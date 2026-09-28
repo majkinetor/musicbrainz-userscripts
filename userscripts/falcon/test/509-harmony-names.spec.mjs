@@ -6,7 +6,7 @@
 // MB round-trip for Harmony-sourced items. Row HTML below is a trimmed copy
 // of a real one captured live from harmony.pulsewidth.org.uk.
 import { readFile } from 'node:fs/promises';
-import { test, check, requireLogin, sourceOf } from '../../../dev/test/harness.mjs';
+import { test, check, requireLogin, sourceOf, frames } from '../../../dev/test/harness.mjs';
 
 // the script brings its own GM stand-ins, as it did before the harness
 test.use({ gm: false });
@@ -81,7 +81,7 @@ test("#509: harmony names", { tag: ['@sandbox', '@login'] }, async ({ context, p
   console.log('queued items:', JSON.stringify(queued));
   ck(queued.length === 2, `both items queued (got ${queued.length})`);
   ck(queued.every(i => i.name), `every queued item has a name populated synchronously (got ${JSON.stringify(queued)})`);
-  await page.waitForTimeout(300); // give any stray async fetchEntityName a chance to fire
+  await frames(page);
   ck(!mbApiHit, 'no MB API round-trip was made — the Harmony-scraped name was used directly, not re-fetched');
 
   // sanity: a tuple with NO name (e.g. from a `?falcon=` URL or paste) still
@@ -90,7 +90,7 @@ test("#509: harmony names", { tag: ['@sandbox', '@login'] }, async ({ context, p
   await page.evaluate(() => {
     window.__falconTest.addToQueue([{ entityType: 'artist', mbid: 'aaaaaaaa-0000-0000-0000-000000000099', url: 'https://example.com/a' }]);
   });
-  await page.waitForTimeout(300);
+  await frames(page);
   ck(mbApiHit, 'a nameless tuple (non-Harmony source) still falls back to fetchEntityName');
 
   ck(errs.length === 0, 'no page errors: ' + JSON.stringify(errs.slice(0, 3)));

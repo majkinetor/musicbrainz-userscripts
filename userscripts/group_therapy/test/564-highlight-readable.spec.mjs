@@ -24,7 +24,7 @@
 // No MusicBrainz: synthetic pages built from the script's own rules, in Chromium and Firefox.
 import { readFile } from 'node:fs/promises';
 import { chromium, firefox } from '@playwright/test';
-import { test, check, sourceOf } from '../../../dev/test/harness.mjs';
+import { test, check, sourceOf, frames } from '../../../dev/test/harness.mjs';
 
 test('the hover highlight and tooltip text are readable in Chromium and Firefox', { tag: '@unit' }, async () => {
   const code = await readFile(sourceOf('group_therapy'), 'utf8');
@@ -114,7 +114,7 @@ test('the hover highlight and tooltip text are readable in Chromium and Firefox'
     const browser = await engine.launch({ headless: true });
     const page = await browser.newPage({ viewport: { width: 600, height: 200 }, deviceScaleFactor: 2 });
     await page.setContent(PAGE);
-    await page.waitForTimeout(400);
+    await frames(page);
     const supported = await page.evaluate(() => window.__hlOk);
     console.log(`\n[${name}] CSS Custom Highlight API supported: ${supported}`);
     if (!supported) { console.log(`  skipped — this engine cannot show the highlight at all`); await browser.close(); continue; }

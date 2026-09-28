@@ -8,7 +8,7 @@
 // Runs against test.musicbrainz.org (the sanctioned sandbox) and never
 // submits — every edit POST is blocked, so this only exercises the editor's
 // staged state, which is exactly what the user reviews before saving.
-import { test, check, requireLogin, SANDBOX } from '../../../dev/test/harness.mjs';
+import { test, check, requireLogin, SANDBOX, settled, idle, frames, until } from '../../../dev/test/harness.mjs';
 import { blockEdits } from './gt.mjs';
 
 test.use({ gm: { name: 'Group Therapy' } });
@@ -17,7 +17,7 @@ test('the text parser end to end: parse, resolve, apply, and the fixes from live
   const RELEASE_GID = '3a37a35f-1e06-457f-9b2a-46155c5c03ce';
   await page.goto(`${SANDBOX}/release/${RELEASE_GID}/edit-relationships`, { waitUntil: 'domcontentloaded' });
   await requireLogin(page);
-  await page.waitForTimeout(4500);
+  await settled(page);
 
   // setup: make sure the test release actually HAS an annotation, so
   // "Load annotation" / "Apply & clear annotation" have real content to
@@ -33,24 +33,24 @@ test('the text parser end to end: parse, resolve, apply, and the fixes from live
   if (!hasAnno) {
     await page.fill('textarea[name="edit-annotation.text"]', 'Mastering: Annotation Seed Artist 522');
     await page.click('button:has-text("Enter edit")');
-    await page.waitForTimeout(1200);
+    await page.waitForURL(u => !/edit_annotation/.test(u.pathname), { timeout: 60000 }).catch(() => {});   // the edit went in
     annoSeeded = true;
     console.log('seeded a test annotation for #522 verification');
   } else {
     annoSeeded = true;   // already had real content from an earlier run
   }
   await page.goto(`${SANDBOX}/release/${RELEASE_GID}/edit-relationships`, { waitUntil: 'domcontentloaded' });
-  await page.waitForTimeout(3000);
+  await settled(page);
 
   const posts = await blockEdits(page);
 
   await inject('group_therapy', { waitFor: '__groupTherapy' });
-  await page.waitForTimeout(1500);
+  await idle(page);
 
   // 1. the modal opens and the toolbar button exists.
   check(await page.isVisible('button.gt-clone-btn:has-text("Text parser")'), 'the "Text parser…" toolbar button is present');
   await page.evaluate(() => window.__groupTherapy.openTextParser());
-  await page.waitForTimeout(150);
+  await frames(page);
   check(await page.isVisible('.gt-cons.gt-tp'), 'the modal opens');
 
   // 1b. #522 fourth round (majkinetor, live, screenshot): fix the empty-state
@@ -90,7 +90,7 @@ test('the text parser end to end: parse, resolve, apply, and the fixes from live
     'Text Editing: Jesse Simon',
   ].join('\n');
   await page.fill('.gt-tp-ta', RA_SAMPLE);
-  await page.waitForTimeout(150);
+  await frames(page);
   let rowTexts = await page.evaluate(() => [...document.querySelectorAll('.gt-tp-row')].map(tr => [...tr.querySelectorAll('.gt-tp-c')].map(td => td.textContent)));
   console.log('R: E rows:', JSON.stringify(rowTexts));
   check(rowTexts.length === 5, `all 5 lines produce a row (got ${rowTexts.length})`);
@@ -102,7 +102,7 @@ test('the text parser end to end: parse, resolve, apply, and the fixes from live
   // one side actually has commas) and confirm the comma-split expansion.
   await page.click('.gt-tp-chip:has-text("E[,] - R[,]")');
   await page.fill('.gt-tp-ta', 'Cameron Allen - Flute, Tenor Saxophone');
-  await page.waitForTimeout(150);
+  await frames(page);
   rowTexts = await page.evaluate(() => [...document.querySelectorAll('.gt-tp-row')].map(tr => [...tr.querySelectorAll('.gt-tp-c')].map(td => td.textContent)));
   console.log('E[,] - R[,] rows:', JSON.stringify(rowTexts));
   check(rowTexts.length === 2, `one line with 2 comma-split roles expands to 2 rows (got ${rowTexts.length})`);
@@ -144,10 +144,11 @@ test('the text parser end to end: parse, resolve, apply, and the fixes from live
   // confirm a real relationship-item / rel-add appears in the DOM.
   await page.fill('.gt-tp-pat', 'R: E');
   await page.fill('.gt-tp-ta', 'Mastering: Test Artist For 522');
-  await page.waitForTimeout(150);
+  await frames(page);
   // resolve the role automatically (exact name match, no picker needed)
   await page.click('.gt-tp-resolve');
-  await page.waitForTimeout(600);
+  await page.waitForFunction(() => { const b = document.querySelector('.gt-tp-resolve'); return b && !b.disabled; }, null, { timeout: 60000 }).catch(() => {});   // resolved
+  await frames(page);
   // resolve the artist via the picker's paste-MBID path — pick a real artist
   // gid from this same test release's own credits so it's guaranteed to exist.
   const anArtistGid = await page.evaluate(() => {
@@ -161,7 +162,7 @@ test('the text parser end to end: parse, resolve, apply, and the fixes from live
     // either column — :not(.gt-tp-resolved) picks the still-unresolved
     // artist "search" button specifically.
     await page.click('.gt-tp-search:not(.gt-tp-resolved)');
-    await page.waitForTimeout(150);
+    await frames(page);
     await page.fill('.gt-tp-q', anArtistGid);
     // #544: a pasted MBID now resolves ITSELF — there is no result row to click
     // any more. It applies to every row with this text (the shared, TEXT-keyed
@@ -170,10 +171,11 @@ test('the text parser end to end: parse, resolve, apply, and the fixes from live
     // text stays resolved after the textarea is wiped and re-filled with the
     // same credit line at a fresh position.
     await page.waitForFunction(() => !document.querySelector('.gt-tp-apop'), null, { timeout: 15000 });
-    await page.waitForTimeout(250);
+    await frames(page);
     const relCountBefore = await page.evaluate(() => document.querySelectorAll('.relationship-item').length);
     await page.click('.gt-cons-apply');
-    await page.waitForTimeout(800);
+    await until(() => page.isVisible('.gt-cons.gt-tp'), v => !v);   // applied: the window closes
+    await frames(page);
     const after = await page.evaluate(() => ({
       relCount: document.querySelectorAll('.relationship-item').length,
       relAdd: document.querySelectorAll('.rel-add').length,
@@ -185,7 +187,7 @@ test('the text parser end to end: parse, resolve, apply, and the fixes from live
     // so there's no "applied" row left to inspect; the modal itself is gone.
     check(!(await page.isVisible('.gt-cons.gt-tp')), 'Apply closes the Text parser window');
     await page.evaluate(() => window.__groupTherapy.openTextParser());
-    await page.waitForTimeout(300);
+    await frames(page);
   } else {
     console.log('SKIP: no existing artist relationship on this test release to reuse an MBID from');
   }
@@ -199,7 +201,7 @@ test('the text parser end to end: parse, resolve, apply, and the fixes from live
   // onto "Alice" here. Resolutions are now keyed by row TEXT, not position.)
   await page.fill('.gt-tp-pat', 'R: E');
   await page.fill('.gt-tp-ta', 'Guitar: Alice; Bass: Bob');
-  await page.waitForTimeout(150);
+  await frames(page);
   let pairRows = await page.evaluate(() => [...document.querySelectorAll('.gt-tp-row')].map(tr => [...tr.querySelectorAll('.gt-tp-c')].map(td => td.textContent)));
   console.log('semicolon-pair rows:', JSON.stringify(pairRows));
   check(pairRows.length === 2, `"Guitar: Alice; Bass: Bob" expands to 2 rows (got ${pairRows.length})`);
@@ -210,11 +212,11 @@ test('the text parser end to end: parse, resolve, apply, and the fixes from live
   // 9. per-row pattern override keeps focus + value while typing (used to lose
   // focus on every keystroke because render() rebuilt the whole table).
   await page.fill('.gt-tp-ta', 'Line one\nLine two');
-  await page.waitForTimeout(150);
+  await frames(page);
   const ov = page.locator('.gt-tp-ov').first();
   await ov.click();
   await ov.type('R: E', { delay: 25 });
-  await page.waitForTimeout(150);
+  await frames(page);
   const focusInfo = await page.evaluate(() => ({ cls: document.activeElement.className || '', val: document.activeElement.value || '' }));
   console.log('focus after typing an override:', JSON.stringify(focusInfo));
   check(focusInfo.cls.includes('gt-tp-ov') && focusInfo.val === 'R: E', `focus and value survive re-renders while typing (got ${JSON.stringify(focusInfo)})`);
@@ -225,7 +227,7 @@ test('the text parser end to end: parse, resolve, apply, and the fixes from live
   // as three instruments having stopped auto-resolving. The tool was fine; the
   // test was carrying its own state forward.
   await ov.fill('');
-  await page.waitForTimeout(200);
+  await frames(page);
   check(await page.evaluate(() => [...document.querySelectorAll('.gt-tp-ov')].every(i => !i.value)),
     'the override is cleared again, so later steps parse with the pattern they set');
 
@@ -233,9 +235,10 @@ test('the text parser end to end: parse, resolve, apply, and the fixes from live
   // "mastering") without colliding with lookalike roles ("chorus master",
   // "remixes and compilations").
   await page.fill('.gt-tp-ta', 'mastered by: Someone For 522\ncompiled: Someone Else For 522');
-  await page.waitForTimeout(150);
+  await frames(page);
   await page.click('.gt-tp-resolve');
-  await page.waitForTimeout(1000);
+  await page.waitForFunction(() => { const b = document.querySelector('.gt-tp-resolve'); return b && !b.disabled; }, null, { timeout: 60000 }).catch(() => {});   // resolved
+  await frames(page);
   // role cells (resolved) render as a <button> (round 5: clickable again to
   // reopen the picker); artist cells (resolved) render as an <a> — target
   // button specifically so an artist name can't false-match.
@@ -254,41 +257,41 @@ test('the text parser end to end: parse, resolve, apply, and the fixes from live
   check(roleTagName === 'BUTTON', `a resolved role is clickable again, to change it (got tag "${roleTagName}")`);
   // clicking the resolved role should reopen the role picker, not do nothing.
   await page.click('button.gt-tp-resolved');
-  await page.waitForTimeout(150);
+  await frames(page);
   check(await page.isVisible('.gt-role-pick'), 'clicking a resolved role reopens the role picker');
   // the picker pre-fills with the parsed role text (round 5 fix #6).
   const rolePickerQuery = await page.inputValue('.gt-role-search');
   check(rolePickerQuery.toLowerCase() === 'mastered by', `the role picker search box is pre-filled with the parsed role text (got "${rolePickerQuery}")`);
   await page.keyboard.press('Escape');
-  await page.waitForTimeout(150);
+  await frames(page);
 
   // reuse the exact text manually resolved (and applied) back in check 7 —
   // artistCache is text-keyed and persists across textarea content changes
   // within the same session, so this is guaranteed to already be resolved.
   await page.fill('.gt-tp-ta', 'Mastering: Test Artist For 522');
-  await page.waitForTimeout(150);
+  await frames(page);
   const artistLink = await page.evaluate(() => { const a = document.querySelector('a.gt-tp-resolved'); return a ? { tag: a.tagName, href: a.getAttribute('href'), target: a.target } : null; });
   console.log('resolved artist link:', JSON.stringify(artistLink));
   check(artistLink && artistLink.tag === 'A' && /^\/(artist|label)\//.test(artistLink.href) && artistLink.target === '_blank', `a resolved artist is a real link (got ${JSON.stringify(artistLink)})`);
   check(await page.evaluate(() => !document.querySelector('.gt-tp-openlink')), 'the separate ↗ open-icon is gone — the artist name itself is the link now');
   // left click must NOT navigate — it reopens the picker instead.
   await page.click('a.gt-tp-resolved');
-  await page.waitForTimeout(150);
+  await frames(page);
   check(await page.isVisible('.gt-tp-apop'), 'left-clicking a resolved artist link reopens the search popover, not a navigation');
   check(page.url().includes('edit-relationships'), 'the page itself did not navigate away');
   await page.keyboard.press('Escape');
-  await page.waitForTimeout(150);
+  await frames(page);
 
   // 12. Escape inside the nested role picker closes only the picker, not the
   // whole Text Parser modal. Open it via an UNRESOLVED row's "search" link —
   // resolved cells no longer reopen the picker (see #11 above).
   await page.fill('.gt-tp-ta', 'Some Unmapped Role Xyz522: Some Artist For Esc Test');
-  await page.waitForTimeout(150);
+  await frames(page);
   await page.click('.gt-tp-search');
-  await page.waitForTimeout(150);
+  await frames(page);
   check(await page.isVisible('.gt-role-pick'), 'clicking "search" on an unresolved role opens the picker');
   await page.keyboard.press('Escape');
-  await page.waitForTimeout(150);
+  await frames(page);
   const afterEsc = await page.evaluate(() => ({ rolePickOpen: !!document.querySelector('.gt-role-pick'), mainOpen: !!document.querySelector('.gt-cons.gt-tp') }));
   console.log('after Escape inside the role picker:', JSON.stringify(afterEsc));
   check(!afterEsc.rolePickOpen, 'Escape closes the nested role picker');
@@ -297,22 +300,23 @@ test('the text parser end to end: parse, resolve, apply, and the fixes from live
   // 13. Load annotation goes straight into the textarea — no confirm/preview step.
   await page.fill('.gt-tp-ta', '');
   await page.click('.gt-tp-anno');
-  await page.waitForTimeout(1500);
+  await until(() => page.inputValue('.gt-tp-ta'), v => !!v.trim(), { timeout: 30000 });   // the annotation is in
+  await frames(page);
   const hasConfirmBox = await page.evaluate(() => !!document.querySelector('.gt-tp-anno-use'));
   check(!hasConfirmBox, 'no confirmation/preview box exists for annotation loading anymore');
 
   // 14. state (pasted text) survives closing and reopening the tool on the same release.
   const marker = 'Persisted Sample 522: Persist Test Artist ' + Date.now();
   await page.fill('.gt-tp-ta', marker);
-  await page.waitForTimeout(250);
+  await frames(page);
   // the new maximize button shares .gt-cons-x with the close button (same
   // convention Match Works already uses for its own header icons) — only the
   // close button has no title, so :not([title]) picks it out unambiguously.
   await page.click('.gt-cons.gt-tp .gt-cons-x:not([title])');
-  await page.waitForTimeout(150);
+  await frames(page);
   check(!(await page.isVisible('.gt-cons.gt-tp')), 'modal closes');
   await page.evaluate(() => window.__groupTherapy.openTextParser());
-  await page.waitForTimeout(300);
+  await frames(page);
   const restoredText = await page.inputValue('.gt-tp-ta');
   console.log('restored text after reopen:', JSON.stringify(restoredText));
   check(restoredText === marker, `pasted text survives a close+reopen on the same release (got ${JSON.stringify(restoredText)})`);
@@ -322,7 +326,7 @@ test('the text parser end to end: parse, resolve, apply, and the fixes from live
   // copyright line, all resolved in the same pass.
   await page.fill('.gt-tp-pat', 'R: E');
   await page.fill('.gt-tp-ta', 'Mastering: Someone For 522\n℗ & © 2020 Some Copyright Test Label 522');
-  await page.waitForTimeout(150);
+  await frames(page);
   const mixedRows = await page.evaluate(() => [...document.querySelectorAll('.gt-tp-row')].map(tr => [...tr.querySelectorAll('.gt-tp-c')].map(td => td.textContent)));
   console.log('mixed credit + copyright rows:', JSON.stringify(mixedRows));
   check(mixedRows.length === 3, `1 ordinary credit + 1 combined "℗ & ©" line (2 notices) = 3 rows total (got ${mixedRows.length})`);
@@ -336,7 +340,7 @@ test('the text parser end to end: parse, resolve, apply, and the fixes from live
   // "+ Create label ↗" link row is gone — replaced by a "+" button inside
   // the search box itself (majkinetor's own mock).
   await page.click('.gt-tp-row:nth-child(2) .gt-tp-search');
-  await page.waitForTimeout(150);
+  await frames(page);
   const pickerInfo = await page.evaluate(() => {
     const plus = document.querySelector('.gt-tp-apop .gt-tp-plus');
     return {
@@ -352,7 +356,7 @@ test('the text parser end to end: parse, resolve, apply, and the fixes from live
   check(pickerInfo.plusInsideQwrap, 'a "+" create button now lives inside the search box itself');
   check(/create label/i.test(pickerInfo.plusTitle || ''), `the "+" button is scoped to label creation for a copyright row (got "${pickerInfo.plusTitle}")`);
   await page.keyboard.press('Escape');
-  await page.waitForTimeout(100);
+  await frames(page);
 
   // direct function-level checks for the copyright parser + label resolution,
   // independent of real test-server holder data.
@@ -444,9 +448,10 @@ test('the text parser end to end: parse, resolve, apply, and the fixes from live
   // asserted to auto-resolve here.
   await page.fill('.gt-tp-pat', 'E - R[,]');
   await page.fill('.gt-tp-ta', 'Kwame Yeboah - Keys, Guitar, Piano, Hammond\nBen Abarbanel-Wolff - Saxophone, Flute\nEric Owusu - Percussion');
-  await page.waitForTimeout(150);
+  await frames(page);
   await page.click('.gt-tp-resolve');
-  await page.waitForTimeout(1500);
+  await page.waitForFunction(() => { const b = document.querySelector('.gt-tp-resolve'); return b && !b.disabled; }, null, { timeout: 60000 }).catch(() => {});   // resolved
+  await frames(page);
   // the override/raw columns only render on a line's FIRST sub-row, so a
   // plain nth-child count isn't stable across rows — read the parsed role
   // text from the FIRST of the row's .gt-tp-c cells instead (array order is
@@ -478,10 +483,10 @@ test('the text parser end to end: parse, resolve, apply, and the fixes from live
   // 17. remove a row — deletes it from the results AND the underlying textarea.
   await page.fill('.gt-tp-pat', 'R: E');
   await page.fill('.gt-tp-ta', 'Mastering: Row To Keep 522\nProducer: Row To Delete 522');
-  await page.waitForTimeout(150);
+  await frames(page);
   let rowCountBefore = await page.evaluate(() => document.querySelectorAll('.gt-tp-row').length);
   await page.click('.gt-tp-row:nth-child(2) .gt-tp-rowdel');
-  await page.waitForTimeout(150);
+  await frames(page);
   const afterDelete = await page.evaluate(() => ({
     rowCount: document.querySelectorAll('.gt-tp-row').length,
     taValue: document.querySelector('.gt-tp-ta').value,
@@ -492,12 +497,12 @@ test('the text parser end to end: parse, resolve, apply, and the fixes from live
 
   // 18. editing the raw-line cell in the table updates the source textarea.
   await page.fill('.gt-tp-ta', 'Mastering: Typo Artist 522');
-  await page.waitForTimeout(150);
+  await frames(page);
   const rawInput = page.locator('.gt-tp-raw').first();
   await rawInput.click();
   await rawInput.fill('Mastering: Fixed Artist 522');
   await rawInput.dispatchEvent('input');
-  await page.waitForTimeout(150);
+  await frames(page);
   const afterRawEdit = await page.evaluate(() => ({
     taValue: document.querySelector('.gt-tp-ta').value,
     artistCell: [...document.querySelector('.gt-tp-row').querySelectorAll('.gt-tp-c')][1]?.textContent,
@@ -509,12 +514,12 @@ test('the text parser end to end: parse, resolve, apply, and the fixes from live
   // 19. maximize button toggles a near-fullscreen class and back.
   const maxBefore = await page.evaluate(() => document.querySelector('.gt-cons.gt-tp').classList.contains('gt-tp-max'));
   await page.click('.gt-cons.gt-tp .gt-cons-x[title="Maximize / restore"]');
-  await page.waitForTimeout(150);
+  await frames(page);
   const maxAfter = await page.evaluate(() => document.querySelector('.gt-cons.gt-tp').classList.contains('gt-tp-max'));
   console.log('maximize toggle:', { maxBefore, maxAfter });
   check(!maxBefore && maxAfter, `the maximize button adds the near-fullscreen class (before ${maxBefore}, after ${maxAfter})`);
   await page.click('.gt-cons.gt-tp .gt-cons-x[title="Restore"]');
-  await page.waitForTimeout(150);
+  await frames(page);
   check(!(await page.evaluate(() => document.querySelector('.gt-cons.gt-tp').classList.contains('gt-tp-max'))), 'clicking it again restores');
 
   // 20. resizable columns — dragging a header's resize handle changes its
@@ -526,7 +531,7 @@ test('the text parser end to end: parse, resolve, apply, and the fixes from live
   await page.mouse.down();
   await page.mouse.move(box.x + 80, box.y + box.height / 2);
   await page.mouse.up();
-  await page.waitForTimeout(100);
+  await frames(page);
   const colWidthAfter = await page.evaluate(() => document.querySelector('.gt-tp-tbl colgroup col:nth-child(2)').style.width);
   console.log('column width drag:', { colWidthBefore, colWidthAfter });
   check(parseInt(colWidthAfter) > parseInt(colWidthBefore), `dragging a column's resize handle widens it (before ${colWidthBefore}, after ${colWidthAfter})`);
@@ -534,25 +539,26 @@ test('the text parser end to end: parse, resolve, apply, and the fixes from live
   // #522 fourth round (majkinetor, live): "memorize as you do it constantly"
   // — a resized column width survives closing and reopening the tool.
   await page.click('.gt-cons.gt-tp .gt-cons-x:not([title])');
-  await page.waitForTimeout(150);
+  await frames(page);
   await page.evaluate(() => window.__groupTherapy.openTextParser());
-  await page.waitForTimeout(300);
+  await frames(page);
   const colWidthAfterReopen = await page.evaluate(() => document.querySelector('.gt-tp-tbl colgroup col:nth-child(2)').style.width);
   console.log('column width after reopen:', colWidthAfterReopen);
   check(colWidthAfterReopen === colWidthAfter, `the resized column width is remembered across close+reopen (got "${colWidthAfterReopen}", expected "${colWidthAfter}")`);
 
   // 21. full resolution state (not just text) survives a close+reopen.
   await page.fill('.gt-tp-ta', 'Mastering: Persisted Resolution Artist 522');
-  await page.waitForTimeout(150);
+  await frames(page);
   await page.click('.gt-tp-resolve');
-  await page.waitForTimeout(800);
+  await page.waitForFunction(() => { const b = document.querySelector('.gt-tp-resolve'); return b && !b.disabled; }, null, { timeout: 60000 }).catch(() => {});   // resolved
+  await frames(page);
   const beforeClose = await page.evaluate(() => document.querySelector('button.gt-tp-resolved')?.textContent);
   console.log('role resolved before close:', beforeClose);
   check(beforeClose && beforeClose.toLowerCase() === 'mastering', 'sanity: the role is resolved before closing');
   await page.click('.gt-cons.gt-tp .gt-cons-x:not([title])');
-  await page.waitForTimeout(150);
+  await frames(page);
   await page.evaluate(() => window.__groupTherapy.openTextParser());
-  await page.waitForTimeout(300);
+  await frames(page);
   const afterReopen = await page.evaluate(() => document.querySelector('button.gt-tp-resolved')?.textContent);
   console.log('role resolved after reopen:', afterReopen);
   check(afterReopen && afterReopen.toLowerCase() === 'mastering', `the resolution survives close+reopen, not just the pasted text (got ${JSON.stringify(afterReopen)})`);
@@ -566,7 +572,7 @@ test('the text parser end to end: parse, resolve, apply, and the fixes from live
   // only that 1").
   await page.fill('.gt-tp-pat', 'E - R[,]');
   await page.fill('.gt-tp-ta', 'Propagation Test Artist 522 - Guitar, Piano');
-  await page.waitForTimeout(150);
+  await frames(page);
   const propArtistGid = anArtistGid;   // reuse the same real gid resolved earlier
   // the artist cell is always the 2nd .gt-tp-c ([role-text, artist-text,
   // →role, →artist] is parsed-cell order; the RESOLVED artist cell shares the
@@ -579,10 +585,10 @@ test('the text parser end to end: parse, resolve, apply, and the fixes from live
     // itself, bulk — so the single-row case is driven from a NAME search, which
     // is the only path that still shows clickable result rows.
     await artistSearchBtn(0).click();
-    await page.waitForTimeout(150);
+    await frames(page);
     await page.fill('.gt-tp-q', propArtistGid);
     await page.waitForFunction(() => !document.querySelector('.gt-tp-apop'), null, { timeout: 15000 });
-    await page.waitForTimeout(250);
+    await frames(page);
     const afterMbidPaste = await page.evaluate(() => [...document.querySelectorAll('.gt-tp-row')].map(tr => !!tr.querySelector('a.gt-tp-resolved')));
     console.log('resolved after pasting an MBID (#544 = bulk):', JSON.stringify(afterMbidPaste));
     check(afterMbidPaste.every(Boolean), `a pasted MBID resolves every row sharing that artist text (got ${JSON.stringify(afterMbidPaste)})`);
@@ -603,17 +609,18 @@ test('the text parser end to end: parse, resolve, apply, and the fixes from live
   // 24. Apply closes the window (majkinetor, live: "Apply should close the window").
   await page.fill('.gt-tp-pat', 'R: E');
   await page.fill('.gt-tp-ta', 'Mastering: Apply Close Test Artist 522');
-  await page.waitForTimeout(150);
+  await frames(page);
   await page.click('.gt-tp-resolve');   // "mastering" auto-resolves via exact name match
-  await page.waitForTimeout(600);
+  await page.waitForFunction(() => { const b = document.querySelector('.gt-tp-resolve'); return b && !b.disabled; }, null, { timeout: 60000 }).catch(() => {});   // resolved
+  await frames(page);
   const artGid2 = anArtistGid;
   if (artGid2) {
     await artistSearchBtn(0).click();
-    await page.waitForTimeout(150);
+    await frames(page);
     await page.fill('.gt-tp-q', artGid2);
     // #544: resolves itself on paste — no result row to click.
     await page.waitForFunction(() => !document.querySelector('.gt-tp-apop'), null, { timeout: 15000 });
-    await page.waitForTimeout(250);
+    await frames(page);
     // regression guard: this exact li:0:0 position was already applied once
     // before (test 7, above) — a brand-new, never-applied line pasted at the
     // same position must NOT silently inherit that stale "✓ applied" status
@@ -621,7 +628,8 @@ test('the text parser end to end: parse, resolve, apply, and the fixes from live
     const applyReady = await page.evaluate(() => !document.querySelector('.gt-cons-apply').disabled && document.querySelector('.gt-tp-status')?.textContent === 'ready');
     check(applyReady, `a fresh line reusing an earlier applied row's position is NOT pre-marked "applied" (Apply must stay enabled)`);
     await page.click('.gt-cons-apply');
-    await page.waitForTimeout(400);
+    await until(() => page.isVisible('.gt-cons.gt-tp'), v => !v);   // applied: the window closes
+    await frames(page);
     check(!(await page.isVisible('.gt-cons.gt-tp')), 'clicking Apply closes the Text parser window');
   } else {
     console.log('SKIP: no real artist gid available for the Apply-closes test');
@@ -632,16 +640,17 @@ test('the text parser end to end: parse, resolve, apply, and the fixes from live
   // add another button - Apply and remove annotation") — never for freely
   // typed/pasted text, since that would risk clearing an unrelated annotation.
   await page.evaluate(() => window.__groupTherapy.openTextParser());
-  await page.waitForTimeout(300);
+  await frames(page);
   await page.fill('.gt-tp-ta', 'Mastering: Not From Annotation 522');
-  await page.waitForTimeout(150);
+  await frames(page);
   const clearBtnHiddenForTyped = await page.evaluate(() => {
     const b = [...document.querySelectorAll('.gt-cons.gt-tp button')].find(x => x.textContent.includes('clear annotation'));
     return b ? getComputedStyle(b).display : 'MISSING';
   });
   check(clearBtnHiddenForTyped === 'none', `"Apply & clear annotation" is hidden for freely-typed text (got display="${clearBtnHiddenForTyped}")`);
   await page.click('.gt-tp-anno');
-  await page.waitForTimeout(1500);
+  await until(() => page.inputValue('.gt-tp-ta'), v => v !== 'Mastering: Not From Annotation 522', { timeout: 30000 });   // the annotation replaced the typed text
+  await frames(page);
   const afterAnnoLoad = await page.evaluate(() => {
     const b = [...document.querySelectorAll('.gt-cons.gt-tp button')].find(x => x.textContent.includes('clear annotation'));
     return { display: b ? getComputedStyle(b).display : 'MISSING', ta: document.querySelector('.gt-tp-ta').value };
@@ -656,7 +665,7 @@ test('the text parser end to end: parse, resolve, apply, and the fixes from live
     console.log('SKIP: annotation text did not come back from the sandbox this run (likely replication lag, not a real failure)');
   }
   await page.click('.gt-cons.gt-tp .gt-cons-x:not([title])');
-  await page.waitForTimeout(150);
+  await frames(page);
 
   // 26. state persistence is SESSION-only — majkinetor, live: "restarting
   // popup should keep the state only within current session. If I reload the
@@ -664,16 +673,16 @@ test('the text parser end to end: parse, resolve, apply, and the fixes from live
   // real page and re-injecting the userscript fresh (a real reload gets a
   // brand-new JS context either way, so this is equivalent).
   await page.reload({ waitUntil: 'domcontentloaded' });
-  await page.waitForTimeout(4000);
+  await settled(page);
   await inject('group_therapy', { waitFor: '__groupTherapy' });
-  await page.waitForTimeout(1000);
+  await idle(page);
   await page.evaluate(() => window.__groupTherapy.openTextParser());
-  await page.waitForTimeout(300);
+  await frames(page);
   const textAfterReload = await page.inputValue('.gt-tp-ta');
   console.log('text after simulated page reload:', JSON.stringify(textAfterReload));
   check(textAfterReload === '', `pasted text does NOT survive a real page reload (got ${JSON.stringify(textAfterReload)})`);
   await page.click('.gt-cons.gt-tp .gt-cons-x:not([title])');
-  await page.waitForTimeout(150);
+  await frames(page);
 
   // ── sixth round of live feedback ────────────────────────────────────────
 
@@ -681,10 +690,10 @@ test('the text parser end to end: parse, resolve, apply, and the fixes from live
   // (majkinetor, live: "We still don't have non-intrusive raw background
   // color (like in CH)" — Credit Hoarder tints its whole review row).
   await page.evaluate(() => window.__groupTherapy.openTextParser());
-  await page.waitForTimeout(300);
+  await frames(page);
   await page.fill('.gt-tp-pat', 'R: E');
   await page.fill('.gt-tp-ta', 'Some Unresolvable Weird Role 522: Some Unresolvable Artist 522\nNo pattern match here at all 522');
-  await page.waitForTimeout(150);
+  await frames(page);
   const rowBgs = await page.evaluate(() => [...document.querySelectorAll('.gt-tp-row')].map(tr => ({
     cls: tr.className, bg: getComputedStyle(tr).backgroundColor,
   })));
@@ -698,7 +707,7 @@ test('the text parser end to end: parse, resolve, apply, and the fixes from live
   // displaced").
   const searchBtnBox = await page.locator('.gt-tp-row').first().locator('.gt-tp-c').nth(3).locator('.gt-tp-search').boundingBox();
   await page.locator('.gt-tp-row').first().locator('.gt-tp-c').nth(3).locator('.gt-tp-search').click();
-  await page.waitForTimeout(200);
+  await frames(page);
   const popBox = await page.locator('.gt-tp-apop').boundingBox();
   console.log('search button box:', JSON.stringify(searchBtnBox), 'popover box:', JSON.stringify(popBox));
   check(Math.abs(popBox.x - searchBtnBox.x) < 40, `the popover opens near the clicked button horizontally (button x=${searchBtnBox.x}, popover x=${popBox.x})`);
@@ -709,7 +718,8 @@ test('the text parser end to end: parse, resolve, apply, and the fixes from live
   // several candidates) could extend past the clamped bound. Type a query
   // with real results and confirm the popover re-clamps to fit.
   await page.fill('.gt-tp-q', 'John');
-  await page.waitForTimeout(900);
+  await until(() => page.evaluate(() => document.querySelectorAll('.gt-tp-apop .gt-tp-res').length), n => n > 0, { timeout: 30000 });   // results are in
+  await frames(page);
   const popBoxAfterResults = await page.evaluate(() => {
     const r = document.querySelector('.gt-tp-apop').getBoundingClientRect();
     return { left: r.left, top: r.top, right: r.right, bottom: r.bottom, resultCount: document.querySelectorAll('.gt-tp-apop .gt-tp-res').length };
@@ -718,13 +728,13 @@ test('the text parser end to end: parse, resolve, apply, and the fixes from live
   check(popBoxAfterResults.resultCount > 0, `sanity: the query returned real results (got ${popBoxAfterResults.resultCount})`);
   check(popBoxAfterResults.right <= 1600 + 1 && popBoxAfterResults.bottom <= 1100 + 1 && popBoxAfterResults.left >= 0 && popBoxAfterResults.top >= 0, `the popover re-clamps to stay fully on-screen once it grows with real results (got ${JSON.stringify(popBoxAfterResults)}, viewport 1600x1100)`);
   await page.keyboard.press('Escape');
-  await page.waitForTimeout(150);
+  await frames(page);
 
   // 29. the role picker's pre-filled search text is SELECTED, so typing
   // immediately overwrites it (majkinetor, live: "Make role text in the
   // search box selected").
   await page.locator('.gt-tp-row').first().locator('.gt-tp-c').nth(2).locator('.gt-tp-search').click();
-  await page.waitForTimeout(200);
+  await frames(page);
   const roleSelInfo = await page.evaluate(() => {
     const el = document.querySelector('.gt-role-search');
     return el ? { start: el.selectionStart, end: el.selectionEnd, len: el.value.length } : null;
@@ -732,9 +742,9 @@ test('the text parser end to end: parse, resolve, apply, and the fixes from live
   console.log('role search selection:', JSON.stringify(roleSelInfo));
   check(roleSelInfo && roleSelInfo.len > 0 && roleSelInfo.start === 0 && roleSelInfo.end === roleSelInfo.len, `the role picker's pre-filled text is fully selected (got ${JSON.stringify(roleSelInfo)})`);
   await page.keyboard.press('Escape');
-  await page.waitForTimeout(150);
+  await frames(page);
   await page.click('.gt-cons.gt-tp .gt-cons-x:not([title])');
-  await page.waitForTimeout(150);
+  await frames(page);
 
   // ── seventh round: "distributed by and friends" + artist-vs-label (#524) ──
 
@@ -742,14 +752,14 @@ test('the text parser end to end: parse, resolve, apply, and the fixes from live
   // expands into one row per holder (majkinetor: "distributed by and
   // friends, that would be some improvement").
   await page.evaluate(() => window.__groupTherapy.openTextParser());
-  await page.waitForTimeout(300);
+  await frames(page);
   await page.fill('.gt-tp-pat', 'R: E');
   await page.fill('.gt-tp-ta', [
     'distributed by Sony Music Entertainment 522',
     'licensed to Republic Records 522',
     '℗ 2012 Shady Records 522/Aftermath Records 522',
   ].join('\n'));
-  await page.waitForTimeout(200);
+  await frames(page);
   const newTypeRows = await page.evaluate(() => [...document.querySelectorAll('.gt-tp-row')].map(tr => {
     const cs = [...tr.querySelectorAll('.gt-tp-c')];
     return { role: cs[0]?.textContent, artist: cs[1]?.textContent };
@@ -765,7 +775,7 @@ test('the text parser end to end: parse, resolve, apply, and the fixes from live
   // message ... resolving 4/N", then "make it show in the button itself:
   // [ Resolving 3/5 ]"), then reverts to "⚡ Match" once done.
   await page.fill('.gt-tp-ta', ['Mastering: David Storrs', 'Producer: Gabriel Aldama', 'Recorded by: Eric Lauzon', 'Mixed by: Steven Cooper'].join('\n'));
-  await page.waitForTimeout(200);
+  await frames(page);
   const progressSnapshots = await page.evaluate(() => new Promise(resolve => {
     const snaps = [];
     const btn = document.querySelector('.gt-tp-resolve');
@@ -786,13 +796,13 @@ test('the text parser end to end: parse, resolve, apply, and the fixes from live
   // "distributed", licensed to → "licensee" — live-verified MB relationship
   // type names, not the plain-English phrase).
   await page.fill('.gt-tp-ta', 'distributed by Sony Music Entertainment\nlicensed to Universal Music Group');
-  await page.waitForTimeout(150);
+  await frames(page);
   await page.click('.gt-tp-resolve');
   // wait for the button's own disabled/text state instead of a fixed delay —
   // a fixed 2.5s guess is exactly the kind of thing that goes flaky under
   // load deep into a long test run (a real search round-trip can take longer).
   await page.waitForFunction(() => { const b = document.querySelector('.gt-tp-resolve'); return b && !b.disabled && b.textContent.includes('Match'); }, { timeout: 20000 });
-  await page.waitForTimeout(200);
+  await frames(page);
   const resolvedNewTypes = await page.evaluate(() => [...document.querySelectorAll('.gt-tp-row')].map(tr => {
     const cs = [...tr.querySelectorAll('.gt-tp-c')];
     return { role: cs[0]?.textContent, resolvedRole: cs[2]?.textContent, resolvedArtist: cs[3]?.textContent };
@@ -816,9 +826,9 @@ test('the text parser end to end: parse, resolve, apply, and the fixes from live
   // artist; a "distributed by" row (label-only concept, MB has no
   // artist-release type for it) never offers the toggle at all.
   await page.fill('.gt-tp-ta', '© 2020 もちこまめ\ndistributed by Sony Music Entertainment 522');
-  await page.waitForTimeout(200);
+  await frames(page);
   await page.locator('.gt-tp-row').nth(0).locator('.gt-tp-c').nth(3).locator('.gt-tp-search').click();
-  await page.waitForTimeout(200);
+  await frames(page);
   const artistDetect = await page.evaluate(() => ({
     header: document.querySelector('.gt-tp-apop .gt-pop-hdr')?.textContent,
     activeTab: document.querySelector('.gt-tp-apop .gt-tp-tab-on')?.textContent,
@@ -828,7 +838,7 @@ test('the text parser end to end: parse, resolve, apply, and the fixes from live
   check(artistDetect.activeTab === 'Artist', `the Artist tab starts active (got "${artistDetect.activeTab}")`);
   // toggle to Label and back — the picker updates live without reopening.
   await page.click('.gt-tp-apop .gt-tp-tab:has-text("Label")');
-  await page.waitForTimeout(150);
+  await frames(page);
   const afterLabelToggle = await page.evaluate(() => ({
     header: document.querySelector('.gt-tp-apop .gt-pop-hdr')?.textContent,
     placeholder: document.querySelector('.gt-tp-q')?.placeholder,
@@ -837,16 +847,16 @@ test('the text parser end to end: parse, resolve, apply, and the fixes from live
   check(/a label/.test(afterLabelToggle.header || ''), `clicking the Label tab updates the picker header live (got "${afterLabelToggle.header}")`);
   check(/labels/.test(afterLabelToggle.placeholder || ''), `clicking the Label tab updates the search placeholder live (got "${afterLabelToggle.placeholder}")`);
   await page.keyboard.press('Escape');
-  await page.waitForTimeout(150);
+  await frames(page);
 
   await page.locator('.gt-tp-row').nth(1).locator('.gt-tp-c').nth(3).locator('.gt-tp-search').click();
-  await page.waitForTimeout(200);
+  await frames(page);
   const noToggle = await page.evaluate(() => !document.querySelector('.gt-tp-apop .gt-tp-tabs'));
   check(noToggle, '"distributed by" (label-only concept) never offers the artist/label toggle');
   await page.keyboard.press('Escape');
-  await page.waitForTimeout(150);
+  await frames(page);
   await page.click('.gt-cons.gt-tp .gt-cons-x:not([title])');
-  await page.waitForTimeout(150);
+  await frames(page);
 
   // ── eighth round: #525, "Published by is also label, but artist is offered" ──
 
@@ -860,17 +870,17 @@ test('the text parser end to end: parse, resolve, apply, and the fixes from live
   // and label-release types; "published" only exists on the label side, so
   // it FORCES label (no toggle) and resolveAll actually finds it.
   await page.evaluate(() => window.__groupTherapy.openTextParser());
-  await page.waitForTimeout(300);
+  await frames(page);
   await page.fill('.gt-tp-pat', 'R: E');
   await page.fill('.gt-tp-ta', 'Published by: Sony Music Entertainment');
-  await page.waitForTimeout(150);
+  await frames(page);
   // role classification (which forces label for "published") only happens
   // inside resolveAll, so Resolve must run BEFORE the picker check below —
   // opening the picker on a never-resolved role can only fall back to the
   // auto-detect guess, not the real forced classification this test proves.
   await page.click('.gt-tp-resolve');
   await page.waitForFunction(() => { const b = document.querySelector('.gt-tp-resolve'); return b && !b.disabled && b.textContent.includes('Match'); }, { timeout: 20000 });
-  await page.waitForTimeout(200);
+  await frames(page);
   const publishedByResolved = await page.evaluate(() => {
     const cs = [...document.querySelector('.gt-tp-row').querySelectorAll('.gt-tp-c')];
     return { resolvedRole: cs[2]?.textContent, resolvedEntity: cs[3]?.textContent };
@@ -887,7 +897,7 @@ test('the text parser end to end: parse, resolve, apply, and the fixes from live
   // now be forced to LABEL with no toggle (the role classification from
   // resolveAll above sticks — roleCache is keyed by role text).
   await page.locator('.gt-tp-row').first().locator('.gt-tp-c').nth(3).locator('a.gt-tp-resolved, button.gt-tp-search').click();
-  await page.waitForTimeout(200);
+  await frames(page);
   const publishedByPicker = await page.evaluate(() => ({
     header: document.querySelector('.gt-tp-apop .gt-pop-hdr')?.textContent,
     hasToggle: !!document.querySelector('.gt-tp-apop .gt-tp-tabs'),
@@ -896,9 +906,9 @@ test('the text parser end to end: parse, resolve, apply, and the fixes from live
   check(/a label/i.test(publishedByPicker.header || ''), `"Published by" forces the LABEL search, not artist (got "${publishedByPicker.header}")`);
   check(!publishedByPicker.hasToggle, '"Published by" (label-only MB type) never offers the artist/label toggle');
   await page.keyboard.press('Escape');
-  await page.waitForTimeout(150);
+  await frames(page);
   await page.click('.gt-cons.gt-tp .gt-cons-x:not([title])');
-  await page.waitForTimeout(150);
+  await frames(page);
 
   // 35. #525 (majkinetor, live, screenshot): "one for the company was
   // selected" — "mastering" and "graphic design" turn out to ALSO exist as
@@ -909,19 +919,19 @@ test('the text parser end to end: parse, resolve, apply, and the fixes from live
   // default back to ARTIST, matching the pre-#525 behavior and the actual
   // intent of a liner-note credit.
   await page.evaluate(() => window.__groupTherapy.openTextParser());
-  await page.waitForTimeout(300);
+  await frames(page);
   await page.fill('.gt-tp-pat', 'R: E');
   await page.fill('.gt-tp-ta', 'Mastering: Michael Graves 525\nGraphic Design: Ricardo H Fernandes 525');
-  await page.waitForTimeout(150);
+  await frames(page);
   await page.click('.gt-tp-resolve');
   await page.waitForFunction(() => { const b = document.querySelector('.gt-tp-resolve'); return b && !b.disabled && b.textContent.includes('Match'); }, { timeout: 20000 });
-  await page.waitForTimeout(200);
+  await frames(page);
   const readPickerFor = async i => {
     await page.locator('.gt-tp-row').nth(i).locator('.gt-tp-c').nth(3).locator('.gt-tp-search').click();
-    await page.waitForTimeout(150);
+    await frames(page);
     const info = await page.evaluate(() => document.querySelector('.gt-tp-apop .gt-pop-hdr')?.textContent);
     await page.keyboard.press('Escape');
-    await page.waitForTimeout(150);
+    await frames(page);
     return info;
   };
   const masteringHeader = await readPickerFor(0);
@@ -930,7 +940,7 @@ test('the text parser end to end: parse, resolve, apply, and the fixes from live
   check(/an artist/i.test(masteringHeader || ''), `"Mastering" defaults to ARTIST search, not label (got "${masteringHeader}")`);
   check(/an artist/i.test(graphicDesignHeader || ''), `"Graphic Design" defaults to ARTIST search, not label (got "${graphicDesignHeader}")`);
   await page.click('.gt-cons.gt-tp .gt-cons-x:not([title])');
-  await page.waitForTimeout(150);
+  await frames(page);
 
   // 36. #525 (majkinetor, live, screenshot): "Biography and Pictures" role
   // wrongly auto-resolved to "pi" — a real MB instrument name that just
@@ -939,18 +949,18 @@ test('the text parser end to end: parse, resolve, apply, and the fixes from live
   // whether the (often much longer) role text merely CONTAINS it — the
   // direction responsible for this false positive.
   await page.evaluate(() => window.__groupTherapy.openTextParser());
-  await page.waitForTimeout(300);
+  await frames(page);
   await page.fill('.gt-tp-pat', 'R: E[,]');
   await page.fill('.gt-tp-ta', 'Biography and Pictures: Chico Unicornio 525');
-  await page.waitForTimeout(150);
+  await frames(page);
   await page.click('.gt-tp-resolve');
   await page.waitForFunction(() => { const b = document.querySelector('.gt-tp-resolve'); return b && !b.disabled && b.textContent.includes('Match'); }, { timeout: 20000 });
-  await page.waitForTimeout(200);
+  await frames(page);
   const biographyRow = await page.evaluate(() => [...document.querySelector('.gt-tp-row').querySelectorAll('.gt-tp-c')].map(c => c.textContent));
   console.log('"Biography and Pictures" row:', JSON.stringify(biographyRow));
   check(biographyRow[2] === 'search', `"Biography and Pictures" no longer false-positive-matches the short instrument "pi" (got role cell "${biographyRow[2]}")`);
   await page.click('.gt-cons.gt-tp .gt-cons-x:not([title])');
-  await page.waitForTimeout(150);
+  await frames(page);
 
   // 37. #525 follow-up (majkinetor): "Can we just replace role with the
   // other one once the entity is selected? That way it should never
@@ -972,25 +982,26 @@ test('the text parser end to end: parse, resolve, apply, and the fixes from live
   check(copyrightIds.artistId && copyrightIds.labelId && copyrightIds.artistId !== copyrightIds.labelId, `"copyright" has distinct ids for artist-release vs label-release (${JSON.stringify(copyrightIds)})`);
   if (anArtistGid && copyrightIds.artistId) {
     await page.evaluate(() => window.__groupTherapy.openTextParser());
-    await page.waitForTimeout(300);
+    await frames(page);
     // a holder that auto-detects as LABEL by default (doesn't match this release's own credited artists).
     await page.fill('.gt-tp-ta', '© 2020 Toggle Test Label 525');
-    await page.waitForTimeout(150);
+    await frames(page);
     await page.click('.gt-tp-resolve');
     await page.waitForFunction(() => { const b = document.querySelector('.gt-tp-resolve'); return b && !b.disabled && b.textContent.includes('Match'); }, { timeout: 20000 });
-    await page.waitForTimeout(200);
+    await frames(page);
     // toggle to Artist and pick a REAL artist (reusing the same gid from test 7).
     await page.locator('.gt-tp-row').first().locator('.gt-tp-c').nth(3).locator('a.gt-tp-resolved, button.gt-tp-search').click();
-    await page.waitForTimeout(200);
+    await frames(page);
     await page.click('.gt-tp-apop .gt-tp-tab:has-text("Artist")');
-    await page.waitForTimeout(150);
+    await frames(page);
     await page.fill('.gt-tp-q', anArtistGid);
     // #544: a pasted MBID resolves itself — no result row to click.
     await page.waitForFunction(() => !document.querySelector('.gt-tp-apop'), null, { timeout: 15000 });
-    await page.waitForTimeout(250);
+    await frames(page);
     const relCountBefore = await page.evaluate(() => document.querySelectorAll('.relationship-item').length);
     await page.click('.gt-cons-apply');
-    await page.waitForTimeout(600);
+    await until(() => page.isVisible('.gt-cons.gt-tp'), v => !v);   // applied: the window closes
+    await frames(page);
     const staged = await page.evaluate(artistId => {
       const find = node => { for (const k in node) if (k.startsWith('__reactFiber$')) { let f = node[k]; let d = 0; while (f && d++ < 40) { const s = f.memoizedProps && f.memoizedProps.relationship; if (s && 'linkTypeID' in s) return s; f = f.return; } } return null; };
       for (const item of document.querySelectorAll('.relationship-item')) {
@@ -1020,7 +1031,7 @@ test('the text parser end to end: parse, resolve, apply, and the fixes from live
   // textarea, without losing the resolution itself.
   if (anArtistGid) {
     await page.evaluate(() => window.__groupTherapy.openTextParser());
-    await page.waitForTimeout(300);
+    await frames(page);
     const canonicalName = await page.evaluate(async gid => {
       const ent = await window.__groupTherapy.txpFetchEntity(gid, 'artist');
       return ent && ent.name;
@@ -1037,18 +1048,18 @@ test('the text parser end to end: parse, resolve, apply, and the fixes from live
     // resolves via ⚡ Match, so the row's overall status can reach "ready"
     // without a second, unrelated manual role pick cluttering this test.
     await page.fill('.gt-tp-ta', `Mastering: ${suffixedLine}`);
-    await page.waitForTimeout(150);
+    await frames(page);
     await page.click('.gt-tp-resolve');   // auto-resolves the role ("mastering")
     await page.waitForFunction(() => { const b = document.querySelector('.gt-tp-resolve'); return b && !b.disabled && b.textContent.includes('Match'); }, { timeout: 20000 });
-    await page.waitForTimeout(200);
+    await frames(page);
     // resolve the entity via the picker's paste-MBID path — since #544 that
     // resolves itself, bulk (the shared text-keyed cache), which is exactly what
     // the right-click used to do here.
     await page.locator('.gt-tp-row').first().locator('.gt-tp-c').nth(3).locator('.gt-tp-search').click();
-    await page.waitForTimeout(150);
+    await frames(page);
     await page.fill('.gt-tp-q', anArtistGid);
     await page.waitForFunction(() => !document.querySelector('.gt-tp-apop'), null, { timeout: 15000 });
-    await page.waitForTimeout(250);
+    await frames(page);
     // the raw-entity cell is always .gt-tp-c index 1 ([role, entity, →role,
     // →entity] is the parsed-cell order) — read through the row's own DOM
     // rather than a bare first-match selector, which would ambiguously hit
@@ -1065,11 +1076,11 @@ test('the text parser end to end: parse, resolve, apply, and the fixes from live
     // a LEFT click on the raw entity cell must NOT trigger the cleanup —
     // only right-click does.
     await rawEntityCell().click();
-    await page.waitForTimeout(150);
+    await frames(page);
     const afterLeftClick = await readRow();
     check(afterLeftClick.rawEntity === suffixedLine, `a plain left click on the raw entity cell does nothing (got "${afterLeftClick.rawEntity}")`);
     await rawEntityCell().click({ button: 'right' });
-    await page.waitForTimeout(150);
+    await frames(page);
     const afterCleanup = await readRow();
     console.log('after right-click cleanup:', JSON.stringify(afterCleanup));
     check(afterCleanup.rawEntity === canonicalName, `right-click replaces the raw entity text with the resolved canonical name (got "${afterCleanup.rawEntity}", expected "${canonicalName}")`);
@@ -1077,11 +1088,11 @@ test('the text parser end to end: parse, resolve, apply, and the fixes from live
     check(afterCleanup.status === 'ready', `the row stays resolved after cleanup, doesn't regress to unresolved (got "${afterCleanup.status}")`);
     // right-clicking again (already clean, no suffix left) is a graceful no-op.
     await rawEntityCell().click({ button: 'right' });
-    await page.waitForTimeout(150);
+    await frames(page);
     const afterSecondClick = await readRow();
     check(afterSecondClick.rawEntity === canonicalName, `right-clicking an already-clean entity cell is a no-op, not an error (got "${afterSecondClick.rawEntity}")`);
     await page.click('.gt-cons.gt-tp .gt-cons-x:not([title])');
-    await page.waitForTimeout(150);
+    await frames(page);
   } else {
     console.log('SKIP: no real artist gid available for the raw-entity-cleanup test');
   }
@@ -1105,7 +1116,7 @@ test('the text parser end to end: parse, resolve, apply, and the fixes from live
   check(noSplitCompound === 'marketed and distributed by Sony Music Entertainment', `a genuine compound marker phrase is left untouched (got ${JSON.stringify(noSplitCompound)})`);
 
   await page.evaluate(() => window.__groupTherapy.openTextParser());
-  await page.waitForTimeout(300);
+  await frames(page);
   await page.fill('.gt-tp-pat', 'R: E');
   await page.evaluate(() => {
     const el = document.querySelector('.gt-tp-ta');
@@ -1113,7 +1124,7 @@ test('the text parser end to end: parse, resolve, apply, and the fixes from live
     el.value = text;
     el.dispatchEvent(new ClipboardEvent('paste', { clipboardData: new DataTransfer(), bubbles: true, cancelable: true }));
   });
-  await page.waitForTimeout(300);
+  await frames(page);
   const splitTaValue = await page.inputValue('.gt-tp-ta');
   console.log('textarea after a real paste event:', JSON.stringify(splitTaValue));
   check(splitTaValue === 'Copyright: Albarika Stores BV\nunder exclusive license to Acid Jazz Acquisitions', `the textarea visibly splits into 2 lines right after paste (got ${JSON.stringify(splitTaValue)})`);
@@ -1126,7 +1137,7 @@ test('the text parser end to end: parse, resolve, apply, and the fixes from live
   check(splitRows[0]?.role === '© copyright' && splitRows[0]?.entity === 'Albarika Stores BV', `row 1 is the copyright holder alone, no suffix (got ${JSON.stringify(splitRows[0])})`);
   check(splitRows[1]?.role === 'licensed to' && splitRows[1]?.entity === 'Acid Jazz Acquisitions', `row 2 is the licensee alone, DISTINCT entity text from row 1 (got ${JSON.stringify(splitRows[1])})`);
   await page.click('.gt-cons.gt-tp .gt-cons-x:not([title])');
-  await page.waitForTimeout(150);
+  await frames(page);
 
   check(posts.length === 0, `nothing submitted during the test (${posts.length})`);
 });

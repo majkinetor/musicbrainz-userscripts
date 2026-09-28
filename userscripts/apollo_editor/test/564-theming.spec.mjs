@@ -11,7 +11,7 @@
 //   black … They should be transparent as in white theme": measured under kellnerd's
 //   "Dark Side of MusicBrainz", fetched live (a vendored copy would test a userstyle
 //   nobody runs), and with no userstyle.
-import { test, check } from '../../../dev/test/harness.mjs';
+import { test, check, until, settled } from '../../../dev/test/harness.mjs';
 import { openApollo, apolloGm } from './ap.mjs';
 
 test.use({ gm: apolloGm() });
@@ -55,7 +55,8 @@ for (const dark of [true, false]) {
     const css = dark ? (await (await fetch('https://raw.githubusercontent.com/kellnerd/userstyles/main/musicbrainz-dark.user.css')).text()).replace(/^[\s\S]*?@-moz-document[^{]*\{/, '').replace(/\}\s*$/, '') : null;
     await openApollo(page, inject, { seed: 'seed-saigon', before: css ? () => page.addStyleTag({ content: css }) : null, tab: 'tracklist' });
     await page.waitForSelector('.tc-mirror', { state: 'visible', timeout: 60000 });
-    await page.waitForTimeout(2500);
+    await settled(page);
+    if (dark) await until(() => page.evaluate(() => document.documentElement.getAttribute('data-mbu-theme')), t => t === 'dark');
     const inputs = await page.evaluate(() => {
       const seen = new Map();
       for (const el of document.querySelectorAll('.tc-mirror input')) { const k = el.className || '(none)'; if (!seen.has(k)) seen.set(k, { cls: k, bg: getComputedStyle(el).backgroundColor }); }

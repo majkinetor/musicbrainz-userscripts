@@ -8,7 +8,7 @@
 // now sweeps still-nameless queued items whenever the suspension actually
 // lifts (start()'s natural-completion path, and stop()).
 import { readFile } from 'node:fs/promises';
-import { test, check, requireLogin, sourceOf } from '../../../dev/test/harness.mjs';
+import { test, check, requireLogin, sourceOf, until } from '../../../dev/test/harness.mjs';
 
 // the script brings its own GM stand-ins, as it did before the harness
 test.use({ gm: false });
@@ -29,17 +29,16 @@ test("#509: name cancel retry", { tag: ['@sandbox', '@login'] }, async ({ contex
   });
   const errs = []; 
   page.on('pageerror', e => errs.push(e.message));
-  // intercept the name-lookup so it's slow enough to still be queued (not yet
-  // started) when suspendNameLookups() cancels it — reproduces the real race.
-  await page.route('**/ws/2/recording/**', async route => {
-    await new Promise(r => setTimeout(r, 800));
-    route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ title: 'Real Recording Name' }) });
-  });
+  // The name lookup is held until the spec lets it go, so it is still out when
+  // suspendNameLookups() cancels it — the real race, without guessing a delay.
+  const heldNames = []; let namesReleased = false;
+  const answerName = route => route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ title: 'Real Recording Name' }) });
+  await page.route('**/ws/2/recording/**', route => (namesReleased ? answerName(route) : heldNames.push(route)));
   await page.goto('https://test.musicbrainz.org/', { waitUntil: 'load' });
   await page.addScriptTag({ content: code });
   await page.waitForFunction(() => !!window.__falconTest, { timeout: 5000 });
 
-  const result = await page.evaluate(async (MBID) => {
+  const early = await page.evaluate(async (MBID) => {
     const t = window.__falconTest;
     // a nameless tuple (as if Harmony's own name pill hadn't rendered yet) —
     // addToQueue's fallback fires fetchEntityName, which our route delays.
@@ -49,14 +48,15 @@ test("#509: name cancel retry", { tag: ['@sandbox', '@login'] }, async ({ contex
     // and immediately stopping (same suspend/cancel/resume path a real short
     // run takes).
     t.suspendNameLookups();
-    await new Promise(r => setTimeout(r, 50));
     const nameWhileSuspended = t.getQueue()[0].name;
     t.resumeNameLookups();
     // without a retry sweep this would stay null forever — call the fix.
     t.resolveMissingNames();
-    await new Promise(r => setTimeout(r, 1200));
-    return { nameRightAfterQueue, nameWhileSuspended, nameAfterRetry: t.getQueue()[0].name };
+    return { nameRightAfterQueue, nameWhileSuspended };
   }, MBID);
+  namesReleased = true;
+  heldNames.splice(0).forEach(answerName);
+  const result = { ...early, nameAfterRetry: await until(() => page.evaluate(() => window.__falconTest.getQueue()[0].name), n => !!n) };
   console.log(JSON.stringify(result));
   ck(result.nameRightAfterQueue === null, 'name starts null (no Harmony-scraped name given)');
   ck(result.nameWhileSuspended === null, 'still null while the lookup was cancelled mid-flight');

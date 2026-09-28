@@ -15,7 +15,7 @@
 //
 // test.musicbrainz.org, read-only: the cover-art page is loaded and nothing is submitted; every
 // POST is aborted and asserted zero.
-import { test, check } from '../../../dev/test/harness.mjs';
+import { test, check, until, frames } from '../../../dev/test/harness.mjs';
 import { openArtStation, blockPosts } from './as.mjs';
 
 test.use({ gm: { name: 'Art Station' } });
@@ -27,12 +27,10 @@ test('every selected card keeps its tick at any card size', { tag: ['@sandbox'] 
   const posted = await blockPosts(page);
   await openArtStation(page, inject);
   await page.waitForSelector('#as-root .as-card', { timeout: 25000 });
-  await page.waitForTimeout(1200);
 
   // select everything, so "is the tick showing" has cards to be true of
   await page.click('.as-selall');
-  await page.waitForTimeout(300);
-  const selected = await page.evaluate(() => document.querySelectorAll('#as-root .as-card.sel').length);
+  const selected = await until(() => page.evaluate(() => document.querySelectorAll('#as-root .as-card.sel').length), n => n >= 2);
   log('selected cards:', selected);
   check(selected >= 2, `at least two cards are selected to check (got ${selected})`);
 
@@ -66,13 +64,15 @@ test('every selected card keeps its tick at any card size', { tag: ['@sandbox'] 
       el.dispatchEvent(new Event('input', { bubbles: true }));
       if (e === 'change') el.dispatchEvent(new Event('change', { bubbles: true }));
     }, [px, evt]);
-    await page.waitForTimeout(evt === 'change' ? 900 : 250);   // change() re-renders
+    // change() re-renders: until the cards are back, then a frame for the layout
+    if (evt === 'change') await until(() => page.evaluate(() => document.querySelectorAll('#as-root .as-card').length), n => n > 0);
+    await frames(page);
   };
 
   for (const evt of ['input', 'change']) {
     for (const px of SIZES) {
       await setSize(px, evt);
-      if (evt === 'change') { await page.click('.as-selall'); await page.waitForTimeout(250); }   // a re-render clears selection
+      if (evt === 'change') { await page.click('.as-selall'); await until(() => page.evaluate(() => document.querySelectorAll('#as-root .as-card.sel').length), n => n >= 2); }   // a re-render clears selection
       const r = await probe();
       const big = px >= OLD_THRESHOLD ? ' (past the old cut-off)' : '';
       log(`${evt} ${px}px${big}:`, JSON.stringify(r));

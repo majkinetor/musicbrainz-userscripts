@@ -9,7 +9,7 @@
 // fixtures/ws-431.json.gz. Deezer is live. Nothing is submitted: "Review first" is
 // pressed, and the profile has no ISRC submission authorisation anyway.
 import { test, check } from '../../../dev/test/harness.mjs';
-import { openScout, logText } from './is.mjs';
+import { openScout, logText, ended } from './is.mjs';
 
 // the album chaban's release was wrongly linked to (534356522 then; Deezer has since
 // given that id to another album)
@@ -23,11 +23,8 @@ test('position-matched fills from a different edition are flagged, kept, and con
     // the link, and the recordings as they were then: without ISRCs
     edit: j => { (j.relations = j.relations || []).push({ url: { resource: DEEZER } }); (j.media || []).forEach(m => (m.tracks || []).forEach(t => { if (t.recording) t.recording.isrcs = []; })); },
   });
-  await page.waitForTimeout(800);
   await page.click('#ii-dz-all');
-  await page.waitForFunction(() => /Deezer done/.test(document.getElementById('ii-log-out')?.textContent || ''), null, { timeout: 120000 });
-  await page.waitForTimeout(500);
-  const log = await logText(page);
+  const log = await ended(page, 'Deezer', 120000);
   const r = await page.evaluate(() => {
     const suspects = [...document.querySelectorAll('input.ii-in-suspect')];
     return { suspects: suspects.length, title: suspects[0] ? suspects[0].title : '' };
@@ -42,16 +39,16 @@ test('position-matched fills from a different edition are flagged, kept, and con
   check(/matched by position only, but length differs/.test(r.title), 'an amber field explains itself');
 
   const fu = await page.evaluate(async () => {
-    const sleep = ms => new Promise(res => setTimeout(res, ms));
+    // polled until the popup is there, and until it has gone
+    const eventually = async f => { for (let i = 0; i < 400 && !f(); i++) await new Promise(res => setTimeout(res, 25)); return f(); };
     const badge = document.getElementById('ii-suspect-badge');
     const out = { badge: badge ? { visible: badge.style.display !== 'none', text: badge.textContent } : null };
     document.getElementById('ii-submit').click();
-    await sleep(200);
-    const pop = [...document.querySelectorAll('div')].find(d => /implausible ISRC fill/.test(d.textContent) && d.querySelector('[data-a="go"]'));
+    const findPop = () => [...document.querySelectorAll('div')].find(d => /implausible ISRC fill/.test(d.textContent) && d.querySelector('[data-a="go"]'));
+    const pop = await eventually(findPop);
     out.popup = !!pop;
     pop?.querySelector('[data-a="review"]')?.click();
-    await sleep(150);
-    out.closed = ![...document.querySelectorAll('[data-a="go"]')].length;
+    out.closed = await eventually(() => ![...document.querySelectorAll('[data-a="go"]')].length);
     out.submitEnabled = !document.getElementById('ii-submit').disabled;
     return out;
   });

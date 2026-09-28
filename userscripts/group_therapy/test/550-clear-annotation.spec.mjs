@@ -10,7 +10,7 @@
 // the browser.
 //
 // Sandbox only. It writes, deliberately, and only there.
-import { test, check, expect, requireLogin, SANDBOX } from '../../../dev/test/harness.mjs';
+import { test, check, expect, requireLogin, SANDBOX, idle, settled } from '../../../dev/test/harness.mjs';
 import { RELEASE } from './gt.mjs';
 
 test.use({ gm: { name: 'Group Therapy' } });
@@ -41,7 +41,7 @@ test('Apply & clear annotation really clears it, with an edit note', { tag: ['@s
       (btn || f).click ? (btn || f).click() : f.submit();
     }),
   ]);
-  await page.waitForTimeout(2000);
+  await settled(page);
 
   const readAnnotation = async () => {
     await goto(`${HOST}/release/${RELEASE}/edit_annotation`);
@@ -53,9 +53,9 @@ test('Apply & clear annotation really clears it, with an edit note', { tag: ['@s
 
   // ── the actual thing: clear it through the shipped code ─────────────────────
   await goto(`${HOST}/release/${RELEASE}/edit-relationships`);
-  await page.waitForTimeout(3000);
+  await settled(page);
   await inject('group_therapy');
-  await page.waitForTimeout(1500);
+  await idle(page);
   const hook = await page.evaluate(() => !!(window.__groupTherapy && window.__groupTherapy.txpClearAnnotation));
   check(hook, 'the shipped script exposes the clear path');
 
@@ -87,7 +87,7 @@ test('Apply & clear annotation really clears it, with an edit note', { tag: ['@s
 
   // ── proof: the edit exists on MusicBrainz, carrying our note ────────────────
   await goto(`${HOST}/release/${RELEASE}/edits`);
-  await page.waitForTimeout(1500);
+  await settled(page);
   const edit = await page.evaluate(() => {
     // Find the edit by OUR note and then read ITS OWN header — picking the first
     // header that merely mentions "annotation" matched an unrelated "Add release"

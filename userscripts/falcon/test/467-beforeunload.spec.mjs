@@ -11,7 +11,7 @@
 // Also runs the full 2-round worker flow with a genuinely-rejected round-1 url
 // (an existing MB relationship) to prove the real worker loop no longer hangs.
 import { readFile } from 'node:fs/promises';
-import { test, check, requireLogin, sourceOf } from '../../../dev/test/harness.mjs';
+import { test, check, requireLogin, sourceOf, frames, idle } from '../../../dev/test/harness.mjs';
 import { resolve } from 'node:path';
 
 // the script brings its own GM stand-ins, as it did before the harness
@@ -41,7 +41,7 @@ test("#467: beforeunload", { tag: ['@sandbox', '@login'] }, async ({ context, pa
       f.src = 'https://test.musicbrainz.org/artist/d31f76d2-1d8e-4271-8027-148f375979d7/edit';
     });
     await page.waitForSelector('#baseline-worker');
-    await page.waitForTimeout(1800);
+    await page.waitForFunction(id => { const f = document.getElementById(id); const d = f && f.contentDocument; return !!d && d.readyState === 'complete' && [...d.querySelectorAll('input')].some(i => /add (another )?link|add another url/i.test(i.placeholder || '')); }, 'baseline-worker', { timeout: 30000 });   // its edit page has loaded
     await page.evaluate(() => {
       const doc = document.getElementById('baseline-worker').contentDocument;
       const w = document.getElementById('baseline-worker').contentWindow;
@@ -56,7 +56,7 @@ test("#467: beforeunload", { tag: ['@sandbox', '@login'] }, async ({ context, pa
       input.dispatchEvent(new w.KeyboardEvent('keyup', { key: 'Enter', code: 'Enter', bubbles: true }));
       input.blur();
     });
-    await page.waitForTimeout(800);
+    await frames(page);
     const oldWayResult = await page.evaluate(() => new Promise(resolve => {
       const f = document.getElementById('baseline-worker');
       f.src = 'https://test.musicbrainz.org/artist/5441c29d-3602-4898-b1a1-b77fa23b8e50/edit';   // reassign .src on the SAME dirtied iframe
@@ -82,7 +82,7 @@ test("#467: beforeunload", { tag: ['@sandbox', '@login'] }, async ({ context, pa
       f.src = 'https://test.musicbrainz.org/artist/d31f76d2-1d8e-4271-8027-148f375979d7/edit';
     });
     await page.waitForSelector('#fixed-worker');
-    await page.waitForTimeout(1800);
+    await page.waitForFunction(id => { const f = document.getElementById(id); const d = f && f.contentDocument; return !!d && d.readyState === 'complete' && [...d.querySelectorAll('input')].some(i => /add (another )?link|add another url/i.test(i.placeholder || '')); }, 'fixed-worker', { timeout: 30000 });   // its edit page has loaded
     await page.evaluate(() => {
       const doc = document.getElementById('fixed-worker').contentDocument;
       const w = document.getElementById('fixed-worker').contentWindow;
@@ -97,7 +97,7 @@ test("#467: beforeunload", { tag: ['@sandbox', '@login'] }, async ({ context, pa
       input.dispatchEvent(new w.KeyboardEvent('keyup', { key: 'Enter', code: 'Enter', bubbles: true }));
       input.blur();
     });
-    await page.waitForTimeout(800);
+    await frames(page);
     const newWayResult = await page.evaluate(() => new Promise(resolve => {
       document.getElementById('fixed-worker').remove();   // the fix: remove, don't reassign .src
       const fresh = document.createElement('iframe'); fresh.id = 'fixed-worker-2';
@@ -128,7 +128,7 @@ test("#467: beforeunload", { tag: ['@sandbox', '@login'] }, async ({ context, pa
     });
     await page.goto('https://test.musicbrainz.org/', { waitUntil: 'load' });
     await requireLogin(page);
-    await page.waitForTimeout(500);
+    await idle(page);
     await page.addScriptTag({ content: code });
     await page.waitForSelector('#falcon-launcher', { timeout: 5000 });
     await page.click('#falcon-launcher');

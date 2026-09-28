@@ -12,7 +12,7 @@
 // (3) a click that gets swallowed entirely is retried rather than burning the
 // whole timeout on one lost click.
 import { readFile } from 'node:fs/promises';
-import { test, check, requireLogin, sourceOf } from '../../../dev/test/harness.mjs';
+import { test, check, requireLogin, sourceOf, idle } from '../../../dev/test/harness.mjs';
 
 // the script brings its own GM stand-ins, as it did before the harness
 test.use({ gm: false });
@@ -42,7 +42,7 @@ test("#467: submit retry", { tag: ['@sandbox', '@login'] }, async ({ context, pa
     });
     await page.goto('https://test.musicbrainz.org/', { waitUntil: 'load' });
     await requireLogin(page);
-    await page.waitForTimeout(500);
+    await idle(page);
     await page.addScriptTag({ content: code });
     await page.waitForFunction(() => !!window.__falconTest, { timeout: 5000 });
     await page.click('#falcon-launcher');
@@ -97,7 +97,7 @@ test("#467: submit retry", { tag: ['@sandbox', '@login'] }, async ({ context, pa
       return route.fallback();
     });
     await page.goto('https://test.musicbrainz.org/artist/d31f76d2-1d8e-4271-8027-148f375979d7/edit', { waitUntil: 'load' });
-    await page.waitForTimeout(1500);
+    await idle(page);
     await page.addScriptTag({ content: code });
     await page.waitForFunction(() => !!window.__falconTest, { timeout: 5000 });
     const swap = await page.evaluate(async () => {
@@ -110,7 +110,7 @@ test("#467: submit retry", { tag: ['@sandbox', '@login'] }, async ({ context, pa
         ta.dispatchEvent(new Event('input', { bubbles: true }));
         ta.dispatchEvent(new Event('change', { bubbles: true }));
       }
-      await new Promise(r => setTimeout(r, 600));
+      await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));   // MusicBrainz has re-rendered
       const after = findSubmitButton(document);
       return { sameNode: before === after, beforeConnected: before?.isConnected, afterExists: !!after };
     });

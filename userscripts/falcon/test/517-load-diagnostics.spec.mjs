@@ -7,7 +7,7 @@
 // NEXT occurrence's log says which check kept failing instead of needing
 // another live repro.
 import { readFile } from 'node:fs/promises';
-import { test, check, requireLogin, sourceOf } from '../../../dev/test/harness.mjs';
+import { test, check, requireLogin, sourceOf, idle, until } from '../../../dev/test/harness.mjs';
 
 // the script brings its own GM stand-ins, as it did before the harness
 test.use({ gm: false });
@@ -36,7 +36,7 @@ test("#517: load diagnostics", { tag: ['@sandbox', '@login'] }, async ({ context
   }));
   await page.goto('https://test.musicbrainz.org/', { waitUntil: 'load' });
   await requireLogin(page);
-  await page.waitForTimeout(400);
+  await idle(page);
   await page.addScriptTag({ content: code });
   await page.waitForFunction(() => !!window.__falconTest, { timeout: 5000 });
   await page.click('#falcon-launcher');
@@ -49,9 +49,8 @@ test("#517: load diagnostics", { tag: ['@sandbox', '@login'] }, async ({ context
     t.addToQueue([{ entityType: 'recording', mbid: RECORDING, url: 'https://example.com/1' }]);
     t.start();
   }, RECORDING);
-  // the diagnostic logs every ~20 polls (~3s) — wait long enough for at least one.
-  await page.waitForTimeout(3500);
-  const log = await page.evaluate(() => window.__falconTest.getLog());
+  // the diagnostic logs every ~20 polls (~3 s): until one has appeared
+  const log = await until(() => page.evaluate(() => window.__falconTest.getLog()), l => l.some(x => /still waiting for edit page/.test(x)), { timeout: 15000 });
   const diagLines = log.filter(l => /still waiting for edit page/.test(l));
   console.log('diagnostic lines seen:', JSON.stringify(diagLines));
   ck(diagLines.length >= 1, `at least one diagnostic line appears while still polling (got ${diagLines.length})`);

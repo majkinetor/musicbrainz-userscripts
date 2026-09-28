@@ -9,7 +9,7 @@
 // merge edit exists (both members now have a pending edit, or — auto-edit — the
 // merged-away recording resolves to another one). A group marked "done" without
 // that is the #608 bug. Run with FUSION_SRC=<old build> to watch it fail.
-import { test, check, requireLogin } from '../../../dev/test/harness.mjs';
+import { test, check, requireLogin, until } from '../../../dev/test/harness.mjs';
 
 const GROUPS = 3;
 test.use({ gm: { name: 'Fusion' } });
@@ -68,9 +68,9 @@ test('Merge All submits one merge at a time, and only reports what MusicBrainz c
   console.log('Fusion says:', JSON.stringify(result, null, 1));
 
   // Ask MB. A created merge edit puts a pending edit on every member (or, if it
-  // auto-applied, the merged-away gid now resolves to the kept recording).
-  await page.waitForTimeout(1500);
-  const truth = await page.evaluate(async (groups) => {
+  // auto-applied, the merged-away gid now resolves to the kept recording). Asked until
+  // every group shows it (a new edit can take a moment to show), every 2 s, not faster.
+  const truth = await until(() => page.evaluate(async (groups) => {
       const out = {};
       for (const g of groups) {
           const st = [];
@@ -81,7 +81,7 @@ test('Merge All submits one merge at a time, and only reports what MusicBrainz c
           out[g.id] = st.every(Boolean);
       }
       return out;
-  }, groups);
+  }, groups), t => Object.values(t).every(Boolean), { timeout: 30000, every: 2000 });
   console.log('MB has the merge edit:', JSON.stringify(truth));
   const lies = result.filter(r => r.state === 'done' && !truth[r.id]);
   check(lies.length === 0, `no group reported "done" without a merge edit in MB (#608) — ${lies.length} did: ${lies.map(l => l.id + ' → ' + l.url).join(', ')}`);

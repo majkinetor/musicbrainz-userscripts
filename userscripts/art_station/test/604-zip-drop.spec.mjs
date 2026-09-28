@@ -12,7 +12,7 @@ import { readFile, writeFile, mkdir, rm } from 'node:fs/promises';
 import { execFileSync } from 'node:child_process';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { test, check, sourceOf } from '../../../dev/test/harness.mjs';
+import { test, check, sourceOf, until } from '../../../dev/test/harness.mjs';
 import { openArtStation } from './as.mjs';
 
 test.use({ gm: { name: 'Art Station' } });
@@ -38,7 +38,8 @@ test('a dropped zip stages its covers, typed as named', { tag: ['@sandbox'] }, a
     return [...new Uint8Array(await b.arrayBuffer())];
   }, { w, h, color, type }).then(a => new Uint8Array(a));
 
-  const dropZip = async (bytes, name) => {
+  // want: how many new covers there should be once this zip is in (they arrive one by one)
+  const dropZip = async (bytes, name, want) => {
     const before = await page.evaluate(() => document.querySelectorAll('.as-card.new').length);
     await page.evaluate(async ({ bytes, name }) => {
       const f = new File([new Uint8Array(bytes)], name, { type: 'application/zip' });
@@ -47,12 +48,12 @@ test('a dropped zip stages its covers, typed as named', { tag: ['@sandbox'] }, a
       window.dispatchEvent(new DragEvent('drop', { dataTransfer: dt, bubbles: true, cancelable: true }));
     }, { bytes: [...bytes], name });
     await page.waitForFunction(n => document.querySelectorAll('.as-card.new').length > n, before, { timeout: 15000 }).catch(() => {});
-    await page.waitForTimeout(1500);   // let measure() decode the thumbnails
-    return page.evaluate(() => [...document.querySelectorAll('.as-card.new')].map(c => {
+    // until they are all there and measure() has decoded each thumbnail (its size shows)
+    return until(() => page.evaluate(() => [...document.querySelectorAll('.as-card.new')].map(c => {
       const t = c.querySelector('.as-type:not(.as-type-add)');
       return { types: t ? t.getAttribute('title') : '', comment: (c.querySelector('.as-cmt-text') || {}).textContent || '',
         dim: (c.querySelector('.as-dim') || {}).textContent || '', tip: (c.querySelector('.as-thumb') || {}).getAttribute?.('title') || '' };
-    }));
+    })), cards => cards.length >= want && cards.every(c => c.dim));
   };
 
   /* ── 1. an Art Station archive ─────────────────────────────────────────────── */
@@ -64,7 +65,7 @@ test('a dropped zip stages its covers, typed as named', { tag: ['@sandbox'] }, a
     { name: 'README.md', data: enc.encode('# A - [B](u)\n\n*Report created with [Art Station](https://x) v1*\n') },
     { name: '02 back,spine barcode side.jpg', data: a2 },
   ]).arrayBuffer());
-  const s1 = await dropZip(asZip, 'aaaa 2026-09-23T19-00-00 3 covers.zip');
+  const s1 = await dropZip(asZip, 'aaaa 2026-09-23T19-00-00 3 covers.zip', 3);
   console.log('staged:', JSON.stringify(s1));
   check(s1.length === 3, `3 covers staged from the Art Station zip (got ${s1.length})`);
   const by = c => s1.find(x => x.comment === c) || s1.find(x => !c && !x.comment);
@@ -82,7 +83,7 @@ test('a dropped zip stages its covers, typed as named', { tag: ['@sandbox'] }, a
   execFileSync(process.platform === 'win32' ? 'C:/Windows/System32/tar.exe' : 'bsdtar', ['-a', '-c', '-f', 'os.zip', 'Album'], { cwd: dir });
   const osZip = await readFile(join(dir, 'os.zip'));
   await rm(dir, { recursive: true, force: true }).catch(() => {});
-  const s2 = (await dropZip(osZip, 'os.zip'));
+  const s2 = (await dropZip(osZip, 'os.zip', 5));
   const fresh = s2.filter(x => /700 × 700|400 × 400/.test(x.dim));
   console.log('staged:', JSON.stringify(fresh));
   check(s2.length === 5, `2 more covers staged from the OS zip (total new ${s2.length}, want 5)`);

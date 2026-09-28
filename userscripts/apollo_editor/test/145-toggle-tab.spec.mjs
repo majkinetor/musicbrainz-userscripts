@@ -4,7 +4,7 @@
 // right on frame 1.
 //   A: Apollo on, on Recordings → off → Tracklist: the stale Apollo table is gone.
 //   B: Apollo off, on Recordings → on → Tracklist: Apollo's table is there.
-import { test, check } from '../../../dev/test/harness.mjs';
+import { test, check, until, idle } from '../../../dev/test/harness.mjs';
 import { openApollo, apolloGm } from './ap.mjs';
 
 test.use({ gm: apolloGm() });
@@ -26,12 +26,14 @@ test('the tracklist is right on the first frame after a toggle', { tag: ['@sandb
       }),
     };
   });
-  const ensureOn = async on => { if ((await page.evaluate(() => window.__t.on())) !== on) { await page.evaluate(() => window.__t.toggle()); await page.waitForTimeout(600); } };
+  const ensureOn = async on => { if ((await page.evaluate(() => window.__t.on())) !== on) { await page.evaluate(() => window.__t.toggle()); await until(() => page.evaluate(() => window.__t.on()), v => v === on); await idle(page); } };
   const scenario = async on => {
     await ensureOn(on);
-    await page.evaluate(() => window.__t.clickTab('recordings')); await page.waitForTimeout(700);
+    await page.evaluate(() => window.__t.clickTab('recordings'));
+    await until(() => page.evaluate(() => !!document.querySelector('#release-editor ul.ui-tabs-nav li.ui-tabs-active a[href="#recordings"]')));
+    await idle(page);
+    // read at once after the toggle: well inside the old 500 ms watcher
     await page.evaluate(() => window.__t.toggle());
-    await page.waitForTimeout(50);   // well inside the old 500 ms watcher
     const pre = await page.evaluate(() => window.__t.mirror());
     const frames = await page.evaluate(() => window.__t.clickAndSample('tracklist', 8));
     return { pre, frame1: frames[1] ?? frames[0] };

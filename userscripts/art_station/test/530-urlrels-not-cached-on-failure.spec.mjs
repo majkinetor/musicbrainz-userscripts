@@ -9,7 +9,7 @@
 //
 // test.musicbrainz.org, read-only. The url-rels answers are routed, and the link lists
 // are written into the page before the script starts, so every case is deterministic.
-import { test, check } from '../../../dev/test/harness.mjs';
+import { test, check, until } from '../../../dev/test/harness.mjs';
 import { openArtStation, RELEASE } from './as.mjs';
 
 test.use({ gm: { name: 'Art Station' } });
@@ -48,8 +48,9 @@ test('a failed links lookup is retried, says so, and is not remembered as "no li
 
   // the original bug: the empty verdict must not be sticky
   await page.evaluate(() => { const b = document.querySelector('.as-src'); for (let i = 0; i < 3; i++) { document.querySelectorAll('.as-pop').forEach(p => p.remove()); b.click(); } });
-  await page.waitForTimeout(800);
-  check(/Discogs/.test((await page.locator('.as-src-prov').textContent()) || ''), 'reopening keeps showing it');
+  // the reopened popover has given its verdict once it stops "Looking for"
+  const again = await until(async () => (await page.locator('.as-src-prov').textContent().catch(() => '')) || '', t => t && !/Looking for/.test(t));
+  check(/Discogs/.test(again), 'reopening keeps showing it');
 });
 
 test('links are read off the page, without waiting on a slow web service', { tag: ['@sandbox'] }, async ({ page, inject }) => {

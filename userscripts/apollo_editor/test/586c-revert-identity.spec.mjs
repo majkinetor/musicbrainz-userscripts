@@ -17,7 +17,7 @@
 // which survives inserts and exists on new tracks too.
 //
 // Nothing is submitted; the model is restored at the end and the page discarded.
-import { test, check } from '../../../dev/test/harness.mjs';
+import { test, check, until, idle, frames } from '../../../dev/test/harness.mjs';
 import { openApollo, apolloGm } from './ap.mjs';
 
 test.use({ gm: apolloGm() });
@@ -31,7 +31,7 @@ test('Revert all restores data tracks and the pregap', { tag: ['@sandbox', '@log
     if (b) b.click();
   });
   await page.waitForSelector('.tc-mirror tr[data-tk]', { state: 'attached', timeout: 20000 });
-  await page.waitForTimeout(1500);
+  await idle(page);
 
   const snap = () => page.evaluate(() => {
     const m = window.MB.releaseEditor.rootField.release().mediums()[0];
@@ -45,22 +45,23 @@ test('Revert all restores data tracks and the pregap', { tag: ['@sandbox', '@log
     const cb = [...document.querySelectorAll('.tc-medopt')].find(l => /Pregap/.test(l.textContent)).querySelector('input');
     cb.checked = v; cb.dispatchEvent(new Event('change', { bubbles: true }));
   }, on);
-  const revertAll = () => page.evaluate(() => window.__apolloEditor.revertAll());
+  // Revert all runs (and confirms) inside this call, so it has finished when the call returns
+  const revertAll = async () => { await page.evaluate(() => window.__apolloEditor.revertAll()); await frames(page); };
 
   const base = await snap();
   check(base.n > 3, `fixture loaded (${base.n} tracks)`);
 
   /* ── his footnote: pregap → revert all → pregap off ─────────────────────── */
-  await pregap(true);   await page.waitForTimeout(2000);
-  const withPregap = await snap();
+  await pregap(true);
+  const withPregap = await until(snap, s => s.n === base.n + 1);
   check(withPregap.n === base.n + 1 && withPregap.titles[0] === '(blank)', `Pregap inserted a blank track at index 0 (${withPregap.n} tracks)`);
-  await revertAll();    await page.waitForTimeout(2500);
+  await revertAll();
   const reverted = await snap();
   check(reverted.titles[0] === '(blank)', 'Revert all left the pregap track blank instead of writing track 1 onto it');
   check(JSON.stringify(reverted.titles.slice(1)) === JSON.stringify(base.titles),
     'Revert all wrote every snapshot back onto the track it came from, not the one below it');
-  await pregap(false);  await page.waitForTimeout(2000);
-  const back = await snap();
+  await pregap(false);
+  const back = await until(snap, s => s.n === base.n);
   check(JSON.stringify(back.titles) === JSON.stringify(base.titles),
     `the round trip is lossless — no track deleted, none duplicated (${back.n} tracks)`);
 
@@ -69,10 +70,9 @@ test('Revert all restores data tracks and the pregap', { tag: ['@sandbox', '@log
     const tr = [...document.querySelectorAll('.tc-mirror tr[data-tk]')].find(r => r.dataset.ti === '10');
     tr.querySelector('.tc-dtmv.down').click();
   });
-  await page.waitForTimeout(1200);
-  const opened = await snap();
+  const opened = await until(snap, s => s.flags.includes('D'));
   check(opened.flags.includes('D'), `a data section was opened for the test (${opened.flags})`);
-  await revertAll();  await page.waitForTimeout(2500);
+  await revertAll();
   const closed = await snap();
   check(closed.flags === base.flags, `Revert all put the data-track boundary back too (${closed.flags} vs ${base.flags})`);
   check(JSON.stringify(closed.titles) === JSON.stringify(base.titles), 'and the titles are still intact');

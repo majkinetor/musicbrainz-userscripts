@@ -22,7 +22,7 @@
 //
 // Never submits: every POST to /edit is aborted, so this exercises the staged
 // editor state, which is what the user reviews before saving.
-import { test, check, requireLogin, SANDBOX } from '../../../dev/test/harness.mjs';
+import { test, check, requireLogin, SANDBOX, settled, idle, frames, until } from '../../../dev/test/harness.mjs';
 import { blockEdits } from './gt.mjs';
 
 test.use({ gm: { name: 'Group Therapy' } });
@@ -34,12 +34,12 @@ test('a copyright notice year is both the start and the end date', { tag: ['@san
 
   await page.goto(`${SANDBOX}/release/${RELEASE_GID}/edit-relationships`, { waitUntil: 'domcontentloaded' });
   await requireLogin(page);
-  await page.waitForTimeout(4000);
+  await settled(page);
 
   const posts = await blockEdits(page);
 
   await inject('group_therapy', { waitFor: '__groupTherapy' });
-  await page.waitForTimeout(1200);
+  await idle(page);
 
   // ── 1. the date period itself ────────────────────────────────────────────────
   const shapes = await page.evaluate(y => {
@@ -75,27 +75,28 @@ test('a copyright notice year is both the start and the end date', { tag: ['@san
     console.log('SKIP: no label found on the test server to use as a ℗ holder');
   } else {
     await page.evaluate(() => window.__groupTherapy.openTextParser());
-    await page.waitForTimeout(300);
+    await frames(page);
     check(await page.isVisible('.gt-cons.gt-tp'), 'the Text parser modal opens');
 
     await page.fill('.gt-tp-ta', `\u2117 ${YEAR} ${label.name}`);
-    await page.waitForTimeout(300);
+    await frames(page);
     const parsed = await page.evaluate(() => [...document.querySelectorAll('.gt-tp-row')]
       .map(tr => [...tr.querySelectorAll('.gt-tp-c')].map(td => td.textContent.trim())));
     log('parsed rows:', JSON.stringify(parsed));
     check(parsed.length === 1 && /phonographic/i.test(parsed[0][0] || ''), `the ℗ line parses as one phonographic-copyright row (got ${JSON.stringify(parsed)})`);
 
     await page.click('.gt-tp-resolve');
-    await page.waitForTimeout(900);
+    await page.waitForFunction(() => { const b = document.querySelector('.gt-tp-resolve'); return b && !b.disabled; }, null, { timeout: 60000 }).catch(() => {});   // resolved
+    await frames(page);
     // resolve the holder through the picker's paste-MBID path — deterministic,
     // unlike clicking whichever search result happens to rank first today.
     const needsPick = await page.isVisible('.gt-tp-search:not(.gt-tp-resolved)');
     if (needsPick) {
       await page.click('.gt-tp-search:not(.gt-tp-resolved)');
-      await page.waitForTimeout(200);
+      await frames(page);
       await page.fill('.gt-tp-q', label.gid);
       await page.waitForFunction(() => !document.querySelector('.gt-tp-apop'), null, { timeout: 15000 });
-      await page.waitForTimeout(400);
+      await frames(page);
     }
 
     // Record what the tool actually hands MB. MB's own state keeps relationships
@@ -116,7 +117,8 @@ test('a copyright notice year is both the start and the end date', { tag: ['@san
 
     const before = await page.evaluate(() => document.querySelectorAll('.relationship-item').length);
     await page.click('.gt-cons-apply');
-    await page.waitForTimeout(1200);
+    await until(() => page.isVisible('.gt-cons.gt-tp'), v => !v);   // applied: the window closes
+    await frames(page);
 
     const staged = await page.evaluate(() => window.__574dispatches || []);
     log('dispatched relationship states:', JSON.stringify(staged));

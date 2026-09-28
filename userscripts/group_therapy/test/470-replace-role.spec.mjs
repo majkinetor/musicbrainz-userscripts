@@ -8,7 +8,7 @@
 // already has is a no-op (rel-noop, no rel-add), so the spec picks one that isn't there.
 //
 // test.musicbrainz.org: staged in the relationship editor, never submitted.
-import { test, check } from '../../../dev/test/harness.mjs';
+import { test, check, until } from '../../../dev/test/harness.mjs';
 import { blockEdits, openRelEditor, installRelReader } from './gt.mjs';
 
 test.use({ gm: { name: 'Group Therapy' } });
@@ -48,12 +48,11 @@ test('Replace role stages a remove and an add under the new role', { tag: ['@san
     return null;
   });
   check(applied && applied.n === 1, `one credit is replaced (${applied && applied.n})`);
-  await page.waitForTimeout(1200);
-
-  const after = await page.evaluate(newType => ({
+  // until the replaced credit shows in the editor
+  const after = await until(() => page.evaluate(newType => ({
     hasNewType: [...document.querySelectorAll('.relationship-item')].map(window.__rel).filter(Boolean).some(r => r.linkTypeID === newType),
     adds: document.querySelectorAll('.rel-add').length, removes: document.querySelectorAll('.rel-remove').length,
-  }), applied ? applied.newType : -1);
+  }), applied ? applied.newType : -1), a => a.hasNewType);
   check(after.hasNewType, 'a relationship under the new role is in the editor');
   check(after.adds > 0 && after.removes > 0, `the add and the removal are staged (${after.adds} added, ${after.removes} removed)`);
   check(posts.length === 0, `nothing was submitted (${posts.length})`);

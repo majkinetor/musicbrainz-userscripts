@@ -5,10 +5,8 @@
   "type": "module",
   "description": "ISRC Scout — self-contained ISRC editor for MusicBrainz release pages",
   "scripts": {
-    "test":        "node test/run.mjs",
-    "test:headed": "node test/run.mjs --headed"
-  },
-  "devDependencies": {
-    "playwright": "^1.49.0"
+    "test": "pnpm -C ../.. test --project=isrc_scout",
+    "test:headed": "pnpm -C ../.. test --project=isrc_scout --headed",
+    "login": "node ../../dev/test/login.mjs"
   }
 }

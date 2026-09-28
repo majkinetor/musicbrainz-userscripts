@@ -6,7 +6,7 @@
 // keeps its same iframe/card for the next item, so a normal run still shows one
 // worker flowing through several items instead of a new card every time.
 import { readFile } from 'node:fs/promises';
-import { test, check, requireLogin, sourceOf } from '../../../dev/test/harness.mjs';
+import { test, check, requireLogin, sourceOf, idle, frames } from '../../../dev/test/harness.mjs';
 import { join } from 'node:path';
 
 // the script brings its own GM stand-ins, as it did before the harness
@@ -36,7 +36,7 @@ test("#467: retire", { tag: ['@sandbox', '@login'] }, async ({ context, page }) 
     });
     await page.goto('https://test.musicbrainz.org/', { waitUntil: 'load' });
     await requireLogin(page);
-    await page.waitForTimeout(500);
+    await idle(page);
     await page.addScriptTag({ content: code });
     await page.waitForSelector('#falcon-launcher', { timeout: 5000 });
     await page.click('#falcon-launcher');
@@ -54,7 +54,7 @@ test("#467: retire", { tag: ['@sandbox', '@login'] }, async ({ context, page }) 
     });
     await page.evaluate(() => window.__falconTest.start());
     await page.waitForFunction(() => window.__falconTest.getQueue().every(i => i.status !== 'queued' && i.status !== 'active'), null, { timeout: 20000 }).catch(() => {});
-    await page.waitForTimeout(500);
+    await frames(page);
     const finalQueue = await page.evaluate(() => window.__falconTest.getQueue());
     const cardInfo = await page.evaluate(() => [...document.querySelectorAll('.falcon-worker-card')].map(c => ({ retired: c.dataset.retired === '1', label: c.querySelector('.falcon-worker-lbl')?.textContent, opacity: getComputedStyle(c).opacity })));
     console.log('final queue:', JSON.stringify(finalQueue.map(i => ({ id: i.id, status: i.status })), null, 1));
@@ -82,7 +82,7 @@ test("#467: retire", { tag: ['@sandbox', '@login'] }, async ({ context, page }) 
       return route.fallback();
     });
     await page.goto('https://test.musicbrainz.org/', { waitUntil: 'load' });
-    await page.waitForTimeout(500);
+    await idle(page);
     await page.addScriptTag({ content: code });
     await page.waitForSelector('#falcon-launcher', { timeout: 5000 });
     await page.click('#falcon-launcher');

@@ -41,6 +41,43 @@ export const SANDBOX = 'https://test.musicbrainz.org';
 // the rest (the ck() every old test carried).
 export const check = (cond, msg) => expect.soft(!!cond, msg).toBe(true);
 
+// Wait for what a check is about, never for a fixed time: a sleep long enough on one
+// machine is too short on a slower one (CI). `read` returns the value the check looks
+// at; it is polled until `ok(value)` holds or `timeout` passes, and returned either
+// way, so a check that still fails reports what was there.
+//   check(await until(() => page.evaluate(() => panel.style.display), v => v === 'flex'), '…')
+export async function until(read, ok = Boolean, { timeout = 20_000, every = 100 } = {}) {
+  const end = Date.now() + timeout;
+  for (;;) {
+    const v = await read();
+    if (ok(v) || Date.now() >= end) return v;
+    await new Promise(r => setTimeout(r, every));
+  }
+}
+
+// idle(), and first until the page's network has gone quiet: for MusicBrainz's release
+// editor, which loads a medium's tracks when its tab opens and re-renders as they arrive.
+export async function settled(page, { timeout = 30_000 } = {}) {
+  await page.waitForLoadState('networkidle', { timeout }).catch(() => {});
+  await idle(page, { timeout });
+}
+
+// Until the page has drawn `n` more frames: for what a script lays out on a later frame
+// (a ResizeObserver, then requestAnimationFrame), where the state before the change would
+// satisfy the check too, so waiting for the check's condition proves nothing.
+export const frames = (page, n = 3) => page.evaluate(n => new Promise(r => { const f = k => (k ? requestAnimationFrame(() => f(k - 1)) : r()); f(n); }), n);
+
+// Until the page has finished starting: its scripts have run and its main thread has
+// nothing queued (MusicBrainz's React is hydrated). Where a spec used to sleep after
+// loading a page before putting a script in, so as not to meet React #418.
+export async function idle(page, { timeout = 30_000 } = {}) {
+  await page.waitForLoadState('load', { timeout }).catch(() => {});
+  await page.evaluate(t => new Promise(r => {
+    const frames = () => requestAnimationFrame(() => requestAnimationFrame(() => r()));
+    (window.requestIdleCallback || (f => setTimeout(f, 0)))(frames, { timeout: t });
+  }), timeout).catch(() => {});
+}
+
 // Where each userscript's built source lives (default: userscripts/<name>/<name>.user.js).
 const SOURCES = {
   credit_hoarder: 'userscripts/credit_hoarder/dist/credit_hoarder.user.js',

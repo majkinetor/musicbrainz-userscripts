@@ -6,7 +6,7 @@
 // collapse rules keyed on MusicBrainz's placeholder text; they key on :placeholder-shown.
 //
 // His two examples, verbatim. On a sandbox release's editor; nothing is submitted.
-import { test, check } from '../../../dev/test/harness.mjs';
+import { test, check, until } from '../../../dev/test/harness.mjs';
 import { openApollo, apolloGm } from './ap.mjs';
 
 test.use({ gm: apolloGm() });
@@ -73,8 +73,8 @@ test('a paste adds every link, with its type', { tag: ['@sandbox', '@login', '@c
     input.dispatchEvent(new ClipboardEvent('paste', { clipboardData: dt, bubbles: true, cancelable: true }));
   }, { BC, SP });
   await page.waitForFunction(n => document.querySelectorAll('#external-links-editor tr.external-link-item a.url, #external-links-editor tr.external-link-item input[type=url]:not(:placeholder-shown)').length >= n + 2, before, { timeout: 30000 }).catch(() => {});
-  await page.waitForTimeout(1500);
-  const after = await urls();
+  // until both rows have their type (Bandcamp's set by the script, Spotify's by MusicBrainz)
+  const after = await until(urls, a => { const bc = a.find(r => r.url.includes('bandcamp.com')), sp = a.find(r => r.url.includes('open.spotify.com')); return bc && sp && /stream/i.test(bc.type || '') && sp.type && sp.type !== '(blank)'; });
   check(after.length === before + 2, `both links added by one paste (${before} → ${after.length})`);
   const bc = after.find(r => r.url.includes('bandcamp.com')), sp = after.find(r => r.url.includes('open.spotify.com'));
   check(bc && sp, 'the Bandcamp and the Spotify link');

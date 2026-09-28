@@ -311,8 +311,8 @@ test("#590: error detect", { tag: ['@sandbox', '@login'] }, async ({ context, pa
   // the one case that genuinely has nothing to send still says so, correctly
   const rA = await pA.evaluate(async () => {
     window.__falconTest.cancelHarmonyReload('test');
-    window.__falconTest.maybeAutoSend();
-    await new Promise(r => setTimeout(r, 250));
+    window.__falconTest.maybeAutoSend();   // decides as it is called
+    await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
     return { opened: window.__opened.length, log: window.__log.slice() };
   });
   ck(rA.opened === 0, 'shape A opens nothing, because there is genuinely nothing on the page to send');

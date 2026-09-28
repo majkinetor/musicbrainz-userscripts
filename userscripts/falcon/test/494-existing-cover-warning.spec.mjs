@@ -9,7 +9,7 @@
 // MB's own /ws/2/release endpoint instead, no cross-origin call at all.
 // renderRowDetail/renderQueue surface the result as a warning.
 import { readFile } from 'node:fs/promises';
-import { test, check, requireLogin, sourceOf } from '../../../dev/test/harness.mjs';
+import { test, check, requireLogin, sourceOf, frames, until } from '../../../dev/test/harness.mjs';
 
 // the script brings its own GM stand-ins, as it did before the harness
 test.use({ gm: false });
@@ -107,7 +107,7 @@ test("#494: existing cover warning", { tag: ['@sandbox', '@login'] }, async ({ c
     await page.evaluate(() => window.__falconTest.addToQueue([
       { entityType: 'release', mbid: 'dddddddd-2222-0000-0000-000000000000', coverCandidates: [{ provider: 'Deezer', url: 'https://example.invalid/z.jpg' }] },
     ]));
-    await page.waitForTimeout(500);
+    await frames(page);
     console.log('WS2 release lookup hit during addToQueue:', hit);
     ck(hit, 'queuing a release with cover candidates automatically checks MB\'s own cover-art-archive field');
     await page.close();
@@ -121,23 +121,30 @@ test("#494: existing cover warning", { tag: ['@sandbox', '@login'] }, async ({ c
   //    already in flight, but skips everything else waiting behind them).
   {
     const page = await context.newPage();
-    await page.route('**/ws/2/artist/**', async route => { await new Promise(r => setTimeout(r, 3000)); route.fulfill({ status: 200, contentType: 'application/json', body: '{"name":"slow"}' }); });
+    // the slow lookups are held, and counted, until the priority check has been queued
+    // behind the four in flight; then all are answered (a hold, not a guessed delay)
+    const heldArtists = []; let artistHits = 0, artistsReleased = false;
+    const answerArtist = route => route.fulfill({ status: 200, contentType: 'application/json', body: '{"name":"slow"}' });
+    await page.route('**/ws/2/artist/**', route => { artistHits++; if (artistsReleased) return answerArtist(route); heldArtists.push(route); });
     await page.route('**/ws/2/release/eeeeeeee-3333-0000-0000-000000000000?fmt=json', route => route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ 'cover-art-archive': { count: 1 } }) }));
     await page.goto('https://test.musicbrainz.org/', { waitUntil: 'load' });
     await page.addScriptTag({ content: code });
     await page.waitForFunction(() => !!window.__falconTest, { timeout: 5000 });
-    const order = await page.evaluate(async () => {
-      const seen = [];
+    await page.evaluate(() => {
+      const seen = window.__seen494 = [];
       // fill every concurrent slot (4) plus a backlog behind them with slow,
       // low-priority "name lookup" style fetches, matching a big batch queued
       // ahead of the cover item.
-      const slow = Array.from({ length: 8 }, (_, i) =>
+      window.__slow494 = Array.from({ length: 8 }, (_, i) =>
         window.__falconTest.mbThrottle.fetchJson(`/ws/2/artist/slow-${i}?fmt=json`).then(() => seen.push(`slow-${i}`)));
-      await new Promise(r => setTimeout(r, 50));   // let the first 4 actually start (become in-flight)
-      const priorityDone = window.__falconTest.checkExistingCoverArt({ mbid: 'eeeeeeee-3333-0000-0000-000000000000', coverExistingCount: null }).then(() => seen.push('priority-cover'));
-      await Promise.all([...slow, priorityDone]);
-      return seen;
     });
+    await until(() => artistHits, n => n >= 4);   // the first 4 are in flight (held)
+    await page.evaluate(() => {
+      window.__prio494 = window.__falconTest.checkExistingCoverArt({ mbid: 'eeeeeeee-3333-0000-0000-000000000000', coverExistingCount: null }).then(() => window.__seen494.push('priority-cover'));
+    });
+    artistsReleased = true;
+    heldArtists.splice(0).forEach(answerArtist);
+    const order = await page.evaluate(async () => { await Promise.all([...window.__slow494, window.__prio494]); return window.__seen494; });
     console.log('resolution order:', JSON.stringify(order));
     const priorityIdx = order.indexOf('priority-cover');
     ck(priorityIdx >= 0 && priorityIdx < 5, `the priority cover check resolves near the front, not after all 8 slow lookups (resolved at position ${priorityIdx} of ${order.length})`);

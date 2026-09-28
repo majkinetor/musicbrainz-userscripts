@@ -3,7 +3,7 @@
 // be read. Reproduces majkinetor's exact case: a Deezer ALBUM url on an artist ->
 // MB's own "This URL is not allowed for artists." message.
 import { readFile } from 'node:fs/promises';
-import { test, check, requireLogin, sourceOf } from '../../../dev/test/harness.mjs';
+import { test, check, requireLogin, sourceOf, idle, frames } from '../../../dev/test/harness.mjs';
 import { resolve } from 'node:path';
 
 // the script brings its own GM stand-ins, as it did before the harness
@@ -25,9 +25,10 @@ test("#467: errors", { tag: ['@sandbox', '@login'] }, async ({ context, page }) 
   // 1. findFieldError() picks up MB's real validation text (not a submit — read-only).
   await page.goto(`https://test.musicbrainz.org/artist/${ARTIST}/edit`, { waitUntil: 'load' });
   await requireLogin(page);
-  await page.waitForTimeout(1200);
+  await idle(page);
   await page.addScriptTag({ content: code });
   await page.waitForFunction(() => !!window.__falconTest, { timeout: 5000 });
+  await page.waitForFunction(() => [...document.querySelectorAll('#external-links-editor input')].some(i => /add (another )?link|add another url/i.test(i.placeholder || '')), null, { timeout: 30000 });   // the links editor is up
   const errText = await page.evaluate(() => {
     const { findAddLinkInput, findFieldError } = window.__falconTest;
     const input = findAddLinkInput(document);
@@ -48,7 +49,7 @@ test("#467: errors", { tag: ['@sandbox', '@login'] }, async ({ context, page }) 
   // not the old generic "may already have this exact link" guess. POST intercepted so
   // nothing real submits (only the rejected url — MB never got a valid one to accept).
   await page.goto(`https://test.musicbrainz.org/artist/${ARTIST}`, { waitUntil: 'load' });
-  await page.waitForTimeout(500);
+  await idle(page);
   await page.addScriptTag({ content: code });
   await page.waitForFunction(() => !!window.__falconTest, { timeout: 5000 });
   await page.waitForSelector('#falcon-launcher', { timeout: 5000 });
@@ -70,11 +71,11 @@ test("#467: errors", { tag: ['@sandbox', '@login'] }, async ({ context, page }) 
   await page.evaluate(() => window.__falconTest.stop());
   const beforeMax = await page.evaluate(() => document.getElementById('falcon-panel').getBoundingClientRect().width);
   await page.click('#falcon-maximize');
-  await page.waitForTimeout(150);
+  await frames(page);
   const afterMax = await page.evaluate(() => document.getElementById('falcon-panel').getBoundingClientRect().width);
   ck(afterMax > beforeMax * 1.5, `maximize meaningfully grows the panel (${beforeMax}px -> ${afterMax}px)`);
   await page.click('#falcon-maximize');
-  await page.waitForTimeout(150);
+  await frames(page);
   const afterRestore = await page.evaluate(() => document.getElementById('falcon-panel').getBoundingClientRect().width);
   ck(Math.abs(afterRestore - beforeMax) < 2, `restore returns to the original width (${beforeMax}px -> ${afterRestore}px)`);
 
@@ -94,9 +95,9 @@ test("#467: errors", { tag: ['@sandbox', '@login'] }, async ({ context, page }) 
   await page.click('#falcon-tab-workers');
   await page.evaluate(() => window.__falconTest.start());
   await page.waitForSelector('.falcon-worker-card', { timeout: 5000 });
-  await page.waitForTimeout(500);
+  await frames(page);
   await page.click('.falcon-worker-zoom');
-  await page.waitForTimeout(200);
+  await frames(page);
   const zoomInfo = await page.evaluate(() => {
     const cards = [...document.querySelectorAll('.falcon-worker-card')];
     return cards.map(c => {
@@ -113,7 +114,7 @@ test("#467: errors", { tag: ['@sandbox', '@login'] }, async ({ context, page }) 
   ck(zoomInfo[0].onScreen && zoomInfo.slice(1).every(c => !c.onScreen), `zooming worker 1 takes the other worker card(s) off screen (${JSON.stringify(zoomInfo.map(c => ({ d: c.display, on: c.onScreen })))})`);
   ck(zoomInfo[0].width > 400, `zoomed worker card is meaningfully larger (${zoomInfo[0].width}px)`);
   await page.click('.falcon-worker-zoom');   // restore
-  await page.waitForTimeout(200);
+  await frames(page);
   // #467 (majkinetor: "hide idle workers on Workers tab") — by this point both
   // items in THIS section have committed and gone idle, so un-zooming should
   // hide those specific cards — earlier sections in this same test file left

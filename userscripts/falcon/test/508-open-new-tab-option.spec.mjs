@@ -4,7 +4,7 @@
 // one" being the Harmony tab itself, navigated away to MusicBrainz instead
 // of a new window.open()'d tab.
 import { readFile } from 'node:fs/promises';
-import { test, check, requireLogin, sourceOf } from '../../../dev/test/harness.mjs';
+import { test, check, requireLogin, sourceOf, frames } from '../../../dev/test/harness.mjs';
 
 // the script brings its own GM stand-ins, as it did before the harness
 test.use({ gm: false });
@@ -49,7 +49,7 @@ test("#508: open new tab option", { tag: ['@sandbox', '@login'] }, async ({ cont
     await page.waitForFunction(() => !!window.__falconTest, { timeout: 5000 });
     await page.waitForSelector('#falcon-harmony-btn', { timeout: 5000 });
     await page.click('#falcon-harmony-btn');
-    await page.waitForTimeout(400);
+    await frames(page);
     const finalUrl = page.url();
     await page.close();
     return { openedUrls, finalUrl, errs };

@@ -12,7 +12,7 @@
 //
 // Nothing is uploaded and no edit is created: every POST is aborted at the network
 // layer and asserted zero. Runs on test.musicbrainz.org.
-import { test, check, requireLogin, SANDBOX, attachShot } from '../../../dev/test/harness.mjs';
+import { test, check, requireLogin, SANDBOX, attachShot, idle } from '../../../dev/test/harness.mjs';
 
 test.use({ gm: { name: 'Art Station' } });
 
@@ -40,10 +40,10 @@ test('the upload timeout is a setting, and reaches the upload request', { tag: [
   });
   await page.goto(`${SANDBOX}/release/${RELEASE}/add-cover-art`, { waitUntil: 'domcontentloaded' });
   await requireLogin(page);
-  await page.waitForTimeout(600);
+  await idle(page);
   await inject('art_station');
   await page.waitForSelector('#as-root', { timeout: 20000 });
-  await page.waitForTimeout(600);
+  await idle(page);
 
   // ── the setup control ───────────────────────────────────────────────────────
   await page.click('#as-setup-btn');
@@ -107,7 +107,6 @@ test('the upload timeout is a setting, and reaches the upload request', { tag: [
   await page.click('#as-setup-btn');
   await page.waitForSelector('.as-setup-uptimeout', { timeout: 5000 });
   await page.evaluate(() => { const i = document.querySelector('.as-setup-uptimeout'); i.value = '10'; i.dispatchEvent(new Event('change', { bubbles: true })); document.getElementById('as-setup').remove(); });
-  await page.waitForTimeout(300);
   const at10 = await runCommit();
   const up10 = at10.find(x => x.method === 'POST');
   console.log('XHR at 10 min: ' + JSON.stringify(up10));
@@ -123,7 +122,6 @@ test('the upload timeout is a setting, and reaches the upload request', { tag: [
   await page.click('#as-setup-btn');
   await page.waitForSelector('.as-setup-uptimeout', { timeout: 5000 });
   await page.evaluate(() => { const i = document.querySelector('.as-setup-uptimeout'); i.value = '1'; i.dispatchEvent(new Event('change', { bubbles: true })); document.getElementById('as-setup').remove(); });
-  await page.waitForTimeout(300);
   await page.evaluate(() => {
     const c = document.querySelector('.as-commit');
     if (c) c.dispatchEvent(new MouseEvent('contextmenu', { bubbles: true, cancelable: true }));

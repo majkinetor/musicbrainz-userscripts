@@ -12,7 +12,7 @@
 //
 // Runs against the sandbox and never submits: every POST to /edit is aborted.
 import { readFile } from 'node:fs/promises';
-import { test, check, requireLogin, sourceOf } from '../../../dev/test/harness.mjs';
+import { test, check, requireLogin, sourceOf, idle, frames } from '../../../dev/test/harness.mjs';
 import { join } from 'node:path';
 
 // the script brings its own GM stand-ins, as it did before the harness
@@ -43,9 +43,9 @@ test("#532: add from release", { tag: ['@sandbox', '@login'] }, async ({ context
     try { await page.goto(`https://test.musicbrainz.org/release/${RELEASE}`, { waitUntil: 'load', timeout: 60000 }); break; }
     catch (e) { if (a >= 3) throw e; console.log('goto retry ' + a); await page.waitForTimeout(4000); }
   }
-  await page.waitForTimeout(1200);
+  await idle(page);
   await page.addScriptTag({ content: code });
-  await page.waitForTimeout(600);
+  await idle(page);
 
   // ── the button only exists where there is something to add ──────────────────
   const ctxSeen = await page.evaluate(() => window.__falconTest.pageEntityContext());
@@ -82,7 +82,7 @@ test("#532: add from release", { tag: ['@sandbox', '@login'] }, async ({ context
   await page.waitForSelector('.falcon-addmenu', { timeout: 5000 });
   await page.click('.falcon-addmenu [data-a="ok"]');            // recordings are pre-ticked
   await page.waitForFunction(() => window.__falconTest.getQueue().length > 0, null, { timeout: 30000 });
-  await page.waitForTimeout(500);
+  await frames(page);
   const q = await page.evaluate(() => window.__falconTest.getQueue().map(i => ({ t: i.entityType, n: i.name, u: i.urls.length, d: i.disambiguation, s: i.status })));
   console.log('queued: ' + q.length + ' — ' + JSON.stringify(q.slice(0, 3)));
   ck(q.length === t.recs, `every recording landed in the queue (${q.length})`);
@@ -127,9 +127,9 @@ test("#532: add from release", { tag: ['@sandbox', '@login'] }, async ({ context
           try { await page.goto(`https://test.musicbrainz.org/release-group/${rgid}`, { waitUntil: 'load', timeout: 60000 }); break; }
           catch (e) { if (a >= 3) throw e; await page.waitForTimeout(4000); }
       }
-      await page.waitForTimeout(1000);
+      await frames(page);
       await page.addScriptTag({ content: code });
-      await page.waitForTimeout(500);
+      await idle(page);
       const rgCtx = await page.evaluate(() => window.__falconTest.pageEntityContext());
       ck(rgCtx && rgCtx.kind === 'release-group', 'a release-group page is recognised');
 
@@ -147,7 +147,7 @@ test("#532: add from release", { tag: ['@sandbox', '@login'] }, async ({ context
       await page.check('.falcon-addmenu input[data-w="release"]');
       await page.click('.falcon-addmenu [data-a="ok"]');
       await page.waitForFunction(() => window.__falconTest.getQueue().length > 1, null, { timeout: 60000 }).catch(() => {});
-      await page.waitForTimeout(800);
+      await frames(page);
       const rgq = await page.evaluate(() => window.__falconTest.getQueue().map(i => ({ t: i.entityType, n: i.name })));
       const expected = await page.evaluate(async (id) => {
           const j = await window.__falconTest.mbThrottle.fetchJson(`https://test.musicbrainz.org/ws/2/release?release-group=${id}&limit=1&fmt=json`, undefined, true);

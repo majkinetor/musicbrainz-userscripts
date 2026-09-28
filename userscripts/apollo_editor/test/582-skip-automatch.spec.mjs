@@ -12,7 +12,7 @@
 // Measured on the wire, not in the log: every /ws/2 URL the page requests is
 // recorded, and the two the pass would have made must not be among them. The
 // release is opened with autoMatchRec ON, exactly his setup.
-import { test, check } from '../../../dev/test/harness.mjs';
+import { test, check, until, settled } from '../../../dev/test/harness.mjs';
 import { openApollo, apolloGm } from './ap.mjs';
 
 test.use({ gm: apolloGm({ autoMatchRec: true, discogsUrlMatch: false }) });
@@ -34,13 +34,14 @@ test('an all-linked release makes no matching lookups', { tag: ['@sandbox', '@lo
      guard: the first medium can arrive fully linked while the rest are still
      coming, and the pass must not decide the whole release from it. */
   await page.waitForSelector('#tc-recwrap', { state: 'attached', timeout: 20000 });
-  await page.waitForTimeout(1500);
+  await settled(page);
   if (!(await page.$('#tc-recwrap tbody tr.tc-recrow'))) {
     await page.evaluate(() => { const b = document.querySelector('#tc-recwrap .tc-recmed-exp'); if (b) b.dispatchEvent(new MouseEvent('contextmenu', { bubbles: true, cancelable: true })); });
   }
   await page.waitForSelector('#tc-recwrap tbody tr.tc-recrow', { state: 'attached', timeout: 60000 });
-  // generous: his pre-fix run took ~35s to get through both lookups
-  await page.waitForTimeout(20000);
+  // until the pass has given its verdict (his pre-fix run took ~35 s through both lookups)
+  await until(() => page.evaluate(() => (document.querySelector('#tc-recwrap .tc-rec-amstatus') || {}).textContent || ''), t => /already linked|linked \d+ of \d+|nothing to|stopped|failed/i.test(t), { timeout: 90000 });
+  await settled(page);
 
   const rows = await page.evaluate(() => {
     const r = window.__apolloEditor.readRecordings();

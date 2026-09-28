@@ -5,7 +5,7 @@
 // Fusion's own background GET(merge_queue)->POST(merge) flow — the exact
 // mechanism live-verified during #529's design phase. Nothing here touches
 // production MusicBrainz.
-import { test, check, requireLogin, mbJson } from '../../../dev/test/harness.mjs';
+import { test, check, requireLogin, mbJson, until } from '../../../dev/test/harness.mjs';
 
 test.use({ gm: { name: 'Fusion' } });
 
@@ -39,7 +39,6 @@ test('Fusion end to end: matching engine, UI, and real merges on the sandbox', {
   await requireLogin(page);
   await inject('fusion');
   await page.waitForFunction(() => !!window.__fusion, { timeout: 15000 });
-  await page.waitForTimeout(500);
 
   // ── pure matching-engine checks (synthetic recordings, no network) ──
   const engineChecks = await page.evaluate(() => {
@@ -278,17 +277,15 @@ test('Fusion end to end: matching engine, UI, and real merges on the sandbox', {
   const cardsBefore = await page.$$('.fs-pcard');
   check(cardsBefore.length === 2, 'pool has exactly 2 cards before double-clicking (' + cardsBefore.length + ')');
   await cardsBefore[0].dblclick();
-  await page.waitForTimeout(150);
-  const afterFirstDblclick = await page.evaluate(() => window.__fusion.STATE.groups.map(g => g.memberGids.length));
+  const afterFirstDblclick = await until(() => page.evaluate(() => window.__fusion.STATE.groups.map(g => g.memberGids.length)), x => x.length === 1 && x[0] === 1);
   check(afterFirstDblclick.length === 1 && afterFirstDblclick[0] === 1, 'first double-click creates a 1-member group (' + JSON.stringify(afterFirstDblclick) + ')');
   const cardsAfter = await page.$$('.fs-pcard');
   check(cardsAfter.length === 1, 'the grouped card left the pool (' + cardsAfter.length + ' remain)');
   await cardsAfter[0].dblclick();
-  await page.waitForTimeout(150);
-  const grouped = await page.evaluate(() => {
+  const grouped = await until(() => page.evaluate(() => {
       const g = window.__fusion.STATE.groups[0];
       return { memberCount: g ? g.memberGids.length : 0, poolSize: window.__fusion.STATE.poolOrder.length, mergeAllDisabled: document.getElementById('fs-mergeall').disabled };
-  });
+  }), g => g.memberCount === 2 && g.poolSize === 0);
   check(grouped.memberCount === 2, 'second double-click joins the same (only) group — now has 2 members (' + grouped.memberCount + ')');
   check(grouped.poolSize === 0, 'pool is empty after both recordings moved into the group');
   check(grouped.mergeAllDisabled === false, 'Merge All is enabled (clickable) once a real 2-member group exists — this is the reported "unclickable" symptom, now fixed');
@@ -365,7 +362,6 @@ test('Fusion end to end: matching engine, UI, and real merges on the sandbox', {
   // verify against WS2: both survivors still resolve. MB's WS2 throttles under
   // load (transient 503s, same as Fusion's own wsGet() handles with retries),
   // so retry here too rather than treating a rate-limit blip as a real failure.
-  await page.waitForTimeout(1000);
   const post = await page.evaluate(async (gids) => {
       const out = {};
       for (const gid of gids) {
@@ -401,11 +397,9 @@ test('Fusion end to end: matching engine, UI, and real merges on the sandbox', {
   // geometry, and a hit test — never mere existence.
   await page.evaluate(() => { document.getElementById('fs-settings')?.remove(); document.getElementById('mbu-logpop')?.remove(); });
   await page.click('#fs-cfg');
-  await page.waitForTimeout(250);
-  check(await page.evaluate(() => !!document.getElementById('fs-settings')), 'the ⚙ settings popup opens');
+  check(await until(() => page.evaluate(() => !!document.getElementById('fs-settings'))), 'the ⚙ settings popup opens');
   await page.click('#fs-settings .mbu-cfg-log');
-  await page.waitForTimeout(350);
-  const logVis = await page.evaluate(() => {
+  const logVis = await until(() => page.evaluate(() => {
       const pop = document.getElementById('mbu-logpop');
       if (!pop) return { exists: false };
       const cs = getComputedStyle(pop);
@@ -421,7 +415,7 @@ test('Fusion end to end: matching engine, UI, and real merges on the sandbox', {
           onTop: !!hit && pop.contains(hit),
           lineCount: pop.querySelectorAll('.mbu-log-li').length,
       };
-  });
+  }), v => v.exists && v.visible && v.inViewport && v.onTop);
   console.log('log panel visibility:', JSON.stringify(logVis));
   check(logVis.exists, 'clicking Log creates the log panel');
   check(logVis.position === 'fixed', 'log panel is positioned (fixed) — i.e. its CSS class actually applied (' + logVis.position + ')');
@@ -455,20 +449,17 @@ test('Fusion end to end: matching engine, UI, and real merges on the sandbox', {
   check(logWin.severityColoured !== false, 'warn lines are coloured differently from info lines');
   // minimize / restore
   await page.click('#mbu-logpop .mbu-logpop-min');
-  await page.waitForTimeout(200);
-  const minned = await page.evaluate(() => {
+  const minned = await until(() => page.evaluate(() => {
       const pop = document.getElementById('mbu-logpop');
       return { hasMinClass: pop.classList.contains('min'), listVisible: getComputedStyle(pop.querySelector('.mbu-log-list')).display !== 'none', btn: pop.querySelector('.mbu-logpop-min').textContent };
-  });
+  }), m => m.hasMinClass && !m.listVisible);
   check(minned.hasMinClass && !minned.listVisible, 'Minimize collapses the log list, leaving just the title bar');
   check(minned.btn === '▢', 'the minimize button flips to a restore glyph');
   await page.click('#mbu-logpop .mbu-logpop-min');
-  await page.waitForTimeout(200);
-  check(await page.evaluate(() => getComputedStyle(document.getElementById('mbu-logpop').querySelector('.mbu-log-list')).display !== 'none'), 'Restore brings the log list back');
+  check(await until(() => page.evaluate(() => getComputedStyle(document.getElementById('mbu-logpop').querySelector('.mbu-log-list')).display !== 'none')), 'Restore brings the log list back');
   // Escape closes, and the open-state is remembered
   await page.keyboard.press('Escape');
-  await page.waitForTimeout(200);
-  check(await page.evaluate(() => !document.getElementById('mbu-logpop')), 'Escape closes the log window');
+  check(await until(() => page.evaluate(() => !document.getElementById('mbu-logpop'))), 'Escape closes the log window');
 
   // #529 (majkinetor): the ✎ edit-note button on a card — driven by REAL clicks
   // with the UI actually open, since this is a DOM/CSS behaviour.
@@ -484,20 +475,18 @@ test('Fusion end to end: matching engine, UI, and real merges on the sandbox', {
   });
   const plainColor = await page.evaluate(g => { const b = document.querySelector('.fs-gcard[data-gid="' + g + '"] .fs-note-btn'); return b ? getComputedStyle(b).color : ''; }, noteGid);
   await page.click('.fs-gcard[data-gid="' + noteGid + '"] [data-act="edit-note"]');
-  await page.waitForTimeout(200);
-  const editing = await page.evaluate(g => ({
+  const editing = await until(() => page.evaluate(g => ({
       ta: !!document.querySelector('.fs-gcard[data-gid="' + g + '"] .fs-note-ta'),
       rowsGone: !document.querySelector('.fs-gcard[data-gid="' + g + '"] .fs-grow'),
-  }), noteGid);
+  }), noteGid), e => e.ta && e.rowsGone);
   check(editing.ta && editing.rowsGone, 'clicking ✎ turns the whole card into the edit-note textbox (member rows replaced)');
   await page.fill('.fs-gcard[data-gid="' + noteGid + '"] .fs-note-ta', 'Same take, verified by ear.');
   await page.click('.fs-gcard[data-gid="' + noteGid + '"] [data-act="note-save"]');
-  await page.waitForTimeout(200);
-  const saved = await page.evaluate(g => {
+  const saved = await until(() => page.evaluate(g => {
       const grp = window.__fusion.findGroup(g);
       const b = document.querySelector('.fs-gcard[data-gid="' + g + '"] .fs-note-btn');
       return { stored: grp.editNote, hasClass: b ? b.classList.contains('fs-has-note') : false, color: b ? getComputedStyle(b).color : '', note: window.__fusion.buildEditNote(grp), rowsBack: !!document.querySelector('.fs-gcard[data-gid="' + g + '"] .fs-grow') };
-  }, noteGid);
+  }, noteGid), s => s.stored && s.rowsBack && s.hasClass);
   console.log('edit note:', JSON.stringify(saved));
   check(saved.stored === 'Same take, verified by ear.', 'the typed note is saved on the group');
   check(saved.rowsBack, 'saving returns the card to its normal member-row view');
@@ -583,11 +572,11 @@ test('Fusion end to end: matching engine, UI, and real merges on the sandbox', {
   const maxRest = await page.evaluate(() => { const b = document.getElementById('fs-max'); return { g: b.textContent, border: getComputedStyle(b).borderStyle }; });
   check(maxRest.g === '⛶', 'maximize button uses Group Therapy\'s ⛶ glyph (' + maxRest.g + ')');
   check(maxRest.border === 'none', 'and Group Therapy\'s borderless styling');
-  await page.click('#fs-max'); await page.waitForTimeout(250);
-  const maxOn = await page.evaluate(() => { const b = document.getElementById('fs-max'); return { g: b.textContent, t: b.title, on: document.getElementById('fs-cons').classList.contains('fs-maximized') }; });
+  await page.click('#fs-max');
+  const maxOn = await until(() => page.evaluate(() => { const b = document.getElementById('fs-max'); return { g: b.textContent, t: b.title, on: document.getElementById('fs-cons').classList.contains('fs-maximized') }; }), m => m.on);
   check(maxOn.on && maxOn.g === '❐' && maxOn.t === 'Restore', 'maximizing flips it to ❐ / "Restore" like GT (' + JSON.stringify(maxOn) + ')');
-  await page.click('#fs-max'); await page.waitForTimeout(250);
-  const maxOff = await page.evaluate(() => { const b = document.getElementById('fs-max'); return { g: b.textContent, on: document.getElementById('fs-cons').classList.contains('fs-maximized') }; });
+  await page.click('#fs-max');
+  const maxOff = await until(() => page.evaluate(() => { const b = document.getElementById('fs-max'); return { g: b.textContent, on: document.getElementById('fs-cons').classList.contains('fs-maximized') }; }), m => !m.on);
   check(!maxOff.on && maxOff.g === '⛶', 'restoring flips it back to ⛶');
 
   // #529 (majkinetor): "recordings with pending edits highlighted … Probably
@@ -987,8 +976,8 @@ test('Fusion end to end: matching engine, UI, and real merges on the sandbox', {
   await page.waitForFunction(() => !!window.__fusion, { timeout: 15000 });
   await page.click('#fs-launch');
   await page.waitForFunction(() => window.__fusion.STATE.poolOrder.length > 0, { timeout: 60000 });
-  await page.waitForTimeout(500);
-  const artistSeed = await page.evaluate(() => {
+  // until the seed has reported (its log line) and every seeded recording has its releases
+  const artistSeed = await until(() => page.evaluate(() => {
       const F = window.__fusion;
       const table = document.querySelector('table.tbl');
       const recs = [...F.STATE.recordings.values()];
@@ -1003,7 +992,7 @@ test('Fusion end to end: matching engine, UI, and real merges on the sandbox', {
           harvestLine: F.getLogLines().find(l => /Harvested \d+ internal/.test(l)) || '',
           consBg: getComputedStyle(document.getElementById('fs-cons')).backgroundColor,
       };
-  });
+  }), s => s.seedLine && s.withReleases === s.pooled, { timeout: 60000 });
   console.log('artist seed:', JSON.stringify(artistSeed));
   check(artistSeed.scope === 'artist-recordings', 'Fusion detects artist-recordings scope');
   check(artistSeed.pooled > artistSeed.domRowsOnPage,

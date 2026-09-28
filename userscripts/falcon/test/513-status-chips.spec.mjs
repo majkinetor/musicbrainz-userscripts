@@ -3,7 +3,7 @@
 // Make window wider if needed to fit the chips. Make the chip clickable to
 // filter in just those results."
 import { readFile } from 'node:fs/promises';
-import { test, check, requireLogin, sourceOf } from '../../../dev/test/harness.mjs';
+import { test, check, requireLogin, sourceOf, frames } from '../../../dev/test/harness.mjs';
 
 // the script brings its own GM stand-ins, as it did before the harness
 test.use({ gm: false });
@@ -51,7 +51,7 @@ test("#513: status chips", { tag: ['@sandbox', '@login'] }, async ({ context, pa
     { id: '5', entityType: 'recording', mbid: 'aaaaaaaa-5130-0000-0000-000000000005', urls: [], isrcs: [], disambiguation: '', cover: [], status: 'skipped', error: '' },
     { id: '6', entityType: 'recording', mbid: 'aaaaaaaa-5130-0000-0000-000000000006', urls: [], isrcs: [], disambiguation: '', cover: [], status: 'queued', error: '' },
   ]), null);
-  await page.waitForTimeout(150);
+  await frames(page);
   const chips = await page.evaluate(() => [...document.querySelectorAll('.falcon-status-chip')].map(c => ({ status: c.dataset.status, text: c.textContent })));
   console.log('chips:', JSON.stringify(chips));
   ck(chips.length === 3, `failed+partial+skipped get a chip — done/queued don't (got ${chips.length})`);
@@ -62,22 +62,22 @@ test("#513: status chips", { tag: ['@sandbox', '@login'] }, async ({ context, pa
 
   // 3. clicking a chip filters the queue view to just that status; clicking again clears it.
   await page.click('.falcon-status-chip[data-status="failed"]');
-  await page.waitForTimeout(150);
+  await frames(page);
   let visibleIds = await page.evaluate(() => [...document.querySelectorAll('.falcon-row')].map(r => r.dataset.id));
   ck(visibleIds.length === 2 && visibleIds.every(id => ['1', '2'].includes(id)), `filtering to 'failed' shows only those 2 rows (got ${JSON.stringify(visibleIds)})`);
   const filterState = await page.evaluate(() => window.__falconTest.getStatusFilter());
   ck(filterState === 'failed', `_statusFilter tracks the active chip (got "${filterState}")`);
 
   await page.click('.falcon-status-chip[data-status="failed"]');
-  await page.waitForTimeout(150);
+  await frames(page);
   visibleIds = await page.evaluate(() => [...document.querySelectorAll('.falcon-row')].map(r => r.dataset.id));
   ck(visibleIds.length === 6, `clicking the SAME chip again clears the filter — all 6 rows back (got ${visibleIds.length})`);
 
   // 4. switching directly from one filter to another (not toggling the same one).
   await page.click('.falcon-status-chip[data-status="failed"]');
-  await page.waitForTimeout(100);
+  await frames(page);
   await page.click('.falcon-status-chip[data-status="partial"]');
-  await page.waitForTimeout(150);
+  await frames(page);
   visibleIds = await page.evaluate(() => [...document.querySelectorAll('.falcon-row')].map(r => r.dataset.id));
   ck(visibleIds.length === 1 && visibleIds[0] === '3', `switching chips replaces the filter, doesn't stack (got ${JSON.stringify(visibleIds)})`);
   await page.evaluate(() => window.__falconTest.setStatusFilter(null));
@@ -89,7 +89,7 @@ test("#513: status chips", { tag: ['@sandbox', '@login'] }, async ({ context, pa
     { id: '3', entityType: 'recording', mbid: 'aaaaaaaa-5130-0000-0000-000000000003', urls: [], isrcs: [], disambiguation: '', cover: [], status: 'manual', error: 'x' },
     { id: '4', entityType: 'recording', mbid: 'aaaaaaaa-5130-0000-0000-000000000004', urls: [], isrcs: [], disambiguation: '', cover: [], status: 'skipped', error: '' },
   ]));
-  await page.waitForTimeout(150);
+  await frames(page);
   const fit = await page.evaluate(() => {
     const chipsWrap = document.getElementById('falcon-status-chips');
     const tabQueue = document.getElementById('falcon-tab-queue');
@@ -102,10 +102,10 @@ test("#513: status chips", { tag: ['@sandbox', '@login'] }, async ({ context, pa
   // 6. the empty-after-filter state offers a way back.
   await page.evaluate(() => window.__falconTest.setQueue([{ id: '1', entityType: 'recording', mbid: 'aaaaaaaa-5130-0000-0000-000000000001', urls: [], isrcs: [], disambiguation: '', cover: [], status: 'failed', error: 'x' }]));
   await page.click('.falcon-status-chip[data-status="failed"]');
-  await page.waitForTimeout(100);
+  await frames(page);
   // now remove the only failed item externally (simulating a re-run that fixed it)
   await page.evaluate(() => window.__falconTest.setQueue([{ id: '1', entityType: 'recording', mbid: 'aaaaaaaa-5130-0000-0000-000000000001', urls: [], isrcs: [], disambiguation: '', cover: [], status: 'done', error: '' }]));
-  await page.waitForTimeout(150);
+  await frames(page);
   const afterClear = await page.evaluate(() => ({ filter: window.__falconTest.getStatusFilter(), rows: document.querySelectorAll('.falcon-row').length }));
   console.log('after the filtered status disappears entirely:', JSON.stringify(afterClear));
   ck(afterClear.filter === null, `the filter self-clears once nothing matches it anymore (got "${afterClear.filter}")`);

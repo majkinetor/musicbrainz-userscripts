@@ -6,7 +6,7 @@
 // so a human can review/complete/commit an item by hand (mirrors what Harmony
 // itself does per-entity).
 import { readFile } from 'node:fs/promises';
-import { test, check, requireLogin, sourceOf } from '../../../dev/test/harness.mjs';
+import { test, check, requireLogin, sourceOf, idle } from '../../../dev/test/harness.mjs';
 
 // the script brings its own GM stand-ins, as it did before the harness
 test.use({ gm: false });
@@ -28,7 +28,7 @@ test("#467: review ux", { tag: ['@sandbox', '@login'] }, async ({ context, page 
     const errs = []; page.on('pageerror', e => errs.push(e.message));
     await page.goto('https://test.musicbrainz.org/', { waitUntil: 'load' });
     await requireLogin(page);
-    await page.waitForTimeout(400);
+    await idle(page);
     await page.addScriptTag({ content: code });
     await page.waitForFunction(() => !!window.__falconTest, { timeout: 5000 });
     await page.waitForSelector('#falcon-launcher', { timeout: 5000 });

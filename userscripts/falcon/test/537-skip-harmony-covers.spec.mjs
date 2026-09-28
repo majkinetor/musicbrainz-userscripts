@@ -13,7 +13,7 @@
 //
 // Nothing is submitted: no run is started.
 import { readFile } from 'node:fs/promises';
-import { test, check, requireLogin, sourceOf } from '../../../dev/test/harness.mjs';
+import { test, check, requireLogin, sourceOf, frames, idle } from '../../../dev/test/harness.mjs';
 
 // the script brings its own GM stand-ins, as it did before the harness
 test.use({ gm: false });
@@ -39,9 +39,9 @@ test("#537: skip harmony covers", { tag: ['@sandbox', '@login'] }, async ({ cont
       try { await page.goto(`https://test.musicbrainz.org/release/${RELEASE}`, { waitUntil: 'load', timeout: 60000 }); break; }
       catch (e) { if (a >= 3) throw e; await page.waitForTimeout(4000); }
     }
-    await page.waitForTimeout(800);
+    await frames(page);
     await page.addScriptTag({ content: code });
-    await page.waitForTimeout(400);
+    await idle(page);
     return { context, page };
   };
 
@@ -94,7 +94,7 @@ test("#537: skip harmony covers", { tag: ['@sandbox', '@login'] }, async ({ cont
     await page.click('#falcon-launcher');
     await page.waitForSelector('#falcon-panel', { timeout: 15000 });
     await page.click('#falcon-tab-options');            // the ⚙ tab — options live there
-    await page.waitForTimeout(300);
+    await frames(page);
     const box = await page.$('#falcon-opt-skip-harmony-covers');
     ck(!!box, 'the option exists in Settings');
     if (box) {

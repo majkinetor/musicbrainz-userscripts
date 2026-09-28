@@ -4,7 +4,7 @@
 // whether its name came straight from the source (Harmony-scraped) or had to
 // be fetched from MB — so this is checkable from the log instead of assumed.
 import { readFile } from 'node:fs/promises';
-import { test, check, requireLogin, sourceOf } from '../../../dev/test/harness.mjs';
+import { test, check, requireLogin, sourceOf, frames } from '../../../dev/test/harness.mjs';
 import { join } from 'node:path';
 
 // the script brings its own GM stand-ins, as it did before the harness
@@ -39,7 +39,7 @@ test("#509: name debug log", { tag: ['@sandbox', '@login'] }, async ({ context, 
       { entityType: 'recording', mbid: FETCH_MBID, url: 'https://example.com/fetch' },
     ]);
   }, { NAMED_MBID, FETCH_MBID });
-  await page.waitForTimeout(600);
+  await frames(page);
 
   const log = await page.evaluate(() => window.__falconTest.getLog().join('\n'));
   console.log('--- log tail ---');

@@ -10,7 +10,7 @@
 // user opened themselves, a stale one, one for another entity type, or one it already
 // pressed once; and it must press it on its own. The real create, read back from
 // MusicBrainz, is 598-two-background-creates.
-import { test, check, requireLogin, SANDBOX } from '../../../dev/test/harness.mjs';
+import { test, check, requireLogin, SANDBOX, idle, until } from '../../../dev/test/harness.mjs';
 
 // the pending record has to survive a navigation
 test.use({ gm: { name: 'Group Therapy', persist: 'tabs' } });
@@ -42,6 +42,10 @@ test('a create page submits itself only when Group Therapy opened it', { tag: ['
   });
   await goto(`${SANDBOX}/`);
   await requireLogin(page);
+  // what the create page decided: it says so in the console, every time
+  let said = [];
+  page.on('console', m => { const t = m.text(); if (/\[Group Therapy\] background create:/.test(t)) said.push(t); });
+  const decided = () => until(() => said.find(t => /leaving (it|this form) alone|standing down|pressing "Enter edit"|gave up/.test(t)), Boolean, { timeout: 30000 });
 
   const cases = [
     ['no pending create at all', null, seedUrl({ x_gtcreate: TOKEN })],
@@ -55,9 +59,11 @@ test('a create page submits itself only when Group Therapy opened it', { tag: ['
     posts = [];
     await goto(`${SANDBOX}/`);
     if (pending) await setPending(pending); else await page.evaluate(() => window.GM_deleteValue('gt:pendingCreate'));
+    said = [];
     await goto(url);
     await inject('group_therapy');
-    await page.waitForTimeout(2500);
+    await decided();   // it has decided (standing down), so no press can follow
+    await idle(page);
     check(posts.length === 0, `does not submit: ${what}` + (posts.length ? ' — POSTed ' + posts[0] : ''));
   }
 
@@ -65,9 +71,11 @@ test('a create page submits itself only when Group Therapy opened it', { tag: ['
   posts = [];
   await goto(`${SANDBOX}/`);
   await setPending({ kind: 'artist', token: TOKEN, ts: Date.now() });
+  said = [];
   await goto(seedUrl({ x_gtcreate: TOKEN }));
   await inject('group_therapy');
-  await page.waitForTimeout(3000);
+  await until(() => posts.length, n => n > 0, { timeout: 30000 });   // Enter edit is pressed once the form is ready
+  await idle(page);
   check(posts.length === 1, `it presses Enter on the create it opened itself (${posts.length} POST)`);
   // read the record from a real page: the aborted POST leaves an error document
   // behind, where localStorage throws and would read as "no record"

@@ -6,7 +6,7 @@
 // API afterward) was already done manually for #467/#459 and doesn't need repeating
 // on every test run.
 import { readFile } from 'node:fs/promises';
-import { test, check, requireLogin, sourceOf } from '../../../dev/test/harness.mjs';
+import { test, check, requireLogin, sourceOf, idle, frames } from '../../../dev/test/harness.mjs';
 import { join } from 'node:path';
 
 // the script brings its own GM stand-ins, as it did before the harness.
@@ -42,7 +42,7 @@ test("#467: mvp", { tag: ['@sandbox', '@login', '@critical'] }, async ({ context
 
   await page.goto('https://test.musicbrainz.org/artist/' + ARTIST_A, { waitUntil: 'load' });
   await requireLogin(page);
-  await page.waitForTimeout(500);
+  await idle(page);
   await page.addScriptTag({ content: code });
   await page.waitForFunction(() => !!window.__falconTest, { timeout: 5000 });
 
@@ -69,7 +69,7 @@ test("#467: mvp", { tag: ['@sandbox', '@login', '@critical'] }, async ({ context
   // 2. URL-param seeding (base64 JSON)
   const seedPayload = Buffer.from(JSON.stringify([{ entityType: 'artist', mbid: ARTIST_A, url: 'https://example.com/seed' }])).toString('base64');
   await page.goto(`https://test.musicbrainz.org/artist/${ARTIST_A}?falcon=${encodeURIComponent(seedPayload)}`, { waitUntil: 'load' });
-  await page.waitForTimeout(500);
+  await idle(page);
   await page.addScriptTag({ content: code });
   await page.waitForFunction(() => !!window.__falconTest, { timeout: 5000 });
   const seededQueue = await page.evaluate(() => window.__falconTest.getQueue());
@@ -83,12 +83,12 @@ test("#467: mvp", { tag: ['@sandbox', '@login', '@critical'] }, async ({ context
   // start already-visible, so the first togglePanel() call closed it instead of opening it.
   const freshPage = await context.newPage();
   await freshPage.goto(`https://test.musicbrainz.org/artist/${ARTIST_A}`, { waitUntil: 'load' });
-  await freshPage.waitForTimeout(500);
+  await idle(freshPage);
   await freshPage.addScriptTag({ content: code });
   await freshPage.waitForSelector('#falcon-launcher', { timeout: 10000 });
   const initialDisplay = await freshPage.evaluate(() => document.getElementById('falcon-panel')?.style.display ?? 'NO_PANEL_YET');
   await freshPage.click('#falcon-launcher');
-  await freshPage.waitForTimeout(300);
+  await frames(freshPage);
   const afterFirstClick = await freshPage.evaluate(() => document.getElementById('falcon-panel')?.style.display);
   ck(initialDisplay !== 'flex', `panel isn't pre-rendered visible before any interaction (was: ${initialDisplay})`);
   ck(afterFirstClick === 'flex', `first-ever launcher click OPENS the panel (display=${afterFirstClick})`);
@@ -109,7 +109,7 @@ test("#467: mvp", { tag: ['@sandbox', '@login', '@critical'] }, async ({ context
   // 4. Hotkey toggles the panel
   await page.evaluate(() => { document.getElementById('falcon-panel').style.display = 'none'; });
   await page.keyboard.press('Control+Alt+F');
-  await page.waitForTimeout(200);
+  await frames(page);
   const afterHotkey = await page.evaluate(() => document.getElementById('falcon-panel')?.style.display);
   ck(afterHotkey === 'flex', `Ctrl+Alt+F opens the panel (display=${afterHotkey})`);
 

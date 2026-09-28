@@ -7,7 +7,7 @@
 // #618: on a Various Artists release, the #437 co-credit lookup took the special-purpose
 //   Various Artists entity for a known artist: every ambiguous name cost an extra paced
 //   `recording?query=arid:<VA> AND artistname:"…"` search that can never help.
-import { test, check, replayWs } from '../../../dev/test/harness.mjs';
+import { test, check, replayWs, settled } from '../../../dev/test/harness.mjs';
 import { openApollo, apolloGm } from './ap.mjs';
 
 test.use({ gm: apolloGm() });
@@ -45,10 +45,10 @@ test('#618: no co-credit search seeded with Various Artists', { tag: ['@sandbox'
   check(!rel || rel.includes(VA), 'a Various Artists release');
   // track 1's artist becomes the unresolved, ambiguous "Joni", as a pasted credit would be
   await page.evaluate(() => MB.releaseEditor.rootField.release().mediums()[0].tracks()[0].artistCredit({ names: [{ artist: { name: 'Joni' }, name: 'Joni', joinPhrase: '' }] }));
-  await page.waitForTimeout(800);
+  await settled(page);
   const mark = reqs.length;
   const slot = await page.evaluate(async () => { const s = (await window.__apolloEditor.buildModel()).tracks[0].slots[0]; return s && { creditedAs: s.creditedAs, status: s.status }; });
-  await page.waitForTimeout(1500);
+  await settled(page);   // whatever that asked has gone out
   const sent = reqs.slice(mark).filter(u => /\/ws\/2\/recording\?/.test(u) && u.includes('arid:' + VA));
   check(slot && slot.creditedAs === 'Joni' && slot.status !== 'set', `track 1 is matched as the unresolved "Joni" (${JSON.stringify(slot)})`);
   check(sent.length === 0, `no co-credit search with Various Artists (${sent.length})`);

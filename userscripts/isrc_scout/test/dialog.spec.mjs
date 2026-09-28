@@ -1,6 +1,6 @@
 // The dialog itself, on a sandbox release (which release doesn't matter here).
 // test.musicbrainz.org, read-only.
-import { test, check } from '../../../dev/test/harness.mjs';
+import { test, check, until, frames } from '../../../dev/test/harness.mjs';
 import { openScout } from './is.mjs';
 
 test.use({ gm: { name: 'ISRC Scout' } });
@@ -36,21 +36,18 @@ test('#490: SoundExchange search is a row-hover icon that survives "Clear ISRCs"
   const opacity = () => page.evaluate(() => { const b = document.querySelector('tr[data-idx="0"] .ii-sx-hover'); return b ? getComputedStyle(b).opacity : null; });
   check(await opacity() === '0', 'the icon is hidden until the row is hovered');
   await page.hover('tr[data-idx="0"] .ii-input');
-  await page.waitForTimeout(150);
-  check(await opacity() !== '0', 'hovering the row shows it');
+  check(await until(opacity, o => o !== '0') !== '0', 'hovering the row shows it');
   await page.click('tr[data-idx="0"] .ii-sx-hover');
-  await page.waitForTimeout(300);
-  check(await page.evaluate(() => !!document.getElementById('ii-sxp-track')?.textContent), 'clicking it opens the SoundExchange search for that track');
+  check(await until(() => page.evaluate(() => !!document.getElementById('ii-sxp-track')?.textContent)), 'clicking it opens the SoundExchange search for that track');
   await page.evaluate(() => document.body.click());
-  await page.waitForTimeout(200);
   await page.click('#ii-clear-toggle');
-  await page.waitForTimeout(150);
   await page.click('#ii-clear-isrcs');
-  await page.waitForTimeout(200);
+  // "Clear ISRCs" has run once the row's field is empty; the icon is looked for then
+  await until(() => page.evaluate(() => document.querySelector('tr[data-idx="0"] .ii-input').value === ''));
+  await frames(page);
   check(await page.evaluate(() => !!document.querySelector('tr[data-idx="0"] .ii-sx-hover')), 'the icon survives "Clear ISRCs"');
   await page.hover('tr[data-idx="0"] .ii-input');
-  await page.waitForTimeout(150);
-  check(await opacity() !== '0', '…and still shows on hover');
+  check(await until(opacity, o => o !== '0') !== '0', '…and still shows on hover');
 });
 
 // majkinetor, on "⚠ SoundCloud failed — see Log": a message that names the log should
@@ -67,10 +64,9 @@ test('#580: a status that says "see Log" opens the log; ordinary progress does n
   check(bad.err && bad.tolog && bad.cursor === 'pointer' && /log/i.test(bad.title), `the failure is a way to the log, and looks it (${JSON.stringify(bad)})`);
   check(!bad.open, 'the log is still shut before a click');
   await page.evaluate(() => document.getElementById('ii-prog').click());
-  await page.waitForTimeout(400);
-  check((await probe()).open, 'clicking it opens the log');
+  check((await until(probe, p => p.open)).open, 'clicking it opens the log');
   await page.evaluate(() => document.getElementById('ii-prog').click());
-  await page.waitForTimeout(400);
+  await frames(page);   // the click has been handled and drawn: a toggle would have shut it
   check((await probe()).open, 'a second click leaves it open');
   await page.evaluate(() => window.__isrcScoutTestProg.setProg('done', false));
   const after = await probe();
@@ -113,8 +109,10 @@ test('#581: column separators are visible in the light and the dark theme', { ta
 // arrived or changed after the first 2 seconds was never noticed. They attach once the
 // document is parsed now. ISRC Scout runs at document-start, like Apollo and Art Station.
 test('#625: a dark userstyle that arrives late is still noticed', { tag: ['@sandbox'] }, async ({ page, inject }) => {
+  // a fake clock, so "past the one-shot re-checks at 0.4 s and 2 s" is exact and instant
+  await page.clock.install();
   await openScout(page, inject);
-  await page.waitForTimeout(2600);   // past the one-shot re-checks at 0.4 s and 2 s
+  await page.clock.runFor(2600);
   const before = await page.evaluate(() => document.documentElement.getAttribute('data-mbu-theme'));
   await page.evaluate(() => { const s = document.createElement('style'); s.textContent = 'html, body { background: #15131a !important; color: #ddd !important; }'; document.head.appendChild(s); });
   const after = await page.waitForFunction(() => document.documentElement.getAttribute('data-mbu-theme') === 'dark', null, { timeout: 3000 }).then(() => 'dark').catch(() => page.evaluate(() => document.documentElement.getAttribute('data-mbu-theme')));

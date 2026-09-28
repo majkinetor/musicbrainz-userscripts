@@ -8,7 +8,7 @@
 // nowhere, and the retry limit is turned down to 1 so the whole give-up cycle
 // fits in one short test.
 import { readFile } from 'node:fs/promises';
-import { test, check, requireLogin, sourceOf } from '../../../dev/test/harness.mjs';
+import { test, check, requireLogin, sourceOf, frames } from '../../../dev/test/harness.mjs';
 import { join } from 'node:path';
 
 // the script brings its own GM stand-ins, as it did before the harness
@@ -141,7 +141,7 @@ test("#590: reload bounded", { tag: ['@sandbox', '@login'] }, async ({ context, 
   ];
   for (const [name, fx, opts, re] of cases) {
     const p = await open(fx, opts);
-    await p.waitForTimeout(400);
+    await frames(p);
     const [pe, lg] = [await pending(p), await logs(p)];
     ck(pe === false, `${name}: nothing is armed`);
     ck(lg.some(l => re.test(l)), `${name}: and the console says why — "${(lg.find(l => re.test(l)) || '').slice(0, 110)}"`);
@@ -150,7 +150,7 @@ test("#590: reload bounded", { tag: ['@sandbox', '@login'] }, async ({ context, 
 
   /* ── 4. the real cycle: arm → reload → give up ─────────────────────────────── */
   const p = await open('err', ON);
-  await p.waitForTimeout(500);
+  await frames(p);
   const armedLbl = await lbl(p);
   console.log('\narmed:', JSON.stringify({ pending: await pending(p), count: await count(p), label: armedLbl }));
   ck(await pending(p) === true, 'an errored page arms a reload');
@@ -172,7 +172,7 @@ test("#590: reload bounded", { tag: ['@sandbox', '@login'] }, async ({ context, 
   // check below was being made several seconds too early.
   await p.waitForFunction(() => window.__log && window.__log.some(l => /standing down/.test(l)),
     null, { timeout: 20000 }).catch(() => {});
-  await p.waitForTimeout(500);
+  await frames(p);
   console.log('pages served by the fixture:', servedBefore, '→', served);
   ck(served > servedBefore, `the page really was requested again (${served - servedBefore} more)`);
   ck(await count(p) === 1, `and the attempt is recorded, so it survives the navigation (${await count(p)})`);
@@ -203,7 +203,7 @@ test("#590: reload bounded", { tag: ['@sandbox', '@login'] }, async ({ context, 
 
   /* ── 5. cancelling is sticky ───────────────────────────────────────────────── */
   const pc = await open('busy', ON);
-  await pc.waitForTimeout(400);
+  await frames(pc);
   ck(await pending(pc) === true, 'fixture: a reload is armed before the cancel (otherwise the cancel proves nothing)');
   const cancelled = await pc.evaluate(() => {
     const T = window.__falconTest;

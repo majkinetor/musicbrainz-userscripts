@@ -11,7 +11,7 @@
 // "Start" — keep their icon+label markup instead of having it flattened by a
 // textContent write.
 import { readFile } from 'node:fs/promises';
-import { test, check, requireLogin, sourceOf } from '../../../dev/test/harness.mjs';
+import { test, check, requireLogin, sourceOf, idle, frames } from '../../../dev/test/harness.mjs';
 import { join } from 'node:path';
 
 // the script brings its own GM stand-ins, as it did before the harness
@@ -32,7 +32,7 @@ test("toolbar collapse", { tag: ['@sandbox', '@login'] }, async ({ context, page
   const errs = []; page.on('pageerror', e => errs.push(e.message));
   await page.goto('https://test.musicbrainz.org/', { waitUntil: 'load' });
   await requireLogin(page);
-  await page.waitForTimeout(500);
+  await idle(page);
   await page.addScriptTag({ content: code });
   await page.waitForFunction(() => !!window.__falconTest, { timeout: 10000 });
   await page.click('#falcon-launcher');
@@ -45,7 +45,7 @@ test("toolbar collapse", { tag: ['@sandbox', '@login'] }, async ({ context, page
       { id: 't2', entityType: 'artist', mbid: '5441c29d-3602-4898-b1a1-b77fa23b8e50', urls: [{ url: 'https://myspace.com/bar2', linkTypeId: null }], name: 'B', urlResults: null, status: 'queued', error: '' },
     ]);
   });
-  await page.waitForTimeout(300);
+  await frames(page);
 
   // every labelled button must be built as icon + label, or there is nothing to collapse
   const markup = await page.evaluate(() => ['falcon-expand-all', 'falcon-remove-selected', 'falcon-run', 'falcon-log-copy', 'falcon-log-clear'].map(id => {
@@ -66,7 +66,7 @@ test("toolbar collapse", { tag: ['@sandbox', '@login'] }, async ({ context, page
     sweep.push(await page.evaluate(async (w) => {
       const p = document.getElementById('falcon-panel');
       p.style.width = w + 'px'; p.style.maxWidth = w + 'px';
-      await new Promise(r => setTimeout(r, 250));
+      await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));   // the ResizeObserver has run
       const bar = document.getElementById('falcon-queue-toolbar');
       return { w, compact: bar.classList.contains('falcon-compact'), wraps: bar.scrollHeight > bar.clientHeight + 1 };
     }, w));
@@ -77,7 +77,7 @@ test("toolbar collapse", { tag: ['@sandbox', '@login'] }, async ({ context, page
 
   // narrow: past the breakpoint
   await page.evaluate(() => { const p = document.getElementById('falcon-panel'); p.style.width = '240px'; p.style.maxWidth = '240px'; });
-  await page.waitForTimeout(400);
+  await frames(page);
   const narrow = await page.evaluate(() => {
     const bar = document.getElementById('falcon-queue-toolbar');
     const btn = document.getElementById('falcon-remove-selected');
@@ -97,7 +97,7 @@ test("toolbar collapse", { tag: ['@sandbox', '@login'] }, async ({ context, page
 
   // maximized: labels must come back
   await page.click('#falcon-maximize');
-  await page.waitForTimeout(400);
+  await frames(page);
   const wide = await page.evaluate(() => {
     const bar = document.getElementById('falcon-queue-toolbar');
     const btn = document.getElementById('falcon-remove-selected');
@@ -108,7 +108,7 @@ test("toolbar collapse", { tag: ['@sandbox', '@login'] }, async ({ context, page
 
   // the runtime-relabelled buttons must not lose their markup when they toggle
   await page.click('#falcon-expand-all');
-  await page.waitForTimeout(250);
+  await frames(page);
   const afterToggle = await page.evaluate(() => {
     const b = document.getElementById('falcon-expand-all');
     return { text: b.querySelector('.falcon-bt')?.textContent, icon: !!b.querySelector('.falcon-bi'), label: !!b.querySelector('.falcon-bt') };

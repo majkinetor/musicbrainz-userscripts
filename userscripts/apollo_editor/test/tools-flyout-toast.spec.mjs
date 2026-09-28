@@ -8,7 +8,7 @@
 //   held open by a focused checkbox overlapped the next tool's. Each is one line now, and
 //   hovering another tool closes it. Both looks: icon and name, and icon only.
 // Nothing is submitted.
-import { test, check } from '../../../dev/test/harness.mjs';
+import { test, check, until, frames } from '../../../dev/test/harness.mjs';
 import { openApollo, apolloGm } from './ap.mjs';
 
 const REL = 'c16af706-4926-4248-80c5-5faee767d579';
@@ -20,12 +20,13 @@ test.describe('messages', () => {
     await page.waitForSelector('.tc-tools', { timeout: 30000 });
     await page.evaluate(() => { window.__apolloEditor.pickTool('splitmed'); window.__apolloEditor.pickTool('mergemed'); });
     await page.waitForSelector('.tc-opt[data-tool="mergemed"] .tc-mmo input', { timeout: 15000 });
-    await page.waitForTimeout(500);
+    await frames(page);   // laid out
     const layout = () => page.evaluate(() => [...document.querySelectorAll('.tc-toolbtns > *, .tc-opt[data-tool] .tc-opttrig')].map(e => { const r = e.getBoundingClientRect(); return Math.round(r.left) + ',' + Math.round(r.top); }).join(' '));
     const before = await layout();
     await page.evaluate(() => [...document.querySelectorAll('.tc-opt[data-tool="mergemed"] .tc-mmo input')].slice(1).forEach(b => { if (b.checked) b.click(); }));
     await page.click('.tc-opt[data-tool="mergemed"] .tc-opttrig');
-    await page.waitForTimeout(400);
+    await until(() => page.evaluate(() => document.getElementById('mbu-toast')?.classList.contains('mbu-toast-on')));
+    await frames(page);
     const after = await layout();
     const st = await page.evaluate(() => {
       const t = document.getElementById('mbu-toast'), tools = document.querySelector('.tc-tools');
@@ -51,7 +52,7 @@ for (const iconOnly of [false, true]) {
         if (!iconOnly) await page.evaluate(a => window.__apolloEditor.pickTool(a), act);
         await page.waitForSelector(`.tc-opt[data-tool="${act}"] .tc-opttrig`, { timeout: 15000 });
         if (!iconOnly) await page.click(`.tc-opt[data-tool="${act}"] .tc-opttrig`, { button: 'right' });   // collapse to a flyout
-        await page.waitForTimeout(300);
+        await until(() => page.evaluate(a => !!document.querySelector(`.tc-opt[data-tool="${a}"].tc-collapsed`), act));
       }
       const flyout = act => page.evaluate(a => {
         const g = document.querySelector(`.tc-opt[data-tool="${a}"]`), f = g && [...g.children].find(c => !c.classList.contains('tc-optname'));
@@ -60,16 +61,16 @@ for (const iconOnly of [false, true]) {
         return { shown: getComputedStyle(f).display !== 'none', h: Math.round(f.getBoundingClientRect().height), labelH: lab ? Math.round(lab.getBoundingClientRect().height) : null, collapsed: g.classList.contains('tc-collapsed') };
       }, act);
       for (const act of ['mergemed', 'splitmed']) {
-        await page.mouse.move(0, 0); await page.waitForTimeout(150);
-        await page.hover(`.tc-opt[data-tool="${act}"] .tc-opttrig`); await page.waitForTimeout(300);
-        const f = await flyout(act);
+        await page.mouse.move(0, 0); await frames(page);
+        await page.hover(`.tc-opt[data-tool="${act}"] .tc-opttrig`);
+        const f = await until(() => flyout(act), f => f && f.shown);
         check(f && f.collapsed && f.shown, `${act}: collapsed, its flyout shows on hover`);
         check(f && f.labelH != null && f.labelH < 26 && f.h < 48, `${act}: one line (label ${f && f.labelH}px, flyout ${f && f.h}px)`);
       }
-      await page.hover('.tc-opt[data-tool="mergemed"] .tc-opttrig'); await page.waitForTimeout(250);
+      await page.hover('.tc-opt[data-tool="mergemed"] .tc-opttrig'); await until(() => flyout('mergemed'), f => f && f.shown);
       await page.click('.tc-opt[data-tool="mergemed"] .tc-mmo input[type=checkbox]');   // keeps the focus
-      await page.hover('.tc-opt[data-tool="splitmed"] .tc-opttrig'); await page.waitForTimeout(300);
-      const m = await flyout('mergemed'), s = await flyout('splitmed');
+      await page.hover('.tc-opt[data-tool="splitmed"] .tc-opttrig');
+      const s = await until(() => flyout('splitmed'), f => f && f.shown), m = await flyout('mergemed');
       check(s.shown && !m.shown, 'hovering Split closes the Merge flyout its focus kept open');
     });
   });

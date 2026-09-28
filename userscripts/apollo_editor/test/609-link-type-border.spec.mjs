@@ -2,7 +2,7 @@
 // — "I can't see where I'm supposed to click to add the relationship type". majkinetor:
 // "Regarding combo, I will add a border." A URL MusicBrainz can't type by itself is added
 // to a sandbox release's editor; nothing is submitted.
-import { test, check, attachShot } from '../../../dev/test/harness.mjs';
+import { test, check, attachShot, until } from '../../../dev/test/harness.mjs';
 import { openApollo, apolloGm } from './ap.mjs';
 
 test.use({ gm: apolloGm(), deviceScaleFactor: 3 });
@@ -13,8 +13,7 @@ test('an untyped link has a visible type combo', { tag: ['@sandbox', '@login'] }
   const input = page.locator('#external-links-editor input[type=url]').last();
   await input.fill('https://example.org/some-page-609');
   await input.press('Tab');
-  await page.waitForTimeout(1500);
-  const sel = await page.evaluate(() => {
+  const sel = await until(() => page.evaluate(() => {
     const row = [...document.querySelectorAll('#external-links-editor tr.external-link-item')].find(tr => /example\.org\/some-page-609/.test(tr.textContent + [...tr.querySelectorAll('input')].map(i => i.value).join(' ')));
     let s = null;
     for (let tr = row && row.nextElementSibling; tr && !tr.classList.contains('external-link-item'); tr = tr.nextElementSibling) { s = tr.querySelector('select'); if (s) break; }
@@ -22,7 +21,7 @@ test('an untyped link has a visible type combo', { tag: ['@sandbox', '@login'] }
     s.scrollIntoView({ block: 'center' });
     const cs = getComputedStyle(s), r = s.getBoundingClientRect();
     return { value: s.value, border: cs.borderTopWidth + ' ' + cs.borderTopStyle, width: Math.round(r.width), height: Math.round(r.height) };
-  });
+  }), s => !!s);   // until MusicBrainz has put the row's type select up
   check(!!sel, 'the new link has a relationship-type combo');
   if (!sel) return;
   check(!sel.value, 'with no type chosen yet (the #609 state)');

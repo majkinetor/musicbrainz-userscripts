@@ -1,5 +1,5 @@
-// The production write guard (#625), shared by the test harness (every spec) and
-// baseline.mjs (the old standalone scripts). No test may write to production
+// The production write guard (#625), installed by the test harness for every
+// spec. No test may write to production
 // MusicBrainz. Three layers:
 //   1. in the page: fetch, XMLHttpRequest, form submits, sendBeacon and the GM
 //      shim refuse any non-GET request to musicbrainz.org / beta.musicbrainz.org;

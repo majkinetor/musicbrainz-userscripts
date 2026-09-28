@@ -18,7 +18,7 @@
 // This pins (1), which is the part that silently drops a cover. Nothing is
 // submitted: every POST is aborted.
 import { readFile } from 'node:fs/promises';
-import { test, check, requireLogin, sourceOf } from '../../../dev/test/harness.mjs';
+import { test, check, requireLogin, sourceOf, idle } from '../../../dev/test/harness.mjs';
 import { join } from 'node:path';
 
 // the script brings its own GM stand-ins, as it did before the harness
@@ -46,11 +46,12 @@ test("cover pick race", { tag: ['@sandbox', '@login'] }, async ({ context, page 
     return route.fallback();
   });
   // Cover measuring goes through GM_xmlhttpRequest (cross-origin). Route it via
-  // Node — AND make it slow, so the race this test is about is guaranteed to be
-  // open when the worker looks at the item, instead of depending on the network
-  // being unlucky.
+  // Node — AND hold it until the run has started, so the race this test is about
+  // is open when the worker looks at the item, rather than depending on timing.
+  let releaseFetch;
+  const fetchHeld = new Promise(r => { releaseFetch = r; });
   await page.exposeFunction('__fetchBytes', async (url) => {
-    await new Promise(r => setTimeout(r, 1500));
+    await fetchHeld;
     const r = await fetch(url);
     if (!r.ok) return { ok: false, status: r.status };
     const buf = Buffer.from(await r.arrayBuffer());
@@ -73,9 +74,9 @@ test("cover pick race", { tag: ['@sandbox', '@login'] }, async ({ context, page 
     catch (e) { if (a >= 3) throw e; await page.waitForTimeout(5000); }
   }
   await requireLogin(page);
-  await page.waitForTimeout(1000);
+  await idle(page);
   await page.addScriptTag({ content: code });
-  await page.waitForTimeout(500);
+  await idle(page);
   await page.click('#falcon-launcher');
   await page.waitForSelector('#falcon-panel', { timeout: 15000 });
 
@@ -103,6 +104,7 @@ test("cover pick race", { tag: ['@sandbox', '@login'] }, async ({ context, page 
   ck(urlAtStart === '', 'the pick really is still in flight when the run begins (otherwise this test proves nothing)');
 
   await page.evaluate(() => window.__falconTest.start());
+  releaseFetch();   // the run has started with the pick still in flight
   await page.waitForFunction(() => window.__falconTest.getQueue().every(i => i.status !== 'queued' && i.status !== 'active'), null, { timeout: 180000 }).catch(() => {});
   const out = await page.evaluate(() => {
     const i = window.__falconTest.getQueue()[0];

@@ -10,7 +10,7 @@
 //
 // Sandbox copies of production releases (their artists were created on the sandbox,
 // without Discogs links); Discogs's answers replayed from a recording (RECORD_WS=1).
-import { test, check, replayWs } from '../../../dev/test/harness.mjs';
+import { test, check, replayWs, until } from '../../../dev/test/harness.mjs';
 import { openApollo, apolloGm } from './ap.mjs';
 
 test.use({ gm: apolloGm() });
@@ -36,15 +36,13 @@ test('a model rebuilt mid-check still gets a badge', { tag: ['@sandbox', '@login
   let grew = false;
   page.on('console', m => { if (/snapshot \+ \d+ newly loaded/.test(m.text())) grew = true; });
   await openApollo(page, inject, { release: '06278b3f-1b45-4355-9b1e-368c5016b831', tab: 'tracklist', settle: 0 });   // Ghana Special 2: 9 → 18 tracks
-  let settled = null, prev = null, stable = 0;
-  for (let i = 0; i < 40 && !settled; i++) {
-    await page.waitForTimeout(700);
-    const b = await badge(page) || { t: '', cls: '' };
-    const checking = /checking/.test(b.t);
-    stable = !checking && b.t === prev ? stable + 1 : 0;
-    prev = b.t;
-    if (!checking && stable >= 2) settled = b;
-  }
+  // MusicBrainz lazy-loads the rest of the tracks and Apollo rebuilds its model mid-check
+  // (it logs "snapshot + N newly loaded"); after that, the badge must reach a result.
+  // One that went blank on the rebuild never would.
+  await until(() => grew, Boolean, { timeout: 30000 });
+  const result = b => b && !/checking/.test(b.t) && /tc-disc-badge|tc-disc-ok|tc-disc-pend/.test(b.cls);
+  const b = await until(() => badge(page), result, { timeout: 30000 });
+  const settled = result(b) ? b : null;
   check(settled && /tc-disc-badge|tc-disc-ok|tc-disc-pend/.test(settled.cls), `the badge settles to a result, not blank (${JSON.stringify(settled)}; rebuilt mid-check: ${grew})`);
   await ws.done();
 });

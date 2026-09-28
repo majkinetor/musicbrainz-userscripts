@@ -1,5 +1,5 @@
 // Shared setup for Art Station's specs.
-import { requireLogin, SANDBOX } from '../../../dev/test/harness.mjs';
+import { requireLogin, SANDBOX, idle } from '../../../dev/test/harness.mjs';
 
 // A sandbox release with four cover-art images (served from beta.coverartarchive.org).
 export const RELEASE = '3a37a35f-1e06-457f-9b2a-46155c5c03ce';
@@ -40,9 +40,9 @@ export async function openArtStation(page, inject, { path = 'cover-art', release
     catch (e) { if (a >= 3) throw e; await page.waitForTimeout(4000); }
   }
   if (path.startsWith('add')) await requireLogin(page);
-  await page.waitForTimeout(500);
+  await idle(page);
   if (before) await before();
   await inject('art_station', { transform });
   await page.waitForSelector('#as-root', { timeout: 20000 });
-  await page.waitForTimeout(500);
+  await idle(page);
 }

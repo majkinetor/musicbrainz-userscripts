@@ -28,7 +28,7 @@
 // visible there, in its active state" (verify-467-item-popup.mjs covers reusing
 // that live iframe from the queue tab's failed-item popup).
 import { readFile } from 'node:fs/promises';
-import { test, check, requireLogin, sourceOf } from '../../../dev/test/harness.mjs';
+import { test, check, requireLogin, sourceOf, idle, frames } from '../../../dev/test/harness.mjs';
 
 // the script brings its own GM stand-ins, as it did before the harness
 test.use({ gm: false });
@@ -56,7 +56,7 @@ test("#467: iframe lifecycle", { tag: ['@sandbox', '@login'] }, async ({ context
     });
     await page.goto('https://test.musicbrainz.org/', { waitUntil: 'load' });
     await requireLogin(page);
-    await page.waitForTimeout(500);
+    await idle(page);
     await page.addScriptTag({ content: code });
     await page.waitForSelector('#falcon-launcher', { timeout: 5000 });
     await page.click('#falcon-launcher');
@@ -82,7 +82,7 @@ test("#467: iframe lifecycle", { tag: ['@sandbox', '@login'] }, async ({ context
     });
     await page.evaluate(() => window.__falconTest.start());
     await page.waitForFunction(() => window.__falconTest.getQueue().every(i => i.status === 'done'), null, { timeout: 20000 });
-    await page.waitForTimeout(300);
+    await frames(page);
     console.log('iframe ids created over the run:', JSON.stringify(iframeIds));
     ck(iframeIds.length === 2, `TWO distinct iframe elements — one per item, never re-navigating a used one (got ${iframeIds.length})`);
     ck(new Set(iframeIds).size === iframeIds.length, 'all created iframe ids are unique (no accidental duplicate reporting)');
@@ -105,7 +105,7 @@ test("#467: iframe lifecycle", { tag: ['@sandbox', '@login'] }, async ({ context
       return route.fallback();
     });
     await page.goto('https://test.musicbrainz.org/', { waitUntil: 'load' });
-    await page.waitForTimeout(500);
+    await idle(page);
     await page.addScriptTag({ content: code });
     await page.waitForSelector('#falcon-launcher', { timeout: 5000 });
     await page.click('#falcon-launcher');
@@ -120,7 +120,7 @@ test("#467: iframe lifecycle", { tag: ['@sandbox', '@login'] }, async ({ context
     });
     await page.evaluate(() => window.__falconTest.start());
     await page.waitForFunction(() => window.__falconTest.getQueue()[0]?.status === 'failed', null, { timeout: 20000 });
-    await page.waitForTimeout(500);
+    await frames(page);
     const retiredCardState = await page.evaluate(() => {
       const card = document.querySelector('.falcon-worker-card[data-retired="1"]');
       return {

@@ -9,7 +9,7 @@
 //
 // test.musicbrainz.org, read-only, with kellnerd's current stylesheet (fetched from
 // GitHub) loaded: no control in the lightbox may be inverted.
-import { test, check, expect, attachShot } from '../../../dev/test/harness.mjs';
+import { test, check, expect, attachShot, until, frames } from '../../../dev/test/harness.mjs';
 import { openArtStation } from './as.mjs';
 
 const STYLE_URL = 'https://raw.githubusercontent.com/kellnerd/userstyles/main/musicbrainz-dark.user.css';
@@ -24,7 +24,8 @@ test("the lightbox's controls are not inverted by a dark userstyle", { tag: ['@s
   const css = raw.slice(raw.indexOf('{', at) + 1, raw.lastIndexOf('}'));
 
   await openArtStation(page, inject, { before: () => page.addStyleTag({ content: css }) });
-  await page.waitForTimeout(2500);
+  // until Art Station has recognised the dark userstyle
+  await until(() => page.evaluate(() => document.documentElement.getAttribute('data-mbu-theme')), t => t === 'dark');
 
   // the fixture: the userstyle really inverts MusicBrainz's own buttons
   const pageBtn = await page.evaluate(() => { const b = [...document.querySelectorAll('button')].find(x => !x.closest('#as-root, #as-lb, #as-setup')); return b ? getComputedStyle(b).filter : null; });
@@ -32,7 +33,8 @@ test("the lightbox's controls are not inverted by a dark userstyle", { tag: ['@s
 
   const opened = await page.evaluate(() => { const th = document.querySelector('.as-thumb'); if (!th) return false; th.click(); return !!document.getElementById('as-lb'); });
   check(opened, 'the lightbox opens from a cover');
-  await page.waitForTimeout(1200);
+  await page.waitForSelector('#as-lb .as-lb-x', { timeout: 10000 }).catch(() => {});
+  await frames(page);
   const items = await page.evaluate(() => {
     const lb = document.getElementById('as-lb');
     return ['.as-lb-play', '.as-lb-x', '.as-lb-type', '.as-lb-dl', '.as-lb-dlcaret', '.as-lb-nav'].map(sel => {

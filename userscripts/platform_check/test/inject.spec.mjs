@@ -15,7 +15,7 @@
 //
 // test.musicbrainz.org, logged in. Nothing is submitted: a press of Enter edit is counted
 // and stopped, and an edit POST would be refused on top of that.
-import { test, check, requireLogin } from '../../../dev/test/harness.mjs';
+import { test, check, until, requireLogin } from '../../../dev/test/harness.mjs';
 
 const REL = '3a37a35f-1e06-457f-9b2a-46155c5c03ce';
 const EDIT = `https://test.musicbrainz.org/release/${REL}/edit`;
@@ -69,10 +69,10 @@ async function openEditor(page, inject, { pending, autocommit = false, withhold 
   await inject('platform_check');
   return run;
 }
-// until the run reports how it went
+// until the run reports how it went; what follows that line (Enter edit, the queue, the
+// banner) each test waits for in the state it checks
 async function finished(run, page, timeout = 60000) {
-  for (const t0 = Date.now(); Date.now() - t0 < timeout; await page.waitForTimeout(250)) if (run.console.some(l => /inject: \d+\/\d+ link\(s\) landed|NOT submitting|crashed/.test(l))) break;
-  await page.waitForTimeout(1500);
+  await until(() => run.console.some(l => /inject: \d+\/\d+ link\(s\) landed|NOT submitting|crashed/.test(l)), Boolean, { timeout });
 }
 const state = page => page.evaluate(rel => ({
   hrefs: [...document.querySelectorAll('tr.external-link-item a[href]')].map(a => a.href),
@@ -88,7 +88,7 @@ test.use({ gm: { name: 'Platform Check', xhr: 'none' } });
 test('#556: every link lands, a rewritten one included, and the add submits', { tag: ['@sandbox', '@login', '@critical'] }, async ({ page, inject }) => {
   const run = await openEditor(page, inject, { autocommit: true, pending: { deezer: DEEZER, tidal: 'https://tidal.com/album/522735526', qobuz: QOBUZ } });
   await finished(run, page);
-  const s = await state(page);
+  const s = await until(() => state(page), s => s.submits === 1 && s.closeMarker === REL && !s.queued);
   for (const id of ['978648191', '522735526', 'uqj72odvp0ofm']) check(s.hrefs.some(h => h.includes(id)), `${id} landed (${s.hrefs.length} rows)`);
   check(!/crashed/.test(s.banner || ''), `no crash (${s.banner})`);
   check(said(run, /inject: 3\/3 link\(s\) landed/), `the run reports it (${said(run, /inject:/)})`);
@@ -100,7 +100,7 @@ test('#556: every link lands, a rewritten one included, and the add submits', { 
 test('#556: a link that cannot land stays queued; the rest are consumed', { tag: ['@sandbox', '@login'] }, async ({ page, inject }) => {
   const run = await openEditor(page, inject, { pending: { deezer: DEEZER, broken: 'not-a-url-at-all' } });
   await finished(run, page);
-  const s = await state(page);
+  const s = await until(() => state(page), s => s.queued && s.queued.broken && !s.queued.deezer);
   check(s.hrefs.some(h => h.includes('978648191')), 'the good one landed');
   check(s.queued && s.queued.broken && !s.queued.deezer, `only the one that didn't land is still queued (${JSON.stringify(s.queued)})`);
 });
@@ -112,7 +112,7 @@ test('#556: nothing landed — no submit, the queue kept, and it says why', { ta
   await page.waitForSelector('#release-editor input#name', { timeout: 30000 });
   await page.evaluate(() => { const i = document.querySelector('#release-editor input#name'); i.value += ' (edited)'; i.dispatchEvent(new Event('input', { bubbles: true })); i.dispatchEvent(new Event('change', { bubbles: true })); });
   await finished(run, page, 45000);
-  const s = await state(page);
+  const s = await until(() => state(page), s => /not submitting/i.test(s.banner || ''));
   check(await page.evaluate(() => window.__withheld()) && s.hrefs.length === 0, 'the links editor was withheld: no row was made');
   check(s.submits === 0, `Enter edit is not pressed (${s.submits})`);
   check(!s.closeMarker, 'the tab does not mark itself to close, so what happened can be seen');
@@ -125,7 +125,7 @@ test('#556: a slow editor still gets its link', { tag: ['@sandbox', '@login'] },
   const run = await openEditor(page, inject, { withhold: 14000, pending: { deezer: DEEZER } });
   const t0 = Date.now();
   await finished(run, page, 60000);
-  const s = await state(page);
+  const s = await until(() => state(page), s => s.hrefs.some(h => h.includes('978648191')));
   check(await page.evaluate(() => window.__withheld()) && Date.now() - t0 > 12000, `the links editor really was withheld (${Date.now() - t0} ms to finish)`);
   check(s.hrefs.some(h => h.includes('978648191')), 'the link lands');
   check(said(run, /inject: 1\/1 link\(s\) landed/) && !said(run, /ever appeared/), `and the run says so (${said(run, /inject:/)})`);
@@ -135,7 +135,8 @@ test('#556: on the "Verifying your browser" page it stands down, the queue untou
   // the editor's URL, answered with MusicBrainz's browser check
   await page.route(EDIT, r => r.fulfill({ status: 200, contentType: 'text/html; charset=utf-8', body: '<!doctype html><title>Verifying your browser</title><noscript>JavaScript is required to access this page</noscript><p>Checking…</p>' }));
   const run = await openEditor(page, inject, { autocommit: true, pending: { deezer: DEEZER } });
-  await page.waitForTimeout(3000);
+  // what it decides, it says: once it has stood down, nothing else follows
+  await until(() => said(run, /standing down/));
   const s = await state(page);
   check(said(run, /standing down/), `it recognises the check and says so (${run.console.join(' | ') || 'nothing said'})`);
   check(s.queued && s.queued.deezer && s.submits === 0 && !s.banner, `and does nothing else: the queue kept, no submit, no banner (${JSON.stringify(s)})`);
@@ -149,8 +150,8 @@ test.describe('with Apollo Editor', () => {
       before: p => inject('apollo_editor', { atStart: true, target: p }),   // as String Theory runs it
     });
     await finished(run, page, 60000);
-    const s = await state(page);
-    const renamed = await page.evaluate(() => [...document.querySelectorAll('#external-links-editor input[type=url]')].some(i => /paste one or more links/i.test(i.placeholder || '')));
+    const s = await until(() => state(page), s => s.hrefs.some(h => h.includes('978648191')));
+    const renamed = await until(() => page.evaluate(() => [...document.querySelectorAll('#external-links-editor input[type=url]')].some(i => /paste one or more links/i.test(i.placeholder || ''))));
     check(renamed, 'Apollo renamed the placeholder to "Paste one or more links" (the case reproduces)');
     check(s.hrefs.some(h => h.includes('978648191')), `the link lands all the same (${said(run, /inject:/)})`);
   });
@@ -162,7 +163,8 @@ test('#423: a digital Bandcamp release gets both link types; a physical-only one
     const run = await openEditor(page, inject, { pending: { bandcamp: BC }, cache: { [`pc:cache:v2:bandcamp:${REL}`]: { url: BC, tracks: 8, format, source: 'test', _t: Date.now() } } });
     await finished(run, page, 45000);
     if (process.env.DBG) console.log(format, run.console.join('\n'));
-    return page.evaluate(() => {
+    // the types are set before the run reports; a row with none chosen yet is re-read
+    return until(() => page.evaluate(() => {
       const row = [...document.querySelectorAll('tr.external-link-item')].find(tr => tr.querySelector('a[href*="remycaset"]'));
       const out = [];
       for (let n = row && row.nextElementSibling; n && n.classList.contains('relationship-item'); n = n.nextElementSibling) {
@@ -170,7 +172,7 @@ test('#423: a digital Bandcamp release gets both link types; a physical-only one
         out.push(sel ? sel.value : (n.textContent.match(/stream for free|purchase for download|download for free/) || ['?'])[0]);
       }
       return out;
-    });
+    }), out => out.length > 0 && out.every(v => v && v !== '?'));
   };
   const digital = await types('Digital, CD');
   check(digital[0] === '85' && digital[1] === '74', `digital: "stream for free" (85) and "purchase for download" (74) (${digital})`);

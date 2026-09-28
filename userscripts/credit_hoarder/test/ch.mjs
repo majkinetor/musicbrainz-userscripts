@@ -1,5 +1,5 @@
 // Shared setup for Credit Hoarder's browser specs.
-import { requireLogin, SANDBOX } from '../../../dev/test/harness.mjs';
+import { requireLogin, SANDBOX, idle } from '../../../dev/test/harness.mjs';
 
 // What Credit Hoarder needs from a manager in these specs: GM_info (edit notes, the
 // summary) and GM storage that remembers nothing. No GM_xmlhttpRequest, so the sources
@@ -17,5 +17,5 @@ export async function openEditor(page, release) {
   }
   await requireLogin(page);
   await page.waitForFunction(() => window.MB && MB.relationshipEditor && MB.relationshipEditor.state && MB.relationshipEditor.state.entity, null, { timeout: 60000 });
-  await page.waitForTimeout(1500);
+  await idle(page);
 }

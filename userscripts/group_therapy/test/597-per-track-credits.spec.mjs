@@ -22,7 +22,7 @@
 // a 2-CD set can all be checked without needing three sandbox releases. The
 // end-to-end half uses the real editor and never submits: every POST to /edit
 // is aborted and asserted zero.
-import { test, check, requireLogin, SANDBOX } from '../../../dev/test/harness.mjs';
+import { test, check, requireLogin, SANDBOX, settled, idle, frames, until } from '../../../dev/test/harness.mjs';
 import { blockEdits } from './gt.mjs';
 
 test.use({ gm: { name: 'Group Therapy' } });
@@ -37,9 +37,9 @@ test('a "(tracks 2,6,9)" clause scopes a credit to those tracks, and nothing els
     catch (e) { if (a >= 3) throw e; console.log('goto retry ' + a); await page.waitForTimeout(4000); }
   }
   await requireLogin(page);
-  await page.waitForTimeout(4000);
+  await settled(page);
   await inject('group_therapy');
-  await page.waitForTimeout(1500);
+  await idle(page);
   check(await page.evaluate(() => !!(window.__groupTherapy && window.__groupTherapy.txpDetectTracks)), 'txpDetectTracks is exported');
 
   // Synthetic row sets, shaped exactly like txpTrackRows() output.
@@ -178,11 +178,11 @@ test('a "(tracks 2,6,9)" clause scopes a credit to those tracks, and nothing els
     set(document.querySelector('.gt-tp-ta'), 'Mbossi Rene: Guitar\nSeckou Keita: Djembe (track 2)');
     set(document.querySelector('.gt-tp-pat'), 'E: R');
   });
-  await page.waitForTimeout(3000);
-  const cells = await page.evaluate(() => [...document.querySelectorAll('.gt-tp-tbl tbody tr')].map(tr => ({
+  // until both lines are parsed and the second one's track clause is read
+  const cells = await until(() => page.evaluate(() => [...document.querySelectorAll('.gt-tp-tbl tbody tr')].map(tr => ({
     role: (tr.querySelectorAll('td')[3] || {}).innerText,
     tracks: ((tr.querySelector('.gt-tp-trk') || {}).innerText || '').trim(),
-  })));
+  }))), c => c.length >= 2 && !!c[1].tracks);
   console.log('   rows: ' + JSON.stringify(cells));
   check(cells.length === 2, 'two rows parsed');
   check(!!cells[1] && cells[1].tracks === '2', 'the tracks column shows "2" for the "(track 2)" row');
@@ -201,16 +201,15 @@ test('a "(tracks 2,6,9)" clause scopes a credit to those tracks, and nothing els
   check(hasDet, 'the Tracks: auto/off control is in the scope pill');
   if (hasDet) {
     await page.selectOption('.gt-tp-det-sel', 'off');
-    await page.waitForTimeout(2500);
-    const offCells = await page.evaluate(() => [...document.querySelectorAll('.gt-tp-tbl tbody tr')].map(tr => ({
+    const offCells = await until(() => page.evaluate(() => [...document.querySelectorAll('.gt-tp-tbl tbody tr')].map(tr => ({
       role: (tr.querySelectorAll('td')[3] || {}).innerText,
       tracks: ((tr.querySelector('.gt-tp-trk') || {}).innerText || '').trim(),
-    })));
+    }))), c => c.every(x => x.tracks === ''));
     console.log('   Tracks: off -> ' + JSON.stringify(offCells));
     check(offCells.every(c => c.tracks === ''), 'with Tracks: off nothing claims a track');
     check(!!offCells[1] && /track 2/i.test(offCells[1].role), 'and the clause is back in the role text, exactly as before #597');
     await page.selectOption('.gt-tp-det-sel', 'auto');
-    await page.waitForTimeout(2500);
+    await frames(page);
   }
 
   // ── 6. the other half of the issue: vertical move by track spec ────────────
@@ -218,12 +217,12 @@ test('a "(tracks 2,6,9)" clause scopes a credit to those tracks, and nothing els
   // them as in Text Pattern scope as selecting checkboxes is slow."
   console.log('\nVERTICAL MOVE (⬆ release → recordings):');
   await page.evaluate(() => { const x = document.querySelector('.gt-tp-x, .gt-cons-x'); if (x) x.click(); });
-  await page.waitForTimeout(500);
+  await frames(page);
   await page.evaluate(() => {
     const b = [...document.querySelectorAll('button')].find(x => /⬆/.test(x.textContent || ''));
     if (b) b.click();
   });
-  await page.waitForTimeout(800);
+  await frames(page);
   const upMenu = await page.evaluate(() => {
     const m = document.querySelector('.gt-menu');
     return m ? { hdr: (m.querySelector('.gt-hdr') || {}).textContent || '', hasInput: !!m.querySelector('.gt-mi-in'),
@@ -258,14 +257,14 @@ test('a "(tracks 2,6,9)" clause scopes a credit to those tracks, and nothing els
     console.log('   (no release-level credits on this release — the field is only on the actionable menu)');
   }
   await page.keyboard.press('Escape');
-  await page.waitForTimeout(400);
+  await frames(page);
 
   console.log('\nVERTICAL MOVE (⬇ recordings → release):');
   await page.evaluate(() => {
     const b = [...document.querySelectorAll('button')].find(x => /⬇/.test(x.textContent || ''));
     if (b) b.click();
   });
-  await page.waitForTimeout(800);
+  await frames(page);
   const downMenu = await page.evaluate(() => {
     const m = document.querySelector('.gt-menu');
     return m ? { hdr: (m.querySelector('.gt-hdr') || {}).textContent || '', hasInput: !!m.querySelector('.gt-mi-in'),
@@ -276,7 +275,7 @@ test('a "(tracks 2,6,9)" clause scopes a credit to those tracks, and nothing els
   check(!!downMenu && /all 3 recordings/.test(downMenu.info),
     'and blank means ALL tracks there — ⬇ never used the tick boxes, so it must not start now — ' + JSON.stringify(downMenu && downMenu.info));
   await page.keyboard.press('Escape');
-  await page.waitForTimeout(300);
+  await frames(page);
 
   check(posts.length === 0, `nothing was submitted (${posts.length} POSTs to /edit)`);
 });

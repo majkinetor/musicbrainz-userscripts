@@ -18,7 +18,7 @@
 // and the attach page. Nothing is fetched from MusicBrainz and nothing is
 // submitted — the attach route only records the URL Falcon would have opened.
 import { readFile, writeFile, mkdir } from 'node:fs/promises';
-import { test, check, requireLogin, sourceOf } from '../../../dev/test/harness.mjs';
+import { test, check, requireLogin, sourceOf, frames, idle, until, settled } from '../../../dev/test/harness.mjs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 const HERE = dirname(fileURLToPath(import.meta.url));
@@ -33,9 +33,6 @@ test("#591: rip log discid", { tag: ['@sandbox', '@login'] }, async ({ context }
 
   // majkinetor's own attachment, committed next to the test so this does not
   // depend on GitHub being reachable on a later run.
-  // ⚠ test/fixtures/, NOT test/logs/ — the latter is gitignored, so a fixture put
-  // there works on this machine and silently turns into a network fetch for
-  // everybody else, in a test whose whole claim is that it touches no network.
   const LOG_DIR = resolve(HERE, 'fixtures');
   const REAL_LOG = resolve(LOG_DIR, 'The.Deadbeats.-.Made.In.The.Shade.log');
   const EXPECT_ID = 'UHvvp8Oyi0D5QEK.qYfeX7GrcLw-';
@@ -240,7 +237,7 @@ test("#591: rip log discid", { tag: ['@sandbox', '@login'] }, async ({ context }
     const r = { id: '9XSS5W9GpTC6mVNa1ARWrddUGaM-', tocString: '1+17+343468+150+10902+38417', tracks: 17 };
     window.__falconTest.goAttach(r, '9b3fe0b2-d286-437c-b13c-2943f90780b4', 1, undefined);
   });
-  await page2.waitForTimeout(900);
+  await until(() => attachHits.length, n => n > 0);   // it navigates: the request is what shows it went
   console.log('\nattach url (no medium id):', attachHits[0]);
   ck(attachHits.length === 1, 'the drop navigates to the attach page');
   const u1 = new URL(attachHits[0] || 'https://x/');
@@ -274,7 +271,7 @@ test("#591: rip log discid", { tag: ['@sandbox', '@login'] }, async ({ context }
   ck(scraped['1'] === 3374577, `the medium's internal id is read off the page's own Remove/Move links (${JSON.stringify(scraped)})`);
   attachHits.length = 0;
   await page3.evaluate(() => window.__falconTest.goAttach({ id: 'ID', tocString: '1+17+343468+150', tracks: 17 }, '9b3fe0b2-d286-437c-b13c-2943f90780b4', 1, '3374577'));
-  await page3.waitForTimeout(900);
+  await until(() => attachHits.length, n => n > 0);   // it navigates: the request is what shows it went
   console.log('attach url (medium id known):', attachHits[0]);
   const u2 = new URL(attachHits[0] || 'https://x/');
   ck(u2.searchParams.get('medium') === '3374577', 'it goes straight to that medium — MusicBrainz renders the confirmation, not the picker');
@@ -304,7 +301,9 @@ test("#591: rip log discid", { tag: ['@sandbox', '@login'] }, async ({ context }
   attachHits.length = 0;
   await page2.evaluate(() => window.__falconTest.goAttachResolved(
     { id: 'ID', tocString: '1+17+343468+150', tracks: 17 }, '9b3fe0b2-d286-437c-b13c-2943f90780b4', 3, undefined, null));
-  await page2.waitForTimeout(1500);
+  // it may ask the picker first; the last request once the network is quiet is where it landed
+  await until(() => attachHits.length, n => n > 0);
+  await settled(page2);
   const last = attachHits[attachHits.length - 1] || '';
   console.log('landed on:', last);
   ck(/[?&]medium=1123588/.test(last), 'a drop goes straight to the confirmation for the right medium');
@@ -327,13 +326,14 @@ test("#591: rip log discid", { tag: ['@sandbox', '@login'] }, async ({ context }
   attachHits.length = 0;
   // landing on the picker WITH falcon-medium: Falcon must tick the radio and press Attach
   await pPick.goto(`https://test.musicbrainz.org/cdtoc/attach?toc=1+17+343468+150&falcon-medium=3&filter-release.query=${MBID}`, { waitUntil: 'load' });
-  await pPick.waitForTimeout(2500);
+  // Falcon ticks the medium and presses Attach once the page is in: the confirmation it lands on
+  await pPick.waitForURL(/[?&]medium=\d+/, { timeout: 20000 }).catch(() => {});
   console.log('\nafter the picker:', pPick.url());
   ck(/[?&]medium=1123588/.test(pPick.url()),
     'landing on the picker anyway, Falcon selects the right medium and presses "Attach CD TOC"');
   // …and the confirmation page gets signed
   await pPick.waitForFunction(() => !!document.querySelector('textarea.edit-note'), null, { timeout: 10000 }).catch(() => {});
-  await pPick.waitForTimeout(800);
+  await frames(pPick);
   const note = await pPick.evaluate(() => (document.querySelector('textarea.edit-note') || {}).value || '');
   console.log('edit note:', JSON.stringify(note));
   ck(/Falcon v/.test(note), `the final edit note carries Falcon's signature — "${note.split(String.fromCharCode(10))[0]}"`);

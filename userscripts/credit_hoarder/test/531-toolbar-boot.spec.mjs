@@ -12,7 +12,7 @@
 // It no longer does, and a late Titles result still reaches the toolbar.
 //
 // test.musicbrainz.org, read-only.
-import { test, check, requireLogin, SANDBOX } from '../../../dev/test/harness.mjs';
+import { test, check, requireLogin, SANDBOX, until, idle } from '../../../dev/test/harness.mjs';
 
 const GM_INFO = "window.GM_info = window.GM_info || { script: { name: 'CH (test)', version: 'test' }, scriptHandler: 'Playwright', version: 'test' };\n";
 const NIGHT_ILLUSION = `${SANDBOX}/release/fdb4fbd8-fcc9-4469-b3a4-a91c1975dde5/edit-relationships`;   // one Discogs link, no remixes
@@ -25,7 +25,7 @@ async function open(page, url) {
     catch (e) { if (a >= 3) throw e; await page.waitForTimeout(4000); }
   }
   await requireLogin(page);
-  await page.waitForTimeout(500);
+  await idle(page);
 }
 const consoleOf = page => { const lines = []; page.on('console', m => { if (m.text().includes('[credit_hoarder]')) lines.push(m.text()); }); return lines; };
 
@@ -34,10 +34,10 @@ test('boot is logged phase by phase, to the console too, with the real link coun
   await open(page, NIGHT_ILLUSION);
   await inject('credit_hoarder', { transform: code => GM_INFO + code });
   check(await page.waitForSelector('.discogs-bar', { timeout: 40000 }).then(() => true).catch(() => false), 'the toolbar mounts');
-  await page.waitForTimeout(500);
 
   check(consoleLines.some(l => /Boot: script running/.test(l)), `the log is mirrored to the console from the first line, before the bar exists (${consoleLines.length} lines)`);
-  const logText = (await page.locator('.discogs-output').textContent().catch(() => '')) || '';
+  // until the boot has logged its last line: the sources found on the release
+  const logText = await until(async () => (await page.locator('.discogs-output').textContent().catch(() => '')) || '', t => /import source\(s\) from \d+ link\(s\)/.test(t) && /MusicBrainz returned/.test(t));
   for (const p of ['Boot: script running', 'Boot: DOM ready', 'Boot: source probe done', 'Boot: toolbar mounted']) {
     check(logText.includes(p) || consoleLines.some(l => l.includes(p)), `phase logged: "${p}"`);
   }

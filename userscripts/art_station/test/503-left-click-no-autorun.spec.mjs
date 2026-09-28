@@ -6,7 +6,7 @@
 //
 // test.musicbrainz.org, with "Dry run" ticked in the injected copy, so a run only
 // previews; the write endpoints are stubbed and recorded as well.
-import { test, check } from '../../../dev/test/harness.mjs';
+import { test, check, until } from '../../../dev/test/harness.mjs';
 import { openArtStation } from './as.mjs';
 
 test.use({ gm: { name: 'Art Station' } });
@@ -30,8 +30,7 @@ test('a left click opens the plan without running it; a right click still runs i
   await card.locator('.as-pencil').click();
   await card.locator('.as-cmt').fill('as503dryrun-' + Date.now());
   await card.locator('.as-cmt').blur();
-  await page.waitForTimeout(300);
-  check(await page.evaluate(() => !document.querySelector('.as-commit').disabled), 'a staged comment enables the commit button');
+  check(await until(() => page.evaluate(() => !document.querySelector('.as-commit').disabled)), 'a staged comment enables the commit button');
 
   // A run starts two animation frames after the review window paints (the right-click
   // path's own wait), so "it has not started" is read after those frames, not a sleep.

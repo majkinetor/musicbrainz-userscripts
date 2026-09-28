@@ -10,7 +10,7 @@
 //
 // Nothing is submitted: every POST is aborted.
 import { readFile } from 'node:fs/promises';
-import { test, check, requireLogin, sourceOf } from '../../../dev/test/harness.mjs';
+import { test, check, requireLogin, sourceOf, idle, frames } from '../../../dev/test/harness.mjs';
 import { join } from 'node:path';
 
 // the script brings its own GM stand-ins, as it did before the harness
@@ -38,12 +38,12 @@ test("#573: batch note", { tag: ['@sandbox', '@login'] }, async ({ context, page
     catch (e) { if (a >= 3) throw e; await page.waitForTimeout(5000); }
   }
   await requireLogin(page);
-  await page.waitForTimeout(1200);
+  await idle(page);
   await page.addScriptTag({ content: code });
-  await page.waitForTimeout(500);
+  await idle(page);
   await page.click('#falcon-launcher');
   await page.waitForSelector('#falcon-panel', { timeout: 15000 });
-  await page.waitForTimeout(400);
+  await frames(page);
 
   // ── where it sits ───────────────────────────────────────────────────────────
   const layout = await page.evaluate(() => {
@@ -65,14 +65,14 @@ test("#573: batch note", { tag: ['@sandbox', '@login'] }, async ({ context, page
   ck(layout.panelHidden, 'closed until asked for');
 
   await page.click('#falcon-note-btn');
-  await page.waitForTimeout(250);
+  await frames(page);
   ck(await page.isVisible('#falcon-notepanel'), 'clicking the button opens the panel');
   ck(await page.isVisible('#falcon-note-text'), 'which holds the text box');
 
   // ── typing it sets it ───────────────────────────────────────────────────────
   const REASON = 'Conforming titles to the series standard (#573 check)';
   await page.fill('#falcon-note-text', REASON);
-  await page.waitForTimeout(200);
+  await frames(page);
   ck(await page.evaluate(() => window.__falconTest.batchNote()) === REASON, 'typing in the box sets the batch note');
   const marked = await page.evaluate(() => {
     const b = document.getElementById('falcon-note-btn');

@@ -12,7 +12,7 @@
 // This test is the regression guard: run a batch while the Queue tab is the
 // active one (i.e. Workers pane hidden) and require it to commit normally.
 import { readFile } from 'node:fs/promises';
-import { test, check, requireLogin, sourceOf } from '../../../dev/test/harness.mjs';
+import { test, check, requireLogin, sourceOf, idle } from '../../../dev/test/harness.mjs';
 import { join } from 'node:path';
 
 // the script brings its own GM stand-ins, as it did before the harness
@@ -38,7 +38,7 @@ test("#467: hidden workers", { tag: ['@sandbox', '@login'] }, async ({ context, 
   });
   await page.goto('https://test.musicbrainz.org/', { waitUntil: 'load' });
   await requireLogin(page);
-  await page.waitForTimeout(500);
+  await idle(page);
   await page.addScriptTag({ content: code });
   await page.waitForFunction(() => !!window.__falconTest, { timeout: 5000 });
   await page.click('#falcon-launcher');

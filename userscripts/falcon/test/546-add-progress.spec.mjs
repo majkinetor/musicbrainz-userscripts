@@ -16,7 +16,7 @@
 // the test off production's back — it is test.musicbrainz.org, and every POST
 // is aborted and asserted at zero, so nothing is ever submitted.
 import { readFile } from 'node:fs/promises';
-import { test, check, requireLogin, sourceOf } from '../../../dev/test/harness.mjs';
+import { test, check, requireLogin, sourceOf, idle as pageIdle, frames, until } from '../../../dev/test/harness.mjs';
 import { join } from 'node:path';
 
 // the script brings its own GM stand-ins, as it did before the harness
@@ -51,12 +51,12 @@ test("#546: add progress", { tag: ['@sandbox', '@login'] }, async ({ context, pa
     catch (e) { if (a >= 4) throw e; console.log('goto retry ' + a); await page.waitForTimeout(4000); }
   }
   await requireLogin(page);
-  await page.waitForTimeout(1200);
+  await pageIdle(page);
   await page.addScriptTag({ content: code });
-  await page.waitForTimeout(600);
+  await pageIdle(page);
   await page.click('#falcon-launcher');
   await page.waitForSelector('#falcon-panel', { timeout: 15000 });
-  await page.waitForTimeout(400);
+  await frames(page);
 
   const readBtn = () => page.evaluate(() => {
     const b = document.getElementById('falcon-add-page');
@@ -122,8 +122,7 @@ test("#546: add progress", { tag: ['@sandbox', '@login'] }, async ({ context, pa
   ck(busy && /log/i.test(busy.title || ''), 'with a tooltip pointing at the log — ' + JSON.stringify(busy && busy.title));
 
   // ── the 5s heartbeat, so a 40s wait is not 40s of silence ───────────────────
-  await page.waitForTimeout(6200);
-  const mid = await readLog();
+  const mid = await until(readLog, l => l.some(x => /still waiting on MusicBrainz/i.test(x)), { timeout: 15000 });
   const beats = mid.filter(l => /still waiting on MusicBrainz/i.test(l));
   console.log('heartbeat lines: ' + JSON.stringify(beats));
   ck(beats.length >= 1, 'it keeps saying it is still waiting while the request is out');

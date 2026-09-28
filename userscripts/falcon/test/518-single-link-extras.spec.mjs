@@ -4,7 +4,7 @@
 // branch — an item with exactly one link silently hid whichever of those
 // it also carried. Same bug existed for >1 links too, fixed alongside it.
 import { readFile } from 'node:fs/promises';
-import { test, check, requireLogin, sourceOf } from '../../../dev/test/harness.mjs';
+import { test, check, requireLogin, sourceOf, frames } from '../../../dev/test/harness.mjs';
 
 // the script brings its own GM stand-ins, as it did before the harness
 test.use({ gm: false });
@@ -39,7 +39,7 @@ test("#518: single link extras", { tag: ['@sandbox', '@login'] }, async ({ conte
     // >1 links + ISRC — same fix applies there too.
     { id: '4', entityType: 'recording', mbid: 'aaaaaaaa-5180-0000-0000-000000000004', urls: [{ url: 'https://a.com/4' }, { url: 'https://b.com/4' }], isrcs: ['GBUM71505078'], disambiguation: '', cover: [], status: 'queued', error: '' },
   ]));
-  await page.waitForTimeout(150);
+  await frames(page);
 
   const rows = await page.evaluate(() => Object.fromEntries([...document.querySelectorAll('.falcon-row')].map(r => [r.dataset.id, r.querySelector('div').textContent])));
   console.log('row text:', JSON.stringify(rows, null, 2));

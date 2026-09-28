@@ -7,7 +7,7 @@
 //
 // Runs against test.musicbrainz.org and never submits: every POST to /edit is
 // aborted and asserted zero at the end.
-import { test, check, requireLogin, SANDBOX } from '../../../dev/test/harness.mjs';
+import { test, check, requireLogin, SANDBOX, settled, idle, frames } from '../../../dev/test/harness.mjs';
 import { blockEdits } from './gt.mjs';
 
 test.use({ gm: { name: 'Group Therapy' } });
@@ -20,11 +20,11 @@ test('the text parser: maximized window, create seeding, places, presets', { tag
     catch (e) { if (a >= 3) throw e; console.log('goto retry ' + a); await page.waitForTimeout(4000); }
   }
   await requireLogin(page);
-  await page.waitForTimeout(4000);
+  await settled(page);
 
   const posts = await blockEdits(page);
   await inject('group_therapy');
-  await page.waitForTimeout(800);
+  await idle(page);
 
   // open the text parser
   await page.evaluate(() => {
@@ -32,7 +32,7 @@ test('the text parser: maximized window, create seeding, places, presets', { tag
     if (b) b.click();
   });
   await page.waitForSelector('.gt-tp', { timeout: 15000 });
-  await page.waitForTimeout(400);
+  await frames(page);
 
   // ── 4. presets ──────────────────────────────────────────────────────────────
   const presets = await page.locator('.gt-tp-presets .gt-tp-chip').allTextContents();
@@ -51,7 +51,7 @@ test('the text parser: maximized window, create seeding, places, presets', { tag
     const pat = document.querySelector('.gt-tp-pat');
     if (pat) { pat.value = 'R by E[&]'; pat.dispatchEvent(new Event('input', { bubbles: true })); }
   });
-  await page.waitForTimeout(700);
+  await frames(page);
   const rows = await page.locator('.gt-tp-row, .gt-tp-tbl tbody tr').count();
   console.log('rows after "R by E[&]": ' + rows);
   check(rows >= 2, 'the "&" split produces a row per entity (' + rows + ')');
@@ -93,7 +93,7 @@ test('the text parser: maximized window, create seeding, places, presets', { tag
     const pat = document.querySelector('.gt-tp-pat');
     if (pat) { pat.value = 'R: E'; pat.dispatchEvent(new Event('input', { bubbles: true })); }
   });
-  await page.waitForTimeout(900);
+  await frames(page);
   // role classification happens in the Resolve pass, not on keystroke
   await page.evaluate(() => {
     const b = [...document.querySelectorAll('.gt-tp button')].find(x => /Match|Resolv/i.test(x.textContent || ''));
@@ -103,7 +103,7 @@ test('the text parser: maximized window, create seeding, places, presets', { tag
     const b = [...document.querySelectorAll('.gt-tp button')].find(x => /Match|Resolv/i.test(x.textContent || ''));
     return b && !/Resolving/i.test(b.textContent);
   }, null, { timeout: 30000 }).catch(() => {});
-  await page.waitForTimeout(1500);
+  await frames(page);
   const typeCell = await page.evaluate(() => {
     const t = document.querySelector('.gt-tp-tbl');
     return t ? t.textContent.replace(/\s+/g, ' ').slice(0, 400) : '';

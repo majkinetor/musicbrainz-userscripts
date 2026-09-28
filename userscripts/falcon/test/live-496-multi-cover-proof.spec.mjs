@@ -9,7 +9,7 @@
 // uploadOneCover is called directly — not wrapped, not stubbed.
 import zlib from 'node:zlib';
 import { readFile } from 'node:fs/promises';
-import { test, check, requireLogin, sourceOf } from '../../../dev/test/harness.mjs';
+import { test, check, requireLogin, sourceOf, until } from '../../../dev/test/harness.mjs';
 
 /// the harness's GM storage; the spec answers GM_xmlhttpRequest itself, below
 test.use({ gm: { name: 'Falcon' } });
@@ -91,12 +91,12 @@ test("live 496 multi cover proof", { tag: ['@sandbox', '@login'] }, async ({ con
 
   // read the entity BACK via MB's own API — per "faked submits prove nothing",
   // this is what actually proves the covers landed, not just that a request left the browser.
-  await page.waitForTimeout(1500);
-  const caa = await page.evaluate(async (mbid) => {
+  // the archive's index lags an upload: asked until the covers show, every 3 s
+  const caa = await until(() => page.evaluate(async (mbid) => {
     const r = await fetch(`https://coverartarchive.org/release/${mbid}`, { headers: { Accept: 'application/json' } }).catch(() => null);
     if (!r || !r.ok) return null;
     return r.json();
-  }, TEST_RELEASE);
+  }, TEST_RELEASE), c => c && (c.images || []).length > 0, { timeout: 120000, every: 3000 });
   console.log('\n── Cover Art Archive read-back (proof) ──');
   console.log(JSON.stringify(caa, null, 1));
 

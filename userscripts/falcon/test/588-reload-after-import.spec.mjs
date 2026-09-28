@@ -19,7 +19,7 @@
 // ⚠ Routed on one narrow regex, never a catch-all: a catch-all route is what
 // made production MusicBrainz load as chrome-error in an earlier session.
 import { readFile } from 'node:fs/promises';
-import { test, check, requireLogin, sourceOf } from '../../../dev/test/harness.mjs';
+import { test, check, requireLogin, sourceOf, frames } from '../../../dev/test/harness.mjs';
 import { join } from 'node:path';
 
 // the script brings its own GM stand-ins, as it did before the harness
@@ -105,7 +105,7 @@ test("#588: reload after import", { tag: ['@sandbox', '@login'] }, async ({ cont
     await seedQueue(p, statuses);
     const before = p.url();
     await p.evaluate(() => window.__falconTest.maybeReloadReleasePage());
-    await p.waitForTimeout(600);
+    await frames(p);
     ck(p.url() === before, `${name}: the page is left alone (${p.url().replace(RELEASE, '…')})`);
     if (re) {
       const lines = await p.evaluate(() => window.__falconTest.getLog().join('\n'));
@@ -117,9 +117,11 @@ test("#588: reload after import", { tag: ['@sandbox', '@login'] }, async ({ cont
   const pNot = await open('https://test.musicbrainz.org/release/' + MBID + '/cover-art', ON);
   // (the route serves the same fixture for this path; the pathname is what matters)
   await seedQueue(pNot, ['done']);
-  await pNot.evaluate(() => window.__falconTest.maybeReloadReleasePage());
-  await pNot.waitForTimeout(500);
-  ck(/cover-art/.test(pNot.url()), 'a page that is not the release page itself is not reloaded either');
+  // The decision is made, and logged, inside this one call: "not a release page",
+  // or "reloading <url>". Read it there, since a reload keeps this very URL (the
+  // old check compared URLs, and passed while every subpage was being reloaded).
+  const notSaid = await pNot.evaluate(() => { window.__falconTest.maybeReloadReleasePage(); return window.__falconTest.getLog().map(String).join('\n'); });
+  ck(/not a release page/.test(notSaid) && !/reloading /.test(notSaid), 'a page that is not the release page itself is not reloaded either');
   await pNot.close();
 
   /* ── 2. a clean run reloads, and drops the spent token ─────────────────────── */

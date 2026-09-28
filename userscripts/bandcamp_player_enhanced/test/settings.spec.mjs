@@ -8,7 +8,7 @@
 // - Scale (70–130%): CSS zoom on the bar. The page's top padding and the dropdown and
 //   panel offsets follow the bar's real height, and the panel itself keeps its size.
 //   The font stack no longer leads with Courier New.
-import { test, check } from '../../../dev/test/harness.mjs';
+import { test, check, until, idle, frames } from '../../../dev/test/harness.mjs';
 
 const ALBUM = 'https://phoebebridgers.bandcamp.com/album/punisher';
 // Bandcamp's own player logs this when a play() is cut short; not ours
@@ -16,10 +16,10 @@ const PLAY_ABORT = 'play\\(\\) request was interrupted by a call to pause\\(\\)'
 test.use({ profile: 'fresh', gm: { name: 'Bandcamp Player Enhanced', persist: true }, pageErrors: [PLAY_ABORT] });
 
 async function load(page, inject) {
-  await page.waitForTimeout(500);
+  await idle(page);
   await inject('bandcamp_player_enhanced');
   await page.waitForSelector('#bc-sticky-player', { timeout: 15000 });
-  await page.waitForTimeout(500);
+  await frames(page);   // the page's padding follows the bar's height a frame later
 }
 
 test('theme, hidden parts and scale apply at once and survive a reload', { tag: ['@web', '@critical'] }, async ({ page, inject }) => {
@@ -51,8 +51,7 @@ test('theme, hidden parts and scale apply at once and survive a reload', { tag: 
   check(!/^courier/i.test(d.font), `the font stack doesn't lead with Courier New (${d.font})`);
 
   await page.click('#bcp-settings');
-  await page.waitForTimeout(150);
-  const opened = await state();
+  const opened = await until(state, s => s.panelOpen);
   check(opened.panelOpen, 'the gear opens the settings panel');
   check(opened.boxes.player === true, 'the "Native player" box is ticked by default');
 
@@ -61,8 +60,7 @@ test('theme, hidden parts and scale apply at once and survive a reload', { tag: 
   await page.click('#bcp-opt-tracklist');
   await page.fill('#bcp-opt-scale', '70');
   await page.dispatchEvent('#bcp-opt-scale', 'input');
-  await page.waitForTimeout(200);
-  const live = await state();
+  const live = await until(state, s => s.bg === 'rgb(20, 20, 20)' && s.tracklist === false);
   check(live.bg === 'rgb(20, 20, 20)' && !live.light, `Dark applies at once (${live.bg})`);
   check(live.tracklist === false && live.player === false && live.tags === true, `ticking "Track list" hides it and nothing else (${live.player}, ${live.tracklist}, ${live.tags})`);
   check(live.barHeight < d.barHeight, `at 70% the bar is smaller (${live.barHeight} < ${d.barHeight})`);
@@ -73,13 +71,12 @@ test('theme, hidden parts and scale apply at once and survive a reload', { tag: 
 
   // a click outside closes the panel (#bcp-time: #bcp-info and #bcp-title keep their clicks for the dropdown)
   await page.click('#bcp-time');
-  await page.waitForTimeout(150);
-  check(!(await state()).panelOpen, 'a click outside closes the panel');
+  check(!(await until(state, s => !s.panelOpen)).panelOpen, 'a click outside closes the panel');
 
   // …and all of it survives a reload
   await page.reload({ waitUntil: 'domcontentloaded' });
   await load(page, inject);
-  const after = await state();
+  const after = await until(state, s => s.boxes.dark);
   check(after.bg === 'rgb(20, 20, 20)' && after.boxes.dark, `the dark theme survives a reload (${after.bg}, radio ${after.boxes.dark})`);
   check(after.tracklist === false && after.boxes.tracklist, `the hidden track list survives a reload (${after.tracklist}, box ${after.boxes.tracklist})`);
   check(after.player === false && after.tags === true, 'the untouched parts keep their defaults');
@@ -87,8 +84,6 @@ test('theme, hidden parts and scale apply at once and survive a reload', { tag: 
 
   // and back to Light
   await page.click('#bcp-settings');
-  await page.waitForTimeout(150);
   await page.click('#bcp-opt-theme-light');
-  await page.waitForTimeout(150);
-  check((await state()).bg === 'rgb(255, 255, 255)', 'switching back to Light works');
+  check((await until(state, s => s.bg === 'rgb(255, 255, 255)')).bg === 'rgb(255, 255, 255)', 'switching back to Light works');
 });

@@ -11,12 +11,15 @@
 //
 // test.musicbrainz.org, read-only: MusicBrainz's reveal is simulated on the cover-art
 // page, which has the same #content structure mount() works on.
-import { test, check } from '../../../dev/test/harness.mjs';
+import { test, check, until } from '../../../dev/test/harness.mjs';
 import { openArtStation } from './as.mjs';
 
 test.use({ gm: { name: 'Art Station' } });
 
 test("MusicBrainz's Internet Archive warning shows in the gallery, and stays", { tag: ['@sandbox'] }, async ({ page, inject }) => {
+  // a fake clock: the observer's 200 ms debounce is passed exactly, and "the banner
+  // stays" is read after the re-check that would have removed it
+  await page.clock.install();
   await openArtStation(page, inject);
 
   // MusicBrainz's markup, added after mount(), hidden as it starts
@@ -32,13 +35,13 @@ test("MusicBrainz's Internet Archive warning shows in the gallery, and stays", {
 
   // revealed the way jQuery's .toggle() does it: an attribute change
   await page.evaluate(() => { document.getElementById('test-ia-wrap').style.display = ''; });
-  await page.waitForTimeout(600);   // past the observer's 200 ms debounce
-  const shown = await banner();
+  await page.clock.runFor(1500);   // past the observer's 200 ms debounce, and the 1 s poll
+  const shown = await until(banner, b => !!b, { timeout: 5000 });
   check(/experiencing difficulties/i.test(shown || ''), `Art Station's banner appears once MusicBrainz reveals the warning (${JSON.stringify(shown)})`);
 
   // a React re-render puts it back to hidden; the banner stays
   await page.evaluate(() => { document.getElementById('test-ia-wrap').style.display = 'none'; });
-  await page.waitForTimeout(600);
+  await page.clock.runFor(1500);
   const latched = await banner();
   check(/experiencing difficulties/i.test(latched || ''), `the banner stays when MusicBrainz hides the warning again (${JSON.stringify(latched)})`);
 });

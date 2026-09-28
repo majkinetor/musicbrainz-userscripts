@@ -13,6 +13,7 @@ const REL = '89efad71-65d2-4f96-bc55-d69ad147bae2';
 
 for (const pending of [true, false]) {
   test(`${pending ? 'open edits: the name is highlighted' : 'no open edits: no highlight'}`, { tag: ['@sandbox', '@login'] }, async ({ page, inject }) => {
+    await page.clock.install();   // the nav sync tick is run out on it
     await openApollo(page, inject, {
       release: REL,
       before: () => page.evaluate(pending => {
@@ -22,7 +23,7 @@ for (const pending of [true, false]) {
       }, pending),
     });
     await page.waitForSelector('#tc-nav-title .tc-nav-title-name', { timeout: 30000 });
-    await page.waitForTimeout(900);   // a nav sync tick
+    await page.clock.runFor(1500);   // a nav sync tick
     const s = await page.evaluate(() => ({
       native: !!document.querySelector('.releaseheader h1 .mp'),
       marked: !!document.getElementById('tc-nav-title')?.classList.contains('tc-nav-title-pending'),

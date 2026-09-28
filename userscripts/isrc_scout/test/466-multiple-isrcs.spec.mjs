@@ -8,7 +8,7 @@
 //
 // test.musicbrainz.org (a copy of the release), with production's data
 // (fixtures/ws-466.json.gz). Only Qobuz is faked.
-import { test, check, answerGm } from '../../../dev/test/harness.mjs';
+import { test, check, answerGm, until } from '../../../dev/test/harness.mjs';
 import { openScout } from './is.mjs';
 
 const TRACKS = ['Fuck You!', '65Chambers', 'Azz Blown Off', '3x', '6 Fuß Tiefe', 'Für die Ghulz Pt.2', 'Was Du Brauchzt', 'NordBerliner', 'Brain Dead', 'Mach Platz!', 'Who You Think?!', "Wo Wir Häng'", 'EBK'];
@@ -24,11 +24,10 @@ test('a recording is looked up by each of its ISRCs, not only the first', { tag:
   const ws = await openScout(page, inject, { release: 'b0a00236-e218-47ae-9d38-ec96f3fe9fff', replay: new URL('./fixtures/ws-466.json.gz', import.meta.url) });
   await page.waitForFunction(() => !!window.__isrcScoutTest466, null, { timeout: 5000 });
   await page.evaluate(async () => { const { PROV, resolveProvider } = window.__isrcScoutTest466; await resolveProvider(PROV.find(p => p.code === 'qz')); });
-  await page.waitForTimeout(500);
-  const r = await page.evaluate(() => {
+  const r = await until(() => page.evaluate(() => {
     const get = i => { const el = document.querySelector(`tr[data-idx="${i}"] .ii-tl-add .ii-tl[data-code="qz"]`); return el ? { cls: el.className, href: el.getAttribute('href') } : null; };
     return { t8: get(7), t10: get(9) };
-  });
+  }), r => r.t8 && r.t10);
   check(qobuz === 1, `one Qobuz album call serves all 13 tracks (${qobuz})`);
   check(r.t8 && r.t8.cls.includes('new') && /open\.qobuz\.com\/track\/900007/.test(r.t8.href || ''), `track 8 resolves through its second ISRC (${JSON.stringify(r.t8)})`);
   check(r.t10 && r.t10.cls.includes('new') && /open\.qobuz\.com\/track\/900009/.test(r.t10.href || ''), `track 10 too (${JSON.stringify(r.t10)})`);

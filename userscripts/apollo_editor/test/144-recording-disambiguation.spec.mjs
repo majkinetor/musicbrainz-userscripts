@@ -2,7 +2,7 @@
 // and the picker's header reads "title - artist … length", the length right-aligned.
 // The disambiguation comes from the linked recording's own `comment` (no extra fetch), so
 // one is given to the first recording here.
-import { test, check } from '../../../dev/test/harness.mjs';
+import { test, check, frames } from '../../../dev/test/harness.mjs';
 import { openApollo, apolloGm, toTab } from './ap.mjs';
 
 test.use({ gm: apolloGm() });
@@ -23,7 +23,7 @@ test('the disambiguation shows in the table and the picker', { tag: ['@sandbox',
 
   await page.evaluate(cell => document.querySelector(cell).click(), cell);
   await page.waitForSelector('.tc-recpop .tc-rpk-hd', { timeout: 10000 });
-  await page.waitForTimeout(120);
+  await frames(page);
   const p = await page.evaluate(() => {
     const cur = document.querySelector('.tc-recpop .tc-rpk-cur'), hd = document.querySelector('.tc-recpop .tc-rpk-hd'), len = document.querySelector('.tc-recpop .tc-rpk-hdlen');
     return {

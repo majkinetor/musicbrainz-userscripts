@@ -5,7 +5,7 @@
 // 2. in work summary at the end of the log, add what was done the same as
 // shown in collapsed queue (e.g. 2 link, isrc)."
 import { readFile } from 'node:fs/promises';
-import { test, check, requireLogin, sourceOf } from '../../../dev/test/harness.mjs';
+import { test, check, requireLogin, sourceOf, frames } from '../../../dev/test/harness.mjs';
 import { join, resolve } from 'node:path';
 
 // the script brings its own GM stand-ins, as it did before the harness
@@ -87,12 +87,12 @@ test("#512: historic logs", { tag: ['@sandbox', '@login'] }, async ({ context, p
   await page.click('#falcon-launcher');
   await page.waitForSelector('#falcon-panel', { timeout: 5000 });
   await page.click('#falcon-tab-log');
-  await page.waitForTimeout(200);
+  await frames(page);
   await page.evaluate(() => {
     navigator.clipboard.writeText = (t) => { window.__copiedText = t; return Promise.resolve(); };
   });
   await page.click('#falcon-log-copy');
-  await page.waitForTimeout(200);
+  await frames(page);
   const copied = await page.evaluate(() => window.__copiedText);
   console.log('copied text starts with:', JSON.stringify((copied || '').slice(0, 80)));
   ck(/^<details><summary>Falcon log \(v[^,]+, current session, \d+ lines\)<\/summary>/.test(copied || ''), `copy wraps in <details> with a session label (got "${(copied || '').slice(0, 120)}")`);

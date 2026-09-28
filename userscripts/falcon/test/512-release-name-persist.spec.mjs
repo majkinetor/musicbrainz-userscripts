@@ -8,7 +8,7 @@
 // name is now also stashed in its own small, never-trimmed key the moment
 // it's known.
 import { readFile } from 'node:fs/promises';
-import { test, check, requireLogin, sourceOf } from '../../../dev/test/harness.mjs';
+import { test, check, requireLogin, sourceOf, frames } from '../../../dev/test/harness.mjs';
 
 // the script brings its own GM stand-ins, as it did before the harness
 test.use({ gm: false });
@@ -85,7 +85,7 @@ test("#512: release name persist", { tag: ['@sandbox', '@login'] }, async ({ con
     localStorage.setItem('falcon:session:' + id + ':name', 'Named Via Dedicated Key');
   }, '20260101160000-1');
   await page.click('#falcon-tab-log');
-  await page.waitForTimeout(100);
+  await frames(page);
   const label = await page.evaluate(() => [...document.getElementById('falcon-log-history').options].map(o => o.textContent).find(t => t.includes('Named Via Dedicated Key')));
   console.log('history label:', label);
   ck(!!label, `the history combo shows the dedicated-key name (got ${JSON.stringify(label)})`);

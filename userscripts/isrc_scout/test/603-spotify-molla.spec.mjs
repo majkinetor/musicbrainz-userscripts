@@ -13,7 +13,7 @@
 // test.musicbrainz.org, with production's data (fixtures/ws-603.json.gz); molla is
 // live except in "ratelimit". Nothing is submitted.
 import { test, check, answerGm } from '../../../dev/test/harness.mjs';
-import { openScout, logText } from './is.mjs';
+import { openScout, logText, ended } from './is.mjs';
 
 const RAM = '5000a285-b67e-4cfc-b54b-2b98f1810d2e';
 const REPLAY = new URL('./fixtures/ws-603.json.gz', import.meta.url);
@@ -36,8 +36,7 @@ async function run(page, context, inject, scenario) {
   });
   await page.waitForSelector('#ii-sp-all:not([style*="none"])', { timeout: 30000 });
   await page.click('#ii-sp-all');
-  await page.waitForFunction(() => /Spotify (done|failed)/.test(document.getElementById('ii-log-out')?.textContent || ''), null, { timeout: 60000 }).catch(() => {});
-  await page.waitForTimeout(500);
+  await ended(page, 'Spotify');
   const rows = await page.evaluate(() => [...document.querySelectorAll('#ii-tbody tr[data-idx]')].map(tr => ({ val: (tr.querySelector('.ii-input') || {}).value || '', suspect: !!tr.querySelector('.ii-input.ii-in-suspect') })));
   await ws.done();
   return { rows, truth, log: await logText(page) };

@@ -16,7 +16,7 @@
 //
 // Runs against test.musicbrainz.org and never submits: every POST to /edit is
 // aborted and asserted zero.
-import { test, check, requireLogin, SANDBOX } from '../../../dev/test/harness.mjs';
+import { test, check, requireLogin, SANDBOX, settled, idle, frames } from '../../../dev/test/harness.mjs';
 import { blockEdits } from './gt.mjs';
 
 test.use({ gm: { name: 'Group Therapy' } });
@@ -36,10 +36,10 @@ test('the text parser: seven UX fixes (background create, MBID paste, freeze, cl
     catch (e) { if (a >= 4) throw e; console.log('goto retry ' + a); await page.waitForTimeout(5000); }
   }
   await requireLogin(page);
-  await page.waitForTimeout(4500);
+  await settled(page);
   const posts = await blockEdits(page);
   await inject('group_therapy');
-  await page.waitForTimeout(800);
+  await idle(page);
 
   const openParser = async () => {
     if (await page.locator('.gt-tp').count()) return;   // already open
@@ -48,7 +48,7 @@ test('the text parser: seven UX fixes (background create, MBID paste, freeze, cl
       if (b) b.click();
     });
     await page.waitForSelector('.gt-tp', { timeout: 15000 });
-    await page.waitForTimeout(400);
+    await frames(page);
   };
   const setText = async (text, pat) => {
     await page.evaluate(({ text, pat }) => {
@@ -57,7 +57,7 @@ test('the text parser: seven UX fixes (background create, MBID paste, freeze, cl
       const p = document.querySelector('.gt-tp-pat');
       if (p) { p.value = pat; p.dispatchEvent(new Event('input', { bubbles: true })); }
     }, { text, pat });
-    await page.waitForTimeout(800);
+    await frames(page);
   };
   // The row's two "search" buttons are, in column order, the RESOLVED ROLE cell
   // and then the RESOLVED ENTITY cell.
@@ -105,7 +105,7 @@ test('the text parser: seven UX fixes (background create, MBID paste, freeze, cl
 
   // ── 7. role picker: Up/Down ─────────────────────────────────────────────────
   // (No Escape here: it closes the parser window itself, not just the popover.)
-  await page.waitForTimeout(300);
+  await frames(page);
   await openParser();
   await setText(`Producer: もちこまめ${NL}Guitar: Someone Unresolvable Xyzzy`, 'R: E');
   check(await clickSearch('role'), 'an unresolved row offers a role search button');
@@ -116,10 +116,10 @@ test('the text parser: seven UX fixes (background create, MBID paste, freeze, cl
     // it opens prefilled with the row's role text, which filters to one match —
     // with a single row the arrows legitimately do nothing, so clear it first.
     search.value = '';
-    search.dispatchEvent(new Event('input', { bubbles: true }));
-    await new Promise(r => setTimeout(r, 150));
+    search.dispatchEvent(new Event('input', { bubbles: true }));   // re-filtered as it is handled
+    await new Promise(r => requestAnimationFrame(r));
     const idx = () => [...document.querySelectorAll('.gt-role-row')].findIndex(r => r.classList.contains('gt-role-active'));
-    const press = k => { search.dispatchEvent(new KeyboardEvent('keydown', { key: k, bubbles: true, cancelable: true })); return new Promise(r => setTimeout(r, 60)); };
+    const press = k => { search.dispatchEvent(new KeyboardEvent('keydown', { key: k, bubbles: true, cancelable: true })); return new Promise(r => requestAnimationFrame(r)); };
     const start = idx();
     await press('ArrowDown'); const d1 = idx();
     await press('ArrowDown'); const d2 = idx();
@@ -137,7 +137,7 @@ test('the text parser: seven UX fixes (background create, MBID paste, freeze, cl
   check(keyNav.end === keyNav.total - 1, 'End jumps to the last role');
   check(keyNav.wrapped === 0, 'and it wraps rather than sticking at the end');
   await page.evaluate(() => { const b = document.querySelector('.gt-role-pick .gt-cons-x'); if (b) b.click(); });
-  await page.waitForTimeout(300);
+  await frames(page);
 
   // ── 4. Freeze matched ───────────────────────────────────────────────────────
   await setText(`Producer: もちこまめ${NL}Mixer: もちこまめ${NL}nonsense line with no pattern at all`, 'R: E');
@@ -146,8 +146,9 @@ test('the text parser: seven UX fixes (background create, MBID paste, freeze, cl
     // Apollo"), so match the class, not the label text.
     const btn = document.querySelector('.gt-tp-freeze');
     if (!btn) return { missing: true };
+    const eventually = async f => { for (let i = 0; i < 400 && !f(); i++) await new Promise(r => setTimeout(r, 25)); return f(); };
     btn.click();
-    await new Promise(r => setTimeout(r, 500));
+    await eventually(() => [...document.querySelectorAll('.gt-tp-ov')].some(i => i.value));
     return { missing: false, overrides: [...document.querySelectorAll('.gt-tp-ov')].map(i => i.value) };
   });
   console.log('after freeze: ' + JSON.stringify(froze));
@@ -174,8 +175,8 @@ test('the text parser: seven UX fixes (background create, MBID paste, freeze, cl
     let ov = document.querySelector('.gt-tp-ov');
     if (!ov) return { missing: true };
     ov.value = 'R[,] - E[,] a very long pattern';
-    ov.dispatchEvent(new Event('input', { bubbles: true }));      // rebuilds the table
-    await new Promise(r => setTimeout(r, 400));
+    ov.dispatchEvent(new Event('input', { bubbles: true }));      // rebuilds the table, as it is handled
+    await new Promise(r => requestAnimationFrame(r));
     ov = document.querySelector('.gt-tp-ov');                      // the NEW input
     if (!ov) return { missing: true, why: 'gone after re-render' };
     const td = ov.closest('td');
@@ -185,7 +186,7 @@ test('the text parser: seven UX fixes (background create, MBID paste, freeze, cl
     // narrow case at all). Column 1 is "pattern".
     const col = document.querySelector('.gt-tp-tbl colgroup').children[1];
     col.style.width = '60px';
-    await new Promise(r => setTimeout(r, 150));
+    await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));   // laid out
     ov.focus();
     const o = ov.getBoundingClientRect(), t = td.getBoundingClientRect();
     return {
@@ -212,7 +213,7 @@ test('the text parser: seven UX fixes (background create, MBID paste, freeze, cl
   await page.evaluate(() => {
     document.querySelectorAll('.gt-tp-ov').forEach(i => { if (i.value) { i.value = ''; i.dispatchEvent(new Event('input', { bubbles: true })); } });
   });
-  await page.waitForTimeout(600);
+  await frames(page);
   const freezeGeo = await page.evaluate(() => {
     const f = document.querySelector('.gt-tp-freeze'), pat = document.querySelector('.gt-tp-pat'), res = document.querySelector('.gt-tp-resolve');
     if (!f || !pat) return { missing: true };
@@ -235,7 +236,7 @@ test('the text parser: seven UX fixes (background create, MBID paste, freeze, cl
   await page.evaluate(() => document.querySelector('.gt-tp-tbl tbody tr').querySelectorAll('button.gt-tp-search')[0].click());
   await page.waitForSelector('.gt-role-pick', { timeout: 8000 });
   await page.evaluate(() => { const q = document.querySelector('.gt-role-search'); q.value = ''; q.dispatchEvent(new Event('input', { bubbles: true })); });
-  await page.waitForTimeout(300);
+  await frames(page);
   const pickGeo = await page.evaluate(() => {
     const p = document.querySelector('.gt-role-pick'), b = p.getBoundingClientRect();
     const d = [...document.querySelectorAll('.gt-role-desc')].find(x => x.textContent.length > 60);
@@ -254,7 +255,7 @@ test('the text parser: seven UX fixes (background create, MBID paste, freeze, cl
   check(!pickGeo.truncatedWithEllipsis, 'descriptions are no longer one nowrap ellipsised line');
   check(pickGeo.fullyVisible, 'and the sampled description fits within its two clamped lines');
   await page.evaluate(() => { const x = document.querySelector('.gt-role-pick .gt-cons-x'); if (x) x.click(); });
-  await page.waitForTimeout(300);
+  await frames(page);
 
   // ── #544 follow-up 2: (+) seeds the SEARCH TEXT, and right-click backgrounds ─
   await page.evaluate(() => {

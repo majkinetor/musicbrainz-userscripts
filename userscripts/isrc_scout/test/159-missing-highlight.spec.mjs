@@ -4,7 +4,7 @@
 //
 // test.musicbrainz.org, with production's data for 安東ウメ子 — ウポポ サンケ (14 tracks,
 // one without an ISRC), from fixtures/ws-159.json.gz (RECORD_WS=1 to refresh).
-import { test, check } from '../../../dev/test/harness.mjs';
+import { test, check, until } from '../../../dev/test/harness.mjs';
 import { openScout } from './is.mjs';
 
 test.use({ gm: { name: 'ISRC Scout' } });
@@ -28,11 +28,9 @@ test('rows missing an ISRC are highlighted, and follow what is typed', { tag: ['
   const idx = await page.evaluate(() => { const r = [...document.querySelectorAll('#ii-tbody tr[data-idx]')].find(x => x.querySelector('.ii-existing .none')); return r ? r.dataset.idx : null; });
   const sel = `#ii-tbody tr[data-idx="${idx}"]`;
   await page.fill(sel + ' .ii-input', 'USABC1234567');
-  await page.waitForTimeout(150);
-  check(!(await page.evaluate(s => document.querySelector(s).classList.contains('ii-row-missing'), sel)), 'entering an ISRC clears the highlight');
+  check(!(await until(() => page.evaluate(s => document.querySelector(s).classList.contains('ii-row-missing'), sel), v => !v)), 'entering an ISRC clears the highlight');
   await page.fill(sel + ' .ii-input', '');
   await page.dispatchEvent(sel + ' .ii-input', 'input');
-  await page.waitForTimeout(150);
-  check(await page.evaluate(s => document.querySelector(s).classList.contains('ii-row-missing'), sel), 'clearing it brings the highlight back');
+  check(await until(() => page.evaluate(s => document.querySelector(s).classList.contains('ii-row-missing'), sel)), 'clearing it brings the highlight back');
   await ws.done();
 });

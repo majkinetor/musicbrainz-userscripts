@@ -9,7 +9,7 @@
 // (RECORD_WS=1 to refresh): who is called what doesn't change under the test, and a
 // busy MusicBrainz can't turn a match into "needs review", which is how this failed in
 // the baseline run.
-import { test, check, requireLogin, replayWs, SANDBOX } from '../../../dev/test/harness.mjs';
+import { test, check, requireLogin, replayWs, SANDBOX, idle } from '../../../dev/test/harness.mjs';
 
 const FIXTURE = new URL('./fixtures/ws-613-matching.json.gz', import.meta.url);
 test.use({ gm: { name: 'CH', values: {} } });
@@ -21,7 +21,7 @@ test('artists match by exact name or alias only when unique, by release context,
     await page.goto(`${SANDBOX}/release/${rel}/edit-relationships`, { waitUntil: 'domcontentloaded', timeout: 60000 });
     await requireLogin(page);
     await page.waitForFunction(() => window.MB && MB.relationshipEditor && MB.relationshipEditor.state && MB.relationshipEditor.state.entity, null, { timeout: 60000 });
-    await page.waitForTimeout(1500);
+    await idle(page);
     if (!ws) ws = await replayWs(page, FIXTURE);   // after MusicBrainz's own page load
     await inject('credit_hoarder', { waitFor: '__creditHoarder' });
   };

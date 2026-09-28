@@ -17,13 +17,16 @@
 //
 // Nothing is uploaded and no edit is created: every POST is aborted at the
 // network layer and asserted zero. Runs on test.musicbrainz.org.
-import { test, check, attachShot } from '../../../dev/test/harness.mjs';
+import { test, check, attachShot, until, frames } from '../../../dev/test/harness.mjs';
 import { openArtStation, blockPosts } from './as.mjs';
 
 test.use({ gm: { name: 'Art Station' } });
 
 test('failed uploads repeat by themselves, say so in the footer, stop at the limit, and stop when closed', { tag: ['@sandbox', '@login'] }, async ({ page, inject }, testInfo) => {
   const posts = await blockPosts(page);
+  // a fake clock: the countdowns, the gaps between attempts and "past the 20 s gap"
+  // are jumped over exactly, rather than waited out
+  await page.clock.install();
   await openArtStation(page, inject, { path: 'add-cover-art' });
 
   // ── the setting (its defaults and their migration are 566b's) ─────────────────
@@ -55,7 +58,7 @@ test('failed uploads repeat by themselves, say so in the footer, stop at the lim
   const arm = async (on, minutes, times) => page.evaluate(async ([on2, m, t]) => {
     document.getElementById('as-setup')?.remove();
     document.getElementById('as-setup-btn').click();
-    await new Promise(r => setTimeout(r, 300));
+    for (let i = 0; i < 200 && !document.querySelector('.as-setup-autorepeat'); i++) await new Promise(r => setTimeout(r, 25));
     const set = (sel, v, isCheck) => {
       const i = document.querySelector(sel);
       if (isCheck) { i.checked = v; } else { i.value = String(v); }
@@ -84,7 +87,8 @@ test('failed uploads repeat by themselves, say so in the footer, stop at the lim
   // 1. OFF — a failed run must sit there waiting for a human
   await arm(false, 20, 20);
   check(await stageAndCommit(), 'fixture: the commit ran and failed, offering Repeat');
-  await page.waitForTimeout(2500);
+  await page.clock.runFor(30000);   // longer than any gap an auto-repeat would wait
+  await frames(page);
   const offState = await page.evaluate(() => {
     // The row is always present now - it reserves its space so the buttons cannot
     // move - so "not showing" means invisible and empty, not absent.
@@ -109,16 +113,19 @@ test('failed uploads repeat by themselves, say so in the footer, stop at the lim
   await attachShot(testInfo, page.locator('.as-cm-box'), 'i566-footer');
 
   // the countdown must actually tick, not just render once
-  const ticked = await page.evaluate(async () => {
-    const read = () => (document.querySelector('.as-cm-ar') || {}).textContent || '';
-    const a = read(); await new Promise(r => setTimeout(r, 2200)); return { a, b: read() };
-  });
+  const read = () => page.evaluate(() => (document.querySelector('.as-cm-ar') || {}).textContent || '');
+  const a = await read();
+  await page.clock.runFor(2200);
+  const ticked = { a, b: await read() };
   check(ticked.a !== ticked.b, `the countdown updates (${JSON.stringify(ticked.a)} -> ${JSON.stringify(ticked.b)})`);
 
   // 3. it gives up at the limit, and says why
-  const gaveUp = await page.waitForFunction(
-    () => { const e = document.querySelector('.as-cm-ar'); return e && /gave up/.test(e.textContent) ? e.textContent : null; },
-    null, { timeout: 120000 }).then(h => h.jsonValue()).catch(() => null);
+  // each gap is jumped over; the failed upload in between runs as it would
+  const gaveUp = await until(async () => {
+    const t = await page.evaluate(() => { const e = document.querySelector('.as-cm-ar'); return e && /gave up/.test(e.textContent) ? e.textContent : null; });
+    if (!t) await page.clock.runFor(5000);
+    return t;
+  }, Boolean, { timeout: 60000 });
   console.log('gave up: ' + JSON.stringify(gaveUp));
   check(!!gaveUp, '#566: it stops at the limit instead of retrying forever');
   check(!!gaveUp && /Press Repeat/.test(gaveUp || ''), 'and tells you the manual Repeat is still there');
@@ -130,7 +137,8 @@ test('failed uploads repeat by themselves, say so in the footer, stop at the lim
   await page.waitForFunction(() => { const e = document.querySelector('.as-cm-ar'); return e && e.classList.contains('on'); }, null, { timeout: 15000 }).catch(() => {});
   const beforeClose = posts.length;
   await page.evaluate(() => document.querySelector('.as-cm-cancel')?.click());
-  await page.waitForTimeout(26000);          // past the 20s gap the countdown was on
+  await page.clock.runFor(26000);          // past the 20s gap the countdown was on
+  await frames(page);                      // a retry would have gone out by now
   const afterClose = posts.length;
   const stray = await page.evaluate(() => !!document.querySelector('.as-cm-ar'));
   console.log(`POSTs before close ${beforeClose}, after ${afterClose}`);

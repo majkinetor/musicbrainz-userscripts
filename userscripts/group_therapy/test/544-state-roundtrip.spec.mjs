@@ -10,7 +10,7 @@
 // object: what matters is what comes back on screen.
 //
 // Read-only: every POST is aborted and asserted at zero.
-import { test, check, requireLogin, SANDBOX } from '../../../dev/test/harness.mjs';
+import { test, check, requireLogin, SANDBOX, settled, idle, frames } from '../../../dev/test/harness.mjs';
 import { blockEdits } from './gt.mjs';
 
 test.use({ gm: { name: 'Group Therapy' } });
@@ -26,9 +26,9 @@ test('the text parser comes back as it was left: text, pattern, frozen lines, ro
     catch (e) { if (a >= 4) throw e; console.log('goto retry ' + a); await page.waitForTimeout(4000); }
   }
   await requireLogin(page);
-  await page.waitForTimeout(4000);
+  await settled(page);
   await inject('group_therapy');
-  await page.waitForTimeout(1500);
+  await idle(page);
 
   const openParser = () => page.evaluate(() => window.__groupTherapy.openTextParser());
   const closeParser = () => page.evaluate(() => window.__groupTherapy.closeTextParser());
@@ -48,7 +48,7 @@ test('the text parser comes back as it was left: text, pattern, frozen lines, ro
 
   await openParser();
   await page.waitForSelector('.gt-tp', { timeout: 15000 });
-  await page.waitForTimeout(500);
+  await frames(page);
 
   // paste text, set a pattern, freeze what matches (all three lines here)
   await page.evaluate((t) => {
@@ -56,13 +56,13 @@ test('the text parser comes back as it was left: text, pattern, frozen lines, ro
     const set = Object.getOwnPropertyDescriptor(Object.getPrototypeOf(ta), 'value').set;
     set.call(ta, t); ta.dispatchEvent(new Event('input', { bubbles: true }));
   }, TEXT);
-  await page.waitForTimeout(600);
+  await frames(page);
   await page.evaluate(() => {
     const p = document.querySelector('.gt-tp-pat');
     const set = Object.getOwnPropertyDescriptor(Object.getPrototypeOf(p), 'value').set;
     set.call(p, 'R: E'); p.dispatchEvent(new Event('input', { bubbles: true }));
   });
-  await page.waitForTimeout(800);
+  await frames(page);
 
   const beforeFreeze = await readUi();
   console.log('before freeze: ' + JSON.stringify(beforeFreeze));
@@ -70,10 +70,10 @@ test('the text parser comes back as it was left: text, pattern, frozen lines, ro
   check(beforeFreeze.overrides.every(v => v === ''), 'and nothing is frozen yet');
 
   await page.evaluate(() => document.querySelector('.gt-tp-freeze').click());
-  await page.waitForTimeout(700);
+  await frames(page);
   // and roll the paste box up (the maximized state is 544-round5's)
   await page.evaluate(() => document.querySelector('.gt-tp-srctgl').click());
-  await page.waitForTimeout(500);
+  await frames(page);
 
   const frozen = await readUi();
   console.log('after freeze: ' + JSON.stringify(frozen));
@@ -84,12 +84,12 @@ test('the text parser comes back as it was left: text, pattern, frozen lines, ro
 
   /* ── close and reopen — the point of the whole test ───────────────────────── */
   await closeParser();
-  await page.waitForTimeout(400);
+  await frames(page);
   check(!(await readUi()).open, 'the window really closed (otherwise nothing below is a test)');
 
   await openParser();
   await page.waitForSelector('.gt-tp', { timeout: 15000 });
-  await page.waitForTimeout(900);
+  await frames(page);
   const back = await readUi();
   console.log('after reopen : ' + JSON.stringify(back));
 
