@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-09-28 21:47 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-09-28 21:52 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -564,7 +564,7 @@ A cover/event-art editor for MusicBrainz: one gallery to view, group, sort, reor
 - [Changelog](../art_station/CHANGELOG.md)
 - [View users](https://musicbrainz.org/search/edits?auto_edit_filter=&order=desc&negation=0&combinator=and&conditions.0.field=edit_note_content&conditions.0.operator=includes&conditions.0.args.0=Art+Station)
 
-![](../art_station/screens/main-pc.png)
+![](../art_station/screenshots/main-pc.png)
 
 It runs on a release's **Cover art** tab and an **Event art** tab, replacing the native list with a gallery. The gallery is the staged state, and **Enter edit** makes MusicBrainz match it.
 
@@ -581,11 +581,11 @@ It runs on a release's **Cover art** tab and an **Event art** tab, replacing the
 
 Group by type view:
 
-![](../art_station/screens/screenshot2.png)
+![](../art_station/screenshots/screenshot2.png)
 
 Detailed view (supports Mammoth in comment section):
 
-![](../art_station/screens/screenshot3.png)
+![](../art_station/screenshots/screenshot3.png)
 
 ### Single or bulk actions
 
