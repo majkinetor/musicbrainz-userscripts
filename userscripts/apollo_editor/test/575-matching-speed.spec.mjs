@@ -72,7 +72,10 @@ test.describe('the web-service queue', () => {
     check(r.replay.asked === 115 && r.replay.sent === 48, `his log's profile: 115 asks, ${r.replay.sent} requests`);
   });
 
-  test('round 2: a slow reply does not hold up the ones behind it', { tag: '@unit' }, async ({ page, inject }) => {
+  // @timing (round 2 and 3, and the two Stop presses below): these assert time itself —
+  // a pass shorter than chaining, gaps of 900 ms, a frame within 250 ms, a press answered
+  // within 2 s — which a slower shared machine (CI) can miss for no fault of Apollo's
+  test('round 2: a slow reply does not hold up the ones behind it', { tag: ['@unit', '@timing'] }, async ({ page, inject }) => {
     await blank(page, inject);
     const LATENCY = 3000, N = 8;   // a slow search, scaled down from his ~12 s
     const run = await page.evaluate(async ({ l, n }) => {
@@ -97,7 +100,7 @@ test.describe('the web-service queue', () => {
     check(run.staleSent === 0 && run.stale && run.stale.stale === true, 'a request gone stale is never sent, and its caller is told');
   });
 
-  test('round 3: one 503 holds every lane', { tag: '@unit' }, async ({ page, inject }) => {
+  test('round 3: one 503 holds every lane', { tag: ['@unit', '@timing'] }, async ({ page, inject }) => {
     await blank(page, inject);
     const out = await page.evaluate(async () => {
       const t0 = performance.now(), events = [], SICK_UNTIL = 12000;   // unwell for a while, not for a count
@@ -152,7 +155,7 @@ test.describe('round 4: Stop answers at once', () => {
   test.use({ gm: apolloGm({ apolloEnabled: true, autoMatch: true, autoMatchRec: true, autoMatchLabel: true, autoMatchArtist: true, discogsUrlMatch: true }) });
   // one pass per test: the stop flag is shared, so stopping one stops both
 
-  test('the tracklist', { tag: ['@sandbox', '@login'] }, async ({ page, inject }) => {
+  test('the tracklist', { tag: ['@sandbox', '@login', '@timing'] }, async ({ page, inject }) => {
     const submitted = await importAndHold(page, inject);
     const raf = await page.evaluate(() => new Promise(r => { const s = performance.now(); requestAnimationFrame(() => r(Math.round(performance.now() - s))); }));
     check(raf < 250, `nothing is frozen: a frame comes back in ${raf} ms`);
@@ -167,7 +170,7 @@ test.describe('round 4: Stop answers at once', () => {
     check(submitted.length === 0, 'nothing submitted');
   });
 
-  test('the Recordings pane', { tag: ['@sandbox', '@login'] }, async ({ page, inject }) => {
+  test('the Recordings pane', { tag: ['@sandbox', '@login', '@timing'] }, async ({ page, inject }) => {
     const submitted = await importAndHold(page, inject);
     await page.locator('a, button', { hasText: /^Recordings$/ }).first().click().catch(() => {});
     await page.waitForSelector(REC, { state: 'visible', timeout: 30000 }).catch(() => {});
