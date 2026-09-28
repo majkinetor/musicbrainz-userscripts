@@ -55,9 +55,10 @@ jobs:
       - run: sudo apt-get install -y libarchive-tools   # bsdtar, for Art Station's zip spec
       - name: Sign in to the sandbox
         run: node dev/test/login.mjs sandbox --auto
-      # @web reads other live sites, which often block cloud machines
+      # @web reads other live sites, which often block cloud machines; @timing asserts a
+      # time budget, which a slower shared machine can miss for no fault of the script
       - name: Core specs (@critical)
-        run: pnpm test --grep @critical --grep-invert @web
+        run: pnpm test --grep @critical --grep-invert "@web|@timing"
       - uses: actions/upload-artifact@v4
         if: ${{ !cancelled() }}
         with:

@@ -44,13 +44,19 @@ test('what the spec proves', { tag: '@sandbox' }, async ({ page, inject }) => {
 - **`inject(name)`** loads `userscripts/<name>/<name>.user.js`. `<NAME>_SRC=<file>` runs the spec against another build, which is how a regression test is shown to fail on the broken one: `FUSION_SRC=old.user.js pnpm test --project=fusion`.
 - **`console.log`** in a spec goes to the test's report (a `log` attachment), not the terminal, so a run shows only pass and fail lines. `TEST_LOG=1` prints it as well. Code run in the page logs to the page, as before.
 - **`check(cond, message)`** is a soft assertion: a failed check is reported and the test continues.
+- **No fixed sleeps.** A spec waits for what it checks, never for a length of time: a wait long enough here is too short on a slower machine (CI). Instead:
+  - **`until(read, ok)`** polls the value a check is about until `ok(value)` holds (20 s at most), and returns it either way, so a failing check still reports what was there: `check(await until(() => page.evaluate(…), v => v === 'flex'), …)`.
+  - **`idle(page)`**: the page has loaded and its main thread is idle, where a script goes in once MusicBrainz has started. **`settled(page)`** waits for the network to go quiet first (MusicBrainz's release editor loads tracks as its tabs open).
+  - **`frames(page, n)`**: `n` drawn frames, for what is laid out a frame later (a ResizeObserver, then requestAnimationFrame), where the state before the change would pass the check too.
+  - **`page.clock`**, Playwright's fake clock, for a script's own timers (debounces, countdowns, polls): `page.clock.install()` before the page loads, then `page.clock.runFor(ms)` jumps ahead at once.
+  - A "nothing happened" check is read once the same action's other effect shows, or once the code has handled it (the answer in, the frame drawn): not after a pause.
 - **`mbJson(url)`** reads the web service from Node, waiting out throttling.
 - **`attachShot(testInfo, pageOrLocator, name)`** attaches a screenshot to the report.
 - **`loadFunctions(name, [names])`** evaluates a script's pure helpers in Node, for `@unit` specs. **`functionSource(name, [names])`** returns their source instead, to run in the page (`new Function(src + '; return fn;')()`) or to read.
 - **`onSandbox(mbid)`** is the sandbox copy of a production release (itself when it has none); **`sandboxAs(mbid)`** maps that copy and its release group back to production, for `replayWs(…, { as })`.
 - **`answerGm(context, handler)`** answers `GM_xmlhttpRequest` calls in place of the network, as `page.route()` does for the page's own requests: `answerGm(context, ({ url }) => /soundexchange/.test(url) ? { status: 202, body: '…' } : null)`.
 - **`replayWs(page, fixture)`** answers the page's `/ws/2/` reads from answers recorded on production, so a spec that depends on who is called what gets the same data every run and is never throttled. `RECORD_WS=1` records what the recording lacks (`RECORD_WS=fresh` starts it over); `await ws.done()` saves, or fails on a read the fixture lacks. `web: true` (or a RegExp of hosts) also replays the other sites the script asks through `GM_xmlhttpRequest`; tokens are redacted and HTML pages stripped of styles, SVG and comments before they are stored, and `trim: (key, body) => body` cuts what else a spec doesn't need.
-- **Tags:** `@unit` needs no network, `@prod` reads musicbrainz.org, `@sandbox` uses test.musicbrainz.org (writes allowed), `@web` reads another live site (Bandcamp, Discogs…), `@login` needs the logged-in profile. `@critical` marks the few specs per script that cover its core, for a quick run.
+- **Tags:** `@unit` needs no network, `@prod` reads musicbrainz.org, `@sandbox` uses test.musicbrainz.org (writes allowed), `@web` reads another live site (Bandcamp, Discogs…), `@login` needs the logged-in profile. `@critical` marks the few specs per script that cover its core, for a quick run. `@timing` marks a spec that asserts a time budget ("shows within 3 s"), which CI leaves out.
 
 ### Options (`test.use`)
 

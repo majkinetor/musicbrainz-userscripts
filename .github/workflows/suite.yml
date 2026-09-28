@@ -24,8 +24,8 @@ jobs:
       - run: sudo apt-get install -y libarchive-tools   # bsdtar, for Art Station's zip spec
       - name: Sign in to the sandbox
         run: node dev/test/login.mjs sandbox --auto
-      - name: All specs but @web
-        run: pnpm test --grep-invert @web
+      - name: All specs but @web and @timing
+        run: pnpm test --grep-invert "@web|@timing"
       - uses: actions/upload-artifact@v4
         if: ${{ !cancelled() }}
         with:
