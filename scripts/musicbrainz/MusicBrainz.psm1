@@ -547,6 +547,11 @@ function Connect-MBWebsite {
     Write-Verbose "MBWeb -> GET $script:MBServer/login + POST (user=$($Credential.UserName))"
     $ua = @{ 'User-Agent' = $script:MBUserAgent; 'Cache-Control' = 'no-cache' }
     $login = Invoke-WebRequest -Uri "$script:MBServer/login?_=$([datetime]::UtcNow.Ticks)" -SessionVariable s -Headers $ua -UseBasicParsing
+    # Since 2026-09 MetaBrainz fronts website pages with a JavaScript proof-of-work check
+    # ("Verifying your browser", posting to /__meb_verify); the ws/2 API is not behind it.
+    if ($login.Content -match '/__meb_verify') {
+        throw "MusicBrainz answered the login page with its browser check ('$(Get-MBPageTitle $login.Content)'), which needs JavaScript - website-form edits (collection create/description) are unavailable from here; API edits still work."
+    }
     $form  = ConvertFrom-MBForm -Html $login.Content -ActionMatch '/login'
     if (-not $form.Contains('csrf_token')) { throw "Login page carried no csrf_token (fields: $($form.Keys -join ', ')) - cached/unexpected page?" }
     $form['username']    = $Credential.UserName
