@@ -12,7 +12,7 @@
 // tab" is simulated by posting the create's own token back over the same
 // BroadcastChannel the real created page uses — no entity is created here.
 // (live-544-background-tab-closes.mjs already proves the real round trip.)
-import { test, check, requireLogin, SANDBOX, attachShot } from '../../../dev/test/harness.mjs';
+import { test, check, requireLogin, SANDBOX, attachShot, settled, idle, frames } from '../../../dev/test/harness.mjs';
 import { blockEdits } from './gt.mjs';
 
 test.use({ gm: { name: 'Group Therapy' } });
@@ -29,10 +29,10 @@ test('the text parser: background create marks the row, disambiguations, popup p
     catch (e) { if (a >= 4) throw e; console.log('goto retry ' + a); await page.waitForTimeout(5000); }
   }
   await requireLogin(page);
-  await page.waitForTimeout(4500);
+  await settled(page);
   const posts = await blockEdits(page);
   await inject('group_therapy');
-  await page.waitForTimeout(800);
+  await idle(page);
 
   const openParser = async () => {
     if (await page.locator('.gt-tp').count()) return;
@@ -41,7 +41,7 @@ test('the text parser: background create marks the row, disambiguations, popup p
       if (b) b.click();
     });
     await page.waitForSelector('.gt-tp', { timeout: 15000 });
-    await page.waitForTimeout(400);
+    await frames(page);
   };
   const setText = async (text, pat) => {
     await page.evaluate(({ text, pat }) => {
@@ -50,7 +50,7 @@ test('the text parser: background create marks the row, disambiguations, popup p
       const p = document.querySelector('.gt-tp-pat');
       if (p) { p.value = pat; p.dispatchEvent(new Event('input', { bubbles: true })); }
     }, { text, pat });
-    await page.waitForTimeout(800);
+    await frames(page);
   };
   // open the entity picker on the Nth row (0-based)
   const openEntityPicker = async (n) => page.evaluate(i => {
@@ -66,9 +66,9 @@ test('the text parser: background create marks the row, disambiguations, popup p
   const dismissPopover = async () => {
     await page.evaluate(async () => {
       document.body.dispatchEvent(new MouseEvent('mousedown', { bubbles: true }));
-      await new Promise(r => setTimeout(r, 50));
+      await new Promise(r => requestAnimationFrame(r));
       document.body.dispatchEvent(new MouseEvent('click', { bubbles: true }));   // eaten by the swallower
-      await new Promise(r => setTimeout(r, 150));
+      await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
     });
   };
 
@@ -85,8 +85,9 @@ test('the text parser: background create marks the row, disambiguations, popup p
 
   const afterRightClick = await page.evaluate(async () => {
     const plus = document.querySelector('.gt-tp-plus');
+    const eventually = async f => { for (let i = 0; i < 400 && !f(); i++) await new Promise(r => setTimeout(r, 25)); return f(); };
     plus.dispatchEvent(new MouseEvent('contextmenu', { bubbles: true, cancelable: true }));
-    await new Promise(r => setTimeout(r, 400));
+    await eventually(() => window.__gtOpened);   // the background tab was asked for
     return {
       popupOpen: !!document.querySelector('.gt-tp-apop'),
       opened: window.__gtOpened ? window.__gtOpened.u : null,
@@ -115,7 +116,7 @@ test('the text parser: background create marks the row, disambiguations, popup p
 
   // meanwhile the parser must still be usable — that is the entire point
   check(await openEntityPicker(2), 'another row can be worked on while the create is in flight');
-  await page.waitForTimeout(400);
+  await frames(page);
   check(await page.locator('.gt-tp-apop').count() > 0, 'its picker opens normally');
   await dismissPopover();
 
@@ -177,16 +178,19 @@ test('the text parser: background create marks the row, disambiguations, popup p
   // changed: that the clamp reads clientWidth and not innerWidth.
   await dismissPopover();
   await page.setViewportSize({ width: 900, height: 800 });
-  await page.waitForTimeout(400);
+  await frames(page);
   const geo = await page.evaluate(async () => {
     const mx = [...document.querySelectorAll('.gt-tp .gt-cons-x')].find(b => b.textContent.includes('⛶'));
+    const eventually = async f => { for (let i = 0; i < 400 && !f(); i++) await new Promise(r => setTimeout(r, 25)); return f(); };
+    const frame = () => new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
     if (mx) mx.click();                                        // maximize → entity column against the right edge
-    await new Promise(r => setTimeout(r, 500));
+    await frame();
     const rows = [...document.querySelectorAll('.gt-tp-tbl tbody tr')];
     const btns = [...rows[1].querySelectorAll('button.gt-tp-search')];
     const anchorBtn = btns[btns.length - 1];
     anchorBtn.click();
-    await new Promise(r => setTimeout(r, 900));
+    await eventually(() => document.querySelector('.gt-tp-apop'));
+    await frame();   // positioned
     const pop = document.querySelector('.gt-tp-apop');
     if (!pop) return { missing: true };
     const p = pop.getBoundingClientRect(), anchor = anchorBtn.getBoundingClientRect();
@@ -216,8 +220,10 @@ test('the text parser: background create marks the row, disambiguations, popup p
     const SB = 15, inner = window.innerWidth;
     Object.defineProperty(document.documentElement, 'clientWidth', { get: () => inner - SB, configurable: true });
     const q = document.querySelector('.gt-tp-q');
+    const eventually = async f => { for (let i = 0; i < 400 && !f(); i++) await new Promise(r => setTimeout(r, 25)); return f(); };
     q.value = 'Fio'; q.dispatchEvent(new Event('input', { bubbles: true }));   // any input re-runs reposition
-    await new Promise(r => setTimeout(r, 2500));
+    await eventually(() => document.querySelectorAll('.gt-tp-apop .gt-tp-res').length > 0);   // the results are in
+    await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));   // and repositioned
     const pop = document.querySelector('.gt-tp-apop');
     const p = pop.getBoundingClientRect();
     const anchor = document.querySelector('.gt-tp-tbl tbody tr:nth-child(2) button.gt-tp-search');

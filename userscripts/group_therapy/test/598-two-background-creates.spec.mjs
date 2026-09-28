@@ -22,7 +22,7 @@
 //   post-fix: 0 tabs left open, 2 rows resolved   -> passes
 //
 // Sandbox only. It deliberately creates TWO artists on test.musicbrainz.org.
-import { test, check, expect, requireLogin, SANDBOX } from '../../../dev/test/harness.mjs';
+import { test, check, expect, requireLogin, SANDBOX, settled, frames, until, idle } from '../../../dev/test/harness.mjs';
 import { RELEASE } from './gt.mjs';
 
 // The pending-create store is shared by the opener and both create tabs. A create tab
@@ -72,9 +72,9 @@ test('two background creates at once both submit, post their MBID back, and clos
     catch (e) { if (a >= 4) throw e; console.log('goto retry ' + a); await page.waitForTimeout(4000); }
   }
   await requireLogin(page);
-  await page.waitForTimeout(4000);
+  await settled(page);
   await injectInto(page);
-  await page.waitForTimeout(1500);
+  await idle(page);
 
   // Two lines -> two rows, each with an entity nothing can resolve.
   await page.evaluate(() => window.__groupTherapy.openTextParser());
@@ -83,15 +83,14 @@ test('two background creates at once both submit, post their MBID back, and clos
     const set = (el, v) => { Object.getOwnPropertyDescriptor(Object.getPrototypeOf(el), 'value').set.call(el, v); el.dispatchEvent(new Event('input', { bubbles: true })); };
     set(document.querySelector('.gt-tp-ta'), 'Mastering: ' + ns[0] + '\nMixer: ' + ns[1]);
   }, NAMES);
-  await page.waitForTimeout(600);
+  await frames(page);
   await page.evaluate(() => {
     const p = document.querySelector('.gt-tp-pat');
     Object.getOwnPropertyDescriptor(Object.getPrototypeOf(p), 'value').set.call(p, 'R: E');
     p.dispatchEvent(new Event('input', { bubbles: true }));
   });
-  await page.waitForTimeout(2500);
 
-  const rows = await page.evaluate(() => document.querySelectorAll('.gt-tp-tbl tbody tr').length);
+  const rows = await until(() => page.evaluate(() => document.querySelectorAll('.gt-tp-tbl tbody tr').length), n => n >= 2);
   console.log('parsed rows: ' + rows);
   expect(rows, 'both pasted lines produced a row').toBeGreaterThanOrEqual(2);
 
@@ -138,11 +137,7 @@ test('two background creates at once both submit, post their MBID back, and clos
   // Both tabs must submit themselves, land on their artist, and be closed by the
   // opener. Poll for the END state rather than for either tab individually — a
   // tab that works closes too fast to catch reliably.
-  for (let i = 0; i < 100; i++) {
-    const extra = context.pages().filter(p => p !== page).length;
-    if (reached.length >= 2 && extra === 0) break;
-    await page.waitForTimeout(1000);
-  }
+  await until(() => reached.length >= 2 && context.pages().filter(p => p !== page).length === 0, Boolean, { timeout: 100000 });
   const left = context.pages().filter(p => p !== page);
   console.log('artist pages reached: ' + JSON.stringify(reached));
   console.log('background tabs still open: ' + left.length);
@@ -172,8 +167,7 @@ test('two background creates at once both submit, post their MBID back, and clos
     const a = [...row.querySelectorAll('a[href*="/artist/"]')].pop();
     return a ? { href: a.getAttribute('href'), text: a.textContent.trim() } : null;
   }));
-  let bound = await readBound();
-  for (let i = 0; i < 30 && !bound.every(Boolean); i++) { await page.waitForTimeout(1000); bound = await readBound(); }
+  const bound = await until(readBound, b => b.every(Boolean), { timeout: 30000 });
   console.log('resolved cells: ' + JSON.stringify(bound, null, 1));
   check(bound.every(b => b && /\/artist\/[0-9a-f-]{36}/.test(b.href)), 'both rows are bound to a real MBID, not just showing the pasted text');
   check(bound[0] && bound[1] && bound[0].href !== bound[1].href, 'the two rows got DIFFERENT MBIDs — neither create overwrote the other');

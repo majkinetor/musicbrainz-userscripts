@@ -15,7 +15,7 @@
 // Runs against test.musicbrainz.org and never submits: every POST to /edit is
 // aborted and asserted zero at the end. Staged relationships live in the
 // editor's own state until someone presses Enter edit, which this never does.
-import { test, check, requireLogin, SANDBOX } from '../../../dev/test/harness.mjs';
+import { test, check, requireLogin, SANDBOX, settled, idle, frames, until } from '../../../dev/test/harness.mjs';
 import { blockEdits } from './gt.mjs';
 
 test.use({ gm: { name: 'Group Therapy' } });
@@ -29,11 +29,11 @@ test('the text parser can credit recordings picked by track number', { tag: ['@s
     catch (e) { if (a >= 3) throw e; console.log('goto retry ' + a); await page.waitForTimeout(4000); }
   }
   await requireLogin(page);
-  await page.waitForTimeout(4000);
+  await settled(page);
 
   const posts = await blockEdits(page);
   await inject('group_therapy');
-  await page.waitForTimeout(800);
+  await idle(page);
 
   // ── the selector itself, against the real tracklist ─────────────────────────
   const specs = await page.evaluate(() => {
@@ -62,17 +62,17 @@ test('the text parser can credit recordings picked by track number', { tag: ['@s
     if (b) b.click();
   });
   await page.waitForSelector('.gt-tp', { timeout: 15000 });
-  await page.waitForTimeout(400);
+  await frames(page);
   check(await page.locator('.gt-tp-scope-sel').count() === 1, 'the parser offers a scope picker rather than a fixed "Scope: Release" pill');
 
   // release scope first: the recording-only controls stay out of the way
   check(!(await page.locator('.gt-tp-tracks').isVisible()), 'the track selector is hidden while the scope is Release');
 
   await page.selectOption('.gt-tp-scope-sel', 'recording');
-  await page.waitForTimeout(200);
+  await frames(page);
   check(await page.locator('.gt-tp-tracks').isVisible(), 'and appears when the scope is Recordings');
   await page.fill('.gt-tp-tracks', '1,3');
-  await page.waitForTimeout(300);
+  await frames(page);
   const info = (await page.locator('.gt-tp-tracks-info').textContent()) || '';
   console.log('scope info: ' + JSON.stringify(info.trim()));
   check(/2 tracks/.test(info) && /1, 3/.test(info), 'it says which tracks it matched, before anything is applied');
@@ -94,7 +94,7 @@ test('the text parser can credit recordings picked by track number', { tag: ['@s
     const pat = document.querySelector('.gt-tp-pat');
     if (pat) { pat.value = 'R: E'; pat.dispatchEvent(new Event('input', { bubbles: true })); }
   });
-  await page.waitForTimeout(600);
+  await frames(page);
   await page.evaluate(() => {
     const b = [...document.querySelectorAll('.gt-tp button')].find(x => /Match/i.test(x.textContent || ''));
     if (b) b.click();
@@ -103,7 +103,7 @@ test('the text parser can credit recordings picked by track number', { tag: ['@s
     const b = [...document.querySelectorAll('.gt-tp button')].find(x => /Match/i.test(x.textContent || ''));
     return b && !/Matching|Resolving/i.test(b.textContent);
   }, null, { timeout: 30000 }).catch(() => {});
-  await page.waitForTimeout(1200);
+  await frames(page);
 
   const before = await page.evaluate(() => window.__groupTherapy.txpTrackRows().map(r => ({ num: r.num, rels: (r.rec.relationships || []).length })));
   const applied = await page.evaluate(() => {
@@ -113,7 +113,8 @@ test('the text parser can credit recordings picked by track number', { tag: ['@s
     return 'clicked';
   });
   console.log('apply: ' + applied);
-  await page.waitForTimeout(1500);
+  await until(() => page.isVisible('.gt-cons.gt-tp'), v => !v);   // applied: the window closes
+  await frames(page);
 
   // Read the editor's own state: which recordings gained a staged relationship?
   const after = await page.evaluate(() => {
@@ -163,7 +164,7 @@ test('the text parser can credit recordings picked by track number', { tag: ['@s
   await page.waitForSelector('.gt-tp-tracks', { timeout: 15000 });
   await page.selectOption('.gt-tp-scope-sel', 'recording');
   await page.fill('.gt-tp-tracks', 'all');
-  await page.waitForTimeout(300);
+  await frames(page);
   const geo = await page.evaluate(() => {
     const r = sel => { const b = document.querySelector(sel).getBoundingClientRect(); return { top: Math.round(b.top), left: Math.round(b.left), right: Math.round(b.right) }; };
     return {

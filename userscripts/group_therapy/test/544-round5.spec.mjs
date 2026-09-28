@@ -14,7 +14,7 @@
 //
 // Runs against test.musicbrainz.org and never submits: every POST to /edit is
 // aborted and asserted zero.
-import { test, check, requireLogin, SANDBOX, attachShot } from '../../../dev/test/harness.mjs';
+import { test, check, requireLogin, SANDBOX, attachShot, settled, idle, frames } from '../../../dev/test/harness.mjs';
 import { blockEdits, ensureAnnotation } from './gt.mjs';
 
 test.use({ gm: { name: 'Group Therapy' } });
@@ -37,10 +37,10 @@ test('the text parser remembers maximized and the annotation button, and a creat
     catch (e) { if (a >= 4) throw e; console.log('goto retry ' + a); await page.waitForTimeout(5000); }
   }
   await requireLogin(page);
-  await page.waitForTimeout(4500);
+  await settled(page);
   const posts = await blockEdits(page);
   await inject('group_therapy');
-  await page.waitForTimeout(800);
+  await idle(page);
 
   const openParser = async () => {
     if (await page.locator('.gt-tp').count()) return;
@@ -49,11 +49,11 @@ test('the text parser remembers maximized and the annotation button, and a creat
       if (b) b.click();
     });
     await page.waitForSelector('.gt-tp', { timeout: 15000 });
-    await page.waitForTimeout(500);
+    await frames(page);
   };
   const closeParser = async () => {
     await page.evaluate(() => { const x = [...document.querySelectorAll('.gt-tp .gt-cons-x')].find(b => b.textContent.includes('✕')); if (x) x.click(); });
-    await page.waitForTimeout(400);
+    await frames(page);
   };
   const setText = async (text, pat) => {
     await page.evaluate(({ text, pat }) => {
@@ -62,7 +62,7 @@ test('the text parser remembers maximized and the annotation button, and a creat
       const p = document.querySelector('.gt-tp-pat');
       if (p) { p.value = pat; p.dispatchEvent(new Event('input', { bubbles: true })); }
     }, { text, pat });
-    await page.waitForTimeout(700);
+    await frames(page);
   };
   const isMax = () => page.evaluate(() => !!document.querySelector('.gt-tp.gt-tp-max') || !!document.querySelector('.gt-tp .gt-tp-max') || !!(document.querySelector('.gt-cons.gt-tp') || {}).classList?.contains('gt-tp-max'));
 
@@ -77,7 +77,7 @@ test('the text parser remembers maximized and the annotation button, and a creat
     const b = [...document.querySelectorAll('.gt-tp .gt-cons-x')].find(x => x.textContent.includes('⛶') || x.textContent.includes('❐'));
     if (b) b.click();
   });
-  await page.waitForTimeout(300);
+  await frames(page);
   check(await isMax(), 'clicking ⛶ maximizes the window');
   await attachShot(testInfo, page.locator('.gt-tp'), 'i544r5-maximized');
   await closeParser();
@@ -92,8 +92,9 @@ test('the text parser remembers maximized and the annotation button, and a creat
     const b = [...document.querySelectorAll('.gt-tp button')].find(x => /load annotation/i.test(x.textContent || ''));
     if (!b) return { missing: true };
     b.click();
-    for (let i = 0; i < 80; i++) { await new Promise(r => setTimeout(r, 100)); if (!/loading/i.test(b.textContent)) break; }
-    await new Promise(r => setTimeout(r, 500));
+    const eventually = async f => { for (let i = 0; i < 400 && !f(); i++) await new Promise(r => setTimeout(r, 25)); return f(); };
+    await eventually(() => !/loading/i.test(b.textContent) && (document.querySelector('.gt-tp textarea') || {}).value);
+    await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
     const clr = document.querySelector('.gt-cons-btn');
     const btn = [...document.querySelectorAll('.gt-tp .gt-cons-btn')].find(x => /apply & clear annotation/i.test(x.textContent || ''));
     return { missing: false, text: (document.querySelector('.gt-tp textarea') || {}).value || '', shown: !!(btn && btn.style.display !== 'none') };
@@ -121,9 +122,9 @@ test('the text parser remembers maximized and the annotation button, and a creat
     btns[btns.length - 1].click();
   });
   await page.waitForSelector('.gt-tp-apop', { timeout: 8000 });
-  await page.waitForTimeout(300);
+  await frames(page);
   await page.evaluate(() => document.querySelector('.gt-tp-plus').dispatchEvent(new MouseEvent('contextmenu', { bubbles: true, cancelable: true })));
-  await page.waitForTimeout(500);
+  await frames(page);
   const creating = await page.evaluate(() => {
     const els = [...document.querySelectorAll('.gt-tp-creating')];
     return { n: els.length, tag: els[0] && els[0].tagName, text: els[0] && els[0].textContent.trim(), title: els[0] && els[0].title };
@@ -136,7 +137,7 @@ test('the text parser remembers maximized and the annotation button, and a creat
   await attachShot(testInfo, page.locator('.gt-tp'), 'i544r5-creating-cancel');
 
   await page.evaluate(() => document.querySelector('.gt-tp-creating').click());
-  await page.waitForTimeout(600);
+  await frames(page);
   const cancelled = await page.evaluate(() => ({
     creating: document.querySelectorAll('.gt-tp-creating').length,
     searchBtns: [...document.querySelectorAll('.gt-tp-tbl tbody tr')].map(r => [...r.querySelectorAll('button.gt-tp-search')].length),
@@ -148,12 +149,17 @@ test('the text parser remembers maximized and the annotation button, and a creat
   check(cancelled.searchBtns.every(n => n === 2), 'and the entity search is back on every row — ' + JSON.stringify(cancelled.searchBtns));
   // A cancelled create must stay cancelled: if the tab commits anyway later, that
   // post-back must not silently rewrite rows the user has stopped waiting on.
-  await page.evaluate(() => {
+  await page.evaluate(async () => {
     const u = new URL(window.__gtOpened.u, location.origin);
     const ch = new BroadcastChannel('gt-entity-created');
+    // A channel delivers to its receivers in the order they were made, so this one,
+    // made after Group Therapy's, hears the message once Group Therapy has handled it.
+    const seen = new BroadcastChannel('gt-entity-created');
+    const heard = new Promise(r => { seen.onmessage = () => r(); });
     ch.postMessage({ token: u.searchParams.get('x_gtcreate'), kind: 'artist', gid: '82ca9599-5a15-4ff5-90d5-59ac8afaf5c7' });
+    await heard; seen.close();
+    await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
   });
-  await page.waitForTimeout(2000);
   const afterLate = await page.evaluate(() => ({
     creating: document.querySelectorAll('.gt-tp-creating').length,
     rows: [...document.querySelectorAll('.gt-tp-tbl tbody tr')].map(r => (r.innerText || '').replace(/\s+/g, ' ').trim()),

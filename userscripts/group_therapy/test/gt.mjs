@@ -1,5 +1,5 @@
 // Shared setup for Group Therapy's browser specs.
-import { requireLogin, SANDBOX } from '../../../dev/test/harness.mjs';
+import { requireLogin, SANDBOX, settled, idle } from '../../../dev/test/harness.mjs';
 
 export const RELEASE = '3a37a35f-1e06-457f-9b2a-46155c5c03ce';   // the sandbox release most specs edit
 
@@ -19,9 +19,9 @@ export async function blockEdits(page) {
 export async function openRelEditor(page, inject, release = RELEASE) {
   await page.goto(`${SANDBOX}/release/${release}/edit-relationships`, { waitUntil: 'domcontentloaded' });
   await requireLogin(page);
-  await page.waitForTimeout(4500);
+  await settled(page);
   await inject('group_therapy', { waitFor: '__groupTherapy' });
-  await page.waitForTimeout(1500);
+  await idle(page);
 }
 
 // Gives the release an annotation when it has none (550-clear-annotation clears it), so
