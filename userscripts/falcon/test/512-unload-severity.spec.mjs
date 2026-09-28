@@ -6,7 +6,7 @@
 // — a navigation stealing the tab MID-run — so the level now follows `busy`,
 // same signal noteUnload() already computes for the message's own wording.
 import { readFile } from 'node:fs/promises';
-import { test, check, requireLogin, sourceOf } from '../../../dev/test/harness.mjs';
+import { test, check, requireLogin, sourceOf, mbNoise } from '../../../dev/test/harness.mjs';
 
 // the script brings its own GM stand-ins, as it did before the harness
 test.use({ gm: false });
@@ -24,7 +24,7 @@ test("#512: unload severity", { tag: ['@sandbox', '@login'] }, async ({ context,
     window.GM_info = { script: { name: 'Falcon', version: 't' } };
   });
   const errs = []; 
-  page.on('pageerror', e => errs.push(e.message));
+  page.on('pageerror', e => { if (!mbNoise(e.message)) errs.push(e.message); });
   await page.goto('https://test.musicbrainz.org/', { waitUntil: 'load' });
   await page.addScriptTag({ content: code });
   await page.waitForFunction(() => !!window.__falconTest, { timeout: 5000 });

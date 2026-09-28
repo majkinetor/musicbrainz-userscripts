@@ -16,7 +16,7 @@
 // the right recording. Read-only: no MusicBrainz page is opened, nothing is
 // submitted.
 import { readFile } from 'node:fs/promises';
-import { test, check, requireLogin, sourceOf, replayWs, idle } from '../../../dev/test/harness.mjs';
+import { test, check, requireLogin, sourceOf, replayWs, idle, mbNoise } from '../../../dev/test/harness.mjs';
 import { join } from 'node:path';
 
 // the script brings its own GM stand-ins, as it did before the harness
@@ -57,7 +57,7 @@ test("#540: isrc alignment", { tag: ['@sandbox', '@login', '@critical'] }, async
     window.GM_deleteValue = k => s.delete(k);
     window.GM_info = { script: { name: 'Falcon', version: 't' } };
   });
-  const errs = []; page.on('pageerror', e => errs.push(e.message));
+  const errs = []; page.on('pageerror', e => { if (!mbNoise(e.message)) errs.push(e.message); });
   // Serve the fake page from harmony's own origin so the script's @match logic
   // and any origin checks behave as they would for real.
   await page.route('https://harmony.pulsewidth.org.uk/release/actions*', route =>

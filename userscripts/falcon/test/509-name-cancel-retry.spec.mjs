@@ -8,7 +8,7 @@
 // now sweeps still-nameless queued items whenever the suspension actually
 // lifts (start()'s natural-completion path, and stop()).
 import { readFile } from 'node:fs/promises';
-import { test, check, requireLogin, sourceOf, until } from '../../../dev/test/harness.mjs';
+import { test, check, requireLogin, sourceOf, until, mbNoise } from '../../../dev/test/harness.mjs';
 
 // the script brings its own GM stand-ins, as it did before the harness
 test.use({ gm: false });
@@ -28,7 +28,7 @@ test("#509: name cancel retry", { tag: ['@sandbox', '@login'] }, async ({ contex
     window.GM_info = { script: { name: 'Falcon', version: 't' } };
   });
   const errs = []; 
-  page.on('pageerror', e => errs.push(e.message));
+  page.on('pageerror', e => { if (!mbNoise(e.message)) errs.push(e.message); });
   // The name lookup is held until the spec lets it go, so it is still out when
   // suspendNameLookups() cancels it — the real race, without guessing a delay.
   const heldNames = []; let namesReleased = false;

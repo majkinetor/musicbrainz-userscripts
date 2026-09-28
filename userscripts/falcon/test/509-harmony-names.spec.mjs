@@ -6,7 +6,7 @@
 // MB round-trip for Harmony-sourced items. Row HTML below is a trimmed copy
 // of a real one captured live from harmony.pulsewidth.org.uk.
 import { readFile } from 'node:fs/promises';
-import { test, check, requireLogin, sourceOf, frames } from '../../../dev/test/harness.mjs';
+import { test, check, requireLogin, sourceOf, frames, mbNoise } from '../../../dev/test/harness.mjs';
 
 // the script brings its own GM stand-ins, as it did before the harness
 test.use({ gm: false });
@@ -46,7 +46,7 @@ test("#509: harmony names", { tag: ['@sandbox', '@login'] }, async ({ context, p
     window.GM_info = { script: { name: 'Falcon', version: 't' } };
   });
   const errs = []; 
-  page.on('pageerror', e => errs.push(e.message));
+  page.on('pageerror', e => { if (!mbNoise(e.message)) errs.push(e.message); });
 
   // harmony.pulsewidth.org.uk is one of the script's @match hosts — matters for
   // MB_TARGET resolving to https://musicbrainz.org (not location.origin).

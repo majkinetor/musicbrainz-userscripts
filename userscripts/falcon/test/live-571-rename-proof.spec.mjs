@@ -17,7 +17,7 @@
 // Sandbox only: it refuses to run against any host but test.musicbrainz.org.
 // Run: node test/live-571-rename-proof.mjs
 import { readFile } from 'node:fs/promises';
-import { test, check, requireLogin, sourceOf, idle, frames } from '../../../dev/test/harness.mjs';
+import { test, check, requireLogin, sourceOf, idle, frames, mbNoise } from '../../../dev/test/harness.mjs';
 import { join } from 'node:path';
 
 // the script brings its own GM stand-ins, as it did before the harness
@@ -74,7 +74,7 @@ test("live 571 rename proof", { tag: ['@sandbox', '@login'] }, async ({ context,
       window.GM_deleteValue = k => s.delete(k);
       window.GM_info = { script: { name: 'Falcon', version: 't' } };
     });
-    const errs = []; page.on('pageerror', e => errs.push(e.message));
+    const errs = []; page.on('pageerror', e => { if (!mbNoise(e.message)) errs.push(e.message); });
     for (let a = 1; ; a++) {
       try { await page.goto(`${HOST}/release/${TARGETS[4].mbid}`, { waitUntil: 'domcontentloaded', timeout: 60000 }); break; }
       catch (e) { if (a >= 3) throw e; await page.waitForTimeout(5000); }

@@ -7,7 +7,7 @@
 // the card, so MB always lays out the page correctly and the card just shows a
 // shrunk, legible thumbnail.
 import { readFile } from 'node:fs/promises';
-import { test, check, requireLogin, sourceOf, idle, frames, until } from '../../../dev/test/harness.mjs';
+import { test, check, requireLogin, sourceOf, idle, frames, until, mbNoise } from '../../../dev/test/harness.mjs';
 
 // the script brings its own GM stand-ins, as it did before the harness
 test.use({ gm: false });
@@ -24,7 +24,7 @@ test("#467: worker scale", { tag: ['@sandbox', '@login'] }, async ({ context, pa
   });
   const ck = check;
 
-  const errs = []; page.on('pageerror', e => errs.push(e.message));
+  const errs = []; page.on('pageerror', e => { if (!mbNoise(e.message)) errs.push(e.message); });
   // #467's hide-idle-workers feature hides a card the instant it has nothing left to
   // do, so the "submit" is held open until the card has been inspected: the item
   // stays genuinely 'active' for exactly as long as the checks need it.

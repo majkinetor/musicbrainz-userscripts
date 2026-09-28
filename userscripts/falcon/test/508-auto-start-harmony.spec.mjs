@@ -6,7 +6,7 @@
 // general external contract any script/user can hand Falcon, not something
 // Harmony specifically vouches for.
 import { readFile } from 'node:fs/promises';
-import { test, check, requireLogin, sourceOf, frames, idle, until } from '../../../dev/test/harness.mjs';
+import { test, check, requireLogin, sourceOf, frames, idle, until, mbNoise } from '../../../dev/test/harness.mjs';
 
 // the script brings its own GM stand-ins, as it did before the harness
 test.use({ gm: false });
@@ -20,7 +20,7 @@ test("#508: auto start harmony", { tag: ['@sandbox', '@login'] }, async ({ conte
 
   async function bootWithToken({ autoStart }) {
     const page = await context.newPage();
-    const errs = []; page.on('pageerror', e => errs.push(e.message));
+    const errs = []; page.on('pageerror', e => { if (!mbNoise(e.message)) errs.push(e.message); });
     await page.route('**/recording/*/edit*', async (route, request) => {
       if (request.method() === 'POST') {
         const mbid = (request.url().match(/\/recording\/([0-9a-f-]{36})\/edit/) || [])[1];
@@ -79,7 +79,7 @@ test("#508: auto start harmony", { tag: ['@sandbox', '@login'] }, async ({ conte
   // 3. autoStart ON, but a base64-scheme (non-Harmony) seed -> still just queued.
   {
     const page = await context.newPage();
-    const errs = []; page.on('pageerror', e => errs.push(e.message));
+    const errs = []; page.on('pageerror', e => { if (!mbNoise(e.message)) errs.push(e.message); });
     await page.addInitScript(() => {
       const store = new Map();
       store.set('falcon:autoStartHarmonyImport', true);
@@ -96,7 +96,7 @@ test("#508: auto start harmony", { tag: ['@sandbox', '@login'] }, async ({ conte
     await page.close();
 
     const page2 = await context.newPage();
-    const errs2 = []; page2.on('pageerror', e => errs2.push(e.message));
+    const errs2 = []; page2.on('pageerror', e => { if (!mbNoise(e.message)) errs2.push(e.message); });
     await page2.addInitScript(() => {
       const store = new Map();
       store.set('falcon:autoStartHarmonyImport', true);

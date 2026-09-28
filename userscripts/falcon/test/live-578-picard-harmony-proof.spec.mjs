@@ -15,7 +15,7 @@
 import { readFile } from 'node:fs/promises';
 import { chromium } from '@playwright/test';
 import { harmonyReplay } from './fc.mjs';
-import { test, check, requireLogin, sourceOf, idle, until, settled } from '../../../dev/test/harness.mjs';
+import { test, check, requireLogin, sourceOf, idle, until, settled, mbNoise } from '../../../dev/test/harness.mjs';
 
 // the script brings its own GM stand-ins, as it did before the harness
 test.use({ gm: false });
@@ -27,7 +27,7 @@ test("live 578 picard harmony proof", { tag: ['@sandbox', '@login'] }, async ({ 
   const log = (...a) => console.log('[live-578]', ...a);
   const ck = check;
 
-  const errs = []; page.on('pageerror', e => errs.push(e.message));
+  const errs = []; page.on('pageerror', e => { if (!mbNoise(e.message)) errs.push(e.message); });
   await page.addInitScript(() => {
     const store = new Map();
     window.GM_getValue = (k, d) => store.has(k) ? store.get(k) : d;

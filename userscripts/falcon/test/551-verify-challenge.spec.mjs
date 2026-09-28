@@ -13,7 +13,7 @@
 //
 // Read-only: every POST is aborted and asserted at zero.
 import { readFile } from 'node:fs/promises';
-import { test, check, requireLogin, sourceOf, idle } from '../../../dev/test/harness.mjs';
+import { test, check, requireLogin, sourceOf, idle, mbNoise } from '../../../dev/test/harness.mjs';
 import { join } from 'node:path';
 
 // the script brings its own GM stand-ins, as it did before the harness
@@ -50,7 +50,7 @@ test("#551: verify challenge", { tag: ['@sandbox', '@login'] }, async ({ context
     window.GM_deleteValue = k => localStorage.removeItem('gmtest:' + k);
     window.GM_info = { script: { name: 'Falcon', version: 't' } };
   });
-  const errs = []; page.on('pageerror', e => errs.push(e.message));
+  const errs = []; page.on('pageerror', e => { if (!mbNoise(e.message)) errs.push(e.message); });
   const posted = [];
 
   let serveChallenge = false;

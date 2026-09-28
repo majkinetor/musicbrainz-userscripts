@@ -6,7 +6,7 @@
 // so a human can review/complete/commit an item by hand (mirrors what Harmony
 // itself does per-entity).
 import { readFile } from 'node:fs/promises';
-import { test, check, requireLogin, sourceOf, idle } from '../../../dev/test/harness.mjs';
+import { test, check, requireLogin, sourceOf, idle, mbNoise } from '../../../dev/test/harness.mjs';
 
 // the script brings its own GM stand-ins, as it did before the harness
 test.use({ gm: false });
@@ -25,7 +25,7 @@ test("#467: review ux", { tag: ['@sandbox', '@login'] }, async ({ context, page 
 
   async function freshPage() {
     const page = await context.newPage();
-    const errs = []; page.on('pageerror', e => errs.push(e.message));
+    const errs = []; page.on('pageerror', e => { if (!mbNoise(e.message)) errs.push(e.message); });
     await page.goto('https://test.musicbrainz.org/', { waitUntil: 'load' });
     await requireLogin(page);
     await idle(page);

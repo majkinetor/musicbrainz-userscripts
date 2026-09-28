@@ -9,7 +9,7 @@
 // unresolvable row (so it can't block the rest of the group), and reports it as
 // a specific, actionable failure instead of a bare "form invalid?" on submit.
 import { readFile } from 'node:fs/promises';
-import { test, check, requireLogin, sourceOf, idle } from '../../../dev/test/harness.mjs';
+import { test, check, requireLogin, sourceOf, idle, mbNoise } from '../../../dev/test/harness.mjs';
 
 // the script brings its own GM stand-ins, as it did before the harness
 test.use({ gm: false });
@@ -31,7 +31,7 @@ test("#467: ambiguous type", { tag: ['@sandbox', '@login'] }, async ({ context, 
   // was nothing else valid to save), and no exception escapes fillAndSubmit.
   {
     const page = context.pages()[0] || await context.newPage();
-    const errs = []; page.on('pageerror', e => errs.push(e.message));
+    const errs = []; page.on('pageerror', e => { if (!mbNoise(e.message)) errs.push(e.message); });
     await page.goto('https://test.musicbrainz.org/recording/e42f8e08-3150-4c6c-be5b-4030c29b1bf7/edit', { waitUntil: 'load' });
     await requireLogin(page);
     await idle(page);
@@ -63,7 +63,7 @@ test("#467: ambiguous type", { tag: ['@sandbox', '@login'] }, async ({ context, 
   // failing outright because ONE bad row poisoned the whole form).
   {
     const page = await context.newPage();
-    const errs = []; page.on('pageerror', e => errs.push(e.message));
+    const errs = []; page.on('pageerror', e => { if (!mbNoise(e.message)) errs.push(e.message); });
     let posts = 0;
     await page.route('**/recording/*/edit*', async (route, request) => {
       if (request.method() === 'POST') { posts++; const mbid = (request.url().match(/\/recording\/([0-9a-f-]{36})\/edit/) || [])[1]; return route.fulfill({ status: 302, headers: { Location: `https://test.musicbrainz.org/recording/${mbid}` } }); }

@@ -5,7 +5,7 @@
 // just syntactically valid JSON but is actually accepted and produces the
 // items the docs claim (right entityType/urls/comment/isrcs/cover per row).
 import { readFile } from 'node:fs/promises';
-import { test, check, requireLogin, sourceOf, idle } from '../../../dev/test/harness.mjs';
+import { test, check, requireLogin, sourceOf, idle, mbNoise } from '../../../dev/test/harness.mjs';
 
 // the script brings its own GM stand-ins, as it did before the harness
 test.use({ gm: false });
@@ -31,7 +31,7 @@ test("#496: readme json model", { tag: ['@sandbox', '@login'] }, async ({ contex
     window.GM_deleteValue = k => store.delete(k);
     window.GM_info = { script: { name: 'Falcon', version: 't' } };
   });
-  const errs = []; page.on('pageerror', e => errs.push(e.message));
+  const errs = []; page.on('pageerror', e => { if (!mbNoise(e.message)) errs.push(e.message); });
   await page.goto('https://test.musicbrainz.org/', { waitUntil: 'load' });
   await requireLogin(page);
   await idle(page);

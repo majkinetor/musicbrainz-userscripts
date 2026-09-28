@@ -5,7 +5,7 @@
 // bounded second chance (polling up to 5s) before finalizing the payload,
 // instead of shipping whatever it found on the very first synchronous read.
 import { readFile } from 'node:fs/promises';
-import { test, check, requireLogin, sourceOf } from '../../../dev/test/harness.mjs';
+import { test, check, requireLogin, sourceOf, mbNoise } from '../../../dev/test/harness.mjs';
 
 // the script brings its own GM stand-ins, as it did before the harness
 test.use({ gm: false });
@@ -37,7 +37,7 @@ test("#509: click waits for names", { tag: ['@sandbox', '@login'] }, async ({ co
   </script>
   </body></html>`;
 
-  const errs = []; page.on('pageerror', e => errs.push(e.message));
+  const errs = []; page.on('pageerror', e => { if (!mbNoise(e.message)) errs.push(e.message); });
   await page.addInitScript(() => {
     window.__gmWrites = [];
     const store = new Map();

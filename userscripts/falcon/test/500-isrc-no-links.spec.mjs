@@ -7,7 +7,7 @@
 // recording, once the item is already queued (same shape as #494's cover
 // candidates) — Falcon has no synchronous view of the tracklist otherwise.
 import { readFile } from 'node:fs/promises';
-import { test, check, requireLogin, sourceOf, frames } from '../../../dev/test/harness.mjs';
+import { test, check, requireLogin, sourceOf, frames, mbNoise } from '../../../dev/test/harness.mjs';
 
 // the script brings its own GM stand-ins, as it did before the harness
 test.use({ gm: false });
@@ -46,7 +46,7 @@ test("#500: isrc no links", { tag: ['@sandbox', '@login'] }, async ({ context, p
   //    places each isrc on its actual recording, positionally.
   {
     const page = await context.newPage();
-    const errs = []; page.on('pageerror', e => errs.push(e.message));
+    const errs = []; page.on('pageerror', e => { if (!mbNoise(e.message)) errs.push(e.message); });
     const recMbids = ['aaaaaaaa-0000-0000-0000-000000000001', 'aaaaaaaa-0000-0000-0000-000000000002', 'aaaaaaaa-0000-0000-0000-000000000003', 'aaaaaaaa-0000-0000-0000-000000000004'];
     await page.route(`**/ws/2/release/${RELEASE}?inc=recordings&fmt=json`, route => route.fulfill({
       status: 200, contentType: 'application/json',
@@ -77,7 +77,7 @@ test("#500: isrc no links", { tag: ['@sandbox', '@login'] }, async ({ context, p
   //    includes the isrcs, and the stored payload carries a pendingIsrcs tuple.
   {
     const page = await context.newPage();
-    const errs = []; page.on('pageerror', e => errs.push(e.message));
+    const errs = []; page.on('pageerror', e => { if (!mbNoise(e.message)) errs.push(e.message); });
     // ensureHarmonyButton only ever runs when ON_HARMONY (hostname-gated) — a
     // real navigation first, then swap in exactly the anchors this test needs.
     await page.route('https://harmony.pulsewidth.org.uk/**', r => r.fulfill({ status: 200, contentType: 'text/html', body: '<html><body></body></html>' }));   // Harmony's origin, not Harmony

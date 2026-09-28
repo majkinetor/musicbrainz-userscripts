@@ -3,7 +3,7 @@
 // (data-mb-corner="br", order 10) keep their historical closest-to-the-corner
 // spot; Falcon (order 20) stacks above them instead of overlapping.
 import { readFile } from 'node:fs/promises';
-import { test, check, requireLogin, sourceOf, idle, frames } from '../../../dev/test/harness.mjs';
+import { test, check, requireLogin, sourceOf, idle, frames, mbNoise } from '../../../dev/test/harness.mjs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 const HERE = dirname(fileURLToPath(import.meta.url));
@@ -41,7 +41,7 @@ test("#468: corner slot", { tag: ['@sandbox', '@login'] }, async ({ context, pag
   // 1. Falcon + Apollo Editor on a real release edit page.
   {
     const page = await context.newPage();
-    const errs = []; page.on('pageerror', e => errs.push(e.message));
+    const errs = []; page.on('pageerror', e => { if (!mbNoise(e.message)) errs.push(e.message); });
     await page.goto('https://test.musicbrainz.org/release/e3e7446a-71fd-43b9-8cbb-b48066a8b566/edit', { waitUntil: 'load' });
     await requireLogin(page);
     await idle(page);
@@ -61,7 +61,7 @@ test("#468: corner slot", { tag: ['@sandbox', '@login'] }, async ({ context, pag
   // 2. Falcon + Art Station on a real cover-art page.
   {
     const page = await context.newPage();
-    const errs = []; page.on('pageerror', e => errs.push(e.message));
+    const errs = []; page.on('pageerror', e => { if (!mbNoise(e.message)) errs.push(e.message); });
     await page.goto('https://test.musicbrainz.org/release/e3e7446a-71fd-43b9-8cbb-b48066a8b566/cover-art', { waitUntil: 'load' });
     await requireLogin(page);
     await idle(page);

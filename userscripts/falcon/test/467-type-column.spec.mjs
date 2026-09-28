@@ -2,7 +2,7 @@
 // cell selects all entities of that type" + "make external links clickable" +
 // "Put link type next to it, not on the other side of the screen".
 import { readFile } from 'node:fs/promises';
-import { test, check, requireLogin, sourceOf, idle } from '../../../dev/test/harness.mjs';
+import { test, check, requireLogin, sourceOf, idle, mbNoise } from '../../../dev/test/harness.mjs';
 
 // the script brings its own GM stand-ins, as it did before the harness
 test.use({ gm: false });
@@ -19,7 +19,7 @@ test("#467: type column", { tag: ['@sandbox', '@login'] }, async ({ context, pag
   });
   const ck = check;
 
-  const errs = []; page.on('pageerror', e => errs.push(e.message));
+  const errs = []; page.on('pageerror', e => { if (!mbNoise(e.message)) errs.push(e.message); });
   await page.goto('https://test.musicbrainz.org/', { waitUntil: 'load' });
   await requireLogin(page);
   await idle(page);

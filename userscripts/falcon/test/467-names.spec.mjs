@@ -4,7 +4,7 @@
 // on musicbrainz.org itself); entityLabel() falls back to entityType/mbid-prefix
 // while the name is still resolving or if the lookup fails.
 import { readFile } from 'node:fs/promises';
-import { test, check, requireLogin, sourceOf, idle } from '../../../dev/test/harness.mjs';
+import { test, check, requireLogin, sourceOf, idle, mbNoise } from '../../../dev/test/harness.mjs';
 
 // the script brings its own GM stand-ins, as it did before the harness
 test.use({ gm: false });
@@ -18,7 +18,7 @@ test("#467: names", { tag: ['@sandbox', '@login'] }, async ({ context, page }) =
     window.GM_setValue = (k, v) => store.set(k, v);
     window.GM_info = { script: { name: 'Falcon', version: 't' } };
   });
-  const errs = []; page.on('pageerror', e => errs.push(e.message));
+  const errs = []; page.on('pageerror', e => { if (!mbNoise(e.message)) errs.push(e.message); });
   await page.goto('https://test.musicbrainz.org/', { waitUntil: 'load' });
   await requireLogin(page);
   await idle(page);

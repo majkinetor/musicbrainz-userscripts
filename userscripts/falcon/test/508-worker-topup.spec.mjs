@@ -9,7 +9,7 @@
 // adds anything while a run is already active, regardless of what triggered
 // the addition.
 import { readFile } from 'node:fs/promises';
-import { test, check, requireLogin, sourceOf } from '../../../dev/test/harness.mjs';
+import { test, check, requireLogin, sourceOf, mbNoise } from '../../../dev/test/harness.mjs';
 
 // the script brings its own GM stand-ins, as it did before the harness
 test.use({ gm: false });
@@ -27,7 +27,7 @@ test("#508: worker topup", { tag: ['@sandbox', '@login'] }, async ({ context, pa
     window.GM_info = { script: { name: 'Falcon', version: 't' } };
   });
   const errs = []; 
-  page.on('pageerror', e => errs.push(e.message));
+  page.on('pageerror', e => { if (!mbNoise(e.message)) errs.push(e.message); });
   // intercept edit-page navigations so workers actually stall in a running
   // state (loading forever) instead of racing through and going idle before
   // we get a chance to observe the worker count.
@@ -70,7 +70,7 @@ test("#508: worker topup", { tag: ['@sandbox', '@login'] }, async ({ context, pa
   // over from a prior start/stop cycle) are a page-lifetime accumulation
   // unrelated to this fix, not something to reset mid-test here.
   const page3 = await context.newPage();
-  const errs3 = []; page3.on('pageerror', e => errs3.push(e.message));
+  const errs3 = []; page3.on('pageerror', e => { if (!mbNoise(e.message)) errs3.push(e.message); });
   await page3.route('**/recording/*/edit*', route => new Promise(() => {}));
   await page3.goto('https://test.musicbrainz.org/', { waitUntil: 'load' });
   await page3.addScriptTag({ content: code });

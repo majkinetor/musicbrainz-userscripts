@@ -7,7 +7,7 @@
 // instead of MB's bare homepage.
 import { readFile } from 'node:fs/promises';
 import { harmonyReplay } from './fc.mjs';
-import { test, check, requireLogin, sourceOf, idle, frames } from '../../../dev/test/harness.mjs';
+import { test, check, requireLogin, sourceOf, idle, frames, mbNoise } from '../../../dev/test/harness.mjs';
 
 // the script brings its own GM stand-ins, as it did before the harness
 test.use({ gm: false });
@@ -29,7 +29,7 @@ test("#498: harmony release target", { tag: ['@sandbox', '@login'] }, async ({ c
   //    panel on that release's own page, not the bare homepage.
   {
     const page = await context.newPage();
-    const errs = []; page.on('pageerror', e => errs.push(e.message));
+    const errs = []; page.on('pageerror', e => { if (!mbNoise(e.message)) errs.push(e.message); });
     const hw = await harmonyReplay(page, '498-by-mbid');
     await page.goto(`https://harmony.pulsewidth.org.uk/release/actions?deezer=873204812&spotify=1SzNfUgYfuebR9knynZSqz&qobuz=g1zmwqqsmmbeq&gtin=199945053117&itunes=&tidal=&region=GB&release_mbid=${RELEASE_MBID}`, { waitUntil: 'domcontentloaded', timeout: 30000 }).catch(() => {});
     await idle(page);

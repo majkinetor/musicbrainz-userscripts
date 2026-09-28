@@ -28,7 +28,7 @@
 // visible there, in its active state" (verify-467-item-popup.mjs covers reusing
 // that live iframe from the queue tab's failed-item popup).
 import { readFile } from 'node:fs/promises';
-import { test, check, requireLogin, sourceOf, idle, frames } from '../../../dev/test/harness.mjs';
+import { test, check, requireLogin, sourceOf, idle, frames, mbNoise } from '../../../dev/test/harness.mjs';
 
 // the script brings its own GM stand-ins, as it did before the harness
 test.use({ gm: false });
@@ -49,7 +49,7 @@ test("#467: iframe lifecycle", { tag: ['@sandbox', '@login'] }, async ({ context
   // (fresh) iframe DOM element — never the literal same node reused/renavigated.
   {
     const page = context.pages()[0] || await context.newPage();
-    const errs = []; page.on('pageerror', e => errs.push(e.message));
+    const errs = []; page.on('pageerror', e => { if (!mbNoise(e.message)) errs.push(e.message); });
     await page.route('**/artist/*/edit*', async (route, request) => {
       if (request.method() === 'POST') { const mbid = (request.url().match(/\/artist\/([0-9a-f-]{36})\/edit/) || [])[1]; return route.fulfill({ status: 302, headers: { Location: `https://test.musicbrainz.org/artist/${mbid}` } }); }
       return route.fallback();
@@ -99,7 +99,7 @@ test("#467: iframe lifecycle", { tag: ['@sandbox', '@login'] }, async ({ context
   // processes nothing further, so it's not the compounding risk fix #1 addresses.
   {
     const page = context.pages()[0] || await context.newPage();
-    const errs = []; page.on('pageerror', e => errs.push(e.message));
+    const errs = []; page.on('pageerror', e => { if (!mbNoise(e.message)) errs.push(e.message); });
     await page.route('**/artist/*/edit*', async (route, request) => {
       if (request.method() === 'POST') { const mbid = (request.url().match(/\/artist\/([0-9a-f-]{36})\/edit/) || [])[1]; return route.fulfill({ status: 302, headers: { Location: `https://test.musicbrainz.org/artist/${mbid}` } }); }
       return route.fallback();

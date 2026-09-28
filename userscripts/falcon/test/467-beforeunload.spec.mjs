@@ -11,7 +11,7 @@
 // Also runs the full 2-round worker flow with a genuinely-rejected round-1 url
 // (an existing MB relationship) to prove the real worker loop no longer hangs.
 import { readFile } from 'node:fs/promises';
-import { test, check, requireLogin, sourceOf, frames, idle } from '../../../dev/test/harness.mjs';
+import { test, check, requireLogin, sourceOf, frames, idle, mbNoise } from '../../../dev/test/harness.mjs';
 import { resolve } from 'node:path';
 
 // the script brings its own GM stand-ins, as it did before the harness
@@ -118,7 +118,7 @@ test("#467: beforeunload", { tag: ['@sandbox', '@login'] }, async ({ context, pa
   // (already an existing relationship), round 2 must still complete (no hang).
   {
     const page = await context.newPage();
-    const errs = []; page.on('pageerror', e => errs.push(e.message));
+    const errs = []; page.on('pageerror', e => { if (!mbNoise(e.message)) errs.push(e.message); });
     let dialogsDuringRun = 0;
     page.on('dialog', async d => { dialogsDuringRun++; await d.dismiss(); });
     let posts = 0;

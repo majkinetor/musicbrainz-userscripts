@@ -12,7 +12,7 @@
 // Read-only: nothing is submitted, and every POST is aborted and asserted at
 // zero.
 import { readFile } from 'node:fs/promises';
-import { test, check, requireLogin, sourceOf, idle, frames } from '../../../dev/test/harness.mjs';
+import { test, check, requireLogin, sourceOf, idle, frames, mbNoise } from '../../../dev/test/harness.mjs';
 import { join } from 'node:path';
 
 // the script brings its own GM stand-ins, as it did before the harness
@@ -31,7 +31,7 @@ test("#547: queue summary", { tag: ['@sandbox', '@login'] }, async ({ context, p
     window.GM_deleteValue = k => s.delete(k);
     window.GM_info = { script: { name: 'Falcon', version: 't' } };
   });
-  const errs = []; page.on('pageerror', e => errs.push(e.message));
+  const errs = []; page.on('pageerror', e => { if (!mbNoise(e.message)) errs.push(e.message); });
   const posted = [];
   await page.route(() => true, route => {
     if (route.request().method() === 'POST') { posted.push(route.request().url()); return route.abort(); }

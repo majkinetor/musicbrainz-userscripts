@@ -6,7 +6,7 @@
 // from BOTH the per-row table and the totals/byStatus count. Every settled
 // item now gets counted; ones with no timing data just show dashes.
 import { readFile } from 'node:fs/promises';
-import { test, check, requireLogin, sourceOf } from '../../../dev/test/harness.mjs';
+import { test, check, requireLogin, sourceOf, mbNoise } from '../../../dev/test/harness.mjs';
 import { join, resolve } from 'node:path';
 
 // the script brings its own GM stand-ins, as it did before the harness
@@ -25,7 +25,7 @@ test("#513: summary untimed failures", { tag: ['@sandbox', '@login'] }, async ({
     window.GM_info = { script: { name: 'Falcon', version: 't' } };
   });
   const errs = []; 
-  page.on('pageerror', e => errs.push(e.message));
+  page.on('pageerror', e => { if (!mbNoise(e.message)) errs.push(e.message); });
   await page.goto('https://test.musicbrainz.org/', { waitUntil: 'load' });
   await page.addScriptTag({ content: code });
   await page.waitForFunction(() => !!window.__falconTest, { timeout: 5000 });

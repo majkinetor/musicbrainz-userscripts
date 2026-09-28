@@ -12,7 +12,7 @@
 // (3) a click that gets swallowed entirely is retried rather than burning the
 // whole timeout on one lost click.
 import { readFile } from 'node:fs/promises';
-import { test, check, requireLogin, sourceOf, idle } from '../../../dev/test/harness.mjs';
+import { test, check, requireLogin, sourceOf, idle, mbNoise } from '../../../dev/test/harness.mjs';
 
 // the script brings its own GM stand-ins, as it did before the harness
 test.use({ gm: false });
@@ -34,7 +34,7 @@ test("#467: submit retry", { tag: ['@sandbox', '@login'] }, async ({ context, pa
   // neutered for the first N clicks to simulate the lost-click case exactly.
   {
     const page = context.pages()[0] || await context.newPage();
-    const errs = []; page.on('pageerror', e => errs.push(e.message));
+    const errs = []; page.on('pageerror', e => { if (!mbNoise(e.message)) errs.push(e.message); });
     let posts = 0;
     await page.route('**/artist/*/edit*', async (route, request) => {
       if (request.method() === 'POST') { posts++; const mbid = (request.url().match(/\/artist\/([0-9a-f-]{36})\/edit/) || [])[1]; return route.fulfill({ status: 302, headers: { Location: `https://test.musicbrainz.org/artist/${mbid}` } }); }
@@ -91,7 +91,7 @@ test("#467: submit retry", { tag: ['@sandbox', '@login'] }, async ({ context, pa
   // way — the assertion is only that fillAndSubmit doesn't depend on it.)
   {
     const page = await context.newPage();
-    const errs = []; page.on('pageerror', e => errs.push(e.message));
+    const errs = []; page.on('pageerror', e => { if (!mbNoise(e.message)) errs.push(e.message); });
     await page.route('**/artist/*/edit*', async (route, request) => {
       if (request.method() === 'POST') { const mbid = (request.url().match(/\/artist\/([0-9a-f-]{36})\/edit/) || [])[1]; return route.fulfill({ status: 302, headers: { Location: `https://test.musicbrainz.org/artist/${mbid}` } }); }
       return route.fallback();

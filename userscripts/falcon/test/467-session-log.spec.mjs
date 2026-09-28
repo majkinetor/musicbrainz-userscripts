@@ -21,7 +21,7 @@
 // "Click buttons across tabs", which injects into Falcon's worker iframes and
 // closes the tab after a successful edit.
 import { readFile } from 'node:fs/promises';
-import { test, check, requireLogin, sourceOf, frames, idle, settled } from '../../../dev/test/harness.mjs';
+import { test, check, requireLogin, sourceOf, frames, idle, settled, mbNoise } from '../../../dev/test/harness.mjs';
 import { join } from 'node:path';
 
 // the script brings its own GM stand-ins, as it did before the harness
@@ -39,7 +39,7 @@ test("#467: session log", { tag: ['@sandbox', '@login'] }, async ({ context, pag
   });
   const ck = check;
 
-  const errs = []; page.on('pageerror', e => errs.push(e.message));
+  const errs = []; page.on('pageerror', e => { if (!mbNoise(e.message)) errs.push(e.message); });
   let posts = 0;
   await page.route('**/artist/*/edit*', async (route, request) => {
     if (request.method() === 'POST') { posts++; const m = request.url().match(/\/artist\/([0-9a-f-]{36})\/edit/); return route.fulfill({ status: 302, headers: { Location: `https://test.musicbrainz.org/artist/${m[1]}` } }); }

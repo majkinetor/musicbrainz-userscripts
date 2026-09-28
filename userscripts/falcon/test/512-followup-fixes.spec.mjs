@@ -8,7 +8,7 @@
 //    and w2" — per-row "; N links, disambiguation, isrc" breakdown in the
 //    run summary table, not just the aggregate line.
 import { readFile } from 'node:fs/promises';
-import { test, check, requireLogin, sourceOf, idle, frames } from '../../../dev/test/harness.mjs';
+import { test, check, requireLogin, sourceOf, idle, frames, mbNoise } from '../../../dev/test/harness.mjs';
 import { join, resolve } from 'node:path';
 
 // the script brings its own GM stand-ins, as it did before the harness
@@ -24,7 +24,7 @@ test("#512: followup fixes", { tag: ['@sandbox', '@login'] }, async ({ context, 
   // session left in localStorage by an earlier, unrelated tab/run.
   {
     const page = await context.newPage();
-    const errs = []; page.on('pageerror', e => errs.push(e.message));
+    const errs = []; page.on('pageerror', e => { if (!mbNoise(e.message)) errs.push(e.message); });
     await page.addInitScript(() => {
       const store = new Map();
       window.GM_getValue = (k, d) => store.has(k) ? store.get(k) : d;
@@ -56,7 +56,7 @@ test("#512: followup fixes", { tag: ['@sandbox', '@login'] }, async ({ context, 
   // 2. run summary shows a per-row breakdown, not just the aggregate.
   {
     const page = await context.newPage();
-    const errs = []; page.on('pageerror', e => errs.push(e.message));
+    const errs = []; page.on('pageerror', e => { if (!mbNoise(e.message)) errs.push(e.message); });
     await page.addInitScript(() => {
       const store = new Map();
       window.GM_getValue = (k, d) => store.has(k) ? store.get(k) : d;

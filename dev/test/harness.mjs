@@ -17,6 +17,7 @@
 //   a production write guard, always on — see below.
 //   page errors fail the test (test.use({ pageErrors: 'ignore' }) to opt out, or
 //                    pageErrors: [regex sources] to let only those through).
+//                    MusicBrainz's own React #418 always gets through: see mbNoise.
 //
 // The guard itself lives in guard.mjs; see there.
 //
@@ -90,6 +91,13 @@ export function sourceOf(name) {
   return env ? resolve(env) : resolve(REPO, SOURCES[name] || `userscripts/${name}/${name}.user.js`);
 }
 
+// MusicBrainz's own noise, never a script's error. React #418: the page was still
+// hydrating when the script went in (on a slow machine, or a script run at
+// DOMContentLoaded as a manager's document-end does), and React recovered by rendering
+// on the client. It turned up in a different spec on most full runs. A spec that
+// collects page errors itself filters with this too.
+export const mbNoise = msg => /Minified React error #418\b/.test(String(msg));
+
 export const test = base.extend({
   // options — override per file with test.use({ … })
   profile: ['logged-in', { option: true }],   // 'logged-in' → .pw-profile · 'fresh' → a throwaway profile
@@ -136,7 +144,7 @@ export const test = base.extend({
     expect(leaked, 'writes that reached PRODUCTION MusicBrainz — the guard has a hole').toEqual([]);
     if (prodWrites === 'fail') expect(refused.map(w => `${w.method} ${w.url} (${w.via})`), 'the test tried to write to production MusicBrainz (refused)').toEqual([]);
     const letThrough = Array.isArray(pageErrors) ? pageErrors.map(r => new RegExp(r)) : [];
-    if (pageErrors !== 'ignore') expect(errors.filter(e => !letThrough.some(r => r.test(e))), 'page errors').toEqual([]);
+    if (pageErrors !== 'ignore') expect(errors.filter(e => !mbNoise(e) && !letThrough.some(r => r.test(e))), 'page errors').toEqual([]);
   },
   page: async ({ context }, use) => { await use(context.pages()[0] || await context.newPage()); },
 

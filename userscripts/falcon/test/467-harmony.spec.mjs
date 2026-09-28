@@ -7,7 +7,7 @@
 // for download"), via MB's own "Add another relationship" row.
 import { readFile } from 'node:fs/promises';
 import { harmonyReplay } from './fc.mjs';
-import { test, check, requireLogin, sourceOf, idle } from '../../../dev/test/harness.mjs';
+import { test, check, requireLogin, sourceOf, idle, mbNoise } from '../../../dev/test/harness.mjs';
 
 // the script brings its own GM stand-ins, as it did before the harness
 test.use({ gm: false });
@@ -70,7 +70,7 @@ test("#467: harmony", { tag: ['@sandbox', '@login'] }, async ({ context, page })
   // duration of the click so this never opens a real tab.
   {
     const page = await context.newPage();
-    const errs = []; page.on('pageerror', e => errs.push(e.message));
+    const errs = []; page.on('pageerror', e => { if (!mbNoise(e.message)) errs.push(e.message); });
     const hw = await harmonyReplay(page, '467');
     await page.goto('https://harmony.pulsewidth.org.uk/release/actions?release_mbid=https%3A%2F%2Fmusicbrainz.org%2Frelease%2F20b03c7d-9e8a-42b9-8a96-bcc9564de034', { waitUntil: 'domcontentloaded', timeout: 30000 }).catch(() => {});
     await idle(page);
@@ -118,7 +118,7 @@ test("#467: harmony", { tag: ['@sandbox', '@login'] }, async ({ context, page })
   // the submit POST is intercepted+faked so nothing real is submitted.
   {
     const page = await context.newPage();
-    const errs = []; page.on('pageerror', e => errs.push(e.message));
+    const errs = []; page.on('pageerror', e => { if (!mbNoise(e.message)) errs.push(e.message); });
     let posts = 0;
     await page.route('**/recording/*/edit*', async (route, request) => {
       if (request.method() === 'POST') { posts++; const mbid = (request.url().match(/\/recording\/([0-9a-f-]{36})\/edit/) || [])[1]; return route.fulfill({ status: 302, headers: { Location: `https://test.musicbrainz.org/recording/${mbid}` } }); }

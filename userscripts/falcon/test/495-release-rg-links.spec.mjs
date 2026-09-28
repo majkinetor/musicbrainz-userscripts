@@ -14,7 +14,7 @@
 // test.musicbrainz.org (sanctioned sandbox, real submits are fine there),
 // never production.
 import { readFile } from 'node:fs/promises';
-import { test, check, requireLogin, sourceOf, idle, frames } from '../../../dev/test/harness.mjs';
+import { test, check, requireLogin, sourceOf, idle, frames, mbNoise } from '../../../dev/test/harness.mjs';
 
 // the script brings its own GM stand-ins, as it did before the harness
 test.use({ gm: false });
@@ -97,7 +97,7 @@ test("#495: release rg links", { tag: ['@sandbox', '@login'] }, async ({ context
   //    here — this is exactly what the sandbox is for.
   {
     const page = await context.newPage();
-    const errs = []; page.on('pageerror', e => errs.push(e.message));
+    const errs = []; page.on('pageerror', e => { if (!mbNoise(e.message)) errs.push(e.message); });
     const marker = 'falcon495-' + Date.now();
     await page.goto(`https://test.musicbrainz.org/release/${TEST_RELEASE}`, { waitUntil: 'load' });
     await requireLogin(page);

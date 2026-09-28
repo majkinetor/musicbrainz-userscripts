@@ -8,7 +8,7 @@
 import zlib from 'node:zlib';
 import { readFile } from 'node:fs/promises';
 import { harmonyReplay } from './fc.mjs';
-import { test, check, requireLogin, sourceOf, idle, frames } from '../../../dev/test/harness.mjs';
+import { test, check, requireLogin, sourceOf, idle, frames, mbNoise } from '../../../dev/test/harness.mjs';
 
 // the script brings its own GM stand-ins, as it did before the harness
 test.use({ gm: false });
@@ -78,7 +78,7 @@ test("#494: cover art", { tag: ['@sandbox', '@login'] }, async ({ context, page 
   //    must carry a 'release' tuple with coverCandidates (Discogs-free, direct URLs).
   {
     const page = await context.newPage();
-    const errs = []; page.on('pageerror', e => errs.push(e.message));
+    const errs = []; page.on('pageerror', e => { if (!mbNoise(e.message)) errs.push(e.message); });
     const hw = await harmonyReplay(page, '494');
     await page.goto('https://harmony.pulsewidth.org.uk/release/actions?deezer=373923127&spotify=13fYK0LOJBzdfLw5DLCGSg&qobuz=kh245e77ftrlb&gtin=4018939599782&itunes=&tidal=&region=GB&release_mbid=3b60d941-e4c7-4dca-9b4d-7a11d0268383', { waitUntil: 'domcontentloaded', timeout: 30000 }).catch(() => {});
     await idle(page);
@@ -153,7 +153,7 @@ test("#494: cover art", { tag: ['@sandbox', '@login'] }, async ({ context, page 
   //    interception-verification lesson: assert on what was actually POSTed).
   {
     const page = await context.newPage();
-    const errs = []; page.on('pageerror', e => errs.push(e.message));
+    const errs = []; page.on('pageerror', e => { if (!mbNoise(e.message)) errs.push(e.message); });
     const calls = [];
     await page.route('**/ws/js/cover-art-upload/**', route => {
       calls.push({ kind: 'sign', url: route.request().url() });
@@ -205,7 +205,7 @@ test("#494: cover art", { tag: ['@sandbox', '@login'] }, async ({ context, page 
   //    as a stray [] on every type including release/artist.
   {
     const page = await context.newPage();
-    const errs = []; page.on('pageerror', e => errs.push(e.message));
+    const errs = []; page.on('pageerror', e => { if (!mbNoise(e.message)) errs.push(e.message); });
     await page.goto('https://test.musicbrainz.org/', { waitUntil: 'load' });
     await page.addScriptTag({ content: code });
     await page.waitForFunction(() => !!window.__falconTest, { timeout: 5000 });
@@ -256,7 +256,7 @@ test("#494: cover art", { tag: ['@sandbox', '@login'] }, async ({ context, page 
     ck(sniffed.none === null, 'no recognizable extension -> null, not a guess');
 
     const page2 = await context.newPage();
-    const errs = []; page2.on('pageerror', e => errs.push(e.message));
+    const errs = []; page2.on('pageerror', e => { if (!mbNoise(e.message)) errs.push(e.message); });
     const signCalls = [];
     await page2.route('**/ws/js/cover-art-upload/**', route => {
       const mime = new URL(route.request().url()).searchParams.get('mime_type');

@@ -14,7 +14,7 @@
 // test did — a real gap in coverage) through GM storage and a fresh
 // "new tab" parseUrlParam() consumption, the exact path that was broken.
 import { readFile } from 'node:fs/promises';
-import { test, check, requireLogin, sourceOf, frames } from '../../../dev/test/harness.mjs';
+import { test, check, requireLogin, sourceOf, frames, mbNoise } from '../../../dev/test/harness.mjs';
 
 // the script brings its own GM stand-ins, as it did before the harness
 test.use({ gm: false });
@@ -51,7 +51,7 @@ test("#509: harmony name roundtrip", { tag: ['@sandbox', '@login', '@critical'] 
   // tab 1: the Harmony page — click the REAL button (not scrapeHarmonyActions()
   // called directly), capture exactly what gets written to GM storage.
   const page1 = await context.newPage();
-  const errs1 = []; page1.on('pageerror', e => errs1.push(e.message));
+  const errs1 = []; page1.on('pageerror', e => { if (!mbNoise(e.message)) errs1.push(e.message); });
   await page1.addInitScript(() => {
     window.__gmStore = new Map();
     window.__gmWrites = [];
@@ -85,7 +85,7 @@ test("#509: harmony name roundtrip", { tag: ['@sandbox', '@login', '@critical'] 
   // SAME GM storage back via parseUrlParam() — the other half of the round-trip.
   const token = pendingKey.slice('falcon:pending:'.length);
   const page2 = await context.newPage();
-  const errs2 = []; page2.on('pageerror', e => errs2.push(e.message));
+  const errs2 = []; page2.on('pageerror', e => { if (!mbNoise(e.message)) errs2.push(e.message); });
   await page2.addInitScript(({ token, payload }) => {
     const store = new Map([[`falcon:pending:${token}`, payload]]);
     window.GM_getValue = (k, d) => store.has(k) ? store.get(k) : d;

@@ -12,7 +12,7 @@
 // So: ask MB whether anything is actually staged before submitting, and report
 // "already up to date" instead of a bogus timeout+failure.
 import { readFile } from 'node:fs/promises';
-import { test, check, requireLogin, sourceOf, idle } from '../../../dev/test/harness.mjs';
+import { test, check, requireLogin, sourceOf, idle, mbNoise } from '../../../dev/test/harness.mjs';
 
 // the script brings its own GM stand-ins, as it did before the harness
 test.use({ gm: false });
@@ -29,7 +29,7 @@ test("#467: noop submit", { tag: ['@sandbox', '@login'] }, async ({ context, pag
   });
   const ck = check;
 
-  const errs = []; page.on('pageerror', e => errs.push(e.message));
+  const errs = []; page.on('pageerror', e => { if (!mbNoise(e.message)) errs.push(e.message); });
   const REC = '66d4cbcc-f78f-4f03-ae33-62fb4b20c565';   // a sandbox copy's recording (his was 297fc936, on production)
   await page.goto(`https://test.musicbrainz.org/recording/${REC}`, { waitUntil: 'load' });
   await requireLogin(page);

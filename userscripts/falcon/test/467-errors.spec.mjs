@@ -3,7 +3,7 @@
 // be read. Reproduces majkinetor's exact case: a Deezer ALBUM url on an artist ->
 // MB's own "This URL is not allowed for artists." message.
 import { readFile } from 'node:fs/promises';
-import { test, check, requireLogin, sourceOf, idle, frames } from '../../../dev/test/harness.mjs';
+import { test, check, requireLogin, sourceOf, idle, frames, mbNoise } from '../../../dev/test/harness.mjs';
 import { resolve } from 'node:path';
 
 // the script brings its own GM stand-ins, as it did before the harness
@@ -19,7 +19,7 @@ test("#467: errors", { tag: ['@sandbox', '@login'] }, async ({ context, page }) 
     window.GM_setValue = (k, v) => store.set(k, v);
     window.GM_info = { script: { name: 'Falcon', version: 't' } };
   });
-  const errs = []; page.on('pageerror', e => errs.push(e.message));
+  const errs = []; page.on('pageerror', e => { if (!mbNoise(e.message)) errs.push(e.message); });
   const ck = check;
 
   // 1. findFieldError() picks up MB's real validation text (not a submit — read-only).

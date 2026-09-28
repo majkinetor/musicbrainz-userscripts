@@ -17,7 +17,7 @@
 // Harmony actions page. That is one line, it uses the same helper asserted
 // below, and standing up a fake Harmony DOM would test the fake.
 import { readFile } from 'node:fs/promises';
-import { test, check, requireLogin, sourceOf, frames } from '../../../dev/test/harness.mjs';
+import { test, check, requireLogin, sourceOf, frames, mbNoise } from '../../../dev/test/harness.mjs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 const HERE = dirname(fileURLToPath(import.meta.url));
@@ -37,7 +37,7 @@ test("#578: picard port", { tag: ['@sandbox', '@login'] }, async ({ context, pag
     window.GM_setValue = (k, v) => store.set(k, v);
     window.GM_info = { script: { name: 'Falcon', version: 't' } };
   });
-  const errs = []; page.on('pageerror', e => errs.push(e.message));
+  const errs = []; page.on('pageerror', e => { if (!mbNoise(e.message)) errs.push(e.message); });
   await page.route(() => true, r => (r.request().method() === 'POST' ? r.abort() : r.fallback()));
   await page.goto('https://test.musicbrainz.org/', { waitUntil: 'load' });
   await page.addScriptTag({ content: code });

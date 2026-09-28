@@ -6,7 +6,7 @@
 // keeps its same iframe/card for the next item, so a normal run still shows one
 // worker flowing through several items instead of a new card every time.
 import { readFile } from 'node:fs/promises';
-import { test, check, requireLogin, sourceOf, idle, frames } from '../../../dev/test/harness.mjs';
+import { test, check, requireLogin, sourceOf, idle, frames, mbNoise } from '../../../dev/test/harness.mjs';
 import { join } from 'node:path';
 
 // the script brings its own GM stand-ins, as it did before the harness
@@ -27,7 +27,7 @@ test("#467: retire", { tag: ['@sandbox', '@login'] }, async ({ context, page }) 
   // picks up the next item and the retired card stays visible with its label intact.
   {
     const page = context.pages()[0] || await context.newPage();
-    const errs = []; page.on('pageerror', e => errs.push(e.message));
+    const errs = []; page.on('pageerror', e => { if (!mbNoise(e.message)) errs.push(e.message); });
     let dialogs = 0; page.on('dialog', async d => { dialogs++; await d.dismiss(); });
     let posts = 0;
     await page.route('**/artist/*/edit*', async (route, request) => {
@@ -76,7 +76,7 @@ test("#467: retire", { tag: ['@sandbox', '@login'] }, async ({ context, page }) 
   // several items — no card explosion for a normal successful run.
   {
     const page = await context.newPage();
-    const errs = []; page.on('pageerror', e => errs.push(e.message));
+    const errs = []; page.on('pageerror', e => { if (!mbNoise(e.message)) errs.push(e.message); });
     await page.route('**/artist/*/edit*', async (route, request) => {
       if (request.method() === 'POST') { const mbid = (request.url().match(/\/artist\/([0-9a-f-]{36})\/edit/) || [])[1]; return route.fulfill({ status: 302, headers: { Location: `https://test.musicbrainz.org/artist/${mbid}` } }); }
       return route.fallback();

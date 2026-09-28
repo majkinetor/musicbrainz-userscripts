@@ -18,7 +18,7 @@
 // database from production; the sandbox login is majkinetor/mb.
 import { readFile } from 'node:fs/promises';
 import { firefox } from '@playwright/test';
-import { test, check, requireLogin, sourceOf, REPO, idle, frames, settled } from '../../../dev/test/harness.mjs';
+import { test, check, requireLogin, sourceOf, REPO, idle, frames, settled, mbNoise } from '../../../dev/test/harness.mjs';
 import { resolve } from 'node:path';
 import { installProdGuard } from '../../../dev/test/guard.mjs';
 
@@ -50,7 +50,7 @@ test("#467: e2e testserver", { tag: ['@sandbox', '@login'] }, async ({}) => {
   });
   const ck = check;
 
-  const errs = []; page.on('pageerror', e => errs.push(e.message));
+  const errs = []; page.on('pageerror', e => { if (!mbNoise(e.message)) errs.push(e.message); });
   // nothing is intercepted here — instead, watch for anything touching production
   let prodHits = 0;
   page.on('request', r => {
