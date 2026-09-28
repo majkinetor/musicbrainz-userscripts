@@ -14,7 +14,7 @@
 // test.musicbrainz.org. Nothing is submitted, and no editor opens: GM_openInTab and
 // window.open are recorded instead. No provider is asked anything, except in #556's test,
 // whose scan answers are replayed from fixtures/ws-556-queue.json.gz (RECORD_WS=1 re-records).
-import { test, check } from '../../../dev/test/harness.mjs';
+import { test, check, until, idle } from '../../../dev/test/harness.mjs';
 import { openPc } from './pc.mjs';
 
 const RAM = 'ec116461-5b0d-4c98-bb44-a4de5de63076';            // on the sandbox as on production; has a barcode
@@ -34,7 +34,7 @@ test.describe('without provider answers', () => {
 
   test('#416: the Discogs master is queued even when the release link is withheld', { tag: ['@sandbox'] }, async ({ page, inject }) => {
     await openPc(page, inject, { release: RAM, settle: false });
-    await page.waitForTimeout(1000);
+    await page.waitForSelector('#mb-inject-btn');
     await recordTabs(page);
     const out = await page.evaluate(({ mbid, rg }) => {
       // Discogs ✓ with a DIFFERENT barcode and a master; a release group with no master yet
@@ -60,7 +60,7 @@ test.describe('without provider answers', () => {
     let navigated = null;
     await page.route(`**/release/${RAM}/edit`, r => { navigated = r.request().url(); return r.abort(); });
     await page.evaluate(mbid => { GM_setValue('pc:open-new-tab', false); window.__pcTest464.openReleaseEditTab(mbid, { background: false }); }, RAM).catch(() => {});
-    await page.waitForTimeout(500);
+    await until(() => navigated, Boolean, { timeout: 10000 });
     check(navigated === `${SANDBOX_RELEASE}/edit`, `#464: with the setting off, this tab goes to the editor (${navigated})`);
     await page.unroute(`**/release/${RAM}/edit`);
 
@@ -82,10 +82,18 @@ test.describe('without provider answers', () => {
     await recordTabs(page);
     const rg = await page.evaluate(async rg => {
       window.__pcTest464.openRgEditTab(rg, { background: true });
-      const t = window.__tabs[0], ch = new BroadcastChannel('platform-check-inject'), wait = ms => new Promise(r => setTimeout(r, ms));
-      ch.postMessage({ type: 'pc-edit-committed', mbid: rg }); await wait(400);
+      const t = window.__tabs[0], ch = new BroadcastChannel('platform-check-inject');
+      // A channel delivers each message to its receivers in the order they were made, so
+      // this one, made after the script's own, hears a message once the script has
+      // handled it: "nothing closed" is read then, not after a guessed pause.
+      const seen = new BroadcastChannel('platform-check-inject');
+      const handled = type => new Promise(r => { const h = e => { if (e.data && e.data.type === type) { seen.removeEventListener('message', h); r(); } }; seen.addEventListener('message', h); });
+      let done = handled('pc-edit-committed');
+      ch.postMessage({ type: 'pc-edit-committed', mbid: rg }); await done;
       const afterRelease = t.closed;
-      ch.postMessage({ type: 'pc-rg-edit-committed', mbid: rg }); await wait(400);
+      done = handled('pc-rg-edit-committed');
+      ch.postMessage({ type: 'pc-rg-edit-committed', mbid: rg }); await done;
+      seen.close();
       window.__opened.length = 0; GM_setValue('pc:open-new-tab', true);
       window.__pcTest464.openRgEditTab(rg, { background: false, sameTabAllowed: true });
       return { url: t.url, active: t.opts.active, afterRelease, afterRg: t.closed, fg: window.__opened.slice() };
@@ -106,7 +114,10 @@ test.describe('without provider answers', () => {
       }, [key, mbid]);
       await p.goto(url, { waitUntil: 'domcontentloaded' });
       await inject('platform_check', { target: p });
-      await p.waitForTimeout(1500);
+      // a landing page says "committed" and closes itself (80 ms later); any other page
+      // does nothing, and has done it once the script has run and the page is idle
+      if (key) await until(() => p.evaluate(() => window.__closed && window.__heard.length > 0).catch(() => false));
+      else await idle(p);
       const r = await p.evaluate(key => ({ heard: window.__heard, closed: window.__closed, marker: key && sessionStorage.getItem(key), panel: !!document.getElementById('mb-pc-panel'), modals: document.querySelectorAll('#mb-log-modal-overlay, #mb-provider-modal-overlay').length }), key);
       await p.close();
       return r;
