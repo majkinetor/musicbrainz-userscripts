@@ -23,7 +23,7 @@ const attrsSig = rel => JSON.stringify(
 // majkinetor: keep both), each carrying its own source badge.
 export const relKeyOf = rel => [
     entityKeyOf(rel.artist), rel.linkType || '', attrsSig(rel), rel.track ? String(rel.track.position != null ? rel.track.position : '') : '',
-].join('');
+].join('\x01');
 
 /**
  * Merge an array of per-source harvests. Returns the same engine shape the pipeline

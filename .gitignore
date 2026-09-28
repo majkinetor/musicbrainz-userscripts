@@ -3,7 +3,7 @@
 # (e.g. userscripts/discogs_credits/.gitignore).
 
 # GitHub credentials for the dedicated automation account (claude-ai-milic).
-# Never commit. Sample shape in userscripts/discogs_credits/DEVELOP.md.
+# Never commit. Its shape and the setup are in DEVELOP.md#bot-identity.
 dev/.github-credentials.json
 
 # State + audit logs for the GH notification → channel pipeline. Each side
@@ -14,11 +14,11 @@ dev/github-notifications/.notif-poll.log
 dev/notif-channel/.channel.log
 dev/notif-channel/node_modules/
 
-# Repo-root noise from running pnpm install at the root by accident
-# (the real packages live under userscripts/*/).
+# Repo-level tooling (the shared test runner, #625) installs here; the
+# per-script build packages still live under userscripts/*/.
 /node_modules/
-/package.json
-/pnpm-lock.yaml
+# `pnpm test` output: the HTML report and failure screenshots.
+/test-results/
 
 # Per-developer MCP config. Each contributor copies
 # `dev/notif-channel/mcp.json.template` → `.mcp.json` themselves
@@ -29,13 +29,10 @@ dev/notif-channel/node_modules/
 /.claude/
 
 # Shared Playwright profile (logged-in MB session + IDB cache) reused by every
-# userscript test harness. Populate once with `node test/login.mjs` from any
-# harness. Never commit — it holds session cookies.
+# userscript test. Populate once with `node dev/test/login.mjs` (production and
+# sandbox). Never commit — it holds session cookies.
 /.pw-profile/
-userscripts/falcon/test/_535-aliases.json
 userscripts/credit_hoarder/_rp.mjs
-userscripts/*/test/*.png
-userscripts/*/test/logs/
 
 # Working screenshots taken while iterating on an issue. Throwaway by
 # definition — the ones that are meant to last live in dev/screens/, which is

@@ -101,9 +101,12 @@ export function getDiscogsEntityData(resourceUrl) {
     if (!resourceUrl) return Promise.resolve(null);
     if (_entityDataCache.has(resourceUrl)) return Promise.resolve(_entityDataCache.get(resourceUrl));
     return fetch(`${resourceUrl}?token=gYAnSAmIoXiHezHBmHoqcBCuJRyQLJBYSjurbGTZ`)
-        .then(r => r.ok ? r.json() : null)
+        // #623 (sweep): only "no such entity" is remembered. A throttled (429) or failed
+        // lookup used to be cached as null for the whole session, so one Discogs rate
+        // limit hid that profile until a reload; now the next open asks again.
+        .then(r => r.ok ? r.json() : r.status === 404 ? null : Promise.reject(new Error('HTTP ' + r.status)))
         .then(json => {
-            if (!json) { _entityDataCache.set(resourceUrl, null); return null; }
+            if (!json) { _entityDataCache.set(resourceUrl, null); return null; }   // 404
             const slim = {
                 profile:        json.profile        || '',
                 name:           json.name           || '',

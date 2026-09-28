@@ -13,9 +13,9 @@ import { guessSortName }                   from './mappers.js';
 import { buildCreateNote }                 from './edit-note.js';
 import { wantsAliasButton, openAddAliasForm, submitAliasBackground, aliasNowHeld } from './alias-add.js';
 import { getLogContainer, getReviewContainer } from './log.js';
-import { noPasswordManagers }               from './util.js';
+import { noPasswordManagers, hashKey }      from './util.js';
 import { _hideBar }                        from './progress-bar.js';
-import { DISCOGS_CHANNEL, pageWindow }     from './constants.js';
+import { MB, DISCOGS_CHANNEL, pageWindow }     from './constants.js';
 import { log, logDebug }                   from './log.js';
 import { splitCreditName, splitKey }       from './split-credit.js';
 
@@ -80,7 +80,7 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
             const mbid = (r.mbUrl || '').split('/').pop().replace(/[^a-f0-9-]/g, '').substring(0, 36);
             if (!mbid) continue;
             const et = r.entityType || 'artist';
-            const data = await mbThrottle.fetchJson(`https://musicbrainz.org/ws/2/${et}/${mbid}?fmt=json`);
+            const data = await mbThrottle.fetchJson(`https:${MB}/ws/2/${et}/${mbid}?fmt=json`);
             if (data?.name) {
                 _preloadedNames.set(rUrl, { name: data.name, dis: data.disambiguation || '' });
                 if (idbKey) {
@@ -461,7 +461,7 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
                 if (!pool.length) {
                     via = 'search';
                     try {
-                        const json = await mbThrottle.fetchJson(`//musicbrainz.org/ws/2/artist?query=${encodeURIComponent(name)}&fmt=json&limit=8`);
+                        const json = await mbThrottle.fetchJson(`${MB}/ws/2/artist?query=${encodeURIComponent(name)}&fmt=json&limit=8`);
                         const all = json?.artists || [];
                         const exact = all.filter(a => norm(a.name) === norm(name));
                         pool = exact.length ? exact : all;
@@ -471,7 +471,7 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
                 log.info(`#605 split part "${name}": ${pool.length} candidate(s) via ${via}, ${exact.length} exact`);
                 const base = { entityType: 'artist', entity, displayName: name, discogsHref: '', _roles: r._roles };
                 if (exact.length === 1) {
-                    const a = exact[0], mbUrl = `//musicbrainz.org/artist/${a.id}`;
+                    const a = exact[0], mbUrl = `${MB}/artist/${a.id}`;
                     subs.push({ ...base, type: 'resolved', mbUrl, mbName: a.name, mbDisambig: a.disambiguation || '',
                         logEntry: { displayName: name, discogsHref: '', mbUrl, mbName: a.name, mbDisambig: a.disambiguation || '', via: 'name', fromCache: false } });
                 } else {
@@ -1094,7 +1094,7 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
                 aliasPick = a;   // #613: a manual pick — renderActions offers "+ alias" for it
                 // a = { id, name, disambiguation }
                 clearRowCreating();   // #273: drop any background-create placeholder
-                const mbUrl = `//musicbrainz.org/${entityType}/${a.id}`;
+                const mbUrl = `${MB}/${entityType}/${a.id}`;
                 rowState.set(_entityKey, { mbUrl, mbName: a.name, mbDisambig: a.disambiguation || '', confirmed: true, via: 'user', fromCache: false });
                 // Re-target the Credited-as override for this row to the
                 // newly-selected mbUrl (#62). If the input still holds
@@ -1221,7 +1221,7 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
                     // Cache result in localStorage for today to avoid repeated checks.
                     // Use session Map as primary cache; fall back to localStorage for cross-session
                     const urlCheckCacheKey = `${selected.id}|${discogsHref}`;
-                    const urlCheckLsKey = `discogs-urlcheck-${selected.id}-${discogsHref.replace(/[^a-z0-9]/gi,'-').substring(0,80)}`;
+                    const urlCheckLsKey = `discogs-urlcheck-${selected.id}-${hashKey(discogsHref)}`;   // #623: a hash, not the URL cut to 80 characters (which could collide)
                     const urlCheckToday = new Date().toISOString().slice(0, 10);
                     const urlCheckExpiry = new Date(); urlCheckExpiry.setDate(urlCheckExpiry.getDate() - 7);
                     const urlCheckExpiryStr = urlCheckExpiry.toISOString().slice(0, 10);
@@ -1240,7 +1240,7 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
                         _urlCheckSessionCache.delete(urlCheckCacheKey);
                         try { localStorage.removeItem(urlCheckLsKey); } catch(e) {}
                         queuedUrlCheck(() =>
-                            fetchWithRetry(`//musicbrainz.org/ws/2/url?resource=${encodeURIComponent(discogsHref)}&inc=${entityType}-rels&fmt=json`)
+                            fetchWithRetry(`${MB}/ws/2/url?resource=${encodeURIComponent(discogsHref)}&inc=${entityType}-rels&fmt=json`)
                                 .then(json => {
                                     const linkedIds = (json.relations || []).filter(r => r[entityType]).map(r => r[entityType].id);
                                     const result = linkedIds.includes(selected.id) ? 'linked' : linkedIds.length > 0 ? 'other' : 'none';
@@ -1299,7 +1299,7 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
                                 if (!n) return;
                                 p.set(`edit-${entityType}.edit_note`, buildCreateNote(n > 1 ? `Added ${n} source links` : `Added ${srcName} link`));
                                 const mbid = selected.id.replace(/.*\//, '').replace(/[^a-f0-9-]/gi, '').substring(0, 36);
-                                const editUrl = `https://musicbrainz.org/${entityType}/${mbid}/edit?${p}`;
+                                const editUrl = `https:${MB}/${entityType}/${mbid}/edit?${p}`;
                                 if (background && typeof GM_openInTab === 'function') {
                                     // #273: add the link silently in a background tab + auto-submit.
                                     // The edit-page bootstrap (hash flag) clicks "Enter edit" and
@@ -1406,7 +1406,7 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
                         applyUrlCheckResult(result);
                     } else {
                         queuedUrlCheck(() =>
-                            fetchWithRetry(`//musicbrainz.org/ws/2/url?resource=${encodeURIComponent(discogsHref)}&inc=${entityType}-rels&fmt=json`)
+                            fetchWithRetry(`${MB}/ws/2/url?resource=${encodeURIComponent(discogsHref)}&inc=${entityType}-rels&fmt=json`)
                                 .then(json => {
                                     const linkedIds = (json.relations || []).filter(r => r[entityType]).map(r => r[entityType].id);
                                     const result = linkedIds.includes(selected.id) ? 'linked' : linkedIds.length > 0 ? 'other' : 'none';
@@ -1454,7 +1454,7 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
                         seedUrls(createParams, 'artist');
                         if (disambiguation) createParams['edit-artist.comment'] = disambiguation;
                         createParams['edit-artist.edit_note'] = buildCreateNote();   // proper attribution on the created entity
-                        createUrl = 'https://musicbrainz.org/artist/create';
+                        createUrl = `https:${MB}/artist/create`;
                     } else {
                         createParams = {
                             [`edit-${entityType}.name`]:                finalName,
@@ -1462,7 +1462,7 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
                         seedUrls(createParams, entityType);
                         if (disambiguation) createParams[`edit-${entityType}.comment`] = disambiguation;
                         createParams[`edit-${entityType}.edit_note`] = buildCreateNote();   // proper attribution on the created entity
-                        createUrl = `https://musicbrainz.org/${entityType}/create`;
+                        createUrl = `https:${MB}/${entityType}/create`;
                     }
                     const p = new URLSearchParams(createParams);
                     // Identity for the cross-tab postback. MUST be truthy even
@@ -1521,7 +1521,7 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
                             setRowResolved({ id: evt.data.id, name: evt.data.name, disambiguation: evt.data.disambiguation });
                         } else {
                             setRowResolved({ id: evt.data.id, name: finalName || displayName || '', disambiguation: '' });
-                            fetchWithRetry(`//musicbrainz.org/ws/2/${entityType}/${evt.data.id}?fmt=json`)
+                            fetchWithRetry(`${MB}/ws/2/${entityType}/${evt.data.id}?fmt=json`)
                                 .then(json => { if (json && json.name) setRowResolved({ id: evt.data.id, name: json.name, disambiguation: json.disambiguation || '' }); })
                                 .catch(() => {});
                         }
@@ -1740,7 +1740,7 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
                 const info = document.createElement('span');
                 info.style.flex = '1';
                 const nameA = document.createElement('a');
-                nameA.href = `https://musicbrainz.org/${entityType}/${a.id}`;
+                nameA.href = `https:${MB}/${entityType}/${a.id}`;
                 nameA.target = '_blank'; nameA.rel = 'noopener noreferrer nofollow';
                 nameA.style.fontWeight = 'bold';
                 nameA.textContent = a.name;
@@ -1771,7 +1771,7 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
                 if (mbid) {
                     candidateList.innerHTML = '<div style="font-size:0.82rem;color:var(--mbu-text-weak);">Looking up MBID…</div>';
                     // #613: inc=aliases rides on the same lookup — the "+ alias" button needs to know them
-                    mbThrottle.fetchJson(`//musicbrainz.org/ws/2/${entityType}/${mbid}?inc=aliases&fmt=json`)
+                    mbThrottle.fetchJson(`${MB}/ws/2/${entityType}/${mbid}?inc=aliases&fmt=json`)
                         .then(json => {
                             if (!json) return;
                             candidateList.innerHTML = '';
@@ -1796,7 +1796,7 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
                 // candidate list looks dead for 1–3s while MB responds
                 // (longer when MB is rate-limiting us, see #87).
                 candidateList.innerHTML = '<div style="font-size:0.82rem;color:var(--mbu-text-weak);font-style:italic;">Searching…</div>';
-                mbThrottle.fetchJson(`//musicbrainz.org/ws/2/${entityType}?query=${encodeURIComponent(q)}&fmt=json&limit=8`)
+                mbThrottle.fetchJson(`${MB}/ws/2/${entityType}?query=${encodeURIComponent(q)}&fmt=json&limit=8`)
                     .then(json => {
                         if (!json) {
                             candidateList.innerHTML = '<div style="font-size:0.82rem;color:var(--mbu-error);">Search failed — MB unavailable</div>';
@@ -1829,7 +1829,7 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
                 // Always reconstruct the MB URL using the current entityType — the cached
                 // mbUrl may have been stored as /artist/ for what is now a /label/ or /place/.
                 const mbid = initMbUrl.replace(/.*\//, '').replace(/[^a-f0-9-]/gi, '').substring(0, 36);
-                const correctedMbUrl = `//musicbrainz.org/${entityType}/${mbid}`;
+                const correctedMbUrl = `${MB}/${entityType}/${mbid}`;
                 // If name fetch was rate-limited, use MBID as display and mark unconfirmed
                 const displayName2 = initMbName || mbid;
                 if (!initMbName) {

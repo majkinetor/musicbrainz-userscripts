@@ -3,12 +3,10 @@
   "version": "0.0.0",
   "private": true,
   "type": "module",
-  "description": "Fusion — merge-recordings assistant for MusicBrainz: pool/groups review UI, multi-signal auto-match, direct background merge submission",
+  "description": "Fusion — merge-recordings assistant for MusicBrainz",
   "scripts": {
-    "test": "node test/run.mjs",
-    "test:headed": "node test/run.mjs --headed"
-  },
-  "devDependencies": {
-    "playwright": "^1.49.0"
+    "test": "pnpm -C ../.. test --project=fusion",
+    "test:headed": "pnpm -C ../.. test --project=fusion --headed",
+    "login": "node ../../dev/test/login.mjs"
   }
 }

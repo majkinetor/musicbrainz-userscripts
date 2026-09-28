@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.9.26.192219
+// @version      2026.9.29
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E
@@ -408,10 +408,10 @@
   /* ── search + siblings ── */
   const _cache = new Map();
   // resolve an MBID to a full entity (incl. the numeric id needed for the credit write-back)
-  async function fetchEntity(gid) {
+  async function fetchEntity(gid, kind) {
     try { const j = await fetch(`${ORIGIN}/ws/js/entity/${gid}`, { headers: { Accept: 'application/json' } }).then(r => r.json());
       // return the WHOLE entity (like a search hit) so the credit write-back has every field it needs
-      if (j && j.gid) { if (!j.entityType) j.entityType = 'artist'; return j; } }
+      if (j && j.gid) { if (!j.entityType) j.entityType = kind || 'artist'; return j; } }
     catch (e) { Log.warn('fetch entity failed', gid, e.message); }
     return null;
   }
@@ -437,25 +437,27 @@
   // → "Abiodun", #442) and enforces the unified unambiguity. Returns { entity, via } where
   // via is 'name' or 'alias' (label only), else null (ambiguous OR none). Cached per name.
   const _aliasMatchCache = new Map();
-  async function resolveByExactAlias(name) {
-    const key = fold(name); if (!key) return null;
+  // `kind`: 'artist' (default) or 'label' — the label auto-match uses the same rule (#623, A5)
+  async function resolveByExactAlias(name, kind) {
+    kind = kind || 'artist';
+    const key = (kind === 'artist' ? '' : kind + ':') + fold(name); if (!fold(name)) return null;
     if (_aliasMatchCache.has(key)) return _aliasMatchCache.get(key);
-    const q = mbmIdentityQuery(name, 'artist'); if (!q) return null;
+    const q = mbmIdentityQuery(name, kind); if (!q) return null;
     // a throttled lookup must NOT be cached as "no match" — that would freeze a
     // transient 503 into a permanent auto-match failure for this name (#555)
-    const res = await wsJson(`${ORIGIN}/ws/2/artist?query=${encodeURIComponent(q)}&fmt=json&limit=${MBM_EXACT_LIMIT}`, { label: 'alias search' });
+    const res = await wsJson(`${ORIGIN}/ws/2/${kind}?query=${encodeURIComponent(q)}&fmt=json&limit=${MBM_EXACT_LIMIT}`, { label: kind + ' alias search' });
     if (!res.json) { Log.warn('alias search failed:', name, '— not cached, a later pass retries'); return null; }
     // #613: unique only when MB returned EVERY match. The search doesn't rank exact holders
     // first — `artist:"kim"` matches 2,777 artists and the one exact "Kim" among the first 25
     // was taken as unique. A common name that can't be proven unique stays a candidate.
     const idn = mbmExactIdentity(res.json, name);
-    Log.debug('alias search:', JSON.stringify(name), '→', (res.json.artists || []).length, 'of', res.json.count, 'match(es),', idn.exact.length, 'exact —', idn.status);
+    Log.debug(kind + ' alias search:', JSON.stringify(name), '→', (res.json.artists || res.json.labels || []).length, 'of', res.json.count, 'match(es),', idn.exact.length, 'exact —', idn.status);
     if (idn.status === 'incomplete' && idn.exact.length) Log.info('Match:', JSON.stringify(name), '— one exact name/alias seen, but', res.json.count, 'artists match; not provably unique → left to pick (#613)');
     let out = null;   // unambiguous only
     if (idn.status === 'unique') {
       // #445: 'name' when it's a real NAME hit (the /ws/js search under-ranked it), 'alias' when
       // only an alias matches — so the log/badge never calls a name match "via exact alias"
-      const ent = await fetchEntity(idn.hit.id);
+      const ent = await fetchEntity(idn.hit.id, kind);
       if (ent && ent.gid) out = { entity: ent, via: idn.via };
     }
     _aliasMatchCache.set(key, out);
@@ -470,16 +472,6 @@
    * Labels live in the KO release model — `release().labels()[i].label` is an
    * observable holding the label entity, so we set it directly (verified: this also
    * fills the #label-N input and is picked up on submit). */
-  async function searchLabel(name, limit) {
-    limit = limit || 8;
-    const k = 'label:' + fold(name) + '|' + limit; if (!fold(name)) return [];
-    if (_cache.has(k)) return _cache.get(k);
-    let list = [];
-    try { const j = await fetch(`${ORIGIN}/ws/js/label?q=${encodeURIComponent(name)}&limit=${limit}&direct=false`, { headers: { Accept: 'application/json' } }).then(r => r.json()); list = Array.isArray(j) ? j : (j.results || []); }
-    catch (e) { Log.warn('label search failed:', name, e.message); }
-    list = list.filter(c => c && (c.name || '').trim());
-    _cache.set(k, list); return list;
-  }
   let _labelsAutoMatchedOnce = false;
   // Resolve every still-unset release label whose name has a unique exact MB hit.
   async function matchReleaseLabels() {
@@ -493,14 +485,18 @@
       const cur = lf.label();
       const name = cur && cur.name;
       if (!name || (cur && cur.gid)) continue;   // empty slot, or already resolved → leave it
-      let hits = [];
-      try { hits = await searchLabel(name); } catch (e) { Log.warn('label search failed', name, e.message); continue; }
-      const exact = hits.filter(c => sameName(c.name, name));
-      if (exact.length !== 1) { Log.info('Label:', name, exact.length ? ('— ' + exact.length + ' exact matches (ambiguous) — left unset') : '— no exact MB match — left unset'); continue; }
-      const hit = exact[0];
+      // #623 (sweep, A5): "exactly one exact hit" was judged on the first 8 search results,
+      // which don't rank exact matches first — a second label of that name further down was
+      // invisible. The same rule as track artists now: unique by name or alias among ALL
+      // matches (#613), else left for a human.
+      const idHit = await resolveByExactAlias(name, 'label');
+      if (!idHit) { Log.info('Label:', name, '— no unique exact MB label (name or alias) — left unset'); continue; }
+      const hit = idHit.entity;
       try {
         let ent = hit;
-        try { if (window.MB && typeof MB.entity === 'function') ent = MB.entity(hit, 'label'); } catch (e) {}
+        // #623 (sweep, A1): the page's MB (unsafeWindow), as everywhere else — the sandbox
+        // `window.MB` is absent in managers that isolate it, and the bare entity got written
+        try { if (W.MB && typeof W.MB.entity === 'function') ent = W.MB.entity(hit, 'label'); } catch (e) {}
         lf.label(ent);
         linked++; lastName = hit.name;
         Log.info('Label match:', name, '→', hit.name, '(' + hit.gid + ')');
@@ -531,16 +527,12 @@
       const nm = (cur && u(cur.name)) || creditedAs;
       let outArtist = cur;
       if (nm && !(cur && u(cur.gid))) {                    // unset (no MBID) → try to resolve
-        let hits = [];
-        try { hits = await searchArtist(nm); } catch (e) { Log.warn('artist search failed', nm, e.message); }
-        const exact = (hits || []).filter(c => sameName(c.name, nm));
-        if (exact.length === 1) {
-          const ent = await fetchEntity(exact[0].gid);
-          if (ent && ent.id) { outArtist = ent; linked++; lastName = ent.name; changed = true; Log.info('Artist match:', nm, '→', ent.name, '(' + ent.gid + ')'); }
-          else Log.warn('artist entity fetch failed', nm);
-        } else {
-          Log.info('Artist:', nm, exact.length ? ('— ' + exact.length + ' exact matches (ambiguous) — left unset') : '— no exact MB match — left unset');
-        }
+        // #623 (sweep, A5): unique among ALL matches, by name or alias (#613) — not the
+        // first 8 search results, where a second artist of that name could be missing
+        const idHit = await resolveByExactAlias(nm);
+        const ent = idHit && idHit.entity;
+        if (ent && ent.id) { outArtist = ent; linked++; lastName = ent.name; changed = true; Log.info('Artist match:', nm, '→', ent.name, '(' + ent.gid + ')', idHit.via === 'alias' ? '— via alias' : ''); }
+        else Log.info('Artist:', nm, '— no unique exact MB artist (name or alias) — left unset');
       }
       out.push({ artist: outArtist, name: creditedAs, joinPhrase });
     }
@@ -1910,7 +1902,7 @@
     });
   }
   const HELP_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md';
-  const VERSION = '2026.9.26.142543';   // keep in sync with @version (fallback when GM_info is unavailable)
+  const VERSION = '2026.9.27.060520';   // keep in sync with @version (fallback when GM_info is unavailable)
   const scriptVersion = () => { try { return GM_info.script.version || VERSION; } catch (e) { return VERSION; } };
   // shared attribution header (same shape as the other scripts' edit notes)
   const apolloAttribution = () => { const s = (typeof GM_info !== 'undefined' && GM_info.script) || {}; return (s.name || 'Apollo Editor') + ' v' + scriptVersion() + ' by ' + (s.author || 'majkinetor') + ' - ' + (s.homepageURL || s.homepage || HELP_URL); };
@@ -2276,7 +2268,11 @@
           return t;
       } catch (e) { return 'light'; }
   }
-  try {
+  // A document-start script runs before the document is parsed: documentElement can
+  // still be null, and <head> and <body> don't exist. Observing a null root threw, the
+  // catch below swallowed it, and nothing (the watches, the re-checks) was ever set up,
+  // so such a script never read the theme at all (#625). It starts on the parsed page.
+  function mbuThemeStart() { try {
       mbuTheme();
       // Stylus and friends inject after us often enough that a one-shot read is
       // wrong about half the time. Watch for stylesheets ARRIVING — head childList
@@ -2312,7 +2308,9 @@
       } catch (e) {}
       setTimeout(mbuTheme, 400);
       setTimeout(mbuTheme, 2000);
-  } catch (e) { /* no observer, no theme switching — the light defaults still apply */ }
+  } catch (e) { /* no observer, no theme switching — the light defaults still apply */ } }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', mbuThemeStart, { once: true });
+  else mbuThemeStart();
 
   try {
       var _mbuNs = (typeof unsafeWindow !== 'undefined' ? unsafeWindow : window);
@@ -7034,7 +7032,7 @@
         if (wholeSide) { (async () => { for (const row of recRows()) await copyRecToTrack(+row.dataset.mi, +row.dataset.ti); _tlRefreshed = false; scheduleSync(); rerenderRec(); })(); return; }   // #443 whole track side
         // entity-aware equality: same artist GID + credited-as + join phrase per name. NOT acText — two
         // different artists sharing a credited name ("Mariz" ≠ "Mariz") must still copy the recording's entity.
-        const nameKey = n => (n.artist ? (u(u(n.artist).gid) || '') : '') + '' + (u(n.name) || '') + '' + (u(n.joinPhrase) || '');
+        const nameKey = n => (n.artist ? (u(u(n.artist).gid) || '') : '') + '\x01' + (u(n.name) || '') + '\x01' + (u(n.joinPhrase) || '');
         const _entCache = new Map();   // gid → full entity, so a whole-column copy fetches each artist once
         const fullEntity = async gid => { if (!_entCache.has(gid)) _entCache.set(gid, await fetchEntity(gid)); return _entCache.get(gid); };
         const setArtistFromRec = async (m, i) => {
@@ -7254,7 +7252,7 @@
       // is boxed; a credited-as (same entity) isn't. Trigger on an ENTITY difference,
       // not just text — a track artist swapped to a SAME-NAME different artist reads
       // identically but must still be boxed so it's not missed (#186, chaban).
-      const acKeys = ac => (ac || []).map(a => a.gid || ('name:' + (a.name || '').toLowerCase().trim())).join('');
+      const acKeys = ac => (ac || []).map(a => a.gid || ('name:' + (a.name || '').toLowerCase().trim())).join('\x01');
       const artistEntitiesDiffer = acKeys(r.trackAc) !== acKeys(r.recAc);
       let trackArtistHtml2 = r.trackArtistHtml || '', recArtistCell = artistCell;
       if (dh && !r.copyArtist && r.recArtist != null && ((r.trackArtist || '') !== (r.recArtist || '') || artistEntitiesDiffer)) {
@@ -9369,7 +9367,7 @@
       const editor = ua?.textContent.trim() || '';
       const avatar = ua?.querySelector('img')?.getAttribute('src') || '';
       const date = [...tr.querySelectorAll('td')].map(c => c.textContent.trim()).find(t => /\d{4}-\d{2}-\d{2}/.test(t)) || '';
-      const cl = (view.parentElement.textContent.match(/\(([^)]*)\)/) || [, ''])[1];
+      const cl = (view.parentElement.textContent.match(/\(([^)]*)\)/) || ['', ''])[1];
       out.push({ editor, avatar, date, changelog: /no changelog/i.test(cl) ? '' : cl, url: view.getAttribute('href') });
     });
     return out;

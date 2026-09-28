@@ -12,9 +12,9 @@
     "lint":       "eslint src/",
     "check":      "node --check dist/credit_hoarder.user.js",
     "verify":     "pnpm run lint && pnpm run build && pnpm run check",
-    "test":       "node test/run.mjs",
-    "test:headed": "node test/run.mjs --headed",
-    "login":      "node test/login.mjs"
+    "test":       "pnpm -C ../.. test --project=credit_hoarder",
+    "test:headed": "pnpm -C ../.. test --project=credit_hoarder --headed",
+    "login":      "node ../../dev/test/login.mjs"
   },
   "devDependencies": {
     "esbuild":    "^0.28.0",

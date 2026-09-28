@@ -538,36 +538,109 @@ function Get-MBPageTitle {
     [System.Net.WebUtility]::HtmlDecode(([regex]::Match($Html, '<title>([^<]*)</title>').Groups[1].Value))
 }
 
+function Get-MBProofOfWork {
+    # (internal) The n the website's browser check asks for: the first n = 0, 1, ... whose
+    # SHA-256(challenge + n), in hex, starts with $Zeros zeros. Compared as bytes (two hex
+    # digits each); around 16^Zeros tries, well under a second for the 4 it asks today.
+    param([string] $Challenge, [int] $Zeros)
+    $full = [math]::Floor($Zeros / 2); $half = $Zeros % 2
+    $enc = [System.Text.Encoding]::UTF8
+    for ($n = 0; $n -lt 100000000; $n++) {
+        $h = [System.Security.Cryptography.SHA256]::HashData($enc.GetBytes($Challenge + $n))
+        $ok = $true
+        for ($i = 0; $i -lt $full; $i++) { if ($h[$i] -ne 0) { $ok = $false; break } }
+        if ($ok -and $half -and $h[$full] -ge 16) { $ok = $false }
+        if ($ok) { return $n }
+    }
+    throw "No answer to MusicBrainz's browser check within 100M tries ($Zeros zeros)."
+}
+
+function Invoke-MBWeb {
+    # (internal) Invoke-WebRequest (splatted $Params, which must carry a WebSession) for
+    # musicbrainz.org's WEBSITE pages. Since 2026-09 MetaBrainz answers those (not the ws/2 API)
+    # with a "Verifying your browser" page first: its JavaScript hashes until it finds the
+    # proof-of-work answer, then POSTs c, t, n, r (the page asked for) and d to /__meb_verify,
+    # which sets a cookie. This does the same, then repeats the request; the session keeps the
+    # cookie, so it is once per session. majkinetor chose this on #629.
+    param([Parameter(Mandatory)][hashtable] $Params)
+    if ($Params.Method -eq 'POST' -and -not $Params.Headers.Contains('Origin')) {
+        # a form post without Referer/Origin is answered with the usual redirect but not saved
+        # (seen 2026-09 on a collection's description): send them as a browser does
+        $Params = $Params.Clone()
+        $Params.Headers = $Params.Headers + @{ 'Referer' = [string]$Params.Uri; 'Origin' = ([uri]$Params.Uri).GetLeftPart('Authority') }
+    }
+    $resp = Invoke-WebRequest @Params
+    if ($resp.Content -notmatch '/__meb_verify') { return $resp }
+    $m = [regex]::Match($resp.Content, 'const c="([0-9a-f]+)",t="(\d+)",d=(\d+)')
+    if (-not $m.Success) { throw "MusicBrainz's browser check has changed shape; can't answer it ('$(Get-MBPageTitle $resp.Content)')." }
+    $c = $m.Groups[1].Value; $t = $m.Groups[2].Value; $d = [int]$m.Groups[3].Value
+    $sw = [System.Diagnostics.Stopwatch]::StartNew()
+    $n = Get-MBProofOfWork -Challenge $c -Zeros $d
+    $u = [uri]$Params.Uri
+    Write-Verbose "MBWeb -> POST /__meb_verify (browser check for $($u.AbsolutePath): $d zeros, n=$n in $($sw.ElapsedMilliseconds) ms)"
+    $answer = @{ c = $c; t = $t; n = "$n"; r = $u.PathAndQuery; d = "$d" }
+    $null = Invoke-WebRequest -Uri "$($u.Scheme)://$($u.Authority)/__meb_verify" -Method POST -Body $answer -WebSession $Params.WebSession -Headers $Params.Headers -UseBasicParsing -MaximumRedirection 5
+    $resp = Invoke-WebRequest @Params
+    if ($resp.Content -match '/__meb_verify') { throw "MusicBrainz's browser check did not accept the answer (still '$(Get-MBPageTitle $resp.Content)')." }
+    return $resp
+}
+
 function Connect-MBWebsite {
     <#.SYNOPSIS Log into musicbrainz.org (cookie session) for form-based edits. Uses the Connect-MB credential.#>
     param()
     Assert-MBConnected
     $Credential = $script:MBCredential
     if ($script:MBWebSession) { return $script:MBWebSession }
-    Write-Verbose "MBWeb -> GET $script:MBServer/login + POST (user=$($Credential.UserName))"
+    Write-Verbose "MBWeb -> sign in to $script:MBServer (user=$($Credential.UserName))"
     $ua = @{ 'User-Agent' = $script:MBUserAgent; 'Cache-Control' = 'no-cache' }
-    $login = Invoke-WebRequest -Uri "$script:MBServer/login?_=$([datetime]::UtcNow.Ticks)" -SessionVariable s -Headers $ua -UseBasicParsing
-    $form  = ConvertFrom-MBForm -Html $login.Content -ActionMatch '/login'
-    if (-not $form.Contains('csrf_token')) { throw "Login page carried no csrf_token (fields: $($form.Keys -join ', ')) - cached/unexpected page?" }
-    $form['username']    = $Credential.UserName
-    $form['password']    = $Credential.GetNetworkCredential().Password
-    $form['remember_me'] = '1'
-    # browser-like headers — a bare POST can trip bot protection that a GET does not
-    $post = $ua + @{ 'Referer' = "$script:MBServer/login"; 'Origin' = $script:MBServer; 'Accept' = 'text/html,application/xhtml+xml' }
-    $resp = Invoke-WebRequest -Uri "$script:MBServer/login" -Method POST -Body $form `
-                -WebSession $s -Headers $post -UseBasicParsing -MaximumRedirection 5
+    $s = [Microsoft.PowerShell.Commands.WebRequestSession]::new()
+    # Since 2026-09 musicbrainz.org's /login hands off to MetaBrainz single sign-on:
+    #   /login -> metabrainz.org/oauth2/authorize -> metabrainz.org/login, a React form whose
+    #   csrf_token is in the page's JSON props -> POST -> authorize -> musicbrainz.org's
+    #   oauth2 callback, which sets the MusicBrainz session.
+    # Followed hop by hop, so each host's browser check is answered (Invoke-MBWeb) and the form
+    # is posted where it is served. MusicBrainz's own login form (the flow before SSO) is
+    # recognised and posted the same way.
+    $url = "$script:MBServer/login?_=$([datetime]::UtcNow.Ticks)"; $body = $null; $posted = $false; $resp = $null
+    for ($hop = 0; $hop -lt 15; $hop++) {
+        $p = @{ Uri = $url; WebSession = $s; Headers = $ua; UseBasicParsing = $true; MaximumRedirection = 0; SkipHttpErrorCheck = $true; ErrorAction = 'SilentlyContinue' }   # a 3xx is a hop to follow, not an error
+        if ($body) {
+            # browser-like headers — a bare POST can trip bot protection that a GET does not
+            $p.Method = 'POST'; $p.Body = $body
+            $p.Headers = $ua + @{ 'Referer' = $url; 'Origin' = ([uri]$url).GetLeftPart('Authority'); 'Accept' = 'text/html,application/xhtml+xml' }
+        }
+        $resp = Invoke-MBWeb $p; $body = $null
+        $loc = @($resp.Headers.Location)[0]
+        Write-Verbose "MBWeb <- $($p.Method ?? 'GET') $(([uri]$url).GetLeftPart('Path')): $($resp.StatusCode) '$(Get-MBPageTitle $resp.Content)'"
+        if ($resp.StatusCode -ge 300 -and $resp.StatusCode -lt 400 -and $loc) { $url = [string]([uri]::new([uri]$url, [string]$loc)); continue }
+        if ($posted) { break }   # the sign-in answered with a page, not a redirect: checked below
+        $form = $null
+        $props = [regex]::Match($resp.Content, '<script id="page-react-props" type="application/json">([\s\S]*?)</script>')
+        if ($props.Success -and $props.Groups[1].Value -match '"csrf_token"') {
+            $form = [ordered]@{ csrf_token = ($props.Groups[1].Value | ConvertFrom-Json).csrf_token; remember_me = 'y' }
+        } else {
+            $old = ConvertFrom-MBForm -Html $resp.Content -ActionMatch '/login'
+            if ($old.Contains('csrf_token')) { $form = $old; $form['remember_me'] = '1' }
+        }
+        if (-not $form) { throw "Login page carried no csrf_token ('$(Get-MBPageTitle $resp.Content)', $url) - cached/unexpected page?" }
+        $form['username'] = $Credential.UserName
+        $form['password'] = $Credential.GetNetworkCredential().Password
+        Write-Verbose "MBWeb -> POST $(([uri]$url).GetLeftPart('Path')) (sign in as $($Credential.UserName))"
+        $body = $form; $posted = $true
+    }
     # Verify with a fresh request: a logged-in page carries the logout menu link. NOTE the
     # link is `/logout` on some pages but `/logout?returnto=...` on others — match the prefix,
     # not a closing quote (that cost hours: login + cookies were fine, the check was wrong).
     $check = $null
     try {
-        $check = Invoke-WebRequest -Uri "$script:MBServer/user/$([uri]::EscapeDataString($Credential.UserName))?_=$([datetime]::UtcNow.Ticks)" `
-                    -WebSession $s -Headers $ua -UseBasicParsing
+        $check = Invoke-MBWeb @{ Uri = "$script:MBServer/user/$([uri]::EscapeDataString($Credential.UserName))?_=$([datetime]::UtcNow.Ticks)"; WebSession = $s; Headers = $ua; UseBasicParsing = $true }
     } catch { }   # e.g. 404 for a nonexistent editor — handled below with MB's own error
     if (-not $check -or $check.Content -notmatch 'href="/logout') {
         $err = ([regex]::Matches($resp.Content, '<(?:p|div|span)[^>]*class="[^"]*error[^"]*"[^>]*>([\s\S]*?)</(?:p|div|span)>') |
                 ForEach-Object { ($_.Groups[1].Value -replace '<[^>]+>', '').Trim() }) -join ' | '
-        $finalUrl = ''; try { $finalUrl = [string]$resp.BaseResponse.RequestMessage.RequestUri } catch { }
+        $pe = [regex]::Match($resp.Content, '<script id="page-react-props" type="application/json">([\s\S]*?)</script>')
+        if (-not $err -and $pe.Success) { try { $err = (@(($pe.Groups[1].Value | ConvertFrom-Json).initial_errors.PSObject.Properties.Value) | ForEach-Object { $_ }) -join ' | ' } catch { } }
+        $finalUrl = $url
         Write-Verbose ("MBWeb <- login response: url='{0}' title='{1}'; verification page title='{2}'" -f $finalUrl, (Get-MBPageTitle $resp.Content), ($check ? (Get-MBPageTitle $check.Content) : '(request failed)'))
         throw "MusicBrainz website login failed for '$($Credential.UserName)'$(if ($err) { ": $err" }) (post landed on: '$(Get-MBPageTitle $resp.Content)', $finalUrl)."
     }
@@ -593,7 +666,7 @@ function New-MBCollection {
     $s   = Connect-MBWebsite
     $ua  = @{ 'User-Agent' = $script:MBUserAgent; 'Cache-Control' = 'no-cache' }
     $url = "$script:MBServer/collection/create"
-    $page = Invoke-WebRequest -Uri "$url`?_=$([datetime]::UtcNow.Ticks)" -WebSession $s -Headers $ua -UseBasicParsing
+    $page = Invoke-MBWeb @{ Uri = "$url`?_=$([datetime]::UtcNow.Ticks)"; WebSession = $s; Headers = $ua; UseBasicParsing = $true }
     # the create form posts to self (no action attribute) — select it by its field names
     $form = ConvertFrom-MBForm -Html $page.Content -ActionMatch '/collection/create' -FieldMarker 'name="edit-list\.'
     if ($form.Count -eq 0) { throw "Could not read the collection create form (login expired? page: '$(Get-MBPageTitle $page.Content)')." }
@@ -613,7 +686,7 @@ function New-MBCollection {
     if ($descKey) { $form[$descKey] = $Description }
 
     Write-Verbose "MBWeb -> POST $url (create collection '$Name')"
-    $resp = Invoke-WebRequest -Uri $url -Method POST -Body $form -WebSession $s -Headers $ua -UseBasicParsing -MaximumRedirection 5
+    $resp = Invoke-MBWeb @{ Uri = $url; Method = 'POST'; Body = $form; WebSession = $s; Headers = $ua; UseBasicParsing = $true; MaximumRedirection = 5 }
     # success redirects to /collection/<mbid>
     $final = ''
     try { $final = [string]$resp.BaseResponse.RequestMessage.RequestUri } catch { }
@@ -650,7 +723,7 @@ function Set-MBCollection {
     # release-removal view and carries no edit-list fields
     $url = "$script:MBServer/collection/$Id/own_collection/edit"
     Write-Verbose "MBWeb -> GET $url (read edit form)"
-    $page = Invoke-WebRequest -Uri "$url`?_=$([datetime]::UtcNow.Ticks)" -WebSession $s -Headers $ua -UseBasicParsing
+    $page = Invoke-MBWeb @{ Uri = "$url`?_=$([datetime]::UtcNow.Ticks)"; WebSession = $s; Headers = $ua; UseBasicParsing = $true }
     $form = ConvertFrom-MBForm -Html $page.Content -ActionMatch '/own_collection/edit' -FieldMarker 'name="edit-list\.'
     if ($form.Count -eq 0) { throw "Could not read the edit form for collection $Id (is it yours? page: '$(Get-MBPageTitle $page.Content)')." }
 
@@ -665,7 +738,7 @@ function Set-MBCollection {
         $form[$descKey] = $Description
     }
     Write-Verbose "MBWeb -> POST $url (update collection details)"
-    $null = Invoke-WebRequest -Uri $url -Method POST -Body $form -WebSession $s -Headers $ua -UseBasicParsing -MaximumRedirection 5
+    $null = Invoke-MBWeb @{ Uri = $url; Method = 'POST'; Body = $form; WebSession = $s; Headers = $ua; UseBasicParsing = $true; MaximumRedirection = 5 }
 }
 
 Export-ModuleMember -Function `

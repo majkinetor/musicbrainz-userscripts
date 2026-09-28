@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Fusion
 // @namespace    https://musicbrainz.org/
-// @version      2026.9.26.111241
+// @version      2026.9.27
 // @description  Merge-recordings assistant for MusicBrainz: gather a pool of candidate recordings from a release / release group / recording page (or paste any MBID/URL), auto-match them into merge groups by ISRC / AcoustID / length / title+artist, review and adjust the groups, then submit the merges directly in the background — no MB merge page involved.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPkZ1c2lvbjwvdGl0bGU+CiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjOGE1Y2Y2IiBzdHJva2Utd2lkdGg9IjciPgogICAgPGVsbGlwc2UgY3g9IjY0IiBjeT0iNjQiIHJ4PSI1MiIgcnk9IjIyIi8+CiAgICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSI2NCIgcng9IjUyIiByeT0iMjIiIHRyYW5zZm9ybT0icm90YXRlKDYwIDY0IDY0KSIvPgogICAgPGVsbGlwc2UgY3g9IjY0IiBjeT0iNjQiIHJ4PSI1MiIgcnk9IjIyIiB0cmFuc2Zvcm09InJvdGF0ZSgxMjAgNjQgNjQpIi8+CiAgPC9nPgogIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjE0IiBmaWxsPSIjNmQzZmYwIi8+Cjwvc3ZnPgo=
@@ -345,7 +345,10 @@ function mbRestackCorner(corner) {
 
 /* ── matching / normalization (ported from platform_check's tokenMatch/scoreCandidate
    normalization stack — same token-overlap approach, reused rather than reinvented) ── */
-function normName(s) { return (s || '').toLowerCase().normalize('NFKD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9]+/g, ' ').trim(); }
+// #623 (sweep, X10): any script. It kept only [a-z0-9], so a non-Latin title or artist
+// normalised to "" and matched nothing. Diacritics still fold on Latin, Greek and
+// Cyrillic letters (é → e); other scripts keep their marks (voiced kana, Indic vowels).
+function normName(s) { return (s || '').toLowerCase().normalize('NFKD').replace(/(?<=[\p{Script=Latin}\p{Script=Greek}\p{Script=Cyrillic}])\p{M}+/gu, '').normalize('NFC').replace(/[^\p{L}\p{N}\p{M}]+/gu, ' ').trim(); }
 function tokenMatch(a, b, mode, threshold) {
     mode = mode || 'max'; threshold = threshold == null ? 0.6 : threshold;
     const na = normName(a), nb = normName(b);
@@ -921,19 +924,50 @@ const SIGNAL_KEYS = ['isrc', 'acoustid', 'length', 'title', 'artist'];
 // transitively, so it survives a tier only if every member is still reachable
 // from every other under that tier's rules.
 const TIER_COLORS = { strict: '#1c9b63', normal: '#2f7fbf', loose: '#a8702a', manual: '#9a9aab' };
+/* #623 (sweep, U3): union-find whose unions respect the hard gates for the WHOLE
+   group, not just the pair that links two sets. An unknown value never blocks a
+   pair (we can't tell), so checking the gates per pair let a recording with an
+   unknown video flag or length bridge a video to an audio recording, or takes
+   minutes apart, into one group — which Merge All then submitted. Each set keeps
+   what its members know (any video, any audio, the shortest and longest known
+   length), and two sets join only if no member of one conflicts with a member of
+   the other: the same rule as pairSignals' videoMismatch and lengthConflict. */
+function gatedUnionFind(recs) {
+    const parent = new Map(), info = new Map();
+    for (const r of recs) {
+        parent.set(r.gid, r.gid);
+        const known = r.length != null;
+        info.set(r.gid, { video: r.video === true, audio: r.video === false, min: known ? r.length : Infinity, max: known ? r.length : -Infinity });
+    }
+    const find = x => { while (parent.get(x) !== x) { parent.set(x, parent.get(parent.get(x))); x = parent.get(x); } return x; };
+    const gross = SETTINGS.grossLengthMs || 30000;
+    // why sets A and B may not join ('' when they may)
+    const conflict = (a, b) => ((a.video && b.audio) || (a.audio && b.video)) ? 'video and audio'
+        : (Math.max(a.max, b.max) - Math.min(a.min, b.min) > gross) ? 'lengths ' + Math.round((Math.max(a.max, b.max) - Math.min(a.min, b.min)) / 1000) + 's apart' : '';
+    // true when joined (or already one set); a string saying why when refused
+    const union = (x, y) => {
+        const ra = find(x), rb = find(y);
+        if (ra === rb) return true;
+        const a = info.get(ra), b = info.get(rb), why = conflict(a, b);
+        if (why) return why;
+        parent.set(ra, rb);
+        info.set(rb, { video: a.video || b.video, audio: a.audio || b.audio, min: Math.min(a.min, b.min), max: Math.max(a.max, b.max) });
+        return true;
+    };
+    return { find, union };
+}
 function groupTier(members) {
     if (members.length < 2) return 'manual';
     for (const cutoff of MATCH_CUTOFFS) {
-        const parent = new Map(members.map(m => [m.gid, m.gid]));
-        const find = x => { while (parent.get(x) !== x) { parent.set(x, parent.get(parent.get(x))); x = parent.get(x); } return x; };
+        const uf = gatedUnionFind(members);
         for (let i = 0; i < members.length; i++) for (let j = i + 1; j < members.length; j++) {
             const sig = pairSignals(members[i], members[j], SETTINGS.lengthToleranceMs);
-            if (shouldUnion(sig, cutoff)) { const a = find(members[i].gid), b = find(members[j].gid); if (a !== b) parent.set(a, b); }
+            if (shouldUnion(sig, cutoff)) uf.union(members[i].gid, members[j].gid);
         }
-        const root = find(members[0].gid);
-        if (members.every(m => find(m.gid) === root)) return cutoff;
+        const root = uf.find(members[0].gid);
+        if (members.every(m => uf.find(m.gid) === root)) return cutoff;
     }
-    return 'manual';   // only hand-built grouping explains it
+    return 'manual';   // only hand-built grouping explains it (including a group no cutoff could form, U3)
 }
 function computeGroupConfidence(members) {
     let confidence = null;
@@ -1113,10 +1147,8 @@ function pairSignals(a, b, tolMs) {
 function autoMatch(pool, tolMs, cutoff) {
     cutoff = cutoff || 'normal';
     if (pool.length < 2) return [];
-    const parent = new Map(pool.map(r => [r.gid, r.gid]));
-    const find = x => { while (parent.get(x) !== x) { parent.set(x, parent.get(parent.get(x))); x = parent.get(x); } return x; };
-    const union = (a, b) => { const ra = find(a), rb = find(b); if (ra !== rb) parent.set(ra, rb); };
-    let lengthBlocked = 0;
+    const uf = gatedUnionFind(pool), find = uf.find;   // #623 U3: the gates hold for the whole group
+    let lengthBlocked = 0, bridgeBlocked = 0;
     for (let i = 0; i < pool.length; i++) {
         for (let j = i + 1; j < pool.length; j++) {
             const sig = pairSignals(pool[i], pool[j], tolMs);
@@ -1135,9 +1167,18 @@ function autoMatch(pool, tolMs, cutoff) {
                 Log.info('  not grouped (length differs by ' + Math.round(Math.abs(pool[i].length - pool[j].length) / 1000) + 's): "'
                     + pool[i].title + '" ' + dur(pool[i].length) + ' vs "' + pool[j].title + '" ' + dur(pool[j].length));
             }
-            if (shouldUnion(sig, cutoff)) union(pool[i].gid, pool[j].gid);
+            if (shouldUnion(sig, cutoff)) {
+                const joined = uf.union(pool[i].gid, pool[j].gid);
+                // the pair matches, but joining would put a conflicting pair into one group
+                if (joined !== true) {
+                    bridgeBlocked++;
+                    Log.info('  not grouped (' + joined + ' in the group it would join): "' + pool[i].title + '" ' + dur(pool[i].length)
+                        + (pool[i].video ? ' (video)' : '') + ' ↔ "' + pool[j].title + '" ' + dur(pool[j].length) + (pool[j].video ? ' (video)' : ''));
+                }
+            }
         }
     }
+    if (bridgeBlocked) Log.warn(bridgeBlocked + ' matching pair(s) kept apart: joining them would have grouped a video with an audio recording, or lengths more than ' + Math.round((SETTINGS.grossLengthMs || 30000) / 1000) + 's apart, through a recording whose value is unknown');
     if (lengthBlocked) Log.warn(lengthBlocked + ' pair(s) held back by the gross-length guard (>' + Math.round((SETTINGS.grossLengthMs || 30000) / 1000) + 's apart) — group them by hand if they really are the same take');
     const byRoot = new Map();
     for (const r of pool) { const root = find(r.gid); if (!byRoot.has(root)) byRoot.set(root, []); byRoot.get(root).push(r); }
@@ -1853,7 +1894,11 @@ function mbuTheme() {
         return t;
     } catch (e) { return 'light'; }
 }
-try {
+// A document-start script runs before the document is parsed: documentElement can
+// still be null, and <head> and <body> don't exist. Observing a null root threw, the
+// catch below swallowed it, and nothing (the watches, the re-checks) was ever set up,
+// so such a script never read the theme at all (#625). It starts on the parsed page.
+function mbuThemeStart() { try {
     mbuTheme();
     // Stylus and friends inject after us often enough that a one-shot read is
     // wrong about half the time. Watch for stylesheets ARRIVING — head childList
@@ -1889,7 +1934,9 @@ try {
     } catch (e) {}
     setTimeout(mbuTheme, 400);
     setTimeout(mbuTheme, 2000);
-} catch (e) { /* no observer, no theme switching — the light defaults still apply */ }
+} catch (e) { /* no observer, no theme switching — the light defaults still apply */ } }
+if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', mbuThemeStart, { once: true });
+else mbuThemeStart();
 
 try {
     var _mbuNs = (typeof unsafeWindow !== 'undefined' ? unsafeWindow : window);
@@ -3519,8 +3566,8 @@ try {
         get SETTINGS() { return SETTINGS; },
         normName, tokenMatch, titleSimilar, artistSimilar, lengthClose, fuzzyRatio, levenshtein, acName, acPrimaryGid, acGids, dur, parseMbidFromInput, parseAddInput,
         mkRecording, fetchRecordingsByBrowse, enrichReleasesFromSearch, fetchReleaseRecordings, fetchRGRecordings, fetchRecordingByGid, fetchAllReleases, resolveInternalId, fetchAcoustIds, fetchAcoustIdsBatch, enrichIsrcs, fetchRecordingDetail, fetchEntityMeta, enrichPendingEdits, fetchRecordingsBySearch, fetchArtistRecordings, harvestInternalIdsFromPage,
-        pairSignals, poolMatches, computeGroupConfidence, groupTier, TIER_COLORS, SIGNAL_KEYS, ACOUSTID_BATCH, shouldUnion, autoMatch, enrichAcoustIds, enrichAllReleases,
-        migrateSettings, presenceDots, SETTINGS_DEFAULTS, RETIRED_ACOUSTID_CAP, SETTINGS_VERSION,
+        pairSignals, poolMatches, computeGroupConfidence, groupTier, gatedUnionFind, TIER_COLORS, SIGNAL_KEYS, ACOUSTID_BATCH, shouldUnion, autoMatch, enrichAcoustIds, enrichAllReleases,
+        migrateSettings, presenceDots, RETIRED_ACOUSTID_CAP, SETTINGS_VERSION,   // SETTINGS_DEFAULTS is listed above
         fetchReleaseDetails, releaseTableHtml, toggleReleaseDetails, storeReleaseDetails, releasesSummary, renderFooter, seedPageProgress, lengthSpread,
         renderRunSummary, getLastRun: () => _lastRun, showNotice, renderNotice, cancelBackground, bgAlive, resumeBackground, isBgStopped: () => _bgStopped,
         lengthDiffLabel,

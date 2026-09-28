@@ -3,7 +3,7 @@
 // chokepoint for everything that hits musicbrainz.org/ws/2 (and /ws/js), so
 // rate-limit handling lives in one place.
 
-import { pageWindow }    from './constants.js';
+import { MB, pageWindow }    from './constants.js';
 import { log, logDebug } from './log.js';
 
 /**
@@ -82,7 +82,7 @@ export const mbThrottle = (() => {
 
     async function _run(item) {
         const tag = `req#${++_diagReqSeq}`;
-        const shortUrl = item.url.replace('//musicbrainz.org', '').replace(/^https:/, '');
+        const shortUrl = item.url.replace(MB, '').replace(/^https:/, '');
         for (let attempt = 0; attempt <= item.retries; attempt++) {
             await _waitForPause();
             _totalRequests++;
@@ -186,7 +186,7 @@ export async function fetchArtistRelTypes(mbid) {
     if (!mbid) return null;
     if (_relTypeCache.has(mbid)) return _relTypeCache.get(mbid);
     const json = await mbThrottle.fetchJson(
-        `//musicbrainz.org/ws/2/artist/${mbid}?inc=recording-rels+release-rels+release-group-rels+work-rels&fmt=json&limit=100`
+        `${MB}/ws/2/artist/${mbid}?inc=recording-rels+release-rels+release-group-rels+work-rels&fmt=json&limit=100`
     );
     if (!json) return null;
     const types = relRoleLabels(json.relations);

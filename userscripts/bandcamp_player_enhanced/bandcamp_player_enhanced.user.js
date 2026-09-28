@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Bandcamp Player Enhanced
 // @namespace    http://violentmonkey.net/
-// @version      2026.8.17
+// @version      2026.9.26.201149
 // @description  Custom sticky 2-row player. Space=play/pause, Shift+Space=scroll, Up/Down=prev/next, Shift+Up/Down=volume, Left/Right=seek 5s (Shift=30s). P=preview mode.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPkJhbmRjYW1wIFBsYXllciBFbmhhbmNlZDwvdGl0bGU+CiAgPGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iNTgiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzFkYTBjMyIgc3Ryb2tlLXdpZHRoPSI3Ii8+CiAgPHBvbHlnb24gcG9pbnRzPSI0OCwzOCA5Niw2NCA0OCw5MCIgZmlsbD0iIzFkYTBjMyIvPgo8L3N2Zz4K
@@ -25,7 +25,9 @@
     const MUTE_KEY      = 'bcp_muted';
     const BAR_H         = 72;
     const PREVIEW_SECS  = 30; // seconds to play per track in preview mode
-    const VERSION       = '2026.08.15.145238'; // keep in sync with @version (fallback when GM_info is unavailable)
+    // #623: the installed version, from the manager — the hard-coded copy this replaced
+    // had drifted (it showed 2026.08.15 while 2026.8.17 was installed)
+    const VERSION       = (typeof GM_info !== 'undefined' && GM_info.script && GM_info.script.version) || '?';
     const HOMEPAGE_URL  = 'https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/bandcamp_player_enhanced/README.md';
     // #501: unsafeWindow reaches the page's own real `window` — Bandcamp's inline
     // script attaches TralbumData directly to it, invisible through a sandboxed

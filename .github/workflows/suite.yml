@@ -1,0 +1,34 @@
+# The whole test suite, nightly and on demand (Actions → suite → Run workflow).
+# Every spec but @web, which reads other live sites that often block cloud
+# machines; those run locally. A red night can also mean the sandbox was reset
+# (run dev/test/copy-to-sandbox.mjs) or runs a newer MusicBrainz.
+name: suite
+on:
+  schedule:
+    - cron: '0 2 * * *'
+  workflow_dispatch:
+jobs:
+  suite:
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    concurrency: { group: sandbox, cancel-in-progress: false }
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm exec playwright install --with-deps chromium firefox
+      - run: sudo apt-get install -y libarchive-tools   # bsdtar, for Art Station's zip spec
+      - name: Sign in to the sandbox
+        run: node dev/test/login.mjs sandbox --auto
+      - name: All specs but @web and @timing
+        run: pnpm test --grep-invert "@web|@timing"
+      - uses: actions/upload-artifact@v4
+        if: ${{ !cancelled() }}
+        with:
+          name: suite-report
+          path: test-results/html
+          retention-days: 14

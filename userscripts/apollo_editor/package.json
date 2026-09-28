@@ -1,14 +1,12 @@
 {
-  "name": "track-cannon-userscript",
+  "name": "apollo-editor-userscript",
   "version": "0.0.0",
   "private": true,
   "type": "module",
-  "description": "Track Cannon — speed up per-track artist-credit resolution in the MusicBrainz release editor",
+  "description": "Apollo Editor — a faster tracklist, recordings and release-info editor for the MusicBrainz release editor",
   "scripts": {
-    "spike": "node test/spike.mjs",
-    "spike:headed": "node test/spike.mjs --headed"
-  },
-  "devDependencies": {
-    "playwright": "^1.49.0"
+    "test": "pnpm -C ../.. test --project=apollo_editor",
+    "test:headed": "pnpm -C ../.. test --project=apollo_editor --headed",
+    "login": "node ../../dev/test/login.mjs"
   }
 }
