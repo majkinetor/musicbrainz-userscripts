@@ -53,7 +53,8 @@ test('a dropped zip stages its covers, typed as named', { tag: ['@sandbox'] }, a
       const t = c.querySelector('.as-type:not(.as-type-add)');
       return { types: t ? t.getAttribute('title') : '', comment: (c.querySelector('.as-cmt-text') || {}).textContent || '',
         dim: (c.querySelector('.as-dim') || {}).textContent || '', tip: (c.querySelector('.as-thumb') || {}).getAttribute?.('title') || '' };
-    })), cards => cards.length >= want && cards.every(c => c.dim));
+    // a card shows its file size first and its resolution once decoded: wait for the resolution
+    })), cards => cards.length >= want && cards.every(c => /\d+ × \d+/.test(c.dim)));
   };
 
   /* ── 1. an Art Station archive ─────────────────────────────────────────────── */
