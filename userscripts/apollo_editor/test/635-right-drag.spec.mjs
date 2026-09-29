@@ -56,6 +56,24 @@ test('a right-button drag copies every cell it touches', { tag: ['@sandbox', '@l
   const off = await until(flags, f => !f[0] && !f[1], { timeout: 5000 });
   check(!off[0] && !off[1], `a drag that starts on a marked cell unmarks both (${JSON.stringify(off)})`);
 
+  // majkinetor: "if you mouse up outside of the table, browser context menu appears". A menu
+  // the page didn't cancel is one whose contextmenu event reaches the document un-prevented.
+  await page.evaluate(() => { window.__menus = []; document.addEventListener('contextmenu', ev => window.__menus.push({ shown: !ev.defaultPrevented, on: ev.target.tagName })); });
+  {
+    const [x0, y0] = await centre(0, 'td.tc-recname'), [x1, y1] = await centre(1, 'td.tc-recname');
+    const tb = await page.locator('#tc-recwrap table.tc-rectbl').boundingBox();
+    await page.mouse.move(x0, y0); await page.mouse.down({ button: 'right' });
+    await page.mouse.move(x1, y1, { steps: 6 });
+    await page.mouse.move(x1, tb.y + tb.height + 40, { steps: 6 });   // below the table
+    await page.mouse.up({ button: 'right' });
+  }
+  const outside = await until(flags, f => f[0] && f[1], { timeout: 5000 });
+  const menus = await page.evaluate(() => window.__menus);
+  check(outside[0] && outside[1], `a drag released below the table still marks what it touched (${JSON.stringify(outside)})`);
+  check(!menus.some(m => m.shown), `…and no browser menu opens where it was released (${JSON.stringify(menus)})`);
+  await rightDrag('td.tc-recname', [0, 1]);   // unmark again for what follows
+  await until(flags, f => !f[0] && !f[1], { timeout: 5000 });
+
   // a plain right-click is still a toggle of the one cell
   await page.locator('#tc-recwrap tbody tr.tc-recrow').nth(1).locator('td.tc-recname').click({ button: 'right' });
   const single = await until(flags, f => f[1], { timeout: 5000 });
