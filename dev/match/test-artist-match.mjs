@@ -1,7 +1,7 @@
 // Unit tests for dev/match/artist-match.mjs (#613). node dev/match/test-artist-match.mjs
 import {
     mbmFold, mbmSameName, mbmHolds, mbmIdentityQuery, mbmExactIdentity,
-    mbmRelatedArtists, mbmContextHolders, mbmCoCreditHits, MBM_SPECIAL_PURPOSE, MBM_EXACT_LIMIT,
+    mbmRelatedArtists, mbmContextHolders, mbmCoCreditHits, mbmGuessSortName, MBM_SPECIAL_PURPOSE, MBM_EXACT_LIMIT,
 } from './artist-match.mjs';
 
 let fail = 0;
@@ -59,6 +59,17 @@ const recs = { recordings: [
 ] };
 const hits = mbmCoCreditHits(recs, 'ctx', 'joni');
 ck(hits.length === 1 && hits[0].gid === 'j1', 'co-credit: the artist credited as the name next to the context artist, deduped', hits);
+
+// sort-name guess, shared by Apollo and Credit Hoarder (#623)
+for (const [n, want] of [
+    ['The Rolling Stones', 'Rolling Stones, The'], ['a tribe called quest', 'tribe called quest, A'],
+    ['John Smith', 'Smith, John'], ['John Smith Jr.', 'Smith, John Jr.'], ['  Pink   Floyd ', 'Floyd, Pink'],
+    ['Björk Guðmundsdóttir', 'Guðmundsdóttir, Björk'], ['Madonna', 'Madonna'],
+    ['坂本 龍一', '坂本 龍一'], ['Кино Группа', 'Кино Группа'], ['', ''],
+]) {
+    const got = mbmGuessSortName(n);
+    ck(got === want, 'sort name: ' + JSON.stringify(n) + ' → ' + JSON.stringify(want), got);
+}
 
 console.log(fail ? `\n${fail} FAIL` : '\nALL PASS');
 process.exit(fail ? 1 : 0);

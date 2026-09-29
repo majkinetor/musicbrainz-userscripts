@@ -130,6 +130,8 @@ export const test = base.extend({
     const ctx = await chromium.launchPersistentContext(profile === 'fresh' ? '' : PROFILE, { headless, viewport, deviceScaleFactor });
     const errors = [];
     const guard = await installProdGuard(ctx, { allow: prodPostAllow, gm: gm === false ? null : gm, onRefused: w => refused.push(w) });
+    // the scripts build their test hooks (window.__falconTest, …) only on a page marked so (#623)
+    await ctx.addInitScript(() => { window.__mbuTest = true; });
     const watch = p => p.on('pageerror', e => errors.push(e.message));
     ctx.pages().forEach(watch); ctx.on('page', watch);
 

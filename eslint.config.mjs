@@ -28,9 +28,12 @@ const rules = {
   'no-useless-backreference': 'error', 'no-misleading-character-class': 'error', 'no-empty-character-class': 'error',
   'no-func-assign': 'error', 'no-const-assign': 'error', 'no-class-assign': 'error', 'no-global-assign': 'error', 'no-invalid-regexp': 'error',
   // worth a look, not a blocker
-  'no-unused-vars': ['warn', { args: 'none', caughtErrors: 'none', varsIgnorePattern: '^_' }],
+  // the shared generated blocks (ST-UI, ST-MATCH, ST-ICONS) carry every helper to every
+  // script; one a script doesn't call is not dead code
+  'no-unused-vars': ['warn', { args: 'none', caughtErrors: 'none', varsIgnorePattern: '^(_|mbu[A-Z]|mbm[A-Z]|MBM_|mbRestackCorner$|st[A-Z])' }],
   'no-template-curly-in-string': 'warn', 'no-unmodified-loop-condition': 'warn', 'array-callback-return': 'warn', 'no-fallthrough': 'warn',
-  'no-constant-condition': ['warn', { checkLoops: false }], 'no-irregular-whitespace': 'warn',
+  'no-constant-condition': ['warn', { checkLoops: false }],
+  'no-irregular-whitespace': ['warn', { skipStrings: true, skipTemplates: true, skipRegExps: true }],   // thin spaces in UI text are meant
   'no-control-regex': 'off',
 };
 

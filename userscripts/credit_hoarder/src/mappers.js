@@ -17,67 +17,8 @@ const INSTRUMENTS_CI = Object.fromEntries(
     Object.entries(INSTRUMENTS).map(([k, v]) => [k.toLowerCase(), v])
 );
 
-/**
- * Best-effort `Name → Sort, Name` heuristic. Used when we create a new MB
- * artist from a Discogs credit. MB's own button has the same limitations and
- * editors are expected to review the result.
- *
- *   - `The Doors` → `Doors, The` (article moves)
- *   - `John Smith` → `Smith, John` (person → family-name first)
- *   - `John Smith Jr.` → `Smith, John Jr.` (suffix preserved)
- *   - Single-word names → unchanged
- */
-export function guessSortName(name) {
-    if (!name || !name.trim()) return name;
-    name = name.trim();
-
-    // Articles that move to the end for group names
-    const articleRe = /^(the|a|an)\s+(.+)$/i;
-
-    // Honorific/title prefixes that are treated as part of the given name
-    const honorifics = /^(dr\.?|prof\.?|sir|lady|lord|rev\.?|st\.?|dj|mc|mc\.?)\s+/i;
-
-    // Suffixes that stay at the end after the given name
-    const suffixRe = /^(.*?),?\s+(jr\.?|sr\.?|ii|iii|iv|v|esq\.?)$/i;
-
-    // Split into words for analysis
-    const words = name.split(/\s+/);
-
-    // Single word → no change
-    if (words.length === 1) return name;
-
-    // --- Check for article prefix (group name heuristic) ---
-    // Only treat as a group if it's an article + multiple remaining words,
-    // AND the name doesn't look like a person name (e.g. "The" followed by what
-    // looks like "Firstname Lastname" still gets treated as a group).
-    const articleMatch = name.match(articleRe);
-    if (articleMatch) {
-        const article = articleMatch[1];
-        const rest    = articleMatch[2];
-        // If rest is a single word, it's clearly a group: "The Doors" → "Doors, The"
-        // If rest is two+ words, it could be "The John Smith Band" — treat as group too
-        return `${rest}, ${article.charAt(0).toUpperCase() + article.slice(1).toLowerCase()}`;
-    }
-
-    // --- Person name heuristic ---
-    // Extract any trailing suffix
-    let suffix = '';
-    let baseName = name;
-    const suffixMatch = name.match(suffixRe);
-    if (suffixMatch) {
-        baseName = suffixMatch[1].trim();
-        suffix   = ' ' + suffixMatch[2];
-    }
-
-    const baseWords = baseName.split(/\s+/);
-    if (baseWords.length === 1) return name; // single word after suffix strip
-
-    // Last word is the family name
-    const familyName = baseWords[baseWords.length - 1];
-    const givenPart  = baseWords.slice(0, -1).join(' ');
-
-    return `${familyName}, ${givenPart}${suffix}`;
-}
+// the sort-name guess is shared with Apollo (dev/match/artist-match.mjs, #623)
+export { mbmGuessSortName as guessSortName } from '../../../dev/match/artist-match.mjs';
 
 /**
  * Flatten Discogs `tracklist`: classical / multi-movement releases group

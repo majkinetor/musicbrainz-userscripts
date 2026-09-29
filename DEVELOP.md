@@ -35,7 +35,7 @@ A run:
 1. collects the closed issues not yet labelled `released` that have an `area | <script>` label and `bug` or `enhancement` (not `skip changelog` or `wontfix`);
 2. prepends a dated section to each script's `CHANGELOG.md` (*Features* from `enhancement`, *Fixes* from `bug`);
 3. lists the scripts whose `.user.js` changed since `stable`, each with a pinned install link and one that follows `stable`;
-4. with `--yes`: commits the changelogs, merges `main` into `stable`, pushes both, regenerates String Theory's `DOCS.pdf`, creates the release, and labels the issues `released`.
+4. with `--yes`: commits the changelogs, merges `main` into `stable`, pushes both, creates the release, attaches String Theory's `DOCS.pdf` to it, and labels the issues `released`.
 
 Changelogs are only ever written by this run.
 

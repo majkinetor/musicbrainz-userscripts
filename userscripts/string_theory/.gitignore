@@ -1,5 +1,7 @@
 # Docs build tooling deps (marked); reused Chromium comes from apollo_editor
 node_modules/
 
+# The PDF manual is attached to each GitHub Release by dev/publish.mjs, not committed (#623)
+DOCS.pdf
 # Transient HTML used by build-pdf.mjs while printing DOCS.pdf
 .docs-print.html

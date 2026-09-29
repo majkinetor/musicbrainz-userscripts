@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Falcon — bulk MusicBrainz link editor
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.9.28
+// @version      2026.9.28.214729
 // @description  Add external links to a BATCH of MusicBrainz artists/labels/recordings at once — no popup-per-entity, no tab churn. A small pool of persistent worker iframes churns through a queue, each submitting its own edit and moving straight to the next entity. Paste a list, hand it a queue via a `?falcon=` URL param, or click "Send to Falcon" on a Harmony actions page to import its suggested links directly.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHBhdGggZD0iTTY0IDEwIEM4MiAyOCA5MCA1NiA5MCA4MCBMMzggODAgQzM4IDU2IDQ2IDI4IDY0IDEwIFoiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzFiMmE0YSIgc3Ryb2tlLXdpZHRoPSI3IiBzdHJva2UtbGluZWpvaW49InJvdW5kIiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8cGF0aCBkPSJNMzggODAgTDIwIDExMCBMNDAgOTYgWiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxwYXRoIGQ9Ik05MCA4MCBMMTA4IDExMCBMODggOTYgWiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxjaXJjbGUgY3g9IjY0IiBjeT0iNDQiIHI9IjEwIiBmaWxsPSIjMWIyYTRhIi8+CiAgPHBhdGggZD0iTTUwIDgwIEw0NSAxMDggTDY0IDEyMiBMODMgMTA4IEw3OCA4MCBaIiBmaWxsPSIjZmY2YTAwIiBzdHJva2U9IiMxYjJhNGEiIHN0cm9rZS13aWR0aD0iNSIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgo8L3N2Zz4K
@@ -13,12 +13,13 @@
 // @grant        GM_deleteValue
 // @grant        GM_xmlhttpRequest
 // @grant        GM_openInTab
+// @grant        unsafeWindow
 // @connect      *
 // @noframes
 // ==/UserScript==
 (function () {
   'use strict';
-  const VERSION = '2026.8.15.192332';
+  const VERSION = '?';   // GM_info carries the real one; every script manager provides it (a hard-coded copy only ever went stale)
   const scriptVersion = () => { try { return GM_info.script.version || VERSION; } catch (e) { return VERSION; } };
   const NAME = 'Falcon';
 
@@ -120,6 +121,235 @@
       }
       html += mbuHelpHtml(o.script);
       return html + '</div>';
+  }
+
+  // Test hooks. A script puts its test hook on window only when the test harness has
+  // marked the page (dev/test/harness.mjs sets window.__mbuTest before any script runs):
+  //   if (mbuTestHooks()) window.__fooTest = { … };
+  // On a user's page the hooks are never built. (#623)
+  function mbuTestHooks() {
+      try { return typeof window !== 'undefined' && window.__mbuTest === true; } catch (e) { return false; }
+  }
+
+  // Corner slots (#468). Every floating launcher (Apollo Editor, Art Station, Falcon,
+  // Fusion, Scribe) tags its element with data-mb-corner (which screen corner: 'br',
+  // 'bl', 'tr', 'tl') and data-mb-corner-order (lower sits closer to the corner), and
+  // calls mbRestackCorner(corner) right after it shows, hides, creates or removes it.
+  // That recomputes every element in the corner, whichever script owns it and
+  // whatever order they loaded in, so two launchers never land on the same pixel.
+  // Orders in use: Apollo and Art Station 10 (never on the same page), Falcon 20,
+  // Fusion above Falcon. Scribe is not on the shared block and keeps a copy of this.
+  function mbRestackCorner(corner) {
+      var bottom = corner[0] === 'b', right = corner[1] === 'r';
+      var els = Array.prototype.slice.call(document.querySelectorAll('[data-mb-corner="' + corner + '"]'))
+          // offsetParent is always null for position:fixed, so it can't tell visibility here
+          .filter(function (el) { return getComputedStyle(el).display !== 'none'; })
+          .sort(function (a, b) { return (Number(a.dataset.mbCornerOrder) || 0) - (Number(b.dataset.mbCornerOrder) || 0); });
+      var pos = 14;
+      els.forEach(function (el) {
+          el.style[bottom ? 'bottom' : 'top'] = pos + 'px';
+          el.style[right ? 'right' : 'left'] = '14px';
+          pos += el.getBoundingClientRect().height + 8;
+      });
+  }
+
+  // Activity log: the session's log lines plus the floating window that shows them
+  // (#283's viewer, shared since X12 of #623). A script makes its log once:
+  //
+  //   var LOG = mbuLog({ name: 'Fusion', version: VERSION, key: 'fusion.logwin' });
+  //   LOG.info('…'); LOG.warn(…); LOG.err(…) (or .error); LOG.ok(…); LOG.debug(…)
+  //   LOG.open(); LOG.close(); LOG.reopen()   // reopen: only if it was left open
+  //   LOG.markdown(); LOG.copy(btn); LOG.lines(); LOG.messages(); LOG.counts()
+  //
+  // o.name / o.version  the Markdown summary's title (version may be a function)
+  // o.subtitle          optional function; its text follows the title (e.g. the release)
+  // o.header            the window's title (default 'Activity log')
+  // o.key               storage key for the window's open/minimised/position state
+  // o.load / o.save     that storage (default GM_getValue / GM_setValue)
+  // o.before            called before the window opens (e.g. to inject the script's CSS)
+  // o.max               lines kept (default 2000)
+  //
+  // A long run keeps only the last o.max lines, and the Markdown says how many went
+  // before them; the copies this replaced grew for the whole session. An open
+  // window appends each new line and drops the oldest row past the cap; the copies
+  // rebuilt the whole list with innerHTML on every line, which is quadratic over a
+  // long matching run.
+  function mbuLog(o) {
+      o = o || {};
+      var max = o.max || 2000, buf = [], dropped = 0, warn = 0, error = 0, win = null;
+      var pad = function (n, w) { return String(n).padStart(w || 2, '0'); };
+      var ts = function (d) { return pad(d.getHours()) + ':' + pad(d.getMinutes()) + ':' + pad(d.getSeconds()) + '.' + pad(d.getMilliseconds(), 3); };
+      var str = function (v) {
+          if (typeof v === 'string') return v;
+          if (v instanceof Error) return v.message || String(v);
+          if (v && v.nodeType) return '<' + (v.tagName || 'node').toLowerCase() + '>';
+          try { return typeof v === 'object' ? JSON.stringify(v) : String(v); } catch (e) { return String(v); }
+      };
+      var esc = function (s) {
+          return String(s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; });
+      };
+      // escape, then make http(s) URLs clickable, keeping trailing punctuation out of them
+      var linkify = function (s) {
+          return esc(s).replace(/(https?:\/\/[^\s<]+)/g, function (m) {
+              var t = (m.match(/[.,;:!?)\]]+$/) || [''])[0];
+              var url = m.slice(0, m.length - t.length);
+              return '<a href="' + url + '" target="_blank" rel="noopener">' + url + '</a>' + t;
+          });
+      };
+      var load = o.load || function (k) { try { return GM_getValue(k, undefined); } catch (e) { return undefined; } };
+      var save = o.save || function (k, v) { try { GM_setValue(k, v); } catch (e) { /* no storage: the window just forgets */ } };
+      var state = function () { try { return JSON.parse(load(o.key) || '{}') || {}; } catch (e) { return {}; } };
+      var remember = function (patch) { try { save(o.key, JSON.stringify(Object.assign(state(), patch))); } catch (e) { /* see save */ } };
+      var tally = function (e, d) { if (e.sev === 'warn') warn += d; else if (e.sev === 'error') error += d; };
+      var PRE = { info: '', ok: 'OK   ', warn: 'WARN ', error: 'ERR  ', debug: 'DBG  ' };
+      var line = function (e) { return ts(e.t) + '  ' + (PRE[e.sev] || '') + e.msg; };
+
+      function add(sev, args) {
+          var msg = Array.prototype.map.call(args, str).join(' ').replace(/\s+/g, ' ').trim();
+          if (!msg) return;
+          var e = { t: new Date(), sev: sev === 'err' ? 'error' : sev, msg: msg };
+          buf.push(e); tally(e, 1);
+          // trim in chunks, not one shift per line
+          if (buf.length > max + Math.ceil(max / 10)) {
+              var gone = buf.splice(0, buf.length - max);
+              gone.forEach(function (g) { tally(g, -1); });
+              dropped += gone.length;
+          }
+          if (win) win.append(e);
+      }
+      function title() {
+          var v = typeof o.version === 'function' ? (function () { try { return o.version(); } catch (e) { return ''; } })() : o.version;
+          var t = (o.name || 'Log') + (v ? ' v' + v : '');
+          try { var s = o.subtitle && o.subtitle(); if (s) t += ' — ' + s; } catch (e) { /* no subtitle */ }
+          return t;
+      }
+      function markdown() {
+          var body = buf.length ? buf.map(line).join('\n') : '(no activity logged)';
+          if (dropped) body = '(' + dropped + ' earlier line' + (dropped === 1 ? '' : 's') + ' not kept)\n' + body;
+          var n = (warn || error) ? ' (' + warn + ' warning' + (warn === 1 ? '' : 's') + ', ' + error + ' error' + (error === 1 ? '' : 's') + ')' : '';
+          var fence = String.fromCharCode(96, 96, 96);
+          return '<details><summary>' + title() + ' — session log' + n + '</summary>\n\n' + fence + 'log\n' + body + '\n' + fence + '\n\n</details>';
+      }
+      function copy(btn) {
+          var md = markdown();
+          var done = function (ok) {
+              if (!btn) return;
+              var was = btn.dataset.lbl || btn.textContent; btn.dataset.lbl = was;
+              btn.textContent = ok ? 'Copied ✓' : 'Copy failed';
+              setTimeout(function () { btn.textContent = was; }, 1500);
+          };
+          var fallback = function () {
+              var ok = false;
+              try {
+                  var ta = document.createElement('textarea'); ta.value = md; ta.style.position = 'fixed'; ta.style.opacity = '0';
+                  document.body.appendChild(ta); ta.select(); ok = document.execCommand('copy'); ta.remove();
+              } catch (x) { /* nothing left to try */ }
+              done(ok);
+          };
+          try { navigator.clipboard.writeText(md).then(function () { done(true); }, fallback); } catch (e) { fallback(); }
+      }
+      function open() {
+          close(true);
+          if (typeof o.before === 'function') { try { o.before(); } catch (e) { /* the window still opens */ } }
+          remember({ open: true });
+          var st = state();
+          var pop = document.createElement('div'); pop.id = 'mbu-logpop'; pop.className = 'mbu-logpop';
+          pop.innerHTML = '<div class="mbu-logpop-h"><b>' + esc(o.header || 'Activity log') + '</b> <span class="mbu-log-badge"></span><span class="mbu-logpop-sp"></span>'
+              + '<button class="mbu-logpop-copy" type="button" title="Copy as Markdown (paste into a GitHub issue)">⧉ Copy</button>'
+              + '<button class="mbu-logpop-min" type="button" title="Minimize">–</button>'
+              + '<button class="mbu-logpop-x" type="button" title="Close">✕</button></div>'
+              + '<div class="mbu-log-list"></div>';
+          document.body.appendChild(pop);
+          if (st.left != null) { pop.style.left = st.left; pop.style.top = st.top; pop.style.right = 'auto'; pop.style.transform = 'none'; }
+          var restore = { left: pop.style.left, top: pop.style.top, right: pop.style.right, bottom: pop.style.bottom, transform: pop.style.transform };
+          var list = pop.querySelector('.mbu-log-list'), badge = pop.querySelector('.mbu-log-badge');
+          var row = function (e) {
+              var d = document.createElement('div');
+              d.className = 'mbu-log-li mbu-log-' + e.sev;
+              d.innerHTML = '<span class="mbu-log-t">' + ts(e.t) + '</span><span class="mbu-log-m">' + linkify(e.msg) + '</span>';
+              return d;
+          };
+          var showBadge = function () { badge.textContent = '(' + buf.length + ')' + (warn || error ? ' · ' + warn + '⚠ ' + error + '✖' : ''); };
+          // the rows, once; later lines are appended one by one
+          var frag = document.createDocumentFragment();
+          buf.forEach(function (e) { frag.appendChild(row(e)); });
+          if (buf.length) list.appendChild(frag);
+          else list.innerHTML = '<div class="mbu-log-empty">No activity yet.</div>';
+          showBadge();
+          list.scrollTop = list.scrollHeight;
+          // badge and scroll once per frame, however many lines arrive in it
+          var queued = false, follow = true;
+          list.addEventListener('scroll', function () { follow = list.scrollHeight - list.scrollTop - list.clientHeight < 40; });
+          var paint = function () { queued = false; showBadge(); if (follow) list.scrollTop = list.scrollHeight; };
+          var onKey = function (e) { if (e.key === 'Escape') close(); };
+          win = {
+              el: pop,
+              append: function (e) {
+                  var empty = list.querySelector('.mbu-log-empty'); if (empty) empty.remove();
+                  list.appendChild(row(e));
+                  while (list.childElementCount > buf.length) list.firstElementChild.remove();
+                  if (!queued) { queued = true; requestAnimationFrame(paint); }
+              },
+              off: function () { document.removeEventListener('keydown', onKey); },
+          };
+          pop.querySelector('.mbu-logpop-copy').onclick = function () { copy(pop.querySelector('.mbu-logpop-copy')); };
+          var minBtn = pop.querySelector('.mbu-logpop-min');
+          var setMin = function (m) {
+              minBtn.textContent = m ? '▢' : '–'; minBtn.title = m ? 'Restore' : 'Minimize';
+              if (m) { pop.style.left = '14px'; pop.style.bottom = '14px'; pop.style.top = 'auto'; pop.style.right = 'auto'; pop.style.transform = 'none'; }   // dock to the bottom
+              else Object.assign(pop.style, restore);
+          };
+          minBtn.onclick = function () { var m = pop.classList.toggle('min'); setMin(m); remember({ min: m }); };
+          if (st.min) { pop.classList.add('min'); setMin(true); }
+          pop.querySelector('.mbu-logpop-x').onclick = function () { close(); };
+          // floating and non-modal: dragged by its header
+          pop.querySelector('.mbu-logpop-h').addEventListener('mousedown', function (e) {
+              if (e.target.closest('button')) return;
+              e.preventDefault();
+              var r = pop.getBoundingClientRect();
+              pop.style.left = r.left + 'px'; pop.style.top = r.top + 'px'; pop.style.right = 'auto'; pop.style.transform = 'none';
+              var ox = e.clientX - r.left, oy = e.clientY - r.top;
+              var mv = function (ev) {
+                  pop.style.left = Math.max(0, Math.min(window.innerWidth - pop.offsetWidth, ev.clientX - ox)) + 'px';
+                  pop.style.top = Math.max(0, Math.min(window.innerHeight - 36, ev.clientY - oy)) + 'px';
+              };
+              var up = function () {
+                  document.removeEventListener('mousemove', mv); document.removeEventListener('mouseup', up);
+                  if (!pop.classList.contains('min')) {
+                      restore = { left: pop.style.left, top: pop.style.top, right: 'auto', bottom: '', transform: 'none' };
+                      remember({ left: pop.style.left, top: pop.style.top });
+                  }
+              };
+              document.addEventListener('mousemove', mv); document.addEventListener('mouseup', up);
+          });
+          document.addEventListener('keydown', onKey);
+          return pop;
+      }
+      // quiet: closing to reopen, so the remembered "open" stays as it is
+      function close(quiet) {
+          var stray = document.getElementById('mbu-logpop');
+          if (win) { win.off(); win.el.remove(); win = null; if (!quiet) remember({ open: false }); }
+          if (stray) stray.remove();   // another script's window: one log window at a time
+      }
+      var api = {
+          info: function () { add('info', arguments); },
+          warn: function () { add('warn', arguments); },
+          err: function () { add('error', arguments); },
+          error: function () { add('error', arguments); },
+          ok: function () { add('ok', arguments); },
+          debug: function () { add('debug', arguments); },
+          add: function (sev) { add(sev, Array.prototype.slice.call(arguments, 1)); },
+          open: open,
+          close: function () { close(); },
+          reopen: function () { if (state().open) open(); },
+          isOpen: function () { return !!win; },
+          markdown: markdown,
+          copy: copy,
+          lines: function () { return buf.map(line); },
+          messages: function () { return buf.map(function (e) { return e.msg; }); },
+          counts: function () { return { warn: warn, error: error }; },
+      };
+      return api;
   }
 
   // Dismiss-on-outside-click, with the trailing click SWALLOWED.
@@ -429,28 +659,7 @@
     '<circle cx="12" cy="8.2" r="1.5" fill="currentColor" stroke="none"/>' +
     '<path d="M9.6 13.5 L9 19 L12 22 L15 19 L14.4 13.5 Z"/></svg>';
 
-  /* ── shared corner-slot convention (#468) ───────────────────────────────
-     Every floating launcher across these scripts (Apollo Editor, Art
-     Station, Scribe, Falcon) tags its element with data-mb-corner (which
-     screen corner) + data-mb-corner-order (priority — lower sits closest to
-     the actual corner) and calls mbRestackCorner() right after it shows /
-     hides / creates / removes its own element. No MutationObserver needed:
-     whichever script's state just changed triggers a full recompute that
-     repositions every element sharing that corner, regardless of load
-     order — so two independent scripts' buttons never land on the same
-     pixel. Duplicated per-script on purpose (no shared file to import). */
-  function mbRestackCorner(corner) {
-    const bottom = corner[0] === 'b', right = corner[1] === 'r';
-    const els = [...document.querySelectorAll('[data-mb-corner="' + corner + '"]')]
-      .filter(el => getComputedStyle(el).display !== 'none')   // offsetParent is always null for position:fixed — not a usable visibility check here
-      .sort((a, b) => (Number(a.dataset.mbCornerOrder) || 0) - (Number(b.dataset.mbCornerOrder) || 0));
-    let pos = 14;
-    els.forEach(el => {
-      el.style[bottom ? 'bottom' : 'top'] = pos + 'px';
-      el.style[right ? 'right' : 'left'] = '14px';
-      pos += el.getBoundingClientRect().height + 8;
-    });
-  }
+  // mbRestackCorner, the #468 corner slots, is in the ST-UI block (dev/ui/ui-components.mjs).
 
   /* ── settings ────────────────────────────────────────────────────────── */
   const cfg = {
@@ -1449,7 +1658,8 @@
   //      different userscripts, only within one script's own tabs — hence keeping
   //      scheme 1 as the general contract.
   function tryDecodeBase64Json(raw) {
-    let text; try { text = decodeURIComponent(escape(atob(raw))); } catch (e) { return null; }
+    // fatal: bytes that are not UTF-8 throw, as decodeURIComponent(escape(…)) did
+    let text; try { text = new TextDecoder('utf-8', { fatal: true }).decode(Uint8Array.from(atob(raw), c => c.charCodeAt(0))); } catch (e) { return null; }
     try { JSON.parse(text); return text; } catch (e) { return null; }
   }
   function parseUrlParam() {
@@ -1541,7 +1751,8 @@
   }
   function encodeFalconPayload(tuples) {
     const json = JSON.stringify(tuples.map(t => ({ entityType: t.entityType, mbid: t.mbid, url: t.url, linkTypeId: t.linkTypeId || undefined, note: t.note || undefined, isrc: t.isrc || undefined, name: t.name || undefined })));
-    return btoa(unescape(encodeURIComponent(json)));
+    let bin = ''; for (const b of new TextEncoder().encode(json)) bin += String.fromCharCode(b);   // UTF-8 bytes, one char each, for btoa
+    return btoa(bin);
   }
 
   /* ── Harmony bridge (#467, #459) ─────────────────────────────────────────
@@ -3172,7 +3383,7 @@
         dbg(tag, '  not seeded — falling back to typing it');
         const input = await waitFor(() => frameDoc(iframe) && findAddLinkInput(frameDoc(iframe)), 12000);
         if (!input) { dbg(tag, '  no "Add another link" input appeared within 12s'); results.push({ url, ok: false, error: 'no "Add another link" input ever appeared' }); continue; }
-        const d2 = frameDoc(iframe), w2 = frameWin(iframe);
+        const w2 = frameWin(iframe);
         const setVal = Object.getOwnPropertyDescriptor(w2.HTMLInputElement.prototype, 'value').set;
         input.focus();
         setVal.call(input, url);
@@ -6173,8 +6384,8 @@
     });
   }
 
-  // Test hook only (#467) — no behavior change.
-  window.__falconTest = { DISAMBIGUATABLE, pageEntityContext, fetchReleaseGraph, fetchGroupReleases, releaseGraphTuples, normalizeAliases, isDuplicateAlias, fetchExistingAliases, submitAlias, runAliasItem, resolveAliasTypeId, parseLine, parsePaste, parseUrlParam, parseHarmonySeedUrl, encodeFalconPayload, scrapeHarmonyActions, makePendingToken, addToQueue, getQueue: () => queue, setQueue: q => { queue = q; renderQueue(); }, start, stop, cfg, fillAndSubmit, findAddLinkInput, findSubmitButton, findFieldError, findNoChangesWarning, setRowLinkType, addSecondRelationshipType, editUrl, buildSeedEditUrl, nextQueued, fetchEntityName, entityLabel, openInTab, getSelectedIds: () => _selectedIds, getExpandedIds: () => _expandedIds, mbThrottle, showItemPopup, focusItemWorker, importQueueJson, suspendNameLookups, resumeNameLookups, getLog: () => LOG.slice(), getSessionId: () => SESSION_ID, noteUnload, editNoteText, setEditNote, isLoggedIn, scrapeHarmonyIsrcs, harmonyIsrcFallback, resolveIsrcFallback,
+  // Test hook only (#467) — no behavior change; built only on a test page (#623).
+  if (mbuTestHooks()) window.__falconTest = { DISAMBIGUATABLE, pageEntityContext, fetchReleaseGraph, fetchGroupReleases, releaseGraphTuples, normalizeAliases, isDuplicateAlias, fetchExistingAliases, submitAlias, runAliasItem, resolveAliasTypeId, parseLine, parsePaste, parseUrlParam, parseHarmonySeedUrl, encodeFalconPayload, scrapeHarmonyActions, makePendingToken, addToQueue, getQueue: () => queue, setQueue: q => { queue = q; renderQueue(); }, start, stop, cfg, fillAndSubmit, findAddLinkInput, findSubmitButton, findFieldError, findNoChangesWarning, setRowLinkType, addSecondRelationshipType, editUrl, buildSeedEditUrl, nextQueued, fetchEntityName, entityLabel, openInTab, getSelectedIds: () => _selectedIds, getExpandedIds: () => _expandedIds, mbThrottle, showItemPopup, focusItemWorker, importQueueJson, suspendNameLookups, resumeNameLookups, getLog: () => LOG.slice(), getSessionId: () => SESSION_ID, noteUnload, editNoteText, setEditNote, isLoggedIn, scrapeHarmonyIsrcs, harmonyIsrcFallback, resolveIsrcFallback,
     // #494
     scrapeHarmonyCover, parseCoverCaptionMeta, pickBestCover, coverEditNote, gmFetch, runCoverItem, mimeFromUrl, checkExistingCoverArt,
     // #495

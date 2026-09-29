@@ -28,6 +28,7 @@ export default defineConfig({
   use: { headless: true, viewport: { width: 1600, height: 1000 }, actionTimeout: 30_000, navigationTimeout: 90_000 },
   projects: [
     { name: 'harness', testDir: 'dev/test' },   // the harness's own guard tests
+    { name: 'ui', testDir: 'dev/ui' },          // the shared UI components (ST-UI)
     ...scripts.map(name => ({ name, testDir: `userscripts/${name}/test` })),
   ],
 });

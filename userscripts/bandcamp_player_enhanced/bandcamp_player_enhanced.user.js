@@ -37,18 +37,9 @@
     // (Playwright/test mode).
     const pageWindow = (typeof unsafeWindow !== 'undefined') ? unsafeWindow
         : (typeof window !== 'undefined') ? window : globalThis;
-    // #501: settings persistence lives in GM storage (backed up/synced by the
-    // script manager) instead of localStorage (browser-profile-only — invisible to
-    // a script manager backup/restore or a move to another browser). One-time
-    // migration: if GM storage is empty but an old localStorage value exists,
-    // adopt it once and write through to GM storage from then on; the old
-    // localStorage key is left in place, unused, so nothing is destructively
-    // deleted.
-    function gmLoad(key) {
-        try { const v = GM_getValue(key, undefined); if (v !== undefined) return v; } catch (e) {}
-        try { const raw = localStorage.getItem(key); if (raw != null) { GM_setValue(key, raw); return raw; } } catch (e) {}
-        return undefined;
-    }
+    // #501: settings live in GM storage (backed up and synced by the script manager).
+    // The one-time adoption of an older localStorage copy is retired (#623).
+    function gmLoad(key) { try { return GM_getValue(key, undefined); } catch (e) { return undefined; } }
     function gmSave(key, raw) { try { GM_setValue(key, raw); } catch (e) {} }
 
     // ─── Helpers ──────────────────────────────────────────────────────────────────

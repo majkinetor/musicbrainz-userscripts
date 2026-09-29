@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         String Theory
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.9.29.090206
+// @version      2026.9.29.133451
 // @description  Unified bundle of 8 MusicBrainz userscripts (apollo_editor, art_station, credit_hoarder, fusion, group_therapy, isrc_scout, mammoth, platform_check). Built by userscripts/string_theory/build.mjs — do not hand-edit.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCIgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0Ij4NCiAgPCEtLSBodWItYW5kLXNwb2tlICJuZXR3b3JrIiBnbHlwaCwgc2luZ2xlIHZpdmlkIHZpb2xldCBvbiB0cmFuc3BhcmVudCBzbyBpdCByZWFkcyBvbiBib3RoIGRhcmsgYW5kIGxpZ2h0IHBhZ2VzIC0tPg0KICA8ZyBmaWxsPSJub25lIiBzdHJva2U9IiM3YzVjZmYiIHN0cm9rZS13aWR0aD0iNC42IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMzIgMTUiLz4NCiAgICA8cGF0aCBkPSJNMzIgMzIgTDQ2LjUgMjMuNSIvPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMNDYuNSA0MC41Ii8+DQogICAgPHBhdGggZD0iTTMyIDMyIEwzMiA0OSIvPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMTcuNSA0MC41Ii8+DQogICAgPHBhdGggZD0iTTMyIDMyIEwxNy41IDIzLjUiLz4NCiAgPC9nPg0KICA8ZyBmaWxsPSIjN2M1Y2ZmIj4NCiAgICA8Y2lyY2xlIGN4PSIzMiIgY3k9IjMyIiByPSI4LjYiLz4NCiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjE5LjUiIHI9IjYuNCIvPg0KICAgIDxjaXJjbGUgY3g9IjQ5IiBjeT0iMTkuNSIgcj0iNi40Ii8+DQogICAgPGNpcmNsZSBjeD0iMzIiIGN5PSI1NyIgcj0iNi40Ii8+DQogIDwvZz4NCiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjN2M1Y2ZmIiBzdHJva2Utd2lkdGg9IjMuOCI+DQogICAgPGNpcmNsZSBjeD0iMzIiIGN5PSI3IiByPSI0LjkiLz4NCiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjQ0LjUiIHI9IjQuOSIvPg0KICAgIDxjaXJjbGUgY3g9IjQ5IiBjeT0iNDQuNSIgcj0iNC45Ii8+DQogIDwvZz4NCjwvc3ZnPg0K
@@ -15,6 +15,7 @@
 // @grant        GM_openInTab
 // @grant        GM_getValue
 // @grant        GM_setValue
+// @grant        unsafeWindow
 // @connect      *
 // @match        *://*.musicbrainz.org/release/*/cover-art*
 // @match        *://*.musicbrainz.org/release/*/add-cover-art*
@@ -27,7 +28,6 @@
 // @match        https://tidal.com/album/*
 // @match        https://listen.tidal.com/album/*
 // @match        https://www.metal-archives.com/albums/*
-// @grant        unsafeWindow
 // @connect      qobuz.com
 // @connect      www.qobuz.com
 // @connect      deezer.com
@@ -81,13 +81,13 @@
 // Bundles (verbatim, each wrapped in a run-at gate): apollo_editor, art_station, credit_hoarder, fusion, group_therapy, isrc_scout, mammoth, platform_check.
 
 try {
-  console.log('%c String Theory %c v2026.9.29.090206 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
-  console.log("String Theory bundles:\n  · Apollo Editor v2026.9.27.060520\n  · Art Station v2026.9.28\n  · Credit Hoarder v2026.9.29.011613\n  · Fusion v2026.9.27\n  · Group Therapy v2026.9.27\n  · ISRC Scout v2026.9.27\n  · Mammoth v2026.9.28\n  · Platform Check v2026.9.27.210137");
+  console.log('%c String Theory %c v2026.9.29.133451 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
+  console.log("String Theory bundles:\n  · Apollo Editor v2026.9.28\n  · Art Station v2026.9.28\n  · Credit Hoarder v2026.9.28.220718\n  · Fusion v2026.9.28\n  · Group Therapy v2026.9.28\n  · ISRC Scout v2026.9.28\n  · Mammoth v2026.9.28.214729\n  · Platform Check v2026.9.28");
 } catch (e) {}
 
 // ===== apollo_editor (@run-at document-start) =====================================
 (function(__stGM){
-  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Apollo Editor*","namespace":"https://musicbrainz.org/","version":"2026.9.27.060520","description":"Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md","supportURL":null,"icon":"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E"}) }) : { script: {"name":"Apollo Editor*","namespace":"https://musicbrainz.org/","version":"2026.9.27.060520","description":"Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md","supportURL":null,"icon":"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E"} };
+  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Apollo Editor*","namespace":"https://musicbrainz.org/","version":"2026.9.28","description":"Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md","supportURL":null,"icon":"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E"}) }) : { script: {"name":"Apollo Editor*","namespace":"https://musicbrainz.org/","version":"2026.9.28","description":"Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md","supportURL":null,"icon":"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E"} };
   (f=>f())(function(){
 /*
  * Editor model (discovered via test/ spikes):
@@ -113,121 +113,18 @@ try {
   // #283 every Log.* call is captured into an in-page buffer and surfaced in a
   // dedicated log viewer — opened from a Log button next to "? Help" —
   // copy/pastable as a Markdown <details> block, like the other scripts. (The
-  // console output was dropped: it just duplicated this buffer.)
-  const LOG = [];
-  const _logListeners = new Set();
-  const _lpad = (n, w = 2) => String(n).padStart(w, '0');
-  const _logTs = d => `${_lpad(d.getHours())}:${_lpad(d.getMinutes())}:${_lpad(d.getSeconds())}.${_lpad(d.getMilliseconds(), 3)}`;
-  const _logStr = v => {
-    if (typeof v === 'string') return v;
-    if (v instanceof Error) return v.message || String(v);
-    if (v && v.nodeType) return '<' + (v.tagName || 'node').toLowerCase() + '>';
-    try { return typeof v === 'object' ? JSON.stringify(v) : String(v); } catch (e) { return String(v); }
-  };
-  function _logRecord(sev, args) {
-    const msg = args.map(_logStr).join(' ').replace(/\s+/g, ' ').trim();
-    if (!msg) return;
-    LOG.push({ t: new Date(), sev, msg });
-    _logListeners.forEach(f => { try { f(); } catch (e) {} });
-  }
-  const Log = {
-    info:  (...a) => _logRecord('info', a),
-    warn:  (...a) => _logRecord('warn', a),
-    err:   (...a) => _logRecord('error', a),
-    ok:    (...a) => _logRecord('ok', a),
-    debug: (...a) => _logRecord('debug', a),
-  };
-  const _logCounts = () => LOG.reduce((acc, e) => { if (e.sev === 'warn') acc.warn++; else if (e.sev === 'error') acc.error++; return acc; }, { warn: 0, error: 0 });
-  // escape, then turn http(s) URLs into clickable links for the log viewer
-  const _logLinkify = s => esc(s).replace(/(https?:\/\/[^\s<]+)/g, (m) => {
-    const t = (m.match(/[.,;:!?)\]]+$/) || [''])[0];   // keep trailing punctuation out of the URL
-    const url = m.slice(0, m.length - t.length);
-    return `<a href="${url}" target="_blank" rel="noopener">${url}</a>${t}`;
+  // console output was dropped: it just duplicated this buffer.) The buffer and
+  // window are the shared mbuLog (ST-UI block), since X12 of #623.
+  const Log = mbuLog({
+    name: 'Apollo Editor', version: () => scriptVersion(), key: 'apolloEditor.logwin',
+    load: k => gmLoad(k), save: (k, v) => gmSave(k, v), before: () => style(),
   });
-  // copy/pastable Markdown — collapsed <details> wrapping a fenced log block.
-  function logMarkdown() {
-    const PRE = { info: '', ok: 'OK   ', warn: 'WARN ', error: 'ERR  ', debug: 'DBG  ' };
-    const body = LOG.length ? LOG.map(e => `${_logTs(e.t)}  ${PRE[e.sev] || ''}${e.msg}`).join('\n') : '(no activity logged)';
-    const c = _logCounts();
-    let title = 'Apollo Editor';
-    try { title += ' v' + scriptVersion(); } catch (e) {}
-    const tally = (c.warn || c.error) ? ` (${c.warn} warning${c.warn === 1 ? '' : 's'}, ${c.error} error${c.error === 1 ? '' : 's'})` : '';
-    return `<details><summary>${title} — session log${tally}</summary>\n\n` + '```log\n' + body + '\n```' + `\n\n</details>`;
-  }
-  async function copyLog(btn) {
-    const md = logMarkdown(); let ok = false;
-    try { await navigator.clipboard.writeText(md); ok = true; }
-    catch (e) { try { const ta = document.createElement('textarea'); ta.value = md; ta.style.position = 'fixed'; ta.style.opacity = '0'; document.body.appendChild(ta); ta.select(); ok = document.execCommand('copy'); ta.remove(); } catch (x) {} }
-    if (btn) { const o = btn.dataset.lbl || btn.textContent; btn.dataset.lbl = o; btn.textContent = ok ? 'Copied ✓' : 'Copy failed'; setTimeout(() => { btn.textContent = o; }, 1500); }
-  }
-  // #501: settings persistence lives in GM storage (backed up/synced by the script
-  // manager) instead of localStorage (browser-profile-only — invisible to a script
-  // manager backup/restore or a move to another browser). One-time migration: if GM
-  // storage is empty but an old localStorage value exists, adopt it once and write
-  // through to GM storage from then on; the old localStorage key is left in place,
-  // unused, so nothing is destructively deleted.
-  const gmLoad = (key) => {
-    try { const v = GM_getValue(key, undefined); if (v !== undefined) return v; } catch (e) {}
-    try { const raw = localStorage.getItem(key); if (raw != null) { GM_setValue(key, raw); return raw; } } catch (e) {}
-    return undefined;
-  };
+  const logMarkdown = () => Log.markdown();
+  const openLog = () => Log.open();
+  // #501: settings live in GM storage (backed up and synced by the script manager).
+  // The one-time adoption of an older localStorage copy is retired (#623).
+  const gmLoad = (key) => { try { return GM_getValue(key, undefined); } catch (e) { return undefined; } };
   const gmSave = (key, raw) => { try { GM_setValue(key, raw); } catch (e) {} };
-  // #283 remember the log window across sessions: open?/minimized?/position
-  const LOGWIN_KEY = 'apolloEditor.logwin';
-  const loadLogWin = () => { try { return JSON.parse(gmLoad(LOGWIN_KEY) || '{}'); } catch (e) { return {}; } };
-  const saveLogWin = (patch) => { try { gmSave(LOGWIN_KEY, JSON.stringify(Object.assign(loadLogWin(), patch))); } catch (e) {} };
-  // the Log button opens this popup: the full session log + a Copy control.
-  function openLog() {
-    document.getElementById('mbu-logpop')?.remove();
-    style();   // ensure the popup CSS is injected (e.g. on auto-open before settings is opened)
-    saveLogWin({ open: true });
-    const st = loadLogWin();
-    const pop = document.createElement('div'); pop.id = 'mbu-logpop';
-    pop.innerHTML = `<div class="mbu-logpop-h"><b>Activity log</b> <span class="mbu-log-badge"></span><span class="mbu-logpop-sp"></span>`
-      + `<button class="mbu-logpop-copy" type="button" title="Copy as Markdown (paste into a GitHub issue)">⧉ Copy</button>`
-      + `<button class="mbu-logpop-min" type="button" title="Minimize">–</button>`
-      + `<button class="mbu-logpop-x" type="button" title="Close">✕</button></div>`
-      + `<div class="mbu-log-list"></div>`;
-    document.body.appendChild(pop);
-    // restore saved open position (used when not minimized, and remembered for restore)
-    if (st.left != null) { pop.style.left = st.left; pop.style.top = st.top; pop.style.right = 'auto'; pop.style.transform = 'none'; }
-    pop._restore = { left: pop.style.left, top: pop.style.top, right: pop.style.right, bottom: pop.style.bottom, transform: pop.style.transform };
-    const renderList = () => {
-      const list = pop.querySelector('.mbu-log-list');
-      list.innerHTML = LOG.length
-        ? LOG.map(e => `<div class="mbu-log-li mbu-log-${e.sev}"><span class="mbu-log-t">${_logTs(e.t)}</span><span class="mbu-log-m">${_logLinkify(e.msg)}</span></div>`).join('')
-        : '<div class="mbu-log-empty">No activity yet.</div>';
-      const c = _logCounts();
-      pop.querySelector('.mbu-log-badge').textContent = `(${LOG.length})` + (c.warn || c.error ? ` · ${c.warn}⚠ ${c.error}✖` : '');
-      list.scrollTop = list.scrollHeight;
-    };
-    renderList();
-    _logListeners.add(renderList);
-    const onKey = e => { if (e.key === 'Escape') close(); };
-    const close = () => { saveLogWin({ open: false }); _logListeners.delete(renderList); pop.remove(); document.removeEventListener('keydown', onKey); };
-    pop.querySelector('.mbu-logpop-copy').onclick = () => copyLog(pop.querySelector('.mbu-logpop-copy'));
-    const minBtn = pop.querySelector('.mbu-logpop-min');
-    const setMin = (m) => {
-      minBtn.textContent = m ? '▢' : '–'; minBtn.title = m ? 'Restore' : 'Minimize';
-      if (m) { pop.style.left = '14px'; pop.style.bottom = '14px'; pop.style.top = 'auto'; pop.style.right = 'auto'; pop.style.transform = 'none'; }   // dock to bottom
-      else if (pop._restore) { Object.assign(pop.style, pop._restore); }
-    };
-    minBtn.onclick = () => { const m = pop.classList.toggle('min'); setMin(m); saveLogWin({ min: m }); };
-    if (st.min) { pop.classList.add('min'); setMin(true); }   // restore minimized state
-    pop.querySelector('.mbu-logpop-x').onclick = close;
-    // floating, non-modal window — draggable by its header
-    pop.querySelector('.mbu-logpop-h').addEventListener('mousedown', (e) => {
-      if (e.target.closest('button')) return;
-      e.preventDefault();
-      const r = pop.getBoundingClientRect();
-      pop.style.left = r.left + 'px'; pop.style.top = r.top + 'px'; pop.style.right = 'auto'; pop.style.transform = 'none';
-      const ox = e.clientX - r.left, oy = e.clientY - r.top;
-      const mv = ev => { pop.style.left = Math.max(0, Math.min(innerWidth - pop.offsetWidth, ev.clientX - ox)) + 'px'; pop.style.top = Math.max(0, Math.min(innerHeight - 36, ev.clientY - oy)) + 'px'; };
-      const up = () => { document.removeEventListener('mousemove', mv); document.removeEventListener('mouseup', up); if (!pop.classList.contains('min')) { pop._restore = { left: pop.style.left, top: pop.style.top, right: 'auto', bottom: '', transform: 'none' }; saveLogWin({ left: pop.style.left, top: pop.style.top }); } };
-      document.addEventListener('mousemove', mv); document.addEventListener('mouseup', up);
-    });
-    document.addEventListener('keydown', onKey);
-  }
   // first log line: the script + version. The MB release line is logged once the
   // editor is ready (so it carries the real title) — see init().
   Log.info('Apollo Editor' + (() => { try { return ' v' + GM_info.script.version; } catch (e) { return ''; } })());
@@ -313,15 +210,27 @@ try {
       }
       return out;
   }
+  function mbmGuessSortName(name) {
+      if (!name || !name.trim()) return name;
+      name = name.trim().replace(/\s+/g, ' ');
+      // names in other scripts are not "given family" in Latin order: leave them to the editor
+      if (/[^\p{Script=Latin}\p{Script=Common}\p{Script=Inherited}]/u.test(name)) return name;
+      const words = name.split(' ');
+      if (words.length === 1) return name;
+      const article = name.match(/^(the|a|an)\s+(.+)$/i);
+      if (article) return article[2] + ', ' + article[1].charAt(0).toUpperCase() + article[1].slice(1).toLowerCase();
+      let base = name, suffix = '';
+      const sfx = name.match(/^(.*?),?\s+(jr\.?|sr\.?|ii|iii|iv|v|esq\.?)$/i);
+      if (sfx) { base = sfx[1].trim(); suffix = ' ' + sfx[2]; }
+      const parts = base.split(' ');
+      if (parts.length === 1) return name;
+      return parts[parts.length - 1] + ', ' + parts.slice(0, -1).join(' ') + suffix;
+  }
   // </ST-MATCH>
   // normalize hyphen/dash look-alikes (MB uses ‐ U+2010, others use - U+002D, en/em
   // dashes, minus…) to a plain '-' so e.g. "Gol‐e Yakh" folds the same as "Gol-e Yakh"
   const fold = s => (s || '').normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/đ/gi, 'd').replace(/[‐‑‒–—―−]/g, '-').toLowerCase().replace(/\s+/g, ' ').trim();
   const sameName = (a, b) => fold(a) === fold(b);
-  // #445 case-preserving fold (diacritics/dashes/whitespace normalized, CASE kept) — so casing is
-  // the only discriminator when breaking a tie between several case-insensitive name/alias matches.
-  const foldKeepCase = s => (s || '').normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/đ/gi, 'd').replace(/[‐‑‒–—―−]/g, '-').replace(/\s+/g, ' ').trim();
-  const sameNameCase = (a, b) => foldKeepCase(a) === foldKeepCase(b);
   // gid → artist disambiguation, harvested from every WS2/js artist-credit the
   // script fetches (search results, recording lookups). The MB page (KO) model
   // doesn't carry disambiguations for freshly-picked entities, so the recordings
@@ -615,14 +524,6 @@ try {
   const _aliasCache = new Map();        // query → { gid: aliases }
   const _gidAliases = new Map();        // gid → aliases — survives table rebuilds (so the bar keeps its alias)
   const cacheAliases = (gid, aks) => { if (gid && aks) _gidAliases.set(gid, aks); };
-  async function fetchAliases(name) {
-    const k = fold(name); if (!k) return {}; if (_aliasCache.has(k)) return _aliasCache.get(k);
-    const map = {};
-    const res = await wsJson(`${ORIGIN}/ws/2/artist?query=${encodeURIComponent(name)}&limit=12&fmt=json`, { label: 'alias fetch' });
-    if (!res.json) { Log.warn('alias fetch failed', name, '— not cached, retried on the next pass'); return map; }   // don't cache a throttled miss (#555)
-    (res.json.artists || []).forEach(a => { map[a.id] = a.aliases || []; cacheAliases(a.id, a.aliases || []); });
-    _aliasCache.set(k, map); return map;
-  }
   // aliases for already-resolved artists (existing releases / auto-matched) WITHOUT a fetch each —
   // one batched WS2 query per ~90 gids (arid:g1 OR arid:g2 …), cached by gid
   async function fetchAliasesByGids(gids) {
@@ -1496,7 +1397,6 @@ try {
   // #580: never commit over a slot the user has focused — that is the write that
   // used to replace a half-typed name with the matched artist.
   const autoCommittable = s => !s._editing && (s.status === 'rg' || s.status === 'high' || s.status === 'disc' || s.status === 'cred' || s.status === 'alias');
-  function autoCommit() { MODEL.tracks.forEach(t => { let any = false; t.slots.forEach(s => { if (autoCommittable(s)) { s.committed = true; any = true; } }); if (any || t.slots.some(s => s.status === 'set')) commitTrack(t); }); }
   function autoCommitTrack(t) { let any = false; t.slots.forEach(s => { if (autoCommittable(s)) { s.committed = true; any = true; } }); if (any) commitTrack(t); }
   // build the table model WITHOUT matching (instant) — unresolved slots are flagged _pending
   function buildShell() {
@@ -1726,12 +1626,8 @@ try {
   }
 
   /* ── create artist ── */
-  function guessSortName(name) {
-    const n = (name || '').trim();
-    if (!/^[\x00-\x7F]+$/.test(n)) return n;
-    const p = n.split(/\s+/); if (p.length < 2) return n;
-    const last = p.pop(); return last + ', ' + p.join(' ');
-  }
+  // the sort-name guess is shared with Credit Hoarder (mbmGuessSortName, the ST-MATCH block)
+  const guessSortName = name => mbmGuessSortName(name);
   // open MB's create-artist form; when it's saved, the new artist page posts the MBID back over the
   // channel (handshake via sessionStorage token) and closes itself, and we drop it into the slot.
   function createArtist(name, slot, discogsUrl, background) {
@@ -1811,33 +1707,9 @@ try {
   }
 
   /* ════════════════════════ UI ════════════════════════ */
-  /* ── shared corner-slot convention (#468) ───────────────────────────────
-     Every floating launcher across these scripts (Apollo Editor, Art
-     Station, Scribe, Falcon) tags its element with data-mb-corner (which
-     screen corner) + data-mb-corner-order (priority — lower sits closest to
-     the actual corner) and calls mbRestackCorner() right after it shows /
-     hides / creates / removes its own element. No MutationObserver needed:
-     whichever script's state just changed triggers a full recompute that
-     repositions every element sharing that corner, regardless of load
-     order — so two independent scripts' buttons never land on the same
-     pixel. Duplicated per-script on purpose (no shared file to import).
-     Apollo and Art Station share the same order (never both mount at once —
-     different page types) and keep their historical closest-to-the-corner spot
-     (order 10); Falcon stacks above them (order 20). */
-  function mbRestackCorner(corner) {
-    const bottom = corner[0] === 'b', right = corner[1] === 'r';
-    const els = [...document.querySelectorAll('[data-mb-corner="' + corner + '"]')]
-      .filter(el => getComputedStyle(el).display !== 'none')   // offsetParent is always null for position:fixed — not a usable visibility check here
-      .sort((a, b) => (Number(a.dataset.mbCornerOrder) || 0) - (Number(b.dataset.mbCornerOrder) || 0));
-    let pos = 14;
-    els.forEach(el => {
-      el.style[bottom ? 'bottom' : 'top'] = pos + 'px';
-      el.style[right ? 'right' : 'left'] = '14px';
-      pos += el.getBoundingClientRect().height + 8;
-    });
-  }
+  // mbRestackCorner, the #468 corner slots, is in the ST-UI block (dev/ui/ui-components.mjs).
   const HELP_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md';
-  const VERSION = '2026.9.27.060520';   // keep in sync with @version (fallback when GM_info is unavailable)
+  const VERSION = '?';   // GM_info carries the real one; every script manager provides it (a hard-coded copy only ever went stale)
   const scriptVersion = () => { try { return GM_info.script.version || VERSION; } catch (e) { return VERSION; } };
   // shared attribution header (same shape as the other scripts' edit notes)
   const apolloAttribution = () => { const s = (typeof GM_info !== 'undefined' && GM_info.script) || {}; return (s.name || 'Apollo Editor') + ' v' + scriptVersion() + ' by ' + (s.author || 'majkinetor') + ' - ' + (s.homepageURL || s.homepage || HELP_URL); };
@@ -1866,15 +1738,10 @@ try {
     { label: '/', value: ' / ' }, { label: '·', value: ' · ' }, { label: 'presents', value: ' presents ' },
   ];
 
-  const COLORS = { set: '#d6f0d8', rg: '#d6f0d8', high: '#d8e6ff', low: '#fdf3d0', user: '#e9dcfb', none: '#fbdcdf' };
   const COLS = [{ k: 'mv', w: 32, label: '' }, { k: 'num', w: 38, label: '#' }, { k: 'title', w: 360, label: 'Title' }, { k: 'art', w: 380, label: 'Artist' }, { k: 'len', w: 52, label: 'Length' }, { k: 'badge', w: 56, label: 'Match' }];
   const badgeText = s => ({ rg: 'rg', disc: 'disc', cred: 'cred', alias: 'alias', high: 'name', user: 'user', set: 'set', low: 'low' })[s.status] || '';
   const colW = (k, d) => (SETTINGS.colWidths && SETTINGS.colWidths[k]) || d;
   function esc(s) { return String(s == null ? '' : s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c])); }
-  // Enter in our inputs must not bubble to MB's form (it switches tabs); commit by blurring instead
-  const enterBlurs = el => el.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); e.stopPropagation(); el.blur(); } });
-  function rowConfidence(t) { const live = t.slots.filter(s => s.status !== 'set'); if (!live.length) return 'set'; const order = ['none', 'low', 'user', 'high', 'alias', 'cred', 'disc', 'rg']; return live.map(s => s.status).sort((a, b) => order.indexOf(a) - order.indexOf(b))[0]; }
-  const badge = s => `<span class="tc-badge ${s}">${s === 'rg' ? 'RG' : s === 'disc' ? 'DISC' : s.toUpperCase()}</span>`;
 
   // The shared design tokens (#562). Values live in dev/tokens/design-tokens.mjs and are
   // inlined here by dev/tokens/sync-tokens.mjs — edit them THERE, never in this block.
@@ -1974,6 +1841,235 @@ try {
       }
       html += mbuHelpHtml(o.script);
       return html + '</div>';
+  }
+
+  // Test hooks. A script puts its test hook on window only when the test harness has
+  // marked the page (dev/test/harness.mjs sets window.__mbuTest before any script runs):
+  //   if (mbuTestHooks()) window.__fooTest = { … };
+  // On a user's page the hooks are never built. (#623)
+  function mbuTestHooks() {
+      try { return typeof window !== 'undefined' && window.__mbuTest === true; } catch (e) { return false; }
+  }
+
+  // Corner slots (#468). Every floating launcher (Apollo Editor, Art Station, Falcon,
+  // Fusion, Scribe) tags its element with data-mb-corner (which screen corner: 'br',
+  // 'bl', 'tr', 'tl') and data-mb-corner-order (lower sits closer to the corner), and
+  // calls mbRestackCorner(corner) right after it shows, hides, creates or removes it.
+  // That recomputes every element in the corner, whichever script owns it and
+  // whatever order they loaded in, so two launchers never land on the same pixel.
+  // Orders in use: Apollo and Art Station 10 (never on the same page), Falcon 20,
+  // Fusion above Falcon. Scribe is not on the shared block and keeps a copy of this.
+  function mbRestackCorner(corner) {
+      var bottom = corner[0] === 'b', right = corner[1] === 'r';
+      var els = Array.prototype.slice.call(document.querySelectorAll('[data-mb-corner="' + corner + '"]'))
+          // offsetParent is always null for position:fixed, so it can't tell visibility here
+          .filter(function (el) { return getComputedStyle(el).display !== 'none'; })
+          .sort(function (a, b) { return (Number(a.dataset.mbCornerOrder) || 0) - (Number(b.dataset.mbCornerOrder) || 0); });
+      var pos = 14;
+      els.forEach(function (el) {
+          el.style[bottom ? 'bottom' : 'top'] = pos + 'px';
+          el.style[right ? 'right' : 'left'] = '14px';
+          pos += el.getBoundingClientRect().height + 8;
+      });
+  }
+
+  // Activity log: the session's log lines plus the floating window that shows them
+  // (#283's viewer, shared since X12 of #623). A script makes its log once:
+  //
+  //   var LOG = mbuLog({ name: 'Fusion', version: VERSION, key: 'fusion.logwin' });
+  //   LOG.info('…'); LOG.warn(…); LOG.err(…) (or .error); LOG.ok(…); LOG.debug(…)
+  //   LOG.open(); LOG.close(); LOG.reopen()   // reopen: only if it was left open
+  //   LOG.markdown(); LOG.copy(btn); LOG.lines(); LOG.messages(); LOG.counts()
+  //
+  // o.name / o.version  the Markdown summary's title (version may be a function)
+  // o.subtitle          optional function; its text follows the title (e.g. the release)
+  // o.header            the window's title (default 'Activity log')
+  // o.key               storage key for the window's open/minimised/position state
+  // o.load / o.save     that storage (default GM_getValue / GM_setValue)
+  // o.before            called before the window opens (e.g. to inject the script's CSS)
+  // o.max               lines kept (default 2000)
+  //
+  // A long run keeps only the last o.max lines, and the Markdown says how many went
+  // before them; the copies this replaced grew for the whole session. An open
+  // window appends each new line and drops the oldest row past the cap; the copies
+  // rebuilt the whole list with innerHTML on every line, which is quadratic over a
+  // long matching run.
+  function mbuLog(o) {
+      o = o || {};
+      var max = o.max || 2000, buf = [], dropped = 0, warn = 0, error = 0, win = null;
+      var pad = function (n, w) { return String(n).padStart(w || 2, '0'); };
+      var ts = function (d) { return pad(d.getHours()) + ':' + pad(d.getMinutes()) + ':' + pad(d.getSeconds()) + '.' + pad(d.getMilliseconds(), 3); };
+      var str = function (v) {
+          if (typeof v === 'string') return v;
+          if (v instanceof Error) return v.message || String(v);
+          if (v && v.nodeType) return '<' + (v.tagName || 'node').toLowerCase() + '>';
+          try { return typeof v === 'object' ? JSON.stringify(v) : String(v); } catch (e) { return String(v); }
+      };
+      var esc = function (s) {
+          return String(s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; });
+      };
+      // escape, then make http(s) URLs clickable, keeping trailing punctuation out of them
+      var linkify = function (s) {
+          return esc(s).replace(/(https?:\/\/[^\s<]+)/g, function (m) {
+              var t = (m.match(/[.,;:!?)\]]+$/) || [''])[0];
+              var url = m.slice(0, m.length - t.length);
+              return '<a href="' + url + '" target="_blank" rel="noopener">' + url + '</a>' + t;
+          });
+      };
+      var load = o.load || function (k) { try { return GM_getValue(k, undefined); } catch (e) { return undefined; } };
+      var save = o.save || function (k, v) { try { GM_setValue(k, v); } catch (e) { /* no storage: the window just forgets */ } };
+      var state = function () { try { return JSON.parse(load(o.key) || '{}') || {}; } catch (e) { return {}; } };
+      var remember = function (patch) { try { save(o.key, JSON.stringify(Object.assign(state(), patch))); } catch (e) { /* see save */ } };
+      var tally = function (e, d) { if (e.sev === 'warn') warn += d; else if (e.sev === 'error') error += d; };
+      var PRE = { info: '', ok: 'OK   ', warn: 'WARN ', error: 'ERR  ', debug: 'DBG  ' };
+      var line = function (e) { return ts(e.t) + '  ' + (PRE[e.sev] || '') + e.msg; };
+
+      function add(sev, args) {
+          var msg = Array.prototype.map.call(args, str).join(' ').replace(/\s+/g, ' ').trim();
+          if (!msg) return;
+          var e = { t: new Date(), sev: sev === 'err' ? 'error' : sev, msg: msg };
+          buf.push(e); tally(e, 1);
+          // trim in chunks, not one shift per line
+          if (buf.length > max + Math.ceil(max / 10)) {
+              var gone = buf.splice(0, buf.length - max);
+              gone.forEach(function (g) { tally(g, -1); });
+              dropped += gone.length;
+          }
+          if (win) win.append(e);
+      }
+      function title() {
+          var v = typeof o.version === 'function' ? (function () { try { return o.version(); } catch (e) { return ''; } })() : o.version;
+          var t = (o.name || 'Log') + (v ? ' v' + v : '');
+          try { var s = o.subtitle && o.subtitle(); if (s) t += ' — ' + s; } catch (e) { /* no subtitle */ }
+          return t;
+      }
+      function markdown() {
+          var body = buf.length ? buf.map(line).join('\n') : '(no activity logged)';
+          if (dropped) body = '(' + dropped + ' earlier line' + (dropped === 1 ? '' : 's') + ' not kept)\n' + body;
+          var n = (warn || error) ? ' (' + warn + ' warning' + (warn === 1 ? '' : 's') + ', ' + error + ' error' + (error === 1 ? '' : 's') + ')' : '';
+          var fence = String.fromCharCode(96, 96, 96);
+          return '<details><summary>' + title() + ' — session log' + n + '</summary>\n\n' + fence + 'log\n' + body + '\n' + fence + '\n\n</details>';
+      }
+      function copy(btn) {
+          var md = markdown();
+          var done = function (ok) {
+              if (!btn) return;
+              var was = btn.dataset.lbl || btn.textContent; btn.dataset.lbl = was;
+              btn.textContent = ok ? 'Copied ✓' : 'Copy failed';
+              setTimeout(function () { btn.textContent = was; }, 1500);
+          };
+          var fallback = function () {
+              var ok = false;
+              try {
+                  var ta = document.createElement('textarea'); ta.value = md; ta.style.position = 'fixed'; ta.style.opacity = '0';
+                  document.body.appendChild(ta); ta.select(); ok = document.execCommand('copy'); ta.remove();
+              } catch (x) { /* nothing left to try */ }
+              done(ok);
+          };
+          try { navigator.clipboard.writeText(md).then(function () { done(true); }, fallback); } catch (e) { fallback(); }
+      }
+      function open() {
+          close(true);
+          if (typeof o.before === 'function') { try { o.before(); } catch (e) { /* the window still opens */ } }
+          remember({ open: true });
+          var st = state();
+          var pop = document.createElement('div'); pop.id = 'mbu-logpop'; pop.className = 'mbu-logpop';
+          pop.innerHTML = '<div class="mbu-logpop-h"><b>' + esc(o.header || 'Activity log') + '</b> <span class="mbu-log-badge"></span><span class="mbu-logpop-sp"></span>'
+              + '<button class="mbu-logpop-copy" type="button" title="Copy as Markdown (paste into a GitHub issue)">⧉ Copy</button>'
+              + '<button class="mbu-logpop-min" type="button" title="Minimize">–</button>'
+              + '<button class="mbu-logpop-x" type="button" title="Close">✕</button></div>'
+              + '<div class="mbu-log-list"></div>';
+          document.body.appendChild(pop);
+          if (st.left != null) { pop.style.left = st.left; pop.style.top = st.top; pop.style.right = 'auto'; pop.style.transform = 'none'; }
+          var restore = { left: pop.style.left, top: pop.style.top, right: pop.style.right, bottom: pop.style.bottom, transform: pop.style.transform };
+          var list = pop.querySelector('.mbu-log-list'), badge = pop.querySelector('.mbu-log-badge');
+          var row = function (e) {
+              var d = document.createElement('div');
+              d.className = 'mbu-log-li mbu-log-' + e.sev;
+              d.innerHTML = '<span class="mbu-log-t">' + ts(e.t) + '</span><span class="mbu-log-m">' + linkify(e.msg) + '</span>';
+              return d;
+          };
+          var showBadge = function () { badge.textContent = '(' + buf.length + ')' + (warn || error ? ' · ' + warn + '⚠ ' + error + '✖' : ''); };
+          // the rows, once; later lines are appended one by one
+          var frag = document.createDocumentFragment();
+          buf.forEach(function (e) { frag.appendChild(row(e)); });
+          if (buf.length) list.appendChild(frag);
+          else list.innerHTML = '<div class="mbu-log-empty">No activity yet.</div>';
+          showBadge();
+          list.scrollTop = list.scrollHeight;
+          // badge and scroll once per frame, however many lines arrive in it
+          var queued = false, follow = true;
+          list.addEventListener('scroll', function () { follow = list.scrollHeight - list.scrollTop - list.clientHeight < 40; });
+          var paint = function () { queued = false; showBadge(); if (follow) list.scrollTop = list.scrollHeight; };
+          var onKey = function (e) { if (e.key === 'Escape') close(); };
+          win = {
+              el: pop,
+              append: function (e) {
+                  var empty = list.querySelector('.mbu-log-empty'); if (empty) empty.remove();
+                  list.appendChild(row(e));
+                  while (list.childElementCount > buf.length) list.firstElementChild.remove();
+                  if (!queued) { queued = true; requestAnimationFrame(paint); }
+              },
+              off: function () { document.removeEventListener('keydown', onKey); },
+          };
+          pop.querySelector('.mbu-logpop-copy').onclick = function () { copy(pop.querySelector('.mbu-logpop-copy')); };
+          var minBtn = pop.querySelector('.mbu-logpop-min');
+          var setMin = function (m) {
+              minBtn.textContent = m ? '▢' : '–'; minBtn.title = m ? 'Restore' : 'Minimize';
+              if (m) { pop.style.left = '14px'; pop.style.bottom = '14px'; pop.style.top = 'auto'; pop.style.right = 'auto'; pop.style.transform = 'none'; }   // dock to the bottom
+              else Object.assign(pop.style, restore);
+          };
+          minBtn.onclick = function () { var m = pop.classList.toggle('min'); setMin(m); remember({ min: m }); };
+          if (st.min) { pop.classList.add('min'); setMin(true); }
+          pop.querySelector('.mbu-logpop-x').onclick = function () { close(); };
+          // floating and non-modal: dragged by its header
+          pop.querySelector('.mbu-logpop-h').addEventListener('mousedown', function (e) {
+              if (e.target.closest('button')) return;
+              e.preventDefault();
+              var r = pop.getBoundingClientRect();
+              pop.style.left = r.left + 'px'; pop.style.top = r.top + 'px'; pop.style.right = 'auto'; pop.style.transform = 'none';
+              var ox = e.clientX - r.left, oy = e.clientY - r.top;
+              var mv = function (ev) {
+                  pop.style.left = Math.max(0, Math.min(window.innerWidth - pop.offsetWidth, ev.clientX - ox)) + 'px';
+                  pop.style.top = Math.max(0, Math.min(window.innerHeight - 36, ev.clientY - oy)) + 'px';
+              };
+              var up = function () {
+                  document.removeEventListener('mousemove', mv); document.removeEventListener('mouseup', up);
+                  if (!pop.classList.contains('min')) {
+                      restore = { left: pop.style.left, top: pop.style.top, right: 'auto', bottom: '', transform: 'none' };
+                      remember({ left: pop.style.left, top: pop.style.top });
+                  }
+              };
+              document.addEventListener('mousemove', mv); document.addEventListener('mouseup', up);
+          });
+          document.addEventListener('keydown', onKey);
+          return pop;
+      }
+      // quiet: closing to reopen, so the remembered "open" stays as it is
+      function close(quiet) {
+          var stray = document.getElementById('mbu-logpop');
+          if (win) { win.off(); win.el.remove(); win = null; if (!quiet) remember({ open: false }); }
+          if (stray) stray.remove();   // another script's window: one log window at a time
+      }
+      var api = {
+          info: function () { add('info', arguments); },
+          warn: function () { add('warn', arguments); },
+          err: function () { add('error', arguments); },
+          error: function () { add('error', arguments); },
+          ok: function () { add('ok', arguments); },
+          debug: function () { add('debug', arguments); },
+          add: function (sev) { add(sev, Array.prototype.slice.call(arguments, 1)); },
+          open: open,
+          close: function () { close(); },
+          reopen: function () { if (state().open) open(); },
+          isOpen: function () { return !!win; },
+          markdown: markdown,
+          copy: copy,
+          lines: function () { return buf.map(line); },
+          messages: function () { return buf.map(function (e) { return e.msg; }); },
+          counts: function () { return { warn: warn, error: error }; },
+      };
+      return api;
   }
 
   // Dismiss-on-outside-click, with the trailing click SWALLOWED.
@@ -3032,7 +3128,6 @@ try {
     row.scrollIntoView({ block: 'center', behavior: 'smooth' });
     const creds = row.querySelectorAll('.tc-cred'); (creds[i] || row).focus();
   }
-  const missingDiscogsCount = () => { let n = 0; if (MODEL) MODEL.tracks.forEach(t => t.slots.forEach(s => { if (discNeedsAttention(s)) n++; })); return n; };
   const setDiscStat = () => {
     // #281: Discogs API unreachable → an amber, clickable "retry" badge instead of a
     // blank that reads as "nothing to do". (It also auto-retries once on its own.)
@@ -4348,7 +4443,6 @@ try {
     let rows = [];         // [{ raw, override }]
     let _splitLast = false;   // #456 v2 ‹first|last›: which separator instance a text field splits on
     const tracks = () => u(mediums()[curMi].tracks) || [];
-    const trackTitle = i => { const t = tracks()[i]; return t ? (u(t.name) || '') : ''; };
     // the current medium's tracklist rendered in the #. T - A (L) format, to seed the paste box
     const acStr = t => (liveNames(t) || []).map(n => (u(n.name) || (u(n.artist) && u(u(n.artist).name)) || '') + (u(n.joinPhrase) || '')).join('').trim();
     const currentText = () => tracks().map((t, i) => { const num = u(t.number) || (i + 1); const title = u(t.name) || ''; const artist = acStr(t); const len = u(t.formattedLength) || ''; return `${num}. ${title}` + (artist ? ` - ${artist}` : '') + (len ? ` (${len})` : ''); }).join('\n');
@@ -4877,7 +4971,6 @@ try {
     { act: 'cols',      label: 'Resize columns',     icon: '↔', params: true }, // ↔
   ];
   const TOOL = Object.fromEntries(MENU.map(m => [m.act, m]));
-  const LABELS = Object.fromEntries(MENU.map(m => [m.act, m.label]));
   const MEDIUM_TOOLS = new Set(['parser', 'patternparser', 'lengthparser', 'resetnum', 'swap']);   // act on ONE medium (inline medium combo when >1)
   const PICK_SHOWS_ONLY = new Set(['mergemed', 'splitmed']);   // #615: structural — picking from the menu must not run them
   const OPTLESS = new Set(['guessfeat']);   // global, no options — fires on pick (non-sticky)
@@ -5001,9 +5094,6 @@ try {
       const disp = row.querySelector('.t-title-disp');
       if (disp) { disp.innerHTML = dhRun(val); disp.classList.toggle('gcpreview', on); }
     });
-  }
-  function wireToolHover() {
-    document.querySelectorAll('.tc-toolbtn[data-act="guesscase"]').forEach(b => { b.onmouseenter = () => previewAllGuess(true); b.onmouseleave = () => previewAllGuess(false); });
   }
 
   // #280: render every on-bar tool inline at its position — a plain button when it
@@ -5850,7 +5940,6 @@ try {
   function recWant() { return apolloEnabled() && SETTINGS.replaceRecordings !== false; }
   function riWant() { return apolloEnabled() && SETTINGS.replaceReleaseInfo !== false; }
   function releaseInfoVisible() { const p = document.getElementById('information'); return !!(p && p.offsetParent !== null); }
-  function curWant() { return apolloEnabled(); }
   function apolloOn() { return apolloEnabled(); }
   // #569: guarded. Assigning textContent replaces the child text node whether or
   // not the string changed, so this was dispatching a childList record twice a
@@ -7409,7 +7498,6 @@ try {
   async function autoMatchRecordings() {
     if (_autoMatching) return; _autoMatching = true;   // #577
     if (!_matching) _matchStop = false;   // #575: don't clear a stop the tracklist pass has not acted on yet
-    const wrap = document.getElementById('tc-recwrap');
     // #545: the status text alone was easy to miss while MusicBrainz was slow —
     // and the button stayed enabled and unchanged, so it read as "nothing
     // happened". Re-queried on each use rather than captured: the recordings
@@ -7620,14 +7708,6 @@ try {
   function setCopy(field, entry, on) {
     try { const t = koTrack(entry.mi, entry.ti); if (field === 'title') t.updateRecordingTitle(on); else t.updateRecordingArtist(on); }
     catch (e) { Log.warn('set copy ' + field + ' failed', e.message); }
-  }
-  function setCopyAll(field) {
-    const flag = field === 'title' ? 'copyTitle' : 'copyArtist';
-    // only the rows where this field actually differs (or is already flagged) — copying a matching value is a no-op
-    const rows = readRecordings().filter(r => r.recGid && ((r.diffs && r.diffs[field]) || r[flag]));
-    const allOn = rows.length && rows.every(r => r[flag]);   // toggle: if every eligible row is on, turn all off
-    rows.forEach(r => setCopy(field, r, !allOn));
-    Log.info((allOn ? 'cleared' : 'set') + ' copy-' + field + ' on all ' + rows.length + ' recording(s)');
   }
   function rerenderRec() { renderRecBody(); }   // body only — keeps the toolbar (status / inputs) intact
 
@@ -9879,7 +9959,7 @@ try {
     // that panel is showing. One delegated listener, self-guarded by the
     // #external-links-editor check inside it.
     installMultiLinkPaste();
-    if (loadLogWin().open) setTimeout(() => { try { openLog(); } catch (e) {} }, 1200);   // #283 reopen the log if it was left open
+    setTimeout(() => { try { Log.reopen(); } catch (e) {} }, 1200);   // #283 reopen the log if it was left open
     snapshotOriginals();
     const tl = readTracklist();
     Log.info('tracklist:', tl.length, 'tracks ·', tl.reduce((n, t) => n + t.names.filter(x => !x.artistGid).length, 0), 'unresolved slots');
@@ -9916,31 +9996,7 @@ try {
   const M = location.pathname.match(/\/(release|event)\/([0-9a-f-]{36})\/(add-)?(?:cover|event)-art/i);
   if (!M) return;
 
-  /* ── shared corner-slot convention (#468) ───────────────────────────────
-     Every floating launcher across these scripts (Apollo Editor, Art
-     Station, Scribe, Falcon) tags its element with data-mb-corner (which
-     screen corner) + data-mb-corner-order (priority — lower sits closest to
-     the actual corner) and calls mbRestackCorner() right after it shows /
-     hides / creates / removes its own element. No MutationObserver needed:
-     whichever script's state just changed triggers a full recompute that
-     repositions every element sharing that corner, regardless of load
-     order — so two independent scripts' buttons never land on the same
-     pixel. Duplicated per-script on purpose (no shared file to import).
-     Apollo and Art Station share the same order (never both mount at once —
-     different page types) and keep their historical closest-to-the-corner spot
-     (order 10); Falcon stacks above them (order 20). */
-  function mbRestackCorner(corner) {
-    const bottom = corner[0] === 'b', right = corner[1] === 'r';
-    const els = [...document.querySelectorAll('[data-mb-corner="' + corner + '"]')]
-      .filter(el => getComputedStyle(el).display !== 'none')   // offsetParent is always null for position:fixed — not a usable visibility check here
-      .sort((a, b) => (Number(a.dataset.mbCornerOrder) || 0) - (Number(b.dataset.mbCornerOrder) || 0));
-    let pos = 14;
-    els.forEach(el => {
-      el.style[bottom ? 'bottom' : 'top'] = pos + 'px';
-      el.style[right ? 'right' : 'left'] = '14px';
-      pos += el.getBoundingClientRect().height + 8;
-    });
-  }
+  // mbRestackCorner, the #468 corner slots, is in the ST-UI block (dev/ui/ui-components.mjs).
 
   const IS_EVENT = M[1].toLowerCase() === 'event';
   const MBID = M[2];
@@ -9976,17 +10032,9 @@ try {
   const footerStyle = document.createElement('style');
   footerStyle.textContent = '#content div.buttons.ui-helper-clearfix{display:none!important}';
   appendEl(footerStyle);
-  // #501: settings persistence lives in GM storage (backed up/synced by the script
-  // manager) instead of localStorage (browser-profile-only — invisible to a script
-  // manager backup/restore or a move to another browser). One-time migration: if GM
-  // storage is empty but an old localStorage value exists, adopt it once and write
-  // through to GM storage from then on; the old localStorage key is left in place,
-  // unused, so nothing is destructively deleted.
-  const gmLoad = (key) => {
-    try { const v = GM_getValue(key, undefined); if (v !== undefined) return v; } catch (e) {}
-    try { const raw = localStorage.getItem(key); if (raw != null) { GM_setValue(key, raw); return raw; } } catch (e) {}
-    return undefined;
-  };
+  // #501: settings live in GM storage (backed up and synced by the script manager).
+  // The one-time adoption of an older localStorage copy is retired (#623).
+  const gmLoad = (key) => { try { return GM_getValue(key, undefined); } catch (e) { return undefined; } };
   const gmSave = (key, raw) => { try { GM_setValue(key, raw); } catch (e) {} };
   // saved prefs read directly here (the SETTINGS object is built later) so the initial
   // Original/footer state is applied flash-free, before first paint.
@@ -10254,7 +10302,7 @@ try {
       _booted = true;
       asLog.info('Art Station' + ((_gm && _gm.version) ? ' v' + _gm.version : '') + (_mgr ? ' · ' + _mgr : ''));
       try { const ri = releaseInfo(); const t = (ri.title || '').trim(); asLog.info('Release: ' + (t ? t + ' — ' : '') + (ri.url || (location.origin + '/' + ENT.kind + '/' + MBID))); } catch (e) { asLog.info('Release: ' + location.origin + '/release/' + MBID); }
-      if (loadLogWin().open) setTimeout(() => { try { openLog(); } catch (e) {} }, 600);   // #283 reopen the log if it was left open
+      setTimeout(() => { try { LOG.reopen(); } catch (e) {} }, 600);   // #283 reopen the log if it was left open
     }
     const pageArt = parsePageArt();
     let caa = [];
@@ -10302,10 +10350,7 @@ try {
   let _resortT = null;
   function scheduleResort() { if (_resortT) return; _resortT = setTimeout(() => { _resortT = null; render(); }, 120); }
 
-  const changed = it => it._del || it._new || it.comment !== it._origComment || it.order !== it._origOrder || it.types.join('|') !== it._origTypes.join('|');
-  const stagedCount = () => MODEL.filter(changed).length;
   const selectable = () => MODEL.filter(it => !it._del);
-  const allSelected = () => { const s = selectable(); return s.length > 0 && s.every(it => it._sel); };
   // reorder (drag) only in the canonical Position view — ungrouped + sorted by position.
   // Grouping is view-only; other sorts don't map to the committed order.
   const canReorder = () => !SETTINGS.group && !SETTINGS.detailed && SETTINGS.sort === 'type';
@@ -10465,7 +10510,6 @@ try {
   function openSetup() {
     document.getElementById('as-setup')?.remove();
     const ver = (_gm && _gm.version) || '';
-    const help = 'https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/art_station/README.md';
     const panel = document.createElement('div'); panel.id = 'as-setup';
     panel.innerHTML = mbuCfgHeader({ script: 'art_station', name: 'Art Station', version: ver,
         icon: `<img src="${ICON_URL}" alt="">`, log: true, logClass: 'as-setup-logbtn' })
@@ -10525,60 +10569,7 @@ try {
     panel.querySelector('.as-setup-logbtn').onclick = () => { panel.remove(); document.removeEventListener('mousedown', off); openLog(); };
     setTimeout(() => document.addEventListener('mousedown', off), 0);
   }
-  // #283 remember the log window across sessions: open?/minimized?/position
-  const LOGWIN_KEY = 'artstation:logwin';
-  const loadLogWin = () => { try { return JSON.parse(gmLoad(LOGWIN_KEY) || '{}'); } catch (e) { return {}; } };
-  const saveLogWin = (patch) => { try { gmSave(LOGWIN_KEY, JSON.stringify(Object.assign(loadLogWin(), patch))); } catch (e) {} };
-  // #283 the Log button opens this popup: the full session log + a Copy control.
-  function openLog() {
-    document.getElementById('mbu-logpop')?.remove();
-    saveLogWin({ open: true });
-    const st = loadLogWin();
-    const pop = document.createElement('div'); pop.id = 'mbu-logpop';
-    pop.innerHTML = `<div class="mbu-logpop-h"><b>Activity log</b> <span class="mbu-log-badge"></span><span class="mbu-logpop-sp"></span>`
-      + `<button class="mbu-logpop-copy" type="button" title="Copy as Markdown (paste into a GitHub issue)">⧉ Copy</button>`
-      + `<button class="mbu-logpop-min" type="button" title="Minimize">–</button>`
-      + `<button class="mbu-logpop-x" type="button" title="Close">✕</button></div>`
-      + `<div class="mbu-log-list"></div>`;
-    document.body.appendChild(pop);
-    if (st.left != null) { pop.style.left = st.left; pop.style.top = st.top; pop.style.right = 'auto'; pop.style.transform = 'none'; }
-    pop._restore = { left: pop.style.left, top: pop.style.top, right: pop.style.right, bottom: pop.style.bottom, transform: pop.style.transform };
-    const renderList = () => {
-      const list = pop.querySelector('.mbu-log-list');
-      list.innerHTML = LOG.length
-        ? LOG.map(e => `<div class="mbu-log-li mbu-log-${e.sev}"><span class="mbu-log-t">${_ts(e.t)}</span><span class="mbu-log-m">${_logLinkify(e.msg)}</span></div>`).join('')
-        : '<div class="mbu-log-empty">No activity yet.</div>';
-      const c = logCounts();
-      pop.querySelector('.mbu-log-badge').textContent = `(${LOG.length})` + (c.warn || c.error ? ` · ${c.warn}⚠ ${c.error}✖` : '');
-      list.scrollTop = list.scrollHeight;
-    };
-    renderList();
-    _logListeners.add(renderList);
-    const onKey = e => { if (e.key === 'Escape') close(); };
-    const close = () => { saveLogWin({ open: false }); _logListeners.delete(renderList); pop.remove(); document.removeEventListener('keydown', onKey); };
-    pop.querySelector('.mbu-logpop-copy').onclick = () => copyLog(pop.querySelector('.mbu-logpop-copy'));
-    const minBtn = pop.querySelector('.mbu-logpop-min');
-    const setMin = (m) => {
-      minBtn.textContent = m ? '▢' : '–'; minBtn.title = m ? 'Restore' : 'Minimize';
-      if (m) { pop.style.left = '14px'; pop.style.bottom = '14px'; pop.style.top = 'auto'; pop.style.right = 'auto'; pop.style.transform = 'none'; }   // dock to bottom
-      else if (pop._restore) { Object.assign(pop.style, pop._restore); }
-    };
-    minBtn.onclick = () => { const m = pop.classList.toggle('min'); setMin(m); saveLogWin({ min: m }); };
-    if (st.min) { pop.classList.add('min'); setMin(true); }   // restore minimized state
-    pop.querySelector('.mbu-logpop-x').onclick = close;
-    // floating, non-modal window — draggable by its header
-    pop.querySelector('.mbu-logpop-h').addEventListener('mousedown', (e) => {
-      if (e.target.closest('button')) return;
-      e.preventDefault();
-      const r = pop.getBoundingClientRect();
-      pop.style.left = r.left + 'px'; pop.style.top = r.top + 'px'; pop.style.right = 'auto'; pop.style.transform = 'none';
-      const ox = e.clientX - r.left, oy = e.clientY - r.top;
-      const mv = ev => { pop.style.left = Math.max(0, Math.min(innerWidth - pop.offsetWidth, ev.clientX - ox)) + 'px'; pop.style.top = Math.max(0, Math.min(innerHeight - 36, ev.clientY - oy)) + 'px'; };
-      const up = () => { document.removeEventListener('mousemove', mv); document.removeEventListener('mouseup', up); if (!pop.classList.contains('min')) { pop._restore = { left: pop.style.left, top: pop.style.top, right: 'auto', bottom: '', transform: 'none' }; saveLogWin({ left: pop.style.left, top: pop.style.top }); } };
-      document.addEventListener('mousemove', mv); document.addEventListener('mouseup', up);
-    });
-    document.addEventListener('keydown', onKey);
-  }
+  const openLog = () => LOG.open();
   // #576 (majkinetor, "Selection icon lost when sizing cards"): there used to be
   // an applyZoomClass() here that put an `as-zoomed` class on the root at
   // tile >= 280, whose only job was to hide the per-card ✓ badge — the theory
@@ -11191,24 +11182,6 @@ try {
     // so this is the same arithmetic, now named once for every script.
     mbuFitToolbar(bar, { spacer: '.as-sp' });
   }
-  // the list of pending MB operations behind "N staged changes"
-  function pendingOps() {
-    const label = it => it.types[0] || (it._new ? 'new image' : ITEM);
-    const ops = [];
-    MODEL.filter(it => it._new && !it._del && !it._sourcing).forEach(it => ops.push(`➕ Add ${label(it)}${it.types.length ? ` — ${it.types.join(', ')}` : ''}${it.comment ? ` “${it.comment}”` : ''}`));
-    MODEL.filter(it => it._del && !it._new).forEach(it => ops.push(`🗑 Remove ${label(it)}`));
-    MODEL.filter(it => !it._del && !it._new).forEach(it => {
-      if (it.types.join('|') !== it._origTypes.join('|')) ops.push(`🏷 Set type on ${it._origTypes[0] || ITEM} → ${it.types.join(', ') || '(none)'}`);
-      if (it.comment !== it._origComment) ops.push(`✎ Comment on ${label(it)} → ${it.comment ? `“${it.comment}”` : '(cleared)'}`);
-    });
-    // reorder = the EXISTING covers' relative order changed. Inserting new covers
-    // shifts indices but is positioned by the add op itself (not a separate reorder).
-    const ex = MODEL.filter(it => !it._del && !it._new);
-    const now = ex.slice().sort((a, b) => a.order - b.order).map(it => it.id).join(',');
-    const orig = ex.slice().sort((a, b) => a._origOrder - b._origOrder).map(it => it.id).join(',');
-    if (now !== orig) ops.push('↕ Reorder ' + ITEMS);
-    return ops;
-  }
   // the count shown on "Enter edit (N)" = the number of real MB edits we'll submit
   // (buildPlan merges a cover's type+comment change into one edit), so it matches
   // the panel's operation list exactly. #234
@@ -11527,14 +11500,13 @@ try {
   // in a catch). Reviewable + copy/pastable as a Markdown <details> block for a
   // GitHub issue, mirroring Credit Hoarder. `toast()` feeds it; operations log
   // explicitly, and verbose diagnostics go in at `debug`.
-  const LOG = [];
-  const _logListeners = new Set();
-  function asLog(sev, msg) {
-    const text = String(msg == null ? '' : msg).replace(/\s+/g, ' ').trim();
-    if (!text) return;
-    LOG.push({ t: new Date(), sev, msg: text });
-    _logListeners.forEach(f => { try { f(); } catch (e) {} });
-  }
+  // The buffer and window are the shared mbuLog (ST-UI block), since X12 of #623.
+  const LOG = mbuLog({
+    name: 'Art Station', version: () => _gm && _gm.version, key: 'artstation:logwin',
+    subtitle: () => (releaseInfo().title || '').trim(),   // the release, after the script name
+    load: k => gmLoad(k), save: (k, v) => gmSave(k, v),
+  });
+  function asLog(sev, msg) { if (msg != null) LOG.add(sev, String(msg)); }
   asLog.info  = m => asLog('info', m);
   asLog.ok    = m => asLog('ok', m);
   asLog.warn  = m => asLog('warn', m);
@@ -11542,35 +11514,7 @@ try {
   asLog.debug = m => asLog('debug', m);
   // standard shape for a caught error: "<context> — <message>"
   const logErr = (ctx, e) => asLog('error', ctx + ' — ' + ((e && e.message) || e || 'unknown error'));
-  const logCounts = () => LOG.reduce((a, e) => { if (e.sev === 'warn') a.warn++; else if (e.sev === 'error') a.error++; return a; }, { warn: 0, error: 0 });
-  // escape, then turn http(s) URLs into clickable links for the log viewer
-  const _logLinkify = s => esc(s).replace(/(https?:\/\/[^\s<]+)/g, (m) => {
-    const t = (m.match(/[.,;:!?)\]]+$/) || [''])[0];   // keep trailing punctuation out of the URL
-    const url = m.slice(0, m.length - t.length);
-    return `<a href="${url}" target="_blank" rel="noopener">${url}</a>${t}`;
-  });
-  const _ts = d => { const p = (n, w = 2) => String(n).padStart(w, '0'); return `${p(d.getHours())}:${p(d.getMinutes())}:${p(d.getSeconds())}.${p(d.getMilliseconds(), 3)}`; };
   const fmtBytes = n => (n == null) ? '?' : n < 1024 ? n + ' B' : n < 1048576 ? (n / 1024).toFixed(1) + ' KB' : (n / 1048576).toFixed(2) + ' MB';
-  // Build the copy/pastable Markdown: a collapsed <details> wrapping a fenced log
-  // block (same shape as the other scripts — paste straight into a GitHub issue).
-  function logMarkdown() {
-    const PRE = { info: '', ok: 'OK   ', warn: 'WARN ', error: 'ERR  ', debug: 'DBG  ' };
-    const body = LOG.length ? LOG.map(e => `${_ts(e.t)}  ${PRE[e.sev] || ''}${e.msg}`).join('\n') : '(no activity logged)';
-    const c = logCounts();
-    let title = 'Art Station' + ((_gm && _gm.version) ? ' v' + _gm.version : '');   // version next to the script name
-    try { const t = (releaseInfo().title || '').trim(); if (t) title += ' — ' + t; } catch (e) {}
-    const tally = (c.warn || c.error) ? ` (${c.warn} warning${c.warn === 1 ? '' : 's'}, ${c.error} error${c.error === 1 ? '' : 's'})` : '';
-    return `<details><summary>${title} — session log${tally}</summary>\n\n` + '```log\n' + body + '\n```' + `\n\n</details>`;
-  }
-  async function copyLog(btn) {
-    const md = logMarkdown();
-    let okCopy = false;
-    try { await navigator.clipboard.writeText(md); okCopy = true; }
-    catch (e) {
-      try { const ta = document.createElement('textarea'); ta.value = md; ta.style.position = 'fixed'; ta.style.opacity = '0'; document.body.appendChild(ta); ta.select(); okCopy = document.execCommand('copy'); ta.remove(); } catch (x) {}
-    }
-    if (btn) { const o = btn.dataset.lbl || btn.textContent; btn.dataset.lbl = o; btn.textContent = okCopy ? 'Copied ✓' : 'Copy failed'; setTimeout(() => { btn.textContent = o; }, 1500); }
-  }
 
   let _toastT;
   // #563: the shared toast. Art Station's log-mirroring was the behaviour worth
@@ -11677,10 +11621,10 @@ try {
     if (txt && !ECAU_UNRELATED_ERROR.test(txt) && /failed to (fetch|enqueue|load)|invalid url|could ?n.?t|no (valid )?image|not a? ?support|unable to|refusing to/i.test(txt)) return txt.slice(-220);
     return null;
   }
-  if (typeof window !== 'undefined') window.__artStationTest = { ecauError };   // test hook only (#478) — no behaviour change
+  if (mbuTestHooks()) window.__artStationTest = { ecauError };   // test hook only (#478) — no behaviour change
   // #566 test hook — the auto-repeat state machine, so its semantics can be
   // driven without provoking real archive.org failures. No behaviour change.
-  if (typeof window !== 'undefined') window.__asAutoRepeat = {
+  if (mbuTestHooks()) window.__asAutoRepeat = {
     get schedule() { return arSchedule; }, get stop() { return arStop; },
     get cancelPending() { return arCancelPending; }, get delayMs() { return arDelayMs; },
     state: ov => ov && ov._ar,
@@ -11833,7 +11777,7 @@ try {
     // test breadcrumb, same idea as window.__asAutoRepeat: an import leaves no
     // other trace a test can read (asLog is in-memory, nothing reaches console),
     // and "did one actually start" is the check #554 turns on.
-    try { (window.__asTest || (window.__asTest = {})).lastSource = url; } catch (e) {}
+    if (mbuTestHooks()) try { (window.__asTest || (window.__asTest = {})).lastSource = url; } catch (e) {}
     if (!/^https?:\/\//i.test(url)) { toast('Enter a provider or image URL (https://…)', 4000); return; }
     // known provider → its name+icon; otherwise fall back to the URL's host so a
     // pasted link from anywhere (e.g. nugs.net) still gets a favicon badge. #249
@@ -13783,6 +13727,235 @@ try {
       return html + '</div>';
   }
 
+  // Test hooks. A script puts its test hook on window only when the test harness has
+  // marked the page (dev/test/harness.mjs sets window.__mbuTest before any script runs):
+  //   if (mbuTestHooks()) window.__fooTest = { … };
+  // On a user's page the hooks are never built. (#623)
+  function mbuTestHooks() {
+      try { return typeof window !== 'undefined' && window.__mbuTest === true; } catch (e) { return false; }
+  }
+
+  // Corner slots (#468). Every floating launcher (Apollo Editor, Art Station, Falcon,
+  // Fusion, Scribe) tags its element with data-mb-corner (which screen corner: 'br',
+  // 'bl', 'tr', 'tl') and data-mb-corner-order (lower sits closer to the corner), and
+  // calls mbRestackCorner(corner) right after it shows, hides, creates or removes it.
+  // That recomputes every element in the corner, whichever script owns it and
+  // whatever order they loaded in, so two launchers never land on the same pixel.
+  // Orders in use: Apollo and Art Station 10 (never on the same page), Falcon 20,
+  // Fusion above Falcon. Scribe is not on the shared block and keeps a copy of this.
+  function mbRestackCorner(corner) {
+      var bottom = corner[0] === 'b', right = corner[1] === 'r';
+      var els = Array.prototype.slice.call(document.querySelectorAll('[data-mb-corner="' + corner + '"]'))
+          // offsetParent is always null for position:fixed, so it can't tell visibility here
+          .filter(function (el) { return getComputedStyle(el).display !== 'none'; })
+          .sort(function (a, b) { return (Number(a.dataset.mbCornerOrder) || 0) - (Number(b.dataset.mbCornerOrder) || 0); });
+      var pos = 14;
+      els.forEach(function (el) {
+          el.style[bottom ? 'bottom' : 'top'] = pos + 'px';
+          el.style[right ? 'right' : 'left'] = '14px';
+          pos += el.getBoundingClientRect().height + 8;
+      });
+  }
+
+  // Activity log: the session's log lines plus the floating window that shows them
+  // (#283's viewer, shared since X12 of #623). A script makes its log once:
+  //
+  //   var LOG = mbuLog({ name: 'Fusion', version: VERSION, key: 'fusion.logwin' });
+  //   LOG.info('…'); LOG.warn(…); LOG.err(…) (or .error); LOG.ok(…); LOG.debug(…)
+  //   LOG.open(); LOG.close(); LOG.reopen()   // reopen: only if it was left open
+  //   LOG.markdown(); LOG.copy(btn); LOG.lines(); LOG.messages(); LOG.counts()
+  //
+  // o.name / o.version  the Markdown summary's title (version may be a function)
+  // o.subtitle          optional function; its text follows the title (e.g. the release)
+  // o.header            the window's title (default 'Activity log')
+  // o.key               storage key for the window's open/minimised/position state
+  // o.load / o.save     that storage (default GM_getValue / GM_setValue)
+  // o.before            called before the window opens (e.g. to inject the script's CSS)
+  // o.max               lines kept (default 2000)
+  //
+  // A long run keeps only the last o.max lines, and the Markdown says how many went
+  // before them; the copies this replaced grew for the whole session. An open
+  // window appends each new line and drops the oldest row past the cap; the copies
+  // rebuilt the whole list with innerHTML on every line, which is quadratic over a
+  // long matching run.
+  function mbuLog(o) {
+      o = o || {};
+      var max = o.max || 2000, buf = [], dropped = 0, warn = 0, error = 0, win = null;
+      var pad = function (n, w) { return String(n).padStart(w || 2, '0'); };
+      var ts = function (d) { return pad(d.getHours()) + ':' + pad(d.getMinutes()) + ':' + pad(d.getSeconds()) + '.' + pad(d.getMilliseconds(), 3); };
+      var str = function (v) {
+          if (typeof v === 'string') return v;
+          if (v instanceof Error) return v.message || String(v);
+          if (v && v.nodeType) return '<' + (v.tagName || 'node').toLowerCase() + '>';
+          try { return typeof v === 'object' ? JSON.stringify(v) : String(v); } catch (e) { return String(v); }
+      };
+      var esc = function (s) {
+          return String(s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; });
+      };
+      // escape, then make http(s) URLs clickable, keeping trailing punctuation out of them
+      var linkify = function (s) {
+          return esc(s).replace(/(https?:\/\/[^\s<]+)/g, function (m) {
+              var t = (m.match(/[.,;:!?)\]]+$/) || [''])[0];
+              var url = m.slice(0, m.length - t.length);
+              return '<a href="' + url + '" target="_blank" rel="noopener">' + url + '</a>' + t;
+          });
+      };
+      var load = o.load || function (k) { try { return GM_getValue(k, undefined); } catch (e) { return undefined; } };
+      var save = o.save || function (k, v) { try { GM_setValue(k, v); } catch (e) { /* no storage: the window just forgets */ } };
+      var state = function () { try { return JSON.parse(load(o.key) || '{}') || {}; } catch (e) { return {}; } };
+      var remember = function (patch) { try { save(o.key, JSON.stringify(Object.assign(state(), patch))); } catch (e) { /* see save */ } };
+      var tally = function (e, d) { if (e.sev === 'warn') warn += d; else if (e.sev === 'error') error += d; };
+      var PRE = { info: '', ok: 'OK   ', warn: 'WARN ', error: 'ERR  ', debug: 'DBG  ' };
+      var line = function (e) { return ts(e.t) + '  ' + (PRE[e.sev] || '') + e.msg; };
+
+      function add(sev, args) {
+          var msg = Array.prototype.map.call(args, str).join(' ').replace(/\s+/g, ' ').trim();
+          if (!msg) return;
+          var e = { t: new Date(), sev: sev === 'err' ? 'error' : sev, msg: msg };
+          buf.push(e); tally(e, 1);
+          // trim in chunks, not one shift per line
+          if (buf.length > max + Math.ceil(max / 10)) {
+              var gone = buf.splice(0, buf.length - max);
+              gone.forEach(function (g) { tally(g, -1); });
+              dropped += gone.length;
+          }
+          if (win) win.append(e);
+      }
+      function title() {
+          var v = typeof o.version === 'function' ? (function () { try { return o.version(); } catch (e) { return ''; } })() : o.version;
+          var t = (o.name || 'Log') + (v ? ' v' + v : '');
+          try { var s = o.subtitle && o.subtitle(); if (s) t += ' — ' + s; } catch (e) { /* no subtitle */ }
+          return t;
+      }
+      function markdown() {
+          var body = buf.length ? buf.map(line).join('\n') : '(no activity logged)';
+          if (dropped) body = '(' + dropped + ' earlier line' + (dropped === 1 ? '' : 's') + ' not kept)\n' + body;
+          var n = (warn || error) ? ' (' + warn + ' warning' + (warn === 1 ? '' : 's') + ', ' + error + ' error' + (error === 1 ? '' : 's') + ')' : '';
+          var fence = String.fromCharCode(96, 96, 96);
+          return '<details><summary>' + title() + ' — session log' + n + '</summary>\n\n' + fence + 'log\n' + body + '\n' + fence + '\n\n</details>';
+      }
+      function copy(btn) {
+          var md = markdown();
+          var done = function (ok) {
+              if (!btn) return;
+              var was = btn.dataset.lbl || btn.textContent; btn.dataset.lbl = was;
+              btn.textContent = ok ? 'Copied ✓' : 'Copy failed';
+              setTimeout(function () { btn.textContent = was; }, 1500);
+          };
+          var fallback = function () {
+              var ok = false;
+              try {
+                  var ta = document.createElement('textarea'); ta.value = md; ta.style.position = 'fixed'; ta.style.opacity = '0';
+                  document.body.appendChild(ta); ta.select(); ok = document.execCommand('copy'); ta.remove();
+              } catch (x) { /* nothing left to try */ }
+              done(ok);
+          };
+          try { navigator.clipboard.writeText(md).then(function () { done(true); }, fallback); } catch (e) { fallback(); }
+      }
+      function open() {
+          close(true);
+          if (typeof o.before === 'function') { try { o.before(); } catch (e) { /* the window still opens */ } }
+          remember({ open: true });
+          var st = state();
+          var pop = document.createElement('div'); pop.id = 'mbu-logpop'; pop.className = 'mbu-logpop';
+          pop.innerHTML = '<div class="mbu-logpop-h"><b>' + esc(o.header || 'Activity log') + '</b> <span class="mbu-log-badge"></span><span class="mbu-logpop-sp"></span>'
+              + '<button class="mbu-logpop-copy" type="button" title="Copy as Markdown (paste into a GitHub issue)">⧉ Copy</button>'
+              + '<button class="mbu-logpop-min" type="button" title="Minimize">–</button>'
+              + '<button class="mbu-logpop-x" type="button" title="Close">✕</button></div>'
+              + '<div class="mbu-log-list"></div>';
+          document.body.appendChild(pop);
+          if (st.left != null) { pop.style.left = st.left; pop.style.top = st.top; pop.style.right = 'auto'; pop.style.transform = 'none'; }
+          var restore = { left: pop.style.left, top: pop.style.top, right: pop.style.right, bottom: pop.style.bottom, transform: pop.style.transform };
+          var list = pop.querySelector('.mbu-log-list'), badge = pop.querySelector('.mbu-log-badge');
+          var row = function (e) {
+              var d = document.createElement('div');
+              d.className = 'mbu-log-li mbu-log-' + e.sev;
+              d.innerHTML = '<span class="mbu-log-t">' + ts(e.t) + '</span><span class="mbu-log-m">' + linkify(e.msg) + '</span>';
+              return d;
+          };
+          var showBadge = function () { badge.textContent = '(' + buf.length + ')' + (warn || error ? ' · ' + warn + '⚠ ' + error + '✖' : ''); };
+          // the rows, once; later lines are appended one by one
+          var frag = document.createDocumentFragment();
+          buf.forEach(function (e) { frag.appendChild(row(e)); });
+          if (buf.length) list.appendChild(frag);
+          else list.innerHTML = '<div class="mbu-log-empty">No activity yet.</div>';
+          showBadge();
+          list.scrollTop = list.scrollHeight;
+          // badge and scroll once per frame, however many lines arrive in it
+          var queued = false, follow = true;
+          list.addEventListener('scroll', function () { follow = list.scrollHeight - list.scrollTop - list.clientHeight < 40; });
+          var paint = function () { queued = false; showBadge(); if (follow) list.scrollTop = list.scrollHeight; };
+          var onKey = function (e) { if (e.key === 'Escape') close(); };
+          win = {
+              el: pop,
+              append: function (e) {
+                  var empty = list.querySelector('.mbu-log-empty'); if (empty) empty.remove();
+                  list.appendChild(row(e));
+                  while (list.childElementCount > buf.length) list.firstElementChild.remove();
+                  if (!queued) { queued = true; requestAnimationFrame(paint); }
+              },
+              off: function () { document.removeEventListener('keydown', onKey); },
+          };
+          pop.querySelector('.mbu-logpop-copy').onclick = function () { copy(pop.querySelector('.mbu-logpop-copy')); };
+          var minBtn = pop.querySelector('.mbu-logpop-min');
+          var setMin = function (m) {
+              minBtn.textContent = m ? '▢' : '–'; minBtn.title = m ? 'Restore' : 'Minimize';
+              if (m) { pop.style.left = '14px'; pop.style.bottom = '14px'; pop.style.top = 'auto'; pop.style.right = 'auto'; pop.style.transform = 'none'; }   // dock to the bottom
+              else Object.assign(pop.style, restore);
+          };
+          minBtn.onclick = function () { var m = pop.classList.toggle('min'); setMin(m); remember({ min: m }); };
+          if (st.min) { pop.classList.add('min'); setMin(true); }
+          pop.querySelector('.mbu-logpop-x').onclick = function () { close(); };
+          // floating and non-modal: dragged by its header
+          pop.querySelector('.mbu-logpop-h').addEventListener('mousedown', function (e) {
+              if (e.target.closest('button')) return;
+              e.preventDefault();
+              var r = pop.getBoundingClientRect();
+              pop.style.left = r.left + 'px'; pop.style.top = r.top + 'px'; pop.style.right = 'auto'; pop.style.transform = 'none';
+              var ox = e.clientX - r.left, oy = e.clientY - r.top;
+              var mv = function (ev) {
+                  pop.style.left = Math.max(0, Math.min(window.innerWidth - pop.offsetWidth, ev.clientX - ox)) + 'px';
+                  pop.style.top = Math.max(0, Math.min(window.innerHeight - 36, ev.clientY - oy)) + 'px';
+              };
+              var up = function () {
+                  document.removeEventListener('mousemove', mv); document.removeEventListener('mouseup', up);
+                  if (!pop.classList.contains('min')) {
+                      restore = { left: pop.style.left, top: pop.style.top, right: 'auto', bottom: '', transform: 'none' };
+                      remember({ left: pop.style.left, top: pop.style.top });
+                  }
+              };
+              document.addEventListener('mousemove', mv); document.addEventListener('mouseup', up);
+          });
+          document.addEventListener('keydown', onKey);
+          return pop;
+      }
+      // quiet: closing to reopen, so the remembered "open" stays as it is
+      function close(quiet) {
+          var stray = document.getElementById('mbu-logpop');
+          if (win) { win.off(); win.el.remove(); win = null; if (!quiet) remember({ open: false }); }
+          if (stray) stray.remove();   // another script's window: one log window at a time
+      }
+      var api = {
+          info: function () { add('info', arguments); },
+          warn: function () { add('warn', arguments); },
+          err: function () { add('error', arguments); },
+          error: function () { add('error', arguments); },
+          ok: function () { add('ok', arguments); },
+          debug: function () { add('debug', arguments); },
+          add: function (sev) { add(sev, Array.prototype.slice.call(arguments, 1)); },
+          open: open,
+          close: function () { close(); },
+          reopen: function () { if (state().open) open(); },
+          isOpen: function () { return !!win; },
+          markdown: markdown,
+          copy: copy,
+          lines: function () { return buf.map(line); },
+          messages: function () { return buf.map(function (e) { return e.msg; }); },
+          counts: function () { return { warn: warn, error: error }; },
+      };
+      return api;
+  }
+
   // Dismiss-on-outside-click, with the trailing click SWALLOWED.
   //
   //   var off = mbuDismissOn(popoverEl, close);   // off() to detach early
@@ -14631,7 +14804,7 @@ try {
 
 // ===== credit_hoarder (@run-at document-end) ====================================
 (function(__stGM){
-  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Credit Hoarder*","namespace":"majkinetor","version":"2026.9.29.011613","description":"Import per-track release credits from streaming/database providers (Discogs, Tidal, Qobuz, Deezer) into MusicBrainz relationships, with a review phase","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/credit_hoarder/README.md","supportURL":"https://github.com/majkinetor/musicbrainz-userscripts/issues","icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij4KICANCiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMmY2ZjU0IiBzdHJva2Utd2lkdGg9IjkiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGNpcmNsZSBjeD0iMzQiIGN5PSIzOCIgcj0iMi41IiBmaWxsPSIjMmY2ZjU0IiBzdHJva2U9Im5vbmUiLz4NCiAgICA8bGluZSB4MT0iNTAiIHkxPSIzOCIgeDI9Ijk4IiB5Mj0iMzgiLz4NCiAgICA8Y2lyY2xlIGN4PSIzNCIgY3k9IjY0IiByPSIyLjUiIGZpbGw9IiMyZjZmNTQiIHN0cm9rZT0ibm9uZSIvPg0KICAgIDxsaW5lIHgxPSI1MCIgeTE9IjY0IiB4Mj0iOTgiIHkyPSI2NCIvPg0KICAgIDxjaXJjbGUgY3g9IjM0IiBjeT0iOTAiIHI9IjIuNSIgZmlsbD0iIzJmNmY1NCIgc3Ryb2tlPSJub25lIi8+DQogICAgPGxpbmUgeDE9IjUwIiB5MT0iOTAiIHgyPSI3NCIgeTI9IjkwIi8+DQogIDwvZz4NCiAgPGNpcmNsZSBjeD0iOTIiIGN5PSI5MiIgcj0iMjMiIGZpbGw9IiMyZTllNWIiLz4NCiAgPGcgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGxpbmUgeDE9IjkyIiB5MT0iODEiIHgyPSI5MiIgeTI9IjEwMyIvPg0KICAgIDxsaW5lIHgxPSI4MSIgeTE9IjkyIiB4Mj0iMTAzIiB5Mj0iOTIiLz4NCiAgPC9nPg0KPC9zdmc+DQo="}) }) : { script: {"name":"Credit Hoarder*","namespace":"majkinetor","version":"2026.9.29.011613","description":"Import per-track release credits from streaming/database providers (Discogs, Tidal, Qobuz, Deezer) into MusicBrainz relationships, with a review phase","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/credit_hoarder/README.md","supportURL":"https://github.com/majkinetor/musicbrainz-userscripts/issues","icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij4KICANCiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMmY2ZjU0IiBzdHJva2Utd2lkdGg9IjkiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGNpcmNsZSBjeD0iMzQiIGN5PSIzOCIgcj0iMi41IiBmaWxsPSIjMmY2ZjU0IiBzdHJva2U9Im5vbmUiLz4NCiAgICA8bGluZSB4MT0iNTAiIHkxPSIzOCIgeDI9Ijk4IiB5Mj0iMzgiLz4NCiAgICA8Y2lyY2xlIGN4PSIzNCIgY3k9IjY0IiByPSIyLjUiIGZpbGw9IiMyZjZmNTQiIHN0cm9rZT0ibm9uZSIvPg0KICAgIDxsaW5lIHgxPSI1MCIgeTE9IjY0IiB4Mj0iOTgiIHkyPSI2NCIvPg0KICAgIDxjaXJjbGUgY3g9IjM0IiBjeT0iOTAiIHI9IjIuNSIgZmlsbD0iIzJmNmY1NCIgc3Ryb2tlPSJub25lIi8+DQogICAgPGxpbmUgeDE9IjUwIiB5MT0iOTAiIHgyPSI3NCIgeTI9IjkwIi8+DQogIDwvZz4NCiAgPGNpcmNsZSBjeD0iOTIiIGN5PSI5MiIgcj0iMjMiIGZpbGw9IiMyZTllNWIiLz4NCiAgPGcgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGxpbmUgeDE9IjkyIiB5MT0iODEiIHgyPSI5MiIgeTI9IjEwMyIvPg0KICAgIDxsaW5lIHgxPSI4MSIgeTE9IjkyIiB4Mj0iMTAzIiB5Mj0iOTIiLz4NCiAgPC9nPg0KPC9zdmc+DQo="} };
+  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Credit Hoarder*","namespace":"majkinetor","version":"2026.9.28.220718","description":"Import per-track release credits from streaming/database providers (Discogs, Tidal, Qobuz, Deezer) into MusicBrainz relationships, with a review phase","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/credit_hoarder/README.md","supportURL":"https://github.com/majkinetor/musicbrainz-userscripts/issues","icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij4KICANCiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMmY2ZjU0IiBzdHJva2Utd2lkdGg9IjkiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGNpcmNsZSBjeD0iMzQiIGN5PSIzOCIgcj0iMi41IiBmaWxsPSIjMmY2ZjU0IiBzdHJva2U9Im5vbmUiLz4NCiAgICA8bGluZSB4MT0iNTAiIHkxPSIzOCIgeDI9Ijk4IiB5Mj0iMzgiLz4NCiAgICA8Y2lyY2xlIGN4PSIzNCIgY3k9IjY0IiByPSIyLjUiIGZpbGw9IiMyZjZmNTQiIHN0cm9rZT0ibm9uZSIvPg0KICAgIDxsaW5lIHgxPSI1MCIgeTE9IjY0IiB4Mj0iOTgiIHkyPSI2NCIvPg0KICAgIDxjaXJjbGUgY3g9IjM0IiBjeT0iOTAiIHI9IjIuNSIgZmlsbD0iIzJmNmY1NCIgc3Ryb2tlPSJub25lIi8+DQogICAgPGxpbmUgeDE9IjUwIiB5MT0iOTAiIHgyPSI3NCIgeTI9IjkwIi8+DQogIDwvZz4NCiAgPGNpcmNsZSBjeD0iOTIiIGN5PSI5MiIgcj0iMjMiIGZpbGw9IiMyZTllNWIiLz4NCiAgPGcgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGxpbmUgeDE9IjkyIiB5MT0iODEiIHgyPSI5MiIgeTI9IjEwMyIvPg0KICAgIDxsaW5lIHgxPSI4MSIgeTE9IjkyIiB4Mj0iMTAzIiB5Mj0iOTIiLz4NCiAgPC9nPg0KPC9zdmc+DQo="}) }) : { script: {"name":"Credit Hoarder*","namespace":"majkinetor","version":"2026.9.28.220718","description":"Import per-track release credits from streaming/database providers (Discogs, Tidal, Qobuz, Deezer) into MusicBrainz relationships, with a review phase","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/credit_hoarder/README.md","supportURL":"https://github.com/majkinetor/musicbrainz-userscripts/issues","icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij4KICANCiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMmY2ZjU0IiBzdHJva2Utd2lkdGg9IjkiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGNpcmNsZSBjeD0iMzQiIGN5PSIzOCIgcj0iMi41IiBmaWxsPSIjMmY2ZjU0IiBzdHJva2U9Im5vbmUiLz4NCiAgICA8bGluZSB4MT0iNTAiIHkxPSIzOCIgeDI9Ijk4IiB5Mj0iMzgiLz4NCiAgICA8Y2lyY2xlIGN4PSIzNCIgY3k9IjY0IiByPSIyLjUiIGZpbGw9IiMyZjZmNTQiIHN0cm9rZT0ibm9uZSIvPg0KICAgIDxsaW5lIHgxPSI1MCIgeTE9IjY0IiB4Mj0iOTgiIHkyPSI2NCIvPg0KICAgIDxjaXJjbGUgY3g9IjM0IiBjeT0iOTAiIHI9IjIuNSIgZmlsbD0iIzJmNmY1NCIgc3Ryb2tlPSJub25lIi8+DQogICAgPGxpbmUgeDE9IjUwIiB5MT0iOTAiIHgyPSI3NCIgeTI9IjkwIi8+DQogIDwvZz4NCiAgPGNpcmNsZSBjeD0iOTIiIGN5PSI5MiIgcj0iMjMiIGZpbGw9IiMyZTllNWIiLz4NCiAgPGcgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGxpbmUgeDE9IjkyIiB5MT0iODEiIHgyPSI5MiIgeTI9IjEwMyIvPg0KICAgIDxsaW5lIHgxPSI4MSIgeTE9IjkyIiB4Mj0iMTAzIiB5Mj0iOTIiLz4NCiAgPC9nPg0KPC9zdmc+DQo="} };
   (f=>document.readyState!=='loading'?f():document.addEventListener('DOMContentLoaded',f,{once:true}))(function(){
 (() => {
   // src/constants.js
@@ -16434,37 +16607,134 @@ try {
     "Wobble Board": null
   };
 
+  // ../../dev/match/artist-match.mjs
+  var MBM_EXACT_LIMIT = 100;
+  var MBM_SPECIAL_PURPOSE = [
+    "125ec42a-7229-4250-afc5-e057484327fe",
+    // [unknown]
+    "f731ccc4-e22a-43af-a747-64213329e088",
+    // [anonymous]
+    "33cf029c-63b0-41a0-9855-be2a3665fb3b",
+    // [data]
+    "314e1c25-dde7-4e4d-b2f4-0a7b9f7c56dc",
+    // [dialogue]
+    "eec63d3c-3b81-4ad4-b1e4-7c147d4d2b61",
+    // [no artist]
+    "9be7f096-97ec-4615-8957-8d40b5dcbc41",
+    // [traditional]
+    "89ad4ac3-39f7-470e-963a-56509c546377",
+    // Various Artists
+    "7e84f845-ac16-41fe-9ff8-df12eb32af55",
+    // MusicBrainz Test Artist
+    "66ea0139-149f-4a0c-8fbf-5ea9ec4a6e49",
+    // [Disney]
+    "a0ef7e1d-44ff-4039-9435-7d5fefdeecc9",
+    // [theatre]
+    "90068d37-bae7-4292-be4a-704c145bd616",
+    // [church chimes]
+    "80a8851f-444c-4539-892b-ad2a49292aa9"
+    // [language instruction]
+  ];
+  function mbmFold(s) {
+    return String(s == null ? "" : s).normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/đ/gi, "d").replace(/[‐‑‒–—―−]/g, "-").toLowerCase().replace(/\s+/g, " ").trim();
+  }
+  function mbmFoldKeepCase(s) {
+    return String(s == null ? "" : s).normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/đ/gi, "d").replace(/[‐‑‒–—―−]/g, "-").replace(/\s+/g, " ").trim();
+  }
+  function mbmSameName(a, b) {
+    return mbmFold(a) === mbmFold(b) && mbmFold(a) !== "";
+  }
+  function mbmSameNameCase(a, b) {
+    return mbmFoldKeepCase(a) === mbmFoldKeepCase(b) && mbmFoldKeepCase(a) !== "";
+  }
+  function mbmHolds(entity, name, caseExact) {
+    if (!entity) return null;
+    const same = caseExact ? mbmSameNameCase : mbmSameName;
+    if (same(entity.name, name)) return "name";
+    if ((entity.aliases || []).some((al) => same(al && (al.name != null ? al.name : al), name))) return "alias";
+    return null;
+  }
+  function mbmIdentityQuery(name, field) {
+    const q = String(name == null ? "" : name).replace(/["\\]/g, " ").replace(/\s+/g, " ").trim();
+    return q ? 'alias:"' + q + '" OR ' + (field || "artist") + ':"' + q + '"' : "";
+  }
+  function mbmExactIdentity(json, name, opts) {
+    const o = opts || {};
+    if (!json || typeof json !== "object") return { status: "failed", exact: [] };
+    const list = json.artists || json.labels || json.places || [];
+    let exact = list.filter((e) => mbmHolds(e, name));
+    if (exact.length > 1) {
+      const caseExact = exact.filter((e) => mbmHolds(e, name, true));
+      if (caseExact.length === 1) exact = caseExact;
+      else if (o.scoreGap) {
+        const scored = exact.filter((e) => typeof e.score === "number").sort((a, b) => b.score - a.score);
+        if (scored.length >= 2 && scored[0].score - scored[1].score >= o.scoreGap) exact = [scored[0]];
+      }
+    }
+    const offset = typeof json.offset === "number" ? json.offset : 0;
+    const complete = typeof json.count === "number" && json.count <= offset + list.length;
+    if (exact.length === 1 && complete) return { status: "unique", hit: exact[0], via: mbmHolds(exact[0], name) === "name" ? "name" : "alias", exact, complete };
+    if (exact.length > 1) return { status: "ambiguous", exact, complete };
+    if (!complete) return { status: "incomplete", exact, complete };
+    return { status: "none", exact, complete };
+  }
+  function mbmRelatedArtists(artistJson) {
+    if (!artistJson || !artistJson.id) return [];
+    const out = [{ gid: artistJson.id, name: artistJson.name || "", aliases: (artistJson.aliases || []).map((a) => a && a.name).filter(Boolean), rel: "self" }];
+    for (const r of artistJson.relations || []) {
+      const a = r && r.artist;
+      if (!a || !a.id || out.some((x) => x.gid === a.id)) continue;
+      out.push({ gid: a.id, name: a.name || "", aliases: [], rel: r.type || "" });
+    }
+    return out;
+  }
+  function mbmContextHolders(related, name, candidates) {
+    const cand = new Map((candidates || []).map((c) => [c.id || c.gid, c]));
+    const out = [];
+    for (const r of related || []) {
+      let via = mbmSameName(r.name, name) ? "name" : (r.aliases || []).some((a) => mbmSameName(a, name)) ? "alias" : null;
+      if (!via) {
+        const c = cand.get(r.gid);
+        if (c && mbmHolds(c, name)) via = mbmHolds(c, name);
+      }
+      if (via && !out.some((x) => x.gid === r.gid)) out.push({ gid: r.gid, name: r.name, via, rel: r.rel });
+    }
+    return out;
+  }
+  function mbmCoCreditHits(recordingsJson, ctxGid, name) {
+    const out = [];
+    for (const rec of recordingsJson && recordingsJson.recordings || []) {
+      for (const c of rec["artist-credit"] || []) {
+        const a = c && c.artist;
+        if (!a || !a.id || a.id === ctxGid) continue;
+        if ((mbmSameName(c.name, name) || mbmSameName(a.name, name)) && !out.some((x) => x.gid === a.id)) out.push({ gid: a.id, name: a.name });
+      }
+    }
+    return out;
+  }
+  function mbmGuessSortName(name) {
+    if (!name || !name.trim()) return name;
+    name = name.trim().replace(/\s+/g, " ");
+    if (/[^\p{Script=Latin}\p{Script=Common}\p{Script=Inherited}]/u.test(name)) return name;
+    const words = name.split(" ");
+    if (words.length === 1) return name;
+    const article = name.match(/^(the|a|an)\s+(.+)$/i);
+    if (article) return article[2] + ", " + article[1].charAt(0).toUpperCase() + article[1].slice(1).toLowerCase();
+    let base = name, suffix = "";
+    const sfx = name.match(/^(.*?),?\s+(jr\.?|sr\.?|ii|iii|iv|v|esq\.?)$/i);
+    if (sfx) {
+      base = sfx[1].trim();
+      suffix = " " + sfx[2];
+    }
+    const parts = base.split(" ");
+    if (parts.length === 1) return name;
+    return parts[parts.length - 1] + ", " + parts.slice(0, -1).join(" ") + suffix;
+  }
+
   // src/mappers.js
   var INSTRUMENTS_CI = Object.fromEntries(
     Object.entries(INSTRUMENTS).map(([k, v]) => [k.toLowerCase(), v])
   );
-  function guessSortName(name) {
-    if (!name || !name.trim()) return name;
-    name = name.trim();
-    const articleRe = /^(the|a|an)\s+(.+)$/i;
-    const honorifics = /^(dr\.?|prof\.?|sir|lady|lord|rev\.?|st\.?|dj|mc|mc\.?)\s+/i;
-    const suffixRe = /^(.*?),?\s+(jr\.?|sr\.?|ii|iii|iv|v|esq\.?)$/i;
-    const words = name.split(/\s+/);
-    if (words.length === 1) return name;
-    const articleMatch = name.match(articleRe);
-    if (articleMatch) {
-      const article = articleMatch[1];
-      const rest = articleMatch[2];
-      return `${rest}, ${article.charAt(0).toUpperCase() + article.slice(1).toLowerCase()}`;
-    }
-    let suffix = "";
-    let baseName = name;
-    const suffixMatch = name.match(suffixRe);
-    if (suffixMatch) {
-      baseName = suffixMatch[1].trim();
-      suffix = " " + suffixMatch[2];
-    }
-    const baseWords = baseName.split(/\s+/);
-    if (baseWords.length === 1) return name;
-    const familyName = baseWords[baseWords.length - 1];
-    const givenPart = baseWords.slice(0, -1).join(" ");
-    return `${familyName}, ${givenPart}${suffix}`;
-  }
   function flattenTracklist(tracklist) {
     if (!Array.isArray(tracklist)) return [];
     return tracklist.flatMap((t) => {
@@ -16681,112 +16951,6 @@ try {
       }
       return rolesArr;
     }, []) || [];
-  }
-
-  // ../../dev/match/artist-match.mjs
-  var MBM_EXACT_LIMIT = 100;
-  var MBM_SPECIAL_PURPOSE = [
-    "125ec42a-7229-4250-afc5-e057484327fe",
-    // [unknown]
-    "f731ccc4-e22a-43af-a747-64213329e088",
-    // [anonymous]
-    "33cf029c-63b0-41a0-9855-be2a3665fb3b",
-    // [data]
-    "314e1c25-dde7-4e4d-b2f4-0a7b9f7c56dc",
-    // [dialogue]
-    "eec63d3c-3b81-4ad4-b1e4-7c147d4d2b61",
-    // [no artist]
-    "9be7f096-97ec-4615-8957-8d40b5dcbc41",
-    // [traditional]
-    "89ad4ac3-39f7-470e-963a-56509c546377",
-    // Various Artists
-    "7e84f845-ac16-41fe-9ff8-df12eb32af55",
-    // MusicBrainz Test Artist
-    "66ea0139-149f-4a0c-8fbf-5ea9ec4a6e49",
-    // [Disney]
-    "a0ef7e1d-44ff-4039-9435-7d5fefdeecc9",
-    // [theatre]
-    "90068d37-bae7-4292-be4a-704c145bd616",
-    // [church chimes]
-    "80a8851f-444c-4539-892b-ad2a49292aa9"
-    // [language instruction]
-  ];
-  function mbmFold(s) {
-    return String(s == null ? "" : s).normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/đ/gi, "d").replace(/[‐‑‒–—―−]/g, "-").toLowerCase().replace(/\s+/g, " ").trim();
-  }
-  function mbmFoldKeepCase(s) {
-    return String(s == null ? "" : s).normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/đ/gi, "d").replace(/[‐‑‒–—―−]/g, "-").replace(/\s+/g, " ").trim();
-  }
-  function mbmSameName(a, b) {
-    return mbmFold(a) === mbmFold(b) && mbmFold(a) !== "";
-  }
-  function mbmSameNameCase(a, b) {
-    return mbmFoldKeepCase(a) === mbmFoldKeepCase(b) && mbmFoldKeepCase(a) !== "";
-  }
-  function mbmHolds(entity, name, caseExact) {
-    if (!entity) return null;
-    const same = caseExact ? mbmSameNameCase : mbmSameName;
-    if (same(entity.name, name)) return "name";
-    if ((entity.aliases || []).some((al) => same(al && (al.name != null ? al.name : al), name))) return "alias";
-    return null;
-  }
-  function mbmIdentityQuery(name, field) {
-    const q = String(name == null ? "" : name).replace(/["\\]/g, " ").replace(/\s+/g, " ").trim();
-    return q ? 'alias:"' + q + '" OR ' + (field || "artist") + ':"' + q + '"' : "";
-  }
-  function mbmExactIdentity(json, name, opts) {
-    const o = opts || {};
-    if (!json || typeof json !== "object") return { status: "failed", exact: [] };
-    const list = json.artists || json.labels || json.places || [];
-    let exact = list.filter((e) => mbmHolds(e, name));
-    if (exact.length > 1) {
-      const caseExact = exact.filter((e) => mbmHolds(e, name, true));
-      if (caseExact.length === 1) exact = caseExact;
-      else if (o.scoreGap) {
-        const scored = exact.filter((e) => typeof e.score === "number").sort((a, b) => b.score - a.score);
-        if (scored.length >= 2 && scored[0].score - scored[1].score >= o.scoreGap) exact = [scored[0]];
-      }
-    }
-    const offset = typeof json.offset === "number" ? json.offset : 0;
-    const complete = typeof json.count === "number" && json.count <= offset + list.length;
-    if (exact.length === 1 && complete) return { status: "unique", hit: exact[0], via: mbmHolds(exact[0], name) === "name" ? "name" : "alias", exact, complete };
-    if (exact.length > 1) return { status: "ambiguous", exact, complete };
-    if (!complete) return { status: "incomplete", exact, complete };
-    return { status: "none", exact, complete };
-  }
-  function mbmRelatedArtists(artistJson) {
-    if (!artistJson || !artistJson.id) return [];
-    const out = [{ gid: artistJson.id, name: artistJson.name || "", aliases: (artistJson.aliases || []).map((a) => a && a.name).filter(Boolean), rel: "self" }];
-    for (const r of artistJson.relations || []) {
-      const a = r && r.artist;
-      if (!a || !a.id || out.some((x) => x.gid === a.id)) continue;
-      out.push({ gid: a.id, name: a.name || "", aliases: [], rel: r.type || "" });
-    }
-    return out;
-  }
-  function mbmContextHolders(related, name, candidates) {
-    const cand = new Map((candidates || []).map((c) => [c.id || c.gid, c]));
-    const out = [];
-    for (const r of related || []) {
-      let via = mbmSameName(r.name, name) ? "name" : (r.aliases || []).some((a) => mbmSameName(a, name)) ? "alias" : null;
-      if (!via) {
-        const c = cand.get(r.gid);
-        if (c && mbmHolds(c, name)) via = mbmHolds(c, name);
-      }
-      if (via && !out.some((x) => x.gid === r.gid)) out.push({ gid: r.gid, name: r.name, via, rel: r.rel });
-    }
-    return out;
-  }
-  function mbmCoCreditHits(recordingsJson, ctxGid, name) {
-    const out = [];
-    for (const rec of recordingsJson && recordingsJson.recordings || []) {
-      for (const c of rec["artist-credit"] || []) {
-        const a = c && c.artist;
-        if (!a || !a.id || a.id === ctxGid) continue;
-        if ((mbmSameName(c.name, name) || mbmSameName(a.name, name)) && !out.some((x) => x.gid === a.id)) out.push({ gid: a.id, name: a.name });
-      }
-    }
-    return out;
   }
 
   // src/sources/split-names.js
@@ -19665,7 +19829,7 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
             if (entityType === "artist") {
               createParams = {
                 "edit-artist.name": finalName,
-                "edit-artist.sort_name": guessSortName(finalName),
+                "edit-artist.sort_name": mbmGuessSortName(finalName),
                 "edit-artist.type_id": "1"
               };
               seedUrls(createParams, "artist");
@@ -21636,6 +21800,344 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
       html += mbuHelpHtml(o.script);
       return html + "</div>";
     }
+    function mbuTestHooks() {
+      try {
+        return typeof window !== "undefined" && window.__mbuTest === true;
+      } catch (e) {
+        return false;
+      }
+    }
+    function mbRestackCorner(corner) {
+      var bottom = corner[0] === "b", right = corner[1] === "r";
+      var els = Array.prototype.slice.call(document.querySelectorAll('[data-mb-corner="' + corner + '"]')).filter(function(el) {
+        return getComputedStyle(el).display !== "none";
+      }).sort(function(a, b) {
+        return (Number(a.dataset.mbCornerOrder) || 0) - (Number(b.dataset.mbCornerOrder) || 0);
+      });
+      var pos = 14;
+      els.forEach(function(el) {
+        el.style[bottom ? "bottom" : "top"] = pos + "px";
+        el.style[right ? "right" : "left"] = "14px";
+        pos += el.getBoundingClientRect().height + 8;
+      });
+    }
+    function mbuLog(o) {
+      o = o || {};
+      var max = o.max || 2e3, buf = [], dropped = 0, warn = 0, error = 0, win = null;
+      var pad = function(n, w) {
+        return String(n).padStart(w || 2, "0");
+      };
+      var ts = function(d) {
+        return pad(d.getHours()) + ":" + pad(d.getMinutes()) + ":" + pad(d.getSeconds()) + "." + pad(d.getMilliseconds(), 3);
+      };
+      var str = function(v) {
+        if (typeof v === "string") return v;
+        if (v instanceof Error) return v.message || String(v);
+        if (v && v.nodeType) return "<" + (v.tagName || "node").toLowerCase() + ">";
+        try {
+          return typeof v === "object" ? JSON.stringify(v) : String(v);
+        } catch (e) {
+          return String(v);
+        }
+      };
+      var esc = function(s) {
+        return String(s).replace(/[&<>"]/g, function(c) {
+          return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c];
+        });
+      };
+      var linkify = function(s) {
+        return esc(s).replace(/(https?:\/\/[^\s<]+)/g, function(m) {
+          var t = (m.match(/[.,;:!?)\]]+$/) || [""])[0];
+          var url = m.slice(0, m.length - t.length);
+          return '<a href="' + url + '" target="_blank" rel="noopener">' + url + "</a>" + t;
+        });
+      };
+      var load = o.load || function(k) {
+        try {
+          return GM_getValue(k, void 0);
+        } catch (e) {
+          return void 0;
+        }
+      };
+      var save = o.save || function(k, v) {
+        try {
+          GM_setValue(k, v);
+        } catch (e) {
+        }
+      };
+      var state = function() {
+        try {
+          return JSON.parse(load(o.key) || "{}") || {};
+        } catch (e) {
+          return {};
+        }
+      };
+      var remember = function(patch) {
+        try {
+          save(o.key, JSON.stringify(Object.assign(state(), patch)));
+        } catch (e) {
+        }
+      };
+      var tally = function(e, d) {
+        if (e.sev === "warn") warn += d;
+        else if (e.sev === "error") error += d;
+      };
+      var PRE = { info: "", ok: "OK   ", warn: "WARN ", error: "ERR  ", debug: "DBG  " };
+      var line = function(e) {
+        return ts(e.t) + "  " + (PRE[e.sev] || "") + e.msg;
+      };
+      function add(sev, args) {
+        var msg = Array.prototype.map.call(args, str).join(" ").replace(/\s+/g, " ").trim();
+        if (!msg) return;
+        var e = { t: /* @__PURE__ */ new Date(), sev: sev === "err" ? "error" : sev, msg };
+        buf.push(e);
+        tally(e, 1);
+        if (buf.length > max + Math.ceil(max / 10)) {
+          var gone = buf.splice(0, buf.length - max);
+          gone.forEach(function(g) {
+            tally(g, -1);
+          });
+          dropped += gone.length;
+        }
+        if (win) win.append(e);
+      }
+      function title() {
+        var v = typeof o.version === "function" ? (function() {
+          try {
+            return o.version();
+          } catch (e) {
+            return "";
+          }
+        })() : o.version;
+        var t = (o.name || "Log") + (v ? " v" + v : "");
+        try {
+          var s = o.subtitle && o.subtitle();
+          if (s) t += " \u2014 " + s;
+        } catch (e) {
+        }
+        return t;
+      }
+      function markdown() {
+        var body = buf.length ? buf.map(line).join("\n") : "(no activity logged)";
+        if (dropped) body = "(" + dropped + " earlier line" + (dropped === 1 ? "" : "s") + " not kept)\n" + body;
+        var n = warn || error ? " (" + warn + " warning" + (warn === 1 ? "" : "s") + ", " + error + " error" + (error === 1 ? "" : "s") + ")" : "";
+        var fence = String.fromCharCode(96, 96, 96);
+        return "<details><summary>" + title() + " \u2014 session log" + n + "</summary>\n\n" + fence + "log\n" + body + "\n" + fence + "\n\n</details>";
+      }
+      function copy(btn) {
+        var md = markdown();
+        var done = function(ok) {
+          if (!btn) return;
+          var was = btn.dataset.lbl || btn.textContent;
+          btn.dataset.lbl = was;
+          btn.textContent = ok ? "Copied \u2713" : "Copy failed";
+          setTimeout(function() {
+            btn.textContent = was;
+          }, 1500);
+        };
+        var fallback = function() {
+          var ok = false;
+          try {
+            var ta = document.createElement("textarea");
+            ta.value = md;
+            ta.style.position = "fixed";
+            ta.style.opacity = "0";
+            document.body.appendChild(ta);
+            ta.select();
+            ok = document.execCommand("copy");
+            ta.remove();
+          } catch (x) {
+          }
+          done(ok);
+        };
+        try {
+          navigator.clipboard.writeText(md).then(function() {
+            done(true);
+          }, fallback);
+        } catch (e) {
+          fallback();
+        }
+      }
+      function open() {
+        close(true);
+        if (typeof o.before === "function") {
+          try {
+            o.before();
+          } catch (e) {
+          }
+        }
+        remember({ open: true });
+        var st = state();
+        var pop = document.createElement("div");
+        pop.id = "mbu-logpop";
+        pop.className = "mbu-logpop";
+        pop.innerHTML = '<div class="mbu-logpop-h"><b>' + esc(o.header || "Activity log") + '</b> <span class="mbu-log-badge"></span><span class="mbu-logpop-sp"></span><button class="mbu-logpop-copy" type="button" title="Copy as Markdown (paste into a GitHub issue)">\u29C9 Copy</button><button class="mbu-logpop-min" type="button" title="Minimize">\u2013</button><button class="mbu-logpop-x" type="button" title="Close">\u2715</button></div><div class="mbu-log-list"></div>';
+        document.body.appendChild(pop);
+        if (st.left != null) {
+          pop.style.left = st.left;
+          pop.style.top = st.top;
+          pop.style.right = "auto";
+          pop.style.transform = "none";
+        }
+        var restore = { left: pop.style.left, top: pop.style.top, right: pop.style.right, bottom: pop.style.bottom, transform: pop.style.transform };
+        var list = pop.querySelector(".mbu-log-list"), badge = pop.querySelector(".mbu-log-badge");
+        var row = function(e) {
+          var d = document.createElement("div");
+          d.className = "mbu-log-li mbu-log-" + e.sev;
+          d.innerHTML = '<span class="mbu-log-t">' + ts(e.t) + '</span><span class="mbu-log-m">' + linkify(e.msg) + "</span>";
+          return d;
+        };
+        var showBadge = function() {
+          badge.textContent = "(" + buf.length + ")" + (warn || error ? " \xB7 " + warn + "\u26A0 " + error + "\u2716" : "");
+        };
+        var frag = document.createDocumentFragment();
+        buf.forEach(function(e) {
+          frag.appendChild(row(e));
+        });
+        if (buf.length) list.appendChild(frag);
+        else list.innerHTML = '<div class="mbu-log-empty">No activity yet.</div>';
+        showBadge();
+        list.scrollTop = list.scrollHeight;
+        var queued = false, follow = true;
+        list.addEventListener("scroll", function() {
+          follow = list.scrollHeight - list.scrollTop - list.clientHeight < 40;
+        });
+        var paint = function() {
+          queued = false;
+          showBadge();
+          if (follow) list.scrollTop = list.scrollHeight;
+        };
+        var onKey = function(e) {
+          if (e.key === "Escape") close();
+        };
+        win = {
+          el: pop,
+          append: function(e) {
+            var empty = list.querySelector(".mbu-log-empty");
+            if (empty) empty.remove();
+            list.appendChild(row(e));
+            while (list.childElementCount > buf.length) list.firstElementChild.remove();
+            if (!queued) {
+              queued = true;
+              requestAnimationFrame(paint);
+            }
+          },
+          off: function() {
+            document.removeEventListener("keydown", onKey);
+          }
+        };
+        pop.querySelector(".mbu-logpop-copy").onclick = function() {
+          copy(pop.querySelector(".mbu-logpop-copy"));
+        };
+        var minBtn = pop.querySelector(".mbu-logpop-min");
+        var setMin = function(m) {
+          minBtn.textContent = m ? "\u25A2" : "\u2013";
+          minBtn.title = m ? "Restore" : "Minimize";
+          if (m) {
+            pop.style.left = "14px";
+            pop.style.bottom = "14px";
+            pop.style.top = "auto";
+            pop.style.right = "auto";
+            pop.style.transform = "none";
+          } else Object.assign(pop.style, restore);
+        };
+        minBtn.onclick = function() {
+          var m = pop.classList.toggle("min");
+          setMin(m);
+          remember({ min: m });
+        };
+        if (st.min) {
+          pop.classList.add("min");
+          setMin(true);
+        }
+        pop.querySelector(".mbu-logpop-x").onclick = function() {
+          close();
+        };
+        pop.querySelector(".mbu-logpop-h").addEventListener("mousedown", function(e) {
+          if (e.target.closest("button")) return;
+          e.preventDefault();
+          var r = pop.getBoundingClientRect();
+          pop.style.left = r.left + "px";
+          pop.style.top = r.top + "px";
+          pop.style.right = "auto";
+          pop.style.transform = "none";
+          var ox = e.clientX - r.left, oy = e.clientY - r.top;
+          var mv = function(ev) {
+            pop.style.left = Math.max(0, Math.min(window.innerWidth - pop.offsetWidth, ev.clientX - ox)) + "px";
+            pop.style.top = Math.max(0, Math.min(window.innerHeight - 36, ev.clientY - oy)) + "px";
+          };
+          var up = function() {
+            document.removeEventListener("mousemove", mv);
+            document.removeEventListener("mouseup", up);
+            if (!pop.classList.contains("min")) {
+              restore = { left: pop.style.left, top: pop.style.top, right: "auto", bottom: "", transform: "none" };
+              remember({ left: pop.style.left, top: pop.style.top });
+            }
+          };
+          document.addEventListener("mousemove", mv);
+          document.addEventListener("mouseup", up);
+        });
+        document.addEventListener("keydown", onKey);
+        return pop;
+      }
+      function close(quiet) {
+        var stray = document.getElementById("mbu-logpop");
+        if (win) {
+          win.off();
+          win.el.remove();
+          win = null;
+          if (!quiet) remember({ open: false });
+        }
+        if (stray) stray.remove();
+      }
+      var api = {
+        info: function() {
+          add("info", arguments);
+        },
+        warn: function() {
+          add("warn", arguments);
+        },
+        err: function() {
+          add("error", arguments);
+        },
+        error: function() {
+          add("error", arguments);
+        },
+        ok: function() {
+          add("ok", arguments);
+        },
+        debug: function() {
+          add("debug", arguments);
+        },
+        add: function(sev) {
+          add(sev, Array.prototype.slice.call(arguments, 1));
+        },
+        open,
+        close: function() {
+          close();
+        },
+        reopen: function() {
+          if (state().open) open();
+        },
+        isOpen: function() {
+          return !!win;
+        },
+        markdown,
+        copy,
+        lines: function() {
+          return buf.map(line);
+        },
+        messages: function() {
+          return buf.map(function(e) {
+            return e.msg;
+          });
+        },
+        counts: function() {
+          return { warn, error };
+        }
+      };
+      return api;
+    }
     function mbuDismissOn(el, close, opts) {
       opts = opts || {};
       var closed = false;
@@ -22459,19 +22961,10 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
     }
     const gmLoad = (key) => {
       try {
-        const v = GM_getValue(key, void 0);
-        if (v !== void 0) return v;
+        return GM_getValue(key, void 0);
       } catch (e) {
+        return void 0;
       }
-      try {
-        const raw = localStorage.getItem(key);
-        if (raw != null) {
-          GM_setValue(key, raw);
-          return raw;
-        }
-      } catch (e) {
-      }
-      return void 0;
     };
     const gmSave = (key, raw) => {
       try {
@@ -23766,12 +24259,12 @@ ${lines}
 
 // ===== fusion (@run-at document-end) ============================================
 (function(__stGM){
-  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Fusion*","namespace":"https://musicbrainz.org/","version":"2026.9.27","description":"Merge-recordings assistant for MusicBrainz: gather a pool of candidate recordings from a release / release group / recording page (or paste any MBID/URL), auto-match them into merge groups by ISRC / AcoustID / length / title+artist, review and adjust the groups, then submit the merges directly in the background — no MB merge page involved.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/fusion/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPkZ1c2lvbjwvdGl0bGU+CiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjOGE1Y2Y2IiBzdHJva2Utd2lkdGg9IjciPgogICAgPGVsbGlwc2UgY3g9IjY0IiBjeT0iNjQiIHJ4PSI1MiIgcnk9IjIyIi8+CiAgICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSI2NCIgcng9IjUyIiByeT0iMjIiIHRyYW5zZm9ybT0icm90YXRlKDYwIDY0IDY0KSIvPgogICAgPGVsbGlwc2UgY3g9IjY0IiBjeT0iNjQiIHJ4PSI1MiIgcnk9IjIyIiB0cmFuc2Zvcm09InJvdGF0ZSgxMjAgNjQgNjQpIi8+CiAgPC9nPgogIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjE0IiBmaWxsPSIjNmQzZmYwIi8+Cjwvc3ZnPgo="}) }) : { script: {"name":"Fusion*","namespace":"https://musicbrainz.org/","version":"2026.9.27","description":"Merge-recordings assistant for MusicBrainz: gather a pool of candidate recordings from a release / release group / recording page (or paste any MBID/URL), auto-match them into merge groups by ISRC / AcoustID / length / title+artist, review and adjust the groups, then submit the merges directly in the background — no MB merge page involved.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/fusion/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPkZ1c2lvbjwvdGl0bGU+CiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjOGE1Y2Y2IiBzdHJva2Utd2lkdGg9IjciPgogICAgPGVsbGlwc2UgY3g9IjY0IiBjeT0iNjQiIHJ4PSI1MiIgcnk9IjIyIi8+CiAgICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSI2NCIgcng9IjUyIiByeT0iMjIiIHRyYW5zZm9ybT0icm90YXRlKDYwIDY0IDY0KSIvPgogICAgPGVsbGlwc2UgY3g9IjY0IiBjeT0iNjQiIHJ4PSI1MiIgcnk9IjIyIiB0cmFuc2Zvcm09InJvdGF0ZSgxMjAgNjQgNjQpIi8+CiAgPC9nPgogIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjE0IiBmaWxsPSIjNmQzZmYwIi8+Cjwvc3ZnPgo="} };
+  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Fusion*","namespace":"https://musicbrainz.org/","version":"2026.9.28","description":"Merge-recordings assistant for MusicBrainz: gather a pool of candidate recordings from a release / release group / recording page (or paste any MBID/URL), auto-match them into merge groups by ISRC / AcoustID / length / title+artist, review and adjust the groups, then submit the merges directly in the background — no MB merge page involved.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/fusion/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPkZ1c2lvbjwvdGl0bGU+CiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjOGE1Y2Y2IiBzdHJva2Utd2lkdGg9IjciPgogICAgPGVsbGlwc2UgY3g9IjY0IiBjeT0iNjQiIHJ4PSI1MiIgcnk9IjIyIi8+CiAgICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSI2NCIgcng9IjUyIiByeT0iMjIiIHRyYW5zZm9ybT0icm90YXRlKDYwIDY0IDY0KSIvPgogICAgPGVsbGlwc2UgY3g9IjY0IiBjeT0iNjQiIHJ4PSI1MiIgcnk9IjIyIiB0cmFuc2Zvcm09InJvdGF0ZSgxMjAgNjQgNjQpIi8+CiAgPC9nPgogIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjE0IiBmaWxsPSIjNmQzZmYwIi8+Cjwvc3ZnPgo="}) }) : { script: {"name":"Fusion*","namespace":"https://musicbrainz.org/","version":"2026.9.28","description":"Merge-recordings assistant for MusicBrainz: gather a pool of candidate recordings from a release / release group / recording page (or paste any MBID/URL), auto-match them into merge groups by ISRC / AcoustID / length / title+artist, review and adjust the groups, then submit the merges directly in the background — no MB merge page involved.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/fusion/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPkZ1c2lvbjwvdGl0bGU+CiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjOGE1Y2Y2IiBzdHJva2Utd2lkdGg9IjciPgogICAgPGVsbGlwc2UgY3g9IjY0IiBjeT0iNjQiIHJ4PSI1MiIgcnk9IjIyIi8+CiAgICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSI2NCIgcng9IjUyIiByeT0iMjIiIHRyYW5zZm9ybT0icm90YXRlKDYwIDY0IDY0KSIvPgogICAgPGVsbGlwc2UgY3g9IjY0IiBjeT0iNjQiIHJ4PSI1MiIgcnk9IjIyIiB0cmFuc2Zvcm09InJvdGF0ZSgxMjAgNjQgNjQpIi8+CiAgPC9nPgogIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjE0IiBmaWxsPSIjNmQzZmYwIi8+Cjwvc3ZnPgo="} };
   (f=>document.readyState!=='loading'?f():document.addEventListener('DOMContentLoaded',f,{once:true}))(function(){
 (function () {
 'use strict';
 
-const VERSION = (typeof GM_info !== 'undefined' && GM_info && GM_info.script && GM_info.script.version) || '2026.9.26.111241';
+const VERSION = (typeof GM_info !== 'undefined' && GM_info && GM_info.script && GM_info.script.version) || '?';   // GM_info carries the real one; every script manager provides it (a hard-coded copy only ever went stale)
 const HELP_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/fusion/README.md';
 const ICON = '⚛';
 const W = (typeof unsafeWindow !== 'undefined' ? unsafeWindow : window);
@@ -23794,112 +24287,11 @@ if (!SCOPE) return;
 const el = (tag, cls, txt) => { const e = document.createElement(tag); if (cls) e.className = cls; if (txt != null) e.textContent = txt; return e; };
 const escapeHtml = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 
-/* ── activity log — in-page buffer + popup viewer (ported from apollo_editor's
-   Log/openLog, #283-style: every Log.* call is captured and surfaced from a
-   Log button next to "? Help", copy/pastable as a Markdown <details> block) ── */
-const _logBuf = [];
-const _logListeners = new Set();
-function _logRecord(kind, args) {
-    const line = args.map(a => (typeof a === 'string' ? a : (() => { try { return JSON.stringify(a); } catch (e) { return String(a); } })())).join(' ');
-    _logBuf.push({ t: Date.now(), kind, line });
-    if (_logBuf.length > 2000) _logBuf.shift();
-    _logListeners.forEach(f => { try { f(); } catch (e) {} });
-}
-const Log = {
-    info: (...a) => _logRecord('info', a),
-    warn: (...a) => _logRecord('warn', a),
-    error: (...a) => _logRecord('error', a),
-    ok: (...a) => _logRecord('ok', a),
-};
-const _lpad = (n, w) => String(n).padStart(w || 2, '0');
-const _logTs = d => _lpad(d.getHours()) + ':' + _lpad(d.getMinutes()) + ':' + _lpad(d.getSeconds()) + '.' + _lpad(d.getMilliseconds(), 3);
-const _logCounts = () => _logBuf.reduce((a, e) => { if (e.kind === 'warn') a.warn++; else if (e.kind === 'error') a.error++; return a; }, { warn: 0, error: 0 });
-// escape, then turn http(s) URLs into clickable links (Apollo's _logLinkify)
-const _logLinkify = s => escapeHtml(s).replace(/(https?:\/\/[^\s<]+)/g, m => {
-    const t = (m.match(/[.,;:!?)\]]+$/) || [''])[0];   // keep trailing punctuation out of the URL
-    const url = m.slice(0, m.length - t.length);
-    return '<a href="' + url + '" target="_blank" rel="noopener">' + url + '</a>' + t;
-});
-function logMarkdown() {
-    const PRE = { info: '', ok: 'OK   ', warn: 'WARN ', error: 'ERR  ' };
-    const body = _logBuf.length ? _logBuf.map(r => _logTs(new Date(r.t)) + '  ' + (PRE[r.kind] || '') + r.line).join('\n') : '(no activity logged)';
-    const c = _logCounts();
-    const tally = (c.warn || c.error) ? ' (' + c.warn + ' warning' + (c.warn === 1 ? '' : 's') + ', ' + c.error + ' error' + (c.error === 1 ? '' : 's') + ')' : '';
-    return '<details><summary>Fusion v' + VERSION + ' — session log' + tally + '</summary>\n\n```log\n' + body + '\n```\n\n</details>';
-}
-async function copyLog(btn) {
-    const md = logMarkdown(); let ok = false;
-    try { await navigator.clipboard.writeText(md); ok = true; }
-    catch (e) { try { const ta = document.createElement('textarea'); ta.value = md; ta.style.position = 'fixed'; ta.style.opacity = '0'; document.body.appendChild(ta); ta.select(); ok = document.execCommand('copy'); ta.remove(); } catch (x) {} }
-    if (btn) { const o = btn.dataset.lbl || btn.textContent; btn.dataset.lbl = o; btn.textContent = ok ? 'Copied ✓' : 'Copy failed'; setTimeout(() => { btn.textContent = o; }, 1500); }
-}
-// remembered position of the draggable log window (#529)
-const LOGWIN_KEY = 'fusion.logwin';
-function loadLogWinState() { try { return JSON.parse(GM_getValue(LOGWIN_KEY, '{}')); } catch (e) { return {}; } }
-function saveLogWinState(patch) { try { GM_setValue(LOGWIN_KEY, JSON.stringify(Object.assign(loadLogWinState(), patch))); } catch (e) {} }
-// #529 (majkinetor): "Make entire log window as in apollo (it has min/maximize,
-// wider etc.)" — ported from apollo_editor's #283 log viewer: wider centred
-// window, minimize/restore docking to the bottom-left, an entry-count + warn/err
-// badge, clickable URLs, per-severity colouring, Escape to close, and
-// open/minimized/position all remembered across sessions.
-// NB the container needs BOTH the id and the .mbu-logpop class — its CSS is a
-// class rule, and setting only the id once left it entirely unstyled (invisible
-// behind the modal) while still passing an existence check.
-function openLog() {
-    document.getElementById('mbu-logpop')?.remove();
-    fsStyle();
-    saveLogWinState({ open: true });
-    const st = loadLogWinState();
-    const pop = el('div', 'mbu-logpop'); pop.id = 'mbu-logpop';
-    pop.innerHTML = '<div class="mbu-logpop-h"><b>Fusion — activity log</b> <span class="mbu-log-badge"></span><span class="mbu-logpop-sp"></span>'
-        + '<button class="mbu-logpop-copy" type="button" title="Copy as Markdown (paste into a GitHub issue)">⧉ Copy</button>'
-        + '<button class="mbu-logpop-min" type="button" title="Minimize">–</button>'
-        + '<button class="mbu-logpop-x" type="button" title="Close">✕</button></div>'
-        + '<div class="mbu-log-list"></div>';
-    document.body.appendChild(pop);
-    if (st.left != null) { pop.style.left = st.left; pop.style.top = st.top; pop.style.right = 'auto'; pop.style.transform = 'none'; }
-    pop._restore = { left: pop.style.left, top: pop.style.top, right: pop.style.right, bottom: pop.style.bottom, transform: pop.style.transform };
-    const list = pop.querySelector('.mbu-log-list');
-    const render = () => {
-        list.innerHTML = _logBuf.length
-            ? _logBuf.map(r => '<div class="mbu-log-li mbu-log-' + r.kind + '"><span class="mbu-log-t">' + _logTs(new Date(r.t)) + '</span><span class="mbu-log-m">' + _logLinkify(r.line) + '</span></div>').join('')
-            : '<div class="mbu-log-empty">No activity yet.</div>';
-        const c = _logCounts();
-        pop.querySelector('.mbu-log-badge').textContent = '(' + _logBuf.length + ')' + (c.warn || c.error ? ' · ' + c.warn + '⚠ ' + c.error + '✖' : '');
-        list.scrollTop = list.scrollHeight;
-    };
-    render();
-    _logListeners.add(render);
-    const onKey = e => { if (e.key === 'Escape') close(); };
-    const close = () => { saveLogWinState({ open: false }); _logListeners.delete(render); pop.remove(); document.removeEventListener('keydown', onKey); };
-    pop.querySelector('.mbu-logpop-copy').onclick = () => copyLog(pop.querySelector('.mbu-logpop-copy'));
-    const minBtn = pop.querySelector('.mbu-logpop-min');
-    const setMin = m => {
-        minBtn.textContent = m ? '▢' : '–'; minBtn.title = m ? 'Restore' : 'Minimize';
-        if (m) { pop.style.left = '14px'; pop.style.bottom = '14px'; pop.style.top = 'auto'; pop.style.right = 'auto'; pop.style.transform = 'none'; }
-        else if (pop._restore) { Object.assign(pop.style, pop._restore); }
-    };
-    minBtn.onclick = () => { const m = pop.classList.toggle('min'); setMin(m); saveLogWinState({ min: m }); };
-    if (st.min) { pop.classList.add('min'); setMin(true); }
-    pop.querySelector('.mbu-logpop-x').onclick = close;
-    pop.querySelector('.mbu-logpop-h').addEventListener('mousedown', e => {
-        if (e.target.closest('button')) return;
-        e.preventDefault();
-        const r = pop.getBoundingClientRect();
-        pop.style.left = r.left + 'px'; pop.style.top = r.top + 'px'; pop.style.right = 'auto'; pop.style.transform = 'none';
-        const ox = e.clientX - r.left, oy = e.clientY - r.top;
-        const mv = ev => {
-            pop.style.left = Math.max(0, Math.min(innerWidth - pop.offsetWidth, ev.clientX - ox)) + 'px';
-            pop.style.top = Math.max(0, Math.min(innerHeight - 36, ev.clientY - oy)) + 'px';
-        };
-        const up = () => {
-            document.removeEventListener('mousemove', mv); document.removeEventListener('mouseup', up);
-            if (!pop.classList.contains('min')) { pop._restore = { left: pop.style.left, top: pop.style.top, right: 'auto', bottom: '', transform: 'none' }; saveLogWinState({ left: pop.style.left, top: pop.style.top }); }
-        };
-        document.addEventListener('mousemove', mv); document.addEventListener('mouseup', up);
-    });
-    document.addEventListener('keydown', onKey);
-}
+/* ── activity log: the shared window and buffer (mbuLog, in the ST-UI block below;
+   #283 / #529, shared since X12 of #623). Every Log.* line lands there, and the
+   Log button opens it, copy/pastable as a Markdown <details> block. ── */
+const Log = mbuLog({ name: 'Fusion', version: VERSION, header: 'Fusion — activity log', key: 'fusion.logwin', before: () => fsStyle() });
+const openLog = () => Log.open();
 
 /* ── GM_xmlhttpRequest promisified (ported from isrc_scout's http/gmGet/gmPost) —
    used only for the merge_queue/merge GET+POST sequence; everything else (read-only
@@ -24046,52 +24438,16 @@ async function wsGet(path, retries) {
 
 // ── settings (GM-persisted) ──────────────────────────────────────────────
 const SETTINGS_KEY = 'fusion.settings';
-const SETTINGS_DEFAULTS = { lengthToleranceMs: 5000, grossLengthMs: 30000, acoustidEnrich: true, acoustidPoolCap: 2000, autoMatchOnOpen: false, prefetchGroupReleases: false, releasePrefetchCap: 200, settingsVersion: 0, poolCollapsed: false, makeVotable: false, matchCutoff: 'normal' };
-// Stored settings win over defaults, so simply RAISING a default is invisible to
-// anyone who ever opened the config window (that saves every key, including the
-// ones they never touched). The old 60 cap dated from one-request-per-recording;
-// now that list_by_mbid batches 50 at a time it only served to leave big pools
-// with no AcoustID data at all. Lift that specific stale value — but only when
-// it's still exactly the retired default, so a cap someone deliberately chose
-// stays theirs.
-const RETIRED_ACOUSTID_CAP = 60;
-// Bumped when a migration below needs to run once and then never again. Without
-// the stamp, "turn the prefetch off" could not tell a value the user chose from
-// one that was merely the old default, and would keep undoing their choice.
-const SETTINGS_VERSION = 2;
-function migrateSettings(s) {
-    if (s.acoustidPoolCap === RETIRED_ACOUSTID_CAP) s.acoustidPoolCap = SETTINGS_DEFAULTS.acoustidPoolCap;
-    // v2: the group release prefetch shipped defaulting ON, and every install
-    // that opened the config window has that `true` persisted — so flipping the
-    // default alone would change nothing. Nobody could have deliberately enabled
-    // it while it was already on, so a stored `true` from before this version is
-    // the old default rather than a preference, and is turned off once.
-    if ((s.settingsVersion || 0) < 2 && s.prefetchGroupReleases === true) s.prefetchGroupReleases = false;
-    s.settingsVersion = SETTINGS_VERSION;
-    return s;
-}
+const SETTINGS_DEFAULTS = { lengthToleranceMs: 5000, grossLengthMs: 30000, acoustidEnrich: true, acoustidPoolCap: 2000, autoMatchOnOpen: false, prefetchGroupReleases: false, releasePrefetchCap: 200, poolCollapsed: false, makeVotable: false, matchCutoff: 'normal' };
 function loadSettings() {
-    try { return migrateSettings(Object.assign({}, SETTINGS_DEFAULTS, JSON.parse(GM_getValue(SETTINGS_KEY, '{}')))); }
+    // (#623: the one-time #529 migrations of the old AcoustID cap and prefetch default are retired)
+    try { return Object.assign({}, SETTINGS_DEFAULTS, JSON.parse(GM_getValue(SETTINGS_KEY, '{}'))); }
     catch (e) { return Object.assign({}, SETTINGS_DEFAULTS); }
 }
 function saveSettings() { try { GM_setValue(SETTINGS_KEY, JSON.stringify(SETTINGS)); } catch (e) {} }
 let SETTINGS = loadSettings();
 
-/* ── shared corner-slot convention (#468), duplicated per-script on purpose —
-   see apollo_editor.user.js for the canonical comment. Fusion stacks above
-   Falcon (order 20) since it can share a page with it. ── */
-function mbRestackCorner(corner) {
-    const bottom = corner[0] === 'b', right = corner[1] === 'r';
-    const els = [...document.querySelectorAll('[data-mb-corner="' + corner + '"]')]
-        .filter(e => getComputedStyle(e).display !== 'none')
-        .sort((a, b) => (Number(a.dataset.mbCornerOrder) || 0) - (Number(b.dataset.mbCornerOrder) || 0));
-    let pos = 14;
-    els.forEach(e => {
-        e.style[bottom ? 'bottom' : 'top'] = pos + 'px';
-        e.style[right ? 'right' : 'left'] = '14px';
-        pos += e.getBoundingClientRect().height + 8;
-    });
-}
+// mbRestackCorner, the #468 corner slots, is in the ST-UI block (dev/ui/ui-components.mjs).
 
 /* ── matching / normalization (ported from platform_check's tokenMatch/scoreCandidate
    normalization stack — same token-overlap approach, reused rather than reinvented) ── */
@@ -25417,6 +25773,235 @@ function mbuCfgHeader(o) {
     return html + '</div>';
 }
 
+// Test hooks. A script puts its test hook on window only when the test harness has
+// marked the page (dev/test/harness.mjs sets window.__mbuTest before any script runs):
+//   if (mbuTestHooks()) window.__fooTest = { … };
+// On a user's page the hooks are never built. (#623)
+function mbuTestHooks() {
+    try { return typeof window !== 'undefined' && window.__mbuTest === true; } catch (e) { return false; }
+}
+
+// Corner slots (#468). Every floating launcher (Apollo Editor, Art Station, Falcon,
+// Fusion, Scribe) tags its element with data-mb-corner (which screen corner: 'br',
+// 'bl', 'tr', 'tl') and data-mb-corner-order (lower sits closer to the corner), and
+// calls mbRestackCorner(corner) right after it shows, hides, creates or removes it.
+// That recomputes every element in the corner, whichever script owns it and
+// whatever order they loaded in, so two launchers never land on the same pixel.
+// Orders in use: Apollo and Art Station 10 (never on the same page), Falcon 20,
+// Fusion above Falcon. Scribe is not on the shared block and keeps a copy of this.
+function mbRestackCorner(corner) {
+    var bottom = corner[0] === 'b', right = corner[1] === 'r';
+    var els = Array.prototype.slice.call(document.querySelectorAll('[data-mb-corner="' + corner + '"]'))
+        // offsetParent is always null for position:fixed, so it can't tell visibility here
+        .filter(function (el) { return getComputedStyle(el).display !== 'none'; })
+        .sort(function (a, b) { return (Number(a.dataset.mbCornerOrder) || 0) - (Number(b.dataset.mbCornerOrder) || 0); });
+    var pos = 14;
+    els.forEach(function (el) {
+        el.style[bottom ? 'bottom' : 'top'] = pos + 'px';
+        el.style[right ? 'right' : 'left'] = '14px';
+        pos += el.getBoundingClientRect().height + 8;
+    });
+}
+
+// Activity log: the session's log lines plus the floating window that shows them
+// (#283's viewer, shared since X12 of #623). A script makes its log once:
+//
+//   var LOG = mbuLog({ name: 'Fusion', version: VERSION, key: 'fusion.logwin' });
+//   LOG.info('…'); LOG.warn(…); LOG.err(…) (or .error); LOG.ok(…); LOG.debug(…)
+//   LOG.open(); LOG.close(); LOG.reopen()   // reopen: only if it was left open
+//   LOG.markdown(); LOG.copy(btn); LOG.lines(); LOG.messages(); LOG.counts()
+//
+// o.name / o.version  the Markdown summary's title (version may be a function)
+// o.subtitle          optional function; its text follows the title (e.g. the release)
+// o.header            the window's title (default 'Activity log')
+// o.key               storage key for the window's open/minimised/position state
+// o.load / o.save     that storage (default GM_getValue / GM_setValue)
+// o.before            called before the window opens (e.g. to inject the script's CSS)
+// o.max               lines kept (default 2000)
+//
+// A long run keeps only the last o.max lines, and the Markdown says how many went
+// before them; the copies this replaced grew for the whole session. An open
+// window appends each new line and drops the oldest row past the cap; the copies
+// rebuilt the whole list with innerHTML on every line, which is quadratic over a
+// long matching run.
+function mbuLog(o) {
+    o = o || {};
+    var max = o.max || 2000, buf = [], dropped = 0, warn = 0, error = 0, win = null;
+    var pad = function (n, w) { return String(n).padStart(w || 2, '0'); };
+    var ts = function (d) { return pad(d.getHours()) + ':' + pad(d.getMinutes()) + ':' + pad(d.getSeconds()) + '.' + pad(d.getMilliseconds(), 3); };
+    var str = function (v) {
+        if (typeof v === 'string') return v;
+        if (v instanceof Error) return v.message || String(v);
+        if (v && v.nodeType) return '<' + (v.tagName || 'node').toLowerCase() + '>';
+        try { return typeof v === 'object' ? JSON.stringify(v) : String(v); } catch (e) { return String(v); }
+    };
+    var esc = function (s) {
+        return String(s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; });
+    };
+    // escape, then make http(s) URLs clickable, keeping trailing punctuation out of them
+    var linkify = function (s) {
+        return esc(s).replace(/(https?:\/\/[^\s<]+)/g, function (m) {
+            var t = (m.match(/[.,;:!?)\]]+$/) || [''])[0];
+            var url = m.slice(0, m.length - t.length);
+            return '<a href="' + url + '" target="_blank" rel="noopener">' + url + '</a>' + t;
+        });
+    };
+    var load = o.load || function (k) { try { return GM_getValue(k, undefined); } catch (e) { return undefined; } };
+    var save = o.save || function (k, v) { try { GM_setValue(k, v); } catch (e) { /* no storage: the window just forgets */ } };
+    var state = function () { try { return JSON.parse(load(o.key) || '{}') || {}; } catch (e) { return {}; } };
+    var remember = function (patch) { try { save(o.key, JSON.stringify(Object.assign(state(), patch))); } catch (e) { /* see save */ } };
+    var tally = function (e, d) { if (e.sev === 'warn') warn += d; else if (e.sev === 'error') error += d; };
+    var PRE = { info: '', ok: 'OK   ', warn: 'WARN ', error: 'ERR  ', debug: 'DBG  ' };
+    var line = function (e) { return ts(e.t) + '  ' + (PRE[e.sev] || '') + e.msg; };
+
+    function add(sev, args) {
+        var msg = Array.prototype.map.call(args, str).join(' ').replace(/\s+/g, ' ').trim();
+        if (!msg) return;
+        var e = { t: new Date(), sev: sev === 'err' ? 'error' : sev, msg: msg };
+        buf.push(e); tally(e, 1);
+        // trim in chunks, not one shift per line
+        if (buf.length > max + Math.ceil(max / 10)) {
+            var gone = buf.splice(0, buf.length - max);
+            gone.forEach(function (g) { tally(g, -1); });
+            dropped += gone.length;
+        }
+        if (win) win.append(e);
+    }
+    function title() {
+        var v = typeof o.version === 'function' ? (function () { try { return o.version(); } catch (e) { return ''; } })() : o.version;
+        var t = (o.name || 'Log') + (v ? ' v' + v : '');
+        try { var s = o.subtitle && o.subtitle(); if (s) t += ' — ' + s; } catch (e) { /* no subtitle */ }
+        return t;
+    }
+    function markdown() {
+        var body = buf.length ? buf.map(line).join('\n') : '(no activity logged)';
+        if (dropped) body = '(' + dropped + ' earlier line' + (dropped === 1 ? '' : 's') + ' not kept)\n' + body;
+        var n = (warn || error) ? ' (' + warn + ' warning' + (warn === 1 ? '' : 's') + ', ' + error + ' error' + (error === 1 ? '' : 's') + ')' : '';
+        var fence = String.fromCharCode(96, 96, 96);
+        return '<details><summary>' + title() + ' — session log' + n + '</summary>\n\n' + fence + 'log\n' + body + '\n' + fence + '\n\n</details>';
+    }
+    function copy(btn) {
+        var md = markdown();
+        var done = function (ok) {
+            if (!btn) return;
+            var was = btn.dataset.lbl || btn.textContent; btn.dataset.lbl = was;
+            btn.textContent = ok ? 'Copied ✓' : 'Copy failed';
+            setTimeout(function () { btn.textContent = was; }, 1500);
+        };
+        var fallback = function () {
+            var ok = false;
+            try {
+                var ta = document.createElement('textarea'); ta.value = md; ta.style.position = 'fixed'; ta.style.opacity = '0';
+                document.body.appendChild(ta); ta.select(); ok = document.execCommand('copy'); ta.remove();
+            } catch (x) { /* nothing left to try */ }
+            done(ok);
+        };
+        try { navigator.clipboard.writeText(md).then(function () { done(true); }, fallback); } catch (e) { fallback(); }
+    }
+    function open() {
+        close(true);
+        if (typeof o.before === 'function') { try { o.before(); } catch (e) { /* the window still opens */ } }
+        remember({ open: true });
+        var st = state();
+        var pop = document.createElement('div'); pop.id = 'mbu-logpop'; pop.className = 'mbu-logpop';
+        pop.innerHTML = '<div class="mbu-logpop-h"><b>' + esc(o.header || 'Activity log') + '</b> <span class="mbu-log-badge"></span><span class="mbu-logpop-sp"></span>'
+            + '<button class="mbu-logpop-copy" type="button" title="Copy as Markdown (paste into a GitHub issue)">⧉ Copy</button>'
+            + '<button class="mbu-logpop-min" type="button" title="Minimize">–</button>'
+            + '<button class="mbu-logpop-x" type="button" title="Close">✕</button></div>'
+            + '<div class="mbu-log-list"></div>';
+        document.body.appendChild(pop);
+        if (st.left != null) { pop.style.left = st.left; pop.style.top = st.top; pop.style.right = 'auto'; pop.style.transform = 'none'; }
+        var restore = { left: pop.style.left, top: pop.style.top, right: pop.style.right, bottom: pop.style.bottom, transform: pop.style.transform };
+        var list = pop.querySelector('.mbu-log-list'), badge = pop.querySelector('.mbu-log-badge');
+        var row = function (e) {
+            var d = document.createElement('div');
+            d.className = 'mbu-log-li mbu-log-' + e.sev;
+            d.innerHTML = '<span class="mbu-log-t">' + ts(e.t) + '</span><span class="mbu-log-m">' + linkify(e.msg) + '</span>';
+            return d;
+        };
+        var showBadge = function () { badge.textContent = '(' + buf.length + ')' + (warn || error ? ' · ' + warn + '⚠ ' + error + '✖' : ''); };
+        // the rows, once; later lines are appended one by one
+        var frag = document.createDocumentFragment();
+        buf.forEach(function (e) { frag.appendChild(row(e)); });
+        if (buf.length) list.appendChild(frag);
+        else list.innerHTML = '<div class="mbu-log-empty">No activity yet.</div>';
+        showBadge();
+        list.scrollTop = list.scrollHeight;
+        // badge and scroll once per frame, however many lines arrive in it
+        var queued = false, follow = true;
+        list.addEventListener('scroll', function () { follow = list.scrollHeight - list.scrollTop - list.clientHeight < 40; });
+        var paint = function () { queued = false; showBadge(); if (follow) list.scrollTop = list.scrollHeight; };
+        var onKey = function (e) { if (e.key === 'Escape') close(); };
+        win = {
+            el: pop,
+            append: function (e) {
+                var empty = list.querySelector('.mbu-log-empty'); if (empty) empty.remove();
+                list.appendChild(row(e));
+                while (list.childElementCount > buf.length) list.firstElementChild.remove();
+                if (!queued) { queued = true; requestAnimationFrame(paint); }
+            },
+            off: function () { document.removeEventListener('keydown', onKey); },
+        };
+        pop.querySelector('.mbu-logpop-copy').onclick = function () { copy(pop.querySelector('.mbu-logpop-copy')); };
+        var minBtn = pop.querySelector('.mbu-logpop-min');
+        var setMin = function (m) {
+            minBtn.textContent = m ? '▢' : '–'; minBtn.title = m ? 'Restore' : 'Minimize';
+            if (m) { pop.style.left = '14px'; pop.style.bottom = '14px'; pop.style.top = 'auto'; pop.style.right = 'auto'; pop.style.transform = 'none'; }   // dock to the bottom
+            else Object.assign(pop.style, restore);
+        };
+        minBtn.onclick = function () { var m = pop.classList.toggle('min'); setMin(m); remember({ min: m }); };
+        if (st.min) { pop.classList.add('min'); setMin(true); }
+        pop.querySelector('.mbu-logpop-x').onclick = function () { close(); };
+        // floating and non-modal: dragged by its header
+        pop.querySelector('.mbu-logpop-h').addEventListener('mousedown', function (e) {
+            if (e.target.closest('button')) return;
+            e.preventDefault();
+            var r = pop.getBoundingClientRect();
+            pop.style.left = r.left + 'px'; pop.style.top = r.top + 'px'; pop.style.right = 'auto'; pop.style.transform = 'none';
+            var ox = e.clientX - r.left, oy = e.clientY - r.top;
+            var mv = function (ev) {
+                pop.style.left = Math.max(0, Math.min(window.innerWidth - pop.offsetWidth, ev.clientX - ox)) + 'px';
+                pop.style.top = Math.max(0, Math.min(window.innerHeight - 36, ev.clientY - oy)) + 'px';
+            };
+            var up = function () {
+                document.removeEventListener('mousemove', mv); document.removeEventListener('mouseup', up);
+                if (!pop.classList.contains('min')) {
+                    restore = { left: pop.style.left, top: pop.style.top, right: 'auto', bottom: '', transform: 'none' };
+                    remember({ left: pop.style.left, top: pop.style.top });
+                }
+            };
+            document.addEventListener('mousemove', mv); document.addEventListener('mouseup', up);
+        });
+        document.addEventListener('keydown', onKey);
+        return pop;
+    }
+    // quiet: closing to reopen, so the remembered "open" stays as it is
+    function close(quiet) {
+        var stray = document.getElementById('mbu-logpop');
+        if (win) { win.off(); win.el.remove(); win = null; if (!quiet) remember({ open: false }); }
+        if (stray) stray.remove();   // another script's window: one log window at a time
+    }
+    var api = {
+        info: function () { add('info', arguments); },
+        warn: function () { add('warn', arguments); },
+        err: function () { add('error', arguments); },
+        error: function () { add('error', arguments); },
+        ok: function () { add('ok', arguments); },
+        debug: function () { add('debug', arguments); },
+        add: function (sev) { add(sev, Array.prototype.slice.call(arguments, 1)); },
+        open: open,
+        close: function () { close(); },
+        reopen: function () { if (state().open) open(); },
+        isOpen: function () { return !!win; },
+        markdown: markdown,
+        copy: copy,
+        lines: function () { return buf.map(line); },
+        messages: function () { return buf.map(function (e) { return e.msg; }); },
+        counts: function () { return { warn: warn, error: error }; },
+    };
+    return api;
+}
+
 // Dismiss-on-outside-click, with the trailing click SWALLOWED.
 //
 //   var off = mbuDismissOn(popoverEl, close);   // off() to detach early
@@ -26339,7 +26924,6 @@ function groupCardHtml(group) {
     const lenOffBy = m => (lenRefRec && m !== lenRefRec && typeof m.length === 'number' && m.length > 0 && Math.abs(m.length - lenRefRec.length) > lenTol) ? m.length - lenRefRec.length : null;
     const secs = ms => Math.round(Math.abs(ms) / 1000);
     const lenWarnTitle = lenOff ? lengthDiffLabel(members) + ' ' + secs(lenSpread) + 's — more than the ' + secs(lenTol) + 's length tolerance. Check it is really the same take before merging.' : '';
-    const confLabel = group.confidence === 'high' ? 'HIGH' : group.confidence === 'medium' ? 'MEDIUM' : 'MANUAL';
     const sigNames = { isrc: 'ISRC', acoustid: 'AcoustID', length: 'Length', title: 'Title', artist: 'Artist' };
     const sigAll = group.signalsAll || [];
     const sigChips = Object.keys(sigNames).map(k => {
@@ -26661,7 +27245,6 @@ function cancelBackground() {
 }
 function busyStart(label) { _busyCount++; if (label) _busyLabel = label; renderBusy(); }
 function busyEnd() { _busyCount = Math.max(0, _busyCount - 1); if (_busyCount === 0) _busyLabel = ''; renderBusy(); }
-async function withBusy(label, fn) { busyStart(label); try { return await fn(); } finally { busyEnd(); } }
 
 // #529 (majkinetor): "acoustic id still not fully fetched … no dot in the pool
 // is lighted". AcoustIDs used to be looked up ONLY inside Auto-match, so a
@@ -27277,6 +27860,7 @@ async function seedFromScope() {
 async function maybeAutoMatchOnOpen() {
     if (!SETTINGS.autoMatchOnOpen) return;
     if (!STATE.poolOrder.length) { Log.info('Auto-match on open: nothing in the pool'); return; }
+    // eslint-disable-next-line no-unmodified-loop-condition -- busyEnd() lowers it while this awaits
     for (let i = 0; i < 120 && _busyCount > 0; i++) await new Promise(r => setTimeout(r, 250));
     if (!FUSION_OPEN) return;
     Log.info('Auto-match on open: starting');
@@ -27306,7 +27890,7 @@ function boot() {
     Log.info('Fusion v' + VERSION + ' — startup on ' + SCOPE.type + ' ' + SCOPE.mbid);
     ensureLauncher();
     // reopen the log window if it was left open (same as apollo_editor #283)
-    try { if (loadLogWinState().open) setTimeout(() => { try { openLog(); } catch (e) {} }, 800); } catch (e) {}
+    setTimeout(() => { try { Log.reopen(); } catch (e) {} }, 800);   // #283 reopen the log if it was left open
 }
 boot();
 
@@ -27317,7 +27901,7 @@ try {
         normName, tokenMatch, titleSimilar, artistSimilar, lengthClose, fuzzyRatio, levenshtein, acName, acPrimaryGid, acGids, dur, parseMbidFromInput, parseAddInput,
         mkRecording, fetchRecordingsByBrowse, enrichReleasesFromSearch, fetchReleaseRecordings, fetchRGRecordings, fetchRecordingByGid, fetchAllReleases, resolveInternalId, fetchAcoustIds, fetchAcoustIdsBatch, enrichIsrcs, fetchRecordingDetail, fetchEntityMeta, enrichPendingEdits, fetchRecordingsBySearch, fetchArtistRecordings, harvestInternalIdsFromPage,
         pairSignals, poolMatches, computeGroupConfidence, groupTier, gatedUnionFind, TIER_COLORS, SIGNAL_KEYS, ACOUSTID_BATCH, shouldUnion, autoMatch, enrichAcoustIds, enrichAllReleases,
-        migrateSettings, presenceDots, RETIRED_ACOUSTID_CAP, SETTINGS_VERSION,   // SETTINGS_DEFAULTS is listed above
+        presenceDots,   // SETTINGS_DEFAULTS is listed above
         fetchReleaseDetails, releaseTableHtml, toggleReleaseDetails, storeReleaseDetails, releasesSummary, renderFooter, seedPageProgress, lengthSpread,
         renderRunSummary, getLastRun: () => _lastRun, showNotice, renderNotice, cancelBackground, bgAlive, resumeBackground, isBgStopped: () => _bgStopped,
         lengthDiffLabel,
@@ -27326,7 +27910,7 @@ try {
         buildEditNote, autoEditNote, evidenceLines, ensureInternalIds, mergeGroup, mergeAll, describeRecordingForLog,
         openFusion, closeFusion, onAutoMatch, seedFromScope, maybeAutoMatchOnOpen, renderAll, renderPool, renderGroups, busyStart, busyEnd,
         gmGet, gmPost, wsGet, parseRetryAfter, setNetTrouble, clearNetTrouble,
-        getLogLines: () => _logBuf.map(r => r.line),
+        getLogLines: () => Log.messages(),
         getBusyCount: () => _busyCount,
     };
 } catch (e) {}
@@ -27337,12 +27921,12 @@ try {
 
 // ===== group_therapy (@run-at document-end) =====================================
 (function(__stGM){
-  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Group Therapy*","namespace":"https://github.com/majkinetor/musicbrainz-userscripts","version":"2026.9.27","description":"MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48ZyBmaWxsPSJub25lIiBzdHJva2U9IiM1YjZiN2EiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9Ijk0IiB5Mj0iNDIiLz48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48bGluZSB4MT0iOTQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48L2c+PGcgZmlsbD0iIzJlOWU1YiIgc3Ryb2tlPSIjMjU2ZjQzIiBzdHJva2Utd2lkdGg9IjQiPjxjaXJjbGUgY3g9IjM0IiBjeT0iNDIiIHI9IjE2Ii8+PGNpcmNsZSBjeD0iOTQiIGN5PSI0MiIgcj0iMTYiLz48Y2lyY2xlIGN4PSI2NCIgY3k9Ijk0IiByPSIxNiIvPjwvZz48L3N2Zz4="}) }) : { script: {"name":"Group Therapy*","namespace":"https://github.com/majkinetor/musicbrainz-userscripts","version":"2026.9.27","description":"MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48ZyBmaWxsPSJub25lIiBzdHJva2U9IiM1YjZiN2EiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9Ijk0IiB5Mj0iNDIiLz48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48bGluZSB4MT0iOTQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48L2c+PGcgZmlsbD0iIzJlOWU1YiIgc3Ryb2tlPSIjMjU2ZjQzIiBzdHJva2Utd2lkdGg9IjQiPjxjaXJjbGUgY3g9IjM0IiBjeT0iNDIiIHI9IjE2Ii8+PGNpcmNsZSBjeD0iOTQiIGN5PSI0MiIgcj0iMTYiLz48Y2lyY2xlIGN4PSI2NCIgY3k9Ijk0IiByPSIxNiIvPjwvZz48L3N2Zz4="} };
+  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Group Therapy*","namespace":"https://github.com/majkinetor/musicbrainz-userscripts","version":"2026.9.28","description":"MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48ZyBmaWxsPSJub25lIiBzdHJva2U9IiM1YjZiN2EiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9Ijk0IiB5Mj0iNDIiLz48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48bGluZSB4MT0iOTQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48L2c+PGcgZmlsbD0iIzJlOWU1YiIgc3Ryb2tlPSIjMjU2ZjQzIiBzdHJva2Utd2lkdGg9IjQiPjxjaXJjbGUgY3g9IjM0IiBjeT0iNDIiIHI9IjE2Ii8+PGNpcmNsZSBjeD0iOTQiIGN5PSI0MiIgcj0iMTYiLz48Y2lyY2xlIGN4PSI2NCIgY3k9Ijk0IiByPSIxNiIvPjwvZz48L3N2Zz4="}) }) : { script: {"name":"Group Therapy*","namespace":"https://github.com/majkinetor/musicbrainz-userscripts","version":"2026.9.28","description":"MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48ZyBmaWxsPSJub25lIiBzdHJva2U9IiM1YjZiN2EiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9Ijk0IiB5Mj0iNDIiLz48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48bGluZSB4MT0iOTQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48L2c+PGcgZmlsbD0iIzJlOWU1YiIgc3Ryb2tlPSIjMjU2ZjQzIiBzdHJva2Utd2lkdGg9IjQiPjxjaXJjbGUgY3g9IjM0IiBjeT0iNDIiIHI9IjE2Ii8+PGNpcmNsZSBjeD0iOTQiIGN5PSI0MiIgcj0iMTYiLz48Y2lyY2xlIGN4PSI2NCIgY3k9Ijk0IiByPSIxNiIvPjwvZz48L3N2Zz4="} };
   (f=>document.readyState!=='loading'?f():document.addEventListener('DOMContentLoaded',f,{once:true}))(function(){
 /* eslint-disable no-undef */
 (function () {
   'use strict';
-  const VERSION = (typeof GM_info !== 'undefined' && GM_info && GM_info.script && GM_info.script.version) || '2026.7.7';   // from the @version header at runtime
+  const VERSION = (typeof GM_info !== 'undefined' && GM_info && GM_info.script && GM_info.script.version) || '?';   // from the @version header at runtime
   const W = (typeof unsafeWindow !== 'undefined' ? unsafeWindow : window);
 
   // ── tiny DOM helpers ──────────────────────────────────────────────────────
@@ -27361,8 +27945,6 @@ try {
   const trunc = (s, n) => { s = String(s || ''); return s.length > n ? s.slice(0, n - 1) + '…' : s; };
   // MB renders each rel as <tr class="<role-kebab>"> … <div class="relationship-item"> <button class="icon remove-item">×</button> <a href="/artist|work|…/<mbid>">name</a> …
   const REMOVE_SEL = 'button.icon.remove-item';
-  const ROLE_STOP = new Set(['odd', 'even', 'highlighted', 'selected', 'subrow', 'rel-add', 'rel-edit', 'rel-remove']);
-  const pickRoleClass = tr => { if (!tr) return null; for (const c of tr.classList) if (!ROLE_STOP.has(c) && /^[a-z][a-z0-9-]*$/.test(c)) return c; return null; };
   const pickRoleLabel = tr => { const l = tr && tr.querySelector('th.link-phrase label'); return l ? (l.textContent || '').replace(/:\s*$/, '').trim() : 'role'; };
   // medium number a track row belongs to — the nearest preceding `tr.subh` ("1▼CD" → 1). Each medium
   // is its own <tbody>, so we scan the table's rows in document order (not just siblings). Cached per row.
@@ -27406,7 +27988,6 @@ try {
   };
   const targetHref = item => { const a = item && item.querySelector('a[href*="/artist/"], a[href*="/work/"], a[href*="/label/"], a[href*="/place/"], a[href*="/recording/"], a[href*="/url/"], a[href*="/event/"], a[href*="/instrument/"]'); return a ? a.getAttribute('href') : null; };
   const targetLabel = item => { const a = item && item.querySelector('a[href*="/"]'); return a ? (a.textContent || '').trim() : 'target'; };
-  const rowHasClass = (tr, cls) => !!(tr && cls && tr.classList.contains(cls));
   const itemHasHref = (item, href) => !!(href && item.querySelector(`a[href="${CSS.escape(href)}"]`));
 
   // a rel's "role" for grouping = its link type PLUS its attributes — because e.g. every instrument rel
@@ -27849,6 +28430,235 @@ try {
       }
       html += mbuHelpHtml(o.script);
       return html + '</div>';
+  }
+
+  // Test hooks. A script puts its test hook on window only when the test harness has
+  // marked the page (dev/test/harness.mjs sets window.__mbuTest before any script runs):
+  //   if (mbuTestHooks()) window.__fooTest = { … };
+  // On a user's page the hooks are never built. (#623)
+  function mbuTestHooks() {
+      try { return typeof window !== 'undefined' && window.__mbuTest === true; } catch (e) { return false; }
+  }
+
+  // Corner slots (#468). Every floating launcher (Apollo Editor, Art Station, Falcon,
+  // Fusion, Scribe) tags its element with data-mb-corner (which screen corner: 'br',
+  // 'bl', 'tr', 'tl') and data-mb-corner-order (lower sits closer to the corner), and
+  // calls mbRestackCorner(corner) right after it shows, hides, creates or removes it.
+  // That recomputes every element in the corner, whichever script owns it and
+  // whatever order they loaded in, so two launchers never land on the same pixel.
+  // Orders in use: Apollo and Art Station 10 (never on the same page), Falcon 20,
+  // Fusion above Falcon. Scribe is not on the shared block and keeps a copy of this.
+  function mbRestackCorner(corner) {
+      var bottom = corner[0] === 'b', right = corner[1] === 'r';
+      var els = Array.prototype.slice.call(document.querySelectorAll('[data-mb-corner="' + corner + '"]'))
+          // offsetParent is always null for position:fixed, so it can't tell visibility here
+          .filter(function (el) { return getComputedStyle(el).display !== 'none'; })
+          .sort(function (a, b) { return (Number(a.dataset.mbCornerOrder) || 0) - (Number(b.dataset.mbCornerOrder) || 0); });
+      var pos = 14;
+      els.forEach(function (el) {
+          el.style[bottom ? 'bottom' : 'top'] = pos + 'px';
+          el.style[right ? 'right' : 'left'] = '14px';
+          pos += el.getBoundingClientRect().height + 8;
+      });
+  }
+
+  // Activity log: the session's log lines plus the floating window that shows them
+  // (#283's viewer, shared since X12 of #623). A script makes its log once:
+  //
+  //   var LOG = mbuLog({ name: 'Fusion', version: VERSION, key: 'fusion.logwin' });
+  //   LOG.info('…'); LOG.warn(…); LOG.err(…) (or .error); LOG.ok(…); LOG.debug(…)
+  //   LOG.open(); LOG.close(); LOG.reopen()   // reopen: only if it was left open
+  //   LOG.markdown(); LOG.copy(btn); LOG.lines(); LOG.messages(); LOG.counts()
+  //
+  // o.name / o.version  the Markdown summary's title (version may be a function)
+  // o.subtitle          optional function; its text follows the title (e.g. the release)
+  // o.header            the window's title (default 'Activity log')
+  // o.key               storage key for the window's open/minimised/position state
+  // o.load / o.save     that storage (default GM_getValue / GM_setValue)
+  // o.before            called before the window opens (e.g. to inject the script's CSS)
+  // o.max               lines kept (default 2000)
+  //
+  // A long run keeps only the last o.max lines, and the Markdown says how many went
+  // before them; the copies this replaced grew for the whole session. An open
+  // window appends each new line and drops the oldest row past the cap; the copies
+  // rebuilt the whole list with innerHTML on every line, which is quadratic over a
+  // long matching run.
+  function mbuLog(o) {
+      o = o || {};
+      var max = o.max || 2000, buf = [], dropped = 0, warn = 0, error = 0, win = null;
+      var pad = function (n, w) { return String(n).padStart(w || 2, '0'); };
+      var ts = function (d) { return pad(d.getHours()) + ':' + pad(d.getMinutes()) + ':' + pad(d.getSeconds()) + '.' + pad(d.getMilliseconds(), 3); };
+      var str = function (v) {
+          if (typeof v === 'string') return v;
+          if (v instanceof Error) return v.message || String(v);
+          if (v && v.nodeType) return '<' + (v.tagName || 'node').toLowerCase() + '>';
+          try { return typeof v === 'object' ? JSON.stringify(v) : String(v); } catch (e) { return String(v); }
+      };
+      var esc = function (s) {
+          return String(s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; });
+      };
+      // escape, then make http(s) URLs clickable, keeping trailing punctuation out of them
+      var linkify = function (s) {
+          return esc(s).replace(/(https?:\/\/[^\s<]+)/g, function (m) {
+              var t = (m.match(/[.,;:!?)\]]+$/) || [''])[0];
+              var url = m.slice(0, m.length - t.length);
+              return '<a href="' + url + '" target="_blank" rel="noopener">' + url + '</a>' + t;
+          });
+      };
+      var load = o.load || function (k) { try { return GM_getValue(k, undefined); } catch (e) { return undefined; } };
+      var save = o.save || function (k, v) { try { GM_setValue(k, v); } catch (e) { /* no storage: the window just forgets */ } };
+      var state = function () { try { return JSON.parse(load(o.key) || '{}') || {}; } catch (e) { return {}; } };
+      var remember = function (patch) { try { save(o.key, JSON.stringify(Object.assign(state(), patch))); } catch (e) { /* see save */ } };
+      var tally = function (e, d) { if (e.sev === 'warn') warn += d; else if (e.sev === 'error') error += d; };
+      var PRE = { info: '', ok: 'OK   ', warn: 'WARN ', error: 'ERR  ', debug: 'DBG  ' };
+      var line = function (e) { return ts(e.t) + '  ' + (PRE[e.sev] || '') + e.msg; };
+
+      function add(sev, args) {
+          var msg = Array.prototype.map.call(args, str).join(' ').replace(/\s+/g, ' ').trim();
+          if (!msg) return;
+          var e = { t: new Date(), sev: sev === 'err' ? 'error' : sev, msg: msg };
+          buf.push(e); tally(e, 1);
+          // trim in chunks, not one shift per line
+          if (buf.length > max + Math.ceil(max / 10)) {
+              var gone = buf.splice(0, buf.length - max);
+              gone.forEach(function (g) { tally(g, -1); });
+              dropped += gone.length;
+          }
+          if (win) win.append(e);
+      }
+      function title() {
+          var v = typeof o.version === 'function' ? (function () { try { return o.version(); } catch (e) { return ''; } })() : o.version;
+          var t = (o.name || 'Log') + (v ? ' v' + v : '');
+          try { var s = o.subtitle && o.subtitle(); if (s) t += ' — ' + s; } catch (e) { /* no subtitle */ }
+          return t;
+      }
+      function markdown() {
+          var body = buf.length ? buf.map(line).join('\n') : '(no activity logged)';
+          if (dropped) body = '(' + dropped + ' earlier line' + (dropped === 1 ? '' : 's') + ' not kept)\n' + body;
+          var n = (warn || error) ? ' (' + warn + ' warning' + (warn === 1 ? '' : 's') + ', ' + error + ' error' + (error === 1 ? '' : 's') + ')' : '';
+          var fence = String.fromCharCode(96, 96, 96);
+          return '<details><summary>' + title() + ' — session log' + n + '</summary>\n\n' + fence + 'log\n' + body + '\n' + fence + '\n\n</details>';
+      }
+      function copy(btn) {
+          var md = markdown();
+          var done = function (ok) {
+              if (!btn) return;
+              var was = btn.dataset.lbl || btn.textContent; btn.dataset.lbl = was;
+              btn.textContent = ok ? 'Copied ✓' : 'Copy failed';
+              setTimeout(function () { btn.textContent = was; }, 1500);
+          };
+          var fallback = function () {
+              var ok = false;
+              try {
+                  var ta = document.createElement('textarea'); ta.value = md; ta.style.position = 'fixed'; ta.style.opacity = '0';
+                  document.body.appendChild(ta); ta.select(); ok = document.execCommand('copy'); ta.remove();
+              } catch (x) { /* nothing left to try */ }
+              done(ok);
+          };
+          try { navigator.clipboard.writeText(md).then(function () { done(true); }, fallback); } catch (e) { fallback(); }
+      }
+      function open() {
+          close(true);
+          if (typeof o.before === 'function') { try { o.before(); } catch (e) { /* the window still opens */ } }
+          remember({ open: true });
+          var st = state();
+          var pop = document.createElement('div'); pop.id = 'mbu-logpop'; pop.className = 'mbu-logpop';
+          pop.innerHTML = '<div class="mbu-logpop-h"><b>' + esc(o.header || 'Activity log') + '</b> <span class="mbu-log-badge"></span><span class="mbu-logpop-sp"></span>'
+              + '<button class="mbu-logpop-copy" type="button" title="Copy as Markdown (paste into a GitHub issue)">⧉ Copy</button>'
+              + '<button class="mbu-logpop-min" type="button" title="Minimize">–</button>'
+              + '<button class="mbu-logpop-x" type="button" title="Close">✕</button></div>'
+              + '<div class="mbu-log-list"></div>';
+          document.body.appendChild(pop);
+          if (st.left != null) { pop.style.left = st.left; pop.style.top = st.top; pop.style.right = 'auto'; pop.style.transform = 'none'; }
+          var restore = { left: pop.style.left, top: pop.style.top, right: pop.style.right, bottom: pop.style.bottom, transform: pop.style.transform };
+          var list = pop.querySelector('.mbu-log-list'), badge = pop.querySelector('.mbu-log-badge');
+          var row = function (e) {
+              var d = document.createElement('div');
+              d.className = 'mbu-log-li mbu-log-' + e.sev;
+              d.innerHTML = '<span class="mbu-log-t">' + ts(e.t) + '</span><span class="mbu-log-m">' + linkify(e.msg) + '</span>';
+              return d;
+          };
+          var showBadge = function () { badge.textContent = '(' + buf.length + ')' + (warn || error ? ' · ' + warn + '⚠ ' + error + '✖' : ''); };
+          // the rows, once; later lines are appended one by one
+          var frag = document.createDocumentFragment();
+          buf.forEach(function (e) { frag.appendChild(row(e)); });
+          if (buf.length) list.appendChild(frag);
+          else list.innerHTML = '<div class="mbu-log-empty">No activity yet.</div>';
+          showBadge();
+          list.scrollTop = list.scrollHeight;
+          // badge and scroll once per frame, however many lines arrive in it
+          var queued = false, follow = true;
+          list.addEventListener('scroll', function () { follow = list.scrollHeight - list.scrollTop - list.clientHeight < 40; });
+          var paint = function () { queued = false; showBadge(); if (follow) list.scrollTop = list.scrollHeight; };
+          var onKey = function (e) { if (e.key === 'Escape') close(); };
+          win = {
+              el: pop,
+              append: function (e) {
+                  var empty = list.querySelector('.mbu-log-empty'); if (empty) empty.remove();
+                  list.appendChild(row(e));
+                  while (list.childElementCount > buf.length) list.firstElementChild.remove();
+                  if (!queued) { queued = true; requestAnimationFrame(paint); }
+              },
+              off: function () { document.removeEventListener('keydown', onKey); },
+          };
+          pop.querySelector('.mbu-logpop-copy').onclick = function () { copy(pop.querySelector('.mbu-logpop-copy')); };
+          var minBtn = pop.querySelector('.mbu-logpop-min');
+          var setMin = function (m) {
+              minBtn.textContent = m ? '▢' : '–'; minBtn.title = m ? 'Restore' : 'Minimize';
+              if (m) { pop.style.left = '14px'; pop.style.bottom = '14px'; pop.style.top = 'auto'; pop.style.right = 'auto'; pop.style.transform = 'none'; }   // dock to the bottom
+              else Object.assign(pop.style, restore);
+          };
+          minBtn.onclick = function () { var m = pop.classList.toggle('min'); setMin(m); remember({ min: m }); };
+          if (st.min) { pop.classList.add('min'); setMin(true); }
+          pop.querySelector('.mbu-logpop-x').onclick = function () { close(); };
+          // floating and non-modal: dragged by its header
+          pop.querySelector('.mbu-logpop-h').addEventListener('mousedown', function (e) {
+              if (e.target.closest('button')) return;
+              e.preventDefault();
+              var r = pop.getBoundingClientRect();
+              pop.style.left = r.left + 'px'; pop.style.top = r.top + 'px'; pop.style.right = 'auto'; pop.style.transform = 'none';
+              var ox = e.clientX - r.left, oy = e.clientY - r.top;
+              var mv = function (ev) {
+                  pop.style.left = Math.max(0, Math.min(window.innerWidth - pop.offsetWidth, ev.clientX - ox)) + 'px';
+                  pop.style.top = Math.max(0, Math.min(window.innerHeight - 36, ev.clientY - oy)) + 'px';
+              };
+              var up = function () {
+                  document.removeEventListener('mousemove', mv); document.removeEventListener('mouseup', up);
+                  if (!pop.classList.contains('min')) {
+                      restore = { left: pop.style.left, top: pop.style.top, right: 'auto', bottom: '', transform: 'none' };
+                      remember({ left: pop.style.left, top: pop.style.top });
+                  }
+              };
+              document.addEventListener('mousemove', mv); document.addEventListener('mouseup', up);
+          });
+          document.addEventListener('keydown', onKey);
+          return pop;
+      }
+      // quiet: closing to reopen, so the remembered "open" stays as it is
+      function close(quiet) {
+          var stray = document.getElementById('mbu-logpop');
+          if (win) { win.off(); win.el.remove(); win = null; if (!quiet) remember({ open: false }); }
+          if (stray) stray.remove();   // another script's window: one log window at a time
+      }
+      var api = {
+          info: function () { add('info', arguments); },
+          warn: function () { add('warn', arguments); },
+          err: function () { add('error', arguments); },
+          error: function () { add('error', arguments); },
+          ok: function () { add('ok', arguments); },
+          debug: function () { add('debug', arguments); },
+          add: function (sev) { add(sev, Array.prototype.slice.call(arguments, 1)); },
+          open: open,
+          close: function () { close(); },
+          reopen: function () { if (state().open) open(); },
+          isOpen: function () { return !!win; },
+          markdown: markdown,
+          copy: copy,
+          lines: function () { return buf.map(line); },
+          messages: function () { return buf.map(function (e) { return e.msg; }); },
+          counts: function () { return { warn: warn, error: error }; },
+      };
+      return api;
   }
 
   // Dismiss-on-outside-click, with the trailing click SWALLOWED.
@@ -28750,7 +29560,6 @@ try {
     }
   }
 
-  let toastEl = null, toastTimer = null;
   function toast(msg) { return mbuToast(msg); }   // #563: the shared toast
 
   // build an MB attribute ImmutableTree from a /ws/js rel's attribute array (they carry typeIDs directly)
@@ -29003,7 +29812,7 @@ try {
   // apart. has_dates is missing from the cache when the type hasn't loaded yet — default true (unknown)
   // rather than silently hiding a genuinely datable row.
   const ltHasDates = id => { const lt = W.MB && W.MB.linkedEntities && W.MB.linkedEntities.link_type[id]; return !lt || lt.has_dates !== false; };
-  if (typeof window !== 'undefined') window.__gtTest = Object.assign(window.__gtTest || {}, { ltHasDates });   // test hook only (#491) — no behaviour change
+  if (mbuTestHooks()) window.__gtTest = Object.assign(window.__gtTest || {}, { ltHasDates });   // test hook only (#491) — no behaviour change
   // grouping key for a copy spec: link type + its attribute typeIDs (so drums ≠ shakers ≠ vocals)
   const roleKeyOfSpec = s => { let a = ''; try { if (s.attributes) a = [...W.MB.tree.iterate(s.attributes)].map(x => x.typeID).sort((p, q) => p - q).join(','); } catch (e) {} return s.linkTypeID + '#' + a; };
   // display label for a copy spec — MB's own rendered role label when the rel is on the page
@@ -30519,11 +31328,25 @@ try {
       }
       return out;
   }
+  function mbmGuessSortName(name) {
+      if (!name || !name.trim()) return name;
+      name = name.trim().replace(/\s+/g, ' ');
+      // names in other scripts are not "given family" in Latin order: leave them to the editor
+      if (/[^\p{Script=Latin}\p{Script=Common}\p{Script=Inherited}]/u.test(name)) return name;
+      const words = name.split(' ');
+      if (words.length === 1) return name;
+      const article = name.match(/^(the|a|an)\s+(.+)$/i);
+      if (article) return article[2] + ', ' + article[1].charAt(0).toUpperCase() + article[1].slice(1).toLowerCase();
+      let base = name, suffix = '';
+      const sfx = name.match(/^(.*?),?\s+(jr\.?|sr\.?|ii|iii|iv|v|esq\.?)$/i);
+      if (sfx) { base = sfx[1].trim(); suffix = ' ' + sfx[2]; }
+      const parts = base.split(' ');
+      if (parts.length === 1) return name;
+      return parts[parts.length - 1] + ', ' + parts.slice(0, -1).join(' ') + suffix;
+  }
   // </ST-MATCH>
   const txpFold = s => (s || '').normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/đ/gi, 'd').replace(/[‐‑‒–—―−]/g, '-').toLowerCase().replace(/\s+/g, ' ').trim();
   const txpSameName = (a, b) => txpFold(a) === txpFold(b);
-  const txpFoldKeepCase = s => (s || '').normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/đ/gi, 'd').replace(/[‐‑‒–—―−]/g, '-').replace(/\s+/g, ' ').trim();
-  const txpSameNameCase = (a, b) => txpFoldKeepCase(a) === txpFoldKeepCase(b);
   // resolve an MBID to a full entity (incl. the numeric id dispatchRelationship needs)
   async function txpFetchEntity(gid, fallbackType) {
     try {
@@ -31997,10 +32820,6 @@ try {
         if (disamb) row.appendChild(el('span', 'gt-tp-disamb', ` (${disamb})`));
         return row;
       };
-      const wirePick = (row, entity) => {
-        row.addEventListener('click', () => pick(entity, true));                                  // #544: all rows with this text
-        row.addEventListener('contextmenu', e => { e.preventDefault(); pick(entity, false); });   // #544: this row only
-      };
       const runSearch = async () => {
         const term = (q.value || '').trim(); list.textContent = ''; if (!term) return;
         const gid = (term.match(GID_RE) || [])[0];
@@ -32941,7 +33760,7 @@ Created this ${kind} while adding credits parsed from text to ${relUrl}`;
 
 // ===== isrc_scout (@run-at document-start) ========================================
 (function(__stGM){
-  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"ISRC Scout*","namespace":"https://musicbrainz.org/","version":"2026.9.27","description":"Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify / Beatport / Tidal / Volumo / HDtracks / Qobuz, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/isrc_scout/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPklTUkMgU2NvdXQ8L3RpdGxlPgogICAgPHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPgogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjQwIi8+CiAgICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyNiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2U9IiNiOWEzZTgiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPgogIDwvZz4KICA8bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+Cjwvc3ZnPgo="}) }) : { script: {"name":"ISRC Scout*","namespace":"https://musicbrainz.org/","version":"2026.9.27","description":"Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify / Beatport / Tidal / Volumo / HDtracks / Qobuz, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/isrc_scout/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPklTUkMgU2NvdXQ8L3RpdGxlPgogICAgPHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPgogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjQwIi8+CiAgICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyNiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2U9IiNiOWEzZTgiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPgogIDwvZz4KICA8bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+Cjwvc3ZnPgo="} };
+  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"ISRC Scout*","namespace":"https://musicbrainz.org/","version":"2026.9.28","description":"Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify / Beatport / Tidal / Volumo / HDtracks / Qobuz, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/isrc_scout/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPklTUkMgU2NvdXQ8L3RpdGxlPgogICAgPHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPgogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjQwIi8+CiAgICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyNiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2U9IiNiOWEzZTgiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPgogIDwvZz4KICA8bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+Cjwvc3ZnPgo="}) }) : { script: {"name":"ISRC Scout*","namespace":"https://musicbrainz.org/","version":"2026.9.28","description":"Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify / Beatport / Tidal / Volumo / HDtracks / Qobuz, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/isrc_scout/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPklTUkMgU2NvdXQ8L3RpdGxlPgogICAgPHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPgogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjQwIi8+CiAgICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyNiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2U9IiNiOWEzZTgiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPgogIDwvZz4KICA8bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+Cjwvc3ZnPgo="} };
   (f=>f())(function(){
 /*
  * ─────────────────────────────────────────────────────────────────────────
@@ -33160,7 +33979,7 @@ Created this ${kind} while adding credits parsed from text to ${relUrl}`;
     set: (k, v) => { try { localStorage.setItem('ii:' + k, JSON.stringify(v)); } catch (e) {} },
     del: (k)    => { try { localStorage.removeItem('ii:' + k); } catch (e) {} },
   };
-  if (typeof window !== 'undefined') window.__isrcScoutTestStore = { store, localStore };   // test hook only (#501) — no behaviour change
+  if (mbuTestHooks()) window.__isrcScoutTestStore = { store, localStore };   // test hook only (#501) — no behaviour change
 
   /* ═══════════════════════════════════════════════════════════════════════
      GENERIC HTTP (GM_xmlhttpRequest promisified)
@@ -33226,7 +34045,6 @@ Created this ${kind} while adding credits parsed from text to ${relUrl}`;
       .replace(/[^\p{L}\p{N}\p{M} ]/gu, ' ')
       .replace(/\s+/g, ' ').trim();
   }
-  function normCI(s) { return norm(s); }
   function wordsMatch(needle, haystack) {
     const nw = norm(needle).split(' ').filter(Boolean), hw = norm(haystack);
     return nw.length > 0 && nw.every(w => hw.includes(w));
@@ -33306,10 +34124,13 @@ Created this ${kind} while adding credits parsed from text to ${relUrl}`;
     const stamp = () => { const d = new Date(); return d.toTimeString().slice(0, 8) + '.' + String(d.getMilliseconds()).padStart(3, '0'); };
     const fmt = (d) => { if (d === undefined) return ''; try { return ' ' + (typeof d === 'string' ? d : JSON.stringify(d)); } catch (e) { return ' ' + String(d); } };
     function render() { if (paneEl) { paneEl.textContent = buf.join('\n'); paneEl.scrollTop = paneEl.scrollHeight; } }
+    // the open pane is redrawn once per frame, not once per line: a busy lookup logs
+    // dozens of lines at a time (X12 of #623)
+    let queued = false;
     function add(level, msg, data) {
       const line = '[' + stamp() + '] ' + String(level).toUpperCase().padEnd(5) + ' ' + msg + fmt(data);
       buf.push(line); if (buf.length > MAX) buf.shift();
-      render();
+      if (paneEl && !queued) { queued = true; requestAnimationFrame(() => { queued = false; render(); }); }
     }
     return {
       setPane: el => { paneEl = el; render(); },
@@ -33430,6 +34251,235 @@ Created this ${kind} while adding credits parsed from text to ${relUrl}`;
       }
       html += mbuHelpHtml(o.script);
       return html + '</div>';
+  }
+
+  // Test hooks. A script puts its test hook on window only when the test harness has
+  // marked the page (dev/test/harness.mjs sets window.__mbuTest before any script runs):
+  //   if (mbuTestHooks()) window.__fooTest = { … };
+  // On a user's page the hooks are never built. (#623)
+  function mbuTestHooks() {
+      try { return typeof window !== 'undefined' && window.__mbuTest === true; } catch (e) { return false; }
+  }
+
+  // Corner slots (#468). Every floating launcher (Apollo Editor, Art Station, Falcon,
+  // Fusion, Scribe) tags its element with data-mb-corner (which screen corner: 'br',
+  // 'bl', 'tr', 'tl') and data-mb-corner-order (lower sits closer to the corner), and
+  // calls mbRestackCorner(corner) right after it shows, hides, creates or removes it.
+  // That recomputes every element in the corner, whichever script owns it and
+  // whatever order they loaded in, so two launchers never land on the same pixel.
+  // Orders in use: Apollo and Art Station 10 (never on the same page), Falcon 20,
+  // Fusion above Falcon. Scribe is not on the shared block and keeps a copy of this.
+  function mbRestackCorner(corner) {
+      var bottom = corner[0] === 'b', right = corner[1] === 'r';
+      var els = Array.prototype.slice.call(document.querySelectorAll('[data-mb-corner="' + corner + '"]'))
+          // offsetParent is always null for position:fixed, so it can't tell visibility here
+          .filter(function (el) { return getComputedStyle(el).display !== 'none'; })
+          .sort(function (a, b) { return (Number(a.dataset.mbCornerOrder) || 0) - (Number(b.dataset.mbCornerOrder) || 0); });
+      var pos = 14;
+      els.forEach(function (el) {
+          el.style[bottom ? 'bottom' : 'top'] = pos + 'px';
+          el.style[right ? 'right' : 'left'] = '14px';
+          pos += el.getBoundingClientRect().height + 8;
+      });
+  }
+
+  // Activity log: the session's log lines plus the floating window that shows them
+  // (#283's viewer, shared since X12 of #623). A script makes its log once:
+  //
+  //   var LOG = mbuLog({ name: 'Fusion', version: VERSION, key: 'fusion.logwin' });
+  //   LOG.info('…'); LOG.warn(…); LOG.err(…) (or .error); LOG.ok(…); LOG.debug(…)
+  //   LOG.open(); LOG.close(); LOG.reopen()   // reopen: only if it was left open
+  //   LOG.markdown(); LOG.copy(btn); LOG.lines(); LOG.messages(); LOG.counts()
+  //
+  // o.name / o.version  the Markdown summary's title (version may be a function)
+  // o.subtitle          optional function; its text follows the title (e.g. the release)
+  // o.header            the window's title (default 'Activity log')
+  // o.key               storage key for the window's open/minimised/position state
+  // o.load / o.save     that storage (default GM_getValue / GM_setValue)
+  // o.before            called before the window opens (e.g. to inject the script's CSS)
+  // o.max               lines kept (default 2000)
+  //
+  // A long run keeps only the last o.max lines, and the Markdown says how many went
+  // before them; the copies this replaced grew for the whole session. An open
+  // window appends each new line and drops the oldest row past the cap; the copies
+  // rebuilt the whole list with innerHTML on every line, which is quadratic over a
+  // long matching run.
+  function mbuLog(o) {
+      o = o || {};
+      var max = o.max || 2000, buf = [], dropped = 0, warn = 0, error = 0, win = null;
+      var pad = function (n, w) { return String(n).padStart(w || 2, '0'); };
+      var ts = function (d) { return pad(d.getHours()) + ':' + pad(d.getMinutes()) + ':' + pad(d.getSeconds()) + '.' + pad(d.getMilliseconds(), 3); };
+      var str = function (v) {
+          if (typeof v === 'string') return v;
+          if (v instanceof Error) return v.message || String(v);
+          if (v && v.nodeType) return '<' + (v.tagName || 'node').toLowerCase() + '>';
+          try { return typeof v === 'object' ? JSON.stringify(v) : String(v); } catch (e) { return String(v); }
+      };
+      var esc = function (s) {
+          return String(s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; });
+      };
+      // escape, then make http(s) URLs clickable, keeping trailing punctuation out of them
+      var linkify = function (s) {
+          return esc(s).replace(/(https?:\/\/[^\s<]+)/g, function (m) {
+              var t = (m.match(/[.,;:!?)\]]+$/) || [''])[0];
+              var url = m.slice(0, m.length - t.length);
+              return '<a href="' + url + '" target="_blank" rel="noopener">' + url + '</a>' + t;
+          });
+      };
+      var load = o.load || function (k) { try { return GM_getValue(k, undefined); } catch (e) { return undefined; } };
+      var save = o.save || function (k, v) { try { GM_setValue(k, v); } catch (e) { /* no storage: the window just forgets */ } };
+      var state = function () { try { return JSON.parse(load(o.key) || '{}') || {}; } catch (e) { return {}; } };
+      var remember = function (patch) { try { save(o.key, JSON.stringify(Object.assign(state(), patch))); } catch (e) { /* see save */ } };
+      var tally = function (e, d) { if (e.sev === 'warn') warn += d; else if (e.sev === 'error') error += d; };
+      var PRE = { info: '', ok: 'OK   ', warn: 'WARN ', error: 'ERR  ', debug: 'DBG  ' };
+      var line = function (e) { return ts(e.t) + '  ' + (PRE[e.sev] || '') + e.msg; };
+
+      function add(sev, args) {
+          var msg = Array.prototype.map.call(args, str).join(' ').replace(/\s+/g, ' ').trim();
+          if (!msg) return;
+          var e = { t: new Date(), sev: sev === 'err' ? 'error' : sev, msg: msg };
+          buf.push(e); tally(e, 1);
+          // trim in chunks, not one shift per line
+          if (buf.length > max + Math.ceil(max / 10)) {
+              var gone = buf.splice(0, buf.length - max);
+              gone.forEach(function (g) { tally(g, -1); });
+              dropped += gone.length;
+          }
+          if (win) win.append(e);
+      }
+      function title() {
+          var v = typeof o.version === 'function' ? (function () { try { return o.version(); } catch (e) { return ''; } })() : o.version;
+          var t = (o.name || 'Log') + (v ? ' v' + v : '');
+          try { var s = o.subtitle && o.subtitle(); if (s) t += ' — ' + s; } catch (e) { /* no subtitle */ }
+          return t;
+      }
+      function markdown() {
+          var body = buf.length ? buf.map(line).join('\n') : '(no activity logged)';
+          if (dropped) body = '(' + dropped + ' earlier line' + (dropped === 1 ? '' : 's') + ' not kept)\n' + body;
+          var n = (warn || error) ? ' (' + warn + ' warning' + (warn === 1 ? '' : 's') + ', ' + error + ' error' + (error === 1 ? '' : 's') + ')' : '';
+          var fence = String.fromCharCode(96, 96, 96);
+          return '<details><summary>' + title() + ' — session log' + n + '</summary>\n\n' + fence + 'log\n' + body + '\n' + fence + '\n\n</details>';
+      }
+      function copy(btn) {
+          var md = markdown();
+          var done = function (ok) {
+              if (!btn) return;
+              var was = btn.dataset.lbl || btn.textContent; btn.dataset.lbl = was;
+              btn.textContent = ok ? 'Copied ✓' : 'Copy failed';
+              setTimeout(function () { btn.textContent = was; }, 1500);
+          };
+          var fallback = function () {
+              var ok = false;
+              try {
+                  var ta = document.createElement('textarea'); ta.value = md; ta.style.position = 'fixed'; ta.style.opacity = '0';
+                  document.body.appendChild(ta); ta.select(); ok = document.execCommand('copy'); ta.remove();
+              } catch (x) { /* nothing left to try */ }
+              done(ok);
+          };
+          try { navigator.clipboard.writeText(md).then(function () { done(true); }, fallback); } catch (e) { fallback(); }
+      }
+      function open() {
+          close(true);
+          if (typeof o.before === 'function') { try { o.before(); } catch (e) { /* the window still opens */ } }
+          remember({ open: true });
+          var st = state();
+          var pop = document.createElement('div'); pop.id = 'mbu-logpop'; pop.className = 'mbu-logpop';
+          pop.innerHTML = '<div class="mbu-logpop-h"><b>' + esc(o.header || 'Activity log') + '</b> <span class="mbu-log-badge"></span><span class="mbu-logpop-sp"></span>'
+              + '<button class="mbu-logpop-copy" type="button" title="Copy as Markdown (paste into a GitHub issue)">⧉ Copy</button>'
+              + '<button class="mbu-logpop-min" type="button" title="Minimize">–</button>'
+              + '<button class="mbu-logpop-x" type="button" title="Close">✕</button></div>'
+              + '<div class="mbu-log-list"></div>';
+          document.body.appendChild(pop);
+          if (st.left != null) { pop.style.left = st.left; pop.style.top = st.top; pop.style.right = 'auto'; pop.style.transform = 'none'; }
+          var restore = { left: pop.style.left, top: pop.style.top, right: pop.style.right, bottom: pop.style.bottom, transform: pop.style.transform };
+          var list = pop.querySelector('.mbu-log-list'), badge = pop.querySelector('.mbu-log-badge');
+          var row = function (e) {
+              var d = document.createElement('div');
+              d.className = 'mbu-log-li mbu-log-' + e.sev;
+              d.innerHTML = '<span class="mbu-log-t">' + ts(e.t) + '</span><span class="mbu-log-m">' + linkify(e.msg) + '</span>';
+              return d;
+          };
+          var showBadge = function () { badge.textContent = '(' + buf.length + ')' + (warn || error ? ' · ' + warn + '⚠ ' + error + '✖' : ''); };
+          // the rows, once; later lines are appended one by one
+          var frag = document.createDocumentFragment();
+          buf.forEach(function (e) { frag.appendChild(row(e)); });
+          if (buf.length) list.appendChild(frag);
+          else list.innerHTML = '<div class="mbu-log-empty">No activity yet.</div>';
+          showBadge();
+          list.scrollTop = list.scrollHeight;
+          // badge and scroll once per frame, however many lines arrive in it
+          var queued = false, follow = true;
+          list.addEventListener('scroll', function () { follow = list.scrollHeight - list.scrollTop - list.clientHeight < 40; });
+          var paint = function () { queued = false; showBadge(); if (follow) list.scrollTop = list.scrollHeight; };
+          var onKey = function (e) { if (e.key === 'Escape') close(); };
+          win = {
+              el: pop,
+              append: function (e) {
+                  var empty = list.querySelector('.mbu-log-empty'); if (empty) empty.remove();
+                  list.appendChild(row(e));
+                  while (list.childElementCount > buf.length) list.firstElementChild.remove();
+                  if (!queued) { queued = true; requestAnimationFrame(paint); }
+              },
+              off: function () { document.removeEventListener('keydown', onKey); },
+          };
+          pop.querySelector('.mbu-logpop-copy').onclick = function () { copy(pop.querySelector('.mbu-logpop-copy')); };
+          var minBtn = pop.querySelector('.mbu-logpop-min');
+          var setMin = function (m) {
+              minBtn.textContent = m ? '▢' : '–'; minBtn.title = m ? 'Restore' : 'Minimize';
+              if (m) { pop.style.left = '14px'; pop.style.bottom = '14px'; pop.style.top = 'auto'; pop.style.right = 'auto'; pop.style.transform = 'none'; }   // dock to the bottom
+              else Object.assign(pop.style, restore);
+          };
+          minBtn.onclick = function () { var m = pop.classList.toggle('min'); setMin(m); remember({ min: m }); };
+          if (st.min) { pop.classList.add('min'); setMin(true); }
+          pop.querySelector('.mbu-logpop-x').onclick = function () { close(); };
+          // floating and non-modal: dragged by its header
+          pop.querySelector('.mbu-logpop-h').addEventListener('mousedown', function (e) {
+              if (e.target.closest('button')) return;
+              e.preventDefault();
+              var r = pop.getBoundingClientRect();
+              pop.style.left = r.left + 'px'; pop.style.top = r.top + 'px'; pop.style.right = 'auto'; pop.style.transform = 'none';
+              var ox = e.clientX - r.left, oy = e.clientY - r.top;
+              var mv = function (ev) {
+                  pop.style.left = Math.max(0, Math.min(window.innerWidth - pop.offsetWidth, ev.clientX - ox)) + 'px';
+                  pop.style.top = Math.max(0, Math.min(window.innerHeight - 36, ev.clientY - oy)) + 'px';
+              };
+              var up = function () {
+                  document.removeEventListener('mousemove', mv); document.removeEventListener('mouseup', up);
+                  if (!pop.classList.contains('min')) {
+                      restore = { left: pop.style.left, top: pop.style.top, right: 'auto', bottom: '', transform: 'none' };
+                      remember({ left: pop.style.left, top: pop.style.top });
+                  }
+              };
+              document.addEventListener('mousemove', mv); document.addEventListener('mouseup', up);
+          });
+          document.addEventListener('keydown', onKey);
+          return pop;
+      }
+      // quiet: closing to reopen, so the remembered "open" stays as it is
+      function close(quiet) {
+          var stray = document.getElementById('mbu-logpop');
+          if (win) { win.off(); win.el.remove(); win = null; if (!quiet) remember({ open: false }); }
+          if (stray) stray.remove();   // another script's window: one log window at a time
+      }
+      var api = {
+          info: function () { add('info', arguments); },
+          warn: function () { add('warn', arguments); },
+          err: function () { add('error', arguments); },
+          error: function () { add('error', arguments); },
+          ok: function () { add('ok', arguments); },
+          debug: function () { add('debug', arguments); },
+          add: function (sev) { add(sev, Array.prototype.slice.call(arguments, 1)); },
+          open: open,
+          close: function () { close(); },
+          reopen: function () { if (state().open) open(); },
+          isOpen: function () { return !!win; },
+          markdown: markdown,
+          copy: copy,
+          lines: function () { return buf.map(line); },
+          messages: function () { return buf.map(function (e) { return e.msg; }); },
+          counts: function () { return { warn: warn, error: error }; },
+      };
+      return api;
   }
 
   // Dismiss-on-outside-click, with the trailing click SWALLOWED.
@@ -34645,7 +35695,7 @@ Created this ${kind} while adding credits parsed from text to ${relUrl}`;
 
     return { refreshToken, apiSearch, apiSearchByIsrc, fields, classify };
   })();
-  if (typeof window !== 'undefined') window.__isrcScoutTestSX = SX;   // test hook only (#486) — no behaviour change
+  if (mbuTestHooks()) window.__isrcScoutTestSX = SX;   // test hook only (#486) — no behaviour change
 
   /* ═══════════════════════════════════════════════════════════════════════
      TRACK ISRC PROVIDER (#181) — each per-track [SX] button is a by-ISRC lookup:
@@ -35007,7 +36057,7 @@ Created this ${kind} while adding credits parsed from text to ${relUrl}`;
     else Log.warn('molla: the album has ' + n + ' track(s) but this release has ' + mb + ' — molla gives no track numbers, so ISRCs are placed by title/artist match only');
     tracks.forEach((t, i) => {
       const isrc = normalizeIsrc(t.isrc || '');
-      const title = t.track_name || '', artist = (t.artists || []).join(', ');
+      const title = t.track_name || '';
       // Spotify puts featured artists in the title ("Get Lucky (feat. Pharrell Williams
       // and Nile Rodgers)"); MB keeps them in the artist credit. molla has no durations,
       // so the title is the only plausibility check — without this every feat. track
@@ -36983,7 +38033,7 @@ Created this ${kind} while adding credits parsed from text to ${relUrl}`;
     // Test hook only (#466) — no behavior change; lets verify-466.mjs call a single
     // provider's resolveProvider directly instead of the aggregate Find-links button,
     // so the test doesn't also have to mock every other provider's network calls.
-    if (typeof window !== 'undefined') window.__isrcScoutTest466 = { PROV, resolveProvider, normalizeProviderUrl };
+    if (mbuTestHooks()) window.__isrcScoutTest466 = { PROV, resolveProvider, normalizeProviderUrl };
 
     return { linkedHtml, addHtml, resolve, addAll, clearResolved, missingCount, refresh: updateAddBtn, removeOne, removeTrack, removeProvider, endOne, endTrack, endProvider, linkRows };
   })();
@@ -38050,7 +39100,7 @@ Created this ${kind} while adding credits parsed from text to ${relUrl}`;
   // test hook only — no behaviour change. The affordance below is a contract of
   // setProg (an error offers the log, a plain message doesn't), so a test should
   // drive that function rather than poke classes onto the element.
-  if (typeof window !== 'undefined') window.__isrcScoutTestProg = { setProg: (m, e) => setProg(m, e), showPane: (id) => showPane(id) };
+  if (mbuTestHooks()) window.__isrcScoutTestProg = { setProg: (m, e) => setProg(m, e), showPane: (id) => showPane(id) };
   const setProgContinue = (msg, onClick) => {
     if (!progEl) return;
     progEl.textContent = msg; progEl.classList.remove('err'); progEl.classList.add('continue');
@@ -38683,7 +39733,7 @@ Created this ${kind} while adding credits parsed from text to ${relUrl}`;
 
 // ===== mammoth (@run-at document-idle) ===========================================
 (function(__stGM){
-  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Mammoth*","namespace":"https://musicbrainz.org/","version":"2026.9.28","description":"Edit-note memory for MusicBrainz: auto-remembers your last edit notes and lets you save reusable ones, recalling them from a compact panel beside the edit-note field on every edit form. A nicer replacement for Elephant Editor.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/mammoth/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48dGV4dCB4PSI2NCIgeT0iNjgiIGZvbnQtc2l6ZT0iMTA0IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0iY2VudHJhbCI+8J+mozwvdGV4dD48L3N2Zz4="}) }) : { script: {"name":"Mammoth*","namespace":"https://musicbrainz.org/","version":"2026.9.28","description":"Edit-note memory for MusicBrainz: auto-remembers your last edit notes and lets you save reusable ones, recalling them from a compact panel beside the edit-note field on every edit form. A nicer replacement for Elephant Editor.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/mammoth/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48dGV4dCB4PSI2NCIgeT0iNjgiIGZvbnQtc2l6ZT0iMTA0IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0iY2VudHJhbCI+8J+mozwvdGV4dD48L3N2Zz4="} };
+  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Mammoth*","namespace":"https://musicbrainz.org/","version":"2026.9.28.214729","description":"Edit-note memory for MusicBrainz: auto-remembers your last edit notes and lets you save reusable ones, recalling them from a compact panel beside the edit-note field on every edit form. A nicer replacement for Elephant Editor.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/mammoth/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48dGV4dCB4PSI2NCIgeT0iNjgiIGZvbnQtc2l6ZT0iMTA0IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0iY2VudHJhbCI+8J+mozwvdGV4dD48L3N2Zz4="}) }) : { script: {"name":"Mammoth*","namespace":"https://musicbrainz.org/","version":"2026.9.28.214729","description":"Edit-note memory for MusicBrainz: auto-remembers your last edit notes and lets you save reusable ones, recalling them from a compact panel beside the edit-note field on every edit form. A nicer replacement for Elephant Editor.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/mammoth/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48dGV4dCB4PSI2NCIgeT0iNjgiIGZvbnQtc2l6ZT0iMTA0IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0iY2VudHJhbCI+8J+mozwvdGV4dD48L3N2Zz4="} };
   (f=>document.readyState!=='loading'?f():document.addEventListener('DOMContentLoaded',f,{once:true}))(function(){
 //
 // Mammoth puts a compact saved-notes panel to the RIGHT of MusicBrainz's native
@@ -38710,8 +39760,7 @@ Created this ${kind} while adding credits parsed from text to ${relUrl}`;
   const KEY = 'mammoth:data';
   const SKEY = 'mammoth:settings';
   const DEFAULTS = { historySize: 10, hideHelp: false, defaultInsert: 'replace', visibleRows: 6, sideWidth: 300, appendNewline: true, minimized: false, showBabies: true, noteSort: 'manual', btnChars: 24, scopePerResource: false, customFields: [] };   // defaultInsert: 'replace' | 'append'; noteSort: 'manual' | 'uses' | 'recent'; btnChars: pinned-button label length; scopePerResource: per-type note pools (#309); customFields: user-defined baby fields [{match,label,key,dx,entity}]
-  const VERSION = '2026.7.23';   // keep in sync with @version (fallback when GM_info is unavailable)
-  const HELP_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/mammoth/README.md';
+  const VERSION = '?';   // GM_info carries the real one; every script manager provides it (a hard-coded copy only ever went stale)
   const SYNTAX_URL = 'https://musicbrainz.org/doc/Edit_Note';
   const scriptVersion = () => { try { return GM_info.script.version || VERSION; } catch (e) { return VERSION; } };
   // #308: the 🦣 emoji (U+1F9A3) renders as a tofu box in Chrome on systems whose
@@ -38762,8 +39811,6 @@ Created this ${kind} while adding credits parsed from text to ${relUrl}`;
     { match: '#ac-source-single-artist, input[id^="ac-source-artist-"]', label: 'Artist', mbid: true },
     { match: '.attribute-container.text.task input[type="text"]', label: 'Task' },
   ];
-  // one-time migration: old PREDEF/built-in keys → the new label-derived keys, so saved values carry over
-  const KEY_RELABEL = { 'release.catno': 'cf:Catalog number', 'release.primary_type': 'cf:Primary type', 'release.packaging': 'cf:Packaging', 'release.status': 'cf:Status', 'release.language': 'cf:Language', 'release.script': 'cf:Script', 'release.country': 'cf:Country', 'release.label': 'cf:Label', 'release.artist': 'cf:Artist', 'rel.task': 'cf:Task' };
 
   let SET = loadSet();
   // seed the built-ins once (merge-in any not already present by selector; never re-adds after you delete one)
@@ -39014,6 +40061,235 @@ Created this ${kind} while adding credits parsed from text to ${relUrl}`;
       }
       html += mbuHelpHtml(o.script);
       return html + '</div>';
+  }
+
+  // Test hooks. A script puts its test hook on window only when the test harness has
+  // marked the page (dev/test/harness.mjs sets window.__mbuTest before any script runs):
+  //   if (mbuTestHooks()) window.__fooTest = { … };
+  // On a user's page the hooks are never built. (#623)
+  function mbuTestHooks() {
+      try { return typeof window !== 'undefined' && window.__mbuTest === true; } catch (e) { return false; }
+  }
+
+  // Corner slots (#468). Every floating launcher (Apollo Editor, Art Station, Falcon,
+  // Fusion, Scribe) tags its element with data-mb-corner (which screen corner: 'br',
+  // 'bl', 'tr', 'tl') and data-mb-corner-order (lower sits closer to the corner), and
+  // calls mbRestackCorner(corner) right after it shows, hides, creates or removes it.
+  // That recomputes every element in the corner, whichever script owns it and
+  // whatever order they loaded in, so two launchers never land on the same pixel.
+  // Orders in use: Apollo and Art Station 10 (never on the same page), Falcon 20,
+  // Fusion above Falcon. Scribe is not on the shared block and keeps a copy of this.
+  function mbRestackCorner(corner) {
+      var bottom = corner[0] === 'b', right = corner[1] === 'r';
+      var els = Array.prototype.slice.call(document.querySelectorAll('[data-mb-corner="' + corner + '"]'))
+          // offsetParent is always null for position:fixed, so it can't tell visibility here
+          .filter(function (el) { return getComputedStyle(el).display !== 'none'; })
+          .sort(function (a, b) { return (Number(a.dataset.mbCornerOrder) || 0) - (Number(b.dataset.mbCornerOrder) || 0); });
+      var pos = 14;
+      els.forEach(function (el) {
+          el.style[bottom ? 'bottom' : 'top'] = pos + 'px';
+          el.style[right ? 'right' : 'left'] = '14px';
+          pos += el.getBoundingClientRect().height + 8;
+      });
+  }
+
+  // Activity log: the session's log lines plus the floating window that shows them
+  // (#283's viewer, shared since X12 of #623). A script makes its log once:
+  //
+  //   var LOG = mbuLog({ name: 'Fusion', version: VERSION, key: 'fusion.logwin' });
+  //   LOG.info('…'); LOG.warn(…); LOG.err(…) (or .error); LOG.ok(…); LOG.debug(…)
+  //   LOG.open(); LOG.close(); LOG.reopen()   // reopen: only if it was left open
+  //   LOG.markdown(); LOG.copy(btn); LOG.lines(); LOG.messages(); LOG.counts()
+  //
+  // o.name / o.version  the Markdown summary's title (version may be a function)
+  // o.subtitle          optional function; its text follows the title (e.g. the release)
+  // o.header            the window's title (default 'Activity log')
+  // o.key               storage key for the window's open/minimised/position state
+  // o.load / o.save     that storage (default GM_getValue / GM_setValue)
+  // o.before            called before the window opens (e.g. to inject the script's CSS)
+  // o.max               lines kept (default 2000)
+  //
+  // A long run keeps only the last o.max lines, and the Markdown says how many went
+  // before them; the copies this replaced grew for the whole session. An open
+  // window appends each new line and drops the oldest row past the cap; the copies
+  // rebuilt the whole list with innerHTML on every line, which is quadratic over a
+  // long matching run.
+  function mbuLog(o) {
+      o = o || {};
+      var max = o.max || 2000, buf = [], dropped = 0, warn = 0, error = 0, win = null;
+      var pad = function (n, w) { return String(n).padStart(w || 2, '0'); };
+      var ts = function (d) { return pad(d.getHours()) + ':' + pad(d.getMinutes()) + ':' + pad(d.getSeconds()) + '.' + pad(d.getMilliseconds(), 3); };
+      var str = function (v) {
+          if (typeof v === 'string') return v;
+          if (v instanceof Error) return v.message || String(v);
+          if (v && v.nodeType) return '<' + (v.tagName || 'node').toLowerCase() + '>';
+          try { return typeof v === 'object' ? JSON.stringify(v) : String(v); } catch (e) { return String(v); }
+      };
+      var esc = function (s) {
+          return String(s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; });
+      };
+      // escape, then make http(s) URLs clickable, keeping trailing punctuation out of them
+      var linkify = function (s) {
+          return esc(s).replace(/(https?:\/\/[^\s<]+)/g, function (m) {
+              var t = (m.match(/[.,;:!?)\]]+$/) || [''])[0];
+              var url = m.slice(0, m.length - t.length);
+              return '<a href="' + url + '" target="_blank" rel="noopener">' + url + '</a>' + t;
+          });
+      };
+      var load = o.load || function (k) { try { return GM_getValue(k, undefined); } catch (e) { return undefined; } };
+      var save = o.save || function (k, v) { try { GM_setValue(k, v); } catch (e) { /* no storage: the window just forgets */ } };
+      var state = function () { try { return JSON.parse(load(o.key) || '{}') || {}; } catch (e) { return {}; } };
+      var remember = function (patch) { try { save(o.key, JSON.stringify(Object.assign(state(), patch))); } catch (e) { /* see save */ } };
+      var tally = function (e, d) { if (e.sev === 'warn') warn += d; else if (e.sev === 'error') error += d; };
+      var PRE = { info: '', ok: 'OK   ', warn: 'WARN ', error: 'ERR  ', debug: 'DBG  ' };
+      var line = function (e) { return ts(e.t) + '  ' + (PRE[e.sev] || '') + e.msg; };
+
+      function add(sev, args) {
+          var msg = Array.prototype.map.call(args, str).join(' ').replace(/\s+/g, ' ').trim();
+          if (!msg) return;
+          var e = { t: new Date(), sev: sev === 'err' ? 'error' : sev, msg: msg };
+          buf.push(e); tally(e, 1);
+          // trim in chunks, not one shift per line
+          if (buf.length > max + Math.ceil(max / 10)) {
+              var gone = buf.splice(0, buf.length - max);
+              gone.forEach(function (g) { tally(g, -1); });
+              dropped += gone.length;
+          }
+          if (win) win.append(e);
+      }
+      function title() {
+          var v = typeof o.version === 'function' ? (function () { try { return o.version(); } catch (e) { return ''; } })() : o.version;
+          var t = (o.name || 'Log') + (v ? ' v' + v : '');
+          try { var s = o.subtitle && o.subtitle(); if (s) t += ' — ' + s; } catch (e) { /* no subtitle */ }
+          return t;
+      }
+      function markdown() {
+          var body = buf.length ? buf.map(line).join('\n') : '(no activity logged)';
+          if (dropped) body = '(' + dropped + ' earlier line' + (dropped === 1 ? '' : 's') + ' not kept)\n' + body;
+          var n = (warn || error) ? ' (' + warn + ' warning' + (warn === 1 ? '' : 's') + ', ' + error + ' error' + (error === 1 ? '' : 's') + ')' : '';
+          var fence = String.fromCharCode(96, 96, 96);
+          return '<details><summary>' + title() + ' — session log' + n + '</summary>\n\n' + fence + 'log\n' + body + '\n' + fence + '\n\n</details>';
+      }
+      function copy(btn) {
+          var md = markdown();
+          var done = function (ok) {
+              if (!btn) return;
+              var was = btn.dataset.lbl || btn.textContent; btn.dataset.lbl = was;
+              btn.textContent = ok ? 'Copied ✓' : 'Copy failed';
+              setTimeout(function () { btn.textContent = was; }, 1500);
+          };
+          var fallback = function () {
+              var ok = false;
+              try {
+                  var ta = document.createElement('textarea'); ta.value = md; ta.style.position = 'fixed'; ta.style.opacity = '0';
+                  document.body.appendChild(ta); ta.select(); ok = document.execCommand('copy'); ta.remove();
+              } catch (x) { /* nothing left to try */ }
+              done(ok);
+          };
+          try { navigator.clipboard.writeText(md).then(function () { done(true); }, fallback); } catch (e) { fallback(); }
+      }
+      function open() {
+          close(true);
+          if (typeof o.before === 'function') { try { o.before(); } catch (e) { /* the window still opens */ } }
+          remember({ open: true });
+          var st = state();
+          var pop = document.createElement('div'); pop.id = 'mbu-logpop'; pop.className = 'mbu-logpop';
+          pop.innerHTML = '<div class="mbu-logpop-h"><b>' + esc(o.header || 'Activity log') + '</b> <span class="mbu-log-badge"></span><span class="mbu-logpop-sp"></span>'
+              + '<button class="mbu-logpop-copy" type="button" title="Copy as Markdown (paste into a GitHub issue)">⧉ Copy</button>'
+              + '<button class="mbu-logpop-min" type="button" title="Minimize">–</button>'
+              + '<button class="mbu-logpop-x" type="button" title="Close">✕</button></div>'
+              + '<div class="mbu-log-list"></div>';
+          document.body.appendChild(pop);
+          if (st.left != null) { pop.style.left = st.left; pop.style.top = st.top; pop.style.right = 'auto'; pop.style.transform = 'none'; }
+          var restore = { left: pop.style.left, top: pop.style.top, right: pop.style.right, bottom: pop.style.bottom, transform: pop.style.transform };
+          var list = pop.querySelector('.mbu-log-list'), badge = pop.querySelector('.mbu-log-badge');
+          var row = function (e) {
+              var d = document.createElement('div');
+              d.className = 'mbu-log-li mbu-log-' + e.sev;
+              d.innerHTML = '<span class="mbu-log-t">' + ts(e.t) + '</span><span class="mbu-log-m">' + linkify(e.msg) + '</span>';
+              return d;
+          };
+          var showBadge = function () { badge.textContent = '(' + buf.length + ')' + (warn || error ? ' · ' + warn + '⚠ ' + error + '✖' : ''); };
+          // the rows, once; later lines are appended one by one
+          var frag = document.createDocumentFragment();
+          buf.forEach(function (e) { frag.appendChild(row(e)); });
+          if (buf.length) list.appendChild(frag);
+          else list.innerHTML = '<div class="mbu-log-empty">No activity yet.</div>';
+          showBadge();
+          list.scrollTop = list.scrollHeight;
+          // badge and scroll once per frame, however many lines arrive in it
+          var queued = false, follow = true;
+          list.addEventListener('scroll', function () { follow = list.scrollHeight - list.scrollTop - list.clientHeight < 40; });
+          var paint = function () { queued = false; showBadge(); if (follow) list.scrollTop = list.scrollHeight; };
+          var onKey = function (e) { if (e.key === 'Escape') close(); };
+          win = {
+              el: pop,
+              append: function (e) {
+                  var empty = list.querySelector('.mbu-log-empty'); if (empty) empty.remove();
+                  list.appendChild(row(e));
+                  while (list.childElementCount > buf.length) list.firstElementChild.remove();
+                  if (!queued) { queued = true; requestAnimationFrame(paint); }
+              },
+              off: function () { document.removeEventListener('keydown', onKey); },
+          };
+          pop.querySelector('.mbu-logpop-copy').onclick = function () { copy(pop.querySelector('.mbu-logpop-copy')); };
+          var minBtn = pop.querySelector('.mbu-logpop-min');
+          var setMin = function (m) {
+              minBtn.textContent = m ? '▢' : '–'; minBtn.title = m ? 'Restore' : 'Minimize';
+              if (m) { pop.style.left = '14px'; pop.style.bottom = '14px'; pop.style.top = 'auto'; pop.style.right = 'auto'; pop.style.transform = 'none'; }   // dock to the bottom
+              else Object.assign(pop.style, restore);
+          };
+          minBtn.onclick = function () { var m = pop.classList.toggle('min'); setMin(m); remember({ min: m }); };
+          if (st.min) { pop.classList.add('min'); setMin(true); }
+          pop.querySelector('.mbu-logpop-x').onclick = function () { close(); };
+          // floating and non-modal: dragged by its header
+          pop.querySelector('.mbu-logpop-h').addEventListener('mousedown', function (e) {
+              if (e.target.closest('button')) return;
+              e.preventDefault();
+              var r = pop.getBoundingClientRect();
+              pop.style.left = r.left + 'px'; pop.style.top = r.top + 'px'; pop.style.right = 'auto'; pop.style.transform = 'none';
+              var ox = e.clientX - r.left, oy = e.clientY - r.top;
+              var mv = function (ev) {
+                  pop.style.left = Math.max(0, Math.min(window.innerWidth - pop.offsetWidth, ev.clientX - ox)) + 'px';
+                  pop.style.top = Math.max(0, Math.min(window.innerHeight - 36, ev.clientY - oy)) + 'px';
+              };
+              var up = function () {
+                  document.removeEventListener('mousemove', mv); document.removeEventListener('mouseup', up);
+                  if (!pop.classList.contains('min')) {
+                      restore = { left: pop.style.left, top: pop.style.top, right: 'auto', bottom: '', transform: 'none' };
+                      remember({ left: pop.style.left, top: pop.style.top });
+                  }
+              };
+              document.addEventListener('mousemove', mv); document.addEventListener('mouseup', up);
+          });
+          document.addEventListener('keydown', onKey);
+          return pop;
+      }
+      // quiet: closing to reopen, so the remembered "open" stays as it is
+      function close(quiet) {
+          var stray = document.getElementById('mbu-logpop');
+          if (win) { win.off(); win.el.remove(); win = null; if (!quiet) remember({ open: false }); }
+          if (stray) stray.remove();   // another script's window: one log window at a time
+      }
+      var api = {
+          info: function () { add('info', arguments); },
+          warn: function () { add('warn', arguments); },
+          err: function () { add('error', arguments); },
+          error: function () { add('error', arguments); },
+          ok: function () { add('ok', arguments); },
+          debug: function () { add('debug', arguments); },
+          add: function (sev) { add(sev, Array.prototype.slice.call(arguments, 1)); },
+          open: open,
+          close: function () { close(); },
+          reopen: function () { if (state().open) open(); },
+          isOpen: function () { return !!win; },
+          markdown: markdown,
+          copy: copy,
+          lines: function () { return buf.map(line); },
+          messages: function () { return buf.map(function (e) { return e.msg; }); },
+          counts: function () { return { warn: warn, error: error }; },
+      };
+      return api;
   }
 
   // Dismiss-on-outside-click, with the trailing click SWALLOWED.
@@ -40216,8 +41492,6 @@ Created this ${kind} while adding credits parsed from text to ${relUrl}`;
     const loadF = () => { try { return JSON.parse(GM_getValue(FKEY, '{}') || '{}'); } catch (e) { return {}; } };
     const saveF = () => { try { GM_setValue(FKEY, JSON.stringify(FDATA)); } catch (e) {} };
     let FDATA = loadF();
-    // migrate saved values from the old built-in keys (release.* / rel.task) to the new label-derived keys
-    { let moved = false; for (const oldK in KEY_RELABEL) { const newK = KEY_RELABEL[oldK]; if (FDATA[oldK] && !FDATA[newK]) { FDATA[newK] = FDATA[oldK]; delete FDATA[oldK]; moved = true; } } if (moved) saveF(); }
 
     const listFor = key => (FDATA[key] = FDATA[key] || []);
     function rememberValue(key, rec) {
@@ -40697,7 +41971,7 @@ Created this ${kind} while adding credits parsed from text to ${relUrl}`;
 
 // ===== platform_check (@run-at document-end) ====================================
 (function(__stGM){
-  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Platform Check*","namespace":"http://tampermonkey.net/","version":"2026.9.27.210137","description":"Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/platform_check/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+DQogIDx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CiAgDQogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJhMWE1MiIgc3Ryb2tlLXdpZHRoPSI5IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik00MCA4OCBBMzQgMzQgMCAwIDEgNDAgNDAiLz4NCiAgICA8cGF0aCBkPSJNMjkgOTkgQTUwIDUwIDAgMCAxIDI5IDI5Ii8+DQogICAgPHBhdGggZD0iTTg4IDg4IEEzNCAzNCAwIDAgMCA4OCA0MCIvPg0KICAgIDxwYXRoIGQ9Ik05OSA5OSBBNTAgNTAgMCAwIDAgOTkgMjkiLz4NCiAgPC9nPg0KICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyMCIgZmlsbD0iI2U4MjAxYSIvPg0KPC9zdmc+DQo="}) }) : { script: {"name":"Platform Check*","namespace":"http://tampermonkey.net/","version":"2026.9.27.210137","description":"Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/platform_check/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+DQogIDx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CiAgDQogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJhMWE1MiIgc3Ryb2tlLXdpZHRoPSI5IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik00MCA4OCBBMzQgMzQgMCAwIDEgNDAgNDAiLz4NCiAgICA8cGF0aCBkPSJNMjkgOTkgQTUwIDUwIDAgMCAxIDI5IDI5Ii8+DQogICAgPHBhdGggZD0iTTg4IDg4IEEzNCAzNCAwIDAgMCA4OCA0MCIvPg0KICAgIDxwYXRoIGQ9Ik05OSA5OSBBNTAgNTAgMCAwIDAgOTkgMjkiLz4NCiAgPC9nPg0KICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyMCIgZmlsbD0iI2U4MjAxYSIvPg0KPC9zdmc+DQo="} };
+  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Platform Check*","namespace":"http://tampermonkey.net/","version":"2026.9.28","description":"Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/platform_check/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+DQogIDx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CiAgDQogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJhMWE1MiIgc3Ryb2tlLXdpZHRoPSI5IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik00MCA4OCBBMzQgMzQgMCAwIDEgNDAgNDAiLz4NCiAgICA8cGF0aCBkPSJNMjkgOTkgQTUwIDUwIDAgMCAxIDI5IDI5Ii8+DQogICAgPHBhdGggZD0iTTg4IDg4IEEzNCAzNCAwIDAgMCA4OCA0MCIvPg0KICAgIDxwYXRoIGQ9Ik05OSA5OSBBNTAgNTAgMCAwIDAgOTkgMjkiLz4NCiAgPC9nPg0KICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyMCIgZmlsbD0iI2U4MjAxYSIvPg0KPC9zdmc+DQo="}) }) : { script: {"name":"Platform Check*","namespace":"http://tampermonkey.net/","version":"2026.9.28","description":"Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/platform_check/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+DQogIDx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CiAgDQogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJhMWE1MiIgc3Ryb2tlLXdpZHRoPSI5IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik00MCA4OCBBMzQgMzQgMCAwIDEgNDAgNDAiLz4NCiAgICA8cGF0aCBkPSJNMjkgOTkgQTUwIDUwIDAgMCAxIDI5IDI5Ii8+DQogICAgPHBhdGggZD0iTTg4IDg4IEEzNCAzNCAwIDAgMCA4OCA0MCIvPg0KICAgIDxwYXRoIGQ9Ik05OSA5OSBBNTAgNTAgMCAwIDAgOTkgMjkiLz4NCiAgPC9nPg0KICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyMCIgZmlsbD0iI2U4MjAxYSIvPg0KPC9zdmc+DQo="} };
   (f=>document.readyState!=='loading'?f():document.addEventListener('DOMContentLoaded',f,{once:true}))(function(){
 (function () {
 'use strict';
@@ -41256,7 +42530,6 @@ async function injectInto(urls, storageKey) {
         // the blocked submission, not the choice of type.
         { test: u => /^https?:\/\/(?:www\.|m\.)?soundcloud\.com\//i.test(u), ids: ['85', '980'], name: 'stream for free' },
     ];
-    const wait = pcWait;
     const setVal = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value').set;
     const setSel = Object.getOwnPropertyDescriptor(window.HTMLSelectElement.prototype, 'value').set;
     const reports = [];
@@ -41720,6 +42993,235 @@ function mbuCfgHeader(o) {
     }
     html += mbuHelpHtml(o.script);
     return html + '</div>';
+}
+
+// Test hooks. A script puts its test hook on window only when the test harness has
+// marked the page (dev/test/harness.mjs sets window.__mbuTest before any script runs):
+//   if (mbuTestHooks()) window.__fooTest = { … };
+// On a user's page the hooks are never built. (#623)
+function mbuTestHooks() {
+    try { return typeof window !== 'undefined' && window.__mbuTest === true; } catch (e) { return false; }
+}
+
+// Corner slots (#468). Every floating launcher (Apollo Editor, Art Station, Falcon,
+// Fusion, Scribe) tags its element with data-mb-corner (which screen corner: 'br',
+// 'bl', 'tr', 'tl') and data-mb-corner-order (lower sits closer to the corner), and
+// calls mbRestackCorner(corner) right after it shows, hides, creates or removes it.
+// That recomputes every element in the corner, whichever script owns it and
+// whatever order they loaded in, so two launchers never land on the same pixel.
+// Orders in use: Apollo and Art Station 10 (never on the same page), Falcon 20,
+// Fusion above Falcon. Scribe is not on the shared block and keeps a copy of this.
+function mbRestackCorner(corner) {
+    var bottom = corner[0] === 'b', right = corner[1] === 'r';
+    var els = Array.prototype.slice.call(document.querySelectorAll('[data-mb-corner="' + corner + '"]'))
+        // offsetParent is always null for position:fixed, so it can't tell visibility here
+        .filter(function (el) { return getComputedStyle(el).display !== 'none'; })
+        .sort(function (a, b) { return (Number(a.dataset.mbCornerOrder) || 0) - (Number(b.dataset.mbCornerOrder) || 0); });
+    var pos = 14;
+    els.forEach(function (el) {
+        el.style[bottom ? 'bottom' : 'top'] = pos + 'px';
+        el.style[right ? 'right' : 'left'] = '14px';
+        pos += el.getBoundingClientRect().height + 8;
+    });
+}
+
+// Activity log: the session's log lines plus the floating window that shows them
+// (#283's viewer, shared since X12 of #623). A script makes its log once:
+//
+//   var LOG = mbuLog({ name: 'Fusion', version: VERSION, key: 'fusion.logwin' });
+//   LOG.info('…'); LOG.warn(…); LOG.err(…) (or .error); LOG.ok(…); LOG.debug(…)
+//   LOG.open(); LOG.close(); LOG.reopen()   // reopen: only if it was left open
+//   LOG.markdown(); LOG.copy(btn); LOG.lines(); LOG.messages(); LOG.counts()
+//
+// o.name / o.version  the Markdown summary's title (version may be a function)
+// o.subtitle          optional function; its text follows the title (e.g. the release)
+// o.header            the window's title (default 'Activity log')
+// o.key               storage key for the window's open/minimised/position state
+// o.load / o.save     that storage (default GM_getValue / GM_setValue)
+// o.before            called before the window opens (e.g. to inject the script's CSS)
+// o.max               lines kept (default 2000)
+//
+// A long run keeps only the last o.max lines, and the Markdown says how many went
+// before them; the copies this replaced grew for the whole session. An open
+// window appends each new line and drops the oldest row past the cap; the copies
+// rebuilt the whole list with innerHTML on every line, which is quadratic over a
+// long matching run.
+function mbuLog(o) {
+    o = o || {};
+    var max = o.max || 2000, buf = [], dropped = 0, warn = 0, error = 0, win = null;
+    var pad = function (n, w) { return String(n).padStart(w || 2, '0'); };
+    var ts = function (d) { return pad(d.getHours()) + ':' + pad(d.getMinutes()) + ':' + pad(d.getSeconds()) + '.' + pad(d.getMilliseconds(), 3); };
+    var str = function (v) {
+        if (typeof v === 'string') return v;
+        if (v instanceof Error) return v.message || String(v);
+        if (v && v.nodeType) return '<' + (v.tagName || 'node').toLowerCase() + '>';
+        try { return typeof v === 'object' ? JSON.stringify(v) : String(v); } catch (e) { return String(v); }
+    };
+    var esc = function (s) {
+        return String(s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; });
+    };
+    // escape, then make http(s) URLs clickable, keeping trailing punctuation out of them
+    var linkify = function (s) {
+        return esc(s).replace(/(https?:\/\/[^\s<]+)/g, function (m) {
+            var t = (m.match(/[.,;:!?)\]]+$/) || [''])[0];
+            var url = m.slice(0, m.length - t.length);
+            return '<a href="' + url + '" target="_blank" rel="noopener">' + url + '</a>' + t;
+        });
+    };
+    var load = o.load || function (k) { try { return GM_getValue(k, undefined); } catch (e) { return undefined; } };
+    var save = o.save || function (k, v) { try { GM_setValue(k, v); } catch (e) { /* no storage: the window just forgets */ } };
+    var state = function () { try { return JSON.parse(load(o.key) || '{}') || {}; } catch (e) { return {}; } };
+    var remember = function (patch) { try { save(o.key, JSON.stringify(Object.assign(state(), patch))); } catch (e) { /* see save */ } };
+    var tally = function (e, d) { if (e.sev === 'warn') warn += d; else if (e.sev === 'error') error += d; };
+    var PRE = { info: '', ok: 'OK   ', warn: 'WARN ', error: 'ERR  ', debug: 'DBG  ' };
+    var line = function (e) { return ts(e.t) + '  ' + (PRE[e.sev] || '') + e.msg; };
+
+    function add(sev, args) {
+        var msg = Array.prototype.map.call(args, str).join(' ').replace(/\s+/g, ' ').trim();
+        if (!msg) return;
+        var e = { t: new Date(), sev: sev === 'err' ? 'error' : sev, msg: msg };
+        buf.push(e); tally(e, 1);
+        // trim in chunks, not one shift per line
+        if (buf.length > max + Math.ceil(max / 10)) {
+            var gone = buf.splice(0, buf.length - max);
+            gone.forEach(function (g) { tally(g, -1); });
+            dropped += gone.length;
+        }
+        if (win) win.append(e);
+    }
+    function title() {
+        var v = typeof o.version === 'function' ? (function () { try { return o.version(); } catch (e) { return ''; } })() : o.version;
+        var t = (o.name || 'Log') + (v ? ' v' + v : '');
+        try { var s = o.subtitle && o.subtitle(); if (s) t += ' — ' + s; } catch (e) { /* no subtitle */ }
+        return t;
+    }
+    function markdown() {
+        var body = buf.length ? buf.map(line).join('\n') : '(no activity logged)';
+        if (dropped) body = '(' + dropped + ' earlier line' + (dropped === 1 ? '' : 's') + ' not kept)\n' + body;
+        var n = (warn || error) ? ' (' + warn + ' warning' + (warn === 1 ? '' : 's') + ', ' + error + ' error' + (error === 1 ? '' : 's') + ')' : '';
+        var fence = String.fromCharCode(96, 96, 96);
+        return '<details><summary>' + title() + ' — session log' + n + '</summary>\n\n' + fence + 'log\n' + body + '\n' + fence + '\n\n</details>';
+    }
+    function copy(btn) {
+        var md = markdown();
+        var done = function (ok) {
+            if (!btn) return;
+            var was = btn.dataset.lbl || btn.textContent; btn.dataset.lbl = was;
+            btn.textContent = ok ? 'Copied ✓' : 'Copy failed';
+            setTimeout(function () { btn.textContent = was; }, 1500);
+        };
+        var fallback = function () {
+            var ok = false;
+            try {
+                var ta = document.createElement('textarea'); ta.value = md; ta.style.position = 'fixed'; ta.style.opacity = '0';
+                document.body.appendChild(ta); ta.select(); ok = document.execCommand('copy'); ta.remove();
+            } catch (x) { /* nothing left to try */ }
+            done(ok);
+        };
+        try { navigator.clipboard.writeText(md).then(function () { done(true); }, fallback); } catch (e) { fallback(); }
+    }
+    function open() {
+        close(true);
+        if (typeof o.before === 'function') { try { o.before(); } catch (e) { /* the window still opens */ } }
+        remember({ open: true });
+        var st = state();
+        var pop = document.createElement('div'); pop.id = 'mbu-logpop'; pop.className = 'mbu-logpop';
+        pop.innerHTML = '<div class="mbu-logpop-h"><b>' + esc(o.header || 'Activity log') + '</b> <span class="mbu-log-badge"></span><span class="mbu-logpop-sp"></span>'
+            + '<button class="mbu-logpop-copy" type="button" title="Copy as Markdown (paste into a GitHub issue)">⧉ Copy</button>'
+            + '<button class="mbu-logpop-min" type="button" title="Minimize">–</button>'
+            + '<button class="mbu-logpop-x" type="button" title="Close">✕</button></div>'
+            + '<div class="mbu-log-list"></div>';
+        document.body.appendChild(pop);
+        if (st.left != null) { pop.style.left = st.left; pop.style.top = st.top; pop.style.right = 'auto'; pop.style.transform = 'none'; }
+        var restore = { left: pop.style.left, top: pop.style.top, right: pop.style.right, bottom: pop.style.bottom, transform: pop.style.transform };
+        var list = pop.querySelector('.mbu-log-list'), badge = pop.querySelector('.mbu-log-badge');
+        var row = function (e) {
+            var d = document.createElement('div');
+            d.className = 'mbu-log-li mbu-log-' + e.sev;
+            d.innerHTML = '<span class="mbu-log-t">' + ts(e.t) + '</span><span class="mbu-log-m">' + linkify(e.msg) + '</span>';
+            return d;
+        };
+        var showBadge = function () { badge.textContent = '(' + buf.length + ')' + (warn || error ? ' · ' + warn + '⚠ ' + error + '✖' : ''); };
+        // the rows, once; later lines are appended one by one
+        var frag = document.createDocumentFragment();
+        buf.forEach(function (e) { frag.appendChild(row(e)); });
+        if (buf.length) list.appendChild(frag);
+        else list.innerHTML = '<div class="mbu-log-empty">No activity yet.</div>';
+        showBadge();
+        list.scrollTop = list.scrollHeight;
+        // badge and scroll once per frame, however many lines arrive in it
+        var queued = false, follow = true;
+        list.addEventListener('scroll', function () { follow = list.scrollHeight - list.scrollTop - list.clientHeight < 40; });
+        var paint = function () { queued = false; showBadge(); if (follow) list.scrollTop = list.scrollHeight; };
+        var onKey = function (e) { if (e.key === 'Escape') close(); };
+        win = {
+            el: pop,
+            append: function (e) {
+                var empty = list.querySelector('.mbu-log-empty'); if (empty) empty.remove();
+                list.appendChild(row(e));
+                while (list.childElementCount > buf.length) list.firstElementChild.remove();
+                if (!queued) { queued = true; requestAnimationFrame(paint); }
+            },
+            off: function () { document.removeEventListener('keydown', onKey); },
+        };
+        pop.querySelector('.mbu-logpop-copy').onclick = function () { copy(pop.querySelector('.mbu-logpop-copy')); };
+        var minBtn = pop.querySelector('.mbu-logpop-min');
+        var setMin = function (m) {
+            minBtn.textContent = m ? '▢' : '–'; minBtn.title = m ? 'Restore' : 'Minimize';
+            if (m) { pop.style.left = '14px'; pop.style.bottom = '14px'; pop.style.top = 'auto'; pop.style.right = 'auto'; pop.style.transform = 'none'; }   // dock to the bottom
+            else Object.assign(pop.style, restore);
+        };
+        minBtn.onclick = function () { var m = pop.classList.toggle('min'); setMin(m); remember({ min: m }); };
+        if (st.min) { pop.classList.add('min'); setMin(true); }
+        pop.querySelector('.mbu-logpop-x').onclick = function () { close(); };
+        // floating and non-modal: dragged by its header
+        pop.querySelector('.mbu-logpop-h').addEventListener('mousedown', function (e) {
+            if (e.target.closest('button')) return;
+            e.preventDefault();
+            var r = pop.getBoundingClientRect();
+            pop.style.left = r.left + 'px'; pop.style.top = r.top + 'px'; pop.style.right = 'auto'; pop.style.transform = 'none';
+            var ox = e.clientX - r.left, oy = e.clientY - r.top;
+            var mv = function (ev) {
+                pop.style.left = Math.max(0, Math.min(window.innerWidth - pop.offsetWidth, ev.clientX - ox)) + 'px';
+                pop.style.top = Math.max(0, Math.min(window.innerHeight - 36, ev.clientY - oy)) + 'px';
+            };
+            var up = function () {
+                document.removeEventListener('mousemove', mv); document.removeEventListener('mouseup', up);
+                if (!pop.classList.contains('min')) {
+                    restore = { left: pop.style.left, top: pop.style.top, right: 'auto', bottom: '', transform: 'none' };
+                    remember({ left: pop.style.left, top: pop.style.top });
+                }
+            };
+            document.addEventListener('mousemove', mv); document.addEventListener('mouseup', up);
+        });
+        document.addEventListener('keydown', onKey);
+        return pop;
+    }
+    // quiet: closing to reopen, so the remembered "open" stays as it is
+    function close(quiet) {
+        var stray = document.getElementById('mbu-logpop');
+        if (win) { win.off(); win.el.remove(); win = null; if (!quiet) remember({ open: false }); }
+        if (stray) stray.remove();   // another script's window: one log window at a time
+    }
+    var api = {
+        info: function () { add('info', arguments); },
+        warn: function () { add('warn', arguments); },
+        err: function () { add('error', arguments); },
+        error: function () { add('error', arguments); },
+        ok: function () { add('ok', arguments); },
+        debug: function () { add('debug', arguments); },
+        add: function (sev) { add(sev, Array.prototype.slice.call(arguments, 1)); },
+        open: open,
+        close: function () { close(); },
+        reopen: function () { if (state().open) open(); },
+        isOpen: function () { return !!win; },
+        markdown: markdown,
+        copy: copy,
+        lines: function () { return buf.map(line); },
+        messages: function () { return buf.map(function (e) { return e.msg; }); },
+        counts: function () { return { warn: warn, error: error }; },
+    };
+    return api;
 }
 
 // Dismiss-on-outside-click, with the trailing click SWALLOWED.
@@ -42956,8 +44458,8 @@ function md5(str) {
     const gg = (a, b, c, d, x, s, t) => cmn((b & d) | (c & ~d), a, b, x, s, t);
     const hh = (a, b, c, d, x, s, t) => cmn(b ^ c ^ d, a, b, x, s, t);
     const ii = (a, b, c, d, x, s, t) => cmn(c ^ (b | ~d), a, b, x, s, t);
-    const bytes = unescape(encodeURIComponent(str)), n = bytes.length, x = [];
-    for (let i = 0; i < n; i++) x[i >> 2] |= (bytes.charCodeAt(i) & 0xFF) << ((i % 4) * 8);
+    const bytes = new TextEncoder().encode(str), n = bytes.length, x = [];   // UTF-8
+    for (let i = 0; i < n; i++) x[i >> 2] |= bytes[i] << ((i % 4) * 8);
     x[n >> 2] |= 0x80 << ((n % 4) * 8);
     x[(((n + 8) >> 6) * 16) + 14] = n * 8;
     let a = 1732584193, b = -271733879, c = -1732584194, d = 271733878;
@@ -46088,10 +47590,10 @@ function openRgEditTab(rgMbid, { background = false, sameTabAllowed = false } = 
 // Test hook only (#464) — no behavior change; lets verify-464.mjs exercise the
 // tab-open decision + background-commit channel without driving the full row UI
 // (which would mean faking a live ✓ match render for no added coverage).
-window.__pcTest464 = { openReleaseEditTab, openRgEditTab, PC_CHANNEL };
+if (mbuTestHooks()) window.__pcTest464 = { openReleaseEditTab, openRgEditTab, PC_CHANNEL };
 // #556 test hook — URL identity + the inject helper, so the cache-staleness and
 // payload-preservation paths can be driven without a live ✓ match render.
-window.__pcTest556 = { pcUrlKey, pcSameUrl, pcIsVerifyInterstitial, injectInto, runInjectHelper, cacheGet, cacheSet, mbDataGet };
+if (mbuTestHooks()) window.__pcTest556 = { pcUrlKey, pcSameUrl, pcIsVerifyInterstitial, injectInto, runInjectHelper, cacheGet, cacheSet, mbDataGet };
 
 function addSingleUrl(platform, background) {
     const cached = cacheGet(mbid, platform);
