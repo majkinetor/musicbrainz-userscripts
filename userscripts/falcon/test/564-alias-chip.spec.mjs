@@ -62,94 +62,99 @@ test("#564: alias chip", { tag: ['@sandbox', '@login'] }, async ({}) => {
   const context = await firefox.launchPersistentContext(resolve(REPO, '.pw-profile-ff'), {
       headless: !process.argv.includes('--headed'), viewport: { width: 1500, height: 950 },
   });
-  await installProdGuard(context);   // Firefox, its own profile: the harness guard is added by hand
-  const page = context.pages()[0] || await context.newPage();
-  await context.addInitScript(() => {
-    window.__mbuTest = true;   // Falcon builds its test hook only on a marked page (#623)
-      const store = new Map();
-      window.GM_getValue = (k, d) => store.has(k) ? store.get(k) : d;
-      window.GM_setValue = (k, v) => store.set(k, v);
-      window.GM_deleteValue = k => store.delete(k);
-      window.GM_listValues = () => [...store.keys()];
-      window.GM_info = { script: { name: 'Falcon', version: 'verify' } };
-      window.unsafeWindow = window;
-      window.GM_openInTab = () => ({ closed: false, close() {} });
-      window.GM_registerMenuCommand = () => {};
-      window.GM_addValueChangeListener = () => 0;
-      window.GM_removeValueChangeListener = () => {};
-      window.GM_setClipboard = () => {};
-      window.GM_notification = () => {};
-      window.GM_addStyle = (css) => { const s = document.createElement('style'); s.textContent = css; document.head?.appendChild(s); return s; };
-      window.GM_xmlhttpRequest = (o) => { try { o && o.onerror && o.onerror({ error: 'verify: network disabled' }); } catch (e) {} return { abort() {} }; };
-      window.GM = { xmlHttpRequest: window.GM_xmlhttpRequest, getValue: async (k, d) => window.GM_getValue(k, d), setValue: async (k, v) => window.GM_setValue(k, v), info: window.GM_info };
-  });
+  // closed in `finally`: a spec that skips (the profile isn't signed in) or fails must not leave
+  // Firefox running on the profile, or the next Firefox spec can't open it (#637)
+  try {
+    await installProdGuard(context);   // Firefox, its own profile: the harness guard is added by hand
+    const page = context.pages()[0] || await context.newPage();
+    await context.addInitScript(() => {
+      window.__mbuTest = true;   // Falcon builds its test hook only on a marked page (#623)
+        const store = new Map();
+        window.GM_getValue = (k, d) => store.has(k) ? store.get(k) : d;
+        window.GM_setValue = (k, v) => store.set(k, v);
+        window.GM_deleteValue = k => store.delete(k);
+        window.GM_listValues = () => [...store.keys()];
+        window.GM_info = { script: { name: 'Falcon', version: 'verify' } };
+        window.unsafeWindow = window;
+        window.GM_openInTab = () => ({ closed: false, close() {} });
+        window.GM_registerMenuCommand = () => {};
+        window.GM_addValueChangeListener = () => 0;
+        window.GM_removeValueChangeListener = () => {};
+        window.GM_setClipboard = () => {};
+        window.GM_notification = () => {};
+        window.GM_addStyle = (css) => { const s = document.createElement('style'); s.textContent = css; document.head?.appendChild(s); return s; };
+        window.GM_xmlhttpRequest = (o) => { try { o && o.onerror && o.onerror({ error: 'verify: network disabled' }); } catch (e) {} return { abort() {} }; };
+        window.GM = { xmlHttpRequest: window.GM_xmlhttpRequest, getValue: async (k, d) => window.GM_getValue(k, d), setValue: async (k, v) => window.GM_setValue(k, v), info: window.GM_info };
+    });
 
-  await page.route(() => true, r => (r.request().method() === 'POST' ? r.abort() : r.fallback()));
-  await page.goto(`${B}/`, { waitUntil: 'domcontentloaded' });
-  await idle(page);
-  // ⚠ ORDER MATTERS, and getting it wrong makes this check worthless. Our shared
-  // default and kellnerd's rule have the SAME specificity (0,1,1), so whichever
-  // stylesheet comes LAST wins — and in a real browser Stylus is last, because
-  // Falcon does not add its stylesheet until its panel first opens. Two earlier
-  // versions of this file passed on a build with the bug still in it for exactly
-  // that reason: the userstyle went in first and our rule won the tie.
-  //
-  // So: script, panel open (which is when Falcon's CSS lands), and only then the
-  // userstyle.
-  await page.addScriptTag({ content: src });
-  await idle(page);
+    await page.route(() => true, r => (r.request().method() === 'POST' ? r.abort() : r.fallback()));
+    await page.goto(`${B}/`, { waitUntil: 'domcontentloaded' });
+    await idle(page);
+    // ⚠ ORDER MATTERS, and getting it wrong makes this check worthless. Our shared
+    // default and kellnerd's rule have the SAME specificity (0,1,1), so whichever
+    // stylesheet comes LAST wins — and in a real browser Stylus is last, because
+    // Falcon does not add its stylesheet until its panel first opens. Two earlier
+    // versions of this file passed on a build with the bug still in it for exactly
+    // that reason: the userstyle went in first and our rule won the tie.
+    //
+    // So: script, panel open (which is when Falcon's CSS lands), and only then the
+    // userstyle.
+    await page.addScriptTag({ content: src });
+    await idle(page);
 
-  // seed the queue through Falcon's own hook and open the row
-  const opened = await page.evaluate(() => {
-      const t = window.__falconTest || (window.unsafeWindow && window.unsafeWindow.__falconTest);
-      if (!t) return 'no test hook';
-      document.getElementById('falcon-launcher')?.click();
-      t.setQueue([{
-          id: 'f1', entityType: 'artist', mbid: '00000000-0000-0000-0000-000000000001',
-          urls: [], note: '', disambiguation: '', isrcs: [], video: false,
-          aliases: [{ name: 'foobar' }], cover: [], coverExistingCount: null,
-          name: 'Test Artist', urlResults: null, status: 'queued', error: '',
-      }]);
-      return 'ok';
-  });
-  ck(opened === 'ok', `the panel opened and the queue was seeded (${opened})`);
-  await frames(page);
-  await page.evaluate(() => document.querySelector('.falcon-row-expand')?.click());
-  await frames(page);
+    // seed the queue through Falcon's own hook and open the row
+    const opened = await page.evaluate(() => {
+        const t = window.__falconTest || (window.unsafeWindow && window.unsafeWindow.__falconTest);
+        if (!t) return 'no test hook';
+        document.getElementById('falcon-launcher')?.click();
+        t.setQueue([{
+            id: 'f1', entityType: 'artist', mbid: '00000000-0000-0000-0000-000000000001',
+            urls: [], note: '', disambiguation: '', isrcs: [], video: false,
+            aliases: [{ name: 'foobar' }], cover: [], coverExistingCount: null,
+            name: 'Test Artist', urlResults: null, status: 'queued', error: '',
+        }]);
+        return 'ok';
+    });
+    ck(opened === 'ok', `the panel opened and the queue was seeded (${opened})`);
+    await frames(page);
+    await page.evaluate(() => document.querySelector('.falcon-row-expand')?.click());
+    await frames(page);
 
-  // NOW the userstyle, the way Stylus arrives: after everything of ours.
-  await page.addStyleTag({ content: styleCss });
-  await until(() => page.evaluate(() => document.documentElement.getAttribute('data-mbu-theme')), t => t === 'dark');   // recognised
+    // NOW the userstyle, the way Stylus arrives: after everything of ours.
+    await page.addStyleTag({ content: styleCss });
+    await until(() => page.evaluate(() => document.documentElement.getAttribute('data-mbu-theme')), t => t === 'dark');   // recognised
 
-  // the fixture: is the userstyle's color:initial rule actually winning anywhere?
-  // Without this the whole check passes on a page where nothing fought us.
-  const probe = await page.evaluate(() => {
-      const s = document.createElement('span');
-      s.id = 'verify-564-probe';
-      s.setAttribute('style', 'background:#333333');
-      s.textContent = 'x';
-      document.body.appendChild(s);
-      return getComputedStyle(s).color;
-  });
-  ck((lum(probe) ?? 1) < 0.2, `the userstyle IS forcing color:initial on inline-background spans (probe: ${probe})`);
+    // the fixture: is the userstyle's color:initial rule actually winning anywhere?
+    // Without this the whole check passes on a page where nothing fought us.
+    const probe = await page.evaluate(() => {
+        const s = document.createElement('span');
+        s.id = 'verify-564-probe';
+        s.setAttribute('style', 'background:#333333');
+        s.textContent = 'x';
+        document.body.appendChild(s);
+        return getComputedStyle(s).color;
+    });
+    ck((lum(probe) ?? 1) < 0.2, `the userstyle IS forcing color:initial on inline-background spans (probe: ${probe})`);
 
-  const chip = await page.evaluate(() => {
-      const el = [...document.querySelectorAll('#falcon-panel span')]
-          .find(s => (s.textContent || '').trim() === 'foobar');
-      if (!el) return null;
-      const cs = getComputedStyle(el);
-      const box = el.closest('span[style*=background]');
-      return {
-          color: cs.color,
-          chipBg: box ? getComputedStyle(box).backgroundColor : null,
-          chipColor: box ? getComputedStyle(box).color : null,
-      };
-  });
-  ck(!!chip, `the alias chip rendered — ${JSON.stringify(chip)}`);
-  if (chip) {
-      ck((lum(chip.color) ?? 0) > 0.5, `the alias NAME is light on the dark chip (${chip.color})`);
-      ck((lum(chip.chipColor) ?? 0) > 0.5, `and the chip itself sets a light colour rather than inheriting canvastext (${chip.chipColor})`);
-      ck((lum(chip.chipBg) ?? 1) < 0.35, `on a dark ground (${chip.chipBg})`);
+    const chip = await page.evaluate(() => {
+        const el = [...document.querySelectorAll('#falcon-panel span')]
+            .find(s => (s.textContent || '').trim() === 'foobar');
+        if (!el) return null;
+        const cs = getComputedStyle(el);
+        const box = el.closest('span[style*=background]');
+        return {
+            color: cs.color,
+            chipBg: box ? getComputedStyle(box).backgroundColor : null,
+            chipColor: box ? getComputedStyle(box).color : null,
+        };
+    });
+    ck(!!chip, `the alias chip rendered — ${JSON.stringify(chip)}`);
+    if (chip) {
+        ck((lum(chip.color) ?? 0) > 0.5, `the alias NAME is light on the dark chip (${chip.color})`);
+        ck((lum(chip.chipColor) ?? 0) > 0.5, `and the chip itself sets a light colour rather than inheriting canvastext (${chip.chipColor})`);
+        ck((lum(chip.chipBg) ?? 1) < 0.35, `on a dark ground (${chip.chipBg})`);
+    }
+  } finally {
+    await context.close();
   }
-  await context.close();
 });

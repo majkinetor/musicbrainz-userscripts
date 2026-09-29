@@ -3,7 +3,7 @@
 //   node dev/test/login.mjs            production and the sandbox
 //   node dev/test/login.mjs prod       musicbrainz.org only
 //   node dev/test/login.mjs sandbox    test.musicbrainz.org only
-//   node dev/test/login.mjs sandbox --auto [--profile <dir>]
+//   node dev/test/login.mjs sandbox --auto [--profile <dir>] [--firefox]
 //
 // Opens a visible browser at each login page and waits until you are signed in.
 // The two sites have separate accounts. Cookies persist in .pw-profile/, which
@@ -12,25 +12,30 @@
 // --auto signs in to the sandbox headless, with no one at the keyboard (CI). The
 // sandbox account is public knowledge, so it needs no secret: majkinetor / mb,
 // or SANDBOX_USER / SANDBOX_PASS. Production is never signed in to this way.
-import { chromium } from '@playwright/test';
-import { PROFILE } from './harness.mjs';
+//
+// --firefox signs in Firefox's profile instead (.pw-profile-ff unless --profile names
+// another): Falcon's Firefox specs use it (#637).
+import { chromium, firefox } from '@playwright/test';
+import { resolve } from 'node:path';
+import { PROFILE, REPO } from './harness.mjs';
 
 const SITES = { prod: 'https://musicbrainz.org', sandbox: 'https://test.musicbrainz.org' };
 const args = process.argv.slice(2);
 const auto = args.includes('--auto');
+const ff = args.includes('--firefox');
 const at = args.indexOf('--profile');
-const profile = at >= 0 ? args[at + 1] : PROFILE;
+const profile = at >= 0 ? args[at + 1] : ff ? resolve(REPO, '.pw-profile-ff') : PROFILE;
 const named = args.filter((a, i) => !a.startsWith('--') && args[i - 1] !== '--profile');
 const want = named.length ? named : Object.keys(SITES);
 if (want.some(w => !SITES[w]) || (auto && want.some(w => w !== 'sandbox'))) {
-  console.error('usage: node dev/test/login.mjs [prod|sandbox]  ·  node dev/test/login.mjs sandbox --auto [--profile <dir>]');
+  console.error('usage: node dev/test/login.mjs [prod|sandbox] [--firefox]  ·  node dev/test/login.mjs sandbox --auto [--profile <dir>] [--firefox]');
   process.exit(2);
 }
 
 const signedIn = page => page.waitForFunction(() => !!document.querySelector('a[href*="/logout"]'), null,
   { timeout: auto ? 60_000 : 5 * 60_000, polling: 1000 }).then(() => true, () => false);
 
-const ctx = await chromium.launchPersistentContext(profile, { headless: auto, viewport: { width: 1100, height: 800 } });
+const ctx = await (ff ? firefox : chromium).launchPersistentContext(profile, { headless: auto, viewport: { width: 1100, height: 800 } });
 const page = ctx.pages()[0] || await ctx.newPage();
 for (const w of want) {
   await page.goto(SITES[w] + '/login');
