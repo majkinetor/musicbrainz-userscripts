@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.9.28
+// @version      2026.9.29
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E
@@ -6652,6 +6652,7 @@
       '.tc-rectbl td{overflow-wrap:anywhere}',
       '.tc-rectbl th{text-align:left;font-size:11px;color:var(--mbu-text-dim);border-bottom:1px solid var(--mbu-border);padding:4px 7px;white-space:nowrap}',
       '.tc-rectbl td{padding:4px 7px;vertical-align:top}',
+      '.tc-rectbl td.tc-rdrag{box-shadow:inset 0 0 0 2px var(--mbu-accent)}',   // #635 cells a right-drag touched
       '.tc-rectbl.gridrows td{border-bottom:1px solid var(--mbu-border)}',
       // density layouts (same names as the Tracklist tab): compact tighter, cozy airier, normal = default
       '.tc-rectbl.compact th{padding:2px 7px}.tc-rectbl.compact td{padding:1px 7px}',
@@ -6893,7 +6894,10 @@
     const tbl = wrap.querySelector('.tc-rectbl'); if (!tbl) return;
     const copyOn = (t, f) => f === 'title' ? !!u(t.updateRecordingTitle) : !!u(t.updateRecordingArtist);
     const eligible = (t, f) => !!t && (nativeDiffFlag(t, f) || copyOn(t, f));
+    wireRecCellDrag(wrap, tbl, { copyOn, eligible });
     tbl.addEventListener('contextmenu', e => {
+      // #635: a right-button drag already did its work on every cell it touched
+      if (_recDragSwallow) { e.preventDefault(); _recDragSwallow = false; Log.debug('#635 contextmenu after a right-drag — swallowed'); return; }
       const tr = e.target.closest('tr.tc-recrow'); if (!tr) return;
       const recRows = () => wrap.querySelectorAll('tbody tr.tc-recrow');
       const wholeSide = e.ctrlKey && e.altKey;   // #443: both fields, every row = the whole side
@@ -7010,6 +7014,80 @@
       else if (e.altKey)      recRows().forEach(row => apply(+row.dataset.mi, +row.dataset.ti, field));   // whole column
       else                    apply(mi, ti, field);
       rerenderRec();
+    });
+  }
+  // #635: right-button DRAG over the cells = the right-click on each cell it touches, so
+  // several rows or columns are done with the mouse alone (the modifiers still work).
+  //   recording side → every touched cell's copy is set to what the FIRST cell toggles to,
+  //                    so a drag either marks or unmarks, never a mix
+  //   track side     → every touched cell copies from its recording, immediately
+  // A drag stays on the side it started on (the two sides copy in opposite directions).
+  // A press that never reaches a second cell is an ordinary right-click and is left to the
+  // contextmenu handler; once a drag has reached one, that trailing contextmenu is swallowed.
+  let _recDragSwallow = false;
+  const REC_DRAG_CELLS = { 'td.tc-recname': ['rec', 'title'], 'td.tc-recartist': ['rec', 'artist'], 'td.tc-tkt': ['track', 'title'], 'td.tc-tka': ['track', 'artist'] };
+  function recDragCell(el) {
+    for (const [sel, [side, field]] of Object.entries(REC_DRAG_CELLS)) {
+      const td = el && el.closest && el.closest(sel), tr = td && td.closest('tr.tc-recrow');
+      if (td && tr) return { td, side, field, mi: +tr.dataset.mi, ti: +tr.dataset.ti, key: tr.dataset.mi + '.' + tr.dataset.ti + '.' + field };
+    }
+    return null;
+  }
+  function wireRecCellDrag(wrap, tbl, { copyOn, eligible }) {
+    if (tbl._tcRecDrag) return; tbl._tcRecDrag = true;
+    tbl.addEventListener('mousedown', e => {
+      if (e.button !== 2 || e.ctrlKey || e.altKey || e.shiftKey || e.metaKey) return;   // modifiers keep their click meaning
+      const start = recDragCell(e.target); if (!start) return;
+      _recDragSwallow = false;
+      const t0 = koTrack(start.mi, start.ti);
+      const drag = { side: start.side, start, touched: new Map(), moved: false,
+        target: start.side === 'rec' ? !copyOn(t0, start.field) : null };   // the rec side's mark/unmark, decided by the first cell
+      const mark = () => wrap.querySelectorAll('tbody tr.tc-recrow').forEach(tr => {   // rerenderRec rebuilds rows: re-mark by key
+        for (const [sel, [side, field]] of Object.entries(REC_DRAG_CELLS)) {
+          if (side !== drag.side) continue;
+          const td = tr.querySelector(sel); if (td) td.classList.toggle('tc-rdrag', drag.touched.has(tr.dataset.mi + '.' + tr.dataset.ti + '.' + field));
+        }
+      });
+      const touch = c => {
+        if (drag.touched.has(c.key)) return;
+        drag.touched.set(c.key, c);
+        if (drag.side === 'rec') {
+          const t = koTrack(c.mi, c.ti);
+          if (eligible(t, c.field)) setCopy(c.field, { mi: c.mi, ti: c.ti }, drag.target);
+          else Log.debug(`#635 right-drag: ${c.key} has no copy to offer — skipped`);
+          rerenderRec();
+        } else {
+          // the right-click's own copy for this one cell (the handler's plain, no-modifier path),
+          // on the cell as it is NOW: the previous copy's rerenderRec may have replaced the row
+          const sel = Object.keys(REC_DRAG_CELLS).find(s => REC_DRAG_CELLS[s][0] === 'track' && REC_DRAG_CELLS[s][1] === c.field);
+          const td = wrap.querySelector(`tbody tr.tc-recrow[data-mi="${c.mi}"][data-ti="${c.ti}"] ${sel}`);
+          if (td) td.dispatchEvent(new MouseEvent('contextmenu', { bubbles: true, cancelable: true, button: 2 }));
+          else Log.warn(`#635 right-drag: row ${c.key} is gone from the table — not copied`);
+        }
+        mark();
+      };
+      const move = ev => {
+        if (!(ev.buttons & 2)) return end(ev);
+        const c = recDragCell(document.elementFromPoint(ev.clientX, ev.clientY));
+        if (!c || c.side !== drag.side || (!drag.moved && c.key === start.key)) return;
+        if (!drag.moved) {
+          drag.moved = true;
+          Log.info(`#635 right-drag on the ${drag.side === 'rec' ? 'recording' : 'track'} side from ${start.key}` + (drag.side === 'rec' ? ` — ${drag.target ? 'marking' : 'unmarking'} copies` : ' — copying from the recordings'));
+          touch(start);
+        }
+        touch(c);
+      };
+      const end = () => {
+        window.removeEventListener('mousemove', move, true); window.removeEventListener('mouseup', end, true);
+        if (!drag.moved) return;   // one cell: the contextmenu handler does it
+        _recDragSwallow = true;    // the release's contextmenu (Windows fires it after mouseup)
+        setTimeout(() => { _recDragSwallow = false; }, 400);   // …and where it fired on press already, don't swallow a later one
+        wrap.querySelectorAll('.tc-rdrag').forEach(td => td.classList.remove('tc-rdrag'));
+        if (drag.side === 'track') { _tlRefreshed = false; scheduleSync(); }
+        rerenderRec();
+        Log.info(`#635 right-drag done: ${drag.touched.size} cell(s) — ${[...drag.touched.keys()].join(', ')}`);
+      };
+      window.addEventListener('mousemove', move, true); window.addEventListener('mouseup', end, true);
     });
   }
   // custom Cutoff picker — a colored-dot dropdown that uses the SAME hex palette as the row dots
