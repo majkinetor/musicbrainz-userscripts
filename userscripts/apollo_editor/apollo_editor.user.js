@@ -14,6 +14,7 @@
 // @grant        GM_openInTab
 // @grant        GM_getValue
 // @grant        GM_setValue
+// @grant        unsafeWindow
 // @connect      *
 // @run-at       document-start
 // ==/UserScript==
@@ -42,121 +43,18 @@
   // #283 every Log.* call is captured into an in-page buffer and surfaced in a
   // dedicated log viewer — opened from a Log button next to "? Help" —
   // copy/pastable as a Markdown <details> block, like the other scripts. (The
-  // console output was dropped: it just duplicated this buffer.)
-  const LOG = [];
-  const _logListeners = new Set();
-  const _lpad = (n, w = 2) => String(n).padStart(w, '0');
-  const _logTs = d => `${_lpad(d.getHours())}:${_lpad(d.getMinutes())}:${_lpad(d.getSeconds())}.${_lpad(d.getMilliseconds(), 3)}`;
-  const _logStr = v => {
-    if (typeof v === 'string') return v;
-    if (v instanceof Error) return v.message || String(v);
-    if (v && v.nodeType) return '<' + (v.tagName || 'node').toLowerCase() + '>';
-    try { return typeof v === 'object' ? JSON.stringify(v) : String(v); } catch (e) { return String(v); }
-  };
-  function _logRecord(sev, args) {
-    const msg = args.map(_logStr).join(' ').replace(/\s+/g, ' ').trim();
-    if (!msg) return;
-    LOG.push({ t: new Date(), sev, msg });
-    _logListeners.forEach(f => { try { f(); } catch (e) {} });
-  }
-  const Log = {
-    info:  (...a) => _logRecord('info', a),
-    warn:  (...a) => _logRecord('warn', a),
-    err:   (...a) => _logRecord('error', a),
-    ok:    (...a) => _logRecord('ok', a),
-    debug: (...a) => _logRecord('debug', a),
-  };
-  const _logCounts = () => LOG.reduce((acc, e) => { if (e.sev === 'warn') acc.warn++; else if (e.sev === 'error') acc.error++; return acc; }, { warn: 0, error: 0 });
-  // escape, then turn http(s) URLs into clickable links for the log viewer
-  const _logLinkify = s => esc(s).replace(/(https?:\/\/[^\s<]+)/g, (m) => {
-    const t = (m.match(/[.,;:!?)\]]+$/) || [''])[0];   // keep trailing punctuation out of the URL
-    const url = m.slice(0, m.length - t.length);
-    return `<a href="${url}" target="_blank" rel="noopener">${url}</a>${t}`;
+  // console output was dropped: it just duplicated this buffer.) The buffer and
+  // window are the shared mbuLog (ST-UI block), since X12 of #623.
+  const Log = mbuLog({
+    name: 'Apollo Editor', version: () => scriptVersion(), key: 'apolloEditor.logwin',
+    load: k => gmLoad(k), save: (k, v) => gmSave(k, v), before: () => style(),
   });
-  // copy/pastable Markdown — collapsed <details> wrapping a fenced log block.
-  function logMarkdown() {
-    const PRE = { info: '', ok: 'OK   ', warn: 'WARN ', error: 'ERR  ', debug: 'DBG  ' };
-    const body = LOG.length ? LOG.map(e => `${_logTs(e.t)}  ${PRE[e.sev] || ''}${e.msg}`).join('\n') : '(no activity logged)';
-    const c = _logCounts();
-    let title = 'Apollo Editor';
-    try { title += ' v' + scriptVersion(); } catch (e) {}
-    const tally = (c.warn || c.error) ? ` (${c.warn} warning${c.warn === 1 ? '' : 's'}, ${c.error} error${c.error === 1 ? '' : 's'})` : '';
-    return `<details><summary>${title} — session log${tally}</summary>\n\n` + '```log\n' + body + '\n```' + `\n\n</details>`;
-  }
-  async function copyLog(btn) {
-    const md = logMarkdown(); let ok = false;
-    try { await navigator.clipboard.writeText(md); ok = true; }
-    catch (e) { try { const ta = document.createElement('textarea'); ta.value = md; ta.style.position = 'fixed'; ta.style.opacity = '0'; document.body.appendChild(ta); ta.select(); ok = document.execCommand('copy'); ta.remove(); } catch (x) {} }
-    if (btn) { const o = btn.dataset.lbl || btn.textContent; btn.dataset.lbl = o; btn.textContent = ok ? 'Copied ✓' : 'Copy failed'; setTimeout(() => { btn.textContent = o; }, 1500); }
-  }
-  // #501: settings persistence lives in GM storage (backed up/synced by the script
-  // manager) instead of localStorage (browser-profile-only — invisible to a script
-  // manager backup/restore or a move to another browser). One-time migration: if GM
-  // storage is empty but an old localStorage value exists, adopt it once and write
-  // through to GM storage from then on; the old localStorage key is left in place,
-  // unused, so nothing is destructively deleted.
-  const gmLoad = (key) => {
-    try { const v = GM_getValue(key, undefined); if (v !== undefined) return v; } catch (e) {}
-    try { const raw = localStorage.getItem(key); if (raw != null) { GM_setValue(key, raw); return raw; } } catch (e) {}
-    return undefined;
-  };
+  const logMarkdown = () => Log.markdown();
+  const openLog = () => Log.open();
+  // #501: settings live in GM storage (backed up and synced by the script manager).
+  // The one-time adoption of an older localStorage copy is retired (#623).
+  const gmLoad = (key) => { try { return GM_getValue(key, undefined); } catch (e) { return undefined; } };
   const gmSave = (key, raw) => { try { GM_setValue(key, raw); } catch (e) {} };
-  // #283 remember the log window across sessions: open?/minimized?/position
-  const LOGWIN_KEY = 'apolloEditor.logwin';
-  const loadLogWin = () => { try { return JSON.parse(gmLoad(LOGWIN_KEY) || '{}'); } catch (e) { return {}; } };
-  const saveLogWin = (patch) => { try { gmSave(LOGWIN_KEY, JSON.stringify(Object.assign(loadLogWin(), patch))); } catch (e) {} };
-  // the Log button opens this popup: the full session log + a Copy control.
-  function openLog() {
-    document.getElementById('mbu-logpop')?.remove();
-    style();   // ensure the popup CSS is injected (e.g. on auto-open before settings is opened)
-    saveLogWin({ open: true });
-    const st = loadLogWin();
-    const pop = document.createElement('div'); pop.id = 'mbu-logpop';
-    pop.innerHTML = `<div class="mbu-logpop-h"><b>Activity log</b> <span class="mbu-log-badge"></span><span class="mbu-logpop-sp"></span>`
-      + `<button class="mbu-logpop-copy" type="button" title="Copy as Markdown (paste into a GitHub issue)">⧉ Copy</button>`
-      + `<button class="mbu-logpop-min" type="button" title="Minimize">–</button>`
-      + `<button class="mbu-logpop-x" type="button" title="Close">✕</button></div>`
-      + `<div class="mbu-log-list"></div>`;
-    document.body.appendChild(pop);
-    // restore saved open position (used when not minimized, and remembered for restore)
-    if (st.left != null) { pop.style.left = st.left; pop.style.top = st.top; pop.style.right = 'auto'; pop.style.transform = 'none'; }
-    pop._restore = { left: pop.style.left, top: pop.style.top, right: pop.style.right, bottom: pop.style.bottom, transform: pop.style.transform };
-    const renderList = () => {
-      const list = pop.querySelector('.mbu-log-list');
-      list.innerHTML = LOG.length
-        ? LOG.map(e => `<div class="mbu-log-li mbu-log-${e.sev}"><span class="mbu-log-t">${_logTs(e.t)}</span><span class="mbu-log-m">${_logLinkify(e.msg)}</span></div>`).join('')
-        : '<div class="mbu-log-empty">No activity yet.</div>';
-      const c = _logCounts();
-      pop.querySelector('.mbu-log-badge').textContent = `(${LOG.length})` + (c.warn || c.error ? ` · ${c.warn}⚠ ${c.error}✖` : '');
-      list.scrollTop = list.scrollHeight;
-    };
-    renderList();
-    _logListeners.add(renderList);
-    const onKey = e => { if (e.key === 'Escape') close(); };
-    const close = () => { saveLogWin({ open: false }); _logListeners.delete(renderList); pop.remove(); document.removeEventListener('keydown', onKey); };
-    pop.querySelector('.mbu-logpop-copy').onclick = () => copyLog(pop.querySelector('.mbu-logpop-copy'));
-    const minBtn = pop.querySelector('.mbu-logpop-min');
-    const setMin = (m) => {
-      minBtn.textContent = m ? '▢' : '–'; minBtn.title = m ? 'Restore' : 'Minimize';
-      if (m) { pop.style.left = '14px'; pop.style.bottom = '14px'; pop.style.top = 'auto'; pop.style.right = 'auto'; pop.style.transform = 'none'; }   // dock to bottom
-      else if (pop._restore) { Object.assign(pop.style, pop._restore); }
-    };
-    minBtn.onclick = () => { const m = pop.classList.toggle('min'); setMin(m); saveLogWin({ min: m }); };
-    if (st.min) { pop.classList.add('min'); setMin(true); }   // restore minimized state
-    pop.querySelector('.mbu-logpop-x').onclick = close;
-    // floating, non-modal window — draggable by its header
-    pop.querySelector('.mbu-logpop-h').addEventListener('mousedown', (e) => {
-      if (e.target.closest('button')) return;
-      e.preventDefault();
-      const r = pop.getBoundingClientRect();
-      pop.style.left = r.left + 'px'; pop.style.top = r.top + 'px'; pop.style.right = 'auto'; pop.style.transform = 'none';
-      const ox = e.clientX - r.left, oy = e.clientY - r.top;
-      const mv = ev => { pop.style.left = Math.max(0, Math.min(innerWidth - pop.offsetWidth, ev.clientX - ox)) + 'px'; pop.style.top = Math.max(0, Math.min(innerHeight - 36, ev.clientY - oy)) + 'px'; };
-      const up = () => { document.removeEventListener('mousemove', mv); document.removeEventListener('mouseup', up); if (!pop.classList.contains('min')) { pop._restore = { left: pop.style.left, top: pop.style.top, right: 'auto', bottom: '', transform: 'none' }; saveLogWin({ left: pop.style.left, top: pop.style.top }); } };
-      document.addEventListener('mousemove', mv); document.addEventListener('mouseup', up);
-    });
-    document.addEventListener('keydown', onKey);
-  }
   // first log line: the script + version. The MB release line is logged once the
   // editor is ready (so it carries the real title) — see init().
   Log.info('Apollo Editor' + (() => { try { return ' v' + GM_info.script.version; } catch (e) { return ''; } })());
@@ -242,15 +140,27 @@
       }
       return out;
   }
+  function mbmGuessSortName(name) {
+      if (!name || !name.trim()) return name;
+      name = name.trim().replace(/\s+/g, ' ');
+      // names in other scripts are not "given family" in Latin order: leave them to the editor
+      if (/[^\p{Script=Latin}\p{Script=Common}\p{Script=Inherited}]/u.test(name)) return name;
+      const words = name.split(' ');
+      if (words.length === 1) return name;
+      const article = name.match(/^(the|a|an)\s+(.+)$/i);
+      if (article) return article[2] + ', ' + article[1].charAt(0).toUpperCase() + article[1].slice(1).toLowerCase();
+      let base = name, suffix = '';
+      const sfx = name.match(/^(.*?),?\s+(jr\.?|sr\.?|ii|iii|iv|v|esq\.?)$/i);
+      if (sfx) { base = sfx[1].trim(); suffix = ' ' + sfx[2]; }
+      const parts = base.split(' ');
+      if (parts.length === 1) return name;
+      return parts[parts.length - 1] + ', ' + parts.slice(0, -1).join(' ') + suffix;
+  }
   // </ST-MATCH>
   // normalize hyphen/dash look-alikes (MB uses ‐ U+2010, others use - U+002D, en/em
   // dashes, minus…) to a plain '-' so e.g. "Gol‐e Yakh" folds the same as "Gol-e Yakh"
   const fold = s => (s || '').normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/đ/gi, 'd').replace(/[‐‑‒–—―−]/g, '-').toLowerCase().replace(/\s+/g, ' ').trim();
   const sameName = (a, b) => fold(a) === fold(b);
-  // #445 case-preserving fold (diacritics/dashes/whitespace normalized, CASE kept) — so casing is
-  // the only discriminator when breaking a tie between several case-insensitive name/alias matches.
-  const foldKeepCase = s => (s || '').normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/đ/gi, 'd').replace(/[‐‑‒–—―−]/g, '-').replace(/\s+/g, ' ').trim();
-  const sameNameCase = (a, b) => foldKeepCase(a) === foldKeepCase(b);
   // gid → artist disambiguation, harvested from every WS2/js artist-credit the
   // script fetches (search results, recording lookups). The MB page (KO) model
   // doesn't carry disambiguations for freshly-picked entities, so the recordings
@@ -544,14 +454,6 @@
   const _aliasCache = new Map();        // query → { gid: aliases }
   const _gidAliases = new Map();        // gid → aliases — survives table rebuilds (so the bar keeps its alias)
   const cacheAliases = (gid, aks) => { if (gid && aks) _gidAliases.set(gid, aks); };
-  async function fetchAliases(name) {
-    const k = fold(name); if (!k) return {}; if (_aliasCache.has(k)) return _aliasCache.get(k);
-    const map = {};
-    const res = await wsJson(`${ORIGIN}/ws/2/artist?query=${encodeURIComponent(name)}&limit=12&fmt=json`, { label: 'alias fetch' });
-    if (!res.json) { Log.warn('alias fetch failed', name, '— not cached, retried on the next pass'); return map; }   // don't cache a throttled miss (#555)
-    (res.json.artists || []).forEach(a => { map[a.id] = a.aliases || []; cacheAliases(a.id, a.aliases || []); });
-    _aliasCache.set(k, map); return map;
-  }
   // aliases for already-resolved artists (existing releases / auto-matched) WITHOUT a fetch each —
   // one batched WS2 query per ~90 gids (arid:g1 OR arid:g2 …), cached by gid
   async function fetchAliasesByGids(gids) {
@@ -1559,7 +1461,6 @@
   // #580: never commit over a slot the user has focused — that is the write that
   // used to replace a half-typed name with the matched artist.
   const autoCommittable = s => !s._editing && (s.status === 'rg' || s.status === 'high' || s.status === 'disc' || s.status === 'cred' || s.status === 'alias' || s.status === 'pos');
-  function autoCommit() { MODEL.tracks.forEach(t => { let any = false; t.slots.forEach(s => { if (autoCommittable(s)) { s.committed = true; any = true; } }); if (any || t.slots.some(s => s.status === 'set')) commitTrack(t); }); }
   function autoCommitTrack(t) { let any = false; t.slots.forEach(s => { if (autoCommittable(s)) { s.committed = true; any = true; } }); if (any) commitTrack(t); }
   // build the table model WITHOUT matching (instant) — unresolved slots are flagged _pending
   function buildShell() {
@@ -1792,12 +1693,8 @@
   }
 
   /* ── create artist ── */
-  function guessSortName(name) {
-    const n = (name || '').trim();
-    if (!/^[\x00-\x7F]+$/.test(n)) return n;
-    const p = n.split(/\s+/); if (p.length < 2) return n;
-    const last = p.pop(); return last + ', ' + p.join(' ');
-  }
+  // the sort-name guess is shared with Credit Hoarder (mbmGuessSortName, the ST-MATCH block)
+  const guessSortName = name => mbmGuessSortName(name);
   // open MB's create-artist form; when it's saved, the new artist page posts the MBID back over the
   // channel (handshake via sessionStorage token) and closes itself, and we drop it into the slot.
   function createArtist(name, slot, discogsUrl, background) {
@@ -1877,33 +1774,9 @@
   }
 
   /* ════════════════════════ UI ════════════════════════ */
-  /* ── shared corner-slot convention (#468) ───────────────────────────────
-     Every floating launcher across these scripts (Apollo Editor, Art
-     Station, Scribe, Falcon) tags its element with data-mb-corner (which
-     screen corner) + data-mb-corner-order (priority — lower sits closest to
-     the actual corner) and calls mbRestackCorner() right after it shows /
-     hides / creates / removes its own element. No MutationObserver needed:
-     whichever script's state just changed triggers a full recompute that
-     repositions every element sharing that corner, regardless of load
-     order — so two independent scripts' buttons never land on the same
-     pixel. Duplicated per-script on purpose (no shared file to import).
-     Apollo and Art Station share the same order (never both mount at once —
-     different page types) and keep their historical closest-to-the-corner spot
-     (order 10); Falcon stacks above them (order 20). */
-  function mbRestackCorner(corner) {
-    const bottom = corner[0] === 'b', right = corner[1] === 'r';
-    const els = [...document.querySelectorAll('[data-mb-corner="' + corner + '"]')]
-      .filter(el => getComputedStyle(el).display !== 'none')   // offsetParent is always null for position:fixed — not a usable visibility check here
-      .sort((a, b) => (Number(a.dataset.mbCornerOrder) || 0) - (Number(b.dataset.mbCornerOrder) || 0));
-    let pos = 14;
-    els.forEach(el => {
-      el.style[bottom ? 'bottom' : 'top'] = pos + 'px';
-      el.style[right ? 'right' : 'left'] = '14px';
-      pos += el.getBoundingClientRect().height + 8;
-    });
-  }
+  // mbRestackCorner, the #468 corner slots, is in the ST-UI block (dev/ui/ui-components.mjs).
   const HELP_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md';
-  const VERSION = '2026.9.27.060520';   // keep in sync with @version (fallback when GM_info is unavailable)
+  const VERSION = '?';   // GM_info carries the real one; every script manager provides it (a hard-coded copy only ever went stale)
   const scriptVersion = () => { try { return GM_info.script.version || VERSION; } catch (e) { return VERSION; } };
   // shared attribution header (same shape as the other scripts' edit notes)
   const apolloAttribution = () => { const s = (typeof GM_info !== 'undefined' && GM_info.script) || {}; return (s.name || 'Apollo Editor') + ' v' + scriptVersion() + ' by ' + (s.author || 'majkinetor') + ' - ' + (s.homepageURL || s.homepage || HELP_URL); };
@@ -1932,15 +1805,10 @@
     { label: '/', value: ' / ' }, { label: '·', value: ' · ' }, { label: 'presents', value: ' presents ' },
   ];
 
-  const COLORS = { set: '#d6f0d8', rg: '#d6f0d8', high: '#d8e6ff', low: '#fdf3d0', user: '#e9dcfb', none: '#fbdcdf' };
   const COLS = [{ k: 'mv', w: 32, label: '' }, { k: 'num', w: 38, label: '#' }, { k: 'title', w: 360, label: 'Title' }, { k: 'art', w: 380, label: 'Artist' }, { k: 'len', w: 52, label: 'Length' }, { k: 'badge', w: 56, label: 'Match' }];
   const badgeText = s => ({ rg: 'rg', disc: 'disc', pos: 'pos', cred: 'cred', alias: 'alias', high: 'name', user: 'user', set: 'set', low: 'low' })[s.status] || '';
   const colW = (k, d) => (SETTINGS.colWidths && SETTINGS.colWidths[k]) || d;
   function esc(s) { return String(s == null ? '' : s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c])); }
-  // Enter in our inputs must not bubble to MB's form (it switches tabs); commit by blurring instead
-  const enterBlurs = el => el.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); e.stopPropagation(); el.blur(); } });
-  function rowConfidence(t) { const live = t.slots.filter(s => s.status !== 'set'); if (!live.length) return 'set'; const order = ['none', 'low', 'user', 'high', 'alias', 'cred', 'pos', 'disc', 'rg']; return live.map(s => s.status).sort((a, b) => order.indexOf(a) - order.indexOf(b))[0]; }
-  const badge = s => `<span class="tc-badge ${s}">${s === 'rg' ? 'RG' : s === 'disc' ? 'DISC' : s.toUpperCase()}</span>`;
 
   // The shared design tokens (#562). Values live in dev/tokens/design-tokens.mjs and are
   // inlined here by dev/tokens/sync-tokens.mjs — edit them THERE, never in this block.
@@ -2040,6 +1908,235 @@
       }
       html += mbuHelpHtml(o.script);
       return html + '</div>';
+  }
+
+  // Test hooks. A script puts its test hook on window only when the test harness has
+  // marked the page (dev/test/harness.mjs sets window.__mbuTest before any script runs):
+  //   if (mbuTestHooks()) window.__fooTest = { … };
+  // On a user's page the hooks are never built. (#623)
+  function mbuTestHooks() {
+      try { return typeof window !== 'undefined' && window.__mbuTest === true; } catch (e) { return false; }
+  }
+
+  // Corner slots (#468). Every floating launcher (Apollo Editor, Art Station, Falcon,
+  // Fusion, Scribe) tags its element with data-mb-corner (which screen corner: 'br',
+  // 'bl', 'tr', 'tl') and data-mb-corner-order (lower sits closer to the corner), and
+  // calls mbRestackCorner(corner) right after it shows, hides, creates or removes it.
+  // That recomputes every element in the corner, whichever script owns it and
+  // whatever order they loaded in, so two launchers never land on the same pixel.
+  // Orders in use: Apollo and Art Station 10 (never on the same page), Falcon 20,
+  // Fusion above Falcon. Scribe is not on the shared block and keeps a copy of this.
+  function mbRestackCorner(corner) {
+      var bottom = corner[0] === 'b', right = corner[1] === 'r';
+      var els = Array.prototype.slice.call(document.querySelectorAll('[data-mb-corner="' + corner + '"]'))
+          // offsetParent is always null for position:fixed, so it can't tell visibility here
+          .filter(function (el) { return getComputedStyle(el).display !== 'none'; })
+          .sort(function (a, b) { return (Number(a.dataset.mbCornerOrder) || 0) - (Number(b.dataset.mbCornerOrder) || 0); });
+      var pos = 14;
+      els.forEach(function (el) {
+          el.style[bottom ? 'bottom' : 'top'] = pos + 'px';
+          el.style[right ? 'right' : 'left'] = '14px';
+          pos += el.getBoundingClientRect().height + 8;
+      });
+  }
+
+  // Activity log: the session's log lines plus the floating window that shows them
+  // (#283's viewer, shared since X12 of #623). A script makes its log once:
+  //
+  //   var LOG = mbuLog({ name: 'Fusion', version: VERSION, key: 'fusion.logwin' });
+  //   LOG.info('…'); LOG.warn(…); LOG.err(…) (or .error); LOG.ok(…); LOG.debug(…)
+  //   LOG.open(); LOG.close(); LOG.reopen()   // reopen: only if it was left open
+  //   LOG.markdown(); LOG.copy(btn); LOG.lines(); LOG.messages(); LOG.counts()
+  //
+  // o.name / o.version  the Markdown summary's title (version may be a function)
+  // o.subtitle          optional function; its text follows the title (e.g. the release)
+  // o.header            the window's title (default 'Activity log')
+  // o.key               storage key for the window's open/minimised/position state
+  // o.load / o.save     that storage (default GM_getValue / GM_setValue)
+  // o.before            called before the window opens (e.g. to inject the script's CSS)
+  // o.max               lines kept (default 2000)
+  //
+  // A long run keeps only the last o.max lines, and the Markdown says how many went
+  // before them; the copies this replaced grew for the whole session. An open
+  // window appends each new line and drops the oldest row past the cap; the copies
+  // rebuilt the whole list with innerHTML on every line, which is quadratic over a
+  // long matching run.
+  function mbuLog(o) {
+      o = o || {};
+      var max = o.max || 2000, buf = [], dropped = 0, warn = 0, error = 0, win = null;
+      var pad = function (n, w) { return String(n).padStart(w || 2, '0'); };
+      var ts = function (d) { return pad(d.getHours()) + ':' + pad(d.getMinutes()) + ':' + pad(d.getSeconds()) + '.' + pad(d.getMilliseconds(), 3); };
+      var str = function (v) {
+          if (typeof v === 'string') return v;
+          if (v instanceof Error) return v.message || String(v);
+          if (v && v.nodeType) return '<' + (v.tagName || 'node').toLowerCase() + '>';
+          try { return typeof v === 'object' ? JSON.stringify(v) : String(v); } catch (e) { return String(v); }
+      };
+      var esc = function (s) {
+          return String(s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; });
+      };
+      // escape, then make http(s) URLs clickable, keeping trailing punctuation out of them
+      var linkify = function (s) {
+          return esc(s).replace(/(https?:\/\/[^\s<]+)/g, function (m) {
+              var t = (m.match(/[.,;:!?)\]]+$/) || [''])[0];
+              var url = m.slice(0, m.length - t.length);
+              return '<a href="' + url + '" target="_blank" rel="noopener">' + url + '</a>' + t;
+          });
+      };
+      var load = o.load || function (k) { try { return GM_getValue(k, undefined); } catch (e) { return undefined; } };
+      var save = o.save || function (k, v) { try { GM_setValue(k, v); } catch (e) { /* no storage: the window just forgets */ } };
+      var state = function () { try { return JSON.parse(load(o.key) || '{}') || {}; } catch (e) { return {}; } };
+      var remember = function (patch) { try { save(o.key, JSON.stringify(Object.assign(state(), patch))); } catch (e) { /* see save */ } };
+      var tally = function (e, d) { if (e.sev === 'warn') warn += d; else if (e.sev === 'error') error += d; };
+      var PRE = { info: '', ok: 'OK   ', warn: 'WARN ', error: 'ERR  ', debug: 'DBG  ' };
+      var line = function (e) { return ts(e.t) + '  ' + (PRE[e.sev] || '') + e.msg; };
+
+      function add(sev, args) {
+          var msg = Array.prototype.map.call(args, str).join(' ').replace(/\s+/g, ' ').trim();
+          if (!msg) return;
+          var e = { t: new Date(), sev: sev === 'err' ? 'error' : sev, msg: msg };
+          buf.push(e); tally(e, 1);
+          // trim in chunks, not one shift per line
+          if (buf.length > max + Math.ceil(max / 10)) {
+              var gone = buf.splice(0, buf.length - max);
+              gone.forEach(function (g) { tally(g, -1); });
+              dropped += gone.length;
+          }
+          if (win) win.append(e);
+      }
+      function title() {
+          var v = typeof o.version === 'function' ? (function () { try { return o.version(); } catch (e) { return ''; } })() : o.version;
+          var t = (o.name || 'Log') + (v ? ' v' + v : '');
+          try { var s = o.subtitle && o.subtitle(); if (s) t += ' — ' + s; } catch (e) { /* no subtitle */ }
+          return t;
+      }
+      function markdown() {
+          var body = buf.length ? buf.map(line).join('\n') : '(no activity logged)';
+          if (dropped) body = '(' + dropped + ' earlier line' + (dropped === 1 ? '' : 's') + ' not kept)\n' + body;
+          var n = (warn || error) ? ' (' + warn + ' warning' + (warn === 1 ? '' : 's') + ', ' + error + ' error' + (error === 1 ? '' : 's') + ')' : '';
+          var fence = String.fromCharCode(96, 96, 96);
+          return '<details><summary>' + title() + ' — session log' + n + '</summary>\n\n' + fence + 'log\n' + body + '\n' + fence + '\n\n</details>';
+      }
+      function copy(btn) {
+          var md = markdown();
+          var done = function (ok) {
+              if (!btn) return;
+              var was = btn.dataset.lbl || btn.textContent; btn.dataset.lbl = was;
+              btn.textContent = ok ? 'Copied ✓' : 'Copy failed';
+              setTimeout(function () { btn.textContent = was; }, 1500);
+          };
+          var fallback = function () {
+              var ok = false;
+              try {
+                  var ta = document.createElement('textarea'); ta.value = md; ta.style.position = 'fixed'; ta.style.opacity = '0';
+                  document.body.appendChild(ta); ta.select(); ok = document.execCommand('copy'); ta.remove();
+              } catch (x) { /* nothing left to try */ }
+              done(ok);
+          };
+          try { navigator.clipboard.writeText(md).then(function () { done(true); }, fallback); } catch (e) { fallback(); }
+      }
+      function open() {
+          close(true);
+          if (typeof o.before === 'function') { try { o.before(); } catch (e) { /* the window still opens */ } }
+          remember({ open: true });
+          var st = state();
+          var pop = document.createElement('div'); pop.id = 'mbu-logpop'; pop.className = 'mbu-logpop';
+          pop.innerHTML = '<div class="mbu-logpop-h"><b>' + esc(o.header || 'Activity log') + '</b> <span class="mbu-log-badge"></span><span class="mbu-logpop-sp"></span>'
+              + '<button class="mbu-logpop-copy" type="button" title="Copy as Markdown (paste into a GitHub issue)">⧉ Copy</button>'
+              + '<button class="mbu-logpop-min" type="button" title="Minimize">–</button>'
+              + '<button class="mbu-logpop-x" type="button" title="Close">✕</button></div>'
+              + '<div class="mbu-log-list"></div>';
+          document.body.appendChild(pop);
+          if (st.left != null) { pop.style.left = st.left; pop.style.top = st.top; pop.style.right = 'auto'; pop.style.transform = 'none'; }
+          var restore = { left: pop.style.left, top: pop.style.top, right: pop.style.right, bottom: pop.style.bottom, transform: pop.style.transform };
+          var list = pop.querySelector('.mbu-log-list'), badge = pop.querySelector('.mbu-log-badge');
+          var row = function (e) {
+              var d = document.createElement('div');
+              d.className = 'mbu-log-li mbu-log-' + e.sev;
+              d.innerHTML = '<span class="mbu-log-t">' + ts(e.t) + '</span><span class="mbu-log-m">' + linkify(e.msg) + '</span>';
+              return d;
+          };
+          var showBadge = function () { badge.textContent = '(' + buf.length + ')' + (warn || error ? ' · ' + warn + '⚠ ' + error + '✖' : ''); };
+          // the rows, once; later lines are appended one by one
+          var frag = document.createDocumentFragment();
+          buf.forEach(function (e) { frag.appendChild(row(e)); });
+          if (buf.length) list.appendChild(frag);
+          else list.innerHTML = '<div class="mbu-log-empty">No activity yet.</div>';
+          showBadge();
+          list.scrollTop = list.scrollHeight;
+          // badge and scroll once per frame, however many lines arrive in it
+          var queued = false, follow = true;
+          list.addEventListener('scroll', function () { follow = list.scrollHeight - list.scrollTop - list.clientHeight < 40; });
+          var paint = function () { queued = false; showBadge(); if (follow) list.scrollTop = list.scrollHeight; };
+          var onKey = function (e) { if (e.key === 'Escape') close(); };
+          win = {
+              el: pop,
+              append: function (e) {
+                  var empty = list.querySelector('.mbu-log-empty'); if (empty) empty.remove();
+                  list.appendChild(row(e));
+                  while (list.childElementCount > buf.length) list.firstElementChild.remove();
+                  if (!queued) { queued = true; requestAnimationFrame(paint); }
+              },
+              off: function () { document.removeEventListener('keydown', onKey); },
+          };
+          pop.querySelector('.mbu-logpop-copy').onclick = function () { copy(pop.querySelector('.mbu-logpop-copy')); };
+          var minBtn = pop.querySelector('.mbu-logpop-min');
+          var setMin = function (m) {
+              minBtn.textContent = m ? '▢' : '–'; minBtn.title = m ? 'Restore' : 'Minimize';
+              if (m) { pop.style.left = '14px'; pop.style.bottom = '14px'; pop.style.top = 'auto'; pop.style.right = 'auto'; pop.style.transform = 'none'; }   // dock to the bottom
+              else Object.assign(pop.style, restore);
+          };
+          minBtn.onclick = function () { var m = pop.classList.toggle('min'); setMin(m); remember({ min: m }); };
+          if (st.min) { pop.classList.add('min'); setMin(true); }
+          pop.querySelector('.mbu-logpop-x').onclick = function () { close(); };
+          // floating and non-modal: dragged by its header
+          pop.querySelector('.mbu-logpop-h').addEventListener('mousedown', function (e) {
+              if (e.target.closest('button')) return;
+              e.preventDefault();
+              var r = pop.getBoundingClientRect();
+              pop.style.left = r.left + 'px'; pop.style.top = r.top + 'px'; pop.style.right = 'auto'; pop.style.transform = 'none';
+              var ox = e.clientX - r.left, oy = e.clientY - r.top;
+              var mv = function (ev) {
+                  pop.style.left = Math.max(0, Math.min(window.innerWidth - pop.offsetWidth, ev.clientX - ox)) + 'px';
+                  pop.style.top = Math.max(0, Math.min(window.innerHeight - 36, ev.clientY - oy)) + 'px';
+              };
+              var up = function () {
+                  document.removeEventListener('mousemove', mv); document.removeEventListener('mouseup', up);
+                  if (!pop.classList.contains('min')) {
+                      restore = { left: pop.style.left, top: pop.style.top, right: 'auto', bottom: '', transform: 'none' };
+                      remember({ left: pop.style.left, top: pop.style.top });
+                  }
+              };
+              document.addEventListener('mousemove', mv); document.addEventListener('mouseup', up);
+          });
+          document.addEventListener('keydown', onKey);
+          return pop;
+      }
+      // quiet: closing to reopen, so the remembered "open" stays as it is
+      function close(quiet) {
+          var stray = document.getElementById('mbu-logpop');
+          if (win) { win.off(); win.el.remove(); win = null; if (!quiet) remember({ open: false }); }
+          if (stray) stray.remove();   // another script's window: one log window at a time
+      }
+      var api = {
+          info: function () { add('info', arguments); },
+          warn: function () { add('warn', arguments); },
+          err: function () { add('error', arguments); },
+          error: function () { add('error', arguments); },
+          ok: function () { add('ok', arguments); },
+          debug: function () { add('debug', arguments); },
+          add: function (sev) { add(sev, Array.prototype.slice.call(arguments, 1)); },
+          open: open,
+          close: function () { close(); },
+          reopen: function () { if (state().open) open(); },
+          isOpen: function () { return !!win; },
+          markdown: markdown,
+          copy: copy,
+          lines: function () { return buf.map(line); },
+          messages: function () { return buf.map(function (e) { return e.msg; }); },
+          counts: function () { return { warn: warn, error: error }; },
+      };
+      return api;
   }
 
   // Dismiss-on-outside-click, with the trailing click SWALLOWED.
@@ -3100,7 +3197,6 @@
     row.scrollIntoView({ block: 'center', behavior: 'smooth' });
     const creds = row.querySelectorAll('.tc-cred'); (creds[i] || row).focus();
   }
-  const missingDiscogsCount = () => { let n = 0; if (MODEL) MODEL.tracks.forEach(t => t.slots.forEach(s => { if (discNeedsAttention(s)) n++; })); return n; };
   const setDiscStat = () => {
     // #281: Discogs API unreachable → an amber, clickable "retry" badge instead of a
     // blank that reads as "nothing to do". (It also auto-retries once on its own.)
@@ -4432,7 +4528,6 @@
     let rows = [];         // [{ raw, override }]
     let _splitLast = false;   // #456 v2 ‹first|last›: which separator instance a text field splits on
     const tracks = () => u(mediums()[curMi].tracks) || [];
-    const trackTitle = i => { const t = tracks()[i]; return t ? (u(t.name) || '') : ''; };
     // the current medium's tracklist rendered in the #. T - A (L) format, to seed the paste box
     const acStr = t => (liveNames(t) || []).map(n => (u(n.name) || (u(n.artist) && u(u(n.artist).name)) || '') + (u(n.joinPhrase) || '')).join('').trim();
     const currentText = () => tracks().map((t, i) => { const num = u(t.number) || (i + 1); const title = u(t.name) || ''; const artist = acStr(t); const len = u(t.formattedLength) || ''; return `${num}. ${title}` + (artist ? ` - ${artist}` : '') + (len ? ` (${len})` : ''); }).join('\n');
@@ -4961,7 +5056,6 @@
     { act: 'cols',      label: 'Resize columns',     icon: '↔', params: true }, // ↔
   ];
   const TOOL = Object.fromEntries(MENU.map(m => [m.act, m]));
-  const LABELS = Object.fromEntries(MENU.map(m => [m.act, m.label]));
   const MEDIUM_TOOLS = new Set(['parser', 'patternparser', 'lengthparser', 'resetnum', 'swap']);   // act on ONE medium (inline medium combo when >1)
   const PICK_SHOWS_ONLY = new Set(['mergemed', 'splitmed']);   // #615: structural — picking from the menu must not run them
   const OPTLESS = new Set(['guessfeat']);   // global, no options — fires on pick (non-sticky)
@@ -5085,9 +5179,6 @@
       const disp = row.querySelector('.t-title-disp');
       if (disp) { disp.innerHTML = dhRun(val); disp.classList.toggle('gcpreview', on); }
     });
-  }
-  function wireToolHover() {
-    document.querySelectorAll('.tc-toolbtn[data-act="guesscase"]').forEach(b => { b.onmouseenter = () => previewAllGuess(true); b.onmouseleave = () => previewAllGuess(false); });
   }
 
   // #280: render every on-bar tool inline at its position — a plain button when it
@@ -5934,7 +6025,6 @@
   function recWant() { return apolloEnabled() && SETTINGS.replaceRecordings !== false; }
   function riWant() { return apolloEnabled() && SETTINGS.replaceReleaseInfo !== false; }
   function releaseInfoVisible() { const p = document.getElementById('information'); return !!(p && p.offsetParent !== null); }
-  function curWant() { return apolloEnabled(); }
   function apolloOn() { return apolloEnabled(); }
   // #569: guarded. Assigning textContent replaces the child text node whether or
   // not the string changed, so this was dispatching a childList record twice a
@@ -6736,6 +6826,7 @@
       '.tc-rectbl td{overflow-wrap:anywhere}',
       '.tc-rectbl th{text-align:left;font-size:11px;color:var(--mbu-text-dim);border-bottom:1px solid var(--mbu-border);padding:4px 7px;white-space:nowrap}',
       '.tc-rectbl td{padding:4px 7px;vertical-align:top}',
+      '.tc-rectbl td.tc-rdrag{box-shadow:inset 0 0 0 2px var(--mbu-accent)}',   // #635 cells a right-drag touched
       '.tc-rectbl.gridrows td{border-bottom:1px solid var(--mbu-border)}',
       // density layouts (same names as the Tracklist tab): compact tighter, cozy airier, normal = default
       '.tc-rectbl.compact th{padding:2px 7px}.tc-rectbl.compact td{padding:1px 7px}',
@@ -6977,7 +7068,10 @@
     const tbl = wrap.querySelector('.tc-rectbl'); if (!tbl) return;
     const copyOn = (t, f) => f === 'title' ? !!u(t.updateRecordingTitle) : !!u(t.updateRecordingArtist);
     const eligible = (t, f) => !!t && (nativeDiffFlag(t, f) || copyOn(t, f));
+    wireRecCellDrag(wrap, tbl, { copyOn, eligible });
     tbl.addEventListener('contextmenu', e => {
+      // #635: a right-button drag already did its work on every cell it touched
+      if (_recDragSwallow) { e.preventDefault(); _recDragSwallow = false; Log.debug('#635 contextmenu after a right-drag — swallowed'); return; }
       const tr = e.target.closest('tr.tc-recrow'); if (!tr) return;
       const recRows = () => wrap.querySelectorAll('tbody tr.tc-recrow');
       const wholeSide = e.ctrlKey && e.altKey;   // #443: both fields, every row = the whole side
@@ -7094,6 +7188,85 @@
       else if (e.altKey)      recRows().forEach(row => apply(+row.dataset.mi, +row.dataset.ti, field));   // whole column
       else                    apply(mi, ti, field);
       rerenderRec();
+    });
+  }
+  // #635: right-button DRAG over the cells = the right-click on each cell it touches, so
+  // several rows or columns are done with the mouse alone (the modifiers still work).
+  //   recording side → every touched cell's copy is set to what the FIRST cell toggles to,
+  //                    so a drag either marks or unmarks, never a mix
+  //   track side     → every touched cell copies from its recording, immediately
+  // A drag stays on the side it started on (the two sides copy in opposite directions).
+  // A press that never reaches a second cell is an ordinary right-click and is left to the
+  // contextmenu handler; once a drag has reached one, that trailing contextmenu is swallowed.
+  let _recDragSwallow = false;
+  const REC_DRAG_CELLS = { 'td.tc-recname': ['rec', 'title'], 'td.tc-recartist': ['rec', 'artist'], 'td.tc-tkt': ['track', 'title'], 'td.tc-tka': ['track', 'artist'] };
+  function recDragCell(el) {
+    for (const [sel, [side, field]] of Object.entries(REC_DRAG_CELLS)) {
+      const td = el && el.closest && el.closest(sel), tr = td && td.closest('tr.tc-recrow');
+      if (td && tr) return { td, side, field, mi: +tr.dataset.mi, ti: +tr.dataset.ti, key: tr.dataset.mi + '.' + tr.dataset.ti + '.' + field };
+    }
+    return null;
+  }
+  function wireRecCellDrag(wrap, tbl, { copyOn, eligible }) {
+    if (tbl._tcRecDrag) return; tbl._tcRecDrag = true;
+    tbl.addEventListener('mousedown', e => {
+      if (e.button !== 2 || e.ctrlKey || e.altKey || e.shiftKey || e.metaKey) return;   // modifiers keep their click meaning
+      const start = recDragCell(e.target); if (!start) return;
+      _recDragSwallow = false;
+      const t0 = koTrack(start.mi, start.ti);
+      const drag = { side: start.side, start, touched: new Map(), moved: false,
+        target: start.side === 'rec' ? !copyOn(t0, start.field) : null };   // the rec side's mark/unmark, decided by the first cell
+      const mark = () => wrap.querySelectorAll('tbody tr.tc-recrow').forEach(tr => {   // rerenderRec rebuilds rows: re-mark by key
+        for (const [sel, [side, field]] of Object.entries(REC_DRAG_CELLS)) {
+          if (side !== drag.side) continue;
+          const td = tr.querySelector(sel); if (td) td.classList.toggle('tc-rdrag', drag.touched.has(tr.dataset.mi + '.' + tr.dataset.ti + '.' + field));
+        }
+      });
+      const touch = c => {
+        if (drag.touched.has(c.key)) return;
+        drag.touched.set(c.key, c);
+        if (drag.side === 'rec') {
+          const t = koTrack(c.mi, c.ti);
+          if (eligible(t, c.field)) setCopy(c.field, { mi: c.mi, ti: c.ti }, drag.target);
+          else Log.debug(`#635 right-drag: ${c.key} has no copy to offer — skipped`);
+          rerenderRec();
+        } else {
+          // the right-click's own copy for this one cell (the handler's plain, no-modifier path),
+          // on the cell as it is NOW: the previous copy's rerenderRec may have replaced the row
+          const sel = Object.keys(REC_DRAG_CELLS).find(s => REC_DRAG_CELLS[s][0] === 'track' && REC_DRAG_CELLS[s][1] === c.field);
+          const td = wrap.querySelector(`tbody tr.tc-recrow[data-mi="${c.mi}"][data-ti="${c.ti}"] ${sel}`);
+          if (td) td.dispatchEvent(new MouseEvent('contextmenu', { bubbles: true, cancelable: true, button: 2 }));
+          else Log.warn(`#635 right-drag: row ${c.key} is gone from the table — not copied`);
+        }
+        mark();
+      };
+      const move = ev => {
+        if (!(ev.buttons & 2)) return end(ev);
+        const c = recDragCell(document.elementFromPoint(ev.clientX, ev.clientY));
+        if (!c || c.side !== drag.side || (!drag.moved && c.key === start.key)) return;
+        if (!drag.moved) {
+          drag.moved = true;
+          Log.info(`#635 right-drag on the ${drag.side === 'rec' ? 'recording' : 'track'} side from ${start.key}` + (drag.side === 'rec' ? ` — ${drag.target ? 'marking' : 'unmarking'} copies` : ' — copying from the recordings'));
+          touch(start);
+        }
+        touch(c);
+      };
+      const end = () => {
+        window.removeEventListener('mousemove', move, true); window.removeEventListener('mouseup', end, true);
+        if (!drag.moved) return;   // one cell: the contextmenu handler does it
+        // The release's contextmenu (Windows fires it after mouseup) lands on whatever is under
+        // the pointer, which may be outside the table (majkinetor, #635): swallow it page-wide.
+        // Where it already fired on the press, nothing comes, so don't keep waiting for one.
+        _recDragSwallow = true;
+        const swallow = ev => { ev.preventDefault(); ev.stopPropagation(); _recDragSwallow = false; window.removeEventListener('contextmenu', swallow, true); Log.debug('#635 contextmenu after a right-drag — swallowed (' + ((ev.target && ev.target.tagName) || '?') + ')'); };
+        window.addEventListener('contextmenu', swallow, true);
+        setTimeout(() => { _recDragSwallow = false; window.removeEventListener('contextmenu', swallow, true); }, 400);
+        wrap.querySelectorAll('.tc-rdrag').forEach(td => td.classList.remove('tc-rdrag'));
+        if (drag.side === 'track') { _tlRefreshed = false; scheduleSync(); }
+        rerenderRec();
+        Log.info(`#635 right-drag done: ${drag.touched.size} cell(s) — ${[...drag.touched.keys()].join(', ')}`);
+      };
+      window.addEventListener('mousemove', move, true); window.addEventListener('mouseup', end, true);
     });
   }
   // custom Cutoff picker — a colored-dot dropdown that uses the SAME hex palette as the row dots
@@ -7512,7 +7685,6 @@
   async function autoMatchRecordings() {
     if (_autoMatching) return; _autoMatching = true;   // #577
     if (!_matching) _matchStop = false;   // #575: don't clear a stop the tracklist pass has not acted on yet
-    const wrap = document.getElementById('tc-recwrap');
     // #545: the status text alone was easy to miss while MusicBrainz was slow —
     // and the button stayed enabled and unchanged, so it read as "nothing
     // happened". Re-queried on each use rather than captured: the recordings
@@ -7723,14 +7895,6 @@
   function setCopy(field, entry, on) {
     try { const t = koTrack(entry.mi, entry.ti); if (field === 'title') t.updateRecordingTitle(on); else t.updateRecordingArtist(on); }
     catch (e) { Log.warn('set copy ' + field + ' failed', e.message); }
-  }
-  function setCopyAll(field) {
-    const flag = field === 'title' ? 'copyTitle' : 'copyArtist';
-    // only the rows where this field actually differs (or is already flagged) — copying a matching value is a no-op
-    const rows = readRecordings().filter(r => r.recGid && ((r.diffs && r.diffs[field]) || r[flag]));
-    const allOn = rows.length && rows.every(r => r[flag]);   // toggle: if every eligible row is on, turn all off
-    rows.forEach(r => setCopy(field, r, !allOn));
-    Log.info((allOn ? 'cleared' : 'set') + ' copy-' + field + ' on all ' + rows.length + ' recording(s)');
   }
   function rerenderRec() { renderRecBody(); }   // body only — keeps the toolbar (status / inputs) intact
 
@@ -10039,7 +10203,7 @@
     // that panel is showing. One delegated listener, self-guarded by the
     // #external-links-editor check inside it.
     installMultiLinkPaste();
-    if (loadLogWin().open) setTimeout(() => { try { openLog(); } catch (e) {} }, 1200);   // #283 reopen the log if it was left open
+    setTimeout(() => { try { Log.reopen(); } catch (e) {} }, 1200);   // #283 reopen the log if it was left open
     snapshotOriginals();
     const tl = readTracklist();
     Log.info('tracklist:', tl.length, 'tracks ·', tl.reduce((n, t) => n + t.names.filter(x => !x.artistGid).length, 0), 'unresolved slots');

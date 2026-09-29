@@ -20,24 +20,31 @@ test('Merge All submits one merge at a time, and only reports what MusicBrainz c
 
   // Fresh fixtures every run: earlier runs merged theirs. Recordings with NO pending
   // edit, so a pending edit afterwards can only be the merge this run created.
-  const fixtures = await page.evaluate(async (need) => {
+  const fixtures = await page.evaluate(async ([need, words]) => {
       // A broad title search, not one artist's catalogue: every earlier merge test
       // left its artist's recordings with pending (never-voted) edits on the sandbox.
-      const out = [];
-      for (let offset = 0; offset < 1000 && out.length < need; offset += 100) {
-          const sr = await fetch(`/ws/2/recording?query=${encodeURIComponent('recording:love')}&limit=100&offset=${offset}&fmt=json`).then(r => r.json()).catch(() => null);
-          const recs = (sr && sr.recordings) || [];
-          if (!recs.length) break;
-          for (const r of recs) {
-              if (out.length >= need) break;
-              if (r.video) continue;   // other specs flag sandbox recordings as videos; one never merges with audio
-              const j = await fetch('/ws/js/entity/' + r.id).then(x => x.ok ? x.json() : null).catch(() => null);
-              if (j && j.gid === r.id && !j.editsPending) out.push(r.id);
-              await new Promise(z => setTimeout(z, 250));
+      // Common words in a random order spread the fixtures over the sandbox; a word
+      // whose page of results yields none clean (earlier runs merged them) gives way
+      // to the next. The search stops after two minutes, well inside the test's five;
+      // too few found → skip.
+      const out = [], stop = Date.now() + 120000;
+      for (const word of words) {
+          for (let offset = 0; offset < 500 && out.length < need && Date.now() < stop; offset += 100) {
+              const sr = await fetch(`/ws/2/recording?query=${encodeURIComponent('recording:' + word)}&limit=100&offset=${offset}&fmt=json`).then(r => r.json()).catch(() => null);
+              const recs = ((sr && sr.recordings) || []).filter(r => !r.video);   // other specs flag sandbox recordings as videos; one never merges with audio
+              const had = out.length;
+              for (const r of recs.slice(0, 25)) {
+                  if (out.length >= need || Date.now() > stop) break;
+                  const j = await fetch('/ws/js/entity/' + r.id).then(x => x.ok ? x.json() : null).catch(() => null);
+                  if (j && j.gid === r.id && !j.editsPending && !out.includes(r.id)) out.push(r.id);
+                  await new Promise(z => setTimeout(z, 250));
+              }
+              if (!recs.length || out.length === had) break;   // this word is used up
           }
+          if (out.length >= need || Date.now() > stop) break;
       }
       return out;
-  }, GROUPS * 2);
+  }, [GROUPS * 2, ['love', 'night', 'time', 'heart', 'dance', 'home', 'light', 'dream', 'rain', 'blue', 'fire', 'song'].sort(() => Math.random() - 0.5)]);
   test.skip(fixtures.length < GROUPS * 2, 'only ' + fixtures.length + ' clean recordings left on the sandbox');
 
   await page.goto(`https://test.musicbrainz.org/recording/${fixtures[0]}`, { waitUntil: 'domcontentloaded' });

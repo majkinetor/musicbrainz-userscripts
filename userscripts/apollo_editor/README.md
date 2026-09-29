@@ -69,6 +69,7 @@ Each part is optional, and the **Original / Apollo** button switches back to Mus
 | Ctrl + right-click | both fields of the row |
 | Alt + right-click | that field in every row |
 | Ctrl + Alt + right-click | both fields in every row |
+| Right-drag | every cell it passes over, on the side it started on |
 
 On the recording side the copy is applied when you submit, like MusicBrainz's own checkboxes; the cell shows `→ New` and the old value struck through. On the track side it's applied at once. A copy is offered wherever MusicBrainz would show its checkbox, including case-only differences.
 

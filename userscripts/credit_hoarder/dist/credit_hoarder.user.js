@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Credit Hoarder
 // @namespace    majkinetor
-// @version      2026.9.29.011948
+// @version      2026.9.29.182430
 // @description  Import per-track release credits from streaming/database providers (Discogs, Tidal, Qobuz, Deezer) into MusicBrainz relationships, with a review phase
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij4KICANCiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMmY2ZjU0IiBzdHJva2Utd2lkdGg9IjkiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGNpcmNsZSBjeD0iMzQiIGN5PSIzOCIgcj0iMi41IiBmaWxsPSIjMmY2ZjU0IiBzdHJva2U9Im5vbmUiLz4NCiAgICA8bGluZSB4MT0iNTAiIHkxPSIzOCIgeDI9Ijk4IiB5Mj0iMzgiLz4NCiAgICA8Y2lyY2xlIGN4PSIzNCIgY3k9IjY0IiByPSIyLjUiIGZpbGw9IiMyZjZmNTQiIHN0cm9rZT0ibm9uZSIvPg0KICAgIDxsaW5lIHgxPSI1MCIgeTE9IjY0IiB4Mj0iOTgiIHkyPSI2NCIvPg0KICAgIDxjaXJjbGUgY3g9IjM0IiBjeT0iOTAiIHI9IjIuNSIgZmlsbD0iIzJmNmY1NCIgc3Ryb2tlPSJub25lIi8+DQogICAgPGxpbmUgeDE9IjUwIiB5MT0iOTAiIHgyPSI3NCIgeTI9IjkwIi8+DQogIDwvZz4NCiAgPGNpcmNsZSBjeD0iOTIiIGN5PSI5MiIgcj0iMjMiIGZpbGw9IiMyZTllNWIiLz4NCiAgPGcgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGxpbmUgeDE9IjkyIiB5MT0iODEiIHgyPSI5MiIgeTI9IjEwMyIvPg0KICAgIDxsaW5lIHgxPSI4MSIgeTE9IjkyIiB4Mj0iMTAzIiB5Mj0iOTIiLz4NCiAgPC9nPg0KPC9zdmc+DQo=
@@ -1833,37 +1833,134 @@
     "Wobble Board": null
   };
 
+  // ../../dev/match/artist-match.mjs
+  var MBM_EXACT_LIMIT = 100;
+  var MBM_SPECIAL_PURPOSE = [
+    "125ec42a-7229-4250-afc5-e057484327fe",
+    // [unknown]
+    "f731ccc4-e22a-43af-a747-64213329e088",
+    // [anonymous]
+    "33cf029c-63b0-41a0-9855-be2a3665fb3b",
+    // [data]
+    "314e1c25-dde7-4e4d-b2f4-0a7b9f7c56dc",
+    // [dialogue]
+    "eec63d3c-3b81-4ad4-b1e4-7c147d4d2b61",
+    // [no artist]
+    "9be7f096-97ec-4615-8957-8d40b5dcbc41",
+    // [traditional]
+    "89ad4ac3-39f7-470e-963a-56509c546377",
+    // Various Artists
+    "7e84f845-ac16-41fe-9ff8-df12eb32af55",
+    // MusicBrainz Test Artist
+    "66ea0139-149f-4a0c-8fbf-5ea9ec4a6e49",
+    // [Disney]
+    "a0ef7e1d-44ff-4039-9435-7d5fefdeecc9",
+    // [theatre]
+    "90068d37-bae7-4292-be4a-704c145bd616",
+    // [church chimes]
+    "80a8851f-444c-4539-892b-ad2a49292aa9"
+    // [language instruction]
+  ];
+  function mbmFold(s) {
+    return String(s == null ? "" : s).normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/đ/gi, "d").replace(/[‐‑‒–—―−]/g, "-").toLowerCase().replace(/\s+/g, " ").trim();
+  }
+  function mbmFoldKeepCase(s) {
+    return String(s == null ? "" : s).normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/đ/gi, "d").replace(/[‐‑‒–—―−]/g, "-").replace(/\s+/g, " ").trim();
+  }
+  function mbmSameName(a, b) {
+    return mbmFold(a) === mbmFold(b) && mbmFold(a) !== "";
+  }
+  function mbmSameNameCase(a, b) {
+    return mbmFoldKeepCase(a) === mbmFoldKeepCase(b) && mbmFoldKeepCase(a) !== "";
+  }
+  function mbmHolds(entity, name, caseExact) {
+    if (!entity) return null;
+    const same = caseExact ? mbmSameNameCase : mbmSameName;
+    if (same(entity.name, name)) return "name";
+    if ((entity.aliases || []).some((al) => same(al && (al.name != null ? al.name : al), name))) return "alias";
+    return null;
+  }
+  function mbmIdentityQuery(name, field) {
+    const q = String(name == null ? "" : name).replace(/["\\]/g, " ").replace(/\s+/g, " ").trim();
+    return q ? 'alias:"' + q + '" OR ' + (field || "artist") + ':"' + q + '"' : "";
+  }
+  function mbmExactIdentity(json, name, opts) {
+    const o = opts || {};
+    if (!json || typeof json !== "object") return { status: "failed", exact: [] };
+    const list = json.artists || json.labels || json.places || [];
+    let exact = list.filter((e) => mbmHolds(e, name));
+    if (exact.length > 1) {
+      const caseExact = exact.filter((e) => mbmHolds(e, name, true));
+      if (caseExact.length === 1) exact = caseExact;
+      else if (o.scoreGap) {
+        const scored = exact.filter((e) => typeof e.score === "number").sort((a, b) => b.score - a.score);
+        if (scored.length >= 2 && scored[0].score - scored[1].score >= o.scoreGap) exact = [scored[0]];
+      }
+    }
+    const offset = typeof json.offset === "number" ? json.offset : 0;
+    const complete = typeof json.count === "number" && json.count <= offset + list.length;
+    if (exact.length === 1 && complete) return { status: "unique", hit: exact[0], via: mbmHolds(exact[0], name) === "name" ? "name" : "alias", exact, complete };
+    if (exact.length > 1) return { status: "ambiguous", exact, complete };
+    if (!complete) return { status: "incomplete", exact, complete };
+    return { status: "none", exact, complete };
+  }
+  function mbmRelatedArtists(artistJson) {
+    if (!artistJson || !artistJson.id) return [];
+    const out = [{ gid: artistJson.id, name: artistJson.name || "", aliases: (artistJson.aliases || []).map((a) => a && a.name).filter(Boolean), rel: "self" }];
+    for (const r of artistJson.relations || []) {
+      const a = r && r.artist;
+      if (!a || !a.id || out.some((x) => x.gid === a.id)) continue;
+      out.push({ gid: a.id, name: a.name || "", aliases: [], rel: r.type || "" });
+    }
+    return out;
+  }
+  function mbmContextHolders(related, name, candidates) {
+    const cand = new Map((candidates || []).map((c) => [c.id || c.gid, c]));
+    const out = [];
+    for (const r of related || []) {
+      let via = mbmSameName(r.name, name) ? "name" : (r.aliases || []).some((a) => mbmSameName(a, name)) ? "alias" : null;
+      if (!via) {
+        const c = cand.get(r.gid);
+        if (c && mbmHolds(c, name)) via = mbmHolds(c, name);
+      }
+      if (via && !out.some((x) => x.gid === r.gid)) out.push({ gid: r.gid, name: r.name, via, rel: r.rel });
+    }
+    return out;
+  }
+  function mbmCoCreditHits(recordingsJson, ctxGid, name) {
+    const out = [];
+    for (const rec of recordingsJson && recordingsJson.recordings || []) {
+      for (const c of rec["artist-credit"] || []) {
+        const a = c && c.artist;
+        if (!a || !a.id || a.id === ctxGid) continue;
+        if ((mbmSameName(c.name, name) || mbmSameName(a.name, name)) && !out.some((x) => x.gid === a.id)) out.push({ gid: a.id, name: a.name });
+      }
+    }
+    return out;
+  }
+  function mbmGuessSortName(name) {
+    if (!name || !name.trim()) return name;
+    name = name.trim().replace(/\s+/g, " ");
+    if (/[^\p{Script=Latin}\p{Script=Common}\p{Script=Inherited}]/u.test(name)) return name;
+    const words = name.split(" ");
+    if (words.length === 1) return name;
+    const article = name.match(/^(the|a|an)\s+(.+)$/i);
+    if (article) return article[2] + ", " + article[1].charAt(0).toUpperCase() + article[1].slice(1).toLowerCase();
+    let base = name, suffix = "";
+    const sfx = name.match(/^(.*?),?\s+(jr\.?|sr\.?|ii|iii|iv|v|esq\.?)$/i);
+    if (sfx) {
+      base = sfx[1].trim();
+      suffix = " " + sfx[2];
+    }
+    const parts = base.split(" ");
+    if (parts.length === 1) return name;
+    return parts[parts.length - 1] + ", " + parts.slice(0, -1).join(" ") + suffix;
+  }
+
   // src/mappers.js
   var INSTRUMENTS_CI = Object.fromEntries(
     Object.entries(INSTRUMENTS).map(([k, v]) => [k.toLowerCase(), v])
   );
-  function guessSortName(name) {
-    if (!name || !name.trim()) return name;
-    name = name.trim();
-    const articleRe = /^(the|a|an)\s+(.+)$/i;
-    const honorifics = /^(dr\.?|prof\.?|sir|lady|lord|rev\.?|st\.?|dj|mc|mc\.?)\s+/i;
-    const suffixRe = /^(.*?),?\s+(jr\.?|sr\.?|ii|iii|iv|v|esq\.?)$/i;
-    const words = name.split(/\s+/);
-    if (words.length === 1) return name;
-    const articleMatch = name.match(articleRe);
-    if (articleMatch) {
-      const article = articleMatch[1];
-      const rest = articleMatch[2];
-      return `${rest}, ${article.charAt(0).toUpperCase() + article.slice(1).toLowerCase()}`;
-    }
-    let suffix = "";
-    let baseName = name;
-    const suffixMatch = name.match(suffixRe);
-    if (suffixMatch) {
-      baseName = suffixMatch[1].trim();
-      suffix = " " + suffixMatch[2];
-    }
-    const baseWords = baseName.split(/\s+/);
-    if (baseWords.length === 1) return name;
-    const familyName = baseWords[baseWords.length - 1];
-    const givenPart = baseWords.slice(0, -1).join(" ");
-    return `${familyName}, ${givenPart}${suffix}`;
-  }
   function flattenTracklist(tracklist) {
     if (!Array.isArray(tracklist)) return [];
     return tracklist.flatMap((t) => {
@@ -2080,112 +2177,6 @@
       }
       return rolesArr;
     }, []) || [];
-  }
-
-  // ../../dev/match/artist-match.mjs
-  var MBM_EXACT_LIMIT = 100;
-  var MBM_SPECIAL_PURPOSE = [
-    "125ec42a-7229-4250-afc5-e057484327fe",
-    // [unknown]
-    "f731ccc4-e22a-43af-a747-64213329e088",
-    // [anonymous]
-    "33cf029c-63b0-41a0-9855-be2a3665fb3b",
-    // [data]
-    "314e1c25-dde7-4e4d-b2f4-0a7b9f7c56dc",
-    // [dialogue]
-    "eec63d3c-3b81-4ad4-b1e4-7c147d4d2b61",
-    // [no artist]
-    "9be7f096-97ec-4615-8957-8d40b5dcbc41",
-    // [traditional]
-    "89ad4ac3-39f7-470e-963a-56509c546377",
-    // Various Artists
-    "7e84f845-ac16-41fe-9ff8-df12eb32af55",
-    // MusicBrainz Test Artist
-    "66ea0139-149f-4a0c-8fbf-5ea9ec4a6e49",
-    // [Disney]
-    "a0ef7e1d-44ff-4039-9435-7d5fefdeecc9",
-    // [theatre]
-    "90068d37-bae7-4292-be4a-704c145bd616",
-    // [church chimes]
-    "80a8851f-444c-4539-892b-ad2a49292aa9"
-    // [language instruction]
-  ];
-  function mbmFold(s) {
-    return String(s == null ? "" : s).normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/đ/gi, "d").replace(/[‐‑‒–—―−]/g, "-").toLowerCase().replace(/\s+/g, " ").trim();
-  }
-  function mbmFoldKeepCase(s) {
-    return String(s == null ? "" : s).normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/đ/gi, "d").replace(/[‐‑‒–—―−]/g, "-").replace(/\s+/g, " ").trim();
-  }
-  function mbmSameName(a, b) {
-    return mbmFold(a) === mbmFold(b) && mbmFold(a) !== "";
-  }
-  function mbmSameNameCase(a, b) {
-    return mbmFoldKeepCase(a) === mbmFoldKeepCase(b) && mbmFoldKeepCase(a) !== "";
-  }
-  function mbmHolds(entity, name, caseExact) {
-    if (!entity) return null;
-    const same = caseExact ? mbmSameNameCase : mbmSameName;
-    if (same(entity.name, name)) return "name";
-    if ((entity.aliases || []).some((al) => same(al && (al.name != null ? al.name : al), name))) return "alias";
-    return null;
-  }
-  function mbmIdentityQuery(name, field) {
-    const q = String(name == null ? "" : name).replace(/["\\]/g, " ").replace(/\s+/g, " ").trim();
-    return q ? 'alias:"' + q + '" OR ' + (field || "artist") + ':"' + q + '"' : "";
-  }
-  function mbmExactIdentity(json, name, opts) {
-    const o = opts || {};
-    if (!json || typeof json !== "object") return { status: "failed", exact: [] };
-    const list = json.artists || json.labels || json.places || [];
-    let exact = list.filter((e) => mbmHolds(e, name));
-    if (exact.length > 1) {
-      const caseExact = exact.filter((e) => mbmHolds(e, name, true));
-      if (caseExact.length === 1) exact = caseExact;
-      else if (o.scoreGap) {
-        const scored = exact.filter((e) => typeof e.score === "number").sort((a, b) => b.score - a.score);
-        if (scored.length >= 2 && scored[0].score - scored[1].score >= o.scoreGap) exact = [scored[0]];
-      }
-    }
-    const offset = typeof json.offset === "number" ? json.offset : 0;
-    const complete = typeof json.count === "number" && json.count <= offset + list.length;
-    if (exact.length === 1 && complete) return { status: "unique", hit: exact[0], via: mbmHolds(exact[0], name) === "name" ? "name" : "alias", exact, complete };
-    if (exact.length > 1) return { status: "ambiguous", exact, complete };
-    if (!complete) return { status: "incomplete", exact, complete };
-    return { status: "none", exact, complete };
-  }
-  function mbmRelatedArtists(artistJson) {
-    if (!artistJson || !artistJson.id) return [];
-    const out = [{ gid: artistJson.id, name: artistJson.name || "", aliases: (artistJson.aliases || []).map((a) => a && a.name).filter(Boolean), rel: "self" }];
-    for (const r of artistJson.relations || []) {
-      const a = r && r.artist;
-      if (!a || !a.id || out.some((x) => x.gid === a.id)) continue;
-      out.push({ gid: a.id, name: a.name || "", aliases: [], rel: r.type || "" });
-    }
-    return out;
-  }
-  function mbmContextHolders(related, name, candidates) {
-    const cand = new Map((candidates || []).map((c) => [c.id || c.gid, c]));
-    const out = [];
-    for (const r of related || []) {
-      let via = mbmSameName(r.name, name) ? "name" : (r.aliases || []).some((a) => mbmSameName(a, name)) ? "alias" : null;
-      if (!via) {
-        const c = cand.get(r.gid);
-        if (c && mbmHolds(c, name)) via = mbmHolds(c, name);
-      }
-      if (via && !out.some((x) => x.gid === r.gid)) out.push({ gid: r.gid, name: r.name, via, rel: r.rel });
-    }
-    return out;
-  }
-  function mbmCoCreditHits(recordingsJson, ctxGid, name) {
-    const out = [];
-    for (const rec of recordingsJson && recordingsJson.recordings || []) {
-      for (const c of rec["artist-credit"] || []) {
-        const a = c && c.artist;
-        if (!a || !a.id || a.id === ctxGid) continue;
-        if ((mbmSameName(c.name, name) || mbmSameName(a.name, name)) && !out.some((x) => x.gid === a.id)) out.push({ gid: a.id, name: a.name });
-      }
-    }
-    return out;
   }
 
   // src/sources/split-names.js
@@ -5064,7 +5055,7 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
             if (entityType === "artist") {
               createParams = {
                 "edit-artist.name": finalName,
-                "edit-artist.sort_name": guessSortName(finalName),
+                "edit-artist.sort_name": mbmGuessSortName(finalName),
                 "edit-artist.type_id": "1"
               };
               seedUrls(createParams, "artist");
@@ -7035,6 +7026,344 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
       html += mbuHelpHtml(o.script);
       return html + "</div>";
     }
+    function mbuTestHooks() {
+      try {
+        return typeof window !== "undefined" && window.__mbuTest === true;
+      } catch (e) {
+        return false;
+      }
+    }
+    function mbRestackCorner(corner) {
+      var bottom = corner[0] === "b", right = corner[1] === "r";
+      var els = Array.prototype.slice.call(document.querySelectorAll('[data-mb-corner="' + corner + '"]')).filter(function(el) {
+        return getComputedStyle(el).display !== "none";
+      }).sort(function(a, b) {
+        return (Number(a.dataset.mbCornerOrder) || 0) - (Number(b.dataset.mbCornerOrder) || 0);
+      });
+      var pos = 14;
+      els.forEach(function(el) {
+        el.style[bottom ? "bottom" : "top"] = pos + "px";
+        el.style[right ? "right" : "left"] = "14px";
+        pos += el.getBoundingClientRect().height + 8;
+      });
+    }
+    function mbuLog(o) {
+      o = o || {};
+      var max = o.max || 2e3, buf = [], dropped = 0, warn = 0, error = 0, win = null;
+      var pad = function(n, w) {
+        return String(n).padStart(w || 2, "0");
+      };
+      var ts = function(d) {
+        return pad(d.getHours()) + ":" + pad(d.getMinutes()) + ":" + pad(d.getSeconds()) + "." + pad(d.getMilliseconds(), 3);
+      };
+      var str = function(v) {
+        if (typeof v === "string") return v;
+        if (v instanceof Error) return v.message || String(v);
+        if (v && v.nodeType) return "<" + (v.tagName || "node").toLowerCase() + ">";
+        try {
+          return typeof v === "object" ? JSON.stringify(v) : String(v);
+        } catch (e) {
+          return String(v);
+        }
+      };
+      var esc = function(s) {
+        return String(s).replace(/[&<>"]/g, function(c) {
+          return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c];
+        });
+      };
+      var linkify = function(s) {
+        return esc(s).replace(/(https?:\/\/[^\s<]+)/g, function(m) {
+          var t = (m.match(/[.,;:!?)\]]+$/) || [""])[0];
+          var url = m.slice(0, m.length - t.length);
+          return '<a href="' + url + '" target="_blank" rel="noopener">' + url + "</a>" + t;
+        });
+      };
+      var load = o.load || function(k) {
+        try {
+          return GM_getValue(k, void 0);
+        } catch (e) {
+          return void 0;
+        }
+      };
+      var save = o.save || function(k, v) {
+        try {
+          GM_setValue(k, v);
+        } catch (e) {
+        }
+      };
+      var state = function() {
+        try {
+          return JSON.parse(load(o.key) || "{}") || {};
+        } catch (e) {
+          return {};
+        }
+      };
+      var remember = function(patch) {
+        try {
+          save(o.key, JSON.stringify(Object.assign(state(), patch)));
+        } catch (e) {
+        }
+      };
+      var tally = function(e, d) {
+        if (e.sev === "warn") warn += d;
+        else if (e.sev === "error") error += d;
+      };
+      var PRE = { info: "", ok: "OK   ", warn: "WARN ", error: "ERR  ", debug: "DBG  " };
+      var line = function(e) {
+        return ts(e.t) + "  " + (PRE[e.sev] || "") + e.msg;
+      };
+      function add(sev, args) {
+        var msg = Array.prototype.map.call(args, str).join(" ").replace(/\s+/g, " ").trim();
+        if (!msg) return;
+        var e = { t: /* @__PURE__ */ new Date(), sev: sev === "err" ? "error" : sev, msg };
+        buf.push(e);
+        tally(e, 1);
+        if (buf.length > max + Math.ceil(max / 10)) {
+          var gone = buf.splice(0, buf.length - max);
+          gone.forEach(function(g) {
+            tally(g, -1);
+          });
+          dropped += gone.length;
+        }
+        if (win) win.append(e);
+      }
+      function title() {
+        var v = typeof o.version === "function" ? (function() {
+          try {
+            return o.version();
+          } catch (e) {
+            return "";
+          }
+        })() : o.version;
+        var t = (o.name || "Log") + (v ? " v" + v : "");
+        try {
+          var s = o.subtitle && o.subtitle();
+          if (s) t += " \u2014 " + s;
+        } catch (e) {
+        }
+        return t;
+      }
+      function markdown() {
+        var body = buf.length ? buf.map(line).join("\n") : "(no activity logged)";
+        if (dropped) body = "(" + dropped + " earlier line" + (dropped === 1 ? "" : "s") + " not kept)\n" + body;
+        var n = warn || error ? " (" + warn + " warning" + (warn === 1 ? "" : "s") + ", " + error + " error" + (error === 1 ? "" : "s") + ")" : "";
+        var fence = String.fromCharCode(96, 96, 96);
+        return "<details><summary>" + title() + " \u2014 session log" + n + "</summary>\n\n" + fence + "log\n" + body + "\n" + fence + "\n\n</details>";
+      }
+      function copy(btn) {
+        var md = markdown();
+        var done = function(ok) {
+          if (!btn) return;
+          var was = btn.dataset.lbl || btn.textContent;
+          btn.dataset.lbl = was;
+          btn.textContent = ok ? "Copied \u2713" : "Copy failed";
+          setTimeout(function() {
+            btn.textContent = was;
+          }, 1500);
+        };
+        var fallback = function() {
+          var ok = false;
+          try {
+            var ta = document.createElement("textarea");
+            ta.value = md;
+            ta.style.position = "fixed";
+            ta.style.opacity = "0";
+            document.body.appendChild(ta);
+            ta.select();
+            ok = document.execCommand("copy");
+            ta.remove();
+          } catch (x) {
+          }
+          done(ok);
+        };
+        try {
+          navigator.clipboard.writeText(md).then(function() {
+            done(true);
+          }, fallback);
+        } catch (e) {
+          fallback();
+        }
+      }
+      function open() {
+        close(true);
+        if (typeof o.before === "function") {
+          try {
+            o.before();
+          } catch (e) {
+          }
+        }
+        remember({ open: true });
+        var st = state();
+        var pop = document.createElement("div");
+        pop.id = "mbu-logpop";
+        pop.className = "mbu-logpop";
+        pop.innerHTML = '<div class="mbu-logpop-h"><b>' + esc(o.header || "Activity log") + '</b> <span class="mbu-log-badge"></span><span class="mbu-logpop-sp"></span><button class="mbu-logpop-copy" type="button" title="Copy as Markdown (paste into a GitHub issue)">\u29C9 Copy</button><button class="mbu-logpop-min" type="button" title="Minimize">\u2013</button><button class="mbu-logpop-x" type="button" title="Close">\u2715</button></div><div class="mbu-log-list"></div>';
+        document.body.appendChild(pop);
+        if (st.left != null) {
+          pop.style.left = st.left;
+          pop.style.top = st.top;
+          pop.style.right = "auto";
+          pop.style.transform = "none";
+        }
+        var restore = { left: pop.style.left, top: pop.style.top, right: pop.style.right, bottom: pop.style.bottom, transform: pop.style.transform };
+        var list = pop.querySelector(".mbu-log-list"), badge = pop.querySelector(".mbu-log-badge");
+        var row = function(e) {
+          var d = document.createElement("div");
+          d.className = "mbu-log-li mbu-log-" + e.sev;
+          d.innerHTML = '<span class="mbu-log-t">' + ts(e.t) + '</span><span class="mbu-log-m">' + linkify(e.msg) + "</span>";
+          return d;
+        };
+        var showBadge = function() {
+          badge.textContent = "(" + buf.length + ")" + (warn || error ? " \xB7 " + warn + "\u26A0 " + error + "\u2716" : "");
+        };
+        var frag = document.createDocumentFragment();
+        buf.forEach(function(e) {
+          frag.appendChild(row(e));
+        });
+        if (buf.length) list.appendChild(frag);
+        else list.innerHTML = '<div class="mbu-log-empty">No activity yet.</div>';
+        showBadge();
+        list.scrollTop = list.scrollHeight;
+        var queued = false, follow = true;
+        list.addEventListener("scroll", function() {
+          follow = list.scrollHeight - list.scrollTop - list.clientHeight < 40;
+        });
+        var paint = function() {
+          queued = false;
+          showBadge();
+          if (follow) list.scrollTop = list.scrollHeight;
+        };
+        var onKey = function(e) {
+          if (e.key === "Escape") close();
+        };
+        win = {
+          el: pop,
+          append: function(e) {
+            var empty = list.querySelector(".mbu-log-empty");
+            if (empty) empty.remove();
+            list.appendChild(row(e));
+            while (list.childElementCount > buf.length) list.firstElementChild.remove();
+            if (!queued) {
+              queued = true;
+              requestAnimationFrame(paint);
+            }
+          },
+          off: function() {
+            document.removeEventListener("keydown", onKey);
+          }
+        };
+        pop.querySelector(".mbu-logpop-copy").onclick = function() {
+          copy(pop.querySelector(".mbu-logpop-copy"));
+        };
+        var minBtn = pop.querySelector(".mbu-logpop-min");
+        var setMin = function(m) {
+          minBtn.textContent = m ? "\u25A2" : "\u2013";
+          minBtn.title = m ? "Restore" : "Minimize";
+          if (m) {
+            pop.style.left = "14px";
+            pop.style.bottom = "14px";
+            pop.style.top = "auto";
+            pop.style.right = "auto";
+            pop.style.transform = "none";
+          } else Object.assign(pop.style, restore);
+        };
+        minBtn.onclick = function() {
+          var m = pop.classList.toggle("min");
+          setMin(m);
+          remember({ min: m });
+        };
+        if (st.min) {
+          pop.classList.add("min");
+          setMin(true);
+        }
+        pop.querySelector(".mbu-logpop-x").onclick = function() {
+          close();
+        };
+        pop.querySelector(".mbu-logpop-h").addEventListener("mousedown", function(e) {
+          if (e.target.closest("button")) return;
+          e.preventDefault();
+          var r = pop.getBoundingClientRect();
+          pop.style.left = r.left + "px";
+          pop.style.top = r.top + "px";
+          pop.style.right = "auto";
+          pop.style.transform = "none";
+          var ox = e.clientX - r.left, oy = e.clientY - r.top;
+          var mv = function(ev) {
+            pop.style.left = Math.max(0, Math.min(window.innerWidth - pop.offsetWidth, ev.clientX - ox)) + "px";
+            pop.style.top = Math.max(0, Math.min(window.innerHeight - 36, ev.clientY - oy)) + "px";
+          };
+          var up = function() {
+            document.removeEventListener("mousemove", mv);
+            document.removeEventListener("mouseup", up);
+            if (!pop.classList.contains("min")) {
+              restore = { left: pop.style.left, top: pop.style.top, right: "auto", bottom: "", transform: "none" };
+              remember({ left: pop.style.left, top: pop.style.top });
+            }
+          };
+          document.addEventListener("mousemove", mv);
+          document.addEventListener("mouseup", up);
+        });
+        document.addEventListener("keydown", onKey);
+        return pop;
+      }
+      function close(quiet) {
+        var stray = document.getElementById("mbu-logpop");
+        if (win) {
+          win.off();
+          win.el.remove();
+          win = null;
+          if (!quiet) remember({ open: false });
+        }
+        if (stray) stray.remove();
+      }
+      var api = {
+        info: function() {
+          add("info", arguments);
+        },
+        warn: function() {
+          add("warn", arguments);
+        },
+        err: function() {
+          add("error", arguments);
+        },
+        error: function() {
+          add("error", arguments);
+        },
+        ok: function() {
+          add("ok", arguments);
+        },
+        debug: function() {
+          add("debug", arguments);
+        },
+        add: function(sev) {
+          add(sev, Array.prototype.slice.call(arguments, 1));
+        },
+        open,
+        close: function() {
+          close();
+        },
+        reopen: function() {
+          if (state().open) open();
+        },
+        isOpen: function() {
+          return !!win;
+        },
+        markdown,
+        copy,
+        lines: function() {
+          return buf.map(line);
+        },
+        messages: function() {
+          return buf.map(function(e) {
+            return e.msg;
+          });
+        },
+        counts: function() {
+          return { warn, error };
+        }
+      };
+      return api;
+    }
     function mbuDismissOn(el, close, opts) {
       opts = opts || {};
       var closed = false;
@@ -7858,19 +8187,10 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
     }
     const gmLoad = (key) => {
       try {
-        const v = GM_getValue(key, void 0);
-        if (v !== void 0) return v;
+        return GM_getValue(key, void 0);
       } catch (e) {
+        return void 0;
       }
-      try {
-        const raw = localStorage.getItem(key);
-        if (raw != null) {
-          GM_setValue(key, raw);
-          return raw;
-        }
-      } catch (e) {
-      }
-      return void 0;
     };
     const gmSave = (key, raw) => {
       try {

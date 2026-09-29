@@ -8,7 +8,7 @@ A cover and event art editor for MusicBrainz: one gallery to view, sort, reorder
 - [Changelog](./CHANGELOG.md)
 - [View users](https://musicbrainz.org/search/edits?auto_edit_filter=&order=desc&negation=0&combinator=and&conditions.0.field=edit_note_content&conditions.0.operator=includes&conditions.0.args.0=Art+Station)
 
-![](./screens/main-pc.png)
+![](./screenshots/main-pc.png)
 
 ## Features
 
@@ -22,7 +22,9 @@ A cover and event art editor for MusicBrainz: one gallery to view, sort, reorder
 
 | Grouped by type | Detailed view |
 |---|---|
-| ![](./screens/screenshot2.png) | ![](./screens/screenshot3.png) |
+| ![](./screenshots/screenshot2.png) | ![](./screenshots/screenshot3.png) |
+
+Each cover shows its size and resolution. *Show each cover's file type next to its size* (⚙, off by default) adds the format: `3.2Mb PNG`.
 
 ## Actions
 

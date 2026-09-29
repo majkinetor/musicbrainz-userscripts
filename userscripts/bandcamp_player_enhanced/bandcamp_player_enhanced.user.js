@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Bandcamp Player Enhanced
 // @namespace    http://violentmonkey.net/
-// @version      2026.9.26.201149
+// @version      2026.9.29
 // @description  Custom sticky 2-row player. Space=play/pause, Shift+Space=scroll, Up/Down=prev/next, Shift+Up/Down=volume, Left/Right=seek 5s (Shift=30s). P=preview mode.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPkJhbmRjYW1wIFBsYXllciBFbmhhbmNlZDwvdGl0bGU+CiAgPGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iNTgiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzFkYTBjMyIgc3Ryb2tlLXdpZHRoPSI3Ii8+CiAgPHBvbHlnb24gcG9pbnRzPSI0OCwzOCA5Niw2NCA0OCw5MCIgZmlsbD0iIzFkYTBjMyIvPgo8L3N2Zz4K
@@ -37,18 +37,9 @@
     // (Playwright/test mode).
     const pageWindow = (typeof unsafeWindow !== 'undefined') ? unsafeWindow
         : (typeof window !== 'undefined') ? window : globalThis;
-    // #501: settings persistence lives in GM storage (backed up/synced by the
-    // script manager) instead of localStorage (browser-profile-only — invisible to
-    // a script manager backup/restore or a move to another browser). One-time
-    // migration: if GM storage is empty but an old localStorage value exists,
-    // adopt it once and write through to GM storage from then on; the old
-    // localStorage key is left in place, unused, so nothing is destructively
-    // deleted.
-    function gmLoad(key) {
-        try { const v = GM_getValue(key, undefined); if (v !== undefined) return v; } catch (e) {}
-        try { const raw = localStorage.getItem(key); if (raw != null) { GM_setValue(key, raw); return raw; } } catch (e) {}
-        return undefined;
-    }
+    // #501: settings live in GM storage (backed up and synced by the script manager).
+    // The one-time adoption of an older localStorage copy is retired (#623).
+    function gmLoad(key) { try { return GM_getValue(key, undefined); } catch (e) { return undefined; } }
     function gmSave(key, raw) { try { GM_setValue(key, raw); } catch (e) {} }
 
     // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -432,6 +423,8 @@
     --bcp-text-5:    #aaaaaa;
     --bcp-hover-bg:  rgba(0,0,0,0.045);
 }
+/* Bandcamp's cover viewer stacks at 201; an opened cover goes over the bar, not under it (#632) */
+.imageviewer_top { z-index: 1000000 !important; }
 #bc-sticky-player {
     position: fixed; top: 0; left: 0; right: 0;
     z-index: 999999;

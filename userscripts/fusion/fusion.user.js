@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Fusion
 // @namespace    https://musicbrainz.org/
-// @version      2026.9.27
+// @version      2026.9.28
 // @description  Merge-recordings assistant for MusicBrainz: gather a pool of candidate recordings from a release / release group / recording page (or paste any MBID/URL), auto-match them into merge groups by ISRC / AcoustID / length / title+artist, review and adjust the groups, then submit the merges directly in the background — no MB merge page involved.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPkZ1c2lvbjwvdGl0bGU+CiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjOGE1Y2Y2IiBzdHJva2Utd2lkdGg9IjciPgogICAgPGVsbGlwc2UgY3g9IjY0IiBjeT0iNjQiIHJ4PSI1MiIgcnk9IjIyIi8+CiAgICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSI2NCIgcng9IjUyIiByeT0iMjIiIHRyYW5zZm9ybT0icm90YXRlKDYwIDY0IDY0KSIvPgogICAgPGVsbGlwc2UgY3g9IjY0IiBjeT0iNjQiIHJ4PSI1MiIgcnk9IjIyIiB0cmFuc2Zvcm09InJvdGF0ZSgxMjAgNjQgNjQpIi8+CiAgPC9nPgogIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjE0IiBmaWxsPSIjNmQzZmYwIi8+Cjwvc3ZnPgo=
@@ -13,6 +13,7 @@
 // @grant        GM_xmlhttpRequest
 // @grant        GM_setValue
 // @grant        GM_getValue
+// @grant        unsafeWindow
 // @connect      musicbrainz.org
 // @connect      beta.musicbrainz.org
 // @connect      api.acoustid.org
@@ -21,7 +22,7 @@
 (function () {
 'use strict';
 
-const VERSION = (typeof GM_info !== 'undefined' && GM_info && GM_info.script && GM_info.script.version) || '2026.9.26.111241';
+const VERSION = (typeof GM_info !== 'undefined' && GM_info && GM_info.script && GM_info.script.version) || '?';   // GM_info carries the real one; every script manager provides it (a hard-coded copy only ever went stale)
 const HELP_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/fusion/README.md';
 const ICON = '⚛';
 const W = (typeof unsafeWindow !== 'undefined' ? unsafeWindow : window);
@@ -44,112 +45,11 @@ if (!SCOPE) return;
 const el = (tag, cls, txt) => { const e = document.createElement(tag); if (cls) e.className = cls; if (txt != null) e.textContent = txt; return e; };
 const escapeHtml = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 
-/* ── activity log — in-page buffer + popup viewer (ported from apollo_editor's
-   Log/openLog, #283-style: every Log.* call is captured and surfaced from a
-   Log button next to "? Help", copy/pastable as a Markdown <details> block) ── */
-const _logBuf = [];
-const _logListeners = new Set();
-function _logRecord(kind, args) {
-    const line = args.map(a => (typeof a === 'string' ? a : (() => { try { return JSON.stringify(a); } catch (e) { return String(a); } })())).join(' ');
-    _logBuf.push({ t: Date.now(), kind, line });
-    if (_logBuf.length > 2000) _logBuf.shift();
-    _logListeners.forEach(f => { try { f(); } catch (e) {} });
-}
-const Log = {
-    info: (...a) => _logRecord('info', a),
-    warn: (...a) => _logRecord('warn', a),
-    error: (...a) => _logRecord('error', a),
-    ok: (...a) => _logRecord('ok', a),
-};
-const _lpad = (n, w) => String(n).padStart(w || 2, '0');
-const _logTs = d => _lpad(d.getHours()) + ':' + _lpad(d.getMinutes()) + ':' + _lpad(d.getSeconds()) + '.' + _lpad(d.getMilliseconds(), 3);
-const _logCounts = () => _logBuf.reduce((a, e) => { if (e.kind === 'warn') a.warn++; else if (e.kind === 'error') a.error++; return a; }, { warn: 0, error: 0 });
-// escape, then turn http(s) URLs into clickable links (Apollo's _logLinkify)
-const _logLinkify = s => escapeHtml(s).replace(/(https?:\/\/[^\s<]+)/g, m => {
-    const t = (m.match(/[.,;:!?)\]]+$/) || [''])[0];   // keep trailing punctuation out of the URL
-    const url = m.slice(0, m.length - t.length);
-    return '<a href="' + url + '" target="_blank" rel="noopener">' + url + '</a>' + t;
-});
-function logMarkdown() {
-    const PRE = { info: '', ok: 'OK   ', warn: 'WARN ', error: 'ERR  ' };
-    const body = _logBuf.length ? _logBuf.map(r => _logTs(new Date(r.t)) + '  ' + (PRE[r.kind] || '') + r.line).join('\n') : '(no activity logged)';
-    const c = _logCounts();
-    const tally = (c.warn || c.error) ? ' (' + c.warn + ' warning' + (c.warn === 1 ? '' : 's') + ', ' + c.error + ' error' + (c.error === 1 ? '' : 's') + ')' : '';
-    return '<details><summary>Fusion v' + VERSION + ' — session log' + tally + '</summary>\n\n```log\n' + body + '\n```\n\n</details>';
-}
-async function copyLog(btn) {
-    const md = logMarkdown(); let ok = false;
-    try { await navigator.clipboard.writeText(md); ok = true; }
-    catch (e) { try { const ta = document.createElement('textarea'); ta.value = md; ta.style.position = 'fixed'; ta.style.opacity = '0'; document.body.appendChild(ta); ta.select(); ok = document.execCommand('copy'); ta.remove(); } catch (x) {} }
-    if (btn) { const o = btn.dataset.lbl || btn.textContent; btn.dataset.lbl = o; btn.textContent = ok ? 'Copied ✓' : 'Copy failed'; setTimeout(() => { btn.textContent = o; }, 1500); }
-}
-// remembered position of the draggable log window (#529)
-const LOGWIN_KEY = 'fusion.logwin';
-function loadLogWinState() { try { return JSON.parse(GM_getValue(LOGWIN_KEY, '{}')); } catch (e) { return {}; } }
-function saveLogWinState(patch) { try { GM_setValue(LOGWIN_KEY, JSON.stringify(Object.assign(loadLogWinState(), patch))); } catch (e) {} }
-// #529 (majkinetor): "Make entire log window as in apollo (it has min/maximize,
-// wider etc.)" — ported from apollo_editor's #283 log viewer: wider centred
-// window, minimize/restore docking to the bottom-left, an entry-count + warn/err
-// badge, clickable URLs, per-severity colouring, Escape to close, and
-// open/minimized/position all remembered across sessions.
-// NB the container needs BOTH the id and the .mbu-logpop class — its CSS is a
-// class rule, and setting only the id once left it entirely unstyled (invisible
-// behind the modal) while still passing an existence check.
-function openLog() {
-    document.getElementById('mbu-logpop')?.remove();
-    fsStyle();
-    saveLogWinState({ open: true });
-    const st = loadLogWinState();
-    const pop = el('div', 'mbu-logpop'); pop.id = 'mbu-logpop';
-    pop.innerHTML = '<div class="mbu-logpop-h"><b>Fusion — activity log</b> <span class="mbu-log-badge"></span><span class="mbu-logpop-sp"></span>'
-        + '<button class="mbu-logpop-copy" type="button" title="Copy as Markdown (paste into a GitHub issue)">⧉ Copy</button>'
-        + '<button class="mbu-logpop-min" type="button" title="Minimize">–</button>'
-        + '<button class="mbu-logpop-x" type="button" title="Close">✕</button></div>'
-        + '<div class="mbu-log-list"></div>';
-    document.body.appendChild(pop);
-    if (st.left != null) { pop.style.left = st.left; pop.style.top = st.top; pop.style.right = 'auto'; pop.style.transform = 'none'; }
-    pop._restore = { left: pop.style.left, top: pop.style.top, right: pop.style.right, bottom: pop.style.bottom, transform: pop.style.transform };
-    const list = pop.querySelector('.mbu-log-list');
-    const render = () => {
-        list.innerHTML = _logBuf.length
-            ? _logBuf.map(r => '<div class="mbu-log-li mbu-log-' + r.kind + '"><span class="mbu-log-t">' + _logTs(new Date(r.t)) + '</span><span class="mbu-log-m">' + _logLinkify(r.line) + '</span></div>').join('')
-            : '<div class="mbu-log-empty">No activity yet.</div>';
-        const c = _logCounts();
-        pop.querySelector('.mbu-log-badge').textContent = '(' + _logBuf.length + ')' + (c.warn || c.error ? ' · ' + c.warn + '⚠ ' + c.error + '✖' : '');
-        list.scrollTop = list.scrollHeight;
-    };
-    render();
-    _logListeners.add(render);
-    const onKey = e => { if (e.key === 'Escape') close(); };
-    const close = () => { saveLogWinState({ open: false }); _logListeners.delete(render); pop.remove(); document.removeEventListener('keydown', onKey); };
-    pop.querySelector('.mbu-logpop-copy').onclick = () => copyLog(pop.querySelector('.mbu-logpop-copy'));
-    const minBtn = pop.querySelector('.mbu-logpop-min');
-    const setMin = m => {
-        minBtn.textContent = m ? '▢' : '–'; minBtn.title = m ? 'Restore' : 'Minimize';
-        if (m) { pop.style.left = '14px'; pop.style.bottom = '14px'; pop.style.top = 'auto'; pop.style.right = 'auto'; pop.style.transform = 'none'; }
-        else if (pop._restore) { Object.assign(pop.style, pop._restore); }
-    };
-    minBtn.onclick = () => { const m = pop.classList.toggle('min'); setMin(m); saveLogWinState({ min: m }); };
-    if (st.min) { pop.classList.add('min'); setMin(true); }
-    pop.querySelector('.mbu-logpop-x').onclick = close;
-    pop.querySelector('.mbu-logpop-h').addEventListener('mousedown', e => {
-        if (e.target.closest('button')) return;
-        e.preventDefault();
-        const r = pop.getBoundingClientRect();
-        pop.style.left = r.left + 'px'; pop.style.top = r.top + 'px'; pop.style.right = 'auto'; pop.style.transform = 'none';
-        const ox = e.clientX - r.left, oy = e.clientY - r.top;
-        const mv = ev => {
-            pop.style.left = Math.max(0, Math.min(innerWidth - pop.offsetWidth, ev.clientX - ox)) + 'px';
-            pop.style.top = Math.max(0, Math.min(innerHeight - 36, ev.clientY - oy)) + 'px';
-        };
-        const up = () => {
-            document.removeEventListener('mousemove', mv); document.removeEventListener('mouseup', up);
-            if (!pop.classList.contains('min')) { pop._restore = { left: pop.style.left, top: pop.style.top, right: 'auto', bottom: '', transform: 'none' }; saveLogWinState({ left: pop.style.left, top: pop.style.top }); }
-        };
-        document.addEventListener('mousemove', mv); document.addEventListener('mouseup', up);
-    });
-    document.addEventListener('keydown', onKey);
-}
+/* ── activity log: the shared window and buffer (mbuLog, in the ST-UI block below;
+   #283 / #529, shared since X12 of #623). Every Log.* line lands there, and the
+   Log button opens it, copy/pastable as a Markdown <details> block. ── */
+const Log = mbuLog({ name: 'Fusion', version: VERSION, header: 'Fusion — activity log', key: 'fusion.logwin', before: () => fsStyle() });
+const openLog = () => Log.open();
 
 /* ── GM_xmlhttpRequest promisified (ported from isrc_scout's http/gmGet/gmPost) —
    used only for the merge_queue/merge GET+POST sequence; everything else (read-only
@@ -296,52 +196,16 @@ async function wsGet(path, retries) {
 
 // ── settings (GM-persisted) ──────────────────────────────────────────────
 const SETTINGS_KEY = 'fusion.settings';
-const SETTINGS_DEFAULTS = { lengthToleranceMs: 5000, grossLengthMs: 30000, acoustidEnrich: true, acoustidPoolCap: 2000, autoMatchOnOpen: false, prefetchGroupReleases: false, releasePrefetchCap: 200, settingsVersion: 0, poolCollapsed: false, makeVotable: false, matchCutoff: 'normal' };
-// Stored settings win over defaults, so simply RAISING a default is invisible to
-// anyone who ever opened the config window (that saves every key, including the
-// ones they never touched). The old 60 cap dated from one-request-per-recording;
-// now that list_by_mbid batches 50 at a time it only served to leave big pools
-// with no AcoustID data at all. Lift that specific stale value — but only when
-// it's still exactly the retired default, so a cap someone deliberately chose
-// stays theirs.
-const RETIRED_ACOUSTID_CAP = 60;
-// Bumped when a migration below needs to run once and then never again. Without
-// the stamp, "turn the prefetch off" could not tell a value the user chose from
-// one that was merely the old default, and would keep undoing their choice.
-const SETTINGS_VERSION = 2;
-function migrateSettings(s) {
-    if (s.acoustidPoolCap === RETIRED_ACOUSTID_CAP) s.acoustidPoolCap = SETTINGS_DEFAULTS.acoustidPoolCap;
-    // v2: the group release prefetch shipped defaulting ON, and every install
-    // that opened the config window has that `true` persisted — so flipping the
-    // default alone would change nothing. Nobody could have deliberately enabled
-    // it while it was already on, so a stored `true` from before this version is
-    // the old default rather than a preference, and is turned off once.
-    if ((s.settingsVersion || 0) < 2 && s.prefetchGroupReleases === true) s.prefetchGroupReleases = false;
-    s.settingsVersion = SETTINGS_VERSION;
-    return s;
-}
+const SETTINGS_DEFAULTS = { lengthToleranceMs: 5000, grossLengthMs: 30000, acoustidEnrich: true, acoustidPoolCap: 2000, autoMatchOnOpen: false, prefetchGroupReleases: false, releasePrefetchCap: 200, poolCollapsed: false, makeVotable: false, matchCutoff: 'normal' };
 function loadSettings() {
-    try { return migrateSettings(Object.assign({}, SETTINGS_DEFAULTS, JSON.parse(GM_getValue(SETTINGS_KEY, '{}')))); }
+    // (#623: the one-time #529 migrations of the old AcoustID cap and prefetch default are retired)
+    try { return Object.assign({}, SETTINGS_DEFAULTS, JSON.parse(GM_getValue(SETTINGS_KEY, '{}'))); }
     catch (e) { return Object.assign({}, SETTINGS_DEFAULTS); }
 }
 function saveSettings() { try { GM_setValue(SETTINGS_KEY, JSON.stringify(SETTINGS)); } catch (e) {} }
 let SETTINGS = loadSettings();
 
-/* ── shared corner-slot convention (#468), duplicated per-script on purpose —
-   see apollo_editor.user.js for the canonical comment. Fusion stacks above
-   Falcon (order 20) since it can share a page with it. ── */
-function mbRestackCorner(corner) {
-    const bottom = corner[0] === 'b', right = corner[1] === 'r';
-    const els = [...document.querySelectorAll('[data-mb-corner="' + corner + '"]')]
-        .filter(e => getComputedStyle(e).display !== 'none')
-        .sort((a, b) => (Number(a.dataset.mbCornerOrder) || 0) - (Number(b.dataset.mbCornerOrder) || 0));
-    let pos = 14;
-    els.forEach(e => {
-        e.style[bottom ? 'bottom' : 'top'] = pos + 'px';
-        e.style[right ? 'right' : 'left'] = '14px';
-        pos += e.getBoundingClientRect().height + 8;
-    });
-}
+// mbRestackCorner, the #468 corner slots, is in the ST-UI block (dev/ui/ui-components.mjs).
 
 /* ── matching / normalization (ported from platform_check's tokenMatch/scoreCandidate
    normalization stack — same token-overlap approach, reused rather than reinvented) ── */
@@ -1667,6 +1531,235 @@ function mbuCfgHeader(o) {
     return html + '</div>';
 }
 
+// Test hooks. A script puts its test hook on window only when the test harness has
+// marked the page (dev/test/harness.mjs sets window.__mbuTest before any script runs):
+//   if (mbuTestHooks()) window.__fooTest = { … };
+// On a user's page the hooks are never built. (#623)
+function mbuTestHooks() {
+    try { return typeof window !== 'undefined' && window.__mbuTest === true; } catch (e) { return false; }
+}
+
+// Corner slots (#468). Every floating launcher (Apollo Editor, Art Station, Falcon,
+// Fusion, Scribe) tags its element with data-mb-corner (which screen corner: 'br',
+// 'bl', 'tr', 'tl') and data-mb-corner-order (lower sits closer to the corner), and
+// calls mbRestackCorner(corner) right after it shows, hides, creates or removes it.
+// That recomputes every element in the corner, whichever script owns it and
+// whatever order they loaded in, so two launchers never land on the same pixel.
+// Orders in use: Apollo and Art Station 10 (never on the same page), Falcon 20,
+// Fusion above Falcon. Scribe is not on the shared block and keeps a copy of this.
+function mbRestackCorner(corner) {
+    var bottom = corner[0] === 'b', right = corner[1] === 'r';
+    var els = Array.prototype.slice.call(document.querySelectorAll('[data-mb-corner="' + corner + '"]'))
+        // offsetParent is always null for position:fixed, so it can't tell visibility here
+        .filter(function (el) { return getComputedStyle(el).display !== 'none'; })
+        .sort(function (a, b) { return (Number(a.dataset.mbCornerOrder) || 0) - (Number(b.dataset.mbCornerOrder) || 0); });
+    var pos = 14;
+    els.forEach(function (el) {
+        el.style[bottom ? 'bottom' : 'top'] = pos + 'px';
+        el.style[right ? 'right' : 'left'] = '14px';
+        pos += el.getBoundingClientRect().height + 8;
+    });
+}
+
+// Activity log: the session's log lines plus the floating window that shows them
+// (#283's viewer, shared since X12 of #623). A script makes its log once:
+//
+//   var LOG = mbuLog({ name: 'Fusion', version: VERSION, key: 'fusion.logwin' });
+//   LOG.info('…'); LOG.warn(…); LOG.err(…) (or .error); LOG.ok(…); LOG.debug(…)
+//   LOG.open(); LOG.close(); LOG.reopen()   // reopen: only if it was left open
+//   LOG.markdown(); LOG.copy(btn); LOG.lines(); LOG.messages(); LOG.counts()
+//
+// o.name / o.version  the Markdown summary's title (version may be a function)
+// o.subtitle          optional function; its text follows the title (e.g. the release)
+// o.header            the window's title (default 'Activity log')
+// o.key               storage key for the window's open/minimised/position state
+// o.load / o.save     that storage (default GM_getValue / GM_setValue)
+// o.before            called before the window opens (e.g. to inject the script's CSS)
+// o.max               lines kept (default 2000)
+//
+// A long run keeps only the last o.max lines, and the Markdown says how many went
+// before them; the copies this replaced grew for the whole session. An open
+// window appends each new line and drops the oldest row past the cap; the copies
+// rebuilt the whole list with innerHTML on every line, which is quadratic over a
+// long matching run.
+function mbuLog(o) {
+    o = o || {};
+    var max = o.max || 2000, buf = [], dropped = 0, warn = 0, error = 0, win = null;
+    var pad = function (n, w) { return String(n).padStart(w || 2, '0'); };
+    var ts = function (d) { return pad(d.getHours()) + ':' + pad(d.getMinutes()) + ':' + pad(d.getSeconds()) + '.' + pad(d.getMilliseconds(), 3); };
+    var str = function (v) {
+        if (typeof v === 'string') return v;
+        if (v instanceof Error) return v.message || String(v);
+        if (v && v.nodeType) return '<' + (v.tagName || 'node').toLowerCase() + '>';
+        try { return typeof v === 'object' ? JSON.stringify(v) : String(v); } catch (e) { return String(v); }
+    };
+    var esc = function (s) {
+        return String(s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; });
+    };
+    // escape, then make http(s) URLs clickable, keeping trailing punctuation out of them
+    var linkify = function (s) {
+        return esc(s).replace(/(https?:\/\/[^\s<]+)/g, function (m) {
+            var t = (m.match(/[.,;:!?)\]]+$/) || [''])[0];
+            var url = m.slice(0, m.length - t.length);
+            return '<a href="' + url + '" target="_blank" rel="noopener">' + url + '</a>' + t;
+        });
+    };
+    var load = o.load || function (k) { try { return GM_getValue(k, undefined); } catch (e) { return undefined; } };
+    var save = o.save || function (k, v) { try { GM_setValue(k, v); } catch (e) { /* no storage: the window just forgets */ } };
+    var state = function () { try { return JSON.parse(load(o.key) || '{}') || {}; } catch (e) { return {}; } };
+    var remember = function (patch) { try { save(o.key, JSON.stringify(Object.assign(state(), patch))); } catch (e) { /* see save */ } };
+    var tally = function (e, d) { if (e.sev === 'warn') warn += d; else if (e.sev === 'error') error += d; };
+    var PRE = { info: '', ok: 'OK   ', warn: 'WARN ', error: 'ERR  ', debug: 'DBG  ' };
+    var line = function (e) { return ts(e.t) + '  ' + (PRE[e.sev] || '') + e.msg; };
+
+    function add(sev, args) {
+        var msg = Array.prototype.map.call(args, str).join(' ').replace(/\s+/g, ' ').trim();
+        if (!msg) return;
+        var e = { t: new Date(), sev: sev === 'err' ? 'error' : sev, msg: msg };
+        buf.push(e); tally(e, 1);
+        // trim in chunks, not one shift per line
+        if (buf.length > max + Math.ceil(max / 10)) {
+            var gone = buf.splice(0, buf.length - max);
+            gone.forEach(function (g) { tally(g, -1); });
+            dropped += gone.length;
+        }
+        if (win) win.append(e);
+    }
+    function title() {
+        var v = typeof o.version === 'function' ? (function () { try { return o.version(); } catch (e) { return ''; } })() : o.version;
+        var t = (o.name || 'Log') + (v ? ' v' + v : '');
+        try { var s = o.subtitle && o.subtitle(); if (s) t += ' — ' + s; } catch (e) { /* no subtitle */ }
+        return t;
+    }
+    function markdown() {
+        var body = buf.length ? buf.map(line).join('\n') : '(no activity logged)';
+        if (dropped) body = '(' + dropped + ' earlier line' + (dropped === 1 ? '' : 's') + ' not kept)\n' + body;
+        var n = (warn || error) ? ' (' + warn + ' warning' + (warn === 1 ? '' : 's') + ', ' + error + ' error' + (error === 1 ? '' : 's') + ')' : '';
+        var fence = String.fromCharCode(96, 96, 96);
+        return '<details><summary>' + title() + ' — session log' + n + '</summary>\n\n' + fence + 'log\n' + body + '\n' + fence + '\n\n</details>';
+    }
+    function copy(btn) {
+        var md = markdown();
+        var done = function (ok) {
+            if (!btn) return;
+            var was = btn.dataset.lbl || btn.textContent; btn.dataset.lbl = was;
+            btn.textContent = ok ? 'Copied ✓' : 'Copy failed';
+            setTimeout(function () { btn.textContent = was; }, 1500);
+        };
+        var fallback = function () {
+            var ok = false;
+            try {
+                var ta = document.createElement('textarea'); ta.value = md; ta.style.position = 'fixed'; ta.style.opacity = '0';
+                document.body.appendChild(ta); ta.select(); ok = document.execCommand('copy'); ta.remove();
+            } catch (x) { /* nothing left to try */ }
+            done(ok);
+        };
+        try { navigator.clipboard.writeText(md).then(function () { done(true); }, fallback); } catch (e) { fallback(); }
+    }
+    function open() {
+        close(true);
+        if (typeof o.before === 'function') { try { o.before(); } catch (e) { /* the window still opens */ } }
+        remember({ open: true });
+        var st = state();
+        var pop = document.createElement('div'); pop.id = 'mbu-logpop'; pop.className = 'mbu-logpop';
+        pop.innerHTML = '<div class="mbu-logpop-h"><b>' + esc(o.header || 'Activity log') + '</b> <span class="mbu-log-badge"></span><span class="mbu-logpop-sp"></span>'
+            + '<button class="mbu-logpop-copy" type="button" title="Copy as Markdown (paste into a GitHub issue)">⧉ Copy</button>'
+            + '<button class="mbu-logpop-min" type="button" title="Minimize">–</button>'
+            + '<button class="mbu-logpop-x" type="button" title="Close">✕</button></div>'
+            + '<div class="mbu-log-list"></div>';
+        document.body.appendChild(pop);
+        if (st.left != null) { pop.style.left = st.left; pop.style.top = st.top; pop.style.right = 'auto'; pop.style.transform = 'none'; }
+        var restore = { left: pop.style.left, top: pop.style.top, right: pop.style.right, bottom: pop.style.bottom, transform: pop.style.transform };
+        var list = pop.querySelector('.mbu-log-list'), badge = pop.querySelector('.mbu-log-badge');
+        var row = function (e) {
+            var d = document.createElement('div');
+            d.className = 'mbu-log-li mbu-log-' + e.sev;
+            d.innerHTML = '<span class="mbu-log-t">' + ts(e.t) + '</span><span class="mbu-log-m">' + linkify(e.msg) + '</span>';
+            return d;
+        };
+        var showBadge = function () { badge.textContent = '(' + buf.length + ')' + (warn || error ? ' · ' + warn + '⚠ ' + error + '✖' : ''); };
+        // the rows, once; later lines are appended one by one
+        var frag = document.createDocumentFragment();
+        buf.forEach(function (e) { frag.appendChild(row(e)); });
+        if (buf.length) list.appendChild(frag);
+        else list.innerHTML = '<div class="mbu-log-empty">No activity yet.</div>';
+        showBadge();
+        list.scrollTop = list.scrollHeight;
+        // badge and scroll once per frame, however many lines arrive in it
+        var queued = false, follow = true;
+        list.addEventListener('scroll', function () { follow = list.scrollHeight - list.scrollTop - list.clientHeight < 40; });
+        var paint = function () { queued = false; showBadge(); if (follow) list.scrollTop = list.scrollHeight; };
+        var onKey = function (e) { if (e.key === 'Escape') close(); };
+        win = {
+            el: pop,
+            append: function (e) {
+                var empty = list.querySelector('.mbu-log-empty'); if (empty) empty.remove();
+                list.appendChild(row(e));
+                while (list.childElementCount > buf.length) list.firstElementChild.remove();
+                if (!queued) { queued = true; requestAnimationFrame(paint); }
+            },
+            off: function () { document.removeEventListener('keydown', onKey); },
+        };
+        pop.querySelector('.mbu-logpop-copy').onclick = function () { copy(pop.querySelector('.mbu-logpop-copy')); };
+        var minBtn = pop.querySelector('.mbu-logpop-min');
+        var setMin = function (m) {
+            minBtn.textContent = m ? '▢' : '–'; minBtn.title = m ? 'Restore' : 'Minimize';
+            if (m) { pop.style.left = '14px'; pop.style.bottom = '14px'; pop.style.top = 'auto'; pop.style.right = 'auto'; pop.style.transform = 'none'; }   // dock to the bottom
+            else Object.assign(pop.style, restore);
+        };
+        minBtn.onclick = function () { var m = pop.classList.toggle('min'); setMin(m); remember({ min: m }); };
+        if (st.min) { pop.classList.add('min'); setMin(true); }
+        pop.querySelector('.mbu-logpop-x').onclick = function () { close(); };
+        // floating and non-modal: dragged by its header
+        pop.querySelector('.mbu-logpop-h').addEventListener('mousedown', function (e) {
+            if (e.target.closest('button')) return;
+            e.preventDefault();
+            var r = pop.getBoundingClientRect();
+            pop.style.left = r.left + 'px'; pop.style.top = r.top + 'px'; pop.style.right = 'auto'; pop.style.transform = 'none';
+            var ox = e.clientX - r.left, oy = e.clientY - r.top;
+            var mv = function (ev) {
+                pop.style.left = Math.max(0, Math.min(window.innerWidth - pop.offsetWidth, ev.clientX - ox)) + 'px';
+                pop.style.top = Math.max(0, Math.min(window.innerHeight - 36, ev.clientY - oy)) + 'px';
+            };
+            var up = function () {
+                document.removeEventListener('mousemove', mv); document.removeEventListener('mouseup', up);
+                if (!pop.classList.contains('min')) {
+                    restore = { left: pop.style.left, top: pop.style.top, right: 'auto', bottom: '', transform: 'none' };
+                    remember({ left: pop.style.left, top: pop.style.top });
+                }
+            };
+            document.addEventListener('mousemove', mv); document.addEventListener('mouseup', up);
+        });
+        document.addEventListener('keydown', onKey);
+        return pop;
+    }
+    // quiet: closing to reopen, so the remembered "open" stays as it is
+    function close(quiet) {
+        var stray = document.getElementById('mbu-logpop');
+        if (win) { win.off(); win.el.remove(); win = null; if (!quiet) remember({ open: false }); }
+        if (stray) stray.remove();   // another script's window: one log window at a time
+    }
+    var api = {
+        info: function () { add('info', arguments); },
+        warn: function () { add('warn', arguments); },
+        err: function () { add('error', arguments); },
+        error: function () { add('error', arguments); },
+        ok: function () { add('ok', arguments); },
+        debug: function () { add('debug', arguments); },
+        add: function (sev) { add(sev, Array.prototype.slice.call(arguments, 1)); },
+        open: open,
+        close: function () { close(); },
+        reopen: function () { if (state().open) open(); },
+        isOpen: function () { return !!win; },
+        markdown: markdown,
+        copy: copy,
+        lines: function () { return buf.map(line); },
+        messages: function () { return buf.map(function (e) { return e.msg; }); },
+        counts: function () { return { warn: warn, error: error }; },
+    };
+    return api;
+}
+
 // Dismiss-on-outside-click, with the trailing click SWALLOWED.
 //
 //   var off = mbuDismissOn(popoverEl, close);   // off() to detach early
@@ -2589,7 +2682,6 @@ function groupCardHtml(group) {
     const lenOffBy = m => (lenRefRec && m !== lenRefRec && typeof m.length === 'number' && m.length > 0 && Math.abs(m.length - lenRefRec.length) > lenTol) ? m.length - lenRefRec.length : null;
     const secs = ms => Math.round(Math.abs(ms) / 1000);
     const lenWarnTitle = lenOff ? lengthDiffLabel(members) + ' ' + secs(lenSpread) + 's — more than the ' + secs(lenTol) + 's length tolerance. Check it is really the same take before merging.' : '';
-    const confLabel = group.confidence === 'high' ? 'HIGH' : group.confidence === 'medium' ? 'MEDIUM' : 'MANUAL';
     const sigNames = { isrc: 'ISRC', acoustid: 'AcoustID', length: 'Length', title: 'Title', artist: 'Artist' };
     const sigAll = group.signalsAll || [];
     const sigChips = Object.keys(sigNames).map(k => {
@@ -2911,7 +3003,6 @@ function cancelBackground() {
 }
 function busyStart(label) { _busyCount++; if (label) _busyLabel = label; renderBusy(); }
 function busyEnd() { _busyCount = Math.max(0, _busyCount - 1); if (_busyCount === 0) _busyLabel = ''; renderBusy(); }
-async function withBusy(label, fn) { busyStart(label); try { return await fn(); } finally { busyEnd(); } }
 
 // #529 (majkinetor): "acoustic id still not fully fetched … no dot in the pool
 // is lighted". AcoustIDs used to be looked up ONLY inside Auto-match, so a
@@ -3527,6 +3618,7 @@ async function seedFromScope() {
 async function maybeAutoMatchOnOpen() {
     if (!SETTINGS.autoMatchOnOpen) return;
     if (!STATE.poolOrder.length) { Log.info('Auto-match on open: nothing in the pool'); return; }
+    // eslint-disable-next-line no-unmodified-loop-condition -- busyEnd() lowers it while this awaits
     for (let i = 0; i < 120 && _busyCount > 0; i++) await new Promise(r => setTimeout(r, 250));
     if (!FUSION_OPEN) return;
     Log.info('Auto-match on open: starting');
@@ -3556,7 +3648,7 @@ function boot() {
     Log.info('Fusion v' + VERSION + ' — startup on ' + SCOPE.type + ' ' + SCOPE.mbid);
     ensureLauncher();
     // reopen the log window if it was left open (same as apollo_editor #283)
-    try { if (loadLogWinState().open) setTimeout(() => { try { openLog(); } catch (e) {} }, 800); } catch (e) {}
+    setTimeout(() => { try { Log.reopen(); } catch (e) {} }, 800);   // #283 reopen the log if it was left open
 }
 boot();
 
@@ -3567,7 +3659,7 @@ try {
         normName, tokenMatch, titleSimilar, artistSimilar, lengthClose, fuzzyRatio, levenshtein, acName, acPrimaryGid, acGids, dur, parseMbidFromInput, parseAddInput,
         mkRecording, fetchRecordingsByBrowse, enrichReleasesFromSearch, fetchReleaseRecordings, fetchRGRecordings, fetchRecordingByGid, fetchAllReleases, resolveInternalId, fetchAcoustIds, fetchAcoustIdsBatch, enrichIsrcs, fetchRecordingDetail, fetchEntityMeta, enrichPendingEdits, fetchRecordingsBySearch, fetchArtistRecordings, harvestInternalIdsFromPage,
         pairSignals, poolMatches, computeGroupConfidence, groupTier, gatedUnionFind, TIER_COLORS, SIGNAL_KEYS, ACOUSTID_BATCH, shouldUnion, autoMatch, enrichAcoustIds, enrichAllReleases,
-        migrateSettings, presenceDots, RETIRED_ACOUSTID_CAP, SETTINGS_VERSION,   // SETTINGS_DEFAULTS is listed above
+        presenceDots,   // SETTINGS_DEFAULTS is listed above
         fetchReleaseDetails, releaseTableHtml, toggleReleaseDetails, storeReleaseDetails, releasesSummary, renderFooter, seedPageProgress, lengthSpread,
         renderRunSummary, getLastRun: () => _lastRun, showNotice, renderNotice, cancelBackground, bgAlive, resumeBackground, isBgStopped: () => _bgStopped,
         lengthDiffLabel,
@@ -3576,7 +3668,7 @@ try {
         buildEditNote, autoEditNote, evidenceLines, ensureInternalIds, mergeGroup, mergeAll, describeRecordingForLog,
         openFusion, closeFusion, onAutoMatch, seedFromScope, maybeAutoMatchOnOpen, renderAll, renderPool, renderGroups, busyStart, busyEnd,
         gmGet, gmPost, wsGet, parseRetryAfter, setNetTrouble, clearNetTrouble,
-        getLogLines: () => _logBuf.map(r => r.line),
+        getLogLines: () => Log.messages(),
         getBusyCount: () => _busyCount,
     };
 } catch (e) {}

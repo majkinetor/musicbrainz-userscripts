@@ -17,6 +17,16 @@ import { fileURLToPath } from 'node:url';
 import { dirname, resolve, join } from 'node:path';
 import { UI_CSS, UI_JS } from './ui-components.mjs';
 
+// Write the file in its own line endings. The generated block comes from a source file
+// that may be CRLF on a Windows checkout while the target is LF (or the other way round);
+// a mixed file is stored by Git with its carriage returns, and every line of it shows as
+// changed (#623).
+function sameEol(next, src) {
+    const crlf = (src.match(/\r\n/g) || []).length, lf = (src.match(/\n/g) || []).length;
+    const flat = next.replace(/\r*\n/g, '\n');   // \r*: a CRLF source's lines can arrive as \r\r\n
+    return crlf * 2 > lf ? flat.replace(/\n/g, '\r\n') : flat;
+}
+
 const HERE = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(HERE, '..', '..');   // dev/<subsystem>/ -> repo root
 const START = '// <ST-UI>';
@@ -62,7 +72,8 @@ for (const file of walk(resolve(ROOT, 'userscripts'))) {
     // Blank lines stay blank — indenting them just adds trailing whitespace.
     const block = body.map(l => (l === '' ? '' : indent + l)).join('\n');
     const next = src.replace(BLOCK_RE, block);
-    if (next !== src) { writeFileSync(file, next); updated.push(file.replace(ROOT + '\\', '').replace(ROOT + '/', '')); }
+    const out = sameEol(next, src);
+    if (out !== src) { writeFileSync(file, out); updated.push(file.replace(ROOT + '\\', '').replace(ROOT + '/', '')); }
 }
 
 console.log(`✓ UI components synced — ${carriers} file(s) carry the marker, ${updated.length} rewritten:`);

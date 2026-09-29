@@ -39,93 +39,99 @@ test("#467: firefox freeze", { tag: ['@sandbox', '@login'] }, async ({}) => {
   const code = await readFile(sourceOf('falcon'), 'utf8');
 
   const context = await firefox.launchPersistentContext(resolve(REPO, '.pw-profile-ff'), { headless: true, viewport: { width: 1500, height: 950 } });
-  await installProdGuard(context);   // Firefox, its own profile: the harness guard is added by hand
-  const page = context.pages()[0] || await context.newPage();
-  await context.addInitScript(() => {
-    const store = new Map();
-    window.GM_getValue = (k, d) => store.has(k) ? store.get(k) : d;
-    window.GM_setValue = (k, v) => store.set(k, v);
-    window.GM_deleteValue = k => store.delete(k);
-    window.GM_info = { script: { name: 'Falcon', version: 't' } };
-  });
-  const ck = check;
+  // closed in `finally`: a spec that skips (the profile isn't signed in) or fails must not leave
+  // Firefox running on the profile, or the next Firefox spec can't open it (#637)
+  try {
+    await installProdGuard(context);   // Firefox, its own profile: the harness guard is added by hand
+    const page = context.pages()[0] || await context.newPage();
+    await context.addInitScript(() => {
+      window.__mbuTest = true;   // Falcon builds its test hook only on a marked page (#623)
+      const store = new Map();
+      window.GM_getValue = (k, d) => store.has(k) ? store.get(k) : d;
+      window.GM_setValue = (k, v) => store.set(k, v);
+      window.GM_deleteValue = k => store.delete(k);
+      window.GM_info = { script: { name: 'Falcon', version: 't' } };
+    });
+    const ck = check;
 
-  // ⚠ the trailing * matters: without it this stops matching the moment the url
-  // carries seed params, and real POSTs leak through to production MusicBrainz.
-  let posts = 0;
-  await page.route('**/recording/*/edit*', async route => {
-    const r = route.request();
-    if (r.method() === 'POST') {
-      posts++;
-      const m = r.url().match(/\/recording\/([0-9a-f-]{36})\/edit/);
-      return route.fulfill({ status: 302, headers: { Location: `https://test.musicbrainz.org/recording/${m[1]}` } });
-    }
-    return route.fallback();
-  });
+    // ⚠ the trailing * matters: without it this stops matching the moment the url
+    // carries seed params, and real POSTs leak through to production MusicBrainz.
+    let posts = 0;
+    await page.route('**/recording/*/edit*', async route => {
+      const r = route.request();
+      if (r.method() === 'POST') {
+        posts++;
+        const m = r.url().match(/\/recording\/([0-9a-f-]{36})\/edit/);
+        return route.fulfill({ status: 302, headers: { Location: `https://test.musicbrainz.org/recording/${m[1]}` } });
+      }
+      return route.fallback();
+    });
 
-  await page.goto('https://test.musicbrainz.org/', { waitUntil: 'load' });
-  await requireLogin(page);
-  await idle(page);
+    await page.goto('https://test.musicbrainz.org/', { waitUntil: 'load' });
+    await requireLogin(page);
+    await idle(page);
 
-  // heartbeat in the HOST page: the freeze is a main-thread block, so a plain
-  // interval that fails to fire on time is the most direct evidence there is.
-  await page.evaluate(() => {
-    window.__stalls = [];
-    let last = performance.now();
-    setInterval(() => {
-      const now = performance.now();
-      const late = Math.round(now - last - 200);
-      last = now;
-      if (late > 400) window.__stalls.push(late);
-    }, 200);
-  });
-  await page.addScriptTag({ content: code });
-  await page.waitForFunction(() => !!window.__falconTest, { timeout: 15000 });
-  await page.evaluate(() => document.getElementById('falcon-launcher').click());
-  await frames(page);
+    // heartbeat in the HOST page: the freeze is a main-thread block, so a plain
+    // interval that fails to fire on time is the most direct evidence there is.
+    await page.evaluate(() => {
+      window.__stalls = [];
+      let last = performance.now();
+      setInterval(() => {
+        const now = performance.now();
+        const late = Math.round(now - last - 200);
+        last = now;
+        if (late > 400) window.__stalls.push(late);
+      }, 200);
+    });
+    await page.addScriptTag({ content: code });
+    await page.waitForFunction(() => !!window.__falconTest, { timeout: 15000 });
+    await page.evaluate(() => document.getElementById('falcon-launcher').click());
+    await frames(page);
 
-  const RECS = [
-    'e42f8e08-3150-4c6c-be5b-4030c29b1bf7', '119d10fc-988a-40c7-95be-ed1138ed7e40',
-    'c5aefca7-c7d7-4c4f-909b-4128301c63e0', '3976f52e-e8ea-4b00-89ac-4a427f0e556d',
-    'a6bd1c8a-6cff-432a-aa6e-91fd9cefde4b', 'ad3289b4-1786-4893-af95-d869df1f6294',
-  ];
-  // a fresh url per run, so MB never short-circuits these as already present —
-  // an "already up to date" skip would submit nothing and prove nothing.
-  const rnd = Math.floor(Math.random() * 1e6);
-  await page.evaluate(({ recs, rnd }) => {
-    window.__falconTest.setQueue(recs.map((mbid, i) => ({
-      id: 'f' + i, entityType: 'recording', mbid,
-      // the shape that froze: the SAME url under two different link types
-      urls: [
-        { url: `https://music.apple.com/sg/song/88${rnd}${i}`, linkTypeId: '254' },
-        { url: `https://music.apple.com/sg/song/88${rnd}${i}`, linkTypeId: '979' },
-      ],
-      name: null, urlResults: null, status: 'queued', error: '',
-    })));
-    window.__falconTest.cfg.workers = 1;
-  }, { recs: RECS, rnd });
+    const RECS = [
+      'e42f8e08-3150-4c6c-be5b-4030c29b1bf7', '119d10fc-988a-40c7-95be-ed1138ed7e40',
+      'c5aefca7-c7d7-4c4f-909b-4128301c63e0', '3976f52e-e8ea-4b00-89ac-4a427f0e556d',
+      'a6bd1c8a-6cff-432a-aa6e-91fd9cefde4b', 'ad3289b4-1786-4893-af95-d869df1f6294',
+    ];
+    // a fresh url per run, so MB never short-circuits these as already present —
+    // an "already up to date" skip would submit nothing and prove nothing.
+    const rnd = Math.floor(Math.random() * 1e6);
+    await page.evaluate(({ recs, rnd }) => {
+      window.__falconTest.setQueue(recs.map((mbid, i) => ({
+        id: 'f' + i, entityType: 'recording', mbid,
+        // the shape that froze: the SAME url under two different link types
+        urls: [
+          { url: `https://music.apple.com/sg/song/88${rnd}${i}`, linkTypeId: '254' },
+          { url: `https://music.apple.com/sg/song/88${rnd}${i}`, linkTypeId: '979' },
+        ],
+        name: null, urlResults: null, status: 'queued', error: '',
+      })));
+      window.__falconTest.cfg.workers = 1;
+    }, { recs: RECS, rnd });
 
-  const t0 = Date.now();
-  await page.evaluate(() => window.__falconTest.start());
-  const finished = await page.waitForFunction(
-    () => window.__falconTest.getQueue().every(i => i.status !== 'queued' && i.status !== 'active'),
-    null, { timeout: 120000 },
-  ).then(() => true).catch(() => false);
-  const elapsed = Date.now() - t0;
+    const t0 = Date.now();
+    await page.evaluate(() => window.__falconTest.start());
+    const finished = await page.waitForFunction(
+      () => window.__falconTest.getQueue().every(i => i.status !== 'queued' && i.status !== 'active'),
+      null, { timeout: 120000 },
+    ).then(() => true).catch(() => false);
+    const elapsed = Date.now() - t0;
 
-  // When it froze, the page was unresponsive enough that evaluate() itself hung
-  // and these came back null — so treat "cannot even read the queue" as a failure
-  // rather than letting it look like a pass with no data.
-  const statuses = await page.evaluate(() => window.__falconTest.getQueue().map(i => i.status)).catch(() => null);
-  const stalls = await page.evaluate(() => window.__stalls).catch(() => null);
-  console.log('elapsed', elapsed, 'ms; posts', posts, '; statuses', JSON.stringify(statuses), '; stalls', JSON.stringify(stalls));
+    // When it froze, the page was unresponsive enough that evaluate() itself hung
+    // and these came back null — so treat "cannot even read the queue" as a failure
+    // rather than letting it look like a pass with no data.
+    const statuses = await page.evaluate(() => window.__falconTest.getQueue().map(i => i.status)).catch(() => null);
+    const stalls = await page.evaluate(() => window.__stalls).catch(() => null);
+    console.log('elapsed', elapsed, 'ms; posts', posts, '; statuses', JSON.stringify(statuses), '; stalls', JSON.stringify(stalls));
 
-  ck(finished, `all ${RECS.length} dual-type items finish (they used to hang past the 120s mark)`);
-  ck(statuses !== null && stalls !== null, 'the page stayed responsive enough to be queried at all');
-  ck(Array.isArray(statuses) && statuses.every(s => s === 'done'), `every item committed (got ${JSON.stringify(statuses)})`);
-  ck(posts === RECS.length, `one real submit per item left the browser (got ${posts} of ${RECS.length})`);
-  ck(Array.isArray(stalls) && stalls.length === 0, `the UI thread was never blocked (stalls over 400ms: ${JSON.stringify(stalls)})`);
-  // generous ceiling: measured runs land near 12s, the broken one took 297s.
-  ck(elapsed < 60000, `the batch runs in seconds, not minutes (${elapsed}ms)`);
-  await context.close();
+    ck(finished, `all ${RECS.length} dual-type items finish (they used to hang past the 120s mark)`);
+    ck(statuses !== null && stalls !== null, 'the page stayed responsive enough to be queried at all');
+    ck(Array.isArray(statuses) && statuses.every(s => s === 'done'), `every item committed (got ${JSON.stringify(statuses)})`);
+    ck(posts === RECS.length, `one real submit per item left the browser (got ${posts} of ${RECS.length})`);
+    ck(Array.isArray(stalls) && stalls.length === 0, `the UI thread was never blocked (stalls over 400ms: ${JSON.stringify(stalls)})`);
+    // generous ceiling: measured runs land near 12s, the broken one took 297s.
+    ck(elapsed < 60000, `the batch runs in seconds, not minutes (${elapsed}ms)`);
+  } finally {
+    await context.close();
+  }
 });

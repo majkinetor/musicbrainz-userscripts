@@ -7,8 +7,12 @@
  *
  * What it does
  *   1. Collect CLOSED issues that are not yet `released`, carry an `area | <script>` label and a
- *      `bug` or `enhancement` label, and are NOT `skip changelog` / `wontfix`.
+ *      `bug` or `enhancement` label, and are NOT `skip changelog` / `wontfix`. Issues labelled
+ *      `general` (cross-script work, tooling, tests, docs: no single script) are collected too,
+ *      with or without bug/enhancement.
  *   2. Group them by script (area label → directory); enhancement → Features, bug → Fixes.
+ *      `general` issues form their own group, listed FIRST: in the release notes, and in String
+ *      Theory's changelog (the master one); anything neither bug nor enhancement is under Changes.
  *   3. Find which scripts' .user.js changed since `stable` — those get a stable link in the release.
  *   4. Prepend a dated section to each affected script's CHANGELOG.md.
  *   5. (--yes) commit the changelogs on main, merge main→stable, push both.
@@ -42,6 +46,7 @@ function tryRun(fn) { try { return fn(); } catch (e) { return null; } }
 // area label → script directory (e.g. "area | apollo editor" → "apollo_editor")
 const AREA_RE = /^area \| (.+)$/;
 const dirFromArea = name => name.match(AREA_RE)[1].trim().toLowerCase().replace(/\s+/g, '_');
+const GENERAL = 'general';   // cross-script / non-functional work: its own section, listed first
 function userJsPath(dir) {
   for (const p of [`userscripts/${dir}/${dir}.user.js`, `userscripts/${dir}/dist/${dir}.user.js`]) if (existsSync(resolve(ROOT, p))) return p;
   return null;
@@ -75,6 +80,7 @@ function collectIssues() {
   const all = JSON.parse(gh('issue', 'list', '--repo', REPO, '--state', 'closed', '--limit', '1000', '--json', 'number,title,labels,stateReason,closedAt'));
   const prev = lastReleaseTime();
   const groups = {};   // dir → { name, path, features:[], fixes:[] }
+  const general = { features: [], fixes: [], changes: [] };
   const included = [];
   for (const i of all) {
     const names = i.labels.map(l => l.name);
@@ -86,15 +92,28 @@ function collectIssues() {
       if (!reFixed) continue;
       console.log(`    (re-including #${i.number} — labelled released, but closed again after ${prev.tag})`);
     }
-    const areas = names.filter(n => AREA_RE.test(n)); if (!areas.length) continue;   // an issue can span several scripts
-    const kind = names.includes('enhancement') ? 'features' : names.includes('bug') ? 'fixes' : null; if (!kind) continue;
+    const areas = names.filter(n => AREA_RE.test(n)), isGeneral = names.includes(GENERAL);
+    if (!areas.length && !isGeneral) continue;   // an issue can span several scripts
+    const kind = names.includes('enhancement') ? 'features' : names.includes('bug') ? 'fixes' : null;
+    if (isGeneral) general[kind || 'changes'].push(i);
+    if (!kind) { if (isGeneral) included.push(i.number); continue; }
     for (const area of areas) {   // add it to EACH script's changelog (cross-cutting work, e.g. a shared Qobuz API)
       const dir = dirFromArea(area), path = userJsPath(dir);
       (groups[dir] ||= { dir, name: scriptDisplayName(path), path, features: [], fixes: [] })[kind].push(i);
     }
     included.push(i.number);
   }
-  return { groups, included };
+  return { groups, general, included };
+}
+const generalCount = g => g.features.length + g.fixes.length + g.changes.length;
+// the General section's lists, each under a heading of `level` hashes
+function generalLines(general, level, bullet) {
+  const h = '#'.repeat(level), out = [];
+  for (const [key, title] of [['features', 'Features'], ['fixes', 'Fixes'], ['changes', 'Changes']]) {
+    if (!general[key].length) continue;
+    out.push(`${h} ${title}`, '', ...general[key].map(i => `${bullet} ${i.title} ([#${i.number}](${issueUrl(i.number)}))`), '');
+  }
+  return out;
 }
 
 function changedScripts() {
@@ -104,9 +123,11 @@ function changedScripts() {
   return dirs;
 }
 
-function changelogSection(group, tag, updatedMembers) {
+function changelogSection(group, tag, updatedMembers, general) {
   const list = arr => arr.map(i => `1. ${i.title} ([#${i.number}](${issueUrl(i.number)}))`).join('\n');
   let s = `## [${tag}](${tagUrl(tag)})\n`;
+  // the bundle's changelog is the master one: the general work opens it
+  if (group.bundle && general && generalCount(general)) s += `\n### General\n\n` + generalLines(general, 4, '1.').join('\n');
   if (group.features.length) s += `\n### Features\n\n${list(group.features)}\n`;
   if (group.fixes.length) s += `\n### Fixes\n\n${list(group.fixes)}\n`;
   // the bundle is the MASTER changelog: aggregate every updated member's changes, each section's heading
@@ -120,9 +141,9 @@ function changelogSection(group, tag, updatedMembers) {
     s += group.bundle ? `\n- Rebuilt with the latest of every bundled script\n` : `\n- Small improvements\n`;   // changed, but no tracked issues
   return s;
 }
-function updateChangelog(group, tag, updatedMembers) {
+function updateChangelog(group, tag, updatedMembers, general) {
   const file = resolve(ROOT, `userscripts/${group.dir}/CHANGELOG.md`);
-  const section = changelogSection(group, tag, updatedMembers);
+  const section = changelogSection(group, tag, updatedMembers, general);
   const title = `# ${group.name} Changelog`;
   let content;
   if (existsSync(file)) {
@@ -135,8 +156,9 @@ function updateChangelog(group, tag, updatedMembers) {
   return { file, content };
 }
 
-function releaseBody(groups, changed, tag, sha) {
+function releaseBody(groups, changed, tag, sha, general) {
   const lines = [];   // no leading "# <tag>" — GitHub already shows the release title
+  if (general && generalCount(general)) lines.push('## General', '', ...generalLines(general, 3, '-'));   // first, above every script
   const dirs = [...new Set([...changed, ...Object.keys(groups)])]
     .sort((a, b) => a === BUNDLE ? -1 : b === BUNDLE ? 1 : a.localeCompare(b));   // bundle on top
   for (const dir of dirs) {
@@ -157,12 +179,12 @@ function releaseBody(groups, changed, tag, sha) {
 function main() {
   // sanity
   tryRun(() => git('fetch', 'github', 'main', 'stable', '--quiet'));
-  const { groups, included } = collectIssues();
+  const { groups, general, included } = collectIssues();
   const changed = changedScripts();
   // a changed script with no tracked issues still gets a changelog + release entry ("Small improvements")
   for (const dir of changed) { if (!groups[dir]) { const path = userJsPath(dir); groups[dir] = { dir, name: (path && scriptDisplayName(path)) || dir, path, features: [], fixes: [] }; } }
   const dirs = [...new Set([...Object.keys(groups), ...changed])];
-  if (!dirs.length) { console.log('Nothing to publish: no unreleased issues and no changed scripts.'); return; }
+  if (!dirs.length && !generalCount(general)) { console.log('Nothing to publish: no unreleased issues and no changed scripts.'); return; }
   // The bundle rides along on every release: it aggregates the others, so it's rebuilt and always gets
   // an install link. (Added after the "nothing to publish" guard so it never triggers a release alone.)
   if (hasBundle) {
@@ -184,9 +206,9 @@ function main() {
   for (const dir of Object.keys(groups)) {
     const g = groups[dir];
     console.log(`--- ${g.name} (${dir})  +${g.features.length} features, +${g.fixes.length} fixes`);
-    const { file, content } = updateChangelog(g, tag, updatedMembers);
+    const { file, content } = updateChangelog(g, tag, updatedMembers, general);
     edits.push({ file, content });
-    console.log(changelogSection(g, tag, updatedMembers).split('\n').map(l => '   ' + l).join('\n'));
+    console.log(changelogSection(g, tag, updatedMembers, general).split('\n').map(l => '   ' + l).join('\n'));
   }
   // bump each linked (changed) script's @version to the release date — a script edited days before the
   // release would otherwise ship a stale-dated version that differs from the tag.
@@ -204,7 +226,7 @@ function main() {
     console.log('\n(dry run) — would write the changelogs above, commit on main, merge main→stable,');
     console.log('           push both, create the dated release, and label the issues `released`.');
     console.log('\nRelease body preview:\n');
-    console.log(releaseBody(groups, changed, tag, '<stable-sha>').split('\n').map(l => '   ' + l).join('\n'));
+    console.log(releaseBody(groups, changed, tag, '<stable-sha>', general).split('\n').map(l => '   ' + l).join('\n'));
     return;
   }
 
@@ -215,13 +237,16 @@ function main() {
   git('add', ...edits.map(e => e.file));
   // Rebuild the bundle from the just-written (version-bumped) members so the release ships a current
   // String Theory + unified docs, then stage them. (The pre-commit hook also rebuilds these — explicit here.)
+  let pdf = null;
   if (hasBundle) {
     run('node', [`userscripts/${BUNDLE}/build.mjs`]);
     const stage = [`userscripts/${BUNDLE}/string_theory.user.js`, `userscripts/${BUNDLE}/DOCS.md`];
     // #403: regenerate the PDF manual too. Best-effort — it needs `marked` installed in that folder
     // and the Chromium apollo_editor's Playwright uses; a failure here must never block a release.
+    // It is attached to the GitHub Release below, not committed: twenty committed versions had
+    // made up 291 MB of the repository, and PDFs barely compress against each other (#623).
     if (existsSync(resolve(ROOT, `userscripts/${BUNDLE}/build-pdf.mjs`))) {
-      try { run('node', [`userscripts/${BUNDLE}/build-pdf.mjs`]); stage.push(`userscripts/${BUNDLE}/DOCS.pdf`); console.log('  ✓ regenerated DOCS.pdf'); }
+      try { run('node', [`userscripts/${BUNDLE}/build-pdf.mjs`]); pdf = resolve(ROOT, `userscripts/${BUNDLE}/DOCS.pdf`); console.log('  ✓ regenerated DOCS.pdf'); }
       catch (e) { console.warn(`  ⚠ DOCS.pdf skipped (${String(e.message).split('\n')[0]}); run \`pnpm --dir userscripts/${BUNDLE} install\` first to enable it`); }
     }
     git('add', ...stage.filter(f => existsSync(resolve(ROOT, f))));
@@ -234,8 +259,12 @@ function main() {
   git('push', 'github', 'stable');
   git('checkout', 'main');
 
-  const body = releaseBody(groups, changed, tag, sha);
+  const body = releaseBody(groups, changed, tag, sha, general);
   gh('release', 'create', tag, '--repo', REPO, '--title', tag, '--target', sha, '--notes', body);
+  if (pdf && existsSync(pdf)) {
+    try { gh('release', 'upload', tag, pdf, '--repo', REPO); console.log('  ✓ DOCS.pdf attached to the release'); }
+    catch (e) { console.warn(`  ⚠ DOCS.pdf not attached (${String(e.message).split('\n')[0]}); upload it by hand: gh release upload ${tag} ${pdf}`); }
+  }
   for (const n of included) gh('issue', 'edit', String(n), '--repo', REPO, '--add-label', 'released');
   console.log(`\nPublished ${tag}: ${tagUrl(tag)}`);
 }

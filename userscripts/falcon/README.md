@@ -134,12 +134,13 @@ What **Import** reads, **Export** writes, and Harmony and other scripts produce:
 
 ```json
 {
-  "note": "Conforming release group titles to the series standard",
+  "note": "Links and covers from the label's site",
   "items": [
-    { "entityType": "artist", "mbid": "d31f76d2-…", "urls": [{ "url": "https://myspace.com/x", "linkTypeId": null }] },
-    { "entityType": "recording", "mbid": "e42f8e08-…", "disambiguation": "live version", "isrcs": ["NLTH62000001"] },
-    { "entityType": "release", "mbid": "8ad416ad-…", "cover": [{ "url": "https://…/1000x1000.jpg", "type": "Booklet", "comment": "page 1" }] },
-    { "entityType": "release_group", "mbid": "…", "rename": "Movements 2" }
+    { "entityType": "artist", "mbid": "d31f76d2-1d8e-4271-8027-148f375979d7", "urls": [{ "url": "https://myspace.com/x", "linkTypeId": null }], "status": "done" },
+    { "entityType": "recording", "mbid": "e42f8e08-3150-4c6c-be5b-4030c29b1bf7", "disambiguation": "live version", "isrcs": ["NLTH62000001"] },
+    { "entityType": "release", "mbid": "8ad416ad-f3a1-43bb-9e85-786efefd5173",
+      "urls": [{ "url": "https://www.discogs.com/release/1", "linkTypeId": "75" }],
+      "cover": [{ "url": "https://e-cdns-images.dzcdn.net/images/cover/x/1000x1000.jpg", "type": "Booklet", "comment": "page 1" }] }
   ]
 }
 ```

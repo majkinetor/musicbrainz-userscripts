@@ -39,91 +39,97 @@ test("#467: e2e testserver", { tag: ['@sandbox', '@login'] }, async ({}) => {
   ];
 
   const context = await firefox.launchPersistentContext(resolve(REPO, '.pw-profile-ff'), { headless: true, viewport: { width: 1500, height: 950 } });
-  await installProdGuard(context);   // Firefox, its own profile: the harness guard is added by hand
-  const page = context.pages()[0] || await context.newPage();
-  await context.addInitScript(() => {
-    const store = new Map();
-    window.GM_getValue = (k, d) => store.has(k) ? store.get(k) : d;
-    window.GM_setValue = (k, v) => store.set(k, v);
-    window.GM_deleteValue = k => store.delete(k);
-    window.GM_info = { script: { name: 'Falcon', version: 't' } };
-  });
-  const ck = check;
+  // closed in `finally`: a spec that skips (the profile isn't signed in) or fails must not leave
+  // Firefox running on the profile, or the next Firefox spec can't open it (#637)
+  try {
+    await installProdGuard(context);   // Firefox, its own profile: the harness guard is added by hand
+    const page = context.pages()[0] || await context.newPage();
+    await context.addInitScript(() => {
+      window.__mbuTest = true;   // Falcon builds its test hook only on a marked page (#623)
+      const store = new Map();
+      window.GM_getValue = (k, d) => store.has(k) ? store.get(k) : d;
+      window.GM_setValue = (k, v) => store.set(k, v);
+      window.GM_deleteValue = k => store.delete(k);
+      window.GM_info = { script: { name: 'Falcon', version: 't' } };
+    });
+    const ck = check;
 
-  const errs = []; page.on('pageerror', e => { if (!mbNoise(e.message)) errs.push(e.message); });
-  // nothing is intercepted here — instead, watch for anything touching production
-  let prodHits = 0;
-  page.on('request', r => {
-    if (/\/\/(www\.)?musicbrainz\.org\//.test(r.url())) prodHits++;
-  });
+    const errs = []; page.on('pageerror', e => { if (!mbNoise(e.message)) errs.push(e.message); });
+    // nothing is intercepted here — instead, watch for anything touching production
+    let prodHits = 0;
+    page.on('request', r => {
+      if (/\/\/(www\.)?musicbrainz\.org\//.test(r.url())) prodHits++;
+    });
 
-  await page.goto(TEST_MB + '/', { waitUntil: 'domcontentloaded' });
-  await requireLogin(page);
-  await idle(page);
-  await page.evaluate(() => {
-    window.__stalls = [];
-    let last = performance.now();
-    setInterval(() => { const n = performance.now(); const late = Math.round(n - last - 200); last = n; if (late > 400) window.__stalls.push(late); }, 200);
-  });
-  await page.addScriptTag({ content: code });
-  await page.waitForFunction(() => !!window.__falconTest, { timeout: 15000 });
+    await page.goto(TEST_MB + '/', { waitUntil: 'domcontentloaded' });
+    await requireLogin(page);
+    await idle(page);
+    await page.evaluate(() => {
+      window.__stalls = [];
+      let last = performance.now();
+      setInterval(() => { const n = performance.now(); const late = Math.round(n - last - 200); last = n; if (late > 400) window.__stalls.push(late); }, 200);
+    });
+    await page.addScriptTag({ content: code });
+    await page.waitForFunction(() => !!window.__falconTest, { timeout: 15000 });
 
-  const target = await page.evaluate(() => window.__falconTest.buildSeedEditUrl({ entityType: 'recording', mbid: 'x', urls: [], note: '' }).split('/recording/')[0]);
-  console.log('MB_TARGET resolved to:', target);
-  ck(target === TEST_MB, `edit urls are built against the server the panel is open on, NOT pinned to production (got ${target})`);
+    const target = await page.evaluate(() => window.__falconTest.buildSeedEditUrl({ entityType: 'recording', mbid: 'x', urls: [], note: '' }).split('/recording/')[0]);
+    console.log('MB_TARGET resolved to:', target);
+    ck(target === TEST_MB, `edit urls are built against the server the panel is open on, NOT pinned to production (got ${target})`);
 
-  await page.evaluate(() => document.getElementById('falcon-launcher').click());
-  await frames(page);
+    await page.evaluate(() => document.getElementById('falcon-launcher').click());
+    await frames(page);
 
-  // fresh urls per run so MB has a genuine edit to make every time
-  const rnd = Math.floor(Math.random() * 1e6);
-  const urlFor = i => `https://music.apple.com/sg/song/${rnd}${i}`;
-  await page.evaluate(({ recs, rnd }) => {
-    window.__falconTest.setQueue(recs.map((mbid, i) => ({
-      id: 'e' + i, entityType: 'recording', mbid,
-      // the dual-type shape: one url, two relationship types
-      urls: [
-        { url: `https://music.apple.com/sg/song/${rnd}${i}`, linkTypeId: '254' },
-        { url: `https://music.apple.com/sg/song/${rnd}${i}`, linkTypeId: '979' },
-      ],
-      name: null, urlResults: null, status: 'queued', error: '',
-    })));
-    window.__falconTest.cfg.workers = 3;
-  }, { recs: RECS, rnd });
+    // fresh urls per run so MB has a genuine edit to make every time
+    const rnd = Math.floor(Math.random() * 1e6);
+    const urlFor = i => `https://music.apple.com/sg/song/${rnd}${i}`;
+    await page.evaluate(({ recs, rnd }) => {
+      window.__falconTest.setQueue(recs.map((mbid, i) => ({
+        id: 'e' + i, entityType: 'recording', mbid,
+        // the dual-type shape: one url, two relationship types
+        urls: [
+          { url: `https://music.apple.com/sg/song/${rnd}${i}`, linkTypeId: '254' },
+          { url: `https://music.apple.com/sg/song/${rnd}${i}`, linkTypeId: '979' },
+        ],
+        name: null, urlResults: null, status: 'queued', error: '',
+      })));
+      window.__falconTest.cfg.workers = 3;
+    }, { recs: RECS, rnd });
 
-  const t0 = Date.now();
-  await page.evaluate(() => window.__falconTest.start());
-  const finished = await page.waitForFunction(
-    () => window.__falconTest.getQueue().every(i => i.status !== 'queued' && i.status !== 'active'),
-    null, { timeout: 180000 },
-  ).then(() => true).catch(() => false);
-  const elapsed = Date.now() - t0;
-  const q = await page.evaluate(() => window.__falconTest.getQueue().map(i => ({ s: i.status, e: i.error }))).catch(() => null);
-  const stalls = await page.evaluate(() => window.__stalls).catch(() => null);
-  console.log('elapsed', elapsed, 'ms; statuses', JSON.stringify((q || []).reduce((a, x) => (a[x.s] = (a[x.s] || 0) + 1, a), {})));
-  console.log('item errors:', JSON.stringify([...new Set((q || []).map(x => x.e).filter(Boolean))]));
+    const t0 = Date.now();
+    await page.evaluate(() => window.__falconTest.start());
+    const finished = await page.waitForFunction(
+      () => window.__falconTest.getQueue().every(i => i.status !== 'queued' && i.status !== 'active'),
+      null, { timeout: 180000 },
+    ).then(() => true).catch(() => false);
+    const elapsed = Date.now() - t0;
+    const q = await page.evaluate(() => window.__falconTest.getQueue().map(i => ({ s: i.status, e: i.error }))).catch(() => null);
+    const stalls = await page.evaluate(() => window.__stalls).catch(() => null);
+    console.log('elapsed', elapsed, 'ms; statuses', JSON.stringify((q || []).reduce((a, x) => (a[x.s] = (a[x.s] || 0) + 1, a), {})));
+    console.log('item errors:', JSON.stringify([...new Set((q || []).map(x => x.e).filter(Boolean))]));
 
-  ck(finished, `all ${RECS.length} items finish`);
-  ck(Array.isArray(q) && q.every(x => x.s === 'done'), `every item commits for real against the sandbox (${JSON.stringify((q || []).map(x => x.s))})`);
-  ck(Array.isArray(stalls) && stalls.length === 0, `the UI thread was never blocked (stalls over 400ms: ${JSON.stringify(stalls)})`);
-  ck(prodHits === 0, `nothing reached PRODUCTION musicbrainz.org while working on the sandbox (${prodHits} request(s))`);
+    ck(finished, `all ${RECS.length} items finish`);
+    ck(Array.isArray(q) && q.every(x => x.s === 'done'), `every item commits for real against the sandbox (${JSON.stringify((q || []).map(x => x.s))})`);
+    ck(Array.isArray(stalls) && stalls.length === 0, `the UI thread was never blocked (stalls over 400ms: ${JSON.stringify(stalls)})`);
+    ck(prodHits === 0, `nothing reached PRODUCTION musicbrainz.org while working on the sandbox (${prodHits} request(s))`);
 
-  // The actual point: read the entities back and require the relationships to be
-  // there. "status: done" only means MB redirected off /edit.
-  await settled(page);
-  const shortfalls = [];
-  for (let i = 0; i < RECS.length; i++) {
-    const types = await page.evaluate(async ({ mbid, want, base }) => {
-      const r = await fetch(`${base}/ws/2/recording/${mbid}?inc=url-rels&fmt=json`, { headers: { Accept: 'application/json' } });
-      if (!r.ok) return null;
-      const j = await r.json();
-      return (j.relations || []).filter(x => x.url && x.url.resource === want).map(x => x.type).sort();
-    }, { mbid: RECS[i], want: urlFor(i), base: TEST_MB });
-    if (!types || types.length !== 2) shortfalls.push({ mbid: RECS[i], got: types });
+    // The actual point: read the entities back and require the relationships to be
+    // there. "status: done" only means MB redirected off /edit.
+    await settled(page);
+    const shortfalls = [];
+    for (let i = 0; i < RECS.length; i++) {
+      const types = await page.evaluate(async ({ mbid, want, base }) => {
+        const r = await fetch(`${base}/ws/2/recording/${mbid}?inc=url-rels&fmt=json`, { headers: { Accept: 'application/json' } });
+        if (!r.ok) return null;
+        const j = await r.json();
+        return (j.relations || []).filter(x => x.url && x.url.resource === want).map(x => x.type).sort();
+      }, { mbid: RECS[i], want: urlFor(i), base: TEST_MB });
+      if (!types || types.length !== 2) shortfalls.push({ mbid: RECS[i], got: types });
+    }
+    console.log('shortfalls:', JSON.stringify(shortfalls));
+    ck(shortfalls.length === 0, `all ${RECS.length} entities really carry BOTH relationship types afterwards, confirmed through the web service (${RECS.length - shortfalls.length}/${RECS.length})`);
+
+    ck(errs.length === 0, 'no page errors: ' + JSON.stringify(errs.slice(0, 3)));
+  } finally {
+    await context.close();
   }
-  console.log('shortfalls:', JSON.stringify(shortfalls));
-  ck(shortfalls.length === 0, `all ${RECS.length} entities really carry BOTH relationship types afterwards, confirmed through the web service (${RECS.length - shortfalls.length}/${RECS.length})`);
-
-  ck(errs.length === 0, 'no page errors: ' + JSON.stringify(errs.slice(0, 3)));
-  await context.close();
 });
