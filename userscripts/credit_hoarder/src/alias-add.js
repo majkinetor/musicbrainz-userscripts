@@ -9,6 +9,7 @@
 // the way Falcon submits aliases (#535) — with the alias type left empty.
 /* global DOMParser */
 import { mbmHolds, MBM_SPECIAL_PURPOSE } from '../../../dev/match/artist-match.mjs';
+import { mbnFetch } from '../../../dev/net/mb-gate.mjs';
 import { log } from './log.js';
 
 const SPECIAL = new Set(MBM_SPECIAL_PURPOSE);
@@ -32,7 +33,8 @@ const aliasFormUrl = mbid => `${location.origin}/artist/${mbid}/add-alias`;
 
 /** The artist's LIVE name + aliases (not the review table's possibly cached view). */
 async function liveHolds(mbid, name) {
-    const live = await fetch(`${location.origin}/ws/2/artist/${mbid}?inc=aliases&fmt=json`, { headers: { Accept: 'application/json' } }).then(r => (r.ok ? r.json() : null)).catch(() => null);
+    // through the shared request gate (#633), ahead of queued background work
+    const live = await mbnFetch(`${location.origin}/ws/2/artist/${mbid}?inc=aliases&fmt=json`, { headers: { Accept: 'application/json' } }, { background: false }).then(r => (r.ok ? r.json() : null)).catch(() => null);
     return live && live.id ? { held: aliasHeldBy({ name: live.name, aliases: live.aliases || [] }, name), artistName: live.name } : null;
 }
 

@@ -49,18 +49,21 @@ test("#467: names", { tag: ['@sandbox', '@login'] }, async ({ context, page }) =
   // (a live-network timing assertion here was flaky — real request latency varies
   // run to run) — 4 requests through a 4-wide throttle should all finish around
   // ONE delay period, not four sequential ones.
+  // #633: request STARTS are now paced by the shared gate (a burst of three, then one a
+  // second), so this is checked on the burst: three slow lookups overlap, from a clean gate.
   const timing = await page.evaluate(async () => {
     const DELAY = 400;
+    localStorage.removeItem('mbu:mb-gate');
     const origFetch = window.fetch;
     window.fetch = async () => { await new Promise(r => setTimeout(r, DELAY)); return new Response(JSON.stringify({ name: 'x' }), { status: 200 }); };
     const t0 = performance.now();
-    await Promise.all([1, 2, 3, 4].map(n => window.__falconTest.mbThrottle.fetchJson(`https://test.musicbrainz.org/ws/2/artist/mock-${n}?fmt=json`)));
+    await Promise.all([1, 2, 3].map(n => window.__falconTest.mbThrottle.fetchJson(`https://test.musicbrainz.org/ws/2/artist/mock-${n}?fmt=json`)));
     const elapsed = performance.now() - t0;
     window.fetch = origFetch;
     return elapsed;
   });
-  console.log('4 mocked concurrent lookups (400ms each) took (ms):', timing);
-  ck(timing < 800, `4 requests through the throttle run concurrently — ~1 delay period, not 4 sequential ones (took ${Math.round(timing)}ms with a 400ms mock delay, expect well under 1600ms)`);
+  console.log('3 mocked concurrent lookups (400ms each) took (ms):', timing);
+  ck(timing < 800, `3 requests through the throttle run concurrently — ~1 delay period, not 3 sequential ones (took ${Math.round(timing)}ms with a 400ms mock delay, expect well under 1200ms)`);
 
   // 1c. Retry-After backoff (mirrors Credit Hoarder's api-mb.js throttle): a
   // 429/503 with a Retry-After header must be honored — retried after that delay

@@ -96,7 +96,9 @@ test.describe('the web-service queue', () => {
     check(run.starts.length === N, `all ${N} made`);
     check(run.total < chained / 2, `${run.total} ms, where chaining would take ~${chained} ms`);
     check(run.peak > 1 && run.peak <= 4, `they overlap, at most 4 at once (peak ${run.peak})`);
-    check(gaps.every(g => g >= 900), `but each starts ~1 s after the last (${JSON.stringify(gaps)})`);
+    // #633: the shared gate allows a burst of three, then one a second on average: the i-th
+    // start is never earlier than (i − 2) seconds in
+    check(run.starts.every((s, i) => s >= (i - 2) * 1000 - 100), `but no faster than a burst of three and then one a second (${JSON.stringify(run.starts)})`);
     check(run.staleSent === 0 && run.stale && run.stale.stale === true, 'a request gone stale is never sent, and its caller is told');
   });
 

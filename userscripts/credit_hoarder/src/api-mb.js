@@ -5,6 +5,7 @@
 
 import { MB, pageWindow }    from './constants.js';
 import { log, logDebug } from './log.js';
+import { mbnGated, mbnSlot, mbnAnswer } from '../../../dev/net/mb-gate.mjs';
 
 /**
  * Fetch a full MB entity from the internal `/ws/js/entity/{mbid}` endpoint.
@@ -19,6 +20,10 @@ export async function fetchMBEntity(mbid) {
 }
 
 // ── Centralized MB API throttle ──────────────────────────────────────────
+// #633: /ws/2 requests also take a start slot from the shared MusicBrainz request
+// gate (dev/net/mb-gate.mjs), one budget for every script and tab on the origin,
+// and a 429/503 on /ws/2 holds all of them, not only Credit Hoarder's workers.
+// The workers and the timeout backoff below stay; /ws/js is not gated.
 // All MB API requests go through this throttle. Up to MAX_CONCURRENT
 // requests can be in flight at any time (no artificial gap between
 // successive requests — MB's own backpressure paces sustained throughput).
@@ -83,8 +88,11 @@ export const mbThrottle = (() => {
     async function _run(item) {
         const tag = `req#${++_diagReqSeq}`;
         const shortUrl = item.url.replace(MB, '').replace(/^https:/, '');
+        const gated = mbnGated(item.url);
+        const gateLog = (lv, m) => (lv === 'warn' ? log.warn(m) : logDebug(m));
         for (let attempt = 0; attempt <= item.retries; attempt++) {
             await _waitForPause();
+            if (gated) await mbnSlot({ label: shortUrl, log: gateLog });
             _totalRequests++;
             const attemptTag = attempt === 0 ? '' : ` (retry ${attempt})`;
             // #87 diagnostic: log request start with in-flight + queued
@@ -97,6 +105,10 @@ export const mbThrottle = (() => {
             try {
                 const res = await fetch(item.url, { signal: ctrl.signal });
                 const elapsed = Date.now() - t0;
+                if (gated) {
+                    const a = await mbnAnswer(res.status, n => res.headers.get(n), { log: gateLog });
+                    if (a.throttled) { _rateLimited++; logDebug(`${tag} <- ${res.status} in ${elapsed}ms; the shared gate holds ${a.hold}ms`); continue; }
+                }
                 if (res.status === 429 || res.status === 503) {
                     _rateLimited++;
                     const ra = parseInt(res.headers.get('Retry-After'), 10);

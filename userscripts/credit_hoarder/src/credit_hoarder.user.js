@@ -17,6 +17,7 @@ import { getSourceUrlsForRelease, logSourceProbe } from './api-mb.js';
 import { log } from './log.js';
 import { insertDiscogsBar, probeTitleRemixes } from './ui-bar.js';
 import { MB, DISCOGS_CHANNEL }       from './constants.js';
+import { mbnFetch }                  from '../../../dev/net/mb-gate.mjs';
 import { runTidalHarvestPage }   from './sources/tidal.js';
 import { runMetalArchivesHarvestPage } from './sources/metal_archives.js';
 import                                './storage.js';   // opens IndexedDB on load
@@ -146,7 +147,7 @@ if (/(^|\.)metal-archives\.com$/i.test(location.hostname)) {
     const CLOSE_DELAY_MS = 50; // tiny grace for BroadcastChannel delivery
     const ctrl  = new AbortController();
     const timer = setTimeout(() => ctrl.abort(), NAME_FETCH_TIMEOUT_MS);
-    fetch(`${MB}/ws/2/${entityType}/${mbid}?fmt=json`, { signal: ctrl.signal })
+    mbnFetch(`${MB}/ws/2/${entityType}/${mbid}?fmt=json`, { signal: ctrl.signal }, { background: false })   // the shared gate (#633), ahead of queued work
         .then(r => r.json())
         .then(json => ({ name: json.name || '', disambiguation: json.disambiguation || '' }))
         .catch(() => ({ name: '', disambiguation: '' }))
