@@ -29,6 +29,7 @@ export default defineConfig({
   projects: [
     { name: 'harness', testDir: 'dev/test' },   // the harness's own guard tests
     { name: 'ui', testDir: 'dev/ui' },          // the shared UI components (ST-UI)
+    { name: 'net', testDir: 'dev/net' },        // the shared MusicBrainz request gate (ST-NET)
     ...scripts.map(name => ({ name, testDir: `userscripts/${name}/test` })),
   ],
 });

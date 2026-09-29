@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         String Theory
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.9.29.182430
+// @version      2026.9.29.220056
 // @description  Unified bundle of 8 MusicBrainz userscripts (apollo_editor, art_station, credit_hoarder, fusion, group_therapy, isrc_scout, mammoth, platform_check). Built by userscripts/string_theory/build.mjs — do not hand-edit.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCIgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0Ij4NCiAgPCEtLSBodWItYW5kLXNwb2tlICJuZXR3b3JrIiBnbHlwaCwgc2luZ2xlIHZpdmlkIHZpb2xldCBvbiB0cmFuc3BhcmVudCBzbyBpdCByZWFkcyBvbiBib3RoIGRhcmsgYW5kIGxpZ2h0IHBhZ2VzIC0tPg0KICA8ZyBmaWxsPSJub25lIiBzdHJva2U9IiM3YzVjZmYiIHN0cm9rZS13aWR0aD0iNC42IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMzIgMTUiLz4NCiAgICA8cGF0aCBkPSJNMzIgMzIgTDQ2LjUgMjMuNSIvPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMNDYuNSA0MC41Ii8+DQogICAgPHBhdGggZD0iTTMyIDMyIEwzMiA0OSIvPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMTcuNSA0MC41Ii8+DQogICAgPHBhdGggZD0iTTMyIDMyIEwxNy41IDIzLjUiLz4NCiAgPC9nPg0KICA8ZyBmaWxsPSIjN2M1Y2ZmIj4NCiAgICA8Y2lyY2xlIGN4PSIzMiIgY3k9IjMyIiByPSI4LjYiLz4NCiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjE5LjUiIHI9IjYuNCIvPg0KICAgIDxjaXJjbGUgY3g9IjQ5IiBjeT0iMTkuNSIgcj0iNi40Ii8+DQogICAgPGNpcmNsZSBjeD0iMzIiIGN5PSI1NyIgcj0iNi40Ii8+DQogIDwvZz4NCiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjN2M1Y2ZmIiBzdHJva2Utd2lkdGg9IjMuOCI+DQogICAgPGNpcmNsZSBjeD0iMzIiIGN5PSI3IiByPSI0LjkiLz4NCiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjQ0LjUiIHI9IjQuOSIvPg0KICAgIDxjaXJjbGUgY3g9IjQ5IiBjeT0iNDQuNSIgcj0iNC45Ii8+DQogIDwvZz4NCjwvc3ZnPg0K
@@ -81,13 +81,13 @@
 // Bundles (verbatim, each wrapped in a run-at gate): apollo_editor, art_station, credit_hoarder, fusion, group_therapy, isrc_scout, mammoth, platform_check.
 
 try {
-  console.log('%c String Theory %c v2026.9.29.182430 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
-  console.log("String Theory bundles:\n  · Apollo Editor v2026.9.29.182334\n  · Art Station v2026.9.28\n  · Credit Hoarder v2026.9.29.182430\n  · Fusion v2026.9.28\n  · Group Therapy v2026.9.28\n  · ISRC Scout v2026.9.28\n  · Mammoth v2026.9.28.214729\n  · Platform Check v2026.9.28");
+  console.log('%c String Theory %c v2026.9.29.220056 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
+  console.log("String Theory bundles:\n  · Apollo Editor v2026.9.29.220049\n  · Art Station v2026.9.29\n  · Credit Hoarder v2026.9.29.220056\n  · Fusion v2026.9.29\n  · Group Therapy v2026.9.29\n  · ISRC Scout v2026.9.29\n  · Mammoth v2026.9.28.214729\n  · Platform Check v2026.9.29");
 } catch (e) {}
 
 // ===== apollo_editor (@run-at document-start) =====================================
 (function(__stGM){
-  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Apollo Editor*","namespace":"https://musicbrainz.org/","version":"2026.9.29.182334","description":"Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md","supportURL":null,"icon":"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E"}) }) : { script: {"name":"Apollo Editor*","namespace":"https://musicbrainz.org/","version":"2026.9.29.182334","description":"Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md","supportURL":null,"icon":"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E"} };
+  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Apollo Editor*","namespace":"https://musicbrainz.org/","version":"2026.9.29.220049","description":"Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md","supportURL":null,"icon":"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E"}) }) : { script: {"name":"Apollo Editor*","namespace":"https://musicbrainz.org/","version":"2026.9.29.220049","description":"Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md","supportURL":null,"icon":"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E"} };
   (f=>f())(function(){
 /*
  * Editor model (discovered via test/ spikes):
@@ -102,6 +102,106 @@ try {
  */
 (function () {
   'use strict';
+  // the shared MusicBrainz request gate (#633) — first, so nothing can call it before its consts exist
+  // <ST-NET> — generated by dev/net/sync-gate.mjs from dev/net/mb-gate.mjs — DO NOT EDIT
+  const MBN_GAP = 1000;
+  const MBN_BURST = 3;
+  const MBN_KEY = "mbu:mb-gate";
+  const MBN_LOCK = "mbu-mb-gate";
+  const MBN_MAX_HOLD = 60000;
+  function mbnGated(url) {
+      const s = String(url || '');
+      return /^\/ws\/2\//.test(s) || /^https?:\/\/([a-z0-9-]+\.)*musicbrainz\.org\/ws\/2\//i.test(s);
+  }
+  async function mbnState(fn) {
+      const rw = () => {
+          let s = null, stored = true;
+          try { s = JSON.parse(localStorage.getItem(MBN_KEY) || 'null'); } catch (e) { stored = false; }
+          const g = globalThis.__mbnGate || (globalThis.__mbnGate = { tat: 0, cool: 0, hot: 0 });
+          if (!stored) s = g;                                                        // no storage: this page's copy only
+          else if (!s || typeof s !== 'object') s = { tat: 0, cool: 0, hot: 0 };   // none yet (or cleared): a fresh schedule
+          const out = fn(s);
+          Object.assign(g, s);
+          try { localStorage.setItem(MBN_KEY, JSON.stringify({ tat: s.tat || 0, cool: s.cool || 0, hot: s.hot || 0 })); } catch (e) {}
+          return out;
+      };
+      try {
+          if (typeof navigator !== 'undefined' && navigator.locks && navigator.locks.request) return await navigator.locks.request(MBN_LOCK, rw);
+      } catch (e) { /* no Web Locks here (an insecure or sandboxed context): unlocked, like a lone script */ }
+      return rw();
+  }
+  async function mbnSlot(o) {
+      o = o || {};
+      const t0 = Date.now(), background = o.background !== false;
+      const booked = await mbnState(s => {
+          const now = Date.now(), cool = s.cool || 0, tat = s.tat || 0;
+          let at = background ? Math.max(now, tat - (MBN_BURST - 1) * MBN_GAP) : now;
+          at = Math.max(at, cool);
+          s.tat = Math.max(tat, at) + MBN_GAP;
+          return { at, why: cool > now && cool >= at ? 'MusicBrainz asked everyone to wait' : 'pacing, one request a second' };
+      });
+      let told = false;
+      for (;;) {
+          if (o.cancelled && o.cancelled()) return { ok: false, waited: Date.now() - t0 };
+          let cool = 0;
+          try { cool = (JSON.parse(localStorage.getItem(MBN_KEY) || 'null') || {}).cool || 0; } catch (e) { cool = (globalThis.__mbnGate || {}).cool || 0; }
+          const until = Math.max(booked.at, cool), left = until - Date.now();   // a hold that appeared while we queued
+          if (left <= 0) break;
+          if (!told && until - t0 > 1000 && o.log) { told = true; o.log('info', 'MusicBrainz gate: ' + (o.label || 'request') + ' waits ' + Math.round((until - t0) / 100) / 10 + 's (' + (cool > booked.at ? 'MusicBrainz asked everyone to wait' : booked.why) + ')'); }
+          await new Promise(r => setTimeout(r, Math.min(left, 250)));   // in slices, so a cancel lands promptly
+      }
+      return { ok: true, waited: Date.now() - t0 };
+  }
+  async function mbnAnswer(status, header, o) {
+      o = o || {};
+      if (status === 429 || status === 503) {
+          const raw = header ? header('Retry-After') : null;
+          const secs = Number(raw), date = raw ? Date.parse(raw) : NaN;
+          const ra = Number.isFinite(secs) ? secs * 1000 : Number.isFinite(date) ? Math.max(0, date - Date.now()) : 0;
+          const hold = await mbnState(s => {
+              const now = Date.now();
+              // One throttle, one step: the requests already in flight when it began all answer
+              // 503 too, and each must not stretch the hold again. A throttle long gone doesn't
+              // count at all: `hot` is shared and persists, and would otherwise slow every later
+              // page for good.
+              if (now > (s.cool || 0) + 30000) s.hot = 0;
+              if (now >= (s.cool || 0)) s.hot = Math.min((s.hot || 0) + 1, 6);
+              const ms = Math.min(Math.max(1000, ra) * Math.max(1, s.hot), MBN_MAX_HOLD);
+              s.cool = Math.max(s.cool || 0, Date.now() + ms);
+              return s.cool - Date.now();
+          });
+          if (o.log) o.log('warn', 'MusicBrainz gate: HTTP ' + status + (raw != null ? ' (Retry-After: ' + raw + ')' : '') + ' — every script holds ' + Math.round(hold / 100) / 10 + 's');
+          return { throttled: true, hold };
+      }
+      if (status >= 200 && status < 500) await mbnState(s => { if (s.hot) s.hot = Date.now() > (s.cool || 0) + 30000 ? 0 : s.hot - 1; });
+      return { throttled: false, hold: 0 };
+  }
+  async function mbnFetch(url, init, o) {
+      o = o || {};
+      if (!mbnGated(url)) return fetch(url, init);
+      const tries = o.tries || 4;
+      for (let attempt = 1; ; attempt++) {
+          const slot = await mbnSlot(o);
+          if (!slot.ok) return null;
+          const r = await fetch(url, init);
+          const a = await mbnAnswer(r.status, n => r.headers.get(n), o);
+          if (!a.throttled || attempt >= tries) return r;
+      }
+  }
+  function mbnHot() {
+      let s;
+      try { s = JSON.parse(localStorage.getItem(MBN_KEY) || 'null') || {}; } catch (e) { s = globalThis.__mbnGate || {}; }
+      return Date.now() > (s.cool || 0) + 30000 ? 0 : (s.hot || 0);   // a throttle long gone is over
+  }
+  function mbnRawHeader(raw, name) {
+      const want = String(name).toLowerCase();
+      for (const line of String(raw || '').split(/\r?\n/)) {
+          const i = line.indexOf(':');
+          if (i > 0 && line.slice(0, i).trim().toLowerCase() === want) return line.slice(i + 1).trim();
+      }
+      return null;
+  }
+  // </ST-NET>
 
   // #522 follow-up (majkinetor, live): "why is LastPass recognizing edits as
   // passwords? I noticed that in apollo credited as too" — password managers
@@ -767,66 +867,41 @@ try {
   // those blocks everything behind it. So the queue wasn't protecting us from
   // the limiter, it was idling in front of a slow server.
   //
-  // Pacing now applies to request STARTS, not completions: a start slot every
-  // WS_MIN_GAP, up to WS_MAX_INFLIGHT outstanding. The sustained rate is now
-  // exactly 1/s — the published guidance, and *stricter* than the 700ms this
-  // used to allow — while a slow response no longer stalls the ones behind it.
-  const WS_MIN_GAP = 1000;      // between STARTS. was 700 between completions
-  const WS_MAX_INFLIGHT = 4;    // a burst ceiling; the gap is what bounds the rate
-  let _wsNextStart = 0, _wsInFlight = 0;
-  /* #575 round 3 (majkinetor's 2026-09-08 log: 90 of 121 responses were HTTP 503,
-     throttled from the very first request). Every caller used to back off on its
-     own — sleep 1.2s, retry — which is fine for one request and actively harmful
-     for several: while one lane waits out its penalty the others keep firing into
-     the same tripped limiter, so the bucket never refills and everybody's backoff
-     grows together. Retries then make up most of the traffic.
-     So a throttle is now a SHARED signal. One 503 holds every lane behind one
-     deadline, and concurrency collapses to a single probing request until a
-     response comes back clean. All lanes wait the same wall-clock window at the
-     same time, so this costs a bounded pause, never a per-request delay. */
-  let _wsCoolUntil = 0, _wsHot = 0;
-  function wsThrottled(retryAfterSec) {
-    _wsHot = Math.min(_wsHot + 1, 6);
-    const base = Math.max(1000, (retryAfterSec > 0 ? retryAfterSec : 1) * 1000);
-    _wsCoolUntil = Math.max(_wsCoolUntil, Date.now() + base * _wsHot);
-  }
-  const wsOkNow = () => { if (_wsHot) _wsHot--; };   // a clean response earns some room back
-  const wsLanes = () => (_wsHot ? 1 : WS_MAX_INFLIGHT);   // while throttled, probe with one
+  // Pacing applies to request STARTS, not completions, so a slow response doesn't stall the
+  // ones behind it; up to WS_MAX_INFLIGHT outstanding.
+  //
+  // #575 round 3 (majkinetor's 2026-09-08 log: 90 of 121 responses were HTTP 503): a
+  // throttle is a SHARED signal. One 503 holds every lane behind one deadline, and
+  // concurrency collapses to a single probing request until a response comes back clean,
+  // so the retries don't keep the limiter tripped.
+  //
+  // #633: both are now the shared MusicBrainz request gate's (the ST-NET block), so the
+  // schedule and the hold cover every script and tab on the origin, not Apollo alone.
+  // What stays here: the lanes, the Stop and the stale checks.
+  const WS_MAX_INFLIGHT = 4;    // a burst ceiling; the gate's pace is what bounds the rate
+  let _wsInFlight = 0;
+  const wsLanes = () => (mbnHot() ? 1 : WS_MAX_INFLIGHT);   // while throttled, probe with one
+  const wsGateLog = (lv, m) => (lv === 'warn' ? Log.warn : Log.info)(m);
   // opts.stale() → true means "this request has been superseded" (the picker types
-  // a new query while an older one still queues). Checked when the turn comes up
-  // AND after the gap wait, so a stale call costs no request and no slot. #555
+  // a new query while an older one still queues). Checked while it waits for its slot
+  // AND once it has one, so a stale call costs no request. #555
+  // A picker search (it has a stale()) is interactive for the gate: it doesn't queue
+  // behind a matching pass's background lookups.
   async function wsGet(url, opts) {
     const o = opts || {};
     if (o.stale && o.stale()) return null;
-    // Take a start slot up front, so concurrent callers space out instead of all
-    // reading the same "last request was long ago" and firing at once. The
-    // cooldown is folded into the same slot so a shared penalty does not also
-    // cost everyone their place in the queue.
-    /* One slot is claimed, ONCE. A throttle landing while we wait pushes our
-       start further out, but must not book another slot — the previous version
-       re-claimed on every pass round this loop, and each re-claim shoved
-       _wsNextStart another second into the future. With four lanes and repeated
-       holds the queue ran away from the work actually left, which is what made
-       pressing Match "produce literally nothing, then after a minute or so it
-       starts" (majkinetor, #575). Waiting is not the same as queueing.
-       The wait is interruptible: a lane parked here cannot notice a Stop, and a
-       pass whose lanes are all parked looks exactly as unstoppable as the one
-       #577 was meant to fix. */
-    let startAt = Math.max(Date.now(), _wsNextStart, _wsCoolUntil);
-    _wsNextStart = startAt + WS_MIN_GAP;
-    for (;;) {
-      const now = Date.now();
-      const until = Math.max(startAt, _wsCoolUntil);   // a hold that appeared while we queued
-      if (now >= until) break;
-      if (_matchStop) return null;                     // caller treats null as superseded
-      await _sleep(Math.min(until - now, 250));        // in slices, so a Stop lands promptly
-    }
+    // The wait is interruptible: a lane parked in the gate cannot notice a Stop otherwise,
+    // and a pass whose lanes are all parked looks unstoppable (#577).
+    const slot = await mbnSlot({ background: !o.stale, label: o.label || 'ws2', log: wsGateLog, cancelled: () => _matchStop || !!(o.stale && o.stale()) });
+    if (!slot.ok) return null;                         // caller treats null as superseded
     while (_wsInFlight >= wsLanes()) { if (_matchStop) return null; await _sleep(120); }
     if (o.stale && o.stale()) return null;
     _wsInFlight++;
     try { return await fetch(url, { headers: { Accept: 'application/json' } }); }
     finally { _wsInFlight--; }
   }
+  // tell the gate how MusicBrainz answered: a 429/503 holds everybody, a clean answer earns room back
+  const wsAnswer = r => mbnAnswer(r.status, n => (r.headers && r.headers.get ? r.headers.get(n) : null), { log: wsGateLog });
   // EVERY /ws/2 read goes through here. MusicBrainz answers a throttled request
   // with HTTP 503 (or 429) and a body of `{"error":"…"}` — no `recordings` /
   // `artists` key. Callers that did `fetch(url).then(r => r.json())` therefore
@@ -841,7 +916,7 @@ try {
   // at once they all miss, all enqueue, and the cache only starts helping once
   // the first answer lands. A classic cache stampede.
   //
-  // It is expensive here because /ws/2 reads are paced (WS_MIN_GAP above), so
+  // It is expensive here because /ws/2 reads are paced (the shared gate, one a second), so
   // every duplicate costs a whole start slot — and the extra volume is what trips
   // MusicBrainz's rate limiter, whose backoff then slows down everything behind
   // it. Measured on his log:
@@ -878,17 +953,15 @@ try {
       catch (e) { Log.warn(label + ': network error —', e.message, '(attempt ' + attempt + '/' + WS_TRIES + ')', url); await _sleep(600 * attempt); continue; }
       if (!r) { Log.debug(label + ': superseded while queued, dropped —', url); return { stale: true }; }
       Log.debug(label + ': HTTP', r.status, url);
-      if (r.status === 429 || r.status === 503) {
-        // #575 round 3: hold every lane, not just this one. wsGet blocks on the
-        // shared deadline, so the retry needs no sleep of its own — sleeping here
+      const a = await wsAnswer(r);
+      if (a.throttled) {
+        // #575 round 3: hold every lane, not just this one. wsGet waits in the gate for
+        // the shared deadline, so the retry needs no sleep of its own — sleeping here
         // too would stack a private penalty on top of the shared one.
-        const ra = parseInt(r.headers.get('retry-after') || '', 10);
-        wsThrottled(ra);
-        Log.warn(label + ': throttled by MusicBrainz (HTTP ' + r.status + ') — all requests holding ' + Math.max(0, _wsCoolUntil - Date.now()) + 'ms (attempt ' + attempt + '/' + WS_TRIES + ')');
+        Log.warn(label + ': throttled by MusicBrainz (HTTP ' + r.status + ') — all requests holding ' + a.hold + 'ms (attempt ' + attempt + '/' + WS_TRIES + ')');
         if (o.onThrottle) { try { o.onThrottle(attempt); } catch (e) {} }
         continue;
       }
-      wsOkNow();   // MusicBrainz answered — earn back some of the shared budget
       if (r.status === 404) { Log.debug(label + ': 404 not found —', url); return { notFound: true }; }
       if (!r.ok) { Log.warn(label + ': HTTP ' + r.status + ' — retrying (attempt ' + attempt + '/' + WS_TRIES + ')', url); await _sleep(600 * attempt); continue; }
       let j; try { j = await r.json(); }
@@ -908,11 +981,7 @@ try {
       try { r = await wsGet(`${ORIGIN}/ws/2/url?resource=${encodeURIComponent(discogsUrl)}&inc=artist-rels&fmt=json`); }
       catch (e) { await _sleep(1200); continue; }                 // network error → retry, don't cache
       if (r.status === 404) { _discogsResolveCache.set(discogsUrl, []); _dput('resolve', discogsUrl, []); return []; }   // URL not in MB → 0 owners (cacheable)
-      if (r.status === 429 || r.status === 503) {                 // rate limited → back off, don't cache
-        wsThrottled(parseInt(r.headers.get('retry-after') || '', 10));   // #575: the shared hold, same as every other caller
-        continue;
-      }
-      if (r.ok) wsOkNow();
+      if ((await wsAnswer(r)).throttled) continue;                // rate limited → the shared hold, don't cache (#575, #633)
       if (!r.ok) { await _sleep(1200); continue; }                // other transient error → retry, don't cache
       let j; try { j = await r.json(); } catch (e) { await _sleep(1200); continue; }
       const seen = new Set();
@@ -7285,7 +7354,12 @@ try {
       _recDragSwallow = false;
       const t0 = koTrack(start.mi, start.ti);
       const drag = { side: start.side, start, touched: new Map(), moved: false,
-        target: start.side === 'rec' ? !copyOn(t0, start.field) : null };   // the rec side's mark/unmark, decided by the first cell
+        target: start.side === 'rec' ? !copyOn(t0, start.field) : null,   // the rec side's mark/unmark, decided by the first cell
+        menuSeen: false };
+      // Linux and macOS fire the contextmenu on the PRESS, Windows on the release: note whether the
+      // browser's own one has come already (the track side's dispatched ones are not the browser's)
+      const sawMenu = ev => { if (ev.isTrusted) drag.menuSeen = true; };
+      window.addEventListener('contextmenu', sawMenu, true);
       const mark = () => wrap.querySelectorAll('tbody tr.tc-recrow').forEach(tr => {   // rerenderRec rebuilds rows: re-mark by key
         for (const [sel, [side, field]] of Object.entries(REC_DRAG_CELLS)) {
           if (side !== drag.side) continue;
@@ -7323,14 +7397,19 @@ try {
       };
       const end = () => {
         window.removeEventListener('mousemove', move, true); window.removeEventListener('mouseup', end, true);
+        setTimeout(() => window.removeEventListener('contextmenu', sawMenu, true), 0);   // after the release's own contextmenu, if it has one
         if (!drag.moved) return;   // one cell: the contextmenu handler does it
         // The release's contextmenu (Windows fires it after mouseup) lands on whatever is under
         // the pointer, which may be outside the table (majkinetor, #635): swallow it page-wide.
-        // Where it already fired on the press, nothing comes, so don't keep waiting for one.
+        // Where it fired on the press already (Linux, macOS), nothing comes: waiting for one would
+        // swallow the next right-click instead (a CI run on Linux caught that).
+        if (drag.menuSeen) Log.debug('#635 the contextmenu came with the press — nothing to swallow on release');
+        else {
         _recDragSwallow = true;
         const swallow = ev => { ev.preventDefault(); ev.stopPropagation(); _recDragSwallow = false; window.removeEventListener('contextmenu', swallow, true); Log.debug('#635 contextmenu after a right-drag — swallowed (' + ((ev.target && ev.target.tagName) || '?') + ')'); };
         window.addEventListener('contextmenu', swallow, true);
         setTimeout(() => { _recDragSwallow = false; window.removeEventListener('contextmenu', swallow, true); }, 400);
+        }
         wrap.querySelectorAll('.tc-rdrag').forEach(td => td.classList.remove('tc-rdrag'));
         if (drag.side === 'track') { _tlRefreshed = false; scheduleSync(); }
         rerenderRec();
@@ -10295,7 +10374,7 @@ try {
 
 // ===== art_station (@run-at document-start) =======================================
 (function(__stGM){
-  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Art Station*","namespace":"https://musicbrainz.org/","version":"2026.9.28","description":"Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png"}) }) : { script: {"name":"Art Station*","namespace":"https://musicbrainz.org/","version":"2026.9.28","description":"Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png"} };
+  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Art Station*","namespace":"https://musicbrainz.org/","version":"2026.9.29","description":"Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png"}) }) : { script: {"name":"Art Station*","namespace":"https://musicbrainz.org/","version":"2026.9.29","description":"Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png"} };
   (f=>f())(function(){
 //
 // Phase-1 PoC. Principle: "you get what you see" — the gallery is the staged
@@ -10303,6 +10382,106 @@ try {
 // page), no uploads yet (Add/Enter-edit submission land next).
 (function () {
   'use strict';
+  // the shared MusicBrainz request gate (#633) — first, so nothing can call it before its consts exist
+  // <ST-NET> — generated by dev/net/sync-gate.mjs from dev/net/mb-gate.mjs — DO NOT EDIT
+  const MBN_GAP = 1000;
+  const MBN_BURST = 3;
+  const MBN_KEY = "mbu:mb-gate";
+  const MBN_LOCK = "mbu-mb-gate";
+  const MBN_MAX_HOLD = 60000;
+  function mbnGated(url) {
+      const s = String(url || '');
+      return /^\/ws\/2\//.test(s) || /^https?:\/\/([a-z0-9-]+\.)*musicbrainz\.org\/ws\/2\//i.test(s);
+  }
+  async function mbnState(fn) {
+      const rw = () => {
+          let s = null, stored = true;
+          try { s = JSON.parse(localStorage.getItem(MBN_KEY) || 'null'); } catch (e) { stored = false; }
+          const g = globalThis.__mbnGate || (globalThis.__mbnGate = { tat: 0, cool: 0, hot: 0 });
+          if (!stored) s = g;                                                        // no storage: this page's copy only
+          else if (!s || typeof s !== 'object') s = { tat: 0, cool: 0, hot: 0 };   // none yet (or cleared): a fresh schedule
+          const out = fn(s);
+          Object.assign(g, s);
+          try { localStorage.setItem(MBN_KEY, JSON.stringify({ tat: s.tat || 0, cool: s.cool || 0, hot: s.hot || 0 })); } catch (e) {}
+          return out;
+      };
+      try {
+          if (typeof navigator !== 'undefined' && navigator.locks && navigator.locks.request) return await navigator.locks.request(MBN_LOCK, rw);
+      } catch (e) { /* no Web Locks here (an insecure or sandboxed context): unlocked, like a lone script */ }
+      return rw();
+  }
+  async function mbnSlot(o) {
+      o = o || {};
+      const t0 = Date.now(), background = o.background !== false;
+      const booked = await mbnState(s => {
+          const now = Date.now(), cool = s.cool || 0, tat = s.tat || 0;
+          let at = background ? Math.max(now, tat - (MBN_BURST - 1) * MBN_GAP) : now;
+          at = Math.max(at, cool);
+          s.tat = Math.max(tat, at) + MBN_GAP;
+          return { at, why: cool > now && cool >= at ? 'MusicBrainz asked everyone to wait' : 'pacing, one request a second' };
+      });
+      let told = false;
+      for (;;) {
+          if (o.cancelled && o.cancelled()) return { ok: false, waited: Date.now() - t0 };
+          let cool = 0;
+          try { cool = (JSON.parse(localStorage.getItem(MBN_KEY) || 'null') || {}).cool || 0; } catch (e) { cool = (globalThis.__mbnGate || {}).cool || 0; }
+          const until = Math.max(booked.at, cool), left = until - Date.now();   // a hold that appeared while we queued
+          if (left <= 0) break;
+          if (!told && until - t0 > 1000 && o.log) { told = true; o.log('info', 'MusicBrainz gate: ' + (o.label || 'request') + ' waits ' + Math.round((until - t0) / 100) / 10 + 's (' + (cool > booked.at ? 'MusicBrainz asked everyone to wait' : booked.why) + ')'); }
+          await new Promise(r => setTimeout(r, Math.min(left, 250)));   // in slices, so a cancel lands promptly
+      }
+      return { ok: true, waited: Date.now() - t0 };
+  }
+  async function mbnAnswer(status, header, o) {
+      o = o || {};
+      if (status === 429 || status === 503) {
+          const raw = header ? header('Retry-After') : null;
+          const secs = Number(raw), date = raw ? Date.parse(raw) : NaN;
+          const ra = Number.isFinite(secs) ? secs * 1000 : Number.isFinite(date) ? Math.max(0, date - Date.now()) : 0;
+          const hold = await mbnState(s => {
+              const now = Date.now();
+              // One throttle, one step: the requests already in flight when it began all answer
+              // 503 too, and each must not stretch the hold again. A throttle long gone doesn't
+              // count at all: `hot` is shared and persists, and would otherwise slow every later
+              // page for good.
+              if (now > (s.cool || 0) + 30000) s.hot = 0;
+              if (now >= (s.cool || 0)) s.hot = Math.min((s.hot || 0) + 1, 6);
+              const ms = Math.min(Math.max(1000, ra) * Math.max(1, s.hot), MBN_MAX_HOLD);
+              s.cool = Math.max(s.cool || 0, Date.now() + ms);
+              return s.cool - Date.now();
+          });
+          if (o.log) o.log('warn', 'MusicBrainz gate: HTTP ' + status + (raw != null ? ' (Retry-After: ' + raw + ')' : '') + ' — every script holds ' + Math.round(hold / 100) / 10 + 's');
+          return { throttled: true, hold };
+      }
+      if (status >= 200 && status < 500) await mbnState(s => { if (s.hot) s.hot = Date.now() > (s.cool || 0) + 30000 ? 0 : s.hot - 1; });
+      return { throttled: false, hold: 0 };
+  }
+  async function mbnFetch(url, init, o) {
+      o = o || {};
+      if (!mbnGated(url)) return fetch(url, init);
+      const tries = o.tries || 4;
+      for (let attempt = 1; ; attempt++) {
+          const slot = await mbnSlot(o);
+          if (!slot.ok) return null;
+          const r = await fetch(url, init);
+          const a = await mbnAnswer(r.status, n => r.headers.get(n), o);
+          if (!a.throttled || attempt >= tries) return r;
+      }
+  }
+  function mbnHot() {
+      let s;
+      try { s = JSON.parse(localStorage.getItem(MBN_KEY) || 'null') || {}; } catch (e) { s = globalThis.__mbnGate || {}; }
+      return Date.now() > (s.cool || 0) + 30000 ? 0 : (s.hot || 0);   // a throttle long gone is over
+  }
+  function mbnRawHeader(raw, name) {
+      const want = String(name).toLowerCase();
+      for (const line of String(raw || '').split(/\r?\n/)) {
+          const i = line.indexOf(':');
+          if (i > 0 && line.slice(0, i).trim().toLowerCase() === want) return line.slice(i + 1).trim();
+      }
+      return null;
+  }
+  // </ST-NET>
 
   // Works on BOTH a release's cover art and an event's event art — same gallery,
   // same flow, only the entity differs (archive host, the */-art endpoint suffix,
@@ -12236,7 +12415,10 @@ try {
     for (let attempt = 1; ; attempt++) {
       let r = null;
       try {
+        // through the shared request gate (#633): its slot, and a hold after a 429/503 that the retry waits out
+        await mbnSlot({ label: `/ws/2/${ENT.kind}/${MBID}?inc=url-rels`, log: (lv, m) => asLog[lv === 'warn' ? 'warn' : 'info'](m) });
         r = await fetch(`${location.origin}/ws/2/${ENT.kind}/${MBID}?inc=url-rels&fmt=json`, { headers: { Accept: 'application/json' } });
+        if ((await mbnAnswer(r.status, n => r.headers.get(n), { log: (lv, m) => asLog[lv === 'warn' ? 'warn' : 'info'](m) })).throttled && attempt < 4) { asLog.debug(`Links: got ${r.status}, retrying (${attempt}/3) after the hold`); continue; }
       } catch (e) {
         if (attempt >= 4) { asLog.warn(`Links: could not reach MusicBrainz (${e.message}) — sourcing left unknown, not "no links"`); return null; }
       }
@@ -15118,7 +15300,7 @@ try {
 
 // ===== credit_hoarder (@run-at document-end) ====================================
 (function(__stGM){
-  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Credit Hoarder*","namespace":"majkinetor","version":"2026.9.29.182430","description":"Import per-track release credits from streaming/database providers (Discogs, Tidal, Qobuz, Deezer) into MusicBrainz relationships, with a review phase","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/credit_hoarder/README.md","supportURL":"https://github.com/majkinetor/musicbrainz-userscripts/issues","icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij4KICANCiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMmY2ZjU0IiBzdHJva2Utd2lkdGg9IjkiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGNpcmNsZSBjeD0iMzQiIGN5PSIzOCIgcj0iMi41IiBmaWxsPSIjMmY2ZjU0IiBzdHJva2U9Im5vbmUiLz4NCiAgICA8bGluZSB4MT0iNTAiIHkxPSIzOCIgeDI9Ijk4IiB5Mj0iMzgiLz4NCiAgICA8Y2lyY2xlIGN4PSIzNCIgY3k9IjY0IiByPSIyLjUiIGZpbGw9IiMyZjZmNTQiIHN0cm9rZT0ibm9uZSIvPg0KICAgIDxsaW5lIHgxPSI1MCIgeTE9IjY0IiB4Mj0iOTgiIHkyPSI2NCIvPg0KICAgIDxjaXJjbGUgY3g9IjM0IiBjeT0iOTAiIHI9IjIuNSIgZmlsbD0iIzJmNmY1NCIgc3Ryb2tlPSJub25lIi8+DQogICAgPGxpbmUgeDE9IjUwIiB5MT0iOTAiIHgyPSI3NCIgeTI9IjkwIi8+DQogIDwvZz4NCiAgPGNpcmNsZSBjeD0iOTIiIGN5PSI5MiIgcj0iMjMiIGZpbGw9IiMyZTllNWIiLz4NCiAgPGcgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGxpbmUgeDE9IjkyIiB5MT0iODEiIHgyPSI5MiIgeTI9IjEwMyIvPg0KICAgIDxsaW5lIHgxPSI4MSIgeTE9IjkyIiB4Mj0iMTAzIiB5Mj0iOTIiLz4NCiAgPC9nPg0KPC9zdmc+DQo="}) }) : { script: {"name":"Credit Hoarder*","namespace":"majkinetor","version":"2026.9.29.182430","description":"Import per-track release credits from streaming/database providers (Discogs, Tidal, Qobuz, Deezer) into MusicBrainz relationships, with a review phase","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/credit_hoarder/README.md","supportURL":"https://github.com/majkinetor/musicbrainz-userscripts/issues","icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij4KICANCiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMmY2ZjU0IiBzdHJva2Utd2lkdGg9IjkiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGNpcmNsZSBjeD0iMzQiIGN5PSIzOCIgcj0iMi41IiBmaWxsPSIjMmY2ZjU0IiBzdHJva2U9Im5vbmUiLz4NCiAgICA8bGluZSB4MT0iNTAiIHkxPSIzOCIgeDI9Ijk4IiB5Mj0iMzgiLz4NCiAgICA8Y2lyY2xlIGN4PSIzNCIgY3k9IjY0IiByPSIyLjUiIGZpbGw9IiMyZjZmNTQiIHN0cm9rZT0ibm9uZSIvPg0KICAgIDxsaW5lIHgxPSI1MCIgeTE9IjY0IiB4Mj0iOTgiIHkyPSI2NCIvPg0KICAgIDxjaXJjbGUgY3g9IjM0IiBjeT0iOTAiIHI9IjIuNSIgZmlsbD0iIzJmNmY1NCIgc3Ryb2tlPSJub25lIi8+DQogICAgPGxpbmUgeDE9IjUwIiB5MT0iOTAiIHgyPSI3NCIgeTI9IjkwIi8+DQogIDwvZz4NCiAgPGNpcmNsZSBjeD0iOTIiIGN5PSI5MiIgcj0iMjMiIGZpbGw9IiMyZTllNWIiLz4NCiAgPGcgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGxpbmUgeDE9IjkyIiB5MT0iODEiIHgyPSI5MiIgeTI9IjEwMyIvPg0KICAgIDxsaW5lIHgxPSI4MSIgeTE9IjkyIiB4Mj0iMTAzIiB5Mj0iOTIiLz4NCiAgPC9nPg0KPC9zdmc+DQo="} };
+  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Credit Hoarder*","namespace":"majkinetor","version":"2026.9.29.220056","description":"Import per-track release credits from streaming/database providers (Discogs, Tidal, Qobuz, Deezer) into MusicBrainz relationships, with a review phase","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/credit_hoarder/README.md","supportURL":"https://github.com/majkinetor/musicbrainz-userscripts/issues","icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij4KICANCiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMmY2ZjU0IiBzdHJva2Utd2lkdGg9IjkiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGNpcmNsZSBjeD0iMzQiIGN5PSIzOCIgcj0iMi41IiBmaWxsPSIjMmY2ZjU0IiBzdHJva2U9Im5vbmUiLz4NCiAgICA8bGluZSB4MT0iNTAiIHkxPSIzOCIgeDI9Ijk4IiB5Mj0iMzgiLz4NCiAgICA8Y2lyY2xlIGN4PSIzNCIgY3k9IjY0IiByPSIyLjUiIGZpbGw9IiMyZjZmNTQiIHN0cm9rZT0ibm9uZSIvPg0KICAgIDxsaW5lIHgxPSI1MCIgeTE9IjY0IiB4Mj0iOTgiIHkyPSI2NCIvPg0KICAgIDxjaXJjbGUgY3g9IjM0IiBjeT0iOTAiIHI9IjIuNSIgZmlsbD0iIzJmNmY1NCIgc3Ryb2tlPSJub25lIi8+DQogICAgPGxpbmUgeDE9IjUwIiB5MT0iOTAiIHgyPSI3NCIgeTI9IjkwIi8+DQogIDwvZz4NCiAgPGNpcmNsZSBjeD0iOTIiIGN5PSI5MiIgcj0iMjMiIGZpbGw9IiMyZTllNWIiLz4NCiAgPGcgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGxpbmUgeDE9IjkyIiB5MT0iODEiIHgyPSI5MiIgeTI9IjEwMyIvPg0KICAgIDxsaW5lIHgxPSI4MSIgeTE9IjkyIiB4Mj0iMTAzIiB5Mj0iOTIiLz4NCiAgPC9nPg0KPC9zdmc+DQo="}) }) : { script: {"name":"Credit Hoarder*","namespace":"majkinetor","version":"2026.9.29.220056","description":"Import per-track release credits from streaming/database providers (Discogs, Tidal, Qobuz, Deezer) into MusicBrainz relationships, with a review phase","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/credit_hoarder/README.md","supportURL":"https://github.com/majkinetor/musicbrainz-userscripts/issues","icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij4KICANCiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMmY2ZjU0IiBzdHJva2Utd2lkdGg9IjkiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGNpcmNsZSBjeD0iMzQiIGN5PSIzOCIgcj0iMi41IiBmaWxsPSIjMmY2ZjU0IiBzdHJva2U9Im5vbmUiLz4NCiAgICA8bGluZSB4MT0iNTAiIHkxPSIzOCIgeDI9Ijk4IiB5Mj0iMzgiLz4NCiAgICA8Y2lyY2xlIGN4PSIzNCIgY3k9IjY0IiByPSIyLjUiIGZpbGw9IiMyZjZmNTQiIHN0cm9rZT0ibm9uZSIvPg0KICAgIDxsaW5lIHgxPSI1MCIgeTE9IjY0IiB4Mj0iOTgiIHkyPSI2NCIvPg0KICAgIDxjaXJjbGUgY3g9IjM0IiBjeT0iOTAiIHI9IjIuNSIgZmlsbD0iIzJmNmY1NCIgc3Ryb2tlPSJub25lIi8+DQogICAgPGxpbmUgeDE9IjUwIiB5MT0iOTAiIHgyPSI3NCIgeTI9IjkwIi8+DQogIDwvZz4NCiAgPGNpcmNsZSBjeD0iOTIiIGN5PSI5MiIgcj0iMjMiIGZpbGw9IiMyZTllNWIiLz4NCiAgPGcgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGxpbmUgeDE9IjkyIiB5MT0iODEiIHgyPSI5MiIgeTI9IjEwMyIvPg0KICAgIDxsaW5lIHgxPSI4MSIgeTE9IjkyIiB4Mj0iMTAzIiB5Mj0iOTIiLz4NCiAgPC9nPg0KPC9zdmc+DQo="} };
   (f=>document.readyState!=='loading'?f():document.addEventListener('DOMContentLoaded',f,{once:true}))(function(){
 (() => {
   // src/constants.js
@@ -15274,6 +15456,105 @@ try {
     ul.appendChild(row);
   }
 
+  // ../../dev/net/mb-gate.mjs
+  var MBN_GAP = 1e3;
+  var MBN_BURST = 3;
+  var MBN_KEY = "mbu:mb-gate";
+  var MBN_LOCK = "mbu-mb-gate";
+  var MBN_MAX_HOLD = 6e4;
+  function mbnGated(url) {
+    const s = String(url || "");
+    return /^\/ws\/2\//.test(s) || /^https?:\/\/([a-z0-9-]+\.)*musicbrainz\.org\/ws\/2\//i.test(s);
+  }
+  async function mbnState(fn) {
+    const rw = () => {
+      let s = null, stored = true;
+      try {
+        s = JSON.parse(localStorage.getItem(MBN_KEY) || "null");
+      } catch (e) {
+        stored = false;
+      }
+      const g = globalThis.__mbnGate || (globalThis.__mbnGate = { tat: 0, cool: 0, hot: 0 });
+      if (!stored) s = g;
+      else if (!s || typeof s !== "object") s = { tat: 0, cool: 0, hot: 0 };
+      const out = fn(s);
+      Object.assign(g, s);
+      try {
+        localStorage.setItem(MBN_KEY, JSON.stringify({ tat: s.tat || 0, cool: s.cool || 0, hot: s.hot || 0 }));
+      } catch (e) {
+      }
+      return out;
+    };
+    try {
+      if (typeof navigator !== "undefined" && navigator.locks && navigator.locks.request) return await navigator.locks.request(MBN_LOCK, rw);
+    } catch (e) {
+    }
+    return rw();
+  }
+  async function mbnSlot(o) {
+    o = o || {};
+    const t0 = Date.now(), background = o.background !== false;
+    const booked = await mbnState((s) => {
+      const now = Date.now(), cool = s.cool || 0, tat = s.tat || 0;
+      let at = background ? Math.max(now, tat - (MBN_BURST - 1) * MBN_GAP) : now;
+      at = Math.max(at, cool);
+      s.tat = Math.max(tat, at) + MBN_GAP;
+      return { at, why: cool > now && cool >= at ? "MusicBrainz asked everyone to wait" : "pacing, one request a second" };
+    });
+    let told = false;
+    for (; ; ) {
+      if (o.cancelled && o.cancelled()) return { ok: false, waited: Date.now() - t0 };
+      let cool = 0;
+      try {
+        cool = (JSON.parse(localStorage.getItem(MBN_KEY) || "null") || {}).cool || 0;
+      } catch (e) {
+        cool = (globalThis.__mbnGate || {}).cool || 0;
+      }
+      const until = Math.max(booked.at, cool), left = until - Date.now();
+      if (left <= 0) break;
+      if (!told && until - t0 > 1e3 && o.log) {
+        told = true;
+        o.log("info", "MusicBrainz gate: " + (o.label || "request") + " waits " + Math.round((until - t0) / 100) / 10 + "s (" + (cool > booked.at ? "MusicBrainz asked everyone to wait" : booked.why) + ")");
+      }
+      await new Promise((r) => setTimeout(r, Math.min(left, 250)));
+    }
+    return { ok: true, waited: Date.now() - t0 };
+  }
+  async function mbnAnswer(status, header, o) {
+    o = o || {};
+    if (status === 429 || status === 503) {
+      const raw = header ? header("Retry-After") : null;
+      const secs = Number(raw), date = raw ? Date.parse(raw) : NaN;
+      const ra = Number.isFinite(secs) ? secs * 1e3 : Number.isFinite(date) ? Math.max(0, date - Date.now()) : 0;
+      const hold = await mbnState((s) => {
+        const now = Date.now();
+        if (now > (s.cool || 0) + 3e4) s.hot = 0;
+        if (now >= (s.cool || 0)) s.hot = Math.min((s.hot || 0) + 1, 6);
+        const ms = Math.min(Math.max(1e3, ra) * Math.max(1, s.hot), MBN_MAX_HOLD);
+        s.cool = Math.max(s.cool || 0, Date.now() + ms);
+        return s.cool - Date.now();
+      });
+      if (o.log) o.log("warn", "MusicBrainz gate: HTTP " + status + (raw != null ? " (Retry-After: " + raw + ")" : "") + " \u2014 every script holds " + Math.round(hold / 100) / 10 + "s");
+      return { throttled: true, hold };
+    }
+    if (status >= 200 && status < 500) await mbnState((s) => {
+      if (s.hot) s.hot = Date.now() > (s.cool || 0) + 3e4 ? 0 : s.hot - 1;
+    });
+    return { throttled: false, hold: 0 };
+  }
+  async function mbnFetch(url, init, o) {
+    o = o || {};
+    if (!mbnGated(url)) return fetch(url, init);
+    const tries = o.tries || 4;
+    for (let attempt = 1; ; attempt++) {
+      const slot = await mbnSlot(o);
+      if (!slot.ok) return null;
+      const r = await fetch(url, init);
+      const a = await mbnAnswer(r.status, (n) => r.headers.get(n), o);
+      if (!a.throttled || attempt >= tries) return r;
+    }
+  }
+
   // src/api-mb.js
   async function fetchMBEntity(mbid) {
     const res = await fetch(`/ws/js/entity/${mbid}`);
@@ -15310,8 +15591,11 @@ try {
     async function _run(item) {
       const tag = `req#${++_diagReqSeq}`;
       const shortUrl = item.url.replace(MB, "").replace(/^https:/, "");
+      const gated = mbnGated(item.url);
+      const gateLog = (lv, m) => lv === "warn" ? log.warn(m) : logDebug(m);
       for (let attempt = 0; attempt <= item.retries; attempt++) {
         await _waitForPause();
+        if (gated) await mbnSlot({ label: shortUrl, log: gateLog });
         _totalRequests++;
         const attemptTag = attempt === 0 ? "" : ` (retry ${attempt})`;
         logDebug(`${tag} [running=${_running} queued=${_queue.length}] GET ${shortUrl}${attemptTag}`);
@@ -15321,6 +15605,14 @@ try {
         try {
           const res = await fetch(item.url, { signal: ctrl.signal });
           const elapsed = Date.now() - t0;
+          if (gated) {
+            const a = await mbnAnswer(res.status, (n) => res.headers.get(n), { log: gateLog });
+            if (a.throttled) {
+              _rateLimited++;
+              logDebug(`${tag} <- ${res.status} in ${elapsed}ms; the shared gate holds ${a.hold}ms`);
+              continue;
+            }
+          }
           if (res.status === 429 || res.status === 503) {
             _rateLimited++;
             const ra = parseInt(res.headers.get("Retry-After"), 10);
@@ -18973,7 +19265,7 @@ ${ourBlock}` : ourBlock;
   }
   var aliasFormUrl = (mbid) => `${location.origin}/artist/${mbid}/add-alias`;
   async function liveHolds(mbid, name) {
-    const live = await fetch(`${location.origin}/ws/2/artist/${mbid}?inc=aliases&fmt=json`, { headers: { Accept: "application/json" } }).then((r) => r.ok ? r.json() : null).catch(() => null);
+    const live = await mbnFetch(`${location.origin}/ws/2/artist/${mbid}?inc=aliases&fmt=json`, { headers: { Accept: "application/json" } }, { background: false }).then((r) => r.ok ? r.json() : null).catch(() => null);
     return live && live.id ? { held: aliasHeldBy({ name: live.name, aliases: live.aliases || [] }, name), artistName: live.name } : null;
   }
   async function aliasNowHeld(mbid, name) {
@@ -24498,7 +24790,7 @@ ${lines}
     const CLOSE_DELAY_MS = 50;
     const ctrl = new AbortController();
     const timer = setTimeout(() => ctrl.abort(), NAME_FETCH_TIMEOUT_MS);
-    fetch(`${MB}/ws/2/${entityType}/${mbid}?fmt=json`, { signal: ctrl.signal }).then((r) => r.json()).then((json) => ({ name: json.name || "", disambiguation: json.disambiguation || "" })).catch(() => ({ name: "", disambiguation: "" })).then(({ name, disambiguation }) => {
+    mbnFetch(`${MB}/ws/2/${entityType}/${mbid}?fmt=json`, { signal: ctrl.signal }, { background: false }).then((r) => r.json()).then((json) => ({ name: json.name || "", disambiguation: json.disambiguation || "" })).catch(() => ({ name: "", disambiguation: "" })).then(({ name, disambiguation }) => {
       clearTimeout(timer);
       DISCOGS_CHANNEL.postMessage({
         type: "artist-created",
@@ -24573,7 +24865,7 @@ ${lines}
 
 // ===== fusion (@run-at document-end) ============================================
 (function(__stGM){
-  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Fusion*","namespace":"https://musicbrainz.org/","version":"2026.9.28","description":"Merge-recordings assistant for MusicBrainz: gather a pool of candidate recordings from a release / release group / recording page (or paste any MBID/URL), auto-match them into merge groups by ISRC / AcoustID / length / title+artist, review and adjust the groups, then submit the merges directly in the background — no MB merge page involved.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/fusion/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPkZ1c2lvbjwvdGl0bGU+CiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjOGE1Y2Y2IiBzdHJva2Utd2lkdGg9IjciPgogICAgPGVsbGlwc2UgY3g9IjY0IiBjeT0iNjQiIHJ4PSI1MiIgcnk9IjIyIi8+CiAgICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSI2NCIgcng9IjUyIiByeT0iMjIiIHRyYW5zZm9ybT0icm90YXRlKDYwIDY0IDY0KSIvPgogICAgPGVsbGlwc2UgY3g9IjY0IiBjeT0iNjQiIHJ4PSI1MiIgcnk9IjIyIiB0cmFuc2Zvcm09InJvdGF0ZSgxMjAgNjQgNjQpIi8+CiAgPC9nPgogIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjE0IiBmaWxsPSIjNmQzZmYwIi8+Cjwvc3ZnPgo="}) }) : { script: {"name":"Fusion*","namespace":"https://musicbrainz.org/","version":"2026.9.28","description":"Merge-recordings assistant for MusicBrainz: gather a pool of candidate recordings from a release / release group / recording page (or paste any MBID/URL), auto-match them into merge groups by ISRC / AcoustID / length / title+artist, review and adjust the groups, then submit the merges directly in the background — no MB merge page involved.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/fusion/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPkZ1c2lvbjwvdGl0bGU+CiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjOGE1Y2Y2IiBzdHJva2Utd2lkdGg9IjciPgogICAgPGVsbGlwc2UgY3g9IjY0IiBjeT0iNjQiIHJ4PSI1MiIgcnk9IjIyIi8+CiAgICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSI2NCIgcng9IjUyIiByeT0iMjIiIHRyYW5zZm9ybT0icm90YXRlKDYwIDY0IDY0KSIvPgogICAgPGVsbGlwc2UgY3g9IjY0IiBjeT0iNjQiIHJ4PSI1MiIgcnk9IjIyIiB0cmFuc2Zvcm09InJvdGF0ZSgxMjAgNjQgNjQpIi8+CiAgPC9nPgogIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjE0IiBmaWxsPSIjNmQzZmYwIi8+Cjwvc3ZnPgo="} };
+  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Fusion*","namespace":"https://musicbrainz.org/","version":"2026.9.29","description":"Merge-recordings assistant for MusicBrainz: gather a pool of candidate recordings from a release / release group / recording page (or paste any MBID/URL), auto-match them into merge groups by ISRC / AcoustID / length / title+artist, review and adjust the groups, then submit the merges directly in the background — no MB merge page involved.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/fusion/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPkZ1c2lvbjwvdGl0bGU+CiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjOGE1Y2Y2IiBzdHJva2Utd2lkdGg9IjciPgogICAgPGVsbGlwc2UgY3g9IjY0IiBjeT0iNjQiIHJ4PSI1MiIgcnk9IjIyIi8+CiAgICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSI2NCIgcng9IjUyIiByeT0iMjIiIHRyYW5zZm9ybT0icm90YXRlKDYwIDY0IDY0KSIvPgogICAgPGVsbGlwc2UgY3g9IjY0IiBjeT0iNjQiIHJ4PSI1MiIgcnk9IjIyIiB0cmFuc2Zvcm09InJvdGF0ZSgxMjAgNjQgNjQpIi8+CiAgPC9nPgogIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjE0IiBmaWxsPSIjNmQzZmYwIi8+Cjwvc3ZnPgo="}) }) : { script: {"name":"Fusion*","namespace":"https://musicbrainz.org/","version":"2026.9.29","description":"Merge-recordings assistant for MusicBrainz: gather a pool of candidate recordings from a release / release group / recording page (or paste any MBID/URL), auto-match them into merge groups by ISRC / AcoustID / length / title+artist, review and adjust the groups, then submit the merges directly in the background — no MB merge page involved.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/fusion/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPkZ1c2lvbjwvdGl0bGU+CiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjOGE1Y2Y2IiBzdHJva2Utd2lkdGg9IjciPgogICAgPGVsbGlwc2UgY3g9IjY0IiBjeT0iNjQiIHJ4PSI1MiIgcnk9IjIyIi8+CiAgICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSI2NCIgcng9IjUyIiByeT0iMjIiIHRyYW5zZm9ybT0icm90YXRlKDYwIDY0IDY0KSIvPgogICAgPGVsbGlwc2UgY3g9IjY0IiBjeT0iNjQiIHJ4PSI1MiIgcnk9IjIyIiB0cmFuc2Zvcm09InJvdGF0ZSgxMjAgNjQgNjQpIi8+CiAgPC9nPgogIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjE0IiBmaWxsPSIjNmQzZmYwIi8+Cjwvc3ZnPgo="} };
   (f=>document.readyState!=='loading'?f():document.addEventListener('DOMContentLoaded',f,{once:true}))(function(){
 (function () {
 'use strict';
@@ -24631,23 +24923,109 @@ function http(opts) {
 const gmGet = (url, headers) => http({ method: 'GET', url, headers: headers || {} });
 const gmPost = (url, data, headers) => http({ method: 'POST', url, data, headers: headers || {} });
 
-// #529 follow-up (majkinetor, live): "Load from release group button almost
-// never appears (probably rate limit)." MB's WS2 throttles hard under any
-// burst of calls (verified live: 503 "web server is currently busy" mid-session)
-// — a single failed GET used to just silently return null. Retry with backoff
-// and log every attempt/outcome so a failure is diagnosable from the log alone.
-// MusicBrainz answers a throttled request with 503 + "Retry-After: 9" and
-// publishes a budget via X-RateLimit-Remaining/Reset. Fusion used to ignore
-// both: it retried on its own 0.8/1.6/3.2s backoff, every retry landed inside
-// the window the server had asked us to wait out, and recordings silently
-// ended up with no ISRC data (#529 - "is retry after followed?"). Now the
-// server's own numbers drive the waiting.
-//
-// The gate is GLOBAL on purpose. Enrichment runs several workers at once, and
-// per-request backoff meant each one independently kept knocking while the
-// server was asking everybody to stop - which is what turned one 503 into
-// dozens. One 503 now parks every MB request until the deadline passes.
-let _mbGateUntil = 0;
+// MusicBrainz's /ws/2 goes through the shared request gate (#633): one budget for every
+// script and tab on the origin, and one 503 holds them all. (#529 had Fusion's own global
+// gate for the same reasons: its enrichment workers kept knocking while the server asked
+// everyone to wait. The shared gate keeps that, across scripts.)
+// <ST-NET> — generated by dev/net/sync-gate.mjs from dev/net/mb-gate.mjs — DO NOT EDIT
+const MBN_GAP = 1000;
+const MBN_BURST = 3;
+const MBN_KEY = "mbu:mb-gate";
+const MBN_LOCK = "mbu-mb-gate";
+const MBN_MAX_HOLD = 60000;
+function mbnGated(url) {
+    const s = String(url || '');
+    return /^\/ws\/2\//.test(s) || /^https?:\/\/([a-z0-9-]+\.)*musicbrainz\.org\/ws\/2\//i.test(s);
+}
+async function mbnState(fn) {
+    const rw = () => {
+        let s = null, stored = true;
+        try { s = JSON.parse(localStorage.getItem(MBN_KEY) || 'null'); } catch (e) { stored = false; }
+        const g = globalThis.__mbnGate || (globalThis.__mbnGate = { tat: 0, cool: 0, hot: 0 });
+        if (!stored) s = g;                                                        // no storage: this page's copy only
+        else if (!s || typeof s !== 'object') s = { tat: 0, cool: 0, hot: 0 };   // none yet (or cleared): a fresh schedule
+        const out = fn(s);
+        Object.assign(g, s);
+        try { localStorage.setItem(MBN_KEY, JSON.stringify({ tat: s.tat || 0, cool: s.cool || 0, hot: s.hot || 0 })); } catch (e) {}
+        return out;
+    };
+    try {
+        if (typeof navigator !== 'undefined' && navigator.locks && navigator.locks.request) return await navigator.locks.request(MBN_LOCK, rw);
+    } catch (e) { /* no Web Locks here (an insecure or sandboxed context): unlocked, like a lone script */ }
+    return rw();
+}
+async function mbnSlot(o) {
+    o = o || {};
+    const t0 = Date.now(), background = o.background !== false;
+    const booked = await mbnState(s => {
+        const now = Date.now(), cool = s.cool || 0, tat = s.tat || 0;
+        let at = background ? Math.max(now, tat - (MBN_BURST - 1) * MBN_GAP) : now;
+        at = Math.max(at, cool);
+        s.tat = Math.max(tat, at) + MBN_GAP;
+        return { at, why: cool > now && cool >= at ? 'MusicBrainz asked everyone to wait' : 'pacing, one request a second' };
+    });
+    let told = false;
+    for (;;) {
+        if (o.cancelled && o.cancelled()) return { ok: false, waited: Date.now() - t0 };
+        let cool = 0;
+        try { cool = (JSON.parse(localStorage.getItem(MBN_KEY) || 'null') || {}).cool || 0; } catch (e) { cool = (globalThis.__mbnGate || {}).cool || 0; }
+        const until = Math.max(booked.at, cool), left = until - Date.now();   // a hold that appeared while we queued
+        if (left <= 0) break;
+        if (!told && until - t0 > 1000 && o.log) { told = true; o.log('info', 'MusicBrainz gate: ' + (o.label || 'request') + ' waits ' + Math.round((until - t0) / 100) / 10 + 's (' + (cool > booked.at ? 'MusicBrainz asked everyone to wait' : booked.why) + ')'); }
+        await new Promise(r => setTimeout(r, Math.min(left, 250)));   // in slices, so a cancel lands promptly
+    }
+    return { ok: true, waited: Date.now() - t0 };
+}
+async function mbnAnswer(status, header, o) {
+    o = o || {};
+    if (status === 429 || status === 503) {
+        const raw = header ? header('Retry-After') : null;
+        const secs = Number(raw), date = raw ? Date.parse(raw) : NaN;
+        const ra = Number.isFinite(secs) ? secs * 1000 : Number.isFinite(date) ? Math.max(0, date - Date.now()) : 0;
+        const hold = await mbnState(s => {
+            const now = Date.now();
+            // One throttle, one step: the requests already in flight when it began all answer
+            // 503 too, and each must not stretch the hold again. A throttle long gone doesn't
+            // count at all: `hot` is shared and persists, and would otherwise slow every later
+            // page for good.
+            if (now > (s.cool || 0) + 30000) s.hot = 0;
+            if (now >= (s.cool || 0)) s.hot = Math.min((s.hot || 0) + 1, 6);
+            const ms = Math.min(Math.max(1000, ra) * Math.max(1, s.hot), MBN_MAX_HOLD);
+            s.cool = Math.max(s.cool || 0, Date.now() + ms);
+            return s.cool - Date.now();
+        });
+        if (o.log) o.log('warn', 'MusicBrainz gate: HTTP ' + status + (raw != null ? ' (Retry-After: ' + raw + ')' : '') + ' — every script holds ' + Math.round(hold / 100) / 10 + 's');
+        return { throttled: true, hold };
+    }
+    if (status >= 200 && status < 500) await mbnState(s => { if (s.hot) s.hot = Date.now() > (s.cool || 0) + 30000 ? 0 : s.hot - 1; });
+    return { throttled: false, hold: 0 };
+}
+async function mbnFetch(url, init, o) {
+    o = o || {};
+    if (!mbnGated(url)) return fetch(url, init);
+    const tries = o.tries || 4;
+    for (let attempt = 1; ; attempt++) {
+        const slot = await mbnSlot(o);
+        if (!slot.ok) return null;
+        const r = await fetch(url, init);
+        const a = await mbnAnswer(r.status, n => r.headers.get(n), o);
+        if (!a.throttled || attempt >= tries) return r;
+    }
+}
+function mbnHot() {
+    let s;
+    try { s = JSON.parse(localStorage.getItem(MBN_KEY) || 'null') || {}; } catch (e) { s = globalThis.__mbnGate || {}; }
+    return Date.now() > (s.cool || 0) + 30000 ? 0 : (s.hot || 0);   // a throttle long gone is over
+}
+function mbnRawHeader(raw, name) {
+    const want = String(name).toLowerCase();
+    for (const line of String(raw || '').split(/\r?\n/)) {
+        const i = line.indexOf(':');
+        if (i > 0 && line.slice(0, i).trim().toLowerCase() === want) return line.slice(i + 1).trim();
+    }
+    return null;
+}
+// </ST-NET>
 let _netTrouble = null;   // { kind, detail, at } — surfaced in the title bar, not just logged
 function setNetTrouble(kind, detail) {
     _netTrouble = { kind, detail, at: Date.now() };
@@ -24673,36 +25051,11 @@ function renderNetBanner() {
     el.title = long + ' — click for the log';
     el.className = 'fs-netbanner' + (_netTrouble.kind === 'offline' ? ' fs-netbanner-err' : '');
 }
-const MB_MAX_WAIT_MS = 60000;   // never park longer than this on one hint
-function parseRetryAfter(v) {
-    if (!v) return null;
-    const secs = Number(v);
-    if (Number.isFinite(secs)) return Math.max(0, secs * 1000);
-    const when = Date.parse(v);                       // HTTP-date form
-    return Number.isFinite(when) ? Math.max(0, when - Date.now()) : null;
-}
-function mbGateFor(ms, why) {
-    const capped = Math.min(Math.max(0, ms), MB_MAX_WAIT_MS);
-    const until = Date.now() + capped;
-    if (until > _mbGateUntil) {
-        _mbGateUntil = until;
-        Log.warn('Pausing MusicBrainz requests for ' + Math.round(capped / 1000) + 's — ' + why);
-        setNetTrouble('throttled', 'paused ' + Math.round(capped / 1000) + 's at the server\'s request');
-    }
-}
-async function mbAwaitGate() {
-    let waited = 0;
-    while (Date.now() < _mbGateUntil) {
-        const left = _mbGateUntil - Date.now();
-        await new Promise(res => setTimeout(res, Math.min(left, 500)));
-        waited += 500;
-        if (waited > MB_MAX_WAIT_MS + 5000) break;   // belt and braces
-    }
-}
+const gateLog = (lv, m) => (lv === 'warn' ? Log.warn : Log.info)(m);
 async function wsGet(path, retries) {
     retries = retries == null ? 4 : retries;
     for (let attempt = 0; attempt <= retries; attempt++) {
-        await mbAwaitGate();                          // respect any server-asked pause
+        await mbnSlot({ label: 'GET ' + path, log: gateLog });   // the shared pace, and any hold MusicBrainz asked for
         const t0 = Date.now();
         try {
             Log.info('GET ' + path + (attempt ? ' (retry ' + attempt + '/' + retries + ')' : ''));
@@ -24711,32 +25064,16 @@ async function wsGet(path, retries) {
             // Fusion out-of-date ISRC data. #529
             const r = await fetch(path, { headers: { Accept: 'application/json' }, cache: 'no-store' });
             const ms = Date.now() - t0;
-            if (r.status === 503 || r.status === 429) {
-                const ra = parseRetryAfter(r.headers.get('Retry-After'));
-                // Retry-After is a FLOOR on the wait, never a replacement for
-                // backoff. MB really does answer "Retry-After: 0" (#529), and
-                // taking that literally made the header DISABLE the backoff:
-                // five attempts fired inside 150ms and gave up before the
-                // server had a chance to recover. Whichever is longer wins.
-                const backoff = Math.min(1000 * Math.pow(2, attempt), 30000);   // same shape as falcon's mbThrottle
-                const wait = Math.max(ra || 0, backoff);
-                Log.warn('GET ' + path + ' → ' + r.status + ' (' + ms + 'ms) — MB busy'
-                    + (ra != null ? '; Retry-After: ' + Math.round(ra / 1000) + 's' : '; no Retry-After')
-                    + ', waiting ' + Math.round(wait / 1000) + 's');
-                if (attempt < retries) { mbGateFor(wait, 'server returned ' + r.status + (ra ? ' with Retry-After ' + Math.round(ra / 1000) + 's' : '')); continue; }
+            const a = await mbnAnswer(r.status, n => r.headers.get(n), { log: gateLog });
+            if (a.throttled) {
+                // the retry waits out the shared hold in mbnSlot: no private backoff on top (#633)
+                Log.warn('GET ' + path + ' → ' + r.status + ' (' + ms + 'ms) — MB busy');
+                if (attempt < retries) { setNetTrouble('throttled', 'paused ' + Math.round(a.hold / 1000) + 's as MusicBrainz asked'); continue; }
                 Log.error('GET ' + path + ' gave up after ' + (retries + 1) + ' attempts (still ' + r.status + ')');
                 setNetTrouble('throttled', 'gave up on a request after ' + (retries + 1) + ' attempts (HTTP ' + r.status + ')');
                 return null;
             }
             if (!r.ok) { Log.warn('GET ' + path + ' → ' + r.status + ' (' + ms + 'ms)'); return null; }
-            // Proactively ease off before MB has to throttle us: it publishes the
-            // remaining budget and when it resets, so spread the rest over that window.
-            const remaining = Number(r.headers.get('X-RateLimit-Remaining'));
-            const resetAt = Number(r.headers.get('X-RateLimit-Reset'));
-            if (Number.isFinite(remaining) && remaining <= 5 && Number.isFinite(resetAt)) {
-                const until = resetAt * 1000 - Date.now();
-                if (until > 0) mbGateFor(until, 'rate-limit budget nearly spent (' + remaining + ' left)');
-            }
             Log.info('← ' + r.status + ' ' + path + ' (' + ms + 'ms)');
             clearNetTrouble();          // something got through — stop warning
             return await r.json();
@@ -28223,7 +28560,7 @@ try {
         addToPool, createGroupWithMember, addToGroup, returnToPool, removeFromGroupAndPool, removeFromPoolPermanently, findGroup, deleteGroup, clearBoard, videoConflict,
         buildEditNote, autoEditNote, evidenceLines, ensureInternalIds, mergeGroup, mergeAll, describeRecordingForLog,
         openFusion, closeFusion, onAutoMatch, seedFromScope, maybeAutoMatchOnOpen, renderAll, renderPool, renderGroups, busyStart, busyEnd,
-        gmGet, gmPost, wsGet, parseRetryAfter, setNetTrouble, clearNetTrouble,
+        gmGet, gmPost, wsGet, setNetTrouble, clearNetTrouble,
         getLogLines: () => Log.messages(),
         getBusyCount: () => _busyCount,
     };
@@ -28235,11 +28572,111 @@ try {
 
 // ===== group_therapy (@run-at document-end) =====================================
 (function(__stGM){
-  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Group Therapy*","namespace":"https://github.com/majkinetor/musicbrainz-userscripts","version":"2026.9.28","description":"MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48ZyBmaWxsPSJub25lIiBzdHJva2U9IiM1YjZiN2EiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9Ijk0IiB5Mj0iNDIiLz48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48bGluZSB4MT0iOTQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48L2c+PGcgZmlsbD0iIzJlOWU1YiIgc3Ryb2tlPSIjMjU2ZjQzIiBzdHJva2Utd2lkdGg9IjQiPjxjaXJjbGUgY3g9IjM0IiBjeT0iNDIiIHI9IjE2Ii8+PGNpcmNsZSBjeD0iOTQiIGN5PSI0MiIgcj0iMTYiLz48Y2lyY2xlIGN4PSI2NCIgY3k9Ijk0IiByPSIxNiIvPjwvZz48L3N2Zz4="}) }) : { script: {"name":"Group Therapy*","namespace":"https://github.com/majkinetor/musicbrainz-userscripts","version":"2026.9.28","description":"MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48ZyBmaWxsPSJub25lIiBzdHJva2U9IiM1YjZiN2EiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9Ijk0IiB5Mj0iNDIiLz48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48bGluZSB4MT0iOTQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48L2c+PGcgZmlsbD0iIzJlOWU1YiIgc3Ryb2tlPSIjMjU2ZjQzIiBzdHJva2Utd2lkdGg9IjQiPjxjaXJjbGUgY3g9IjM0IiBjeT0iNDIiIHI9IjE2Ii8+PGNpcmNsZSBjeD0iOTQiIGN5PSI0MiIgcj0iMTYiLz48Y2lyY2xlIGN4PSI2NCIgY3k9Ijk0IiByPSIxNiIvPjwvZz48L3N2Zz4="} };
+  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Group Therapy*","namespace":"https://github.com/majkinetor/musicbrainz-userscripts","version":"2026.9.29","description":"MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48ZyBmaWxsPSJub25lIiBzdHJva2U9IiM1YjZiN2EiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9Ijk0IiB5Mj0iNDIiLz48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48bGluZSB4MT0iOTQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48L2c+PGcgZmlsbD0iIzJlOWU1YiIgc3Ryb2tlPSIjMjU2ZjQzIiBzdHJva2Utd2lkdGg9IjQiPjxjaXJjbGUgY3g9IjM0IiBjeT0iNDIiIHI9IjE2Ii8+PGNpcmNsZSBjeD0iOTQiIGN5PSI0MiIgcj0iMTYiLz48Y2lyY2xlIGN4PSI2NCIgY3k9Ijk0IiByPSIxNiIvPjwvZz48L3N2Zz4="}) }) : { script: {"name":"Group Therapy*","namespace":"https://github.com/majkinetor/musicbrainz-userscripts","version":"2026.9.29","description":"MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48ZyBmaWxsPSJub25lIiBzdHJva2U9IiM1YjZiN2EiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9Ijk0IiB5Mj0iNDIiLz48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48bGluZSB4MT0iOTQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48L2c+PGcgZmlsbD0iIzJlOWU1YiIgc3Ryb2tlPSIjMjU2ZjQzIiBzdHJva2Utd2lkdGg9IjQiPjxjaXJjbGUgY3g9IjM0IiBjeT0iNDIiIHI9IjE2Ii8+PGNpcmNsZSBjeD0iOTQiIGN5PSI0MiIgcj0iMTYiLz48Y2lyY2xlIGN4PSI2NCIgY3k9Ijk0IiByPSIxNiIvPjwvZz48L3N2Zz4="} };
   (f=>document.readyState!=='loading'?f():document.addEventListener('DOMContentLoaded',f,{once:true}))(function(){
 /* eslint-disable no-undef */
 (function () {
   'use strict';
+  // the shared MusicBrainz request gate (#633) — first, so nothing can call it before its consts exist
+  // <ST-NET> — generated by dev/net/sync-gate.mjs from dev/net/mb-gate.mjs — DO NOT EDIT
+  const MBN_GAP = 1000;
+  const MBN_BURST = 3;
+  const MBN_KEY = "mbu:mb-gate";
+  const MBN_LOCK = "mbu-mb-gate";
+  const MBN_MAX_HOLD = 60000;
+  function mbnGated(url) {
+      const s = String(url || '');
+      return /^\/ws\/2\//.test(s) || /^https?:\/\/([a-z0-9-]+\.)*musicbrainz\.org\/ws\/2\//i.test(s);
+  }
+  async function mbnState(fn) {
+      const rw = () => {
+          let s = null, stored = true;
+          try { s = JSON.parse(localStorage.getItem(MBN_KEY) || 'null'); } catch (e) { stored = false; }
+          const g = globalThis.__mbnGate || (globalThis.__mbnGate = { tat: 0, cool: 0, hot: 0 });
+          if (!stored) s = g;                                                        // no storage: this page's copy only
+          else if (!s || typeof s !== 'object') s = { tat: 0, cool: 0, hot: 0 };   // none yet (or cleared): a fresh schedule
+          const out = fn(s);
+          Object.assign(g, s);
+          try { localStorage.setItem(MBN_KEY, JSON.stringify({ tat: s.tat || 0, cool: s.cool || 0, hot: s.hot || 0 })); } catch (e) {}
+          return out;
+      };
+      try {
+          if (typeof navigator !== 'undefined' && navigator.locks && navigator.locks.request) return await navigator.locks.request(MBN_LOCK, rw);
+      } catch (e) { /* no Web Locks here (an insecure or sandboxed context): unlocked, like a lone script */ }
+      return rw();
+  }
+  async function mbnSlot(o) {
+      o = o || {};
+      const t0 = Date.now(), background = o.background !== false;
+      const booked = await mbnState(s => {
+          const now = Date.now(), cool = s.cool || 0, tat = s.tat || 0;
+          let at = background ? Math.max(now, tat - (MBN_BURST - 1) * MBN_GAP) : now;
+          at = Math.max(at, cool);
+          s.tat = Math.max(tat, at) + MBN_GAP;
+          return { at, why: cool > now && cool >= at ? 'MusicBrainz asked everyone to wait' : 'pacing, one request a second' };
+      });
+      let told = false;
+      for (;;) {
+          if (o.cancelled && o.cancelled()) return { ok: false, waited: Date.now() - t0 };
+          let cool = 0;
+          try { cool = (JSON.parse(localStorage.getItem(MBN_KEY) || 'null') || {}).cool || 0; } catch (e) { cool = (globalThis.__mbnGate || {}).cool || 0; }
+          const until = Math.max(booked.at, cool), left = until - Date.now();   // a hold that appeared while we queued
+          if (left <= 0) break;
+          if (!told && until - t0 > 1000 && o.log) { told = true; o.log('info', 'MusicBrainz gate: ' + (o.label || 'request') + ' waits ' + Math.round((until - t0) / 100) / 10 + 's (' + (cool > booked.at ? 'MusicBrainz asked everyone to wait' : booked.why) + ')'); }
+          await new Promise(r => setTimeout(r, Math.min(left, 250)));   // in slices, so a cancel lands promptly
+      }
+      return { ok: true, waited: Date.now() - t0 };
+  }
+  async function mbnAnswer(status, header, o) {
+      o = o || {};
+      if (status === 429 || status === 503) {
+          const raw = header ? header('Retry-After') : null;
+          const secs = Number(raw), date = raw ? Date.parse(raw) : NaN;
+          const ra = Number.isFinite(secs) ? secs * 1000 : Number.isFinite(date) ? Math.max(0, date - Date.now()) : 0;
+          const hold = await mbnState(s => {
+              const now = Date.now();
+              // One throttle, one step: the requests already in flight when it began all answer
+              // 503 too, and each must not stretch the hold again. A throttle long gone doesn't
+              // count at all: `hot` is shared and persists, and would otherwise slow every later
+              // page for good.
+              if (now > (s.cool || 0) + 30000) s.hot = 0;
+              if (now >= (s.cool || 0)) s.hot = Math.min((s.hot || 0) + 1, 6);
+              const ms = Math.min(Math.max(1000, ra) * Math.max(1, s.hot), MBN_MAX_HOLD);
+              s.cool = Math.max(s.cool || 0, Date.now() + ms);
+              return s.cool - Date.now();
+          });
+          if (o.log) o.log('warn', 'MusicBrainz gate: HTTP ' + status + (raw != null ? ' (Retry-After: ' + raw + ')' : '') + ' — every script holds ' + Math.round(hold / 100) / 10 + 's');
+          return { throttled: true, hold };
+      }
+      if (status >= 200 && status < 500) await mbnState(s => { if (s.hot) s.hot = Date.now() > (s.cool || 0) + 30000 ? 0 : s.hot - 1; });
+      return { throttled: false, hold: 0 };
+  }
+  async function mbnFetch(url, init, o) {
+      o = o || {};
+      if (!mbnGated(url)) return fetch(url, init);
+      const tries = o.tries || 4;
+      for (let attempt = 1; ; attempt++) {
+          const slot = await mbnSlot(o);
+          if (!slot.ok) return null;
+          const r = await fetch(url, init);
+          const a = await mbnAnswer(r.status, n => r.headers.get(n), o);
+          if (!a.throttled || attempt >= tries) return r;
+      }
+  }
+  function mbnHot() {
+      let s;
+      try { s = JSON.parse(localStorage.getItem(MBN_KEY) || 'null') || {}; } catch (e) { s = globalThis.__mbnGate || {}; }
+      return Date.now() > (s.cool || 0) + 30000 ? 0 : (s.hot || 0);   // a throttle long gone is over
+  }
+  function mbnRawHeader(raw, name) {
+      const want = String(name).toLowerCase();
+      for (const line of String(raw || '').split(/\r?\n/)) {
+          const i = line.indexOf(':');
+          if (i > 0 && line.slice(0, i).trim().toLowerCase() === want) return line.slice(i + 1).trim();
+      }
+      return null;
+  }
+  // </ST-NET>
   const VERSION = (typeof GM_info !== 'undefined' && GM_info && GM_info.script && GM_info.script.version) || '?';   // from the @version header at runtime
   const W = (typeof unsafeWindow !== 'undefined' ? unsafeWindow : window);
 
@@ -30002,10 +30439,10 @@ try {
   async function loadRgReleases(list) {
     try {
       const here = RE().state.entity.gid;
-      const rg = await (await fetch('/ws/2/release/' + here + '?inc=release-groups&fmt=json', { headers: { Accept: 'application/json' } })).json();
+      const rg = await (await mbnFetch('/ws/2/release/' + here + '?inc=release-groups&fmt=json', { headers: { Accept: 'application/json' } })).json();
       const rgid = rg['release-group'] && rg['release-group'].id;
       if (!rgid) { list.textContent = ''; list.appendChild(el('div', 'gt-pop-note', 'No release group')); return; }
-      const sib = await (await fetch('/ws/2/release?release-group=' + rgid + '&inc=media&limit=100&fmt=json', { headers: { Accept: 'application/json' } })).json();
+      const sib = await (await mbnFetch('/ws/2/release?release-group=' + rgid + '&inc=media&limit=100&fmt=json', { headers: { Accept: 'application/json' } })).json();
       const rels = (sib.releases || []).filter(r => r.id !== here);
       list.textContent = '';
       if (!rels.length) { list.appendChild(el('div', 'gt-pop-note', 'No other releases in this group')); return; }
@@ -30240,22 +30677,20 @@ try {
   // #624 (majkinetor): "RG Consolidation reports no RG due to error/rate limit" — on a release that
   // plainly had 3 versions. The WS2 reads here never looked at the response: a throttled 503 is JSON
   // too ({"error": …}), so it parsed as "no release group" / "no releases". Every WS2 read in the
-  // dialog now goes through the /ws/2 gate (wmGate), retries 429/503 with backoff (Retry-After is a
+  // dialog now goes through the /ws/2 gate (the shared one since #633), retries 429/503 after its hold (Retry-After is a
   // floor, never a replacement — MB sends "Retry-After: 0"), and THROWS when it gives up, so a
   // failure is reported as a failure, never as an empty result.
   async function consWs2(url, tries = 5) {
     let last = '';
     for (let i = 0; i < tries; i++) {
-      await wmGate();
+      await mbnSlot({ label: url, log: gtGateLog });   // the shared gate (#633): its pace, and any hold MusicBrainz asked for
       let r;
       try { r = await fetch(url, { headers: { Accept: 'application/json' } }); }
       catch (e) { last = (e && e.message) || 'network error'; console.debug('[Group Therapy] consolidate:', url, 'failed:', last); await sleep(700 * (i + 1)); continue; }
-      if (r.status === 429 || r.status === 503) {
-        const ra = parseFloat(r.headers.get('Retry-After'));
-        const wait = Math.min(15000, Math.max(Number.isFinite(ra) ? ra * 1000 : 0, 1000 * Math.pow(2, i)));
+      if ((await mbnAnswer(r.status, n => r.headers.get(n), { log: gtGateLog })).throttled) {
         last = 'MusicBrainz is rate-limiting (HTTP ' + r.status + ')';
-        console.debug(`[Group Therapy] consolidate: ${url} → ${r.status}` + (i < tries - 1 ? `, retry ${i + 1}/${tries - 1} in ${Math.round(wait / 1000)}s` : ', giving up'));
-        if (i < tries - 1) { await sleep(wait); continue; }
+        console.debug(`[Group Therapy] consolidate: ${url} → ${r.status}` + (i < tries - 1 ? `, retry ${i + 1}/${tries - 1} after the hold` : ', giving up'));
+        if (i < tries - 1) continue;   // the next slot waits out the shared hold
         break;
       }
       if (!r.ok) throw new Error('HTTP ' + r.status);
@@ -30853,10 +31288,10 @@ try {
     pop.style.top = (r.bottom + 4) + 'px';
     setTimeout(() => { document.addEventListener('mousedown', wmRoDown, true); document.addEventListener('keydown', wmRoKey, true); }, 0);
   }
-  // proactively space WS2 calls so a long tracklist doesn't burst past the ~1 req/s limit and drop the
-  // tail to 503s (which surfaced as false "no match"). Serialised through a single timestamp.
-  let _wmNext = 0;
-  async function wmGate() { const now = Date.now(); const at = Math.max(now, _wmNext); _wmNext = at + 380; if (at > now) await sleep(at - now); }
+  // /ws/2 is paced by the shared MusicBrainz request gate (#633, the ST-NET block at the top), one budget for every script and tab
+  // on the origin. (It used to be spaced 380ms apart here alone, and a long tracklist still burst past
+  // the limit and dropped its tail to 503s, which surfaced as false "no match".)
+  const gtGateLog = (lv, m) => console[lv === 'warn' ? 'warn' : 'debug']('[Group Therapy] ' + m);
   let wmAbort = null, wmRunning = false;   // #372 cancel aborts in-flight matching fetches; wmRunning drives the "matching…" row state
   let wmPrefetchP = null;                  // #363 the in-flight prefetch (fired, not awaited up front) — wmMatchOne folds it in per row
   let _wmPrefetchCache = null;             // #363 { gid, at, data } — cached 1h so re-opening the matcher doesn't re-fetch the release
@@ -30865,9 +31300,11 @@ try {
     for (let i = 0; i < 5; i++) {
       if (sig && sig.aborted) return null;   // cancelled — stop retrying / sleeping
       try {
-        if (url.startsWith('/ws/2/')) await wmGate();   // only the public API is rate-limited; /ws/js is the editor's own
+        const gated = url.startsWith('/ws/2/');   // only the public API is rate-limited; /ws/js is the editor's own
+        if (gated && !(await mbnSlot({ label: url, log: gtGateLog, cancelled: () => !!(sig && sig.aborted) })).ok) return null;
         const r = await fetch(url, { credentials: 'include', headers: { Accept: 'application/json' }, signal: sig });
-        if ((r.status === 429 || r.status === 503) && i < 4) { await sleep(900 * (i + 1)); continue; }   // rate limit — back off harder
+        if (gated && (await mbnAnswer(r.status, n => r.headers.get(n), { log: gtGateLog })).throttled && i < 4) continue;   // the next slot waits out the shared hold
+        if ((r.status === 429 || r.status === 503) && i < 4) { await sleep(900 * (i + 1)); continue; }
         if (!r.ok) return null; return await r.json();
       } catch (e) { if ((sig && sig.aborted) || i === 4) return null; await sleep(500 * (i + 1)); }
     }
@@ -31703,7 +32140,7 @@ try {
     if (_txpAliasCache.has(key)) return _txpAliasCache.get(key);
     const q = mbmIdentityQuery(name, 'artist'); if (!q) return null;
     let arr = null;
-    try { arr = await fetch(`/ws/2/artist?query=${encodeURIComponent(q)}&fmt=json&limit=${MBM_EXACT_LIMIT}`, { headers: { Accept: 'application/json' } }).then(r => r.json()); }
+    try { arr = await mbnFetch(`/ws/2/artist?query=${encodeURIComponent(q)}&fmt=json&limit=${MBM_EXACT_LIMIT}`, { headers: { Accept: 'application/json' } }).then(r => r.json()); }
     catch (e) { return null; }   // transient → don't cache, let a later pass retry
     if (!arr || arr.error || typeof arr.count !== 'number') return null;   // throttled / error envelope — not an answer, don't cache
     // #613: unique only when MB returned EVERY match (a common name is never provably
@@ -31753,7 +32190,7 @@ try {
     if (_txpLabelAliasCache.has(key)) return _txpLabelAliasCache.get(key);
     const q = mbmIdentityQuery(name, 'label'); if (!q) return null;
     let arr = null;
-    try { arr = await fetch(`/ws/2/label?query=${encodeURIComponent(q)}&fmt=json&limit=${MBM_EXACT_LIMIT}`, { headers: { Accept: 'application/json' } }).then(r => r.json()); }
+    try { arr = await mbnFetch(`/ws/2/label?query=${encodeURIComponent(q)}&fmt=json&limit=${MBM_EXACT_LIMIT}`, { headers: { Accept: 'application/json' } }).then(r => r.json()); }
     catch (e) { return null; }   // transient → don't cache, let a later pass retry
     if (!arr || arr.error || typeof arr.count !== 'number') return null;   // throttled / error envelope — not an answer, don't cache
     // #613: unique only when MB returned EVERY match (a common name is never provably
@@ -34074,7 +34511,7 @@ Created this ${kind} while adding credits parsed from text to ${relUrl}`;
 
 // ===== isrc_scout (@run-at document-start) ========================================
 (function(__stGM){
-  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"ISRC Scout*","namespace":"https://musicbrainz.org/","version":"2026.9.28","description":"Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify / Beatport / Tidal / Volumo / HDtracks / Qobuz, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/isrc_scout/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPklTUkMgU2NvdXQ8L3RpdGxlPgogICAgPHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPgogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjQwIi8+CiAgICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyNiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2U9IiNiOWEzZTgiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPgogIDwvZz4KICA8bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+Cjwvc3ZnPgo="}) }) : { script: {"name":"ISRC Scout*","namespace":"https://musicbrainz.org/","version":"2026.9.28","description":"Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify / Beatport / Tidal / Volumo / HDtracks / Qobuz, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/isrc_scout/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPklTUkMgU2NvdXQ8L3RpdGxlPgogICAgPHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPgogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjQwIi8+CiAgICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyNiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2U9IiNiOWEzZTgiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPgogIDwvZz4KICA8bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+Cjwvc3ZnPgo="} };
+  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"ISRC Scout*","namespace":"https://musicbrainz.org/","version":"2026.9.29","description":"Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify / Beatport / Tidal / Volumo / HDtracks / Qobuz, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/isrc_scout/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPklTUkMgU2NvdXQ8L3RpdGxlPgogICAgPHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPgogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjQwIi8+CiAgICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyNiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2U9IiNiOWEzZTgiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPgogIDwvZz4KICA8bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+Cjwvc3ZnPgo="}) }) : { script: {"name":"ISRC Scout*","namespace":"https://musicbrainz.org/","version":"2026.9.29","description":"Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify / Beatport / Tidal / Volumo / HDtracks / Qobuz, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/isrc_scout/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPklTUkMgU2NvdXQ8L3RpdGxlPgogICAgPHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPgogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjQwIi8+CiAgICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyNiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2U9IiNiOWEzZTgiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPgogIDwvZz4KICA8bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+Cjwvc3ZnPgo="} };
   (f=>f())(function(){
 /*
  * ─────────────────────────────────────────────────────────────────────────
@@ -34096,6 +34533,106 @@ Created this ${kind} while adding credits parsed from text to ${relUrl}`;
 
 (function () {
   'use strict';
+  // the shared MusicBrainz request gate (#633) — first, so nothing can call it before its consts exist
+  // <ST-NET> — generated by dev/net/sync-gate.mjs from dev/net/mb-gate.mjs — DO NOT EDIT
+  const MBN_GAP = 1000;
+  const MBN_BURST = 3;
+  const MBN_KEY = "mbu:mb-gate";
+  const MBN_LOCK = "mbu-mb-gate";
+  const MBN_MAX_HOLD = 60000;
+  function mbnGated(url) {
+      const s = String(url || '');
+      return /^\/ws\/2\//.test(s) || /^https?:\/\/([a-z0-9-]+\.)*musicbrainz\.org\/ws\/2\//i.test(s);
+  }
+  async function mbnState(fn) {
+      const rw = () => {
+          let s = null, stored = true;
+          try { s = JSON.parse(localStorage.getItem(MBN_KEY) || 'null'); } catch (e) { stored = false; }
+          const g = globalThis.__mbnGate || (globalThis.__mbnGate = { tat: 0, cool: 0, hot: 0 });
+          if (!stored) s = g;                                                        // no storage: this page's copy only
+          else if (!s || typeof s !== 'object') s = { tat: 0, cool: 0, hot: 0 };   // none yet (or cleared): a fresh schedule
+          const out = fn(s);
+          Object.assign(g, s);
+          try { localStorage.setItem(MBN_KEY, JSON.stringify({ tat: s.tat || 0, cool: s.cool || 0, hot: s.hot || 0 })); } catch (e) {}
+          return out;
+      };
+      try {
+          if (typeof navigator !== 'undefined' && navigator.locks && navigator.locks.request) return await navigator.locks.request(MBN_LOCK, rw);
+      } catch (e) { /* no Web Locks here (an insecure or sandboxed context): unlocked, like a lone script */ }
+      return rw();
+  }
+  async function mbnSlot(o) {
+      o = o || {};
+      const t0 = Date.now(), background = o.background !== false;
+      const booked = await mbnState(s => {
+          const now = Date.now(), cool = s.cool || 0, tat = s.tat || 0;
+          let at = background ? Math.max(now, tat - (MBN_BURST - 1) * MBN_GAP) : now;
+          at = Math.max(at, cool);
+          s.tat = Math.max(tat, at) + MBN_GAP;
+          return { at, why: cool > now && cool >= at ? 'MusicBrainz asked everyone to wait' : 'pacing, one request a second' };
+      });
+      let told = false;
+      for (;;) {
+          if (o.cancelled && o.cancelled()) return { ok: false, waited: Date.now() - t0 };
+          let cool = 0;
+          try { cool = (JSON.parse(localStorage.getItem(MBN_KEY) || 'null') || {}).cool || 0; } catch (e) { cool = (globalThis.__mbnGate || {}).cool || 0; }
+          const until = Math.max(booked.at, cool), left = until - Date.now();   // a hold that appeared while we queued
+          if (left <= 0) break;
+          if (!told && until - t0 > 1000 && o.log) { told = true; o.log('info', 'MusicBrainz gate: ' + (o.label || 'request') + ' waits ' + Math.round((until - t0) / 100) / 10 + 's (' + (cool > booked.at ? 'MusicBrainz asked everyone to wait' : booked.why) + ')'); }
+          await new Promise(r => setTimeout(r, Math.min(left, 250)));   // in slices, so a cancel lands promptly
+      }
+      return { ok: true, waited: Date.now() - t0 };
+  }
+  async function mbnAnswer(status, header, o) {
+      o = o || {};
+      if (status === 429 || status === 503) {
+          const raw = header ? header('Retry-After') : null;
+          const secs = Number(raw), date = raw ? Date.parse(raw) : NaN;
+          const ra = Number.isFinite(secs) ? secs * 1000 : Number.isFinite(date) ? Math.max(0, date - Date.now()) : 0;
+          const hold = await mbnState(s => {
+              const now = Date.now();
+              // One throttle, one step: the requests already in flight when it began all answer
+              // 503 too, and each must not stretch the hold again. A throttle long gone doesn't
+              // count at all: `hot` is shared and persists, and would otherwise slow every later
+              // page for good.
+              if (now > (s.cool || 0) + 30000) s.hot = 0;
+              if (now >= (s.cool || 0)) s.hot = Math.min((s.hot || 0) + 1, 6);
+              const ms = Math.min(Math.max(1000, ra) * Math.max(1, s.hot), MBN_MAX_HOLD);
+              s.cool = Math.max(s.cool || 0, Date.now() + ms);
+              return s.cool - Date.now();
+          });
+          if (o.log) o.log('warn', 'MusicBrainz gate: HTTP ' + status + (raw != null ? ' (Retry-After: ' + raw + ')' : '') + ' — every script holds ' + Math.round(hold / 100) / 10 + 's');
+          return { throttled: true, hold };
+      }
+      if (status >= 200 && status < 500) await mbnState(s => { if (s.hot) s.hot = Date.now() > (s.cool || 0) + 30000 ? 0 : s.hot - 1; });
+      return { throttled: false, hold: 0 };
+  }
+  async function mbnFetch(url, init, o) {
+      o = o || {};
+      if (!mbnGated(url)) return fetch(url, init);
+      const tries = o.tries || 4;
+      for (let attempt = 1; ; attempt++) {
+          const slot = await mbnSlot(o);
+          if (!slot.ok) return null;
+          const r = await fetch(url, init);
+          const a = await mbnAnswer(r.status, n => r.headers.get(n), o);
+          if (!a.throttled || attempt >= tries) return r;
+      }
+  }
+  function mbnHot() {
+      let s;
+      try { s = JSON.parse(localStorage.getItem(MBN_KEY) || 'null') || {}; } catch (e) { s = globalThis.__mbnGate || {}; }
+      return Date.now() > (s.cool || 0) + 30000 ? 0 : (s.hot || 0);   // a throttle long gone is over
+  }
+  function mbnRawHeader(raw, name) {
+      const want = String(name).toLowerCase();
+      for (const line of String(raw || '').split(/\r?\n/)) {
+          const i = line.indexOf(':');
+          if (i > 0 && line.slice(0, i).trim().toLowerCase() === want) return line.slice(i + 1).trim();
+      }
+      return null;
+  }
+  // </ST-NET>
 
   /* ═══════════════════════════════════════════════════════════════════════
      TIMERS — Firefox + Violentmonkey can throw "called on incompatible object"
@@ -34299,7 +34836,7 @@ Created this ${kind} while adding credits parsed from text to ${relUrl}`;
      GENERIC HTTP (GM_xmlhttpRequest promisified)
   ═══════════════════════════════════════════════════════════════════════ */
   const _inflight = new Set();   // live GM requests, so batched SoundExchange work can be aborted (#127)
-  function http(opts) {
+  function httpRaw(opts) {
     const t0 = Date.now();
     const tag = (opts.method || 'GET') + ' ' + shortUrl(opts.url);
     Log.net('→ ' + tag);
@@ -34330,6 +34867,16 @@ Created this ${kind} while adding credits parsed from text to ${relUrl}`;
         _inflight.delete(e);
       }
     });
+  }
+  // MusicBrainz's /ws/2 (the release reads, the ISRC submission) goes through the shared request
+  // gate (#633): its slot first, and its hold after a 429/503, which the next call waits out.
+  const gateLog = (lv, m) => (lv === 'warn' ? Log.warn : Log.info)(m);
+  async function http(opts) {
+    if (!mbnGated(opts && opts.url)) return httpRaw(opts);
+    await mbnSlot({ label: opts.method + ' ' + '/ws/2/' + String(opts.url).split('/ws/2/').pop(), log: gateLog });
+    const r = await httpRaw(opts);
+    await mbnAnswer(r.status, n => mbnRawHeader(r.responseHeaders, n), { log: gateLog });
+    return r;
   }
   const gmGet  = (url, headers) => http({ method: 'GET',  url, headers: headers || {} });
   const gmPost = (url, data, headers) => http({ method: 'POST', url, data, headers: headers || {} });
@@ -42285,10 +42832,111 @@ Created this ${kind} while adding credits parsed from text to ${relUrl}`;
 
 // ===== platform_check (@run-at document-end) ====================================
 (function(__stGM){
-  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Platform Check*","namespace":"http://tampermonkey.net/","version":"2026.9.28","description":"Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/platform_check/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+DQogIDx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CiAgDQogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJhMWE1MiIgc3Ryb2tlLXdpZHRoPSI5IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik00MCA4OCBBMzQgMzQgMCAwIDEgNDAgNDAiLz4NCiAgICA8cGF0aCBkPSJNMjkgOTkgQTUwIDUwIDAgMCAxIDI5IDI5Ii8+DQogICAgPHBhdGggZD0iTTg4IDg4IEEzNCAzNCAwIDAgMCA4OCA0MCIvPg0KICAgIDxwYXRoIGQ9Ik05OSA5OSBBNTAgNTAgMCAwIDAgOTkgMjkiLz4NCiAgPC9nPg0KICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyMCIgZmlsbD0iI2U4MjAxYSIvPg0KPC9zdmc+DQo="}) }) : { script: {"name":"Platform Check*","namespace":"http://tampermonkey.net/","version":"2026.9.28","description":"Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/platform_check/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+DQogIDx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CiAgDQogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJhMWE1MiIgc3Ryb2tlLXdpZHRoPSI5IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik00MCA4OCBBMzQgMzQgMCAwIDEgNDAgNDAiLz4NCiAgICA8cGF0aCBkPSJNMjkgOTkgQTUwIDUwIDAgMCAxIDI5IDI5Ii8+DQogICAgPHBhdGggZD0iTTg4IDg4IEEzNCAzNCAwIDAgMCA4OCA0MCIvPg0KICAgIDxwYXRoIGQ9Ik05OSA5OSBBNTAgNTAgMCAwIDAgOTkgMjkiLz4NCiAgPC9nPg0KICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyMCIgZmlsbD0iI2U4MjAxYSIvPg0KPC9zdmc+DQo="} };
+  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Platform Check*","namespace":"http://tampermonkey.net/","version":"2026.9.29","description":"Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/platform_check/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+DQogIDx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CiAgDQogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJhMWE1MiIgc3Ryb2tlLXdpZHRoPSI5IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik00MCA4OCBBMzQgMzQgMCAwIDEgNDAgNDAiLz4NCiAgICA8cGF0aCBkPSJNMjkgOTkgQTUwIDUwIDAgMCAxIDI5IDI5Ii8+DQogICAgPHBhdGggZD0iTTg4IDg4IEEzNCAzNCAwIDAgMCA4OCA0MCIvPg0KICAgIDxwYXRoIGQ9Ik05OSA5OSBBNTAgNTAgMCAwIDAgOTkgMjkiLz4NCiAgPC9nPg0KICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyMCIgZmlsbD0iI2U4MjAxYSIvPg0KPC9zdmc+DQo="}) }) : { script: {"name":"Platform Check*","namespace":"http://tampermonkey.net/","version":"2026.9.29","description":"Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/platform_check/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+DQogIDx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CiAgDQogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJhMWE1MiIgc3Ryb2tlLXdpZHRoPSI5IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik00MCA4OCBBMzQgMzQgMCAwIDEgNDAgNDAiLz4NCiAgICA8cGF0aCBkPSJNMjkgOTkgQTUwIDUwIDAgMCAxIDI5IDI5Ii8+DQogICAgPHBhdGggZD0iTTg4IDg4IEEzNCAzNCAwIDAgMCA4OCA0MCIvPg0KICAgIDxwYXRoIGQ9Ik05OSA5OSBBNTAgNTAgMCAwIDAgOTkgMjkiLz4NCiAgPC9nPg0KICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyMCIgZmlsbD0iI2U4MjAxYSIvPg0KPC9zdmc+DQo="} };
   (f=>document.readyState!=='loading'?f():document.addEventListener('DOMContentLoaded',f,{once:true}))(function(){
 (function () {
 'use strict';
+
+// the shared MusicBrainz request gate (#633) — first, so nothing can call it before its consts exist
+// <ST-NET> — generated by dev/net/sync-gate.mjs from dev/net/mb-gate.mjs — DO NOT EDIT
+const MBN_GAP = 1000;
+const MBN_BURST = 3;
+const MBN_KEY = "mbu:mb-gate";
+const MBN_LOCK = "mbu-mb-gate";
+const MBN_MAX_HOLD = 60000;
+function mbnGated(url) {
+    const s = String(url || '');
+    return /^\/ws\/2\//.test(s) || /^https?:\/\/([a-z0-9-]+\.)*musicbrainz\.org\/ws\/2\//i.test(s);
+}
+async function mbnState(fn) {
+    const rw = () => {
+        let s = null, stored = true;
+        try { s = JSON.parse(localStorage.getItem(MBN_KEY) || 'null'); } catch (e) { stored = false; }
+        const g = globalThis.__mbnGate || (globalThis.__mbnGate = { tat: 0, cool: 0, hot: 0 });
+        if (!stored) s = g;                                                        // no storage: this page's copy only
+        else if (!s || typeof s !== 'object') s = { tat: 0, cool: 0, hot: 0 };   // none yet (or cleared): a fresh schedule
+        const out = fn(s);
+        Object.assign(g, s);
+        try { localStorage.setItem(MBN_KEY, JSON.stringify({ tat: s.tat || 0, cool: s.cool || 0, hot: s.hot || 0 })); } catch (e) {}
+        return out;
+    };
+    try {
+        if (typeof navigator !== 'undefined' && navigator.locks && navigator.locks.request) return await navigator.locks.request(MBN_LOCK, rw);
+    } catch (e) { /* no Web Locks here (an insecure or sandboxed context): unlocked, like a lone script */ }
+    return rw();
+}
+async function mbnSlot(o) {
+    o = o || {};
+    const t0 = Date.now(), background = o.background !== false;
+    const booked = await mbnState(s => {
+        const now = Date.now(), cool = s.cool || 0, tat = s.tat || 0;
+        let at = background ? Math.max(now, tat - (MBN_BURST - 1) * MBN_GAP) : now;
+        at = Math.max(at, cool);
+        s.tat = Math.max(tat, at) + MBN_GAP;
+        return { at, why: cool > now && cool >= at ? 'MusicBrainz asked everyone to wait' : 'pacing, one request a second' };
+    });
+    let told = false;
+    for (;;) {
+        if (o.cancelled && o.cancelled()) return { ok: false, waited: Date.now() - t0 };
+        let cool = 0;
+        try { cool = (JSON.parse(localStorage.getItem(MBN_KEY) || 'null') || {}).cool || 0; } catch (e) { cool = (globalThis.__mbnGate || {}).cool || 0; }
+        const until = Math.max(booked.at, cool), left = until - Date.now();   // a hold that appeared while we queued
+        if (left <= 0) break;
+        if (!told && until - t0 > 1000 && o.log) { told = true; o.log('info', 'MusicBrainz gate: ' + (o.label || 'request') + ' waits ' + Math.round((until - t0) / 100) / 10 + 's (' + (cool > booked.at ? 'MusicBrainz asked everyone to wait' : booked.why) + ')'); }
+        await new Promise(r => setTimeout(r, Math.min(left, 250)));   // in slices, so a cancel lands promptly
+    }
+    return { ok: true, waited: Date.now() - t0 };
+}
+async function mbnAnswer(status, header, o) {
+    o = o || {};
+    if (status === 429 || status === 503) {
+        const raw = header ? header('Retry-After') : null;
+        const secs = Number(raw), date = raw ? Date.parse(raw) : NaN;
+        const ra = Number.isFinite(secs) ? secs * 1000 : Number.isFinite(date) ? Math.max(0, date - Date.now()) : 0;
+        const hold = await mbnState(s => {
+            const now = Date.now();
+            // One throttle, one step: the requests already in flight when it began all answer
+            // 503 too, and each must not stretch the hold again. A throttle long gone doesn't
+            // count at all: `hot` is shared and persists, and would otherwise slow every later
+            // page for good.
+            if (now > (s.cool || 0) + 30000) s.hot = 0;
+            if (now >= (s.cool || 0)) s.hot = Math.min((s.hot || 0) + 1, 6);
+            const ms = Math.min(Math.max(1000, ra) * Math.max(1, s.hot), MBN_MAX_HOLD);
+            s.cool = Math.max(s.cool || 0, Date.now() + ms);
+            return s.cool - Date.now();
+        });
+        if (o.log) o.log('warn', 'MusicBrainz gate: HTTP ' + status + (raw != null ? ' (Retry-After: ' + raw + ')' : '') + ' — every script holds ' + Math.round(hold / 100) / 10 + 's');
+        return { throttled: true, hold };
+    }
+    if (status >= 200 && status < 500) await mbnState(s => { if (s.hot) s.hot = Date.now() > (s.cool || 0) + 30000 ? 0 : s.hot - 1; });
+    return { throttled: false, hold: 0 };
+}
+async function mbnFetch(url, init, o) {
+    o = o || {};
+    if (!mbnGated(url)) return fetch(url, init);
+    const tries = o.tries || 4;
+    for (let attempt = 1; ; attempt++) {
+        const slot = await mbnSlot(o);
+        if (!slot.ok) return null;
+        const r = await fetch(url, init);
+        const a = await mbnAnswer(r.status, n => r.headers.get(n), o);
+        if (!a.throttled || attempt >= tries) return r;
+    }
+}
+function mbnHot() {
+    let s;
+    try { s = JSON.parse(localStorage.getItem(MBN_KEY) || 'null') || {}; } catch (e) { s = globalThis.__mbnGate || {}; }
+    return Date.now() > (s.cool || 0) + 30000 ? 0 : (s.hot || 0);   // a throttle long gone is over
+}
+function mbnRawHeader(raw, name) {
+    const want = String(name).toLowerCase();
+    for (const line of String(raw || '').split(/\r?\n/)) {
+        const i = line.indexOf(':');
+        if (i > 0 && line.slice(0, i).trim().toLowerCase() === want) return line.slice(i + 1).trim();
+    }
+    return null;
+}
+// </ST-NET>
 
 // MusicBrainz origin of the current page (musicbrainz.org or beta.musicbrainz.org),
 // so the script's own MB API calls + edit-page links stay on the same server.
@@ -44598,7 +45246,19 @@ appendLog('System', `Platform Check v${(typeof GM_info !== 'undefined' && GM_inf
 }
 
 // ─── GM_xmlhttpRequest wrapper that returns a Promise ──────────────────────
-function gmGet(url, { responseType, headers, timeout = 15000, anonymous } = {}) {
+// MusicBrainz's /ws/2 goes through the shared request gate (#633): its slot first, and its
+// hold after a 429/503 (one retry, which waits the hold out); everything else goes straight.
+const pcGateLog = (lv, m) => appendLog('MusicBrainz', m, lv === 'warn' ? 'warn' : undefined);
+async function gmGet(url, o) {
+    if (!mbnGated(url)) return gmGetRaw(url, o);
+    for (let attempt = 1; ; attempt++) {
+        await mbnSlot({ label: '/ws/2/' + url.split('/ws/2/').pop(), log: pcGateLog });
+        const r = await gmGetRaw(url, o);
+        const a = await mbnAnswer(r.status, n => mbnRawHeader(r.responseHeaders, n), { log: pcGateLog });
+        if (!a.throttled || attempt >= 2) return r;
+    }
+}
+function gmGetRaw(url, { responseType, headers, timeout = 15000, anonymous } = {}) {
     return new Promise((resolve) => {
         const t0 = Date.now();
         const opts = {
