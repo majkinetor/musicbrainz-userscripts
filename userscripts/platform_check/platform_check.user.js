@@ -99,15 +99,21 @@ async function mbnAnswer(status, header, o) {
         const secs = Number(raw), date = raw ? Date.parse(raw) : NaN;
         const ra = Number.isFinite(secs) ? secs * 1000 : Number.isFinite(date) ? Math.max(0, date - Date.now()) : 0;
         const hold = await mbnState(s => {
-            s.hot = Math.min((s.hot || 0) + 1, 6);
-            const ms = Math.min(Math.max(1000, ra) * s.hot, MBN_MAX_HOLD);
+            const now = Date.now();
+            // One throttle, one step: the requests already in flight when it began all answer
+            // 503 too, and each must not stretch the hold again. A throttle long gone doesn't
+            // count at all: `hot` is shared and persists, and would otherwise slow every later
+            // page for good.
+            if (now > (s.cool || 0) + 30000) s.hot = 0;
+            if (now >= (s.cool || 0)) s.hot = Math.min((s.hot || 0) + 1, 6);
+            const ms = Math.min(Math.max(1000, ra) * Math.max(1, s.hot), MBN_MAX_HOLD);
             s.cool = Math.max(s.cool || 0, Date.now() + ms);
             return s.cool - Date.now();
         });
         if (o.log) o.log('warn', 'MusicBrainz gate: HTTP ' + status + (raw != null ? ' (Retry-After: ' + raw + ')' : '') + ' — every script holds ' + Math.round(hold / 100) / 10 + 's');
         return { throttled: true, hold };
     }
-    if (status >= 200 && status < 500) await mbnState(s => { if (s.hot) s.hot--; });
+    if (status >= 200 && status < 500) await mbnState(s => { if (s.hot) s.hot = Date.now() > (s.cool || 0) + 30000 ? 0 : s.hot - 1; });
     return { throttled: false, hold: 0 };
 }
 async function mbnFetch(url, init, o) {
@@ -121,6 +127,11 @@ async function mbnFetch(url, init, o) {
         const a = await mbnAnswer(r.status, n => r.headers.get(n), o);
         if (!a.throttled || attempt >= tries) return r;
     }
+}
+function mbnHot() {
+    let s;
+    try { s = JSON.parse(localStorage.getItem(MBN_KEY) || 'null') || {}; } catch (e) { s = globalThis.__mbnGate || {}; }
+    return Date.now() > (s.cool || 0) + 30000 ? 0 : (s.hot || 0);   // a throttle long gone is over
 }
 function mbnRawHeader(raw, name) {
     const want = String(name).toLowerCase();

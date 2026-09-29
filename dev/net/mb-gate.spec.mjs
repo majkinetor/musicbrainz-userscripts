@@ -13,7 +13,7 @@ const GATE = Object.entries(MBN_INLINE.consts).map(([k, v]) => `const ${k} = ${J
   + `\nwindow.__starts = []; window.__answers = [];
      window.fetch = async (url) => { window.__starts.push(Date.now()); const st = window.__answers.shift() || 200;
        return new Response('{}', { status: st, headers: st === 503 ? { 'Retry-After': '2' } : {} }); };
-     Object.assign(window, { mbnSlot, mbnAnswer, mbnFetch, mbnState });`;
+     Object.assign(window, { mbnSlot, mbnAnswer, mbnFetch, mbnState, mbnHot });`;
 
 async function tab(context) {
   const p = await context.newPage();
@@ -61,6 +61,24 @@ test('a 503 in one tab holds the other', { tag: ['@unit'] }, async ({ context })
   check(logs.some(l => /HTTP 503 \(Retry-After: 2\) — every script holds 2/.test(l)), `the throttle is logged: ${JSON.stringify(logs)}`);
   const waited = await b.evaluate(async () => { const t0 = Date.now(); await mbnFetch('/ws/2/y'); return Date.now() - t0; });
   check(waited >= 1700, `the other tab's next request waited the hold out (${waited} ms)`);
+});
+
+test('503s from requests already in flight count as one throttle; a throttle long gone is forgotten', { tag: ['@unit'] }, async ({ context }) => {
+  const a = await tab(context);
+  const r = await a.evaluate(async () => {
+    localStorage.clear();
+    const h = () => '0';
+    for (let i = 0; i < 4; i++) await mbnAnswer(503, h);    // four answers of one burst
+    const once = JSON.parse(localStorage.getItem('mbu:mb-gate'));
+    // an old throttle: its hold ended a minute ago
+    localStorage.setItem('mbu:mb-gate', JSON.stringify({ tat: 0, cool: Date.now() - 60000, hot: 6 }));
+    const staleHot = mbnHot();
+    await mbnAnswer(503, h);
+    const fresh = JSON.parse(localStorage.getItem('mbu:mb-gate'));
+    return { onceHot: once.hot, onceHold: once.cool - Date.now(), staleHot, freshHot: fresh.hot, freshHold: fresh.cool - Date.now() };
+  });
+  check(r.onceHot === 1 && r.onceHold <= 1100, `four 503s at once: one step, a one-second hold (${JSON.stringify(r)})`);
+  check(r.staleHot === 0 && r.freshHot === 1 && r.freshHold <= 1100, 'a throttle that ended a minute ago no longer counts: the next one starts from the first step');
 });
 
 test('an interactive request goes ahead of queued background work; a cancelled wait stops', { tag: ['@unit'] }, async ({ context }) => {

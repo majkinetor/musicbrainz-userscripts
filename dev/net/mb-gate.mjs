@@ -104,15 +104,21 @@ export async function mbnAnswer(status, header, o) {
         const secs = Number(raw), date = raw ? Date.parse(raw) : NaN;
         const ra = Number.isFinite(secs) ? secs * 1000 : Number.isFinite(date) ? Math.max(0, date - Date.now()) : 0;
         const hold = await mbnState(s => {
-            s.hot = Math.min((s.hot || 0) + 1, 6);
-            const ms = Math.min(Math.max(1000, ra) * s.hot, MBN_MAX_HOLD);
+            const now = Date.now();
+            // One throttle, one step: the requests already in flight when it began all answer
+            // 503 too, and each must not stretch the hold again. A throttle long gone doesn't
+            // count at all: `hot` is shared and persists, and would otherwise slow every later
+            // page for good.
+            if (now > (s.cool || 0) + 30000) s.hot = 0;
+            if (now >= (s.cool || 0)) s.hot = Math.min((s.hot || 0) + 1, 6);
+            const ms = Math.min(Math.max(1000, ra) * Math.max(1, s.hot), MBN_MAX_HOLD);
             s.cool = Math.max(s.cool || 0, Date.now() + ms);
             return s.cool - Date.now();
         });
         if (o.log) o.log('warn', 'MusicBrainz gate: HTTP ' + status + (raw != null ? ' (Retry-After: ' + raw + ')' : '') + ' — every script holds ' + Math.round(hold / 100) / 10 + 's');
         return { throttled: true, hold };
     }
-    if (status >= 200 && status < 500) await mbnState(s => { if (s.hot) s.hot--; });
+    if (status >= 200 && status < 500) await mbnState(s => { if (s.hot) s.hot = Date.now() > (s.cool || 0) + 30000 ? 0 : s.hot - 1; });
     return { throttled: false, hold: 0 };
 }
 
@@ -135,6 +141,14 @@ export async function mbnFetch(url, init, o) {
     }
 }
 
+/** How throttled MusicBrainz is right now (0: not at all), for a caller that narrows its own
+ *  concurrency while it is — Apollo probes with a single request until a clean answer (#575). */
+export function mbnHot() {
+    let s;
+    try { s = JSON.parse(localStorage.getItem(MBN_KEY) || 'null') || {}; } catch (e) { s = globalThis.__mbnGate || {}; }
+    return Date.now() > (s.cool || 0) + 30000 ? 0 : (s.hot || 0);   // a throttle long gone is over
+}
+
 /** One header out of a GM_xmlhttpRequest response's raw `responseHeaders` text, or null. */
 export function mbnRawHeader(raw, name) {
     const want = String(name).toLowerCase();
@@ -148,5 +162,5 @@ export function mbnRawHeader(raw, name) {
 /** What sync-gate.mjs inlines, in order. */
 export const MBN_INLINE = {
     consts: { MBN_GAP, MBN_BURST, MBN_KEY, MBN_LOCK, MBN_MAX_HOLD },
-    fns: [mbnGated, mbnState, mbnSlot, mbnAnswer, mbnFetch, mbnRawHeader],
+    fns: [mbnGated, mbnState, mbnSlot, mbnAnswer, mbnFetch, mbnHot, mbnRawHeader],
 };
