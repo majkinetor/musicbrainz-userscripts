@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         String Theory
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.9.29.165122
+// @version      2026.9.29.171510
 // @description  Unified bundle of 8 MusicBrainz userscripts (apollo_editor, art_station, credit_hoarder, fusion, group_therapy, isrc_scout, mammoth, platform_check). Built by userscripts/string_theory/build.mjs — do not hand-edit.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCIgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0Ij4NCiAgPCEtLSBodWItYW5kLXNwb2tlICJuZXR3b3JrIiBnbHlwaCwgc2luZ2xlIHZpdmlkIHZpb2xldCBvbiB0cmFuc3BhcmVudCBzbyBpdCByZWFkcyBvbiBib3RoIGRhcmsgYW5kIGxpZ2h0IHBhZ2VzIC0tPg0KICA8ZyBmaWxsPSJub25lIiBzdHJva2U9IiM3YzVjZmYiIHN0cm9rZS13aWR0aD0iNC42IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMzIgMTUiLz4NCiAgICA8cGF0aCBkPSJNMzIgMzIgTDQ2LjUgMjMuNSIvPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMNDYuNSA0MC41Ii8+DQogICAgPHBhdGggZD0iTTMyIDMyIEwzMiA0OSIvPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMTcuNSA0MC41Ii8+DQogICAgPHBhdGggZD0iTTMyIDMyIEwxNy41IDIzLjUiLz4NCiAgPC9nPg0KICA8ZyBmaWxsPSIjN2M1Y2ZmIj4NCiAgICA8Y2lyY2xlIGN4PSIzMiIgY3k9IjMyIiByPSI4LjYiLz4NCiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjE5LjUiIHI9IjYuNCIvPg0KICAgIDxjaXJjbGUgY3g9IjQ5IiBjeT0iMTkuNSIgcj0iNi40Ii8+DQogICAgPGNpcmNsZSBjeD0iMzIiIGN5PSI1NyIgcj0iNi40Ii8+DQogIDwvZz4NCiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjN2M1Y2ZmIiBzdHJva2Utd2lkdGg9IjMuOCI+DQogICAgPGNpcmNsZSBjeD0iMzIiIGN5PSI3IiByPSI0LjkiLz4NCiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjQ0LjUiIHI9IjQuOSIvPg0KICAgIDxjaXJjbGUgY3g9IjQ5IiBjeT0iNDQuNSIgcj0iNC45Ii8+DQogIDwvZz4NCjwvc3ZnPg0K
@@ -81,8 +81,8 @@
 // Bundles (verbatim, each wrapped in a run-at gate): apollo_editor, art_station, credit_hoarder, fusion, group_therapy, isrc_scout, mammoth, platform_check.
 
 try {
-  console.log('%c String Theory %c v2026.9.29.165122 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
-  console.log("String Theory bundles:\n  · Apollo Editor v2026.9.28\n  · Art Station v2026.9.28\n  · Credit Hoarder v2026.9.29.165122\n  · Fusion v2026.9.28\n  · Group Therapy v2026.9.28\n  · ISRC Scout v2026.9.28\n  · Mammoth v2026.9.28.214729\n  · Platform Check v2026.9.28");
+  console.log('%c String Theory %c v2026.9.29.171510 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
+  console.log("String Theory bundles:\n  · Apollo Editor v2026.9.28\n  · Art Station v2026.9.28\n  · Credit Hoarder v2026.9.29.171510\n  · Fusion v2026.9.28\n  · Group Therapy v2026.9.28\n  · ISRC Scout v2026.9.28\n  · Mammoth v2026.9.28.214729\n  · Platform Check v2026.9.28");
 } catch (e) {}
 
 // ===== apollo_editor (@run-at document-start) =====================================
@@ -14896,7 +14896,7 @@ try {
 
 // ===== credit_hoarder (@run-at document-end) ====================================
 (function(__stGM){
-  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Credit Hoarder*","namespace":"majkinetor","version":"2026.9.29.165122","description":"Import per-track release credits from streaming/database providers (Discogs, Tidal, Qobuz, Deezer) into MusicBrainz relationships, with a review phase","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/credit_hoarder/README.md","supportURL":"https://github.com/majkinetor/musicbrainz-userscripts/issues","icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij4KICANCiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMmY2ZjU0IiBzdHJva2Utd2lkdGg9IjkiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGNpcmNsZSBjeD0iMzQiIGN5PSIzOCIgcj0iMi41IiBmaWxsPSIjMmY2ZjU0IiBzdHJva2U9Im5vbmUiLz4NCiAgICA8bGluZSB4MT0iNTAiIHkxPSIzOCIgeDI9Ijk4IiB5Mj0iMzgiLz4NCiAgICA8Y2lyY2xlIGN4PSIzNCIgY3k9IjY0IiByPSIyLjUiIGZpbGw9IiMyZjZmNTQiIHN0cm9rZT0ibm9uZSIvPg0KICAgIDxsaW5lIHgxPSI1MCIgeTE9IjY0IiB4Mj0iOTgiIHkyPSI2NCIvPg0KICAgIDxjaXJjbGUgY3g9IjM0IiBjeT0iOTAiIHI9IjIuNSIgZmlsbD0iIzJmNmY1NCIgc3Ryb2tlPSJub25lIi8+DQogICAgPGxpbmUgeDE9IjUwIiB5MT0iOTAiIHgyPSI3NCIgeTI9IjkwIi8+DQogIDwvZz4NCiAgPGNpcmNsZSBjeD0iOTIiIGN5PSI5MiIgcj0iMjMiIGZpbGw9IiMyZTllNWIiLz4NCiAgPGcgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGxpbmUgeDE9IjkyIiB5MT0iODEiIHgyPSI5MiIgeTI9IjEwMyIvPg0KICAgIDxsaW5lIHgxPSI4MSIgeTE9IjkyIiB4Mj0iMTAzIiB5Mj0iOTIiLz4NCiAgPC9nPg0KPC9zdmc+DQo="}) }) : { script: {"name":"Credit Hoarder*","namespace":"majkinetor","version":"2026.9.29.165122","description":"Import per-track release credits from streaming/database providers (Discogs, Tidal, Qobuz, Deezer) into MusicBrainz relationships, with a review phase","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/credit_hoarder/README.md","supportURL":"https://github.com/majkinetor/musicbrainz-userscripts/issues","icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij4KICANCiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMmY2ZjU0IiBzdHJva2Utd2lkdGg9IjkiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGNpcmNsZSBjeD0iMzQiIGN5PSIzOCIgcj0iMi41IiBmaWxsPSIjMmY2ZjU0IiBzdHJva2U9Im5vbmUiLz4NCiAgICA8bGluZSB4MT0iNTAiIHkxPSIzOCIgeDI9Ijk4IiB5Mj0iMzgiLz4NCiAgICA8Y2lyY2xlIGN4PSIzNCIgY3k9IjY0IiByPSIyLjUiIGZpbGw9IiMyZjZmNTQiIHN0cm9rZT0ibm9uZSIvPg0KICAgIDxsaW5lIHgxPSI1MCIgeTE9IjY0IiB4Mj0iOTgiIHkyPSI2NCIvPg0KICAgIDxjaXJjbGUgY3g9IjM0IiBjeT0iOTAiIHI9IjIuNSIgZmlsbD0iIzJmNmY1NCIgc3Ryb2tlPSJub25lIi8+DQogICAgPGxpbmUgeDE9IjUwIiB5MT0iOTAiIHgyPSI3NCIgeTI9IjkwIi8+DQogIDwvZz4NCiAgPGNpcmNsZSBjeD0iOTIiIGN5PSI5MiIgcj0iMjMiIGZpbGw9IiMyZTllNWIiLz4NCiAgPGcgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGxpbmUgeDE9IjkyIiB5MT0iODEiIHgyPSI5MiIgeTI9IjEwMyIvPg0KICAgIDxsaW5lIHgxPSI4MSIgeTE9IjkyIiB4Mj0iMTAzIiB5Mj0iOTIiLz4NCiAgPC9nPg0KPC9zdmc+DQo="} };
+  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Credit Hoarder*","namespace":"majkinetor","version":"2026.9.29.171510","description":"Import per-track release credits from streaming/database providers (Discogs, Tidal, Qobuz, Deezer) into MusicBrainz relationships, with a review phase","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/credit_hoarder/README.md","supportURL":"https://github.com/majkinetor/musicbrainz-userscripts/issues","icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij4KICANCiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMmY2ZjU0IiBzdHJva2Utd2lkdGg9IjkiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGNpcmNsZSBjeD0iMzQiIGN5PSIzOCIgcj0iMi41IiBmaWxsPSIjMmY2ZjU0IiBzdHJva2U9Im5vbmUiLz4NCiAgICA8bGluZSB4MT0iNTAiIHkxPSIzOCIgeDI9Ijk4IiB5Mj0iMzgiLz4NCiAgICA8Y2lyY2xlIGN4PSIzNCIgY3k9IjY0IiByPSIyLjUiIGZpbGw9IiMyZjZmNTQiIHN0cm9rZT0ibm9uZSIvPg0KICAgIDxsaW5lIHgxPSI1MCIgeTE9IjY0IiB4Mj0iOTgiIHkyPSI2NCIvPg0KICAgIDxjaXJjbGUgY3g9IjM0IiBjeT0iOTAiIHI9IjIuNSIgZmlsbD0iIzJmNmY1NCIgc3Ryb2tlPSJub25lIi8+DQogICAgPGxpbmUgeDE9IjUwIiB5MT0iOTAiIHgyPSI3NCIgeTI9IjkwIi8+DQogIDwvZz4NCiAgPGNpcmNsZSBjeD0iOTIiIGN5PSI5MiIgcj0iMjMiIGZpbGw9IiMyZTllNWIiLz4NCiAgPGcgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGxpbmUgeDE9IjkyIiB5MT0iODEiIHgyPSI5MiIgeTI9IjEwMyIvPg0KICAgIDxsaW5lIHgxPSI4MSIgeTE9IjkyIiB4Mj0iMTAzIiB5Mj0iOTIiLz4NCiAgPC9nPg0KPC9zdmc+DQo="}) }) : { script: {"name":"Credit Hoarder*","namespace":"majkinetor","version":"2026.9.29.171510","description":"Import per-track release credits from streaming/database providers (Discogs, Tidal, Qobuz, Deezer) into MusicBrainz relationships, with a review phase","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/credit_hoarder/README.md","supportURL":"https://github.com/majkinetor/musicbrainz-userscripts/issues","icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij4KICANCiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMmY2ZjU0IiBzdHJva2Utd2lkdGg9IjkiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGNpcmNsZSBjeD0iMzQiIGN5PSIzOCIgcj0iMi41IiBmaWxsPSIjMmY2ZjU0IiBzdHJva2U9Im5vbmUiLz4NCiAgICA8bGluZSB4MT0iNTAiIHkxPSIzOCIgeDI9Ijk4IiB5Mj0iMzgiLz4NCiAgICA8Y2lyY2xlIGN4PSIzNCIgY3k9IjY0IiByPSIyLjUiIGZpbGw9IiMyZjZmNTQiIHN0cm9rZT0ibm9uZSIvPg0KICAgIDxsaW5lIHgxPSI1MCIgeTE9IjY0IiB4Mj0iOTgiIHkyPSI2NCIvPg0KICAgIDxjaXJjbGUgY3g9IjM0IiBjeT0iOTAiIHI9IjIuNSIgZmlsbD0iIzJmNmY1NCIgc3Ryb2tlPSJub25lIi8+DQogICAgPGxpbmUgeDE9IjUwIiB5MT0iOTAiIHgyPSI3NCIgeTI9IjkwIi8+DQogIDwvZz4NCiAgPGNpcmNsZSBjeD0iOTIiIGN5PSI5MiIgcj0iMjMiIGZpbGw9IiMyZTllNWIiLz4NCiAgPGcgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGxpbmUgeDE9IjkyIiB5MT0iODEiIHgyPSI5MiIgeTI9IjEwMyIvPg0KICAgIDxsaW5lIHgxPSI4MSIgeTE9IjkyIiB4Mj0iMTAzIiB5Mj0iOTIiLz4NCiAgPC9nPg0KPC9zdmc+DQo="} };
   (f=>document.readyState!=='loading'?f():document.addEventListener('DOMContentLoaded',f,{once:true}))(function(){
 (() => {
   // src/constants.js
@@ -15052,6 +15052,103 @@ try {
     ul.appendChild(row);
   }
 
+  // ../../dev/net/mb-gate.mjs
+  var MBN_GAP = 1e3;
+  var MBN_BURST = 3;
+  var MBN_KEY = "mbu:mb-gate";
+  var MBN_LOCK = "mbu-mb-gate";
+  var MBN_MAX_HOLD = 6e4;
+  function mbnGated(url) {
+    const s = String(url || "");
+    return /^\/ws\/2\//.test(s) || /^https?:\/\/([a-z0-9-]+\.)*musicbrainz\.org\/ws\/2\//i.test(s);
+  }
+  async function mbnState(fn) {
+    const rw = () => {
+      let s = null, stored = true;
+      try {
+        s = JSON.parse(localStorage.getItem(MBN_KEY) || "null");
+      } catch (e) {
+        stored = false;
+      }
+      const g = globalThis.__mbnGate || (globalThis.__mbnGate = { tat: 0, cool: 0, hot: 0 });
+      if (!stored) s = g;
+      else if (!s || typeof s !== "object") s = { tat: 0, cool: 0, hot: 0 };
+      const out = fn(s);
+      Object.assign(g, s);
+      try {
+        localStorage.setItem(MBN_KEY, JSON.stringify({ tat: s.tat || 0, cool: s.cool || 0, hot: s.hot || 0 }));
+      } catch (e) {
+      }
+      return out;
+    };
+    try {
+      if (typeof navigator !== "undefined" && navigator.locks && navigator.locks.request) return await navigator.locks.request(MBN_LOCK, rw);
+    } catch (e) {
+    }
+    return rw();
+  }
+  async function mbnSlot(o) {
+    o = o || {};
+    const t0 = Date.now(), background = o.background !== false;
+    const booked = await mbnState((s) => {
+      const now = Date.now(), cool = s.cool || 0, tat = s.tat || 0;
+      let at = background ? Math.max(now, tat - (MBN_BURST - 1) * MBN_GAP) : now;
+      at = Math.max(at, cool);
+      s.tat = Math.max(tat, at) + MBN_GAP;
+      return { at, why: cool > now && cool >= at ? "MusicBrainz asked everyone to wait" : "pacing, one request a second" };
+    });
+    let told = false;
+    for (; ; ) {
+      if (o.cancelled && o.cancelled()) return { ok: false, waited: Date.now() - t0 };
+      let cool = 0;
+      try {
+        cool = (JSON.parse(localStorage.getItem(MBN_KEY) || "null") || {}).cool || 0;
+      } catch (e) {
+        cool = (globalThis.__mbnGate || {}).cool || 0;
+      }
+      const until = Math.max(booked.at, cool), left = until - Date.now();
+      if (left <= 0) break;
+      if (!told && until - t0 > 1e3 && o.log) {
+        told = true;
+        o.log("info", "MusicBrainz gate: " + (o.label || "request") + " waits " + Math.round((until - t0) / 100) / 10 + "s (" + (cool > booked.at ? "MusicBrainz asked everyone to wait" : booked.why) + ")");
+      }
+      await new Promise((r) => setTimeout(r, Math.min(left, 250)));
+    }
+    return { ok: true, waited: Date.now() - t0 };
+  }
+  async function mbnAnswer(status, header, o) {
+    o = o || {};
+    if (status === 429 || status === 503) {
+      const raw = header ? header("Retry-After") : null;
+      const secs = Number(raw), date = raw ? Date.parse(raw) : NaN;
+      const ra = Number.isFinite(secs) ? secs * 1e3 : Number.isFinite(date) ? Math.max(0, date - Date.now()) : 0;
+      const hold = await mbnState((s) => {
+        s.hot = Math.min((s.hot || 0) + 1, 6);
+        const ms = Math.min(Math.max(1e3, ra) * s.hot, MBN_MAX_HOLD);
+        s.cool = Math.max(s.cool || 0, Date.now() + ms);
+        return s.cool - Date.now();
+      });
+      if (o.log) o.log("warn", "MusicBrainz gate: HTTP " + status + (raw != null ? " (Retry-After: " + raw + ")" : "") + " \u2014 every script holds " + Math.round(hold / 100) / 10 + "s");
+      return { throttled: true, hold };
+    }
+    if (status >= 200 && status < 500) await mbnState((s) => {
+      if (s.hot) s.hot--;
+    });
+    return { throttled: false, hold: 0 };
+  }
+  async function mbnFetch(url, init, o) {
+    o = o || {};
+    if (!mbnGated(url)) return fetch(url, init);
+    const tries = o.tries || 4;
+    for (let attempt = 1; ; attempt++) {
+      const slot = await mbnSlot(o);
+      if (!slot.ok) return null;
+      const r = await fetch(url, init);
+      const a = await mbnAnswer(r.status, (n) => r.headers.get(n), o);
+      if (!a.throttled || attempt >= tries) return r;
+    }
+  }
+
   // src/api-mb.js
   async function fetchMBEntity(mbid) {
     const res = await fetch(`/ws/js/entity/${mbid}`);
@@ -15088,8 +15185,11 @@ try {
     async function _run(item) {
       const tag = `req#${++_diagReqSeq}`;
       const shortUrl = item.url.replace(MB, "").replace(/^https:/, "");
+      const gated = mbnGated(item.url);
+      const gateLog = (lv, m) => lv === "warn" ? log.warn(m) : logDebug(m);
       for (let attempt = 0; attempt <= item.retries; attempt++) {
         await _waitForPause();
+        if (gated) await mbnSlot({ label: shortUrl, log: gateLog });
         _totalRequests++;
         const attemptTag = attempt === 0 ? "" : ` (retry ${attempt})`;
         logDebug(`${tag} [running=${_running} queued=${_queue.length}] GET ${shortUrl}${attemptTag}`);
@@ -15099,6 +15199,14 @@ try {
         try {
           const res = await fetch(item.url, { signal: ctrl.signal });
           const elapsed = Date.now() - t0;
+          if (gated) {
+            const a = await mbnAnswer(res.status, (n) => res.headers.get(n), { log: gateLog });
+            if (a.throttled) {
+              _rateLimited++;
+              logDebug(`${tag} <- ${res.status} in ${elapsed}ms; the shared gate holds ${a.hold}ms`);
+              continue;
+            }
+          }
           if (res.status === 429 || res.status === 503) {
             _rateLimited++;
             const ra = parseInt(res.headers.get("Retry-After"), 10);
@@ -18751,7 +18859,7 @@ ${ourBlock}` : ourBlock;
   }
   var aliasFormUrl = (mbid) => `${location.origin}/artist/${mbid}/add-alias`;
   async function liveHolds(mbid, name) {
-    const live = await fetch(`${location.origin}/ws/2/artist/${mbid}?inc=aliases&fmt=json`, { headers: { Accept: "application/json" } }).then((r) => r.ok ? r.json() : null).catch(() => null);
+    const live = await mbnFetch(`${location.origin}/ws/2/artist/${mbid}?inc=aliases&fmt=json`, { headers: { Accept: "application/json" } }, { background: false }).then((r) => r.ok ? r.json() : null).catch(() => null);
     return live && live.id ? { held: aliasHeldBy({ name: live.name, aliases: live.aliases || [] }, name), artistName: live.name } : null;
   }
   async function aliasNowHeld(mbid, name) {
@@ -24276,7 +24384,7 @@ ${lines}
     const CLOSE_DELAY_MS = 50;
     const ctrl = new AbortController();
     const timer = setTimeout(() => ctrl.abort(), NAME_FETCH_TIMEOUT_MS);
-    fetch(`${MB}/ws/2/${entityType}/${mbid}?fmt=json`, { signal: ctrl.signal }).then((r) => r.json()).then((json) => ({ name: json.name || "", disambiguation: json.disambiguation || "" })).catch(() => ({ name: "", disambiguation: "" })).then(({ name, disambiguation }) => {
+    mbnFetch(`${MB}/ws/2/${entityType}/${mbid}?fmt=json`, { signal: ctrl.signal }, { background: false }).then((r) => r.json()).then((json) => ({ name: json.name || "", disambiguation: json.disambiguation || "" })).catch(() => ({ name: "", disambiguation: "" })).then(({ name, disambiguation }) => {
       clearTimeout(timer);
       DISCOGS_CHANNEL.postMessage({
         type: "artist-created",
