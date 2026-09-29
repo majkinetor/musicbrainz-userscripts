@@ -1,6 +1,6 @@
 # Fusion <img src="icon.svg" align="left" width="48">
 
-A merge assistant for MusicBrainz recordings: gather a pool of candidates, let auto-match group the likely duplicates, adjust by hand, then submit every merge directly in the background
+A merge assistant for MusicBrainz recordings: gather candidates, let Auto-match group the duplicates, adjust by hand, and submit every merge from one window.
 
 - Install: [stable](https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/refs/heads/stable/userscripts/fusion/fusion.user.js) or [latest](https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/refs/heads/main/userscripts/fusion/fusion.user.js)
     - Or via bundle: [String Theory](../string_theory/README.md)
@@ -11,39 +11,79 @@ A merge assistant for MusicBrainz recordings: gather a pool of candidates, let a
 
 ## Features
 
-- **Pool / Groups review UI** — every candidate recording starts in the left-hand **Pool**; drag one into the right-hand **Groups** column, double-click a pool card to add it straight to the *current* group, or select a pool card then click a group to add it. A recording only ever lives in one place at a time.
-- **Auto-match** — scans the pool and groups likely duplicates automatically using multiple signals: shared ISRC, shared AcoustID, length within a configurable tolerance, and title/artist similarity (typo-tolerant — a one-letter difference). A **Cutoff** selector controls how strict the combination has to be: *strict* (identifiers only), *normal* (default — identifiers, or title+artist+length together), *loose* (identifiers, or title+length alone, artist not required). Re-running Auto-match only touches whatever is still in the pool, so it never undoes a group you built by hand.
-- **Full manual control** — return a recording from a group back to the pool (↩, shown on hover so it can't be clicked by accident), remove it from the group *and* the pool entirely (✕), or build a brand-new group yourself. The merge **target** (the recording that survives) always sits at the top of the card with a gold ★; hover any other row and click its ☆ to make that one the target instead — no separate column needed, the row's shaded background says which one it is. Click a group's header to make it the "current" group for double-click-adds and empty-space drops. 🗑 on a group deletes it — its members go back to the pool, nothing is lost — and **Clear board** does the same for every group at once.
-- **Flexible seeding** — opens with a pool already populated from wherever you launched it:
-    - **Release page** — that release's own recordings, plus a *"Load recordings from RG edition"* dropdown to pull in another edition from the same release group.
-    - **Release group page** — every recording across every release in the group in one go.
-    - **Recording page** — just that one recording, to start building a merge from scratch.
-    - **Artist → Recordings tab** — the artist's *entire* recording catalogue via the search API, not just the page you're looking at (MB paginates that table at 100 rows; Fusion pulls all of them, up to a 2000 safety cap).
-    - Any page: paste a recording, release, or release-group MBID/URL into the input — it is added on paste, no button to press. A release or release-group URL pulls in every recording it contains.
-- **Video recordings are never mixed with audio** — a video recording gets a 🎬 marker everywhere it appears, and merging one with an audio recording is refused, hard, at every entry point (Auto-match, drag, double-click, select+click) — no signal, not even a shared ISRC, overrides this.
-- **Direct background merges** — a group's **Merge ↗** button (or the footer's **Merge All**, which drives every ready group, several at once) submits the merge itself, the same two real MusicBrainz endpoints MB's own merge page uses (`/recording/merge_queue` → `/recording/merge`), with an edit note auto-composed from whichever signals matched. No tab opens, no MB UI is shown.
-- **Shared identifiers are colour-coded** — within a group card, any ISRC or AcoustID held by two or more members is tinted, with a different colour per distinct shared value, so which rows actually agree is obvious at a glance. A value only one member has stays plain.
-- **Per-merge edit note** — the ✎ in a group's title turns the whole card into a note editor; the button is tinted purple when a custom note is set. A custom note replaces the auto-generated reason line; Fusion's attribution footer is always appended.
-- **Options and log** — the ⚙ menu holds settings (length tolerance, AcoustID enrichment on/off, always-request-a-vote) plus a **Log** button opening activity log window
+- **[Pool and groups](#pool-and-groups)**: candidates on the left, merge groups on the right.
+- **[Seeding](#seeding)** from a release, a release group, a recording, or an artist's whole catalogue.
+- **[Auto-match](#auto-match)** groups likely duplicates by ISRC, AcoustID, title, artist and length.
+- **[Merging](#merging)** submits the merges in the background, each with an itemised edit note.
 
-## How matching works
+## Pool and groups
 
-Auto-match treats two recordings as the same group when either:
-- they share an **ISRC**, or
-- they share an **AcoustID**, or
-- their **title** and **artist credit** are both similar *and* their **length** is within tolerance (5 seconds by default) — title similarity tolerates small typos (edit-distance based), not just exact word overlap, or
-- with the **loose** cutoff, title+length alone (no artist match required).
+Every candidate starts in the **Pool**. Put it in a group by dragging it, by double-clicking it (it joins the *current* group, the one whose header you clicked last), or by selecting it and clicking a group.
 
-Length alone is never enough to group two recordings — it's supporting evidence only, combined with title (and usually artist). A group formed from ISRC or AcoustID is marked `HIGH` confidence; a group formed only from title+length/title+artist+length is marked `MEDIUM`. Groups you build by hand (drag/select, not Auto-match) are marked `MANUAL` and still show their signal chips for reference, since a merge you intend deliberately doesn't need to justify itself the same way an automatic one does.
+In a group:
 
-This mirrors MB's own [How To Merge Recordings](https://musicbrainz.org/doc/How_To_Merge_Recordings) guidance — matching "acoustic content", not incidental metadata — while staying honest that Fusion's signals are a heuristic, not a guarantee: always glance at the group before merging.
+- the **target**, the recording that survives, sits on top with a gold ★; click another row's ☆ to change it;
+- ↩ returns a recording to the pool, ✕ drops it altogether;
+- 🗑 deletes the group and returns its members to the pool; **Clear board** does it for every group;
+- an ISRC or AcoustID that two or more members share is tinted, one colour per shared value, so you can see which rows agree;
+- a length outside the tolerance is flagged amber, with the spread next to the title.
 
-## Submitting merges
+## Seeding
 
-Fusion never uses MB's own merge review page. Clicking **Merge** on a group (or **Merge All** for every ready group) drives the same two endpoints MB's own "select recordings → merge" flow uses, directly:
+Fusion opens with a pool already filled from the page you launched it on:
 
-1. `GET /recording/merge_queue?add-to-merge=<id>&add-to-merge=<id>…` — queues the group's recordings server-side.
-2. `POST` back to the resulting `/recording/merge` form with the chosen target and an edit note.
+| Page | Pool |
+|---|---|
+| Release | its recordings; *Load recordings from RG edition* adds another edition |
+| Release group | the recordings of every release in the group |
+| Recording | that recording |
+| Artist → Recordings | the artist's entire catalogue, not just the visible page (up to 2000) |
 
-This is a normal MusicBrainz edit like any other — it goes through your account exactly as if you'd used MB's own merge page, and if your account isn't an auto-editor (or **"Always require a vote"** is on in Fusion's options) it enters the voting queue rather than applying immediately. Fusion doesn't change that; it only removes the "click through several MB pages to get there" part.
+On any page, pasting a recording, release or release-group MBID or URL into the input adds it (a release adds all of its recordings).
 
+## Auto-match
+
+Auto-match groups the recordings still in the pool, so a group you built by hand is never undone. The **Cutoff** sets how much evidence it needs:
+
+| Cutoff | Groups two recordings when they share… |
+|---|---|
+| strict | an ISRC or an AcoustID |
+| normal *(default)* | …or a similar title and artist, with lengths within tolerance (or unknown) |
+| loose | …or a similar title with either the length or the artist |
+
+Titles tolerate small typos. Artists are compared by MBID when both recordings have them, so *Radium* and *DJ Radium* credited to the same artist match.
+
+Auto-match never groups:
+
+- a video with an audio recording (not even with a shared ISRC; manual grouping refuses it too);
+- a recording that has an open edit;
+- lengths more than 30 s apart.
+
+A group's chips show which signals hold for **every** member; one that holds for only some of them is shown as partial.
+
+> [!NOTE]
+> This follows MusicBrainz's [How To Merge Recordings](https://musicbrainz.org/doc/How_To_Merge_Recordings): match the acoustic content, not incidental metadata. The signals are a heuristic, so glance at each group before merging.
+
+## Merging
+
+**Merge ↗** on a group, or **Merge All** in the footer, submits the merge without opening MusicBrainz's merge page. Merge All prepares several groups in parallel and submits them one at a time, because MusicBrainz keeps one merge queue per session.
+
+Each merge gets an edit note listing what matched ("Same ISRC …", "Length difference 5s (3:59 – 4:04)"). ✎ in a group's title replaces it with your own text; Fusion's attribution line is always appended.
+
+It is an ordinary edit on your account: unless you're an auto-editor, it goes to a vote (see [Settings](#settings) to always ask for one).
+
+> [!NOTE]
+> Under the hood, Fusion queues the group with `GET /recording/merge_queue?add-to-merge=…` and posts MusicBrainz's own `/recording/merge` form with the target and the note. If MusicBrainz bounces the form instead of creating the edit, the group is marked failed, not done.
+
+## Settings
+
+The ⚙ window, which also holds the activity **Log**:
+
+| Setting | Default | |
+|---|---|---|
+| Always require a vote | off | send even your auto-edits to a vote |
+| Look up AcoustIDs | on | fetch the pool's AcoustIDs from acoustid.org |
+| Auto-match on open | off | run Auto-match once the pool has loaded |
+| Preload group release details | off | fetch every grouped recording's releases in the background |
+| Length tolerance | 5 s | lengths this close count as the same |
+| Never auto-group if lengths differ by more than | 30 s | |

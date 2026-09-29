@@ -8,7 +8,7 @@ This repository contains tools ([userscripts](https://musicbrainz.org/doc/Guides
 
 > [!IMPORTANT]
 >  [String Theory](./userscripts/string_theory/README.md) <img src="./userscripts/string_theory/icon.svg" align="left" width="32"><br>
-One-file bundle of all of the scripts in section bellow — install it *instead* of individuall userscripts
+One-file bundle of the scripts below — install it *instead of* the individual userscripts
 
 <br>
 

@@ -1,12 +1,8 @@
 # Standards
 
-Reusable conventions for this repository (and similar future work). Each entry has a short title and a 1–3 sentence description with an example when useful.
+Conventions for this repository. New ones arrive when the maintainer starts a chat message with `standard: …`; they're added here, numbered consecutively, and a number is never reused. Each section has a stable anchor (`#standard-1` … `#standard-11`), so links keep working when a title is reworded.
 
-New standards arrive when the maintainer prefixes a chat message with `standard: ...`. Add them here at that moment, numbered consecutively; existing numbers never get reused.
-
-For project-specific decisions (e.g. "MB's `[no artist]` MBID is `eec63d3c-…`"), use the per-project `dev/DECISIONS.md` log, not this file.
-
-Each numbered section also carries a stable short anchor (`#standard-1` … `#standard-11`) so links like `STANDARDS.md#standard-11` keep working even when the section title is reworded.
+Decisions about one feature or script live on its GitHub issue, not here (see [Standard 4](#standard-4)).
 
 ---
 
@@ -52,15 +48,9 @@ Windows-native environment. Shell scripts in the repo are `.ps1`. Command exampl
 
 <a id="standard-4"></a>
 
-## 4. Per-project `dev/DECISIONS.md` log
+## 4. ~~Per-project `dev/DECISIONS.md` log~~ (retired)
 
-Each project keeps an append-only one-line-per-entry decision log at `dev/DECISIONS.md`:
-
-```
-- YYYY-MM-DD HH:MM — topic → decision. (short rationale)
-```
-
-Newest entries at the bottom. Grep-friendly. Future contributors (human or AI) read this to understand *why* the code looks the way it does without diffing every commit.
+Retired 2026-09 (#623): only the frozen Discogs Importer ever kept one. Decisions live on the GitHub issues, where they were made and discussed; that includes what was declined, so it isn't raised again.
 
 <a id="standard-5"></a>
 
@@ -89,9 +79,9 @@ $env:GH_TOKEN = (Get-Content dev/.github-credentials.json | ConvertFrom-Json).to
 gh pr create --title …      # now authenticated as the bot
 ```
 
-Plain `gh pr create` / `gh issue comment` without `GH_TOKEN` set will silently post under the maintainer's name — a Standard #7 violation that's only visible after the fact in the comment's author field.
+Without `GH_TOKEN`, `gh` silently posts as the maintainer, which only shows afterwards in the author field.
 
-Keeps human and bot activity clearly attributable in commit / PR authors, makes a token-rotation easy (only the bot's PAT, never the maintainer's session), and means a bot-misstep is easily revertable.
+This keeps human and bot activity attributable, makes rotating a token easy, and a bot's mistake easy to revert.
 
 <a id="standard-8"></a>
 
@@ -141,7 +131,6 @@ to via `…/ANALYSIS.md#auto-match-disagreement`.
 
 Both header anchors (`## My Section` → `#my-section`) and explicit `<a id="…"></a>` work on GitHub. Prefer headers; use explicit anchors only when no header fits.
 
-**Don't hard-wrap the prose** in long-form markdown blocks like this one — let the renderer reflow naturally. Hard wraps look like manual line breaks in raw view and are a maintenance burden when the text edits in place. (Code blocks, tables, and lists still wrap where the grammar requires.)
 
 The goal is *zero-friction verification*: every claim that names a thing carries its own evidence trail.
 
@@ -163,4 +152,4 @@ Get the SHA from the commit that last touched the file: `git log -1 --format=%H 
 
 ## 11. Never hard-wrap markdown prose — let it reflow
 
-Write each markdown paragraph as a single physical line; never insert manual line breaks to fit a column width. The same applies to a list item's text and a table cell — one logical unit, one line. Hard wraps show up as spurious line breaks in raw/diff view, make in-place edits churn unrelated lines, and fight the renderer (which reflows to the reader's width anyway). Break the line only where the markdown grammar requires it — between paragraphs, between list items, between table rows, or inside fenced code blocks (where line breaks are literal). This generalises the note already attached to [Standard #9](#standard-9).
+Write each paragraph, list item and table cell as one physical line; never break a line to fit a width. Hard wraps churn unrelated lines in diffs and fight the renderer, which reflows anyway. Break only where the grammar requires: between paragraphs, list items and table rows, and inside code blocks.

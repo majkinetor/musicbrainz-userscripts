@@ -1,6 +1,6 @@
 # Falcon <img src="./icon.svg" align="left" width="40" height="40">
 
-**Falcon** is a MusicBrainz batch editor that uses a pool of iframe workers to add entity fields. Workers drive web forms or use an API, depending on what's available. It can be used standalone or via third party like [Harmony](#from-harmony).
+A MusicBrainz batch editor: queue many entities, then let a pool of workers add their links, ISRCs, names, aliases, disambiguations and cover art, through MusicBrainz's own forms or its API.
 
 - Install: [stable](https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/refs/heads/stable/userscripts/falcon/falcon.user.js) or [latest](https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/refs/heads/main/userscripts/falcon/falcon.user.js)
 - [Changelog](./CHANGELOG.md)
@@ -8,346 +8,184 @@
 
 <img src="./screenshots/queue.png" width="600">
 
-Adding data in automated way has no good options today. For example, an importer like [Harmony] hands you 20-50 artists/records/labels that each need an exeternal link and other data like isrcs and covers. MusicBrainz has no write API for some attributes so external tools can only open tabs that users are expected to individually handle.
-
-Falcon provides unified interface to bulk edit supported entity [attributes](#attributes), regardless if it is done via API or form manipulation.  
+An importer like [Harmony] hands you 20–50 artists, recordings and labels that each need links, ISRCs and a cover. MusicBrainz has no write API for most of that, so tools open a tab per entity for you to handle one by one. Falcon does them as one batch.
 
 ## Features
 
-- **[Queue from anywhere](#usage)** — a [Harmony](#from-harmony) Release Actions page, [the release or release group you are on](#from-the-current-page), [a series](#from-a-series), or a [JSON worksheet](#json-model).
-- **[Bulk attributes](#attributes)** — external links, [names](#name), disambiguations, [aliases](#aliases), ISRCs, the video flag and [cover art](#cover-art), across all five entity types.
-- **[Worker pool](#how-it-works)** — a fixed set of same-origin iframes seeds MusicBrainz's own forms, or uses the API where one exists; nothing opens or closes per item.
-- **[Failures stay inspectable](#statuses)** — MusicBrainz's own error on the row, the live worker to look at, retry in place, or open in a real tab to finish by hand.
-- **Export / import** — a run round-trips as JSON with each item's outcome, so a partial batch can be kept, edited and re-run without repeating what already went through.
-- **[Batch edit note](#batch-edit-note)** — one reason appended to every edit the run makes.
-- **[Disc IDs from a rip log](#disc-ids-from-a-rip-log)** — EAC, XLD, fre:ac, whipper, dBpoweramp and cyanrip, computed in the browser.
-- **[Hands-free import](#hands-free-import)** — a finished Harmony import can carry through to a finished run, [retrying MusicBrainz errors](#when-harmony-errors) and sending what it has.
-- **[Picard](#options)** — the tagger button is always there, with optional automatic hand-off once a run finishes.
-- Idempotent where it can be — untouched rows and aliases the entity already has are skipped rather than re-submitted.
+- **[Queue from anywhere](#filling-the-queue)**: a [Harmony](#from-harmony) import, [the page you're on](#from-the-current-page), [a series](#from-a-series), a [JSON file](#json-model), or [another script](#from-another-script).
+- **[Attributes](#attributes)**: links, names, disambiguations, aliases, ISRCs, the video flag, cover art.
+- **[Failures you can inspect](#the-run)**: MusicBrainz's own error on the row, the worker left where it stopped, retry in place.
+- **Export and import** a run as JSON, with each item's outcome, so a partial batch can be rerun without repeating what went through.
+- **[Batch edit note](#batch-edit-note)** on every edit of a run.
+- **[Hands-free Harmony import](#hands-free-import)**, including retries when MusicBrainz errors.
+- **[Disc IDs from a rip log](#disc-ids-from-a-rip-log)**, computed in the browser.
+- **[Picard](#settings)** hand-off once a run finishes.
 
-## Usage
+Untouched rows and aliases the entity already has are skipped, not submitted again.
 
-1. Populate a queue from [Harmony](#from-harmony), [the page you are on](#from-the-current-page), or import a [JSON file](#json-model) by accessing Falcon on any Musicbrainz page (CTRL+ALT+F).
-2. Review the queue (remove some entities or edit attributes), then press Start button to process it.
-   - Right-click a row's entity-type column to select every item of that same type at once so you can remove them
-   - Or, click the chips in the header (`art`/`lbl`/`rec`/`rel`/`rg`) to exclude all instances of specific entity without removing them from queue 
+## Filling the queue
 
-Each queue row shows the entity's name, a [status](#statuses) dot, and, on failure, MB's own real error message on hover (e.g. *"This URL is not allowed for artists."*).
-
-If a run leaves problems behind, a colored **FAILED**/**PARTIAL**/**MANUAL** chip appears at the very top, next to the Falcon name — click it to show just those rows; click again (or a different chip) to change the filter.
-
-A worker whose item doesn't cleanly commit (e.g. a duplicate/rejected url etc.) retires that card in place — dimmed but still live and inspectable (nothing is discarded) — while a fresh worker card takes over the rest of the queue. A worker that *does* commit keeps flowing through the queue on the same card, building a fresh iframe for each new item rather than re-navigating a used one. Switch to the **Workers** tab to watch the live iframes — click a worker's **⛶** to view just that one large (useful for reading a validation error). 
-
-<img src="./screenshots/workers.png">
-
-> [!NOTE] 
-> Click a red **FAILED**/**PARTIAL** status label to jump straight to that item's real worker in the **Workers** tab — the exact live page it left off on with the error shown as a banner right on the card.
-
-Row button **⇗** opens that entity's edit page in a real tab, pre-filled the same way a worker would — but left for you to review and click "Enter edit" yourself. This is useful for retrying something the worker couldn't commit automatically. 
-
-**Export** writes the queue back out *with each item's status and per-url outcome*, so a partly-finished run can be kept as a record, or re-imported to retry only what failed — items that already show `done` are not re-run.
-
-**Retry failed** re-queues every `failed`/`partial` item for another attempt in place — no export/import round trip needed. Useful when the cause was transient (MusicBrainz being slow, a timeout) rather than the item genuinely being broken.
+Open Falcon on any MusicBrainz page with **Ctrl+Alt+F** (or its corner icon).
 
 ### From Harmony
 
-Open a [Harmony] **Release Actions** page and a **"Send N to Falcon"** button appears in the bottom-right corner, covering every entity type Harmony offers. Clicking the button opens MusicBrainz in a new tab with the batch queued and the panel open, ready to review and Start.
+On a [Harmony] *Release Actions* page, **Send N to Falcon** (bottom-right) opens MusicBrainz with the batch queued: links for every entity, the recordings' ISRCs, and the front cover.
 
 <img src="./screenshots/harmony.png" width="400">
 
-Harmony integration fills Falcon queue with external links for all entities, recording isrcs and cover.
+- **ISRCs** go by tracklist position: ISRC *N* to track *N* as MusicBrainz has it. If the counts differ, the extras are dropped and logged. (A recording linked to the wrong provider track still gets that track's ISRC; Falcon can't tell.)
+- **Cover art**: Falcon measures every candidate itself (Harmony's sizes are often wrong) and picks the largest, then the smallest file. Expand the row to change the pick, its type or its comment. The edit note names the source, its size, and what it was chosen over.
 
-ISRCs are placed by **tracklist position** — Harmony hands over the release plus MagicISRC's numbered list (`isrc1`, `isrc2`, …), and *isrcN* goes to track *N* as MusicBrainz has it. They are deliberately not matched against the recordings appearing in Harmony's own action list: Harmony stops offering a "Link external IDs" action once the link exists, so on a second pass over a partly-finished release that list is missing its earlier tracks and everything after the gap would shift ([#540](https://github.com/majkinetor/musicbrainz-userscripts/issues/540)). If the tracklist and the ISRC list disagree in length, the extras are dropped and the mismatch is logged rather than placed on whatever position happens to exist.
-
-Note this can only be as right as the data it is given: if a recording is linked to the *wrong* provider track, Harmony derives that track's ISRC for it and Falcon has no way to tell.
-
-#### Cover art
-
-When a Harmony Release Actions page has cover art (front image, one per provider — Discogs is skipped), the batch includes a queue item for the release itself, showing *cover* in its row summary. Falcon picks the best candidate automatically — highest resolution, then lowest size — **measuring every candidate itself**. Harmony's captions are not describing the linked image (on one real release Tidal advertised 3000×3000 for a 1280×1280 file, and Spotify 2000×2000 for a 640×640 one), so they are only used as a last resort for a candidate that can't be fetched at all. Expand the row to see (and override) the picked URL, set its **type** (Front, Back, Booklet, …), add a **comment** for that specific image, or swap between providers if more than one was found; Falcon accepts a URL for the image only (no file upload).
-
-Falcon currently adds front cover art from Harmony, although it generally supports a list (which can be hand-written [JSON](#json-model)).
-
-A cover-art item is added via API (sign → upload → register), the same one [Art Station](../art_station) uses.
-
-Its edit note records where the image came from, in the spirit of ECAU's — the source URL, its measured size, and which candidates it was chosen over, so a voter can judge the pick — and, for a Harmony batch, the page it came from:
-
-```
-Imported from Harmony: https://harmony.pulsewidth.org.uk/release/actions?…
-Cover art (Front) from iTunes
-* https://a1.mzstatic.com/…/cover.jpg (3000×3000, 5.58 MB)
-Chosen as the largest of 2 candidates — also offered: Deezer 1000×1000
-```
-
-> [!WARNING] 
-> Harmony offers cover art whether or not the release already has some — adding one isn't idempotent the way links are. Falcon checks the Cover Art Archive as soon as a release item is queued and, if it already has cover art, the warning is shown.
-
-**Ignore Harmony cover art** (Settings, off by default) takes Falcon out of the cover business entirely — no cover row is sent from Harmony, none is counted on the *Send to Falcon* button, and one arriving from an older tab or a hand-written JSON is dropped with a line in the log. Links, ISRCs, disambiguations and aliases still import as usual. Worth turning on if you upload covers with [ECAU] or [Art Station](../art_station) instead: the URL Harmony gives is whatever the provider's API returns, which is often not the largest that provider will serve, and those tools rewrite it to the full-size one first (see [#537](https://github.com/majkinetor/musicbrainz-userscripts/issues/537)).
-
-[ECAU]: https://github.com/ROpdebee/mb-userscripts#mb-enhanced-cover-art-uploads
+> [!WARNING]
+> A cover is added even if the release already has one, unless *Add covers only when there aren't any* is on; the row warns when the release has art. If you upload covers with [ECAU] or [Art Station](../art_station) instead (they fetch the full-size image), turn on *Ignore Harmony cover art*.
 
 ### From the current page
 
-Open Falcon on a **release** or **release-group** page and the toolbar offers **+ Add from** — it fills the queue with that page entities so you can edit them in bulk. Rows arrive **empty** — this seeds a worksheet, not a batch of edits. Fill in the fields you want on the rows you care about, then press Start. It also works as a way to *produce* a JSON worksheet: add the entities, press **Export**, fill the file in at your leisure, then **Import** it back and Start.
+On a release or release group page, **+ Add from** fills the queue with its entities, with empty fields. Fill in the rows you care about and press Start; untouched rows are skipped. **Export** turns it into a JSON worksheet to fill in later.
 
 <img src="./screenshots/add-from-release.png" width="520">
 
-Rows you never touched are **skipped**. That means you can add a whole tracklist, fill in two rows, and run it without a screenful of failures.
-
-Ticking a recording's **🎬 Video** flag while it is part of the current selection applies it to *every selected recording*, so flagging a whole tracklist is one tick. MusicBrainz treats a video change as votable, so it won't show on the recording until the edit passes.
+Ticking 🎬 *Video* on a selected recording ticks it on every selected recording.
 
 ### From a series
 
-Open Falcon on a **series** page and **+ Add from series** fills the queue with what the series holds. A *release group series* offers its release groups, and optionally every release inside those groups; a *release series* offers its releases, and optionally the release groups behind them.
+On a series page, **+ Add from series** queues its release groups (optionally every release in them), or its releases (optionally their release groups), in the series' own order. Together with [renaming](#attributes), this is how a series gets its titles conformed.
 
-Rows arrive in the **series' own ordering**, not MusicBrainz's relation order, so they read the way the series page does.
+## The run
 
-A series' contents are relationships rather than a browsable collection — there is no `/ws/2/release-group?series=…` — so the membership is one request. The two expansions are not: "all releases in those groups" is a browse per group, and "the release groups of those releases" is a lookup per release, which is why both are off by default and say so in the menu.
+Review the queue (remove rows, edit fields), then press **Start**. Right-click a row's type to select every item of that type; the header chips (`art`, `lbl`, `rec`, `rel`, `rg`) exclude a type without removing it.
 
-## How it works
-
-Since MusicBrainz sends no `X-Frame-Options` / CSP `frame-ancestors`, its edit pages can be framed — so Falcon's panel hosts a handful of same-origin `<iframe>` workers instead. Same-origin means the panel's own script can reach directly into each iframe's DOM — check the form, submit, and once MB redirects off `/edit`, load the next queued entity into a fresh iframe on that same worker. The worker count never grows with the queue size, and nothing opens or closes per item.
-
-Each worker navigates to MusicBrainz's own **seed URL** format (`?edit-<type>.url.0.text=…&…link_type_id=…`), so MB fills the form itself as the page renders instead of Falcon simulating typing into it. Falcon only touches the form for what seeding can't express: applying a relationship type MB left unresolved, adding a second relationship type on a url that needs two, and clearing rows MB couldn't classify (which would otherwise disable the submit button for the entire group).
-
-If API is available, Falcon uses it rather then driving a form. 
-
-## Statuses
-
-|Status|Meaning|
+| Status | |
 |---|---|
-|queued|Entity is not yet processed|
-|in-progress|Entity is beeing acivelly processed|
-|done|Processing is finished without errors|
-|partial|Some array data is added, other failed|
-|failed|Completelly failed
-|manual|User has manually added data for the entity|
-|skipped|Nothing to submit — either MusicBrainz reported no change, or the row has no url/disambiguation/ISRC/cover filled in yet (see [From the current page](#from-the-current-page))|
-|excluded|Excluded by disabling entity chip at the header|
+| queued | not processed yet |
+| in progress | being processed |
+| done | everything went through |
+| partial | some of it failed |
+| failed | nothing went through |
+| manual | finished by you in a tab |
+| skipped | nothing to submit, or MusicBrainz reported no change |
+| excluded | its type's chip is off |
 
-## Attributes 
+- A failed row shows MusicBrainz's own error on hover. **FAILED** / **PARTIAL** / **MANUAL** chips at the top filter the queue to those rows.
+- A worker that can't commit stays where it stopped, dimmed but live, and a fresh one takes over. Click a red status to jump to it in the **Workers** tab; **⛶** enlarges it.
+- **⇗** opens the entity's edit page in a tab, prefilled, for you to finish.
+- **Retry failed** reruns the failed and partial rows in place.
 
-Field usage by entity type
-
-| field | artist | label | recording | release | release group |
-| --- | --- | --- | --- | --- | --- |
-| External links | yes | yes | yes | yes | yes |
-| Name | yes | yes | yes | yes | yes |
-| ISRC | — | — | yes | — | — |
-| Video | — | — | yes | — | — |
-| Aliases | yes | yes | yes | yes | yes |
-| Disambiguation | yes | yes | yes | yes | yes |
-| Cover art | — | — | — | yes| — |
-
-### Name
-
-Every entity type can be renamed. An expanded row carries a ✎ box **prefilled with the entity's current name** — the job this exists for is conforming existing names to a standard, and retyping a title from scratch to fix its casing would be worse than MusicBrainz's own form. Leave a box as you found it and that row submits nothing.
-
-Four types are renamed by seeding MusicBrainz's own edit form (`edit-<type>.name=`). A **release** is not: its editor is a Knockout app that ignores seeded fields, so Falcon types into it and reads the value back — the same route its disambiguation takes.
+<img src="./screenshots/workers.png">
 
 > [!NOTE]
-> MusicBrainz treats a rename as **votable** for every entity type, so the new name does not appear until the edit passes. Falcon reports the row as `done` once the edit is created, which is the most it can know.
+> Workers are MusicBrainz edit pages in same-origin iframes. Each is loaded with MusicBrainz's seed parameters, so the page fills itself. Falcon only touches the form for what seeding can't express (a link that needs two types, a row MusicBrainz couldn't classify), and submits. Where MusicBrainz has an API (cover art, aliases), Falcon uses it instead. The worker count never grows with the queue.
 
-Combined with [seeding from a series](#from-a-series), this is the bulk-rename path: add a series' release groups, edit the names that need it, press Start.
+A link MusicBrainz can't classify on its own (a Bandcamp track: purchase or streaming?) fails with that reason instead of blocking its row; use **⇗** to pick the type.
 
-### Aliases
+## Attributes
 
-Every entity type can carry aliases, and each one is a separate MusicBrainz edit — so localising a 20-track release is 40 edits. Falcon submits them straight to MB's `add-alias` form, which is why the bulk path is a JSON file rather than the UI: see [examples/aliases.json](./examples/aliases.json).
+| | artist | label | recording | release | release group |
+|---|:---:|:---:|:---:|:---:|:---:|
+| links, name, aliases, disambiguation | ✓ | ✓ | ✓ | ✓ | ✓ |
+| ISRCs, video | | | ✓ | | |
+| cover art | | | | ✓ | |
 
-```json
-{ 
-  "entityType": "recording", 
-  "mbid": "…",
-  "aliases": [
-    { "name": "town goes on! (wersja polska)", "locale": "pl", "type": "Recording name", "primary": true },
-    { "name": "town goes on! (deutsche Fassung)", "locale": "de", "type": "Recording name", "primary": true }
-  ] 
-}
-```
-
-An expanded queue row shows a 🏷 **aliases** strip where you can add one by typing `name` or `name@locale`, and remove any before the run.
+- **Name**: an expanded row's ✎ box starts with the current name, so a fix is an edit, not a retype. A rename is votable, so it shows once the edit passes.
+- **Aliases**: in the row's 🏷 strip type `name` or `name@locale`, or use [JSON](./examples/aliases.json) for many. An alias the entity already has is never added again. If that can't be checked, the aliases wait for **Retry failed**.
+- **Video** is only ever set, never cleared.
 
 > [!WARNING]
-> Falcon **never adds an alias the entity already has**: before each item it reads the current aliases and skips any whose name, locale and type already match (MusicBrainz itself allows exact duplicates without complaint, so re-running a queue or importing the same file twice would otherwise litter it). A row whose aliases are all already present reports **skipped**. If that check can't be made — MusicBrainz unreachable — the aliases are held back rather than risking duplicates, and **Retry failed** picks them up later.
-
-> [!WARNING]
-> MusicBrainz **silently discards the locale** (and *primary for locale*) on a **Search hint** alias — the same submission stores `pl` under *Recording name* and nothing under *Search hint*, with no error either way. Falcon warns in the log when a search hint carries a locale. For a localised title use the `<entity> name` type.
+> MusicBrainz silently drops the locale of a *Search hint* alias; Falcon warns in the log. Use the `<entity> name` type for a localised title.
 
 ## Batch edit note
 
-**✎ Note**, left of Start, opens a box above the bar. Whatever you put there is appended to **every edit the run makes** — form edits, aliases and cover-art uploads alike — so a batch of renames can say why it happened where a voter will actually see it.
+**✎ Note**, left of Start, adds its text to every edit of the run: forms, aliases and covers. The button is marked while a note is set. The note is not kept across reloads, so an old reason can't slip into a new batch.
 
-The button is marked while a note is set, because a reason silently attaching itself to edits is the thing worth avoiding. It is deliberately **not** remembered across reloads for the same reason; a leftover reason from an earlier batch is worse than retyping one.
+## Hands-free import
 
-It is part of the JSON model as a root-level `note` (per-item `note` still means that one edit's own note), so a worksheet can carry its reason with it:
+Two settings carry a finished Harmony import to a finished run:
 
-```json
-{
-  "note": "Conforming release group titles to the series standard",
-  "items": [
-    { "entityType": "release_group", "mbid": "…", "rename": "Movements 2" }
-  ]
-}
-```
+| | Runs on | Does |
+|---|---|---|
+| *Auto send* | Harmony | presses *Send to Falcon* |
+| *Auto start Harmony import* | MusicBrainz | presses *Start* |
+
+*Auto send* waits until the import is complete (the page has a `release_mbid`) and Harmony has finished listing its actions. It stands down if there's nothing to send. It counts down on the button first; a click cancels.
+
+**When Harmony errors**, the page still loads, just short of actions. Falcon handles this without a setting:
+
+- **a MusicBrainz error**: Falcon reloads the page, up to 5 times, backing off from 5 s to 60 s;
+- **a provider error**, or retries exhausted: Falcon sends what it has, as *Send 43 to Falcon (partial)*, with the reason as the batch's edit note (reloading can't fix a provider).
+
+Falcon is idempotent, so a partial run can be topped up later. *Reload release page after import without errors* shows the result on the release page and turns the corner icon green. A run with failures isn't reloaded, since the queue wouldn't survive it; the log would.
+
+## Disc IDs from a rip log
+
+On a release's **Disc IDs** tab, each medium gets a drop zone for a rip log. Falcon reads the TOC, computes the disc ID in the browser, and takes you straight to MusicBrainz's attach page with the edit note signed. **Enter edit** is yours.
+
+| Program | Reads |
+|---|---|
+| EAC, XLD, fre:ac | the TOC table (localised EAC too) |
+| whipper | the `TOC:` block |
+| dBpoweramp | `Track N: Ripped LBA x to y` |
+| cyanrip | `Start LSN` / `End LSN` |
+
+Like Picard, whose parsers these are, it refuses a partial rip, a non-standard track sequence or an unknown file, and drops a trailing data track. A log whose track count doesn't match the medium asks before continuing.
 
 ## JSON model
 
-Falcon has basic entity forms — the file is loaded by **Import**, written by **Export**, and used internally is the actual interface for batch loading; Harmony and `?falcon=` are just producers of this same shape. Root is either a bare array of items or `{"items": [...]}`. A root-level `note` is the [batch edit note](#batch-edit-note) for the whole file:
+What **Import** reads, **Export** writes, and Harmony and other scripts produce: a bare array of items, or `{ "items": [...] }` with an optional root `note` (the [batch edit note](#batch-edit-note)).
 
 ```json
 {
-  "falcon": "2026.8.14",
-  "exported": "2026-08-14T10:00:00.000Z",
+  "note": "Links and covers from the label's site",
   "items": [
-    {
-      "entityType": "artist",
-      "mbid": "d31f76d2-1d8e-4271-8027-148f375979d7",
-      "name": "Der Zirkel",
-      "note": "via Falcon",
-      "urls": [{ "url": "https://myspace.com/x", "linkTypeId": null }],
-      "status": "done",
-      "error": "",
-      "urlResults": null
-    },
-    {
-      "entityType": "recording",
-      "mbid": "e42f8e08-3150-4c6c-be5b-4030c29b1bf7",
-      "urls": [],
-      "disambiguation": "live version",
-      "isrcs": ["NLTH62000001"]
-    },
-    {
-      "entityType": "release",
-      "mbid": "8ad416ad-f3a1-43bb-9e85-786efefd5173",
+    { "entityType": "artist", "mbid": "d31f76d2-1d8e-4271-8027-148f375979d7", "urls": [{ "url": "https://myspace.com/x", "linkTypeId": null }], "status": "done" },
+    { "entityType": "recording", "mbid": "e42f8e08-3150-4c6c-be5b-4030c29b1bf7", "disambiguation": "live version", "isrcs": ["NLTH62000001"] },
+    { "entityType": "release", "mbid": "8ad416ad-f3a1-43bb-9e85-786efefd5173",
       "urls": [{ "url": "https://www.discogs.com/release/1", "linkTypeId": "75" }],
-      "cover": [{ "url": "https://e-cdns-images.dzcdn.net/images/cover/x/1000x1000.jpg", "comment": "page 1", "type": "Booklet", "candidates": [] }]
-    }
+      "cover": [{ "url": "https://e-cdns-images.dzcdn.net/images/cover/x/1000x1000.jpg", "type": "Booklet", "comment": "page 1" }] }
   ]
 }
 ```
 
-| attribute | type | meaning |
-| --- | --- | --- |
-| `entityType` | string | one of `artist`, `label`, `recording`, `release`, `release_group` |
-| `mbid` | string | the entity's MBID |
-| `urls[]` | array of `{url, linkTypeId}` | external links to add — every entity type; `linkTypeId` optional (MB auto-classifies if omitted) |
-| `note` | string | edit note |
-| `aliases[]` | array of `{name, locale, type, primary, sortName, begin, end, ended}` | all types — each entry becomes **its own MusicBrainz edit**, submitted through `/<entity>/<mbid>/add-alias`. `type` is the alias type's name as MB spells it for that entity (`Recording name`, `Search hint`, `Legal name` on artists) and is matched against the form's own list, so a wrong one fails with the valid options rather than guessing. Shorthand accepted: a bare string, or `"name@locale"` |
-| `video` | boolean | recording-only — MB's **Video** checkbox. Only ever sent when `true`; leaving it out preserves whatever the recording already has, so `false` means *don't touch*, never *clear it*. Falcon never unsets the flag |
-| `rename` | string | the entity's **new** name — all five types. Not to be confused with `name`, which is the entity's *current* name and is only ever read. A row whose only payload is a `rename` is a valid item |
-| `disambiguation` | string | MB's own disambiguation comment field — every entity type has one. For a release it is the **Disambiguation** box under *Additional information* in the release editor |
-| `isrcs[]` | array of string | recording-only |
-| `cover[]` | array of `{url, comment, type, candidates}` | release-only — the cover art to upload. An **array**: a release can carry more than one cover image, though Falcon today only ever populates one entry from Harmony. Each entry's own `comment` is that image's upload comment (unrelated to `disambiguation`); `type` is MB's cover-art type (`Front`, `Back`, `Booklet`, `Medium`, …, default `Front`); `candidates` are not-yet-measured alternates Falcon is still picking a winner from |
-| `name` | string or null | display name — re-fetched if omitted, so it's optional |
-| `status` | string | item processing [status](#statuses) |
-| `error` | string | last error message, if any |
-| `urlResults` | array or null | per-url ✓/✗ outcome from the last run, shown on hover in the expanded row |
-
-The `?falcon=` URL parameter ([From another script](#from-another-script)) uses a lighter, flattened subset of this same model — one row per url instead of a grouped `urls[]` — meant for a single script call rather than a saved file.
+| Key | |
+|---|---|
+| `entityType` | `artist`, `label`, `recording`, `release`, `release_group` |
+| `mbid` | the entity |
+| `urls[]` | `{ url, linkTypeId }`; without a type, MusicBrainz classifies the link |
+| `rename` | a new name (`name` is the current one, read only) |
+| `disambiguation` | the disambiguation comment |
+| `aliases[]` | `{ name, locale, type, primary, sortName, begin, end, ended }`, or `"name@locale"`; each is its own edit. `type` as MusicBrainz names it (`Recording name`, `Search hint`…) |
+| `isrcs[]` | recordings |
+| `video` | recordings; only `true` does anything |
+| `cover[]` | releases: `{ url, type, comment, candidates }`, type defaulting to Front |
+| `note` | that item's own edit note |
+| `status`, `error`, `urlResults` | written by Export: the outcome of the last run |
 
 ### From another script
 
-Any other script can hand Falcon a queue directly via a URL parameter: append `?falcon=<base64(JSON)>` to any `musicbrainz.org` URL. Falcon detects the param on load, seeds the queue, and opens the panel automatically (does not auto-start). 
+Append `?falcon=<base64(JSON)>` to any musicbrainz.org URL: Falcon opens with the queue seeded (it doesn't start). It takes a flatter form of the model, one row per link.
 
-### Options
+## Settings
 
-Click the ⚙ tab to open it.
-
-1. **Hide Falcon icon** - the floating corner launcher becomes optional; **Ctrl+Alt+F** still opens the panel either way
-2. **Add covers only when there aren't any** - skip a release's cover upload instead of adding it blind when the release already has cover art
-3. **Auto send** (off by default) - press *Send to Falcon* for you once a Harmony import has finished and its action list has settled. See [Hands-free import](#hands-free-import)
-4. **Auto start Harmony import** (off by default) - start processing the queue immediately after "Send to Falcon" from Harmony, instead of waiting for a manual **Start**
-5. **Reload release page after import without errors** (off by default) - once a run finishes with nothing failed, reload the MusicBrainz release page so it shows what Falcon just added instead of the state it had before the run. Falcon's corner icon turns green on a page it reloaded, so you can tell which tab it was. See [Reload after a clean run](#reload-after-a-clean-run)
-6. **Open from Harmony in new tab** (on by default) - off navigates the current Harmony tab to MusicBrainz instead of opening a new one
-7. **Automatically send to Picard using port** (off by default, port 8000) - hands the release to [Picard](https://picard.musicbrainz.org/) once a run finishes, by calling its `openalbum` endpoint directly ([#578](https://github.com/majkinetor/musicbrainz-userscripts/issues/578)). It fires *after* the run, so Picard reads the release with Falcon's links, ISRCs and cover already on it, and only once per release per tab. Picard has to be running with **Browser integration** enabled and listening on that port — its own default is 8000; if it isn't reachable the Log says so rather than failing silently.<br>The port is used **whether or not this is ticked**: the MusicBrainz URL *Send to Falcon* opens always carries `&tport=<port>`, so MusicBrainz's own green tagger button is always there. Leave the box unticked to import only the releases you pick
-8. **Workers** - how many entities are processed at once (default is 5)
-9. **Keep last N run logs** (default 20) - how many past runs' logs stick around, selectable from the Log tab's history dropdown
-
-#### Hands-free import
-
-**Auto send** and **Auto start Harmony import** are the two halves of the same trip, and turning both on carries a finished Harmony import through to a finished Falcon run without a click ([#557](https://github.com/majkinetor/musicbrainz-userscripts/issues/557)):
-
-| | where it runs | what it does |
+| Setting | Default | |
 |---|---|---|
-| **Auto send** | on the Harmony page | presses *Send to Falcon* |
-| **Auto start Harmony import** | on the MusicBrainz page | presses *Start* on the seeded queue |
+| Hide Falcon icon | off | Ctrl+Alt+F still opens it |
+| Add covers only when there aren't any | off | |
+| Ignore Harmony cover art | off | |
+| Auto send | off | see [Hands-free import](#hands-free-import) |
+| Auto start Harmony import | off | |
+| Reload release page after import without errors | off | |
+| Open from Harmony in new tab | on | off navigates the Harmony tab |
+| Automatically send to Picard using port | off, 8000 | hand the release to [Picard](https://picard.musicbrainz.org/) after a run (needs its *Browser integration*). The port also gives MusicBrainz's own tagger button, ticked or not. |
+| Workers | 5 | entities processed at once |
+| Keep last N run logs | 20 | |
 
-Auto send holds back deliberately in three cases, since an unattended send that guesses wrong is worse than no send:
-
-- **the page isn't a completed import.** It requires a `release_mbid` in the URL — the MBID Harmony assigns once the release actually exists in MusicBrainz. No MBID means the import didn't finish, so there is nothing to send
-- **Harmony hasn't finished rendering.** Its actions arrive client-side; the send waits for the same "count stopped changing" signal the *Send N to Falcon* label already waits for, so it can't ship half a batch
-- **there is nothing to send.** A re-run over an already-complete release stands down quietly rather than opening an empty queue
-
-An *errored* page is deliberately not one of those cases — it sends what it has and says so. See [When Harmony errors](#when-harmony-errors).
-
-It also **counts down on the button first** (`Auto-sending 42 in 4… (click to cancel)`). With *Open from Harmony in new tab* off, a send navigates the tab away from Harmony, and that should never happen without a beat in which to stop it. Clicking the button cancels, and it will not re-arm on that page.
-
-#### When Harmony errors
-
-Harmony builds its actions page in one pass: the release lookup, the merge, then a browse of the release's artists, recordings and labels. If any of that fails the rest is abandoned, but the page still returns `200 OK` and renders — just without the actions it never got to build ([#590](https://github.com/majkinetor/musicbrainz-userscripts/issues/590)). Harmony has no retry of its own.
-
-**Only a MusicBrainz error gets a reload**, and that distinction matters more than it sounds. A provider that fails to parse can fail forever — `Beatport: Failed to extract embedded player JSON` was seen blocking six other providers that had returned perfectly good data. Reloading cannot bring that provider back, so Falcon doesn't try. Harmony tags a provider failure with a `<span class="provider">` chip and a MusicBrainz API failure without one, which is what tells them apart.
-
-So, with no option to set:
-
-- **MusicBrainz errored** → the page is loaded again, up to 5 times, backing off 5s → 60s with jitter (starting at 15s when the server asked for less traffic). A countdown shows on the button; clicking it cancels, for good, on that page.
-- **retries exhausted, or a provider errored, or the error is one a reload could never fix** (a malformed MBID, a release that isn't there) → **the batch is sent anyway**. Falcon is idempotent, so a partial import beats none and can be topped up by running it again later.
-- either way, the button reads `Send 43 to Falcon (partial)` and **the reason is attached to the batch as its edit note**, so every edit the run produces says why it might be short.
-
-#### Reload after a clean run
-
-Running fully automatic leaves you looking at a drained queue over a release page showing the state from *before* the run. **Reload release page after import without errors** ([#588](https://github.com/majkinetor/musicbrainz-userscripts/issues/588)) reloads it once the run finishes, and the icon in the corner turns **green** so you can pick that tab out of a screenful.
-
-It deliberately does nothing when anything failed, came back partial, or is waiting on a manual review — those are only visible in the queue, and the queue does not survive a reload. The run's **log does** survive it (it lives in the session store, so the Log tab still has it), and the consumed `falcon=` token is dropped from the URL while `tport=` is kept, so MusicBrainz still draws its tagger button.
-
-### Disc IDs from a rip log
-
-MusicBrainz has no web way to attach a disc ID — the documented route is Picard, which reads a CD rip log, works out the disc ID and opens `/cdtoc/attach` for you ([#591](https://github.com/majkinetor/musicbrainz-userscripts/issues/591)).
-
-Falcon puts that on the release's **Disc IDs** tab. Each medium gets a drop zone; drop a rip log on it (or click to pick one) and Falcon reads the TOC, computes the disc ID and takes you to MusicBrainz's attach page. **The edit itself is never submitted for you** — Falcon fills the edit note in and stops there, leaving *Enter edit* to you, exactly as it is coming from Picard.
-
-Logs it reads, all ports of [Picard's own parsers](https://github.com/metabrainz/picard/tree/master/picard/disc):
-
-| program | what it reads |
-|---|---|
-| **EAC**, **XLD**, **fre:ac** | the TOC table (matched by shape, so localised EAC output works) |
-| **whipper** | the `TOC:` block |
-| **dBpoweramp** | `Track N: Ripped LBA x to y` |
-| **cyanrip** | `Start LSN` / `End LSN` per track |
-
-A MusicBrainz disc ID is a SHA-1 over the TOC, so all of this happens in the browser — no Picard, no libdiscid, and the log file never leaves your machine.
-
-It refuses rather than guessing in the cases Picard refuses: a partial rip (non-consecutive track numbers), a non-standard track sequence, and a file it does not recognise. A trailing **data track** is dropped the way Picard drops it (an 11401-sector gap), and a log whose track count doesn't match the medium you dropped it on asks before continuing — a disc ID on the wrong medium is an edit someone else has to undo.
-
-A drop goes **straight to MusicBrainz's confirmation page** — neither the "enter a release MBID" box nor the medium picker is shown, since Falcon already knows both. The medium's internal row id is the only thing it lacks: for a medium that already has a disc ID that id is in the page's own Remove/Move links, and otherwise Falcon reads it off MusicBrainz's own medium list in the background. Should you land on the medium picker anyway, Falcon ticks the right medium and presses **Attach CD TOC** for you.
-
-If MusicBrainz doesn't offer that medium at all — it only lists mediums whose track count matches the TOC — Falcon leaves the picker up rather than choosing the nearest thing.
-
-On the confirmation page Falcon signs the edit note:
-
-```
-Falcon v2026.9.14 by majkinetor - https://github.com/…/falcon/README.md
-Disc ID computed from a CD rip log.
-```
-
-Anything already in the box is kept, and the signature is not added twice. **Enter edit** is still yours to press.
-
-### Reporting a problem
-
-The **Log** tab traces every worker step — which entity it loaded, how each url was resolved (already present / seeded and classified / typed / rejected and why), whether the submit button was reachable, and how long each stage took. Lines are tagged per worker (`[w1]`, `[w2]`…) since workers run concurrently. Leave the **debug** checkbox on, reproduce the problem, then hit **Copy log** and paste it into the issue — that's usually enough to pinpoint a worker that stopped short of submitting without needing a live reproduction.
-
-Each run gets its own log, kept separately so one run's lines never get mixed into another's. The dropdown next to **debug** lists past runs by date/time — pick one to review or copy it instead of the current session. **Clear history**, next to that dropdown, deletes every past run's log in one go (the current session's log is untouched — use the **Clear** button for that).
+> [!TIP]
+> To report a problem: leave **debug** on in the **Log** tab, reproduce it, then **Copy log** into the issue. Each run's log is kept separately; the dropdown lists past runs.
 
 ## Shortcuts
 
-| Shortcut | Action |
-| --- | --- |
-| **Ctrl+Alt+F** | Open / close the Falcon panel |
-
-## Note
-
-Entity names resolve through the same rate-limit-aware throttle MB API calls use elsewhere in these scripts (a handful concurrently, cooperatively backing off on an actual 429/503 via its Retry-After header) — fast for a normal batch, but still polite to MB's webservice under a big one. They also **yield to a run**: pressing Start drops any lookups still pending, because they are cosmetic while the workers' edit-page loads are not, and both draw on the same per-IP rate limit. Rows keep whatever label they have until the run finishes, then resolution resumes.
-
-A url that MB considers ambiguous (a Bandcamp track is the common case — could be "purchase for download", "streaming", etc.) needs an explicit relationship type MusicBrainz can't infer on its own; without one, Falcon reports that specific url as failed with a clear reason rather than letting it silently block the rest of its group's submission. Use **⇗** to open it in a tab and pick the type by hand.
+| Key | |
+|---|---|
+| Ctrl+Alt+F | open or close Falcon |
 
 [Harmony]: https://harmony.pulsewidth.org.uk
-
+[ECAU]: https://github.com/ROpdebee/mb-userscripts#mb-enhanced-cover-art-uploads

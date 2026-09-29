@@ -62,7 +62,7 @@ test("#509: click waits for names", { tag: ['@sandbox', '@login'] }, async ({ co
   console.log('label while waiting:', midLabel);
   ck(midLabel === 'Resolving names…', `the button shows it's waiting, not silently stuck (got "${midLabel}")`);
 
-  await page.waitForFunction(() => window.__gmWrites.some(([k]) => k.startsWith('falcon:pending:')), { timeout: 8000 });
+  await page.waitForFunction(() => window.__gmWrites.some(([k]) => k.startsWith('falcon:pending:')), null, { timeout: 8000 });
   const elapsed = Date.now() - clickTime;
   console.log('elapsed until payload written:', elapsed, 'ms');
   ck(elapsed >= 900, `it actually waited for the pill to render, not send instantly (got ${elapsed}ms)`);
