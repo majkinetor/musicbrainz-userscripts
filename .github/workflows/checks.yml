@@ -28,6 +28,17 @@ jobs:
         run: |
           pnpm --dir userscripts/credit_hoarder install --frozen-lockfile
           pnpm --dir userscripts/credit_hoarder run lint
+      # dist/credit_hoarder.user.js is what people install; the pre-commit hook rebuilds it, but a
+      # commit made without the hook (the web editor, --no-verify, a merge) can leave it behind
+      # src/. Rebuild and compare, the build's own @version stamp aside (#637).
+      - name: Credit Hoarder's build is its source
+        run: |
+          cp userscripts/credit_hoarder/dist/credit_hoarder.user.js "$RUNNER_TEMP/committed.js"
+          pnpm --dir userscripts/credit_hoarder run build
+          if ! diff -q <(grep -v '@version' "$RUNNER_TEMP/committed.js") <(grep -v '@version' userscripts/credit_hoarder/dist/credit_hoarder.user.js) >/dev/null; then
+            echo "::error file=userscripts/credit_hoarder/dist/credit_hoarder.user.js::not the build of src/ — run pnpm run build in userscripts/credit_hoarder and commit dist/"
+            exit 1
+          fi
       - name: Design tokens
         run: node dev/tokens/verify-tokens.mjs
       - name: Specs that need no network

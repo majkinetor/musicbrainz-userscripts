@@ -8,6 +8,7 @@ Every userscript's tests run under one runner, [Playwright Test](https://playwri
 pnpm install                      # once, at the repo root
 node dev/test/login.mjs           # once: log the test profile in (production and sandbox)
 node dev/test/login.mjs sandbox --auto   # the sandbox only, headless, as CI does
+node dev/test/login.mjs sandbox --firefox   # Firefox's profile, for Falcon's Firefox specs
 pnpm test                         # everything
 pnpm test --project=fusion        # one script
 pnpm test --grep @unit            # only specs that need no network
@@ -21,8 +22,8 @@ One test runs at a time: all of them share the logged-in profile, and MusicBrain
 
 ## CI
 
-- **[checks](../../.github/workflows/checks.yml)**, on every push to main or stable and every pull request: parse, lint, design tokens, and the `@unit` specs. For main and pull requests it then runs the `@critical` specs on the sandbox, signed in by `login.mjs sandbox --auto` (the sandbox account is public, so there is no secret).
-- **[suite](../../.github/workflows/suite.yml)**, nightly and from Actions → suite → Run workflow: every spec but `@web`, since other live sites often block cloud machines.
+- **[checks](../../.github/workflows/checks.yml)**, on every push to main or stable and every pull request: parse, lint, design tokens, Credit Hoarder's build matching its source, and the `@unit` specs. For main and pull requests it then runs the `@critical` specs on the sandbox, signed in by `login.mjs sandbox --auto` (the sandbox account is public, so there is no secret).
+- **[suite](../../.github/workflows/suite.yml)**, nightly and from Actions → suite → Run workflow: every spec but `@web` (other live sites often block cloud machines) and `@timing`. It signs in Firefox's profile too, for Falcon's Firefox specs. The README badge shows how many specs passed and failed on its last run on main.
 
 Both keep the HTML report as a download on the run page, for 14 days, and only one of them uses the sandbox at a time.
 
