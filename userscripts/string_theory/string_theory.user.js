@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         String Theory
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.9.29.190054
+// @version      2026.9.29.231227
 // @description  Unified bundle of 8 MusicBrainz userscripts (apollo_editor, art_station, credit_hoarder, fusion, group_therapy, isrc_scout, mammoth, platform_check). Built by userscripts/string_theory/build.mjs — do not hand-edit.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCIgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0Ij4NCiAgPCEtLSBodWItYW5kLXNwb2tlICJuZXR3b3JrIiBnbHlwaCwgc2luZ2xlIHZpdmlkIHZpb2xldCBvbiB0cmFuc3BhcmVudCBzbyBpdCByZWFkcyBvbiBib3RoIGRhcmsgYW5kIGxpZ2h0IHBhZ2VzIC0tPg0KICA8ZyBmaWxsPSJub25lIiBzdHJva2U9IiM3YzVjZmYiIHN0cm9rZS13aWR0aD0iNC42IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMzIgMTUiLz4NCiAgICA8cGF0aCBkPSJNMzIgMzIgTDQ2LjUgMjMuNSIvPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMNDYuNSA0MC41Ii8+DQogICAgPHBhdGggZD0iTTMyIDMyIEwzMiA0OSIvPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMTcuNSA0MC41Ii8+DQogICAgPHBhdGggZD0iTTMyIDMyIEwxNy41IDIzLjUiLz4NCiAgPC9nPg0KICA8ZyBmaWxsPSIjN2M1Y2ZmIj4NCiAgICA8Y2lyY2xlIGN4PSIzMiIgY3k9IjMyIiByPSI4LjYiLz4NCiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjE5LjUiIHI9IjYuNCIvPg0KICAgIDxjaXJjbGUgY3g9IjQ5IiBjeT0iMTkuNSIgcj0iNi40Ii8+DQogICAgPGNpcmNsZSBjeD0iMzIiIGN5PSI1NyIgcj0iNi40Ii8+DQogIDwvZz4NCiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjN2M1Y2ZmIiBzdHJva2Utd2lkdGg9IjMuOCI+DQogICAgPGNpcmNsZSBjeD0iMzIiIGN5PSI3IiByPSI0LjkiLz4NCiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjQ0LjUiIHI9IjQuOSIvPg0KICAgIDxjaXJjbGUgY3g9IjQ5IiBjeT0iNDQuNSIgcj0iNC45Ii8+DQogIDwvZz4NCjwvc3ZnPg0K
@@ -81,8 +81,8 @@
 // Bundles (verbatim, each wrapped in a run-at gate): apollo_editor, art_station, credit_hoarder, fusion, group_therapy, isrc_scout, mammoth, platform_check.
 
 try {
-  console.log('%c String Theory %c v2026.9.29.190054 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
-  console.log("String Theory bundles:\n  · Apollo Editor v2026.9.29.162141\n  · Art Station v2026.9.28\n  · Credit Hoarder v2026.9.28.220718\n  · Fusion v2026.9.28\n  · Group Therapy v2026.9.28\n  · ISRC Scout v2026.9.28\n  · Mammoth v2026.9.28.214729\n  · Platform Check v2026.9.29");
+  console.log('%c String Theory %c v2026.9.29.231227 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
+  console.log("String Theory bundles:\n  · Apollo Editor v2026.9.29.162141\n  · Art Station v2026.9.28\n  · Credit Hoarder v2026.9.28.220718\n  · Fusion v2026.9.28\n  · Group Therapy v2026.9.28\n  · ISRC Scout v2026.9.28\n  · Mammoth v2026.9.28.214729\n  · Platform Check v2026.9.29.231226");
 } catch (e) {}
 
 // ===== apollo_editor (@run-at document-start) =====================================
@@ -42054,7 +42054,7 @@ Created this ${kind} while adding credits parsed from text to ${relUrl}`;
 
 // ===== platform_check (@run-at document-end) ====================================
 (function(__stGM){
-  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Platform Check*","namespace":"http://tampermonkey.net/","version":"2026.9.29","description":"Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/platform_check/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+DQogIDx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CiAgDQogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJhMWE1MiIgc3Ryb2tlLXdpZHRoPSI5IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik00MCA4OCBBMzQgMzQgMCAwIDEgNDAgNDAiLz4NCiAgICA8cGF0aCBkPSJNMjkgOTkgQTUwIDUwIDAgMCAxIDI5IDI5Ii8+DQogICAgPHBhdGggZD0iTTg4IDg4IEEzNCAzNCAwIDAgMCA4OCA0MCIvPg0KICAgIDxwYXRoIGQ9Ik05OSA5OSBBNTAgNTAgMCAwIDAgOTkgMjkiLz4NCiAgPC9nPg0KICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyMCIgZmlsbD0iI2U4MjAxYSIvPg0KPC9zdmc+DQo="}) }) : { script: {"name":"Platform Check*","namespace":"http://tampermonkey.net/","version":"2026.9.29","description":"Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/platform_check/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+DQogIDx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CiAgDQogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJhMWE1MiIgc3Ryb2tlLXdpZHRoPSI5IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik00MCA4OCBBMzQgMzQgMCAwIDEgNDAgNDAiLz4NCiAgICA8cGF0aCBkPSJNMjkgOTkgQTUwIDUwIDAgMCAxIDI5IDI5Ii8+DQogICAgPHBhdGggZD0iTTg4IDg4IEEzNCAzNCAwIDAgMCA4OCA0MCIvPg0KICAgIDxwYXRoIGQ9Ik05OSA5OSBBNTAgNTAgMCAwIDAgOTkgMjkiLz4NCiAgPC9nPg0KICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyMCIgZmlsbD0iI2U4MjAxYSIvPg0KPC9zdmc+DQo="} };
+  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Platform Check*","namespace":"http://tampermonkey.net/","version":"2026.9.29.231226","description":"Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/platform_check/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+DQogIDx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CiAgDQogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJhMWE1MiIgc3Ryb2tlLXdpZHRoPSI5IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik00MCA4OCBBMzQgMzQgMCAwIDEgNDAgNDAiLz4NCiAgICA8cGF0aCBkPSJNMjkgOTkgQTUwIDUwIDAgMCAxIDI5IDI5Ii8+DQogICAgPHBhdGggZD0iTTg4IDg4IEEzNCAzNCAwIDAgMCA4OCA0MCIvPg0KICAgIDxwYXRoIGQ9Ik05OSA5OSBBNTAgNTAgMCAwIDAgOTkgMjkiLz4NCiAgPC9nPg0KICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyMCIgZmlsbD0iI2U4MjAxYSIvPg0KPC9zdmc+DQo="}) }) : { script: {"name":"Platform Check*","namespace":"http://tampermonkey.net/","version":"2026.9.29.231226","description":"Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/platform_check/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+DQogIDx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CiAgDQogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJhMWE1MiIgc3Ryb2tlLXdpZHRoPSI5IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik00MCA4OCBBMzQgMzQgMCAwIDEgNDAgNDAiLz4NCiAgICA8cGF0aCBkPSJNMjkgOTkgQTUwIDUwIDAgMCAxIDI5IDI5Ii8+DQogICAgPHBhdGggZD0iTTg4IDg4IEEzNCAzNCAwIDAgMCA4OCA0MCIvPg0KICAgIDxwYXRoIGQ9Ik05OSA5OSBBNTAgNTAgMCAwIDAgOTkgMjkiLz4NCiAgPC9nPg0KICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyMCIgZmlsbD0iI2U4MjAxYSIvPg0KPC9zdmc+DQo="} };
   (f=>document.readyState!=='loading'?f():document.addEventListener('DOMContentLoaded',f,{once:true}))(function(){
 (function () {
 'use strict';
@@ -46487,10 +46487,16 @@ async function fetchAppleMeta(albumUrl) {
 // Its track count is songs only: amp's own trackCount also counts music videos, and iTunes'
 // counted digital booklets (Harmony #192). The iTunes API stays, as the fallback when the
 // token or amp-api fails.
-const APPLE_AMP = 'https://amp-api.music.apple.com/v1/catalog';
+const APPLE_AMP_V1 = 'https://amp-api.music.apple.com/v1';
 const APPLE_TOKEN_KEY = 'mbtools:apple-token';   // shared with ISRC Scout and Credit Hoarder
-let _appleTok = null;
-async function appleToken(fresh) {
+let _appleTok = null, _appleTokP = null;
+// one fetch at a time: the storefronts are read in parallel, and each would otherwise fetch its own
+function appleToken(fresh) {
+    if (_appleTok && !fresh) return Promise.resolve(_appleTok);
+    if (!_appleTokP) _appleTokP = appleTokenFetch(fresh).finally(() => { _appleTokP = null; });
+    return _appleTokP;
+}
+async function appleTokenFetch(fresh) {
     if (_appleTok && !fresh) return _appleTok;
     if (!fresh) {
         try { const c = JSON.parse(localStorage.getItem(APPLE_TOKEN_KEY) || 'null'); if (c && c.t && c.at && Date.now() - c.at < 12 * 3600e3) return (_appleTok = c.t); } catch (e) {}
@@ -46507,10 +46513,11 @@ async function appleToken(fresh) {
 }
 // One amp-api read: its JSON, or throws (the caller falls back to iTunes). A 401 is a rotated
 // token: a new one is fetched, once.
-async function appleAmp(path) {
+const appleAmp = path => appleAmpV1('catalog/' + path);
+async function appleAmpV1(path) {
     for (let attempt = 0; attempt < 2; attempt++) {
         const tok = await appleToken(attempt > 0);
-        const r = await gmGet(`${APPLE_AMP}/${path}${path.includes('?') ? '&' : '?'}l=en-US`, { headers: { Authorization: 'Bearer ' + tok, Origin: 'https://music.apple.com', Accept: 'application/json' } });
+        const r = await gmGet(`${APPLE_AMP_V1}/${path}${path.includes('?') ? '&' : '?'}l=en-US`, { headers: { Authorization: 'Bearer ' + tok, Origin: 'https://music.apple.com', Accept: 'application/json' } });
         if (r.status === 401 && attempt === 0) { appendLog('Apple', 'amp-api: the token was refused (401) — fetching a new one', 'warn'); continue; }
         if (r.status === 404) return { data: [] };
         if (!r.ok) throw new Error(`amp-api HTTP ${r.status || r.error || '?'}`);
@@ -46521,6 +46528,34 @@ async function appleAmp(path) {
 // the album whose UPC it is — amp-api lists others first too (808391067776: the single 808391068360 comes first)
 const applePickByUpc = (items, upc) => (items || []).find(a => normBarcode(a.attributes?.upc) === normBarcode(upc)) || null;
 const appleStorefront = url => ((String(url || '').match(/music\.apple\.com\/([a-z]{2})\//i) || [])[1] || 'us').toLowerCase();
+// Apple's catalogue is per storefront: an album is only in the ones it is licensed to (majkinetor,
+// #627: "better to find any release in any store than no release in particular store"). The short
+// list is read first, all at once: eight storefronts in parallel answered in 83 ms. Only when it has
+// nothing is every storefront read, again all at once: 172 in about a second. (Apple's own site
+// checks a release's availability one storefront at a time, about a second each.)
+const APPLE_SHORTLIST = ['us', 'gb', 'de', 'fr', 'jp', 'br', 'au'];
+async function appleAllStorefronts() {
+    try { const c = JSON.parse(localStorage.getItem('pc:apple-storefronts') || 'null'); if (c && c.ids && c.ids.length && Date.now() - c.at < 7 * 864e5) return c.ids; } catch (e) {}
+    const ids = [];
+    for (let next = 'storefronts?limit=200'; next;) {
+        const j = await appleAmpV1(next);
+        (j.data || []).forEach(s => ids.push(s.id));
+        next = j.next ? String(j.next).replace(/^\/v1\//, '') : null;
+    }
+    try { localStorage.setItem('pc:apple-storefronts', JSON.stringify({ ids, at: Date.now() })); } catch (e) {}
+    appendLog('Apple', `amp-api: ${ids.length} storefronts`);
+    return ids;
+}
+// One catalogue read in several storefronts at once: [{ sf, j }] for each that answered. Throws when
+// none did (the caller falls back to iTunes); a few that fail are only logged.
+async function appleEach(sfs, path) {
+    await appleToken();   // once, before the parallel reads
+    const res = await Promise.all(sfs.map(s => appleAmp(`${s}/${path}`).then(j => ({ sf: s, j }), e => ({ sf: s, err: e.message }))));
+    const ok = res.filter(r => r.j), bad = res.filter(r => !r.j);
+    if (!ok.length) throw new Error(bad.length ? bad[0].err : 'no storefront to ask');
+    if (bad.length) appendLog('Apple', `amp-api: ${bad.length} of ${res.length} storefront(s) didn't answer (${bad.slice(0, 5).map(b => b.sf).join(', ')}${bad.length > 5 ? '…' : ''})`, 'warn');
+    return ok;
+}
 // An amp-api album → what the row shows. Songs only: the videos are in trackCount too.
 function appleAlbumMeta(a) {
     const at = (a && a.attributes) || {}, rel = a && a.relationships && a.relationships.tracks;
@@ -46565,20 +46600,37 @@ async function scanAppleAmp({ artist, album, mbTracks, existingUrl, mbid, isVari
         return true;
     };
 
-    // Barcode first: the album whose UPC it is, not the first one Apple lists
+    const shortSfs = [...new Set([sf, ...APPLE_SHORTLIST])];
+    // the rest of the storefronts, for a second round when the short list had nothing
+    const otherSfs = async () => (await appleAllStorefronts()).filter(s => !shortSfs.includes(s));
+
+    // Barcode first: the album whose UPC it is, not the first one Apple lists. Every zero-padding
+    // of the barcode goes in the one request per storefront (filter[upc] takes a list).
     if (!existingUrl && !wikidataAppleId && barcode) {
-        const hit = await upcTry(barcode, async (u) => {
-            const j = await appleAmp(`${sf}/albums?filter[upc]=${encodeURIComponent(u)}`);
-            const items = j.data || [];
-            items.forEach(a => appendLog(label, `  UPC ${u}: "${a.attributes?.name}" has UPC ${a.attributes?.upc || '?'} — ${a.attributes?.url}`));
-            return applePickByUpc(items, u);
-        });
-        if (hit) {
-            const meta = appleAlbumMeta(hit);
-            appendLog(label, `Barcode ${barcode} → ${meta.url} (its UPC)`, 'ok');
+        const forms = gtinVariants(barcode);
+        const upcIn = async sfs => {
+            const got = await appleEach(sfs, `albums?filter[upc]=${forms.map(encodeURIComponent).join(',')}`);
+            const seen = new Set();
+            for (const { sf: s, j } of got) for (const a of (j.data || [])) {
+                if (seen.has(a.id)) continue;
+                seen.add(a.id);
+                appendLog(label, `  UPC ${forms.join('/')} in "${s}": "${a.attributes?.name}" has UPC ${a.attributes?.upc || '?'} — ${a.attributes?.url}`);
+            }
+            for (const { sf: s, j } of got) for (const u of forms) { const hit = applePickByUpc(j.data, u); if (hit) return { hit, sf: s }; }
+            return null;
+        };
+        let found = await upcIn(shortSfs);
+        if (!found) {
+            const rest = await otherSfs();
+            appendLog(label, `Barcode ${barcode}: no album with that UPC in ${shortSfs.join(', ')} — asking the other ${rest.length} storefronts`);
+            found = await upcIn(rest);
+        }
+        if (found) {
+            const meta = appleAlbumMeta(found.hit);
+            appendLog(label, `Barcode ${barcode} → ${meta.url} (its UPC, in the "${found.sf}" storefront)`, 'ok');
             return done(meta, 'barcode');
         }
-        appendLog(label, `Barcode ${barcode}: no album with that UPC in the "${sf}" storefront — falling back to search`);
+        appendLog(label, `Barcode ${barcode}: no album with that UPC in any storefront — falling back to search`);
     }
 
     // A link MusicBrainz or Wikidata already has: read the album itself
@@ -46601,10 +46653,22 @@ async function scanAppleAmp({ artist, album, mbTracks, existingUrl, mbid, isVari
 
     // Search. VA compilations: the album title alone (Apple doesn't credit a literal "Various Artists").
     const term = isVariousArtists ? album : `${artist} ${album}`;
-    const j = await appleAmp(`${sf}/search?term=${encodeURIComponent(term)}&types=albums&limit=10`);
-    const results = (j.results && j.results.albums && j.results.albums.data) || [];
-    appendLog(label, `amp-api search "${term}" ("${sf}" storefront): ${results.length} candidate(s)`);
-    if (!results.length) return none('API search');
+    // every storefront's candidates, pooled: one album is one candidate, from the first storefront that has it
+    const searchIn = async sfs => {
+        const got = await appleEach(sfs, `search?term=${encodeURIComponent(term)}&types=albums&limit=10`);
+        const byId = new Map();
+        for (const { sf: s, j } of got) for (const a of ((j.results && j.results.albums && j.results.albums.data) || [])) if (!byId.has(a.id)) byId.set(a.id, { a, sf: s });
+        return [...byId.values()];
+    };
+    let pool = await searchIn(shortSfs);
+    appendLog(label, `amp-api search "${term}" in ${shortSfs.join(', ')}: ${pool.length} candidate(s)`);
+    if (!pool.length) {
+        const rest = await otherSfs();
+        pool = await searchIn(rest);
+        appendLog(label, `amp-api search "${term}" in the other ${rest.length} storefronts: ${pool.length} candidate(s)${pool.length ? ' (' + [...new Set(pool.map(p => p.sf))].slice(0, 8).join(', ') + ')' : ''}`);
+    }
+    if (!pool.length) return none('API search');
+    const results = pool.map(p => Object.assign(p.a, { _sf: p.sf }));
     let best = null;
     for (const a of results) {
         const at = a.attributes || {};
@@ -46620,7 +46684,7 @@ async function scanAppleAmp({ artist, album, mbTracks, existingUrl, mbid, isVari
         return none('API search');
     }
     // the album itself, for the songs-only count (a search result has no track list)
-    const full = ((await appleAmp(`${sf}/albums/${best.a.id}`)).data || [])[0] || best.a;
+    const full = ((await appleAmp(`${best.a._sf || sf}/albums/${best.a.id}`)).data || [])[0] || best.a;
     const meta = appleAlbumMeta(full);
     appendLog(label, `Picked best (${best.score >= 1000 ? 'UPC match' : 'score=' + best.score}): ${meta.url}`, best.score >= 150 ? 'ok' : 'warn');
     return done(meta, 'API search');
@@ -47825,7 +47889,7 @@ if (mbuTestHooks()) window.__pcTest464 = { openReleaseEditTab, openRgEditTab, PC
 // #556 test hook — URL identity + the inject helper, so the cache-staleness and
 // payload-preservation paths can be driven without a live ✓ match render.
 // #627 test hook — the amp-api pieces, driven against the live API without a row render
-if (mbuTestHooks()) window.__pcTest627 = { appleAmp, appleToken, appleAlbumMeta, applePickByUpc, appleStorefront, setAppleToken: t => { _appleTok = t; } };
+if (mbuTestHooks()) window.__pcTest627 = { appleAmp, appleToken, appleAlbumMeta, applePickByUpc, appleStorefront, appleEach, appleAllStorefronts, APPLE_SHORTLIST, setAppleToken: t => { _appleTok = t; } };
 if (mbuTestHooks()) window.__pcTest556 = { pcUrlKey, pcSameUrl, pcIsVerifyInterstitial, injectInto, runInjectHelper, cacheGet, cacheSet, mbDataGet };
 
 function addSingleUrl(platform, background) {

@@ -5,6 +5,8 @@
 //   853435003333   iTunes counted 20 tracks (a digital booklet); amp-api has the 19 songs
 //   3615938016152  11 tracks, one a music video: the count is the 10 songs
 //   the token      a rotated (refused) token is replaced, once, and the read goes through
+//   6001211540730  majkinetor's I Wanda Why?: the short list of storefronts has only the reissue; all
+//                  the others, asked at once, find the original
 // On the sandbox, a release page, so the script and its hook are in; Apple is read, nothing else.
 import { test, check, answerGm } from '../../../dev/test/harness.mjs';
 import { openPc } from './pc.mjs';
@@ -30,6 +32,18 @@ test('Apple: the album whose UPC it is, songs only, and a refused token replaced
     out.video = robot && A.appleAlbumMeta(robot);
 
     out.storefront = [A.appleStorefront('https://music.apple.com/de/album/x/123'), A.appleStorefront(null)];
+
+    // majkinetor's I Wanda Why? (6001211540730): every storefront of the short list has only the 2024
+    // reissue (its own UPC); the 1993 original is in one storefront of the rest. Both rounds in parallel.
+    const upc = '6001211540730', q = `albums?filter[upc]=${upc},0${upc}`;
+    const exactIn = got => got.filter(g => A.applePickByUpc(g.j.data, upc)).map(g => g.sf);
+    let t0 = Date.now();
+    const short = await A.appleEach(A.APPLE_SHORTLIST, q);
+    out.short = { asked: A.APPLE_SHORTLIST.length, answered: short.length, exact: exactIn(short), ms: Date.now() - t0 };
+    const all = await A.appleAllStorefronts();
+    t0 = Date.now();
+    const rest = await A.appleEach(all.filter(s => !A.APPLE_SHORTLIST.includes(s)), q);
+    out.rest = { storefronts: all.length, answered: rest.length, exact: exactIn(rest), ms: Date.now() - t0 };
     return out;
   });
   // a refused token. Live, Apple's own session cookies carry a read whatever the token says, so a
@@ -52,4 +66,6 @@ test('Apple: the album whose UPC it is, songs only, and a refused token replaced
   check(r.video && r.video.tracks === 10 && /1 video\(s\) left out/.test(r.video.tracksNote), `3615938016152: the 10 songs, the video left out (${JSON.stringify(r.video)})`);
   check(r.token.ok && r.token.fresh !== 'eyJxxxxx', `a refused token is replaced and the read goes through (${JSON.stringify(r.token)})`);
   check(r.storefront[0] === 'de' && r.storefront[1] === 'us', `the storefront comes from the release's link, else us (${r.storefront})`);
+  check(r.short.answered === r.short.asked && r.short.exact.length === 0, `6001211540730: the short list answers, and has only the reissue (${JSON.stringify(r.short)})`);
+  check(r.rest.storefronts > 100 && r.rest.answered >= r.rest.storefronts - r.short.asked - 3 && r.rest.exact.length >= 1, `…every other storefront, at once, finds the original (${JSON.stringify(r.rest)})`);
 });
