@@ -30,7 +30,7 @@ const rules = {
   // worth a look, not a blocker
   // the shared generated blocks (ST-UI, ST-MATCH, ST-ICONS) carry every helper to every
   // script; one a script doesn't call is not dead code
-  'no-unused-vars': ['warn', { args: 'none', caughtErrors: 'none', varsIgnorePattern: '^(_|mbu[A-Z]|mbm[A-Z]|MBM_|mbRestackCorner$|st[A-Z])' }],
+  'no-unused-vars': ['warn', { args: 'none', caughtErrors: 'none', varsIgnorePattern: '^(_|mbu[A-Z]|mbm[A-Z]|MBM_|mbn[A-Z]|MBN_|mbRestackCorner$|st[A-Z])' }],
   'no-template-curly-in-string': 'warn', 'no-unmodified-loop-condition': 'warn', 'array-callback-return': 'warn', 'no-fallthrough': 'warn',
   'no-constant-condition': ['warn', { checkLoops: false }],
   'no-irregular-whitespace': ['warn', { skipStrings: true, skipTemplates: true, skipRegExps: true }],   // thin spaces in UI text are meant
