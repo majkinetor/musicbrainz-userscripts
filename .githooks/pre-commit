@@ -85,12 +85,23 @@ if printf '%s\n' "$STAGED" | grep -qE '^dev/match/(artist-match|sync-match)\.mjs
     STAGED=$(git diff --cached --name-only)
 fi
 
+# shared MusicBrainz request gate (#633) — dev/net/mb-gate.mjs, re-inlined into every
+# script carrying a `// <ST-NET>` marker (Credit Hoarder imports it via esbuild — its
+# rebuild below watches dev/net too).
+if printf '%s\n' "$STAGED" | grep -qE '^dev/net/(mb-gate|sync-gate)\.mjs$'; then
+    echo "[pre-commit] syncing the shared request gate…"
+    node dev/net/sync-gate.mjs >/dev/null
+    NET_FILES=$(grep -rl '// <ST-NET>' userscripts --include='*.js' 2>/dev/null || true)
+    [ -n "$NET_FILES" ] && git add $NET_FILES
+    STAGED=$(git diff --cached --name-only)
+fi
+
 # (discogs_credits is frozen — no longer developed — so its bundle is not rebuilt here.)
 
 # credit_hoarder — esbuild bundle. It was
 # missing here, so a shared-component sync (which rewrites src/ui-bar.js) left
 # the committed dist/ — the file people actually install — one build behind.
-if printf '%s\n' "$STAGED" | grep -qE '^(userscripts/credit_hoarder/(src/|build\.mjs)|dev/match/artist-match\.mjs$)'; then
+if printf '%s\n' "$STAGED" | grep -qE '^(userscripts/credit_hoarder/(src/|build\.mjs)|dev/match/artist-match\.mjs$|dev/net/mb-gate\.mjs$)'; then
     echo "[pre-commit] rebuilding userscripts/credit_hoarder/dist/…"
     (cd userscripts/credit_hoarder && pnpm run build >/dev/null)
     git add userscripts/credit_hoarder/dist/credit_hoarder.user.js

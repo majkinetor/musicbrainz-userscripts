@@ -811,12 +811,8 @@ test('Fusion end to end: matching engine, UI, and real merges on the sandbox', {
   // retry landed inside the window the server asked us to wait out and
   // recordings silently lost their ISRCs. fetch is stubbed here so the test
   // exercises OUR logic and never depends on MB being reachable.
-  check(await page.evaluate(() => window.__fusion.parseRetryAfter('9')) === 9000, 'Retry-After in seconds is parsed');
-  check(await page.evaluate(() => window.__fusion.parseRetryAfter(null)) === null, 'a missing Retry-After yields null (falls back to backoff)');
-  check(await page.evaluate(() => window.__fusion.parseRetryAfter('soon')) === null, 'an unparseable Retry-After is ignored rather than trusted');
-  const httpDateMs = await page.evaluate(() => window.__fusion.parseRetryAfter(new Date(Date.now() + 8000).toUTCString()));
-  check(httpDateMs > 6500 && httpDateMs <= 8000, 'the HTTP-date form of Retry-After is understood too (' + httpDateMs + 'ms)');
-
+  // Since #633 the waiting is the shared request gate's (dev/net/mb-gate.mjs, its own specs
+  // cover Retry-After's forms); here, that Fusion's requests go through it.
   const retryAfter = await page.evaluate(async () => {
       const F = window.__fusion;
       const realFetch = window.fetch;
@@ -850,7 +846,7 @@ test('Fusion end to end: matching engine, UI, and real merges on the sandbox', {
       return { elapsedMs: Date.now() - t0 };
   });
   check(gate.elapsedMs >= 1800, 'a 503 for one request pauses the sibling requests too, instead of each knocking independently (' + gate.elapsedMs + 'ms)');
-  const raLog = await page.evaluate(() => window.__fusion.getLogLines().filter(l => /Pausing MusicBrainz requests/.test(l)).length);
+  const raLog = await page.evaluate(() => window.__fusion.getLogLines().filter(l => /every script holds/.test(l)).length);
   check(raLog > 0, 'the pause is reported in the log so throttling is visible');
 
   // #529 (majkinetor): "Why are we getting ISRCs on matching when we already have
