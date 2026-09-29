@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         String Theory
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.9.29.011949
+// @version      2026.9.29.182335
 // @description  Unified bundle of 8 MusicBrainz userscripts (apollo_editor, art_station, credit_hoarder, fusion, group_therapy, isrc_scout, mammoth, platform_check). Built by userscripts/string_theory/build.mjs — do not hand-edit.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCIgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0Ij4NCiAgPCEtLSBodWItYW5kLXNwb2tlICJuZXR3b3JrIiBnbHlwaCwgc2luZ2xlIHZpdmlkIHZpb2xldCBvbiB0cmFuc3BhcmVudCBzbyBpdCByZWFkcyBvbiBib3RoIGRhcmsgYW5kIGxpZ2h0IHBhZ2VzIC0tPg0KICA8ZyBmaWxsPSJub25lIiBzdHJva2U9IiM3YzVjZmYiIHN0cm9rZS13aWR0aD0iNC42IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMzIgMTUiLz4NCiAgICA8cGF0aCBkPSJNMzIgMzIgTDQ2LjUgMjMuNSIvPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMNDYuNSA0MC41Ii8+DQogICAgPHBhdGggZD0iTTMyIDMyIEwzMiA0OSIvPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMTcuNSA0MC41Ii8+DQogICAgPHBhdGggZD0iTTMyIDMyIEwxNy41IDIzLjUiLz4NCiAgPC9nPg0KICA8ZyBmaWxsPSIjN2M1Y2ZmIj4NCiAgICA8Y2lyY2xlIGN4PSIzMiIgY3k9IjMyIiByPSI4LjYiLz4NCiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjE5LjUiIHI9IjYuNCIvPg0KICAgIDxjaXJjbGUgY3g9IjQ5IiBjeT0iMTkuNSIgcj0iNi40Ii8+DQogICAgPGNpcmNsZSBjeD0iMzIiIGN5PSI1NyIgcj0iNi40Ii8+DQogIDwvZz4NCiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjN2M1Y2ZmIiBzdHJva2Utd2lkdGg9IjMuOCI+DQogICAgPGNpcmNsZSBjeD0iMzIiIGN5PSI3IiByPSI0LjkiLz4NCiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjQ0LjUiIHI9IjQuOSIvPg0KICAgIDxjaXJjbGUgY3g9IjQ5IiBjeT0iNDQuNSIgcj0iNC45Ii8+DQogIDwvZz4NCjwvc3ZnPg0K
@@ -81,13 +81,13 @@
 // Bundles (verbatim, each wrapped in a run-at gate): apollo_editor, art_station, credit_hoarder, fusion, group_therapy, isrc_scout, mammoth, platform_check.
 
 try {
-  console.log('%c String Theory %c v2026.9.29.011949 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
-  console.log("String Theory bundles:\n  · Apollo Editor v2026.9.29\n  · Art Station v2026.9.27\n  · Credit Hoarder v2026.9.29.011948\n  · Fusion v2026.9.27\n  · Group Therapy v2026.9.27\n  · ISRC Scout v2026.9.27\n  · Mammoth v2026.9.28\n  · Platform Check v2026.9.27.210137");
+  console.log('%c String Theory %c v2026.9.29.182335 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
+  console.log("String Theory bundles:\n  · Apollo Editor v2026.9.29.182334\n  · Art Station v2026.9.27\n  · Credit Hoarder v2026.9.29.011948\n  · Fusion v2026.9.27\n  · Group Therapy v2026.9.27\n  · ISRC Scout v2026.9.27\n  · Mammoth v2026.9.28\n  · Platform Check v2026.9.27.210137");
 } catch (e) {}
 
 // ===== apollo_editor (@run-at document-start) =====================================
 (function(__stGM){
-  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Apollo Editor*","namespace":"https://musicbrainz.org/","version":"2026.9.29","description":"Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md","supportURL":null,"icon":"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E"}) }) : { script: {"name":"Apollo Editor*","namespace":"https://musicbrainz.org/","version":"2026.9.29","description":"Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md","supportURL":null,"icon":"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E"} };
+  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Apollo Editor*","namespace":"https://musicbrainz.org/","version":"2026.9.29.182334","description":"Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md","supportURL":null,"icon":"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E"}) }) : { script: {"name":"Apollo Editor*","namespace":"https://musicbrainz.org/","version":"2026.9.29.182334","description":"Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md","supportURL":null,"icon":"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E"} };
   (f=>f())(function(){
 /*
  * Editor model (discovered via test/ spikes):
@@ -1408,13 +1408,13 @@ try {
   // recording), so "N of M editions" counts releases.
   function addReleaseToArtistPos(rel, idx, skipGid) {
     if (!rel || !rel.id || rel.id === skipGid) return;   // never the release being edited
-    (rel.media || []).forEach(med => (med.tracks || []).forEach(t => {
+    (rel.media || []).forEach(med => { const medLens = mediumLensOf(med); (med.tracks || []).forEach(t => {
       const ac = (t['artist-credit'] && t['artist-credit'].length) ? t['artist-credit'] : ((t.recording && t.recording['artist-credit']) || []);
       if (!ac.length) return;
       const key = (med.position || 1) + '.' + (t.position || 0);
       if (!idx.has(key)) idx.set(key, []);
-      idx.get(key).push({ rel: rel.id, relTitle: rel.title || '', title: t.title || (t.recording && t.recording.title) || '', length: t.length || (t.recording && t.recording.length) || null, ac });
-    }));
+      idx.get(key).push({ rel: rel.id, relTitle: rel.title || '', title: t.title || (t.recording && t.recording.title) || '', length: t.length || (t.recording && t.recording.length) || null, ac, medLens });
+    }); });
   }
   let _artPosRg = { gid: null, self: null, idx: null };
   let _artPosDup = { key: null, p: null };
@@ -1470,7 +1470,8 @@ try {
       key = (u(mediums()[entry.mi].position) || (entry.mi + 1)) + '.' + (u(ko.position) || (entry.ti + 1));
       len = u(ko.length) || null;
     } catch (e) { return null; }
-    const agrees = c => recSimilar(c.title, entry.title) && (c.length && len ? recLenGap(c.length, len) === 0 : recFold(c.title) === recFold(entry.title));
+    const agrees = c => (recSimilar(c.title, entry.title) && (c.length && len ? recLenGap(c.length, len) === 0 : recFold(c.title) === recFold(entry.title)))
+      || (scriptsDiffer(c.title, entry.title) && mediumAligned(c.medLens, entry.mi));   // one title in another script (#626)
     const at = idx => ((idx && idx.get(key)) || []).filter(agrees);
     let hits = at(await artistPosRgIndex());
     let res = tallyPosArtists(hits, creditedAs);
@@ -7716,7 +7717,7 @@ try {
         // keeps a divergent edition from mislinking an unrelated song at that position.
         if (!best || bestLevel > maxLevel) {
           const pk = posKeyOf(r, ko);
-          const tryPos = (tag) => { const at = (posIndex.get(pk) || []); const sim = at.filter(c => c.gid && recSimilar(c.name, r.title)); Log.debug('rec-match #' + (r.number || (r.ti + 1)) + ' posTier[' + tag + '] pos=' + pk + ' atSlot=' + at.length + ' similar=' + sim.length + (at.length ? ' [' + at.slice(0, 4).map(c => '"' + c.name + '"' + (recSimilar(c.name, r.title) ? '✓' : '✗') + (c.length && r.trackLen && recLenGap(c.length, r.trackLen) === 0 ? '=len' : '')).join(', ') + ']' : '')); sim.forEach(considerPos); };   // #440 diag
+          const tryPos = (tag) => { const at = (posIndex.get(pk) || []); const sim = at.filter(c => c.gid && posTitleAgrees(c, r)); Log.debug('rec-match #' + (r.number || (r.ti + 1)) + ' posTier[' + tag + '] pos=' + pk + ' atSlot=' + at.length + ' similar=' + sim.length + (at.length ? ' [' + at.slice(0, 4).map(c => '"' + c.name + '"' + (recSimilar(c.name, r.title) ? '✓' : posTitleAgrees(c, r) ? '✓script' : '✗') + (c.length && r.trackLen && recLenGap(c.length, r.trackLen) === 0 ? '=len' : '')).join(', ') + ']' : '')); sim.forEach(considerPos); };   // #440 diag
           if (pk) {
             tryPos('rg');
             if ((!best || bestLevel > maxLevel) && !dupFetched && relTitleForDup) {   // widen to possible duplicates once (works even on a fresh import with no RG yet, #440)
@@ -7933,7 +7934,7 @@ try {
   // too much for the title matcher, but the same position in a duplicate holds
   // the right recording, and the titles are *similar enough* to trust it.
   function addReleaseToPosIndex(rel, idx, rgGidOfEdit) {
-    (rel.media || []).forEach(med => (med.tracks || []).forEach(t => {
+    (rel.media || []).forEach(med => { const medLens = mediumLensOf(med); (med.tracks || []).forEach(t => {
       const rec = t.recording; if (!rec || !rec.id) return;
       const key = (med.position || 1) + '.' + (t.position || 0);
       const ac = (t['artist-credit'] && t['artist-credit'].length) ? t['artist-credit'] : (rec['artist-credit'] || []);
@@ -7943,11 +7944,12 @@ try {
         artistGids: ac.map(a => a.artist && a.artist.id).filter(Boolean),
         ac, isrcs: rec.isrcs || [], comment: rec.disambiguation || '', video: !!rec.video,
         relTitle: rel.title || '', sameRg: !rgGidOfEdit || (rel['release-group'] && rel['release-group'].id === rgGidOfEdit),
+        medLens,
       };
       if (!idx.has(key)) idx.set(key, []);
       const arr = idx.get(key);
       if (!arr.some(c => c.gid === cand.gid)) arr.push(cand);
-    }));
+    }); });
   }
   // RG editions: every edition's tracklist by position — from the shared release-group
   // lookup (#626), so this pass and the artist pass make that request once between them.
@@ -8019,6 +8021,39 @@ try {
     const d = recLev(x, y), m = Math.max(x.length, y.length);
     return m > 0 && (1 - d / m) >= 0.6;
   }
+  // #626 (majkinetor): "Another case for this is localization … seed is on english and RG is
+  // japanese". A title in another script shares no letters to compare ("Kalimba Night" and
+  // "カリンバナイト"), so it is neither similar nor dissimilar. The position is trusted then on
+  // the rest: the edition's medium has as many tracks as this one, and every length both know
+  // agrees within the tolerance (three quarters of them known, at least two). A different album
+  // that merely shares a slot doesn't line up track for track.
+  function titleScript(s) {
+    const n = {};
+    for (const ch of String(s || '')) {
+      const k = /\p{Script=Latin}/u.test(ch) ? 'Latin' : /[\p{Script=Han}\p{Script=Hiragana}\p{Script=Katakana}]/u.test(ch) ? 'CJK'
+        : /\p{Script=Hangul}/u.test(ch) ? 'Hangul' : /\p{Script=Cyrillic}/u.test(ch) ? 'Cyrillic' : /\p{Script=Greek}/u.test(ch) ? 'Greek'
+        : /\p{Script=Arabic}/u.test(ch) ? 'Arabic' : /\p{Script=Hebrew}/u.test(ch) ? 'Hebrew' : /\p{Script=Thai}/u.test(ch) ? 'Thai' : /\p{L}/u.test(ch) ? 'Other' : null;
+      if (k) n[k] = (n[k] || 0) + 1;
+    }
+    let best = null; for (const k in n) if (!best || n[k] > n[best]) best = k;
+    return best;
+  }
+  function scriptsDiffer(a, b) { const x = titleScript(a), y = titleScript(b); return !!(x && y && x !== y); }
+  function mediumLensOf(med) { return (med.tracks || []).map(t => t.length || (t.recording && t.recording.length) || null); }
+  function mediumAligned(lens, mi) {
+    if (!lens || !lens.length) return false;
+    let mine; try { mine = u(mediums()[mi].tracks).map(t => u(t.length) || null); } catch (e) { return false; }
+    if (mine.length !== lens.length) return false;
+    let known = 0;
+    for (let k = 0; k < mine.length; k++) {
+      if (!mine[k] || !lens[k]) continue;
+      known++;
+      if (recLenGap(mine[k], lens[k]) !== 0) return false;
+    }
+    return known >= Math.max(2, Math.ceil(mine.length * 0.75));
+  }
+  // a position candidate's title agrees: similar, or in another script on a medium that lines up
+  const posTitleAgrees = (c, r) => recSimilar(c.name, r.title) || (scriptsDiffer(c.name, r.title) && mediumAligned(c.medLens, r.mi));
   // Returns an array of hits, or NULL when the lookup itself failed (throttled /
   // network / superseded). A failure must never masquerade as "0 results" — that
   // was #555: an intermittent 503 rendered a silent "no matches".
