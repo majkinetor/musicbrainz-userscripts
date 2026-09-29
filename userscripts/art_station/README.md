@@ -24,6 +24,8 @@ A cover and event art editor for MusicBrainz: one gallery to view, sort, reorder
 |---|---|
 | ![](./screenshots/screenshot2.png) | ![](./screenshots/screenshot3.png) |
 
+Each cover shows its size and resolution. *Show each cover's file type next to its size* (⚙, off by default) adds the format: `3.2Mb PNG`.
+
 ## Actions
 
 - **Set type**: tick one or more types; right-click a type to set only that one.

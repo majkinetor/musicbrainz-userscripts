@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-09-29 01:23 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-09-29 13:34 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -290,6 +290,8 @@ A cover and event art editor for MusicBrainz: one gallery to view, sort, reorder
 | Grouped by type | Detailed view |
 |---|---|
 | ![](../art_station/screenshots/screenshot2.png) | ![](../art_station/screenshots/screenshot3.png) |
+
+Each cover shows its size and resolution. *Show each cover's file type next to its size* (⚙, off by default) adds the format: `3.2Mb PNG`.
 
 ### Actions
 

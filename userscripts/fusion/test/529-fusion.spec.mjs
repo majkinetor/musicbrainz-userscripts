@@ -5,7 +5,7 @@
 // Fusion's own background GET(merge_queue)->POST(merge) flow — the exact
 // mechanism live-verified during #529's design phase. Nothing here touches
 // production MusicBrainz.
-import { test, check, requireLogin, mbJson, until } from '../../../dev/test/harness.mjs';
+import { test, check, requireLogin, mbJson, until, settled } from '../../../dev/test/harness.mjs';
 
 test.use({ gm: { name: 'Fusion' } });
 
@@ -23,7 +23,8 @@ test('Fusion end to end: matching engine, UI, and real merges on the sandbox', {
       const ARTIST = 'c321a13a-1c52-43c0-b60a-3a454cb7f9a2';   // Mocky — large sandbox catalogue
       const sr = await jget('https://test.musicbrainz.org/ws/2/recording?query=arid:' + ARTIST + '&limit=25&fmt=json');
       const gids = [];
-      for (const r of (sr && sr.recordings) || []) if (r.id && !gids.includes(r.id)) gids.push(r.id);
+      // audio only: other specs flag sandbox recordings as videos, and Fusion never groups a video with audio
+      for (const r of (sr && sr.recordings) || []) if (r.id && !r.video && !gids.includes(r.id)) gids.push(r.id);
       return gids.length >= 4 ? { release: null, gids } : null;
   }
   const fixtures = await pickFixtures();
@@ -274,11 +275,15 @@ test('Fusion end to end: matching engine, UI, and real merges on the sandbox', {
   // ever formed this way, Merge All stayed permanently disabled ("unclickable").
   // Fixed by only toggling a CSS class on selection clicks instead of re-rendering.
   // This drives the exact same real DOM gesture a user performs, not the STATE API.
+  // The pool redraws when background lookups (AcoustID, releases) come back; a redraw
+  // between the two clicks is a different gesture from #529's, so let them finish first.
+  await settled(page);
   const cardsBefore = await page.$$('.fs-pcard');
   check(cardsBefore.length === 2, 'pool has exactly 2 cards before double-clicking (' + cardsBefore.length + ')');
   await cardsBefore[0].dblclick();
   const afterFirstDblclick = await until(() => page.evaluate(() => window.__fusion.STATE.groups.map(g => g.memberGids.length)), x => x.length === 1 && x[0] === 1);
   check(afterFirstDblclick.length === 1 && afterFirstDblclick[0] === 1, 'first double-click creates a 1-member group (' + JSON.stringify(afterFirstDblclick) + ')');
+  await settled(page);
   const cardsAfter = await page.$$('.fs-pcard');
   check(cardsAfter.length === 1, 'the grouped card left the pool (' + cardsAfter.length + ' remain)');
   await cardsAfter[0].dblclick();
@@ -351,7 +356,7 @@ test('Fusion end to end: matching engine, UI, and real merges on the sandbox', {
   await page.evaluate(() => { window.__fusion.STATE.recordings.forEach(r => { r.editsPending = false; }); });
   console.log('Submitting REAL merges by clicking Merge All on test.musicbrainz.org (sandbox — safe)…');
   await page.click('#fs-mergeall');
-  await page.waitForFunction(() => window.__fusion.STATE.groups.every(g => g.state === 'done' || g.state === 'error'), { timeout: 60000 });
+  await page.waitForFunction(() => window.__fusion.STATE.groups.every(g => g.state === 'done' || g.state === 'error'), null, { timeout: 60000 });
   const mergeAllResult = await page.evaluate(() => window.__fusion.STATE.groups.map(g => ({ id: g.id, memberGids: g.memberGids, state: g.state, error: g.error })));
   console.log('mergeAll result:', JSON.stringify(mergeAllResult));
   check(mergeAllResult.length === 2, 'clicking Merge All left exactly the 2 groups that were built (' + mergeAllResult.length + ')');
