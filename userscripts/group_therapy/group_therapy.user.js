@@ -99,6 +99,14 @@
           if (!a.throttled || attempt >= tries) return r;
       }
   }
+  function mbnRawHeader(raw, name) {
+      const want = String(name).toLowerCase();
+      for (const line of String(raw || '').split(/\r?\n/)) {
+          const i = line.indexOf(':');
+          if (i > 0 && line.slice(0, i).trim().toLowerCase() === want) return line.slice(i + 1).trim();
+      }
+      return null;
+  }
   // </ST-NET>
   const VERSION = (typeof GM_info !== 'undefined' && GM_info && GM_info.script && GM_info.script.version) || '?';   // from the @version header at runtime
   const W = (typeof unsafeWindow !== 'undefined' ? unsafeWindow : window);

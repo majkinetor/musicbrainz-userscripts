@@ -134,8 +134,18 @@ export async function mbnFetch(url, init, o) {
     }
 }
 
+/** One header out of a GM_xmlhttpRequest response's raw `responseHeaders` text, or null. */
+export function mbnRawHeader(raw, name) {
+    const want = String(name).toLowerCase();
+    for (const line of String(raw || '').split(/\r?\n/)) {
+        const i = line.indexOf(':');
+        if (i > 0 && line.slice(0, i).trim().toLowerCase() === want) return line.slice(i + 1).trim();
+    }
+    return null;
+}
+
 /** What sync-gate.mjs inlines, in order. */
 export const MBN_INLINE = {
     consts: { MBN_GAP, MBN_BURST, MBN_KEY, MBN_LOCK, MBN_MAX_HOLD },
-    fns: [mbnGated, mbnState, mbnSlot, mbnAnswer, mbnFetch],
+    fns: [mbnGated, mbnState, mbnSlot, mbnAnswer, mbnFetch, mbnRawHeader],
 };

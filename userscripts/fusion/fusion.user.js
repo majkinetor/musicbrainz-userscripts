@@ -157,6 +157,14 @@ async function mbnFetch(url, init, o) {
         if (!a.throttled || attempt >= tries) return r;
     }
 }
+function mbnRawHeader(raw, name) {
+    const want = String(name).toLowerCase();
+    for (const line of String(raw || '').split(/\r?\n/)) {
+        const i = line.indexOf(':');
+        if (i > 0 && line.slice(0, i).trim().toLowerCase() === want) return line.slice(i + 1).trim();
+    }
+    return null;
+}
 // </ST-NET>
 let _netTrouble = null;   // { kind, detail, at } — surfaced in the title bar, not just logged
 function setNetTrouble(kind, detail) {
