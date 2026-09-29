@@ -33,10 +33,11 @@
   }
   async function mbnState(fn) {
       const rw = () => {
-          let s = null;
-          try { s = JSON.parse(localStorage.getItem(MBN_KEY) || 'null'); } catch (e) { s = null; }
+          let s = null, stored = true;
+          try { s = JSON.parse(localStorage.getItem(MBN_KEY) || 'null'); } catch (e) { stored = false; }
           const g = globalThis.__mbnGate || (globalThis.__mbnGate = { tat: 0, cool: 0, hot: 0 });
-          if (!s || typeof s !== 'object') s = g;   // no storage: this page's copy only
+          if (!stored) s = g;                                                        // no storage: this page's copy only
+          else if (!s || typeof s !== 'object') s = { tat: 0, cool: 0, hot: 0 };   // none yet (or cleared): a fresh schedule
           const out = fn(s);
           Object.assign(g, s);
           try { localStorage.setItem(MBN_KEY, JSON.stringify({ tat: s.tat || 0, cool: s.cool || 0, hot: s.hot || 0 })); } catch (e) {}
