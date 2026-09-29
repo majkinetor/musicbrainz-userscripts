@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         String Theory
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.9.29.220056
+// @version      2026.9.29.231256
 // @description  Unified bundle of 8 MusicBrainz userscripts (apollo_editor, art_station, credit_hoarder, fusion, group_therapy, isrc_scout, mammoth, platform_check). Built by userscripts/string_theory/build.mjs — do not hand-edit.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCIgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0Ij4NCiAgPCEtLSBodWItYW5kLXNwb2tlICJuZXR3b3JrIiBnbHlwaCwgc2luZ2xlIHZpdmlkIHZpb2xldCBvbiB0cmFuc3BhcmVudCBzbyBpdCByZWFkcyBvbiBib3RoIGRhcmsgYW5kIGxpZ2h0IHBhZ2VzIC0tPg0KICA8ZyBmaWxsPSJub25lIiBzdHJva2U9IiM3YzVjZmYiIHN0cm9rZS13aWR0aD0iNC42IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMzIgMTUiLz4NCiAgICA8cGF0aCBkPSJNMzIgMzIgTDQ2LjUgMjMuNSIvPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMNDYuNSA0MC41Ii8+DQogICAgPHBhdGggZD0iTTMyIDMyIEwzMiA0OSIvPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMTcuNSA0MC41Ii8+DQogICAgPHBhdGggZD0iTTMyIDMyIEwxNy41IDIzLjUiLz4NCiAgPC9nPg0KICA8ZyBmaWxsPSIjN2M1Y2ZmIj4NCiAgICA8Y2lyY2xlIGN4PSIzMiIgY3k9IjMyIiByPSI4LjYiLz4NCiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjE5LjUiIHI9IjYuNCIvPg0KICAgIDxjaXJjbGUgY3g9IjQ5IiBjeT0iMTkuNSIgcj0iNi40Ii8+DQogICAgPGNpcmNsZSBjeD0iMzIiIGN5PSI1NyIgcj0iNi40Ii8+DQogIDwvZz4NCiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjN2M1Y2ZmIiBzdHJva2Utd2lkdGg9IjMuOCI+DQogICAgPGNpcmNsZSBjeD0iMzIiIGN5PSI3IiByPSI0LjkiLz4NCiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjQ0LjUiIHI9IjQuOSIvPg0KICAgIDxjaXJjbGUgY3g9IjQ5IiBjeT0iNDQuNSIgcj0iNC45Ii8+DQogIDwvZz4NCjwvc3ZnPg0K
@@ -81,8 +81,8 @@
 // Bundles (verbatim, each wrapped in a run-at gate): apollo_editor, art_station, credit_hoarder, fusion, group_therapy, isrc_scout, mammoth, platform_check.
 
 try {
-  console.log('%c String Theory %c v2026.9.29.220056 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
-  console.log("String Theory bundles:\n  · Apollo Editor v2026.9.29.220049\n  · Art Station v2026.9.29\n  · Credit Hoarder v2026.9.29.220056\n  · Fusion v2026.9.29\n  · Group Therapy v2026.9.29\n  · ISRC Scout v2026.9.29\n  · Mammoth v2026.9.28.214729\n  · Platform Check v2026.9.29");
+  console.log('%c String Theory %c v2026.9.29.231256 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
+  console.log("String Theory bundles:\n  · Apollo Editor v2026.9.29.220049\n  · Art Station v2026.9.29\n  · Credit Hoarder v2026.9.29.231256\n  · Fusion v2026.9.29\n  · Group Therapy v2026.9.29\n  · ISRC Scout v2026.9.29\n  · Mammoth v2026.9.28.214729\n  · Platform Check v2026.9.29.231226");
 } catch (e) {}
 
 // ===== apollo_editor (@run-at document-start) =====================================
@@ -15300,7 +15300,7 @@ try {
 
 // ===== credit_hoarder (@run-at document-end) ====================================
 (function(__stGM){
-  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Credit Hoarder*","namespace":"majkinetor","version":"2026.9.29.220056","description":"Import per-track release credits from streaming/database providers (Discogs, Tidal, Qobuz, Deezer) into MusicBrainz relationships, with a review phase","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/credit_hoarder/README.md","supportURL":"https://github.com/majkinetor/musicbrainz-userscripts/issues","icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij4KICANCiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMmY2ZjU0IiBzdHJva2Utd2lkdGg9IjkiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGNpcmNsZSBjeD0iMzQiIGN5PSIzOCIgcj0iMi41IiBmaWxsPSIjMmY2ZjU0IiBzdHJva2U9Im5vbmUiLz4NCiAgICA8bGluZSB4MT0iNTAiIHkxPSIzOCIgeDI9Ijk4IiB5Mj0iMzgiLz4NCiAgICA8Y2lyY2xlIGN4PSIzNCIgY3k9IjY0IiByPSIyLjUiIGZpbGw9IiMyZjZmNTQiIHN0cm9rZT0ibm9uZSIvPg0KICAgIDxsaW5lIHgxPSI1MCIgeTE9IjY0IiB4Mj0iOTgiIHkyPSI2NCIvPg0KICAgIDxjaXJjbGUgY3g9IjM0IiBjeT0iOTAiIHI9IjIuNSIgZmlsbD0iIzJmNmY1NCIgc3Ryb2tlPSJub25lIi8+DQogICAgPGxpbmUgeDE9IjUwIiB5MT0iOTAiIHgyPSI3NCIgeTI9IjkwIi8+DQogIDwvZz4NCiAgPGNpcmNsZSBjeD0iOTIiIGN5PSI5MiIgcj0iMjMiIGZpbGw9IiMyZTllNWIiLz4NCiAgPGcgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGxpbmUgeDE9IjkyIiB5MT0iODEiIHgyPSI5MiIgeTI9IjEwMyIvPg0KICAgIDxsaW5lIHgxPSI4MSIgeTE9IjkyIiB4Mj0iMTAzIiB5Mj0iOTIiLz4NCiAgPC9nPg0KPC9zdmc+DQo="}) }) : { script: {"name":"Credit Hoarder*","namespace":"majkinetor","version":"2026.9.29.220056","description":"Import per-track release credits from streaming/database providers (Discogs, Tidal, Qobuz, Deezer) into MusicBrainz relationships, with a review phase","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/credit_hoarder/README.md","supportURL":"https://github.com/majkinetor/musicbrainz-userscripts/issues","icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij4KICANCiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMmY2ZjU0IiBzdHJva2Utd2lkdGg9IjkiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGNpcmNsZSBjeD0iMzQiIGN5PSIzOCIgcj0iMi41IiBmaWxsPSIjMmY2ZjU0IiBzdHJva2U9Im5vbmUiLz4NCiAgICA8bGluZSB4MT0iNTAiIHkxPSIzOCIgeDI9Ijk4IiB5Mj0iMzgiLz4NCiAgICA8Y2lyY2xlIGN4PSIzNCIgY3k9IjY0IiByPSIyLjUiIGZpbGw9IiMyZjZmNTQiIHN0cm9rZT0ibm9uZSIvPg0KICAgIDxsaW5lIHgxPSI1MCIgeTE9IjY0IiB4Mj0iOTgiIHkyPSI2NCIvPg0KICAgIDxjaXJjbGUgY3g9IjM0IiBjeT0iOTAiIHI9IjIuNSIgZmlsbD0iIzJmNmY1NCIgc3Ryb2tlPSJub25lIi8+DQogICAgPGxpbmUgeDE9IjUwIiB5MT0iOTAiIHgyPSI3NCIgeTI9IjkwIi8+DQogIDwvZz4NCiAgPGNpcmNsZSBjeD0iOTIiIGN5PSI5MiIgcj0iMjMiIGZpbGw9IiMyZTllNWIiLz4NCiAgPGcgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGxpbmUgeDE9IjkyIiB5MT0iODEiIHgyPSI5MiIgeTI9IjEwMyIvPg0KICAgIDxsaW5lIHgxPSI4MSIgeTE9IjkyIiB4Mj0iMTAzIiB5Mj0iOTIiLz4NCiAgPC9nPg0KPC9zdmc+DQo="} };
+  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Credit Hoarder*","namespace":"majkinetor","version":"2026.9.29.231256","description":"Import per-track release credits from streaming/database providers (Discogs, Tidal, Qobuz, Deezer) into MusicBrainz relationships, with a review phase","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/credit_hoarder/README.md","supportURL":"https://github.com/majkinetor/musicbrainz-userscripts/issues","icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij4KICANCiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMmY2ZjU0IiBzdHJva2Utd2lkdGg9IjkiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGNpcmNsZSBjeD0iMzQiIGN5PSIzOCIgcj0iMi41IiBmaWxsPSIjMmY2ZjU0IiBzdHJva2U9Im5vbmUiLz4NCiAgICA8bGluZSB4MT0iNTAiIHkxPSIzOCIgeDI9Ijk4IiB5Mj0iMzgiLz4NCiAgICA8Y2lyY2xlIGN4PSIzNCIgY3k9IjY0IiByPSIyLjUiIGZpbGw9IiMyZjZmNTQiIHN0cm9rZT0ibm9uZSIvPg0KICAgIDxsaW5lIHgxPSI1MCIgeTE9IjY0IiB4Mj0iOTgiIHkyPSI2NCIvPg0KICAgIDxjaXJjbGUgY3g9IjM0IiBjeT0iOTAiIHI9IjIuNSIgZmlsbD0iIzJmNmY1NCIgc3Ryb2tlPSJub25lIi8+DQogICAgPGxpbmUgeDE9IjUwIiB5MT0iOTAiIHgyPSI3NCIgeTI9IjkwIi8+DQogIDwvZz4NCiAgPGNpcmNsZSBjeD0iOTIiIGN5PSI5MiIgcj0iMjMiIGZpbGw9IiMyZTllNWIiLz4NCiAgPGcgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGxpbmUgeDE9IjkyIiB5MT0iODEiIHgyPSI5MiIgeTI9IjEwMyIvPg0KICAgIDxsaW5lIHgxPSI4MSIgeTE9IjkyIiB4Mj0iMTAzIiB5Mj0iOTIiLz4NCiAgPC9nPg0KPC9zdmc+DQo="}) }) : { script: {"name":"Credit Hoarder*","namespace":"majkinetor","version":"2026.9.29.231256","description":"Import per-track release credits from streaming/database providers (Discogs, Tidal, Qobuz, Deezer) into MusicBrainz relationships, with a review phase","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/credit_hoarder/README.md","supportURL":"https://github.com/majkinetor/musicbrainz-userscripts/issues","icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij4KICANCiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMmY2ZjU0IiBzdHJva2Utd2lkdGg9IjkiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGNpcmNsZSBjeD0iMzQiIGN5PSIzOCIgcj0iMi41IiBmaWxsPSIjMmY2ZjU0IiBzdHJva2U9Im5vbmUiLz4NCiAgICA8bGluZSB4MT0iNTAiIHkxPSIzOCIgeDI9Ijk4IiB5Mj0iMzgiLz4NCiAgICA8Y2lyY2xlIGN4PSIzNCIgY3k9IjY0IiByPSIyLjUiIGZpbGw9IiMyZjZmNTQiIHN0cm9rZT0ibm9uZSIvPg0KICAgIDxsaW5lIHgxPSI1MCIgeTE9IjY0IiB4Mj0iOTgiIHkyPSI2NCIvPg0KICAgIDxjaXJjbGUgY3g9IjM0IiBjeT0iOTAiIHI9IjIuNSIgZmlsbD0iIzJmNmY1NCIgc3Ryb2tlPSJub25lIi8+DQogICAgPGxpbmUgeDE9IjUwIiB5MT0iOTAiIHgyPSI3NCIgeTI9IjkwIi8+DQogIDwvZz4NCiAgPGNpcmNsZSBjeD0iOTIiIGN5PSI5MiIgcj0iMjMiIGZpbGw9IiMyZTllNWIiLz4NCiAgPGcgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGxpbmUgeDE9IjkyIiB5MT0iODEiIHgyPSI5MiIgeTI9IjEwMyIvPg0KICAgIDxsaW5lIHgxPSI4MSIgeTE9IjkyIiB4Mj0iMTAzIiB5Mj0iOTIiLz4NCiAgPC9nPg0KPC9zdmc+DQo="} };
   (f=>document.readyState!=='loading'?f():document.addEventListener('DOMContentLoaded',f,{once:true}))(function(){
 (() => {
   // src/constants.js
@@ -42832,7 +42832,7 @@ Created this ${kind} while adding credits parsed from text to ${relUrl}`;
 
 // ===== platform_check (@run-at document-end) ====================================
 (function(__stGM){
-  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Platform Check*","namespace":"http://tampermonkey.net/","version":"2026.9.29","description":"Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/platform_check/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+DQogIDx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CiAgDQogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJhMWE1MiIgc3Ryb2tlLXdpZHRoPSI5IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik00MCA4OCBBMzQgMzQgMCAwIDEgNDAgNDAiLz4NCiAgICA8cGF0aCBkPSJNMjkgOTkgQTUwIDUwIDAgMCAxIDI5IDI5Ii8+DQogICAgPHBhdGggZD0iTTg4IDg4IEEzNCAzNCAwIDAgMCA4OCA0MCIvPg0KICAgIDxwYXRoIGQ9Ik05OSA5OSBBNTAgNTAgMCAwIDAgOTkgMjkiLz4NCiAgPC9nPg0KICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyMCIgZmlsbD0iI2U4MjAxYSIvPg0KPC9zdmc+DQo="}) }) : { script: {"name":"Platform Check*","namespace":"http://tampermonkey.net/","version":"2026.9.29","description":"Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/platform_check/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+DQogIDx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CiAgDQogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJhMWE1MiIgc3Ryb2tlLXdpZHRoPSI5IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik00MCA4OCBBMzQgMzQgMCAwIDEgNDAgNDAiLz4NCiAgICA8cGF0aCBkPSJNMjkgOTkgQTUwIDUwIDAgMCAxIDI5IDI5Ii8+DQogICAgPHBhdGggZD0iTTg4IDg4IEEzNCAzNCAwIDAgMCA4OCA0MCIvPg0KICAgIDxwYXRoIGQ9Ik05OSA5OSBBNTAgNTAgMCAwIDAgOTkgMjkiLz4NCiAgPC9nPg0KICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyMCIgZmlsbD0iI2U4MjAxYSIvPg0KPC9zdmc+DQo="} };
+  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Platform Check*","namespace":"http://tampermonkey.net/","version":"2026.9.29.231226","description":"Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/platform_check/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+DQogIDx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CiAgDQogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJhMWE1MiIgc3Ryb2tlLXdpZHRoPSI5IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik00MCA4OCBBMzQgMzQgMCAwIDEgNDAgNDAiLz4NCiAgICA8cGF0aCBkPSJNMjkgOTkgQTUwIDUwIDAgMCAxIDI5IDI5Ii8+DQogICAgPHBhdGggZD0iTTg4IDg4IEEzNCAzNCAwIDAgMCA4OCA0MCIvPg0KICAgIDxwYXRoIGQ9Ik05OSA5OSBBNTAgNTAgMCAwIDAgOTkgMjkiLz4NCiAgPC9nPg0KICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyMCIgZmlsbD0iI2U4MjAxYSIvPg0KPC9zdmc+DQo="}) }) : { script: {"name":"Platform Check*","namespace":"http://tampermonkey.net/","version":"2026.9.29.231226","description":"Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/platform_check/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+DQogIDx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CiAgDQogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJhMWE1MiIgc3Ryb2tlLXdpZHRoPSI5IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik00MCA4OCBBMzQgMzQgMCAwIDEgNDAgNDAiLz4NCiAgICA8cGF0aCBkPSJNMjkgOTkgQTUwIDUwIDAgMCAxIDI5IDI5Ii8+DQogICAgPHBhdGggZD0iTTg4IDg4IEEzNCAzNCAwIDAgMCA4OCA0MCIvPg0KICAgIDxwYXRoIGQ9Ik05OSA5OSBBNTAgNTAgMCAwIDAgOTkgMjkiLz4NCiAgPC9nPg0KICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyMCIgZmlsbD0iI2U4MjAxYSIvPg0KPC9zdmc+DQo="} };
   (f=>document.readyState!=='loading'?f():document.addEventListener('DOMContentLoaded',f,{once:true}))(function(){
 (function () {
 'use strict';
@@ -47370,7 +47370,219 @@ async function fetchAppleMeta(albumUrl) {
     } catch { return null; }
 }
 
-async function scanApple({ artist, album, mbTracks, existingUrl, mbid, isVariousArtists, wikidataAppleId, barcode }) {
+// #627: Apple Music's own catalogue (amp-api.music.apple.com), read anonymously with the
+// bearer token the web player's public JS bundle carries — the token ISRC Scout and Credit
+// Hoarder use, shared through one cache. Unlike the iTunes Search API below it returns each
+// album's UPC, so a barcode lookup takes the album whose UPC it is (iTunes put a different
+// album first for 808391067776, Harmony #196), and Apple links can pass strict barcode mode.
+// Its track count is songs only: amp's own trackCount also counts music videos, and iTunes'
+// counted digital booklets (Harmony #192). The iTunes API stays, as the fallback when the
+// token or amp-api fails.
+const APPLE_AMP_V1 = 'https://amp-api.music.apple.com/v1';
+const APPLE_TOKEN_KEY = 'mbtools:apple-token';   // shared with ISRC Scout and Credit Hoarder
+let _appleTok = null, _appleTokP = null;
+// one fetch at a time: the storefronts are read in parallel, and each would otherwise fetch its own
+function appleToken(fresh) {
+    if (_appleTok && !fresh) return Promise.resolve(_appleTok);
+    if (!_appleTokP) _appleTokP = appleTokenFetch(fresh).finally(() => { _appleTokP = null; });
+    return _appleTokP;
+}
+async function appleTokenFetch(fresh) {
+    if (_appleTok && !fresh) return _appleTok;
+    if (!fresh) {
+        try { const c = JSON.parse(localStorage.getItem(APPLE_TOKEN_KEY) || 'null'); if (c && c.t && c.at && Date.now() - c.at < 12 * 3600e3) return (_appleTok = c.t); } catch (e) {}
+    }
+    appendLog('Apple', 'amp-api: fetching the web player\'s token');
+    const home = await gmGet('https://music.apple.com/us/browse', { headers: { Accept: 'text/html' } });
+    const asset = (home.responseText.match(/\/assets\/index-legacy~[a-z0-9]+\.js/i) || home.responseText.match(/\/assets\/index~[a-z0-9]+\.js/i) || [])[0];
+    if (!asset) throw new Error('the web player\'s JS was not found');
+    const js = await gmGet('https://music.apple.com' + asset);
+    const tok = (js.responseText.match(/eyJ[A-Za-z0-9._-]{80,}/) || [])[0];
+    if (!tok) throw new Error('no token in the web player\'s JS');
+    try { localStorage.setItem(APPLE_TOKEN_KEY, JSON.stringify({ t: tok, at: Date.now() })); } catch (e) {}
+    return (_appleTok = tok);
+}
+// One amp-api read: its JSON, or throws (the caller falls back to iTunes). A 401 is a rotated
+// token: a new one is fetched, once.
+const appleAmp = path => appleAmpV1('catalog/' + path);
+async function appleAmpV1(path) {
+    for (let attempt = 0; attempt < 2; attempt++) {
+        const tok = await appleToken(attempt > 0);
+        const r = await gmGet(`${APPLE_AMP_V1}/${path}${path.includes('?') ? '&' : '?'}l=en-US`, { headers: { Authorization: 'Bearer ' + tok, Origin: 'https://music.apple.com', Accept: 'application/json' } });
+        if (r.status === 401 && attempt === 0) { appendLog('Apple', 'amp-api: the token was refused (401) — fetching a new one', 'warn'); continue; }
+        if (r.status === 404) return { data: [] };
+        if (!r.ok) throw new Error(`amp-api HTTP ${r.status || r.error || '?'}`);
+        return JSON.parse(r.responseText);
+    }
+    throw new Error('amp-api refused a fresh token');
+}
+// the album whose UPC it is — amp-api lists others first too (808391067776: the single 808391068360 comes first)
+const applePickByUpc = (items, upc) => (items || []).find(a => normBarcode(a.attributes?.upc) === normBarcode(upc)) || null;
+const appleStorefront = url => ((String(url || '').match(/music\.apple\.com\/([a-z]{2})\//i) || [])[1] || 'us').toLowerCase();
+// Apple's catalogue is per storefront: an album is only in the ones it is licensed to (majkinetor,
+// #627: "better to find any release in any store than no release in particular store"). The short
+// list is read first, all at once: eight storefronts in parallel answered in 83 ms. Only when it has
+// nothing is every storefront read, again all at once: 172 in about a second. (Apple's own site
+// checks a release's availability one storefront at a time, about a second each.)
+const APPLE_SHORTLIST = ['us', 'gb', 'de', 'fr', 'jp', 'br', 'au'];
+async function appleAllStorefronts() {
+    try { const c = JSON.parse(localStorage.getItem('pc:apple-storefronts') || 'null'); if (c && c.ids && c.ids.length && Date.now() - c.at < 7 * 864e5) return c.ids; } catch (e) {}
+    const ids = [];
+    for (let next = 'storefronts?limit=200'; next;) {
+        const j = await appleAmpV1(next);
+        (j.data || []).forEach(s => ids.push(s.id));
+        next = j.next ? String(j.next).replace(/^\/v1\//, '') : null;
+    }
+    try { localStorage.setItem('pc:apple-storefronts', JSON.stringify({ ids, at: Date.now() })); } catch (e) {}
+    appendLog('Apple', `amp-api: ${ids.length} storefronts`);
+    return ids;
+}
+// One catalogue read in several storefronts at once: [{ sf, j }] for each that answered. Throws when
+// none did (the caller falls back to iTunes); a few that fail are only logged.
+async function appleEach(sfs, path) {
+    await appleToken();   // once, before the parallel reads
+    const res = await Promise.all(sfs.map(s => appleAmp(`${s}/${path}`).then(j => ({ sf: s, j }), e => ({ sf: s, err: e.message }))));
+    const ok = res.filter(r => r.j), bad = res.filter(r => !r.j);
+    if (!ok.length) throw new Error(bad.length ? bad[0].err : 'no storefront to ask');
+    if (bad.length) appendLog('Apple', `amp-api: ${bad.length} of ${res.length} storefront(s) didn't answer (${bad.slice(0, 5).map(b => b.sf).join(', ')}${bad.length > 5 ? '…' : ''})`, 'warn');
+    return ok;
+}
+// An amp-api album → what the row shows. Songs only: the videos are in trackCount too.
+function appleAlbumMeta(a) {
+    const at = (a && a.attributes) || {}, rel = a && a.relationships && a.relationships.tracks;
+    const list = rel && !rel.next && Array.isArray(rel.data) ? rel.data : null;   // a paged list isn't all of it
+    const songs = list ? list.filter(t => t.type === 'songs').length : null;
+    return {
+        url: String(at.url || '').split('?')[0], title: at.name || null, artist: at.artistName || null,
+        tracks: songs ?? at.trackCount ?? null,
+        tracksNote: songs == null ? 'its trackCount, which may include videos' : list.length > songs ? `${list.length - songs} video(s) left out` : 'songs',
+        year: at.releaseDate ? at.releaseDate.slice(0, 4) : null, label: at.recordLabel || null, barcode: at.upc || null,
+    };
+}
+async function scanApple(args) {
+    const { mbTracks, existingUrl, mbid, barcode } = args;
+    const label = 'Apple';
+    const cached = cacheGet(mbid, 'apple');
+    if (cached?.url && (!existingUrl || existingUrl === cached.url)) {
+        applyCachedRow('apple', label, cached, mbTracks);
+        return;
+    }
+    if (cached && !cached.url && !existingUrl && !barcode) {
+        appendLog(label, `No match (cached from previous scan — use ↻ to force a re-search)`, 'warn');
+        applyCachedRow('apple', label, cached, mbTracks);
+        return;
+    }
+    try { if (await scanAppleAmp(args)) return; }
+    catch (e) { appendLog(label, `amp-api unavailable (${e.message}) — falling back to the iTunes API`, 'warn'); }
+    return scanAppleItunes(args);
+}
+// true once it has set the row
+async function scanAppleAmp({ artist, album, mbTracks, existingUrl, mbid, isVariousArtists, wikidataAppleId, barcode }) {
+    const label = 'Apple', sf = appleStorefront(existingUrl);
+    const done = (meta, source) => {
+        appendLog(label, `Album: "${meta.title}" — ${meta.tracks ?? '?'} track(s) (${meta.tracksNote}), ${meta.year || '?'}, ${meta.label || '?'}, UPC ${meta.barcode || '?'}`, meta.tracks ? 'ok' : 'warn');
+        cacheSet(mbid, 'apple', { url: meta.url, tracks: meta.tracks, year: meta.year, label: meta.label, source, barcode: meta.barcode });
+        updateRow('apple', { url: meta.url, mbTracks, remoteTracks: meta.tracks, year: meta.year, label: meta.label, source, barcode: meta.barcode });
+        return true;
+    };
+    const none = source => {
+        cacheSet(mbid, 'apple', { url: null, tracks: null, year: null, label: null, source });
+        updateRow('apple', { url: null, mbTracks, remoteTracks: null });
+        return true;
+    };
+
+    const shortSfs = [...new Set([sf, ...APPLE_SHORTLIST])];
+    // the rest of the storefronts, for a second round when the short list had nothing
+    const otherSfs = async () => (await appleAllStorefronts()).filter(s => !shortSfs.includes(s));
+
+    // Barcode first: the album whose UPC it is, not the first one Apple lists. Every zero-padding
+    // of the barcode goes in the one request per storefront (filter[upc] takes a list).
+    if (!existingUrl && !wikidataAppleId && barcode) {
+        const forms = gtinVariants(barcode);
+        const upcIn = async sfs => {
+            const got = await appleEach(sfs, `albums?filter[upc]=${forms.map(encodeURIComponent).join(',')}`);
+            const seen = new Set();
+            for (const { sf: s, j } of got) for (const a of (j.data || [])) {
+                if (seen.has(a.id)) continue;
+                seen.add(a.id);
+                appendLog(label, `  UPC ${forms.join('/')} in "${s}": "${a.attributes?.name}" has UPC ${a.attributes?.upc || '?'} — ${a.attributes?.url}`);
+            }
+            for (const { sf: s, j } of got) for (const u of forms) { const hit = applePickByUpc(j.data, u); if (hit) return { hit, sf: s }; }
+            return null;
+        };
+        let found = await upcIn(shortSfs);
+        if (!found) {
+            const rest = await otherSfs();
+            appendLog(label, `Barcode ${barcode}: no album with that UPC in ${shortSfs.join(', ')} — asking the other ${rest.length} storefronts`);
+            found = await upcIn(rest);
+        }
+        if (found) {
+            const meta = appleAlbumMeta(found.hit);
+            appendLog(label, `Barcode ${barcode} → ${meta.url} (its UPC, in the "${found.sf}" storefront)`, 'ok');
+            return done(meta, 'barcode');
+        }
+        appendLog(label, `Barcode ${barcode}: no album with that UPC in any storefront — falling back to search`);
+    }
+
+    // A link MusicBrainz or Wikidata already has: read the album itself
+    let id = null, source = null;
+    if (existingUrl) { id = (existingUrl.match(/\/album\/(?:[^/?#]+\/)?(?:id)?(\d+)/) || [])[1] || null; source = 'MB rels'; appendLog(label, `Using existing MB URL: ${existingUrl}`, 'ok'); }
+    else if (wikidataAppleId) { id = String(wikidataAppleId); source = 'Wikidata'; appendLog(label, `Wikidata answer: album ${id}`, 'ok'); }
+    if (id) {
+        const a = ((await appleAmp(`${sf}/albums/${id}`)).data || [])[0];
+        const url = existingUrl ? existingUrl.split('?')[0] : `https://music.apple.com/${sf}/album/${id}`;
+        if (!a) {
+            appendLog(label, `amp-api: album ${id} is not in the "${sf}" storefront — keeping the link, details unknown`, 'warn');
+            cacheSet(mbid, 'apple', { url, tracks: null, year: null, label: null, source });
+            updateRow('apple', { url, mbTracks, remoteTracks: null, source });
+            return true;
+        }
+        const meta = appleAlbumMeta(a);
+        meta.url = url;
+        return done(meta, source);
+    }
+
+    // Search. VA compilations: the album title alone (Apple doesn't credit a literal "Various Artists").
+    const term = isVariousArtists ? album : `${artist} ${album}`;
+    // every storefront's candidates, pooled: one album is one candidate, from the first storefront that has it
+    const searchIn = async sfs => {
+        const got = await appleEach(sfs, `search?term=${encodeURIComponent(term)}&types=albums&limit=10`);
+        const byId = new Map();
+        for (const { sf: s, j } of got) for (const a of ((j.results && j.results.albums && j.results.albums.data) || [])) if (!byId.has(a.id)) byId.set(a.id, { a, sf: s });
+        return [...byId.values()];
+    };
+    let pool = await searchIn(shortSfs);
+    appendLog(label, `amp-api search "${term}" in ${shortSfs.join(', ')}: ${pool.length} candidate(s)`);
+    if (!pool.length) {
+        const rest = await otherSfs();
+        pool = await searchIn(rest);
+        appendLog(label, `amp-api search "${term}" in the other ${rest.length} storefronts: ${pool.length} candidate(s)${pool.length ? ' (' + [...new Set(pool.map(p => p.sf))].slice(0, 8).join(', ') + ')' : ''}`);
+    }
+    if (!pool.length) return none('API search');
+    const results = pool.map(p => Object.assign(p.a, { _sf: p.sf }));
+    let best = null;
+    for (const a of results) {
+        const at = a.attributes || {};
+        // a candidate carrying the release's own barcode is the answer, whatever its score
+        const upcHit = !!(barcode && at.upc && normBarcode(at.upc) === normBarcode(barcode));
+        const sc = upcHit ? 1000 : scoreCandidate({ tracks: at.trackCount, title: at.name, artist: at.artistName }, mbTracks, album, artist, isVariousArtists);
+        appendLog(label, `  cand ${upcHit ? 'UPC match' : 'score=' + sc}  tracks=${at.trackCount ?? '?'}  artist="${at.artistName || '?'}"  title="${at.name}"  upc=${at.upc || '?'}  url=${at.url}`);
+        if (!best || sc > best.score) best = { score: sc, a };
+        if (upcHit) break;
+    }
+    if (best.score < 120) {
+        appendLog(label, `No verifiable match (best score=${best.score}) — leaving URL unset`, 'warn');
+        return none('API search');
+    }
+    // the album itself, for the songs-only count (a search result has no track list)
+    const full = ((await appleAmp(`${best.a._sf || sf}/albums/${best.a.id}`)).data || [])[0] || best.a;
+    const meta = appleAlbumMeta(full);
+    appendLog(label, `Picked best (${best.score >= 1000 ? 'UPC match' : 'score=' + best.score}): ${meta.url}`, best.score >= 150 ? 'ok' : 'warn');
+    return done(meta, 'API search');
+}
+
+// The iTunes Search API: the fallback when amp-api is unavailable (#627).
+async function scanAppleItunes({ artist, album, mbTracks, existingUrl, mbid, isVariousArtists, wikidataAppleId, barcode }) {
     const label = 'Apple';
 
     const cached = cacheGet(mbid, 'apple');
@@ -48567,6 +48779,8 @@ function openRgEditTab(rgMbid, { background = false, sameTabAllowed = false } = 
 if (mbuTestHooks()) window.__pcTest464 = { openReleaseEditTab, openRgEditTab, PC_CHANNEL };
 // #556 test hook — URL identity + the inject helper, so the cache-staleness and
 // payload-preservation paths can be driven without a live ✓ match render.
+// #627 test hook — the amp-api pieces, driven against the live API without a row render
+if (mbuTestHooks()) window.__pcTest627 = { appleAmp, appleToken, appleAlbumMeta, applePickByUpc, appleStorefront, appleEach, appleAllStorefronts, APPLE_SHORTLIST, setAppleToken: t => { _appleTok = t; } };
 if (mbuTestHooks()) window.__pcTest556 = { pcUrlKey, pcSameUrl, pcIsVerifyInterstitial, injectInto, runInjectHelper, cacheGet, cacheSet, mbDataGet };
 
 function addSingleUrl(platform, background) {

@@ -14,6 +14,9 @@ import { replayWs, answerGm, onSandbox, sandboxAs, SANDBOX } from '../../../dev/
 // Returns the replay (or null), for done().
 export async function openPc(page, inject, { release, replay = null, links = null, storage = {}, settle = true, before = null } = {}) {
   const ws = replay ? await replayWs(page, replay, { as: sandboxAs(release), web: true, trim }) : null;
+  // Apple's token (#627) is cached in localStorage across runs: without one, every run asks for
+  // it the same way, so a recording made here replays anywhere (a fresh CI profile too)
+  if (replay) await page.context().addInitScript(() => { try { localStorage.removeItem('mbtools:apple-token'); } catch (e) {} });
   if (links) editLinks(page.context(), ws, links);
   if (before) await before();   // after the replay: an answerGm registered here is asked first
   for (let a = 1; ; a++) {
@@ -43,6 +46,11 @@ export async function openPc(page, inject, { release, replay = null, links = nul
 // What a recording keeps of a reply: of SoundCloud's 3 MB web-player script, only the
 // public client_id Platform Check reads from it.
 function trim(key, body) {
+  // Apple's token (#627): the page names the web player's script, and the script carries the token.
+  // Kept: that name, and a stand-in token of the same shape (the amp-api replies are keyed by URL).
+  // (the one the script picks: -legacy first, as appleToken() looks for it)
+  if (/^https:\/\/music\.apple\.com\/us\/browse/.test(key)) return (body.match(/\/assets\/index-legacy~[a-z0-9]+\.js/i) || body.match(/\/assets\/index~[a-z0-9]+\.js/i) || [''])[0];
+  if (/^https:\/\/music\.apple\.com\/assets\/index/.test(key)) return 'eyJrecorded' + 'x'.repeat(100);
   if (/^https:\/\/a-v2\.sndcdn\.com\/assets\//.test(key)) return (body.match(/client_id\s*[:=]\s*"[a-zA-Z0-9]{20,40}"/) || [''])[0];
   return body;
 }

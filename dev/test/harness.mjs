@@ -272,10 +272,11 @@ export async function replayWs(page, file, { from = PROD, paths = /^\/ws\/2\//, 
           body = body.replace(/<style[\s>][\s\S]*?<\/style>|<svg[\s>][\s\S]*?<\/svg>|<!--[\s\S]*?-->/gi, '');
           if (r.status() >= 400) body = body.slice(0, 2000);   // a refusal page: what it says is enough
         }
-        if (text && trim) body = trim(key, body);
         live = { status: r.status(), type, ...(r.url() !== url ? { url: r.url() } : {}), ...(text ? { body } : { b64: bytes.toString('base64') }) };
-        // the fixture keeps no working token; the script, still talking to the live site, gets the real one
-        store[key] = text ? { ...live, body: body.replace(/"(access_token|refresh_token|id_token)"(\s*:\s*)"[^"]*"/g, '"$1"$2"recorded"') } : live;
+        // the fixture keeps no working token, and only what trim() keeps; the script, still
+        // talking to the live site, gets the whole reply (an access token it goes on to use, #627)
+        const kept = text && trim ? trim(key, body) : body;
+        store[key] = text ? { ...live, body: kept.replace(/"(access_token|refresh_token|id_token)"(\s*:\s*)"[^"]*"/g, '"$1"$2"recorded"') } : live;
       } catch (e) { store[key] = { error: String(e.message || e).split('\n')[0] }; throw new Error(store[key].error); }
       return reply(live);
     }

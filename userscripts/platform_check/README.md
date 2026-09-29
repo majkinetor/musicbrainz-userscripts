@@ -62,7 +62,7 @@ The footer's **+** adds every confirmed link and **↗** opens them all. A backg
 | Discogs | read | |
 | Bandcamp | read | |
 | Spotify | looked up (through [Wallstream](https://tools.wallstream.com/isrc-lookup)) | |
-| Apple Music | looked up | |
+| Apple Music | looked up and read | |
 | Deezer | looked up | |
 | Tidal | looked up and read | |
 | Qobuz | looked up and read | optional |
@@ -76,6 +76,7 @@ The footer's **+** adds every confirmed link and **↗** opens them all. A backg
 - **Qobuz**: signed in, matches are verified through its API (track count and barcode); otherwise its store page is scraped, which is slower and throttled. The login is shared with ISRC Scout and Credit Hoarder. Only the token is stored, never the password.
 - **Beatport** is behind Cloudflare: without a login, a match found by web search can't be verified, shows `?`, and isn't added. Signed in, it is verified, and ISRC Scout can import its ISRCs.
 - **Bandcamp**: bonus tracks that are download-only are counted and marked ⁿ. A Bandcamp barcode that is really a physical package's is ignored.
+- **Apple Music** is read from the catalogue its web player uses, anonymously. Of the albums a barcode brings up, only the one with that barcode counts, and the track count is songs only, without music videos. Apple's catalogue differs by country, so a release is looked for in several storefronts at once (the release's own link's, the US, UK, Germany, France, Japan, Brazil and Australia), and when none has it, in all of Apple's storefronts at once, about a second. The log says which storefront a match came from, and the link keeps it. If that catalogue can't be reached, the older iTunes search is used, which gives no barcode.
 - **Discogs**: on a CD release, a CD edition is searched first. The release group's Discogs master is checked too.
 - **SoundCloud** can't be searched by barcode; it's read from the linked set, and trusted only when the whole set agrees on it.
 - **Volumo** and **HDtracks** are added as *purchase for download*, since MusicBrainz has no type of their own.
