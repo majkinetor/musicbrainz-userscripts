@@ -1,0 +1,61 @@
+# Script metrics, weekly on a runner: the MusicBrainz edit dump counted for this repo's
+# scripts (dev/script-metrics), and the four reports it writes committed as github-actions[bot].
+# It replaces the Windows scheduled task, which needed the maintainer's machine awake with
+# Docker running.
+#
+# MusicBrainz exports on Wednesday and Saturday; the edit dump is complete by ~04:50 UTC
+# (dev/script-metrics/scheduled-run.ps1 has the measurements). Wednesday 09:00 UTC takes that
+# week's first one. Actions → metrics → Run workflow runs it by hand ("force" rebuilds even
+# when the reports already come from the latest dump).
+name: metrics
+permissions:
+  contents: write
+on:
+  schedule:
+    - cron: '0 9 * * 3'
+  workflow_dispatch:
+    inputs:
+      force:
+        description: Rebuild even if the reports are from the latest dump
+        type: boolean
+        default: false
+concurrency: { group: metrics, cancel-in-progress: false }
+jobs:
+  metrics:
+    runs-on: ubuntu-latest
+    timeout-minutes: 300
+    steps:
+      - uses: actions/checkout@v4
+      - name: The latest dump
+        id: dump
+        run: |
+          id=$(curl -fsS --retry 3 https://data.metabrainz.org/pub/musicbrainz/data/fullexport/LATEST | tr -d '[:space:]')
+          [[ "$id" =~ ^[0-9]{8}-[0-9]{6}$ ]] || { echo "::error::LATEST looks wrong: '$id'"; exit 1; }
+          prev=$(node -p "require('./dev/script-metrics/out/metrics.json').dump_id" 2>/dev/null || true)
+          echo "dump $id (reports are from ${prev:-nothing})"
+          echo "id=$id" >> "$GITHUB_OUTPUT"
+          if [ "$id" = "$prev" ] && [ "${{ inputs.force }}" != "true" ]; then echo "skip=true" >> "$GITHUB_OUTPUT"; echo "already built from $id"; fi
+      # the dump (~16 GB) and the database (~8 GB) need more than a runner's ~14 GB free:
+      # drop the preinstalled toolchains nothing here uses
+      - name: Room on the disk
+        if: steps.dump.outputs.skip != 'true'
+        run: |
+          df -h / | tail -1
+          sudo rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc /usr/local/.ghcup /opt/hostedtoolcache/CodeQL /usr/local/share/boost /usr/local/share/powershell /usr/share/swift
+          sudo docker image prune -af >/dev/null
+          df -h / | tail -1
+      - name: Count
+        if: steps.dump.outputs.skip != 'true'
+        run: |
+          dev/script-metrics/run.sh --dump-id "${{ steps.dump.outputs.id }}"
+          df -h / | tail -1
+      - name: Commit the reports
+        if: steps.dump.outputs.skip != 'true'
+        run: |
+          files=(dev/script-metrics/out/METRICS.md dev/script-metrics/out/dashboard.html dev/script-metrics/out/metrics.json docs/stats.html)
+          if git diff --quiet -- "${files[@]}"; then echo "reports unchanged"; exit 0; fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -- "${files[@]}"
+          git commit -m "metrics: rebuild from the ${{ steps.dump.outputs.id }} snapshot [skip ci]"
+          git push || { git pull --rebase && git push; }

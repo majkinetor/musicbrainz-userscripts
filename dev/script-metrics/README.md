@@ -34,6 +34,21 @@ Only the small reports cross back to the host. To inspect it:
 docker compose run --rm --entrypoint sqlite3 metrics /data/metrics.db
 ```
 
+## Where it runs
+
+Weekly on GitHub Actions ([`metrics.yml`](../../.github/workflows/metrics.yml)): Wednesday 09:00 UTC, a few hours
+after MusicBrainz finishes that day's export. It reads `LATEST`, skips the run when the committed reports already
+come from that dump, runs `run.sh` against it, and commits the four reports (`out/METRICS.md`, `out/dashboard.html`,
+`out/metrics.json`, `docs/stats.html`) as `github-actions[bot]`. **Actions → metrics → Run workflow** runs it by
+hand; *force* rebuilds even from the same dump.
+
+A runner fits it once the preinstalled toolchains are deleted (the workflow's first step): the dump (~16 GB) and
+the database (~8 GB) against ~45 GB free. A run starts from nothing, so each one is a full ingest of that week's
+dump; nothing carries over, and nothing needs to, since every dump holds the whole edit history.
+
+The Windows scheduled task (`register-task.ps1`, `scheduled-run.ps1`) is what ran it before; it is disabled, and
+kept for a run on a local machine.
+
 ## Dashboard filters
 
 `dashboard.html` recomputes every number client-side from the cubes in
