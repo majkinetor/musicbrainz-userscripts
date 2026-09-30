@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-09-30 15:12 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-09-30 15:21 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -839,8 +839,11 @@ Shows a release's ISRCs, fills in the missing ones from several providers, and f
 | SoundCloud | ✓ | ✓ | the set (a track URL counts as a one-track release); by position (+ title for links) |
 | Spotify | ✓ | ✓ | ISRCs through [a lookup service](#spotify); links from the album, by position + title |
 | Bandcamp | | ✓ | the album page, by position + title |
+| YouTube Music | | ✓ | ISRC, on any release; title + length checked |
 | HDtracks | ✓ | | the album |
 | SoundExchange | ✓ | | a title and artist search |
+
+**YouTube Music** shows no ISRCs, but its search finds most songs by one. An ISRC it doesn't know brings up unrelated songs instead of nothing, so a result counts only when it is official audio (not a user upload), has the track's title and is within 3 s of its length. The log names every result it skipped, and why. Links are added as *free streaming*.
 
 An album-based provider needs the release's album link: already in MusicBrainz, found by Platform Check, or pasted with **(+)**. No login is needed anywhere except Qobuz outside the countries it serves (see [Qobuz](#qobuz)).
 

@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         ISRC Scout
 // @namespace    https://musicbrainz.org/
-// @version      2026.9.30.151225
+// @version      2026.9.30.151611
 // @description  Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify / Beatport / Tidal / Volumo / HDtracks / Qobuz, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPklTUkMgU2NvdXQ8L3RpdGxlPgogICAgPHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPgogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjQwIi8+CiAgICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyNiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2U9IiNiOWEzZTgiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPgogIDwvZz4KICA8bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+Cjwvc3ZnPgo=
@@ -36,6 +36,7 @@
 // @connect      api-v2.soundcloud.com
 // @connect      a-v2.sndcdn.com
 // @connect      open.spotify.com
+// @connect      music.youtube.com
 // @run-at       document-start
 // ==/UserScript==
 
@@ -330,7 +331,7 @@
     dz: stIcon('deezer', 16), sp: stIcon('spotify', 16), bp: stIcon('beatport', 16),
     td: stIcon('tidal', 16),  vo: stIcon('volumo', 16),  hd: stIcon('hdtracks', 16),
     qz: stIcon('qobuz', 16),  bc: stIcon('bandcamp', 16), am: stIcon('apple', 16),
-    sc: stIcon('soundcloud', 16),
+    sc: stIcon('soundcloud', 16), yt: stIcon('ytmusic', 16),
   };
 
   // MBIDs are canonically lowercase, but MB serves an upper-/mixed-case URL as-is
@@ -2141,7 +2142,7 @@
     apple:    { source: 'Apple',    idField: 'appleUrl',   fetcher: fetchApple,    code: 'am' },   // #435 anonymous amp-api
     soundcloud:{ source: 'SoundCloud', idField: 'scUrl',   fetcher: fetchSoundcloud, code: 'sc' }, // #439 set → publisher_metadata.isrc
   };
-  const _PROV_COLOR = { sx: stColor('soundexchange'), deezer: stColor('deezer'), spotify: stColor('spotify'), beatport: stColor('beatport'), tidal: stColor('tidal'), volumo: stColor('volumo'), hdtracks: stColor('hdtracks'), qobuz: stColor('qobuz'), bandcamp: stColor('bandcamp'), apple: stColor('apple'), soundcloud: stColor('soundcloud') };   // #404: colours from the shared registry
+  const _PROV_COLOR = { sx: stColor('soundexchange'), deezer: stColor('deezer'), spotify: stColor('spotify'), beatport: stColor('beatport'), tidal: stColor('tidal'), volumo: stColor('volumo'), hdtracks: stColor('hdtracks'), qobuz: stColor('qobuz'), bandcamp: stColor('bandcamp'), apple: stColor('apple'), soundcloud: stColor('soundcloud'), ytmusic: stColor('ytmusic') };   // #404: colours from the shared registry
   const TRACK_PROV = { sx: { name: 'SoundExchange', short: 'SX', code: 'sx', color: _PROV_COLOR.sx, kind: 'search' } };
   Object.keys(ALBUM_PROVIDERS).forEach(k => {
     const p = ALBUM_PROVIDERS[k];
@@ -2812,7 +2813,11 @@
   ═══════════════════════════════════════════════════════════════════════ */
   const APPLE = { amp: 'https://amp-api.music.apple.com/v1/catalog', lsKey: 'mbtools:apple-token' };
   let _appleTok = null;
-  async function appleToken() {
+  // fresh: skip the cached token — it was refused. The cache is shared with Platform Check,
+  // and a token there can be stale or rotated; without this, ISRC Scout kept presenting a
+  // refused one for up to 12 h (Platform Check has recovered this way since #627).
+  async function appleToken(fresh) {
+    if (fresh) { _appleTok = null; try { localStorage.removeItem(APPLE.lsKey); } catch (e) {} }
     if (_appleTok) return _appleTok;
     try { const c = JSON.parse(localStorage.getItem(APPLE.lsKey) || 'null'); if (c && c.t && c.at && (Date.now() - c.at) < 12 * 3600e3) { _appleTok = c.t; return _appleTok; } } catch (e) {}
     const home = await gmGet('https://music.apple.com/us/browse', { 'Accept': 'text/html' });
@@ -2831,9 +2836,13 @@
     let sf = 'us', id = String(albumId).trim();
     let m = id.match(/music\.apple\.com\/([a-z]{2})\/album\/(?:[^/?#]+\/)?(\d+)/i) || id.match(/^([a-z]{2})\/(\d+)$/i);
     if (m) { sf = m[1].toLowerCase(); id = m[2]; }
-    const tok = await appleToken();
-    const h = { Authorization: 'Bearer ' + tok, Origin: 'https://music.apple.com', Accept: 'application/json' };
-    const r = await gmGet(APPLE.amp + '/' + sf + '/albums/' + encodeURIComponent(id) + '?l=en-US', h);
+    let h, r;
+    for (let attempt = 0; attempt < 2; attempt++) {
+      h = { Authorization: 'Bearer ' + await appleToken(attempt > 0), Origin: 'https://music.apple.com', Accept: 'application/json' };
+      r = await gmGet(APPLE.amp + '/' + sf + '/albums/' + encodeURIComponent(id) + '?l=en-US', h);
+      if (r.status !== 401 || attempt > 0) break;
+      Log.warn('Apple: the cached token was refused (401) — fetching a new one');
+    }
     if (r.status !== 200) throw new Error('Apple ' + r.status + ' for album ' + id);
     let j; try { j = JSON.parse(r.responseText || 'null'); } catch (e) { throw new Error('Apple: malformed JSON'); }
     const alb = j && j.data && j.data[0];
@@ -3821,6 +3830,14 @@
           const t = (j.data || [])[0];
           return t && t.id ? ('https://tidal.com/browse/track/' + t.id) : null;
         } },
+      // YouTube Music (#640): it shows no ISRCs, but its search (the "songs" filter) finds most
+      // songs by one. A miss comes back as unrelated songs rather than nothing, so ytResolve
+      // takes a hit only when it is official audio, its title matches and its length is within
+      // 3 s of the track's. The free tier plays everything → "free streaming" (268).
+      { code: 'yt', name: 'YouTube Music', color: _PROV_COLOR.ytmusic, icon: SRC_ICON.yt, linkTypeID: 268,
+        conc: 2, gap: 150,   // one search per ISRC; an internal API with no published limit, so gently
+        test: u => /music\.youtube\.com\/watch\?(?:[^#]*&)?v=[\w-]{11}/i.test(u),
+        resolve: (isrc, t) => ytResolve(isrc, t) },
       // Bandcamp (#300): no ISRC — resolve by ALBUM. The release's Bandcamp album
       // page lists every track's URL in order, so we match by position (with a
       // title sanity-check). Only offered when the release has a Bandcamp album link.
@@ -3908,6 +3925,51 @@
       const a = _nrm(e.title), b = _nrm(t.title);
       // position match must agree on title (else the editions are out of sync) — don't add a likely-wrong link
       return (a && b && (a === b || a.indexOf(b) >= 0 || b.indexOf(a) >= 0)) ? e.url : null;
+    }
+
+    // YouTube Music (#640): the ISRC searched with the "songs" filter, through the API its web
+    // player uses (anonymous). Of the first three results, the first that is official audio
+    // (MUSIC_VIDEO_TYPE_ATV — not a user upload), has the track's title and is within 3 s of
+    // its length. A result row reads "Kerala" | "Bonobo • Migration • 3:58".
+    const YTM_SONGS_FILTER = 'EgWKAQIIAWoKEAkQBRAKEAMQBA==';
+    const ytText = x => (x && x.runs ? x.runs.map(r => r.text).join('') : '');
+    function ytSongs(j) {
+      const out = [];
+      const walk = o => {
+        if (!o || typeof o !== 'object') return;
+        const r = o.musicResponsiveListItemRenderer;
+        if (r) {
+          const cols = (r.flexColumns || []).map(c => ytText(c.musicResponsiveListItemFlexColumnRenderer && c.musicResponsiveListItemFlexColumnRenderer.text));
+          const sub = (cols[1] || '').split(' • ');
+          const vid = (r.playlistItemData && r.playlistItemData.videoId) || (JSON.stringify(r).match(/"videoId":"([\w-]{11})"/) || [])[1];
+          const type = (JSON.stringify(r).match(/MUSIC_VIDEO_TYPE_[A-Z]+/) || [''])[0].replace('MUSIC_VIDEO_TYPE_', '');
+          if (vid) out.push({ vid, title: cols[0] || '', artist: sub[0] || '', len: durToSec(sub[sub.length - 1]), type });
+          return;
+        }
+        for (const k in o) walk(o[k]);
+      };
+      walk(j);
+      return out;
+    }
+    async function ytResolve(isrc, t) {
+      if (!isrc) return null;
+      const body = JSON.stringify({ context: { client: { clientName: 'WEB_REMIX', clientVersion: '1.20250101.01.00', hl: 'en', gl: 'US' } }, query: isrc, params: YTM_SONGS_FILTER });
+      const r = await gmPost('https://music.youtube.com/youtubei/v1/search?prettyPrint=false', body, { 'Content-Type': 'application/json' });
+      let j = null; try { j = JSON.parse(r.responseText || 'null'); } catch (e) {}
+      if (r.status !== 200 || !j) { Log.warn('YouTube Music: the search for ' + isrc + ' failed (HTTP ' + r.status + ') — its API may have changed'); return null; }
+      const want = durToSec(t.dur), wt = _nrm(t.title);
+      const songs = ytSongs(j).slice(0, 3);
+      for (const s of songs) {
+        const st = _nrm(s.title);
+        const why = s.type !== 'ATV' ? 'not official audio (' + (s.type || '?') + ')'
+          : !(st && wt && (st === wt || st.indexOf(wt) >= 0 || wt.indexOf(st) >= 0)) ? 'another title'
+          : (want != null && (s.len == null || Math.abs(s.len - want) > 3)) ? 'another length (' + (s.len == null ? '?' : msToMmSs(s.len * 1000)) + ' vs ' + t.dur + ')'
+          : '';
+        Log.info('YouTube Music ' + isrc + ' → "' + s.title + '" by ' + (s.artist || '?') + ' ' + (s.len == null ? '' : msToMmSs(s.len * 1000)) + (why ? ' — skipped: ' + why : ' — matches "' + t.title + '"'));
+        if (!why) return 'https://music.youtube.com/watch?v=' + s.vid;
+      }
+      if (!songs.length) Log.info('YouTube Music ' + isrc + ': no songs');
+      return null;
     }
 
     // Apple Music album page (fetched once): ordered [{title, url}] from its ld+json.
