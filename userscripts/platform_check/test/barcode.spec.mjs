@@ -79,7 +79,12 @@ test.describe('strict barcode confidence', () => {
     // a plain click on the withheld icon still does nothing
     await page.evaluate(p => document.getElementById('ico-' + p).click(), target);
     const plain = await page.evaluate(() => window.__opened.length);
-    await middle('#ico-' + target);
+    // with compact mode on (the default) a withheld row is folded into the strip: its icon there is
+    // what you see, so the middle click goes to it, as a real mouse click
+    const stripName = await page.evaluate(p => document.getElementById('plat-' + p)?.title.split(' ')[0] || p, target);
+    const inStrip = page.locator(`#pc-compact-strip .pc-compact-ico[title^="${stripName}"]`);
+    check(await inStrip.count() === 1, `the withheld ${target} row sits in the compact strip (${await inStrip.count()})`);
+    await inStrip.click({ button: 'middle' });
     const one = await page.evaluate(p => ({ opened: window.__opened.slice(), queued: Object.keys(JSON.parse(Object.entries(localStorage).find(([k]) => /^pc:pending:[0-9a-f-]{36}$/.test(k))?.[1] || '{}')), mine: p }), target);
     check(plain === 0, `a plain click on the withheld icon still adds nothing (${plain})`);
     check(one.opened.length === 1 && /\/release\/[0-9a-f-]{36}\/edit$/.test(one.opened[0]), `middle-click opens the release editor in the foreground (${one.opened.join(', ')})`);
