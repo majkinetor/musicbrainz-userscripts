@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         String Theory
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.9.30.201756
+// @version      2026.9.30.211136
 // @description  Unified bundle of 8 MusicBrainz userscripts (apollo_editor, art_station, credit_hoarder, fusion, group_therapy, isrc_scout, mammoth, platform_check). Built by userscripts/string_theory/build.mjs — do not hand-edit.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCIgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0Ij4NCiAgPCEtLSBodWItYW5kLXNwb2tlICJuZXR3b3JrIiBnbHlwaCwgc2luZ2xlIHZpdmlkIHZpb2xldCBvbiB0cmFuc3BhcmVudCBzbyBpdCByZWFkcyBvbiBib3RoIGRhcmsgYW5kIGxpZ2h0IHBhZ2VzIC0tPg0KICA8ZyBmaWxsPSJub25lIiBzdHJva2U9IiM3YzVjZmYiIHN0cm9rZS13aWR0aD0iNC42IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMzIgMTUiLz4NCiAgICA8cGF0aCBkPSJNMzIgMzIgTDQ2LjUgMjMuNSIvPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMNDYuNSA0MC41Ii8+DQogICAgPHBhdGggZD0iTTMyIDMyIEwzMiA0OSIvPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMTcuNSA0MC41Ii8+DQogICAgPHBhdGggZD0iTTMyIDMyIEwxNy41IDIzLjUiLz4NCiAgPC9nPg0KICA8ZyBmaWxsPSIjN2M1Y2ZmIj4NCiAgICA8Y2lyY2xlIGN4PSIzMiIgY3k9IjMyIiByPSI4LjYiLz4NCiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjE5LjUiIHI9IjYuNCIvPg0KICAgIDxjaXJjbGUgY3g9IjQ5IiBjeT0iMTkuNSIgcj0iNi40Ii8+DQogICAgPGNpcmNsZSBjeD0iMzIiIGN5PSI1NyIgcj0iNi40Ii8+DQogIDwvZz4NCiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjN2M1Y2ZmIiBzdHJva2Utd2lkdGg9IjMuOCI+DQogICAgPGNpcmNsZSBjeD0iMzIiIGN5PSI3IiByPSI0LjkiLz4NCiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjQ0LjUiIHI9IjQuOSIvPg0KICAgIDxjaXJjbGUgY3g9IjQ5IiBjeT0iNDQuNSIgcj0iNC45Ii8+DQogIDwvZz4NCjwvc3ZnPg0K
@@ -82,8 +82,8 @@
 // Bundles (verbatim, each wrapped in a run-at gate): apollo_editor, art_station, credit_hoarder, fusion, group_therapy, isrc_scout, mammoth, platform_check.
 
 try {
-  console.log('%c String Theory %c v2026.9.30.201756 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
-  console.log("String Theory bundles:\n  · Apollo Editor v2026.9.30.092616\n  · Art Station v2026.9.30.191939\n  · Credit Hoarder v2026.9.30.192230\n  · Fusion v2026.9.30.092616\n  · Group Therapy v2026.9.30.092616\n  · ISRC Scout v2026.9.30.201204\n  · Mammoth v2026.9.30\n  · Platform Check v2026.9.30.193105");
+  console.log('%c String Theory %c v2026.9.30.211136 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
+  console.log("String Theory bundles:\n  · Apollo Editor v2026.9.30.092616\n  · Art Station v2026.9.30.191939\n  · Credit Hoarder v2026.9.30.192230\n  · Fusion v2026.9.30.092616\n  · Group Therapy v2026.9.30.092616\n  · ISRC Scout v2026.9.30.210842\n  · Mammoth v2026.9.30\n  · Platform Check v2026.9.30.193105");
 } catch (e) {}
 
 // ===== apollo_editor (@run-at document-start) =====================================
@@ -34792,7 +34792,7 @@ Created this ${kind} while adding credits parsed from text to ${relUrl}`;
 
 // ===== isrc_scout (@run-at document-start) ========================================
 (function(__stGM){
-  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"ISRC Scout*","namespace":"https://musicbrainz.org/","version":"2026.9.30.201204","description":"Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify / Beatport / Tidal / Volumo / HDtracks / Qobuz, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/isrc_scout/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPklTUkMgU2NvdXQ8L3RpdGxlPgogICAgPHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPgogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjQwIi8+CiAgICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyNiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2U9IiNiOWEzZTgiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPgogIDwvZz4KICA8bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+Cjwvc3ZnPgo="}) }) : { script: {"name":"ISRC Scout*","namespace":"https://musicbrainz.org/","version":"2026.9.30.201204","description":"Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify / Beatport / Tidal / Volumo / HDtracks / Qobuz, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/isrc_scout/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPklTUkMgU2NvdXQ8L3RpdGxlPgogICAgPHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPgogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjQwIi8+CiAgICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyNiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2U9IiNiOWEzZTgiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPgogIDwvZz4KICA8bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+Cjwvc3ZnPgo="} };
+  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"ISRC Scout*","namespace":"https://musicbrainz.org/","version":"2026.9.30.210842","description":"Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify / Beatport / Tidal / Volumo / HDtracks / Qobuz, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/isrc_scout/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPklTUkMgU2NvdXQ8L3RpdGxlPgogICAgPHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPgogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjQwIi8+CiAgICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyNiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2U9IiNiOWEzZTgiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPgogIDwvZz4KICA8bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+Cjwvc3ZnPgo="}) }) : { script: {"name":"ISRC Scout*","namespace":"https://musicbrainz.org/","version":"2026.9.30.210842","description":"Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify / Beatport / Tidal / Volumo / HDtracks / Qobuz, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/isrc_scout/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPklTUkMgU2NvdXQ8L3RpdGxlPgogICAgPHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPgogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjQwIi8+CiAgICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyNiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2U9IiNiOWEzZTgiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPgogIDwvZz4KICA8bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+Cjwvc3ZnPgo="} };
   (f=>f())(function(){ try { (function(){
 /*
  * ─────────────────────────────────────────────────────────────────────────
@@ -35205,12 +35205,23 @@ Created this ${kind} while adding credits parsed from text to ${relUrl}`;
     if (titleClose(aTitle, bTitle) !== true) return false;
     return !bArtist || artistClose(aArtist, bArtist) === true;
   }
+  // #643: guests don't make another song. A "(feat. …)" clause names them — Tidal titles "Instant
+  // Crush (feat. Julian Casablancas)", and MusicBrainz may carry the guests in the title where Deezer
+  // doesn't ("Get Lucky (feat. Pharrell Williams & Nile Rodgers)" vs "Get Lucky") — so it is left out
+  // of both titles. Guest lists differ between databases too ("Daft Punk feat. Pharrell Williams" on
+  // MusicBrainz, "Daft Punk, Pharrell Williams, Nile Rodgers" on Deezer), so when the whole credits
+  // don't match, the main artist is looked for in the other side's credit.
+  function unfeat(s) {
+    return String(s || '').replace(/\s*[([](?:feat\.?|ft\.?|featuring)\s[^)\]]*[)\]]/gi, '')
+      .replace(/\s+(?:feat\.?|ft\.?|featuring)\s.*$/i, '').trim();
+  }
+  function mainArtist(s) { return String(s || '').split(/\s+(?:feat\.?|ft\.?|featuring)\s+|\s*[,;]\s*/i)[0].trim(); }
   // Per-field comparisons between an SoundExchange result and the MB track,
   // used to highlight exactly WHICH attribute disagrees. Each returns
   // true (matches) / false (mismatch) / null (can't compare — no data).
   function titleClose(sx, mb) {
-    const aw = norm(sx).split(' ').filter(Boolean);
-    const bw = norm(mb).split(' ').filter(Boolean);
+    const aw = norm(unfeat(sx)).split(' ').filter(Boolean);
+    const bw = norm(unfeat(mb)).split(' ').filter(Boolean);
     if (!aw.length || !bw.length) return null;
     const shorter = aw.length <= bw.length ? aw : bw;
     const longer  = aw.length <= bw.length ? bw : aw;
@@ -35222,7 +35233,9 @@ Created this ${kind} while adding credits parsed from text to ${relUrl}`;
   }
   function artistClose(sx, mb) {
     if (!sx || !mb) return null;
-    return wordsMatch(mb, sx) || wordsMatch(sx, mb);
+    if (wordsMatch(mb, sx) || wordsMatch(sx, mb)) return true;
+    const a = mainArtist(sx), b = mainArtist(mb);   // guests left out (#643)
+    return !!(a && b) && (wordsMatch(b, sx) || wordsMatch(a, mb));
   }
   function durClose(sxDur, mbDur) {
     const a = durToSec(mbDur), b = durToSec(sxDur);
@@ -36310,18 +36323,28 @@ Created this ${kind} while adding credits parsed from text to ${relUrl}`;
     .ii-lookup.ii-all-chip { flex: 0 0 auto; cursor: pointer; font-weight: 700; padding: 1px 7px; border-radius: 10px; border: 1px solid currentColor; }
     .ii-lookup.ii-all-chip.none { color: var(--mbu-text-weak); }
     .ii-lookup.ii-all-chip:hover { background: var(--mbu-bg-hover); }
-    #ii-all-pop { position: absolute; z-index: 20; min-width: 360px; max-width: 560px; background: var(--mbu-bg); color: var(--mbu-text); border: 1px solid var(--mbu-accent); border-radius: 8px; box-shadow: var(--mbu-shadow-lg); padding: 6px 4px; font-size: 12px; }
-    #ii-all-pop .ii-all-h { font-weight: 700; color: var(--mbu-text-dim); padding: 2px 8px 5px; border-bottom: 1px solid var(--mbu-border-soft); margin-bottom: 3px; }
-    #ii-all-pop .ii-all-line { display: grid; grid-template-columns: 18px 104px 108px 16px 1fr auto; gap: 6px; align-items: center; padding: 3px 8px; border-radius: 5px; }
+    #ii-all-pop { position: absolute; z-index: 20; min-width: 300px; max-width: 620px; background: var(--mbu-bg); color: var(--mbu-text); border: 1px solid var(--mbu-accent); border-radius: 8px; box-shadow: var(--mbu-shadow-lg); padding: 6px 4px; font-size: 12px; user-select: text; }
+    #ii-all-pop.pinned { box-shadow: 0 0 0 1px var(--mbu-accent), var(--mbu-shadow-lg); }
+    #ii-all-pop .ii-all-h { display: flex; flex-wrap: wrap; align-items: center; gap: 5px; font-weight: 700; color: var(--mbu-text-dim); padding: 2px 6px 5px 8px; border-bottom: 1px solid var(--mbu-border-soft); margin-bottom: 3px; }
+    #ii-all-pop .ii-all-sp { flex: 1 1 auto; }
+    #ii-all-pop .ii-all-pick { font: inherit; font-family: var(--mbu-font-mono); font-weight: 400; font-size: 11px; padding: 1px 6px; border: 1px solid var(--mbu-border); border-radius: 4px; background: var(--mbu-bg-raised); color: var(--mbu-text); cursor: pointer; }
+    #ii-all-pop .ii-all-pick.other { border-color: var(--mbu-error); }
+    #ii-all-pop .ii-all-pick.sel { border-color: var(--mbu-accent); background: var(--mbu-bg-hover); }
+    #ii-all-pop .ii-all-pick .ii-all-n { color: var(--mbu-text-weak); }
+    #ii-all-pop .ii-all-line { display: grid; grid-template-columns: 14px 18px 96px 1fr auto; gap: 6px; align-items: center; padding: 3px 8px; border-radius: 5px; }
     #ii-all-pop .ii-all-ico svg { width: 14px; height: 14px; display: block; }
     #ii-all-pop .ii-all-isrc { font-family: var(--mbu-font-mono); }
     #ii-all-pop .ii-all-note { color: var(--mbu-text-dim); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    #ii-all-pop .ii-all-at { cursor: help; }
+    #ii-all-pop .ii-all-sub { color: var(--mbu-text-weak); }
+    #ii-all-pop .ii-all-mark { text-align: center; }
     #ii-all-pop .ii-all-ok .ii-all-mark { color: var(--mbu-ok); }
     #ii-all-pop .ii-all-song .ii-all-mark, #ii-all-pop .ii-all-blocked .ii-all-mark { color: var(--mbu-warn); }
     #ii-all-pop .ii-all-differs { background: var(--mbu-error-bg); }
     #ii-all-pop .ii-all-differs .ii-all-mark { color: var(--mbu-error); }
     #ii-all-pop .ii-all-none, #ii-all-pop .ii-all-pending { color: var(--mbu-text-weak); }
-    #ii-all-pop .ii-all-use { font-size: 11px; padding: 1px 8px; border: 1px solid var(--mbu-border); border-radius: 4px; background: var(--mbu-bg-raised); color: var(--mbu-text); cursor: pointer; }
+    #ii-all-pop .ii-all-use, #ii-all-pop .ii-all-copy { font-size: 11px; padding: 1px 8px; border: 1px solid var(--mbu-border); border-radius: 4px; background: var(--mbu-bg-raised); color: var(--mbu-text); cursor: pointer; }
+    #ii-all-pop .ii-all-copy:hover, #ii-all-pop .ii-all-pick:hover,
     #ii-all-pop .ii-all-use:hover { border-color: var(--mbu-accent); }
     .ii-lookup-rel { color: var(--mbu-text-dim); }
     .ii-lookup.pending { color: var(--mbu-text-dim); cursor: pointer; text-decoration: underline dotted #adb5bd; text-underline-offset: 2px; }
@@ -36810,7 +36833,7 @@ Created this ${kind} while adding credits parsed from text to ${relUrl}`;
     // version text that clearly names a different edit — missing/messy SX version data
     // (common per chaban) is left alone rather than penalized on absent information.
     function versionHint(mbTitle) {
-      const m = String(mbTitle || '').match(/\(([^)]+)\)\s*$/);
+      const m = unfeat(mbTitle).match(/\(([^)]+)\)\s*$/);
       return m ? norm(m[1]) : '';
     }
     function versionConflicts(f, mbTitle) {
@@ -36924,7 +36947,7 @@ Created this ${kind} while adding credits parsed from text to ${relUrl}`;
     // on any release. The rest scan the release's album, so they need its link.
     TRACK_PROV[k] = { name: p.source, short: p.source, code: p.code, color: _PROV_COLOR[k] || '#444', kind: 'album', global: k === 'deezer' || k === 'tidal' };
   });
-  // #643: 'all' — every provider at once, SoundExchange as the tiebreaker
+  // #643: 'all' — every provider at once, SoundExchange included
   TRACK_PROV.all = { name: 'All', short: 'All', code: 'all', color: '', kind: 'all' };
   const TRACK_PROV_ORDER = ['all', 'sx', 'deezer', 'tidal', 'beatport', 'volumo', 'hdtracks', 'qobuz', 'apple', 'soundcloud'];
   let trackProv = 'sx';                                  // NOT persisted (#181)
@@ -37021,21 +37044,24 @@ Created this ${kind} while adding credits parsed from text to ${relUrl}`;
     }
   }
   // #643: "All" — the row's ISRC checked on every provider available for the release at once,
-  // summed up in a verdict chip in the row's result slot, with a popover comparing them.
+  // SoundExchange included, summed up in a verdict chip in the row's result slot. Hovering the chip
+  // (or the row's All button) shows the comparison beside the chip; a click pins it.
   // What each provider can say about an ISRC:
-  //   · Deezer, Tidal (a lookup by ISRC): ✓ their song for it is this track · ⚠ it is another song
-  //     (title or length differ) · – they don't know it
-  //   · the album providers (the release's album on them, read once): ✓ the album has this ISRC ·
-  //     ✗ it has ANOTHER ISRC at this track's position — offered with [use] · – nothing there
-  //   · SoundExchange, the tiebreaker: asked last, and only when the others don't all agree —
-  //     it throttles and serves captchas, so a bulk run paces it and stops at a captcha.
-  const _allRes = {};                     // idx → { isrc, lines: [{ key, name, state, isrc?, note }] }
+  //   · Deezer, Tidal, SoundExchange (a lookup by ISRC): ✓ their song for it is this track ·
+  //     ⚠ it is another song (title, artist or length differ; guests don't count) · – they don't know it
+  //   · the album providers (the release's album on them, read once): ✓ the album has this ISRC at
+  //     the track's place (📍) or, with nothing there, elsewhere (↪ track n) · ✗ it has ANOTHER ISRC
+  //     at the track's place — offered with [use] · – nothing there
+  // SoundExchange throttles and serves captchas: a bulk run asks it last, one track at a time,
+  // paced, and stops at a captcha with every other result kept.
+  const _allRes = {};                     // idx → { isrc, lines: [{ key, name, state, isrc?, at?, song?, note? }] }
   let _allEpoch = 0;                      // bumped by closing the dialog / Clear: a running All stops
   // After a captcha or rate limit, All leaves SoundExchange alone until you run All yourself again
   // (a click or right-click on the button) — leaving an ISRC field doesn't count, so a blocked
   // SoundExchange isn't poked with every field you leave.
   let _allSxBlocked = null;               // null, or 'captcha' / 'rate limit'
   const ALL_OK = 'ok', ALL_SONG = 'song', ALL_DIFF = 'differs', ALL_NONE = 'none', ALL_FAIL = 'fail', ALL_WAIT = 'pending', ALL_BLOCK = 'blocked';
+  const ALL_MARK = { ok: '✓', song: '⚠', differs: '✗', none: '–', fail: '!', pending: '⏳', blocked: '⛔' };
   function allProviders() { return TRACK_PROV_ORDER.filter(k => k !== 'all' && k !== 'sx' && trackProvAvailable(k)); }
   // the album entry at this track's place: disc + position, as an album import maps it (mapOneToTrack)
   function albumEntryAt(entries, t) {
@@ -37056,34 +37082,39 @@ Created this ${kind} while adding credits parsed from text to ${relUrl}`;
       const e = albumEntryAt(entries, t), eIsrc = e ? normalizeIsrc(e.isrc) : '';
       const other = entries.find(x => normalizeIsrc(x.isrc) === isrc);
       const where = x => 'track ' + (x.disc && RELEASE.tracks.some(y => +y.mediumPos !== 1) ? x.disc + '.' : '') + x.pos;
-      if (eIsrc === isrc) return { key, name, state: ALL_OK, isrc, note: 'the album has it at this track' + (e.title ? ': "' + e.title + '"' : '') };
-      if (eIsrc) return { key, name, state: ALL_DIFF, isrc: eIsrc, note: 'the album has this at the track\u2019s place' + (e.title ? ' ("' + e.title + '")' : '') + (other ? '; ' + isrc + ' is its ' + where(other) : '') };
-      if (other) return { key, name, state: ALL_OK, isrc, note: 'on the album, at ' + where(other) + ' (no entry at this track\u2019s place)' };
+      const song = x => ({ title: x.title || '', artist: '', dur: x.dur || '' });
+      if (eIsrc === isrc) return { key, name, state: ALL_OK, isrc, at: 'here', song: song(e) };
+      if (eIsrc) return { key, name, state: ALL_DIFF, isrc: eIsrc, at: 'here', song: song(e), note: other ? isrc + ' is its ' + where(other) : '' };
+      if (other) return { key, name, state: ALL_OK, isrc, at: where(other), song: song(other), note: 'nothing at this track’s place' };
       return { key, name, state: ALL_NONE, note: 'not on the album' };
     } catch (err) {
       return { key, name, state: ALL_FAIL, note: err && err.rateLimited ? 'rate-limited — try again' : 'failed: ' + errText(err) };
     }
   }
   // A provider's song for the ISRC, against the track: the same song (classify 'best', or 'warn' —
-  // a version marker such as "(feat. …)" or the length reads differently, which is noted) agrees;
-  // another song ('other') doesn't.
+  // the version or length reads differently, which is noted) agrees; another song ('other') doesn't.
+  // Guests are left out of the comparison, as in every lookup (unfeat, mainArtist).
   function allSongLine(key, name, f, t, isrc) {
-    // a '(feat. …)' clause names guests, not another song: Tidal titles "Instant Crush (feat. Julian
-    // Casablancas)", and MusicBrainz may carry the guests in the title where Deezer doesn't ("Get Lucky
-    // (feat. Pharrell Williams & Nile Rodgers)" vs "Get Lucky"). It is left out on both sides.
-    const unfeat = x => String(x || '').replace(/\s*[([](?:feat\.?|ft\.?|featuring)\s[^)\]]*[)\]]/gi, '').trim();
-    // …and the guest lists differ between databases ("Daft Punk feat. Pharrell Williams" on MusicBrainz,
-    // "Daft Punk, Pharrell Williams, Nile Rodgers" on Deezer), so only the main artist is compared
-    const mainArtist = String(t.artist || '').split(/\s+(?:feat\.?|ft\.?|featuring|with|&|and|x|vs\.?)\s+|\s*[,;]\s*/i)[0];
-    const cls = SX.classify(Object.assign({}, f, { title: unfeat(f.title) }), unfeat(t.title), mainArtist, t.dur, RELEASE.releaseYear);
-    const what = '"' + f.title + '"' + (f.artist && cls === 'other' ? ' — ' + f.artist : '') + (f.dur ? ' ' + f.dur : '');
-    if (cls === 'other') return { key, name, state: ALL_SONG, isrc, note: 'another song: ' + what };
-    return { key, name, state: ALL_OK, isrc, note: what + (cls === 'warn' ? ' — the same song; its version or length reads differently' : '') };
+    const cls = SX.classify(f, t.title, t.artist, t.dur, RELEASE.releaseYear);
+    const song = { title: f.title || '', artist: cls === 'other' ? f.artist || '' : '', dur: f.dur || '' };
+    if (cls === 'other') return { key, name, state: ALL_SONG, isrc, song, note: 'another song' };
+    return { key, name, state: ALL_OK, isrc, song, note: cls === 'warn' ? 'its version or length reads differently' : '' };
   }
-  // Do the providers asked so far settle it? Only a unanimous ✓ does: then SoundExchange isn't asked.
-  function allSettled(lines) {
-    const known = lines.filter(l => l.state === ALL_OK || l.state === ALL_SONG || l.state === ALL_DIFF);
-    return known.length > 0 && known.every(l => l.state === ALL_OK);
+  // a line as text (the log, the Markdown copy) and as the panel shows it
+  function allLineText(l, isrc) {
+    return [l.at === 'here' ? 'at this track' : l.at ? 'at ' + l.at : '',
+      l.isrc && l.isrc !== isrc ? l.isrc : '',
+      l.song && l.song.title ? '"' + l.song.title + '"' + (l.song.artist ? ' — ' + l.song.artist : '') + (l.song.dur ? ' ' + l.song.dur : '') : '',
+      l.note || ''].filter(Boolean).join(' · ');
+  }
+  function allLineHtml(l, isrc) {
+    const p = [];
+    if (l.at === 'here') p.push('<span class="ii-all-at" title="the album has this at the track’s place">📍</span>');
+    else if (l.at) p.push('<span class="ii-all-at" title="the album has it at ' + esc(l.at) + ', not at this track’s place">↪ ' + esc(l.at) + '</span>');
+    if (l.isrc && l.isrc !== isrc) p.push('<span class="ii-all-isrc">' + esc(l.isrc) + '</span>');
+    if (l.song && l.song.title) p.push(esc('"' + l.song.title + '"' + (l.song.artist ? ' — ' + l.song.artist : '') + (l.song.dur ? ' ' + l.song.dur : '')));
+    if (l.note) p.push('<span class="ii-all-sub">' + esc(l.note) + '</span>');
+    return p.join(' ');
   }
   async function allSxLine(t, isrc) {
     const rows = await sxLookupCached(isrc);   // throws on a captcha / rate limit
@@ -37091,7 +37122,8 @@ Created this ${kind} while adding credits parsed from text to ${relUrl}`;
     const f = SX.fields(rows[0]);
     return allSongLine('sx', 'SoundExchange', f, t, isrc);
   }
-  // One track: every provider, then SoundExchange if they don't all agree (sx: false leaves it for later).
+  // One track: every provider, then SoundExchange (sx: false queues it — a bulk run asks it after
+  // the other tracks' providers).
   const _allInflight = {};
   function allLookupRow(idx, isrc, opts) {
     const k = idx + ' ' + isrc;
@@ -37102,12 +37134,11 @@ Created this ${kind} while adding credits parsed from text to ${relUrl}`;
     const t = RELEASE.tracks[idx], keys = allProviders();
     const res = _allRes[idx] = { isrc, lines: keys.map(k => ({ key: k, name: TRACK_PROV[k].name, state: ALL_WAIT, note: 'asking…' })) };
     renderAllChip(idx);
-    Log.info('All #' + (t.number || t.trackPos) + ' ' + isrc + ': asking ' + keys.map(k => TRACK_PROV[k].name).join(', '));
+    Log.info('All #' + (t.number || t.trackPos) + ' ' + isrc + ': asking ' + keys.map(k => TRACK_PROV[k].name).join(', ') + (sx ? ', SoundExchange' : ''));
     res.lines = await Promise.all(keys.map(k => allOnProvider(k, t, isrc)));
-    res.lines.forEach(l => Log.info('All #' + (t.number || t.trackPos) + ' ' + l.name + ': ' + l.state + (l.isrc && l.isrc !== isrc ? ' ' + l.isrc : '') + ' — ' + l.note));
-    if (allSettled(res.lines)) Log.info('All #' + (t.number || t.trackPos) + ': the providers agree — SoundExchange not asked');
-    else if (sx) await allSxRow(idx);
-    else res.lines.push({ key: 'sx', name: 'SoundExchange', state: ALL_WAIT, note: 'queued — asked after the others, only where they disagree' });
+    res.lines.forEach(l => Log.info('All #' + (t.number || t.trackPos) + ' ' + l.name + ': ' + l.state + ' — ' + allLineText(l, isrc)));
+    if (sx) await allSxRow(idx);
+    else res.lines.push({ key: 'sx', name: 'SoundExchange', state: ALL_WAIT, note: 'queued — asked after the other tracks’ providers' });
     renderAllChip(idx);
     return res;
   }
@@ -37125,7 +37156,7 @@ Created this ${kind} while adding credits parsed from text to ${relUrl}`;
     renderAllChip(idx);
     try {
       res.lines[at] = await allSxLine(t, res.isrc);
-      Log.info('All #' + (t.number || t.trackPos) + ' SoundExchange: ' + res.lines[at].state + ' — ' + res.lines[at].note);
+      Log.info('All #' + (t.number || t.trackPos) + ' SoundExchange: ' + res.lines[at].state + ' — ' + allLineText(res.lines[at], res.isrc));
     } catch (e) {
       if (e && (e.captcha || e.rateLimited)) {
         _allSxBlocked = e.captcha ? 'captcha' : 'rate limit';
@@ -37139,7 +37170,8 @@ Created this ${kind} while adding credits parsed from text to ${relUrl}`;
     renderAllChip(idx);
   }
   // The verdict chip: ✓ n/n when every provider that knows the ISRC agrees, ⚠ k/n when some don't,
-  // – 0/m when none knows it, ⏳ while asking. Click opens the comparison.
+  // – 0/m when none knows it, ⏳ while asking, ⛔ when SoundExchange was blocked. Hover shows the
+  // comparison, a click pins it (a click on the pinned one's chip unpins it).
   function renderAllChip(idx) {
     const el = rowLookup(idx), res = _allRes[idx];
     if (!el || !res) return;
@@ -37155,38 +37187,54 @@ Created this ${kind} while adding credits parsed from text to ${relUrl}`;
     if (lines.some(l => l.state === ALL_BLOCK)) text += ' ⛔';
     el.className = 'ii-lookup ii-all-chip ' + cls;
     el.textContent = text;
-    el.title = lines.map(l => l.name + ': ' + l.state + (l.isrc && l.isrc !== res.isrc ? ' ' + l.isrc : '') + ' — ' + l.note).join('\n') + '\n(click to compare)';
-    el.onclick = (e) => { e.stopPropagation(); openAllPop(idx, el); };
+    el.title = '';   // the comparison is the tooltip
+    el.onclick = (e) => {
+      e.stopPropagation();
+      const p = modal.querySelector('#ii-all-pop');
+      if (p && p._pinned && p._idx === idx) closeAllPop(); else openAllPop(idx, { pin: true });
+    };
+    el.onmouseenter = () => openAllPop(idx);
+    el.onmouseleave = () => hideAllPopSoon();
+    const p = modal && modal.querySelector('#ii-all-pop');
+    if (p && p._idx === idx) renderAllPop(p);   // live while it is asking
   }
-  // The comparison popover: one line per provider — its icon, the ISRC it has, what that means,
-  // and [use] where it has another one. Closes on Escape or a click elsewhere (that click is
-  // swallowed, so it doesn't land on whatever is underneath).
-  function openAllPop(idx, anchor) {
-    closeAllPop();
-    const res = _allRes[idx]; if (!res) return;
-    const pop = document.createElement('div');
-    pop.id = 'ii-all-pop';
-    const icon = k => k === 'sx' ? '<span class="ii-prov-sx">SX</span>' : (SRC_ICON[TRACK_PROV[k] && TRACK_PROV[k].code] || '');
-    const mark = { ok: '✓', song: '⚠', differs: '✗', none: '–', fail: '!', pending: '⏳', blocked: '⛔' };
-    pop.innerHTML = '<div class="ii-all-h">Track ' + esc(RELEASE.tracks[idx].number || RELEASE.tracks[idx].trackPos) + ' · ' + esc(res.isrc) + '</div>' +
-      res.lines.map((l, i) => '<div class="ii-all-line ii-all-' + l.state + '"><span class="ii-all-ico">' + icon(l.key) + '</span>' +
-        '<span class="ii-all-name">' + esc(l.name) + '</span><span class="ii-all-isrc">' + esc(l.isrc || '—') + '</span>' +
-        '<span class="ii-all-mark">' + mark[l.state] + '</span><span class="ii-all-note">' + esc(l.note) + '</span>' +
-        (l.state === ALL_DIFF ? '<button type="button" class="ii-all-use" data-i="' + i + '">use</button>' : '') + '</div>').join('');
-    modal.appendChild(pop);
-    const a = anchor.getBoundingClientRect(), m = modal.getBoundingClientRect();
-    pop.style.left = Math.max(8, Math.min(a.left - m.left, m.width - pop.offsetWidth - 8)) + 'px';
-    pop.style.top = (a.bottom - m.top + 4) + 'px';
-    pop.querySelectorAll('.ii-all-use').forEach(b => b.addEventListener('click', () => {
-      const l = res.lines[+b.dataset.i];
-      setPending(idx, l.isrc, true, 'All · ' + l.name);
-      Log.info('All #' + (RELEASE.tracks[idx].number || RELEASE.tracks[idx].trackPos) + ': using ' + l.name + '\'s ' + l.isrc + ' in place of ' + res.isrc);
+  // The comparison, beside the chip or above its row (placeAllPop) so it covers neither the All
+  // buttons nor the chips below — moving down either column walks the tracks. The header lists
+  // every ISRC the providers named (a click shows only the providers with that one) and [copy]
+  // (the comparison as Markdown); a line per provider: verdict, icon, name, what it has.
+  let _allHideT = 0;
+  function openAllPop(idx, { pin = false } = {}) {
+    if (!modal || !_allRes[idx]) return;
+    clearTimeout(_allHideT);
+    let pop = modal.querySelector('#ii-all-pop');
+    if (pop && pop._pinned && pop._idx !== idx && !pin) return;   // a pinned comparison stays until it is closed
+    if (!pop || pop._idx !== idx) {
       closeAllPop();
-    }));
+      pop = document.createElement('div');
+      pop.id = 'ii-all-pop';
+      pop._idx = idx; pop._sel = '';
+      modal.appendChild(pop);
+      pop.addEventListener('mouseenter', () => clearTimeout(_allHideT));
+      pop.addEventListener('mouseleave', () => hideAllPopSoon());
+      pop.addEventListener('click', (e) => allPopClick(pop, e));
+      renderAllPop(pop);
+    }
+    if (pin && !pop._pinned) allPin(pop);
+  }
+  function hideAllPopSoon() {
+    clearTimeout(_allHideT);
+    _allHideT = setTimeout(() => { const p = modal && modal.querySelector('#ii-all-pop'); if (p && !p._pinned) closeAllPop(); }, 200);
+  }
+  // pinned: it stays when the mouse leaves (text can be selected); Escape or a click elsewhere
+  // closes it, and that click is swallowed unless it lands on another track's chip (which pins that one)
+  function allPin(pop) {
+    pop._pinned = true;
+    pop.classList.add('pinned');
+    const chip = () => rowLookup(pop._idx);
     const onDown = (e) => {
-      if (pop.contains(e.target)) return;
+      if (pop.contains(e.target) || e.target === chip()) return;
       closeAllPop();
-      if (e.target !== anchor) {   // swallow the click this mousedown starts, so it doesn't act underneath
+      if (!(e.target.closest && e.target.closest('.ii-all-chip'))) {
         const swallow = (ev) => { ev.stopPropagation(); ev.preventDefault(); };
         document.addEventListener('click', swallow, { capture: true, once: true });
         setTimeout(() => document.removeEventListener('click', swallow, { capture: true }), 400);
@@ -37197,40 +37245,95 @@ Created this ${kind} while adding credits parsed from text to ${relUrl}`;
     document.addEventListener('keydown', onKey, true);
     pop._off = () => { document.removeEventListener('mousedown', onDown, true); document.removeEventListener('keydown', onKey, true); };
   }
-  function closeAllPop() { const p = modal && modal.querySelector('#ii-all-pop'); if (p) { if (p._off) p._off(); p.remove(); } }
+  function renderAllPop(pop) {
+    const idx = pop._idx, res = _allRes[idx]; if (!res) return;
+    const num = RELEASE.tracks[idx].number || RELEASE.tracks[idx].trackPos;
+    const icon = k => k === 'sx' ? '<span class="ii-prov-sx">SX</span>' : (SRC_ICON[TRACK_PROV[k] && TRACK_PROV[k].code] || '');
+    const isrcs = [...new Set([res.isrc].concat(res.lines.map(l => l.isrc).filter(Boolean)))];
+    if (!isrcs.includes(pop._sel)) pop._sel = '';
+    const count = i => res.lines.filter(l => l.isrc === i).length;
+    pop.innerHTML = '<div class="ii-all-h"><span>Track ' + esc(num) + '</span>' +
+      isrcs.map(i => '<button type="button" class="ii-all-pick' + (i === res.isrc ? '' : ' other') + (i === pop._sel ? ' sel' : '') + '" data-isrc="' + esc(i) + '" title="' +
+        esc((i === res.isrc ? 'the row’s ISRC' : 'another ISRC a provider has for this track') + ' — ' + count(i) + ' provider(s); click to show only them' + (i === pop._sel ? ' (click again for all)' : '')) + '">' +
+        esc(i) + ' <span class="ii-all-n">' + count(i) + '</span></button>').join('') +
+      '<span class="ii-all-sp"></span><button type="button" class="ii-all-copy" title="Copy this comparison as Markdown">copy</button></div>' +
+      res.lines.map((l, i) => (pop._sel && l.isrc !== pop._sel) ? '' :
+        '<div class="ii-all-line ii-all-' + l.state + '"><span class="ii-all-mark">' + ALL_MARK[l.state] + '</span><span class="ii-all-ico">' + icon(l.key) + '</span>' +
+        '<span class="ii-all-name">' + esc(l.name) + '</span><span class="ii-all-note" title="' + esc(allLineText(l, res.isrc)) + '">' + allLineHtml(l, res.isrc) + '</span>' +
+        (l.state === ALL_DIFF ? '<button type="button" class="ii-all-use" data-i="' + i + '" title="put ' + esc(l.isrc) + ' in the row">use</button>' : '<span></span>') + '</div>').join('');
+    placeAllPop(pop);
+  }
+  // Where it goes: right of the chip, level with the row, when it fits there; otherwise above the row
+  // (right-aligned to the chip) — either way the rows below, their All buttons and chips, stay free.
+  // Only with no room above either (the first rows) does it squeeze in beside the chip.
+  function placeAllPop(pop) {
+    const chip = rowLookup(pop._idx); if (!chip) return;
+    const a = chip.getBoundingClientRect(), m = modal.getBoundingClientRect();
+    const tr = chip.closest('tr'), r = tr ? tr.getBoundingClientRect() : a;
+    pop.style.maxWidth = '620px'; pop.style.left = '0px'; pop.style.top = '0px';
+    const w = pop.offsetWidth, h = pop.offsetHeight, right = a.right - m.left + 10;
+    const levelTop = Math.max(8, Math.min(a.top - m.top - 8, m.height - h - 8));
+    if (right + w + 8 <= m.width) { pop.style.left = right + 'px'; pop.style.top = levelTop + 'px'; pop._at = 'right'; return; }
+    const above = r.top - m.top - h - 4;
+    if (above >= 8) { pop.style.left = Math.max(8, Math.min(a.right - m.left - w, m.width - w - 8)) + 'px'; pop.style.top = above + 'px'; pop._at = 'above'; return; }
+    pop.style.maxWidth = Math.max(240, m.width - right - 8) + 'px';
+    pop.style.left = Math.max(8, Math.min(right, m.width - pop.offsetWidth - 8)) + 'px';
+    pop.style.top = levelTop + 'px'; pop._at = 'beside';
+  }
+  function allPopClick(pop, e) {
+    const res = _allRes[pop._idx], idx = pop._idx, num = RELEASE.tracks[idx].number || RELEASE.tracks[idx].trackPos;
+    const pick = e.target.closest('.ii-all-pick'), use = e.target.closest('.ii-all-use'), copy = e.target.closest('.ii-all-copy');
+    if (pick) { pop._sel = pop._sel === pick.dataset.isrc ? '' : pick.dataset.isrc; renderAllPop(pop); return; }
+    if (use) {
+      const l = res.lines[+use.dataset.i];
+      setPending(idx, l.isrc, true, 'All · ' + l.name);
+      Log.info('All #' + num + ': using ' + l.name + '\'s ' + l.isrc + ' in place of ' + res.isrc);
+      closeAllPop();
+      return;
+    }
+    if (copy) {
+      const cell = x => String(x).replace(/\|/g, '\\|');
+      const t = RELEASE.tracks[idx];
+      const md = '**Track ' + num + '** · ' + cell(t.title || '') + ' · `' + res.isrc + '`\n\n| | Provider | ISRC | Result |\n|:-:|---|---|---|\n' +
+        res.lines.map(l => '| ' + ALL_MARK[l.state] + ' | ' + cell(l.name) + ' | ' + (l.isrc ? '`' + l.isrc + '`' : '') + ' | ' + cell(allLineText(l, res.isrc)) + ' |').join('\n') + '\n';
+      try { navigator.clipboard.writeText(md).then(() => toast('Comparison copied'), () => toast('Copy failed', 'err')); } catch (err) { toast('Copy failed', 'err'); }
+      Log.info('All #' + num + ': comparison copied as Markdown');
+    }
+  }
+  function closeAllPop() { clearTimeout(_allHideT); const p = modal && modal.querySelector('#ii-all-pop'); if (p) { if (p._off) p._off(); p.remove(); } }
   // Right-click on All: every track with the providers first (Tidal paced per track), then
-  // SoundExchange one at a time, only for the tracks the others didn't settle — and it stops at
-  // a captcha or rate limit, leaving the rest marked, with every other result kept.
+  // SoundExchange one track at a time, paced — and it stops at a captcha or rate limit, leaving the
+  // rest marked, with every other result kept.
   async function runAllTracks() {
     _allSxBlocked = null;   // an explicit run asks SoundExchange again
     const myEpoch = _allEpoch;
     const todo = [];
     RELEASE.tracks.forEach((t, idx) => { const isrc = rowIsrc(idx); if (isrc) todo.push({ idx, isrc }); });
-    Log.info('All: ' + todo.length + ' track(s) with an ISRC, on ' + allProviders().map(k => TRACK_PROV[k].name).join(', ') + '; SoundExchange only where they disagree');
+    Log.info('All: ' + todo.length + ' track(s) with an ISRC, on ' + allProviders().map(k => TRACK_PROV[k].name).join(', ') + ', then SoundExchange');
     for (let k = 0; k < todo.length; k++) {
       if (myEpoch !== _allEpoch) { Log.info('All: cancelled'); return; }
       await allLookupRow(todo[k].idx, todo[k].isrc, { sx: false });
       if (allProviders().includes('tidal') && k < todo.length - 1) await sleep(TIDAL_TRACK_DELAY);
     }
-    const tie = todo.filter(({ idx }) => _allRes[idx] && !allSettled(_allRes[idx].lines));
-    Log.info('All: SoundExchange for ' + tie.length + ' track(s) the others didn’t settle');
-    for (let k = 0; k < tie.length; k++) {
+    Log.info('All: SoundExchange for ' + todo.length + ' track(s), one at a time');
+    for (let k = 0; k < todo.length; k++) {
       if (myEpoch !== _allEpoch) { Log.info('All: cancelled'); return; }
-      const cached = !!_isrcLookupCache[_allRes[tie[k].idx].isrc];
-      try { await allSxRow(tie[k].idx); }
+      if (!_allRes[todo[k].idx]) continue;
+      const cached = !!_isrcLookupCache[_allRes[todo[k].idx].isrc];
+      try { await allSxRow(todo[k].idx); }
       catch (e) {
         if (e && (e.captcha || e.rateLimited)) {
-          tie.slice(k + 1).forEach(({ idx }) => {
-            const l = _allRes[idx].lines.find(x => x.key === 'sx');
+          todo.slice(k + 1).forEach(({ idx }) => {
+            const l = _allRes[idx] && _allRes[idx].lines.find(x => x.key === 'sx');
             if (l) { l.state = ALL_BLOCK; l.note = 'not asked — SoundExchange stopped at a ' + (e.captcha ? 'captcha' : 'rate limit') + '; solve it, then run All again'; }
             renderAllChip(idx);
           });
-          Log.warn('All: SoundExchange ' + (e.captcha ? 'captcha' : 'rate limit') + ' — stopped; ' + (tie.length - k - 1) + ' track(s) not asked');
+          Log.warn('All: SoundExchange ' + (e.captcha ? 'captcha' : 'rate limit') + ' — stopped; ' + (todo.length - k - 1) + ' track(s) not asked');
           sxBlocked(e);
           return;
         }
       }
-      if (!cached && k < tie.length - 1) await sleep(BATCH_DELAY);
+      if (!cached && k < todo.length - 1) await sleep(BATCH_DELAY);
     }
     Log.info('All: done');
   }
@@ -39683,7 +39786,7 @@ Created this ${kind} while adding credits parsed from text to ${relUrl}`;
         if (input.dataset.autofill === '1') return;   // filled by a source, not manual typing
         const v = normalizeIsrc(input.value);
         if (!v || !isValidIsrc(v)) return;
-        // #643: with All picked, a typed ISRC is checked by All (SoundExchange as its tiebreaker), not by
+        // #643: with All picked, a typed ISRC is checked by All (SoundExchange included), not by
         // SoundExchange alone — both would write the row's one result slot
         const run = trackProv === 'all' ? allLookupRow(idx, v) : lookupIsrc(idx, v);
         run.catch(e => { if (e && (e.rateLimited || e.captcha)) sxBlocked(e); });
@@ -39704,6 +39807,10 @@ Created this ${kind} while adding credits parsed from text to ${relUrl}`;
         sxBtn.addEventListener('click', () => runTrackSingle(idx));
         // right-click → run the current provider for ALL tracks (#181)
         sxBtn.addEventListener('contextmenu', e => { e.preventDefault(); runTrackAll(); });
+        // #643: with All, hovering the button shows the row's comparison beside its chip — moving
+        // down the buttons walks the tracks
+        sxBtn.addEventListener('mouseenter', () => { if (trackProv === 'all' && _allRes[idx]) openAllPop(idx); });
+        sxBtn.addEventListener('mouseleave', () => { if (trackProv === 'all') hideAllPopSoon(); });
       }
       // the ▾ next to each per-track button opens the shared provider menu (#181)
       const provBtn = tr.querySelector('.ii-sxprov');

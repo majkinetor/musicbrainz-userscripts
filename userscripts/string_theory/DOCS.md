@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-09-30 20:17 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-09-30 21:11 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -876,11 +876,12 @@ The toolbar shows the providers available for this release:
 <img width="1000" src="../isrc_scout/screenshots/isrc-tracks.png" />
 
 - **+1** fills the previous track's ISRC plus one.
-- The **lookup** button looks the row's ISRC up on the selected provider and shows its title, artist and length next to the row, mismatches in red. Its menu switches every row to another provider; right-click runs it on all tracks.
-- **All** (top of the menu) checks the row's ISRC on every provider available for the release at once. The row shows a verdict: **✓ 3/3** when every provider that knows the ISRC agrees, **⚠ 1/3** when some don't, **– 0/3** when none knows it. Click it to compare them, one line per provider:
-  - Deezer and Tidal look the ISRC up: ✓ their song for it is this track, ⚠ it is another song. A *feat.* clause and the guest artists are left out of the comparison, since databases list guests differently.
-  - An album provider (Qobuz, Apple, Beatport…) reads the release's album there: ✓ it has this ISRC at this track, ✗ it has **another** ISRC here, offered with **use**.
-  - SoundExchange is the tiebreaker: asked last, and only when the others don't all agree. On a right-click it goes one track at a time and stops at a captcha or rate limit, keeping every other result; solve the captcha, then run **All** again. Until you do, leaving an ISRC field doesn't ask it.
+- The **lookup** button looks the row's ISRC up on the selected provider and shows its title, artist and length next to the row, mismatches in red. Guests don't count as a mismatch: a *feat.* clause is left out of both titles, and when the credits differ only the main artist has to match, since databases list guests differently. Its menu switches every row to another provider; right-click runs it on all tracks.
+- **All** (top of the menu) checks the row's ISRC on every provider available for the release at once, SoundExchange included. The row shows a verdict: **✓ 4/4** when every provider that knows the ISRC agrees, **⚠ 1/4** when some don't, **– 0/4** when none knows it, **⛔** when SoundExchange was blocked. Hover the verdict (or the row's **All** button) to see the comparison next to it (right of the verdict, or above the row when there's no room there, so the rows below stay free); move down either column to walk the tracks, click the verdict to pin it so you can select text. Each line starts with the provider's verdict:
+  - Deezer, Tidal and SoundExchange look the ISRC up: ✓ their song for it is this track, ⚠ it is another song.
+  - An album provider (Qobuz, Apple, Beatport…) reads the release's album there: ✓ it has this ISRC at this track (📍), or elsewhere with nothing at this track (↪ track 3); ✗ it has **another** ISRC here, offered with **use**.
+  - The header lists every ISRC the providers named, with how many have it; click one to see only those providers. **copy** puts the comparison on the clipboard as a Markdown table.
+  - SoundExchange throttles and serves captchas. On a right-click it is asked after the other providers, one track at a time, and stops at a captcha or rate limit, keeping every other result; solve the captcha, then run **All** again. Until you do, leaving an ISRC field doesn't ask it.
 - **⚙** opens a SoundExchange search you can tune (title, artist, release, exact), with a link to run it on their site.
 
 | Check | Mismatch when |

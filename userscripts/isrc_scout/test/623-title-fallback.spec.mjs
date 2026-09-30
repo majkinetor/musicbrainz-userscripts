@@ -5,7 +5,7 @@
 import { test, check, loadFunctions } from '../../../dev/test/harness.mjs';
 
 test('the title fallback prefers an exact title and never guesses between equals', { tag: '@unit' }, async () => {
-  const F = await loadFunctions('isrc_scout', ['norm', 'wordsMatch', 'titleClose', 'artistClose', 'isGoodMatch', 'pickTrackByTitle']);
+  const F = await loadFunctions('isrc_scout', ['norm', 'wordsMatch', 'unfeat', 'mainArtist', 'titleClose', 'artistClose', 'isGoodMatch', 'pickTrackByTitle']);
   const tracks = [{ title: 'Song', artist: 'A' }, { title: 'Song (Live)', artist: 'A' }, { title: 'Intro', artist: 'A' }, { title: 'Other', artist: 'A' }, { title: 'Intro', artist: 'A' }];
   const pick = title => F.pickTrackByTitle({ title, artist: 'A' }, tracks);
   // what the old rule did: the first track passing isGoodMatch
