@@ -2,13 +2,19 @@
 # Hoarder's own lint passes, the design tokens resolve, and the specs that need
 # no network (@unit) pass. Then, for main and pull requests into it, each
 # script's core specs (@critical) run on test.musicbrainz.org. The whole suite
-# runs nightly (suite.yml).
+# runs nightly (suite.yml). The release workflow calls it too, without @critical (#646).
 name: checks
 on:
   push:
     branches: [main, stable]
   pull_request:
   workflow_dispatch:
+  workflow_call:
+    inputs:
+      critical:
+        description: Run the @critical specs on the sandbox too
+        type: boolean
+        default: true
 jobs:
   checks:
     runs-on: ubuntu-latest
@@ -28,17 +34,12 @@ jobs:
         run: |
           pnpm --dir userscripts/credit_hoarder install --frozen-lockfile
           pnpm --dir userscripts/credit_hoarder run lint
-      # dist/credit_hoarder.user.js is what people install; the pre-commit hook rebuilds it, but a
-      # commit made without the hook (the web editor, --no-verify, a merge) can leave it behind
-      # src/. Rebuild and compare, the build's own @version stamp aside (#637).
-      - name: Credit Hoarder's build is its source
-        run: |
-          cp userscripts/credit_hoarder/dist/credit_hoarder.user.js "$RUNNER_TEMP/committed.js"
-          pnpm --dir userscripts/credit_hoarder run build
-          if ! diff -q <(grep -v '@version' "$RUNNER_TEMP/committed.js") <(grep -v '@version' userscripts/credit_hoarder/dist/credit_hoarder.user.js) >/dev/null; then
-            echo "::error file=userscripts/credit_hoarder/dist/credit_hoarder.user.js::not the build of src/ — run pnpm run build in userscripts/credit_hoarder and commit dist/"
-            exit 1
-          fi
+      # What the pre-commit hook builds (Credit Hoarder's dist/, the String Theory bundle, the
+      # shared blocks) must match its sources. On main the build workflow regenerates and
+      # commits it (#646), so only a pull request is held to it here.
+      - name: Builds match their sources
+        if: github.event_name == 'pull_request'
+        run: node dev/regen.mjs --check
       - name: Design tokens
         run: node dev/tokens/verify-tokens.mjs
       - name: Specs that need no network
@@ -49,7 +50,8 @@ jobs:
 
   critical:
     needs: checks
-    if: github.event_name != 'push' || github.ref == 'refs/heads/main'
+    # (called from the release workflow, the event is its workflow_dispatch; the input decides)
+    if: (github.event_name != 'push' || github.ref == 'refs/heads/main') && inputs.critical != false
     runs-on: ubuntu-latest
     timeout-minutes: 30
     # one run at a time on the sandbox: two would edit the same fixture releases

@@ -4,6 +4,10 @@
  *
  *   node dev/publish.mjs            # DRY RUN — compute + print the plan, write/push nothing
  *   node dev/publish.mjs --yes      # execute: write changelogs, commit, merge main→stable, push, release, label
+ *   node dev/publish.mjs --silent [--yes]   # only main→stable: installs update; no changelog, release or labels
+ *
+ * Normally run by the "release" workflow (Actions → release → Run workflow, #646), which
+ * offers the same three: a dry run, a release, a silent release.
  *
  * What it does
  *   1. Collect CLOSED issues that are not yet `released`, carry an `area | <script>` label and a
@@ -13,12 +17,17 @@
  *   2. Group them by script (area label → directory); enhancement → Features, bug → Fixes.
  *      `general` issues form their own group, listed FIRST: in the release notes, and in String
  *      Theory's changelog (the master one); anything neither bug nor enhancement is under Changes.
- *   3. Find which scripts' .user.js changed since `stable` — those get a stable link in the release.
+ *   3. Find which scripts' .user.js changed since the last GitHub release — those get a stable link in the release.
  *   4. Prepend a dated section to each affected script's CHANGELOG.md.
  *   5. (--yes) commit the changelogs on main, merge main→stable, push both.
  *   6. (--yes) create ONE dated GitHub Release whose body lists every changed script as a stable
  *      raw link pinned to the merge commit, with that script's changelog entries; then label every
  *      included issue `released`.
+ *
+ * A silent release moves `stable` to `main` and nothing else: userscript managers update, and
+ * the issues stay unlabelled, so the next full release lists them. Which scripts changed is
+ * measured from the last GitHub release (not from `stable`), so what a silent release shipped
+ * still gets its install link and changelog entry then.
  *
  * Releases are date-based (tag = YYYY.M.D) because each script keeps its own @version.
  */
@@ -30,6 +39,8 @@ import { fileURLToPath } from 'node:url';
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const REPO = 'majkinetor/musicbrainz-userscripts';
 const YES = process.argv.includes('--yes');
+const SILENT = process.argv.includes('--silent');
+const CI = !!process.env.CI;   // in the release workflow the PDF manual is required, not best-effort
 const raw = (sha, path) => `https://raw.githubusercontent.com/${REPO}/${sha}/${path}`;
 const issueUrl = n => `https://github.com/${REPO}/issues/${n}`;
 const tagUrl = t => `https://github.com/${REPO}/releases/tag/${t}`;
@@ -42,6 +53,8 @@ function run(cmd, args, opts = {}) { return execFileSync(cmd, args, { cwd: ROOT,
 const git = (...a) => run('git', a);
 const gh = (...a) => run('gh', a);
 function tryRun(fn) { try { return fn(); } catch (e) { return null; } }
+// the GitHub remote: `github` in the maintainer's clone, `origin` in a workflow's checkout
+const REMOTE = (tryRun(() => git('remote')) || '').split(/\r?\n/).includes('github') ? 'github' : 'origin';
 
 // area label → script directory (e.g. "area | apollo editor" → "apollo_editor")
 const AREA_RE = /^area \| (.+)$/;
@@ -116,8 +129,11 @@ function generalLines(general, level, bullet) {
   return out;
 }
 
+// since the last GitHub release's tag, or `stable` when there is none (or its tag isn't fetched)
 function changedScripts() {
-  const files = tryRun(() => git('diff', '--name-only', 'stable...main')) || '';
+  const prev = lastReleaseTime();
+  const base = prev && tryRun(() => git('rev-parse', '--verify', '--quiet', `refs/tags/${prev.tag}`)) ? prev.tag : 'stable';
+  const files = tryRun(() => git('diff', '--name-only', `${base}...main`)) || '';
   const dirs = new Set();
   for (const f of files.split('\n')) { const m = f.match(/^userscripts\/([^/]+)\/.*\.user\.js$/); if (m) dirs.add(m[1]); }
   return dirs;
@@ -176,9 +192,29 @@ function releaseBody(groups, changed, tag, sha, general) {
   return lines.join('\n');
 }
 
+// A silent release: `stable` moves to `main`, so installs update; nothing is written, released or labelled.
+function silent() {
+  tryRun(() => git('fetch', REMOTE, 'main', 'stable', '--tags', '--quiet'));
+  const ahead = git('rev-list', '--count', `${REMOTE}/stable..${REMOTE}/main`);
+  console.log(`
+=== silent release ${YES ? '(EXECUTE)' : '(dry run — pass --yes to execute)'} ===`);
+  console.log(`stable → main: ${ahead} commit(s); no changelog, no GitHub release, no labels`);
+  if (ahead === '0') { console.log('Nothing to do: stable is already main.'); return; }
+  if (!YES) return;
+  if (git('rev-parse', '--abbrev-ref', 'HEAD') !== 'main') throw new Error('publish --silent --yes must be run on `main`');
+  git('checkout', '-B', 'stable', `${REMOTE}/stable`);
+  git('merge', '--ff-only', `${REMOTE}/main`);
+  git('push', REMOTE, 'stable');
+  const sha = git('rev-parse', 'HEAD');
+  git('checkout', 'main');
+  console.log(`
+stable is now ${sha}`);
+}
+
 function main() {
+  if (SILENT) return silent();
   // sanity
-  tryRun(() => git('fetch', 'github', 'main', 'stable', '--quiet'));
+  tryRun(() => git('fetch', REMOTE, 'main', 'stable', '--tags', '--quiet'));
   const { groups, general, included } = collectIssues();
   const changed = changedScripts();
   // a changed script with no tracked issues still gets a changelog + release entry ("Small improvements")
@@ -242,21 +278,23 @@ function main() {
     run('node', [`userscripts/${BUNDLE}/build.mjs`]);
     const stage = [`userscripts/${BUNDLE}/string_theory.user.js`, `userscripts/${BUNDLE}/DOCS.md`];
     // #403: regenerate the PDF manual too. Best-effort — it needs `marked` installed in that folder
-    // and the Chromium apollo_editor's Playwright uses; a failure here must never block a release.
+    // and the repo root's Playwright Chromium. By hand a failure never blocks a release; in CI it does (#646).
     // It is attached to the GitHub Release below, not committed: twenty committed versions had
     // made up 291 MB of the repository, and PDFs barely compress against each other (#623).
     if (existsSync(resolve(ROOT, `userscripts/${BUNDLE}/build-pdf.mjs`))) {
       try { run('node', [`userscripts/${BUNDLE}/build-pdf.mjs`]); pdf = resolve(ROOT, `userscripts/${BUNDLE}/DOCS.pdf`); console.log('  ✓ regenerated DOCS.pdf'); }
-      catch (e) { console.warn(`  ⚠ DOCS.pdf skipped (${String(e.message).split('\n')[0]}); run \`pnpm --dir userscripts/${BUNDLE} install\` first to enable it`); }
+      catch (e) {
+        if (CI) throw new Error(`DOCS.pdf failed to build — nothing was committed or pushed: ${String(e.message).split(/\r?\n/)[0]}`);   // #646: a release without its manual
+        console.warn(`  ⚠ DOCS.pdf skipped (${String(e.message).split('\n')[0]}); run \`pnpm --dir userscripts/${BUNDLE} install\` first to enable it`); }
     }
     git('add', ...stage.filter(f => existsSync(resolve(ROOT, f))));
   }
   git('commit', '-m', `changelog: release ${tag}`);
-  git('push', 'github', 'main');
-  git('checkout', 'stable');
+  git('push', REMOTE, 'main');
+  git('checkout', '-B', 'stable', `${REMOTE}/stable`);
   git('merge', '--ff-only', 'main');
   const sha = git('rev-parse', 'HEAD');
-  git('push', 'github', 'stable');
+  git('push', REMOTE, 'stable');
   git('checkout', 'main');
 
   const body = releaseBody(groups, changed, tag, sha, general);

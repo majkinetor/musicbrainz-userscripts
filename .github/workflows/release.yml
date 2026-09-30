@@ -1,0 +1,62 @@
+# The release (#646): Actions → release → Run workflow. It runs dev/publish.mjs, which
+# otherwise needed the maintainer's machine.
+#   dry run         prints the changelog, the issues and the release notes; changes nothing
+#   release         changelogs committed on main, main → stable, the dated GitHub release with
+#                   the PDF manual attached, the issues labelled `released`
+#   silent release  main → stable only: installs update; no changelog, release or labels, so
+#                   the issues go out with the next full release
+# Commits, the release and the labels come from github-actions[bot].
+name: release
+permissions:
+  contents: write
+  issues: write
+on:
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: What to do
+        type: choice
+        options: [dry run, release, silent release]
+        default: dry run
+concurrency: { group: release, cancel-in-progress: false }
+jobs:
+  # the repo's gates first (parse, lint, builds, @unit); @critical already ran on each push to main
+  checks:
+    if: inputs.mode != 'dry run'
+    uses: ./.github/workflows/checks.yml
+    with:
+      critical: false
+
+  release:
+    needs: checks
+    # a dry run skips the checks and goes ahead; a real run only on green checks
+    if: ${{ !cancelled() && (needs.checks.result == 'success' || (inputs.mode == 'dry run' && needs.checks.result == 'skipped')) }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0          # every branch and tag: publish.mjs diffs against the last release
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: The PDF manual's tooling
+        if: inputs.mode == 'release'
+        run: |
+          pnpm --dir userscripts/string_theory install --frozen-lockfile
+          pnpm exec playwright install --with-deps chromium
+      - run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+      - name: Publish (${{ inputs.mode }})
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          case "${{ inputs.mode }}" in
+            'dry run')        node dev/publish.mjs ;;
+            'release')        node dev/publish.mjs --yes ;;
+            'silent release') node dev/publish.mjs --silent --yes ;;
+          esac

@@ -3,8 +3,8 @@
 //
 // Kept SEPARATE from build.mjs (and out of the pre-commit hook) because it needs
 // heavier tooling — `marked` (this folder's devDependency) for Markdown→HTML and
-// a headless Chromium (reused from apollo_editor's Playwright, which already has
-// the browser installed) for HTML→PDF. Run it on demand / before a release:
+// a headless Chromium (the repo root's Playwright, which the tests already use) for
+// HTML→PDF. The release workflow runs it (#646); by hand:
 //
 //   node userscripts/string_theory/build.mjs      # regenerate DOCS.md first
 //   node userscripts/string_theory/build-pdf.mjs  # then DOCS.md → DOCS.pdf
@@ -21,10 +21,11 @@ const ROOT = resolve(HERE, '../..');
 const DOCS_MD  = resolve(HERE, 'DOCS.md');
 const DOCS_PDF = resolve(HERE, 'DOCS.pdf');
 
-// Reuse apollo_editor's Playwright (its Chromium is already installed) so this
-// folder needs no second browser download.
-const require = createRequire(resolve(ROOT, 'userscripts/apollo_editor/package.json'));
-const { chromium } = require('playwright');
+// The repo root's Playwright (the test runner's; `pnpm exec playwright install chromium`
+// provides the browser), so this folder needs no second one. It used to borrow
+// apollo_editor's, whose link broke and cost the 2026.9.30 release its PDF (#646).
+const require = createRequire(resolve(ROOT, 'package.json'));
+const { chromium } = require('@playwright/test');
 
 const md = readFileSync(DOCS_MD, 'utf8');
 marked.setOptions({ gfm: true, breaks: false });

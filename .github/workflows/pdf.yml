@@ -1,0 +1,44 @@
+# The PDF manual for a release made outside the release workflow (#646): a GitHub release
+# published by hand, or on demand for any release tag (Actions → pdf → Run workflow).
+# The release workflow attaches the PDF itself: a release it creates with its own token
+# doesn't start this one.
+name: pdf
+permissions:
+  contents: write
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Release tag (e.g. 2026.9.30)
+        required: true
+jobs:
+  pdf:
+    runs-on: ubuntu-latest
+    env:
+      TAG: ${{ inputs.tag || github.event.release.tag_name }}
+    steps:
+      # main's tooling (build-pdf.mjs as fixed in #646), the release's documentation
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+      - name: The release's docs
+        run: |
+          git checkout "$TAG" -- userscripts
+          git checkout main -- userscripts/string_theory/build-pdf.mjs userscripts/string_theory/package.json userscripts/string_theory/pnpm-lock.yaml
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --dir userscripts/string_theory install --frozen-lockfile
+      - run: pnpm exec playwright install --with-deps chromium
+      - name: Build DOCS.pdf from the release's DOCS.md
+        run: node userscripts/string_theory/build-pdf.mjs
+      - name: Attach it
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release upload "$TAG" userscripts/string_theory/DOCS.pdf --clobber --repo "$GITHUB_REPOSITORY"

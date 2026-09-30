@@ -18,26 +18,36 @@ pnpm lint
 ## Checks
 
 - **Pre-commit hook** (`.githooks/`, set up by `pnpm install`): a staged userscript must parse and lint clean; then Credit Hoarder's `dist/` and the String Theory bundle are rebuilt from what's being committed, and the shared blocks re-synced.
-- **CI** (`.github/workflows/`): `checks.yml` on every push and pull request runs the syntax check, the linters, the design-token check and the `@unit` specs, then the `@critical` specs on test.musicbrainz.org. `suite.yml` runs the whole suite nightly.
+- **CI** (`.github/workflows/`):
+  - `checks.yml`, on every push and pull request, runs the syntax check, the linters, the design-token check and the `@unit` specs, then the `@critical` specs on test.musicbrainz.org. A pull request must also carry the builds of its sources (`node dev/regen.mjs --check`).
+  - `build.yml`, on every push to `main`, rebuilds what the hook builds (`node dev/regen.mjs`) and commits it as `github-actions[bot]` when a commit came without the hook: the web editor, another machine, `--no-verify`, a merge. Where the hook ran, it finds nothing to commit. The hook stays: it builds in the same commit (so a pinned install link works at once, on a feature branch too), and it stops a script that doesn't parse or lint.
+  - `suite.yml` runs the whole suite nightly.
 - **Tests** are in [`dev/test`](dev/test/README.md): one Playwright runner for every script, on test.musicbrainz.org, with a guard that refuses any write to production.
 
 ## Releasing
 
-Releases are dated (tag `YYYY.M.D`), one GitHub Release per publish.
+Releases are dated (tag `YYYY.M.D`), one GitHub Release per publish, made from **Actions → release → Run workflow** (`release.yml`), as `github-actions[bot]`. Its *mode*:
+
+- **dry run**: prints the changelog, the issues and the release notes; changes nothing.
+- **release**: checks first (as `checks.yml`, without `@critical`, which already ran on each push to `main`), then everything below, with the PDF manual built on the runner. It fails before anything is pushed if the PDF doesn't build.
+- **silent release**: `main` goes to `stable`, so installs update, and nothing else: no changelog, no GitHub release, no labels. Its issues go out with the next full release, and the scripts it shipped get their install links then.
+
+The same by hand, from a clean `main` (the PDF is then best-effort):
 
 ```sh
-node dev/publish.mjs            # dry run: prints the plan, changes nothing
-node dev/publish.mjs --yes      # on a clean main
+node dev/publish.mjs                  # dry run
+node dev/publish.mjs --yes            # release
+node dev/publish.mjs --silent --yes   # silent release
 ```
 
 A run:
 
 1. collects the closed issues not yet labelled `released` that have an `area | <script>` label and `bug` or `enhancement`, plus those labelled `general` (not `skip changelog` or `wontfix`); the labels are in [Standard 2](STANDARDS.md#standard-2);
 2. prepends a dated section to each script's `CHANGELOG.md` (*Features* from `enhancement`, *Fixes* from `bug`), with the `general` issues first in String Theory's;
-3. lists the scripts whose `.user.js` changed since `stable`, each with a pinned install link and one that follows `stable`;
+3. lists the scripts whose `.user.js` changed since the last GitHub release, each with a pinned install link and one that follows `stable`;
 4. with `--yes`: commits the changelogs, merges `main` into `stable`, pushes both, creates the release, attaches String Theory's `DOCS.pdf` to it, and labels the issues `released`.
 
-Changelogs are only ever written by this run.
+Changelogs are only ever written by this run. A release made by hand on GitHub gets its PDF from `pdf.yml`, which can also be run for any release tag.
 
 ## What's in `dev/`
 
@@ -54,7 +64,8 @@ Nothing here ships. A script belongs in its subsystem's folder, next to that fol
 | [`script-metrics/`](dev/script-metrics/README.md) | edits made with these scripts, counted from the MusicBrainz database dump, in Docker |
 | `site-proposals/`, `reports/` | design proposals and measurement reports kept for reference |
 | `templates/` | starting points: a script's README in the [compact style](STANDARDS.md#standard-12) |
-| `publish.mjs` | the release |
+| `publish.mjs` | the release (run by `release.yml`) |
+| `regen.mjs` | rebuilds everything the pre-commit hook builds; `--check` fails if that changes anything |
 | `gh-inbox.mjs` | every issue comment newer than the bot's last reply |
 | `align-md-tables.mjs` | pads Markdown tables so their columns line up |
 | `install-hook.mjs` | points `core.hooksPath` at `.githooks/` |
