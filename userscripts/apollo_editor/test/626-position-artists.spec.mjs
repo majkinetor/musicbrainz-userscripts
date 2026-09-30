@@ -66,13 +66,20 @@ test('track artists matched by their position on other editions', { tag: ['@sand
       // every listed duplicate scored = its tracklist fetched (they are fetched one at a time)
       await page.waitForFunction(() => { const c = [...document.querySelectorAll('#duplicates-tab .tc-dup-sim')]; return c.length > 0 && c.every(td => /%|\?|—/.test(td.textContent)); }, null, { timeout: 90000 }).catch(() => console.log('the Duplicates tab did not finish scoring'));
     }
-    await page.evaluate(() => { const a = [...document.querySelectorAll('a')].find(x => /^\s*Tracklist\s*$/.test(x.textContent)); if (a) a.click(); });
     const btn = '#tc-bar [data-act="match"], #tc-hdr [data-act="match"]';
-    await page.waitForSelector(btn, { timeout: 30000 });
     // the pass's own end: its summary line in Apollo's log
     const count = t => (t.match(/tracklist match: \d+ track/g) || []).length;
     const before = count(await logText());
-    await page.click(btn);
+    // A quick editor: the Tracklist tab and ⚡ Match in one go, before Apollo's tab watcher (a
+    // half-second tick) has seen the switch. Its refresh used to rebuild the table under the
+    // running pass, and every badge the pass set was lost (#638). When the button isn't there
+    // yet (no table before the tab), the slow way.
+    const quick = await page.evaluate(sel => {
+      const a = [...document.querySelectorAll('a')].find(x => /^\s*Tracklist\s*$/.test(x.textContent)); if (a) a.click();
+      const b = document.querySelector(sel); if (b) b.click(); return !!b;
+    }, btn);
+    if (!quick) { await page.waitForSelector(btn, { timeout: 30000 }); await page.click(btn); }
+    console.log(withRg ? 'A' : 'B', quick ? 'tab + Match at once' : 'tab, then Match');
     const finished = await page.waitForFunction(n => ((window.__apolloEditor.logMarkdown ? window.__apolloEditor.logMarkdown() : '').match(/tracklist match: \d+ track/g) || []).length > n, before, { timeout: 180000 }).then(() => true, () => false);
     await page.waitForTimeout(1500);   // the commits and any rebuild after the pass
     const all = await logText(), log = all.slice(all.lastIndexOf('Release: Going Places'));   // this scenario's part
@@ -84,7 +91,9 @@ test('track artists matched by their position on other editions', { tag: ['@sand
     for (const c of CASES) {
       const s = (rows.find(x => x.n === c.n) || { slots: [] }).slots[0], truth = T(c.n);
       if (c.want === 'not-pos') { check(!viaPos(log, c.artist), `${label} #${c.n} "${c.artist}" is NOT matched by position — ${c.why} (${s && s.status})`); continue; }
-      const linked = !!s && s.gid === truth.gids[0] && s.committed && [c.want, 'set'].includes(s.status);
+      // the badge itself, not a plain "set": a rebuild that dropped it (#638 — a tab switch rebuilt the
+      // table under a running pass) left every link right and every badge gone, and "set" let that pass
+      const linked = !!s && s.gid === truth.gids[0] && s.committed && s.status === c.want;
       check(linked && (c.want !== 'pos' || viaPos(log, c.artist)), `${label} #${c.n} "${c.artist}" → ${truth.names[0]}${c.want === 'pos' ? ', by position' : ''} — ${c.why} (${s && s.status}, ${s && s.gid && s.gid.slice(0, 8)})`);
       if (c.want === 'pos' && s) check(s.creditedAs === c.artist, `${label} #${c.n} keeps the seeded credited name "${c.artist}" (${JSON.stringify(s.creditedAs)})`);
     }

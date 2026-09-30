@@ -202,8 +202,8 @@ test("#591: rip log discid", { tag: ['@sandbox', '@login'] }, async ({ context }
   ck(dt.id === EXPECT_ID, 'and dropped, so the disc ID is the audio disc\'s — the same one again');
 
   /* ── 4. the drop zones ─────────────────────────────────────────────────────── */
-  const zones = await page.evaluate(() => [...document.querySelectorAll('#falcon-discid-zones .fd-zone')]
-    .map(z => ({ pos: z.dataset.position, tracks: z.dataset.tracks, mediumId: z.dataset.mediumId || null, off: z.classList.contains('off'), text: z.textContent.replace(/\s+/g, ' ').trim() })));
+  const zones = await until(() => page.evaluate(() => [...document.querySelectorAll('#falcon-discid-zones .fd-zone')]
+    .map(z => ({ pos: z.dataset.position, tracks: z.dataset.tracks, mediumId: z.dataset.mediumId || null, off: z.classList.contains('off'), text: z.textContent.replace(/\s+/g, ' ').trim() }))), z => z.length >= 1, { timeout: 15000 });
   console.log('\nzones:', JSON.stringify(zones, null, 1));
   ck(zones.length === 1 && zones[0].pos === '1', `one medium, one zone (${zones.length})`);
   ck(zones[0].tracks === '13', 'the zone knows how many tracks the medium has');
@@ -215,8 +215,10 @@ test("#591: rip log discid", { tag: ['@sandbox', '@login'] }, async ({ context }
   // a non-CD medium cannot have disc IDs and must say so rather than fail later
   STATE.media = MEDIA_TWO;
   const page2 = await open();
-  const zones2 = await page2.evaluate(() => [...document.querySelectorAll('#falcon-discid-zones .fd-zone')]
-    .map(z => ({ pos: z.dataset.position, off: z.classList.contains('off'), text: z.textContent.replace(/\s+/g, ' ').trim() })));
+  // the zones come after Falcon's /ws/2 media read, which waits its turn at the shared request
+  // gate (#633): read them once they are there, not straight after the page opens
+  const zones2 = await until(() => page2.evaluate(() => [...document.querySelectorAll('#falcon-discid-zones .fd-zone')]
+    .map(z => ({ pos: z.dataset.position, off: z.classList.contains('off'), text: z.textContent.replace(/\s+/g, ' ').trim() }))), z => z.length >= 2, { timeout: 15000 });
   console.log('two mediums:', JSON.stringify(zones2, null, 1));
   ck(zones2.length === 2, `a zone per medium (${zones2.length})`);
   ck(zones2[0].off === false && zones2[1].off === true, 'the CD is droppable, the DVD-Video is not');
