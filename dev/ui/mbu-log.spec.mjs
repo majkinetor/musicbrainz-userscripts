@@ -72,3 +72,40 @@ test('the window escapes text, links URLs, minimises, closes on Escape and remem
   const back = await page.evaluate(() => { L.open(); L.close(); window.__store.set('k', JSON.stringify({ open: true })); const L2 = mk(); L2.reopen(); return !!document.getElementById('mbu-logpop'); });
   check(back, 'left open, it is');
 });
+
+test('Clear empties the log; 20000 lines are kept by default', { tag: ['@unit'] }, async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const L = mk();   // no max: the default
+    for (let i = 0; i < 2500; i++) L.info('line ' + i);
+    L.warn('careful');
+    const kept = L.lines().length;
+    L.open();
+    const rowsBefore = document.querySelectorAll('#mbu-logpop .mbu-log-li').length;
+    document.querySelector('#mbu-logpop .mbu-logpop-clear').click();
+    await new Promise(z => requestAnimationFrame(() => requestAnimationFrame(z)));
+    const after = { lines: L.lines().length, counts: L.counts(), rows: document.querySelectorAll('#mbu-logpop .mbu-log-li').length, empty: !!document.querySelector('#mbu-logpop .mbu-log-empty'), md: L.markdown() };
+    L.info('after the clear');
+    await new Promise(z => requestAnimationFrame(() => requestAnimationFrame(z)));
+    return { kept, rowsBefore, after, rowsNow: document.querySelectorAll('#mbu-logpop .mbu-log-li').length };
+  });
+  check(r.kept === 2501 && r.rowsBefore === 2501, `2501 lines, all kept and shown (the old default kept 2000): ${r.kept}, ${r.rowsBefore} rows`);
+  check(r.after.lines === 0 && r.after.rows === 0 && r.after.empty && r.after.counts.warn === 0, `Clear empties the lines, the rows and the counts (${JSON.stringify({ ...r.after, md: undefined })})`);
+  check(/no activity logged/.test(r.after.md) && !/not kept/.test(r.after.md), 'and the Markdown says there is nothing, without an "earlier lines" note');
+  check(r.rowsNow === 1, `logging goes on after a clear (${r.rowsNow} row)`);
+});
+
+test('a toast with an action is clickable, runs it, and closes', { tag: ['@unit'] }, async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    let ran = 0;
+    const el = mbuToast('⚠ something happened', { action: { label: 'Copy log', onClick: () => { ran++; } } });
+    const btn = el.querySelector('.mbu-toast-btn');
+    const clickable = getComputedStyle(el).pointerEvents !== 'none';
+    btn.click();
+    await new Promise(z => setTimeout(z, 1100));
+    const plain = mbuToast('plain');
+    return { label: btn.textContent, clickable, ran, closed: !el.classList.contains('mbu-toast-on') || el.textContent === 'plain', plainInert: getComputedStyle(plain).pointerEvents === 'none', plainNoBtn: !plain.querySelector('.mbu-toast-btn') };
+  });
+  check(r.label === 'Copy log' && r.clickable, `the toast carries the button and takes clicks (${JSON.stringify(r)})`);
+  check(r.ran === 1 && r.closed, 'the button runs its action, and the toast closes');
+  check(r.plainInert && r.plainNoBtn, 'a toast without an action stays click-through, with no button');
+});

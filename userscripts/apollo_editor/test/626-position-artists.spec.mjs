@@ -15,8 +15,8 @@
 //   B — no release group: the duplicates carry it, common names included; the Duplicates
 //       view links the seeded artists that matched and marks the ones that didn't.
 // The outcome is read from the table, the reason from Apollo's log, where every position match
-// is recorded ("… via the same position"): writing the matches can make Apollo rebuild its table
-// once the pass ends (#575), and a matched artist then shows as set, without its badge.
+// is recorded ("… via the same position"). Writing the matches can make Apollo rebuild its table
+// once the pass ends (#575); the badges must survive it (#638).
 // APOLLO_EDITOR_SRC=<old build> to watch it fail.
 import { test, check, mbJson } from '../../../dev/test/harness.mjs';
 import { openApollo, apolloGm } from './ap.mjs';
@@ -99,16 +99,16 @@ test('track artists matched by their position on other editions', { tag: ['@sand
   const rgReqs = reqs.filter(u => /release-group=/.test(u) && /inc=recordings\+artist-credits/.test(u));
   check(rgReqs.length === 1, `one release-group request serves the rg source and the position source (${rgReqs.length})`);
   check(/via the same position on \d+ of \d+ other edition/.test(A.log), 'a position match says how many editions it rests on');
-  // the badge and the picker's section live until a rebuild: checked when there was none
-  if (A.rebuilt) console.log('A: the table was rebuilt after the pass — the badge and picker checks are skipped this run');
-  else {
+  // #638: a rebuild after the pass keeps each artist's match badge; one that loses it is logged
+  check(!/#638 a table rebuild lost/.test(A.log), 'A: no match badge is lost in a table rebuild (#638)');
+  {
     const tip = await page.evaluate(() => (document.querySelector('.tc-badge.pos') || {}).title || '');
     check(/matched by position: .* on \d+ of \d+ other edition/.test(tip), `a pos badge says what it rests on: "${tip}"`);
     const sec = await page.evaluate(async () => {
       const inp = [...document.querySelectorAll('.tc-search input.nm')].find(i => /Buzzard/i.test(i.value));
       if (!inp) return null;
       inp.focus();
-      for (let i = 0; i < 40 && !document.querySelector('.tc-acpop .tc-acsec'); i++) await new Promise(z => setTimeout(z, 100));
+      for (let i = 0; i < 100 && !document.querySelector('.tc-acpop .tc-acsec'); i++) await new Promise(z => setTimeout(z, 100));   // the search is paced (#633)
       const pop = document.querySelector('.tc-acpop');
       const out = pop ? { head: (pop.querySelector('.tc-acsec') || {}).textContent || '', votes: (pop.querySelector('.tc-acvotes') || {}).textContent || '', first: (pop.querySelector('.tc-acrow .nm') || {}).textContent || '' } : null;
       inp.blur(); return out;
@@ -120,6 +120,7 @@ test('track artists matched by their position on other editions', { tag: ['@sand
   const B = await seedAndMatch(false);
   console.log('B:', B.rebuilt ? '(rebuilt)' : '', JSON.stringify(B.rows.filter(r => CASES.some(c => c.n === r.n)).map(r => [r.n, r.slots[0].status, (r.slots[0].gid || '').slice(0, 8)])));
   check(B.finished, 'B: the match pass finishes');
+  check(!/#638 a table rebuild lost/.test(B.log), 'B: no match badge is lost in a table rebuild (#638)');
   for (const n of [1, 3, 5]) {
     const s = B.rows.find(x => x.n === n).slots[0], c = CASES.find(x => x.n === n);
     check(s.gid === T(n).gids[0] && viaPos(B.log, c.artist), `B #${n} resolves from the duplicates by position, with no release group linked (${s.status})`);

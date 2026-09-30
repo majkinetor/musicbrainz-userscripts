@@ -22,6 +22,12 @@ node dev/ui/verify-contrast-live.mjs --userstyle
 
 The live checks run against `test.musicbrainz.org` and abort every POST.
 
+## The log window and the toast
+
+Every script's activity log is `mbuLog()`: the last 20,000 lines of the session (about 4 MB), in a floating window with **Clear** (empties it, counts and all) and **⧉ Copy** (the whole log as Markdown, ready for a GitHub issue). Older lines past the limit are dropped, and the Markdown says how many.
+
+`mbuToast(msg, { action: { label, onClick } })` puts one button on a toast: it then takes clicks and stays up 12 s. A script uses it to ask for the log when something goes wrong in the wild, as Apollo does for #638.
+
 ## The four theme worlds
 
 `verify-contrast-live.mjs` runs one of four, and they are not

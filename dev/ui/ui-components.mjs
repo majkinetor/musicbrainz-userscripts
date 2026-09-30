@@ -96,6 +96,9 @@ const CSS = [
     'font:13px/1.35 var(--mbu-font);box-shadow:var(--mbu-shadow-lg);opacity:0;transition:opacity .2s;',
     'pointer-events:none;max-width:80vw;text-align:center;white-space:pre-wrap}',
     '#mbu-toast.mbu-toast-on{opacity:1}',
+    '#mbu-toast.mbu-toast-act{pointer-events:auto}',
+    '#mbu-toast .mbu-toast-btn{margin-left:10px;padding:2px 9px;border:1px solid currentColor;border-radius:5px;background:transparent;color:inherit;font:inherit;cursor:pointer}',
+    '#mbu-toast .mbu-toast-btn:hover{background:rgba(255,255,255,.18)}',
     '#mbu-toast.mbu-toast-ok{background:var(--mbu-ok)}',
     '#mbu-toast.mbu-toast-warn{background:var(--mbu-warn)}',
     '#mbu-toast.mbu-toast-error{background:var(--mbu-error)}',
@@ -133,12 +136,12 @@ const CSS = [
     '.mbu-logpop-h{display:flex;align-items:center;gap:8px;padding:10px 13px;',
     'border-bottom:1px solid var(--mbu-border-soft);color:var(--mbu-accent-text);cursor:move;user-select:none}',
     '.mbu-logpop-sp{margin-left:auto}',
-    '.mbu-logpop-copy,.mbu-logpop-x,.mbu-logpop-min{font-size:12px;color:var(--mbu-accent-text);',
+    '.mbu-logpop-clear,.mbu-logpop-copy,.mbu-logpop-x,.mbu-logpop-min{font-size:12px;color:var(--mbu-accent-text);',
     'background:var(--mbu-bg-hover);border:1px solid var(--mbu-border);border-radius:5px;',
     'padding:2px 9px;cursor:pointer;font-family:inherit}',
-    '.mbu-logpop-copy:hover,.mbu-logpop-x:hover,.mbu-logpop-min:hover{background:var(--mbu-accent-soft)}',
+    '.mbu-logpop-clear:hover,.mbu-logpop-copy:hover,.mbu-logpop-x:hover,.mbu-logpop-min:hover{background:var(--mbu-accent-soft)}',
     // minimised: just the header bar, so it can sit out of the way mid-run
-    '#mbu-logpop.min .mbu-log-list,#mbu-logpop.min .mbu-logpop-copy,#mbu-logpop.min .mbu-logpop-x{display:none}',
+    '#mbu-logpop.min .mbu-log-list,#mbu-logpop.min .mbu-logpop-clear,#mbu-logpop.min .mbu-logpop-copy,#mbu-logpop.min .mbu-logpop-x{display:none}',
     '#mbu-logpop.min{max-height:none;width:auto}',
     '#mbu-logpop.min .mbu-logpop-sp{display:none}',
     '.mbu-log-badge{color:var(--mbu-border-strong);font-size:11px}',
@@ -309,7 +312,10 @@ function mbuHelpEl(name, label) {
     return a;
 }
 
-// Toast. mbuToast(msg) or mbuToast(msg, { ms, kind, at:{x,y} }).
+// Toast. mbuToast(msg) or mbuToast(msg, { ms, kind, at:{x,y}, action:{ label, onClick } }).
+//
+// An action adds one button to the toast (e.g. "Copy log"): the toast is then clickable,
+// stays up longer (12 s unless ms says otherwise), and closes when the button is used.
 //
 // Severity is inferred from a leading warning/tick glyph when not given — Art
 // Station already did that and it is why its toasts reached its log with the
@@ -330,8 +336,17 @@ function mbuToast(msg, opts) {
         el.id = 'mbu-toast';
         (document.body || document.documentElement).appendChild(el);
     }
-    el.className = 'mbu-toast-on' + (kind !== 'info' ? ' mbu-toast-' + kind : '');
+    el.className = 'mbu-toast-on' + (kind !== 'info' ? ' mbu-toast-' + kind : '') + (opts.action ? ' mbu-toast-act' : '');
     el.textContent = s;
+    if (opts.action) {
+        var b = document.createElement('button');
+        b.type = 'button'; b.className = 'mbu-toast-btn'; b.textContent = opts.action.label || 'OK';
+        b.onclick = function () {
+            try { if (opts.action.onClick) opts.action.onClick(b); } catch (e) { /* the toast still closes */ }
+            clearTimeout(_mbuToastT); _mbuToastT = setTimeout(function () { el.className = ''; }, 900);
+        };
+        el.appendChild(b);
+    }
     // Anchor above a click point when asked, clamped into the viewport; otherwise
     // fall back to the centred default by clearing the inline placement.
     if (opts.at) {
@@ -344,7 +359,7 @@ function mbuToast(msg, opts) {
         el.style.left = ''; el.style.top = ''; el.style.bottom = ''; el.style.transform = '';
     }
     clearTimeout(_mbuToastT);
-    _mbuToastT = setTimeout(function () { el.className = ''; }, opts.ms || 2600);
+    _mbuToastT = setTimeout(function () { el.className = ''; }, opts.ms || (opts.action ? 12000 : 2600));
     return el;
 }
 
@@ -415,7 +430,7 @@ function mbRestackCorner(corner) {
 //   var LOG = mbuLog({ name: 'Fusion', version: VERSION, key: 'fusion.logwin' });
 //   LOG.info('…'); LOG.warn(…); LOG.err(…) (or .error); LOG.ok(…); LOG.debug(…)
 //   LOG.open(); LOG.close(); LOG.reopen()   // reopen: only if it was left open
-//   LOG.markdown(); LOG.copy(btn); LOG.lines(); LOG.messages(); LOG.counts()
+//   LOG.markdown(); LOG.copy(btn); LOG.clear(); LOG.lines(); LOG.messages(); LOG.counts()
 //
 // o.name / o.version  the Markdown summary's title (version may be a function)
 // o.subtitle          optional function; its text follows the title (e.g. the release)
@@ -423,7 +438,7 @@ function mbRestackCorner(corner) {
 // o.key               storage key for the window's open/minimised/position state
 // o.load / o.save     that storage (default GM_getValue / GM_setValue)
 // o.before            called before the window opens (e.g. to inject the script's CSS)
-// o.max               lines kept (default 2000)
+// o.max               lines kept (default 20000: about 4 MB; 2000 dropped a long session's start)
 //
 // A long run keeps only the last o.max lines, and the Markdown says how many went
 // before them; the copies this replaced grew for the whole session. An open
@@ -432,7 +447,7 @@ function mbRestackCorner(corner) {
 // long matching run.
 function mbuLog(o) {
     o = o || {};
-    var max = o.max || 2000, buf = [], dropped = 0, warn = 0, error = 0, win = null;
+    var max = o.max || 20000, buf = [], dropped = 0, warn = 0, error = 0, win = null;
     var pad = function (n, w) { return String(n).padStart(w || 2, '0'); };
     var ts = function (d) { return pad(d.getHours()) + ':' + pad(d.getMinutes()) + ':' + pad(d.getSeconds()) + '.' + pad(d.getMilliseconds(), 3); };
     var str = function (v) {
@@ -511,6 +526,7 @@ function mbuLog(o) {
         var st = state();
         var pop = document.createElement('div'); pop.id = 'mbu-logpop'; pop.className = 'mbu-logpop';
         pop.innerHTML = '<div class="mbu-logpop-h"><b>' + esc(o.header || 'Activity log') + '</b> <span class="mbu-log-badge"></span><span class="mbu-logpop-sp"></span>'
+            + '<button class="mbu-logpop-clear" type="button" title="Clear the log (the lines so far are gone)">Clear</button>'
             + '<button class="mbu-logpop-copy" type="button" title="Copy as Markdown (paste into a GitHub issue)">⧉ Copy</button>'
             + '<button class="mbu-logpop-min" type="button" title="Minimize">–</button>'
             + '<button class="mbu-logpop-x" type="button" title="Close">✕</button></div>'
@@ -547,7 +563,9 @@ function mbuLog(o) {
                 if (!queued) { queued = true; requestAnimationFrame(paint); }
             },
             off: function () { document.removeEventListener('keydown', onKey); },
+            cleared: function () { list.innerHTML = '<div class="mbu-log-empty">No activity yet.</div>'; showBadge(); },
         };
+        pop.querySelector('.mbu-logpop-clear').onclick = function () { clear(); };
         pop.querySelector('.mbu-logpop-copy').onclick = function () { copy(pop.querySelector('.mbu-logpop-copy')); };
         var minBtn = pop.querySelector('.mbu-logpop-min');
         var setMin = function (m) {
@@ -581,6 +599,11 @@ function mbuLog(o) {
         document.addEventListener('keydown', onKey);
         return pop;
     }
+    // empty the log: the lines, the counts and the "earlier lines not kept" note
+    function clear() {
+        buf = []; dropped = 0; warn = 0; error = 0;
+        if (win) win.cleared();
+    }
     // quiet: closing to reopen, so the remembered "open" stays as it is
     function close(quiet) {
         var stray = document.getElementById('mbu-logpop');
@@ -601,6 +624,7 @@ function mbuLog(o) {
         isOpen: function () { return !!win; },
         markdown: markdown,
         copy: copy,
+        clear: clear,
         lines: function () { return buf.map(line); },
         messages: function () { return buf.map(function (e) { return e.msg; }); },
         counts: function () { return { warn: warn, error: error }; },
