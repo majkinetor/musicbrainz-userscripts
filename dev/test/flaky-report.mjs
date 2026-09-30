@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // Which specs keep failing (#647): reads the suite history (dev/test/suite-history.mjs) and
-// lists every spec that failed or was flaky in the last N runs, most often first.
+// lists every spec that failed in the last N runs, most often first.
 //
 //   node dev/test/flaky-report.mjs [history.json] [--runs 30]
 //
@@ -20,16 +20,16 @@ const load = () => {
 const runs = Object.entries(JSON.parse(load())).slice(0, N);   // newest first
 const specs = new Map();
 for (const [at, r] of runs) {
-  for (const [kind, list] of [['failed', r.failures || []], ['flaky', r.flakes || []]]) for (const f of list) {
-    const s = specs.get(f.name) || { name: f.name, failed: 0, flaky: 0, last: at, error: f.error || '' };
-    s[kind]++; specs.set(f.name, s);
+  for (const f of r.failures || []) {
+    const s = specs.get(f.name) || { name: f.name, failed: 0, last: at, error: f.error || '' };
+    s.failed++; specs.set(f.name, s);
   }
 }
 console.log(`${runs.length} run(s), ${runs.length ? runs[runs.length - 1][0] + ' … ' + runs[0][0] : ''}\n`);
-const rows = [...specs.values()].sort((a, b) => (b.failed + b.flaky) - (a.failed + a.flaky) || b.last.localeCompare(a.last));
+const rows = [...specs.values()].sort((a, b) => b.failed - a.failed || b.last.localeCompare(a.last));
 if (!rows.length) console.log('Nothing failed.');
 for (const s of rows) {
-  const verdict = runs.length > 2 && s.failed === runs.length ? 'BROKEN' : s.failed + s.flaky > 1 ? 'flaky' : 'once';
-  console.log(`${String(s.failed).padStart(3)} failed ${String(s.flaky).padStart(3)} flaky  ${verdict.padEnd(6)}  last ${s.last}  ${s.name}`);
-  if (s.error) console.log(`${' '.repeat(29)}${s.error.slice(0, 160)}`);
+  const verdict = runs.length > 2 && s.failed === runs.length ? 'BROKEN' : s.failed > 1 ? 'flaky' : 'once';
+  console.log(`${String(s.failed).padStart(3)} failed  ${verdict.padEnd(6)}  last ${s.last}  ${s.name}`);
+  if (s.error) console.log(`${' '.repeat(19)}${s.error.slice(0, 160)}`);
 }

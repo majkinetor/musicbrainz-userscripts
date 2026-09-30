@@ -41,7 +41,7 @@ jobs:
       # The README badge says how many passed and failed, not only "failing": a suite this
       # size on a shared sandbox has a spec or two red on most nights (#637). Shields reads
       # the numbers from suite.json on the `badges` branch. history.json beside it keeps every
-      # run, newest first: counts, each failure with its error, the flaky specs (#647);
+      # run, newest first: counts, how long it took, each failure with its error (#647);
       # node dev/test/flaky-report.mjs lists what keeps failing.
       - name: Badge and history
         if: ${{ !cancelled() && github.ref == 'refs/heads/main' }}
