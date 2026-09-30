@@ -1577,11 +1577,12 @@
     #ii-all-pop .ii-all-pick.other { border-color: var(--mbu-error); }
     #ii-all-pop .ii-all-pick.sel { border-color: var(--mbu-accent); background: var(--mbu-bg-hover); }
     #ii-all-pop .ii-all-pick .ii-all-n { color: var(--mbu-text-weak); }
-    #ii-all-pop .ii-all-line { display: grid; grid-template-columns: 14px 18px 96px 1fr auto; gap: 6px; align-items: center; padding: 3px 8px; border-radius: 5px; }
+    #ii-all-pop .ii-all-line { display: grid; grid-template-columns: 14px 18px 96px 1fr auto auto; gap: 6px; align-items: center; padding: 3px 8px; border-radius: 5px; }
     #ii-all-pop .ii-all-ico svg { width: 14px; height: 14px; display: block; }
     #ii-all-pop .ii-all-isrc { font-family: var(--mbu-font-mono); }
     #ii-all-pop .ii-all-note { color: var(--mbu-text-dim); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     #ii-all-pop .ii-all-at { cursor: help; }
+    #ii-all-pop .ii-all-len { font-variant-numeric: tabular-nums; color: var(--mbu-text-dim); text-align: right; }
     #ii-all-pop .ii-all-sub { color: var(--mbu-text-weak); }
     #ii-all-pop .ii-all-mark { text-align: center; }
     #ii-all-pop .ii-all-ok .ii-all-mark { color: var(--mbu-ok); }
@@ -2365,7 +2366,7 @@
     if (l.at === 'here') p.push('<span class="ii-all-at" title="' + esc(allAtText(l)) + '">📍</span>');
     else if (l.at) p.push('<span class="ii-all-at" title="' + esc(allAtText(l)) + '">↪ ' + esc(l.at) + '</span>');
     if (l.isrc && l.isrc !== isrc) p.push('<span class="ii-all-isrc">' + esc(l.isrc) + '</span>');
-    if (l.song && l.song.title) p.push(esc('"' + l.song.title + '"' + (l.song.artist ? ' — ' + l.song.artist : '') + (l.song.dur ? ' ' + l.song.dur : '')));
+    if (l.song && l.song.title) p.push(esc('"' + l.song.title + '"' + (l.song.artist ? ' — ' + l.song.artist : '')));   // the length has its own column
     if (l.note) p.push('<span class="ii-all-sub">' + esc(l.note) + '</span>');
     if (l.sxLink) p.push('<a class="ii-all-sxlink" href="' + esc(SX_HOME) + '" target="_blank" rel="noopener" title="SoundExchange is blocked — solve its captcha in the browser, then click or right-click All">↗</a>');
     return p.join(' ');
@@ -2514,6 +2515,7 @@
       res.lines.map((l, i) => (pop._sel && l.isrc !== pop._sel) ? '' :
         '<div class="ii-all-line ii-all-' + l.state + '"><span class="ii-all-mark">' + ALL_MARK[l.state] + '</span><span class="ii-all-ico">' + icon(l.key) + '</span>' +
         '<span class="ii-all-name">' + esc(l.name) + '</span><span class="ii-all-note" title="' + esc(allLineText(l, res.isrc)) + '">' + allLineHtml(l, res.isrc) + '</span>' +
+        '<span class="ii-all-len">' + esc((l.song && l.song.dur) || '') + '</span>' +
         (l.state === ALL_DIFF ? '<button type="button" class="ii-all-use" data-i="' + i + '" title="put ' + esc(l.isrc) + ' in the row">use</button>' : '<span></span>') + '</div>').join('');
     placeAllPop(pop);
   }
@@ -2548,10 +2550,11 @@
     if (copy) {
       const cell = x => String(x).replace(/\|/g, '\\|');
       const t = RELEASE.tracks[idx];
-      const md = '**Track ' + num + '** · ' + cell(t.title || '') + ' · `' + res.isrc + '`\n\n| | Provider | ISRC | Track | Length | Note |\n|:-:|---|---|---|---|---|\n' +
-        res.lines.map(l => '| ' + ALL_MARK[l.state] + ' | ' + cell(l.name) + ' | ' + (l.isrc ? '`' + l.isrc + '`' : '') + ' | ' +
+      const md = '**Track ' + num + '** · ' + cell(t.title || '') + ' · `' + res.isrc + '`\n\n| | Provider | Track | Length | Note |\n|:-:|---|---|---|---|\n' +
+        // no ISRC column: the header's is every line's, except where an album has another one — the note names that
+        res.lines.map(l => '| ' + ALL_MARK[l.state] + ' | ' + cell(l.name) + ' | ' +
           cell(l.song && l.song.title ? l.song.title + (l.song.artist ? ' — ' + l.song.artist : '') : '') + ' | ' + cell((l.song && l.song.dur) || '') + ' | ' +
-          cell([allAtText(l), l.note || ''].filter(Boolean).join(' · ')) + ' |').join('\n') + '\n';
+          cell([l.isrc && l.isrc !== res.isrc ? '`' + l.isrc + '`' : '', allAtText(l), l.note || ''].filter(Boolean).join(' · ')) + ' |').join('\n') + '\n';
       const said = (ok) => { copy.textContent = ok ? 'copied ✓' : 'copy failed'; copy.classList.toggle('done', ok); setTimeout(() => { copy.textContent = 'copy'; copy.classList.remove('done'); }, 1500); };
       try { navigator.clipboard.writeText(md).then(() => said(true), () => said(false)); } catch (err) { said(false); }
       Log.info('All #' + num + ': comparison copied as Markdown');

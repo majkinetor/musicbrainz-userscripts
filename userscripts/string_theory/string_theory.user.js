@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         String Theory
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.9.30.214102
+// @version      2026.9.30.220619
 // @description  Unified bundle of 8 MusicBrainz userscripts (apollo_editor, art_station, credit_hoarder, fusion, group_therapy, isrc_scout, mammoth, platform_check). Built by userscripts/string_theory/build.mjs — do not hand-edit.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCIgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0Ij4NCiAgPCEtLSBodWItYW5kLXNwb2tlICJuZXR3b3JrIiBnbHlwaCwgc2luZ2xlIHZpdmlkIHZpb2xldCBvbiB0cmFuc3BhcmVudCBzbyBpdCByZWFkcyBvbiBib3RoIGRhcmsgYW5kIGxpZ2h0IHBhZ2VzIC0tPg0KICA8ZyBmaWxsPSJub25lIiBzdHJva2U9IiM3YzVjZmYiIHN0cm9rZS13aWR0aD0iNC42IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMzIgMTUiLz4NCiAgICA8cGF0aCBkPSJNMzIgMzIgTDQ2LjUgMjMuNSIvPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMNDYuNSA0MC41Ii8+DQogICAgPHBhdGggZD0iTTMyIDMyIEwzMiA0OSIvPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMTcuNSA0MC41Ii8+DQogICAgPHBhdGggZD0iTTMyIDMyIEwxNy41IDIzLjUiLz4NCiAgPC9nPg0KICA8ZyBmaWxsPSIjN2M1Y2ZmIj4NCiAgICA8Y2lyY2xlIGN4PSIzMiIgY3k9IjMyIiByPSI4LjYiLz4NCiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjE5LjUiIHI9IjYuNCIvPg0KICAgIDxjaXJjbGUgY3g9IjQ5IiBjeT0iMTkuNSIgcj0iNi40Ii8+DQogICAgPGNpcmNsZSBjeD0iMzIiIGN5PSI1NyIgcj0iNi40Ii8+DQogIDwvZz4NCiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjN2M1Y2ZmIiBzdHJva2Utd2lkdGg9IjMuOCI+DQogICAgPGNpcmNsZSBjeD0iMzIiIGN5PSI3IiByPSI0LjkiLz4NCiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjQ0LjUiIHI9IjQuOSIvPg0KICAgIDxjaXJjbGUgY3g9IjQ5IiBjeT0iNDQuNSIgcj0iNC45Ii8+DQogIDwvZz4NCjwvc3ZnPg0K
@@ -82,7 +82,7 @@
 // Bundles (verbatim, each wrapped in a run-at gate): apollo_editor, art_station, credit_hoarder, fusion, group_therapy, isrc_scout, mammoth, platform_check.
 
 try {
-  console.log('%c String Theory %c v2026.9.30.214102 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
+  console.log('%c String Theory %c v2026.9.30.220619 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
   console.log("String Theory bundles:\n  · Apollo Editor v2026.9.30.092616\n  · Art Station v2026.9.30.191939\n  · Credit Hoarder v2026.9.30.192230\n  · Fusion v2026.9.30.092616\n  · Group Therapy v2026.9.30.092616\n  · ISRC Scout v2026.9.30.214101\n  · Mammoth v2026.9.30\n  · Platform Check v2026.9.30.193105");
 } catch (e) {}
 
@@ -36331,11 +36331,12 @@ Created this ${kind} while adding credits parsed from text to ${relUrl}`;
     #ii-all-pop .ii-all-pick.other { border-color: var(--mbu-error); }
     #ii-all-pop .ii-all-pick.sel { border-color: var(--mbu-accent); background: var(--mbu-bg-hover); }
     #ii-all-pop .ii-all-pick .ii-all-n { color: var(--mbu-text-weak); }
-    #ii-all-pop .ii-all-line { display: grid; grid-template-columns: 14px 18px 96px 1fr auto; gap: 6px; align-items: center; padding: 3px 8px; border-radius: 5px; }
+    #ii-all-pop .ii-all-line { display: grid; grid-template-columns: 14px 18px 96px 1fr auto auto; gap: 6px; align-items: center; padding: 3px 8px; border-radius: 5px; }
     #ii-all-pop .ii-all-ico svg { width: 14px; height: 14px; display: block; }
     #ii-all-pop .ii-all-isrc { font-family: var(--mbu-font-mono); }
     #ii-all-pop .ii-all-note { color: var(--mbu-text-dim); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     #ii-all-pop .ii-all-at { cursor: help; }
+    #ii-all-pop .ii-all-len { font-variant-numeric: tabular-nums; color: var(--mbu-text-dim); text-align: right; }
     #ii-all-pop .ii-all-sub { color: var(--mbu-text-weak); }
     #ii-all-pop .ii-all-mark { text-align: center; }
     #ii-all-pop .ii-all-ok .ii-all-mark { color: var(--mbu-ok); }
@@ -37119,7 +37120,7 @@ Created this ${kind} while adding credits parsed from text to ${relUrl}`;
     if (l.at === 'here') p.push('<span class="ii-all-at" title="' + esc(allAtText(l)) + '">📍</span>');
     else if (l.at) p.push('<span class="ii-all-at" title="' + esc(allAtText(l)) + '">↪ ' + esc(l.at) + '</span>');
     if (l.isrc && l.isrc !== isrc) p.push('<span class="ii-all-isrc">' + esc(l.isrc) + '</span>');
-    if (l.song && l.song.title) p.push(esc('"' + l.song.title + '"' + (l.song.artist ? ' — ' + l.song.artist : '') + (l.song.dur ? ' ' + l.song.dur : '')));
+    if (l.song && l.song.title) p.push(esc('"' + l.song.title + '"' + (l.song.artist ? ' — ' + l.song.artist : '')));   // the length has its own column
     if (l.note) p.push('<span class="ii-all-sub">' + esc(l.note) + '</span>');
     if (l.sxLink) p.push('<a class="ii-all-sxlink" href="' + esc(SX_HOME) + '" target="_blank" rel="noopener" title="SoundExchange is blocked — solve its captcha in the browser, then click or right-click All">↗</a>');
     return p.join(' ');
@@ -37268,6 +37269,7 @@ Created this ${kind} while adding credits parsed from text to ${relUrl}`;
       res.lines.map((l, i) => (pop._sel && l.isrc !== pop._sel) ? '' :
         '<div class="ii-all-line ii-all-' + l.state + '"><span class="ii-all-mark">' + ALL_MARK[l.state] + '</span><span class="ii-all-ico">' + icon(l.key) + '</span>' +
         '<span class="ii-all-name">' + esc(l.name) + '</span><span class="ii-all-note" title="' + esc(allLineText(l, res.isrc)) + '">' + allLineHtml(l, res.isrc) + '</span>' +
+        '<span class="ii-all-len">' + esc((l.song && l.song.dur) || '') + '</span>' +
         (l.state === ALL_DIFF ? '<button type="button" class="ii-all-use" data-i="' + i + '" title="put ' + esc(l.isrc) + ' in the row">use</button>' : '<span></span>') + '</div>').join('');
     placeAllPop(pop);
   }
@@ -37302,10 +37304,11 @@ Created this ${kind} while adding credits parsed from text to ${relUrl}`;
     if (copy) {
       const cell = x => String(x).replace(/\|/g, '\\|');
       const t = RELEASE.tracks[idx];
-      const md = '**Track ' + num + '** · ' + cell(t.title || '') + ' · `' + res.isrc + '`\n\n| | Provider | ISRC | Track | Length | Note |\n|:-:|---|---|---|---|---|\n' +
-        res.lines.map(l => '| ' + ALL_MARK[l.state] + ' | ' + cell(l.name) + ' | ' + (l.isrc ? '`' + l.isrc + '`' : '') + ' | ' +
+      const md = '**Track ' + num + '** · ' + cell(t.title || '') + ' · `' + res.isrc + '`\n\n| | Provider | Track | Length | Note |\n|:-:|---|---|---|---|\n' +
+        // no ISRC column: the header's is every line's, except where an album has another one — the note names that
+        res.lines.map(l => '| ' + ALL_MARK[l.state] + ' | ' + cell(l.name) + ' | ' +
           cell(l.song && l.song.title ? l.song.title + (l.song.artist ? ' — ' + l.song.artist : '') : '') + ' | ' + cell((l.song && l.song.dur) || '') + ' | ' +
-          cell([allAtText(l), l.note || ''].filter(Boolean).join(' · ')) + ' |').join('\n') + '\n';
+          cell([l.isrc && l.isrc !== res.isrc ? '`' + l.isrc + '`' : '', allAtText(l), l.note || ''].filter(Boolean).join(' · ')) + ' |').join('\n') + '\n';
       const said = (ok) => { copy.textContent = ok ? 'copied ✓' : 'copy failed'; copy.classList.toggle('done', ok); setTimeout(() => { copy.textContent = 'copy'; copy.classList.remove('done'); }, 1500); };
       try { navigator.clipboard.writeText(md).then(() => said(true), () => said(false)); } catch (err) { said(false); }
       Log.info('All #' + num + ': comparison copied as Markdown');

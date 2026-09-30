@@ -85,7 +85,9 @@ test('#643: All — agreement, a disputed ISRC with [use], the tooltip, SoundExc
   await page.locator('#ii-all-pop .ii-all-copy').click();
   const md = await page.evaluate(() => window.__md);
   console.log('md', md);
-  check(md && /^\*\*Track 1\*\*/.test(md) && /\| Provider \| ISRC \| Track \| Length \| Note \|/.test(md) && /\| ✓ \| Deezer \| `USQX91300101` \| Give Life Back to Music \| 4:34 \| +\|/.test(md) && /\| ✓ \| Apple \| `USQX91300101` \| Give Life Back to Music \| 4:3\d \| same position on the album \|/.test(md), 'copy puts the comparison on the clipboard as a Markdown table: track, length, note');
+  check(md && /^\*\*Track 1\*\*/.test(md) && /\| Provider \| Track \| Length \| Note \|/.test(md) && !/\| ISRC \|/.test(md) && /\| ✓ \| Deezer \| Give Life Back to Music \| 4:34 \| +\|/.test(md) && /\| ✓ \| Apple \| Give Life Back to Music \| 4:3\d \| same position on the album \|/.test(md), 'copy puts the comparison on the clipboard as a Markdown table: track, length, note (no ISRC column: the header has it)');
+  const lens = await page.evaluate(() => [...document.querySelectorAll('#ii-all-pop .ii-all-line')].map(l => [l.querySelector('.ii-all-len').textContent, l.querySelector('.ii-all-note').textContent]));
+  check(lens.some(([len, note]) => /^\d+:\d\d$/.test(len) && !/\d+:\d\d/.test(note)), `the tooltip has the length in its own column (${JSON.stringify(lens.slice(0, 2))})`);
   check(await page.locator('#ii-all-pop .ii-all-copy').textContent() === 'copied ✓', 'the button says it copied')
   await page.keyboard.press('Escape');
   check(await page.locator('#ii-all-pop').count() === 0, 'Escape closes it');
