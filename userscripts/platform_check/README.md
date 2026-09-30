@@ -51,6 +51,8 @@ MusicBrainz treats a different barcode or a different format as a different rele
 | right | open the platform's search | add the link in the background |
 | middle | | add the link even when [link confidence](#link-confidence) withholds it, in the foreground |
 
+A middle click on a link that passes link confidence is a plain foreground add. One it overrides is marked in the edit note, with the reason: *(added by hand over link confidence: barcode not confirmed)*.
+
 The footer's **+** adds every confirmed link (middle-click: the withheld ones too) and **↗** opens them all. A background add opens an inactive tab that submits the edit and closes itself; the Discogs master goes onto the release group the same way.
 
 > [!NOTE]

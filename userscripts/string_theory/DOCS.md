@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-09-30 17:35 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-09-30 17:58 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -1151,6 +1151,8 @@ MusicBrainz treats a different barcode or a different format as a different rele
 | left | open the page (or the platform's search, if not found) | open the release editor with the link added, for you to review |
 | right | open the platform's search | add the link in the background |
 | middle | | add the link even when [link confidence](#link-confidence) withholds it, in the foreground |
+
+A middle click on a link that passes link confidence is a plain foreground add. One it overrides is marked in the edit note, with the reason: *(added by hand over link confidence: barcode not confirmed)*.
 
 The footer's **+** adds every confirmed link (middle-click: the withheld ones too) and **↗** opens them all. A background add opens an inactive tab that submits the edit and closes itself; the Discogs master goes onto the release group the same way.
 

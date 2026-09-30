@@ -86,6 +86,13 @@ test.describe('strict barcode confidence', () => {
     check(one.queued.length === 1 && one.queued[0] === target, `…with the withheld ${target} link queued (${one.queued.join(', ')})`);
     const log1 = await logText(page);
     check(new RegExp(target + ' is withheld by barcode/format confidence — added anyway').test(log1), 'the log says it was added anyway');
+    const forced1 = await page.evaluate(() => { const e = Object.entries(localStorage).find(([k]) => /^pc:forced:[0-9a-f-]{36}$/.test(k)); return e ? JSON.parse(e[1]) : null; });
+    check(forced1 && Object.values(forced1).length === 1 && /barcode/.test(Object.values(forced1)[0]), `…and recorded for the edit note, with why (${JSON.stringify(forced1)})`);
+    // a legitimate find (the exact-barcode Tidal album): a middle click is just a foreground add
+    await page.evaluate(() => { window.__opened = []; Object.keys(localStorage).filter(k => /^pc:(pending|forced):/.test(k)).forEach(k => localStorage.removeItem(k)); });
+    await middle('#ico-tidal');
+    const legit = await page.evaluate(() => ({ opened: window.__opened.length, queued: Object.keys(JSON.parse(Object.entries(localStorage).find(([k]) => /^pc:pending:[0-9a-f-]{36}$/.test(k))?.[1] || '{}')), forced: Object.keys(localStorage).some(k => /^pc:forced:/.test(k)) }));
+    check(legit.opened === 1 && legit.queued.join() === 'tidal' && !legit.forced, `on a legitimate find a middle click adds it like a left click, nothing marked as forced (${JSON.stringify(legit)})`);
     // + : every confirmed link, the withheld ones included
     await page.evaluate(() => { window.__opened = []; });
     const blockedAll = await page.evaluate(() => [...document.querySelectorAll('.pc-row.pc-blocked')].map(r => r.id.replace(/^row-/, '')).filter(p => document.getElementById('ico-' + p)?.textContent.trim() === '✓' && !document.getElementById('ico-' + p).classList.contains('pc-ico-circled')));

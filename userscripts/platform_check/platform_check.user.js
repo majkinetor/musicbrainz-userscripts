@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Platform Check
 // @namespace    http://tampermonkey.net/
-// @version      2026.9.30.173332
+// @version      2026.9.30.175549
 // @description  Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+DQogIDx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CiAgDQogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJhMWE1MiIgc3Ryb2tlLXdpZHRoPSI5IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik00MCA4OCBBMzQgMzQgMCAwIDEgNDAgNDAiLz4NCiAgICA8cGF0aCBkPSJNMjkgOTkgQTUwIDUwIDAgMCAxIDI5IDI5Ii8+DQogICAgPHBhdGggZD0iTTg4IDg4IEEzNCAzNCAwIDAgMCA4OCA0MCIvPg0KICAgIDxwYXRoIGQ9Ik05OSA5OSBBNTAgNTAgMCAwIDAgOTkgMjkiLz4NCiAgPC9nPg0KICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyMCIgZmlsbD0iI2U4MjAxYSIvPg0KPC9zdmc+DQo=
@@ -905,16 +905,23 @@ async function injectInto(urls, storageKey) {
         if (injected > 0) { try { localStorage.removeItem(storageKey); } catch (_) {} }
     }
 
+    // #641: links added by a middle click, over link confidence ({ url: reason }), so the note
+    // doesn't claim they passed it. Read once, then dropped with the queue.
+    let forced = {};
+    const forcedKey = storageKey.replace(/^pc:pending:/, 'pc:forced:');
+    try { forced = JSON.parse(localStorage.getItem(forcedKey) || '{}') || {}; if (injected > 0) localStorage.removeItem(forcedKey); } catch (_) {}
     // Set the edit note (as the script used to), and report the result quietly
     // inline next to the External links heading instead of a centred popup.
-    if (okUrls.length) setEditNote(pcEditNote(okUrls));
+    if (okUrls.length) setEditNote(pcEditNote(okUrls, forced));
     showInlineSummary(reports);
     return { injected, reports, okUrls };
 }
 
 // Build the edit note: a header line (name/version/author/homepage from GM_info,
 // with fallbacks) + the links that were added — same shape as the other scripts.
-function pcEditNote(urls) {
+// forced (#641): { url: reason } for links added by a middle click over link confidence — each is
+// marked in the list, so the note never claims they passed it. A link that passed is listed plain.
+function pcEditNote(urls, forced) {
     const s = (typeof GM_info !== 'undefined' && GM_info.script) || {};
     const homepage = s.homepageURL || s.homepage ||
         'https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/platform_check/README.md';
@@ -928,7 +935,8 @@ function pcEditNote(urls) {
     if (GM_getValue('pc:respect-barcode', true)) conf.push('barcodes ' + modeWord('pc:barcode-mode'));
     const confLine = 'Link confidence: ' + (conf.length ? conf.join(', ') : 'off');
     const lines = [header, confLine, '', 'Added ' + urls.length + ' external link' + (urls.length === 1 ? '' : 's') + ':'];
-    urls.forEach(u => lines.push(u));
+    const why = u => { const k = Object.keys(forced || {}).find(x => pcSameUrl(x, u) || x === u); return k ? forced[k] : null; };
+    urls.forEach(u => { const w = why(u); lines.push(w ? u + '  (added by hand over link confidence: ' + w + ')' : u); });
     return lines.join('\n');
 }
 
@@ -6032,6 +6040,12 @@ if (mbuTestHooks()) window.__pcTest464 = { openReleaseEditTab, openRgEditTab, PC
 if (mbuTestHooks()) window.__pcTest627 = { appleAmp, appleToken, appleAlbumMeta, applePickByUpc, appleStorefront, appleEach, appleAllStorefronts, APPLE_SHORTLIST, setAppleToken: t => { _appleTok = t; } };
 if (mbuTestHooks()) window.__pcTest556 = { pcUrlKey, pcSameUrl, pcIsVerifyInterstitial, injectInto, runInjectHelper, cacheGet, cacheSet, mbDataGet };
 
+// Why link confidence withholds this platform's link, for the edit note (#641); null when it doesn't.
+function pcWithheldWhy(p) {
+    if (barcodeBlocks(p)) return cacheGet(mbid, p)?.barcode ? `barcode ${cacheGet(mbid, p).barcode} differs from the release's` : 'barcode not confirmed';
+    if (formatBlocks(p)) return "format differs from the release's";
+    return null;
+}
 // force (#641, middle click): add it even when barcode/format confidence would withhold it.
 function addSingleUrl(platform, background, force) {
     const cached = cacheGet(mbid, platform);
@@ -6053,6 +6067,9 @@ function addSingleUrl(platform, background, force) {
         return;
     }
     localStorage.setItem(`pc:pending:${mbid}`, JSON.stringify({ [platform]: cached.url }));
+    // #641: a forced add is recorded for the edit note; any other add clears an old record
+    const forcedWhy = force ? pcWithheldWhy(platform) : null;
+    if (forcedWhy) localStorage.setItem(`pc:forced:${mbid}`, JSON.stringify({ [cached.url]: forcedWhy })); else localStorage.removeItem(`pc:forced:${mbid}`);
     appendLog('System', `Inject (${background ? 'background' : force ? 'middle-click' : 'click'}): queued ${platform} URL — opening release editor`, 'ok');
     openReleaseEditTab(mbid, { background });
 }
@@ -6084,6 +6101,7 @@ async function runInjectBtn(e, background, force) {
     let barcodeBlocked = 0;
     let formatBlocked = 0;
     let alreadyInMb = 0;
+    const forcedUrls = {};   // #641: { url: reason } of the withheld links a middle click adds anyway
     // #556: the live rels parsed from THIS page load are the authority on what the
     // release already carries — the cached `source` is only a hint, and a stale one
     // after a previous add. Queueing a link MusicBrainz already has is a no-op in
@@ -6101,7 +6119,10 @@ async function runInjectBtn(e, background, force) {
         }
         const icoText = document.getElementById(`ico-${p}`)?.textContent?.trim();
         if (icoText !== '✓') continue;
-        if (force && (barcodeBlocks(p) || formatBlocks(p))) appendLog('System', `Inject (middle-click): ${p} is withheld by barcode/format confidence — added anyway, as asked`, 'warn');
+        if (force && (barcodeBlocks(p) || formatBlocks(p))) {
+            forcedUrls[cached.url] = pcWithheldWhy(p);
+            appendLog('System', `Inject (middle-click): ${p} is withheld by barcode/format confidence — added anyway, as asked`, 'warn');
+        }
         else if (barcodeBlocks(p)) { barcodeBlocked++; appendLog('System', `Inject: ${p} ${cached.barcode ? 'barcode differs from MB' : 'barcode not confirmed'} — skipped (barcode-confidence on)`, 'warn'); continue; }
         else if (formatBlocks(p)) { formatBlocked++; appendLog('System', `Inject: ${p} format incompatible with MB (${MB_FORMAT}) — skipped (format-confidence on)`, 'warn'); continue; }
         pendingRelease[p] = cached.url;
@@ -6165,6 +6186,7 @@ async function runInjectBtn(e, background, force) {
 
     if (releaseCount > 0) {
         localStorage.setItem(`pc:pending:${mbid}`, JSON.stringify(pendingRelease));
+        if (Object.keys(forcedUrls).length) localStorage.setItem(`pc:forced:${mbid}`, JSON.stringify(forcedUrls)); else localStorage.removeItem(`pc:forced:${mbid}`);
         appendLog('System', `Inject (${background ? 'background' : 'click'}): queued ${releaseCount} release URL(s) — opening release editor`, 'ok');
         openReleaseEditTab(mbid, { background });
     }

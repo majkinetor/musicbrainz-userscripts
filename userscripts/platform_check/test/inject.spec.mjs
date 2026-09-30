@@ -179,3 +179,13 @@ test('#423: a digital Bandcamp release gets both link types; a physical-only one
   const vinyl = await types('Vinyl');
   check(vinyl.length === 1 && vinyl[0] === '85', `physical only: just "stream for free" (${vinyl})`);
 });
+
+test('#641: the edit note marks a link added over link confidence, and only that one', { tag: ['@sandbox', '@login'] }, async ({ page, inject }) => {
+  const run = await openEditor(page, inject, { pending: { deezer: DEEZER, tidal: 'https://tidal.com/album/522735526' }, cache: { ['pc:forced:' + REL]: { [DEEZER]: 'barcode not confirmed' } } });
+  await finished(run, page);
+  const note = await until(() => page.evaluate(() => (document.querySelector('textarea.edit-note, textarea[name="edit-note"], #id-edit-note, .edit-note textarea') || {}).value || ''), n => /Added 2 external links/.test(n));
+  console.log(note);
+  check(note.includes(DEEZER + '  (added by hand over link confidence: barcode not confirmed)'), 'the forced link is marked, with why');
+  check(/\nhttps:\/\/tidal\.com\/album\/522735526$/m.test(note), 'the other link is listed plain');
+  check(await page.evaluate(rel => localStorage.getItem('pc:forced:' + rel), REL) === null, 'the record is dropped once used');
+});
