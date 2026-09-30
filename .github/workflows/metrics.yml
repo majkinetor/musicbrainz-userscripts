@@ -49,13 +49,23 @@ jobs:
         run: |
           dev/script-metrics/run.sh --dump-id "${{ steps.dump.outputs.id }}"
           df -h / | tail -1
+      # main moves during the hour the count takes, often with these same files (a local run, a
+      # dashboard change): the reports go on top of the latest main as they are, never rebased
       - name: Commit the reports
         if: steps.dump.outputs.skip != 'true'
         run: |
           files=(dev/script-metrics/out/METRICS.md dev/script-metrics/out/dashboard.html dev/script-metrics/out/metrics.json docs/stats.html)
-          if git diff --quiet -- "${files[@]}"; then echo "reports unchanged"; exit 0; fi
+          keep=$(mktemp -d)
+          for f in "${files[@]}"; do mkdir -p "$keep/$(dirname "$f")"; cp "$f" "$keep/$f"; done
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add -- "${files[@]}"
-          git commit -m "metrics: rebuild from the ${{ steps.dump.outputs.id }} snapshot [skip ci]"
-          git push || { git pull --rebase && git push; }
+          for try in 1 2 3; do
+            git fetch -q origin main && git reset -q --hard origin/main
+            for f in "${files[@]}"; do cp "$keep/$f" "$f"; done
+            if git diff --quiet -- "${files[@]}"; then echo "reports unchanged"; exit 0; fi
+            git add -- "${files[@]}"
+            git commit -q -m "metrics: rebuild from the ${{ steps.dump.outputs.id }} snapshot [skip ci]"
+            git push -q origin HEAD:main && { git log --oneline -1; exit 0; }
+            sleep 10
+          done
+          exit 1
