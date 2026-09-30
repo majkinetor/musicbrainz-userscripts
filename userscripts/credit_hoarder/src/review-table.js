@@ -1026,6 +1026,22 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
             // its aliases aren't known, so the button came back after the alias had been added
             // (majkinetor). A fresh pick's candidate carries its aliases; re-pick to get the button.
             let aliasPick = null;
+            // #613 follow-up (majkinetor: "I added alias … refreshed review table to see if it will now
+            // show alias+url but it doesn't"). Once the credit is an alias of the artist this row matched
+            // by its URL, the row IS an alias+url match: relabel it now, and in the cache, which a refresh
+            // reads. (A fresh lookup can't be relied on to see it soon: MusicBrainz's search index takes
+            // a while to include a new alias.)
+            let rowViaBadge = null, rowMatchId = null;
+            function aliasLanded(a) {
+                if (r.logEntry?.via !== 'url' || !rowViaBadge || rowMatchId !== a.id) return;
+                const nb = makeViaBadge('both-alias', false);
+                if (nb) { rowViaBadge.replaceWith(nb); rowViaBadge = nb; }
+                r.logEntry.via = 'both-alias'; r.logEntry.fromCache = false;
+                const st = rowState.get(_entityKey); if (st) { st.via = 'both-alias'; st.fromCache = false; }
+                const k = idbKeyForEntity(r.entity);
+                if (k) writeIdbRecord(k, { resolvedVia: 'both-alias' });
+                log.info(`+ alias: "${displayName}" → ${a.name} is now an alias+url match (was url)${k ? ', cached' : ''}`);
+            }
             function makeAddAliasBtn(a) {
                 if (!wantsAliasButton(entityType, a, displayName)) return null;
                 const ab = document.createElement('button');
@@ -1044,6 +1060,7 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
                         ab.textContent = '✓ has alias'; ab.disabled = true;
                         ab.title = `${a.name} already carries "${displayName}" — nothing to add`;
                         ab.style.color = 'var(--mbu-ok)'; ab.style.borderColor = 'var(--mbu-ok)';
+                        aliasLanded(a);
                         return;
                     }
                     // The form is in another tab and only you know whether you submitted it: when this
@@ -1065,6 +1082,7 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
                         ab.style.color = 'var(--mbu-ok)'; ab.style.borderColor = 'var(--mbu-ok)';
                         a.aliases = [...(a.aliases || []), displayName];
                         log.info(`+ alias: "${displayName}" is now an alias of ${a.name} (added through the form)`);
+                        aliasLanded(a);
                     };
                     ab._aliasWatch = onReturn;
                     // armed a moment later, so the focus change of opening the tab doesn't count as a return
@@ -1080,6 +1098,7 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
                         ab.title = res && res.already ? `${a.name} already carries "${displayName}" — nothing submitted` : `"${displayName}" submitted as an alias of ${a.name}`;
                         ab.style.color = 'var(--mbu-ok)'; ab.style.borderColor = 'var(--mbu-ok)';
                         a.aliases = [...(a.aliases || []), displayName];   // don't offer it again this session
+                        aliasLanded(a);
                         if (!(res && res.already)) log.info(`+ alias: "${displayName}" submitted as an alias of <a href="${location.origin}/artist/${a.id}/aliases" target="_blank" rel="noopener noreferrer nofollow">${a.name}</a>`);
                     } catch (e) {
                         ab.disabled = false; ab.textContent = '✗ alias'; ab.title = `Adding the alias failed: ${e.message} — right-click to retry, click to open the form`;
@@ -1864,6 +1883,7 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
                 // `(cache)` suffix when the resolution came from IDB.
                 const viaBadge = makeViaBadge(r.logEntry?.via, r.logEntry?.fromCache);
                 if (viaBadge) selRow.appendChild(viaBadge);
+                rowViaBadge = viaBadge; rowMatchId = mbid;   // aliasLanded() relabels it
                 const mbRolesEl = buildMbRolesEl();
                 if (mbRolesEl) selRow.appendChild(mbRolesEl);
                 selRow.appendChild(undoBtn);
