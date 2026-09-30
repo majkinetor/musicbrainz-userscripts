@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Platform Check
 // @namespace    http://tampermonkey.net/
-// @version      2026.9.30.153945
+// @version      2026.9.30.165227
 // @description  Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+DQogIDx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CiAgDQogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJhMWE1MiIgc3Ryb2tlLXdpZHRoPSI5IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik00MCA4OCBBMzQgMzQgMCAwIDEgNDAgNDAiLz4NCiAgICA8cGF0aCBkPSJNMjkgOTkgQTUwIDUwIDAgMCAxIDI5IDI5Ii8+DQogICAgPHBhdGggZD0iTTg4IDg4IEEzNCAzNCAwIDAgMCA4OCA0MCIvPg0KICAgIDxwYXRoIGQ9Ik05OSA5OSBBNTAgNTAgMCAwIDAgOTkgMjkiLz4NCiAgPC9nPg0KICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyMCIgZmlsbD0iI2U4MjAxYSIvPg0KPC9zdmc+DQo=
@@ -4503,11 +4503,32 @@ async function fetchYtmAlbum(id, label = 'YouTube Music') {
     const tracks = m ? parseInt(m[1].replace(/\D/g, ''), 10) : (shelf && shelf.contents ? shelf.contents.length : null);
     const canon = (j.microformat && j.microformat.microformatDataRenderer && j.microformat.microformatDataRenderer.urlCanonical) || '';
     const list = (canon.match(/[?&]list=(OLAK5uy_[\w-]+)/) || JSON.stringify(j).match(/"(OLAK5uy_[\w-]+)"/) || [])[1];
+    // The page's "Other versions" shelf: editions YouTube Music groups with this one (#639,
+    // rinsuki). A barcode belonging to one of them can bring up this album instead, and they
+    // can share title and tracklist — so the row names them, for you to check.
+    const otherVersions = [];
+    ytmWalk(j, o => {
+        const c = o.musicCarouselShelfRenderer;
+        if (!c || !/^other versions$/i.test(ytmText(c.header && c.header.musicCarouselShelfBasicHeaderRenderer && c.header.musicCarouselShelfBasicHeaderRenderer.title))) return;
+        for (const it of c.contents || []) {
+            const r = it.musicTwoRowItemRenderer;
+            if (r) otherVersions.push({ title: ytmText(r.title), sub: ytmText(r.subtitle), id: (r.navigationEndpoint && r.navigationEndpoint.browseEndpoint && r.navigationEndpoint.browseEndpoint.browseId) || null });
+        }
+    });
     return {
         url: list ? `https://music.youtube.com/playlist?list=${list}` : `https://music.youtube.com/browse/${id}`,
         tracks, title: ytmText(h.title) || null, artist: ytmText(h.straplineTextOne) || null,
-        year: sub.find(s => /^\d{4}$/.test(s)) || null, kind: sub[0] || null,
+        year: sub.find(s => /^\d{4}$/.test(s)) || null, kind: sub[0] || null, otherVersions,
     };
+}
+// The row's tooltip names the album's other versions (#639); the ✓ stays — Platform Check finds
+// the same or a close release, and you decide (majkinetor). Kept in the cache, so a cached row says it too.
+function ytmNoteOtherVersions(v, label = 'YouTube Music') {
+    if (!v || !v.length) return;
+    const names = v.map(x => `"${x.title}"${x.sub ? ' (' + x.sub + ')' : ''}`).join('; ');
+    appendLog(label, `The album has ${v.length} other version(s) on YouTube Music: ${names} — check the match is the right one`, 'warn');
+    const a = document.getElementById('mb-online-ytmusic');
+    if (a && a.href && /music\.youtube\.com/.test(a.href)) a.title = (a.title ? a.title + '\n' : '') + `Also on YouTube Music as ${v.length} other version(s): ${names}. They can share title and tracks — check it's this one.`;
 }
 // The album behind a YouTube Music link: …/browse/MPREb_… directly, …/playlist?list=OLAK5uy_…
 // through the playlist's page, which names its album.
@@ -4525,7 +4546,7 @@ async function ytmAlbumIdOf(url, label = 'YouTube Music') {
 async function scanYtmusic({ artist, album, mbTracks, existingUrl, mbid, isVariousArtists, barcode }) {
     const label = 'YouTube Music';
     const cached = cacheGet(mbid, 'ytmusic');
-    if (cached?.url && (!existingUrl || pcSameUrl(existingUrl, cached.url))) { applyCachedRow('ytmusic', label, cached, mbTracks); return; }
+    if (cached?.url && (!existingUrl || pcSameUrl(existingUrl, cached.url))) { applyCachedRow('ytmusic', label, cached, mbTracks); ytmNoteOtherVersions(cached.otherVersions, label); return; }
     if (cached && !cached.url && !existingUrl) { appendLog(label, `No match (cached from previous scan — use ↻ to force a re-search)`, 'warn'); applyCachedRow('ytmusic', label, cached, mbTracks); return; }
     const none = source => { cacheSet(mbid, 'ytmusic', { url: null, tracks: null, year: null, label: null, source }); updateRow('ytmusic', { url: null, mbTracks, remoteTracks: null }); };
 
@@ -4535,8 +4556,9 @@ async function scanYtmusic({ artist, album, mbTracks, existingUrl, mbid, isVario
         const meta = id ? await fetchYtmAlbum(id, label) : null;
         if (meta) appendLog(label, `Album parsed: tracks=${meta.tracks ?? '?'} title="${meta.title}" artist="${meta.artist || '?'}" year=${meta.year || '?'}`, meta.tracks ? 'ok' : 'warn');
         else appendLog(label, `Couldn't read the linked album — shown unverified`, 'warn');
-        cacheSet(mbid, 'ytmusic', { url: existingUrl, tracks: meta?.tracks ?? null, year: meta?.year ?? null, label: null, source: 'MB rels' });
+        cacheSet(mbid, 'ytmusic', { url: existingUrl, tracks: meta?.tracks ?? null, year: meta?.year ?? null, label: null, source: 'MB rels', otherVersions: meta?.otherVersions || [] });
         updateRow('ytmusic', { url: existingUrl, mbTracks, remoteTracks: meta?.tracks ?? null, year: meta?.year ?? null, source: 'MB rels' });
+        ytmNoteOtherVersions(meta?.otherVersions, label);
         return;
     }
 
@@ -4585,8 +4607,9 @@ async function scanYtmusic({ artist, album, mbTracks, existingUrl, mbid, isVario
     // page tells them apart, so strict barcode mode withholds YouTube Music like any platform
     // whose barcode can't be read.
     appendLog(label, `Picked (score=${pick.score}, ${source}): ${meta.url}`, pick.score >= 150 ? 'ok' : 'warn');
-    cacheSet(mbid, 'ytmusic', { url: meta.url, tracks: meta.tracks, year: meta.year, label: null, source });
+    cacheSet(mbid, 'ytmusic', { url: meta.url, tracks: meta.tracks, year: meta.year, label: null, source, otherVersions: meta.otherVersions });
     updateRow('ytmusic', { url: meta.url, mbTracks, remoteTracks: meta.tracks, year: meta.year, source });
+    ytmNoteOtherVersions(meta.otherVersions, label);
 }
 
 // ─── Deezer ─────────────────────────────────────────────────────────────────
