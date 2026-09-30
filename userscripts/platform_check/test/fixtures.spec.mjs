@@ -19,7 +19,9 @@ FIXTURES.forEach((f, i) => {
   test(f.name, { tag: ['@fixture', '@sandbox', ...tags] }, async ({ page, inject }, testInfo) => {
     const ws = await openPc(page, inject, { release: f.mbid, replay: new URL(`./fixtures/fx-${i + 1}.json.gz`, import.meta.url) });
     const e = f.expect || {};
-    for (const p of ['spotify', 'discogs', 'bandcamp', 'ytmusic']) {
+    for (const p of ['spotify', 'discogs', 'bandcamp', 'ytmusic', 'amazonmusic']) {
+      // null: the platform has no such album, and a near miss (same artist, same song count) isn't taken
+      if (e[p] === null) { const r = await row(page, p); check(!/\/albums?\//.test(r.url || ''), `${p}: nothing (found ${r.url})`); continue; }
       const want = e[p] ? [e[p]] : e[p + 'OneOf'];
       if (!want) continue;
       const r = await row(page, p);

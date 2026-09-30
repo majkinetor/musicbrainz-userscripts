@@ -56,6 +56,21 @@ function trim(key, body) {
   if (/^https:\/\/a-v2\.sndcdn\.com\/assets\//.test(key)) return (body.match(/client_id\s*[:=]\s*"[a-zA-Z0-9]{20,40}"/) || [''])[0];
   // YouTube Music (#639): an album page is ~160 KB, most of it thumbnails, menus and tracking
   // data the script never reads. Kept: the text, the ids and links, the header and tracklist.
+  // Amazon Music (#644): a search answer is ~1 MB (podcasts, audiobooks, images, menus). Kept: the
+  // guest session's fields, and of a page its header and each shelf's rows (text and links).
+  if (/^POST https:\/\/music\.amazon\.com\/config\.json/.test(key)) {
+    try { const j = JSON.parse(body); return JSON.stringify({ accessToken: '', deviceId: j.deviceId, sessionId: j.sessionId, version: j.version, marketplaceId: j.marketplaceId, csrf: j.csrf }); } catch (e) { return body; }
+  }
+  if (/^POST https:\/\/na\.mesk\.skill\.music\.a2z\.com\//.test(key)) {
+    try {
+      const j = JSON.parse(body), t = j.methods.find(m => m.template).template;
+      const link = l => (l && l.deeplink ? { deeplink: l.deeplink } : undefined);
+      const keep = { interface: t.interface, headerText: t.headerText, headerPrimaryText: t.headerPrimaryText, headerTertiaryText: t.headerTertiaryText, headerLabel: t.headerLabel, footer: t.footer,
+        widgets: (t.widgets || []).filter(w => (w.items || []).some(it => /^\/(albums|tracks)\//.test((it.primaryLink && it.primaryLink.deeplink) || ''))).map(w => ({ interface: w.interface, header: w.header,
+          items: w.items.map(it => ({ primaryText: it.primaryText, secondaryText: it.secondaryText, secondaryText2: it.secondaryText2, secondaryText3: it.secondaryText3, tertiaryText: it.tertiaryText, primaryLink: link(it.primaryLink), primaryTextLink: link(it.primaryTextLink) })) })) };
+      return JSON.stringify({ methods: [{ interface: j.methods[0].interface, template: keep }] });
+    } catch (e) { return body; }
+  }
   if (/^POST https:\/\/music\.youtube\.com\/youtubei\//.test(key)) {
     try { return JSON.stringify(JSON.parse(body), (k, v) => (YTM_DROP.has(k) ? undefined : v)); } catch (e) { return body; }
   }

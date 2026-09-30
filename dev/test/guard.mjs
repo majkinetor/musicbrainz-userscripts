@@ -9,6 +9,10 @@
 //   3. a monitor: any production write that still reached the network is
 //      reported, so a hole in 1–2 can't go unnoticed.
 export const PROD_HOST = /^(beta\.)?musicbrainz\.org$/i;
+// GM_xmlhttpRequest made from Node carries the browser's user agent, as a manager's does — a
+// desktop Chrome's, not headless Chromium's: some sites refuse "HeadlessChrome" (Amazon Music, #644)
+export const BROWSER_UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36';
+export const withUa = h => (Object.keys(h || {}).some(k => /^user-agent$/i.test(k)) ? h : { ...(h || {}), 'User-Agent': BROWSER_UA });
 export const hostOf = url => { try { return new URL(url).hostname; } catch { return ''; } };
 export const isProd = url => PROD_HOST.test(hostOf(url));
 export const WRITE_ONLY = /\/ws\/js\/edit\/|\/edit\/create\b|\/relationship-editor\b/i;
@@ -160,7 +164,7 @@ export async function installProdGuard(ctx, { allow = [], gm = null, onRefused =
         const a = await answer({ ...o, method: String(o.method).toUpperCase() });
         if (a) return { status: a.status || 200, statusText: a.statusText || '', url: a.url || o.url, headers: a.headers || 'content-type: application/json', b64: Buffer.from(a.body == null ? '' : a.body).toString('base64') };
       }
-      const r = await ctx.request.fetch(o.url, { method: o.method, headers: o.headers, data: o.data, maxRedirects: 20, failOnStatusCode: false, timeout: o.timeout || 60000 });
+      const r = await ctx.request.fetch(o.url, { method: o.method, headers: withUa(o.headers), data: o.data, maxRedirects: 20, failOnStatusCode: false, timeout: o.timeout || 60000 });
       const body = await r.body();
       return { status: r.status(), statusText: r.statusText(), url: r.url(), headers: r.headersArray().map(h => h.name + ': ' + h.value).join('\r\n'), b64: body.toString('base64') };
     });
