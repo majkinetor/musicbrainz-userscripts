@@ -29,15 +29,17 @@ export const PLATFORM_ICONS = {
     // ── Deezer — the purple pixel heart, as MusicBrainz's link editor shows it ──
     deezer: { color: '#A238FF', svg: '<svg viewBox="0 0 24 24"><path d="M4 2h6v2h-6zM14 2h6v2h-6zM2 4h20v2h-20zM0 6h24v2h-24zM0 8h24v2h-24zM0 10h24v2h-24zM2 12h20v2h-20zM4 14h16v2h-16zM6 16h12v2h-12zM8 18h8v2h-8zM10 20h4v2h-4z" fill="#A238FF"/></svg>' },
 
-    // ── Tidal — four interlocking diamonds ──
-    tidal: { color: '#000000', svg: '<svg viewBox="0 0 24 24" fill="#000000"><path d="M6 3l3 3-3 3-3-3zM12 3l3 3-3 3-3-3zM18 3l3 3-3 3-3-3zM12 9l3 3-3 3-3-3z"/></svg>' },
+    // ── Tidal — its four diamonds in the TEXT colour (currentColor), so they read on light and dark
+    //    themes alike. Inline SVG only: a script that turns icons into images replaces currentColor ──
+    tidal: { color: '#000000', svg: '<svg viewBox="0 0 24 24"><path d="M6 6l3 3-3 3-3-3zM12 6l3 3-3 3-3-3zM18 6l3 3-3 3-3-3zM12 12l3 3-3 3-3-3z" fill="currentColor"/></svg>' },
 
     // ── Qobuz — brand-blue roundel ──
     qobuz: { color: '#0070ef', svg: '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="#0070ef"/><circle cx="12" cy="12" r="5" fill="none" stroke="#fff" stroke-width="2.2"/><path d="M14.5 14.5 19 19" stroke="#fff" stroke-width="2.2" stroke-linecap="round"/></svg>' },
 
-    // ── Beatport — its green mark (a stem hooked at the top, ending in a ring) on black, as MusicBrainz shows it;
-    //    the green disc with a play triangle was a near-twin of YouTube Music's ──
-    beatport: { color: '#01FF95', svg: '<svg viewBox="0 0 24 24"><rect x="1" y="1" width="22" height="22" rx="4" fill="#000"/><path d="M8.2 4.2c0 2.6 3.6 2.4 3.6 5.6v5.9" fill="none" stroke="#01FF95" stroke-width="2.4" stroke-linecap="round"/><circle cx="15.1" cy="15.7" r="3.3" fill="none" stroke="#01FF95" stroke-width="2.4"/></svg>' },
+    // ── Beatport — its green mark on a black rounded square, as MusicBrainz shows it. The square
+    //    stays inside the icon's circle (corners ≈10.2 from the centre of 12), so Platform Check's
+    //    in-MB ring doesn't cut through it ──
+    beatport: { color: '#01FF95', svg: '<svg viewBox="0 0 24 24"><rect x="3.5" y="3.5" width="17" height="17" rx="4.5" fill="#000"/><g transform="translate(12 12) scale(0.72) translate(-12 -12)"><path d="M8.2 4.2c0 2.6 3.6 2.4 3.6 5.6v5.9" fill="none" stroke="#01FF95" stroke-width="2.6" stroke-linecap="round"/><circle cx="15.1" cy="15.7" r="3.3" fill="none" stroke="#01FF95" stroke-width="2.6"/></g></svg>' },
 
     // ── Bandcamp — the parallelogram logomark ──
     bandcamp: { color: '#629AA9', svg: '<svg viewBox="0 0 24 24" fill="#629AA9"><path d="M0 18.75l7.437-13.5H24l-7.438 13.5z"/></svg>' },
