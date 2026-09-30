@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Platform Check
 // @namespace    http://tampermonkey.net/
-// @version      2026.9.30.151225
+// @version      2026.9.30.152452
 // @description  Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+DQogIDx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CiAgDQogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJhMWE1MiIgc3Ryb2tlLXdpZHRoPSI5IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik00MCA4OCBBMzQgMzQgMCAwIDEgNDAgNDAiLz4NCiAgICA8cGF0aCBkPSJNMjkgOTkgQTUwIDUwIDAgMCAxIDI5IDI5Ii8+DQogICAgPHBhdGggZD0iTTg4IDg4IEEzNCAzNCAwIDAgMCA4OCA0MCIvPg0KICAgIDxwYXRoIGQ9Ik05OSA5OSBBNTAgNTAgMCAwIDAgOTkgMjkiLz4NCiAgPC9nPg0KICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyMCIgZmlsbD0iI2U4MjAxYSIvPg0KPC9zdmc+DQo=
@@ -4579,13 +4579,14 @@ async function scanYtmusic({ artist, album, mbTracks, existingUrl, mbid, isVario
     if (!pick) { appendLog(label, `No verifiable match — leaving URL unset`, 'warn'); none('search'); return; }
 
     const { meta } = pick;
-    // Found by its barcode AND the same songs and title: as good as reading the barcode (like
-    // Spotify's exact-UPC lookup), so strict barcode mode lets it through. A name match can't
-    // vouch for the barcode, so strict mode withholds it.
-    const bc = source === 'barcode search' && meta.tracks === mbTracks && titleSimilar(meta.title, album) ? MB_BARCODE : null;
-    appendLog(label, `Picked (score=${pick.score}, ${source}${bc ? ', barcode confirmed' : ''}): ${meta.url}`, pick.score >= 150 ? 'ok' : 'warn');
-    cacheSet(mbid, 'ytmusic', { url: meta.url, tracks: meta.tracks, year: meta.year, label: null, source, barcode: bc });
-    updateRow('ytmusic', { url: meta.url, mbTracks, remoteTracks: meta.tracks, year: meta.year, source, barcode: bc });
+    // No barcode is claimed, not even for a barcode search's hit with the same songs and title:
+    // YouTube Music groups editions ("Other versions"), and a barcode that belongs to one of them
+    // brings up the group's primary album, whose barcode differs (rinsuki, #639). Nothing on the
+    // page tells them apart, so strict barcode mode withholds YouTube Music like any platform
+    // whose barcode can't be read.
+    appendLog(label, `Picked (score=${pick.score}, ${source}): ${meta.url}`, pick.score >= 150 ? 'ok' : 'warn');
+    cacheSet(mbid, 'ytmusic', { url: meta.url, tracks: meta.tracks, year: meta.year, label: null, source });
+    updateRow('ytmusic', { url: meta.url, mbTracks, remoteTracks: meta.tracks, year: meta.year, source });
 }
 
 // ─── Deezer ─────────────────────────────────────────────────────────────────
