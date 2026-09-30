@@ -9,7 +9,7 @@
 //
 //   "2026-09-30 02:00:14": {
 //     "passed": 320, "failed": 2, "flaky": 1, "skipped": 4, "color": "orange",
-//     "minutes": 124, "commit": "8136e0f", "run": "https://github.com/…/actions/runs/…",
+//     "duration": "2:04:31", "commit": "8136e0f", "run": "https://github.com/…/actions/runs/…",
 //     "failures": [{ "name": "[isrc_scout] 640-ytmusic.spec.mjs › #640: …", "error": "Error: …" }],
 //     "flakes":   [{ "name": "…", "error": "the error of the attempt that failed" }]
 //   }
@@ -22,6 +22,8 @@ const [resultsFile, historyFile] = process.argv.slice(2).filter((a, i, all) => !
 const opt = name => { const i = process.argv.indexOf(name); return i > 0 ? process.argv[i + 1] : null; };
 if (!resultsFile || !historyFile) { console.error('usage: suite-history.mjs <results.json> <history.json> [--badge file] [--commit sha] [--run url]'); process.exit(2); }
 
+// 7431000 ms → "2:03:51"
+const hms = ms => { const t = Math.round(ms / 1000); return `${Math.floor(t / 3600)}:${String(Math.floor(t / 60) % 60).padStart(2, '0')}:${String(t % 60).padStart(2, '0')}`; };
 const ansi = s => String(s || '').replace(/\u001b\[[0-9;]*m/g, '');
 // an error in a line or four (message, expected, received): the message, without the stack or the code frame
 const brief = err => {
@@ -51,19 +53,19 @@ function summarise(report) {
   return {
     start: st.startTime ? new Date(st.startTime) : new Date(),
     passed: st.expected || 0, failed: st.unexpected || 0, flaky: st.flaky || 0, skipped: st.skipped || 0,
-    minutes: st.duration ? Math.round(st.duration / 60000) : null, ...out,
+    ms: st.duration || null, ...out,
   };
 }
 
 let run;
 try { run = summarise(JSON.parse(readFileSync(resultsFile, 'utf8'))); }
-catch (e) { run = { start: new Date(), passed: 0, failed: 0, flaky: 0, skipped: 0, minutes: null, failures: [], flakes: [], error: `no report: ${String(e.message).split('\n')[0]}` }; }
+catch (e) { run = { start: new Date(), passed: 0, failed: 0, flaky: 0, skipped: 0, ms: null, failures: [], flakes: [], error: `no report: ${String(e.message).split('\n')[0]}` }; }
 
 const color = run.error ? 'red' : run.failed > 5 ? 'red' : run.failed ? 'orange' : run.flaky ? 'yellowgreen' : 'brightgreen';
 const key = run.start.toISOString().replace('T', ' ').slice(0, 19);
 const entry = {
   passed: run.passed, failed: run.failed, flaky: run.flaky, skipped: run.skipped, color,
-  ...(run.minutes != null ? { minutes: run.minutes } : {}),
+  ...(run.ms != null ? { duration: hms(run.ms) } : {}),   // how long the specs took, the run's setup aside
   ...(opt('--commit') ? { commit: opt('--commit').slice(0, 7) } : {}),
   ...(opt('--run') ? { run: opt('--run') } : {}),
   ...(run.error ? { error: run.error } : {}),
@@ -72,6 +74,8 @@ const entry = {
 
 let history = {};
 if (existsSync(historyFile)) { try { history = JSON.parse(readFileSync(historyFile, 'utf8') || '{}'); } catch (e) { console.warn(`suite-history: ${historyFile} unreadable, starting over (${e.message})`); } }
+// entries written before #647's duration field carry whole minutes: shown the same way
+for (const e of Object.values(history)) if (e && e.minutes != null && !e.duration) { e.duration = hms(e.minutes * 60000); delete e.minutes; }
 history = { [key]: entry, ...Object.fromEntries(Object.entries(history).filter(([k]) => k !== key)) };   // newest first
 writeFileSync(historyFile, JSON.stringify(history, null, 2) + '\n');
 
