@@ -109,7 +109,10 @@ const bodies = parts.map(p => {
   return `// ===== ${p.n} (@run-at ${runAt}) ${'='.repeat(Math.max(0, 50 - p.n.length))}\n`
     + `(function(__stGM){\n`
     + `  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, ${shadow}) }) : { script: ${shadow} };\n`
-    + `  ${gate}(function(){\n${p.body}\n});\n`
+    // A member that throws while starting must not stop the members after it: ISRC Scout's
+    // "Cannot access 'btnStatus' before initialization" kept Platform Check's panel away until
+    // a reload (oblaka). The body stays in a function of its own, so its 'use strict' still counts.
+    + `  ${gate}(function(){ try { (function(){\n${p.body}\n})(); } catch (e) { try { console.error('[String Theory] ${p.n} failed while starting — the other scripts carry on:', e); } catch (x) {} } });\n`
     + `})(typeof GM_info !== 'undefined' ? GM_info : undefined);`;
 }).join('\n\n');
 

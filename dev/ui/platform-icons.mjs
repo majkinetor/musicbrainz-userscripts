@@ -26,8 +26,9 @@ export const PLATFORM_ICONS = {
     // ── Apple Music — the Apple mark ──
     apple: { color: '#FA243C', svg: '<svg viewBox="0 0 24 24" fill="#FA243C"><path d="M17.05 12.04c-.03-2.5 2.04-3.7 2.13-3.76-1.16-1.7-2.97-1.93-3.61-1.96-1.54-.16-3 .9-3.78.9-.78 0-1.97-.88-3.24-.86-1.67.03-3.21.97-4.07 2.46-1.73 3.01-.44 7.47 1.24 9.92.82 1.2 1.8 2.54 3.08 2.49 1.24-.05 1.71-.8 3.21-.8 1.5 0 1.92.8 3.23.77 1.33-.02 2.18-1.22 3-2.42.94-1.39 1.33-2.73 1.35-2.8-.03-.01-2.59-.99-2.62-3.93zM14.6 4.59c.68-.83 1.14-1.97 1.01-3.11-.98.04-2.17.65-2.87 1.47-.63.73-1.18 1.9-1.03 3.02 1.09.08 2.21-.55 2.89-1.38z"/></svg>' },
 
-    // ── Deezer — the purple pixel heart, as MusicBrainz's link editor shows it ──
-    deezer: { color: '#A238FF', svg: '<svg viewBox="0 0 24 24"><path d="M4 2h6v2h-6zM14 2h6v2h-6zM2 4h20v2h-20zM0 6h24v2h-24zM0 8h24v2h-24zM0 10h24v2h-24zM2 12h20v2h-20zM4 14h16v2h-16zM6 16h12v2h-12zM8 18h8v2h-8zM10 20h4v2h-4z" fill="#A238FF"/></svg>' },
+    // ── Deezer — the purple pixel heart, as MusicBrainz's link editor shows it; scaled to 74% so its
+    //    widest rows stay inside the icon's circle (Platform Check's in-MB ring) ──
+    deezer: { color: '#A238FF', svg: '<svg viewBox="0 0 24 24"><path transform="translate(12 12) scale(.74) translate(-12 -12)" d="M4 2h6v2h-6zM14 2h6v2h-6zM2 4h20v2h-20zM0 6h24v2h-24zM0 8h24v2h-24zM0 10h24v2h-24zM2 12h20v2h-20zM4 14h16v2h-16zM6 16h12v2h-12zM8 18h8v2h-8zM10 20h4v2h-4z" fill="#A238FF"/></svg>' },
 
     // ── Tidal — its four diamonds in the TEXT colour (currentColor), so they read on light and dark
     //    themes alike. Inline SVG only: a script that turns icons into images replaces currentColor ──
@@ -42,7 +43,8 @@ export const PLATFORM_ICONS = {
     beatport: { color: '#01FF95', svg: '<svg viewBox="0 0 24 24"><rect x="3.5" y="3.5" width="17" height="17" rx="4.5" fill="#000"/><g transform="translate(12 12) scale(0.72) translate(-12 -12)"><path d="M8.2 4.2c0 2.6 3.6 2.4 3.6 5.6v5.9" fill="none" stroke="#01FF95" stroke-width="2.6" stroke-linecap="round"/><circle cx="15.1" cy="15.7" r="3.3" fill="none" stroke="#01FF95" stroke-width="2.6"/></g></svg>' },
 
     // ── Bandcamp — the parallelogram logomark ──
-    bandcamp: { color: '#629AA9', svg: '<svg viewBox="0 0 24 24" fill="#629AA9"><path d="M0 18.75l7.437-13.5H24l-7.438 13.5z"/></svg>' },
+    //    (scaled to 80%: its sharp corners reached ~13.7 from the centre, through the icon's circle)
+    bandcamp: { color: '#629AA9', svg: '<svg viewBox="0 0 24 24" fill="#629AA9"><path transform="translate(12 12) scale(.8) translate(-12 -12)" d="M0 18.75l7.437-13.5H24l-7.438 13.5z"/></svg>' },
 
     // ── Volumo — violet disc + V (stand-in) ──
     volumo: { color: '#7c4dff', svg: '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="#7c4dff"/><path d="M7 8h2.2l2.8 6 2.8-6H17l-4 9h-2z" fill="#fff"/></svg>' },
