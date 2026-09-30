@@ -85,7 +85,8 @@ test('#643: All — agreement, a disputed ISRC with [use], the tooltip, SoundExc
   await page.locator('#ii-all-pop .ii-all-copy').click();
   const md = await page.evaluate(() => window.__md);
   console.log('md', md);
-  check(md && /^\*\*Track 1\*\*/.test(md) && /\| Provider \| ISRC \| Result \|/.test(md) && /\| ✓ \| Deezer \| `USQX91300101` \|/.test(md), 'copy puts the comparison on the clipboard as a Markdown table');
+  check(md && /^\*\*Track 1\*\*/.test(md) && /\| Provider \| ISRC \| Track \| Length \| Note \|/.test(md) && /\| ✓ \| Deezer \| `USQX91300101` \| Give Life Back to Music \| 4:34 \| +\|/.test(md) && /\| ✓ \| Apple \| `USQX91300101` \| Give Life Back to Music \| 4:3\d \| same position on the album \|/.test(md), 'copy puts the comparison on the clipboard as a Markdown table: track, length, note');
+  check(await page.locator('#ii-all-pop .ii-all-copy').textContent() === 'copied ✓', 'the button says it copied')
   await page.keyboard.press('Escape');
   check(await page.locator('#ii-all-pop').count() === 0, 'Escape closes it');
 
@@ -117,7 +118,7 @@ test('#643: All — agreement, a disputed ISRC with [use], the tooltip, SoundExc
   await until(async () => [await chip(page, 1), await chip(page, 2)], c => c.every(x => x && /ii-all-chip/.test(x.cls) && !/⏳/.test(x.text)), { timeout: 60000 });
   const sxOf = p => (p.lines.find(l => l.name === 'SoundExchange') || {}).text || '';
   const t2 = await hoverPop(page, 2);
-  check(sx === 2 && /not asked — SoundExchange is blocked/.test(sxOf(t2)), `after a captcha, leaving a field doesn't ask SoundExchange again (${sx}: ${sxOf(t2)})`);
+  check(sx === 2 && /not asked · captcha/.test(sxOf(t2)), `after a captcha, leaving a field doesn't ask SoundExchange again (${sx}: ${sxOf(t2)})`);
 
   // right-click: every track, then SoundExchange one track at a time — its captcha stops it
   const before = sx;
@@ -127,7 +128,7 @@ test('#643: All — agreement, a disputed ISRC with [use], the tooltip, SoundExc
   check(all.length === 13, `every track gets a verdict (${all.length})`);
   check(sx - before === 1, `SoundExchange is asked once, for the first track, and its captcha stops it (${sx - before})`);
   const t3 = await hoverPop(page, 2);
-  check(/not asked — SoundExchange stopped at a captcha/.test(sxOf(t3)), `the other tracks say SoundExchange wasn't asked, and why (${sxOf(t3)})`);
+  check(/not asked · stopped at a captcha/.test(sxOf(t3)), `the other tracks say SoundExchange wasn't asked, and why (${sxOf(t3)})`);
   check(all.filter(t => /^✓/.test(t)).length === 11, `the eleven untouched tracks agree — feat. clauses and guest lists included (${all.join(' ')})`);
   await ws.done();
 });

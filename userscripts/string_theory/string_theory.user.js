@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         String Theory
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.9.30.211136
+// @version      2026.9.30.214102
 // @description  Unified bundle of 8 MusicBrainz userscripts (apollo_editor, art_station, credit_hoarder, fusion, group_therapy, isrc_scout, mammoth, platform_check). Built by userscripts/string_theory/build.mjs — do not hand-edit.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCIgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0Ij4NCiAgPCEtLSBodWItYW5kLXNwb2tlICJuZXR3b3JrIiBnbHlwaCwgc2luZ2xlIHZpdmlkIHZpb2xldCBvbiB0cmFuc3BhcmVudCBzbyBpdCByZWFkcyBvbiBib3RoIGRhcmsgYW5kIGxpZ2h0IHBhZ2VzIC0tPg0KICA8ZyBmaWxsPSJub25lIiBzdHJva2U9IiM3YzVjZmYiIHN0cm9rZS13aWR0aD0iNC42IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMzIgMTUiLz4NCiAgICA8cGF0aCBkPSJNMzIgMzIgTDQ2LjUgMjMuNSIvPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMNDYuNSA0MC41Ii8+DQogICAgPHBhdGggZD0iTTMyIDMyIEwzMiA0OSIvPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMTcuNSA0MC41Ii8+DQogICAgPHBhdGggZD0iTTMyIDMyIEwxNy41IDIzLjUiLz4NCiAgPC9nPg0KICA8ZyBmaWxsPSIjN2M1Y2ZmIj4NCiAgICA8Y2lyY2xlIGN4PSIzMiIgY3k9IjMyIiByPSI4LjYiLz4NCiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjE5LjUiIHI9IjYuNCIvPg0KICAgIDxjaXJjbGUgY3g9IjQ5IiBjeT0iMTkuNSIgcj0iNi40Ii8+DQogICAgPGNpcmNsZSBjeD0iMzIiIGN5PSI1NyIgcj0iNi40Ii8+DQogIDwvZz4NCiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjN2M1Y2ZmIiBzdHJva2Utd2lkdGg9IjMuOCI+DQogICAgPGNpcmNsZSBjeD0iMzIiIGN5PSI3IiByPSI0LjkiLz4NCiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjQ0LjUiIHI9IjQuOSIvPg0KICAgIDxjaXJjbGUgY3g9IjQ5IiBjeT0iNDQuNSIgcj0iNC45Ii8+DQogIDwvZz4NCjwvc3ZnPg0K
@@ -82,8 +82,8 @@
 // Bundles (verbatim, each wrapped in a run-at gate): apollo_editor, art_station, credit_hoarder, fusion, group_therapy, isrc_scout, mammoth, platform_check.
 
 try {
-  console.log('%c String Theory %c v2026.9.30.211136 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
-  console.log("String Theory bundles:\n  · Apollo Editor v2026.9.30.092616\n  · Art Station v2026.9.30.191939\n  · Credit Hoarder v2026.9.30.192230\n  · Fusion v2026.9.30.092616\n  · Group Therapy v2026.9.30.092616\n  · ISRC Scout v2026.9.30.210842\n  · Mammoth v2026.9.30\n  · Platform Check v2026.9.30.193105");
+  console.log('%c String Theory %c v2026.9.30.214102 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
+  console.log("String Theory bundles:\n  · Apollo Editor v2026.9.30.092616\n  · Art Station v2026.9.30.191939\n  · Credit Hoarder v2026.9.30.192230\n  · Fusion v2026.9.30.092616\n  · Group Therapy v2026.9.30.092616\n  · ISRC Scout v2026.9.30.214101\n  · Mammoth v2026.9.30\n  · Platform Check v2026.9.30.193105");
 } catch (e) {}
 
 // ===== apollo_editor (@run-at document-start) =====================================
@@ -34792,7 +34792,7 @@ Created this ${kind} while adding credits parsed from text to ${relUrl}`;
 
 // ===== isrc_scout (@run-at document-start) ========================================
 (function(__stGM){
-  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"ISRC Scout*","namespace":"https://musicbrainz.org/","version":"2026.9.30.210842","description":"Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify / Beatport / Tidal / Volumo / HDtracks / Qobuz, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/isrc_scout/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPklTUkMgU2NvdXQ8L3RpdGxlPgogICAgPHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPgogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjQwIi8+CiAgICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyNiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2U9IiNiOWEzZTgiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPgogIDwvZz4KICA8bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+Cjwvc3ZnPgo="}) }) : { script: {"name":"ISRC Scout*","namespace":"https://musicbrainz.org/","version":"2026.9.30.210842","description":"Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify / Beatport / Tidal / Volumo / HDtracks / Qobuz, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/isrc_scout/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPklTUkMgU2NvdXQ8L3RpdGxlPgogICAgPHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPgogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjQwIi8+CiAgICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyNiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2U9IiNiOWEzZTgiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPgogIDwvZz4KICA8bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+Cjwvc3ZnPgo="} };
+  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"ISRC Scout*","namespace":"https://musicbrainz.org/","version":"2026.9.30.214101","description":"Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify / Beatport / Tidal / Volumo / HDtracks / Qobuz, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/isrc_scout/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPklTUkMgU2NvdXQ8L3RpdGxlPgogICAgPHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPgogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjQwIi8+CiAgICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyNiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2U9IiNiOWEzZTgiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPgogIDwvZz4KICA8bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+Cjwvc3ZnPgo="}) }) : { script: {"name":"ISRC Scout*","namespace":"https://musicbrainz.org/","version":"2026.9.30.214101","description":"Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify / Beatport / Tidal / Volumo / HDtracks / Qobuz, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/isrc_scout/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPklTUkMgU2NvdXQ8L3RpdGxlPgogICAgPHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPgogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjQwIi8+CiAgICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyNiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2U9IiNiOWEzZTgiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPgogIDwvZz4KICA8bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+Cjwvc3ZnPgo="} };
   (f=>f())(function(){ try { (function(){
 /*
  * ─────────────────────────────────────────────────────────────────────────
@@ -34993,7 +34993,7 @@ Created this ${kind} while adding credits parsed from text to ${relUrl}`;
       // ascending first, so the harvest agrees with the API and MB.
       const ordered = [...results].sort((a, b) => (Number(a.id) || 0) - (Number(b.id) || 0));
       const tracks = ordered.map((t, i) => {
-        const mix = t.mix_name && !/^original mix$/i.test(t.mix_name) ? ' (' + t.mix_name + ')' : '';
+        const mix = t.mix_name && !/^original mix$/i.test(t.mix_name) && !String(t.name || '').toLowerCase().includes('(' + String(t.mix_name).toLowerCase() + ')') ? ' (' + t.mix_name + ')' : '';   // #643: not twice
         return {
           isrc:   String(t.isrc || '').toUpperCase().replace(/[\s-]/g, ''),
           title:  (t.name || '') + mix,
@@ -36344,6 +36344,8 @@ Created this ${kind} while adding credits parsed from text to ${relUrl}`;
     #ii-all-pop .ii-all-differs .ii-all-mark { color: var(--mbu-error); }
     #ii-all-pop .ii-all-none, #ii-all-pop .ii-all-pending { color: var(--mbu-text-weak); }
     #ii-all-pop .ii-all-use, #ii-all-pop .ii-all-copy { font-size: 11px; padding: 1px 8px; border: 1px solid var(--mbu-border); border-radius: 4px; background: var(--mbu-bg-raised); color: var(--mbu-text); cursor: pointer; }
+    #ii-all-pop .ii-all-copy.done { border-color: var(--mbu-ok); color: var(--mbu-ok); }
+    #ii-all-pop .ii-all-sxlink { color: var(--mbu-link, var(--mbu-accent)); text-decoration: none; font-weight: 700; }
     #ii-all-pop .ii-all-copy:hover, #ii-all-pop .ii-all-pick:hover,
     #ii-all-pop .ii-all-use:hover { border-color: var(--mbu-accent); }
     .ii-lookup-rel { color: var(--mbu-text-dim); }
@@ -37100,20 +37102,26 @@ Created this ${kind} while adding credits parsed from text to ${relUrl}`;
     if (cls === 'other') return { key, name, state: ALL_SONG, isrc, song, note: 'another song' };
     return { key, name, state: ALL_OK, isrc, song, note: cls === 'warn' ? 'its version or length reads differently' : '' };
   }
-  // a line as text (the log, the Markdown copy) and as the panel shows it
+  // Where an album provider has the ISRC, said plainly (the album providers read the release's album
+  // there, so they can say at which position it sits; Deezer/Tidal/SoundExchange can't)
+  function allAtText(l) {
+    if (l.at === 'here') return l.state === ALL_DIFF ? 'the album’s ISRC at this position' : 'same position on the album';
+    return l.at ? 'on the album at ' + l.at + ', not this position' : '';
+  }
+  // a line as text (the log) and as the panel shows it
   function allLineText(l, isrc) {
-    return [l.at === 'here' ? 'at this track' : l.at ? 'at ' + l.at : '',
-      l.isrc && l.isrc !== isrc ? l.isrc : '',
+    return [allAtText(l), l.isrc && l.isrc !== isrc ? l.isrc : '',
       l.song && l.song.title ? '"' + l.song.title + '"' + (l.song.artist ? ' — ' + l.song.artist : '') + (l.song.dur ? ' ' + l.song.dur : '') : '',
       l.note || ''].filter(Boolean).join(' · ');
   }
   function allLineHtml(l, isrc) {
     const p = [];
-    if (l.at === 'here') p.push('<span class="ii-all-at" title="the album has this at the track’s place">📍</span>');
-    else if (l.at) p.push('<span class="ii-all-at" title="the album has it at ' + esc(l.at) + ', not at this track’s place">↪ ' + esc(l.at) + '</span>');
+    if (l.at === 'here') p.push('<span class="ii-all-at" title="' + esc(allAtText(l)) + '">📍</span>');
+    else if (l.at) p.push('<span class="ii-all-at" title="' + esc(allAtText(l)) + '">↪ ' + esc(l.at) + '</span>');
     if (l.isrc && l.isrc !== isrc) p.push('<span class="ii-all-isrc">' + esc(l.isrc) + '</span>');
     if (l.song && l.song.title) p.push(esc('"' + l.song.title + '"' + (l.song.artist ? ' — ' + l.song.artist : '') + (l.song.dur ? ' ' + l.song.dur : '')));
     if (l.note) p.push('<span class="ii-all-sub">' + esc(l.note) + '</span>');
+    if (l.sxLink) p.push('<a class="ii-all-sxlink" href="' + esc(SX_HOME) + '" target="_blank" rel="noopener" title="SoundExchange is blocked — solve its captcha in the browser, then click or right-click All">↗</a>');
     return p.join(' ');
   }
   async function allSxLine(t, isrc) {
@@ -37148,7 +37156,7 @@ Created this ${kind} while adding credits parsed from text to ${relUrl}`;
     res.lines = res.lines.filter(l => l.key !== 'sx');
     const at = res.lines.length;
     if (_allSxBlocked) {
-      res.lines.push({ key: 'sx', name: 'SoundExchange', state: ALL_BLOCK, note: 'not asked — SoundExchange is blocked (' + _allSxBlocked + '); solve it on soundexchange.com, then click or right-click All' });
+      res.lines.push({ key: 'sx', name: 'SoundExchange', state: ALL_BLOCK, note: 'not asked · ' + _allSxBlocked, sxLink: true });
       renderAllChip(idx);
       return;
     }
@@ -37160,7 +37168,7 @@ Created this ${kind} while adding credits parsed from text to ${relUrl}`;
     } catch (e) {
       if (e && (e.captcha || e.rateLimited)) {
         _allSxBlocked = e.captcha ? 'captcha' : 'rate limit';
-        res.lines[at] = { key: 'sx', name: 'SoundExchange', state: ALL_BLOCK, note: (e.captcha ? 'captcha' : 'rate-limited') + ' — solve it on soundexchange.com, then run All again' };
+        res.lines[at] = { key: 'sx', name: 'SoundExchange', state: ALL_BLOCK, note: e.captcha ? 'captcha' : 'rate-limited', sxLink: true };
         renderAllChip(idx);
         throw e;
       }
@@ -37294,9 +37302,12 @@ Created this ${kind} while adding credits parsed from text to ${relUrl}`;
     if (copy) {
       const cell = x => String(x).replace(/\|/g, '\\|');
       const t = RELEASE.tracks[idx];
-      const md = '**Track ' + num + '** · ' + cell(t.title || '') + ' · `' + res.isrc + '`\n\n| | Provider | ISRC | Result |\n|:-:|---|---|---|\n' +
-        res.lines.map(l => '| ' + ALL_MARK[l.state] + ' | ' + cell(l.name) + ' | ' + (l.isrc ? '`' + l.isrc + '`' : '') + ' | ' + cell(allLineText(l, res.isrc)) + ' |').join('\n') + '\n';
-      try { navigator.clipboard.writeText(md).then(() => toast('Comparison copied'), () => toast('Copy failed', 'err')); } catch (err) { toast('Copy failed', 'err'); }
+      const md = '**Track ' + num + '** · ' + cell(t.title || '') + ' · `' + res.isrc + '`\n\n| | Provider | ISRC | Track | Length | Note |\n|:-:|---|---|---|---|---|\n' +
+        res.lines.map(l => '| ' + ALL_MARK[l.state] + ' | ' + cell(l.name) + ' | ' + (l.isrc ? '`' + l.isrc + '`' : '') + ' | ' +
+          cell(l.song && l.song.title ? l.song.title + (l.song.artist ? ' — ' + l.song.artist : '') : '') + ' | ' + cell((l.song && l.song.dur) || '') + ' | ' +
+          cell([allAtText(l), l.note || ''].filter(Boolean).join(' · ')) + ' |').join('\n') + '\n';
+      const said = (ok) => { copy.textContent = ok ? 'copied ✓' : 'copy failed'; copy.classList.toggle('done', ok); setTimeout(() => { copy.textContent = 'copy'; copy.classList.remove('done'); }, 1500); };
+      try { navigator.clipboard.writeText(md).then(() => said(true), () => said(false)); } catch (err) { said(false); }
       Log.info('All #' + num + ': comparison copied as Markdown');
     }
   }
@@ -37325,7 +37336,7 @@ Created this ${kind} while adding credits parsed from text to ${relUrl}`;
         if (e && (e.captcha || e.rateLimited)) {
           todo.slice(k + 1).forEach(({ idx }) => {
             const l = _allRes[idx] && _allRes[idx].lines.find(x => x.key === 'sx');
-            if (l) { l.state = ALL_BLOCK; l.note = 'not asked — SoundExchange stopped at a ' + (e.captcha ? 'captcha' : 'rate limit') + '; solve it, then run All again'; }
+            if (l) { l.state = ALL_BLOCK; l.note = 'not asked · stopped at a ' + (e.captcha ? 'captcha' : 'rate limit'); l.sxLink = true; }
             renderAllChip(idx);
           });
           Log.warn('All: SoundExchange ' + (e.captcha ? 'captcha' : 'rate limit') + ' — stopped; ' + (todo.length - k - 1) + ' track(s) not asked');
@@ -37662,7 +37673,7 @@ Created this ${kind} while adding credits parsed from text to ${relUrl}`;
     if (!list.length) { Log.warn('Beatport API: release had no tracks — falling back to tab harvest'); return null; }
     let withIsrc = 0;
     list.forEach((t, i) => {
-      const mix = t.mix_name && !/^original mix$/i.test(t.mix_name) ? ' (' + t.mix_name + ')' : '';
+      const mix = t.mix_name && !/^original mix$/i.test(t.mix_name) && !String(t.name || '').toLowerCase().includes('(' + String(t.mix_name).toLowerCase() + ')') ? ' (' + t.mix_name + ')' : '';   // #643: not twice
       const e = {
         isrc:   normalizeIsrc(t.isrc || ''),
         title:  (t.name || '') + mix,
