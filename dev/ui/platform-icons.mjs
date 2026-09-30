@@ -51,8 +51,9 @@ export const PLATFORM_ICONS = {
     soundcloud: { color: '#ff5500', svg: '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="#ff5500"/><g fill="#fff"><rect x="6" y="12" width="1.4" height="4" rx=".6"/><rect x="8.5" y="10" width="1.4" height="6" rx=".6"/><rect x="11" y="8.5" width="1.4" height="7.5" rx=".6"/><rect x="13.5" y="10.5" width="1.4" height="5.5" rx=".6"/><rect x="16" y="11.5" width="1.4" height="4.5" rx=".6"/></g></svg>' },
 
     // ── SoundExchange — purple disc + waveform (stand-in) ──
-    // ── YouTube Music — red disc, white ring, play triangle (#639) ──
-    ytmusic: { color: '#FF0000', svg: '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="#FF0000"/><circle cx="12" cy="12" r="5.6" fill="none" stroke="#fff" stroke-width="1.4"/><path d="M10.4 9.5v5l4.2-2.5z" fill="#fff"/></svg>' },
+    // ── YouTube Music — the YouTube button carrying a music note (#639; a red disc with a play
+    //    triangle read as Beatport's at 16px) ──
+    ytmusic: { color: '#FF0000', svg: '<svg viewBox="0 0 24 24"><rect x="1" y="4.5" width="22" height="15" rx="4.5" fill="#FF0000"/><path d="M10.4 7.6v6.1a2.1 2.1 0 1 0 1.3 1.9V9.9l3.9-1V7z" fill="#fff"/></svg>' },
 
     soundexchange: { color: '#6f42c1', svg: '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="#6f42c1"/><path d="M6.5 12h1.3l1-3 1.6 6 1.6-9 1.6 12 1.4-6h1.5" fill="none" stroke="#fff" stroke-width="1.4" stroke-linejoin="round" stroke-linecap="round"/></svg>' },
 
