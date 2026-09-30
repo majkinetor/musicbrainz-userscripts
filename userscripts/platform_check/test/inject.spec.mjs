@@ -179,3 +179,19 @@ test('#423: a digital Bandcamp release gets both link types; a physical-only one
   const vinyl = await types('Vinyl');
   check(vinyl.length === 1 && vinyl[0] === '85', `physical only: just "stream for free" (${vinyl})`);
 });
+
+test('#639: a YouTube Music album link lands with its link type set', { tag: ['@sandbox', '@login'] }, async ({ page, inject }) => {
+  const YTM = 'https://music.youtube.com/playlist?list=OLAK5uy_kNhM2yaBTOVwrcZJepB1C9P3-n5_Sfy5c';
+  const run = await openEditor(page, inject, { pending: { ytmusic: YTM } });
+  await finished(run, page);
+  const s = await until(() => state(page), s => s.hrefs.some(h => h.includes('OLAK5uy_kNhM2yaBTOVwrcZJepB1C9P3-n5_Sfy5c')));
+  const typed = await page.evaluate(() => {
+    const ed = document.getElementById('external-links-editor') || document.body;
+    const row = [...ed.querySelectorAll('tr.external-link-item')].find(tr => /OLAK5uy_kNhM2yaBTOVwrcZJepB1C9P3/.test(tr.innerHTML));
+    const sel = row && row.parentElement.querySelector('select.link-type');
+    return { text: row ? row.parentElement.innerText.replace(/\s+/g, ' ').slice(0, 300) : null, select: sel ? sel.value : null, unset: /Please select a link type/i.test(ed.innerText) };
+  });
+  console.log(JSON.stringify({ typed, report: said(run, /inject:/), lines: run.console.filter(l => /music\.youtube/.test(l)) }, null, 1));
+  check(s.hrefs.some(h => h.includes('OLAK5uy_kNhM2yaBTOVwrcZJepB1C9P3-n5_Sfy5c')), 'the link lands, its list id intact');
+  check(!typed.unset, `with a link type, not "Please select a link type" (${JSON.stringify(typed)})`);
+});

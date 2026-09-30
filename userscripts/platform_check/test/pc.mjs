@@ -43,6 +43,8 @@ export async function openPc(page, inject, { release, replay = null, links = nul
   return ws;
 }
 
+const YTM_DROP = new Set(['responseContext', 'trackingParams', 'clickTrackingParams', 'loggingContext', 'frameworkUpdates', 'thumbnail', 'thumbnails', 'thumbnailRenderer', 'thumbnailOverlay', 'straplineThumbnail', 'background', 'menu', 'overlay', 'buttons', 'multiSelectCheckbox', 'accessibility', 'accessibilityData']);
+
 // What a recording keeps of a reply: of SoundCloud's 3 MB web-player script, only the
 // public client_id Platform Check reads from it.
 function trim(key, body) {
@@ -52,6 +54,11 @@ function trim(key, body) {
   if (/^https:\/\/music\.apple\.com\/us\/browse/.test(key)) return (body.match(/\/assets\/index-legacy~[a-z0-9]+\.js/i) || body.match(/\/assets\/index~[a-z0-9]+\.js/i) || [''])[0];
   if (/^https:\/\/music\.apple\.com\/assets\/index/.test(key)) return 'eyJrecorded' + 'x'.repeat(100);
   if (/^https:\/\/a-v2\.sndcdn\.com\/assets\//.test(key)) return (body.match(/client_id\s*[:=]\s*"[a-zA-Z0-9]{20,40}"/) || [''])[0];
+  // YouTube Music (#639): an album page is ~160 KB, most of it thumbnails, menus and tracking
+  // data the script never reads. Kept: the text, the ids and links, the header and tracklist.
+  if (/^POST https:\/\/music\.youtube\.com\/youtubei\//.test(key)) {
+    try { return JSON.stringify(JSON.parse(body), (k, v) => (YTM_DROP.has(k) ? undefined : v)); } catch (e) { return body; }
+  }
   return body;
 }
 

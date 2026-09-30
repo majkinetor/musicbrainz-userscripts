@@ -8,8 +8,9 @@
         "open.spotify.com/album/41aeU2fQpLCNn3n1AVqCIF",
         "open.spotify.com/album/0X9oLn2APMvGOIsogM1TSp"
       ],
-      "discogs":  "www.discogs.com/release/17601142",
-      "bandcamp": "menahanstreetband.bandcamp.com/album/the-exciting-sounds-of-menahan-street-band"
+      "discogs": "www.discogs.com/release/17601142",
+      "bandcamp": "menahanstreetband.bandcamp.com/album/the-exciting-sounds-of-menahan-street-band",
+      "ytmusic": "music.youtube.com/playlist?list=OLAK5uy_l_YfLHFCEsBC6a8dbcYiI97xGy8HN1h50"
     },
     "notes": "Spotify has two valid editions of this album (US-only `41aeU…` and worldwide `0X9oLn…`); both have 14 tracks and identical metadata, so the script can't distinguish them. Brave's result order picks the first canonical hit, which is non-deterministic across runs. Either is acceptable."
   },
@@ -22,8 +23,9 @@
         "open.spotify.com/album/41aeU2fQpLCNn3n1AVqCIF",
         "open.spotify.com/album/0X9oLn2APMvGOIsogM1TSp"
       ],
-      "discogs":  "www.discogs.com/release/17630890",
-      "bandcamp": "menahanstreetband.bandcamp.com/album/the-exciting-sounds-of-menahan-street-band"
+      "discogs": "www.discogs.com/release/17630890",
+      "bandcamp": "menahanstreetband.bandcamp.com/album/the-exciting-sounds-of-menahan-street-band",
+      "ytmusic": "music.youtube.com/playlist?list=OLAK5uy_l_YfLHFCEsBC6a8dbcYiI97xGy8HN1h50"
     },
     "notes": "Vinyl edition of the same release group as the digital fixture (3f6797b2…). Discogs link in MB rels is the vinyl-specific release 17630890; Spotify/Wikidata still resolve to the worldwide-edition album because that's what Wikidata's P2205 anchors the whole release group to."
   },
@@ -41,7 +43,7 @@
     "mbid": "4cefc624-2b8e-4f84-82cc-296b5d7e46a5",
     "tags": "niche-release multiple-spotify-matches",
     "expect": {
-      "discogs":  "www.discogs.com/release/2728685"
+      "discogs": "www.discogs.com/release/2728685"
     },
     "notes": "Spotify and Bandcamp may not have this niche live recording. Discogs is the only guaranteed match. Spotify search returns multiple wrong albums by the same artist — exercises candidate verification."
   },
@@ -51,7 +53,8 @@
     "tags": "no-rels cd-format format-aware-discogs panel-self-contamination",
     "expect": {
       "discogs": "www.discogs.com/release/5124829",
-      "existingRelsAllNull": true
+      "existingRelsAllNull": true,
+      "ytmusic": "music.youtube.com/playlist?list=OLAK5uy_mWX9x3_qTV3aHdHBllbJwttHmbZJTRaFw"
     },
     "notes": "Threads CD release with ZERO external links on MB. Used to verify (a) format extraction picks up 'CD' from the sidebar dl.properties, (b) Discogs format-aware search picks the CD release (5124829) not the vinyl (5045213), and (c) parseMbFromDom does NOT pick up our own panel's anchors as 'existing MB rels' on a refresh — the regression that made every row appear circled."
   },
@@ -60,7 +63,8 @@
     "mbid": "c7f73c79-536e-4b58-8152-a7aad47204c6",
     "tags": "year-extraction release-events-json-bootstrap",
     "expect": {
-      "headerYear": "2021"
+      "headerYear": "2021",
+      "ytmusic": "music.youtube.com/playlist?list=OLAK5uy_lcoiUR1sulM0wxKk7jRT06pTvT0egxu40"
     },
     "notes": "Release date 2021-12-03 (Germany). The Release-events sibling is a <script type=\"application/json\"> bootstrap blob containing the [DE] country entity's last_updated=2013-05-27 timestamp; the rendered '<div>Germany2021-12-03</div>' sibling has the actual year. Used to verify the script-stripping helper handles the case where the sibling itself IS the script (not a descendant of a sibling)."
   },
@@ -70,7 +74,8 @@
     "tags": "year-extraction script-sibling country-first-order discogs-medley-index",
     "expect": {
       "headerYear": "2021",
-      "discogs": "www.discogs.com/release/21216070"
+      "discogs": "www.discogs.com/release/21216070",
+      "ytmusic": "music.youtube.com/playlist?list=OLAK5uy_lcoiUR1sulM0wxKk7jRT06pTvT0egxu40"
     },
     "notes": "Release date 2021-12-03. Two distinct bugs caught by this fixture: (1) The Release-events JSON bootstrap sibling has the country entity FIRST and the date object second — opposite of the digital edition — so the first 4-digit year match inside the script is Germany's last_updated=2013, not the release year. Fixed by skipping <script> siblings outright (cleanText doesn't strip them when they're the sibling root). (2) Discogs release 21216070 has 13 type_=track + 1 type_=index (the 'Medley' parent with 3 sub-tracks 9a/9b/9c). MB counts the medley parent as one position so the right count is 14, not 13."
   },
@@ -79,7 +84,8 @@
     "mbid": "f53176c9-5e90-4de2-aa0d-8bf66b8b01cc",
     "tags": "discogs-master-on-rg no-discogs-in-rels",
     "expect": {
-      "discogsMaster": "www.discogs.com/master/84579"
+      "discogsMaster": "www.discogs.com/master/84579",
+      "ytmusic": "music.youtube.com/playlist?list=OLAK5uy_lJGJTswh9pQOppNFvDKOMCrfPv3vPjXmE"
     },
     "notes": "Self-titled Philip Cohran reissue. No Discogs *release* link in MB rels, and the Discogs release search misses (the album title contains the artist, so the query duplicates it; the master's releases are physical-only vs the digital MB release). But the release-GROUP already carries Discogs master 84579 — the master slot must surface that existing RG link regardless of whether a release resolves (discogsMasterState honours existingDiscogsMaster even with no resolved-release master)."
   }
