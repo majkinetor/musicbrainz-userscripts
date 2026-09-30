@@ -30,7 +30,7 @@ import { readFileSync } from 'node:fs';
 import { gzipSync, gunzipSync } from 'node:zlib';
 import { fileURLToPath } from 'node:url';
 import { dirname, resolve } from 'node:path';
-import { installProdGuard, hostOf } from './guard.mjs';
+import { installProdGuard, hostOf, withUa } from './guard.mjs';
 
 export { expect };
 export const REPO = resolve(dirname(fileURLToPath(import.meta.url)), '..', '..');
@@ -259,12 +259,15 @@ export async function replayWs(page, file, { from = PROD, paths = /^\/ws\/2\//, 
   const context = page.context();
   const coversWeb = u => !!web && !isMb(u) && (web === true || web.test(u.hostname));
   const answerWeb = async ({ url, method = 'GET', headers, data }) => {
-    const key = mapped((method === 'GET' ? '' : method + ' ') + url + (data ? ' ' + data : ''));
+    // Amazon Music's web-player API (#644) carries its guest session, a request id and the time in
+    // the body's "headers" string: a request is keyed without it, or no two runs would match
+    const stable = d => (/\.a2z\.com\//.test(url) && d ? String(d).replace(/,"headers":"(?:[^"\\]|\\.)*"/, '') : d);
+    const key = mapped((method === 'GET' ? '' : method + ' ') + url + (data ? ' ' + stable(data) : ''));
     const reply = a => ({ status: a.status, url: a.url, headers: 'content-type: ' + a.type, body: a.b64 ? Buffer.from(a.b64, 'base64') : a.body });
     if (record && !store[key]) {
       let live;
       try {
-        const r = await context.request.fetch(url, { method, headers, data, maxRedirects: 20, failOnStatusCode: false, timeout: 60000 });
+        const r = await context.request.fetch(url, { method, headers: withUa(headers), data, maxRedirects: 20, failOnStatusCode: false, timeout: 60000 });
         const bytes = await r.body(), type = r.headers()['content-type'] || '';
         const text = !type || /json|text|xml|html|javascript/i.test(type);
         let body = text ? bytes.toString('utf8') : undefined;

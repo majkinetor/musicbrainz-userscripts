@@ -61,6 +61,9 @@ export const PLATFORM_ICONS = {
     ytmusic: { color: '#FF0000', svg: '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="#FF0000"/><circle cx="12" cy="12" r="5.6" fill="none" stroke="#fff" stroke-width="1.4"/><path d="M10.4 9.5v5l4.2-2.5z" fill="#fff"/></svg>' },
 
     // ── SoundExchange — purple disc + waveform (stand-in) ──
+    // ── Amazon Music — cyan disc, Amazon's smile (#644) ──
+    amazonmusic: { color: '#25D1DA', svg: '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="#25D1DA"/><path d="M5.8 11.2c3.5 3.2 8.9 3.5 12.4.9" fill="none" stroke="#0F1111" stroke-width="1.9" stroke-linecap="round"/><path d="M15.5 10.7l3 1.3-.9 3.1" fill="none" stroke="#0F1111" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>' },
+
     soundexchange: { color: '#6f42c1', svg: '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="#6f42c1"/><path d="M6.5 12h1.3l1-3 1.6 6 1.6-9 1.6 12 1.4-6h1.5" fill="none" stroke="#fff" stroke-width="1.4" stroke-linejoin="round" stroke-linecap="round"/></svg>' },
 
     // ── Generic streaming host (unknown provider fallback) ──
