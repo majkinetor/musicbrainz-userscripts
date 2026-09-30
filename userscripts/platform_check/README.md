@@ -68,6 +68,7 @@ The footer's **+** adds every confirmed link (middle-click: the withheld ones to
 | Apple Music | looked up and read | |
 | Deezer | looked up | |
 | Tidal | looked up and read | |
+| YouTube Music | looked up | |
 | Qobuz | looked up and read | optional |
 | Beatport | | optional |
 | Volumo | looked up and read | |
@@ -81,6 +82,7 @@ The footer's **+** adds every confirmed link (middle-click: the withheld ones to
 - **Bandcamp**: bonus tracks that are download-only are counted and marked ⁿ. A Bandcamp barcode that is really a physical package's is ignored.
 - **Apple Music** is read from the catalogue its web player uses, anonymously. Of the albums a barcode brings up, only the one with that barcode counts, and the track count is songs only, without music videos. Apple's catalogue differs by country, so a release is looked for in several storefronts at once (the release's own link's, the US, UK, Germany, France, Japan, Brazil and Australia), and when none has it, in all of Apple's storefronts at once, about a second. The log says which storefront a match came from, and the link keeps it. If that catalogue can't be reached, the older iTunes search is used, which gives no barcode.
 - **Discogs**: on a CD release, a CD edition is searched first. The release group's Discogs master is checked too.
+- **YouTube Music** is read anonymously, through the catalogue its web player uses. Its search finds most albums by their barcode, and the rest by artist and title. It shows no barcode and can return another edition of the album, so every hit must also match on track count and title. A barcode search can also bring up another edition from the same group of versions, with a different barcode. So a match is never taken as barcode-confirmed, and strict barcode mode withholds it. When YouTube Music lists *other versions* of the album, the link's tooltip and the log name them, for you to check. Links are added as *stream for free*.
 - **SoundCloud** can't be searched by barcode; it's read from the linked set, and trusted only when the whole set agrees on it.
 - **Volumo** and **HDtracks** are added as *purchase for download*, since MusicBrainz has no type of their own.
 

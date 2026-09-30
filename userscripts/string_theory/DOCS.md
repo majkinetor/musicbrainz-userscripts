@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-09-30 17:58 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-09-30 18:07 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -839,8 +839,11 @@ Shows a release's ISRCs, fills in the missing ones from several providers, and f
 | SoundCloud | ✓ | ✓ | the set (a track URL counts as a one-track release); by position (+ title for links) |
 | Spotify | ✓ | ✓ | ISRCs through [a lookup service](#spotify); links from the album, by position + title |
 | Bandcamp | | ✓ | the album page, by position + title |
+| YouTube Music | | ✓ | the album, when linked (by position + title); else ISRC, on any release |
 | HDtracks | ✓ | | the album |
 | SoundExchange | ✓ | | a title and artist search |
+
+**YouTube Music** shows no ISRCs. When the release links its YouTube Music album (Platform Check finds it), each track is taken from that album's tracklist, by position and title. Otherwise its ISRC is searched. An ISRC it doesn't know brings up unrelated songs instead of nothing, and labels sometimes reuse an ISRC for another version of a song with the same title and length: [JP92Q2400507](https://musicbrainz.org/isrc/JP92Q2400507) is both *メズマライザー* and its *Critical Damage ver.* So a search result counts only when it is official audio (not a user upload), has the track's title, is within 3 s of its length, and comes from this release's album. The log names every result it skipped, and why. The edit note names each link's YouTube Music album, since a song's URL no longer says which album it was once it is delisted. Links are added as *free streaming*.
 
 An album-based provider needs the release's album link: already in MusicBrainz, found by Platform Check, or pasted with **(+)**. No login is needed anywhere except Qobuz outside the countries it serves (see [Qobuz](#qobuz)).
 
@@ -1169,6 +1172,7 @@ The footer's **+** adds every confirmed link (middle-click: the withheld ones to
 | Apple Music | looked up and read | |
 | Deezer | looked up | |
 | Tidal | looked up and read | |
+| YouTube Music | looked up | |
 | Qobuz | looked up and read | optional |
 | Beatport | | optional |
 | Volumo | looked up and read | |
@@ -1182,6 +1186,7 @@ The footer's **+** adds every confirmed link (middle-click: the withheld ones to
 - **Bandcamp**: bonus tracks that are download-only are counted and marked ⁿ. A Bandcamp barcode that is really a physical package's is ignored.
 - **Apple Music** is read from the catalogue its web player uses, anonymously. Of the albums a barcode brings up, only the one with that barcode counts, and the track count is songs only, without music videos. Apple's catalogue differs by country, so a release is looked for in several storefronts at once (the release's own link's, the US, UK, Germany, France, Japan, Brazil and Australia), and when none has it, in all of Apple's storefronts at once, about a second. The log says which storefront a match came from, and the link keeps it. If that catalogue can't be reached, the older iTunes search is used, which gives no barcode.
 - **Discogs**: on a CD release, a CD edition is searched first. The release group's Discogs master is checked too.
+- **YouTube Music** is read anonymously, through the catalogue its web player uses. Its search finds most albums by their barcode, and the rest by artist and title. It shows no barcode and can return another edition of the album, so every hit must also match on track count and title. A barcode search can also bring up another edition from the same group of versions, with a different barcode. So a match is never taken as barcode-confirmed, and strict barcode mode withholds it. When YouTube Music lists *other versions* of the album, the link's tooltip and the log name them, for you to check. Links are added as *stream for free*.
 - **SoundCloud** can't be searched by barcode; it's read from the linked set, and trusted only when the whole set agrees on it.
 - **Volumo** and **HDtracks** are added as *purchase for download*, since MusicBrainz has no type of their own.
 
