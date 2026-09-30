@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Platform Check
 // @namespace    http://tampermonkey.net/
-// @version      2026.9.30.215118
+// @version      2026.9.30.220126
 // @description  Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+DQogIDx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CiAgDQogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJhMWE1MiIgc3Ryb2tlLXdpZHRoPSI5IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik00MCA4OCBBMzQgMzQgMCAwIDEgNDAgNDAiLz4NCiAgICA8cGF0aCBkPSJNMjkgOTkgQTUwIDUwIDAgMCAxIDI5IDI5Ii8+DQogICAgPHBhdGggZD0iTTg4IDg4IEEzNCAzNCAwIDAgMCA4OCA0MCIvPg0KICAgIDxwYXRoIGQ9Ik05OSA5OSBBNTAgNTAgMCAwIDAgOTkgMjkiLz4NCiAgPC9nPg0KICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyMCIgZmlsbD0iI2U4MjAxYSIvPg0KPC9zdmc+DQo=
@@ -2991,7 +2991,8 @@ function updateRow(p, { url, mbTracks, remoteTracks, year, label, source, fromCa
 
     // Meta cells: year · format · label, each its own grid cell so the columns
     // align across providers (1-row layout) — see setMetaCells.
-    setMetaCells(`year-${p}`, `format-${p}`, `label-${p}`, year, format, label);
+    // re-stripped here too, so a label cached before a stripCopyright fix shows clean (#644)
+    setMetaCells(`year-${p}`, `format-${p}`, `label-${p}`, year, format, label ? stripCopyright(label) : label);
     refreshCompactStrip();   // #355
 }
 
@@ -3128,10 +3129,11 @@ function fmtMarker(fmt) {
 // Strip leading copyright noise from a label string so the meta line doesn't
 // show the year twice (year · label). Handles ℗/© or "(P)/(C)", a BARE leading
 // year (Tidal often does "2026 Label" with no symbol), and repeated/stacked
-// prefixes ("℗ 2017 © 2017 Label"). Returns null when nothing's left.
+// prefixes ("℗ 2017 © 2017 Label"), and marks run together (Amazon Music's "℗© 2025 Label", #644).
+// Returns null when nothing's left.
 function stripCopyright(text) {
     let t = String(text || '').trim(), prev;
-    do { prev = t; t = t.replace(/^\s*(?:[℗©]|\([pc]\))?\s*(?:19|20)\d{2}\s*/i, ''); } while (t !== prev);
+    do { prev = t; t = t.replace(/^\s*(?:(?:[℗©]|\([pc]\))\s*)*(?:19|20)\d{2}\s*|^\s*(?:(?:[℗©]|\([pc]\))\s*)+/i, ''); } while (t !== prev);
     return t.trim() || null;
 }
 
