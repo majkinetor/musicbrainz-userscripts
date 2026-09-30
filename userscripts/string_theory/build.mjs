@@ -27,7 +27,9 @@ if (!MEMBERS.length) throw new Error('members.txt lists no scripts');
 const NAME = 'String Theory';
 // Embed the icon as a data URI, not a raw GitHub URL — managers render data: icons reliably (no network
 // fetch, no content-type dependency), whereas the raw-URL icon didn't show up in the manager list.
-const ICON = 'data:image/svg+xml;base64,' + readFileSync(resolve(HERE, 'icon.svg')).toString('base64');
+// line endings as committed (LF): a Windows checkout has CRLF, and the icon then came out different
+// from the one CI builds (#646)
+const ICON = 'data:image/svg+xml;base64,' + Buffer.from(readFileSync(resolve(HERE, 'icon.svg'), 'utf8').replace(/\r\n/g, '\n')).toString('base64');
 const HOMEPAGE = 'https://github.com/majkinetor/musicbrainz-userscripts/tree/main/userscripts/string_theory';
 const OUT = resolve(HERE, 'string_theory.user.js');
 

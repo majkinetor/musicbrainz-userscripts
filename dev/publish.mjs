@@ -132,7 +132,7 @@ function generalLines(general, level, bullet) {
 // since the last GitHub release's tag, or `stable` when there is none (or its tag isn't fetched)
 function changedScripts() {
   const prev = lastReleaseTime();
-  const base = prev && tryRun(() => git('rev-parse', '--verify', '--quiet', `refs/tags/${prev.tag}`)) ? prev.tag : 'stable';
+  const base = changedScripts.base = prev && tryRun(() => git('rev-parse', '--verify', '--quiet', `refs/tags/${prev.tag}`)) ? prev.tag : 'stable';
   const files = tryRun(() => git('diff', '--name-only', `${base}...main`)) || '';
   const dirs = new Set();
   for (const f of files.split('\n')) { const m = f.match(/^userscripts\/([^/]+)\/.*\.user\.js$/); if (m) dirs.add(m[1]); }
@@ -235,7 +235,7 @@ function main() {
 
   console.log(`\n=== publish ${YES ? '(EXECUTE)' : '(dry run — pass --yes to execute)'} ===`);
   console.log(`Release tag: ${tag}`);
-  console.log(`Changed scripts (since stable): ${[...changed].join(', ') || '(none)'}`);
+  console.log(`Changed scripts (since ${changedScripts.base}): ${[...changed].join(', ') || '(none)'}`);
   console.log(`Issues to include & mark released: ${included.length ? included.map(n => '#' + n).join(', ') : '(none)'}\n`);
 
   const edits = [];
