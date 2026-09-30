@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         String Theory
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.9.30.192230
+// @version      2026.9.30.193345
 // @description  Unified bundle of 8 MusicBrainz userscripts (apollo_editor, art_station, credit_hoarder, fusion, group_therapy, isrc_scout, mammoth, platform_check). Built by userscripts/string_theory/build.mjs — do not hand-edit.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCIgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0Ij4NCiAgPCEtLSBodWItYW5kLXNwb2tlICJuZXR3b3JrIiBnbHlwaCwgc2luZ2xlIHZpdmlkIHZpb2xldCBvbiB0cmFuc3BhcmVudCBzbyBpdCByZWFkcyBvbiBib3RoIGRhcmsgYW5kIGxpZ2h0IHBhZ2VzIC0tPg0KICA8ZyBmaWxsPSJub25lIiBzdHJva2U9IiM3YzVjZmYiIHN0cm9rZS13aWR0aD0iNC42IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMzIgMTUiLz4NCiAgICA8cGF0aCBkPSJNMzIgMzIgTDQ2LjUgMjMuNSIvPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMNDYuNSA0MC41Ii8+DQogICAgPHBhdGggZD0iTTMyIDMyIEwzMiA0OSIvPg0KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMTcuNSA0MC41Ii8+DQogICAgPHBhdGggZD0iTTMyIDMyIEwxNy41IDIzLjUiLz4NCiAgPC9nPg0KICA8ZyBmaWxsPSIjN2M1Y2ZmIj4NCiAgICA8Y2lyY2xlIGN4PSIzMiIgY3k9IjMyIiByPSI4LjYiLz4NCiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjE5LjUiIHI9IjYuNCIvPg0KICAgIDxjaXJjbGUgY3g9IjQ5IiBjeT0iMTkuNSIgcj0iNi40Ii8+DQogICAgPGNpcmNsZSBjeD0iMzIiIGN5PSI1NyIgcj0iNi40Ii8+DQogIDwvZz4NCiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjN2M1Y2ZmIiBzdHJva2Utd2lkdGg9IjMuOCI+DQogICAgPGNpcmNsZSBjeD0iMzIiIGN5PSI3IiByPSI0LjkiLz4NCiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjQ0LjUiIHI9IjQuOSIvPg0KICAgIDxjaXJjbGUgY3g9IjQ5IiBjeT0iNDQuNSIgcj0iNC45Ii8+DQogIDwvZz4NCjwvc3ZnPg0K
@@ -82,8 +82,8 @@
 // Bundles (verbatim, each wrapped in a run-at gate): apollo_editor, art_station, credit_hoarder, fusion, group_therapy, isrc_scout, mammoth, platform_check.
 
 try {
-  console.log('%c String Theory %c v2026.9.30.192230 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
-  console.log("String Theory bundles:\n  · Apollo Editor v2026.9.30.092616\n  · Art Station v2026.9.30.191939\n  · Credit Hoarder v2026.9.30.192230\n  · Fusion v2026.9.30.092616\n  · Group Therapy v2026.9.30.092616\n  · ISRC Scout v2026.9.30.191939\n  · Mammoth v2026.9.30\n  · Platform Check v2026.9.30.191939");
+  console.log('%c String Theory %c v2026.9.30.193345 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
+  console.log("String Theory bundles:\n  · Apollo Editor v2026.9.30.092616\n  · Art Station v2026.9.30.191939\n  · Credit Hoarder v2026.9.30.192230\n  · Fusion v2026.9.30.092616\n  · Group Therapy v2026.9.30.092616\n  · ISRC Scout v2026.9.30.191939\n  · Mammoth v2026.9.30\n  · Platform Check v2026.9.30.193105");
 } catch (e) {}
 
 // ===== apollo_editor (@run-at document-start) =====================================
@@ -43303,7 +43303,7 @@ Created this ${kind} while adding credits parsed from text to ${relUrl}`;
 
 // ===== platform_check (@run-at document-end) ====================================
 (function(__stGM){
-  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Platform Check*","namespace":"http://tampermonkey.net/","version":"2026.9.30.191939","description":"Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/platform_check/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+DQogIDx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CiAgDQogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJhMWE1MiIgc3Ryb2tlLXdpZHRoPSI5IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik00MCA4OCBBMzQgMzQgMCAwIDEgNDAgNDAiLz4NCiAgICA8cGF0aCBkPSJNMjkgOTkgQTUwIDUwIDAgMCAxIDI5IDI5Ii8+DQogICAgPHBhdGggZD0iTTg4IDg4IEEzNCAzNCAwIDAgMCA4OCA0MCIvPg0KICAgIDxwYXRoIGQ9Ik05OSA5OSBBNTAgNTAgMCAwIDAgOTkgMjkiLz4NCiAgPC9nPg0KICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyMCIgZmlsbD0iI2U4MjAxYSIvPg0KPC9zdmc+DQo="}) }) : { script: {"name":"Platform Check*","namespace":"http://tampermonkey.net/","version":"2026.9.30.191939","description":"Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/platform_check/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+DQogIDx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CiAgDQogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJhMWE1MiIgc3Ryb2tlLXdpZHRoPSI5IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik00MCA4OCBBMzQgMzQgMCAwIDEgNDAgNDAiLz4NCiAgICA8cGF0aCBkPSJNMjkgOTkgQTUwIDUwIDAgMCAxIDI5IDI5Ii8+DQogICAgPHBhdGggZD0iTTg4IDg4IEEzNCAzNCAwIDAgMCA4OCA0MCIvPg0KICAgIDxwYXRoIGQ9Ik05OSA5OSBBNTAgNTAgMCAwIDAgOTkgMjkiLz4NCiAgPC9nPg0KICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyMCIgZmlsbD0iI2U4MjAxYSIvPg0KPC9zdmc+DQo="} };
+  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Platform Check*","namespace":"http://tampermonkey.net/","version":"2026.9.30.193105","description":"Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/platform_check/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+DQogIDx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CiAgDQogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJhMWE1MiIgc3Ryb2tlLXdpZHRoPSI5IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik00MCA4OCBBMzQgMzQgMCAwIDEgNDAgNDAiLz4NCiAgICA8cGF0aCBkPSJNMjkgOTkgQTUwIDUwIDAgMCAxIDI5IDI5Ii8+DQogICAgPHBhdGggZD0iTTg4IDg4IEEzNCAzNCAwIDAgMCA4OCA0MCIvPg0KICAgIDxwYXRoIGQ9Ik05OSA5OSBBNTAgNTAgMCAwIDAgOTkgMjkiLz4NCiAgPC9nPg0KICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyMCIgZmlsbD0iI2U4MjAxYSIvPg0KPC9zdmc+DQo="}) }) : { script: {"name":"Platform Check*","namespace":"http://tampermonkey.net/","version":"2026.9.30.193105","description":"Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/platform_check/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+DQogIDx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CiAgDQogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJhMWE1MiIgc3Ryb2tlLXdpZHRoPSI5IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik00MCA4OCBBMzQgMzQgMCAwIDEgNDAgNDAiLz4NCiAgICA8cGF0aCBkPSJNMjkgOTkgQTUwIDUwIDAgMCAxIDI5IDI5Ii8+DQogICAgPHBhdGggZD0iTTg4IDg4IEEzNCAzNCAwIDAgMCA4OCA0MCIvPg0KICAgIDxwYXRoIGQ9Ik05OSA5OSBBNTAgNTAgMCAwIDAgOTkgMjkiLz4NCiAgPC9nPg0KICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyMCIgZmlsbD0iI2U4MjAxYSIvPg0KPC9zdmc+DQo="} };
   (f=>document.readyState!=='loading'?f():document.addEventListener('DOMContentLoaded',f,{once:true}))(function(){ try { (function(){
 (function () {
 'use strict';
@@ -45006,13 +45006,14 @@ ${MBU_TOKENS}${MBU_UI_CSS}
   /* in-MB marker (independent of match/mismatch) — per the "MB marker" option (#642) */
   /* #642: the marker is a choice (Settings › MB marker); the glow is gone — it was barely visible */
   #mb-pc-panel.pc-icons-mode.pc-mark-circle .pc-inmb .pc-plat-ico { border: 1px solid var(--mbu-info); padding: 1px; }
-  #mb-pc-panel.pc-icons-mode.pc-mark-gap    .pc-inmb .pc-plat-ico { outline: 2px solid var(--mbu-info); outline-offset: 2px; }
-  #mb-pc-panel.pc-icons-mode.pc-mark-square .pc-inmb .pc-plat-ico { outline: 1.5px solid var(--mbu-info); outline-offset: 3px; border-radius: 6px; }
-  #mb-pc-panel.pc-icons-mode:is(.pc-mark-badge, .pc-mark-dot, .pc-mark-underline) .pc-inmb .pc-plat-ico { position: relative; overflow: visible; }
-  #mb-pc-panel.pc-icons-mode:is(.pc-mark-badge, .pc-mark-dot, .pc-mark-underline) .pc-inmb .pc-plat-ico::after { content: ""; position: absolute; pointer-events: none; background: var(--mbu-info); }
+  /* the ring and square are drawn INSIDE the icon box (border + padding shrink the icon), never outside it: an
+     outline with an offset overflowed into the next row and the panel edge at larger icon sizes (majkinetor) */
+  #mb-pc-panel.pc-icons-mode.pc-mark-bold   .pc-inmb .pc-plat-ico { border: 2px solid var(--mbu-info); padding: 3px; }
+  #mb-pc-panel.pc-icons-mode.pc-mark-square .pc-inmb .pc-plat-ico { border: 1.5px solid var(--mbu-info); padding: 3px; border-radius: 6px; }
+  #mb-pc-panel.pc-icons-mode:is(.pc-mark-badge, .pc-mark-dot) .pc-inmb .pc-plat-ico { position: relative; overflow: visible; }
+  #mb-pc-panel.pc-icons-mode:is(.pc-mark-badge, .pc-mark-dot) .pc-inmb .pc-plat-ico::after { content: ""; position: absolute; pointer-events: none; background: var(--mbu-info); }
   #mb-pc-panel.pc-icons-mode.pc-mark-badge .pc-inmb .pc-plat-ico::after { content: "✓"; right: -5px; bottom: -4px; width: 12px; height: 12px; border-radius: 50%; color: #fff; font: bold 9px/12px sans-serif; text-align: center; box-shadow: 0 0 0 1.5px var(--mbu-bg); }
   #mb-pc-panel.pc-icons-mode.pc-mark-dot .pc-inmb .pc-plat-ico::after { right: -3px; top: -3px; width: 8px; height: 8px; border-radius: 50%; box-shadow: 0 0 0 1.5px var(--mbu-bg); }
-  #mb-pc-panel.pc-icons-mode.pc-mark-underline .pc-inmb .pc-plat-ico::after { left: 3px; right: 3px; bottom: -5px; height: 2.5px; border-radius: 2px; }
   /* presence — fades/grays the icon + name regardless of in-MB */
   #mb-pc-panel.pc-icons-mode .pc-st-mismatch .pc-plat-ico svg { filter: grayscale(1); opacity: .6; }  /* found but wrong */
   #mb-pc-panel.pc-icons-mode .pc-st-mismatch a[id^="mb-online"] { color: var(--mbu-text-weak) !important; }
@@ -45317,10 +45318,9 @@ providerModal.innerHTML = `
         <span style="font-weight: 600; color: var(--mbu-text-dim);">MB marker</span>
         <select id="mb-marker" title="How an icon shows that its link is already on the release (icons mode)" style="font-size: 12px; padding: 2px 4px;">
           <option value="circle">Ring</option>
-          <option value="gap">Ring with a gap</option>
+          <option value="bold">Bold ring</option>
           <option value="badge">✓ badge</option>
           <option value="dot">Dot</option>
-          <option value="underline">Underline</option>
           <option value="square">Rounded square</option>
         </select>
       </div>
@@ -45427,9 +45427,10 @@ container.classList.toggle('pc-compact-unmatched', GM_getValue('pc:compact-unmat
 container.classList.toggle('pc-no-names', !GM_getValue('pc:show-names', false));   // names hidden by default (#173) — the brand icon identifies the row
 // row layout — 1-row aligned grid (default) vs 2-row stacked (issue #173)
 container.classList.add(GM_getValue('pc:layout', '1row') === '2row' ? 'pc-layout-2row' : 'pc-layout-1row');
-// How the in-MB marker is drawn (#642). The glow is retired: a stored 'glow' becomes the ring.
-const PC_MARKERS = ['circle', 'gap', 'badge', 'dot', 'underline', 'square'];
-function pcMarker() { const v = GM_getValue('pc:mb-marker', 'circle'); return PC_MARKERS.includes(v) ? v : 'circle'; }
+// How the in-MB marker is drawn (#642). The glow is retired: a stored 'glow' becomes the ring;
+// 'gap' was the bold ring's first name, and anything else (the dropped underline) is the ring.
+const PC_MARKERS = ['circle', 'bold', 'badge', 'dot', 'square'];
+function pcMarker() { const v = GM_getValue('pc:mb-marker', 'circle'); return v === 'gap' ? 'bold' : PC_MARKERS.includes(v) ? v : 'circle'; }
 if (GM_getValue('pc:mb-marker', 'circle') === 'glow') GM_setValue('pc:mb-marker', 'circle');
 function pcApplyMarker(m) { for (const x of PC_MARKERS) container.classList.toggle('pc-mark-' + x, x === m); }
 pcApplyMarker(pcMarker());
