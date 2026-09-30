@@ -26,8 +26,8 @@ export const PLATFORM_ICONS = {
     // ── Apple Music — the Apple mark ──
     apple: { color: '#FA243C', svg: '<svg viewBox="0 0 24 24" fill="#FA243C"><path d="M17.05 12.04c-.03-2.5 2.04-3.7 2.13-3.76-1.16-1.7-2.97-1.93-3.61-1.96-1.54-.16-3 .9-3.78.9-.78 0-1.97-.88-3.24-.86-1.67.03-3.21.97-4.07 2.46-1.73 3.01-.44 7.47 1.24 9.92.82 1.2 1.8 2.54 3.08 2.49 1.24-.05 1.71-.8 3.21-.8 1.5 0 1.92.8 3.23.77 1.33-.02 2.18-1.22 3-2.42.94-1.39 1.33-2.73 1.35-2.8-.03-.01-2.59-.99-2.62-3.93zM14.6 4.59c.68-.83 1.14-1.97 1.01-3.11-.98.04-2.17.65-2.87 1.47-.63.73-1.18 1.9-1.03 3.02 1.09.08 2.21-.55 2.89-1.38z"/></svg>' },
 
-    // ── Deezer — equalizer bars (brand-coloured stand-in) ──
-    deezer: { color: '#A238FF', svg: '<svg viewBox="0 0 24 24" fill="#A238FF"><rect x="1" y="14" width="4" height="6" rx=".6"/><rect x="6.7" y="10" width="4" height="10" rx=".6"/><rect x="12.4" y="6" width="4" height="14" rx=".6"/><rect x="18.1" y="11" width="4" height="9" rx=".6"/></svg>' },
+    // ── Deezer — the purple pixel heart, as MusicBrainz's link editor shows it ──
+    deezer: { color: '#A238FF', svg: '<svg viewBox="0 0 24 24"><path d="M4 2h6v2h-6zM14 2h6v2h-6zM2 4h20v2h-20zM0 6h24v2h-24zM0 8h24v2h-24zM0 10h24v2h-24zM2 12h20v2h-20zM4 14h16v2h-16zM6 16h12v2h-12zM8 18h8v2h-8zM10 20h4v2h-4z" fill="#A238FF"/></svg>' },
 
     // ── Tidal — four interlocking diamonds ──
     tidal: { color: '#000000', svg: '<svg viewBox="0 0 24 24" fill="#000000"><path d="M6 3l3 3-3 3-3-3zM12 3l3 3-3 3-3-3zM18 3l3 3-3 3-3-3zM12 9l3 3-3 3-3-3z"/></svg>' },
@@ -35,8 +35,9 @@ export const PLATFORM_ICONS = {
     // ── Qobuz — brand-blue roundel ──
     qobuz: { color: '#0070ef', svg: '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="#0070ef"/><circle cx="12" cy="12" r="5" fill="none" stroke="#fff" stroke-width="2.2"/><path d="M14.5 14.5 19 19" stroke="#fff" stroke-width="2.2" stroke-linecap="round"/></svg>' },
 
-    // ── Beatport — green disc + play wedge (stand-in) ──
-    beatport: { color: '#0a8754', svg: '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="#0a8754"/><path d="M10 8l6 4-6 4z" fill="#fff"/></svg>' },
+    // ── Beatport — its green mark (a stem hooked at the top, ending in a ring) on black, as MusicBrainz shows it;
+    //    the green disc with a play triangle was a near-twin of YouTube Music's ──
+    beatport: { color: '#01FF95', svg: '<svg viewBox="0 0 24 24"><rect x="1" y="1" width="22" height="22" rx="4" fill="#000"/><path d="M8.2 4.2c0 2.6 3.6 2.4 3.6 5.6v5.9" fill="none" stroke="#01FF95" stroke-width="2.4" stroke-linecap="round"/><circle cx="15.1" cy="15.7" r="3.3" fill="none" stroke="#01FF95" stroke-width="2.4"/></svg>' },
 
     // ── Bandcamp — the parallelogram logomark ──
     bandcamp: { color: '#629AA9', svg: '<svg viewBox="0 0 24 24" fill="#629AA9"><path d="M0 18.75l7.437-13.5H24l-7.438 13.5z"/></svg>' },
@@ -50,11 +51,10 @@ export const PLATFORM_ICONS = {
     // ── SoundCloud — orange disc + waveform bars (stand-in) ──
     soundcloud: { color: '#ff5500', svg: '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="#ff5500"/><g fill="#fff"><rect x="6" y="12" width="1.4" height="4" rx=".6"/><rect x="8.5" y="10" width="1.4" height="6" rx=".6"/><rect x="11" y="8.5" width="1.4" height="7.5" rx=".6"/><rect x="13.5" y="10.5" width="1.4" height="5.5" rx=".6"/><rect x="16" y="11.5" width="1.4" height="4.5" rx=".6"/></g></svg>' },
 
-    // ── SoundExchange — purple disc + waveform (stand-in) ──
-    // ── YouTube Music — the YouTube button carrying a music note (#639; a red disc with a play
-    //    triangle read as Beatport's at 16px) ──
-    ytmusic: { color: '#FF0000', svg: '<svg viewBox="0 0 24 24"><rect x="1" y="4.5" width="22" height="15" rx="4.5" fill="#FF0000"/><path d="M10.4 7.6v6.1a2.1 2.1 0 1 0 1.3 1.9V9.9l3.9-1V7z" fill="#fff"/></svg>' },
+    // ── YouTube Music — red disc, white ring, play triangle, as MusicBrainz shows it (#639) ──
+    ytmusic: { color: '#FF0000', svg: '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="#FF0000"/><circle cx="12" cy="12" r="5.6" fill="none" stroke="#fff" stroke-width="1.4"/><path d="M10.4 9.5v5l4.2-2.5z" fill="#fff"/></svg>' },
 
+    // ── SoundExchange — purple disc + waveform (stand-in) ──
     soundexchange: { color: '#6f42c1', svg: '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="#6f42c1"/><path d="M6.5 12h1.3l1-3 1.6 6 1.6-9 1.6 12 1.4-6h1.5" fill="none" stroke="#fff" stroke-width="1.4" stroke-linejoin="round" stroke-linecap="round"/></svg>' },
 
     // ── Generic streaming host (unknown provider fallback) ──
