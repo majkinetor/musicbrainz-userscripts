@@ -1055,7 +1055,9 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
                 const note = buildCreateNote(`Added "${displayName}" as an alias — the ${srcName} credit${discogsHref ? ' (' + discogsHref + ')' : ''} —`);
                 ab.addEventListener('click', async (ev) => {
                     ev.preventDefault();
-                    const res = await openAddAliasForm(a.id, displayName, note);
+                    logDebug(`+ alias: click on "${displayName}" → ${a.name} (${a.id})`);
+                    let res;
+                    try { res = await openAddAliasForm(a.id, displayName, note); } catch (e) { log.warn(`+ alias: opening the form for "${displayName}" failed — ${e && e.message || e}`); return; }
                     if (res && res.already) {   // carried by now — no form, no duplicate
                         ab.textContent = '✓ has alias'; ab.disabled = true;
                         ab.title = `${a.name} already carries "${displayName}" — nothing to add`;
@@ -1090,6 +1092,7 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
                 });
                 ab.addEventListener('contextmenu', async (ev) => {
                     ev.preventDefault();
+                    logDebug(`+ alias: right-click on "${displayName}" → ${a.name} (${a.id})${ab.disabled ? ' — ignored, the button is busy or done' : ''}`);
                     if (ab.disabled) return;
                     ab.disabled = true; ab.textContent = '⏳ alias';
                     try {

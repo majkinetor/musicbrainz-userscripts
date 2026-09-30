@@ -96,3 +96,17 @@ test('an interactive request goes ahead of queued background work; a cancelled w
   check(r.inter < 400 && r.inter < Math.max(...r.bg), `interactive started at ${r.inter} ms, ahead of the queued ones (${r.bg.join(', ')} ms)`);
   check(r.cancelled.ok === false && r.cancelMs < 800, `a cancelled wait returns at once (${r.cancelMs} ms, ok=${r.cancelled.ok})`);
 });
+
+test('a lock held and never released stalls a request 3 s, not for good', { tag: ['@unit'] }, async ({ context }) => {
+  const a = await tab(context);
+  const r = await a.evaluate(async () => {
+    localStorage.clear();
+    navigator.locks.request(MBN_LOCK, () => new Promise(() => {}));   // a holder that never lets go
+    await new Promise(res => setTimeout(res, 50));
+    const t0 = Date.now();
+    const res = await mbnFetch('/ws/2/artist/x', {}, { background: false });
+    return { ms: Date.now() - t0, ok: !!(res && res.ok), starts: window.__starts.length };
+  });
+  check(r.ok && r.starts === 1, `the request still goes out (${JSON.stringify(r)})`);
+  check(r.ms >= 2900 && r.ms < 9000, `after about 3 s per gate step, not never (${r.ms} ms)`);
+});

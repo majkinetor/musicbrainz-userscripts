@@ -55,9 +55,17 @@ export async function mbnState(fn) {
         try { localStorage.setItem(MBN_KEY, JSON.stringify({ tat: s.tat || 0, cool: s.cool || 0, hot: s.hot || 0 })); } catch (e) {}
         return out;
     };
+    // The lock is held only for rw()'s synchronous moment, so a wait of seconds means it is
+    // stuck (a frozen or sandboxed holder): give up on it and go unlocked rather than hang
+    // every request behind it.
+    let timer = 0;
     try {
-        if (typeof navigator !== 'undefined' && navigator.locks && navigator.locks.request) return await navigator.locks.request(MBN_LOCK, rw);
-    } catch (e) { /* no Web Locks here (an insecure or sandboxed context): unlocked, like a lone script */ }
+        if (typeof navigator !== 'undefined' && navigator.locks && navigator.locks.request) {
+            const ctrl = typeof AbortController === 'function' ? new AbortController() : null;
+            if (ctrl) timer = setTimeout(() => ctrl.abort(), 3000);
+            return await navigator.locks.request(MBN_LOCK, ctrl ? { signal: ctrl.signal } : {}, rw);
+        }
+    } catch (e) { /* no Web Locks here (an insecure or sandboxed context), or stuck: unlocked, like a lone script */ } finally { clearTimeout(timer); }
     return rw();
 }
 
