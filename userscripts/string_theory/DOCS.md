@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-09-30 19:33 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-09-30 20:17 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -877,6 +877,10 @@ The toolbar shows the providers available for this release:
 
 - **+1** fills the previous track's ISRC plus one.
 - The **lookup** button looks the row's ISRC up on the selected provider and shows its title, artist and length next to the row, mismatches in red. Its menu switches every row to another provider; right-click runs it on all tracks.
+- **All** (top of the menu) checks the row's ISRC on every provider available for the release at once. The row shows a verdict: **✓ 3/3** when every provider that knows the ISRC agrees, **⚠ 1/3** when some don't, **– 0/3** when none knows it. Click it to compare them, one line per provider:
+  - Deezer and Tidal look the ISRC up: ✓ their song for it is this track, ⚠ it is another song. A *feat.* clause and the guest artists are left out of the comparison, since databases list guests differently.
+  - An album provider (Qobuz, Apple, Beatport…) reads the release's album there: ✓ it has this ISRC at this track, ✗ it has **another** ISRC here, offered with **use**.
+  - SoundExchange is the tiebreaker: asked last, and only when the others don't all agree. On a right-click it goes one track at a time and stops at a captcha or rate limit, keeping every other result; solve the captcha, then run **All** again. Until you do, leaving an ISRC field doesn't ask it.
 - **⚙** opens a SoundExchange search you can tune (title, artist, release, exact), with a link to run it on their site.
 
 | Check | Mismatch when |
