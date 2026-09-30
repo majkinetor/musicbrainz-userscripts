@@ -40,7 +40,7 @@ test('an entity field shows its link when focused', { tag: ['@sandbox', '@login'
   check(bc && !bc.on, 'barcode: none');
 });
 
-test("the favicon fits, checkbox labels aren't bold, and switching leaves no stray bubble", { tag: ['@sandbox', '@login'] }, async ({ page, inject }) => {
+test("the favicon fits, checkbox labels aren't bold, and switching leaves no stray bubble", { tag: ['@cosmetic', '@sandbox', '@login'] }, async ({ page, inject }) => {
   await openApollo(page, inject, { release: 'ce9529d6-b490-4010-b8ff-5e1fb0f8441e' });   // Shelflife 8, with its Discogs link
   await releaseInfo(page);
   const s = await page.evaluate(() => {
@@ -62,7 +62,7 @@ test("the favicon fits, checkbox labels aren't bold, and switching leaves no str
   check(bubbles === 0, `switched to the original: no native bubble left showing (${bubbles})`);
 });
 
-test('dated relationships share a row, and dates wrap in their cell', { tag: ['@sandbox', '@login'] }, async ({ page, inject }) => {
+test('dated relationships share a row, and dates wrap in their cell', { tag: ['@cosmetic', '@sandbox', '@login'] }, async ({ page, inject }) => {
   const submitted = await openApollo(page, inject, { release: 'd39b6cab-6ae6-4de8-b782-528865f4e832' });   // Misanthrope: one link with two types
   await releaseInfo(page);
   const addDate = async (n, parts) => {

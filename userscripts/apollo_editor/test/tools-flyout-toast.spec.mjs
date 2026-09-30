@@ -15,7 +15,7 @@ const REL = 'c16af706-4926-4248-80c5-5faee767d579';
 
 test.describe('messages', () => {
   test.use({ gm: apolloGm(), viewport: { width: 1250, height: 900 } });
-  test('a refusal is a floating toast, and the toolbar holds still', { tag: ['@sandbox', '@login'] }, async ({ page, inject }) => {
+  test('a refusal is a floating toast, and the toolbar holds still', { tag: ['@cosmetic', '@sandbox', '@login'] }, async ({ page, inject }) => {
     const submitted = await openApollo(page, inject, { release: REL, tab: 'tracklist' });
     await page.waitForSelector('.tc-tools', { timeout: 30000 });
     await page.evaluate(() => { window.__apolloEditor.pickTool('splitmed'); window.__apolloEditor.pickTool('mergemed'); });
@@ -45,7 +45,7 @@ test.describe('messages', () => {
 for (const iconOnly of [false, true]) {
   test.describe(`flyouts, ${iconOnly ? 'icon only' : 'icon and name'}`, () => {
     test.use({ gm: apolloGm(iconOnly ? { toolCfg: ['mergemed', 'splitmed'].map(act => ({ act, onBar: true, icon: true, text: false, hideParams: true })) } : null) });
-    test('each flyout is one line, and one at a time', { tag: ['@sandbox', '@login'] }, async ({ page, inject }) => {
+    test('each flyout is one line, and one at a time', { tag: ['@cosmetic', '@sandbox', '@login'] }, async ({ page, inject }) => {
       await openApollo(page, inject, { release: REL, tab: 'tracklist' });
       await page.waitForSelector('.tc-tools', { timeout: 30000 });
       for (const act of ['mergemed', 'splitmed']) {

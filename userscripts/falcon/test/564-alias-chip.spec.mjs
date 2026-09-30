@@ -26,7 +26,7 @@ const HERE = dirname(fileURLToPath(import.meta.url));
 // Firefox (the harness is Chromium): the script launches it, with its own GM stand-ins
 test.use({ gm: false });
 
-test("#564: alias chip", { tag: ['@sandbox', '@login'] }, async ({}) => {
+test("#564: alias chip", { tag: ['@cosmetic', '@sandbox', '@login'] }, async ({}) => {
 
   const B = 'https://test.musicbrainz.org';
   const STYLE_URL = 'https://raw.githubusercontent.com/kellnerd/userstyles/main/musicbrainz-dark.user.css';

@@ -20,7 +20,7 @@ import { openArtStation, blockPosts } from './as.mjs';
 
 test.use({ gm: { name: 'Art Station' } });
 
-test('every selected card keeps its tick at any card size', { tag: ['@sandbox'] }, async ({ page, inject }) => {
+test('every selected card keeps its tick at any card size', { tag: ['@cosmetic', '@sandbox'] }, async ({ page, inject }) => {
   const OLD_THRESHOLD = 280;                            // where the badge used to vanish
   const SIZES = [120, 220, 279, 280, 300, 340];         // slider is min=120 max=340
   const log = (...a) => console.log('[576]', ...a);

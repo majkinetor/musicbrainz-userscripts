@@ -9,7 +9,7 @@ import { openPc } from './pc.mjs';
 const RAM = 'ec116461-5b0d-4c98-bb44-a4de5de63076';
 test.use({ gm: { name: 'Platform Check', values: { 'pc:mb-marker': 'glow' } } });
 
-test('#642: five in-MB markers to choose from, and a stored glow becomes the ring', { tag: ['@sandbox'] }, async ({ page, inject }, testInfo) => {
+test('#642: five in-MB markers to choose from, and a stored glow becomes the ring', { tag: ['@cosmetic', '@sandbox'] }, async ({ page, inject }, testInfo) => {
   const ws = await openPc(page, inject, { release: RAM, links: { drop: /hdtracks\.com|tidal\.com/ }, replay: new URL('./fixtures/ws-182.json.gz', import.meta.url) });
   const panelClass = () => page.evaluate(() => [...document.getElementById('mb-pc-panel').classList].filter(c => c.startsWith('pc-mark-')));
   check((await panelClass()).join() === 'pc-mark-circle', `a stored glow is drawn as the ring (${await panelClass()})`);

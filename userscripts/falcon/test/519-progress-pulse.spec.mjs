@@ -14,7 +14,7 @@ import { test, check, requireLogin, sourceOf, mbNoise } from '../../../dev/test/
 // the script brings its own GM stand-ins, as it did before the harness
 test.use({ gm: false });
 
-test("#519: progress pulse", { tag: ['@sandbox', '@login'] }, async ({ context, page }) => {
+test("#519: progress pulse", { tag: ['@cosmetic', '@sandbox', '@login'] }, async ({ context, page }) => {
   const code = await readFile(sourceOf('falcon'), 'utf8');
 
   const ck = check;

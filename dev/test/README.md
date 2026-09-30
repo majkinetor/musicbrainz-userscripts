@@ -13,6 +13,7 @@ pnpm test                         # everything
 pnpm test --project=fusion        # one script
 pnpm test --grep @unit            # only specs that need no network
 pnpm test --grep @critical        # the quick run: each script's core
+pnpm test:core                    # everything but the purely visual specs (@cosmetic)
 pnpm test --headed                # watch the browser
 TEST_LOG=1 pnpm test              # also print what specs log
 pnpm test:report                  # open the last HTML report
@@ -58,7 +59,7 @@ test('what the spec proves', { tag: '@sandbox' }, async ({ page, inject }) => {
 - **`answerGm(context, handler)`** answers `GM_xmlhttpRequest` calls in place of the network, as `page.route()` does for the page's own requests: `answerGm(context, ({ url }) => /soundexchange/.test(url) ? { status: 202, body: '…' } : null)`.
 - **`replayWs(page, fixture)`** answers the page's `/ws/2/` reads from answers recorded on production, so a spec that depends on who is called what gets the same data every run and is never throttled. `RECORD_WS=1` records what the recording lacks (`RECORD_WS=fresh` starts it over); `await ws.done()` saves, or fails on a read the fixture lacks. `web: true` (or a RegExp of hosts) also replays the other sites the script asks through `GM_xmlhttpRequest`; tokens are redacted and HTML pages stripped of styles, SVG and comments before they are stored, and `trim: (key, body) => body` cuts what else a spec doesn't need.
 - **MusicBrainz noise:** its own React #418 (hydration, recovered on the client) never fails a test. A spec that collects page errors itself filters with `mbNoise` from the harness.
-- **Tags:** `@unit` needs no network, `@prod` reads musicbrainz.org, `@sandbox` uses test.musicbrainz.org (writes allowed), `@web` reads another live site (Bandcamp, Discogs…), `@login` needs the logged-in profile. `@critical` marks the few specs per script that cover its core, for a quick run. `@timing` marks a spec that asserts a time budget ("shows within 3 s"), which CI leaves out. `@flaky` marks a spec that has failed intermittently, so it can be run alone many times: `pnpm test:flaky` repeats every one 10 times (`pnpm test --grep @flaky --repeat-each 20` for more). Drop the tag once a fix has held through several full runs; add it with a note in the commit when a spec fails once and passes on rerun.
+- **Tags:** `@unit` needs no network, `@prod` reads musicbrainz.org, `@sandbox` uses test.musicbrainz.org (writes allowed), `@web` reads another live site (Bandcamp, Discogs…), `@login` needs the logged-in profile. `@critical` marks the few specs per script that cover its core, for a quick run. `@cosmetic` marks a spec that checks only how something looks (colours, themes, icons, layout, alignment); a broken one leaves every feature working, so `pnpm test:core` leaves them out. Tag a new spec `@cosmetic` when that is all it checks. `@timing` marks a spec that asserts a time budget ("shows within 3 s"), which CI leaves out. `@flaky` marks a spec that has failed intermittently, so it can be run alone many times: `pnpm test:flaky` repeats every one 10 times (`pnpm test --grep @flaky --repeat-each 20` for more). Drop the tag once a fix has held through several full runs; add it with a note in the commit when a spec fails once and passes on rerun.
 
 ### Options (`test.use`)
 

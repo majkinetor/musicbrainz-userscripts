@@ -20,7 +20,7 @@ import { openApollo, apolloGm } from './ap.mjs';
 test.use({ gm: apolloGm() });
 const MBID = '55530bc0-97ec-4256-97fc-e6058958c251';
 
-test('the video marker leads the title, in both tables', { tag: ['@sandbox', '@login'] }, async ({ page, inject }) => {
+test('the video marker leads the title, in both tables', { tag: ['@cosmetic', '@sandbox', '@login'] }, async ({ page, inject }) => {
   const posted = await openApollo(page, inject, { release: MBID });
   const tab = async n => {
     await page.evaluate(x => { const b = [...document.querySelectorAll('#tc-nav-bar button, #tc-nav-bar a')].find(e => e.textContent.trim().toLowerCase().startsWith(x)); if (b) b.click(); }, n);

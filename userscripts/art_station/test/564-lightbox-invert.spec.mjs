@@ -15,7 +15,7 @@ import { openArtStation } from './as.mjs';
 const STYLE_URL = 'https://raw.githubusercontent.com/kellnerd/userstyles/main/musicbrainz-dark.user.css';
 test.use({ gm: { name: 'Art Station' } });
 
-test("the lightbox's controls are not inverted by a dark userstyle", { tag: ['@sandbox', '@web'] }, async ({ page, inject }, testInfo) => {
+test("the lightbox's controls are not inverted by a dark userstyle", { tag: ['@cosmetic', '@sandbox', '@web'] }, async ({ page, inject }, testInfo) => {
   // A UserCSS keeps everything inside an @-moz-document block, which Chromium drops
   // wholesale: injected as is, it applies nothing and the check passes for nothing.
   const raw = await (await fetch(STYLE_URL)).text();

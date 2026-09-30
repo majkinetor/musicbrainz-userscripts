@@ -77,7 +77,7 @@ test('#580: a status that says "see Log" opens the log; ordinary progress does n
 // drawn in --mbu-bg-sunken, a surface token (~#f0f0f0 on a white header); it is
 // --mbu-border now. Measured as contrast against the header, in both themes, the dark
 // one under kellnerd's userstyle.
-test('#581: column separators are visible in the light and the dark theme', { tag: ['@sandbox', '@web'] }, async ({ context, inject }) => {
+test('#581: column separators are visible in the light and the dark theme', { tag: ['@cosmetic', '@sandbox', '@web'] }, async ({ context, inject }) => {
   const rgb = s => { const n = (String(s).match(/[\d.]+/g) || []).slice(0, 3).map(Number); return /^color\(/i.test(String(s).trim()) ? n.map(v => v * 255) : n; };
   const lin = c => { c /= 255; return c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4); };
   const lum = ([r, g, b]) => 0.2126 * lin(r) + 0.7152 * lin(g) + 0.0722 * lin(b);
@@ -108,7 +108,7 @@ test('#581: column separators are visible in the light and the dark theme', { ta
 // <body> exist, so the #569 watches on them attached to nothing, and a userstyle that
 // arrived or changed after the first 2 seconds was never noticed. They attach once the
 // document is parsed now. ISRC Scout runs at document-start, like Apollo and Art Station.
-test('#625: a dark userstyle that arrives late is still noticed', { tag: ['@sandbox'] }, async ({ page, inject }) => {
+test('#625: a dark userstyle that arrives late is still noticed', { tag: ['@cosmetic', '@sandbox'] }, async ({ page, inject }) => {
   // a fake clock, so "past the one-shot re-checks at 0.4 s and 2 s" is exact and instant
   await page.clock.install();
   await openScout(page, inject);

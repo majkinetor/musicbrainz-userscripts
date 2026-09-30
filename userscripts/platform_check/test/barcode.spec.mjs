@@ -50,7 +50,7 @@ test.describe('dark theme', () => {
   test.use({ gm: { name: 'Platform Check' } });
   // Tidal's icon is drawn in the theme's text colour, not black: on a dark theme (MusicBrainz's own
   // text colour left black underneath, as a dark userstyle can) its diamonds were black on dark
-  test('Tidal\'s icon follows the dark theme', { tag: ['@sandbox'] }, async ({ page, inject }) => {
+  test('Tidal\'s icon follows the dark theme', { tag: ['@cosmetic', '@sandbox'] }, async ({ page, inject }) => {
     const ws = await openPc(page, inject, { release: RAM, links, replay: new URL('./fixtures/ws-182.json.gz', import.meta.url) });
     const fill = async theme => page.evaluate(t => {
       if (t) document.documentElement.setAttribute('data-mbu-theme', t); else document.documentElement.removeAttribute('data-mbu-theme');

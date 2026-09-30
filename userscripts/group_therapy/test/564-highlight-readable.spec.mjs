@@ -26,7 +26,7 @@ import { readFile } from 'node:fs/promises';
 import { chromium, firefox } from '@playwright/test';
 import { test, check, sourceOf, frames } from '../../../dev/test/harness.mjs';
 
-test('the hover highlight and tooltip text are readable in Chromium and Firefox', { tag: '@unit' }, async () => {
+test('the hover highlight and tooltip text are readable in Chromium and Firefox', { tag: ['@cosmetic', '@unit'] }, async () => {
   const code = await readFile(sourceOf('group_therapy'), 'utf8');
 
   // the shipped rules, pulled out of the script so this guards what actually ships

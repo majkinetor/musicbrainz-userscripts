@@ -11,7 +11,7 @@ import { test, check, until, idle, requireLogin, SANDBOX } from '../../../dev/te
 const RELEASE = '3a37a35f-1e06-457f-9b2a-46155c5c03ce';
 test.use({ gm: { name: 'Scribe', version: '9.9.9-test', xhr: 'none' } });
 
-test('the session window header stays light under a dark userstyle', { tag: ['@sandbox', '@login'] }, async ({ page, inject }, testInfo) => {
+test('the session window header stays light under a dark userstyle', { tag: ['@cosmetic', '@sandbox', '@login'] }, async ({ page, inject }, testInfo) => {
   await page.goto(`${SANDBOX}/release/${RELEASE}/edit`, { waitUntil: 'domcontentloaded' });
   await requireLogin(page);
   await idle(page);

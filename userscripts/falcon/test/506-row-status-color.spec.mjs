@@ -10,7 +10,7 @@ import { join } from 'node:path';
 // the script brings its own GM stand-ins, as it did before the harness
 test.use({ gm: false });
 
-test("#506: row status color", { tag: ['@sandbox', '@login'] }, async ({ context, page }) => {
+test("#506: row status color", { tag: ['@cosmetic', '@sandbox', '@login'] }, async ({ context, page }) => {
   const code = await readFile(sourceOf('falcon'), 'utf8');
 
   await context.addInitScript(() => {

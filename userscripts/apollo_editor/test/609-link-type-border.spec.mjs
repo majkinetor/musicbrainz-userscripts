@@ -7,7 +7,7 @@ import { openApollo, apolloGm } from './ap.mjs';
 
 test.use({ gm: apolloGm(), deviceScaleFactor: 3 });
 
-test('an untyped link has a visible type combo', { tag: ['@sandbox', '@login'] }, async ({ page, inject }, testInfo) => {
+test('an untyped link has a visible type combo', { tag: ['@cosmetic', '@sandbox', '@login'] }, async ({ page, inject }, testInfo) => {
   const submitted = await openApollo(page, inject, { release: '3a37a35f-1e06-457f-9b2a-46155c5c03ce' });
   await page.waitForFunction(() => document.body.classList.contains('tc-ri-on'), null, { timeout: 20000 });
   const input = page.locator('#external-links-editor input[type=url]').last();

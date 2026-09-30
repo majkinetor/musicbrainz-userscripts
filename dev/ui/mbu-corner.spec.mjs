@@ -6,7 +6,7 @@ import { UI_JS } from './ui-components.mjs';
 
 test.use({ profile: 'fresh', gm: false });
 
-test('launchers in one corner stack by order, and a hidden one leaves no gap', { tag: ['@unit'] }, async ({ page }) => {
+test('launchers in one corner stack by order, and a hidden one leaves no gap', { tag: ['@cosmetic', '@unit'] }, async ({ page }) => {
   await page.setContent('<!doctype html><html><head></head><body></body></html>');
   await page.addScriptTag({ content: UI_JS });
   const at = () => page.evaluate(() => Object.fromEntries([...document.querySelectorAll('[data-mb-corner]')].map(el => [el.id, el.style.display === 'none' ? null : { bottom: el.style.bottom, right: el.style.right }])));

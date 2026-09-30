@@ -34,7 +34,7 @@ import { blockEdits, openRelEditor } from './gt.mjs';
 
 test.use({ gm: { name: 'Group Therapy' } });
 
-test('every format badge is readable, and findable, in both themes', { tag: ['@sandbox', '@login'] }, async ({ page, inject }, testInfo) => {
+test('every format badge is readable, and findable, in both themes', { tag: ['@cosmetic', '@sandbox', '@login'] }, async ({ page, inject }, testInfo) => {
   // Group Therapy boots only on the relationship editor: on any other page it installs
   // nothing, and an earlier version measured four unstyled placeholders at 1.00:1.
   const posts = await blockEdits(page);

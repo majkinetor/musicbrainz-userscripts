@@ -23,7 +23,7 @@ import { openArtStation } from './as.mjs';
 
 test.use({ gm: { name: 'Art Station' } });
 
-test('card borders stay single, concentric and unbroken at every size and state', { tag: ['@sandbox'] }, async ({ page, inject }) => {
+test('card borders stay single, concentric and unbroken at every size and state', { tag: ['@cosmetic', '@sandbox'] }, async ({ page, inject }) => {
   const TILES = ['110px', '120px', '140px', '175px', '260px', '380px'];
   const wrote = [];
   page.on('request', r => {

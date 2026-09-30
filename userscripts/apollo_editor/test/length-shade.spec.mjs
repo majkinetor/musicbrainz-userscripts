@@ -18,7 +18,7 @@ async function blank(page, inject) {
   await inject('apollo_editor', { waitFor: '__apolloEditor' });
 }
 
-test('#480: the ramp', { tag: '@unit' }, async ({ page, inject }) => {
+test('#480: the ramp', { tag: ['@cosmetic', '@unit'] }, async ({ page, inject }) => {
   await blank(page, inject);
   const a = await page.evaluate(() => Object.fromEntries([-500, 999, 1000, 2000, 2999, 3000, 10000, 15000, 20000, 29999, 30000, 60000].map(ms => [ms, window.__apolloEditor.lenShadeAlpha(ms)])));
   check(a[999] === null && a[-500] === null, `under 1 s, either way: no shade (${a[999]}, ${a[-500]})`);
@@ -56,7 +56,7 @@ const worst = (rows, surface) => {
   return w;
 };
 
-test('#564: the tint is legible on light and dark pages', { tag: '@unit' }, async ({ page, inject }) => {
+test('#564: the tint is legible on light and dark pages', { tag: ['@cosmetic', '@unit'] }, async ({ page, inject }) => {
   await blank(page, inject);
   const sample = theme => page.evaluate(([t, gaps]) => {
     document.documentElement.setAttribute('data-mbu-theme', t);

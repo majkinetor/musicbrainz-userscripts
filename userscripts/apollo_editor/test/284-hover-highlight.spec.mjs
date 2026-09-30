@@ -21,7 +21,7 @@ const hover = (page, id) => page.evaluate(async id => {
 
 test.describe('by default', () => {
   test.use({ gm: apolloGm() });
-  test('hovering highlights nothing', { tag: ['@sandbox', '@login'] }, async ({ page, inject }) => {
+  test('hovering highlights nothing', { tag: ['@cosmetic', '@sandbox', '@login'] }, async ({ page, inject }) => {
     await openApollo(page, inject, { release: REL, tab: 'tracklist' });
     await page.waitForSelector('.tc-aslot', { timeout: 30000 });
     const a = await artists(page);
@@ -32,7 +32,7 @@ test.describe('by default', () => {
 
 test.describe('turned on', () => {
   test.use({ gm: apolloGm({ hoverHighlight: true }) });
-  test('an artist lights all its instances', { tag: ['@sandbox', '@login'] }, async ({ page, inject }) => {
+  test('an artist lights all its instances', { tag: ['@cosmetic', '@sandbox', '@login'] }, async ({ page, inject }) => {
     await openApollo(page, inject, { release: REL, tab: 'tracklist' });
     await page.waitForSelector('.tc-aslot', { timeout: 30000 });
     const a = await artists(page);

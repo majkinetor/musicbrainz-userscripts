@@ -35,7 +35,7 @@ test('#156: "Keep uppercased" changes the guess', { tag: ['@sandbox', '@login'] 
   check(on.checked === true && on.cookie === 'true' && on.guess === before.guess, `on again: back to the first guess (${JSON.stringify(on)})`);
 });
 
-test('#153: the in-cell title buttons take no width from the title', { tag: ['@sandbox', '@login'] }, async ({ page, inject }) => {
+test('#153: the in-cell title buttons take no width from the title', { tag: ['@cosmetic', '@sandbox', '@login'] }, async ({ page, inject }) => {
   await openApollo(page, inject, { seed: 'seed-saigon', tab: 'tracklist' });
   // a guess-case difference on the first title, so its Aa button shows
   await page.evaluate(() => {

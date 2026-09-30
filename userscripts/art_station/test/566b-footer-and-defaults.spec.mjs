@@ -58,7 +58,7 @@ test.describe('deliberate values stored', () => {
 
 test.describe('the commit window', () => {
   test.use(seeded(null));
-  test('shows the note as its own footer, without moving the buttons', { tag: ['@sandbox', '@login'] }, async ({ page, inject }, testInfo) => {
+  test('shows the note as its own footer, without moving the buttons', { tag: ['@cosmetic', '@sandbox', '@login'] }, async ({ page, inject }, testInfo) => {
     const posts = await blockPosts(page);
     await openArtStation(page, inject, { path: 'add-cover-art' });
     // Stage a file and open the commit window. What matters here is where the note sits

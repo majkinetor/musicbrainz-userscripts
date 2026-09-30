@@ -11,7 +11,7 @@ const HERE = dirname(fileURLToPath(import.meta.url));
 // the script brings its own GM stand-ins, as it did before the harness
 test.use({ gm: false });
 
-test("#468: corner slot", { tag: ['@sandbox', '@login'] }, async ({ context, page }) => {
+test("#468: corner slot", { tag: ['@cosmetic', '@sandbox', '@login'] }, async ({ context, page }) => {
   const falconCode = await readFile(resolve(HERE, '..', 'falcon.user.js'), 'utf8');
   const apolloCode = await readFile(resolve(HERE, '..', '..', 'apollo_editor', 'apollo_editor.user.js'), 'utf8');
   const artStationCode = await readFile(resolve(HERE, '..', '..', 'art_station', 'art_station.user.js'), 'utf8');

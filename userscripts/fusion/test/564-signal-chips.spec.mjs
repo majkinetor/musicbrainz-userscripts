@@ -19,7 +19,7 @@ import { test, check } from '../../../dev/test/harness.mjs';
 
 test.use({ gm: { name: 'Fusion', xhr: 'none' } });
 
-test('a matched signal chip is filled and an unmatched one is not, in both themes', { tag: '@sandbox' }, async ({ page, inject }) => {
+test('a matched signal chip is filled and an unmatched one is not, in both themes', { tag: ['@cosmetic', '@sandbox'] }, async ({ page, inject }) => {
   // Fusion only installs itself on the pages it matches, and its stylesheet is
   // injected when the overlay is built — so open it, rather than measuring against
   // CSS that was never added.

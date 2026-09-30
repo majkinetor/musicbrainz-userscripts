@@ -15,7 +15,7 @@ import { openReleasePage } from './lib/browser.js';
 
 test.use({ gm: { name: 'Credit Hoarder' } });
 
-test('the Log menu stays readable under a dark userstyle', { tag: ['@sandbox', '@login', '@web'] }, async ({ context, inject }) => {
+test('the Log menu stays readable under a dark userstyle', { tag: ['@cosmetic', '@sandbox', '@login', '@web'] }, async ({ context, inject }) => {
   const raw = await (await fetch('https://raw.githubusercontent.com/kellnerd/userstyles/main/musicbrainz-dark.user.css')).text();
   const css = raw.replace(/^[\s\S]*?@-moz-document[^{]*\{/, '').replace(/\}\s*$/, '');
   expect(/--invert-value/.test(css), 'the userstyle still defines --invert-value').toBe(true);
