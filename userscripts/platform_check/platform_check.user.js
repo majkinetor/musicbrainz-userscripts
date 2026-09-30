@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Platform Check
 // @namespace    http://tampermonkey.net/
-// @version      2026.9.30.183411
+// @version      2026.9.30.184036
 // @description  Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+DQogIDx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CiAgDQogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJhMWE1MiIgc3Ryb2tlLXdpZHRoPSI5IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik00MCA4OCBBMzQgMzQgMCAwIDEgNDAgNDAiLz4NCiAgICA8cGF0aCBkPSJNMjkgOTkgQTUwIDUwIDAgMCAxIDI5IDI5Ii8+DQogICAgPHBhdGggZD0iTTg4IDg4IEEzNCAzNCAwIDAgMCA4OCA0MCIvPg0KICAgIDxwYXRoIGQ9Ik05OSA5OSBBNTAgNTAgMCAwIDAgOTkgMjkiLz4NCiAgPC9nPg0KICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyMCIgZmlsbD0iI2U4MjAxYSIvPg0KPC9zdmc+DQo=
@@ -1942,6 +1942,9 @@ logModal.style.cssText = 'display: none; position: fixed; top: 0; left: 0; width
 // active (toggled = filter ON = entries hidden). State is per-session only;
 // not persisted because the natural workflow is "open log to investigate
 // one provider's behavior on this page".
+// A log source's key for classes and data-attributes: no spaces ("YouTube Music" → youtube-music).
+// With the space, classList.toggle threw on it, and its lines showed under every filter.
+const pcLogKey = s => String(s).toLowerCase().replace(/[^a-z0-9]+/g, '-');
 const LOG_SOURCES = ['System', 'MusicBrainz', 'Wikidata', 'Wallstream', 'Spotify', 'Discogs', 'Bandcamp', 'Deezer', 'Apple', 'Tidal', 'Qobuz', 'Beatport', 'Volumo', 'HDtracks', 'SoundCloud', 'YouTube Music'];
 const LOG_SOURCE_COLORS = {
     System: '#999', MusicBrainz: '#BA68C8', Wikidata: '#FFD54F', Wallstream: '#4FC3F7',
@@ -1953,7 +1956,7 @@ logModal.innerHTML = `
 ${MBU_TOKENS}${MBU_UI_CSS}
   .pc-log-chip { display: inline-block; padding: 3px 9px; margin-right: 4px; border-radius: 12px; font-size: 11px; font-weight: bold; cursor: pointer; user-select: none; border: 1px solid var(--mbu-border-strong); }
   .pc-log-chip.off { opacity: 0.35; background: transparent !important; color: var(--mbu-text-weak) !important; }
-  ${LOG_SOURCES.map(s => `#mb-finder-log-panel.pc-hide-${s.toLowerCase()} [data-platform="${s.toLowerCase()}"] { display: none; }`).join('\n  ')}
+  ${LOG_SOURCES.map(s => `#mb-finder-log-panel.pc-hide-${pcLogKey(s)} [data-platform="${pcLogKey(s)}"] { display: none; }`).join('\n  ')}
   /* MOBILE / NARROW VIEWPORTS — both Platform Check modals live on <body>, so
      these rules are global. The log modal trims its 30px overlay padding and
      wraps its header (title + Copy on top, source chips below) to use the full
@@ -1975,7 +1978,7 @@ ${MBU_TOKENS}${MBU_UI_CSS}
   <div style="padding: 10px 12px; background: #2D2D2D; border-bottom: 1px solid var(--mbu-border-strong); display: flex; justify-content: space-between; align-items: center; gap: 12px;">
     <span style="font-weight: bold; color: var(--mbu-ok); font-size: 14px; white-space: nowrap;">Platform Check log</span>
     <div id="mb-log-filters" style="flex-grow: 1; text-align: left;">
-      ${LOG_SOURCES.map(s => `<span class="pc-log-chip" data-source="${s.toLowerCase()}" style="background:${LOG_SOURCE_COLORS[s]}33; color:${LOG_SOURCE_COLORS[s]};">${s}</span>`).join('')}
+      ${LOG_SOURCES.map(s => `<span class="pc-log-chip" data-source="${pcLogKey(s)}" style="background:${LOG_SOURCE_COLORS[s]}33; color:${LOG_SOURCE_COLORS[s]};">${s}</span>`).join('')}
     </div>
     <button id="mb-modal-copy-btn" style="padding: 6px 12px; background: #434C5E; border: none; color: white; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 12px;">Copy</button>
   </div>
@@ -2288,8 +2291,8 @@ for (const chip of logModal.querySelectorAll('.pc-log-chip')) {
         }
         // Refresh panel hide-classes: hide every source except the active one.
         for (const s of LOG_SOURCES) {
-            const sLower = s.toLowerCase();
-            logPanel.classList.toggle(`pc-hide-${sLower}`, activeFilter !== null && sLower !== activeFilter);
+            const key = pcLogKey(s);
+            logPanel.classList.toggle(`pc-hide-${key}`, activeFilter !== null && key !== activeFilter);
         }
     });
 }
@@ -2463,7 +2466,7 @@ function appendLog(platform, msg, kind = 'info') {
     const ts = new Date().toLocaleTimeString();
     // data-platform lets the modal's per-provider filter chips toggle entries
     // via CSS (`#mb-finder-log-panel.pc-hide-<platform> [data-platform=…]`).
-    logPanel.insertAdjacentHTML('beforeend', `<div data-platform="${platform.toLowerCase()}" style="margin-bottom: 3px; border-left: 3px solid ${color}; padding-left: 6px;"><span style="color: var(--mbu-text-dim);">[${ts}]</span> <span style="color: ${color}; font-weight: bold;">[${platform}]</span> <span style="color: var(--mbu-text-weak);">${msg}</span></div>`);
+    logPanel.insertAdjacentHTML('beforeend', `<div data-platform="${pcLogKey(platform)}" style="margin-bottom: 3px; border-left: 3px solid ${color}; padding-left: 6px;"><span style="color: var(--mbu-text-dim);">[${ts}]</span> <span style="color: ${color}; font-weight: bold;">[${platform}]</span> <span style="color: var(--mbu-text-weak);">${msg}</span></div>`);
     logPanel.scrollTop = logPanel.scrollHeight;
 }
 appendLog('System', `Platform Check v${(typeof GM_info !== 'undefined' && GM_info.script?.version) || '?'} — startup`);

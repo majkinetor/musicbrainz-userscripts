@@ -35,6 +35,18 @@ FIXTURES.forEach((f, i) => {
       const year = await page.evaluate(() => document.getElementById('mb-mb-year')?.title);   // shown as '21, in full on hover
       check(year === e.headerYear, `the header's year: ${e.headerYear} (shows "${year}")`);
     }
+    if (i === 0) {
+      // the log's source filter, for a source with a space in its name: picking Beatport hides YouTube
+      // Music's lines too ("YouTube Music" made classList.toggle throw, so its lines showed under every filter)
+      const shown = await page.evaluate(() => {
+        document.querySelector('.pc-log-chip[data-source="beatport"]').click();
+        const vis = p => [...document.querySelectorAll('#mb-finder-log-panel [data-platform="' + p + '"]')].filter(d => getComputedStyle(d).display !== 'none').length;
+        const r = { ytm: vis('youtube-music'), ytmAll: document.querySelectorAll('#mb-finder-log-panel [data-platform="youtube-music"]').length, beatport: vis('beatport') };
+        document.querySelector('.pc-log-chip[data-source="beatport"]').click();   // and off again
+        return r;
+      });
+      check(shown.ytmAll > 0 && shown.ytm === 0, `the Beatport filter hides YouTube Music's lines (${shown.ytm} of ${shown.ytmAll} still shown)`);
+    }
     await attachShot(testInfo, page.locator('#mb-pc-panel'), 'panel');
     await ws.done();
   });
