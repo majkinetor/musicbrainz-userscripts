@@ -37,10 +37,9 @@ export const PLATFORM_ICONS = {
     // ── Qobuz — brand-blue roundel ──
     qobuz: { color: '#0070ef', svg: '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="#0070ef"/><circle cx="12" cy="12" r="5" fill="none" stroke="#fff" stroke-width="2.2"/><path d="M14.5 14.5 19 19" stroke="#fff" stroke-width="2.2" stroke-linecap="round"/></svg>' },
 
-    // ── Beatport — its green mark on a black rounded square, as MusicBrainz shows it. The square
-    //    stays inside the icon's circle (corners ≈10.2 from the centre of 12), so Platform Check's
-    //    in-MB ring doesn't cut through it ──
-    beatport: { color: '#01FF95', svg: '<svg viewBox="0 0 24 24"><rect x="3.5" y="3.5" width="17" height="17" rx="4.5" fill="#000"/><g transform="translate(12 12) scale(0.72) translate(-12 -12)"><path d="M8.2 4.2c0 2.6 3.6 2.4 3.6 5.6v5.9" fill="none" stroke="#01FF95" stroke-width="2.6" stroke-linecap="round"/><circle cx="15.1" cy="15.7" r="3.3" fill="none" stroke="#01FF95" stroke-width="2.6"/></g></svg>' },
+    // ── Beatport — its mark as on the logo (thick flat strokes: a stem bending down-left at 45°, a ring low
+    //    on the right) in its green, on a black disc: a disc sits in Platform Check's in-MB ring like the others ──
+    beatport: { color: '#01FF95', svg: '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="11" fill="#000"/><g transform="translate(12 12) scale(0.84) translate(-12 -12)" fill="none" stroke="#01FF95" stroke-width="2.5"><path d="M10.9 3V8.3c0 1.2-.4 1.9-1.1 2.6L5.6 15.1"/><circle cx="13.9" cy="15.8" r="4.05" stroke-width="2.35"/></g></svg>' },
 
     // ── Bandcamp — the parallelogram logomark ──
     //    (scaled to 80%: its sharp corners reached ~13.7 from the centre, through the icon's circle)
