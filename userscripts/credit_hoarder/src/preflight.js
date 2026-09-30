@@ -36,7 +36,7 @@ import { MB } from './constants.js';
 // `kind`-specific tweaks. Tiny lookup table so the per-strategy code in
 // `resolveEntity` reads as one shared body.
 const KIND_TABLE = {
-    artist: { searchLimit: 10, resultKey: 'artists', incRels: 'artist-rels' },
+    artist: { searchLimit: 100, resultKey: 'artists', incRels: 'artist-rels' },
     label:  { searchLimit: 8,  resultKey: 'labels',  incRels: 'label-rels'  },
     // Places also accept label-rels because MB editors often file a
     // facility as a label rather than a place (issue we've worked around
@@ -261,9 +261,11 @@ async function resolveEntity(entity, kind, opts) {
     // #613: an artist is an exact hit by NAME or ALIAS (the plain search already matches and
     // returns aliases — no extra request); labels/places keep the name-only comparison.
     const holdsName = a => isArtist ? !!mbmHolds(a, searchName) : a.name.toLowerCase().trim() === normalized;
-    const nameMatches = !(nameJson?.[resultKey]) ? [] : nameJson[resultKey]
-        .filter(a => holdsName(a) || (a.score != null && a.score >= 70))
-        .map(toCandidate);
+    // #613: the search reads 100 results so an exact holder ranked low is still seen; the list the
+    // review table offers keeps every exact holder, plus the ten best of the rest, as before
+    const found = nameJson?.[resultKey] || [];
+    const nameMatches = [...found.filter(a => holdsName(a)),
+        ...found.filter(a => !holdsName(a) && a.score != null && a.score >= 70).slice(0, 10)].map(toCandidate);
     const exactNameMatches = nameMatches.filter(holdsName);
     const nameHit = exactNameMatches.length === 1 ? {
         kind,
@@ -325,7 +327,21 @@ async function resolveEntity(entity, kind, opts) {
     // ── 4. Decide ───────────────────────────────────────────────────────────
     let resolved = null;
     let via      = null;
-    if (nameHit && urlHit) {
+    // #613 (majkinetor: an alias added, "url+alias is not there"): the URL identifies the artist,
+    // so the name only has to be ITS name or alias — not unique among all artists. "Sugimoto" is
+    // held by several artists, so nameHit (one exact holder) was null and the row stayed "url",
+    // though クニ杉本 carries the alias. When the search returned the URL's own artist holding the
+    // name, the two agree.
+    // The credit as printed on this release (displayName, an ANV like "Sugimoto") counts as well as the
+    // source's own name for it ("Kuni Sugimoto"): "+ alias" adds the credit, so that is what an alias is.
+    const heldBy = a => (isArtist ? (mbmHolds(a, displayName) || mbmHolds(a, searchName)) : (holdsName(a) ? 'name' : null));
+    const urlHolder = urlHit && urlHit.kind === kind && !(nameHit && nameHit.mbid === urlHit.mbid)
+        ? (nameJson?.[resultKey] || []).find(a => a.id === urlHit.mbid && heldBy(a)) : null;
+    if (urlHolder) {
+        resolved = urlHit;
+        via      = heldBy(urlHolder) === 'alias' ? 'both-alias' : 'both';
+        logDebug(`Match: ${displayName} → ${urlHolder.name} — the URL's artist holds the name${via === 'both-alias' ? ' as an alias' : ''} (${exactNameMatches.length} exact holder(s) in all)`);
+    } else if (nameHit && urlHit) {
         if (nameHit.mbid === urlHit.mbid && nameHit.kind === urlHit.kind) {
             // Both lookups returned the same MBID — highest confidence.
             // Prefer the URL hit's `kind` (it's authoritative for the
@@ -396,6 +412,21 @@ async function resolveEntity(entity, kind, opts) {
         const mbUrl = `${MB}/${resolved.kind}/${resolved.mbid}`;
         let finalName  = resolved.name;
         let finalDisam = resolved.disambiguation;
+        // #613 (majkinetor: "url+alias is not there, alias exists"): an artist found by its URL alone.
+        // The name search reads only its top results, and a common name ("Sugimoto": the URL's artist
+        // is result 21; "Mori": thousands) hides it there, so ask the artist itself: one lookup, exact
+        // and current (no search index to wait for). It also makes its aliases known for "+ alias".
+        let liveAliases = null;
+        if (via === 'url' && resolved.kind === 'artist' && isArtist) {
+            const live = await mbThrottle.fetchJson(`${MB}/ws/2/artist/${resolved.mbid}?inc=aliases&fmt=json`);
+            if (live && live.id === resolved.mbid) {
+                liveAliases = (live.aliases || []).map(al => al && al.name).filter(Boolean);
+                if (!finalName) { finalName = live.name || null; finalDisam = live.disambiguation || ''; }
+                const held = heldBy({ name: live.name, aliases: live.aliases || [] });
+                if (held) via = held === 'alias' ? 'both-alias' : 'both';
+                logDebug(`"${displayName}" → ${live.name}: found by URL; the artist ${held ? `holds the name as its ${held} → ${via}` : `doesn't carry the name (${liveAliases.length} alias(es))`}`);
+            } else logDebug(`"${displayName}": the URL's artist ${resolved.mbid} couldn't be read — stays "url"`);
+        }
         if (!finalName) {
             // URL-only hit may lack name/disambiguation — fetch them.
             const info = await fetchMbEntityInfo(resolved.kind, resolved.mbid);
@@ -427,6 +458,7 @@ async function resolveEntity(entity, kind, opts) {
             const self = !cand && via === 'ctx' && context && context.related
                 ? context.related.find(x => x.gid === resolved.mbid && x.rel === 'self') : null;
             if (cand && Array.isArray(cand.aliases)) out.mbAliases = cand.aliases;
+            else if (liveAliases) out.mbAliases = liveAliases;   // the URL artist's own lookup, above
             else if (self && Array.isArray(self.aliases)) out.mbAliases = self.aliases;
             logDebug(`"${displayName}" → ${finalName}: aliases ${out.mbAliases ? `known (${out.mbAliases.length})` : 'unknown'} for the "+ alias" check`);
         }

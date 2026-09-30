@@ -52,12 +52,12 @@ For sources that give an artist URL (Discogs, Tidal, Metal Archives), a chip sho
 
 **Automatic matching**, in this order:
 
-1. **Source URL**: the artist is linked to that URL in MusicBrainz.
+1. **Source URL**: the artist is linked to that URL in MusicBrainz. When it also carries the credited name, as its name or an alias, the row says `name+url` or `alias+url`; otherwise just `url`, and **+ alias** is offered. That is checked on the artist itself, so an alias added a moment ago counts at once.
 2. **Release context**: one of the release artist's related artists (band members, collaborators) carries the name or alias. So *George Harrison* on a Beatles release, although MusicBrainz has several.
 3. **Exact name or alias**, when exactly one MusicBrainz artist carries it (*Don Abi* → *Abiodun*). A common name like *Kim* can't be proven unique and is left for you, with the reason on the row.
 4. **Co-credit**: a recording that credits the name alongside the release artist (*Options › Matching*, on by default).
 
-When name and URL disagree, the row is left for you. Each match is cached with how it was made (`url`, `context`, `name`, `alias`, `co-credit`, `user`). Credits with a URL are cached by that URL; name-only credits are cached per release, so a bare name never carries over to another release. 🔄 clears the cache and matches again.
+When name and URL disagree, the row is left for you. Each match is cached with how it was made (`url`, `name+url`, `alias+url`, `context`, `name`, `alias`, `co-credit`, `user`); adding an alias with **+ alias** updates it. **🔄 Refresh from MB** re-matches rows cached before a change. Credits with a URL are cached by that URL; name-only credits are cached per release, so a bare name never carries over to another release. 🔄 clears the cache and matches again.
 
 On a row:
 
