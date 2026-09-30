@@ -22,7 +22,8 @@ export default defineConfig({
   fullyParallel: false,
   timeout: 5 * 60_000,
   expect: { timeout: 20_000 },
-  reporter: [['list'], ['html', { outputFolder: 'test-results/html', open: 'never' }]],
+  // PW_JSON=<file> adds a JSON report: the nightly suite keeps every run's results from it (#647)
+  reporter: [['list'], ['html', { outputFolder: 'test-results/html', open: 'never' }], ...(process.env.PW_JSON ? [['json', { outputFile: process.env.PW_JSON }]] : [])],
   outputDir: 'test-results/artifacts',
   // A missing element fails in 30 s, not at the 5-minute test timeout.
   use: { headless: true, viewport: { width: 1600, height: 1000 }, actionTimeout: 30_000, navigationTimeout: 90_000 },

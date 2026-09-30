@@ -31,7 +31,7 @@ jobs:
       - name: All specs but @web and @timing
         run: |
           set -o pipefail
-          pnpm test --grep-invert "@web|@timing" 2>&1 | tee suite.log
+          PW_JSON="$RUNNER_TEMP/results.json" pnpm test --grep-invert "@web|@timing" 2>&1 | tee suite.log
       - uses: actions/upload-artifact@v4
         if: ${{ !cancelled() }}
         with:
@@ -40,19 +40,18 @@ jobs:
           retention-days: 14
       # The README badge says how many passed and failed, not only "failing": a suite this
       # size on a shared sandbox has a spec or two red on most nights (#637). Shields reads
-      # the numbers from badges/suite.json on the `badges` branch, rewritten each run.
-      - name: Badge
+      # the numbers from suite.json on the `badges` branch. history.json beside it keeps every
+      # run, newest first: counts, each failure with its error, the flaky specs (#647);
+      # node dev/test/flaky-report.mjs lists what keeps failing.
+      - name: Badge and history
         if: ${{ !cancelled() && github.ref == 'refs/heads/main' }}
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          n() { grep -oE "^ +[0-9]+ $1" suite.log | tail -1 | grep -oE '[0-9]+' || true; }
-          passed=$(n passed); failed=$(n failed); flaky=$(n flaky)
-          msg="${passed:-0} passed"; color=brightgreen
-          [ -n "$flaky" ] && msg="$msg, $flaky flaky" && color=yellowgreen
-          [ -n "$failed" ] && msg="$msg, $failed failed" && color=orange
-          [ -n "$failed" ] && [ "$failed" -gt 5 ] && color=red
-          mkdir badge && cd badge && git init -q -b badges
-          printf '{"schemaVersion":1,"label":"suite","message":"%s","color":"%s"}\n' "$msg" "$color" > suite.json
-          git add suite.json && git -c user.name=github-actions -c user.email=github-actions@users.noreply.github.com commit -qm "suite: $msg"
+          mkdir badge
+          git fetch -q --depth=1 origin badges && git show FETCH_HEAD:history.json > badge/history.json 2>/dev/null || echo '{}' > badge/history.json
+          node dev/test/suite-history.mjs "$RUNNER_TEMP/results.json" badge/history.json --badge badge/suite.json --commit "$GITHUB_SHA" --run "$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"
+          cd badge && git init -q -b badges
+          git add suite.json history.json
+          git -c user.name=github-actions -c user.email=github-actions@users.noreply.github.com commit -qm "suite: $(node -p "require('./suite.json').message")"
           git push -qf "https://x-access-token:${GH_TOKEN}@github.com/${{ github.repository }}.git" badges
