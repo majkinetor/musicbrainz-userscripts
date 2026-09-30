@@ -1,5 +1,12 @@
 # Credit Hoarder Changelog
 
+## [2026.9.30](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.9.30)
+
+### Features
+
+1. Match artists by alias and release context, add missing aliases ([#613](https://github.com/majkinetor/musicbrainz-userscripts/issues/613))
+1. Contextual artist search before global search ([#612](https://github.com/majkinetor/musicbrainz-userscripts/issues/612))
+
 ## [2026.9.25](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.9.25)
 
 ### Features

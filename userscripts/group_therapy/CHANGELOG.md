@@ -1,5 +1,11 @@
 # Group Therapy
 
+## [2026.9.30](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.9.30)
+
+### Fixes
+
+1. RG Consolidation reports no RG due to error/rate limit ([#624](https://github.com/majkinetor/musicbrainz-userscripts/issues/624))
+
 ## [2026.9.25](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.9.25)
 
 ### Features

@@ -1,5 +1,13 @@
 # ISRC Scout Changelog
 
+## [2026.9.30](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.9.30)
+
+### Features
+
+1. Amazon Music support ([#644](https://github.com/majkinetor/musicbrainz-userscripts/issues/644))
+1. All-providers ISRC check per track ([#643](https://github.com/majkinetor/musicbrainz-userscripts/issues/643))
+1. YouTube Music support ([#640](https://github.com/majkinetor/musicbrainz-userscripts/issues/640))
+
 ## [2026.9.25](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.9.25)
 
 ### Features

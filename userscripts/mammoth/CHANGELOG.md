@@ -1,5 +1,9 @@
 # Mammoth Changelog
 
+## [2026.9.30](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.9.30)
+
+- Small improvements
+
 ## [2026.9.12](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.9.12)
 
 ### Fixes

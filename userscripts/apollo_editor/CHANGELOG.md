@@ -1,5 +1,18 @@
 # Apollo Editor Changelog
 
+## [2026.9.30](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.9.30)
+
+### Features
+
+1. Right-click drag in recordings tab to copy to the other side ([#635](https://github.com/majkinetor/musicbrainz-userscripts/issues/635))
+1. Track artists matched by their position on other editions of the release ([#626](https://github.com/majkinetor/musicbrainz-userscripts/issues/626))
+1. Paste link in Length Parser ([#622](https://github.com/majkinetor/musicbrainz-userscripts/issues/622))
+1. Allow empty tracks in length parser ([#621](https://github.com/majkinetor/musicbrainz-userscripts/issues/621))
+
+### Fixes
+
+1. Co-credit matching searches with Various Artists as a known artist ([#618](https://github.com/majkinetor/musicbrainz-userscripts/issues/618))
+
 ## [2026.9.25](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.9.25)
 
 ### Features

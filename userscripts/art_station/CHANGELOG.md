@@ -1,5 +1,11 @@
 # Art Station Changelog
 
+## [2026.9.30](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.9.30)
+
+### Features
+
+1. Display file extension ([#630](https://github.com/majkinetor/musicbrainz-userscripts/issues/630))
+
 ## [2026.9.25](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.9.25)
 
 ### Features

@@ -1,5 +1,63 @@
 # String Theory Changelog
 
+## [2026.9.30](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.9.30)
+
+### General
+
+#### Features
+
+1. Continuous integration: checks on every push, core specs before merge, the whole suite nightly ([#637](https://github.com/majkinetor/musicbrainz-userscripts/issues/637))
+1. Shared MusicBrainz request gate for every script ([#633](https://github.com/majkinetor/musicbrainz-userscripts/issues/633))
+1. One test runner for all userscripts ([#625](https://github.com/majkinetor/musicbrainz-userscripts/issues/625))
+1. Tidy up 2026-09 ([#623](https://github.com/majkinetor/musicbrainz-userscripts/issues/623))
+
+#### Changes
+
+1. Compact documentation, in one style for every script ([#636](https://github.com/majkinetor/musicbrainz-userscripts/issues/636))
+
+### [Apollo Editor](../apollo_editor/CHANGELOG.md)
+
+1. Right-click drag in recordings tab to copy to the other side ([#635](https://github.com/majkinetor/musicbrainz-userscripts/issues/635))
+1. Track artists matched by their position on other editions of the release ([#626](https://github.com/majkinetor/musicbrainz-userscripts/issues/626))
+1. Paste link in Length Parser ([#622](https://github.com/majkinetor/musicbrainz-userscripts/issues/622))
+1. Allow empty tracks in length parser ([#621](https://github.com/majkinetor/musicbrainz-userscripts/issues/621))
+1. Co-credit matching searches with Various Artists as a known artist ([#618](https://github.com/majkinetor/musicbrainz-userscripts/issues/618))
+
+### [Art Station](../art_station/CHANGELOG.md)
+
+1. Display file extension ([#630](https://github.com/majkinetor/musicbrainz-userscripts/issues/630))
+
+### [Credit Hoarder](../credit_hoarder/CHANGELOG.md)
+
+1. Match artists by alias and release context, add missing aliases ([#613](https://github.com/majkinetor/musicbrainz-userscripts/issues/613))
+1. Contextual artist search before global search ([#612](https://github.com/majkinetor/musicbrainz-userscripts/issues/612))
+
+### [Fusion](../fusion/CHANGELOG.md)
+
+1. Highlight length differences ([#619](https://github.com/majkinetor/musicbrainz-userscripts/issues/619))
+
+### [Group Therapy](../group_therapy/CHANGELOG.md)
+
+1. RG Consolidation reports no RG due to error/rate limit ([#624](https://github.com/majkinetor/musicbrainz-userscripts/issues/624))
+
+### [ISRC Scout](../isrc_scout/CHANGELOG.md)
+
+1. Amazon Music support ([#644](https://github.com/majkinetor/musicbrainz-userscripts/issues/644))
+1. All-providers ISRC check per track ([#643](https://github.com/majkinetor/musicbrainz-userscripts/issues/643))
+1. YouTube Music support ([#640](https://github.com/majkinetor/musicbrainz-userscripts/issues/640))
+
+### [Mammoth](../mammoth/CHANGELOG.md)
+
+1. Small improvements
+
+### [Platform Check](../platform_check/CHANGELOG.md)
+
+1. Amazon Music support ([#644](https://github.com/majkinetor/musicbrainz-userscripts/issues/644))
+1. MB marker additional options ([#642](https://github.com/majkinetor/musicbrainz-userscripts/issues/642))
+1. Middle click to force adding URL when strict settings prevent it ([#641](https://github.com/majkinetor/musicbrainz-userscripts/issues/641))
+1. YouTube Music support ([#639](https://github.com/majkinetor/musicbrainz-userscripts/issues/639))
+1. Apple provider migration from legacy iTunes to amp-api ([#627](https://github.com/majkinetor/musicbrainz-userscripts/issues/627))
+
 ## [2026.9.25](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.9.25)
 
 ### [Apollo Editor](../apollo_editor/CHANGELOG.md)

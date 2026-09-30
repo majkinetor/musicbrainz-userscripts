@@ -1,5 +1,15 @@
 # Platform Check Changelog
 
+## [2026.9.30](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.9.30)
+
+### Features
+
+1. Amazon Music support ([#644](https://github.com/majkinetor/musicbrainz-userscripts/issues/644))
+1. MB marker additional options ([#642](https://github.com/majkinetor/musicbrainz-userscripts/issues/642))
+1. Middle click to force adding URL when strict settings prevent it ([#641](https://github.com/majkinetor/musicbrainz-userscripts/issues/641))
+1. YouTube Music support ([#639](https://github.com/majkinetor/musicbrainz-userscripts/issues/639))
+1. Apple provider migration from legacy iTunes to amp-api ([#627](https://github.com/majkinetor/musicbrainz-userscripts/issues/627))
+
 ## [2026.9.25](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.9.25)
 
 ### Features
