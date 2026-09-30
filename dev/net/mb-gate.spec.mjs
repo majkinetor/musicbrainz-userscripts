@@ -110,3 +110,28 @@ test('a lock held and never released stalls a request 3 s, not for good', { tag:
   check(r.ok && r.starts === 1, `the request still goes out (${JSON.stringify(r)})`);
   check(r.ms >= 2900 && r.ms < 9000, `after about 3 s per gate step, not never (${r.ms} ms)`);
 });
+
+// majkinetor on #633: Falcon runs a queue in one tab while Platform Check adds links in another —
+// does Falcon hold the line so Platform Check waits until it times out? A request books its slot
+// only when it is about to start, and Falcon keeps at most 4 in flight: so another tab's request
+// queues behind those 4 at most, not behind Falcon's whole queue.
+test('a tab working through a long queue (4 at a time) doesn\'t starve another tab', { tag: ['@unit'] }, async ({ context }) => {
+  const falcon = await tab(context), pc = await tab(context);
+  await falcon.evaluate(() => localStorage.clear());
+  // Falcon: 20 reads, at most 4 waiting or running at once, as its mbThrottle does
+  const run = falcon.evaluate(async () => {
+    const q = Array.from({ length: 20 }, (_, i) => i); let running = 0;
+    await new Promise(done => {
+      const next = () => {
+        if (!q.length && !running) return done();
+        while (running < 4 && q.length) { q.shift(); running++; mbnFetch('/ws/2/release?query=f').then(() => { running--; next(); }); }
+      };
+      next();
+    });
+  });
+  await falcon.waitForTimeout(5000);   // well into Falcon's run
+  const waited = await pc.evaluate(async () => { const t0 = Date.now(); await mbnFetch('/ws/2/release/x'); return Date.now() - t0; });
+  await run;
+  console.log('other tab waited', waited, 'ms');
+  check(waited < 6000, `the other tab's request waits for the few slots already booked, not for the whole queue (${waited} ms; the queue takes ~20 s)`);
+});
