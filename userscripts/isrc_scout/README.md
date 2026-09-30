@@ -29,11 +29,11 @@ Shows a release's ISRCs, fills in the missing ones from several providers, and f
 | SoundCloud | ✓ | ✓ | the set (a track URL counts as a one-track release); by position (+ title for links) |
 | Spotify | ✓ | ✓ | ISRCs through [a lookup service](#spotify); links from the album, by position + title |
 | Bandcamp | | ✓ | the album page, by position + title |
-| YouTube Music | | ✓ | ISRC, on any release; title + length checked |
+| YouTube Music | | ✓ | the album, when linked (by position + title); else ISRC, on any release |
 | HDtracks | ✓ | | the album |
 | SoundExchange | ✓ | | a title and artist search |
 
-**YouTube Music** shows no ISRCs, but its search finds most songs by one. An ISRC it doesn't know brings up unrelated songs instead of nothing, so a result counts only when it is official audio (not a user upload), has the track's title and is within 3 s of its length. The log names every result it skipped, and why. Links are added as *free streaming*.
+**YouTube Music** shows no ISRCs. When the release links its YouTube Music album (Platform Check finds it), each track is taken from that album's tracklist, by position and title. Otherwise its ISRC is searched. An ISRC it doesn't know brings up unrelated songs instead of nothing, and labels sometimes reuse an ISRC for another version of a song with the same title and length: [JP92Q2400507](https://musicbrainz.org/isrc/JP92Q2400507) is both *メズマライザー* and its *Critical Damage ver.* So a search result counts only when it is official audio (not a user upload), has the track's title, is within 3 s of its length, and comes from this release's album. The log names every result it skipped, and why. The edit note names each link's YouTube Music album, since a song's URL no longer says which album it was once it is delisted. Links are added as *free streaming*.
 
 An album-based provider needs the release's album link: already in MusicBrainz, found by Platform Check, or pasted with **(+)**. No login is needed anywhere except Qobuz outside the countries it serves (see [Qobuz](#qobuz)).
 

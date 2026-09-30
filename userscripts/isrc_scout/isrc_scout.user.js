@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         ISRC Scout
 // @namespace    https://musicbrainz.org/
-// @version      2026.9.30.153945
+// @version      2026.9.30.165833
 // @description  Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify / Beatport / Tidal / Volumo / HDtracks / Qobuz, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPklTUkMgU2NvdXQ8L3RpdGxlPgogICAgPHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPgogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjQwIi8+CiAgICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyNiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2U9IiNiOWEzZTgiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPgogIDwvZz4KICA8bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+Cjwvc3ZnPgo=
@@ -1713,6 +1713,8 @@
   // null. One place so the per-release parse and the release-group scan (#302) agree.
   function matchProviderLink(u) {
     let m;
+    // #640: the release's YouTube Music album — its tracklist resolves the per-track links
+    if ((m = u.match(/music\.youtube\.com\/(?:playlist\?(?:[^#]*&)?list=(OLAK5uy_[\w-]+)|browse\/(MPREb_[\w-]+))/i))) return { k: 'ytmUrl', v: m[1] ? 'https://music.youtube.com/playlist?list=' + m[1] : 'https://music.youtube.com/browse/' + m[2] };
     if ((m = u.match(/^https?:\/\/[a-z0-9-]+\.bandcamp\.com\/album\/[^?#]+/i))) return { k: 'bandcampUrl', v: m[0] };  // #300: per-track URLs by position
     if ((m = u.match(/^(https?:\/\/music\.apple\.com\/[a-z]{2}\/album\/(?:[^/?#]+\/)?\d+)/i))) return { k: 'appleUrl', v: m[1] };  // album page ld+json lists every track URL
     // Legacy iTunes links are equivalent to Apple Music — normalise to the canonical
@@ -1822,7 +1824,7 @@
         });
       });
       const rels = data.relations || [];
-      const prov = { deezerId: null, spotifyId: null, beatportId: null, tidalId: null, volumoId: null, hdtracksId: null, qobuzId: null, bandcampUrl: null, appleUrl: null, scUrl: null };
+      const prov = { deezerId: null, spotifyId: null, beatportId: null, tidalId: null, volumoId: null, hdtracksId: null, qobuzId: null, bandcampUrl: null, appleUrl: null, scUrl: null, ytmUrl: null };
       rels.forEach(rel => {
         const u = rel.url && rel.url.resource;
         if (!u) return;
@@ -3837,7 +3839,7 @@
       { code: 'yt', name: 'YouTube Music', color: _PROV_COLOR.ytmusic, icon: SRC_ICON.yt, linkTypeID: 268,
         conc: 2, gap: 150,   // one search per ISRC; an internal API with no published limit, so gently
         test: u => /music\.youtube\.com\/watch\?(?:[^#]*&)?v=[\w-]{11}/i.test(u),
-        resolve: (isrc, t) => ytResolve(isrc, t) },
+        resolve: (isrc, t, idx) => ytResolve(isrc, t, idx) },
       // Bandcamp (#300): no ISRC — resolve by ALBUM. The release's Bandcamp album
       // page lists every track's URL in order, so we match by position (with a
       // title sanity-check). Only offered when the release has a Bandcamp album link.
@@ -3927,23 +3929,47 @@
       return (a && b && (a === b || a.indexOf(b) >= 0 || b.indexOf(a) >= 0)) ? e.url : null;
     }
 
-    // YouTube Music (#640): the ISRC searched with the "songs" filter, through the API its web
-    // player uses (anonymous). Of the first three results, the first that is official audio
-    // (MUSIC_VIDEO_TYPE_ATV — not a user upload), has the track's title and is within 3 s of
-    // its length. A result row reads "Kerala" | "Bonobo • Migration • 3:58".
+    // YouTube Music (#640), through the API its web player uses (anonymous). Two routes:
+    //   · the release's own YouTube Music album, when it has a link to one: its tracklist,
+    //     matched by position (or, when the album lists fewer songs, the one song with the
+    //     track's title), with the title and length checked;
+    //   · otherwise, or for a track the album doesn't have: the ISRC searched with the "songs"
+    //     filter. Of the first three results, one that is official audio (MUSIC_VIDEO_TYPE_ATV,
+    //     not a user upload), has the track's title, is within 3 s of its length, AND comes from
+    //     this release's album. Labels reuse an ISRC across versions: JP92Q2400507 is both
+    //     "メズマライザー" and its "Critical Damage ver.", same title, same 2:37, and the search
+    //     brings up the original's song from "Mesmerizer" (rinsuki). A search row reads
+    //     "Kerala" | "Bonobo • Migration • 3:58", the album a link to it.
+    // Where each link came from is kept for the edit note (ytSource): once a song is delisted
+    // or geo-blocked, its URL alone no longer says which album it was.
     const YTM_SONGS_FILTER = 'EgWKAQIIAWoKEAkQBRAKEAMQBA==';
+    const ytSource = new Map();   // watch URL → { album, albumId, how }
     const ytText = x => (x && x.runs ? x.runs.map(r => r.text).join('') : '');
+    const ytWatch = vid => 'https://music.youtube.com/watch?v=' + vid;
+    const ytSame = (a, b) => { a = _nrm(a); b = _nrm(b); return !!(a && b && (a === b || a.indexOf(b) >= 0 || b.indexOf(a) >= 0)); };
+    async function ytCall(endpoint, body) {
+      const r = await gmPost('https://music.youtube.com/youtubei/v1/' + endpoint + '?prettyPrint=false',
+        JSON.stringify(Object.assign({ context: { client: { clientName: 'WEB_REMIX', clientVersion: '1.20250101.01.00', hl: 'en', gl: 'US' } } }, body)), { 'Content-Type': 'application/json' });
+      let j = null; try { j = JSON.parse(r.responseText || 'null'); } catch (e) {}
+      if (r.status !== 200 || !j) { Log.warn('YouTube Music: ' + endpoint + ' ' + (body.query || body.browseId) + ' failed (HTTP ' + r.status + ') — its API may have changed'); return null; }
+      return j;
+    }
+    // The songs of a search or an album page: { vid, title, artist, len, type, album, albumId }.
     function ytSongs(j) {
       const out = [];
       const walk = o => {
         if (!o || typeof o !== 'object') return;
         const r = o.musicResponsiveListItemRenderer;
         if (r) {
-          const cols = (r.flexColumns || []).map(c => ytText(c.musicResponsiveListItemFlexColumnRenderer && c.musicResponsiveListItemFlexColumnRenderer.text));
-          const sub = (cols[1] || '').split(' • ');
+          const col = i => r.flexColumns && r.flexColumns[i] && r.flexColumns[i].musicResponsiveListItemFlexColumnRenderer && r.flexColumns[i].musicResponsiveListItemFlexColumnRenderer.text;
+          const sub = ytText(col(1)).split(' • ');
+          const albumRun = ((col(1) && col(1).runs) || []).find(x => x.navigationEndpoint && x.navigationEndpoint.browseEndpoint && /^MPREb_/.test(x.navigationEndpoint.browseEndpoint.browseId || ''));
+          const fixed = r.fixedColumns && r.fixedColumns[0] && r.fixedColumns[0].musicResponsiveListItemFixedColumnRenderer;
           const vid = (r.playlistItemData && r.playlistItemData.videoId) || (JSON.stringify(r).match(/"videoId":"([\w-]{11})"/) || [])[1];
           const type = (JSON.stringify(r).match(/MUSIC_VIDEO_TYPE_[A-Z]+/) || [''])[0].replace('MUSIC_VIDEO_TYPE_', '');
-          if (vid) out.push({ vid, title: cols[0] || '', artist: sub[0] || '', len: durToSec(sub[sub.length - 1]), type });
+          if (vid) out.push({ vid, title: ytText(col(0)), artist: sub[0] || '', type,
+            len: durToSec(fixed ? ytText(fixed.text) : sub[sub.length - 1]),
+            album: albumRun ? albumRun.text : null, albumId: albumRun ? albumRun.navigationEndpoint.browseEndpoint.browseId : null });
           return;
         }
         for (const k in o) walk(o[k]);
@@ -3951,22 +3977,64 @@
       walk(j);
       return out;
     }
-    async function ytResolve(isrc, t) {
+    // Why a song isn't this track ('' when it is): the title, and the length within 3 s.
+    function ytMismatch(s, t) {
+      const want = durToSec(t.dur);
+      if (!ytSame(s.title, t.title)) return 'another title';
+      if (want != null && (s.len == null || Math.abs(s.len - want) > 3)) return 'another length (' + (s.len == null ? '?' : msToMmSs(s.len * 1000)) + ' vs ' + t.dur + ')';
+      return '';
+    }
+    // The release's YouTube Music album (fetched once): { id, name, tracks: [song…] }.
+    let _ytAlbum = null, _ytAlbumP = null;
+    async function ytAlbum() {
+      if (_ytAlbum) return _ytAlbum;
+      if (_ytAlbumP) return _ytAlbumP;
+      const url = RELEASE && RELEASE.ytmUrl;
+      if (!url) return { tracks: [] };
+      _ytAlbumP = (async () => {
+        let id = (url.match(/browse\/(MPREb_[\w-]+)/) || [])[1];
+        const list = (url.match(/[?&]list=(OLAK5uy_[\w-]+)/) || [])[1];
+        if (!id && list) { const pj = await ytCall('browse', { browseId: 'VL' + list }); id = pj && (JSON.stringify(pj).match(/"(MPREb_[\w-]+)"/) || [])[1]; }
+        if (!id) { Log.warn('YouTube Music: the release\'s album link ' + url + ' names no album — each track falls back to its ISRC'); return { tracks: [] }; }
+        const j = await ytCall('browse', { browseId: id });
+        let h = null; const walk = o => { if (!o || typeof o !== 'object' || h) return; if (o.musicResponsiveHeaderRenderer) { h = o.musicResponsiveHeaderRenderer; return; } for (const k in o) walk(o[k]); };
+        walk(j);
+        const name = h ? ytText(h.title) : '';
+        const tracks = j ? ytSongs(j) : [];
+        Log.info('YouTube Music album "' + name + '" (' + id + '): ' + tracks.length + ' song(s), from the release\'s link');
+        return { id, name, tracks };
+      })();
+      const res = await _ytAlbumP.catch(() => ({ tracks: [] }));
+      _ytAlbumP = null;
+      if (res.tracks.length) _ytAlbum = res;
+      return res;
+    }
+    async function ytResolve(isrc, t, idx) {
+      // 1. the release's own album: by position, else the one song with the track's title
+      const alb = await ytAlbum();
+      if (alb.tracks.length) {
+        const at = alb.tracks[idx];
+        let s = at && !ytMismatch(at, t) ? at : null;
+        if (!s) { const c = alb.tracks.filter(x => !ytMismatch(x, t)); if (c.length === 1) s = c[0]; }
+        if (s) {
+          const url = ytWatch(s.vid);
+          const sib = RELEASE.rgFrom && RELEASE.rgFrom.ytmUrl;   // #302: the link came from a sibling release
+          ytSource.set(url, { album: alb.name, albumId: alb.id, how: (sib ? 'the album linked from ' + MB_ROOT + '/release/' + sib.release : 'the release\'s album') + ', track ' + (alb.tracks.indexOf(s) + 1) });
+          Log.info('YouTube Music track ' + (idx + 1) + ' → "' + s.title + '" ' + (s.len == null ? '' : msToMmSs(s.len * 1000)) + ' from the album "' + alb.name + '"');
+          return url;
+        }
+        Log.info('YouTube Music track ' + (idx + 1) + ' "' + t.title + '": not on the album "' + alb.name + '"' + (at ? ' (position ' + (idx + 1) + ' is "' + at.title + '", ' + ytMismatch(at, t) + ')' : '') + (isrc ? ' — trying its ISRC' : ''));
+      }
+      // 2. the ISRC, searched
       if (!isrc) return null;
-      const body = JSON.stringify({ context: { client: { clientName: 'WEB_REMIX', clientVersion: '1.20250101.01.00', hl: 'en', gl: 'US' } }, query: isrc, params: YTM_SONGS_FILTER });
-      const r = await gmPost('https://music.youtube.com/youtubei/v1/search?prettyPrint=false', body, { 'Content-Type': 'application/json' });
-      let j = null; try { j = JSON.parse(r.responseText || 'null'); } catch (e) {}
-      if (r.status !== 200 || !j) { Log.warn('YouTube Music: the search for ' + isrc + ' failed (HTTP ' + r.status + ') — its API may have changed'); return null; }
-      const want = durToSec(t.dur), wt = _nrm(t.title);
+      const j = await ytCall('search', { query: isrc, params: YTM_SONGS_FILTER });
+      if (!j) return null;
       const songs = ytSongs(j).slice(0, 3);
       for (const s of songs) {
-        const st = _nrm(s.title);
         const why = s.type !== 'ATV' ? 'not official audio (' + (s.type || '?') + ')'
-          : !(st && wt && (st === wt || st.indexOf(wt) >= 0 || wt.indexOf(st) >= 0)) ? 'another title'
-          : (want != null && (s.len == null || Math.abs(s.len - want) > 3)) ? 'another length (' + (s.len == null ? '?' : msToMmSs(s.len * 1000)) + ' vs ' + t.dur + ')'
-          : '';
-        Log.info('YouTube Music ' + isrc + ' → "' + s.title + '" by ' + (s.artist || '?') + ' ' + (s.len == null ? '' : msToMmSs(s.len * 1000)) + (why ? ' — skipped: ' + why : ' — matches "' + t.title + '"'));
-        if (!why) return 'https://music.youtube.com/watch?v=' + s.vid;
+          : ytMismatch(s, t) || (!ytSame(s.album, RELEASE.title) ? 'from the album "' + (s.album || '?') + '", not "' + RELEASE.title + '" — the ISRC may be shared with another version' : '');
+        Log.info('YouTube Music ' + isrc + ' → "' + s.title + '" by ' + (s.artist || '?') + ' ' + (s.len == null ? '' : msToMmSs(s.len * 1000)) + (s.album ? ' on "' + s.album + '"' : '') + (why ? ' — skipped: ' + why : ' — matches "' + t.title + '"'));
+        if (!why) { const url = ytWatch(s.vid); ytSource.set(url, { album: s.album, albumId: s.albumId, how: 'ISRC ' + isrc }); return url; }
       }
       if (!songs.length) Log.info('YouTube Music ' + isrc + ': no songs');
       return null;
@@ -4206,7 +4274,7 @@
 
     // Same shape as ISRC Scout's standard edit note (noteHeader + Release line +
     // an "Added …" summary), so link edits read like the script's ISRC edits.
-    function noteFor(provs) {
+    function noteFor(provs, urls) {
       const counts = {};
       provs.forEach(p => { counts[p.name] = (counts[p.name] || 0) + 1; });
       const breakdown = Object.keys(counts).sort().map(n => n + ' (' + counts[n] + ')').join(', ');
@@ -4215,6 +4283,12 @@
         '',
         'Release: ' + MB_ROOT + '/release/' + mbid,
         'Added ' + provs.length + ' streaming link' + (provs.length === 1 ? '' : 's') + (breakdown ? ': ' + breakdown : ''),
+        // #640 (rinsuki): once a song is delisted or geo-blocked, its URL no longer says which
+        // album it was — so each YouTube Music link names it, and how it was found
+        ...(urls || []).filter(u => ytSource.has(u)).map(u => {
+          const y = ytSource.get(u);
+          return 'YouTube Music ' + u + ' ← album "' + (y.album || '?') + '"' + (y.albumId ? ' https://music.youtube.com/browse/' + y.albumId : '') + ' (' + y.how + ')';
+        }),
       ].join('\n');
     }
 
@@ -4261,7 +4335,7 @@
       items.forEach(it => { const el = cell(it.idx, it.p.code); if (el) { el.className = 'ii-tl spin'; el.dataset.code = it.p.code; } });
       let ok = 0, fail = 0;
       try {
-        await submitRels(items.map(it => ({ recGid: RELEASE.tracks[it.idx].recId, url: it.url, linkTypeID: it.p.linkTypeID })), noteFor(items.map(it => it.p)));
+        await submitRels(items.map(it => ({ recGid: RELEASE.tracks[it.idx].recId, url: it.url, linkTypeID: it.p.linkTypeID })), noteFor(items.map(it => it.p), items.map(it => it.url)));
         items.forEach(it => markLinked(it.idx, it.p, it.url));
         ok = items.length;
         Log.info('Linked ' + items.length + ' track-link' + (items.length === 1 ? '' : 's') + ' on MusicBrainz');
@@ -4451,7 +4525,8 @@
         // because Qobuz had them under the recording's OTHER isrc).
         const isrcs = [normalizeIsrc(t.pending), ...(t.existing || []).map(normalizeIsrc)]
           .filter((v, i, a) => isValidIsrc(v) && a.indexOf(v) === i);
-        if (!p.album && !isrcs.length) continue;   // by-ISRC providers need an ISRC; album ones don't
+        // by-ISRC providers need an ISRC; album ones don't — nor does YouTube Music with an album link (#640)
+        if (!p.album && !isrcs.length && !(p.code === 'yt' && RELEASE.ytmUrl)) continue;
         if (linkedUrl(t, p)) continue;              // already linked → leave monochrome
         const el = cell(idx, p.code);
         if (!el || !el.classList.contains('cand')) continue;
