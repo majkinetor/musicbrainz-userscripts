@@ -44,7 +44,7 @@ test('artists match by exact name or alias only when unique, by release context,
   check(byName(A, 'George Harrison').via === 'ctx' && byName(A, 'George Harrison').gid === '42a8f507', '"George Harrison" (three exact namesakes) → the Beatle, through the release context');
   check(byName(A, 'Don Abi').via === 'alias' && byName(A, 'Don Abi').gid === 'b4acea3f', `"Don Abi" → Abiodun by alias, provably unique (#442) (${JSON.stringify(byName(A, 'Don Abi'))})`);
   check(byName(A, 'Solar Moon').type === 'resolved' && byName(A, 'Solar Moon').via === 'name', '"Solar Moon" → by name');
-  check(byName(A, 'Kim').type === 'attention' && /not provably unique/.test(byName(A, 'Kim').reason || ''), `"Kim" is left for review (${byName(A, 'Kim').reason})`);
+  check(byName(A, 'Kim').type === 'attention' && /not provably unique|artists carry the name/.test(byName(A, 'Kim').reason || ''), `"Kim" is left for review (${byName(A, 'Kim').reason})`);
   const noCtx = await resolveNames(['George Harrison'], { withContext: false });
   check(byName(noCtx, 'George Harrison').type === 'attention', 'without the context, "George Harrison" is left for review');
 

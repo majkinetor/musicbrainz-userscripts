@@ -387,6 +387,10 @@ async function resolveEntity(entity, kind, opts) {
                 reviewReason = idn.status === 'incomplete' ? `not provably unique (${idJson.count} artists match)` : idn.status === 'ambiguous' ? `${idn.exact.length} artists carry the name` : 'the exact holder did not verify';
                 logDebug(`"${searchName}" not resolved by name — ${reviewReason}`);
             }
+        } else if (exactNameMatches.length > 1) {
+            // several exact holders already in the search's first page (limit 100): no identity query needed
+            reviewReason = `${exactNameMatches.length} artists carry the name`;
+            logDebug(`"${searchName}" not resolved by name — ${reviewReason}`);
         }
         // #613: the co-credit step also covers a name the exact-identity check rejected — a
         // "not provably unique" common name is exactly what it's for

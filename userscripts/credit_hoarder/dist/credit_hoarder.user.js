@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Credit Hoarder
 // @namespace    majkinetor
-// @version      2026.9.30.090640
+// @version      2026.9.30.092622
 // @description  Import per-track release credits from streaming/database providers (Discogs, Tidal, Qobuz, Deezer) into MusicBrainz relationships, with a review phase
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij4KICANCiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMmY2ZjU0IiBzdHJva2Utd2lkdGg9IjkiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGNpcmNsZSBjeD0iMzQiIGN5PSIzOCIgcj0iMi41IiBmaWxsPSIjMmY2ZjU0IiBzdHJva2U9Im5vbmUiLz4NCiAgICA8bGluZSB4MT0iNTAiIHkxPSIzOCIgeDI9Ijk4IiB5Mj0iMzgiLz4NCiAgICA8Y2lyY2xlIGN4PSIzNCIgY3k9IjY0IiByPSIyLjUiIGZpbGw9IiMyZjZmNTQiIHN0cm9rZT0ibm9uZSIvPg0KICAgIDxsaW5lIHgxPSI1MCIgeTE9IjY0IiB4Mj0iOTgiIHkyPSI2NCIvPg0KICAgIDxjaXJjbGUgY3g9IjM0IiBjeT0iOTAiIHI9IjIuNSIgZmlsbD0iIzJmNmY1NCIgc3Ryb2tlPSJub25lIi8+DQogICAgPGxpbmUgeDE9IjUwIiB5MT0iOTAiIHgyPSI3NCIgeTI9IjkwIi8+DQogIDwvZz4NCiAgPGNpcmNsZSBjeD0iOTIiIGN5PSI5MiIgcj0iMjMiIGZpbGw9IiMyZTllNWIiLz4NCiAgPGcgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGxpbmUgeDE9IjkyIiB5MT0iODEiIHgyPSI5MiIgeTI9IjEwMyIvPg0KICAgIDxsaW5lIHgxPSI4MSIgeTE9IjkyIiB4Mj0iMTAzIiB5Mj0iOTIiLz4NCiAgPC9nPg0KPC9zdmc+DQo=
@@ -215,9 +215,16 @@
       }
       return out;
     };
+    let timer = 0;
     try {
-      if (typeof navigator !== "undefined" && navigator.locks && navigator.locks.request) return await navigator.locks.request(MBN_LOCK, rw);
+      if (typeof navigator !== "undefined" && navigator.locks && navigator.locks.request) {
+        const ctrl = typeof AbortController === "function" ? new AbortController() : null;
+        if (ctrl) timer = setTimeout(() => ctrl.abort(), 3e3);
+        return await navigator.locks.request(MBN_LOCK, ctrl ? { signal: ctrl.signal } : {}, rw);
+      }
     } catch (e) {
+    } finally {
+      clearTimeout(timer);
     }
     return rw();
   }
@@ -3636,6 +3643,9 @@
           reviewReason = idn.status === "incomplete" ? `not provably unique (${idJson.count} artists match)` : idn.status === "ambiguous" ? `${idn.exact.length} artists carry the name` : "the exact holder did not verify";
           logDebug(`"${searchName}" not resolved by name \u2014 ${reviewReason}`);
         }
+      } else if (exactNameMatches.length > 1) {
+        reviewReason = `${exactNameMatches.length} artists carry the name`;
+        logDebug(`"${searchName}" not resolved by name \u2014 ${reviewReason}`);
       }
       if (!resolved) {
         const cc = await coCreditHit(context, searchName);
@@ -4020,9 +4030,35 @@ ${ourBlock}` : ourBlock;
   }
   var aliasFormUrl = (mbid) => `${location.origin}/artist/${mbid}/add-alias`;
   async function liveHolds(mbid, name) {
-    const live = await mbnFetch(`${location.origin}/ws/2/artist/${mbid}?inc=aliases&fmt=json`, { headers: { Accept: "application/json" } }, { background: false }).then((r) => r.ok ? r.json() : null).catch(() => null);
-    return live && live.id ? { held: aliasHeldBy({ name: live.name, aliases: live.aliases || [] }, name), artistName: live.name } : null;
+    const t0 = Date.now();
+    logDebug(`+ alias: checking ${mbid}'s live aliases for "${name}"`);
+    let why = "";
+    const live = await Promise.race([
+      mbnFetch(`${location.origin}/ws/2/artist/${mbid}?inc=aliases&fmt=json`, { headers: { Accept: "application/json" } }, { background: false }).then((r) => {
+        if (!r) {
+          why = "cancelled";
+          return null;
+        }
+        if (!r.ok) {
+          why = "HTTP " + r.status;
+          return null;
+        }
+        return r.json();
+      }).catch((e) => {
+        why = e && e.message || String(e);
+        return null;
+      }),
+      new Promise((res) => setTimeout(() => {
+        why = `no answer in ${LIVE_TIMEOUT / 1e3}s`;
+        res(null);
+      }, LIVE_TIMEOUT))
+    ]);
+    const out = live && live.id ? { held: aliasHeldBy({ name: live.name, aliases: live.aliases || [] }, name), artistName: live.name } : null;
+    if (out) logDebug(`+ alias: ${out.artistName} ${out.held ? "already carries" : "doesn't carry"} "${name}" (${Date.now() - t0} ms)`);
+    else log.warn(`+ alias: couldn't read ${mbid}'s live aliases (${why || "no artist in the answer"}, ${Date.now() - t0} ms) \u2014 going ahead without the check`);
+    return out;
   }
+  var LIVE_TIMEOUT = 8e3;
   async function aliasNowHeld(mbid, name) {
     const live = await liveHolds(mbid, name);
     return live ? live.held : null;
@@ -4042,8 +4078,19 @@ ${ourBlock}` : ourBlock;
       return { already: true };
     }
     log.info(`+ alias: opening MusicBrainz's add-alias form for "${name}" \u2014 ${url.split("?")[0]}`);
-    if (tab) tab.location.href = url;
-    else window.open(url, "_blank");
+    let how = "the blank tab";
+    try {
+      if (!tab || tab.closed) throw new Error(tab ? "the blank tab was closed" : "no tab handle (popup blocked?)");
+      tab.location.href = url;
+    } catch (e) {
+      how = "a new tab \u2014 " + (e && e.message || e);
+      try {
+        if (tab) tab.close();
+      } catch (e2) {
+      }
+      window.open(url, "_blank");
+    }
+    logDebug(`+ alias: form opened in ${how}`);
     return { already: false };
   }
   async function submitAliasBackground(mbid, name, note) {
@@ -4872,7 +4919,14 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
           const note = buildCreateNote(`Added "${displayName}" as an alias \u2014 the ${srcName} credit${discogsHref ? " (" + discogsHref + ")" : ""} \u2014`);
           ab.addEventListener("click", async (ev) => {
             ev.preventDefault();
-            const res = await openAddAliasForm(a.id, displayName, note);
+            logDebug(`+ alias: click on "${displayName}" \u2192 ${a.name} (${a.id})`);
+            let res;
+            try {
+              res = await openAddAliasForm(a.id, displayName, note);
+            } catch (e2) {
+              log.warn(`+ alias: opening the form for "${displayName}" failed \u2014 ${e2 && e2.message || e2}`);
+              return;
+            }
             if (res && res.already) {
               ab.textContent = "\u2713 has alias";
               ab.disabled = true;
@@ -4913,6 +4967,7 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
           });
           ab.addEventListener("contextmenu", async (ev) => {
             ev.preventDefault();
+            logDebug(`+ alias: right-click on "${displayName}" \u2192 ${a.name} (${a.id})${ab.disabled ? " \u2014 ignored, the button is busy or done" : ""}`);
             if (ab.disabled) return;
             ab.disabled = true;
             ab.textContent = "\u23F3 alias";

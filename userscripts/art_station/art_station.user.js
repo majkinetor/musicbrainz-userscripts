@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Art Station
 // @namespace    https://musicbrainz.org/
-// @version      2026.9.30
+// @version      2026.9.30.092616
 // @description  Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png
@@ -46,9 +46,17 @@
           try { localStorage.setItem(MBN_KEY, JSON.stringify({ tat: s.tat || 0, cool: s.cool || 0, hot: s.hot || 0 })); } catch (e) {}
           return out;
       };
+      // The lock is held only for rw()'s synchronous moment, so a wait of seconds means it is
+      // stuck (a frozen or sandboxed holder): give up on it and go unlocked rather than hang
+      // every request behind it.
+      let timer = 0;
       try {
-          if (typeof navigator !== 'undefined' && navigator.locks && navigator.locks.request) return await navigator.locks.request(MBN_LOCK, rw);
-      } catch (e) { /* no Web Locks here (an insecure or sandboxed context): unlocked, like a lone script */ }
+          if (typeof navigator !== 'undefined' && navigator.locks && navigator.locks.request) {
+              const ctrl = typeof AbortController === 'function' ? new AbortController() : null;
+              if (ctrl) timer = setTimeout(() => ctrl.abort(), 3000);
+              return await navigator.locks.request(MBN_LOCK, ctrl ? { signal: ctrl.signal } : {}, rw);
+          }
+      } catch (e) { /* no Web Locks here (an insecure or sandboxed context), or stuck: unlocked, like a lone script */ } finally { clearTimeout(timer); }
       return rw();
   }
   async function mbnSlot(o) {

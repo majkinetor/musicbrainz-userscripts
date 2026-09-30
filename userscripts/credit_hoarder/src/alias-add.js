@@ -10,7 +10,7 @@
 /* global DOMParser */
 import { mbmHolds, MBM_SPECIAL_PURPOSE } from '../../../dev/match/artist-match.mjs';
 import { mbnFetch } from '../../../dev/net/mb-gate.mjs';
-import { log } from './log.js';
+import { log, logDebug } from './log.js';
 
 const SPECIAL = new Set(MBM_SPECIAL_PURPOSE);
 
@@ -33,10 +33,24 @@ const aliasFormUrl = mbid => `${location.origin}/artist/${mbid}/add-alias`;
 
 /** The artist's LIVE name + aliases (not the review table's possibly cached view). */
 async function liveHolds(mbid, name) {
-    // through the shared request gate (#633), ahead of queued background work
-    const live = await mbnFetch(`${location.origin}/ws/2/artist/${mbid}?inc=aliases&fmt=json`, { headers: { Accept: 'application/json' } }, { background: false }).then(r => (r.ok ? r.json() : null)).catch(() => null);
-    return live && live.id ? { held: aliasHeldBy({ name: live.name, aliases: live.aliases || [] }, name), artistName: live.name } : null;
+    // through the shared request gate (#633), ahead of queued background work — but never
+    // longer than LIVE_TIMEOUT: a click waits on this, and an unknown answer is fine (the
+    // form route lets you see it; the background route submits, as before the check existed)
+    const t0 = Date.now();
+    logDebug(`+ alias: checking ${mbid}'s live aliases for "${name}"`);
+    let why = '';
+    const live = await Promise.race([
+        mbnFetch(`${location.origin}/ws/2/artist/${mbid}?inc=aliases&fmt=json`, { headers: { Accept: 'application/json' } }, { background: false })
+            .then(r => { if (!r) { why = 'cancelled'; return null; } if (!r.ok) { why = 'HTTP ' + r.status; return null; } return r.json(); })
+            .catch(e => { why = e && e.message || String(e); return null; }),
+        new Promise(res => setTimeout(() => { why = `no answer in ${LIVE_TIMEOUT / 1000}s`; res(null); }, LIVE_TIMEOUT)),
+    ]);
+    const out = live && live.id ? { held: aliasHeldBy({ name: live.name, aliases: live.aliases || [] }, name), artistName: live.name } : null;
+    if (out) logDebug(`+ alias: ${out.artistName} ${out.held ? 'already carries' : "doesn't carry"} "${name}" (${Date.now() - t0} ms)`);
+    else log.warn(`+ alias: couldn't read ${mbid}'s live aliases (${why || 'no artist in the answer'}, ${Date.now() - t0} ms) — going ahead without the check`);
+    return out;
 }
+const LIVE_TIMEOUT = 8000;
 
 /** Does the artist carry `name` (name or alias) on MusicBrainz right now? → true/false, or null when
  *  the lookup failed. Used when you come back from the add-alias form tab. */
@@ -61,7 +75,19 @@ export async function openAddAliasForm(mbid, name, note) {
         return { already: true };
     }
     log.info(`+ alias: opening MusicBrainz's add-alias form for "${name}" — ${url.split('?')[0]}`);
-    if (tab) tab.location.href = url; else window.open(url, '_blank');
+    // Navigating the blank tab can fail from a userscript sandbox (the handle is a wrapper):
+    // then close it and open the form directly — no longer a user gesture, but better a
+    // popup-blocked notice than a blank tab.
+    let how = 'the blank tab';
+    try {
+        if (!tab || tab.closed) throw new Error(tab ? 'the blank tab was closed' : 'no tab handle (popup blocked?)');
+        tab.location.href = url;
+    } catch (e) {
+        how = 'a new tab — ' + (e && e.message || e);
+        try { if (tab) tab.close(); } catch (e2) {}
+        window.open(url, '_blank');
+    }
+    logDebug(`+ alias: form opened in ${how}`);
     return { already: false };
 }
 
