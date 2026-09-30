@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Platform Check
 // @namespace    http://tampermonkey.net/
-// @version      2026.9.30.092616
+// @version      2026.9.30.173332
 // @description  Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+DQogIDx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CiAgDQogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJhMWE1MiIgc3Ryb2tlLXdpZHRoPSI5IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik00MCA4OCBBMzQgMzQgMCAwIDEgNDAgNDAiLz4NCiAgICA8cGF0aCBkPSJNMjkgOTkgQTUwIDUwIDAgMCAxIDI5IDI5Ii8+DQogICAgPHBhdGggZD0iTTg4IDg4IEEzNCAzNCAwIDAgMCA4OCA0MCIvPg0KICAgIDxwYXRoIGQ9Ik05OSA5OSBBNTAgNTAgMCAwIDAgOTkgMjkiLz4NCiAgPC9nPg0KICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyMCIgZmlsbD0iI2U4MjAxYSIvPg0KPC9zdmc+DQo=
@@ -1912,7 +1912,7 @@ ${MBU_TOKENS}${MBU_UI_CSS}
 </div>
 <div style="display: flex; justify-content: space-between; align-items: center; padding-top: 6px; border-top: 1px solid var(--mbu-border);">
   <div style="display: flex; align-items: center; gap: 6px;">
-    <span id="mb-inject-btn"      class="pc-icon-btn" title="Open the release editor and queue OK URLs to add · right-click: add them silently in the background" style="${iconBtn}">+</span>
+    <span id="mb-inject-btn"      class="pc-icon-btn" title="Open the release editor and queue OK URLs to add · right-click: add them silently in the background · middle-click: add them, including the ones strict barcode/format settings withhold" style="${iconBtn}">+</span>
     <span id="mb-openall-btn"     class="pc-icon-btn" title="Open found platform pages not yet in MB (non-circled) in new tabs" style="${iconBtn}">↗</span>
   </div>
   <div style="display: flex; align-items: center; gap: 6px;">
@@ -2827,6 +2827,12 @@ function wireRowOpen(p) {
     row.style.cursor = (a.dataset.searchUrl || (href && /^https?:\/\//.test(href))) ? 'pointer' : '';
 }
 
+// #641: middle click (button 1) runs `fn`, or nothing when fn is null. The mousedown is
+// swallowed, so the browser doesn't start autoscrolling instead.
+function pcWireForce(el, fn) {
+    el.onmousedown = fn ? (e) => { if (e.button === 1) e.preventDefault(); } : null;
+    el.onauxclick = fn ? (e) => { if (e.button !== 1) return; e.preventDefault(); fn(); } : null;
+}
 function updateRow(p, { url, mbTracks, remoteTracks, year, label, source, fromCache, format, masterState, hiddenTracks, barcode }) {
     const a    = document.getElementById(`mb-online-${p}`);
     const ico  = document.getElementById(`ico-${p}`);
@@ -2888,10 +2894,15 @@ function updateRow(p, { url, mbTracks, remoteTracks, year, label, source, fromCa
     const blocked = !!(url && !fromMbRels && (barcodeBlocks(p) || formatBlocks(p)));
     // Click-to-add on the main icon for verified ✓ + not-already-in-MB (and not withheld).
     const canAdd = url && ico.textContent === '✓' && !fromMbRels && !blocked;
-    ico.style.cursor = canAdd ? 'pointer' : '';
-    ico.title = canAdd ? `Click to add ${PROVIDER_NAME[p]} URL to MB · right-click: add it silently in the background` : (blocked ? `Withheld from + / ↗ — barcode/format confidence is on (see the coloured bar)` : '');
+    // #641: middle click adds a confirmed (✓) link anyway — over a strict barcode/format
+    // withholding, which sometimes keeps back a legitimate find — in the foreground
+    const canForce = !!(url && ico.textContent === '✓' && !fromMbRels);
+    const forceTip = blocked ? ' · middle-click: add it anyway' : ' · middle-click: add it even if strict settings would withhold it';
+    ico.style.cursor = canAdd || (blocked && canForce) ? 'pointer' : '';
+    ico.title = canAdd ? `Click to add ${PROVIDER_NAME[p]} URL to MB · right-click: add it silently in the background${forceTip}` : (blocked ? `Withheld from + / ↗ — barcode/format confidence is on (see the coloured bar)${canForce ? forceTip : ''}` : '');
     ico.onclick = canAdd ? () => addSingleUrl(p) : null;
     ico.oncontextmenu = canAdd ? (e) => { e.preventDefault(); addSingleUrl(p, true); } : null;
+    pcWireForce(ico, canForce ? () => addSingleUrl(p, false, true) : null);
 
     // Icons-mode encoding — TWO INDEPENDENT dimensions:
     //   presence (pc-st-*) drives the icon fade + name colour: match = full · mismatch = gray · notfound = faint
@@ -2921,10 +2932,11 @@ function updateRow(p, { url, mbTracks, remoteTracks, year, label, source, fromCa
     }
     const plat = document.getElementById(`plat-${p}`);
     if (plat) {
-        plat.style.cursor = canAdd ? 'pointer' : 'default';
+        plat.style.cursor = canAdd || (blocked && canForce) ? 'pointer' : 'default';
         plat.onclick = canAdd ? () => addSingleUrl(p) : null;   // click-to-add works on the brand icon too
         plat.oncontextmenu = canAdd ? (e) => { e.preventDefault(); addSingleUrl(p, true); } : null;
-        plat.title = canAdd ? `Click to add ${PROVIDER_NAME[p]} URL to MB · right-click: add it silently in the background` : (url ? a.title : `No ${PROVIDER_NAME[p]} URL found`);
+        pcWireForce(plat, canForce ? () => addSingleUrl(p, false, true) : null);
+        plat.title = canAdd ? `Click to add ${PROVIDER_NAME[p]} URL to MB · right-click: add it silently in the background${forceTip}` : (url ? a.title + (blocked && canForce ? forceTip : '') : `No ${PROVIDER_NAME[p]} URL found`);
     }
 
     // Discogs gets a master state in the left slot. Other platforms have an
@@ -5289,7 +5301,8 @@ function resetRows() {
         const a    = document.getElementById(`mb-online-${p}`);
         if (ico)  { ico.textContent = '⚪'; ico.style.color = 'var(--mbu-text-dim)'; ico.style.fontWeight = 'normal'; ico.onclick = null; ico.style.cursor = ''; ico.classList.remove('pc-ico-circled'); }
         const plat = document.getElementById(`plat-${p}`);
-        if (plat) { plat.onclick = null; plat.style.cursor = 'default'; }
+        if (plat) { plat.onclick = null; plat.style.cursor = 'default'; pcWireForce(plat, null); }
+        if (ico) pcWireForce(ico, null);
         const row = document.getElementById(`row-${p}`);
         if (row) { row.classList.remove('pc-inmb', 'pc-st-mismatch', 'pc-st-match', 'pc-rise'); row.classList.add('pc-st-notfound'); }   // back to "not found" — refreshCompactStrip re-folds it (#355)
         if (val)  { val.textContent = '—'; val.style.color = 'var(--mbu-error)'; }   // neutral dash while re-scanning
@@ -6019,13 +6032,16 @@ if (mbuTestHooks()) window.__pcTest464 = { openReleaseEditTab, openRgEditTab, PC
 if (mbuTestHooks()) window.__pcTest627 = { appleAmp, appleToken, appleAlbumMeta, applePickByUpc, appleStorefront, appleEach, appleAllStorefronts, APPLE_SHORTLIST, setAppleToken: t => { _appleTok = t; } };
 if (mbuTestHooks()) window.__pcTest556 = { pcUrlKey, pcSameUrl, pcIsVerifyInterstitial, injectInto, runInjectHelper, cacheGet, cacheSet, mbDataGet };
 
-function addSingleUrl(platform, background) {
+// force (#641, middle click): add it even when barcode/format confidence would withhold it.
+function addSingleUrl(platform, background, force) {
     const cached = cacheGet(mbid, platform);
     if (!cached?.url) {
         appendLog('System', `Inject (click): no cached URL for ${platform} — abort`, 'warn');
         return;
     }
-    if (barcodeBlocks(platform)) {
+    if (force && (barcodeBlocks(platform) || formatBlocks(platform))) {
+        appendLog('System', `Inject (middle-click): ${platform} is withheld by barcode/format confidence — added anyway, as asked`, 'warn');
+    } else if (barcodeBlocks(platform)) {
         const why = cacheGet(mbid, platform)?.barcode ? 'barcode differs from MB' : 'barcode not confirmed';
         appendLog('System', `Inject (click): ${platform} ${why} — blocked (barcode-confidence is on)`, 'warn');
         flashInfo(rowAnchor(platform), cacheGet(mbid, platform)?.barcode ? 'Different barcode — not added' : 'Barcode not confirmed — not added');
@@ -6037,7 +6053,7 @@ function addSingleUrl(platform, background) {
         return;
     }
     localStorage.setItem(`pc:pending:${mbid}`, JSON.stringify({ [platform]: cached.url }));
-    appendLog('System', `Inject (${background ? 'background' : 'click'}): queued ${platform} URL — opening release editor`, 'ok');
+    appendLog('System', `Inject (${background ? 'background' : force ? 'middle-click' : 'click'}): queued ${platform} URL — opening release editor`, 'ok');
     openReleaseEditTab(mbid, { background });
 }
 
@@ -6060,7 +6076,8 @@ function addMasterUrl(masterUrl) {
     openRgEditTab(rgMbid, { background: false, sameTabAllowed: true });
 }
 
-async function runInjectBtn(e, background) {
+// force (#641, middle click on +): barcode/format confidence doesn't withhold anything.
+async function runInjectBtn(e, background, force) {
     const triggerBtn = e.currentTarget;
     // Bucket 1: URLs going onto the release.
     const pendingRelease = {};
@@ -6084,8 +6101,9 @@ async function runInjectBtn(e, background) {
         }
         const icoText = document.getElementById(`ico-${p}`)?.textContent?.trim();
         if (icoText !== '✓') continue;
-        if (barcodeBlocks(p)) { barcodeBlocked++; appendLog('System', `Inject: ${p} ${cached.barcode ? 'barcode differs from MB' : 'barcode not confirmed'} — skipped (barcode-confidence on)`, 'warn'); continue; }
-        if (formatBlocks(p)) { formatBlocked++; appendLog('System', `Inject: ${p} format incompatible with MB (${MB_FORMAT}) — skipped (format-confidence on)`, 'warn'); continue; }
+        if (force && (barcodeBlocks(p) || formatBlocks(p))) appendLog('System', `Inject (middle-click): ${p} is withheld by barcode/format confidence — added anyway, as asked`, 'warn');
+        else if (barcodeBlocks(p)) { barcodeBlocked++; appendLog('System', `Inject: ${p} ${cached.barcode ? 'barcode differs from MB' : 'barcode not confirmed'} — skipped (barcode-confidence on)`, 'warn'); continue; }
+        else if (formatBlocks(p)) { formatBlocked++; appendLog('System', `Inject: ${p} format incompatible with MB (${MB_FORMAT}) — skipped (format-confidence on)`, 'warn'); continue; }
         pendingRelease[p] = cached.url;
     }
 
@@ -6161,6 +6179,8 @@ async function runInjectBtn(e, background) {
 }
 document.getElementById('mb-inject-btn').addEventListener('click', (e) => runInjectBtn(e, false));
 document.getElementById('mb-inject-btn').addEventListener('contextmenu', (e) => { e.preventDefault(); runInjectBtn(e, true); });
+document.getElementById('mb-inject-btn').addEventListener('mousedown', (e) => { if (e.button === 1) e.preventDefault(); });
+document.getElementById('mb-inject-btn').addEventListener('auxclick', (e) => { if (e.button !== 1) return; e.preventDefault(); runInjectBtn(e, false, true); });
 
 // "↗" — open found platform pages that are NOT already in MB (non-circled links,
 // source != 'MB rels') in their own new tabs. Circled = already an MB relationship.
