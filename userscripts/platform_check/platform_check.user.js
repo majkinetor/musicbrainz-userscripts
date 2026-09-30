@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Platform Check
 // @namespace    http://tampermonkey.net/
-// @version      2026.9.30.213022
+// @version      2026.9.30.215118
 // @description  Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+DQogIDx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CiAgDQogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJhMWE1MiIgc3Ryb2tlLXdpZHRoPSI5IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik00MCA4OCBBMzQgMzQgMCAwIDEgNDAgNDAiLz4NCiAgICA8cGF0aCBkPSJNMjkgOTkgQTUwIDUwIDAgMCAxIDI5IDI5Ii8+DQogICAgPHBhdGggZD0iTTg4IDg4IEEzNCAzNCAwIDAgMCA4OCA0MCIvPg0KICAgIDxwYXRoIGQ9Ik05OSA5OSBBNTAgNTAgMCAwIDAgOTkgMjkiLz4NCiAgPC9nPg0KICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyMCIgZmlsbD0iI2U4MjAxYSIvPg0KPC9zdmc+DQo=
@@ -4734,6 +4734,7 @@ async function fetchAmzAlbum(id, label = 'Amazon Music') {
         tracks: m ? parseInt(m[1].replace(/\D/g, ''), 10) : (rows.length || null),
         title, artist: amzText(tpl.headerPrimaryText) || null, year: (date.match(/(\d{4})$/) || [])[1] || null,
         kind: amzText(tpl.headerLabel) || null, date: date || null,
+        label: stripCopyright(String(tpl.footer || '')) || null,   // the page's ℗ line: "(P) 2013 Daft Life Limited under exclusive license to Columbia Records…"
     };
 }
 async function scanAmazon({ artist, album, mbTracks, existingUrl, mbid, isVariousArtists, mbYear }) {
@@ -4747,10 +4748,10 @@ async function scanAmazon({ artist, album, mbTracks, existingUrl, mbid, isVariou
         appendLog(label, `Using existing MB URL: ${existingUrl}`, 'ok');
         const id = (String(existingUrl).match(/\/albums\/([A-Z0-9]{10})/i) || [])[1];
         const meta = id ? await fetchAmzAlbum(id.toUpperCase(), label) : null;
-        if (meta) appendLog(label, `Album parsed: tracks=${meta.tracks ?? '?'} title="${meta.title}" artist="${meta.artist || '?'}" date=${meta.date || '?'}`, meta.tracks ? 'ok' : 'warn');
+        if (meta) appendLog(label, `Album parsed: tracks=${meta.tracks ?? '?'} title="${meta.title}" artist="${meta.artist || '?'}" date=${meta.date || '?'} label="${meta.label || '?'}"`, meta.tracks ? 'ok' : 'warn');
         else appendLog(label, `Couldn't read the linked album — shown unverified`, 'warn');
-        cacheSet(mbid, 'amazonmusic', { url: existingUrl, tracks: meta?.tracks ?? null, year: meta?.year ?? null, label: null, source: 'MB rels' });
-        updateRow('amazonmusic', { url: existingUrl, mbTracks, remoteTracks: meta?.tracks ?? null, year: meta?.year ?? null, source: 'MB rels' });
+        cacheSet(mbid, 'amazonmusic', { url: existingUrl, tracks: meta?.tracks ?? null, year: meta?.year ?? null, label: meta?.label ?? null, source: 'MB rels' });
+        updateRow('amazonmusic', { url: existingUrl, mbTracks, remoteTracks: meta?.tracks ?? null, year: meta?.year ?? null, label: meta?.label ?? null, source: 'MB rels' });
         return;
     }
 
@@ -4786,8 +4787,8 @@ async function scanAmazon({ artist, album, mbTracks, existingUrl, mbid, isVariou
     const { meta } = best;
     // found by name: no barcode is claimed (Amazon Music shows none), so strict barcode mode withholds it
     appendLog(label, `Picked (score=${best.score}, search): ${meta.url}`, best.score >= 150 ? 'ok' : 'warn');
-    cacheSet(mbid, 'amazonmusic', { url: meta.url, tracks: meta.tracks, year: meta.year, label: null, source: 'search' });
-    updateRow('amazonmusic', { url: meta.url, mbTracks, remoteTracks: meta.tracks, year: meta.year, source: 'search' });
+    cacheSet(mbid, 'amazonmusic', { url: meta.url, tracks: meta.tracks, year: meta.year, label: meta.label, source: 'search' });
+    updateRow('amazonmusic', { url: meta.url, mbTracks, remoteTracks: meta.tracks, year: meta.year, label: meta.label, source: 'search' });
 }
 
 // ─── Deezer ─────────────────────────────────────────────────────────────────

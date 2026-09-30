@@ -35,6 +35,7 @@ test('Amazon Music: albums by name, read from their page; a barcode finds nothin
   check(plain.includes('B00CRMWMZ0') && plain.length >= 2, `the search finds Random Access Memories, in more than one edition (${plain.join(', ')})`);
   check(r.ram.every(a => /^[A-Z0-9]{10}$/.test(a.id)) && r.ram.some(a => a.year === '2013'), `each with its id, and its year (${JSON.stringify(r.ram.slice(0, 3))})`);
   check(r.album && r.album.tracks === 13 && r.album.artist === 'Daft Punk' && r.album.year === '2013' && r.album.title === 'Random Access Memories', `its page: 13 songs, Daft Punk, 2013 (${JSON.stringify(r.album)})`);
+  check(r.album && /Columbia Records/.test(r.album.label || '') && !/^\(P\)|2013/.test(r.album.label), `the label, from the page's ℗ line without its year (${r.album && r.album.label})`);
   check(r.album && r.album.url === 'https://music.amazon.com/albums/B00CRMWMZ0', `…and its link (${r.album && r.album.url})`);
   check(r.byName && r.byName.title === 'Migration' && r.byName.artist === 'Bonobo', `"Bonobo Migration" → Migration, first (${JSON.stringify(r.byName)})`);
   check(!r.barcode.some(a => /Random Access Memories/.test(a.title)), `a barcode finds no album (${r.barcode.length} unrelated)`);

@@ -65,7 +65,7 @@ function trim(key, body) {
     try {
       const j = JSON.parse(body), t = j.methods.find(m => m.template).template;
       const link = l => (l && l.deeplink ? { deeplink: l.deeplink } : undefined);
-      const keep = { interface: t.interface, headerText: t.headerText, headerPrimaryText: t.headerPrimaryText, headerTertiaryText: t.headerTertiaryText, headerLabel: t.headerLabel,
+      const keep = { interface: t.interface, headerText: t.headerText, headerPrimaryText: t.headerPrimaryText, headerTertiaryText: t.headerTertiaryText, headerLabel: t.headerLabel, footer: t.footer,
         widgets: (t.widgets || []).filter(w => (w.items || []).some(it => /^\/(albums|tracks)\//.test((it.primaryLink && it.primaryLink.deeplink) || ''))).map(w => ({ interface: w.interface, header: w.header,
           items: w.items.map(it => ({ primaryText: it.primaryText, secondaryText: it.secondaryText, secondaryText2: it.secondaryText2, secondaryText3: it.secondaryText3, tertiaryText: it.tertiaryText, primaryLink: link(it.primaryLink), primaryTextLink: link(it.primaryTextLink) })) })) };
       return JSON.stringify({ methods: [{ interface: j.methods[0].interface, template: keep }] });
