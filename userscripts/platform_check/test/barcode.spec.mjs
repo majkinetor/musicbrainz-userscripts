@@ -66,4 +66,39 @@ test.describe('strict barcode confidence', () => {
     check(anchor.visible, `#182: in icon mode, a row message anchors to a visible icon (${anchor.id})`);
     await ws.done();
   });
+
+  // #641: strict settings sometimes withhold a legitimate find. A middle click on a withheld row's
+  // icon, or on +, adds it anyway, in the foreground. The editor tab it opens is caught and its
+  // queue read; nothing is submitted.
+  test('#641: middle click adds a withheld link anyway, on the icon and on +', { tag: ['@sandbox'] }, async ({ page, inject }) => {
+    const ws = await openPc(page, inject, { release: RAM, links, replay: new URL('./fixtures/ws-182b.json.gz', import.meta.url) });
+    await page.evaluate(() => { window.__opened = []; window.open = (u) => { window.__opened.push(String(u)); return null; }; });
+    const target = await page.evaluate(() => [...document.querySelectorAll('.pc-row.pc-blocked')].map(r => r.id.replace(/^row-/, '')).find(p => document.getElementById('ico-' + p)?.textContent.trim() === '✓'));
+    check(!!target, `a withheld ✓ row to try it on (${target})`);
+    const middle = sel => page.evaluate(sel => { const el = document.querySelector(sel); for (const t of ['mousedown', 'mouseup', 'auxclick']) el.dispatchEvent(new MouseEvent(t, { bubbles: true, cancelable: true, button: 1 })); }, sel);
+    // a plain click on the withheld icon still does nothing
+    await page.evaluate(p => document.getElementById('ico-' + p).click(), target);
+    const plain = await page.evaluate(() => window.__opened.length);
+    await middle('#ico-' + target);
+    const one = await page.evaluate(p => ({ opened: window.__opened.slice(), queued: Object.keys(JSON.parse(Object.entries(localStorage).find(([k]) => /^pc:pending:[0-9a-f-]{36}$/.test(k))?.[1] || '{}')), mine: p }), target);
+    check(plain === 0, `a plain click on the withheld icon still adds nothing (${plain})`);
+    check(one.opened.length === 1 && /\/release\/[0-9a-f-]{36}\/edit$/.test(one.opened[0]), `middle-click opens the release editor in the foreground (${one.opened.join(', ')})`);
+    check(one.queued.length === 1 && one.queued[0] === target, `…with the withheld ${target} link queued (${one.queued.join(', ')})`);
+    const log1 = await logText(page);
+    check(new RegExp(target + ' is withheld by barcode/format confidence — added anyway').test(log1), 'the log says it was added anyway');
+    const forced1 = await page.evaluate(() => { const e = Object.entries(localStorage).find(([k]) => /^pc:forced:[0-9a-f-]{36}$/.test(k)); return e ? JSON.parse(e[1]) : null; });
+    check(forced1 && Object.values(forced1).length === 1 && /barcode/.test(Object.values(forced1)[0]), `…and recorded for the edit note, with why (${JSON.stringify(forced1)})`);
+    // a legitimate find (the exact-barcode Tidal album): a middle click is just a foreground add
+    await page.evaluate(() => { window.__opened = []; Object.keys(localStorage).filter(k => /^pc:(pending|forced):/.test(k)).forEach(k => localStorage.removeItem(k)); });
+    await middle('#ico-tidal');
+    const legit = await page.evaluate(() => ({ opened: window.__opened.length, queued: Object.keys(JSON.parse(Object.entries(localStorage).find(([k]) => /^pc:pending:[0-9a-f-]{36}$/.test(k))?.[1] || '{}')), forced: Object.keys(localStorage).some(k => /^pc:forced:/.test(k)) }));
+    check(legit.opened === 1 && legit.queued.join() === 'tidal' && !legit.forced, `on a legitimate find a middle click adds it like a left click, nothing marked as forced (${JSON.stringify(legit)})`);
+    // + : every confirmed link, the withheld ones included
+    await page.evaluate(() => { window.__opened = []; });
+    const blockedAll = await page.evaluate(() => [...document.querySelectorAll('.pc-row.pc-blocked')].map(r => r.id.replace(/^row-/, '')).filter(p => document.getElementById('ico-' + p)?.textContent.trim() === '✓' && !document.getElementById('ico-' + p).classList.contains('pc-ico-circled')));
+    await middle('#mb-inject-btn');
+    const all = await page.evaluate(() => Object.keys(JSON.parse(Object.entries(localStorage).find(([k]) => /^pc:pending:[0-9a-f-]{36}$/.test(k))?.[1] || '{}')));
+    check(blockedAll.every(p => all.includes(p)), `middle-click on + queues the withheld links too (${blockedAll.join(', ')} → ${all.join(', ')})`);
+    await ws.done();
+  });
 });
