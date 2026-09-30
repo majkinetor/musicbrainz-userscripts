@@ -26,7 +26,7 @@ A link already in the release's relationships is used as is. Otherwise each plat
 | coloured | found |
 | grey | found, but the details don't match |
 | faded | not found |
-| circled | already linked in MusicBrainz |
+| marked | already linked in MusicBrainz: a ring by default; *Settings › Appearance* offers a ring with a gap, a ✓ badge, a dot, an underline or a rounded square |
 | amber bar | found, with a different barcode |
 | violet bar | found, in a format this release isn't |
 
@@ -95,7 +95,7 @@ The footer's **+** adds every confirmed link (middle-click: the withheld ones to
 | Platforms | order them, or leave some out |
 | Authentication | Beatport and Qobuz logins |
 | Link confidence | *Use barcodes* and *Use formats* (off, if they exist, strictly); *Add links in a new tab* (on; off navigates this tab); *Keep background-add tabs awake* |
-| Appearance | icon and name size, *Compact unmatched providers*, the MusicBrainz marker (circle or glow), the format marker (circle or text), one or two rows |
+| Appearance | icon and name size, *Compact unmatched providers*, the MusicBrainz marker (ring, ring with a gap, ✓ badge, dot, underline or rounded square), the format marker (circle or text), one or two rows |
 
 ## Shortcuts
 
