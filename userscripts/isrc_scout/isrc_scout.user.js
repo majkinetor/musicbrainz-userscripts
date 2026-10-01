@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         ISRC Scout
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.1.174412
+// @version      2026.10.1.174918
 // @description  Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify / Beatport / Tidal / Volumo / HDtracks / Qobuz, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPklTUkMgU2NvdXQ8L3RpdGxlPgogICAgPHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPgogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjQwIi8+CiAgICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyNiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2U9IiNiOWEzZTgiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPgogIDwvZz4KICA8bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+Cjwvc3ZnPgo=
@@ -1362,6 +1362,11 @@
     .ii-blabel { display: none; }
     #ii-tools.ii-show-icons .ii-bico { display: inline-flex; align-items: center; }
     #ii-tools.ii-show-text .ii-blabel { display: inline; }
+    /* #643: All has no logo: its "icon" is the word, at the logos' height (icons get line-height 0,
+       which collapsed it), and it is said once when icons and labels are both on */
+    .ii-tbtn.all { color: var(--mbu-text); border-color: var(--mbu-border-strong); }
+    .ii-tbtn.all .ii-bico { line-height: 16px; height: 16px; font-weight: 700; font-size: 12px; letter-spacing: .02em; }
+    #ii-tools.ii-show-icons.ii-show-text .ii-tbtn.all .ii-blabel { display: none; }
     .ii-tbtn.primary { background: #198754; color: var(--mbu-text-on-accent); border-color: var(--mbu-ok); }
     .ii-tbtn.primary:hover { background: #157347; }
     /* #406: a collection is running — fade the whole button in/out so it's clearly in progress */

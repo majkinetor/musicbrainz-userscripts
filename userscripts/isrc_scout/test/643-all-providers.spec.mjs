@@ -181,6 +181,14 @@ test('#643: All — agreement, a disputed ISRC with [use], the tooltip, no Sound
     return { shown: !!b && b.style.display !== 'none', last: provs[provs.length - 1] === b, n: provs.length };
   });
   check(tb.shown && tb.last, `the toolbar has All, last of its ${tb.n} provider buttons (${JSON.stringify(tb)})`);
+  // …as tall as the logo buttons beside it, its word in full (its icon is the word: an icon's
+  // line-height 0 squashed it into a sliver)
+  const sz = await page.evaluate(() => {
+    const b = document.getElementById('ii-all-all'), prev = [...document.querySelectorAll('#ii-tools > .ii-tbtn:not(.sx):not(.all)')].filter(x => x.style.display !== 'none').pop();
+    return { all: Math.round(b.getBoundingClientRect().height), prev: Math.round(prev.getBoundingClientRect().height), text: b.innerText.trim() };
+  });
+  check(Math.abs(sz.all - sz.prev) <= 1 && sz.text === 'All', `the All button is as tall as the others and says All once (${JSON.stringify(sz)})`);
+  await page.locator('#ii-tools').screenshot({ path: 'test-results/643-toolbar.png' });
   const logBefore = (await logText(page)).length;
   await page.locator('#ii-all-all').click();
   await until(async () => (await logText(page)).slice(logBefore), t => /All: run from the toolbar/.test(t) && /All: done/.test(t), { timeout: 120000 });
