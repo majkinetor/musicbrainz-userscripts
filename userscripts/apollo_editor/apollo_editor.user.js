@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.1.164157
+// @version      2026.10.1.170139
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E
@@ -2782,6 +2782,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
        backing so it still reads (majkinetor: "those 2 icons covering Match column"). */
     .tc-bl{height:28px;box-sizing:border-box;display:flex;align-items:center;justify-content:center}
     .tc-mirror td.c-act{vertical-align:top;padding:0}
+    .tc-mirror th.c-badge{text-align:center}   /* #654: over its centred pills */
     .tc-trackacts{height:28px;display:flex;align-items:center;justify-content:center;gap:0;visibility:hidden}
     .tc-mirror tr:hover .tc-trackacts{visibility:visible}
     .tc-trackacts button{cursor:pointer;border:none;border-radius:4px;width:22px;padding:2px 0;background:none;font-size:16px;line-height:1}
@@ -3750,7 +3751,10 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     const TOL = 5;
     const artIdx = COLS.findIndex(c => c.k === 'art');   // the flexible filler column
     // detect a column boundary near the cursor (each th's right edge), including Artist's right edge. #119
-    const borderIdx = clientX => { const ths = table.querySelectorAll('thead th'); for (let i = 0; i < ths.length - 1; i++) { if (Math.abs(ths[i].getBoundingClientRect().right - clientX) <= TOL) return i; } return -1; };
+    // #654: the boundary before the fixed-width actions column resizes nothing, so it isn't one
+    // (it set the drag going and returned, and the cursor stayed a resize arrow for good)
+    const actIdx = COLS.findIndex(c => c.k === 'act');
+    const borderIdx = clientX => { const ths = table.querySelectorAll('thead th'); for (let i = 0; i < ths.length - 1; i++) { if (i + 1 === actIdx) continue; if (Math.abs(ths[i].getBoundingClientRect().right - clientX) <= TOL) return i; } return -1; };
     let dragging = false;
     table.addEventListener('mousemove', e => { if (!dragging) table.style.cursor = borderIdx(e.clientX) >= 0 ? 'col-resize' : ''; });
     table.addEventListener('mousedown', e => {
@@ -3763,7 +3767,6 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
       const ths = [...table.querySelectorAll('thead th')];
       const inverse = i >= artIdx;
       const ci = inverse ? i + 1 : i;
-      if (COLS[ci].k === 'act') return;   // #654: fixed width
       const col = cols[ci], startX = e.clientX, startW = parseInt(col.style.width) || (ths[ci] && ths[ci].offsetWidth) || 100;
       const mm = ev => { col.style.width = Math.max(36, startW + (ev.clientX - startX) * (inverse ? -1 : 1)) + 'px'; };
       const mu = () => { document.removeEventListener('mousemove', mm); document.removeEventListener('mouseup', mu); dragging = false; SETTINGS.colWidths = SETTINGS.colWidths || {}; SETTINGS.colWidths[COLS[ci].k] = parseInt(col.style.width); saveSettings(); };

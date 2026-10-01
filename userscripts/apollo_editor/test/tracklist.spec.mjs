@@ -57,6 +57,20 @@ test.describe('editing', () => {
     });
     check(acts.after && acts.inside && acts.width <= 48, `the hover's ↺/✕ sit in their own column after Match, two icons wide (${JSON.stringify(acts)})`);
     check(acts.visible === 'visible' && acts.xs === 1, `✕ shows on hover, at one x in every row (${acts.xs})`);
+    // #654: the Match header sits over its centred pills, and the boundary before the actions
+    // column is no resize handle (a press there used to leave the cursor stuck as a resize arrow)
+    const hdr = await page.evaluate(() => {
+      const th = document.querySelector('.tc-mirror thead th.c-badge'), b = th.getBoundingClientRect();
+      const tbl = th.closest('table');
+      const opts = { bubbles: true, clientX: b.right, clientY: b.top + b.height / 2 };
+      tbl.dispatchEvent(new MouseEvent('mousemove', opts));
+      const over = tbl.style.cursor;
+      tbl.dispatchEvent(new MouseEvent('mousedown', opts)); tbl.dispatchEvent(new MouseEvent('mouseup', opts));
+      tbl.dispatchEvent(new MouseEvent('mousemove', { bubbles: true, clientX: b.left + b.width / 2, clientY: opts.clientY }));
+      return { align: getComputedStyle(th).textAlign, over, after: tbl.style.cursor };
+    });
+    check(hdr.align === 'center', `the Match header is centred (${hdr.align})`);
+    check(hdr.over !== 'col-resize' && hdr.after !== 'col-resize', `no resize handle before the actions column, and no stuck cursor (${JSON.stringify(hdr)})`);
     await last.locator('.rm').click();
     check((await until(titles, t => t.length === before.length - 1)).length === before.length - 1, '✕ removes a track');
 
