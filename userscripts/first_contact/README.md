@@ -9,8 +9,6 @@ Import a release into MusicBrainz from the platform's album page with one click:
 > [!NOTE]
 > First Contact doesn't match entities: it hands them to [Apollo Editor](../apollo_editor/README.md#artist-matching), which does. Keep Apollo's *Auto-match on start: Label, Artist* on (the default), or click its **Match** button yourself.
 
-<img src="./screenshots/editor.png" />
-
 ## Features
 
 - **[Import](#import)** a release from the album page into the MusicBrainz release editor.
