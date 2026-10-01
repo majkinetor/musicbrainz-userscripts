@@ -288,6 +288,7 @@ export async function getSourceUrlsForRelease(mbid) {
                 deezer:  href(rel => /(^|\/\/)(www\.)?deezer\.com\/([a-z]{2}\/)?album\/\d+/i.test(rel.target?.href_url || '')),
                 apple:   href(rel => /(^|\/\/)(?:music|itunes)\.apple\.com\/(?:[a-z]{2}\/)?album\/(?:[^/?#]+\/)?(?:id)?\d+/i.test(rel.target?.href_url || '')),   // #435; iTunes URLs #436
                 metalArchives: href(rel => /(^|\/\/)(www\.)?metal-archives\.com\/albums\/[^/]+\/[^/]+\/\d+/i.test(rel.target?.href_url || '')),   // #453
+                ytmusic: href(rel => /(^|\/\/)music\.youtube\.com\/(?:playlist\?(?:[^#]*&)?list=OLAK5uy_|browse\/MPREb_)/i.test(rel.target?.href_url || '')),   // #648
             };
     }
 }

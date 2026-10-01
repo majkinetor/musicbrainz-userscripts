@@ -24,6 +24,7 @@
 // @connect      music.apple.com
 // @connect      amp-api.music.apple.com
 // @connect      www.metal-archives.com
+// @connect      music.youtube.com
 // @grant        GM_openInTab
 // @grant        GM_setValue
 // @grant        GM_getValue
