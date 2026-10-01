@@ -1,13 +1,14 @@
 // ==UserScript==
 // @name         First Contact
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.1.144229
-// @description  Import a release into MusicBrainz from the platform's album page with one click: the release editor opens with the title, tracklist, artists, date, label, barcode and link filled in. Each artist's platform link is handed to Apollo Editor for matching. Platforms: Deezer, Bandcamp.
+// @version      2026.10.1.145149
+// @description  Import a release into MusicBrainz from the platform's album page with one click: the release editor opens with the title, tracklist, artists, date, label, barcode and link filled in. Each artist's platform link is handed to Apollo Editor for matching. Platforms: Deezer, Bandcamp, Discogs.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPkZpcnN0IENvbnRhY3Q8L3RpdGxlPgogIDwhLS0gdHJhY3RvciBiZWFtIC0tPgogIDxwYXRoIGQ9Ik01MCA0NCBMNzggNDQgTDEwNCAxMTIgTDI0IDExMiBaIiBmaWxsPSIjZjZjNDMxIiBvcGFjaXR5PSIwLjkiLz4KICA8cGF0aCBkPSJNNTYgNDQgTDcyIDQ0IEw4OCAxMTIgTDQwIDExMiBaIiBmaWxsPSIjZmRlNjhhIiBvcGFjaXR5PSIwLjciLz4KICA8IS0tIGxhbmRpbmcgcmluZyAtLT4KICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSIxMTQiIHJ4PSI0MiIgcnk9IjgiIGZpbGw9IiMxZTIzNDYiLz4KICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSIxMTMiIHJ4PSIyNiIgcnk9IjQuMiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZjZjNDMxIiBzdHJva2Utd2lkdGg9IjIuNCIvPgogIDwhLS0gc2F1Y2VyIC0tPgogIDxwYXRoIGQ9Ik00MCAyNiBBMjQgMTggMCAwIDEgODggMjYgWiIgZmlsbD0iIzFlMjM0NiIvPgogIDxwYXRoIGQ9Ik01MCAxOCBBMTAgNiAwIDAgMSA2MCAxNCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjIuNiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8+CiAgPGVsbGlwc2UgY3g9IjY0IiBjeT0iMzIiIHJ4PSI1NiIgcnk9IjEzIiBmaWxsPSIjMWUyMzQ2Ii8+CiAgPGNpcmNsZSBjeD0iMzgiIGN5PSIzMiIgcj0iNC40IiBmaWxsPSIjZmZmIi8+CiAgPGNpcmNsZSBjeD0iNjQiIGN5PSIzNCIgcj0iNC40IiBmaWxsPSIjZmZmIi8+CiAgPGNpcmNsZSBjeD0iOTAiIGN5PSIzMiIgcj0iNC40IiBmaWxsPSIjZmZmIi8+CiAgPCEtLSB0aGUgcmVsZWFzZSBiZWluZyBiZWFtZWQgdXA6IGEgcHVycGxlIGhleGFnb24gd2l0aCBhIG5vdGUgLS0+CiAgPHBhdGggZD0iTTY0IDU4IEw4NCA2OS41IEw4NCA5Mi41IEw2NCAxMDQgTDQ0IDkyLjUgTDQ0IDY5LjUgWiIgZmlsbD0iIzdiNGZkNiIvPgogIDxwYXRoIGQ9Ik02NCA1OCBMODQgNjkuNSBMNjQgODEgTDQ0IDY5LjUgWiIgZmlsbD0iIzliNzJlYSIvPgogIDxwYXRoIGQ9Ik02MCA3MiBMNzQgNjkgTDc0IDg5IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iMy40IiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+CiAgPHBhdGggZD0iTTYwIDcyIEw2MCA5MiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjMuNCIvPgogIDxlbGxpcHNlIGN4PSI1NiIgY3k9IjkyIiByeD0iNC42IiByeT0iMy42IiBmaWxsPSIjZmZmIi8+CiAgPGVsbGlwc2UgY3g9IjcwIiBjeT0iODkiIHJ4PSI0LjYiIHJ5PSIzLjYiIGZpbGw9IiNmZmYiLz4KICA8IS0tIHNwYXJrbGVzIC0tPgogIDxwYXRoIGQ9Ik0xOCA1NCBsMi41IDYgNiAyLjUgLTYgMi41IC0yLjUgNiAtMi41IC02IC02IC0yLjUgNiAtMi41IFoiIGZpbGw9IiNmNmM0MzEiLz4KICA8cGF0aCBkPSJNMTA4IDUyIGwyLjUgNiA2IDIuNSAtNiAyLjUgLTIuNSA2IC0yLjUgLTYgLTYgLTIuNSA2IC0yLjUgWiIgZmlsbD0iIzFlMjM0NiIvPgogIDxwYXRoIGQ9Ik0xMTIgODIgbDEuOCA0LjIgNC4yIDEuOCAtNC4yIDEuOCAtMS44IDQuMiAtMS44IC00LjIgLTQuMiAtMS44IDQuMiAtMS44IFoiIGZpbGw9IiNmNmM0MzEiLz4KICA8cGF0aCBkPSJNMTQgODYgbDEuOCA0LjIgNC4yIDEuOCAtNC4yIDEuOCAtMS44IDQuMiAtMS44IC00LjIgLTQuMiAtMS44IDQuMiAtMS44IFoiIGZpbGw9IiMxZTIzNDYiLz4KPC9zdmc+Cg==
 // @homepageURL  https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/first_contact/README.md
 // @match        https://www.deezer.com/*
 // @match        https://*.bandcamp.com/album/*
+// @match        https://www.discogs.com/*
 // @match        https://*.musicbrainz.org/release/add*
 // @noframes
 // @grant        GM_xmlhttpRequest
@@ -17,6 +18,7 @@
 // @grant        GM_listValues
 // @grant        unsafeWindow
 // @connect      api.deezer.com
+// @connect      api.discogs.com
 // ==/UserScript==
 
 (function () {
@@ -364,7 +366,156 @@ const BANDCAMP = {
     },
 };
 
-const PROVIDERS = [DEEZER, BANDCAMP];
+// Discogs: the public API (api.discogs.com/releases/<id>), no token. The mappings are those of
+// murdos's Discogs importer (github.com/murdos/musicbrainz-userscripts): its country and media
+// tables, LP = 12" vinyl, sides A/B → medium 1, C/D → 2, sub-tracks folded into their index track.
+const DISCOGS_COUNTRIES = { Worldwide: "XW", Afghanistan: "AF", Albania: "AL", Algeria: "DZ", "American Samoa": "AS", Andorra: "AD", Angola: "AO", Anguilla: "AI", Antarctica: "AQ", "Antigua and Barbuda": "AG", Argentina: "AR", Armenia: "AM", Aruba: "AW", Australia: "AU", Austria: "AT", Azerbaijan: "AZ", Bahamas: "BS", Bahrain: "BH", Bangladesh: "BD", Barbados: "BB", "Barbados, The": "BB", Belarus: "BY", Belgium: "BE", Belize: "BZ", Benin: "BJ", Bermuda: "BM", Bhutan: "BT", Bolivia: "BO", Croatia: "HR", Botswana: "BW", "Bouvet Island": "BV", Brazil: "BR", "British Indian Ocean Territory": "IO", "Brunei Darussalam": "BN", Bulgaria: "BG", "Burkina Faso": "BF", Burundi: "BI", Cambodia: "KH", Cameroon: "CM", Canada: "CA", "Cape Verde": "CV", "Cayman Islands": "KY", "Central African Republic": "CF", Chad: "TD", Chile: "CL", China: "CN", "Christmas Island": "CX", "Cocos (Keeling) Islands": "CC", Colombia: "CO", Comoros: "KM", Congo: "CG", "Cook Islands": "CK", "Costa Rica": "CR", "Virgin Islands, British": "VG", Cuba: "CU", Cyprus: "CY", "Czech Republic": "CZ", Denmark: "DK", Djibouti: "DJ", Dominica: "DM", "Dominican Republic": "DO", Ecuador: "EC", Egypt: "EG", "El Salvador": "SV", "Equatorial Guinea": "GQ", Eritrea: "ER", Estonia: "EE", Ethiopia: "ET", "Falkland Islands (Malvinas)": "FK", "Faroe Islands": "FO", Fiji: "FJ", Finland: "FI", France: "FR", "French Guiana": "GF", "French Polynesia": "PF", "French Southern Territories": "TF", Gabon: "GA", Gambia: "GM", Georgia: "GE", Germany: "DE", Ghana: "GH", Gibraltar: "GI", Greece: "GR", Greenland: "GL", Grenada: "GD", Guadeloupe: "GP", Guam: "GU", Guatemala: "GT", Guinea: "GN", "Guinea-Bissau": "GW", Guyana: "GY", Haiti: "HT", "Virgin Islands, U.S.": "VI", Honduras: "HN", "Hong Kong": "HK", Hungary: "HU", Iceland: "IS", India: "IN", Indonesia: "ID", "Wallis and Futuna": "WF", Iraq: "IQ", Ireland: "IE", Israel: "IL", Italy: "IT", Jamaica: "JM", Japan: "JP", Jordan: "JO", Kazakhstan: "KZ", Kenya: "KE", Kiribati: "KI", Kuwait: "KW", Kyrgyzstan: "KG", "Lao People's Democratic Republic": "LA", Latvia: "LV", Lebanon: "LB", Lesotho: "LS", Liberia: "LR", "Libyan Arab Jamahiriya": "LY", Liechtenstein: "LI", Lithuania: "LT", Luxembourg: "LU", Montserrat: "MS", Macedonia: "MK", Madagascar: "MG", Malawi: "MW", Malaysia: "MY", Maldives: "MV", Mali: "ML", Malta: "MT", "Marshall Islands": "MH", Martinique: "MQ", Mauritania: "MR", Mauritius: "MU", Mayotte: "YT", Mexico: "MX", "Micronesia, Federated States of": "FM", Morocco: "MA", Monaco: "MC", Mongolia: "MN", Mozambique: "MZ", Myanmar: "MM", Namibia: "NA", Nauru: "NR", Nepal: "NP", Netherlands: "NL", "Netherlands Antilles": "AN", "New Caledonia": "NC", "New Zealand": "NZ", Nicaragua: "NI", Niger: "NE", Nigeria: "NG", Niue: "NU", "Norfolk Island": "NF", "Northern Mariana Islands": "MP", Norway: "NO", Oman: "OM", Pakistan: "PK", Palau: "PW", Panama: "PA", "Papua New Guinea": "PG", Paraguay: "PY", Peru: "PE", Philippines: "PH", Pitcairn: "PN", Poland: "PL", Portugal: "PT", "Puerto Rico": "PR", Qatar: "QA", Reunion: "RE", Romania: "RO", "Russian Federation": "RU", Russia: "RU", Rwanda: "RW", "Saint Kitts and Nevis": "KN", "Saint Lucia": "LC", "Saint Vincent and The Grenadines": "VC", Samoa: "WS", "San Marino": "SM", "Sao Tome and Principe": "ST", "Saudi Arabia": "SA", Senegal: "SN", Seychelles: "SC", "Sierra Leone": "SL", Singapore: "SG", Slovenia: "SI", "Solomon Islands": "SB", Somalia: "SO", "South Africa": "ZA", Spain: "ES", "Sri Lanka": "LK", Sudan: "SD", Suriname: "SR", Swaziland: "SZ", Sweden: "SE", Switzerland: "CH", "Syrian Arab Republic": "SY", Tajikistan: "TJ", "Tanzania, United Republic of": "TZ", Thailand: "TH", Togo: "TG", Tokelau: "TK", Tonga: "TO", "Trinidad & Tobago": "TT", Tunisia: "TN", Turkey: "TR", Turkmenistan: "TM", "Turks and Caicos Islands": "TC", Tuvalu: "TV", Uganda: "UG", Ukraine: "UA", "United Arab Emirates": "AE", UK: "GB", US: "US", "United States Minor Outlying Islands": "UM", Uruguay: "UY", Uzbekistan: "UZ", Vanuatu: "VU", "Vatican City State (Holy See)": "VA", Venezuela: "VE", "Viet Nam": "VN", "Western Sahara": "EH", Yemen: "YE", Zambia: "ZM", Zimbabwe: "ZW", Taiwan: "TW", "[Worldwide]": "XW", Europe: "XE", USSR: "SU", "East Germany (historical, 1949-1990)": "XG", Czechoslovakia: "XC", "Congo, Republic of the": "CD", Slovakia: "SK", "Bosnia & Herzegovina": "BA", "Korea (North), Democratic People's Republic of": "KP", "North Korea": "KP", "Korea (South), Republic of": "KR", "South Korea": "KR", Montenegro: "ME", "South Georgia and the South Sandwich Islands": "GS", "Palestinian Territory": "PS", Macao: "MO", "Timor-Leste": "TL", "<85>land Islands": "AX", Guernsey: "GG", "Isle of Man": "IM", Jersey: "JE", Serbia: "RS", "Saint Barthélemy": "BL", "Saint Martin": "MF", Moldova: "MD", Yugoslavia: "YU", "Serbia and Montenegro": "CS", "Côte d'Ivoire": "CI", "Heard Island and McDonald Islands": "HM", "Iran, Islamic Republic of": "IR", "Saint Pierre and Miquelon": "PM", "Saint Helena": "SH", "Svalbard and Jan Mayen": "SJ" };
+const DISCOGS_MEDIA = { "8-Track Cartridge": "Cartridge", Acetate: "Acetate", "Acetate7\"": "7\" Acetate", "Acetate10\"": "10\" Acetate", "Acetate12\"": "12\" Acetate", Betamax: "Betamax", "Blu-ray": "Blu-ray", "Blu-ray-R": "Blu-ray", Cassette: "Cassette", CD: "CD", CDr: "CD-R", CDV: "CDV", "CD+G": "CD+G", Cylinder: "Wax Cylinder", DAT: "DAT", Datassette: "Other", DCC: "DCC", DVD: "DVD", DVDr: "DVD", "DVD-Audio": "DVD-Audio", "DVD-Video": "DVD-Video", "Edison Disc": "Vinyl", File: "Digital Media", "Flexi-disc": "Vinyl", "Floppy Disk": "Other", HDCD: "HDCD", "HD DVD": "HD-DVD", "HD DVD-R": "HD-DVD", Hybrid: "Other", Laserdisc: "LaserDisc", "Memory Stick": "USB Flash Drive", Microcassette: "Other", Minidisc: "MiniDisc", MVD: "Other", "Reel-To-Reel": "Reel-to-reel", SACD: "SACD", SelectaVision: "Other", Shellac: "Shellac", "Shellac7\"": "7\" Shellac", "Shellac10\"": "10\" Shellac", "Shellac12\"": "12\" Shellac", SVCD: "SVCD", UMD: "UMD", VCD: "VCD", VHS: "VHS", "Video 2000": "Other", Vinyl: "Vinyl", "Vinyl7\"": "7\" Vinyl", "Vinyl10\"": "10\" Vinyl", "Vinyl12\"": "12\" Vinyl", "Lathe Cut": "Phonograph record" };
+const DISCOGS_PACKAGING = [[/cardboard|paper/, 'Cardboard/Paper Sleeve'], [/digi[\s\-‐]?pac?k/, 'Digipak'], [/keepcase/, 'Keep Case'], [/slimjewel/, 'Slim Jewel Case'], [/jewel/, 'Jewel Case'], [/gatefold|digisleeve/, 'Gatefold Cover']];
+const DISCOGS = {
+    id: 'discogs',
+    name: 'Discogs',
+    host: /^(www\.)?discogs\.com$/,
+    albumId(loc) { const m = loc.pathname.match(/^\/(?:[a-z]{2}\/)?release\/(\d+)(?:-[^/]*)?\/?$/i); return m ? m[1] : null; },
+    VARIOUS: 194,
+    NO_LABEL: 750,   // "Not On Label"
+
+    noNum: n => String(n || '').replace(/ \(\d+\)$/, ''),
+    // Discogs joins: "&", ",", "Feat.", "Vs", "And", "With", "x" → MB style
+    join(j) {
+        const t = String(j || '').trim();
+        if (!t) return '';
+        if (t === ',') return ', ';
+        const k = t.toLowerCase().replace(/\.$/, '');
+        const map = { feat: ' feat. ', featuring: ' feat. ', ft: ' feat. ', vs: ' vs. ', and: ' and ', with: ' with ', x: ' x ', '&': ' & ', '+': ' + ', '/': ' / ' };
+        return map[k] || ` ${t} `;
+    },
+    artist(a) {
+        if (a.id === this.VARIOUS) return { name: 'Various Artists', artistName: 'Various Artists', url: null, mbid: VARIOUS_ARTISTS_MBID };
+        return {
+            name: a.anv || this.noNum(a.name),
+            artistName: this.noNum(a.name),
+            url: a.id ? `https://www.discogs.com/artist/${a.id}` : null,
+            mbid: null,
+        };
+    },
+    credit(artists, featuring) {
+        const out = (artists || []).map(a => Object.assign(this.artist(a), { join: this.join(a.join) }));
+        if (out.length) out[out.length - 1].join = '';
+        const feats = (featuring || []).filter(f => !out.some(o => o.url && o.url === this.artist(f).url));
+        if (feats.length) {
+            if (out.length) out[out.length - 1].join = ' feat. ';
+            feats.forEach((a, i) => out.push(Object.assign(this.artist(a), { join: i === feats.length - 1 ? '' : i === feats.length - 2 ? ' & ' : ', ' })));
+        }
+        return out;
+    },
+    ms(d) { const p = String(d || '').split(':').map(Number); return p.length > 1 && p.every(n => Number.isFinite(n)) ? p.reduce((a, n) => a * 60 + n, 0) * 1000 : null; },
+
+    async fetchRelease(id) {
+        const r = await gmJson(`https://api.discogs.com/releases/${id}`);
+        if (!r || !r.title) throw new Error(`Discogs: no release ${id}${r && r.message ? ` (${r.message})` : ''}`);
+        Log.info(`Discogs release ${id}: "${r.title}" by ${(r.artists || []).map(a => a.name + (a.join ? ' ' + a.join : '')).join(' ')} · ${r.country || '—'} · ${r.released || '—'} · formats ${(r.formats || []).map(f => `${f.qty}×${f.name} [${(f.descriptions || []).join(', ')}]${f.text ? ' "' + f.text + '"' : ''}`).join(' + ')} · ${(r.tracklist || []).length} tracklist row(s)`);
+
+        // formats → one MB format per medium, plus type, status, packaging
+        const formats = [];
+        let primary = null, status = 'official', packaging = null;
+        const secondary = [];
+        for (const f of r.formats || []) {
+            let fmt = DISCOGS_MEDIA[f.name];
+            for (const d of f.descriptions || []) {
+                if (/7"|10"|12"/.test(d) && DISCOGS_MEDIA[f.name + d]) fmt = DISCOGS_MEDIA[f.name + d];
+                if (/^(VCD|SVCD|CD\+G|HDCD|DVD-Audio|DVD-Video)$/.test(d) && DISCOGS_MEDIA[d]) fmt = DISCOGS_MEDIA[d];
+                if (f.name === 'Vinyl' && d === 'LP') fmt = '12" Vinyl';
+                if (f.name === 'CD' && d === 'Mini') fmt = '8cm CD';
+                if (/Promo|Smplr/.test(d)) status = 'promotion';
+                if (/Unofficial Release/.test(d)) status = 'bootleg';
+                if (/Compilation/.test(d) && !secondary.includes('Compilation')) secondary.push('Compilation');
+                if (/^Album/.test(d)) primary = primary || 'Album';
+                if (/Single(?! Sided)/.test(d)) primary = 'Single';
+                if (/^(EP|Mini-Album)$/.test(d)) primary = 'EP';
+            }
+            const text = String(f.text || '').toLowerCase().replace(/[\s-]/g, '');
+            for (const [re, p] of DISCOGS_PACKAGING) if (!packaging && re.test(text)) packaging = p;
+            if (fmt) for (let q = 0; q < (parseInt(f.qty, 10) || 1); q++) formats.push(fmt);
+            else if (f.name !== 'Box Set' && f.name !== 'All Media') Log.warn(`Discogs format "${f.name}" has no MusicBrainz format`);
+        }
+        Log.debug(`formats → ${formats.join(', ') || 'none'} · type ${primary || '—'}${secondary.length ? ' + ' + secondary.join(' + ') : ''} · status ${status} · packaging ${packaging || '—'}`);
+
+        // tracklist → mediums by position: "1-3" / "CD2-4" / "2.4" (medium-track), "A1" (sides,
+        // two per medium), "1" (a number that starts over begins the next medium)
+        const mediums = [];
+        let heading = '', med = 1, last = 0, odd = false;
+        const releaseCredit = this.credit(r.artists);
+        for (const t of r.tracklist || []) {
+            // a heading names the medium that follows: "CD 1 Routine" → "Routine"
+            if (t.type_ === 'heading') { heading = String(t.title || '').replace(/^(?:CD|Disc|Disk|DVD|LP|Vinyl|Side)\s*\d+\s*[-:–.]?\s*/i, ''); continue; }
+            if (t.type_ !== 'track' && t.type_ !== 'index') continue;
+            let title = String(t.title || '').replace(/´/g, '’');
+            let pos = t.position || '';
+            let len = this.ms(t.duration);
+            if (t.type_ === 'index' && t.sub_tracks) {
+                const subs = t.sub_tracks.filter(x => x.type_ === 'track');
+                if (!pos && subs[0]) pos = subs[0].position || '';
+                if (subs.length) title += (title ? ': ' : '') + subs.map(x => x.title || '[unknown]').join(' / ');
+                if (!len) { const sum = subs.reduce((a, x) => a + (this.ms(x.duration) || 0), 0); len = sum || null; }
+            }
+            if (!pos || /^(video|mp3)/i.test(pos)) { Log.debug(`skipped tracklist row "${title}" (position "${t.position}")`); continue; }
+            let m;
+            if ((m = pos.match(/^(?:[a-z]+)?(\d+)[.-](\d+)/i))) { med = +m[1]; last = +m[2]; }
+            else if (/^[A-Z]\d*$/i.test(pos)) { med = (((32 | pos.charCodeAt(0)) - 97) >> 1) + 1; last++; }
+            else if ((m = pos.match(/^(\d+)/))) { if (+m[1] <= last) med++; last = +m[1]; }
+            else { odd = true; last++; }
+            while (mediums.length < med) {
+                mediums.push({ format: formats[mediums.length] || formats[formats.length - 1] || null, name: heading, tracks: [] });
+                heading = '';
+            }
+            const feat = (t.extraartists || []).filter(e => /^Featuring\b/.test(e.role || ''));
+            const credit = t.artists && t.artists.length ? this.credit(t.artists, feat) : feat.length ? this.credit(r.artists, feat) : releaseCredit;
+            const medium = mediums[med - 1];
+            const sided = /Vinyl|Cassette|Shellac|Acetate/.test(medium.format || '');
+            medium.tracks.push({ title, lengthMs: len, isrc: null, url: null, credit, number: sided && /^[A-Z]+[.-]?\d*$/i.test(pos) ? pos : null });
+            Log.debug(`track ${pos} → medium ${med}: "${title}" — ${credit.map(c => c.name + c.join).join('')}${len ? '' : ' (no length)'}`);
+        }
+        if (odd) Log.warn('Discogs: some track positions could not be read; check the medium split');
+        const empty = mediums.filter(x => !x.tracks.length).length;
+        if (empty) Log.warn(`Discogs: ${empty} medium(s) without tracks`);
+        if (mediums.length === 1) mediums[0].name = '';
+
+        // labels; the same label listed twice with its catalog number written two ways is kept once
+        const seen = new Set(), labels = [];
+        for (const l of r.labels || []) {
+            const none = l.id === this.NO_LABEL;
+            const name = none ? '[no label]' : this.noNum(l.name);
+            const catno = /^none$/i.test(l.catno || '') ? '[none]' : (l.catno || '');
+            const key = normName(name) + '|' + catno.replace(/[\s.-]/g, '').toLowerCase();
+            if (seen.has(key)) continue;
+            seen.add(key);
+            labels.push({ name, catno, url: none ? null : `https://www.discogs.com/label/${l.id}`, mbid: none ? '157afde4-4bf5-4039-8ad2-5a15acc85176' : null });
+        }
+        const barcode = ((r.identifiers || []).find(i => i.type === 'Barcode' && i.value) || {}).value;
+        const [y, mo, d] = String(r.released || '').split(/\D+/).map(n => parseInt(n, 10));
+        const country = DISCOGS_COUNTRIES[r.country] || null;
+        if (r.country && !country) Log.info(`Discogs country "${r.country}" is no single MusicBrainz country; left for you`);
+        const url = `https://www.discogs.com/release/${id}`;
+        return {
+            source: this.id,
+            url,
+            title: r.title,
+            credit: releaseCredit,
+            types: primary ? [primary].concat(secondary) : secondary.length ? ['Album'].concat(secondary) : [],
+            status,
+            packaging,
+            date: { year: y || null, month: mo || null, day: d || null },
+            country,
+            barcode: barcode ? barcode.replace(/[^\dX]/gi, '') : null,
+            labels,
+            urls: [{ url, linkType: 76 }],   // 76 = discogs
+            mediums,
+        };
+    },
+};
+
+const PROVIDERS = [DEEZER, BANDCAMP, DISCOGS];
 
 /* ── the seed: model → the release editor's POST parameters ──────────────── */
 // https://musicbrainz.org/doc/Development/Release_Editor_Seeding
@@ -374,7 +525,7 @@ function seedParams(rel, editNote) {
     const add = (k, v) => { if (v !== null && v !== undefined && v !== '') p.push([k, String(v)]); };
     const credit = (prefix, c) => (c || []).forEach((a, i) => {
         add(`${prefix}artist_credit.names.${i}.name`, a.name);
-        add(`${prefix}artist_credit.names.${i}.artist.name`, a.name);
+        add(`${prefix}artist_credit.names.${i}.artist.name`, a.artistName || a.name);
         add(`${prefix}artist_credit.names.${i}.mbid`, a.mbid);
         add(`${prefix}artist_credit.names.${i}.join_phrase`, a.join);
     });
@@ -391,7 +542,7 @@ function seedParams(rel, editNote) {
         add('events.0.date.day', rel.date.day);
         add('events.0.country', rel.country);
     }
-    (rel.labels || []).forEach((l, i) => { add(`labels.${i}.name`, l.name); add(`labels.${i}.catalog_number`, l.catno); });
+    (rel.labels || []).forEach((l, i) => { add(`labels.${i}.name`, l.name); add(`labels.${i}.mbid`, l.mbid); add(`labels.${i}.catalog_number`, l.catno); });
     (rel.urls || []).forEach((u, i) => { add(`urls.${i}.url`, u.url); add(`urls.${i}.link_type`, u.linkType); });
     rel.mediums.forEach((m, i) => {
         add(`mediums.${i}.format`, m.format);
@@ -399,7 +550,7 @@ function seedParams(rel, editNote) {
         m.tracks.forEach((t, j) => {
             const pre = `mediums.${i}.track.${j}.`;
             add(pre + 'name', t.title);
-            add(pre + 'number', j + 1);
+            add(pre + 'number', t.number || j + 1);
             add(pre + 'length', t.lengthMs);
             credit(pre, t.credit);
         });
@@ -414,7 +565,7 @@ function editNoteFor(rel, provider) {
 
 // What Apollo needs to match: every credited artist with its platform link, by position.
 function handoffFor(rel, provider, token) {
-    const ac = c => (c || []).map(a => ({ name: a.name, join: a.join, url: a.url || null, mbid: a.mbid || null }));
+    const ac = c => (c || []).map(a => ({ name: a.name, artistName: a.artistName || a.name, join: a.join, url: a.url || null, mbid: a.mbid || null }));
     return {
         v: 1,
         token,
@@ -425,7 +576,7 @@ function handoffFor(rel, provider, token) {
         title: rel.title,
         barcode: rel.barcode,
         credit: ac(rel.credit),
-        labels: rel.labels,
+        labels: (rel.labels || []).map(l => ({ name: l.name, catno: l.catno, url: l.url || null, mbid: l.mbid || null })),
         mediums: rel.mediums.map(m => ({ tracks: m.tracks.map(t => ({ title: t.title, isrc: t.isrc, url: t.url, credit: ac(t.credit) })) })),
     };
 }
