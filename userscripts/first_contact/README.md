@@ -1,6 +1,6 @@
 # First Contact <img src="icon.svg" align="left" width="48">
 
-Import a release into MusicBrainz from the platform's album page with one click: the release editor opens with everything the platform knows filled in. Install one userscript instead of hudreeds. 
+Import a release into MusicBrainz from the platform's album page with one click: the release editor opens with everything the platform knows filled in. 
 
 - Install: [stable](https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/refs/heads/stable/userscripts/first_contact/first_contact.user.js) or [latest](https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/refs/heads/main/userscripts/first_contact/first_contact.user.js)
 - [Changelog](./CHANGELOG.md)
