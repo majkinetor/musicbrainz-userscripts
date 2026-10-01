@@ -7,8 +7,7 @@ Import a release into MusicBrainz from the platform's album page with one click:
 - [View users](https://musicbrainz.org/search/edits?auto_edit_filter=&order=desc&negation=0&combinator=and&conditions.0.field=edit_note_content&conditions.0.operator=includes&conditions.0.args.0=First+Contact)
 
 > [!NOTE]
-> First Contact doesn't match entities but hands data to [Apollo](../apollo_editor/README.md) which then proceedes to automatically match entities. NOTE that its best to have auto match enabled in Apollo options, otherwise, you might need to manually click a Match button at this moment.
-
+> First Contact doesn't match entities but hands data to [Apollo](../apollo_editor/README.md). NOTE that it is best to have auto match enabled in Apollo options, otherwise, you might need to manually click a Match button at this moment.
 
 ## Features
 
