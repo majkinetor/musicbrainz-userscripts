@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Credit Hoarder
 // @namespace    majkinetor
-// @version      2026.10.1.164212
+// @version      2026.10.1.190956
 // @description  Import per-track release credits from streaming/database providers (Discogs, Tidal, Qobuz, Deezer) into MusicBrainz relationships, with a review phase
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij4KICANCiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMmY2ZjU0IiBzdHJva2Utd2lkdGg9IjkiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGNpcmNsZSBjeD0iMzQiIGN5PSIzOCIgcj0iMi41IiBmaWxsPSIjMmY2ZjU0IiBzdHJva2U9Im5vbmUiLz4NCiAgICA8bGluZSB4MT0iNTAiIHkxPSIzOCIgeDI9Ijk4IiB5Mj0iMzgiLz4NCiAgICA8Y2lyY2xlIGN4PSIzNCIgY3k9IjY0IiByPSIyLjUiIGZpbGw9IiMyZjZmNTQiIHN0cm9rZT0ibm9uZSIvPg0KICAgIDxsaW5lIHgxPSI1MCIgeTE9IjY0IiB4Mj0iOTgiIHkyPSI2NCIvPg0KICAgIDxjaXJjbGUgY3g9IjM0IiBjeT0iOTAiIHI9IjIuNSIgZmlsbD0iIzJmNmY1NCIgc3Ryb2tlPSJub25lIi8+DQogICAgPGxpbmUgeDE9IjUwIiB5MT0iOTAiIHgyPSI3NCIgeTI9IjkwIi8+DQogIDwvZz4NCiAgPGNpcmNsZSBjeD0iOTIiIGN5PSI5MiIgcj0iMjMiIGZpbGw9IiMyZTllNWIiLz4NCiAgPGcgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGxpbmUgeDE9IjkyIiB5MT0iODEiIHgyPSI5MiIgeTI9IjEwMyIvPg0KICAgIDxsaW5lIHgxPSI4MSIgeTE9IjkyIiB4Mj0iMTAzIiB5Mj0iOTIiLz4NCiAgPC9nPg0KPC9zdmc+DQo=
@@ -7436,6 +7436,21 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
       a.textContent = label || "? Help";
       return a;
     }
+    var MBU_CFG_ICON = "\u2699\uFE0E";
+    var _mbuTT;
+    function mbuHtml(s) {
+      if (_mbuTT === void 0) {
+        _mbuTT = null;
+        try {
+          var tt = typeof window !== "undefined" && window.trustedTypes || null;
+          if (tt && tt.createPolicy) _mbuTT = tt.createPolicy("mbu-" + Math.random().toString(36).slice(2, 8), { createHTML: function(x) {
+            return x;
+          } });
+        } catch (e) {
+        }
+      }
+      return _mbuTT ? _mbuTT.createHTML(String(s)) : String(s);
+    }
     function mbuClaimVer(v) {
       return String(v || "").split(".").map(function(n) {
         return parseInt(n, 10) || 0;
@@ -7782,7 +7797,7 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
         var pop = document.createElement("div");
         pop.id = "mbu-logpop";
         pop.className = "mbu-logpop";
-        pop.innerHTML = '<div class="mbu-logpop-h"><b>' + esc(o.header || "Activity log") + '</b> <span class="mbu-log-badge"></span><span class="mbu-logpop-sp"></span><button class="mbu-logpop-clear" type="button" title="Clear the log (the lines so far are gone)">Clear</button><button class="mbu-logpop-copy" type="button" title="Copy as Markdown (paste into a GitHub issue)">\u29C9 Copy</button><button class="mbu-logpop-min" type="button" title="Minimize">\u2013</button><button class="mbu-logpop-x" type="button" title="Close">\u2715</button></div><div class="mbu-log-list"></div>';
+        pop.innerHTML = mbuHtml('<div class="mbu-logpop-h"><b>' + esc(o.header || "Activity log") + '</b> <span class="mbu-log-badge"></span><span class="mbu-logpop-sp"></span><button class="mbu-logpop-clear" type="button" title="Clear the log (the lines so far are gone)">Clear</button><button class="mbu-logpop-copy" type="button" title="Copy as Markdown (paste into a GitHub issue)">\u29C9 Copy</button><button class="mbu-logpop-min" type="button" title="Minimize">\u2013</button><button class="mbu-logpop-x" type="button" title="Close">\u2715</button></div><div class="mbu-log-list"></div>');
         document.body.appendChild(pop);
         if (st.left != null) {
           pop.style.left = st.left;
@@ -7795,7 +7810,7 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
         var row = function(e) {
           var d = document.createElement("div");
           d.className = "mbu-log-li mbu-log-" + e.sev;
-          d.innerHTML = '<span class="mbu-log-t">' + ts(e.t) + '</span><span class="mbu-log-m">' + linkify(e.msg) + "</span>";
+          d.innerHTML = mbuHtml('<span class="mbu-log-t">' + ts(e.t) + '</span><span class="mbu-log-m">' + linkify(e.msg) + "</span>");
           return d;
         };
         var showBadge = function() {
@@ -7806,7 +7821,7 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
           frag.appendChild(row(e));
         });
         if (buf.length) list.appendChild(frag);
-        else list.innerHTML = '<div class="mbu-log-empty">No activity yet.</div>';
+        else list.innerHTML = mbuHtml('<div class="mbu-log-empty">No activity yet.</div>');
         showBadge();
         list.scrollTop = list.scrollHeight;
         var queued = false, follow = true;
@@ -7837,7 +7852,7 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
             document.removeEventListener("keydown", onKey);
           },
           cleared: function() {
-            list.innerHTML = '<div class="mbu-log-empty">No activity yet.</div>';
+            list.innerHTML = mbuHtml('<div class="mbu-log-empty">No activity yet.</div>');
             showBadge();
           }
         };

@@ -129,6 +129,25 @@ export function insertDiscogsBar(discogsUrl, sources = {}, meta = {}) {
         return a;
     }
 
+    // The config (settings) icon every script's settings button shows: the gear in text
+    // presentation (U+FE0E), so it takes the button's colour instead of an emoji's. #650
+    var MBU_CFG_ICON = '\u2699\uFE0E';
+
+    // HTML for an innerHTML on a page that enforces Trusted Types (YouTube Music, #650): there a
+    // plain string is refused ("This document requires 'TrustedHTML' assignment"). The policy
+    // passes the string through; the markup is the script's own. Elsewhere it is the string.
+    var _mbuTT;
+    function mbuHtml(s) {
+        if (_mbuTT === undefined) {
+            _mbuTT = null;
+            try {
+                var tt = (typeof window !== 'undefined' && window.trustedTypes) || null;
+                if (tt && tt.createPolicy) _mbuTT = tt.createPolicy('mbu-' + Math.random().toString(36).slice(2, 8), { createHTML: function (x) { return x; } });
+            } catch (e) { /* the page allows no new policy: plain strings, as before */ }
+        }
+        return _mbuTT ? _mbuTT.createHTML(String(s)) : String(s);
+    }
+
     // One copy per page (#653). With String Theory and a standalone install of the same script
     // both on, two copies build the same element ids and fight over them: each settings window
     // fills in the other's checkboxes, rows flip between two rule sets. So one copy runs, the
@@ -412,12 +431,12 @@ export function insertDiscogsBar(discogsUrl, sources = {}, meta = {}) {
             remember({ open: true });
             var st = state();
             var pop = document.createElement('div'); pop.id = 'mbu-logpop'; pop.className = 'mbu-logpop';
-            pop.innerHTML = '<div class="mbu-logpop-h"><b>' + esc(o.header || 'Activity log') + '</b> <span class="mbu-log-badge"></span><span class="mbu-logpop-sp"></span>'
+            pop.innerHTML = mbuHtml('<div class="mbu-logpop-h"><b>' + esc(o.header || 'Activity log') + '</b> <span class="mbu-log-badge"></span><span class="mbu-logpop-sp"></span>'
                 + '<button class="mbu-logpop-clear" type="button" title="Clear the log (the lines so far are gone)">Clear</button>'
                 + '<button class="mbu-logpop-copy" type="button" title="Copy as Markdown (paste into a GitHub issue)">⧉ Copy</button>'
                 + '<button class="mbu-logpop-min" type="button" title="Minimize">–</button>'
                 + '<button class="mbu-logpop-x" type="button" title="Close">✕</button></div>'
-                + '<div class="mbu-log-list"></div>';
+                + '<div class="mbu-log-list"></div>');
             document.body.appendChild(pop);
             if (st.left != null) { pop.style.left = st.left; pop.style.top = st.top; pop.style.right = 'auto'; pop.style.transform = 'none'; }
             var restore = { left: pop.style.left, top: pop.style.top, right: pop.style.right, bottom: pop.style.bottom, transform: pop.style.transform };
@@ -425,7 +444,7 @@ export function insertDiscogsBar(discogsUrl, sources = {}, meta = {}) {
             var row = function (e) {
                 var d = document.createElement('div');
                 d.className = 'mbu-log-li mbu-log-' + e.sev;
-                d.innerHTML = '<span class="mbu-log-t">' + ts(e.t) + '</span><span class="mbu-log-m">' + linkify(e.msg) + '</span>';
+                d.innerHTML = mbuHtml('<span class="mbu-log-t">' + ts(e.t) + '</span><span class="mbu-log-m">' + linkify(e.msg) + '</span>');
                 return d;
             };
             var showBadge = function () { badge.textContent = '(' + buf.length + ')' + (warn || error ? ' · ' + warn + '⚠ ' + error + '✖' : ''); };
@@ -433,7 +452,7 @@ export function insertDiscogsBar(discogsUrl, sources = {}, meta = {}) {
             var frag = document.createDocumentFragment();
             buf.forEach(function (e) { frag.appendChild(row(e)); });
             if (buf.length) list.appendChild(frag);
-            else list.innerHTML = '<div class="mbu-log-empty">No activity yet.</div>';
+            else list.innerHTML = mbuHtml('<div class="mbu-log-empty">No activity yet.</div>');
             showBadge();
             list.scrollTop = list.scrollHeight;
             // badge and scroll once per frame, however many lines arrive in it
@@ -450,7 +469,7 @@ export function insertDiscogsBar(discogsUrl, sources = {}, meta = {}) {
                     if (!queued) { queued = true; requestAnimationFrame(paint); }
                 },
                 off: function () { document.removeEventListener('keydown', onKey); },
-                cleared: function () { list.innerHTML = '<div class="mbu-log-empty">No activity yet.</div>'; showBadge(); },
+                cleared: function () { list.innerHTML = mbuHtml('<div class="mbu-log-empty">No activity yet.</div>'); showBadge(); },
             };
             pop.querySelector('.mbu-logpop-clear').onclick = function () { clear(); };
             pop.querySelector('.mbu-logpop-copy').onclick = function () { copy(pop.querySelector('.mbu-logpop-copy')); };

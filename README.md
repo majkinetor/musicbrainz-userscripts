@@ -41,6 +41,9 @@ Find and verify URLs for a particular MusicBrainz release on online platforms
 [Scribe](./userscripts/scribe/README.md) <img src="./userscripts/scribe/scribe.svg" align="left" width="32"><br>
 Edit MusicBrainz in your real editor (VS Code, Vim, …)
 
+[First Contact](./userscripts/first_contact/README.md) <img src="./userscripts/first_contact/icon.svg" align="left" width="32"><br>
+Import a release from the platform's album page into the MusicBrainz release editor with one click
+
 [Falcon](./userscripts/falcon/README.md) <img src="./userscripts/falcon/icon.svg" align="left" width="32"><br>
 Batch import entity fields from Harmony and standalone; attach disc IDs from CD rip logs
 

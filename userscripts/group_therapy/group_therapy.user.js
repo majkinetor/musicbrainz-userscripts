@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Group Therapy
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.1.164157
+// @version      2026.10.1.190337
 // @description  MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48ZyBmaWxsPSJub25lIiBzdHJva2U9IiM1YjZiN2EiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9Ijk0IiB5Mj0iNDIiLz48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48bGluZSB4MT0iOTQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48L2c+PGcgZmlsbD0iIzJlOWU1YiIgc3Ryb2tlPSIjMjU2ZjQzIiBzdHJva2Utd2lkdGg9IjQiPjxjaXJjbGUgY3g9IjM0IiBjeT0iNDIiIHI9IjE2Ii8+PGNpcmNsZSBjeD0iOTQiIGN5PSI0MiIgcj0iMTYiLz48Y2lyY2xlIGN4PSI2NCIgY3k9Ijk0IiByPSIxNiIvPjwvZz48L3N2Zz4=
@@ -566,6 +566,25 @@
       return a;
   }
 
+  // The config (settings) icon every script's settings button shows: the gear in text
+  // presentation (U+FE0E), so it takes the button's colour instead of an emoji's. #650
+  var MBU_CFG_ICON = '\u2699\uFE0E';
+
+  // HTML for an innerHTML on a page that enforces Trusted Types (YouTube Music, #650): there a
+  // plain string is refused ("This document requires 'TrustedHTML' assignment"). The policy
+  // passes the string through; the markup is the script's own. Elsewhere it is the string.
+  var _mbuTT;
+  function mbuHtml(s) {
+      if (_mbuTT === undefined) {
+          _mbuTT = null;
+          try {
+              var tt = (typeof window !== 'undefined' && window.trustedTypes) || null;
+              if (tt && tt.createPolicy) _mbuTT = tt.createPolicy('mbu-' + Math.random().toString(36).slice(2, 8), { createHTML: function (x) { return x; } });
+          } catch (e) { /* the page allows no new policy: plain strings, as before */ }
+      }
+      return _mbuTT ? _mbuTT.createHTML(String(s)) : String(s);
+  }
+
   // One copy per page (#653). With String Theory and a standalone install of the same script
   // both on, two copies build the same element ids and fight over them: each settings window
   // fills in the other's checkboxes, rows flip between two rule sets. So one copy runs, the
@@ -849,12 +868,12 @@
           remember({ open: true });
           var st = state();
           var pop = document.createElement('div'); pop.id = 'mbu-logpop'; pop.className = 'mbu-logpop';
-          pop.innerHTML = '<div class="mbu-logpop-h"><b>' + esc(o.header || 'Activity log') + '</b> <span class="mbu-log-badge"></span><span class="mbu-logpop-sp"></span>'
+          pop.innerHTML = mbuHtml('<div class="mbu-logpop-h"><b>' + esc(o.header || 'Activity log') + '</b> <span class="mbu-log-badge"></span><span class="mbu-logpop-sp"></span>'
               + '<button class="mbu-logpop-clear" type="button" title="Clear the log (the lines so far are gone)">Clear</button>'
               + '<button class="mbu-logpop-copy" type="button" title="Copy as Markdown (paste into a GitHub issue)">⧉ Copy</button>'
               + '<button class="mbu-logpop-min" type="button" title="Minimize">–</button>'
               + '<button class="mbu-logpop-x" type="button" title="Close">✕</button></div>'
-              + '<div class="mbu-log-list"></div>';
+              + '<div class="mbu-log-list"></div>');
           document.body.appendChild(pop);
           if (st.left != null) { pop.style.left = st.left; pop.style.top = st.top; pop.style.right = 'auto'; pop.style.transform = 'none'; }
           var restore = { left: pop.style.left, top: pop.style.top, right: pop.style.right, bottom: pop.style.bottom, transform: pop.style.transform };
@@ -862,7 +881,7 @@
           var row = function (e) {
               var d = document.createElement('div');
               d.className = 'mbu-log-li mbu-log-' + e.sev;
-              d.innerHTML = '<span class="mbu-log-t">' + ts(e.t) + '</span><span class="mbu-log-m">' + linkify(e.msg) + '</span>';
+              d.innerHTML = mbuHtml('<span class="mbu-log-t">' + ts(e.t) + '</span><span class="mbu-log-m">' + linkify(e.msg) + '</span>');
               return d;
           };
           var showBadge = function () { badge.textContent = '(' + buf.length + ')' + (warn || error ? ' · ' + warn + '⚠ ' + error + '✖' : ''); };
@@ -870,7 +889,7 @@
           var frag = document.createDocumentFragment();
           buf.forEach(function (e) { frag.appendChild(row(e)); });
           if (buf.length) list.appendChild(frag);
-          else list.innerHTML = '<div class="mbu-log-empty">No activity yet.</div>';
+          else list.innerHTML = mbuHtml('<div class="mbu-log-empty">No activity yet.</div>');
           showBadge();
           list.scrollTop = list.scrollHeight;
           // badge and scroll once per frame, however many lines arrive in it
@@ -887,7 +906,7 @@
                   if (!queued) { queued = true; requestAnimationFrame(paint); }
               },
               off: function () { document.removeEventListener('keydown', onKey); },
-              cleared: function () { list.innerHTML = '<div class="mbu-log-empty">No activity yet.</div>'; showBadge(); },
+              cleared: function () { list.innerHTML = mbuHtml('<div class="mbu-log-empty">No activity yet.</div>'); showBadge(); },
           };
           pop.querySelector('.mbu-logpop-clear').onclick = function () { clear(); };
           pop.querySelector('.mbu-logpop-copy').onclick = function () { copy(pop.querySelector('.mbu-logpop-copy')); };

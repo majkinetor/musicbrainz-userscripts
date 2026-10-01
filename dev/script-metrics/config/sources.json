@@ -55,6 +55,8 @@
 
     { "id": "fusion", "name": "Fusion", "owner": "majkinetor",
       "patterns": ["userscripts/fusion"] },
+    { "id": "first_contact", "name": "First Contact", "owner": "majkinetor",
+      "patterns": ["userscripts/first_contact"] },
 
     { "id": "group_therapy", "name": "Group Therapy", "owner": "majkinetor",
       "patterns": ["userscripts/group_therapy"] },
