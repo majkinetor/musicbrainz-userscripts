@@ -48,3 +48,20 @@ test('Spotify: First Contact started after the player still reads the album', { 
   check(rel.auth, `a late start still hears a token (${rel.seen} request(s) seen)`);
   check(rel.rel && rel.rel.title === 'Random Access Memories' && rel.rel.mediums[0].tracks.length === 13, `…and reads the album with the known query id (${rel.rel && rel.rel.title})`);
 });
+
+// majkinetor's next log: "the hook saw 0 request(s)", hooked while the document was still loading.
+// His manager sandboxes the script: unsafeWindow's fetch there isn't the page's. Here the script
+// gets a stand-in unsafeWindow, so only the in-page hook (a blob: script) can hear the player.
+test('Spotify: in a sandbox, the in-page hook hears the player', { tag: ['@web'] }, async ({ page, inject }) => {
+  const sandboxed = code => `(function (unsafeWindow) {\n${code}\n})({ fetch: function () {}, XMLHttpRequest: function () {} });`;
+  await inject('first_contact', { atStart: true, transform: sandboxed });
+  await page.goto('https://open.spotify.com/album/4m2880jivSbbyEGAKfITCa', { waitUntil: 'domcontentloaded' });
+  await page.locator('#fc-root .fc-go').waitFor({ state: 'visible', timeout: 30000 });
+  const r = await page.evaluate(async () => {
+    const sp = window.__fcTest.providers.find(p => p.id === 'spotify');
+    for (let i = 0; !sp.auth && i < 200; i++) await new Promise(res => setTimeout(res, 100));
+    return { seen: sp.seen, auth: !!sp.auth, hash: !!sp.hash, title: sp.auth ? (await sp.fetchRelease('4m2880jivSbbyEGAKfITCa')).title : null };
+  });
+  check(r.auth && r.seen > 0, `the player is heard through the page (${r.seen} request(s), token ${r.auth})`);
+  check(r.title === 'Random Access Memories', `and the album is read (${r.title}; the player's own query id heard: ${r.hash})`);
+});

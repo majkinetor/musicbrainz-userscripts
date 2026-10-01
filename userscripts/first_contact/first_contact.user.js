@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         First Contact
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.1.180125
+// @version      2026.10.1.185325
 // @description  Import a release into MusicBrainz from the platform's album page with one click: the release editor opens with the title, tracklist, artists, date, label, barcode and link filled in. Each artist's platform link is handed to Apollo Editor for matching. Platforms: Deezer, Bandcamp, Discogs, Apple Music, Tidal, Qobuz, Beatport, Spotify, YouTube Music, Volumo, HDtracks, SoundCloud.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPkZpcnN0IENvbnRhY3Q8L3RpdGxlPgogIDwhLS0gdHJhY3RvciBiZWFtIC0tPgogIDxwYXRoIGQ9Ik01MCA0NCBMNzggNDQgTDEwNCAxMTIgTDI0IDExMiBaIiBmaWxsPSIjZjZjNDMxIiBvcGFjaXR5PSIwLjkiLz4KICA8cGF0aCBkPSJNNTYgNDQgTDcyIDQ0IEw4OCAxMTIgTDQwIDExMiBaIiBmaWxsPSIjZmRlNjhhIiBvcGFjaXR5PSIwLjciLz4KICA8IS0tIGxhbmRpbmcgcmluZyAtLT4KICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSIxMTQiIHJ4PSI0MiIgcnk9IjgiIGZpbGw9IiMxZTIzNDYiIHN0cm9rZT0iI2M5Y2RmMiIgc3Ryb2tlLXdpZHRoPSIzIi8+CiAgPGVsbGlwc2UgY3g9IjY0IiBjeT0iMTEzIiByeD0iMjYiIHJ5PSI0LjIiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2Y2YzQzMSIgc3Ryb2tlLXdpZHRoPSIyLjQiLz4KICA8IS0tIHNhdWNlcjogYSBwYWxlIHJpbSwgc28gaXQgc2hvd3Mgb24gYSBkYXJrIGJhY2tncm91bmQgdG9vIC0tPgogIDxwYXRoIGQ9Ik00MCAyNiBBMjQgMTggMCAwIDEgODggMjYgWiIgZmlsbD0iIzFlMjM0NiIgc3Ryb2tlPSIjYzljZGYyIiBzdHJva2Utd2lkdGg9IjMiLz4KICA8cGF0aCBkPSJNNTAgMTggQTEwIDYgMCAwIDEgNjAgMTQiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2ZmZiIgc3Ryb2tlLXdpZHRoPSIyLjYiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxlbGxpcHNlIGN4PSI2NCIgY3k9IjMyIiByeD0iNTYiIHJ5PSIxMyIgZmlsbD0iIzFlMjM0NiIgc3Ryb2tlPSIjYzljZGYyIiBzdHJva2Utd2lkdGg9IjMiLz4KICA8Y2lyY2xlIGN4PSIzOCIgY3k9IjMyIiByPSI0LjQiIGZpbGw9IiNmZmYiLz4KICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjM0IiByPSI0LjQiIGZpbGw9IiNmZmYiLz4KICA8Y2lyY2xlIGN4PSI5MCIgY3k9IjMyIiByPSI0LjQiIGZpbGw9IiNmZmYiLz4KICA8IS0tIHRoZSByZWxlYXNlIGJlaW5nIGJlYW1lZCB1cDogYSBwdXJwbGUgaGV4YWdvbiB3aXRoIGEgbm90ZSAtLT4KICA8cGF0aCBkPSJNNjQgNTggTDg0IDY5LjUgTDg0IDkyLjUgTDY0IDEwNCBMNDQgOTIuNSBMNDQgNjkuNSBaIiBmaWxsPSIjN2I0ZmQ2Ii8+CiAgPHBhdGggZD0iTTY0IDU4IEw4NCA2OS41IEw2NCA4MSBMNDQgNjkuNSBaIiBmaWxsPSIjOWI3MmVhIi8+CiAgPHBhdGggZD0iTTYwIDcyIEw3NCA2OSBMNzQgODkiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2ZmZiIgc3Ryb2tlLXdpZHRoPSIzLjQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz4KICA8cGF0aCBkPSJNNjAgNzIgTDYwIDkyIiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iMy40Ii8+CiAgPGVsbGlwc2UgY3g9IjU2IiBjeT0iOTIiIHJ4PSI0LjYiIHJ5PSIzLjYiIGZpbGw9IiNmZmYiLz4KICA8ZWxsaXBzZSBjeD0iNzAiIGN5PSI4OSIgcng9IjQuNiIgcnk9IjMuNiIgZmlsbD0iI2ZmZiIvPgogIDwhLS0gc3BhcmtsZXMgLS0+CiAgPHBhdGggZD0iTTE4IDU0IGwyLjUgNiA2IDIuNSAtNiAyLjUgLTIuNSA2IC0yLjUgLTYgLTYgLTIuNSA2IC0yLjUgWiIgZmlsbD0iI2Y2YzQzMSIvPgogIDxwYXRoIGQ9Ik0xMDggNTIgbDIuNSA2IDYgMi41IC02IDIuNSAtMi41IDYgLTIuNSAtNiAtNiAtMi41IDYgLTIuNSBaIiBmaWxsPSIjMWUyMzQ2Ii8+CiAgPHBhdGggZD0iTTExMiA4MiBsMS44IDQuMiA0LjIgMS44IC00LjIgMS44IC0xLjggNC4yIC0xLjggLTQuMiAtNC4yIC0xLjggNC4yIC0xLjggWiIgZmlsbD0iI2Y2YzQzMSIvPgogIDxwYXRoIGQ9Ik0xNCA4NiBsMS44IDQuMiA0LjIgMS44IC00LjIgMS44IC0xLjggNC4yIC0xLjggLTQuMiAtNC4yIC0xLjggNC4yIC0xLjggWiIgZmlsbD0iIzFlMjM0NiIvPgo8L3N2Zz4K
@@ -1078,6 +1078,58 @@ const SPOTIFY = {
             XP.send = wrap(function (body) { try { if (this.__fcUrl) self.note(this.__fcUrl, this.__fcH || {}, typeof body === 'string' ? body : null); } catch (e) { Log.debug(`Spotify hook (XHR): ${e.message}`); } return oSend.apply(this, arguments); });
         }
         Log.debug(`Spotify: listening to the player's requests (fetch${XP ? ' and XHR' : ''}, document ${document.readyState})`);
+        this.inPage();
+    },
+    /* majkinetor's log: "the hook saw 0 request(s) to Spotify's APIs", hooked while the document was
+       still loading. His userscript manager runs the script in its own sandbox, where unsafeWindow's
+       fetch isn't the page's: the hook above wraps a fetch the player never calls. So the same hook
+       also goes into the page itself, as a script — Spotify's policy refuses inline scripts but
+       allows blob: ones — and tells the userscript what it hears with a DOM event, which crosses
+       the sandbox. In a manager that does share the page's window both hooks run; a request heard
+       twice is the same request. */
+    inPage() {
+        const EV = 'first-contact:spotify-heard';
+        document.addEventListener(EV, e => {
+            try { const d = JSON.parse(e.detail); if (!this._fromPage) { this._fromPage = true; Log.debug('Spotify: the in-page hook is hearing the player'); } this.note(d.url, d.headers || {}, d.body); }
+            catch (x) { Log.debug(`Spotify (in-page hook): ${x.message}`); }
+        });
+        const code = '(' + function (EV) {
+            if (window.__fcSpotifyHook) return; window.__fcSpotifyHook = true;
+            const tell = (url, headers, body) => { try { document.dispatchEvent(new CustomEvent(EV, { detail: JSON.stringify({ url: String(url), headers, body: typeof body === 'string' ? body : null }) })); } catch (e) { /* nothing to tell with */ } };
+            const lower = src => { const h = {}; try { if (src && typeof src.forEach === 'function') src.forEach((v, k) => { h[String(k).toLowerCase()] = v; }); else if (src) Object.keys(src).forEach(k => { h[k.toLowerCase()] = src[k]; }); } catch (e) { /* unreadable */ } return h; };
+            const spot = u => /^https:\/\/[^/]*spotify\.com\//.test(u) && !/open\.spotify\.com\//.test(u);
+            const of = window.fetch;
+            window.fetch = function (input, init) {
+                try {
+                    const isReq = input && typeof input === 'object' && 'url' in input;
+                    const url = String(isReq ? input.url : input || '');
+                    if (spot(url)) {
+                        const headers = Object.assign(isReq ? lower(input.headers) : {}, lower(init && init.headers));
+                        if (init && typeof init.body === 'string') tell(url, headers, init.body);
+                        else { tell(url, headers, null); if (isReq && /pathfinder/.test(url)) input.clone().text().then(t => tell(url, {}, t), () => {}); }
+                    }
+                } catch (e) { /* never in the player's way */ }
+                return of.apply(this, arguments);
+            };
+            const XP = XMLHttpRequest.prototype, oo = XP.open, os = XP.setRequestHeader, osd = XP.send;
+            XP.open = function (m, u) { this.__fcU = String(u); this.__fcH = {}; return oo.apply(this, arguments); };
+            XP.setRequestHeader = function (k, v) { if (this.__fcH) this.__fcH[String(k).toLowerCase()] = v; return os.apply(this, arguments); };
+            XP.send = function (b) { try { if (this.__fcU && spot(this.__fcU)) tell(this.__fcU, this.__fcH || {}, typeof b === 'string' ? b : null); } catch (e) { /* never in the way */ } return osd.apply(this, arguments); };
+        } + ')(' + JSON.stringify(EV) + ');';
+        try {
+            const url = URL.createObjectURL(new Blob([code], { type: 'text/javascript' }));
+            const el = document.createElement('script');
+            let src = url;
+            try {   // a page that enforces Trusted Types takes a script URL only from a policy
+                if (window.trustedTypes && window.trustedTypes.createPolicy) src = window.trustedTypes.createPolicy('first-contact-' + Math.random().toString(36).slice(2, 7), { createScriptURL: x => x }).createScriptURL(url);
+            } catch (e) { /* no policy: the plain URL */ }
+            el.src = src;
+            el.onload = () => { Log.debug('Spotify: the in-page hook is in'); el.remove(); URL.revokeObjectURL(url); };
+            el.onerror = () => Log.warn('Spotify: the page refused the in-page hook');
+            // at document-start there may be no <html> yet to put it in: wait for it
+            const put = () => { const at = document.head || document.documentElement; if (at) { at.appendChild(el); return true; } return false; };
+            if (!put()) new MutationObserver((m, o) => { if (put()) o.disconnect(); }).observe(document, { childList: true, subtree: true });
+        } catch (e) { Log.warn(`Spotify: no in-page hook: ${e.message}`); }
     },
     post(body) {
         const url = this.QUERY_URL, headers = this.auth.headers;
