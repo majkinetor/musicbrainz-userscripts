@@ -67,8 +67,33 @@ test.describe('dark theme', () => {
   });
 });
 
-test.describe('strict barcode confidence', () => {
+// #653: two compact options. Unmatched (on by default) folds only the rows that found nothing;
+// non-strict (off by default) folds a found row that isn't a clean match, so by default a withheld
+// row keeps its full row with its track count, year and label.
+test.describe('strict barcode confidence, default compact options', () => {
   test.use({ gm: { name: 'Platform Check', values: { 'pc:respect-barcode': true, 'pc:barcode-mode': 'strict' } } });
+  test('#653: a withheld find keeps its row; only what found nothing is folded', { tag: ['@sandbox', '@critical'] }, async ({ page, inject }) => {
+    const ws = await openPc(page, inject, { release: RAM, links, replay: new URL('./fixtures/ws-182b.json.gz', import.meta.url) });
+    const rows = await page.evaluate(() => [...document.querySelectorAll('#mb-pc-panel .pc-row[id^="row-"]')].filter(r => r.style.display !== 'none').map(r => {
+      const p = r.id.replace(/^row-/, '');
+      return { p, st: (r.className.match(/pc-st-(\w+)/) || [])[1] || 'pending', compacted: r.classList.contains('pc-compacted'), inmb: r.classList.contains('pc-inmb'), tracks: (document.getElementById('val-' + p)?.textContent || '').trim() };
+    }));
+    const strip = await page.locator('#pc-compact-strip .pc-compact-ico').count();
+    console.log(JSON.stringify(rows), 'strip', strip);
+    const mism = rows.filter(r => r.st === 'mismatch' && !r.inmb);
+    const none = rows.filter(r => r.st === 'notfound' && !r.inmb && r.p !== 'discogs' && r.p !== 'bandcamp');
+    check(mism.length > 0, `the fixture has withheld/mismatched finds (${mism.map(r => r.p).join(', ')})`);
+    check(mism.every(r => !r.compacted), `non-strict off: every mismatched find keeps its full row (${mism.filter(r => r.compacted).map(r => r.p).join(', ') || 'ok'})`);
+    check(mism.some(r => /\d/.test(r.tracks)), `…showing its track count (${mism.map(r => r.p + ':' + r.tracks).join(', ')})`);
+    check(none.every(r => r.compacted), `unmatched on: what found nothing is folded (${none.filter(r => !r.compacted).map(r => r.p).join(', ') || 'ok'})`);
+    check(strip === none.length, `the strip holds exactly the not-found providers (${strip} vs ${none.length})`);
+    check(!(await page.locator('#pc-compact-strip .pc-compact-mismatch').count()), 'no amber-ringed (mismatch) icon in the strip');
+    await ws.done();
+  });
+});
+
+test.describe('strict barcode confidence', () => {
+  test.use({ gm: { name: 'Platform Check', values: { 'pc:respect-barcode': true, 'pc:barcode-mode': 'strict', 'pc:compact-nonstrict': true } } });
   test('an unconfirmed link is greyed and inert; an exact-barcode one is not', { tag: ['@sandbox'] }, async ({ page, inject }) => {
     const ws = await openPc(page, inject, { release: RAM, links, replay: new URL('./fixtures/ws-182b.json.gz', import.meta.url) });
     const rows = {};
@@ -100,7 +125,7 @@ test.describe('strict barcode confidence', () => {
     // a plain click on the withheld icon still does nothing
     await page.evaluate(p => document.getElementById('ico-' + p).click(), target);
     const plain = await page.evaluate(() => window.__opened.length);
-    // with compact mode on (the default) a withheld row is folded into the strip: its icon there is
+    // with Compact non-strict providers on, a withheld row is folded into the strip: its icon there is
     // what you see, so the middle click goes to it, as a real mouse click
     const stripName = await page.evaluate(p => document.getElementById('plat-' + p)?.title.split(' ')[0] || p, target);
     const inStrip = page.locator(`#pc-compact-strip .pc-compact-ico[title^="${stripName}"]`);

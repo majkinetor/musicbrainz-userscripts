@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Platform Check
 // @namespace    http://tampermonkey.net/
-// @version      2026.10.1
+// @version      2026.10.1.141605
 // @description  Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+DQogIDx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CiAgDQogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJhMWE1MiIgc3Ryb2tlLXdpZHRoPSI5IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik00MCA4OCBBMzQgMzQgMCAwIDEgNDAgNDAiLz4NCiAgICA8cGF0aCBkPSJNMjkgOTkgQTUwIDUwIDAgMCAxIDI5IDI5Ii8+DQogICAgPHBhdGggZD0iTTg4IDg4IEEzNCAzNCAwIDAgMCA4OCA0MCIvPg0KICAgIDxwYXRoIGQ9Ik05OSA5OSBBNTAgNTAgMCAwIDAgOTkgMjkiLz4NCiAgPC9nPg0KICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyMCIgZmlsbD0iI2U4MjAxYSIvPg0KPC9zdmc+DQo=
@@ -2050,8 +2050,10 @@ providerModal.innerHTML = `
         </label>
       </div>
 
-      <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; margin: 9px 0 4px;" title="Start every provider compact in a strip of dimmed icons; each rises into a full row when it matches. Discogs and Bandcamp always stay full rows. Click a strip icon to search that platform, just like clicking its row.">
+      <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; margin: 9px 0 4px;" title="A provider that found nothing (or is still searching) shrinks to a dimmed icon in a strip under the rows, and rises into a full row once it finds something. Discogs and Bandcamp always stay full rows. Click a strip icon to search that platform, just like clicking its row.">
         <input type="checkbox" id="mb-compact-unmatched" style="margin: 0; width: 16px; height: 16px;"> Compact <b>unmatched</b> providers</label>
+      <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; margin: 4px 0;" title="A provider that found a release which isn't a clean match (a different barcode or format, or withheld by the strict barcode/format settings) also shrinks to an icon in the strip, with an amber ring. Off: it keeps its full row, so its tracks, year and label show.">
+        <input type="checkbox" id="mb-compact-nonstrict" style="margin: 0; width: 16px; height: 16px;"> Compact <b>non-strict</b> providers</label>
 
       <div style="display: flex; align-items: center; gap: 12px; margin: 9px 0 4px;">
         <span style="font-weight: 600; color: var(--mbu-text-dim);">MB marker</span>
@@ -2163,6 +2165,7 @@ PROVIDER_ORDER.forEach(p => {
 // platform brand icons (default on) — class on the panel hides them all via CSS
 container.classList.toggle('pc-icons-mode', GM_getValue('pc:show-icons', true));
 container.classList.toggle('pc-compact-unmatched', GM_getValue('pc:compact-unmatched', true));   // #355 (on by default)
+container.classList.toggle('pc-compact-nonstrict', GM_getValue('pc:compact-nonstrict', false));   // #653 (off: a found mismatch keeps its row)
 container.classList.toggle('pc-no-names', !GM_getValue('pc:show-names', false));   // names hidden by default (#173) — the brand icon identifies the row
 // row layout — 1-row aligned grid (default) vs 2-row stacked (issue #173)
 container.classList.add(GM_getValue('pc:layout', '1row') === '2row' ? 'pc-layout-2row' : 'pc-layout-1row');
@@ -2371,6 +2374,7 @@ document.getElementById('mb-token-setup-btn').addEventListener('click', () => {
     const layout = GM_getValue('pc:layout', '1row');
     providerModal.querySelectorAll('input[name="mb-layout"]').forEach(r => { r.checked = r.value === layout; });
     document.getElementById('mb-compact-unmatched').checked = GM_getValue('pc:compact-unmatched', true);
+    document.getElementById('mb-compact-nonstrict').checked = GM_getValue('pc:compact-nonstrict', false);
     providerModal.querySelector('#mb-marker').value = pcMarker();
     const fmtMarkerMode = GM_getValue('pc:format-marker', 'circle');
     providerModal.querySelectorAll('input[name="format-marker"]').forEach(r => { r.checked = r.value === fmtMarkerMode; });
@@ -2404,6 +2408,11 @@ document.getElementById('mb-show-icons').addEventListener('change', e => {
 document.getElementById('mb-compact-unmatched').addEventListener('change', e => {
     GM_setValue('pc:compact-unmatched', e.target.checked);   // #355
     container.classList.toggle('pc-compact-unmatched', e.target.checked);
+    refreshCompactStrip();
+});
+document.getElementById('mb-compact-nonstrict').addEventListener('change', e => {
+    GM_setValue('pc:compact-nonstrict', e.target.checked);   // #653
+    container.classList.toggle('pc-compact-nonstrict', e.target.checked);
     refreshCompactStrip();
 });
 document.getElementById('mb-show-names').addEventListener('change', e => {
@@ -3006,17 +3015,22 @@ function updateRow(p, { url, mbTracks, remoteTracks, year, label, source, fromCa
 function refreshCompactStrip() {
     const strip = document.getElementById('pc-compact-strip');
     if (!strip) return;
-    const on = container.classList.contains('pc-compact-unmatched');
+    const unmatched = container.classList.contains('pc-compact-unmatched');
+    const nonStrict = container.classList.contains('pc-compact-nonstrict');   // #653
     strip.textContent = '';
-    if (on) PROVIDER_ORDER.forEach(p => {
+    if (unmatched || nonStrict) PROVIDER_ORDER.forEach(p => {
         if (p === 'discogs' || p === 'bandcamp') return;
         const row = document.getElementById(`row-${p}`);
         if (!row) return;
-        // compact unless the row is a CLEAN match — so pending, not-found AND
-        // found-but-mismatched (wrong barcode/format) all stay in the strip; only a
-        // real match rises into a full row. A link that's already IN MB (pc-inmb) also
-        // always stays a full row, even without a clean match — you added it, so show it.
-        const compact = !row.classList.contains('pc-st-match') && !row.classList.contains('pc-inmb') && GM_getValue(`pc:prov_${p}`, true);
+        // #653: two options. Unmatched: pending and not-found rows stay in the strip.
+        // Non-strict: a found-but-mismatched (wrong barcode/format, or withheld) row too;
+        // with it off that row keeps its full row, so its tracks/year/label show. A clean
+        // match always rises into a full row, and so does a link that's already IN MB
+        // (pc-inmb) — you added it, so show it.
+        const isMismatch = row.classList.contains('pc-st-mismatch');
+        const isMatch = row.classList.contains('pc-st-match');
+        const foldable = isMismatch ? nonStrict : !isMatch && unmatched;
+        const compact = foldable && !row.classList.contains('pc-inmb') && GM_getValue(`pc:prov_${p}`, true);
         const was = row.classList.contains('pc-compacted');
         row.classList.toggle('pc-compacted', compact);
         if (!compact) {
@@ -3026,7 +3040,7 @@ function refreshCompactStrip() {
         const a = document.getElementById(`mb-online-${p}`);
         // a mismatch (found but wrong release) keeps a subtle amber ring so the
         // "found but wrong" signal isn't lost when it's folded into the strip.
-        const mismatch = row.classList.contains('pc-st-mismatch');
+        const mismatch = isMismatch;
         const ico = document.createElement('span');
         ico.className = 'pc-compact-ico' + (mismatch ? ' pc-compact-mismatch' : '');
         // #641: a withheld match (✓, folded into the strip as a mismatch) takes the same

@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-10-01 03:28 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-10-01 14:16 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -1147,7 +1147,7 @@ A link already in the release's relationships is used as is. Otherwise each plat
 A release's format is a four-quadrant circle: vinyl, cassette, CD, digital (DVD, SACD and Blu-ray count as CD).
 
 > [!TIP]
-> *Compact unmatched providers* keeps only clean matches as rows; the rest shrink to dimmed icons at the bottom, a mismatch with an amber ring. Discogs and Bandcamp always keep their rows.
+> *Compact unmatched providers* shrinks a provider that found nothing (or is still searching) to a dimmed icon at the bottom; it rises into a row once it finds something. *Compact non-strict providers* does the same for a found release that isn't a clean match (different barcode or format, or withheld), shown with an amber ring; with it off, that row stays, with its tracks, year and label. Discogs and Bandcamp always keep their rows.
 
 ### Link confidence
 
@@ -1211,7 +1211,7 @@ The footer's **+** adds every confirmed link (middle-click: the withheld ones to
 | Platforms | order them, or leave some out |
 | Authentication | Beatport and Qobuz logins |
 | Link confidence | *Use barcodes* and *Use formats* (off, if they exist, strictly); *Add links in a new tab* (on; off navigates this tab); *Keep background-add tabs awake* |
-| Appearance | icon and name size, *Compact unmatched providers*, the MusicBrainz marker (ring, bold ring, ✓ badge, dot or rounded square), the format marker (circle or text), one or two rows |
+| Appearance | icon and name size, *Compact unmatched providers*, *Compact non-strict providers*, the MusicBrainz marker (ring, bold ring, ✓ badge, dot or rounded square), the format marker (circle or text), one or two rows |
 
 ### Shortcuts
 
