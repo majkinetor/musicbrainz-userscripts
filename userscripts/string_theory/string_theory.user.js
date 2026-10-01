@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         String Theory
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.1.031404
+// @version      2026.10.1.041144
 // @description  Unified bundle of 8 MusicBrainz userscripts (apollo_editor, art_station, credit_hoarder, fusion, group_therapy, isrc_scout, mammoth, platform_check). Built by userscripts/string_theory/build.mjs — do not hand-edit.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCIgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0Ij4KICA8IS0tIGh1Yi1hbmQtc3Bva2UgIm5ldHdvcmsiIGdseXBoLCBzaW5nbGUgdml2aWQgdmlvbGV0IG9uIHRyYW5zcGFyZW50IHNvIGl0IHJlYWRzIG9uIGJvdGggZGFyayBhbmQgbGlnaHQgcGFnZXMgLS0+CiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjN2M1Y2ZmIiBzdHJva2Utd2lkdGg9IjQuNiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj4KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMzIgMTUiLz4KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMNDYuNSAyMy41Ii8+CiAgICA8cGF0aCBkPSJNMzIgMzIgTDQ2LjUgNDAuNSIvPgogICAgPHBhdGggZD0iTTMyIDMyIEwzMiA0OSIvPgogICAgPHBhdGggZD0iTTMyIDMyIEwxNy41IDQwLjUiLz4KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMTcuNSAyMy41Ii8+CiAgPC9nPgogIDxnIGZpbGw9IiM3YzVjZmYiPgogICAgPGNpcmNsZSBjeD0iMzIiIGN5PSIzMiIgcj0iOC42Ii8+CiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjE5LjUiIHI9IjYuNCIvPgogICAgPGNpcmNsZSBjeD0iNDkiIGN5PSIxOS41IiByPSI2LjQiLz4KICAgIDxjaXJjbGUgY3g9IjMyIiBjeT0iNTciIHI9IjYuNCIvPgogIDwvZz4KICA8ZyBmaWxsPSJub25lIiBzdHJva2U9IiM3YzVjZmYiIHN0cm9rZS13aWR0aD0iMy44Ij4KICAgIDxjaXJjbGUgY3g9IjMyIiBjeT0iNyIgcj0iNC45Ii8+CiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjQ0LjUiIHI9IjQuOSIvPgogICAgPGNpcmNsZSBjeD0iNDkiIGN5PSI0NC41IiByPSI0LjkiLz4KICA8L2c+Cjwvc3ZnPgo=
@@ -84,8 +84,8 @@
 // Bundles (verbatim, each wrapped in a run-at gate): apollo_editor, art_station, credit_hoarder, fusion, group_therapy, isrc_scout, mammoth, platform_check.
 
 try {
-  console.log('%c String Theory %c v2026.10.1.031404 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
-  console.log("String Theory bundles:\n  · Apollo Editor v2026.10.1\n  · Art Station v2026.9.30\n  · Credit Hoarder v2026.9.30\n  · Fusion v2026.9.30\n  · Group Therapy v2026.9.30\n  · ISRC Scout v2026.10.1\n  · Mammoth v2026.9.30\n  · Platform Check v2026.9.30");
+  console.log('%c String Theory %c v2026.10.1.041144 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
+  console.log("String Theory bundles:\n  · Apollo Editor v2026.10.1\n  · Art Station v2026.9.30\n  · Credit Hoarder v2026.9.30\n  · Fusion v2026.9.30\n  · Group Therapy v2026.9.30\n  · ISRC Scout v2026.10.1\n  · Mammoth v2026.9.30\n  · Platform Check v2026.10.1");
 } catch (e) {}
 
 // ===== apollo_editor (@run-at document-start) =====================================
@@ -43820,7 +43820,7 @@ Created this ${kind} while adding credits parsed from text to ${relUrl}`;
 
 // ===== platform_check (@run-at document-end) ====================================
 (function(__stGM){
-  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Platform Check*","namespace":"http://tampermonkey.net/","version":"2026.9.30","description":"Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/platform_check/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+DQogIDx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CiAgDQogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJhMWE1MiIgc3Ryb2tlLXdpZHRoPSI5IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik00MCA4OCBBMzQgMzQgMCAwIDEgNDAgNDAiLz4NCiAgICA8cGF0aCBkPSJNMjkgOTkgQTUwIDUwIDAgMCAxIDI5IDI5Ii8+DQogICAgPHBhdGggZD0iTTg4IDg4IEEzNCAzNCAwIDAgMCA4OCA0MCIvPg0KICAgIDxwYXRoIGQ9Ik05OSA5OSBBNTAgNTAgMCAwIDAgOTkgMjkiLz4NCiAgPC9nPg0KICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyMCIgZmlsbD0iI2U4MjAxYSIvPg0KPC9zdmc+DQo="}) }) : { script: {"name":"Platform Check*","namespace":"http://tampermonkey.net/","version":"2026.9.30","description":"Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/platform_check/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+DQogIDx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CiAgDQogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJhMWE1MiIgc3Ryb2tlLXdpZHRoPSI5IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik00MCA4OCBBMzQgMzQgMCAwIDEgNDAgNDAiLz4NCiAgICA8cGF0aCBkPSJNMjkgOTkgQTUwIDUwIDAgMCAxIDI5IDI5Ii8+DQogICAgPHBhdGggZD0iTTg4IDg4IEEzNCAzNCAwIDAgMCA4OCA0MCIvPg0KICAgIDxwYXRoIGQ9Ik05OSA5OSBBNTAgNTAgMCAwIDAgOTkgMjkiLz4NCiAgPC9nPg0KICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyMCIgZmlsbD0iI2U4MjAxYSIvPg0KPC9zdmc+DQo="} };
+  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Platform Check*","namespace":"http://tampermonkey.net/","version":"2026.10.1","description":"Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/platform_check/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+DQogIDx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CiAgDQogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJhMWE1MiIgc3Ryb2tlLXdpZHRoPSI5IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik00MCA4OCBBMzQgMzQgMCAwIDEgNDAgNDAiLz4NCiAgICA8cGF0aCBkPSJNMjkgOTkgQTUwIDUwIDAgMCAxIDI5IDI5Ii8+DQogICAgPHBhdGggZD0iTTg4IDg4IEEzNCAzNCAwIDAgMCA4OCA0MCIvPg0KICAgIDxwYXRoIGQ9Ik05OSA5OSBBNTAgNTAgMCAwIDAgOTkgMjkiLz4NCiAgPC9nPg0KICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyMCIgZmlsbD0iI2U4MjAxYSIvPg0KPC9zdmc+DQo="}) }) : { script: {"name":"Platform Check*","namespace":"http://tampermonkey.net/","version":"2026.10.1","description":"Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/platform_check/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+DQogIDx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CiAgDQogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJhMWE1MiIgc3Ryb2tlLXdpZHRoPSI5IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik00MCA4OCBBMzQgMzQgMCAwIDEgNDAgNDAiLz4NCiAgICA8cGF0aCBkPSJNMjkgOTkgQTUwIDUwIDAgMCAxIDI5IDI5Ii8+DQogICAgPHBhdGggZD0iTTg4IDg4IEEzNCAzNCAwIDAgMCA4OCA0MCIvPg0KICAgIDxwYXRoIGQ9Ik05OSA5OSBBNTAgNTAgMCAwIDAgOTkgMjkiLz4NCiAgPC9nPg0KICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyMCIgZmlsbD0iI2U4MjAxYSIvPg0KPC9zdmc+DQo="} };
   (f=>document.readyState!=='loading'?f():document.addEventListener('DOMContentLoaded',f,{once:true}))(function(){ try { (function(){
 (function () {
 'use strict';
@@ -48343,11 +48343,57 @@ async function fetchYtmAlbum(id, label = 'YouTube Music') {
             if (r) otherVersions.push({ title: ytmText(r.title), sub: ytmText(r.subtitle), id: (r.navigationEndpoint && r.navigationEndpoint.browseEndpoint && r.navigationEndpoint.browseEndpoint.browseId) || null });
         }
     });
+    const songIds = ytmSongIds(shelf);   // whose credits name the label (#649)
     return {
         url: list ? `https://music.youtube.com/playlist?list=${list}` : `https://music.youtube.com/browse/${id}`,
         tracks, title: ytmText(h.title) || null, artist: ytmText(h.straplineTextOne) || null,
-        year: sub.find(s => /^\d{4}$/.test(s)) || null, kind: sub[0] || null, otherVersions,
+        year: sub.find(s => /^\d{4}$/.test(s)) || null, kind: sub[0] || null, otherVersions, songIds,
     };
+}
+// The songs a list links to, in order. Only a song (an "ATV" video) has credits; an album's
+// tracks can link to the official audio or music video instead ("OMV": every track of Random
+// Access Memories), which answers with an empty Credits dialog (#649).
+function ytmSongIds(o) {
+    const ids = [];
+    ytmWalk(o, x => {
+        const w = x.watchEndpoint;
+        const type = w && w.watchEndpointMusicSupportedConfigs && w.watchEndpointMusicSupportedConfigs.watchEndpointMusicConfig && w.watchEndpointMusicSupportedConfigs.watchEndpointMusicConfig.musicVideoType;
+        if (type === 'MUSIC_VIDEO_TYPE_ATV' && w.videoId && !ids.includes(w.videoId)) ids.push(w.videoId);
+    });
+    return ids;
+}
+// A song's credits (browse MPTC<videoId>, the ⋮ → Credits dialog), as { 'Performed by': [names], … }.
+function ytmCreditSections(j) {
+    const out = {};
+    ytmWalk(j, o => {
+        const s = o.dismissableDialogContentSectionRenderer;
+        if (s) out[ytmText(s.title)] = ((s.subtitle && s.subtitle.runs) || []).map(r => r.text.trim()).filter(Boolean);
+    });
+    return out;
+}
+// The album's label (#649). The album page names none; every song's credits end with "Music
+// metadata provided by", whoever delivered the metadata — the label, sometimes a distributor or
+// a combined "Darkroom/Interscope Records", like other platforms' ℗ lines. Read for the matched
+// album only, from its first song: the album page's, else the album playlist's, which lists the
+// songs where the album page links videos. One or two requests; the row's cache keeps the label.
+async function ytmAlbumLabel(meta, label = 'YouTube Music') {
+    if (!meta) return null;
+    let ids = meta.songIds || [];
+    const list = (String(meta.url).match(/[?&]list=(OLAK5uy_[\w-]+)/) || [])[1];
+    if (!ids.length && list) {
+        appendLog(label, `Label: the album page links no song (only videos) — reading its playlist ${list}`);
+        ids = ytmSongIds(await ytmCall('browse', { browseId: 'VL' + list }, label));
+    }
+    if (!ids.length) { appendLog(label, `Label: no song to read the credits of`, 'warn'); return null; }
+    for (const id of ids.slice(0, 2)) {
+        const j = await ytmCall('browse', { browseId: 'MPTC' + id }, label);
+        if (!j) return null;
+        const sec = ytmCreditSections(j);
+        const names = sec['Music metadata provided by'];
+        appendLog(label, `Label: credits of ${id} have ${Object.keys(sec).map(k => `"${k}" (${sec[k].length})`).join(', ') || 'no sections'} → ${names && names.length ? '"' + names.join(' / ') + '"' : 'none'}`, names && names.length ? 'ok' : 'warn');
+        if (names && names.length) return names.join(' / ');
+    }
+    return null;
 }
 // The row's tooltip names the album's other versions (#639); the ✓ stays — Platform Check finds
 // the same or a close release, and you decide (majkinetor). Kept in the cache, so a cached row says it too.
@@ -48384,8 +48430,9 @@ async function scanYtmusic({ artist, album, mbTracks, existingUrl, mbid, isVario
         const meta = id ? await fetchYtmAlbum(id, label) : null;
         if (meta) appendLog(label, `Album parsed: tracks=${meta.tracks ?? '?'} title="${meta.title}" artist="${meta.artist || '?'}" year=${meta.year || '?'}`, meta.tracks ? 'ok' : 'warn');
         else appendLog(label, `Couldn't read the linked album — shown unverified`, 'warn');
-        cacheSet(mbid, 'ytmusic', { url: existingUrl, tracks: meta?.tracks ?? null, year: meta?.year ?? null, label: null, source: 'MB rels', otherVersions: meta?.otherVersions || [] });
-        updateRow('ytmusic', { url: existingUrl, mbTracks, remoteTracks: meta?.tracks ?? null, year: meta?.year ?? null, source: 'MB rels' });
+        const lbl = await ytmAlbumLabel(meta, label);
+        cacheSet(mbid, 'ytmusic', { url: existingUrl, tracks: meta?.tracks ?? null, year: meta?.year ?? null, label: lbl, source: 'MB rels', otherVersions: meta?.otherVersions || [] });
+        updateRow('ytmusic', { url: existingUrl, mbTracks, remoteTracks: meta?.tracks ?? null, year: meta?.year ?? null, label: lbl, source: 'MB rels' });
         ytmNoteOtherVersions(meta?.otherVersions, label);
         return;
     }
@@ -48435,8 +48482,9 @@ async function scanYtmusic({ artist, album, mbTracks, existingUrl, mbid, isVario
     // page tells them apart, so strict barcode mode withholds YouTube Music like any platform
     // whose barcode can't be read.
     appendLog(label, `Picked (score=${pick.score}, ${source}): ${meta.url}`, pick.score >= 150 ? 'ok' : 'warn');
-    cacheSet(mbid, 'ytmusic', { url: meta.url, tracks: meta.tracks, year: meta.year, label: null, source, otherVersions: meta.otherVersions });
-    updateRow('ytmusic', { url: meta.url, mbTracks, remoteTracks: meta.tracks, year: meta.year, source });
+    const lbl = await ytmAlbumLabel(meta, label);
+    cacheSet(mbid, 'ytmusic', { url: meta.url, tracks: meta.tracks, year: meta.year, label: lbl, source, otherVersions: meta.otherVersions });
+    updateRow('ytmusic', { url: meta.url, mbTracks, remoteTracks: meta.tracks, year: meta.year, label: lbl, source });
     ytmNoteOtherVersions(meta.otherVersions, label);
 }
 
@@ -50151,7 +50199,7 @@ if (mbuTestHooks()) window.__pcTest464 = { openReleaseEditTab, openRgEditTab, PC
 // payload-preservation paths can be driven without a live ✓ match render.
 // #627 test hook — the amp-api pieces, driven against the live API without a row render
 if (mbuTestHooks()) window.__pcTest627 = { appleAmp, appleToken, appleAlbumMeta, applePickByUpc, appleStorefront, appleEach, appleAllStorefronts, APPLE_SHORTLIST, setAppleToken: t => { _appleTok = t; } };
-if (mbuTestHooks()) window.__pcTest639 = { ytmCall, ytmAlbumResults, fetchYtmAlbum, ytmAlbumIdOf, YTM_ALBUMS_FILTER };
+if (mbuTestHooks()) window.__pcTest639 = { ytmCall, ytmAlbumResults, fetchYtmAlbum, ytmAlbumIdOf, ytmAlbumLabel, ytmCreditSections, YTM_ALBUMS_FILTER };
 if (mbuTestHooks()) window.__pcTest644 = { amzCall, amzAlbumResults, fetchAmzAlbum };
 if (mbuTestHooks()) window.__pcTest556 = { pcUrlKey, pcSameUrl, pcIsVerifyInterstitial, injectInto, runInjectHelper, cacheGet, cacheSet, mbDataGet };
 
