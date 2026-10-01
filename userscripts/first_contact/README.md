@@ -34,15 +34,6 @@ On a platform's album page, click **Import to MusicBrainz** in the bottom-right 
 | Annotation | optional, off by default: the platform's notes, and where they come from (see [Settings](#settings)) |
 | Edit note | the album page, and the script's name and version |
 
-Artists are seeded by name only. Check everything, then submit as usual.
-
-MusicBrainz first asks you to **Confirm form submission**, as for every import from another site. Click **Continue**; with [Apollo Editor](../apollo_editor/README.md#settings)'s *Auto confirm release submissions* on, the page is skipped.
-
-While the album is read, the button counts the tracks: *Reading Deezer… 7/13*. If something fails, a message says why and offers **Copy log**.
-
-> [!NOTE]
-> The tab opens at once, while the platform is still being read, so the browser doesn't block it as a popup. The data reaches it a moment later.
-
 ### Release type
 
 When the platform gives no type, or only a plain *album* while the title says otherwise, it is guessed, the most certain sign first:
