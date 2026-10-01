@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.1.190337
+// @version      2026.10.1.210938
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E
@@ -167,7 +167,7 @@
   const gmSave = (key, raw) => { try { GM_setValue(key, raw); } catch (e) {} };
   // first log line: the script + version. The MB release line is logged once the
   // editor is ready (so it carries the real title) — see init().
-  Log.info('Apollo Editor' + (() => { try { return ' v' + GM_info.script.version; } catch (e) { return ''; } })());
+  Log.info(mbuStartupInfo('Apollo Editor'));
 
   const W = (typeof unsafeWindow !== 'undefined' && unsafeWindow) || window;
   const ORIGIN = location.origin;
@@ -2007,6 +2007,26 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
           } catch (e) { /* the page allows no new policy: plain strings, as before */ }
       }
       return _mbuTT ? _mbuTT.createHTML(String(s)) : String(s);
+  }
+
+  // The first line of every script's log: the script, its version, and what runs it, so a
+  // pasted log says which manager and browser it came from (#282 started it in Art Station):
+  //   Log.info(mbuStartupInfo('Fusion'));
+  //   -> Fusion v2026.10.1 · Violentmonkey 2.31.0 · firefox 143.0 (win)
+  // Inside String Theory GM_info describes the bundle, so the line names it:
+  //   -> Fusion (String Theory v2026.10.1) · Tampermonkey 5.3.3 · chrome 140.0 (win)
+  function mbuStartupInfo(name) {
+      var g = null;
+      try { g = (typeof GM_info !== 'undefined' && GM_info) || null; } catch (e) { /* no GM_info */ }
+      var s = (g && g.script) || {}, p = (g && g.platform) || {};
+      var host = String(s.name || '').replace(/\*$/, ''), ver = s.version || '?';
+      var line = !name ? (host || 'Script') + ' v' + ver
+          : (host && host !== name) ? name + ' (' + host + ' v' + ver + ')'
+          : name + ' v' + ver;
+      if (g) line += ' · ' + (g.scriptHandler || 'unknown manager') + (g.version ? ' ' + g.version : '');
+      if (p.browserName) line += ' · ' + p.browserName + (p.browserVersion ? ' ' + p.browserVersion : '') + (p.os ? ' (' + p.os + ')' : '');
+      else { try { line += ' · ' + navigator.userAgent; } catch (e) { /* no navigator */ } }
+      return line;
   }
 
   // One copy per page (#653). With String Theory and a standalone install of the same script

@@ -148,6 +148,26 @@ export function insertDiscogsBar(discogsUrl, sources = {}, meta = {}) {
         return _mbuTT ? _mbuTT.createHTML(String(s)) : String(s);
     }
 
+    // The first line of every script's log: the script, its version, and what runs it, so a
+    // pasted log says which manager and browser it came from (#282 started it in Art Station):
+    //   Log.info(mbuStartupInfo('Fusion'));
+    //   -> Fusion v2026.10.1 · Violentmonkey 2.31.0 · firefox 143.0 (win)
+    // Inside String Theory GM_info describes the bundle, so the line names it:
+    //   -> Fusion (String Theory v2026.10.1) · Tampermonkey 5.3.3 · chrome 140.0 (win)
+    function mbuStartupInfo(name) {
+        var g = null;
+        try { g = (typeof GM_info !== 'undefined' && GM_info) || null; } catch (e) { /* no GM_info */ }
+        var s = (g && g.script) || {}, p = (g && g.platform) || {};
+        var host = String(s.name || '').replace(/\*$/, ''), ver = s.version || '?';
+        var line = !name ? (host || 'Script') + ' v' + ver
+            : (host && host !== name) ? name + ' (' + host + ' v' + ver + ')'
+            : name + ' v' + ver;
+        if (g) line += ' · ' + (g.scriptHandler || 'unknown manager') + (g.version ? ' ' + g.version : '');
+        if (p.browserName) line += ' · ' + p.browserName + (p.browserVersion ? ' ' + p.browserVersion : '') + (p.os ? ' (' + p.os + ')' : '');
+        else { try { line += ' · ' + navigator.userAgent; } catch (e) { /* no navigator */ } }
+        return line;
+    }
+
     // One copy per page (#653). With String Theory and a standalone install of the same script
     // both on, two copies build the same element ids and fight over them: each settings window
     // fills in the other's checkboxes, rows flip between two rule sets. So one copy runs, the
@@ -823,6 +843,7 @@ export function insertDiscogsBar(discogsUrl, sources = {}, meta = {}) {
         if (!_mbuNs.MBU.fitToolbar) _mbuNs.MBU.fitToolbar = mbuFitToolbar;
     } catch (e) { /* a locked-down page must not stop the script loading */ }
     // </ST-UI>
+    log.info(mbuStartupInfo('Credit Hoarder'));   // script, manager and browser, at the head of the log
     const style = document.createElement('style');
     style.innerText = MBU_TOKENS + MBU_UI_CSS + `
         .discogs-bar {

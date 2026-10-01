@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Platform Check
 // @namespace    http://tampermonkey.net/
-// @version      2026.10.1.190337
+// @version      2026.10.1.210938
 // @description  Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+DQogIDx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CiAgDQogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJhMWE1MiIgc3Ryb2tlLXdpZHRoPSI5IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik00MCA4OCBBMzQgMzQgMCAwIDEgNDAgNDAiLz4NCiAgICA8cGF0aCBkPSJNMjkgOTkgQTUwIDUwIDAgMCAxIDI5IDI5Ii8+DQogICAgPHBhdGggZD0iTTg4IDg4IEEzNCAzNCAwIDAgMCA4OCA0MCIvPg0KICAgIDxwYXRoIGQ9Ik05OSA5OSBBNTAgNTAgMCAwIDAgOTkgMjkiLz4NCiAgPC9nPg0KICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyMCIgZmlsbD0iI2U4MjAxYSIvPg0KPC9zdmc+DQo=
@@ -1137,6 +1137,26 @@ function mbuHtml(s) {
         } catch (e) { /* the page allows no new policy: plain strings, as before */ }
     }
     return _mbuTT ? _mbuTT.createHTML(String(s)) : String(s);
+}
+
+// The first line of every script's log: the script, its version, and what runs it, so a
+// pasted log says which manager and browser it came from (#282 started it in Art Station):
+//   Log.info(mbuStartupInfo('Fusion'));
+//   -> Fusion v2026.10.1 · Violentmonkey 2.31.0 · firefox 143.0 (win)
+// Inside String Theory GM_info describes the bundle, so the line names it:
+//   -> Fusion (String Theory v2026.10.1) · Tampermonkey 5.3.3 · chrome 140.0 (win)
+function mbuStartupInfo(name) {
+    var g = null;
+    try { g = (typeof GM_info !== 'undefined' && GM_info) || null; } catch (e) { /* no GM_info */ }
+    var s = (g && g.script) || {}, p = (g && g.platform) || {};
+    var host = String(s.name || '').replace(/\*$/, ''), ver = s.version || '?';
+    var line = !name ? (host || 'Script') + ' v' + ver
+        : (host && host !== name) ? name + ' (' + host + ' v' + ver + ')'
+        : name + ' v' + ver;
+    if (g) line += ' · ' + (g.scriptHandler || 'unknown manager') + (g.version ? ' ' + g.version : '');
+    if (p.browserName) line += ' · ' + p.browserName + (p.browserVersion ? ' ' + p.browserVersion : '') + (p.os ? ' (' + p.os + ')' : '');
+    else { try { line += ' · ' + navigator.userAgent; } catch (e) { /* no navigator */ } }
+    return line;
 }
 
 // One copy per page (#653). With String Theory and a standalone install of the same script
@@ -2591,7 +2611,7 @@ function appendLog(platform, msg, kind = 'info') {
     logPanel.insertAdjacentHTML('beforeend', `<div data-platform="${pcLogKey(platform)}" style="margin-bottom: 3px; border-left: 3px solid ${color}; padding-left: 6px;"><span style="color: var(--mbu-text-dim);">[${ts}]</span> <span style="color: ${color}; font-weight: bold;">[${platform}]</span> <span style="color: var(--mbu-text-weak);">${msg}</span></div>`);
     logPanel.scrollTop = logPanel.scrollHeight;
 }
-appendLog('System', `Platform Check v${(typeof GM_info !== 'undefined' && GM_info.script?.version) || '?'} — startup`);
+appendLog('System', mbuStartupInfo('Platform Check') + ' — startup');
 
 // #556: the background add's stage timeline, surfaced HERE — see pcMark. The
 // tab it happens in closes itself and this page reloads underneath it, so the

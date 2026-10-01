@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         ISRC Scout
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.1.190337
+// @version      2026.10.1.210938
 // @description  Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify / Beatport / Tidal / Volumo / HDtracks / Qobuz, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPklTUkMgU2NvdXQ8L3RpdGxlPgogICAgPHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPgogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjQwIi8+CiAgICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyNiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2U9IiNiOWEzZTgiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPgogIDwvZz4KICA8bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+Cjwvc3ZnPgo=
@@ -560,7 +560,7 @@
   // token/secret/signature values, and cap length. (#201: the query was being
   // dropped, so a 404 gave no clue which id/app_id was actually sent.)
   const shortUrl = (u) => String(u || '').replace(/([?&](?:[a-z_]*(?:token|secret|sig|password))=)[^&#]*/gi, '$1…').slice(0, 200);
-  Log.info('ISRC Scout v' + SCRIPT_VERSION + ' — ' + MB_ROOT);
+  Log.info(mbuStartupInfo('ISRC Scout') + ' — ' + MB_ROOT);
 
   /* ═══════════════════════════════════════════════════════════════════════
      STYLES
@@ -613,6 +613,26 @@
           } catch (e) { /* the page allows no new policy: plain strings, as before */ }
       }
       return _mbuTT ? _mbuTT.createHTML(String(s)) : String(s);
+  }
+
+  // The first line of every script's log: the script, its version, and what runs it, so a
+  // pasted log says which manager and browser it came from (#282 started it in Art Station):
+  //   Log.info(mbuStartupInfo('Fusion'));
+  //   -> Fusion v2026.10.1 · Violentmonkey 2.31.0 · firefox 143.0 (win)
+  // Inside String Theory GM_info describes the bundle, so the line names it:
+  //   -> Fusion (String Theory v2026.10.1) · Tampermonkey 5.3.3 · chrome 140.0 (win)
+  function mbuStartupInfo(name) {
+      var g = null;
+      try { g = (typeof GM_info !== 'undefined' && GM_info) || null; } catch (e) { /* no GM_info */ }
+      var s = (g && g.script) || {}, p = (g && g.platform) || {};
+      var host = String(s.name || '').replace(/\*$/, ''), ver = s.version || '?';
+      var line = !name ? (host || 'Script') + ' v' + ver
+          : (host && host !== name) ? name + ' (' + host + ' v' + ver + ')'
+          : name + ' v' + ver;
+      if (g) line += ' · ' + (g.scriptHandler || 'unknown manager') + (g.version ? ' ' + g.version : '');
+      if (p.browserName) line += ' · ' + p.browserName + (p.browserVersion ? ' ' + p.browserVersion : '') + (p.os ? ' (' + p.os + ')' : '');
+      else { try { line += ' · ' + navigator.userAgent; } catch (e) { /* no navigator */ } }
+      return line;
   }
 
   // One copy per page (#653). With String Theory and a standalone install of the same script

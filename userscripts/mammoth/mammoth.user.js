@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Mammoth
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.1.190337
+// @version      2026.10.1.210938
 // @description  Edit-note memory for MusicBrainz: auto-remembers your last edit notes and lets you save reusable ones, recalling them from a compact panel beside the edit-note field on every edit form. A nicer replacement for Elephant Editor.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48dGV4dCB4PSI2NCIgeT0iNjgiIGZvbnQtc2l6ZT0iMTA0IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0iY2VudHJhbCI+8J+mozwvdGV4dD48L3N2Zz4=
@@ -35,6 +35,7 @@
   'use strict';
   // one copy per page: with String Theory and a standalone install both on, the newer one runs (#653)
   if (!mbuClaim('mammoth', 'Mammoth')) return;
+  try { console.info('[Mammoth] ' + mbuStartupInfo('Mammoth')); } catch (e) { /* no console */ }   // Mammoth keeps no session log
 
   const KEY = 'mammoth:data';
   const SKEY = 'mammoth:settings';
@@ -289,6 +290,26 @@
           } catch (e) { /* the page allows no new policy: plain strings, as before */ }
       }
       return _mbuTT ? _mbuTT.createHTML(String(s)) : String(s);
+  }
+
+  // The first line of every script's log: the script, its version, and what runs it, so a
+  // pasted log says which manager and browser it came from (#282 started it in Art Station):
+  //   Log.info(mbuStartupInfo('Fusion'));
+  //   -> Fusion v2026.10.1 · Violentmonkey 2.31.0 · firefox 143.0 (win)
+  // Inside String Theory GM_info describes the bundle, so the line names it:
+  //   -> Fusion (String Theory v2026.10.1) · Tampermonkey 5.3.3 · chrome 140.0 (win)
+  function mbuStartupInfo(name) {
+      var g = null;
+      try { g = (typeof GM_info !== 'undefined' && GM_info) || null; } catch (e) { /* no GM_info */ }
+      var s = (g && g.script) || {}, p = (g && g.platform) || {};
+      var host = String(s.name || '').replace(/\*$/, ''), ver = s.version || '?';
+      var line = !name ? (host || 'Script') + ' v' + ver
+          : (host && host !== name) ? name + ' (' + host + ' v' + ver + ')'
+          : name + ' v' + ver;
+      if (g) line += ' · ' + (g.scriptHandler || 'unknown manager') + (g.version ? ' ' + g.version : '');
+      if (p.browserName) line += ' · ' + p.browserName + (p.browserVersion ? ' ' + p.browserVersion : '') + (p.os ? ' (' + p.os + ')' : '');
+      else { try { line += ' · ' + navigator.userAgent; } catch (e) { /* no navigator */ } }
+      return line;
   }
 
   // One copy per page (#653). With String Theory and a standalone install of the same script

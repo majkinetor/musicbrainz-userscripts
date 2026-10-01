@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Fusion
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.1.190337
+// @version      2026.10.1.210938
 // @description  Merge-recordings assistant for MusicBrainz: gather a pool of candidate recordings from a release / release group / recording page (or paste any MBID/URL), auto-match them into merge groups by ISRC / AcoustID / length / title+artist, review and adjust the groups, then submit the merges directly in the background — no MB merge page involved.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPkZ1c2lvbjwvdGl0bGU+CiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjOGE1Y2Y2IiBzdHJva2Utd2lkdGg9IjciPgogICAgPGVsbGlwc2UgY3g9IjY0IiBjeT0iNjQiIHJ4PSI1MiIgcnk9IjIyIi8+CiAgICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSI2NCIgcng9IjUyIiByeT0iMjIiIHRyYW5zZm9ybT0icm90YXRlKDYwIDY0IDY0KSIvPgogICAgPGVsbGlwc2UgY3g9IjY0IiBjeT0iNjQiIHJ4PSI1MiIgcnk9IjIyIiB0cmFuc2Zvcm09InJvdGF0ZSgxMjAgNjQgNjQpIi8+CiAgPC9nPgogIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjE0IiBmaWxsPSIjNmQzZmYwIi8+Cjwvc3ZnPgo=
@@ -51,6 +51,7 @@ const escapeHtml = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '
    #283 / #529, shared since X12 of #623). Every Log.* line lands there, and the
    Log button opens it, copy/pastable as a Markdown <details> block. ── */
 const Log = mbuLog({ name: 'Fusion', version: VERSION, header: 'Fusion — activity log', key: 'fusion.logwin', before: () => fsStyle() });
+Log.info(mbuStartupInfo('Fusion'));
 const openLog = () => Log.open();
 
 /* ── GM_xmlhttpRequest promisified (ported from isrc_scout's http/gmGet/gmPost) —
@@ -1533,6 +1534,26 @@ function mbuHtml(s) {
         } catch (e) { /* the page allows no new policy: plain strings, as before */ }
     }
     return _mbuTT ? _mbuTT.createHTML(String(s)) : String(s);
+}
+
+// The first line of every script's log: the script, its version, and what runs it, so a
+// pasted log says which manager and browser it came from (#282 started it in Art Station):
+//   Log.info(mbuStartupInfo('Fusion'));
+//   -> Fusion v2026.10.1 · Violentmonkey 2.31.0 · firefox 143.0 (win)
+// Inside String Theory GM_info describes the bundle, so the line names it:
+//   -> Fusion (String Theory v2026.10.1) · Tampermonkey 5.3.3 · chrome 140.0 (win)
+function mbuStartupInfo(name) {
+    var g = null;
+    try { g = (typeof GM_info !== 'undefined' && GM_info) || null; } catch (e) { /* no GM_info */ }
+    var s = (g && g.script) || {}, p = (g && g.platform) || {};
+    var host = String(s.name || '').replace(/\*$/, ''), ver = s.version || '?';
+    var line = !name ? (host || 'Script') + ' v' + ver
+        : (host && host !== name) ? name + ' (' + host + ' v' + ver + ')'
+        : name + ' v' + ver;
+    if (g) line += ' · ' + (g.scriptHandler || 'unknown manager') + (g.version ? ' ' + g.version : '');
+    if (p.browserName) line += ' · ' + p.browserName + (p.browserVersion ? ' ' + p.browserVersion : '') + (p.os ? ' (' + p.os + ')' : '');
+    else { try { line += ' · ' + navigator.userAgent; } catch (e) { /* no navigator */ } }
+    return line;
 }
 
 // One copy per page (#653). With String Theory and a standalone install of the same script

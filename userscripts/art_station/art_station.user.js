@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Art Station
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.1.190337
+// @version      2026.10.1.210938
 // @description  Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png
@@ -202,11 +202,6 @@
   // GM_info is exposed even under @grant none on the common managers; fall back to
   // the hard-coded repo URL so the note never reads "v undefined".
   const _gm = (typeof GM_info !== 'undefined' && GM_info.script) ? GM_info.script : null;
-  // which userscript manager is running us (Violentmonkey / Tampermonkey / Greasemonkey / …)
-  // + its version — surfaced in the session log to help diagnose manager-specific issues (#282)
-  const _mgr = (typeof GM_info !== 'undefined' && GM_info)
-    ? ((GM_info.scriptHandler || 'unknown manager') + (GM_info.version ? ' ' + GM_info.version : ''))
-    : '';
   const SCRIPT_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/tree/main/userscripts/art_station';
   const ICON_URL = 'https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png';
   const ATTRIBUTION = _gm
@@ -444,7 +439,7 @@
   async function loadArt() {
     if (!_booted) {   // first two log lines: the script + version, then the MB entity
       _booted = true;
-      asLog.info('Art Station' + ((_gm && _gm.version) ? ' v' + _gm.version : '') + (_mgr ? ' · ' + _mgr : ''));
+      asLog.info(mbuStartupInfo('Art Station'));
       try { const ri = releaseInfo(); const t = (ri.title || '').trim(); asLog.info('Release: ' + (t ? t + ' — ' : '') + (ri.url || (location.origin + '/' + ENT.kind + '/' + MBID))); } catch (e) { asLog.info('Release: ' + location.origin + '/release/' + MBID); }
       setTimeout(() => { try { LOG.reopen(); } catch (e) {} }, 600);   // #283 reopen the log if it was left open
     }
@@ -3824,6 +3819,26 @@
           } catch (e) { /* the page allows no new policy: plain strings, as before */ }
       }
       return _mbuTT ? _mbuTT.createHTML(String(s)) : String(s);
+  }
+
+  // The first line of every script's log: the script, its version, and what runs it, so a
+  // pasted log says which manager and browser it came from (#282 started it in Art Station):
+  //   Log.info(mbuStartupInfo('Fusion'));
+  //   -> Fusion v2026.10.1 · Violentmonkey 2.31.0 · firefox 143.0 (win)
+  // Inside String Theory GM_info describes the bundle, so the line names it:
+  //   -> Fusion (String Theory v2026.10.1) · Tampermonkey 5.3.3 · chrome 140.0 (win)
+  function mbuStartupInfo(name) {
+      var g = null;
+      try { g = (typeof GM_info !== 'undefined' && GM_info) || null; } catch (e) { /* no GM_info */ }
+      var s = (g && g.script) || {}, p = (g && g.platform) || {};
+      var host = String(s.name || '').replace(/\*$/, ''), ver = s.version || '?';
+      var line = !name ? (host || 'Script') + ' v' + ver
+          : (host && host !== name) ? name + ' (' + host + ' v' + ver + ')'
+          : name + ' v' + ver;
+      if (g) line += ' · ' + (g.scriptHandler || 'unknown manager') + (g.version ? ' ' + g.version : '');
+      if (p.browserName) line += ' · ' + p.browserName + (p.browserVersion ? ' ' + p.browserVersion : '') + (p.os ? ' (' + p.os + ')' : '');
+      else { try { line += ' · ' + navigator.userAgent; } catch (e) { /* no navigator */ } }
+      return line;
   }
 
   // One copy per page (#653). With String Theory and a standalone install of the same script
