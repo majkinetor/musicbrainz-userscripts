@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.1
+// @version      2026.10.1.162021
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E
@@ -1723,8 +1723,31 @@
      recording, which does carry .video in the release editor's own model
      (verified in test/probe-584-video-flag.mjs — 3 of 13 true, none undefined). */
   function trackRecIsVideo(entry) {
-    try { const rec = u(koTrack(entry.mi, entry.ti).recording); return !!(rec && u(rec.video)); }
+    try {
+      const t = koTrack(entry.mi, entry.ti);
+      if (typeof t.hasNewRecording === 'function' && u(t.hasNewRecording)) return false;   // #655: unset → a new recording, not a video
+      const rec = u(t.recording); return !!(rec && u(rec.video));
+    }
     catch (e) { return false; }
+  }
+  /* #655 (chaban-mb): "When unsetting a wrongly matched video recording the video
+     indicator is not removed from the tracklist." The Tracklist is built once and
+     refreshed once per visit, so a recording linked or unset on the Recordings tab
+     (or by MB itself) left its rows showing the old marker. Bring each row's
+     marker in line with the live recording, in place: a rebuild would cost the
+     match badges nothing, but it is far more work than one icon. */
+  function syncTlVideoMarks() {
+    let added = 0, removed = 0;
+    document.querySelectorAll('.tc-mirror tr[data-tk]').forEach(tr => {
+      const want = trackRecIsVideo({ mi: +tr.dataset.mi, ti: +tr.dataset.ti });
+      const mk = tr.querySelector('.t-wrap > .tc-rec-video');
+      if (want && !mk) {
+        const wrap = tr.querySelector('.t-wrap'), before = wrap && wrap.querySelector(':scope > .t-title-disp, :scope > .t-title');
+        if (!before) return;
+        before.insertAdjacentHTML('beforebegin', VIDEO_MARK_PRE); added++;
+      } else if (!want && mk) { mk.remove(); removed++; }
+    });
+    if (added || removed) Log.debug('tracklist video markers: ' + added + ' added, ' + removed + ' removed (a recording link changed)');
   }
   // #329: on a disc-ID (TOC) medium the audio tracks' lengths are fixed by the TOC, so
   // native MB makes them read-only. Pregap + data tracks aren't covered by the audio TOC
@@ -6222,6 +6245,7 @@
         // and every badge it set was gone ("set") in the table shown. Wait for the pass (#575).
         if (tlWant()) { if (!document.getElementById('tc-mirror-wrap')) showMirror(); else if (!_tlRefreshed) { _tlRefreshed = true; if (_matching || _autoMatching) runSync(); else loadAndRender(); } } else hideMirror(); }
       else if (!tl && _tlPrev) { _tlPrev = false; }
+      if (tl && document.getElementById('tc-mirror-wrap')) syncTlVideoMarks();   // #655
       if (rec && !_recPrev) { _recPrev = true; Log.info('entered Recordings tab'); }
       else if (!rec && _recPrev) { _recPrev = false; }
       // mount as soon as the (lazily-built) native table exists — retry each tick so there's no native flash
@@ -6931,7 +6955,7 @@
         mi, ti, number: u(t.number), title: u(t.name), trackArtist: acText(u(t.artistCredit)), trackArtistHtml: acLinks(u(t.artistCredit), true), trackAc: acData(u(t.artistCredit)), trackLen: u(t.length),
         isNew,
         recGid: rec ? u(rec.gid) : null, recName: rec ? u(rec.name) : null, recComment: rec ? (u(rec.comment) || '') : '', recArtist: rec ? acText(u(rec.artistCredit)) : null, recArtistHtml: rec ? acLinks(u(rec.artistCredit), true) : '', recAc: rec ? acData(u(rec.artistCredit)) : [], recLen: rec ? u(rec.length) : null,
-        recVideo: rec ? !!u(rec.video) : false,   // #303 — native recordings table shows a video marker; mirror it here
+        recVideo: rec && !isNew ? !!u(rec.video) : false,   // #655: a track set to a new recording has no video   // #303 — native recordings table shows a video marker; mirror it here
         // submit-flags: when on, the recording's title/artist will be overwritten with the track's on submit
         copyTitle: typeof t.updateRecordingTitle === 'function' ? !!u(t.updateRecordingTitle) : false,
         copyArtist: typeof t.updateRecordingArtist === 'function' ? !!u(t.updateRecordingArtist) : false,
