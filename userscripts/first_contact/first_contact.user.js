@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         First Contact
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.1.174700
+// @version      2026.10.1.175437
 // @description  Import a release into MusicBrainz from the platform's album page with one click: the release editor opens with the title, tracklist, artists, date, label, barcode and link filled in. Each artist's platform link is handed to Apollo Editor for matching. Platforms: Deezer, Bandcamp, Discogs, Apple Music, Tidal, Qobuz, Beatport, Spotify, YouTube Music.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPkZpcnN0IENvbnRhY3Q8L3RpdGxlPgogIDwhLS0gdHJhY3RvciBiZWFtIC0tPgogIDxwYXRoIGQ9Ik01MCA0NCBMNzggNDQgTDEwNCAxMTIgTDI0IDExMiBaIiBmaWxsPSIjZjZjNDMxIiBvcGFjaXR5PSIwLjkiLz4KICA8cGF0aCBkPSJNNTYgNDQgTDcyIDQ0IEw4OCAxMTIgTDQwIDExMiBaIiBmaWxsPSIjZmRlNjhhIiBvcGFjaXR5PSIwLjciLz4KICA8IS0tIGxhbmRpbmcgcmluZyAtLT4KICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSIxMTQiIHJ4PSI0MiIgcnk9IjgiIGZpbGw9IiMxZTIzNDYiIHN0cm9rZT0iI2M5Y2RmMiIgc3Ryb2tlLXdpZHRoPSIzIi8+CiAgPGVsbGlwc2UgY3g9IjY0IiBjeT0iMTEzIiByeD0iMjYiIHJ5PSI0LjIiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2Y2YzQzMSIgc3Ryb2tlLXdpZHRoPSIyLjQiLz4KICA8IS0tIHNhdWNlcjogYSBwYWxlIHJpbSwgc28gaXQgc2hvd3Mgb24gYSBkYXJrIGJhY2tncm91bmQgdG9vIC0tPgogIDxwYXRoIGQ9Ik00MCAyNiBBMjQgMTggMCAwIDEgODggMjYgWiIgZmlsbD0iIzFlMjM0NiIgc3Ryb2tlPSIjYzljZGYyIiBzdHJva2Utd2lkdGg9IjMiLz4KICA8cGF0aCBkPSJNNTAgMTggQTEwIDYgMCAwIDEgNjAgMTQiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2ZmZiIgc3Ryb2tlLXdpZHRoPSIyLjYiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxlbGxpcHNlIGN4PSI2NCIgY3k9IjMyIiByeD0iNTYiIHJ5PSIxMyIgZmlsbD0iIzFlMjM0NiIgc3Ryb2tlPSIjYzljZGYyIiBzdHJva2Utd2lkdGg9IjMiLz4KICA8Y2lyY2xlIGN4PSIzOCIgY3k9IjMyIiByPSI0LjQiIGZpbGw9IiNmZmYiLz4KICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjM0IiByPSI0LjQiIGZpbGw9IiNmZmYiLz4KICA8Y2lyY2xlIGN4PSI5MCIgY3k9IjMyIiByPSI0LjQiIGZpbGw9IiNmZmYiLz4KICA8IS0tIHRoZSByZWxlYXNlIGJlaW5nIGJlYW1lZCB1cDogYSBwdXJwbGUgaGV4YWdvbiB3aXRoIGEgbm90ZSAtLT4KICA8cGF0aCBkPSJNNjQgNTggTDg0IDY5LjUgTDg0IDkyLjUgTDY0IDEwNCBMNDQgOTIuNSBMNDQgNjkuNSBaIiBmaWxsPSIjN2I0ZmQ2Ii8+CiAgPHBhdGggZD0iTTY0IDU4IEw4NCA2OS41IEw2NCA4MSBMNDQgNjkuNSBaIiBmaWxsPSIjOWI3MmVhIi8+CiAgPHBhdGggZD0iTTYwIDcyIEw3NCA2OSBMNzQgODkiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2ZmZiIgc3Ryb2tlLXdpZHRoPSIzLjQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz4KICA8cGF0aCBkPSJNNjAgNzIgTDYwIDkyIiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iMy40Ii8+CiAgPGVsbGlwc2UgY3g9IjU2IiBjeT0iOTIiIHJ4PSI0LjYiIHJ5PSIzLjYiIGZpbGw9IiNmZmYiLz4KICA8ZWxsaXBzZSBjeD0iNzAiIGN5PSI4OSIgcng9IjQuNiIgcnk9IjMuNiIgZmlsbD0iI2ZmZiIvPgogIDwhLS0gc3BhcmtsZXMgLS0+CiAgPHBhdGggZD0iTTE4IDU0IGwyLjUgNiA2IDIuNSAtNiAyLjUgLTIuNSA2IC0yLjUgLTYgLTYgLTIuNSA2IC0yLjUgWiIgZmlsbD0iI2Y2YzQzMSIvPgogIDxwYXRoIGQ9Ik0xMDggNTIgbDIuNSA2IDYgMi41IC02IDIuNSAtMi41IDYgLTIuNSAtNiAtNiAtMi41IDYgLTIuNSBaIiBmaWxsPSIjMWUyMzQ2Ii8+CiAgPHBhdGggZD0iTTExMiA4MiBsMS44IDQuMiA0LjIgMS44IC00LjIgMS44IC0xLjggNC4yIC0xLjggLTQuMiAtNC4yIC0xLjggNC4yIC0xLjggWiIgZmlsbD0iI2Y2YzQzMSIvPgogIDxwYXRoIGQ9Ik0xNCA4NiBsMS44IDQuMiA0LjIgMS44IC00LjIgMS44IC0xLjggNC4yIC0xLjggLTQuMiAtNC4yIC0xLjggNC4yIC0xLjggWiIgZmlsbD0iIzFlMjM0NiIvPgo8L3N2Zz4K
@@ -210,6 +210,37 @@ function guessReleaseType(title, tracks) {
 }
 
 // Latn when every letter in the titles is Latin; nothing otherwise (left for the editor).
+// #650 (majkinetor): "fail to add multiple labels 'Crystal Method / Geffen'". A platform that has
+// one label field writes two labels in it with " / " between them (Apple, Qobuz). Only a spaced
+// slash splits: "AC/DC Records" is one name. A split label loses the platform's link, which is
+// the combined name's page, not either label's.
+function splitLabels(labels) {
+    const out = [];
+    for (const l of labels || []) {
+        const parts = String(l.name || '').split(/\s+\/\s+/).map(x => x.trim()).filter(Boolean);
+        if (parts.length < 2) { out.push(l); continue; }
+        Log.info(`label "${l.name}" is ${parts.length} labels: ${parts.join(' | ')}`);
+        parts.forEach(name => out.push({ name, catno: l.catno || '' }));
+    }
+    return out;
+}
+
+// A label from a copyright line, for a platform that has no label field (Tidal, #650: "This tidal
+// release didn't add label (Outpost Recordings)"). "℗ 2020 Outpost Recordings" → Outpost Recordings;
+// "℗ 2013 Daft Life Limited under exclusive license to Columbia Records, a Division of Sony Music
+// Entertainment" → Columbia Records, the label the release came out on. Anything that doesn't read
+// as one name (several years and owners, "All rights reserved" alone) gives none.
+function labelFromCopyright(text) {
+    let t = String(text || '').trim();
+    if (!t) return null;
+    t = t.replace(/^(?:\(?[℗©]\)?|\([pc]\))\s*/i, '').replace(/^(?:\d{4}\s*(?:[-–,]\s*\d{4}\s*)?)+/, '').trim();
+    const lic = t.match(/\bunder (?:exclusive )?licen[cs]e to\s+(.+)$/i);
+    if (lic) t = lic[1];
+    t = t.replace(/,\s*(?:a|an)\s+(?:division|label|imprint|company)\b.*$/i, '').replace(/\.?\s*all rights reserved\.?$/i, '').replace(/[.,;\s]+$/, '').trim();
+    if (!t || t.length > 60 || /[℗©]|\b\d{4}\b/.test(t) || /^(?:all rights reserved|under licen[cs]e)/i.test(t)) return null;
+    return t;
+}
+
 function guessScript(texts) {
     const letters = texts.join(' ').replace(/[^\p{L}]/gu, '');
     if (!letters) return null;
@@ -671,7 +702,8 @@ const APPLE = {
 // Tidal: the official catalogue API (openapi.tidal.com/v2) with an app token from the
 // client-credentials grant — no login — as ISRC Scout reads it. One request has the album, its
 // tracks and every artist (include=artists,items,items.artists); longer albums page on. Tidal
-// has no label field (only a copyright line), so the label is left for you.
+// has no label field, only a copyright line, which names the label most of the time: the label is
+// read from it (labelFromCopyright), and left for you when it doesn't read as one name.
 const TIDAL = {
     id: 'tidal',
     name: 'Tidal',
@@ -766,7 +798,7 @@ const TIDAL = {
             date: { year: y || null, month: m || null, day: d || null },
             country: 'XW',
             barcode: at.barcodeId || null,
-            labels: [],
+            labels: (lbl => (lbl ? [{ name: lbl, catno: '' }] : []))(labelFromCopyright((at.copyright || {}).text)),
             urls: [{ url, linkType: 980 }],   // 980 = streaming page (paid)
             mediums,
         };
@@ -949,36 +981,76 @@ const SPOTIFY = {
     host: /^open\.spotify\.com$/,
     albumId(loc) { const m = loc.pathname.match(/^\/(?:intl-[a-z-]+\/)?album\/([A-Za-z0-9]{22})\/?$/); return m ? m[1] : null; },
     TYPES: { ALBUM: ['Album'], SINGLE: ['Single'], EP: ['EP'], COMPILATION: ['Album', 'Compilation'] },
-    heard: null,   // { url, headers, hash } of the player's last album query
-    // hook the page's fetch before the player starts: note the album query's headers and id
+    // #650 (majkinetor: "Spotify fails" — the player's album query was never heard). The hook took
+    // only fetch(url, init) with a string body: a Request object, an XHR, or a userscript manager
+    // that starts the script after the player's first query all slipped past it. Now the token
+    // comes from ANY authorised request of the player (fetch or XHR, Request or init), the query id
+    // from its getAlbum when heard and a known one otherwise, and the log says what was heard.
+    QUERY_URL: 'https://api-partner.spotify.com/pathfinder/v2/query',
+    GETALBUM_HASH: '6a74b456cd1735c9193d9e8ec8cc5184cad7ce13572210315229db3975964361',   // the player's getAlbum id on 2026-10-01
+    KEEP: ['authorization', 'client-token', 'app-platform', 'spotify-app-version', 'accept-language'],
+    auth: null,        // { headers } of the player's last authorised request
+    hash: null,        // getAlbum's query id, when the player's own getAlbum was heard
+    seen: 0,           // requests to Spotify's APIs the hook saw (for the log)
+    note(url, headers, body) {
+        if (!/^https:\/\/[^/]*spotify\.com\//.test(url) || /open\.spotify\.com\//.test(url)) return;
+        this.seen++;
+        const h = {};
+        for (const k of this.KEEP) if (headers[k]) h[k] = headers[k];
+        if (h.authorization) {
+            if (!this.auth) Log.debug(`Spotify: heard the player's token (${url.replace(/\?.*$/, '')}; ${Object.keys(h).join(', ')})`);
+            this.auth = { headers: h };
+        }
+        if (typeof body === 'string' && /"getAlbum"/.test(body)) {
+            try {
+                const hash = JSON.parse(body).extensions.persistedQuery.sha256Hash;
+                if (hash && hash !== this.hash) Log.debug(`Spotify: heard the player's album query (id ${hash.slice(0, 12)}…)`);
+                if (hash) this.hash = hash;
+            } catch (e) { Log.debug(`Spotify: an album query I couldn't read: ${e.message}`); }
+        }
+    },
     early() {
         const w = typeof unsafeWindow !== 'undefined' ? unsafeWindow : window;
-        const orig = w.fetch;
-        if (typeof orig !== 'function') return;
         const self = this;
-        const hook = function (input, init) {
+        const lower = src => {
+            const h = {};
             try {
-                const url = typeof input === 'string' ? input : (input && input.url) || '';
-                if (/api-partner\.spotify\.com\/pathfinder\//.test(url) && init && typeof init.body === 'string' && /"getAlbum"/.test(init.body)) {
-                    const body = JSON.parse(init.body);
-                    const h = {};
-                    const src = init.headers;
-                    if (src && typeof src.forEach === 'function') src.forEach((v, k) => { h[k.toLowerCase()] = v; });
-                    else if (src) Object.keys(src).forEach(k => { h[k.toLowerCase()] = src[k]; });
-                    const hash = body.extensions && body.extensions.persistedQuery && body.extensions.persistedQuery.sha256Hash;
-                    if (h.authorization && hash) {
-                        if (!self.heard) Log.debug(`Spotify: heard the player's album query (${url.replace(/\?.*$/, '')}; headers ${Object.keys(h).join(', ')})`);
-                        self.heard = { url: url.replace(/\?.*$/, ''), headers: h, hash };
-                    }
-                }
-            } catch (e) { Log.debug(`Spotify hook: ${e.message}`); }
-            return orig.apply(this, arguments);
+                if (src && typeof src.forEach === 'function') src.forEach((v, k) => { h[String(k).toLowerCase()] = v; });
+                else if (src) Object.keys(src).forEach(k => { h[k.toLowerCase()] = src[k]; });
+            } catch (e) { /* unreadable headers */ }
+            return h;
         };
-        w.fetch = typeof exportFunction === 'function' ? exportFunction(hook, w) : hook;
-        Log.debug('Spotify: listening to the player’s requests');
+        const origFetch = w.fetch;
+        if (typeof origFetch === 'function') {
+            const hook = function (input, init) {
+                try {
+                    const isReq = input && typeof input === 'object' && 'url' in input;
+                    const url = String(isReq ? input.url : input || '');
+                    const headers = Object.assign(isReq ? lower(input.headers) : {}, lower(init && init.headers));
+                    const body = init && typeof init.body === 'string' ? init.body : null;
+                    if (body !== null || !isReq) self.note(url, headers, body);
+                    else if (/pathfinder/.test(url)) {
+                        // a Request carries its body inside: read a copy, the page reads the original
+                        self.note(url, headers, null);
+                        input.clone().text().then(t => self.note(url, {}, t), () => {});
+                    } else self.note(url, headers, null);
+                } catch (e) { Log.debug(`Spotify hook (fetch): ${e.message}`); }
+                return origFetch.apply(this, arguments);
+            };
+            w.fetch = typeof exportFunction === 'function' ? exportFunction(hook, w) : hook;
+        }
+        const XP = w.XMLHttpRequest && w.XMLHttpRequest.prototype;
+        if (XP) {
+            const oOpen = XP.open, oSet = XP.setRequestHeader, oSend = XP.send;
+            const wrap = fn => (typeof exportFunction === 'function' ? exportFunction(fn, w) : fn);
+            XP.open = wrap(function (method, url) { try { this.__fcUrl = String(url); this.__fcH = {}; } catch (e) { /* ignore */ } return oOpen.apply(this, arguments); });
+            XP.setRequestHeader = wrap(function (k, v) { try { if (this.__fcH) this.__fcH[String(k).toLowerCase()] = v; } catch (e) { /* ignore */ } return oSet.apply(this, arguments); });
+            XP.send = wrap(function (body) { try { if (this.__fcUrl) self.note(this.__fcUrl, this.__fcH || {}, typeof body === 'string' ? body : null); } catch (e) { Log.debug(`Spotify hook (XHR): ${e.message}`); } return oSend.apply(this, arguments); });
+        }
+        Log.debug(`Spotify: listening to the player's requests (fetch${XP ? ' and XHR' : ''}, document ${document.readyState})`);
     },
     post(body) {
-        const { url, headers } = this.heard;
+        const url = this.QUERY_URL, headers = this.auth.headers;
         return new Promise((resolve, reject) => {
             GM_xmlhttpRequest({
                 method: 'POST', url, data: JSON.stringify(body), timeout: 20000, anonymous: true,
@@ -996,9 +1068,12 @@ const SPOTIFY = {
     idOf: uri => String(uri || '').split(':').pop(),
 
     async fetchRelease(id, progress) {
-        for (let i = 0; !this.heard && i < 50; i++) await new Promise(r => setTimeout(r, 100));
-        if (!this.heard) throw new Error('Spotify: the player hasn’t loaded an album since this tab opened; reload the page and try again');
-        const page = offset => this.post({ variables: { uri: `spotify:album:${id}`, locale: '', offset, limit: 50 }, operationName: 'getAlbum', extensions: { persistedQuery: { version: 1, sha256Hash: this.heard.hash } } });
+        for (let i = 0; !this.auth && i < 50; i++) await new Promise(r => setTimeout(r, 100));
+        Log.info(`Spotify: the hook saw ${this.seen} request(s) to Spotify's APIs; token ${this.auth ? 'heard' : 'not heard'}; album query id ${this.hash ? 'heard' : 'not heard, using the known one'}`);
+        if (!this.auth) throw new Error(this.seen ? 'Spotify: the player\u2019s requests carried no token; reload the page and try again'
+            : 'Spotify: no request of the player was heard. Your userscript manager may start First Contact too late on Spotify; reload the page, and if it persists, copy the log to #650');
+        const hash = this.hash || this.GETALBUM_HASH;
+        const page = offset => this.post({ variables: { uri: `spotify:album:${id}`, locale: '', offset, limit: 50 }, operationName: 'getAlbum', extensions: { persistedQuery: { version: 1, sha256Hash: hash } } });
         const first = await page(0);
         const a = first && first.data && first.data.albumUnion;
         if (!a || !a.name) throw new Error(`Spotify: no album ${id}${first && first.errors ? ': ' + JSON.stringify(first.errors).slice(0, 200) : ''}`);
@@ -1352,6 +1427,7 @@ async function importCurrent() {
                 Log.info(`type set to ${rel.types.join(' + ')}`);
             }
         }
+        rel.labels = splitLabels(rel.labels);
         rel.script = guessScript([rel.title].concat(...rel.mediums.map(m => m.tracks.map(t => t.title))));
         const nTracks = rel.mediums.reduce((n, m) => n + m.tracks.length, 0);
         Log.info(`release read in ${Date.now() - t0} ms: "${rel.title}" · ${rel.credit.map(c => c.name + c.join).join('')} · ${rel.mediums.length} medium(s), ${nTracks} track(s) · types ${rel.types.join('+') || '—'} · script ${rel.script || '—'}`);
@@ -2164,6 +2240,6 @@ try {
 } catch (e) {
     try { Log.err(`startup: ${e.stack || e.message}`); } catch (_) { /* nothing left to log with */ }
 }
-if (mbuTestHooks()) window.__fcTest = { splitFeat, creditFromTitle, seedParams, guessScript, providers: PROVIDERS, importCurrent };
+if (mbuTestHooks()) window.__fcTest = { splitFeat, creditFromTitle, seedParams, guessScript, splitLabels, providers: PROVIDERS, importCurrent };
 
 })();

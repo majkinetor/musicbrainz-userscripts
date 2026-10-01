@@ -3,7 +3,8 @@
 //
 // Fixture: Daft Punk, "Random Access Memories" (4m2880jivSbbyEGAKfITCa), 13 tracks; Get Lucky
 // credits Pharrell Williams and Nile Rodgers.
-import { test, check } from '../../../dev/test/harness.mjs';
+import { test, check, sourceOf } from '../../../dev/test/harness.mjs';
+import { readFile } from 'node:fs/promises';
 
 test.use({ gm: { name: 'First Contact' }, pageErrors: 'ignore' });   // spotify.com's own scripts are not ours
 
@@ -26,4 +27,24 @@ test('a Spotify album: the player\'s query replayed, artists with their links, t
   const lucky = tracks.find(t => /^Get Lucky/.test(t.title));
   check(lucky && /Daft Punk/.test(text(lucky.credit)) && /Pharrell Williams/.test(text(lucky.credit)) && lucky.credit.every(a => /open\.spotify\.com\/artist\//.test(a.url || '')), `Get Lucky: "${lucky && lucky.title}" — ${lucky && text(lucky.credit)}`);
   check(rel.urls[0].url === 'https://open.spotify.com/album/4m2880jivSbbyEGAKfITCa' && rel.urls[0].linkType === 85, `link: ${JSON.stringify(rel.urls)}`);
+});
+
+// majkinetor's log: "the player hasn't loaded an album since this tab opened" on a fresh album page
+// — the hook heard nothing. A userscript manager can start the script after the player's first
+// queries; the token then comes from any later authorised request of the player, and the album
+// query's id is the known one when the player's own wasn't heard.
+test('Spotify: First Contact started after the player still reads the album', { tag: ['@web'] }, async ({ page, inject }) => {
+  await page.goto('https://open.spotify.com/album/4m2880jivSbbyEGAKfITCa', { waitUntil: 'domcontentloaded' });
+  await page.waitForTimeout(6000);   // the player has made its album query by now
+  await page.evaluate(c => (0, eval)(c), await readFile(sourceOf('first_contact'), 'utf8'));   // the page's CSP blocks a script tag
+  await page.waitForFunction(() => !!window.__fcTest);
+  // the player keeps talking to its APIs (playback state, events…); a scroll nudges it
+  await page.mouse.wheel(0, 600);
+  const rel = await page.evaluate(async () => {
+    const sp = window.__fcTest.providers.find(p => p.id === 'spotify');
+    for (let i = 0; !sp.auth && i < 300; i++) await new Promise(r => setTimeout(r, 100));
+    return { seen: sp.seen, auth: !!sp.auth, rel: sp.auth ? await sp.fetchRelease('4m2880jivSbbyEGAKfITCa') : null };
+  });
+  check(rel.auth, `a late start still hears a token (${rel.seen} request(s) seen)`);
+  check(rel.rel && rel.rel.title === 'Random Access Memories' && rel.rel.mediums[0].tracks.length === 13, `…and reads the album with the known query id (${rel.rel && rel.rel.title})`);
 });

@@ -2,7 +2,7 @@
 // release editor's seed parameters.
 import { test, check, loadFunctions } from '../../../dev/test/harness.mjs';
 
-const fns = () => loadFunctions('first_contact', ['TYPE_VERSION_MARKER'].concat( ['splitFeat', 'normName', 'toCredit', 'creditFromTitle', 'guessScript', 'seedParams', 'normTrackTitle', 'guessReleaseType']));
+const fns = () => loadFunctions('first_contact', ['TYPE_VERSION_MARKER'].concat( ['splitFeat', 'normName', 'toCredit', 'creditFromTitle', 'guessScript', 'seedParams', 'normTrackTitle', 'guessReleaseType', 'labelFromCopyright']));
 
 test('a feat. clause leaves the title and names the featured artists', { tag: ['@unit', '@critical'] }, async () => {
   const { splitFeat } = await fns();
@@ -92,4 +92,20 @@ test('the release type is guessed as murdos does, the title first', { tag: ['@un
     const g = guessReleaseType(title, tracks);
     check(g.type === want && !!g.explicit === explicit, `"${title}" (${tracks.length} tracks) → ${g.type} (${g.why}), wanted ${want}${explicit ? ', from the title' : ''}`);
   }
+});
+
+// #650: "This tidal release didn't add label (Outpost Recordings)" — Tidal has only a copyright line
+test('a label from a copyright line', { tag: ['@unit', '@critical'] }, async () => {
+  const { labelFromCopyright: L } = await fns();
+  const cases = [
+    ['℗ 2020 Outpost Recordings', 'Outpost Recordings'],
+    ['(P) 2013 Daft Life Limited under exclusive license to Columbia Records, a Division of Sony Music Entertainment', 'Columbia Records'],
+    ['© 2019 Ninja Tune', 'Ninja Tune'],
+    ['℗ 1997, 2017 Geffen Records', 'Geffen Records'],
+    ['(C) 2001 Warp Records Ltd. All rights reserved.', 'Warp Records Ltd'],
+    ['All rights reserved', null],
+    ['℗ 2004', null],
+    ['', null],
+  ];
+  for (const [text, want] of cases) check(L(text) === want, `"${text}" → ${JSON.stringify(L(text))} (want ${JSON.stringify(want)})`);
 });
