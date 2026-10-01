@@ -1,5 +1,30 @@
 # String Theory Changelog
 
+## [2026.10.1](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.10.1)
+
+### General
+
+#### Features
+
+1. Record summary of all suite test runs in CI ([#647](https://github.com/majkinetor/musicbrainz-userscripts/issues/647))
+1. Release, PDF manual and builds in CI ([#646](https://github.com/majkinetor/musicbrainz-userscripts/issues/646))
+
+### [Apollo Editor](../apollo_editor/CHANGELOG.md)
+
+1. Match badges disappear after the Tracklist match ([#638](https://github.com/majkinetor/musicbrainz-userscripts/issues/638))
+
+### [Credit Hoarder](../credit_hoarder/CHANGELOG.md)
+
+1. YouTube Music credits source ([#648](https://github.com/majkinetor/musicbrainz-userscripts/issues/648))
+
+### [ISRC Scout](../isrc_scout/CHANGELOG.md)
+
+1. Small improvements
+
+### [Platform Check](../platform_check/CHANGELOG.md)
+
+1. YouTube Music label ([#649](https://github.com/majkinetor/musicbrainz-userscripts/issues/649))
+
 ## [2026.9.30](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.9.30)
 
 ### General

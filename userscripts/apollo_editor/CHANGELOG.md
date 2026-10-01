@@ -1,5 +1,11 @@
 # Apollo Editor Changelog
 
+## [2026.10.1](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.10.1)
+
+### Fixes
+
+1. Match badges disappear after the Tracklist match ([#638](https://github.com/majkinetor/musicbrainz-userscripts/issues/638))
+
 ## [2026.9.30](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.9.30)
 
 ### Features
