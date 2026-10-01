@@ -50,6 +50,7 @@ import { harvestTidalAlbum, tidalToEngine, tidalReleaseArtists } from './sources
 import { harvestMetalArchivesAlbum, metalArchivesToEngine, metalArchivesReleaseArtists } from './sources/metal_archives.js';
 import { parseQobuzAlbumUrl, fetchQobuzAlbumPage, extractQobuzCredits, extractQobuzAlbumInfo, qobuzToEngine, qobuzToken, fetchQobuzApiAlbum, parseQobuzApiTracks, qobuzApiAlbumInfo } from './sources/qobuz.js';
 import { parseAppleAlbumUrl, fetchAppleCredits, appleToEngine } from './sources/apple.js';
+import { fetchYtmCredits, ytmToEngine } from './sources/ytmusic.js';
 import { parseDeezerAlbumUrl, fetchDeezerAlbumPage, extractDeezerCredits, extractDeezerAlbumInfo, deezerToEngine } from './sources/deezer.js';
 import { mergeHarvests, mergeResolvedResults } from './consolidate.js';
 
@@ -68,6 +69,8 @@ let _qobuzJson = null;
 let _deezerJson = null;
 // Parsed Apple credits of the current run (#435) — same contract for "Copy Apple".
 let _appleJson = null;
+// Fetched YouTube Music credits of the current run (#648) — "Copy YouTube Music".
+let _ytmJson = null;
 // #408: combined JSON of a consolidated ("Import all") run — every source's raw JSON
 // plus the merged, de-duplicated result — for the Log ▾ "Copy all" item.
 let _consolidatedJson = null;
@@ -1159,6 +1162,7 @@ export function insertDiscogsBar(discogsUrl, sources = {}, meta = {}) {
     if (sources.deezer) importSources.push({ name: 'Deezer', url: sources.deezer, run: (g, c, collect) => runDeezerImport(sources.deezer, g, c, collect) });
     if (sources.apple)  importSources.push({ name: 'Apple',  url: sources.apple,  run: (g, c, collect) => runAppleImport(sources.apple, g, c, collect) });
     if (sources.metalArchives) importSources.push({ name: 'Metal Archives', url: sources.metalArchives, run: (g, c, collect) => runMetalArchivesImport(sources.metalArchives, g, c, collect) });   // #453
+    if (sources.ytmusic) importSources.push({ name: 'YouTube Music', url: sources.ytmusic, run: (g, c, collect) => runYtmImport(sources.ytmusic, g, c, collect) });   // #648
     // #271: "Titles" — derive remixer credits from the track titles. Offered
     // ONLY when the titles actually yield ≥1 remixer (probed at page load), so
     // CH doesn't surface an action with nothing behind it. Pushed LAST so it
@@ -1179,6 +1183,7 @@ export function insertDiscogsBar(discogsUrl, sources = {}, meta = {}) {
         Qobuz:   stIcon('qobuz', 16),
         Deezer:  stIcon('deezer', 16),
         Apple:   stIcon('apple', 16),
+        'YouTube Music': stIcon('ytmusic', 16),   // #648
         Titles:  SRC_ICON.Titles,
     };
     const srcButtons = [];
@@ -1740,6 +1745,7 @@ export function insertDiscogsBar(discogsUrl, sources = {}, meta = {}) {
     if (sources.qobuz) logMenu.appendChild(mkMenuItem('Copy Qobuz',   'Copy the parsed Qobuz credits for this release',       (b, l) => bar._copy?.qobuz(b, l)));
     if (sources.deezer) logMenu.appendChild(mkMenuItem('Copy Deezer', 'Copy the parsed Deezer credits for this release',      (b, l) => bar._copy?.deezer(b, l)));
     if (sources.apple)  logMenu.appendChild(mkMenuItem('Copy Apple',  'Copy the parsed Apple credits for this release',       (b, l) => bar._copy?.apple(b, l)));
+    if (sources.ytmusic) logMenu.appendChild(mkMenuItem('Copy YouTube Music', 'Copy the fetched YouTube Music credits for this release', (b, l) => bar._copy?.ytmusic(b, l)));   // #648
     if (importSources.length > 1) logMenu.appendChild(mkMenuItem('Copy all', 'Copy the combined JSON of an "Import all" run — every source plus the merged, de-duplicated result (#408)', (b, l) => bar._copy?.all(b, l)));   // #408
     document.body.appendChild(logMenu);
 
@@ -2019,6 +2025,7 @@ export function insertDiscogsBar(discogsUrl, sources = {}, meta = {}) {
             qobuz:   (item, label) => { if (_qobuzJson)   copyToClipboard(JSON.stringify(_qobuzJson,   null, 2), item, label); },
             deezer:  (item, label) => { if (_deezerJson)  copyToClipboard(JSON.stringify(_deezerJson,  null, 2), item, label); },
             apple:   (item, label) => { if (_appleJson)   copyToClipboard(JSON.stringify(_appleJson,   null, 2), item, label); },   // #435
+            ytmusic: (item, label) => { if (_ytmJson)     copyToClipboard(JSON.stringify(_ytmJson,     null, 2), item, label); },   // #648
             all:     (item, label) => { if (_consolidatedJson) copyToClipboard(JSON.stringify(_consolidatedJson, null, 2), item, label); },   // #408
         };
 
@@ -2439,6 +2446,53 @@ function runAppleImport(appleUrl, getOpts, cancelled, collect) {
         .catch(err => { log.error(err.message || String(err)); });
 }
 
+// YouTube Music import (#648): the innertube API serves each song's Credits dialog
+// anonymously. playlist → songs → per-song MPTC<videoId>. Names only — every credit
+// resolves via name search + the review table (the Qobuz/Apple shape). YouTube Music
+// numbers a multi-disc album straight through, so the release's own medium sizes
+// (from the editor state already on the page — no extra request) place each song.
+function editorMediumSizes() {
+    try {
+        const MB = pageWindow.MB, st = MB?.relationshipEditor?.state;
+        if (!st?.mediums || !MB.tree?.iterate) return [];
+        const sizes = [];
+        for (const entry of MB.tree.iterate(st.mediums)) {
+            const medium = Array.isArray(entry) ? entry[1] : entry;
+            const tracks = medium?.tracks ?? medium;
+            let n = 0;
+            for (const t of MB.tree.iterate(tracks)) if (t) n++;
+            sizes.push(n);
+        }
+        return sizes;
+    } catch (e) { logDebug(`YouTube Music: couldn't read the release's mediums from the editor — ${e.message}`); return []; }
+}
+function runYtmImport(ytmUrl, getOpts, cancelled, collect) {
+    log.info(`Fetching YouTube Music credits (anonymous): ${ytmUrl}`);
+    return fetchYtmCredits(ytmUrl, (d, n) => document.querySelector('.discogs-bar')?._setProgress?.(null, `YouTube Music ${d}/${n}`))
+        .then(({ album, list, songs }) => {
+            _ytmJson = { source: ytmUrl, album, list, songs };   // Log ▾ → "Copy YouTube Music"
+            const credited = songs.filter(s => Object.keys(s.sections || {}).length).length;
+            const li = document.createElement('li');
+            const pre = document.createElement('pre');
+            pre.style.cssText = 'max-height:400px;overflow:auto;font-size:0.72rem;background:var(--mbu-bg-raised);padding:0.5rem;border:1px solid var(--mbu-border);border-radius:3px;margin:0.3rem 0 0 0;white-space:pre-wrap;word-break:break-all;';
+            pre.textContent = JSON.stringify(_ytmJson, null, 2);
+            li.innerHTML = `<details><summary style="cursor:pointer;user-select:none;"><strong>${album || 'YouTube Music album'} · ${songs.length} songs, ${credited} with credits — YouTube Music credits (API)</strong></summary></details>`;
+            li.querySelector('details').appendChild(pre);
+            _logs.appendChild(li);
+            if (!credited) { log.warn('No YouTube Music credits found (the label sent none for this album) — nothing to import.'); stopMsg(collect, 'No importable credits found'); return; }
+            const sizes = editorMediumSizes();
+            const { tracklistRels, tracklist, skipped, multiMedium, mismatch } = ytmToEngine(songs, sizes);
+            log.info(`YouTube Music credits: ${tracklistRels.length} per-track relationship(s) across ${tracklist.length} song(s); release mediums: ${sizes.length ? sizes.join(' + ') : 'unknown'}`);
+            skipped.forEach(s => log.info(`Not imported: ${s}`));
+            if (mismatch) log.warn(`Multi-medium release: YouTube Music has ${songs.length} songs, the release ${sizes.reduce((a, b) => a + b, 0)} tracks (${sizes.join(' + ')}) — songs can't be placed on the right mediums. Review carefully.`);
+            else if (multiMedium) log.info(`Multi-medium release: YouTube Music's straight-through numbering mapped onto ${sizes.length} mediums (${sizes.join(' + ')}).`);
+            if (!tracklistRels.length) { log.warn('No importable YouTube Music credits found.'); stopMsg(collect, 'No importable credits found'); return; }
+            const parts = { companies: [], artistRoles: [], tracklistRels, tracklist, sourceUrl: ytmUrl, processTracklist: true };
+            return collect ? parts : runSourcePipeline({ ...parts, getOpts, cancelled });
+        })
+        .catch(err => { log.error(err.message || String(err)); });
+}
+
 // Titles "source" (#271): no provider — read the release's own track titles
 // from MB (WS2) and derive remixer credits from the disambiguation convention
 // ("Song (Artist Remix)"). The derived roles are name-only artists (no URL,
@@ -2541,7 +2595,7 @@ async function runConsolidatedImport(importSources, getOpts, cancelled) {
     // combined JSON for Log ▾ → "Copy all"
     _consolidatedJson = {
         via: 'consolidated', sources: harvests.map(h => h.sourceName),
-        discogs: _discogsJson, tidal: _tidalJson, qobuz: _qobuzJson, deezer: _deezerJson, apple: _appleJson,
+        discogs: _discogsJson, tidal: _tidalJson, qobuz: _qobuzJson, deezer: _deezerJson, apple: _appleJson, ytmusic: _ytmJson,
         merged: { companies: merged.companies, artistRoles: merged.artistRoles, tracklistRels: merged.tracklistRels },
     };
     return runSourcePipeline({

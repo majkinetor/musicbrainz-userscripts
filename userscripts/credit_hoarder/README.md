@@ -94,6 +94,7 @@ The edit note carries the statistics, one block per source when several ran. Wha
 | Metal Archives | the lineup with instruments, work credits, other staff | Metal Archives artist ID | |
 | Qobuz | composer, lyricist, producer, publisher, performers | names, except the composer and main artist | optional |
 | Apple Music | composer, writer, lyricist, producer, engineers, arranger, vocals | names | |
+| YouTube Music | writer, producer | names | |
 | Deezer | composers only | names | |
 | Titles | remixers named in the release's own track titles | names | |
 
@@ -101,6 +102,7 @@ A source with an artist ID resolves to the exact MusicBrainz artist; a name-only
 
 - **Tidal** and **Metal Archives** are read in a background tab (Metal Archives is behind Cloudflare), and the credits are sent back. Many Tidal albums list their credits once, on the Info tab; those are read too.
 - **Qobuz**: signed in under [Platform Check](../platform_check/README.md), Credit Hoarder reads Qobuz's API, which is reliable and gives the composer's artist ID. Otherwise it reads the store page, names only.
+- **YouTube Music** is read anonymously, from each song's *Credits* (⋮ → Credits), for a release linked to a YouTube Music album. It has three groups: *Written by* (a writer, on the work), *Produced by* (producer) and *Performed by*, which is the track's artist credit and isn't imported. *Music metadata provided by* is the label, also not imported. Some labels send no credits at all. YouTube Music numbers a multi-disc album straight through, so its songs are placed on the release's mediums by their track counts; when the counts don't add up, the log says so.
 - **Metal Archives**: guitars and bass default to electric; guests get the *guest* attribute; on a split release, each band's credits stay on its own tracks.
 - **Titles** reads named remixes: *Song (Artist Remix)*, *Track (KiNK Dub)*, *Tune (Tom Moulton Mix)*, *Cut (Remixed by Someone)* each give that recording a remixer. *(Extended Mix)*, *(Radio Edit)*, a bare *(Remix)* and *(Mixed by …)* don't. It's a heuristic over a naming habit, so check what it finds.
 

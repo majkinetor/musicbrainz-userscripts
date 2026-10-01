@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         String Theory
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.1.041144
+// @version      2026.10.1.041850
 // @description  Unified bundle of 8 MusicBrainz userscripts (apollo_editor, art_station, credit_hoarder, fusion, group_therapy, isrc_scout, mammoth, platform_check). Built by userscripts/string_theory/build.mjs — do not hand-edit.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCIgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0Ij4KICA8IS0tIGh1Yi1hbmQtc3Bva2UgIm5ldHdvcmsiIGdseXBoLCBzaW5nbGUgdml2aWQgdmlvbGV0IG9uIHRyYW5zcGFyZW50IHNvIGl0IHJlYWRzIG9uIGJvdGggZGFyayBhbmQgbGlnaHQgcGFnZXMgLS0+CiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjN2M1Y2ZmIiBzdHJva2Utd2lkdGg9IjQuNiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj4KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMzIgMTUiLz4KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMNDYuNSAyMy41Ii8+CiAgICA8cGF0aCBkPSJNMzIgMzIgTDQ2LjUgNDAuNSIvPgogICAgPHBhdGggZD0iTTMyIDMyIEwzMiA0OSIvPgogICAgPHBhdGggZD0iTTMyIDMyIEwxNy41IDQwLjUiLz4KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMTcuNSAyMy41Ii8+CiAgPC9nPgogIDxnIGZpbGw9IiM3YzVjZmYiPgogICAgPGNpcmNsZSBjeD0iMzIiIGN5PSIzMiIgcj0iOC42Ii8+CiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjE5LjUiIHI9IjYuNCIvPgogICAgPGNpcmNsZSBjeD0iNDkiIGN5PSIxOS41IiByPSI2LjQiLz4KICAgIDxjaXJjbGUgY3g9IjMyIiBjeT0iNTciIHI9IjYuNCIvPgogIDwvZz4KICA8ZyBmaWxsPSJub25lIiBzdHJva2U9IiM3YzVjZmYiIHN0cm9rZS13aWR0aD0iMy44Ij4KICAgIDxjaXJjbGUgY3g9IjMyIiBjeT0iNyIgcj0iNC45Ii8+CiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjQ0LjUiIHI9IjQuOSIvPgogICAgPGNpcmNsZSBjeD0iNDkiIGN5PSI0NC41IiByPSI0LjkiLz4KICA8L2c+Cjwvc3ZnPgo=
@@ -35,6 +35,7 @@
 // @connect      music.apple.com
 // @connect      amp-api.music.apple.com
 // @connect      www.metal-archives.com
+// @connect      music.youtube.com
 // @grant        GM_deleteValue
 // @grant        GM_addValueChangeListener
 // @grant        GM_removeValueChangeListener
@@ -66,7 +67,6 @@
 // @connect      api-v2.soundcloud.com
 // @connect      a-v2.sndcdn.com
 // @connect      open.spotify.com
-// @connect      music.youtube.com
 // @connect      music.amazon.com
 // @connect      na.mesk.skill.music.a2z.com
 // @match        https://*.musicbrainz.org/*
@@ -84,8 +84,8 @@
 // Bundles (verbatim, each wrapped in a run-at gate): apollo_editor, art_station, credit_hoarder, fusion, group_therapy, isrc_scout, mammoth, platform_check.
 
 try {
-  console.log('%c String Theory %c v2026.10.1.041144 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
-  console.log("String Theory bundles:\n  · Apollo Editor v2026.10.1\n  · Art Station v2026.9.30\n  · Credit Hoarder v2026.9.30\n  · Fusion v2026.9.30\n  · Group Therapy v2026.9.30\n  · ISRC Scout v2026.10.1\n  · Mammoth v2026.9.30\n  · Platform Check v2026.10.1");
+  console.log('%c String Theory %c v2026.10.1.041850 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
+  console.log("String Theory bundles:\n  · Apollo Editor v2026.10.1\n  · Art Station v2026.9.30\n  · Credit Hoarder v2026.10.1.041850\n  · Fusion v2026.9.30\n  · Group Therapy v2026.9.30\n  · ISRC Scout v2026.10.1\n  · Mammoth v2026.9.30\n  · Platform Check v2026.10.1");
 } catch (e) {}
 
 // ===== apollo_editor (@run-at document-start) =====================================
@@ -15392,7 +15392,7 @@ try {
 
 // ===== credit_hoarder (@run-at document-end) ====================================
 (function(__stGM){
-  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Credit Hoarder*","namespace":"majkinetor","version":"2026.9.30","description":"Import per-track release credits from streaming/database providers (Discogs, Tidal, Qobuz, Deezer) into MusicBrainz relationships, with a review phase","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/credit_hoarder/README.md","supportURL":"https://github.com/majkinetor/musicbrainz-userscripts/issues","icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij4KICANCiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMmY2ZjU0IiBzdHJva2Utd2lkdGg9IjkiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGNpcmNsZSBjeD0iMzQiIGN5PSIzOCIgcj0iMi41IiBmaWxsPSIjMmY2ZjU0IiBzdHJva2U9Im5vbmUiLz4NCiAgICA8bGluZSB4MT0iNTAiIHkxPSIzOCIgeDI9Ijk4IiB5Mj0iMzgiLz4NCiAgICA8Y2lyY2xlIGN4PSIzNCIgY3k9IjY0IiByPSIyLjUiIGZpbGw9IiMyZjZmNTQiIHN0cm9rZT0ibm9uZSIvPg0KICAgIDxsaW5lIHgxPSI1MCIgeTE9IjY0IiB4Mj0iOTgiIHkyPSI2NCIvPg0KICAgIDxjaXJjbGUgY3g9IjM0IiBjeT0iOTAiIHI9IjIuNSIgZmlsbD0iIzJmNmY1NCIgc3Ryb2tlPSJub25lIi8+DQogICAgPGxpbmUgeDE9IjUwIiB5MT0iOTAiIHgyPSI3NCIgeTI9IjkwIi8+DQogIDwvZz4NCiAgPGNpcmNsZSBjeD0iOTIiIGN5PSI5MiIgcj0iMjMiIGZpbGw9IiMyZTllNWIiLz4NCiAgPGcgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGxpbmUgeDE9IjkyIiB5MT0iODEiIHgyPSI5MiIgeTI9IjEwMyIvPg0KICAgIDxsaW5lIHgxPSI4MSIgeTE9IjkyIiB4Mj0iMTAzIiB5Mj0iOTIiLz4NCiAgPC9nPg0KPC9zdmc+DQo="}) }) : { script: {"name":"Credit Hoarder*","namespace":"majkinetor","version":"2026.9.30","description":"Import per-track release credits from streaming/database providers (Discogs, Tidal, Qobuz, Deezer) into MusicBrainz relationships, with a review phase","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/credit_hoarder/README.md","supportURL":"https://github.com/majkinetor/musicbrainz-userscripts/issues","icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij4KICANCiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMmY2ZjU0IiBzdHJva2Utd2lkdGg9IjkiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGNpcmNsZSBjeD0iMzQiIGN5PSIzOCIgcj0iMi41IiBmaWxsPSIjMmY2ZjU0IiBzdHJva2U9Im5vbmUiLz4NCiAgICA8bGluZSB4MT0iNTAiIHkxPSIzOCIgeDI9Ijk4IiB5Mj0iMzgiLz4NCiAgICA8Y2lyY2xlIGN4PSIzNCIgY3k9IjY0IiByPSIyLjUiIGZpbGw9IiMyZjZmNTQiIHN0cm9rZT0ibm9uZSIvPg0KICAgIDxsaW5lIHgxPSI1MCIgeTE9IjY0IiB4Mj0iOTgiIHkyPSI2NCIvPg0KICAgIDxjaXJjbGUgY3g9IjM0IiBjeT0iOTAiIHI9IjIuNSIgZmlsbD0iIzJmNmY1NCIgc3Ryb2tlPSJub25lIi8+DQogICAgPGxpbmUgeDE9IjUwIiB5MT0iOTAiIHgyPSI3NCIgeTI9IjkwIi8+DQogIDwvZz4NCiAgPGNpcmNsZSBjeD0iOTIiIGN5PSI5MiIgcj0iMjMiIGZpbGw9IiMyZTllNWIiLz4NCiAgPGcgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGxpbmUgeDE9IjkyIiB5MT0iODEiIHgyPSI5MiIgeTI9IjEwMyIvPg0KICAgIDxsaW5lIHgxPSI4MSIgeTE9IjkyIiB4Mj0iMTAzIiB5Mj0iOTIiLz4NCiAgPC9nPg0KPC9zdmc+DQo="} };
+  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Credit Hoarder*","namespace":"majkinetor","version":"2026.10.1.041850","description":"Import per-track release credits from streaming/database providers (Discogs, Tidal, Qobuz, Deezer) into MusicBrainz relationships, with a review phase","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/credit_hoarder/README.md","supportURL":"https://github.com/majkinetor/musicbrainz-userscripts/issues","icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij4KICANCiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMmY2ZjU0IiBzdHJva2Utd2lkdGg9IjkiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGNpcmNsZSBjeD0iMzQiIGN5PSIzOCIgcj0iMi41IiBmaWxsPSIjMmY2ZjU0IiBzdHJva2U9Im5vbmUiLz4NCiAgICA8bGluZSB4MT0iNTAiIHkxPSIzOCIgeDI9Ijk4IiB5Mj0iMzgiLz4NCiAgICA8Y2lyY2xlIGN4PSIzNCIgY3k9IjY0IiByPSIyLjUiIGZpbGw9IiMyZjZmNTQiIHN0cm9rZT0ibm9uZSIvPg0KICAgIDxsaW5lIHgxPSI1MCIgeTE9IjY0IiB4Mj0iOTgiIHkyPSI2NCIvPg0KICAgIDxjaXJjbGUgY3g9IjM0IiBjeT0iOTAiIHI9IjIuNSIgZmlsbD0iIzJmNmY1NCIgc3Ryb2tlPSJub25lIi8+DQogICAgPGxpbmUgeDE9IjUwIiB5MT0iOTAiIHgyPSI3NCIgeTI9IjkwIi8+DQogIDwvZz4NCiAgPGNpcmNsZSBjeD0iOTIiIGN5PSI5MiIgcj0iMjMiIGZpbGw9IiMyZTllNWIiLz4NCiAgPGcgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGxpbmUgeDE9IjkyIiB5MT0iODEiIHgyPSI5MiIgeTI9IjEwMyIvPg0KICAgIDxsaW5lIHgxPSI4MSIgeTE9IjkyIiB4Mj0iMTAzIiB5Mj0iOTIiLz4NCiAgPC9nPg0KPC9zdmc+DQo="}) }) : { script: {"name":"Credit Hoarder*","namespace":"majkinetor","version":"2026.10.1.041850","description":"Import per-track release credits from streaming/database providers (Discogs, Tidal, Qobuz, Deezer) into MusicBrainz relationships, with a review phase","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/credit_hoarder/README.md","supportURL":"https://github.com/majkinetor/musicbrainz-userscripts/issues","icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij4KICANCiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMmY2ZjU0IiBzdHJva2Utd2lkdGg9IjkiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGNpcmNsZSBjeD0iMzQiIGN5PSIzOCIgcj0iMi41IiBmaWxsPSIjMmY2ZjU0IiBzdHJva2U9Im5vbmUiLz4NCiAgICA8bGluZSB4MT0iNTAiIHkxPSIzOCIgeDI9Ijk4IiB5Mj0iMzgiLz4NCiAgICA8Y2lyY2xlIGN4PSIzNCIgY3k9IjY0IiByPSIyLjUiIGZpbGw9IiMyZjZmNTQiIHN0cm9rZT0ibm9uZSIvPg0KICAgIDxsaW5lIHgxPSI1MCIgeTE9IjY0IiB4Mj0iOTgiIHkyPSI2NCIvPg0KICAgIDxjaXJjbGUgY3g9IjM0IiBjeT0iOTAiIHI9IjIuNSIgZmlsbD0iIzJmNmY1NCIgc3Ryb2tlPSJub25lIi8+DQogICAgPGxpbmUgeDE9IjUwIiB5MT0iOTAiIHgyPSI3NCIgeTI9IjkwIi8+DQogIDwvZz4NCiAgPGNpcmNsZSBjeD0iOTIiIGN5PSI5MiIgcj0iMjMiIGZpbGw9IiMyZTllNWIiLz4NCiAgPGcgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGxpbmUgeDE9IjkyIiB5MT0iODEiIHgyPSI5MiIgeTI9IjEwMyIvPg0KICAgIDxsaW5lIHgxPSI4MSIgeTE9IjkyIiB4Mj0iMTAzIiB5Mj0iOTIiLz4NCiAgPC9nPg0KPC9zdmc+DQo="} };
   (f=>document.readyState!=='loading'?f():document.addEventListener('DOMContentLoaded',f,{once:true}))(function(){ try { (function(){
 (() => {
   // src/constants.js
@@ -15839,8 +15839,10 @@ try {
         deezer: href((rel) => /(^|\/\/)(www\.)?deezer\.com\/([a-z]{2}\/)?album\/\d+/i.test(rel.target?.href_url || "")),
         apple: href((rel) => /(^|\/\/)(?:music|itunes)\.apple\.com\/(?:[a-z]{2}\/)?album\/(?:[^/?#]+\/)?(?:id)?\d+/i.test(rel.target?.href_url || "")),
         // #435; iTunes URLs #436
-        metalArchives: href((rel) => /(^|\/\/)(www\.)?metal-archives\.com\/albums\/[^/]+\/[^/]+\/\d+/i.test(rel.target?.href_url || ""))
+        metalArchives: href((rel) => /(^|\/\/)(www\.)?metal-archives\.com\/albums\/[^/]+\/[^/]+\/\d+/i.test(rel.target?.href_url || "")),
         // #453
+        ytmusic: href((rel) => /(^|\/\/)music\.youtube\.com\/(?:playlist\?(?:[^#]*&)?list=OLAK5uy_|browse\/MPREb_)/i.test(rel.target?.href_url || ""))
+        // #648
       };
     }
   }
@@ -22187,6 +22189,189 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
     return { album: albumName, tracks };
   }
 
+  // src/sources/ytmusic.js
+  var YTM_API = "https://music.youtube.com/youtubei/v1/";
+  var YTM_CLIENT = { clientName: "WEB_REMIX", clientVersion: "1.20250101.01.00", hl: "en", gl: "US" };
+  var YTM_ALBUM_RE = /music\.youtube\.com\/(?:playlist\?(?:[^#]*&)?list=(OLAK5uy_[\w-]+)|browse\/(MPREb_[\w-]+))/i;
+  function parseYtmAlbumUrl(url) {
+    const m = YTM_ALBUM_RE.exec(url || "");
+    return m ? m[1] ? { list: m[1] } : { album: m[2] } : null;
+  }
+  var YTM_ROLE_BRIDGE = {
+    "Written by": "Written-By",
+    "Produced by": "Producer"
+  };
+  var YTM_SKIP = {
+    "Performed by": "the track artist credit",
+    "Music metadata provided by": "the label or distributor"
+  };
+  function ytmPositions(count, mediumSizes) {
+    const sizes = (mediumSizes || []).filter((n) => n > 0);
+    const plain = Array.from({ length: count }, (_, i) => String(i + 1));
+    if (sizes.length <= 1) return { positions: plain, multiMedium: false, mismatch: false };
+    const total = sizes.reduce((a, b) => a + b, 0);
+    if (total !== count) return { positions: plain, multiMedium: true, mismatch: true };
+    const positions = [];
+    sizes.forEach((n, m) => {
+      for (let t = 1; t <= n; t++) positions.push(`${m + 1}-${t}`);
+    });
+    return { positions, multiMedium: true, mismatch: false };
+  }
+  function ytmToEngine(songs, mediumSizes) {
+    const tracklistRels = [];
+    const tracklist = [];
+    const skipped = [];
+    const list = songs || [];
+    const { positions, multiMedium, mismatch } = ytmPositions(list.length, mediumSizes);
+    list.forEach((s, i) => {
+      const track = { position: positions[i], title: s.title || "", type_: "track" };
+      tracklist.push(track);
+      for (const [section, names] of Object.entries(s.sections || {})) {
+        const named = (names || []).map((n) => String(n || "").trim()).filter(Boolean);
+        if (!named.length) continue;
+        if (YTM_SKIP[section]) {
+          skipped.push(`track ${track.position}: ${section} \u2014 ${named.join(", ")} (${YTM_SKIP[section]})`);
+          continue;
+        }
+        const role = YTM_ROLE_BRIDGE[section];
+        if (!role) {
+          skipped.push(`track ${track.position}: ${section} \u2014 ${named.join(", ")} (unmapped section)`);
+          continue;
+        }
+        for (const name of named) {
+          const rels = getArtistRoles({ name, anv: "", role, resource_url: "" });
+          if (!rels || !rels.length) {
+            skipped.push(`track ${track.position}: ${section} \u2014 ${name} (unmapped)`);
+            continue;
+          }
+          for (const rel of rels) tracklistRels.push({ ...rel, artist: rel.artist || { name, anv: "", resource_url: "" }, track });
+        }
+      }
+    });
+    return { tracklistRels, tracklist, skipped, multiMedium, mismatch };
+  }
+  function ytmPost(endpoint, body) {
+    const what = body.browseId || endpoint;
+    return new Promise((resolve, reject) => {
+      if (typeof GM_xmlhttpRequest !== "function") {
+        reject(new Error("GM_xmlhttpRequest unavailable"));
+        return;
+      }
+      const t0 = Date.now();
+      GM_xmlhttpRequest({
+        method: "POST",
+        url: `${YTM_API}${endpoint}?prettyPrint=false`,
+        anonymous: true,
+        timeout: 2e4,
+        headers: { "Content-Type": "application/json" },
+        data: JSON.stringify({ context: { client: YTM_CLIENT }, ...body }),
+        onload: (r) => {
+          const text = r.responseText || "";
+          let json = null;
+          try {
+            json = JSON.parse(text);
+          } catch (e) {
+          }
+          logDebug(`YouTube Music: ${endpoint} ${what} \u2192 HTTP ${r.status}, ${text.length}b in ${Date.now() - t0}ms`);
+          if (r.status !== 200 || !json) {
+            reject(new Error(`YouTube Music ${endpoint} ${what} \u2192 HTTP ${r.status}${r.status === 200 ? ", not JSON" : ""} \u2014 YouTube Music's API may have changed`));
+            return;
+          }
+          resolve(json);
+        },
+        onerror: () => reject(new Error(`YouTube Music ${endpoint} ${what}: network error`)),
+        ontimeout: () => reject(new Error(`YouTube Music ${endpoint} ${what}: timed out`))
+      });
+    });
+  }
+  var ytmText = (t) => t && t.runs ? t.runs.map((x) => x.text).join("") : t && t.simpleText || "";
+  function ytmWalk(o, fn) {
+    if (!o || typeof o !== "object") return;
+    fn(o);
+    for (const k in o) ytmWalk(o[k], fn);
+  }
+  var videoType = (w) => w && w.watchEndpointMusicSupportedConfigs && w.watchEndpointMusicSupportedConfigs.watchEndpointMusicConfig && w.watchEndpointMusicSupportedConfigs.watchEndpointMusicConfig.musicVideoType;
+  function ytmRows(json) {
+    const rows = [];
+    ytmWalk(json, (o) => {
+      const r = o.musicResponsiveListItemRenderer;
+      if (!r) return;
+      let w = null;
+      ytmWalk(r, (x) => {
+        if (!w && x.watchEndpoint && x.watchEndpoint.videoId) w = x.watchEndpoint;
+      });
+      const id = r.playlistItemData && r.playlistItemData.videoId || w && w.videoId;
+      if (!id) return;
+      const col = r.flexColumns && r.flexColumns[0] && r.flexColumns[0].musicResponsiveListItemFlexColumnRenderer;
+      rows.push({ title: ytmText(col && col.text), videoId: id, type: videoType(w) || null });
+    });
+    return rows;
+  }
+  function ytmCreditSections(json) {
+    const out = {};
+    ytmWalk(json, (o) => {
+      const s = o.dismissableDialogContentSectionRenderer;
+      if (s) out[ytmText(s.title)] = (s.subtitle && s.subtitle.runs || []).map((r) => r.text.trim()).filter(Boolean);
+    });
+    return out;
+  }
+  async function fetchYtmCredits(url, onProgress) {
+    const parsed = parseYtmAlbumUrl(url);
+    if (!parsed) throw new Error(`Not a YouTube Music album link: ${url}`);
+    let list = parsed.list, album = "";
+    if (!list) {
+      const a = await ytmPost("browse", { browseId: parsed.album });
+      const canon = a.microformat && a.microformat.microformatDataRenderer && a.microformat.microformatDataRenderer.urlCanonical || "";
+      list = (canon.match(/[?&]list=(OLAK5uy_[\w-]+)/) || JSON.stringify(a).match(/"(OLAK5uy_[\w-]+)"/) || [])[1];
+      let h = null;
+      ytmWalk(a, (o) => {
+        if (!h && o.musicResponsiveHeaderRenderer) h = o.musicResponsiveHeaderRenderer;
+      });
+      album = h ? ytmText(h.title) : "";
+      log.info(`YouTube Music: album ${parsed.album} "${album}" \u2192 playlist ${list || "(none found)"}`);
+      if (!list) throw new Error(`YouTube Music: album ${parsed.album} names no playlist \u2014 its page may have changed`);
+    }
+    const pl = await ytmPost("browse", { browseId: "VL" + list });
+    if (!album) {
+      let h = null;
+      ytmWalk(pl, (o) => {
+        if (!h && (o.musicResponsiveHeaderRenderer || o.musicDetailHeaderRenderer)) h = o.musicResponsiveHeaderRenderer || o.musicDetailHeaderRenderer;
+      });
+      album = h ? ytmText(h.title) : "";
+    }
+    if (/"continuations?"|"continuationItemRenderer"/.test(JSON.stringify(pl))) log.warn(`YouTube Music: playlist ${list} has more songs than its first page \u2014 only those are read`);
+    const rows = ytmRows(pl);
+    const types = rows.reduce((m, r) => {
+      const k = (r.type || "?").replace("MUSIC_VIDEO_TYPE_", "");
+      m[k] = (m[k] || 0) + 1;
+      return m;
+    }, {});
+    log.info(`YouTube Music: playlist ${list} "${album}" \u2014 ${rows.length} row(s) (${Object.entries(types).map(([k, n]) => `${n} ${k}`).join(", ") || "none"})`);
+    const songs = [];
+    let done = 0;
+    for (const r of rows) {
+      let sections = {};
+      if (r.type && r.type !== "MUSIC_VIDEO_TYPE_ATV") logDebug(`YouTube Music: row ${done + 1} "${r.title}" is a ${r.type}, not a song \u2014 it has no credits`);
+      else {
+        try {
+          sections = ytmCreditSections(await ytmPost("browse", { browseId: "MPTC" + r.videoId }));
+        } catch (e) {
+          log.warn(`YouTube Music: credits of "${r.title}" (${r.videoId}) failed \u2014 ${e.message}`);
+        }
+      }
+      logDebug(`YouTube Music: ${done + 1}. "${r.title}" (${r.videoId}) \u2014 ${Object.keys(sections).map((k) => `${k}: ${sections[k].join(", ")}`).join(" \xB7 ") || "no credits"}`);
+      songs.push({ title: r.title, videoId: r.videoId, sections });
+      done++;
+      if (onProgress) {
+        try {
+          onProgress(done, rows.length);
+        } catch (e) {
+        }
+      }
+    }
+    return { album, list, songs };
+  }
+
   // src/sources/deezer.js
   function decodeEntities2(s) {
     return String(s).replace(/&#(\d+);/g, (_, n) => String.fromCodePoint(+n)).replace(/&#x([0-9a-f]+);/gi, (_, n) => String.fromCodePoint(parseInt(n, 16))).replace(/&amp;/g, "&").replace(/&quot;/g, '"').replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&nbsp;/g, " ").replace(/&#039;/g, "'").replace(/&apos;/g, "'");
@@ -22507,6 +22692,7 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
   var _qobuzJson = null;
   var _deezerJson = null;
   var _appleJson = null;
+  var _ytmJson = null;
   var _consolidatedJson = null;
   var ST_ICONS = { "musicbrainz": { "color": "#eb743b", "svg": '<svg viewBox="0 0 30 30" xmlns="http://www.w3.org/2000/svg"><g transform="translate(1.5)"><path d="m13 1-12 7v14l12 7z" fill="#ba478f"/><path d="m14 1 12 7v14l-12 7z" fill="#eb743b"/></g></svg>' }, "discogs": { "color": "#333333", "svg": '<svg viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg"><g transform="translate(512 512) scale(0.86) translate(-512 -512)"><circle cx="512" cy="512" r="496" fill="#333" stroke="#9a9a9a" stroke-width="32"/><path fill="#fff" d="M439.84 511.58A72.58 72.58 0 0 1 512.41 439 72.54 72.54 0 0 1 585 511.58a72.56 72.56 0 0 1-72.57 72.56 72.56 72.56 0 0 1-72.57-72.56zm3.18 0A69.48 69.48 0 0 0 512.41 581a69.4 69.4 0 0 0 69.4-69.38 69.49 69.49 0 0 0-69.4-69.43A69.44 69.44 0 0 0 443 511.58zm69.42-11.44a11.43 11.43 0 1 0 11.47 11.45 11.45 11.45 0 0 0-11.48-11.45zm-131.08 11.43a130.68 130.68 0 0 0 40.3 94.43l24.68-26.69.33.3a94.59 94.59 0 0 1 113.08-149.95l17.51-31.95a130.23 130.23 0 0 0-64.82-17.22c-72.27.01-131.08 58.81-131.08 131.08zm225.73 0a94.6 94.6 0 0 1-138.64 83.79l-17.83 31.74a130.26 130.26 0 0 0 61.82 15.53c72.28 0 131.08-58.8 131.08-131.08a130.63 130.63 0 0 0-37.73-91.9L581 446.39a94.3 94.3 0 0 1 26.1 65.2zm-267.34 0a172.17 172.17 0 0 0 53.68 125l25-27.07a135.38 135.38 0 0 1-41.82-97.89c0-74.88 60.92-135.8 135.8-135.8a134.92 134.92 0 0 1 67.08 17.8l17.73-32.34a171.57 171.57 0 0 0-84.81-22.35c-95.19-.03-172.66 77.43-172.66 172.65zm308.49 0c0 74.88-60.92 135.8-135.8 135.8a135 135 0 0 1-64.14-16.14l-18.07 32.17a171.62 171.62 0 0 0 82.21 20.86c95.22 0 172.69-77.47 172.69-172.69a172.15 172.15 0 0 0-51-122.4l-25.12 27a135.35 135.35 0 0 1 39.23 95.4zm41.61 0c0 97.83-79.58 177.43-177.41 177.43a176.32 176.32 0 0 1-84.52-21.46l-18.18 32.36a213.21 213.21 0 0 0 102.7 26.23C630.74 726.11 727 629.87 727 511.57a213.87 213.87 0 0 0-64.38-153l-25.26 27.18a176.85 176.85 0 0 1 52.49 125.82zm-392 0A213.9 213.9 0 0 0 365 667.24L390.23 640A176.88 176.88 0 0 1 335 511.57c0-97.82 79.59-177.41 177.41-177.41a176.26 176.26 0 0 1 87.08 22.93l17.84-32.55A213.14 213.14 0 0 0 512.44 297c-118.3 0-214.54 96.28-214.54 214.57zm392.55-183-24.64 26.49a218.57 218.57 0 0 1 65.94 156.51c0 120.9-98.36 219.26-219.26 219.26a217.9 217.9 0 0 1-105-26.84l-18.24 32.47A255.43 255.43 0 0 0 512 768c141.39 0 256-114.64 256-256a255.23 255.23 0 0 0-77.55-183.41zm-397.27 183c0-120.9 98.36-219.26 219.26-219.26a217.84 217.84 0 0 1 107.19 28.09L637 288.65A254.46 254.46 0 0 0 516.12 256H512c-140.54.22-254.42 113.26-256 253.5v2.5a255.69 255.69 0 0 0 80.51 186.08l25.31-27.36a218.61 218.61 0 0 1-68.64-159.15z"/></g></svg>' }, "spotify": { "color": "#1DB954", "svg": '<svg viewBox="0 0 24 24" fill="#1DB954"><path transform="translate(12 12) scale(.875) translate(-12 -12)" d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.42 1.56-.299.421-1.02.599-1.559.3z"/></svg>' }, "apple": { "color": "#FA243C", "svg": '<svg viewBox="0 0 24 24" fill="#FA243C"><path d="M17.05 12.04c-.03-2.5 2.04-3.7 2.13-3.76-1.16-1.7-2.97-1.93-3.61-1.96-1.54-.16-3 .9-3.78.9-.78 0-1.97-.88-3.24-.86-1.67.03-3.21.97-4.07 2.46-1.73 3.01-.44 7.47 1.24 9.92.82 1.2 1.8 2.54 3.08 2.49 1.24-.05 1.71-.8 3.21-.8 1.5 0 1.92.8 3.23.77 1.33-.02 2.18-1.22 3-2.42.94-1.39 1.33-2.73 1.35-2.8-.03-.01-2.59-.99-2.62-3.93zM14.6 4.59c.68-.83 1.14-1.97 1.01-3.11-.98.04-2.17.65-2.87 1.47-.63.73-1.18 1.9-1.03 3.02 1.09.08 2.21-.55 2.89-1.38z"/></svg>' }, "deezer": { "color": "#A238FF", "svg": '<svg viewBox="0 0 24 24"><path transform="translate(12 12) scale(.74) translate(-12 -12)" d="M4 2h6v2h-6zM14 2h6v2h-6zM2 4h20v2h-20zM0 6h24v2h-24zM0 8h24v2h-24zM0 10h24v2h-24zM2 12h20v2h-20zM4 14h16v2h-16zM6 16h12v2h-12zM8 18h8v2h-8zM10 20h4v2h-4z" fill="#A238FF"/></svg>' }, "tidal": { "color": "#000000", "svg": '<svg viewBox="0 0 24 24"><path d="M6 6l3 3-3 3-3-3zM12 6l3 3-3 3-3-3zM18 6l3 3-3 3-3-3zM12 12l3 3-3 3-3-3z" style="fill:var(--mbu-text,currentColor)"/></svg>' }, "qobuz": { "color": "#0070ef", "svg": '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="#0070ef"/><circle cx="12" cy="12" r="5" fill="none" stroke="#fff" stroke-width="2.2"/><path d="M14.5 14.5 19 19" stroke="#fff" stroke-width="2.2" stroke-linecap="round"/></svg>' }, "beatport": { "color": "#01FF95", "svg": '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="11" fill="#000"/><g transform="translate(12 12) scale(0.84) translate(-12 -12)" fill="none" stroke="#01FF95" stroke-width="2.5"><path d="M10.9 3V8.3c0 1.2-.4 1.9-1.1 2.6L5.6 15.1"/><circle cx="13.9" cy="15.8" r="4.05" stroke-width="2.35"/></g></svg>' }, "bandcamp": { "color": "#629AA9", "svg": '<svg viewBox="0 0 24 24" fill="#629AA9"><path transform="translate(12 12) scale(.8) translate(-12 -12)" d="M0 18.75l7.437-13.5H24l-7.438 13.5z"/></svg>' }, "volumo": { "color": "#7c4dff", "svg": '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="#7c4dff"/><path d="M7 8h2.2l2.8 6 2.8-6H17l-4 9h-2z" fill="#fff"/></svg>' }, "hdtracks": { "color": "#e63329", "svg": '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="#e63329"/><path d="M5 7.5h1.7v3.1h2.6V7.5H11v8H9.3v-3.2H6.7v3.2H5zm7.2 0h2.9c2 0 3.4 1.6 3.4 4s-1.4 4-3.4 4h-2.9zm1.7 1.5v5h1.1c1.1 0 1.8-1 1.8-2.5s-.7-2.5-1.8-2.5z" fill="#fff"/></svg>' }, "soundcloud": { "color": "#ff5500", "svg": '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="#ff5500"/><g fill="#fff"><rect x="6" y="12" width="1.4" height="4" rx=".6"/><rect x="8.5" y="10" width="1.4" height="6" rx=".6"/><rect x="11" y="8.5" width="1.4" height="7.5" rx=".6"/><rect x="13.5" y="10.5" width="1.4" height="5.5" rx=".6"/><rect x="16" y="11.5" width="1.4" height="4.5" rx=".6"/></g></svg>' }, "ytmusic": { "color": "#FF0000", "svg": '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="#FF0000"/><circle cx="12" cy="12" r="5.6" fill="none" stroke="#fff" stroke-width="1.4"/><path d="M10.4 9.5v5l4.2-2.5z" fill="#fff"/></svg>' }, "amazonmusic": { "color": "#25D1DA", "svg": '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="#25D1DA"/><path d="M5.8 11.2c3.5 3.2 8.9 3.5 12.4.9" fill="none" stroke="#0F1111" stroke-width="1.9" stroke-linecap="round"/><path d="M15.5 10.7l3 1.3-.9 3.1" fill="none" stroke="#0F1111" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>' }, "soundexchange": { "color": "#6f42c1", "svg": '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="#6f42c1"/><path d="M6.5 12h1.3l1-3 1.6 6 1.6-9 1.6 12 1.4-6h1.5" fill="none" stroke="#fff" stroke-width="1.4" stroke-linejoin="round" stroke-linecap="round"/></svg>' }, "globe": { "color": "#6f7d75", "svg": '<svg viewBox="0 0 24 24" fill="none" stroke="#6f7d75" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a15 15 0 0 1 0 18M12 3a15 15 0 0 0 0 18"/></svg>' } };
   function stIcon(name, size) {
@@ -23544,6 +23730,7 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
     if (sources.deezer) importSources.push({ name: "Deezer", url: sources.deezer, run: (g, c, collect) => runDeezerImport(sources.deezer, g, c, collect) });
     if (sources.apple) importSources.push({ name: "Apple", url: sources.apple, run: (g, c, collect) => runAppleImport(sources.apple, g, c, collect) });
     if (sources.metalArchives) importSources.push({ name: "Metal Archives", url: sources.metalArchives, run: (g, c, collect) => runMetalArchivesImport(sources.metalArchives, g, c, collect) });
+    if (sources.ytmusic) importSources.push({ name: "YouTube Music", url: sources.ytmusic, run: (g, c, collect) => runYtmImport(sources.ytmusic, g, c, collect) });
     if ((meta.titlesRemixCount || 0) > 0) {
       importSources.push({ name: "Titles", url: "", run: (g, c, collect) => runTitlesImport(g, c, collect) });
     }
@@ -23558,6 +23745,8 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
       Qobuz: stIcon("qobuz", 16),
       Deezer: stIcon("deezer", 16),
       Apple: stIcon("apple", 16),
+      "YouTube Music": stIcon("ytmusic", 16),
+      // #648
       Titles: SRC_ICON.Titles
     };
     const srcButtons = [];
@@ -24030,6 +24219,7 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
     if (sources.qobuz) logMenu.appendChild(mkMenuItem("Copy Qobuz", "Copy the parsed Qobuz credits for this release", (b, l) => bar._copy?.qobuz(b, l)));
     if (sources.deezer) logMenu.appendChild(mkMenuItem("Copy Deezer", "Copy the parsed Deezer credits for this release", (b, l) => bar._copy?.deezer(b, l)));
     if (sources.apple) logMenu.appendChild(mkMenuItem("Copy Apple", "Copy the parsed Apple credits for this release", (b, l) => bar._copy?.apple(b, l)));
+    if (sources.ytmusic) logMenu.appendChild(mkMenuItem("Copy YouTube Music", "Copy the fetched YouTube Music credits for this release", (b, l) => bar._copy?.ytmusic(b, l)));
     if (importSources.length > 1) logMenu.appendChild(mkMenuItem("Copy all", 'Copy the combined JSON of an "Import all" run \u2014 every source plus the merged, de-duplicated result (#408)', (b, l) => bar._copy?.all(b, l)));
     document.body.appendChild(logMenu);
     function openLogMenu() {
@@ -24257,6 +24447,10 @@ ${lines}
           if (_appleJson) copyToClipboard(JSON.stringify(_appleJson, null, 2), item, label);
         },
         // #435
+        ytmusic: (item, label) => {
+          if (_ytmJson) copyToClipboard(JSON.stringify(_ytmJson, null, 2), item, label);
+        },
+        // #648
         all: (item, label) => {
           if (_consolidatedJson) copyToClipboard(JSON.stringify(_consolidatedJson, null, 2), item, label);
         }
@@ -24636,6 +24830,58 @@ ${lines}
       log.error(err.message || String(err));
     });
   }
+  function editorMediumSizes() {
+    try {
+      const MB2 = pageWindow.MB, st = MB2?.relationshipEditor?.state;
+      if (!st?.mediums || !MB2.tree?.iterate) return [];
+      const sizes = [];
+      for (const entry of MB2.tree.iterate(st.mediums)) {
+        const medium = Array.isArray(entry) ? entry[1] : entry;
+        const tracks = medium?.tracks ?? medium;
+        let n = 0;
+        for (const t of MB2.tree.iterate(tracks)) if (t) n++;
+        sizes.push(n);
+      }
+      return sizes;
+    } catch (e) {
+      logDebug(`YouTube Music: couldn't read the release's mediums from the editor \u2014 ${e.message}`);
+      return [];
+    }
+  }
+  function runYtmImport(ytmUrl, getOpts, cancelled, collect) {
+    log.info(`Fetching YouTube Music credits (anonymous): ${ytmUrl}`);
+    return fetchYtmCredits(ytmUrl, (d, n) => document.querySelector(".discogs-bar")?._setProgress?.(null, `YouTube Music ${d}/${n}`)).then(({ album, list, songs }) => {
+      _ytmJson = { source: ytmUrl, album, list, songs };
+      const credited = songs.filter((s) => Object.keys(s.sections || {}).length).length;
+      const li = document.createElement("li");
+      const pre = document.createElement("pre");
+      pre.style.cssText = "max-height:400px;overflow:auto;font-size:0.72rem;background:var(--mbu-bg-raised);padding:0.5rem;border:1px solid var(--mbu-border);border-radius:3px;margin:0.3rem 0 0 0;white-space:pre-wrap;word-break:break-all;";
+      pre.textContent = JSON.stringify(_ytmJson, null, 2);
+      li.innerHTML = `<details><summary style="cursor:pointer;user-select:none;"><strong>${album || "YouTube Music album"} \xB7 ${songs.length} songs, ${credited} with credits \u2014 YouTube Music credits (API)</strong></summary></details>`;
+      li.querySelector("details").appendChild(pre);
+      _logs2.appendChild(li);
+      if (!credited) {
+        log.warn("No YouTube Music credits found (the label sent none for this album) \u2014 nothing to import.");
+        stopMsg(collect, "No importable credits found");
+        return;
+      }
+      const sizes = editorMediumSizes();
+      const { tracklistRels, tracklist, skipped, multiMedium, mismatch } = ytmToEngine(songs, sizes);
+      log.info(`YouTube Music credits: ${tracklistRels.length} per-track relationship(s) across ${tracklist.length} song(s); release mediums: ${sizes.length ? sizes.join(" + ") : "unknown"}`);
+      skipped.forEach((s) => log.info(`Not imported: ${s}`));
+      if (mismatch) log.warn(`Multi-medium release: YouTube Music has ${songs.length} songs, the release ${sizes.reduce((a, b) => a + b, 0)} tracks (${sizes.join(" + ")}) \u2014 songs can't be placed on the right mediums. Review carefully.`);
+      else if (multiMedium) log.info(`Multi-medium release: YouTube Music's straight-through numbering mapped onto ${sizes.length} mediums (${sizes.join(" + ")}).`);
+      if (!tracklistRels.length) {
+        log.warn("No importable YouTube Music credits found.");
+        stopMsg(collect, "No importable credits found");
+        return;
+      }
+      const parts = { companies: [], artistRoles: [], tracklistRels, tracklist, sourceUrl: ytmUrl, processTracklist: true };
+      return collect ? parts : runSourcePipeline({ ...parts, getOpts, cancelled });
+    }).catch((err) => {
+      log.error(err.message || String(err));
+    });
+  }
   function buildTitlesTracklist(mbid) {
     return fetchWithRetry(`/ws/2/release/${mbid}?inc=recordings&fmt=json`).then((json) => {
       const media = json?.media || [];
@@ -24717,6 +24963,7 @@ ${lines}
       qobuz: _qobuzJson,
       deezer: _deezerJson,
       apple: _appleJson,
+      ytmusic: _ytmJson,
       merged: { companies: merged.companies, artistRoles: merged.artistRoles, tracklistRels: merged.tracklistRels }
     };
     return runSourcePipeline({
@@ -25059,7 +25306,7 @@ ${lines}
       document.addEventListener("DOMContentLoaded", () => resolve(), { once: true });
     }).then(() => log.info(`Boot: DOM ready (+${since()}ms)`));
     Promise.all([sourceProbe, domReady]).then(([probe]) => {
-      const known = !!(probe.sources.discogs || probe.sources.tidal || probe.sources.qobuz || probe.sources.deezer || probe.sources.apple || probe.sources.metalArchives);
+      const known = !!(probe.sources.discogs || probe.sources.tidal || probe.sources.qobuz || probe.sources.deezer || probe.sources.apple || probe.sources.metalArchives || probe.sources.ytmusic);
       if (known || probe.failed) {
         bootstrapBar(probe, null, m[1]);
         remixProbe.then((remix) => {
@@ -25078,7 +25325,7 @@ ${lines}
   function bootstrapBar(probe, remix, releaseMbid) {
     {
       const sources = probe.sources;
-      const hasProvider = !!(sources.discogs || sources.tidal || sources.qobuz || sources.deezer || sources.apple);
+      const hasProvider = !!(sources.discogs || sources.tidal || sources.qobuz || sources.deezer || sources.apple || sources.ytmusic);
       const remixCount = remix?.count || 0;
       if (!probe.failed) logSourceProbe(sources);
       log.info(`Toolbar: ${probe.failed ? "source probe FAILED" : hasProvider ? "linked source(s) found" : "no linked sources"}, ${remixCount} title-derived remixer(s) \u2014 ${probe.failed || hasProvider || remixCount ? "mounting" : "not mounting (nothing to import)"}`);

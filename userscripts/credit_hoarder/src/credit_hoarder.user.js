@@ -215,7 +215,7 @@ if (/musicbrainz\.org$/i.test(location.hostname)) (function () {
         // Titles probe is the only thing that could justify a toolbar, so that
         // is the one case worth waiting for.
         const known = !!(probe.sources.discogs || probe.sources.tidal || probe.sources.qobuz
-            || probe.sources.deezer || probe.sources.apple || probe.sources.metalArchives);
+            || probe.sources.deezer || probe.sources.apple || probe.sources.metalArchives || probe.sources.ytmusic);
         if (known || probe.failed) {
             bootstrapBar(probe, null, m[1]);
             remixProbe.then(remix => {
@@ -248,7 +248,7 @@ function bootstrapBar(probe, remix, releaseMbid) {
     // a refresh appeared to fix it. The lookup retries now; if it still fails we
     // mount ANYWAY rather than silently deciding there is nothing to do.
         const sources = probe.sources;
-        const hasProvider = !!(sources.discogs || sources.tidal || sources.qobuz || sources.deezer || sources.apple);
+        const hasProvider = !!(sources.discogs || sources.tidal || sources.qobuz || sources.deezer || sources.apple || sources.ytmusic);
         const remixCount  = remix?.count || 0;
         if (!probe.failed) logSourceProbe(sources);
         log.info(`Toolbar: ${probe.failed ? 'source probe FAILED' : hasProvider ? 'linked source(s) found' : 'no linked sources'}`
