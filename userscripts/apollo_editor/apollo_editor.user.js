@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.1
+// @version      2026.10.1.045712
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E
@@ -2678,11 +2678,15 @@
     .tc-mirror.compact input.t-title,.tc-mirror.compact input.t-len,.tc-mirror.compact input.t-num{padding:0 2px;font-size:12px}
     .tc-mirror.compact .tc-search{padding:0 5px}.tc-mirror.compact .tc-search .nm{padding:1px 0;font-size:12px}
     .tc-mirror.compact .tc-cred{padding:0 4px 0 15px}
-    /* badge column: pills per artist line; on row hover the track ↺/✕ overlay it */
+    /* badge column: pills per artist line; on row hover the track ↺/✕ show at the cell's
+       right edge. Only the buttons take the pointer — the rest of the overlay lets it
+       through — so the pills stay visible and their tooltips (pos: on how many editions)
+       reachable; a cell narrow enough that a button lands on a pill gives the button a
+       backing so it still reads (majkinetor: "those 2 icons covering Match column"). */
     .tc-bl{height:28px;box-sizing:border-box;display:flex;align-items:center;justify-content:center}
-    .tc-trackacts{position:absolute;inset:0;display:none;align-items:center;justify-content:center;gap:10px;background:color-mix(in srgb, var(--mbu-bg) 93%, transparent)}
+    .tc-trackacts{position:absolute;inset:0;display:none;align-items:center;justify-content:flex-end;gap:2px;padding-right:2px;pointer-events:none}
     .tc-mirror tr:hover .tc-trackacts{display:flex}
-    .tc-trackacts button{cursor:pointer;border:none;background:none;font-size:16px;line-height:1}
+    .tc-trackacts button{pointer-events:auto;cursor:pointer;border:none;border-radius:4px;padding:2px 3px;background:color-mix(in srgb, var(--mbu-bg) 85%, transparent);font-size:16px;line-height:1}
     .tc-trackacts .trev{color:var(--mbu-accent-text)}.tc-trackacts .trev:hover{color:var(--mbu-accent-text)}
     .tc-trackacts .rm{color:var(--mbu-error);font-weight:bold}.tc-trackacts .rm:hover{color:var(--mbu-error)}
     /* #564 (majkinetor): "you should also change the blue color on the left that

@@ -46,6 +46,14 @@ test.describe('editing', () => {
 
     const last = page.locator(ROWS).last();
     await last.hover();
+    // the hover's ↺/✕ sit at the Match cell's right edge and only they take the pointer, so
+    // the pills (and the pos tooltip) stay reachable underneath
+    const acts = await last.evaluate(tr => {
+      const c = tr.querySelector('td.c-badge'), b = c.getBoundingClientRect(), rm = c.querySelector('.rm').getBoundingClientRect();
+      const hit = document.elementFromPoint(b.left + 4, rm.top + rm.height / 2);
+      return { through: !c.querySelector('.tc-trackacts').contains(hit), gap: Math.round(b.right - rm.right) };
+    });
+    check(acts.through && acts.gap < 8, `the hover's ✕ sits at the Match cell's right edge and lets the pointer through elsewhere (${JSON.stringify(acts)})`);
     await last.locator('.rm').click();
     check((await until(titles, t => t.length === before.length - 1)).length === before.length - 1, '✕ removes a track');
 
