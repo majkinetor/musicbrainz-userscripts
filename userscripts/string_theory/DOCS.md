@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-10-01 17:08 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-10-01 17:44 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -904,11 +904,11 @@ The toolbar shows the providers available for this release:
 
 - **+1** fills the previous track's ISRC plus one.
 - The **lookup** button looks the row's ISRC up on the selected provider and shows its title, artist and length next to the row, mismatches in red. Guests don't count as a mismatch: a *feat.* clause is left out of both titles, and when the credits differ only the main artist has to match, since databases list guests differently. Its menu switches every row to another provider; right-click runs it on all tracks.
-- **All** (top of the menu) checks the row's ISRCs on every provider available for the release at once, SoundExchange included: the entered one and every ISRC the recording already has. The row shows a verdict: **✓ 4/4** when every provider that knows the ISRC agrees, **⚠ 1/4** when some don't, **– 0/4** when none knows it, **⛔** when SoundExchange was blocked. Hover the verdict (or the row's **All** button) to see the comparison next to it (right of the verdict, or above the row when there's no room there, so the rows below stay free); move down either column to walk the tracks, click the verdict to pin it so you can select text. Each line starts with the provider's verdict:
-  - Deezer, Tidal and SoundExchange look the ISRC up: ✓ their song for it is this track, ⚠ it is another song.
-  - An album provider (Qobuz, Apple, Beatport…) reads the release's album there: ✓ it has this ISRC at the same position as this track (📍), or at another position (↪ track 3: the album orders its tracks differently). Deezer, Tidal and SoundExchange can't say where: they only look the ISRC up. When the album hasn't the ISRC at all, ✗ it has **another** ISRC at this track's position, offered with **use**. An ISRC that belongs to another track of the release, or that the row already has, is never offered.
+- **All** (top of the menu) checks the row's ISRCs on every provider available for the release at once (not SoundExchange, which serves a captcha on nearly every run): the entered one and every ISRC the recording already has. The row shows a verdict: **✓ 4/4** when every provider that knows the ISRC agrees, **⚠ 1/4** when some don't, **– 0/4** when none knows it. Hover the verdict (or the row's **All** button) to see the comparison next to it (right of the verdict, or above the row when there's no room there, so the rows below stay free); move down either column to walk the tracks, click the verdict to pin it so you can select text. Clicking one of its ISRCs pins it too, and the comparison stays where it is. Each line starts with the provider's verdict:
+  - Deezer and Tidal look the ISRC up: ✓ their song for it is this track, ⚠ it is another song.
+  - An album provider (Qobuz, Apple, Beatport…) reads the release's album there: ✓ it has this ISRC at the same position as this track (📍), or at another position (↪ track 3: the album orders its tracks differently). Deezer and Tidal can't say where: they only look the ISRC up. When the album hasn't the ISRC at all, ✗ it has **another** ISRC at this track's position, offered with **use**. An ISRC that belongs to another track of the release, or that the row already has, is never offered.
   - The header lists the row's ISRCs first, then any other ISRC a provider named, each with how many providers have it for this track. The comparison shows the row's first ISRC; click another of the row's to see what the providers say about that one, or an ISRC a provider named to see only the providers that name it. **copy** puts the comparison on the clipboard as a Markdown table (provider, track, length, note; the ISRC is in its heading, and in the note where an album has another one).
-  - SoundExchange throttles and serves captchas. On a right-click it is asked after the other providers, one track at a time, and stops at a captcha or rate limit, keeping every other result; its line then says so with a **↗** to SoundExchange, where you solve the captcha before running **All** again. Until you do, leaving an ISRC field doesn't ask it.
+  - **All** is also the last button in the toolbar, when the release has more than one provider: it checks every track, as a right-click on a row's **All** does.
 - **⚙** opens a SoundExchange search you can tune (title, artist, release, exact), with a link to run it on their site.
 
 | Check | Mismatch when |

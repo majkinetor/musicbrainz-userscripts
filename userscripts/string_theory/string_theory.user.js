@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         String Theory
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.1.170825
+// @version      2026.10.1.174414
 // @description  Unified bundle of 8 MusicBrainz userscripts (apollo_editor, art_station, credit_hoarder, fusion, group_therapy, isrc_scout, mammoth, platform_check). Built by userscripts/string_theory/build.mjs — do not hand-edit.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCIgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0Ij4KICA8IS0tIGh1Yi1hbmQtc3Bva2UgIm5ldHdvcmsiIGdseXBoLCBzaW5nbGUgdml2aWQgdmlvbGV0IG9uIHRyYW5zcGFyZW50IHNvIGl0IHJlYWRzIG9uIGJvdGggZGFyayBhbmQgbGlnaHQgcGFnZXMgLS0+CiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjN2M1Y2ZmIiBzdHJva2Utd2lkdGg9IjQuNiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj4KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMzIgMTUiLz4KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMNDYuNSAyMy41Ii8+CiAgICA8cGF0aCBkPSJNMzIgMzIgTDQ2LjUgNDAuNSIvPgogICAgPHBhdGggZD0iTTMyIDMyIEwzMiA0OSIvPgogICAgPHBhdGggZD0iTTMyIDMyIEwxNy41IDQwLjUiLz4KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMTcuNSAyMy41Ii8+CiAgPC9nPgogIDxnIGZpbGw9IiM3YzVjZmYiPgogICAgPGNpcmNsZSBjeD0iMzIiIGN5PSIzMiIgcj0iOC42Ii8+CiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjE5LjUiIHI9IjYuNCIvPgogICAgPGNpcmNsZSBjeD0iNDkiIGN5PSIxOS41IiByPSI2LjQiLz4KICAgIDxjaXJjbGUgY3g9IjMyIiBjeT0iNTciIHI9IjYuNCIvPgogIDwvZz4KICA8ZyBmaWxsPSJub25lIiBzdHJva2U9IiM3YzVjZmYiIHN0cm9rZS13aWR0aD0iMy44Ij4KICAgIDxjaXJjbGUgY3g9IjMyIiBjeT0iNyIgcj0iNC45Ii8+CiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjQ0LjUiIHI9IjQuOSIvPgogICAgPGNpcmNsZSBjeD0iNDkiIGN5PSI0NC41IiByPSI0LjkiLz4KICA8L2c+Cjwvc3ZnPgo=
@@ -84,8 +84,8 @@
 // Bundles (verbatim, each wrapped in a run-at gate): apollo_editor, art_station, credit_hoarder, fusion, group_therapy, isrc_scout, mammoth, platform_check.
 
 try {
-  console.log('%c String Theory %c v2026.10.1.170825 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
-  console.log("String Theory bundles:\n  · Apollo Editor v2026.10.1.170823\n  · Art Station v2026.10.1.164157\n  · Credit Hoarder v2026.10.1.164212\n  · Fusion v2026.10.1.164157\n  · Group Therapy v2026.10.1.164157\n  · ISRC Scout v2026.10.1.164157\n  · Mammoth v2026.10.1.164157\n  · Platform Check v2026.10.1.164157");
+  console.log('%c String Theory %c v2026.10.1.174414 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
+  console.log("String Theory bundles:\n  · Apollo Editor v2026.10.1.170823\n  · Art Station v2026.10.1.164157\n  · Credit Hoarder v2026.10.1.164212\n  · Fusion v2026.10.1.164157\n  · Group Therapy v2026.10.1.164157\n  · ISRC Scout v2026.10.1.174412\n  · Mammoth v2026.10.1.164157\n  · Platform Check v2026.10.1.164157");
 } catch (e) {}
 
 // ===== apollo_editor (@run-at document-start) =====================================
@@ -35717,7 +35717,7 @@ Created this ${kind} while adding credits parsed from text to ${relUrl}`;
 
 // ===== isrc_scout (@run-at document-start) ========================================
 (function(__stGM){
-  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"ISRC Scout*","namespace":"https://musicbrainz.org/","version":"2026.10.1.164157","description":"Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify / Beatport / Tidal / Volumo / HDtracks / Qobuz, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/isrc_scout/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPklTUkMgU2NvdXQ8L3RpdGxlPgogICAgPHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPgogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjQwIi8+CiAgICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyNiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2U9IiNiOWEzZTgiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPgogIDwvZz4KICA8bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+Cjwvc3ZnPgo="}) }) : { script: {"name":"ISRC Scout*","namespace":"https://musicbrainz.org/","version":"2026.10.1.164157","description":"Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify / Beatport / Tidal / Volumo / HDtracks / Qobuz, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/isrc_scout/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPklTUkMgU2NvdXQ8L3RpdGxlPgogICAgPHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPgogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjQwIi8+CiAgICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyNiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2U9IiNiOWEzZTgiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPgogIDwvZz4KICA8bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+Cjwvc3ZnPgo="} };
+  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"ISRC Scout*","namespace":"https://musicbrainz.org/","version":"2026.10.1.174412","description":"Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify / Beatport / Tidal / Volumo / HDtracks / Qobuz, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/isrc_scout/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPklTUkMgU2NvdXQ8L3RpdGxlPgogICAgPHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPgogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjQwIi8+CiAgICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyNiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2U9IiNiOWEzZTgiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPgogIDwvZz4KICA8bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+Cjwvc3ZnPgo="}) }) : { script: {"name":"ISRC Scout*","namespace":"https://musicbrainz.org/","version":"2026.10.1.174412","description":"Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify / Beatport / Tidal / Volumo / HDtracks / Qobuz, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/isrc_scout/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPklTUkMgU2NvdXQ8L3RpdGxlPgogICAgPHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPgogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjQwIi8+CiAgICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyNiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2U9IiNiOWEzZTgiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPgogIDwvZz4KICA8bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+Cjwvc3ZnPgo="} };
   (f=>f())(function(){ try { (function(){
 /*
  * ─────────────────────────────────────────────────────────────────────────
@@ -37950,7 +37950,8 @@ Created this ${kind} while adding credits parsed from text to ${relUrl}`;
     // on any release. The rest scan the release's album, so they need its link.
     TRACK_PROV[k] = { name: p.source, short: p.source, code: p.code, color: _PROV_COLOR[k] || '#444', kind: 'album', global: k === 'deezer' || k === 'tidal' };
   });
-  // #643: 'all' — every provider at once, SoundExchange included
+  // #643: 'all' — every provider at once. Not SoundExchange: it serves a captcha on nearly every
+  // run, so majkinetor took it out ("I was wrong about SX, it constantly does captcha").
   TRACK_PROV.all = { name: 'All', short: 'All', code: 'all', color: '', kind: 'all' };
   const TRACK_PROV_ORDER = ['all', 'sx', 'deezer', 'tidal', 'beatport', 'volumo', 'hdtracks', 'qobuz', 'apple', 'soundcloud'];
   let trackProv = 'sx';                                  // NOT persisted (#181)
@@ -38046,23 +38047,17 @@ Created this ${kind} while adding credits parsed from text to ${relUrl}`;
       }
     }
   }
-  // #643: "All" — the row's ISRC checked on every provider available for the release at once,
-  // SoundExchange included, summed up in a verdict chip in the row's result slot. Hovering the chip
+  // #643: "All" — the row's ISRC checked on every provider available for the release at once
+  // (SoundExchange is not one: it serves captchas), summed up in a verdict chip in the row's result slot. Hovering the chip
   // (or the row's All button) shows the comparison beside the chip; a click pins it.
   // What each provider can say about an ISRC:
-  //   · Deezer, Tidal, SoundExchange (a lookup by ISRC): ✓ their song for it is this track ·
+  //   · Deezer, Tidal (a lookup by ISRC): ✓ their song for it is this track ·
   //     ⚠ it is another song (title, artist or length differ; guests don't count) · – they don't know it
   //   · the album providers (the release's album on them, read once): ✓ the album has this ISRC at
   //     the track's place (📍) or, with nothing there, elsewhere (↪ track n) · ✗ it has ANOTHER ISRC
   //     at the track's place — offered with [use] · – nothing there
-  // SoundExchange throttles and serves captchas: a bulk run asks it last, one track at a time,
-  // paced, and stops at a captcha with every other result kept.
   const _allRes = {};                     // idx → { isrc, lines: [{ key, name, state, isrc?, at?, song?, note? }] }
   let _allEpoch = 0;                      // bumped by closing the dialog / Clear: a running All stops
-  // After a captcha or rate limit, All leaves SoundExchange alone until you run All yourself again
-  // (a click or right-click on the button) — leaving an ISRC field doesn't count, so a blocked
-  // SoundExchange isn't poked with every field you leave.
-  let _allSxBlocked = null;               // null, or 'captcha' / 'rate limit'
   const ALL_OK = 'ok', ALL_SONG = 'song', ALL_DIFF = 'differs', ALL_NONE = 'none', ALL_FAIL = 'fail', ALL_WAIT = 'pending', ALL_BLOCK = 'blocked';
   const ALL_MARK = { ok: '✓', song: '⚠', differs: '✗', none: '–', fail: '!', pending: '⏳', blocked: '⛔' };
   function allProviders() { return TRACK_PROV_ORDER.filter(k => k !== 'all' && k !== 'sx' && trackProvAvailable(k)); }
@@ -38143,14 +38138,7 @@ Created this ${kind} while adding credits parsed from text to ${relUrl}`;
     if (l.isrc && l.isrc !== isrc) p.push('<span class="ii-all-isrc">' + esc(l.isrc) + '</span>');
     if (l.song && l.song.title) p.push(esc('"' + l.song.title + '"' + (l.song.artist ? ' — ' + l.song.artist : '')));   // the length has its own column
     if (l.note) p.push('<span class="ii-all-sub">' + esc(l.note) + '</span>');
-    if (l.sxLink) p.push('<a class="ii-all-sxlink" href="' + esc(SX_HOME) + '" target="_blank" rel="noopener" title="SoundExchange is blocked — solve its captcha in the browser, then click or right-click All">↗</a>');
     return p.join(' ');
-  }
-  async function allSxLine(t, isrc) {
-    const rows = await sxLookupCached(isrc);   // throws on a captcha / rate limit
-    if (!rows.length) return { key: 'sx', name: 'SoundExchange', of: isrc, state: ALL_NONE, note: 'doesn’t know ' + isrc };
-    const f = SX.fields(rows[0]);
-    return Object.assign(allSongLine('sx', 'SoundExchange', f, t, isrc), { of: isrc });
   }
   // #643: the ISRCs All asks about on a row: the given one (entered, or the first existing) and
   // every other ISRC the recording already has
@@ -38158,59 +38146,23 @@ Created this ${kind} while adding credits parsed from text to ${relUrl}`;
     const t = RELEASE.tracks[idx];
     return [...new Set([isrc].concat(t.existing || []).map(normalizeIsrc).filter(isValidIsrc))];
   }
-  // One track: every provider, then SoundExchange (sx: false queues it — a bulk run asks it after
-  // the other tracks' providers).
+  // One track: every provider at once.
   const _allInflight = {};
   function allLookupRow(idx, isrc, opts) {
     const k = idx + ' ' + isrc;
     if (!_allInflight[k]) _allInflight[k] = allLookupRowNow(idx, isrc, opts).finally(() => { delete _allInflight[k]; });
     return _allInflight[k];
   }
-  async function allLookupRowNow(idx, isrc, { sx = true } = {}) {
+  async function allLookupRowNow(idx, isrc) {
     const t = RELEASE.tracks[idx], keys = allProviders(), asked = allRowIsrcs(idx, isrc), num = t.number || t.trackPos;
     // res.isrc: the row's ISRC (entered, or the first existing), shown first; res.asked: every one asked about
     const res = _allRes[idx] = { isrc, asked, lines: [].concat(...asked.map(i => keys.map(k => ({ key: k, name: TRACK_PROV[k].name, of: i, state: ALL_WAIT, note: 'asking…' })))) };
     renderAllChip(idx);
-    Log.info('All #' + num + ' ' + asked.join(', ') + ': asking ' + keys.map(k => TRACK_PROV[k].name).join(', ') + (sx ? ', SoundExchange' : ''));
+    Log.info('All #' + num + ' ' + asked.join(', ') + ': asking ' + keys.map(k => TRACK_PROV[k].name).join(', '));
     res.lines = [].concat(...await Promise.all(asked.map(i => Promise.all(keys.map(k => allOnProvider(k, t, i, idx, asked))))));
     res.lines.forEach(l => Log.info('All #' + num + ' ' + l.of + ' ' + l.name + ': ' + l.state + ' — ' + allLineText(l, l.of)));
-    if (sx) await allSxRow(idx);
-    else asked.forEach(i => res.lines.push({ key: 'sx', name: 'SoundExchange', of: i, state: ALL_WAIT, note: 'queued — asked after the other tracks’ providers' }));
     renderAllChip(idx);
     return res;
-  }
-  // SoundExchange for a row All has looked at, for each ISRC asked about: throws on a captcha /
-  // rate limit, after marking the row.
-  async function allSxRow(idx) {
-    const res = _allRes[idx], t = RELEASE.tracks[idx], num = t.number || t.trackPos;
-    res.lines = res.lines.filter(l => l.key !== 'sx');
-    const asked = res.asked || [res.isrc];
-    for (let n = 0; n < asked.length; n++) {
-      const i = asked[n], at = res.lines.length;
-      if (_allSxBlocked) {
-        res.lines.push({ key: 'sx', name: 'SoundExchange', of: i, state: ALL_BLOCK, note: 'not asked · ' + _allSxBlocked, sxLink: true });
-        continue;
-      }
-      res.lines.push({ key: 'sx', name: 'SoundExchange', of: i, state: ALL_WAIT, note: 'asking…' });
-      renderAllChip(idx);
-      const cached = !!_isrcLookupCache[i];
-      try {
-        res.lines[at] = await allSxLine(t, i);
-        Log.info('All #' + num + ' ' + i + ' SoundExchange: ' + res.lines[at].state + ' — ' + allLineText(res.lines[at], i));
-      } catch (e) {
-        if (e && (e.captcha || e.rateLimited)) {
-          _allSxBlocked = e.captcha ? 'captcha' : 'rate limit';
-          res.lines[at] = { key: 'sx', name: 'SoundExchange', of: i, state: ALL_BLOCK, note: e.captcha ? 'captcha' : 'rate-limited', sxLink: true };
-          asked.slice(n + 1).forEach(j => res.lines.push({ key: 'sx', name: 'SoundExchange', of: j, state: ALL_BLOCK, note: 'not asked · ' + _allSxBlocked, sxLink: true }));
-          renderAllChip(idx);
-          throw e;
-        }
-        res.lines[at] = { key: 'sx', name: 'SoundExchange', of: i, state: ALL_FAIL, note: 'failed: ' + errText(e) };
-        Log.err('All #' + num + ' ' + i + ' SoundExchange failed: ' + errText(e));
-      }
-      if (!cached && n < asked.length - 1) await sleep(BATCH_DELAY);   // paced, as a bulk run is
-    }
-    renderAllChip(idx);
   }
   // The verdict chip: ✓ n/n when every provider that knows the ISRC agrees, ⚠ k/n when some don't,
   // – 0/m when none knows it, ⏳ while asking, ⛔ when SoundExchange was blocked. Hover shows the
@@ -38298,7 +38250,7 @@ Created this ${kind} while adding credits parsed from text to ${relUrl}`;
     const shown = allShownIsrc(pop, res);
     return shown ? (l.of || res.isrc) === shown : l.isrc === pop._sel;
   }
-  function renderAllPop(pop) {
+  function renderAllPop(pop, keepPlace) {
     const idx = pop._idx, res = _allRes[idx]; if (!res) return;
     const num = RELEASE.tracks[idx].number || RELEASE.tracks[idx].trackPos;
     const icon = k => k === 'sx' ? '<span class="ii-prov-sx">SX</span>' : (SRC_ICON[TRACK_PROV[k] && TRACK_PROV[k].code] || '');
@@ -38322,7 +38274,7 @@ Created this ${kind} while adding credits parsed from text to ${relUrl}`;
         '<span class="ii-all-name">' + esc(l.name) + '</span><span class="ii-all-note" title="' + esc(allLineText(l, l.of || res.isrc)) + '">' + allLineHtml(l, l.of || res.isrc) + '</span>' +
         '<span class="ii-all-len">' + esc((l.song && l.song.dur) || '') + '</span>' +
         (l.state === ALL_DIFF ? '<button type="button" class="ii-all-use" data-i="' + i + '" title="put ' + esc(l.isrc) + ' in the row">use</button>' : '<span></span>') + '</div>').join('');
-    placeAllPop(pop);
+    if (!keepPlace) placeAllPop(pop);
   }
   // Where it goes: right of the chip, level with the row, when it fits there; otherwise above the row
   // (right-aligned to the chip) — either way the rows below, their All buttons and chips, stay free.
@@ -38349,7 +38301,14 @@ Created this ${kind} while adding credits parsed from text to ${relUrl}`;
       // an ISRC of the row shows its comparison (the row's first: no selection); another one named
       // by a provider toggles a filter to the providers naming it
       pop._sel = asked.includes(i) ? (i === res.isrc ? '' : i) : (pop._sel === i ? '' : i);
-      renderAllPop(pop); return;
+      // #643: the panel stays where it is — it used to be placed anew for the other ISRC's lines,
+      // moved out from under the pointer and closed. Above the row it keeps its bottom edge (it
+      // grows upward); elsewhere its top. And a picked tab pins it.
+      const top0 = parseFloat(pop.style.top) || 0, h0 = pop.offsetHeight;
+      renderAllPop(pop, true);
+      if (pop._at === 'above') pop.style.top = Math.max(8, top0 + h0 - pop.offsetHeight) + 'px';
+      if (!pop._pinned) allPin(pop);
+      return;
     }
     if (use) {
       const l = res.lines[+use.dataset.i];
@@ -38374,40 +38333,16 @@ Created this ${kind} while adding credits parsed from text to ${relUrl}`;
     }
   }
   function closeAllPop() { clearTimeout(_allHideT); const p = modal && modal.querySelector('#ii-all-pop'); if (p) { if (p._off) p._off(); p.remove(); } }
-  // Right-click on All: every track with the providers first (Tidal paced per track), then
-  // SoundExchange one track at a time, paced — and it stops at a captcha or rate limit, leaving the
-  // rest marked, with every other result kept.
+  // Right-click on All: every track, on every provider (Tidal paced per track).
   async function runAllTracks() {
-    _allSxBlocked = null;   // an explicit run asks SoundExchange again
     const myEpoch = _allEpoch;
     const todo = [];
     RELEASE.tracks.forEach((t, idx) => { const isrc = rowIsrc(idx); if (isrc) todo.push({ idx, isrc }); });
-    Log.info('All: ' + todo.length + ' track(s) with an ISRC, on ' + allProviders().map(k => TRACK_PROV[k].name).join(', ') + ', then SoundExchange');
+    Log.info('All: ' + todo.length + ' track(s) with an ISRC, on ' + allProviders().map(k => TRACK_PROV[k].name).join(', '));
     for (let k = 0; k < todo.length; k++) {
       if (myEpoch !== _allEpoch) { Log.info('All: cancelled'); return; }
-      await allLookupRow(todo[k].idx, todo[k].isrc, { sx: false });
+      await allLookupRow(todo[k].idx, todo[k].isrc);
       if (allProviders().includes('tidal') && k < todo.length - 1) await sleep(TIDAL_TRACK_DELAY);
-    }
-    Log.info('All: SoundExchange for ' + todo.length + ' track(s), one at a time');
-    for (let k = 0; k < todo.length; k++) {
-      if (myEpoch !== _allEpoch) { Log.info('All: cancelled'); return; }
-      if (!_allRes[todo[k].idx]) continue;
-      const cached = (_allRes[todo[k].idx].asked || [_allRes[todo[k].idx].isrc]).every(i => _isrcLookupCache[i]);
-      try { await allSxRow(todo[k].idx); }
-      catch (e) {
-        if (e && (e.captcha || e.rateLimited)) {
-          todo.slice(k + 1).forEach(({ idx }) => {
-            (_allRes[idx] ? _allRes[idx].lines.filter(x => x.key === 'sx') : []).forEach(l => {
-              l.state = ALL_BLOCK; l.note = 'not asked · stopped at a ' + (e.captcha ? 'captcha' : 'rate limit'); l.sxLink = true;
-            });
-            renderAllChip(idx);
-          });
-          Log.warn('All: SoundExchange ' + (e.captcha ? 'captcha' : 'rate limit') + ' — stopped; ' + (todo.length - k - 1) + ' track(s) not asked');
-          sxBlocked(e);
-          return;
-        }
-      }
-      if (!cached && k < todo.length - 1) await sleep(BATCH_DELAY);
     }
     Log.info('All: done');
   }
@@ -38425,7 +38360,7 @@ Created this ${kind} while adding credits parsed from text to ${relUrl}`;
     const isrc = rowIsrc(idx);
     if (!isrc) return;                       // nothing to look up (button is disabled)
     if (trackProv === 'sx') { lookupIsrc(idx, isrc).catch(e => { if (e && (e.rateLimited || e.captcha)) sxBlocked(e); }); return; }
-    if (trackProv === 'all') { _allSxBlocked = null; allLookupRow(idx, isrc).catch(e => { if (e && (e.rateLimited || e.captcha)) sxBlocked(e); }); return; }   // #643: an explicit run asks SoundExchange again
+    if (trackProv === 'all') { allLookupRow(idx, isrc).catch(e => Log.err('All: ' + errText(e))); return; }   // #643
     lookupRowOnProvider(idx, isrc);
   }
   // Right-click → look up EVERY track's ISRC on the current provider, shown next
@@ -38468,7 +38403,7 @@ Created this ${kind} while adding credits parsed from text to ${relUrl}`;
       b.dataset.prov = key;
       b.innerHTML = provGlyph || m.short;
       b.title = (m.kind === 'all'
-        ? 'Check this track’s ISRC on every provider at once — a verdict, and a comparison on click (SoundExchange only if they disagree)'
+        ? 'Check this track’s ISRC on every provider at once — a verdict, and a comparison on click'
         : m.kind === 'album'
         ? ('Look up this track’s ISRC on ' + m.name)
         : 'Look up this track’s ISRC on SoundExchange — verify the entered ISRC, or (if empty) search by title/artist')
@@ -39438,6 +39373,7 @@ Created this ${kind} while adding credits parsed from text to ${relUrl}`;
         <button class="ii-tbtn qz" id="ii-qz-all" title="Import ISRCs from Qobuz (needs Qobuz login in Platform Check)"><span class="ii-bico">${SRC_ICON.qz}</span><span class="ii-blabel">Qobuz</span></button>
         <button class="ii-tbtn am" id="ii-am-all" title="Import ISRCs from Apple Music"><span class="ii-bico">${SRC_ICON.am}</span><span class="ii-blabel">Apple</span></button>
         <button class="ii-tbtn sc" id="ii-sc-all" title="Import ISRCs from a SoundCloud set"><span class="ii-bico">${SRC_ICON.sc}</span><span class="ii-blabel">SoundCloud</span></button>
+        <button class="ii-tbtn all" id="ii-all-all" title="Check every track’s ISRC on every available provider (All)"><span class="ii-bico">All</span><span class="ii-blabel">All</span></button>
         <span class="ii-urladd" id="ii-urladd">
           <button class="ii-urladd-btn" id="ii-url-btn" type="button" title="Paste a streaming URL (Deezer / Spotify / Beatport / Tidal / Volumo / HDtracks / Qobuz) — auto-detected and imported">+</button>
           <input class="ii-urladd-input" type="text" id="ii-url-input" placeholder="Paste a streaming album URL…" autocomplete="off">
@@ -39667,6 +39603,8 @@ Created this ${kind} while adding credits parsed from text to ${relUrl}`;
     modal.querySelector('#ii-qz-all').addEventListener('click', runQobuz);
     modal.querySelector('#ii-am-all').addEventListener('click', runApple);
     modal.querySelector('#ii-sc-all').addEventListener('click', runSoundcloud);
+    // #643: All from the toolbar — every track on every provider, as a right-click on a row's All
+    modal.querySelector('#ii-all-all').addEventListener('click', () => { Log.info('All: run from the toolbar'); if (trackProvAvailable('all')) setTrackProvider('all', { quiet: true }); runAllTracks(); });
     // Unified "paste a URL" control (#180) — apollo-style unroll. Click the +
     // to reveal the input; paste any streaming album URL; on Enter the platform
     // is auto-detected and imported. Replaces the per-provider ▾ submenus.
@@ -40875,6 +40813,11 @@ Created this ${kind} while adding credits parsed from text to ${relUrl}`;
         : ('No ' + source + ' link');
     });
 
+    // #643: All, last in the toolbar, when there is more than one provider to compare
+    { const allBtn = modal.querySelector('#ii-all-all'), n = allProviders().length;
+      allBtn.style.display = n > 1 ? '' : 'none';
+      allBtn.title = 'Check every track’s ISRC on ' + allProviders().map(k => TRACK_PROV[k].name).join(', ') + ' at once — a verdict per row, the comparison on its chip'; }
+
     tbody.innerHTML = '';
     let lastMedium = null;
     RELEASE.tracks.forEach((t, idx) => {
@@ -40941,8 +40884,8 @@ Created this ${kind} while adding credits parsed from text to ${relUrl}`;
         if (input.dataset.autofill === '1') return;   // filled by a source, not manual typing
         const v = normalizeIsrc(input.value);
         if (!v || !isValidIsrc(v)) return;
-        // #643: with All picked, a typed ISRC is checked by All (SoundExchange included), not by
-        // SoundExchange alone — both would write the row's one result slot
+        // #643: with All picked, a typed ISRC is checked by All, not by SoundExchange — both would
+        // write the row's one result slot
         const run = trackProv === 'all' ? allLookupRow(idx, v) : lookupIsrc(idx, v);
         run.catch(e => { if (e && (e.rateLimited || e.captcha)) sxBlocked(e); });
       });

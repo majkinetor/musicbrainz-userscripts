@@ -1,13 +1,17 @@
 // #643: "All" in the per-track provider menu — the row's ISRC checked on every provider available
-// for the release at once, SoundExchange included, a verdict chip on the row and the comparison as
-// a tooltip beside it (a click pins it). SoundExchange is asked last on a right-click and stopped at
-// a captcha with every other result kept. Guests don't count as a mismatch, in All and in a single
-// provider's lookup alike.
+// for the release at once, a verdict chip on the row and the comparison as a tooltip beside it (a
+// click pins it). Guests don't count as a mismatch, in All and in a single provider's lookup alike.
+//
+// majkinetor, after the release: "I was wrong about SX, it constantly does captcha so lets remove it
+// from the All" — so All never asks SoundExchange (a request to it is counted, and must stay 0).
+// "when clicking other ISRC tab, the tooltip can move away to different position and close soon
+// after that as no mouse is over it" — a tab click keeps the tooltip where it is, and pins it.
+// "add [All] as last provider in the toolbar … (when more then 1 is avail)".
 //
 // Random Access Memories (fixtures/ws-458.json.gz: production's data on the sandbox). The providers
-// are live; SoundExchange is answered with its captcha reply, so its part is the same every run.
+// are live; SoundExchange would be answered with its captcha reply.
 import { test, check, until, answerGm } from '../../../dev/test/harness.mjs';
-import { openScout } from './is.mjs';
+import { openScout, logText } from './is.mjs';
 
 test.use({ gm: { name: 'ISRC Scout' } });
 const RAM = '5000a285-b67e-4cfc-b54b-2b98f1810d2e';
@@ -33,7 +37,7 @@ async function hoverPop(page, i) {
 }
 const box = (page, sel) => page.locator(sel).boundingBox();
 
-test('#643: All — agreement, a disputed ISRC with [use], the tooltip, SoundExchange stopped at a captcha', { tag: ['@sandbox', '@web'] }, async ({ page, inject }) => {
+test('#643: All — agreement, a disputed ISRC with [use], the tooltip, no SoundExchange, the toolbar button', { tag: ['@sandbox', '@web'] }, async ({ page, inject }) => {
   let sx = 0;
   const ws = await openScout(page, inject, {
     release: RAM, replay: new URL('./fixtures/ws-458.json.gz', import.meta.url),
@@ -57,17 +61,17 @@ test('#643: All — agreement, a disputed ISRC with [use], the tooltip, SoundExc
 
   check(await pickProv(page, 'All') === 'All', 'the menu offers All, and the row buttons say so');
 
-  // track 1, its own ISRC: every provider agrees; SoundExchange is asked too (here: its captcha)
+  // track 1, its own ISRC: every provider agrees; SoundExchange is not asked
   await page.locator(row(0) + ' .ii-sx').click();
-  const agree = await until(() => chip(page, 0), c => c && /^✓ \d+\/\d+/.test(c.text) && /⛔/.test(c.text), { timeout: 60000 });
+  const agree = await until(() => chip(page, 0), c => c && /^✓ \d+\/\d+/.test(c.text), { timeout: 60000 });
   console.log('agree', JSON.stringify(agree));
   check(/ii-all-chip ok/.test(agree.cls) && +agree.text.match(/\/(\d+)/)[1] >= 2, `track 1: a green verdict from at least two providers (${agree.text})`);
-  check(sx === 1, `…and SoundExchange is asked along with them (${sx} requests)`);
+  check(sx === 0 && !/⛔/.test(agree.text), `…and SoundExchange isn't asked (${sx} requests; ${agree.text})`);
   const p1 = await hoverPop(page, 0);
   console.log('pop1', JSON.stringify(p1));
   check(!p1.pinned, 'hovering the verdict shows the comparison, unpinned');
   check(p1.lines.filter(l => l.state !== 'fail' && l.name !== 'SoundExchange').every(l => l.state === 'ok' && l.mark === '✓'), `each line starts with its verdict; all that could answer say ✓ (${p1.lines.map(l => l.mark + l.name).join(', ')})`);
-  check(p1.lines.some(l => l.name === 'SoundExchange' && l.state === 'blocked'), 'SoundExchange\'s line says it met a captcha');
+  check(!p1.lines.some(l => l.name === 'SoundExchange'), 'no SoundExchange line in the comparison');
   check(p1.picks.length === 2 && p1.picks[0] === 'USQX91300101' && p1.picks[1] === EXTRA, `the header lists both of the recording's ISRCs, the first shown (${p1.picks})`);
   check(p1.lines.some(l => l.name === 'Apple' && l.text.startsWith('📍')), `an album provider's "at this track's place" is an icon (${(p1.lines.find(l => l.name === 'Apple') || {}).text})`);
   // beside the chip: the All buttons and the verdicts below stay free to hover
@@ -106,14 +110,27 @@ test('#643: All — agreement, a disputed ISRC with [use], the tooltip, SoundExc
   check((await readPop(page)).lines.some(l => l.state === 'ok'), 'a click on the first one shows its comparison again');
   await page.keyboard.press('Escape');
   check(await page.locator('#ii-all-pop').count() === 0, 'Escape closes it');
+  // a tab click on the hover tooltip (unpinned) keeps it where it is and pins it — it used to be
+  // placed anew, out from under the pointer, and close
+  await hoverPop(page, 0);
+  const before0 = await box(page, '#ii-all-pop'), at0 = await page.evaluate(() => document.querySelector('#ii-all-pop')._at);
+  await page.locator(`#ii-all-pop .ii-all-pick[data-isrc="${EXTRA}"]`).click();
+  const after0 = await box(page, '#ii-all-pop');
+  const kept = at0 === 'above' ? Math.abs((after0.y + after0.height) - (before0.y + before0.height)) <= 1 : Math.abs(after0.y - before0.y) <= 1;
+  check(kept && Math.abs(after0.x - before0.x) <= 1, `a tab click keeps the tooltip in place (${at0}: ${JSON.stringify(before0)} → ${JSON.stringify(after0)})`);
+  await page.mouse.move(5, 5);
+  await page.waitForTimeout(500);
+  const stays = await readPop(page);
+  check(stays && stays.pinned, 'and pins it: it stays when the mouse leaves');
+  await page.keyboard.press('Escape');
 
   // track 4 (no ISRC on MB) with track 2's ISRC typed in: the providers dispute it
   await page.fill(row(3) + ' .ii-input', 'USQX91300102');
   await page.locator(row(3) + ' .ii-sx').click();
-  const dispute = await until(() => chip(page, 3), c => c && /^[⚠–]/.test(c.text) && /⛔/.test(c.text), { timeout: 60000 });
+  const dispute = await until(() => chip(page, 3), c => c && /^[⚠–]/.test(c.text), { timeout: 60000 });
   console.log('dispute', JSON.stringify(dispute));
   check(/^⚠/.test(dispute.text), `a disputed ISRC gets an amber verdict (${dispute.text})`);
-  check(sx === 2, `a click asks SoundExchange again after its captcha (${sx} requests)`);
+  check(sx === 0, `still no SoundExchange (${sx} requests)`);
   const p2 = await hoverPop(page, 3);
   console.log('pop2', JSON.stringify(p2));
   const diff = p2.lines.find(l => l.state === 'differs' && l.use);
@@ -142,27 +159,32 @@ test('#643: All — agreement, a disputed ISRC with [use], the tooltip, SoundExc
   await page.fill(row(2) + ' .ii-input', '');
   await page.fill(row(3) + ' .ii-input', 'USQX91300104');
 
-  const sxNow = sx;
-  // two tracks with each other's ISRC; leaving the fields runs All on them — SoundExchange is still
-  // blocked from the click above, so it isn't poked on every field you leave
+  // two tracks with each other's ISRC; leaving the fields runs All on them
   await page.fill(row(1) + ' .ii-input', 'USQX91300103');
   await page.fill(row(2) + ' .ii-input', 'USQX91300102');
   await page.locator(row(0) + ' .ii-input').focus();
   await until(async () => [await chip(page, 1), await chip(page, 2)], c => c.every(x => x && /ii-all-chip/.test(x.cls) && !/⏳/.test(x.text)), { timeout: 60000 });
-  const sxOf = p => (p.lines.find(l => l.name === 'SoundExchange') || {}).text || '';
-  const t2 = await hoverPop(page, 2);
-  check(sx === sxNow && /not asked · captcha/.test(sxOf(t2)), `after a captcha, leaving a field doesn't ask SoundExchange again (${sx - sxNow}: ${sxOf(t2)})`);
+  check(sx === 0, 'leaving a field runs All without SoundExchange');
 
-  // right-click: every track, then SoundExchange one track at a time — its captcha stops it
-  const before = sx;
+  // right-click: every track, on every provider
   await page.locator(row(0) + ' .ii-sx').click({ button: 'right' });
-  const all = await until(() => page.evaluate(() => [...document.querySelectorAll('#ii-tbody tr[data-idx] .ii-lookup.ii-all-chip')].map(e => e.textContent.trim())), a => a.length >= 13 && a.every(t => !/⏳/.test(t)) && a.every(t => /⛔/.test(t)), { timeout: 120000 });
-  console.log('all', JSON.stringify(all), 'sx', sx - before);
+  const verdicts = () => page.evaluate(() => [...document.querySelectorAll('#ii-tbody tr[data-idx] .ii-lookup.ii-all-chip')].map(e => e.textContent.trim()));
+  const all = await until(verdicts, a => a.length >= 13 && a.every(t => !/⏳/.test(t)), { timeout: 120000 });
+  console.log('all', JSON.stringify(all), 'sx', sx);
   check(all.length === 13, `every track gets a verdict (${all.length})`);
-  check(sx - before === 1, `SoundExchange is asked once, for the first track, and its captcha stops it (${sx - before})`);
-  const t3 = await hoverPop(page, 2);
-  check(/not asked · stopped at a captcha/.test(sxOf(t3)), `the other tracks say SoundExchange wasn't asked, and why (${sxOf(t3)})`);
+  check(sx === 0 && all.every(t => !/⛔/.test(t)), `SoundExchange isn't asked for any of them (${sx})`);
   check(all.filter(t => /^✓/.test(t)).length === 11, `the eleven untouched tracks agree — feat. clauses and guest lists included (${all.join(' ')})`);
+
+  // the toolbar: All, after the last provider, runs every track too
+  const tb = await page.evaluate(() => {
+    const b = document.getElementById('ii-all-all'), provs = [...document.querySelectorAll('#ii-tools > .ii-tbtn:not(.sx)')].filter(x => x.style.display !== 'none');
+    return { shown: !!b && b.style.display !== 'none', last: provs[provs.length - 1] === b, n: provs.length };
+  });
+  check(tb.shown && tb.last, `the toolbar has All, last of its ${tb.n} provider buttons (${JSON.stringify(tb)})`);
+  const logBefore = (await logText(page)).length;
+  await page.locator('#ii-all-all').click();
+  await until(async () => (await logText(page)).slice(logBefore), t => /All: run from the toolbar/.test(t) && /All: done/.test(t), { timeout: 120000 });
+  check(/All: done/.test((await logText(page)).slice(logBefore)), 'the toolbar\'s All checks every track');
 
   // closed and opened again, the buttons still say All (they used to say SX, and run All)
   await page.evaluate(() => document.getElementById('ii-overlay').click());   // the backdrop closes it
