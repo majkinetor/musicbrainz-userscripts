@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         First Contact
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.1.161334
-// @description  Import a release into MusicBrainz from the platform's album page with one click: the release editor opens with the title, tracklist, artists, date, label, barcode and link filled in. Each artist's platform link is handed to Apollo Editor for matching. Platforms: Deezer, Bandcamp, Discogs, Apple Music, Tidal, Qobuz, Beatport.
+// @version      2026.10.1.165018
+// @description  Import a release into MusicBrainz from the platform's album page with one click: the release editor opens with the title, tracklist, artists, date, label, barcode and link filled in. Each artist's platform link is handed to Apollo Editor for matching. Platforms: Deezer, Bandcamp, Discogs, Apple Music, Tidal, Qobuz, Beatport, Spotify, YouTube Music.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPkZpcnN0IENvbnRhY3Q8L3RpdGxlPgogIDwhLS0gdHJhY3RvciBiZWFtIC0tPgogIDxwYXRoIGQ9Ik01MCA0NCBMNzggNDQgTDEwNCAxMTIgTDI0IDExMiBaIiBmaWxsPSIjZjZjNDMxIiBvcGFjaXR5PSIwLjkiLz4KICA8cGF0aCBkPSJNNTYgNDQgTDcyIDQ0IEw4OCAxMTIgTDQwIDExMiBaIiBmaWxsPSIjZmRlNjhhIiBvcGFjaXR5PSIwLjciLz4KICA8IS0tIGxhbmRpbmcgcmluZyAtLT4KICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSIxMTQiIHJ4PSI0MiIgcnk9IjgiIGZpbGw9IiMxZTIzNDYiLz4KICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSIxMTMiIHJ4PSIyNiIgcnk9IjQuMiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZjZjNDMxIiBzdHJva2Utd2lkdGg9IjIuNCIvPgogIDwhLS0gc2F1Y2VyIC0tPgogIDxwYXRoIGQ9Ik00MCAyNiBBMjQgMTggMCAwIDEgODggMjYgWiIgZmlsbD0iIzFlMjM0NiIvPgogIDxwYXRoIGQ9Ik01MCAxOCBBMTAgNiAwIDAgMSA2MCAxNCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjIuNiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8+CiAgPGVsbGlwc2UgY3g9IjY0IiBjeT0iMzIiIHJ4PSI1NiIgcnk9IjEzIiBmaWxsPSIjMWUyMzQ2Ii8+CiAgPGNpcmNsZSBjeD0iMzgiIGN5PSIzMiIgcj0iNC40IiBmaWxsPSIjZmZmIi8+CiAgPGNpcmNsZSBjeD0iNjQiIGN5PSIzNCIgcj0iNC40IiBmaWxsPSIjZmZmIi8+CiAgPGNpcmNsZSBjeD0iOTAiIGN5PSIzMiIgcj0iNC40IiBmaWxsPSIjZmZmIi8+CiAgPCEtLSB0aGUgcmVsZWFzZSBiZWluZyBiZWFtZWQgdXA6IGEgcHVycGxlIGhleGFnb24gd2l0aCBhIG5vdGUgLS0+CiAgPHBhdGggZD0iTTY0IDU4IEw4NCA2OS41IEw4NCA5Mi41IEw2NCAxMDQgTDQ0IDkyLjUgTDQ0IDY5LjUgWiIgZmlsbD0iIzdiNGZkNiIvPgogIDxwYXRoIGQ9Ik02NCA1OCBMODQgNjkuNSBMNjQgODEgTDQ0IDY5LjUgWiIgZmlsbD0iIzliNzJlYSIvPgogIDxwYXRoIGQ9Ik02MCA3MiBMNzQgNjkgTDc0IDg5IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iMy40IiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+CiAgPHBhdGggZD0iTTYwIDcyIEw2MCA5MiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjMuNCIvPgogIDxlbGxpcHNlIGN4PSI1NiIgY3k9IjkyIiByeD0iNC42IiByeT0iMy42IiBmaWxsPSIjZmZmIi8+CiAgPGVsbGlwc2UgY3g9IjcwIiBjeT0iODkiIHJ4PSI0LjYiIHJ5PSIzLjYiIGZpbGw9IiNmZmYiLz4KICA8IS0tIHNwYXJrbGVzIC0tPgogIDxwYXRoIGQ9Ik0xOCA1NCBsMi41IDYgNiAyLjUgLTYgMi41IC0yLjUgNiAtMi41IC02IC02IC0yLjUgNiAtMi41IFoiIGZpbGw9IiNmNmM0MzEiLz4KICA8cGF0aCBkPSJNMTA4IDUyIGwyLjUgNiA2IDIuNSAtNiAyLjUgLTIuNSA2IC0yLjUgLTYgLTYgLTIuNSA2IC0yLjUgWiIgZmlsbD0iIzFlMjM0NiIvPgogIDxwYXRoIGQ9Ik0xMTIgODIgbDEuOCA0LjIgNC4yIDEuOCAtNC4yIDEuOCAtMS44IDQuMiAtMS44IC00LjIgLTQuMiAtMS44IDQuMiAtMS44IFoiIGZpbGw9IiNmNmM0MzEiLz4KICA8cGF0aCBkPSJNMTQgODYgbDEuOCA0LjIgNC4yIDEuOCAtNC4yIDEuOCAtMS44IDQuMiAtMS44IC00LjIgLTQuMiAtMS44IDQuMiAtMS44IFoiIGZpbGw9IiMxZTIzNDYiLz4KPC9zdmc+Cg==
 // @homepageURL  https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/first_contact/README.md
@@ -14,8 +14,11 @@
 // @match        https://listen.tidal.com/*
 // @match        https://www.qobuz.com/*/album/*
 // @match        https://www.beatport.com/*
+// @match        https://open.spotify.com/*
+// @match        https://music.youtube.com/*
 // @match        https://*.musicbrainz.org/release/add*
 // @noframes
+// @run-at       document-start
 // @grant        GM_xmlhttpRequest
 // @grant        GM_setValue
 // @grant        GM_getValue
@@ -29,6 +32,8 @@
 // @connect      auth.tidal.com
 // @connect      openapi.tidal.com
 // @connect      api.beatport.com
+// @connect      api-partner.spotify.com
+// @connect      music.youtube.com
 // ==/UserScript==
 
 (function () {
@@ -934,7 +939,223 @@ const BEATPORT = {
     },
 };
 
-const PROVIDERS = [DEEZER, BANDCAMP, DISCOGS, APPLE, TIDAL, QOBUZ, BEATPORT];
+// Spotify: the web player's own album query (api-partner.spotify.com, "getAlbum"). The player's
+// token is refused by Spotify's public API, and the query needs the player's token, client token
+// and the query's current id, so FC listens to the player's requests from the start (early) and
+// replays the album query with what it heard. No ISRCs or barcode: the player doesn't have them.
+const SPOTIFY = {
+    id: 'spotify',
+    name: 'Spotify',
+    host: /^open\.spotify\.com$/,
+    albumId(loc) { const m = loc.pathname.match(/^\/(?:intl-[a-z-]+\/)?album\/([A-Za-z0-9]{22})\/?$/); return m ? m[1] : null; },
+    TYPES: { ALBUM: ['Album'], SINGLE: ['Single'], EP: ['EP'], COMPILATION: ['Album', 'Compilation'] },
+    heard: null,   // { url, headers, hash } of the player's last album query
+    // hook the page's fetch before the player starts: note the album query's headers and id
+    early() {
+        const w = typeof unsafeWindow !== 'undefined' ? unsafeWindow : window;
+        const orig = w.fetch;
+        if (typeof orig !== 'function') return;
+        const self = this;
+        const hook = function (input, init) {
+            try {
+                const url = typeof input === 'string' ? input : (input && input.url) || '';
+                if (/api-partner\.spotify\.com\/pathfinder\//.test(url) && init && typeof init.body === 'string' && /"getAlbum"/.test(init.body)) {
+                    const body = JSON.parse(init.body);
+                    const h = {};
+                    const src = init.headers;
+                    if (src && typeof src.forEach === 'function') src.forEach((v, k) => { h[k.toLowerCase()] = v; });
+                    else if (src) Object.keys(src).forEach(k => { h[k.toLowerCase()] = src[k]; });
+                    const hash = body.extensions && body.extensions.persistedQuery && body.extensions.persistedQuery.sha256Hash;
+                    if (h.authorization && hash) {
+                        if (!self.heard) Log.debug(`Spotify: heard the player's album query (${url.replace(/\?.*$/, '')}; headers ${Object.keys(h).join(', ')})`);
+                        self.heard = { url: url.replace(/\?.*$/, ''), headers: h, hash };
+                    }
+                }
+            } catch (e) { Log.debug(`Spotify hook: ${e.message}`); }
+            return orig.apply(this, arguments);
+        };
+        w.fetch = typeof exportFunction === 'function' ? exportFunction(hook, w) : hook;
+        Log.debug('Spotify: listening to the player’s requests');
+    },
+    post(body) {
+        const { url, headers } = this.heard;
+        return new Promise((resolve, reject) => {
+            GM_xmlhttpRequest({
+                method: 'POST', url, data: JSON.stringify(body), timeout: 20000, anonymous: true,
+                headers: Object.assign({}, headers, { 'content-type': 'application/json;charset=UTF-8', accept: 'application/json' }),
+                onload: r => {
+                    Log.debug(`POST ${url} (getAlbum offset ${body.variables.offset}) → ${r.status}, ${(r.responseText || '').length} b`);
+                    if (r.status < 200 || r.status >= 300) return reject(Object.assign(new Error(`Spotify: HTTP ${r.status} for the album query`), { status: r.status }));
+                    try { resolve(JSON.parse(r.responseText)); } catch (e) { reject(new Error(`Spotify: bad JSON: ${e.message}`)); }
+                },
+                onerror: () => reject(new Error('Spotify: network error')),
+                ontimeout: () => reject(new Error('Spotify: timeout')),
+            });
+        });
+    },
+    idOf: uri => String(uri || '').split(':').pop(),
+
+    async fetchRelease(id, progress) {
+        for (let i = 0; !this.heard && i < 50; i++) await new Promise(r => setTimeout(r, 100));
+        if (!this.heard) throw new Error('Spotify: the player hasn’t loaded an album since this tab opened; reload the page and try again');
+        const page = offset => this.post({ variables: { uri: `spotify:album:${id}`, locale: '', offset, limit: 50 }, operationName: 'getAlbum', extensions: { persistedQuery: { version: 1, sha256Hash: this.heard.hash } } });
+        const first = await page(0);
+        const a = first && first.data && first.data.albumUnion;
+        if (!a || !a.name) throw new Error(`Spotify: no album ${id}${first && first.errors ? ': ' + JSON.stringify(first.errors).slice(0, 200) : ''}`);
+        const items = (a.tracksV2.items || []).slice();
+        while (items.length < a.tracksV2.totalCount) {
+            const more = await page(items.length);
+            const got = (((more.data || {}).albumUnion || {}).tracksV2 || {}).items || [];
+            if (!got.length) break;
+            items.push(...got);
+        }
+        Log.info(`Spotify album ${id}: "${a.name}" by ${a.artists.items.map(x => x.profile.name).join(', ')} · ${a.type} · ${items.length} of ${a.tracksV2.totalCount} track(s) · ${a.date && a.date.isoString} (${a.date && a.date.precision}) · label "${a.label || ''}"`);
+
+        const artist = x => ({ name: x.profile.name, url: `https://open.spotify.com/artist/${this.idOf(x.uri)}` });
+        const mediums = [];
+        items.forEach((it, i) => {
+            const t = it.track || {};
+            const tf = splitFeat(t.name || '');
+            const credit = creditFromTitle(((t.artists || {}).items || []).map(artist), tf.feat);
+            const disc = t.discNumber || 1;
+            while (mediums.length < disc) mediums.push({ format: 'Digital Media', name: '', tracks: [] });
+            mediums[disc - 1].tracks.push({ title: tf.title, lengthMs: (t.duration && t.duration.totalMilliseconds) || null, isrc: null, url: `https://open.spotify.com/track/${this.idOf(t.uri)}`, credit });
+            progress && progress(i + 1, items.length);
+            Log.debug(`track ${disc}.${t.trackNumber}: "${tf.title}" — ${credit.map(c => c.name + c.join).join('')}`);
+        });
+
+        const ra = a.artists.items || [];
+        const af = splitFeat(a.name);
+        const credit = ra.length === 1 && /^various artists$/i.test(ra[0].profile.name)
+            ? [{ name: 'Various Artists', mbid: VARIOUS_ARTISTS_MBID, join: '' }]
+            : creditFromTitle(ra.map(artist), af.feat);
+        const p = (a.date && a.date.precision) || '';
+        const [y, m, d] = String((a.date && a.date.isoString) || '').slice(0, 10).split('-').map(n => parseInt(n, 10));
+        const url = `https://open.spotify.com/album/${id}`;
+        return {
+            source: this.id,
+            url,
+            title: af.title,
+            credit,
+            types: this.TYPES[a.type] || [],
+            status: 'official',
+            packaging: 'None',
+            date: { year: y || null, month: p === 'YEAR' ? null : m || null, day: p === 'DAY' ? d || null : null },
+            country: 'XW',
+            barcode: null,
+            labels: a.label ? [{ name: a.label, catno: '' }] : [],
+            urls: [{ url, linkType: 85 }],   // 85 = stream for free
+            mediums,
+        };
+    },
+};
+
+// YouTube Music: the API its own web player uses (youtubei/v1), which answers anonymous
+// requests — as Platform Check and Credit Hoarder read it. The album page (browse MPREb_…) has
+// the title, the kind (Album / EP / Single), the year, and each track with its artists' channels
+// and length; an album playlist (OLAK5uy_…) names its album page. No label, barcode, ISRCs or
+// full date: the player doesn't show them. YouTube Music lists a featured artist as a main
+// one, so feat. comes from the title, as on Deezer.
+const YTMUSIC = {
+    id: 'ytmusic',
+    name: 'YouTube Music',
+    host: /^music\.youtube\.com$/,
+    albumId(loc) {
+        const b = loc.pathname.match(/^\/browse\/(MPREb_[\w-]+)\/?$/);
+        if (b) return b[1];
+        const l = loc.pathname === '/playlist' && String(loc.search || '').match(/[?&]list=(OLAK5uy_[\w-]+)/);
+        return l ? 'list:' + l[1] : null;
+    },
+    API: 'https://music.youtube.com/youtubei/v1/',
+    CLIENT: { clientName: 'WEB_REMIX', clientVersion: '1.20250101.01.00', hl: 'en', gl: 'US' },
+    TYPES: { Album: ['Album'], EP: ['EP'], Single: ['Single'] },
+    call(endpoint, body) {
+        const url = `${this.API}${endpoint}?prettyPrint=false`;
+        const t0 = Date.now();
+        return new Promise((resolve, reject) => {
+            GM_xmlhttpRequest({
+                method: 'POST', url, data: JSON.stringify(Object.assign({ context: { client: this.CLIENT } }, body)), timeout: 20000, anonymous: true,
+                headers: { 'Content-Type': 'application/json' },
+                onload: r => {
+                    Log.debug(`POST ${url} ${body.browseId || ''} → ${r.status}, ${(r.responseText || '').length} b in ${Date.now() - t0} ms`);
+                    if (r.status < 200 || r.status >= 300) return reject(new Error(`YouTube Music: HTTP ${r.status} for ${body.browseId}`));
+                    try { resolve(JSON.parse(r.responseText)); } catch (e) { reject(new Error(`YouTube Music: bad JSON for ${body.browseId}`)); }
+                },
+                onerror: () => reject(new Error('YouTube Music: network error')),
+                ontimeout: () => reject(new Error('YouTube Music: timeout')),
+            });
+        });
+    },
+    text: t => (t && t.runs ? t.runs.map(x => x.text).join('') : (t && t.simpleText) || ''),
+    walk(o, fn) { if (!o || typeof o !== 'object') return; fn(o); for (const k in o) this.walk(o[k], fn); },
+    // the artists a run list links: "Daft Punk, Pharrell Williams & Nile Rodgers", each with its channel
+    artists(t) {
+        return ((t && t.runs) || []).filter(r => {
+            const b = r.navigationEndpoint && r.navigationEndpoint.browseEndpoint;
+            return b && /^UC/.test(b.browseId || '');
+        }).map(r => ({ name: r.text.trim(), url: `https://music.youtube.com/channel/${r.navigationEndpoint.browseEndpoint.browseId}` }));
+    },
+    hms(s) { const p = String(s || '').trim().split(':').map(Number); return p.length > 1 && p.every(Number.isFinite) ? p.reduce((a, n) => a * 60 + n, 0) * 1000 : null; },
+
+    async fetchRelease(key, progress) {
+        let id = key;
+        if (/^list:/.test(key)) {
+            const list = key.slice(5);
+            const pl = await this.call('browse', { browseId: 'VL' + list });
+            id = (JSON.stringify(pl).match(/"(MPREb_[\w-]+)"/) || [])[1];
+            Log.info(`YouTube Music: playlist ${list} → album page ${id || 'none'}`);
+            if (!id) throw new Error(`YouTube Music: playlist ${list} names no album`);
+        }
+        const j = await this.call('browse', { browseId: id });
+        let h = null, shelf = null;
+        this.walk(j, o => { if (!h && o.musicResponsiveHeaderRenderer) h = o.musicResponsiveHeaderRenderer; if (!shelf && o.musicShelfRenderer) shelf = o.musicShelfRenderer; });
+        if (!h || !shelf) throw new Error(`YouTube Music: no album on ${id} (the page may have changed)`);
+        const title = this.text(h.title);
+        const sub = this.text(h.subtitle).split(' • ');   // "Album • 2013"
+        const kind = sub[0] || '', year = parseInt(sub.find(s => /^\d{4}$/.test(s)) || '', 10) || null;
+        const albumArtists = this.artists(h.straplineTextOne);
+        const canon = (j.microformat && j.microformat.microformatDataRenderer && j.microformat.microformatDataRenderer.urlCanonical) || '';
+        const list = (canon.match(/[?&]list=(OLAK5uy_[\w-]+)/) || [])[1];
+        const rows = (shelf.contents || []).map(c => c.musicResponsiveListItemRenderer).filter(Boolean);
+        Log.info(`YouTube Music album ${id}: "${title}" by ${this.text(h.straplineTextOne)} · ${kind} · ${year || 'no year'} · ${this.text(h.secondSubtitle)} · ${rows.length} row(s)${list ? ' · playlist ' + list : ''}`);
+
+        const tracks = rows.map((r, i) => {
+            const cols = (r.flexColumns || []).map(c => c.musicResponsiveListItemFlexColumnRenderer && c.musicResponsiveListItemFlexColumnRenderer.text);
+            const name = this.text(cols[0]);
+            const tf = splitFeat(name);
+            const listed = this.artists(cols[1]);
+            const credit = creditFromTitle(listed.length ? listed : albumArtists, tf.feat);
+            const len = this.hms(this.text((((r.fixedColumns || [])[0] || {}).musicResponsiveListItemFixedColumnRenderer || {}).text));
+            const vid = ((((cols[0] || {}).runs || [])[0] || {}).navigationEndpoint || {}).watchEndpoint;
+            progress && progress(i + 1, rows.length);
+            Log.debug(`track ${this.text(r.index) || i + 1}: "${tf.title}" — ${credit.map(c => c.name + c.join).join('')} (${len || '?'} ms)`);
+            return { title: tf.title, lengthMs: len, isrc: null, url: vid && vid.videoId ? `https://music.youtube.com/watch?v=${vid.videoId}` : null, credit };
+        });
+
+        const af = splitFeat(title);
+        const credit = /^various artists$/i.test(this.text(h.straplineTextOne))
+            ? [{ name: 'Various Artists', mbid: VARIOUS_ARTISTS_MBID, join: '' }]
+            : creditFromTitle(albumArtists.length ? albumArtists : [{ name: this.text(h.straplineTextOne) }], af.feat);
+        const url = list ? `https://music.youtube.com/playlist?list=${list}` : `https://music.youtube.com/browse/${id}`;
+        return {
+            source: this.id,
+            url,
+            title: af.title,
+            credit,
+            types: this.TYPES[kind] || [],
+            status: 'official',
+            packaging: 'None',
+            date: { year, month: null, day: null },
+            country: 'XW',
+            barcode: null,
+            labels: [],
+            urls: [{ url, linkType: 85 }],   // 85 = stream for free
+            mediums: [{ format: 'Digital Media', name: '', tracks }],
+        };
+    },
+};
+
+const PROVIDERS = [DEEZER, BANDCAMP, DISCOGS, APPLE, TIDAL, QOBUZ, BEATPORT, SPOTIFY, YTMUSIC];
 
 /* ── the seed: model → the release editor's POST parameters ──────────────── */
 // https://musicbrainz.org/doc/Development/Release_Editor_Seeding
@@ -1055,7 +1276,7 @@ function mountButton(provider, id) {
         const go = document.createElement('button');
         go.type = 'button';
         go.className = 'fc-go';
-        go.innerHTML = ICON_SVG + '<span>Import to MusicBrainz</span>';
+        go.innerHTML = mbuHtml(ICON_SVG + '<span>Import to MusicBrainz</span>');
         go.addEventListener('click', () => { importCurrent(); });
         const more = document.createElement('button');
         more.type = 'button';
@@ -1086,10 +1307,10 @@ function togglePanel(anchor) {
     const s = settings();
     panel = document.createElement('div');
     panel.id = 'fc-panel';
-    panel.innerHTML = mbuCfgHeader({ script: SCRIPT, name: NAME, version: VERSION, icon: ICON_SVG, log: true })
+    panel.innerHTML = mbuHtml(mbuCfgHeader({ script: SCRIPT, name: NAME, version: VERSION, icon: ICON_SVG, log: true })
         + '<div class="fc-body"><label>MusicBrainz server <select class="fc-server">'
         + SERVERS.map(h => `<option value="${h}"${h === s.server ? ' selected' : ''}>${h}</option>`).join('')
-        + '</select></label></div>';
+        + '</select></label></div>');
     document.body.appendChild(panel);
     const r = anchor.getBoundingClientRect();
     panel.style.right = Math.max(8, window.innerWidth - r.right) + 'px';
@@ -1241,6 +1462,21 @@ function mbuHelpEl(name, label) {
 // The config (settings) icon every script's settings button shows: the gear in text
 // presentation (U+FE0E), so it takes the button's colour instead of an emoji's. #650
 var MBU_CFG_ICON = '\u2699\uFE0E';
+
+// HTML for an innerHTML on a page that enforces Trusted Types (YouTube Music, #650): there a
+// plain string is refused ("This document requires 'TrustedHTML' assignment"). The policy
+// passes the string through; the markup is the script's own. Elsewhere it is the string.
+var _mbuTT;
+function mbuHtml(s) {
+    if (_mbuTT === undefined) {
+        _mbuTT = null;
+        try {
+            var tt = (typeof window !== 'undefined' && window.trustedTypes) || null;
+            if (tt && tt.createPolicy) _mbuTT = tt.createPolicy('mbu-' + Math.random().toString(36).slice(2, 8), { createHTML: function (x) { return x; } });
+        } catch (e) { /* the page allows no new policy: plain strings, as before */ }
+    }
+    return _mbuTT ? _mbuTT.createHTML(String(s)) : String(s);
+}
 
 // One copy per page (#653). With String Theory and a standalone install of the same script
 // both on, two copies build the same element ids and fight over them: each settings window
@@ -1525,12 +1761,12 @@ function mbuLog(o) {
         remember({ open: true });
         var st = state();
         var pop = document.createElement('div'); pop.id = 'mbu-logpop'; pop.className = 'mbu-logpop';
-        pop.innerHTML = '<div class="mbu-logpop-h"><b>' + esc(o.header || 'Activity log') + '</b> <span class="mbu-log-badge"></span><span class="mbu-logpop-sp"></span>'
+        pop.innerHTML = mbuHtml('<div class="mbu-logpop-h"><b>' + esc(o.header || 'Activity log') + '</b> <span class="mbu-log-badge"></span><span class="mbu-logpop-sp"></span>'
             + '<button class="mbu-logpop-clear" type="button" title="Clear the log (the lines so far are gone)">Clear</button>'
             + '<button class="mbu-logpop-copy" type="button" title="Copy as Markdown (paste into a GitHub issue)">⧉ Copy</button>'
             + '<button class="mbu-logpop-min" type="button" title="Minimize">–</button>'
             + '<button class="mbu-logpop-x" type="button" title="Close">✕</button></div>'
-            + '<div class="mbu-log-list"></div>';
+            + '<div class="mbu-log-list"></div>');
         document.body.appendChild(pop);
         if (st.left != null) { pop.style.left = st.left; pop.style.top = st.top; pop.style.right = 'auto'; pop.style.transform = 'none'; }
         var restore = { left: pop.style.left, top: pop.style.top, right: pop.style.right, bottom: pop.style.bottom, transform: pop.style.transform };
@@ -1538,7 +1774,7 @@ function mbuLog(o) {
         var row = function (e) {
             var d = document.createElement('div');
             d.className = 'mbu-log-li mbu-log-' + e.sev;
-            d.innerHTML = '<span class="mbu-log-t">' + ts(e.t) + '</span><span class="mbu-log-m">' + linkify(e.msg) + '</span>';
+            d.innerHTML = mbuHtml('<span class="mbu-log-t">' + ts(e.t) + '</span><span class="mbu-log-m">' + linkify(e.msg) + '</span>');
             return d;
         };
         var showBadge = function () { badge.textContent = '(' + buf.length + ')' + (warn || error ? ' · ' + warn + '⚠ ' + error + '✖' : ''); };
@@ -1546,7 +1782,7 @@ function mbuLog(o) {
         var frag = document.createDocumentFragment();
         buf.forEach(function (e) { frag.appendChild(row(e)); });
         if (buf.length) list.appendChild(frag);
-        else list.innerHTML = '<div class="mbu-log-empty">No activity yet.</div>';
+        else list.innerHTML = mbuHtml('<div class="mbu-log-empty">No activity yet.</div>');
         showBadge();
         list.scrollTop = list.scrollHeight;
         // badge and scroll once per frame, however many lines arrive in it
@@ -1563,7 +1799,7 @@ function mbuLog(o) {
                 if (!queued) { queued = true; requestAnimationFrame(paint); }
             },
             off: function () { document.removeEventListener('keydown', onKey); },
-            cleared: function () { list.innerHTML = '<div class="mbu-log-empty">No activity yet.</div>'; showBadge(); },
+            cleared: function () { list.innerHTML = mbuHtml('<div class="mbu-log-empty">No activity yet.</div>'); showBadge(); },
         };
         pop.querySelector('.mbu-logpop-clear').onclick = function () { clear(); };
         pop.querySelector('.mbu-logpop-copy').onclick = function () { copy(pop.querySelector('.mbu-logpop-copy')); };
@@ -1919,6 +2155,9 @@ try {
 // </ST-UI>
 
 try {
+    // a provider that must hear the player's own requests hooks them now, before the page's scripts run
+    const early = !ON_MB && PROVIDERS.find(p => p.early && p.host.test(location.hostname));
+    if (early) early.early();
     if (ON_MB) mbMain();
     else if (document.body) platformMain();
     else document.addEventListener('DOMContentLoaded', platformMain, { once: true });
