@@ -75,6 +75,7 @@ test('the release type is guessed as murdos does, the title first', { tag: ['@un
   const cases = [
     ['Prophet Margin EP', tr(['A', 'B', 'C'], [4, 4, 5]), 'EP', true],
     ['Thing (E.P.)', tr(['A'], [3]), 'EP', true],
+    ['Summer EP 2', tr(['A', 'B'], [4, 4]), 'EP', true],
     ['Song - Single', tr(['Song', 'Other'], [4, 4]), 'Single', true],
     ['Single Ladies', tr(new Array(12).fill('x').map((x, i) => 'T' + i), new Array(12).fill(4)), 'Album', false],
     ['Thing', tr(['Thing', 'Thing (Extended Mix)', 'Thing (Instrumental)', 'Thing - VIP'], [4, 7, 4, 5]), 'Single', false],
