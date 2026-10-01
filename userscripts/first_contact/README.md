@@ -6,7 +6,6 @@ Import a release into MusicBrainz from the platform's album page with one click:
 - [Changelog](./CHANGELOG.md)
 - [View users](https://musicbrainz.org/search/edits?auto_edit_filter=&order=desc&negation=0&combinator=and&conditions.0.field=edit_note_content&conditions.0.operator=includes&conditions.0.args.0=First+Contact)
 
-<img src="./screenshots/editor.png" />
 
 ## Features
 
