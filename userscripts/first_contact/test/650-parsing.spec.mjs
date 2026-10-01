@@ -2,7 +2,7 @@
 // release editor's seed parameters.
 import { test, check, loadFunctions } from '../../../dev/test/harness.mjs';
 
-const fns = () => loadFunctions('first_contact', ['splitFeat', 'normName', 'toCredit', 'creditFromTitle', 'guessScript', 'seedParams']);
+const fns = () => loadFunctions('first_contact', ['splitFeat', 'normName', 'toCredit', 'creditFromTitle', 'guessScript', 'seedParams', 'typeFromTitle']);
 
 test('a feat. clause leaves the title and names the featured artists', { tag: ['@unit', '@critical'] }, async () => {
   const { splitFeat } = await fns();
@@ -67,4 +67,11 @@ test('the seed carries the release editor parameters', { tag: ['@unit', '@critic
   check(get('mediums.0.track.0.name')[0] === 'T1' && get('mediums.0.track.0.length')[0] === '61000' && get('mediums.0.track.0.number')[0] === '1', 'track');
   check(get('mediums.0.track.0.artist_credit.names.0.name')[0] === 'A', 'track credit');
   check(get('edit_note')[0] === 'note', 'edit note');
+});
+
+test('the title names the type: EP, Single', { tag: ['@unit'] }, async () => {
+  const { typeFromTitle } = await fns();
+  const cases = [['Prophet Margin EP', 'EP'], ['Thing (EP)', 'EP'], ['Thing - EP', 'EP'], ['Thing E.P.', 'EP'], ['Song - Single', 'Single'], ['Song (Single)', 'Single'],
+    ['Deep', null], ['STEP', null], ['Single Ladies (Remix)', null], ['Album', null]];
+  for (const [t, want] of cases) check(typeFromTitle(t) === want, `"${t}" → ${typeFromTitle(t)}, wanted ${want}`);
 });

@@ -1941,6 +1941,10 @@
       return a;
   }
 
+  // The config (settings) icon every script's settings button shows: the gear in text
+  // presentation (U+FE0E), so it takes the button's colour instead of an emoji's. #650
+  var MBU_CFG_ICON = '\u2699\uFE0E';
+
   // Toast. mbuToast(msg) or mbuToast(msg, { ms, kind, at:{x,y}, action:{ label, onClick } }).
   //
   // An action adds one button to the toast (e.g. "Copy log"): the toast is then clickable,

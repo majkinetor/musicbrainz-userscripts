@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         First Contact
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.1.140559
+// @version      2026.10.1.143328
 // @description  Import a release into MusicBrainz from the platform's album page with one click: the release editor opens with the title, tracklist, artists, date, label, barcode and link filled in. Each artist's platform link is handed to Apollo Editor for matching. Platforms: Deezer, Bandcamp.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPkZpcnN0IENvbnRhY3Q8L3RpdGxlPgogIDwhLS0gdHJhY3RvciBiZWFtIC0tPgogIDxwYXRoIGQ9Ik01MCA0NCBMNzggNDQgTDEwNCAxMTIgTDI0IDExMiBaIiBmaWxsPSIjZjZjNDMxIiBvcGFjaXR5PSIwLjkiLz4KICA8cGF0aCBkPSJNNTYgNDQgTDcyIDQ0IEw4OCAxMTIgTDQwIDExMiBaIiBmaWxsPSIjZmRlNjhhIiBvcGFjaXR5PSIwLjciLz4KICA8IS0tIGxhbmRpbmcgcmluZyAtLT4KICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSIxMTQiIHJ4PSI0MiIgcnk9IjgiIGZpbGw9IiMxZTIzNDYiLz4KICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSIxMTMiIHJ4PSIyNiIgcnk9IjQuMiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZjZjNDMxIiBzdHJva2Utd2lkdGg9IjIuNCIvPgogIDwhLS0gc2F1Y2VyIC0tPgogIDxwYXRoIGQ9Ik00MCAyNiBBMjQgMTggMCAwIDEgODggMjYgWiIgZmlsbD0iIzFlMjM0NiIvPgogIDxwYXRoIGQ9Ik01MCAxOCBBMTAgNiAwIDAgMSA2MCAxNCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjIuNiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8+CiAgPGVsbGlwc2UgY3g9IjY0IiBjeT0iMzIiIHJ4PSI1NiIgcnk9IjEzIiBmaWxsPSIjMWUyMzQ2Ii8+CiAgPGNpcmNsZSBjeD0iMzgiIGN5PSIzMiIgcj0iNC40IiBmaWxsPSIjZmZmIi8+CiAgPGNpcmNsZSBjeD0iNjQiIGN5PSIzNCIgcj0iNC40IiBmaWxsPSIjZmZmIi8+CiAgPGNpcmNsZSBjeD0iOTAiIGN5PSIzMiIgcj0iNC40IiBmaWxsPSIjZmZmIi8+CiAgPCEtLSB0aGUgcmVsZWFzZSBiZWluZyBiZWFtZWQgdXA6IGEgcHVycGxlIGhleGFnb24gd2l0aCBhIG5vdGUgLS0+CiAgPHBhdGggZD0iTTY0IDU4IEw4NCA2OS41IEw4NCA5Mi41IEw2NCAxMDQgTDQ0IDkyLjUgTDQ0IDY5LjUgWiIgZmlsbD0iIzdiNGZkNiIvPgogIDxwYXRoIGQ9Ik02NCA1OCBMODQgNjkuNSBMNjQgODEgTDQ0IDY5LjUgWiIgZmlsbD0iIzliNzJlYSIvPgogIDxwYXRoIGQ9Ik02MCA3MiBMNzQgNjkgTDc0IDg5IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iMy40IiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+CiAgPHBhdGggZD0iTTYwIDcyIEw2MCA5MiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjMuNCIvPgogIDxlbGxpcHNlIGN4PSI1NiIgY3k9IjkyIiByeD0iNC42IiByeT0iMy42IiBmaWxsPSIjZmZmIi8+CiAgPGVsbGlwc2UgY3g9IjcwIiBjeT0iODkiIHJ4PSI0LjYiIHJ5PSIzLjYiIGZpbGw9IiNmZmYiLz4KICA8IS0tIHNwYXJrbGVzIC0tPgogIDxwYXRoIGQ9Ik0xOCA1NCBsMi41IDYgNiAyLjUgLTYgMi41IC0yLjUgNiAtMi41IC02IC02IC0yLjUgNiAtMi41IFoiIGZpbGw9IiNmNmM0MzEiLz4KICA8cGF0aCBkPSJNMTA4IDUyIGwyLjUgNiA2IDIuNSAtNiAyLjUgLTIuNSA2IC0yLjUgLTYgLTYgLTIuNSA2IC0yLjUgWiIgZmlsbD0iIzFlMjM0NiIvPgogIDxwYXRoIGQ9Ik0xMTIgODIgbDEuOCA0LjIgNC4yIDEuOCAtNC4yIDEuOCAtMS44IDQuMiAtMS44IC00LjIgLTQuMiAtMS44IDQuMiAtMS44IFoiIGZpbGw9IiNmNmM0MzEiLz4KICA8cGF0aCBkPSJNMTQgODYgbDEuOCA0LjIgNC4yIDEuOCAtNC4yIDEuOCAtMS44IDQuMiAtMS44IC00LjIgLTQuMiAtMS44IDQuMiAtMS44IFoiIGZpbGw9IiMxZTIzNDYiLz4KPC9zdmc+Cg==
@@ -117,6 +117,14 @@ function creditFromTitle(contributors, featNames) {
     for (const n of featNames) if (!feats.some(c => normName(c.name) === normName(n))) feats.push({ name: n });
     if (!mains.length && feats.length) mains.push(feats.shift());   // never a credit that starts with " feat."
     return toCredit(mains, feats);
+}
+
+// "Prophet Margin EP", "Song (Single)", "Song - Single": the type the title names, or null.
+function typeFromTitle(title) {
+    const s = String(title || '').trim();
+    if (/(?:^|[\s([\-–])E\.?P\.?\s*[)\]]?$/.test(s)) return 'EP';
+    if (/(?:^|[\s([\-–])Single\s*[)\]]?$/i.test(s)) return 'Single';
+    return null;
 }
 
 // Latn when every letter in the titles is Latin; nothing otherwise (left for the editor).
@@ -253,13 +261,24 @@ const BANDCAMP = {
         const albumArtist = t.artist || cur.artist || (by && by.name) || '';
         Log.info(`Bandcamp album "${cur.title}" by ${albumArtist} · ${(t.trackinfo || []).length} track(s) · released ${t.album_release_date || cur.release_date} · UPC ${cur.upc || '—'} · by ${by ? by.name + ' ' + (by.url || '(no page)') : '—'} · publisher ${pub ? pub.name + ' ' + (pub.url || '') : '—'}${t.album_is_preorder ? ' · PREORDER' : ''}`);
 
+        let band = null;
+        try { band = JSON.parse((document.querySelector('script[data-band]') || {}).dataset?.band || 'null'); } catch (e) { Log.debug(`Bandcamp data-band: ${e.message}`); }
+        // the account this page belongs to: an artist's own, or a label's
+        const account = { name: (band && band.name) || (pub && pub.name) || '', url: (pub && pub.url) || location.origin };
+        Log.debug(`Bandcamp account: ${account.name} ${account.url}`);
+
         const isVarious = this.VARIOUS.test(albumArtist);
-        // the album artist's own Bandcamp page: byArtist's, or the account's when it is the artist's
-        const artistUrl = !isVarious && by && by.url ? by.url : null;
+        // "Future Funk Squad, Omega Sparx, Stu Brootal, The Crystal Method" is four artists;
+        // the account's own name is never split ("Earth, Wind & Fire" on its own page)
+        const splitNames = s => normName(s) === normName(account.name) ? [s] : String(s).split(/\s*,\s*|\s+&\s+/).map(n => n.trim()).filter(Boolean);
+        // a Bandcamp page for an artist: byArtist's own, or the account's when it is that artist's
+        const linkFor = n => (by && by.url && normName(n) === normName(by.name)) ? by.url : normName(n) === normName(account.name) ? account.url : null;
+        const artistsOf = s => splitNames(s).map(n => ({ name: n, url: linkFor(n) }));
+        const albumArtists = isVarious ? [] : artistsOf(albumArtist);
         const at = splitFeat(cur.title || '');
         const credit = isVarious
             ? [{ name: 'Various Artists', mbid: VARIOUS_ARTISTS_MBID, join: '' }]
-            : creditFromTitle([{ name: albumArtist, url: artistUrl }], at.feat);
+            : creditFromTitle(albumArtists, at.feat);
 
         const tracks = (t.trackinfo || []).map((x, i) => {
             let title = x.title || '';
@@ -267,10 +286,10 @@ const BANDCAMP = {
             // a compilation's track titles repeat the artist: "Michna - Triple Chrome Dipped"
             if (trackArtist && title.toLowerCase().startsWith(trackArtist.toLowerCase() + ' - ')) title = title.slice(trackArtist.length + 3);
             const tf = splitFeat(title);
-            const main = trackArtist && normName(trackArtist) !== normName(albumArtist)
-                ? { name: trackArtist }
-                : { name: isVarious ? (trackArtist || 'Various Artists') : albumArtist, url: artistUrl };
-            const tc = creditFromTitle([main], tf.feat);
+            const mains = trackArtist && normName(trackArtist) !== normName(albumArtist)
+                ? artistsOf(trackArtist)
+                : isVarious ? [{ name: trackArtist || 'Various Artists' }] : albumArtists;
+            const tc = creditFromTitle(mains, tf.feat);
             progress && progress(i + 1, t.trackinfo.length);
             return {
                 title: tf.title,
@@ -282,15 +301,17 @@ const BANDCAMP = {
         });
         tracks.forEach((x, i) => Log.debug(`track ${i + 1}: "${x.title}" — ${x.credit.map(c => c.name + c.join).join('')} (${x.lengthMs ? x.lengthMs / 1000 + 's' : 'no length'})`));
 
-        // a label account publishing someone else's album: that's the label
-        const label = pub && pub.name && (!by || !by.url || pub.url !== by.url) && normName(pub.name) !== normName(albumArtist) ? pub.name : null;
+        // a label account publishing someone else's album: that's the label. An account that
+        // belongs to one of the credited artists is not.
+        const label = pub && pub.name && (!by || !by.url || pub.url !== by.url)
+            && normName(pub.name) !== normName(albumArtist) && !albumArtists.some(a => normName(a.name) === normName(pub.name)) ? pub.name : null;
         const streamable = t.hasAudio && (t.trackinfo || []).some(x => x.streaming);
         return {
             source: this.id,
             url,
             title: at.title,
             credit,
-            types: tracks.length === 1 ? ['Single'] : [],
+            types: [],   // Bandcamp doesn't say; the title's EP / Single, or one track, decide it (importCurrent)
             status: 'official',
             packaging: 'None',
             date: this.date(t.album_release_date || cur.release_date),
@@ -404,8 +425,9 @@ function injectStyle() {
 #fc-root .fc-go[aria-busy="true"] { cursor: progress; opacity: .85; }
 #fc-panel { position: fixed; z-index: 2147483001; min-width: 300px; background: var(--mbu-bg); color: var(--mbu-text);
   border: 1px solid var(--mbu-border); border-radius: 8px; box-shadow: var(--mbu-shadow, 0 4px 18px rgba(0,0,0,.3));
-  font: 13px/1.4 system-ui, sans-serif; overflow: hidden; }
-#fc-panel .fc-body { padding: 10px 12px; display: grid; gap: 8px; }
+  font: 13px/1.4 system-ui, sans-serif; padding: 12px 14px; }
+#fc-panel .mbu-cfg-ic svg { width: 22px; height: 22px; }
+#fc-panel .fc-body { display: grid; gap: 8px; }
 #fc-panel label { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
 #fc-panel select { font: inherit; color: inherit; background: var(--mbu-bg); border: 1px solid var(--mbu-border); border-radius: 4px; padding: 2px 4px; }
 #fc-panel a { color: var(--mbu-accent); }
@@ -429,8 +451,8 @@ function mountButton(provider, id) {
         const more = document.createElement('button');
         more.type = 'button';
         more.className = 'fc-more';
-        more.textContent = '⋯';
-        more.title = 'Settings, log and help';
+        more.textContent = MBU_CFG_ICON;
+        more.title = 'Settings';
         more.setAttribute('aria-label', more.title);
         more.addEventListener('click', e => { e.stopPropagation(); togglePanel(more); });
         root.append(go, more);
@@ -483,12 +505,17 @@ async function importCurrent() {
     // a popup the browser blocks. The form posts into it once the data is in.
     const target = 'fc-' + token;
     const win = window.open('about:blank', target);
+    Log.info(`import ${location.href}`);
     Log.info(`import ${provider.name} album ${id} → ${server} (token ${token}, tab ${win ? 'opened' : 'BLOCKED: posting in this tab'})`);
     busy = true;
     if (go) go.setAttribute('aria-busy', 'true');
     const t0 = Date.now();
     try {
         const rel = await provider.fetchRelease(id, (n, total) => { if (label) label.textContent = `Reading ${provider.name}… ${n}/${total}`; });
+        if (!rel.types.length) {
+            const tt = typeFromTitle(rel.title) || (rel.mediums.reduce((n, m) => n + m.tracks.length, 0) === 1 ? 'Single' : null);
+            if (tt) { rel.types = [tt]; Log.info(`type ${tt}, from the ${typeFromTitle(rel.title) ? 'title' : 'single track'}`); }
+        }
         rel.script = guessScript([rel.title].concat(...rel.mediums.map(m => m.tracks.map(t => t.title))));
         const nTracks = rel.mediums.reduce((n, m) => n + m.tracks.length, 0);
         Log.info(`release read in ${Date.now() - t0} ms: "${rel.title}" · ${rel.credit.map(c => c.name + c.join).join('')} · ${rel.mediums.length} medium(s), ${nTracks} track(s) · types ${rel.types.join('+') || '—'} · script ${rel.script || '—'}`);
@@ -595,6 +622,10 @@ function mbuHelpEl(name, label) {
     a.textContent = label || '? Help';
     return a;
 }
+
+// The config (settings) icon every script's settings button shows: the gear in text
+// presentation (U+FE0E), so it takes the button's colour instead of an emoji's. #650
+var MBU_CFG_ICON = '\u2699\uFE0E';
 
 // Toast. mbuToast(msg) or mbuToast(msg, { ms, kind, at:{x,y}, action:{ label, onClick } }).
 //

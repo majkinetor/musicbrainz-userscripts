@@ -2,6 +2,8 @@
 //
 // Fixtures:
 //   Bullion, "Nearly": an artist's own account; "Francis Ford (ft. L Devine)" shows the feat. split.
+//   Future Funk Squad, "Prophet Margin EP": four artists in one comma list, on the first one's
+//   account; "EP" in the title.
 //   Ghostly International, "Ghostly Swim": a label's Various Artists compilation, track titles
 //   prefixed with "Artist - ".
 import { test, check } from '../../../dev/test/harness.mjs';
@@ -41,4 +43,12 @@ test("a label's Various Artists compilation: VA credit, track artists, label", {
   check(rel.date.year === 2009 && rel.date.month === 1 && rel.date.day === 27, `date: ${JSON.stringify(rel.date)}`);
   const t1 = rel.mediums[0].tracks[0];
   check(t1.title === 'Triple Chrome Dipped' && text(t1.credit) === 'Michna', `track 1: "${t1.title}" — ${text(t1.credit)}`);
+});
+
+test('a comma list of artists is split; the account artist keeps the link and is not the label', { tag: ['@web'] }, async ({ page, inject }) => {
+  const rel = await read(page, inject, 'https://futurefunksquad.bandcamp.com/album/prophet-margin-ep');
+  check(text(rel.credit) === 'Future Funk Squad, Omega Sparx, Stu Brootal & The Crystal Method', `release credit: ${text(rel.credit)}`);
+  check(rel.credit[0].url === 'https://futurefunksquad.bandcamp.com' && rel.credit.slice(1).every(a => !a.url), `only the account's artist has a link: ${rel.credit.map(a => a.url).join(', ')}`);
+  check(rel.labels.length === 0, `the artist's own account is not the label: ${JSON.stringify(rel.labels)}`);
+  check(text(rel.mediums[0].tracks[0].credit) === text(rel.credit), 'the tracks carry the same credit');
 });
