@@ -13,6 +13,7 @@ test('a feat. clause leaves the title and names the featured artists', { tag: ['
     ['Song featuring C, D and E', 'Song', ['C', 'D', 'E']],
     ['Song (Remix) (feat. X)', 'Song (Remix)', ['X']],
     ['Plain Title', 'Plain Title', []],
+    ['feat. Pharrell Williams and Nile Rodgers', '', ['Pharrell Williams', 'Nile Rodgers']],   // Tidal's version field
     ['Feather (Live)', 'Feather (Live)', []],
   ];
   for (const [input, title, feat] of cases) {

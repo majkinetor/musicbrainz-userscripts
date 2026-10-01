@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         First Contact
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.1.150330
-// @description  Import a release into MusicBrainz from the platform's album page with one click: the release editor opens with the title, tracklist, artists, date, label, barcode and link filled in. Each artist's platform link is handed to Apollo Editor for matching. Platforms: Deezer, Bandcamp, Discogs, Apple Music.
+// @version      2026.10.1.150644
+// @description  Import a release into MusicBrainz from the platform's album page with one click: the release editor opens with the title, tracklist, artists, date, label, barcode and link filled in. Each artist's platform link is handed to Apollo Editor for matching. Platforms: Deezer, Bandcamp, Discogs, Apple Music, Tidal.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPkZpcnN0IENvbnRhY3Q8L3RpdGxlPgogIDwhLS0gdHJhY3RvciBiZWFtIC0tPgogIDxwYXRoIGQ9Ik01MCA0NCBMNzggNDQgTDEwNCAxMTIgTDI0IDExMiBaIiBmaWxsPSIjZjZjNDMxIiBvcGFjaXR5PSIwLjkiLz4KICA8cGF0aCBkPSJNNTYgNDQgTDcyIDQ0IEw4OCAxMTIgTDQwIDExMiBaIiBmaWxsPSIjZmRlNjhhIiBvcGFjaXR5PSIwLjciLz4KICA8IS0tIGxhbmRpbmcgcmluZyAtLT4KICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSIxMTQiIHJ4PSI0MiIgcnk9IjgiIGZpbGw9IiMxZTIzNDYiLz4KICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSIxMTMiIHJ4PSIyNiIgcnk9IjQuMiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZjZjNDMxIiBzdHJva2Utd2lkdGg9IjIuNCIvPgogIDwhLS0gc2F1Y2VyIC0tPgogIDxwYXRoIGQ9Ik00MCAyNiBBMjQgMTggMCAwIDEgODggMjYgWiIgZmlsbD0iIzFlMjM0NiIvPgogIDxwYXRoIGQ9Ik01MCAxOCBBMTAgNiAwIDAgMSA2MCAxNCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjIuNiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8+CiAgPGVsbGlwc2UgY3g9IjY0IiBjeT0iMzIiIHJ4PSI1NiIgcnk9IjEzIiBmaWxsPSIjMWUyMzQ2Ii8+CiAgPGNpcmNsZSBjeD0iMzgiIGN5PSIzMiIgcj0iNC40IiBmaWxsPSIjZmZmIi8+CiAgPGNpcmNsZSBjeD0iNjQiIGN5PSIzNCIgcj0iNC40IiBmaWxsPSIjZmZmIi8+CiAgPGNpcmNsZSBjeD0iOTAiIGN5PSIzMiIgcj0iNC40IiBmaWxsPSIjZmZmIi8+CiAgPCEtLSB0aGUgcmVsZWFzZSBiZWluZyBiZWFtZWQgdXA6IGEgcHVycGxlIGhleGFnb24gd2l0aCBhIG5vdGUgLS0+CiAgPHBhdGggZD0iTTY0IDU4IEw4NCA2OS41IEw4NCA5Mi41IEw2NCAxMDQgTDQ0IDkyLjUgTDQ0IDY5LjUgWiIgZmlsbD0iIzdiNGZkNiIvPgogIDxwYXRoIGQ9Ik02NCA1OCBMODQgNjkuNSBMNjQgODEgTDQ0IDY5LjUgWiIgZmlsbD0iIzliNzJlYSIvPgogIDxwYXRoIGQ9Ik02MCA3MiBMNzQgNjkgTDc0IDg5IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iMy40IiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+CiAgPHBhdGggZD0iTTYwIDcyIEw2MCA5MiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjMuNCIvPgogIDxlbGxpcHNlIGN4PSI1NiIgY3k9IjkyIiByeD0iNC42IiByeT0iMy42IiBmaWxsPSIjZmZmIi8+CiAgPGVsbGlwc2UgY3g9IjcwIiBjeT0iODkiIHJ4PSI0LjYiIHJ5PSIzLjYiIGZpbGw9IiNmZmYiLz4KICA8IS0tIHNwYXJrbGVzIC0tPgogIDxwYXRoIGQ9Ik0xOCA1NCBsMi41IDYgNiAyLjUgLTYgMi41IC0yLjUgNiAtMi41IC02IC02IC0yLjUgNiAtMi41IFoiIGZpbGw9IiNmNmM0MzEiLz4KICA8cGF0aCBkPSJNMTA4IDUyIGwyLjUgNiA2IDIuNSAtNiAyLjUgLTIuNSA2IC0yLjUgLTYgLTYgLTIuNSA2IC0yLjUgWiIgZmlsbD0iIzFlMjM0NiIvPgogIDxwYXRoIGQ9Ik0xMTIgODIgbDEuOCA0LjIgNC4yIDEuOCAtNC4yIDEuOCAtMS44IDQuMiAtMS44IC00LjIgLTQuMiAtMS44IDQuMiAtMS44IFoiIGZpbGw9IiNmNmM0MzEiLz4KICA8cGF0aCBkPSJNMTQgODYgbDEuOCA0LjIgNC4yIDEuOCAtNC4yIDEuOCAtMS44IDQuMiAtMS44IC00LjIgLTQuMiAtMS44IDQuMiAtMS44IFoiIGZpbGw9IiMxZTIzNDYiLz4KPC9zdmc+Cg==
 // @homepageURL  https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/first_contact/README.md
@@ -10,6 +10,8 @@
 // @match        https://*.bandcamp.com/album/*
 // @match        https://www.discogs.com/*
 // @match        https://music.apple.com/*
+// @match        https://tidal.com/*
+// @match        https://listen.tidal.com/*
 // @match        https://*.musicbrainz.org/release/add*
 // @noframes
 // @grant        GM_xmlhttpRequest
@@ -22,6 +24,8 @@
 // @connect      api.discogs.com
 // @connect      music.apple.com
 // @connect      amp-api.music.apple.com
+// @connect      auth.tidal.com
+// @connect      openapi.tidal.com
 // ==/UserScript==
 
 (function () {
@@ -86,6 +90,24 @@ async function gmJson(url, headers) {
     try { return JSON.parse(text); } catch (e) { throw new Error(`bad JSON from ${url}: ${e.message}`); }
 }
 
+// A form POST through the manager: the parsed JSON answer, or throws.
+function gmPostJson(url, body, headers) {
+    return new Promise((resolve, reject) => {
+        GM_xmlhttpRequest({
+            method: 'POST', url, data: body, timeout: 20000, anonymous: true,
+            headers: Object.assign({ 'Content-Type': 'application/x-www-form-urlencoded', Accept: 'application/json' }, headers || {}),
+            onload: r => {
+                Log.debug(`POST ${url} → ${r.status}`);
+                let j = null; try { j = JSON.parse(r.responseText || 'null'); } catch (e) { /* not JSON */ }
+                if (r.status < 200 || r.status >= 300) return reject(Object.assign(new Error(`HTTP ${r.status} for ${url}${j && j.error ? ': ' + j.error : ''}`), { status: r.status }));
+                resolve(j);
+            },
+            onerror: () => reject(new Error(`network error for ${url}`)),
+            ontimeout: () => reject(new Error(`timeout for ${url}`)),
+        });
+    });
+}
+
 // Run fn over items with at most `limit` in flight; results keep the input order.
 async function mapLimit(items, limit, fn) {
     const out = new Array(items.length);
@@ -101,7 +123,7 @@ async function mapLimit(items, limit, fn) {
 // without it and the featured names, in order.
 function splitFeat(title) {
     const s = String(title || '');
-    const re = /\s*[([]\s*(?:feat\.?|ft\.?|featuring)\s+([^)\]]+)[)\]]|\s+(?:feat\.?|ft\.?|featuring)\s+(.+)$/i;
+    const re = /\s*[([]\s*(?:feat\.?|ft\.?|featuring)\s+([^)\]]+)[)\]]|(?:^|\s+)(?:feat\.?|ft\.?|featuring)\s+(.+)$/i;
     const m = s.match(re);
     if (!m) return { title: s.trim(), feat: [] };
     const names = (m[1] || m[2]).split(/\s*(?:,|&|\band\b)\s*/i).map(n => n.trim()).filter(Boolean);
@@ -636,7 +658,112 @@ const APPLE = {
     },
 };
 
-const PROVIDERS = [DEEZER, BANDCAMP, DISCOGS, APPLE];
+// Tidal: the official catalogue API (openapi.tidal.com/v2) with an app token from the
+// client-credentials grant — no login — as ISRC Scout reads it. One request has the album, its
+// tracks and every artist (include=artists,items,items.artists); longer albums page on. Tidal
+// has no label field (only a copyright line), so the label is left for you.
+const TIDAL = {
+    id: 'tidal',
+    name: 'Tidal',
+    host: /^(listen\.)?tidal\.com$/,
+    albumId(loc) { const m = loc.pathname.match(/^\/(?:browse\/)?album\/(\d+)\/?$/); return m ? m[1] : null; },
+    CLIENT: 'cRhhDJDpYXXBn82U:K7UX40jDOZ5p4y4JMYZgoiwKi7jymTHWcLMb4gkewKs=',
+    COUNTRIES: ['US', 'GB', 'DE'],
+    TOKEN_KEY: 'fc.tidal-token',
+    TYPES: { ALBUM: ['Album'], EP: ['EP'], SINGLE: ['Single'] },
+    artistUrl: id => `https://tidal.com/artist/${id}`,
+    async token() {
+        const c = GM_getValue(this.TOKEN_KEY, null);
+        if (c && c.t && Date.now() < c.exp - 60000) return c.t;
+        Log.info('Tidal: fetching an app token');
+        const j = await gmPostJson('https://auth.tidal.com/v1/oauth2/token', 'grant_type=client_credentials', { Authorization: 'Basic ' + btoa(this.CLIENT) });
+        if (!j || !j.access_token) throw new Error('Tidal: no app token');
+        GM_setValue(this.TOKEN_KEY, { t: j.access_token, exp: Date.now() + (j.expires_in || 14400) * 1000 });
+        return j.access_token;
+    },
+    // one read; a 429 (Tidal throttles hard) waits as long as it says, three times at most
+    async get(path) {
+        for (let attempt = 0; ; attempt++) {
+            try {
+                return await gmJson('https://openapi.tidal.com/v2' + path, { Authorization: 'Bearer ' + await this.token(), Accept: 'application/vnd.api+json' });
+            } catch (e) {
+                if (e.status === 401 && attempt === 0) { GM_deleteValue(this.TOKEN_KEY); continue; }
+                if (e.status !== 429 || attempt >= 3) throw e;
+                const wait = 1000 * 2 ** attempt;
+                Log.warn(`Tidal: throttled (429), retrying in ${wait / 1000} s`);
+                await new Promise(r => setTimeout(r, wait));
+            }
+        }
+    },
+    secs(iso) { const m = String(iso || '').match(/PT(?:(\d+)H)?(?:(\d+)M)?(?:([\d.]+)S)?/); return m ? ((+m[1] || 0) * 3600 + (+m[2] || 0) * 60 + (+m[3] || 0)) : 0; },
+
+    async fetchRelease(id, progress) {
+        let j = null, cc = null;
+        for (const c of this.COUNTRIES) {
+            try { j = await this.get(`/albums/${id}?countryCode=${c}&include=artists,items,items.artists`); cc = c; break; }
+            catch (e) { if (e.status !== 404) throw e; Log.info(`Tidal: album ${id} is not in the ${c} catalogue`); }
+        }
+        if (!j || !j.data) throw new Error(`Tidal: album ${id} is in none of the ${this.COUNTRIES.join(', ')} catalogues`);
+        const a = j.data, at = a.attributes || {};
+        const included = new Map();
+        const keep = list => (list || []).forEach(x => included.set(x.type + ':' + x.id, x));
+        keep(j.included);
+        const refs = ((a.relationships.items || {}).data || []).slice();
+        for (let next = ((a.relationships.items || {}).links || {}).next; next;) {
+            const page = await this.get(next.replace(/^.*\/v2/, '') + (/[?&]include=/.test(next) ? '' : '&include=items,items.artists'));
+            keep(page.included);
+            refs.push(...(page.data || []));
+            next = (page.links || {}).next || null;
+        }
+        Log.info(`Tidal album ${id} (${cc}): "${at.title}" · ${at.albumType} · ${refs.length} item(s) · ${at.releaseDate} · UPC ${at.barcodeId || '—'} · ${(at.copyright || {}).text || 'no copyright line'}`);
+
+        const artist = r => { const x = included.get('artists:' + r.id); return { name: x && x.attributes ? x.attributes.name : String(r.id), url: this.artistUrl(r.id) }; };
+        const mediums = [];
+        let videos = 0;
+        refs.forEach((r, i) => {
+            if (r.type !== 'tracks') { videos++; return; }
+            const t = included.get('tracks:' + r.id) || {};
+            const x = t.attributes || {};
+            const tf = splitFeat(x.title || '');
+            let title = tf.title;
+            const vf = splitFeat(x.version || '');
+            if (vf.title) title += ` (${vf.title.replace(/^\((.*)\)$/, '$1')})`;
+            const listed = ((t.relationships && t.relationships.artists && t.relationships.artists.data) || []).map(artist);
+            const credit = creditFromTitle(listed, tf.feat.length ? tf.feat : vf.feat);
+            const disc = (r.meta && r.meta.volumeNumber) || 1;
+            while (mediums.length < disc) mediums.push({ format: 'Digital Media', name: '', tracks: [] });
+            mediums[disc - 1].tracks.push({ title, lengthMs: this.secs(x.duration) * 1000 || null, isrc: x.isrc || null, url: `https://tidal.com/track/${r.id}`, credit });
+            progress && progress(i + 1, refs.length);
+            Log.debug(`track ${disc}.${r.meta && r.meta.trackNumber}: "${title}" — ${credit.map(c => c.name + c.join).join('')} (${x.isrc || 'no ISRC'})`);
+        });
+        if (videos) Log.info(`Tidal: ${videos} video(s) left out`);
+
+        const af = splitFeat(at.title || '');
+        const listed = ((a.relationships.artists || {}).data || []).map(artist);
+        const credit = listed.length === 1 && /^various artists$/i.test(listed[0].name)
+            ? [{ name: 'Various Artists', mbid: VARIOUS_ARTISTS_MBID, join: '' }]
+            : creditFromTitle(listed, af.feat);
+        const [y, m, d] = String(at.releaseDate || '').split('-').map(n => parseInt(n, 10));
+        const url = `https://tidal.com/album/${id}`;
+        return {
+            source: this.id,
+            url,
+            title: af.title,
+            credit,
+            types: this.TYPES[at.albumType] || [],
+            status: 'official',
+            packaging: 'None',
+            date: { year: y || null, month: m || null, day: d || null },
+            country: 'XW',
+            barcode: at.barcodeId || null,
+            labels: [],
+            urls: [{ url, linkType: 980 }],   // 980 = streaming page (paid)
+            mediums,
+        };
+    },
+};
+
+const PROVIDERS = [DEEZER, BANDCAMP, DISCOGS, APPLE, TIDAL];
 
 /* ── the seed: model → the release editor's POST parameters ──────────────── */
 // https://musicbrainz.org/doc/Development/Release_Editor_Seeding
