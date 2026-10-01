@@ -21,7 +21,7 @@ On a platform's album page, click **Import to MusicBrainz** in the bottom-right 
 | Field | From |
 |---|---|
 | Title, artist credit | the album, with any *feat.* artists split off the title into the credit |
-| Type | the platform's album / EP / single / compilation |
+| Type | the platform's album / EP / single / compilation, when it says |
 | Status, packaging | Official, None |
 | Release event | the platform's release date, Worldwide |
 | Label | the platform's label text |
@@ -45,6 +45,7 @@ While the album is read, the button counts the tracks: *Reading Deezer… 7/13*.
 | Platform | Pages | Notes |
 |---|---|---|
 | Deezer | `deezer.com/…/album/<id>` | Featured artists come from the title's *feat.* clause: Deezer lists them as main artists. A trailing *(Original Mix)* is dropped from track titles. |
+| Bandcamp | `<name>.bandcamp.com/album/<slug>` | Read from the page itself. The type is set only for a one-track release (Single). On a label's page the label is filled in; on the artist's own page it is left empty. A compilation's *Artist - Title* track titles are split into artist and title. The album link gets both *purchase for download* and, when it streams, *stream for free*. Only the album artist has a Bandcamp link to hand off. |
 
 More platforms follow, one at a time ([#650](https://github.com/majkinetor/musicbrainz-userscripts/issues/650)).
 

@@ -1,12 +1,13 @@
 // ==UserScript==
 // @name         First Contact
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.1
-// @description  Import a release into MusicBrainz from the platform's album page with one click: the release editor opens with the title, tracklist, artists, date, label, barcode and link filled in. Each artist's platform link is handed to Apollo Editor for matching. Platforms: Deezer.
+// @version      2026.10.1.140559
+// @description  Import a release into MusicBrainz from the platform's album page with one click: the release editor opens with the title, tracklist, artists, date, label, barcode and link filled in. Each artist's platform link is handed to Apollo Editor for matching. Platforms: Deezer, Bandcamp.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPkZpcnN0IENvbnRhY3Q8L3RpdGxlPgogIDwhLS0gdHJhY3RvciBiZWFtIC0tPgogIDxwYXRoIGQ9Ik01MCA0NCBMNzggNDQgTDEwNCAxMTIgTDI0IDExMiBaIiBmaWxsPSIjZjZjNDMxIiBvcGFjaXR5PSIwLjkiLz4KICA8cGF0aCBkPSJNNTYgNDQgTDcyIDQ0IEw4OCAxMTIgTDQwIDExMiBaIiBmaWxsPSIjZmRlNjhhIiBvcGFjaXR5PSIwLjciLz4KICA8IS0tIGxhbmRpbmcgcmluZyAtLT4KICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSIxMTQiIHJ4PSI0MiIgcnk9IjgiIGZpbGw9IiMxZTIzNDYiLz4KICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSIxMTMiIHJ4PSIyNiIgcnk9IjQuMiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZjZjNDMxIiBzdHJva2Utd2lkdGg9IjIuNCIvPgogIDwhLS0gc2F1Y2VyIC0tPgogIDxwYXRoIGQ9Ik00MCAyNiBBMjQgMTggMCAwIDEgODggMjYgWiIgZmlsbD0iIzFlMjM0NiIvPgogIDxwYXRoIGQ9Ik01MCAxOCBBMTAgNiAwIDAgMSA2MCAxNCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjIuNiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8+CiAgPGVsbGlwc2UgY3g9IjY0IiBjeT0iMzIiIHJ4PSI1NiIgcnk9IjEzIiBmaWxsPSIjMWUyMzQ2Ii8+CiAgPGNpcmNsZSBjeD0iMzgiIGN5PSIzMiIgcj0iNC40IiBmaWxsPSIjZmZmIi8+CiAgPGNpcmNsZSBjeD0iNjQiIGN5PSIzNCIgcj0iNC40IiBmaWxsPSIjZmZmIi8+CiAgPGNpcmNsZSBjeD0iOTAiIGN5PSIzMiIgcj0iNC40IiBmaWxsPSIjZmZmIi8+CiAgPCEtLSB0aGUgcmVsZWFzZSBiZWluZyBiZWFtZWQgdXA6IGEgcHVycGxlIGhleGFnb24gd2l0aCBhIG5vdGUgLS0+CiAgPHBhdGggZD0iTTY0IDU4IEw4NCA2OS41IEw4NCA5Mi41IEw2NCAxMDQgTDQ0IDkyLjUgTDQ0IDY5LjUgWiIgZmlsbD0iIzdiNGZkNiIvPgogIDxwYXRoIGQ9Ik02NCA1OCBMODQgNjkuNSBMNjQgODEgTDQ0IDY5LjUgWiIgZmlsbD0iIzliNzJlYSIvPgogIDxwYXRoIGQ9Ik02MCA3MiBMNzQgNjkgTDc0IDg5IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iMy40IiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+CiAgPHBhdGggZD0iTTYwIDcyIEw2MCA5MiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjMuNCIvPgogIDxlbGxpcHNlIGN4PSI1NiIgY3k9IjkyIiByeD0iNC42IiByeT0iMy42IiBmaWxsPSIjZmZmIi8+CiAgPGVsbGlwc2UgY3g9IjcwIiBjeT0iODkiIHJ4PSI0LjYiIHJ5PSIzLjYiIGZpbGw9IiNmZmYiLz4KICA8IS0tIHNwYXJrbGVzIC0tPgogIDxwYXRoIGQ9Ik0xOCA1NCBsMi41IDYgNiAyLjUgLTYgMi41IC0yLjUgNiAtMi41IC02IC02IC0yLjUgNiAtMi41IFoiIGZpbGw9IiNmNmM0MzEiLz4KICA8cGF0aCBkPSJNMTA4IDUyIGwyLjUgNiA2IDIuNSAtNiAyLjUgLTIuNSA2IC0yLjUgLTYgLTYgLTIuNSA2IC0yLjUgWiIgZmlsbD0iIzFlMjM0NiIvPgogIDxwYXRoIGQ9Ik0xMTIgODIgbDEuOCA0LjIgNC4yIDEuOCAtNC4yIDEuOCAtMS44IDQuMiAtMS44IC00LjIgLTQuMiAtMS44IDQuMiAtMS44IFoiIGZpbGw9IiNmNmM0MzEiLz4KICA8cGF0aCBkPSJNMTQgODYgbDEuOCA0LjIgNC4yIDEuOCAtNC4yIDEuOCAtMS44IDQuMiAtMS44IC00LjIgLTQuMiAtMS44IDQuMiAtMS44IFoiIGZpbGw9IiMxZTIzNDYiLz4KPC9zdmc+Cg==
 // @homepageURL  https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/first_contact/README.md
 // @match        https://www.deezer.com/*
+// @match        https://*.bandcamp.com/album/*
 // @match        https://*.musicbrainz.org/release/add*
 // @noframes
 // @grant        GM_xmlhttpRequest
@@ -223,7 +224,87 @@ const DEEZER = {
     },
 };
 
-const PROVIDERS = [DEEZER];
+// Bandcamp: everything is on the album page itself (the tralbum JSON and the ld+json), so
+// nothing is fetched. Only the artist's own page has a link: track artists on a label's
+// compilation are names.
+const BANDCAMP = {
+    id: 'bandcamp',
+    name: 'Bandcamp',
+    host: /(^|\.)bandcamp\.com$/,
+    albumId(loc) { return /^\/album\/[^/]+\/?$/.test(loc.pathname) ? loc.pathname.replace(/\/$/, '') : null; },
+    VARIOUS: /^various( artists)?$/i,
+
+    // a "04 Mar 2011 00:00:00 GMT" date, read in UTC
+    date(s) {
+        const d = s ? new Date(s) : null;
+        return d && !isNaN(d) ? { year: d.getUTCFullYear(), month: d.getUTCMonth() + 1, day: d.getUTCDate() } : { year: null, month: null, day: null };
+    },
+
+    async fetchRelease(path, progress) {
+        const tEl = document.querySelector('script[data-tralbum]');
+        if (!tEl) throw new Error('Bandcamp: no album data on this page (tralbum)');
+        const t = JSON.parse(tEl.dataset.tralbum);
+        let ld = null;
+        try { ld = JSON.parse((document.querySelector('script[type="application/ld+json"]') || {}).textContent || 'null'); } catch (e) { Log.warn(`Bandcamp ld+json: ${e.message}`); }
+        const cur = t.current || {};
+        const url = (t.url || location.origin + path).replace(/^http:/, 'https:');
+        const by = ld && ld.byArtist ? { name: ld.byArtist.name, url: ld.byArtist['@id'] || null } : null;
+        const pub = ld && ld.publisher ? { name: ld.publisher.name, url: ld.publisher['@id'] || null } : null;
+        const albumArtist = t.artist || cur.artist || (by && by.name) || '';
+        Log.info(`Bandcamp album "${cur.title}" by ${albumArtist} · ${(t.trackinfo || []).length} track(s) · released ${t.album_release_date || cur.release_date} · UPC ${cur.upc || '—'} · by ${by ? by.name + ' ' + (by.url || '(no page)') : '—'} · publisher ${pub ? pub.name + ' ' + (pub.url || '') : '—'}${t.album_is_preorder ? ' · PREORDER' : ''}`);
+
+        const isVarious = this.VARIOUS.test(albumArtist);
+        // the album artist's own Bandcamp page: byArtist's, or the account's when it is the artist's
+        const artistUrl = !isVarious && by && by.url ? by.url : null;
+        const at = splitFeat(cur.title || '');
+        const credit = isVarious
+            ? [{ name: 'Various Artists', mbid: VARIOUS_ARTISTS_MBID, join: '' }]
+            : creditFromTitle([{ name: albumArtist, url: artistUrl }], at.feat);
+
+        const tracks = (t.trackinfo || []).map((x, i) => {
+            let title = x.title || '';
+            const trackArtist = x.artist || null;
+            // a compilation's track titles repeat the artist: "Michna - Triple Chrome Dipped"
+            if (trackArtist && title.toLowerCase().startsWith(trackArtist.toLowerCase() + ' - ')) title = title.slice(trackArtist.length + 3);
+            const tf = splitFeat(title);
+            const main = trackArtist && normName(trackArtist) !== normName(albumArtist)
+                ? { name: trackArtist }
+                : { name: isVarious ? (trackArtist || 'Various Artists') : albumArtist, url: artistUrl };
+            const tc = creditFromTitle([main], tf.feat);
+            progress && progress(i + 1, t.trackinfo.length);
+            return {
+                title: tf.title,
+                lengthMs: x.duration ? Math.round(x.duration * 1000) : null,
+                isrc: null,
+                url: x.title_link ? new URL(x.title_link, url).href : null,
+                credit: tc,
+            };
+        });
+        tracks.forEach((x, i) => Log.debug(`track ${i + 1}: "${x.title}" — ${x.credit.map(c => c.name + c.join).join('')} (${x.lengthMs ? x.lengthMs / 1000 + 's' : 'no length'})`));
+
+        // a label account publishing someone else's album: that's the label
+        const label = pub && pub.name && (!by || !by.url || pub.url !== by.url) && normName(pub.name) !== normName(albumArtist) ? pub.name : null;
+        const streamable = t.hasAudio && (t.trackinfo || []).some(x => x.streaming);
+        return {
+            source: this.id,
+            url,
+            title: at.title,
+            credit,
+            types: tracks.length === 1 ? ['Single'] : [],
+            status: 'official',
+            packaging: 'None',
+            date: this.date(t.album_release_date || cur.release_date),
+            country: 'XW',
+            barcode: cur.upc || null,
+            labels: label ? [{ name: label, catno: '' }] : [],
+            // 74 = purchase for download, 85 = stream for free: both, on one URL, as MB allows
+            urls: [{ url, linkType: 74 }].concat(streamable ? [{ url, linkType: 85 }] : []),
+            mediums: [{ format: 'Digital Media', name: '', tracks }],
+        };
+    },
+};
+
+const PROVIDERS = [DEEZER, BANDCAMP];
 
 /* ── the seed: model → the release editor's POST parameters ──────────────── */
 // https://musicbrainz.org/doc/Development/Release_Editor_Seeding
