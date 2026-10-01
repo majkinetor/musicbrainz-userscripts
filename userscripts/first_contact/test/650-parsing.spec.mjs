@@ -2,7 +2,7 @@
 // release editor's seed parameters.
 import { test, check, loadFunctions } from '../../../dev/test/harness.mjs';
 
-const fns = () => loadFunctions('first_contact', ['TYPE_VERSION_MARKER'].concat( ['splitFeat', 'normName', 'toCredit', 'creditFromTitle', 'guessScript', 'seedParams', 'normTrackTitle', 'guessReleaseType', 'labelFromCopyright']));
+const fns = () => loadFunctions('first_contact', ['TYPE_VERSION_MARKER', 'VARIOUS_ARTISTS_MBID', 'variousArtistsWhy'].concat( ['splitFeat', 'normName', 'toCredit', 'creditFromTitle', 'guessScript', 'seedParams', 'normTrackTitle', 'guessReleaseType', 'labelFromCopyright']));
 
 test('a feat. clause leaves the title and names the featured artists', { tag: ['@unit', '@critical'] }, async () => {
   const { splitFeat } = await fns();
@@ -108,4 +108,19 @@ test('a label from a copyright line', { tag: ['@unit', '@critical'] }, async () 
     ['', null],
   ];
   for (const [text, want] of cases) check(L(text) === want, `"${text}" → ${JSON.stringify(L(text))} (want ${JSON.stringify(want)})`);
+});
+
+// #650: Spotify credits the "African Pearls - Guinée" compilation to Bembeya Jazz National (2 of 25 tracks)
+test('a compilation credited to one of its artists is Various Artists', { tag: ['@unit', '@critical'] }, async () => {
+  const { variousArtistsWhy: V } = await fns();
+  const tr = names => names.map(n => ({ credit: [{ name: n, join: '' }] }));
+  const rel = (main, names) => ({ credit: [{ name: main, join: '' }], mediums: [{ tracks: tr(names) }] });
+  const comp = rel('Bembeya Jazz National', ['Ballets africains', 'African Virtuoses', 'Sory Kandia Kouyaté', 'Bah Sadio', 'Bembeya Jazz National', 'Quintette Guinéenne', 'Miriam Makeba', 'Momo Wandel']);
+  check(/on 1 of 8 tracks, 8 track artists/.test(V(comp) || ''), `the compilation: ${V(comp)}`);
+  const own = rel('Daft Punk', ['Daft Punk', 'Daft Punk', 'Daft Punk', 'Daft Punk', 'Daft Punk', 'Pharrell Williams', 'Julian Casablancas', 'Panda Bear', 'Todd Edwards']);
+  check(V(own) === null, `an artist's own album with guests on some tracks stays theirs: ${V(own)}`);
+  const split = rel('A', ['A', 'B', 'A', 'B', 'A', 'B']);
+  check(V(split) === null, `a split release of two artists stays as credited: ${V(split)}`);
+  const va = { credit: [{ name: 'Various Artists', mbid: '89ad4ac3-39f7-470e-963a-56509c546377', join: '' }], mediums: comp.mediums };
+  check(V(va) === null, 'already Various Artists: nothing to do');
 });

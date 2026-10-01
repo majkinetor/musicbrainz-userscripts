@@ -20,7 +20,7 @@ On a platform's album page, click **Import to MusicBrainz** in the bottom-right 
 
 | Field | From |
 |---|---|
-| Title, artist credit | the album, with any *feat.* artists split off the title into the credit |
+| Title, artist credit | the album, with any *feat.* artists split off the title into the credit. A compilation the platform credits to one of its artists becomes Various Artists + Compilation: when the credited artists are on fewer than half the tracks and the tracks have five or more artists |
 | Type | the platform's album / EP / single / compilation, or a [guess](#release-type) when it doesn't say |
 | Status, packaging | Official, None |
 | Release event | the platform's release date, Worldwide |
