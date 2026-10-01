@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         String Theory
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.1.162357
+// @version      2026.10.1.164212
 // @description  Unified bundle of 8 MusicBrainz userscripts (apollo_editor, art_station, credit_hoarder, fusion, group_therapy, isrc_scout, mammoth, platform_check). Built by userscripts/string_theory/build.mjs — do not hand-edit.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCIgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0Ij4KICA8IS0tIGh1Yi1hbmQtc3Bva2UgIm5ldHdvcmsiIGdseXBoLCBzaW5nbGUgdml2aWQgdmlvbGV0IG9uIHRyYW5zcGFyZW50IHNvIGl0IHJlYWRzIG9uIGJvdGggZGFyayBhbmQgbGlnaHQgcGFnZXMgLS0+CiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjN2M1Y2ZmIiBzdHJva2Utd2lkdGg9IjQuNiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj4KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMzIgMTUiLz4KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMNDYuNSAyMy41Ii8+CiAgICA8cGF0aCBkPSJNMzIgMzIgTDQ2LjUgNDAuNSIvPgogICAgPHBhdGggZD0iTTMyIDMyIEwzMiA0OSIvPgogICAgPHBhdGggZD0iTTMyIDMyIEwxNy41IDQwLjUiLz4KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMTcuNSAyMy41Ii8+CiAgPC9nPgogIDxnIGZpbGw9IiM3YzVjZmYiPgogICAgPGNpcmNsZSBjeD0iMzIiIGN5PSIzMiIgcj0iOC42Ii8+CiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjE5LjUiIHI9IjYuNCIvPgogICAgPGNpcmNsZSBjeD0iNDkiIGN5PSIxOS41IiByPSI2LjQiLz4KICAgIDxjaXJjbGUgY3g9IjMyIiBjeT0iNTciIHI9IjYuNCIvPgogIDwvZz4KICA8ZyBmaWxsPSJub25lIiBzdHJva2U9IiM3YzVjZmYiIHN0cm9rZS13aWR0aD0iMy44Ij4KICAgIDxjaXJjbGUgY3g9IjMyIiBjeT0iNyIgcj0iNC45Ii8+CiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjQ0LjUiIHI9IjQuOSIvPgogICAgPGNpcmNsZSBjeD0iNDkiIGN5PSI0NC41IiByPSI0LjkiLz4KICA8L2c+Cjwvc3ZnPgo=
@@ -84,13 +84,13 @@
 // Bundles (verbatim, each wrapped in a run-at gate): apollo_editor, art_station, credit_hoarder, fusion, group_therapy, isrc_scout, mammoth, platform_check.
 
 try {
-  console.log('%c String Theory %c v2026.10.1.162357 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
-  console.log("String Theory bundles:\n  · Apollo Editor v2026.10.1.162355\n  · Art Station v2026.9.30\n  · Credit Hoarder v2026.10.1.145919\n  · Fusion v2026.9.30\n  · Group Therapy v2026.9.30\n  · ISRC Scout v2026.10.1\n  · Mammoth v2026.9.30\n  · Platform Check v2026.10.1.145904");
+  console.log('%c String Theory %c v2026.10.1.164212 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
+  console.log("String Theory bundles:\n  · Apollo Editor v2026.10.1.164157\n  · Art Station v2026.10.1.164157\n  · Credit Hoarder v2026.10.1.164212\n  · Fusion v2026.10.1.164157\n  · Group Therapy v2026.10.1.164157\n  · ISRC Scout v2026.10.1.164157\n  · Mammoth v2026.10.1.164157\n  · Platform Check v2026.10.1.164157");
 } catch (e) {}
 
 // ===== apollo_editor (@run-at document-start) =====================================
 (function(__stGM){
-  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Apollo Editor*","namespace":"https://musicbrainz.org/","version":"2026.10.1.162355","description":"Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md","supportURL":null,"icon":"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E"}) }) : { script: {"name":"Apollo Editor*","namespace":"https://musicbrainz.org/","version":"2026.10.1.162355","description":"Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md","supportURL":null,"icon":"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E"} };
+  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Apollo Editor*","namespace":"https://musicbrainz.org/","version":"2026.10.1.164157","description":"Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md","supportURL":null,"icon":"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E"}) }) : { script: {"name":"Apollo Editor*","namespace":"https://musicbrainz.org/","version":"2026.10.1.164157","description":"Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md","supportURL":null,"icon":"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E"} };
   (f=>f())(function(){ try { (function(){
 /*
  * Editor model (discovered via test/ spikes):
@@ -105,6 +105,8 @@ try {
  */
 (function () {
   'use strict';
+  // one copy per page: with String Theory and a standalone install both on, the newer one runs (#653)
+  if (!mbuClaim('apollo_editor', 'Apollo Editor')) return;
   // the shared MusicBrainz request gate (#633) — first, so nothing can call it before its consts exist
   // <ST-NET> — generated by dev/net/sync-gate.mjs from dev/net/mb-gate.mjs — DO NOT EDIT
   const MBN_GAP = 1000;
@@ -2040,21 +2042,72 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
 
   // One copy per page (#653). With String Theory and a standalone install of the same script
   // both on, two copies build the same element ids and fight over them: each settings window
-  // fills in the other's checkboxes, rows flip between two rule sets. The first copy to start
-  // claims the page; a later one stays out and says so:
+  // fills in the other's checkboxes, rows flip between two rule sets. So one copy runs, the
+  // one with the higher version, and the other stays off without a word; only the running
+  // copy notes it in its log (majkinetor: "disable copy that has lower version without any
+  // info (except in log of active copy)"):
   //   if (!mbuClaim('platform_check', 'Platform Check')) return;   // first line of the script
   // The claim is a data- attribute on <html>, which every copy sees whatever its sandbox.
+  // It is decided at once, so no script starts late. The copy that starts first takes the
+  // page. When it is the older one, the newer copy stays off for this page and leaves a note
+  // in localStorage, and from the next page load the older copy finds the note and steps
+  // aside. A note whose copy has gone (uninstalled) is cleared by the older copy after the
+  // page loads, so it runs again from the load after.
+  function mbuClaimVer(v) {
+      return String(v || '').split('.').map(function (n) { return parseInt(n, 10) || 0; });
+  }
+  function mbuClaimCmp(a, b) {
+      var x = mbuClaimVer(a), y = mbuClaimVer(b);
+      for (var i = 0; i < Math.max(x.length, y.length); i++) { var d = (x[i] || 0) - (y[i] || 0); if (d) return d < 0 ? -1 : 1; }
+      return 0;
+  }
   function mbuClaim(key, label) {
       var info = (typeof GM_info !== 'undefined' && GM_info && GM_info.script) || {};
-      var name = String(info.name || label || key), mine = (name.slice(-1) === '*' ? 'String Theory' : 'standalone') + ' v' + (info.version || '?');
-      var root = document.documentElement, attr = 'data-mbu-run-' + key;
+      var name = String(info.name || label || key), ver = String(info.version || '0');
+      var mine = (name.slice(-1) === '*' ? 'String Theory' : 'standalone') + ' v' + ver;
+      var root = document.documentElement, attr = 'data-mbu-run-' + key, ev = 'mbu-claim-' + key, noteKey = 'mbu-newer-' + key;
+      var log = function (msg) { try { if (typeof mbuLog !== 'undefined' && mbuLog.active) mbuLog.active.info(msg); else if (typeof mbuToast !== 'undefined' && typeof mbuToast.log === 'function') mbuToast.log('info', msg); else console.info('[' + (label || key) + '] ' + msg); } catch (e) { /* no log */ } };
+      var note = null;
+      try { note = JSON.parse(localStorage.getItem(noteKey) || 'null'); } catch (e) { /* storage blocked */ }
+      if (note && mbuClaimCmp(note.ver, ver) <= 0) { try { localStorage.removeItem(noteKey); } catch (e) { /* storage blocked */ } note = null; }
       var held = root && root.getAttribute(attr);
-      if (!held) { if (root) root.setAttribute(attr, mine); return true; }
-      var msg = (label || key) + ' is installed twice (' + held + ' and ' + mine + '): only the ' + held + ' copy runs. Turn one of them off in your userscript manager.';
-      try { console.warn('[' + (label || key) + '] ' + msg); } catch (e) { /* no console */ }
-      var show = function () { try { mbuToast('⚠ ' + msg, { ms: 15000, kind: 'warn' }); } catch (e) { /* no toast */ } };
-      if (document.body) setTimeout(show, 0); else document.addEventListener('DOMContentLoaded', show, { once: true });
-      return false;
+      var off = function (why) {
+          // tell the running copy (any sandbox hears a DOM event), or the copy that runs after
+          // this one (it reads the attribute), and stay quiet
+          try { if (root) root.setAttribute(attr + '-off', JSON.stringify({ mine: mine, why: why })); } catch (e) { /* no attribute */ }
+          try { document.dispatchEvent(new CustomEvent(ev, { detail: JSON.stringify({ mine: mine, ver: ver, why: why }) })); } catch (e) { /* no event */ }
+          return false;
+      };
+      if (held) {
+          var heldVer = (root.getAttribute(attr + '-ver') || '0');
+          if (mbuClaimCmp(ver, heldVer) > 0) {
+              try { localStorage.setItem(noteKey, JSON.stringify({ ver: ver, mine: mine, at: Date.now() })); } catch (e) { /* storage blocked */ }
+              return off('newer, from the next page load');
+          }
+          return off('older or the same');
+      }
+      if (note) {
+          // a newer copy said it is installed: leave the page to it, unless it never shows up
+          var watch = function () {
+              setTimeout(function () {
+                  if (root.getAttribute(attr)) return;
+                  try { localStorage.removeItem(noteKey); } catch (e) { /* storage blocked */ }
+                  try { console.info('[' + (label || key) + '] the newer copy (' + note.mine + ') did not start: this copy runs again from the next page load'); } catch (e) { /* no console */ }
+              }, 3000);
+          };
+          if (document.readyState === 'complete') watch(); else window.addEventListener('load', watch, { once: true });
+          return off('older: a newer copy runs');
+      }
+      if (root) { root.setAttribute(attr, mine); root.setAttribute(attr + '-ver', ver); }
+      var told = function (o) {
+          log((label || key) + ' is installed twice: ' + mine + ' runs, ' + (o.mine || 'another copy') + ' is switched off'
+              + (o.why === 'newer, from the next page load' ? ' for this page (it is newer and runs from the next page load)' : '') + '.');
+      };
+      document.addEventListener(ev, function (e) { var o = {}; try { o = JSON.parse(e.detail); } catch (x) { /* not ours */ } told(o); });
+      // a copy that stepped aside before this one started (it found a note): log it once the script's log is up
+      var before = root && root.getAttribute(attr + '-off');
+      if (before) setTimeout(function () { var o = {}; try { o = JSON.parse(before); } catch (x) { /* not ours */ } told(o); }, 0);
+      return true;
   }
 
   // Toast. mbuToast(msg) or mbuToast(msg, { ms, kind, at:{x,y}, action:{ label, onClick } }).
@@ -2374,6 +2427,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
           messages: function () { return buf.map(function (e) { return e.msg; }); },
           counts: function () { return { warn: warn, error: error }; },
       };
+      mbuLog.active = api;   // the script's own log, for helpers that note things in it (mbuClaim)
       return api;
   }
 
@@ -10495,7 +10549,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
 
 // ===== art_station (@run-at document-start) =======================================
 (function(__stGM){
-  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Art Station*","namespace":"https://musicbrainz.org/","version":"2026.9.30","description":"Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png"}) }) : { script: {"name":"Art Station*","namespace":"https://musicbrainz.org/","version":"2026.9.30","description":"Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png"} };
+  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Art Station*","namespace":"https://musicbrainz.org/","version":"2026.10.1.164157","description":"Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png"}) }) : { script: {"name":"Art Station*","namespace":"https://musicbrainz.org/","version":"2026.10.1.164157","description":"Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png"} };
   (f=>f())(function(){ try { (function(){
 //
 // Phase-1 PoC. Principle: "you get what you see" — the gallery is the staged
@@ -10503,6 +10557,8 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
 // page), no uploads yet (Add/Enter-edit submission land next).
 (function () {
   'use strict';
+  // one copy per page: with String Theory and a standalone install both on, the newer one runs (#653)
+  if (!mbuClaim('art_station', 'Art Station')) return;
   // the shared MusicBrainz request gate (#633) — first, so nothing can call it before its consts exist
   // <ST-NET> — generated by dev/net/sync-gate.mjs from dev/net/mb-gate.mjs — DO NOT EDIT
   const MBN_GAP = 1000;
@@ -14287,21 +14343,72 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
 
   // One copy per page (#653). With String Theory and a standalone install of the same script
   // both on, two copies build the same element ids and fight over them: each settings window
-  // fills in the other's checkboxes, rows flip between two rule sets. The first copy to start
-  // claims the page; a later one stays out and says so:
+  // fills in the other's checkboxes, rows flip between two rule sets. So one copy runs, the
+  // one with the higher version, and the other stays off without a word; only the running
+  // copy notes it in its log (majkinetor: "disable copy that has lower version without any
+  // info (except in log of active copy)"):
   //   if (!mbuClaim('platform_check', 'Platform Check')) return;   // first line of the script
   // The claim is a data- attribute on <html>, which every copy sees whatever its sandbox.
+  // It is decided at once, so no script starts late. The copy that starts first takes the
+  // page. When it is the older one, the newer copy stays off for this page and leaves a note
+  // in localStorage, and from the next page load the older copy finds the note and steps
+  // aside. A note whose copy has gone (uninstalled) is cleared by the older copy after the
+  // page loads, so it runs again from the load after.
+  function mbuClaimVer(v) {
+      return String(v || '').split('.').map(function (n) { return parseInt(n, 10) || 0; });
+  }
+  function mbuClaimCmp(a, b) {
+      var x = mbuClaimVer(a), y = mbuClaimVer(b);
+      for (var i = 0; i < Math.max(x.length, y.length); i++) { var d = (x[i] || 0) - (y[i] || 0); if (d) return d < 0 ? -1 : 1; }
+      return 0;
+  }
   function mbuClaim(key, label) {
       var info = (typeof GM_info !== 'undefined' && GM_info && GM_info.script) || {};
-      var name = String(info.name || label || key), mine = (name.slice(-1) === '*' ? 'String Theory' : 'standalone') + ' v' + (info.version || '?');
-      var root = document.documentElement, attr = 'data-mbu-run-' + key;
+      var name = String(info.name || label || key), ver = String(info.version || '0');
+      var mine = (name.slice(-1) === '*' ? 'String Theory' : 'standalone') + ' v' + ver;
+      var root = document.documentElement, attr = 'data-mbu-run-' + key, ev = 'mbu-claim-' + key, noteKey = 'mbu-newer-' + key;
+      var log = function (msg) { try { if (typeof mbuLog !== 'undefined' && mbuLog.active) mbuLog.active.info(msg); else if (typeof mbuToast !== 'undefined' && typeof mbuToast.log === 'function') mbuToast.log('info', msg); else console.info('[' + (label || key) + '] ' + msg); } catch (e) { /* no log */ } };
+      var note = null;
+      try { note = JSON.parse(localStorage.getItem(noteKey) || 'null'); } catch (e) { /* storage blocked */ }
+      if (note && mbuClaimCmp(note.ver, ver) <= 0) { try { localStorage.removeItem(noteKey); } catch (e) { /* storage blocked */ } note = null; }
       var held = root && root.getAttribute(attr);
-      if (!held) { if (root) root.setAttribute(attr, mine); return true; }
-      var msg = (label || key) + ' is installed twice (' + held + ' and ' + mine + '): only the ' + held + ' copy runs. Turn one of them off in your userscript manager.';
-      try { console.warn('[' + (label || key) + '] ' + msg); } catch (e) { /* no console */ }
-      var show = function () { try { mbuToast('⚠ ' + msg, { ms: 15000, kind: 'warn' }); } catch (e) { /* no toast */ } };
-      if (document.body) setTimeout(show, 0); else document.addEventListener('DOMContentLoaded', show, { once: true });
-      return false;
+      var off = function (why) {
+          // tell the running copy (any sandbox hears a DOM event), or the copy that runs after
+          // this one (it reads the attribute), and stay quiet
+          try { if (root) root.setAttribute(attr + '-off', JSON.stringify({ mine: mine, why: why })); } catch (e) { /* no attribute */ }
+          try { document.dispatchEvent(new CustomEvent(ev, { detail: JSON.stringify({ mine: mine, ver: ver, why: why }) })); } catch (e) { /* no event */ }
+          return false;
+      };
+      if (held) {
+          var heldVer = (root.getAttribute(attr + '-ver') || '0');
+          if (mbuClaimCmp(ver, heldVer) > 0) {
+              try { localStorage.setItem(noteKey, JSON.stringify({ ver: ver, mine: mine, at: Date.now() })); } catch (e) { /* storage blocked */ }
+              return off('newer, from the next page load');
+          }
+          return off('older or the same');
+      }
+      if (note) {
+          // a newer copy said it is installed: leave the page to it, unless it never shows up
+          var watch = function () {
+              setTimeout(function () {
+                  if (root.getAttribute(attr)) return;
+                  try { localStorage.removeItem(noteKey); } catch (e) { /* storage blocked */ }
+                  try { console.info('[' + (label || key) + '] the newer copy (' + note.mine + ') did not start: this copy runs again from the next page load'); } catch (e) { /* no console */ }
+              }, 3000);
+          };
+          if (document.readyState === 'complete') watch(); else window.addEventListener('load', watch, { once: true });
+          return off('older: a newer copy runs');
+      }
+      if (root) { root.setAttribute(attr, mine); root.setAttribute(attr + '-ver', ver); }
+      var told = function (o) {
+          log((label || key) + ' is installed twice: ' + mine + ' runs, ' + (o.mine || 'another copy') + ' is switched off'
+              + (o.why === 'newer, from the next page load' ? ' for this page (it is newer and runs from the next page load)' : '') + '.');
+      };
+      document.addEventListener(ev, function (e) { var o = {}; try { o = JSON.parse(e.detail); } catch (x) { /* not ours */ } told(o); });
+      // a copy that stepped aside before this one started (it found a note): log it once the script's log is up
+      var before = root && root.getAttribute(attr + '-off');
+      if (before) setTimeout(function () { var o = {}; try { o = JSON.parse(before); } catch (x) { /* not ours */ } told(o); }, 0);
+      return true;
   }
 
   // Toast. mbuToast(msg) or mbuToast(msg, { ms, kind, at:{x,y}, action:{ label, onClick } }).
@@ -14621,6 +14728,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
           messages: function () { return buf.map(function (e) { return e.msg; }); },
           counts: function () { return { warn: warn, error: error }; },
       };
+      mbuLog.active = api;   // the script's own log, for helpers that note things in it (mbuClaim)
       return api;
   }
 
@@ -15472,9 +15580,67 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
 
 // ===== credit_hoarder (@run-at document-end) ====================================
 (function(__stGM){
-  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Credit Hoarder*","namespace":"majkinetor","version":"2026.10.1.145919","description":"Import per-track release credits from streaming/database providers (Discogs, Tidal, Qobuz, Deezer) into MusicBrainz relationships, with a review phase","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/credit_hoarder/README.md","supportURL":"https://github.com/majkinetor/musicbrainz-userscripts/issues","icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij4KICANCiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMmY2ZjU0IiBzdHJva2Utd2lkdGg9IjkiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGNpcmNsZSBjeD0iMzQiIGN5PSIzOCIgcj0iMi41IiBmaWxsPSIjMmY2ZjU0IiBzdHJva2U9Im5vbmUiLz4NCiAgICA8bGluZSB4MT0iNTAiIHkxPSIzOCIgeDI9Ijk4IiB5Mj0iMzgiLz4NCiAgICA8Y2lyY2xlIGN4PSIzNCIgY3k9IjY0IiByPSIyLjUiIGZpbGw9IiMyZjZmNTQiIHN0cm9rZT0ibm9uZSIvPg0KICAgIDxsaW5lIHgxPSI1MCIgeTE9IjY0IiB4Mj0iOTgiIHkyPSI2NCIvPg0KICAgIDxjaXJjbGUgY3g9IjM0IiBjeT0iOTAiIHI9IjIuNSIgZmlsbD0iIzJmNmY1NCIgc3Ryb2tlPSJub25lIi8+DQogICAgPGxpbmUgeDE9IjUwIiB5MT0iOTAiIHgyPSI3NCIgeTI9IjkwIi8+DQogIDwvZz4NCiAgPGNpcmNsZSBjeD0iOTIiIGN5PSI5MiIgcj0iMjMiIGZpbGw9IiMyZTllNWIiLz4NCiAgPGcgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGxpbmUgeDE9IjkyIiB5MT0iODEiIHgyPSI5MiIgeTI9IjEwMyIvPg0KICAgIDxsaW5lIHgxPSI4MSIgeTE9IjkyIiB4Mj0iMTAzIiB5Mj0iOTIiLz4NCiAgPC9nPg0KPC9zdmc+DQo="}) }) : { script: {"name":"Credit Hoarder*","namespace":"majkinetor","version":"2026.10.1.145919","description":"Import per-track release credits from streaming/database providers (Discogs, Tidal, Qobuz, Deezer) into MusicBrainz relationships, with a review phase","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/credit_hoarder/README.md","supportURL":"https://github.com/majkinetor/musicbrainz-userscripts/issues","icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij4KICANCiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMmY2ZjU0IiBzdHJva2Utd2lkdGg9IjkiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGNpcmNsZSBjeD0iMzQiIGN5PSIzOCIgcj0iMi41IiBmaWxsPSIjMmY2ZjU0IiBzdHJva2U9Im5vbmUiLz4NCiAgICA8bGluZSB4MT0iNTAiIHkxPSIzOCIgeDI9Ijk4IiB5Mj0iMzgiLz4NCiAgICA8Y2lyY2xlIGN4PSIzNCIgY3k9IjY0IiByPSIyLjUiIGZpbGw9IiMyZjZmNTQiIHN0cm9rZT0ibm9uZSIvPg0KICAgIDxsaW5lIHgxPSI1MCIgeTE9IjY0IiB4Mj0iOTgiIHkyPSI2NCIvPg0KICAgIDxjaXJjbGUgY3g9IjM0IiBjeT0iOTAiIHI9IjIuNSIgZmlsbD0iIzJmNmY1NCIgc3Ryb2tlPSJub25lIi8+DQogICAgPGxpbmUgeDE9IjUwIiB5MT0iOTAiIHgyPSI3NCIgeTI9IjkwIi8+DQogIDwvZz4NCiAgPGNpcmNsZSBjeD0iOTIiIGN5PSI5MiIgcj0iMjMiIGZpbGw9IiMyZTllNWIiLz4NCiAgPGcgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGxpbmUgeDE9IjkyIiB5MT0iODEiIHgyPSI5MiIgeTI9IjEwMyIvPg0KICAgIDxsaW5lIHgxPSI4MSIgeTE9IjkyIiB4Mj0iMTAzIiB5Mj0iOTIiLz4NCiAgPC9nPg0KPC9zdmc+DQo="} };
+  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Credit Hoarder*","namespace":"majkinetor","version":"2026.10.1.164212","description":"Import per-track release credits from streaming/database providers (Discogs, Tidal, Qobuz, Deezer) into MusicBrainz relationships, with a review phase","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/credit_hoarder/README.md","supportURL":"https://github.com/majkinetor/musicbrainz-userscripts/issues","icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij4KICANCiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMmY2ZjU0IiBzdHJva2Utd2lkdGg9IjkiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGNpcmNsZSBjeD0iMzQiIGN5PSIzOCIgcj0iMi41IiBmaWxsPSIjMmY2ZjU0IiBzdHJva2U9Im5vbmUiLz4NCiAgICA8bGluZSB4MT0iNTAiIHkxPSIzOCIgeDI9Ijk4IiB5Mj0iMzgiLz4NCiAgICA8Y2lyY2xlIGN4PSIzNCIgY3k9IjY0IiByPSIyLjUiIGZpbGw9IiMyZjZmNTQiIHN0cm9rZT0ibm9uZSIvPg0KICAgIDxsaW5lIHgxPSI1MCIgeTE9IjY0IiB4Mj0iOTgiIHkyPSI2NCIvPg0KICAgIDxjaXJjbGUgY3g9IjM0IiBjeT0iOTAiIHI9IjIuNSIgZmlsbD0iIzJmNmY1NCIgc3Ryb2tlPSJub25lIi8+DQogICAgPGxpbmUgeDE9IjUwIiB5MT0iOTAiIHgyPSI3NCIgeTI9IjkwIi8+DQogIDwvZz4NCiAgPGNpcmNsZSBjeD0iOTIiIGN5PSI5MiIgcj0iMjMiIGZpbGw9IiMyZTllNWIiLz4NCiAgPGcgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGxpbmUgeDE9IjkyIiB5MT0iODEiIHgyPSI5MiIgeTI9IjEwMyIvPg0KICAgIDxsaW5lIHgxPSI4MSIgeTE9IjkyIiB4Mj0iMTAzIiB5Mj0iOTIiLz4NCiAgPC9nPg0KPC9zdmc+DQo="}) }) : { script: {"name":"Credit Hoarder*","namespace":"majkinetor","version":"2026.10.1.164212","description":"Import per-track release credits from streaming/database providers (Discogs, Tidal, Qobuz, Deezer) into MusicBrainz relationships, with a review phase","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/credit_hoarder/README.md","supportURL":"https://github.com/majkinetor/musicbrainz-userscripts/issues","icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij4KICANCiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMmY2ZjU0IiBzdHJva2Utd2lkdGg9IjkiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGNpcmNsZSBjeD0iMzQiIGN5PSIzOCIgcj0iMi41IiBmaWxsPSIjMmY2ZjU0IiBzdHJva2U9Im5vbmUiLz4NCiAgICA8bGluZSB4MT0iNTAiIHkxPSIzOCIgeDI9Ijk4IiB5Mj0iMzgiLz4NCiAgICA8Y2lyY2xlIGN4PSIzNCIgY3k9IjY0IiByPSIyLjUiIGZpbGw9IiMyZjZmNTQiIHN0cm9rZT0ibm9uZSIvPg0KICAgIDxsaW5lIHgxPSI1MCIgeTE9IjY0IiB4Mj0iOTgiIHkyPSI2NCIvPg0KICAgIDxjaXJjbGUgY3g9IjM0IiBjeT0iOTAiIHI9IjIuNSIgZmlsbD0iIzJmNmY1NCIgc3Ryb2tlPSJub25lIi8+DQogICAgPGxpbmUgeDE9IjUwIiB5MT0iOTAiIHgyPSI3NCIgeTI9IjkwIi8+DQogIDwvZz4NCiAgPGNpcmNsZSBjeD0iOTIiIGN5PSI5MiIgcj0iMjMiIGZpbGw9IiMyZTllNWIiLz4NCiAgPGcgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGxpbmUgeDE9IjkyIiB5MT0iODEiIHgyPSI5MiIgeTI9IjEwMyIvPg0KICAgIDxsaW5lIHgxPSI4MSIgeTE9IjkyIiB4Mj0iMTAzIiB5Mj0iOTIiLz4NCiAgPC9nPg0KPC9zdmc+DQo="} };
   (f=>document.readyState!=='loading'?f():document.addEventListener('DOMContentLoaded',f,{once:true}))(function(){ try { (function(){
 (() => {
+// one copy per page: with String Theory and a standalone install both on, the newer one runs (#653)
+function mbuClaimVer(v) {
+    return String(v || '').split('.').map(function (n) { return parseInt(n, 10) || 0; });
+}
+function mbuClaimCmp(a, b) {
+    var x = mbuClaimVer(a), y = mbuClaimVer(b);
+    for (var i = 0; i < Math.max(x.length, y.length); i++) { var d = (x[i] || 0) - (y[i] || 0); if (d) return d < 0 ? -1 : 1; }
+    return 0;
+}
+function mbuClaim(key, label) {
+    var info = (typeof GM_info !== 'undefined' && GM_info && GM_info.script) || {};
+    var name = String(info.name || label || key), ver = String(info.version || '0');
+    var mine = (name.slice(-1) === '*' ? 'String Theory' : 'standalone') + ' v' + ver;
+    var root = document.documentElement, attr = 'data-mbu-run-' + key, ev = 'mbu-claim-' + key, noteKey = 'mbu-newer-' + key;
+    var log = function (msg) { try { if (typeof mbuLog !== 'undefined' && mbuLog.active) mbuLog.active.info(msg); else if (typeof mbuToast !== 'undefined' && typeof mbuToast.log === 'function') mbuToast.log('info', msg); else console.info('[' + (label || key) + '] ' + msg); } catch (e) { /* no log */ } };
+    var note = null;
+    try { note = JSON.parse(localStorage.getItem(noteKey) || 'null'); } catch (e) { /* storage blocked */ }
+    if (note && mbuClaimCmp(note.ver, ver) <= 0) { try { localStorage.removeItem(noteKey); } catch (e) { /* storage blocked */ } note = null; }
+    var held = root && root.getAttribute(attr);
+    var off = function (why) {
+        // tell the running copy (any sandbox hears a DOM event), or the copy that runs after
+        // this one (it reads the attribute), and stay quiet
+        try { if (root) root.setAttribute(attr + '-off', JSON.stringify({ mine: mine, why: why })); } catch (e) { /* no attribute */ }
+        try { document.dispatchEvent(new CustomEvent(ev, { detail: JSON.stringify({ mine: mine, ver: ver, why: why }) })); } catch (e) { /* no event */ }
+        return false;
+    };
+    if (held) {
+        var heldVer = (root.getAttribute(attr + '-ver') || '0');
+        if (mbuClaimCmp(ver, heldVer) > 0) {
+            try { localStorage.setItem(noteKey, JSON.stringify({ ver: ver, mine: mine, at: Date.now() })); } catch (e) { /* storage blocked */ }
+            return off('newer, from the next page load');
+        }
+        return off('older or the same');
+    }
+    if (note) {
+        // a newer copy said it is installed: leave the page to it, unless it never shows up
+        var watch = function () {
+            setTimeout(function () {
+                if (root.getAttribute(attr)) return;
+                try { localStorage.removeItem(noteKey); } catch (e) { /* storage blocked */ }
+                try { console.info('[' + (label || key) + '] the newer copy (' + note.mine + ') did not start: this copy runs again from the next page load'); } catch (e) { /* no console */ }
+            }, 3000);
+        };
+        if (document.readyState === 'complete') watch(); else window.addEventListener('load', watch, { once: true });
+        return off('older: a newer copy runs');
+    }
+    if (root) { root.setAttribute(attr, mine); root.setAttribute(attr + '-ver', ver); }
+    var told = function (o) {
+        log((label || key) + ' is installed twice: ' + mine + ' runs, ' + (o.mine || 'another copy') + ' is switched off'
+            + (o.why === 'newer, from the next page load' ? ' for this page (it is newer and runs from the next page load)' : '') + '.');
+    };
+    document.addEventListener(ev, function (e) { var o = {}; try { o = JSON.parse(e.detail); } catch (x) { /* not ours */ } told(o); });
+    // a copy that stepped aside before this one started (it found a note): log it once the script's log is up
+    var before = root && root.getAttribute(attr + '-off');
+    if (before) setTimeout(function () { var o = {}; try { o = JSON.parse(before); } catch (x) { /* not ours */ } told(o); }, 0);
+    return true;
+}
+if (!mbuClaim('credit_hoarder', 'Credit Hoarder')) return;
   // src/constants.js
   var REL_TEMPLATE = {
     _lineage: [],
@@ -22819,29 +22985,110 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
       a.textContent = label || "? Help";
       return a;
     }
+    function mbuClaimVer(v) {
+      return String(v || "").split(".").map(function(n) {
+        return parseInt(n, 10) || 0;
+      });
+    }
+    function mbuClaimCmp(a, b) {
+      var x = mbuClaimVer(a), y = mbuClaimVer(b);
+      for (var i = 0; i < Math.max(x.length, y.length); i++) {
+        var d = (x[i] || 0) - (y[i] || 0);
+        if (d) return d < 0 ? -1 : 1;
+      }
+      return 0;
+    }
     function mbuClaim(key, label) {
       var info = typeof GM_info !== "undefined" && GM_info && GM_info.script || {};
-      var name = String(info.name || label || key), mine = (name.slice(-1) === "*" ? "String Theory" : "standalone") + " v" + (info.version || "?");
-      var root = document.documentElement, attr = "data-mbu-run-" + key;
-      var held = root && root.getAttribute(attr);
-      if (!held) {
-        if (root) root.setAttribute(attr, mine);
-        return true;
-      }
-      var msg = (label || key) + " is installed twice (" + held + " and " + mine + "): only the " + held + " copy runs. Turn one of them off in your userscript manager.";
-      try {
-        console.warn("[" + (label || key) + "] " + msg);
-      } catch (e) {
-      }
-      var show = function() {
+      var name = String(info.name || label || key), ver = String(info.version || "0");
+      var mine = (name.slice(-1) === "*" ? "String Theory" : "standalone") + " v" + ver;
+      var root = document.documentElement, attr = "data-mbu-run-" + key, ev = "mbu-claim-" + key, noteKey = "mbu-newer-" + key;
+      var log2 = function(msg) {
         try {
-          mbuToast("\u26A0 " + msg, { ms: 15e3, kind: "warn" });
+          if (typeof mbuLog !== "undefined" && mbuLog.active) mbuLog.active.info(msg);
+          else if (typeof mbuToast !== "undefined" && typeof mbuToast.log === "function") mbuToast.log("info", msg);
+          else console.info("[" + (label || key) + "] " + msg);
         } catch (e) {
         }
       };
-      if (document.body) setTimeout(show, 0);
-      else document.addEventListener("DOMContentLoaded", show, { once: true });
-      return false;
+      var note = null;
+      try {
+        note = JSON.parse(localStorage.getItem(noteKey) || "null");
+      } catch (e) {
+      }
+      if (note && mbuClaimCmp(note.ver, ver) <= 0) {
+        try {
+          localStorage.removeItem(noteKey);
+        } catch (e) {
+        }
+        note = null;
+      }
+      var held = root && root.getAttribute(attr);
+      var off = function(why) {
+        try {
+          if (root) root.setAttribute(attr + "-off", JSON.stringify({ mine, why }));
+        } catch (e) {
+        }
+        try {
+          document.dispatchEvent(new CustomEvent(ev, { detail: JSON.stringify({ mine, ver, why }) }));
+        } catch (e) {
+        }
+        return false;
+      };
+      if (held) {
+        var heldVer = root.getAttribute(attr + "-ver") || "0";
+        if (mbuClaimCmp(ver, heldVer) > 0) {
+          try {
+            localStorage.setItem(noteKey, JSON.stringify({ ver, mine, at: Date.now() }));
+          } catch (e) {
+          }
+          return off("newer, from the next page load");
+        }
+        return off("older or the same");
+      }
+      if (note) {
+        var watch = function() {
+          setTimeout(function() {
+            if (root.getAttribute(attr)) return;
+            try {
+              localStorage.removeItem(noteKey);
+            } catch (e) {
+            }
+            try {
+              console.info("[" + (label || key) + "] the newer copy (" + note.mine + ") did not start: this copy runs again from the next page load");
+            } catch (e) {
+            }
+          }, 3e3);
+        };
+        if (document.readyState === "complete") watch();
+        else window.addEventListener("load", watch, { once: true });
+        return off("older: a newer copy runs");
+      }
+      if (root) {
+        root.setAttribute(attr, mine);
+        root.setAttribute(attr + "-ver", ver);
+      }
+      var told = function(o) {
+        log2((label || key) + " is installed twice: " + mine + " runs, " + (o.mine || "another copy") + " is switched off" + (o.why === "newer, from the next page load" ? " for this page (it is newer and runs from the next page load)" : "") + ".");
+      };
+      document.addEventListener(ev, function(e) {
+        var o = {};
+        try {
+          o = JSON.parse(e.detail);
+        } catch (x) {
+        }
+        told(o);
+      });
+      var before = root && root.getAttribute(attr + "-off");
+      if (before) setTimeout(function() {
+        var o = {};
+        try {
+          o = JSON.parse(before);
+        } catch (x) {
+        }
+        told(o);
+      }, 0);
+      return true;
     }
     var _mbuToastT = null;
     function mbuToast(msg, opts) {
@@ -23264,6 +23511,7 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
           return { warn, error };
         }
       };
+      mbuLog.active = api;
       return api;
     }
     function mbuDismissOn(el, close, opts) {
@@ -25448,10 +25696,12 @@ ${lines}
 
 // ===== fusion (@run-at document-end) ============================================
 (function(__stGM){
-  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Fusion*","namespace":"https://musicbrainz.org/","version":"2026.9.30","description":"Merge-recordings assistant for MusicBrainz: gather a pool of candidate recordings from a release / release group / recording page (or paste any MBID/URL), auto-match them into merge groups by ISRC / AcoustID / length / title+artist, review and adjust the groups, then submit the merges directly in the background — no MB merge page involved.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/fusion/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPkZ1c2lvbjwvdGl0bGU+CiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjOGE1Y2Y2IiBzdHJva2Utd2lkdGg9IjciPgogICAgPGVsbGlwc2UgY3g9IjY0IiBjeT0iNjQiIHJ4PSI1MiIgcnk9IjIyIi8+CiAgICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSI2NCIgcng9IjUyIiByeT0iMjIiIHRyYW5zZm9ybT0icm90YXRlKDYwIDY0IDY0KSIvPgogICAgPGVsbGlwc2UgY3g9IjY0IiBjeT0iNjQiIHJ4PSI1MiIgcnk9IjIyIiB0cmFuc2Zvcm09InJvdGF0ZSgxMjAgNjQgNjQpIi8+CiAgPC9nPgogIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjE0IiBmaWxsPSIjNmQzZmYwIi8+Cjwvc3ZnPgo="}) }) : { script: {"name":"Fusion*","namespace":"https://musicbrainz.org/","version":"2026.9.30","description":"Merge-recordings assistant for MusicBrainz: gather a pool of candidate recordings from a release / release group / recording page (or paste any MBID/URL), auto-match them into merge groups by ISRC / AcoustID / length / title+artist, review and adjust the groups, then submit the merges directly in the background — no MB merge page involved.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/fusion/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPkZ1c2lvbjwvdGl0bGU+CiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjOGE1Y2Y2IiBzdHJva2Utd2lkdGg9IjciPgogICAgPGVsbGlwc2UgY3g9IjY0IiBjeT0iNjQiIHJ4PSI1MiIgcnk9IjIyIi8+CiAgICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSI2NCIgcng9IjUyIiByeT0iMjIiIHRyYW5zZm9ybT0icm90YXRlKDYwIDY0IDY0KSIvPgogICAgPGVsbGlwc2UgY3g9IjY0IiBjeT0iNjQiIHJ4PSI1MiIgcnk9IjIyIiB0cmFuc2Zvcm09InJvdGF0ZSgxMjAgNjQgNjQpIi8+CiAgPC9nPgogIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjE0IiBmaWxsPSIjNmQzZmYwIi8+Cjwvc3ZnPgo="} };
+  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Fusion*","namespace":"https://musicbrainz.org/","version":"2026.10.1.164157","description":"Merge-recordings assistant for MusicBrainz: gather a pool of candidate recordings from a release / release group / recording page (or paste any MBID/URL), auto-match them into merge groups by ISRC / AcoustID / length / title+artist, review and adjust the groups, then submit the merges directly in the background — no MB merge page involved.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/fusion/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPkZ1c2lvbjwvdGl0bGU+CiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjOGE1Y2Y2IiBzdHJva2Utd2lkdGg9IjciPgogICAgPGVsbGlwc2UgY3g9IjY0IiBjeT0iNjQiIHJ4PSI1MiIgcnk9IjIyIi8+CiAgICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSI2NCIgcng9IjUyIiByeT0iMjIiIHRyYW5zZm9ybT0icm90YXRlKDYwIDY0IDY0KSIvPgogICAgPGVsbGlwc2UgY3g9IjY0IiBjeT0iNjQiIHJ4PSI1MiIgcnk9IjIyIiB0cmFuc2Zvcm09InJvdGF0ZSgxMjAgNjQgNjQpIi8+CiAgPC9nPgogIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjE0IiBmaWxsPSIjNmQzZmYwIi8+Cjwvc3ZnPgo="}) }) : { script: {"name":"Fusion*","namespace":"https://musicbrainz.org/","version":"2026.10.1.164157","description":"Merge-recordings assistant for MusicBrainz: gather a pool of candidate recordings from a release / release group / recording page (or paste any MBID/URL), auto-match them into merge groups by ISRC / AcoustID / length / title+artist, review and adjust the groups, then submit the merges directly in the background — no MB merge page involved.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/fusion/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPkZ1c2lvbjwvdGl0bGU+CiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjOGE1Y2Y2IiBzdHJva2Utd2lkdGg9IjciPgogICAgPGVsbGlwc2UgY3g9IjY0IiBjeT0iNjQiIHJ4PSI1MiIgcnk9IjIyIi8+CiAgICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSI2NCIgcng9IjUyIiByeT0iMjIiIHRyYW5zZm9ybT0icm90YXRlKDYwIDY0IDY0KSIvPgogICAgPGVsbGlwc2UgY3g9IjY0IiBjeT0iNjQiIHJ4PSI1MiIgcnk9IjIyIiB0cmFuc2Zvcm09InJvdGF0ZSgxMjAgNjQgNjQpIi8+CiAgPC9nPgogIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjE0IiBmaWxsPSIjNmQzZmYwIi8+Cjwvc3ZnPgo="} };
   (f=>document.readyState!=='loading'?f():document.addEventListener('DOMContentLoaded',f,{once:true}))(function(){ try { (function(){
 (function () {
 'use strict';
+// one copy per page: with String Theory and a standalone install both on, the newer one runs (#653)
+if (!mbuClaim('fusion', 'Fusion')) return;
 
 const VERSION = (typeof GM_info !== 'undefined' && GM_info && GM_info.script && GM_info.script.version) || '?';   // GM_info carries the real one; every script manager provides it (a hard-coded copy only ever went stale)
 const HELP_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/fusion/README.md';
@@ -26947,21 +27197,72 @@ function mbuHelpEl(name, label) {
 
 // One copy per page (#653). With String Theory and a standalone install of the same script
 // both on, two copies build the same element ids and fight over them: each settings window
-// fills in the other's checkboxes, rows flip between two rule sets. The first copy to start
-// claims the page; a later one stays out and says so:
+// fills in the other's checkboxes, rows flip between two rule sets. So one copy runs, the
+// one with the higher version, and the other stays off without a word; only the running
+// copy notes it in its log (majkinetor: "disable copy that has lower version without any
+// info (except in log of active copy)"):
 //   if (!mbuClaim('platform_check', 'Platform Check')) return;   // first line of the script
 // The claim is a data- attribute on <html>, which every copy sees whatever its sandbox.
+// It is decided at once, so no script starts late. The copy that starts first takes the
+// page. When it is the older one, the newer copy stays off for this page and leaves a note
+// in localStorage, and from the next page load the older copy finds the note and steps
+// aside. A note whose copy has gone (uninstalled) is cleared by the older copy after the
+// page loads, so it runs again from the load after.
+function mbuClaimVer(v) {
+    return String(v || '').split('.').map(function (n) { return parseInt(n, 10) || 0; });
+}
+function mbuClaimCmp(a, b) {
+    var x = mbuClaimVer(a), y = mbuClaimVer(b);
+    for (var i = 0; i < Math.max(x.length, y.length); i++) { var d = (x[i] || 0) - (y[i] || 0); if (d) return d < 0 ? -1 : 1; }
+    return 0;
+}
 function mbuClaim(key, label) {
     var info = (typeof GM_info !== 'undefined' && GM_info && GM_info.script) || {};
-    var name = String(info.name || label || key), mine = (name.slice(-1) === '*' ? 'String Theory' : 'standalone') + ' v' + (info.version || '?');
-    var root = document.documentElement, attr = 'data-mbu-run-' + key;
+    var name = String(info.name || label || key), ver = String(info.version || '0');
+    var mine = (name.slice(-1) === '*' ? 'String Theory' : 'standalone') + ' v' + ver;
+    var root = document.documentElement, attr = 'data-mbu-run-' + key, ev = 'mbu-claim-' + key, noteKey = 'mbu-newer-' + key;
+    var log = function (msg) { try { if (typeof mbuLog !== 'undefined' && mbuLog.active) mbuLog.active.info(msg); else if (typeof mbuToast !== 'undefined' && typeof mbuToast.log === 'function') mbuToast.log('info', msg); else console.info('[' + (label || key) + '] ' + msg); } catch (e) { /* no log */ } };
+    var note = null;
+    try { note = JSON.parse(localStorage.getItem(noteKey) || 'null'); } catch (e) { /* storage blocked */ }
+    if (note && mbuClaimCmp(note.ver, ver) <= 0) { try { localStorage.removeItem(noteKey); } catch (e) { /* storage blocked */ } note = null; }
     var held = root && root.getAttribute(attr);
-    if (!held) { if (root) root.setAttribute(attr, mine); return true; }
-    var msg = (label || key) + ' is installed twice (' + held + ' and ' + mine + '): only the ' + held + ' copy runs. Turn one of them off in your userscript manager.';
-    try { console.warn('[' + (label || key) + '] ' + msg); } catch (e) { /* no console */ }
-    var show = function () { try { mbuToast('⚠ ' + msg, { ms: 15000, kind: 'warn' }); } catch (e) { /* no toast */ } };
-    if (document.body) setTimeout(show, 0); else document.addEventListener('DOMContentLoaded', show, { once: true });
-    return false;
+    var off = function (why) {
+        // tell the running copy (any sandbox hears a DOM event), or the copy that runs after
+        // this one (it reads the attribute), and stay quiet
+        try { if (root) root.setAttribute(attr + '-off', JSON.stringify({ mine: mine, why: why })); } catch (e) { /* no attribute */ }
+        try { document.dispatchEvent(new CustomEvent(ev, { detail: JSON.stringify({ mine: mine, ver: ver, why: why }) })); } catch (e) { /* no event */ }
+        return false;
+    };
+    if (held) {
+        var heldVer = (root.getAttribute(attr + '-ver') || '0');
+        if (mbuClaimCmp(ver, heldVer) > 0) {
+            try { localStorage.setItem(noteKey, JSON.stringify({ ver: ver, mine: mine, at: Date.now() })); } catch (e) { /* storage blocked */ }
+            return off('newer, from the next page load');
+        }
+        return off('older or the same');
+    }
+    if (note) {
+        // a newer copy said it is installed: leave the page to it, unless it never shows up
+        var watch = function () {
+            setTimeout(function () {
+                if (root.getAttribute(attr)) return;
+                try { localStorage.removeItem(noteKey); } catch (e) { /* storage blocked */ }
+                try { console.info('[' + (label || key) + '] the newer copy (' + note.mine + ') did not start: this copy runs again from the next page load'); } catch (e) { /* no console */ }
+            }, 3000);
+        };
+        if (document.readyState === 'complete') watch(); else window.addEventListener('load', watch, { once: true });
+        return off('older: a newer copy runs');
+    }
+    if (root) { root.setAttribute(attr, mine); root.setAttribute(attr + '-ver', ver); }
+    var told = function (o) {
+        log((label || key) + ' is installed twice: ' + mine + ' runs, ' + (o.mine || 'another copy') + ' is switched off'
+            + (o.why === 'newer, from the next page load' ? ' for this page (it is newer and runs from the next page load)' : '') + '.');
+    };
+    document.addEventListener(ev, function (e) { var o = {}; try { o = JSON.parse(e.detail); } catch (x) { /* not ours */ } told(o); });
+    // a copy that stepped aside before this one started (it found a note): log it once the script's log is up
+    var before = root && root.getAttribute(attr + '-off');
+    if (before) setTimeout(function () { var o = {}; try { o = JSON.parse(before); } catch (x) { /* not ours */ } told(o); }, 0);
+    return true;
 }
 
 // Toast. mbuToast(msg) or mbuToast(msg, { ms, kind, at:{x,y}, action:{ label, onClick } }).
@@ -27281,6 +27582,7 @@ function mbuLog(o) {
         messages: function () { return buf.map(function (e) { return e.msg; }); },
         counts: function () { return { warn: warn, error: error }; },
     };
+    mbuLog.active = api;   // the script's own log, for helpers that note things in it (mbuClaim)
     return api;
 }
 
@@ -29203,11 +29505,13 @@ try {
 
 // ===== group_therapy (@run-at document-end) =====================================
 (function(__stGM){
-  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Group Therapy*","namespace":"https://github.com/majkinetor/musicbrainz-userscripts","version":"2026.9.30","description":"MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48ZyBmaWxsPSJub25lIiBzdHJva2U9IiM1YjZiN2EiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9Ijk0IiB5Mj0iNDIiLz48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48bGluZSB4MT0iOTQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48L2c+PGcgZmlsbD0iIzJlOWU1YiIgc3Ryb2tlPSIjMjU2ZjQzIiBzdHJva2Utd2lkdGg9IjQiPjxjaXJjbGUgY3g9IjM0IiBjeT0iNDIiIHI9IjE2Ii8+PGNpcmNsZSBjeD0iOTQiIGN5PSI0MiIgcj0iMTYiLz48Y2lyY2xlIGN4PSI2NCIgY3k9Ijk0IiByPSIxNiIvPjwvZz48L3N2Zz4="}) }) : { script: {"name":"Group Therapy*","namespace":"https://github.com/majkinetor/musicbrainz-userscripts","version":"2026.9.30","description":"MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48ZyBmaWxsPSJub25lIiBzdHJva2U9IiM1YjZiN2EiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9Ijk0IiB5Mj0iNDIiLz48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48bGluZSB4MT0iOTQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48L2c+PGcgZmlsbD0iIzJlOWU1YiIgc3Ryb2tlPSIjMjU2ZjQzIiBzdHJva2Utd2lkdGg9IjQiPjxjaXJjbGUgY3g9IjM0IiBjeT0iNDIiIHI9IjE2Ii8+PGNpcmNsZSBjeD0iOTQiIGN5PSI0MiIgcj0iMTYiLz48Y2lyY2xlIGN4PSI2NCIgY3k9Ijk0IiByPSIxNiIvPjwvZz48L3N2Zz4="} };
+  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Group Therapy*","namespace":"https://github.com/majkinetor/musicbrainz-userscripts","version":"2026.10.1.164157","description":"MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48ZyBmaWxsPSJub25lIiBzdHJva2U9IiM1YjZiN2EiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9Ijk0IiB5Mj0iNDIiLz48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48bGluZSB4MT0iOTQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48L2c+PGcgZmlsbD0iIzJlOWU1YiIgc3Ryb2tlPSIjMjU2ZjQzIiBzdHJva2Utd2lkdGg9IjQiPjxjaXJjbGUgY3g9IjM0IiBjeT0iNDIiIHI9IjE2Ii8+PGNpcmNsZSBjeD0iOTQiIGN5PSI0MiIgcj0iMTYiLz48Y2lyY2xlIGN4PSI2NCIgY3k9Ijk0IiByPSIxNiIvPjwvZz48L3N2Zz4="}) }) : { script: {"name":"Group Therapy*","namespace":"https://github.com/majkinetor/musicbrainz-userscripts","version":"2026.10.1.164157","description":"MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48ZyBmaWxsPSJub25lIiBzdHJva2U9IiM1YjZiN2EiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9Ijk0IiB5Mj0iNDIiLz48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48bGluZSB4MT0iOTQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48L2c+PGcgZmlsbD0iIzJlOWU1YiIgc3Ryb2tlPSIjMjU2ZjQzIiBzdHJva2Utd2lkdGg9IjQiPjxjaXJjbGUgY3g9IjM0IiBjeT0iNDIiIHI9IjE2Ii8+PGNpcmNsZSBjeD0iOTQiIGN5PSI0MiIgcj0iMTYiLz48Y2lyY2xlIGN4PSI2NCIgY3k9Ijk0IiByPSIxNiIvPjwvZz48L3N2Zz4="} };
   (f=>document.readyState!=='loading'?f():document.addEventListener('DOMContentLoaded',f,{once:true}))(function(){ try { (function(){
 /* eslint-disable no-undef */
 (function () {
   'use strict';
+  // one copy per page: with String Theory and a standalone install both on, the newer one runs (#653)
+  if (!mbuClaim('group_therapy', 'Group Therapy')) return;
   // the shared MusicBrainz request gate (#633) — first, so nothing can call it before its consts exist
   // <ST-NET> — generated by dev/net/sync-gate.mjs from dev/net/mb-gate.mjs — DO NOT EDIT
   const MBN_GAP = 1000;
@@ -29754,21 +30058,72 @@ try {
 
   // One copy per page (#653). With String Theory and a standalone install of the same script
   // both on, two copies build the same element ids and fight over them: each settings window
-  // fills in the other's checkboxes, rows flip between two rule sets. The first copy to start
-  // claims the page; a later one stays out and says so:
+  // fills in the other's checkboxes, rows flip between two rule sets. So one copy runs, the
+  // one with the higher version, and the other stays off without a word; only the running
+  // copy notes it in its log (majkinetor: "disable copy that has lower version without any
+  // info (except in log of active copy)"):
   //   if (!mbuClaim('platform_check', 'Platform Check')) return;   // first line of the script
   // The claim is a data- attribute on <html>, which every copy sees whatever its sandbox.
+  // It is decided at once, so no script starts late. The copy that starts first takes the
+  // page. When it is the older one, the newer copy stays off for this page and leaves a note
+  // in localStorage, and from the next page load the older copy finds the note and steps
+  // aside. A note whose copy has gone (uninstalled) is cleared by the older copy after the
+  // page loads, so it runs again from the load after.
+  function mbuClaimVer(v) {
+      return String(v || '').split('.').map(function (n) { return parseInt(n, 10) || 0; });
+  }
+  function mbuClaimCmp(a, b) {
+      var x = mbuClaimVer(a), y = mbuClaimVer(b);
+      for (var i = 0; i < Math.max(x.length, y.length); i++) { var d = (x[i] || 0) - (y[i] || 0); if (d) return d < 0 ? -1 : 1; }
+      return 0;
+  }
   function mbuClaim(key, label) {
       var info = (typeof GM_info !== 'undefined' && GM_info && GM_info.script) || {};
-      var name = String(info.name || label || key), mine = (name.slice(-1) === '*' ? 'String Theory' : 'standalone') + ' v' + (info.version || '?');
-      var root = document.documentElement, attr = 'data-mbu-run-' + key;
+      var name = String(info.name || label || key), ver = String(info.version || '0');
+      var mine = (name.slice(-1) === '*' ? 'String Theory' : 'standalone') + ' v' + ver;
+      var root = document.documentElement, attr = 'data-mbu-run-' + key, ev = 'mbu-claim-' + key, noteKey = 'mbu-newer-' + key;
+      var log = function (msg) { try { if (typeof mbuLog !== 'undefined' && mbuLog.active) mbuLog.active.info(msg); else if (typeof mbuToast !== 'undefined' && typeof mbuToast.log === 'function') mbuToast.log('info', msg); else console.info('[' + (label || key) + '] ' + msg); } catch (e) { /* no log */ } };
+      var note = null;
+      try { note = JSON.parse(localStorage.getItem(noteKey) || 'null'); } catch (e) { /* storage blocked */ }
+      if (note && mbuClaimCmp(note.ver, ver) <= 0) { try { localStorage.removeItem(noteKey); } catch (e) { /* storage blocked */ } note = null; }
       var held = root && root.getAttribute(attr);
-      if (!held) { if (root) root.setAttribute(attr, mine); return true; }
-      var msg = (label || key) + ' is installed twice (' + held + ' and ' + mine + '): only the ' + held + ' copy runs. Turn one of them off in your userscript manager.';
-      try { console.warn('[' + (label || key) + '] ' + msg); } catch (e) { /* no console */ }
-      var show = function () { try { mbuToast('⚠ ' + msg, { ms: 15000, kind: 'warn' }); } catch (e) { /* no toast */ } };
-      if (document.body) setTimeout(show, 0); else document.addEventListener('DOMContentLoaded', show, { once: true });
-      return false;
+      var off = function (why) {
+          // tell the running copy (any sandbox hears a DOM event), or the copy that runs after
+          // this one (it reads the attribute), and stay quiet
+          try { if (root) root.setAttribute(attr + '-off', JSON.stringify({ mine: mine, why: why })); } catch (e) { /* no attribute */ }
+          try { document.dispatchEvent(new CustomEvent(ev, { detail: JSON.stringify({ mine: mine, ver: ver, why: why }) })); } catch (e) { /* no event */ }
+          return false;
+      };
+      if (held) {
+          var heldVer = (root.getAttribute(attr + '-ver') || '0');
+          if (mbuClaimCmp(ver, heldVer) > 0) {
+              try { localStorage.setItem(noteKey, JSON.stringify({ ver: ver, mine: mine, at: Date.now() })); } catch (e) { /* storage blocked */ }
+              return off('newer, from the next page load');
+          }
+          return off('older or the same');
+      }
+      if (note) {
+          // a newer copy said it is installed: leave the page to it, unless it never shows up
+          var watch = function () {
+              setTimeout(function () {
+                  if (root.getAttribute(attr)) return;
+                  try { localStorage.removeItem(noteKey); } catch (e) { /* storage blocked */ }
+                  try { console.info('[' + (label || key) + '] the newer copy (' + note.mine + ') did not start: this copy runs again from the next page load'); } catch (e) { /* no console */ }
+              }, 3000);
+          };
+          if (document.readyState === 'complete') watch(); else window.addEventListener('load', watch, { once: true });
+          return off('older: a newer copy runs');
+      }
+      if (root) { root.setAttribute(attr, mine); root.setAttribute(attr + '-ver', ver); }
+      var told = function (o) {
+          log((label || key) + ' is installed twice: ' + mine + ' runs, ' + (o.mine || 'another copy') + ' is switched off'
+              + (o.why === 'newer, from the next page load' ? ' for this page (it is newer and runs from the next page load)' : '') + '.');
+      };
+      document.addEventListener(ev, function (e) { var o = {}; try { o = JSON.parse(e.detail); } catch (x) { /* not ours */ } told(o); });
+      // a copy that stepped aside before this one started (it found a note): log it once the script's log is up
+      var before = root && root.getAttribute(attr + '-off');
+      if (before) setTimeout(function () { var o = {}; try { o = JSON.parse(before); } catch (x) { /* not ours */ } told(o); }, 0);
+      return true;
   }
 
   // Toast. mbuToast(msg) or mbuToast(msg, { ms, kind, at:{x,y}, action:{ label, onClick } }).
@@ -30088,6 +30443,7 @@ try {
           messages: function () { return buf.map(function (e) { return e.msg; }); },
           counts: function () { return { warn: warn, error: error }; },
       };
+      mbuLog.active = api;   // the script's own log, for helpers that note things in it (mbuClaim)
       return api;
   }
 
@@ -35190,7 +35546,7 @@ Created this ${kind} while adding credits parsed from text to ${relUrl}`;
 
 // ===== isrc_scout (@run-at document-start) ========================================
 (function(__stGM){
-  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"ISRC Scout*","namespace":"https://musicbrainz.org/","version":"2026.10.1","description":"Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify / Beatport / Tidal / Volumo / HDtracks / Qobuz, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/isrc_scout/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPklTUkMgU2NvdXQ8L3RpdGxlPgogICAgPHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPgogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjQwIi8+CiAgICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyNiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2U9IiNiOWEzZTgiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPgogIDwvZz4KICA8bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+Cjwvc3ZnPgo="}) }) : { script: {"name":"ISRC Scout*","namespace":"https://musicbrainz.org/","version":"2026.10.1","description":"Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify / Beatport / Tidal / Volumo / HDtracks / Qobuz, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/isrc_scout/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPklTUkMgU2NvdXQ8L3RpdGxlPgogICAgPHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPgogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjQwIi8+CiAgICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyNiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2U9IiNiOWEzZTgiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPgogIDwvZz4KICA8bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+Cjwvc3ZnPgo="} };
+  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"ISRC Scout*","namespace":"https://musicbrainz.org/","version":"2026.10.1.164157","description":"Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify / Beatport / Tidal / Volumo / HDtracks / Qobuz, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/isrc_scout/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPklTUkMgU2NvdXQ8L3RpdGxlPgogICAgPHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPgogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjQwIi8+CiAgICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyNiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2U9IiNiOWEzZTgiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPgogIDwvZz4KICA8bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+Cjwvc3ZnPgo="}) }) : { script: {"name":"ISRC Scout*","namespace":"https://musicbrainz.org/","version":"2026.10.1.164157","description":"Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify / Beatport / Tidal / Volumo / HDtracks / Qobuz, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/isrc_scout/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPklTUkMgU2NvdXQ8L3RpdGxlPgogICAgPHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPgogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjQwIi8+CiAgICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyNiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2U9IiNiOWEzZTgiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPgogIDwvZz4KICA8bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+Cjwvc3ZnPgo="} };
   (f=>f())(function(){ try { (function(){
 /*
  * ─────────────────────────────────────────────────────────────────────────
@@ -35212,6 +35568,8 @@ Created this ${kind} while adding credits parsed from text to ${relUrl}`;
 
 (function () {
   'use strict';
+  // one copy per page: with String Theory and a standalone install both on, the newer one runs (#653)
+  if (!mbuClaim('isrc_scout', 'ISRC Scout')) return;
   // the shared MusicBrainz request gate (#633) — first, so nothing can call it before its consts exist
   // <ST-NET> — generated by dev/net/sync-gate.mjs from dev/net/mb-gate.mjs — DO NOT EDIT
   const MBN_GAP = 1000;
@@ -35746,21 +36104,72 @@ Created this ${kind} while adding credits parsed from text to ${relUrl}`;
 
   // One copy per page (#653). With String Theory and a standalone install of the same script
   // both on, two copies build the same element ids and fight over them: each settings window
-  // fills in the other's checkboxes, rows flip between two rule sets. The first copy to start
-  // claims the page; a later one stays out and says so:
+  // fills in the other's checkboxes, rows flip between two rule sets. So one copy runs, the
+  // one with the higher version, and the other stays off without a word; only the running
+  // copy notes it in its log (majkinetor: "disable copy that has lower version without any
+  // info (except in log of active copy)"):
   //   if (!mbuClaim('platform_check', 'Platform Check')) return;   // first line of the script
   // The claim is a data- attribute on <html>, which every copy sees whatever its sandbox.
+  // It is decided at once, so no script starts late. The copy that starts first takes the
+  // page. When it is the older one, the newer copy stays off for this page and leaves a note
+  // in localStorage, and from the next page load the older copy finds the note and steps
+  // aside. A note whose copy has gone (uninstalled) is cleared by the older copy after the
+  // page loads, so it runs again from the load after.
+  function mbuClaimVer(v) {
+      return String(v || '').split('.').map(function (n) { return parseInt(n, 10) || 0; });
+  }
+  function mbuClaimCmp(a, b) {
+      var x = mbuClaimVer(a), y = mbuClaimVer(b);
+      for (var i = 0; i < Math.max(x.length, y.length); i++) { var d = (x[i] || 0) - (y[i] || 0); if (d) return d < 0 ? -1 : 1; }
+      return 0;
+  }
   function mbuClaim(key, label) {
       var info = (typeof GM_info !== 'undefined' && GM_info && GM_info.script) || {};
-      var name = String(info.name || label || key), mine = (name.slice(-1) === '*' ? 'String Theory' : 'standalone') + ' v' + (info.version || '?');
-      var root = document.documentElement, attr = 'data-mbu-run-' + key;
+      var name = String(info.name || label || key), ver = String(info.version || '0');
+      var mine = (name.slice(-1) === '*' ? 'String Theory' : 'standalone') + ' v' + ver;
+      var root = document.documentElement, attr = 'data-mbu-run-' + key, ev = 'mbu-claim-' + key, noteKey = 'mbu-newer-' + key;
+      var log = function (msg) { try { if (typeof mbuLog !== 'undefined' && mbuLog.active) mbuLog.active.info(msg); else if (typeof mbuToast !== 'undefined' && typeof mbuToast.log === 'function') mbuToast.log('info', msg); else console.info('[' + (label || key) + '] ' + msg); } catch (e) { /* no log */ } };
+      var note = null;
+      try { note = JSON.parse(localStorage.getItem(noteKey) || 'null'); } catch (e) { /* storage blocked */ }
+      if (note && mbuClaimCmp(note.ver, ver) <= 0) { try { localStorage.removeItem(noteKey); } catch (e) { /* storage blocked */ } note = null; }
       var held = root && root.getAttribute(attr);
-      if (!held) { if (root) root.setAttribute(attr, mine); return true; }
-      var msg = (label || key) + ' is installed twice (' + held + ' and ' + mine + '): only the ' + held + ' copy runs. Turn one of them off in your userscript manager.';
-      try { console.warn('[' + (label || key) + '] ' + msg); } catch (e) { /* no console */ }
-      var show = function () { try { mbuToast('⚠ ' + msg, { ms: 15000, kind: 'warn' }); } catch (e) { /* no toast */ } };
-      if (document.body) setTimeout(show, 0); else document.addEventListener('DOMContentLoaded', show, { once: true });
-      return false;
+      var off = function (why) {
+          // tell the running copy (any sandbox hears a DOM event), or the copy that runs after
+          // this one (it reads the attribute), and stay quiet
+          try { if (root) root.setAttribute(attr + '-off', JSON.stringify({ mine: mine, why: why })); } catch (e) { /* no attribute */ }
+          try { document.dispatchEvent(new CustomEvent(ev, { detail: JSON.stringify({ mine: mine, ver: ver, why: why }) })); } catch (e) { /* no event */ }
+          return false;
+      };
+      if (held) {
+          var heldVer = (root.getAttribute(attr + '-ver') || '0');
+          if (mbuClaimCmp(ver, heldVer) > 0) {
+              try { localStorage.setItem(noteKey, JSON.stringify({ ver: ver, mine: mine, at: Date.now() })); } catch (e) { /* storage blocked */ }
+              return off('newer, from the next page load');
+          }
+          return off('older or the same');
+      }
+      if (note) {
+          // a newer copy said it is installed: leave the page to it, unless it never shows up
+          var watch = function () {
+              setTimeout(function () {
+                  if (root.getAttribute(attr)) return;
+                  try { localStorage.removeItem(noteKey); } catch (e) { /* storage blocked */ }
+                  try { console.info('[' + (label || key) + '] the newer copy (' + note.mine + ') did not start: this copy runs again from the next page load'); } catch (e) { /* no console */ }
+              }, 3000);
+          };
+          if (document.readyState === 'complete') watch(); else window.addEventListener('load', watch, { once: true });
+          return off('older: a newer copy runs');
+      }
+      if (root) { root.setAttribute(attr, mine); root.setAttribute(attr + '-ver', ver); }
+      var told = function (o) {
+          log((label || key) + ' is installed twice: ' + mine + ' runs, ' + (o.mine || 'another copy') + ' is switched off'
+              + (o.why === 'newer, from the next page load' ? ' for this page (it is newer and runs from the next page load)' : '') + '.');
+      };
+      document.addEventListener(ev, function (e) { var o = {}; try { o = JSON.parse(e.detail); } catch (x) { /* not ours */ } told(o); });
+      // a copy that stepped aside before this one started (it found a note): log it once the script's log is up
+      var before = root && root.getAttribute(attr + '-off');
+      if (before) setTimeout(function () { var o = {}; try { o = JSON.parse(before); } catch (x) { /* not ours */ } told(o); }, 0);
+      return true;
   }
 
   // Toast. mbuToast(msg) or mbuToast(msg, { ms, kind, at:{x,y}, action:{ label, onClick } }).
@@ -36080,6 +36489,7 @@ Created this ${kind} while adding credits parsed from text to ${relUrl}`;
           messages: function () { return buf.map(function (e) { return e.msg; }); },
           counts: function () { return { warn: warn, error: error }; },
       };
+      mbuLog.active = api;   // the script's own log, for helpers that note things in it (mbuClaim)
       return api;
   }
 
@@ -41973,7 +42383,7 @@ Created this ${kind} while adding credits parsed from text to ${relUrl}`;
 
 // ===== mammoth (@run-at document-idle) ===========================================
 (function(__stGM){
-  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Mammoth*","namespace":"https://musicbrainz.org/","version":"2026.9.30","description":"Edit-note memory for MusicBrainz: auto-remembers your last edit notes and lets you save reusable ones, recalling them from a compact panel beside the edit-note field on every edit form. A nicer replacement for Elephant Editor.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/mammoth/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48dGV4dCB4PSI2NCIgeT0iNjgiIGZvbnQtc2l6ZT0iMTA0IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0iY2VudHJhbCI+8J+mozwvdGV4dD48L3N2Zz4="}) }) : { script: {"name":"Mammoth*","namespace":"https://musicbrainz.org/","version":"2026.9.30","description":"Edit-note memory for MusicBrainz: auto-remembers your last edit notes and lets you save reusable ones, recalling them from a compact panel beside the edit-note field on every edit form. A nicer replacement for Elephant Editor.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/mammoth/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48dGV4dCB4PSI2NCIgeT0iNjgiIGZvbnQtc2l6ZT0iMTA0IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0iY2VudHJhbCI+8J+mozwvdGV4dD48L3N2Zz4="} };
+  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Mammoth*","namespace":"https://musicbrainz.org/","version":"2026.10.1.164157","description":"Edit-note memory for MusicBrainz: auto-remembers your last edit notes and lets you save reusable ones, recalling them from a compact panel beside the edit-note field on every edit form. A nicer replacement for Elephant Editor.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/mammoth/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48dGV4dCB4PSI2NCIgeT0iNjgiIGZvbnQtc2l6ZT0iMTA0IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0iY2VudHJhbCI+8J+mozwvdGV4dD48L3N2Zz4="}) }) : { script: {"name":"Mammoth*","namespace":"https://musicbrainz.org/","version":"2026.10.1.164157","description":"Edit-note memory for MusicBrainz: auto-remembers your last edit notes and lets you save reusable ones, recalling them from a compact panel beside the edit-note field on every edit form. A nicer replacement for Elephant Editor.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/mammoth/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48dGV4dCB4PSI2NCIgeT0iNjgiIGZvbnQtc2l6ZT0iMTA0IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0iY2VudHJhbCI+8J+mozwvdGV4dD48L3N2Zz4="} };
   (f=>document.readyState!=='loading'?f():document.addEventListener('DOMContentLoaded',f,{once:true}))(function(){ try { (function(){
 //
 // Mammoth puts a compact saved-notes panel to the RIGHT of MusicBrainz's native
@@ -41996,6 +42406,8 @@ Created this ${kind} while adding credits parsed from text to ${relUrl}`;
 
 (function () {
   'use strict';
+  // one copy per page: with String Theory and a standalone install both on, the newer one runs (#653)
+  if (!mbuClaim('mammoth', 'Mammoth')) return;
 
   const KEY = 'mammoth:data';
   const SKEY = 'mammoth:settings';
@@ -42235,21 +42647,72 @@ Created this ${kind} while adding credits parsed from text to ${relUrl}`;
 
   // One copy per page (#653). With String Theory and a standalone install of the same script
   // both on, two copies build the same element ids and fight over them: each settings window
-  // fills in the other's checkboxes, rows flip between two rule sets. The first copy to start
-  // claims the page; a later one stays out and says so:
+  // fills in the other's checkboxes, rows flip between two rule sets. So one copy runs, the
+  // one with the higher version, and the other stays off without a word; only the running
+  // copy notes it in its log (majkinetor: "disable copy that has lower version without any
+  // info (except in log of active copy)"):
   //   if (!mbuClaim('platform_check', 'Platform Check')) return;   // first line of the script
   // The claim is a data- attribute on <html>, which every copy sees whatever its sandbox.
+  // It is decided at once, so no script starts late. The copy that starts first takes the
+  // page. When it is the older one, the newer copy stays off for this page and leaves a note
+  // in localStorage, and from the next page load the older copy finds the note and steps
+  // aside. A note whose copy has gone (uninstalled) is cleared by the older copy after the
+  // page loads, so it runs again from the load after.
+  function mbuClaimVer(v) {
+      return String(v || '').split('.').map(function (n) { return parseInt(n, 10) || 0; });
+  }
+  function mbuClaimCmp(a, b) {
+      var x = mbuClaimVer(a), y = mbuClaimVer(b);
+      for (var i = 0; i < Math.max(x.length, y.length); i++) { var d = (x[i] || 0) - (y[i] || 0); if (d) return d < 0 ? -1 : 1; }
+      return 0;
+  }
   function mbuClaim(key, label) {
       var info = (typeof GM_info !== 'undefined' && GM_info && GM_info.script) || {};
-      var name = String(info.name || label || key), mine = (name.slice(-1) === '*' ? 'String Theory' : 'standalone') + ' v' + (info.version || '?');
-      var root = document.documentElement, attr = 'data-mbu-run-' + key;
+      var name = String(info.name || label || key), ver = String(info.version || '0');
+      var mine = (name.slice(-1) === '*' ? 'String Theory' : 'standalone') + ' v' + ver;
+      var root = document.documentElement, attr = 'data-mbu-run-' + key, ev = 'mbu-claim-' + key, noteKey = 'mbu-newer-' + key;
+      var log = function (msg) { try { if (typeof mbuLog !== 'undefined' && mbuLog.active) mbuLog.active.info(msg); else if (typeof mbuToast !== 'undefined' && typeof mbuToast.log === 'function') mbuToast.log('info', msg); else console.info('[' + (label || key) + '] ' + msg); } catch (e) { /* no log */ } };
+      var note = null;
+      try { note = JSON.parse(localStorage.getItem(noteKey) || 'null'); } catch (e) { /* storage blocked */ }
+      if (note && mbuClaimCmp(note.ver, ver) <= 0) { try { localStorage.removeItem(noteKey); } catch (e) { /* storage blocked */ } note = null; }
       var held = root && root.getAttribute(attr);
-      if (!held) { if (root) root.setAttribute(attr, mine); return true; }
-      var msg = (label || key) + ' is installed twice (' + held + ' and ' + mine + '): only the ' + held + ' copy runs. Turn one of them off in your userscript manager.';
-      try { console.warn('[' + (label || key) + '] ' + msg); } catch (e) { /* no console */ }
-      var show = function () { try { mbuToast('⚠ ' + msg, { ms: 15000, kind: 'warn' }); } catch (e) { /* no toast */ } };
-      if (document.body) setTimeout(show, 0); else document.addEventListener('DOMContentLoaded', show, { once: true });
-      return false;
+      var off = function (why) {
+          // tell the running copy (any sandbox hears a DOM event), or the copy that runs after
+          // this one (it reads the attribute), and stay quiet
+          try { if (root) root.setAttribute(attr + '-off', JSON.stringify({ mine: mine, why: why })); } catch (e) { /* no attribute */ }
+          try { document.dispatchEvent(new CustomEvent(ev, { detail: JSON.stringify({ mine: mine, ver: ver, why: why }) })); } catch (e) { /* no event */ }
+          return false;
+      };
+      if (held) {
+          var heldVer = (root.getAttribute(attr + '-ver') || '0');
+          if (mbuClaimCmp(ver, heldVer) > 0) {
+              try { localStorage.setItem(noteKey, JSON.stringify({ ver: ver, mine: mine, at: Date.now() })); } catch (e) { /* storage blocked */ }
+              return off('newer, from the next page load');
+          }
+          return off('older or the same');
+      }
+      if (note) {
+          // a newer copy said it is installed: leave the page to it, unless it never shows up
+          var watch = function () {
+              setTimeout(function () {
+                  if (root.getAttribute(attr)) return;
+                  try { localStorage.removeItem(noteKey); } catch (e) { /* storage blocked */ }
+                  try { console.info('[' + (label || key) + '] the newer copy (' + note.mine + ') did not start: this copy runs again from the next page load'); } catch (e) { /* no console */ }
+              }, 3000);
+          };
+          if (document.readyState === 'complete') watch(); else window.addEventListener('load', watch, { once: true });
+          return off('older: a newer copy runs');
+      }
+      if (root) { root.setAttribute(attr, mine); root.setAttribute(attr + '-ver', ver); }
+      var told = function (o) {
+          log((label || key) + ' is installed twice: ' + mine + ' runs, ' + (o.mine || 'another copy') + ' is switched off'
+              + (o.why === 'newer, from the next page load' ? ' for this page (it is newer and runs from the next page load)' : '') + '.');
+      };
+      document.addEventListener(ev, function (e) { var o = {}; try { o = JSON.parse(e.detail); } catch (x) { /* not ours */ } told(o); });
+      // a copy that stepped aside before this one started (it found a note): log it once the script's log is up
+      var before = root && root.getAttribute(attr + '-off');
+      if (before) setTimeout(function () { var o = {}; try { o = JSON.parse(before); } catch (x) { /* not ours */ } told(o); }, 0);
+      return true;
   }
 
   // Toast. mbuToast(msg) or mbuToast(msg, { ms, kind, at:{x,y}, action:{ label, onClick } }).
@@ -42569,6 +43032,7 @@ Created this ${kind} while adding credits parsed from text to ${relUrl}`;
           messages: function () { return buf.map(function (e) { return e.msg; }); },
           counts: function () { return { warn: warn, error: error }; },
       };
+      mbuLog.active = api;   // the script's own log, for helpers that note things in it (mbuClaim)
       return api;
   }
 
@@ -44251,12 +44715,12 @@ Created this ${kind} while adding credits parsed from text to ${relUrl}`;
 
 // ===== platform_check (@run-at document-end) ====================================
 (function(__stGM){
-  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Platform Check*","namespace":"http://tampermonkey.net/","version":"2026.10.1.145904","description":"Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/platform_check/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+DQogIDx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CiAgDQogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJhMWE1MiIgc3Ryb2tlLXdpZHRoPSI5IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik00MCA4OCBBMzQgMzQgMCAwIDEgNDAgNDAiLz4NCiAgICA8cGF0aCBkPSJNMjkgOTkgQTUwIDUwIDAgMCAxIDI5IDI5Ii8+DQogICAgPHBhdGggZD0iTTg4IDg4IEEzNCAzNCAwIDAgMCA4OCA0MCIvPg0KICAgIDxwYXRoIGQ9Ik05OSA5OSBBNTAgNTAgMCAwIDAgOTkgMjkiLz4NCiAgPC9nPg0KICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyMCIgZmlsbD0iI2U4MjAxYSIvPg0KPC9zdmc+DQo="}) }) : { script: {"name":"Platform Check*","namespace":"http://tampermonkey.net/","version":"2026.10.1.145904","description":"Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/platform_check/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+DQogIDx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CiAgDQogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJhMWE1MiIgc3Ryb2tlLXdpZHRoPSI5IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik00MCA4OCBBMzQgMzQgMCAwIDEgNDAgNDAiLz4NCiAgICA8cGF0aCBkPSJNMjkgOTkgQTUwIDUwIDAgMCAxIDI5IDI5Ii8+DQogICAgPHBhdGggZD0iTTg4IDg4IEEzNCAzNCAwIDAgMCA4OCA0MCIvPg0KICAgIDxwYXRoIGQ9Ik05OSA5OSBBNTAgNTAgMCAwIDAgOTkgMjkiLz4NCiAgPC9nPg0KICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyMCIgZmlsbD0iI2U4MjAxYSIvPg0KPC9zdmc+DQo="} };
+  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Platform Check*","namespace":"http://tampermonkey.net/","version":"2026.10.1.164157","description":"Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/platform_check/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+DQogIDx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CiAgDQogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJhMWE1MiIgc3Ryb2tlLXdpZHRoPSI5IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik00MCA4OCBBMzQgMzQgMCAwIDEgNDAgNDAiLz4NCiAgICA8cGF0aCBkPSJNMjkgOTkgQTUwIDUwIDAgMCAxIDI5IDI5Ii8+DQogICAgPHBhdGggZD0iTTg4IDg4IEEzNCAzNCAwIDAgMCA4OCA0MCIvPg0KICAgIDxwYXRoIGQ9Ik05OSA5OSBBNTAgNTAgMCAwIDAgOTkgMjkiLz4NCiAgPC9nPg0KICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyMCIgZmlsbD0iI2U4MjAxYSIvPg0KPC9zdmc+DQo="}) }) : { script: {"name":"Platform Check*","namespace":"http://tampermonkey.net/","version":"2026.10.1.164157","description":"Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/platform_check/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+DQogIDx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CiAgDQogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJhMWE1MiIgc3Ryb2tlLXdpZHRoPSI5IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik00MCA4OCBBMzQgMzQgMCAwIDEgNDAgNDAiLz4NCiAgICA8cGF0aCBkPSJNMjkgOTkgQTUwIDUwIDAgMCAxIDI5IDI5Ii8+DQogICAgPHBhdGggZD0iTTg4IDg4IEEzNCAzNCAwIDAgMCA4OCA0MCIvPg0KICAgIDxwYXRoIGQ9Ik05OSA5OSBBNTAgNTAgMCAwIDAgOTkgMjkiLz4NCiAgPC9nPg0KICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyMCIgZmlsbD0iI2U4MjAxYSIvPg0KPC9zdmc+DQo="} };
   (f=>document.readyState!=='loading'?f():document.addEventListener('DOMContentLoaded',f,{once:true}))(function(){ try { (function(){
 (function () {
 'use strict';
 
-// one copy per page: String Theory and a standalone install side by side fight over the same ids (#653)
+// one copy per page: with String Theory and a standalone install both on, the newer one runs (#653)
 if (!mbuClaim('platform_check', 'Platform Check')) return;
 
 // the shared MusicBrainz request gate (#633) — first, so nothing can call it before its consts exist
@@ -45331,21 +45795,72 @@ function mbuHelpEl(name, label) {
 
 // One copy per page (#653). With String Theory and a standalone install of the same script
 // both on, two copies build the same element ids and fight over them: each settings window
-// fills in the other's checkboxes, rows flip between two rule sets. The first copy to start
-// claims the page; a later one stays out and says so:
+// fills in the other's checkboxes, rows flip between two rule sets. So one copy runs, the
+// one with the higher version, and the other stays off without a word; only the running
+// copy notes it in its log (majkinetor: "disable copy that has lower version without any
+// info (except in log of active copy)"):
 //   if (!mbuClaim('platform_check', 'Platform Check')) return;   // first line of the script
 // The claim is a data- attribute on <html>, which every copy sees whatever its sandbox.
+// It is decided at once, so no script starts late. The copy that starts first takes the
+// page. When it is the older one, the newer copy stays off for this page and leaves a note
+// in localStorage, and from the next page load the older copy finds the note and steps
+// aside. A note whose copy has gone (uninstalled) is cleared by the older copy after the
+// page loads, so it runs again from the load after.
+function mbuClaimVer(v) {
+    return String(v || '').split('.').map(function (n) { return parseInt(n, 10) || 0; });
+}
+function mbuClaimCmp(a, b) {
+    var x = mbuClaimVer(a), y = mbuClaimVer(b);
+    for (var i = 0; i < Math.max(x.length, y.length); i++) { var d = (x[i] || 0) - (y[i] || 0); if (d) return d < 0 ? -1 : 1; }
+    return 0;
+}
 function mbuClaim(key, label) {
     var info = (typeof GM_info !== 'undefined' && GM_info && GM_info.script) || {};
-    var name = String(info.name || label || key), mine = (name.slice(-1) === '*' ? 'String Theory' : 'standalone') + ' v' + (info.version || '?');
-    var root = document.documentElement, attr = 'data-mbu-run-' + key;
+    var name = String(info.name || label || key), ver = String(info.version || '0');
+    var mine = (name.slice(-1) === '*' ? 'String Theory' : 'standalone') + ' v' + ver;
+    var root = document.documentElement, attr = 'data-mbu-run-' + key, ev = 'mbu-claim-' + key, noteKey = 'mbu-newer-' + key;
+    var log = function (msg) { try { if (typeof mbuLog !== 'undefined' && mbuLog.active) mbuLog.active.info(msg); else if (typeof mbuToast !== 'undefined' && typeof mbuToast.log === 'function') mbuToast.log('info', msg); else console.info('[' + (label || key) + '] ' + msg); } catch (e) { /* no log */ } };
+    var note = null;
+    try { note = JSON.parse(localStorage.getItem(noteKey) || 'null'); } catch (e) { /* storage blocked */ }
+    if (note && mbuClaimCmp(note.ver, ver) <= 0) { try { localStorage.removeItem(noteKey); } catch (e) { /* storage blocked */ } note = null; }
     var held = root && root.getAttribute(attr);
-    if (!held) { if (root) root.setAttribute(attr, mine); return true; }
-    var msg = (label || key) + ' is installed twice (' + held + ' and ' + mine + '): only the ' + held + ' copy runs. Turn one of them off in your userscript manager.';
-    try { console.warn('[' + (label || key) + '] ' + msg); } catch (e) { /* no console */ }
-    var show = function () { try { mbuToast('⚠ ' + msg, { ms: 15000, kind: 'warn' }); } catch (e) { /* no toast */ } };
-    if (document.body) setTimeout(show, 0); else document.addEventListener('DOMContentLoaded', show, { once: true });
-    return false;
+    var off = function (why) {
+        // tell the running copy (any sandbox hears a DOM event), or the copy that runs after
+        // this one (it reads the attribute), and stay quiet
+        try { if (root) root.setAttribute(attr + '-off', JSON.stringify({ mine: mine, why: why })); } catch (e) { /* no attribute */ }
+        try { document.dispatchEvent(new CustomEvent(ev, { detail: JSON.stringify({ mine: mine, ver: ver, why: why }) })); } catch (e) { /* no event */ }
+        return false;
+    };
+    if (held) {
+        var heldVer = (root.getAttribute(attr + '-ver') || '0');
+        if (mbuClaimCmp(ver, heldVer) > 0) {
+            try { localStorage.setItem(noteKey, JSON.stringify({ ver: ver, mine: mine, at: Date.now() })); } catch (e) { /* storage blocked */ }
+            return off('newer, from the next page load');
+        }
+        return off('older or the same');
+    }
+    if (note) {
+        // a newer copy said it is installed: leave the page to it, unless it never shows up
+        var watch = function () {
+            setTimeout(function () {
+                if (root.getAttribute(attr)) return;
+                try { localStorage.removeItem(noteKey); } catch (e) { /* storage blocked */ }
+                try { console.info('[' + (label || key) + '] the newer copy (' + note.mine + ') did not start: this copy runs again from the next page load'); } catch (e) { /* no console */ }
+            }, 3000);
+        };
+        if (document.readyState === 'complete') watch(); else window.addEventListener('load', watch, { once: true });
+        return off('older: a newer copy runs');
+    }
+    if (root) { root.setAttribute(attr, mine); root.setAttribute(attr + '-ver', ver); }
+    var told = function (o) {
+        log((label || key) + ' is installed twice: ' + mine + ' runs, ' + (o.mine || 'another copy') + ' is switched off'
+            + (o.why === 'newer, from the next page load' ? ' for this page (it is newer and runs from the next page load)' : '') + '.');
+    };
+    document.addEventListener(ev, function (e) { var o = {}; try { o = JSON.parse(e.detail); } catch (x) { /* not ours */ } told(o); });
+    // a copy that stepped aside before this one started (it found a note): log it once the script's log is up
+    var before = root && root.getAttribute(attr + '-off');
+    if (before) setTimeout(function () { var o = {}; try { o = JSON.parse(before); } catch (x) { /* not ours */ } told(o); }, 0);
+    return true;
 }
 
 // Toast. mbuToast(msg) or mbuToast(msg, { ms, kind, at:{x,y}, action:{ label, onClick } }).
@@ -45665,6 +46180,7 @@ function mbuLog(o) {
         messages: function () { return buf.map(function (e) { return e.msg; }); },
         counts: function () { return { warn: warn, error: error }; },
     };
+    mbuLog.active = api;   // the script's own log, for helpers that note things in it (mbuClaim)
     return api;
 }
 

@@ -36,6 +36,7 @@ import { readFile, writeFile, mkdir, watch as fsWatch } from 'node:fs/promises';
 import { createServer }                                  from 'node:http';
 import { execSync }                                      from 'node:child_process';
 import { build as esBuild, context as esContext }       from 'esbuild';
+import { UI_JS }                                         from '../../dev/ui/ui-components.mjs';
 
 const META_SRC = 'src/meta.txt';
 const ENTRY    = 'src/credit_hoarder.user.js';
@@ -84,6 +85,27 @@ function escapeControls(code) {
     return code.replace(/[\x00-\x08\x0b\x0c\x0e-\x1f\x7f]/g, c => '\\x' + c.charCodeAt(0).toString(16).padStart(2, '0'));
 }
 
+/**
+ * One copy per page (#653): the shared guard runs before any module's side effects. The
+ * shared UI block sits inside insertDiscogsBar, out of reach at the top, so its claim
+ * helpers are lifted from dev/ui/ui-components.mjs and placed at the head of the bundle.
+ */
+function claimFirst(bundle) {
+    const fn = name => {
+        const at = UI_JS.indexOf('function ' + name + '(');
+        const end = at < 0 ? -1 : UI_JS.indexOf('\n}\n', at);
+        const m = end < 0 ? null : [UI_JS.slice(at, end + 3)];
+        if (!m) throw new Error('build: ' + name + ' not found in ui-components');
+        return m[0];
+    };
+    const head = bundle.match(/^\(\(\) => \{\r?\n/);
+    if (!head) throw new Error('build: the bundle does not open with an arrow IIFE');
+    const guard = '// one copy per page: with String Theory and a standalone install both on, the newer one runs (#653)\n'
+        + ['mbuClaimVer', 'mbuClaimCmp', 'mbuClaim'].map(fn).join('')
+        + "if (!mbuClaim('credit_hoarder', 'Credit Hoarder')) return;\n";
+    return head[0] + guard + bundle.slice(head[0].length);
+}
+
 const esbuildOptions = {
     entryPoints: [ENTRY],
     bundle:      true,
@@ -104,7 +126,7 @@ async function build() {
         readFile(META_SRC, 'utf8'),
         esBuild(esbuildOptions),
     ]);
-    const bundle = escapeControls(result.outputFiles[0].text);
+    const bundle = claimFirst(escapeControls(result.outputFiles[0].text));
     const out = stampVersion(meta).trimEnd() + '\n\n' + bundle;
     await mkdir('dist', { recursive: true });
     await writeFile(OUT, out);

@@ -131,21 +131,72 @@ export function insertDiscogsBar(discogsUrl, sources = {}, meta = {}) {
 
     // One copy per page (#653). With String Theory and a standalone install of the same script
     // both on, two copies build the same element ids and fight over them: each settings window
-    // fills in the other's checkboxes, rows flip between two rule sets. The first copy to start
-    // claims the page; a later one stays out and says so:
+    // fills in the other's checkboxes, rows flip between two rule sets. So one copy runs, the
+    // one with the higher version, and the other stays off without a word; only the running
+    // copy notes it in its log (majkinetor: "disable copy that has lower version without any
+    // info (except in log of active copy)"):
     //   if (!mbuClaim('platform_check', 'Platform Check')) return;   // first line of the script
     // The claim is a data- attribute on <html>, which every copy sees whatever its sandbox.
+    // It is decided at once, so no script starts late. The copy that starts first takes the
+    // page. When it is the older one, the newer copy stays off for this page and leaves a note
+    // in localStorage, and from the next page load the older copy finds the note and steps
+    // aside. A note whose copy has gone (uninstalled) is cleared by the older copy after the
+    // page loads, so it runs again from the load after.
+    function mbuClaimVer(v) {
+        return String(v || '').split('.').map(function (n) { return parseInt(n, 10) || 0; });
+    }
+    function mbuClaimCmp(a, b) {
+        var x = mbuClaimVer(a), y = mbuClaimVer(b);
+        for (var i = 0; i < Math.max(x.length, y.length); i++) { var d = (x[i] || 0) - (y[i] || 0); if (d) return d < 0 ? -1 : 1; }
+        return 0;
+    }
     function mbuClaim(key, label) {
         var info = (typeof GM_info !== 'undefined' && GM_info && GM_info.script) || {};
-        var name = String(info.name || label || key), mine = (name.slice(-1) === '*' ? 'String Theory' : 'standalone') + ' v' + (info.version || '?');
-        var root = document.documentElement, attr = 'data-mbu-run-' + key;
+        var name = String(info.name || label || key), ver = String(info.version || '0');
+        var mine = (name.slice(-1) === '*' ? 'String Theory' : 'standalone') + ' v' + ver;
+        var root = document.documentElement, attr = 'data-mbu-run-' + key, ev = 'mbu-claim-' + key, noteKey = 'mbu-newer-' + key;
+        var log = function (msg) { try { if (typeof mbuLog !== 'undefined' && mbuLog.active) mbuLog.active.info(msg); else if (typeof mbuToast !== 'undefined' && typeof mbuToast.log === 'function') mbuToast.log('info', msg); else console.info('[' + (label || key) + '] ' + msg); } catch (e) { /* no log */ } };
+        var note = null;
+        try { note = JSON.parse(localStorage.getItem(noteKey) || 'null'); } catch (e) { /* storage blocked */ }
+        if (note && mbuClaimCmp(note.ver, ver) <= 0) { try { localStorage.removeItem(noteKey); } catch (e) { /* storage blocked */ } note = null; }
         var held = root && root.getAttribute(attr);
-        if (!held) { if (root) root.setAttribute(attr, mine); return true; }
-        var msg = (label || key) + ' is installed twice (' + held + ' and ' + mine + '): only the ' + held + ' copy runs. Turn one of them off in your userscript manager.';
-        try { console.warn('[' + (label || key) + '] ' + msg); } catch (e) { /* no console */ }
-        var show = function () { try { mbuToast('⚠ ' + msg, { ms: 15000, kind: 'warn' }); } catch (e) { /* no toast */ } };
-        if (document.body) setTimeout(show, 0); else document.addEventListener('DOMContentLoaded', show, { once: true });
-        return false;
+        var off = function (why) {
+            // tell the running copy (any sandbox hears a DOM event), or the copy that runs after
+            // this one (it reads the attribute), and stay quiet
+            try { if (root) root.setAttribute(attr + '-off', JSON.stringify({ mine: mine, why: why })); } catch (e) { /* no attribute */ }
+            try { document.dispatchEvent(new CustomEvent(ev, { detail: JSON.stringify({ mine: mine, ver: ver, why: why }) })); } catch (e) { /* no event */ }
+            return false;
+        };
+        if (held) {
+            var heldVer = (root.getAttribute(attr + '-ver') || '0');
+            if (mbuClaimCmp(ver, heldVer) > 0) {
+                try { localStorage.setItem(noteKey, JSON.stringify({ ver: ver, mine: mine, at: Date.now() })); } catch (e) { /* storage blocked */ }
+                return off('newer, from the next page load');
+            }
+            return off('older or the same');
+        }
+        if (note) {
+            // a newer copy said it is installed: leave the page to it, unless it never shows up
+            var watch = function () {
+                setTimeout(function () {
+                    if (root.getAttribute(attr)) return;
+                    try { localStorage.removeItem(noteKey); } catch (e) { /* storage blocked */ }
+                    try { console.info('[' + (label || key) + '] the newer copy (' + note.mine + ') did not start: this copy runs again from the next page load'); } catch (e) { /* no console */ }
+                }, 3000);
+            };
+            if (document.readyState === 'complete') watch(); else window.addEventListener('load', watch, { once: true });
+            return off('older: a newer copy runs');
+        }
+        if (root) { root.setAttribute(attr, mine); root.setAttribute(attr + '-ver', ver); }
+        var told = function (o) {
+            log((label || key) + ' is installed twice: ' + mine + ' runs, ' + (o.mine || 'another copy') + ' is switched off'
+                + (o.why === 'newer, from the next page load' ? ' for this page (it is newer and runs from the next page load)' : '') + '.');
+        };
+        document.addEventListener(ev, function (e) { var o = {}; try { o = JSON.parse(e.detail); } catch (x) { /* not ours */ } told(o); });
+        // a copy that stepped aside before this one started (it found a note): log it once the script's log is up
+        var before = root && root.getAttribute(attr + '-off');
+        if (before) setTimeout(function () { var o = {}; try { o = JSON.parse(before); } catch (x) { /* not ours */ } told(o); }, 0);
+        return true;
     }
 
     // Toast. mbuToast(msg) or mbuToast(msg, { ms, kind, at:{x,y}, action:{ label, onClick } }).
@@ -465,6 +516,7 @@ export function insertDiscogsBar(discogsUrl, sources = {}, meta = {}) {
             messages: function () { return buf.map(function (e) { return e.msg; }); },
             counts: function () { return { warn: warn, error: error }; },
         };
+        mbuLog.active = api;   // the script's own log, for helpers that note things in it (mbuClaim)
         return api;
     }
 

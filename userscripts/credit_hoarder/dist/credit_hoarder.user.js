@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Credit Hoarder
 // @namespace    majkinetor
-// @version      2026.10.1.145919
+// @version      2026.10.1.164212
 // @description  Import per-track release credits from streaming/database providers (Discogs, Tidal, Qobuz, Deezer) into MusicBrainz relationships, with a review phase
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij4KICANCiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMmY2ZjU0IiBzdHJva2Utd2lkdGg9IjkiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGNpcmNsZSBjeD0iMzQiIGN5PSIzOCIgcj0iMi41IiBmaWxsPSIjMmY2ZjU0IiBzdHJva2U9Im5vbmUiLz4NCiAgICA8bGluZSB4MT0iNTAiIHkxPSIzOCIgeDI9Ijk4IiB5Mj0iMzgiLz4NCiAgICA8Y2lyY2xlIGN4PSIzNCIgY3k9IjY0IiByPSIyLjUiIGZpbGw9IiMyZjZmNTQiIHN0cm9rZT0ibm9uZSIvPg0KICAgIDxsaW5lIHgxPSI1MCIgeTE9IjY0IiB4Mj0iOTgiIHkyPSI2NCIvPg0KICAgIDxjaXJjbGUgY3g9IjM0IiBjeT0iOTAiIHI9IjIuNSIgZmlsbD0iIzJmNmY1NCIgc3Ryb2tlPSJub25lIi8+DQogICAgPGxpbmUgeDE9IjUwIiB5MT0iOTAiIHgyPSI3NCIgeTI9IjkwIi8+DQogIDwvZz4NCiAgPGNpcmNsZSBjeD0iOTIiIGN5PSI5MiIgcj0iMjMiIGZpbGw9IiMyZTllNWIiLz4NCiAgPGcgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGxpbmUgeDE9IjkyIiB5MT0iODEiIHgyPSI5MiIgeTI9IjEwMyIvPg0KICAgIDxsaW5lIHgxPSI4MSIgeTE9IjkyIiB4Mj0iMTAzIiB5Mj0iOTIiLz4NCiAgPC9nPg0KPC9zdmc+DQo=
@@ -34,6 +34,64 @@
 // ==/UserScript==
 
 (() => {
+// one copy per page: with String Theory and a standalone install both on, the newer one runs (#653)
+function mbuClaimVer(v) {
+    return String(v || '').split('.').map(function (n) { return parseInt(n, 10) || 0; });
+}
+function mbuClaimCmp(a, b) {
+    var x = mbuClaimVer(a), y = mbuClaimVer(b);
+    for (var i = 0; i < Math.max(x.length, y.length); i++) { var d = (x[i] || 0) - (y[i] || 0); if (d) return d < 0 ? -1 : 1; }
+    return 0;
+}
+function mbuClaim(key, label) {
+    var info = (typeof GM_info !== 'undefined' && GM_info && GM_info.script) || {};
+    var name = String(info.name || label || key), ver = String(info.version || '0');
+    var mine = (name.slice(-1) === '*' ? 'String Theory' : 'standalone') + ' v' + ver;
+    var root = document.documentElement, attr = 'data-mbu-run-' + key, ev = 'mbu-claim-' + key, noteKey = 'mbu-newer-' + key;
+    var log = function (msg) { try { if (typeof mbuLog !== 'undefined' && mbuLog.active) mbuLog.active.info(msg); else if (typeof mbuToast !== 'undefined' && typeof mbuToast.log === 'function') mbuToast.log('info', msg); else console.info('[' + (label || key) + '] ' + msg); } catch (e) { /* no log */ } };
+    var note = null;
+    try { note = JSON.parse(localStorage.getItem(noteKey) || 'null'); } catch (e) { /* storage blocked */ }
+    if (note && mbuClaimCmp(note.ver, ver) <= 0) { try { localStorage.removeItem(noteKey); } catch (e) { /* storage blocked */ } note = null; }
+    var held = root && root.getAttribute(attr);
+    var off = function (why) {
+        // tell the running copy (any sandbox hears a DOM event), or the copy that runs after
+        // this one (it reads the attribute), and stay quiet
+        try { if (root) root.setAttribute(attr + '-off', JSON.stringify({ mine: mine, why: why })); } catch (e) { /* no attribute */ }
+        try { document.dispatchEvent(new CustomEvent(ev, { detail: JSON.stringify({ mine: mine, ver: ver, why: why }) })); } catch (e) { /* no event */ }
+        return false;
+    };
+    if (held) {
+        var heldVer = (root.getAttribute(attr + '-ver') || '0');
+        if (mbuClaimCmp(ver, heldVer) > 0) {
+            try { localStorage.setItem(noteKey, JSON.stringify({ ver: ver, mine: mine, at: Date.now() })); } catch (e) { /* storage blocked */ }
+            return off('newer, from the next page load');
+        }
+        return off('older or the same');
+    }
+    if (note) {
+        // a newer copy said it is installed: leave the page to it, unless it never shows up
+        var watch = function () {
+            setTimeout(function () {
+                if (root.getAttribute(attr)) return;
+                try { localStorage.removeItem(noteKey); } catch (e) { /* storage blocked */ }
+                try { console.info('[' + (label || key) + '] the newer copy (' + note.mine + ') did not start: this copy runs again from the next page load'); } catch (e) { /* no console */ }
+            }, 3000);
+        };
+        if (document.readyState === 'complete') watch(); else window.addEventListener('load', watch, { once: true });
+        return off('older: a newer copy runs');
+    }
+    if (root) { root.setAttribute(attr, mine); root.setAttribute(attr + '-ver', ver); }
+    var told = function (o) {
+        log((label || key) + ' is installed twice: ' + mine + ' runs, ' + (o.mine || 'another copy') + ' is switched off'
+            + (o.why === 'newer, from the next page load' ? ' for this page (it is newer and runs from the next page load)' : '') + '.');
+    };
+    document.addEventListener(ev, function (e) { var o = {}; try { o = JSON.parse(e.detail); } catch (x) { /* not ours */ } told(o); });
+    // a copy that stepped aside before this one started (it found a note): log it once the script's log is up
+    var before = root && root.getAttribute(attr + '-off');
+    if (before) setTimeout(function () { var o = {}; try { o = JSON.parse(before); } catch (x) { /* not ours */ } told(o); }, 0);
+    return true;
+}
+if (!mbuClaim('credit_hoarder', 'Credit Hoarder')) return;
   // src/constants.js
   var REL_TEMPLATE = {
     _lineage: [],
@@ -7378,29 +7436,110 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
       a.textContent = label || "? Help";
       return a;
     }
+    function mbuClaimVer(v) {
+      return String(v || "").split(".").map(function(n) {
+        return parseInt(n, 10) || 0;
+      });
+    }
+    function mbuClaimCmp(a, b) {
+      var x = mbuClaimVer(a), y = mbuClaimVer(b);
+      for (var i = 0; i < Math.max(x.length, y.length); i++) {
+        var d = (x[i] || 0) - (y[i] || 0);
+        if (d) return d < 0 ? -1 : 1;
+      }
+      return 0;
+    }
     function mbuClaim(key, label) {
       var info = typeof GM_info !== "undefined" && GM_info && GM_info.script || {};
-      var name = String(info.name || label || key), mine = (name.slice(-1) === "*" ? "String Theory" : "standalone") + " v" + (info.version || "?");
-      var root = document.documentElement, attr = "data-mbu-run-" + key;
-      var held = root && root.getAttribute(attr);
-      if (!held) {
-        if (root) root.setAttribute(attr, mine);
-        return true;
-      }
-      var msg = (label || key) + " is installed twice (" + held + " and " + mine + "): only the " + held + " copy runs. Turn one of them off in your userscript manager.";
-      try {
-        console.warn("[" + (label || key) + "] " + msg);
-      } catch (e) {
-      }
-      var show = function() {
+      var name = String(info.name || label || key), ver = String(info.version || "0");
+      var mine = (name.slice(-1) === "*" ? "String Theory" : "standalone") + " v" + ver;
+      var root = document.documentElement, attr = "data-mbu-run-" + key, ev = "mbu-claim-" + key, noteKey = "mbu-newer-" + key;
+      var log2 = function(msg) {
         try {
-          mbuToast("\u26A0 " + msg, { ms: 15e3, kind: "warn" });
+          if (typeof mbuLog !== "undefined" && mbuLog.active) mbuLog.active.info(msg);
+          else if (typeof mbuToast !== "undefined" && typeof mbuToast.log === "function") mbuToast.log("info", msg);
+          else console.info("[" + (label || key) + "] " + msg);
         } catch (e) {
         }
       };
-      if (document.body) setTimeout(show, 0);
-      else document.addEventListener("DOMContentLoaded", show, { once: true });
-      return false;
+      var note = null;
+      try {
+        note = JSON.parse(localStorage.getItem(noteKey) || "null");
+      } catch (e) {
+      }
+      if (note && mbuClaimCmp(note.ver, ver) <= 0) {
+        try {
+          localStorage.removeItem(noteKey);
+        } catch (e) {
+        }
+        note = null;
+      }
+      var held = root && root.getAttribute(attr);
+      var off = function(why) {
+        try {
+          if (root) root.setAttribute(attr + "-off", JSON.stringify({ mine, why }));
+        } catch (e) {
+        }
+        try {
+          document.dispatchEvent(new CustomEvent(ev, { detail: JSON.stringify({ mine, ver, why }) }));
+        } catch (e) {
+        }
+        return false;
+      };
+      if (held) {
+        var heldVer = root.getAttribute(attr + "-ver") || "0";
+        if (mbuClaimCmp(ver, heldVer) > 0) {
+          try {
+            localStorage.setItem(noteKey, JSON.stringify({ ver, mine, at: Date.now() }));
+          } catch (e) {
+          }
+          return off("newer, from the next page load");
+        }
+        return off("older or the same");
+      }
+      if (note) {
+        var watch = function() {
+          setTimeout(function() {
+            if (root.getAttribute(attr)) return;
+            try {
+              localStorage.removeItem(noteKey);
+            } catch (e) {
+            }
+            try {
+              console.info("[" + (label || key) + "] the newer copy (" + note.mine + ") did not start: this copy runs again from the next page load");
+            } catch (e) {
+            }
+          }, 3e3);
+        };
+        if (document.readyState === "complete") watch();
+        else window.addEventListener("load", watch, { once: true });
+        return off("older: a newer copy runs");
+      }
+      if (root) {
+        root.setAttribute(attr, mine);
+        root.setAttribute(attr + "-ver", ver);
+      }
+      var told = function(o) {
+        log2((label || key) + " is installed twice: " + mine + " runs, " + (o.mine || "another copy") + " is switched off" + (o.why === "newer, from the next page load" ? " for this page (it is newer and runs from the next page load)" : "") + ".");
+      };
+      document.addEventListener(ev, function(e) {
+        var o = {};
+        try {
+          o = JSON.parse(e.detail);
+        } catch (x) {
+        }
+        told(o);
+      });
+      var before = root && root.getAttribute(attr + "-off");
+      if (before) setTimeout(function() {
+        var o = {};
+        try {
+          o = JSON.parse(before);
+        } catch (x) {
+        }
+        told(o);
+      }, 0);
+      return true;
     }
     var _mbuToastT = null;
     function mbuToast(msg, opts) {
@@ -7823,6 +7962,7 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
           return { warn, error };
         }
       };
+      mbuLog.active = api;
       return api;
     }
     function mbuDismissOn(el, close, opts) {

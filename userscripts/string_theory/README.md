@@ -8,7 +8,7 @@
 - [View users](https://musicbrainz.org/search/edits?auto_edit_filter=&order=desc&negation=0&combinator=and&conditions.0.field=edit_note_content&conditions.0.operator=includes&conditions.0.args.0=by+majkinetor&conditions.1.field=edit_note_author&conditions.1.operator=%21%3D&conditions.1.name=majkinetor&conditions.1.args.0=1601832&field=Please+choose+a+condition)
 
 > [!IMPORTANT]
-> Install String Theory **instead of** the individual scripts it contains — never both, or each would run twice on the pages they share.
+> Install String Theory **instead of** the individual scripts it contains. If both are on, only one copy of a script runs on a page: the one with the higher version. When the older copy happens to start first, it keeps that page and the newer one takes over from the next page load. The running copy notes the other one in its log.
 >
 > Any configuration stored with this script is not visible by the standalone variants and vice versa
 
