@@ -83,8 +83,6 @@ First Contact doesn't pick MusicBrainz artists itself. It hands every credited a
 
 The **⚙︎** button next to **Import to MusicBrainz**.
 
-<img src="./screenshots/button.png" width="420" />
-
 | Setting | Default | |
 |---|---|---|
 | MusicBrainz server | musicbrainz.org | where the release editor opens: musicbrainz.org, beta.musicbrainz.org or test.musicbrainz.org |
