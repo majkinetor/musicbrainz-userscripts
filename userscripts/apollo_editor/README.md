@@ -49,6 +49,7 @@ Each part is optional, and the **Original / Apollo** button switches back to Mus
 
 - On hover: **Split** and **Guess case**; left-click for one track, right-click for all.
 - **⠿** drags a track within its medium. **⤓** moves a track and everything below it into the data section; **⤒** moves it back. A medium with a disc ID can't have data tracks.
+- On hover, the last column has the track's **↺** (revert, when it has changed) and **✕** (remove). It sits after **Match**, so it never covers the match badges.
 - Changed tracks get a coloured left border; pending changes, splittable tracks and tracks Guess case would change are highlighted.
 - Left-click a collapsed medium to expand it, right-click to expand all.
 - Pregap and data tracks and disc IDs are supported.

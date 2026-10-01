@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-10-01 14:33 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-10-01 16:44 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -66,6 +66,7 @@ Each part is optional, and the **Original / Apollo** button switches back to Mus
 
 - On hover: **Split** and **Guess case**; left-click for one track, right-click for all.
 - **⠿** drags a track within its medium. **⤓** moves a track and everything below it into the data section; **⤒** moves it back. A medium with a disc ID can't have data tracks.
+- On hover, the last column has the track's **↺** (revert, when it has changed) and **✕** (remove). It sits after **Match**, so it never covers the match badges.
 - Changed tracks get a coloured left border; pending changes, splittable tracks and tracks Guess case would change are highlighted.
 - Left-click a collapsed medium to expand it, right-click to expand all.
 - Pregap and data tracks and disc IDs are supported.
@@ -1147,7 +1148,7 @@ A link already in the release's relationships is used as is. Otherwise each plat
 A release's format is a four-quadrant circle: vinyl, cassette, CD, digital (DVD, SACD and Blu-ray count as CD).
 
 > [!TIP]
-> *Compact unmatched providers* keeps only clean matches as rows; the rest shrink to dimmed icons at the bottom, a mismatch with an amber ring. Discogs and Bandcamp always keep their rows.
+> *Compact unmatched providers* shrinks a provider that found nothing (or is still searching) to a dimmed icon at the bottom; it rises into a row once it finds something. *Compact non-strict providers* does the same for a found release that isn't a clean match (different barcode or format, or withheld), shown with an amber ring; with it off, that row stays, with its tracks, year and label. Discogs and Bandcamp always keep their rows.
 
 ### Link confidence
 
@@ -1163,11 +1164,11 @@ MusicBrainz treats a different barcode or a different format as a different rele
 |---|---|---|
 | left | open the page (or the platform's search, if not found) | open the release editor with the link added, for you to review |
 | right | open the platform's search | add the link in the background |
-| middle | | add the link even when [link confidence](#link-confidence) withholds it, in the foreground |
+| middle, or Ctrl+left (⌘ on a Mac) | | add the link even when [link confidence](#link-confidence) withholds it, in the foreground |
 
-A middle click on a link that passes link confidence is a plain foreground add. One it overrides is marked in the edit note, with the reason: *(added by hand over link confidence: barcode not confirmed)*.
+A middle click (or Ctrl+click) on a link that passes link confidence is a plain foreground add. One it overrides is marked in the edit note, with the reason: *(added by hand over link confidence: barcode not confirmed)*.
 
-The footer's **+** adds every confirmed link (middle-click: the withheld ones too) and **↗** opens them all. A background add opens an inactive tab that submits the edit and closes itself; the Discogs master goes onto the release group the same way.
+The footer's **+** adds every confirmed link (middle-click or Ctrl+click: the withheld ones too) and **↗** opens them all. A background add opens an inactive tab that submits the edit and closes itself; the Discogs master goes onto the release group the same way.
 
 > [!NOTE]
 > Firefox throttles background tabs hard, slowing a background add down. *Keep background-add tabs awake* plays an inaudible tone, which exempts the tab. It needs **Allow Audio** for musicbrainz.org (padlock → *Autoplay*); without it, the log reports the tone as blocked.
@@ -1211,13 +1212,14 @@ The footer's **+** adds every confirmed link (middle-click: the withheld ones to
 | Platforms | order them, or leave some out |
 | Authentication | Beatport and Qobuz logins |
 | Link confidence | *Use barcodes* and *Use formats* (off, if they exist, strictly); *Add links in a new tab* (on; off navigates this tab); *Keep background-add tabs awake* |
-| Appearance | icon and name size, *Compact unmatched providers*, the MusicBrainz marker (ring, bold ring, ✓ badge, dot or rounded square), the format marker (circle or text), one or two rows |
+| Appearance | icon and name size, *Compact unmatched providers*, *Compact non-strict providers*, the MusicBrainz marker (ring, bold ring, ✓ badge, dot or rounded square), the format marker (circle or text), one or two rows |
 
 ### Shortcuts
 
 | Key | |
 |---|---|
 | Esc | close the open dialog |
+| Ctrl+click (⌘+click) | the same as a middle click: add a link even when [link confidence](#link-confidence) withholds it; on **+**, add the withheld ones too |
 
 
 ---

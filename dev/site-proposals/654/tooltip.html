@@ -1,0 +1,106 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>Match tooltip mock</title>
+<style>
+:root{--bg:#fff;--text:#222;--dim:#555;--weak:#888;--border:#cfc6e6;--soft:#e2dcef;--accent:#5f3ec0;--hover:#f3eefe}
+body{margin:0;padding:22px;background:#f6f5fa;font:13px/1.4 -apple-system,Segoe UI,Roboto,Arial,sans-serif;color:var(--text)}
+h3{margin:0 0 4px;font-size:14px;color:#3b2c70}
+.note{margin:0 0 12px;color:var(--dim);max-width:980px}
+.grid{display:grid;grid-template-columns:repeat(2,470px);gap:26px 30px}
+.case{position:relative}
+.row{display:flex;align-items:center;gap:10px;background:#fff;border:1px solid var(--soft);border-radius:6px;padding:6px 10px;width:440px}
+.row .art{flex:1;background:#e3eee9;border-radius:6px;padding:5px 9px;font-size:14px}
+.row .art i{color:var(--weak);font-size:12px;margin-left:6px}
+.row .len{color:var(--dim);width:38px;text-align:right}
+.b{font-size:10px;font-weight:bold;border-radius:9px;padding:1px 7px;color:#fff;white-space:nowrap}
+.b.rg{background:#1f8a4c}.b.pos{background:#a0522d}.b.alias{background:#1f8a7a}.b.name{background:#2f6fd6}.b.cred{background:#b5179e}.b.disc{background:#0a7a8c}.b.low{background:#e0a800}.b.user{background:var(--accent)}.b.set{background:#6c757d}
+.row .b{outline:2px solid #5f3ec055;outline-offset:1px}
+.tip{margin:8px 0 0 70px;width:370px;background:var(--bg);border:1px solid var(--border);border-radius:9px;box-shadow:0 8px 30px rgba(40,20,80,.22);overflow:hidden}
+.tip .h{display:flex;align-items:center;gap:8px;padding:8px 11px;border-bottom:1px solid var(--soft);background:#faf9fe}
+.tip .h b{font-size:13px}
+.tip .h .st{margin-left:auto;font-size:11px;color:var(--weak)}
+.tip .bd{padding:8px 11px;display:flex;flex-direction:column;gap:7px}
+.tip .who{font-size:13px}
+.tip .who a{color:var(--accent);font-weight:600;text-decoration:none}
+.tip .who .dis{color:var(--weak)}
+.tip .who .meta{display:block;color:var(--weak);font-size:11px}
+.tip .why{color:var(--dim)}
+.tip .why a{color:var(--accent)}
+.tip table{border-collapse:collapse;width:100%;font-size:12px}
+.tip td{padding:2px 4px;border-top:1px solid #f0edf7}
+.tip td.ok{color:#1f8a4c;font-weight:bold;width:14px}
+.tip td.no{color:#c0392b;font-weight:bold;width:14px}
+.tip td.w{color:var(--weak);text-align:right;white-space:nowrap}
+.tip .alt{font-size:12px;color:var(--dim)}
+.tip .alt span{color:var(--weak)}
+.tip .ft{padding:6px 11px;border-top:1px solid var(--soft);font-size:11px;color:var(--weak);display:flex;gap:10px}
+.tip .ft .k{margin-left:auto}
+kbd{font:11px ui-monospace,Consolas,monospace;border:1px solid var(--border);border-radius:3px;padding:0 3px;background:#faf9fe}
+</style></head><body>
+<h3>Match badge: a rich tooltip</h3>
+<p class="note">Hover a badge for ½ s and a card opens under it. The card stays open while the pointer is on it, so its links can be clicked; Esc or moving away closes it. Every card has the same four parts: the stage and what it means; the artist it linked; the evidence, taken from the same data the log line is written from, with links; and what else was considered. The footer has when it matched and how to change it.</p>
+<div class="grid">
+
+<div class="case">
+  <div class="row"><span class="art">CBC <i>(Vietnamese rock band)</i></span><span class="len">3:53</span><span class="b rg">rg</span></div>
+  <div class="tip">
+    <div class="h"><span class="b rg">rg</span><b>Release group</b><span class="st">stage 2 · auto-linked</span></div>
+    <div class="bd">
+      <div class="who"><a href="#">CBC</a> <span class="dis">(Vietnamese rock band)</span><span class="meta">Group · Vietnam · 1960–</span></div>
+      <div class="why">Another release in this release group credits this artist on the same track:<br><a href="#">Saigon Supersound Vol. 2</a> · 2014 · CD · track 1 <i>"Tình Yêu Mùa Hè"</i></div>
+      <div class="alt">Also considered: CBC <span>(Canadian broadcaster)</span>, C.B.C. <span>(UK punk)</span></div>
+    </div>
+    <div class="ft"><span>matched 14:49:02</span><span class="k">click the artist to change</span></div>
+  </div>
+</div>
+
+<div class="case">
+  <div class="row"><span class="art">Thanh Mai</span><span class="len">4:42</span><span class="b pos">pos</span></div>
+  <div class="tip">
+    <div class="h"><span class="b pos">pos</span><b>Same position on other editions</b><span class="st">stage 3 · auto-linked</span></div>
+    <div class="bd">
+      <div class="who"><a href="#">Thanh Mai</a> <span class="dis">(Vietnamese singer)</span><span class="meta">Person · Vietnam · b. 1942</span></div>
+      <div class="why">Credited on track 4 on 3 of 4 other editions:</div>
+      <table>
+        <tr><td class="ok">✓</td><td><a href="#">Saigon Supersound</a> · 2017 · 2×12" Vinyl</td><td class="w">A4</td></tr>
+        <tr><td class="ok">✓</td><td><a href="#">Saigon Supersound</a> · 2016 · CD</td><td class="w">4</td></tr>
+        <tr><td class="ok">✓</td><td><a href="#">Saigon Supersound</a> · 2016 · Digital</td><td class="w">4</td></tr>
+        <tr><td class="no">✗</td><td><a href="#">Saigon Supersound</a> · 2015 · Cassette</td><td class="w">Thành Mái</td></tr>
+      </table>
+    </div>
+    <div class="ft"><span>matched 14:49:05</span><span class="k">click the artist to change</span></div>
+  </div>
+</div>
+
+<div class="case">
+  <div class="row"><span class="art">Abiodun</span><span class="len">5:10</span><span class="b alias">alias</span></div>
+  <div class="tip">
+    <div class="h"><span class="b alias">alias</span><b>Alias</b><span class="st">stage 4 · auto-linked</span></div>
+    <div class="bd">
+      <div class="who"><a href="#">Abiodun</a> <span class="dis">(Nigerian drummer)</span><span class="meta">Person · Nigeria</span></div>
+      <div class="why">Credited as <b>Don Abi</b>, an alias of this artist (Artist name, English). No other MusicBrainz artist has it as a name or alias.</div>
+      <div class="alt">Also considered: Don Abi <span>(not an exact match: “Don Abie”)</span></div>
+    </div>
+    <div class="ft"><span>matched 14:49:07</span><span class="k">click the artist to change</span></div>
+  </div>
+</div>
+
+<div class="case">
+  <div class="row"><span class="art">Carol Kim</span><span class="len">4:35</span><span class="b low">low</span></div>
+  <div class="tip">
+    <div class="h"><span class="b low">low</span><b>Uncertain: not linked</b><span class="st">no stage was sure</span></div>
+    <div class="bd">
+      <div class="why">No stage found one certain artist. What each one found:</div>
+      <table>
+        <tr><td class="no">–</td><td>Release group</td><td class="w">no other release</td></tr>
+        <tr><td class="no">–</td><td>Other editions</td><td class="w">none</td></tr>
+        <tr><td class="no">✗</td><td>Name / alias</td><td class="w">3 artists named “Carol Kim”</td></tr>
+        <tr><td class="no">✗</td><td>Co-credit</td><td class="w">tie: 2 × 1 shared credit</td></tr>
+      </table>
+      <div class="alt">Best: <a href="#">Carol Kim</a> <span>(Vietnamese-American singer)</span> · Carol Kim <span>(US jazz singer)</span> · Carol Kim <span>(Korean actress)</span></div>
+    </div>
+    <div class="ft"><span>14:49:09</span><span class="k">click the artist to pick one</span></div>
+  </div>
+</div>
+
+</div>
+</body></html>
