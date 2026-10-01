@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+  <title>First Contact</title>
+  <!-- tractor beam -->
+  <path d="M50 44 L78 44 L104 112 L24 112 Z" fill="#f6c431" opacity="0.9"/>
+  <path d="M56 44 L72 44 L88 112 L40 112 Z" fill="#fde68a" opacity="0.7"/>
+  <!-- landing ring -->
+  <ellipse cx="64" cy="114" rx="42" ry="8" fill="#1e2346"/>
+  <ellipse cx="64" cy="113" rx="26" ry="4.2" fill="none" stroke="#f6c431" stroke-width="2.4"/>
+  <!-- saucer -->
+  <path d="M40 26 A24 18 0 0 1 88 26 Z" fill="#1e2346"/>
+  <path d="M50 18 A10 6 0 0 1 60 14" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round"/>
+  <ellipse cx="64" cy="32" rx="56" ry="13" fill="#1e2346"/>
+  <circle cx="38" cy="32" r="4.4" fill="#fff"/>
+  <circle cx="64" cy="34" r="4.4" fill="#fff"/>
+  <circle cx="90" cy="32" r="4.4" fill="#fff"/>
+  <!-- the release being beamed up: a purple hexagon with a note -->
+  <path d="M64 58 L84 69.5 L84 92.5 L64 104 L44 92.5 L44 69.5 Z" fill="#7b4fd6"/>
+  <path d="M64 58 L84 69.5 L64 81 L44 69.5 Z" fill="#9b72ea"/>
+  <path d="M60 72 L74 69 L74 89" fill="none" stroke="#fff" stroke-width="3.4" stroke-linejoin="round"/>
+  <path d="M60 72 L60 92" fill="none" stroke="#fff" stroke-width="3.4"/>
+  <ellipse cx="56" cy="92" rx="4.6" ry="3.6" fill="#fff"/>
+  <ellipse cx="70" cy="89" rx="4.6" ry="3.6" fill="#fff"/>
+  <!-- sparkles -->
+  <path d="M18 54 l2.5 6 6 2.5 -6 2.5 -2.5 6 -2.5 -6 -6 -2.5 6 -2.5 Z" fill="#f6c431"/>
+  <path d="M108 52 l2.5 6 6 2.5 -6 2.5 -2.5 6 -2.5 -6 -6 -2.5 6 -2.5 Z" fill="#1e2346"/>
+  <path d="M112 82 l1.8 4.2 4.2 1.8 -4.2 1.8 -1.8 4.2 -1.8 -4.2 -4.2 -1.8 4.2 -1.8 Z" fill="#f6c431"/>
+  <path d="M14 86 l1.8 4.2 4.2 1.8 -4.2 1.8 -1.8 4.2 -1.8 -4.2 -4.2 -1.8 4.2 -1.8 Z" fill="#1e2346"/>
+</svg>

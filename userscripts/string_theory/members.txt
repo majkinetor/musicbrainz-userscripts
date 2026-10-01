@@ -11,6 +11,7 @@
 #                     members', so all of it would load there for one script
 #   as_picker       — runs on every site (*://*/*), for the same reason
 #   scribe          — separate workflow
+#   first_contact   — runs on the platforms' album pages (deezer.com, …), for the same reason as falcon
 #   discogs_credits — parallel twin of credit_hoarder; would double-run
 
 apollo_editor
