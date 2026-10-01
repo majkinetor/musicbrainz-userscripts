@@ -248,7 +248,7 @@ function bootstrapBar(probe, remix, releaseMbid) {
     // a refresh appeared to fix it. The lookup retries now; if it still fails we
     // mount ANYWAY rather than silently deciding there is nothing to do.
         const sources = probe.sources;
-        const hasProvider = !!(sources.discogs || sources.tidal || sources.qobuz || sources.deezer || sources.apple || sources.ytmusic);
+        const hasProvider = !!(sources.discogs || sources.tidal || sources.qobuz || sources.deezer || sources.apple || sources.metalArchives || sources.ytmusic);
         const remixCount  = remix?.count || 0;
         if (!probe.failed) logSourceProbe(sources);
         log.info(`Toolbar: ${probe.failed ? 'source probe FAILED' : hasProvider ? 'linked source(s) found' : 'no linked sources'}`
