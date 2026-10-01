@@ -70,7 +70,7 @@ const Log = mbuLog({ name: NAME, version: VERSION, header: NAME + ' — activity
 mbuToast.log = (kind, msg) => (kind === 'warn' ? Log.warn(msg) : kind === 'ok' ? Log.ok(msg) : Log.info(msg));
 
 function settings() {
-    const s = Object.assign({ server: 'musicbrainz.org' }, GM_getValue('fc.settings', {}));
+    const s = Object.assign({ server: 'musicbrainz.org', annotation: false }, GM_getValue('fc.settings', {}));
     if (!SERVERS.includes(s.server)) s.server = 'musicbrainz.org';
     return s;
 }
@@ -239,6 +239,23 @@ function labelFromCopyright(text) {
     t = t.replace(/,\s*(?:a|an)\s+(?:division|label|imprint|company)\b.*$/i, '').replace(/\.?\s*all rights reserved\.?$/i, '').replace(/[.,;\s]+$/, '').trim();
     if (!t || t.length > 60 || /[℗©]|\b\d{4}\b/.test(t) || /^(?:all rights reserved|under licen[cs]e)/i.test(t)) return null;
     return t;
+}
+
+// #650 (majkinetor): "we should add annotations (should be optional) from all providers (Qobuz
+// above has it, BC almost always has it, Discogs has notes etc.)". A platform's notes as plain
+// text: its HTML's breaks and paragraphs become lines, the rest of the markup goes.
+function notesText(...parts) {
+    const one = x => {
+        let t = String(x || '');
+        if (/<[a-z][^>]*>|&[a-z#0-9]+;/i.test(t)) {
+            t = t.replace(/<br\s*\/?>/gi, '\n').replace(/<\/(?:p|div|li|h\d)>/gi, '\n\n');
+            const d = document.createElement('textarea');
+            d.innerHTML = mbuHtml(t.replace(/<[^>]+>/g, ''));
+            t = d.value;
+        }
+        return t.replace(/\r\n?/g, '\n').replace(/[ \t]+\n/g, '\n').replace(/\n{3,}/g, '\n\n').trim();
+    };
+    return parts.map(one).filter(Boolean).join('\n\n') || null;
 }
 
 function guessScript(texts) {
@@ -421,6 +438,7 @@ const BANDCAMP = {
         const streamable = t.hasAudio && (t.trackinfo || []).some(x => x.streaming);
         return {
             source: this.id,
+            annotation: notesText(cur.about, cur.credits),   // the album's about and credits
             url,
             title: at.title,
             credit,
@@ -571,6 +589,7 @@ const DISCOGS = {
         const url = `https://www.discogs.com/release/${id}`;
         return {
             source: this.id,
+            annotation: notesText(r.notes),
             url,
             title: r.title,
             credit: releaseCredit,
@@ -683,6 +702,7 @@ const APPLE = {
         const url = (at.url || `https://music.apple.com/${sf}/album/${id}`).replace(/\?.*$/, '');
         return {
             source: this.id,
+            annotation: notesText(at.editorialNotes && (at.editorialNotes.standard || at.editorialNotes.short)),
             url,
             title: af.title,
             credit,
@@ -868,6 +888,7 @@ const QOBUZ = {
         const url = location.origin + path;
         return {
             source: this.id,
+            annotation: notesText((doc.querySelector('#description .album-block__text') || {}).innerHTML),   // the album review
             url,
             title: af.title,
             credit,
@@ -954,6 +975,7 @@ const BEATPORT = {
         const url = this.url('release', r);
         return {
             source: this.id,
+            annotation: notesText(r.desc),
             url,
             title: af.title,
             credit,
@@ -1214,6 +1236,7 @@ const YTMUSIC = {
         const url = list ? `https://music.youtube.com/playlist?list=${list}` : `https://music.youtube.com/browse/${id}`;
         return {
             source: this.id,
+            annotation: notesText(this.text(h.description && h.description.musicDescriptionShelfRenderer && h.description.musicDescriptionShelfRenderer.description)),
             url,
             title: af.title,
             credit,
@@ -1270,6 +1293,7 @@ function seedParams(rel, editNote) {
             credit(pre, t.credit);
         });
     });
+    add('annotation', rel.annotation);
     add('edit_note', editNote);
     return p;
 }
@@ -1334,6 +1358,7 @@ function injectStyle() {
 #fc-panel .mbu-cfg-ic svg { width: 22px; height: 22px; }
 #fc-panel .fc-body { display: grid; gap: 8px; }
 #fc-panel label { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+#fc-panel label.fc-check { justify-content: flex-start; gap: 6px; cursor: pointer; }
 #fc-panel select { font: inherit; color: inherit; background: var(--mbu-bg); border: 1px solid var(--mbu-border); border-radius: 4px; padding: 2px 4px; }
 #fc-panel a { color: var(--mbu-accent); }
 `;
@@ -1385,7 +1410,9 @@ function togglePanel(anchor) {
     panel.innerHTML = mbuHtml(mbuCfgHeader({ script: SCRIPT, name: NAME, version: VERSION, icon: ICON_SVG, log: true })
         + '<div class="fc-body"><label>MusicBrainz server <select class="fc-server">'
         + SERVERS.map(h => `<option value="${h}"${h === s.server ? ' selected' : ''}>${h}</option>`).join('')
-        + '</select></label></div>');
+        + '</select></label>'
+        + `<label class="fc-check" title="The album's notes on the platform (Bandcamp's about and credits, Discogs's notes, Qobuz's and Apple's reviews, Beatport's and YouTube Music's description), with a line saying where they come from. Reviews are the critic's text: check you may copy it before you submit."><input type="checkbox" class="fc-annotation"${s.annotation ? ' checked' : ''}> Annotation from the platform's notes</label>`
+        + '</div>');
     document.body.appendChild(panel);
     const r = anchor.getBoundingClientRect();
     panel.style.right = Math.max(8, window.innerWidth - r.right) + 'px';
@@ -1395,6 +1422,11 @@ function togglePanel(anchor) {
         const next = Object.assign(settings(), { server: e.target.value });
         saveSettings(next);
         Log.info(`server set to ${next.server}`);
+    });
+    panel.querySelector('.fc-annotation').addEventListener('change', e => {
+        const next = Object.assign(settings(), { annotation: e.target.checked });
+        saveSettings(next);
+        Log.info(`annotation from the platform's notes: ${next.annotation ? 'on' : 'off'}`);
     });
     mbuDismissOn(panel, () => panel.remove());
 }
@@ -1428,6 +1460,13 @@ async function importCurrent() {
             }
         }
         rel.labels = splitLabels(rel.labels);
+        if (rel.annotation && settings().annotation) {
+            rel.annotation += `\n\nFrom ${provider.name}: ${rel.url}`;
+            Log.info(`annotation: ${rel.annotation.length} characters of ${provider.name}'s notes`);
+        } else {
+            if (rel.annotation) Log.info(`annotation: ${provider.name} has notes (${rel.annotation.length} characters); off in the settings`);
+            rel.annotation = null;
+        }
         rel.script = guessScript([rel.title].concat(...rel.mediums.map(m => m.tracks.map(t => t.title))));
         const nTracks = rel.mediums.reduce((n, m) => n + m.tracks.length, 0);
         Log.info(`release read in ${Date.now() - t0} ms: "${rel.title}" · ${rel.credit.map(c => c.name + c.join).join('')} · ${rel.mediums.length} medium(s), ${nTracks} track(s) · types ${rel.types.join('+') || '—'} · script ${rel.script || '—'}`);
