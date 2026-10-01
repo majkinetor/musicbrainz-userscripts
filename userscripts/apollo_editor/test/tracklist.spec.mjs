@@ -46,14 +46,17 @@ test.describe('editing', () => {
 
     const last = page.locator(ROWS).last();
     await last.hover();
-    // the hover's ↺/✕ sit at the Match cell's right edge and only they take the pointer, so
-    // the pills (and the pos tooltip) stay reachable underneath
+    // #654: the hover's ↺/✕ have their own column after Match, two icons wide, so they never
+    // cover the pills; ✕ keeps its x whether or not ↺ shows
     const acts = await last.evaluate(tr => {
-      const c = tr.querySelector('td.c-badge'), b = c.getBoundingClientRect(), rm = c.querySelector('.rm').getBoundingClientRect();
-      const hit = document.elementFromPoint(b.left + 4, rm.top + rm.height / 2);
-      return { through: !c.querySelector('.tc-trackacts').contains(hit), gap: Math.round(b.right - rm.right) };
+      const b = tr.querySelector('td.c-badge').getBoundingClientRect(), a = tr.querySelector('td.c-act'), ab = a.getBoundingClientRect();
+      const rm = a.querySelector('.rm').getBoundingClientRect(), rev = a.querySelector('.trev').getBoundingClientRect();
+      const xs = [...document.querySelectorAll('.tc-mirror tbody tr[data-tk] td.c-act .rm')].map(x => Math.round(x.getBoundingClientRect().left));
+      return { after: ab.left >= b.right - 1, width: Math.round(ab.width), inside: rm.left >= ab.left - 1 && rm.right <= ab.right + 1 && rev.left >= ab.left - 1,
+        visible: getComputedStyle(a.querySelector('.rm')).visibility, xs: [...new Set(xs)].length };
     });
-    check(acts.through && acts.gap < 8, `the hover's ✕ sits at the Match cell's right edge and lets the pointer through elsewhere (${JSON.stringify(acts)})`);
+    check(acts.after && acts.inside && acts.width <= 48, `the hover's ↺/✕ sit in their own column after Match, two icons wide (${JSON.stringify(acts)})`);
+    check(acts.visible === 'visible' && acts.xs === 1, `✕ shows on hover, at one x in every row (${acts.xs})`);
     await last.locator('.rm').click();
     check((await until(titles, t => t.length === before.length - 1)).length === before.length - 1, '✕ removes a track');
 
@@ -106,16 +109,16 @@ test.describe('matching on load', () => {
       const A = window.__apolloEditor, t = A.model.tracks.find(x => A.trackChanged(x));
       if (!t) return null;
       const tk = t.mi + ':' + t.ti, row = () => document.querySelector(`.tc-medsec tr[data-tk="${tk}"]`);
-      const before = { revert: !!row().querySelector('.trev'), marked: row().classList.contains('tc-changed') };
+      const before = { revert: !!row().querySelector('.trev:not(.void)'), marked: row().classList.contains('tc-changed') };
       const eventually = async f => { for (let i = 0; i < 400 && !f(); i++) await new Promise(r => setTimeout(r, 25)); return f(); };
       A.revertTrack(t);
       await eventually(() => !A.trackChanged(A.model.tracks.find(x => x.mi + ':' + x.ti === tk)) && !row().classList.contains('tc-changed'));
       const t2 = A.model.tracks.find(x => x.mi + ':' + x.ti === tk);
-      const after = { changed: A.trackChanged(t2), revert: !!row().querySelector('.trev'), marked: row().classList.contains('tc-changed') };
+      const after = { changed: A.trackChanged(t2), revert: !!row().querySelector('.trev:not(.void)'), marked: row().classList.contains('tc-changed') };
       const cred = row().querySelector('.tc-cred');
       cred.value = 'Zzz Changed Credit'; cred.dispatchEvent(new Event('change', { bubbles: true }));
-      await eventually(() => row().classList.contains('tc-changed') && !!row().querySelector('.trev'));
-      return { before, after, edited: row().classList.contains('tc-changed') && !!row().querySelector('.trev') };
+      await eventually(() => row().classList.contains('tc-changed') && !!row().querySelector('.trev:not(.void)'));
+      return { before, after, edited: row().classList.contains('tc-changed') && !!row().querySelector('.trev:not(.void)') };
     });
     check(rev, 'a row changed by matching');
     if (rev) {

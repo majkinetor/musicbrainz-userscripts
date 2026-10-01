@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         String Theory
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.1.162029
+// @version      2026.10.1.162357
 // @description  Unified bundle of 8 MusicBrainz userscripts (apollo_editor, art_station, credit_hoarder, fusion, group_therapy, isrc_scout, mammoth, platform_check). Built by userscripts/string_theory/build.mjs — do not hand-edit.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCIgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0Ij4KICA8IS0tIGh1Yi1hbmQtc3Bva2UgIm5ldHdvcmsiIGdseXBoLCBzaW5nbGUgdml2aWQgdmlvbGV0IG9uIHRyYW5zcGFyZW50IHNvIGl0IHJlYWRzIG9uIGJvdGggZGFyayBhbmQgbGlnaHQgcGFnZXMgLS0+CiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjN2M1Y2ZmIiBzdHJva2Utd2lkdGg9IjQuNiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj4KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMzIgMTUiLz4KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMNDYuNSAyMy41Ii8+CiAgICA8cGF0aCBkPSJNMzIgMzIgTDQ2LjUgNDAuNSIvPgogICAgPHBhdGggZD0iTTMyIDMyIEwzMiA0OSIvPgogICAgPHBhdGggZD0iTTMyIDMyIEwxNy41IDQwLjUiLz4KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMTcuNSAyMy41Ii8+CiAgPC9nPgogIDxnIGZpbGw9IiM3YzVjZmYiPgogICAgPGNpcmNsZSBjeD0iMzIiIGN5PSIzMiIgcj0iOC42Ii8+CiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjE5LjUiIHI9IjYuNCIvPgogICAgPGNpcmNsZSBjeD0iNDkiIGN5PSIxOS41IiByPSI2LjQiLz4KICAgIDxjaXJjbGUgY3g9IjMyIiBjeT0iNTciIHI9IjYuNCIvPgogIDwvZz4KICA8ZyBmaWxsPSJub25lIiBzdHJva2U9IiM3YzVjZmYiIHN0cm9rZS13aWR0aD0iMy44Ij4KICAgIDxjaXJjbGUgY3g9IjMyIiBjeT0iNyIgcj0iNC45Ii8+CiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjQ0LjUiIHI9IjQuOSIvPgogICAgPGNpcmNsZSBjeD0iNDkiIGN5PSI0NC41IiByPSI0LjkiLz4KICA8L2c+Cjwvc3ZnPgo=
@@ -84,13 +84,13 @@
 // Bundles (verbatim, each wrapped in a run-at gate): apollo_editor, art_station, credit_hoarder, fusion, group_therapy, isrc_scout, mammoth, platform_check.
 
 try {
-  console.log('%c String Theory %c v2026.10.1.162029 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
-  console.log("String Theory bundles:\n  · Apollo Editor v2026.10.1.162021\n  · Art Station v2026.9.30\n  · Credit Hoarder v2026.10.1.145919\n  · Fusion v2026.9.30\n  · Group Therapy v2026.9.30\n  · ISRC Scout v2026.10.1\n  · Mammoth v2026.9.30\n  · Platform Check v2026.10.1.145904");
+  console.log('%c String Theory %c v2026.10.1.162357 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
+  console.log("String Theory bundles:\n  · Apollo Editor v2026.10.1.162355\n  · Art Station v2026.9.30\n  · Credit Hoarder v2026.10.1.145919\n  · Fusion v2026.9.30\n  · Group Therapy v2026.9.30\n  · ISRC Scout v2026.10.1\n  · Mammoth v2026.9.30\n  · Platform Check v2026.10.1.145904");
 } catch (e) {}
 
 // ===== apollo_editor (@run-at document-start) =====================================
 (function(__stGM){
-  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Apollo Editor*","namespace":"https://musicbrainz.org/","version":"2026.10.1.162021","description":"Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md","supportURL":null,"icon":"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E"}) }) : { script: {"name":"Apollo Editor*","namespace":"https://musicbrainz.org/","version":"2026.10.1.162021","description":"Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md","supportURL":null,"icon":"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E"} };
+  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Apollo Editor*","namespace":"https://musicbrainz.org/","version":"2026.10.1.162355","description":"Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md","supportURL":null,"icon":"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E"}) }) : { script: {"name":"Apollo Editor*","namespace":"https://musicbrainz.org/","version":"2026.10.1.162355","description":"Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md","supportURL":null,"icon":"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E"} };
   (f=>f())(function(){ try { (function(){
 /*
  * Editor model (discovered via test/ spikes):
@@ -2002,9 +2002,10 @@ try {
     { label: '/', value: ' / ' }, { label: '·', value: ' · ' }, { label: 'presents', value: ' presents ' },
   ];
 
-  const COLS = [{ k: 'mv', w: 32, label: '' }, { k: 'num', w: 38, label: '#' }, { k: 'title', w: 360, label: 'Title' }, { k: 'art', w: 380, label: 'Artist' }, { k: 'len', w: 52, label: 'Length' }, { k: 'badge', w: 56, label: 'Match' }];
+  const COLS = [{ k: 'mv', w: 32, label: '' }, { k: 'num', w: 38, label: '#' }, { k: 'title', w: 360, label: 'Title' }, { k: 'art', w: 380, label: 'Artist' }, { k: 'len', w: 52, label: 'Length' }, { k: 'badge', w: 56, label: 'Match' }, { k: 'act', w: 44, label: '' }];
   const badgeText = s => ({ rg: 'rg', disc: 'disc', pos: 'pos', cred: 'cred', alias: 'alias', high: 'name', user: 'user', set: 'set', low: 'low' })[s.status] || '';
-  const colW = (k, d) => (SETTINGS.colWidths && SETTINGS.colWidths[k]) || d;
+  // #654: the track-actions column is fixed at two icons wide; it is never resized
+const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[k]) || d;
   function esc(s) { return String(s == null ? '' : s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c])); }
 
   // The shared design tokens (#562). Values live in dev/tokens/design-tokens.mjs and are
@@ -2799,9 +2800,12 @@ try {
        reachable; a cell narrow enough that a button lands on a pill gives the button a
        backing so it still reads (majkinetor: "those 2 icons covering Match column"). */
     .tc-bl{height:28px;box-sizing:border-box;display:flex;align-items:center;justify-content:center}
-    .tc-trackacts{position:absolute;inset:0;display:none;align-items:center;justify-content:flex-end;gap:2px;padding-right:2px;pointer-events:none}
-    .tc-mirror tr:hover .tc-trackacts{display:flex}
-    .tc-trackacts button{pointer-events:auto;cursor:pointer;border:none;border-radius:4px;padding:2px 3px;background:color-mix(in srgb, var(--mbu-bg) 85%, transparent);font-size:16px;line-height:1}
+    .tc-mirror td.c-act{vertical-align:top;padding:0}
+    .tc-trackacts{height:28px;display:flex;align-items:center;justify-content:center;gap:0;visibility:hidden}
+    .tc-mirror tr:hover .tc-trackacts{visibility:visible}
+    .tc-trackacts button{cursor:pointer;border:none;border-radius:4px;width:22px;padding:2px 0;background:none;font-size:16px;line-height:1}
+    .tc-trackacts button:hover{background:var(--mbu-bg-hover)}
+    .tc-trackacts button.void{visibility:hidden}   /* the slot keeps its width, so ✕ never moves */
     .tc-trackacts .trev{color:var(--mbu-accent-text)}.tc-trackacts .trev:hover{color:var(--mbu-accent-text)}
     .tc-trackacts .rm{color:var(--mbu-error);font-weight:bold}.tc-trackacts .rm:hover{color:var(--mbu-error)}
     /* #564 (majkinetor): "you should also change the blue color on the left that
@@ -3242,7 +3246,7 @@ try {
       .tc-mirror{display:block}
       .tc-mirror > colgroup,.tc-mirror > thead{display:none}
       .tc-mirror > tbody{display:block}
-      .tc-mirror > tbody > tr{display:grid;grid-template-columns:20px 34px 1fr 46px 30px;
+      .tc-mirror > tbody > tr{display:grid;grid-template-columns:20px 34px 1fr 46px 30px 44px;
         align-items:center;column-gap:6px;row-gap:3px;padding:7px 8px;background:transparent}
       .tc-mirror.gridrows > tbody > tr{border-bottom:1px solid var(--mbu-border)}
       .tc-mirror > tbody > tr > td{display:block;padding:0;border:none!important;background:transparent;overflow:visible}
@@ -3251,6 +3255,7 @@ try {
       .tc-mirror td.c-title{grid-column:3;grid-row:1}
       .tc-mirror td.c-len{grid-column:4;grid-row:1}
       .tc-mirror td.c-badge{grid-column:5;grid-row:1}
+      .tc-mirror td.c-act{grid-column:6;grid-row:1}
       .tc-mirror td.c-art{grid-column:1 / -1;grid-row:2;width:auto}
       .tc-mirror input.t-len{width:100%;text-align:right}
       /* the medium header keeps its own full-width line */
@@ -3265,7 +3270,7 @@ try {
       .tc-acts{width:auto;gap:3px;padding-left:3px}
       /* touch = no hover: reveal the per-row / per-artist controls permanently */
       .tc-mirror tr .t-gc,.tc-mirror tr .t-feat,
-      .tc-enter,.tc-splitb,.tc-slotgrab,.tc-slotx{visibility:visible}
+      .tc-enter,.tc-splitb,.tc-slotgrab,.tc-slotx,.tc-trackacts{visibility:visible}
       .tc-aslot:not(.tc-can-split) .tc-splitb{display:none}
     }
   `;
@@ -3634,7 +3639,7 @@ try {
     // the Artist column is the flexible filler (no fixed width) — it absorbs the slack so every OTHER
     // column keeps its EXACT width (table-layout:fixed) and resizes 1:1 with the mouse (no jump)
     t.innerHTML = `<colgroup>${COLS.map(c => c.k === 'art' ? '<col>' : `<col style="width:${colW(c.k, c.w)}px">`).join('')}</colgroup>` +
-      `<thead><tr>${COLS.map(c => `<th class="c-${c.k}">${c.label}${c.k === 'art' ? '' : '<span class="tc-resizer"></span>'}</th>`).join('')}</tr></thead><tbody></tbody>`;
+      `<thead><tr>${COLS.map(c => `<th class="c-${c.k}">${c.label}${c.k === 'art' || c.k === 'act' || c.k === 'badge' ? '' : '<span class="tc-resizer"></span>'}</th>`).join('')}</tr></thead><tbody></tbody>`;
     return t;
   }
   // the artist-selection-mode dropdown now lives in the Artist column header (right-aligned)
@@ -3777,6 +3782,7 @@ try {
       const ths = [...table.querySelectorAll('thead th')];
       const inverse = i >= artIdx;
       const ci = inverse ? i + 1 : i;
+      if (COLS[ci].k === 'act') return;   // #654: fixed width
       const col = cols[ci], startX = e.clientX, startW = parseInt(col.style.width) || (ths[ci] && ths[ci].offsetWidth) || 100;
       const mm = ev => { col.style.width = Math.max(36, startW + (ev.clientX - startX) * (inverse ? -1 : 1)) + 'px'; };
       const mu = () => { document.removeEventListener('mousemove', mm); document.removeEventListener('mouseup', mu); dragging = false; SETTINGS.colWidths = SETTINGS.colWidths || {}; SETTINGS.colWidths[COLS[ci].k] = parseInt(col.style.width); saveSettings(); };
@@ -3813,7 +3819,7 @@ try {
     const table = document.querySelector('.tc-mirror'); if (!table) return;
     SETTINGS.colWidths = SETTINGS.colWidths || {};
     const total = table.clientWidth || table.offsetWidth || 900;
-    const fixed = colW('mv', 32) + colW('num', 38) + colW('len', 52) + colW('badge', 56);
+    const fixed = colW('mv', 32) + colW('num', 38) + colW('len', 52) + colW('badge', 56) + colW('act', 44);
     SETTINGS.colWidths.title = Math.max(160, Math.round((total - fixed) / 2));
     saveSettings(); applyColWidths(); Log.info('columns → balanced (Title = Artist)', SETTINGS.colWidths.title);
   }
@@ -4000,15 +4006,22 @@ try {
     const a = s._pos.artists.find(x => x.entity && x.entity.gid === s.gid); if (!a) return '';
     return ` title="${esc(`matched by position: ${a.entity.name} is credited on this track on ${a.votes} of ${s._pos.of} other edition${s._pos.of === 1 ? '' : 's'} of the release`)}"`;
   }
-  // the badge column: a pill per artist line, plus a hover overlay with the track ↺/✕ actions
+  /* the badge column: a pill per artist line. #654 (majkinetor): the track ↺/✕ overlaid
+     it and covered the pills; they get their own column after Match, "fit to 2 icon
+     width", empty until the row is hovered. (Not the gutter by the drag handle: the
+     data-track ⤓ lives there, and a ✕ next to it is easy to hit by accident.) */
   function renderBadgeCell(cell, track) {
     const changed = trackChanged(track);   // ↺ only makes sense (and only shows) when there's something to revert
     const locked = mediumLocked(track.mi);   // disc-ID medium: no remove button (#125)
-    cell.innerHTML = track.slots.map(s => `<div class="tc-bl">${s.committed ? `<span class="tc-badge ${s.status}"${posBadgeTitle(s)}>${badgeText(s)}</span>` : ''}</div>`).join('')
-      + `<div class="tc-trackacts">${changed ? '<button class="trev" title="revert this track">↺</button>' : ''}${locked ? '' : '<button class="rm" title="remove track">✕</button>'}</div>`;
-    const trev = cell.querySelector('.trev'); if (trev) trev.onclick = () => revertTrack(track);
-    const rm = cell.querySelector('.rm'); if (rm) rm.onclick = () => { removeTrack(track); rebuild(); };
-    const row = cell.closest('tr'); if (row) row.classList.toggle('tc-changed', changed);   // mark the row (left border)
+    cell.innerHTML = track.slots.map(s => `<div class="tc-bl">${s.committed ? `<span class="tc-badge ${s.status}"${posBadgeTitle(s)}>${badgeText(s)}</span>` : ''}</div>`).join('');
+    const row = cell.closest('tr');
+    const actCell = (row && row.querySelector('td.c-act')) || cell;
+    // both slots always rendered, so ✕ never moves when ↺ comes and goes
+    actCell.innerHTML = `<div class="tc-trackacts"><button class="trev${changed ? '' : ' void'}" title="revert this track"${changed ? '' : ' tabindex="-1" aria-hidden="true"'}>↺</button>`
+      + `<button class="rm${locked ? ' void' : ''}" title="remove track"${locked ? ' tabindex="-1" aria-hidden="true"' : ''}>✕</button></div>`;
+    const trev = actCell.querySelector('.trev:not(.void)'); if (trev) trev.onclick = () => revertTrack(track);
+    const rm = actCell.querySelector('.rm:not(.void)'); if (rm) rm.onclick = () => { removeTrack(track); rebuild(); };
+    if (row) row.classList.toggle('tc-changed', changed);   // mark the row (left border)
   }
   // join phrase: editable text that grows right-to-left, plus a ▾ that opens the presets list
   function joinControl(entry, slot, refreshBadges) {
@@ -4370,7 +4383,8 @@ try {
         <td class="c-title"><div class="t-wrap">${kind === 'pregap' ? '<span class="tc-trkkind" title="Hidden pregap track (position 0)">pregap</span>' : ''}${trackRecIsVideo(t) ? VIDEO_MARK_PRE : ''}<input class="t-title" ${NOPW_ATTRS} value="${esc(t.title)}" placeholder="title…"></div></td>
         <td class="c-art"></td>
         <td class="c-len"><input class="t-len" ${NOPW_ATTRS} value="${esc(t.length)}"${lenLocked ? ' readonly tabindex="-1" title="Length is fixed by this medium’s Disc ID"' : ''}></td>
-        <td class="c-badge"></td>`;
+        <td class="c-badge"></td>
+        <td class="c-act"></td>`;
       const badgeCell = tr.querySelector('.c-badge'); const refreshBadges = () => renderBadgeCell(badgeCell, t);
       const art = tr.querySelector('.c-art'); const pgids = ps && ps.artGids;   // #376 gold ONLY the slot(s) whose SELECTED artist has pending edits — not free-text neighbours, and not a field edited to free text
       t.slots.forEach((s, si) => { const se = slotEl(t, s, si, refreshBadges); const sr = se.querySelector('.tc-search'); if (sr) sr.classList.toggle('tc-slot-pending', slotIsPending(pgids, s)); art.appendChild(se); });
