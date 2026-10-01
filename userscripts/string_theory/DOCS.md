@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-10-01 17:01 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-10-01 17:08 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -99,13 +99,34 @@ On the recording side the copy is applied when you submit, like MusicBrainz's ow
 
 Stages, most confident first:
 
-1. **Release group.** The same track on other releases in the group, with its credited artists. This settles most tracks, compilations included.
-2. **Discogs link.** When the release links to Discogs, each credited artist (featured ones too) is matched by the Discogs link on the MusicBrainz artist. Badge: **DISC**.
-3. **Same position on other editions.** The track at the same position on the release group's other editions and on the [duplicates](#duplicates), when that track passes the [recording](#recording-matching) test (similar title and length within tolerance, or a title in another script on a medium that lines up). Its artist is taken if the name matches loosely (spaces, punctuation, quotes, a leading *The* ignored, or 85% similar): *Juan Formel* → *Juan Formell*, *Cedric Im Brooks* → *Cedric “Im” Brooks*. When the editions agree the artist is linked, keeping the seeded credited name. Badge: **POS**, with the number of editions in its tooltip. When they disagree nothing is linked, and they head the picker under **On other editions at this position**.
+1. **Discogs link.** When the release links to Discogs, each credited artist (featured ones too) is matched by the Discogs link on the MusicBrainz artist. Badge: **DISC**.
+2. **Release group.** The same track on other releases in the group, with its credited artists. This settles most tracks, compilations included. Badge: **RG**.
+3. **Same position on other editions.** The track at the same position on the release group's other editions and on the [duplicates](#duplicates), when that track passes the [recording](#recording-matching) test (similar title and length within tolerance, or a title in another script on a medium that lines up). Its artist is taken if the name matches loosely (spaces, punctuation, quotes, a leading *The* ignored, or 85% similar): *Juan Formel* → *Juan Formell*, *Cedric Im Brooks* → *Cedric “Im” Brooks*. When the editions agree the artist is linked, keeping the seeded credited name. Badge: **POS**. When they disagree nothing is linked, and they head the picker under **On other editions at this position**.
 4. **Exact name or alias.** Linked only when exactly one artist has the credited name as its name or an alias, among all of MusicBrainz's matches, not only the first page. Badge: **NAME** or **ALIAS**.
 5. **Co-credit.** For a shared name, an artist credited with that name next to an artist already on this release. Exactly one such artist is linked; a tie is offered to pick from. Badge: **CRED**.
 
 Green means matched confidently; a white search box means unresolved, counted by **N unresolved**.
+
+**Match card.** Hover a badge for half a second and a card opens under it. It shows:
+- the stage, and whether Apollo linked the artist or you picked it;
+- the linked artist, with its disambiguation, type, area and dates;
+- the evidence the stage had: the Discogs artist; the release-group release and track; each other edition and whom it credits (✓ / ✗); the alias; the co-credit counts;
+- the other candidates;
+- when it matched.
+
+The card stays open while the pointer is on it, so its links can be followed; Esc or moving away closes it. It only shows what the match already read, so it makes no requests.
+
+| Badge | Meaning |
+|---|---|
+| **DISC** | the Discogs artist credited on the release is linked from this MusicBrainz artist |
+| **RG** | another release in the release group credits this artist on the same track |
+| **POS** | other editions credit this artist on the track at this position |
+| **NAME** | the only MusicBrainz artist with this name (aliases checked too) |
+| **ALIAS** | the only MusicBrainz artist with this credit as an alias |
+| **CRED** | credited alongside an artist already on this release, more often than any other artist of this name |
+| **USER** | picked by you |
+| **SET** | linked before Apollo matched: by the release, the seed or the page |
+| **LOW** | uncertain; the card lists what each stage found |
 
 **Discogs links.** When the Discogs link is known, the type icon offers what's missing: **🔗** creates the artist with the link, or adds the link to the matched artist. **⚠** warns that the link belongs to a different artist, or that the artist links a different Discogs page (often a wrong match). **🔗 N links** in the toolbar counts them and steps through them.
 

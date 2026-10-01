@@ -111,8 +111,11 @@ test('track artists matched by their position on other editions', { tag: ['@sand
   // #638: a rebuild after the pass keeps each artist's match badge; one that loses it is logged
   check(!/#638 a table rebuild lost/.test(A.log), 'A: no match badge is lost in a table rebuild (#638)');
   {
-    const tip = await page.evaluate(() => (document.querySelector('.tc-badge.pos') || {}).title || '');
-    check(/matched by position: .* on \d+ of \d+ other edition/.test(tip), `a pos badge says what it rests on: "${tip}"`);
+    // #654: the badge's match card says what it rests on, edition by edition
+    await page.locator('.tc-badge.pos').first().hover();
+    const tip = await page.locator('#tc-mtip').textContent({ timeout: 5000 }).catch(() => '');
+    check(/Same position on other editions/.test(tip) && /Credited on this track on \d+ of \d+ other edition/.test(tip), `a pos badge's card says what it rests on: "${tip.slice(0, 200)}"`);
+    await page.mouse.move(0, 0);
     const sec = await page.evaluate(async () => {
       const inp = [...document.querySelectorAll('.tc-search input.nm')].find(i => /Buzzard/i.test(i.value));
       if (!inp) return null;
