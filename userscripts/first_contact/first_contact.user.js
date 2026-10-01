@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         First Contact
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.1.151031
-// @description  Import a release into MusicBrainz from the platform's album page with one click: the release editor opens with the title, tracklist, artists, date, label, barcode and link filled in. Each artist's platform link is handed to Apollo Editor for matching. Platforms: Deezer, Bandcamp, Discogs, Apple Music, Tidal, Qobuz.
+// @version      2026.10.1.161334
+// @description  Import a release into MusicBrainz from the platform's album page with one click: the release editor opens with the title, tracklist, artists, date, label, barcode and link filled in. Each artist's platform link is handed to Apollo Editor for matching. Platforms: Deezer, Bandcamp, Discogs, Apple Music, Tidal, Qobuz, Beatport.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPkZpcnN0IENvbnRhY3Q8L3RpdGxlPgogIDwhLS0gdHJhY3RvciBiZWFtIC0tPgogIDxwYXRoIGQ9Ik01MCA0NCBMNzggNDQgTDEwNCAxMTIgTDI0IDExMiBaIiBmaWxsPSIjZjZjNDMxIiBvcGFjaXR5PSIwLjkiLz4KICA8cGF0aCBkPSJNNTYgNDQgTDcyIDQ0IEw4OCAxMTIgTDQwIDExMiBaIiBmaWxsPSIjZmRlNjhhIiBvcGFjaXR5PSIwLjciLz4KICA8IS0tIGxhbmRpbmcgcmluZyAtLT4KICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSIxMTQiIHJ4PSI0MiIgcnk9IjgiIGZpbGw9IiMxZTIzNDYiLz4KICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSIxMTMiIHJ4PSIyNiIgcnk9IjQuMiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZjZjNDMxIiBzdHJva2Utd2lkdGg9IjIuNCIvPgogIDwhLS0gc2F1Y2VyIC0tPgogIDxwYXRoIGQ9Ik00MCAyNiBBMjQgMTggMCAwIDEgODggMjYgWiIgZmlsbD0iIzFlMjM0NiIvPgogIDxwYXRoIGQ9Ik01MCAxOCBBMTAgNiAwIDAgMSA2MCAxNCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjIuNiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8+CiAgPGVsbGlwc2UgY3g9IjY0IiBjeT0iMzIiIHJ4PSI1NiIgcnk9IjEzIiBmaWxsPSIjMWUyMzQ2Ii8+CiAgPGNpcmNsZSBjeD0iMzgiIGN5PSIzMiIgcj0iNC40IiBmaWxsPSIjZmZmIi8+CiAgPGNpcmNsZSBjeD0iNjQiIGN5PSIzNCIgcj0iNC40IiBmaWxsPSIjZmZmIi8+CiAgPGNpcmNsZSBjeD0iOTAiIGN5PSIzMiIgcj0iNC40IiBmaWxsPSIjZmZmIi8+CiAgPCEtLSB0aGUgcmVsZWFzZSBiZWluZyBiZWFtZWQgdXA6IGEgcHVycGxlIGhleGFnb24gd2l0aCBhIG5vdGUgLS0+CiAgPHBhdGggZD0iTTY0IDU4IEw4NCA2OS41IEw4NCA5Mi41IEw2NCAxMDQgTDQ0IDkyLjUgTDQ0IDY5LjUgWiIgZmlsbD0iIzdiNGZkNiIvPgogIDxwYXRoIGQ9Ik02NCA1OCBMODQgNjkuNSBMNjQgODEgTDQ0IDY5LjUgWiIgZmlsbD0iIzliNzJlYSIvPgogIDxwYXRoIGQ9Ik02MCA3MiBMNzQgNjkgTDc0IDg5IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iMy40IiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+CiAgPHBhdGggZD0iTTYwIDcyIEw2MCA5MiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjMuNCIvPgogIDxlbGxpcHNlIGN4PSI1NiIgY3k9IjkyIiByeD0iNC42IiByeT0iMy42IiBmaWxsPSIjZmZmIi8+CiAgPGVsbGlwc2UgY3g9IjcwIiBjeT0iODkiIHJ4PSI0LjYiIHJ5PSIzLjYiIGZpbGw9IiNmZmYiLz4KICA8IS0tIHNwYXJrbGVzIC0tPgogIDxwYXRoIGQ9Ik0xOCA1NCBsMi41IDYgNiAyLjUgLTYgMi41IC0yLjUgNiAtMi41IC02IC02IC0yLjUgNiAtMi41IFoiIGZpbGw9IiNmNmM0MzEiLz4KICA8cGF0aCBkPSJNMTA4IDUyIGwyLjUgNiA2IDIuNSAtNiAyLjUgLTIuNSA2IC0yLjUgLTYgLTYgLTIuNSA2IC0yLjUgWiIgZmlsbD0iIzFlMjM0NiIvPgogIDxwYXRoIGQ9Ik0xMTIgODIgbDEuOCA0LjIgNC4yIDEuOCAtNC4yIDEuOCAtMS44IDQuMiAtMS44IC00LjIgLTQuMiAtMS44IDQuMiAtMS44IFoiIGZpbGw9IiNmNmM0MzEiLz4KICA8cGF0aCBkPSJNMTQgODYgbDEuOCA0LjIgNC4yIDEuOCAtNC4yIDEuOCAtMS44IDQuMiAtMS44IC00LjIgLTQuMiAtMS44IDQuMiAtMS44IFoiIGZpbGw9IiMxZTIzNDYiLz4KPC9zdmc+Cg==
 // @homepageURL  https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/first_contact/README.md
@@ -13,6 +13,7 @@
 // @match        https://tidal.com/*
 // @match        https://listen.tidal.com/*
 // @match        https://www.qobuz.com/*/album/*
+// @match        https://www.beatport.com/*
 // @match        https://*.musicbrainz.org/release/add*
 // @noframes
 // @grant        GM_xmlhttpRequest
@@ -27,6 +28,7 @@
 // @connect      amp-api.music.apple.com
 // @connect      auth.tidal.com
 // @connect      openapi.tidal.com
+// @connect      api.beatport.com
 // ==/UserScript==
 
 (function () {
@@ -843,7 +845,94 @@ const QOBUZ = {
     },
 };
 
-const PROVIDERS = [DEEZER, BANDCAMP, DISCOGS, APPLE, TIDAL, QOBUZ];
+// Beatport: the release page's Next.js data (__NEXT_DATA__), the way Harmony reads it: the
+// release, and its tracks in a second query. The site is a single-page app, so after an in-app
+// navigation the page's data is stale and the release page is fetched again (same origin, so it
+// passes the site's bot check). More than one page of tracks is read from Beatport's API with
+// the anonymous token the page carries.
+const BEATPORT = {
+    id: 'beatport',
+    name: 'Beatport',
+    host: /^www\.beatport\.com$/,
+    albumId(loc) { const m = loc.pathname.match(/^\/(?:[a-z]{2}\/)?release\/[^/]+\/(\d+)\/?$/i); return m ? m[1] : null; },
+    TYPES: { Album: ['Album'], EP: ['EP'], Single: ['Single'], Compilation: ['Album', 'Compilation'] },
+    url: (kind, x) => `https://www.beatport.com/${kind}/${x.slug || '-'}/${x.id}`,
+
+    // the page's __NEXT_DATA__ when it is this release's, else the release page fetched anew
+    async nextData(id, doc) {
+        const read = d => { const el = d.querySelector('script#__NEXT_DATA__'); return el ? JSON.parse(el.textContent) : null; };
+        const here = read(doc || document);
+        const rel = here && here.props && here.props.pageProps && here.props.pageProps.release;
+        if (rel && String(rel.id) === String(id)) { Log.debug('Beatport: the page\'s own data is this release\'s'); return here; }
+        Log.info(`Beatport: the page's data is ${rel ? 'release ' + rel.id : 'not a release'}; fetching release ${id}`);
+        const r = await fetch(`${location.origin}/release/-/${id}`, { credentials: 'include' });
+        if (!r.ok) throw new Error(`Beatport: HTTP ${r.status} for release ${id}`);
+        const got = read(new DOMParser().parseFromString(await r.text(), 'text/html'));
+        if (!got) throw new Error('Beatport: no __NEXT_DATA__ on the release page (bot check?)');
+        return got;
+    },
+
+    async fetchRelease(id, progress, doc) {
+        const nd = await this.nextData(id, doc);
+        const pp = nd.props.pageProps;
+        const r = pp.release;
+        if (!r) throw new Error(`Beatport: no release ${id} in the page data`);
+        const q = ((pp.dehydratedState || {}).queries || []).map(x => x.state && x.state.data).find(d => d && Array.isArray(d.results) && d.results.some(t => t.release && String(t.release.id) === String(id)));
+        if (!q) throw new Error('Beatport: no tracks in the page data');
+        const results = q.results.slice();
+        for (let next = q.next; next;) {
+            const tok = pp.anonSession && pp.anonSession.access_token;
+            if (!tok) { Log.warn(`Beatport: ${q.count} tracks but no token to read past ${results.length}`); break; }
+            // the page names an internal host; the same path answers on the public one
+            const page = await gmJson(next.replace(/^https?:\/\/[^/]+/, 'https://api.beatport.com'), { Authorization: 'Bearer ' + tok });
+            results.push(...(page.results || []));
+            next = page.next || null;
+        }
+        Log.info(`Beatport release ${id}: "${r.name}" by ${(r.artists || []).map(a => a.name).join(', ')} · type ${(r.type || {}).name} · ${r.track_count} track(s), ${results.length} read · ${r.new_release_date} · UPC ${r.upc || '—'} · label "${(r.label || {}).name}" ${r.catalog_number || ''}`);
+
+        // release.tracks lists the track URLs last to first; a track it misses keeps the API's order
+        const byUrl = new Map(results.map(t => [t.url, t]));
+        const order = (r.tracks || []).slice().reverse().map(u => byUrl.get(u)).filter(Boolean);
+        const tracks = order.length === results.length ? order : results;
+        if (tracks !== order) Log.warn(`Beatport: the release's track list matched ${order.length} of ${results.length} tracks; using the API's order`);
+        const artist = a => ({ name: a.name, url: this.url('artist', a) });
+        const list = tracks.map((t, i) => {
+            const tf = splitFeat(t.name || '');
+            const title = tf.title + (t.mix_name && !/^original mix$/i.test(t.mix_name) ? ` (${t.mix_name})` : '');
+            const credit = creditFromTitle((t.artists || []).map(artist), tf.feat);
+            progress && progress(i + 1, tracks.length);
+            Log.debug(`track ${i + 1}: "${title}" — ${credit.map(c => c.name + c.join).join('')} (${t.isrc || 'no ISRC'})`);
+            return { title, lengthMs: t.length_ms || null, isrc: t.isrc || null, url: this.url('track', t), credit };
+        });
+
+        // Beatport credits every track artist to the release; many of them mean Various Artists
+        const ra = r.artists || [];
+        const af = splitFeat(r.name || '');
+        const credit = ra.length > 4 || (ra.length === 1 && /^various artists$/i.test(ra[0].name))
+            ? [{ name: 'Various Artists', mbid: VARIOUS_ARTISTS_MBID, join: '' }]
+            : creditFromTitle(ra.map(artist), af.feat);
+        const [y, m, d] = String(r.new_release_date || r.publish_date || '').split('-').map(n => parseInt(n, 10));
+        const url = this.url('release', r);
+        return {
+            source: this.id,
+            url,
+            title: af.title,
+            credit,
+            types: this.TYPES[(r.type || {}).name] || [],
+            status: 'official',
+            packaging: 'None',
+            date: { year: y || null, month: m || null, day: d || null },
+            country: 'XW',
+            barcode: r.upc || null,
+            labels: r.label ? [{ name: r.label.name, catno: r.catalog_number || '', url: this.url('label', r.label) }] : [],
+            // 74 = purchase for download, 980 = streaming page (paid)
+            urls: [{ url, linkType: 74 }].concat(r.is_available_for_streaming ? [{ url, linkType: 980 }] : []),
+            mediums: [{ format: 'Digital Media', name: '', tracks: list }],
+        };
+    },
+};
+
+const PROVIDERS = [DEEZER, BANDCAMP, DISCOGS, APPLE, TIDAL, QOBUZ, BEATPORT];
 
 /* ── the seed: model → the release editor's POST parameters ──────────────── */
 // https://musicbrainz.org/doc/Development/Release_Editor_Seeding
