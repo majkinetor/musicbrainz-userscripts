@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         ISRC Scout
 // @namespace    https://musicbrainz.org/
-// @version      2026.9.30
+// @version      2026.10.1
 // @description  Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify / Beatport / Tidal / Volumo / HDtracks / Qobuz, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPklTUkMgU2NvdXQ8L3RpdGxlPgogICAgPHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPgogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjQwIi8+CiAgICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyNiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2U9IiNiOWEzZTgiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPgogIDwvZz4KICA8bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+Cjwvc3ZnPgo=
@@ -2321,27 +2321,48 @@
     const discs = new Set(RELEASE.tracks.map(x => +x.mediumPos));
     return entries.find(s => +s.pos === +t.trackPos && (+s.disc === +t.mediumPos || !discs.has(+s.disc))) || null;
   }
-  async function allOnProvider(key, t, isrc) {
+  // the number of another track of this release that has the ISRC (on MB, or entered), or ''
+  function isrcOfOtherTrack(idx, isrc) {
+    const i = RELEASE.tracks.findIndex((x, j) => j !== idx && ((x.existing || []).includes(isrc) || normalizeIsrc(x.pending || '') === isrc));
+    return i < 0 ? '' : String(RELEASE.tracks[i].number || RELEASE.tracks[i].trackPos);
+  }
+  // an album entry's title reads as this track's (the artist isn't compared: album entries carry none)
+  const albumTitleFits = (x, t) => !!x && SX.classify({ title: x.title || '', artist: t.artist, dur: x.dur || '' }, t.title, t.artist, t.dur) !== 'other';
+  // asked: every ISRC All asks about on this row (an album entry with one of them isn't "another ISRC")
+  async function allOnProvider(key, t, isrc, idx, asked) {
     const name = TRACK_PROV[key].name;
     try {
       if (TRACK_PROV[key].global) {
         const f = await providerLookupByIsrc(key, isrc);
-        if (!f) return { key, name, state: ALL_NONE, note: 'doesn’t know ' + isrc };
-        return allSongLine(key, name, f, t, isrc);
+        if (!f) return { key, name, of: isrc, state: ALL_NONE, note: 'doesn’t know ' + isrc };
+        return Object.assign(allSongLine(key, name, f, t, isrc), { of: isrc });
       }
-      // the album's answer for THIS track is what it has at the track's place; the ISRC being
-      // somewhere else on the album (another track's) is no agreement
+      // The album has the ISRC → it agrees, at this track's position (📍) or another (↪ track n:
+      // the album orders its tracks differently). Only when the ISRC is nowhere on the album is
+      // the ISRC at this track's position offered instead (✗ + use), and never when that one is
+      // another track's of this release or this row's own (#643: a Qobuz album with the mixes in
+      // another order offered track 4's ISRC for track 2).
       const entries = await ensureProvAlbum(key);
       const e = albumEntryAt(entries, t), eIsrc = e ? normalizeIsrc(e.isrc) : '';
       const other = entries.find(x => normalizeIsrc(x.isrc) === isrc);
       const where = x => 'track ' + (x.disc && RELEASE.tracks.some(y => +y.mediumPos !== 1) ? x.disc + '.' : '') + x.pos;
       const song = x => ({ title: x.title || '', artist: '', dur: x.dur || '' });
-      if (eIsrc === isrc) return { key, name, state: ALL_OK, isrc, at: 'here', song: song(e) };
-      if (eIsrc) return { key, name, state: ALL_DIFF, isrc: eIsrc, at: 'here', song: song(e), note: other ? isrc + ' is its ' + where(other) : '' };
-      if (other) return { key, name, state: ALL_OK, isrc, at: where(other), song: song(other), note: 'nothing at this track’s place' };
-      return { key, name, state: ALL_NONE, note: 'not on the album' };
+      const line = { key, name, of: isrc };
+      if (eIsrc === isrc) return Object.assign(line, { state: ALL_OK, isrc, at: 'here', song: song(e) });
+      // the ISRC elsewhere, and another at this position: by title, which one is this track
+      // (when neither or both read as it, the album having the ISRC wins)
+      if (other && !(eIsrc && albumTitleFits(e, t) && !albumTitleFits(other, t)))
+        return Object.assign(line, { state: ALL_OK, isrc, at: where(other), song: song(other), note: eIsrc ? '' : 'nothing at this track’s place' });
+      if (eIsrc && !asked.includes(eIsrc)) {
+        const owner = isrcOfOtherTrack(idx, eIsrc);
+        if (owner) return Object.assign(line, { state: ALL_NONE, note: (other ? isrc + ' is its ' + where(other) + '; ' : 'not on the album; ') + 'at this position it has track ' + owner + '’s ISRC (' + eIsrc + ')' });
+        return Object.assign(line, { state: ALL_DIFF, isrc: eIsrc, at: 'here', song: song(e), note: other ? isrc + ' is its ' + where(other) : '' });
+      }
+      // left: at this position the album has nothing or this row's other ISRC
+      if (other) return Object.assign(line, { state: ALL_SONG, isrc, at: where(other), song: song(other), note: 'another track' + (eIsrc ? '; at this position it has ' + eIsrc + ', this row’s other ISRC' : '') });
+      return Object.assign(line, { state: ALL_NONE, note: 'not on the album' + (eIsrc ? ' (at this position: ' + eIsrc + ', this row’s other ISRC)' : '') });
     } catch (err) {
-      return { key, name, state: ALL_FAIL, note: err && err.rateLimited ? 'rate-limited — try again' : 'failed: ' + errText(err) };
+      return { key, name, of: isrc, state: ALL_FAIL, note: err && err.rateLimited ? 'rate-limited — try again' : 'failed: ' + errText(err) };
     }
   }
   // A provider's song for the ISRC, against the track: the same song (classify 'best', or 'warn' —
@@ -2377,9 +2398,15 @@
   }
   async function allSxLine(t, isrc) {
     const rows = await sxLookupCached(isrc);   // throws on a captcha / rate limit
-    if (!rows.length) return { key: 'sx', name: 'SoundExchange', state: ALL_NONE, note: 'doesn’t know ' + isrc };
+    if (!rows.length) return { key: 'sx', name: 'SoundExchange', of: isrc, state: ALL_NONE, note: 'doesn’t know ' + isrc };
     const f = SX.fields(rows[0]);
-    return allSongLine('sx', 'SoundExchange', f, t, isrc);
+    return Object.assign(allSongLine('sx', 'SoundExchange', f, t, isrc), { of: isrc });
+  }
+  // #643: the ISRCs All asks about on a row: the given one (entered, or the first existing) and
+  // every other ISRC the recording already has
+  function allRowIsrcs(idx, isrc) {
+    const t = RELEASE.tracks[idx];
+    return [...new Set([isrc].concat(t.existing || []).map(normalizeIsrc).filter(isValidIsrc))];
   }
   // One track: every provider, then SoundExchange (sx: false queues it — a bulk run asks it after
   // the other tracks' providers).
@@ -2390,41 +2417,48 @@
     return _allInflight[k];
   }
   async function allLookupRowNow(idx, isrc, { sx = true } = {}) {
-    const t = RELEASE.tracks[idx], keys = allProviders();
-    const res = _allRes[idx] = { isrc, lines: keys.map(k => ({ key: k, name: TRACK_PROV[k].name, state: ALL_WAIT, note: 'asking…' })) };
+    const t = RELEASE.tracks[idx], keys = allProviders(), asked = allRowIsrcs(idx, isrc), num = t.number || t.trackPos;
+    // res.isrc: the row's ISRC (entered, or the first existing), shown first; res.asked: every one asked about
+    const res = _allRes[idx] = { isrc, asked, lines: [].concat(...asked.map(i => keys.map(k => ({ key: k, name: TRACK_PROV[k].name, of: i, state: ALL_WAIT, note: 'asking…' })))) };
     renderAllChip(idx);
-    Log.info('All #' + (t.number || t.trackPos) + ' ' + isrc + ': asking ' + keys.map(k => TRACK_PROV[k].name).join(', ') + (sx ? ', SoundExchange' : ''));
-    res.lines = await Promise.all(keys.map(k => allOnProvider(k, t, isrc)));
-    res.lines.forEach(l => Log.info('All #' + (t.number || t.trackPos) + ' ' + l.name + ': ' + l.state + ' — ' + allLineText(l, isrc)));
+    Log.info('All #' + num + ' ' + asked.join(', ') + ': asking ' + keys.map(k => TRACK_PROV[k].name).join(', ') + (sx ? ', SoundExchange' : ''));
+    res.lines = [].concat(...await Promise.all(asked.map(i => Promise.all(keys.map(k => allOnProvider(k, t, i, idx, asked))))));
+    res.lines.forEach(l => Log.info('All #' + num + ' ' + l.of + ' ' + l.name + ': ' + l.state + ' — ' + allLineText(l, l.of)));
     if (sx) await allSxRow(idx);
-    else res.lines.push({ key: 'sx', name: 'SoundExchange', state: ALL_WAIT, note: 'queued — asked after the other tracks’ providers' });
+    else asked.forEach(i => res.lines.push({ key: 'sx', name: 'SoundExchange', of: i, state: ALL_WAIT, note: 'queued — asked after the other tracks’ providers' }));
     renderAllChip(idx);
     return res;
   }
-  // SoundExchange for a row All has looked at: throws on a captcha / rate limit, after marking the row.
+  // SoundExchange for a row All has looked at, for each ISRC asked about: throws on a captcha /
+  // rate limit, after marking the row.
   async function allSxRow(idx) {
-    const res = _allRes[idx], t = RELEASE.tracks[idx];
+    const res = _allRes[idx], t = RELEASE.tracks[idx], num = t.number || t.trackPos;
     res.lines = res.lines.filter(l => l.key !== 'sx');
-    const at = res.lines.length;
-    if (_allSxBlocked) {
-      res.lines.push({ key: 'sx', name: 'SoundExchange', state: ALL_BLOCK, note: 'not asked · ' + _allSxBlocked, sxLink: true });
-      renderAllChip(idx);
-      return;
-    }
-    res.lines.push({ key: 'sx', name: 'SoundExchange', state: ALL_WAIT, note: 'asking…' });
-    renderAllChip(idx);
-    try {
-      res.lines[at] = await allSxLine(t, res.isrc);
-      Log.info('All #' + (t.number || t.trackPos) + ' SoundExchange: ' + res.lines[at].state + ' — ' + allLineText(res.lines[at], res.isrc));
-    } catch (e) {
-      if (e && (e.captcha || e.rateLimited)) {
-        _allSxBlocked = e.captcha ? 'captcha' : 'rate limit';
-        res.lines[at] = { key: 'sx', name: 'SoundExchange', state: ALL_BLOCK, note: e.captcha ? 'captcha' : 'rate-limited', sxLink: true };
-        renderAllChip(idx);
-        throw e;
+    const asked = res.asked || [res.isrc];
+    for (let n = 0; n < asked.length; n++) {
+      const i = asked[n], at = res.lines.length;
+      if (_allSxBlocked) {
+        res.lines.push({ key: 'sx', name: 'SoundExchange', of: i, state: ALL_BLOCK, note: 'not asked · ' + _allSxBlocked, sxLink: true });
+        continue;
       }
-      res.lines[at] = { key: 'sx', name: 'SoundExchange', state: ALL_FAIL, note: 'failed: ' + errText(e) };
-      Log.err('All #' + (t.number || t.trackPos) + ' SoundExchange failed: ' + errText(e));
+      res.lines.push({ key: 'sx', name: 'SoundExchange', of: i, state: ALL_WAIT, note: 'asking…' });
+      renderAllChip(idx);
+      const cached = !!_isrcLookupCache[i];
+      try {
+        res.lines[at] = await allSxLine(t, i);
+        Log.info('All #' + num + ' ' + i + ' SoundExchange: ' + res.lines[at].state + ' — ' + allLineText(res.lines[at], i));
+      } catch (e) {
+        if (e && (e.captcha || e.rateLimited)) {
+          _allSxBlocked = e.captcha ? 'captcha' : 'rate limit';
+          res.lines[at] = { key: 'sx', name: 'SoundExchange', of: i, state: ALL_BLOCK, note: e.captcha ? 'captcha' : 'rate-limited', sxLink: true };
+          asked.slice(n + 1).forEach(j => res.lines.push({ key: 'sx', name: 'SoundExchange', of: j, state: ALL_BLOCK, note: 'not asked · ' + _allSxBlocked, sxLink: true }));
+          renderAllChip(idx);
+          throw e;
+        }
+        res.lines[at] = { key: 'sx', name: 'SoundExchange', of: i, state: ALL_FAIL, note: 'failed: ' + errText(e) };
+        Log.err('All #' + num + ' ' + i + ' SoundExchange failed: ' + errText(e));
+      }
+      if (!cached && n < asked.length - 1) await sleep(BATCH_DELAY);   // paced, as a bulk run is
     }
     renderAllChip(idx);
   }
@@ -2504,21 +2538,38 @@
     document.addEventListener('keydown', onKey, true);
     pop._off = () => { document.removeEventListener('mousedown', onDown, true); document.removeEventListener('keydown', onKey, true); };
   }
+  // the asked ISRC whose comparison the panel shows ('' while it shows a named ISRC's providers),
+  // and whether a line is in it
+  function allShownIsrc(pop, res) {
+    const asked = res.asked || [res.isrc];
+    return !pop._sel ? res.isrc : asked.includes(pop._sel) ? pop._sel : '';
+  }
+  function allLineShown(l, pop, res) {
+    const shown = allShownIsrc(pop, res);
+    return shown ? (l.of || res.isrc) === shown : l.isrc === pop._sel;
+  }
   function renderAllPop(pop) {
     const idx = pop._idx, res = _allRes[idx]; if (!res) return;
     const num = RELEASE.tracks[idx].number || RELEASE.tracks[idx].trackPos;
     const icon = k => k === 'sx' ? '<span class="ii-prov-sx">SX</span>' : (SRC_ICON[TRACK_PROV[k] && TRACK_PROV[k].code] || '');
-    const isrcs = [...new Set([res.isrc].concat(res.lines.map(l => l.isrc).filter(Boolean)))];
+    // #643: the header has every ISRC on the row (each asked about) and then any other a provider
+    // named; the comparison shows one asked ISRC at a time (the row's first), and a named one shows
+    // the providers that name it
+    const asked = res.asked || [res.isrc];
+    const isrcs = [...new Set(asked.concat(res.lines.map(l => l.isrc).filter(Boolean)))];
     if (!isrcs.includes(pop._sel)) pop._sel = '';
-    const count = i => res.lines.filter(l => l.isrc === i).length;
+    const shown = allShownIsrc(pop, res);
+    const count = i => res.lines.filter(l => l.isrc === i && (l.state === ALL_OK || l.state === ALL_DIFF)).length;
     pop.innerHTML = '<div class="ii-all-h"><span>Track ' + esc(num) + '</span>' +
-      isrcs.map(i => '<button type="button" class="ii-all-pick' + (i === res.isrc ? '' : ' other') + (i === pop._sel ? ' sel' : '') + '" data-isrc="' + esc(i) + '" title="' +
-        esc((i === res.isrc ? 'the row’s ISRC' : 'another ISRC a provider has for this track') + ' — ' + count(i) + ' provider(s); click to show only them' + (i === pop._sel ? ' (click again for all)' : '')) + '">' +
+      isrcs.map(i => '<button type="button" class="ii-all-pick' + (asked.includes(i) ? '' : ' other') + (i === shown || i === pop._sel ? ' sel' : '') + '" data-isrc="' + esc(i) + '" title="' +
+        esc((i === res.isrc ? 'the row’s ISRC' : asked.includes(i) ? 'another ISRC the recording has' : 'another ISRC a provider has for this track') +
+          ' — ' + count(i) + ' provider(s) have it for this track; click to show ' + (asked.includes(i) ? 'what each provider says about it' : 'only those providers') +
+          (i === pop._sel && !asked.includes(i) ? ' (click again for all)' : '')) + '">' +
         esc(i) + ' <span class="ii-all-n">' + count(i) + '</span></button>').join('') +
       '<span class="ii-all-sp"></span><button type="button" class="ii-all-copy" title="Copy this comparison as Markdown">copy</button></div>' +
-      res.lines.map((l, i) => (pop._sel && l.isrc !== pop._sel) ? '' :
+      res.lines.map((l, i) => !allLineShown(l, pop, res) ? '' :
         '<div class="ii-all-line ii-all-' + l.state + '"><span class="ii-all-mark">' + ALL_MARK[l.state] + '</span><span class="ii-all-ico">' + icon(l.key) + '</span>' +
-        '<span class="ii-all-name">' + esc(l.name) + '</span><span class="ii-all-note" title="' + esc(allLineText(l, res.isrc)) + '">' + allLineHtml(l, res.isrc) + '</span>' +
+        '<span class="ii-all-name">' + esc(l.name) + '</span><span class="ii-all-note" title="' + esc(allLineText(l, l.of || res.isrc)) + '">' + allLineHtml(l, l.of || res.isrc) + '</span>' +
         '<span class="ii-all-len">' + esc((l.song && l.song.dur) || '') + '</span>' +
         (l.state === ALL_DIFF ? '<button type="button" class="ii-all-use" data-i="' + i + '" title="put ' + esc(l.isrc) + ' in the row">use</button>' : '<span></span>') + '</div>').join('');
     placeAllPop(pop);
@@ -2543,10 +2594,17 @@
   function allPopClick(pop, e) {
     const res = _allRes[pop._idx], idx = pop._idx, num = RELEASE.tracks[idx].number || RELEASE.tracks[idx].trackPos;
     const pick = e.target.closest('.ii-all-pick'), use = e.target.closest('.ii-all-use'), copy = e.target.closest('.ii-all-copy');
-    if (pick) { pop._sel = pop._sel === pick.dataset.isrc ? '' : pick.dataset.isrc; renderAllPop(pop); return; }
+    if (pick) {
+      const i = pick.dataset.isrc, asked = res.asked || [res.isrc];
+      // an ISRC of the row shows its comparison (the row's first: no selection); another one named
+      // by a provider toggles a filter to the providers naming it
+      pop._sel = asked.includes(i) ? (i === res.isrc ? '' : i) : (pop._sel === i ? '' : i);
+      renderAllPop(pop); return;
+    }
     if (use) {
       const l = res.lines[+use.dataset.i];
       setPending(idx, l.isrc, true, 'All · ' + l.name);
+      updateSummary();   // #643: the Add ISRCs button counts it
       Log.info('All #' + num + ': using ' + l.name + '\'s ' + l.isrc + ' in place of ' + res.isrc);
       closeAllPop();
       return;
@@ -2554,11 +2612,12 @@
     if (copy) {
       const cell = x => String(x).replace(/\|/g, '\\|');
       const t = RELEASE.tracks[idx];
-      const md = '**Track ' + num + '** · ' + cell(t.title || '') + ' · `' + res.isrc + '`\n\n| | Provider | Track | Length | Note |\n|:-:|---|---|---|---|\n' +
+      // what the comparison shows: one asked ISRC's lines, or the providers naming another
+      const md = '**Track ' + num + '** · ' + cell(t.title || '') + ' · `' + (allShownIsrc(pop, res) || pop._sel) + '`\n\n| | Provider | Track | Length | Note |\n|:-:|---|---|---|---|\n' +
         // no ISRC column: the header's is every line's, except where an album has another one — the note names that
-        res.lines.map(l => '| ' + ALL_MARK[l.state] + ' | ' + cell(l.name) + ' | ' +
+        res.lines.filter(l => allLineShown(l, pop, res)).map(l => '| ' + ALL_MARK[l.state] + ' | ' + cell(l.name) + ' | ' +
           cell(l.song && l.song.title ? l.song.title + (l.song.artist ? ' — ' + l.song.artist : '') : '') + ' | ' + cell((l.song && l.song.dur) || '') + ' | ' +
-          cell([l.isrc && l.isrc !== res.isrc ? '`' + l.isrc + '`' : '', allAtText(l), l.note || ''].filter(Boolean).join(' · ')) + ' |').join('\n') + '\n';
+          cell([l.isrc && l.isrc !== (l.of || res.isrc) ? '`' + l.isrc + '`' : '', allAtText(l), l.note || ''].filter(Boolean).join(' · ')) + ' |').join('\n') + '\n';
       const said = (ok) => { copy.textContent = ok ? 'copied ✓' : 'copy failed'; copy.classList.toggle('done', ok); setTimeout(() => { copy.textContent = 'copy'; copy.classList.remove('done'); }, 1500); };
       try { navigator.clipboard.writeText(md).then(() => said(true), () => said(false)); } catch (err) { said(false); }
       Log.info('All #' + num + ': comparison copied as Markdown');
@@ -2583,13 +2642,14 @@
     for (let k = 0; k < todo.length; k++) {
       if (myEpoch !== _allEpoch) { Log.info('All: cancelled'); return; }
       if (!_allRes[todo[k].idx]) continue;
-      const cached = !!_isrcLookupCache[_allRes[todo[k].idx].isrc];
+      const cached = (_allRes[todo[k].idx].asked || [_allRes[todo[k].idx].isrc]).every(i => _isrcLookupCache[i]);
       try { await allSxRow(todo[k].idx); }
       catch (e) {
         if (e && (e.captcha || e.rateLimited)) {
           todo.slice(k + 1).forEach(({ idx }) => {
-            const l = _allRes[idx] && _allRes[idx].lines.find(x => x.key === 'sx');
-            if (l) { l.state = ALL_BLOCK; l.note = 'not asked · stopped at a ' + (e.captcha ? 'captcha' : 'rate limit'); l.sxLink = true; }
+            (_allRes[idx] ? _allRes[idx].lines.filter(x => x.key === 'sx') : []).forEach(l => {
+              l.state = ALL_BLOCK; l.note = 'not asked · stopped at a ' + (e.captcha ? 'captcha' : 'rate limit'); l.sxLink = true;
+            });
             renderAllChip(idx);
           });
           Log.warn('All: SoundExchange ' + (e.captcha ? 'captcha' : 'rate limit') + ' — stopped; ' + (todo.length - k - 1) + ' track(s) not asked');
@@ -2649,7 +2709,7 @@
 
   // Re-skin EVERY per-track button to the chosen provider (global, not persisted).
   // The bulk "⟳ SoundExchange" toolbar button is intentionally left untouched.
-  function setTrackProvider(key) {
+  function setTrackProvider(key, { quiet = false } = {}) {
     if (!TRACK_PROV[key] || !trackProvAvailable(key)) return;
     trackProv = key;
     const m = TPM();
@@ -2669,7 +2729,7 @@
       const b = tbody.querySelector('tr[data-idx="' + i + '"] .ii-sx');
       if (b) { const inp = rowInput(i); b.disabled = trackBtnDisabled(t, inp ? inp.value : ''); }
     });
-    Log.info('Track ISRC provider → ' + m.name);
+    if (!quiet) Log.info('Track ISRC provider → ' + m.name);
   }
   // Build the provider dropdown (only the providers available for this release).
   function buildProvMenu() {
@@ -5172,6 +5232,9 @@
       tbody.appendChild(tr);
       validateInput(input, t);
     });
+    // #643: the rows are built with SoundExchange's label; the picked provider (kept while the
+    // page is open) re-skins them, or SoundExchange when this release doesn't offer it
+    setTrackProvider(trackProvAvailable(trackProv) ? trackProv : 'sx', { quiet: true });
     updateSummary();
     TrackLinks.refresh();   // #301: set the Links tab "N missing" badge
   }

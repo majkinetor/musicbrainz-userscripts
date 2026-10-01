@@ -11,6 +11,7 @@ import { openScout } from './is.mjs';
 
 test.use({ gm: { name: 'ISRC Scout' } });
 const RAM = '5000a285-b67e-4cfc-b54b-2b98f1810d2e';
+const EXTRA = 'QZZZZ2600001';   // a valid ISRC no provider has
 
 async function pickProv(page, name) {
   await page.locator('#ii-tbody tr[data-idx="0"] .ii-sxprov').click();
@@ -37,7 +38,13 @@ test('#643: All — agreement, a disputed ISRC with [use], the tooltip, SoundExc
   const ws = await openScout(page, inject, {
     release: RAM, replay: new URL('./fixtures/ws-458.json.gz', import.meta.url),
     // an album provider too (Apple, read once), so a wrong ISRC meets the album's own at the track's place
-    edit: j => { if (!(j.relations || []).some(x => /music.apple.com/.test(x.url?.resource || ''))) (j.relations = j.relations || []).push({ url: { resource: 'https://music.apple.com/us/album/random-access-memories/617154241' } }); },
+    // track 1 has a second ISRC (one no provider knows), track 4 none (so All can offer one with [use])
+    edit: j => {
+      if (!(j.relations || []).some(x => /music.apple.com/.test(x.url?.resource || ''))) (j.relations = j.relations || []).push({ url: { resource: 'https://music.apple.com/us/album/random-access-memories/617154241' } });
+      const tr = j.media[0].tracks;
+      if (!tr[0].recording.isrcs.includes(EXTRA)) tr[0].recording.isrcs.push(EXTRA);
+      tr[3].recording.isrcs = [];
+    },
     before: () => answerGm(page.context(), ({ url }) => (/isrc-api\.soundexchange\.com/.test(url) ? (sx++, { status: 202, body: '{"searchCaptcha":true}' }) : null)),
   });
 
@@ -61,7 +68,7 @@ test('#643: All — agreement, a disputed ISRC with [use], the tooltip, SoundExc
   check(!p1.pinned, 'hovering the verdict shows the comparison, unpinned');
   check(p1.lines.filter(l => l.state !== 'fail' && l.name !== 'SoundExchange').every(l => l.state === 'ok' && l.mark === '✓'), `each line starts with its verdict; all that could answer say ✓ (${p1.lines.map(l => l.mark + l.name).join(', ')})`);
   check(p1.lines.some(l => l.name === 'SoundExchange' && l.state === 'blocked'), 'SoundExchange\'s line says it met a captcha');
-  check(p1.picks.length === 1 && p1.picks[0] === 'USQX91300101', `the header lists the one ISRC they all have (${p1.picks})`);
+  check(p1.picks.length === 2 && p1.picks[0] === 'USQX91300101' && p1.picks[1] === EXTRA, `the header lists both of the recording's ISRCs, the first shown (${p1.picks})`);
   check(p1.lines.some(l => l.name === 'Apple' && l.text.startsWith('📍')), `an album provider's "at this track's place" is an icon (${(p1.lines.find(l => l.name === 'Apple') || {}).text})`);
   // beside the chip: the All buttons and the verdicts below stay free to hover
   const pb = await box(page, '#ii-all-pop'), free = [row(0) + ' .ii-lookup', row(1) + ' .ii-sx', row(1) + ' .ii-sxprov', row(2) + ' .ii-sx'];
@@ -89,29 +96,53 @@ test('#643: All — agreement, a disputed ISRC with [use], the tooltip, SoundExc
   const lens = await page.evaluate(() => [...document.querySelectorAll('#ii-all-pop .ii-all-line')].map(l => [l.querySelector('.ii-all-len').textContent, l.querySelector('.ii-all-note').textContent]));
   check(lens.some(([len, note]) => /^\d+:\d\d$/.test(len) && !/\d+:\d\d/.test(note)), `the tooltip has the length in its own column (${JSON.stringify(lens.slice(0, 2))})`);
   check(await page.locator('#ii-all-pop .ii-all-copy').textContent() === 'copied ✓', 'the button says it copied')
+  // the recording's other ISRC: a click shows what each provider says about it
+  await page.locator(`#ii-all-pop .ii-all-pick[data-isrc="${EXTRA}"]`).click();
+  const ex = await readPop(page);
+  console.log('extra', JSON.stringify(ex));
+  check(ex.lines.length >= 3 && ex.lines.every(l => l.state === 'none' || l.state === 'blocked' || l.state === 'fail') && ex.lines.some(l => l.name === 'Apple' && /not on the album/.test(l.text)),
+    `a click on the recording's other ISRC shows its comparison: nobody has it (${ex.lines.map(l => l.mark + l.name + ' ' + l.text).join(' | ')})`);
+  await page.locator('#ii-all-pop .ii-all-pick[data-isrc="USQX91300101"]').click();
+  check((await readPop(page)).lines.some(l => l.state === 'ok'), 'a click on the first one shows its comparison again');
   await page.keyboard.press('Escape');
   check(await page.locator('#ii-all-pop').count() === 0, 'Escape closes it');
 
-  // track 1 with track 2's ISRC typed in: the providers dispute it
-  await page.fill(row(0) + ' .ii-input', 'USQX91300102');
-  await page.locator(row(0) + ' .ii-sx').click();
-  const dispute = await until(() => chip(page, 0), c => c && /^[⚠–]/.test(c.text) && /⛔/.test(c.text), { timeout: 60000 });
+  // track 4 (no ISRC on MB) with track 2's ISRC typed in: the providers dispute it
+  await page.fill(row(3) + ' .ii-input', 'USQX91300102');
+  await page.locator(row(3) + ' .ii-sx').click();
+  const dispute = await until(() => chip(page, 3), c => c && /^[⚠–]/.test(c.text) && /⛔/.test(c.text), { timeout: 60000 });
   console.log('dispute', JSON.stringify(dispute));
   check(/^⚠/.test(dispute.text), `a disputed ISRC gets an amber verdict (${dispute.text})`);
   check(sx === 2, `a click asks SoundExchange again after its captcha (${sx} requests)`);
-  const p2 = await hoverPop(page, 0);
+  const p2 = await hoverPop(page, 3);
   console.log('pop2', JSON.stringify(p2));
   const diff = p2.lines.find(l => l.state === 'differs' && l.use);
   check(p2.lines.some(l => l.mark === '⚠' || l.mark === '✗'), `the comparison shows who disagrees (${p2.lines.map(l => l.mark + l.name).join(', ')})`);
-  check(!!diff && diff.isrc === 'USQX91300101' && diff.text.startsWith('📍'), `an album provider has track 1's own ISRC at its place, with [use] (${JSON.stringify(diff)})`);
-  check(p2.picks.includes('USQX91300101') && p2.picks.includes('USQX91300102'), `the header lists both ISRCs (${p2.picks})`);
-  // a click on an ISRC in the header shows only the providers that have it
-  await page.locator('#ii-all-pop .ii-all-pick[data-isrc="USQX91300101"]').click();
+  check(!!diff && diff.isrc === 'USQX91300104' && diff.text.startsWith('📍'), `an album provider has track 4's ISRC at its place, with [use] (${JSON.stringify(diff)})`);
+  check(p2.picks.includes('USQX91300104') && p2.picks.includes('USQX91300102'), `the header lists both ISRCs (${p2.picks})`);
+  // a click on an ISRC a provider named shows only the providers that have it
+  await page.locator('#ii-all-pop .ii-all-pick[data-isrc="USQX91300104"]').click();
   const only = await readPop(page);
-  check(only.lines.length >= 1 && only.lines.every(l => l.isrc === 'USQX91300101'), `a click on an ISRC shows only its providers (${only.lines.map(l => l.name).join(', ')})`);
+  check(only.lines.length >= 1 && only.lines.every(l => l.isrc === 'USQX91300104'), `a click on an ISRC shows only its providers (${only.lines.map(l => l.name).join(', ')})`);
   await page.locator('#ii-all-pop .ii-all-use').first().click();
-  check(await page.inputValue(row(0) + ' .ii-input') === 'USQX91300101', '[use] puts it in the row');
+  check(await page.inputValue(row(3) + ' .ii-input') === 'USQX91300104', '[use] puts it in the row');
+  check(/1 ISRC/.test(await page.locator('#ii-submit').textContent()), `…and Submit counts it (${await page.locator('#ii-submit').textContent()})`);
 
+  // an album's ISRC at this position that is another track's is never offered: with track 3's
+  // ISRC on track 4 too, Apple's 104 at track 4's place… is track 4's own — so put 104 on track 3
+  // and ask track 4 about nothing it has: the album's 104 belongs to track 3 now
+  await page.fill(row(2) + ' .ii-input', 'USQX91300104');
+  await page.fill(row(3) + ' .ii-input', 'USQX91300113');
+  await page.locator(row(3) + ' .ii-sx').click();
+  const p4 = await until(async () => { await page.locator(row(3) + ' .ii-lookup').hover(); return readPop(page); }, p => p && p.lines.some(l => l.name === 'Apple' && l.state !== 'pending'), { timeout: 60000 });
+  const apple4 = p4.lines.find(l => l.name === 'Apple');
+  console.log('apple4', JSON.stringify(apple4));
+  check(!apple4.use && apple4.state !== 'differs', `the album's ISRC at track 4's place is track 3's (entered): no [use] (${apple4.mark} ${apple4.text})`);
+  await page.keyboard.press('Escape');
+  await page.fill(row(2) + ' .ii-input', '');
+  await page.fill(row(3) + ' .ii-input', 'USQX91300104');
+
+  const sxNow = sx;
   // two tracks with each other's ISRC; leaving the fields runs All on them — SoundExchange is still
   // blocked from the click above, so it isn't poked on every field you leave
   await page.fill(row(1) + ' .ii-input', 'USQX91300103');
@@ -120,7 +151,7 @@ test('#643: All — agreement, a disputed ISRC with [use], the tooltip, SoundExc
   await until(async () => [await chip(page, 1), await chip(page, 2)], c => c.every(x => x && /ii-all-chip/.test(x.cls) && !/⏳/.test(x.text)), { timeout: 60000 });
   const sxOf = p => (p.lines.find(l => l.name === 'SoundExchange') || {}).text || '';
   const t2 = await hoverPop(page, 2);
-  check(sx === 2 && /not asked · captcha/.test(sxOf(t2)), `after a captcha, leaving a field doesn't ask SoundExchange again (${sx}: ${sxOf(t2)})`);
+  check(sx === sxNow && /not asked · captcha/.test(sxOf(t2)), `after a captcha, leaving a field doesn't ask SoundExchange again (${sx - sxNow}: ${sxOf(t2)})`);
 
   // right-click: every track, then SoundExchange one track at a time — its captcha stops it
   const before = sx;
@@ -132,5 +163,13 @@ test('#643: All — agreement, a disputed ISRC with [use], the tooltip, SoundExc
   const t3 = await hoverPop(page, 2);
   check(/not asked · stopped at a captcha/.test(sxOf(t3)), `the other tracks say SoundExchange wasn't asked, and why (${sxOf(t3)})`);
   check(all.filter(t => /^✓/.test(t)).length === 11, `the eleven untouched tracks agree — feat. clauses and guest lists included (${all.join(' ')})`);
+
+  // closed and opened again, the buttons still say All (they used to say SX, and run All)
+  await page.evaluate(() => document.getElementById('ii-overlay').click());   // the backdrop closes it
+  await page.waitForSelector('#ii-modal.open', { state: 'detached', timeout: 10000 });
+  await page.evaluate(() => document.getElementById('ii-btn').click());
+  await page.waitForSelector('#ii-modal.open', { timeout: 15000 });
+  const labels = await until(() => page.evaluate(() => [...document.querySelectorAll('#ii-tbody tr[data-idx] .ii-sx')].map(b => b.textContent.trim())), l => l.length >= 13, { timeout: 30000 });
+  check(labels.every(l => l === 'All'), `reopened, every row's button says All (${[...new Set(labels)]})`);
   await ws.done();
 });
