@@ -2,7 +2,7 @@
 // release editor's seed parameters.
 import { test, check, loadFunctions } from '../../../dev/test/harness.mjs';
 
-const fns = () => loadFunctions('first_contact', ['splitFeat', 'normName', 'toCredit', 'creditFromTitle', 'guessScript', 'seedParams', 'typeFromTitle']);
+const fns = () => loadFunctions('first_contact', ['TYPE_VERSION_MARKER'].concat( ['splitFeat', 'normName', 'toCredit', 'creditFromTitle', 'guessScript', 'seedParams', 'normTrackTitle', 'guessReleaseType']));
 
 test('a feat. clause leaves the title and names the featured artists', { tag: ['@unit', '@critical'] }, async () => {
   const { splitFeat } = await fns();
@@ -69,9 +69,25 @@ test('the seed carries the release editor parameters', { tag: ['@unit', '@critic
   check(get('edit_note')[0] === 'note', 'edit note');
 });
 
-test('the title names the type: EP, Single', { tag: ['@unit'] }, async () => {
-  const { typeFromTitle } = await fns();
-  const cases = [['Prophet Margin EP', 'EP'], ['Thing (EP)', 'EP'], ['Thing - EP', 'EP'], ['Thing E.P.', 'EP'], ['Song - Single', 'Single'], ['Song (Single)', 'Single'],
-    ['Deep', null], ['STEP', null], ['Single Ladies (Remix)', null], ['Album', null]];
-  for (const [t, want] of cases) check(typeFromTitle(t) === want, `"${t}" → ${typeFromTitle(t)}, wanted ${want}`);
+test('the release type is guessed as murdos does, the title first', { tag: ['@unit', '@critical'] }, async () => {
+  const { guessReleaseType } = await fns();
+  const tr = (titles, mins) => titles.map((t, i) => ({ title: t, lengthMs: mins ? mins[i] * 60000 : null }));
+  const cases = [
+    ['Prophet Margin EP', tr(['A', 'B', 'C'], [4, 4, 5]), 'EP', true],
+    ['Thing (E.P.)', tr(['A'], [3]), 'EP', true],
+    ['Song - Single', tr(['Song', 'Other'], [4, 4]), 'Single', true],
+    ['Single Ladies', tr(new Array(12).fill('x').map((x, i) => 'T' + i), new Array(12).fill(4)), 'Album', false],
+    ['Thing', tr(['Thing', 'Thing (Extended Mix)', 'Thing (Instrumental)', 'Thing - VIP'], [4, 7, 4, 5]), 'Single', false],
+    ['Thing', tr(['A', 'B', 'C', 'D'], [5, 6, 5, 6]), 'EP', false],
+    ['Thing', tr(['A', 'B'], [3, 3]), 'Single', false],
+    ['Thing', tr(['A'], [45]), 'Album', false],
+    ['Thing', tr(['A', 'B'], null), null, false],
+    ['Thing', tr(['A', 'B', 'C', 'D'], null), 'EP', false],
+    ['Deep Step', tr(['A', 'B', 'C', 'D', 'E', 'F', 'G'], [4, 4, 4, 4, 4, 4, 4]), 'Album', false],
+    ['Episode One', tr(['A'], [3]), 'Single', false],
+  ];
+  for (const [title, tracks, want, explicit] of cases) {
+    const g = guessReleaseType(title, tracks);
+    check(g.type === want && !!g.explicit === explicit, `"${title}" (${tracks.length} tracks) → ${g.type} (${g.why}), wanted ${want}${explicit ? ', from the title' : ''}`);
+  }
 });

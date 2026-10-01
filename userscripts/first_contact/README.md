@@ -21,7 +21,7 @@ On a platform's album page, click **Import to MusicBrainz** in the bottom-right 
 | Field | From |
 |---|---|
 | Title, artist credit | the album, with any *feat.* artists split off the title into the credit |
-| Type | the platform's album / EP / single / compilation; when the platform doesn't say, EP or Single when the title ends so (*Prophet Margin EP*), or Single for one track |
+| Type | the platform's album / EP / single / compilation, or a [guess](#release-type) when it doesn't say |
 | Status, packaging | Official, None |
 | Release event | the platform's release date, Worldwide |
 | Label | the platform's label text |
@@ -39,6 +39,24 @@ While the album is read, the button counts the tracks: *Reading Deezer… 7/13*.
 
 > [!NOTE]
 > The tab opens at once, while the platform is still being read, so the browser doesn't block it as a popup. The data reaches it a moment later.
+
+### Release type
+
+When the platform gives no type, or only a plain *album* while the title says otherwise, it is guessed, the most certain sign first:
+
+| Sign | Type |
+|---|---|
+| *EP* or *E.P.* in the title | EP |
+| the title ends in *Single*, or says *single* on up to 8 tracks and 50 minutes | Single |
+| every track is the same song in another version (*Remix*, *Instrumental*, *Extended Mix*, *VIP*…) | Single |
+| 7 tracks or more, or over 30 minutes | Album |
+| up to 7 minutes | Single |
+| 2 tracks or more, up to 30 minutes | EP |
+
+Without every track's length: 1 track is a Single, 3 to 6 an EP, 7 or more an Album, and 2 are left for you. The log says which sign decided.
+
+> [!NOTE]
+> The rules are those of murdos's importers (`fnGuessReleaseType`), with the title's *EP* or *Single* also outranking a platform's plain *album*.
 
 ## Platforms
 

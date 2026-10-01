@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         First Contact
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.1.143328
+// @version      2026.10.1.144155
 // @description  Import a release into MusicBrainz from the platform's album page with one click: the release editor opens with the title, tracklist, artists, date, label, barcode and link filled in. Each artist's platform link is handed to Apollo Editor for matching. Platforms: Deezer, Bandcamp.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPkZpcnN0IENvbnRhY3Q8L3RpdGxlPgogIDwhLS0gdHJhY3RvciBiZWFtIC0tPgogIDxwYXRoIGQ9Ik01MCA0NCBMNzggNDQgTDEwNCAxMTIgTDI0IDExMiBaIiBmaWxsPSIjZjZjNDMxIiBvcGFjaXR5PSIwLjkiLz4KICA8cGF0aCBkPSJNNTYgNDQgTDcyIDQ0IEw4OCAxMTIgTDQwIDExMiBaIiBmaWxsPSIjZmRlNjhhIiBvcGFjaXR5PSIwLjciLz4KICA8IS0tIGxhbmRpbmcgcmluZyAtLT4KICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSIxMTQiIHJ4PSI0MiIgcnk9IjgiIGZpbGw9IiMxZTIzNDYiLz4KICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSIxMTMiIHJ4PSIyNiIgcnk9IjQuMiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZjZjNDMxIiBzdHJva2Utd2lkdGg9IjIuNCIvPgogIDwhLS0gc2F1Y2VyIC0tPgogIDxwYXRoIGQ9Ik00MCAyNiBBMjQgMTggMCAwIDEgODggMjYgWiIgZmlsbD0iIzFlMjM0NiIvPgogIDxwYXRoIGQ9Ik01MCAxOCBBMTAgNiAwIDAgMSA2MCAxNCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjIuNiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8+CiAgPGVsbGlwc2UgY3g9IjY0IiBjeT0iMzIiIHJ4PSI1NiIgcnk9IjEzIiBmaWxsPSIjMWUyMzQ2Ii8+CiAgPGNpcmNsZSBjeD0iMzgiIGN5PSIzMiIgcj0iNC40IiBmaWxsPSIjZmZmIi8+CiAgPGNpcmNsZSBjeD0iNjQiIGN5PSIzNCIgcj0iNC40IiBmaWxsPSIjZmZmIi8+CiAgPGNpcmNsZSBjeD0iOTAiIGN5PSIzMiIgcj0iNC40IiBmaWxsPSIjZmZmIi8+CiAgPCEtLSB0aGUgcmVsZWFzZSBiZWluZyBiZWFtZWQgdXA6IGEgcHVycGxlIGhleGFnb24gd2l0aCBhIG5vdGUgLS0+CiAgPHBhdGggZD0iTTY0IDU4IEw4NCA2OS41IEw4NCA5Mi41IEw2NCAxMDQgTDQ0IDkyLjUgTDQ0IDY5LjUgWiIgZmlsbD0iIzdiNGZkNiIvPgogIDxwYXRoIGQ9Ik02NCA1OCBMODQgNjkuNSBMNjQgODEgTDQ0IDY5LjUgWiIgZmlsbD0iIzliNzJlYSIvPgogIDxwYXRoIGQ9Ik02MCA3MiBMNzQgNjkgTDc0IDg5IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iMy40IiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+CiAgPHBhdGggZD0iTTYwIDcyIEw2MCA5MiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjMuNCIvPgogIDxlbGxpcHNlIGN4PSI1NiIgY3k9IjkyIiByeD0iNC42IiByeT0iMy42IiBmaWxsPSIjZmZmIi8+CiAgPGVsbGlwc2UgY3g9IjcwIiBjeT0iODkiIHJ4PSI0LjYiIHJ5PSIzLjYiIGZpbGw9IiNmZmYiLz4KICA8IS0tIHNwYXJrbGVzIC0tPgogIDxwYXRoIGQ9Ik0xOCA1NCBsMi41IDYgNiAyLjUgLTYgMi41IC0yLjUgNiAtMi41IC02IC02IC0yLjUgNiAtMi41IFoiIGZpbGw9IiNmNmM0MzEiLz4KICA8cGF0aCBkPSJNMTA4IDUyIGwyLjUgNiA2IDIuNSAtNiAyLjUgLTIuNSA2IC0yLjUgLTYgLTYgLTIuNSA2IC0yLjUgWiIgZmlsbD0iIzFlMjM0NiIvPgogIDxwYXRoIGQ9Ik0xMTIgODIgbDEuOCA0LjIgNC4yIDEuOCAtNC4yIDEuOCAtMS44IDQuMiAtMS44IC00LjIgLTQuMiAtMS44IDQuMiAtMS44IFoiIGZpbGw9IiNmNmM0MzEiLz4KICA8cGF0aCBkPSJNMTQgODYgbDEuOCA0LjIgNC4yIDEuOCAtNC4yIDEuOCAtMS44IDQuMiAtMS44IC00LjIgLTQuMiAtMS44IDQuMiAtMS44IFoiIGZpbGw9IiMxZTIzNDYiLz4KPC9zdmc+Cg==
@@ -119,12 +119,51 @@ function creditFromTitle(contributors, featNames) {
     return toCredit(mains, feats);
 }
 
-// "Prophet Margin EP", "Song (Single)", "Song - Single": the type the title names, or null.
-function typeFromTitle(title) {
-    const s = String(title || '').trim();
-    if (/(?:^|[\s([\-–])E\.?P\.?\s*[)\]]?$/.test(s)) return 'EP';
-    if (/(?:^|[\s([\-–])Single\s*[)\]]?$/i.test(s)) return 'Single';
-    return null;
+// The primary type a release looks like, after murdos's fnGuessReleaseType (mbimport.js,
+// github.com/murdos/musicbrainz-userscripts), most confident first:
+//   1. an "EP" / "E.P." token in the title;
+//   2. "Single" ending the title ("Song - Single", "Song (Single)") — or anywhere in it, within
+//      8 tracks and 50 minutes (it's common English, so it needs the guard);
+//   3. every track the same song once versions are taken off ("Song", "Song (Remix)",
+//      "Song (Instrumental)") → Single;
+//   4. by size: 7+ tracks or over 30 minutes → Album; up to 7 minutes → Single; else EP from
+//      2 tracks up. Without every length: 1 track Single, 3–6 EP, 7+ Album, 2 left open.
+// Returns { type: 'Album' | 'EP' | 'Single' | null, why, explicit } — explicit when the title
+// says so, which then outranks a platform that calls everything an album.
+const TYPE_VERSION_MARKER = /\b(?:a ?cap+el+a|acoustic|alt(?:ernate)?|bootleg|clean|club|demo|dirty|dub|edit|explicit|extended|instrumental|karaoke|live|mix|mono|original|radio|remaster(?:ed)?|remix|rework|short|slowed|sped[ -]up|stereo|version|vip|vocal)\b/i;
+// (the brackets are { / } escapes so the test harness's brace matching reads the function whole)
+function normTrackTitle(title) {
+    return String(title || '').normalize('NFKC').toLocaleLowerCase()
+        .replace(/\s*[([\x7B]([^\])\x7D]*?)[\])\x7D]/g, (m, inner) => (TYPE_VERSION_MARKER.test(inner) ? '' : m))
+        .replace(/\s*[-–—:]\s*([^\n]*)$/, (m, tail) => (TYPE_VERSION_MARKER.test(tail) ? '' : m))
+        .replace(/[^\p{L}\p{N}]+/gu, ' ').trim();
+}
+function guessReleaseType(title, tracks) {
+    const n = tracks.length;
+    if (!n) return { type: null, why: 'no tracks' };
+    const t = String(title || '');
+    const lengths = tracks.map(x => x.lengthMs);
+    const ms = lengths.every(l => l > 0) ? lengths.reduce((a, l) => a + l, 0) : NaN;
+    const min = ms / 60000;
+    if (/(?:^|[\s([\-–])E\.?P\b\.?/i.test(t) && !/\bE\.?P\.?\s*\d/i.test(t)) return { type: 'EP', why: 'the title says EP', explicit: true };
+    if (/[\s([\-–]single\s*[)\]]?$/i.test(t)) return { type: 'Single', why: 'the title ends in Single', explicit: true };
+    if (/\bsingle\b/i.test(t) && n <= 8 && !(min > 50)) return { type: 'Single', why: 'the title says Single', explicit: true };
+    if (n >= 2) {
+        const norm = tracks.map(x => normTrackTitle(x.title));
+        if (norm[0] && norm.every(x => x === norm[0])) return { type: 'Single', why: `every track is "${norm[0]}" in another version` };
+    }
+    if (!Number.isFinite(ms)) {
+        if (n === 1) return { type: 'Single', why: 'one track' };
+        if (n >= 3 && n <= 6) return { type: 'EP', why: `${n} tracks` };
+        if (n >= 7) return { type: 'Album', why: `${n} tracks` };
+        return { type: null, why: 'two tracks without lengths' };
+    }
+    if (n >= 7) return { type: 'Album', why: `${n} tracks` };
+    if (min > 30) return { type: 'Album', why: `${Math.round(min)} minutes` };
+    if (min < 1) return { type: null, why: 'under a minute' };
+    if (min <= 7) return { type: 'Single', why: `${n} track(s), ${min.toFixed(1)} minutes` };
+    if (n >= 2) return { type: 'EP', why: `${n} tracks, ${Math.round(min)} minutes` };
+    return { type: null, why: `one track of ${Math.round(min)} minutes` };
 }
 
 // Latn when every letter in the titles is Latin; nothing otherwise (left for the editor).
@@ -512,9 +551,15 @@ async function importCurrent() {
     const t0 = Date.now();
     try {
         const rel = await provider.fetchRelease(id, (n, total) => { if (label) label.textContent = `Reading ${provider.name}… ${n}/${total}`; });
-        if (!rel.types.length) {
-            const tt = typeFromTitle(rel.title) || (rel.mediums.reduce((n, m) => n + m.tracks.length, 0) === 1 ? 'Single' : null);
-            if (tt) { rel.types = [tt]; Log.info(`type ${tt}, from the ${typeFromTitle(rel.title) ? 'title' : 'single track'}`); }
+        {
+            const tracks = [].concat(...rel.mediums.map(m => m.tracks));
+            const g = guessReleaseType(rel.title, tracks);
+            Log.info(`type: ${provider.name} says ${rel.types.join(' + ') || 'nothing'}; the guess is ${g.type || 'none'} (${g.why})`);
+            // the platform's own type stands, unless it's a plain Album and the title says EP / Single
+            if (g.type && (!rel.types.length || (g.explicit && rel.types[0] === 'Album' && g.type !== 'Album'))) {
+                rel.types = [g.type].concat(rel.types.slice(1));
+                Log.info(`type set to ${rel.types.join(' + ')}`);
+            }
         }
         rel.script = guessScript([rel.title].concat(...rel.mediums.map(m => m.tracks.map(t => t.title))));
         const nTracks = rel.mediums.reduce((n, m) => n + m.tracks.length, 0);
