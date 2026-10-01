@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         First Contact
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.1.150644
-// @description  Import a release into MusicBrainz from the platform's album page with one click: the release editor opens with the title, tracklist, artists, date, label, barcode and link filled in. Each artist's platform link is handed to Apollo Editor for matching. Platforms: Deezer, Bandcamp, Discogs, Apple Music, Tidal.
+// @version      2026.10.1.151031
+// @description  Import a release into MusicBrainz from the platform's album page with one click: the release editor opens with the title, tracklist, artists, date, label, barcode and link filled in. Each artist's platform link is handed to Apollo Editor for matching. Platforms: Deezer, Bandcamp, Discogs, Apple Music, Tidal, Qobuz.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPkZpcnN0IENvbnRhY3Q8L3RpdGxlPgogIDwhLS0gdHJhY3RvciBiZWFtIC0tPgogIDxwYXRoIGQ9Ik01MCA0NCBMNzggNDQgTDEwNCAxMTIgTDI0IDExMiBaIiBmaWxsPSIjZjZjNDMxIiBvcGFjaXR5PSIwLjkiLz4KICA8cGF0aCBkPSJNNTYgNDQgTDcyIDQ0IEw4OCAxMTIgTDQwIDExMiBaIiBmaWxsPSIjZmRlNjhhIiBvcGFjaXR5PSIwLjciLz4KICA8IS0tIGxhbmRpbmcgcmluZyAtLT4KICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSIxMTQiIHJ4PSI0MiIgcnk9IjgiIGZpbGw9IiMxZTIzNDYiLz4KICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSIxMTMiIHJ4PSIyNiIgcnk9IjQuMiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZjZjNDMxIiBzdHJva2Utd2lkdGg9IjIuNCIvPgogIDwhLS0gc2F1Y2VyIC0tPgogIDxwYXRoIGQ9Ik00MCAyNiBBMjQgMTggMCAwIDEgODggMjYgWiIgZmlsbD0iIzFlMjM0NiIvPgogIDxwYXRoIGQ9Ik01MCAxOCBBMTAgNiAwIDAgMSA2MCAxNCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjIuNiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8+CiAgPGVsbGlwc2UgY3g9IjY0IiBjeT0iMzIiIHJ4PSI1NiIgcnk9IjEzIiBmaWxsPSIjMWUyMzQ2Ii8+CiAgPGNpcmNsZSBjeD0iMzgiIGN5PSIzMiIgcj0iNC40IiBmaWxsPSIjZmZmIi8+CiAgPGNpcmNsZSBjeD0iNjQiIGN5PSIzNCIgcj0iNC40IiBmaWxsPSIjZmZmIi8+CiAgPGNpcmNsZSBjeD0iOTAiIGN5PSIzMiIgcj0iNC40IiBmaWxsPSIjZmZmIi8+CiAgPCEtLSB0aGUgcmVsZWFzZSBiZWluZyBiZWFtZWQgdXA6IGEgcHVycGxlIGhleGFnb24gd2l0aCBhIG5vdGUgLS0+CiAgPHBhdGggZD0iTTY0IDU4IEw4NCA2OS41IEw4NCA5Mi41IEw2NCAxMDQgTDQ0IDkyLjUgTDQ0IDY5LjUgWiIgZmlsbD0iIzdiNGZkNiIvPgogIDxwYXRoIGQ9Ik02NCA1OCBMODQgNjkuNSBMNjQgODEgTDQ0IDY5LjUgWiIgZmlsbD0iIzliNzJlYSIvPgogIDxwYXRoIGQ9Ik02MCA3MiBMNzQgNjkgTDc0IDg5IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iMy40IiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+CiAgPHBhdGggZD0iTTYwIDcyIEw2MCA5MiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjMuNCIvPgogIDxlbGxpcHNlIGN4PSI1NiIgY3k9IjkyIiByeD0iNC42IiByeT0iMy42IiBmaWxsPSIjZmZmIi8+CiAgPGVsbGlwc2UgY3g9IjcwIiBjeT0iODkiIHJ4PSI0LjYiIHJ5PSIzLjYiIGZpbGw9IiNmZmYiLz4KICA8IS0tIHNwYXJrbGVzIC0tPgogIDxwYXRoIGQ9Ik0xOCA1NCBsMi41IDYgNiAyLjUgLTYgMi41IC0yLjUgNiAtMi41IC02IC02IC0yLjUgNiAtMi41IFoiIGZpbGw9IiNmNmM0MzEiLz4KICA8cGF0aCBkPSJNMTA4IDUyIGwyLjUgNiA2IDIuNSAtNiAyLjUgLTIuNSA2IC0yLjUgLTYgLTYgLTIuNSA2IC0yLjUgWiIgZmlsbD0iIzFlMjM0NiIvPgogIDxwYXRoIGQ9Ik0xMTIgODIgbDEuOCA0LjIgNC4yIDEuOCAtNC4yIDEuOCAtMS44IDQuMiAtMS44IC00LjIgLTQuMiAtMS44IDQuMiAtMS44IFoiIGZpbGw9IiNmNmM0MzEiLz4KICA8cGF0aCBkPSJNMTQgODYgbDEuOCA0LjIgNC4yIDEuOCAtNC4yIDEuOCAtMS44IDQuMiAtMS44IC00LjIgLTQuMiAtMS44IDQuMiAtMS44IFoiIGZpbGw9IiMxZTIzNDYiLz4KPC9zdmc+Cg==
 // @homepageURL  https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/first_contact/README.md
@@ -12,6 +12,7 @@
 // @match        https://music.apple.com/*
 // @match        https://tidal.com/*
 // @match        https://listen.tidal.com/*
+// @match        https://www.qobuz.com/*/album/*
 // @match        https://*.musicbrainz.org/release/add*
 // @noframes
 // @grant        GM_xmlhttpRequest
@@ -763,7 +764,86 @@ const TIDAL = {
     },
 };
 
-const PROVIDERS = [DEEZER, BANDCAMP, DISCOGS, APPLE, TIDAL];
+// Qobuz: the store page itself (www.qobuz.com/<cc-ll>/album/<slug>/<id>). Qobuz's API answers
+// only from the countries it serves, but the store page is rendered in full everywhere, so
+// nothing is fetched. The page's per-track artist is unreliable (Qobuz shows a member, like
+// Thomas Bangalter on a Daft Punk track), so an album by one artist credits its main artists on
+// every track, with the title's feat.; only a Various Artists album takes the track's artist.
+const QOBUZ = {
+    id: 'qobuz',
+    name: 'Qobuz',
+    host: /^www\.qobuz\.com$/,
+    albumId(loc) { return /^\/[a-z]{2}-[a-z]{2}\/album\/[^/]+\/[A-Za-z0-9]+\/?$/.test(loc.pathname) ? loc.pathname.replace(/\/$/, '') : null; },
+    hms(t) { const p = String(t || '').trim().split(':').map(Number); return p.length > 1 && p.every(Number.isFinite) ? p.reduce((a, n) => a * 60 + n, 0) * 1000 : null; },
+    text: el => (el ? el.textContent.replace(/\s+/g, ' ').trim() : ''),
+
+    async fetchRelease(path, progress, doc) {
+        doc = doc || document;
+        let album = null, product = null;
+        for (const sc of doc.querySelectorAll('script[type="application/ld+json"]')) {
+            try { const j = JSON.parse(sc.textContent); if (j['@type'] === 'MusicAlbum') album = j; if (j['@type'] === 'Product') product = j; } catch (e) { Log.debug(`Qobuz ld+json: ${e.message}`); }
+        }
+        const title = this.text(doc.querySelector('.album-meta__title .album-title')) || (album && album.name) || '';
+        if (!title) throw new Error('Qobuz: no album on this page');
+        const root = new URL(path, location.origin);
+        const mains = [...doc.querySelectorAll('.album-meta__item')].filter(li => /^\s*Main artists?\s*:/i.test(li.textContent))
+            .flatMap(li => [...li.querySelectorAll('a[href*="/interpreter/"]')])
+            .map(a => ({ name: (a.getAttribute('title') || this.text(a)).trim(), url: new URL(a.getAttribute('href'), root).href }));
+        const shown = this.text(doc.querySelector('.album-meta__title .artist-name'));
+        const labelA = [...doc.querySelectorAll('.album-meta__item a[href*="/label/"]')][0];
+        const label = this.text(labelA);
+        const upc = String((product && product.sku) || '').replace(/\D/g, '');
+        const box = doc.querySelector('#playerTracks');
+        const nb = box ? parseInt(box.getAttribute('data-nbTracks'), 10) : NaN, shownN = box ? parseInt(box.getAttribute('data-nbTracksDisplayed'), 10) : NaN;
+        Log.info(`Qobuz album ${path}: "${title}" by ${shown} · main artists ${mains.map(m => m.name).join(', ') || '—'} · label "${label}" · ${album && album.datePublished} · UPC ${upc || '—'} · ${nb} track(s)${shownN < nb ? `, ${shownN} on the page` : ''}`);
+        if (shownN < nb) Log.warn(`Qobuz: the page lists only ${shownN} of ${nb} tracks; the rest are left out`);
+
+        const various = /^various artists$/i.test(shown) || (mains.length === 1 && /^various artists$/i.test(mains[0].name));
+        const albumArtists = mains.length ? mains : (shown ? [{ name: shown }] : []);
+        // one row per real track: the page also renders empty copies of each row for its layout
+        const rows = [...doc.querySelectorAll('#playerTracks div.track[data-track]')];
+        const mediums = [];
+        let disc = 1, last = 0;
+        rows.forEach((row, i) => {
+            const name = this.text(row.querySelector('.track__item--name'));
+            const n = parseInt(this.text(row.querySelector('.track__item--number')), 10) || (last + 1);
+            if (n <= last) disc++;   // numbering starts over: the next disc
+            last = n;
+            const tf = splitFeat(name);
+            let credit;
+            if (various) {
+                const raw = this.text(row.querySelector('.track__item--artist'));
+                const af = splitFeat(raw);
+                credit = creditFromTitle(String(af.title).split(/\s*,\s*|\s+&\s+/).filter(Boolean).map(x => ({ name: x })), tf.feat.length ? tf.feat : af.feat);
+            } else credit = creditFromTitle(albumArtists, tf.feat);
+            while (mediums.length < disc) mediums.push({ format: 'Digital Media', name: '', tracks: [] });
+            mediums[disc - 1].tracks.push({ title: tf.title, lengthMs: this.hms(this.text(row.querySelector('.track__item--duration'))), isrc: null, url: null, credit });
+            progress && progress(i + 1, rows.length);
+            Log.debug(`track ${disc}.${n}: "${tf.title}" — ${credit.map(c => c.name + c.join).join('')}`);
+        });
+        const af = splitFeat(title);
+        const credit = various ? [{ name: 'Various Artists', mbid: VARIOUS_ARTISTS_MBID, join: '' }] : creditFromTitle(albumArtists, af.feat);
+        const [y, m, d] = String((album && album.datePublished) || '').split('-').map(x => parseInt(x, 10));
+        const url = location.origin + path;
+        return {
+            source: this.id,
+            url,
+            title: af.title,
+            credit,
+            types: [],
+            status: 'official',
+            packaging: 'None',
+            date: { year: y || null, month: m || null, day: d || null },
+            country: 'XW',
+            barcode: /^\d{12,14}$/.test(upc) ? upc : null,
+            labels: label ? [{ name: label, catno: '', url: labelA ? new URL(labelA.getAttribute('href'), root).href : null }] : [],
+            urls: [{ url, linkType: 74 }],   // 74 = purchase for download
+            mediums,
+        };
+    },
+};
+
+const PROVIDERS = [DEEZER, BANDCAMP, DISCOGS, APPLE, TIDAL, QOBUZ];
 
 /* ── the seed: model → the release editor's POST parameters ──────────────── */
 // https://musicbrainz.org/doc/Development/Release_Editor_Seeding
