@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         String Theory
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.1.174920
+// @version      2026.10.1.190003
 // @description  Unified bundle of 8 MusicBrainz userscripts (apollo_editor, art_station, credit_hoarder, fusion, group_therapy, isrc_scout, mammoth, platform_check). Built by userscripts/string_theory/build.mjs — do not hand-edit.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCIgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0Ij4KICA8IS0tIGh1Yi1hbmQtc3Bva2UgIm5ldHdvcmsiIGdseXBoLCBzaW5nbGUgdml2aWQgdmlvbGV0IG9uIHRyYW5zcGFyZW50IHNvIGl0IHJlYWRzIG9uIGJvdGggZGFyayBhbmQgbGlnaHQgcGFnZXMgLS0+CiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjN2M1Y2ZmIiBzdHJva2Utd2lkdGg9IjQuNiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj4KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMzIgMTUiLz4KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMNDYuNSAyMy41Ii8+CiAgICA8cGF0aCBkPSJNMzIgMzIgTDQ2LjUgNDAuNSIvPgogICAgPHBhdGggZD0iTTMyIDMyIEwzMiA0OSIvPgogICAgPHBhdGggZD0iTTMyIDMyIEwxNy41IDQwLjUiLz4KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMTcuNSAyMy41Ii8+CiAgPC9nPgogIDxnIGZpbGw9IiM3YzVjZmYiPgogICAgPGNpcmNsZSBjeD0iMzIiIGN5PSIzMiIgcj0iOC42Ii8+CiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjE5LjUiIHI9IjYuNCIvPgogICAgPGNpcmNsZSBjeD0iNDkiIGN5PSIxOS41IiByPSI2LjQiLz4KICAgIDxjaXJjbGUgY3g9IjMyIiBjeT0iNTciIHI9IjYuNCIvPgogIDwvZz4KICA8ZyBmaWxsPSJub25lIiBzdHJva2U9IiM3YzVjZmYiIHN0cm9rZS13aWR0aD0iMy44Ij4KICAgIDxjaXJjbGUgY3g9IjMyIiBjeT0iNyIgcj0iNC45Ii8+CiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjQ0LjUiIHI9IjQuOSIvPgogICAgPGNpcmNsZSBjeD0iNDkiIGN5PSI0NC41IiByPSI0LjkiLz4KICA8L2c+Cjwvc3ZnPgo=
@@ -84,13 +84,13 @@
 // Bundles (verbatim, each wrapped in a run-at gate): apollo_editor, art_station, credit_hoarder, fusion, group_therapy, isrc_scout, mammoth, platform_check.
 
 try {
-  console.log('%c String Theory %c v2026.10.1.174920 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
-  console.log("String Theory bundles:\n  · Apollo Editor v2026.10.1.170823\n  · Art Station v2026.10.1.164157\n  · Credit Hoarder v2026.10.1.164212\n  · Fusion v2026.10.1.164157\n  · Group Therapy v2026.10.1.164157\n  · ISRC Scout v2026.10.1.174918\n  · Mammoth v2026.10.1.164157\n  · Platform Check v2026.10.1.164157");
+  console.log('%c String Theory %c v2026.10.1.190003 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
+  console.log("String Theory bundles:\n  · Apollo Editor v2026.10.1.190001\n  · Art Station v2026.10.1.164157\n  · Credit Hoarder v2026.10.1.164212\n  · Fusion v2026.10.1.164157\n  · Group Therapy v2026.10.1.164157\n  · ISRC Scout v2026.10.1.174918\n  · Mammoth v2026.10.1.164157\n  · Platform Check v2026.10.1.164157");
 } catch (e) {}
 
 // ===== apollo_editor (@run-at document-start) =====================================
 (function(__stGM){
-  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Apollo Editor*","namespace":"https://musicbrainz.org/","version":"2026.10.1.170823","description":"Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md","supportURL":null,"icon":"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E"}) }) : { script: {"name":"Apollo Editor*","namespace":"https://musicbrainz.org/","version":"2026.10.1.170823","description":"Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md","supportURL":null,"icon":"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E"} };
+  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Apollo Editor*","namespace":"https://musicbrainz.org/","version":"2026.10.1.190001","description":"Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md","supportURL":null,"icon":"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E"}) }) : { script: {"name":"Apollo Editor*","namespace":"https://musicbrainz.org/","version":"2026.10.1.190001","description":"Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md","supportURL":null,"icon":"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E"} };
   (f=>f())(function(){ try { (function(){
 /*
  * Editor model (discovered via test/ spikes):
@@ -1393,14 +1393,14 @@ try {
   // position "<medium>.<track>" → the tracks there on other releases, with their credits.
   // Every release is kept (unlike the recordings' index, which keeps one entry per
   // recording), so "N of M editions" counts releases.
-  function addReleaseToArtistPos(rel, idx, skipGid) {
+  function addReleaseToArtistPos(rel, idx, skipGid, from) {   // from: 'rg' or 'dup' (#654: the card says which)
     if (!rel || !rel.id || rel.id === skipGid) return;   // never the release being edited
     (rel.media || []).forEach(med => { const medLens = mediumLensOf(med); (med.tracks || []).forEach(t => {
       const ac = (t['artist-credit'] && t['artist-credit'].length) ? t['artist-credit'] : ((t.recording && t.recording['artist-credit']) || []);
       if (!ac.length) return;
       const key = (med.position || 1) + '.' + (t.position || 0);
       if (!idx.has(key)) idx.set(key, []);
-      idx.get(key).push({ rel: rel.id, relTitle: rel.title || '', relDate: rel.date || '', format: med.format || '', title: t.title || (t.recording && t.recording.title) || '', length: t.length || (t.recording && t.recording.length) || null, ac, medLens });
+      idx.get(key).push({ rel: rel.id, from: from || 'rg', relTitle: rel.title || '', relDate: rel.date || '', format: med.format || '', title: t.title || (t.recording && t.recording.title) || '', length: t.length || (t.recording && t.recording.length) || null, ac, medLens });
     }); });
   }
   let _artPosRg = { gid: null, self: null, idx: null };
@@ -1412,7 +1412,7 @@ try {
     if (!rgGid) return null;
     if (_artPosRg.gid === rgGid && _artPosRg.self === self && _artPosRg.idx) return _artPosRg.idx;
     const rels = await rgReleases(rgGid); if (!rels) return null;
-    const idx = new Map(); rels.forEach(r => addReleaseToArtistPos(r, idx, self));
+    const idx = new Map(); rels.forEach(r => addReleaseToArtistPos(r, idx, self, 'rg'));
     _artPosRg = { gid: rgGid, self, idx };
     Log.debug('artist position index: release group', rgGid, '→', rels.length, 'edition(s),', idx.size, 'position(s)');
     return idx;
@@ -1430,7 +1430,7 @@ try {
     const p = (async () => {
       let rels = [..._dupRawCache.values()], from = 'the Duplicates tab';
       if (!rels.length) { rels = await duplicateReleases(title, artistGid, rgGid); from = 'a duplicate search'; }
-      const idx = new Map(); rels.forEach(r => addReleaseToArtistPos(r, idx, self));
+      const idx = new Map(); rels.forEach(r => addReleaseToArtistPos(r, idx, self, 'dup'));
       Log.debug('artist position index: duplicates from', from, '→', rels.length, 'release(s),', idx.size, 'position(s)');
       return idx;
     })();
@@ -1449,7 +1449,7 @@ try {
     }));
     // #654: each edition, and whom it credits there, for the match tooltip
     const seen = new Set(), editions = [];
-    hits.forEach(h => { if (seen.has(h.rel)) return; seen.add(h.rel); editions.push({ gid: h.rel, title: h.relTitle, date: h.relDate || '', format: h.format || '', names: h.ac.map(a => (a.artist && a.artist.name) || a.name), gids: h.ac.map(a => a.artist && a.artist.id).filter(Boolean) }); });
+    hits.forEach(h => { if (seen.has(h.rel)) return; seen.add(h.rel); editions.push({ gid: h.rel, from: h.from || 'rg', title: h.relTitle, date: h.relDate || '', format: h.format || '', names: h.ac.map(a => (a.artist && a.artist.name) || a.name), gids: h.ac.map(a => a.artist && a.artist.id).filter(Boolean) }); });
     return { artists: [...by.values()].map(v => ({ gid: v.gid, name: v.name, votes: v.rels.size })).sort((a, b) => b.votes - a.votes), of: rels.size, editions };
   }
   async function positionArtists(entry, creditedAs) {
@@ -4147,8 +4147,14 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     if (st === 'pos') {
       const p = s._pos || w.pos || {}; const eds = p.editions || [];
       const a = (p.artists || []).find(x => (x.entity ? x.entity.gid : x.gid) === s.gid);
-      let h = `<div class="tc-mt-why">Credited on this track on ${a ? a.votes : '?'} of ${p.of || '?'} other edition${p.of === 1 ? '' : 's'}${eds.length ? ':' : '.'}</div>`;
-      if (eds.length) h += '<table class="tc-mt-tbl">' + eds.slice(0, 8).map(ed => { const ok = (ed.gids || []).includes(s.gid); return `<tr><td class="${ok ? 'ok' : 'no'}">${ok ? '✓' : '✗'}</td><td>${mtEditionLine(ed)}</td><td class="w">${ok ? '' : esc((ed.names || []).join(', '))}</td></tr>`; }).join('') + (eds.length > 8 ? `<tr><td></td><td class="tc-mt-dim">and ${eds.length - 8} more</td><td></td></tr>` : '') + '</table>';
+      // #654 (majkinetor: "I didn't select any other edition"): an edition is the release group's
+      // or a duplicate — a release elsewhere with this title and artist, found by search, as the
+      // Duplicates tab lists them. Say which.
+      const dups = eds.filter(ed => ed.from === 'dup').length;
+      const where = !eds.length ? 'other edition' : dups === eds.length ? 'release' : 'other edition';
+      let h = `<div class="tc-mt-why">Credited on this track on ${a ? a.votes : '?'} of ${p.of || '?'} ${where}${p.of === 1 ? '' : 's'}${eds.length ? ':' : '.'}</div>`;
+      if (dups) h += `<div class="tc-mt-dim">${dups === eds.length ? 'Not in this release group: found' : 'Marked ⧉: found'} by the duplicate search, a release with this title and artist (see the Duplicates tab). It may be this release, already in MusicBrainz.</div>`;
+      if (eds.length) h += '<table class="tc-mt-tbl">' + eds.slice(0, 8).map(ed => { const ok = (ed.gids || []).includes(s.gid); return `<tr><td class="${ok ? 'ok' : 'no'}">${ok ? '✓' : '✗'}</td><td>${ed.from === 'dup' && dups !== eds.length ? '⧉ ' : ''}${mtEditionLine(ed)}</td><td class="w">${ok ? '' : esc((ed.names || []).join(', '))}</td></tr>`; }).join('') + (eds.length > 8 ? `<tr><td></td><td class="tc-mt-dim">and ${eds.length - 8} more</td><td></td></tr>` : '') + '</table>';
       return h;
     }
     if (st === 'alias' || st === 'high') {
@@ -10653,7 +10659,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     fix();
   }
 
-  W.__apolloEditor = { readTracklist, buildModel, commitTrack, resetTrack, revertTrack, trackChanged, removeTrack, moveTrack, addTracks, searchArtist, fetchEntity, createArtist, openPanel, showMirror, hideMirror, revertAll, revertSlot, pickArtist, addSlot, removeSlot, splitSlot, matchSlot, snapshotOriginals, readRecordings, showRecMirror, hideRecMirror, recordingsVisible, recConfidence, applyView, applyNav, applyReleaseInfo, releaseInfoVisible, ensureApolloEditNote, checkAllLinks, checkUrl, linkRows, alExtractUrls, alAddUrls, installMultiLinkPaste, alApplyHint, AL_HINT, discogsReleaseUrlFromPage, loadDiscogsMap, resolveByDiscogsUrl, discogsFeatUrlFor, tagDiscogsAddable, tagDiscogsForAll, addOrCreateDiscogsLink, reTagAfterDiscogsLink, artistDiscogsUrls, dhRun, acLinksDiff, fetchRgPositionIndex, fetchDuplicatePositionIndex, recSimilar, recComboLevel, recPickBest, pickSibArtist, loadSiblingMap, autoMatchRecordings, setDataBoundary, videoBlockedHere, NON_VIDEO_FORMAT_IDS, trackRecIsVideo, newRecordingFor, logMarkdown, openLengthParser, lpParse, lpValid, lpExtractFromHtml, lpNoteSource, openTrackPatternParser, tpCompile, resolveByExactAlias, wsJson, stopMatching, lenShadeAlpha, lenShade, dupLenShade, mergeMediums, splitMedium, pickTool, runAction, slotContextGids, releaseArtistGids, positionArtists, posNameMatch, tallyPosArtists, artistPosRgIndex, artistPosDupIndex, rgReleases, duplicateReleases, enteredTracklist, buildDupDetail, get apolloOn() { return apolloOn(); }, get model() { return MODEL; }, get settings() { return SETTINGS; } };
+  W.__apolloEditor = { matchCardHtml, readTracklist, buildModel, commitTrack, resetTrack, revertTrack, trackChanged, removeTrack, moveTrack, addTracks, searchArtist, fetchEntity, createArtist, openPanel, showMirror, hideMirror, revertAll, revertSlot, pickArtist, addSlot, removeSlot, splitSlot, matchSlot, snapshotOriginals, readRecordings, showRecMirror, hideRecMirror, recordingsVisible, recConfidence, applyView, applyNav, applyReleaseInfo, releaseInfoVisible, ensureApolloEditNote, checkAllLinks, checkUrl, linkRows, alExtractUrls, alAddUrls, installMultiLinkPaste, alApplyHint, AL_HINT, discogsReleaseUrlFromPage, loadDiscogsMap, resolveByDiscogsUrl, discogsFeatUrlFor, tagDiscogsAddable, tagDiscogsForAll, addOrCreateDiscogsLink, reTagAfterDiscogsLink, artistDiscogsUrls, dhRun, acLinksDiff, fetchRgPositionIndex, fetchDuplicatePositionIndex, recSimilar, recComboLevel, recPickBest, pickSibArtist, loadSiblingMap, autoMatchRecordings, setDataBoundary, videoBlockedHere, NON_VIDEO_FORMAT_IDS, trackRecIsVideo, newRecordingFor, logMarkdown, openLengthParser, lpParse, lpValid, lpExtractFromHtml, lpNoteSource, openTrackPatternParser, tpCompile, resolveByExactAlias, wsJson, stopMatching, lenShadeAlpha, lenShade, dupLenShade, mergeMediums, splitMedium, pickTool, runAction, slotContextGids, releaseArtistGids, positionArtists, posNameMatch, tallyPosArtists, artistPosRgIndex, artistPosDupIndex, rgReleases, duplicateReleases, enteredTracklist, buildDupDetail, get apolloOn() { return apolloOn(); }, get model() { return MODEL; }, get settings() { return SETTINGS; } };
 
   // #267 auto-confirm a seeded Add/Edit-release submission. When another site seeds the editor,
   // MusicBrainz shows a `.confirm-seed` interstitial with a single submit button; clicking it

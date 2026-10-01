@@ -40,3 +40,21 @@ test('a badge opens its match card: stage, artist, the release that proves it, w
   await page.keyboard.press('Escape');
   check(await page.locator('#tc-mtip').count() === 0, 'Esc closes it');
 });
+
+// majkinetor: "I didn't select any other edition" — the pos evidence was a duplicate: a release with
+// this title and artist found by search, not one of the release group's editions. The card says so.
+test('a pos card names a duplicate-search release as such', { tag: ['@sandbox', '@login'] }, async ({ page, inject }) => {
+  await openApollo(page, inject, { seed: 'seed-saigon', tab: 'tracklist' });
+  const html = await page.evaluate(() => {
+    const ed = from => ({ gid: '00000000-0000-0000-0000-00000000000' + (from === 'dup' ? '1' : '2'), from, title: 'African Pearls', date: '2006', format: 'Digital Media', names: ['Ensemble Instrumental de Guinée'], gids: ['g1'] });
+    const slot = (eds) => ({ status: 'pos', creditedAs: 'Ballets africains', gid: 'g1', name: 'Ensemble Instrumental de Guinée', entity: { gid: 'g1', name: 'Ensemble Instrumental de Guinée' }, candidates: [],
+      _pos: { of: eds.length, artists: [{ entity: { gid: 'g1' }, votes: eds.length }], editions: eds }, _why: { at: Date.now() } });
+    const text = h => { const d = document.createElement('div'); d.innerHTML = h; return d.textContent; };
+    const A = window.__apolloEditor;
+    return { dup: text(A.matchCardHtml(slot([ed('dup')]))), rg: text(A.matchCardHtml(slot([ed('rg')]))), mixed: text(A.matchCardHtml(slot([ed('rg'), ed('dup')]))) };
+  });
+  check(/on 1 of 1 release:/.test(html.dup) && /Not in this release group: found by the duplicate search/.test(html.dup), `only a duplicate: "release", and where it came from (${html.dup.slice(0, 260)})`);
+  check(/on 1 of 1 other edition:/.test(html.rg) && !/duplicate search/.test(html.rg), `a release-group edition: as before (${html.rg.slice(0, 160)})`);
+  check(/Marked ⧉/.test(html.mixed) && /⧉ African Pearls/.test(html.mixed), `both: the duplicate is marked (${html.mixed.slice(0, 260)})`);
+});
+

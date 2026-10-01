@@ -114,7 +114,7 @@ test('track artists matched by their position on other editions', { tag: ['@sand
     // #654: the badge's match card says what it rests on, edition by edition
     await page.locator('.tc-badge.pos').first().hover();
     const tip = await page.locator('#tc-mtip').textContent({ timeout: 5000 }).catch(() => '');
-    check(/Same position on other editions/.test(tip) && /Credited on this track on \d+ of \d+ other edition/.test(tip), `a pos badge's card says what it rests on: "${tip.slice(0, 200)}"`);
+    check(/Same position on other editions/.test(tip) && /Credited on this track on \d+ of \d+ (other edition|release)/.test(tip), `a pos badge's card says what it rests on: "${tip.slice(0, 200)}"`);
     await page.mouse.move(0, 0);
     const sec = await page.evaluate(async () => {
       const inp = [...document.querySelectorAll('.tc-search input.nm')].find(i => /Buzzard/i.test(i.value));

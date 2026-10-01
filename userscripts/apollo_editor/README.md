@@ -93,7 +93,7 @@ Green means matched confidently; a white search box means unresolved, counted by
 **Match card.** Hover a badge for half a second and a card opens under it. It shows:
 - the stage, and whether Apollo linked the artist or you picked it;
 - the linked artist, with its disambiguation, type, area and dates;
-- the evidence the stage had: the Discogs artist; the release-group release and track; each other edition and whom it credits (✓ / ✗); the alias; the co-credit counts;
+- the evidence the stage had: the Discogs artist; the release-group release and track; each other edition and whom it credits (✓ / ✗), with a release found by the duplicate search (the same title and artist, outside the release group) marked as such, since it may be this very release already in MusicBrainz; the alias; the co-credit counts;
 - the other candidates;
 - when it matched.
 
