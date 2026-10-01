@@ -84,3 +84,23 @@ test('YouTube Music credits fetch live: songs from the playlist page, album link
     assert.equal(ytmToEngine(mig.songs, []).tracklistRels.length, 0);
   } finally { delete globalThis.GM_xmlhttpRequest; }
 });
+
+// #648 follow-up (majkinetor: "All doesn't take YT into account"): the All review's Source
+// column drew no YouTube Music badge (no SRC_ICON entry), a YouTube Music run was labelled
+// "Discogs", and its edit note dropped the `?list=` that IS the album id.
+test('YouTube Music is named, badged and linked like every other source', { tag: '@unit' }, async () => {
+  const { sourceNameForUrl } = await import('../src/sources/registry.js');
+  const { buildEditNote } = await import('../src/edit-note.js');
+  const url = 'https://music.youtube.com/playlist?list=OLAK5uy_mI3R4t0ULQA92mMVsWeymmGoQNZI_nkx4';
+  assert.equal(sourceNameForUrl(url), 'YouTube Music');
+  globalThis.GM_info = { script: { name: 'Credit Hoarder', version: 'test', author: 'majkinetor' } };
+  globalThis.location = { href: 'https://musicbrainz.org/release/56f7d5c2-db58-4577-ae97-78c679a56663/edit-relationships' };
+  assert.ok(buildEditNote(url, null).split(/\r?\n/).includes(`YouTube Music URL: ${url}`), 'edit note names YouTube Music and keeps ?list=');
+  // every import source has a badge icon for the All review's Source column
+  const fs = await import('node:fs');
+  const src = fs.readFileSync(new URL('../src/ui-bar.js', import.meta.url), 'utf8');
+  const block = src.slice(src.indexOf('const SRC_ICON = {'), src.indexOf('};', src.indexOf('const SRC_ICON = {')));
+  const names = [...src.matchAll(/importSources\.push\(\{ name: '([^']+)'/g)].map(m => m[1]);
+  assert.ok(names.includes('YouTube Music'), 'YouTube Music is an import source');
+  for (const n of new Set(names)) assert.ok(block.includes(/^\w+$/.test(n) ? `${n}:` : `'${n}':`), `SRC_ICON has a badge for ${n}`);
+});

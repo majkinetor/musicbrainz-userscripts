@@ -2,6 +2,8 @@
 // preamble + URLs + options summary that the import bar drops into the
 // release's edit-note input at import start.
 
+import { sourceNameForUrl } from './sources/registry.js';
+
 /**
  * Build the edit-note text.
  *
@@ -27,11 +29,10 @@ export function buildEditNote(sourceUrl, opts, extraLines, sourceLabel) {
     const homepage = s.homepageURL || s.homepage || 'https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/credit_hoarder/README.md';
     const header = s.name + ' v' + s.version + ' by ' + s.author + ' - ' + homepage;
     // Label the source line by what the URL actually is (#193 — multi-source).
-    const cleanSource = String(sourceUrl || '').split(/[?#]/)[0];
-    const sourceName = /tidal\.com/i.test(cleanSource) ? 'Tidal'
-                     : /qobuz\.com/i.test(cleanSource) ? 'Qobuz'
-                     : /deezer\.com/i.test(cleanSource) ? 'Deezer'
-                     : 'Discogs';
+    // YouTube Music's album id IS the `?list=` query (#648), so its query survives.
+    const raw = String(sourceUrl || '');
+    const sourceName = sourceNameForUrl(raw);
+    const cleanSource = sourceName === 'YouTube Music' ? raw.split('#')[0] : raw.split(/[?#]/)[0];
     const lines = [
         header,
         '',

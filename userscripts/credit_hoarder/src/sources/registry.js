@@ -40,6 +40,7 @@ export function sourceNameForUrl(url) {
     if (/deezer\.com\//i.test(url || '')) return 'Deezer';
     if (/(?:music|itunes)\.apple\.com\//i.test(url || '')) return 'Apple';   // #435; iTunes URLs #436
     if (/metal-archives\.com\//i.test(url || '')) return 'Metal Archives';   // #453
+    if (/music\.youtube\.com\//i.test(url || '')) return 'YouTube Music';   // #648
     return 'Discogs';
 }
 
