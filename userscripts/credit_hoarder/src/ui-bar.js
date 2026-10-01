@@ -129,6 +129,25 @@ export function insertDiscogsBar(discogsUrl, sources = {}, meta = {}) {
         return a;
     }
 
+    // One copy per page (#653). With String Theory and a standalone install of the same script
+    // both on, two copies build the same element ids and fight over them: each settings window
+    // fills in the other's checkboxes, rows flip between two rule sets. The first copy to start
+    // claims the page; a later one stays out and says so:
+    //   if (!mbuClaim('platform_check', 'Platform Check')) return;   // first line of the script
+    // The claim is a data- attribute on <html>, which every copy sees whatever its sandbox.
+    function mbuClaim(key, label) {
+        var info = (typeof GM_info !== 'undefined' && GM_info && GM_info.script) || {};
+        var name = String(info.name || label || key), mine = (name.slice(-1) === '*' ? 'String Theory' : 'standalone') + ' v' + (info.version || '?');
+        var root = document.documentElement, attr = 'data-mbu-run-' + key;
+        var held = root && root.getAttribute(attr);
+        if (!held) { if (root) root.setAttribute(attr, mine); return true; }
+        var msg = (label || key) + ' is installed twice (' + held + ' and ' + mine + '): only the ' + held + ' copy runs. Turn one of them off in your userscript manager.';
+        try { console.warn('[' + (label || key) + '] ' + msg); } catch (e) { /* no console */ }
+        var show = function () { try { mbuToast('⚠ ' + msg, { ms: 15000, kind: 'warn' }); } catch (e) { /* no toast */ } };
+        if (document.body) setTimeout(show, 0); else document.addEventListener('DOMContentLoaded', show, { once: true });
+        return false;
+    }
+
     // Toast. mbuToast(msg) or mbuToast(msg, { ms, kind, at:{x,y}, action:{ label, onClick } }).
     //
     // An action adds one button to the toast (e.g. "Copy log"): the toast is then clickable,

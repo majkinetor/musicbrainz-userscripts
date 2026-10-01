@@ -49,11 +49,11 @@ MusicBrainz treats a different barcode or a different format as a different rele
 |---|---|---|
 | left | open the page (or the platform's search, if not found) | open the release editor with the link added, for you to review |
 | right | open the platform's search | add the link in the background |
-| middle | | add the link even when [link confidence](#link-confidence) withholds it, in the foreground |
+| middle, or Ctrl+left (⌘ on a Mac) | | add the link even when [link confidence](#link-confidence) withholds it, in the foreground |
 
-A middle click on a link that passes link confidence is a plain foreground add. One it overrides is marked in the edit note, with the reason: *(added by hand over link confidence: barcode not confirmed)*.
+A middle click (or Ctrl+click) on a link that passes link confidence is a plain foreground add. One it overrides is marked in the edit note, with the reason: *(added by hand over link confidence: barcode not confirmed)*.
 
-The footer's **+** adds every confirmed link (middle-click: the withheld ones too) and **↗** opens them all. A background add opens an inactive tab that submits the edit and closes itself; the Discogs master goes onto the release group the same way.
+The footer's **+** adds every confirmed link (middle-click or Ctrl+click: the withheld ones too) and **↗** opens them all. A background add opens an inactive tab that submits the edit and closes itself; the Discogs master goes onto the release group the same way.
 
 > [!NOTE]
 > Firefox throttles background tabs hard, slowing a background add down. *Keep background-add tabs awake* plays an inaudible tone, which exempts the tab. It needs **Allow Audio** for musicbrainz.org (padlock → *Autoplay*); without it, the log reports the tone as blocked.
@@ -104,3 +104,4 @@ The footer's **+** adds every confirmed link (middle-click: the withheld ones to
 | Key | |
 |---|---|
 | Esc | close the open dialog |
+| Ctrl+click (⌘+click) | the same as a middle click: add a link even when [link confidence](#link-confidence) withholds it; on **+**, add the withheld ones too |

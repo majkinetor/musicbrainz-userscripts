@@ -144,6 +144,11 @@ test.describe('strict barcode confidence', () => {
     await middle('#ico-tidal');
     const legit = await page.evaluate(() => ({ opened: window.__opened.length, queued: Object.keys(JSON.parse(Object.entries(localStorage).find(([k]) => /^pc:pending:[0-9a-f-]{36}$/.test(k))?.[1] || '{}')), forced: Object.keys(localStorage).some(k => /^pc:forced:/.test(k)) }));
     check(legit.opened === 1 && legit.queued.join() === 'tidal' && !legit.forced, `on a legitimate find a middle click adds it like a left click, nothing marked as forced (${JSON.stringify(legit)})`);
+    // #653: Ctrl+click does what a middle click does (a touchpad has no middle button), on the icon
+    await page.evaluate(() => { window.__opened = []; Object.keys(localStorage).filter(k => /^pc:(pending|forced):/.test(k)).forEach(k => localStorage.removeItem(k)); });
+    await page.evaluate(p => document.getElementById('plat-' + p).dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true, ctrlKey: true })), target);
+    const ctrl = await page.evaluate(() => ({ opened: window.__opened.length, queued: Object.keys(JSON.parse(Object.entries(localStorage).find(([k]) => /^pc:pending:[0-9a-f-]{36}$/.test(k))?.[1] || '{}')), forced: Object.keys(localStorage).some(k => /^pc:forced:/.test(k)) }));
+    check(ctrl.opened === 1 && ctrl.queued.join() === target && ctrl.forced, `#653: Ctrl+click on the withheld icon adds it anyway, like a middle click (${JSON.stringify(ctrl)})`);
     // + : every confirmed link, the withheld ones included
     await page.evaluate(() => { window.__opened = []; });
     const blockedAll = await page.evaluate(() => [...document.querySelectorAll('.pc-row.pc-blocked')].map(r => r.id.replace(/^row-/, '')).filter(p => document.getElementById('ico-' + p)?.textContent.trim() === '✓' && !document.getElementById('ico-' + p).classList.contains('pc-ico-circled')));

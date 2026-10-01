@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         String Theory
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.1.141606
+// @version      2026.10.1.145920
 // @description  Unified bundle of 8 MusicBrainz userscripts (apollo_editor, art_station, credit_hoarder, fusion, group_therapy, isrc_scout, mammoth, platform_check). Built by userscripts/string_theory/build.mjs — do not hand-edit.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCIgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0Ij4KICA8IS0tIGh1Yi1hbmQtc3Bva2UgIm5ldHdvcmsiIGdseXBoLCBzaW5nbGUgdml2aWQgdmlvbGV0IG9uIHRyYW5zcGFyZW50IHNvIGl0IHJlYWRzIG9uIGJvdGggZGFyayBhbmQgbGlnaHQgcGFnZXMgLS0+CiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjN2M1Y2ZmIiBzdHJva2Utd2lkdGg9IjQuNiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj4KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMzIgMTUiLz4KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMNDYuNSAyMy41Ii8+CiAgICA8cGF0aCBkPSJNMzIgMzIgTDQ2LjUgNDAuNSIvPgogICAgPHBhdGggZD0iTTMyIDMyIEwzMiA0OSIvPgogICAgPHBhdGggZD0iTTMyIDMyIEwxNy41IDQwLjUiLz4KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMTcuNSAyMy41Ii8+CiAgPC9nPgogIDxnIGZpbGw9IiM3YzVjZmYiPgogICAgPGNpcmNsZSBjeD0iMzIiIGN5PSIzMiIgcj0iOC42Ii8+CiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjE5LjUiIHI9IjYuNCIvPgogICAgPGNpcmNsZSBjeD0iNDkiIGN5PSIxOS41IiByPSI2LjQiLz4KICAgIDxjaXJjbGUgY3g9IjMyIiBjeT0iNTciIHI9IjYuNCIvPgogIDwvZz4KICA8ZyBmaWxsPSJub25lIiBzdHJva2U9IiM3YzVjZmYiIHN0cm9rZS13aWR0aD0iMy44Ij4KICAgIDxjaXJjbGUgY3g9IjMyIiBjeT0iNyIgcj0iNC45Ii8+CiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjQ0LjUiIHI9IjQuOSIvPgogICAgPGNpcmNsZSBjeD0iNDkiIGN5PSI0NC41IiByPSI0LjkiLz4KICA8L2c+Cjwvc3ZnPgo=
@@ -84,8 +84,8 @@
 // Bundles (verbatim, each wrapped in a run-at gate): apollo_editor, art_station, credit_hoarder, fusion, group_therapy, isrc_scout, mammoth, platform_check.
 
 try {
-  console.log('%c String Theory %c v2026.10.1.141606 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
-  console.log("String Theory bundles:\n  · Apollo Editor v2026.10.1\n  · Art Station v2026.9.30\n  · Credit Hoarder v2026.10.1\n  · Fusion v2026.9.30\n  · Group Therapy v2026.9.30\n  · ISRC Scout v2026.10.1\n  · Mammoth v2026.9.30\n  · Platform Check v2026.10.1.141605");
+  console.log('%c String Theory %c v2026.10.1.145920 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
+  console.log("String Theory bundles:\n  · Apollo Editor v2026.10.1\n  · Art Station v2026.9.30\n  · Credit Hoarder v2026.10.1.145919\n  · Fusion v2026.9.30\n  · Group Therapy v2026.9.30\n  · ISRC Scout v2026.10.1\n  · Mammoth v2026.9.30\n  · Platform Check v2026.10.1.145904");
 } catch (e) {}
 
 // ===== apollo_editor (@run-at document-start) =====================================
@@ -2012,6 +2012,25 @@ try {
       a.title = 'open the README in a new tab';
       a.textContent = label || '? Help';
       return a;
+  }
+
+  // One copy per page (#653). With String Theory and a standalone install of the same script
+  // both on, two copies build the same element ids and fight over them: each settings window
+  // fills in the other's checkboxes, rows flip between two rule sets. The first copy to start
+  // claims the page; a later one stays out and says so:
+  //   if (!mbuClaim('platform_check', 'Platform Check')) return;   // first line of the script
+  // The claim is a data- attribute on <html>, which every copy sees whatever its sandbox.
+  function mbuClaim(key, label) {
+      var info = (typeof GM_info !== 'undefined' && GM_info && GM_info.script) || {};
+      var name = String(info.name || label || key), mine = (name.slice(-1) === '*' ? 'String Theory' : 'standalone') + ' v' + (info.version || '?');
+      var root = document.documentElement, attr = 'data-mbu-run-' + key;
+      var held = root && root.getAttribute(attr);
+      if (!held) { if (root) root.setAttribute(attr, mine); return true; }
+      var msg = (label || key) + ' is installed twice (' + held + ' and ' + mine + '): only the ' + held + ' copy runs. Turn one of them off in your userscript manager.';
+      try { console.warn('[' + (label || key) + '] ' + msg); } catch (e) { /* no console */ }
+      var show = function () { try { mbuToast('⚠ ' + msg, { ms: 15000, kind: 'warn' }); } catch (e) { /* no toast */ } };
+      if (document.body) setTimeout(show, 0); else document.addEventListener('DOMContentLoaded', show, { once: true });
+      return false;
   }
 
   // Toast. mbuToast(msg) or mbuToast(msg, { ms, kind, at:{x,y}, action:{ label, onClick } }).
@@ -14228,6 +14247,25 @@ try {
       return a;
   }
 
+  // One copy per page (#653). With String Theory and a standalone install of the same script
+  // both on, two copies build the same element ids and fight over them: each settings window
+  // fills in the other's checkboxes, rows flip between two rule sets. The first copy to start
+  // claims the page; a later one stays out and says so:
+  //   if (!mbuClaim('platform_check', 'Platform Check')) return;   // first line of the script
+  // The claim is a data- attribute on <html>, which every copy sees whatever its sandbox.
+  function mbuClaim(key, label) {
+      var info = (typeof GM_info !== 'undefined' && GM_info && GM_info.script) || {};
+      var name = String(info.name || label || key), mine = (name.slice(-1) === '*' ? 'String Theory' : 'standalone') + ' v' + (info.version || '?');
+      var root = document.documentElement, attr = 'data-mbu-run-' + key;
+      var held = root && root.getAttribute(attr);
+      if (!held) { if (root) root.setAttribute(attr, mine); return true; }
+      var msg = (label || key) + ' is installed twice (' + held + ' and ' + mine + '): only the ' + held + ' copy runs. Turn one of them off in your userscript manager.';
+      try { console.warn('[' + (label || key) + '] ' + msg); } catch (e) { /* no console */ }
+      var show = function () { try { mbuToast('⚠ ' + msg, { ms: 15000, kind: 'warn' }); } catch (e) { /* no toast */ } };
+      if (document.body) setTimeout(show, 0); else document.addEventListener('DOMContentLoaded', show, { once: true });
+      return false;
+  }
+
   // Toast. mbuToast(msg) or mbuToast(msg, { ms, kind, at:{x,y}, action:{ label, onClick } }).
   //
   // An action adds one button to the toast (e.g. "Copy log"): the toast is then clickable,
@@ -15396,7 +15434,7 @@ try {
 
 // ===== credit_hoarder (@run-at document-end) ====================================
 (function(__stGM){
-  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Credit Hoarder*","namespace":"majkinetor","version":"2026.10.1","description":"Import per-track release credits from streaming/database providers (Discogs, Tidal, Qobuz, Deezer) into MusicBrainz relationships, with a review phase","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/credit_hoarder/README.md","supportURL":"https://github.com/majkinetor/musicbrainz-userscripts/issues","icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij4KICANCiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMmY2ZjU0IiBzdHJva2Utd2lkdGg9IjkiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGNpcmNsZSBjeD0iMzQiIGN5PSIzOCIgcj0iMi41IiBmaWxsPSIjMmY2ZjU0IiBzdHJva2U9Im5vbmUiLz4NCiAgICA8bGluZSB4MT0iNTAiIHkxPSIzOCIgeDI9Ijk4IiB5Mj0iMzgiLz4NCiAgICA8Y2lyY2xlIGN4PSIzNCIgY3k9IjY0IiByPSIyLjUiIGZpbGw9IiMyZjZmNTQiIHN0cm9rZT0ibm9uZSIvPg0KICAgIDxsaW5lIHgxPSI1MCIgeTE9IjY0IiB4Mj0iOTgiIHkyPSI2NCIvPg0KICAgIDxjaXJjbGUgY3g9IjM0IiBjeT0iOTAiIHI9IjIuNSIgZmlsbD0iIzJmNmY1NCIgc3Ryb2tlPSJub25lIi8+DQogICAgPGxpbmUgeDE9IjUwIiB5MT0iOTAiIHgyPSI3NCIgeTI9IjkwIi8+DQogIDwvZz4NCiAgPGNpcmNsZSBjeD0iOTIiIGN5PSI5MiIgcj0iMjMiIGZpbGw9IiMyZTllNWIiLz4NCiAgPGcgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGxpbmUgeDE9IjkyIiB5MT0iODEiIHgyPSI5MiIgeTI9IjEwMyIvPg0KICAgIDxsaW5lIHgxPSI4MSIgeTE9IjkyIiB4Mj0iMTAzIiB5Mj0iOTIiLz4NCiAgPC9nPg0KPC9zdmc+DQo="}) }) : { script: {"name":"Credit Hoarder*","namespace":"majkinetor","version":"2026.10.1","description":"Import per-track release credits from streaming/database providers (Discogs, Tidal, Qobuz, Deezer) into MusicBrainz relationships, with a review phase","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/credit_hoarder/README.md","supportURL":"https://github.com/majkinetor/musicbrainz-userscripts/issues","icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij4KICANCiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMmY2ZjU0IiBzdHJva2Utd2lkdGg9IjkiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGNpcmNsZSBjeD0iMzQiIGN5PSIzOCIgcj0iMi41IiBmaWxsPSIjMmY2ZjU0IiBzdHJva2U9Im5vbmUiLz4NCiAgICA8bGluZSB4MT0iNTAiIHkxPSIzOCIgeDI9Ijk4IiB5Mj0iMzgiLz4NCiAgICA8Y2lyY2xlIGN4PSIzNCIgY3k9IjY0IiByPSIyLjUiIGZpbGw9IiMyZjZmNTQiIHN0cm9rZT0ibm9uZSIvPg0KICAgIDxsaW5lIHgxPSI1MCIgeTE9IjY0IiB4Mj0iOTgiIHkyPSI2NCIvPg0KICAgIDxjaXJjbGUgY3g9IjM0IiBjeT0iOTAiIHI9IjIuNSIgZmlsbD0iIzJmNmY1NCIgc3Ryb2tlPSJub25lIi8+DQogICAgPGxpbmUgeDE9IjUwIiB5MT0iOTAiIHgyPSI3NCIgeTI9IjkwIi8+DQogIDwvZz4NCiAgPGNpcmNsZSBjeD0iOTIiIGN5PSI5MiIgcj0iMjMiIGZpbGw9IiMyZTllNWIiLz4NCiAgPGcgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGxpbmUgeDE9IjkyIiB5MT0iODEiIHgyPSI5MiIgeTI9IjEwMyIvPg0KICAgIDxsaW5lIHgxPSI4MSIgeTE9IjkyIiB4Mj0iMTAzIiB5Mj0iOTIiLz4NCiAgPC9nPg0KPC9zdmc+DQo="} };
+  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Credit Hoarder*","namespace":"majkinetor","version":"2026.10.1.145919","description":"Import per-track release credits from streaming/database providers (Discogs, Tidal, Qobuz, Deezer) into MusicBrainz relationships, with a review phase","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/credit_hoarder/README.md","supportURL":"https://github.com/majkinetor/musicbrainz-userscripts/issues","icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij4KICANCiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMmY2ZjU0IiBzdHJva2Utd2lkdGg9IjkiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGNpcmNsZSBjeD0iMzQiIGN5PSIzOCIgcj0iMi41IiBmaWxsPSIjMmY2ZjU0IiBzdHJva2U9Im5vbmUiLz4NCiAgICA8bGluZSB4MT0iNTAiIHkxPSIzOCIgeDI9Ijk4IiB5Mj0iMzgiLz4NCiAgICA8Y2lyY2xlIGN4PSIzNCIgY3k9IjY0IiByPSIyLjUiIGZpbGw9IiMyZjZmNTQiIHN0cm9rZT0ibm9uZSIvPg0KICAgIDxsaW5lIHgxPSI1MCIgeTE9IjY0IiB4Mj0iOTgiIHkyPSI2NCIvPg0KICAgIDxjaXJjbGUgY3g9IjM0IiBjeT0iOTAiIHI9IjIuNSIgZmlsbD0iIzJmNmY1NCIgc3Ryb2tlPSJub25lIi8+DQogICAgPGxpbmUgeDE9IjUwIiB5MT0iOTAiIHgyPSI3NCIgeTI9IjkwIi8+DQogIDwvZz4NCiAgPGNpcmNsZSBjeD0iOTIiIGN5PSI5MiIgcj0iMjMiIGZpbGw9IiMyZTllNWIiLz4NCiAgPGcgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGxpbmUgeDE9IjkyIiB5MT0iODEiIHgyPSI5MiIgeTI9IjEwMyIvPg0KICAgIDxsaW5lIHgxPSI4MSIgeTE9IjkyIiB4Mj0iMTAzIiB5Mj0iOTIiLz4NCiAgPC9nPg0KPC9zdmc+DQo="}) }) : { script: {"name":"Credit Hoarder*","namespace":"majkinetor","version":"2026.10.1.145919","description":"Import per-track release credits from streaming/database providers (Discogs, Tidal, Qobuz, Deezer) into MusicBrainz relationships, with a review phase","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/credit_hoarder/README.md","supportURL":"https://github.com/majkinetor/musicbrainz-userscripts/issues","icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij4KICANCiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMmY2ZjU0IiBzdHJva2Utd2lkdGg9IjkiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGNpcmNsZSBjeD0iMzQiIGN5PSIzOCIgcj0iMi41IiBmaWxsPSIjMmY2ZjU0IiBzdHJva2U9Im5vbmUiLz4NCiAgICA8bGluZSB4MT0iNTAiIHkxPSIzOCIgeDI9Ijk4IiB5Mj0iMzgiLz4NCiAgICA8Y2lyY2xlIGN4PSIzNCIgY3k9IjY0IiByPSIyLjUiIGZpbGw9IiMyZjZmNTQiIHN0cm9rZT0ibm9uZSIvPg0KICAgIDxsaW5lIHgxPSI1MCIgeTE9IjY0IiB4Mj0iOTgiIHkyPSI2NCIvPg0KICAgIDxjaXJjbGUgY3g9IjM0IiBjeT0iOTAiIHI9IjIuNSIgZmlsbD0iIzJmNmY1NCIgc3Ryb2tlPSJub25lIi8+DQogICAgPGxpbmUgeDE9IjUwIiB5MT0iOTAiIHgyPSI3NCIgeTI9IjkwIi8+DQogIDwvZz4NCiAgPGNpcmNsZSBjeD0iOTIiIGN5PSI5MiIgcj0iMjMiIGZpbGw9IiMyZTllNWIiLz4NCiAgPGcgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGxpbmUgeDE9IjkyIiB5MT0iODEiIHgyPSI5MiIgeTI9IjEwMyIvPg0KICAgIDxsaW5lIHgxPSI4MSIgeTE9IjkyIiB4Mj0iMTAzIiB5Mj0iOTIiLz4NCiAgPC9nPg0KPC9zdmc+DQo="} };
   (f=>document.readyState!=='loading'?f():document.addEventListener('DOMContentLoaded',f,{once:true}))(function(){ try { (function(){
 (() => {
   // src/constants.js
@@ -22743,6 +22781,30 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
       a.textContent = label || "? Help";
       return a;
     }
+    function mbuClaim(key, label) {
+      var info = typeof GM_info !== "undefined" && GM_info && GM_info.script || {};
+      var name = String(info.name || label || key), mine = (name.slice(-1) === "*" ? "String Theory" : "standalone") + " v" + (info.version || "?");
+      var root = document.documentElement, attr = "data-mbu-run-" + key;
+      var held = root && root.getAttribute(attr);
+      if (!held) {
+        if (root) root.setAttribute(attr, mine);
+        return true;
+      }
+      var msg = (label || key) + " is installed twice (" + held + " and " + mine + "): only the " + held + " copy runs. Turn one of them off in your userscript manager.";
+      try {
+        console.warn("[" + (label || key) + "] " + msg);
+      } catch (e) {
+      }
+      var show = function() {
+        try {
+          mbuToast("\u26A0 " + msg, { ms: 15e3, kind: "warn" });
+        } catch (e) {
+        }
+      };
+      if (document.body) setTimeout(show, 0);
+      else document.addEventListener("DOMContentLoaded", show, { once: true });
+      return false;
+    }
     var _mbuToastT = null;
     function mbuToast(msg, opts) {
       opts = opts || {};
@@ -26845,6 +26907,25 @@ function mbuHelpEl(name, label) {
     return a;
 }
 
+// One copy per page (#653). With String Theory and a standalone install of the same script
+// both on, two copies build the same element ids and fight over them: each settings window
+// fills in the other's checkboxes, rows flip between two rule sets. The first copy to start
+// claims the page; a later one stays out and says so:
+//   if (!mbuClaim('platform_check', 'Platform Check')) return;   // first line of the script
+// The claim is a data- attribute on <html>, which every copy sees whatever its sandbox.
+function mbuClaim(key, label) {
+    var info = (typeof GM_info !== 'undefined' && GM_info && GM_info.script) || {};
+    var name = String(info.name || label || key), mine = (name.slice(-1) === '*' ? 'String Theory' : 'standalone') + ' v' + (info.version || '?');
+    var root = document.documentElement, attr = 'data-mbu-run-' + key;
+    var held = root && root.getAttribute(attr);
+    if (!held) { if (root) root.setAttribute(attr, mine); return true; }
+    var msg = (label || key) + ' is installed twice (' + held + ' and ' + mine + '): only the ' + held + ' copy runs. Turn one of them off in your userscript manager.';
+    try { console.warn('[' + (label || key) + '] ' + msg); } catch (e) { /* no console */ }
+    var show = function () { try { mbuToast('⚠ ' + msg, { ms: 15000, kind: 'warn' }); } catch (e) { /* no toast */ } };
+    if (document.body) setTimeout(show, 0); else document.addEventListener('DOMContentLoaded', show, { once: true });
+    return false;
+}
+
 // Toast. mbuToast(msg) or mbuToast(msg, { ms, kind, at:{x,y}, action:{ label, onClick } }).
 //
 // An action adds one button to the toast (e.g. "Copy log"): the toast is then clickable,
@@ -29631,6 +29712,25 @@ try {
       a.title = 'open the README in a new tab';
       a.textContent = label || '? Help';
       return a;
+  }
+
+  // One copy per page (#653). With String Theory and a standalone install of the same script
+  // both on, two copies build the same element ids and fight over them: each settings window
+  // fills in the other's checkboxes, rows flip between two rule sets. The first copy to start
+  // claims the page; a later one stays out and says so:
+  //   if (!mbuClaim('platform_check', 'Platform Check')) return;   // first line of the script
+  // The claim is a data- attribute on <html>, which every copy sees whatever its sandbox.
+  function mbuClaim(key, label) {
+      var info = (typeof GM_info !== 'undefined' && GM_info && GM_info.script) || {};
+      var name = String(info.name || label || key), mine = (name.slice(-1) === '*' ? 'String Theory' : 'standalone') + ' v' + (info.version || '?');
+      var root = document.documentElement, attr = 'data-mbu-run-' + key;
+      var held = root && root.getAttribute(attr);
+      if (!held) { if (root) root.setAttribute(attr, mine); return true; }
+      var msg = (label || key) + ' is installed twice (' + held + ' and ' + mine + '): only the ' + held + ' copy runs. Turn one of them off in your userscript manager.';
+      try { console.warn('[' + (label || key) + '] ' + msg); } catch (e) { /* no console */ }
+      var show = function () { try { mbuToast('⚠ ' + msg, { ms: 15000, kind: 'warn' }); } catch (e) { /* no toast */ } };
+      if (document.body) setTimeout(show, 0); else document.addEventListener('DOMContentLoaded', show, { once: true });
+      return false;
   }
 
   // Toast. mbuToast(msg) or mbuToast(msg, { ms, kind, at:{x,y}, action:{ label, onClick } }).
@@ -35604,6 +35704,25 @@ Created this ${kind} while adding credits parsed from text to ${relUrl}`;
       a.title = 'open the README in a new tab';
       a.textContent = label || '? Help';
       return a;
+  }
+
+  // One copy per page (#653). With String Theory and a standalone install of the same script
+  // both on, two copies build the same element ids and fight over them: each settings window
+  // fills in the other's checkboxes, rows flip between two rule sets. The first copy to start
+  // claims the page; a later one stays out and says so:
+  //   if (!mbuClaim('platform_check', 'Platform Check')) return;   // first line of the script
+  // The claim is a data- attribute on <html>, which every copy sees whatever its sandbox.
+  function mbuClaim(key, label) {
+      var info = (typeof GM_info !== 'undefined' && GM_info && GM_info.script) || {};
+      var name = String(info.name || label || key), mine = (name.slice(-1) === '*' ? 'String Theory' : 'standalone') + ' v' + (info.version || '?');
+      var root = document.documentElement, attr = 'data-mbu-run-' + key;
+      var held = root && root.getAttribute(attr);
+      if (!held) { if (root) root.setAttribute(attr, mine); return true; }
+      var msg = (label || key) + ' is installed twice (' + held + ' and ' + mine + '): only the ' + held + ' copy runs. Turn one of them off in your userscript manager.';
+      try { console.warn('[' + (label || key) + '] ' + msg); } catch (e) { /* no console */ }
+      var show = function () { try { mbuToast('⚠ ' + msg, { ms: 15000, kind: 'warn' }); } catch (e) { /* no toast */ } };
+      if (document.body) setTimeout(show, 0); else document.addEventListener('DOMContentLoaded', show, { once: true });
+      return false;
   }
 
   // Toast. mbuToast(msg) or mbuToast(msg, { ms, kind, at:{x,y}, action:{ label, onClick } }).
@@ -42076,6 +42195,25 @@ Created this ${kind} while adding credits parsed from text to ${relUrl}`;
       return a;
   }
 
+  // One copy per page (#653). With String Theory and a standalone install of the same script
+  // both on, two copies build the same element ids and fight over them: each settings window
+  // fills in the other's checkboxes, rows flip between two rule sets. The first copy to start
+  // claims the page; a later one stays out and says so:
+  //   if (!mbuClaim('platform_check', 'Platform Check')) return;   // first line of the script
+  // The claim is a data- attribute on <html>, which every copy sees whatever its sandbox.
+  function mbuClaim(key, label) {
+      var info = (typeof GM_info !== 'undefined' && GM_info && GM_info.script) || {};
+      var name = String(info.name || label || key), mine = (name.slice(-1) === '*' ? 'String Theory' : 'standalone') + ' v' + (info.version || '?');
+      var root = document.documentElement, attr = 'data-mbu-run-' + key;
+      var held = root && root.getAttribute(attr);
+      if (!held) { if (root) root.setAttribute(attr, mine); return true; }
+      var msg = (label || key) + ' is installed twice (' + held + ' and ' + mine + '): only the ' + held + ' copy runs. Turn one of them off in your userscript manager.';
+      try { console.warn('[' + (label || key) + '] ' + msg); } catch (e) { /* no console */ }
+      var show = function () { try { mbuToast('⚠ ' + msg, { ms: 15000, kind: 'warn' }); } catch (e) { /* no toast */ } };
+      if (document.body) setTimeout(show, 0); else document.addEventListener('DOMContentLoaded', show, { once: true });
+      return false;
+  }
+
   // Toast. mbuToast(msg) or mbuToast(msg, { ms, kind, at:{x,y}, action:{ label, onClick } }).
   //
   // An action adds one button to the toast (e.g. "Copy log"): the toast is then clickable,
@@ -44075,10 +44213,13 @@ Created this ${kind} while adding credits parsed from text to ${relUrl}`;
 
 // ===== platform_check (@run-at document-end) ====================================
 (function(__stGM){
-  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Platform Check*","namespace":"http://tampermonkey.net/","version":"2026.10.1.141605","description":"Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/platform_check/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+DQogIDx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CiAgDQogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJhMWE1MiIgc3Ryb2tlLXdpZHRoPSI5IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik00MCA4OCBBMzQgMzQgMCAwIDEgNDAgNDAiLz4NCiAgICA8cGF0aCBkPSJNMjkgOTkgQTUwIDUwIDAgMCAxIDI5IDI5Ii8+DQogICAgPHBhdGggZD0iTTg4IDg4IEEzNCAzNCAwIDAgMCA4OCA0MCIvPg0KICAgIDxwYXRoIGQ9Ik05OSA5OSBBNTAgNTAgMCAwIDAgOTkgMjkiLz4NCiAgPC9nPg0KICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyMCIgZmlsbD0iI2U4MjAxYSIvPg0KPC9zdmc+DQo="}) }) : { script: {"name":"Platform Check*","namespace":"http://tampermonkey.net/","version":"2026.10.1.141605","description":"Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/platform_check/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+DQogIDx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CiAgDQogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJhMWE1MiIgc3Ryb2tlLXdpZHRoPSI5IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik00MCA4OCBBMzQgMzQgMCAwIDEgNDAgNDAiLz4NCiAgICA8cGF0aCBkPSJNMjkgOTkgQTUwIDUwIDAgMCAxIDI5IDI5Ii8+DQogICAgPHBhdGggZD0iTTg4IDg4IEEzNCAzNCAwIDAgMCA4OCA0MCIvPg0KICAgIDxwYXRoIGQ9Ik05OSA5OSBBNTAgNTAgMCAwIDAgOTkgMjkiLz4NCiAgPC9nPg0KICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyMCIgZmlsbD0iI2U4MjAxYSIvPg0KPC9zdmc+DQo="} };
+  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Platform Check*","namespace":"http://tampermonkey.net/","version":"2026.10.1.145904","description":"Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/platform_check/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+DQogIDx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CiAgDQogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJhMWE1MiIgc3Ryb2tlLXdpZHRoPSI5IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik00MCA4OCBBMzQgMzQgMCAwIDEgNDAgNDAiLz4NCiAgICA8cGF0aCBkPSJNMjkgOTkgQTUwIDUwIDAgMCAxIDI5IDI5Ii8+DQogICAgPHBhdGggZD0iTTg4IDg4IEEzNCAzNCAwIDAgMCA4OCA0MCIvPg0KICAgIDxwYXRoIGQ9Ik05OSA5OSBBNTAgNTAgMCAwIDAgOTkgMjkiLz4NCiAgPC9nPg0KICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyMCIgZmlsbD0iI2U4MjAxYSIvPg0KPC9zdmc+DQo="}) }) : { script: {"name":"Platform Check*","namespace":"http://tampermonkey.net/","version":"2026.10.1.145904","description":"Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/platform_check/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+DQogIDx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CiAgDQogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJhMWE1MiIgc3Ryb2tlLXdpZHRoPSI5IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik00MCA4OCBBMzQgMzQgMCAwIDEgNDAgNDAiLz4NCiAgICA8cGF0aCBkPSJNMjkgOTkgQTUwIDUwIDAgMCAxIDI5IDI5Ii8+DQogICAgPHBhdGggZD0iTTg4IDg4IEEzNCAzNCAwIDAgMCA4OCA0MCIvPg0KICAgIDxwYXRoIGQ9Ik05OSA5OSBBNTAgNTAgMCAwIDAgOTkgMjkiLz4NCiAgPC9nPg0KICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyMCIgZmlsbD0iI2U4MjAxYSIvPg0KPC9zdmc+DQo="} };
   (f=>document.readyState!=='loading'?f():document.addEventListener('DOMContentLoaded',f,{once:true}))(function(){ try { (function(){
 (function () {
 'use strict';
+
+// one copy per page: String Theory and a standalone install side by side fight over the same ids (#653)
+if (!mbuClaim('platform_check', 'Platform Check')) return;
 
 // the shared MusicBrainz request gate (#633) — first, so nothing can call it before its consts exist
 // <ST-NET> — generated by dev/net/sync-gate.mjs from dev/net/mb-gate.mjs — DO NOT EDIT
@@ -45150,6 +45291,25 @@ function mbuHelpEl(name, label) {
     return a;
 }
 
+// One copy per page (#653). With String Theory and a standalone install of the same script
+// both on, two copies build the same element ids and fight over them: each settings window
+// fills in the other's checkboxes, rows flip between two rule sets. The first copy to start
+// claims the page; a later one stays out and says so:
+//   if (!mbuClaim('platform_check', 'Platform Check')) return;   // first line of the script
+// The claim is a data- attribute on <html>, which every copy sees whatever its sandbox.
+function mbuClaim(key, label) {
+    var info = (typeof GM_info !== 'undefined' && GM_info && GM_info.script) || {};
+    var name = String(info.name || label || key), mine = (name.slice(-1) === '*' ? 'String Theory' : 'standalone') + ' v' + (info.version || '?');
+    var root = document.documentElement, attr = 'data-mbu-run-' + key;
+    var held = root && root.getAttribute(attr);
+    if (!held) { if (root) root.setAttribute(attr, mine); return true; }
+    var msg = (label || key) + ' is installed twice (' + held + ' and ' + mine + '): only the ' + held + ' copy runs. Turn one of them off in your userscript manager.';
+    try { console.warn('[' + (label || key) + '] ' + msg); } catch (e) { /* no console */ }
+    var show = function () { try { mbuToast('⚠ ' + msg, { ms: 15000, kind: 'warn' }); } catch (e) { /* no toast */ } };
+    if (document.body) setTimeout(show, 0); else document.addEventListener('DOMContentLoaded', show, { once: true });
+    return false;
+}
+
 // Toast. mbuToast(msg) or mbuToast(msg, { ms, kind, at:{x,y}, action:{ label, onClick } }).
 //
 // An action adds one button to the toast (e.g. "Copy log"): the toast is then clickable,
@@ -45968,7 +46128,7 @@ ${MBU_TOKENS}${MBU_UI_CSS}
 </div>
 <div style="display: flex; justify-content: space-between; align-items: center; padding-top: 6px; border-top: 1px solid var(--mbu-border);">
   <div style="display: flex; align-items: center; gap: 6px;">
-    <span id="mb-inject-btn"      class="pc-icon-btn" title="Open the release editor and queue OK URLs to add · right-click: add them silently in the background · middle-click: add them, including the ones strict barcode/format settings withhold" style="${iconBtn}">+</span>
+    <span id="mb-inject-btn"      class="pc-icon-btn" title="Open the release editor and queue OK URLs to add · right-click: add them silently in the background · middle-click or Ctrl+click: add them, including the ones strict barcode/format settings withhold" style="${iconBtn}">+</span>
     <span id="mb-openall-btn"     class="pc-icon-btn" title="Open found platform pages not yet in MB (non-circled) in new tabs" style="${iconBtn}">↗</span>
   </div>
   <div style="display: flex; align-items: center; gap: 6px;">
@@ -46905,10 +47065,21 @@ function wireRowOpen(p) {
 }
 
 // #641: middle click (button 1) runs `fn`, or nothing when fn is null. The mousedown is
-// swallowed, so the browser doesn't start autoscrolling instead.
+// swallowed, so the browser doesn't start autoscrolling instead. #653: so does Ctrl+click
+// (⌘+click on a Mac), for a laptop's touchpad that has no middle button; it is caught before
+// the element's own click and the row's, which would add normally or open the page.
 function pcWireForce(el, fn) {
+    el._pcForce = fn || null;
     el.onmousedown = fn ? (e) => { if (e.button === 1) e.preventDefault(); } : null;
     el.onauxclick = fn ? (e) => { if (e.button !== 1) return; e.preventDefault(); fn(); } : null;
+    if (!el._pcForceCtrl) {
+        el._pcForceCtrl = true;
+        el.addEventListener('click', (e) => {
+            if (!(e.ctrlKey || e.metaKey) || !el._pcForce) return;
+            e.preventDefault(); e.stopImmediatePropagation();
+            el._pcForce();
+        }, true);
+    }
 }
 function updateRow(p, { url, mbTracks, remoteTracks, year, label, source, fromCache, format, masterState, hiddenTracks, barcode }) {
     const a    = document.getElementById(`mb-online-${p}`);
@@ -46974,7 +47145,7 @@ function updateRow(p, { url, mbTracks, remoteTracks, year, label, source, fromCa
     // #641: middle click adds a confirmed (✓) link anyway — over a strict barcode/format
     // withholding, which sometimes keeps back a legitimate find — in the foreground
     const canForce = !!(url && ico.textContent === '✓' && !fromMbRels);
-    const forceTip = blocked ? ' · middle-click: add it anyway' : ' · middle-click: add it even if strict settings would withhold it';
+    const forceTip = blocked ? ' · middle-click or Ctrl+click: add it anyway' : ' · middle-click or Ctrl+click: add it even if strict settings would withhold it';
     ico.style.cursor = canAdd || (blocked && canForce) ? 'pointer' : '';
     ico.title = canAdd ? `Click to add ${PROVIDER_NAME[p]} URL to MB · right-click: add it silently in the background${forceTip}` : (blocked ? `Withheld from + / ↗ — barcode/format confidence is on (see the coloured bar)${canForce ? forceTip : ''}` : '');
     ico.onclick = canAdd ? () => addSingleUrl(p) : null;
@@ -47079,7 +47250,7 @@ function refreshCompactStrip() {
         // #641: a withheld match (✓, folded into the strip as a mismatch) takes the same
         // middle click as its full row's icon: add it anyway, in the foreground
         const canForce = !!(a && /^https?:\/\//.test(a.getAttribute('href') || '') && document.getElementById(`ico-${p}`)?.textContent.trim() === '✓' && !row.classList.contains('pc-inmb'));
-        ico.title = `${PROVIDER_NAME[p]} — ${mismatch ? 'found but a different release · click to open it' : 'click to search'}${canForce ? ' · middle-click: add it anyway' : ''}`;
+        ico.title = `${PROVIDER_NAME[p]} — ${mismatch ? 'found but a different release · click to open it' : 'click to search'}${canForce ? ' · middle-click or Ctrl+click: add it anyway' : ''}`;
         pcWireForce(ico, canForce ? () => addSingleUrl(p, false, true) : null);
         ico.innerHTML = stIcon(p, 16);
         ico.addEventListener('click', () => {
@@ -50631,7 +50802,7 @@ async function runInjectBtn(e, background, force) {
         openRgEditTab(rgMbid, { background, sameTabAllowed: releaseCount === 0 });
     }
 }
-document.getElementById('mb-inject-btn').addEventListener('click', (e) => runInjectBtn(e, false));
+document.getElementById('mb-inject-btn').addEventListener('click', (e) => runInjectBtn(e, false, e.ctrlKey || e.metaKey));   // #653: Ctrl+click = middle click
 document.getElementById('mb-inject-btn').addEventListener('contextmenu', (e) => { e.preventDefault(); runInjectBtn(e, true); });
 document.getElementById('mb-inject-btn').addEventListener('mousedown', (e) => { if (e.button === 1) e.preventDefault(); });
 document.getElementById('mb-inject-btn').addEventListener('auxclick', (e) => { if (e.button !== 1) return; e.preventDefault(); runInjectBtn(e, false, true); });
