@@ -1,14 +1,15 @@
 // ==UserScript==
 // @name         First Contact
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.1.145149
-// @description  Import a release into MusicBrainz from the platform's album page with one click: the release editor opens with the title, tracklist, artists, date, label, barcode and link filled in. Each artist's platform link is handed to Apollo Editor for matching. Platforms: Deezer, Bandcamp, Discogs.
+// @version      2026.10.1.150330
+// @description  Import a release into MusicBrainz from the platform's album page with one click: the release editor opens with the title, tracklist, artists, date, label, barcode and link filled in. Each artist's platform link is handed to Apollo Editor for matching. Platforms: Deezer, Bandcamp, Discogs, Apple Music.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPkZpcnN0IENvbnRhY3Q8L3RpdGxlPgogIDwhLS0gdHJhY3RvciBiZWFtIC0tPgogIDxwYXRoIGQ9Ik01MCA0NCBMNzggNDQgTDEwNCAxMTIgTDI0IDExMiBaIiBmaWxsPSIjZjZjNDMxIiBvcGFjaXR5PSIwLjkiLz4KICA8cGF0aCBkPSJNNTYgNDQgTDcyIDQ0IEw4OCAxMTIgTDQwIDExMiBaIiBmaWxsPSIjZmRlNjhhIiBvcGFjaXR5PSIwLjciLz4KICA8IS0tIGxhbmRpbmcgcmluZyAtLT4KICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSIxMTQiIHJ4PSI0MiIgcnk9IjgiIGZpbGw9IiMxZTIzNDYiLz4KICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSIxMTMiIHJ4PSIyNiIgcnk9IjQuMiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZjZjNDMxIiBzdHJva2Utd2lkdGg9IjIuNCIvPgogIDwhLS0gc2F1Y2VyIC0tPgogIDxwYXRoIGQ9Ik00MCAyNiBBMjQgMTggMCAwIDEgODggMjYgWiIgZmlsbD0iIzFlMjM0NiIvPgogIDxwYXRoIGQ9Ik01MCAxOCBBMTAgNiAwIDAgMSA2MCAxNCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjIuNiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8+CiAgPGVsbGlwc2UgY3g9IjY0IiBjeT0iMzIiIHJ4PSI1NiIgcnk9IjEzIiBmaWxsPSIjMWUyMzQ2Ii8+CiAgPGNpcmNsZSBjeD0iMzgiIGN5PSIzMiIgcj0iNC40IiBmaWxsPSIjZmZmIi8+CiAgPGNpcmNsZSBjeD0iNjQiIGN5PSIzNCIgcj0iNC40IiBmaWxsPSIjZmZmIi8+CiAgPGNpcmNsZSBjeD0iOTAiIGN5PSIzMiIgcj0iNC40IiBmaWxsPSIjZmZmIi8+CiAgPCEtLSB0aGUgcmVsZWFzZSBiZWluZyBiZWFtZWQgdXA6IGEgcHVycGxlIGhleGFnb24gd2l0aCBhIG5vdGUgLS0+CiAgPHBhdGggZD0iTTY0IDU4IEw4NCA2OS41IEw4NCA5Mi41IEw2NCAxMDQgTDQ0IDkyLjUgTDQ0IDY5LjUgWiIgZmlsbD0iIzdiNGZkNiIvPgogIDxwYXRoIGQ9Ik02NCA1OCBMODQgNjkuNSBMNjQgODEgTDQ0IDY5LjUgWiIgZmlsbD0iIzliNzJlYSIvPgogIDxwYXRoIGQ9Ik02MCA3MiBMNzQgNjkgTDc0IDg5IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iMy40IiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+CiAgPHBhdGggZD0iTTYwIDcyIEw2MCA5MiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjMuNCIvPgogIDxlbGxpcHNlIGN4PSI1NiIgY3k9IjkyIiByeD0iNC42IiByeT0iMy42IiBmaWxsPSIjZmZmIi8+CiAgPGVsbGlwc2UgY3g9IjcwIiBjeT0iODkiIHJ4PSI0LjYiIHJ5PSIzLjYiIGZpbGw9IiNmZmYiLz4KICA8IS0tIHNwYXJrbGVzIC0tPgogIDxwYXRoIGQ9Ik0xOCA1NCBsMi41IDYgNiAyLjUgLTYgMi41IC0yLjUgNiAtMi41IC02IC02IC0yLjUgNiAtMi41IFoiIGZpbGw9IiNmNmM0MzEiLz4KICA8cGF0aCBkPSJNMTA4IDUyIGwyLjUgNiA2IDIuNSAtNiAyLjUgLTIuNSA2IC0yLjUgLTYgLTYgLTIuNSA2IC0yLjUgWiIgZmlsbD0iIzFlMjM0NiIvPgogIDxwYXRoIGQ9Ik0xMTIgODIgbDEuOCA0LjIgNC4yIDEuOCAtNC4yIDEuOCAtMS44IDQuMiAtMS44IC00LjIgLTQuMiAtMS44IDQuMiAtMS44IFoiIGZpbGw9IiNmNmM0MzEiLz4KICA8cGF0aCBkPSJNMTQgODYgbDEuOCA0LjIgNC4yIDEuOCAtNC4yIDEuOCAtMS44IDQuMiAtMS44IC00LjIgLTQuMiAtMS44IDQuMiAtMS44IFoiIGZpbGw9IiMxZTIzNDYiLz4KPC9zdmc+Cg==
 // @homepageURL  https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/first_contact/README.md
 // @match        https://www.deezer.com/*
 // @match        https://*.bandcamp.com/album/*
 // @match        https://www.discogs.com/*
+// @match        https://music.apple.com/*
 // @match        https://*.musicbrainz.org/release/add*
 // @noframes
 // @grant        GM_xmlhttpRequest
@@ -19,6 +20,8 @@
 // @grant        unsafeWindow
 // @connect      api.deezer.com
 // @connect      api.discogs.com
+// @connect      music.apple.com
+// @connect      amp-api.music.apple.com
 // ==/UserScript==
 
 (function () {
@@ -61,20 +64,26 @@ function saveSettings(s) { GM_setValue('fc.settings', s); }
 
 /* ── network ─────────────────────────────────────────────────────────────── */
 
-function gmJson(url) {
+// A GET through the manager (no CORS): the response text, or throws. `headers` add to the request;
+// an error carries the HTTP status (`e.status`) for a caller that retries on one.
+function gmText(url, headers) {
     const t0 = Date.now();
     return new Promise((resolve, reject) => {
         GM_xmlhttpRequest({
-            method: 'GET', url, headers: { Accept: 'application/json' }, timeout: 20000, anonymous: true,
+            method: 'GET', url, headers: Object.assign({ Accept: 'application/json' }, headers || {}), timeout: 20000, anonymous: true,
             onload: r => {
                 Log.debug(`GET ${url} → ${r.status}, ${(r.responseText || '').length} b in ${Date.now() - t0} ms`);
-                if (r.status < 200 || r.status >= 300) return reject(new Error(`HTTP ${r.status} for ${url}`));
-                try { resolve(JSON.parse(r.responseText)); } catch (e) { reject(new Error(`bad JSON from ${url}: ${e.message}`)); }
+                if (r.status < 200 || r.status >= 300) return reject(Object.assign(new Error(`HTTP ${r.status} for ${url}`), { status: r.status }));
+                resolve(r.responseText || '');
             },
             onerror: () => reject(new Error(`network error for ${url}`)),
             ontimeout: () => reject(new Error(`timeout for ${url}`)),
         });
     });
+}
+async function gmJson(url, headers) {
+    const text = await gmText(url, headers);
+    try { return JSON.parse(text); } catch (e) { throw new Error(`bad JSON from ${url}: ${e.message}`); }
 }
 
 // Run fn over items with at most `limit` in flight; results keep the input order.
@@ -515,7 +524,119 @@ const DISCOGS = {
     },
 };
 
-const PROVIDERS = [DEEZER, BANDCAMP, DISCOGS];
+// Apple Music: its own catalogue API (amp-api.music.apple.com), read with the bearer token the
+// web player's public JS carries — the way Platform Check, ISRC Scout and Credit Hoarder read
+// it (#627). Unlike the iTunes Search API it has the UPC, each track's ISRC, the label and every
+// track artist's Apple id. The storefront is the page's (music.apple.com/<sf>/album/…).
+const APPLE = {
+    id: 'apple',
+    name: 'Apple Music',
+    host: /^music\.apple\.com$/,
+    albumId(loc) {
+        const m = loc.pathname.match(/^\/([a-z]{2})\/album\/(?:[^/]+\/)?(\d+)\/?$/i);
+        return m ? `${m[1].toLowerCase()}/${m[2]}` : null;
+    },
+    TOKEN_KEY: 'fc.apple-token',
+    _tok: null,
+    async token(fresh) {
+        if (this._tok && !fresh) return this._tok;
+        if (!fresh) {
+            const c = GM_getValue(this.TOKEN_KEY, null);
+            if (c && c.t && Date.now() - c.at < 12 * 3600e3) return (this._tok = c.t);
+        }
+        Log.info('Apple Music: fetching the web player\'s token');
+        const home = await gmText('https://music.apple.com/us/browse', { Accept: 'text/html' });
+        const asset = (home.match(/\/assets\/index-legacy~[a-z0-9]+\.js/i) || home.match(/\/assets\/index~[a-z0-9]+\.js/i) || [])[0];
+        if (!asset) throw new Error('Apple Music: the web player\'s JS was not found');
+        const js = await gmText('https://music.apple.com' + asset, { Accept: '*/*' });
+        const tok = (js.match(/eyJ[A-Za-z0-9._-]{80,}/) || [])[0];
+        if (!tok) throw new Error('Apple Music: no token in the web player\'s JS');
+        GM_setValue(this.TOKEN_KEY, { t: tok, at: Date.now() });
+        return (this._tok = tok);
+    },
+    // one amp-api read; a 401 is a rotated token: fetch a new one, once
+    async amp(path) {
+        for (let attempt = 0; ; attempt++) {
+            const tok = await this.token(attempt > 0);
+            try {
+                return await gmJson(`https://amp-api.music.apple.com${path}${path.includes('?') ? '&' : '?'}l=en-US`, { Authorization: 'Bearer ' + tok, Origin: 'https://music.apple.com' });
+            } catch (e) {
+                if (e.status === 401 && attempt === 0) { Log.warn('Apple Music: the token was refused (401), fetching a new one'); continue; }
+                throw e;
+            }
+        }
+    },
+    // "Daft Punk, Pharrell Williams & Nile Rodgers" → its names, each with the Apple artist of that
+    // name when the song lists one
+    artists(text, rel, sf) {
+        const byName = new Map((rel || []).map(a => [normName(a.attributes && a.attributes.name), a]));
+        const url = a => (a.attributes && a.attributes.url) || `https://music.apple.com/${sf}/artist/${a.id}`;
+        const names = String(text || '').split(/\s*,\s*|\s+&\s+/).map(n => n.trim()).filter(Boolean);
+        const out = names.map(n => { const a = byName.get(normName(n)); return { name: n, url: a ? url(a) : null }; });
+        // a listed artist the text leaves out (rare) still belongs in the credit
+        for (const a of rel || []) if (!out.some(o => normName(o.name) === normName(a.attributes && a.attributes.name))) out.push({ name: a.attributes ? a.attributes.name : String(a.id), url: url(a) });
+        return out;
+    },
+
+    async fetchRelease(key, progress) {
+        const [sf, id] = key.split('/');
+        const j = await this.amp(`/v1/catalog/${sf}/albums/${id}?include=tracks,artists&include[songs]=artists`);
+        const a = j && j.data && j.data[0];
+        if (!a) throw new Error(`Apple Music: no album ${id} in the "${sf}" storefront`);
+        const at = a.attributes || {};
+        Log.info(`Apple Music album ${sf}/${id}: "${at.name}" by ${at.artistName} · ${at.trackCount} track(s) · ${at.releaseDate} · UPC ${at.upc || '—'} · label "${at.recordLabel || ''}"${at.isSingle ? ' · single' : ''}${at.isCompilation ? ' · compilation' : ''}`);
+
+        const items = (a.relationships.tracks.data || []).slice();
+        for (let next = a.relationships.tracks.next; next;) {
+            const page = await this.amp(next + (next.includes('include') ? '' : '&include[songs]=artists'));
+            items.push(...(page.data || []));
+            next = page.next || null;
+        }
+        const videos = items.filter(t => t.type !== 'songs');
+        if (videos.length) Log.info(`Apple Music: ${videos.length} music video(s) left out`);
+        const songs = items.filter(t => t.type === 'songs');
+
+        const mediums = [];
+        songs.forEach((t, i) => {
+            const x = t.attributes || {};
+            const tf = splitFeat(x.name || '');
+            const listed = this.artists(x.artistName, t.relationships && t.relationships.artists && t.relationships.artists.data, sf);
+            const credit = creditFromTitle(listed, tf.feat);
+            const disc = x.discNumber || 1;
+            while (mediums.length < disc) mediums.push({ format: 'Digital Media', name: '', tracks: [] });
+            mediums[disc - 1].tracks.push({ title: tf.title, lengthMs: x.durationInMillis || null, isrc: x.isrc || null, url: x.url || null, credit });
+            progress && progress(i + 1, songs.length);
+            Log.debug(`track ${disc}.${x.trackNumber}: "${tf.title}" — ${credit.map(c => c.name + c.join).join('')} (${x.isrc || 'no ISRC'})`);
+        });
+
+        // " - Single" / " - EP" is Apple's label for the release, not part of its title
+        const suffix = (String(at.name || '').match(/\s+-\s+(Single|EP)$/) || [])[1];
+        const af = splitFeat(String(at.name || '').replace(/\s+-\s+(Single|EP)$/, ''));
+        const relArtists = a.relationships.artists && a.relationships.artists.data;
+        const credit = /^various artists$/i.test(at.artistName || '')
+            ? [{ name: 'Various Artists', mbid: VARIOUS_ARTISTS_MBID, join: '' }]
+            : creditFromTitle(this.artists(at.artistName, relArtists, sf), af.feat);
+        const [y, m, d] = String(at.releaseDate || '').split('-').map(n => parseInt(n, 10));
+        const url = (at.url || `https://music.apple.com/${sf}/album/${id}`).replace(/\?.*$/, '');
+        return {
+            source: this.id,
+            url,
+            title: af.title,
+            credit,
+            types: (suffix ? [suffix] : at.isSingle ? ['Single'] : []).concat(at.isCompilation ? ['Compilation'] : []),
+            status: 'official',
+            packaging: 'None',
+            date: { year: y || null, month: m || null, day: d || null },
+            country: 'XW',
+            barcode: at.upc || null,
+            labels: at.recordLabel ? [{ name: at.recordLabel, catno: '' }] : [],
+            urls: [{ url, linkType: 980 }],   // 980 = streaming page (paid)
+            mediums,
+        };
+    },
+};
+
+const PROVIDERS = [DEEZER, BANDCAMP, DISCOGS, APPLE];
 
 /* ── the seed: model → the release editor's POST parameters ──────────────── */
 // https://musicbrainz.org/doc/Development/Release_Editor_Seeding
