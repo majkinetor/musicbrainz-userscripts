@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         First Contact
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.1.175437
-// @description  Import a release into MusicBrainz from the platform's album page with one click: the release editor opens with the title, tracklist, artists, date, label, barcode and link filled in. Each artist's platform link is handed to Apollo Editor for matching. Platforms: Deezer, Bandcamp, Discogs, Apple Music, Tidal, Qobuz, Beatport, Spotify, YouTube Music.
+// @version      2026.10.1.180125
+// @description  Import a release into MusicBrainz from the platform's album page with one click: the release editor opens with the title, tracklist, artists, date, label, barcode and link filled in. Each artist's platform link is handed to Apollo Editor for matching. Platforms: Deezer, Bandcamp, Discogs, Apple Music, Tidal, Qobuz, Beatport, Spotify, YouTube Music, Volumo, HDtracks, SoundCloud.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPkZpcnN0IENvbnRhY3Q8L3RpdGxlPgogIDwhLS0gdHJhY3RvciBiZWFtIC0tPgogIDxwYXRoIGQ9Ik01MCA0NCBMNzggNDQgTDEwNCAxMTIgTDI0IDExMiBaIiBmaWxsPSIjZjZjNDMxIiBvcGFjaXR5PSIwLjkiLz4KICA8cGF0aCBkPSJNNTYgNDQgTDcyIDQ0IEw4OCAxMTIgTDQwIDExMiBaIiBmaWxsPSIjZmRlNjhhIiBvcGFjaXR5PSIwLjciLz4KICA8IS0tIGxhbmRpbmcgcmluZyAtLT4KICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSIxMTQiIHJ4PSI0MiIgcnk9IjgiIGZpbGw9IiMxZTIzNDYiIHN0cm9rZT0iI2M5Y2RmMiIgc3Ryb2tlLXdpZHRoPSIzIi8+CiAgPGVsbGlwc2UgY3g9IjY0IiBjeT0iMTEzIiByeD0iMjYiIHJ5PSI0LjIiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2Y2YzQzMSIgc3Ryb2tlLXdpZHRoPSIyLjQiLz4KICA8IS0tIHNhdWNlcjogYSBwYWxlIHJpbSwgc28gaXQgc2hvd3Mgb24gYSBkYXJrIGJhY2tncm91bmQgdG9vIC0tPgogIDxwYXRoIGQ9Ik00MCAyNiBBMjQgMTggMCAwIDEgODggMjYgWiIgZmlsbD0iIzFlMjM0NiIgc3Ryb2tlPSIjYzljZGYyIiBzdHJva2Utd2lkdGg9IjMiLz4KICA8cGF0aCBkPSJNNTAgMTggQTEwIDYgMCAwIDEgNjAgMTQiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2ZmZiIgc3Ryb2tlLXdpZHRoPSIyLjYiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxlbGxpcHNlIGN4PSI2NCIgY3k9IjMyIiByeD0iNTYiIHJ5PSIxMyIgZmlsbD0iIzFlMjM0NiIgc3Ryb2tlPSIjYzljZGYyIiBzdHJva2Utd2lkdGg9IjMiLz4KICA8Y2lyY2xlIGN4PSIzOCIgY3k9IjMyIiByPSI0LjQiIGZpbGw9IiNmZmYiLz4KICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjM0IiByPSI0LjQiIGZpbGw9IiNmZmYiLz4KICA8Y2lyY2xlIGN4PSI5MCIgY3k9IjMyIiByPSI0LjQiIGZpbGw9IiNmZmYiLz4KICA8IS0tIHRoZSByZWxlYXNlIGJlaW5nIGJlYW1lZCB1cDogYSBwdXJwbGUgaGV4YWdvbiB3aXRoIGEgbm90ZSAtLT4KICA8cGF0aCBkPSJNNjQgNTggTDg0IDY5LjUgTDg0IDkyLjUgTDY0IDEwNCBMNDQgOTIuNSBMNDQgNjkuNSBaIiBmaWxsPSIjN2I0ZmQ2Ii8+CiAgPHBhdGggZD0iTTY0IDU4IEw4NCA2OS41IEw2NCA4MSBMNDQgNjkuNSBaIiBmaWxsPSIjOWI3MmVhIi8+CiAgPHBhdGggZD0iTTYwIDcyIEw3NCA2OSBMNzQgODkiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2ZmZiIgc3Ryb2tlLXdpZHRoPSIzLjQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz4KICA8cGF0aCBkPSJNNjAgNzIgTDYwIDkyIiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iMy40Ii8+CiAgPGVsbGlwc2UgY3g9IjU2IiBjeT0iOTIiIHJ4PSI0LjYiIHJ5PSIzLjYiIGZpbGw9IiNmZmYiLz4KICA8ZWxsaXBzZSBjeD0iNzAiIGN5PSI4OSIgcng9IjQuNiIgcnk9IjMuNiIgZmlsbD0iI2ZmZiIvPgogIDwhLS0gc3BhcmtsZXMgLS0+CiAgPHBhdGggZD0iTTE4IDU0IGwyLjUgNiA2IDIuNSAtNiAyLjUgLTIuNSA2IC0yLjUgLTYgLTYgLTIuNSA2IC0yLjUgWiIgZmlsbD0iI2Y2YzQzMSIvPgogIDxwYXRoIGQ9Ik0xMDggNTIgbDIuNSA2IDYgMi41IC02IDIuNSAtMi41IDYgLTIuNSAtNiAtNiAtMi41IDYgLTIuNSBaIiBmaWxsPSIjMWUyMzQ2Ii8+CiAgPHBhdGggZD0iTTExMiA4MiBsMS44IDQuMiA0LjIgMS44IC00LjIgMS44IC0xLjggNC4yIC0xLjggLTQuMiAtNC4yIC0xLjggNC4yIC0xLjggWiIgZmlsbD0iI2Y2YzQzMSIvPgogIDxwYXRoIGQ9Ik0xNCA4NiBsMS44IDQuMiA0LjIgMS44IC00LjIgMS44IC0xLjggNC4yIC0xLjggLTQuMiAtNC4yIC0xLjggNC4yIC0xLjggWiIgZmlsbD0iIzFlMjM0NiIvPgo8L3N2Zz4K
 // @homepageURL  https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/first_contact/README.md
@@ -16,6 +16,9 @@
 // @match        https://www.beatport.com/*
 // @match        https://open.spotify.com/*
 // @match        https://music.youtube.com/*
+// @match        https://volumo.com/*
+// @match        https://www.hdtracks.com/*
+// @match        https://soundcloud.com/*
 // @match        https://*.musicbrainz.org/release/add*
 // @noframes
 // @run-at       document-start
@@ -34,6 +37,11 @@
 // @connect      api.beatport.com
 // @connect      api-partner.spotify.com
 // @connect      music.youtube.com
+// @connect      volumo.com
+// @connect      hdtracks.azurewebsites.net
+// @connect      soundcloud.com
+// @connect      a-v2.sndcdn.com
+// @connect      api-v2.soundcloud.com
 // ==/UserScript==
 
 (function () {
@@ -1253,7 +1261,193 @@ const YTMUSIC = {
     },
 };
 
-const PROVIDERS = [DEEZER, BANDCAMP, DISCOGS, APPLE, TIDAL, QOBUZ, BEATPORT, SPOTIFY, YTMUSIC];
+// Volumo: its public API (volumo.com/api/v1), as ISRC Scout and Platform Check read it — no token.
+// The album page is /album/<barcode>-<slug> (or /album/<id>); the barcode form asks
+// /album_by_icpn, the id form /albums. Every track has its ISRC and every artist its Volumo id.
+const VOLUMO = {
+    id: 'volumo',
+    name: 'Volumo',
+    host: /^(www\.)?volumo\.com$/,
+    albumId(loc) { const m = loc.pathname.match(/^\/album\/(\d+)(?:-[^/]*)?\/?$/); return m ? m[1] : null; },
+    artist: a => ({ name: a.name, url: `https://volumo.com/artist/${a.id}` }),
+
+    async fetchRelease(id, progress) {
+        const j = await gmJson('https://volumo.com/api/v1' + (id.length >= 12 ? '/album_by_icpn/' : '/albums/') + id);
+        const a = Array.isArray(j) ? j[0] : (j && (j.album || j));
+        if (!a || !a.title) throw new Error(`Volumo: no album ${id}`);
+        const list = a.tracks || [];
+        Log.info(`Volumo album ${id}: "${a.title}" by ${(a.artists || []).map(x => x.name).join(', ')} · ${list.length} track(s) · ${a.original_release_date || a.release_start_at || 'no date'} · UPC ${a.icpn || '—'} · label "${(a.recordlabel || {}).name || ''}" ${a.catalog_number || ''}`);
+        const mediums = [];
+        list.forEach((t, i) => {
+            const tf = splitFeat(t.title || '');
+            const title = tf.title + (t.version && !/^original mix$/i.test(t.version) ? ` (${t.version})` : '');
+            const credit = creditFromTitle((t.artists || []).map(this.artist).concat((t.featured_artists || []).map(this.artist)), tf.feat.length ? tf.feat : (t.featured_artists || []).map(x => x.name));
+            const disc = t.disc_number || 1;
+            while (mediums.length < disc) mediums.push({ format: 'Digital Media', name: '', tracks: [] });
+            mediums[disc - 1].tracks.push({ title, lengthMs: Math.round(t.duration) || null, isrc: t.isrc || null, url: t.id ? `https://volumo.com/track/${t.id}` : null, credit });
+            progress && progress(i + 1, list.length);
+            Log.debug(`track ${i + 1}: "${title}" — ${credit.map(c => c.name + c.join).join('')} (${t.isrc || 'no ISRC'})`);
+        });
+        const ra = a.artists || [];
+        const af = splitFeat(a.title);
+        // a label's sampler credits every track artist to the release: many of them mean Various Artists
+        const credit = ra.length > 4 || (ra.length === 1 && /^various artists$/i.test(ra[0].name))
+            ? [{ name: 'Various Artists', mbid: VARIOUS_ARTISTS_MBID, join: '' }]
+            : creditFromTitle(ra.map(this.artist), af.feat);
+        const [y, m, d] = String(a.original_release_date || a.release_start_at || '').slice(0, 10).split('-').map(n => parseInt(n, 10));
+        const url = `https://volumo.com/album/${a.icpn || a.id}`;   // the slug-less form (Platform Check #202)
+        return {
+            source: this.id,
+            annotation: notesText(a.description),
+            url,
+            title: af.title,
+            credit,
+            types: [],
+            status: 'official',
+            packaging: 'None',
+            date: { year: y || null, month: m || null, day: d || null },
+            country: 'XW',
+            barcode: a.icpn || null,
+            labels: a.recordlabel && a.recordlabel.name ? [{ name: a.recordlabel.name, catno: a.catalog_number || '' }] : [],
+            urls: [{ url, linkType: 74 }],   // 74 = purchase for download
+            mediums,
+        };
+    },
+};
+
+// HDtracks: its public API (hdtracks.azurewebsites.net/api/v1), as ISRC Scout reads it — one
+// call has the album and every track with its ISRC. The site routes in the address's hash
+// (www.hdtracks.com/#/album/<id>). HDtracks names artists only, with no artist pages.
+const HDTRACKS = {
+    id: 'hdtracks',
+    name: 'HDtracks',
+    host: /^(www\.)?hdtracks\.com$/,
+    albumId(loc) { const m = String(loc.hash || '').match(/^#\/album\/([a-f0-9]{24})\b/i) || loc.pathname.match(/^\/album\/([a-f0-9]{24})\/?$/i); return m ? m[1] : null; },
+    API: 'https://hdtracks.azurewebsites.net/api/v1',
+
+    async fetchRelease(id, progress) {
+        const j = await gmJson(`${this.API}/album/${id}`);
+        if (!j || !j.id) throw new Error(`HDtracks: no album ${id}`);   // an unknown id answers 200 with nothing in it
+        const list = (j.tracks || []).slice().sort((a, b) => (a.discIndex || 1) - (b.discIndex || 1) || (a.index || 0) - (b.index || 0));
+        Log.info(`HDtracks album ${id}: "${j.name}" by ${j.mainArtist} · ${list.length} track(s) · ${j.release || j.originalRelease || 'no date'} · UPC ${j.upc || '—'} · label "${j.label || ''}" · ${j.quality || ''}`);
+        const names = text => String(text || '').split(/\s*,\s*|\s+&\s+/).filter(Boolean).map(name => ({ name }));
+        const mediums = [];
+        list.forEach((t, i) => {
+            const tf = splitFeat(t.name || '');
+            const credit = creditFromTitle(names(t.mainArtist || j.mainArtist), tf.feat);
+            const disc = t.discIndex || 1;
+            while (mediums.length < disc) mediums.push({ format: 'Digital Media', name: '', tracks: [] });
+            mediums[disc - 1].tracks.push({ title: tf.title, lengthMs: t.duration ? Math.round(t.duration * 1000) : null, isrc: t.isrc || null, url: null, credit });
+            progress && progress(i + 1, list.length);
+            Log.debug(`track ${disc}.${t.index}: "${tf.title}" — ${credit.map(c => c.name + c.join).join('')} (${t.isrc || 'no ISRC'})`);
+        });
+        const af = splitFeat(j.name || '');
+        const credit = /^various artists$/i.test(j.mainArtist || '')
+            ? [{ name: 'Various Artists', mbid: VARIOUS_ARTISTS_MBID, join: '' }]
+            : creditFromTitle(names(j.mainArtist), af.feat);
+        const [y, m, d] = String(j.release || j.originalRelease || '').slice(0, 10).split('-').map(n => parseInt(n, 10));
+        const url = `https://www.hdtracks.com/#/album/${id}`;
+        return {
+            source: this.id,
+            annotation: notesText(j.notes),
+            url,
+            title: af.title,
+            credit,
+            types: [],
+            status: 'official',
+            packaging: 'None',
+            date: { year: y || null, month: m || null, day: d || null },
+            country: 'XW',
+            barcode: j.upc || null,
+            labels: j.label ? [{ name: j.label, catno: '' }] : [],
+            urls: [{ url, linkType: 74 }],   // 74 = purchase for download
+            mediums,
+        };
+    },
+};
+
+// SoundCloud: its public API (api-v2.soundcloud.com) with the client id the web player's JS
+// carries, as ISRC Scout reads it. A set (/<user>/sets/<slug>) is the release; a set the label
+// distributed has each track's ISRC, the barcode and the label in the track's publisher data.
+const SOUNDCLOUD = {
+    id: 'soundcloud',
+    name: 'SoundCloud',
+    host: /^soundcloud\.com$/,
+    albumId(loc) { return /^\/[^/]+\/sets\/[^/]+\/?$/.test(loc.pathname) ? loc.pathname.replace(/\/$/, '') : null; },
+    API: 'https://api-v2.soundcloud.com',
+    CID_KEY: 'fc.soundcloud-cid',
+    TYPES: { album: ['Album'], ep: ['EP'], single: ['Single'], compilation: ['Album', 'Compilation'] },
+    async clientId(fresh) {
+        const c = !fresh && GM_getValue(this.CID_KEY, null);
+        if (c && c.id && Date.now() - c.at < 12 * 3600e3) return c.id;
+        Log.info('SoundCloud: reading the web player\'s client id');
+        const home = await gmText('https://soundcloud.com/discover', { Accept: 'text/html' });
+        const assets = [...home.matchAll(/https:\/\/a-v2\.sndcdn\.com\/assets\/[^"']+\.js/g)].map(m => m[0]).reverse();
+        for (const a of assets) {
+            let js; try { js = await gmText(a, { Accept: '*/*' }); } catch (e) { continue; }
+            const m = js.match(/client_id\s*[:=]\s*"([a-zA-Z0-9]{20,40})"/);
+            if (m) { GM_setValue(this.CID_KEY, { id: m[1], at: Date.now() }); return m[1]; }
+        }
+        throw new Error('SoundCloud: no client id in the web player\'s JS');
+    },
+    async api(path) {
+        for (let attempt = 0; ; attempt++) {
+            const cid = await this.clientId(attempt > 0);
+            try { return await gmJson(`${this.API}${path}${path.includes('?') ? '&' : '?'}client_id=${cid}`); }
+            catch (e) { if ((e.status === 401 || e.status === 403) && attempt === 0) { Log.warn('SoundCloud: the client id was refused, reading a new one'); continue; } throw e; }
+        }
+    },
+
+    async fetchRelease(path, progress) {
+        const page = `https://soundcloud.com${path}`;
+        const pl = await this.api('/resolve?url=' + encodeURIComponent(page));
+        if (!pl || pl.kind !== 'playlist') throw new Error('SoundCloud: not a set');
+        // the set names its first tracks in full and the rest by id: read those in batches of 50
+        const byId = new Map((pl.tracks || []).filter(t => t && t.title).map(t => [t.id, t]));
+        const missing = (pl.tracks || []).filter(t => t && !byId.has(t.id)).map(t => t.id);
+        for (let i = 0; i < missing.length; i += 50) (await this.api('/tracks?ids=' + missing.slice(i, i + 50).join(','))).forEach(t => byId.set(t.id, t));
+        const list = (pl.tracks || []).map(t => byId.get(t.id)).filter(Boolean);
+        const pm0 = (list[0] && list[0].publisher_metadata) || {};
+        Log.info(`SoundCloud set ${path}: "${pl.title}" by ${pl.user && pl.user.username} · ${pl.set_type || 'set'} · ${list.length} track(s) · ${pl.release_date || pl.published_at || pl.created_at || 'no date'} · label "${pl.label_name || ''}" · UPC ${pm0.upc_or_ean || '—'}`);
+
+        const uploader = pl.user || {};
+        const linkFor = name => (uploader.username && normName(name) === normName(uploader.username) ? uploader.permalink_url : null);   // only the uploader has a page we know
+        const names = text => String(text || '').split(/\s*,\s*|\s+&\s+/).filter(Boolean).map(name => ({ name, url: linkFor(name) }));
+        const tracks = list.map((t, i) => {
+            const pm = t.publisher_metadata || {};
+            const tf = splitFeat(t.title || '');
+            const credit = creditFromTitle(names(pm.artist || uploader.username), tf.feat);
+            progress && progress(i + 1, list.length);
+            Log.debug(`track ${i + 1}: "${tf.title}" — ${credit.map(c => c.name + c.join).join('')} (${pm.isrc || 'no ISRC'})`);
+            return { title: tf.title, lengthMs: t.full_duration || t.duration || null, isrc: pm.isrc || null, url: t.permalink_url || null, credit };
+        });
+        const artists = [...new Set(list.map(t => (t.publisher_metadata || {}).artist).filter(Boolean))];
+        const af = splitFeat(pl.title || '');
+        const credit = artists.length > 4 ? [{ name: 'Various Artists', mbid: VARIOUS_ARTISTS_MBID, join: '' }]
+            : creditFromTitle(names(artists.length === 1 ? artists[0] : uploader.username), af.feat);
+        const upcs = [...new Set(list.map(t => String((t.publisher_metadata || {}).upc_or_ean || '').trim()).filter(Boolean))];
+        const [y, m, d] = String(pl.release_date || pl.published_at || pl.created_at || '').slice(0, 10).split('-').map(n => parseInt(n, 10));
+        const url = pl.permalink_url || page;
+        return {
+            source: this.id,
+            annotation: notesText(pl.description),
+            url,
+            title: af.title,
+            credit,
+            types: this.TYPES[String(pl.set_type || '').toLowerCase()] || [],
+            status: 'official',
+            packaging: 'None',
+            date: { year: y || null, month: m || null, day: d || null },
+            country: 'XW',
+            barcode: upcs.length === 1 ? upcs[0] : null,
+            labels: pl.label_name ? [{ name: pl.label_name, catno: '' }] : [],
+            urls: [{ url, linkType: 85 }],   // 85 = stream for free
+            mediums: [{ format: 'Digital Media', name: '', tracks }],
+        };
+    },
+};
+
+const PROVIDERS = [DEEZER, BANDCAMP, DISCOGS, APPLE, TIDAL, QOBUZ, BEATPORT, SPOTIFY, YTMUSIC, VOLUMO, HDTRACKS, SOUNDCLOUD];
 
 /* ── the seed: model → the release editor's POST parameters ──────────────── */
 // https://musicbrainz.org/doc/Development/Release_Editor_Seeding
