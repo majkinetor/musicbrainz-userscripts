@@ -82,7 +82,7 @@ First Contact doesn't pick MusicBrainz artists itself. It hands every credited a
 
 ## Moving the button
 
-Drag **Import to MusicBrainz** (or its **⚙︎**) to wherever it is out of the way. A drag doesn't import or open the settings. Each platform remembers its own place: moving the button on Bandcamp leaves it in the corner on Deezer. It keeps its distance from the window's right and bottom edges, so it stays in view when the window is resized. **⚙︎ → Reset button position** puts it back in the bottom-right corner on that platform.
+Drag **Import to MusicBrainz** (or its **⚙︎**) to wherever it is out of the way. A drag doesn't import or open the settings. Each platform remembers its own place: moving the button on Bandcamp leaves it in the corner on Deezer. It keeps its distance from the window's right and bottom edges, so it stays in view when the window is resized. With **Moved button scrolls with the page** on (see [Settings](#settings)), it stays on its spot on the page instead, above the cover, say, and scrolls with it. **⚙︎ → Reset button position** puts it back in the bottom-right corner on that platform.
 
 ## Settings
 
@@ -94,4 +94,5 @@ The **⚙︎** button next to **Import to MusicBrainz**.
 | Icon only | off | the button shows only its icon; the tooltip still says *Import to MusicBrainz*, and the progress still shows while it reads the platform |
 | Annotation from the platform's notes | off | the album's notes on the platform go into the annotation, followed by *From <platform>: <album page>*: Bandcamp's about and credits, Discogs's notes, Qobuz's and Apple's reviews, the description on Beatport, Volumo, HDtracks, SoundCloud and YouTube Music. Deezer, Tidal and Spotify have none. A review is the critic's text (Qobuz's and Apple's are usually AllMusic's): check you may copy it before you submit. |
 | Settings button only on hover | off | the **⚙︎** button hides until the pointer is over **Import to MusicBrainz**; then it shows as a small tab on the button's top edge (bottom edge when the button sits at the top of the window), so Import doesn't move. It stays while the settings are open. |
+| Moved button scrolls with the page | off | a button you have [moved](#moving-the-button) stays on its spot on the page and scrolls with it, instead of staying put on the screen. The spot is kept from the page's centre, so it stays over the same place when the window is resized on platforms that centre their layout. A button in its corner always stays on the screen. Positions saved before this setting existed need one more drag. |
 | Close this page after the import | off | the platform's tab closes once the release editor has the release, half a second after it is sent. It stays open when the import fails, and when the browser blocked the new tab and the editor opened in this one. |

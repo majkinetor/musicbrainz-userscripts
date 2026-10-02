@@ -71,3 +71,42 @@ test('Close this page after the import: off, the page stays; on, it closes; not 
   check(await run(true) === true, 'on: the page closes once the editor has the release');
   check(await run(false) === false, 'on, but the editor opened in this tab: nothing to close');
 });
+
+// majkinetor: "add option for it to keep its position when scrolling … I put the widget above the
+// cover and want to stay there". On, a moved button scrolls with the page; off, it stays on screen.
+test('Moved button scrolls with the page: on, it stays over its spot on the page; off, on the screen', { tag: ['@web'] }, async ({ page, inject }) => {
+  const open = async () => {
+    await page.goto(BC, { waitUntil: 'domcontentloaded' });
+    await inject('first_contact', { waitFor: '__fcTest' });
+    await page.locator('#fc-root .fc-go').waitFor({ state: 'visible' });
+  };
+  const box = () => page.locator('#fc-root').boundingBox();
+  const scrollTo = async y => { await page.evaluate(y => window.scrollTo(0, y), y); await page.waitForTimeout(150); };
+  await open();
+  await page.locator('#fc-root .fc-more').click();
+  await page.locator('#fc-panel .fc-scroll-opt').check();
+  await page.keyboard.press('Escape');
+  const g = await page.locator('#fc-root .fc-go').boundingBox();
+  await page.mouse.move(g.x + 20, g.y + g.height / 2);
+  await page.mouse.down();
+  await page.mouse.move(g.x + 20 - 500, 250, { steps: 10 });
+  await page.mouse.up();
+  const placed = await box();
+  check(Math.abs(placed.y + placed.height / 2 - 250) < 10, `dropped where it was let go (${JSON.stringify(placed)})`);
+  await scrollTo(400);
+  const scrolled = await box();
+  const sy = await page.evaluate(() => window.scrollY);
+  check(sy > 100 && Math.abs(scrolled.y - (placed.y - sy)) < 3 && Math.abs(scrolled.x - placed.x) < 3, `on: it scrolls with the page (${placed.y} → ${scrolled.y}, scrolled ${sy})`);
+
+  await open();
+  await scrollTo(0);
+  const reloaded = await box();
+  check(Math.abs(reloaded.y - placed.y) < 3 && Math.abs(reloaded.x - placed.x) < 3, `on: the same spot on the page after a reload (${JSON.stringify(reloaded)})`);
+
+  await page.locator('#fc-root .fc-more').click();
+  await page.locator('#fc-panel .fc-scroll-opt').uncheck();
+  await page.keyboard.press('Escape');
+  await scrollTo(400);
+  const fixed = await box();
+  check(Math.abs(fixed.y - placed.y) < 3, `off: it stays on the screen while the page scrolls (${placed.y} → ${fixed.y})`);
+});

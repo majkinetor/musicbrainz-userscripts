@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         First Contact
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.2.090638
+// @version      2026.10.2.091035
 // @description  Import a release into MusicBrainz from the platform's album page with one click: the release editor opens with the title, tracklist, artists, date, label, barcode and link filled in. Each artist's platform link is handed to Apollo Editor for matching. Platforms: Deezer, Bandcamp, Discogs, Apple Music, Tidal, Qobuz, Beatport, Spotify, YouTube Music, Volumo, HDtracks, SoundCloud.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPkZpcnN0IENvbnRhY3Q8L3RpdGxlPgogIDwhLS0gdHJhY3RvciBiZWFtIC0tPgogIDxwYXRoIGQ9Ik01MCA0NCBMNzggNDQgTDEwNCAxMTIgTDI0IDExMiBaIiBmaWxsPSIjZjZjNDMxIiBvcGFjaXR5PSIwLjkiLz4KICA8cGF0aCBkPSJNNTYgNDQgTDcyIDQ0IEw4OCAxMTIgTDQwIDExMiBaIiBmaWxsPSIjZmRlNjhhIiBvcGFjaXR5PSIwLjciLz4KICA8IS0tIGxhbmRpbmcgcmluZyAtLT4KICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSIxMTQiIHJ4PSI0MiIgcnk9IjgiIGZpbGw9IiMxZTIzNDYiIHN0cm9rZT0iI2M5Y2RmMiIgc3Ryb2tlLXdpZHRoPSIzIi8+CiAgPGVsbGlwc2UgY3g9IjY0IiBjeT0iMTEzIiByeD0iMjYiIHJ5PSI0LjIiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2Y2YzQzMSIgc3Ryb2tlLXdpZHRoPSIyLjQiLz4KICA8IS0tIHNhdWNlcjogYSBwYWxlIHJpbSwgc28gaXQgc2hvd3Mgb24gYSBkYXJrIGJhY2tncm91bmQgdG9vIC0tPgogIDxwYXRoIGQ9Ik00MCAyNiBBMjQgMTggMCAwIDEgODggMjYgWiIgZmlsbD0iIzFlMjM0NiIgc3Ryb2tlPSIjYzljZGYyIiBzdHJva2Utd2lkdGg9IjMiLz4KICA8cGF0aCBkPSJNNTAgMTggQTEwIDYgMCAwIDEgNjAgMTQiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2ZmZiIgc3Ryb2tlLXdpZHRoPSIyLjYiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxlbGxpcHNlIGN4PSI2NCIgY3k9IjMyIiByeD0iNTYiIHJ5PSIxMyIgZmlsbD0iIzFlMjM0NiIgc3Ryb2tlPSIjYzljZGYyIiBzdHJva2Utd2lkdGg9IjMiLz4KICA8Y2lyY2xlIGN4PSIzOCIgY3k9IjMyIiByPSI0LjQiIGZpbGw9IiNmZmYiLz4KICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjM0IiByPSI0LjQiIGZpbGw9IiNmZmYiLz4KICA8Y2lyY2xlIGN4PSI5MCIgY3k9IjMyIiByPSI0LjQiIGZpbGw9IiNmZmYiLz4KICA8IS0tIHRoZSByZWxlYXNlIGJlaW5nIGJlYW1lZCB1cDogYSBwdXJwbGUgaGV4YWdvbiB3aXRoIGEgbm90ZSAtLT4KICA8cGF0aCBkPSJNNjQgNTggTDg0IDY5LjUgTDg0IDkyLjUgTDY0IDEwNCBMNDQgOTIuNSBMNDQgNjkuNSBaIiBmaWxsPSIjN2I0ZmQ2Ii8+CiAgPHBhdGggZD0iTTY0IDU4IEw4NCA2OS41IEw2NCA4MSBMNDQgNjkuNSBaIiBmaWxsPSIjOWI3MmVhIi8+CiAgPHBhdGggZD0iTTYwIDcyIEw3NCA2OSBMNzQgODkiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2ZmZiIgc3Ryb2tlLXdpZHRoPSIzLjQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz4KICA8cGF0aCBkPSJNNjAgNzIgTDYwIDkyIiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iMy40Ii8+CiAgPGVsbGlwc2UgY3g9IjU2IiBjeT0iOTIiIHJ4PSI0LjYiIHJ5PSIzLjYiIGZpbGw9IiNmZmYiLz4KICA8ZWxsaXBzZSBjeD0iNzAiIGN5PSI4OSIgcng9IjQuNiIgcnk9IjMuNiIgZmlsbD0iI2ZmZiIvPgogIDwhLS0gc3BhcmtsZXMgLS0+CiAgPHBhdGggZD0iTTE4IDU0IGwyLjUgNiA2IDIuNSAtNiAyLjUgLTIuNSA2IC0yLjUgLTYgLTYgLTIuNSA2IC0yLjUgWiIgZmlsbD0iI2Y2YzQzMSIvPgogIDxwYXRoIGQ9Ik0xMDggNTIgbDIuNSA2IDYgMi41IC02IDIuNSAtMi41IDYgLTIuNSAtNiAtNiAtMi41IDYgLTIuNSBaIiBmaWxsPSIjMWUyMzQ2Ii8+CiAgPHBhdGggZD0iTTExMiA4MiBsMS44IDQuMiA0LjIgMS44IC00LjIgMS44IC0xLjggNC4yIC0xLjggLTQuMiAtNC4yIC0xLjggNC4yIC0xLjggWiIgZmlsbD0iI2Y2YzQzMSIvPgogIDxwYXRoIGQ9Ik0xNCA4NiBsMS44IDQuMiA0LjIgMS44IC00LjIgMS44IC0xLjggNC4yIC0xLjggLTQuMiAtNC4yIC0xLjggNC4yIC0xLjggWiIgZmlsbD0iIzFlMjM0NiIvPgo8L3N2Zz4K
@@ -80,7 +80,7 @@ Log.info(mbuStartupInfo(NAME));
 mbuToast.log = (kind, msg) => (kind === 'warn' ? Log.warn(msg) : kind === 'ok' ? Log.ok(msg) : Log.info(msg));
 
 function settings() {
-    const s = Object.assign({ server: 'musicbrainz.org', annotation: false, iconOnly: false, gearOnHover: false, closeAfter: false }, GM_getValue('fc.settings', {}));
+    const s = Object.assign({ server: 'musicbrainz.org', annotation: false, iconOnly: false, gearOnHover: false, scrollWithPage: false, closeAfter: false }, GM_getValue('fc.settings', {}));
     if (!SERVERS.includes(s.server)) s.server = 'musicbrainz.org';
     return s;
 }
@@ -1701,6 +1701,24 @@ function placeButton(root) {
     }
     if (root.dataset.mbCorner) { delete root.dataset.mbCorner; mbRestackCorner('br'); }   // the others close the gap
     const r = root.getBoundingClientRect();
+    // majkinetor: "keep its position when scrolling" — the button sits on the page (above the
+    // cover, say) and scrolls with it. Stored against the page's horizontal centre, since the
+    // platforms centre their layout: it stays over the same spot when the window is resized.
+    if (settings().scrollWithPage && pos.top != null) {
+        const vw = document.documentElement.clientWidth;
+        const left = Math.round(Math.min(Math.max(0, vw / 2 + pos.cx - r.width / 2), Math.max(0, vw - r.width)));
+        const top = Math.max(0, Math.round(pos.top));
+        root.style.position = 'absolute';
+        root.style.right = root.style.bottom = '';
+        root.style.left = left + 'px';
+        root.style.top = top + 'px';
+        // a positioned <body> (or margin) shifts what left/top mean: measure and correct once
+        const got = root.getBoundingClientRect();
+        root.style.left = Math.round(left + (left - got.left - window.scrollX)) + 'px';
+        root.style.top = Math.round(top + (top - got.top - window.scrollY)) + 'px';
+        return;
+    }
+    root.style.position = '';
     root.style.right = Math.round(Math.min(Math.max(0, pos.right), Math.max(0, window.innerWidth - r.width))) + 'px';
     root.style.bottom = Math.round(Math.min(Math.max(0, pos.bottom), Math.max(0, window.innerHeight - r.height))) + 'px';
     root.style.left = root.style.top = '';
@@ -1723,6 +1741,8 @@ function makeMovable(root) {
             moved = true;
             document.documentElement.style.userSelect = 'none';
             root.classList.add('fc-dragging');
+            root.style.position = '';                         // fixed while it moves
+            root.style.left = root.style.top = '';
             if (root.dataset.mbCorner) { delete root.dataset.mbCorner; mbRestackCorner('br'); }
             const panel = document.getElementById('fc-panel');
             if (panel) panel.remove();
@@ -1736,9 +1756,13 @@ function makeMovable(root) {
         if (!moved) return;
         root.classList.remove('fc-dragging');
         document.documentElement.style.userSelect = '';
-        const pos = { right: parseInt(root.style.right, 10) || 0, bottom: parseInt(root.style.bottom, 10) || 0 };
+        // both ways of keeping it: on the screen, and on the page (Scroll with the page)
+        const r = root.getBoundingClientRect();
+        const pos = { right: parseInt(root.style.right, 10) || 0, bottom: parseInt(root.style.bottom, 10) || 0,
+            cx: Math.round(r.left + r.width / 2 - document.documentElement.clientWidth / 2), top: Math.round(r.top + window.scrollY) };
         storePos(root.dataset.fcProvider, pos);
-        Log.info(`button moved on ${root.dataset.fcProvider}: ${pos.right}px from the right, ${pos.bottom}px from the bottom`);
+        placeButton(root);
+        Log.info(`button moved on ${root.dataset.fcProvider}: on the screen ${pos.right}px from the right, ${pos.bottom}px from the bottom; on the page ${pos.cx}px from the centre, ${pos.top}px from the top`);
     };
     window.addEventListener('pointerup', end, true);
     window.addEventListener('pointercancel', end, true);
@@ -1765,6 +1789,7 @@ function togglePanel(anchor) {
         + '</select></label>'
         + `<label class="fc-check" title="The button shows only its icon; hover it for what it does"><input type="checkbox" class="fc-iconly-opt"${s.iconOnly ? ' checked' : ''}> Icon only</label>`
         + `<label class="fc-check" title="The ⚙︎ button hides until the pointer is over Import to MusicBrainz; it shows as a small tab on the button's edge"><input type="checkbox" class="fc-gear-hover-opt"${s.gearOnHover ? ' checked' : ''}> Settings button only on hover</label>`
+        + `<label class="fc-check" title="A button you have moved stays on its spot on the page (above the cover, say) and scrolls with it, instead of staying put on the screen. The button in its corner always stays on the screen."><input type="checkbox" class="fc-scroll-opt"${s.scrollWithPage ? ' checked' : ''}> Moved button scrolls with the page</label>`
         + `<label class="fc-check" title="The album's notes on the platform (Bandcamp's about and credits, Discogs's notes, Qobuz's and Apple's reviews, Beatport's and YouTube Music's description), with a line saying where they come from. Reviews are the critic's text: check you may copy it before you submit."><input type="checkbox" class="fc-annotation"${s.annotation ? ' checked' : ''}> Annotation from the platform's notes</label>`
         + `<label class="fc-check" title="Once the release editor has the release, this platform tab closes. It stays open when the import fails, or when the browser blocked the new tab and the editor opened here."><input type="checkbox" class="fc-close-after"${s.closeAfter ? ' checked' : ''}> Close this page after the import</label>`
         + `<button type="button" class="fc-reset-pos" title="Drag the button to move it; each platform remembers its own place. This puts it back in the bottom-right corner on ${document.getElementById('fc-root').dataset.fcProvider}.">Reset button position</button>`
@@ -1787,6 +1812,13 @@ function togglePanel(anchor) {
         const next = Object.assign(settings(), { server: e.target.value });
         saveSettings(next);
         Log.info(`server set to ${next.server}`);
+    });
+    panel.querySelector('.fc-scroll-opt').addEventListener('change', e => {
+        const next = Object.assign(settings(), { scrollWithPage: e.target.checked });
+        saveSettings(next);
+        const root = document.getElementById('fc-root');
+        if (root) placeButton(root);
+        Log.info(`moved button: ${next.scrollWithPage ? 'scrolls with the page' : 'stays on the screen'}`);
     });
     panel.querySelector('.fc-gear-hover-opt').addEventListener('change', e => {
         const next = Object.assign(settings(), { gearOnHover: e.target.checked });
