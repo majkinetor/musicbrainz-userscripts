@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         String Theory
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.2.203000
+// @version      2026.10.2.211125
 // @description  Unified bundle of 8 MusicBrainz userscripts (apollo_editor, art_station, credit_hoarder, fusion, group_therapy, isrc_scout, mammoth, platform_check). Built by userscripts/string_theory/build.mjs — do not hand-edit.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCIgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0Ij4KICA8IS0tIGh1Yi1hbmQtc3Bva2UgIm5ldHdvcmsiIGdseXBoLCBzaW5nbGUgdml2aWQgdmlvbGV0IG9uIHRyYW5zcGFyZW50IHNvIGl0IHJlYWRzIG9uIGJvdGggZGFyayBhbmQgbGlnaHQgcGFnZXMgLS0+CiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjN2M1Y2ZmIiBzdHJva2Utd2lkdGg9IjQuNiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj4KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMzIgMTUiLz4KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMNDYuNSAyMy41Ii8+CiAgICA8cGF0aCBkPSJNMzIgMzIgTDQ2LjUgNDAuNSIvPgogICAgPHBhdGggZD0iTTMyIDMyIEwzMiA0OSIvPgogICAgPHBhdGggZD0iTTMyIDMyIEwxNy41IDQwLjUiLz4KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMTcuNSAyMy41Ii8+CiAgPC9nPgogIDxnIGZpbGw9IiM3YzVjZmYiPgogICAgPGNpcmNsZSBjeD0iMzIiIGN5PSIzMiIgcj0iOC42Ii8+CiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjE5LjUiIHI9IjYuNCIvPgogICAgPGNpcmNsZSBjeD0iNDkiIGN5PSIxOS41IiByPSI2LjQiLz4KICAgIDxjaXJjbGUgY3g9IjMyIiBjeT0iNTciIHI9IjYuNCIvPgogIDwvZz4KICA8ZyBmaWxsPSJub25lIiBzdHJva2U9IiM3YzVjZmYiIHN0cm9rZS13aWR0aD0iMy44Ij4KICAgIDxjaXJjbGUgY3g9IjMyIiBjeT0iNyIgcj0iNC45Ii8+CiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjQ0LjUiIHI9IjQuOSIvPgogICAgPGNpcmNsZSBjeD0iNDkiIGN5PSI0NC41IiByPSI0LjkiLz4KICA8L2c+Cjwvc3ZnPgo=
@@ -84,13 +84,13 @@
 // Bundles (verbatim, each wrapped in a run-at gate): apollo_editor, art_station, credit_hoarder, fusion, group_therapy, isrc_scout, mammoth, platform_check.
 
 try {
-  console.log('%c String Theory %c v2026.10.2.203000 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
-  console.log("String Theory bundles:\n  · Apollo Editor v2026.10.2.202946\n  · Art Station v2026.10.2\n  · Credit Hoarder v2026.10.2.122238\n  · Fusion v2026.10.1.210938\n  · Group Therapy v2026.10.1.210938\n  · ISRC Scout v2026.10.2\n  · Mammoth v2026.10.1.210938\n  · Platform Check v2026.10.2.160007");
+  console.log('%c String Theory %c v2026.10.2.211125 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
+  console.log("String Theory bundles:\n  · Apollo Editor v2026.10.2.211115\n  · Art Station v2026.10.2\n  · Credit Hoarder v2026.10.2.122238\n  · Fusion v2026.10.1.210938\n  · Group Therapy v2026.10.1.210938\n  · ISRC Scout v2026.10.2\n  · Mammoth v2026.10.1.210938\n  · Platform Check v2026.10.2.160007");
 } catch (e) {}
 
 // ===== apollo_editor (@run-at document-start) =====================================
 (function(__stGM){
-  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Apollo Editor*","namespace":"https://musicbrainz.org/","version":"2026.10.2.202946","description":"Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md","supportURL":null,"icon":"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E"}) }) : { script: {"name":"Apollo Editor*","namespace":"https://musicbrainz.org/","version":"2026.10.2.202946","description":"Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md","supportURL":null,"icon":"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E"} };
+  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Apollo Editor*","namespace":"https://musicbrainz.org/","version":"2026.10.2.211115","description":"Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md","supportURL":null,"icon":"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E"}) }) : { script: {"name":"Apollo Editor*","namespace":"https://musicbrainz.org/","version":"2026.10.2.211115","description":"Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md","supportURL":null,"icon":"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E"} };
   (f=>f())(function(){ try { (function(){
 /*
  * Editor model (discovered via test/ spikes):
@@ -725,24 +725,6 @@ try {
     _riCommittedKey = riLiveKey();
     Log.info('release artist credit →', JSON.stringify(names.map(n => n.name + n.joinPhrase).join('')), '·', names.map(n => (n.artist && n.artist.gid) ? 'linked' : 'unlinked').join(', '));
   }
-  // MusicBrainz's Copy / Paste credits, same storage, so they work across both editors
-  function riCopyCredits() {
-    const out = { names: riNames().map(n => { const a = u(n.artist), g = a && u(a.gid); return { artist: g ? { gid: g, name: u(a.name), id: u(a.id) } : null, joinPhrase: u(n.joinPhrase) || '', name: u(n.name) || '' }; }) };
-    try { localStorage.setItem('copiedArtistCredit', JSON.stringify(out)); toast('Artist credit copied'); Log.info('release artist: copied', JSON.stringify(out)); } catch (x) { Log.warn('copy credits failed', x.message); }
-  }
-  async function riPasteCredits() {
-    let c = null; try { c = JSON.parse(localStorage.getItem('copiedArtistCredit') || 'null'); } catch (x) {}
-    if (!c || !Array.isArray(c.names) || !c.names.length) { toast('No copied artist credit'); return; }
-    const slots = [];
-    for (const n of c.names) {
-      const g = n.artist && n.artist.gid, ent = g ? ((await fetchEntity(g)) || null) : null;
-      slots.push({ creditedAs: n.name || (ent && ent.name) || '', joinPhrase: n.joinPhrase || '', status: ent ? 'user' : 'none', entity: ent, gid: ent ? ent.gid : null, name: ent ? ent.name : '', candidates: [], committed: !!ent });
-    }
-    slots[slots.length - 1].joinPhrase = '';
-    _riArt = slots; riBind(); riCommit(riEntry);
-    Log.info('release artist: pasted', slots.length, 'artist(s)');
-    renderRiArtist(true);
-  }
   async function matchReleaseArtist(manual) {
     if (SETTINGS.autoMatchArtist === false && !manual) return;
     const rel = release(); if (!rel || typeof rel.artistCredit !== 'function') return;
@@ -793,54 +775,52 @@ try {
   function renderRiArtist(force) {
     const td = document.querySelector('#information td.release-artist'); if (!td) return;
     let cell = td.querySelector(':scope > .tc-ri-art'), box = td.querySelector(':scope > .tc-ri-am');
-    if (!riWant()) { if (cell) cell.remove(); if (box) box.remove(); td.classList.remove('tc-ri-artcell'); return; }
+    const th = td.previousElementSibling;
+    let lead = th && th.querySelector(':scope > .tc-ri-lead');
+    if (!riWant()) { if (cell) cell.remove(); if (box) box.remove(); if (lead) lead.remove(); td.classList.remove('tc-ri-artcell'); if (th) th.classList.remove('tc-ri-artlbl'); return; }
+    if (box) box.remove();   // the badges sit on their own lines now
+    if (th && !lead) { lead = document.createElement('div'); lead.className = 'tc-ri-lead mbu-ui'; th.appendChild(lead); th.classList.add('tc-ri-artlbl'); }
     if (!cell) {
       cell = document.createElement('div'); cell.className = 'tc-ri-art mbu-ui'; td.prepend(cell); td.classList.add('tc-ri-artcell');
       Log.debug('release artist: the Tracklist cell replaces MusicBrainz\'s artist field');
     }
-    if (_riMatching || (!force && cell.contains(document.activeElement))) return;   // never rebuild under the user's caret; the next tick catches up
+    if (_riMatching || (!force && (cell.contains(document.activeElement) || (lead && lead.contains(document.activeElement))))) return;   // never rebuild under the user's caret; the next tick catches up
     riSyncSlots();
     const sig = JSON.stringify(_riArt.map(p => [p.status, p.gid, !!p.committed, p.creditedAs, p.joinPhrase, p.name, !!p._discogsAddable, !!p._platAddable, p._platConflict && p._platConflict.gid, p._discogsConflict && p._discogsConflict.gid, !!p._pending]));
     if (!force && cell.dataset.sig === sig) return;   // re-applied every tick: only touch the DOM on a change
-    cell.dataset.sig = sig; cell.textContent = '';
+    cell.dataset.sig = sig; cell.textContent = ''; if (lead) lead.textContent = '';
     const tbl = document.createElement('table'); tbl.className = 'tc-mirror ' + (SETTINGS.gridRows !== false ? 'gridrows ' : '') + (SETTINGS.layout || 'normal');
     const tr = tbl.appendChild(document.createElement('tbody')).appendChild(document.createElement('tr'));
     const art = tr.appendChild(document.createElement('td')); art.className = 'c-art';
     const paintBadges = () => riBadges(td);
-    _riArt.forEach((p, i) => art.appendChild(slotEl(riEntry, p, i, paintBadges)));
-    cell.appendChild(tbl);
-    // the credit as it will read, MusicBrainz's Preview line; Copy / Paste credits beside it
-    const prev = document.createElement('div'); prev.className = 'tc-ri-prev';
-    prev.appendChild(document.createTextNode('Preview: '));
     _riArt.forEach((p, i) => {
-      const t = p.creditedAs || p.name || p.query || '';
-      if (p.committed && p.gid) { const l = document.createElement('a'); l.href = ORIGIN + '/artist/' + p.gid; l.target = '_blank'; l.rel = 'noopener'; l.textContent = t; prev.appendChild(l); }
-      else prev.appendChild(document.createTextNode(t));
-      if (i < _riArt.length - 1) prev.appendChild(document.createTextNode(p.joinPhrase || ''));
+      const line = art.appendChild(slotEl(riEntry, p, i, paintBadges));
+      // #652 (majkinetor): "Credit as instead of Artist label, selector aligned with edit above it" —
+      // the credited-as box and the artist-type icon move to the label column, one row per line
+      if (lead) {
+        const row = lead.appendChild(document.createElement('div')); row.className = 'tc-ri-leadrow';
+        const cw = line.querySelector(':scope > .tc-credwrap'), ic = cw && cw.nextElementSibling;
+        if (cw) row.appendChild(cw);
+        if (ic && !ic.classList.contains('tc-search')) row.appendChild(ic);
+        row.addEventListener('mouseenter', () => line.dispatchEvent(new MouseEvent('mouseenter')));
+      }
+      const rb = document.createElement('span'); rb.className = 'tc-ri-rb'; rb.dataset.ri = i; line.appendChild(rb);
     });
-    const btn = (txt, title, fn) => { const b = document.createElement('button'); b.type = 'button'; b.className = 'tc-ri-cp'; b.textContent = txt; b.title = title; b.onclick = fn; return b; };
-    const tools = document.createElement('span'); tools.className = 'tc-ri-cps';
-    tools.append(btn('Copy credits', 'copy this artist credit (MusicBrainz\'s Copy credits, same clipboard)', riCopyCredits), btn('Paste credits', 'paste the copied artist credit here', () => riPasteCredits()));
-    prev.appendChild(tools);
-    cell.appendChild(prev);
+    cell.appendChild(tbl);
     paintBadges();
   }
-  // the match badges under the cell (the Tracklist shows them in its own column)
+  // the match badge at the end of each artist's line (the Tracklist shows them in its own column)
   function riBadges(td) {
-    let box = td.querySelector(':scope > .tc-ri-am');
-    const shown = _riArt.map((p, i) => ({ p, i, txt: badgeText(p) })).filter(x => x.txt);
-    if (!shown.length) { if (box) box.remove(); return; }
-    if (!box) { box = document.createElement('div'); box.className = 'tc-ri-am mbu-ui'; td.appendChild(box); }
-    box.textContent = '';
-    shown.forEach(({ p, i, txt }) => {
-      const chip = document.createElement('span'); chip.className = 'tc-ri-chip';
-      if (_riArt.length > 1) { const nm = document.createElement('span'); nm.className = 'tc-ri-nm'; nm.textContent = p.creditedAs || p.name; chip.appendChild(nm); }
+    td.querySelectorAll('.tc-ri-art .tc-ri-rb').forEach(rb => {
+      const i = +rb.dataset.ri, p = _riArt[i]; rb.textContent = '';
+      const txt = p && badgeText(p); if (!txt) return;
+      const chip = rb;
       const b = document.createElement('span'); b.className = 'tc-badge ' + p.status; b.dataset.ri = i; b.textContent = txt;
       if (p.status === 'low' && p.entity) {
         b.classList.add('tc-ri-pick'); b.title = `uncertain: click to link ${p.entity.name}`;
         b.onclick = () => riPick(i, p.entity, 'picked (the uncertain candidate)');
       }
-      chip.appendChild(b); box.appendChild(chip);
+      chip.appendChild(b);
     });
   }
   /* ── #652: a label by its Discogs or platform link ───────────────────────────────── */
@@ -4754,7 +4734,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
   function wireMatchCards() {
     if (wireMatchCards.done) return; wireMatchCards.done = true;
     document.addEventListener('mouseover', e => {
-      const badge = e.target.closest && e.target.closest('.tc-mirror .tc-badge[data-slot], .tc-ri-am .tc-badge[data-ri]');
+      const badge = e.target.closest && e.target.closest('.tc-mirror .tc-badge[data-slot]:not([data-ri]), .tc-ri-rb .tc-badge[data-ri]');
       if (!badge || badge === _mtFor) return;
       clearTimeout(_mtShowT); clearTimeout(_mtHideT);
       _mtShowT = setTimeout(() => {
@@ -4766,7 +4746,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
       }, 500);
     });
     document.addEventListener('mouseout', e => {
-      const badge = e.target.closest && e.target.closest('.tc-mirror .tc-badge[data-slot], .tc-ri-am .tc-badge[data-ri]');
+      const badge = e.target.closest && e.target.closest('.tc-mirror .tc-badge[data-slot]:not([data-ri]), .tc-ri-rb .tc-badge[data-ri]');
       if (!badge || (e.relatedTarget && badge.contains(e.relatedTarget))) return;
       clearTimeout(_mtShowT);
       if (_mtFor === badge) _mtHideT = setTimeout(closeMatchCard, 250);
@@ -9877,6 +9857,22 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     body.tc-ri-on .tc-ri-helphidden{display:none!important}
     /* #652: the release artist's and labels' badges and offers, by their fields (the Tracklist's colours) */
     .tc-ri-am{display:flex;flex-wrap:wrap;gap:4px 10px;margin:4px 0 0;font:12px var(--mbu-font)}
+    /* #652: credited-as in the label column, a row per artist line, lined up with it */
+    body.tc-ri-on #information .tc-ri-artlbl > :not(.tc-ri-lead){display:none!important}
+    #information .tc-ri-artlbl{vertical-align:top;padding-top:0}
+    .tc-ri-lead{display:flex;flex-direction:column;align-items:stretch}
+    .tc-ri-leadrow{display:flex;align-items:center;justify-content:flex-end;gap:6px;height:28px;margin:0 0 4px;box-sizing:border-box}
+    .tc-ri-leadrow .tc-credwrap{flex:1 1 auto;min-width:0;display:flex;align-items:center}
+    #information .tc-ri-lead input.tc-cred{width:100%!important;max-width:none!important;text-align:right;font-style:italic;background:transparent!important;border:1px solid transparent!important;border-radius:var(--mbu-radius);padding:3px 6px!important;color:var(--mbu-text)}
+    #information .tc-ri-lead input.tc-cred:hover{border-color:var(--mbu-border)!important}
+    #information .tc-ri-lead input.tc-cred:focus{border-color:var(--mbu-accent)!important;background:var(--mbu-bg)!important;font-style:normal;text-align:left}
+    .tc-ri-art .tc-aslot{margin:0 0 4px}
+    .tc-ri-art .tc-mirror td.c-art{box-shadow:none!important}
+    .tc-ri-art .tc-search{flex:1 1 auto!important;min-width:0;border-radius:var(--mbu-radius)!important}
+    #information .tc-ri-art .tc-search input.nm{flex:1 1 auto!important;min-width:120px!important}
+    #information .tc-ri-art .tc-joinwrap{flex:0 0 150px}
+    #information .tc-ri-art input.tc-join{width:100%!important}
+    .tc-ri-rb{flex:0 0 auto;min-width:44px;display:inline-flex;justify-content:flex-start;font:12px var(--mbu-font)}
     .tc-ri-chip{display:inline-flex;align-items:center;gap:5px}
     .tc-ri-nm{color:var(--mbu-text-dim)}
     /* #652: the Tracklist's artist cell in place of MusicBrainz's artist field */
@@ -9884,25 +9880,17 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     .tc-ri-art .tc-mirror{width:100%;border-collapse:collapse;table-layout:fixed}
     .tc-ri-art .tc-mirror td.c-art{padding:0}
     /* MusicBrainz pins the form's inputs to 354px with !important: give the cell's fields back their Tracklist sizes */
-    #information .tc-ri-art input.tc-cred{width:130px!important;max-width:none!important}
     #information .tc-ri-art :is(input.nm,input.tc-join){width:auto!important;max-width:none!important;min-width:0!important}
     #information .tc-ri-art .tc-search:not(.matched) input.nm{flex:1 1 auto}
-    #information .tc-ri-art .tc-search.matched input.nm{flex:none!important}   /* the name never shrinks: the disambiguation gives way */
-    #information .tc-ri-art input.tc-cred{width:100px!important}
     .tc-ri-art .tc-acts{width:auto;min-width:22px}
-    .tc-ri-prev{display:flex;flex-wrap:wrap;align-items:center;gap:0 4px;margin:4px 0 0;font:12px var(--mbu-font);color:var(--mbu-text-dim);white-space:pre-wrap}
-    .tc-ri-prev a{color:var(--mbu-accent-text);text-decoration:none}
-    .tc-ri-cps{margin-left:auto;display:inline-flex;gap:6px}
-    .tc-ri-cp{all:unset;cursor:pointer;font:11px var(--mbu-font);color:var(--mbu-text-dim);padding:1px 6px;border:1px solid var(--mbu-border);border-radius:var(--mbu-radius)}
-    .tc-ri-cp:hover{background:var(--mbu-bg-hover);color:var(--mbu-text)}
     /* inside the label field, left of its search icon: the cell is too narrow for it beside the field */
     #information span.autocomplete:has(> .tc-ri-lab){position:relative}
     .tc-ri-lab{position:absolute;right:28px;top:50%;transform:translateY(-50%);line-height:1;pointer-events:auto}
     html:has(.mmthf-pin) .tc-ri-lab{right:48px}   /* Mammoth pins its icon inside the field, just left of the search icon: sit clear of it */
-    :is(.tc-ri-am,.tc-ri-lab) .tc-badge{font-size:10px;font-weight:bold;border-radius:9px;padding:1px 7px;color:var(--mbu-text-on-accent);white-space:nowrap;cursor:help;text-transform:none}
-    :is(.tc-ri-am,.tc-ri-lab) .tc-badge.rg{background:#1f8a4c}:is(.tc-ri-am,.tc-ri-lab) .tc-badge.set{background:#6c757d}:is(.tc-ri-am,.tc-ri-lab) .tc-badge.high{background:#2f6fd6}:is(.tc-ri-am,.tc-ri-lab) .tc-badge.disc{background:#0a7a8c}
-    :is(.tc-ri-am,.tc-ri-lab) .tc-badge.low{background:#e0a800}:is(.tc-ri-am,.tc-ri-lab) .tc-badge.user{background:var(--mbu-accent)}:is(.tc-ri-am,.tc-ri-lab) .tc-badge.cred{background:#b5179e}:is(.tc-ri-am,.tc-ri-lab) .tc-badge.alias{background:#1f8a7a}:is(.tc-ri-am,.tc-ri-lab) .tc-badge.pos{background:#a0522d}:is(.tc-ri-am,.tc-ri-lab) .tc-badge.plat{background:#0b6e99}
-    .tc-ri-am .tc-badge.tc-ri-pick{cursor:pointer}
+    :is(.tc-ri-am,.tc-ri-lab,.tc-ri-rb) .tc-badge{font-size:10px;font-weight:bold;border-radius:9px;padding:1px 7px;color:var(--mbu-text-on-accent);white-space:nowrap;cursor:help;text-transform:none}
+    :is(.tc-ri-am,.tc-ri-lab,.tc-ri-rb) .tc-badge.rg{background:#1f8a4c}:is(.tc-ri-am,.tc-ri-lab,.tc-ri-rb) .tc-badge.set{background:#6c757d}:is(.tc-ri-am,.tc-ri-lab,.tc-ri-rb) .tc-badge.high{background:#2f6fd6}:is(.tc-ri-am,.tc-ri-lab,.tc-ri-rb) .tc-badge.disc{background:#0a7a8c}
+    :is(.tc-ri-am,.tc-ri-lab,.tc-ri-rb) .tc-badge.low{background:#e0a800}:is(.tc-ri-am,.tc-ri-lab,.tc-ri-rb) .tc-badge.user{background:var(--mbu-accent)}:is(.tc-ri-am,.tc-ri-lab,.tc-ri-rb) .tc-badge.cred{background:#b5179e}:is(.tc-ri-am,.tc-ri-lab,.tc-ri-rb) .tc-badge.alias{background:#1f8a7a}:is(.tc-ri-am,.tc-ri-lab,.tc-ri-rb) .tc-badge.pos{background:#a0522d}:is(.tc-ri-am,.tc-ri-lab,.tc-ri-rb) .tc-badge.plat{background:#0b6e99}
+    :is(.tc-ri-am,.tc-ri-rb) .tc-badge.tc-ri-pick{cursor:pointer}
     .tc-ri-am .tc-tic{display:inline-flex;align-items:center;justify-content:center;min-width:22px;min-height:22px;color:#0a7a8c;text-decoration:none;cursor:pointer}
     .tc-ri-am .tc-tic.discogs-conflict{color:#c0392b}.tc-ri-am .tc-tic.discogs-mismatch{color:#b4791f}
     .tc-ri-am .tc-ri-mk{all:unset;cursor:pointer;min-width:22px;min-height:22px;display:inline-flex;align-items:center;justify-content:center;border:1px solid var(--mbu-border);border-radius:var(--mbu-radius);color:var(--mbu-accent-text);font-size:13px}

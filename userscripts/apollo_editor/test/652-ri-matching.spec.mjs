@@ -42,20 +42,19 @@ test.describe('release artist and label', () => {
     check(credit[0].gid === DAFT_PUNK && credit[0].name === 'D. Punk', `written into the release's artist credit, keeping the credited name: ${JSON.stringify(credit)}`);
     check(ri[1] && !ri[1].committed && credit[1] && !credit[1].gid, `an artist no stage finds is left unset: ${JSON.stringify(ri[1])}`);
 
-    await until(() => page.locator('.tc-ri-am .tc-badge').count(), n => n >= 1, { timeout: 10000 });
+    await until(() => page.locator('.tc-ri-rb .tc-badge').count(), n => n >= 1, { timeout: 10000 });
     const ui = await page.evaluate(() => {
-      const box = document.querySelector('#information td.release-artist .tc-ri-am');
       const cell = document.querySelector('#information td.release-artist .tc-ri-art');
-      return box && { badges: [...box.querySelectorAll('.tc-badge')].map(b => b.textContent + '@' + b.dataset.ri), names: [...box.querySelectorAll('.tc-ri-nm')].map(n => n.textContent), mk: cell ? [...cell.querySelectorAll('.tc-aslot')].map(l => [...l.querySelectorAll('.mk')].filter(m => m.offsetParent).length) : [] };
+      return cell && { badges: [...cell.querySelectorAll('.tc-aslot')].map(l => [...l.querySelectorAll('.tc-ri-rb .tc-badge')].map(b => b.textContent + '@' + b.dataset.ri).join()), mk: cell ? [...cell.querySelectorAll('.tc-aslot')].map(l => [...l.querySelectorAll('.mk')].filter(m => m.offsetParent).length) : [] };
     });
-    check(ui && ui.badges[0] === 'dz@0', `the dz badge by the field: ${JSON.stringify(ui)}`);
-    check(ui && JSON.stringify(ui.names) === JSON.stringify(['D. Punk', 'Zzq Nobody 652']), `a badge names its artist when the credit has several: ${JSON.stringify(ui && ui.names)}`);
+    check(ui && ui.badges[0] === 'dz@0', `the dz badge on its line: ${JSON.stringify(ui)}`);
+    check(ui && ui.badges.length === 2 && !/@0/.test(ui.badges[1]), `each badge sits on its own artist's line: ${JSON.stringify(ui && ui.badges)}`);
     check(ui && JSON.stringify(ui.mk) === '[0,1]', `＋ in the cell for the unset artist only: ${JSON.stringify(ui)}`);
 
     const card = await page.evaluate(() => window.__apolloEditor.matchCardHtml(window.__apolloEditor.riArt[0]));
     check(/Platform link/.test(card) && /deezer\.com\/artist\/27/.test(card), 'the match card says it was the Deezer link');
     // the card opens on hover, as on the Tracklist
-    await page.locator('.tc-ri-am .tc-badge[data-ri="0"]').hover();
+    await page.locator('.tc-ri-rb .tc-badge[data-ri="0"]').hover();
     const opened = await page.waitForSelector('#tc-mtip', { timeout: 5000 }).then(h => h.textContent()).catch(() => '');
     check(/Platform link/.test(opened), 'hovering the badge opens its match card');
 
@@ -84,12 +83,21 @@ test.describe('release artist and label', () => {
     const ui = await page.evaluate(c => ({
       native: getComputedStyle(document.querySelector('#information td.release-artist .artist-credit-editor')).display,
       slots: [...document.querySelectorAll(c + ' .tc-aslot')].map(l => ({ nm: l.querySelector('input.nm').value, matched: l.querySelector('.tc-search').classList.contains('matched') })),
-      prev: document.querySelector(c + ' .tc-ri-prev').textContent,
+      // #652: credited-as sits in the label column, a row per line, the artist search lined up with Title
+      lead: [...document.querySelectorAll('#information .tc-ri-artlbl .tc-ri-leadrow')].map(r => ({ cred: r.querySelector('input.tc-cred')?.placeholder, top: Math.round(r.getBoundingClientRect().top) })),
+      tops: [...document.querySelectorAll(c + ' .tc-aslot')].map(l => Math.round(l.getBoundingClientRect().top)),
+      label: getComputedStyle(document.querySelector('#information .tc-ri-artlbl > :not(.tc-ri-lead)') || document.body).display,
+      searchLeft: Math.round(document.querySelector(c + ' .tc-search').getBoundingClientRect().left),
+      titleLeft: Math.round(document.querySelector('#name').getBoundingClientRect().left),
+      prev: !!document.querySelector('.tc-ri-prev, .tc-ri-cp'),
     }), cell);
     console.log(JSON.stringify(ui));
     check(ui.native === 'none', `MusicBrainz's artist field is hidden (${ui.native})`);
     check(ui.slots.length === 2 && ui.slots[0].nm === 'Daft Punk' && ui.slots[0].matched && !ui.slots[1].matched, `one line per artist, the matched one green: ${JSON.stringify(ui.slots)}`);
-    check(/Preview: Daft Punk & Zzq Nobody 652/.test(ui.prev), `the preview reads the credit: ${ui.prev}`);
+    check(ui.lead.length === 2 && ui.lead[0].cred === 'Daft Punk' && ui.lead.every((r, i) => Math.abs(r.top - ui.tops[i]) <= 2), `credited-as in the label column, level with each line: ${JSON.stringify(ui.lead)} / ${ui.tops}`);
+    check(ui.label === 'none', `the Artist label gives way to it (${ui.label})`);
+    check(Math.abs(ui.searchLeft - ui.titleLeft) <= 2, `the artist search lines up with the Title field (${ui.searchLeft} / ${ui.titleLeft})`);
+    check(!ui.prev, 'no preview, no copy / paste');
 
     // join phrase → the release credit
     await page.evaluate(c => { const j = document.querySelector(c + ' .tc-join'); j.value = ' feat. '; j.dispatchEvent(new Event('change')); }, cell);
@@ -115,16 +123,8 @@ test.describe('release artist and label', () => {
     credit = await until(() => liveCredit(page), c => c.length === 2 && c[1].gid, { timeout: 15000 });
     check(credit[1].gid && credit[0].gid === DAFT_PUNK, `picking from the search links the artist: ${JSON.stringify(credit)}`);
     await page.keyboard.press('Escape'); await page.locator('h1, h2').first().click().catch(() => {});
-    await page.screenshot({ path: 'test-results/652-artist-cell.png', clip: await page.locator('#information td.release-artist').boundingBox() });
+    const clip = await page.locator('#information td.release-artist').evaluate(td => { const r = td.closest('tr').getBoundingClientRect(), t = document.querySelector('#name').closest('tr').getBoundingClientRect(); return { x: r.left, y: t.top, width: r.width, height: r.bottom - t.top }; });
+    await page.screenshot({ path: 'test-results/652-artist-cell.png', clip });
 
-    // Copy / Paste credits share MusicBrainz's storage
-    await page.evaluate(c => [...document.querySelectorAll(c + ' .tc-ri-cp')].find(b => /Copy/.test(b.textContent)).click(), cell);
-    const copied = await page.evaluate(() => JSON.parse(localStorage.getItem('copiedArtistCredit')));
-    check(copied && copied.names.length === 2 && copied.names[0].artist.gid === DAFT_PUNK, `Copy credits writes MusicBrainz's copiedArtistCredit: ${JSON.stringify(copied)}`);
-    await page.evaluate(() => localStorage.setItem('copiedArtistCredit', JSON.stringify({ names: [{ artist: null, joinPhrase: ' x ', name: 'Somebody Zz' }, { artist: { gid: '056e4f3e-d505-4dad-8ec1-d04f521cbb56', name: 'Daft Punk' }, joinPhrase: '', name: 'DP' }] })));
-    await page.evaluate(c => [...document.querySelectorAll(c + ' .tc-ri-cp')].find(b => /Paste/.test(b.textContent)).click(), cell);
-    credit = await until(() => liveCredit(page), c => c.length === 2 && c[1].name === 'DP', { timeout: 10000 });
-    check(!credit[0].gid && credit[0].name === 'Somebody Zz' && credit[1].gid === DAFT_PUNK, `Paste credits writes the copied credit, the artist fetched in full: ${JSON.stringify(credit)}`);
-    check(await page.evaluate(c => document.querySelectorAll(c + ' .tc-aslot').length, cell) === 2, 'and the cell shows it');
   });
 });
