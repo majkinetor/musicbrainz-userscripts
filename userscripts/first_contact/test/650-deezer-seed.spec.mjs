@@ -9,7 +9,7 @@ import { test, check, until, requireLogin, settled } from '../../../dev/test/har
 const ALBUM = 'https://www.deezer.com/en/album/6575789';
 
 test.use({
-  gm: { name: 'First Contact', persist: 'tabs', values: { 'fc.settings': { server: 'test.musicbrainz.org' } } },
+  gm: { name: 'First Contact', persist: 'tabs', values: { 'fc.settings': { server: 'test.musicbrainz.org', archive: false } } },
   pageErrors: 'ignore',
   ...(process.env.FC_SHOT ? { deviceScaleFactor: 2 } : {}),   // FC_SHOT=<file.png>: the README's screenshots   // deezer.com's own scripts throw in an automated browser; not ours
 });

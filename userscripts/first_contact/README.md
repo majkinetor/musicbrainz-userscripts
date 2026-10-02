@@ -9,13 +9,17 @@ Import a release into MusicBrainz from the platform's album page with one click:
 > [!NOTE]
 > First Contact doesn't match entities: it hands them to [Apollo Editor](../apollo_editor/README.md#artist-matching), which does. Keep Apollo's *Auto-match on start: Label, Artist* on (the default), or click its **Match** button yourself.
 
+> [!IMPORTANT]
+> By default every album page you import is sent to the Internet Archive to be saved, so the edit note can link a snapshot of it. See [Archive](#archive); turn it off in [Settings](#settings).
+
 ## Features
 
 - **[Import](#import)** a release from the album page into the MusicBrainz release editor.
 - **[Platforms](#platforms)**: what is read from each one.
 - **[Artist matching](#artist-matching)** is left to Apollo Editor, which gets every artist's platform link.
+- **[Archive](#archive)**: the album page is saved on the Internet Archive, and the edit note links the snapshot.
 - **[Moving the button](#moving-the-button)**: drag it anywhere; each platform remembers its place.
-- **[Settings](#settings)**: the MusicBrainz server, an icon-only button, a settings button only on hover, the annotation, and closing the page after the import.
+- **[Settings](#settings)**: the MusicBrainz server, an icon-only button, a settings button only on hover, the annotation, closing the page after the import, and archiving.
 
 ## Import
 
@@ -33,7 +37,7 @@ On a platform's album page, click **Import to MusicBrainz** in the bottom-right 
 | Tracklist            | one Digital Media medium per disc, with titles, track artists and lengths                                                                            |
 | External link        | the album page                                                                                                                                       |
 | Annotation           | the platform's [notes](#platforms), and where they come from; can be turned off per platform (see [Settings](#settings))                             |
-| Edit note            | the album page, and the script's name and version                                                                                                    |
+| Edit note            | the album page, links to its [Internet Archive snapshots](#archive), and the script's name and version                                               |
 
 A compilation the platform credits to one of its artists becomes Various Artists and a Compilation, when the credited artists are on fewer than half the tracks and the tracks have five or more artists.
 
@@ -188,6 +192,34 @@ Pages: `music.amazon.com/albums/<id>`, and the other countries' `music.amazon.*`
 
 First Contact doesn't pick MusicBrainz artists itself. It hands every credited artist's platform link (the release's and each track's) to [Apollo Editor](../apollo_editor/README.md#artist-matching) on the release editor page, and Apollo matches them. Other scripts can read the same [handoff](#handoff).
 
+## Archive
+
+On every import, First Contact asks the Internet Archive's Wayback Machine to save the album page, so anyone can later check what the platform showed, even after the page changes or is gone. The edit note links the snapshot:
+
+```text
+Imported from Deezer: https://www.deezer.com/album/6575789
+Archived page: https://web.archive.org/web/20261002121804/https://www.deezer.com/en/album/6575789
+Archived API data: https://web.archive.org/web/20261002121804/https://api.deezer.com/album/6575789
+```
+
+- The save starts once the release editor opens and runs in its tab, so the import never waits for it. It takes from a few seconds to a minute; the [log](#settings) says when it's done or why it failed.
+- The link carries the time of the import, and the Wayback Machine opens the snapshot nearest to it, which is the one just made.
+- Deezer and Apple Music build their pages in the browser, so a saved page shows little. For these, the album data First Contact read is saved too, and linked as *Archived API data*.
+- Spotify, Tidal and YouTube Music also build their pages in the browser, and their data can't be saved. For these, add your archive.org keys: the save then also takes a screenshot of the page, and the edit note links it as *Archived screenshot*.
+
+### archive.org keys
+
+Without keys the save is anonymous. The Internet Archive limits how many anonymous saves one connection may make, so after many imports in a row some are refused (the log says so). With your own keys:
+
+- the limit is much higher;
+- each save also takes a screenshot of the page;
+- a page saved in the last 30 days isn't saved again.
+
+To get them, make a free account on [archive.org](https://archive.org), log in, and open [archive.org/account/s3.php](https://archive.org/account/s3.php). Copy the *access key* and the *secret* into **⚙︎ → archive.org keys**.
+
+> [!NOTE]
+> Archiving sends the address of every album you import to archive.org, and with keys, under your account. Turn **Archive the album page on the Internet Archive** off in [Settings](#settings) if you don't want that.
+
 ## Moving the button
 
 Drag **Import to MusicBrainz** (or its **⚙︎**) to wherever it is out of the way. A drag doesn't import or open the settings. Each platform remembers its own place: moving the button on Bandcamp leaves it in the corner on Deezer. **⚙︎ → Reset:** **this one** puts it back in the bottom-right corner on that platform and stops it scrolling with the page there; **all** does so on every platform.
@@ -210,9 +242,15 @@ The **⚙︎** button next to **Import to MusicBrainz**.
 | Settings button only on hover | off | the **⚙︎** button shows only once the pointer has rested on **Import to MusicBrainz** for a second, as a small tab on its edge, so a click to import doesn't bring it up |
 | Moved button scrolls with the page on *platform* | off | on this platform only, a [moved](#moving-the-button) button stays on its spot on the page and scrolls with it |
 | Close this page after the import | off | the platform's tab closes once the release editor has the release; it stays open when the import fails |
+| Archive the album page on the Internet Archive | on | each import saves the album page on the Internet Archive and links the snapshot in the edit note; see [Archive](#archive) |
+| archive.org keys | none | your archive.org access key and secret: higher limits and a screenshot of each page; see [archive.org keys](#archiveorg-keys) |
 
 ## Notes
 
 ### Handoff
 
 Other scripts on the release editor page can read what First Contact sent: the release and every track with each artist's name and platform link. [DEVELOP.md](DEVELOP.md#handoff) says how, and how each platform is read.
+
+### Archiving requests
+
+[DEVELOP.md](DEVELOP.md#archive) lists the requests sent to the Internet Archive, with and without keys.

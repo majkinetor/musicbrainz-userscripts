@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         First Contact
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.2.130038
-// @description  Import a release into MusicBrainz from the platform's album page with one click: the release editor opens with the title, tracklist, artists, date, label, barcode and link filled in. Each artist's platform link is handed to Apollo Editor for matching. Platforms: Deezer, Bandcamp, Discogs, Apple Music, Tidal, Qobuz, Beatport, Spotify, YouTube Music, Volumo, HDtracks, SoundCloud, Amazon Music.
+// @version      2026.10.2.142055
+// @description  Import a release into MusicBrainz from the platform's album page with one click: the release editor opens with the title, tracklist, artists, date, label, barcode and link filled in. Each artist's platform link is handed to Apollo Editor for matching. By default the album page is also saved on the Internet Archive (it sends each imported URL to archive.org; off in the settings), and the edit note links the snapshot. Platforms: Deezer, Bandcamp, Discogs, Apple Music, Tidal, Qobuz, Beatport, Spotify, YouTube Music, Volumo, HDtracks, SoundCloud, Amazon Music.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPkZpcnN0IENvbnRhY3Q8L3RpdGxlPgogIDwhLS0gdHJhY3RvciBiZWFtIC0tPgogIDxwYXRoIGQ9Ik01MCA0NCBMNzggNDQgTDEwNCAxMTIgTDI0IDExMiBaIiBmaWxsPSIjZjZjNDMxIiBvcGFjaXR5PSIwLjkiLz4KICA8cGF0aCBkPSJNNTYgNDQgTDcyIDQ0IEw4OCAxMTIgTDQwIDExMiBaIiBmaWxsPSIjZmRlNjhhIiBvcGFjaXR5PSIwLjciLz4KICA8IS0tIGxhbmRpbmcgcmluZyAtLT4KICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSIxMTQiIHJ4PSI0MiIgcnk9IjgiIGZpbGw9IiMxZTIzNDYiIHN0cm9rZT0iI2M5Y2RmMiIgc3Ryb2tlLXdpZHRoPSIzIi8+CiAgPGVsbGlwc2UgY3g9IjY0IiBjeT0iMTEzIiByeD0iMjYiIHJ5PSI0LjIiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2Y2YzQzMSIgc3Ryb2tlLXdpZHRoPSIyLjQiLz4KICA8IS0tIHNhdWNlcjogYSBwYWxlIHJpbSwgc28gaXQgc2hvd3Mgb24gYSBkYXJrIGJhY2tncm91bmQgdG9vIC0tPgogIDxwYXRoIGQ9Ik00MCAyNiBBMjQgMTggMCAwIDEgODggMjYgWiIgZmlsbD0iIzFlMjM0NiIgc3Ryb2tlPSIjYzljZGYyIiBzdHJva2Utd2lkdGg9IjMiLz4KICA8cGF0aCBkPSJNNTAgMTggQTEwIDYgMCAwIDEgNjAgMTQiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2ZmZiIgc3Ryb2tlLXdpZHRoPSIyLjYiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxlbGxpcHNlIGN4PSI2NCIgY3k9IjMyIiByeD0iNTYiIHJ5PSIxMyIgZmlsbD0iIzFlMjM0NiIgc3Ryb2tlPSIjYzljZGYyIiBzdHJva2Utd2lkdGg9IjMiLz4KICA8Y2lyY2xlIGN4PSIzOCIgY3k9IjMyIiByPSI0LjQiIGZpbGw9IiNmZmYiLz4KICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjM0IiByPSI0LjQiIGZpbGw9IiNmZmYiLz4KICA8Y2lyY2xlIGN4PSI5MCIgY3k9IjMyIiByPSI0LjQiIGZpbGw9IiNmZmYiLz4KICA8IS0tIHRoZSByZWxlYXNlIGJlaW5nIGJlYW1lZCB1cDogYSBwdXJwbGUgaGV4YWdvbiB3aXRoIGEgbm90ZSAtLT4KICA8cGF0aCBkPSJNNjQgNTggTDg0IDY5LjUgTDg0IDkyLjUgTDY0IDEwNCBMNDQgOTIuNSBMNDQgNjkuNSBaIiBmaWxsPSIjN2I0ZmQ2Ii8+CiAgPHBhdGggZD0iTTY0IDU4IEw4NCA2OS41IEw2NCA4MSBMNDQgNjkuNSBaIiBmaWxsPSIjOWI3MmVhIi8+CiAgPHBhdGggZD0iTTYwIDcyIEw3NCA2OSBMNzQgODkiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2ZmZiIgc3Ryb2tlLXdpZHRoPSIzLjQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz4KICA8cGF0aCBkPSJNNjAgNzIgTDYwIDkyIiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iMy40Ii8+CiAgPGVsbGlwc2UgY3g9IjU2IiBjeT0iOTIiIHJ4PSI0LjYiIHJ5PSIzLjYiIGZpbGw9IiNmZmYiLz4KICA8ZWxsaXBzZSBjeD0iNzAiIGN5PSI4OSIgcng9IjQuNiIgcnk9IjMuNiIgZmlsbD0iI2ZmZiIvPgogIDwhLS0gc3BhcmtsZXMgLS0+CiAgPHBhdGggZD0iTTE4IDU0IGwyLjUgNiA2IDIuNSAtNiAyLjUgLTIuNSA2IC0yLjUgLTYgLTYgLTIuNSA2IC0yLjUgWiIgZmlsbD0iI2Y2YzQzMSIvPgogIDxwYXRoIGQ9Ik0xMDggNTIgbDIuNSA2IDYgMi41IC02IDIuNSAtMi41IDYgLTIuNSAtNiAtNiAtMi41IDYgLTIuNSBaIiBmaWxsPSIjMWUyMzQ2Ii8+CiAgPHBhdGggZD0iTTExMiA4MiBsMS44IDQuMiA0LjIgMS44IC00LjIgMS44IC0xLjggNC4yIC0xLjggLTQuMiAtNC4yIC0xLjggNC4yIC0xLjggWiIgZmlsbD0iI2Y2YzQzMSIvPgogIDxwYXRoIGQ9Ik0xNCA4NiBsMS44IDQuMiA0LjIgMS44IC00LjIgMS44IC0xLjggNC4yIC0xLjggLTQuMiAtNC4yIC0xLjggNC4yIC0xLjggWiIgZmlsbD0iIzFlMjM0NiIvPgo8L3N2Zz4K
 // @homepageURL  https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/first_contact/README.md
@@ -58,6 +58,7 @@
 // @connect      api-v2.soundcloud.com
 // @connect      music.amazon.com
 // @connect      na.mesk.skill.music.a2z.com
+// @connect      web.archive.org
 // ==/UserScript==
 
 (function () {
@@ -99,7 +100,7 @@ Log.info(mbuStartupInfo(NAME));
 mbuToast.log = (kind, msg) => (kind === 'warn' ? Log.warn(msg) : kind === 'ok' ? Log.ok(msg) : Log.info(msg));
 
 function settings() {
-    const s = Object.assign({ server: 'musicbrainz.org', iconOnly: false, gearOnHover: false, closeAfter: false }, GM_getValue('fc.settings', {}));
+    const s = Object.assign({ server: 'musicbrainz.org', iconOnly: false, gearOnHover: false, closeAfter: false, archive: true, iaKey: '', iaSecret: '' }, GM_getValue('fc.settings', {}));
     if (!SERVERS.includes(s.server)) s.server = 'musicbrainz.org';
     return s;
 }
@@ -345,6 +346,8 @@ const DEEZER = {
     host: /^www\.deezer\.com$/,
     albumId(loc) { const m = loc.pathname.match(/^\/(?:[a-z]{2}(?:-[a-z]{2})?\/)?album\/(\d+)\/?$/i); return m ? m[1] : null; },
     albumUrl: id => `https://www.deezer.com/album/${id}`,
+    // #659: the page is built in the browser, so its snapshot is near empty; the API answer FC reads is the evidence
+    archiveApi: id => `https://api.deezer.com/album/${id}`,
     artistUrl: id => `https://www.deezer.com/artist/${id}`,
     TYPES: { album: ['Album'], ep: ['EP'], single: ['Single'], compile: ['Album', 'Compilation'] },
     VARIOUS: 5080,
@@ -681,6 +684,8 @@ const APPLE = {
         const m = loc.pathname.match(/^\/([a-z]{2})\/album\/(?:[^/]+\/)?(\d+)\/?$/i);
         return m ? `${m[1].toLowerCase()}/${m[2]}` : null;
     },
+    // #659: amp-api needs a token Wayback can't send; the public iTunes lookup has the same album and tracks
+    archiveApi(id) { const [cc, n] = id.split('/'); return `https://itunes.apple.com/lookup?id=${n}&entity=song&country=${cc}`; },
     TOKEN_KEY: 'fc.apple-token',
     _tok: null,
     async token(fresh) {
@@ -1764,8 +1769,122 @@ function seedParams(rel, editNote) {
     return p;
 }
 
-function editNoteFor(rel, provider) {
-    return `Imported from ${provider.name}: ${rel.url}\n\n${NAME} v${VERSION} by majkinetor - ${HOMEPAGE}`;
+function editNoteFor(rel, provider, archive) {
+    const lines = [`Imported from ${provider.name}: ${rel.url}`];
+    if (archive) {
+        // the snapshot is made after the seed, so its exact time isn't known yet: the import's time
+        // is, and Wayback sends /web/<time>/<url> to the snapshot nearest to it
+        const wb = u => `https://web.archive.org/web/${archive.ts}/${u}`;
+        for (const a of archive.urls) lines.push(`${a.what === 'api' ? 'Archived API data' : 'Archived page'}: ${wb(a.url)}`);
+        if (archive.keys) lines.push(`Archived screenshot: ${wb('http://web.archive.org/screenshot/' + archive.urls[0].url)}`);
+    }
+    return lines.join('\n') + `\n\n${NAME} v${VERSION} by majkinetor - ${HOMEPAGE}`;
+}
+
+/* ── #659: Internet Archive ──────────────────────────────────────────────── */
+// The release editor's tab sends the save requests (the platform tab may close right after the
+// import); the edit note links the snapshots by the import's time.
+
+const WAYBACK_TS = d => d.toISOString().replace(/[^0-9]/g, '').slice(0, 14);
+const ARCHIVE_WAIT_MS = 180000;
+
+// The page as the user has it, without the fragment and share/tracking parameters. Not the
+// canonical URL: that one often redirects (Deezer's /album/<id> to a country's /xx/album/<id>), and
+// Wayback then stores the snapshot under the target, so a link to the canonical URL by the
+// import's time finds an older snapshot instead of this one.
+function archivePageUrl(href) {
+    const u = new URL(href);
+    u.hash = '';
+    for (const k of [...u.searchParams.keys()]) if (/^(si|utm_\w+|fbclid|gclid|ref|from|context|nd|feature)$/i.test(k)) u.searchParams.delete(k);
+    return u.href;
+}
+
+// What to archive for this import, or null when archiving is off.
+function archivePlan(rel, provider, id) {
+    const s = settings();
+    if (!s.archive) { Log.info('archive: off in the settings'); return null; }
+    const urls = [{ url: archivePageUrl(location.href), what: 'page' }];
+    if (provider.archiveApi) urls.push({ url: provider.archiveApi(id), what: 'api' });
+    const keys = !!(s.iaKey && s.iaSecret);
+    Log.info(`archive: ${urls.map(u => u.what + ' ' + u.url).join(', ')} (${keys ? 'Save Page Now 2 with your keys, with a screenshot' : 'anonymous Save Page Now'}); the release editor's tab sends it`);
+    return { ts: WAYBACK_TS(new Date()), keys, urls };
+}
+
+// Anonymous Save Page Now: a GET that answers (in seconds to a minute) with a redirect to the snapshot.
+function spnAnonymous(url) {
+    const t0 = Date.now();
+    return new Promise(resolve => {
+        GM_xmlhttpRequest({
+            method: 'GET', url: 'https://web.archive.org/save/' + url, timeout: ARCHIVE_WAIT_MS, anonymous: true,
+            headers: { Accept: 'text/html' },
+            onload: r => {
+                const snap = /\/web\/\d{14}\//.test(r.finalUrl || '') ? r.finalUrl : null;
+                const ms = Date.now() - t0;
+                if (r.status >= 200 && r.status < 300 && snap) Log.ok(`archive: saved ${url} → ${snap} (${ms} ms)`);
+                else if (r.status === 429) Log.warn(`archive: ${url} not saved: Save Page Now is limiting anonymous saves (HTTP 429). archive.org keys in the settings raise the limit`);
+                else Log.warn(`archive: ${url} → HTTP ${r.status}${snap ? '' : ', no snapshot in the answer'} (${ms} ms)${r.finalUrl ? ', ended at ' + r.finalUrl : ''}`);
+                resolve();
+            },
+            onerror: () => { Log.warn(`archive: network error saving ${url}`); resolve(); },
+            ontimeout: () => { Log.warn(`archive: no answer for ${url} in ${ARCHIVE_WAIT_MS / 60000} minutes (the save may still finish)`); resolve(); },
+        });
+    });
+}
+
+// Save Page Now 2 with the user's archive.org keys: higher limits, a screenshot, and a snapshot from
+// the last 30 days is reused. Starts a job, then follows it for the log only (nothing waits for it).
+function spnRequest(method, url, auth, body) {
+    return new Promise(resolve => {
+        GM_xmlhttpRequest({
+            method, url, data: body, timeout: 30000, anonymous: true,
+            headers: Object.assign({ Accept: 'application/json', Authorization: 'LOW ' + auth }, body ? { 'Content-Type': 'application/x-www-form-urlencoded' } : {}),
+            onload: r => { let j = null; try { j = JSON.parse(r.responseText || 'null'); } catch (e) { /* not JSON */ } resolve({ status: r.status, json: j, text: r.responseText || '' }); },
+            onerror: () => resolve({ status: 0, json: null, text: 'network error' }),
+            ontimeout: () => resolve({ status: 0, json: null, text: 'timeout' }),
+        });
+    });
+}
+async function spnWithKeys(url, s) {
+    const auth = `${s.iaKey}:${s.iaSecret}`;
+    const body = new URLSearchParams({ url, if_not_archived_within: '30d', capture_screenshot: '1' }).toString();
+    const r = await spnRequest('POST', 'https://web.archive.org/save', auth, body);
+    Log.debug(`archive: POST /save ${url} → HTTP ${r.status} ${r.text.slice(0, 300)}`);
+    if (r.status === 401 || r.status === 403) { Log.warn(`archive: archive.org refused your keys (HTTP ${r.status}); check them in the settings`); return; }
+    const job = r.json && r.json.job_id;
+    if (!job) {
+        const msg = (r.json && (r.json.message || r.json.status_ext)) || r.text.slice(0, 200) || 'no answer';
+        if (r.status === 200 && /archived|already/i.test(msg)) Log.ok(`archive: ${url} has a recent snapshot, not saved again (${msg})`);
+        else Log.warn(`archive: ${url} not saved (HTTP ${r.status}: ${msg})`);
+        return;
+    }
+    Log.info(`archive: ${url} queued as job ${job}`);
+    const t0 = Date.now();
+    while (Date.now() - t0 < ARCHIVE_WAIT_MS) {
+        await new Promise(res => setTimeout(res, 6000));
+        const st = await spnRequest('GET', 'https://web.archive.org/save/status/' + encodeURIComponent(job), auth);
+        const j = st.json || {};
+        Log.debug(`archive: job ${job} → HTTP ${st.status}, ${j.status || '?'}`);
+        if (j.status === 'pending') continue;
+        if (j.status === 'success') Log.ok(`archive: saved ${url} → https://web.archive.org/web/${j.timestamp}/${j.original_url || url}${j.screenshot ? ', screenshot ' + j.screenshot : ''} (${Date.now() - t0} ms)`);
+        else Log.warn(`archive: job ${job} for ${url} ended ${j.status || 'HTTP ' + st.status}: ${j.message || j.status_ext || st.text.slice(0, 200)}`);
+        return;
+    }
+    Log.info(`archive: job ${job} for ${url} still running after ${ARCHIVE_WAIT_MS / 60000} minutes; archive.org finishes it on its side`);
+}
+
+// Send this import's URLs, once per import (a reload of the editor tab doesn't send them again).
+async function archiveSources(plan, token) {
+    const done = 'fc.archived.' + token;
+    try {
+        if (sessionStorage.getItem(done)) { Log.debug(`archive: already sent for ${token} (this tab was reloaded)`); return; }
+        sessionStorage.setItem(done, '1');
+    } catch (e) { /* no sessionStorage: send anyway */ }
+    const s = settings();
+    const keys = !!(s.iaKey && s.iaSecret);
+    Log.info(`archive: sending ${plan.urls.length} URL(s) to the Internet Archive (${keys ? 'Save Page Now 2 with your keys' : 'anonymous'})`);
+    for (const a of plan.urls) {   // one at a time: anonymous saves are limited per IP
+        try { await (keys ? spnWithKeys(a.url, s) : spnAnonymous(a.url)); } catch (e) { Log.warn(`archive: ${a.url}: ${e.message}`); }
+    }
 }
 
 // What Apollo needs to match: every credited artist with its platform link, by position.
@@ -1851,6 +1970,13 @@ function injectStyle() {
 #fc-panel .fc-reset { margin-top: 2px; }
 #fc-panel label { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
 #fc-panel label.fc-check { justify-content: flex-start; gap: 6px; cursor: pointer; }
+/* #659: the archive.org keys, under the archive checkbox; dimmed while archiving is off */
+#fc-panel .fc-ia { display: grid; grid-template-columns: 1fr 1fr; gap: 4px 6px; margin: -2px 0 0 19px; }
+#fc-panel .fc-ia.fc-off { opacity: .5; }
+#fc-panel .fc-ia-h { grid-column: 1 / -1; color: var(--mbu-text-weak); }
+#fc-panel .fc-ia-h a { color: var(--mbu-accent-text); margin-left: 4px; }
+#fc-panel .fc-ia input { all: revert; box-sizing: border-box; width: 100%; min-width: 0; font: 12px var(--mbu-font-mono, monospace);
+  padding: 3px 6px; border: 1px solid var(--mbu-border); border-radius: 4px; background: var(--mbu-bg-sunken); color: var(--mbu-text); }
 /* the browser's own checkbox, whatever the site's sheet says: qobuz.com's sets appearance:none
    in a rule only Firefox applies, and our checkboxes drew as nothing there (#650) */
 #fc-panel input[type=checkbox] { all: revert; margin: 0; accent-color: var(--mbu-accent); cursor: pointer; }
@@ -2181,6 +2307,12 @@ function togglePanel(anchor) {
         + `<label class="fc-check" title="On ${here} only: a button you have moved stays on its spot on the page (above the cover, say) and scrolls with it, instead of staying put on the screen. The button in its corner always stays on the screen."><input type="checkbox" class="fc-scroll-opt"${scrollsWithPage(here) ? ' checked' : ''}> Moved button scrolls with the page on ${here}</label>`
         + `<label class="fc-check" title="On ${here} only: the album's notes on the platform (Bandcamp's about and credits, Discogs's notes, Qobuz's and Apple's reviews, Beatport's and YouTube Music's description, Amazon Music's ℗ line), with a line saying where they come from. Reviews are the critic's text: check you may copy it before you submit."><input type="checkbox" class="fc-annotation"${annotationOn(here) ? ' checked' : ''}> Annotation from ${here}'s notes</label>`
         + `<label class="fc-check" title="Once the release editor has the release, this platform tab closes. It stays open when the import fails, or when the browser blocked the new tab and the editor opened here."><input type="checkbox" class="fc-close-after"${s.closeAfter ? ' checked' : ''}> Close this page after the import</label>`
+        // #659: majkinetor: "It should be ON by default or many people will not use it"
+        + `<label class="fc-check" title="On every import, ask the Internet Archive's Wayback Machine to save the album page (and, for Deezer and Apple Music, the album data FC read), and link the snapshots in the edit note. This sends each imported URL to archive.org."><input type="checkbox" class="fc-archive"${s.archive ? ' checked' : ''}> Archive the album page on the Internet Archive</label>`
+        + `<div class="fc-ia${s.archive ? '' : ' fc-off'}" title="Optional. With your archive.org keys the save uses Save Page Now 2: higher limits, and a screenshot of the page, which is the evidence for platforms that build their pages in the browser (Spotify, Tidal, YouTube Music). Without keys the save is anonymous.">`
+        + `<div class="fc-ia-h">archive.org keys <a href="https://archive.org/account/s3.php" target="_blank" rel="noopener">get them</a></div>`
+        + `<input type="text" class="fc-ia-key" placeholder="access key" autocomplete="off" spellcheck="false" value="${(s.iaKey || '').replace(/"/g, '&quot;')}">`
+        + `<input type="password" class="fc-ia-secret" placeholder="secret" autocomplete="off" value="${(s.iaSecret || '').replace(/"/g, '&quot;')}"></div>`
         // majkinetor: "change this to Reset: all | this one"
         + `<div class="fc-reset" title="Drag the button to move it; each platform remembers its own place. Reset puts it back in the bottom-right corner.">Reset: `
         + `<button type="button" class="fc-reset-all" title="Back in the corner on every platform">all</button> | `
@@ -2240,6 +2372,19 @@ function togglePanel(anchor) {
         saveSettings(next);
         Log.info(`close the page after the import: ${next.closeAfter ? 'on' : 'off'}`);
     });
+    panel.querySelector('.fc-archive').addEventListener('change', e => {
+        const next = Object.assign(settings(), { archive: e.target.checked });
+        saveSettings(next);
+        panel.querySelector('.fc-ia').classList.toggle('fc-off', !next.archive);
+        Log.info(`archive on the Internet Archive: ${next.archive ? 'on' : 'off'}`);
+    });
+    const saveKeys = () => {
+        const next = Object.assign(settings(), { iaKey: panel.querySelector('.fc-ia-key').value.trim(), iaSecret: panel.querySelector('.fc-ia-secret').value.trim() });
+        saveSettings(next);
+        Log.info(`archive.org keys: ${next.iaKey && next.iaSecret ? 'set (Save Page Now 2)' : next.iaKey || next.iaSecret ? 'only one of the two is set, so saves stay anonymous' : 'none (anonymous saves)'}`);
+    };
+    panel.querySelector('.fc-ia-key').addEventListener('change', saveKeys);
+    panel.querySelector('.fc-ia-secret').addEventListener('change', saveKeys);
     panelDismiss = mbuDismissOn(panel, () => { panelDismiss = null; panel.remove(); });
 }
 
@@ -2291,8 +2436,9 @@ async function importCurrent() {
         if (!nTracks) throw new Error(`${provider.name} returned no tracks`);
 
         pruneHandoffs();
-        GM_setValue(HANDOFF_PREFIX + token, handoffFor(rel, provider, token));
-        const params = seedParams(rel, editNoteFor(rel, provider));
+        const archive = archivePlan(rel, provider, id);
+        GM_setValue(HANDOFF_PREFIX + token, Object.assign(handoffFor(rel, provider, token), { archive }));
+        const params = seedParams(rel, editNoteFor(rel, provider, archive));
         Log.debug(`seed: ${params.length} parameters`);
         if (mbuTestHooks()) window.__fcLastSeed = { token, server, params, rel };
 
@@ -2378,6 +2524,7 @@ function mbMain() {
         try { sessionStorage.setItem(key, JSON.stringify(h)); } catch (e) { Log.debug(`handoff ${token}: no copy for this tab (${e.message})`); }
         GM_deleteValue(key);
         Log.debug(`handoff ${token} taken out of the script's storage`);
+        if (h.archive) archiveSources(h.archive, token);
     };
     if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', consume, { once: true }); else consume();
     const json = JSON.stringify(h);
