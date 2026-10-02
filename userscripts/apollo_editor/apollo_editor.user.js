@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.2.200251
+// @version      2026.10.2.234912
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E
@@ -8942,19 +8942,55 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
   /* #662: First Contact hands over each track's ISRC (Deezer, Apple Music, Tidal, …).
      A recording that already carries it on MusicBrainz is the strongest sign it is
      this track's recording, so the matcher tries it first and the picker lists it
-     on top. One lookup per ISRC, shared by both, and only on a page First Contact
-     seeded. */
+     on top. The release's ISRCs are searched together, shared by both, and only on a
+     page First Contact seeded. */
   const _isrcRecCache = new Map();   // isrc → Promise<recordings>
   function fcIsrcFor(mi, ti, title) {
     const ht = fcTrackFor({ mi, ti, title });
     const v = ht && ht.isrc ? String(ht.isrc).toUpperCase().replace(/[^A-Z0-9]/g, '') : '';
     return /^[A-Z]{2}[A-Z0-9]{3}[0-9]{7}$/.test(v) ? v : null;
   }
+  // #662 (chaban-mb): every ISRC the handoff carries is looked up together, in as few recording
+  // searches as possible (isrc:A OR isrc:B …), instead of one /isrc/ lookup each. The search index
+  // trails the database a little; an ISRC added minutes ago is missed, which is acceptable here.
+  const ISRC_BATCH = 40;   // ISRCs per search, to keep the query url short
+  function fcAllIsrcs() {
+    const h = fcHandoff(); if (!h) return [];
+    const out = [];
+    (h.mediums || []).forEach(m => (m.tracks || []).forEach(t => {
+      const v = t && t.isrc ? String(t.isrc).toUpperCase().replace(/[^A-Z0-9]/g, '') : '';
+      if (/^[A-Z]{2}[A-Z0-9]{3}[0-9]{7}$/.test(v) && !out.includes(v)) out.push(v);
+    }));
+    return out;
+  }
+  async function searchRecordingsByIsrcs(isrcs) {
+    const q = isrcs.map(i => 'isrc:' + i).join(' OR ');
+    const recs = [];
+    for (let offset = 0; ; offset += 100) {
+      const res = await wsJson(`${ORIGIN}/ws/2/recording?query=${encodeURIComponent(q)}&fmt=json&limit=100&offset=${offset}`, { label: 'ISRC batch search' });
+      if (!res.json) throw new Error('ISRC batch search failed');
+      const page = (res.json.recordings || []).map(mapWsRec);
+      recs.push(...page);
+      if (!page.length || recs.length >= (res.json.count || 0)) break;   // past 100 hits: the next page
+    }
+    Log.debug('ISRC batch search:', isrcs.length, 'ISRC(s) →', recs.length, 'recording(s)');
+    return recs;
+  }
+  function isrcBatch(isrcs) {
+    const want = isrcs.filter(i => !_isrcRecCache.has(i));
+    for (let k = 0; k < want.length; k += ISRC_BATCH) {
+      const chunk = want.slice(k, k + ISRC_BATCH);
+      const all = searchRecordingsByIsrcs(chunk);
+      chunk.forEach(isrc => _isrcRecCache.set(isrc, all
+        .then(recs => recs.filter(r => (r.isrcs || []).some(x => String(x).toUpperCase() === isrc)).map(r => Object.assign({}, r, { _isrc: isrc })))
+        .then(recs => { Log.debug('ISRC', isrc, '→', recs.length, 'recording(s)'); return recs; })
+        .catch(e => { Log.warn('ISRC batch search failed for', isrc, '—', e.message); _isrcRecCache.delete(isrc); return []; })));
+    }
+  }
   function isrcRecordings(isrc) {
     if (!_isrcRecCache.has(isrc)) {
-      _isrcRecCache.set(isrc, fetchRecordingsByIsrc(isrc)
-        .then(recs => recs.map(r => Object.assign(r, { _isrc: isrc })))
-        .catch(e => { Log.warn('ISRC lookup failed for', isrc, '—', e.message); _isrcRecCache.delete(isrc); return []; }));
+      const all = fcAllIsrcs();
+      isrcBatch(all.includes(isrc) ? all : [isrc, ...all]);   // the first ask fetches the whole release's ISRCs
     }
     return _isrcRecCache.get(isrc);
   }
