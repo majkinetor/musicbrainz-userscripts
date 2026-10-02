@@ -74,13 +74,17 @@ test('the button drags anywhere, each platform keeps its own place, Reset puts i
     document.documentElement.dataset.mbuTheme = 'dark';
     const el = document.querySelector('#fc-panel .fc-reset') || document.querySelector('#fc-panel .fc-reset-pos');
     const lum = c => { const [r, g, b] = c.match(/\d+(\.\d+)?/g).slice(0, 3).map(Number).map(v => { v /= 255; return v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4; }); return 0.2126 * r + 0.7152 * g + 0.0722 * b; };
-    const fg = lum(getComputedStyle(document.querySelector('#fc-panel .fc-reset-pos')).color), bg = lum(getComputedStyle(document.getElementById('fc-panel')).backgroundColor);
-    const ratio = (Math.max(fg, bg) + 0.05) / (Math.min(fg, bg) + 0.05);
+    const bg = lum(getComputedStyle(document.getElementById('fc-panel')).backgroundColor);
+    const contrast = sel => { const fg = lum(getComputedStyle(document.querySelector(sel)).color); return (Math.max(fg, bg) + 0.05) / (Math.min(fg, bg) + 0.05); };
+    const ratio = contrast('#fc-panel .fc-reset-pos'), help = contrast('#fc-panel .mbu-help');
     delete document.documentElement.dataset.mbuTheme;
-    return { text: el.textContent.replace(/\s+/g, ' ').trim(), ratio: Math.round(ratio * 10) / 10 };
+    const text = [...el.childNodes].filter(n => !(n.classList && n.classList.contains('fc-pos'))).map(n => n.textContent).join('');   // past its "Position" label
+    return { text: text.replace(/\s+/g, ' ').trim(), ratio: Math.round(ratio * 10) / 10, help: Math.round(help * 10) / 10 };
   });
   check(reset.text === 'Reset: all | this one', `the reset reads "Reset: all | this one" (${JSON.stringify(reset.text)})`);
   check(reset.ratio >= 4.5, `the links read on the dark panel (contrast ${reset.ratio}:1)`);
+  // majkinetor: "also fix dark help": ? Help was the deep accent, unreadable on the dark panel
+  check(reset.help >= 4.5, `? Help reads on the dark panel (contrast ${reset.help}:1)`);
   await page.locator('#fc-panel .fc-reset-pos').click();
   check(inCorner(await box()), 'this one: back in the corner on Bandcamp');
   await open(BC);

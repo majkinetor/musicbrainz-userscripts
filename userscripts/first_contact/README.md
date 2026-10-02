@@ -232,18 +232,31 @@ By default the button stays put on the screen. With **Moved button scrolls with 
 
 ## Settings
 
-The **⚙︎** button next to **Import to MusicBrainz**.
+The **⚙︎** button next to **Import to MusicBrainz** opens them, in three sections.
+
+### Import
 
 | Setting | Default |  |
 | --- | --- | --- |
 | MusicBrainz server | musicbrainz.org | where the release editor opens: musicbrainz.org, beta.musicbrainz.org or test.musicbrainz.org |
-| Icon only | off | the button shows only its icon; the tooltip still says *Import to MusicBrainz*, and the progress still shows while it reads the platform |
 | Annotation from *platform*'s notes | on | on this platform only, the album's [notes on the platform](#platforms) go into the annotation, followed by *From <platform>: <album page>*. A review is the critic's text (Qobuz's and Apple's are usually AllMusic's): check you may copy it before you submit. |
-| Settings button only on hover | off | the **⚙︎** button shows only once the pointer has rested on **Import to MusicBrainz** for a second, as a small tab on its edge, so a click to import doesn't bring it up |
-| Moved button scrolls with the page on *platform* | off | on this platform only, a [moved](#moving-the-button) button stays on its spot on the page and scrolls with it |
 | Close this page after the import | off | the platform's tab closes once the release editor has the release; it stays open when the import fails |
-| Archive the album page on the Internet Archive | on | each import saves the album page on the Internet Archive and links the snapshot in the edit note; see [Archive](#archive) |
-| archive.org keys | none | your archive.org access key and secret: higher limits and a screenshot of each page; see [archive.org keys](#archiveorg-keys) |
+
+### Archive
+
+| Setting                                        | Default |                                                                                                                               |
+| ---------------------------------------------- | ------- | ----------------------------------------------------------------------------------------------------------------------------- |
+| Archive the album page on the Internet Archive | on      | each import saves the album page on the Internet Archive and links the snapshot in the edit note; see [Archive](#archive)     |
+| archive.org keys                               | none    | your archive.org access key and secret: higher limits and a screenshot of each page; see [archive.org keys](#archiveorg-keys) |
+
+### Button
+
+| Setting                                          | Default |                                                                                                                                                                          |
+| ------------------------------------------------ | ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Icon only                                        | off     | the button shows only its icon; the tooltip still says *Import to MusicBrainz*, and the progress still shows while it reads the platform                                 |
+| Settings button only on hover                    | off     | the **⚙︎** button shows only once the pointer has rested on **Import to MusicBrainz** for a second, as a small tab on its edge, so a click to import doesn't bring it up |
+| Moved button scrolls with the page on *platform* | off     | on this platform only, a [moved](#moving-the-button) button stays on its spot on the page and scrolls with it                                                            |
+| Position: Reset                                  |         | **this one** puts the button back in the bottom-right corner on this platform, **all** on every platform; see [Moving the button](#moving-the-button)                    |
 
 ## Notes
 

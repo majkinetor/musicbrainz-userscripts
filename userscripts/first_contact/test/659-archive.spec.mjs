@@ -154,7 +154,9 @@ test.describe('settings', () => {
     await page.locator('#fc-panel .fc-ia-secret').press('Tab');
     const s1 = await page.evaluate(() => GM_getValue('fc.settings'));
     check(s1.iaKey === 'K1' && s1.iaSecret === 'S1', `keys saved (${s1.iaKey}/${s1.iaSecret})`);
-    check(await page.locator('#fc-panel .fc-ia-secret').getAttribute('type') === 'password', 'the secret is a password field');
+    // masked, but not a password field: that draws a password manager's icon into it (majkinetor: "Make fields not have password manager icons")
+    const secret = await page.locator('#fc-panel .fc-ia-secret').evaluate(e => ({ type: e.type, mask: getComputedStyle(e).webkitTextSecurity, opt: e.hasAttribute('data-1p-ignore') && e.dataset.lpignore === 'true' }));
+    check(secret.type === 'text' && secret.mask === 'disc' && secret.opt, `the secret is masked, not a password field, and opts out of password managers (${JSON.stringify(secret)})`);
     await box.uncheck();
     const s2 = await page.evaluate(() => GM_getValue('fc.settings'));
     check(s2.archive === false, 'unchecking turns archiving off');

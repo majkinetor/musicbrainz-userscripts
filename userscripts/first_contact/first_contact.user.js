@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         First Contact
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.2.160249
+// @version      2026.10.2.161250
 // @description  Import a release into MusicBrainz from the platform's album page with one click: the release editor opens with the title, tracklist, artists, date, label, barcode and link filled in. Each artist's platform link is handed to Apollo Editor for matching. By default the album page is also saved on the Internet Archive (it sends each imported URL to archive.org; off in the settings), and the edit note links the snapshot. Platforms: Deezer, Bandcamp, Discogs, Apple Music, Tidal, Qobuz, Beatport, Spotify, YouTube Music, Volumo, HDtracks, SoundCloud, Amazon Music.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPkZpcnN0IENvbnRhY3Q8L3RpdGxlPgogIDwhLS0gdHJhY3RvciBiZWFtIC0tPgogIDxwYXRoIGQ9Ik01MCA0NCBMNzggNDQgTDEwNCAxMTIgTDI0IDExMiBaIiBmaWxsPSIjZjZjNDMxIiBvcGFjaXR5PSIwLjkiLz4KICA8cGF0aCBkPSJNNTYgNDQgTDcyIDQ0IEw4OCAxMTIgTDQwIDExMiBaIiBmaWxsPSIjZmRlNjhhIiBvcGFjaXR5PSIwLjciLz4KICA8IS0tIGxhbmRpbmcgcmluZyAtLT4KICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSIxMTQiIHJ4PSI0MiIgcnk9IjgiIGZpbGw9IiMxZTIzNDYiIHN0cm9rZT0iI2M5Y2RmMiIgc3Ryb2tlLXdpZHRoPSIzIi8+CiAgPGVsbGlwc2UgY3g9IjY0IiBjeT0iMTEzIiByeD0iMjYiIHJ5PSI0LjIiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2Y2YzQzMSIgc3Ryb2tlLXdpZHRoPSIyLjQiLz4KICA8IS0tIHNhdWNlcjogYSBwYWxlIHJpbSwgc28gaXQgc2hvd3Mgb24gYSBkYXJrIGJhY2tncm91bmQgdG9vIC0tPgogIDxwYXRoIGQ9Ik00MCAyNiBBMjQgMTggMCAwIDEgODggMjYgWiIgZmlsbD0iIzFlMjM0NiIgc3Ryb2tlPSIjYzljZGYyIiBzdHJva2Utd2lkdGg9IjMiLz4KICA8cGF0aCBkPSJNNTAgMTggQTEwIDYgMCAwIDEgNjAgMTQiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2ZmZiIgc3Ryb2tlLXdpZHRoPSIyLjYiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxlbGxpcHNlIGN4PSI2NCIgY3k9IjMyIiByeD0iNTYiIHJ5PSIxMyIgZmlsbD0iIzFlMjM0NiIgc3Ryb2tlPSIjYzljZGYyIiBzdHJva2Utd2lkdGg9IjMiLz4KICA8Y2lyY2xlIGN4PSIzOCIgY3k9IjMyIiByPSI0LjQiIGZpbGw9IiNmZmYiLz4KICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjM0IiByPSI0LjQiIGZpbGw9IiNmZmYiLz4KICA8Y2lyY2xlIGN4PSI5MCIgY3k9IjMyIiByPSI0LjQiIGZpbGw9IiNmZmYiLz4KICA8IS0tIHRoZSByZWxlYXNlIGJlaW5nIGJlYW1lZCB1cDogYSBwdXJwbGUgaGV4YWdvbiB3aXRoIGEgbm90ZSAtLT4KICA8cGF0aCBkPSJNNjQgNTggTDg0IDY5LjUgTDg0IDkyLjUgTDY0IDEwNCBMNDQgOTIuNSBMNDQgNjkuNSBaIiBmaWxsPSIjN2I0ZmQ2Ii8+CiAgPHBhdGggZD0iTTY0IDU4IEw4NCA2OS41IEw2NCA4MSBMNDQgNjkuNSBaIiBmaWxsPSIjOWI3MmVhIi8+CiAgPHBhdGggZD0iTTYwIDcyIEw3NCA2OSBMNzQgODkiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2ZmZiIgc3Ryb2tlLXdpZHRoPSIzLjQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz4KICA8cGF0aCBkPSJNNjAgNzIgTDYwIDkyIiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iMy40Ii8+CiAgPGVsbGlwc2UgY3g9IjU2IiBjeT0iOTIiIHJ4PSI0LjYiIHJ5PSIzLjYiIGZpbGw9IiNmZmYiLz4KICA8ZWxsaXBzZSBjeD0iNzAiIGN5PSI4OSIgcng9IjQuNiIgcnk9IjMuNiIgZmlsbD0iI2ZmZiIvPgogIDwhLS0gc3BhcmtsZXMgLS0+CiAgPHBhdGggZD0iTTE4IDU0IGwyLjUgNiA2IDIuNSAtNiAyLjUgLTIuNSA2IC0yLjUgLTYgLTYgLTIuNSA2IC0yLjUgWiIgZmlsbD0iI2Y2YzQzMSIvPgogIDxwYXRoIGQ9Ik0xMDggNTIgbDIuNSA2IDYgMi41IC02IDIuNSAtMi41IDYgLTIuNSAtNiAtNiAtMi41IDYgLTIuNSBaIiBmaWxsPSIjMWUyMzQ2Ii8+CiAgPHBhdGggZD0iTTExMiA4MiBsMS44IDQuMiA0LjIgMS44IC00LjIgMS44IC0xLjggNC4yIC0xLjggLTQuMiAtNC4yIC0xLjggNC4yIC0xLjggWiIgZmlsbD0iI2Y2YzQzMSIvPgogIDxwYXRoIGQ9Ik0xNCA4NiBsMS44IDQuMiA0LjIgMS44IC00LjIgMS44IC0xLjggNC4yIC0xLjggLTQuMiAtNC4yIC0xLjggNC4yIC0xLjggWiIgZmlsbD0iIzFlMjM0NiIvPgo8L3N2Zz4K
@@ -1968,10 +1968,16 @@ function injectStyle() {
 #fc-panel .mbu-cfg-ic, #fc-panel .mbu-cfg-ic svg { width: 18px; height: 18px; }
 #fc-panel .fc-body { display: grid; gap: 7px; }
 #fc-panel .fc-reset { margin-top: 2px; }
+/* the sections (Import, Archive, Button), headed as Platform Check's settings are */
+#fc-panel .fc-sec { font-weight: 700; color: var(--mbu-text); font-size: 11px; letter-spacing: .05em; text-transform: uppercase;
+  margin: 8px 0 0; padding-bottom: 3px; border-bottom: 1px solid var(--mbu-divider, var(--mbu-border-soft)); }
+#fc-panel .fc-sec:first-child { margin-top: 0; }
+#fc-panel .fc-body > :not(.fc-sec) { margin-left: 8px; }
+#fc-panel .fc-pos { color: var(--mbu-text); margin-right: 14px; }
 #fc-panel label { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
 #fc-panel label.fc-check { justify-content: flex-start; gap: 6px; cursor: pointer; }
 /* #659: the archive.org keys, under the archive checkbox; dimmed while archiving is off */
-#fc-panel .fc-ia { display: grid; grid-template-columns: 1fr 1fr; gap: 4px 6px; margin: -2px 0 0 19px; }
+#fc-panel .fc-body > .fc-ia { display: grid; grid-template-columns: 1fr 1fr; gap: 4px 6px; margin: -2px 0 0 27px; }
 #fc-panel .fc-ia.fc-off { opacity: .5; }
 /* no password-manager icon in the key fields: they opt out by attribute (LastPass, 1Password,
    Bitwarden, Dashlane), and the secret is a text field masked in CSS, since type=password draws every manager in */
@@ -1987,7 +1993,8 @@ function injectStyle() {
 #fc-root, #fc-panel { color-scheme: light; }
 :root[data-mbu-theme=dark] :is(#fc-root, #fc-panel) { color-scheme: dark; }
 #fc-panel select { font: inherit; color: inherit; background: var(--mbu-bg); border: 1px solid var(--mbu-border); border-radius: 4px; padding: 2px 4px; }
-#fc-panel a { color: var(--mbu-accent); }
+/* links (? Help, get them) in the readable accent: --mbu-accent is the deep purple that vanishes on the dark panel */
+#fc-panel a { color: var(--mbu-accent-text); }
 `;
     (document.head || document.documentElement).appendChild(st);
 }
@@ -2093,6 +2100,13 @@ function pagePosOf(r) {
     const sr = sc.getBoundingClientRect();
     return { cx: Math.round(r.left + r.width / 2 - (sr.left + sr.width / 2)), top: Math.round(r.top - sr.top + sc.scrollTop), inner: true };
 }
+// On the page the button is page content: it goes under the site's fixed bars and the popups
+// that open from them, and over its sticky headers. 50 sits between them on every platform:
+// Tidal's header and search popup are at 90 and its fullscreen player at 80 (the 100 this was
+// went over them), Bandcamp Player Enhanced's player is above 100, while Spotify's, Deezer's and
+// Tidal's sticky section headers are at 1 or 2. Measured 2026-10-02; the page's lowest fixed bar
+// can't be used instead: Tidal's sticky header at 1 would take the button under the page.
+const PAGE_Z = '50';
 // In a scrolling panel the button stays fixed and follows the panel's scroll, cut to the part of
 // the panel that shows, so it slides under the panel's edges (Spotify's top bar and player) as
 // content does.
@@ -2101,7 +2115,7 @@ function placeInScroller(root, pos, sc, r) {
     const left = Math.round(Math.min(Math.max(sr.left, sr.left + sr.width / 2 + pos.cx - r.width / 2), Math.max(sr.left, sr.right - r.width)));
     const top = Math.round(sr.top + pos.top - sc.scrollTop);
     root.style.position = '';
-    root.style.zIndex = '100';
+    root.style.zIndex = PAGE_Z;
     root.style.right = root.style.bottom = '';
     root.style.left = left + 'px';
     root.style.top = top + 'px';
@@ -2198,9 +2212,8 @@ function placeButton(root) {
         const left = Math.round(Math.min(Math.max(0, vw / 2 + pos.cx - r.width / 2), Math.max(0, vw - r.width)));
         const top = Math.max(0, Math.round(pos.top));
         root.style.position = 'absolute';
-        // on the page it is page content: a site's fixed bar (Bandcamp Player Enhanced's player,
-        // a sticky header) goes over it as the page scrolls, not under it
-        root.style.zIndex = '100';
+        // on the page it is page content: a site's fixed bar goes over it as the page scrolls (PAGE_Z)
+        root.style.zIndex = PAGE_Z;
         root.style.right = root.style.bottom = '';
         root.style.left = left + 'px';
         root.style.top = top + 'px';
@@ -2302,22 +2315,27 @@ function togglePanel(anchor) {
     panel = document.createElement('div');
     panel.id = 'fc-panel';
     panel.innerHTML = mbuHtml(mbuCfgHeader({ script: SCRIPT, name: NAME, version: VERSION, icon: ICON_SVG, log: true })
-        + '<div class="fc-body"><label>MusicBrainz server <select class="fc-server">'
+        // majkinetor: "make clear categories here not wall of options": Import, Archive, Button
+        + '<div class="fc-body">'
+        + '<div class="fc-sec">Import</div>'
+        + '<label>MusicBrainz server <select class="fc-server">'
         + SERVERS.map(h => `<option value="${h}"${h === s.server ? ' selected' : ''}>${h}</option>`).join('')
         + '</select></label>'
-        + `<label class="fc-check" title="The button shows only its icon; hover it for what it does"><input type="checkbox" class="fc-iconly-opt"${s.iconOnly ? ' checked' : ''}> Icon only</label>`
-        + `<label class="fc-check" title="The ⚙︎ button hides until the pointer has rested on Import to MusicBrainz for a second; it shows as a small tab on the button's edge"><input type="checkbox" class="fc-gear-hover-opt"${s.gearOnHover ? ' checked' : ''}> Settings button only on hover</label>`
-        + `<label class="fc-check" title="On ${here} only: a button you have moved stays on its spot on the page (above the cover, say) and scrolls with it, instead of staying put on the screen. The button in its corner always stays on the screen."><input type="checkbox" class="fc-scroll-opt"${scrollsWithPage(here) ? ' checked' : ''}> Moved button scrolls with the page on ${here}</label>`
         + `<label class="fc-check" title="On ${here} only: the album's notes on the platform (Bandcamp's about and credits, Discogs's notes, Qobuz's and Apple's reviews, Beatport's and YouTube Music's description, Amazon Music's ℗ line), with a line saying where they come from. Reviews are the critic's text: check you may copy it before you submit."><input type="checkbox" class="fc-annotation"${annotationOn(here) ? ' checked' : ''}> Annotation from ${here}'s notes</label>`
         + `<label class="fc-check" title="Once the release editor has the release, this platform tab closes. It stays open when the import fails, or when the browser blocked the new tab and the editor opened here."><input type="checkbox" class="fc-close-after"${s.closeAfter ? ' checked' : ''}> Close this page after the import</label>`
+        + '<div class="fc-sec">Archive</div>'
         // #659: majkinetor: "It should be ON by default or many people will not use it"
         + `<label class="fc-check" title="On every import, ask the Internet Archive's Wayback Machine to save the album page (and, for Deezer and Apple Music, the album data FC read), and link the snapshots in the edit note. This sends each imported URL to archive.org."><input type="checkbox" class="fc-archive"${s.archive ? ' checked' : ''}> Archive the album page on the Internet Archive</label>`
         + `<div class="fc-ia${s.archive ? '' : ' fc-off'}" title="Optional. With your archive.org keys the save uses Save Page Now 2: higher limits, and a screenshot of the page, which is the evidence for platforms that build their pages in the browser (Spotify, Tidal, YouTube Music). Without keys the save is anonymous.">`
         + `<div class="fc-ia-h">archive.org keys <a href="https://archive.org/account/s3.php" target="_blank" rel="noopener">get them</a></div>`
         + `<input type="text" class="fc-ia-key" placeholder="access key" autocomplete="off" data-lpignore="true" data-1p-ignore data-bwignore data-form-type="other" spellcheck="false" value="${(s.iaKey || '').replace(/"/g, '&quot;')}">`
         + `<input type="text" class="fc-ia-secret" placeholder="secret" autocomplete="off" data-lpignore="true" data-1p-ignore data-bwignore data-form-type="other" spellcheck="false" value="${(s.iaSecret || '').replace(/"/g, '&quot;')}"></div>`
+        + '<div class="fc-sec">Button</div>'
+        + `<label class="fc-check" title="The button shows only its icon; hover it for what it does"><input type="checkbox" class="fc-iconly-opt"${s.iconOnly ? ' checked' : ''}> Icon only</label>`
+        + `<label class="fc-check" title="The ⚙︎ button hides until the pointer has rested on Import to MusicBrainz for a second; it shows as a small tab on the button's edge"><input type="checkbox" class="fc-gear-hover-opt"${s.gearOnHover ? ' checked' : ''}> Settings button only on hover</label>`
+        + `<label class="fc-check" title="On ${here} only: a button you have moved stays on its spot on the page (above the cover, say) and scrolls with it, instead of staying put on the screen. The button in its corner always stays on the screen."><input type="checkbox" class="fc-scroll-opt"${scrollsWithPage(here) ? ' checked' : ''}> Moved button scrolls with the page on ${here}</label>`
         // majkinetor: "change this to Reset: all | this one"
-        + `<div class="fc-reset" title="Drag the button to move it; each platform remembers its own place. Reset puts it back in the bottom-right corner.">Reset: `
+        + `<div class="fc-reset" title="Drag the button to move it; each platform remembers its own place. Reset puts it back in the bottom-right corner."><span class="fc-pos">Position</span>Reset: `
         + `<button type="button" class="fc-reset-all" title="Back in the corner on every platform">all</button> | `
         + `<button type="button" class="fc-reset-pos" title="Back in the corner on ${document.getElementById('fc-root').dataset.fcProvider}">this one</button></div>`
         + '</div>');
