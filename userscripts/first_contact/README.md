@@ -228,7 +228,8 @@ By default the button stays put on the screen. With **Moved button scrolls with 
 
 - On Spotify and Apple Music it follows the scrolling panel and is cut off at its edges.
 - When a page opens, it appears once the page has settled.
-- It goes under the page's fixed bars, such as a sticky header or [Bandcamp Player Enhanced](../bandcamp_player_enhanced/README.md)'s player.
+- It goes under the page's fixed bars and the popups that open from them, such as Tidal's search or [Bandcamp Player Enhanced](../bandcamp_player_enhanced/README.md)'s player.
+- Dropped on part of the page that would cover it, such as Discogs's header or Bandcamp's menu bar when you're logged in, it shows over that part instead.
 
 ## Settings
 
