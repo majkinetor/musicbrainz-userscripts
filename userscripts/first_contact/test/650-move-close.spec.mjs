@@ -56,14 +56,42 @@ test('the button drags anywhere, each platform keeps its own place, Reset puts i
   const dz = await box();
   check(vp.width - (dz.x + dz.width) < 40 && vp.height - (dz.y + dz.height) < 80, `Deezer still has it in the corner (${JSON.stringify(dz)})`);
 
+  // moved on Deezer too, for the two resets below
+  const drag = async () => {
+    const d = await page.locator('#fc-root .fc-go').boundingBox();
+    await page.mouse.move(d.x + 20, d.y + d.height / 2);
+    await page.mouse.down();
+    await page.mouse.move(d.x + 20 - 220, d.y + d.height / 2 - 300, { steps: 10 });
+    await page.mouse.up();
+  };
+  await drag();
+  const inCorner = b => Math.abs(b.x + b.width - (corner.x + corner.width)) < 3 && Math.abs(b.y - corner.y) < 3;
+
+  // majkinetor: "Reset: all | this one"; and the link was "not visible" on the dark panel
   await open(BC);
   await page.locator('#fc-root .fc-more').click();
+  const reset = await page.evaluate(() => {
+    document.documentElement.dataset.mbuTheme = 'dark';
+    const el = document.querySelector('#fc-panel .fc-reset') || document.querySelector('#fc-panel .fc-reset-pos');
+    const lum = c => { const [r, g, b] = c.match(/\d+(\.\d+)?/g).slice(0, 3).map(Number).map(v => { v /= 255; return v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4; }); return 0.2126 * r + 0.7152 * g + 0.0722 * b; };
+    const fg = lum(getComputedStyle(document.querySelector('#fc-panel .fc-reset-pos')).color), bg = lum(getComputedStyle(document.getElementById('fc-panel')).backgroundColor);
+    const ratio = (Math.max(fg, bg) + 0.05) / (Math.min(fg, bg) + 0.05);
+    delete document.documentElement.dataset.mbuTheme;
+    return { text: el.textContent.replace(/\s+/g, ' ').trim(), ratio: Math.round(ratio * 10) / 10 };
+  });
+  check(reset.text === 'Reset: all | this one', `the reset reads "Reset: all | this one" (${JSON.stringify(reset.text)})`);
+  check(reset.ratio >= 4.5, `the links read on the dark panel (contrast ${reset.ratio}:1)`);
   await page.locator('#fc-panel .fc-reset-pos').click();
-  const reset = await box();
-  check(Math.abs(reset.x - corner.x) < 3 && Math.abs(reset.y - corner.y) < 3, `Reset button position: back in the corner (${JSON.stringify(reset)})`);
+  check(inCorner(await box()), 'this one: back in the corner on Bandcamp');
   await open(BC);
-  const after = await box();
-  check(Math.abs(after.x - corner.x) < 3 && Math.abs(after.y - corner.y) < 3, 'and it stays there after a reload');
+  check(inCorner(await box()), 'and it stays there after a reload');
+  await open(DZ);
+  check(!inCorner(await box()), 'Deezer keeps its own place');
+  await page.locator('#fc-root .fc-more').click();
+  await page.locator('#fc-panel .fc-reset-all').click();
+  check(inCorner(await box()), 'all: back in the corner on Deezer');
+  await open(BC);
+  check(inCorner(await box()), 'and on Bandcamp');
 });
 
 test('Close this page after the import: off, the page stays; on, it closes; not when the editor opened here', { tag: ['@web'] }, async ({ page, inject }) => {

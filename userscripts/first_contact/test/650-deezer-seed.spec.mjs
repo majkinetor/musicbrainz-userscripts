@@ -80,4 +80,17 @@ test('a Deezer album seeds the sandbox release editor and hands off the artist l
     document.dispatchEvent(new CustomEvent('first-contact:request'));
   }));
   check(fromEvent === seed.token, `first-contact:request re-publishes the handoff (${fromEvent})`);
+
+  // majkinetor: "handoff probably shouldn't spam the settings?" — the editor takes it out of the
+  // script's storage once it has it, and a reload of the editor tab still finds it (the tab's copy)
+  const left = await editor.evaluate(() => GM_listValues().filter(k => k.startsWith('fc.handoff.')));
+  check(left.length === 0, `the handoff is out of the script's storage once the editor has it (${JSON.stringify(left)})`);
+  await editor.reload({ waitUntil: 'domcontentloaded' });
+  const confirm2 = editor.getByRole('button', { name: 'Continue' });
+  if (await confirm2.isVisible().catch(() => false)) await Promise.all([editor.waitForNavigation(), confirm2.click()]);
+  await settled(editor);
+  await editor.evaluate(() => { delete window.__fcHandoff; });
+  await inject('first_contact', { target: editor, waitFor: '__fcHandoff' });
+  const again = await editor.evaluate(() => (JSON.parse(document.documentElement.dataset.firstContact || 'null') || {}).token);
+  check(again === seed.token, `after a reload the editor still hands it off (${again})`);
 });

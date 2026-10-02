@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         First Contact
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.2.100433
+// @version      2026.10.2.102349
 // @description  Import a release into MusicBrainz from the platform's album page with one click: the release editor opens with the title, tracklist, artists, date, label, barcode and link filled in. Each artist's platform link is handed to Apollo Editor for matching. Platforms: Deezer, Bandcamp, Discogs, Apple Music, Tidal, Qobuz, Beatport, Spotify, YouTube Music, Volumo, HDtracks, SoundCloud.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPkZpcnN0IENvbnRhY3Q8L3RpdGxlPgogIDwhLS0gdHJhY3RvciBiZWFtIC0tPgogIDxwYXRoIGQ9Ik01MCA0NCBMNzggNDQgTDEwNCAxMTIgTDI0IDExMiBaIiBmaWxsPSIjZjZjNDMxIiBvcGFjaXR5PSIwLjkiLz4KICA8cGF0aCBkPSJNNTYgNDQgTDcyIDQ0IEw4OCAxMTIgTDQwIDExMiBaIiBmaWxsPSIjZmRlNjhhIiBvcGFjaXR5PSIwLjciLz4KICA8IS0tIGxhbmRpbmcgcmluZyAtLT4KICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSIxMTQiIHJ4PSI0MiIgcnk9IjgiIGZpbGw9IiMxZTIzNDYiIHN0cm9rZT0iI2M5Y2RmMiIgc3Ryb2tlLXdpZHRoPSIzIi8+CiAgPGVsbGlwc2UgY3g9IjY0IiBjeT0iMTEzIiByeD0iMjYiIHJ5PSI0LjIiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2Y2YzQzMSIgc3Ryb2tlLXdpZHRoPSIyLjQiLz4KICA8IS0tIHNhdWNlcjogYSBwYWxlIHJpbSwgc28gaXQgc2hvd3Mgb24gYSBkYXJrIGJhY2tncm91bmQgdG9vIC0tPgogIDxwYXRoIGQ9Ik00MCAyNiBBMjQgMTggMCAwIDEgODggMjYgWiIgZmlsbD0iIzFlMjM0NiIgc3Ryb2tlPSIjYzljZGYyIiBzdHJva2Utd2lkdGg9IjMiLz4KICA8cGF0aCBkPSJNNTAgMTggQTEwIDYgMCAwIDEgNjAgMTQiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2ZmZiIgc3Ryb2tlLXdpZHRoPSIyLjYiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxlbGxpcHNlIGN4PSI2NCIgY3k9IjMyIiByeD0iNTYiIHJ5PSIxMyIgZmlsbD0iIzFlMjM0NiIgc3Ryb2tlPSIjYzljZGYyIiBzdHJva2Utd2lkdGg9IjMiLz4KICA8Y2lyY2xlIGN4PSIzOCIgY3k9IjMyIiByPSI0LjQiIGZpbGw9IiNmZmYiLz4KICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjM0IiByPSI0LjQiIGZpbGw9IiNmZmYiLz4KICA8Y2lyY2xlIGN4PSI5MCIgY3k9IjMyIiByPSI0LjQiIGZpbGw9IiNmZmYiLz4KICA8IS0tIHRoZSByZWxlYXNlIGJlaW5nIGJlYW1lZCB1cDogYSBwdXJwbGUgaGV4YWdvbiB3aXRoIGEgbm90ZSAtLT4KICA8cGF0aCBkPSJNNjQgNTggTDg0IDY5LjUgTDg0IDkyLjUgTDY0IDEwNCBMNDQgOTIuNSBMNDQgNjkuNSBaIiBmaWxsPSIjN2I0ZmQ2Ii8+CiAgPHBhdGggZD0iTTY0IDU4IEw4NCA2OS41IEw2NCA4MSBMNDQgNjkuNSBaIiBmaWxsPSIjOWI3MmVhIi8+CiAgPHBhdGggZD0iTTYwIDcyIEw3NCA2OSBMNzQgODkiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2ZmZiIgc3Ryb2tlLXdpZHRoPSIzLjQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz4KICA8cGF0aCBkPSJNNjAgNzIgTDYwIDkyIiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iMy40Ii8+CiAgPGVsbGlwc2UgY3g9IjU2IiBjeT0iOTIiIHJ4PSI0LjYiIHJ5PSIzLjYiIGZpbGw9IiNmZmYiLz4KICA8ZWxsaXBzZSBjeD0iNzAiIGN5PSI4OSIgcng9IjQuNiIgcnk9IjMuNiIgZmlsbD0iI2ZmZiIvPgogIDwhLS0gc3BhcmtsZXMgLS0+CiAgPHBhdGggZD0iTTE4IDU0IGwyLjUgNiA2IDIuNSAtNiAyLjUgLTIuNSA2IC0yLjUgLTYgLTYgLTIuNSA2IC0yLjUgWiIgZmlsbD0iI2Y2YzQzMSIvPgogIDxwYXRoIGQ9Ik0xMDggNTIgbDIuNSA2IDYgMi41IC02IDIuNSAtMi41IDYgLTIuNSAtNiAtNiAtMi41IDYgLTIuNSBaIiBmaWxsPSIjMWUyMzQ2Ii8+CiAgPHBhdGggZD0iTTExMiA4MiBsMS44IDQuMiA0LjIgMS44IC00LjIgMS44IC0xLjggNC4yIC0xLjggLTQuMiAtNC4yIC0xLjggNC4yIC0xLjggWiIgZmlsbD0iI2Y2YzQzMSIvPgogIDxwYXRoIGQ9Ik0xNCA4NiBsMS44IDQuMiA0LjIgMS44IC00LjIgMS44IC0xLjggNC4yIC0xLjggLTQuMiAtNC4yIC0xLjggNC4yIC0xLjggWiIgZmlsbD0iIzFlMjM0NiIvPgo8L3N2Zz4K
@@ -72,7 +72,11 @@ const VARIOUS_ARTISTS_MBID = '89ad4ac3-39f7-470e-963a-56509c546377';
 // Handoffs (the platform links of every credited artist) wait in GM storage for the release
 // editor tab. They are small; a day is plenty for a tab that was opened and left.
 const HANDOFF_PREFIX = 'fc.handoff.';
-const HANDOFF_TTL_MS = 24 * 3600 * 1000;
+// majkinetor: "handoff probably shouldn't spam the settings?" — every import left its handoff in
+// the script's storage for a day. Now the release editor takes it out once it has it (keeping a
+// copy for that tab, so a reload still finds it), and one that was never picked up (the editor
+// never opened) goes after an hour.
+const HANDOFF_TTL_MS = 3600 * 1000;
 const SERVERS = ['musicbrainz.org', 'beta.musicbrainz.org', 'test.musicbrainz.org'];
 
 /* ── activity log: the shared window and buffer (mbuLog, in the ST-UI block below) ── */
@@ -1649,7 +1653,11 @@ function injectStyle() {
 #fc-root.fc-settling { opacity: 0 !important; pointer-events: none !important; }
 #fc-root.fc-fadein { transition: opacity .4s ease; }
 #fc-root.fc-dragging, #fc-root.fc-dragging button { cursor: grabbing; }
-#fc-panel .fc-reset-pos { all: unset; cursor: pointer; color: var(--mbu-accent); text-decoration: underline; justify-self: start; }
+/* the readable accent (as Log's): --mbu-accent alone is a deep purple that vanishes on the dark panel */
+#fc-panel .fc-reset { justify-self: start; color: var(--mbu-text-weak); }
+#fc-panel .fc-reset button { all: unset; cursor: pointer; color: var(--mbu-accent-text); text-decoration: underline; padding: 0 2px; }
+#fc-panel .fc-reset button:hover { color: var(--mbu-text); }
+#fc-panel .fc-reset button:focus-visible { outline: 2px solid var(--mbu-accent); outline-offset: 1px; }
 #fc-root.fc-iconly .fc-go span { display: none; }
 #fc-root.fc-iconly .fc-go[aria-busy="true"] span { display: inline; }   /* the progress still shows while it reads */
 /* ⚙︎ only on hover: a tab on the button's edge, above it (below when the button sits near the
@@ -1666,7 +1674,7 @@ function injectStyle() {
 #fc-panel .mbu-cfg-h { margin: 0 0 9px; padding: 0 0 8px; font-size: 13px; gap: 6px; }
 #fc-panel .mbu-cfg-ic, #fc-panel .mbu-cfg-ic svg { width: 18px; height: 18px; }
 #fc-panel .fc-body { display: grid; gap: 7px; }
-#fc-panel .fc-reset-pos { margin-top: 2px; }
+#fc-panel .fc-reset { margin-top: 2px; }
 #fc-panel label { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
 #fc-panel label.fc-check { justify-content: flex-start; gap: 6px; cursor: pointer; }
 /* the browser's own checkbox, whatever the site's sheet says: qobuz.com's sets appearance:none
@@ -1961,7 +1969,10 @@ function togglePanel(anchor) {
         + `<label class="fc-check" title="A button you have moved stays on its spot on the page (above the cover, say) and scrolls with it, instead of staying put on the screen. The button in its corner always stays on the screen."><input type="checkbox" class="fc-scroll-opt"${s.scrollWithPage ? ' checked' : ''}> Moved button scrolls with the page</label>`
         + `<label class="fc-check" title="The album's notes on the platform (Bandcamp's about and credits, Discogs's notes, Qobuz's and Apple's reviews, Beatport's and YouTube Music's description), with a line saying where they come from. Reviews are the critic's text: check you may copy it before you submit."><input type="checkbox" class="fc-annotation"${s.annotation ? ' checked' : ''}> Annotation from the platform's notes</label>`
         + `<label class="fc-check" title="Once the release editor has the release, this platform tab closes. It stays open when the import fails, or when the browser blocked the new tab and the editor opened here."><input type="checkbox" class="fc-close-after"${s.closeAfter ? ' checked' : ''}> Close this page after the import</label>`
-        + `<button type="button" class="fc-reset-pos" title="Drag the button to move it; each platform remembers its own place. This puts it back in the bottom-right corner on ${document.getElementById('fc-root').dataset.fcProvider}.">Reset button position</button>`
+        // majkinetor: "change this to Reset: all | this one"
+        + `<div class="fc-reset" title="Drag the button to move it; each platform remembers its own place. Reset puts it back in the bottom-right corner.">Reset: `
+        + `<button type="button" class="fc-reset-all" title="Back in the corner on every platform">all</button> | `
+        + `<button type="button" class="fc-reset-pos" title="Back in the corner on ${document.getElementById('fc-root').dataset.fcProvider}">this one</button></div>`
         + '</div>');
     document.body.appendChild(panel);
     placePanel(panel, anchor.closest('#fc-root') || anchor);
@@ -1971,6 +1982,14 @@ function togglePanel(anchor) {
         placeButton(root);
         panel.remove();
         Log.info(`button back in the corner on ${root.dataset.fcProvider}`);
+    });
+    panel.querySelector('.fc-reset-all').addEventListener('click', () => {
+        const root = document.getElementById('fc-root');
+        const had = Object.keys(GM_getValue(POS_KEY, {}) || {});
+        GM_setValue(POS_KEY, {});
+        placeButton(root);
+        panel.remove();
+        Log.info(`button back in the corner on every platform (it had been moved on ${had.join(', ') || 'none'})`);
     });
     panel.querySelector('.mbu-cfg-log').addEventListener('click', () => Log.open());
     panel.querySelector('.fc-server').addEventListener('change', e => {
@@ -2134,8 +2153,21 @@ function platformMain() {
 function mbMain() {
     const token = new URLSearchParams(location.search).get('first_contact');
     if (!token) return;
-    const h = GM_getValue(HANDOFF_PREFIX + token, null);
+    pruneHandoffs();
+    const key = HANDOFF_PREFIX + token;
+    let h = GM_getValue(key, null), from = 'storage';
+    if (!h) { try { h = JSON.parse(sessionStorage.getItem(key) || 'null'); from = 'this tab'; } catch (e) { h = null; } }
     if (!h) { Log.warn(`release editor opened with handoff ${token}, but it is not stored (expired, or another browser)`); return; }
+    Log.debug(`handoff ${token} read from ${from}`);
+    // MusicBrainz's "Continue" page (a POST from another site) comes first, at the same address:
+    // the handoff stays stored until the release editor itself is here
+    const consume = () => {
+        if (!document.getElementById('release-editor')) { Log.debug(`handoff ${token} kept: not the release editor yet (the confirmation page)`); return; }
+        try { sessionStorage.setItem(key, JSON.stringify(h)); } catch (e) { Log.debug(`handoff ${token}: no copy for this tab (${e.message})`); }
+        GM_deleteValue(key);
+        Log.debug(`handoff ${token} taken out of the script's storage`);
+    };
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', consume, { once: true }); else consume();
     const json = JSON.stringify(h);
     const publish = why => {
         document.documentElement.dataset.firstContact = json;

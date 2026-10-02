@@ -78,11 +78,11 @@ Without every track's length: 1 track is a Single, 3 to 6 an EP, 7 or more an Al
 First Contact doesn't pick MusicBrainz artists itself. It hands every credited artist's platform link (the release's and each track's) to [Apollo Editor](../apollo_editor/README.md#artist-matching) on the release editor page, and Apollo matches them.
 
 > [!NOTE]
-> The handoff is on the release editor page for any script to read: `document.documentElement.dataset.firstContact` holds it as JSON, the `first-contact:seed` event on `document` carries the same JSON as its `detail`, and a `first-contact:request` event on `document` sends it again. It lists the release and every track with each artist's name, join phrase and platform link, in tracklist order.
+> The handoff is on the release editor page for any script to read: `document.documentElement.dataset.firstContact` holds it as JSON, the `first-contact:seed` event on `document` carries the same JSON as its `detail`, and a `first-contact:request` event on `document` sends it again. It lists the release and every track with each artist's name, join phrase and platform link, in tracklist order. The handoff is kept in the script's storage only until the release editor has it (a reload of that tab still finds it); one that is never picked up goes after an hour.
 
 ## Moving the button
 
-Drag **Import to MusicBrainz** (or its **⚙︎**) to wherever it is out of the way. A drag doesn't import or open the settings. Each platform remembers its own place: moving the button on Bandcamp leaves it in the corner on Deezer. It keeps its distance from the window's right and bottom edges, so it stays in view when the window is resized. With **Moved button scrolls with the page** on (see [Settings](#settings)), it stays on its spot on the page instead, above the cover, say, and scrolls with it. **⚙︎ → Reset button position** puts it back in the bottom-right corner on that platform.
+Drag **Import to MusicBrainz** (or its **⚙︎**) to wherever it is out of the way. A drag doesn't import or open the settings. Each platform remembers its own place: moving the button on Bandcamp leaves it in the corner on Deezer. It keeps its distance from the window's right and bottom edges, so it stays in view when the window is resized. With **Moved button scrolls with the page** on (see [Settings](#settings)), it stays on its spot on the page instead, above the cover, say, and scrolls with it. **⚙︎ → Reset:** **this one** puts it back in the bottom-right corner on that platform, **all** on every platform.
 
 ## Settings
 
