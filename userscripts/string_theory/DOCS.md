@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-10-02 18:45 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-10-02 20:02 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -139,6 +139,8 @@ The release **Label** and release **Artist** are linked on load under the same e
 > After a match, Apollo sometimes rebuilds its table, when the page's tracklist changed meanwhile. The badges are kept. If one is ever lost (the artist stays linked, but shows as *set*), a toast says so and offers **Copy log**: please paste it into [#638](https://github.com/majkinetor/musicbrainz-userscripts/issues/638).
 
 #### Recording matching
+
+**ISRC first.** On a release imported with [First Contact](../first_contact/README.md) from a platform that gives ISRCs (Deezer, Apple Music, Tidal, Beatport, …), each track's ISRC is looked up first. A recording that is the only one with that ISRC, and agrees with the track on title and artist, is linked ahead of every other candidate. When several recordings share the ISRC, or the one that has it differs from the track, they are only offered: the picker lists them on top with an **ISRC** badge.
 
 All the release group's recordings come in one request and are matched by title, artist and length. Tracks the group can't answer are looked up one by one. When a title is worded differently (*Part 1* / *Pt. 1*), the same position on other editions, and then on releases of the same title and artist in other groups, is used if the title is similar and the length agrees. A title in another script (*Kalimba Night* for *カリンバナイト*) can't be compared, so its position is used when that edition's whole medium lines up: as many tracks, and every length within the tolerance.
 
