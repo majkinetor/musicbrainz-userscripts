@@ -1,5 +1,5 @@
 // #663 (majkinetor), second round:
-// - Aliases: an alias language in the toolbar (empty or set; @locale still overrides it);
+// - Aliases: a new alias takes the language last typed; @locale in the name sets it too;
 //   one row per alias (name, language), + adds one; the grid shows a row's aliases below it, as it does links.
 // - Links: edit the url, add / change / remove a type, remove the row, add a link.
 // - The open tab is marked; the toolbar is laid out as in the issue's picture.
@@ -51,7 +51,7 @@ test('#663: alias language, editable aliases and links, toolbar', { tag: ['@sand
       tabOn: [...document.querySelectorAll('#falcon-hdr .falcon-tab-on')].map(b => b.id) };
   });
   console.log('layout:', JSON.stringify(layout));
-  check(layout.bar.includes('falcon-import') && layout.bar.includes('falcon-export') && layout.bar.includes('falcon-alias-lang') && !layout.bar.includes('falcon-view-toggle'), 'toolbar: Add/Import, alias language, Export');
+  check(layout.bar.includes('falcon-import') && layout.bar.includes('falcon-export') && !layout.bar.includes('falcon-alias-lang') && !layout.bar.includes('falcon-view-toggle'), 'toolbar: Add/Import … Export, no alias language');
   check(layout.row2.includes('falcon-view-toggle') && layout.row2.includes('falcon-type-chips-in'), 'the type chips row carries the view switch');
   check(layout.head, 'select-all heads the rows');
   check(layout.retryInMenu, "Retry failed sits in Start's closed ▾ menu");
@@ -69,15 +69,15 @@ test('#663: alias language, editable aliases and links, toolbar', { tag: ['@sand
   check((await page.textContent('#falcon-select-count')).trim() === '1', 'the header counts the selection');
 
   // ── aliases: one row each (name, language, ✕), + adds one; Enter on a filled one opens the next, focused
-  await page.fill('#falcon-alias-lang', 'sr'); await page.press('#falcon-alias-lang', 'Enter'); await frames(page);
   const focused = () => page.evaluate(() => { const a = document.activeElement; return a && a.classList.contains('falcon-alias-nm') ? a.dataset.id + ':' + a.dataset.idx + ':' + a.value : String(a && a.className); });
   await page.click('.falcon-alias-plus[data-id="a1"]'); await frames(page);
   check(await focused() === 'a1:1:', `+ adds an alias row and focuses it (${await focused()})`);
-  await page.keyboard.type('Bamako Band'); await page.keyboard.press('Enter'); await frames(page);
+  await page.keyboard.type('Bamako Band'); await page.keyboard.press('Tab'); await page.keyboard.type('sr'); await page.keyboard.press('Enter'); await frames(page);
   check(await focused() === 'a1:2:', `Enter on a filled alias opens a new one, focused (${await focused()})`);
+  check((await q('a1')).aliases[2].locale === 'sr', 'the new one takes the language last typed');
   await page.keyboard.type('Banda@pl'); await page.keyboard.press('Enter'); await frames(page);
   let a1 = await q('a1');
-  check(a1.aliases[1] && a1.aliases[1].locale === 'sr', `a new alias gets the alias language (${JSON.stringify(a1.aliases[1])})`);
+  check(a1.aliases[1] && a1.aliases[1].locale === 'sr', `the alias keeps the language typed for it (${JSON.stringify(a1.aliases[1])})`);
   check(a1.aliases[2] && a1.aliases[2].name === 'Banda' && a1.aliases[2].locale === 'pl', `name@locale fills the language box (${JSON.stringify(a1.aliases[2])})`);
   await page.keyboard.press('Escape'); await frames(page);
   check((await q('a1')).aliases.length === 3, 'Esc drops the new, still empty row');
@@ -115,6 +115,8 @@ test('#663: alias language, editable aliases and links, toolbar', { tag: ['@sand
   check(a1.urls.some(u => u.url === 'https://www.deezer.com/artist/1' && u.linkTypeId === '194') && !a1.urls.some(u => u.url === deez), `the url is edited in place, its type kept (${JSON.stringify(a1.urls)})`);
   await page.click(`.falcon-link-del[data-url="${spot}"]`); await frames(page);
   check(!(await q('a1')).urls.some(u => u.url === spot), 'the row ✕ removes the link');
+  await page.click('.falcon-link-plus[data-id="a1"]'); await frames(page);
+  check(await page.evaluate(() => document.activeElement?.matches('.falcon-link-new[data-id="a1"]')), 'the + by Links opens an empty link box, focused');
   await page.fill('.falcon-link-new[data-id="a1"]', 'https://example.com/x'); await page.press('.falcon-link-new[data-id="a1"]', 'Enter'); await frames(page);
   check((await q('a1')).urls.some(u => u.url === 'https://example.com/x'), 'a link is added');
   await page.screenshot({ path: 'test-results/663-editing-list.png', clip: await page.locator('#falcon-panel').boundingBox() });
@@ -125,17 +127,20 @@ test('#663: alias language, editable aliases and links, toolbar', { tag: ['@sand
   await frames(page);
   check(await page.evaluate(() => !!document.querySelector('.falcon-grid th #falcon-select-all')), 'the grid heads select-all too');
   check(!(await page.$('.falcon-grid tr.falcon-row .falcon-alias-nm')), 'the grid line holds no alias boxes');
-  check((await page.textContent('.falcon-grid-aliases[data-id="r1"]')).includes('+ alias'), 'a row without aliases offers + alias');
-  await page.click('.falcon-grid-aliases[data-id="a1"]'); await frames(page);
+  const gl = await page.evaluate(() => ({ heads: [...document.querySelectorAll('.falcon-grid th')].map(t => t.textContent.trim()).filter(Boolean), xp: !!document.querySelector('.falcon-grid tr.falcon-row[data-id="a1"] .falcon-row-expand.falcon-xp'), hxp: !!document.querySelector('.falcon-grid th #falcon-expand-all') }));
+  check(gl.xp && gl.hxp && !gl.heads.includes('Aliases') && !gl.heads.includes('Links'), `each grid line has ▸, the header expand-all, no Aliases/Links columns (${JSON.stringify(gl)})`);
+  await page.click('.falcon-grid tr.falcon-row[data-id="a1"] .falcon-row-expand'); await frames(page);
+  const al = await page.evaluate(() => { const n = document.querySelector('.falcon-grid tr.falcon-row[data-id="a1"] .falcon-rename-input'), u = document.querySelector('.falcon-grid tr.falcon-sub[data-id="a1"] .falcon-link-url'), a = document.querySelector('.falcon-grid tr.falcon-sub[data-id="a1"] .falcon-alias-nm'); const x = e => Math.round(e.getBoundingClientRect().left); return [x(n), x(u), x(a)]; });
+  check(Math.abs(al[0] - al[1]) <= 2 && Math.abs(al[0] - al[2]) <= 2, `links and aliases below line up with the Name column (${al})`);
   const subNames = await page.evaluate(() => [...document.querySelectorAll('.falcon-grid tr.falcon-sub[data-id="a1"] .falcon-alias-nm')].map(s => s.value));
   check(subNames.length === 2 && subNames[0] === 'Bamako Stars', `the aliases show below the row, one per row (${subNames})`);
   check(await page.evaluate(() => !!document.querySelector('.falcon-grid tr.falcon-sub[data-id="a1"] .falcon-link-url')), 'and the links with them');
   // Enter in an empty alias below a row goes on to the next row's, a new alias there ready to type
-  await page.click('.falcon-grid tr.falcon-sub[data-id="a1"] .falcon-alias-plus'); await frames(page);
+  await page.click('.falcon-grid tr.falcon-sub[data-id="a1"] .falcon-alias-plus'); await frames(page);   // the + by Aliases
   await page.keyboard.press('Enter'); await frames(page);
   check(await page.evaluate(() => document.activeElement?.matches('.falcon-sub[data-id="r1"] .falcon-alias-nm')), "empty Enter moves to the next row's aliases, opening it");
   check((await q('a1')).aliases.length === 2, 'the empty alias it left is dropped');
   await page.keyboard.type('Cuillères'); await page.keyboard.press('Tab'); await frames(page);
-  check((await q('r1')).aliases.some(a => a.name === 'Cuillères' && a.locale === 'sr'), 'and an alias typed there is added');
+  check((await q('r1')).aliases.some(a => a.name === 'Cuillères' && a.locale === 'pt_BR'), 'and an alias typed there is added, in the language last typed');
   await page.screenshot({ path: 'test-results/663-editing-grid.png', clip: await page.locator('#falcon-panel').boundingBox() });
 });

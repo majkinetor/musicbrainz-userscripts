@@ -65,7 +65,7 @@ test("#663: list/grid views + keyboard walk", { tag: ['@sandbox', '@critical'] }
   const more = await page.locator('.falcon-row[data-id="a1"] .falcon-more').textContent();
   check(/\+ 2 more \(Tidal, Apple\)/.test(more), `the rest folds into "+ 2 more (Tidal, Apple)" (got "${more}")`);
   const labels = await page.evaluate(() => [...document.querySelectorAll('.falcon-row[data-id="a1"] .falcon-lbl')].map(l => l.textContent));
-  check(labels.join('|') === 'Name|Links|Disambiguation|Aliases', `artist form labels (got ${labels.join('|')})`);
+  check(labels.join('|') === 'Name|Links+|Disambiguation|Aliases+', `artist form labels (got ${labels.join('|')})`);
   await page.screenshot({ path: 'test-results/663-list.png', clip: await page.locator('#falcon-panel').boundingBox() });
 
   // ── keyboard walk in the list: Enter goes to the same field on the next row it can hold it

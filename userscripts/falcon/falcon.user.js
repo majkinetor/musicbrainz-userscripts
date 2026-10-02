@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Falcon — bulk MusicBrainz link editor
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.2.225209
+// @version      2026.10.3.012603
 // @description  Add external links to a BATCH of MusicBrainz artists/labels/recordings at once — no popup-per-entity, no tab churn. A small pool of persistent worker iframes churns through a queue, each submitting its own edit and moving straight to the next entity. Paste a list, hand it a queue via a `?falcon=` URL param, or click "Send to Falcon" on a Harmony actions page to import its suggested links directly.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHBhdGggZD0iTTY0IDEwIEM4MiAyOCA5MCA1NiA5MCA4MCBMMzggODAgQzM4IDU2IDQ2IDI4IDY0IDEwIFoiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzFiMmE0YSIgc3Ryb2tlLXdpZHRoPSI3IiBzdHJva2UtbGluZWpvaW49InJvdW5kIiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8cGF0aCBkPSJNMzggODAgTDIwIDExMCBMNDAgOTYgWiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxwYXRoIGQ9Ik05MCA4MCBMMTA4IDExMCBMODggOTYgWiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxjaXJjbGUgY3g9IjY0IiBjeT0iNDQiIHI9IjEwIiBmaWxsPSIjMWIyYTRhIi8+CiAgPHBhdGggZD0iTTUwIDgwIEw0NSAxMDggTDY0IDEyMiBMODMgMTA4IEw3OCA4MCBaIiBmaWxsPSIjZmY2YTAwIiBzdHJva2U9IiMxYjJhNGEiIHN0cm9rZS13aWR0aD0iNSIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgo8L3N2Zz4K
@@ -5349,16 +5349,24 @@
       '#falcon-hdr .falcon-tab.falcon-tab-on{border-bottom-color:var(--mbu-warn)!important;font-weight:700}',
       '.falcon-selhead{display:inline-flex;align-items:center;gap:5px}',
       '.falcon-selhead .falcon-selcount{color:var(--mbu-warn);font-weight:700;font-size:11px}',
+      '.falcon-xp{border:none;background:none!important;cursor:pointer;color:var(--mbu-text-dim);font-size:13px;line-height:1;width:20px;height:20px;padding:0;display:inline-flex;align-items:center;justify-content:center}',
+      '.falcon-lbl .falcon-lplus{border:none;background:none!important;cursor:pointer;color:var(--mbu-ok);font-size:13px;line-height:1;padding:0 0 0 5px}',
+      '.falcon-grid .falcon-gsum{font-size:10px;color:var(--mbu-text-weak);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}',
+      '.falcon-grid tr.falcon-sub>td{padding:4px 4px 8px 0!important}',
+      '.falcon-grid .falcon-form{grid-template-columns:92px minmax(0,1fr);column-gap:4px;padding:2px 0 0}',
+      '.falcon-grid td,.falcon-grid th{border-bottom-color:var(--mbu-border)!important}',
+      '#falcon-queue-list{scrollbar-width:thin}',
+      '#falcon-queue-list::-webkit-scrollbar{width:8px;height:8px}',
+      '#falcon-queue-list::-webkit-scrollbar-thumb{background:var(--mbu-border);border-radius:4px}',
       '.falcon-lhead{position:sticky;top:0;z-index:1;background:var(--mbu-bg);padding:4px 0;border-bottom:1px solid var(--mbu-border)}',
       '.falcon-als{display:flex;flex-direction:column;gap:3px;min-width:0;align-items:stretch}',
       '.falcon-al{display:grid;grid-template-columns:minmax(0,1fr) 64px 18px;gap:6px;align-items:center}',
       '.falcon-al input.falcon-alias-loc{font-family:var(--mbu-font-mono);font-size:10.5px!important}',
       '.falcon-al .falcon-alias-del{border:none;background:none!important;cursor:pointer;color:var(--mbu-text-weak);padding:0}',
       '.falcon-alias-plus{align-self:flex-start;border:1px solid var(--mbu-border);background:none!important;color:var(--mbu-ok);cursor:pointer;border-radius:9px;font-size:11px;line-height:1;padding:1px 0;width:20px}',
-      '.falcon-grid-aliases{border:none;background:none!important;color:var(--mbu-info);cursor:pointer;font-size:11px;padding:2px 4px;white-space:nowrap;flex:0 0 auto}',
-      '.falcon-ln{grid-template-columns:14px minmax(0,1fr) auto 20px 18px!important}',
+      '.falcon-ln{grid-template-columns:minmax(0,1fr) auto 20px 18px!important}',
       '.falcon-ln a.falcon-lst{text-align:center;text-decoration:none;font-size:11px}',
-      '.falcon-ln-new>input.falcon-link-new{grid-column:2 / -1}',
+      '.falcon-ln-new>input.falcon-link-new{grid-column:1 / -1}',
       '.falcon-ltb{display:inline-flex;align-items:center;padding:0 3px 0 0!important}',
       '.falcon-lt select{appearance:none;-webkit-appearance:none;border:none!important;background:transparent!important;color:inherit;font:inherit;font-size:9.5px;padding:0 0 0 6px!important;cursor:pointer;max-width:130px;min-width:0}',
       '.falcon-lt{gap:2px!important}',
@@ -5367,7 +5375,6 @@
       '.falcon-ltb-new{outline:1px dashed var(--mbu-ok)}',
       '.falcon-lauto{background:none!important;color:var(--mbu-text-weak)!important;font-style:italic}',
       '.falcon-link-type-add{border:1px solid var(--mbu-border);background:none!important;color:var(--mbu-ok);cursor:pointer;border-radius:9px;font-size:11px;line-height:1;padding:1px 0;width:20px}',
-      '.falcon-grid-aliases{color:var(--mbu-info)}',
       '.falcon-ln input.falcon-link-url{padding:2px 6px!important;font-size:11px}',
       '.falcon-lt span button{border:none;background:none!important;color:inherit;cursor:pointer;padding:0 0 0 3px;font-size:9px;line-height:1}',
       '.falcon-ln .falcon-link-del{border:none;background:none!important;cursor:pointer;color:var(--mbu-text-weak);padding:0}',
@@ -5480,15 +5487,12 @@
         <div id="falcon-queue-toolbar" class="falcon-bar" style="display:flex;align-items:center;gap:10px;padding:6px 10px;border-bottom:1px solid var(--mbu-border);font-size:11px;color:var(--mbu-text);flex:0 0 auto">
           <button type="button" id="falcon-add-page" title="Add this release's entities to the queue as empty rows to edit" style="padding:2px 8px;cursor:pointer;display:none"><span class="falcon-bi">+</span><span class="falcon-bt">Add from release</span></button>
           <button type="button" id="falcon-import" title="Load a queue from a JSON file" style="padding:2px 8px;cursor:pointer"><span class="falcon-bi">↓</span><span class="falcon-bt">Import</span></button>
-          <label id="falcon-alias-lang-wrap" title="Alias language: the locale every alias you type gets, unless it says name@locale itself. Leave empty for none." style="display:inline-flex;align-items:center;gap:5px;cursor:text"><span class="falcon-bi">🗣</span><span class="falcon-bt">Alias language</span>
-            <input type="text" id="falcon-alias-lang" placeholder="none" spellcheck="false" style="width:52px;font:inherit;padding:2px 5px;border:1px solid var(--mbu-border);border-radius:4px" /></label>
           <button type="button" id="falcon-export" title="Save the queue — and each item's outcome — to a JSON file" style="margin-left:auto;padding:2px 8px;cursor:pointer"><span class="falcon-bi">↑</span><span class="falcon-bt">Export</span></button>
           <input type="file" id="falcon-import-file" accept="application/json,.json" style="display:none" />
         </div>
         <div id="falcon-type-chips" class="falcon-bar" style="display:flex;align-items:center;gap:6px;padding:6px 10px;border-bottom:1px solid var(--mbu-border);font-size:11px;flex:0 0 auto">
           <span id="falcon-type-chips-in" style="display:flex;gap:6px;flex-wrap:nowrap;overflow:hidden;min-width:0"></span>
           <button type="button" id="falcon-remove-selected" disabled title="Remove the selected rows from the queue" style="margin-left:auto;padding:2px 8px;cursor:pointer"><span class="falcon-bi">🗑</span><span class="falcon-bt">Remove selected</span></button>
-          <button type="button" id="falcon-expand-all" style="padding:2px 8px;cursor:pointer" title="Expand every row's url detail"><span class="falcon-bi">▾</span><span class="falcon-bt">Expand all</span></button>
           <button type="button" id="falcon-view-toggle" style="padding:2px 8px;cursor:pointer" title="Switch between the list and the grid"><span class="falcon-bi">▦</span><span class="falcon-bt">Grid</span></button>
         </div>
         <div id="falcon-queue-list" style="overflow:auto;flex:1;padding:0 10px"></div>
@@ -5512,7 +5516,7 @@
             <button type="button" id="falcon-run" title="Start processing the queue" style="padding:4px 12px;font-weight:700;cursor:pointer;background:#1b2a4a;color:#fff;border:none;border-radius:4px 0 0 4px;justify-content:center"><span class="falcon-bi">▶</span><span class="falcon-bt">Start</span></button>
             <button type="button" id="falcon-run-more" title="More: Retry failed" style="padding:4px 8px;cursor:pointer;background:#1b2a4a;color:#fff;border:none;border-left:1px solid rgba(255,255,255,.25);border-radius:0 4px 4px 0;font-size:10px">▾</button>
             <div id="falcon-run-menu" style="display:none;position:absolute;right:0;bottom:calc(100% + 4px);z-index:5;background:var(--mbu-bg-raised);border:1px solid var(--mbu-border);border-radius:6px;box-shadow:0 4px 14px rgba(0,0,0,.25);padding:4px;min-width:150px">
-              <button type="button" id="falcon-retry-failed" disabled title="Re-queue every failed/partial item for another attempt — useful when MusicBrainz was just slow, not when an item is genuinely broken" style="display:flex;width:100%;gap:6px;padding:4px 8px;cursor:pointer;border:none;background:none;text-align:left"><span>↻</span><span>Retry failed</span></button>
+              <button type="button" id="falcon-retry-failed" disabled title="Re-queue every failed/partial item for another attempt — useful when MusicBrainz was just slow, not when an item is genuinely broken" style="display:flex;width:100%;gap:6px;padding:4px 8px;cursor:pointer;border:none;background:none;text-align:left;color:var(--mbu-text)"><span>↻</span><span>Retry failed</span></button>
             </div>
           </div>
         </div>
@@ -5872,15 +5876,6 @@
     document.getElementById('falcon-run-more').onclick = e => { e.stopPropagation(); runMenu.style.display = runMenu.style.display === 'none' ? 'block' : 'none'; };
     document.addEventListener('click', e => { if (runMenu.style.display !== 'none' && !runMenu.contains(e.target)) runMenu.style.display = 'none'; });
     document.getElementById('falcon-retry-failed').addEventListener('click', () => { runMenu.style.display = 'none'; });
-    // #663 (majkinetor): "Lets have default language in the toolbar. It can be empty or set. @ still works to override it"
-    const langBox = document.getElementById('falcon-alias-lang');
-    langBox.value = cfg.aliasLang;
-    langBox.addEventListener('change', () => {
-      langBox.value = langBox.value.trim().replace('-', '_');
-      cfg.aliasLang = langBox.value;
-      log('info', cfg.aliasLang ? `typed aliases get the locale ${cfg.aliasLang} unless they say name@locale` : 'typed aliases get no locale unless they say name@locale');
-      renderQueue();
-    });
     document.getElementById('falcon-remove-selected').onclick = () => {
       const removable = [..._selectedIds].filter(id => { const it = queue.find(q => q.id === id); return it && it.status !== 'active'; });
       if (!removable.length) return;
@@ -5893,12 +5888,13 @@
     // once and collapsing them all — its own label reflects which action is
     // next, kept in sync from renderQueue() since expanding/collapsing an
     // individual row can also change whether "all" are currently expanded.
-    document.getElementById('falcon-expand-all').onclick = () => {
+    document.getElementById('falcon-queue-list').addEventListener('click', e => {
+      if (!e.target.closest('#falcon-expand-all')) return;
       const allExpanded = queue.length > 0 && queue.every(i => _expandedIds.has(i.id));
       if (allExpanded) _expandedIds.clear();
       else queue.forEach(i => _expandedIds.add(i.id));
       renderQueue();
-    };
+    });
     document.getElementById('falcon-view-toggle').onclick = () => {
       cfg.queueView = cfg.queueView === 'grid' ? 'list' : 'grid';
       log('debug', `queue view → ${cfg.queueView}`);
@@ -5965,6 +5961,13 @@
       renderQueue();
     });
     list.addEventListener('click', e => {
+      const lp = e.target.closest('.falcon-link-plus');
+      if (lp) {
+        _newLink = lp.dataset.id; renderQueue();
+        const box = document.querySelector(`#falcon-queue-list .falcon-link-new[data-id="${lp.dataset.id}"]`);
+        if (box) box.focus();
+        return;
+      }
       const plus = e.target.closest('.falcon-alias-plus');
       if (plus) { addAliasRow(plus.dataset.id, null); return; }
       const ta = e.target.closest('.falcon-link-type-add');
@@ -5979,8 +5982,6 @@
       if (lt) { e.preventDefault(); editLink(lt.dataset.id, 'untype', lt.dataset.url, lt.dataset.type); return; }
       const ld = e.target.closest('.falcon-link-del');
       if (ld) { e.preventDefault(); editLink(ld.dataset.id, 'remove', ld.dataset.url, ''); return; }
-      const ga = e.target.closest('.falcon-grid-aliases');
-      if (ga) { if (_expandedIds.has(ga.dataset.id)) _expandedIds.delete(ga.dataset.id); else _expandedIds.add(ga.dataset.id); renderQueue(); return; }
       const del = e.target.closest('.falcon-alias-del');
       if (!del) return;
       e.preventDefault(); e.stopPropagation();
@@ -5989,6 +5990,7 @@
     });
     list.addEventListener('focusout', e => {
       if (e.target.classList && e.target.classList.contains('falcon-link-type') && _pendingType) { setTimeout(() => { if (_pendingType && !document.activeElement?.classList?.contains('falcon-link-type')) { _pendingType = null; renderQueue(); } }, 0); return; }
+      if (e.target.classList && e.target.classList.contains('falcon-link-new')) setTimeout(() => { if (_newLink && !document.activeElement?.classList?.contains('falcon-link-new')) { _newLink = null; renderQueue(); } }, 0);
       // an alias row left with no name is dropped once focus leaves it
       const al = e.target.closest && e.target.closest('.falcon-al');
       if (al) setTimeout(() => { if (!al.isConnected || al.contains(document.activeElement)) return; if (dropEmptyAliases()) renderQueue(); }, 0);
@@ -6299,7 +6301,7 @@
   function renderLinks(it) {
     const groups = groupedLinks(it);
     const dis = it.status === 'active' ? 'disabled' : '';
-    const add = `<div class="falcon-ln falcon-ln-new"><span></span><input type="text" class="falcon-link-new" data-id="${it.id}" placeholder="+ link" title="Add a link: paste its url" ${dis} /></div>`;
+    const add = _newLink === it.id ? `<div class="falcon-ln falcon-ln-new"><input type="text" class="falcon-link-new" data-id="${it.id}" placeholder="paste a link" title="Add a link: paste its url" ${dis} /></div>` : '';
     if (!groups.length) return `<div class="falcon-links">${add}</div>`;
     const all = _linksOpen.has(it.id) || groups.length <= LINKS_SHOWN + 1;
     const shown = all ? groups : groups.slice(0, LINKS_SHOWN);
@@ -6311,9 +6313,8 @@
       const opts = cur => [...new Set([...(cur ? [String(cur)] : []), ...urlTypesFor(it.entityType)])].filter(t => t === String(cur) || !g.types.map(String).includes(t)).map(t => `<option value="${t}"${t === String(cur) ? ' selected' : ''}>${esc(linkTypeName(t))}</option>`).join('');
       const pending = _pendingType && _pendingType.id === it.id && _pendingType.url === g.url;
       return `<div class="falcon-ln" title="${failed && failed.error ? esc(failed.error) : ''}">
-        <a class="falcon-lst" href="${esc(g.url)}" target="_blank" rel="noopener" title="Open ${esc(g.url)}${failed && failed.error ? ' — ' + esc(failed.error) : ''}" style="color:${color}">${icon === '·' ? '↗' : icon}</a>
         <input type="text" class="falcon-link-url" data-id="${it.id}" data-url="${esc(g.url)}" value="${esc(g.url)}" title="Edit the link; empty it to remove it" ${dis} />
-        <span class="falcon-lt">${g.types.map(t => `<span class="falcon-ltb" title="link type: pick another to change it"><select style="width:${Math.round(linkTypeName(t).length * 5.4 + 12)}px" class="falcon-link-type-chg" data-id="${it.id}" data-url="${esc(g.url)}" data-old="${esc(t)}" ${dis}>${opts(t) || `<option selected>${esc(linkTypeName(t))}</option>`}</select><button type="button" class="falcon-link-type-del" data-id="${it.id}" data-url="${esc(g.url)}" data-type="${esc(t)}" title="Remove this type" ${dis}>✕</button></span>`).join('')}${pending ? `<span class="falcon-ltb falcon-ltb-new"><select class="falcon-link-type" data-id="${it.id}" data-url="${esc(g.url)}"><option value="">type…</option>${opts(null)}</select></span>` : ''}${!g.types.length && !pending ? '<span class="falcon-lauto" title="No type: MusicBrainz guesses it from the url">auto</span>' : ''}</span>
+        <span class="falcon-lt"><a class="falcon-lst" href="${esc(g.url)}" target="_blank" rel="noopener" title="Open ${esc(g.url)}${failed && failed.error ? ' — ' + esc(failed.error) : ''}" style="color:${color}">${icon === '·' ? '↗' : icon}</a>${g.types.map(t => `<span class="falcon-ltb" title="link type: pick another to change it"><select style="width:${Math.round(linkTypeName(t).length * 5.4 + 12)}px" class="falcon-link-type-chg" data-id="${it.id}" data-url="${esc(g.url)}" data-old="${esc(t)}" ${dis}>${opts(t) || `<option selected>${esc(linkTypeName(t))}</option>`}</select><button type="button" class="falcon-link-type-del" data-id="${it.id}" data-url="${esc(g.url)}" data-type="${esc(t)}" title="Remove this type" ${dis}>✕</button></span>`).join('')}${pending ? `<span class="falcon-ltb falcon-ltb-new"><select class="falcon-link-type" data-id="${it.id}" data-url="${esc(g.url)}"><option value="">type…</option>${opts(null)}</select></span>` : ''}${!g.types.length && !pending ? '<span class="falcon-lauto" title="No type: MusicBrainz guesses it from the url">auto</span>' : ''}</span>
         <button type="button" class="falcon-link-type-add" data-id="${it.id}" data-url="${esc(g.url)}" title="Add a type to this link" ${dis}>+</button>
         <button type="button" class="falcon-link-del" data-id="${it.id}" data-url="${esc(g.url)}" title="Remove this link from the queue row" ${dis}>✕</button>
       </div>`;
@@ -6333,6 +6334,8 @@
     if (m) { nm.value = m[1]; loc.value = m[2]; }
     a.name = nm.value.trim();
     a.locale = loc.value.trim().replace('-', '_');
+    // #663 (majkinetor): "Last input is used for new ones" — the language last typed is the next alias's
+    if (a.locale && a.locale !== cfg.aliasLang) cfg.aliasLang = a.locale;
     if (before !== a.name + '@' + a.locale) dbg('alias', `${it.id} alias ${idx}: ${before} → ${a.name}@${a.locale}`);
   }
   function addAliasRow(id, at) {
@@ -6362,7 +6365,8 @@
   // #663 (majkinetor): "Add option to edit elements, and remove them. Add/change/remove
   // type, edit link, remove row." A url with no type is left for MusicBrainz to guess, as
   // pasted links always were.
-  let _pendingType = null;   // {id, url}: the link whose [+] badge is waiting for a type
+  let _pendingType = null;
+  let _newLink = null;   // the row whose empty link box is open (the + by Links)   // {id, url}: the link whose [+] badge is waiting for a type
   function editLink(id, op, url, val, old) {
     const it = queue.find(i => i.id === id);
     if (!it || it.status === 'active') return;
@@ -6377,6 +6381,7 @@
     } else if (op === 'add') {
       if (!v) return;
       if (!/^https?:\/\//i.test(v)) { log('warn', `${entityLabel(it)} — "${v}" is not a link (it needs http:// or https://)`); renderQueue(); return; }
+      _newLink = null;
       if (!it.urls.some(u => u.url === v)) it.urls.push({ url: v, linkTypeId: null });
       log('info', `${entityLabel(it)} — link ${v} added`);
     } else if (op === 'type') {
@@ -6422,10 +6427,6 @@
       // #535: aliases apply to every entity type. Each alias is one MB edit; the
       // bulk case ("2 translations for all recordings") is meant to arrive as
       // JSON, so this stays a light add/remove list rather than a form.
-      if (short === 'grid') {
-        const n = (it.aliases || []).length, open = _expandedIds.has(it.id);
-        return `<button type="button" class="falcon-grid-aliases" data-id="${it.id}" title="${open ? 'Hide' : 'Show and edit'} the aliases, below the row">${open ? '▾' : '▸'} ${n ? n + (n === 1 ? ' alias' : ' aliases') : '+ alias'}</button>`;
-      }
       // #663 (majkinetor): "each alias on its own row along with the language … so it behaves like
       // links. Have + to add new". The language box falls back to the toolbar's Alias language.
       const walk = short === 'sub' ? '' : ' data-col="alias"';
@@ -6433,11 +6434,17 @@
           <input type="text" class="falcon-alias-nm" data-id="${it.id}" data-idx="${idx}"${idx === 0 ? walk : ''} value="${esc(a.name)}" placeholder="alias${a.primary ? ' ★' : ''}" title="The alias; name@locale sets its language too. Enter adds another" ${dis} />
           <input type="text" class="falcon-alias-loc" data-id="${it.id}" data-idx="${idx}" value="${esc(a.locale || '')}" placeholder="lang" title="Language (locale) of this alias, e.g. en or sr_Latn; empty for none" spellcheck="false" ${dis} />
           <button type="button" class="falcon-alias-del" data-id="${it.id}" data-idx="${idx}" title="Remove this alias from the queue row" ${dis}>✕</button></div>`).join('');
-      return `<div class="falcon-als">${rows}<button type="button" class="falcon-alias-plus" data-id="${it.id}"${rows ? '' : walk} title="Add an alias${cfg.aliasLang ? ' (language ' + esc(cfg.aliasLang) + ')' : ''}" ${dis}>+</button></div>`;
+      return `<div class="falcon-als">${rows}</div>`;
     }
     return '';
   }
   const FIELD_LABEL = { name: 'Name', disambig: 'Disambiguation', isrc: 'ISRCs', alias: 'Aliases', video: 'Video' };
+  // #663 (majkinetor): the + that adds a link or an alias sits by its label
+  const plusLbl = (it, kind, walk) => {
+    const dis = it.status === 'active' ? 'disabled' : '';
+    const has = kind === 'alias' ? (it.aliases || []).length : 0;
+    return `<span class="falcon-lbl">${kind === 'alias' ? 'Aliases' : 'Links'}<button type="button" class="falcon-${kind}-plus falcon-lplus" data-id="${it.id}"${kind === 'alias' && !has && walk ? ' data-col="alias"' : ''} title="Add ${kind === 'alias' ? 'an alias' + (cfg.aliasLang ? ' (language ' + esc(cfg.aliasLang) + ', the last one typed)' : '') : 'a link'}" ${dis}>+</button></span>`;
+  };
   // `gridSub`: the grid already has the fields on its line, so its sub-row is links + cover only
   function renderRowDetail(it, gridSub) {
     // #474/#533/#534/#535/#571: the editable fields; #663 lays them out as one
@@ -6446,11 +6453,11 @@
     // nothing while it still equals that name, so a row you only looked at
     // never submits an edit.
     const links = renderLinks(it);
-    const fields = (gridSub ? ['alias'] : fieldCols(it)).map(col => gridSub
-      ? `<span class="falcon-lbl">${FIELD_LABEL[col]}</span>${fieldHtml(it, col, 'sub')}` : col === 'video'
+    const fields = (gridSub ? ['alias'] : fieldCols(it)).map(col => col === 'alias'
+      ? plusLbl(it, 'alias', !gridSub) + fieldHtml(it, col, gridSub ? 'sub' : undefined) : col === 'video'
       ? `<span class="falcon-lbl">Type</span><label class="falcon-video-lbl">${fieldHtml(it, col)} video</label>`
       : `<span class="falcon-lbl">${FIELD_LABEL[col]}</span>${fieldHtml(it, col)}`);
-    if (links) fields.splice(!gridSub && fieldCols(it).includes('name') ? 1 : 0, 0, `<span class="falcon-lbl">Links</span>${links}`);
+    fields.splice(!gridSub && fieldCols(it).includes('name') ? 1 : 0, 0, plusLbl(it, 'link') + links);
     // #494/#496: cover art has no urls[] row to show — the image URL IS the
     // payload, so it gets the same input treatment (auto-picked from Harmony's
     // candidates but always user-editable/overridable), plus a type picker and
@@ -6579,33 +6586,35 @@
   // the link list (and a release's cover editor), sharing the list view's
   // expanded state.
   function renderGrid(visible) {
-    const head = `<tr><th colspan="2">${selHead()}</th><th>Name</th>`
-      + '<th>Disambiguation</th><th>ISRCs</th><th>Aliases</th><th>Links</th><th title="Video">'
+    const head = `<tr><th colspan="3">${selHead()}</th><th>Name</th>`
+      + '<th>Disambiguation</th><th>ISRCs</th><th></th><th title="Video">'
       + '<input type="checkbox" class="mbu-video" checked disabled style="opacity:.6" /></th><th></th><th></th></tr>';
     const rows = visible.map(it => {
       const cols = fieldCols(it), isActive = it.status === 'active';
       const excluded = it.status === 'queued' && _disabledTypes.has(it.entityType);
-      const cell = col => col === 'alias' ? fieldHtml(it, col, 'grid') : cols.includes(col) ? fieldHtml(it, col, true) : '';
+      const cell = col => cols.includes(col) ? fieldHtml(it, col, true) : '';
       const expanded = _expandedIds.has(it.id);
       const nLinks = groupedLinks(it).length;
       const hasCover = it.entityType === 'release';
       const sub = expanded
         ? `<tr class="falcon-sub" data-id="${it.id}"><td colspan="10">${renderRowDetail(it, true)}</td></tr>` : '';
+      const nLinksTxt = nLinks ? nLinks + (nLinks === 1 ? ' link' : ' links') : '', nAl = (it.aliases || []).length;
+      const what = [nLinksTxt, nAl ? nAl + (nAl === 1 ? ' alias' : ' aliases') : '', hasCover ? 'cover art' : ''].filter(Boolean).join(', ');
       return `<tr class="falcon-row" data-id="${it.id}" style="background:${ROW_BG[it.status] || ''};${excluded ? 'opacity:.45' : ''}" title="${it.error ? esc(it.error) : ''}">
         <td><input type="checkbox" class="falcon-row-check" data-id="${it.id}" ${_selectedIds.has(it.id) ? 'checked' : ''} ${isActive ? 'disabled' : ''} /></td>
+        <td><button type="button" class="falcon-row-expand falcon-xp" data-id="${it.id}" title="${expanded ? 'Hide' : 'Show and edit'} the links and aliases${what ? ' (' + esc(what) + ')' : ''}">${expanded ? '▾' : '▸'}</button></td>
         <td style="white-space:nowrap"><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${DOT[it.status] || '#999'}"></span>
           <a class="falcon-row-type" data-id="${it.id}" data-type="${esc(it.entityType)}" href="${MB_ORIGIN}/${entityUrlSegment(it.entityType)}/${it.mbid}" target="_blank" rel="noopener" title="Open ${esc(entityLabel(it))} — right-click to select every ${esc(it.entityType)}" style="font-size:9px;text-transform:uppercase;color:var(--mbu-text-weak);text-decoration:none;margin-left:3px">${esc(TYPE_BADGE[it.entityType] || it.entityType.slice(0, 3))}</a></td>
         <td>${cols.includes('name') ? cell('name') : `<span style="padding:0 7px">${esc(entityLabel(it))}</span>`}</td>
         <td>${cell('disambig')}</td>
         <td>${cell('isrc')}</td>
-        <td>${cell('alias')}</td>
-        <td><button type="button" class="falcon-grid-links falcon-row-expand" data-id="${it.id}" title="${expanded ? 'Hide' : 'Show and edit'} the links${hasCover ? ' and cover art' : ''}">${expanded ? '▾' : '▸'} ${nLinks ? nLinks + (nLinks === 1 ? ' link' : ' links') : hasCover ? 'cover' : '+ link'}</button></td>
+        <td class="falcon-gsum">${esc(what)}</td>
         <td style="text-align:center">${cell('video')}</td>
         <td class="falcon-row-status" data-id="${it.id}" style="text-transform:uppercase;font-size:9px;white-space:nowrap;${it.status === 'failed' || it.status === 'partial' ? 'color:var(--mbu-error);cursor:pointer;text-decoration:underline' : 'color:var(--mbu-text-weak)'}">${excluded ? 'excluded' : it.status}</td>
         <td style="white-space:nowrap"><button type="button" class="falcon-row-opentab" data-id="${it.id}" title="Open this entity's edit page in a real tab, pre-filled" style="border:none;background:none;cursor:pointer;color:var(--mbu-text-dim)">⇗</button><button type="button" class="falcon-row-remove" data-id="${it.id}" ${isActive ? 'disabled' : ''} title="Remove from queue" style="border:none;background:none;cursor:pointer;color:var(--mbu-text-weak)">✕</button></td>
       </tr>${sub}`;
     }).join('');
-    const colgroup = '<colgroup><col style="width:24px"><col style="width:46px"><col style="width:21%"><col style="width:15%"><col style="width:13%"><col><col style="width:66px"><col style="width:28px"><col style="width:62px"><col style="width:44px"></colgroup>';
+    const colgroup = '<colgroup><col style="width:24px"><col style="width:22px"><col style="width:46px"><col style="width:26%"><col style="width:19%"><col style="width:15%"><col><col style="width:28px"><col style="width:62px"><col style="width:44px"></colgroup>';
     return rows ? `<table class="falcon-grid">${colgroup}${head}${rows}</table>` : '';
   }
   // #663: which field to focus after the queue is redrawn — a redraw replaces
@@ -6616,7 +6625,8 @@
   function selHead() {
     const selectable = queue.filter(i => i.status !== 'active');
     const all = selectable.length > 0 && selectable.every(i => _selectedIds.has(i.id));
-    return `<span class="falcon-selhead"><input type="checkbox" id="falcon-select-all" title="Select all" ${all ? 'checked' : ''} /><span class="falcon-selcount" id="falcon-select-count" title="Selected rows">${_selectedIds.size || ''}</span></span>`;
+    const open = queue.length > 0 && queue.every(i => _expandedIds.has(i.id));
+    return `<span class="falcon-selhead"><input type="checkbox" id="falcon-select-all" title="Select all" ${all ? 'checked' : ''} /><button type="button" id="falcon-expand-all" class="falcon-xp" title="${open ? 'Collapse' : 'Expand'} every row">${open ? '▾' : '▸'}</button><span class="falcon-selcount" id="falcon-select-count" title="Selected rows">${_selectedIds.size || ''}</span></span>`;
   }
   function renderQueue() {
     renderTypeChips();
@@ -6710,18 +6720,6 @@
     if (moreBtn) moreBtn.textContent = retryBtn && !retryBtn.disabled ? '▾•' : '▾';   // a dot: there is something to retry
     const selectAll = document.getElementById('falcon-select-all');
     if (selectAll) { const selectable = queue.filter(i => i.status !== 'active'); selectAll.checked = selectable.length > 0 && selectable.every(i => _selectedIds.has(i.id)); }
-    const expandAllBtn = document.getElementById('falcon-expand-all');
-    if (expandAllBtn) expandAllBtn.style.display = grid ? 'none' : '';
-    if (expandAllBtn) {
-      const allExpanded = queue.length > 0 && queue.every(i => _expandedIds.has(i.id));
-      // write only the LABEL span — replacing the button's textContent would
-      // throw away the icon and the collapse markup along with it.
-      const bt = expandAllBtn.querySelector('.falcon-bt');
-      const bi = expandAllBtn.querySelector('.falcon-bi');
-      if (bt) bt.textContent = allExpanded ? 'Collapse all' : 'Expand all';
-      if (bi) bi.textContent = allExpanded ? '▴' : '▾';
-      expandAllBtn.title = allExpanded ? "Collapse every row's url detail" : "Expand every row's url detail";
-    }
     renderProgress();
     renderCoverWarning();
     fitBars();

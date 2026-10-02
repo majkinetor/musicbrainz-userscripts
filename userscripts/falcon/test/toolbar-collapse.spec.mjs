@@ -48,7 +48,7 @@ test("toolbar collapse", { tag: ['@cosmetic', '@sandbox', '@login'] }, async ({ 
   await frames(page);
 
   // every labelled button must be built as icon + label, or there is nothing to collapse
-  const markup = await page.evaluate(() => ['falcon-expand-all', 'falcon-remove-selected', 'falcon-run', 'falcon-log-copy', 'falcon-log-clear'].map(id => {
+  const markup = await page.evaluate(() => ['falcon-remove-selected', 'falcon-run', 'falcon-log-copy', 'falcon-log-clear'].map(id => {
     const b = document.getElementById(id);
     return { id, icon: !!b?.querySelector('.falcon-bi'), label: !!b?.querySelector('.falcon-bt'), title: (b?.title || '').length };
   }));
@@ -73,7 +73,6 @@ test("toolbar collapse", { tag: ['@cosmetic', '@sandbox', '@login'] }, async ({ 
   }
   console.log('width sweep:', JSON.stringify(sweep));
   ck(sweep.every(s => !s.wraps), `the queue toolbar never wraps at any width from 460px down to 200px (${sweep.filter(s => s.wraps).map(s => s.w + 'px').join(', ') || 'none wrapped'})`);
-  ck(sweep.some(s => s.compact), 'and it does collapse somewhere in that range rather than just overflowing');
 
   // narrow: past the breakpoint
   await page.evaluate(() => { const p = document.getElementById('falcon-panel'); p.style.width = '240px'; p.style.maxWidth = '240px'; });
@@ -90,8 +89,8 @@ test("toolbar collapse", { tag: ['@cosmetic', '@sandbox', '@login'] }, async ({ 
     };
   });
   console.log('narrow:', JSON.stringify(narrow));
-  ck(narrow.compact, 'a 240px panel collapses the queue toolbar to icon-only');
-  ck(!narrow.labelShown && narrow.iconShown, 'the label is hidden and the icon kept');
+  // #663: with Expand all and Alias language gone, the bar may fit with its labels; it must not wrap either way
+  ck(narrow.compact ? (!narrow.labelShown && narrow.iconShown) : narrow.labelShown, 'collapsed: icon only; not collapsed: labels shown');
   ck(!narrow.wraps, 'and the bar does not wrap to a second row (the whole point)');
   ck(narrow.w >= 24 && narrow.h >= 20, `the icon-only button keeps a real hit area, not a bare glyph (${narrow.w}x${narrow.h})`);
 
@@ -106,16 +105,11 @@ test("toolbar collapse", { tag: ['@cosmetic', '@sandbox', '@login'] }, async ({ 
   console.log('maximized:', JSON.stringify(wide));
   ck(!wide.compact && wide.labelShown, 'maximizing brings the labels back — the collapse is responsive, not one-way');
 
-  // the runtime-relabelled buttons must not lose their markup when they toggle
-  await page.click('#falcon-expand-all');
-  await frames(page);
-  const afterToggle = await page.evaluate(() => {
-    const b = document.getElementById('falcon-expand-all');
-    return { text: b.querySelector('.falcon-bt')?.textContent, icon: !!b.querySelector('.falcon-bi'), label: !!b.querySelector('.falcon-bt') };
-  });
-  console.log('expand-all after toggle:', JSON.stringify(afterToggle));
-  ck(afterToggle.icon && afterToggle.label, 'toggling Expand all/Collapse all keeps the icon+label spans (a textContent write would flatten them)');
-  ck(/collapse/i.test(afterToggle.text || ''), `and the label really did change (got "${afterToggle.text}")`);
+  // #663: Expand all is the header's ▸ now; it flips to ▾ once every row is open
+  await page.evaluate(() => window.__falconTest.setQueue([{ id: 'x1', entityType: 'artist', mbid: 'd31f76d2-1d8e-4271-8027-148f375979d7', urls: [], name: null, urlResults: null, status: 'queued', error: '' }]));
+  await page.click('#falcon-expand-all'); await frames(page);
+  const xp = await page.evaluate(() => document.getElementById('falcon-expand-all').textContent);
+  ck(xp === '▾', `the header's expand-all flips to ▾ (got "${xp}")`);
 
   const runBtn = await page.evaluate(() => {
     window.__falconTest.setQueue([]);
