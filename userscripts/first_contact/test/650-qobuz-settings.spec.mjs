@@ -39,6 +39,14 @@ test('Qobuz in Firefox: the settings window draws its checkboxes, in our colours
         `${b.cls} is drawn (${JSON.stringify(b)})`);
       check(b.scheme === 'light', `${b.cls} takes our light theme, not the page's dark color-scheme (${b.scheme})`);
     }
+    // majkinetor: "qobuz big vs other": qobuz.com's label margin spread the rows apart (the panel
+    // ran out of the window), and its appearance:none took the server list's arrow
+    const look = await page.evaluate(() => ({
+      margins: [...document.querySelectorAll('#fc-panel .fc-body > label')].map(l => getComputedStyle(l).marginBottom).filter(m => m !== '0px'),
+      select: getComputedStyle(document.querySelector('#fc-panel select')).appearance,
+    }));
+    check(!look.margins.length, `the rows sit as on every platform, no page margin under them (${look.margins.join(', ') || 'none'})`);
+    check(look.select !== 'none', `the server list keeps its arrow (appearance ${look.select})`);
     const box = page.locator('#fc-panel .fc-iconly-opt'), before = await box.isChecked();
     await page.locator('#fc-panel label:has(.fc-iconly-opt)').click();
     check((await box.isChecked()) !== before, 'clicking the label toggles it');
