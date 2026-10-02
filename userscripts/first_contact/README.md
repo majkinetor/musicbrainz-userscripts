@@ -14,7 +14,8 @@ Import a release into MusicBrainz from the platform's album page with one click:
 - **[Import](#import)** a release from the album page into the MusicBrainz release editor.
 - **[Platforms](#platforms)**: what is read from each one.
 - **[Artist matching](#artist-matching)** is left to Apollo Editor, which gets every artist's platform link.
-- **[Settings](#settings)**: the MusicBrainz server, an icon-only button, and the annotation.
+- **[Moving the button](#moving-the-button)**: drag it anywhere; each platform remembers its place.
+- **[Settings](#settings)**: the MusicBrainz server, an icon-only button, the annotation, and closing the page after the import.
 
 ## Import
 
@@ -79,6 +80,10 @@ First Contact doesn't pick MusicBrainz artists itself. It hands every credited a
 > [!NOTE]
 > The handoff is on the release editor page for any script to read: `document.documentElement.dataset.firstContact` holds it as JSON, the `first-contact:seed` event on `document` carries the same JSON as its `detail`, and a `first-contact:request` event on `document` sends it again. It lists the release and every track with each artist's name, join phrase and platform link, in tracklist order.
 
+## Moving the button
+
+Drag **Import to MusicBrainz** (or its **⚙︎**) to wherever it is out of the way. A drag doesn't import or open the settings. Each platform remembers its own place: moving the button on Bandcamp leaves it in the corner on Deezer. It keeps its distance from the window's right and bottom edges, so it stays in view when the window is resized. **⚙︎ → Reset button position** puts it back in the bottom-right corner on that platform.
+
 ## Settings
 
 The **⚙︎** button next to **Import to MusicBrainz**.
@@ -88,3 +93,4 @@ The **⚙︎** button next to **Import to MusicBrainz**.
 | MusicBrainz server | musicbrainz.org | where the release editor opens: musicbrainz.org, beta.musicbrainz.org or test.musicbrainz.org |
 | Icon only | off | the button shows only its icon; the tooltip still says *Import to MusicBrainz*, and the progress still shows while it reads the platform |
 | Annotation from the platform's notes | off | the album's notes on the platform go into the annotation, followed by *From <platform>: <album page>*: Bandcamp's about and credits, Discogs's notes, Qobuz's and Apple's reviews, the description on Beatport, Volumo, HDtracks, SoundCloud and YouTube Music. Deezer, Tidal and Spotify have none. A review is the critic's text (Qobuz's and Apple's are usually AllMusic's): check you may copy it before you submit. |
+| Close this page after the import | off | the platform's tab closes once the release editor has the release, half a second after it is sent. It stays open when the import fails, and when the browser blocked the new tab and the editor opened in this one. |

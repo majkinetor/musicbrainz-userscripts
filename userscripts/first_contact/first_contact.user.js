@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         First Contact
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.1.212428
+// @version      2026.10.2
 // @description  Import a release into MusicBrainz from the platform's album page with one click: the release editor opens with the title, tracklist, artists, date, label, barcode and link filled in. Each artist's platform link is handed to Apollo Editor for matching. Platforms: Deezer, Bandcamp, Discogs, Apple Music, Tidal, Qobuz, Beatport, Spotify, YouTube Music, Volumo, HDtracks, SoundCloud.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPkZpcnN0IENvbnRhY3Q8L3RpdGxlPgogIDwhLS0gdHJhY3RvciBiZWFtIC0tPgogIDxwYXRoIGQ9Ik01MCA0NCBMNzggNDQgTDEwNCAxMTIgTDI0IDExMiBaIiBmaWxsPSIjZjZjNDMxIiBvcGFjaXR5PSIwLjkiLz4KICA8cGF0aCBkPSJNNTYgNDQgTDcyIDQ0IEw4OCAxMTIgTDQwIDExMiBaIiBmaWxsPSIjZmRlNjhhIiBvcGFjaXR5PSIwLjciLz4KICA8IS0tIGxhbmRpbmcgcmluZyAtLT4KICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSIxMTQiIHJ4PSI0MiIgcnk9IjgiIGZpbGw9IiMxZTIzNDYiIHN0cm9rZT0iI2M5Y2RmMiIgc3Ryb2tlLXdpZHRoPSIzIi8+CiAgPGVsbGlwc2UgY3g9IjY0IiBjeT0iMTEzIiByeD0iMjYiIHJ5PSI0LjIiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2Y2YzQzMSIgc3Ryb2tlLXdpZHRoPSIyLjQiLz4KICA8IS0tIHNhdWNlcjogYSBwYWxlIHJpbSwgc28gaXQgc2hvd3Mgb24gYSBkYXJrIGJhY2tncm91bmQgdG9vIC0tPgogIDxwYXRoIGQ9Ik00MCAyNiBBMjQgMTggMCAwIDEgODggMjYgWiIgZmlsbD0iIzFlMjM0NiIgc3Ryb2tlPSIjYzljZGYyIiBzdHJva2Utd2lkdGg9IjMiLz4KICA8cGF0aCBkPSJNNTAgMTggQTEwIDYgMCAwIDEgNjAgMTQiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2ZmZiIgc3Ryb2tlLXdpZHRoPSIyLjYiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxlbGxpcHNlIGN4PSI2NCIgY3k9IjMyIiByeD0iNTYiIHJ5PSIxMyIgZmlsbD0iIzFlMjM0NiIgc3Ryb2tlPSIjYzljZGYyIiBzdHJva2Utd2lkdGg9IjMiLz4KICA8Y2lyY2xlIGN4PSIzOCIgY3k9IjMyIiByPSI0LjQiIGZpbGw9IiNmZmYiLz4KICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjM0IiByPSI0LjQiIGZpbGw9IiNmZmYiLz4KICA8Y2lyY2xlIGN4PSI5MCIgY3k9IjMyIiByPSI0LjQiIGZpbGw9IiNmZmYiLz4KICA8IS0tIHRoZSByZWxlYXNlIGJlaW5nIGJlYW1lZCB1cDogYSBwdXJwbGUgaGV4YWdvbiB3aXRoIGEgbm90ZSAtLT4KICA8cGF0aCBkPSJNNjQgNTggTDg0IDY5LjUgTDg0IDkyLjUgTDY0IDEwNCBMNDQgOTIuNSBMNDQgNjkuNSBaIiBmaWxsPSIjN2I0ZmQ2Ii8+CiAgPHBhdGggZD0iTTY0IDU4IEw4NCA2OS41IEw2NCA4MSBMNDQgNjkuNSBaIiBmaWxsPSIjOWI3MmVhIi8+CiAgPHBhdGggZD0iTTYwIDcyIEw3NCA2OSBMNzQgODkiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2ZmZiIgc3Ryb2tlLXdpZHRoPSIzLjQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz4KICA8cGF0aCBkPSJNNjAgNzIgTDYwIDkyIiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iMy40Ii8+CiAgPGVsbGlwc2UgY3g9IjU2IiBjeT0iOTIiIHJ4PSI0LjYiIHJ5PSIzLjYiIGZpbGw9IiNmZmYiLz4KICA8ZWxsaXBzZSBjeD0iNzAiIGN5PSI4OSIgcng9IjQuNiIgcnk9IjMuNiIgZmlsbD0iI2ZmZiIvPgogIDwhLS0gc3BhcmtsZXMgLS0+CiAgPHBhdGggZD0iTTE4IDU0IGwyLjUgNiA2IDIuNSAtNiAyLjUgLTIuNSA2IC0yLjUgLTYgLTYgLTIuNSA2IC0yLjUgWiIgZmlsbD0iI2Y2YzQzMSIvPgogIDxwYXRoIGQ9Ik0xMDggNTIgbDIuNSA2IDYgMi41IC02IDIuNSAtMi41IDYgLTIuNSAtNiAtNiAtMi41IDYgLTIuNSBaIiBmaWxsPSIjMWUyMzQ2Ii8+CiAgPHBhdGggZD0iTTExMiA4MiBsMS44IDQuMiA0LjIgMS44IC00LjIgMS44IC0xLjggNC4yIC0xLjggLTQuMiAtNC4yIC0xLjggNC4yIC0xLjggWiIgZmlsbD0iI2Y2YzQzMSIvPgogIDxwYXRoIGQ9Ik0xNCA4NiBsMS44IDQuMiA0LjIgMS44IC00LjIgMS44IC0xLjggNC4yIC0xLjggLTQuMiAtNC4yIC0xLjggNC4yIC0xLjggWiIgZmlsbD0iIzFlMjM0NiIvPgo8L3N2Zz4K
@@ -28,6 +28,7 @@
 // @grant        GM_deleteValue
 // @grant        GM_listValues
 // @grant        unsafeWindow
+// @grant        window.close
 // @connect      api.deezer.com
 // @connect      api.discogs.com
 // @connect      music.apple.com
@@ -79,7 +80,7 @@ Log.info(mbuStartupInfo(NAME));
 mbuToast.log = (kind, msg) => (kind === 'warn' ? Log.warn(msg) : kind === 'ok' ? Log.ok(msg) : Log.info(msg));
 
 function settings() {
-    const s = Object.assign({ server: 'musicbrainz.org', annotation: false, iconOnly: false }, GM_getValue('fc.settings', {}));
+    const s = Object.assign({ server: 'musicbrainz.org', annotation: false, iconOnly: false, closeAfter: false }, GM_getValue('fc.settings', {}));
     if (!SERVERS.includes(s.server)) s.server = 'musicbrainz.org';
     return s;
 }
@@ -1614,6 +1615,9 @@ function injectStyle() {
 #fc-root .fc-go { border-radius: 8px 0 0 8px; font-weight: 600; }
 #fc-root .fc-more { border-radius: 0 8px 8px 0; border-left: none; min-width: 30px; justify-content: center; padding: 8px 10px; }
 #fc-root .fc-go[aria-busy="true"] { cursor: progress; opacity: .85; }
+#fc-root { touch-action: none; }
+#fc-root.fc-dragging, #fc-root.fc-dragging button { cursor: grabbing; }
+#fc-panel .fc-reset-pos { all: unset; cursor: pointer; color: var(--mbu-accent); text-decoration: underline; justify-self: start; }
 #fc-root.fc-iconly .fc-go span { display: none; }
 #fc-root.fc-iconly .fc-go[aria-busy="true"] span { display: inline; }   /* the progress still shows while it reads */
 #fc-panel { position: fixed; z-index: 2147483001; min-width: 300px; background: var(--mbu-bg); color: var(--mbu-text);
@@ -1657,12 +1661,80 @@ function mountButton(provider, id) {
         more.addEventListener('click', e => { e.stopPropagation(); togglePanel(more); });
         root.append(go, more);
         document.body.appendChild(root);
+        makeMovable(root);
+        window.addEventListener('resize', () => placeButton(root));
     }
+    root.dataset.fcProvider = provider.name;
     root.classList.toggle('fc-iconly', !!settings().iconOnly);   // majkinetor: an option to hide the button's text
     root.querySelector('.fc-go').title = `Import to MusicBrainz: open the release editor with this ${provider.name} release filled in`;
     root.style.display = '';
-    mbRestackCorner('br');
+    placeButton(root);
     Log.debug(`button shown for ${provider.name} album ${id}`);
+}
+
+// majkinetor: the button can be dragged anywhere, and each platform remembers where. A moved
+// button leaves the shared corner stack (data-mb-corner) and keeps its distance from the
+// window's right and bottom edges, so it stays put as the window resizes; ⚙︎ → Reset position
+// puts it back in the corner.
+const POS_KEY = 'fc.pos';
+function storedPos(name) { const all = GM_getValue(POS_KEY, {}) || {}; return all[name] || null; }
+function storePos(name, pos) {
+    const all = Object.assign({}, GM_getValue(POS_KEY, {}) || {});
+    if (pos) all[name] = pos; else delete all[name];
+    GM_setValue(POS_KEY, all);
+}
+function placeButton(root) {
+    const pos = storedPos(root.dataset.fcProvider);
+    if (!pos) {
+        root.dataset.mbCorner = 'br';
+        mbRestackCorner('br');
+        return;
+    }
+    if (root.dataset.mbCorner) { delete root.dataset.mbCorner; mbRestackCorner('br'); }   // the others close the gap
+    const r = root.getBoundingClientRect();
+    root.style.right = Math.round(Math.min(Math.max(0, pos.right), Math.max(0, window.innerWidth - r.width))) + 'px';
+    root.style.bottom = Math.round(Math.min(Math.max(0, pos.bottom), Math.max(0, window.innerHeight - r.height))) + 'px';
+    root.style.left = root.style.top = '';
+}
+function makeMovable(root) {
+    let drag = null, moved = false;
+    root.addEventListener('pointerdown', e => {
+        if (e.button !== 0) return;
+        const r = root.getBoundingClientRect();
+        drag = { x: e.clientX, y: e.clientY, right: window.innerWidth - r.right, bottom: window.innerHeight - r.bottom, w: r.width, h: r.height, id: e.pointerId };
+        moved = false;
+    });
+    // move and up are watched on the window: the pointer leaves the button as soon as it moves,
+    // and capturing it on pointerdown would retarget the plain click away from Import / ⚙︎
+    window.addEventListener('pointermove', e => {
+        if (!drag || e.pointerId !== drag.id) return;
+        const dx = e.clientX - drag.x, dy = e.clientY - drag.y;
+        if (!moved) {
+            if (Math.abs(dx) < 5 && Math.abs(dy) < 5) return;   // a click, not a drag
+            moved = true;
+            document.documentElement.style.userSelect = 'none';
+            root.classList.add('fc-dragging');
+            if (root.dataset.mbCorner) { delete root.dataset.mbCorner; mbRestackCorner('br'); }
+            const panel = document.getElementById('fc-panel');
+            if (panel) panel.remove();
+        }
+        root.style.right = Math.round(Math.min(Math.max(0, drag.right - dx), window.innerWidth - drag.w)) + 'px';
+        root.style.bottom = Math.round(Math.min(Math.max(0, drag.bottom - dy), window.innerHeight - drag.h)) + 'px';
+    });
+    const end = e => {
+        if (!drag || e.pointerId !== drag.id) return;
+        drag = null;
+        if (!moved) return;
+        root.classList.remove('fc-dragging');
+        document.documentElement.style.userSelect = '';
+        const pos = { right: parseInt(root.style.right, 10) || 0, bottom: parseInt(root.style.bottom, 10) || 0 };
+        storePos(root.dataset.fcProvider, pos);
+        Log.info(`button moved on ${root.dataset.fcProvider}: ${pos.right}px from the right, ${pos.bottom}px from the bottom`);
+    };
+    window.addEventListener('pointerup', end, true);
+    window.addEventListener('pointercancel', end, true);
+    // the click that ends a drag is not an import (or a settings toggle)
+    root.addEventListener('click', e => { if (moved) { moved = false; e.stopPropagation(); e.preventDefault(); } }, true);
 }
 
 function unmountButton() {
@@ -1684,11 +1756,22 @@ function togglePanel(anchor) {
         + '</select></label>'
         + `<label class="fc-check" title="The button shows only its icon; hover it for what it does"><input type="checkbox" class="fc-iconly-opt"${s.iconOnly ? ' checked' : ''}> Icon only</label>`
         + `<label class="fc-check" title="The album's notes on the platform (Bandcamp's about and credits, Discogs's notes, Qobuz's and Apple's reviews, Beatport's and YouTube Music's description), with a line saying where they come from. Reviews are the critic's text: check you may copy it before you submit."><input type="checkbox" class="fc-annotation"${s.annotation ? ' checked' : ''}> Annotation from the platform's notes</label>`
+        + `<label class="fc-check" title="Once the release editor has the release, this platform tab closes. It stays open when the import fails, or when the browser blocked the new tab and the editor opened here."><input type="checkbox" class="fc-close-after"${s.closeAfter ? ' checked' : ''}> Close this page after the import</label>`
+        + `<button type="button" class="fc-reset-pos" title="Drag the button to move it; each platform remembers its own place. This puts it back in the bottom-right corner on ${document.getElementById('fc-root').dataset.fcProvider}.">Reset button position</button>`
         + '</div>');
     document.body.appendChild(panel);
     const r = anchor.getBoundingClientRect();
     panel.style.right = Math.max(8, window.innerWidth - r.right) + 'px';
-    panel.style.bottom = Math.max(8, window.innerHeight - r.top + 8) + 'px';
+    // above the button, or below it when it was moved near the top
+    if (r.top > panel.offsetHeight + 16) panel.style.bottom = Math.max(8, window.innerHeight - r.top + 8) + 'px';
+    else panel.style.top = Math.max(8, r.bottom + 8) + 'px';
+    panel.querySelector('.fc-reset-pos').addEventListener('click', () => {
+        const root = document.getElementById('fc-root');
+        storePos(root.dataset.fcProvider, null);
+        placeButton(root);
+        panel.remove();
+        Log.info(`button back in the corner on ${root.dataset.fcProvider}`);
+    });
     panel.querySelector('.mbu-cfg-log').addEventListener('click', () => Log.open());
     panel.querySelector('.fc-server').addEventListener('change', e => {
         const next = Object.assign(settings(), { server: e.target.value });
@@ -1706,6 +1789,11 @@ function togglePanel(anchor) {
         const next = Object.assign(settings(), { annotation: e.target.checked });
         saveSettings(next);
         Log.info(`annotation from the platform's notes: ${next.annotation ? 'on' : 'off'}`);
+    });
+    panel.querySelector('.fc-close-after').addEventListener('change', e => {
+        const next = Object.assign(settings(), { closeAfter: e.target.checked });
+        saveSettings(next);
+        Log.info(`close the page after the import: ${next.closeAfter ? 'on' : 'off'}`);
     });
     mbuDismissOn(panel, () => panel.remove());
 }
@@ -1778,6 +1866,10 @@ async function importCurrent() {
         form.submit();
         form.remove();
         Log.ok(`seeded ${server}/release/add with ${nTracks} track(s)`);
+        if (settings().closeAfter) {
+            if (win) closeSourceTab();
+            else Log.info('close after the import: skipped, the editor opened in this tab');
+        }
     } catch (e) {
         Log.err(`import failed: ${e.message}`);
         if (win) try { win.close(); } catch (_) { /* already gone */ }
@@ -1787,6 +1879,18 @@ async function importCurrent() {
         if (go) go.removeAttribute('aria-busy');
         if (label) label.textContent = 'Import to MusicBrainz';
     }
+}
+
+// majkinetor: an option to close the page once the import is clicked. Only after the POST has
+// gone into the editor's tab (closing sooner could take the submission with it), and only with
+// @grant window.close: a tab the user opened can't close itself otherwise.
+function closeSourceTab() {
+    Log.info('closing this page (Close this page after the import)');
+    if (mbuTestHooks()) { window.__fcClosed = true; return; }
+    setTimeout(() => {
+        try { window.close(); } catch (e) { Log.warn(`could not close this page: ${e.message}`); }
+        setTimeout(() => { Log.warn('this page is still open: the userscript manager did not let it close (it needs @grant window.close)'); }, 1000);
+    }, 500);
 }
 
 function platformMain() {
