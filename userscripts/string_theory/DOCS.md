@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-10-01 21:09 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-10-02 10:15 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -325,6 +325,7 @@ Each cover shows its size and resolution. *Show each cover's file type next to i
 - **Set type**: tick one or more types; right-click a type to set only that one.
 - **Set comment**: Enter moves to the next cover's comment. With [Mammoth](../mammoth) installed, the comment field gets its 🦣 memory.
 - **Remove**: marks the cover for removal.
+- **Only this**: on a new cover, while there are others (after *Import all*, say), **✓ only this** in its top-left corner marks every other new cover for removal; the release's own covers stay. **↺ keep** brings one back.
 - **Download** as a zip, [named by type](#file-names--types).
 - **Report** in HTML or Markdown: inline, captioned, or a table (position, file, resolution, size) that also serves as the archive's `README.md`.
 

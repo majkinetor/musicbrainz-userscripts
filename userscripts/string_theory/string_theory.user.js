@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         String Theory
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.1.210957
+// @version      2026.10.2.101547
 // @description  Unified bundle of 8 MusicBrainz userscripts (apollo_editor, art_station, credit_hoarder, fusion, group_therapy, isrc_scout, mammoth, platform_check). Built by userscripts/string_theory/build.mjs — do not hand-edit.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCIgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0Ij4KICA8IS0tIGh1Yi1hbmQtc3Bva2UgIm5ldHdvcmsiIGdseXBoLCBzaW5nbGUgdml2aWQgdmlvbGV0IG9uIHRyYW5zcGFyZW50IHNvIGl0IHJlYWRzIG9uIGJvdGggZGFyayBhbmQgbGlnaHQgcGFnZXMgLS0+CiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjN2M1Y2ZmIiBzdHJva2Utd2lkdGg9IjQuNiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj4KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMzIgMTUiLz4KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMNDYuNSAyMy41Ii8+CiAgICA8cGF0aCBkPSJNMzIgMzIgTDQ2LjUgNDAuNSIvPgogICAgPHBhdGggZD0iTTMyIDMyIEwzMiA0OSIvPgogICAgPHBhdGggZD0iTTMyIDMyIEwxNy41IDQwLjUiLz4KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMTcuNSAyMy41Ii8+CiAgPC9nPgogIDxnIGZpbGw9IiM3YzVjZmYiPgogICAgPGNpcmNsZSBjeD0iMzIiIGN5PSIzMiIgcj0iOC42Ii8+CiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjE5LjUiIHI9IjYuNCIvPgogICAgPGNpcmNsZSBjeD0iNDkiIGN5PSIxOS41IiByPSI2LjQiLz4KICAgIDxjaXJjbGUgY3g9IjMyIiBjeT0iNTciIHI9IjYuNCIvPgogIDwvZz4KICA8ZyBmaWxsPSJub25lIiBzdHJva2U9IiM3YzVjZmYiIHN0cm9rZS13aWR0aD0iMy44Ij4KICAgIDxjaXJjbGUgY3g9IjMyIiBjeT0iNyIgcj0iNC45Ii8+CiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjQ0LjUiIHI9IjQuOSIvPgogICAgPGNpcmNsZSBjeD0iNDkiIGN5PSI0NC41IiByPSI0LjkiLz4KICA8L2c+Cjwvc3ZnPgo=
@@ -84,8 +84,8 @@
 // Bundles (verbatim, each wrapped in a run-at gate): apollo_editor, art_station, credit_hoarder, fusion, group_therapy, isrc_scout, mammoth, platform_check.
 
 try {
-  console.log('%c String Theory %c v2026.10.1.210957 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
-  console.log("String Theory bundles:\n  · Apollo Editor v2026.10.1.210938\n  · Art Station v2026.10.1.210938\n  · Credit Hoarder v2026.10.1.210957\n  · Fusion v2026.10.1.210938\n  · Group Therapy v2026.10.1.210938\n  · ISRC Scout v2026.10.1.210938\n  · Mammoth v2026.10.1.210938\n  · Platform Check v2026.10.1.210938");
+  console.log('%c String Theory %c v2026.10.2.101547 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
+  console.log("String Theory bundles:\n  · Apollo Editor v2026.10.1.210938\n  · Art Station v2026.10.2\n  · Credit Hoarder v2026.10.1.210957\n  · Fusion v2026.10.1.210938\n  · Group Therapy v2026.10.1.210938\n  · ISRC Scout v2026.10.1.210938\n  · Mammoth v2026.10.1.210938\n  · Platform Check v2026.10.1.210938");
 } catch (e) {}
 
 // ===== apollo_editor (@run-at document-start) =====================================
@@ -10765,7 +10765,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
 
 // ===== art_station (@run-at document-start) =======================================
 (function(__stGM){
-  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Art Station*","namespace":"https://musicbrainz.org/","version":"2026.10.1.210938","description":"Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png"}) }) : { script: {"name":"Art Station*","namespace":"https://musicbrainz.org/","version":"2026.10.1.210938","description":"Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png"} };
+  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Art Station*","namespace":"https://musicbrainz.org/","version":"2026.10.2","description":"Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png"}) }) : { script: {"name":"Art Station*","namespace":"https://musicbrainz.org/","version":"2026.10.2","description":"Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png"} };
   (f=>f())(function(){ try { (function(){
 //
 // Phase-1 PoC. Principle: "you get what you see" — the gallery is the staged
@@ -11659,6 +11659,24 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
   }
   // #248 (vzell) tooltip for a locally-uploaded cover — its original file name.
   const uploadTip = it => (it._new && it._uploadName) ? ` title="${esc(it._uploadName)}"` : '';
+  // #660 (majkinetor): "When importing all images from streaming provider the point is to keep the
+  // best one. Currently, one must select other images and delete them … Lets have an option on new
+  // images only to keep just one." On a NEW cover, while there are others: mark every other new
+  // cover for removal (undoable with ↺ keep). Covers already on the release, and sources still
+  // being read, are left alone.
+  const otherNews = it => MODEL.filter(x => x !== it && x._new && !x._del && !x._sourcing);
+  function onlyBtn(it) {
+    if (!it._new || it._del || it._sourcing || !otherNews(it).length) return '';
+    return `<button class="as-only" title="Keep only this one: the other ${otherNews(it).length} new ${otherNews(it).length === 1 ? ITEM : ITEMS} are marked for removal (↺ keep undoes it)">✓ only this</button>`;
+  }
+  function keepOnly(it) {
+    if (!it || !it._new) return;
+    const drop = otherNews(it);
+    drop.forEach(x => { x._del = true; x._sel = false; });
+    asLog.info(`Keep only ${it._provider || it._uploadName || 'this'} ${ITEM} (${it.w}×${it.h}): marked the other ${drop.length} new ${drop.length === 1 ? ITEM : ITEMS} for removal${drop.length ? ` (${drop.map(x => `${x._provider || x._uploadName || x.id} ${x.w}×${x.h}`).join(', ')})` : ''}`);
+    toast(`Kept only this one — ${drop.length} other new ${drop.length === 1 ? ITEM : ITEMS} marked for removal`);
+    render();
+  }
   function card(it) {
     if (it._sourcing) return `<div class="as-card new as-sourcing" data-id="${esc(it.id)}" title="${esc(it._srcLabel || 'Sourcing…')}">`
       + `<div class="as-srcing-thumb"><div class="as-spinner"></div><div class="as-srcing-lbl">${esc(it._srcLabel || 'Sourcing…')}</div></div></div>`;
@@ -11668,6 +11686,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
         ${it._pdf ? '<span class="as-pdfban" title="PDF — opens in a new tab">PDF</span>' : ''}
         ${provBadge(it)}
         ${it._del ? '<button class="as-tbtn as-undo" title="keep this image">↺ keep</button>' : ''}
+        ${onlyBtn(it)}
       </div>
       ${foot(it)}
       <span class="as-selmark">✓</span>
@@ -11864,6 +11883,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     const commit = root.querySelector('.as-commit'); if (commit && !commit.disabled) { commit.onclick = () => enterEdit(); commit.oncontextmenu = e => { e.preventDefault(); enterEdit(true); }; }   // #493: right-click — skip the review dialog
 
     root.querySelectorAll('.as-undo').forEach(b => b.onclick = e => { e.stopPropagation(); const it = byId(cardId(e.target)); if (it) { it._del = false; render(); } });
+    root.querySelectorAll('.as-only').forEach(b => b.onclick = e => { e.stopPropagation(); keepOnly(byId(cardId(b))); });
     wireComments();
     wireDetail();
 
@@ -15431,6 +15451,9 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
   .as-dim-sz,.as-dim-px{white-space:nowrap}
   .as-tbtn{position:absolute;top:6px;right:6px;border:none;border-radius:var(--mbu-radius);background:rgba(255,255,255,.92);cursor:pointer;font-size:14px;line-height:1;padding:4px 7px;color:var(--mbu-text-dim);box-shadow:0 1px 3px rgba(0,0,0,.2);opacity:0;transition:.1s}
   .as-card:hover .as-tbtn{opacity:1}
+  .as-only{position:absolute;top:6px;left:6px;z-index:6;border:1px solid var(--mbu-border);border-radius:var(--mbu-radius);background:var(--mbu-bg);color:var(--mbu-accent-text);cursor:pointer;font:600 12px/1 var(--mbu-font);padding:5px 8px;box-shadow:0 1px 3px rgba(0,0,0,.25);opacity:0;transition:opacity .1s}
+  .as-card:hover .as-only,.as-only:focus-visible{opacity:1}
+  .as-only:hover{background:var(--mbu-bg-hover);border-color:var(--mbu-accent)}
   .as-rm:hover{background:var(--as-warn);color:var(--mbu-text-on-accent)}
   .as-undo{opacity:1;background:var(--mbu-bg);color:var(--mbu-accent-text);font-size:12px;font-weight:600}
   /* #234: footer (mockup) — row 1: comment (left) · dimensions+size (right); row 2: centered type pill on a divider */
@@ -15618,6 +15641,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     #as-root .as-type,#as-root .as-type-add{padding-top:7px;padding-bottom:7px}
     #as-root .as-pencil{min-height:34px;padding:0 12px}
     #as-root .as-tbtn{opacity:1;padding:8px 11px}
+    #as-root .as-only{opacity:1;padding:8px 11px}
     .as-lb-x,.as-lb-play,.as-lb-del,.as-lb-dl,.as-lb-dlcaret{min-width:46px;min-height:46px;font-size:18px}
     .as-lb-cmtadd,.as-lb-type{min-height:40px;padding:9px 16px}
     .as-lb-dlmenu button{padding:12px 14px}
