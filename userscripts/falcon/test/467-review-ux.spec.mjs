@@ -130,7 +130,8 @@ test("#467: review ux", { tag: ['@sandbox', '@login'] }, async ({ context, page 
     const detailText = await page.evaluate(() => document.getElementById('falcon-queue-list').textContent + ' ' + [...document.querySelectorAll('#falcon-queue-list .falcon-link-url')].map(i => i.value).join(' '));
     console.log('detail text after expand:', detailText.replace(/\s+/g, ' ').trim());
     ck(detailText.includes('deezer.com/track/1') && detailText.includes('tidal.com/track/1'), 'expanding the row shows BOTH urls');
-    ck(detailText.includes('free streaming') && detailText.includes('+ streaming'), 'each url shows its link type, by name (#663)');
+    const typeNames = await page.evaluate(() => [...document.querySelectorAll('#falcon-queue-list .falcon-link-type-chg')].map(s => s.selectedOptions[0]?.textContent));   // #663: type badges are combos
+    ck(typeNames.includes('free streaming') && typeNames.includes('streaming'), 'each url shows its link type, by name (#663)');
     const errorTitle = await page.evaluate(() => [...document.querySelectorAll('#falcon-queue-list [title]')].map(el => el.title).find(t => /not allowed for recordings/.test(t)));
     ck(!!errorTitle, `the failed url's real MB error is shown on hover ("${errorTitle}")`);
     await page.click('.falcon-row-expand[data-id="d1"]');

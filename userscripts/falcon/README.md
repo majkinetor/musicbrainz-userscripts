@@ -55,9 +55,9 @@ On a series page, **+ Add from series** queues its release groups (optionally ev
 
 The **List** / **Grid** button, right of the type chips, switches between two views. Falcon remembers the one you last used.
 
-- **List**: expand a row to edit it as a labelled form. Its links are listed one per URL, with the service and the link type by name; a URL added under two types shows both. Long link lists fold after three, with *+ N more*.
-- Links are editable: change a URL in its box (empty it to drop it), **✕** a type off, **+ type** adds one from that entity's link types, the row's **✕** removes the link, and **+ link** adds one. A link with no type is left for MusicBrainz to guess.
-- **Grid**: one line per row, with every field editable in place. *N links* opens the row's links (and a release's cover art) beneath it, and the count by the alias box opens its aliases there too.
+- **List**: expand a row to edit it as a labelled form. Its links are listed one per URL, each with its link types by name; a URL added under two types shows both. The mark before a URL (✓ done, ✗ failed, ↗ not run yet) opens it. Long link lists fold after three, with *+ N more*.
+- Links are editable: change a URL in its box (empty it to drop it). A type badge is a dropdown: pick another type to change it, or **✕** it off. **+** adds a type from that entity's link types, the row's **✕** removes the link, and **+ link** adds one. A link with no type shows *auto* and is left for MusicBrainz to guess.
+- **Grid**: one line per row, with every field editable in place. *N links* opens the row's links (and a release's cover art) beneath it, and *N aliases* (or *+ alias*) opens its aliases there too: aliases are added and edited only below the row. Enter in an empty alias box goes on to the next row's, Shift+Enter back.
 
 The select-all box heads the rows, with the number of rows selected. The open tab is underlined.
 
@@ -81,7 +81,7 @@ Review the queue (remove rows, edit fields), then press **Start**. Right-click a
 - A failed row shows MusicBrainz's own error on hover. **FAILED** / **PARTIAL** / **MANUAL** chips at the top filter the queue to those rows.
 - A worker that can't commit stays where it stopped, dimmed but live, and a fresh one takes over. Click a red status to jump to it in the **Workers** tab; **⛶** enlarges it.
 - **⇗** opens the entity's edit page in a tab, prefilled, for you to finish.
-- **Retry failed**, under Start, reruns the failed and partial rows in place.
+- **Retry failed**, in Start's **▾** menu, reruns the failed and partial rows in place.
 
 <img src="./screenshots/workers.png">
 

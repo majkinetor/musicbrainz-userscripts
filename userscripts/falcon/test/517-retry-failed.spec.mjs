@@ -51,6 +51,7 @@ test("#517: retry failed", { tag: ['@sandbox', '@login'] }, async ({ context, pa
   disabled = await page.evaluate(() => document.getElementById('falcon-retry-failed').disabled);
   ck(disabled === false, `enabled once there's a failed/partial item (got ${disabled})`);
 
+  await page.click('#falcon-run-more');   // #663: Retry failed lives in Start's ▾ menu
   await page.click('#falcon-retry-failed');
   await frames(page);
   const after = await page.evaluate(() => window.__falconTest.getQueue().map(i => ({ id: i.id, status: i.status, error: i.error, urlResults: i.urlResults, timing: i.timing })));

@@ -68,10 +68,10 @@ test("#467: type column", { tag: ['@sandbox', '@login'] }, async ({ context, pag
   await page.click('.falcon-row-expand[data-id="a2"]');
   const detailInfo = await page.evaluate(() => {
     const row = document.querySelector('.falcon-row[data-id="a2"]');
-    const detailLines = [...row.querySelectorAll('.falcon-ln')];   // #663: one line per URL in the form
+    const detailLines = [...row.querySelectorAll('.falcon-ln:not(.falcon-ln-new)')];   // #663: one line per URL in the form
     return detailLines.map(line => {
       const a = line.querySelector('a');
-      const typeSpans = [...line.querySelectorAll('span')].map(s => s.textContent);
+      const typeSpans = [...line.querySelectorAll('span')].map(s => s.querySelector('select') ? s.querySelector('select').selectedOptions[0]?.textContent || '' : s.textContent);   // #663: a type badge is a combo
       return { href: a?.href, isFlexGrow: getComputedStyle(a).flexGrow, typeSpans };
     });
   });

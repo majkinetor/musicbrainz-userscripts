@@ -45,16 +45,20 @@ test('#663: alias language, editable aliases and links, toolbar', { tag: ['@sand
   const layout = await page.evaluate(() => {
     const bar = document.getElementById('falcon-queue-toolbar'), row2 = document.getElementById('falcon-type-chips');
     const ids = el => [...el.querySelectorAll('[id]')].map(e => e.id);
-    const run = document.getElementById('falcon-run').getBoundingClientRect(), retry = document.getElementById('falcon-retry-failed').getBoundingClientRect();
+    const menu = document.getElementById('falcon-run-menu');
     return { bar: ids(bar), row2: ids(row2), head: !!document.querySelector('#falcon-queue-list .falcon-lhead #falcon-select-all'),
-      retryUnderStart: retry.top >= run.bottom - 1 && Math.abs(retry.right - run.right) < 2,
+      retryInMenu: menu.contains(document.getElementById('falcon-retry-failed')) && getComputedStyle(menu).display === 'none',
       tabOn: [...document.querySelectorAll('#falcon-hdr .falcon-tab-on')].map(b => b.id) };
   });
   console.log('layout:', JSON.stringify(layout));
   check(layout.bar.includes('falcon-import') && layout.bar.includes('falcon-export') && layout.bar.includes('falcon-alias-lang') && !layout.bar.includes('falcon-view-toggle'), 'toolbar: Add/Import, alias language, Export');
   check(layout.row2.includes('falcon-view-toggle') && layout.row2.includes('falcon-type-chips-in'), 'the type chips row carries the view switch');
   check(layout.head, 'select-all heads the rows');
-  check(layout.retryUnderStart, 'Retry failed sits under Start');
+  check(layout.retryInMenu, "Retry failed sits in Start's closed ▾ menu");
+  await page.click('#falcon-run-more'); await frames(page);
+  check(await page.evaluate(() => getComputedStyle(document.getElementById('falcon-run-menu')).display) === 'block', '▾ opens it');
+  await page.mouse.click(5, 5); await frames(page);
+  check(await page.evaluate(() => getComputedStyle(document.getElementById('falcon-run-menu')).display) === 'none', 'a click elsewhere closes it');
   check(layout.tabOn.join() === 'falcon-tab-queue', `the Queue tab is marked (${layout.tabOn})`);
   await page.click('#falcon-tab-log'); await frames(page);
   check(await page.evaluate(() => [...document.querySelectorAll('#falcon-hdr .falcon-tab-on')].map(b => b.id).join()) === 'falcon-tab-log', 'the Log tab is marked once open');
@@ -87,12 +91,18 @@ test('#663: alias language, editable aliases and links, toolbar', { tag: ['@sand
 
   // ── links
   const spot = 'https://open.spotify.com/artist/2vumMcvGJfXKD3NKD51G8a', deez = 'https://www.deezer.com/artist/4668332';
-  const opts = await page.evaluate(u => [...document.querySelector(`.falcon-link-type[data-url="${u}"]`).options].map(o => o.textContent), spot);
-  check(opts.includes('official homepage') && !opts.includes('free streaming') && !opts.includes('cover art link'), `the type picker offers the artist's other link types only (${opts.length})`);
-  await page.selectOption(`.falcon-link-type[data-url="${spot}"]`, { label: 'streaming' }); await frames(page);
+  check(!(await page.$('.falcon-svc')), 'no service-name prefix on the link lines');
+  await page.click(`.falcon-link-type-add[data-url="${spot}"]`); await frames(page);
+  const opts = await page.evaluate(u => [...document.querySelector(`.falcon-ltb-new .falcon-link-type[data-url="${u}"]`).options].map(o => o.textContent), spot);
+  check(opts[0] === 'type…' && opts.includes('official homepage') && !opts.includes('free streaming') && !opts.includes('cover art link'), `the type picker offers the artist's other link types only (${opts.length})`);
+  await page.selectOption(`.falcon-ltb-new .falcon-link-type[data-url="${spot}"]`, { label: 'streaming' }); await frames(page);
   a1 = await q('a1');
   check(a1.urls.filter(u => u.url === spot).map(u => u.linkTypeId).sort().join() === '194,978', `a type is added (${JSON.stringify(a1.urls)})`);
-  await page.click(`.falcon-link-type-del[data-url="${spot}"][data-type="194"]`); await frames(page);
+  // a badge is a combo: picking another type changes it
+  await page.selectOption(`.falcon-link-type-chg[data-url="${spot}"][data-old="194"]`, { label: 'official homepage' }); await frames(page);
+  a1 = await q('a1');
+  check(a1.urls.filter(u => u.url === spot).map(u => u.linkTypeId).sort().join() === '183,978', `a badge changes its type in place (${JSON.stringify(a1.urls)})`);
+  await page.click(`.falcon-link-type-del[data-url="${spot}"][data-type="183"]`); await frames(page);
   a1 = await q('a1');
   check(a1.urls.filter(u => u.url === spot).map(u => u.linkTypeId).join() === '978', `a type is removed: change = add + remove (${JSON.stringify(a1.urls)})`);
   await page.click(`.falcon-link-type-del[data-url="${spot}"][data-type="978"]`); await frames(page);
@@ -112,7 +122,8 @@ test('#663: alias language, editable aliases and links, toolbar', { tag: ['@sand
   await page.evaluate(() => { window.__falconTest.getExpandedIds().clear(); window.__falconTest.setQueue(window.__falconTest.getQueue()); });
   await frames(page);
   check(await page.evaluate(() => !!document.querySelector('.falcon-grid th #falcon-select-all')), 'the grid heads select-all too');
-  check(!(await page.$('.falcon-grid tr.falcon-row .falcon-chip')), 'the grid line holds no alias chips');
+  check(!(await page.$('.falcon-grid tr.falcon-row .falcon-chip')) && !(await page.$('.falcon-grid tr.falcon-row .falcon-alias-add')), 'the grid line holds no alias chips and no alias box');
+  check((await page.textContent('.falcon-grid-aliases[data-id="r1"]')).includes('+ alias'), 'a row without aliases offers + alias');
   await page.click('.falcon-grid-aliases[data-id="a1"]'); await frames(page);
   const subChips = await page.evaluate(() => [...document.querySelectorAll('.falcon-grid tr.falcon-sub[data-id="a1"] .falcon-chip .falcon-alias-name')].map(s => s.textContent.trim()));
   check(subChips.length === 2 && subChips[0].startsWith('Bamako Stars'), `the aliases show below the row (${subChips})`);
@@ -120,5 +131,10 @@ test('#663: alias language, editable aliases and links, toolbar', { tag: ['@sand
   await page.click('.falcon-grid tr.falcon-sub .falcon-alias-name[data-idx="1"]'); await frames(page);
   check(await page.evaluate(() => document.activeElement?.classList.contains('falcon-alias-edit')), 'a grid alias chip edits in place too');
   await page.keyboard.press('Escape'); await frames(page);
+  // Enter in the empty alias box below a row goes on to the next row's
+  await page.focus('.falcon-grid tr.falcon-sub[data-id="a1"] .falcon-alias-add'); await page.keyboard.press('Enter'); await frames(page);
+  check(await page.evaluate(() => document.activeElement?.matches('.falcon-sub[data-id="r1"] .falcon-alias-add')), "empty Enter moves to the next row's alias box, opening it");
+  await page.keyboard.type('Cuillères'); await page.keyboard.press('Enter'); await frames(page);
+  check((await q('r1')).aliases.some(a => a.name === 'Cuillères' && a.locale === 'sr'), 'and an alias typed there is added');
   await page.screenshot({ path: 'test-results/663-editing-grid.png', clip: await page.locator('#falcon-panel').boundingBox() });
 });

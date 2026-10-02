@@ -51,8 +51,12 @@ test("#663: list/grid views + keyboard walk", { tag: ['@sandbox', '@critical'] }
   await frames(page);
 
   // ── list view: links grouped by URL with named types, the rest a labelled form
-  const links = await page.evaluate(() => [...document.querySelectorAll('.falcon-row[data-id="a1"] .falcon-ln')].map(l => ({
-    svc: l.querySelector('.falcon-svc').textContent, types: [...l.querySelectorAll('.falcon-lt > span')].map(s => s.firstChild.textContent) })));
+  // #663: no service name on the line any more; the test still groups by it, from the url
+  const links = await page.evaluate(() => {
+    const svc = u => { const p = new URL(u).hostname.replace(/^www\./, '').split('.'); const n = p.length > 2 ? p[p.length - 2] : p[0]; return n[0].toUpperCase() + n.slice(1); };
+    return [...document.querySelectorAll('.falcon-row[data-id="a1"] .falcon-ln:not(.falcon-ln-new)')].map(l => ({
+      svc: svc(l.querySelector('input.falcon-link-url').value), types: [...l.querySelectorAll('.falcon-link-type-chg')].map(s => '+ ' + s.selectedOptions[0]?.textContent) }));
+  });
   console.log('links:', JSON.stringify(links));
   check(links.length === 3, `5 distinct URLs collapse to 3 shown plus "more" (got ${links.length})`);
   const qobuz = links.find(l => l.svc === 'Qobuz');
@@ -110,7 +114,7 @@ test("#663: list/grid views + keyboard walk", { tag: ['@sandbox', '@critical'] }
   await page.keyboard.press('Shift+Tab'); await frames(page);
   at = await page.evaluate(() => document.activeElement.dataset.col + '@' + document.activeElement.dataset.id);
   check(at === 'name@a1', `Shift+Tab at the very first field stays put (got ${at})`);
-  await page.locator('.falcon-grid .falcon-alias-add[data-id="a1"]').focus();
+  await page.locator('.falcon-grid .falcon-disambiguation-input[data-id="a1"]').focus();   // #663: aliases are edited below the row, off the walk
   await page.keyboard.press('Tab'); await frames(page);
   at = await page.evaluate(() => document.activeElement.dataset.col + '@' + document.activeElement.dataset.id);
   check(at === 'name@r1', `Tab off the last field wraps to the next row (got ${at})`);

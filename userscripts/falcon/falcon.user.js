@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Falcon — bulk MusicBrainz link editor
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.2.210657
+// @version      2026.10.2.220229
 // @description  Add external links to a BATCH of MusicBrainz artists/labels/recordings at once — no popup-per-entity, no tab churn. A small pool of persistent worker iframes churns through a queue, each submitting its own edit and moving straight to the next entity. Paste a list, hand it a queue via a `?falcon=` URL param, or click "Send to Falcon" on a Harmony actions page to import its suggested links directly.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHBhdGggZD0iTTY0IDEwIEM4MiAyOCA5MCA1NiA5MCA4MCBMMzggODAgQzM4IDU2IDQ2IDI4IDY0IDEwIFoiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzFiMmE0YSIgc3Ryb2tlLXdpZHRoPSI3IiBzdHJva2UtbGluZWpvaW49InJvdW5kIiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8cGF0aCBkPSJNMzggODAgTDIwIDExMCBMNDAgOTYgWiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxwYXRoIGQ9Ik05MCA4MCBMMTA4IDExMCBMODggOTYgWiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxjaXJjbGUgY3g9IjY0IiBjeT0iNDQiIHI9IjEwIiBmaWxsPSIjMWIyYTRhIi8+CiAgPHBhdGggZD0iTTUwIDgwIEw0NSAxMDggTDY0IDEyMiBMODMgMTA4IEw3OCA4MCBaIiBmaWxsPSIjZmY2YTAwIiBzdHJva2U9IiMxYjJhNGEiIHN0cm9rZS13aWR0aD0iNSIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgo8L3N2Zz4K
@@ -5354,12 +5354,18 @@
       '.falcon-chip .falcon-alias-name:hover{text-decoration:underline dotted}',
       '.falcon-chips>input.falcon-alias-edit{flex:0 1 160px}',
       '.falcon-grid-aliases{border:none;background:none!important;color:var(--mbu-info);cursor:pointer;font-size:11px;padding:2px 4px;white-space:nowrap;flex:0 0 auto}',
-      '.falcon-ln{grid-template-columns:12px 62px minmax(0,1fr) auto auto 18px!important}',
+      '.falcon-ln{grid-template-columns:14px minmax(0,1fr) auto 20px 18px!important}',
+      '.falcon-ln a.falcon-lst{text-align:center;text-decoration:none;font-size:11px}',
+      '.falcon-ln-new>input.falcon-link-new{grid-column:2 / -1}',
+      '.falcon-ltb{display:inline-flex;align-items:center;padding:0 3px 0 0!important}',
+      '.falcon-lt select{appearance:none;-webkit-appearance:none;border:none!important;background:transparent!important;color:inherit;font:inherit;font-size:9.5px;padding:0 2px 0 7px!important;cursor:pointer;max-width:130px}',
+      '.falcon-ltb-new{outline:1px dashed var(--mbu-ok)}',
+      '.falcon-lauto{background:none!important;color:var(--mbu-text-weak)!important;font-style:italic}',
+      '.falcon-link-type-add{border:1px solid var(--mbu-border);background:none!important;color:var(--mbu-ok);cursor:pointer;border-radius:9px;font-size:11px;line-height:1;padding:1px 0;width:20px}',
+      '.falcon-grid-aliases{color:var(--mbu-info)}',
       '.falcon-ln input.falcon-link-url{padding:2px 6px!important;font-size:11px}',
       '.falcon-lt span button{border:none;background:none!important;color:inherit;cursor:pointer;padding:0 0 0 3px;font-size:9px;line-height:1}',
-      '.falcon-ln select{font-size:10px;padding:1px 2px;border:1px solid var(--mbu-border);border-radius:4px;max-width:120px}',
       '.falcon-ln .falcon-link-del{border:none;background:none!important;cursor:pointer;color:var(--mbu-text-weak);padding:0}',
-      '.falcon-links>input.falcon-link-new{margin-left:80px;width:calc(100% - 80px)!important}',
       // #663: the open row is a labelled form (list view), or every row is one grid line
       '.falcon-form{display:grid;grid-template-columns:max-content minmax(0,1fr);gap:5px 10px;align-items:center;padding:4px 6px 9px 30px;font-size:11px}',
       '.falcon-form>.falcon-lbl{color:var(--mbu-text-weak);text-align:right;font-size:10.5px;white-space:nowrap}',
@@ -5497,9 +5503,12 @@
             <span id="falcon-progress-text" style="color:var(--mbu-text-dim);font-size:10px;white-space:nowrap;flex:0 0 auto"></span>
           </div>
           <button type="button" id="falcon-note-btn" title="Batch edit note &mdash; appended to every edit in this run" style="flex:0 0 auto;padding:4px 10px;cursor:pointer"><span class="falcon-bi">&#9998;</span><span class="falcon-bt">Note</span></button>
-          <div style="flex:0 0 auto;display:flex;flex-direction:column;align-items:stretch;gap:3px">
-            <button type="button" id="falcon-run" title="Start processing the queue" style="padding:4px 12px;font-weight:700;cursor:pointer;background:#1b2a4a;color:#fff;border:none;border-radius:4px;justify-content:center"><span class="falcon-bi">▶</span><span class="falcon-bt">Start</span></button>
-            <button type="button" id="falcon-retry-failed" disabled title="Re-queue every failed/partial item for another attempt — useful when MusicBrainz was just slow, not when an item is genuinely broken" style="padding:1px 8px;cursor:pointer;font-size:10.5px;justify-content:center"><span class="falcon-bi">↻</span><span class="falcon-bt">Retry failed</span></button>
+          <div id="falcon-run-split" style="flex:0 0 auto;display:flex;position:relative">
+            <button type="button" id="falcon-run" title="Start processing the queue" style="padding:4px 12px;font-weight:700;cursor:pointer;background:#1b2a4a;color:#fff;border:none;border-radius:4px 0 0 4px;justify-content:center"><span class="falcon-bi">▶</span><span class="falcon-bt">Start</span></button>
+            <button type="button" id="falcon-run-more" title="More: Retry failed" style="padding:4px 8px;cursor:pointer;background:#1b2a4a;color:#fff;border:none;border-left:1px solid rgba(255,255,255,.25);border-radius:0 4px 4px 0;font-size:10px">▾</button>
+            <div id="falcon-run-menu" style="display:none;position:absolute;right:0;bottom:calc(100% + 4px);z-index:5;background:var(--mbu-bg-raised);border:1px solid var(--mbu-border);border-radius:6px;box-shadow:0 4px 14px rgba(0,0,0,.25);padding:4px;min-width:150px">
+              <button type="button" id="falcon-retry-failed" disabled title="Re-queue every failed/partial item for another attempt — useful when MusicBrainz was just slow, not when an item is genuinely broken" style="display:flex;width:100%;gap:6px;padding:4px 8px;cursor:pointer;border:none;background:none;text-align:left"><span>↻</span><span>Retry failed</span></button>
+            </div>
           </div>
         </div>
         <div id="falcon-cover-warning" style="display:none;padding:5px 10px;background:var(--mbu-warn-bg);color:var(--mbu-warn);font-size:10.5px;border-top:1px solid var(--mbu-warn);flex:0 0 auto"></div>
@@ -5853,6 +5862,11 @@
       else selectable.forEach(i => _selectedIds.delete(i.id));
       renderQueue();
     });
+    // #663 (majkinetor): Retry failed is "not that frequent" — it lives in Start's ▾ menu
+    const runMenu = document.getElementById('falcon-run-menu');
+    document.getElementById('falcon-run-more').onclick = e => { e.stopPropagation(); runMenu.style.display = runMenu.style.display === 'none' ? 'block' : 'none'; };
+    document.addEventListener('click', e => { if (runMenu.style.display !== 'none' && !runMenu.contains(e.target)) runMenu.style.display = 'none'; });
+    document.getElementById('falcon-retry-failed').addEventListener('click', () => { runMenu.style.display = 'none'; });
     // #663 (majkinetor): "Lets have default language in the toolbar. It can be empty or set. @ still works to override it"
     const langBox = document.getElementById('falcon-alias-lang');
     langBox.value = cfg.aliasLang;
@@ -5955,6 +5969,14 @@
         if (box) { box.focus(); box.setSelectionRange(box.value.length, box.value.length); }
         return;
       }
+      const ta = e.target.closest('.falcon-link-type-add');
+      if (ta) {
+        _pendingType = { id: ta.dataset.id, url: ta.dataset.url };
+        renderQueue();
+        const sel = document.querySelector('#falcon-queue-list .falcon-ltb-new select');
+        if (sel) { sel.focus(); try { sel.showPicker(); } catch (x) {} }
+        return;
+      }
       const lt = e.target.closest('.falcon-link-type-del');
       if (lt) { e.preventDefault(); editLink(lt.dataset.id, 'untype', lt.dataset.url, lt.dataset.type); return; }
       const ld = e.target.closest('.falcon-link-del');
@@ -5967,7 +5989,24 @@
       const it = queue.find(i => i.id === del.dataset.id);
       if (it) { it.aliases.splice(+del.dataset.idx, 1); renderQueue(); }
     });
+    // #663 (majkinetor): "make empty enter in alias switch to another row"
+    list.addEventListener('keydown', e => {
+      const box = e.target;
+      if (e.key !== 'Enter' || e.isComposing || !box.classList || !box.classList.contains('falcon-alias-add') || box.dataset.col || box.value.trim()) return;
+      e.preventDefault();
+      const id = box.dataset.id, d = e.shiftKey ? -1 : 1;
+      let i = _visibleIds.indexOf(id) + d, next = null;
+      for (; i >= 0 && i < _visibleIds.length; i += d) { const it = queue.find(q => q.id === _visibleIds[i]); if (it && it.status !== 'active') { next = it; break; } }
+      if (!next) { dbg('keys', `alias Enter on ${id}: no ${d > 0 ? 'next' : 'previous'} row`); return; }
+      if (_navOpened.has(id)) { _expandedIds.delete(id); _navOpened.delete(id); }
+      if (!_expandedIds.has(next.id)) { _expandedIds.add(next.id); _navOpened.add(next.id); }
+      dbg('keys', `alias Enter on ${id} → the alias box of ${next.id}`);
+      renderQueue();
+      const nb = document.querySelector(`#falcon-queue-list .falcon-sub[data-id="${next.id}"] .falcon-alias-add`);
+      if (nb) { nb.focus({ preventScroll: true }); nb.scrollIntoView({ block: 'nearest' }); }
+    });
     list.addEventListener('focusout', e => {
+      if (e.target.classList && e.target.classList.contains('falcon-link-type') && _pendingType) { setTimeout(() => { if (_pendingType && !document.activeElement?.classList?.contains('falcon-link-type')) { _pendingType = null; renderQueue(); } }, 0); return; }
       if (!e.target.classList || !e.target.classList.contains('falcon-alias-edit') || !_aliasEdit) return;
       setTimeout(() => { if (_aliasEdit && document.activeElement !== e.target) { _aliasEdit = null; renderQueue(); } }, 0);
     });
@@ -6044,7 +6083,9 @@
       const linkUrl = e.target.closest('.falcon-link-url');
       if (linkUrl) { editLink(linkUrl.dataset.id, 'url', linkUrl.dataset.url, linkUrl.value); return; }
       const linkType = e.target.closest('.falcon-link-type');
-      if (linkType) { editLink(linkType.dataset.id, 'type', linkType.dataset.url, linkType.value); return; }
+      if (linkType) { _pendingType = null; editLink(linkType.dataset.id, 'type', linkType.dataset.url, linkType.value); return; }
+      const linkChg = e.target.closest('.falcon-link-type-chg');
+      if (linkChg) { editLink(linkChg.dataset.id, 'retype', linkChg.dataset.url, linkChg.value, linkChg.dataset.old); return; }
       const linkNew = e.target.closest('.falcon-link-new');
       if (linkNew) { editLink(linkNew.dataset.id, 'add', '', linkNew.value); return; }
       const aliasAdd = e.target.closest('.falcon-alias-add');
@@ -6273,7 +6314,7 @@
   function renderLinks(it) {
     const groups = groupedLinks(it);
     const dis = it.status === 'active' ? 'disabled' : '';
-    const add = `<input type="text" class="falcon-link-new" data-id="${it.id}" placeholder="+ link" title="Add a link: paste its url" ${dis} />`;
+    const add = `<div class="falcon-ln falcon-ln-new"><span></span><input type="text" class="falcon-link-new" data-id="${it.id}" placeholder="+ link" title="Add a link: paste its url" ${dis} /></div>`;
     if (!groups.length) return `<div class="falcon-links">${add}</div>`;
     const all = _linksOpen.has(it.id) || groups.length <= LINKS_SHOWN + 1;
     const shown = all ? groups : groups.slice(0, LINKS_SHOWN);
@@ -6281,12 +6322,14 @@
       const failed = g.results.find(r => !r.ok), done = g.results.length && !failed;
       const icon = failed ? '✗' : done ? '✓' : '·';
       const color = failed ? 'var(--mbu-error)' : done ? 'var(--mbu-ok)' : 'var(--mbu-text-weak)';
-      return `<div class="falcon-ln" title="${failed && failed.error ? esc(failed.error) : esc(g.url)}">
-        <span style="color:${color};text-align:center">${icon}</span>
-        <a class="falcon-svc" href="${esc(g.url)}" target="_blank" rel="noopener" title="Open ${esc(g.url)}">${esc(linkService(g.url))}</a>
+      // #663 (majkinetor): "Find another way for prefix" — the status mark opens the link; the service name is gone
+      const opts = cur => [...new Set([...(cur ? [String(cur)] : []), ...urlTypesFor(it.entityType)])].filter(t => t === String(cur) || !g.types.map(String).includes(t)).map(t => `<option value="${t}"${t === String(cur) ? ' selected' : ''}>${esc(linkTypeName(t))}</option>`).join('');
+      const pending = _pendingType && _pendingType.id === it.id && _pendingType.url === g.url;
+      return `<div class="falcon-ln" title="${failed && failed.error ? esc(failed.error) : ''}">
+        <a class="falcon-lst" href="${esc(g.url)}" target="_blank" rel="noopener" title="Open ${esc(g.url)}${failed && failed.error ? ' — ' + esc(failed.error) : ''}" style="color:${color}">${icon === '·' ? '↗' : icon}</a>
         <input type="text" class="falcon-link-url" data-id="${it.id}" data-url="${esc(g.url)}" value="${esc(g.url)}" title="Edit the link; empty it to remove it" ${dis} />
-        <span class="falcon-lt">${g.types.map(t => `<span title="link type ${esc(t)}">+ ${esc(linkTypeName(t))}<button type="button" class="falcon-link-type-del" data-id="${it.id}" data-url="${esc(g.url)}" data-type="${esc(t)}" title="Remove this type" ${dis}>✕</button></span>`).join('') || '<span style="background:none;color:var(--mbu-text-weak)" title="No type: MusicBrainz guesses it from the url">auto</span>'}</span>
-        <select class="falcon-link-type" data-id="${it.id}" data-url="${esc(g.url)}" title="Add a type to this link" ${dis}><option value="">+ type</option>${urlTypesFor(it.entityType).filter(t => !g.types.map(String).includes(t)).map(t => `<option value="${t}">${esc(linkTypeName(t))}</option>`).join('')}</select>
+        <span class="falcon-lt">${g.types.map(t => `<span class="falcon-ltb" title="link type: pick another to change it"><select class="falcon-link-type-chg" data-id="${it.id}" data-url="${esc(g.url)}" data-old="${esc(t)}" ${dis}>${opts(t) || `<option selected>${esc(linkTypeName(t))}</option>`}</select><button type="button" class="falcon-link-type-del" data-id="${it.id}" data-url="${esc(g.url)}" data-type="${esc(t)}" title="Remove this type" ${dis}>✕</button></span>`).join('')}${pending ? `<span class="falcon-ltb falcon-ltb-new"><select class="falcon-link-type" data-id="${it.id}" data-url="${esc(g.url)}"><option value="">type…</option>${opts(null)}</select></span>` : ''}${!g.types.length && !pending ? '<span class="falcon-lauto" title="No type: MusicBrainz guesses it from the url">auto</span>' : ''}</span>
+        <button type="button" class="falcon-link-type-add" data-id="${it.id}" data-url="${esc(g.url)}" title="Add a type to this link" ${dis}>+</button>
         <button type="button" class="falcon-link-del" data-id="${it.id}" data-url="${esc(g.url)}" title="Remove this link from the queue row" ${dis}>✕</button>
       </div>`;
     }).join('');
@@ -6321,7 +6364,8 @@
   // #663 (majkinetor): "Add option to edit elements, and remove them. Add/change/remove
   // type, edit link, remove row." A url with no type is left for MusicBrainz to guess, as
   // pasted links always were.
-  function editLink(id, op, url, val) {
+  let _pendingType = null;   // {id, url}: the link whose [+] badge is waiting for a type
+  function editLink(id, op, url, val, old) {
     const it = queue.find(i => i.id === id);
     if (!it || it.status === 'active') return;
     const v = String(val || '').trim(), before = it.urls.length;
@@ -6343,6 +6387,11 @@
       if (untyped) untyped.linkTypeId = v;
       else if (!it.urls.some(u => u.url === url && String(u.linkTypeId) === v)) it.urls.push({ url, linkTypeId: v });
       log('info', `${entityLabel(it)} — link ${url} gets the type ${linkTypeName(v)}`);
+    } else if (op === 'retype') {
+      if (!v || v === String(old)) return;
+      if (it.urls.some(u => u.url === url && String(u.linkTypeId) === v)) it.urls = it.urls.filter(u => !(u.url === url && String(u.linkTypeId) === String(old)));
+      else it.urls.forEach(u => { if (u.url === url && String(u.linkTypeId) === String(old)) u.linkTypeId = v; });
+      log('info', `${entityLabel(it)} — link ${url}: ${linkTypeName(old)} → ${linkTypeName(v)}`);
     } else if (op === 'untype') {
       const rest = it.urls.filter(u => u.url === url && String(u.linkTypeId) !== String(v));
       it.urls = it.urls.filter(u => u.url !== url).concat(rest.length ? rest : [{ url, linkTypeId: null }]);
@@ -6359,7 +6408,7 @@
       RENAMEABLE.has(it.entityType) && 'name',
       DISAMBIGUATABLE.has(it.entityType) && 'disambig',
       it.entityType === 'recording' && 'isrc',
-      'alias',
+      cfg.queueView !== 'grid' && 'alias',   // the grid edits aliases below the row, off the keyboard walk
       it.entityType === 'recording' && 'video',
     ].filter(Boolean);
   }
@@ -6377,7 +6426,7 @@
       // JSON, so this stays a light add/remove list rather than a form.
       if (short === 'grid') {
         const n = (it.aliases || []).length, open = _expandedIds.has(it.id);
-        return `<div class="falcon-chips">${n ? `<button type="button" class="falcon-grid-aliases" data-id="${it.id}" title="${open ? 'Hide' : 'Show and edit'} the aliases, below the row">${open ? '▾' : '▸'} ${n}</button>` : ''}<input type="text" class="falcon-alias-add" data-id="${it.id}" data-col="alias" placeholder="+ alias${cfg.aliasLang ? ' (' + esc(cfg.aliasLang) + ')' : ''}" title="Add an alias: name, or name@locale" ${dis} /></div>`;
+        return `<button type="button" class="falcon-grid-aliases" data-id="${it.id}" title="${open ? 'Hide' : 'Show and edit'} the aliases, below the row">${open ? '▾' : '▸'} ${n ? n + (n === 1 ? ' alias' : ' aliases') : '+ alias'}</button>`;
       }
       const chips = (it.aliases || []).map((a, idx) => _aliasEdit && _aliasEdit.id === it.id && _aliasEdit.idx === idx
         ? `<input type="text" class="falcon-alias-edit" data-id="${it.id}" data-idx="${idx}" value="${esc(aliasText(a))}" title="Edit the alias: name, or name@locale. Enter keeps it, Esc cancels, empty removes it" />`
@@ -6397,7 +6446,7 @@
     // nothing while it still equals that name, so a row you only looked at
     // never submits an edit.
     const links = renderLinks(it);
-    const fields = (gridSub ? ((it.aliases || []).length ? ['alias'] : []) : fieldCols(it)).map(col => gridSub
+    const fields = (gridSub ? ['alias'] : fieldCols(it)).map(col => gridSub
       ? `<span class="falcon-lbl">${FIELD_LABEL[col]}</span>${fieldHtml(it, col, 'sub')}` : col === 'video'
       ? `<span class="falcon-lbl">Type</span><label class="falcon-video-lbl">${fieldHtml(it, col)} video</label>`
       : `<span class="falcon-lbl">${FIELD_LABEL[col]}</span>${fieldHtml(it, col)}`);
@@ -6536,7 +6585,7 @@
     const rows = visible.map(it => {
       const cols = fieldCols(it), isActive = it.status === 'active';
       const excluded = it.status === 'queued' && _disabledTypes.has(it.entityType);
-      const cell = col => cols.includes(col) ? fieldHtml(it, col, col === 'alias' ? 'grid' : true) : '';
+      const cell = col => col === 'alias' ? fieldHtml(it, col, 'grid') : cols.includes(col) ? fieldHtml(it, col, true) : '';
       const expanded = _expandedIds.has(it.id);
       const nLinks = groupedLinks(it).length;
       const hasCover = it.entityType === 'release';
@@ -6657,6 +6706,8 @@
     if (removeBtn) removeBtn.disabled = _selectedIds.size === 0;
     const retryBtn = document.getElementById('falcon-retry-failed');
     if (retryBtn) retryBtn.disabled = !queue.some(i => i.status === 'failed' || i.status === 'partial');
+    const moreBtn = document.getElementById('falcon-run-more');
+    if (moreBtn) moreBtn.textContent = retryBtn && !retryBtn.disabled ? '▾•' : '▾';   // a dot: there is something to retry
     const selectAll = document.getElementById('falcon-select-all');
     if (selectAll) { const selectable = queue.filter(i => i.status !== 'active'); selectAll.checked = selectable.length > 0 && selectable.every(i => _selectedIds.has(i.id)); }
     const expandAllBtn = document.getElementById('falcon-expand-all');
