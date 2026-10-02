@@ -46,3 +46,24 @@ test('#463: a Cyrillic title still gets its link', { tag: ['@sandbox', '@web'] }
   check(r.total >= 10, `most tracks resolve links (${r.total})`);
   await ws.done();
 });
+
+// #661: MusicBrainz's track 16 is "Les Escrocs", Apple's and Spotify's "Les Ecrocs" (a typo, the
+// same song at the same position): the title guard turned it away, so only Tidal (by ISRC) linked.
+test('#661: a typo in the platform\'s title still gets the link', { tag: ['@sandbox', '@web'] }, async ({ page, inject }) => {
+  const ws = await openScout(page, inject, {
+    release: 'b0856abb-5498-4407-b25d-089ce8650fde', replay: new URL('./fixtures/ws-661.json.gz', import.meta.url),
+    // back to the state #661 was about, should the links have been added since
+    edit: j => (j.media || []).forEach(md => (md.tracks || []).forEach(tk => { const rec = tk.recording; if (rec && rec.relations) rec.relations = rec.relations.filter(x => !/music\.apple\.com|open\.spotify\.com/.test(x.url?.resource || '')); })),
+  });
+  await page.waitForFunction(() => document.querySelectorAll('#ii-modal .ii-tl.cand').length > 0, null, { timeout: 20000 });
+  await page.click('#ii-links-btn');
+  const row = await until(() => page.evaluate(() => {
+    const tr = [...document.querySelectorAll('#ii-modal tr[data-idx]')].find(r => /Les Escrocs/.test(r.textContent));
+    const st = code => { const el = tr && tr.querySelector('.ii-tl[data-code="' + code + '"]:not(.linked)'); return el ? el.className.replace(/\bii-tl\b/, '').trim() : 'none'; };
+    return { found: !!tr, am: st('am'), sp: st('sp') };
+  }), r => r.found && !/spin|cand/.test(r.am + r.sp), { timeout: 90000 });
+  check(row.found, 'track 16, Les Escrocs, is listed');
+  check(/\bnew\b/.test(row.am), `Apple Music's "Les Ecrocs" is offered for it (${row.am})`);
+  check(/\bnew\b/.test(row.sp), `Spotify's is too (${row.sp})`);
+  await ws.done();
+});

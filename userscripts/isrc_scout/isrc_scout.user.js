@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         ISRC Scout
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.1.210938
+// @version      2026.10.2
 // @description  Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify / Beatport / Tidal / Volumo / HDtracks / Qobuz, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPklTUkMgU2NvdXQ8L3RpdGxlPgogICAgPHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPgogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjQwIi8+CiAgICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyNiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2U9IiNiOWEzZTgiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPgogIDwvZz4KICA8bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+Cjwvc3ZnPgo=
@@ -469,17 +469,33 @@
   // Per-field comparisons between an SoundExchange result and the MB track,
   // used to highlight exactly WHICH attribute disagrees. Each returns
   // true (matches) / false (mismatch) / null (can't compare — no data).
-  function titleClose(sx, mb) {
+  // #661: a typo is not another song. Tidal and Apple title it "Les Ecrocs", MusicBrainz "Les
+  // Escrocs". Two words are the same word one letter apart (a letter added, dropped, changed, or
+  // two swapped) when both have 5 letters or more and start alike, so "Love"/"Live" and
+  // "Heart"/"Start" stay different songs.
+  function wordTypo(a, b) {
+    if (a === b) return true;
+    if (Math.min(a.length, b.length) < 5 || Math.abs(a.length - b.length) > 1 || a[0] !== b[0]) return false;
+    let i = 0;
+    while (a[i] === b[i]) i++;
+    const ra = a.slice(i + 1), rb = b.slice(i + 1);
+    return ra === rb                                                    // changed
+      || a.slice(i) === rb || ra === b.slice(i)                         // added or dropped
+      || (a[i] === b[i + 1] && a[i + 1] === b[i] && a.slice(i + 2) === b.slice(i + 2));   // swapped
+  }
+  // exact: words must be spelled alike; otherwise one typo per word is tolerated (wordTypo)
+  function titleClose(sx, mb, exact) {
     const aw = norm(unfeat(sx)).split(' ').filter(Boolean);
     const bw = norm(unfeat(mb)).split(' ').filter(Boolean);
     if (!aw.length || !bw.length) return null;
+    const same = exact ? (x, y) => x === y : wordTypo;
     const shorter = aw.length <= bw.length ? aw : bw;
     const longer  = aw.length <= bw.length ? bw : aw;
-    if (!shorter.every(w => longer.includes(w))) return false;
+    if (!shorter.every(w => longer.some(l => same(w, l)))) return false;
     const extra = longer.length - shorter.length;
     // extra words are only tolerated as a SUFFIX (a version/remaster tag) — a
     // leading extra word ("Sacred Motherhood" vs "Motherhood") is a different song
-    return extra === 0 || (extra <= 2 && shorter.every((w, i) => longer[i] === w));
+    return extra === 0 || (extra <= 2 && shorter.every((w, i) => same(longer[i], w)));
   }
   function artistClose(sx, mb) {
     if (!sx || !mb) return null;
@@ -2220,6 +2236,9 @@
       if (versionConflicts(f, mbTitle)) return 'warn';
       const a = durToSec(mbDurStr), b = durToSec(f.dur);
       if (a !== null && b !== null && Math.abs(a - b) > 10) return 'warn';
+      // #661: the same song with a typo in a title (one or the other) agrees, but never as a sure
+      // match: nothing is picked on a typo alone
+      if (titleClose(f.title, mbTitle, true) !== true) return 'warn';
       return 'best';
     }
 
@@ -2484,7 +2503,8 @@
     const cls = SX.classify(f, t.title, t.artist, t.dur, RELEASE.releaseYear);
     const song = { title: f.title || '', artist: cls === 'other' ? f.artist || '' : '', dur: f.dur || '' };
     if (cls === 'other') return { key, name, state: ALL_SONG, isrc, song, note: 'another song' };
-    return { key, name, state: ALL_OK, isrc, song, note: cls === 'warn' ? 'its version or length reads differently' : '' };
+    const typo = cls === 'warn' && titleClose(f.title, t.title, true) !== true;   // #661
+    return { key, name, state: ALL_OK, isrc, song, note: typo ? 'its title is spelled differently' : cls === 'warn' ? 'its version or length reads differently' : '' };
   }
   // Where an album provider has the ISRC, said plainly (the album providers read the release's album
   // there, so they can say at which position it sits; Deezer/Tidal/SoundExchange can't)
@@ -4402,13 +4422,21 @@
     // CJK, …) collapses to '' and the position title-guard bails, refusing an otherwise-identical
     // match (e.g. "слезы завтра"). NFD + the 0x300-0x36f drop still folds Latin diacritics (café→cafe).
     const _nrm = s => [...(s || '').toLowerCase().normalize('NFD')].filter(c => { const x = c.charCodeAt(0); return x < 0x300 || x > 0x36f; }).join('').replace(/[^\p{L}\p{N}]+/gu, ' ').trim();
+    // A position match agrees on the title: the same, one inside the other (a version tag), or the
+    // same words with a typo in one (#661: Apple's "Les Ecrocs" is MusicBrainz's "Les Escrocs")
+    function _sameTitle(x, y) {
+      const a = _nrm(x), b = _nrm(y);
+      if (!a || !b) return false;
+      if (a === b || a.indexOf(b) >= 0 || b.indexOf(a) >= 0) return true;
+      const aw = a.split(' '), bw = b.split(' ');
+      return aw.length === bw.length && aw.every((w, i) => wordTypo(w, bw[i]));
+    }
     async function bcResolve(t, idx) {
       const list = await bcAlbum();
       const e = list[idx];
       if (!e) return null;
-      const a = _nrm(e.title), b = _nrm(t.title);
       // position match must agree on title (else the editions are out of sync) — don't add a likely-wrong link
-      return (a && b && (a === b || a.indexOf(b) >= 0 || b.indexOf(a) >= 0)) ? e.url : null;
+      return _sameTitle(e.title, t.title) ? e.url : null;
     }
 
     // YouTube Music (#640), through the API its web player uses (anonymous). Two routes:
@@ -4428,7 +4456,7 @@
     const ytSource = new Map();   // watch URL → { album, albumId, how }
     const ytText = x => (x && x.runs ? x.runs.map(r => r.text).join('') : '');
     const ytWatch = vid => 'https://music.youtube.com/watch?v=' + vid;
-    const ytSame = (a, b) => { a = _nrm(a); b = _nrm(b); return !!(a && b && (a === b || a.indexOf(b) >= 0 || b.indexOf(a) >= 0)); };
+    const ytSame = _sameTitle;
     async function ytCall(endpoint, body) {
       const r = await gmPost('https://music.youtube.com/youtubei/v1/' + endpoint + '?prettyPrint=false',
         JSON.stringify(Object.assign({ context: { client: { clientName: 'WEB_REMIX', clientVersion: '1.20250101.01.00', hl: 'en', gl: 'US' } } }, body)), { 'Content-Type': 'application/json' });
@@ -4618,8 +4646,7 @@
       const list = await amAlbum();
       const e = list[idx];
       if (!e) return null;
-      const a = _nrm(e.title), b = _nrm(t.title);
-      return (a && b && (a === b || a.indexOf(b) >= 0 || b.indexOf(a) >= 0)) ? e.url : null;
+      return _sameTitle(e.title, t.title) ? e.url : null;
     }
 
     // SoundCloud set (fetched once via api-v2): ordered [{title, url}] per track. Like
@@ -4654,8 +4681,7 @@
       const list = await scAlbum();
       const e = list[idx];
       if (!e) return null;
-      const a = _nrm(e.title), b = _nrm(t.title);
-      return (a && b && (a === b || a.indexOf(b) >= 0 || b.indexOf(a) >= 0)) ? e.url : null;
+      return _sameTitle(e.title, t.title) ? e.url : null;
     }
 
     // Spotify embed page (fetched once): ordered [{title, url}] from its __NEXT_DATA__
@@ -4708,8 +4734,7 @@
       const e = list[idx];
       if (!e) return null;
       if (!e.title) return e.url;   // fallback list carries no titles → trust album position
-      const a = _nrm(e.title), b = _nrm(t.title);
-      return (a && b && (a === b || a.indexOf(b) >= 0 || b.indexOf(a) >= 0)) ? e.url : null;
+      return _sameTitle(e.title, t.title) ? e.url : null;
     }
     // #387 album-scoped by-ISRC providers (Volumo/Beatport): fetch the release's album tracklist once
     // (cached in ensureProvAlbum), match the track by ISRC — never position — and return its per-track URL.

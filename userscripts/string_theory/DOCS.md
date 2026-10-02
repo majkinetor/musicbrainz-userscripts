@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-10-02 16:00 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-10-02 16:25 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -904,7 +904,7 @@ The toolbar shows the providers available for this release:
 <img width="1000" src="../isrc_scout/screenshots/isrc-tracks.png" />
 
 - **+1** fills the previous track's ISRC plus one.
-- The **lookup** button looks the row's ISRC up on the selected provider and shows its title, artist and length next to the row, mismatches in red. Guests don't count as a mismatch: a *feat.* clause is left out of both titles, and when the credits differ only the main artist has to match, since databases list guests differently. Its menu switches every row to another provider; right-click runs it on all tracks.
+- The **lookup** button looks the row's ISRC up on the selected provider and shows its title, artist and length next to the row, mismatches in red. Guests don't count as a mismatch: a *feat.* clause is left out of both titles, and when the credits differ only the main artist has to match, since databases list guests differently. Nor does a typo: a word one letter off (*Les Ecrocs* for *Les Escrocs*), in words of five letters or more, reads as the same song: the lookup marks it ⚠, and **All** counts it with the note *its title is spelled differently*. Its menu switches every row to another provider; right-click runs it on all tracks.
 - **All** (top of the menu) checks the row's ISRCs on every provider available for the release at once (not SoundExchange, which serves a captcha on nearly every run): the entered one and every ISRC the recording already has. The row shows a verdict: **✓ 4/4** when every provider that knows the ISRC agrees, **⚠ 1/4** when some don't, **– 0/4** when none knows it. Hover the verdict (or the row's **All** button) to see the comparison next to it (right of the verdict, or above the row when there's no room there, so the rows below stay free); move down either column to walk the tracks, click the verdict to pin it so you can select text. Clicking one of its ISRCs pins it too, and the comparison stays where it is. Each line starts with the provider's verdict:
   - Deezer and Tidal look the ISRC up: ✓ their song for it is this track, ⚠ it is another song.
   - An album provider (Qobuz, Apple, Beatport…) reads the release's album there: ✓ it has this ISRC at the same position as this track (📍), or at another position (↪ track 3: the album orders its tracks differently). Deezer and Tidal can't say where: they only look the ISRC up. When the album hasn't the ISRC at all, ✗ it has **another** ISRC at this track's position, offered with **use**. An ISRC that belongs to another track of the release, or that the row already has, is never offered.
@@ -936,7 +936,7 @@ The **Links** tab shows, per track, what each recording already links to (**Link
 
 <img width="1000" src="../isrc_scout/screenshots/links.png" />
 
-**🔗 Find links** resolves every track on every available provider, in parallel. A Deezer track that no longer plays anywhere is not offered. **➕ Add links** adds everything found; adding goes through your logged-in session (no OAuth), with ISRC Scout's edit note.
+**🔗 Find links** resolves every track on every available provider, in parallel. A provider matched by position (Apple Music, Bandcamp, SoundCloud, Spotify, YouTube Music, Amazon Music) must have the track's title there; a typo in it, as above, still counts. A Deezer track that no longer plays anywhere is not offered. **➕ Add links** adds everything found; adding goes through your logged-in session (no OAuth), with ISRC Scout's edit note.
 
 | Click | on an **Add** icon | on a **Linked** icon |
 |---|---|---|
