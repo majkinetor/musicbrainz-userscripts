@@ -196,10 +196,7 @@ Pages: `music.amazon.com/albums/<id>`, and the other countries' `music.amazon.*`
 
 ## Artist matching
 
-First Contact doesn't pick MusicBrainz artists itself. It hands every credited artist's platform link (the release's and each track's) to [Apollo Editor](../apollo_editor/README.md#artist-matching) on the release editor page, and Apollo matches them.
-
-> [!NOTE]
-> The handoff is on the release editor page for any script to read: `document.documentElement.dataset.firstContact` holds it as JSON, the `first-contact:seed` event on `document` carries the same JSON as its `detail`, and a `first-contact:request` event on `document` sends it again. It lists the release and every track with each artist's name, join phrase and platform link, in tracklist order. The handoff is kept in the script's storage only until the release editor has it (a reload of that tab still finds it); one that is never picked up goes after an hour.
+First Contact doesn't pick MusicBrainz artists itself. It hands every credited artist's platform link (the release's and each track's) to [Apollo Editor](../apollo_editor/README.md#artist-matching) on the release editor page, and Apollo matches them. Other scripts can read the same [handoff](#handoff).
 
 ## Moving the button
 
@@ -217,3 +214,9 @@ The **⚙︎** button next to **Import to MusicBrainz**.
 | Settings button only on hover | off | the **⚙︎** button hides until the pointer is over **Import to MusicBrainz**; then it shows as a small tab on the button's top edge (bottom edge when the button sits at the top of the window), so Import doesn't move. It stays while the settings are open. |
 | Moved button scrolls with the page | off | a button you have [moved](#moving-the-button) stays on its spot on the page and scrolls with it, instead of staying put on the screen. The spot is kept from the page's centre, so it stays over the same place when the window is resized on platforms that centre their layout. Where the platform scrolls a panel instead of the window (Spotify, Apple Music), it follows that panel and is cut off at its edges. When a page opens, the button stays out of sight until the page has settled (and the panel is there), then fades in on its spot. As page content, it goes under the page's fixed bars (a sticky header, [Bandcamp Player Enhanced](../bandcamp_player_enhanced/README.md)'s player) as the page scrolls. A button in its corner always stays on the screen. Positions saved before this setting existed need one more drag. |
 | Close this page after the import | off | the platform's tab closes once the release editor has the release, half a second after it is sent. It stays open when the import fails, and when the browser blocked the new tab and the editor opened in this one. |
+
+## Notes
+
+### Handoff
+
+The handoff is on the release editor page for any script to read: `document.documentElement.dataset.firstContact` holds it as JSON, the `first-contact:seed` event on `document` carries the same JSON as its `detail`, and a `first-contact:request` event on `document` sends it again. It lists the release and every track with each artist's name, join phrase and platform link, in tracklist order. The handoff is kept in the script's storage only until the release editor has it (a reload of that tab still finds it); one that is never picked up goes after an hour.
