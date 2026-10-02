@@ -17,6 +17,9 @@ test.use({ gm: apolloGm() });
 
 test('a matched slot being edited is left alone until it loses focus', { tag: ['@sandbox', '@login', '@critical', '@flaky'] }, async ({ page, inject }) => {
   const ws = await replayWs(page, new URL('./fixtures/ws-580.json.gz', import.meta.url));
+  // #652: the release artist goes through every stage now, and the batched alias read for the
+  // candidates holds a different set of artists from run to run; aliases only label the picker
+  await page.route(/\/ws\/2\/artist\?query=arid%3A/, r => r.fulfill({ status: 200, contentType: 'application/json', body: '{"count":0,"artists":[]}' }));
   const seed = { name: 'Apollo 580 fixture', 'artist_credit.names.0.name': 'Miles Davis', 'mediums.0.format': 'CD' };
   ['So What', 'Blue in Green'].forEach((t, i) => { seed[`mediums.0.track.${i}.name`] = t; seed[`mediums.0.track.${i}.artist_credit.names.0.name`] = 'Miles Davis'; });
   await page.clock.install();   // "well past the 400 ms rebuild" is run out on it, below

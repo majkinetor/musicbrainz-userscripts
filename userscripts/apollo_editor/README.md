@@ -31,6 +31,8 @@ Each part is optional, and the **Original / Apollo** button switches back to Mus
 - A **front-cover thumbnail** under the links opens the cover-art page.
 - Right-click a date's or label's ✕ to remove all of them.
 - The help bubbles are gone.
+- The release **Artist** is [matched](#artist-matching) on load like a track artist, through the same stages: the Discogs or platform link, the release artist of other editions, the exact name or alias, and co-credit with the artists on the tracks. A confident match is linked. Each name gets the Tracklist's badge and match card by the field, and its offers: **＋** creates an unset artist, **🔗** / **⚠** for its Discogs or platform link. Click an uncertain **LOW** badge to link its candidate.
+- The release **Label** is linked on load by its Discogs or platform link when exactly one label has it, else when exactly one label has its name or alias. A badge by the field says which.
 
 ## Tracklist
 
@@ -116,7 +118,7 @@ The card stays open while the pointer is on it, so its links can be followed; Es
 
 **Platform links.** A release imported with First Contact gets the same offers for each artist's platform page: **🔗** creates the artist with it, or adds it to the matched artist; **⚠** warns that it belongs to a different artist.
 
-The release **Label** and release **Artist** are linked on load under the same exact-name rule.
+The release **Artist** and **Label** are matched on load too; see [Release information](#release-information).
 
 > [!NOTE]
 > After a match, Apollo sometimes rebuilds its table, when the page's tracklist changed meanwhile. The badges are kept. If one is ever lost (the artist stays linked, but shows as *set*), a toast says so and offers **Copy log**: please paste it into [#638](https://github.com/majkinetor/musicbrainz-userscripts/issues/638).
@@ -249,7 +251,7 @@ Apollo follows a dark MusicBrainz theme, such as kellnerd's [userstyle](https://
 | Zen editing                                                   | on      | hide the site header, title and footer; the title moves into Apollo's bar                      |
 | Auto confirm release submissions                              | on      | skip the confirmation page when a site seeds a release (`?skip_confirmation` bypasses it once) |
 | Auto-match on start: Tracklist, Recordings                    | off     | match on load                                                                                  |
-| Auto-match on start: Label, Artist                            | on      | link a release label or artist with exactly one exact match                                    |
+| Auto-match on start: Label, Artist                            | on      | match the release [artist and label](#release-information) on load                             |
 | Discogs artist link matching                                  | on      | match by [Discogs link](#artist-matching) and offer missing links                              |
 | Length tolerance                                              | 5 s     | `0` for exact                                                                                  |
 | Title tolerance                                               | 1       | differing characters allowed                                                                   |
