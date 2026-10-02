@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Falcon — bulk MusicBrainz link editor
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.2.220229
+// @version      2026.10.2.225209
 // @description  Add external links to a BATCH of MusicBrainz artists/labels/recordings at once — no popup-per-entity, no tab churn. A small pool of persistent worker iframes churns through a queue, each submitting its own edit and moving straight to the next entity. Paste a list, hand it a queue via a `?falcon=` URL param, or click "Send to Falcon" on a Harmony actions page to import its suggested links directly.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHBhdGggZD0iTTY0IDEwIEM4MiAyOCA5MCA1NiA5MCA4MCBMMzggODAgQzM4IDU2IDQ2IDI4IDY0IDEwIFoiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzFiMmE0YSIgc3Ryb2tlLXdpZHRoPSI3IiBzdHJva2UtbGluZWpvaW49InJvdW5kIiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8cGF0aCBkPSJNMzggODAgTDIwIDExMCBMNDAgOTYgWiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxwYXRoIGQ9Ik05MCA4MCBMMTA4IDExMCBMODggOTYgWiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxjaXJjbGUgY3g9IjY0IiBjeT0iNDQiIHI9IjEwIiBmaWxsPSIjMWIyYTRhIi8+CiAgPHBhdGggZD0iTTUwIDgwIEw0NSAxMDggTDY0IDEyMiBMODMgMTA4IEw3OCA4MCBaIiBmaWxsPSIjZmY2YTAwIiBzdHJva2U9IiMxYjJhNGEiIHN0cm9rZS13aWR0aD0iNSIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgo8L3N2Zz4K
@@ -5350,15 +5350,20 @@
       '.falcon-selhead{display:inline-flex;align-items:center;gap:5px}',
       '.falcon-selhead .falcon-selcount{color:var(--mbu-warn);font-weight:700;font-size:11px}',
       '.falcon-lhead{position:sticky;top:0;z-index:1;background:var(--mbu-bg);padding:4px 0;border-bottom:1px solid var(--mbu-border)}',
-      '.falcon-chip .falcon-alias-name{cursor:text;overflow:hidden;text-overflow:ellipsis}',
-      '.falcon-chip .falcon-alias-name:hover{text-decoration:underline dotted}',
-      '.falcon-chips>input.falcon-alias-edit{flex:0 1 160px}',
+      '.falcon-als{display:flex;flex-direction:column;gap:3px;min-width:0;align-items:stretch}',
+      '.falcon-al{display:grid;grid-template-columns:minmax(0,1fr) 64px 18px;gap:6px;align-items:center}',
+      '.falcon-al input.falcon-alias-loc{font-family:var(--mbu-font-mono);font-size:10.5px!important}',
+      '.falcon-al .falcon-alias-del{border:none;background:none!important;cursor:pointer;color:var(--mbu-text-weak);padding:0}',
+      '.falcon-alias-plus{align-self:flex-start;border:1px solid var(--mbu-border);background:none!important;color:var(--mbu-ok);cursor:pointer;border-radius:9px;font-size:11px;line-height:1;padding:1px 0;width:20px}',
       '.falcon-grid-aliases{border:none;background:none!important;color:var(--mbu-info);cursor:pointer;font-size:11px;padding:2px 4px;white-space:nowrap;flex:0 0 auto}',
       '.falcon-ln{grid-template-columns:14px minmax(0,1fr) auto 20px 18px!important}',
       '.falcon-ln a.falcon-lst{text-align:center;text-decoration:none;font-size:11px}',
       '.falcon-ln-new>input.falcon-link-new{grid-column:2 / -1}',
       '.falcon-ltb{display:inline-flex;align-items:center;padding:0 3px 0 0!important}',
-      '.falcon-lt select{appearance:none;-webkit-appearance:none;border:none!important;background:transparent!important;color:inherit;font:inherit;font-size:9.5px;padding:0 2px 0 7px!important;cursor:pointer;max-width:130px}',
+      '.falcon-lt select{appearance:none;-webkit-appearance:none;border:none!important;background:transparent!important;color:inherit;font:inherit;font-size:9.5px;padding:0 0 0 6px!important;cursor:pointer;max-width:130px;min-width:0}',
+      '.falcon-lt{gap:2px!important}',
+      '.falcon-lt .falcon-ltb{padding:0 2px 0 0!important;flex:0 0 auto}',
+      '.falcon-lt .falcon-ltb button{padding:0 1px 0 2px!important}',
       '.falcon-ltb-new{outline:1px dashed var(--mbu-ok)}',
       '.falcon-lauto{background:none!important;color:var(--mbu-text-weak)!important;font-style:italic}',
       '.falcon-link-type-add{border:1px solid var(--mbu-border);background:none!important;color:var(--mbu-ok);cursor:pointer;border-radius:9px;font-size:11px;line-height:1;padding:1px 0;width:20px}',
@@ -5960,15 +5965,8 @@
       renderQueue();
     });
     list.addEventListener('click', e => {
-      const nm = e.target.closest('.falcon-alias-name');
-      if (nm && !nm.closest('.falcon-chip').querySelector('button[disabled]')) {
-        _aliasEdit = { id: nm.dataset.id, idx: +nm.dataset.idx };
-        dbg('alias', `editing alias ${_aliasEdit.idx} of ${_aliasEdit.id}`);
-        renderQueue();
-        const box = document.querySelector('#falcon-queue-list .falcon-alias-edit');
-        if (box) { box.focus(); box.setSelectionRange(box.value.length, box.value.length); }
-        return;
-      }
+      const plus = e.target.closest('.falcon-alias-plus');
+      if (plus) { addAliasRow(plus.dataset.id, null); return; }
       const ta = e.target.closest('.falcon-link-type-add');
       if (ta) {
         _pendingType = { id: ta.dataset.id, url: ta.dataset.url };
@@ -5989,31 +5987,27 @@
       const it = queue.find(i => i.id === del.dataset.id);
       if (it) { it.aliases.splice(+del.dataset.idx, 1); renderQueue(); }
     });
-    // #663 (majkinetor): "make empty enter in alias switch to another row"
-    list.addEventListener('keydown', e => {
-      const box = e.target;
-      if (e.key !== 'Enter' || e.isComposing || !box.classList || !box.classList.contains('falcon-alias-add') || box.dataset.col || box.value.trim()) return;
-      e.preventDefault();
-      const id = box.dataset.id, d = e.shiftKey ? -1 : 1;
-      let i = _visibleIds.indexOf(id) + d, next = null;
-      for (; i >= 0 && i < _visibleIds.length; i += d) { const it = queue.find(q => q.id === _visibleIds[i]); if (it && it.status !== 'active') { next = it; break; } }
-      if (!next) { dbg('keys', `alias Enter on ${id}: no ${d > 0 ? 'next' : 'previous'} row`); return; }
-      if (_navOpened.has(id)) { _expandedIds.delete(id); _navOpened.delete(id); }
-      if (!_expandedIds.has(next.id)) { _expandedIds.add(next.id); _navOpened.add(next.id); }
-      dbg('keys', `alias Enter on ${id} → the alias box of ${next.id}`);
-      renderQueue();
-      const nb = document.querySelector(`#falcon-queue-list .falcon-sub[data-id="${next.id}"] .falcon-alias-add`);
-      if (nb) { nb.focus({ preventScroll: true }); nb.scrollIntoView({ block: 'nearest' }); }
-    });
     list.addEventListener('focusout', e => {
       if (e.target.classList && e.target.classList.contains('falcon-link-type') && _pendingType) { setTimeout(() => { if (_pendingType && !document.activeElement?.classList?.contains('falcon-link-type')) { _pendingType = null; renderQueue(); } }, 0); return; }
-      if (!e.target.classList || !e.target.classList.contains('falcon-alias-edit') || !_aliasEdit) return;
-      setTimeout(() => { if (_aliasEdit && document.activeElement !== e.target) { _aliasEdit = null; renderQueue(); } }, 0);
+      // an alias row left with no name is dropped once focus leaves it
+      const al = e.target.closest && e.target.closest('.falcon-al');
+      if (al) setTimeout(() => { if (!al.isConnected || al.contains(document.activeElement)) return; if (dropEmptyAliases()) renderQueue(); }, 0);
     });
+    // #663 (majkinetor): Enter on a filled alias opens a new one, focused ("the edit box to enter a new
+    // one isn't selected"); Enter on an empty one goes on to the next row's aliases ("make empty enter
+    // in alias switch to another row"); Esc drops a new, still empty one
     list.addEventListener('keydown', e => {
-      if (e.key !== 'Escape' || !e.target.classList || !e.target.classList.contains('falcon-alias-edit')) return;
+      const box = e.target;
+      if (e.isComposing || !box.classList || !(box.classList.contains('falcon-alias-nm') || box.classList.contains('falcon-alias-loc'))) return;
+      const it = queue.find(q => q.id === box.dataset.id), idx = +box.dataset.idx, a = it && it.aliases[idx];
+      if (!a) return;
+      if (e.key === 'Escape' && !a.name.trim()) { e.preventDefault(); e.stopPropagation(); it.aliases.splice(idx, 1); renderQueue(); return; }
+      if (e.key !== 'Enter') return;
       e.preventDefault(); e.stopPropagation();
-      _aliasEdit = null; renderQueue();
+      readAliasRow(box.closest('.falcon-al'), it, idx);
+      if (it.aliases[idx] && it.aliases[idx].name.trim() && !e.shiftKey) { addAliasRow(it.id, idx + 1); return; }
+      if (it.aliases[idx] && !it.aliases[idx].name.trim()) it.aliases.splice(idx, 1);
+      aliasGoRow(it.id, e.shiftKey ? -1 : 1);
     }, true);
     // #663: spreadsheet keys. Enter / Down go to the same field of the next row,
     // Shift+Enter / Up to the previous one; Tab / Shift+Tab walk the fields, and
@@ -6026,8 +6020,6 @@
       const atEnd = !text || (el.selectionStart === len && el.selectionEnd === len);
       let dRow = 0, dCol = 0;
       if (e.key === 'Enter') {
-        // a typed alias is added by Enter first (its change handler); the walk waits for an empty box
-        if (el.classList.contains('falcon-alias-add') && el.value.trim()) return;
         dRow = e.shiftKey ? -1 : 1;
       } else if (e.key === 'ArrowDown' && !e.shiftKey) dRow = 1;
       else if (e.key === 'ArrowUp' && !e.shiftKey) dRow = -1;
@@ -6078,8 +6070,8 @@
       // this row. Deliberately minimal — the bulk path is JSON.
       // #663 (majkinetor): "Added aliases can't be edited after they are in chip" — a
       // clicked chip turns back into a box; Enter or leaving it puts the chip back
-      const aliasEdit = e.target.closest('.falcon-alias-edit');
-      if (aliasEdit) { commitAliasEdit(aliasEdit); return; }
+      const aliasIn = e.target.closest('.falcon-alias-nm, .falcon-alias-loc');
+      if (aliasIn) { const it = queue.find(q => q.id === aliasIn.dataset.id); if (it) readAliasRow(aliasIn.closest('.falcon-al'), it, +aliasIn.dataset.idx); return; }
       const linkUrl = e.target.closest('.falcon-link-url');
       if (linkUrl) { editLink(linkUrl.dataset.id, 'url', linkUrl.dataset.url, linkUrl.value); return; }
       const linkType = e.target.closest('.falcon-link-type');
@@ -6088,13 +6080,6 @@
       if (linkChg) { editLink(linkChg.dataset.id, 'retype', linkChg.dataset.url, linkChg.value, linkChg.dataset.old); return; }
       const linkNew = e.target.closest('.falcon-link-new');
       if (linkNew) { editLink(linkNew.dataset.id, 'add', '', linkNew.value); return; }
-      const aliasAdd = e.target.closest('.falcon-alias-add');
-      if (aliasAdd) {
-        const it = queue.find(i => i.id === aliasAdd.dataset.id);
-        const parsed = withAliasLang(aliasAdd.value);
-        if (it && parsed.length) { it.aliases = (it.aliases || []).concat(parsed); aliasAdd.value = ''; renderQueue(); }
-        return;
-      }
       const videoChk = e.target.closest('.falcon-video-input');
       if (videoChk) {
         const it = queue.find(i => i.id === videoChk.dataset.id);
@@ -6328,7 +6313,7 @@
       return `<div class="falcon-ln" title="${failed && failed.error ? esc(failed.error) : ''}">
         <a class="falcon-lst" href="${esc(g.url)}" target="_blank" rel="noopener" title="Open ${esc(g.url)}${failed && failed.error ? ' — ' + esc(failed.error) : ''}" style="color:${color}">${icon === '·' ? '↗' : icon}</a>
         <input type="text" class="falcon-link-url" data-id="${it.id}" data-url="${esc(g.url)}" value="${esc(g.url)}" title="Edit the link; empty it to remove it" ${dis} />
-        <span class="falcon-lt">${g.types.map(t => `<span class="falcon-ltb" title="link type: pick another to change it"><select class="falcon-link-type-chg" data-id="${it.id}" data-url="${esc(g.url)}" data-old="${esc(t)}" ${dis}>${opts(t) || `<option selected>${esc(linkTypeName(t))}</option>`}</select><button type="button" class="falcon-link-type-del" data-id="${it.id}" data-url="${esc(g.url)}" data-type="${esc(t)}" title="Remove this type" ${dis}>✕</button></span>`).join('')}${pending ? `<span class="falcon-ltb falcon-ltb-new"><select class="falcon-link-type" data-id="${it.id}" data-url="${esc(g.url)}"><option value="">type…</option>${opts(null)}</select></span>` : ''}${!g.types.length && !pending ? '<span class="falcon-lauto" title="No type: MusicBrainz guesses it from the url">auto</span>' : ''}</span>
+        <span class="falcon-lt">${g.types.map(t => `<span class="falcon-ltb" title="link type: pick another to change it"><select style="width:${Math.round(linkTypeName(t).length * 5.4 + 12)}px" class="falcon-link-type-chg" data-id="${it.id}" data-url="${esc(g.url)}" data-old="${esc(t)}" ${dis}>${opts(t) || `<option selected>${esc(linkTypeName(t))}</option>`}</select><button type="button" class="falcon-link-type-del" data-id="${it.id}" data-url="${esc(g.url)}" data-type="${esc(t)}" title="Remove this type" ${dis}>✕</button></span>`).join('')}${pending ? `<span class="falcon-ltb falcon-ltb-new"><select class="falcon-link-type" data-id="${it.id}" data-url="${esc(g.url)}"><option value="">type…</option>${opts(null)}</select></span>` : ''}${!g.types.length && !pending ? '<span class="falcon-lauto" title="No type: MusicBrainz guesses it from the url">auto</span>' : ''}</span>
         <button type="button" class="falcon-link-type-add" data-id="${it.id}" data-url="${esc(g.url)}" title="Add a type to this link" ${dis}>+</button>
         <button type="button" class="falcon-link-del" data-id="${it.id}" data-url="${esc(g.url)}" title="Remove this link from the queue row" ${dis}>✕</button>
       </div>`;
@@ -6338,28 +6323,41 @@
       ? `<button type="button" class="falcon-more" data-id="${it.id}">${all ? 'show fewer' : `+ ${rest.length} more (${esc([...new Set(rest.map(g => linkService(g.url)))].join(', '))})`}</button>` : '';
     return `<div class="falcon-links">${rows}${more}${add}</div>`;
   }
-  // #663: typed alias text → aliases, the toolbar's alias language filling in a missing @locale
-  function withAliasLang(text) {
-    const parsed = normalizeAliases([text]);
-    if (cfg.aliasLang && !/@/.test(String(text))) parsed.forEach(a => { if (!a.locale) a.locale = cfg.aliasLang; });
-    return parsed;
+  // #663: alias rows. The row's boxes are read into the alias as they change; the rest of the alias
+  // (type, primary, sort name) is kept. name@locale in the name box sets the language box too.
+  function readAliasRow(row, it, idx) {
+    const a = it && it.aliases[idx]; if (!row || !a) return;
+    const nm = row.querySelector('.falcon-alias-nm'), loc = row.querySelector('.falcon-alias-loc');
+    const before = a.name + '@' + a.locale;
+    const m = nm.value.match(/^(.*\S)\s*@\s*([A-Za-z]{2,3}(?:[-_][A-Za-z0-9]+)*)\s*$/);
+    if (m) { nm.value = m[1]; loc.value = m[2]; }
+    a.name = nm.value.trim();
+    a.locale = loc.value.trim().replace('-', '_');
+    if (before !== a.name + '@' + a.locale) dbg('alias', `${it.id} alias ${idx}: ${before} → ${a.name}@${a.locale}`);
   }
-  let _aliasEdit = null;   // {id, idx}: the alias chip open as a box
-  const aliasText = a => a.name + (a.locale ? '@' + a.locale : '');
-  function commitAliasEdit(box) {
-    const it = queue.find(i => i.id === box.dataset.id), idx = +box.dataset.idx;
-    _aliasEdit = null;
-    if (!it || !it.aliases[idx]) { renderQueue(); return; }
-    const old = it.aliases[idx], text = box.value.trim();
-    if (!text) { it.aliases.splice(idx, 1); log('info', `${entityLabel(it)} — alias "${old.name}" removed`); }
-    else {
-      // only the name and locale are typed; the rest of the alias (type, primary, sort name) stays
-      const p = normalizeAliases([text])[0];
-      const locale = /@/.test(text) ? p.locale : (old.locale || cfg.aliasLang || '');
-      it.aliases[idx] = { ...old, name: p.name, locale };
-      if (aliasText(old) !== aliasText(it.aliases[idx])) log('info', `${entityLabel(it)} — alias "${aliasText(old)}" → "${aliasText(it.aliases[idx])}"`);
-    }
+  function addAliasRow(id, at) {
+    const it = queue.find(q => q.id === id); if (!it || it.status === 'active') return;
+    it.aliases = it.aliases || [];
+    const idx = at == null ? it.aliases.length : at;
+    it.aliases.splice(idx, 0, { name: '', locale: cfg.aliasLang || '', type: '', primary: false, sortName: '', begin: '', end: '', ended: false });
     renderQueue();
+    const box = document.querySelector(`#falcon-queue-list .falcon-alias-nm[data-id="${id}"][data-idx="${idx}"]`);
+    if (box) { box.focus({ preventScroll: true }); box.scrollIntoView({ block: 'nearest' }); }
+  }
+  function dropEmptyAliases() {
+    let n = 0;
+    queue.forEach(it => { const k = (it.aliases || []).length; if (k) { it.aliases = it.aliases.filter(a => a && String(a.name || '').trim()); n += k - it.aliases.length; } });
+    return n;
+  }
+  // on to the next (or previous) row's aliases, opening it: a new alias row there, ready to type
+  function aliasGoRow(id, d) {
+    let i = _visibleIds.indexOf(id) + d, next = null;
+    for (; i >= 0 && i < _visibleIds.length; i += d) { const it = queue.find(q => q.id === _visibleIds[i]); if (it && it.status !== 'active') { next = it; break; } }
+    if (!next) { dbg('keys', `alias Enter on ${id}: no ${d > 0 ? 'next' : 'previous'} row`); renderQueue(); return; }
+    if (_navOpened.has(id)) { _expandedIds.delete(id); _navOpened.delete(id); }
+    if (!_expandedIds.has(next.id)) { _expandedIds.add(next.id); _navOpened.add(next.id); }
+    dbg('keys', `alias Enter on ${id} → the aliases of ${next.id}`);
+    addAliasRow(next.id, null);
   }
   // #663 (majkinetor): "Add option to edit elements, and remove them. Add/change/remove
   // type, edit link, remove row." A url with no type is left for MusicBrainz to guess, as
@@ -6428,12 +6426,14 @@
         const n = (it.aliases || []).length, open = _expandedIds.has(it.id);
         return `<button type="button" class="falcon-grid-aliases" data-id="${it.id}" title="${open ? 'Hide' : 'Show and edit'} the aliases, below the row">${open ? '▾' : '▸'} ${n ? n + (n === 1 ? ' alias' : ' aliases') : '+ alias'}</button>`;
       }
-      const chips = (it.aliases || []).map((a, idx) => _aliasEdit && _aliasEdit.id === it.id && _aliasEdit.idx === idx
-        ? `<input type="text" class="falcon-alias-edit" data-id="${it.id}" data-idx="${idx}" value="${esc(aliasText(a))}" title="Edit the alias: name, or name@locale. Enter keeps it, Esc cancels, empty removes it" />`
-        : `<span class="falcon-chip" title="${esc([a.type, a.primary ? 'primary for locale' : '', a.sortName ? 'sort: ' + a.sortName : ''].filter(Boolean).join(' · ') || 'alias')}">
-          <span class="falcon-alias-name" data-id="${it.id}" data-idx="${idx}" title="Click to edit">${esc(a.name)}${a.primary ? ' ★' : ''}</span>${a.locale ? ` <span class="falcon-loc">${esc(a.locale)}</span>` : ''}
-          <button type="button" class="falcon-alias-del" data-id="${it.id}" data-idx="${idx}" title="Remove this alias from the queue row" ${dis}>✕</button></span>`).join('');
-      return `<div class="falcon-chips">${chips}<input type="text" class="falcon-alias-add" data-id="${it.id}"${short === 'sub' ? '' : ' data-col="alias"'} placeholder="${short ? '+ alias' : 'add alias — name, or name@locale'}${cfg.aliasLang ? ' (' + esc(cfg.aliasLang) + ')' : ''}" title="Add an alias: name, or name@locale" ${dis} /></div>`;
+      // #663 (majkinetor): "each alias on its own row along with the language … so it behaves like
+      // links. Have + to add new". The language box falls back to the toolbar's Alias language.
+      const walk = short === 'sub' ? '' : ' data-col="alias"';
+      const rows = (it.aliases || []).map((a, idx) => `<div class="falcon-al" title="${esc([a.type, a.primary ? 'primary for locale' : '', a.sortName ? 'sort: ' + a.sortName : ''].filter(Boolean).join(' · '))}">
+          <input type="text" class="falcon-alias-nm" data-id="${it.id}" data-idx="${idx}"${idx === 0 ? walk : ''} value="${esc(a.name)}" placeholder="alias${a.primary ? ' ★' : ''}" title="The alias; name@locale sets its language too. Enter adds another" ${dis} />
+          <input type="text" class="falcon-alias-loc" data-id="${it.id}" data-idx="${idx}" value="${esc(a.locale || '')}" placeholder="lang" title="Language (locale) of this alias, e.g. en or sr_Latn; empty for none" spellcheck="false" ${dis} />
+          <button type="button" class="falcon-alias-del" data-id="${it.id}" data-idx="${idx}" title="Remove this alias from the queue row" ${dis}>✕</button></div>`).join('');
+      return `<div class="falcon-als">${rows}<button type="button" class="falcon-alias-plus" data-id="${it.id}"${rows ? '' : walk} title="Add an alias${cfg.aliasLang ? ' (language ' + esc(cfg.aliasLang) + ')' : ''}" ${dis}>+</button></div>`;
     }
     return '';
   }

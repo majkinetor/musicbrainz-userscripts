@@ -1,6 +1,6 @@
 // #663 (majkinetor), second round:
 // - Aliases: an alias language in the toolbar (empty or set; @locale still overrides it);
-//   alias chips can be edited; the grid shows a row's aliases below it, as it does links.
+//   one row per alias (name, language), + adds one; the grid shows a row's aliases below it, as it does links.
 // - Links: edit the url, add / change / remove a type, remove the row, add a link.
 // - The open tab is marked; the toolbar is laid out as in the issue's picture.
 //
@@ -68,26 +68,28 @@ test('#663: alias language, editable aliases and links, toolbar', { tag: ['@sand
   await page.check('.falcon-row-check[data-id="r1"]'); await frames(page);
   check((await page.textContent('#falcon-select-count')).trim() === '1', 'the header counts the selection');
 
-  // ── alias language
+  // ── aliases: one row each (name, language, ✕), + adds one; Enter on a filled one opens the next, focused
   await page.fill('#falcon-alias-lang', 'sr'); await page.press('#falcon-alias-lang', 'Enter'); await frames(page);
-  await page.fill('.falcon-alias-add[data-id="a1"]', 'Bamako Band'); await page.press('.falcon-alias-add[data-id="a1"]', 'Enter'); await frames(page);
-  await page.fill('.falcon-alias-add[data-id="a1"]', 'Banda@pl'); await page.press('.falcon-alias-add[data-id="a1"]', 'Enter'); await frames(page);
+  const focused = () => page.evaluate(() => { const a = document.activeElement; return a && a.classList.contains('falcon-alias-nm') ? a.dataset.id + ':' + a.dataset.idx + ':' + a.value : String(a && a.className); });
+  await page.click('.falcon-alias-plus[data-id="a1"]'); await frames(page);
+  check(await focused() === 'a1:1:', `+ adds an alias row and focuses it (${await focused()})`);
+  await page.keyboard.type('Bamako Band'); await page.keyboard.press('Enter'); await frames(page);
+  check(await focused() === 'a1:2:', `Enter on a filled alias opens a new one, focused (${await focused()})`);
+  await page.keyboard.type('Banda@pl'); await page.keyboard.press('Enter'); await frames(page);
   let a1 = await q('a1');
-  check(a1.aliases[1] && a1.aliases[1].locale === 'sr', `a typed alias gets the alias language (${JSON.stringify(a1.aliases[1])})`);
-  check(a1.aliases[2] && a1.aliases[2].locale === 'pl', `@locale overrides it (${JSON.stringify(a1.aliases[2])})`);
+  check(a1.aliases[1] && a1.aliases[1].locale === 'sr', `a new alias gets the alias language (${JSON.stringify(a1.aliases[1])})`);
+  check(a1.aliases[2] && a1.aliases[2].name === 'Banda' && a1.aliases[2].locale === 'pl', `name@locale fills the language box (${JSON.stringify(a1.aliases[2])})`);
+  await page.keyboard.press('Escape'); await frames(page);
+  check((await q('a1')).aliases.length === 3, 'Esc drops the new, still empty row');
 
-  // ── alias chip editing: the rest of the alias is kept
-  await page.click('.falcon-alias-name[data-id="a1"][data-idx="0"]'); await frames(page);
-  check(await page.evaluate(() => document.activeElement?.classList.contains('falcon-alias-edit') && document.activeElement.value), 'a clicked chip opens as a box holding name@locale');
-  await page.keyboard.press('Control+A'); await page.keyboard.type('Bamako Stars@fr'); await page.keyboard.press('Enter'); await frames(page);
+  // ── editing in place keeps the rest of the alias
+  await page.fill('.falcon-alias-nm[data-id="a1"][data-idx="0"]', 'Bamako Stars'); await page.press('.falcon-alias-nm[data-id="a1"][data-idx="0"]', 'Tab'); await frames(page);
   a1 = await q('a1');
   check(a1.aliases[0].name === 'Bamako Stars' && a1.aliases[0].locale === 'fr' && a1.aliases[0].primary === true && a1.aliases[0].type === 'Artist name', `the edit renames it and keeps type and primary (${JSON.stringify(a1.aliases[0])})`);
-  await page.click('.falcon-alias-name[data-id="a1"][data-idx="2"]'); await frames(page);
-  await page.keyboard.press('Escape'); await frames(page);
-  check((await q('a1')).aliases[2].name === 'Banda' && !(await page.$('.falcon-alias-edit')), 'Esc leaves the alias as it was');
-  await page.click('.falcon-alias-name[data-id="a1"][data-idx="2"]'); await frames(page);
-  await page.keyboard.press('Control+A'); await page.keyboard.press('Delete'); await page.keyboard.press('Enter'); await frames(page);
-  check((await q('a1')).aliases.length === 2, 'emptying the box removes the alias');
+  await page.fill('.falcon-alias-loc[data-id="a1"][data-idx="2"]', 'pt-BR'); await page.press('.falcon-alias-loc[data-id="a1"][data-idx="2"]', 'Tab'); await frames(page);
+  check((await q('a1')).aliases[2].locale === 'pt_BR', 'the language box sets the locale');
+  await page.click('.falcon-alias-del[data-id="a1"][data-idx="2"]'); await frames(page);
+  check((await q('a1')).aliases.length === 2, '✕ removes the alias');
 
   // ── links
   const spot = 'https://open.spotify.com/artist/2vumMcvGJfXKD3NKD51G8a', deez = 'https://www.deezer.com/artist/4668332';
@@ -122,19 +124,18 @@ test('#663: alias language, editable aliases and links, toolbar', { tag: ['@sand
   await page.evaluate(() => { window.__falconTest.getExpandedIds().clear(); window.__falconTest.setQueue(window.__falconTest.getQueue()); });
   await frames(page);
   check(await page.evaluate(() => !!document.querySelector('.falcon-grid th #falcon-select-all')), 'the grid heads select-all too');
-  check(!(await page.$('.falcon-grid tr.falcon-row .falcon-chip')) && !(await page.$('.falcon-grid tr.falcon-row .falcon-alias-add')), 'the grid line holds no alias chips and no alias box');
+  check(!(await page.$('.falcon-grid tr.falcon-row .falcon-alias-nm')), 'the grid line holds no alias boxes');
   check((await page.textContent('.falcon-grid-aliases[data-id="r1"]')).includes('+ alias'), 'a row without aliases offers + alias');
   await page.click('.falcon-grid-aliases[data-id="a1"]'); await frames(page);
-  const subChips = await page.evaluate(() => [...document.querySelectorAll('.falcon-grid tr.falcon-sub[data-id="a1"] .falcon-chip .falcon-alias-name')].map(s => s.textContent.trim()));
-  check(subChips.length === 2 && subChips[0].startsWith('Bamako Stars'), `the aliases show below the row (${subChips})`);
+  const subNames = await page.evaluate(() => [...document.querySelectorAll('.falcon-grid tr.falcon-sub[data-id="a1"] .falcon-alias-nm')].map(s => s.value));
+  check(subNames.length === 2 && subNames[0] === 'Bamako Stars', `the aliases show below the row, one per row (${subNames})`);
   check(await page.evaluate(() => !!document.querySelector('.falcon-grid tr.falcon-sub[data-id="a1"] .falcon-link-url')), 'and the links with them');
-  await page.click('.falcon-grid tr.falcon-sub .falcon-alias-name[data-idx="1"]'); await frames(page);
-  check(await page.evaluate(() => document.activeElement?.classList.contains('falcon-alias-edit')), 'a grid alias chip edits in place too');
-  await page.keyboard.press('Escape'); await frames(page);
-  // Enter in the empty alias box below a row goes on to the next row's
-  await page.focus('.falcon-grid tr.falcon-sub[data-id="a1"] .falcon-alias-add'); await page.keyboard.press('Enter'); await frames(page);
-  check(await page.evaluate(() => document.activeElement?.matches('.falcon-sub[data-id="r1"] .falcon-alias-add')), "empty Enter moves to the next row's alias box, opening it");
-  await page.keyboard.type('Cuillères'); await page.keyboard.press('Enter'); await frames(page);
+  // Enter in an empty alias below a row goes on to the next row's, a new alias there ready to type
+  await page.click('.falcon-grid tr.falcon-sub[data-id="a1"] .falcon-alias-plus'); await frames(page);
+  await page.keyboard.press('Enter'); await frames(page);
+  check(await page.evaluate(() => document.activeElement?.matches('.falcon-sub[data-id="r1"] .falcon-alias-nm')), "empty Enter moves to the next row's aliases, opening it");
+  check((await q('a1')).aliases.length === 2, 'the empty alias it left is dropped');
+  await page.keyboard.type('Cuillères'); await page.keyboard.press('Tab'); await frames(page);
   check((await q('r1')).aliases.some(a => a.name === 'Cuillères' && a.locale === 'sr'), 'and an alias typed there is added');
   await page.screenshot({ path: 'test-results/663-editing-grid.png', clip: await page.locator('#falcon-panel').boundingBox() });
 });
