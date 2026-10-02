@@ -105,6 +105,7 @@ test('a label from a copyright line', { tag: ['@unit', '@critical'] }, async () 
     ['(C) 2001 Warp Records Ltd. All rights reserved.', 'Warp Records Ltd'],
     ['All rights reserved', null],
     ['℗ 2004', null],
+    ['℗© VIDLIK', null],   // #650: Amazon Music; maybe a label, maybe not — it goes to the annotation
     ['', null],
   ];
   for (const [text, want] of cases) check(L(text) === want, `"${text}" → ${JSON.stringify(L(text))} (want ${JSON.stringify(want)})`);

@@ -17,10 +17,10 @@ test('an Amazon Music album: tracklist, artists with their links, date, label, l
   await page.locator('#fc-root .fc-go').waitFor({ state: 'visible', timeout: 30000 });
   check(await page.locator('#fc-root .fc-go').isVisible(), 'the import button shows on an Amazon Music album page');
 
-  const { rel, sg, ids } = await page.evaluate(async () => {
+  const { rel, sg, vid, ids } = await page.evaluate(async () => {
     const am = window.__fcTest.providers.find(p => p.id === 'amazonmusic');
     const ids = ['/albums/B00CRMWMZ0', '/albums/b00crmwmz0/', '/tracks/B00CRMX53S', '/artists/B000S9ULT8/daft-punk'].map(pathname => am.albumId({ pathname }));
-    return { rel: await am.fetchRelease('B00CRMWMZ0'), sg: await am.fetchRelease('B00PAYQWWG'), ids };
+    return { rel: await am.fetchRelease('B00CRMWMZ0'), sg: await am.fetchRelease('B00PAYQWWG'), vid: await am.fetchRelease('B095X5WZ7Q'), ids };
   });
   const text = c => c.map(a => a.name + a.join).join('');
   check(JSON.stringify(ids) === JSON.stringify(['B00CRMWMZ0', 'B00CRMWMZ0', null, null]), `album pages only: ${JSON.stringify(ids)}`);
@@ -38,6 +38,9 @@ test('an Amazon Music album: tracklist, artists with their links, date, label, l
   check(lucky && lucky.credit[0].url === 'https://music.amazon.com/artists/B000S9ULT8' && !lucky.credit[1].url && !lucky.credit[2].url, `only the linked artist carries a link: ${JSON.stringify(lucky && lucky.credit.map(c => c.url || null))}`);
 
   check(sg.credit.length === 1 && sg.credit[0].name === 'Simon & Garfunkel' && /\/artists\/B000ZSBZ38$/.test(sg.credit[0].url || ''), `"Simon & Garfunkel" is one artist, its link's slug says so: ${JSON.stringify(sg.credit)}`);
+  // #650 (majkinetor): "℗© VIDLIK" — "this is not label" … "but it might be": the annotation has it, the label stays empty
+  check(vid.labels.length === 0 && /℗© VIDLIK/.test(vid.annotation || ''), `the ℗ line goes to the annotation: ${JSON.stringify(vid.labels)} ${JSON.stringify(vid.annotation)}`);
+  check(/Columbia Records/.test(rel.annotation || ''), `and Random Access Memories's too: ${rel.annotation}`);
   check(sg.date.year === 1970, `its date: ${JSON.stringify(sg.date)}`);
 });
 
