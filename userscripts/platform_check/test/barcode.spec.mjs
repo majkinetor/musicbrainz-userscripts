@@ -68,7 +68,7 @@ test.describe('dark theme', () => {
 });
 
 // #653: two compact options. Unmatched (on by default) folds only the rows that found nothing;
-// non-strict (off by default) folds a found row that isn't a clean match, so by default a withheld
+// Compact low-confidence providers (off by default) folds a found row that isn't a clean match, so by default a withheld
 // row keeps its full row with its track count, year and label.
 test.describe('strict barcode confidence, default compact options', () => {
   test.use({ gm: { name: 'Platform Check', values: { 'pc:respect-barcode': true, 'pc:barcode-mode': 'strict' } } });
@@ -83,7 +83,7 @@ test.describe('strict barcode confidence, default compact options', () => {
     const mism = rows.filter(r => r.st === 'mismatch' && !r.inmb);
     const none = rows.filter(r => r.st === 'notfound' && !r.inmb && r.p !== 'discogs' && r.p !== 'bandcamp');
     check(mism.length > 0, `the fixture has withheld/mismatched finds (${mism.map(r => r.p).join(', ')})`);
-    check(mism.every(r => !r.compacted), `non-strict off: every mismatched find keeps its full row (${mism.filter(r => r.compacted).map(r => r.p).join(', ') || 'ok'})`);
+    check(mism.every(r => !r.compacted), `low-confidence off: every mismatched find keeps its full row (${mism.filter(r => r.compacted).map(r => r.p).join(', ') || 'ok'})`);
     check(mism.some(r => /\d/.test(r.tracks)), `…showing its track count (${mism.map(r => r.p + ':' + r.tracks).join(', ')})`);
     check(none.every(r => r.compacted), `unmatched on: what found nothing is folded (${none.filter(r => !r.compacted).map(r => r.p).join(', ') || 'ok'})`);
     check(strip === none.length, `the strip holds exactly the not-found providers (${strip} vs ${none.length})`);
@@ -125,7 +125,7 @@ test.describe('strict barcode confidence', () => {
     // a plain click on the withheld icon still does nothing
     await page.evaluate(p => document.getElementById('ico-' + p).click(), target);
     const plain = await page.evaluate(() => window.__opened.length);
-    // with Compact non-strict providers on, a withheld row is folded into the strip: its icon there is
+    // with Compact low-confidence providers on, a withheld row is folded into the strip: its icon there is
     // what you see, so the middle click goes to it, as a real mouse click
     const stripName = await page.evaluate(p => document.getElementById('plat-' + p)?.title.split(' ')[0] || p, target);
     const inStrip = page.locator(`#pc-compact-strip .pc-compact-ico[title^="${stripName}"]`);

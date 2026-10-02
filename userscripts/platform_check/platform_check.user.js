@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Platform Check
 // @namespace    http://tampermonkey.net/
-// @version      2026.10.2.133321
+// @version      2026.10.2.160007
 // @description  Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+DQogIDx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CiAgDQogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJhMWE1MiIgc3Ryb2tlLXdpZHRoPSI5IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik00MCA4OCBBMzQgMzQgMCAwIDEgNDAgNDAiLz4NCiAgICA8cGF0aCBkPSJNMjkgOTkgQTUwIDUwIDAgMCAxIDI5IDI5Ii8+DQogICAgPHBhdGggZD0iTTg4IDg4IEEzNCAzNCAwIDAgMCA4OCA0MCIvPg0KICAgIDxwYXRoIGQ9Ik05OSA5OSBBNTAgNTAgMCAwIDAgOTkgMjkiLz4NCiAgPC9nPg0KICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyMCIgZmlsbD0iI2U4MjAxYSIvPg0KPC9zdmc+DQo=
@@ -2166,7 +2166,7 @@ providerModal.innerHTML = `
       <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; margin: 9px 0 4px;" title="A provider that found nothing (or is still searching) shrinks to a dimmed icon in a strip under the rows, and rises into a full row once it finds something. Discogs and Bandcamp always stay full rows. Click a strip icon to search that platform, just like clicking its row.">
         <input type="checkbox" id="mb-compact-unmatched" style="margin: 0; width: 16px; height: 16px;"> Compact <b>unmatched</b> providers</label>
       <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; margin: 4px 0;" title="A provider that found a release which isn't a clean match (a different barcode or format, or withheld by the strict barcode/format settings) also shrinks to an icon in the strip, with an amber ring. Off: it keeps its full row, so its tracks, year and label show.">
-        <input type="checkbox" id="mb-compact-nonstrict" style="margin: 0; width: 16px; height: 16px;"> Compact <b>non-strict</b> providers</label>
+        <input type="checkbox" id="mb-compact-nonstrict" style="margin: 0; width: 16px; height: 16px;"> Compact <b>low-confidence</b> providers</label>
 
       <div style="display: flex; align-items: center; gap: 12px; margin: 9px 0 4px;">
         <span style="font-weight: 600; color: var(--mbu-text-dim);">MB marker</span>
@@ -3147,20 +3147,20 @@ function refreshCompactStrip() {
     const strip = document.getElementById('pc-compact-strip');
     if (!strip) return;
     const unmatched = container.classList.contains('pc-compact-unmatched');
-    const nonStrict = container.classList.contains('pc-compact-nonstrict');   // #653
+    const lowConf = container.classList.contains('pc-compact-nonstrict');   // #653
     strip.textContent = '';
-    if (unmatched || nonStrict) PROVIDER_ORDER.forEach(p => {
+    if (unmatched || lowConf) PROVIDER_ORDER.forEach(p => {
         if (p === 'discogs' || p === 'bandcamp') return;
         const row = document.getElementById(`row-${p}`);
         if (!row) return;
         // #653: two options. Unmatched: pending and not-found rows stay in the strip.
-        // Non-strict: a found-but-mismatched (wrong barcode/format, or withheld) row too;
+        // Low-confidence: a found-but-mismatched (wrong barcode/format, or withheld) row too;
         // with it off that row keeps its full row, so its tracks/year/label show. A clean
         // match always rises into a full row, and so does a link that's already IN MB
         // (pc-inmb) — you added it, so show it.
         const isMismatch = row.classList.contains('pc-st-mismatch');
         const isMatch = row.classList.contains('pc-st-match');
-        const foldable = isMismatch ? nonStrict : !isMatch && unmatched;
+        const foldable = isMismatch ? lowConf : !isMatch && unmatched;
         const compact = foldable && !row.classList.contains('pc-inmb') && GM_getValue(`pc:prov_${p}`, true);
         const was = row.classList.contains('pc-compacted');
         row.classList.toggle('pc-compacted', compact);
