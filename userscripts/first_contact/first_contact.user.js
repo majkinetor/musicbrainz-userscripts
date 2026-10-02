@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         First Contact
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.2.091035
+// @version      2026.10.2.092719
 // @description  Import a release into MusicBrainz from the platform's album page with one click: the release editor opens with the title, tracklist, artists, date, label, barcode and link filled in. Each artist's platform link is handed to Apollo Editor for matching. Platforms: Deezer, Bandcamp, Discogs, Apple Music, Tidal, Qobuz, Beatport, Spotify, YouTube Music, Volumo, HDtracks, SoundCloud.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPkZpcnN0IENvbnRhY3Q8L3RpdGxlPgogIDwhLS0gdHJhY3RvciBiZWFtIC0tPgogIDxwYXRoIGQ9Ik01MCA0NCBMNzggNDQgTDEwNCAxMTIgTDI0IDExMiBaIiBmaWxsPSIjZjZjNDMxIiBvcGFjaXR5PSIwLjkiLz4KICA8cGF0aCBkPSJNNTYgNDQgTDcyIDQ0IEw4OCAxMTIgTDQwIDExMiBaIiBmaWxsPSIjZmRlNjhhIiBvcGFjaXR5PSIwLjciLz4KICA8IS0tIGxhbmRpbmcgcmluZyAtLT4KICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSIxMTQiIHJ4PSI0MiIgcnk9IjgiIGZpbGw9IiMxZTIzNDYiIHN0cm9rZT0iI2M5Y2RmMiIgc3Ryb2tlLXdpZHRoPSIzIi8+CiAgPGVsbGlwc2UgY3g9IjY0IiBjeT0iMTEzIiByeD0iMjYiIHJ5PSI0LjIiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2Y2YzQzMSIgc3Ryb2tlLXdpZHRoPSIyLjQiLz4KICA8IS0tIHNhdWNlcjogYSBwYWxlIHJpbSwgc28gaXQgc2hvd3Mgb24gYSBkYXJrIGJhY2tncm91bmQgdG9vIC0tPgogIDxwYXRoIGQ9Ik00MCAyNiBBMjQgMTggMCAwIDEgODggMjYgWiIgZmlsbD0iIzFlMjM0NiIgc3Ryb2tlPSIjYzljZGYyIiBzdHJva2Utd2lkdGg9IjMiLz4KICA8cGF0aCBkPSJNNTAgMTggQTEwIDYgMCAwIDEgNjAgMTQiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2ZmZiIgc3Ryb2tlLXdpZHRoPSIyLjYiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxlbGxpcHNlIGN4PSI2NCIgY3k9IjMyIiByeD0iNTYiIHJ5PSIxMyIgZmlsbD0iIzFlMjM0NiIgc3Ryb2tlPSIjYzljZGYyIiBzdHJva2Utd2lkdGg9IjMiLz4KICA8Y2lyY2xlIGN4PSIzOCIgY3k9IjMyIiByPSI0LjQiIGZpbGw9IiNmZmYiLz4KICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjM0IiByPSI0LjQiIGZpbGw9IiNmZmYiLz4KICA8Y2lyY2xlIGN4PSI5MCIgY3k9IjMyIiByPSI0LjQiIGZpbGw9IiNmZmYiLz4KICA8IS0tIHRoZSByZWxlYXNlIGJlaW5nIGJlYW1lZCB1cDogYSBwdXJwbGUgaGV4YWdvbiB3aXRoIGEgbm90ZSAtLT4KICA8cGF0aCBkPSJNNjQgNTggTDg0IDY5LjUgTDg0IDkyLjUgTDY0IDEwNCBMNDQgOTIuNSBMNDQgNjkuNSBaIiBmaWxsPSIjN2I0ZmQ2Ii8+CiAgPHBhdGggZD0iTTY0IDU4IEw4NCA2OS41IEw2NCA4MSBMNDQgNjkuNSBaIiBmaWxsPSIjOWI3MmVhIi8+CiAgPHBhdGggZD0iTTYwIDcyIEw3NCA2OSBMNzQgODkiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2ZmZiIgc3Ryb2tlLXdpZHRoPSIzLjQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz4KICA8cGF0aCBkPSJNNjAgNzIgTDYwIDkyIiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iMy40Ii8+CiAgPGVsbGlwc2UgY3g9IjU2IiBjeT0iOTIiIHJ4PSI0LjYiIHJ5PSIzLjYiIGZpbGw9IiNmZmYiLz4KICA8ZWxsaXBzZSBjeD0iNzAiIGN5PSI4OSIgcng9IjQuNiIgcnk9IjMuNiIgZmlsbD0iI2ZmZiIvPgogIDwhLS0gc3BhcmtsZXMgLS0+CiAgPHBhdGggZD0iTTE4IDU0IGwyLjUgNiA2IDIuNSAtNiAyLjUgLTIuNSA2IC0yLjUgLTYgLTYgLTIuNSA2IC0yLjUgWiIgZmlsbD0iI2Y2YzQzMSIvPgogIDxwYXRoIGQ9Ik0xMDggNTIgbDIuNSA2IDYgMi41IC02IDIuNSAtMi41IDYgLTIuNSAtNiAtNiAtMi41IDYgLTIuNSBaIiBmaWxsPSIjMWUyMzQ2Ii8+CiAgPHBhdGggZD0iTTExMiA4MiBsMS44IDQuMiA0LjIgMS44IC00LjIgMS44IC0xLjggNC4yIC0xLjggLTQuMiAtNC4yIC0xLjggNC4yIC0xLjggWiIgZmlsbD0iI2Y2YzQzMSIvPgogIDxwYXRoIGQ9Ik0xNCA4NiBsMS44IDQuMiA0LjIgMS44IC00LjIgMS44IC0xLjggNC4yIC0xLjggLTQuMiAtNC4yIC0xLjggNC4yIC0xLjggWiIgZmlsbD0iIzFlMjM0NiIvPgo8L3N2Zz4K
@@ -1627,11 +1627,14 @@ function injectStyle() {
   border: 1px solid var(--mbu-border); border-bottom: none; border-radius: 8px 8px 0 0; visibility: hidden; }
 #fc-root.fc-gear-hover.fc-gear-below .fc-more { bottom: auto; top: 100%; border-bottom: 1px solid var(--mbu-border); border-top: none; border-radius: 0 0 8px 8px; }
 #fc-root.fc-gear-hover:hover .fc-more, #fc-root.fc-gear-hover:focus-within .fc-more, body:has(#fc-panel) #fc-root.fc-gear-hover .fc-more { visibility: visible; }
-#fc-panel { position: fixed; z-index: 2147483001; min-width: 300px; background: var(--mbu-bg); color: var(--mbu-text);
+#fc-panel { position: fixed; z-index: 2147483001; box-sizing: border-box; width: max-content; max-width: calc(100vw - 16px);
+  overflow: auto; overscroll-behavior: contain; background: var(--mbu-bg); color: var(--mbu-text);
   border: 1px solid var(--mbu-border); border-radius: 8px; box-shadow: var(--mbu-shadow, 0 4px 18px rgba(0,0,0,.3));
-  font: 13px/1.4 system-ui, sans-serif; padding: 12px 14px; }
-#fc-panel .mbu-cfg-ic svg { width: 22px; height: 22px; }
-#fc-panel .fc-body { display: grid; gap: 8px; }
+  font: 12px/1.3 system-ui, sans-serif; padding: 8px 10px; }
+#fc-panel .mbu-cfg-h { margin: 0 0 6px; padding: 0 0 6px; font-size: 13px; gap: 6px; }
+#fc-panel .mbu-cfg-ic, #fc-panel .mbu-cfg-ic svg { width: 18px; height: 18px; }
+#fc-panel .fc-body { display: grid; gap: 4px; }
+#fc-panel .fc-reset-pos { margin-top: 2px; }
 #fc-panel label { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
 #fc-panel label.fc-check { justify-content: flex-start; gap: 6px; cursor: pointer; }
 /* the browser's own checkbox, whatever the site's sheet says: qobuz.com's sets appearance:none
@@ -1777,6 +1780,22 @@ function unmountButton() {
     if (panel) panel.remove();
 }
 
+// Next to the whole button (not ⚙︎, which may be a tab above it): above it, or below when there's
+// more room there, right edges lined up, and always inside the window — the button can be
+// dragged anywhere, so the panel can't assume the corner. Too tall for either side: it scrolls.
+function placePanel(panel, anchor) {
+    const r = anchor.getBoundingClientRect();
+    const vw = document.documentElement.clientWidth, vh = window.innerHeight, M = 8;
+    const above = r.top - M * 2, below = vh - r.bottom - M * 2;
+    const up = panel.offsetHeight <= above || above >= below;
+    panel.style.maxHeight = Math.max(120, up ? above : below) + 'px';
+    const w = panel.offsetWidth, h = panel.offsetHeight;
+    panel.style.left = Math.round(Math.min(Math.max(M, r.right - w), Math.max(M, vw - w - M))) + 'px';
+    panel.style.top = Math.round(up ? Math.max(M, r.top - M - h) : Math.min(r.bottom + M, Math.max(M, vh - h - M))) + 'px';
+    panel.style.right = panel.style.bottom = '';
+    Log.debug(`settings panel ${w}×${h} ${up ? 'above' : 'below'} the button at ${Math.round(r.left)},${Math.round(r.top)} (window ${vw}×${vh})`);
+}
+
 function togglePanel(anchor) {
     let panel = document.getElementById('fc-panel');
     if (panel) { panel.remove(); return; }
@@ -1795,11 +1814,7 @@ function togglePanel(anchor) {
         + `<button type="button" class="fc-reset-pos" title="Drag the button to move it; each platform remembers its own place. This puts it back in the bottom-right corner on ${document.getElementById('fc-root').dataset.fcProvider}.">Reset button position</button>`
         + '</div>');
     document.body.appendChild(panel);
-    const r = anchor.getBoundingClientRect();
-    panel.style.right = Math.max(8, window.innerWidth - r.right) + 'px';
-    // above the button, or below it when it was moved near the top
-    if (r.top > panel.offsetHeight + 16) panel.style.bottom = Math.max(8, window.innerHeight - r.top + 8) + 'px';
-    else panel.style.top = Math.max(8, r.bottom + 8) + 'px';
+    placePanel(panel, anchor.closest('#fc-root') || anchor);
     panel.querySelector('.fc-reset-pos').addEventListener('click', () => {
         const root = document.getElementById('fc-root');
         storePos(root.dataset.fcProvider, null);
