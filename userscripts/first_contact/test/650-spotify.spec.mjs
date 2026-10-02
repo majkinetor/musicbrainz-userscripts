@@ -29,6 +29,17 @@ test('a Spotify album: the player\'s query replayed, artists with their links, t
   check(rel.urls[0].url === 'https://open.spotify.com/album/4m2880jivSbbyEGAKfITCa' && rel.urls[0].linkType === 85, `link: ${JSON.stringify(rel.urls)}`);
 });
 
+// majkinetor: "Here, https://open.spotify.com/album/0QPZBEO7W3gho2UiFBPJz2, FC didn't get barcode.
+// Should be 881626542866". The player's album query has no barcode; its metadata service does.
+test('a Spotify album has its barcode, from the player’s metadata service', { tag: ['@web'] }, async ({ page, inject }) => {
+  await inject('first_contact', { atStart: true });
+  await page.goto('https://open.spotify.com/album/0QPZBEO7W3gho2UiFBPJz2', { waitUntil: 'domcontentloaded' });
+  await page.locator('#fc-root .fc-go').waitFor({ state: 'visible', timeout: 30000 });
+  const rel = await page.evaluate(() => window.__fcTest.providers.find(p => p.id === 'spotify').fetchRelease('0QPZBEO7W3gho2UiFBPJz2'));
+  check(rel.barcode === '881626542866', `barcode: ${rel.barcode}`);
+  check(/Grupo Pilon/.test(rel.title), `the album: ${rel.title}`);
+});
+
 // majkinetor's log: "the player hasn't loaded an album since this tab opened" on a fresh album page
 // — the hook heard nothing. A userscript manager can start the script after the player's first
 // queries; the token then comes from any later authorised request of the player, and the album

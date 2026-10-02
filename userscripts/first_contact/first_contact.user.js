@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         First Contact
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.2.100234
+// @version      2026.10.2.100433
 // @description  Import a release into MusicBrainz from the platform's album page with one click: the release editor opens with the title, tracklist, artists, date, label, barcode and link filled in. Each artist's platform link is handed to Apollo Editor for matching. Platforms: Deezer, Bandcamp, Discogs, Apple Music, Tidal, Qobuz, Beatport, Spotify, YouTube Music, Volumo, HDtracks, SoundCloud.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPkZpcnN0IENvbnRhY3Q8L3RpdGxlPgogIDwhLS0gdHJhY3RvciBiZWFtIC0tPgogIDxwYXRoIGQ9Ik01MCA0NCBMNzggNDQgTDEwNCAxMTIgTDI0IDExMiBaIiBmaWxsPSIjZjZjNDMxIiBvcGFjaXR5PSIwLjkiLz4KICA8cGF0aCBkPSJNNTYgNDQgTDcyIDQ0IEw4OCAxMTIgTDQwIDExMiBaIiBmaWxsPSIjZmRlNjhhIiBvcGFjaXR5PSIwLjciLz4KICA8IS0tIGxhbmRpbmcgcmluZyAtLT4KICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSIxMTQiIHJ4PSI0MiIgcnk9IjgiIGZpbGw9IiMxZTIzNDYiIHN0cm9rZT0iI2M5Y2RmMiIgc3Ryb2tlLXdpZHRoPSIzIi8+CiAgPGVsbGlwc2UgY3g9IjY0IiBjeT0iMTEzIiByeD0iMjYiIHJ5PSI0LjIiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2Y2YzQzMSIgc3Ryb2tlLXdpZHRoPSIyLjQiLz4KICA8IS0tIHNhdWNlcjogYSBwYWxlIHJpbSwgc28gaXQgc2hvd3Mgb24gYSBkYXJrIGJhY2tncm91bmQgdG9vIC0tPgogIDxwYXRoIGQ9Ik00MCAyNiBBMjQgMTggMCAwIDEgODggMjYgWiIgZmlsbD0iIzFlMjM0NiIgc3Ryb2tlPSIjYzljZGYyIiBzdHJva2Utd2lkdGg9IjMiLz4KICA8cGF0aCBkPSJNNTAgMTggQTEwIDYgMCAwIDEgNjAgMTQiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2ZmZiIgc3Ryb2tlLXdpZHRoPSIyLjYiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxlbGxpcHNlIGN4PSI2NCIgY3k9IjMyIiByeD0iNTYiIHJ5PSIxMyIgZmlsbD0iIzFlMjM0NiIgc3Ryb2tlPSIjYzljZGYyIiBzdHJva2Utd2lkdGg9IjMiLz4KICA8Y2lyY2xlIGN4PSIzOCIgY3k9IjMyIiByPSI0LjQiIGZpbGw9IiNmZmYiLz4KICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjM0IiByPSI0LjQiIGZpbGw9IiNmZmYiLz4KICA8Y2lyY2xlIGN4PSI5MCIgY3k9IjMyIiByPSI0LjQiIGZpbGw9IiNmZmYiLz4KICA8IS0tIHRoZSByZWxlYXNlIGJlaW5nIGJlYW1lZCB1cDogYSBwdXJwbGUgaGV4YWdvbiB3aXRoIGEgbm90ZSAtLT4KICA8cGF0aCBkPSJNNjQgNTggTDg0IDY5LjUgTDg0IDkyLjUgTDY0IDEwNCBMNDQgOTIuNSBMNDQgNjkuNSBaIiBmaWxsPSIjN2I0ZmQ2Ii8+CiAgPHBhdGggZD0iTTY0IDU4IEw4NCA2OS41IEw2NCA4MSBMNDQgNjkuNSBaIiBmaWxsPSIjOWI3MmVhIi8+CiAgPHBhdGggZD0iTTYwIDcyIEw3NCA2OSBMNzQgODkiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2ZmZiIgc3Ryb2tlLXdpZHRoPSIzLjQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz4KICA8cGF0aCBkPSJNNjAgNzIgTDYwIDkyIiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iMy40Ii8+CiAgPGVsbGlwc2UgY3g9IjU2IiBjeT0iOTIiIHJ4PSI0LjYiIHJ5PSIzLjYiIGZpbGw9IiNmZmYiLz4KICA8ZWxsaXBzZSBjeD0iNzAiIGN5PSI4OSIgcng9IjQuNiIgcnk9IjMuNiIgZmlsbD0iI2ZmZiIvPgogIDwhLS0gc3BhcmtsZXMgLS0+CiAgPHBhdGggZD0iTTE4IDU0IGwyLjUgNiA2IDIuNSAtNiAyLjUgLTIuNSA2IC0yLjUgLTYgLTYgLTIuNSA2IC0yLjUgWiIgZmlsbD0iI2Y2YzQzMSIvPgogIDxwYXRoIGQ9Ik0xMDggNTIgbDIuNSA2IDYgMi41IC02IDIuNSAtMi41IDYgLTIuNSAtNiAtNiAtMi41IDYgLTIuNSBaIiBmaWxsPSIjMWUyMzQ2Ii8+CiAgPHBhdGggZD0iTTExMiA4MiBsMS44IDQuMiA0LjIgMS44IC00LjIgMS44IC0xLjggNC4yIC0xLjggLTQuMiAtNC4yIC0xLjggNC4yIC0xLjggWiIgZmlsbD0iI2Y2YzQzMSIvPgogIDxwYXRoIGQ9Ik0xNCA4NiBsMS44IDQuMiA0LjIgMS44IC00LjIgMS44IC0xLjggNC4yIC0xLjggLTQuMiAtNC4yIC0xLjggNC4yIC0xLjggWiIgZmlsbD0iIzFlMjM0NiIvPgo8L3N2Zz4K
@@ -37,6 +37,7 @@
 // @connect      openapi.tidal.com
 // @connect      api.beatport.com
 // @connect      api-partner.spotify.com
+// @connect      spclient.wg.spotify.com
 // @connect      music.youtube.com
 // @connect      volumo.com
 // @connect      hdtracks.azurewebsites.net
@@ -1021,7 +1022,8 @@ const BEATPORT = {
 // Spotify: the web player's own album query (api-partner.spotify.com, "getAlbum"). The player's
 // token is refused by Spotify's public API, and the query needs the player's token, client token
 // and the query's current id, so FC listens to the player's requests from the start (early) and
-// replays the album query with what it heard. No ISRCs or barcode: the player doesn't have them.
+// replays the album query with what it heard. The barcode comes from the player's metadata service
+// (spclient, the same token), which the album query doesn't have. No ISRCs.
 const SPOTIFY = {
     id: 'spotify',
     name: 'Spotify',
@@ -1165,6 +1167,33 @@ const SPOTIFY = {
         });
     },
     idOf: uri => String(uri || '').split(':').pop(),
+    // base62 id → the 32-hex gid the metadata service names things by
+    gidOf(id) {
+        const A = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
+        let n = 0n;
+        for (const c of id) n = n * 62n + BigInt(A.indexOf(c));
+        return n.toString(16).padStart(32, '0');
+    },
+    // majkinetor: "FC didn't get barcode" (album 0QPZBEO7W3gho2UiFBPJz2, UPC 881626542866). The
+    // player's album query has none; its metadata service has the album's external ids (upc).
+    // Optional: without it the import goes on, barcode empty.
+    upc(id) {
+        const url = `https://spclient.wg.spotify.com/metadata/4/album/${this.gidOf(id)}?market=from_token`;
+        return new Promise(resolve => {
+            GM_xmlhttpRequest({
+                method: 'GET', url, timeout: 15000, anonymous: true,
+                headers: Object.assign({}, this.auth.headers, { accept: 'application/json' }),
+                onload: r => {
+                    let upc = null;
+                    try { upc = ((JSON.parse(r.responseText).external_id || []).find(x => /^upc$/i.test(x.type) && x.id) || {}).id || null; } catch (e) { /* not JSON: no barcode */ }
+                    Log.debug(`GET ${url} → ${r.status}, ${(r.responseText || '').length} b, UPC ${upc || '—'}`);
+                    resolve(upc && /^\d{8,14}$/.test(upc) ? upc : null);
+                },
+                onerror: () => { Log.warn('Spotify: no barcode (the metadata service could not be reached)'); resolve(null); },
+                ontimeout: () => { Log.warn('Spotify: no barcode (the metadata service timed out)'); resolve(null); },
+            });
+        });
+    },
 
     async fetchRelease(id, progress) {
         for (let i = 0; !this.auth && i < 50; i++) await new Promise(r => setTimeout(r, 100));
@@ -1173,6 +1202,7 @@ const SPOTIFY = {
             : 'Spotify: no request of the player was heard. Your userscript manager may start First Contact too late on Spotify; reload the page, and if it persists, copy the log to #650');
         const hash = this.hash || this.GETALBUM_HASH;
         const page = offset => this.post({ variables: { uri: `spotify:album:${id}`, locale: '', offset, limit: 50 }, operationName: 'getAlbum', extensions: { persistedQuery: { version: 1, sha256Hash: hash } } });
+        const upcP = this.upc(id);   // alongside the album query
         const first = await page(0);
         const a = first && first.data && first.data.albumUnion;
         if (!a || !a.name) throw new Error(`Spotify: no album ${id}${first && first.errors ? ': ' + JSON.stringify(first.errors).slice(0, 200) : ''}`);
@@ -1183,7 +1213,7 @@ const SPOTIFY = {
             if (!got.length) break;
             items.push(...got);
         }
-        Log.info(`Spotify album ${id}: "${a.name}" by ${a.artists.items.map(x => x.profile.name).join(', ')} · ${a.type} · ${items.length} of ${a.tracksV2.totalCount} track(s) · ${a.date && a.date.isoString} (${a.date && a.date.precision}) · label "${a.label || ''}"`);
+        Log.info(`Spotify album ${id}: "${a.name}" by ${a.artists.items.map(x => x.profile.name).join(', ')} · ${a.type} · ${items.length} of ${a.tracksV2.totalCount} track(s) · ${a.date && a.date.isoString} (${a.date && a.date.precision}) · label "${a.label || ''}" · UPC ${(await upcP) || '—'}`);
 
         const artist = x => ({ name: x.profile.name, url: `https://open.spotify.com/artist/${this.idOf(x.uri)}` });
         const mediums = [];
@@ -1216,7 +1246,7 @@ const SPOTIFY = {
             packaging: 'None',
             date: { year: y || null, month: p === 'YEAR' ? null : m || null, day: p === 'DAY' ? d || null : null },
             country: 'XW',
-            barcode: null,
+            barcode: await upcP,
             labels: a.label ? [{ name: a.label, catno: '' }] : [],
             urls: [{ url, linkType: 85 }],   // 85 = stream for free
             mediums,
