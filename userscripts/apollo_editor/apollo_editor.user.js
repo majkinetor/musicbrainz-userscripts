@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.2.182734
+// @version      2026.10.2.183944
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E
@@ -1554,6 +1554,7 @@
   }
   let _artPosRg = { gid: null, self: null, idx: null };
   let _artPosDup = { key: null, p: null };
+  let _artPosDupFromTab = false;   // the duplicates came from the Duplicates tab, not our own search (the card says which)
   // the release group's editions (free: the rg source's own request) …
   async function artistPosRgIndex() {
     const rel = release(), self = rel ? u(rel.gid) || null : null;
@@ -1579,6 +1580,7 @@
     const p = (async () => {
       let rels = [..._dupRawCache.values()], from = 'the Duplicates tab';
       if (!rels.length) { rels = await duplicateReleases(title, artistGid, rgGid); from = 'a duplicate search'; }
+      _artPosDupFromTab = from === "the Duplicates tab";
       const idx = new Map(); rels.forEach(r => addReleaseToArtistPos(r, idx, self, 'dup'));
       Log.debug('artist position index: duplicates from', from, '→', rels.length, 'release(s),', idx.size, 'position(s)');
       return idx;
@@ -4371,8 +4373,8 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
       // Duplicates tab lists them. Say which.
       const dups = eds.filter(ed => ed.from === 'dup').length;
       const where = !eds.length ? 'other edition' : dups === eds.length ? 'release' : 'other edition';
-      let h = `<div class="tc-mt-why">Credited on this track on ${a ? a.votes : '?'} of ${p.of || '?'} ${where}${p.of === 1 ? '' : 's'}${eds.length ? ':' : '.'}</div>`;
-      if (dups) h += `<div class="tc-mt-dim">${dups === eds.length ? 'Not in this release group: found' : 'Marked ⧉: found'} by the duplicate search, a release with this title and artist (see the Duplicates tab). It may be this release, already in MusicBrainz.</div>`;
+      let h = `<div class="tc-mt-why">Credited ${w.pos && w.pos.ri ? 'as the release artist' : 'on this track'} on ${a ? a.votes : '?'} of ${p.of || '?'} ${where}${p.of === 1 ? '' : 's'}${eds.length ? ':' : '.'}</div>`;
+      if (dups) h += `<div class="tc-mt-dim">${dups === eds.length ? 'Not in this release group: found' : 'Marked ⧉: found'} ${_artPosDupFromTab ? "by the duplicate search, a release with this title and artist (see the Duplicates tab)" : "by Apollo's own duplicate search (the Duplicates tab had none), a release with this title and artist"}. It may be this release, already in MusicBrainz.</div>`;
       if (eds.length) h += '<table class="tc-mt-tbl">' + eds.slice(0, 8).map(ed => { const ok = (ed.gids || []).includes(s.gid); return `<tr><td class="${ok ? 'ok' : 'no'}">${ok ? '✓' : '✗'}</td><td>${ed.from === 'dup' && dups !== eds.length ? '⧉ ' : ''}${mtEditionLine(ed)}</td><td class="w">${ok ? '' : esc((ed.names || []).join(', '))}</td></tr>`; }).join('') + (eds.length > 8 ? `<tr><td></td><td class="tc-mt-dim">and ${eds.length - 8} more</td><td></td></tr>` : '') + '</table>';
       return h;
     }
