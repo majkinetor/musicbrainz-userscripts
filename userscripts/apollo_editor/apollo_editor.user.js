@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.2.183944
+// @version      2026.10.2.195500
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E
@@ -9754,6 +9754,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     /* inside the label field, left of its search icon: the cell is too narrow for it beside the field */
     #information span.autocomplete:has(> .tc-ri-lab){position:relative}
     .tc-ri-lab{position:absolute;right:28px;top:50%;transform:translateY(-50%);line-height:1;pointer-events:auto}
+    html:has(.mmthf-pin) .tc-ri-lab{right:48px}   /* Mammoth pins its icon inside the field, just left of the search icon: sit clear of it */
     :is(.tc-ri-am,.tc-ri-lab) .tc-badge{font-size:10px;font-weight:bold;border-radius:9px;padding:1px 7px;color:var(--mbu-text-on-accent);white-space:nowrap;cursor:help;text-transform:none}
     :is(.tc-ri-am,.tc-ri-lab) .tc-badge.rg{background:#1f8a4c}:is(.tc-ri-am,.tc-ri-lab) .tc-badge.set{background:#6c757d}:is(.tc-ri-am,.tc-ri-lab) .tc-badge.high{background:#2f6fd6}:is(.tc-ri-am,.tc-ri-lab) .tc-badge.disc{background:#0a7a8c}
     :is(.tc-ri-am,.tc-ri-lab) .tc-badge.low{background:#e0a800}:is(.tc-ri-am,.tc-ri-lab) .tc-badge.user{background:var(--mbu-accent)}:is(.tc-ri-am,.tc-ri-lab) .tc-badge.cred{background:#b5179e}:is(.tc-ri-am,.tc-ri-lab) .tc-badge.alias{background:#1f8a7a}:is(.tc-ri-am,.tc-ri-lab) .tc-badge.pos{background:#a0522d}:is(.tc-ri-am,.tc-ri-lab) .tc-badge.plat{background:#0b6e99}
