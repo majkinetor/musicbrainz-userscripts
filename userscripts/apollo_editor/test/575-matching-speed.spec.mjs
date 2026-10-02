@@ -137,7 +137,7 @@ async function importAndHold(page, inject) {
     before: () => page.route(/\/ws\/2\//, async r => { await new Promise(z => setTimeout(z, 3000)); return r.fallback(); }),
   });
   await page.locator('a, button', { hasText: /^Tracklist$/ }).first().click().catch(() => {});
-  await page.waitForSelector('.tc-search input.nm', { state: 'visible', timeout: 60000 });
+  await page.waitForSelector('.tc-medsec .tc-search input.nm', { state: 'visible', timeout: 60000 });
   return submitted;
 }
 const TL = '#tc-bar [data-act="match"], #tc-hdr [data-act="match"]', REC = '#tc-recwrap .tc-rec-am';

@@ -117,7 +117,7 @@ test('track artists matched by their position on other editions', { tag: ['@sand
     check(/Same position on other editions/.test(tip) && /Credited on this track on \d+ of \d+ (other edition|release)/.test(tip), `a pos badge's card says what it rests on: "${tip.slice(0, 200)}"`);
     await page.mouse.move(0, 0);
     const sec = await page.evaluate(async () => {
-      const inp = [...document.querySelectorAll('.tc-search input.nm')].find(i => /Buzzard/i.test(i.value));
+      const inp = [...document.querySelectorAll('.tc-medsec .tc-search input.nm')].find(i => /Buzzard/i.test(i.value));
       if (!inp) return null;
       inp.focus();
       for (let i = 0; i < 100 && !document.querySelector('.tc-acpop .tc-acsec'); i++) await new Promise(z => setTimeout(z, 100));   // the search is paced (#633)

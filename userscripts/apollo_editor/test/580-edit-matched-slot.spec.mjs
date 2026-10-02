@@ -24,23 +24,23 @@ test('a matched slot being edited is left alone until it loses focus', { tag: ['
   ['So What', 'Blue in Green'].forEach((t, i) => { seed[`mediums.0.track.${i}.name`] = t; seed[`mediums.0.track.${i}.artist_credit.names.0.name`] = 'Miles Davis'; });
   await page.clock.install();   // "well past the 400 ms rebuild" is run out on it, below
   const submitted = await openApollo(page, inject, { seed, tab: 'tracklist' });
-  await page.waitForSelector('.tc-search input.nm', { state: 'visible', timeout: 60000 });
+  await page.waitForSelector('.tc-medsec .tc-search input.nm', { state: 'visible', timeout: 60000 });
   const matched = await page.waitForFunction(() => window.__apolloEditor.model?.tracks[0]?.slots[0].committed, null, { timeout: 120000 }).then(() => true).catch(() => false);
   check(matched, 'the slot auto-matched (the bug needs a matched slot)');
   if (!matched) return;
   await page.clock.runFor(2000);   // the match's own rebuild is due: let it land before marking the input
-  await page.waitForSelector('.tc-search input.nm', { state: 'visible' });
-  const mkShown = () => page.evaluate(() => { const mk = document.querySelector('.tc-search .mk'); return !!mk && mk.offsetParent !== null; });
-  await page.evaluate(() => { document.querySelector('.tc-search input.nm').dataset.fixtureMark = 'original'; });
+  await page.waitForSelector('.tc-medsec .tc-search input.nm', { state: 'visible' });
+  const mkShown = () => page.evaluate(() => { const mk = document.querySelector('.tc-medsec .tc-search .mk'); return !!mk && mk.offsetParent !== null; });
+  await page.evaluate(() => { document.querySelector('.tc-medsec .tc-search input.nm').dataset.fixtureMark = 'original'; });
   check(!(await mkShown()), 'settled and matched: no ＋');
-  await page.locator('.tc-search input.nm').first().click();
+  await page.locator('.tc-medsec .tc-search input.nm').first().click();
   check(await until(mkShown), 'focused: ＋ is offered (to create a same-named artist)');
 
   await page.keyboard.press('Control+A');
   await page.keyboard.type('M');   // one letter over the name: the reported gesture
   await page.clock.runFor(2000);   // well past the 400 ms rebuild
   const after = await page.evaluate(() => {
-    const live = document.querySelector('.tc-search input.nm'), s = window.__apolloEditor.model.tracks[0].slots[0];
+    const live = document.querySelector('.tc-medsec .tc-search input.nm'), s = window.__apolloEditor.model.tracks[0].slots[0];
     return { value: live && live.value, same: !!live && live.dataset.fixtureMark === 'original', focused: document.activeElement === live, committed: !!s.committed, pending: !!s._pending };
   });
   check(after.value === 'M', `the typed letter stays (${JSON.stringify(after.value)})`);
@@ -49,7 +49,7 @@ test('a matched slot being edited is left alone until it loses focus', { tag: ['
   check(await mkShown(), '＋ is offered for the typed name');
 
   await page.evaluate(() => document.activeElement.blur());
-  const ran = await page.waitForFunction(() => { const live = document.querySelector('.tc-search input.nm'); return !live || live.dataset.fixtureMark !== 'original'; }, null, { timeout: 30000 }).then(() => true).catch(() => false);
+  const ran = await page.waitForFunction(() => { const live = document.querySelector('.tc-medsec .tc-search input.nm'); return !live || live.dataset.fixtureMark !== 'original'; }, null, { timeout: 30000 }).then(() => true).catch(() => false);
   check(ran, 'leaving the field lets the held-back rebuild run: deferred, not dropped');
   check(submitted.length === 0, 'nothing submitted');
   await ws.done();
