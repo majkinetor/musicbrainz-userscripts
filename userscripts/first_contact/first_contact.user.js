@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         First Contact
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.2.102349
-// @description  Import a release into MusicBrainz from the platform's album page with one click: the release editor opens with the title, tracklist, artists, date, label, barcode and link filled in. Each artist's platform link is handed to Apollo Editor for matching. Platforms: Deezer, Bandcamp, Discogs, Apple Music, Tidal, Qobuz, Beatport, Spotify, YouTube Music, Volumo, HDtracks, SoundCloud.
+// @version      2026.10.2.103301
+// @description  Import a release into MusicBrainz from the platform's album page with one click: the release editor opens with the title, tracklist, artists, date, label, barcode and link filled in. Each artist's platform link is handed to Apollo Editor for matching. Platforms: Deezer, Bandcamp, Discogs, Apple Music, Tidal, Qobuz, Beatport, Spotify, YouTube Music, Volumo, HDtracks, SoundCloud, Amazon Music.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPkZpcnN0IENvbnRhY3Q8L3RpdGxlPgogIDwhLS0gdHJhY3RvciBiZWFtIC0tPgogIDxwYXRoIGQ9Ik01MCA0NCBMNzggNDQgTDEwNCAxMTIgTDI0IDExMiBaIiBmaWxsPSIjZjZjNDMxIiBvcGFjaXR5PSIwLjkiLz4KICA8cGF0aCBkPSJNNTYgNDQgTDcyIDQ0IEw4OCAxMTIgTDQwIDExMiBaIiBmaWxsPSIjZmRlNjhhIiBvcGFjaXR5PSIwLjciLz4KICA8IS0tIGxhbmRpbmcgcmluZyAtLT4KICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSIxMTQiIHJ4PSI0MiIgcnk9IjgiIGZpbGw9IiMxZTIzNDYiIHN0cm9rZT0iI2M5Y2RmMiIgc3Ryb2tlLXdpZHRoPSIzIi8+CiAgPGVsbGlwc2UgY3g9IjY0IiBjeT0iMTEzIiByeD0iMjYiIHJ5PSI0LjIiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2Y2YzQzMSIgc3Ryb2tlLXdpZHRoPSIyLjQiLz4KICA8IS0tIHNhdWNlcjogYSBwYWxlIHJpbSwgc28gaXQgc2hvd3Mgb24gYSBkYXJrIGJhY2tncm91bmQgdG9vIC0tPgogIDxwYXRoIGQ9Ik00MCAyNiBBMjQgMTggMCAwIDEgODggMjYgWiIgZmlsbD0iIzFlMjM0NiIgc3Ryb2tlPSIjYzljZGYyIiBzdHJva2Utd2lkdGg9IjMiLz4KICA8cGF0aCBkPSJNNTAgMTggQTEwIDYgMCAwIDEgNjAgMTQiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2ZmZiIgc3Ryb2tlLXdpZHRoPSIyLjYiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxlbGxpcHNlIGN4PSI2NCIgY3k9IjMyIiByeD0iNTYiIHJ5PSIxMyIgZmlsbD0iIzFlMjM0NiIgc3Ryb2tlPSIjYzljZGYyIiBzdHJva2Utd2lkdGg9IjMiLz4KICA8Y2lyY2xlIGN4PSIzOCIgY3k9IjMyIiByPSI0LjQiIGZpbGw9IiNmZmYiLz4KICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjM0IiByPSI0LjQiIGZpbGw9IiNmZmYiLz4KICA8Y2lyY2xlIGN4PSI5MCIgY3k9IjMyIiByPSI0LjQiIGZpbGw9IiNmZmYiLz4KICA8IS0tIHRoZSByZWxlYXNlIGJlaW5nIGJlYW1lZCB1cDogYSBwdXJwbGUgaGV4YWdvbiB3aXRoIGEgbm90ZSAtLT4KICA8cGF0aCBkPSJNNjQgNTggTDg0IDY5LjUgTDg0IDkyLjUgTDY0IDEwNCBMNDQgOTIuNSBMNDQgNjkuNSBaIiBmaWxsPSIjN2I0ZmQ2Ii8+CiAgPHBhdGggZD0iTTY0IDU4IEw4NCA2OS41IEw2NCA4MSBMNDQgNjkuNSBaIiBmaWxsPSIjOWI3MmVhIi8+CiAgPHBhdGggZD0iTTYwIDcyIEw3NCA2OSBMNzQgODkiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2ZmZiIgc3Ryb2tlLXdpZHRoPSIzLjQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz4KICA8cGF0aCBkPSJNNjAgNzIgTDYwIDkyIiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iMy40Ii8+CiAgPGVsbGlwc2UgY3g9IjU2IiBjeT0iOTIiIHJ4PSI0LjYiIHJ5PSIzLjYiIGZpbGw9IiNmZmYiLz4KICA8ZWxsaXBzZSBjeD0iNzAiIGN5PSI4OSIgcng9IjQuNiIgcnk9IjMuNiIgZmlsbD0iI2ZmZiIvPgogIDwhLS0gc3BhcmtsZXMgLS0+CiAgPHBhdGggZD0iTTE4IDU0IGwyLjUgNiA2IDIuNSAtNiAyLjUgLTIuNSA2IC0yLjUgLTYgLTYgLTIuNSA2IC0yLjUgWiIgZmlsbD0iI2Y2YzQzMSIvPgogIDxwYXRoIGQ9Ik0xMDggNTIgbDIuNSA2IDYgMi41IC02IDIuNSAtMi41IDYgLTIuNSAtNiAtNiAtMi41IDYgLTIuNSBaIiBmaWxsPSIjMWUyMzQ2Ii8+CiAgPHBhdGggZD0iTTExMiA4MiBsMS44IDQuMiA0LjIgMS44IC00LjIgMS44IC0xLjggNC4yIC0xLjggLTQuMiAtNC4yIC0xLjggNC4yIC0xLjggWiIgZmlsbD0iI2Y2YzQzMSIvPgogIDxwYXRoIGQ9Ik0xNCA4NiBsMS44IDQuMiA0LjIgMS44IC00LjIgMS44IC0xLjggNC4yIC0xLjggLTQuMiAtNC4yIC0xLjggNC4yIC0xLjggWiIgZmlsbD0iIzFlMjM0NiIvPgo8L3N2Zz4K
 // @homepageURL  https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/first_contact/README.md
@@ -19,6 +19,18 @@
 // @match        https://volumo.com/*
 // @match        https://www.hdtracks.com/*
 // @match        https://soundcloud.com/*
+// @match        https://music.amazon.com/*
+// @match        https://music.amazon.co.uk/*
+// @match        https://music.amazon.de/*
+// @match        https://music.amazon.fr/*
+// @match        https://music.amazon.it/*
+// @match        https://music.amazon.es/*
+// @match        https://music.amazon.ca/*
+// @match        https://music.amazon.co.jp/*
+// @match        https://music.amazon.com.au/*
+// @match        https://music.amazon.com.br/*
+// @match        https://music.amazon.com.mx/*
+// @match        https://music.amazon.in/*
 // @match        https://*.musicbrainz.org/release/add*
 // @noframes
 // @run-at       document-start
@@ -44,6 +56,8 @@
 // @connect      soundcloud.com
 // @connect      a-v2.sndcdn.com
 // @connect      api-v2.soundcloud.com
+// @connect      music.amazon.com
+// @connect      na.mesk.skill.music.a2z.com
 // ==/UserScript==
 
 (function () {
@@ -1550,7 +1564,140 @@ const SOUNDCLOUD = {
     },
 };
 
-const PROVIDERS = [DEEZER, BANDCAMP, DISCOGS, APPLE, TIDAL, QOBUZ, BEATPORT, SPOTIFY, YTMUSIC, VOLUMO, HDTRACKS, SOUNDCLOUD];
+// Amazon Music (#650, majkinetor: "implement AM"): the API its own web player uses
+// (na.mesk.skill.music.a2z.com), as a guest — music.amazon.com/config.json hands out a session (CSRF
+// token, device and session id, no login), carried as a JSON "headers" string in each request's body.
+// Platform Check (#644) and ISRC Scout read it the same way. The guest session is amazon.com's (US)
+// catalogue: an album from another country's store is looked up by the same id there. The album
+// page is one flat tracklist (no disc numbers), with each track's length, link and, when it isn't
+// the album artist, an artist line like "A, B & C" whose first name alone is linked. No barcode or
+// ISRCs (Amazon Music shows neither); the label is read from the page's ℗ line.
+const AMAZON = {
+    id: 'amazonmusic',
+    name: 'Amazon Music',
+    host: /^music\.amazon\.(?:com|co\.uk|de|fr|it|es|ca|co\.jp|com\.au|com\.br|com\.mx|in)$/,
+    albumId(loc) { const m = loc.pathname.match(/^\/albums\/([A-Z0-9]{10})\/?$/i); return m ? m[1].toUpperCase() : null; },
+    API: 'https://na.mesk.skill.music.a2z.com/api/',
+    TYPES: { album: ['Album'], ep: ['EP'], single: ['Single'] },
+    MONTHS: ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec'],
+    session: null,
+    post(url, data, headers) {
+        const t0 = Date.now();
+        return new Promise((resolve, reject) => {
+            GM_xmlhttpRequest({
+                method: 'POST', url, data, timeout: 20000, anonymous: true, headers: headers || {},
+                onload: r => {
+                    Log.debug(`POST ${url} → ${r.status}, ${(r.responseText || '').length} b in ${Date.now() - t0} ms`);
+                    if (r.status < 200 || r.status >= 300) return reject(Object.assign(new Error(`Amazon Music: HTTP ${r.status} for ${url}`), { status: r.status }));
+                    try { resolve(JSON.parse(r.responseText)); } catch (e) { reject(new Error(`Amazon Music: bad JSON from ${url}`)); }
+                },
+                onerror: () => reject(new Error('Amazon Music: network error')),
+                ontimeout: () => reject(new Error('Amazon Music: timeout')),
+            });
+        });
+    },
+    async guest() {
+        if (this.session) return this.session;
+        const j = await this.post('https://music.amazon.com/config.json', '');
+        if (!j || !j.csrf || !j.deviceId) throw new Error('Amazon Music: no guest session; its web player may have changed');
+        Log.info(`Amazon Music: guest session (marketplace ${j.marketplaceId || '?'}, player ${j.version || '?'})`);
+        return (this.session = j);
+    },
+    async call(endpoint, body) {
+        const s = await this.guest();
+        const headers = JSON.stringify({
+            'x-amzn-authentication': JSON.stringify({ interface: 'ClientAuthenticationInterface.v1_0.ClientTokenElement', accessToken: s.accessToken || '' }),
+            'x-amzn-device-model': 'WEBPLAYER', 'x-amzn-device-width': '1920', 'x-amzn-device-family': 'WebPlayer', 'x-amzn-device-id': s.deviceId,
+            'x-amzn-user-agent': navigator.userAgent, 'x-amzn-session-id': s.sessionId, 'x-amzn-device-height': '1080',
+            'x-amzn-request-id': (crypto.randomUUID ? crypto.randomUUID() : String(Math.random()).slice(2)), 'x-amzn-device-language': 'en_US',
+            'x-amzn-currency-of-preference': 'USD', 'x-amzn-os-version': '1.0', 'x-amzn-application-version': s.version,
+            'x-amzn-device-time-zone': 'UTC', 'x-amzn-timestamp': String(Date.now()),
+            'x-amzn-csrf': JSON.stringify({ interface: 'CSRFInterface.v1_0.CSRFHeaderElement', token: s.csrf.token, timestamp: s.csrf.ts, rndNonce: s.csrf.rnd }),
+            'x-amzn-music-domain': 'music.amazon.com', 'x-amzn-referer': '', 'x-amzn-affiliate-tags': '', 'x-amzn-ref-marker': '', 'x-amzn-page-url': 'https://music.amazon.com/',
+            'x-amzn-weblab-id-overrides': '', 'x-amzn-video-player-token': '', 'x-amzn-feature-flags': '', 'x-amzn-has-profile-id': '', 'x-amzn-age-band': '',
+        });
+        let j;
+        try { j = await this.post(this.API + endpoint, JSON.stringify(Object.assign({}, body, { headers })), { 'Content-Type': 'text/plain;charset=UTF-8' }); }
+        catch (e) { if (e.status === 401 || e.status === 403) this.session = null; throw e; }
+        const tpl = j && j.methods && (j.methods.find(m => m.template) || {}).template;
+        if (!tpl) throw new Error(`Amazon Music: ${endpoint} gave no page; its API may have changed`);
+        return tpl;
+    },
+    text: t => String((t && typeof t === 'object' ? t.text : t) || '').trim(),
+    slug: s => String(s || '').normalize('NFKD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/&/g, ' ').replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, ''),
+    // "A, B & C" with a link to one artist's page (/artists/<id>/<slug>) → [{ name, url }]. The link
+    // names who it is: when its slug is the whole line ("Simon & Garfunkel"), the line is one artist;
+    // otherwise it's a list, and the link belongs to the name its slug matches (the first, so far).
+    artists(line, link) {
+        const m = String(link || '').match(/^\/artists\/([A-Z0-9]{10})(?:\/([^/?#]+))?/i);
+        const url = m ? `https://music.amazon.com/artists/${m[1].toUpperCase()}` : null;
+        const slug = m && m[2] ? m[2].toLowerCase() : '';
+        const names = /,\s|\s&\s/.test(line) && !(slug && slug === this.slug(line)) ? line.split(/\s*,\s+|\s+&\s+/).map(x => x.trim()).filter(Boolean) : [line];
+        let at = slug ? names.findIndex(n => this.slug(n) === slug) : -1;
+        if (at < 0 && url) { at = 0; if (slug) Log.debug(`Amazon Music: the link /${slug} is none of ${JSON.stringify(names)}; it goes to the first`); }
+        return names.map((name, i) => (i === at ? { name, url } : { name }));
+    },
+    // "MAY 17 2013" → { year, month, day }
+    date(s) {
+        const m = String(s || '').match(/\b([A-Za-z]{3})[a-z]*\.?\s+(\d{1,2}),?\s+(\d{4})\b/);
+        if (m) return { year: +m[3], month: this.MONTHS.indexOf(m[1].toLowerCase()) + 1 || null, day: +m[2] };
+        const y = String(s || '').match(/\b(\d{4})\b/);
+        return { year: y ? +y[1] : null, month: null, day: null };
+    },
+    secs(x) { const p = String(x || '').split(':').map(Number); return p.length > 1 && p.every(n => !isNaN(n)) ? p.reduce((a, n) => a * 60 + n, 0) : null; },
+
+    async fetchRelease(id, progress) {
+        const tpl = await this.call('showCatalogAlbum', { id, userHash: JSON.stringify({ level: 'LIBRARY_MEMBER' }) });
+        const title = this.text(tpl.headerText);
+        if (!title) throw new Error(`Amazon Music: no album ${id}`);
+        const sub = String(tpl.headerTertiaryText || '').split(/\s*•\s*/);
+        const artistLine = this.text(tpl.headerPrimaryText);
+        const artistLink = (tpl.headerPrimaryTextLink || {}).deeplink;
+        const rows = [];
+        for (const w of tpl.widgets || []) for (const it of w.items || []) {
+            const tid = (String((it.primaryTextLink || {}).deeplink || '').match(/^\/tracks\/([A-Z0-9]{10})/) || String((it.primaryLink || {}).deeplink || '').match(/[?&]trackAsin=([A-Z0-9]{10})/) || [])[1];
+            if (tid && !rows.some(r => r.id === tid)) rows.push({ id: tid, it });
+        }
+        const said = parseInt(((sub[0] || '').match(/^([\d,.]+)\s+(?:song|track)s?\b/i) || [])[1] || '', 10);
+        Log.info(`Amazon Music album ${id}: "${title}" by ${artistLine} (${artistLink || 'no link'}) · ${this.text(tpl.headerLabel) || 'no kind'} · ${rows.length} track(s)${said && said !== rows.length ? ` (the header says ${said})` : ''} · ${sub.slice(1).join(' · ')} · ${tpl.footer || 'no ℗ line'}`);
+        if (!rows.length) throw new Error(`Amazon Music: album ${id} has no tracks in its answer; its page may have changed`);
+
+        const va = /^various artists$/i.test(artistLine);
+        const albumArtists = va ? null : this.artists(artistLine, artistLink);
+        const tracks = rows.map(({ id: tid, it }, i) => {
+            const tf = splitFeat(this.text(it.primaryText));
+            const line = this.text(it.secondaryText2);
+            const listed = line ? this.artists(line, (it.secondaryText2Link || {}).deeplink) : (albumArtists || [{ name: 'Various Artists' }]);
+            const credit = creditFromTitle(listed, tf.feat);
+            const secs = this.secs(it.secondaryText3);
+            progress && progress(i + 1, rows.length);
+            Log.debug(`track ${i + 1}: "${tf.title}" ${it.secondaryText3 || '?'} — ${credit.map(c => c.name + c.join).join('')}${line ? ` (line "${line}")` : ' (album artist)'}`);
+            return { title: tf.title, lengthMs: secs == null ? null : secs * 1000, isrc: null, url: `https://music.amazon.com/tracks/${tid}`, credit };
+        });
+        const af = splitFeat(title);
+        const credit = va ? [{ name: 'Various Artists', mbid: VARIOUS_ARTISTS_MBID, join: '' }] : creditFromTitle(albumArtists, af.feat);
+        const date = this.date(sub.find(x => /\b\d{4}$/.test(x)) || '');
+        const lbl = labelFromCopyright(tpl.footer);
+        const url = `https://music.amazon.com/albums/${id}`;
+        return {
+            source: this.id,
+            url,
+            title: af.title,
+            credit,
+            types: this.TYPES[this.text(tpl.headerLabel).toLowerCase()] || [],
+            status: 'official',
+            packaging: 'None',
+            date,
+            country: 'XW',
+            barcode: null,
+            labels: lbl ? [{ name: lbl, catno: '' }] : [],
+            urls: [{ url, linkType: 980 }],   // 980 = streaming page (paid)
+            mediums: [{ format: 'Digital Media', name: '', tracks }],
+        };
+    },
+};
+
+const PROVIDERS = [DEEZER, BANDCAMP, DISCOGS, APPLE, TIDAL, QOBUZ, BEATPORT, SPOTIFY, YTMUSIC, VOLUMO, HDTRACKS, SOUNDCLOUD, AMAZON];
 
 /* ── the seed: model → the release editor's POST parameters ──────────────── */
 // https://musicbrainz.org/doc/Development/Release_Editor_Seeding
