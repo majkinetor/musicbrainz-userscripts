@@ -34,6 +34,15 @@ test('the archived page is the one the user has, without the fragment and share 
     ['https://music.apple.com/us/album/x/123?l=en&utm_source=y', 'https://music.apple.com/us/album/x/123?l=en'],
   ];
   for (const [input, want] of cases) check(archivePageUrl(input) === want, `${input} → ${archivePageUrl(input)}, wanted ${want}`);
+  // majkinetor (a toast on Spotify): "u.searchParams.keys() is not iterable": open.spotify.com
+  // patches URLSearchParams, and the import stopped. As there:
+  const proto = URLSearchParams.prototype, realKeys = proto.keys;
+  proto.keys = function () { return {}; };
+  try {
+    let got = null, err = null;
+    try { got = archivePageUrl('https://open.spotify.com/album/4m2880jivSbbyEGAKfITCa?si=abc&nd=1'); } catch (e) { err = e; }
+    check(!err && got === 'https://open.spotify.com/album/4m2880jivSbbyEGAKfITCa', `a page's own URLSearchParams doesn't matter (${err ? err.message : got})`);
+  } finally { proto.keys = realKeys; }
 });
 
 // Import the Deezer album into the sandbox's release editor; returns the editor page and the seed.
