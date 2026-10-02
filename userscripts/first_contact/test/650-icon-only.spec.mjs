@@ -27,3 +27,39 @@ test('Icon only: the button loses its text, keeps its tooltip, and stays that wa
   const again = await look();
   check(!again.text, 'it holds after a reload');
 });
+
+// majkinetor: "add option to show config button only on hover". ⚙︎ hides; hovering the button
+// shows it as a tab on the edge, without moving Import; it holds across a reload.
+test('Settings button only on hover: ⚙︎ hides until hover, Import stays put', { tag: ['@web'] }, async ({ page, inject }) => {
+  const open = async () => {
+    await page.goto('https://bullion.bandcamp.com/album/nearly', { waitUntil: 'domcontentloaded' });
+    await inject('first_contact', { waitFor: '__fcTest' });
+    await page.locator('#fc-root .fc-go').waitFor({ state: 'visible' });
+  };
+  const gear = page.locator('#fc-root .fc-more'), go = page.locator('#fc-root .fc-go');
+  await open();
+  check(await gear.isVisible(), 'by default ⚙︎ shows');
+  await gear.click();
+  await page.locator('#fc-panel .fc-gear-hover-opt').check();
+  check(await gear.isVisible(), 'it stays while the settings are open');
+  await page.keyboard.press('Escape');
+  await page.mouse.move(10, 10);
+  check(!(await gear.isVisible()), 'hidden once the pointer leaves');
+  const before = await go.boundingBox();
+  await go.hover();
+  check(await gear.isVisible(), 'shown on hover');
+  const after = await go.boundingBox();
+  check(Math.abs(before.x - after.x) < 1 && Math.abs(before.y - after.y) < 1, 'Import does not move when ⚙︎ shows');
+  if (process.env.FC_SHOT) {
+    const r = await page.locator('#fc-root').boundingBox();
+    await page.screenshot({ path: process.env.FC_SHOT, clip: { x: r.x - 20, y: r.y - 40, width: r.width + 40, height: r.height + 60 } });
+  }
+  const g = await gear.boundingBox();
+  await page.mouse.move(g.x + g.width / 2, g.y + g.height / 2, { steps: 5 });
+  await gear.click();
+  check(await page.locator('#fc-panel').isVisible(), 'the pointer reaches ⚙︎ and it opens the settings');
+  await page.keyboard.press('Escape');
+  await open();
+  await page.mouse.move(10, 10);
+  check(!(await gear.isVisible()), 'it holds after a reload');
+});

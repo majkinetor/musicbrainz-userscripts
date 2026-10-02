@@ -15,7 +15,7 @@ Import a release into MusicBrainz from the platform's album page with one click:
 - **[Platforms](#platforms)**: what is read from each one.
 - **[Artist matching](#artist-matching)** is left to Apollo Editor, which gets every artist's platform link.
 - **[Moving the button](#moving-the-button)**: drag it anywhere; each platform remembers its place.
-- **[Settings](#settings)**: the MusicBrainz server, an icon-only button, the annotation, and closing the page after the import.
+- **[Settings](#settings)**: the MusicBrainz server, an icon-only button, a settings button only on hover, the annotation, and closing the page after the import.
 
 ## Import
 
@@ -93,4 +93,5 @@ The **⚙︎** button next to **Import to MusicBrainz**.
 | MusicBrainz server | musicbrainz.org | where the release editor opens: musicbrainz.org, beta.musicbrainz.org or test.musicbrainz.org |
 | Icon only | off | the button shows only its icon; the tooltip still says *Import to MusicBrainz*, and the progress still shows while it reads the platform |
 | Annotation from the platform's notes | off | the album's notes on the platform go into the annotation, followed by *From <platform>: <album page>*: Bandcamp's about and credits, Discogs's notes, Qobuz's and Apple's reviews, the description on Beatport, Volumo, HDtracks, SoundCloud and YouTube Music. Deezer, Tidal and Spotify have none. A review is the critic's text (Qobuz's and Apple's are usually AllMusic's): check you may copy it before you submit. |
+| Settings button only on hover | off | the **⚙︎** button hides until the pointer is over **Import to MusicBrainz**; then it shows as a small tab on the button's top edge (bottom edge when the button sits at the top of the window), so Import doesn't move. It stays while the settings are open. |
 | Close this page after the import | off | the platform's tab closes once the release editor has the release, half a second after it is sent. It stays open when the import fails, and when the browser blocked the new tab and the editor opened in this one. |
