@@ -190,9 +190,9 @@ First Contact doesn't pick MusicBrainz artists itself. It hands every credited a
 
 ## Moving the button
 
-Drag **Import to MusicBrainz** (or its **⚙︎**) to wherever it is out of the way. A drag doesn't import or open the settings. Each platform remembers its own place: moving the button on Bandcamp leaves it in the corner on Deezer. **⚙︎ → Reset:** **this one** puts it back in the bottom-right corner on that platform, **all** on every platform.
+Drag **Import to MusicBrainz** (or its **⚙︎**) to wherever it is out of the way. A drag doesn't import or open the settings. Each platform remembers its own place: moving the button on Bandcamp leaves it in the corner on Deezer. **⚙︎ → Reset:** **this one** puts it back in the bottom-right corner on that platform and stops it scrolling with the page there; **all** does so on every platform.
 
-By default the button stays put on the screen. With **Moved button scrolls with the page** on (see [Settings](#settings)), a moved button stays on its spot on the page instead, above the cover, say, and scrolls with it:
+By default the button stays put on the screen. With **Moved button scrolls with the page on** *platform* on (see [Settings](#settings)), a moved button stays on its spot on that platform's page instead, above the cover, say, and scrolls with it. Each platform has its own, so the button can scroll with the page on Bandcamp and stay on the screen on Spotify:
 
 - On Spotify and Apple Music it follows the scrolling panel and is cut off at its edges.
 - When a page opens, it appears once the page has settled.
@@ -208,7 +208,7 @@ The **⚙︎** button next to **Import to MusicBrainz**.
 | Icon only | off | the button shows only its icon; the tooltip still says *Import to MusicBrainz*, and the progress still shows while it reads the platform |
 | Annotation from the platform's notes | off | the album's [notes on the platform](#platforms) go into the annotation, followed by *From <platform>: <album page>*. A review is the critic's text (Qobuz's and Apple's are usually AllMusic's): check you may copy it before you submit. |
 | Settings button only on hover | off | the **⚙︎** button shows only while the pointer is over **Import to MusicBrainz**, as a small tab on its edge |
-| Moved button scrolls with the page | off | a [moved](#moving-the-button) button stays on its spot on the page and scrolls with it |
+| Moved button scrolls with the page on *platform* | off | on this platform only, a [moved](#moving-the-button) button stays on its spot on the page and scrolls with it |
 | Close this page after the import | off | the platform's tab closes once the release editor has the release; it stays open when the import fails |
 
 ## Notes

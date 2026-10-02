@@ -153,6 +153,61 @@ test('Moved button scrolls with the page: on, it stays over its spot on the page
   check(Math.abs(fixed.y - placed.y) < 3, `off: it stays on the screen while the page scrolls (${placed.y} → ${fixed.y})`);
 });
 
+// majkinetor: "changing the fixed position on page only for some platforms … It is currently not
+// possible to have while keeping other platforms independent". The setting is each platform's own;
+// the old one-for-all setting carries over to every platform the button had been moved on.
+test('Moved button scrolls with the page is per platform, and the old setting carries over', { tag: ['@web'] }, async ({ page, inject }) => {
+  const open = async () => {
+    await page.goto(BC, { waitUntil: 'domcontentloaded' });
+    await inject('first_contact', { waitFor: '__fcTest' });
+    await page.locator('#fc-root .fc-go').waitFor({ state: 'visible' });
+    await noBandcampDialog(page);
+  };
+  const box = () => page.locator('#fc-root').boundingBox();
+  const scrollTo = async y => { await page.evaluate(y => window.scrollTo(0, y), y); await page.waitForTimeout(150); };
+  const gm = k => page.evaluate(k => GM_getValue(k, null), k);
+  await open();
+  const g = await page.locator('#fc-root .fc-go').boundingBox();
+  await page.mouse.move(g.x + 20, g.y + g.height / 2);
+  await page.mouse.down();
+  await page.mouse.move(g.x + 20 - 500, 250, { steps: 10 });
+  await page.mouse.up();
+  const placed = await box();
+  // as an older version left it: one setting, on, and the button moved on Bandcamp and on Deezer
+  await page.evaluate(() => {
+    GM_setValue('fc.settings', Object.assign({}, GM_getValue('fc.settings', {}), { scrollWithPage: true }));
+    GM_setValue('fc.pos', Object.assign({}, GM_getValue('fc.pos', {}), { Deezer: { right: 300, bottom: 300, cx: 0, top: 200 } }));
+    GM_deleteValue('fc.scroll');
+  });
+  await open();
+  check(JSON.stringify(await gm('fc.scroll')) === JSON.stringify({ Bandcamp: true, Deezer: true }), `carried over to both moved platforms: ${JSON.stringify(await gm('fc.scroll'))}`);
+  check(!('scrollWithPage' in (await gm('fc.settings') || {})), 'the old setting is gone');
+  await scrollTo(400);
+  const sy = await page.evaluate(() => window.scrollY);
+  check(Math.abs((await box()).y - (placed.y - sy)) < 3, 'on Bandcamp it scrolls with the page');
+  await scrollTo(0);
+
+  await page.locator('#fc-root .fc-more').click();
+  check(/on Bandcamp$/.test((await page.locator('#fc-panel label:has(.fc-scroll-opt)').textContent()).trim()), 'the setting names the platform');
+  check(await page.locator('#fc-panel .fc-scroll-opt').isChecked(), 'and shows it on');
+  await page.locator('#fc-panel .fc-scroll-opt').uncheck();
+  await page.keyboard.press('Escape');
+  check(JSON.stringify(await gm('fc.scroll')) === JSON.stringify({ Deezer: true }), `off on Bandcamp leaves Deezer on: ${JSON.stringify(await gm('fc.scroll'))}`);
+  await scrollTo(400);
+  check(Math.abs((await box()).y - placed.y) < 3, 'on Bandcamp it now stays on the screen');
+
+  await page.locator('#fc-root .fc-more').click();
+  await page.locator('#fc-panel .fc-scroll-opt').check();
+  await page.locator('#fc-panel .fc-reset-pos').click();
+  check(JSON.stringify(await gm('fc.scroll')) === JSON.stringify({ Deezer: true }), `Reset this one clears it on Bandcamp only: ${JSON.stringify(await gm('fc.scroll'))}`);
+  // the button was on the page, scrolled away: Reset brings it back on the screen, in its corner
+  const back = await box(), vp = page.viewportSize();
+  check(back && back.y + back.height > vp.height - 40 && back.x + back.width > vp.width - 40, `this one: back in the corner on the screen (${JSON.stringify(back)})`);
+  await page.locator('#fc-root .fc-more').click();
+  await page.locator('#fc-panel .fc-reset-all').click();
+  check(JSON.stringify(await gm('fc.scroll')) === '{}', `Reset all clears it everywhere: ${JSON.stringify(await gm('fc.scroll'))}`);
+});
+
 // majkinetor: "make settings more compact and prevent overflow" — with the button dragged near the
 // top, the settings ran off the window's left edge and covered the button. Wherever the button
 // is, the settings are inside the window and clear of it.

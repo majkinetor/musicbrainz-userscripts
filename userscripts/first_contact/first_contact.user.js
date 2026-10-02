@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         First Contact
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.2.114123
+// @version      2026.10.2.115313
 // @description  Import a release into MusicBrainz from the platform's album page with one click: the release editor opens with the title, tracklist, artists, date, label, barcode and link filled in. Each artist's platform link is handed to Apollo Editor for matching. Platforms: Deezer, Bandcamp, Discogs, Apple Music, Tidal, Qobuz, Beatport, Spotify, YouTube Music, Volumo, HDtracks, SoundCloud, Amazon Music.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPkZpcnN0IENvbnRhY3Q8L3RpdGxlPgogIDwhLS0gdHJhY3RvciBiZWFtIC0tPgogIDxwYXRoIGQ9Ik01MCA0NCBMNzggNDQgTDEwNCAxMTIgTDI0IDExMiBaIiBmaWxsPSIjZjZjNDMxIiBvcGFjaXR5PSIwLjkiLz4KICA8cGF0aCBkPSJNNTYgNDQgTDcyIDQ0IEw4OCAxMTIgTDQwIDExMiBaIiBmaWxsPSIjZmRlNjhhIiBvcGFjaXR5PSIwLjciLz4KICA8IS0tIGxhbmRpbmcgcmluZyAtLT4KICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSIxMTQiIHJ4PSI0MiIgcnk9IjgiIGZpbGw9IiMxZTIzNDYiIHN0cm9rZT0iI2M5Y2RmMiIgc3Ryb2tlLXdpZHRoPSIzIi8+CiAgPGVsbGlwc2UgY3g9IjY0IiBjeT0iMTEzIiByeD0iMjYiIHJ5PSI0LjIiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2Y2YzQzMSIgc3Ryb2tlLXdpZHRoPSIyLjQiLz4KICA8IS0tIHNhdWNlcjogYSBwYWxlIHJpbSwgc28gaXQgc2hvd3Mgb24gYSBkYXJrIGJhY2tncm91bmQgdG9vIC0tPgogIDxwYXRoIGQ9Ik00MCAyNiBBMjQgMTggMCAwIDEgODggMjYgWiIgZmlsbD0iIzFlMjM0NiIgc3Ryb2tlPSIjYzljZGYyIiBzdHJva2Utd2lkdGg9IjMiLz4KICA8cGF0aCBkPSJNNTAgMTggQTEwIDYgMCAwIDEgNjAgMTQiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2ZmZiIgc3Ryb2tlLXdpZHRoPSIyLjYiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxlbGxpcHNlIGN4PSI2NCIgY3k9IjMyIiByeD0iNTYiIHJ5PSIxMyIgZmlsbD0iIzFlMjM0NiIgc3Ryb2tlPSIjYzljZGYyIiBzdHJva2Utd2lkdGg9IjMiLz4KICA8Y2lyY2xlIGN4PSIzOCIgY3k9IjMyIiByPSI0LjQiIGZpbGw9IiNmZmYiLz4KICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjM0IiByPSI0LjQiIGZpbGw9IiNmZmYiLz4KICA8Y2lyY2xlIGN4PSI5MCIgY3k9IjMyIiByPSI0LjQiIGZpbGw9IiNmZmYiLz4KICA8IS0tIHRoZSByZWxlYXNlIGJlaW5nIGJlYW1lZCB1cDogYSBwdXJwbGUgaGV4YWdvbiB3aXRoIGEgbm90ZSAtLT4KICA8cGF0aCBkPSJNNjQgNTggTDg0IDY5LjUgTDg0IDkyLjUgTDY0IDEwNCBMNDQgOTIuNSBMNDQgNjkuNSBaIiBmaWxsPSIjN2I0ZmQ2Ii8+CiAgPHBhdGggZD0iTTY0IDU4IEw4NCA2OS41IEw2NCA4MSBMNDQgNjkuNSBaIiBmaWxsPSIjOWI3MmVhIi8+CiAgPHBhdGggZD0iTTYwIDcyIEw3NCA2OSBMNzQgODkiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2ZmZiIgc3Ryb2tlLXdpZHRoPSIzLjQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz4KICA8cGF0aCBkPSJNNjAgNzIgTDYwIDkyIiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iMy40Ii8+CiAgPGVsbGlwc2UgY3g9IjU2IiBjeT0iOTIiIHJ4PSI0LjYiIHJ5PSIzLjYiIGZpbGw9IiNmZmYiLz4KICA8ZWxsaXBzZSBjeD0iNzAiIGN5PSI4OSIgcng9IjQuNiIgcnk9IjMuNiIgZmlsbD0iI2ZmZiIvPgogIDwhLS0gc3BhcmtsZXMgLS0+CiAgPHBhdGggZD0iTTE4IDU0IGwyLjUgNiA2IDIuNSAtNiAyLjUgLTIuNSA2IC0yLjUgLTYgLTYgLTIuNSA2IC0yLjUgWiIgZmlsbD0iI2Y2YzQzMSIvPgogIDxwYXRoIGQ9Ik0xMDggNTIgbDIuNSA2IDYgMi41IC02IDIuNSAtMi41IDYgLTIuNSAtNiAtNiAtMi41IDYgLTIuNSBaIiBmaWxsPSIjMWUyMzQ2Ii8+CiAgPHBhdGggZD0iTTExMiA4MiBsMS44IDQuMiA0LjIgMS44IC00LjIgMS44IC0xLjggNC4yIC0xLjggLTQuMiAtNC4yIC0xLjggNC4yIC0xLjggWiIgZmlsbD0iI2Y2YzQzMSIvPgogIDxwYXRoIGQ9Ik0xNCA4NiBsMS44IDQuMiA0LjIgMS44IC00LjIgMS44IC0xLjggNC4yIC0xLjggLTQuMiAtNC4yIC0xLjggNC4yIC0xLjggWiIgZmlsbD0iIzFlMjM0NiIvPgo8L3N2Zz4K
@@ -99,7 +99,7 @@ Log.info(mbuStartupInfo(NAME));
 mbuToast.log = (kind, msg) => (kind === 'warn' ? Log.warn(msg) : kind === 'ok' ? Log.ok(msg) : Log.info(msg));
 
 function settings() {
-    const s = Object.assign({ server: 'musicbrainz.org', annotation: false, iconOnly: false, gearOnHover: false, scrollWithPage: false, closeAfter: false }, GM_getValue('fc.settings', {}));
+    const s = Object.assign({ server: 'musicbrainz.org', annotation: false, iconOnly: false, gearOnHover: false, closeAfter: false }, GM_getValue('fc.settings', {}));
     if (!SERVERS.includes(s.server)) s.server = 'musicbrainz.org';
     return s;
 }
@@ -1870,9 +1870,10 @@ function mountButton(provider, id) {
     root.classList.toggle('fc-gear-hover', !!settings().gearOnHover);   // majkinetor: an option to show ⚙︎ only on hover
     root.querySelector('.fc-go').title = `Import to MusicBrainz: open the release editor with this ${provider.name} release filled in`;
     root.style.display = '';
+    migrateScrollSetting();
     placeButton(root);
     const pinned = storedPos(provider.name);
-    if (settings().scrollWithPage && pinned && pinned.top != null) settleThenShow(root);
+    if (scrollsWithPage(provider.name) && pinned && pinned.top != null) settleThenShow(root);
     Log.debug(`button shown for ${provider.name} album ${id}`);
 }
 
@@ -1886,6 +1887,32 @@ function storePos(name, pos) {
     const all = Object.assign({}, GM_getValue(POS_KEY, {}) || {});
     if (pos) all[name] = pos; else delete all[name];
     GM_setValue(POS_KEY, all);
+}
+// majkinetor: "changing the fixed position on page only for some platforms … keeping other
+// platforms independent". Moved button scrolls with the page is each platform's own, kept beside
+// its position: { platformName: true }.
+const SCROLL_KEY = 'fc.scroll';
+function scrollsWithPage(name) { return !!(GM_getValue(SCROLL_KEY, {}) || {})[name]; }
+function setScrollsWithPage(name, on) {
+    const all = Object.assign({}, GM_getValue(SCROLL_KEY, {}) || {});
+    if (on) all[name] = true; else delete all[name];
+    GM_setValue(SCROLL_KEY, all);
+}
+// The setting used to be one for every platform: where it was on, it stays on for each platform
+// the button had been moved on.
+function migrateScrollSetting() {
+    const s = GM_getValue('fc.settings', {}) || {};
+    if (!Object.prototype.hasOwnProperty.call(s, 'scrollWithPage')) return;
+    const on = !!s.scrollWithPage;
+    delete s.scrollWithPage;
+    GM_setValue('fc.settings', s);
+    const moved = Object.keys(GM_getValue(POS_KEY, {}) || {});
+    if (on && moved.length) {
+        const all = Object.assign({}, GM_getValue(SCROLL_KEY, {}) || {});
+        for (const n of moved) all[n] = true;
+        GM_setValue(SCROLL_KEY, all);
+    }
+    Log.info(`Moved button scrolls with the page is now per platform: ${on ? `on for ${moved.join(', ') || 'none (no button moved yet)'}` : 'off everywhere, as it was'}`);
 }
 // What scrolls the page. Usually the window (Bandcamp, Qobuz); the app-like platforms (Spotify,
 // Apple Music) keep the window still and scroll a panel inside it instead, and have more than one
@@ -1964,7 +1991,7 @@ function watchScroller(root, sc) {
     if (sc === watchedScroller || typeof ResizeObserver === 'undefined') return;
     if (scrollerObserver) scrollerObserver.disconnect();
     watchedScroller = sc;
-    scrollerObserver = new ResizeObserver(() => { if (root.style.display !== 'none' && !root.classList.contains('fc-dragging') && settings().scrollWithPage) placeButton(root); });
+    scrollerObserver = new ResizeObserver(() => { if (root.style.display !== 'none' && !root.classList.contains('fc-dragging') && scrollsWithPage(root.dataset.fcProvider)) placeButton(root); });
     scrollerObserver.observe(sc);
     if (sc.firstElementChild) scrollerObserver.observe(sc.firstElementChild);
 }
@@ -1974,15 +2001,17 @@ document.addEventListener('scroll', e => {
     scrollFollow = requestAnimationFrame(() => {
         scrollFollow = 0;
         const root = document.getElementById('fc-root');
-        if (root && root.style.display !== 'none' && !root.classList.contains('fc-dragging') && root.dataset.fcProvider && settings().scrollWithPage) placeButton(root);
+        if (root && root.style.display !== 'none' && !root.classList.contains('fc-dragging') && root.dataset.fcProvider && scrollsWithPage(root.dataset.fcProvider)) placeButton(root);
     });
 }, { capture: true, passive: true });
 
 function placeButton(root) {
     const pos = storedPos(root.dataset.fcProvider);
-    const pageMode = settings().scrollWithPage && pos && pos.top != null;
+    const pageMode = scrollsWithPage(root.dataset.fcProvider) && pos && pos.top != null;
     if (!pageMode && root.dataset.fcWaiting) { delete root.dataset.fcWaiting; if (!root.dataset.fcSettling) revealButton(root); }
     if (!pos) {
+        // back from a spot on the page (Reset): drop what placed it there, or it stays put on the page
+        root.style.position = root.style.zIndex = root.style.clipPath = root.style.visibility = root.style.left = root.style.top = '';
         root.dataset.mbCorner = 'br';
         mbRestackCorner('br');
         return;
@@ -1992,7 +2021,7 @@ function placeButton(root) {
     // majkinetor: "keep its position when scrolling" — the button sits on the page (above the
     // cover, say) and scrolls with it. Stored against the page's horizontal centre, since the
     // platforms centre their layout: it stays over the same spot when the window is resized.
-    if (settings().scrollWithPage && pos.top != null) {
+    if (pageMode) {
         const sc = pageScroller();
         if (sc) {
             waitScroller.n = 0;
@@ -2055,8 +2084,7 @@ function makeMovable(root) {
             root.style.position = root.style.zIndex = root.style.clipPath = root.style.visibility = '';   // fixed and on top while it moves
             root.style.left = root.style.top = '';
             if (root.dataset.mbCorner) { delete root.dataset.mbCorner; mbRestackCorner('br'); }
-            const panel = document.getElementById('fc-panel');
-            if (panel) panel.remove();
+            closePanel();
         }
         root.style.right = Math.round(Math.min(Math.max(0, drag.right - dx), window.innerWidth - drag.w)) + 'px';
         root.style.bottom = Math.round(Math.min(Math.max(0, drag.bottom - dy), window.innerHeight - drag.h)) + 'px';
@@ -2084,8 +2112,7 @@ function makeMovable(root) {
 function unmountButton() {
     const root = document.getElementById('fc-root');
     if (root && root.style.display !== 'none') { root.style.display = 'none'; mbRestackCorner('br'); }
-    const panel = document.getElementById('fc-panel');
-    if (panel) panel.remove();
+    closePanel();
 }
 
 // Next to the whole button (not ⚙︎, which may be a tab above it): above it, or below when there's
@@ -2104,10 +2131,21 @@ function placePanel(panel, anchor) {
     Log.debug(`settings panel ${w}×${h} ${up ? 'above' : 'below'} the button at ${Math.round(r.left)},${Math.round(r.top)} (window ${vw}×${vh})`);
 }
 
+// The settings close through their dismiss handler, which then lets go of the page's clicks. A bare
+// remove() left it waiting, and it swallowed the next click anywhere: ⚙︎ after Reset did nothing.
+let panelDismiss = null;
+function closePanel() {
+    const f = panelDismiss;
+    panelDismiss = null;
+    if (f) f();
+    const panel = document.getElementById('fc-panel');
+    if (panel) panel.remove();
+}
 function togglePanel(anchor) {
     let panel = document.getElementById('fc-panel');
-    if (panel) { panel.remove(); return; }
+    if (panel) { closePanel(); return; }
     const s = settings();
+    const here = (document.getElementById('fc-root') || { dataset: {} }).dataset.fcProvider || '';
     panel = document.createElement('div');
     panel.id = 'fc-panel';
     panel.innerHTML = mbuHtml(mbuCfgHeader({ script: SCRIPT, name: NAME, version: VERSION, icon: ICON_SVG, log: true })
@@ -2116,7 +2154,7 @@ function togglePanel(anchor) {
         + '</select></label>'
         + `<label class="fc-check" title="The button shows only its icon; hover it for what it does"><input type="checkbox" class="fc-iconly-opt"${s.iconOnly ? ' checked' : ''}> Icon only</label>`
         + `<label class="fc-check" title="The ⚙︎ button hides until the pointer is over Import to MusicBrainz; it shows as a small tab on the button's edge"><input type="checkbox" class="fc-gear-hover-opt"${s.gearOnHover ? ' checked' : ''}> Settings button only on hover</label>`
-        + `<label class="fc-check" title="A button you have moved stays on its spot on the page (above the cover, say) and scrolls with it, instead of staying put on the screen. The button in its corner always stays on the screen."><input type="checkbox" class="fc-scroll-opt"${s.scrollWithPage ? ' checked' : ''}> Moved button scrolls with the page</label>`
+        + `<label class="fc-check" title="On ${here} only: a button you have moved stays on its spot on the page (above the cover, say) and scrolls with it, instead of staying put on the screen. The button in its corner always stays on the screen."><input type="checkbox" class="fc-scroll-opt"${scrollsWithPage(here) ? ' checked' : ''}> Moved button scrolls with the page on ${here}</label>`
         + `<label class="fc-check" title="The album's notes on the platform (Bandcamp's about and credits, Discogs's notes, Qobuz's and Apple's reviews, Beatport's and YouTube Music's description, Amazon Music's ℗ line), with a line saying where they come from. Reviews are the critic's text: check you may copy it before you submit."><input type="checkbox" class="fc-annotation"${s.annotation ? ' checked' : ''}> Annotation from the platform's notes</label>`
         + `<label class="fc-check" title="Once the release editor has the release, this platform tab closes. It stays open when the import fails, or when the browser blocked the new tab and the editor opened here."><input type="checkbox" class="fc-close-after"${s.closeAfter ? ' checked' : ''}> Close this page after the import</label>`
         // majkinetor: "change this to Reset: all | this one"
@@ -2129,16 +2167,18 @@ function togglePanel(anchor) {
     panel.querySelector('.fc-reset-pos').addEventListener('click', () => {
         const root = document.getElementById('fc-root');
         storePos(root.dataset.fcProvider, null);
+        setScrollsWithPage(root.dataset.fcProvider, false);
         placeButton(root);
-        panel.remove();
+        closePanel();
         Log.info(`button back in the corner on ${root.dataset.fcProvider}`);
     });
     panel.querySelector('.fc-reset-all').addEventListener('click', () => {
         const root = document.getElementById('fc-root');
         const had = Object.keys(GM_getValue(POS_KEY, {}) || {});
         GM_setValue(POS_KEY, {});
+        GM_setValue(SCROLL_KEY, {});
         placeButton(root);
-        panel.remove();
+        closePanel();
         Log.info(`button back in the corner on every platform (it had been moved on ${had.join(', ') || 'none'})`);
     });
     panel.querySelector('.mbu-cfg-log').addEventListener('click', () => Log.open());
@@ -2148,11 +2188,10 @@ function togglePanel(anchor) {
         Log.info(`server set to ${next.server}`);
     });
     panel.querySelector('.fc-scroll-opt').addEventListener('change', e => {
-        const next = Object.assign(settings(), { scrollWithPage: e.target.checked });
-        saveSettings(next);
+        setScrollsWithPage(here, e.target.checked);
         const root = document.getElementById('fc-root');
         if (root) placeButton(root);
-        Log.info(`moved button: ${next.scrollWithPage ? 'scrolls with the page' : 'stays on the screen'}`);
+        Log.info(`moved button on ${here}: ${e.target.checked ? 'scrolls with the page' : 'stays on the screen'}`);
     });
     panel.querySelector('.fc-gear-hover-opt').addEventListener('change', e => {
         const next = Object.assign(settings(), { gearOnHover: e.target.checked });
@@ -2178,7 +2217,7 @@ function togglePanel(anchor) {
         saveSettings(next);
         Log.info(`close the page after the import: ${next.closeAfter ? 'on' : 'off'}`);
     });
-    mbuDismissOn(panel, () => panel.remove());
+    panelDismiss = mbuDismissOn(panel, () => { panelDismiss = null; panel.remove(); });
 }
 
 async function importCurrent() {
