@@ -136,6 +136,7 @@ Every script's README follows one shape, so a reader who knows one knows them al
 **Writing**
 
 - Short sentences, plain words. Say what the user sees and does, not how the code does it.
+- No low-level technical detail (APIs, tokens, storage keys, events, selectors, timings) in the README. A user who might need it gets a short line in **Notes** that links the script's `DEVELOP.md`, where the detail lives.
 - A list of alike things is a table: sources, cutoffs, confidence levels, settings, gestures. Keep its cells short (a word, a value, a ✓). When many cells would hold sentences, keep the table to the short facts and give each item its own heading below it (ISRC Scout's and First Contact's providers), so the text reads as prose and each item can be linked.
 - Background, reasons and "how it works" go in a `> [!NOTE]` at the end of their section, so they don't break the flow of the instructions.
 - Leave out everyday UI behaviour: Esc closes a window, a button shows on hover, there's no button to press.
