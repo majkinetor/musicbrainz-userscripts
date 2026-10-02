@@ -238,6 +238,28 @@ test('the settings stay inside the window and off the button, wherever it was dr
   }
 });
 
+// majkinetor: "do not show settings button while dragging" — with the settings button only on
+// hover, a drag that lasts past the hover delay brought the tab up mid-drag.
+test('the hover-only settings button stays hidden while the button is dragged', { tag: ['@web'] }, async ({ page, inject }) => {
+  await page.goto(BC, { waitUntil: 'domcontentloaded' });
+  await inject('first_contact', { waitFor: '__fcTest' });
+  await page.locator('#fc-root .fc-go').waitFor({ state: 'visible' });
+  await page.locator('#fc-root .fc-more').click();
+  await page.locator('#fc-panel .fc-gear-hover-opt').check();
+  await page.keyboard.press('Escape');
+  const g = await page.locator('#fc-root .fc-go').boundingBox();
+  await page.mouse.move(g.x + 10, g.y + g.height / 2);
+  await page.mouse.down();
+  await page.mouse.move(g.x - 200, g.y - 200, { steps: 8 });
+  await page.waitForTimeout(1500);                                       // well past the 1 s hover delay
+  const during = await page.locator('#fc-root .fc-more').evaluate(e => getComputedStyle(e).visibility);
+  await page.mouse.up();
+  check(during === 'hidden', `hidden mid-drag: ${during}`);
+  await page.waitForTimeout(1500);                                       // resting on it after the drop: back as before
+  const after = await page.locator('#fc-root .fc-more').evaluate(e => getComputedStyle(e).visibility);
+  check(after === 'visible', `shows again once dropped and rested on: ${after}`);
+});
+
 // majkinetor: "it draws over bandcamp extended player" — a button scrolling with the page is page
 // content, so a fixed bar on the page (Bandcamp Player Enhanced's player) goes over it.
 test('Scrolls with the page: the button goes under a fixed bar on the page, not over it', { tag: ['@web'] }, async ({ page, inject }) => {
