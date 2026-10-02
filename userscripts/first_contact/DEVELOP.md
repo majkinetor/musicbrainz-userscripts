@@ -47,3 +47,15 @@ The guess follows murdos's importers (`fnGuessReleaseType`), with the title's *E
 ## The button's place
 
 Positions are kept per platform in `fc.pos`, and which platforms scroll it with the page in `fc.scroll` (`{ platformName: true }`). The one-for-all `scrollWithPage` setting of older versions is moved there once: on for every platform the button had been moved on. A button in its corner keeps its distance from the window's right and bottom edges. With *Moved button scrolls with the page*, the spot is measured across from the horizontal centre of what scrolls and down from the top of its content, since the platforms centre their layout. Where the platform scrolls a panel instead of the window (Spotify, Apple Music), the scroller is the one under the window's centre; the button is `position: fixed`, follows its scroll and is clipped to it. On load it waits for the page to be quiet for 300 ms (1.5 s at most) and for that panel, then fades in.
+
+## Archive
+
+The handoff carries the archive plan (`archive: { ts, keys, urls: [{ url, what: 'page' | 'api' }] }`, or `null` when archiving is off). The release editor's tab sends it, once per token: a `fc.archived.<token>` flag in its `sessionStorage` stops a reload from sending it again. The platform tab may close straight after the import, which would cut a request off.
+
+- **Page URL**: `location.href` without the fragment and share/tracking parameters (`si`, `utm_*`, `fbclid`, `feature`, …), not the canonical `rel.url`. The canonical URL often redirects (Deezer's `/album/<id>` → `/<country>/album/<id>`), Wayback stores the snapshot under the target, and `/web/<ts>/<canonical>` then finds an older snapshot.
+- **API URL**: a provider's `archiveApi(id)`. Deezer: `api.deezer.com/album/<id>`. Apple Music: `itunes.apple.com/lookup?id=<id>&entity=song&country=<cc>` (amp-api needs a bearer token Wayback can't send). Spotify, Tidal and YouTube Music have none: their APIs need a token, or POST.
+- **Edit note**: `https://web.archive.org/web/<ts>/<url>`, with `<ts>` the import's UTC time (`YYYYMMDDhhmmss`). Wayback redirects to the nearest snapshot. With keys, the screenshot is `/web/<ts>/http://web.archive.org/screenshot/<page url>`.
+- **Anonymous**: `GET https://web.archive.org/save/<url>`. It answers with a 302 to `/web/<ts>/<url>` once the capture is done (about 5–20 s); the manager follows it, and `finalUrl` is the snapshot. 429 is the per-IP rate limit.
+- **With keys** (Save Page Now 2): `POST https://web.archive.org/save` with `Authorization: LOW <key>:<secret>`, `Accept: application/json`, form body `url`, `capture_screenshot=1`, `if_not_archived_within=30d`. It answers `{ url, job_id }`; `GET /save/status/<job_id>` (same header) is polled every 6 s for up to 3 minutes, for the log only.
+
+URLs are sent one at a time. Every step is logged: the plan on the platform side, then each request, its status, the job and its result on the editor side.
