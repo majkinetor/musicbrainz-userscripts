@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Falcon — bulk MusicBrainz link editor
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.2.193847
+// @version      2026.10.2.210657
 // @description  Add external links to a BATCH of MusicBrainz artists/labels/recordings at once — no popup-per-entity, no tab churn. A small pool of persistent worker iframes churns through a queue, each submitting its own edit and moving straight to the next entity. Paste a list, hand it a queue via a `?falcon=` URL param, or click "Send to Falcon" on a Harmony actions page to import its suggested links directly.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHBhdGggZD0iTTY0IDEwIEM4MiAyOCA5MCA1NiA5MCA4MCBMMzggODAgQzM4IDU2IDQ2IDI4IDY0IDEwIFoiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzFiMmE0YSIgc3Ryb2tlLXdpZHRoPSI3IiBzdHJva2UtbGluZWpvaW49InJvdW5kIiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8cGF0aCBkPSJNMzggODAgTDIwIDExMCBMNDAgOTYgWiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxwYXRoIGQ9Ik05MCA4MCBMMTA4IDExMCBMODggOTYgWiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxjaXJjbGUgY3g9IjY0IiBjeT0iNDQiIHI9IjEwIiBmaWxsPSIjMWIyYTRhIi8+CiAgPHBhdGggZD0iTTUwIDgwIEw0NSAxMDggTDY0IDEyMiBMODMgMTA4IEw3OCA4MCBaIiBmaWxsPSIjZmY2YTAwIiBzdHJva2U9IiMxYjJhNGEiIHN0cm9rZS13aWR0aD0iNSIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgo8L3N2Zz4K
@@ -918,6 +918,9 @@
     // #508 (majkinetor): "Options" screen additions.
     get hideLauncher() { return GM_getValue('falcon:hideLauncher', false) === true; },
     // #663: the queue's layout, 'list' (a labelled form per open row) or 'grid' (one line per row)
+    // #663: the locale a typed alias gets when it carries no @locale of its own ('' = none)
+    get aliasLang() { return String(GM_getValue('falcon:aliasLang', '') || ''); },
+    set aliasLang(v) { GM_setValue('falcon:aliasLang', String(v || '').trim()); },
     get queueView() { return GM_getValue('falcon:queueView', 'list') === 'grid' ? 'grid' : 'list'; },
     set queueView(v) { GM_setValue('falcon:queueView', v === 'grid' ? 'grid' : 'list'); },
     set hideLauncher(v) { GM_setValue('falcon:hideLauncher', !!v); },
@@ -1415,6 +1418,10 @@
   // only); an id missing from it still shows as "type N".
   const URL_LINK_TYPES = {"72":"production","73":"get the music","74":"purchase for download","75":"download for free","76":"discogs","77":"amazon asin","78":"cover art link","79":"purchase for mail-order","82":"other databases","83":"IMDB samples","85":"free streaming","86":"vgmdb","88":"discography","89":"wikipedia","90":"discogs","93":"lyrics","94":"review","96":"other databases","97":"IMDb","171":"discography","172":"fanpage","173":"image","174":"purevolume","175":"purchase for mail-order","176":"purchase for download","177":"download for free","178":"IMDb","179":"wikipedia","180":"discogs","182":"biography","183":"official homepage","184":"discography page","185":"online community","187":"get the music","188":"other databases","189":"myspace","190":"BBC Music page","191":"vgmdb","192":"social network","193":"youtube","194":"free streaming","197":"lyrics","199":"blog","210":"vgmdb","211":"history site","212":"catalog site","213":"logo","214":"fanpage","215":"myspace","216":"wikipedia","217":"discogs","218":"social network","219":"official site","221":"online data","222":"other databases","224":"blog","225":"youtube","254":"purchase for download","255":"download for free","256":"production","257":"get the music","258":"IMDB samples","268":"free streaming","271":"lyrics","273":"other databases","274":"download for free","279":"wikipedia","280":"secondhandsongs","283":"allmusic","284":"allmusic","285":"allmusic","286":"allmusic","287":"official homepage","288":"discography entry","289":"songfacts","290":"soundcloud","291":"soundcloud","301":"license","302":"license","303":"video channel","304":"video channel","306":"other databases","307":"secondhandsongs","308":"secondhandsongs","310":"VIAF","311":"VIAF","312":"VIAF","313":"IMDb","351":"wikidata","352":"wikidata","353":"wikidata","354":"wikidata","355":"wikipedia","358":"wikidata","363":"official homepage","396":"image","429":"social network","462":"myspace","495":"video channel","528":"youtube","561":"other databases","594":"wikidata","595":"wikipedia","627":"blog","660":"online data","705":"discogs","706":"IMDb","707":"interview","713":"geonames","718":"bandcamp","719":"bandcamp","729":"show notes","730":"other databases","731":"wikipedia","732":"image","733":"wikidata","734":"information page","744":"wikipedia","745":"official homepage","746":"other databases","747":"discogs","749":"wikidata","753":"other databases","754":"IMSLP","755":"allmusic","782":"official homepage","783":"social network","784":"social network","785":"songkick","786":"songkick","787":"songkick","788":"vgmdb","789":"wikipedia","790":"wikidata","791":"youtube","792":"youtube","803":"other databases","804":"video channel","805":"video channel","808":"poster","811":"setlistfm","816":"setlistfm","817":"setlistfm","837":"last.fm","838":"last.fm","839":"last.fm","840":"last.fm","841":"online data","842":"review","843":"IMDb","850":"BookBrainz","851":"BookBrainz","852":"BookBrainz","853":"BookBrainz","854":"BookBrainz","860":"bandsintown","861":"bandsintown","862":"bandsintown","870":"soundcloud","897":"patronage","898":"patronage","899":"patronage","900":"patronage","901":"patronage","902":"crowdfunding","903":"crowdfunding","904":"crowdfunding","905":"crowdfunding","906":"crowdfunding","907":"crowdfunding","908":"crowdfunding","909":"crowdfunding","910":"crowdfunding","911":"get the score","912":"purchase for download","913":"purchase for mail-order","915":"podcast feed","919":"CD Baby","920":"VIAF","921":"work list entry","934":"geonames","938":"setlistfm","939":"license","940":"soundcloud","957":"get the music","958":"download for free","959":"purchase for download","960":"purchase for mail-order","971":"discogs","976":"secondhandsongs","977":"secondhandsongs","978":"streaming","979":"streaming","980":"streaming","981":"CPDL","982":"lyrics","984":"history site","992":"vgmdb","997":"free streaming","1001":"VIAF","1005":"streaming","1013":"vgmdb","1080":"youtube music","1083":"schedule","1086":"other databases","1087":"wikidata","1089":"discogs","1091":"get the music","1092":"bandcamp","1093":"allmusic","1130":"apple music","1131":"apple music","1167":"BookBrainz","1169":"discography entry","1188":"fanpage","1189":"fanpage","1190":"fanpage","1191":"fanpage","1192":"art gallery","1193":"ticketing","1194":"ticketing","1195":"ticketing","1196":"ticketing","1197":"ticketing","1254":"purchase artwork","1275":"discogs","1288":"logo","1289":"IMDb","1301":"fanpage","1302":"schedule"};
   const linkTypeName = id => URL_LINK_TYPES[id] || `type ${id}`;
+  // #663: the url link types each entity can take (MusicBrainz's, current ones only), for the link editor's type picker
+  const URL_TYPES_BY_ENTITY = {"release":"72,73,74,75,76,77,79,82,85,86,288,301,308,729,755,850,906,980","release_group":"88,89,90,93,94,96,97,284,287,353,853,907","artist":"171,172,173,174,175,176,177,178,179,180,182,183,184,185,187,188,189,191,192,193,194,197,199,283,291,303,307,310,352,707,718,754,785,816,840,841,852,862,897,902,919,978,981,1080,1131","label":"210,211,212,213,214,215,216,217,218,219,221,222,224,225,290,304,311,313,354,719,838,851,899,903,957,958,959,960,977,982,997,1005,1130","recording":"254,255,256,257,258,268,285,302,306,905,976,979","work":"271,273,274,279,280,286,289,312,351,843,854,908,911,912,913,921,939,992","area":"355,358,713,730","place":"363,396,429,462,495,528,561,594,595,627,660,705,706,787,817,861,900,909,920,934,940,984,1013","instrument":"732,733,734,753","series":"744,745,746,747,749,784,792,805,870,901,910,915,938,1001,1083","event":"782,783,786,788,789,790,791,803,804,808,811,839,842,860,898,904","genre":"1086,1087,1089,1091,1092,1093"};
+  const urlTypesFor = entityType => (URL_TYPES_BY_ENTITY[entityType] || '').split(',').filter(Boolean)
+    .sort((a, b) => linkTypeName(a).localeCompare(linkTypeName(b)));
   // "open.spotify.com" -> "Spotify": the registrable name, for the service tag
   function linkService(url) {
     try {
@@ -5315,7 +5322,7 @@
     const kids = [...bar.children];
     const gap = parseFloat(getComputedStyle(bar).gap) || 8;
     let need = gap * Math.max(0, kids.length - 1);
-    kids.forEach(el => { if (!el.id || el.id !== 'falcon-progress-wrap') need += el.offsetWidth; });
+    kids.forEach(el => { if (!el.id || el.id !== 'falcon-progress-wrap') need += el.id === 'falcon-type-chips-in' ? el.scrollWidth : el.offsetWidth; });   // the chips shrink to fit: count what they hold
     bar.classList.toggle('falcon-compact', need > bar.clientWidth - 20);   // minus h-padding
   }
   function fitBars() {
@@ -5337,6 +5344,22 @@
       // (and MusicBrainz's own page CSS was darkening the browser default).
       '#falcon-panel input::placeholder{color:var(--mbu-text-weak);font-style:italic;opacity:1}',
       '.falcon-bar.falcon-compact .falcon-bt{display:none}',
+      // #663: the open tab is marked; the select-all box and the selection count head the rows
+      '#falcon-hdr .falcon-tab{border-bottom:2px solid transparent!important;padding:2px 4px}',
+      '#falcon-hdr .falcon-tab.falcon-tab-on{border-bottom-color:var(--mbu-warn)!important;font-weight:700}',
+      '.falcon-selhead{display:inline-flex;align-items:center;gap:5px}',
+      '.falcon-selhead .falcon-selcount{color:var(--mbu-warn);font-weight:700;font-size:11px}',
+      '.falcon-lhead{position:sticky;top:0;z-index:1;background:var(--mbu-bg);padding:4px 0;border-bottom:1px solid var(--mbu-border)}',
+      '.falcon-chip .falcon-alias-name{cursor:text;overflow:hidden;text-overflow:ellipsis}',
+      '.falcon-chip .falcon-alias-name:hover{text-decoration:underline dotted}',
+      '.falcon-chips>input.falcon-alias-edit{flex:0 1 160px}',
+      '.falcon-grid-aliases{border:none;background:none!important;color:var(--mbu-info);cursor:pointer;font-size:11px;padding:2px 4px;white-space:nowrap;flex:0 0 auto}',
+      '.falcon-ln{grid-template-columns:12px 62px minmax(0,1fr) auto auto 18px!important}',
+      '.falcon-ln input.falcon-link-url{padding:2px 6px!important;font-size:11px}',
+      '.falcon-lt span button{border:none;background:none!important;color:inherit;cursor:pointer;padding:0 0 0 3px;font-size:9px;line-height:1}',
+      '.falcon-ln select{font-size:10px;padding:1px 2px;border:1px solid var(--mbu-border);border-radius:4px;max-width:120px}',
+      '.falcon-ln .falcon-link-del{border:none;background:none!important;cursor:pointer;color:var(--mbu-text-weak);padding:0}',
+      '.falcon-links>input.falcon-link-new{margin-left:80px;width:calc(100% - 80px)!important}',
       // #663: the open row is a labelled form (list view), or every row is one grid line
       '.falcon-form{display:grid;grid-template-columns:max-content minmax(0,1fr);gap:5px 10px;align-items:center;padding:4px 6px 9px 30px;font-size:11px}',
       '.falcon-form>.falcon-lbl{color:var(--mbu-text-weak);text-align:right;font-size:10.5px;white-space:nowrap}',
@@ -5435,27 +5458,28 @@
         <span style="display:flex;color:var(--mbu-warn)">${ICON}</span>
         <span style="flex:0 0 auto;font-weight:700">${NAME}</span>
         <div id="falcon-status-chips" style="display:flex;gap:5px;flex:1;overflow-x:auto;overflow-y:hidden;min-width:0"></div>
-        <button type="button" id="falcon-tab-queue" style="background:none;border:none;color:#fff;cursor:pointer;font:inherit">Queue</button>
-        <button type="button" id="falcon-tab-workers" style="background:none;border:none;color:#fff;cursor:pointer;font:inherit">Workers</button>
-        <button type="button" id="falcon-tab-log" style="background:none;border:none;color:#fff;cursor:pointer;font:inherit">Log</button>
-        <button type="button" id="falcon-tab-options" title="Options" style="background:none;border:none;color:#fff;cursor:pointer;font:inherit;font-size:14px">⚙</button>
+        <button type="button" id="falcon-tab-queue" class="falcon-tab" style="background:none;border:none;color:#fff;cursor:pointer;font:inherit">Queue</button>
+        <button type="button" id="falcon-tab-workers" class="falcon-tab" style="background:none;border:none;color:#fff;cursor:pointer;font:inherit">Workers</button>
+        <button type="button" id="falcon-tab-log" class="falcon-tab" style="margin-right:14px;background:none;border:none;color:#fff;cursor:pointer;font:inherit">Log</button>
+        <button type="button" id="falcon-tab-options" class="falcon-tab" title="Options" style="background:none;border:none;color:#fff;cursor:pointer;font:inherit;font-size:14px">⚙</button>
         <button type="button" id="falcon-maximize" title="Maximize" style="background:none;border:none;color:#fff;cursor:pointer;font:inherit;font-size:14px">⛶</button>
         <button type="button" id="falcon-close" style="background:none;border:none;color:#fff;cursor:pointer;font:inherit;font-size:14px">✕</button>
       </div>
       <div id="falcon-body-queue" style="padding:0;overflow:hidden;flex:1;display:flex;flex-direction:column">
         <div id="falcon-queue-toolbar" class="falcon-bar" style="display:flex;align-items:center;gap:10px;padding:6px 10px;border-bottom:1px solid var(--mbu-border);font-size:11px;color:var(--mbu-text);flex:0 0 auto">
-          <input type="checkbox" id="falcon-select-all" title="Select all" style="flex:0 0 auto" />
-          <button type="button" id="falcon-expand-all" style="padding:2px 8px;cursor:pointer" title="Expand every row's url detail"><span class="falcon-bi">▾</span><span class="falcon-bt">Expand all</span></button>
-          <button type="button" id="falcon-view-toggle" style="padding:2px 8px;cursor:pointer" title="Switch between the list and the grid"><span class="falcon-bi">▦</span><span class="falcon-bt">Grid</span></button>
           <button type="button" id="falcon-add-page" title="Add this release's entities to the queue as empty rows to edit" style="padding:2px 8px;cursor:pointer;display:none"><span class="falcon-bi">+</span><span class="falcon-bt">Add from release</span></button>
           <button type="button" id="falcon-import" title="Load a queue from a JSON file" style="padding:2px 8px;cursor:pointer"><span class="falcon-bi">↓</span><span class="falcon-bt">Import</span></button>
-          <button type="button" id="falcon-export" title="Save the queue — and each item's outcome — to a JSON file" style="padding:2px 8px;cursor:pointer"><span class="falcon-bi">↑</span><span class="falcon-bt">Export</span></button>
-          <button type="button" id="falcon-retry-failed" disabled title="Re-queue every failed/partial item for another attempt — useful when MusicBrainz was just slow, not when an item is genuinely broken" style="padding:2px 8px;cursor:pointer"><span class="falcon-bi">↻</span><span class="falcon-bt">Retry failed</span></button>
+          <label id="falcon-alias-lang-wrap" title="Alias language: the locale every alias you type gets, unless it says name@locale itself. Leave empty for none." style="display:inline-flex;align-items:center;gap:5px;cursor:text"><span class="falcon-bi">🗣</span><span class="falcon-bt">Alias language</span>
+            <input type="text" id="falcon-alias-lang" placeholder="none" spellcheck="false" style="width:52px;font:inherit;padding:2px 5px;border:1px solid var(--mbu-border);border-radius:4px" /></label>
+          <button type="button" id="falcon-export" title="Save the queue — and each item's outcome — to a JSON file" style="margin-left:auto;padding:2px 8px;cursor:pointer"><span class="falcon-bi">↑</span><span class="falcon-bt">Export</span></button>
           <input type="file" id="falcon-import-file" accept="application/json,.json" style="display:none" />
-          <span id="falcon-select-count"></span>
-          <button type="button" id="falcon-remove-selected" disabled title="Remove the selected rows from the queue" style="margin-left:auto;padding:2px 8px;cursor:pointer"><span class="falcon-bi">🗑</span><span class="falcon-bt">Remove selected</span></button>
         </div>
-        <div id="falcon-type-chips" style="display:none;gap:6px;flex-wrap:wrap;padding:6px 10px;border-bottom:1px solid var(--mbu-border)"></div>
+        <div id="falcon-type-chips" class="falcon-bar" style="display:flex;align-items:center;gap:6px;padding:6px 10px;border-bottom:1px solid var(--mbu-border);font-size:11px;flex:0 0 auto">
+          <span id="falcon-type-chips-in" style="display:flex;gap:6px;flex-wrap:nowrap;overflow:hidden;min-width:0"></span>
+          <button type="button" id="falcon-remove-selected" disabled title="Remove the selected rows from the queue" style="margin-left:auto;padding:2px 8px;cursor:pointer"><span class="falcon-bi">🗑</span><span class="falcon-bt">Remove selected</span></button>
+          <button type="button" id="falcon-expand-all" style="padding:2px 8px;cursor:pointer" title="Expand every row's url detail"><span class="falcon-bi">▾</span><span class="falcon-bt">Expand all</span></button>
+          <button type="button" id="falcon-view-toggle" style="padding:2px 8px;cursor:pointer" title="Switch between the list and the grid"><span class="falcon-bi">▦</span><span class="falcon-bt">Grid</span></button>
+        </div>
         <div id="falcon-queue-list" style="overflow:auto;flex:1;padding:0 10px"></div>
         <div id="falcon-notepanel" style="display:none;padding:8px 10px;border-top:1px solid var(--mbu-border);background:var(--mbu-bg-sunken);flex:0 0 auto">
           <div style="display:flex;align-items:baseline;gap:8px;margin-bottom:5px">
@@ -5473,7 +5497,10 @@
             <span id="falcon-progress-text" style="color:var(--mbu-text-dim);font-size:10px;white-space:nowrap;flex:0 0 auto"></span>
           </div>
           <button type="button" id="falcon-note-btn" title="Batch edit note &mdash; appended to every edit in this run" style="flex:0 0 auto;padding:4px 10px;cursor:pointer"><span class="falcon-bi">&#9998;</span><span class="falcon-bt">Note</span></button>
-          <button type="button" id="falcon-run" title="Start processing the queue" style="flex:0 0 auto;padding:4px 12px;font-weight:700;cursor:pointer;background:#1b2a4a;color:#fff;border:none;border-radius:4px"><span class="falcon-bi">▶</span><span class="falcon-bt">Start</span></button>
+          <div style="flex:0 0 auto;display:flex;flex-direction:column;align-items:stretch;gap:3px">
+            <button type="button" id="falcon-run" title="Start processing the queue" style="padding:4px 12px;font-weight:700;cursor:pointer;background:#1b2a4a;color:#fff;border:none;border-radius:4px;justify-content:center"><span class="falcon-bi">▶</span><span class="falcon-bt">Start</span></button>
+            <button type="button" id="falcon-retry-failed" disabled title="Re-queue every failed/partial item for another attempt — useful when MusicBrainz was just slow, not when an item is genuinely broken" style="padding:1px 8px;cursor:pointer;font-size:10.5px;justify-content:center"><span class="falcon-bi">↻</span><span class="falcon-bt">Retry failed</span></button>
+          </div>
         </div>
         <div id="falcon-cover-warning" style="display:none;padding:5px 10px;background:var(--mbu-warn-bg);color:var(--mbu-warn);font-size:10.5px;border-top:1px solid var(--mbu-warn);flex:0 0 auto"></div>
       </div>
@@ -5819,12 +5846,22 @@
       box.addEventListener('input', () => { setBatchNote(box.value); syncBatchNoteUi(); });
       syncBatchNoteUi();
     })();
-    document.getElementById('falcon-select-all').onchange = function () {
+    document.getElementById('falcon-queue-list').addEventListener('change', e => {
+      if (e.target.id !== 'falcon-select-all') return;
       const selectable = queue.filter(i => i.status !== 'active');
-      if (this.checked) selectable.forEach(i => _selectedIds.add(i.id));
+      if (e.target.checked) selectable.forEach(i => _selectedIds.add(i.id));
       else selectable.forEach(i => _selectedIds.delete(i.id));
       renderQueue();
-    };
+    });
+    // #663 (majkinetor): "Lets have default language in the toolbar. It can be empty or set. @ still works to override it"
+    const langBox = document.getElementById('falcon-alias-lang');
+    langBox.value = cfg.aliasLang;
+    langBox.addEventListener('change', () => {
+      langBox.value = langBox.value.trim().replace('-', '_');
+      cfg.aliasLang = langBox.value;
+      log('info', cfg.aliasLang ? `typed aliases get the locale ${cfg.aliasLang} unless they say name@locale` : 'typed aliases get no locale unless they say name@locale');
+      renderQueue();
+    });
     document.getElementById('falcon-remove-selected').onclick = () => {
       const removable = [..._selectedIds].filter(id => { const it = queue.find(q => q.id === id); return it && it.status !== 'active'; });
       if (!removable.length) return;
@@ -5909,12 +5946,36 @@
       renderQueue();
     });
     list.addEventListener('click', e => {
+      const nm = e.target.closest('.falcon-alias-name');
+      if (nm && !nm.closest('.falcon-chip').querySelector('button[disabled]')) {
+        _aliasEdit = { id: nm.dataset.id, idx: +nm.dataset.idx };
+        dbg('alias', `editing alias ${_aliasEdit.idx} of ${_aliasEdit.id}`);
+        renderQueue();
+        const box = document.querySelector('#falcon-queue-list .falcon-alias-edit');
+        if (box) { box.focus(); box.setSelectionRange(box.value.length, box.value.length); }
+        return;
+      }
+      const lt = e.target.closest('.falcon-link-type-del');
+      if (lt) { e.preventDefault(); editLink(lt.dataset.id, 'untype', lt.dataset.url, lt.dataset.type); return; }
+      const ld = e.target.closest('.falcon-link-del');
+      if (ld) { e.preventDefault(); editLink(ld.dataset.id, 'remove', ld.dataset.url, ''); return; }
+      const ga = e.target.closest('.falcon-grid-aliases');
+      if (ga) { if (_expandedIds.has(ga.dataset.id)) _expandedIds.delete(ga.dataset.id); else _expandedIds.add(ga.dataset.id); renderQueue(); return; }
       const del = e.target.closest('.falcon-alias-del');
       if (!del) return;
       e.preventDefault(); e.stopPropagation();
       const it = queue.find(i => i.id === del.dataset.id);
       if (it) { it.aliases.splice(+del.dataset.idx, 1); renderQueue(); }
     });
+    list.addEventListener('focusout', e => {
+      if (!e.target.classList || !e.target.classList.contains('falcon-alias-edit') || !_aliasEdit) return;
+      setTimeout(() => { if (_aliasEdit && document.activeElement !== e.target) { _aliasEdit = null; renderQueue(); } }, 0);
+    });
+    list.addEventListener('keydown', e => {
+      if (e.key !== 'Escape' || !e.target.classList || !e.target.classList.contains('falcon-alias-edit')) return;
+      e.preventDefault(); e.stopPropagation();
+      _aliasEdit = null; renderQueue();
+    }, true);
     // #663: spreadsheet keys. Enter / Down go to the same field of the next row,
     // Shift+Enter / Up to the previous one; Tab / Shift+Tab walk the fields, and
     // so do Right / Left once the caret is at the end / start of the text.
@@ -5976,10 +6037,20 @@
       // than MB's own form.
       // #535: type a name (optionally "name@pl") and it becomes an alias on
       // this row. Deliberately minimal — the bulk path is JSON.
+      // #663 (majkinetor): "Added aliases can't be edited after they are in chip" — a
+      // clicked chip turns back into a box; Enter or leaving it puts the chip back
+      const aliasEdit = e.target.closest('.falcon-alias-edit');
+      if (aliasEdit) { commitAliasEdit(aliasEdit); return; }
+      const linkUrl = e.target.closest('.falcon-link-url');
+      if (linkUrl) { editLink(linkUrl.dataset.id, 'url', linkUrl.dataset.url, linkUrl.value); return; }
+      const linkType = e.target.closest('.falcon-link-type');
+      if (linkType) { editLink(linkType.dataset.id, 'type', linkType.dataset.url, linkType.value); return; }
+      const linkNew = e.target.closest('.falcon-link-new');
+      if (linkNew) { editLink(linkNew.dataset.id, 'add', '', linkNew.value); return; }
       const aliasAdd = e.target.closest('.falcon-alias-add');
       if (aliasAdd) {
         const it = queue.find(i => i.id === aliasAdd.dataset.id);
-        const parsed = normalizeAliases([aliasAdd.value]);
+        const parsed = withAliasLang(aliasAdd.value);
         if (it && parsed.length) { it.aliases = (it.aliases || []).concat(parsed); aliasAdd.value = ''; renderQueue(); }
         return;
       }
@@ -6144,6 +6215,7 @@
   const OFFSCREEN = 'position:absolute;left:-100000px;top:0;width:1200px;height:800px;overflow:auto;';
   function setTab(t) {
     tab = t;
+    ['queue', 'workers', 'log', 'options'].forEach(n => { const b = document.getElementById('falcon-tab-' + n); if (b) b.classList.toggle('falcon-tab-on', n === t); });
     document.getElementById('falcon-body-queue').style.display = t === 'queue' ? 'flex' : 'none';
     const w = document.getElementById('falcon-body-workers');
     if (t === 'workers') w.style.cssText = 'display:block;padding:8px 10px;overflow:auto;flex:1';
@@ -6200,7 +6272,9 @@
   let _linksOpen = new Set();   // rows whose link list is shown past the first LINKS_SHOWN
   function renderLinks(it) {
     const groups = groupedLinks(it);
-    if (!groups.length) return '';
+    const dis = it.status === 'active' ? 'disabled' : '';
+    const add = `<input type="text" class="falcon-link-new" data-id="${it.id}" placeholder="+ link" title="Add a link: paste its url" ${dis} />`;
+    if (!groups.length) return `<div class="falcon-links">${add}</div>`;
     const all = _linksOpen.has(it.id) || groups.length <= LINKS_SHOWN + 1;
     const shown = all ? groups : groups.slice(0, LINKS_SHOWN);
     const rows = shown.map(g => {
@@ -6209,15 +6283,73 @@
       const color = failed ? 'var(--mbu-error)' : done ? 'var(--mbu-ok)' : 'var(--mbu-text-weak)';
       return `<div class="falcon-ln" title="${failed && failed.error ? esc(failed.error) : esc(g.url)}">
         <span style="color:${color};text-align:center">${icon}</span>
-        <span class="falcon-svc">${esc(linkService(g.url))}</span>
-        <a href="${esc(g.url)}" target="_blank" rel="noopener">${esc(g.url.replace(/^https?:\/\/(www\.)?/, ''))}</a>
-        <span class="falcon-lt">${g.types.map(t => `<span title="link type ${esc(t)}">+ ${esc(linkTypeName(t))}</span>`).join('')}</span>
+        <a class="falcon-svc" href="${esc(g.url)}" target="_blank" rel="noopener" title="Open ${esc(g.url)}">${esc(linkService(g.url))}</a>
+        <input type="text" class="falcon-link-url" data-id="${it.id}" data-url="${esc(g.url)}" value="${esc(g.url)}" title="Edit the link; empty it to remove it" ${dis} />
+        <span class="falcon-lt">${g.types.map(t => `<span title="link type ${esc(t)}">+ ${esc(linkTypeName(t))}<button type="button" class="falcon-link-type-del" data-id="${it.id}" data-url="${esc(g.url)}" data-type="${esc(t)}" title="Remove this type" ${dis}>✕</button></span>`).join('') || '<span style="background:none;color:var(--mbu-text-weak)" title="No type: MusicBrainz guesses it from the url">auto</span>'}</span>
+        <select class="falcon-link-type" data-id="${it.id}" data-url="${esc(g.url)}" title="Add a type to this link" ${dis}><option value="">+ type</option>${urlTypesFor(it.entityType).filter(t => !g.types.map(String).includes(t)).map(t => `<option value="${t}">${esc(linkTypeName(t))}</option>`).join('')}</select>
+        <button type="button" class="falcon-link-del" data-id="${it.id}" data-url="${esc(g.url)}" title="Remove this link from the queue row" ${dis}>✕</button>
       </div>`;
     }).join('');
     const rest = groups.slice(LINKS_SHOWN);
     const more = groups.length > LINKS_SHOWN + 1
       ? `<button type="button" class="falcon-more" data-id="${it.id}">${all ? 'show fewer' : `+ ${rest.length} more (${esc([...new Set(rest.map(g => linkService(g.url)))].join(', '))})`}</button>` : '';
-    return `<div class="falcon-links">${rows}${more}</div>`;
+    return `<div class="falcon-links">${rows}${more}${add}</div>`;
+  }
+  // #663: typed alias text → aliases, the toolbar's alias language filling in a missing @locale
+  function withAliasLang(text) {
+    const parsed = normalizeAliases([text]);
+    if (cfg.aliasLang && !/@/.test(String(text))) parsed.forEach(a => { if (!a.locale) a.locale = cfg.aliasLang; });
+    return parsed;
+  }
+  let _aliasEdit = null;   // {id, idx}: the alias chip open as a box
+  const aliasText = a => a.name + (a.locale ? '@' + a.locale : '');
+  function commitAliasEdit(box) {
+    const it = queue.find(i => i.id === box.dataset.id), idx = +box.dataset.idx;
+    _aliasEdit = null;
+    if (!it || !it.aliases[idx]) { renderQueue(); return; }
+    const old = it.aliases[idx], text = box.value.trim();
+    if (!text) { it.aliases.splice(idx, 1); log('info', `${entityLabel(it)} — alias "${old.name}" removed`); }
+    else {
+      // only the name and locale are typed; the rest of the alias (type, primary, sort name) stays
+      const p = normalizeAliases([text])[0];
+      const locale = /@/.test(text) ? p.locale : (old.locale || cfg.aliasLang || '');
+      it.aliases[idx] = { ...old, name: p.name, locale };
+      if (aliasText(old) !== aliasText(it.aliases[idx])) log('info', `${entityLabel(it)} — alias "${aliasText(old)}" → "${aliasText(it.aliases[idx])}"`);
+    }
+    renderQueue();
+  }
+  // #663 (majkinetor): "Add option to edit elements, and remove them. Add/change/remove
+  // type, edit link, remove row." A url with no type is left for MusicBrainz to guess, as
+  // pasted links always were.
+  function editLink(id, op, url, val) {
+    const it = queue.find(i => i.id === id);
+    if (!it || it.status === 'active') return;
+    const v = String(val || '').trim(), before = it.urls.length;
+    if (op === 'url') {
+      if (!v) it.urls = it.urls.filter(u => u.url !== url);
+      else it.urls.forEach(u => { if (u.url === url) u.url = v; });
+      log('info', `${entityLabel(it)} — link ${url} → ${v || '(removed)'}`);
+    } else if (op === 'remove') {
+      it.urls = it.urls.filter(u => u.url !== url);
+      log('info', `${entityLabel(it)} — link ${url} removed`);
+    } else if (op === 'add') {
+      if (!v) return;
+      if (!/^https?:\/\//i.test(v)) { log('warn', `${entityLabel(it)} — "${v}" is not a link (it needs http:// or https://)`); renderQueue(); return; }
+      if (!it.urls.some(u => u.url === v)) it.urls.push({ url: v, linkTypeId: null });
+      log('info', `${entityLabel(it)} — link ${v} added`);
+    } else if (op === 'type') {
+      if (!v) return;
+      const untyped = it.urls.find(u => u.url === url && !u.linkTypeId);
+      if (untyped) untyped.linkTypeId = v;
+      else if (!it.urls.some(u => u.url === url && String(u.linkTypeId) === v)) it.urls.push({ url, linkTypeId: v });
+      log('info', `${entityLabel(it)} — link ${url} gets the type ${linkTypeName(v)}`);
+    } else if (op === 'untype') {
+      const rest = it.urls.filter(u => u.url === url && String(u.linkTypeId) !== String(v));
+      it.urls = it.urls.filter(u => u.url !== url).concat(rest.length ? rest : [{ url, linkTypeId: null }]);
+      log('info', `${entityLabel(it)} — link ${url} loses the type ${linkTypeName(v)}`);
+    }
+    dbg('links', `${it.id} ${op} ${url} ${v}: ${before} → ${it.urls.length} url entries ${JSON.stringify(it.urls)}`);
+    renderQueue();
   }
   // The editable fields, keyed by the column name the keyboard walk uses (#663).
   // Both views draw the same fields in this order, so Tab and Enter mean the same
@@ -6243,10 +6375,16 @@
       // #535: aliases apply to every entity type. Each alias is one MB edit; the
       // bulk case ("2 translations for all recordings") is meant to arrive as
       // JSON, so this stays a light add/remove list rather than a form.
-      const chips = (it.aliases || []).map((a, idx) => `<span class="falcon-chip" title="${esc([a.type, a.primary ? 'primary for locale' : '', a.sortName ? 'sort: ' + a.sortName : ''].filter(Boolean).join(' · ') || 'alias')}">
-          <span style="overflow:hidden;text-overflow:ellipsis">${esc(a.name)}${a.primary ? ' ★' : ''}</span>${a.locale ? ` <span class="falcon-loc">${esc(a.locale)}</span>` : ''}
+      if (short === 'grid') {
+        const n = (it.aliases || []).length, open = _expandedIds.has(it.id);
+        return `<div class="falcon-chips">${n ? `<button type="button" class="falcon-grid-aliases" data-id="${it.id}" title="${open ? 'Hide' : 'Show and edit'} the aliases, below the row">${open ? '▾' : '▸'} ${n}</button>` : ''}<input type="text" class="falcon-alias-add" data-id="${it.id}" data-col="alias" placeholder="+ alias${cfg.aliasLang ? ' (' + esc(cfg.aliasLang) + ')' : ''}" title="Add an alias: name, or name@locale" ${dis} /></div>`;
+      }
+      const chips = (it.aliases || []).map((a, idx) => _aliasEdit && _aliasEdit.id === it.id && _aliasEdit.idx === idx
+        ? `<input type="text" class="falcon-alias-edit" data-id="${it.id}" data-idx="${idx}" value="${esc(aliasText(a))}" title="Edit the alias: name, or name@locale. Enter keeps it, Esc cancels, empty removes it" />`
+        : `<span class="falcon-chip" title="${esc([a.type, a.primary ? 'primary for locale' : '', a.sortName ? 'sort: ' + a.sortName : ''].filter(Boolean).join(' · ') || 'alias')}">
+          <span class="falcon-alias-name" data-id="${it.id}" data-idx="${idx}" title="Click to edit">${esc(a.name)}${a.primary ? ' ★' : ''}</span>${a.locale ? ` <span class="falcon-loc">${esc(a.locale)}</span>` : ''}
           <button type="button" class="falcon-alias-del" data-id="${it.id}" data-idx="${idx}" title="Remove this alias from the queue row" ${dis}>✕</button></span>`).join('');
-      return `<div class="falcon-chips">${chips}<input type="text" class="falcon-alias-add" data-id="${it.id}" data-col="alias" placeholder="${short ? '+ alias' : 'add alias — name, or name@locale'}" title="Add an alias: name, or name@locale" ${dis} /></div>`;
+      return `<div class="falcon-chips">${chips}<input type="text" class="falcon-alias-add" data-id="${it.id}"${short === 'sub' ? '' : ' data-col="alias"'} placeholder="${short ? '+ alias' : 'add alias — name, or name@locale'}${cfg.aliasLang ? ' (' + esc(cfg.aliasLang) + ')' : ''}" title="Add an alias: name, or name@locale" ${dis} /></div>`;
     }
     return '';
   }
@@ -6259,7 +6397,8 @@
     // nothing while it still equals that name, so a row you only looked at
     // never submits an edit.
     const links = renderLinks(it);
-    const fields = (gridSub ? [] : fieldCols(it)).map(col => col === 'video'
+    const fields = (gridSub ? ((it.aliases || []).length ? ['alias'] : []) : fieldCols(it)).map(col => gridSub
+      ? `<span class="falcon-lbl">${FIELD_LABEL[col]}</span>${fieldHtml(it, col, 'sub')}` : col === 'video'
       ? `<span class="falcon-lbl">Type</span><label class="falcon-video-lbl">${fieldHtml(it, col)} video</label>`
       : `<span class="falcon-lbl">${FIELD_LABEL[col]}</span>${fieldHtml(it, col)}`);
     if (links) fields.splice(!gridSub && fieldCols(it).includes('name') ? 1 : 0, 0, `<span class="falcon-lbl">Links</span>${links}`);
@@ -6343,12 +6482,11 @@
     if (_pendingFocus) { const p = _pendingFocus; _pendingFocus = null; focusField(p.id, p.col, null); }
   }
   function renderTypeChips() {
-    const wrap = document.getElementById('falcon-type-chips'); if (!wrap) return;
+    const wrap = document.getElementById('falcon-type-chips-in'); if (!wrap) return;
     const counts = {};
     queue.forEach(i => { counts[i.entityType] = (counts[i.entityType] || 0) + 1; });
     const types = Object.keys(counts).sort();
-    if (!types.length) { wrap.style.display = 'none'; wrap.innerHTML = ''; return; }
-    wrap.style.display = 'flex';
+    if (!types.length) { wrap.innerHTML = ''; return; }
     wrap.innerHTML = types.map(t => {
       const on = !_disabledTypes.has(t);
       const label = TYPE_BADGE[t] || t.slice(0, 3);
@@ -6392,16 +6530,17 @@
   // the link list (and a release's cover editor), sharing the list view's
   // expanded state.
   function renderGrid(visible) {
-    const head = '<tr><th></th><th></th><th>Name</th><th>Disambiguation</th><th>ISRCs</th><th>Aliases</th><th>Links</th><th title="Video">'
+    const head = `<tr><th colspan="2">${selHead()}</th><th>Name</th>`
+      + '<th>Disambiguation</th><th>ISRCs</th><th>Aliases</th><th>Links</th><th title="Video">'
       + '<input type="checkbox" class="mbu-video" checked disabled style="opacity:.6" /></th><th></th><th></th></tr>';
     const rows = visible.map(it => {
       const cols = fieldCols(it), isActive = it.status === 'active';
       const excluded = it.status === 'queued' && _disabledTypes.has(it.entityType);
-      const cell = col => cols.includes(col) ? fieldHtml(it, col, true) : '';
+      const cell = col => cols.includes(col) ? fieldHtml(it, col, col === 'alias' ? 'grid' : true) : '';
       const expanded = _expandedIds.has(it.id);
       const nLinks = groupedLinks(it).length;
       const hasCover = it.entityType === 'release';
-      const sub = expanded && (nLinks || hasCover)
+      const sub = expanded
         ? `<tr class="falcon-sub" data-id="${it.id}"><td colspan="10">${renderRowDetail(it, true)}</td></tr>` : '';
       return `<tr class="falcon-row" data-id="${it.id}" style="background:${ROW_BG[it.status] || ''};${excluded ? 'opacity:.45' : ''}" title="${it.error ? esc(it.error) : ''}">
         <td><input type="checkbox" class="falcon-row-check" data-id="${it.id}" ${_selectedIds.has(it.id) ? 'checked' : ''} ${isActive ? 'disabled' : ''} /></td>
@@ -6411,19 +6550,25 @@
         <td>${cell('disambig')}</td>
         <td>${cell('isrc')}</td>
         <td>${cell('alias')}</td>
-        <td>${nLinks || hasCover ? `<button type="button" class="falcon-grid-links falcon-row-expand" data-id="${it.id}" title="${expanded ? 'Hide' : 'Show'} the links${hasCover ? ' and cover art' : ''}">${expanded ? '▾' : '▸'} ${nLinks ? nLinks + (nLinks === 1 ? ' link' : ' links') : 'cover'}</button>` : ''}</td>
+        <td><button type="button" class="falcon-grid-links falcon-row-expand" data-id="${it.id}" title="${expanded ? 'Hide' : 'Show and edit'} the links${hasCover ? ' and cover art' : ''}">${expanded ? '▾' : '▸'} ${nLinks ? nLinks + (nLinks === 1 ? ' link' : ' links') : hasCover ? 'cover' : '+ link'}</button></td>
         <td style="text-align:center">${cell('video')}</td>
         <td class="falcon-row-status" data-id="${it.id}" style="text-transform:uppercase;font-size:9px;white-space:nowrap;${it.status === 'failed' || it.status === 'partial' ? 'color:var(--mbu-error);cursor:pointer;text-decoration:underline' : 'color:var(--mbu-text-weak)'}">${excluded ? 'excluded' : it.status}</td>
         <td style="white-space:nowrap"><button type="button" class="falcon-row-opentab" data-id="${it.id}" title="Open this entity's edit page in a real tab, pre-filled" style="border:none;background:none;cursor:pointer;color:var(--mbu-text-dim)">⇗</button><button type="button" class="falcon-row-remove" data-id="${it.id}" ${isActive ? 'disabled' : ''} title="Remove from queue" style="border:none;background:none;cursor:pointer;color:var(--mbu-text-weak)">✕</button></td>
       </tr>${sub}`;
     }).join('');
-    const colgroup = '<colgroup><col style="width:22px"><col style="width:46px"><col style="width:21%"><col style="width:15%"><col style="width:13%"><col><col style="width:66px"><col style="width:28px"><col style="width:62px"><col style="width:44px"></colgroup>';
+    const colgroup = '<colgroup><col style="width:24px"><col style="width:46px"><col style="width:21%"><col style="width:15%"><col style="width:13%"><col><col style="width:66px"><col style="width:28px"><col style="width:62px"><col style="width:44px"></colgroup>';
     return rows ? `<table class="falcon-grid">${colgroup}${head}${rows}</table>` : '';
   }
   // #663: which field to focus after the queue is redrawn — a redraw replaces
   // every input, so focus (and the keyboard walk) would otherwise drop out.
   let _pendingFocus = null;
   let _visibleIds = [];
+  // #663: select-all and the selection count head the rows, in both views
+  function selHead() {
+    const selectable = queue.filter(i => i.status !== 'active');
+    const all = selectable.length > 0 && selectable.every(i => _selectedIds.has(i.id));
+    return `<span class="falcon-selhead"><input type="checkbox" id="falcon-select-all" title="Select all" ${all ? 'checked' : ''} /><span class="falcon-selcount" id="falcon-select-count" title="Selected rows">${_selectedIds.size || ''}</span></span>`;
+  }
   function renderQueue() {
     renderTypeChips();
     renderStatusChips();
@@ -6441,7 +6586,7 @@
       viewBtn.querySelector('.falcon-bt').textContent = grid ? 'List' : 'Grid';
       viewBtn.title = grid ? 'Show the queue as a list, one form per open row' : 'Show the queue as a grid, one line per row';
     }
-    list.innerHTML = (grid ? renderGrid(visible) : '') || (grid ? [] : visible).map(it => {
+    const listRows = grid ? '' : visible.map(it => {
       const expanded = _expandedIds.has(it.id);
       const checked = _selectedIds.has(it.id);
       const isActive = it.status === 'active';
@@ -6501,12 +6646,13 @@
         </div>
         ${expanded ? renderRowDetail(it) : ''}
       </div>`;
-    }).join('') || (_statusFilter
+    }).join('');
+    list.innerHTML = (grid ? renderGrid(visible) : listRows && `<div class="falcon-lhead">${selHead()}</div>${listRows}`) || (_statusFilter
       ? `<div style="color:var(--mbu-text-weak);padding:8px 0">No ${esc(_statusFilter)} items right now — <button type="button" id="falcon-status-filter-clear" style="border:none;background:none;color:var(--mbu-info);cursor:pointer;padding:0;font:inherit;text-decoration:underline">show everything</button>.</div>`
       : '<div style="color:var(--mbu-text-weak);padding:8px 0">Queue is empty — click + above to paste some entities.</div>');
     if (keep) focusField(keep.id, keep.col, keep.caret);
     const selCount = document.getElementById('falcon-select-count');
-    if (selCount) selCount.textContent = _selectedIds.size ? `${_selectedIds.size} selected` : '';
+    if (selCount) selCount.textContent = _selectedIds.size || '';
     const removeBtn = document.getElementById('falcon-remove-selected');
     if (removeBtn) removeBtn.disabled = _selectedIds.size === 0;
     const retryBtn = document.getElementById('falcon-retry-failed');
@@ -6514,6 +6660,7 @@
     const selectAll = document.getElementById('falcon-select-all');
     if (selectAll) { const selectable = queue.filter(i => i.status !== 'active'); selectAll.checked = selectable.length > 0 && selectable.every(i => _selectedIds.has(i.id)); }
     const expandAllBtn = document.getElementById('falcon-expand-all');
+    if (expandAllBtn) expandAllBtn.style.display = grid ? 'none' : '';
     if (expandAllBtn) {
       const allExpanded = queue.length > 0 && queue.every(i => _expandedIds.has(i.id));
       // write only the LABEL span — replacing the button's textContent would

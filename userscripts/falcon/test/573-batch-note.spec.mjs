@@ -51,10 +51,11 @@ test("#573: batch note", { tag: ['@sandbox', '@login'] }, async ({ context, page
     const btn = document.getElementById('falcon-note-btn');
     const run = document.getElementById('falcon-run');
     const panel = document.getElementById('falcon-notepanel');
-    const kids = bar ? [...bar.children] : [];
+    const kids = bar ? [...bar.children] : [];   // #663: Start shares a column with Retry failed
+    const runKid = run && kids.find(k => k.contains(run));
     return {
       btnInBar: !!btn && bar.contains(btn),
-      leftOfStart: kids.indexOf(btn) >= 0 && kids.indexOf(btn) < kids.indexOf(run),
+      leftOfStart: kids.indexOf(btn) >= 0 && kids.indexOf(btn) < kids.indexOf(runKid),
       panelAboveBar: !!panel && !!(panel.compareDocumentPosition(bar) & Node.DOCUMENT_POSITION_FOLLOWING),
       panelHidden: panel && panel.style.display === 'none',
     };

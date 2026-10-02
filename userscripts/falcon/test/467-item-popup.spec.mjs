@@ -62,7 +62,7 @@ test("#467: item popup", { tag: ['@sandbox', '@login', '@flaky'] }, async ({ con
       display: el ? getComputedStyle(el).display : 'none',
       title: document.getElementById('falcon-item-popup-title')?.textContent,
       error: document.getElementById('falcon-item-popup-error')?.textContent,
-      bodyText: document.getElementById('falcon-item-popup-body')?.textContent,
+      bodyText: (document.getElementById('falcon-item-popup-body')?.textContent || '') + ' ' + [...document.querySelectorAll('#falcon-item-popup-body input')].map(i => i.value).join(' '),   // #663: urls sit in edit boxes
     };
   });
   console.log('fallback popup state:', JSON.stringify(popupState));

@@ -52,7 +52,7 @@ test("#663: list/grid views + keyboard walk", { tag: ['@sandbox', '@critical'] }
 
   // ── list view: links grouped by URL with named types, the rest a labelled form
   const links = await page.evaluate(() => [...document.querySelectorAll('.falcon-row[data-id="a1"] .falcon-ln')].map(l => ({
-    svc: l.querySelector('.falcon-svc').textContent, types: [...l.querySelectorAll('.falcon-lt span')].map(s => s.textContent) })));
+    svc: l.querySelector('.falcon-svc').textContent, types: [...l.querySelectorAll('.falcon-lt > span')].map(s => s.firstChild.textContent) })));
   console.log('links:', JSON.stringify(links));
   check(links.length === 3, `5 distinct URLs collapse to 3 shown plus "more" (got ${links.length})`);
   const qobuz = links.find(l => l.svc === 'Qobuz');

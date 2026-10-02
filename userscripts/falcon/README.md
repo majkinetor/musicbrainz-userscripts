@@ -53,10 +53,13 @@ On a series page, **+ Add from series** queues its release groups (optionally ev
 
 ## Editing the queue
 
-The toolbar button switches between two views. Falcon remembers the one you last used.
+The **List** / **Grid** button, right of the type chips, switches between two views. Falcon remembers the one you last used.
 
 - **List**: expand a row to edit it as a labelled form. Its links are listed one per URL, with the service and the link type by name; a URL added under two types shows both. Long link lists fold after three, with *+ N more*.
-- **Grid**: one line per row, with every field editable in place. *N links* opens the row's links (and a release's cover art) beneath it.
+- Links are editable: change a URL in its box (empty it to drop it), **✕** a type off, **+ type** adds one from that entity's link types, the row's **✕** removes the link, and **+ link** adds one. A link with no type is left for MusicBrainz to guess.
+- **Grid**: one line per row, with every field editable in place. *N links* opens the row's links (and a release's cover art) beneath it, and the count by the alias box opens its aliases there too.
+
+The select-all box heads the rows, with the number of rows selected. The open tab is underlined.
 
 The [keyboard](#shortcuts) moves between fields in both views, like a spreadsheet. In the list, the row you move into opens and the one you leave closes again.
 
@@ -78,7 +81,7 @@ Review the queue (remove rows, edit fields), then press **Start**. Right-click a
 - A failed row shows MusicBrainz's own error on hover. **FAILED** / **PARTIAL** / **MANUAL** chips at the top filter the queue to those rows.
 - A worker that can't commit stays where it stopped, dimmed but live, and a fresh one takes over. Click a red status to jump to it in the **Workers** tab; **⛶** enlarges it.
 - **⇗** opens the entity's edit page in a tab, prefilled, for you to finish.
-- **Retry failed** reruns the failed and partial rows in place.
+- **Retry failed**, under Start, reruns the failed and partial rows in place.
 
 <img src="./screenshots/workers.png">
 
@@ -96,7 +99,7 @@ A link MusicBrainz can't classify on its own (a Bandcamp track: purchase or stre
 | cover art | | | | ✓ | |
 
 - **Name**: an expanded row's ✎ box starts with the current name, so a fix is an edit, not a retype. A rename is votable, so it shows once the edit passes.
-- **Aliases**: in the row's 🏷 strip type `name` or `name@locale`, or use [JSON](./examples/aliases.json) for many. An alias the entity already has is never added again. If that can't be checked, the aliases wait for **Retry failed**.
+- **Aliases**: type `name` or `name@locale` in the row's alias box, or use [JSON](./examples/aliases.json) for many. **Alias language** in the toolbar gives every typed alias that locale unless it says its own `@locale`; leave it empty for none. Click an alias to edit it: Enter keeps the change, Esc cancels, and an empty box removes it. An alias the entity already has is never added again. If that can't be checked, the aliases wait for **Retry failed**.
 - **Video** is only ever set, never cleared.
 
 > [!WARNING]

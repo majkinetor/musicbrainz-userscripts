@@ -67,7 +67,7 @@ test("toolbar collapse", { tag: ['@cosmetic', '@sandbox', '@login'] }, async ({ 
       const p = document.getElementById('falcon-panel');
       p.style.width = w + 'px'; p.style.maxWidth = w + 'px';
       await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));   // the ResizeObserver has run
-      const bar = document.getElementById('falcon-queue-toolbar');
+      const bar = document.getElementById('falcon-type-chips');
       return { w, compact: bar.classList.contains('falcon-compact'), wraps: bar.scrollHeight > bar.clientHeight + 1 };
     }, w));
   }
@@ -79,7 +79,7 @@ test("toolbar collapse", { tag: ['@cosmetic', '@sandbox', '@login'] }, async ({ 
   await page.evaluate(() => { const p = document.getElementById('falcon-panel'); p.style.width = '240px'; p.style.maxWidth = '240px'; });
   await frames(page);
   const narrow = await page.evaluate(() => {
-    const bar = document.getElementById('falcon-queue-toolbar');
+    const bar = document.getElementById('falcon-type-chips');
     const btn = document.getElementById('falcon-remove-selected');
     return {
       compact: bar.classList.contains('falcon-compact'),
@@ -99,7 +99,7 @@ test("toolbar collapse", { tag: ['@cosmetic', '@sandbox', '@login'] }, async ({ 
   await page.click('#falcon-maximize');
   await frames(page);
   const wide = await page.evaluate(() => {
-    const bar = document.getElementById('falcon-queue-toolbar');
+    const bar = document.getElementById('falcon-type-chips');
     const btn = document.getElementById('falcon-remove-selected');
     return { compact: bar.classList.contains('falcon-compact'), labelShown: getComputedStyle(btn.querySelector('.falcon-bt')).display !== 'none' };
   });
