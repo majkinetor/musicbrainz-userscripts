@@ -22,7 +22,7 @@ Import a release into MusicBrainz from the platform's album page with one click:
 On a platform's album page, click **Import to MusicBrainz** in the bottom-right corner. A new tab opens with MusicBrainz's release editor, filled in:
 
 | Field | From |
-|---|---|
+| --- | --- |
 | Title, artist credit | the album, with any *feat.* artists split off the title into the credit. A compilation the platform credits to one of its artists becomes Various Artists + Compilation: when the credited artists are on fewer than half the tracks and the tracks have five or more artists |
 | Type | the platform's album / EP / single / compilation, or a [guess](#release-type) when it doesn't say |
 | Status, packaging | Official, None |
@@ -39,14 +39,14 @@ On a platform's album page, click **Import to MusicBrainz** in the bottom-right 
 
 When the platform gives no type, or only a plain *album* while the title says otherwise, it is guessed, the most certain sign first:
 
-| Sign | Type |
-|---|---|
-| *EP* or *E.P.* in the title | EP |
-| the title ends in *Single*, or says *single* on up to 8 tracks and 50 minutes | Single |
+| Sign                                                                                              | Type   |
+| ------------------------------------------------------------------------------------------------- | ------ |
+| *EP* or *E.P.* in the title                                                                       | EP     |
+| the title ends in *Single*, or says *single* on up to 8 tracks and 50 minutes                     | Single |
 | every track is the same song in another version (*Remix*, *Instrumental*, *Extended Mix*, *VIP*…) | Single |
-| 7 tracks or more, or over 30 minutes | Album |
-| up to 7 minutes | Single |
-| 2 tracks or more, up to 30 minutes | EP |
+| 7 tracks or more, or over 30 minutes                                                              | Album  |
+| up to 7 minutes                                                                                   | Single |
+| 2 tracks or more, up to 30 minutes                                                                | EP     |
 
 Without every track's length: 1 track is a Single, 3 to 6 an EP, 7 or more an Album, and 2 are left for you. The log says which sign decided.
 
@@ -55,24 +55,144 @@ Without every track's length: 1 track is a Single, 3 to 6 an EP, 7 or more an Al
 
 ## Platforms
 
-| Platform | Pages | Notes |
-|---|---|---|
-| Deezer | `deezer.com/…/album/<id>` | Featured artists come from the title's *feat.* clause: Deezer lists them as main artists. A trailing *(Original Mix)* is dropped from track titles. |
-| Bandcamp | `<name>.bandcamp.com/album/<slug>` | Read from the page itself. A comma list of artists (*Future Funk Squad, Omega Sparx, Stu Brootal, The Crystal Method*) is split into separate artists, except the account's own name. On a label's page the label is filled in; on an artist's own page it is left empty. A compilation's *Artist - Title* track titles are split into artist and title. The album link gets both *purchase for download* and, when it streams, *stream for free*. Only the artist the page belongs to has a Bandcamp link to hand off. |
-| Discogs | `discogs.com/release/<id>` | Read from Discogs's API. Format per medium (LP is 12" Vinyl), and sides A/B, C/D… become one medium each, numbered A1, B2…; *CD 1 …* style headings become medium titles. Status *Promotion* or *Bootleg* and the *Compilation* type come from the format's descriptions, packaging from its free text. Artists keep their credited name (*DJ Fresh* for *Fresh*) and lose Discogs's *(2)* numbering; *Featuring* track credits go after *feat.* Country when it is one country (not *UK, Europe & US*). A label listed twice with its catalog number written two ways is kept once; *Not On Label* becomes *[no label]*. Every artist and label carries its Discogs link for Apollo. |
-| Apple Music | `music.apple.com/<country>/album/…` | Read from Apple's catalogue, in the page's country store. Every track has its ISRC; every artist its Apple link. *- Single* / *- EP* at the end of the title is the type, not part of the title. Music videos are left out. |
-| Tidal | `tidal.com/album/<id>`, `tidal.com/browse/album/<id>`, `listen.tidal.com/album/<id>` | Read from Tidal's catalogue (US store, then GB, DE). Every track has its ISRC; every artist its Tidal link. The *feat.* Tidal puts in a track's version goes into the credit, any other version (*Radio Edit*) stays in the title. Tidal has no label field, so the label is read from its copyright line: *℗ 2020 Outpost Recordings* gives Outpost Recordings, *… under exclusive license to Columbia Records, a Division of …* gives Columbia Records. A line that doesn't read as one name leaves the label for you. |
-| Qobuz | `qobuz.com/<country-lang>/album/<slug>/<id>` | Read from the store page itself. Qobuz's per-track artist is unreliable (it can name a band member), so an album by one artist credits its main artists on every track, with the title's *feat.*; a Various Artists album takes each track's artist. The type isn't given, so it is guessed. A page that lists only part of a long album says so in the log. |
-| Beatport | `beatport.com/release/<slug>/<id>` | Read from the release page's own data, as Harmony does. Every track has its ISRC and Beatport link; every artist and the label their Beatport link. A mix name other than *Original Mix* goes into the track title: *Leg Pulling (Dub)*. Beatport credits every track artist to the release, so more than four of them make it Various Artists. Beatport's own type is mostly just *Release*, so the type is usually guessed. The link gets *purchase for download* and, when it streams, *streaming page*. |
-| Spotify | `open.spotify.com/album/<id>` | Read from the web player's own API. If the log says nothing was heard from the player, reload the page. Every artist has its Spotify link and every track its Spotify link. The date is as precise as Spotify has it. The barcode comes from the player's metadata service, with the same token. No ISRCs. |
-| YouTube Music | `music.youtube.com/browse/MPREb_…`, `music.youtube.com/playlist?list=OLAK5uy_…` | Read from the web player's own API. Every artist has its YouTube Music channel. Featured artists come from the title's *feat.*: YouTube Music lists them as main artists. The type (Album, EP, Single) is YouTube Music's; the date is the year only, and there is no label, barcode or ISRCs. The link is the album playlist. |
-| Volumo | `volumo.com/album/<barcode>-<slug>`, `volumo.com/album/<id>` | Read from Volumo's API. Every track has its ISRC; every artist its Volumo link. Label and catalog number, barcode, release date. A mix name other than *Original Mix* goes into the track title. More than four release artists make it Various Artists. |
-| HDtracks | `hdtracks.com/#/album/<id>` | Read from HDtracks's API. Every track has its ISRC; label, barcode and release date are filled in. HDtracks has no artist pages, so artists have no link to hand off. |
-| SoundCloud | `soundcloud.com/<user>/sets/<slug>` | Read from SoundCloud's API, with the web player's public client id. A set the label distributed has each track's ISRC, the barcode and the label; the set's type (album, EP, single, compilation) is used. Only the uploading account has a SoundCloud link to hand off. |
-| Amazon Music | `music.amazon.com/albums/<id>` (and the other countries' `music.amazon.*`) | Read as a guest (no Amazon account) through the API Amazon Music's web player uses. The tracklist is one medium: Amazon Music doesn't mark discs, so split them in the editor. A track's artists come from its artist line ("A, B & C"), and only the first has an Amazon Music link; an "&" inside one name ("Simon & Garfunkel") stays one artist. The date is the one the album page shows, which for a reissue can be the original's. The label is read from the ℗ line. No barcode or ISRCs: Amazon Music shows neither. The guest catalogue is amazon.com's (US). |
+| Platform                        |   ISRCs    |  Barcode   | Label                 |
+| ------------------------------- | :--------: | :--------: | --------------------- |
+| [Deezer](#deezer)               |     ✓      |     ✓      | ✓                     |
+| [Bandcamp](#bandcamp)           |            |     ✓      | on a label's page     |
+| [Discogs](#discogs)             |            |     ✓      | ✓ with catalog number |
+| [Apple Music](#apple-music)     |     ✓      |     ✓      | ✓                     |
+| [Tidal](#tidal)                 |     ✓      |     ✓      | from the ℗ line       |
+| [Qobuz](#qobuz)                 |            |     ✓      | ✓                     |
+| [Beatport](#beatport)           |     ✓      |     ✓      | ✓ with catalog number |
+| [Spotify](#spotify)             |            |     ✓      | ✓                     |
+| [YouTube Music](#youtube-music) |            |            |                       |
+| [Volumo](#volumo)               |     ✓      |     ✓      | ✓ with catalog number |
+| [HDtracks](#hdtracks)           |     ✓      |     ✓      | ✓                     |
+| [SoundCloud](#soundcloud)       | label sets | label sets | ✓                     |
+| [Amazon Music](#amazon-music)   |            |            | from the ℗ line       |
+
+### Deezer
+
+Pages: `deezer.com/…/album/<id>`
+
+Featured artists come from the title's *feat.* clause: Deezer lists them as main artists. A trailing *(Original Mix)* is dropped from track titles.
+
+### Bandcamp
+
+Pages: `<name>.bandcamp.com/album/<slug>`
+
+- Read from the page itself.
+- A comma list of artists (*Future Funk Squad, Omega Sparx, Stu Brootal, The Crystal Method*) is split into separate artists, except the account's own name.
+- On a label's page the label is filled in; on an artist's own page it is left empty.
+- A compilation's *Artist - Title* track titles are split into artist and title.
+- The album link gets both *purchase for download* and, when it streams, *stream for free*.
+- Only the artist the page belongs to has a Bandcamp link to hand off.
+
+### Discogs
+
+Pages: `discogs.com/release/<id>`
+
+- Read from Discogs's API.
+- Format per medium (LP is 12" Vinyl), and sides A/B, C/D… become one medium each, numbered A1, B2…; *CD 1 …* style headings become medium titles.
+- Status *Promotion* or *Bootleg* and the *Compilation* type come from the format's descriptions, packaging from its free text.
+- Artists keep their credited name (*DJ Fresh* for *Fresh*) and lose Discogs's *(2)* numbering; *Featuring* track credits go after *feat.*
+- Country when it is one country (not *UK, Europe & US*).
+- A label listed twice with its catalog number written two ways is kept once; *Not On Label* becomes *[no label]*.
+- Every artist and label carries its Discogs link for Apollo.
+
+### Apple Music
+
+Pages: `music.apple.com/<country>/album/…`
+
+- Read from Apple's catalogue, in the page's country store.
+- Every track has its ISRC; every artist its Apple link.
+- *- Single* / *- EP* at the end of the title is the type, not part of the title.
+- Music videos are left out.
+
+### Tidal
+
+Pages: `tidal.com/album/<id>`, `tidal.com/browse/album/<id>`, `listen.tidal.com/album/<id>`
+
+- Read from Tidal's catalogue (US store, then GB, DE).
+- Every track has its ISRC; every artist its Tidal link.
+- The *feat.* Tidal puts in a track's version goes into the credit, any other version (*Radio Edit*) stays in the title.
+- Tidal has no label field, so the label is read from its copyright line: *℗ 2020 Outpost Recordings* gives Outpost Recordings, *… under exclusive license to Columbia Records, a Division of …* gives Columbia Records. A line that doesn't read as one name leaves the label for you.
+
+### Qobuz
+
+Pages: `qobuz.com/<country-lang>/album/<slug>/<id>`
+
+- Read from the store page itself.
+- Qobuz's per-track artist is unreliable (it can name a band member), so an album by one artist credits its main artists on every track, with the title's *feat.*; a Various Artists album takes each track's artist.
+- The type isn't given, so it is guessed.
+- A page that lists only part of a long album says so in the log.
+
+### Beatport
+
+Pages: `beatport.com/release/<slug>/<id>`
+
+- Read from the release page's own data, as Harmony does.
+- Every track has its ISRC and Beatport link; every artist and the label their Beatport link.
+- A mix name other than *Original Mix* goes into the track title: *Leg Pulling (Dub)*.
+- Beatport credits every track artist to the release, so more than four of them make it Various Artists.
+- Beatport's own type is mostly just *Release*, so the type is usually guessed.
+- The link gets *purchase for download* and, when it streams, *streaming page*.
+
+### Spotify
+
+Pages: `open.spotify.com/album/<id>`
+
+- Read from the web player's own API. If the log says nothing was heard from the player, reload the page.
+- Every artist and every track has its Spotify link.
+- The date is as precise as Spotify has it.
+- The barcode comes from the player's metadata service, with the same token.
 
 > [!NOTE]
-> Spotify: First Contact listens to the web player's requests (fetch and XHR) for its token, then asks the album query itself. When it started too late to hear the album query, it uses the query's known id.
+> First Contact listens to the web player's requests (fetch and XHR) for its token, then asks the album query itself. When it started too late to hear the album query, it uses the query's known id.
+
+### YouTube Music
+
+Pages: `music.youtube.com/browse/MPREb_…`, `music.youtube.com/playlist?list=OLAK5uy_…`
+
+- Read from the web player's own API.
+- Every artist has its YouTube Music channel.
+- Featured artists come from the title's *feat.*: YouTube Music lists them as main artists.
+- The type (Album, EP, Single) is YouTube Music's; the date is the year only.
+- The link is the album playlist.
+
+### Volumo
+
+Pages: `volumo.com/album/<barcode>-<slug>`, `volumo.com/album/<id>`
+
+- Read from Volumo's API.
+- Every track has its ISRC; every artist its Volumo link.
+- A mix name other than *Original Mix* goes into the track title.
+- More than four release artists make it Various Artists.
+
+### HDtracks
+
+Pages: `hdtracks.com/#/album/<id>`
+
+- Read from HDtracks's API.
+- HDtracks has no artist pages, so artists have no link to hand off.
+
+### SoundCloud
+
+Pages: `soundcloud.com/<user>/sets/<slug>`
+
+- Read from SoundCloud's API, with the web player's public client id.
+- A set the label distributed (a *label set* above) has each track's ISRC and the barcode; the set's type (album, EP, single, compilation) is used.
+- Only the uploading account has a SoundCloud link to hand off.
+
+### Amazon Music
+
+Pages: `music.amazon.com/albums/<id>`, and the other countries' `music.amazon.*`
+
+- Read as a guest (no Amazon account) through the API Amazon Music's web player uses. The guest catalogue is amazon.com's (US).
+- The tracklist is one medium: Amazon Music doesn't mark discs, so split them in the editor.
+- A track's artists come from its artist line (*A, B & C*), and only the first has an Amazon Music link; an *&* inside one name (*Simon & Garfunkel*) stays one artist.
+- The date is the one the album page shows, which for a reissue can be the original's.
+- The label is read from the ℗ line, as for [Tidal](#tidal); the whole line also goes to the annotation (see [Settings](#settings)), since it may or may not name the label.
 
 ## Artist matching
 
@@ -89,8 +209,8 @@ Drag **Import to MusicBrainz** (or its **⚙︎**) to wherever it is out of the 
 
 The **⚙︎** button next to **Import to MusicBrainz**.
 
-| Setting | Default | |
-|---|---|---|
+| Setting | Default |  |
+| --- | --- | --- |
 | MusicBrainz server | musicbrainz.org | where the release editor opens: musicbrainz.org, beta.musicbrainz.org or test.musicbrainz.org |
 | Icon only | off | the button shows only its icon; the tooltip still says *Import to MusicBrainz*, and the progress still shows while it reads the platform |
 | Annotation from the platform's notes | off | the album's notes on the platform go into the annotation, followed by *From <platform>: <album page>*: Bandcamp's about and credits, Discogs's notes, Qobuz's and Apple's reviews, the description on Beatport, Volumo, HDtracks, SoundCloud and YouTube Music, Amazon Music's ℗ line. Deezer, Tidal and Spotify have none. A review is the critic's text (Qobuz's and Apple's are usually AllMusic's): check you may copy it before you submit. |
