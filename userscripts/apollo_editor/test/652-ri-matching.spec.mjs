@@ -98,6 +98,13 @@ test.describe('release artist and label', () => {
     check(ui.label === 'none', `the Artist label gives way to it (${ui.label})`);
     check(Math.abs(ui.searchLeft - ui.titleLeft) <= 2, `the artist search lines up with the Title field (${ui.searchLeft} / ${ui.titleLeft})`);
     check(!ui.prev, 'no preview, no copy / paste');
+    // a theme that pads the label column and makes the lines taller must not knock them apart (majkinetor's sat a line low)
+    await page.addStyleTag({ content: '#information .tc-ri-artlbl{padding-top:22px!important}#information .tc-ri-art .tc-aslot{height:38px!important}' });
+    const skew = await until(() => page.evaluate(c => {
+      const rows = [...document.querySelectorAll('#information .tc-ri-leadrow')], lines = [...document.querySelectorAll(c + ' .tc-aslot')];
+      return rows.map((r, i) => Math.round(Math.abs((r.getBoundingClientRect().top + r.getBoundingClientRect().height / 2) - (lines[i].getBoundingClientRect().top + lines[i].getBoundingClientRect().height / 2))));
+    }, cell), v => v.every(d => d <= 2), { timeout: 5000 }).catch(e => String(e));
+    check(Array.isArray(skew) && skew.every(d => d <= 2), `credited-as stays level with its line under a padded theme (off by ${JSON.stringify(skew)} px)`);
 
     // join phrase → the release credit
     await page.evaluate(c => { const j = document.querySelector(c + ' .tc-join'); j.value = ' feat. '; j.dispatchEvent(new Event('change')); }, cell);

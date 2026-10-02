@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.2.211115
+// @version      2026.10.2.214002
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E
@@ -714,6 +714,7 @@
     if (_riMatching || (!force && (cell.contains(document.activeElement) || (lead && lead.contains(document.activeElement))))) return;   // never rebuild under the user's caret; the next tick catches up
     riSyncSlots();
     const sig = JSON.stringify(_riArt.map(p => [p.status, p.gid, !!p.committed, p.creditedAs, p.joinPhrase, p.name, !!p._discogsAddable, !!p._platAddable, p._platConflict && p._platConflict.gid, p._discogsConflict && p._discogsConflict.gid, !!p._pending]));
+    riAlignLead();
     if (!force && cell.dataset.sig === sig) return;   // re-applied every tick: only touch the DOM on a change
     cell.dataset.sig = sig; cell.textContent = ''; if (lead) lead.textContent = '';
     const tbl = document.createElement('table'); tbl.className = 'tc-mirror ' + (SETTINGS.gridRows !== false ? 'gridrows ' : '') + (SETTINGS.layout || 'normal');
@@ -735,6 +736,23 @@
     });
     cell.appendChild(tbl);
     paintBadges();
+    riAlignLead();
+  }
+  // #652: each credited-as row level with its artist line. Measured, not styled: the label
+  // column's padding and the row's height differ with the theme (majkinetor's sat a line low)
+  function riAlignLead() {
+    const rows = [...document.querySelectorAll('#information .tc-ri-lead > .tc-ri-leadrow')];
+    const lines = [...document.querySelectorAll('#information .tc-ri-art .tc-aslot')];
+    rows.forEach((row, i) => {
+      const line = lines[i]; if (!line) return;
+      const h = line.getBoundingClientRect().height;
+      if (h && Math.abs(row.getBoundingClientRect().height - h) >= 1) row.style.height = h + 'px';
+      const d = Math.round(line.getBoundingClientRect().top - row.getBoundingClientRect().top);
+      if (Math.abs(d) >= 1) {
+        row.style.marginTop = ((parseFloat(row.style.marginTop) || 0) + d) + 'px';
+        Log.debug('release artist: credited-as row', i, 'moved', d, 'px to its line');
+      }
+    });
   }
   // the match badge at the end of each artist's line (the Tracklist shows them in its own column)
   function riBadges(td) {
