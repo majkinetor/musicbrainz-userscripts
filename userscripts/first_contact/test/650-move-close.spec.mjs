@@ -7,6 +7,18 @@ import { test, check } from '../../../dev/test/harness.mjs';
 test.use({ gm: { name: 'First Contact', persist: 'tabs' }, pageErrors: 'ignore' });   // the platforms' own scripts are not ours
 
 const BC = 'https://bullion.bandcamp.com/album/nearly';
+// A fresh, logged-out browser gets Bandcamp's modal dialog (a full-window backdrop at z-index 200,
+// in <page-footer>'s shadow root). A button on the page sits under it like the rest of the page,
+// so the page-level tests hide it, as a visitor would by answering it.
+const noBandcampDialog = page => page.evaluate(() => new Promise(done => {
+  const t0 = Date.now();
+  (function hide() {
+    const sr = document.querySelector('page-footer') && document.querySelector('page-footer').shadowRoot;
+    if (sr) { const st = document.createElement('style'); st.textContent = '.dialog-container{display:none!important}'; sr.appendChild(st); return done(true); }
+    if (Date.now() - t0 > 5000) return done(false);
+    setTimeout(hide, 100);
+  })();
+}));
 const DZ = 'https://www.deezer.com/en/album/6575789';
 
 test('the button drags anywhere, each platform keeps its own place, Reset puts it back', { tag: ['@web'] }, async ({ page, inject }) => {
@@ -79,6 +91,7 @@ test('Moved button scrolls with the page: on, it stays over its spot on the page
     await page.goto(BC, { waitUntil: 'domcontentloaded' });
     await inject('first_contact', { waitFor: '__fcTest' });
     await page.locator('#fc-root .fc-go').waitFor({ state: 'visible' });
+    await noBandcampDialog(page);
   };
   const box = () => page.locator('#fc-root').boundingBox();
   const scrollTo = async y => { await page.evaluate(y => window.scrollTo(0, y), y); await page.waitForTimeout(150); };
@@ -139,4 +152,34 @@ test('the settings stay inside the window and off the button, wherever it was dr
     if (process.env.FC_SHOT && name === 'just below the top') await page.screenshot({ path: process.env.FC_SHOT, clip: { x: Math.min(p.x, b.x) - 10, y: Math.min(p.y, b.y) - 10, width: Math.max(p.x + p.width, b.x + b.width) - Math.min(p.x, b.x) + 20, height: Math.max(p.y + p.height, b.y + b.height) - Math.min(p.y, b.y) + 20 } });
     await page.keyboard.press('Escape');
   }
+});
+
+// majkinetor: "it draws over bandcamp extended player" — a button scrolling with the page is page
+// content, so a fixed bar on the page (Bandcamp Player Enhanced's player) goes over it.
+test('Scrolls with the page: the button goes under a fixed bar on the page, not over it', { tag: ['@web'] }, async ({ page, inject }) => {
+  await page.goto(BC, { waitUntil: 'domcontentloaded' });
+  await inject('bandcamp_player_enhanced');
+  await inject('first_contact', { waitFor: '__fcTest' });
+  await page.locator('#bc-sticky-player').waitFor({ state: 'visible' });
+  await noBandcampDialog(page);
+  await page.locator('#fc-root .fc-go').waitFor({ state: 'visible' });
+  await page.locator('#fc-root .fc-more').click();
+  await page.locator('#fc-panel .fc-scroll-opt').check();
+  await page.keyboard.press('Escape');
+  const g = await page.locator('#fc-root .fc-go').boundingBox();
+  await page.mouse.move(g.x + 20, g.y + g.height / 2);
+  await page.mouse.down();
+  await page.mouse.move(g.x + 20 - 300, 300, { steps: 10 });
+  await page.mouse.up();
+  const bar = await page.locator('#bc-sticky-player').boundingBox();
+  const b = await page.locator('#fc-root').boundingBox();
+  await page.evaluate(dy => window.scrollBy(0, dy), b.y - bar.y - 5);   // the button's top edge now under the bar
+  await page.waitForTimeout(150);
+  const hit = await page.evaluate(() => {
+    const r = document.getElementById('fc-root').getBoundingClientRect(), bar = document.getElementById('bc-sticky-player').getBoundingClientRect();
+    const el = document.elementFromPoint(r.left + r.width / 2, Math.max(r.top, 0) + 2);
+    return { onBar: r.top < bar.bottom, top: el && !!el.closest('#bc-sticky-player'), fc: el && !!el.closest('#fc-root') };
+  });
+  check(hit.onBar, 'the button has scrolled under the bar');
+  check(hit.top && !hit.fc, `the bar is drawn over the button (${JSON.stringify(hit)})`);
 });
