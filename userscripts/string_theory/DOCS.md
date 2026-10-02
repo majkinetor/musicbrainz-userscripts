@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-10-02 17:20 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-10-02 17:41 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -43,7 +43,7 @@ Each part is optional, and the **Original / Apollo** button switches back to Mus
 
 <img width="1200" src="../apollo_editor/screenshots/release.png" />
 
-- **External links** sit in a right column, checked for dead links. Right-click a favicon or type to edit it.
+- **External links** sit in a right column, checked for dead links. Right-click a favicon or type to edit it. A link type that takes the video attribute shows a small camera glyph instead of a checkbox: click it to mark the link as video (filled when on).
 - **+** takes several links at once and pulls URLs out of anything pasted, HTML included, dropping duplicates and setting each link's type.
 - A **front-cover thumbnail** under the links opens the cover-art page.
 - Right-click a date's or label's ✕ to remove all of them.

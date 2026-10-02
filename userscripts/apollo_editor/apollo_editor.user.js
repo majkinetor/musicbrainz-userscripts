@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.2.140100
+// @version      2026.10.2.180500
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E
@@ -9388,7 +9388,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     body.tc-ri-on #external-links-editor tr.relationship-item > td:first-child{display:none}
     /* the cell content is a 3-track grid [ type (1fr) | video | ! ] so the select always ends at the same x
        and the carets line up across rows, whether or not a video checkbox / error badge is present */
-    body.tc-ri-on #external-links-editor tr.relationship-item > td:last-child{display:grid;grid-template-columns:minmax(0,1fr) 15px 16px;align-items:center;column-gap:2px;flex:1;min-width:0}
+    body.tc-ri-on #external-links-editor tr.relationship-item > td:last-child{display:grid;grid-template-columns:minmax(0,1fr) 18px 16px;align-items:center;column-gap:2px;flex:1;min-width:0}
     body.tc-ri-on #external-links-editor tr.relationship-item .relationship-content{grid-column:1;display:flex;align-items:center;min-width:0}
     body.tc-ri-on #external-links-editor tr.relationship-item .relationship-content > label:first-child{display:none}   /* the "Type:" caption */
     /* a relationship with a date period ("stream for free (1111-11-11 – 1112-11-11)") needs more room than
@@ -9412,10 +9412,14 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     body.tc-ri-on #external-links-editor select{-webkit-appearance:none;-moz-appearance:none;appearance:none;font-size:12px;color:var(--mbu-accent-deep-text);background-color:transparent;background-image:url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20width='10'%20height='7'%20viewBox='0%200%2010%207'%3E%3Cpath%20d='M1%201l4%204%204-4'%20fill='none'%20stroke='%235a3e94'%20stroke-width='1.5'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 5px center;border:1px solid var(--mbu-border-strong);border-radius:var(--mbu-radius);box-shadow:none;padding:1px 18px 1px 5px;height:auto;margin:0;flex:1;min-width:0;width:100%;cursor:pointer}   /* #609: bordered, so an empty (no type yet) combo reads as a field to click, not a stray chevron */
     body.tc-ri-on #external-links-editor select:hover{color:var(--mbu-accent-deep-text);border-color:var(--mbu-accent)}
     body.tc-ri-on #external-links-editor select:focus-visible{border-color:var(--mbu-accent);outline:none}
-    /* video attribute → a compact checkbox (no "video" caption) */
+    /* video attribute → a compact glyph toggle (no "video" caption) */
     body.tc-ri-on #external-links-editor tr.relationship-item .attribute-container{grid-column:2;justify-self:start;display:inline-flex;align-items:center;margin:0}
     body.tc-ri-on #external-links-editor tr.relationship-item .attribute-container label{font-size:0;display:inline-flex;align-items:center;cursor:pointer}
-    body.tc-ri-on #external-links-editor tr.relationship-item .attribute-container input{margin:0}
+    /* video → a camera glyph toggle (still MB's own checkbox underneath): faint when off, a filled accent chip when on */
+    body.tc-ri-on #external-links-editor tr.relationship-item .attribute-container input{-webkit-appearance:none;-moz-appearance:none;appearance:none;width:18px;height:18px;margin:0;border:none;border-radius:3px;cursor:pointer;background:transparent url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2016%2016'%20fill='%23888'%3E%3Crect%20x='1'%20y='3.5'%20width='10'%20height='9'%20rx='1.5'/%3E%3Cpath%20d='M11.5%207L15%204.8v6.4L11.5%209z'/%3E%3C/svg%3E") center/13px no-repeat;opacity:.45;box-shadow:none}
+    body.tc-ri-on #external-links-editor tr.relationship-item .attribute-container input:hover{opacity:1}
+    body.tc-ri-on #external-links-editor tr.relationship-item .attribute-container input:checked{opacity:1;background-color:var(--mbu-accent);background-image:url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2016%2016'%20fill='%23fff'%3E%3Crect%20x='1'%20y='3.5'%20width='10'%20height='9'%20rx='1.5'/%3E%3Cpath%20d='M11.5%207L15%204.8v6.4L11.5%209z'/%3E%3C/svg%3E")}
+    body.tc-ri-on #external-links-editor tr.relationship-item .attribute-container input:focus-visible{outline:1px solid var(--mbu-accent);outline-offset:1px}
     /* error → a compact "!" badge (full text on hover via title) so it doesn't reflow the combos when it appears */
     body.tc-ri-on #external-links-editor tr.relationship-item .error.field-error{grid-column:3;justify-self:start;font-size:0;display:inline-flex;align-items:center;justify-content:center;width:15px;height:15px;border-radius:50%;background:var(--mbu-error-bg);border:1px solid var(--mbu-error);margin:0;cursor:help}
     body.tc-ri-on #external-links-editor tr.relationship-item .error.field-error::before{content:"!";font:bold 11px/1 Arial;color:var(--mbu-error)}
