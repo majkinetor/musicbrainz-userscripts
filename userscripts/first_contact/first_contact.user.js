@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         First Contact
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.2.115313
+// @version      2026.10.2.122553
 // @description  Import a release into MusicBrainz from the platform's album page with one click: the release editor opens with the title, tracklist, artists, date, label, barcode and link filled in. Each artist's platform link is handed to Apollo Editor for matching. Platforms: Deezer, Bandcamp, Discogs, Apple Music, Tidal, Qobuz, Beatport, Spotify, YouTube Music, Volumo, HDtracks, SoundCloud, Amazon Music.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPkZpcnN0IENvbnRhY3Q8L3RpdGxlPgogIDwhLS0gdHJhY3RvciBiZWFtIC0tPgogIDxwYXRoIGQ9Ik01MCA0NCBMNzggNDQgTDEwNCAxMTIgTDI0IDExMiBaIiBmaWxsPSIjZjZjNDMxIiBvcGFjaXR5PSIwLjkiLz4KICA8cGF0aCBkPSJNNTYgNDQgTDcyIDQ0IEw4OCAxMTIgTDQwIDExMiBaIiBmaWxsPSIjZmRlNjhhIiBvcGFjaXR5PSIwLjciLz4KICA8IS0tIGxhbmRpbmcgcmluZyAtLT4KICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSIxMTQiIHJ4PSI0MiIgcnk9IjgiIGZpbGw9IiMxZTIzNDYiIHN0cm9rZT0iI2M5Y2RmMiIgc3Ryb2tlLXdpZHRoPSIzIi8+CiAgPGVsbGlwc2UgY3g9IjY0IiBjeT0iMTEzIiByeD0iMjYiIHJ5PSI0LjIiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2Y2YzQzMSIgc3Ryb2tlLXdpZHRoPSIyLjQiLz4KICA8IS0tIHNhdWNlcjogYSBwYWxlIHJpbSwgc28gaXQgc2hvd3Mgb24gYSBkYXJrIGJhY2tncm91bmQgdG9vIC0tPgogIDxwYXRoIGQ9Ik00MCAyNiBBMjQgMTggMCAwIDEgODggMjYgWiIgZmlsbD0iIzFlMjM0NiIgc3Ryb2tlPSIjYzljZGYyIiBzdHJva2Utd2lkdGg9IjMiLz4KICA8cGF0aCBkPSJNNTAgMTggQTEwIDYgMCAwIDEgNjAgMTQiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2ZmZiIgc3Ryb2tlLXdpZHRoPSIyLjYiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxlbGxpcHNlIGN4PSI2NCIgY3k9IjMyIiByeD0iNTYiIHJ5PSIxMyIgZmlsbD0iIzFlMjM0NiIgc3Ryb2tlPSIjYzljZGYyIiBzdHJva2Utd2lkdGg9IjMiLz4KICA8Y2lyY2xlIGN4PSIzOCIgY3k9IjMyIiByPSI0LjQiIGZpbGw9IiNmZmYiLz4KICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjM0IiByPSI0LjQiIGZpbGw9IiNmZmYiLz4KICA8Y2lyY2xlIGN4PSI5MCIgY3k9IjMyIiByPSI0LjQiIGZpbGw9IiNmZmYiLz4KICA8IS0tIHRoZSByZWxlYXNlIGJlaW5nIGJlYW1lZCB1cDogYSBwdXJwbGUgaGV4YWdvbiB3aXRoIGEgbm90ZSAtLT4KICA8cGF0aCBkPSJNNjQgNTggTDg0IDY5LjUgTDg0IDkyLjUgTDY0IDEwNCBMNDQgOTIuNSBMNDQgNjkuNSBaIiBmaWxsPSIjN2I0ZmQ2Ii8+CiAgPHBhdGggZD0iTTY0IDU4IEw4NCA2OS41IEw2NCA4MSBMNDQgNjkuNSBaIiBmaWxsPSIjOWI3MmVhIi8+CiAgPHBhdGggZD0iTTYwIDcyIEw3NCA2OSBMNzQgODkiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2ZmZiIgc3Ryb2tlLXdpZHRoPSIzLjQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz4KICA8cGF0aCBkPSJNNjAgNzIgTDYwIDkyIiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iMy40Ii8+CiAgPGVsbGlwc2UgY3g9IjU2IiBjeT0iOTIiIHJ4PSI0LjYiIHJ5PSIzLjYiIGZpbGw9IiNmZmYiLz4KICA8ZWxsaXBzZSBjeD0iNzAiIGN5PSI4OSIgcng9IjQuNiIgcnk9IjMuNiIgZmlsbD0iI2ZmZiIvPgogIDwhLS0gc3BhcmtsZXMgLS0+CiAgPHBhdGggZD0iTTE4IDU0IGwyLjUgNiA2IDIuNSAtNiAyLjUgLTIuNSA2IC0yLjUgLTYgLTYgLTIuNSA2IC0yLjUgWiIgZmlsbD0iI2Y2YzQzMSIvPgogIDxwYXRoIGQ9Ik0xMDggNTIgbDIuNSA2IDYgMi41IC02IDIuNSAtMi41IDYgLTIuNSAtNiAtNiAtMi41IDYgLTIuNSBaIiBmaWxsPSIjMWUyMzQ2Ii8+CiAgPHBhdGggZD0iTTExMiA4MiBsMS44IDQuMiA0LjIgMS44IC00LjIgMS44IC0xLjggNC4yIC0xLjggLTQuMiAtNC4yIC0xLjggNC4yIC0xLjggWiIgZmlsbD0iI2Y2YzQzMSIvPgogIDxwYXRoIGQ9Ik0xNCA4NiBsMS44IDQuMiA0LjIgMS44IC00LjIgMS44IC0xLjggNC4yIC0xLjggLTQuMiAtNC4yIC0xLjggNC4yIC0xLjggWiIgZmlsbD0iIzFlMjM0NiIvPgo8L3N2Zz4K
@@ -99,7 +99,7 @@ Log.info(mbuStartupInfo(NAME));
 mbuToast.log = (kind, msg) => (kind === 'warn' ? Log.warn(msg) : kind === 'ok' ? Log.ok(msg) : Log.info(msg));
 
 function settings() {
-    const s = Object.assign({ server: 'musicbrainz.org', annotation: false, iconOnly: false, gearOnHover: false, closeAfter: false }, GM_getValue('fc.settings', {}));
+    const s = Object.assign({ server: 'musicbrainz.org', iconOnly: false, gearOnHover: false, closeAfter: false }, GM_getValue('fc.settings', {}));
     if (!SERVERS.includes(s.server)) s.server = 'musicbrainz.org';
     return s;
 }
@@ -268,6 +268,25 @@ function labelFromCopyright(text) {
     t = t.replace(/,\s*(?:a|an)\s+(?:division|label|imprint|company)\b.*$/i, '').replace(/\.?\s*all rights reserved\.?$/i, '').replace(/[.,;\s]+$/, '').trim();
     if (!t || t.length > 60 || /[℗©]|\b\d{4}\b/.test(t) || /^(?:all rights reserved|under licen[cs]e)/i.test(t)) return null;
     return t;
+}
+
+// #650 (majkinetor): "lets make FC annotation also per platform (enable by default)". Kept as the
+// platforms it is turned off on ({ platformName: true }), so a new platform starts on. The old
+// one-for-all setting (off by default) is dropped once: every platform starts on.
+const ANNOTATION_OFF_KEY = 'fc.annotation.off';
+function annotationOn(name) {
+    const s = GM_getValue('fc.settings', {}) || {};
+    if (Object.prototype.hasOwnProperty.call(s, 'annotation')) {
+        delete s.annotation;
+        GM_setValue('fc.settings', s);
+        Log.info('Annotation from the platform\'s notes is now per platform, on everywhere to start with');
+    }
+    return !(GM_getValue(ANNOTATION_OFF_KEY, {}) || {})[name];
+}
+function setAnnotationOn(name, on) {
+    const all = Object.assign({}, GM_getValue(ANNOTATION_OFF_KEY, {}) || {});
+    if (on) delete all[name]; else all[name] = true;
+    GM_setValue(ANNOTATION_OFF_KEY, all);
 }
 
 // #650 (majkinetor): "we should add annotations (should be optional) from all providers (Qobuz
@@ -1816,7 +1835,11 @@ function injectStyle() {
 #fc-root.fc-gear-hover .fc-more { position: absolute; right: 8px; bottom: 100%; min-width: 0; padding: 3px 8px;
   border: 1px solid var(--mbu-border); border-bottom: none; border-radius: 8px 8px 0 0; visibility: hidden; }
 #fc-root.fc-gear-hover.fc-gear-below .fc-more { bottom: auto; top: 100%; border-bottom: 1px solid var(--mbu-border); border-top: none; border-radius: 0 0 8px 8px; }
-#fc-root.fc-gear-hover:hover .fc-more, #fc-root.fc-gear-hover:focus-within .fc-more, body:has(#fc-panel) #fc-root.fc-gear-hover .fc-more { visibility: visible; }
+/* majkinetor: "settings on hover should kick in after a sec or so, so that on normal usage it doesn't
+   pop up when you click to import": the tab shows after the pointer has rested on the button for 1 s,
+   and hides at once. The keyboard (focus-visible, not the focus a click leaves) and open settings show it now. */
+#fc-root.fc-gear-hover:hover .fc-more { visibility: visible; transition: visibility 0s linear 1s; }
+#fc-root.fc-gear-hover:has(:focus-visible) .fc-more, body:has(#fc-panel) #fc-root.fc-gear-hover .fc-more { visibility: visible; transition: none; }
 #fc-panel { position: fixed; z-index: 2147483001; box-sizing: border-box; width: max-content; max-width: calc(100vw - 16px);
   overflow: auto; overscroll-behavior: contain; background: var(--mbu-bg); color: var(--mbu-text);
   border: 1px solid var(--mbu-border); border-radius: 8px; box-shadow: var(--mbu-shadow, 0 4px 18px rgba(0,0,0,.3));
@@ -2153,9 +2176,9 @@ function togglePanel(anchor) {
         + SERVERS.map(h => `<option value="${h}"${h === s.server ? ' selected' : ''}>${h}</option>`).join('')
         + '</select></label>'
         + `<label class="fc-check" title="The button shows only its icon; hover it for what it does"><input type="checkbox" class="fc-iconly-opt"${s.iconOnly ? ' checked' : ''}> Icon only</label>`
-        + `<label class="fc-check" title="The ⚙︎ button hides until the pointer is over Import to MusicBrainz; it shows as a small tab on the button's edge"><input type="checkbox" class="fc-gear-hover-opt"${s.gearOnHover ? ' checked' : ''}> Settings button only on hover</label>`
+        + `<label class="fc-check" title="The ⚙︎ button hides until the pointer has rested on Import to MusicBrainz for a second; it shows as a small tab on the button's edge"><input type="checkbox" class="fc-gear-hover-opt"${s.gearOnHover ? ' checked' : ''}> Settings button only on hover</label>`
         + `<label class="fc-check" title="On ${here} only: a button you have moved stays on its spot on the page (above the cover, say) and scrolls with it, instead of staying put on the screen. The button in its corner always stays on the screen."><input type="checkbox" class="fc-scroll-opt"${scrollsWithPage(here) ? ' checked' : ''}> Moved button scrolls with the page on ${here}</label>`
-        + `<label class="fc-check" title="The album's notes on the platform (Bandcamp's about and credits, Discogs's notes, Qobuz's and Apple's reviews, Beatport's and YouTube Music's description, Amazon Music's ℗ line), with a line saying where they come from. Reviews are the critic's text: check you may copy it before you submit."><input type="checkbox" class="fc-annotation"${s.annotation ? ' checked' : ''}> Annotation from the platform's notes</label>`
+        + `<label class="fc-check" title="On ${here} only: the album's notes on the platform (Bandcamp's about and credits, Discogs's notes, Qobuz's and Apple's reviews, Beatport's and YouTube Music's description, Amazon Music's ℗ line), with a line saying where they come from. Reviews are the critic's text: check you may copy it before you submit."><input type="checkbox" class="fc-annotation"${annotationOn(here) ? ' checked' : ''}> Annotation from ${here}'s notes</label>`
         + `<label class="fc-check" title="Once the release editor has the release, this platform tab closes. It stays open when the import fails, or when the browser blocked the new tab and the editor opened here."><input type="checkbox" class="fc-close-after"${s.closeAfter ? ' checked' : ''}> Close this page after the import</label>`
         // majkinetor: "change this to Reset: all | this one"
         + `<div class="fc-reset" title="Drag the button to move it; each platform remembers its own place. Reset puts it back in the bottom-right corner.">Reset: `
@@ -2208,9 +2231,8 @@ function togglePanel(anchor) {
         Log.info(`button: ${next.iconOnly ? 'icon only' : 'icon and text'}`);
     });
     panel.querySelector('.fc-annotation').addEventListener('change', e => {
-        const next = Object.assign(settings(), { annotation: e.target.checked });
-        saveSettings(next);
-        Log.info(`annotation from the platform's notes: ${next.annotation ? 'on' : 'off'}`);
+        setAnnotationOn(here, e.target.checked);
+        Log.info(`annotation from ${here}'s notes: ${e.target.checked ? 'on' : 'off'}`);
     });
     panel.querySelector('.fc-close-after').addEventListener('change', e => {
         const next = Object.assign(settings(), { closeAfter: e.target.checked });
@@ -2255,11 +2277,11 @@ async function importCurrent() {
             rel.credit = [{ name: 'Various Artists', mbid: VARIOUS_ARTISTS_MBID, join: '' }];
             if (!rel.types.includes('Compilation')) rel.types = (rel.types.length ? rel.types : ['Album']).concat('Compilation');
         }
-        if (rel.annotation && settings().annotation) {
+        if (rel.annotation && annotationOn(provider.name)) {
             rel.annotation += `\n\nFrom ${provider.name}: ${rel.url}`;
             Log.info(`annotation: ${rel.annotation.length} characters of ${provider.name}'s notes`);
         } else {
-            if (rel.annotation) Log.info(`annotation: ${provider.name} has notes (${rel.annotation.length} characters); off in the settings`);
+            if (rel.annotation) Log.info(`annotation: ${provider.name} has notes (${rel.annotation.length} characters); off for ${provider.name} in the settings`);
             rel.annotation = null;
         }
         rel.script = guessScript([rel.title].concat(...rel.mediums.map(m => m.tracks.map(t => t.title))));

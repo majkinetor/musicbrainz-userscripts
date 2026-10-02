@@ -47,7 +47,13 @@ test('Settings button only on hover: ⚙︎ hides until hover, Import stays put'
   check(!(await gear.isVisible()), 'hidden once the pointer leaves');
   const before = await go.boundingBox();
   await go.hover();
-  check(await gear.isVisible(), 'shown on hover');
+  // majkinetor: "settings on hover should kick in after a sec or so so that on normal usage it
+  // doesn't popup when you click to import"
+  await page.waitForTimeout(300);
+  check(!(await gear.isVisible()), 'not yet a moment into the hover (a click to import shows no ⚙︎)');
+  await go.click({ trial: true });
+  await page.waitForTimeout(1000);
+  check(await gear.isVisible(), 'shown once the pointer has rested on the button for a second');
   const after = await go.boundingBox();
   check(Math.abs(before.x - after.x) < 1 && Math.abs(before.y - after.y) < 1, 'Import does not move when ⚙︎ shows');
   if (process.env.FC_SHOT) {

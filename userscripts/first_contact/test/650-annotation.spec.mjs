@@ -1,14 +1,14 @@
 // #650 (majkinetor): "we should add annotations (should be optional) from all providers (Qobuz
 // above has it, BC almost always has it, Discogs has notes etc.)".
 //
-// Off by default: the seed has no annotation. On: the platform's notes, plain text, with a line
+// On by default, per platform (see the setting test below): the platform's notes, plain text, with a line
 // naming where they come from. Fixtures: Discogs 4570366 (notes), Apple us/617154241 (Random Access Memories,
 // editorial notes).
 import { test, check, SANDBOX } from '../../../dev/test/harness.mjs';
 
 test.use({ gm: { name: 'First Contact' } });
 
-test('annotation: off by default; on, the platform\'s notes with their source', { tag: ['@web'] }, async ({ page, inject }) => {
+test('annotation: the platform\'s notes with their source', { tag: ['@web'] }, async ({ page, inject }) => {
   await page.goto(SANDBOX + '/', { waitUntil: 'domcontentloaded' });
   await inject('first_contact', { waitFor: '__fcTest' });
   const r = await page.evaluate(async () => {
@@ -23,9 +23,11 @@ test('annotation: off by default; on, the platform\'s notes with their source', 
   check(r.seedWith && !r.seedWithout, 'the seed carries an annotation only when there is one');
 });
 
-// the setting, on a real import from a Bandcamp page (its about and credits): off by default, so
-// the seed has no annotation; on, the notes, ending with where they come from
-test('annotation setting: off, no annotation in the seed; on, the notes and their source', { tag: ['@web'] }, async ({ page, inject }) => {
+// the setting, on a real import from a Bandcamp page (its about and credits). majkinetor: "lets make
+// FC annotation also per platform (enable by default)": on, the notes, ending with where they come
+// from; off for Bandcamp, no annotation, and other platforms keep theirs. The old one-for-all setting
+// (off by default) is dropped: every platform starts on.
+test('annotation setting: on by default, per platform; off, no annotation in the seed', { tag: ['@web'] }, async ({ page, inject }) => {
   test.info().annotations.push({ type: 'fixture', description: 'bullion.bandcamp.com/album/nearly' });
   await page.goto('https://bullion.bandcamp.com/album/nearly', { waitUntil: 'domcontentloaded' });
   await inject('first_contact', { waitFor: '__fcTest' });
@@ -38,12 +40,22 @@ test('annotation setting: off, no annotation in the seed; on, the notes and thei
     const s = window.__fcLastSeed;
     return s && (s.params.find(([k]) => k === 'annotation') || [null, null])[1];
   });
-  const off = await seedOf();
-  check(off === null, `off by default: no annotation (${JSON.stringify(off)})`);
-  await page.locator('#fc-root .fc-more').click();
-  await page.locator('#fc-panel .fc-annotation').check();
-  await page.mouse.click(5, 5);
+  const gm = k => page.evaluate(k => GM_getValue(k, null), k);
+  // as an older version left it: the one setting, off
+  await page.evaluate(() => GM_setValue('fc.settings', { server: 'musicbrainz.org', annotation: false }));
   const on = await seedOf();
   const tail = 'From Bandcamp: https://bullion.bandcamp.com/album/nearly';
-  check(typeof on === 'string' && on.endsWith('\n\n' + tail) && on.length > tail.length + 40, `on: the album's notes and their source (${JSON.stringify((on || '').slice(-120))})`);
+  check(typeof on === 'string' && on.endsWith('\n\n' + tail) && on.length > tail.length + 40, `on by default, the old "off" included: the album's notes and their source (${JSON.stringify((on || '').slice(-120))})`);
+  check(!('annotation' in (await gm('fc.settings') || {})), 'the old setting is gone');
+
+  await page.locator('#fc-root .fc-more').click();
+  const label = (await page.locator('#fc-panel label:has(.fc-annotation)').textContent()).trim();
+  check(label === "Annotation from Bandcamp's notes", `the setting names the platform (${JSON.stringify(label)})`);
+  check(await page.locator('#fc-panel .fc-annotation').isChecked(), 'and shows it on');
+  await page.evaluate(() => GM_setValue('fc.annotation.off', { Discogs: true }));   // off elsewhere already
+  await page.locator('#fc-panel .fc-annotation').uncheck();
+  await page.mouse.click(5, 5);
+  check(JSON.stringify(await gm('fc.annotation.off')) === JSON.stringify({ Discogs: true, Bandcamp: true }), `off for Bandcamp, Discogs untouched (${JSON.stringify(await gm('fc.annotation.off'))})`);
+  const off = await seedOf();
+  check(off === null, `off: no annotation (${JSON.stringify(off)})`);
 });
