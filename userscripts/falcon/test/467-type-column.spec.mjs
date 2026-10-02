@@ -68,7 +68,7 @@ test("#467: type column", { tag: ['@sandbox', '@login'] }, async ({ context, pag
   await page.click('.falcon-row-expand[data-id="a2"]');
   const detailInfo = await page.evaluate(() => {
     const row = document.querySelector('.falcon-row[data-id="a2"]');
-    const detailLines = [...row.children].slice(1).filter(l => l.querySelector("a[href]"));   // the url lines (the rest edit the item)
+    const detailLines = [...row.querySelectorAll('.falcon-ln')];   // #663: one line per URL in the form
     return detailLines.map(line => {
       const a = line.querySelector('a');
       const typeSpans = [...line.querySelectorAll('span')].map(s => s.textContent);
@@ -77,7 +77,7 @@ test("#467: type column", { tag: ['@sandbox', '@login'] }, async ({ context, pag
   });
   console.log('detail lines:', JSON.stringify(detailInfo));
   ck(detailInfo.every(l => l.href && l.href.includes('myspace.com')), 'every expanded detail url is a real clickable link');
-  ck(detailInfo.some(l => l.typeSpans.some(t => /type 268/.test(t))), `the linkTypeId badge is present (${JSON.stringify(detailInfo.map(l => l.typeSpans))})`);
+  ck(detailInfo.some(l => l.typeSpans.some(t => /free streaming/.test(t))), `the linkTypeId badge is present (${JSON.stringify(detailInfo.map(l => l.typeSpans))})`);
   ck(detailInfo.every(l => l.isFlexGrow === '0'), `the url link no longer flex-grows to push the type badge away (flex-grow values: ${JSON.stringify(detailInfo.map(l => l.isFlexGrow))})`);
 
   ck(errs.length === 0, 'no page errors: ' + JSON.stringify(errs.slice(0, 3)));

@@ -45,11 +45,20 @@ On a release or release group page, **+ Add from** fills the queue with its enti
 
 <img src="./screenshots/add-from-release.png" width="520">
 
-Ticking 🎬 *Video* on a selected recording ticks it on every selected recording.
+Ticking the *Video* camera on a selected recording ticks it on every selected recording.
 
 ### From a series
 
 On a series page, **+ Add from series** queues its release groups (optionally every release in them), or its releases (optionally their release groups), in the series' own order. Together with [renaming](#attributes), this is how a series gets its titles conformed.
+
+## Editing the queue
+
+The toolbar button switches between two views. Falcon remembers the one you last used.
+
+- **List**: expand a row to edit it as a labelled form. Its links are listed one per URL, with the service and the link type by name; a URL added under two types shows both. Long link lists fold after three, with *+ N more*.
+- **Grid**: one line per row, with every field editable in place. *N links* opens the row's links (and a release's cover art) beneath it.
+
+The [keyboard](#shortcuts) moves between fields in both views, like a spreadsheet. In the list, the row you move into opens and the one you leave closes again.
 
 ## The run
 
@@ -186,6 +195,12 @@ Append `?falcon=<base64(JSON)>` to any musicbrainz.org URL: Falcon opens with th
 | Key | |
 |---|---|
 | Ctrl+Alt+F | open or close Falcon |
+| Enter / Down | the same field on the next row |
+| Shift+Enter / Up | the same field on the previous row |
+| Tab / Shift+Tab | the next / previous field, on to the next / previous row |
+| Right / Left | the next / previous field, once the cursor is at the end / start of the text |
+
+In an alias box with text in it, Enter adds the alias first; press it again to move on.
 
 [Harmony]: https://harmony.pulsewidth.org.uk
 [ECAU]: https://github.com/ROpdebee/mb-userscripts#mb-enhanced-cover-art-uploads
