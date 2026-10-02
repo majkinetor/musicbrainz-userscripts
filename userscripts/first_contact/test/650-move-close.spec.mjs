@@ -2,7 +2,8 @@
 // button movable, and it should remember where it is positioned on particular provider".
 //
 // Fixtures: Bandcamp bullion.bandcamp.com/album/nearly, Deezer album 6575789.
-import { test, check } from '../../../dev/test/harness.mjs';
+import { test, check, sourceOf } from '../../../dev/test/harness.mjs';
+import { readFile } from 'node:fs/promises';
 
 test.use({ gm: { name: 'First Contact', persist: 'tabs' }, pageErrors: 'ignore' });   // the platforms' own scripts are not ours
 
@@ -183,3 +184,49 @@ test('Scrolls with the page: the button goes under a fixed bar on the page, not 
   check(hit.onBar, 'the button has scrolled under the bar');
   check(hit.top && !hit.fc, `the bar is drawn over the button (${JSON.stringify(hit)})`);
 });
+
+// majkinetor: "for some reason button still moves on spotify … and apple music … but not on qobuz
+// and bandcamp". Spotify and Apple Music keep the window still and scroll a panel inside it: the
+// button follows that panel, and is cut off where the panel ends.
+for (const [name, url, viaEval] of [
+  ['Spotify', 'https://open.spotify.com/album/4m2880jivSbbyEGAKfITCa', true],
+  ['Apple Music', 'https://music.apple.com/us/album/random-access-memories/617154241', true],   // both CSPs refuse the inline <script>: eval, as 650-apple does
+]) {
+  test(`Scrolls with the page on ${name}, where a panel scrolls and not the window`, { tag: ['@web'] }, async ({ page, inject }) => {
+    await page.goto(url, { waitUntil: 'domcontentloaded' });
+    if (viaEval) await page.evaluate(c => (0, eval)(c), await readFile(sourceOf('first_contact'), 'utf8'));
+    else await inject('first_contact', { waitFor: '__fcTest' });
+    await page.locator('#fc-root .fc-go').waitFor({ state: 'visible' });
+    // the panel that scrolls: what the script has to find
+    const scroller = () => page.evaluate(() => {
+      let best = null, area = 0;
+      for (const el of document.body.querySelectorAll('*')) {
+        if (el.scrollHeight <= el.clientHeight + 1 || el.clientHeight < 200 || !/auto|scroll|overlay/.test(getComputedStyle(el).overflowY)) continue;
+        if (el.clientWidth * el.clientHeight > area) { area = el.clientWidth * el.clientHeight; best = el; }
+      }
+      if (best) best.dataset.fcTestScroller = '1';
+      return !!best && document.scrollingElement.scrollHeight <= document.scrollingElement.clientHeight + 1;
+    });
+    await page.waitForFunction(() => document.body.scrollHeight > 0);
+    await page.waitForTimeout(3000);   // the album's content renders after the shell
+    await page.evaluate(() => { const c = document.getElementById('onetrust-consent-sdk'); if (c) c.remove(); });   // Spotify's cookie banner, over the corner
+    check(await scroller(), `${name}: the window stands still and a panel scrolls`);
+    await page.locator('#fc-root .fc-more').click();
+    await page.locator('#fc-panel .fc-scroll-opt').check();
+    await page.keyboard.press('Escape');
+    const g = await page.locator('#fc-root .fc-go').boundingBox();
+    await page.mouse.move(g.x + 20, g.y + g.height / 2);
+    await page.mouse.down();
+    await page.mouse.move(g.x + 20 - 300, 400, { steps: 10 });
+    await page.mouse.up();
+    const placed = await page.locator('#fc-root').boundingBox();
+    await page.evaluate(() => { document.querySelector('[data-fc-test-scroller]').scrollTop += 150; });
+    await page.waitForTimeout(200);
+    const after = await page.locator('#fc-root').boundingBox();
+    check(Math.abs(after.y - (placed.y - 150)) < 3 && Math.abs(after.x - placed.x) < 3, `${name}: the button scrolls with the panel (${placed.y} → ${after.y})`);
+    await page.evaluate(() => { document.querySelector('[data-fc-test-scroller]').scrollTop += 2000; });
+    await page.waitForTimeout(200);
+    const gone = await page.evaluate(() => { const r = document.getElementById('fc-root'); return getComputedStyle(r).visibility === 'hidden' || r.getBoundingClientRect().bottom < document.querySelector('[data-fc-test-scroller]').getBoundingClientRect().top + 1 || !!r.style.clipPath; });
+    check(gone, `${name}: scrolled past the panel's top, it is cut off there`);
+  });
+}

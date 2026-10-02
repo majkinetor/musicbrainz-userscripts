@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         First Contact
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.2.093120
+// @version      2026.10.2.094043
 // @description  Import a release into MusicBrainz from the platform's album page with one click: the release editor opens with the title, tracklist, artists, date, label, barcode and link filled in. Each artist's platform link is handed to Apollo Editor for matching. Platforms: Deezer, Bandcamp, Discogs, Apple Music, Tidal, Qobuz, Beatport, Spotify, YouTube Music, Volumo, HDtracks, SoundCloud.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPkZpcnN0IENvbnRhY3Q8L3RpdGxlPgogIDwhLS0gdHJhY3RvciBiZWFtIC0tPgogIDxwYXRoIGQ9Ik01MCA0NCBMNzggNDQgTDEwNCAxMTIgTDI0IDExMiBaIiBmaWxsPSIjZjZjNDMxIiBvcGFjaXR5PSIwLjkiLz4KICA8cGF0aCBkPSJNNTYgNDQgTDcyIDQ0IEw4OCAxMTIgTDQwIDExMiBaIiBmaWxsPSIjZmRlNjhhIiBvcGFjaXR5PSIwLjciLz4KICA8IS0tIGxhbmRpbmcgcmluZyAtLT4KICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSIxMTQiIHJ4PSI0MiIgcnk9IjgiIGZpbGw9IiMxZTIzNDYiIHN0cm9rZT0iI2M5Y2RmMiIgc3Ryb2tlLXdpZHRoPSIzIi8+CiAgPGVsbGlwc2UgY3g9IjY0IiBjeT0iMTEzIiByeD0iMjYiIHJ5PSI0LjIiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2Y2YzQzMSIgc3Ryb2tlLXdpZHRoPSIyLjQiLz4KICA8IS0tIHNhdWNlcjogYSBwYWxlIHJpbSwgc28gaXQgc2hvd3Mgb24gYSBkYXJrIGJhY2tncm91bmQgdG9vIC0tPgogIDxwYXRoIGQ9Ik00MCAyNiBBMjQgMTggMCAwIDEgODggMjYgWiIgZmlsbD0iIzFlMjM0NiIgc3Ryb2tlPSIjYzljZGYyIiBzdHJva2Utd2lkdGg9IjMiLz4KICA8cGF0aCBkPSJNNTAgMTggQTEwIDYgMCAwIDEgNjAgMTQiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2ZmZiIgc3Ryb2tlLXdpZHRoPSIyLjYiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxlbGxpcHNlIGN4PSI2NCIgY3k9IjMyIiByeD0iNTYiIHJ5PSIxMyIgZmlsbD0iIzFlMjM0NiIgc3Ryb2tlPSIjYzljZGYyIiBzdHJva2Utd2lkdGg9IjMiLz4KICA8Y2lyY2xlIGN4PSIzOCIgY3k9IjMyIiByPSI0LjQiIGZpbGw9IiNmZmYiLz4KICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjM0IiByPSI0LjQiIGZpbGw9IiNmZmYiLz4KICA8Y2lyY2xlIGN4PSI5MCIgY3k9IjMyIiByPSI0LjQiIGZpbGw9IiNmZmYiLz4KICA8IS0tIHRoZSByZWxlYXNlIGJlaW5nIGJlYW1lZCB1cDogYSBwdXJwbGUgaGV4YWdvbiB3aXRoIGEgbm90ZSAtLT4KICA8cGF0aCBkPSJNNjQgNTggTDg0IDY5LjUgTDg0IDkyLjUgTDY0IDEwNCBMNDQgOTIuNSBMNDQgNjkuNSBaIiBmaWxsPSIjN2I0ZmQ2Ii8+CiAgPHBhdGggZD0iTTY0IDU4IEw4NCA2OS41IEw2NCA4MSBMNDQgNjkuNSBaIiBmaWxsPSIjOWI3MmVhIi8+CiAgPHBhdGggZD0iTTYwIDcyIEw3NCA2OSBMNzQgODkiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2ZmZiIgc3Ryb2tlLXdpZHRoPSIzLjQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz4KICA8cGF0aCBkPSJNNjAgNzIgTDYwIDkyIiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iMy40Ii8+CiAgPGVsbGlwc2UgY3g9IjU2IiBjeT0iOTIiIHJ4PSI0LjYiIHJ5PSIzLjYiIGZpbGw9IiNmZmYiLz4KICA8ZWxsaXBzZSBjeD0iNzAiIGN5PSI4OSIgcng9IjQuNiIgcnk9IjMuNiIgZmlsbD0iI2ZmZiIvPgogIDwhLS0gc3BhcmtsZXMgLS0+CiAgPHBhdGggZD0iTTE4IDU0IGwyLjUgNiA2IDIuNSAtNiAyLjUgLTIuNSA2IC0yLjUgLTYgLTYgLTIuNSA2IC0yLjUgWiIgZmlsbD0iI2Y2YzQzMSIvPgogIDxwYXRoIGQ9Ik0xMDggNTIgbDIuNSA2IDYgMi41IC02IDIuNSAtMi41IDYgLTIuNSAtNiAtNiAtMi41IDYgLTIuNSBaIiBmaWxsPSIjMWUyMzQ2Ii8+CiAgPHBhdGggZD0iTTExMiA4MiBsMS44IDQuMiA0LjIgMS44IC00LjIgMS44IC0xLjggNC4yIC0xLjggLTQuMiAtNC4yIC0xLjggNC4yIC0xLjggWiIgZmlsbD0iI2Y2YzQzMSIvPgogIDxwYXRoIGQ9Ik0xNCA4NiBsMS44IDQuMiA0LjIgMS44IC00LjIgMS44IC0xLjggNC4yIC0xLjggLTQuMiAtNC4yIC0xLjggNC4yIC0xLjggWiIgZmlsbD0iIzFlMjM0NiIvPgo8L3N2Zz4K
@@ -1681,6 +1681,8 @@ function mountButton(provider, id) {
     root.querySelector('.fc-go').title = `Import to MusicBrainz: open the release editor with this ${provider.name} release filled in`;
     root.style.display = '';
     placeButton(root);
+    // an app-like platform draws its scrolling panel after the shell: place it again once it's there
+    if (settings().scrollWithPage) setTimeout(() => { if (root.style.display !== 'none' && !root.classList.contains('fc-dragging')) placeButton(root); }, 1500);
     Log.debug(`button shown for ${provider.name} album ${id}`);
 }
 
@@ -1695,6 +1697,58 @@ function storePos(name, pos) {
     if (pos) all[name] = pos; else delete all[name];
     GM_setValue(POS_KEY, all);
 }
+// What scrolls the page. Usually the window (Bandcamp, Qobuz); the app-like platforms (Spotify,
+// Apple Music) keep the window still and scroll one big panel inside it instead. That panel is
+// the largest element that scrolls; null means the window does. Kept until it leaves the page.
+let scrollerCache = null;
+function pageScroller() {
+    const se = document.scrollingElement || document.documentElement;
+    if (se.scrollHeight > se.clientHeight + 1) return null;
+    if (scrollerCache && scrollerCache.isConnected && scrollerCache.scrollHeight > scrollerCache.clientHeight + 1) return scrollerCache;
+    let best = null, area = 0;
+    for (const el of document.body.querySelectorAll('*')) {
+        if (el.scrollHeight <= el.clientHeight + 1 || el.clientHeight < 200 || el.closest('#fc-root, #fc-panel')) continue;
+        const a = el.clientWidth * el.clientHeight;
+        if (a <= area || !/^(auto|scroll|overlay)$/.test(getComputedStyle(el).overflowY)) continue;
+        best = el; area = a;
+    }
+    if (best !== scrollerCache) Log.debug(`page scrolls in ${best ? `<${best.tagName.toLowerCase()}${best.className ? ' class="' + String(best.className).slice(0, 60) + '"' : ''}> (${best.clientWidth}×${best.clientHeight})` : 'the window'}`);
+    scrollerCache = best;
+    return best;
+}
+// a spot on the page: across from the centre of what scrolls, down from the top of its content
+function pagePosOf(r) {
+    const sc = pageScroller();
+    if (!sc) return { cx: Math.round(r.left + r.width / 2 - document.documentElement.clientWidth / 2), top: Math.round(r.top + window.scrollY) };
+    const sr = sc.getBoundingClientRect();
+    return { cx: Math.round(r.left + r.width / 2 - (sr.left + sr.width / 2)), top: Math.round(r.top - sr.top + sc.scrollTop) };
+}
+// In a scrolling panel the button stays fixed and follows the panel's scroll, cut to the part of
+// the panel that shows, so it slides under the panel's edges (Spotify's top bar and player) as
+// content does.
+function placeInScroller(root, pos, sc, r) {
+    const sr = sc.getBoundingClientRect();
+    const left = Math.round(Math.min(Math.max(sr.left, sr.left + sr.width / 2 + pos.cx - r.width / 2), Math.max(sr.left, sr.right - r.width)));
+    const top = Math.round(sr.top + pos.top - sc.scrollTop);
+    root.style.position = '';
+    root.style.zIndex = '100';
+    root.style.right = root.style.bottom = '';
+    root.style.left = left + 'px';
+    root.style.top = top + 'px';
+    const cutTop = Math.max(0, sr.top - top), cutBottom = Math.max(0, top + r.height - sr.bottom);
+    root.style.visibility = cutTop + cutBottom >= r.height ? 'hidden' : '';
+    root.style.clipPath = cutTop || cutBottom ? `inset(${cutTop}px 0 ${cutBottom}px 0)` : '';
+}
+let scrollFollow = 0;
+document.addEventListener('scroll', e => {
+    if (e.target === document || scrollFollow) return;
+    scrollFollow = requestAnimationFrame(() => {
+        scrollFollow = 0;
+        const root = document.getElementById('fc-root');
+        if (root && root.style.display !== 'none' && !root.classList.contains('fc-dragging') && root.dataset.fcProvider && settings().scrollWithPage) placeButton(root);
+    });
+}, { capture: true, passive: true });
+
 function placeButton(root) {
     const pos = storedPos(root.dataset.fcProvider);
     if (!pos) {
@@ -1708,6 +1762,9 @@ function placeButton(root) {
     // cover, say) and scrolls with it. Stored against the page's horizontal centre, since the
     // platforms centre their layout: it stays over the same spot when the window is resized.
     if (settings().scrollWithPage && pos.top != null) {
+        const sc = pageScroller();
+        if (sc) { placeInScroller(root, pos, sc, r); return; }
+        root.style.clipPath = root.style.visibility = '';
         const vw = document.documentElement.clientWidth;
         const left = Math.round(Math.min(Math.max(0, vw / 2 + pos.cx - r.width / 2), Math.max(0, vw - r.width)));
         const top = Math.max(0, Math.round(pos.top));
@@ -1725,7 +1782,7 @@ function placeButton(root) {
         return;
     }
     root.style.position = '';
-    root.style.zIndex = '';
+    root.style.zIndex = root.style.clipPath = root.style.visibility = '';
     root.style.right = Math.round(Math.min(Math.max(0, pos.right), Math.max(0, window.innerWidth - r.width))) + 'px';
     root.style.bottom = Math.round(Math.min(Math.max(0, pos.bottom), Math.max(0, window.innerHeight - r.height))) + 'px';
     root.style.left = root.style.top = '';
@@ -1748,7 +1805,7 @@ function makeMovable(root) {
             moved = true;
             document.documentElement.style.userSelect = 'none';
             root.classList.add('fc-dragging');
-            root.style.position = root.style.zIndex = '';     // fixed and on top while it moves
+            root.style.position = root.style.zIndex = root.style.clipPath = root.style.visibility = '';   // fixed and on top while it moves
             root.style.left = root.style.top = '';
             if (root.dataset.mbCorner) { delete root.dataset.mbCorner; mbRestackCorner('br'); }
             const panel = document.getElementById('fc-panel');
@@ -1766,7 +1823,7 @@ function makeMovable(root) {
         // both ways of keeping it: on the screen, and on the page (Scroll with the page)
         const r = root.getBoundingClientRect();
         const pos = { right: parseInt(root.style.right, 10) || 0, bottom: parseInt(root.style.bottom, 10) || 0,
-            cx: Math.round(r.left + r.width / 2 - document.documentElement.clientWidth / 2), top: Math.round(r.top + window.scrollY) };
+            ...pagePosOf(r) };
         storePos(root.dataset.fcProvider, pos);
         placeButton(root);
         Log.info(`button moved on ${root.dataset.fcProvider}: on the screen ${pos.right}px from the right, ${pos.bottom}px from the bottom; on the page ${pos.cx}px from the centre, ${pos.top}px from the top`);
