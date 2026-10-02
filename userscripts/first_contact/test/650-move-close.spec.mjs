@@ -228,5 +228,24 @@ for (const [name, url, viaEval] of [
     await page.waitForTimeout(200);
     const gone = await page.evaluate(() => { const r = document.getElementById('fc-root'); return getComputedStyle(r).visibility === 'hidden' || r.getBoundingClientRect().bottom < document.querySelector('[data-fc-test-scroller]').getBoundingClientRect().top + 1 || !!r.style.clipPath; });
     check(gone, `${name}: scrolled past the panel's top, it is cut off there`);
+
+    // majkinetor: "positions only when I move" — after a reload it sat against the window until the
+    // first scroll. Now it stays unseen until the panel is there, then fades in on its spot.
+    await page.evaluate(() => { document.querySelector('[data-fc-test-scroller]').scrollTop = 0; });
+    await page.waitForTimeout(200);
+    const home = await page.locator('#fc-root').boundingBox();
+    await page.goto(url, { waitUntil: 'commit' });
+    await page.waitForFunction(() => document.body);
+    await page.evaluate(c => (0, eval)(c), await readFile(sourceOf('first_contact'), 'utf8'));
+    const seen = [];
+    for (let i = 0; i < 60; i++) {
+      seen.push(await page.evaluate(() => { const r = document.getElementById('fc-root'); if (!r) return null; const b = r.getBoundingClientRect(); return { o: Number(getComputedStyle(r).opacity), v: getComputedStyle(r).visibility, x: Math.round(b.x), y: Math.round(b.y) }; }));
+      await page.waitForTimeout(100);
+    }
+    const shown = seen.filter(v => v && v.o > 0.05 && v.v !== 'hidden');
+    const astray = shown.filter(v => Math.abs(v.x - home.x) > 3 || Math.abs(v.y - home.y) > 3);
+    check(shown.length > 0, `${name}: it shows after a reload`);
+    check(!astray.length, `${name}: after a reload it is never seen anywhere but its spot (${JSON.stringify(home)}; astray ${JSON.stringify(astray.slice(0, 3))})`);
+    check(seen[0] === null || seen[0].o < 0.05, `${name}: unseen at first, then it fades in (${JSON.stringify(seen[0])})`);
   });
 }
