@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Platform Check
 // @namespace    http://tampermonkey.net/
-// @version      2026.10.1.210938
+// @version      2026.10.2.120339
 // @description  Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+DQogIDx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CiAgDQogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJhMWE1MiIgc3Ryb2tlLXdpZHRoPSI5IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik00MCA4OCBBMzQgMzQgMCAwIDEgNDAgNDAiLz4NCiAgICA8cGF0aCBkPSJNMjkgOTkgQTUwIDUwIDAgMCAxIDI5IDI5Ii8+DQogICAgPHBhdGggZD0iTTg4IDg4IEEzNCAzNCAwIDAgMCA4OCA0MCIvPg0KICAgIDxwYXRoIGQ9Ik05OSA5OSBBNTAgNTAgMCAwIDAgOTkgMjkiLz4NCiAgPC9nPg0KICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyMCIgZmlsbD0iI2U4MjAxYSIvPg0KPC9zdmc+DQo=
@@ -2048,7 +2048,7 @@ ${MBU_TOKENS}${MBU_UI_CSS}
 </div>
 <div style="display: flex; justify-content: space-between; align-items: center; padding-top: 6px; border-top: 1px solid var(--mbu-border);">
   <div style="display: flex; align-items: center; gap: 6px;">
-    <span id="mb-inject-btn"      class="pc-icon-btn" title="Open the release editor and queue OK URLs to add · right-click: add them silently in the background · middle-click or Ctrl+click: add them, including the ones strict barcode/format settings withhold" style="${iconBtn}">+</span>
+    <span id="mb-inject-btn"      class="pc-icon-btn" title="Open the release editor and queue OK URLs to add · right-click: add them silently in the background · middle-click or Alt+click: add them, including the ones strict barcode/format settings withhold (with Ctrl: in the background)" style="${iconBtn}">+</span>
     <span id="mb-openall-btn"     class="pc-icon-btn" title="Open found platform pages not yet in MB (non-circled) in new tabs" style="${iconBtn}">↗</span>
   </div>
   <div style="display: flex; align-items: center; gap: 6px;">
@@ -2985,19 +2985,22 @@ function wireRowOpen(p) {
 }
 
 // #641: middle click (button 1) runs `fn`, or nothing when fn is null. The mousedown is
-// swallowed, so the browser doesn't start autoscrolling instead. #653: so does Ctrl+click
-// (⌘+click on a Mac), for a laptop's touchpad that has no middle button; it is caught before
-// the element's own click and the row's, which would add normally or open the page.
+// swallowed, so the browser doesn't start autoscrolling instead. #653: so does Alt+click, for a
+// laptop's touchpad that has no middle button; it is caught before the element's own click and
+// the row's, which would add normally or open the page. #641 (majkinetor): "I miss the background
+// option with middle click. Lets use CTRL middle click … ctrl + alt + click forces to background":
+// with Ctrl (⌘ on a Mac) held, `fn(true)` adds in the background.
+const pcBgKey = e => !!(e.ctrlKey || e.metaKey);
 function pcWireForce(el, fn) {
     el._pcForce = fn || null;
     el.onmousedown = fn ? (e) => { if (e.button === 1) e.preventDefault(); } : null;
-    el.onauxclick = fn ? (e) => { if (e.button !== 1) return; e.preventDefault(); fn(); } : null;
-    if (!el._pcForceCtrl) {
-        el._pcForceCtrl = true;
+    el.onauxclick = fn ? (e) => { if (e.button !== 1) return; e.preventDefault(); fn(pcBgKey(e)); } : null;
+    if (!el._pcForceAlt) {
+        el._pcForceAlt = true;
         el.addEventListener('click', (e) => {
-            if (!(e.ctrlKey || e.metaKey) || !el._pcForce) return;
+            if (!e.altKey || !el._pcForce) return;
             e.preventDefault(); e.stopImmediatePropagation();
-            el._pcForce();
+            el._pcForce(pcBgKey(e));
         }, true);
     }
 }
@@ -3065,12 +3068,12 @@ function updateRow(p, { url, mbTracks, remoteTracks, year, label, source, fromCa
     // #641: middle click adds a confirmed (✓) link anyway — over a strict barcode/format
     // withholding, which sometimes keeps back a legitimate find — in the foreground
     const canForce = !!(url && ico.textContent === '✓' && !fromMbRels);
-    const forceTip = blocked ? ' · middle-click or Ctrl+click: add it anyway' : ' · middle-click or Ctrl+click: add it even if strict settings would withhold it';
+    const forceTip = blocked ? ' · middle-click or Alt+click: add it anyway (with Ctrl: in the background)' : ' · middle-click or Alt+click: add it even if strict settings would withhold it (with Ctrl: in the background)';
     ico.style.cursor = canAdd || (blocked && canForce) ? 'pointer' : '';
     ico.title = canAdd ? `Click to add ${PROVIDER_NAME[p]} URL to MB · right-click: add it silently in the background${forceTip}` : (blocked ? `Withheld from + / ↗ — barcode/format confidence is on (see the coloured bar)${canForce ? forceTip : ''}` : '');
     ico.onclick = canAdd ? () => addSingleUrl(p) : null;
     ico.oncontextmenu = canAdd ? (e) => { e.preventDefault(); addSingleUrl(p, true); } : null;
-    pcWireForce(ico, canForce ? () => addSingleUrl(p, false, true) : null);
+    pcWireForce(ico, canForce ? (bg) => addSingleUrl(p, bg, true) : null);
 
     // Icons-mode encoding — TWO INDEPENDENT dimensions:
     //   presence (pc-st-*) drives the icon fade + name colour: match = full · mismatch = gray · notfound = faint
@@ -3103,7 +3106,7 @@ function updateRow(p, { url, mbTracks, remoteTracks, year, label, source, fromCa
         plat.style.cursor = canAdd || (blocked && canForce) ? 'pointer' : 'default';
         plat.onclick = canAdd ? () => addSingleUrl(p) : null;   // click-to-add works on the brand icon too
         plat.oncontextmenu = canAdd ? (e) => { e.preventDefault(); addSingleUrl(p, true); } : null;
-        pcWireForce(plat, canForce ? () => addSingleUrl(p, false, true) : null);
+        pcWireForce(plat, canForce ? (bg) => addSingleUrl(p, bg, true) : null);
         plat.title = canAdd ? `Click to add ${PROVIDER_NAME[p]} URL to MB · right-click: add it silently in the background${forceTip}` : (url ? a.title + (blocked && canForce ? forceTip : '') : `No ${PROVIDER_NAME[p]} URL found`);
     }
 
@@ -3170,8 +3173,8 @@ function refreshCompactStrip() {
         // #641: a withheld match (✓, folded into the strip as a mismatch) takes the same
         // middle click as its full row's icon: add it anyway, in the foreground
         const canForce = !!(a && /^https?:\/\//.test(a.getAttribute('href') || '') && document.getElementById(`ico-${p}`)?.textContent.trim() === '✓' && !row.classList.contains('pc-inmb'));
-        ico.title = `${PROVIDER_NAME[p]} — ${mismatch ? 'found but a different release · click to open it' : 'click to search'}${canForce ? ' · middle-click or Ctrl+click: add it anyway' : ''}`;
-        pcWireForce(ico, canForce ? () => addSingleUrl(p, false, true) : null);
+        ico.title = `${PROVIDER_NAME[p]} — ${mismatch ? 'found but a different release · click to open it' : 'click to search'}${canForce ? ' · middle-click or Alt+click: add it anyway (with Ctrl: in the background)' : ''}`;
+        pcWireForce(ico, canForce ? (bg) => addSingleUrl(p, bg, true) : null);
         ico.innerHTML = stIcon(p, 16);
         ico.addEventListener('click', () => {
             // behave exactly like clicking the (uncompacted) row: open what was FOUND
@@ -6593,7 +6596,7 @@ function addSingleUrl(platform, background, force) {
     // #641: a forced add is recorded for the edit note; any other add clears an old record
     const forcedWhy = force ? pcWithheldWhy(platform) : null;
     if (forcedWhy) localStorage.setItem(`pc:forced:${mbid}`, JSON.stringify({ [cached.url]: forcedWhy })); else localStorage.removeItem(`pc:forced:${mbid}`);
-    appendLog('System', `Inject (${background ? 'background' : force ? 'middle-click' : 'click'}): queued ${platform} URL — opening release editor`, 'ok');
+    appendLog('System', `Inject (${force ? 'forced, ' : ''}${background ? 'background' : 'click'}): queued ${platform} URL — opening release editor`, 'ok');
     openReleaseEditTab(mbid, { background });
 }
 
@@ -6722,10 +6725,10 @@ async function runInjectBtn(e, background, force) {
         openRgEditTab(rgMbid, { background, sameTabAllowed: releaseCount === 0 });
     }
 }
-document.getElementById('mb-inject-btn').addEventListener('click', (e) => runInjectBtn(e, false, e.ctrlKey || e.metaKey));   // #653: Ctrl+click = middle click
+document.getElementById('mb-inject-btn').addEventListener('click', (e) => runInjectBtn(e, e.altKey && pcBgKey(e), e.altKey));   // #653/#641: Alt+click = middle click; Ctrl+Alt: in the background
 document.getElementById('mb-inject-btn').addEventListener('contextmenu', (e) => { e.preventDefault(); runInjectBtn(e, true); });
 document.getElementById('mb-inject-btn').addEventListener('mousedown', (e) => { if (e.button === 1) e.preventDefault(); });
-document.getElementById('mb-inject-btn').addEventListener('auxclick', (e) => { if (e.button !== 1) return; e.preventDefault(); runInjectBtn(e, false, true); });
+document.getElementById('mb-inject-btn').addEventListener('auxclick', (e) => { if (e.button !== 1) return; e.preventDefault(); runInjectBtn(e, pcBgKey(e), true); });   // #641: Ctrl+middle: in the background
 
 // "↗" — open found platform pages that are NOT already in MB (non-circled links,
 // source != 'MB rels') in their own new tabs. Circled = already an MB relationship.

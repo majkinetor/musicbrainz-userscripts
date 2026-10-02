@@ -118,7 +118,7 @@ test.describe('strict barcode confidence', () => {
   // queue read; nothing is submitted.
   test('#641: middle click adds a withheld link anyway, on the icon and on +', { tag: ['@sandbox'] }, async ({ page, inject }) => {
     const ws = await openPc(page, inject, { release: RAM, links, replay: new URL('./fixtures/ws-182b.json.gz', import.meta.url) });
-    await page.evaluate(() => { window.__opened = []; window.open = (u) => { window.__opened.push(String(u)); return null; }; });
+    await page.evaluate(() => { window.__opened = []; window.__bg = []; window.open = (u) => { window.__opened.push(String(u)); return null; }; window.GM_openInTab = (u, o) => { window.__bg.push({ url: String(u), active: !!(o && o.active) }); return { close() {} }; }; });
     const target = await page.evaluate(() => [...document.querySelectorAll('.pc-row.pc-blocked')].map(r => r.id.replace(/^row-/, '')).find(p => document.getElementById('ico-' + p)?.textContent.trim() === '✓'));
     check(!!target, `a withheld ✓ row to try it on (${target})`);
     const middle = sel => page.evaluate(sel => { const el = document.querySelector(sel); for (const t of ['mousedown', 'mouseup', 'auxclick']) el.dispatchEvent(new MouseEvent(t, { bubbles: true, cancelable: true, button: 1 })); }, sel);
@@ -144,11 +144,35 @@ test.describe('strict barcode confidence', () => {
     await middle('#ico-tidal');
     const legit = await page.evaluate(() => ({ opened: window.__opened.length, queued: Object.keys(JSON.parse(Object.entries(localStorage).find(([k]) => /^pc:pending:[0-9a-f-]{36}$/.test(k))?.[1] || '{}')), forced: Object.keys(localStorage).some(k => /^pc:forced:/.test(k)) }));
     check(legit.opened === 1 && legit.queued.join() === 'tidal' && !legit.forced, `on a legitimate find a middle click adds it like a left click, nothing marked as forced (${JSON.stringify(legit)})`);
-    // #653: Ctrl+click does what a middle click does (a touchpad has no middle button), on the icon
-    await page.evaluate(() => { window.__opened = []; Object.keys(localStorage).filter(k => /^pc:(pending|forced):/.test(k)).forEach(k => localStorage.removeItem(k)); });
-    await page.evaluate(p => document.getElementById('plat-' + p).dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true, ctrlKey: true })), target);
-    const ctrl = await page.evaluate(() => ({ opened: window.__opened.length, queued: Object.keys(JSON.parse(Object.entries(localStorage).find(([k]) => /^pc:pending:[0-9a-f-]{36}$/.test(k))?.[1] || '{}')), forced: Object.keys(localStorage).some(k => /^pc:forced:/.test(k)) }));
-    check(ctrl.opened === 1 && ctrl.queued.join() === target && ctrl.forced, `#653: Ctrl+click on the withheld icon adds it anyway, like a middle click (${JSON.stringify(ctrl)})`);
+    const reset = () => page.evaluate(() => { window.__opened = []; window.__bg = []; Object.keys(localStorage).filter(k => /^pc:(pending|forced):/.test(k)).forEach(k => localStorage.removeItem(k)); });
+    const after = () => page.evaluate(() => ({ opened: window.__opened.length, bg: window.__bg.map(b => b.url.replace(/^.*\/release\/[0-9a-f-]{36}\/edit/, 'edit') + (b.active ? ' active' : '')), queued: Object.keys(JSON.parse(Object.entries(localStorage).find(([k]) => /^pc:pending:[0-9a-f-]{36}$/.test(k))?.[1] || '{}')), forced: Object.keys(localStorage).some(k => /^pc:forced:/.test(k)) }));
+    const click = (p, mods) => page.evaluate(([p, mods]) => document.getElementById('plat-' + p).dispatchEvent(new MouseEvent('click', Object.assign({ bubbles: true, cancelable: true }, mods))), [p, mods]);
+    // #653, as changed in #641 (majkinetor): "Laptop users currently use ctrl click to force, so lets
+    // change that to alt click, so that ctrl can have the same meaning for them": Alt+click does what
+    // a middle click does (a touchpad has no middle button)
+    await reset();
+    await click(target, { altKey: true });
+    const alt = await after();
+    check(alt.opened === 1 && !alt.bg.length && alt.queued.join() === target && alt.forced, `Alt+click on the withheld icon adds it anyway, in the foreground, like a middle click (${JSON.stringify(alt)})`);
+    await reset();
+    await click(target, { ctrlKey: true });
+    const ctrlOnly = await after();
+    check(!ctrlOnly.opened && !ctrlOnly.bg.length && !ctrlOnly.queued.length, `Ctrl+click alone no longer forces it (${JSON.stringify(ctrlOnly)})`);
+    // #641 (majkinetor): "I miss the background option with middle click. Lets use CTRL middle click
+    // … ctrl + alt + click forces to background"
+    await reset();
+    await page.evaluate(p => { const el = document.getElementById('plat-' + p); for (const t of ['mousedown', 'mouseup', 'auxclick']) el.dispatchEvent(new MouseEvent(t, { bubbles: true, cancelable: true, button: 1, ctrlKey: true })); }, target);
+    const ctrlMiddle = await after();
+    check(!ctrlMiddle.opened && ctrlMiddle.bg.join() === 'edit#pc-autocommit' && ctrlMiddle.queued.join() === target && ctrlMiddle.forced, `Ctrl+middle-click adds it anyway, in a background tab that submits itself (${JSON.stringify(ctrlMiddle)})`);
+    await reset();
+    await click(target, { ctrlKey: true, altKey: true });
+    const ctrlAlt = await after();
+    check(!ctrlAlt.opened && ctrlAlt.bg.join() === 'edit#pc-autocommit' && ctrlAlt.queued.join() === target && ctrlAlt.forced, `Ctrl+Alt+click does the same (${JSON.stringify(ctrlAlt)})`);
+    await reset();
+    await page.evaluate(() => { const el = document.getElementById('mb-inject-btn'); for (const t of ['mousedown', 'mouseup', 'auxclick']) el.dispatchEvent(new MouseEvent(t, { bubbles: true, cancelable: true, button: 1, ctrlKey: true })); });
+    const plusBg = await after();
+    check(!plusBg.opened && plusBg.bg.join() === 'edit#pc-autocommit' && plusBg.queued.includes(target), `Ctrl+middle-click on + adds every link, the withheld ones too, in the background (${JSON.stringify(plusBg)})`);
+    await page.evaluate(() => { Object.keys(localStorage).filter(k => /^pc:(pending|forced):/.test(k)).forEach(k => localStorage.removeItem(k)); });
     // + : every confirmed link, the withheld ones included
     await page.evaluate(() => { window.__opened = []; });
     const blockedAll = await page.evaluate(() => [...document.querySelectorAll('.pc-row.pc-blocked')].map(r => r.id.replace(/^row-/, '')).filter(p => document.getElementById('ico-' + p)?.textContent.trim() === '✓' && !document.getElementById('ico-' + p).classList.contains('pc-ico-circled')));

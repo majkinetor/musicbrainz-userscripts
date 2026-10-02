@@ -21,14 +21,14 @@ Finds a MusicBrainz release on the streaming and store platforms, checks each ma
 
 A link already in the release's relationships is used as is. Otherwise each platform is searched: by barcode first, then the platform's own search, Wikidata, and a web search. The platform's details are fetched and shown next to MusicBrainz's, and the result is cached until you press ↻.
 
-| Icon and name | |
-|---|---|
-| coloured | found |
-| grey | found, but the details don't match |
-| faded | not found |
-| marked | already linked in MusicBrainz: a ring by default; *Settings › Appearance* offers a bold ring, a ✓ badge, a dot or a rounded square |
-| amber bar | found, with a different barcode |
-| violet bar | found, in a format this release isn't |
+| Icon and name |                                                                                                                                    |
+| ------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
+| coloured      | found                                                                                                                              |
+| grey          | found, but the details don't match                                                                                                 |
+| faded         | not found                                                                                                                          |
+| marked        | already linked in MusicBrainz: a ring by default; *Settings › Appearance* offers a bold ring, a ✓ badge, a dot or a rounded square |
+| amber bar     | found, with a different barcode                                                                                                    |
+| violet bar    | found, in a format this release isn't                                                                                              |
 
 A release's format is a four-quadrant circle: vinyl, cassette, CD, digital (DVD, SACD and Blu-ray count as CD).
 
@@ -45,36 +45,37 @@ MusicBrainz treats a different barcode or a different format as a different rele
 
 ## Adding links
 
-| Click | on the name | on the icon |
-|---|---|---|
-| left | open the page (or the platform's search, if not found) | open the release editor with the link added, for you to review |
-| right | open the platform's search | add the link in the background |
-| middle, or Ctrl+left (⌘ on a Mac) | | add the link even when [link confidence](#link-confidence) withholds it, in the foreground |
+| Click                                      | on the name                                            | on the icon                                                                                |
+| ------------------------------------------ | ------------------------------------------------------ | ------------------------------------------------------------------------------------------ |
+| left                                       | open the page (or the platform's search, if not found) | open the release editor with the link added, for you to review                             |
+| right                                      | open the platform's search                             | add the link in the background                                                             |
+| middle, or Alt+left                        |                                                        | add the link even when [link confidence](#link-confidence) withholds it, in the foreground |
+| Ctrl+middle, or Ctrl+Alt+left (⌘ on a Mac) |                                                        | the same, in the background                                                                |
 
-A middle click (or Ctrl+click) on a link that passes link confidence is a plain foreground add. One it overrides is marked in the edit note, with the reason: *(added by hand over link confidence: barcode not confirmed)*.
+A middle click (or Alt+click) on a link that passes link confidence is a plain add. One it overrides is marked in the edit note, with the reason: *(added by hand over link confidence: barcode not confirmed)*.
 
-The footer's **+** adds every confirmed link (middle-click or Ctrl+click: the withheld ones too) and **↗** opens them all. A background add opens an inactive tab that submits the edit and closes itself; the Discogs master goes onto the release group the same way.
+The footer's **+** adds every confirmed link (middle-click or Alt+click: the withheld ones too; with Ctrl, in the background) and **↗** opens them all. A background add opens an inactive tab that submits the edit and closes itself; the Discogs master goes onto the release group the same way.
 
 > [!NOTE]
 > Firefox throttles background tabs hard, slowing a background add down. *Keep background-add tabs awake* plays an inaudible tone, which exempts the tab. It needs **Allow Audio** for musicbrainz.org (padlock → *Autoplay*); without it, the log reports the tone as blocked.
 
 ## Platforms
 
-| Platform | Barcode | Login |
-|---|---|---|
-| Discogs | read | |
-| Bandcamp | read | |
-| Spotify | looked up (through [Wallstream](https://tools.wallstream.com/isrc-lookup)) | |
-| Apple Music | looked up and read | |
-| Deezer | looked up | |
-| Tidal | looked up and read | |
-| YouTube Music | looked up | |
-| Amazon Music | | |
-| Qobuz | looked up and read | optional |
-| Beatport | | optional |
-| Volumo | looked up and read | |
-| HDtracks | looked up and read | |
-| SoundCloud | read from the linked set | |
+| Platform      | Barcode                                                                    | Login    |
+| ------------- | -------------------------------------------------------------------------- | -------- |
+| Discogs       | read                                                                       |          |
+| Bandcamp      | read                                                                       |          |
+| Spotify       | looked up (through [Wallstream](https://tools.wallstream.com/isrc-lookup)) |          |
+| Apple Music   | looked up and read                                                         |          |
+| Deezer        | looked up                                                                  |          |
+| Tidal         | looked up and read                                                         |          |
+| YouTube Music | looked up                                                                  |          |
+| Amazon Music  |                                                                            |          |
+| Qobuz         | looked up and read                                                         | optional |
+| Beatport      |                                                                            | optional |
+| Volumo        | looked up and read                                                         |          |
+| HDtracks      | looked up and read                                                         |          |
+| SoundCloud    | read from the linked set                                                   |          |
 
 *Looked up*: the barcode finds the album. *Read*: the found album's barcode is checked against the release's.
 
@@ -92,8 +93,8 @@ The footer's **+** adds every confirmed link (middle-click or Ctrl+click: the wi
 
 <img width="400" src="./screenshots/config.png" />
 
-| Section | |
-|---|---|
+| Section |  |
+| --- | --- |
 | Platforms | order them, or leave some out |
 | Authentication | Beatport and Qobuz logins |
 | Link confidence | *Use barcodes* and *Use formats* (off, if they exist, strictly); *Add links in a new tab* (on; off navigates this tab); *Keep background-add tabs awake* |
@@ -101,7 +102,8 @@ The footer's **+** adds every confirmed link (middle-click or Ctrl+click: the wi
 
 ## Shortcuts
 
-| Key | |
-|---|---|
-| Esc | close the open dialog |
-| Ctrl+click (⌘+click) | the same as a middle click: add a link even when [link confidence](#link-confidence) withholds it; on **+**, add the withheld ones too |
+| Key                                            |                                                                                                                                        |
+| ---------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
+| Esc                                            | close the open dialog                                                                                                                  |
+| Alt+click                                      | the same as a middle click: add a link even when [link confidence](#link-confidence) withholds it; on **+**, add the withheld ones too |
+| Ctrl+middle-click, Ctrl+Alt+click (⌘ on a Mac) | the same, in the background                                                                                                            |
