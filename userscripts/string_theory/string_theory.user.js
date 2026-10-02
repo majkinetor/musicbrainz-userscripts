@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         String Theory
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.2.174155
+// @version      2026.10.2.184415
 // @description  Unified bundle of 8 MusicBrainz userscripts (apollo_editor, art_station, credit_hoarder, fusion, group_therapy, isrc_scout, mammoth, platform_check). Built by userscripts/string_theory/build.mjs — do not hand-edit.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCIgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0Ij4KICA8IS0tIGh1Yi1hbmQtc3Bva2UgIm5ldHdvcmsiIGdseXBoLCBzaW5nbGUgdml2aWQgdmlvbGV0IG9uIHRyYW5zcGFyZW50IHNvIGl0IHJlYWRzIG9uIGJvdGggZGFyayBhbmQgbGlnaHQgcGFnZXMgLS0+CiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjN2M1Y2ZmIiBzdHJva2Utd2lkdGg9IjQuNiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj4KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMzIgMTUiLz4KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMNDYuNSAyMy41Ii8+CiAgICA8cGF0aCBkPSJNMzIgMzIgTDQ2LjUgNDAuNSIvPgogICAgPHBhdGggZD0iTTMyIDMyIEwzMiA0OSIvPgogICAgPHBhdGggZD0iTTMyIDMyIEwxNy41IDQwLjUiLz4KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMTcuNSAyMy41Ii8+CiAgPC9nPgogIDxnIGZpbGw9IiM3YzVjZmYiPgogICAgPGNpcmNsZSBjeD0iMzIiIGN5PSIzMiIgcj0iOC42Ii8+CiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjE5LjUiIHI9IjYuNCIvPgogICAgPGNpcmNsZSBjeD0iNDkiIGN5PSIxOS41IiByPSI2LjQiLz4KICAgIDxjaXJjbGUgY3g9IjMyIiBjeT0iNTciIHI9IjYuNCIvPgogIDwvZz4KICA8ZyBmaWxsPSJub25lIiBzdHJva2U9IiM3YzVjZmYiIHN0cm9rZS13aWR0aD0iMy44Ij4KICAgIDxjaXJjbGUgY3g9IjMyIiBjeT0iNyIgcj0iNC45Ii8+CiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjQ0LjUiIHI9IjQuOSIvPgogICAgPGNpcmNsZSBjeD0iNDkiIGN5PSI0NC41IiByPSI0LjkiLz4KICA8L2c+Cjwvc3ZnPgo=
@@ -84,7 +84,7 @@
 // Bundles (verbatim, each wrapped in a run-at gate): apollo_editor, art_station, credit_hoarder, fusion, group_therapy, isrc_scout, mammoth, platform_check.
 
 try {
-  console.log('%c String Theory %c v2026.10.2.174155 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
+  console.log('%c String Theory %c v2026.10.2.184415 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
   console.log("String Theory bundles:\n  · Apollo Editor v2026.10.2.180500\n  · Art Station v2026.10.2\n  · Credit Hoarder v2026.10.2.122238\n  · Fusion v2026.10.1.210938\n  · Group Therapy v2026.10.1.210938\n  · ISRC Scout v2026.10.2\n  · Mammoth v2026.10.1.210938\n  · Platform Check v2026.10.2.160007");
 } catch (e) {}
 
@@ -1010,7 +1010,7 @@ try {
   }
   // slot status from a match result — 'disc' for a confident Discogs-URL match,
   // 'rg' for a release-group sibling, else the name-search confidence.
-  const slotStatusOf = m => !m.entity ? 'none' : (m.source === 'rg' ? 'rg' : m.source === 'pos' ? 'pos' : m.source === 'cred' ? 'cred' : m.source === 'alias' ? 'alias' : (m.source === 'discogs' && m.confidence === 'high') ? 'disc' : m.confidence);
+  const slotStatusOf = m => !m.entity ? 'none' : (m.source === 'rg' ? 'rg' : m.source === 'pos' ? 'pos' : m.source === 'cred' ? 'cred' : m.source === 'alias' ? 'alias' : (m.source === 'discogs' && m.confidence === 'high') ? 'disc' : (m.source === 'plat' && m.confidence === 'high') ? 'plat' : m.confidence);
 
   /* ── add / create the Discogs link for a slot (#227) ──────────────────────────
    * Stash the slot's Discogs artist URL and decide whether a link can be added:
@@ -1048,6 +1048,225 @@ try {
       if (pruned) _dsave();   // write back without the expired entries
     } catch (e) {}
   })();
+
+  /* ── #651: artist matching by the platform links First Contact hands over ──────────
+     First Contact seeds /release/add from a platform's album page and publishes, as its
+     handoff, every credited artist with that artist's page on the platform (Deezer, Spotify,
+     …). An MB artist that carries the link is as certain as one carrying the release's
+     Discogs link, so it is the same stage: one owner → linked, badged with the platform. */
+  // `type`: the artist link type to seed when MB's URL cleanup can't pick one itself (verified
+  // on the sandbox: Apple Music and Qobuz offer several, Volumo and HDtracks aren't recognised).
+  const PLATFORMS = [
+    { re: /(^|\.)deezer\.com$/i, abbr: 'dz', name: 'Deezer' },
+    { re: /(^|\.)spotify\.com$/i, abbr: 'sp', name: 'Spotify' },
+    { re: /(^|\.)tidal\.com$/i, abbr: 'td', name: 'Tidal' },
+    { re: /^(music|itunes)\.apple\.com$/i, abbr: 'am', name: 'Apple Music', type: 978 },   // streaming page
+    { re: /^music\.youtube\.com$/i, abbr: 'ytm', name: 'YouTube Music' },
+    { re: /(^|\.)bandcamp\.com$/i, abbr: 'bc', name: 'Bandcamp' },
+    { re: /(^|\.)beatport\.com$/i, abbr: 'bp', name: 'Beatport' },
+    { re: /(^|\.)qobuz\.com$/i, abbr: 'qz', name: 'Qobuz', type: 176 },                    // purchase music for download
+    { re: /(^|\.)soundcloud\.com$/i, abbr: 'sc', name: 'SoundCloud' },
+    { re: /^music\.amazon\./i, abbr: 'amz', name: 'Amazon Music' },
+    { re: /(^|\.)volumo\.com$/i, abbr: 'vo', name: 'Volumo', type: 176 },
+    { re: /(^|\.)hdtracks\.com$/i, abbr: 'hd', name: 'HDtracks', type: 176 },
+    { re: /(^|\.)discogs\.com$/i, abbr: 'disc', name: 'Discogs', type: DISCOGS_ARTIST_LINK_TYPE },
+  ];
+  function platformOf(url) { try { const h = new URL(url).hostname; return PLATFORMS.find(p => p.re.test(h)) || null; } catch (e) { return null; } }
+  // The /ws/2/url lookup matches the URL exactly as MusicBrainz stores it, and some platforms'
+  // links are stored under a storefront the album page doesn't say: Apple Music's under any
+  // country (music.apple.com/fr/artist/<id>, no slug), Amazon's under any of its domains, Qobuz's
+  // also as open.qobuz.com. Every form is asked in the same batched request.
+  const APPLE_CCS = ['us', 'gb', 'fr', 'de', 'jp', 'ca', 'au', 'nl', 'se', 'it', 'es', 'br', 'mx', 'pl', 'kr', 'be', 'ch', 'at', 'dk', 'no', 'fi', 'nz'];
+  const AMAZON_TLDS = ['com', 'co.uk', 'de', 'fr', 'it', 'es', 'ca', 'co.jp', 'com.au', 'com.br', 'com.mx', 'in'];
+  function platformUrlForms(url) {
+    const forms = [url];
+    let m;
+    if ((m = url.match(/^https?:\/\/(?:music|itunes)\.apple\.com\/([a-z]{2})\/artist\/(?:[^/?#]+\/)?(?:id)?(\d+)/i))) {
+      const cc = m[1].toLowerCase();
+      [cc, ...APPLE_CCS.filter(c => c !== cc)].forEach(c => forms.push(`https://music.apple.com/${c}/artist/${m[2]}`));
+    } else if ((m = url.match(/^https?:\/\/music\.amazon\.[a-z.]+\/artists\/([A-Z0-9]{10})/i))) {
+      AMAZON_TLDS.forEach(t => forms.push(`https://music.amazon.${t}/artists/${m[1].toUpperCase()}`));
+    } else if ((m = url.match(/^https?:\/\/(?:www\.)?qobuz\.com\/[a-z]{2}-[a-z]{2}\/interpreter\/[^/]+\/(\d+)/i))) {
+      forms.push(`https://open.qobuz.com/artist/${m[1]}`);
+    }
+    return [...new Set(forms)];
+  }
+  // Resolve platform links to their MB owners, batched: /ws/2/url takes up to 100 `resource`s per
+  // call and answers only the ones it knows. → Map url → [{ gid, name }] (the owners across all of
+  // its forms), or null for a url whose lookup failed (not cached, so it's asked again later).
+  // Shares the Discogs cache: both are "who owns this URL", keyed by the URL.
+  async function resolvePlatformUrls(urls) {
+    urls = [...new Set(urls.filter(Boolean))];
+    const need = [...new Set(urls.flatMap(platformUrlForms))].filter(f => !_discogsResolveCache.has(f));
+    const failed = new Set();
+    for (let i = 0; i < need.length;) {
+      const chunk = []; let len = 0;
+      while (i < need.length && chunk.length < 100 && len < 6000) { chunk.push(need[i]); len += encodeURIComponent(need[i]).length + 10; i++; }
+      const q = chunk.map(f => 'resource=' + encodeURIComponent(f)).join('&');
+      const r = await wsJson(`${ORIGIN}/ws/2/url?${q}&inc=artist-rels&fmt=json`, { label: 'platform links' });
+      if (r.notFound) { chunk.forEach(f => { _discogsResolveCache.set(f, []); _dput('resolve', f, []); }); Log.debug('platform links: none of', chunk.length, 'URL(s) is in MusicBrainz'); continue; }
+      if (!r.json) { chunk.forEach(f => failed.add(f)); Log.warn('platform links: lookup of', chunk.length, 'URL(s) failed; they are asked again on the next pass'); continue; }
+      const list = r.json.urls || (r.json.resource ? [r.json] : []);
+      const by = new Map(list.map(x => [String(x.resource).toLowerCase(), x]));
+      let known = 0;
+      chunk.forEach(f => {
+        const x = by.get(f.toLowerCase());
+        const seen = new Set();
+        const own = x ? (x.relations || []).filter(rel => rel.artist && rel.artist.id).map(rel => ({ gid: rel.artist.id, name: rel.artist.name })).filter(e => !seen.has(e.gid) && seen.add(e.gid)) : [];
+        if (own.length) known++;
+        _discogsResolveCache.set(f, own); _dput('resolve', f, own);
+      });
+      Log.debug('platform links: looked up', chunk.length, 'URL form(s) in one request,', known, 'owned by an MB artist');
+    }
+    const out = new Map();
+    urls.forEach(url => {
+      const forms = platformUrlForms(url), seen = new Set(), own = [];
+      let unknown = false;
+      forms.forEach(f => { if (failed.has(f) || !_discogsResolveCache.has(f)) { unknown = true; return; } _discogsResolveCache.get(f).forEach(e => { if (!seen.has(e.gid)) { seen.add(e.gid); own.push(e); } }); });
+      out.set(url, own.length ? own : unknown ? null : []);
+    });
+    return out;
+  }
+  const resolveByPlatformUrl = async url => (url ? (await resolvePlatformUrls([url])).get(url) : []);
+  // drop a link's cached owners (after we added it, or created an artist with it)
+  const forgetPlatformUrl = url => platformUrlForms(url).forEach(f => { _discogsResolveCache.delete(f); _ddrop('resolve', f); });
+
+  // First Contact's handoff: on <html data-first-contact>, and again on its 'first-contact:seed'
+  // event (asked for with 'first-contact:request', in case it came before us).
+  let _fcHandoff = null;
+  function takeFcHandoff(json, from) {
+    try {
+      const h = JSON.parse(json || 'null');
+      if (!h || !h.mediums || (_fcHandoff && _fcHandoff.token === h.token)) return;
+      _fcHandoff = h;
+      const n = [h.credit || []].concat(...h.mediums.map(m => m.tracks.map(t => t.credit || []))).reduce((k, c) => k + c.filter(a => a.url).length, 0);
+      Log.info('First Contact handoff (' + from + '):', h.sourceName || h.source, '—', n, 'artist credit(s) carry a platform link', h.url ? '(' + h.url + ')' : '');
+    } catch (e) { Log.warn('First Contact handoff unreadable:', e.message); }
+  }
+  function fcHandoff() {
+    if (!_fcHandoff && document.documentElement.dataset.firstContact) takeFcHandoff(document.documentElement.dataset.firstContact, 'page');
+    return _fcHandoff;
+  }
+  if (/\/release\/add/.test(location.pathname)) {
+    document.addEventListener('first-contact:seed', e => takeFcHandoff(e.detail, 'event'));
+    try { document.dispatchEvent(new CustomEvent('first-contact:request')); } catch (e) { /* no First Contact */ }
+  }
+  // the handoff's track for an Apollo track: the same medium, the same title (a reordered
+  // tracklist still finds it), else the same position
+  function fcTrackFor(t) {
+    const h = fcHandoff(); if (!h) return null;
+    const med = h.mediums[t.mi]; if (!med || !med.tracks) return null;
+    return med.tracks.find(x => sameName(x.title, t.title)) || med.tracks[t.ti] || null;
+  }
+  // a credit's platform link: the credited name first, else the same position when the credit
+  // still has as many artists as the handoff's
+  function fcCreditUrl(credit, i, creditedAs, nSlots) {
+    if (!credit || !credit.length) return null;
+    const byName = credit.find(a => a.url && (sameName(a.name, creditedAs) || sameName(a.artistName, creditedAs)));
+    if (byName) return byName.url;
+    return credit.length === nSlots && credit[i] && credit[i].url ? credit[i].url : null;
+  }
+  const fcPlatformUrl = (t, i, creditedAs) => { const ht = fcTrackFor(t); return ht ? fcCreditUrl(ht.credit, i, creditedAs, t.slots ? t.slots.length : (t.names || []).length) : null; };
+  // every platform link the handoff has for the pending slots, resolved in a few batched requests
+  // before the match pass, so each slot's own lookup is answered from the cache
+  async function prewarmPlatformLinks(tracks) {
+    if (!fcHandoff()) return;
+    const urls = [];
+    tracks.forEach(t => t.slots.forEach((s, i) => { const u = fcPlatformUrl(t, i, s.creditedAs); if (u) urls.push(u); }));
+    if (!urls.length) { Log.debug('platform links: the handoff has none for these slots'); return; }
+    const t0 = Date.now(), res = await resolvePlatformUrls(urls), uniq = [...res.keys()];
+    const owned = uniq.filter(u => res.get(u) && res.get(u).length).length, failed = uniq.filter(u => res.get(u) === null).length;
+    Log.info('platform links:', uniq.length, 'distinct artist link(s) from', _fcHandoff.sourceName || 'First Contact', '—', owned, 'owned by an MB artist,', uniq.length - owned - failed, 'not in MusicBrainz' + (failed ? ', ' + failed + ' lookup(s) failed' : ''), '(' + (Date.now() - t0) + ' ms)');
+  }
+
+  // 🔗 / ⚠ for a slot's platform link, as for Discogs (#227): a matched artist without the link
+  // can have it added (⚠ when another artist owns it); an unmatched slot whose link nobody owns
+  // can create its artist with it.
+  async function tagPlatformAddable(slot, url) {
+    slot._platUrl = url || null; slot._platAddable = false; slot._platConflict = null;
+    if (!url) return;
+    if (slot.gid && SPECIAL_PURPOSE_ARTISTS.has(slot.gid)) return;   // never link a special-purpose artist (#306)
+    const hits = await resolveByPlatformUrl(url);
+    if (hits === null) return;                                        // unknown: offer nothing rather than a wrong offer
+    if (slot.committed && slot.gid) {
+      if (hits.some(h => h.gid === slot.gid)) return;                 // the artist already has it
+      slot._platAddable = true;
+      if (hits.length) slot._platConflict = hits[0];
+      return;
+    }
+    slot._platAddable = hits.length === 0;
+    if (hits.length) slot._platConflict = hits[0];
+  }
+  let _tagPlatRunning = false, _tagPlatQueued = false;
+  async function tagPlatformForAll() {
+    if (!MODEL || !fcHandoff()) return;
+    if (_tagPlatRunning) { _tagPlatQueued = true; return; }
+    _tagPlatRunning = true;
+    try {
+      const jobs = [];
+      MODEL.tracks.forEach(t => t.slots.forEach((s, i) => { const u = fcPlatformUrl(t, i, s.creditedAs); if (u || s._platUrl) jobs.push([s, u]); }));
+      await resolvePlatformUrls(jobs.map(j => j[1]));
+      for (const [s, u] of jobs) await tagPlatformAddable(s, u);
+      const linked = s => !!(s.committed && s.gid);   // an uncommitted candidate isn't the slot's artist yet
+      const add = jobs.filter(([s]) => s._platAddable && linked(s)).length, create = jobs.filter(([s]) => s._platAddable && !linked(s)).length, conf = jobs.filter(([s]) => s._platConflict).length;
+      const outcome = `${jobs.length} slot(s) with a platform link: ${add} link(s) can be added, ${create} artist(s) can be created with theirs, ${conf} owned by another artist`;
+      if (outcome !== _lastPlatCheck) { _lastPlatCheck = outcome; Log.info('platform links:', outcome); }
+      if (!isEditingNow()) rerender();
+    } finally {
+      _tagPlatRunning = false;
+      if (_tagPlatQueued) { _tagPlatQueued = false; tagPlatformForAll(); }
+    }
+  }
+  let _lastPlatCheck = '';
+  function platAddTooltip(s) {
+    const p = platformOf(s._platUrl) || { name: 'platform' }, conf = s._platConflict;
+    if (!(s.committed && s.gid)) return `Create this artist with its ${p.name} link (${s._platUrl})`;
+    return conf ? `${p.name}: ${s._platUrl} is linked to ${conf.name}, not to this artist — click to add it here anyway`
+      : `${p.name}: this artist doesn't have ${s._platUrl} yet — click to add it`;
+  }
+  // add the slot's platform link to its artist (an edit of the artist), or create the artist with it
+  function addOrCreatePlatformLink(slot, background) {
+    const url = slot._platUrl; if (!url) return;
+    // an unmatched slot, or one with only an uncertain candidate: create the credited artist with the link
+    if (!(slot.committed && slot.gid)) { createArtist((slot.creditedAs || '').trim() || slot.name || '', slot, slot._discogsUrl || null, background); return; }
+    const p = platformOf(url) || { name: 'platform' }, gid = slot.gid;
+    const q = { 'edit-artist.url.0.text': url, 'edit-artist.edit_note': entityActionNote('Added ' + p.name + ' link') };
+    if (p.type) q['edit-artist.url.0.link_type_id'] = p.type;
+    const editUrl = `${ORIGIN}/artist/${gid}/edit?${new URLSearchParams(q)}`;
+    const done = async () => {
+      forgetPlatformUrl(url);
+      let hits = null;
+      for (let attempt = 0; attempt < 5; attempt++) {   // read-after-write: the new link can take a moment to show (#479)
+        hits = await resolveByPlatformUrl(url);
+        if (hits && hits.some(h => h.gid === gid)) break;
+        forgetPlatformUrl(url); await _sleep(800 * (attempt + 1));
+      }
+      if (hits && hits.some(h => h.gid === gid)) { MODEL && MODEL.tracks.forEach(t => t.slots.forEach(s => { if (s.gid === gid) s._flash = true; })); discMsg(`added ${p.name} link to ${slot.name || 'the artist'}`); }
+      else Log.warn(p.name, 'link for', slot.name || gid, 'not visible yet; it stays offered until the next check');
+      await tagPlatformForAll();
+    };
+    if (background && typeof GM_openInTab === 'function' && ART_CHANNEL) {
+      const bgTab = GM_openInTab(`${editUrl}#tc-autocommit`, { active: false, insert: true });
+      const onCommitted = e => {
+        if (!e.data || e.data.type !== 'tc-edit-committed' || e.data.gid !== gid) return;
+        ART_CHANNEL.removeEventListener('message', onCommitted);
+        try { if (bgTab && typeof bgTab.close === 'function') bgTab.close(); } catch (x) {}
+        done();
+      };
+      ART_CHANNEL.addEventListener('message', onCommitted);
+      Log.info(p.name, 'link (background) for', slot.name || gid, '→', url);
+      return;
+    }
+    const tab = W.open(editUrl, '_blank');
+    if (tab) { const trySet = () => { try { tab.sessionStorage.setItem(CLOSE_KEY, '1'); } catch (e) { setTimeout(trySet, 50); } }; trySet(); }
+    Log.info(p.name, 'link: opening the edit of', slot.name || gid, '→', url);
+    const onReturn = async () => {
+      if (document.visibilityState !== 'visible') return;
+      document.removeEventListener('visibilitychange', onReturn);
+      await done();
+    };
+    document.addEventListener('visibilitychange', onReturn);
+  }
 
   async function artistDiscogsUrls(gid, force) {
     if (!gid) return [];
@@ -1477,13 +1696,13 @@ try {
      found — the Discogs link, the release-group sibling (which release and track), the other
      editions at this position, the name/alias search, the co-credits — and when. The slot keeps
      it as _why and the badge's card shows it. Nothing extra is fetched for it. */
-  async function matchSlot(creditedAs, sib, discogsUrl, contextGids, pos) {
+  async function matchSlot(creditedAs, sib, discogsUrl, contextGids, pos, platUrl) {
     const why = { at: Date.now() };
-    const m = await matchSlotCore(creditedAs, sib, discogsUrl, contextGids, pos, why);
+    const m = await matchSlotCore(creditedAs, sib, discogsUrl, contextGids, pos, why, platUrl);
     m.why = why;
     return m;
   }
-  async function matchSlotCore(creditedAs, sib, discogsUrl, contextGids, pos, why) {
+  async function matchSlotCore(creditedAs, sib, discogsUrl, contextGids, pos, why, platUrl) {
     const who = creditedAs || '(track artist)';
     let posInfo = null;   // { of, artists: [{ entity, votes }] } — kept on the slot for the picker's section
     // #224: a Discogs artist-link match outranks the name search.
@@ -1506,6 +1725,24 @@ try {
       // mismatch case); null = the lookup was rate-limited.
       if (hits && hits.length === 0) Log.debug('Match:', who, '— Discogs URL not linked to any MB artist → name search');
       else if (hits == null) Log.debug('Match:', who, '— Discogs URL lookup unavailable (rate-limited) → name search');
+    }
+    // #651: the artist's page on the platform First Contact imported from — as certain as Discogs
+    if (platUrl) {
+      const p = platformOf(platUrl) || { abbr: 'link', name: 'platform' };
+      const hits = await resolveByPlatformUrl(platUrl);
+      why.plat = { url: platUrl, abbr: p.abbr, name: p.name, n: hits ? hits.length : null };
+      if (hits && hits.length === 1) {
+        const e = await fetchEntity(hits[0].gid);
+        if (e && e.gid) { Log.info('Match:', who, '→', e.name, '— via', p.name, 'link', platUrl); return { entity: e, source: 'plat', confidence: 'high', candidates: [e] }; }
+      } else if (hits && hits.length > 1) {
+        const named = await searchArtist(creditedAs);
+        const ents = [];
+        for (const h of hits) { const e = await fetchEntity(h.gid); if (e && e.gid) ents.push(e); }
+        const merged = [...ents, ...named.filter(c => !ents.some(e => e.gid === (c.gid || c.id)))];
+        if (ents.length) { Log.info('Match:', who, '—', ents.length, 'MB artists link', p.name, platUrl + '; pick one'); return { entity: ents[0], source: 'plat', confidence: 'low', candidates: merged }; }
+      }
+      if (hits && hits.length === 0) Log.debug('Match:', who, '—', p.name, 'link', platUrl, 'not in MusicBrainz → the next stages');
+      else if (hits == null) Log.debug('Match:', who, '—', p.name, 'link lookup unavailable → the next stages');
     }
     let candidates = await searchArtist(creditedAs);
     let entity = null, source = 'search', confidence = 'low';
@@ -1592,7 +1829,7 @@ try {
         else {
           const ctxGids = [...new Set(slots.map(s => s.gid).filter(Boolean).concat(releaseArtistGids()))].filter(coCreditCtx).slice(0, 6);   // #437 co-artists so far + release artist(s), never special-purpose (#618)
           const dUrl = (durls && durls[i]) || discogsFeatUrlFor(dmap, t.title, ti, tl.length, n.creditedAs);   // #442 fall back to the Discogs "Featuring" credit for a feat slot
-          const m = await matchSlot(n.creditedAs, sib && pickSibArtist(sib, n.creditedAs, i), dUrl, ctxGids);
+          const m = await matchSlot(n.creditedAs, sib && pickSibArtist(sib, n.creditedAs, i), dUrl, ctxGids, undefined, fcCreditUrl((fcTrackFor(t) || {}).credit, i, n.creditedAs, t.names.length));
           const status = slotStatusOf(m);
           const slot = { creditedAs: n.creditedAs, joinPhrase: n.joinPhrase, status, entity: m.entity, gid: m.entity ? m.entity.gid : null, name: m.entity ? m.entity.name : '', candidates: m.candidates, committed: false, _pos: m.pos || null, _why: m.why || null };
           await tagDiscogsAddable(slot, dUrl);   // #227
@@ -1635,7 +1872,7 @@ try {
   // on load, immediately write the confident matches (RG/HIGH) — that's the "no apply phase" behaviour
   // #580: never commit over a slot the user has focused — that is the write that
   // used to replace a half-typed name with the matched artist.
-  const autoCommittable = s => !s._editing && (s.status === 'rg' || s.status === 'high' || s.status === 'disc' || s.status === 'cred' || s.status === 'alias' || s.status === 'pos');
+  const autoCommittable = s => !s._editing && (s.status === 'rg' || s.status === 'high' || s.status === 'disc' || s.status === 'plat' || s.status === 'cred' || s.status === 'alias' || s.status === 'pos');
   function autoCommitTrack(t) { let any = false; t.slots.forEach(s => { if (autoCommittable(s)) { s.committed = true; any = true; } }); if (any) commitTrack(t); }
   // build the table model WITHOUT matching (instant) — unresolved slots are flagged _pending
   function buildShell() {
@@ -1703,6 +1940,7 @@ try {
       // needs (#283 falls back to matching by position), so carry it along
       // rather than re-deriving it from a filtered list.
       const todo = MODEL.tracks.map((t, ti) => ({ t, ti })).filter(x => x.t.slots.some(s => s._pending)); planned = todo.length;
+      await prewarmPlatformLinks(todo.map(x => x.t));   // #651: First Contact's platform links, a few batched lookups up front
       /* #575 (majkinetor, "Matching takes too long"): this loop used to await
          each track before starting the next. The /ws/2 pacer allows four reads in
          flight — measured on a 14-track fixture against production, the pass
@@ -1729,7 +1967,7 @@ try {
             const s = t.slots[i]; if (!s._pending) continue;
             if (s._editing) { Log.debug('match: slot skipped — the user is editing it (#580)'); continue; }   // stays _pending, so leaving the field lets a later pass have it
             const dUrl = (durls && durls[i]) || discogsFeatUrlFor(dmap, t.title, ti, total, s.creditedAs);   // #442 fall back to the Discogs "Featuring" credit for a feat slot
-            const m = await matchSlot(s.creditedAs, sib && pickSibArtist(sib, s.creditedAs, i), dUrl, slotContextGids(t, i), () => positionArtists(t, s.creditedAs));   // #437, #626
+            const m = await matchSlot(s.creditedAs, sib && pickSibArtist(sib, s.creditedAs, i), dUrl, slotContextGids(t, i), () => positionArtists(t, s.creditedAs), fcPlatformUrl(t, i, s.creditedAs));   // #437, #626, #651
             Object.assign(s, { status: slotStatusOf(m), entity: m.entity, gid: m.entity ? m.entity.gid : null, name: m.entity ? m.entity.name : '', candidates: m.candidates, _pos: m.pos || null, _why: m.why || null }); delete s._pending;
             await tagDiscogsAddable(s, dUrl);   // #227
           }
@@ -1763,6 +2001,7 @@ try {
     // Discogs link to load, and we don't want that holding up the caller's
     // alias-enrichment. It owns the badge and updates it when it settles.
     tagDiscogsForAll();
+    tagPlatformForAll();   // #651: 🔗 / ⚠ for First Contact's platform links, 'set' artists too
   }
   // (re-)match every still-unmatched slot — the "Match" button / used when auto-match is off
   async function matchAll() { if (!MODEL) return; MODEL.tracks.forEach(t => t.slots.forEach(s => { if (s.status !== 'set' && !s.committed) s._pending = true; })); await matchModel((d, n) => updateStatus(`matching ${d}/${n}…`)); }
@@ -1923,6 +2162,14 @@ try {
     let url = `${ORIGIN}/artist/create?edit-artist.name=${encodeURIComponent(name)}&edit-artist.sort_name=${encodeURIComponent(guessSortName(name))}`;
     // #227: seed the Discogs link so the new artist is born already linked
     if (discogsUrl) { url += `&edit-artist.url.0.text=${encodeURIComponent(discogsUrl)}&edit-artist.url.0.link_type_id=${DISCOGS_ARTIST_LINK_TYPE}`; _discogsResolveCache.delete(discogsUrl); }
+    // #651: and First Contact's platform link, unless another artist already has it
+    const platUrl = slot && slot._platUrl && !slot._platConflict && slot._platUrl !== discogsUrl ? slot._platUrl : null;
+    if (platUrl) {
+      const k = discogsUrl ? 1 : 0, pt = (platformOf(platUrl) || {}).type;
+      url += `&edit-artist.url.${k}.text=${encodeURIComponent(platUrl)}` + (pt ? `&edit-artist.url.${k}.link_type_id=${pt}` : '');
+      forgetPlatformUrl(platUrl);
+      Log.info('create-artist: seeding the', (platformOf(platUrl) || { name: 'platform' }).name, 'link', platUrl);
+    }
     url += `&edit-artist.edit_note=${encodeURIComponent(entityActionNote('Created this artist'))}`;   // proper attribution on the created artist
     const token = (slot && ART_CHANNEL) ? ('tc-' + Date.now() + '-' + (++_createSeq)) : null;
     // #273: right-click → create SILENTLY in a background tab and auto-submit.
@@ -2028,7 +2275,7 @@ try {
   ];
 
   const COLS = [{ k: 'mv', w: 32, label: '' }, { k: 'num', w: 38, label: '#' }, { k: 'title', w: 360, label: 'Title' }, { k: 'art', w: 380, label: 'Artist' }, { k: 'len', w: 52, label: 'Length' }, { k: 'badge', w: 56, label: 'Match' }, { k: 'act', w: 44, label: '' }];
-  const badgeText = s => ({ rg: 'rg', disc: 'disc', pos: 'pos', cred: 'cred', alias: 'alias', high: 'name', user: 'user', set: 'set', low: 'low' })[s.status] || '';
+  const badgeText = s => s.status === 'plat' ? ((s._why && s._why.plat && s._why.plat.abbr) || 'link') : ({ rg: 'rg', disc: 'disc', pos: 'pos', cred: 'cred', alias: 'alias', high: 'name', user: 'user', set: 'set', low: 'low' })[s.status] || '';
   // #654: the track-actions column is fixed at two icons wide; it is never resized
 const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[k]) || d;
   function esc(s) { return String(s == null ? '' : s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c])); }
@@ -2781,7 +3028,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
   const css = MBU_TOKENS + MBU_UI_CSS + `
     .tc-badge{font-size:10px;font-weight:bold;border-radius:9px;padding:1px 7px;color:var(--mbu-text-on-accent);white-space:nowrap}
     .tc-badge.rg{background:#1f8a4c}.tc-badge.set{background:#6c757d}.tc-badge.high{background:#2f6fd6}.tc-badge.disc{background:#0a7a8c}
-    .tc-badge.low{background:#e0a800}.tc-badge.user{background:var(--mbu-accent)}.tc-badge.none{background:#c0392b}.tc-badge.cred{background:#b5179e}.tc-badge.alias{background:#1f8a7a}.tc-badge.pos{background:#a0522d}
+    .tc-badge.low{background:#e0a800}.tc-badge.user{background:var(--mbu-accent)}.tc-badge.none{background:#c0392b}.tc-badge.cred{background:#b5179e}.tc-badge.alias{background:#1f8a7a}.tc-badge.pos{background:#a0522d}.tc-badge.plat{background:#0b6e99}
     .tc-btn{padding:4px 11px;border:1px solid transparent;border-radius:3px;background:transparent;cursor:pointer;font:13px Arial;color:var(--mbu-text)}
     .tc-btn:hover{background:var(--mbu-bg-raised);border-color:var(--mbu-border)}
     .tc-btn.primary{color:var(--mbu-accent-text);font-weight:bold}.tc-btn.primary:hover{background:linear-gradient(#7a52df,var(--mbu-accent));color:var(--mbu-text-on-accent);border-color:var(--mbu-accent)}
@@ -3983,6 +4230,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     if (copies) toast(`linked “${c.name}” — also on ${copies} matching track${copies > 1 ? 's' : ''}`);
     // #227: the new artist may lack the slot's Discogs link — recompute the add affordance
     if (slot._discogsUrl) tagDiscogsAddable(slot, slot._discogsUrl).then(() => rerender());
+    if (slot._platUrl) tagPlatformAddable(slot, slot._platUrl).then(() => rerender());   // #651
   }
   // Ctrl/Cmd-click a search result → set that artist on EVERY still-unresolved slot (bulk-fill, e.g. a
   // various-artists comp that's actually one artist). Resolved (green) slots are left untouched.
@@ -4007,7 +4255,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     slot.creditedAs = on.creditedAs; slot.joinPhrase = on.joinPhrase; slot.query = null;
     const a = u(on.artist) || {}, gid = u(a.gid);
     if (gid) Object.assign(slot, { status: 'set', gid, name: u(a.name), entity: { gid, name: u(a.name), id: u(a.id) }, candidates: [], committed: true });
-    else { const sib = (await loadSiblingMap()).get(fold(entry.title)); const durls = (await loadDiscogsMap())?.get(fold(entry.title)); const m = await matchSlot(on.creditedAs, sib && pickSibArtist(sib, on.creditedAs, i), durls && durls[i], slotContextGids(slot._entry, i), () => positionArtists(entry, on.creditedAs)); Object.assign(slot, { status: slotStatusOf(m), entity: m.entity, gid: m.entity ? m.entity.gid : null, name: m.entity ? m.entity.name : '', candidates: m.candidates, _pos: m.pos || null, _why: m.why || null, committed: false }); await tagDiscogsAddable(slot, durls && durls[i]); }
+    else { const sib = (await loadSiblingMap()).get(fold(entry.title)); const durls = (await loadDiscogsMap())?.get(fold(entry.title)); const pUrl = fcPlatformUrl(entry, i, on.creditedAs); const m = await matchSlot(on.creditedAs, sib && pickSibArtist(sib, on.creditedAs, i), durls && durls[i], slotContextGids(slot._entry, i), () => positionArtists(entry, on.creditedAs), pUrl); Object.assign(slot, { status: slotStatusOf(m), entity: m.entity, gid: m.entity ? m.entity.gid : null, name: m.entity ? m.entity.name : '', candidates: m.candidates, _pos: m.pos || null, _why: m.why || null, committed: false }); await tagDiscogsAddable(slot, durls && durls[i]); await tagPlatformAddable(slot, pUrl); }
     commitTrack(entry); Log.info('reverted slot', i, 'of track', entry.number); rerender();
   }
 
@@ -4150,6 +4398,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
      moving away closes it. */
   const MATCH_STAGES = {
     disc: { name: 'Discogs link', n: 1, means: 'The Discogs artist credited on the release is linked from this MusicBrainz artist.' },
+    plat: { name: 'Platform link', n: 1, means: 'The artist\'s page on the platform the release was imported from is linked from this MusicBrainz artist.' },
     rg: { name: 'Release group', n: 2, means: 'Another release in this release group credits this artist on the same track.' },
     pos: { name: 'Same position on other editions', n: 3, means: 'Other editions credit this artist on the track at this position.' },
     high: { name: 'Exact name', n: 4, means: 'The only MusicBrainz artist with this name; aliases were checked too.' },
@@ -4176,6 +4425,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
   const mtEditionLine = ed => [mtRelLink(ed.gid, ed.title), ed.date ? esc(String(ed.date).slice(0, 4)) : '', ed.format ? esc(ed.format) : ''].filter(Boolean).join(' · ');
   function mtEvidenceHtml(s) {
     const w = s._why || {}, st = s.status;
+    if (st === 'plat' && w.plat) return `<div class="tc-mt-why">First Contact imported this release from ${esc(w.plat.name)}, which credits <a href="${esc(w.plat.url)}" target="_blank" rel="noopener">this artist page</a>, and exactly one MusicBrainz artist links it.</div>`;
     if (st === 'disc' && w.discogs) return `<div class="tc-mt-why">The release credits <a href="${esc(w.discogs.url)}" target="_blank" rel="noopener">this Discogs artist</a>, and exactly one MusicBrainz artist links it.</div>`;
     if (st === 'rg' && w.rg) {
       const src = w.rg.src;
@@ -4213,6 +4463,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
   function mtStagesHtml(w) {
     const rows = [];
     if (w.discogs) rows.push(['Discogs link', w.discogs.n == null ? 'lookup unavailable' : w.discogs.n === 0 ? 'no MusicBrainz artist links it' : `${w.discogs.n} artists link it`]);
+    if (w.plat) rows.push([w.plat.name + ' link', w.plat.n == null ? 'lookup unavailable' : w.plat.n === 0 ? 'no MusicBrainz artist links it' : `${w.plat.n} artists link it`]);
     rows.push(['Release group', w.rg ? (w.rg.found ? 'found' : 'credit found, artist not') : 'no other release credits it']);
     if (w.pos) rows.push(['Other editions', w.pos.of ? `${w.pos.of} agree on the track; ${w.pos.artists.length ? w.pos.artists.map(a => `${a.name} ×${a.votes}`).join(', ') : 'none credit this name'}` : 'none']);
     if (w.ident) rows.push(['Name / alias', w.ident.status === 'unique' ? 'unique' : w.ident.count != null ? `${w.ident.exact} exact of ${w.ident.count} similar${w.ident.status === 'incomplete' ? ', not all seen' : ''}` : 'search unavailable']);
@@ -4503,11 +4754,25 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
       ic.onmousedown = e => e.preventDefault();
       ic.onclick = e => { e.preventDefault(); addOrCreateDiscogsLink(s); };
       ic.oncontextmenu = e => { e.preventDefault(); addOrCreateDiscogsLink(s, true); };   // #273 background
+    } else if (s._platAddable) {
+      // #651: the same offer for First Contact's platform link
+      const conf = s._platConflict;
+      ic = document.createElement('a'); ic.className = 'tc-tic ' + (conf ? 'discogs-conflict' : 'discogs-add') + ' plat-offer'; ic.href = '#'; ic.innerHTML = conf ? DISCOGS_WARN_SVG : DISCOGS_LINK_SVG;
+      ic.title = platAddTooltip(s) + '  ·  right-click: do it silently in a background tab';
+      ic.onmousedown = e => e.preventDefault();
+      ic.onclick = e => { e.preventDefault(); addOrCreatePlatformLink(s); };
+      ic.oncontextmenu = e => { e.preventDefault(); addOrCreatePlatformLink(s, true); };
     } else if (s._discogsConflict) {
       // unresolved slot whose Discogs URL already belongs to an MB artist — info only (pick that artist)
       ic = document.createElement('a'); ic.className = 'tc-tic discogs-conflict'; ic.innerHTML = DISCOGS_WARN_SVG;
       ic.href = `${ORIGIN}/artist/${s._discogsConflict.gid}`; ic.target = '_blank'; ic.rel = 'noopener';
       ic.title = `Discogs links this URL to ${s._discogsConflict.name} — pick that artist`;
+    } else if (s._platConflict && !(s.committed && s.gid)) {
+      // #651: an unmatched slot whose platform link belongs to an MB artist — info only (pick that artist)
+      const p = platformOf(s._platUrl) || { name: 'platform' };
+      ic = document.createElement('a'); ic.className = 'tc-tic discogs-conflict plat-offer'; ic.innerHTML = DISCOGS_WARN_SVG;
+      ic.href = `${ORIGIN}/artist/${s._platConflict.gid}`; ic.target = '_blank'; ic.rel = 'noopener';
+      ic.title = `${p.name}: ${s._platUrl} is linked to ${s._platConflict.name} — pick that artist`;
     } else {
       ic = document.createElement(s.gid ? 'a' : 'span'); ic.className = 'tc-tic ' + (s.gid ? 'link' : 'dim'); ic.innerHTML = typeSvg(s.entity);
       if (s.gid) { ic.href = `${ORIGIN}/artist/${s.gid}`; ic.target = '_blank'; ic.rel = 'noopener'; ic.title = 'open artist page'; } else ic.title = 'no artist linked yet';
@@ -4744,7 +5009,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
        landing mid-pass it also took turns with "matching N/M". majkinetor: "lets
        remove the auto-match off - click Match". refreshStatus then owns the line
        and the badges survive. */
-    if (SETTINGS.autoMatch !== false) await matchModel(onProgress); else { tagDiscogsForAll(); refreshStatus(); }   // #227: tag 'set' artists even when not matching
+    if (SETTINGS.autoMatch !== false) await matchModel(onProgress); else { tagDiscogsForAll(); tagPlatformForAll(); refreshStatus(); }   // #227: tag 'set' artists even when not matching
     enrichResolvedAliasesSoon();   // batch-fetch aliases for resolved artists (existing releases too) — coalesced, see #575
     // #407: resolve an unset release label to its unique exact MB hit — once, independent of the
     // tracklist auto-match toggle (the label lives in the release-info model, not the tracklist).
@@ -10707,7 +10972,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     fix();
   }
 
-  W.__apolloEditor = { matchCardHtml, readTracklist, buildModel, commitTrack, resetTrack, revertTrack, trackChanged, removeTrack, moveTrack, addTracks, searchArtist, fetchEntity, createArtist, openPanel, showMirror, hideMirror, revertAll, revertSlot, pickArtist, addSlot, removeSlot, splitSlot, matchSlot, snapshotOriginals, readRecordings, showRecMirror, hideRecMirror, recordingsVisible, recConfidence, applyView, applyNav, applyReleaseInfo, releaseInfoVisible, ensureApolloEditNote, checkAllLinks, checkUrl, linkRows, alExtractUrls, alAddUrls, installMultiLinkPaste, alApplyHint, AL_HINT, discogsReleaseUrlFromPage, loadDiscogsMap, resolveByDiscogsUrl, discogsFeatUrlFor, tagDiscogsAddable, tagDiscogsForAll, addOrCreateDiscogsLink, reTagAfterDiscogsLink, artistDiscogsUrls, dhRun, acLinksDiff, fetchRgPositionIndex, fetchDuplicatePositionIndex, recSimilar, recComboLevel, recPickBest, pickSibArtist, loadSiblingMap, autoMatchRecordings, setDataBoundary, videoBlockedHere, NON_VIDEO_FORMAT_IDS, trackRecIsVideo, newRecordingFor, logMarkdown, openLengthParser, lpParse, lpValid, lpExtractFromHtml, lpNoteSource, openTrackPatternParser, tpCompile, resolveByExactAlias, wsJson, stopMatching, lenShadeAlpha, lenShade, dupLenShade, mergeMediums, splitMedium, pickTool, runAction, slotContextGids, releaseArtistGids, positionArtists, posNameMatch, tallyPosArtists, artistPosRgIndex, artistPosDupIndex, rgReleases, duplicateReleases, enteredTracklist, buildDupDetail, get apolloOn() { return apolloOn(); }, get model() { return MODEL; }, get settings() { return SETTINGS; } };
+  W.__apolloEditor = { matchCardHtml, readTracklist, buildModel, commitTrack, resetTrack, revertTrack, trackChanged, removeTrack, moveTrack, addTracks, searchArtist, fetchEntity, createArtist, openPanel, showMirror, hideMirror, revertAll, revertSlot, pickArtist, addSlot, removeSlot, splitSlot, matchSlot, snapshotOriginals, readRecordings, showRecMirror, hideRecMirror, recordingsVisible, recConfidence, applyView, applyNav, applyReleaseInfo, releaseInfoVisible, ensureApolloEditNote, checkAllLinks, checkUrl, linkRows, alExtractUrls, alAddUrls, installMultiLinkPaste, alApplyHint, AL_HINT, discogsReleaseUrlFromPage, loadDiscogsMap, resolveByDiscogsUrl, discogsFeatUrlFor, tagDiscogsAddable, tagDiscogsForAll, addOrCreateDiscogsLink, reTagAfterDiscogsLink, artistDiscogsUrls, platformOf, platformUrlForms, resolvePlatformUrls, resolveByPlatformUrl, fcHandoff, fcPlatformUrl, tagPlatformAddable, tagPlatformForAll, addOrCreatePlatformLink, dhRun, acLinksDiff, fetchRgPositionIndex, fetchDuplicatePositionIndex, recSimilar, recComboLevel, recPickBest, pickSibArtist, loadSiblingMap, autoMatchRecordings, setDataBoundary, videoBlockedHere, NON_VIDEO_FORMAT_IDS, trackRecIsVideo, newRecordingFor, logMarkdown, openLengthParser, lpParse, lpValid, lpExtractFromHtml, lpNoteSource, openTrackPatternParser, tpCompile, resolveByExactAlias, wsJson, stopMatching, lenShadeAlpha, lenShade, dupLenShade, mergeMediums, splitMedium, pickTool, runAction, slotContextGids, releaseArtistGids, positionArtists, posNameMatch, tallyPosArtists, artistPosRgIndex, artistPosDupIndex, rgReleases, duplicateReleases, enteredTracklist, buildDupDetail, get apolloOn() { return apolloOn(); }, get model() { return MODEL; }, get settings() { return SETTINGS; } };
 
   // #267 auto-confirm a seeded Add/Edit-release submission. When another site seeds the editor,
   // MusicBrainz shows a `.confirm-seed` interstitial with a single submit button; clicking it

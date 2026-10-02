@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-10-02 17:41 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-10-02 18:44 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -58,7 +58,7 @@ Each part is optional, and the **Original / Apollo** button switches back to Mus
 - The picker colours each artist by [match confidence](#artist-matching), and shows aliases, disambiguation and a type icon linking to the artist.
 - **Change** in the toolbar sets whether an edit applies to one track or to every track with the same credit.
 - Ctrl-click a search result to set it on every unresolved track. Paste an MBID or artist URL to resolve it directly.
-- **＋** creates an unresolved artist in the background, with sort name, type and Discogs link filled in.
+- **＋** creates an unresolved artist in the background, with sort name, type and its Discogs or platform link filled in.
 - On hover: **split** an artist (with a join-phrase picker), remove a split artist, or reorder artists within a credit.
 - The **N unresolved** badge jumps to the first unresolved artist.
 
@@ -81,13 +81,13 @@ Each part is optional, and the **Original / Apollo** button switches back to Mus
 - Videos have a camera marker before their name.
 - Right-click a title or artist cell to copy it to the other side:
 
-| Gesture | Copies |
-|---|---|
-| Right-click | that cell |
-| Ctrl + right-click | both fields of the row |
-| Alt + right-click | that field in every row |
-| Ctrl + Alt + right-click | both fields in every row |
-| Right-drag | every cell it passes over, on the side it started on |
+| Gesture                  | Copies                                               |
+| ------------------------ | ---------------------------------------------------- |
+| Right-click              | that cell                                            |
+| Ctrl + right-click       | both fields of the row                               |
+| Alt + right-click        | that field in every row                              |
+| Ctrl + Alt + right-click | both fields in every row                             |
+| Right-drag               | every cell it passes over, on the side it started on |
 
 On the recording side the copy is applied when you submit, like MusicBrainz's own checkboxes; the cell shows `→ New` and the old value struck through. On the track side it's applied at once. A copy is offered wherever MusicBrainz would show its checkbox, including case-only differences.
 
@@ -99,7 +99,7 @@ On the recording side the copy is applied when you submit, like MusicBrainz's ow
 
 Stages, most confident first:
 
-1. **Discogs link.** When the release links to Discogs, each credited artist (featured ones too) is matched by the Discogs link on the MusicBrainz artist. Badge: **DISC**.
+1. **Discogs or platform link.** When the release links to Discogs, each credited artist (featured ones too) is matched by the Discogs link on the MusicBrainz artist. Badge: **DISC**. When the release was imported with [First Contact](../first_contact/README.md), each credited artist is matched the same way by its page on the platform the release came from (Deezer, Spotify, Tidal, …). Badge: the platform, such as **DZ** for Deezer.
 2. **Release group.** The same track on other releases in the group, with its credited artists. This settles most tracks, compilations included. Badge: **RG**.
 3. **Same position on other editions.** The track at the same position on the release group's other editions and on the [duplicates](#duplicates), when that track passes the [recording](#recording-matching) test (similar title and length within tolerance, or a title in another script on a medium that lines up). Its artist is taken if the name matches loosely (spaces, punctuation, quotes, a leading *The* ignored, or 85% similar): *Juan Formel* → *Juan Formell*, *Cedric Im Brooks* → *Cedric “Im” Brooks*. When the editions agree the artist is linked, keeping the seeded credited name. Badge: **POS**. When they disagree nothing is linked, and they head the picker under **On other editions at this position**.
 4. **Exact name or alias.** Linked only when exactly one artist has the credited name as its name or an alias, among all of MusicBrainz's matches, not only the first page. Badge: **NAME** or **ALIAS**.
@@ -110,15 +110,16 @@ Green means matched confidently; a white search box means unresolved, counted by
 **Match card.** Hover a badge for half a second and a card opens under it. It shows:
 - the stage, and whether Apollo linked the artist or you picked it;
 - the linked artist, with its disambiguation, type, area and dates;
-- the evidence the stage had: the Discogs artist; the release-group release and track; each other edition and whom it credits (✓ / ✗), with a release found by the duplicate search (the same title and artist, outside the release group) marked as such, since it may be this very release already in MusicBrainz; the alias; the co-credit counts;
+- the evidence the stage had: the Discogs artist or the platform page; the release-group release and track; each other edition and whom it credits (✓ / ✗), with a release found by the duplicate search (the same title and artist, outside the release group) marked as such, since it may be this very release already in MusicBrainz; the alias; the co-credit counts;
 - the other candidates;
 - when it matched.
 
 The card stays open while the pointer is on it, so its links can be followed; Esc or moving away closes it. It only shows what the match already read, so it makes no requests.
 
 | Badge | Meaning |
-|---|---|
+| --- | --- |
 | **DISC** | the Discogs artist credited on the release is linked from this MusicBrainz artist |
+| **DZ**, **SP**, **TD**, … | the artist's page on the platform the release was imported from is linked from this MusicBrainz artist: **DZ** Deezer, **SP** Spotify, **TD** Tidal, **AM** Apple Music, **YTM** YouTube Music, **BC** Bandcamp, **BP** Beatport, **QZ** Qobuz, **SC** SoundCloud, **AMZ** Amazon Music, **VO** Volumo, **HD** HDtracks |
 | **RG** | another release in the release group credits this artist on the same track |
 | **POS** | other editions credit this artist on the track at this position |
 | **NAME** | the only MusicBrainz artist with this name (aliases checked too) |
@@ -130,6 +131,8 @@ The card stays open while the pointer is on it, so its links can be followed; Es
 
 **Discogs links.** When the Discogs link is known, the type icon offers what's missing: **🔗** creates the artist with the link, or adds the link to the matched artist. **⚠** warns that the link belongs to a different artist, or that the artist links a different Discogs page (often a wrong match). **🔗 N links** in the toolbar counts them and steps through them.
 
+**Platform links.** A release imported with First Contact gets the same offers for each artist's platform page: **🔗** creates the artist with it, or adds it to the matched artist; **⚠** warns that it belongs to a different artist.
+
 The release **Label** and release **Artist** are linked on load under the same exact-name rule.
 
 > [!NOTE]
@@ -139,13 +142,13 @@ The release **Label** and release **Artist** are linked on load under the same e
 
 All the release group's recordings come in one request and are matched by title, artist and length. Tracks the group can't answer are looked up one by one. When a title is worded differently (*Part 1* / *Pt. 1*), the same position on other editions, and then on releases of the same title and artist in other groups, is used if the title is similar and the length agrees. A title in another script (*Kalimba Night* for *カリンバナイト*) can't be compared, so its position is used when that edition's whole medium lines up: as many tracks, and every length within the tolerance.
 
-| Colour | Confidence | |
-|:---:|---|---|
-| 🔵 | Exact | every field the same |
-| 🟢 | Tolerance | within the [tolerances](#settings) |
-| 🟡 | Near | one field differs, or lengths 3–15 s apart |
-| 🟠 | Low | two fields differ, or lengths over 15 s apart |
-| 🔴 | Very low | all three differ, lengths over 10 s apart |
+| Colour | Confidence |                                               |
+| :----: | ---------- | --------------------------------------------- |
+|   🔵    | Exact      | every field the same                          |
+|   🟢    | Tolerance  | within the [tolerances](#settings)            |
+|   🟡    | Near       | one field differs, or lengths 3–15 s apart    |
+|   🟠    | Low        | two fields differ, or lengths over 15 s apart |
+|   🔴    | Very low   | all three differ, lengths over 10 s apart     |
 
 **Cutoff** in the toolbar sets the lowest confidence that's linked. *Credited as* doesn't affect matching.
 
@@ -155,16 +158,16 @@ All the release group's recordings come in one request and are matched by title,
 
 The toolbar holds the tools you choose; the rest are in **Tools ▾**, with **Customize…** to pick, reorder and show each tool as icon, text or both. A tool with settings picked from the menu joins the bar until the page closes. Right-click a tool's name to fold its settings into a hover flyout.
 
-| Tool | |
-|---|---|
-| Track parser, Swap, Reset #, Guess feat., Guess case | MusicBrainz's own |
-| [Search and Replace](#search-and-replace) | replace text in titles, with saved patterns |
-| [Pattern parser](#pattern-parser) | a tracklist from text, by a pattern |
-| [Length parser](#length-parser) | track lengths from any text or page |
-| [Merge mediums, Split medium](#merge-and-split-mediums) | restructure the mediums, keeping the recordings |
-| Resize columns | Fit, Centered or Default widths |
-| Guess punctuation | kellnerd's [guess-unicode-punctuation](https://github.com/kellnerd/musicbrainz-scripts#guess-unicode-punctuation), when installed |
-| **↺ Revert all**, **✕ Clear all** (under ▾) | back to the loaded page, or empty |
+| Tool                                                    |                                                                                                                                   |
+| ------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| Track parser, Swap, Reset #, Guess feat., Guess case    | MusicBrainz's own                                                                                                                 |
+| [Search and Replace](#search-and-replace)               | replace text in titles, with saved patterns                                                                                       |
+| [Pattern parser](#pattern-parser)                       | a tracklist from text, by a pattern                                                                                               |
+| [Length parser](#length-parser)                         | track lengths from any text or page                                                                                               |
+| [Merge mediums, Split medium](#merge-and-split-mediums) | restructure the mediums, keeping the recordings                                                                                   |
+| Resize columns                                          | Fit, Centered or Default widths                                                                                                   |
+| Guess punctuation                                       | kellnerd's [guess-unicode-punctuation](https://github.com/kellnerd/musicbrainz-scripts#guess-unicode-punctuation), when installed |
+| **↺ Revert all**, **✕ Clear all** (under ▾)             | back to the loaded page, or empty                                                                                                 |
 
 #### Search and Replace
 
@@ -178,12 +181,12 @@ Replaces text in track titles. **★** saves patterns under a name; the last fiv
 
 Fills a medium from pasted text, by a pattern. It opens with the current tracklist, so it also bulk-edits.
 
-| Token | | Token | |
-|---|---|---|---|
-| `#` | track number | `M` | medium |
-| `T` | title | `-` | separator: any of `- – — / :` |
-| `A` | artist | `_` | skip the rest |
-| `L` | length | | |
+| Token |              | Token |                               |
+| ----- | ------------ | ----- | ----------------------------- |
+| `#`   | track number | `M`   | medium                        |
+| `T`   | title        | `-`   | separator: any of `- – — / :` |
+| `A`   | artist       | `_`   | skip the rest                 |
+| `L`   | length       |       |                               |
 
 Anything else is literal and whitespace is elastic. A capital is a token only standing alone; `$T` forces one. Fields split at the first separator; **split: last** splits at the last. Examples: `#. T`, `# A - T (L)`, `# A - T (_`.
 
@@ -255,40 +258,40 @@ Apollo follows a dark MusicBrainz theme, such as kellnerd's [userstyle](https://
 
 **⚙** on the **Original / Apollo** button. Column widths, the toolbar layout, **Change**, **Cutoff** and the picker's folded sections are remembered as you use them.
 
-| Setting | Default | |
-|---|---|---|
-| Modify Release information, Tracklist, Recordings, Duplicates | on | replace that part of the editor |
-| Modify annotations with Markdown | on | the [annotation editor](#annotation-editor) |
-| Modify header and footer | on | a compact step switcher instead of the tabs and footer |
-| Zen editing | on | hide the site header, title and footer; the title moves into Apollo's bar |
-| Auto confirm release submissions | on | skip the confirmation page when a site seeds a release (`?skip_confirmation` bypasses it once) |
-| Auto-match on start: Tracklist, Recordings | off | match on load |
-| Auto-match on start: Label, Artist | on | link a release label or artist with exactly one exact match |
-| Discogs artist link matching | on | match by [Discogs link](#artist-matching) and offer missing links |
-| Length tolerance | 5 s | `0` for exact |
-| Title tolerance | 1 | differing characters allowed |
-| Ignore casing | on | case, accents and spacing don't count |
-| Ignore punctuation | on | `&`/*and*, brackets, quotes, dashes and dots don't count |
-| Enable detailed highlighting | on | see [Highlighting](#highlighting) |
-| Row layout | normal | compact, normal or cozy |
-| Alternate row colors | off | |
-| Show grid | rows | lines between rows and/or columns |
-| Enlarge punctuation by | 3 px | `0` stops the enlarging; the markers stay |
-| Keep caret position on row navigation | on | off: a cell is selected whole on arrival |
-| Highlight all instances of an artist on hover | off | |
+| Setting                                                       | Default |                                                                                                |
+| ------------------------------------------------------------- | ------- | ---------------------------------------------------------------------------------------------- |
+| Modify Release information, Tracklist, Recordings, Duplicates | on      | replace that part of the editor                                                                |
+| Modify annotations with Markdown                              | on      | the [annotation editor](#annotation-editor)                                                    |
+| Modify header and footer                                      | on      | a compact step switcher instead of the tabs and footer                                         |
+| Zen editing                                                   | on      | hide the site header, title and footer; the title moves into Apollo's bar                      |
+| Auto confirm release submissions                              | on      | skip the confirmation page when a site seeds a release (`?skip_confirmation` bypasses it once) |
+| Auto-match on start: Tracklist, Recordings                    | off     | match on load                                                                                  |
+| Auto-match on start: Label, Artist                            | on      | link a release label or artist with exactly one exact match                                    |
+| Discogs artist link matching                                  | on      | match by [Discogs link](#artist-matching) and offer missing links                              |
+| Length tolerance                                              | 5 s     | `0` for exact                                                                                  |
+| Title tolerance                                               | 1       | differing characters allowed                                                                   |
+| Ignore casing                                                 | on      | case, accents and spacing don't count                                                          |
+| Ignore punctuation                                            | on      | `&`/*and*, brackets, quotes, dashes and dots don't count                                       |
+| Enable detailed highlighting                                  | on      | see [Highlighting](#highlighting)                                                              |
+| Row layout                                                    | normal  | compact, normal or cozy                                                                        |
+| Alternate row colors                                          | off     |                                                                                                |
+| Show grid                                                     | rows    | lines between rows and/or columns                                                              |
+| Enlarge punctuation by                                        | 3 px    | `0` stops the enlarging; the markers stay                                                      |
+| Keep caret position on row navigation                         | on      | off: a cell is selected whole on arrival                                                       |
+| Highlight all instances of an artist on hover                 | off     |                                                                                                |
 
 ### Shortcuts
 
-| Where | Key | |
-|---|---|---|
-| Tracklist | ↓, Enter | next row |
-| Tracklist | ↑, Shift+Enter | previous row |
-| Tracklist | Tab, Shift+Tab | next, previous column |
-| Join phrase | typing, ↓ ↑, Enter | filter the presets, move, pick |
-| Length parser | Ctrl+V | read the lengths from the link on the clipboard |
-| Length parser | Ctrl+Enter | apply |
-| Annotation | Ctrl+B, Ctrl+I | bold, italic |
-| Annotation | Tab, Shift+Tab | make or change a list, remove it |
+| Where         | Key                |                                                 |
+| ------------- | ------------------ | ----------------------------------------------- |
+| Tracklist     | ↓, Enter           | next row                                        |
+| Tracklist     | ↑, Shift+Enter     | previous row                                    |
+| Tracklist     | Tab, Shift+Tab     | next, previous column                           |
+| Join phrase   | typing, ↓ ↑, Enter | filter the presets, move, pick                  |
+| Length parser | Ctrl+V             | read the lengths from the link on the clipboard |
+| Length parser | Ctrl+Enter         | apply                                           |
+| Annotation    | Ctrl+B, Ctrl+I     | bold, italic                                    |
+| Annotation    | Tab, Shift+Tab     | make or change a list, remove it                |
 
 ---
 
