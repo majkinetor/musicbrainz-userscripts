@@ -84,7 +84,7 @@ test.describe('release artist and label', () => {
       native: getComputedStyle(document.querySelector('#information td.release-artist .artist-credit-editor')).display,
       slots: [...document.querySelectorAll(c + ' .tc-aslot')].map(l => ({ nm: l.querySelector('input.nm').value, matched: l.querySelector('.tc-search').classList.contains('matched') })),
       // #652: credited-as sits in the label column, a row per line, the artist search lined up with Title
-      lead: [...document.querySelectorAll('#information .tc-ri-artlbl .tc-ri-leadrow')].map(r => ({ cred: r.querySelector('input.tc-cred')?.placeholder, top: Math.round(r.getBoundingClientRect().top) })),
+      lead: [...document.querySelectorAll('#information .tc-ri-leadrow')].map(r => ({ cred: r.querySelector('input.tc-cred')?.placeholder, top: Math.round(r.getBoundingClientRect().top) })),
       tops: [...document.querySelectorAll(c + ' .tc-aslot')].map(l => Math.round(l.getBoundingClientRect().top)),
       label: getComputedStyle(document.querySelector('#information .tc-ri-artlbl > :not(.tc-ri-lead)') || document.body).display,
       searchLeft: Math.round(document.querySelector(c + ' .tc-search').getBoundingClientRect().left),
@@ -100,10 +100,11 @@ test.describe('release artist and label', () => {
     check(!ui.prev, 'no preview, no copy / paste');
     // a theme that pads the label column and makes the lines taller must not knock them apart (majkinetor's sat a line low)
     await page.addStyleTag({ content: '#information .tc-ri-artlbl{padding-top:22px!important}#information .tc-ri-art .tc-aslot{height:38px!important}' });
-    const skew = await until(() => page.evaluate(c => {
+    // read straight away, no waiting: the box moves with its line, it never catches up in steps (majkinetor saw 3-4)
+    const skew = await page.evaluate(c => {
       const rows = [...document.querySelectorAll('#information .tc-ri-leadrow')], lines = [...document.querySelectorAll(c + ' .tc-aslot')];
       return rows.map((r, i) => Math.round(Math.abs((r.getBoundingClientRect().top + r.getBoundingClientRect().height / 2) - (lines[i].getBoundingClientRect().top + lines[i].getBoundingClientRect().height / 2))));
-    }, cell), v => v.every(d => d <= 2), { timeout: 5000 }).catch(e => String(e));
+    }, cell);
     check(Array.isArray(skew) && skew.every(d => d <= 2), `credited-as stays level with its line under a padded theme (off by ${JSON.stringify(skew)} px)`);
 
     // join phrase → the release credit

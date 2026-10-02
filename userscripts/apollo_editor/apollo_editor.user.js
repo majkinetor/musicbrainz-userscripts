@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.2.214002
+// @version      2026.10.2.214632
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E
@@ -706,17 +706,17 @@
     let lead = th && th.querySelector(':scope > .tc-ri-lead');
     if (!riWant()) { if (cell) cell.remove(); if (box) box.remove(); if (lead) lead.remove(); td.classList.remove('tc-ri-artcell'); if (th) th.classList.remove('tc-ri-artlbl'); return; }
     if (box) box.remove();   // the badges sit on their own lines now
-    if (th && !lead) { lead = document.createElement('div'); lead.className = 'tc-ri-lead mbu-ui'; th.appendChild(lead); th.classList.add('tc-ri-artlbl'); }
+    if (lead) lead.remove();   // (older builds kept the credited-as column in the label cell)
+    if (th) { th.classList.add('tc-ri-artlbl'); td.style.setProperty('--tc-ri-lead-w', Math.max(80, th.getBoundingClientRect().width - 14) + 'px'); }
     if (!cell) {
       cell = document.createElement('div'); cell.className = 'tc-ri-art mbu-ui'; td.prepend(cell); td.classList.add('tc-ri-artcell');
       Log.debug('release artist: the Tracklist cell replaces MusicBrainz\'s artist field');
     }
-    if (_riMatching || (!force && (cell.contains(document.activeElement) || (lead && lead.contains(document.activeElement))))) return;   // never rebuild under the user's caret; the next tick catches up
+    if (_riMatching || (!force && cell.contains(document.activeElement))) return;   // never rebuild under the user's caret; the next tick catches up
     riSyncSlots();
     const sig = JSON.stringify(_riArt.map(p => [p.status, p.gid, !!p.committed, p.creditedAs, p.joinPhrase, p.name, !!p._discogsAddable, !!p._platAddable, p._platConflict && p._platConflict.gid, p._discogsConflict && p._discogsConflict.gid, !!p._pending]));
-    riAlignLead();
     if (!force && cell.dataset.sig === sig) return;   // re-applied every tick: only touch the DOM on a change
-    cell.dataset.sig = sig; cell.textContent = ''; if (lead) lead.textContent = '';
+    cell.dataset.sig = sig; cell.textContent = '';
     const tbl = document.createElement('table'); tbl.className = 'tc-mirror ' + (SETTINGS.gridRows !== false ? 'gridrows ' : '') + (SETTINGS.layout || 'normal');
     const tr = tbl.appendChild(document.createElement('tbody')).appendChild(document.createElement('tr'));
     const art = tr.appendChild(document.createElement('td')); art.className = 'c-art';
@@ -724,35 +724,17 @@
     _riArt.forEach((p, i) => {
       const line = art.appendChild(slotEl(riEntry, p, i, paintBadges));
       // #652 (majkinetor): "Credit as instead of Artist label, selector aligned with edit above it" —
-      // the credited-as box and the artist-type icon move to the label column, one row per line
-      if (lead) {
-        const row = lead.appendChild(document.createElement('div')); row.className = 'tc-ri-leadrow';
-        const cw = line.querySelector(':scope > .tc-credwrap'), ic = cw && cw.nextElementSibling;
-        if (cw) row.appendChild(cw);
-        if (ic && !ic.classList.contains('tc-search')) row.appendChild(ic);
-        row.addEventListener('mouseenter', () => line.dispatchEvent(new MouseEvent('mouseenter')));
-      }
+      // the credited-as box and the artist-type icon stay in the line, drawn out into the label
+      // column: they move with it, so they are level whatever the theme does to either cell
+      const row = document.createElement('div'); row.className = 'tc-ri-leadrow';
+      const cw = line.querySelector(':scope > .tc-credwrap'), ic = cw && cw.nextElementSibling;
+      if (cw) row.appendChild(cw);
+      if (ic && !ic.classList.contains('tc-search')) row.appendChild(ic);
+      line.prepend(row);
       const rb = document.createElement('span'); rb.className = 'tc-ri-rb'; rb.dataset.ri = i; line.appendChild(rb);
     });
     cell.appendChild(tbl);
     paintBadges();
-    riAlignLead();
-  }
-  // #652: each credited-as row level with its artist line. Measured, not styled: the label
-  // column's padding and the row's height differ with the theme (majkinetor's sat a line low)
-  function riAlignLead() {
-    const rows = [...document.querySelectorAll('#information .tc-ri-lead > .tc-ri-leadrow')];
-    const lines = [...document.querySelectorAll('#information .tc-ri-art .tc-aslot')];
-    rows.forEach((row, i) => {
-      const line = lines[i]; if (!line) return;
-      const h = line.getBoundingClientRect().height;
-      if (h && Math.abs(row.getBoundingClientRect().height - h) >= 1) row.style.height = h + 'px';
-      const d = Math.round(line.getBoundingClientRect().top - row.getBoundingClientRect().top);
-      if (Math.abs(d) >= 1) {
-        row.style.marginTop = ((parseFloat(row.style.marginTop) || 0) + d) + 'px';
-        Log.debug('release artist: credited-as row', i, 'moved', d, 'px to its line');
-      }
-    });
   }
   // the match badge at the end of each artist's line (the Tracklist shows them in its own column)
   function riBadges(td) {
@@ -9805,12 +9787,12 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     /* #652: credited-as in the label column, a row per artist line, lined up with it */
     body.tc-ri-on #information .tc-ri-artlbl > :not(.tc-ri-lead){display:none!important}
     #information .tc-ri-artlbl{vertical-align:top;padding-top:0}
-    .tc-ri-lead{display:flex;flex-direction:column;align-items:stretch}
-    .tc-ri-leadrow{display:flex;align-items:center;justify-content:flex-end;gap:6px;height:28px;margin:0 0 4px;box-sizing:border-box}
+    .tc-ri-art .tc-aslot{position:relative}
+    .tc-ri-leadrow{position:absolute;top:0;bottom:0;right:calc(100% + 10px);width:var(--tc-ri-lead-w,160px);display:flex;align-items:center;justify-content:flex-end;gap:6px;box-sizing:border-box}
     .tc-ri-leadrow .tc-credwrap{flex:1 1 auto;min-width:0;display:flex;align-items:center}
-    #information .tc-ri-lead input.tc-cred{width:100%!important;max-width:none!important;text-align:right;font-style:italic;background:transparent!important;border:1px solid transparent!important;border-radius:var(--mbu-radius);padding:3px 6px!important;color:var(--mbu-text)}
-    #information .tc-ri-lead input.tc-cred:hover{border-color:var(--mbu-border)!important}
-    #information .tc-ri-lead input.tc-cred:focus{border-color:var(--mbu-accent)!important;background:var(--mbu-bg)!important;font-style:normal;text-align:left}
+    #information .tc-ri-leadrow input.tc-cred{width:100%!important;max-width:none!important;text-align:right;font-style:italic;background:transparent!important;border:1px solid transparent!important;border-radius:var(--mbu-radius);padding:3px 6px!important;color:var(--mbu-text)}
+    #information .tc-ri-leadrow input.tc-cred:hover{border-color:var(--mbu-border)!important}
+    #information .tc-ri-leadrow input.tc-cred:focus{border-color:var(--mbu-accent)!important;background:var(--mbu-bg)!important;font-style:normal;text-align:left}
     .tc-ri-art .tc-aslot{margin:0 0 4px}
     .tc-ri-art .tc-mirror td.c-art{box-shadow:none!important}
     .tc-ri-art .tc-search{flex:1 1 auto!important;min-width:0;border-radius:var(--mbu-radius)!important}
@@ -9823,7 +9805,8 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     /* #652: the Tracklist's artist cell in place of MusicBrainz's artist field */
     body.tc-ri-on #information td.release-artist.tc-ri-artcell > :not(.tc-ri-art):not(.tc-ri-am){display:none!important}
     .tc-ri-art .tc-mirror{width:100%;border-collapse:collapse;table-layout:fixed}
-    .tc-ri-art .tc-mirror td.c-art{padding:0}
+    .tc-ri-art .tc-mirror td.c-art{padding:0;overflow:visible!important}
+    .tc-ri-art,.tc-ri-art .tc-mirror{overflow:visible!important}
     /* MusicBrainz pins the form's inputs to 354px with !important: give the cell's fields back their Tracklist sizes */
     #information .tc-ri-art :is(input.nm,input.tc-join){width:auto!important;max-width:none!important;min-width:0!important}
     #information .tc-ri-art .tc-search:not(.matched) input.nm{flex:1 1 auto}
