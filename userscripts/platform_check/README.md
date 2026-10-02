@@ -30,6 +30,16 @@ A link already in the release's relationships is used as is. Otherwise each plat
 | amber bar     | found, with a different barcode                                                                                                    |
 | violet bar    | found, in a format this release isn't                                                                                              |
 
+| Track count |                                         |
+| ----------- | --------------------------------------- |
+| green       | matches MusicBrainz, fetched this scan  |
+| blue        | matches MusicBrainz, from the cache     |
+| amber       | differs from MusicBrainz                |
+| ?           | link found, track count unreadable      |
+| red —       | not found                               |
+
+Hover a track count for what its colour means.
+
 A release's format is a four-quadrant circle: vinyl, cassette, CD, digital (DVD, SACD and Blu-ray count as CD).
 
 > [!TIP]

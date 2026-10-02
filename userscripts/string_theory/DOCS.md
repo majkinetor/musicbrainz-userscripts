@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-10-02 12:22 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-10-02 13:33 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -1166,6 +1166,16 @@ A link already in the release's relationships is used as is. Otherwise each plat
 | marked        | already linked in MusicBrainz: a ring by default; *Settings › Appearance* offers a bold ring, a ✓ badge, a dot or a rounded square |
 | amber bar     | found, with a different barcode                                                                                                    |
 | violet bar    | found, in a format this release isn't                                                                                              |
+
+| Track count |                                         |
+| ----------- | --------------------------------------- |
+| green       | matches MusicBrainz, fetched this scan  |
+| blue        | matches MusicBrainz, from the cache     |
+| amber       | differs from MusicBrainz                |
+| ?           | link found, track count unreadable      |
+| red —       | not found                               |
+
+Hover a track count for what its colour means.
 
 A release's format is a four-quadrant circle: vinyl, cassette, CD, digital (DVD, SACD and Blu-ray count as CD).
 

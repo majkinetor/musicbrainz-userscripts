@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Platform Check
 // @namespace    http://tampermonkey.net/
-// @version      2026.10.2.120339
+// @version      2026.10.2.133321
 // @description  Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+DQogIDx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CiAgDQogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJhMWE1MiIgc3Ryb2tlLXdpZHRoPSI5IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik00MCA4OCBBMzQgMzQgMCAwIDEgNDAgNDAiLz4NCiAgICA8cGF0aCBkPSJNMjkgOTkgQTUwIDUwIDAgMCAxIDI5IDI5Ii8+DQogICAgPHBhdGggZD0iTTg4IDg4IEEzNCAzNCAwIDAgMCA4OCA0MCIvPg0KICAgIDxwYXRoIGQ9Ik05OSA5OSBBNTAgNTAgMCAwIDAgOTkgMjkiLz4NCiAgPC9nPg0KICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyMCIgZmlsbD0iI2U4MjAxYSIvPg0KPC9zdmc+DQo=
@@ -3039,22 +3039,26 @@ function updateRow(p, { url, mbTracks, remoteTracks, year, label, source, fromCa
         // superscript + tooltip so the editor knows N of the tracks aren't
         // streamable (the count itself already includes them).
         val.textContent = String(remoteTracks) + (hiddenTracks > 0 ? 'ⁿ' : '');
-        val.title = hiddenTracks > 0 ? `${hiddenTracks} download-only track(s) hidden from streaming on Bandcamp` : '';
+        const hiddenNote = hiddenTracks > 0 ? `\n${hiddenTracks} download-only track(s) hidden from streaming on Bandcamp` : '';
         if (parseInt(remoteTracks, 10) === parseInt(mbTracks, 10)) {
             ico.textContent = '✓';
             const tone = fromCache ? '#5B82B0' : '#008000';
             ico.style.color = tone;
             val.style.color = tone;
+            val.title = `${remoteTracks} tracks, matches MB — ${fromCache ? 'blue: from the local cache' : 'green: fetched live this scan'}` + hiddenNote;
         } else {
             ico.textContent = '~'; ico.style.color = 'var(--mbu-warn)';
             val.style.color = 'var(--mbu-warn)';
+            val.title = `${remoteTracks} tracks, MB has ${mbTracks}${fromCache ? ' (from the local cache)' : ''}` + hiddenNote;
         }
     } else if (url) {
         ico.textContent = '?'; ico.style.color = 'var(--mbu-text-weak)';
         val.textContent = '?'; val.style.color = 'var(--mbu-text-weak)';
+        val.title = 'Track count could not be read';
     } else {
         ico.textContent = '×'; ico.style.color = 'var(--mbu-error)';
         val.textContent = '—'; val.style.color = 'var(--mbu-error)';
+        val.title = `No ${PROVIDER_NAME[p]} release found`;
     }
 
     // Circle MB-rels rows regardless of glyph — circle says "URL is in MB".
