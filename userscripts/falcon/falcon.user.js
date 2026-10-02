@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Falcon — bulk MusicBrainz link editor
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.3.012603
+// @version      2026.10.3.015856
 // @description  Add external links to a BATCH of MusicBrainz artists/labels/recordings at once — no popup-per-entity, no tab churn. A small pool of persistent worker iframes churns through a queue, each submitting its own edit and moving straight to the next entity. Paste a list, hand it a queue via a `?falcon=` URL param, or click "Send to Falcon" on a Harmony actions page to import its suggested links directly.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHBhdGggZD0iTTY0IDEwIEM4MiAyOCA5MCA1NiA5MCA4MCBMMzggODAgQzM4IDU2IDQ2IDI4IDY0IDEwIFoiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzFiMmE0YSIgc3Ryb2tlLXdpZHRoPSI3IiBzdHJva2UtbGluZWpvaW49InJvdW5kIiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8cGF0aCBkPSJNMzggODAgTDIwIDExMCBMNDAgOTYgWiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxwYXRoIGQ9Ik05MCA4MCBMMTA4IDExMCBMODggOTYgWiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxjaXJjbGUgY3g9IjY0IiBjeT0iNDQiIHI9IjEwIiBmaWxsPSIjMWIyYTRhIi8+CiAgPHBhdGggZD0iTTUwIDgwIEw0NSAxMDggTDY0IDEyMiBMODMgMTA4IEw3OCA4MCBaIiBmaWxsPSIjZmY2YTAwIiBzdHJva2U9IiMxYjJhNGEiIHN0cm9rZS13aWR0aD0iNSIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgo8L3N2Zz4K
@@ -5347,7 +5347,8 @@
       // #663: the open tab is marked; the select-all box and the selection count head the rows
       '#falcon-hdr .falcon-tab{border-bottom:2px solid transparent!important;padding:2px 4px}',
       '#falcon-hdr .falcon-tab.falcon-tab-on{border-bottom-color:var(--mbu-warn)!important;font-weight:700}',
-      '.falcon-selhead{display:inline-flex;align-items:center;gap:5px}',
+      '.falcon-selhead{display:inline-flex;align-items:center;gap:6px}',
+      'th.falcon-selhead{display:table-cell}',
       '.falcon-selhead .falcon-selcount{color:var(--mbu-warn);font-weight:700;font-size:11px}',
       '.falcon-xp{border:none;background:none!important;cursor:pointer;color:var(--mbu-text-dim);font-size:13px;line-height:1;width:20px;height:20px;padding:0;display:inline-flex;align-items:center;justify-content:center}',
       '.falcon-lbl .falcon-lplus{border:none;background:none!important;cursor:pointer;color:var(--mbu-ok);font-size:13px;line-height:1;padding:0 0 0 5px}',
@@ -6586,7 +6587,7 @@
   // the link list (and a release's cover editor), sharing the list view's
   // expanded state.
   function renderGrid(visible) {
-    const head = `<tr><th colspan="3">${selHead()}</th><th>Name</th>`
+    const head = `<tr>${selHead(true)}<th>Name</th>`
       + '<th>Disambiguation</th><th>ISRCs</th><th></th><th title="Video">'
       + '<input type="checkbox" class="mbu-video" checked disabled style="opacity:.6" /></th><th></th><th></th></tr>';
     const rows = visible.map(it => {
@@ -6622,11 +6623,15 @@
   let _pendingFocus = null;
   let _visibleIds = [];
   // #663: select-all and the selection count head the rows, in both views
-  function selHead() {
+  // `cells`: the grid puts each in its own header cell, over the row's own columns (#663: the ▸ lined up)
+  function selHead(cells) {
     const selectable = queue.filter(i => i.status !== 'active');
     const all = selectable.length > 0 && selectable.every(i => _selectedIds.has(i.id));
     const open = queue.length > 0 && queue.every(i => _expandedIds.has(i.id));
-    return `<span class="falcon-selhead"><input type="checkbox" id="falcon-select-all" title="Select all" ${all ? 'checked' : ''} /><button type="button" id="falcon-expand-all" class="falcon-xp" title="${open ? 'Collapse' : 'Expand'} every row">${open ? '▾' : '▸'}</button><span class="falcon-selcount" id="falcon-select-count" title="Selected rows">${_selectedIds.size || ''}</span></span>`;
+    const parts = [`<input type="checkbox" id="falcon-select-all" title="Select all" ${all ? 'checked' : ''} />`,
+      `<button type="button" id="falcon-expand-all" class="falcon-xp" title="${open ? 'Collapse' : 'Expand'} every row">${open ? '▾' : '▸'}</button>`,
+      `<span class="falcon-selcount" id="falcon-select-count" title="Selected rows">${_selectedIds.size || ''}</span>`];
+    return cells ? parts.map(x => `<th class="falcon-selhead">${x}</th>`).join('') : `<span class="falcon-selhead">${parts.join('')}</span>`;
   }
   function renderQueue() {
     renderTypeChips();
