@@ -1690,6 +1690,7 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
                     cancelBtn.style.cssText = 'padding:0.4rem 1rem;cursor:pointer;border:1px solid var(--mbu-border);border-radius:0.25rem;background:var(--mbu-bg-raised);color:var(--mbu-text);font-size:0.88rem;';
                     const submitBtn = document.createElement('button');
                     submitBtn.textContent = 'Create ↗';
+                    submitBtn.title = 'Open the create page, for you to review  ·  right-click: create silently in a background tab (auto-submitted)';
                     submitBtn.style.cssText = 'padding:0.4rem 1.1rem;cursor:pointer;font-weight:bold;background:var(--mbu-ok);color:var(--mbu-text-on-accent);border:none;border-radius:0.25rem;font-size:0.9rem;';
                     btnRow.appendChild(cancelBtn);
                     btnRow.appendChild(submitBtn);
@@ -1703,20 +1704,24 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
                         document.removeEventListener('keydown', onKey);
                         overlay.remove();
                     };
-                    const submit = () => {
+                    // #657 (majkinetor): "I want to rclick Create so it goes to background as usual,
+                    // after I set disamb" — right-click is the + chip's background create (#273),
+                    // with the name and disambiguation set here
+                    const submit = (background) => {
                         const name = nameInput.value.trim();
                         const dis  = disInput.value.trim();
                         close();
-                        openCreateTab({ name: name || displayName, disambiguation: dis || null });
+                        openCreateTab({ name: name || displayName, disambiguation: dis || null, background: !!background });
                     };
                     const onKey = (ev) => {
                         if (ev.key === 'Escape') { close(); }
-                        else if (ev.key === 'Enter' && (ev.target === disInput || ev.target === nameInput)) submit();
+                        else if (ev.key === 'Enter' && (ev.target === disInput || ev.target === nameInput)) submit(false);
                     };
                     document.addEventListener('keydown', onKey);
                     overlay.addEventListener('click', ev => { if (ev.target === overlay) close(); });
                     cancelBtn.addEventListener('click', close);
-                    submitBtn.addEventListener('click', submit);
+                    submitBtn.addEventListener('click', () => submit(false));
+                    submitBtn.addEventListener('contextmenu', ev => { ev.preventDefault(); submit(true); });
 
                     // Focus the disambiguation field (the field the user is
                     // most likely to edit). Select-all so type-replace works.
