@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.2.214730
+// @version      2026.10.2.221432
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E
@@ -769,9 +769,12 @@
       const inp = document.getElementById('label-' + i); if (!inp) return;
       const host = inp.closest('span.autocomplete') || inp.parentElement;
       let b = host.querySelector(':scope > .tc-ri-lab');
-      const st = _riLab.get(lf), cur = lf && typeof lf.label === 'function' ? lf.label() : null;
-      const show = riWant() && st && cur && cur.gid === st.gid;
+      let st = _riLab.get(lf); const cur = lf && typeof lf.label === 'function' ? lf.label() : null;
+      // #652: a label already on the release (not matched by Apollo) shows "set", as the artist does
+      const mine = st && cur && cur.gid === st.gid;
+      const show = riWant() && cur && cur.gid;
       if (!show) { if (b) b.remove(); return; }
+      if (!mine) st = { status: 'set', title: 'already set on the release' };
       const txt = st.abbr || ({ disc: 'disc', high: 'name', alias: 'alias' })[st.status] || st.status;
       if (!b) { b = document.createElement('span'); b.className = 'tc-ri-lab mbu-ui'; host.appendChild(b); }
       if (b.dataset.t !== st.status + txt) { b.dataset.t = st.status + txt; b.innerHTML = `<span class="tc-badge ${esc(st.status)}" title="${esc(st.title || '')}">${esc(txt)}</span>`; }
@@ -9790,9 +9793,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     .tc-ri-art .tc-aslot{position:relative}
     .tc-ri-leadrow{position:absolute;top:0;bottom:0;right:calc(100% + 10px);width:var(--tc-ri-lead-w,160px);display:flex;align-items:center;justify-content:flex-end;gap:6px;box-sizing:border-box}
     .tc-ri-leadrow .tc-credwrap{flex:1 1 auto;min-width:0;display:flex;align-items:center}
-    #information .tc-ri-leadrow input.tc-cred{width:100%!important;max-width:none!important;text-align:right;font-style:italic;background:transparent!important;border:1px solid transparent!important;border-radius:var(--mbu-radius);padding:3px 6px!important;color:var(--mbu-text)}
-    #information .tc-ri-leadrow input.tc-cred:hover{border-color:var(--mbu-border)!important}
-    #information .tc-ri-leadrow input.tc-cred:focus{border-color:var(--mbu-accent)!important;background:var(--mbu-bg)!important;font-style:normal;text-align:left}
+    #information .tc-ri-leadrow input.tc-cred{width:100%!important;max-width:none!important}   /* otherwise the Tracklist's credited-as box, as is */
     .tc-ri-art .tc-aslot{margin:0 0 4px}
     .tc-ri-art .tc-mirror td.c-art{box-shadow:none!important}
     .tc-ri-art .tc-search{flex:1 1 auto!important;min-width:0;border-radius:var(--mbu-radius)!important}
@@ -9881,13 +9882,6 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
        *selected* entity ("You selected <a>…</a>"); we surface that next to the focused field instead of
        the removed help column — without bringing back the verbose style-guide noise. (unscoped: the
        element lives on <body>; visibility is gated by the .on class, only added while Apollo is on.) */
-    #tc-ri-help{position:fixed;z-index:9999;display:none;max-width:360px;width:max-content;background:var(--mbu-bg);border:1px solid var(--mbu-accent);border-radius:7px;box-shadow:0 6px 22px rgba(60,40,110,.20);padding:9px 12px;font-size:12px;line-height:1.45;color:var(--mbu-text)}
-    #tc-ri-help.on{display:block}
-    #tc-ri-help p{margin:0 0 5px}
-    #tc-ri-help p:last-child{margin-bottom:0}
-    #tc-ri-help a{color:var(--mbu-accent-text);text-decoration:none}
-    #tc-ri-help a:hover{text-decoration:underline}
-    #tc-ri-help .comment,#tc-ri-help .name-variation a[title]{color:var(--mbu-text-weak)}
     body.tc-ri-on #tc-ri-rightcol{flex:1 1 340px;min-width:300px;max-width:100%;box-sizing:border-box}  /* links take the remaining width, but wrap below the form when there isn't room for both; never wider than the row */
     /* External links matches the form sections: no boxy border, same compact purple header (#143) */
     body.tc-ri-on #tc-ri-rightcol > fieldset{margin-top:0;max-width:100%;min-width:0;box-sizing:border-box;border:none;padding:0}
@@ -10988,54 +10982,6 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     });
     return [...out];
   }
-  // #143: the help column is hidden, but MB keeps each field's native bubble populated — for the
-  // entity fields (release group / label / artist) that bubble holds "You selected <a>…</a>", the
-  // clickable link to the chosen entity. MB sets the focused field's bubble to inline display:block
-  // even while the column is hidden, so on focus we clone that selection message into a compact,
-  // on-theme popover beside the field. Generic style-guide bubbles (no entity link) stay hidden.
-  let _riHelpWired = false;
-  function wireHelpPopover() {
-    if (_riHelpWired) return; _riHelpWired = true;
-    let pop = null, hideT = null;
-    const ensurePop = () => {
-      if (pop && pop.isConnected) return pop;
-      pop = document.createElement('div'); pop.id = 'tc-ri-help';
-      pop.addEventListener('mouseenter', () => clearTimeout(hideT));   // keep open so the link is clickable
-      pop.addEventListener('mouseleave', hide);
-      document.body.appendChild(pop);
-      return pop;
-    };
-    function hide() { clearTimeout(hideT); hideT = setTimeout(() => { if (pop) pop.classList.remove('on'); }, 160); }
-    const showFor = (field) => {
-      const doc = document.querySelector('#information > div.documentation'); if (!doc) { hide(); return; }
-      // the focused field's bubble (MB flags it display:block) — only if it carries a selection link
-      const bub = [...doc.querySelectorAll('.bubble')].find(b => /display:\s*block/.test(b.getAttribute('style') || '')
-        && b.querySelector('a[href^="/release-group/"],a[href^="/label/"],a[href^="/artist/"]'));
-      if (!bub) { hide(); return; }
-      const p = ensurePop();
-      p.innerHTML = bub.innerHTML;   // the rendered "You selected …" message (knockout comment nodes render as nothing)
-      p.querySelectorAll('a').forEach(a => { a.target = '_blank'; a.rel = 'noopener'; });
-      const r = field.getBoundingClientRect();
-      const w = Math.min(360, window.innerWidth - 16);
-      // prefer to the right of the field (like MB's native bubble) so it never covers the field's own
-      // autocomplete dropdown; drop below, left-aligned, when there isn't room on the right
-      let left = r.right + 12, top = r.top;
-      if (left + w > window.innerWidth - 8) { left = Math.min(r.left, window.innerWidth - w - 8); top = r.bottom + 6; }
-      p.style.left = Math.round(Math.max(8, left)) + 'px';
-      p.style.top = Math.round(top) + 'px';
-      clearTimeout(hideT); p.classList.add('on');
-    };
-    document.addEventListener('focusin', e => {
-      if (!document.body.classList.contains('tc-ri-on')) return;
-      const info = document.getElementById('information'); if (!info || !info.contains(e.target)) return;
-      const field = e.target.closest('input,select,textarea'); if (!field) return;
-      if (field.closest('#tc-anno-wrap')) { hide(); return; }   // the annotation editor isn't an entity field — no "You selected …" bubble
-      setTimeout(() => { if (document.activeElement === field) showFor(field); }, 30);   // let MB pick the bubble first
-    });
-    document.addEventListener('focusout', e => {
-      const info = document.getElementById('information'); if (info && info.contains(e.target)) hide();
-    });
-  }
   // clicking the favicon edits the URL (edit1); clicking the type chip edits the relationship type (edit2).
   // Both proxy to MB's own (hover-hidden) pencil buttons so the native editor bubble does the actual work.
   let _riClicksWired = false;
@@ -11125,7 +11071,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     riStyle();
     wireLinkClicks();
     wireReleaseInfoBatch();
-    wireHelpPopover();
+    // #652 (majkinetor): "no bubbles anywhere" — the #143 selection popover is retired; the badges say what was picked
     if (riWant()) {
       _apolloUsed = true;
       mbuCls(document.body, 'tc-ri-on', true);   // #569: guarded — re-added 2x/s otherwise

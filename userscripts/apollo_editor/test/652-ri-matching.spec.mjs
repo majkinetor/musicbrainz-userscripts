@@ -135,4 +135,22 @@ test.describe('release artist and label', () => {
     await page.screenshot({ path: 'test-results/652-artist-cell.png', clip });
 
   });
+  // majkinetor's release (its test.musicbrainz.org copy): an existing Various Artists release with its label set
+  test('an existing release: set badges, no bubbles, one line, Tracklist credited-as', { tag: ['@sandbox', '@login'] }, async ({ page, inject }) => {
+    await openApollo(page, inject, { release: '96cd48d4-c1a3-4ba9-a6a9-3c7a1400dea4' });
+    await until(() => page.locator('#information .tc-ri-art .tc-aslot').count(), n => n >= 1, { timeout: 60000 });
+    const lab = await until(() => page.evaluate(() => document.querySelector('.tc-ri-lab .tc-badge')?.textContent), Boolean, { timeout: 15000 }).catch(() => null);
+    check(lab === 'set', `an already-set label shows "set", as the artist does (${lab})`);
+    const row = await page.evaluate(() => { const td = document.querySelector('#information td.release-artist'), l = td.querySelector('.tc-aslot'); return { tr: Math.round(td.closest('tr').getBoundingClientRect().height), line: Math.round(l.getBoundingClientRect().height) }; });
+    check(row.tr <= row.line + 14, `the artist row is its line and no more: nothing between it and Release group (${JSON.stringify(row)})`);
+    await page.locator('#information .tc-ri-art input.nm').first().click();
+    await page.waitForTimeout(400);
+    const bubA = await page.evaluate(() => [...document.querySelectorAll('#tc-ri-help, .bubble')].filter(b => b.offsetParent !== null || getComputedStyle(b).position === 'fixed' && getComputedStyle(b).display !== 'none').length);
+    await page.locator('#label-0').click();
+    await page.waitForTimeout(400);
+    const bubL = await page.evaluate(() => [...document.querySelectorAll('#tc-ri-help, .bubble')].filter(b => b.offsetParent !== null || getComputedStyle(b).position === 'fixed' && getComputedStyle(b).display !== 'none').length);
+    check(bubA === 0 && bubL === 0, `no bubble on the artist or the label (${bubA}, ${bubL})`);
+    const cred = await page.evaluate(() => { const i = document.querySelector('#information .tc-ri-leadrow input.tc-cred'); const before = getComputedStyle(i).textAlign; i.focus(); return [before, getComputedStyle(i).textAlign]; });
+    check(cred[0] === cred[1], `credited-as keeps its alignment when entered, as on the Tracklist (${cred})`);
+  });
 });

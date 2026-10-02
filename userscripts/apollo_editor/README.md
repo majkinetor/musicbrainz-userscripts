@@ -30,10 +30,10 @@ Each part is optional, and the **Original / Apollo** button switches back to Mus
 - **+** takes several links at once and pulls URLs out of anything pasted, HTML included, dropping duplicates and setting each link's type.
 - A **front-cover thumbnail** under the links opens the cover-art page.
 - Right-click a date's or label's ✕ to remove all of them.
-- The help bubbles are gone.
+- The help bubbles are gone, including the "You selected …" ones on the artist, label and release group: the badges say what is linked.
 - The release **Artist** field is the Tracklist's artist cell, in place of MusicBrainz's box and its Edit popup. One line per artist: the credited-as name takes the place of the **Artist** label, the artist search lines up with Title, then the join phrase and the line's match badge. **↵** adds an artist, **⋔** splits a combined name, **⠿** reorders, **✕** removes, and **＋** / **🔗** / **⚠** offer to create the artist or add its link. The **Original** view brings back MusicBrainz's editor.
 - The release **Artist** is [matched](#artist-matching) on load like a track artist, through the same stages: the Discogs or platform link, the release artist of other editions, the exact name or alias, and co-credit with the artists on the tracks. A confident match is linked. Each artist's badge sits at the end of its line, its match card on hover; click an uncertain **LOW** badge to link its candidate.
-- The release **Label** is linked on load by its Discogs or platform link when exactly one label has it, else when exactly one label has its name or alias. A badge by the field says which.
+- The release **Label** is linked on load by its Discogs or platform link when exactly one label has it, else when exactly one label has its name or alias. A badge by the field says which; a label already on the release shows **set**.
 
 ## Tracklist
 
