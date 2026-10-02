@@ -2,7 +2,7 @@
 // button movable, and it should remember where it is positioned on particular provider".
 //
 // Fixtures: Bandcamp bullion.bandcamp.com/album/nearly, Deezer album 6575789.
-import { test, check, sourceOf } from '../../../dev/test/harness.mjs';
+import { test, check, until, sourceOf } from '../../../dev/test/harness.mjs';
 import { readFile } from 'node:fs/promises';
 
 test.use({ gm: { name: 'First Contact', persist: 'tabs' }, pageErrors: 'ignore' });   // the platforms' own scripts are not ours
@@ -288,6 +288,49 @@ test('Scrolls with the page: the button goes under a fixed bar on the page, not 
   });
   check(hit.onBar, 'the button has scrolled under the bar');
   check(hit.top && !hit.fc, `the bar is drawn over the button (${JSON.stringify(hit)})`);
+});
+
+// majkinetor: "The FC disapeared from Discogs … it goes behind this": Discogs's header is page
+// content (position relative, z-index 1000, in a shadow root), and the button dropped on it went
+// under it. Discogs serves a bot check to the harness, so its header is built here on Bandcamp, with
+// a fixed bar beside it: the button rises over the header and still goes under the fixed bar.
+test('Scrolls with the page: dropped on a page header that covers it, the button comes over it', { tag: ['@web'] }, async ({ page, inject }) => {
+  await page.goto(BC, { waitUntil: 'domcontentloaded' });
+  await noBandcampDialog(page);
+  await page.evaluate(() => {
+    const host = document.createElement('div');
+    host.id = 'dg-header-root';
+    document.body.prepend(host);
+    host.attachShadow({ mode: 'open' }).innerHTML = '<header style="position: relative; z-index: 1000; height: 200px; background: #111"></header>';
+    const bar = document.createElement('div');
+    bar.id = 'dg-fixed-bar';
+    // above the header, as a site's player or cookie bar would be: one under it is under the header too
+    bar.style.cssText = 'position: fixed; left: 0; right: 0; top: 0; height: 40px; z-index: 2000; background: #933';
+    document.body.append(bar);
+  });
+  await inject('first_contact', { waitFor: '__fcTest' });
+  await page.locator('#fc-root .fc-go').waitFor({ state: 'visible' });
+  await page.locator('#fc-root .fc-more').click();
+  await page.locator('#fc-panel .fc-scroll-opt').check();
+  await page.keyboard.press('Escape');
+  const g = await page.locator('#fc-root .fc-go').boundingBox();
+  await page.mouse.move(g.x + 20, g.y + g.height / 2);
+  await page.mouse.down();
+  await page.mouse.move(g.x + 20 - 300, 120, { steps: 10 });   // onto the header, below the bar
+  await page.mouse.up();
+  const onTop = sel => page.evaluate(sel => {
+    const r = document.getElementById('fc-root').getBoundingClientRect(), x = r.left + r.width / 2, y = r.top + r.height / 2;
+    let el = document.elementFromPoint(x, y);
+    while (el && el.shadowRoot) { const d = el.shadowRoot.elementFromPoint(x, y); if (!d || d === el) break; el = d; }
+    return { fc: !!(el && el.closest('#fc-root')), z: document.getElementById('fc-root').style.zIndex, under: sel && !!(el && el.closest(sel)) };
+  }, sel);
+  const header = await until(() => onTop(), r => r.fc, { timeout: 3000 });
+  check(header.fc, `the button shows over the page's header (z-index ${header.z})`);
+  const bar = await page.locator('#dg-fixed-bar').boundingBox(), b = await page.locator('#fc-root').boundingBox();
+  await page.evaluate(dy => window.scrollBy(0, dy), b.y + b.height / 2 - (bar.y + bar.height / 2));   // the button's middle under the fixed bar
+  await page.waitForTimeout(150);
+  const fixed = await onTop('#dg-fixed-bar');
+  check(fixed.under && !fixed.fc, `a fixed bar still goes over it (${JSON.stringify(fixed)})`);
 });
 
 // majkinetor: "for some reason button still moves on spotify … and apple music … but not on qobuz
