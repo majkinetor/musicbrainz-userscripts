@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.2.214632
+// @version      2026.10.2.214730
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E
@@ -9797,8 +9797,8 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     .tc-ri-art .tc-mirror td.c-art{box-shadow:none!important}
     .tc-ri-art .tc-search{flex:1 1 auto!important;min-width:0;border-radius:var(--mbu-radius)!important}
     #information .tc-ri-art .tc-search input.nm{flex:1 1 auto!important;min-width:120px!important}
-    #information .tc-ri-art .tc-joinwrap{flex:0 0 150px}
-    #information .tc-ri-art input.tc-join{width:100%!important}
+    #information .tc-ri-art .tc-joinwrap{flex:0 0 150px;justify-content:flex-end}
+    #information .tc-ri-art input.tc-join{width:auto!important;flex:1 1 auto;min-width:0!important;text-align:right}
     .tc-ri-rb{flex:0 0 auto;min-width:44px;display:inline-flex;justify-content:flex-start;font:12px var(--mbu-font)}
     .tc-ri-chip{display:inline-flex;align-items:center;gap:5px}
     .tc-ri-nm{color:var(--mbu-text-dim)}
