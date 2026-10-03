@@ -27,6 +27,7 @@ Shows a release's ISRCs, fills in the missing ones from several providers, and f
 | Qobuz | ✓ | ✓ | the album; ISRCs by position, links by ISRC |
 | Apple Music | ✓ | ✓ | the album; by position (+ title for links) |
 | SoundCloud | ✓ | ✓ | the set (a track URL counts as a one-track release); by position (+ title for links) |
+| Audiomack | ✓ | ✓ | the album (a song URL counts as a one-track release); by position (+ title for links) |
 | Spotify | ✓ | ✓ | ISRCs through [a lookup service](#spotify); links from the album, by position + title |
 | Bandcamp | | ✓ | the album page, by position + title |
 | YouTube Music | | ✓ | the album, when linked (by position + title); else ISRC, on any release |
@@ -101,7 +102,7 @@ The **Links** tab shows, per track, what each recording already links to (**Link
 
 <img width="1000" src="./screenshots/links.png" />
 
-**🔗 Find links** resolves every track on every available provider, in parallel. A provider matched by position (Apple Music, Bandcamp, SoundCloud, Spotify, YouTube Music, Amazon Music) must have the track's title there; a typo in it, as above, still counts. A Deezer track that no longer plays anywhere is not offered. **➕ Add links** adds everything found; adding goes through your logged-in session (no OAuth), with ISRC Scout's edit note.
+**🔗 Find links** resolves every track on every available provider, in parallel. A provider matched by position (Apple Music, Bandcamp, SoundCloud, Audiomack, Spotify, YouTube Music, Amazon Music) must have the track's title there; a typo in it, as above, still counts. A Deezer track that no longer plays anywhere is not offered. **➕ Add links** adds everything found; adding goes through your logged-in session (no OAuth), with ISRC Scout's edit note.
 
 | Click | on an **Add** icon | on a **Linked** icon |
 |---|---|---|

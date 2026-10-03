@@ -57,6 +57,9 @@ export const PLATFORM_ICONS = {
     // ── SoundCloud — orange disc + waveform bars (stand-in) ──
     soundcloud: { color: '#ff5500', svg: '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="#ff5500"/><g fill="#fff"><rect x="6" y="12" width="1.4" height="4" rx=".6"/><rect x="8.5" y="10" width="1.4" height="6" rx=".6"/><rect x="11" y="8.5" width="1.4" height="7.5" rx=".6"/><rect x="13.5" y="10.5" width="1.4" height="5.5" rx=".6"/><rect x="16" y="11.5" width="1.4" height="4.5" rx=".6"/></g></svg>' },
 
+    // ── Audiomack — orange disc + waveform peaks (stand-in, #664) ──
+    audiomack: { color: '#FFA200', svg: '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="#FFA200"/><path d="M5 13.5l2-2 1.6 2.4 2.2-5.4 2.4 6.6 2.2-4 1.6 2.4H19" fill="none" stroke="#fff" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round"/></svg>' },
+
     // ── YouTube Music — red disc, white ring, play triangle, as MusicBrainz shows it (#639) ──
     ytmusic: { color: '#FF0000', svg: '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="#FF0000"/><circle cx="12" cy="12" r="5.6" fill="none" stroke="#fff" stroke-width="1.4"/><path d="M10.4 9.5v5l4.2-2.5z" fill="#fff"/></svg>' },
 

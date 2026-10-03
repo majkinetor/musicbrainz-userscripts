@@ -86,6 +86,7 @@ The footer's **+** adds every confirmed link (middle-click or Alt+click: the wit
 | Volumo        | looked up and read                                                         |          |
 | HDtracks      | looked up and read                                                         |          |
 | SoundCloud    | read from the linked set                                                   |          |
+| Audiomack     | read                                                                       |          |
 
 *Looked up*: the barcode finds the album. *Read*: the found album's barcode is checked against the release's.
 
@@ -97,6 +98,7 @@ The footer's **+** adds every confirmed link (middle-click or Alt+click: the wit
 - **YouTube Music** is read anonymously, through the catalogue its web player uses. Its search finds most albums by their barcode, and the rest by artist and title. It shows no barcode and can return another edition of the album, so every hit must also match on track count and title. A barcode search can also bring up another edition from the same group of versions, with a different barcode. So a match is never taken as barcode-confirmed, and strict barcode mode withholds it. When YouTube Music lists *other versions* of the album, the link's tooltip and the log name them, for you to check. The album page names no label, so the label comes from a song's credits (*Music metadata provided by*, usually the label, sometimes a distributor). Some labels send no credits, and those rows have no label. Links are added as *stream for free*.
 - **Amazon Music** is read as a guest (no Amazon account), through the catalogue its web player uses. It has no barcode search and shows no barcode, so an album is found by artist and title only, and taken only when its title and track count both match; when two editions match, the one from the release's year wins. A match is never barcode-confirmed, so strict barcode mode withholds it. The guest catalogue is amazon.com's (US), so an album sold only elsewhere may not be found. The year comes from the album page's date, and the label from its ℗ line. MusicBrainz makes the link a *streaming page* by itself.
 - **SoundCloud** can't be searched by barcode; it's read from the linked set, and trusted only when the whole set agrees on it.
+- **Audiomack** is read through the API its web player uses, with no login. Its search finds albums by artist and title only, never by barcode, and fans re-upload albums there, so every hit is opened and its barcode read: the one with the release's barcode wins; otherwise one whose track count matches and that has a barcode at all. A song link counts as a one-track release. The label comes from the ℗ line. Links are added as *stream for free*.
 - **Volumo** and **HDtracks** are added as *purchase for download*, since MusicBrainz has no type of their own.
 
 ## Settings

@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-10-03 02:47 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-10-03 11:18 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -122,7 +122,7 @@ The card stays open while the pointer is on it, so its links can be followed; Es
 | Badge | Meaning |
 | --- | --- |
 | **DISC** | the Discogs artist credited on the release is linked from this MusicBrainz artist |
-| **DZ**, **SP**, **TD**, … | the artist's page on the platform the release was imported from is linked from this MusicBrainz artist: **DZ** Deezer, **SP** Spotify, **TD** Tidal, **AM** Apple Music, **YTM** YouTube Music, **BC** Bandcamp, **BP** Beatport, **QZ** Qobuz, **SC** SoundCloud, **AMZ** Amazon Music, **VO** Volumo, **HD** HDtracks |
+| **DZ**, **SP**, **TD**, … | the artist's page on the platform the release was imported from is linked from this MusicBrainz artist: **DZ** Deezer, **SP** Spotify, **TD** Tidal, **AM** Apple Music, **YTM** YouTube Music, **BC** Bandcamp, **BP** Beatport, **QZ** Qobuz, **SC** SoundCloud, **AMZ** Amazon Music, **VO** Volumo, **HD** HDtracks, **AMK** Audiomack |
 | **RG** | another release in the release group credits this artist on the same track |
 | **POS** | other editions credit this artist on the track at this position |
 | **NAME** | the only MusicBrainz artist with this name (aliases checked too) |
@@ -870,6 +870,7 @@ Shows a release's ISRCs, fills in the missing ones from several providers, and f
 | Qobuz | ✓ | ✓ | the album; ISRCs by position, links by ISRC |
 | Apple Music | ✓ | ✓ | the album; by position (+ title for links) |
 | SoundCloud | ✓ | ✓ | the set (a track URL counts as a one-track release); by position (+ title for links) |
+| Audiomack | ✓ | ✓ | the album (a song URL counts as a one-track release); by position (+ title for links) |
 | Spotify | ✓ | ✓ | ISRCs through [a lookup service](#spotify); links from the album, by position + title |
 | Bandcamp | | ✓ | the album page, by position + title |
 | YouTube Music | | ✓ | the album, when linked (by position + title); else ISRC, on any release |
@@ -944,7 +945,7 @@ The **Links** tab shows, per track, what each recording already links to (**Link
 
 <img width="1000" src="../isrc_scout/screenshots/links.png" />
 
-**🔗 Find links** resolves every track on every available provider, in parallel. A provider matched by position (Apple Music, Bandcamp, SoundCloud, Spotify, YouTube Music, Amazon Music) must have the track's title there; a typo in it, as above, still counts. A Deezer track that no longer plays anywhere is not offered. **➕ Add links** adds everything found; adding goes through your logged-in session (no OAuth), with ISRC Scout's edit note.
+**🔗 Find links** resolves every track on every available provider, in parallel. A provider matched by position (Apple Music, Bandcamp, SoundCloud, Audiomack, Spotify, YouTube Music, Amazon Music) must have the track's title there; a typo in it, as above, still counts. A Deezer track that no longer plays anywhere is not offered. **➕ Add links** adds everything found; adding goes through your logged-in session (no OAuth), with ISRC Scout's edit note.
 
 | Click | on an **Add** icon | on a **Linked** icon |
 |---|---|---|
@@ -1231,6 +1232,7 @@ The footer's **+** adds every confirmed link (middle-click or Alt+click: the wit
 | Volumo        | looked up and read                                                         |          |
 | HDtracks      | looked up and read                                                         |          |
 | SoundCloud    | read from the linked set                                                   |          |
+| Audiomack     | read                                                                       |          |
 
 *Looked up*: the barcode finds the album. *Read*: the found album's barcode is checked against the release's.
 
@@ -1242,6 +1244,7 @@ The footer's **+** adds every confirmed link (middle-click or Alt+click: the wit
 - **YouTube Music** is read anonymously, through the catalogue its web player uses. Its search finds most albums by their barcode, and the rest by artist and title. It shows no barcode and can return another edition of the album, so every hit must also match on track count and title. A barcode search can also bring up another edition from the same group of versions, with a different barcode. So a match is never taken as barcode-confirmed, and strict barcode mode withholds it. When YouTube Music lists *other versions* of the album, the link's tooltip and the log name them, for you to check. The album page names no label, so the label comes from a song's credits (*Music metadata provided by*, usually the label, sometimes a distributor). Some labels send no credits, and those rows have no label. Links are added as *stream for free*.
 - **Amazon Music** is read as a guest (no Amazon account), through the catalogue its web player uses. It has no barcode search and shows no barcode, so an album is found by artist and title only, and taken only when its title and track count both match; when two editions match, the one from the release's year wins. A match is never barcode-confirmed, so strict barcode mode withholds it. The guest catalogue is amazon.com's (US), so an album sold only elsewhere may not be found. The year comes from the album page's date, and the label from its ℗ line. MusicBrainz makes the link a *streaming page* by itself.
 - **SoundCloud** can't be searched by barcode; it's read from the linked set, and trusted only when the whole set agrees on it.
+- **Audiomack** is read through the API its web player uses, with no login. Its search finds albums by artist and title only, never by barcode, and fans re-upload albums there, so every hit is opened and its barcode read: the one with the release's barcode wins; otherwise one whose track count matches and that has a barcode at all. A song link counts as a one-track release. The label comes from the ℗ line. Links are added as *stream for free*.
 - **Volumo** and **HDtracks** are added as *purchase for download*, since MusicBrainz has no type of their own.
 
 ### Settings
