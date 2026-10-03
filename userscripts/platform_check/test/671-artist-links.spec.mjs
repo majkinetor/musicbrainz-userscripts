@@ -130,10 +130,14 @@ test('existing links, the Falcon batch and the seeded edit page', { tag: '@unit'
   check(u.pathname === '/label/l/edit' && u.searchParams.get('edit-label.url.0.text') === 'https://a/1' && u.searchParams.get('edit-label.url.1.text') === 'https://b/2' && u.searchParams.get('edit-label.edit_note') === 'note', `the edit page, seeded (${u})`);
   const here = new Function('document', await functionSource('platform_check', ['pcSendToFalconHere']) + '\nreturn pcSendToFalconHere;');
   const doc = new EventTarget();
-  check(here(doc)('{}') === false, 'no Falcon on the page: not handed over (a tab opens instead)');
+  check(here(doc)('{}', true) === false, 'no Falcon on the page: not handed over (a tab opens instead)');
   let got = null;
   doc.addEventListener('falcon:import', e => { got = e.detail; doc.dispatchEvent(new CustomEvent('falcon:import-ok')); });
   check(here(doc)('{"items":[]}') === true && got === '{"items":[]}', 'Falcon on the page takes the JSON in place');
+  let ran = null;
+  doc.addEventListener('falcon:run', e => { ran = e.detail; doc.dispatchEvent(new CustomEvent('falcon:import-ok')); });
+  got = null;
+  check(here(doc)('{"items":[1]}', true) === true && ran === '{"items":[1]}' && got === null, 'Run asks Falcon to run (falcon:run), Send only just to queue');
   const q = new URL(seeded('artist', 'a', ['https://www.deezer.com/artist/1', 'https://www.qobuz.com/us-en/interpreter/x/2'], 'n'));
   check(!q.searchParams.has('edit-artist.url.0.link_type_id') && q.searchParams.get('edit-artist.url.1.link_type_id') === '176', `…the Qobuz link typed (${q})`);
 });

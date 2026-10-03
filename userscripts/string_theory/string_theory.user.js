@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         String Theory
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.3.190355
+// @version      2026.10.3.191429
 // @description  Unified bundle of 8 MusicBrainz userscripts (apollo_editor, art_station, credit_hoarder, fusion, group_therapy, isrc_scout, mammoth, platform_check). Built by userscripts/string_theory/build.mjs — do not hand-edit.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCIgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0Ij4KICA8IS0tIGh1Yi1hbmQtc3Bva2UgIm5ldHdvcmsiIGdseXBoLCBzaW5nbGUgdml2aWQgdmlvbGV0IG9uIHRyYW5zcGFyZW50IHNvIGl0IHJlYWRzIG9uIGJvdGggZGFyayBhbmQgbGlnaHQgcGFnZXMgLS0+CiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjN2M1Y2ZmIiBzdHJva2Utd2lkdGg9IjQuNiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj4KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMzIgMTUiLz4KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMNDYuNSAyMy41Ii8+CiAgICA8cGF0aCBkPSJNMzIgMzIgTDQ2LjUgNDAuNSIvPgogICAgPHBhdGggZD0iTTMyIDMyIEwzMiA0OSIvPgogICAgPHBhdGggZD0iTTMyIDMyIEwxNy41IDQwLjUiLz4KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMTcuNSAyMy41Ii8+CiAgPC9nPgogIDxnIGZpbGw9IiM3YzVjZmYiPgogICAgPGNpcmNsZSBjeD0iMzIiIGN5PSIzMiIgcj0iOC42Ii8+CiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjE5LjUiIHI9IjYuNCIvPgogICAgPGNpcmNsZSBjeD0iNDkiIGN5PSIxOS41IiByPSI2LjQiLz4KICAgIDxjaXJjbGUgY3g9IjMyIiBjeT0iNTciIHI9IjYuNCIvPgogIDwvZz4KICA8ZyBmaWxsPSJub25lIiBzdHJva2U9IiM3YzVjZmYiIHN0cm9rZS13aWR0aD0iMy44Ij4KICAgIDxjaXJjbGUgY3g9IjMyIiBjeT0iNyIgcj0iNC45Ii8+CiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjQ0LjUiIHI9IjQuOSIvPgogICAgPGNpcmNsZSBjeD0iNDkiIGN5PSI0NC41IiByPSI0LjkiLz4KICA8L2c+Cjwvc3ZnPgo=
@@ -88,8 +88,8 @@
 // Bundles (verbatim, each wrapped in a run-at gate): apollo_editor, art_station, credit_hoarder, fusion, group_therapy, isrc_scout, mammoth, platform_check.
 
 try {
-  console.log('%c String Theory %c v2026.10.3.190355 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
-  console.log("String Theory bundles:\n  · Apollo Editor v2026.10.3.195428\n  · Art Station v2026.10.3.170825\n  · Credit Hoarder v2026.10.3.155734\n  · Fusion v2026.10.3\n  · Group Therapy v2026.10.3\n  · ISRC Scout v2026.10.3.175216\n  · Mammoth v2026.10.3\n  · Platform Check v2026.10.3.224500");
+  console.log('%c String Theory %c v2026.10.3.191429 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
+  console.log("String Theory bundles:\n  · Apollo Editor v2026.10.3.195428\n  · Art Station v2026.10.3.170825\n  · Credit Hoarder v2026.10.3.155734\n  · Fusion v2026.10.3\n  · Group Therapy v2026.10.3\n  · ISRC Scout v2026.10.3.175216\n  · Mammoth v2026.10.3\n  · Platform Check v2026.10.3.231500");
 } catch (e) {}
 
 // ===== apollo_editor (@run-at document-start) =====================================
@@ -46203,7 +46203,7 @@ Created this ${kind} while adding credits parsed from text to ${relUrl}`;
 
 // ===== platform_check (@run-at document-end) ====================================
 (function(__stGM){
-  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Platform Check*","namespace":"http://tampermonkey.net/","version":"2026.10.3.224500","description":"Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/platform_check/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+DQogIDx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CiAgDQogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJhMWE1MiIgc3Ryb2tlLXdpZHRoPSI5IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik00MCA4OCBBMzQgMzQgMCAwIDEgNDAgNDAiLz4NCiAgICA8cGF0aCBkPSJNMjkgOTkgQTUwIDUwIDAgMCAxIDI5IDI5Ii8+DQogICAgPHBhdGggZD0iTTg4IDg4IEEzNCAzNCAwIDAgMCA4OCA0MCIvPg0KICAgIDxwYXRoIGQ9Ik05OSA5OSBBNTAgNTAgMCAwIDAgOTkgMjkiLz4NCiAgPC9nPg0KICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyMCIgZmlsbD0iI2U4MjAxYSIvPg0KPC9zdmc+DQo="}) }) : { script: {"name":"Platform Check*","namespace":"http://tampermonkey.net/","version":"2026.10.3.224500","description":"Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/platform_check/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+DQogIDx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CiAgDQogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJhMWE1MiIgc3Ryb2tlLXdpZHRoPSI5IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik00MCA4OCBBMzQgMzQgMCAwIDEgNDAgNDAiLz4NCiAgICA8cGF0aCBkPSJNMjkgOTkgQTUwIDUwIDAgMCAxIDI5IDI5Ii8+DQogICAgPHBhdGggZD0iTTg4IDg4IEEzNCAzNCAwIDAgMCA4OCA0MCIvPg0KICAgIDxwYXRoIGQ9Ik05OSA5OSBBNTAgNTAgMCAwIDAgOTkgMjkiLz4NCiAgPC9nPg0KICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyMCIgZmlsbD0iI2U4MjAxYSIvPg0KPC9zdmc+DQo="} };
+  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Platform Check*","namespace":"http://tampermonkey.net/","version":"2026.10.3.231500","description":"Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/platform_check/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+DQogIDx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CiAgDQogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJhMWE1MiIgc3Ryb2tlLXdpZHRoPSI5IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik00MCA4OCBBMzQgMzQgMCAwIDEgNDAgNDAiLz4NCiAgICA8cGF0aCBkPSJNMjkgOTkgQTUwIDUwIDAgMCAxIDI5IDI5Ii8+DQogICAgPHBhdGggZD0iTTg4IDg4IEEzNCAzNCAwIDAgMCA4OCA0MCIvPg0KICAgIDxwYXRoIGQ9Ik05OSA5OSBBNTAgNTAgMCAwIDAgOTkgMjkiLz4NCiAgPC9nPg0KICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyMCIgZmlsbD0iI2U4MjAxYSIvPg0KPC9zdmc+DQo="}) }) : { script: {"name":"Platform Check*","namespace":"http://tampermonkey.net/","version":"2026.10.3.231500","description":"Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/platform_check/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+DQogIDx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CiAgDQogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJhMWE1MiIgc3Ryb2tlLXdpZHRoPSI5IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik00MCA4OCBBMzQgMzQgMCAwIDEgNDAgNDAiLz4NCiAgICA8cGF0aCBkPSJNMjkgOTkgQTUwIDUwIDAgMCAxIDI5IDI5Ii8+DQogICAgPHBhdGggZD0iTTg4IDg4IEEzNCAzNCAwIDAgMCA4OCA0MCIvPg0KICAgIDxwYXRoIGQ9Ik05OSA5OSBBNTAgNTAgMCAwIDAgOTkgMjkiLz4NCiAgPC9nPg0KICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyMCIgZmlsbD0iI2U4MjAxYSIvPg0KPC9zdmc+DQo="} };
   (f=>document.readyState!=='loading'?f():document.addEventListener('DOMContentLoaded',f,{once:true}))(function(){ try { (function(){
 (function () {
 'use strict';
@@ -53156,12 +53156,13 @@ function pcFalconPayload(rows, note) {
     return btoa(String.fromCharCode(...new TextEncoder().encode(pcFalconJson(rows, note))));
 }
 // Falcon runs on this page too: hand it the batch in place (a DOM event, which every
-// userscript sandbox hears). False when no Falcon answered, so the caller opens it in a tab.
-function pcSendToFalconHere(json) {
+// userscript sandbox hears), to run (falcon:run) or only to queue (falcon:import). False
+// when no Falcon answered, so the caller opens it in a tab.
+function pcSendToFalconHere(json, run) {
     let ok = false;
     const ack = () => { ok = true; };
     document.addEventListener('falcon:import-ok', ack);
-    try { document.dispatchEvent(new CustomEvent('falcon:import', { detail: json })); } finally { document.removeEventListener('falcon:import-ok', ack); }
+    try { document.dispatchEvent(new CustomEvent(run ? 'falcon:run' : 'falcon:import', { detail: json })); } finally { document.removeEventListener('falcon:import-ok', ack); }
     return ok;
 }
 // MusicBrainz's edit page for one artist or label, with its new links filled in, for you to submit
@@ -53232,10 +53233,17 @@ async function pcOpenLinksTable(btn) {
       #pc-links-ov .pc-lk-status { flex: 1 1 auto; color: var(--mbu-text-weak); font-size: 12px; }
       #pc-links-ov .pc-lk-send { cursor: pointer; background: var(--mbu-accent); color: var(--mbu-accent-fg); border: none; border-radius: var(--mbu-radius); padding: 5px 12px; font: 600 13px var(--mbu-font); }
       #pc-links-ov .pc-lk-send:disabled { opacity: .5; cursor: default; }
+      #pc-links-ov .pc-lk-split { position: relative; display: inline-flex; }
+      #pc-links-ov .pc-lk-split .pc-lk-send:first-child { border-radius: var(--mbu-radius) 0 0 var(--mbu-radius); }
+      #pc-links-ov .pc-lk-more { border-left: 1px solid var(--mbu-accent-fg) !important; border-radius: 0 var(--mbu-radius) var(--mbu-radius) 0 !important; padding: 5px 8px !important; }
+      #pc-links-ov .pc-lk-menu { position: absolute; right: 0; bottom: calc(100% + 4px); background: var(--mbu-bg); border: 1px solid var(--mbu-border); border-radius: var(--mbu-radius); box-shadow: 0 4px 14px rgba(0,0,0,.3); padding: 4px 0; white-space: nowrap; z-index: 1; }
+      #pc-links-ov .pc-lk-menu[hidden] { display: none; }
+      #pc-links-ov .pc-lk-menu button { display: block; width: 100%; text-align: left; background: none; border: none; color: var(--mbu-text); padding: 5px 14px; font: 13px var(--mbu-font); cursor: pointer; }
+      #pc-links-ov .pc-lk-menu button:hover { background: var(--mbu-bg-hover); }
     </style>
     <div class="mbu-ov-panel"><div class="mbu-ov-h"><span class="mbu-ov-title">Artists &amp; labels</span><button type="button" class="mbu-ov-x" title="Close">✕</button></div>
     <div class="mbu-ov-body"></div>
-    <div class="pc-lk-foot"><span class="pc-lk-status">Checking MusicBrainz for links already there…</span><button type="button" class="pc-lk-send" disabled>Send to Falcon</button></div></div>`);
+    <div class="pc-lk-foot"><span class="pc-lk-status">Checking MusicBrainz for links already there…</span><span class="pc-lk-split"><button type="button" class="pc-lk-send" disabled title="Queue the new links in Falcon and start it">Run in Falcon</button><button type="button" class="pc-lk-send pc-lk-more" disabled title="More">▾</button><span class="pc-lk-menu" hidden><button type="button" class="pc-lk-queue" title="Queue the new links in Falcon without starting it">Send only</button></span></span></div></div>`);
     document.body.appendChild(ov);
     const close = () => { ov.remove(); document.removeEventListener('keydown', onKey, true); };
     const onKey = e => { if (e.key === 'Escape') { e.stopPropagation(); close(); } };
@@ -53243,7 +53251,7 @@ async function pcOpenLinksTable(btn) {
     ov.addEventListener('mousedown', e => { if (e.target === ov) close(); });
     ov.querySelector('.mbu-ov-x').onclick = close;
 
-    const status = ov.querySelector('.pc-lk-status'), send = ov.querySelector('.pc-lk-send');
+    const status = ov.querySelector('.pc-lk-status'), send = ov.querySelector('.pc-lk-send'), more = ov.querySelector('.pc-lk-more'), menu = ov.querySelector('.pc-lk-menu');
     let linked = new Map(), checked = false;
     try {
         linked = await pcLinkedTo(rows.flatMap(r => Object.values(r.cells).flat().map(c => c.url)));
@@ -53278,8 +53286,9 @@ async function pcOpenLinksTable(btn) {
     const body = tbl.createTBody();
     const refresh = () => {
         const b = batch(), n = b.reduce((s, r) => s + r.urls.length, 0);
-        send.textContent = `Send ${n} to Falcon`;
-        send.disabled = !n;
+        send.textContent = `Run ${n} in Falcon`;
+        send.disabled = more.disabled = !n;
+        if (!n) menu.hidden = true;
         status.textContent = checked ? `${n} new link(s) on ${b.length} artist(s)/label(s)` : `MusicBrainz couldn't be asked which links it already has — check before sending`;
     };
     for (const r of marked) {
@@ -53315,14 +53324,20 @@ async function pcOpenLinksTable(btn) {
     }
     ov.querySelector('.mbu-ov-body').appendChild(tbl);
     refresh();
-    send.onclick = () => {
+    // Run: queue and start. Send only: queue, Falcon waits for Start. A Falcon opened in a
+    // new tab (none on this page) only queues: ?falcon= never starts on its own.
+    const toFalcon = run => {
         const b = batch();
         if (!b.length) return;
-        const here = pcSendToFalconHere(pcFalconJson(b, pcLinksNote()));
-        appendLog('System', `Artists & labels: sent ${b.reduce((s, r) => s + r.urls.length, 0)} link(s) on ${b.length} artist(s)/label(s) to Falcon${here ? '' : ' (in a new tab: no Falcon on this page)'}`, 'ok');
+        const here = pcSendToFalconHere(pcFalconJson(b, pcLinksNote()), run);
+        appendLog('System', `Artists & labels: ${run && here ? 'running' : 'sent'} ${b.reduce((s, r) => s + r.urls.length, 0)} link(s) on ${b.length} artist(s)/label(s) ${run && here ? 'in' : 'to'} Falcon${here ? '' : ` (in a new tab: no Falcon on this page${run ? '; press Start there' : ''})`}`, 'ok');
         if (!here) window.open(`${MB_ORIGIN}/?falcon=${encodeURIComponent(pcFalconPayload(b, pcLinksNote()))}`, '_blank');
-        ov.remove();
+        close();
     };
+    send.onclick = () => toFalcon(true);
+    more.onclick = e => { e.stopPropagation(); menu.hidden = !menu.hidden; };
+    ov.querySelector('.pc-lk-queue').onclick = () => toFalcon(false);
+    ov.addEventListener('click', e => { if (!menu.hidden && !e.target.closest('.pc-lk-split')) menu.hidden = true; });
 }
 document.getElementById('mb-links-btn').addEventListener('click', e => pcOpenLinksTable(e.currentTarget));
 
