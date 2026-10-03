@@ -60,6 +60,9 @@ export const PLATFORM_ICONS = {
     // ── Audiomack — orange disc + waveform peaks (stand-in, #664) ──
     audiomack: { color: '#FFA200', svg: '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="#FFA200"/><path d="M5 13.5l2-2 1.6 2.4 2.2-5.4 2.4 6.6 2.2-4 1.6 2.4H19" fill="none" stroke="#fff" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round"/></svg>' },
 
+    // ── 7digital — the store's teal (its theme colour) + a white 7 (stand-in, #669) ──
+    sevendigital: { color: '#07606E', svg: '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="#07606E"/><path d="M7.8 6.8h8.4v1.9l-4.5 8.9H9.4l4.4-8.7h-6z" fill="#fff"/></svg>' },
+
     // ── YouTube Music — red disc, white ring, play triangle, as MusicBrainz shows it (#639) ──
     ytmusic: { color: '#FF0000', svg: '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="#FF0000"/><circle cx="12" cy="12" r="5.6" fill="none" stroke="#fff" stroke-width="1.4"/><path d="M10.4 9.5v5l4.2-2.5z" fill="#fff"/></svg>' },
 

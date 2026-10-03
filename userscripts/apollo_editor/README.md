@@ -105,7 +105,7 @@ The card stays open while the pointer is on it, so its links can be followed; Es
 | Badge | Meaning |
 | --- | --- |
 | **DISC** | the Discogs artist credited on the release is linked from this MusicBrainz artist |
-| **DZ**, **SP**, **TD**, … | the artist's page on the platform the release was imported from is linked from this MusicBrainz artist: **DZ** Deezer, **SP** Spotify, **TD** Tidal, **AM** Apple Music, **YTM** YouTube Music, **BC** Bandcamp, **BP** Beatport, **QZ** Qobuz, **SC** SoundCloud, **AMZ** Amazon Music, **VO** Volumo, **HD** HDtracks, **AMK** Audiomack |
+| **DZ**, **SP**, **TD**, … | the artist's page on the platform the release was imported from is linked from this MusicBrainz artist: **DZ** Deezer, **SP** Spotify, **TD** Tidal, **AM** Apple Music, **YTM** YouTube Music, **BC** Bandcamp, **BP** Beatport, **QZ** Qobuz, **SC** SoundCloud, **AMZ** Amazon Music, **VO** Volumo, **HD** HDtracks, **AMK** Audiomack, **7D** 7digital |
 | **RG** | another release in the release group credits this artist on the same track |
 | **POS** | other editions credit this artist on the track at this position |
 | **NAME** | the only MusicBrainz artist with this name (aliases checked too) |
