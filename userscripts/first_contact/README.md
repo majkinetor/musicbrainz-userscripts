@@ -74,7 +74,7 @@ Without every track's length: 1 track is a Single, 3 to 6 an EP, 7 or more an Al
 | [SoundCloud](#soundcloud)       | label sets | label sets | ✓                     | description    |
 | [Amazon Music](#amazon-music)   |            |            | from the ℗ line       | ℗ line         |
 | [Audiomack](#audiomack)         |     ✓      |     ✓      | from the ℗ line       | description    |
-| [7digital](#7digital)           |     ✓      |     ✓      | ✓                     |                |
+| [7digital](#7digital)           |     ✓      |     ✓      | ✓                     | ℗ and © lines  |
 
 ### Deezer
 
