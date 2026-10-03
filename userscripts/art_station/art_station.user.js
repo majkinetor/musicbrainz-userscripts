@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Art Station
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.3
+// @version      2026.10.3.115514
 // @description  Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png
@@ -2273,7 +2273,7 @@
   // #667 (majkinetor): "Implement middle click on URL button so that it automatically chooses
   // the best image - highest resolution lowest size. Only one cover is added as a result."
   // Import from all (#558), wait until every sourcing slot is gone and the new covers have
-  // their dimensions, then pick max pixels (ties → fewest bytes) and keepOnly() it (#660).
+  // their dimensions, then pick max pixels (ties → fewest bytes) and drop the other imported covers outright.
   // The pick carries _bestOf so its edit note says Art Station chose it.
   function pickBest(cands) {
     return cands.slice().sort((a, b) => (b.w * b.h - a.w * a.h) || ((a.bytes || Infinity) - (b.bytes || Infinity)))[0];
@@ -2300,7 +2300,13 @@
         const best = pickBest(cands);
         best._bestOf = cands.length;
         asLog.info(`Best cover: ${best._provider || best.id} ${best.w}×${best.h} (${best.bytes ? fmtBytes(best.bytes) : '?'}) of ${cands.length}`);
-        if (cands.length > 1 || otherNews(best).length) keepOnly(best); else { toast(`Only one cover found — ${best._provider || 'kept'}`); render(); }
+        // the losers are removed outright, not marked for removal — they never show up at all
+        const drop = MODEL.filter(x => !before.has(x.id) && x !== best && !x._sourcing);
+        drop.forEach(x => { try { if (x._file) URL.revokeObjectURL(x._file); } catch (e) {} });
+        MODEL = MODEL.filter(x => !drop.includes(x)); MODEL.forEach((x, i) => x.order = i);
+        asLog.info(`Best cover: removed the other ${drop.length} imported ${drop.length === 1 ? ITEM : ITEMS}${drop.length ? ` (${drop.map(x => `${x._provider || x.id} ${x.w}×${x.h}`).join(', ')})` : ''}`);
+        toast(cands.length > 1 ? `Kept the best of ${cands.length}: ${best._provider || ''} ${best.w}×${best.h}` : `Only one cover found — ${best._provider || 'kept'}`);
+        render();
       }, 500);
     }).catch(e => { asLog.warn('middle-click best cover failed: ' + (e && e.message)); openSourcePop(btn); });
   }

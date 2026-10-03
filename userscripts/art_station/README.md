@@ -42,7 +42,7 @@ Each cover shows its size and resolution. *Show each cover's file type next to i
 | Files | drop or pick; the type is [guessed from the name](#file-names--types) |
 | Folder | drop one, or Shift-click the drop zone; one level of subfolders, up to 100 files |
 | Zip | drop or pick one; unpacked in the browser like a folder. An Art Station download restores each cover's types and comment. |
-| URL | **Ctrl+V** a URL anywhere on the gallery, or the **URL (N)** panel: one import per source the release links, plus [registered providers](#plugin-api). Right-click **URL (N)** to import from all of them; middle-click to import from all and keep only the best cover (highest resolution, then smallest file), noted in the edit note. Needs [Enhanced Cover Art Uploads](https://raw.github.com/ROpdebee/mb-userscripts/dist/mb_enhanced_cover_art_uploads.user.js). |
+| URL | **Ctrl+V** a URL anywhere on the gallery, or the **URL (N)** panel: one import per source the release links, plus [registered providers](#plugin-api). Right-click **URL (N)** to import from all of them; middle-click to import from all and keep only the best cover (highest resolution, then smallest file); the others are discarded, and the edit note says Art Station chose it. Needs [Enhanced Cover Art Uploads](https://raw.github.com/ROpdebee/mb-userscripts/dist/mb_enhanced_cover_art_uploads.user.js). |
 | [MH Covers](https://covers.musichoarders.xyz) | pick a cover; it's staged as a new one |
 | Reverse-image search | 🔍 on a cover searches Yandex, Google Lens, TinEye or Bing for a bigger copy. With the [Picker](./as_picker/README.md), clicking the copy on the results sends it back to the gallery. |
 
