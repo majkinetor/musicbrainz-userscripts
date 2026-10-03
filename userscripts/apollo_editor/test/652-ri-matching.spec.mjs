@@ -107,6 +107,9 @@ test.describe('release artist and label', () => {
     }, cell);
     check(Array.isArray(skew) && skew.every(d => d <= 2), `credited-as stays level with its line under a padded theme (off by ${JSON.stringify(skew)} px)`);
 
+    // #652 (majkinetor): "edit on join phrase is enormous" — it hid the artist's disambiguation
+    const jw = await page.evaluate(c => Math.round(document.querySelector(c + ' .tc-joinwrap').getBoundingClientRect().width), cell);
+    check(jw <= 70, `the join phrase box is narrow (${jw}px)`);
     // join phrase → the release credit
     await page.evaluate(c => { const j = document.querySelector(c + ' .tc-join'); j.value = ' feat. '; j.dispatchEvent(new Event('change')); }, cell);
     let credit = await until(() => liveCredit(page), c => c[0] && c[0].join === ' feat. ', { timeout: 5000 }).catch(() => null);
