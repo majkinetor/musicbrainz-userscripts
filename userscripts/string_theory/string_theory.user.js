@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         String Theory
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.3.021241
+// @version      2026.10.3.023158
 // @description  Unified bundle of 8 MusicBrainz userscripts (apollo_editor, art_station, credit_hoarder, fusion, group_therapy, isrc_scout, mammoth, platform_check). Built by userscripts/string_theory/build.mjs — do not hand-edit.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCIgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0Ij4KICA8IS0tIGh1Yi1hbmQtc3Bva2UgIm5ldHdvcmsiIGdseXBoLCBzaW5nbGUgdml2aWQgdmlvbGV0IG9uIHRyYW5zcGFyZW50IHNvIGl0IHJlYWRzIG9uIGJvdGggZGFyayBhbmQgbGlnaHQgcGFnZXMgLS0+CiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjN2M1Y2ZmIiBzdHJva2Utd2lkdGg9IjQuNiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj4KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMzIgMTUiLz4KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMNDYuNSAyMy41Ii8+CiAgICA8cGF0aCBkPSJNMzIgMzIgTDQ2LjUgNDAuNSIvPgogICAgPHBhdGggZD0iTTMyIDMyIEwzMiA0OSIvPgogICAgPHBhdGggZD0iTTMyIDMyIEwxNy41IDQwLjUiLz4KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMTcuNSAyMy41Ii8+CiAgPC9nPgogIDxnIGZpbGw9IiM3YzVjZmYiPgogICAgPGNpcmNsZSBjeD0iMzIiIGN5PSIzMiIgcj0iOC42Ii8+CiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjE5LjUiIHI9IjYuNCIvPgogICAgPGNpcmNsZSBjeD0iNDkiIGN5PSIxOS41IiByPSI2LjQiLz4KICAgIDxjaXJjbGUgY3g9IjMyIiBjeT0iNTciIHI9IjYuNCIvPgogIDwvZz4KICA8ZyBmaWxsPSJub25lIiBzdHJva2U9IiM3YzVjZmYiIHN0cm9rZS13aWR0aD0iMy44Ij4KICAgIDxjaXJjbGUgY3g9IjMyIiBjeT0iNyIgcj0iNC45Ii8+CiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjQ0LjUiIHI9IjQuOSIvPgogICAgPGNpcmNsZSBjeD0iNDkiIGN5PSI0NC41IiByPSI0LjkiLz4KICA8L2c+Cjwvc3ZnPgo=
@@ -84,13 +84,13 @@
 // Bundles (verbatim, each wrapped in a run-at gate): apollo_editor, art_station, credit_hoarder, fusion, group_therapy, isrc_scout, mammoth, platform_check.
 
 try {
-  console.log('%c String Theory %c v2026.10.3.021241 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
-  console.log("String Theory bundles:\n  · Apollo Editor v2026.10.3.021231\n  · Art Station v2026.10.2\n  · Credit Hoarder v2026.10.3.021241\n  · Fusion v2026.10.1.210938\n  · Group Therapy v2026.10.1.210938\n  · ISRC Scout v2026.10.2\n  · Mammoth v2026.10.1.210938\n  · Platform Check v2026.10.2.160007");
+  console.log('%c String Theory %c v2026.10.3.023158 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
+  console.log("String Theory bundles:\n  · Apollo Editor v2026.10.3.023156\n  · Art Station v2026.10.2\n  · Credit Hoarder v2026.10.3.021241\n  · Fusion v2026.10.1.210938\n  · Group Therapy v2026.10.1.210938\n  · ISRC Scout v2026.10.2\n  · Mammoth v2026.10.1.210938\n  · Platform Check v2026.10.2.160007");
 } catch (e) {}
 
 // ===== apollo_editor (@run-at document-start) =====================================
 (function(__stGM){
-  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Apollo Editor*","namespace":"https://musicbrainz.org/","version":"2026.10.3.021231","description":"Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md","supportURL":null,"icon":"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E"}) }) : { script: {"name":"Apollo Editor*","namespace":"https://musicbrainz.org/","version":"2026.10.3.021231","description":"Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md","supportURL":null,"icon":"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E"} };
+  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Apollo Editor*","namespace":"https://musicbrainz.org/","version":"2026.10.3.023156","description":"Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md","supportURL":null,"icon":"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E"}) }) : { script: {"name":"Apollo Editor*","namespace":"https://musicbrainz.org/","version":"2026.10.3.023156","description":"Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md","supportURL":null,"icon":"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E"} };
   (f=>f())(function(){ try { (function(){
 /*
  * Editor model (discovered via test/ spikes):
@@ -7934,6 +7934,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
       '.tc-recpop .tc-rpk-copy{padding:5px 10px;border-bottom:1px solid var(--mbu-border);display:flex;flex-direction:column;gap:3px;background:var(--mbu-bg-raised)}',
       '.tc-recpop .tc-rpk-copy label{cursor:pointer;color:var(--mbu-text);font-size:11px;display:flex;align-items:center;gap:5px}',
       '.tc-recpop .tc-rpk-row{border-left:3px solid transparent}',
+      '.tc-recpop .tc-rpk-isrcm{font:bold 9.5px Arial;border-radius:8px;padding:0 6px;background:#0a7a8c;color:#fff;vertical-align:1px}',   // #662
       '.tc-recpop .tc-rpk-row.tc-conf-exact{border-left-color:var(--mbu-info)}',
       '.tc-recpop .tc-rpk-row.tc-conf-tolerance{border-left-color:var(--mbu-ok)}',
       '.tc-recpop .tc-rpk-row.tc-conf-near{border-left-color:var(--mbu-warn)}',
@@ -8851,6 +8852,23 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
         // it never links. Floor such a candidate to 'near' so it clears the default cutoff; a
         // DIFFERING length keeps its (worse) computed level, so this can't over-link.
         const considerPos = d => { let lvl = recComboLevel(d, ctx); if (d.length && ctx.length && recLenGap(d.length, ctx.length) === 0) lvl = Math.min(lvl, CUTOFF.near); note(d, lvl); };
+        // #662: the track's ISRC from First Contact, ahead of every other tier
+        const isrc = fcIsrcFor(r.mi, r.ti, r.title);
+        if (!isrc && fcHandoff()) Log.debug('rec-match #' + (r.number || (r.ti + 1)) + ' no ISRC in the First Contact handoff for this track');
+        if (isrc) {
+          setStatus('auto-matching ' + (i + 1) + '/' + todo.length + '… (ISRC)');
+          const held = (await isrcRecordings(isrc)).filter(d => !(videoBlocked && d.video));
+          const agree = held.filter(d => isrcAgrees(d, ctx));
+          Log.info('rec-match #' + (r.number || (r.ti + 1)) + ' ISRC ' + isrc + ' → ' + held.length + ' recording(s)' + (held.length ? ': ' + held.map(d => '"' + d.name + '" [' + (d.gid || '').slice(0, 8) + ']' + (isrcAgrees(d, ctx) ? ' agrees' : ' differs')).join(', ') : ''));
+          if (held.length === 1 && agree.length === 1) {
+            note(agree[0], -1);   // unique and agreeing: ranks above even an exact title match, so it can never tie with one
+            Log.info('rec-match #' + (r.number || (r.ti + 1)) + ' ISRC: "' + agree[0].name + '" is the only recording with ' + isrc + ' and agrees on title and artist, ranked first');
+          } else {
+            // several holders, or one that disagrees: offered on their own merits, never forced
+            held.forEach(consider);
+            if (held.length) Log.info('rec-match #' + (r.number || (r.ti + 1)) + ' ISRC: ' + (held.length > 1 ? held.length + ' recordings share ' + isrc : 'the recording with ' + isrc + ' differs from the track') + ', not linked on the ISRC alone');
+          }
+        }
         let cands = byTitle.get(recFold(r.title)) || [];
         if (!cands.length && (SETTINGS.recTitleTol || 0) > 0 && pool.length) cands = pool.filter(p => recTitleEq(p.name, r.title));
         cands.forEach(consider);
@@ -9224,6 +9242,64 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     Log.debug('ISRC lookup:', isrc, '→', out.length, 'recording(s)');
     return out;
   }
+  /* #662: First Contact hands over each track's ISRC (Deezer, Apple Music, Tidal, …).
+     A recording that already carries it on MusicBrainz is the strongest sign it is
+     this track's recording, so the matcher tries it first and the picker lists it
+     on top. The release's ISRCs are searched together, shared by both, and only on a
+     page First Contact seeded. */
+  const _isrcRecCache = new Map();   // isrc → Promise<recordings>
+  function fcIsrcFor(mi, ti, title) {
+    const ht = fcTrackFor({ mi, ti, title });
+    const v = ht && ht.isrc ? String(ht.isrc).toUpperCase().replace(/[^A-Z0-9]/g, '') : '';
+    return /^[A-Z]{2}[A-Z0-9]{3}[0-9]{7}$/.test(v) ? v : null;
+  }
+  // #662 (chaban-mb): every ISRC the handoff carries is looked up together, in as few recording
+  // searches as possible (isrc:A OR isrc:B …), instead of one /isrc/ lookup each. The search index
+  // trails the database a little; an ISRC added minutes ago is missed, which is acceptable here.
+  const ISRC_BATCH = 40;   // ISRCs per search, to keep the query url short
+  function fcAllIsrcs() {
+    const h = fcHandoff(); if (!h) return [];
+    const out = [];
+    (h.mediums || []).forEach(m => (m.tracks || []).forEach(t => {
+      const v = t && t.isrc ? String(t.isrc).toUpperCase().replace(/[^A-Z0-9]/g, '') : '';
+      if (/^[A-Z]{2}[A-Z0-9]{3}[0-9]{7}$/.test(v) && !out.includes(v)) out.push(v);
+    }));
+    return out;
+  }
+  async function searchRecordingsByIsrcs(isrcs) {
+    const q = isrcs.map(i => 'isrc:' + i).join(' OR ');
+    const recs = [];
+    for (let offset = 0; ; offset += 100) {
+      const res = await wsJson(`${ORIGIN}/ws/2/recording?query=${encodeURIComponent(q)}&fmt=json&limit=100&offset=${offset}`, { label: 'ISRC batch search' });
+      if (!res.json) throw new Error('ISRC batch search failed');
+      const page = (res.json.recordings || []).map(mapWsRec);
+      recs.push(...page);
+      if (!page.length || recs.length >= (res.json.count || 0)) break;   // past 100 hits: the next page
+    }
+    Log.debug('ISRC batch search:', isrcs.length, 'ISRC(s) →', recs.length, 'recording(s)');
+    return recs;
+  }
+  function isrcBatch(isrcs) {
+    const want = isrcs.filter(i => !_isrcRecCache.has(i));
+    for (let k = 0; k < want.length; k += ISRC_BATCH) {
+      const chunk = want.slice(k, k + ISRC_BATCH);
+      const all = searchRecordingsByIsrcs(chunk);
+      chunk.forEach(isrc => _isrcRecCache.set(isrc, all
+        .then(recs => recs.filter(r => (r.isrcs || []).some(x => String(x).toUpperCase() === isrc)).map(r => Object.assign({}, r, { _isrc: isrc })))
+        .then(recs => { Log.debug('ISRC', isrc, '→', recs.length, 'recording(s)'); return recs; })
+        .catch(e => { Log.warn('ISRC batch search failed for', isrc, '—', e.message); _isrcRecCache.delete(isrc); return []; })));
+    }
+  }
+  function isrcRecordings(isrc) {
+    if (!_isrcRecCache.has(isrc)) {
+      const all = fcAllIsrcs();
+      isrcBatch(all.includes(isrc) ? all : [isrc, ...all]);   // the first ask fetches the whole release's ISRCs
+    }
+    return _isrcRecCache.get(isrc);
+  }
+  // the ISRC holder agrees with the track on title and artist: the only kind auto-linked on the ISRC alone
+  const isrcAgrees = (d, ctx) => !!(d && ctx && d.name && recTitleEq(d.name, ctx.title)
+    && (!ctx.artist || !d.artist || sameAcEntities(d, ctx) || recNameEq(d.artist, ctx.artist)));
   function recEntityFrom(data) {
     if (data.entity) return data.entity;   // suggestions are already full MB entities
     try {
@@ -9325,7 +9401,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
       : esc(data.name || '');
     const artistHtml = (data.ac && data.ac.length) ? acLinksWs(data.ac, true) : esc(data.artist || '');
     return '<div class="tc-rpk-row' + resultConfClass(data, ctx) + '" data-gid="' + esc(data.gid) + '">' +
-      '<div class="tc-rpk-main">' + (data.video ? VIDEO_MARK_PRE : '') +   // #584 — leading, same as the table
+      '<div class="tc-rpk-main">' + (data._isrc ? '<span class="tc-badge isrc tc-rpk-isrcm" title="has the ISRC First Contact read for this track,  ' + esc(data._isrc) + '">ISRC</span> ' : '') + (data.video ? VIDEO_MARK_PRE : '') +   // #584 — leading, same as the table
         '<span class="tc-rpk-name' + (dT ? ' tc-rpk-fdiff' : '') + '">' + titleHtml + '</span>' +
         (data.comment ? ' <span class="tc-rpk-cmt">(' + esc(data.comment) + ')</span>' : '') +
         '<span class="tc-rpk-len' + (dL ? ' tc-rpk-fdiff' : '') + '">' + (data.length ? fmtMs(data.length) : '') + '</span></div>' +
@@ -9431,8 +9507,11 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     const suggN = pop.querySelector('.tc-rpk-suggn');
     const setSuggCount = n => { if (suggN) suggN.textContent = n > 0 ? ' (' + n + ')' : ''; };
     // suggestions are lazy in MB — render what's there, else trigger findRecordingSuggestions and poll
+    let isrcList = [];   // #662: recordings holding the track's ISRC, listed first
     const renderSugg = () => {
-      const list = (typeof ko.suggestedRecordings === 'function' ? (u(ko.suggestedRecordings) || []) : []).map(suggData);
+      const mbList = (typeof ko.suggestedRecordings === 'function' ? (u(ko.suggestedRecordings) || []) : []).map(suggData);
+      const isrcGids = new Set(isrcList.map(d => d.gid));
+      const list = isrcList.concat(mbList.filter(d => !isrcGids.has(d.gid)));
       list.forEach(s => { data[s.gid] = s; });
       if (!list.length) return false;
       suggGids.clear(); list.forEach(s => suggGids.add(s.gid));
@@ -9440,8 +9519,16 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
       setSuggCount(list.length);
       Log.debug('picker suggestions for track', entry.number, '→', list.length);
       if (lastResults.length) paintResults();   // suggestions arrived after a search → drop any now-duplicate rows
-      return true;
+      return mbList.length > 0;   // keep waiting for MB's own when only the ISRC holders are in
     };
+    {
+      const isrc = fcIsrcFor(entry.mi, entry.ti, u(ko.name));
+      if (isrc) isrcRecordings(isrc).then(recs => {
+        if (!_recPop || !recs.length) return;
+        isrcList = recs; Log.debug('picker: ISRC', isrc, '→', recs.length, 'recording(s) on top');
+        renderSugg();
+      });
+    }
     if (!renderSugg()) {
       try { getEditor().recordingAssociation.findRecordingSuggestions(ko); } catch (e) { Log.warn('findRecordingSuggestions failed', e.message); }
       let tries = 0;
