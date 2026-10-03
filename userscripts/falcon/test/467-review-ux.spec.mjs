@@ -59,14 +59,16 @@ test("#467: review ux", { tag: ['@sandbox', '@login'] }, async ({ context, page 
     ck(result.parsed?.some(t => t.entityType === 'recording'), 'a recording tuple survives the token round-trip');
     ck(result.stillThere === null, 'the stored payload is deleted from GM storage once consumed (no orphaned entries)');
 
-    // base64 scheme (the general "any external script" contract) still works alongside it.
+    // base64 scheme (the general "any external script" contract) still works alongside it:
+    // its JSON goes to Import (#671)
     const base64Result = await page.evaluate(() => {
       const tuples = [{ entityType: 'label', mbid: '04201e6d-c430-4a53-a9a0-56170825fbde', url: 'https://example.com/x', linkTypeId: null }];
       const payload = window.__falconTest.encodeFalconPayload(tuples);
       history.replaceState(null, '', '/?falcon=' + encodeURIComponent(payload));
       return window.__falconTest.parseUrlParam();
     });
-    ck(base64Result?.length === 1 && base64Result[0].entityType === 'label', `base64 scheme still parses correctly alongside the new token scheme (${JSON.stringify(base64Result)})`);
+    const imported = base64Result && base64Result.importText ? JSON.parse(base64Result.importText) : null;
+    ck(imported?.length === 1 && imported[0].entityType === 'label', `base64 scheme still parses correctly alongside the new token scheme (${JSON.stringify(base64Result)})`);
     ck(errs.length === 0, 'no page errors: ' + JSON.stringify(errs.slice(0, 3)));
     await page.close();
   }

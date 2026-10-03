@@ -116,8 +116,9 @@ test('existing links, the Falcon batch and the seeded edit page', { tag: '@unit'
 
   const b64 = f.pcFalconPayload([{ type: 'artist', mbid: 'a', name: 'Björk', urls: ['https://u/1', 'https://u/2'] }, { type: 'label', mbid: 'l', name: 'L', urls: ['https://u/3'] }], 'from Platform Check — “x”');
   const back = JSON.parse(new TextDecoder().decode(Uint8Array.from(atob(b64), c => c.charCodeAt(0))));
-  check(back.note === 'from Platform Check — “x”' && back.items.length === 3, `{ note, items }, UTF-8 intact (${JSON.stringify(back)})`);
-  check(back.items[0].entityType === 'artist' && back.items[0].mbid === 'a' && back.items[0].url === 'https://u/1' && back.items[0].name === 'Björk' && back.items[2].entityType === 'label', 'one item per link, as Falcon reads them');
+  check(back.note === 'from Platform Check — “x”' && back.items.length === 2, `Falcon's JSON model, { note, items }, UTF-8 intact (${JSON.stringify(back)})`);
+  check(back.items[0].entityType === 'artist' && back.items[0].mbid === 'a' && back.items[0].name === 'Björk' && back.items[0].urls.map(u => u.url).join() === 'https://u/1,https://u/2' && back.items[0].urls[0].linkTypeId === null && back.items[1].entityType === 'label',
+    'one item per artist or label, its links in urls[]');
 
   const seeded = new Function('const MB_ORIGIN = "https://musicbrainz.org";\n' + await functionSource('platform_check', ['pcSeededEditUrl']) + '\nreturn pcSeededEditUrl;')();
   const u = new URL(seeded('label', 'l', ['https://a/1', 'https://b/2'], 'note'));
