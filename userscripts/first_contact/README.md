@@ -76,6 +76,7 @@ Without every track's length: 1 track is a Single, 3 to 6 an EP, 7 or more an Al
 | [HDtracks](#hdtracks)           |     ✓      |     ✓      | ✓                     | description    |
 | [SoundCloud](#soundcloud)       | label sets | label sets | ✓                     | description    |
 | [Amazon Music](#amazon-music)   |            |            | from the ℗ line       | ℗ line         |
+| [Audiomack](#audiomack)         |     ✓      |     ✓      | from the ℗ line       | description    |
 
 ### Deezer
 
@@ -187,6 +188,15 @@ Pages: `music.amazon.com/albums/<id>`, and the other countries' `music.amazon.*`
 - A track's artists come from its artist line (*A, B & C*), and only the first has an Amazon Music link; an *&* inside one name (*Simon & Garfunkel*) stays one artist.
 - The date is the one the album page shows, which for a reissue can be the original's.
 - The label is read from the ℗ line, as for [Tidal](#tidal); the whole line also goes to the annotation (see [Settings](#settings)), since it may or may not name the label.
+
+### Audiomack
+
+Pages: `audiomack.com/<artist>/album/<slug>`, `audiomack.com/<artist>/song/<slug>`
+
+- No Audiomack account is needed.
+- A song page is imported as a one-track single.
+- A track's artists come from its artist line (*A, B & C*), and the featured ones from its title or Audiomack's *featuring*. Only the uploading account has an Audiomack link to hand off.
+- The tracklist is one medium.
 
 ## Artist matching
 

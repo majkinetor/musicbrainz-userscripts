@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         First Contact
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.2.184540
-// @description  Import a release into MusicBrainz from the platform's album page with one click: the release editor opens with the title, tracklist, artists, date, label, barcode and link filled in. Each artist's platform link is handed to Apollo Editor for matching. By default the album page is also saved on the Internet Archive (it sends each imported URL to archive.org; off in the settings), and the edit note links the snapshot. Platforms: Deezer, Bandcamp, Discogs, Apple Music, Tidal, Qobuz, Beatport, Spotify, YouTube Music, Volumo, HDtracks, SoundCloud, Amazon Music.
+// @version      2026.10.3
+// @description  Import a release into MusicBrainz from the platform's album page with one click: the release editor opens with the title, tracklist, artists, date, label, barcode and link filled in. Each artist's platform link is handed to Apollo Editor for matching. By default the album page is also saved on the Internet Archive (it sends each imported URL to archive.org; off in the settings), and the edit note links the snapshot. Platforms: Deezer, Bandcamp, Discogs, Apple Music, Tidal, Qobuz, Beatport, Spotify, YouTube Music, Volumo, HDtracks, SoundCloud, Amazon Music, Audiomack.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPkZpcnN0IENvbnRhY3Q8L3RpdGxlPgogIDwhLS0gdHJhY3RvciBiZWFtIC0tPgogIDxwYXRoIGQ9Ik01MCA0NCBMNzggNDQgTDEwNCAxMTIgTDI0IDExMiBaIiBmaWxsPSIjZjZjNDMxIiBvcGFjaXR5PSIwLjkiLz4KICA8cGF0aCBkPSJNNTYgNDQgTDcyIDQ0IEw4OCAxMTIgTDQwIDExMiBaIiBmaWxsPSIjZmRlNjhhIiBvcGFjaXR5PSIwLjciLz4KICA8IS0tIGxhbmRpbmcgcmluZyAtLT4KICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSIxMTQiIHJ4PSI0MiIgcnk9IjgiIGZpbGw9IiMxZTIzNDYiIHN0cm9rZT0iI2M5Y2RmMiIgc3Ryb2tlLXdpZHRoPSIzIi8+CiAgPGVsbGlwc2UgY3g9IjY0IiBjeT0iMTEzIiByeD0iMjYiIHJ5PSI0LjIiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2Y2YzQzMSIgc3Ryb2tlLXdpZHRoPSIyLjQiLz4KICA8IS0tIHNhdWNlcjogYSBwYWxlIHJpbSwgc28gaXQgc2hvd3Mgb24gYSBkYXJrIGJhY2tncm91bmQgdG9vIC0tPgogIDxwYXRoIGQ9Ik00MCAyNiBBMjQgMTggMCAwIDEgODggMjYgWiIgZmlsbD0iIzFlMjM0NiIgc3Ryb2tlPSIjYzljZGYyIiBzdHJva2Utd2lkdGg9IjMiLz4KICA8cGF0aCBkPSJNNTAgMTggQTEwIDYgMCAwIDEgNjAgMTQiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2ZmZiIgc3Ryb2tlLXdpZHRoPSIyLjYiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxlbGxpcHNlIGN4PSI2NCIgY3k9IjMyIiByeD0iNTYiIHJ5PSIxMyIgZmlsbD0iIzFlMjM0NiIgc3Ryb2tlPSIjYzljZGYyIiBzdHJva2Utd2lkdGg9IjMiLz4KICA8Y2lyY2xlIGN4PSIzOCIgY3k9IjMyIiByPSI0LjQiIGZpbGw9IiNmZmYiLz4KICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjM0IiByPSI0LjQiIGZpbGw9IiNmZmYiLz4KICA8Y2lyY2xlIGN4PSI5MCIgY3k9IjMyIiByPSI0LjQiIGZpbGw9IiNmZmYiLz4KICA8IS0tIHRoZSByZWxlYXNlIGJlaW5nIGJlYW1lZCB1cDogYSBwdXJwbGUgaGV4YWdvbiB3aXRoIGEgbm90ZSAtLT4KICA8cGF0aCBkPSJNNjQgNTggTDg0IDY5LjUgTDg0IDkyLjUgTDY0IDEwNCBMNDQgOTIuNSBMNDQgNjkuNSBaIiBmaWxsPSIjN2I0ZmQ2Ii8+CiAgPHBhdGggZD0iTTY0IDU4IEw4NCA2OS41IEw2NCA4MSBMNDQgNjkuNSBaIiBmaWxsPSIjOWI3MmVhIi8+CiAgPHBhdGggZD0iTTYwIDcyIEw3NCA2OSBMNzQgODkiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2ZmZiIgc3Ryb2tlLXdpZHRoPSIzLjQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz4KICA8cGF0aCBkPSJNNjAgNzIgTDYwIDkyIiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iMy40Ii8+CiAgPGVsbGlwc2UgY3g9IjU2IiBjeT0iOTIiIHJ4PSI0LjYiIHJ5PSIzLjYiIGZpbGw9IiNmZmYiLz4KICA8ZWxsaXBzZSBjeD0iNzAiIGN5PSI4OSIgcng9IjQuNiIgcnk9IjMuNiIgZmlsbD0iI2ZmZiIvPgogIDwhLS0gc3BhcmtsZXMgLS0+CiAgPHBhdGggZD0iTTE4IDU0IGwyLjUgNiA2IDIuNSAtNiAyLjUgLTIuNSA2IC0yLjUgLTYgLTYgLTIuNSA2IC0yLjUgWiIgZmlsbD0iI2Y2YzQzMSIvPgogIDxwYXRoIGQ9Ik0xMDggNTIgbDIuNSA2IDYgMi41IC02IDIuNSAtMi41IDYgLTIuNSAtNiAtNiAtMi41IDYgLTIuNSBaIiBmaWxsPSIjMWUyMzQ2Ii8+CiAgPHBhdGggZD0iTTExMiA4MiBsMS44IDQuMiA0LjIgMS44IC00LjIgMS44IC0xLjggNC4yIC0xLjggLTQuMiAtNC4yIC0xLjggNC4yIC0xLjggWiIgZmlsbD0iI2Y2YzQzMSIvPgogIDxwYXRoIGQ9Ik0xNCA4NiBsMS44IDQuMiA0LjIgMS44IC00LjIgMS44IC0xLjggNC4yIC0xLjggLTQuMiAtNC4yIC0xLjggNC4yIC0xLjggWiIgZmlsbD0iIzFlMjM0NiIvPgo8L3N2Zz4K
 // @homepageURL  https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/first_contact/README.md
@@ -19,6 +19,7 @@
 // @match        https://volumo.com/*
 // @match        https://www.hdtracks.com/*
 // @match        https://soundcloud.com/*
+// @match        https://audiomack.com/*
 // @match        https://music.amazon.com/*
 // @match        https://music.amazon.co.uk/*
 // @match        https://music.amazon.de/*
@@ -56,6 +57,7 @@
 // @connect      soundcloud.com
 // @connect      a-v2.sndcdn.com
 // @connect      api-v2.soundcloud.com
+// @connect      api.audiomack.com
 // @connect      music.amazon.com
 // @connect      na.mesk.skill.music.a2z.com
 // @connect      web.archive.org
@@ -1724,7 +1726,79 @@ const AMAZON = {
     },
 };
 
-const PROVIDERS = [DEEZER, BANDCAMP, DISCOGS, APPLE, TIDAL, QOBUZ, BEATPORT, SPOTIFY, YTMUSIC, VOLUMO, HDTRACKS, SOUNDCLOUD, AMAZON];
+// Audiomack (#664): its API (api.audiomack.com/v1), as ISRC Scout and Platform Check read it. Every
+// call is OAuth 1.0a-signed with the web player's own public key and secret, so no login. An album
+// (/<artist>/album/<slug>) has its tracks in order, each with its ISRC; a song (/<artist>/song/<slug>)
+// is a one-track release. The barcode is the album's `upc`, the label comes from its ℗ line.
+const AUDIOMACK = {
+    id: 'audiomack',
+    name: 'Audiomack',
+    host: /^(www\.)?audiomack\.com$/,
+    albumId(loc) { const m = loc.pathname.match(/^\/([^/]+)\/(album|song)\/([^/]+)\/?$/); return m ? `${m[1]}/${m[2]}/${m[3]}` : null; },
+    API: 'https://api.audiomack.com/v1/',
+    KEY: 'audiomack-web',
+    SECRET: 'bd8a07e9f23fbe9d808646b730f89b8e',
+    async api(endpoint) {
+        const enc = s => encodeURIComponent(s).replace(/[!'()*]/g, c => '%' + c.charCodeAt(0).toString(16).toUpperCase());
+        const url = this.API + endpoint;
+        const p = { oauth_consumer_key: this.KEY, oauth_nonce: Math.random().toString(36).slice(2) + Math.random().toString(36).slice(2),
+            oauth_signature_method: 'HMAC-SHA1', oauth_timestamp: String(Math.floor(Date.now() / 1000)), oauth_version: '1.0' };
+        const qs = Object.keys(p).sort().map(k => `${enc(k)}=${enc(p[k])}`).join('&');
+        const te = new TextEncoder();
+        const key = await crypto.subtle.importKey('raw', te.encode(enc(this.SECRET) + '&'), { name: 'HMAC', hash: 'SHA-1' }, false, ['sign']);
+        const sig = btoa(String.fromCharCode(...new Uint8Array(await crypto.subtle.sign('HMAC', key, te.encode(['GET', enc(url), enc(qs)].join('&'))))));
+        const j = await gmJson(`${url}?${qs}&oauth_signature=${enc(sig)}`);
+        if (!j || !j.results) throw new Error(`Audiomack: nothing at ${endpoint}`);
+        return j.results;
+    },
+    // "℗ Spaceship/ Bad Habit/ Atlantic Records,  2025 Spaceship …" → "Spaceship/ Bad Habit/ Atlantic Records"
+    label: pline => String(pline || '').replace(/^[\s©℗]*(?:\(P\)\s*)?(?:\d{4}\s+)?/i, '').split(/,\s+\d{4}\b/)[0].trim(),
+
+    async fetchRelease(id, progress) {
+        const [artistSlug, kind, slug] = id.split('/');
+        const a = await this.api(`music/${kind}/${artistSlug}/${slug}`);
+        const list = kind === 'album' ? (a.tracks || []) : [a];
+        const ts = Number(a.original_release_date || a.released || 0);
+        Log.info(`Audiomack ${kind} ${id}: "${a.title}" by ${a.artist} · ${list.length} track(s) · ${ts ? new Date(ts * 1000).toISOString().slice(0, 10) : 'no date'} · UPC ${a.upc || '—'} · ℗ "${a.pline || ''}"`);
+        const uploader = a.uploader || {};
+        const linkFor = name => (uploader.name && normName(name) === normName(uploader.name) ? `https://audiomack.com/${uploader.url_slug}` : null);   // only the uploader has a page we know
+        const names = text => String(text || '').split(/\s*,\s*|\s+&\s+/).filter(Boolean).map(name => ({ name, url: linkFor(name) }));
+        const tracks = list.map((t, i) => {
+            const tf = splitFeat(t.title || '');
+            const feat = tf.feat.length ? tf.feat : String(t.featuring || '').split(/\s*,\s*|\s+&\s+/).filter(Boolean);
+            const credit = creditFromTitle(names(t.artist || a.artist), feat);
+            progress && progress(i + 1, list.length);
+            Log.debug(`track ${i + 1}: "${tf.title}" — ${credit.map(c => c.name + c.join).join('')} (${t.isrc || 'no ISRC'})`);
+            const songSlug = t.url_slug;
+            return { title: tf.title, lengthMs: Number(t.duration) > 0 ? Number(t.duration) * 1000 : null, isrc: t.isrc || null,
+                url: songSlug ? `https://audiomack.com/${t.uploader_url_slug || uploader.url_slug || artistSlug}/song/${songSlug}` : null, credit };
+        });
+        const af = splitFeat(a.title || '');
+        const credit = /^various artists$/i.test(a.artist || '') ? [{ name: 'Various Artists', mbid: VARIOUS_ARTISTS_MBID, join: '' }]
+            : creditFromTitle(names(a.artist), af.feat.length ? af.feat : String(a.featuring || '').split(/\s*,\s*|\s+&\s+/).filter(Boolean));
+        const d = ts ? new Date(ts * 1000) : null;
+        const url = `https://audiomack.com/${id}`;
+        const lbl = this.label(a.pline);
+        return {
+            source: this.id,
+            annotation: notesText(a.description),
+            url,
+            title: af.title,
+            credit,
+            types: kind === 'song' ? ['Single'] : [],   // an album: its title's EP / Single, or its track count, decide it (importCurrent)
+            status: 'official',
+            packaging: 'None',
+            date: { year: d ? d.getUTCFullYear() : null, month: d ? d.getUTCMonth() + 1 : null, day: d ? d.getUTCDate() : null },
+            country: 'XW',
+            barcode: String(a.upc || '').replace(/\D/g, '') || null,
+            labels: lbl ? [{ name: lbl, catno: '' }] : [],
+            urls: [{ url, linkType: 85 }],   // 85 = stream for free
+            mediums: [{ format: 'Digital Media', name: '', tracks }],
+        };
+    },
+};
+
+const PROVIDERS = [DEEZER, BANDCAMP, DISCOGS, APPLE, TIDAL, QOBUZ, BEATPORT, SPOTIFY, YTMUSIC, VOLUMO, HDTRACKS, SOUNDCLOUD, AMAZON, AUDIOMACK];
 
 /* ── the seed: model → the release editor's POST parameters ──────────────── */
 // https://musicbrainz.org/doc/Development/Release_Editor_Seeding
