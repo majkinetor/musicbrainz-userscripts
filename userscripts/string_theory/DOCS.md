@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-10-03 18:51 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-10-03 19:02 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -1241,6 +1241,7 @@ Click a mark to open the page; right-click to take it in or leave it out. **Send
 - **Which artists**: the release's artist credit (not Various Artists) and each track's, which a compilation needs. Tracks are paired by position, so a platform with another track count gives no track artists.
 - **Matching**: by name, ignoring case, accents and *&* / *and*. When no name matches, by position, but only when both credits have as many artists; otherwise the artist is left out, and the log says why.
 - **Which platforms**: Discogs, Deezer, Apple Music, Qobuz, Beatport (signed in), YouTube Music, Bandcamp, SoundCloud and Audiomack. Label pages come from Discogs, Qobuz, Beatport and the accounts.
+- **Link types**: MusicBrainz types most links itself. Where it offers several and picks none, the link is sent typed: Qobuz as *purchase for download*, Apple Music as *streaming*, Audiomack as *stream for free*.
 - Only a [confirmed](#link-confidence) match counts: a link withheld by link confidence gives no artists or labels either.
 
 > [!NOTE]

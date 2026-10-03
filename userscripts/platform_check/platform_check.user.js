@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Platform Check
 // @namespace    http://tampermonkey.net/
-// @version      2026.10.3.213600
+// @version      2026.10.3.222000
 // @description  Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+DQogIDx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CiAgDQogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJhMWE1MiIgc3Ryb2tlLXdpZHRoPSI5IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik00MCA4OCBBMzQgMzQgMCAwIDEgNDAgNDAiLz4NCiAgICA8cGF0aCBkPSJNMjkgOTkgQTUwIDUwIDAgMCAxIDI5IDI5Ii8+DQogICAgPHBhdGggZD0iTTg4IDg4IEEzNCAzNCAwIDAgMCA4OCA0MCIvPg0KICAgIDxwYXRoIGQ9Ik05OSA5OSBBNTAgNTAgMCAwIDAgOTkgMjkiLz4NCiAgPC9nPg0KICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyMCIgZmlsbD0iI2U4MjAxYSIvPg0KPC9zdmc+DQo=
@@ -6975,16 +6975,33 @@ function pcMarkCell(row, cell, linked) {
     });
 }
 
+// The link type for an artist's or label's page where MusicBrainz offers several and picks none
+// (Qobuz: download or streaming; Apple Music; Audiomack: free or paid streaming), the same picks
+// as Apollo's (verified on the sandbox) and the album rows' TYPE_FORCE. Others MusicBrainz types itself.
+const PC_ENTITY_LINK_TYPE = [
+    { re: /(^|\.)qobuz\.com$/i,          artist: 176, label: 959 },   // purchase music for download
+    { re: /^(music|itunes)\.apple\.com$/i, artist: 978, label: 1005 },  // streaming page
+    { re: /(^|\.)audiomack\.com$/i,      artist: 194, label: 997 },   // stream for free
+];
+function pcLinkTypeFor(type, url) {
+    let h = '';
+    try { h = new URL(url).hostname; } catch (e) { return null; }
+    const t = PC_ENTITY_LINK_TYPE.find(x => x.re.test(h));
+    return (t && t[type]) || null;
+}
 // The batch for Falcon's ?falcon= handoff, in Falcon's JSON model (what its Import reads):
-// one item per artist or label with its new links (typed by MusicBrainz), and the batch's edit note
+// one item per artist or label with its new links, and the batch's edit note
 function pcFalconPayload(rows, note) {
-    const items = rows.map(r => ({ entityType: r.type, mbid: r.mbid, name: r.name, urls: r.urls.map(url => ({ url, linkTypeId: null })) }));
+    const items = rows.map(r => ({ entityType: r.type, mbid: r.mbid, name: r.name, urls: r.urls.map(url => ({ url, linkTypeId: pcLinkTypeFor(r.type, url) })) }));
     const json = JSON.stringify({ note, items });
     return btoa(String.fromCharCode(...new TextEncoder().encode(json)));
 }
 // MusicBrainz's edit page for one artist or label, with its new links filled in, for you to submit
 function pcSeededEditUrl(type, mbid, urls, note) {
-    const q = urls.map((u, i) => `edit-${type}.url.${i}.text=${encodeURIComponent(u)}`);
+    const q = urls.flatMap((u, i) => {
+        const t = pcLinkTypeFor(type, u);
+        return [`edit-${type}.url.${i}.text=${encodeURIComponent(u)}`].concat(t ? [`edit-${type}.url.${i}.link_type_id=${t}`] : []);
+    });
     q.push(`edit-${type}.edit_note=${encodeURIComponent(note)}`);
     return `${MB_ORIGIN}/${type}/${mbid}/edit?${q.join('&')}`;
 }
