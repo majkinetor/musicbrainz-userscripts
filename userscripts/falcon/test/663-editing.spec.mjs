@@ -128,6 +128,13 @@ test('#663: alias language, editable aliases and links, toolbar', { tag: ['@sand
   check(await page.evaluate(() => !!document.querySelector('.falcon-grid th #falcon-select-all')), 'the grid heads select-all too');
   const hx = await page.evaluate(() => { const c = e => { const b = e.getBoundingClientRect(); return b.left + b.width / 2; }; return [c(document.querySelector('#falcon-expand-all')), c(document.querySelector('.falcon-grid tr.falcon-row .falcon-row-expand')), c(document.querySelector('#falcon-select-all')), c(document.querySelector('.falcon-grid tr.falcon-row .falcon-row-check'))]; });
   check(Math.abs(hx[0] - hx[1]) < 0.5 && Math.abs(hx[2] - hx[3]) < 0.5, `the header's ▸ and checkbox sit over the rows' (${hx})`);
+  const tx = await page.evaluate(() => {
+    const th = [...document.querySelectorAll('.falcon-grid th')].filter(t => /^(Name|Disambiguation|ISRCs)$/i.test(t.textContent.trim()));
+    const textLeft = el => { const r = document.createRange(); r.selectNodeContents(el); return r.getBoundingClientRect().left; };
+    const inLeft = sel => { const i = document.querySelector('.falcon-grid tr.falcon-row ' + sel), cs = getComputedStyle(i); return i.getBoundingClientRect().left + parseFloat(cs.paddingLeft) + parseFloat(cs.borderLeftWidth); };
+    return th.map(textLeft).map((x, k) => Math.round(x - inLeft(['.falcon-rename-input', '.falcon-disambiguation-input', '.falcon-isrc-input'][k])));
+  });
+  check(tx.length === 3 && tx.every(d => Math.abs(d) <= 1), `Name / Disambiguation / ISRCs titles start where their values' text does (off by ${tx})`);
   check(!(await page.$('.falcon-grid tr.falcon-row .falcon-alias-nm')), 'the grid line holds no alias boxes');
   const gl = await page.evaluate(() => ({ heads: [...document.querySelectorAll('.falcon-grid th')].map(t => t.textContent.trim()).filter(Boolean), xp: !!document.querySelector('.falcon-grid tr.falcon-row[data-id="a1"] .falcon-row-expand.falcon-xp'), hxp: !!document.querySelector('.falcon-grid th #falcon-expand-all') }));
   check(gl.xp && gl.hxp && !gl.heads.includes('Aliases') && !gl.heads.includes('Links'), `each grid line has ▸, the header expand-all, no Aliases/Links columns (${JSON.stringify(gl)})`);
