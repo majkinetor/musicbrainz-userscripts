@@ -74,7 +74,7 @@ Downloads are named `<NN> <types> <comment>.<ext>`, with `none` for no type, e.g
 **Enter edit** lists the staged operations and submits them as MusicBrainz edits, with one edit note and *make votable* for all.
 
 - Operations are listed in two columns (one in a narrow window). Each shows the cover it acts on and its own progress bar; the bar at the top counts the whole batch.
-- The edit note starts folded to one line: its line count and first line. Click it to edit. With [Mammoth](../mammoth) installed, 🦣 opens the note with Mammoth's saved notes.
+- The edit note starts folded to one line: its line count and first line. Click it to edit.
 - **Dry run** is in the menu on **Submit edits** (▾): it shows what each edit would send, and submits nothing.
 - Removes, edits and uploads run in parallel; one reorder edit runs last and sets the final order.
 - **Repeat** re-runs only the failed operations, and the reorder after them.

@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         String Theory
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.3.165141
+// @version      2026.10.3.165651
 // @description  Unified bundle of 8 MusicBrainz userscripts (apollo_editor, art_station, credit_hoarder, fusion, group_therapy, isrc_scout, mammoth, platform_check). Built by userscripts/string_theory/build.mjs — do not hand-edit.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCIgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0Ij4KICA8IS0tIGh1Yi1hbmQtc3Bva2UgIm5ldHdvcmsiIGdseXBoLCBzaW5nbGUgdml2aWQgdmlvbGV0IG9uIHRyYW5zcGFyZW50IHNvIGl0IHJlYWRzIG9uIGJvdGggZGFyayBhbmQgbGlnaHQgcGFnZXMgLS0+CiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjN2M1Y2ZmIiBzdHJva2Utd2lkdGg9IjQuNiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj4KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMzIgMTUiLz4KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMNDYuNSAyMy41Ii8+CiAgICA8cGF0aCBkPSJNMzIgMzIgTDQ2LjUgNDAuNSIvPgogICAgPHBhdGggZD0iTTMyIDMyIEwzMiA0OSIvPgogICAgPHBhdGggZD0iTTMyIDMyIEwxNy41IDQwLjUiLz4KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMTcuNSAyMy41Ii8+CiAgPC9nPgogIDxnIGZpbGw9IiM3YzVjZmYiPgogICAgPGNpcmNsZSBjeD0iMzIiIGN5PSIzMiIgcj0iOC42Ii8+CiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjE5LjUiIHI9IjYuNCIvPgogICAgPGNpcmNsZSBjeD0iNDkiIGN5PSIxOS41IiByPSI2LjQiLz4KICAgIDxjaXJjbGUgY3g9IjMyIiBjeT0iNTciIHI9IjYuNCIvPgogIDwvZz4KICA8ZyBmaWxsPSJub25lIiBzdHJva2U9IiM3YzVjZmYiIHN0cm9rZS13aWR0aD0iMy44Ij4KICAgIDxjaXJjbGUgY3g9IjMyIiBjeT0iNyIgcj0iNC45Ii8+CiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjQ0LjUiIHI9IjQuOSIvPgogICAgPGNpcmNsZSBjeD0iNDkiIGN5PSI0NC41IiByPSI0LjkiLz4KICA8L2c+Cjwvc3ZnPgo=
@@ -85,8 +85,8 @@
 // Bundles (verbatim, each wrapped in a run-at gate): apollo_editor, art_station, credit_hoarder, fusion, group_therapy, isrc_scout, mammoth, platform_check.
 
 try {
-  console.log('%c String Theory %c v2026.10.3.165141 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
-  console.log("String Theory bundles:\n  · Apollo Editor v2026.10.3.140041\n  · Art Station v2026.10.3.165140\n  · Credit Hoarder v2026.10.3\n  · Fusion v2026.10.3\n  · Group Therapy v2026.10.3\n  · ISRC Scout v2026.10.3.155213\n  · Mammoth v2026.10.3\n  · Platform Check v2026.10.3.135706");
+  console.log('%c String Theory %c v2026.10.3.165651 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
+  console.log("String Theory bundles:\n  · Apollo Editor v2026.10.3.140041\n  · Art Station v2026.10.3.165649\n  · Credit Hoarder v2026.10.3\n  · Fusion v2026.10.3\n  · Group Therapy v2026.10.3\n  · ISRC Scout v2026.10.3.155213\n  · Mammoth v2026.10.3\n  · Platform Check v2026.10.3.135706");
 } catch (e) {}
 
 // ===== apollo_editor (@run-at document-start) =====================================
@@ -11364,7 +11364,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
 
 // ===== art_station (@run-at document-start) =======================================
 (function(__stGM){
-  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Art Station*","namespace":"https://musicbrainz.org/","version":"2026.10.3.165140","description":"Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png"}) }) : { script: {"name":"Art Station*","namespace":"https://musicbrainz.org/","version":"2026.10.3.165140","description":"Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png"} };
+  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Art Station*","namespace":"https://musicbrainz.org/","version":"2026.10.3.165649","description":"Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png"}) }) : { script: {"name":"Art Station*","namespace":"https://musicbrainz.org/","version":"2026.10.3.165649","description":"Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png"} };
   (f=>f())(function(){ try { (function(){
 //
 // Phase-1 PoC. Principle: "you get what you see" — the gallery is the staged
@@ -14348,7 +14348,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
       <div class="as-cm-prog" hidden><div class="as-cm-prog-track"><div class="as-cm-prog-fill"></div></div><span class="as-cm-prog-txt"></span></div>
       <div class="as-cm-list">${plan.map((o, i) => `<div class="as-cm-op" data-i="${i}"><div class="as-cm-line"><span class="as-cm-st">○</span><span class="as-cm-th">${opThumb(o)}</span><div class="as-cm-main"><div class="as-cm-ttl"><span class="as-cm-lb">${esc(o.label)}</span>${o.id ? ` <span class="as-cm-id">#${esc(o.id)}</span>` : ''}${o.skip ? `<span class="as-cm-skip">${esc(o.skip)}</span>` : ''}</div><span class="as-cm-bar"><span class="as-cm-bfill"></span></span></div></div><div class="as-cm-payload"></div></div>`).join('')}</div>
       <div class="as-cm-nb">
-        <div class="as-cm-ns" role="button" tabindex="0" title="Edit note added to each edit — click to show or hide it"><span class="as-cm-ni">📝</span><b>Note</b><span class="as-cm-nl"></span><span class="as-cm-np"></span><span class="as-cm-nc">▸</span><button type="button" class="as-cm-nm" title="Mammoth — saved notes (opens the note)">🦣</button></div>
+        <div class="as-cm-ns" role="button" tabindex="0" title="Edit note added to each edit — click to show or hide it"><span class="as-cm-ni">📝</span><b>Note</b><span class="as-cm-nl"></span><span class="as-cm-np"></span><span class="as-cm-nc">▸</span></div>
         <div class="as-cm-nbody"><textarea class="as-cm-note edit-note" rows="2" placeholder="optional edit note shown on each edit"></textarea></div>
       </div>
       <div class="as-cm-f"><label class="as-cm-chk"><input type="checkbox" class="as-cm-vote"> Make votable</label><span class="as-sp"></span><button class="as-btn as-cm-cancel">Cancel</button><span class="as-cm-split"><button class="as-btn as-cm-go">Submit edits</button><button type="button" class="as-btn as-cm-more" title="More ways to run">▾</button><div class="as-cm-menu" hidden><button type="button" class="as-cm-mi as-cm-dryrun" title="Show what each edit would send, without submitting anything">👁 Dry run</button></div></span></div>
@@ -14376,15 +14376,8 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     };
     noteEl.addEventListener('input', paintNote); paintNote();
     const ns = ov.querySelector('.as-cm-ns');
-    ns.onclick = e => { if (!e.target.closest('.as-cm-nm')) toggleNote(); };
+    ns.onclick = () => toggleNote();
     ns.onkeydown = e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleNote(); } };
-    // Mammoth (when installed) wraps the note in .mmth-wrap; this button is only shown then
-    // (CSS :has) — it opens the note, and in Mammoth's minimized mode its saved-notes panel too.
-    ov.querySelector('.as-cm-nm').onclick = () => {
-      toggleNote(true);
-      const badge = nb.querySelector('.mmth-badge');
-      if (badge && getComputedStyle(badge).display !== 'none') badge.click();
-    };
     const closeMenu = installCommitMenu(ov);
     // backdrop click closes — but NOT while a live run is in flight (#269): that
     // path bypassed the abort, orphaning the in-flight edits. During a run the only
@@ -16392,9 +16385,6 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
   .as-cm-nl{flex:none;font-size:11.5px;color:var(--mbu-accent-text);background:var(--mbu-bg-sunken);border-radius:var(--mbu-radius-lg);padding:1px 8px;font-variant-numeric:tabular-nums}
   .as-cm-np{flex:1 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--mbu-text-dim);font-size:13px}
   .as-cm-nc{flex:none;color:var(--mbu-text-dim);padding:2px 8px;font-size:15px;line-height:1}
-  .as-cm-nm{display:none;flex:none;align-items:center;justify-content:center;width:30px;height:28px;border:1px solid var(--mbu-border);border-radius:7px;background:var(--mbu-bg);cursor:pointer;font-size:16px;line-height:1;padding:0}
-  .as-cm-nm:hover{background:var(--mbu-bg-hover)}
-  .as-cm-nb:has(.mmth-wrap) .as-cm-nm{display:flex}
   .as-cm-nbody{display:none;padding:0 8px 8px}
   .as-cm-nb.open .as-cm-nbody{display:block}
   .as-cm-nb.open .as-cm-np{visibility:hidden}
