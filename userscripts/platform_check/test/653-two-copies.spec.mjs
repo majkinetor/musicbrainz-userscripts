@@ -61,6 +61,15 @@ test('the newer copy runs, the older one stays off without a word', { tag: ['@sa
   check(s.runs === 'standalone v2026.10.1.120000' && s.panels === 1, `next load: the newer copy runs (${JSON.stringify(s)})`);
   check(!/installed twice/.test(s.toast), 'still no toast');
 
+  // and every load after: the newer copy reading its own note doesn't spend it (#671: it did,
+  // so the older copy won the race again on every other load)
+  await open(page);
+  await inject('platform_check', { transform: OLD });
+  await inject('platform_check', { transform: NEW });
+  await page.waitForSelector('#mb-pc-panel');
+  s = await state(page);
+  check(s.runs === 'standalone v2026.10.1.120000' && s.panels === 1 && /2026\.10\.1\.120000/.test(s.note || ''), `the load after: the newer copy still runs, its note kept (${JSON.stringify(s)})`);
+
   // the newer copy is uninstalled: the older one clears the stale note and runs again from the next load
   await open(page);
   await inject('platform_check', { transform: OLD });

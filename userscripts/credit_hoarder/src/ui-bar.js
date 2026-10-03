@@ -197,7 +197,11 @@ export function insertDiscogsBar(discogsUrl, sources = {}, meta = {}) {
         var log = function (msg) { try { if (typeof mbuLog !== 'undefined' && mbuLog.active) mbuLog.active.info(msg); else if (typeof mbuToast !== 'undefined' && typeof mbuToast.log === 'function') mbuToast.log('info', msg); else console.info('[' + (label || key) + '] ' + msg); } catch (e) { /* no log */ } };
         var note = null;
         try { note = JSON.parse(localStorage.getItem(noteKey) || 'null'); } catch (e) { /* storage blocked */ }
-        if (note && mbuClaimCmp(note.ver, ver) <= 0) { try { localStorage.removeItem(noteKey); } catch (e) { /* storage blocked */ } note = null; }
+        // A note older than this copy is spent. This copy's own note stays: it is what keeps the
+        // older copy aside on every later load, not only the next one (#671).
+        var noteCmp = note ? mbuClaimCmp(note.ver, ver) : 1;
+        if (noteCmp < 0) { try { localStorage.removeItem(noteKey); } catch (e) { /* storage blocked */ } }
+        if (noteCmp <= 0) note = null;
         var held = root && root.getAttribute(attr);
         var off = function (why) {
             // tell the running copy (any sandbox hears a DOM event), or the copy that runs after
