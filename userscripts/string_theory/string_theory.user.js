@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         String Theory
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.3.155214
+// @version      2026.10.3.164022
 // @description  Unified bundle of 8 MusicBrainz userscripts (apollo_editor, art_station, credit_hoarder, fusion, group_therapy, isrc_scout, mammoth, platform_check). Built by userscripts/string_theory/build.mjs — do not hand-edit.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCIgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0Ij4KICA8IS0tIGh1Yi1hbmQtc3Bva2UgIm5ldHdvcmsiIGdseXBoLCBzaW5nbGUgdml2aWQgdmlvbGV0IG9uIHRyYW5zcGFyZW50IHNvIGl0IHJlYWRzIG9uIGJvdGggZGFyayBhbmQgbGlnaHQgcGFnZXMgLS0+CiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjN2M1Y2ZmIiBzdHJva2Utd2lkdGg9IjQuNiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj4KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMzIgMTUiLz4KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMNDYuNSAyMy41Ii8+CiAgICA8cGF0aCBkPSJNMzIgMzIgTDQ2LjUgNDAuNSIvPgogICAgPHBhdGggZD0iTTMyIDMyIEwzMiA0OSIvPgogICAgPHBhdGggZD0iTTMyIDMyIEwxNy41IDQwLjUiLz4KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMTcuNSAyMy41Ii8+CiAgPC9nPgogIDxnIGZpbGw9IiM3YzVjZmYiPgogICAgPGNpcmNsZSBjeD0iMzIiIGN5PSIzMiIgcj0iOC42Ii8+CiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjE5LjUiIHI9IjYuNCIvPgogICAgPGNpcmNsZSBjeD0iNDkiIGN5PSIxOS41IiByPSI2LjQiLz4KICAgIDxjaXJjbGUgY3g9IjMyIiBjeT0iNTciIHI9IjYuNCIvPgogIDwvZz4KICA8ZyBmaWxsPSJub25lIiBzdHJva2U9IiM3YzVjZmYiIHN0cm9rZS13aWR0aD0iMy44Ij4KICAgIDxjaXJjbGUgY3g9IjMyIiBjeT0iNyIgcj0iNC45Ii8+CiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjQ0LjUiIHI9IjQuOSIvPgogICAgPGNpcmNsZSBjeD0iNDkiIGN5PSI0NC41IiByPSI0LjkiLz4KICA8L2c+Cjwvc3ZnPgo=
@@ -85,8 +85,8 @@
 // Bundles (verbatim, each wrapped in a run-at gate): apollo_editor, art_station, credit_hoarder, fusion, group_therapy, isrc_scout, mammoth, platform_check.
 
 try {
-  console.log('%c String Theory %c v2026.10.3.155214 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
-  console.log("String Theory bundles:\n  · Apollo Editor v2026.10.3.140041\n  · Art Station v2026.10.3\n  · Credit Hoarder v2026.10.3\n  · Fusion v2026.10.3\n  · Group Therapy v2026.10.3\n  · ISRC Scout v2026.10.3.155213\n  · Mammoth v2026.10.3\n  · Platform Check v2026.10.3.135706");
+  console.log('%c String Theory %c v2026.10.3.164022 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
+  console.log("String Theory bundles:\n  · Apollo Editor v2026.10.3.140041\n  · Art Station v2026.10.3.163702\n  · Credit Hoarder v2026.10.3\n  · Fusion v2026.10.3\n  · Group Therapy v2026.10.3\n  · ISRC Scout v2026.10.3.155213\n  · Mammoth v2026.10.3\n  · Platform Check v2026.10.3.135706");
 } catch (e) {}
 
 // ===== apollo_editor (@run-at document-start) =====================================
@@ -11364,7 +11364,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
 
 // ===== art_station (@run-at document-start) =======================================
 (function(__stGM){
-  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Art Station*","namespace":"https://musicbrainz.org/","version":"2026.10.3","description":"Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png"}) }) : { script: {"name":"Art Station*","namespace":"https://musicbrainz.org/","version":"2026.10.3","description":"Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png"} };
+  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Art Station*","namespace":"https://musicbrainz.org/","version":"2026.10.3.163702","description":"Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png"}) }) : { script: {"name":"Art Station*","namespace":"https://musicbrainz.org/","version":"2026.10.3.163702","description":"Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png"} };
   (f=>f())(function(){ try { (function(){
 //
 // Phase-1 PoC. Principle: "you get what you see" — the gallery is the staged
@@ -14334,29 +14334,96 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     document.getElementById('as-commit')?.remove();
     const plan = buildPlan();
     const ov = document.createElement('div'); ov.id = 'as-commit';
+    /* #668 (majkinetor): "Edit note dominates enter edit so we can't really see most
+       of the individual progress." The note is rarely changed but often holds a
+       long block from a sourcing script, so it now opens COLLAPSED to a one-line
+       summary (line count + first line) and expands on click. Each operation row
+       carries the cover it acts on and its progress bar under the label, and Dry
+       run moved off the footer into the Submit button's menu. */
+    const opThumb = o => o.kind === 'reorder' ? '<span class="as-cm-thi">⇅</span>'
+      : o.it && o.it._file ? `<img alt="" data-alt="" src="${esc(o.it._file)}">`
+      : o.id ? `<img alt="" data-alt="${esc(imgUrl(o.id))}" src="${esc(thumb(o.id, 250))}">` : '<span class="as-cm-thi">🖼</span>';
     ov.innerHTML = `<div class="as-cm-box">
-      <div class="as-cm-h"><span class="as-cm-h-t">Apply ${plan.length} change${plan.length===1?'':'s'} as MusicBrainz edits</span><a class="as-cm-hist" href="${ART_EDITS_URL}" target="_blank" rel="noopener noreferrer" title="Your ${ENT.noun} edits on MusicBrainz">🕓 My ${ENT.Noun} edits</a></div>
+      <div class="as-cm-h"><span class="as-cm-h-t" title="Each change is applied as a MusicBrainz edit">Apply ${plan.length} change${plan.length===1?'':'s'}</span><a class="as-cm-hist" href="${ART_EDITS_URL}" target="_blank" rel="noopener noreferrer" title="Your ${ENT.noun} edits on MusicBrainz">🕓 My edits</a><button type="button" class="as-cm-x" title="Close — during a run, cancels it">✕</button></div>
       <div class="as-cm-prog" hidden><div class="as-cm-prog-track"><div class="as-cm-prog-fill"></div></div><span class="as-cm-prog-txt"></span></div>
-      <div class="as-cm-list">${plan.map((o, i) => `<div class="as-cm-op" data-i="${i}"><div class="as-cm-line"><span class="as-cm-st">○</span> <span class="as-cm-lb">${esc(o.label)}</span>${o.id ? ` <span class="as-cm-id">#${esc(o.id)}</span>` : ''}${o.skip ? `<span class="as-cm-skip">${esc(o.skip)}</span>` : ''}<span class="as-cm-bar"><span class="as-cm-bfill"></span></span></div><div class="as-cm-payload"></div></div>`).join('')}</div>
-      <textarea class="as-cm-note edit-note" rows="2" placeholder="optional edit note shown on each edit"></textarea>
-      <div class="as-cm-f"><label class="as-cm-dry"><input type="checkbox" class="as-cm-dryrun"> Dry run</label><label class="as-cm-chk"><input type="checkbox" class="as-cm-vote"> Make votable</label><span class="as-sp"></span><button class="as-btn as-cm-cancel">Cancel</button><button class="as-btn as-cm-go">Run</button></div>
+      <div class="as-cm-list">${plan.map((o, i) => `<div class="as-cm-op" data-i="${i}"><div class="as-cm-line"><span class="as-cm-st">○</span><span class="as-cm-th">${opThumb(o)}</span><div class="as-cm-main"><div class="as-cm-ttl"><span class="as-cm-lb">${esc(o.label)}</span>${o.id ? ` <span class="as-cm-id">#${esc(o.id)}</span>` : ''}${o.skip ? `<span class="as-cm-skip">${esc(o.skip)}</span>` : ''}</div><span class="as-cm-bar"><span class="as-cm-bfill"></span></span></div></div><div class="as-cm-payload"></div></div>`).join('')}</div>
+      <div class="as-cm-nb">
+        <div class="as-cm-ns" role="button" tabindex="0" title="Edit note added to each edit — click to show or hide it"><span class="as-cm-ni">📝</span><b>Note</b><span class="as-cm-nl"></span><span class="as-cm-np"></span><span class="as-cm-nc">▸</span><button type="button" class="as-cm-nm" title="Mammoth — saved notes (opens the note)">🦣</button></div>
+        <div class="as-cm-nbody"><textarea class="as-cm-note edit-note" rows="2" placeholder="optional edit note shown on each edit"></textarea></div>
+      </div>
+      <div class="as-cm-f"><label class="as-cm-chk"><input type="checkbox" class="as-cm-vote"> Make votable</label><span class="as-sp"></span><button class="as-btn as-cm-cancel">Cancel</button><span class="as-cm-split"><button class="as-btn as-cm-go">Submit edits</button><button type="button" class="as-btn as-cm-more" title="More ways to run">▾</button><div class="as-cm-menu" hidden><button type="button" class="as-cm-mi as-cm-dryrun" title="Show what each edit would send, without submitting anything">👁 Dry run</button></div></span></div>
       <div class="as-cm-ar"></div>
     </div>`;
     document.body.appendChild(ov);
-    if (_seedNote) ov.querySelector('.as-cm-note').value = _seedNote;   // #248/#364 carry over a seeded edit note (native add page, or captured from a hidden ECAU sourcing frame)
+    // a cover whose CAA thumbnail isn't generated yet falls back to the original, then to nothing
+    ov.querySelectorAll('.as-cm-th img').forEach(img => img.addEventListener('error', () => {
+      const alt = img.dataset.alt; img.dataset.alt = '';
+      if (alt) img.src = alt; else img.replaceWith(Object.assign(document.createElement('span'), { className: 'as-cm-thi', textContent: '🖼' }));
+    }));
+    const noteEl = ov.querySelector('.as-cm-note'), nb = ov.querySelector('.as-cm-nb');
+    if (_seedNote) noteEl.value = _seedNote;   // #248/#364 carry over a seeded edit note (native add page, or captured from a hidden ECAU sourcing frame)
+    const paintNote = () => {
+      const v = noteEl.value.trim(), lines = v ? v.split('\n').length : 0;
+      ov.querySelector('.as-cm-nl').textContent = lines ? `${lines} line${lines === 1 ? '' : 's'}` : 'empty';
+      ov.querySelector('.as-cm-np').textContent = v ? v.split('\n').find(l => l.trim()).trim().replace(/^https?:\/\/(www\.)?/, '') : 'click to add one';
+    };
+    const toggleNote = open => {
+      open = open == null ? !nb.classList.contains('open') : open;
+      nb.classList.toggle('open', open);
+      ov.querySelector('.as-cm-nc').textContent = open ? '▾' : '▸';
+      if (open) noteEl.focus();
+      asLog.debug(`Commit: edit note ${open ? 'expanded' : 'collapsed'} (${noteEl.value.length} chars)`);
+    };
+    noteEl.addEventListener('input', paintNote); paintNote();
+    const ns = ov.querySelector('.as-cm-ns');
+    ns.onclick = e => { if (!e.target.closest('.as-cm-nm')) toggleNote(); };
+    ns.onkeydown = e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleNote(); } };
+    // Mammoth (when installed) wraps the note in .mmth-wrap; this button is only shown then
+    // (CSS :has) — it opens the note, and in Mammoth's minimized mode its saved-notes panel too.
+    ov.querySelector('.as-cm-nm').onclick = () => {
+      toggleNote(true);
+      const badge = nb.querySelector('.mmth-badge');
+      if (badge && getComputedStyle(badge).display !== 'none') badge.click();
+    };
+    const closeMenu = installCommitMenu(ov);
     // backdrop click closes — but NOT while a live run is in flight (#269): that
     // path bypassed the abort, orphaning the in-flight edits. During a run the only
     // exits are Cancel (aborts) or Close (after it finishes).
     onBackdropClick(ov, () => { arStop(ov); ov.remove(); }, () => !ov._running);   // #595
     rememberDialogSize(ov.querySelector('.as-cm-box'), 'commit');                  // #595
     ov.querySelector('.as-cm-cancel').onclick = () => { arStop(ov); ov.remove(); };
-    const dryEl = ov.querySelector('.as-cm-dryrun');
+    // #668 the ✕ is the Cancel/Close button's twin: mid-run it aborts (the dialog stays
+    // up to show what was cancelled), otherwise it closes. A dry run has nothing to abort.
+    ov.querySelector('.as-cm-x').onclick = () => {
+      const c = ov.querySelector('.as-cm-cancel');
+      if (ov._running && !c.disabled) c.click(); else if (!ov._running) { arStop(ov); ov.remove(); }
+    };
     const goBtn = ov.querySelector('.as-cm-go');
-    const setGoLabel = () => goBtn.textContent = dryEl.checked ? 'Dry run' : 'Submit edits';
-    dryEl.onchange = setGoLabel; setGoLabel();
-    const go = () => runPlan(ov, plan, { note: ov.querySelector('.as-cm-note').value, votable: ov.querySelector('.as-cm-vote').checked, dry: dryEl.checked });
-    goBtn.onclick = go;
-    if (immediate) requestAnimationFrame(() => requestAnimationFrame(go));   // let the dialog actually paint first
+    const go = dry => {
+      closeMenu();
+      asLog.debug(`Commit: ${dry ? 'dry run' : 'submit'} of ${plan.length} operation(s), note ${noteEl.value.length} chars`);
+      runPlan(ov, plan, { note: noteEl.value, votable: ov.querySelector('.as-cm-vote').checked, dry });
+    };
+    goBtn.onclick = () => go(false);
+    ov.querySelector('.as-cm-dryrun').onclick = () => go(true);
+    if (immediate) requestAnimationFrame(() => requestAnimationFrame(() => go(false)));   // let the dialog actually paint first
+  }
+  // #668 the Submit button's ▾ menu (Dry run). Dismissed by an outside press, and
+  // that press's trailing click is swallowed so it can't also hit what's underneath
+  // (#305). Returns closeMenu(), which reports whether a menu was actually open.
+  function installCommitMenu(ov) {
+    const more = ov.querySelector('.as-cm-more'), menu = ov.querySelector('.as-cm-menu');
+    const close = () => { if (menu.hidden) return false; menu.hidden = true; more.classList.remove('on'); return true; };
+    more.onclick = e => { e.stopPropagation(); if (!close()) { menu.hidden = false; more.classList.add('on'); asLog.debug('Commit: run menu opened'); } };
+    ov.addEventListener('pointerdown', e => {
+      if (menu.hidden || e.target.closest('.as-cm-menu, .as-cm-more')) return;
+      close();
+      const swallow = ev => { ev.stopPropagation(); ev.preventDefault(); };
+      ov.addEventListener('click', swallow, { capture: true, once: true });
+      setTimeout(() => ov.removeEventListener('click', swallow, { capture: true }), 400);
+    }, true);
+    ov.addEventListener('keydown', e => { if (e.key === 'Escape' && close()) e.stopPropagation(); });
+    return close;
   }
   // #278: per-row progress bar pinned on the right of each op row. `pct` null →
   // leave the width; `state` colours it (busy=indeterminate sweep, ''=in-progress
@@ -14436,6 +14503,10 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
   async function runPlan(ov, plan, meta, opsToRun) {
     const goBtn = ov.querySelector('.as-cm-go'), cancelBtn = ov.querySelector('.as-cm-cancel');
     goBtn.disabled = true;
+    // #668 the ▾ (Dry run) is off while anything runs, and gone for good once a live
+    // run has started — from then on the main button is Repeat / Done, not a choice.
+    const moreBtn = ov.querySelector('.as-cm-more');
+    if (moreBtn) { moreBtn.disabled = true; if (!meta.dry) ov.querySelector('.as-cm-split').classList.add('live'); }
     // #275: `opsToRun` set → Repeat run (just the failed ops). Keep the original
     // `_i` row mapping; reset each retried row's ❌/error back to pending first.
     const isRepeat = !!opsToRun;
@@ -14551,7 +14622,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
         if (SETTINGS.autoRepeat) arSchedule(ov, again);
       }
     }
-    else ov.querySelector('.as-cm-go').disabled = false;
+    else { ov.querySelector('.as-cm-go').disabled = false; if (moreBtn) moreBtn.disabled = false; }
   }
 
   // ── #566 auto-repeat of failed operations ────────────────────────────────────
@@ -16310,31 +16381,65 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
   .as-cm-hist:hover{background:var(--mbu-bg-raised);border-color:var(--mbu-accent)}
   .as-cm-row{display:flex;flex-direction:column;gap:5px;margin-bottom:10px;font-size:13px;color:var(--mbu-text-dim)}
   .as-cm-hint{font-size:11px;color:var(--mbu-accent-text);font-weight:400}
-  .as-cm-note{font-size:13px;font-family:inherit;border:1px solid var(--mbu-border);border-radius:7px;padding:6px 9px;resize:vertical;width:100%;box-sizing:border-box;display:block;margin-bottom:12px}
+  .as-cm-note{font-size:13px;font-family:inherit;border:1px solid var(--mbu-border);border-radius:7px;padding:6px 9px;resize:vertical;width:100%;box-sizing:border-box;display:block;margin:0}
+  /* #668 the note opens collapsed to a one-line summary; .open shows the field */
+  .as-cm-nb{flex:none;border:1px solid var(--mbu-divider);border-radius:8px;background:var(--mbu-bg-raised);margin-bottom:12px}
+  .as-cm-ns{display:flex;align-items:center;gap:8px;padding:6px 8px 6px 12px;cursor:pointer;user-select:none;min-height:30px}
+  .as-cm-ns:hover{background:var(--mbu-bg-hover);border-radius:8px}
+  .as-cm-ns:focus-visible{outline:2px solid var(--as-acc);outline-offset:-2px}
+  .as-cm-ni{flex:none}
+  .as-cm-ns b{flex:none;color:var(--mbu-text)}
+  .as-cm-nl{flex:none;font-size:11.5px;color:var(--mbu-accent-text);background:var(--mbu-bg-sunken);border-radius:var(--mbu-radius-lg);padding:1px 8px;font-variant-numeric:tabular-nums}
+  .as-cm-np{flex:1 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--mbu-text-dim);font-size:13px}
+  .as-cm-nc{flex:none;color:var(--mbu-text-dim);padding:2px 8px;font-size:15px;line-height:1}
+  .as-cm-nm{display:none;flex:none;align-items:center;justify-content:center;width:30px;height:28px;border:1px solid var(--mbu-border);border-radius:7px;background:var(--mbu-bg);cursor:pointer;font-size:16px;line-height:1;padding:0}
+  .as-cm-nm:hover{background:var(--mbu-bg-hover)}
+  .as-cm-nb:has(.mmth-wrap) .as-cm-nm{display:flex}
+  .as-cm-nbody{display:none;padding:0 8px 8px}
+  .as-cm-nb.open .as-cm-nbody{display:block}
+  .as-cm-nb.open .as-cm-np{visibility:hidden}
   /* #263 if Mammoth is installed it auto-enhances the .edit-note field (saved notes / history
      panel), which sits below the operations list. It wraps the textarea in .mmth-wrap + a
      300px side panel; the 680px modal fits that — give the wrap the note's bottom margin and
      full width. Hide Mammoth's WIDTH splitter in the modal: it overhangs a shorter panel, and
      stretching the panel to size-match the field feeds Mammoth's height observer into a
      runaway (infinite growth, #245). The field stays HEIGHT-resizable via its own corner grip. */
-  #as-commit .mmth-wrap{margin:0 0 12px;max-width:none}
+  #as-commit .mmth-wrap{margin:0;max-width:none}
   #as-commit .mmth-vsep{display:none}
   .as-cm-chk{display:flex;align-items:center;gap:6px;cursor:pointer;color:var(--mbu-text-dim)}
   .as-cm-opts{flex-direction:row;gap:18px;flex-wrap:wrap}
   .as-cm-opts label{display:flex;align-items:center;gap:6px;cursor:pointer;color:var(--mbu-text)}
-  .as-cm-dry{color:var(--mbu-warn);display:flex;align-items:center;gap:6px;cursor:pointer}
+  .as-cm-split{position:relative;display:inline-flex}
+  .as-cm-split .as-cm-go{border-top-right-radius:0;border-bottom-right-radius:0}
+  /* #668 ▾ gets a real hit area (no tiny carets, #419) */
+  .as-cm-more{min-width:30px;padding:0 9px;border-top-left-radius:0;border-bottom-left-radius:0;border-left:1px solid rgba(0,0,0,.25);background:var(--as-acc);color:var(--mbu-text-on-accent);border-color:var(--as-acc);font-size:15px;line-height:1}
+  .as-cm-more:hover:not(:disabled),.as-cm-more.on{background:var(--mbu-accent-hover);border-color:var(--mbu-accent-hover)}
+  .as-cm-more:disabled{opacity:.5}
+  .as-cm-split.live .as-cm-more{display:none}
+  .as-cm-split.live .as-cm-go{border-radius:var(--mbu-radius)}
+  .as-cm-menu{position:absolute;right:0;bottom:calc(100% + 6px);z-index:5;min-width:170px;background:var(--mbu-bg);border:1px solid var(--mbu-border);border-radius:8px;box-shadow:0 6px 22px rgba(0,0,0,.3);padding:4px}
+  .as-cm-mi{display:block;width:100%;text-align:left;background:none;border:0;border-radius:6px;padding:7px 10px;font:inherit;font-size:13px;color:var(--mbu-warn);cursor:pointer;white-space:nowrap}
+  .as-cm-mi:hover{background:var(--mbu-bg-hover)}
+  .as-cm-x{flex:none;background:none;border:0;color:var(--mbu-text-dim);font-size:18px;line-height:1;cursor:pointer;padding:4px 6px;border-radius:6px}
+  .as-cm-x:hover{color:var(--mbu-text);background:var(--mbu-bg-hover)}
   .as-cm-list{overflow:auto;border:1px solid var(--mbu-divider);border-radius:8px;padding:6px;margin:4px 0 12px;background:var(--mbu-bg-raised);flex:1 1 auto;min-height:0}   /* #263 flex so the note + buttons below stay pinned and the list scrolls */
   .as-cm-op{padding:5px 6px;border-radius:var(--mbu-radius);font-size:13px}
   .as-cm-op.dry{background:var(--mbu-bg-hover)}.as-cm-op.err{background:var(--mbu-bg-hover)}
-  .as-cm-line{display:flex;align-items:center;gap:6px}   /* #278: keep the row on one flex line so the bar can pin right */
+  .as-cm-line{display:flex;align-items:center;gap:10px}
+  /* #668 cover thumbnail per row, label above its own full-width progress bar */
+  .as-cm-th{flex:none;width:44px;height:44px;border:1px solid var(--mbu-border);border-radius:6px;overflow:hidden;display:flex;align-items:center;justify-content:center;background:var(--mbu-bg-sunken)}
+  .as-cm-th img{width:100%;height:100%;object-fit:cover;display:block}
+  .as-cm-thi{font-size:18px;color:var(--mbu-text-dim)}
+  .as-cm-main{flex:1 1 auto;min-width:0;display:flex;flex-direction:column;gap:5px}
+  .as-cm-ttl{display:flex;align-items:center;gap:6px;min-width:0}
   .as-cm-st{display:inline-block;min-width:18px;white-space:nowrap;text-align:center;flex:none}
   .as-cm-lb{flex:0 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
   .as-cm-skip{font-size:11px;color:var(--mbu-text-weak);margin-left:6px;background:var(--mbu-bg-sunken);border-radius:var(--mbu-radius-lg);padding:1px 7px;flex:none}
-  .as-cm-payload{white-space:pre-wrap;font:11px/1.4 ui-monospace,Consolas,monospace;color:var(--mbu-text-dim);margin:4px 0 2px 18px;display:none}
+  .as-cm-payload{white-space:pre-wrap;font:11px/1.4 ui-monospace,Consolas,monospace;color:var(--mbu-text-dim);margin:4px 0 2px 82px;display:none}
   .as-cm-op.dry .as-cm-payload,.as-cm-op.err .as-cm-payload{display:block}
   /* #278 per-row progress bar (right side, was empty) */
-  .as-cm-bar{flex:0 0 110px;margin-left:auto;height:7px;border-radius:5px;background:var(--mbu-bg-hover);overflow:hidden;position:relative;display:none}
-  .as-cm-bar.on{display:block}
+  .as-cm-bar{display:block;width:100%;height:5px;border-radius:5px;background:var(--mbu-bg-hover);overflow:hidden;position:relative;visibility:hidden}   /* #668 reserved, so rows don't jump when it appears */
+  .as-cm-bar.on{visibility:visible}
   .as-cm-bfill{display:block;height:100%;width:0;background:var(--as-acc);border-radius:5px;transition:width .15s linear}
   .as-cm-bar.done .as-cm-bfill{background:#2e9b57}
   .as-cm-bar.dry .as-cm-bfill{background:var(--mbu-bg-hover)}

@@ -4,7 +4,7 @@
 // Event as enterEdit's only parameter, `immediate`, and an Event is truthy, so every
 // left click behaved like the right-click "run now" (#493). Now `() => enterEdit()`.
 //
-// test.musicbrainz.org, with "Dry run" ticked in the injected copy, so a run only
+// test.musicbrainz.org, with the injected copy's right-click run made a dry run, so a run only
 // previews; the write endpoints are stubbed and recorded as well.
 import { test, check, until } from '../../../dev/test/harness.mjs';
 import { openArtStation } from './as.mjs';
@@ -20,7 +20,7 @@ test('a left click opens the plan without running it; a right click still runs i
   });
   await page.route(u => u.pathname === '/ws/js/edit/create', r => { writes.push(r.request().url()); return r.fulfill({ status: 200, contentType: 'application/json', body: '{"edits":[]}' }); });
   await openArtStation(page, inject, {
-    transform: code => code.replace('<input type="checkbox" class="as-cm-dryrun">', '<input type="checkbox" class="as-cm-dryrun" checked>'),
+    transform: code => code.replace('requestAnimationFrame(() => go(false))', 'requestAnimationFrame(() => go(true))'),
   });
 
   // the first card that can be edited (a card with an open edit on it can't), by

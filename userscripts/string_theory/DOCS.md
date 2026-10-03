@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-10-03 15:52 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-10-03 16:40 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -375,6 +375,9 @@ Downloads are named `<NN> <types> <comment>.<ext>`, with `none` for no type, e.g
 
 **Enter edit** lists the staged operations and submits them as MusicBrainz edits, with one edit note and *make votable* for all.
 
+- Each operation shows the cover it acts on and its own progress bar; the bar at the top counts the whole batch.
+- The edit note starts folded to one line: its line count and first line. Click it to edit. With [Mammoth](../mammoth) installed, 🦣 opens the note with Mammoth's saved notes.
+- **Dry run** is in the menu on **Submit edits** (▾): it shows what each edit would send, and submits nothing.
 - Removes, edits and uploads run in parallel; one reorder edit runs last and sets the final order.
 - **Repeat** re-runs only the failed operations, and the reorder after them.
 - With *Automatically repeat failures* on (the default), Art Station retries the failed operations by itself, up to 10 times or 10 minutes. The pause between attempts grows as they pile up. A footer row shows the attempt and the countdown; **Close** stops it.
