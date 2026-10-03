@@ -56,9 +56,6 @@ When the platform gives no type, or only a plain *album* while the title says ot
 
 Without every track's length: 1 track is a Single, 3 to 6 an EP, 7 or more an Album, and 2 are left for you. The log says which sign decided.
 
-> [!NOTE]
-> The rules are those of murdos's importers.
-
 ## Platforms
 
 | Platform                        |   ISRCs    |  Barcode   | Label                 | Notes          |
