@@ -92,7 +92,7 @@ test.describe('the commit window', () => {
     check(!geom.insideRow && geom.below, 'the note sits below the button row, as the window footer');
     check(!geom.clipped, 'a full-length message is not clipped');
     check(JSON.stringify(geom.before.btns) === JSON.stringify(geom.after.btns), `showing it doesn't move the buttons (${JSON.stringify(geom.before.btns)} → ${JSON.stringify(geom.after.btns)})`);
-    check(JSON.stringify(geom.before.labels) === JSON.stringify(geom.after.labels), "and doesn't wrap the Dry run / Make votable labels");
+    check(JSON.stringify(geom.before.labels) === JSON.stringify(geom.after.labels), "and doesn't wrap the Make votable label");
     await attachShot(testInfo, page.locator('#as-commit .as-cm-box'), 'footer');
     check(!posts.some(u => /ws\/js\/edit\/create/.test(u)), `no edit was submitted (${posts.length} POSTs, all aborted)`);
   });

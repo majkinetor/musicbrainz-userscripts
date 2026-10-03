@@ -33,4 +33,4 @@ It runs **last**, after every register, and is **re-run whenever a failed upload
 - **Retype / comment** — `POST /release/<mbid>/edit-<art>/<id>` with `edit-<art>.type_id` / `.comment`.
 - **Remove** — `POST /release/<mbid>/remove-<art>/<id>` (a 404 is treated as *already removed*, not an error).
 
-Every edit body also carries `.edit_note` (crediting Art Station and the image's source, if any) and `.make_votable=1` when that box is ticked. **Dry run** prints each request's method / URL / body instead of POSTing.
+Every edit body also carries `.edit_note` (crediting Art Station and the image's source, if any) and `.make_votable=1` when that box is ticked. **Dry run** (the ▾ menu on **Submit edits**) prints each request's method / URL / body instead of POSTing.

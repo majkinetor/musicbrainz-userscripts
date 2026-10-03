@@ -64,6 +64,7 @@ test('a drag that starts inside the commit window never closes it, and its size 
   // textarea + mouseup on the overlay = click dispatched on the overlay.
   let r = await boxRect();
   console.log('box: ' + JSON.stringify(r));
+  await page.click('#as-commit .as-cm-ns');   // #668 the note opens folded; unfold it to drag out of it
   const note = await page.locator('#as-commit .as-cm-note').boundingBox();
   await page.mouse.move(note.x + 20, note.y + 10);
   await page.mouse.down();
