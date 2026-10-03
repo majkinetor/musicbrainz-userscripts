@@ -180,7 +180,9 @@ function releaseBody(groups, changed, tag, sha, general) {
   for (const dir of dirs) {
     const g = groups[dir]; const path = (g && g.path) || userJsPath(dir);
     const name = (g && g.name) || (path && scriptDisplayName(path)) || dir;
-    lines.push(`## ${name}`, '');
+    // the heading links to the script's README as of this release
+    const readme = `userscripts/${dir}/README.md`;
+    lines.push(existsSync(resolve(ROOT, readme)) ? `## [${name}](https://github.com/${REPO}/blob/${tag}/${readme})` : `## ${name}`, '');
     // only scripts whose code changed get install links — both the pinned link
     // (frozen to this release's commit) and the non-pinned one (tracks `stable`,
     // so the script manager auto-updates to future releases).
