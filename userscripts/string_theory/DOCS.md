@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-10-03 17:08 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-10-03 17:05 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -122,7 +122,7 @@ The card stays open while the pointer is on it, so its links can be followed; Es
 | Badge | Meaning |
 | --- | --- |
 | **DISC** | the Discogs artist credited on the release is linked from this MusicBrainz artist |
-| **DZ**, **SP**, **TD**, … | the artist's page on the platform the release was imported from is linked from this MusicBrainz artist: **DZ** Deezer, **SP** Spotify, **TD** Tidal, **AM** Apple Music, **YTM** YouTube Music, **BC** Bandcamp, **BP** Beatport, **QZ** Qobuz, **SC** SoundCloud, **AMZ** Amazon Music, **VO** Volumo, **HD** HDtracks, **AMK** Audiomack |
+| **DZ**, **SP**, **TD**, … | the artist's page on the platform the release was imported from is linked from this MusicBrainz artist: **DZ** Deezer, **SP** Spotify, **TD** Tidal, **AM** Apple Music, **YTM** YouTube Music, **BC** Bandcamp, **BP** Beatport, **QZ** Qobuz, **SC** SoundCloud, **AMZ** Amazon Music, **VO** Volumo, **HD** HDtracks, **AMK** Audiomack, **7D** 7digital |
 | **RG** | another release in the release group credits this artist on the same track |
 | **POS** | other editions credit this artist on the track at this position |
 | **NAME** | the only MusicBrainz artist with this name (aliases checked too) |
@@ -881,11 +881,14 @@ Shows a release's ISRCs, fills in the missing ones from several providers, and f
 | YouTube Music | | ✓ | the album, when linked (by position + title); else ISRC, on any release |
 | Amazon Music | | ✓ | the album, when linked (by position + title) |
 | HDtracks | ✓ | | the album |
+| 7digital | ✓ | | the album: each track searched by title |
 | SoundExchange | ✓ | | a title and artist search |
 
 **YouTube Music** shows no ISRCs. When the release links its YouTube Music album (Platform Check finds it), each track is taken from that album's tracklist, by position and title. Otherwise its ISRC is searched. An ISRC it doesn't know brings up unrelated songs instead of nothing, and labels sometimes reuse an ISRC for another version of a song with the same title and length: [JP92Q2400507](https://musicbrainz.org/isrc/JP92Q2400507) is both *メズマライザー* and its *Critical Damage ver.* So a search result counts only when it is official audio (not a user upload), has the track's title, is within 3 s of its length, and comes from this release's album. The log names every result it skipped, and why. The edit note names each link's YouTube Music album, since a song's URL no longer says which album it was once it is delisted. Links are added as *free streaming*.
 
 **Amazon Music** shows no ISRCs either, and has no ISRC search, so its track links come only from the release's Amazon Music album, when the release links it (Platform Check finds it by name). Each track is taken from the album's tracklist by position, or by title when the album orders it differently, and only when the title matches and the length is within 3 seconds. It is read as a guest, with no Amazon account, and the links are added as *streaming page*.
+
+**7digital** is read through the catalogue its web store uses, with no login. It can't list an album's tracks, so each track of the release is searched for by its title (with the album's title, then with its artist), and the results from the linked 7digital album are kept, each with its ISRC, disc and position. One search often brings up the whole album; when it doesn't, there is a search per track, a few at a time, which takes some seconds on a long album. A 7digital track has no page of its own, so there are no track links.
 
 An album-based provider needs the release's album link: already in MusicBrainz, found by Platform Check, or pasted with **(+)**. No login is needed anywhere except Qobuz outside the countries it serves (see [Qobuz](#qobuz)).
 
@@ -1236,6 +1239,7 @@ The footer's **+** adds every confirmed link (middle-click or Alt+click: the wit
 | Beatport      |                                                                            | optional |
 | Volumo        | looked up and read                                                         |          |
 | HDtracks      | looked up and read                                                         |          |
+| 7digital      | looked up and read                                                         |          |
 | SoundCloud    | read from the linked set                                                   |          |
 | Audiomack     | read                                                                       |          |
 
@@ -1250,6 +1254,7 @@ The footer's **+** adds every confirmed link (middle-click or Alt+click: the wit
 - **Amazon Music** is read as a guest (no Amazon account), through the catalogue its web player uses. It has no barcode search and shows no barcode, so an album is found by artist and title only, and taken only when its title and track count both match; when two editions match, the one from the release's year wins. A match is never barcode-confirmed, so strict barcode mode withholds it. The guest catalogue is amazon.com's (US), so an album sold only elsewhere may not be found. The year comes from the album page's date, and the label from its ℗ line. MusicBrainz makes the link a *streaming page* by itself.
 - **SoundCloud** can't be searched by barcode; it's read from the linked set, and trusted only when the whole set agrees on it.
 - **Audiomack** is read through the API its web player uses, with no login. Its search finds albums by artist and title only, never by barcode, and fans re-upload albums there, so every hit is opened and its barcode read: the one with the release's barcode wins; otherwise one whose track count matches and that has a barcode at all. A song link counts as a one-track release. The label comes from the ℗ line. Links are added as *stream for free*.
+- **7digital** is read through the catalogue its web store uses, with no login. It finds an album by its barcode, in the UK store and then the US one, and has the track count, year and label. Without a barcode match, artist and title are searched. The link is to the store the album was found in; MusicBrainz makes it *purchase for download* by itself.
 - **Volumo** and **HDtracks** are added as *purchase for download*, since MusicBrainz has no type of their own.
 
 ### Settings

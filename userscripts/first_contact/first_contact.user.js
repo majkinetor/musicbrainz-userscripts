@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         First Contact
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.3
-// @description  Import a release into MusicBrainz from the platform's album page with one click: the release editor opens with the title, tracklist, artists, date, label, barcode and link filled in. Each artist's platform link is handed to Apollo Editor for matching. By default the album page is also saved on the Internet Archive (it sends each imported URL to archive.org; off in the settings), and the edit note links the snapshot. Platforms: Deezer, Bandcamp, Discogs, Apple Music, Tidal, Qobuz, Beatport, Spotify, YouTube Music, Volumo, HDtracks, SoundCloud, Amazon Music, Audiomack.
+// @version      2026.10.3.190540
+// @description  Import a release into MusicBrainz from the platform's album page with one click: the release editor opens with the title, tracklist, artists, date, label, barcode and link filled in. Each artist's platform link is handed to Apollo Editor for matching. By default the album page is also saved on the Internet Archive (it sends each imported URL to archive.org; off in the settings), and the edit note links the snapshot. Platforms: Deezer, Bandcamp, Discogs, Apple Music, Tidal, Qobuz, Beatport, Spotify, YouTube Music, Volumo, HDtracks, SoundCloud, Amazon Music, Audiomack, 7digital.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPkZpcnN0IENvbnRhY3Q8L3RpdGxlPgogIDwhLS0gdHJhY3RvciBiZWFtIC0tPgogIDxwYXRoIGQ9Ik01MCA0NCBMNzggNDQgTDEwNCAxMTIgTDI0IDExMiBaIiBmaWxsPSIjZjZjNDMxIiBvcGFjaXR5PSIwLjkiLz4KICA8cGF0aCBkPSJNNTYgNDQgTDcyIDQ0IEw4OCAxMTIgTDQwIDExMiBaIiBmaWxsPSIjZmRlNjhhIiBvcGFjaXR5PSIwLjciLz4KICA8IS0tIGxhbmRpbmcgcmluZyAtLT4KICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSIxMTQiIHJ4PSI0MiIgcnk9IjgiIGZpbGw9IiMxZTIzNDYiIHN0cm9rZT0iI2M5Y2RmMiIgc3Ryb2tlLXdpZHRoPSIzIi8+CiAgPGVsbGlwc2UgY3g9IjY0IiBjeT0iMTEzIiByeD0iMjYiIHJ5PSI0LjIiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2Y2YzQzMSIgc3Ryb2tlLXdpZHRoPSIyLjQiLz4KICA8IS0tIHNhdWNlcjogYSBwYWxlIHJpbSwgc28gaXQgc2hvd3Mgb24gYSBkYXJrIGJhY2tncm91bmQgdG9vIC0tPgogIDxwYXRoIGQ9Ik00MCAyNiBBMjQgMTggMCAwIDEgODggMjYgWiIgZmlsbD0iIzFlMjM0NiIgc3Ryb2tlPSIjYzljZGYyIiBzdHJva2Utd2lkdGg9IjMiLz4KICA8cGF0aCBkPSJNNTAgMTggQTEwIDYgMCAwIDEgNjAgMTQiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2ZmZiIgc3Ryb2tlLXdpZHRoPSIyLjYiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxlbGxpcHNlIGN4PSI2NCIgY3k9IjMyIiByeD0iNTYiIHJ5PSIxMyIgZmlsbD0iIzFlMjM0NiIgc3Ryb2tlPSIjYzljZGYyIiBzdHJva2Utd2lkdGg9IjMiLz4KICA8Y2lyY2xlIGN4PSIzOCIgY3k9IjMyIiByPSI0LjQiIGZpbGw9IiNmZmYiLz4KICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjM0IiByPSI0LjQiIGZpbGw9IiNmZmYiLz4KICA8Y2lyY2xlIGN4PSI5MCIgY3k9IjMyIiByPSI0LjQiIGZpbGw9IiNmZmYiLz4KICA8IS0tIHRoZSByZWxlYXNlIGJlaW5nIGJlYW1lZCB1cDogYSBwdXJwbGUgaGV4YWdvbiB3aXRoIGEgbm90ZSAtLT4KICA8cGF0aCBkPSJNNjQgNTggTDg0IDY5LjUgTDg0IDkyLjUgTDY0IDEwNCBMNDQgOTIuNSBMNDQgNjkuNSBaIiBmaWxsPSIjN2I0ZmQ2Ii8+CiAgPHBhdGggZD0iTTY0IDU4IEw4NCA2OS41IEw2NCA4MSBMNDQgNjkuNSBaIiBmaWxsPSIjOWI3MmVhIi8+CiAgPHBhdGggZD0iTTYwIDcyIEw3NCA2OSBMNzQgODkiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2ZmZiIgc3Ryb2tlLXdpZHRoPSIzLjQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz4KICA8cGF0aCBkPSJNNjAgNzIgTDYwIDkyIiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iMy40Ii8+CiAgPGVsbGlwc2UgY3g9IjU2IiBjeT0iOTIiIHJ4PSI0LjYiIHJ5PSIzLjYiIGZpbGw9IiNmZmYiLz4KICA8ZWxsaXBzZSBjeD0iNzAiIGN5PSI4OSIgcng9IjQuNiIgcnk9IjMuNiIgZmlsbD0iI2ZmZiIvPgogIDwhLS0gc3BhcmtsZXMgLS0+CiAgPHBhdGggZD0iTTE4IDU0IGwyLjUgNiA2IDIuNSAtNiAyLjUgLTIuNSA2IC0yLjUgLTYgLTYgLTIuNSA2IC0yLjUgWiIgZmlsbD0iI2Y2YzQzMSIvPgogIDxwYXRoIGQ9Ik0xMDggNTIgbDIuNSA2IDYgMi41IC02IDIuNSAtMi41IDYgLTIuNSAtNiAtNiAtMi41IDYgLTIuNSBaIiBmaWxsPSIjMWUyMzQ2Ii8+CiAgPHBhdGggZD0iTTExMiA4MiBsMS44IDQuMiA0LjIgMS44IC00LjIgMS44IC0xLjggNC4yIC0xLjggLTQuMiAtNC4yIC0xLjggNC4yIC0xLjggWiIgZmlsbD0iI2Y2YzQzMSIvPgogIDxwYXRoIGQ9Ik0xNCA4NiBsMS44IDQuMiA0LjIgMS44IC00LjIgMS44IC0xLjggNC4yIC0xLjggLTQuMiAtNC4yIC0xLjggNC4yIC0xLjggWiIgZmlsbD0iIzFlMjM0NiIvPgo8L3N2Zz4K
 // @homepageURL  https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/first_contact/README.md
@@ -20,6 +20,7 @@
 // @match        https://www.hdtracks.com/*
 // @match        https://soundcloud.com/*
 // @match        https://audiomack.com/*
+// @match        https://*.7digital.com/artist/*
 // @match        https://music.amazon.com/*
 // @match        https://music.amazon.co.uk/*
 // @match        https://music.amazon.de/*
@@ -40,6 +41,7 @@
 // @grant        GM_getValue
 // @grant        GM_deleteValue
 // @grant        GM_listValues
+// @grant        GM_openInTab
 // @grant        unsafeWindow
 // @grant        window.close
 // @connect      api.deezer.com
@@ -58,6 +60,9 @@
 // @connect      a-v2.sndcdn.com
 // @connect      api-v2.soundcloud.com
 // @connect      api.audiomack.com
+// @connect      api.7digital.com
+// @connect      us.7digital.com
+// @connect      js-cdn.7digital.com
 // @connect      music.amazon.com
 // @connect      na.mesk.skill.music.a2z.com
 // @connect      web.archive.org
@@ -89,6 +94,8 @@ const VARIOUS_ARTISTS_MBID = '89ad4ac3-39f7-470e-963a-56509c546377';
 // Handoffs (the platform links of every credited artist) wait in GM storage for the release
 // editor tab. They are small; a day is plenty for a tab that was opened and left.
 const HANDOFF_PREFIX = 'fc.handoff.';
+// A seed waiting for the editor's tab (sendSeed), pruned with the handoffs
+const SEED_PREFIX = HANDOFF_PREFIX + 'seed.';
 // majkinetor: "handoff probably shouldn't spam the settings?" — every import left its handoff in
 // the script's storage for a day. Now the release editor takes it out once it has it (keeping a
 // copy for that tab, so a reload still finds it), and one that was never picked up (the editor
@@ -1798,7 +1805,187 @@ const AUDIOMACK = {
     },
 };
 
-const PROVIDERS = [DEEZER, BANDCAMP, DISCOGS, APPLE, TIDAL, QOBUZ, BEATPORT, SPOTIFY, YTMUSIC, VOLUMO, HDTRACKS, SOUNDCLOUD, AMAZON, AUDIOMACK];
+// 7digital (#669): the release page has the title, the release artist with their page, the release
+// date, the label, and the tracklist (each track's id, title and length). The barcode, type, discs,
+// track artists and ISRCs come from 7digital's catalogue API, with the key its own store ships in its
+// app.js, as Platform Check and ISRC Scout read it. That key may only search, so the release is found
+// by its title, and each track by its title (with the album's title, or after its artist), by their
+// ids. The catalogue is per country: the store's.
+const SEVENDIGITAL = {
+    id: 'sevendigital',
+    name: '7digital',
+    host: /^(?:[a-z]{2}\.|www\.)?7digital\.com$/,
+    albumId(loc) { return /^\/artist\/[^/]+\/release\/(?:[^/]*-)?\d{3,}\/?$/.test(loc.pathname) ? loc.pathname.replace(/\/$/, '') : null; },
+    KEY: '7drfpc993qp5',   // the store's key when this was written; a refused one is replaced by the store's current one
+    TYPES: { Album: ['Album'], EP: ['EP'], Single: ['Single'] },
+    text: el => (el ? el.textContent.replace(/\s+/g, ' ').trim() : ''),
+    // "PT4M9S" → ms
+    iso(d) { const m = String(d || '').match(/^PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?$/); return m ? ((+m[1] || 0) * 3600 + (+m[2] || 0) * 60 + (+m[3] || 0)) * 1000 || null : null; },
+
+    async apiKey(fresh) {
+        if (this.key && !fresh) return this.key;
+        if (!fresh) return (this.key = this.KEY);
+        if (this.keyP) return this.keyP;
+        this.keyP = (async () => {
+            const own = document.querySelector('script[src*="/static/build/javascript/app."]');
+            let src = own && own.getAttribute('src');
+            if (!src) src = ((await gmText('https://us.7digital.com/', { Accept: 'text/html' })).match(/\/\/js-cdn\.7digital\.com\/static\/build\/javascript\/app\.[a-z0-9]+\.js/i) || [])[0];
+            if (!src) throw new Error('7digital: the store\'s JS was not found');
+            const k = ((await gmText(new URL(src, 'https://us.7digital.com/').href, { Accept: '*/*' })).match(/oauth_consumer_key="([A-Za-z0-9]+)"/) || [])[1];
+            if (!k) throw new Error('7digital: no key in the store\'s JS');
+            return (this.key = k);
+        })().finally(() => { this.keyP = null; });
+        return this.keyP;
+    },
+    // One API read: its JSON, or throws. A refused key (HTTP 401) is replaced, once.
+    async api(path, params) {
+        for (let attempt = 0; ; attempt++) {
+            const key = await this.apiKey(attempt > 0);
+            const qs = new URLSearchParams(Object.assign({}, params, { usageTypes: 'download', oauth_consumer_key: key }));
+            try {
+                const j = await gmJson(`https://api.7digital.com/1.2/${path}?${qs}`);
+                if (!j || j.status !== 'ok') throw new Error(`7digital ${path}: ${(j && j.error && j.error.message) || 'no answer'}`);
+                return j;
+            } catch (e) {
+                if (e.status === 401 && attempt === 0) { Log.warn('7digital: the key was refused; fetching the store\'s current one'); continue; }
+                throw e;
+            }
+        }
+    },
+    // "A, B & C" / "A;B;C" / "A x B" → names; the release's own artist ("Simon & Garfunkel") stays one
+    names(line, own) {
+        const s = String(line || '').trim();
+        if (!s) return [];
+        if (own && normName(s) === normName(own)) return [s];
+        return s.split(/\s*;\s*|\s*,\s+|\s+&\s+|\s+x\s+/).map(x => x.trim()).filter(Boolean);
+    },
+
+    async fetchRelease(path, progress, doc) {
+        doc = doc || document;
+        const og = (doc.querySelector('meta[property="og:url"]') || {}).content || '';
+        const url = (/7digital\.com\/artist\//.test(og) ? og : location.origin + path).replace(/[?#].*$/, '').replace(/\/$/, '');
+        const sub = (new URL(url).hostname.match(/^([a-z]{2})\./) || [])[1];
+        const country = sub === 'uk' || !sub ? 'GB' : sub.toUpperCase();
+        const info = doc.querySelector('.release-info');
+        const releaseId = (info && info.dataset.releaseid) || (url.match(/(\d{3,})$/) || [])[1];
+        const title = this.text(doc.querySelector('.release-info-title'));
+        if (!title) throw new Error('7digital: no release on this page (is it asking you to prove you\'re human?)');
+        const artistA = doc.querySelector('.release-info-artist a');
+        const artist = this.text(artistA) || (doc.querySelector('.release-info-artist [itemprop="name"]') || {}).content || '';
+        const artistUrl = artistA ? new URL(artistA.getAttribute('href'), url).href : null;
+        const pageLabel = this.text(doc.querySelector('.release-label-info .release-data-info'));
+        const pageDate = this.text(doc.querySelector('.release-date-info .release-data-info'));
+        // majkinetor: "It doesnt get annotation <dd class="release-data-info">℗ 2014 Asylum Records UK, a Warner
+        // Music UK Company</dd>". Below the tracklist, the ℗ and © lines are the page's only notes: they go
+        // to the annotation whole, as Amazon Music's ℗ line does
+        const plines = [...doc.querySelectorAll('.release-data-info')].map(el => this.text(el)).filter(t => /^(?:[℗©]|\([pc]\))/i.test(t));
+        // majkinetor: "reads PDF as track": a digital booklet is a row of the tracklist too, marked with
+        // its file type (<em class="release-track-file-type is-pdf">); a song's row has none
+        const all = [...doc.querySelectorAll('tr.release-track[data-trackid]')];
+        const extras = all.filter(tr => { const ft = tr.querySelector('.release-track-file-type'); return ft && !/\baudio\b/i.test(ft.className + ' ' + ft.textContent); });
+        if (extras.length) Log.info(`7digital: left out ${extras.map(tr => `"${this.text(tr.querySelector('.release-track-name p'))}" (${this.text(tr.querySelector('.release-track-file-type'))})`).join(', ')}: not a track`);
+        const rows = all.filter(tr => !extras.includes(tr)).map(tr => ({
+            id: tr.dataset.trackid,
+            title: this.text(tr.querySelector('.release-track-name p')) || (tr.querySelector('.release-track-name [itemprop="name"]') || {}).content || '',
+            lengthMs: this.iso((tr.querySelector('[itemprop="duration"]') || {}).content),
+        }));
+        const various = /^various artists$/i.test(artist);
+        Log.info(`7digital release ${releaseId} (${country}): "${title}" by ${artist} · ${rows.length} track(s) · ${pageDate || 'no date'} · label "${pageLabel}" · ${plines.join(' · ') || 'no ℗ line'}`);
+
+        // the release: its barcode, type and date (found by its title, as the store's key can't read it by id).
+        // 7digital's search can take 10 s or more, so it runs alongside the tracks' searches below.
+        const relP = (async () => {
+            for (const c of [...new Set([country, 'GB', 'US'])]) {
+                for (const q of [title, `${artist} ${title}`]) {
+                    try {
+                        const j = await this.api('release/search', { q, country: c, pageSize: '50' });
+                        const r = ((j.searchResults || {}).searchResult || []).map(x => x.release).find(x => x && String(x.id) === String(releaseId));
+                        if (r) return r;
+                    } catch (e) { Log.warn(`7digital: release search "${q}" (${c}) failed: ${e.message}`); }
+                }
+            }
+            return null;
+        })();
+
+        // the tracks: each by its title with the album's (often the whole album comes back for one), after its
+        // artist, or alone; a hit fills every row it is
+        const hits = new Map();
+        const search = async (q, c) => {
+            try {
+                const j = await this.api('track/search', { q, country: c, pageSize: '50' });
+                for (const x of (j.searchResults || {}).searchResult || []) if (x.track && x.track.release && String(x.track.release.id) === String(releaseId)) hits.set(String(x.track.id), x.track);
+            } catch (e) { Log.warn(`7digital: track search "${q}" failed: ${e.message}`); }
+        };
+        // the count is of tracks found: one search often brings up the whole album at once
+        const found = () => rows.filter(r => hits.has(r.id)).length;
+        // the store's country first; a release its catalogue doesn't have (a UK compilation on the US
+        // store) is looked for in the UK's and the US's
+        for (const c of [...new Set([country, 'GB', 'US'])]) {
+            await mapLimit(rows, 6, async row => {
+                for (const q of [`${row.title} ${title}`, various ? null : `${artist} ${row.title}`, row.title]) {
+                    if (hits.has(row.id)) break;
+                    if (q) { await search(q, c); progress && progress(found(), rows.length); }
+                }
+            });
+            if (found()) break;
+            Log.info(`7digital: none of the tracks is in the ${c} catalogue`);
+        }
+        const rel = await relP;
+        if (rel) Log.info(`7digital API: type ${rel.type} · UPC ${rel.barcode || '—'} · ${(rel.download || {}).releaseDate || 'no date'} · label "${(rel.label || {}).name || ''}"`);
+        else Log.warn('7digital: the release wasn\'t found in the API: no barcode, and the type is guessed');
+        Log.info(`7digital API: ${rows.filter(r => hits.has(r.id)).length} of ${rows.length} track(s) found, ${rows.filter(r => (hits.get(r.id) || {}).isrc).length} with an ISRC`);
+
+        const storeArtist = a => (a && a.slug ? `${new URL(url).origin}/artist/${a.slug}` : null);
+        const mediums = [];
+        let disc = 1;
+        rows.forEach((row, i) => {
+            const t = hits.get(row.id);
+            if (t && t.discNumber) disc = t.discNumber;
+            const tf = splitFeat((t && t.title) || row.title);
+            // the track's artist line: "A, B & C", "A x B", "A feat. B" ("The Blessed Madonna feat. Clementine Douglas")
+            const lf = splitFeat(t ? (t.artist || {}).name : (various ? '' : artist));
+            const names = this.names(lf.title, artist);
+            // the release artist links their page; a track's own 7digital artist is one entry for its whole
+            // line, so it links only an artist who is the whole line
+            const contributors = names.map(name => ({ name, url: normName(name) === normName(artist) ? artistUrl : names.length === 1 && !lf.feat.length && t ? storeArtist(t.artist) : null }));
+            const credit = creditFromTitle(contributors.length ? contributors : [{ name: artist, url: artistUrl }], lf.feat.concat(tf.feat.filter(n => !lf.feat.some(f => normName(f) === normName(n)))));
+            while (mediums.length < disc) mediums.push({ format: 'Digital Media', name: '', tracks: [] });
+            mediums[disc - 1].tracks.push({ title: tf.title, lengthMs: row.lengthMs || (t && t.duration ? t.duration * 1000 : null), isrc: (t && t.isrc) || null, url: null, credit });
+            Log.debug(`track ${disc}.${t ? t.number : '?'} (${i + 1}): "${tf.title}" — ${credit.map(c => c.name + c.join).join('')} (${(t && t.isrc) || 'no ISRC'})`);
+        });
+        const empty = mediums.findIndex(m => !m.tracks.length);
+        if (empty >= 0) { Log.warn(`7digital: disc ${empty + 1} has no tracks; the tracklist is one medium`); mediums.splice(0, mediums.length, { format: 'Digital Media', name: '', tracks: [].concat(...mediums.map(m => m.tracks)) }); }
+
+        const af = splitFeat(title);
+        const credit = various ? [{ name: 'Various Artists', mbid: VARIOUS_ARTISTS_MBID, join: '' }] : creditFromTitle(this.names(artist, artist).map(name => ({ name, url: artistUrl })), af.feat);
+        // the release date is the store's local midnight in UTC ("2020-07-22T23:00:00Z" is 23 July in the UK):
+        // the day 12 hours on is the local day, wherever the store is
+        const at = Date.parse(((rel || {}).download || {}).releaseDate || '');
+        let [y, m, d] = Number.isFinite(at) ? new Date(at + 12 * 3600e3).toISOString().slice(0, 10).split('-').map(n => parseInt(n, 10)) : [];
+        if (!y && sub === 'uk') [d, m, y] = pageDate.split('/').map(n => parseInt(n, 10));   // the UK store writes 23/07/2020
+        // 7digital stores some barcodes as 14 digits (00602508436901): one leading zero too many for an EAN
+        const bc = String((rel || {}).barcode || '').replace(/\D/g, '').replace(/^0(?=\d{13}$)/, '');
+        const label = pageLabel || ((rel || {}).label || {}).name || labelFromCopyright(plines[0]) || '';
+        return {
+            source: this.id,
+            annotation: notesText(plines.join('\n')),
+            url,
+            title: af.title,
+            credit,
+            types: (rel && this.TYPES[rel.type]) || [],
+            status: 'official',
+            packaging: 'None',
+            date: { year: y || (rel && rel.year) || null, month: m || null, day: d || null },
+            country: 'XW',
+            barcode: /^\d{12,13}$/.test(bc) ? bc : null,
+            labels: label ? [{ name: label, catno: '' }] : [],
+            urls: [{ url, linkType: 74 }],   // 74 = purchase for download, the only type MusicBrainz allows for 7digital
+            mediums,
+        };
+    },
+};
+
+const PROVIDERS = [DEEZER, BANDCAMP, DISCOGS, APPLE, TIDAL, QOBUZ, BEATPORT, SPOTIFY, YTMUSIC, VOLUMO, HDTRACKS, SOUNDCLOUD, AMAZON, AUDIOMACK, SEVENDIGITAL];
 
 /* ── the seed: model → the release editor's POST parameters ──────────────── */
 // https://musicbrainz.org/doc/Development/Release_Editor_Seeding
@@ -2011,7 +2198,12 @@ function injectStyle() {
 #fc-root button:focus-visible { outline: 2px solid var(--mbu-accent); outline-offset: -2px; }
 #fc-root .fc-go { border-radius: 8px 0 0 8px; font-weight: 600; }
 #fc-root .fc-more { border-radius: 0 8px 8px 0; border-left: none; min-width: 30px; justify-content: center; padding: 8px 10px; }
-#fc-root .fc-go[aria-busy="true"] { cursor: progress; opacity: .85; }
+#fc-root .fc-go[aria-busy="true"] { cursor: progress; }
+/* majkinetor: "after the click nothing happens … make it obvious it works": a spinner while it reads */
+#fc-root .fc-go[aria-busy="true"]::after { content: ''; width: 14px; height: 14px; flex: 0 0 auto; box-sizing: border-box;
+  border: 2px solid var(--mbu-border); border-top-color: var(--mbu-accent-text); border-right-color: var(--mbu-accent-text); border-radius: 50%; animation: fc-spin .8s linear infinite; }
+@keyframes fc-spin { to { transform: rotate(360deg); } }
+#fc-root .fc-go[aria-busy="true"] span { font-variant-numeric: tabular-nums; }
 #fc-root { touch-action: none; animation: fc-fadein .4s ease; }
 /* fades in when it appears, as Mammoth's pins do */
 @keyframes fc-fadein { from { opacity: 0; } }
@@ -2524,17 +2716,20 @@ async function importCurrent() {
     const label = go && go.querySelector('span');
     const server = settings().server;
     const token = Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
-    // Open the target tab now, inside the click: a window opened after the fetches would be
-    // a popup the browser blocks. The form posts into it once the data is in.
-    const target = 'fc-' + token;
-    const win = window.open('about:blank', target);
     Log.info(`import ${location.href}`);
-    Log.info(`import ${provider.name} album ${id} → ${server} (token ${token}, tab ${win ? 'opened' : 'BLOCKED: posting in this tab'})`);
+    Log.info(`import ${provider.name} album ${id} → ${server} (token ${token})`);
     busy = true;
     if (go) go.setAttribute('aria-busy', 'true');
     const t0 = Date.now();
+    // the button says what it does from the click on, with the tracks read so far (when the platform
+    // counts them) and the seconds gone, so a slow platform (7digital's search takes 10 s) visibly works
+    let count = '', phase = `Reading ${provider.name}…`;
+    const show = () => { if (label) label.textContent = `${phase}${count ? ' ' + count : ''} · ${Math.round((Date.now() - t0) / 1000)} s`; };
+    show();
+    const ticker = setInterval(show, 1000);
     try {
-        const rel = await provider.fetchRelease(id, (n, total) => { if (label) label.textContent = `Reading ${provider.name}… ${n}/${total}`; });
+        const rel = await provider.fetchRelease(id, (n, total) => { count = `${n}/${total}`; show(); });
+        count = ''; phase = 'Opening MusicBrainz…'; show();
         {
             const tracks = [].concat(...rel.mediums.map(m => m.tracks));
             const g = guessReleaseType(rel.title, tracks);
@@ -2573,34 +2768,68 @@ async function importCurrent() {
         Log.debug(`seed: ${params.length} parameters`);
         if (mbuTestHooks()) window.__fcLastSeed = { token, server, params, rel };
 
-        const form = document.createElement('form');
-        form.method = 'POST';
-        form.action = `https://${server}/release/add?first_contact=${token}`;
-        form.target = win ? target : '_self';
-        form.acceptCharset = 'UTF-8';
-        form.style.display = 'none';
-        for (const [k, v] of params) {
-            const inp = document.createElement('input');
-            inp.type = 'hidden'; inp.name = k; inp.value = v;
-            form.appendChild(inp);
-        }
-        document.body.appendChild(form);
-        form.submit();
-        form.remove();
-        Log.ok(`seeded ${server}/release/add with ${nTracks} track(s)`);
+        const where = sendSeed(server, token, params);
+        Log.ok(`seeded ${server}/release/add with ${nTracks} track(s) (${where === 'here' ? 'in this tab: the browser blocked a new one' : 'in a new tab'})`);
         if (settings().closeAfter) {
-            if (win) closeSourceTab();
+            if (where !== 'here') closeSourceTab();
             else Log.info('close after the import: skipped, the editor opened in this tab');
         }
     } catch (e) {
         Log.err(`import failed: ${e.message}`);
-        if (win) try { win.close(); } catch (_) { /* already gone */ }
         mbuToast(`✗ ${NAME}: ${e.message}`, { kind: 'warn', action: { label: 'Copy log', onClick: b => Log.copy(b) } });
     } finally {
+        clearInterval(ticker);
         busy = false;
         if (go) go.removeAttribute('aria-busy');
         if (label) label.textContent = 'Import to MusicBrainz';
     }
+}
+
+// majkinetor: "why does it open tab while reading?" The editor's tab opens once the release is read,
+// not at the click. A tab a page opens that long after the click is a popup the browser blocks, but
+// one the userscript manager opens (GM_openInTab) isn't: the seed waits in the script's storage, and
+// First Contact on that page posts it there (mbPostSeed). Without GM_openInTab, the page opens the tab
+// itself and posts into it, or posts in this tab when the browser blocks it.
+// → 'tab' (a new tab) or 'here' (this one)
+function sendSeed(server, token, params) {
+    const action = `https://${server}/release/add?first_contact=${token}`;
+    if (typeof GM_openInTab === 'function') {
+        GM_setValue(SEED_PREFIX + token, { created: Date.now(), params });
+        GM_openInTab(`${action}&fc_post=1`, { active: true, insert: true });
+        return 'tab';
+    }
+    const target = 'fc-' + token;
+    const win = window.open('about:blank', target);
+    postForm(action, win ? target : '_self', params);
+    return win ? 'tab' : 'here';
+}
+function postForm(action, target, params) {
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = action;
+    form.target = target;
+    form.acceptCharset = 'UTF-8';
+    form.style.display = 'none';
+    for (const [k, v] of params) {
+        const inp = document.createElement('input');
+        inp.type = 'hidden'; inp.name = k; inp.value = v;
+        form.appendChild(inp);
+    }
+    (document.body || document.documentElement).appendChild(form);
+    form.submit();
+    form.remove();
+}
+// On the tab sendSeed opened: stop the empty release editor loading and post the seed to it, here
+function mbPostSeed(token) {
+    const key = SEED_PREFIX + token;
+    const seed = GM_getValue(key, null);
+    if (!seed || !Array.isArray(seed.params)) { Log.warn(`release editor opened to take the seed ${token}, but it is not stored (expired, or another browser)`); return; }
+    GM_deleteValue(key);
+    try { window.stop(); } catch (e) { /* it posts anyway */ }
+    Log.debug(`seed ${token}: ${seed.params.length} parameters, posting them to the release editor`);
+    const post = () => postForm(`/release/add?first_contact=${token}`, '_self', seed.params);
+    if (document.documentElement) post();   // at document-start the page may have no root yet
+    else new MutationObserver((m, o) => { if (document.documentElement) { o.disconnect(); post(); } }).observe(document, { childList: true });
 }
 
 // majkinetor: an option to close the page once the import is clicked. Only after the POST has
@@ -2640,8 +2869,10 @@ function platformMain() {
 // and can ask for it again with a 'first-contact:request' event on document.
 
 function mbMain() {
-    const token = new URLSearchParams(location.search).get('first_contact');
+    const q = new URLSearchParams(location.search);
+    const token = q.get('first_contact');
     if (!token) return;
+    if (q.get('fc_post')) { mbPostSeed(token); return; }
     pruneHandoffs();
     const key = HANDOFF_PREFIX + token;
     let h = GM_getValue(key, null), from = 'storage';

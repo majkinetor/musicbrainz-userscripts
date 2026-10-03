@@ -33,11 +33,14 @@ Shows a release's ISRCs, fills in the missing ones from several providers, and f
 | YouTube Music | | ✓ | the album, when linked (by position + title); else ISRC, on any release |
 | Amazon Music | | ✓ | the album, when linked (by position + title) |
 | HDtracks | ✓ | | the album |
+| 7digital | ✓ | | the album: each track searched by title |
 | SoundExchange | ✓ | | a title and artist search |
 
 **YouTube Music** shows no ISRCs. When the release links its YouTube Music album (Platform Check finds it), each track is taken from that album's tracklist, by position and title. Otherwise its ISRC is searched. An ISRC it doesn't know brings up unrelated songs instead of nothing, and labels sometimes reuse an ISRC for another version of a song with the same title and length: [JP92Q2400507](https://musicbrainz.org/isrc/JP92Q2400507) is both *メズマライザー* and its *Critical Damage ver.* So a search result counts only when it is official audio (not a user upload), has the track's title, is within 3 s of its length, and comes from this release's album. The log names every result it skipped, and why. The edit note names each link's YouTube Music album, since a song's URL no longer says which album it was once it is delisted. Links are added as *free streaming*.
 
 **Amazon Music** shows no ISRCs either, and has no ISRC search, so its track links come only from the release's Amazon Music album, when the release links it (Platform Check finds it by name). Each track is taken from the album's tracklist by position, or by title when the album orders it differently, and only when the title matches and the length is within 3 seconds. It is read as a guest, with no Amazon account, and the links are added as *streaming page*.
+
+**7digital** is read through the catalogue its web store uses, with no login. It can't list an album's tracks, so each track of the release is searched for by its title (with the album's title, then with its artist), and the results from the linked 7digital album are kept, each with its ISRC, disc and position. One search often brings up the whole album; when it doesn't, there is a search per track, a few at a time, which takes some seconds on a long album. A 7digital track has no page of its own, so there are no track links.
 
 An album-based provider needs the release's album link: already in MusicBrainz, found by Platform Check, or pasted with **(+)**. No login is needed anywhere except Qobuz outside the countries it serves (see [Qobuz](#qobuz)).
 

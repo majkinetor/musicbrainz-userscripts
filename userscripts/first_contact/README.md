@@ -23,7 +23,7 @@ Import a release into MusicBrainz from the platform's album page with one click:
 
 ## Import
 
-On a platform's album page, click **Import to MusicBrainz** in the bottom-right corner. A new tab opens with MusicBrainz's release editor, filled in:
+On a platform's album page, click **Import to MusicBrainz** in the bottom-right corner. Once the release is read (the button counts the tracks), a new tab opens with MusicBrainz's release editor, filled in:
 
 | Field                | From                                                                                                                                                 |
 | -------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -74,6 +74,7 @@ Without every track's length: 1 track is a Single, 3 to 6 an EP, 7 or more an Al
 | [SoundCloud](#soundcloud)       | label sets | label sets | ✓                     | description    |
 | [Amazon Music](#amazon-music)   |            |            | from the ℗ line       | ℗ line         |
 | [Audiomack](#audiomack)         |     ✓      |     ✓      | from the ℗ line       | description    |
+| [7digital](#7digital)           |     ✓      |     ✓      | ✓                     | ℗ and © lines  |
 
 ### Deezer
 
@@ -194,6 +195,14 @@ Pages: `audiomack.com/<artist>/album/<slug>`, `audiomack.com/<artist>/song/<slug
 - A song page is imported as a one-track single.
 - A track's artists come from its artist line (*A, B & C*), and the featured ones from its title or Audiomack's *featuring*. Only the uploading account has an Audiomack link to hand off.
 - The tracklist is one medium.
+
+### 7digital
+
+Pages: `<store>.7digital.com/artist/<artist>/release/<slug>`
+
+- No 7digital account is needed. If the page asks you to prove you're human, do it first, then import.
+- The barcode, type, date, discs and ISRCs come from 7digital's catalogue, which can't list an album's tracks: each track is searched for, a few at a time.
+- A track's artists come from its artist line (*A, B & C*, *A x B*, *A feat. B*). The release artist has a 7digital link to hand off, and so does a track artist who is the whole line.
 
 ## Artist matching
 
