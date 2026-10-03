@@ -6,7 +6,7 @@ import { test, check, loadFunctions, functionSource } from '../../../dev/test/ha
 
 const NAMES = ['VA_MBID', 'VA_NAME_RE', 'qzDec', 'ytmWalk', 'pcUrlKey', 'pcSameUrl', 'pcCr', 'pcCredits', 'pcCreditsSummary', 'pcDiscogsName',
   'pcCreditsDiscogs', 'pcCreditsDeezer', 'pcCreditsApple', 'pcSlug', 'pcCreditsQobuzApi', 'pcCreditsQobuzPage', 'pcCreditsBandcamp', 'pcCreditsBeatport',
-  'pcCreditsYtm', 'pcCreditsSoundcloud', 'pcCreditsAudiomack', 'pcNameKey', 'pcPairCredits', 'pcLinkRows', 'pcMarkCell', 'PC_ENTITY_LINK_TYPE', 'pcLinkTypeFor', 'pcFalconPayload'];
+  'pcCreditsYtm', 'pcCreditsSoundcloud', 'pcCreditsAudiomack', 'pcNameKey', 'pcPairCredits', 'pcLinkRows', 'pcMarkCell', 'PC_ENTITY_LINK_TYPE', 'pcLinkTypeFor', 'pcFalconJson', 'pcFalconPayload'];
 // every reply the fixtures recorded, keyed by URL
 const dir = new URL('./fixtures/', import.meta.url);
 const replies = {};
@@ -128,6 +128,12 @@ test('existing links, the Falcon batch and the seeded edit page', { tag: '@unit'
   const seeded = new Function('const MB_ORIGIN = "https://musicbrainz.org";\n' + await functionSource('platform_check', ['PC_ENTITY_LINK_TYPE', 'pcLinkTypeFor', 'pcSeededEditUrl']) + '\nreturn pcSeededEditUrl;')();
   const u = new URL(seeded('label', 'l', ['https://a/1', 'https://b/2'], 'note'));
   check(u.pathname === '/label/l/edit' && u.searchParams.get('edit-label.url.0.text') === 'https://a/1' && u.searchParams.get('edit-label.url.1.text') === 'https://b/2' && u.searchParams.get('edit-label.edit_note') === 'note', `the edit page, seeded (${u})`);
+  const here = new Function('document', await functionSource('platform_check', ['pcSendToFalconHere']) + '\nreturn pcSendToFalconHere;');
+  const doc = new EventTarget();
+  check(here(doc)('{}') === false, 'no Falcon on the page: not handed over (a tab opens instead)');
+  let got = null;
+  doc.addEventListener('falcon:import', e => { got = e.detail; doc.dispatchEvent(new CustomEvent('falcon:import-ok')); });
+  check(here(doc)('{"items":[]}') === true && got === '{"items":[]}', 'Falcon on the page takes the JSON in place');
   const q = new URL(seeded('artist', 'a', ['https://www.deezer.com/artist/1', 'https://www.qobuz.com/us-en/interpreter/x/2'], 'n'));
   check(!q.searchParams.has('edit-artist.url.0.link_type_id') && q.searchParams.get('edit-artist.url.1.link_type_id') === '176', `…the Qobuz link typed (${q})`);
 });

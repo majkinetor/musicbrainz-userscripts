@@ -173,7 +173,7 @@ What **Import** reads, **Export** writes, and Harmony and other scripts produce:
 
 ### From another script
 
-Append `?falcon=<base64(JSON)>` to any musicbrainz.org URL: Falcon opens with the queue seeded (it doesn't start). The JSON is the [model](#json-model) above, read as **Import** reads a file: the `note` becomes the batch edit note, and an item carries whatever a row can. [Platform Check](../platform_check/README.md#artists-and-labels) sends its artist and label links this way.
+Append `?falcon=<base64(JSON)>` to any musicbrainz.org URL: Falcon opens with the queue seeded (it doesn't start). The JSON is the [model](#json-model) above, read as **Import** reads a file: the `note` becomes the batch edit note, and an item carries whatever a row can. On a page where Falcon already runs, a script can instead dispatch a `falcon:import` event on `document` with the JSON as a string `detail`: Falcon queues it on that page and answers with `falcon:import-ok`. [Platform Check](../platform_check/README.md#artists-and-labels) sends its artist and label links this way, and falls back to `?falcon=` in a new tab when no Falcon answers.
 
 ## Settings
 

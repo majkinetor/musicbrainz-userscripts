@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Platform Check
 // @namespace    http://tampermonkey.net/
-// @version      2026.10.3.222000
+// @version      2026.10.3.224500
 // @description  Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+DQogIDx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CiAgDQogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJhMWE1MiIgc3Ryb2tlLXdpZHRoPSI5IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik00MCA4OCBBMzQgMzQgMCAwIDEgNDAgNDAiLz4NCiAgICA8cGF0aCBkPSJNMjkgOTkgQTUwIDUwIDAgMCAxIDI5IDI5Ii8+DQogICAgPHBhdGggZD0iTTg4IDg4IEEzNCAzNCAwIDAgMCA4OCA0MCIvPg0KICAgIDxwYXRoIGQ9Ik05OSA5OSBBNTAgNTAgMCAwIDAgOTkgMjkiLz4NCiAgPC9nPg0KICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyMCIgZmlsbD0iI2U4MjAxYSIvPg0KPC9zdmc+DQo=
@@ -6991,10 +6991,21 @@ function pcLinkTypeFor(type, url) {
 }
 // The batch for Falcon's ?falcon= handoff, in Falcon's JSON model (what its Import reads):
 // one item per artist or label with its new links, and the batch's edit note
-function pcFalconPayload(rows, note) {
+function pcFalconJson(rows, note) {
     const items = rows.map(r => ({ entityType: r.type, mbid: r.mbid, name: r.name, urls: r.urls.map(url => ({ url, linkTypeId: pcLinkTypeFor(r.type, url) })) }));
-    const json = JSON.stringify({ note, items });
-    return btoa(String.fromCharCode(...new TextEncoder().encode(json)));
+    return JSON.stringify({ note, items });
+}
+function pcFalconPayload(rows, note) {
+    return btoa(String.fromCharCode(...new TextEncoder().encode(pcFalconJson(rows, note))));
+}
+// Falcon runs on this page too: hand it the batch in place (a DOM event, which every
+// userscript sandbox hears). False when no Falcon answered, so the caller opens it in a tab.
+function pcSendToFalconHere(json) {
+    let ok = false;
+    const ack = () => { ok = true; };
+    document.addEventListener('falcon:import-ok', ack);
+    try { document.dispatchEvent(new CustomEvent('falcon:import', { detail: json })); } finally { document.removeEventListener('falcon:import-ok', ack); }
+    return ok;
 }
 // MusicBrainz's edit page for one artist or label, with its new links filled in, for you to submit
 function pcSeededEditUrl(type, mbid, urls, note) {
@@ -7150,9 +7161,10 @@ async function pcOpenLinksTable(btn) {
     send.onclick = () => {
         const b = batch();
         if (!b.length) return;
-        const url = `${MB_ORIGIN}/?falcon=${encodeURIComponent(pcFalconPayload(b, pcLinksNote()))}`;
-        appendLog('System', `Artists & labels: sent ${b.reduce((s, r) => s + r.urls.length, 0)} link(s) on ${b.length} artist(s)/label(s) to Falcon`, 'ok');
-        window.open(url, '_blank');
+        const here = pcSendToFalconHere(pcFalconJson(b, pcLinksNote()));
+        appendLog('System', `Artists & labels: sent ${b.reduce((s, r) => s + r.urls.length, 0)} link(s) on ${b.length} artist(s)/label(s) to Falcon${here ? '' : ' (in a new tab: no Falcon on this page)'}`, 'ok');
+        if (!here) window.open(`${MB_ORIGIN}/?falcon=${encodeURIComponent(pcFalconPayload(b, pcLinksNote()))}`, '_blank');
+        ov.remove();
     };
 }
 document.getElementById('mb-links-btn').addEventListener('click', e => pcOpenLinksTable(e.currentTarget));
