@@ -12,7 +12,7 @@ An importer like [Harmony] hands you 20–50 artists, recordings and labels that
 
 ## Features
 
-- **[Queue from anywhere](#filling-the-queue)**: a [Harmony](#from-harmony) import, [the page you're on](#from-the-current-page), [a series](#from-a-series), a [JSON file](#json-model), or [another script](#from-another-script).
+- **[Queue from anywhere](#filling-the-queue)**: a [Harmony](#from-harmony) import, [the page you're on](#from-the-current-page), [a series](#from-a-series), a [JSON file](#json-model), or [another script](#from-another-script) such as Platform Check.
 - **[Attributes](#attributes)**: links, names, disambiguations, aliases, ISRCs, the video flag, cover art.
 - **[Failures you can inspect](#the-run)**: MusicBrainz's own error on the row, the worker left where it stopped, retry in place.
 - **Export and import** a run as JSON, with each item's outcome, so a partial batch can be rerun without repeating what went through.
@@ -173,7 +173,11 @@ What **Import** reads, **Export** writes, and Harmony and other scripts produce:
 
 ### From another script
 
-Append `?falcon=<base64(JSON)>` to any musicbrainz.org URL: Falcon opens with the queue seeded (it doesn't start). It takes a flatter form of the model, one row per link.
+Append `?falcon=<base64(JSON)>` to any musicbrainz.org URL: Falcon opens with the queue seeded (it doesn't start). It takes a flatter form of the model, one row per link: a bare array, or `{ "note": "…", "items": [...] }` with the [batch edit note](#batch-edit-note). [Platform Check](../platform_check/README.md#artists-and-labels) sends its artist and label links this way.
+
+```json
+{ "note": "Links from Platform Check", "items": [{ "entityType": "artist", "mbid": "d31f76d2-1d8e-4271-8027-148f375979d7", "url": "https://www.deezer.com/artist/27", "name": "Daft Punk" }] }
+```
 
 ## Settings
 
