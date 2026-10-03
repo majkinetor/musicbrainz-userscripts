@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-10-03 23:46 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-10-04 00:20 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -1226,7 +1226,7 @@ The footer's **+** adds every confirmed link (middle-click or Alt+click: the wit
 
 ### Artists and labels
 
-A matched album usually names its artists' pages on that platform, and sometimes its label's. **Artists & labels**, in the footer next to **+** and **↗**, lists them against this release's MusicBrainz artists and labels: one row per artist or label, one column per platform.
+A matched album usually names its artists' pages on that platform, and sometimes its label's. **Artists & labels**, in the footer next to **+** and **↗**, lists them against this release's MusicBrainz artists and labels: one row per artist or label, one column per platform. Once the scans finish, the button shows how many links would be added, e.g. **Artists & labels (25)**.
 
 | Mark |                                                                                                                                                       |
 | ---- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -1246,7 +1246,7 @@ Click a mark to open the page (a ⚠ opens the MusicBrainz artist or label that 
 - Only a [confirmed](#link-confidence) match counts: a link withheld by link confidence gives no artists or labels either.
 
 > [!NOTE]
-> The pages come from the album answers the scan already read, so they cost no extra platform requests. Opening the table asks MusicBrainz once which of the links it already has, and on whom. A match cached before this feature is read again once, on the next scan of the release.
+> The pages come from the album answers the scan already read, so they cost no extra platform requests. MusicBrainz is asked once which of the links it already has, and on whom (one request per 100 links): when the scans finish, for the count, and the table reuses that answer. With *Count artist and label links to add* off, it is asked only when you open the table. A match cached before this feature is read again once, on the next scan of the release.
 
 ### Platforms
 
@@ -1290,7 +1290,7 @@ Click a mark to open the page (a ⚠ opens the MusicBrainz artist or label that 
 | --- | --- |
 | Platforms | order them, or leave some out |
 | Authentication | Beatport and Qobuz logins |
-| Link confidence | *Use barcodes* and *Use formats* (off, if they exist, strictly); *Add links in a new tab* (on; off navigates this tab); *Keep background-add tabs awake* |
+| Link confidence | *Use barcodes* and *Use formats* (off, if they exist, strictly); *Add links in a new tab* (on; off navigates this tab); *Keep background-add tabs awake*; *Count artist and label links to add* (on) |
 | Appearance | icon and name size, *Compact unmatched providers*, *Compact low-confidence providers*, the MusicBrainz marker (ring, bold ring, ✓ badge, dot or rounded square), the format marker (circle or text), one or two rows |
 
 ### Shortcuts

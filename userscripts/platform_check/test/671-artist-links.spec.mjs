@@ -194,3 +194,32 @@ test('a track\'s artists are its artist column, not the "Recording artist:" line
   const tracks = await page.evaluate(`(() => { ${src}; return pcMbCredits(document, 2).tracks.map(t => t.map(a => a.mbid)); })()`);
   check(JSON.stringify(tracks) === JSON.stringify([['36bf8efc-34ba-4f90-b02c-90af2c6d7856'], ['7a157e97-0000-4000-8000-000000000000']]), `track 1 is the italo disco Boeing only (${JSON.stringify(tracks)})`);
 });
+
+// #671 (majkinetor: "show a number before opening… if there are 25 to be added"): once the scans
+// finish, one lookup counts the links the table would add; opening the table reuses it.
+test('Artists & labels shows how many links it would add, from one lookup', { tag: '@unit' }, async () => {
+  const src = await functionSource('platform_check', ['pcUrlKey', 'pcMarkCell', 'pcLinkedKey', 'pcLinkedFresh', 'pcLinkedCached', 'pcNewCount', 'pcShowLinksCount', 'pcCountLinks']);
+  const run = async (setting) => {
+    const btn = { textContent: 'Artists & labels' }, calls = [];
+    let key = null;
+    const rows = [
+      { type: 'artist', mbid: 'a', name: 'A', cells: { discogs: [{ url: 'https://www.discogs.com/artist/1' }], deezer: [{ url: 'https://www.deezer.com/artist/2' }] } },
+      { type: 'artist', mbid: 'b', name: 'B', cells: { discogs: [{ url: 'https://www.discogs.com/artist/3' }, { url: 'https://x.bandcamp.com/', uncertain: true }] } },
+    ];
+    const env = new Function('document', 'GM_getValue', 'mbDataGet', 'mbid', 'pcLinkRows', 'pcMbCredits', 'pcConfirmedCredits', 'pcLinkedTo', 'appendLog',
+      'let _pcLinked = null;\n' + src + '\nreturn { pcCountLinks, pcLinkedCached, pcUrlKey };')(
+      { getElementById: () => btn }, (k, d) => k === 'pc:links-count' ? setting : d, () => ({ mbTracks: 1 }), 'm',
+      () => ({ rows }), () => ({}), () => ({ byProvider: {} }),
+      async urls => { calls.push(urls); return new Map([[key('https://www.discogs.com/artist/1'), [{ type: 'artist', mbid: 'a' }]]]); }, () => {});
+    key = env.pcUrlKey;
+    await env.pcCountLinks();
+    return { btn, calls, env, rows };
+  };
+  const on = await run(true);
+  check(on.btn.textContent === 'Artists & labels (2)', `two links to add (Deezer A, Discogs B; not A's linked one or the uncertain account): "${on.btn.textContent}"`);
+  check(on.calls.length === 1, `one lookup (${on.calls.length})`);
+  await on.env.pcLinkedCached(on.rows.flatMap(r => Object.values(r.cells).flat().map(c => c.url)));
+  check(on.calls.length === 1, 'opening the table reuses it');
+  const off = await run(false);
+  check(off.calls.length === 0 && off.btn.textContent === 'Artists & labels', 'setting off: nothing asked, no number');
+});

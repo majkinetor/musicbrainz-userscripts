@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Platform Check
 // @namespace    http://tampermonkey.net/
-// @version      2026.10.3.234800
+// @version      2026.10.4
 // @description  Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+DQogIDx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CiAgDQogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJhMWE1MiIgc3Ryb2tlLXdpZHRoPSI5IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik00MCA4OCBBMzQgMzQgMCAwIDEgNDAgNDAiLz4NCiAgICA8cGF0aCBkPSJNMjkgOTkgQTUwIDUwIDAgMCAxIDI5IDI5Ii8+DQogICAgPHBhdGggZD0iTTg4IDg4IEEzNCAzNCAwIDAgMCA4OCA0MCIvPg0KICAgIDxwYXRoIGQ9Ik05OSA5OSBBNTAgNTAgMCAwIDAgOTkgMjkiLz4NCiAgPC9nPg0KICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyMCIgZmlsbD0iI2U4MjAxYSIvPg0KPC9zdmc+DQo=
@@ -2170,6 +2170,10 @@ providerModal.innerHTML = `
         <label style="display: inline-flex; align-items: center; gap: 8px; cursor: pointer; user-select: none;" title="#556. Firefox throttles timers in a background tab - to one step per second, and worse once the tab has spent its execution budget - and MusicBrainz's submit is a chain of them. A tab that is playing audio is exempt, so this plays an inaudible tone (30Hz, gain 0.0008) for the few seconds the background-add tab is alive. Measured on the same 2-link add: 20.2s without it, 3.7s with. REQUIRES allowing audio for musicbrainz.org (padlock menu > Autoplay > Allow Audio) - without it Firefox blocks the tone and the setting does nothing, which the Log says - and it lights the speaker icon while it runs. A WebRTC loopback was tried instead and does NOT work: it connects, and changes nothing.">
           <input type="checkbox" id="mb-bg-audio" style="margin: 0; width: 16px; height: 16px;"> Keep background-add tabs <b>awake</b></label>
       </div>
+      <div style="display: flex; align-items: center; gap: 8px; margin: 5px 0;">
+        <label style="display: inline-flex; align-items: center; gap: 8px; cursor: pointer; user-select: none;" title="On: once the scans finish, MusicBrainz is asked which of the artist and label pages it already has (one request per 100 links), and Artists &amp; labels shows how many would be added. Off: it is asked only when you open the table.">
+          <input type="checkbox" id="mb-links-count" style="margin: 0; width: 16px; height: 16px;"> <b>Count</b> artist and label links to add</label>
+      </div>
     </div>
 
     <div class="pc-setup-sec">Appearance</div>
@@ -2510,6 +2514,7 @@ document.getElementById('mb-token-setup-btn').addEventListener('click', () => {
     document.getElementById('mb-format-mode').disabled = !GM_getValue('pc:respect-format', true);
     document.getElementById('mb-open-new-tab').checked = GM_getValue('pc:open-new-tab', true);
     document.getElementById('mb-bg-audio').checked = GM_getValue('pc:bg-audio', false);
+    document.getElementById('mb-links-count').checked = GM_getValue('pc:links-count', true);
     const layout = GM_getValue('pc:layout', '1row');
     providerModal.querySelectorAll('input[name="mb-layout"]').forEach(r => { r.checked = r.value === layout; });
     document.getElementById('mb-compact-unmatched').checked = GM_getValue('pc:compact-unmatched', true);
@@ -2571,6 +2576,10 @@ document.getElementById('mb-respect-format').addEventListener('change', e => {
 });
 document.getElementById('mb-format-mode').addEventListener('change', e => {
     GM_setValue('pc:format-mode', e.target.value);         // 'exists' (known incompatible only) | 'strict' (also undeterminable)
+});
+document.getElementById('mb-links-count').addEventListener('change', e => {
+    GM_setValue('pc:links-count', e.target.checked);       // #671 — count the links to add once the scans finish
+    if (e.target.checked) pcCountLinks(); else pcShowLinksCount(null);
 });
 document.getElementById('mb-open-new-tab').addEventListener('change', e => {
     GM_setValue('pc:open-new-tab', e.target.checked);      // #464 — off navigates the same tab instead of opening one
@@ -6855,6 +6864,7 @@ async function runScansInner() {
     if (providerEnabled('sevendigital')) tasks.push(scanSevendigital({ ...ctx, existingUrl: existing.sevendigital }));
     await Promise.allSettled(tasks);
     appendLog('System', 'All scans completed', 'ok');
+    pcCountLinks();   // #671
 }
 
 // ─── Artists & labels table (#671) ──────────────────────────────────────────
@@ -7090,6 +7100,37 @@ function pcLinksNote() {
     return `Artist and label links from Platform Check's platform matches for the release "${mb.album || ''}" by ${mb.artist || '?'}: ${MB_ORIGIN}/release/${mbid}`;
 }
 
+// The Artists & labels count (#671): the links the table would add as it opens (its + marks), on
+// the footer button once the scans finish — when the setting is on. Its /ws/2/url answer is kept
+// for the table, so opening it right after asks nothing again.
+let _pcLinked = null;   // { key, map }: the last lookup, keyed by the urls it asked about
+const pcLinkedKey = urls => [...new Set(urls)].sort().join('\n');
+async function pcLinkedFresh(urls) {
+    const map = await pcLinkedTo(urls);
+    _pcLinked = { key: pcLinkedKey(urls), map };
+    return map;
+}
+const pcLinkedCached = urls => (_pcLinked && _pcLinked.key === pcLinkedKey(urls)) ? Promise.resolve(_pcLinked.map) : pcLinkedFresh(urls);
+const pcNewCount = (rows, linked) => rows.reduce((s, r) => s + Object.values(r.cells).reduce((t, cell) => t + pcMarkCell(r, cell, linked).filter(c => c.state === 'new').length, 0), 0);
+function pcShowLinksCount(n) {
+    const b = document.getElementById('mb-links-btn');
+    if (b) b.textContent = n ? `Artists & labels (${n})` : 'Artists & labels';
+}
+async function pcCountLinks() {
+    if (!GM_getValue('pc:links-count', true)) return;
+    const mbRec = mbDataGet(mbid) || {};
+    const { rows } = pcLinkRows(pcMbCredits(document, mbRec.mbTracks || 0), pcConfirmedCredits().byProvider);
+    const urls = rows.flatMap(r => Object.values(r.cells).flat().map(c => c.url));
+    if (!urls.length) { pcShowLinksCount(0); appendLog('System', 'Artists & labels: no artist or label pages to count'); return; }
+    try {
+        const n = pcNewCount(rows, await pcLinkedFresh(urls));
+        pcShowLinksCount(n);
+        appendLog('System', `Artists & labels: ${n} link(s) to add, of ${urls.length} page(s) found`);
+    } catch (e) {
+        appendLog('System', `Artists & labels: couldn't count the links to add (${e.message})`, 'warn');
+    }
+}
+
 async function pcOpenLinksTable(btn) {
     document.getElementById('pc-links-ov')?.remove();
     const mbRec = mbDataGet(mbid) || {};
@@ -7146,7 +7187,7 @@ async function pcOpenLinksTable(btn) {
     const status = ov.querySelector('.pc-lk-status'), send = ov.querySelector('.pc-lk-send'), more = ov.querySelector('.pc-lk-more'), menu = ov.querySelector('.pc-lk-menu');
     let linked = new Map(), checked = false;
     try {
-        linked = await pcLinkedTo(rows.flatMap(r => Object.values(r.cells).flat().map(c => c.url)));
+        linked = await pcLinkedCached(rows.flatMap(r => Object.values(r.cells).flat().map(c => c.url)));   // the count's answer, when it has one
         checked = true;
     } catch (e) {
         appendLog('System', `Artists & labels: couldn't ask MusicBrainz which links it already has (${e.message})`, 'error');
@@ -7159,6 +7200,7 @@ async function pcOpenLinksTable(btn) {
         for (const p of provs) if (r.cells[p]) cells[p] = pcMarkCell(r, r.cells[p], linked).map(c => ({ ...c, on: c.state === 'new' }));
         return { ...r, cells };
     });
+    if (checked && GM_getValue('pc:links-count', true)) pcShowLinksCount(pcNewCount(rows, linked));
     const batch = () => marked.map(r => ({ type: r.type, mbid: r.mbid, name: r.name, urls: Object.values(r.cells).flat().filter(c => c.on).map(c => c.url) })).filter(r => r.urls.length);
     const MARK = { linked: '✓', new: '+', unsure: '+?', other: '⚠' };
     const cellMark = cs => {
@@ -7231,6 +7273,9 @@ async function pcOpenLinksTable(btn) {
         const here = pcSendToFalconHere(pcFalconJson(b, pcLinksNote(), pcLinksName()), run);
         appendLog('System', `Artists & labels: ${run && here ? 'running' : 'sent'} ${b.reduce((s, r) => s + r.urls.length, 0)} link(s) on ${b.length} artist(s)/label(s) ${run && here ? 'in' : 'to'} Falcon${here ? '' : ` (in a new tab: no Falcon on this page${run ? '; press Start there' : ''})`}`, 'ok');
         if (!here) window.open(`${MB_ORIGIN}/?falcon=${encodeURIComponent(pcFalconPayload(b, pcLinksNote(), pcLinksName()))}`, '_blank');
+        // the links are on their way: the count and the lookup behind it no longer hold
+        _pcLinked = null;
+        pcShowLinksCount(null);
         close();
     };
     send.onclick = () => toFalcon(true);
