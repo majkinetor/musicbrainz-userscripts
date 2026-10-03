@@ -3,7 +3,8 @@
 // store ships, gives the barcode, type, date, discs and each track's ISRC, found by search.
 //
 // Fixture: fixtures/669-kiwanuka.html, the uk.7digital.com page of Michael Kiwanuka's KIWANUKA
-// (release 10569454), trimmed to the release block, its tracklist and the ℗ / © lines below it: a live release page asks a
+// (release 10569454), trimmed to the release block, its tracklist and the ℗ / © lines below it, with
+// a digital booklet's row added to the tracklist, as on Origins (Deluxe): a live release page asks a
 // headless browser to prove it is human. The API answers live. 7digital stores its barcode as
 // 00602508436901; the release date is 23 July 2020, which the API writes as 2020-07-22T23:00:00Z.
 import { test, check, sourceOf } from '../../../dev/test/harness.mjs';
@@ -31,7 +32,7 @@ test('7digital: the page and the API, with ISRCs, barcode, type and date; a refu
   check(rel.barcode === '0602508436901', `the barcode, as an EAN-13: ${rel.barcode}`);
   check(rel.types[0] === 'Album' && rel.labels.length === 1 && rel.labels[0].name === 'Polydor Records', `type and label: ${JSON.stringify(rel.types)} ${JSON.stringify(rel.labels)}`);
   check(rel.date.year === 2020 && rel.date.month === 7 && rel.date.day === 23, `the date is the store's day, not UTC's: ${JSON.stringify(rel.date)}`);
-  check(rel.mediums.length === 1 && tracks.length === 14 && tracks.every(t => /^GBUM719\d{5}$/.test(t.isrc || '') && t.lengthMs > 0), `14 tracks, each with its ISRC and length (${tracks.length})`);
+  check(rel.mediums.length === 1 && tracks.length === 14 && tracks.every(t => /^GBUM719\d{5}$/.test(t.isrc || '') && t.lengthMs > 0), `14 tracks, each with its ISRC and length; the booklet is not one (${tracks.length})`);
   check(tracks[7].title === 'Hero (Intro)' && tracks[8].title === 'Hero' && tracks[8].isrc === 'GBUM71903002', `"Hero (Intro)" and "Hero" each get their own ISRC (${tracks[7].isrc}, ${tracks[8].isrc})`);
   check(rel.annotation === '℗ 2019 Polydor Limited\n© 2019 Polydor Limited', `the ℗ and © lines are the annotation: ${JSON.stringify(rel.annotation)}`);
   check(rel.urls.length === 1 && rel.urls[0].url === 'https://uk.7digital.com' + PATH && rel.urls[0].linkType === 74, `link: ${JSON.stringify(rel.urls)}`);

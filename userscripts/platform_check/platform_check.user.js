@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Platform Check
 // @namespace    http://tampermonkey.net/
-// @version      2026.10.3.175216
+// @version      2026.10.3.190540
 // @description  Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+DQogIDx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CiAgDQogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJhMWE1MiIgc3Ryb2tlLXdpZHRoPSI5IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik00MCA4OCBBMzQgMzQgMCAwIDEgNDAgNDAiLz4NCiAgICA8cGF0aCBkPSJNMjkgOTkgQTUwIDUwIDAgMCAxIDI5IDI5Ii8+DQogICAgPHBhdGggZD0iTTg4IDg4IEEzNCAzNCAwIDAgMCA4OCA0MCIvPg0KICAgIDxwYXRoIGQ9Ik05OSA5OSBBNTAgNTAgMCAwIDAgOTkgMjkiLz4NCiAgPC9nPg0KICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyMCIgZmlsbD0iI2U4MjAxYSIvPg0KPC9zdmc+DQo=
@@ -2228,12 +2228,15 @@ providerModal.innerHTML = `
   <div id="mb-setup-order" style="display: none;">
     <div class="pc-setup-sec" style="margin-top: 14px; display: flex; align-items: center;">Platforms<button class="pc-setup-back" type="button" style="margin-left: auto; padding: 0; background: none; border: none; color: var(--mbu-ok); font-size: 12px; font-weight: 600; text-transform: none; letter-spacing: 0; cursor: pointer;">‹ Back</button></div>
     <p style="font-size: 12px; color: var(--mbu-text-weak); margin: 4px 0 10px;">Drag to reorder; uncheck to skip a service. All results come from public endpoints.</p>
-    <div id="mb-provider-list">
+    <!-- majkinetor: "make PC platform settings more compact vertically as it will soon require scroll …
+         also add platform icons there": two columns, read across, each platform with its icon -->
+    <div id="mb-provider-list" style="display: grid; grid-template-columns: 1fr 1fr; gap: 2px 4px;">
     ${PROVIDER_ORDER.map(p => `
-      <div class="pc-prov-row" data-provider="${p}" draggable="true" style="display: flex; align-items: center; margin-bottom: 2px; font-size: 13px; padding: 4px 8px; border-radius: 4px; background: var(--mbu-bg-raised); border: 1px solid transparent; cursor: grab; user-select: none;">
-        <span class="pc-prov-grip" style="color: var(--mbu-text-weak); font-size: 14px; margin-right: 8px; letter-spacing: -2px;" title="Drag to reorder">⋮⋮</span>
-        <input type="checkbox" id="mb-toggle-${p}" checked style="margin: 0 10px 0 0; width: 15px; height: 15px;">
-        <span style="font-weight: 500; flex-grow: 1; color: var(--mbu-text);">${PROVIDER_NAME[p]}</span>
+      <div class="pc-prov-row" data-provider="${p}" draggable="true" style="display: flex; align-items: center; min-width: 0; font-size: 13px; padding: 2px 6px; border-radius: 4px; background: var(--mbu-bg-raised); border: 1px solid transparent; cursor: grab; user-select: none;">
+        <span class="pc-prov-grip" style="color: var(--mbu-text-weak); font-size: 12px; margin-right: 5px; letter-spacing: -2px;" title="Drag to reorder">⋮⋮</span>
+        <input type="checkbox" id="mb-toggle-${p}" checked style="margin: 0 7px 0 0; width: 14px; height: 14px; flex: 0 0 auto;">
+        <span style="display: inline-flex; flex: 0 0 auto; margin-right: 6px;">${stIcon(p, 15)}</span>
+        <span style="font-weight: 500; flex-grow: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--mbu-text);">${PROVIDER_NAME[p]}</span>
       </div>`).join('')}
     </div>
   </div>
@@ -2317,8 +2320,9 @@ container.style.setProperty('--pc-icon-size', `${GM_getValue('pc:icon-size', 22)
 refreshCompactStrip();   // #355: start everything compact (rows rise out as they match)
 
 // Provider-reorder controls in the providers modal — drag-and-drop. Each row
-// is draggable; dragover on a sibling reorders via the cursor's Y-midpoint
-// (above-mid = insert before, below-mid = insert after). Save reads the
+// is draggable; the list is two columns read across, so dragover on a sibling
+// reorders via the cursor's X-midpoint (left half = insert before, right half =
+// insert after). Save reads the
 // resulting DOM order, persists to pc:provider-order, and reloads so the
 // sidebar re-renders rows in the new sequence.
 {
@@ -2351,20 +2355,19 @@ refreshCompactStrip();   // #355: start everything compact (rows rise out as the
             e.preventDefault();
             e.dataTransfer.dropEffect = 'move';
             const rect = row.getBoundingClientRect();
-            const after = e.clientY > rect.top + rect.height / 2;
+            const after = e.clientX > rect.left + rect.width / 2;
             // Visual hint: highlight which edge will receive the drop.
-            row.style.borderColor = 'var(--mbu-ok)';
-            row.style.borderTopColor    = after ? 'transparent' : 'var(--mbu-ok)';
-            row.style.borderBottomColor = after ? 'var(--mbu-ok)'     : 'transparent';
-            row.style.borderLeftColor   = 'transparent';
-            row.style.borderRightColor  = 'transparent';
+            row.style.borderColor = 'transparent';
+            row.style.borderLeftColor  = after ? 'transparent' : 'var(--mbu-ok)';
+            row.style.borderRightColor = after ? 'var(--mbu-ok)' : 'transparent';
         });
         row.addEventListener('dragleave', () => { row.style.borderColor = 'transparent'; });
         row.addEventListener('drop', e => {
             e.preventDefault();
             if (!dragged || dragged === row) return;
             const rect = row.getBoundingClientRect();
-            const after = e.clientY > rect.top + rect.height / 2;
+            const after = e.clientX > rect.left + rect.width / 2;
+            row.style.borderColor = 'transparent';
             list.insertBefore(dragged, after ? row.nextSibling : row);
             commitProviderOrder();
         });
@@ -6000,7 +6003,7 @@ const sdStore = country => (country === 'GB' ? 'uk' : String(country || 'us').to
 function sdMeta(r, country) {
     const date = String((r.download || {}).releaseDate || '').slice(0, 10);
     return {
-        id: String(r.id),
+        id: String(r.id), country,
         url: `https://${sdStore(country)}.7digital.com/artist/${r.artist.slug}/release/${r.slug}`,
         title: r.title || '', artist: (r.artist || {}).name || '',
         tracks: r.trackCount || null,
@@ -6029,6 +6032,22 @@ async function sdById(ref, { artist, album, barcode }) {
         }
     }
     return null;
+}
+// majkinetor: "PC reads PDF as track" (Origins (Deluxe): 15 songs and a digital booklet, trackCount 16).
+// A release's trackCount counts its booklet; its tracks in track/search are only the audio ones. When
+// 7digital counts more than MB, the release's audio tracks are counted by searching its title (one search
+// usually brings up the whole album), and that count stands when it is MB's: the rest is the booklet.
+async function sdAudioTracks(meta, mbTracks) {
+    if (!meta || !meta.id || !(meta.tracks > mbTracks)) return meta;
+    const found = new Set();
+    for (const q of [`${meta.artist} ${meta.title}`, meta.title]) {
+        const j = await sdApi('track/search', { q, country: meta.country || 'GB', pageSize: '50' }).catch(() => null);
+        for (const x of ((j || {}).searchResults || {}).searchResult || []) if (x.track && x.track.release && String(x.track.release.id) === meta.id && (x.track.type || 'audio') === 'audio') found.add(x.track.id);
+        if (found.size >= mbTracks) break;
+    }
+    if (found.size === mbTracks) { appendLog('7digital', `Release ${meta.id}: ${meta.tracks} items, ${found.size} of them audio tracks (the rest a booklet or video)`); return { ...meta, tracks: found.size }; }
+    appendLog('7digital', `Release ${meta.id}: ${meta.tracks} items; ${found.size} audio track(s) found by search, so the count stays`);
+    return meta;
 }
 async function scanSevendigital({ artist, album, mbTracks, existingUrl, mbid, isVariousArtists, barcode }) {
     const label = '7digital';
@@ -6073,6 +6092,7 @@ async function scanSevendigital({ artist, album, mbTracks, existingUrl, mbid, is
         meta = { url: existingUrl, tracks: null, year: null, label: null, barcode: null };
     }
     if (!meta) { cacheSet(mbid, 'sevendigital', { url: null, tracks: null, year: null, label: null, source: 'search' }); updateRow('sevendigital', { url: null, mbTracks, remoteTracks: null }); return; }
+    meta = await sdAudioTracks(meta, mbTracks).catch(() => meta);
     appendLog(label, `Release: tracks=${meta.tracks ?? '?'} title="${meta.title || ''}" year=${meta.year || '?'} label=${meta.label || '?'} barcode=${meta.barcode || '-'}`, meta.tracks ? 'ok' : 'warn');
     const entry = { url: meta.url, tracks: meta.tracks, year: meta.year, label: meta.label, format: null, source, barcode: meta.barcode };
     cacheSet(mbid, 'sevendigital', entry);
