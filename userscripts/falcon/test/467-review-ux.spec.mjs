@@ -100,7 +100,7 @@ test("#467: review ux", { tag: ['@sandbox', '@login'] }, async ({ context, page 
     await page.check('.falcon-row-check[data-id="x"]');
     await page.check('.falcon-row-check[data-id="y"]');
     const selCountText = await page.textContent('#falcon-select-count');
-    ck(/2 selected/.test(selCountText || ''), `select-count reflects the 2 checked rows ("${selCountText}")`);
+    ck((selCountText || '').trim() === '2', `select-count reflects the 2 checked rows ("${selCountText}")`);
     await page.click('#falcon-remove-selected');
     const remaining = await page.evaluate(() => window.__falconTest.getQueue().map(i => i.id));
     console.log('after bulk-remove:', remaining);
@@ -124,12 +124,14 @@ test("#467: review ux", { tag: ['@sandbox', '@login'] }, async ({ context, page 
     const beforeExpand = await page.evaluate(() => document.querySelectorAll('#falcon-queue-list .falcon-row > div').length);
     await page.click('.falcon-row-expand[data-id="d1"]');
     const duringExpand = await page.evaluate(() => document.querySelectorAll('#falcon-queue-list .falcon-row > div').length);
-    const urlLines = await page.evaluate(() => [...document.querySelectorAll('#falcon-queue-list .falcon-row > div')].slice(1).filter(l => l.querySelector('a[href]')).length);   // the rest edit the item
+    const urlLines = await page.evaluate(() => document.querySelectorAll("#falcon-queue-list .falcon-row .falcon-ln a[href]").length);   // #663: one .falcon-ln per URL in the form
     ck(duringExpand > beforeExpand && urlLines === 2, `expanding shows one line per url — 2 urls (${urlLines} of ${duringExpand - beforeExpand} new lines)`);
-    const detailText = await page.evaluate(() => document.getElementById('falcon-queue-list').textContent);
+    // #663: each url sits in its own edit box
+    const detailText = await page.evaluate(() => document.getElementById('falcon-queue-list').textContent + ' ' + [...document.querySelectorAll('#falcon-queue-list .falcon-link-url')].map(i => i.value).join(' '));
     console.log('detail text after expand:', detailText.replace(/\s+/g, ' ').trim());
     ck(detailText.includes('deezer.com/track/1') && detailText.includes('tidal.com/track/1'), 'expanding the row shows BOTH urls');
-    ck(detailText.includes('type 268') && detailText.includes('type 979'), 'each url shows its linkTypeId');
+    const typeNames = await page.evaluate(() => [...document.querySelectorAll('#falcon-queue-list .falcon-link-type-chg')].map(s => s.selectedOptions[0]?.textContent));   // #663: type badges are combos
+    ck(typeNames.includes('free streaming') && typeNames.includes('streaming'), 'each url shows its link type, by name (#663)');
     const errorTitle = await page.evaluate(() => [...document.querySelectorAll('#falcon-queue-list [title]')].map(el => el.title).find(t => /not allowed for recordings/.test(t)));
     ck(!!errorTitle, `the failed url's real MB error is shown on hover ("${errorTitle}")`);
     await page.click('.falcon-row-expand[data-id="d1"]');

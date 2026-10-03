@@ -78,6 +78,9 @@ const scoped = (inner) => `:where(${ROOTS.join(',')}) :where(${inner})`;
 const scopedEl = (inner) => `:where(${ROOTS.join(',')}) ${inner}`;
 
 // Single-quoted at generation time, so: no single quotes, no newlines.
+// the camera glyph, as an SVG data URI in the given (url-encoded) fill
+const VIDEO_GLYPH = (fill) => "data:image/svg+xml,%3Csvg%20xmlns=%27http://www.w3.org/2000/svg%27%20viewBox=%270%200%2016%2016%27%20fill=%27" + fill + "%27%3E%3Crect%20x=%271%27%20y=%273.5%27%20width=%2710%27%20height=%279%27%20rx=%271.5%27/%3E%3Cpath%20d=%27M11.5%207L15%204.8v6.4L11.5%209z%27/%3E%3C/svg%3E";
+
 const CSS = [
     // Help link — `? Help` opening the script's README in a new tab. Apollo and
     // Fusion already agreed on this shape; Art Station said "Help ↗" and Mammoth
@@ -286,6 +289,14 @@ const CSS = [
     // would otherwise wrap; the icon plus its tooltip carries the meaning.
     // Art Station is the reference implementation the issue names.
     '.mbu-compact .mbu-bt{display:none}',
+    // Video toggle (#663): a checkbox drawn as a camera glyph, faint when off and a
+    // filled accent chip when on. Falcon puts .mbu-video on its own checkbox; Apollo
+    // styles MB's external-links video checkbox, which it can't add a class to.
+    ':is(.mbu-video,body.tc-ri-on #external-links-editor tr.relationship-item .attribute-container input){-webkit-appearance:none;-moz-appearance:none;appearance:none;width:18px;height:18px;margin:0;border:none;border-radius:3px;cursor:pointer;background:transparent url("' + VIDEO_GLYPH('%23888') + '") center/13px no-repeat;opacity:.45;box-shadow:none;flex:0 0 auto;vertical-align:middle}',
+    ':is(.mbu-video,body.tc-ri-on #external-links-editor tr.relationship-item .attribute-container input):hover{opacity:1}',
+    ':is(.mbu-video,body.tc-ri-on #external-links-editor tr.relationship-item .attribute-container input):checked{opacity:1;background-color:var(--mbu-accent);background-image:url("' + VIDEO_GLYPH('%23fff') + '")}',
+    ':is(.mbu-video,body.tc-ri-on #external-links-editor tr.relationship-item .attribute-container input):focus-visible{outline:1px solid var(--mbu-accent);outline-offset:1px}',
+    ':is(.mbu-video,body.tc-ri-on #external-links-editor tr.relationship-item .attribute-container input):disabled{cursor:default;opacity:.3}',
 ].join('');
 
 // ── JS ──────────────────────────────────────────────────────────────────────

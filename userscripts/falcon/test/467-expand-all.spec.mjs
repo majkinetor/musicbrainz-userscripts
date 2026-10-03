@@ -38,26 +38,26 @@ test("#467: expand all", { tag: ['@sandbox', '@login'] }, async ({ context, page
     { id: 'c', entityType: 'artist', mbid: 'b31113ab-205d-461b-b431-5d5c52635117', urls: [{ url: 'https://myspace.com/exp3', linkTypeId: null }], name: null, urlResults: null, status: 'queued', error: '' },
   ]));
 
-  const initialLabel = await page.textContent('#falcon-expand-all .falcon-bt');
+  const initialLabel = await page.getAttribute('#falcon-expand-all', 'title').then(t => /^Collapse/.test(t) ? 'Collapse all' : 'Expand all')   /* #663: ▸/▾ in the header; the title says which */;
   ck(initialLabel === 'Expand all', `starts as "Expand all" when nothing is expanded (got "${initialLabel}")`);
 
   await page.click('#falcon-expand-all');
   const expandedCount = await page.evaluate(() => window.__falconTest.getExpandedIds().size);
-  const labelAfterExpand = await page.textContent('#falcon-expand-all .falcon-bt');
+  const labelAfterExpand = await page.getAttribute('#falcon-expand-all', 'title').then(t => /^Collapse/.test(t) ? 'Collapse all' : 'Expand all')   /* #663: ▸/▾ in the header; the title says which */;
   console.log('expanded count:', expandedCount, 'label:', labelAfterExpand);
   ck(expandedCount === 3, `clicking it expands ALL 3 rows at once (got ${expandedCount})`);
   ck(labelAfterExpand === 'Collapse all', `label flips to "Collapse all" once everything is expanded (got "${labelAfterExpand}")`);
 
   await page.click('#falcon-expand-all');
   const expandedAfterCollapse = await page.evaluate(() => window.__falconTest.getExpandedIds().size);
-  const labelAfterCollapse = await page.textContent('#falcon-expand-all .falcon-bt');
+  const labelAfterCollapse = await page.getAttribute('#falcon-expand-all', 'title').then(t => /^Collapse/.test(t) ? 'Collapse all' : 'Expand all')   /* #663: ▸/▾ in the header; the title says which */;
   console.log('expanded after collapse-all:', expandedAfterCollapse, 'label:', labelAfterCollapse);
   ck(expandedAfterCollapse === 0, `clicking it again collapses everything (got ${expandedAfterCollapse})`);
   ck(labelAfterCollapse === 'Expand all', `label flips back to "Expand all" (got "${labelAfterCollapse}")`);
 
   // expanding one row manually, then the rest via the button, still reaches "all expanded"
   await page.click('.falcon-row-expand[data-id="a"]');
-  const labelPartial = await page.textContent('#falcon-expand-all .falcon-bt');
+  const labelPartial = await page.getAttribute('#falcon-expand-all', 'title').then(t => /^Collapse/.test(t) ? 'Collapse all' : 'Expand all')   /* #663: ▸/▾ in the header; the title says which */;
   ck(labelPartial === 'Expand all', `with only SOME rows expanded, the button still offers "Expand all" (got "${labelPartial}")`);
   await page.click('#falcon-expand-all');
   const allExpandedNow = await page.evaluate(() => window.__falconTest.getExpandedIds().size);

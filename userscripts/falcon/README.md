@@ -45,11 +45,23 @@ On a release or release group page, **+ Add from** fills the queue with its enti
 
 <img src="./screenshots/add-from-release.png" width="520">
 
-Ticking 🎬 *Video* on a selected recording ticks it on every selected recording.
+Ticking the *Video* camera on a selected recording ticks it on every selected recording.
 
 ### From a series
 
 On a series page, **+ Add from series** queues its release groups (optionally every release in them), or its releases (optionally their release groups), in the series' own order. Together with [renaming](#attributes), this is how a series gets its titles conformed.
+
+## Editing the queue
+
+The **List** / **Grid** button, right of the type chips, switches between two views. Falcon remembers the one you last used.
+
+- **List**: expand a row to edit it as a labelled form. Its links are listed one per URL, each with its link types by name; a URL added under two types shows both. The mark before a URL (✓ done, ✗ failed, ↗ not run yet) opens it. Long link lists fold after three, with *+ N more*.
+- Links are editable: change a URL in its box (empty it to drop it). A type badge is a dropdown: pick another type to change it, or **✕** it off. The **+** after the types adds one from that entity's link types, the row's **✕** removes the link, and the **+** by the *Links* label adds a link. The **↗** mark opens the link (✓ / ✗ once it has run). A link with no type shows *auto* and is left for MusicBrainz to guess.
+- **Grid**: one line per row, with its name, disambiguation and ISRCs editable in place. **▸** opens the row's links and aliases (and a release's cover art) beneath it, lined up under *Name*; aliases are added and edited only there.
+
+The select-all box, **▸** expand-all and the number of rows selected head the rows, in both views. The open tab is underlined.
+
+The [keyboard](#shortcuts) moves between fields in both views, like a spreadsheet. In the list, the row you move into opens and the one you leave closes again.
 
 ## The run
 
@@ -69,7 +81,7 @@ Review the queue (remove rows, edit fields), then press **Start**. Right-click a
 - A failed row shows MusicBrainz's own error on hover. **FAILED** / **PARTIAL** / **MANUAL** chips at the top filter the queue to those rows.
 - A worker that can't commit stays where it stopped, dimmed but live, and a fresh one takes over. Click a red status to jump to it in the **Workers** tab; **⛶** enlarges it.
 - **⇗** opens the entity's edit page in a tab, prefilled, for you to finish.
-- **Retry failed** reruns the failed and partial rows in place.
+- **Retry failed**, in Start's **▾** menu, reruns the failed and partial rows in place.
 
 <img src="./screenshots/workers.png">
 
@@ -87,7 +99,7 @@ A link MusicBrainz can't classify on its own (a Bandcamp track: purchase or stre
 | cover art | | | | ✓ | |
 
 - **Name**: an expanded row's ✎ box starts with the current name, so a fix is an edit, not a retype. A rename is votable, so it shows once the edit passes.
-- **Aliases**: in the row's 🏷 strip type `name` or `name@locale`, or use [JSON](./examples/aliases.json) for many. An alias the entity already has is never added again. If that can't be checked, the aliases wait for **Retry failed**.
+- **Aliases**: one row per alias, with its name, its language and **✕**; the **+** by the *Aliases* label adds one, or use [JSON](./examples/aliases.json) for many. A new alias takes the language last typed; `name@locale` typed in the name box sets the language too. Enter on a filled alias opens the next one, on an empty one moves on to the next row's aliases; Esc drops a new, still empty row.
 - **Video** is only ever set, never cleared.
 
 > [!WARNING]
@@ -186,6 +198,12 @@ Append `?falcon=<base64(JSON)>` to any musicbrainz.org URL: Falcon opens with th
 | Key | |
 |---|---|
 | Ctrl+Alt+F | open or close Falcon |
+| Enter / Down | the same field on the next row |
+| Shift+Enter / Up | the same field on the previous row |
+| Tab / Shift+Tab | the next / previous field, on to the next / previous row |
+| Right / Left | the next / previous field, once the cursor is at the end / start of the text |
+
+In an alias box with text in it, Enter adds the alias first; press it again to move on.
 
 [Harmony]: https://harmony.pulsewidth.org.uk
 [ECAU]: https://github.com/ROpdebee/mb-userscripts#mb-enhanced-cover-art-uploads
