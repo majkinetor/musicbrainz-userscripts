@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         First Contact
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.3.190540
-// @description  Import a release into MusicBrainz from the platform's album page with one click: the release editor opens with the title, tracklist, artists, date, label, barcode and link filled in. Each artist's platform link is handed to Apollo Editor for matching. By default the album page is also saved on the Internet Archive (it sends each imported URL to archive.org; off in the settings), and the edit note links the snapshot. Platforms: Deezer, Bandcamp, Discogs, Apple Music, Tidal, Qobuz, Beatport, Spotify, YouTube Music, Volumo, HDtracks, SoundCloud, Amazon Music, Audiomack, 7digital.
+// @version      2026.10.3.195428
+// @description  Import a release into MusicBrainz from the platform's album page with one click: the release editor opens with the title, tracklist, artists, date, label, barcode and link filled in. Each artist's platform link is handed to Apollo Editor for matching. By default the album page is also saved on the Internet Archive (it sends each imported URL to archive.org; off in the settings), and the edit note links the snapshot. Platforms: Deezer, Bandcamp, Discogs, Apple Music, Tidal, Qobuz, Beatport, Spotify, YouTube Music, Volumo, HDtracks, SoundCloud, Amazon Music, Audiomack, 7digital, Ototoy.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPkZpcnN0IENvbnRhY3Q8L3RpdGxlPgogIDwhLS0gdHJhY3RvciBiZWFtIC0tPgogIDxwYXRoIGQ9Ik01MCA0NCBMNzggNDQgTDEwNCAxMTIgTDI0IDExMiBaIiBmaWxsPSIjZjZjNDMxIiBvcGFjaXR5PSIwLjkiLz4KICA8cGF0aCBkPSJNNTYgNDQgTDcyIDQ0IEw4OCAxMTIgTDQwIDExMiBaIiBmaWxsPSIjZmRlNjhhIiBvcGFjaXR5PSIwLjciLz4KICA8IS0tIGxhbmRpbmcgcmluZyAtLT4KICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSIxMTQiIHJ4PSI0MiIgcnk9IjgiIGZpbGw9IiMxZTIzNDYiIHN0cm9rZT0iI2M5Y2RmMiIgc3Ryb2tlLXdpZHRoPSIzIi8+CiAgPGVsbGlwc2UgY3g9IjY0IiBjeT0iMTEzIiByeD0iMjYiIHJ5PSI0LjIiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2Y2YzQzMSIgc3Ryb2tlLXdpZHRoPSIyLjQiLz4KICA8IS0tIHNhdWNlcjogYSBwYWxlIHJpbSwgc28gaXQgc2hvd3Mgb24gYSBkYXJrIGJhY2tncm91bmQgdG9vIC0tPgogIDxwYXRoIGQ9Ik00MCAyNiBBMjQgMTggMCAwIDEgODggMjYgWiIgZmlsbD0iIzFlMjM0NiIgc3Ryb2tlPSIjYzljZGYyIiBzdHJva2Utd2lkdGg9IjMiLz4KICA8cGF0aCBkPSJNNTAgMTggQTEwIDYgMCAwIDEgNjAgMTQiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2ZmZiIgc3Ryb2tlLXdpZHRoPSIyLjYiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxlbGxpcHNlIGN4PSI2NCIgY3k9IjMyIiByeD0iNTYiIHJ5PSIxMyIgZmlsbD0iIzFlMjM0NiIgc3Ryb2tlPSIjYzljZGYyIiBzdHJva2Utd2lkdGg9IjMiLz4KICA8Y2lyY2xlIGN4PSIzOCIgY3k9IjMyIiByPSI0LjQiIGZpbGw9IiNmZmYiLz4KICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjM0IiByPSI0LjQiIGZpbGw9IiNmZmYiLz4KICA8Y2lyY2xlIGN4PSI5MCIgY3k9IjMyIiByPSI0LjQiIGZpbGw9IiNmZmYiLz4KICA8IS0tIHRoZSByZWxlYXNlIGJlaW5nIGJlYW1lZCB1cDogYSBwdXJwbGUgaGV4YWdvbiB3aXRoIGEgbm90ZSAtLT4KICA8cGF0aCBkPSJNNjQgNTggTDg0IDY5LjUgTDg0IDkyLjUgTDY0IDEwNCBMNDQgOTIuNSBMNDQgNjkuNSBaIiBmaWxsPSIjN2I0ZmQ2Ii8+CiAgPHBhdGggZD0iTTY0IDU4IEw4NCA2OS41IEw2NCA4MSBMNDQgNjkuNSBaIiBmaWxsPSIjOWI3MmVhIi8+CiAgPHBhdGggZD0iTTYwIDcyIEw3NCA2OSBMNzQgODkiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2ZmZiIgc3Ryb2tlLXdpZHRoPSIzLjQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz4KICA8cGF0aCBkPSJNNjAgNzIgTDYwIDkyIiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iMy40Ii8+CiAgPGVsbGlwc2UgY3g9IjU2IiBjeT0iOTIiIHJ4PSI0LjYiIHJ5PSIzLjYiIGZpbGw9IiNmZmYiLz4KICA8ZWxsaXBzZSBjeD0iNzAiIGN5PSI4OSIgcng9IjQuNiIgcnk9IjMuNiIgZmlsbD0iI2ZmZiIvPgogIDwhLS0gc3BhcmtsZXMgLS0+CiAgPHBhdGggZD0iTTE4IDU0IGwyLjUgNiA2IDIuNSAtNiAyLjUgLTIuNSA2IC0yLjUgLTYgLTYgLTIuNSA2IC0yLjUgWiIgZmlsbD0iI2Y2YzQzMSIvPgogIDxwYXRoIGQ9Ik0xMDggNTIgbDIuNSA2IDYgMi41IC02IDIuNSAtMi41IDYgLTIuNSAtNiAtNiAtMi41IDYgLTIuNSBaIiBmaWxsPSIjMWUyMzQ2Ii8+CiAgPHBhdGggZD0iTTExMiA4MiBsMS44IDQuMiA0LjIgMS44IC00LjIgMS44IC0xLjggNC4yIC0xLjggLTQuMiAtNC4yIC0xLjggNC4yIC0xLjggWiIgZmlsbD0iI2Y2YzQzMSIvPgogIDxwYXRoIGQ9Ik0xNCA4NiBsMS44IDQuMiA0LjIgMS44IC00LjIgMS44IC0xLjggNC4yIC0xLjggLTQuMiAtNC4yIC0xLjggNC4yIC0xLjggWiIgZmlsbD0iIzFlMjM0NiIvPgo8L3N2Zz4K
 // @homepageURL  https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/first_contact/README.md
@@ -21,6 +21,7 @@
 // @match        https://soundcloud.com/*
 // @match        https://audiomack.com/*
 // @match        https://*.7digital.com/artist/*
+// @match        https://ototoy.jp/_/default/p/*
 // @match        https://music.amazon.com/*
 // @match        https://music.amazon.co.uk/*
 // @match        https://music.amazon.de/*
@@ -1985,7 +1986,86 @@ const SEVENDIGITAL = {
     },
 };
 
-const PROVIDERS = [DEEZER, BANDCAMP, DISCOGS, APPLE, TIDAL, QOBUZ, BEATPORT, SPOTIFY, YTMUSIC, VOLUMO, HDTRACKS, SOUNDCLOUD, AMAZON, AUDIOMACK, SEVENDIGITAL];
+// Ototoy (#670): a Japanese download store. Everything is on the album page, server-rendered: the title,
+// the album artist with their page, "DISC n" rows, each track's title, length and the artists Ototoy links
+// for it, the release dates, the label with its page, and the album info. No barcode, no ISRCs, no type.
+// A track's linked artists are all of Ototoy's for it: on some compilations that includes the arranger or
+// the label (IMAGINATION vol.1: ときのそら and Yunomi), which can't be told from a co-singer (three on
+// にじさんじ's "3倍！Sun Shine！カーニバル！"), so all are kept, and the title's "(feat. …)" makes the
+// featured ones. Hi-res and CD-quality editions are separate pages; older titles carry their format.
+const OTOTOY = {
+    id: 'ototoy',
+    name: 'Ototoy',
+    host: /^ototoy\.jp$/,
+    albumId(loc) { const m = loc.pathname.match(/^\/_\/default\/p\/(\d+)\/?$/); return m ? m[1] : null; },
+    text: el => (el ? el.textContent.replace(/\s+/g, ' ').trim() : ''),
+    // "04:28" / "1:02:03" → ms
+    hms(t) { const p = String(t || '').trim().split(':').map(Number); return p.length > 1 && p.every(Number.isFinite) ? p.reduce((a, n) => a * 60 + n, 0) * 1000 : null; },
+    // "Live Archives Disc2(24bit/44.1kHz)", "… (dsd+mp3)": the format the page sells, not the title
+    FORMAT: /\s*[(（][^()（）]*(?:\d+\s*bit|khz|\bdsd\b|\bmp3\b|\bflac\b|\bwav\b|\balac\b|\baac\b|hi-?res|ハイレゾ)[^()（）]*[)）]\s*$/i,
+    artist(a) { return { name: this.text(a), url: a.getAttribute('href') ? new URL(a.getAttribute('href'), 'https://ototoy.jp/').href.replace(/[?#].*$/, '') : null }; },
+
+    async fetchRelease(id, progress, doc) {
+        doc = doc || document;
+        const rawTitle = this.text(doc.querySelector('h1.album-title'));
+        if (!rawTitle) throw new Error('Ototoy: no album on this page');
+        const title = rawTitle.replace(this.FORMAT, '');
+        const albumArtists = [...doc.querySelectorAll('p.album-artist a[href*="/_/default/a/"]')].map(a => this.artist(a));
+        const detail = [...doc.querySelectorAll('.album-meta-data .detail p')].map(p => this.text(p));
+        const field = re => { const l = detail.find(x => re.test(x)); return l ? l.replace(re, '').trim() : ''; };
+        const released = field(/^Release date:\s*/i), original = field(/^Original release date:\s*/i), catno = field(/^Catalog number:\s*/i);
+        const labelA = doc.querySelector('.album-meta-data .detail p.label-name a');
+        const label = this.text(labelA);
+        Log.info(`Ototoy album ${id}: "${rawTitle}"${title !== rawTitle ? ` (title "${title}")` : ''} by ${albumArtists.map(a => a.name).join(', ') || '—'} · ${detail.join(' · ')}`);
+        if (catno) Log.info(`Ototoy: catalog number ${catno} left out: Ototoy shows the CD's or a distributor's code as often as the release's`);
+
+        const various = albumArtists.length === 1 && /^(?:various artists|v\.?\s*a\.?)$/i.test(albumArtists[0].name);
+        const mediums = [];
+        let disc = 0;
+        const rows = [...doc.querySelectorAll('#tracklist tr')];
+        const nTracks = rows.filter(tr => tr.querySelector('[id^="title-"]')).length;
+        let n = 0;
+        for (const tr of rows) {
+            if (tr.classList.contains('disc-row')) { disc = mediums.push({ format: 'Digital Media', name: '', tracks: [] }); continue; }
+            const t = tr.querySelector('[id^="title-"]');
+            if (!t) continue;
+            if (!mediums.length) disc = mediums.push({ format: 'Digital Media', name: '', tracks: [] });
+            const tf = splitFeat(this.text(t));
+            const linked = [...tr.querySelectorAll('a.artist[href*="/_/default/a/"]')].map(a => this.artist(a));
+            const credit = creditFromTitle(linked.length ? linked : (various ? [] : albumArtists), tf.feat);
+            const len = [...tr.querySelectorAll('td.item.center')].map(td => this.text(td)).find(x => /^\d+(?::\d\d){1,2}$/.test(x));
+            mediums[disc - 1].tracks.push({ title: tf.title, lengthMs: this.hms(len), isrc: null, url: null, credit });
+            progress && progress(++n, nTracks);
+            Log.debug(`track ${disc}.${mediums[disc - 1].tracks.length}: "${tf.title}" — ${credit.map(c => c.name + c.join).join('') || '(no artist)'}`);
+        }
+        const emptyDisc = mediums.findIndex(m => !m.tracks.length);
+        if (emptyDisc >= 0) mediums.splice(emptyDisc, 1);
+
+        const af = splitFeat(title);
+        const credit = various || !albumArtists.length ? [{ name: 'Various Artists', mbid: VARIOUS_ARTISTS_MBID, join: '' }] : creditFromTitle(albumArtists, af.feat);
+        // the original release date is the release's; "Release date" can be the day Ototoy listed it
+        const [y, m, d] = (original || released).split('-').map(x => parseInt(x, 10));
+        const url = `https://ototoy.jp/_/default/p/${id}`;
+        return {
+            source: this.id,
+            annotation: notesText((doc.querySelector('.album-addendum .album-review') || {}).innerHTML),   // the album info
+            url,
+            title: af.title,
+            credit,
+            types: [],
+            status: 'official',
+            packaging: 'None',
+            date: { year: y || null, month: m || null, day: d || null },
+            country: 'JP',   // Ototoy sells in Japan only
+            barcode: null,
+            labels: label ? [{ name: label, catno: '', url: labelA.getAttribute('href') ? new URL(labelA.getAttribute('href'), 'https://ototoy.jp/').href : null }] : [],
+            urls: [{ url, linkType: 74 }],   // 74 = purchase for download, the only type MusicBrainz allows for Ototoy
+            mediums,
+        };
+    },
+};
+
+const PROVIDERS = [DEEZER, BANDCAMP, DISCOGS, APPLE, TIDAL, QOBUZ, BEATPORT, SPOTIFY, YTMUSIC, VOLUMO, HDTRACKS, SOUNDCLOUD, AMAZON, AUDIOMACK, SEVENDIGITAL, OTOTOY];
 
 /* ── the seed: model → the release editor's POST parameters ──────────────── */
 // https://musicbrainz.org/doc/Development/Release_Editor_Seeding
