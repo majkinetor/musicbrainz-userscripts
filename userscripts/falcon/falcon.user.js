@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Falcon — bulk MusicBrainz link editor
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.3.231500
+// @version      2026.10.3.233000
 // @description  Add external links to a BATCH of MusicBrainz artists/labels/recordings at once — no popup-per-entity, no tab churn. A small pool of persistent worker iframes churns through a queue, each submitting its own edit and moving straight to the next entity. Paste a list, hand it a queue via a `?falcon=` URL param, or click "Send to Falcon" on a Harmony actions page to import its suggested links directly.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHBhdGggZD0iTTY0IDEwIEM4MiAyOCA5MCA1NiA5MCA4MCBMMzggODAgQzM4IDU2IDQ2IDI4IDY0IDEwIFoiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzFiMmE0YSIgc3Ryb2tlLXdpZHRoPSI3IiBzdHJva2UtbGluZWpvaW49InJvdW5kIiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8cGF0aCBkPSJNMzggODAgTDIwIDExMCBMNDAgOTYgWiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxwYXRoIGQ9Ik05MCA4MCBMMTA4IDExMCBMODggOTYgWiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxjaXJjbGUgY3g9IjY0IiBjeT0iNDQiIHI9IjEwIiBmaWxsPSIjMWIyYTRhIi8+CiAgPHBhdGggZD0iTTUwIDgwIEw0NSAxMDggTDY0IDEyMiBMODMgMTA4IEw3OCA4MCBaIiBmaWxsPSIjZmY2YTAwIiBzdHJva2U9IiMxYjJhNGEiIHN0cm9rZS13aWR0aD0iNSIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgo8L3N2Zz4K
@@ -4831,8 +4831,13 @@
   // the release AFTER Falcon has added its links, ISRCs and cover — otherwise it
   // would tag the version that made Falcon necessary in the first place.
   const _picardSent = new Set();
+  // #671: Picard and the reload after import are Harmony options (they sit in its settings
+  // group), so they follow only a queue Harmony seeded in this tab — not Import, a ?falcon=
+  // link, or a batch another script (Platform Check) hands over on the page.
+  let _harmonySeeded = false;
   function sendReleaseToPicard() {
     if (!cfg.sendToPicard) return;
+    if (!_harmonySeeded) { log('debug', 'Picard: this queue did not come from Harmony, so nothing is sent'); return; }
     const m = /\/release\/([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})/i.exec(location.pathname);
     if (!m) { log('debug', 'Picard: this tab is not a release page, so there is nothing to hand over'); return; }
     const mbid = m[1].toLowerCase();
@@ -4881,6 +4886,7 @@
   const RELOADED_KEY = 'falcon:reloadedAfterImport';
   function maybeReloadReleasePage() {
     if (!cfg.reloadReleaseAfterImport) return;
+    if (!_harmonySeeded) { log('debug', 'reload after import: this queue did not come from Harmony, so the page is left as it is'); return; }
     // the release page itself only: /release/<mbid>/cover-art and the other subpages
     // matched too, and were reloaded after every clean run (#588)
     const m = /^\/release\/([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})\/?$/i.exec(location.pathname);
@@ -7008,6 +7014,7 @@
       // whatever session the LAST tab's LAST run left behind, instead of
       // starting clean. A genuine new seed always means a new session.
       newSession(`seeded ${seeded.length} item(s) from the falcon= URL param`);
+      if (seeded.fromHarmony) _harmonySeeded = true;
       addToQueue(seeded);
       showPanel();
       // #508 follow-up (majkinetor): "Auto start Harmony import (off by
@@ -7042,6 +7049,8 @@
     entityUrlSegment, activateReleaseEditNoteTab,
     // #497
     getDisabledTypes: () => _disabledTypes, setDisabledTypes: s => { _disabledTypes = s; renderQueue(); },
+    // #671
+    setHarmonySeeded: v => { _harmonySeeded = !!v; },
     // #500
     // #509 follow-up
     resolveMissingNames,

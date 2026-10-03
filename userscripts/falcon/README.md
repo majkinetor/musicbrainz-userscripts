@@ -125,7 +125,7 @@ Two settings carry a finished Harmony import to a finished run:
 - **a MusicBrainz error**: Falcon reloads the page, up to 5 times, backing off from 5 s to 60 s;
 - **a provider error**, or retries exhausted: Falcon sends what it has, as *Send 43 to Falcon (partial)*, with the reason as the batch's edit note (reloading can't fix a provider).
 
-Falcon is idempotent, so a partial run can be topped up later. *Reload release page after import without errors* shows the result on the release page and turns the corner icon green. A run with failures isn't reloaded, since the queue wouldn't survive it; the log would.
+Falcon is idempotent, so a partial run can be topped up later. *Reload release page after import without errors* (a Harmony option, like Picard: both follow only a queue Harmony sent) shows the result on the release page and turns the corner icon green. A run with failures isn't reloaded, since the queue wouldn't survive it; the log would.
 
 ## Disc IDs from a rip log
 

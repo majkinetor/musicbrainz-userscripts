@@ -69,14 +69,16 @@ test("#588: reload after import", { tag: ['@sandbox', '@login'] }, async ({ cont
     return page;
   };
   // a settled queue, as a run would leave it
-  const seedQueue = (page, statuses) => page.evaluate(ss => {
+  // a queue Harmony sent: the reload is a Harmony option (#671)
+  const seedQueue = (page, statuses, fromHarmony = true) => page.evaluate(([ss, h]) => {
+    window.__falconTest.setHarmonySeeded(h);
     window.__falconTest.setQueue(ss.map((status, i) => ({
       id: 'f' + (i + 1), entityType: 'recording', mbid: '1111111' + i + '-1111-4111-8111-111111111111',
       urls: [{ url: 'https://x.y/' + i, linkTypeId: '268' }], note: '', disambiguation: '', rename: '',
       isrcs: [], video: false, aliases: [], cover: [], coverExistingCount: null,
       name: 'Track ' + i, urlResults: null, status, error: status === 'failed' ? 'nope' : '',
     })));
-  }, statuses);
+  }, [statuses, fromHarmony]);
 
   const ON = { 'falcon:reloadReleaseAfterImport': true };
   const OFF = { 'falcon:reloadReleaseAfterImport': false };
@@ -100,6 +102,16 @@ test("#588: reload after import", { tag: ['@sandbox', '@login'] }, async ({ cont
     ['an item left for manual review', ['done', 'manual'], ON, /manual review/],
     ['the option turned off', ['done', 'done'], OFF, null],
   ];
+  {
+    // #671: a queue that didn't come from Harmony (Import, Platform Check) is never reloaded
+    const p = await open(`${RELEASE}?falcon=tok&tport=8000`, ON);
+    await seedQueue(p, ['done', 'done'], false);
+    const before = p.url();
+    const said = await p.evaluate(() => { window.__falconTest.maybeReloadReleasePage(); return window.__falconTest.getLog().map(String).join('\n'); });
+    await frames(p);
+    ck(p.url() === before && /did not come from Harmony/.test(said), 'a clean run of a queue not from Harmony: the page is left alone, and the log says why');
+    await p.close();
+  }
   for (const [name, statuses, opts, re] of refuses) {
     const p = await open(`${RELEASE}?falcon=tok&tport=8000`, opts);
     await seedQueue(p, statuses);

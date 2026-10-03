@@ -155,10 +155,15 @@ test("#578: picard port", { tag: ['@sandbox', '@login'] }, async ({ context, pag
   // Falcon makes — not whether a Picard happens to be running on this machine.
   const REL = '81fe067b-d8b7-45d2-ae9d-cff74e7bc68d';   // majkinetor's release from the issue
   const handover = await page.evaluate(async (rel) => {
-    const { cfg, sendReleaseToPicard } = window.__falconTest;
+    const { cfg, sendReleaseToPicard, setHarmonySeeded } = window.__falconTest;
     const calls = [];
     window.GM_xmlhttpRequest = (o) => { calls.push(o.url); if (o.onload) o.onload({ status: 200 }); };
     history.replaceState(null, '', '/release/' + rel + '?falcon=tok&tport=8000');
+
+    // #671: Picard is a Harmony option — a queue from anywhere else sends nothing
+    cfg.sendToPicard = true; setHarmonySeeded(false);
+    sendReleaseToPicard(); const notHarmony = calls.length;
+    setHarmonySeeded(true);
 
     cfg.sendToPicard = false; cfg.picardPort = 8000;
     sendReleaseToPicard(); const whenOff = calls.length;
@@ -169,9 +174,10 @@ test("#578: picard port", { tag: ['@sandbox', '@login'] }, async ({ context, pag
 
     history.replaceState(null, '', '/');
     sendReleaseToPicard(); const offRelease = calls.length;
-    return { whenOff, first, afterRepeat, offRelease };
+    return { notHarmony, whenOff, first, afterRepeat, offRelease };
   }, REL);
   log('hand-over:', JSON.stringify(handover));
+  ck(handover.notHarmony === 0, `a queue that didn't come from Harmony sends nothing to Picard (got ${handover.notHarmony} call(s))`);
   ck(handover.whenOff === 0, `with the option off nothing is sent to Picard (got ${handover.whenOff} call(s))`);
   ck(handover.first.length === 1 && handover.first[0] === `http://127.0.0.1:8000/openalbum?id=${REL}`,
     `with it on Falcon calls Picard's endpoint for this release (got ${JSON.stringify(handover.first)})`);
