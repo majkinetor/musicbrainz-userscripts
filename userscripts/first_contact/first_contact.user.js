@@ -2001,7 +2001,7 @@ function injectStyle() {
     st.id = 'fc-style';
     // On a platform's page a userstyle's --background/--text/--border are the platform's own,
     // not a MusicBrainz theme: take our defaults there.
-    const tokens = ON_MB ? MBU_TOKENS : MBU_TOKENS.replace(/var\(--(?:background|text|border), ([^)]+)\)/g, '$1');
+    const css = MBU_TOKENS, tokens = ON_MB ? css : css.replace(/var\(--(?:background|text|border), ([^)]+)\)/g, '$1');
     st.textContent = tokens + MBU_UI_CSS + `
 #fc-root { position: fixed; z-index: 2147483000; display: flex; gap: 0; font: 13px/1.3 system-ui, sans-serif;
   box-shadow: var(--mbu-shadow, 0 2px 10px rgba(0,0,0,.25)); border-radius: 8px; }
