@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Platform Check
 // @namespace    http://tampermonkey.net/
-// @version      2026.10.3.234600
+// @version      2026.10.3.234700
 // @description  Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+DQogIDx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CiAgDQogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJhMWE1MiIgc3Ryb2tlLXdpZHRoPSI5IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik00MCA4OCBBMzQgMzQgMCAwIDEgNDAgNDAiLz4NCiAgICA8cGF0aCBkPSJNMjkgOTkgQTUwIDUwIDAgMCAxIDI5IDI5Ii8+DQogICAgPHBhdGggZD0iTTg4IDg4IEEzNCAzNCAwIDAgMCA4OCA0MCIvPg0KICAgIDxwYXRoIGQ9Ik05OSA5OSBBNTAgNTAgMCAwIDAgOTkgMjkiLz4NCiAgPC9nPg0KICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyMCIgZmlsbD0iI2U4MjAxYSIvPg0KPC9zdmc+DQo=
@@ -6965,9 +6965,29 @@ function pcMbCredits(doc, mbTracks) {
 
 // Which of these URLs MusicBrainz already has, and on whom: one /ws/2/url request per
 // 100 URLs. Asked only when the table opens. → Map(pcUrlKey → [{ type, mbid, name }])
+// The other forms MusicBrainz may hold one page under (#671): it keeps a Qobuz or Apple Music
+// link in whatever locale it was entered (gb-en, /gb/, open.qobuz.com, itunes.apple.com), and
+// /ws/2/url only answers for the exact url. The common ones are asked for in the same request.
+const PC_QOBUZ_LOCALES = ['us-en', 'gb-en', 'fr-fr', 'de-de'];
+const PC_APPLE_STOREFRONTS = ['us', 'gb'];
+function pcUrlForms(url) {
+    let m;
+    if ((m = String(url).match(/^https:\/\/www\.qobuz\.com\/[a-z]{2}-[a-z]{2}\/(interpreter|label)\/(.+?)\/?$/))) {
+        const id = (m[2].match(/(\d+)$/) || [])[1];
+        return PC_QOBUZ_LOCALES.map(l => `https://www.qobuz.com/${l}/${m[1]}/${m[2]}`)
+            .concat(id ? [`https://open.qobuz.com/${m[1] === 'label' ? 'label' : 'artist'}/${id}`] : []).filter(u => u !== url);
+    }
+    if ((m = String(url).match(/^https:\/\/music\.apple\.com\/[a-z]{2}\/(artist|label)\/(?:[^/]+\/)?(\d+)$/))) {
+        return PC_APPLE_STOREFRONTS.flatMap(s => [`https://music.apple.com/${s}/${m[1]}/${m[2]}`, `https://itunes.apple.com/${s}/${m[1]}/id${m[2]}`]).filter(u => u !== url);
+    }
+    return [];
+}
 async function pcLinkedTo(urls) {
     const out = new Map();
-    const uniq = [...new Set(urls)];
+    // each url, and the other forms of it, each pointing back at the url asked about
+    const back = new Map();
+    for (const u of new Set(urls)) for (const f of [u, ...pcUrlForms(u)]) { if (!back.has(f)) back.set(f, new Set()); back.get(f).add(u); }
+    const uniq = [...back.keys()];
     for (let i = 0; i < uniq.length; i += 100) {
         const part = uniq.slice(i, i + 100);
         const r = await gmGet(`${MB_ORIGIN}/ws/2/url?${part.map(u => 'resource=' + encodeURIComponent(u)).join('&')}&inc=artist-rels+label-rels&fmt=json`, { headers: { Accept: 'application/json' } });
@@ -6977,7 +6997,12 @@ async function pcLinkedTo(urls) {
         for (const u of (j.urls || (j.resource ? [j] : []))) {
             const who = (u.relations || []).filter(x => x['target-type'] === 'artist' || x['target-type'] === 'label')
                 .map(x => ({ type: x['target-type'], mbid: (x.artist || x.label || {}).id, name: (x.artist || x.label || {}).name || '' }));
-            out.set(pcUrlKey(u.resource), who);
+            // a page MusicBrainz holds under another form counts for the url asked about
+            for (const asked of back.get(u.resource) || [u.resource]) {
+                const k = pcUrlKey(asked), had = out.get(k) || [];
+                out.set(k, had.concat(who.filter(w => !had.some(h => h.type === w.type && h.mbid === w.mbid))));
+                if (asked !== u.resource) appendLog('System', `Artists & labels: ${asked} is in MusicBrainz as ${u.resource}`);
+            }
         }
     }
     return out;
@@ -7008,13 +7033,14 @@ function pcLinkTypeFor(type, url) {
     return (t && t[type]) || null;
 }
 // The batch for Falcon's ?falcon= handoff, in Falcon's JSON model (what its Import reads):
-// one item per artist or label with its new links, and the batch's edit note
-function pcFalconJson(rows, note) {
+// one item per artist or label with its new links, the batch's edit note, and its name (the
+// session name in Falcon's history, #671)
+function pcFalconJson(rows, note, name) {
     const items = rows.map(r => ({ entityType: r.type, mbid: r.mbid, name: r.name, urls: r.urls.map(url => ({ url, linkTypeId: pcLinkTypeFor(r.type, url) })) }));
-    return JSON.stringify({ note, items });
+    return JSON.stringify(name ? { name, note, items } : { note, items });
 }
-function pcFalconPayload(rows, note) {
-    return btoa(String.fromCharCode(...new TextEncoder().encode(pcFalconJson(rows, note))));
+function pcFalconPayload(rows, note, name) {
+    return btoa(String.fromCharCode(...new TextEncoder().encode(pcFalconJson(rows, note, name))));
 }
 // Falcon runs on this page too: hand it the batch in place (a DOM event, which every
 // userscript sandbox hears), to run (falcon:run) or only to queue (falcon:import). False
@@ -7050,6 +7076,11 @@ function pcConfirmedCredits() {
         if (c.credits) out[p] = c.credits;
     }
     return { byProvider: out, stale };
+}
+// the batch's name in Falcon: the release, and what the batch is
+function pcLinksName() {
+    const mb = mbDataGet(mbid) || {};
+    return `${mb.album || mbid} — artist and label links`;
 }
 function pcLinksNote() {
     const mb = mbDataGet(mbid) || {};
@@ -7187,9 +7218,9 @@ async function pcOpenLinksTable(btn) {
     const toFalcon = run => {
         const b = batch();
         if (!b.length) return;
-        const here = pcSendToFalconHere(pcFalconJson(b, pcLinksNote()), run);
+        const here = pcSendToFalconHere(pcFalconJson(b, pcLinksNote(), pcLinksName()), run);
         appendLog('System', `Artists & labels: ${run && here ? 'running' : 'sent'} ${b.reduce((s, r) => s + r.urls.length, 0)} link(s) on ${b.length} artist(s)/label(s) ${run && here ? 'in' : 'to'} Falcon${here ? '' : ` (in a new tab: no Falcon on this page${run ? '; press Start there' : ''})`}`, 'ok');
-        if (!here) window.open(`${MB_ORIGIN}/?falcon=${encodeURIComponent(pcFalconPayload(b, pcLinksNote()))}`, '_blank');
+        if (!here) window.open(`${MB_ORIGIN}/?falcon=${encodeURIComponent(pcFalconPayload(b, pcLinksNote(), pcLinksName()))}`, '_blank');
         close();
     };
     send.onclick = () => toFalcon(true);

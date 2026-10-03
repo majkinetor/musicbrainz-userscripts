@@ -88,6 +88,7 @@ Click a mark to open the page; right-click to take it in or leave it out. **Run 
 - **Matching**: by name, ignoring case, accents and *&* / *and*. When no name matches, by position, but only when both credits have as many artists; otherwise the artist is left out, and the log says why.
 - **Which platforms**: Discogs, Deezer, Apple Music, Qobuz, Beatport (signed in), YouTube Music, Bandcamp, SoundCloud and Audiomack. Label pages come from Discogs, Qobuz, Beatport and the accounts.
 - **Link types**: MusicBrainz types most links itself. Where it offers several and picks none, the link is sent typed: Qobuz as *purchase for download*, Apple Music as *streaming*, Audiomack as *stream for free*.
+- **Other locales**: MusicBrainz keeps a Qobuz or Apple Music link in whatever locale it was entered. A page already linked as `gb-en`, `fr-fr`, `de-de` or `/gb/` (or open.qobuz.com, itunes.apple.com) shows ✓, not +. Falcon catches any other locale when it runs and doesn't add the page again.
 - Only a [confirmed](#link-confidence) match counts: a link withheld by link confidence gives no artists or labels either.
 
 > [!NOTE]

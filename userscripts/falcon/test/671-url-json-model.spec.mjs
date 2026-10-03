@@ -50,3 +50,41 @@ test('the model from the URL is queued as Import queues a file, note included', 
   env.importQueueJson(JSON.stringify([{ entityType: 'artist', mbid: DAFT, url: 'https://x/1', name: 'Daft Punk' }]), 'x');
   check(env.added[0] && env.added[0].name === 'Daft Punk', 'a flat row keeps its name');
 });
+
+// #671: majkinetor's batch reached Falcon three times and each artist ran three times over.
+// A handed-over batch now merges into what's queued; a file Import still restores as it was.
+test('a batch handed over again merges into the queue; it names the session', { tag: '@unit' }, async () => {
+  const src = await functionSource('falcon', ['MBID_RE', 'ENTITY_RE', 'normalizeEntityType', 'DISAMBIGUATABLE', 'RENAMEABLE', 'normalizeAliases', 'normalizeCoverForImport', 'importQueueJson']);
+  const env = new Function(`
+    let queue = [], _idSeq = 0, _batchNote = '', _batchName = '', named = [];
+    const batchNote = () => _batchNote.trim(), setBatchNote = v => { _batchNote = String(v || ''); };
+    const syncBatchNoteUi = () => {}, renderQueue = () => {}, resolveMissingNames = () => {}, log = () => {}, dbg = () => {};
+    const noteSessionReleaseName = n => named.push(n);
+    const addToQueue = t => ({ added: t.length, merged: 0 });
+    const newCoverEntry = () => ({}), checkExistingCoverArt = () => null;
+    ${src}
+    return { importQueueJson, get queue() { return queue; }, get name() { return _batchName; }, get named() { return named; } };`)();
+  const batch = urls => JSON.stringify({ name: 'De Gulden Snede — artist and label links', note: 'n', items: [{ entityType: 'artist', mbid: DAFT, name: 'Daft Punk', urls: urls.map(url => ({ url, linkTypeId: null })) }] });
+  env.importQueueJson(batch(['https://www.deezer.com/artist/27']), 'a script on this page', { merge: true });
+  const r = env.importQueueJson(batch(['https://www.deezer.com/artist/27', 'https://www.discogs.com/artist/1289']), 'a script on this page', { merge: true });
+  check(env.queue.length === 1 && env.queue[0].urls.length === 2 && r.added === 0 && r.merged === 1, `sent again: one item, the new link merged into it (${JSON.stringify({ n: env.queue.length, urls: env.queue[0].urls.length, r })})`);
+  env.importQueueJson(batch(['https://www.deezer.com/artist/27']), 'file.json');
+  check(env.queue.length === 2, 'a file Import restores its rows as they are');
+  check(env.name === 'De Gulden Snede — artist and label links' && env.named.includes(env.name), `the model's name names the session (${env.name})`);
+});
+
+test('one platform page under any of its url forms', { tag: '@unit' }, async () => {
+  const src = await functionSource('falcon', ['platformPageKey', 'equivalentExistingUrl']);
+  const f = new Function('isOurs', src + '\nreturn { platformPageKey, equivalentExistingUrl };')(tr => !!tr.ours);
+  const k = f.platformPageKey;
+  check(k('https://www.qobuz.com/us-en/interpreter/pink-floyd/38324') === k('https://www.qobuz.com/gb-en/interpreter/pink-floyd/38324')
+    && k('https://open.qobuz.com/artist/38324') === k('https://www.qobuz.com/gb-en/interpreter/pink-floyd/38324'), 'Qobuz: any locale, and open.qobuz.com');
+  check(k('https://www.qobuz.com/us-en/interpreter/blink-182/12345') === 'qobuz:artist:12345', 'the id, not a number in the slug');
+  check(k('https://www.qobuz.com/us-en/label/x/download-streaming-albums/7') === 'qobuz:label:7' && k('https://www.qobuz.com/us-en/label/x/download-streaming-albums/7') !== k('https://open.qobuz.com/artist/7'), 'a label is not the artist of the same number');
+  check(k('https://music.apple.com/us/artist/487143') === k('https://music.apple.com/gb/artist/pink-floyd/487143') && k('https://itunes.apple.com/gb/artist/id487143') === 'apple:artist:487143', 'Apple Music: any storefront, slug or not, itunes.apple.com');
+  check(k('https://www.discogs.com/artist/1') === null && k('nonsense') === null, 'others: no equivalence');
+  const row = (href, ours) => ({ ours, querySelector: () => ({ getAttribute: () => href }) });
+  const doc = { querySelectorAll: () => [row('https://www.qobuz.com/us-en/interpreter/x/9', true), row('https://music.apple.com/gb/artist/5', false)] };
+  check(f.equivalentExistingUrl(doc, 'https://music.apple.com/us/artist/5') === 'https://music.apple.com/gb/artist/5', 'the link already on the entity is found');
+  check(f.equivalentExistingUrl(doc, 'https://www.qobuz.com/gb-en/interpreter/x/9') === null, 'one Falcon seeded itself is not "already there"');
+});

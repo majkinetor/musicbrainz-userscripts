@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Falcon — bulk MusicBrainz link editor
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.3.234600
+// @version      2026.10.3.234700
 // @description  Add external links to a BATCH of MusicBrainz artists/labels/recordings at once — no popup-per-entity, no tab churn. A small pool of persistent worker iframes churns through a queue, each submitting its own edit and moving straight to the next entity. Paste a list, hand it a queue via a `?falcon=` URL param, or click "Send to Falcon" on a Harmony actions page to import its suggested links directly.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHBhdGggZD0iTTY0IDEwIEM4MiAyOCA5MCA1NiA5MCA4MCBMMzggODAgQzM4IDU2IDQ2IDI4IDY0IDEwIFoiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzFiMmE0YSIgc3Ryb2tlLXdpZHRoPSI3IiBzdHJva2UtbGluZWpvaW49InJvdW5kIiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8cGF0aCBkPSJNMzggODAgTDIwIDExMCBMNDAgOTYgWiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxwYXRoIGQ9Ik05MCA4MCBMMTA4IDExMCBMODggOTYgWiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxjaXJjbGUgY3g9IjY0IiBjeT0iNDQiIHI9IjEwIiBmaWxsPSIjMWIyYTRhIi8+CiAgPHBhdGggZD0iTTUwIDgwIEw0NSAxMDggTDY0IDEyMiBMODMgMTA4IEw3OCA4MCBaIiBmaWxsPSIjZmY2YTAwIiBzdHJva2U9IiMxYjJhNGEiIHN0cm9rZS13aWR0aD0iNSIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgo8L3N2Zz4K
@@ -1079,6 +1079,9 @@
     if (!LS || !SESSION_ID || !name) return;
     try { if (!LS.getItem(sessionNameKey(SESSION_ID))) LS.setItem(sessionNameKey(SESSION_ID), name); } catch (e) {}
   }
+  // #671: the name a JSON model gives its batch (its root `name`), for a queue with no release
+  // in it to name the session after — Platform Check's artists and labels, say
+  let _batchName = '';
   function deleteSessionData(id) {
     if (!LS) return;
     try { LS.removeItem(LS_PREFIX + id); LS.removeItem(sessionNameKey(id)); } catch (e) {}
@@ -1142,6 +1145,7 @@
     try {
       const rel = queue.find(i => i.entityType === 'release' && i.name);
       if (rel) noteSessionReleaseName(rel.name);
+      else if (_batchName && queue.length) noteSessionReleaseName(_batchName);
     } catch (e) {}
     pruneOldSessions();
     log('info', `=== session ${SESSION_ID} started (${reason}) ===`);
@@ -1833,7 +1837,10 @@
   // edits; only rows that are still `queued` will be picked up by a worker. That
   // makes "export a failed run, fix the bad urls, import, Start" work without
   // duplicating everything that already succeeded.
-  function importQueueJson(text, sourceName) {
+  // opts.merge (#671): an item for an entity already queued adds its links to that item instead
+  // of queueing it twice — a batch handed over again (another script, ?falcon=) would otherwise
+  // run each entity once per send. A file Import restores a saved queue as it was, so it doesn't.
+  function importQueueJson(text, sourceName, opts) {
     let data;
     try { data = JSON.parse(text); } catch (e) { log('error', `${sourceName || 'import'}: not valid JSON — ${e.message}`); return { added: 0, merged: 0 }; }
     const rows = Array.isArray(data) ? data : (data && Array.isArray(data.items) ? data.items : null);
@@ -1843,6 +1850,11 @@
       setBatchNote(data.note);
       syncBatchNoteUi(true);
       if (batchNote()) log('info', `batch edit note set from ${sourceName || 'import'}: ${JSON.stringify(batchNote())}`);
+    }
+    if (data && !Array.isArray(data) && typeof data.name === 'string' && data.name.trim()) {
+      _batchName = data.name.trim();
+      noteSessionReleaseName(_batchName);
+      log('info', `batch name from ${sourceName || 'import'}: ${JSON.stringify(_batchName)}`);
     }
     if (!rows) { log('error', `${sourceName || 'import'}: no items found (expected {"items":[…]} or an array)`); return { added: 0, merged: 0 }; }
 
@@ -1888,6 +1900,15 @@
           status: ['done', 'failed', 'partial', 'skipped', 'manual'].includes(r.status) ? r.status : 'queued',
           error: r.error || '',
         };
+        const same = opts && opts.merge && reItem.status === 'queued' && queue.find(i => i.status === 'queued' && i.entityType === type && i.mbid === r.mbid);
+        if (same) {
+          const before = same.urls.length;
+          urls.forEach(u => { if (!same.urls.some(x => x.url === u.url && x.linkTypeId === u.linkTypeId)) same.urls.push(u); });
+          if (reItem.name && !same.name) same.name = reItem.name;
+          merged += same.urls.length - before;
+          dbg('[import]', `${type}:${r.mbid} is queued already — ${same.urls.length - before} new url(s) merged into it`);
+          return;
+        }
         queue.push(reItem);
         if (hasCover && reItem.status === 'queued') reItem._coverCheckPromise = checkExistingCoverArt(reItem);
         added++;
@@ -3569,6 +3590,30 @@
       .map(tr => tr.querySelector('a[href]')?.getAttribute('href'))
       .filter(Boolean);
   }
+  // #671: one platform page under any of its url forms — MusicBrainz keeps a Qobuz or Apple
+  // Music link with whatever locale it was entered in (gb-en, us-en, /gb/, /us/; open.qobuz.com),
+  // so an exact-url check misses the page already being there. null: no known equivalence.
+  function platformPageKey(url) {
+    let u;
+    try { u = new URL(url); } catch (e) { return null; }
+    const h = u.hostname.replace(/^www\./, ''), p = u.pathname;
+    let m;
+    if (/(^|\.)qobuz\.com$/.test(h) && (m = p.match(/\/(interpreter|artist|label)\/(?:.*\/)?(\d+)\/?$/))) return `qobuz:${m[1] === 'label' ? 'label' : 'artist'}:${m[2]}`;
+    if (/^(music|itunes|geo\.music)\.apple\.com$/.test(h) && (m = p.match(/\/(artist|label)\/(?:[^/]*\/)?(?:id)?(\d+)\/?$/))) return `apple:${m[1]}:${m[2]}`;
+    if (/(^|\.)deezer\.com$/.test(h) && (m = p.match(/\/(artist|label)\/(\d+)\/?$/))) return `deezer:${m[1]}:${m[2]}`;
+    return null;
+  }
+  // A link already on the entity (not one Falcon seeded) that is the same platform page as
+  // `url` in another form; its href, or null
+  function equivalentExistingUrl(doc, url) {
+    const key = platformPageKey(url);
+    if (!key || !doc) return null;
+    for (const tr of doc.querySelectorAll('tr.external-link-item')) {
+      const href = tr.querySelector('a[href]')?.getAttribute('href') || '';
+      if (href && href !== url && !isOurs(tr) && platformPageKey(href) === key) return href;
+    }
+    return null;
+  }
   async function fillAndSubmit(iframe, item, opts) {
     const skipSubmit = !!(opts && opts.skipSubmit);
     const tag = (opts && opts.tag) || '[w?]';
@@ -3590,6 +3635,17 @@
       seen.set(url, occurrence + 1);
       try {
         const doc0 = frameDoc(iframe);
+        // #671: the same page is already on the entity under another locale or form — adding
+        // this one would only duplicate it, so take back what was seeded for it
+        const same = occurrence === 0 ? equivalentExistingUrl(doc0, url) : null;
+        if (same) {
+          const { resolved: sr, unresolved: su } = findRowsForUrl(doc0, url);
+          [sr, ...su].filter(Boolean).forEach(removeIfOurs);
+          await wait(150);
+          dbg(tag, `url[0] ${url} — the same page is already on the entity as ${same}; not added`);
+          results.push({ url, ok: false, present: true, error: `already on MusicBrainz as ${same}` });
+          continue;
+        }
         const existingRow = findRowForUrl(doc0, url);
         dbg(tag, `url[${occurrence}] ${url} (type=${linkTypeId || 'auto'}) — preexisting row: ${existingRow ? (existingRow.querySelector('a[href]') ? 'resolved' : 'unresolved-input') : 'none'}`);
         if (existingRow && occurrence > 0) {
@@ -3620,7 +3676,7 @@
             unresolved.forEach(removeIfOurs);
             await wait(150);
             dbg(tag, `  already on entity -> dropped ${unresolved.length} seeded duplicate row(s)`);
-            results.push({ url, ok: false, error: 'this url is already present on the entity' });
+            results.push({ url, ok: false, present: true, error: 'this url is already present on the entity' });
             continue;
           }
           const target = resolved || unresolved[0] || existingRow;
@@ -3685,7 +3741,9 @@
       dbg(tag, `blank-select sweep removed ${swept.length} row(s): ${JSON.stringify(swept)}`);
       swept.forEach(sweptUrl => {
         const hit = results.find(r => r.ok && (sweptUrl === null || r.url === sweptUrl));
-        if (hit) { hit.ok = false; hit.error = 'this url is already present on the entity (MusicBrainz wanted a second relationship type for it, and none was given)'; }
+        // #671: MusicBrainz offers a blank second type only on a url the entity already has
+        // (the seed folded into its existing row), so this one is there already: nothing to do
+        if (hit) { hit.ok = false; hit.present = true; hit.error = 'this url is already present on the entity'; }
       });
     }
     dbg(tag, `per-url outcome: ${JSON.stringify(results.map(r => ({ u: r.url.slice(-40), ok: r.ok, e: r.error })))}`);
@@ -3746,6 +3804,8 @@
       || (item.entityType === 'recording' && item.isrcs && item.isrcs.length)
       || (item.entityType === 'recording' && item.video)
     );
+    // #671: every url already on the entity — the state asked for holds, nothing to submit
+    if (!hasFieldChange && results.length && results.every(r => r.present)) { dbg(tag, 'NOT SUBMITTING — every url is already on the entity'); return { committed: false, results, noop: true, fillMs: Date.now() - tFillStart }; }
     if (!results.some(r => r.ok) && !hasFieldChange) { dbg(tag, 'NOT SUBMITTING — no url in this group ended up committable, and no disambiguation/isrc queued'); return { committed: false, results, fillMs: Date.now() - tFillStart }; }
     // #467 (majkinetor, "still fails if not shown" — actually nothing to do with
     // visibility): when every url is ALREADY on the entity with the right type,
@@ -4738,7 +4798,9 @@
         // per-stage timings, kept on the item so the end-of-run summary table
         // can show where the time actually went (majkinetor, #467).
         item.timing = { worker: tag, loadMs, settleMs, fillMs: r.fillMs || 0, submitMs: r.submitMs || 0, totalMs: Date.now() - tNav };
-        const failedUrls = r.results.filter(x => !x.ok);
+        // a url already on the entity (#671) is nothing to do, not a failure
+        const failedUrls = r.results.filter(x => !x.ok && !x.present);
+        const presentUrls = r.results.filter(x => x.present);
         if (r.noop) {
           // everything was already there — the desired state holds, so this is
           // a success with nothing to do, NOT a failure.
@@ -4752,11 +4814,12 @@
         } else if (failedUrls.length) {
           item.status = 'partial';
           item.error = failedUrls.map(x => `${x.url}: ${x.error}`).join('; ');
-          log('warn', `${tag} ${item.entityType} ${item.mbid} — committed ${r.results.length - failedUrls.length}/${r.results.length} link(s)`);
+          log('warn', `${tag} ${item.entityType} ${item.mbid} — committed ${r.results.filter(x => x.ok).length}/${r.results.length} link(s)`);
         } else {
           item.status = 'done';
-          log('info', `${tag} ${item.entityType} ${item.mbid} — committed ${r.results.length} link(s)`);
+          log('info', `${tag} ${item.entityType} ${item.mbid} — committed ${r.results.filter(x => x.ok).length} link(s)` + (presentUrls.length ? `, ${presentUrls.length} already there` : ''));
         }
+        presentUrls.forEach(x => log('info', `${tag} ${entityLabel(item)} — ${x.url}: ${x.error}`));
       } catch (e) {
         item.status = 'failed'; item.error = e.message || String(e);
         item.timing = { worker: tag, loadMs, settleMs, fillMs: 0, submitMs: 0, totalMs: Date.now() - tNav };
@@ -6323,7 +6386,8 @@
     const all = _linksOpen.has(it.id) || groups.length <= LINKS_SHOWN + 1;
     const shown = all ? groups : groups.slice(0, LINKS_SHOWN);
     const rows = shown.map(g => {
-      const failed = g.results.find(r => !r.ok), done = g.results.length && !failed;
+      const failed = g.results.find(r => !r.ok && !r.present), done = g.results.length && !failed;
+      const present = !failed && g.results.find(r => r.present);   // #671: already on the entity
       const icon = failed ? '✗' : done ? '✓' : '·';
       const color = failed ? 'var(--mbu-error)' : done ? 'var(--mbu-ok)' : 'var(--mbu-text-weak)';
       // #663 (majkinetor): "Find another way for prefix" — the status mark opens the link; the service name is gone
@@ -6331,7 +6395,7 @@
       const pending = _pendingType && _pendingType.id === it.id && _pendingType.url === g.url;
       return `<div class="falcon-ln" title="${failed && failed.error ? esc(failed.error) : ''}">
         <input type="text" class="falcon-link-url" data-id="${it.id}" data-url="${esc(g.url)}" value="${esc(g.url)}" title="Edit the link; empty it to remove it" ${dis} />
-        <span class="falcon-lt"><a class="falcon-lst" href="${esc(g.url)}" target="_blank" rel="noopener" title="Open ${esc(g.url)}${failed && failed.error ? ' — ' + esc(failed.error) : ''}" style="color:${color}">${icon === '·' ? '↗' : icon}</a>${g.types.map(t => `<span class="falcon-ltb" title="link type: pick another to change it"><select style="width:${Math.round(linkTypeName(t).length * 5.4 + 12)}px" class="falcon-link-type-chg" data-id="${it.id}" data-url="${esc(g.url)}" data-old="${esc(t)}" ${dis}>${opts(t) || `<option selected>${esc(linkTypeName(t))}</option>`}</select><button type="button" class="falcon-link-type-del" data-id="${it.id}" data-url="${esc(g.url)}" data-type="${esc(t)}" title="Remove this type" ${dis}>✕</button></span>`).join('')}${pending ? `<span class="falcon-ltb falcon-ltb-new"><select class="falcon-link-type" data-id="${it.id}" data-url="${esc(g.url)}"><option value="">type…</option>${opts(null)}</select></span>` : ''}${!g.types.length && !pending ? '<span class="falcon-lauto" title="No type: MusicBrainz guesses it from the url">auto</span>' : ''}</span>
+        <span class="falcon-lt"><a class="falcon-lst" href="${esc(g.url)}" target="_blank" rel="noopener" title="Open ${esc(g.url)}${failed && failed.error ? ' — ' + esc(failed.error) : present ? ' — ' + esc(present.error) : ''}" style="color:${color}">${icon === '·' ? '↗' : icon}</a>${g.types.map(t => `<span class="falcon-ltb" title="link type: pick another to change it"><select style="width:${Math.round(linkTypeName(t).length * 5.4 + 12)}px" class="falcon-link-type-chg" data-id="${it.id}" data-url="${esc(g.url)}" data-old="${esc(t)}" ${dis}>${opts(t) || `<option selected>${esc(linkTypeName(t))}</option>`}</select><button type="button" class="falcon-link-type-del" data-id="${it.id}" data-url="${esc(g.url)}" data-type="${esc(t)}" title="Remove this type" ${dis}>✕</button></span>`).join('')}${pending ? `<span class="falcon-ltb falcon-ltb-new"><select class="falcon-link-type" data-id="${it.id}" data-url="${esc(g.url)}"><option value="">type…</option>${opts(null)}</select></span>` : ''}${!g.types.length && !pending ? '<span class="falcon-lauto" title="No type: MusicBrainz guesses it from the url">auto</span>' : ''}</span>
         <button type="button" class="falcon-link-type-add" data-id="${it.id}" data-url="${esc(g.url)}" title="Add a type to this link" ${dis}>+</button>
         <button type="button" class="falcon-link-del" data-id="${it.id}" data-url="${esc(g.url)}" title="Remove this link from the queue row" ${dis}>✕</button>
       </div>`;
@@ -6993,7 +7057,7 @@
     const fromPage = run => e => {
       if (typeof e.detail !== 'string') return;
       document.dispatchEvent(new CustomEvent('falcon:import-ok'));
-      const r = importQueueJson(e.detail, 'a script on this page');
+      const r = importQueueJson(e.detail, 'a script on this page', { merge: true });
       showPanel();
       if (run && r && (r.added || r.merged)) whenQueueSettles(20000).then(() => start());
     };
@@ -7007,7 +7071,7 @@
     if (seeded && seeded.importText) {
       // #671: the whole JSON model, read exactly as Import reads a file
       newSession('seeded from the falcon= URL param (the JSON model)');
-      importQueueJson(seeded.importText, 'the falcon= URL');
+      importQueueJson(seeded.importText, 'the falcon= URL', { merge: true });
       showPanel();
     } else if (seeded && seeded.length) {
       // #512 (majkinetor, live: "See the log before starting queue - it

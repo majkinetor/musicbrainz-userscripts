@@ -21,7 +21,7 @@ An importer like [Harmony] hands you 20–50 artists, recordings and labels that
 - **[Disc IDs from a rip log](#disc-ids-from-a-rip-log)**, computed in the browser.
 - **[Picard](#settings)** hand-off once a run finishes.
 
-Untouched rows and aliases the entity already has are skipped, not submitted again.
+Untouched rows and aliases the entity already has are skipped, not submitted again. So is a link the entity already has, even in another locale: a Qobuz or Apple Music page already linked as `gb-en` or `/gb/` (or open.qobuz.com, itunes.apple.com) isn't added again as `us-en`. The row says which link it already is.
 
 ## Filling the queue
 
@@ -142,7 +142,7 @@ Like Picard, whose parsers these are, it refuses a partial rip, a non-standard t
 
 ## JSON model
 
-What **Import** reads, **Export** writes, and Harmony and other scripts produce: a bare array of items, or `{ "items": [...] }` with an optional root `note` (the [batch edit note](#batch-edit-note)).
+What **Import** reads, **Export** writes, and Harmony and other scripts produce: a bare array of items, or `{ "items": [...] }` with an optional root `note` (the [batch edit note](#batch-edit-note)) and `name` (the run's name in the log history, for a queue with no release in it to be named after).
 
 ```json
 {
@@ -173,7 +173,7 @@ What **Import** reads, **Export** writes, and Harmony and other scripts produce:
 
 ### From another script
 
-Append `?falcon=<base64(JSON)>` to any musicbrainz.org URL: Falcon opens with the queue seeded (it doesn't start). The JSON is the [model](#json-model) above, read as **Import** reads a file: the `note` becomes the batch edit note, and an item carries whatever a row can. On a page where Falcon already runs, a script can instead dispatch a `falcon:import` event on `document` with the JSON as a string `detail`: Falcon queues it on that page and answers with `falcon:import-ok`. `falcon:run` does the same and starts the queue. A `?falcon=` link never starts on its own. [Platform Check](../platform_check/README.md#artists-and-labels) sends its artist and label links this way, and falls back to `?falcon=` in a new tab when no Falcon answers.
+Append `?falcon=<base64(JSON)>` to any musicbrainz.org URL: Falcon opens with the queue seeded (it doesn't start). The JSON is the [model](#json-model) above, read as **Import** reads a file: the `note` becomes the batch edit note, and an item carries whatever a row can. On a page where Falcon already runs, a script can instead dispatch a `falcon:import` event on `document` with the JSON as a string `detail`: Falcon queues it on that page and answers with `falcon:import-ok`. `falcon:run` does the same and starts the queue. A `?falcon=` link never starts on its own. A batch handed over this way (event or link) adds an entity already queued to its row rather than queueing it twice, so sending the same batch again doesn't run it twice; **Import** restores a file as it is. [Platform Check](../platform_check/README.md#artists-and-labels) sends its artist and label links this way, and falls back to `?falcon=` in a new tab when no Falcon answers.
 
 ## Settings
 

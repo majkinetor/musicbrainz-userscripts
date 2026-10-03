@@ -157,3 +157,25 @@ test('a match cached before artist pages were kept is read again', { tag: '@unit
   check(get('m', 'qobuz') === store.qobuz && get('m', 'spotify') === store.spotify && get('m', 'discogs') === store.discogs && get('m', 'tidal') === null,
     'kept: an entry that has them (even none), a platform with none to keep, a cached no-match');
 });
+
+// #671: MusicBrainz keeps Qobuz and Apple Music links in whatever locale they were entered, and
+// /ws/2/url answers only for the exact url: the common other forms are asked in the same request.
+test('a link MusicBrainz holds under another locale is already linked', { tag: '@unit' }, async () => {
+  const src = await functionSource('platform_check', ['pcUrlKey', 'PC_QOBUZ_LOCALES', 'PC_APPLE_STOREFRONTS', 'pcUrlForms', 'pcLinkedTo']);
+  const asked = [];
+  const gmGet = async url => {
+    const res = new URL(url).searchParams.getAll('resource');
+    asked.push(res);
+    const urls = res.filter(u => u === 'https://www.qobuz.com/gb-en/interpreter/pink-floyd/38324')
+      .map(u => ({ resource: u, relations: [{ 'target-type': 'artist', artist: { id: 'pf', name: 'Pink Floyd' } }] }));
+    return { ok: true, status: 200, responseText: JSON.stringify({ urls }) };
+  };
+  const f = new Function('gmGet', 'appendLog', 'MB_ORIGIN', src + '\nreturn { pcUrlForms, pcLinkedTo, pcUrlKey };')(gmGet, () => {}, 'https://musicbrainz.org');
+  const forms = f.pcUrlForms('https://www.qobuz.com/us-en/interpreter/pink-floyd/38324');
+  check(forms.includes('https://www.qobuz.com/gb-en/interpreter/pink-floyd/38324') && forms.includes('https://open.qobuz.com/artist/38324') && !forms.includes('https://www.qobuz.com/us-en/interpreter/pink-floyd/38324'), `Qobuz: the other locales and open.qobuz.com (${forms})`);
+  check(f.pcUrlForms('https://music.apple.com/us/artist/487143').includes('https://itunes.apple.com/gb/artist/id487143') && !f.pcUrlForms('https://www.deezer.com/artist/1').length, 'Apple Music: other storefronts and itunes.apple.com; others none');
+  const linked = await f.pcLinkedTo(['https://www.qobuz.com/us-en/interpreter/pink-floyd/38324', 'https://www.deezer.com/artist/1']);
+  const who = linked.get(f.pcUrlKey('https://www.qobuz.com/us-en/interpreter/pink-floyd/38324')) || [];
+  check(asked.length === 1, `one request (${asked.length})`);
+  check(who.length === 1 && who[0].mbid === 'pf', `the us-en link counts as linked to Pink Floyd (${JSON.stringify(who)})`);
+});
