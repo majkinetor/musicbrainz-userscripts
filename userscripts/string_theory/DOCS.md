@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-10-03 22:16 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-10-03 22:24 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -1169,6 +1169,7 @@ Finds a MusicBrainz release on the streaming and store platforms, checks each ma
 - **[Link confidence](#link-confidence)**: a match with a different barcode or format is a different release, and is not added.
 - **[Adding links](#adding-links)** to the release, one or all, in the foreground or in the background.
 - **Open all found**: every confirmed platform page not yet in MusicBrainz, each in a tab (plus the Discogs master). Mind the pop-up blocker.
+- **[Artists and labels](#artists-and-labels)**: the artist and label pages the matched albums name, added to the release's MusicBrainz artists and labels through [Falcon](../falcon/README.md).
 - A **log** with a filter per platform.
 
 ### Dashboard
@@ -1184,13 +1185,13 @@ A link already in the release's relationships is used as is. Otherwise each plat
 | amber bar     | found, with a different barcode                                                                                                    |
 | violet bar    | found, in a format this release isn't                                                                                              |
 
-| Track count |                                         |
-| ----------- | --------------------------------------- |
-| green       | matches MusicBrainz, fetched this scan  |
-| blue        | matches MusicBrainz, from the cache     |
-| amber       | differs from MusicBrainz                |
-| ?           | link found, track count unreadable      |
-| red —       | not found                               |
+| Track count |                                        |
+| ----------- | -------------------------------------- |
+| green       | matches MusicBrainz, fetched this scan |
+| blue        | matches MusicBrainz, from the cache    |
+| amber       | differs from MusicBrainz               |
+| ?           | link found, track count unreadable     |
+| red —       | not found                              |
 
 Hover a track count for what its colour means.
 
@@ -1222,6 +1223,29 @@ The footer's **+** adds every confirmed link (middle-click or Alt+click: the wit
 
 > [!NOTE]
 > Firefox throttles background tabs hard, slowing a background add down. *Keep background-add tabs awake* plays an inaudible tone, which exempts the tab. It needs **Allow Audio** for musicbrainz.org (padlock → *Autoplay*); without it, the log reports the tone as blocked.
+
+### Artists and labels
+
+A matched album usually names its artists' pages on that platform, and sometimes its label's. **Artists & labels**, in the footer next to **+** and **↗**, lists them against this release's MusicBrainz artists and labels: one row per artist or label, one column per platform.
+
+| Mark |                                                                                                                 |
+| ---- | --------------------------------------------------------------------------------------------------------------- |
+| ✓    | already linked in MusicBrainz                                                                                   |
+| +    | found, not linked yet: will be added                                                                            |
+| ⚠    | linked to a different MusicBrainz artist or label: not added; hover shows which                                 |
+| +?   | an account that may be the artist or the label (Bandcamp, SoundCloud, Audiomack): left out until you take it in |
+| ·    | no page, or the platform didn't find the release                                                                |
+
+Click a mark to open the page; right-click to take it in or leave it out. **Run N in Falcon** closes the table, queues every row with its new links in Falcon on this page and starts it; **▾ › Send only** queues them and Falcon waits for you to press Start. Where Falcon doesn't run, it opens in a new tab with the links queued, not started; the edit note names the release. Without Falcon, a row's **✎** opens that artist's or label's edit page with its new links filled in, for you to submit.
+
+- **Which artists**: the release's artist credit (not Various Artists) and each track's, which a compilation needs. Tracks are paired by position, so a platform with another track count gives no track artists.
+- **Matching**: by name, ignoring case, accents and *&* / *and*. When no name matches, by position, but only when both credits have as many artists; otherwise the artist is left out, and the log says why.
+- **Which platforms**: Discogs, Deezer, Apple Music, Qobuz, Beatport (signed in), YouTube Music, Bandcamp, SoundCloud and Audiomack. Label pages come from Discogs, Qobuz, Beatport and the accounts.
+- **Link types**: MusicBrainz types most links itself. Where it offers several and picks none, the link is sent typed: Qobuz as *purchase for download*, Apple Music as *streaming*, Audiomack as *stream for free*.
+- Only a [confirmed](#link-confidence) match counts: a link withheld by link confidence gives no artists or labels either.
+
+> [!NOTE]
+> The pages come from the album answers the scan already read, so they cost no extra platform requests. Opening the table asks MusicBrainz once which of the links it already has, and on whom. A match cached before this feature is read again once, on the next scan of the release.
 
 ### Platforms
 

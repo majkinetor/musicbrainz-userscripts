@@ -12,7 +12,7 @@ An importer like [Harmony] hands you 20–50 artists, recordings and labels that
 
 ## Features
 
-- **[Queue from anywhere](#filling-the-queue)**: a [Harmony](#from-harmony) import, [the page you're on](#from-the-current-page), [a series](#from-a-series), a [JSON file](#json-model), or [another script](#from-another-script).
+- **[Queue from anywhere](#filling-the-queue)**: a [Harmony](#from-harmony) import, [the page you're on](#from-the-current-page), [a series](#from-a-series), a [JSON file](#json-model), or [another script](#from-another-script) such as Platform Check.
 - **[Attributes](#attributes)**: links, names, disambiguations, aliases, ISRCs, the video flag, cover art.
 - **[Failures you can inspect](#the-run)**: MusicBrainz's own error on the row, the worker left where it stopped, retry in place.
 - **Export and import** a run as JSON, with each item's outcome, so a partial batch can be rerun without repeating what went through.
@@ -125,7 +125,7 @@ Two settings carry a finished Harmony import to a finished run:
 - **a MusicBrainz error**: Falcon reloads the page, up to 5 times, backing off from 5 s to 60 s;
 - **a provider error**, or retries exhausted: Falcon sends what it has, as *Send 43 to Falcon (partial)*, with the reason as the batch's edit note (reloading can't fix a provider).
 
-Falcon is idempotent, so a partial run can be topped up later. *Reload release page after import without errors* shows the result on the release page and turns the corner icon green. A run with failures isn't reloaded, since the queue wouldn't survive it; the log would.
+Falcon is idempotent, so a partial run can be topped up later. *Reload release page after import without errors* (a Harmony option, like Picard: both follow only a queue Harmony sent) shows the result on the release page and turns the corner icon green. A run with failures isn't reloaded, since the queue wouldn't survive it; the log would.
 
 ## Disc IDs from a rip log
 
@@ -173,7 +173,7 @@ What **Import** reads, **Export** writes, and Harmony and other scripts produce:
 
 ### From another script
 
-Append `?falcon=<base64(JSON)>` to any musicbrainz.org URL: Falcon opens with the queue seeded (it doesn't start). It takes a flatter form of the model, one row per link.
+Append `?falcon=<base64(JSON)>` to any musicbrainz.org URL: Falcon opens with the queue seeded (it doesn't start). The JSON is the [model](#json-model) above, read as **Import** reads a file: the `note` becomes the batch edit note, and an item carries whatever a row can. On a page where Falcon already runs, a script can instead dispatch a `falcon:import` event on `document` with the JSON as a string `detail`: Falcon queues it on that page and answers with `falcon:import-ok`. `falcon:run` does the same and starts the queue. A `?falcon=` link never starts on its own. [Platform Check](../platform_check/README.md#artists-and-labels) sends its artist and label links this way, and falls back to `?falcon=` in a new tab when no Falcon answers.
 
 ## Settings
 

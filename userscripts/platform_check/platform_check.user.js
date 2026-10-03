@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Platform Check
 // @namespace    http://tampermonkey.net/
-// @version      2026.10.3.221557
+// @version      2026.10.3.234600
 // @description  Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+DQogIDx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CiAgDQogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJhMWE1MiIgc3Ryb2tlLXdpZHRoPSI5IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik00MCA4OCBBMzQgMzQgMCAwIDEgNDAgNDAiLz4NCiAgICA8cGF0aCBkPSJNMjkgOTkgQTUwIDUwIDAgMCAxIDI5IDI5Ii8+DQogICAgPHBhdGggZD0iTTg4IDg4IEEzNCAzNCAwIDAgMCA4OCA0MCIvPg0KICAgIDxwYXRoIGQ9Ik05OSA5OSBBNTAgNTAgMCAwIDAgOTkgMjkiLz4NCiAgPC9nPg0KICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyMCIgZmlsbD0iI2U4MjAxYSIvPg0KPC9zdmc+DQo=
@@ -2072,6 +2072,7 @@ ${MBU_TOKENS}${MBU_UI_CSS}
   <div style="display: flex; align-items: center; gap: 6px;">
     <span id="mb-inject-btn"      class="pc-icon-btn" title="Open the release editor and queue OK URLs to add · right-click: add them silently in the background · middle-click or Alt+click: add them, including the ones strict barcode/format settings withhold (with Ctrl: in the background)" style="${iconBtn}">+</span>
     <span id="mb-openall-btn"     class="pc-icon-btn" title="Open found platform pages not yet in MB (non-circled) in new tabs" style="${iconBtn}">↗</span>
+    <span id="mb-links-btn"       class="pc-icon-btn" title="Artists &amp; labels: the artist and label pages the matched platforms name, for the release's MusicBrainz artists and labels" style="${iconBtn} font-size: 11px; white-space: nowrap;">Artists &amp; labels</span>
   </div>
   <div style="display: flex; align-items: center; gap: 6px;">
     <span id="mb-log-open-btn"    class="pc-icon-btn" title="Diagnostic log" style="${iconBtn} font-size: 11px;">log</span>
@@ -3678,6 +3679,20 @@ function pcPruneCache() {
 function cacheKey(mbid, platform) { return `pc:cache:v2:${platform}:${mbid}`; }   // v2: entries now carry `barcode` (#182)
 function cacheGet(mbid, platform) { return pcLsGet(cacheKey(mbid, platform)); }
 function cacheSet(mbid, platform, entry) { pcLsSet(cacheKey(mbid, platform), entry); }
+// the platforms whose album answer names artist or label pages (Spotify's, Tidal's, Amazon's,
+// 7digital's, Volumo's and HDtracks' don't, or not without another request)
+const PC_CREDIT_PROVIDERS = ['discogs', 'deezer', 'apple', 'qobuz', 'bandcamp', 'beatport', 'ytmusic', 'soundcloud', 'audiomack'];
+// A scanner's cache read (#671): a match cached before artist and label pages were kept has
+// no `credits`, and serving it would leave Artists & labels empty until ↻. It's read again
+// instead, once, and the new entry carries them.
+function cacheGetScan(mbid, platform, label) {
+    const c = cacheGet(mbid, platform);
+    if (c && c.url && !('credits' in c) && PC_CREDIT_PROVIDERS.includes(platform)) {
+        appendLog(label || platform, 'Cached match has no artist and label pages (cached before they were kept) — reading it again', 'info');
+        return null;
+    }
+    return c;
+}
 function cacheClear(mbid) {
     for (const p of ALL_PROVIDERS) localStorage.removeItem(cacheKey(mbid, p));   // all providers — not a stale hardcoded subset (else ↻ leaves Tidal/Beatport/Volumo cached)
     localStorage.removeItem(mbDataKey(mbid));
@@ -3716,6 +3731,130 @@ function applyCachedRow(platform, label, cached, mbTracks, masterState) {
 
 // (Old discogsMasterExtra pill replaced by the master-slot state object —
 // see discogsMasterState() / applyMasterIcon() above.)
+
+// ─── Artist and label pages (#671) ──────────────────────────────────────────
+// The album a scanner reads usually names its artists' pages on that platform, and
+// some name the label's. Each scanner keeps them with its match, as `credits`:
+//   { artists: [{ name, url }], labels: [{ name, url }], tracks: [[{ name, url }], …] or null }
+// — read from the answer it already has, never with a request of its own. `tracks` is
+// the platform's tracklist in order, each with its own artists; `alt` is another name
+// to match on (Discogs' credited name), `uncertain` an account that may be the artist
+// or the label (Bandcamp, SoundCloud, Audiomack). The Artists & labels table pairs them
+// with the release's MusicBrainz artists and labels.
+function pcCr(name, url, opts) {
+    if (!url) return null;
+    const c = { name: String(name || '').trim(), url };
+    if (opts && opts.alt && opts.alt !== c.name) c.alt = String(opts.alt).trim();
+    if (opts && opts.uncertain) c.uncertain = true;
+    return c;
+}
+function pcCredits(artists, labels, tracks) {
+    const uniq = l => (l || []).filter(Boolean).filter((c, i, a) => a.findIndex(x => x.url === c.url) === i);
+    const out = { artists: uniq(artists), labels: uniq(labels), tracks: Array.isArray(tracks) ? tracks.map(uniq) : null };
+    return out.artists.length || out.labels.length || (out.tracks && out.tracks.some(t => t.length)) ? out : null;
+}
+// One line for the platform's log: what the album named.
+function pcCreditsSummary(c) {
+    if (!c) return 'Artist and label pages: none in this album';
+    const names = l => l.map(x => `${x.name || '?'}${x.uncertain ? ' (artist or label)' : ''}`).join(', ');
+    const tr = c.tracks ? c.tracks.filter(t => t.length).length : 0;
+    return `Artist and label pages: ${c.artists.length ? `artists ${names(c.artists)}` : 'no artist'}; ${c.labels.length ? `labels ${names(c.labels)}` : 'no label'}${c.tracks ? `; track artists on ${tr} of ${c.tracks.length} track(s)` : ''}`;
+}
+// What a scanner keeps (#671): its log line, then the credits themselves.
+function pcKeep(label, credits) { appendLog(label, pcCreditsSummary(credits || null)); return credits || null; }
+// "Name (2)": Discogs' own way of telling two artists of one name apart
+const pcDiscogsName = s => String(s || '').replace(/\s+\(\d+\)$/, '').trim();
+function pcCreditsDiscogs(d) {
+    if (!d) return null;
+    const art = a => (a && a.id && a.id !== 194) ? pcCr(pcDiscogsName(a.name), `https://www.discogs.com/artist/${a.id}`, { alt: a.anv }) : null;   // 194: Various
+    const lbl = l => (l && l.id && !/^not on label\b/i.test(l.name || '')) ? pcCr(pcDiscogsName(l.name), `https://www.discogs.com/label/${l.id}`) : null;
+    // the tracks as the scanner counts them: headings aren't tracks, a medley's index is one
+    const trk = (d.tracklist || []).filter(t => t.type_ === 'track' || t.type_ === 'index' || !t.type_);
+    return pcCredits((d.artists || []).map(art), (d.labels || []).map(lbl), trk.map(t => (t.artists || []).map(art)));
+}
+function pcCreditsDeezer(d) {
+    if (!d) return null;
+    const art = a => (a && a.id && !VA_NAME_RE.test(a.name || '')) ? pcCr(a.name, `https://www.deezer.com/artist/${a.id}`) : null;
+    const main = (d.contributors || []).filter(c => !c.role || c.role === 'Main');
+    const list = (d.tracks && d.tracks.data) || [];
+    // a tracklist cut short (paged) can't be paired by position
+    return pcCredits((main.length ? main : [d.artist]).map(art), [], list.length && list.length === d.nb_tracks ? list.map(t => [art(t.artist)]) : null);
+}
+// Apple names the album's artists by id only; their names come from the credit's text,
+// split into as many parts as there are ids (otherwise they're matched by position).
+function pcCreditsApple(a, storefront) {
+    const ids = ((a && a.relationships && a.relationships.artists && a.relationships.artists.data) || []).map(x => x.id).filter(Boolean);
+    if (!ids.length) return null;
+    const credit = String((a.attributes && a.attributes.artistName) || '');
+    const parts = credit.split(/\s*(?:,|&|\band\b)\s*/i).filter(Boolean);
+    const names = ids.length === 1 ? [credit] : parts.length === ids.length ? parts : ids.map(() => '');
+    if (ids.length === 1 && VA_NAME_RE.test(credit)) return null;
+    return pcCredits(ids.map((id, i) => pcCr(names[i], `https://music.apple.com/${storefront || 'us'}/artist/${id}`)), [], null);
+}
+const pcSlug = s => String(s || '').toLowerCase().normalize('NFKD').replace(/\p{M}+/gu, '').replace(/[^\p{L}\p{N}]+/gu, '-').replace(/^-+|-+$/g, '') || '-';
+function pcCreditsQobuzApi(d) {
+    if (!d || !d.id) return null;
+    const art = a => (a && a.id && !VA_NAME_RE.test(a.name || '')) ? pcCr(a.name, `https://www.qobuz.com/us-en/interpreter/${a.slug || pcSlug(a.name)}/${a.id}`) : null;
+    const main = (d.artists || []).filter(a => !a.roles || a.roles.includes('main-artist'));
+    const l = d.label;
+    const items = (d.tracks && d.tracks.items) || [];
+    return pcCredits((main.length ? main : [d.artist]).map(art),
+        [l && l.id ? pcCr(l.name, `https://www.qobuz.com/us-en/label/${l.slug || pcSlug(l.name)}/download-streaming-albums/${l.id}`) : null],
+        items.length && items.length === d.tracks_count ? items.map(t => [art(t.performer)]) : null);
+}
+// the store page links the album's artists and its label
+function pcCreditsQobuzPage(html) {
+    const artists = [], labels = [];
+    for (const m of String(html || '').matchAll(/<a\b[^>]*\bhref="(\/[a-z]{2}-[a-z]{2}\/(interpreter|label)\/[^"]+)"[^>]*>([^<]{1,120})<\/a>/g)) {
+        const name = qzDec(m[3]).trim();
+        if (!name || (m[2] === 'interpreter' && VA_NAME_RE.test(name))) continue;
+        (m[2] === 'label' ? labels : artists).push(pcCr(name, 'https://www.qobuz.com' + m[1]));
+    }
+    return pcCredits(artists, labels, null);
+}
+// The album's account: the band's own, or its label's (a label page puts every artist's
+// album under its own name), so it's offered for either and left unchecked.
+function pcCreditsBandcamp(html) {
+    const m = String(html || '').match(/"byArtist"\s*:\s*\{[^}]*?"@id"\s*:\s*"(https?:\/\/[a-z0-9-]+\.bandcamp\.com)\/?"/i)
+           || String(html || '').match(/"publisher"\s*:\s*\{[^}]*?"@id"\s*:\s*"(https?:\/\/[a-z0-9-]+\.bandcamp\.com)\/?"/i);
+    if (!m) return null;
+    const near = String(html).slice(m.index, m.index + 400);
+    const name = (near.match(/"name"\s*:\s*"([^"]+)"/) || [])[1] || '';
+    const acc = pcCr(name, m[1].replace(/^http:/, 'https:') + '/', { uncertain: true });
+    return pcCredits([acc], [acc], null);
+}
+function pcCreditsBeatport(d) {
+    if (!d) return null;
+    const art = a => (a && a.id) ? pcCr(a.name, `https://www.beatport.com/artist/${a.slug || pcSlug(a.name)}/${a.id}`) : null;
+    const l = d.label;
+    return pcCredits((d.artists || []).map(art), [l && l.id ? pcCr(l.name, `https://www.beatport.com/label/${l.slug || pcSlug(l.name)}/${l.id}`) : null], null);
+}
+// YouTube Music: the header's artist links, and each track's when it names its own
+// (a compilation's); a track that names none is the album's artists'.
+function pcCreditsYtm(j) {
+    const runsOf = t => ((t && t.runs) || []).map(r => {
+        const b = r.navigationEndpoint && r.navigationEndpoint.browseEndpoint;
+        const type = b && b.browseEndpointContextSupportedConfigs && b.browseEndpointContextSupportedConfigs.browseEndpointContextMusicConfig && b.browseEndpointContextSupportedConfigs.browseEndpointContextMusicConfig.pageType;
+        return b && /^UC/.test(b.browseId || '') && (!type || type === 'MUSIC_PAGE_TYPE_ARTIST') ? pcCr(r.text, `https://music.youtube.com/channel/${b.browseId}`) : null;
+    });
+    let h = null, shelf = null;
+    ytmWalk(j, o => { if (!h && o.musicResponsiveHeaderRenderer) h = o.musicResponsiveHeaderRenderer; if (!shelf && o.musicShelfRenderer) shelf = o.musicShelfRenderer; });
+    if (!h) return null;
+    const rows = ((shelf && shelf.contents) || []).map(c => c.musicResponsiveListItemRenderer).filter(Boolean);
+    const tracks = rows.map(r => runsOf(r.flexColumns && r.flexColumns[1] && r.flexColumns[1].musicResponsiveListItemFlexColumnRenderer && r.flexColumns[1].musicResponsiveListItemFlexColumnRenderer.text));
+    return pcCredits(runsOf(h.straplineTextOne), [], rows.length ? tracks : null);
+}
+function pcCreditsSoundcloud(pl) {
+    const u = pl && pl.user;
+    return u && u.permalink_url ? pcCredits([pcCr(u.username, u.permalink_url, { uncertain: true })], [pcCr(u.username, u.permalink_url, { uncertain: true })], null) : null;
+}
+function pcCreditsAudiomack(it) {
+    const u = it && it.uploader;
+    const slug = (u && u.url_slug) || (it && it.uploader_url_slug);
+    if (!slug) return null;
+    const acc = pcCr((u && u.name) || it.artist || slug, `https://audiomack.com/${slug}`, { uncertain: true });
+    return pcCredits([acc], [acc], null);
+}
 
 // ─── Wikidata fast path ─────────────────────────────────────────────────────
 // Wikidata curates external IDs (Spotify P2205, Apple Music P5121, AllMusic
@@ -3979,6 +4118,7 @@ const qobuzMetaFromApi = d => (d && d.id) ? {
     label:  (d.label && d.label.name) || null,
     artist: (d.artist && d.artist.name) || null,
     barcode: d.upc || null,
+    credits: pcCreditsQobuzApi(d),   // #671
 } : null;
 const qzDec = s => String(s || '').replace(/&amp;/g, '&').replace(/&quot;/g, '"').replace(/&#0?39;/g, "'").replace(/&#x([0-9a-f]+);/gi, (_, n) => String.fromCodePoint(parseInt(n, 16))).replace(/&#(\d+);/g, (_, n) => String.fromCodePoint(+n));
 // Normalise any Qobuz album URL to the server-rendered www store page. open./play.
@@ -4043,12 +4183,12 @@ async function fetchQobuzScrape(albumUrl) {
     // canonical /album/<slug>/<id> (the slug includes the artist, so we can't
     // reconstruct it from the title; #201 chaban-mb). The caller uses it as the URL
     // to hand MB instead of the /album/x/<id> placeholder we fetched with.
-    return { tracks: trackIds.size || null, title: title || og || null, year, label, artist, barcode: null, url: r.finalUrl || null };
+    return { tracks: trackIds.size || null, title: title || og || null, year, label, artist, barcode: null, url: r.finalUrl || null, credits: pcCreditsQobuzPage(html) };
 }
 
 async function scanQobuz({ artist, album, mbTracks, existingUrl, mbid, isVariousArtists, barcode }) {
     const label = 'Qobuz';
-    const cached = cacheGet(mbid, 'qobuz');
+    const cached = cacheGetScan(mbid, 'qobuz', label);
     if (cached?.url && (!existingUrl || existingUrl === cached.url)) { applyCachedRow('qobuz', label, cached, mbTracks); return; }
     if (cached && !cached.url && !existingUrl && !barcode) { appendLog(label, `No match (cached from previous scan — use ↻ to force a re-search)`, 'warn'); applyCachedRow('qobuz', label, cached, mbTracks); return; }
 
@@ -4079,7 +4219,7 @@ async function scanQobuz({ artist, album, mbTracks, existingUrl, mbid, isVarious
             const albumUrl = apiUrl || meta?.url || fetchUrl;
             appendLog(label, `Barcode ${barcode} → ${albumUrl}`, 'ok');
             const bc = meta?.barcode || hit.upc || barcode;
-            cacheSet(mbid, 'qobuz', { url: albumUrl, tracks: meta?.tracks ?? null, year: meta?.year ?? null, label: meta?.label ?? null, source: 'barcode', barcode: bc });
+            cacheSet(mbid, 'qobuz', { url: albumUrl, tracks: meta?.tracks ?? null, year: meta?.year ?? null, label: meta?.label ?? null, source: 'barcode', barcode: bc, credits: pcKeep(label, meta?.credits) });
             updateRow('qobuz', { url: albumUrl, mbTracks, remoteTracks: meta?.tracks ?? null, year: meta?.year ?? null, label: meta?.label ?? null, source: 'barcode', barcode: bc });
             return;
         }
@@ -4142,7 +4282,7 @@ async function scanQobuz({ artist, album, mbTracks, existingUrl, mbid, isVarious
     const year   = meta?.year   ?? null;
     const lbl    = meta?.label  ?? null;
     const bc     = meta?.barcode ?? null;   // UPC from the API (null on the scrape fallback) — feeds barcode-confidence #201
-    cacheSet(mbid, 'qobuz', { url: albumUrl, tracks, year, label: lbl, source, barcode: bc });
+    cacheSet(mbid, 'qobuz', { url: albumUrl, tracks, year, label: lbl, source, barcode: bc, credits: pcKeep(label, meta?.credits) });
     updateRow('qobuz', { url: albumUrl, mbTracks, remoteTracks: tracks, year, label: lbl, source, barcode: bc });
 }
 
@@ -4179,7 +4319,7 @@ async function scanDiscogs({ artist, album, mbTracks, existingUrl, mbid, isVario
     // from the MB release format (e.g. cache holds a Vinyl pressing but MB
     // says CD — possible when a prior scan ran without format extraction),
     // re-search so format-aware ranking can pick the matching edition.
-    const cached = cacheGet(mbid, 'discogs');
+    const cached = cacheGetScan(mbid, 'discogs', label);
     const wantFmt = mbFormatToDiscogs(format);
     const haveFmt = mbFormatToDiscogs(cached?.format);
     const formatMismatch = !!(wantFmt && haveFmt && wantFmt !== haveFmt && cached?.url && !existingUrl);
@@ -4315,7 +4455,7 @@ async function scanDiscogs({ artist, album, mbTracks, existingUrl, mbid, isVario
         return;
     }
 
-    let tracks = null, year = null, lbl = null, fmt = null, masterUrl = null, foundBarcode = null;
+    let tracks = null, year = null, lbl = null, fmt = null, masterUrl = null, foundBarcode = null, credits = null;
     if (releaseId) {
         const detailUrl = `https://api.discogs.com/releases/${releaseId}`;
         appendLog(label, `API detail: ${detailUrl}`);
@@ -4351,12 +4491,13 @@ async function scanDiscogs({ artist, album, mbTracks, existingUrl, mbid, isVario
                 // other barcode-exposing providers (previously it was treated as unconfirmable).
                 foundBarcode = ((data.identifiers || []).find(i => /^barcode$/i.test(i.type || '')) || {}).value || null;
                 if (foundBarcode) foundBarcode = String(foundBarcode).replace(/\s+/g, '');
+                credits = pcKeep(label, pcCreditsDiscogs(data));   // #671
                 appendLog(label, `API detail parsed: tracks=${tracks} year=${year || '?'} label=${lbl || '?'} format=${fmt || '?'} barcode=${foundBarcode || '-'} master=${masterUrl || '-'}`, 'ok');
             } catch (e) { appendLog(label, `API detail parse error: ${e.message}`, 'error'); }
         } else { appendLog(label, `API detail failed`, 'error'); }
     }
 
-    cacheSet(mbid, 'discogs', { url: releaseUrl, tracks, year, label: lbl, format: fmt, masterUrl, source, barcode: foundBarcode });
+    cacheSet(mbid, 'discogs', { url: releaseUrl, tracks, year, label: lbl, format: fmt, masterUrl, source, barcode: foundBarcode, credits });
     updateRow('discogs', {
         url: releaseUrl, mbTracks, remoteTracks: tracks, year, label: lbl, format: fmt, source, barcode: foundBarcode,
         masterState: discogsMasterState(masterUrl, existingDiscogsMaster),
@@ -4427,6 +4568,7 @@ async function fetchBandcampMeta(albumUrl) {
         artist: artistMatch?.[1]?.trim() || null,
         barcode,
         barcodeIsPackage,
+        credits: pcCreditsBandcamp(html),   // #671
     };
 }
 
@@ -4460,7 +4602,7 @@ async function searchBandcampNative(query, label) {
 async function scanBandcamp({ artist, album, mbTracks, existingUrl, mbid, isVariousArtists }) {
     const label = 'Bandcamp';
 
-    const cached = cacheGet(mbid, 'bandcamp');
+    const cached = cacheGetScan(mbid, 'bandcamp', label);
     if (cached?.url && (!existingUrl || existingUrl === cached.url)) {
         applyCachedRow('bandcamp', label, cached, mbTracks);
         return;
@@ -4533,7 +4675,7 @@ async function scanBandcamp({ artist, album, mbTracks, existingUrl, mbid, isVari
     const lbl    = meta?.label  ?? null;
     const fmt    = meta?.format ?? null;
     const bc     = meta?.barcode ?? null;   // #194: digital release UPC (null when absent or package-only)
-    cacheSet(mbid, 'bandcamp', { url: albumUrl, tracks, year, label: lbl, format: fmt, source, hiddenTracks: hidden, barcode: bc });
+    cacheSet(mbid, 'bandcamp', { url: albumUrl, tracks, year, label: lbl, format: fmt, source, hiddenTracks: hidden, barcode: bc, credits: pcKeep(label, meta?.credits) });
     updateRow('bandcamp', { url: albumUrl, mbTracks, remoteTracks: tracks, year, label: lbl, format: fmt, source, hiddenTracks: hidden, barcode: bc });
 }
 
@@ -4567,7 +4709,7 @@ async function fetchSoundcloudSet(setUrl) {
     if (pl && pl.kind === 'track') {
         const pm = pl.publisher_metadata || {};
         const pl1 = (pm.p_line || '').replace(/^\s*©?℗?\s*\d{4}\s*/, '').trim();
-        return { title: pl.title || '', tracks: 1, barcode: String(pm.upc_or_ean || '').trim() || null, year: (pl.release_date || pl.display_date || pl.created_at || '').slice(0, 4) || null, label: pl1 || null };
+        return { title: pl.title || '', tracks: 1, barcode: String(pm.upc_or_ean || '').trim() || null, year: (pl.release_date || pl.display_date || pl.created_at || '').slice(0, 4) || null, label: pl1 || null, credits: pcCreditsSoundcloud(pl) };
     }
     if (!pl || pl.kind !== 'playlist') return null;
     const stubs = (pl.tracks || []).filter(t => t && t.id);
@@ -4587,6 +4729,7 @@ async function fetchSoundcloudSet(setUrl) {
         barcode: upcs.length === 1 ? upcs[0] : null,
         year:    (pl.release_date || pl.display_date || pl.created_at || '').slice(0, 4) || null,
         label:   pLine || pl.label_name || null,
+        credits: pcCreditsSoundcloud(pl),   // #671
         // #527 follow-up (majkinetor, live): "SC shows as digital, although it
         // is assumed" — SoundCloud never actually tells us the RELEASE's
         // format (a set page says nothing about whether the release also
@@ -4608,7 +4751,7 @@ async function fetchSoundcloudSet(setUrl) {
 // didn't match — not just the final pick or a bare "no match".
 async function scanSoundcloud({ artist, album, mbTracks, existingUrl, mbid, isVariousArtists }) {
     const label = 'SoundCloud';
-    const cached = cacheGet(mbid, 'soundcloud');
+    const cached = cacheGetScan(mbid, 'soundcloud', label);
     if (cached?.url && (!existingUrl || existingUrl === cached.url)) { applyCachedRow('soundcloud', label, cached, mbTracks); return; }
     if (cached && !cached.url && !existingUrl) { appendLog(label, `No match (cached from previous scan — use ↻ to force a re-search)`, 'warn'); applyCachedRow('soundcloud', label, cached, mbTracks); return; }
 
@@ -4669,7 +4812,7 @@ async function scanSoundcloud({ artist, album, mbTracks, existingUrl, mbid, isVa
     if (!meta) meta = await fetchSoundcloudSet(setUrl).catch(e => { appendLog(label, `Set fetch failed: ${e && e.message}`, 'error'); return null; });
     if (meta) appendLog(label, `Set parsed: tracks=${meta.tracks} title="${meta.title}" year=${meta.year || '?'} label=${meta.label || '?'} barcode=${meta.barcode || '-'}`, meta.tracks ? 'ok' : 'warn');
     else appendLog(label, `Set parse returned nothing — resolve() likely failed for ${setUrl}`, 'error');
-    const entry = { url: setUrl, tracks: meta?.tracks ?? null, year: meta?.year ?? null, label: meta?.label ?? null, format: meta?.format ?? null, source, barcode: meta?.barcode ?? null };
+    const entry = { url: setUrl, tracks: meta?.tracks ?? null, year: meta?.year ?? null, label: meta?.label ?? null, format: meta?.format ?? null, source, barcode: meta?.barcode ?? null, credits: pcKeep(label, meta?.credits) };
     cacheSet(mbid, 'soundcloud', entry);
     updateRow('soundcloud', { url: setUrl, mbTracks, remoteTracks: meta?.tracks ?? null, year: meta?.year ?? null, label: meta?.label ?? null, format: meta?.format ?? null, source, barcode: meta?.barcode ?? null });
 }
@@ -4716,6 +4859,7 @@ function audiomackMeta(it, url) {
         barcode: String(it.upc || '').replace(/\D/g, '') || null,
         year:    ts ? String(new Date(ts * 1000).getUTCFullYear()) : null,
         label:   pl || it.uploader?.label || null,
+        credits: pcCreditsAudiomack(it),   // #671
     };
 }
 async function fetchAudiomack(url) {
@@ -4726,7 +4870,7 @@ async function fetchAudiomack(url) {
 }
 async function scanAudiomack({ artist, album, mbTracks, existingUrl, mbid, isVariousArtists, barcode }) {
     const label = 'Audiomack';
-    const cached = cacheGet(mbid, 'audiomack');
+    const cached = cacheGetScan(mbid, 'audiomack', label);
     if (cached?.url && (!existingUrl || pcSameUrl(existingUrl, cached.url))) { applyCachedRow('audiomack', label, cached, mbTracks); return; }
     if (cached && !cached.url && !existingUrl) { appendLog(label, `No match (cached from previous scan — use ↻ to force a re-search)`, 'warn'); applyCachedRow('audiomack', label, cached, mbTracks); return; }
 
@@ -4774,7 +4918,7 @@ async function scanAudiomack({ artist, album, mbTracks, existingUrl, mbid, isVar
         }
     }
     appendLog(label, `Parsed: tracks=${meta.tracks} title="${meta.title}" year=${meta.year || '?'} label=${meta.label || '?'} barcode=${meta.barcode || '-'}`, meta.tracks ? 'ok' : 'warn');
-    const entry = { url: meta.url, tracks: meta.tracks, year: meta.year, label: meta.label, format: null, source, barcode: meta.barcode };
+    const entry = { url: meta.url, tracks: meta.tracks, year: meta.year, label: meta.label, format: null, source, barcode: meta.barcode, credits: pcKeep(label, meta.credits) };
     cacheSet(mbid, 'audiomack', entry);
     updateRow('audiomack', { url: meta.url, mbTracks, remoteTracks: meta.tracks, year: meta.year, label: meta.label, format: null, source, barcode: meta.barcode });
 }
@@ -4846,6 +4990,7 @@ async function fetchYtmAlbum(id, label = 'YouTube Music') {
         url: list ? `https://music.youtube.com/playlist?list=${list}` : `https://music.youtube.com/browse/${id}`,
         tracks, title: ytmText(h.title) || null, artist: ytmText(h.straplineTextOne) || null,
         year: sub.find(s => /^\d{4}$/.test(s)) || null, kind: sub[0] || null, otherVersions, songIds,
+        credits: pcCreditsYtm(j),   // #671
     };
 }
 // The songs a list links to, in order. Only a song (an "ATV" video) has credits; an album's
@@ -4917,7 +5062,7 @@ async function ytmAlbumIdOf(url, label = 'YouTube Music') {
 
 async function scanYtmusic({ artist, album, mbTracks, existingUrl, mbid, isVariousArtists, barcode }) {
     const label = 'YouTube Music';
-    const cached = cacheGet(mbid, 'ytmusic');
+    const cached = cacheGetScan(mbid, 'ytmusic', label);
     if (cached?.url && (!existingUrl || pcSameUrl(existingUrl, cached.url))) { applyCachedRow('ytmusic', label, cached, mbTracks); ytmNoteOtherVersions(cached.otherVersions, label); return; }
     if (cached && !cached.url && !existingUrl) { appendLog(label, `No match (cached from previous scan — use ↻ to force a re-search)`, 'warn'); applyCachedRow('ytmusic', label, cached, mbTracks); return; }
     const none = source => { cacheSet(mbid, 'ytmusic', { url: null, tracks: null, year: null, label: null, source }); updateRow('ytmusic', { url: null, mbTracks, remoteTracks: null }); };
@@ -4929,7 +5074,7 @@ async function scanYtmusic({ artist, album, mbTracks, existingUrl, mbid, isVario
         if (meta) appendLog(label, `Album parsed: tracks=${meta.tracks ?? '?'} title="${meta.title}" artist="${meta.artist || '?'}" year=${meta.year || '?'}`, meta.tracks ? 'ok' : 'warn');
         else appendLog(label, `Couldn't read the linked album — shown unverified`, 'warn');
         const lbl = await ytmAlbumLabel(meta, label);
-        cacheSet(mbid, 'ytmusic', { url: existingUrl, tracks: meta?.tracks ?? null, year: meta?.year ?? null, label: lbl, source: 'MB rels', otherVersions: meta?.otherVersions || [] });
+        cacheSet(mbid, 'ytmusic', { url: existingUrl, tracks: meta?.tracks ?? null, year: meta?.year ?? null, label: lbl, source: 'MB rels', otherVersions: meta?.otherVersions || [], credits: pcKeep(label, meta?.credits) });
         updateRow('ytmusic', { url: existingUrl, mbTracks, remoteTracks: meta?.tracks ?? null, year: meta?.year ?? null, label: lbl, source: 'MB rels' });
         ytmNoteOtherVersions(meta?.otherVersions, label);
         return;
@@ -4981,7 +5126,7 @@ async function scanYtmusic({ artist, album, mbTracks, existingUrl, mbid, isVario
     // whose barcode can't be read.
     appendLog(label, `Picked (score=${pick.score}, ${source}): ${meta.url}`, pick.score >= 150 ? 'ok' : 'warn');
     const lbl = await ytmAlbumLabel(meta, label);
-    cacheSet(mbid, 'ytmusic', { url: meta.url, tracks: meta.tracks, year: meta.year, label: lbl, source, otherVersions: meta.otherVersions });
+    cacheSet(mbid, 'ytmusic', { url: meta.url, tracks: meta.tracks, year: meta.year, label: lbl, source, otherVersions: meta.otherVersions, credits: pcKeep(label, meta.credits) });
     updateRow('ytmusic', { url: meta.url, mbTracks, remoteTracks: meta.tracks, year: meta.year, label: lbl, source });
     ytmNoteOtherVersions(meta.otherVersions, label);
 }
@@ -5136,6 +5281,7 @@ async function fetchDeezerMeta(albumUrl) {
             label:  d.label || null,
             artist: d.artist?.name || null,
             barcode: d.upc || null,
+            credits: pcCreditsDeezer(d),   // #671
         };
     } catch { return null; }
 }
@@ -5143,7 +5289,7 @@ async function fetchDeezerMeta(albumUrl) {
 async function scanDeezer({ artist, album, mbTracks, existingUrl, mbid, isVariousArtists, barcode }) {
     const label = 'Deezer';
 
-    const cached = cacheGet(mbid, 'deezer');
+    const cached = cacheGetScan(mbid, 'deezer', label);
     if (cached?.url && (!existingUrl || existingUrl === cached.url)) {
         applyCachedRow('deezer', label, cached, mbTracks);
         return;
@@ -5176,7 +5322,7 @@ async function scanDeezer({ artist, album, mbTracks, existingUrl, mbid, isVariou
             appendLog(label, `Barcode ${barcode} → ${albumUrl}`, 'ok');
             const meta = await fetchDeezerMeta(albumUrl);
             const bc = bd.upc || meta?.barcode || barcode;
-            cacheSet(mbid, 'deezer', { url: albumUrl, tracks: meta?.tracks ?? null, year: meta?.year ?? null, label: meta?.label ?? null, source: 'barcode', barcode: bc });
+            cacheSet(mbid, 'deezer', { url: albumUrl, tracks: meta?.tracks ?? null, year: meta?.year ?? null, label: meta?.label ?? null, source: 'barcode', barcode: bc, credits: pcKeep(label, meta?.credits) });
             updateRow('deezer', { url: albumUrl, mbTracks, remoteTracks: meta?.tracks ?? null, year: meta?.year ?? null, label: meta?.label ?? null, source: 'barcode', barcode: bc });
             return;
         }
@@ -5249,7 +5395,7 @@ async function scanDeezer({ artist, album, mbTracks, existingUrl, mbid, isVariou
     const tracks = meta?.tracks ?? null;
     const year   = meta?.year   ?? null;
     const lbl    = meta?.label  ?? null;
-    cacheSet(mbid, 'deezer', { url: albumUrl, tracks, year, label: lbl, source, barcode: meta?.barcode ?? null });
+    cacheSet(mbid, 'deezer', { url: albumUrl, tracks, year, label: lbl, source, barcode: meta?.barcode ?? null, credits: pcKeep(label, meta?.credits) });
     updateRow('deezer', { url: albumUrl, mbTracks, remoteTracks: tracks, year, label: lbl, source, barcode: meta?.barcode ?? null });
 }
 
@@ -5364,12 +5510,13 @@ function appleAlbumMeta(a) {
         tracks: songs ?? at.trackCount ?? null,
         tracksNote: songs == null ? 'its trackCount, which may include videos' : list.length > songs ? `${list.length - songs} video(s) left out` : 'songs',
         year: at.releaseDate ? at.releaseDate.slice(0, 4) : null, label: at.recordLabel || null, barcode: at.upc || null,
+        credits: pcCreditsApple(a, appleStorefront(at.url)),   // #671
     };
 }
 async function scanApple(args) {
     const { mbTracks, existingUrl, mbid, barcode } = args;
     const label = 'Apple';
-    const cached = cacheGet(mbid, 'apple');
+    const cached = cacheGetScan(mbid, 'apple', label);
     if (cached?.url && (!existingUrl || existingUrl === cached.url)) {
         applyCachedRow('apple', label, cached, mbTracks);
         return;
@@ -5388,7 +5535,7 @@ async function scanAppleAmp({ artist, album, mbTracks, existingUrl, mbid, isVari
     const label = 'Apple', sf = appleStorefront(existingUrl);
     const done = (meta, source) => {
         appendLog(label, `Album: "${meta.title}" — ${meta.tracks ?? '?'} track(s) (${meta.tracksNote}), ${meta.year || '?'}, ${meta.label || '?'}, UPC ${meta.barcode || '?'}`, meta.tracks ? 'ok' : 'warn');
-        cacheSet(mbid, 'apple', { url: meta.url, tracks: meta.tracks, year: meta.year, label: meta.label, source, barcode: meta.barcode });
+        cacheSet(mbid, 'apple', { url: meta.url, tracks: meta.tracks, year: meta.year, label: meta.label, source, barcode: meta.barcode, credits: pcKeep(label, meta.credits) });
         updateRow('apple', { url: meta.url, mbTracks, remoteTracks: meta.tracks, year: meta.year, label: meta.label, source, barcode: meta.barcode });
         return true;
     };
@@ -5440,7 +5587,7 @@ async function scanAppleAmp({ artist, album, mbTracks, existingUrl, mbid, isVari
         const url = existingUrl ? existingUrl.split('?')[0] : `https://music.apple.com/${sf}/album/${id}`;
         if (!a) {
             appendLog(label, `amp-api: album ${id} is not in the "${sf}" storefront — keeping the link, details unknown`, 'warn');
-            cacheSet(mbid, 'apple', { url, tracks: null, year: null, label: null, source });
+            cacheSet(mbid, 'apple', { url, tracks: null, year: null, label: null, source, credits: null });
             updateRow('apple', { url, mbTracks, remoteTracks: null, source });
             return true;
         }
@@ -5492,7 +5639,7 @@ async function scanAppleAmp({ artist, album, mbTracks, existingUrl, mbid, isVari
 async function scanAppleItunes({ artist, album, mbTracks, existingUrl, mbid, isVariousArtists, wikidataAppleId, barcode }) {
     const label = 'Apple';
 
-    const cached = cacheGet(mbid, 'apple');
+    const cached = cacheGetScan(mbid, 'apple', label);
     if (cached?.url && (!existingUrl || existingUrl === cached.url)) {
         applyCachedRow('apple', label, cached, mbTracks);
         return;
@@ -5516,7 +5663,7 @@ async function scanAppleItunes({ artist, album, mbTracks, existingUrl, mbid, isV
             const albumUrl = hit.collectionViewUrl.split('?')[0];
             appendLog(label, `Barcode ${barcode} → ${albumUrl}`, 'ok');
             const meta = await fetchAppleMeta(albumUrl);
-            cacheSet(mbid, 'apple', { url: albumUrl, tracks: meta?.tracks ?? null, year: meta?.year ?? null, label: meta?.label ?? null, source: 'barcode' });
+            cacheSet(mbid, 'apple', { url: albumUrl, tracks: meta?.tracks ?? null, year: meta?.year ?? null, label: meta?.label ?? null, source: 'barcode', credits: null });
             updateRow('apple', { url: albumUrl, mbTracks, remoteTracks: meta?.tracks ?? null, year: meta?.year ?? null, label: meta?.label ?? null, source: 'barcode' });
             return;
         }
@@ -5583,7 +5730,7 @@ async function scanAppleItunes({ artist, album, mbTracks, existingUrl, mbid, isV
     const tracks = meta?.tracks ?? null;
     const year   = meta?.year   ?? null;
     const lbl    = meta?.label  ?? null;
-    cacheSet(mbid, 'apple', { url: albumUrl, tracks, year, label: lbl, source });
+    cacheSet(mbid, 'apple', { url: albumUrl, tracks, year, label: lbl, source, credits: null });
     updateRow('apple', { url: albumUrl, mbTracks, remoteTracks: tracks, year, label: lbl, source });
 }
 
@@ -5698,7 +5845,7 @@ async function scanTidal({ artist, album, mbTracks, existingUrl, mbid, isVarious
 // → web search, surfaced UNVERIFIED (no track count).
 async function scanBeatport({ artist, album, existingUrl, mbTracks, mbid, isVariousArtists, wikidataBeatportId, barcode }) {
     const label = 'Beatport';
-    const cached = cacheGet(mbid, 'beatport');
+    const cached = cacheGetScan(mbid, 'beatport', label);
     const idFromUrl = u => (String(u || '').match(/beatport\.com\/release\/[^/]+\/(\d+)/) || [])[1];
     // A cached hit short-circuits — EXCEPT when we're now logged in and the
     // cached entry was never track-count verified (e.g. a web-search result
@@ -5752,7 +5899,7 @@ async function scanBeatport({ artist, album, existingUrl, mbTracks, mbid, isVari
             const lbl = detail.label?.name || null;
             const bc = detail.upc || (source === 'barcode' ? barcode : null);   // (#182) Beatport exposes the UPC
             appendLog(label, `Verified: tracks=${tracks} year=${year || '?'} label=${lbl || '?'}${bc ? ` upc=${bc}` : ''}`, tracks ? 'ok' : 'warn');
-            cacheSet(mbid, 'beatport', { url, tracks, year, label: lbl, source, barcode: bc });
+            cacheSet(mbid, 'beatport', { url, tracks, year, label: lbl, source, barcode: bc, credits: pcKeep(label, pcCreditsBeatport(detail)) });
             updateRow('beatport', { url, mbTracks, remoteTracks: tracks, year, label: lbl, source, barcode: bc });
             return;
         }
@@ -5801,7 +5948,7 @@ async function scanBeatport({ artist, album, existingUrl, mbTracks, mbid, isVari
                 const year = String(detail.new_release_date || detail.publish_date || '').slice(0, 4) || null;
                 const lbl = detail.label?.name || null, bc = detail.upc || null;
                 appendLog(label, `Search hit verified via API (score=${sc}): tracks=${tracks} year=${year || '?'}`, 'ok');
-                cacheSet(mbid, 'beatport', { url, tracks, year, label: lbl, source: 'search+api', barcode: bc });
+                cacheSet(mbid, 'beatport', { url, tracks, year, label: lbl, source: 'search+api', barcode: bc, credits: pcKeep(label, pcCreditsBeatport(detail)) });
                 updateRow('beatport', { url, mbTracks, remoteTracks: tracks, year, label: lbl, source: 'search+api', barcode: bc });
                 return;
             }
@@ -5810,7 +5957,7 @@ async function scanBeatport({ artist, album, existingUrl, mbTracks, mbid, isVari
     } else if (source === 'MB rels') {
         appendLog(label, `Using existing MB URL: ${url}`, 'ok');
     }
-    cacheSet(mbid, 'beatport', { url, tracks: null, year: null, label: null, source });
+    cacheSet(mbid, 'beatport', { url, tracks: null, year: null, label: null, source, credits: null });
     updateRow('beatport', { url, mbTracks, remoteTracks: null, source });
 }
 
@@ -6709,6 +6856,348 @@ async function runScansInner() {
     await Promise.allSettled(tasks);
     appendLog('System', 'All scans completed', 'ok');
 }
+
+// ─── Artists & labels table (#671) ──────────────────────────────────────────
+// The platform pages the scanners kept (credits, above), paired with this release's
+// MusicBrainz artists and labels: the release's artist credit, each track's (a
+// compilation's), and its labels. One row per MusicBrainz artist or label, one column
+// per platform; Falcon submits the new links as one batch.
+
+// A name as both sides spell it: case, accents and "&"/"and" don't count
+function pcNameKey(s) {
+    return String(s || '').toLowerCase().normalize('NFKD').replace(/\p{M}+/gu, '')
+        .replace(/\s*[&+]\s*/g, ' and ').replace(/[^\p{L}\p{N}]+/gu, ' ').trim();
+}
+// Pairs one platform credit list with one MusicBrainz list: by name first; a platform
+// artist whose name matches none is paired by position only when both lists are the
+// same length (and never an account that may be the label instead). The rest is left
+// out, with why.
+function pcPairCredits(mb, plat) {
+    const keys = e => [e.name, e.alt].map(pcNameKey).filter(Boolean);
+    const pairs = [], left = [], named = new Set(), rest = [];
+    plat.forEach((p, i) => {
+        const pk = keys(p);
+        const j = pk.length ? mb.findIndex(m => keys(m).some(k => pk.includes(k))) : -1;
+        if (j >= 0) { pairs.push({ mb: mb[j], plat: p, by: 'name' }); named.add(j); }
+        else rest.push(i);
+    });
+    for (const i of rest) {
+        const p = plat[i];
+        if (mb.length === plat.length && !p.uncertain && !named.has(i)) pairs.push({ mb: mb[i], plat: p, by: 'position' });
+        else left.push({ plat: p, why: p.uncertain ? 'no MusicBrainz name matches it (an account that may be the artist or the label is paired by name only)'
+            : `no MusicBrainz name matches it, and the credits differ in length (${plat.length} on the platform, ${mb.length} in MusicBrainz)` });
+    }
+    return { pairs, left };
+}
+// The table's rows. mb: { artists, labels, tracks (each track's credit, or null for the
+// release's), va }; byProvider: { <provider>: credits }. Each row is
+// { type: 'artist'|'label', mbid, name, cells: { <provider>: [{ url, name, uncertain, by }] } }.
+function pcLinkRows(mb, byProvider) {
+    const rows = new Map(), notes = [];
+    const notVa = l => (l || []).filter(c => !VA_NAME_RE.test(c.name || ''));
+    const mbArtists = l => (l || []).filter(a => a.mbid !== VA_MBID);
+    const add = (type, p, { mb: m, plat, by }) => {
+        const key = `${type}:${m.mbid}`;
+        let r = rows.get(key);
+        if (!r) rows.set(key, r = { type, mbid: m.mbid, name: m.name, cells: {} });
+        const cell = r.cells[p] || (r.cells[p] = []);
+        if (!cell.some(x => pcSameUrl(x.url, plat.url))) cell.push({ url: plat.url, name: plat.name, uncertain: !!plat.uncertain, by });
+    };
+    for (const [p, cr] of Object.entries(byProvider)) {
+        if (!cr) continue;
+        const said = new Set();
+        const pair = (type, mbList, platList, where) => {
+            const { pairs, left } = pcPairCredits(mbList, platList);
+            pairs.forEach(x => add(type, p, x));
+            for (const l of left) {
+                const line = `${p}: ${type} "${l.plat.name || l.plat.url}" (${where}) left out: ${l.why}`;
+                if (!said.has(line)) { said.add(line); notes.push(line); }
+            }
+        };
+        const releaseArtists = mbArtists(mb.artists);
+        if (!mb.va && releaseArtists.length && cr.artists.length) pair('artist', releaseArtists, notVa(cr.artists), 'release artist');
+        if (cr.tracks && cr.tracks.some(t => t.length)) {
+            if (!mb.tracks) notes.push(`${p}: track artists not paired — the page doesn't show every track's artist credit (a medium not loaded?)`);
+            else if (cr.tracks.length !== mb.tracks.length) notes.push(`${p}: track artists not paired — ${cr.tracks.length} track(s) on the platform, ${mb.tracks.length} in MusicBrainz`);
+            else cr.tracks.forEach((t, i) => {
+                const mbT = mbArtists(mb.tracks[i] || (mb.va ? [] : mb.artists));
+                const pt = notVa(t);
+                if (mbT.length && pt.length) pair('artist', mbT, pt, `track ${i + 1}`);
+            });
+        }
+        if (cr.labels.length && (mb.labels || []).length) pair('label', mb.labels, cr.labels, 'label');
+    }
+    // an account that may be either is only offered where its name matched
+    for (const r of rows.values()) for (const p of Object.keys(r.cells)) {
+        r.cells[p] = r.cells[p].filter(c => !c.uncertain || c.by === 'name');
+        if (!r.cells[p].length) delete r.cells[p];
+    }
+    const out = [...rows.values()].filter(r => Object.keys(r.cells).length);
+    out.sort((a, b) => (a.type === b.type ? 0 : a.type === 'artist' ? -1 : 1));
+    return { rows: out, notes };
+}
+
+// This release's MusicBrainz artists and labels, from the page itself (no request).
+// A track whose row names no artist has the release's credit; when the page shows fewer
+// tracks than the release has (a medium not loaded), tracks is null.
+function pcMbCredits(doc, mbTracks) {
+    const credit = scope => {
+        const out = [];
+        for (const a of scope.querySelectorAll('a[href*="/artist/"]')) {
+            if (a.closest('.ars, dl.ars, div.ars, .release-rels, #mb-pc-panel')) continue;   // relationship credits, not the track's artists
+            const m = (a.getAttribute('href') || '').match(/\/artist\/([0-9a-f-]{36})(?:[/?#]|$)/);
+            if (m && !out.some(x => x.mbid === m[1])) out.push({ mbid: m[1], name: a.textContent.trim(), alt: (a.getAttribute('title') || '').trim() });
+        }
+        return out;
+    };
+    const header = doc.querySelector('.releaseheader, .release-information') || doc;
+    const artists = [];
+    for (const el of header.querySelectorAll('.artist-credit, .subheader, h1 ~ p')) for (const a of credit(el)) if (!artists.some(x => x.mbid === a.mbid)) artists.push(a);
+    const labels = [];
+    for (const a of (doc.querySelector('#sidebar') || doc).querySelectorAll('a[href*="/label/"]')) {
+        const m = (a.getAttribute('href') || '').match(/\/label\/([0-9a-f-]{36})(?:[/?#]|$)/);
+        if (m && !labels.some(x => x.mbid === m[1])) labels.push({ mbid: m[1], name: a.textContent.trim() });
+    }
+    const rows = [...doc.querySelectorAll('table.tbl.medium tbody tr')].filter(tr => tr.querySelector(':scope > td.pos'));
+    const tracks = rows.length && rows.length === mbTracks ? rows.map(tr => { const c = credit(tr); return c.length ? c : null; }) : null;
+    return { artists, labels, tracks, va: artists.some(a => a.mbid === VA_MBID) };
+}
+
+// Which of these URLs MusicBrainz already has, and on whom: one /ws/2/url request per
+// 100 URLs. Asked only when the table opens. → Map(pcUrlKey → [{ type, mbid, name }])
+async function pcLinkedTo(urls) {
+    const out = new Map();
+    const uniq = [...new Set(urls)];
+    for (let i = 0; i < uniq.length; i += 100) {
+        const part = uniq.slice(i, i + 100);
+        const r = await gmGet(`${MB_ORIGIN}/ws/2/url?${part.map(u => 'resource=' + encodeURIComponent(u)).join('&')}&inc=artist-rels+label-rels&fmt=json`, { headers: { Accept: 'application/json' } });
+        if (r.status === 404) continue;   // one URL asked, and MusicBrainz doesn't have it
+        if (!r.ok) throw new Error(`MusicBrainz answered ${r.status || r.error || '?'}`);
+        const j = JSON.parse(r.responseText);
+        for (const u of (j.urls || (j.resource ? [j] : []))) {
+            const who = (u.relations || []).filter(x => x['target-type'] === 'artist' || x['target-type'] === 'label')
+                .map(x => ({ type: x['target-type'], mbid: (x.artist || x.label || {}).id, name: (x.artist || x.label || {}).name || '' }));
+            out.set(pcUrlKey(u.resource), who);
+        }
+    }
+    return out;
+}
+// A cell's links, each marked: 'linked' (already on this entity), 'other' (MusicBrainz has
+// it on someone else: not added), 'new', or 'unsure' (new, but may be the label's)
+function pcMarkCell(row, cell, linked) {
+    return cell.map(c => {
+        const who = linked.get(pcUrlKey(c.url)) || [];
+        if (who.some(w => w.type === row.type && w.mbid === row.mbid)) return { ...c, state: 'linked', who };
+        if (who.length) return { ...c, state: 'other', who };
+        return { ...c, state: c.uncertain ? 'unsure' : 'new', who };
+    });
+}
+
+// The link type for an artist's or label's page where MusicBrainz offers several and picks none
+// (Qobuz: download or streaming; Apple Music; Audiomack: free or paid streaming), the same picks
+// as Apollo's (verified on the sandbox) and the album rows' TYPE_FORCE. Others MusicBrainz types itself.
+const PC_ENTITY_LINK_TYPE = [
+    { re: /(^|\.)qobuz\.com$/i,          artist: 176, label: 959 },   // purchase music for download
+    { re: /^(music|itunes)\.apple\.com$/i, artist: 978, label: 1005 },  // streaming page
+    { re: /(^|\.)audiomack\.com$/i,      artist: 194, label: 997 },   // stream for free
+];
+function pcLinkTypeFor(type, url) {
+    let h = '';
+    try { h = new URL(url).hostname; } catch (e) { return null; }
+    const t = PC_ENTITY_LINK_TYPE.find(x => x.re.test(h));
+    return (t && t[type]) || null;
+}
+// The batch for Falcon's ?falcon= handoff, in Falcon's JSON model (what its Import reads):
+// one item per artist or label with its new links, and the batch's edit note
+function pcFalconJson(rows, note) {
+    const items = rows.map(r => ({ entityType: r.type, mbid: r.mbid, name: r.name, urls: r.urls.map(url => ({ url, linkTypeId: pcLinkTypeFor(r.type, url) })) }));
+    return JSON.stringify({ note, items });
+}
+function pcFalconPayload(rows, note) {
+    return btoa(String.fromCharCode(...new TextEncoder().encode(pcFalconJson(rows, note))));
+}
+// Falcon runs on this page too: hand it the batch in place (a DOM event, which every
+// userscript sandbox hears), to run (falcon:run) or only to queue (falcon:import). False
+// when no Falcon answered, so the caller opens it in a tab.
+function pcSendToFalconHere(json, run) {
+    let ok = false;
+    const ack = () => { ok = true; };
+    document.addEventListener('falcon:import-ok', ack);
+    try { document.dispatchEvent(new CustomEvent(run ? 'falcon:run' : 'falcon:import', { detail: json })); } finally { document.removeEventListener('falcon:import-ok', ack); }
+    return ok;
+}
+// MusicBrainz's edit page for one artist or label, with its new links filled in, for you to submit
+function pcSeededEditUrl(type, mbid, urls, note) {
+    const q = urls.flatMap((u, i) => {
+        const t = pcLinkTypeFor(type, u);
+        return [`edit-${type}.url.${i}.text=${encodeURIComponent(u)}`].concat(t ? [`edit-${type}.url.${i}.link_type_id=${t}`] : []);
+    });
+    q.push(`edit-${type}.edit_note=${encodeURIComponent(note)}`);
+    return `${MB_ORIGIN}/${type}/${mbid}/edit?${q.join('&')}`;
+}
+
+// The credits of the platforms whose album is a confirmed match: the same bar as +
+// (a ✓ that link confidence doesn't withhold), or a link the release already has.
+function pcConfirmedCredits() {
+    const out = {}, stale = [];
+    for (const p of PROVIDER_ORDER) {
+        if (!providerEnabled(p)) continue;
+        const c = cacheGet(mbid, p);
+        if (!c || !c.url) continue;
+        const ok = c.source === 'MB rels' || (document.getElementById(`ico-${p}`)?.textContent?.trim() === '✓' && !barcodeBlocks(p) && !formatBlocks(p));
+        if (!ok) continue;
+        if (!('credits' in c)) { if (PC_CREDIT_PROVIDERS.includes(p)) stale.push(p); continue; }   // cached before #671: ↻ reads it again
+        if (c.credits) out[p] = c.credits;
+    }
+    return { byProvider: out, stale };
+}
+function pcLinksNote() {
+    const mb = mbDataGet(mbid) || {};
+    return `Artist and label links from Platform Check's platform matches for the release "${mb.album || ''}" by ${mb.artist || '?'}: ${MB_ORIGIN}/release/${mbid}`;
+}
+
+async function pcOpenLinksTable(btn) {
+    document.getElementById('pc-links-ov')?.remove();
+    const mbRec = mbDataGet(mbid) || {};
+    const mb = pcMbCredits(document, mbRec.mbTracks || 0);
+    const { byProvider, stale } = pcConfirmedCredits();
+    const { rows, notes } = pcLinkRows(mb, byProvider);
+    appendLog('System', `Artists & labels: ${rows.length} MusicBrainz artist(s)/label(s) with platform pages, from ${Object.keys(byProvider).join(', ') || 'no platform'}${stale.length ? `; cached before artist pages were kept: ${stale.join(', ')} (↻ reads them again)` : ''}${mb.tracks ? '' : '; track credits: not all on the page'}`);
+    notes.forEach(n => appendLog('System', `Artists & labels: ${n}`, 'warn'));
+    if (!rows.length) { flashInfo(btn, stale.length ? 'Nothing kept yet — press ↻' : 'No artist or label pages'); return; }
+
+    const ov = document.createElement('div');
+    ov.id = 'pc-links-ov';
+    ov.className = 'mbu-ov';
+    ov.innerHTML = mbuHtml(`<style>${MBU_TOKENS}${MBU_UI_CSS}
+      #pc-links-ov .mbu-ov-panel { min-width: 420px; font: 13px var(--mbu-font); }
+      #pc-links-ov table { border-collapse: collapse; }
+      #pc-links-ov th, #pc-links-ov td { padding: 3px 6px; border-bottom: 1px solid var(--mbu-divider); text-align: center; white-space: nowrap; }
+      #pc-links-ov th { font-weight: 600; color: var(--mbu-text-dim); }
+      #pc-links-ov td.pc-lk-name { text-align: left; max-width: 260px; overflow: hidden; text-overflow: ellipsis; }
+      #pc-links-ov td.pc-lk-name a { color: var(--mbu-accent-text); }
+      #pc-links-ov .pc-lk-type { color: var(--mbu-text-weak); font-size: 11px; margin-right: 4px; }
+      #pc-links-ov td.pc-lk-cell { cursor: pointer; font-weight: 700; min-width: 22px; user-select: none; }
+      #pc-links-ov td.pc-lk-cell:hover { background: var(--mbu-bg-hover); }
+      #pc-links-ov .pc-lk-linked { color: var(--mbu-ok); }
+      #pc-links-ov .pc-lk-new { color: var(--mbu-accent-text); }
+      #pc-links-ov .pc-lk-unsure { color: var(--mbu-warn); }
+      #pc-links-ov .pc-lk-other { color: var(--mbu-error); }
+      #pc-links-ov .pc-lk-on { background: var(--mbu-warn-bg); }
+      #pc-links-ov .pc-lk-off { color: var(--mbu-text-weak); opacity: .55; text-decoration: line-through; }
+      #pc-links-ov .pc-lk-none { color: var(--mbu-text-weak); font-weight: 400; cursor: default; }
+      #pc-links-ov .pc-lk-edit { cursor: pointer; color: var(--mbu-accent-text); background: none; border: 1px solid var(--mbu-border); border-radius: var(--mbu-radius); padding: 0 6px; font: inherit; }
+      #pc-links-ov .pc-lk-foot { display: flex; align-items: center; gap: 10px; padding: 10px 16px; border-top: 1px solid var(--mbu-border-soft); }
+      #pc-links-ov .pc-lk-status { flex: 1 1 auto; color: var(--mbu-text-weak); font-size: 12px; }
+      #pc-links-ov .pc-lk-send { cursor: pointer; background: var(--mbu-accent); color: var(--mbu-accent-fg); border: none; border-radius: var(--mbu-radius); padding: 5px 12px; font: 600 13px var(--mbu-font); }
+      #pc-links-ov .pc-lk-send:disabled { opacity: .5; cursor: default; }
+      #pc-links-ov .pc-lk-split { position: relative; display: inline-flex; }
+      #pc-links-ov .pc-lk-split .pc-lk-send:first-child { border-radius: var(--mbu-radius) 0 0 var(--mbu-radius); }
+      #pc-links-ov .pc-lk-more { border-left: 1px solid var(--mbu-accent-fg) !important; border-radius: 0 var(--mbu-radius) var(--mbu-radius) 0 !important; padding: 5px 8px !important; }
+      #pc-links-ov .pc-lk-menu { position: absolute; right: 0; bottom: calc(100% + 4px); background: var(--mbu-bg); border: 1px solid var(--mbu-border); border-radius: var(--mbu-radius); box-shadow: 0 4px 14px rgba(0,0,0,.3); padding: 4px 0; white-space: nowrap; z-index: 1; }
+      #pc-links-ov .pc-lk-menu[hidden] { display: none; }
+      #pc-links-ov .pc-lk-menu button { display: block; width: 100%; text-align: left; background: none; border: none; color: var(--mbu-text); padding: 5px 14px; font: 13px var(--mbu-font); cursor: pointer; }
+      #pc-links-ov .pc-lk-menu button:hover { background: var(--mbu-bg-hover); }
+    </style>
+    <div class="mbu-ov-panel"><div class="mbu-ov-h"><span class="mbu-ov-title">Artists &amp; labels</span><button type="button" class="mbu-ov-x" title="Close">✕</button></div>
+    <div class="mbu-ov-body"></div>
+    <div class="pc-lk-foot"><span class="pc-lk-status">Checking MusicBrainz for links already there…</span><span class="pc-lk-split"><button type="button" class="pc-lk-send" disabled title="Queue the new links in Falcon and start it">Run in Falcon</button><button type="button" class="pc-lk-send pc-lk-more" disabled title="More">▾</button><span class="pc-lk-menu" hidden><button type="button" class="pc-lk-queue" title="Queue the new links in Falcon without starting it">Send only</button></span></span></div></div>`);
+    document.body.appendChild(ov);
+    const close = () => { ov.remove(); document.removeEventListener('keydown', onKey, true); };
+    const onKey = e => { if (e.key === 'Escape') { e.stopPropagation(); close(); } };
+    document.addEventListener('keydown', onKey, true);
+    ov.addEventListener('mousedown', e => { if (e.target === ov) close(); });
+    ov.querySelector('.mbu-ov-x').onclick = close;
+
+    const status = ov.querySelector('.pc-lk-status'), send = ov.querySelector('.pc-lk-send'), more = ov.querySelector('.pc-lk-more'), menu = ov.querySelector('.pc-lk-menu');
+    let linked = new Map(), checked = false;
+    try {
+        linked = await pcLinkedTo(rows.flatMap(r => Object.values(r.cells).flat().map(c => c.url)));
+        checked = true;
+    } catch (e) {
+        appendLog('System', `Artists & labels: couldn't ask MusicBrainz which links it already has (${e.message})`, 'error');
+    }
+    if (!ov.isConnected) return;
+    const provs = PROVIDER_ORDER.filter(p => rows.some(r => r.cells[p]));
+    // a link is in the batch when it's new (an uncertain one only once you include it)
+    const marked = rows.map(r => {
+        const cells = {};
+        for (const p of provs) if (r.cells[p]) cells[p] = pcMarkCell(r, r.cells[p], linked).map(c => ({ ...c, on: c.state === 'new' }));
+        return { ...r, cells };
+    });
+    const batch = () => marked.map(r => ({ type: r.type, mbid: r.mbid, name: r.name, urls: Object.values(r.cells).flat().filter(c => c.on).map(c => c.url) })).filter(r => r.urls.length);
+    const MARK = { linked: '✓', new: '+', unsure: '+?', other: '⚠' };
+    const cellMark = cs => {
+        const lead = cs.find(c => c.on) || cs.find(c => c.state === 'new' || c.state === 'unsure') || cs.find(c => c.state === 'other') || cs[0];
+        // a + taken out is struck; a +? is amber, and highlighted once taken in
+        return { text: MARK[lead.state], cls: lead.state === 'new' && !lead.on ? 'pc-lk-off' : `pc-lk-${lead.state}${lead.state === 'unsure' && lead.on ? ' pc-lk-on' : ''}` };
+    };
+    const cellTitle = cs => cs.map(c => `${c.url}\n  ${c.state === 'linked' ? 'already linked in MusicBrainz'
+        : c.state === 'other' ? `linked to ${c.who.map(w => `${w.type} ${w.name || w.mbid}`).join(', ')} in MusicBrainz — not added`
+        : `${c.on ? 'will be added' : 'not added'}${c.state === 'unsure' ? ' (an account that may be the artist or the label)' : ''}${c.by === 'position' ? ' (matched by position, not name)' : ''}`}`).join('\n') + '\nclick: open · right-click: include or leave out';
+
+    const tbl = document.createElement('table');
+    const head = tbl.createTHead().insertRow();
+    head.appendChild(document.createElement('th')).textContent = 'MusicBrainz';
+    for (const p of provs) { const th = head.appendChild(document.createElement('th')); th.title = PROVIDER_NAME[p]; th.innerHTML = mbuHtml(stIcon(p, 16)); }
+    head.appendChild(document.createElement('th'));
+    const body = tbl.createTBody();
+    const refresh = () => {
+        const b = batch(), n = b.reduce((s, r) => s + r.urls.length, 0);
+        send.textContent = `Run ${n} in Falcon`;
+        send.disabled = more.disabled = !n;
+        if (!n) menu.hidden = true;
+        status.textContent = checked ? `${n} new link(s) on ${b.length} artist(s)/label(s)` : `MusicBrainz couldn't be asked which links it already has — check before sending`;
+    };
+    for (const r of marked) {
+        const tr = body.insertRow();
+        const name = tr.insertCell();
+        name.className = 'pc-lk-name';
+        name.appendChild(Object.assign(document.createElement('span'), { className: 'pc-lk-type', textContent: r.type === 'artist' ? 'art' : 'lbl' }));
+        name.appendChild(Object.assign(document.createElement('a'), { href: `${MB_ORIGIN}/${r.type}/${r.mbid}`, target: '_blank', rel: 'noopener', textContent: r.name || r.mbid }));
+        for (const p of provs) {
+            const td = tr.insertCell();
+            const cs = r.cells[p];
+            if (!cs) { td.className = 'pc-lk-none'; td.textContent = '·'; continue; }
+            const paint = () => { const m = cellMark(cs); td.className = `pc-lk-cell ${m.cls}`; td.textContent = m.text; td.title = cellTitle(cs); };
+            paint();
+            td.onclick = () => window.open(cs[0].url, '_blank', 'noopener');
+            td.oncontextmenu = e => {
+                e.preventDefault();
+                const can = cs.filter(c => c.state === 'new' || c.state === 'unsure');
+                if (!can.length) return;
+                const on = !can.some(c => c.on);
+                can.forEach(c => { c.on = on; });
+                paint(); refresh();
+            };
+        }
+        const act = tr.insertCell();
+        const edit = Object.assign(document.createElement('button'), { type: 'button', className: 'pc-lk-edit', textContent: '✎', title: `Open the ${r.type}'s edit page with its new links filled in, for you to submit` });
+        edit.onclick = () => {
+            const urls = Object.values(r.cells).flat().filter(c => c.on).map(c => c.url);
+            if (!urls.length) { flashInfo(edit, 'No new links in this row'); return; }
+            window.open(pcSeededEditUrl(r.type, r.mbid, urls, pcLinksNote()), '_blank');
+        };
+        act.appendChild(edit);
+    }
+    ov.querySelector('.mbu-ov-body').appendChild(tbl);
+    refresh();
+    // Run: queue and start. Send only: queue, Falcon waits for Start. A Falcon opened in a
+    // new tab (none on this page) only queues: ?falcon= never starts on its own.
+    const toFalcon = run => {
+        const b = batch();
+        if (!b.length) return;
+        const here = pcSendToFalconHere(pcFalconJson(b, pcLinksNote()), run);
+        appendLog('System', `Artists & labels: ${run && here ? 'running' : 'sent'} ${b.reduce((s, r) => s + r.urls.length, 0)} link(s) on ${b.length} artist(s)/label(s) ${run && here ? 'in' : 'to'} Falcon${here ? '' : ` (in a new tab: no Falcon on this page${run ? '; press Start there' : ''})`}`, 'ok');
+        if (!here) window.open(`${MB_ORIGIN}/?falcon=${encodeURIComponent(pcFalconPayload(b, pcLinksNote()))}`, '_blank');
+        close();
+    };
+    send.onclick = () => toFalcon(true);
+    more.onclick = e => { e.stopPropagation(); menu.hidden = !menu.hidden; };
+    ov.querySelector('.pc-lk-queue').onclick = () => toFalcon(false);
+    ov.addEventListener('click', e => { if (!menu.hidden && !e.target.closest('.pc-lk-split')) menu.hidden = true; });
+}
+document.getElementById('mb-links-btn').addEventListener('click', e => pcOpenLinksTable(e.currentTarget));
 
 // ↻ REFRESH button: clear cached URLs for this MBID, blank the rows, re-run.
 document.getElementById('mb-refresh-btn').addEventListener('click', () => {

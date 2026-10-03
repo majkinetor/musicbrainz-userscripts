@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Falcon — bulk MusicBrainz link editor
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.3.221557
+// @version      2026.10.3.234600
 // @description  Add external links to a BATCH of MusicBrainz artists/labels/recordings at once — no popup-per-entity, no tab churn. A small pool of persistent worker iframes churns through a queue, each submitting its own edit and moving straight to the next entity. Paste a list, hand it a queue via a `?falcon=` URL param, or click "Send to Falcon" on a Harmony actions page to import its suggested links directly.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHBhdGggZD0iTTY0IDEwIEM4MiAyOCA5MCA1NiA5MCA4MCBMMzggODAgQzM4IDU2IDQ2IDI4IDY0IDEwIFoiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzFiMmE0YSIgc3Ryb2tlLXdpZHRoPSI3IiBzdHJva2UtbGluZWpvaW49InJvdW5kIiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8cGF0aCBkPSJNMzggODAgTDIwIDExMCBMNDAgOTYgWiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxwYXRoIGQ9Ik05MCA4MCBMMTA4IDExMCBMODggOTYgWiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxjaXJjbGUgY3g9IjY0IiBjeT0iNDQiIHI9IjEwIiBmaWxsPSIjMWIyYTRhIi8+CiAgPHBhdGggZD0iTTUwIDgwIEw0NSAxMDggTDY0IDEyMiBMODMgMTA4IEw3OCA4MCBaIiBmaWxsPSIjZmY2YTAwIiBzdHJva2U9IiMxYjJhNGEiIHN0cm9rZS13aWR0aD0iNSIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgo8L3N2Zz4K
@@ -1892,7 +1892,7 @@
         if (hasCover && reItem.status === 'queued') reItem._coverCheckPromise = checkExistingCoverArt(reItem);
         added++;
       } else if (r.url) {
-        flat.push({ entityType: type, mbid: r.mbid, url: String(r.url), linkTypeId: r.linkTypeId || null, note: r.note || '', disambiguation: r.disambiguation || r.comment || '', rename: r.rename || '', isrc: r.isrc || (Array.isArray(r.isrcs) ? r.isrcs[0] : null) || null });
+        flat.push({ entityType: type, mbid: r.mbid, url: String(r.url), linkTypeId: r.linkTypeId || null, note: r.note || '', disambiguation: r.disambiguation || r.comment || '', rename: r.rename || '', isrc: r.isrc || (Array.isArray(r.isrcs) ? r.isrcs[0] : null) || null, name: r.name || null });
       } else skipped++;
     });
     if (flat.length) { const res = addToQueue(flat); added += res.added; merged += res.merged; }
@@ -1909,9 +1909,8 @@
   }
 
   // `?falcon=` accepts TWO schemes:
-  //   1. base64(JSON array of {entityType?,mbid,url,linkTypeId?,note?}) directly in
-  //      the URL — the documented contract for any external script to hand Falcon a
-  //      queue with one link.
+  //   1. base64(JSON) directly in the URL — the documented contract for any external
+  //      script: the JSON model, as Import reads it (#671).
   //   2. a short random TOKEN keyed into GM storage (`falcon:pending:<token>`) — used
   //      by the Harmony bridge itself (see ensureHarmonyButton below), since GM
   //      storage is shared across every tab this SAME script runs in regardless of
@@ -1950,6 +1949,9 @@
     if (json == null) { log('warn', 'falcon= param present but neither valid base64 JSON nor a known pending token'); return null; }
     try {
       const arr = JSON.parse(json);
+      // #671: a base64 payload is the JSON model, read as Import reads a file: everything a
+      // row can carry, the note too. The flat one-link rows below are Harmony's token only.
+      if (!fromHarmony) return { importText: json };
       if (!Array.isArray(arr)) return null;
       const out = arr.map(it => {
         // #494/#495: a cover-shaped tuple (coverCandidates, no url — only
@@ -4833,8 +4835,13 @@
   // the release AFTER Falcon has added its links, ISRCs and cover — otherwise it
   // would tag the version that made Falcon necessary in the first place.
   const _picardSent = new Set();
+  // #671: Picard and the reload after import are Harmony options (they sit in its settings
+  // group), so they follow only a queue Harmony seeded in this tab — not Import, a ?falcon=
+  // link, or a batch another script (Platform Check) hands over on the page.
+  let _harmonySeeded = false;
   function sendReleaseToPicard() {
     if (!cfg.sendToPicard) return;
+    if (!_harmonySeeded) { log('debug', 'Picard: this queue did not come from Harmony, so nothing is sent'); return; }
     const m = /\/release\/([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})/i.exec(location.pathname);
     if (!m) { log('debug', 'Picard: this tab is not a release page, so there is nothing to hand over'); return; }
     const mbid = m[1].toLowerCase();
@@ -4883,6 +4890,7 @@
   const RELOADED_KEY = 'falcon:reloadedAfterImport';
   function maybeReloadReleasePage() {
     if (!cfg.reloadReleaseAfterImport) return;
+    if (!_harmonySeeded) { log('debug', 'reload after import: this queue did not come from Harmony, so the page is left as it is'); return; }
     // the release page itself only: /release/<mbid>/cover-art and the other subpages
     // matched too, and were reloaded after every clean run (#588)
     const m = /^\/release\/([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})\/?$/i.exec(location.pathname);
@@ -6977,12 +6985,31 @@
   } else {
     const seeded = parseUrlParam();
     ensureLauncher();
+    // #671: a script on this same page (Platform Check's Artists & labels) hands over the
+    // JSON model as a DOM event, which every userscript sandbox hears; it is queued as
+    // Import queues a file, and the ack tells the sender not to open a tab instead.
+    // falcon:run also starts the queue (only a script already on this page can ask that;
+    // a ?falcon= link never starts on its own).
+    const fromPage = run => e => {
+      if (typeof e.detail !== 'string') return;
+      document.dispatchEvent(new CustomEvent('falcon:import-ok'));
+      const r = importQueueJson(e.detail, 'a script on this page');
+      showPanel();
+      if (run && r && (r.added || r.merged)) whenQueueSettles(20000).then(() => start());
+    };
+    document.addEventListener('falcon:import', fromPage(false));
+    document.addEventListener('falcon:run', fromPage(true));
     // #591 — both halves of the rip-log flow live on ordinary MusicBrainz pages
     // and are independent of the queue, so they run whether or not this tab was
     // seeded with anything.
     ensureDiscIdUi();
     autoPickAttachMedium();
-    if (seeded && seeded.length) {
+    if (seeded && seeded.importText) {
+      // #671: the whole JSON model, read exactly as Import reads a file
+      newSession('seeded from the falcon= URL param (the JSON model)');
+      importQueueJson(seeded.importText, 'the falcon= URL');
+      showPanel();
+    } else if (seeded && seeded.length) {
       // #512 (majkinetor, live: "See the log before starting queue - it
       // still contains older logs from 13:54") — falcon:session:current
       // lives in localStorage, which is shared across EVERY tab on
@@ -6991,6 +7018,7 @@
       // whatever session the LAST tab's LAST run left behind, instead of
       // starting clean. A genuine new seed always means a new session.
       newSession(`seeded ${seeded.length} item(s) from the falcon= URL param`);
+      if (seeded.fromHarmony) _harmonySeeded = true;
       addToQueue(seeded);
       showPanel();
       // #508 follow-up (majkinetor): "Auto start Harmony import (off by
@@ -7025,6 +7053,8 @@
     entityUrlSegment, activateReleaseEditNoteTab,
     // #497
     getDisabledTypes: () => _disabledTypes, setDisabledTypes: s => { _disabledTypes = s; renderQueue(); },
+    // #671
+    setHarmonySeeded: v => { _harmonySeeded = !!v; },
     // #500
     // #509 follow-up
     resolveMissingNames,
