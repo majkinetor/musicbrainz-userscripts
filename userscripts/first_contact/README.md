@@ -237,14 +237,9 @@ To get them, make a free account on [archive.org](https://archive.org), log in, 
 
 ## Moving the button
 
-Drag **Import to MusicBrainz** (or its **⚙︎**) to wherever it is out of the way. A drag doesn't import or open the settings. Each platform remembers its own place: moving the button on Bandcamp leaves it in the corner on Deezer. **⚙︎ → Reset:** **this one** puts it back in the bottom-right corner on that platform and stops it scrolling with the page there; **all** does so on every platform.
+Drag **Import to MusicBrainz** (or its **⚙︎**) to wherever it is out of the way. Each platform remembers its own place. **⚙︎ → Reset:** **this one** puts it back in the bottom-right corner on that platform and stops it scrolling with the page; **all** does so on every platform.
 
 By default the button stays put on the screen. With **Moved button scrolls with the page on** *platform* on (see [Settings](#settings)), a moved button stays on its spot on that platform's page instead, above the cover, say, and scrolls with it. Each platform has its own, so the button can scroll with the page on Bandcamp and stay on the screen on Spotify:
-
-- On Spotify and Apple Music it follows the scrolling panel and is cut off at its edges.
-- When a page opens, it appears once the page has settled.
-- It goes under the page's fixed bars and the popups that open from them, such as Tidal's search or [Bandcamp Player Enhanced](../bandcamp_player_enhanced/README.md)'s player.
-- Dropped on part of the page that would cover it, such as Discogs's header or Bandcamp's menu bar when you're logged in, it shows over that part instead.
 
 ## Settings
 
