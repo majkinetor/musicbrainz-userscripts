@@ -24,7 +24,7 @@ const seed = {
   'mediums.0.track.2.name': 'Unknown Code 662', 'mediums.0.track.2.length': '200000', 'mediums.0.track.2.artist_credit.names.0.name': 'Daft Punk',
 };
 const handoff = {
-  v: 1, token: 't662', created: Date.now(), source: 'deezer', sourceName: 'Deezer', title: seed.name, credit: [{ name: 'Daft Punk', join: '' }],
+  v: 2, token: 't662', created: Date.now(), source: 'deezer', sourceName: 'Deezer', platform: { abbr: 'dz', name: 'Deezer' }, title: seed.name, credit: [{ name: 'Daft Punk', join: '' }],
   mediums: [{ tracks: [
     { title: 'Get Lucky', isrc: 'USQX91300108', credit: [] },
     { title: 'Shared Code 662', isrc: 'ZZ6620000001', credit: [] },

@@ -66,6 +66,7 @@ test('a Deezer album seeds the sandbox release editor and hands off the artist l
   // the handoff, as Apollo will read it
   const h = await editor.evaluate(() => JSON.parse(document.documentElement.dataset.firstContact || 'null'));
   check(h && h.source === 'deezer' && h.url === 'https://www.deezer.com/album/6575789', `handoff source: ${h && h.source} ${h && h.url}`);
+  check(h && h.v === 2 && h.platform && h.platform.abbr === 'dz' && h.platform.name === 'Deezer', `#672: the handoff says what the platform is (${JSON.stringify(h && h.platform)})`);
   const tracks = h ? h.mediums.flatMap(m => m.tracks) : [];
   check(tracks.length === 13, `13 tracks handed off (got ${tracks.length})`);
   const lucky = tracks.find(t => t.title === 'Get Lucky');

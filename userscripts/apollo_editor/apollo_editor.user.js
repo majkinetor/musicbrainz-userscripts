@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.3.195428
+// @version      2026.10.3.204022
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E
@@ -1220,47 +1220,27 @@ click to open the label`;
      handoff, every credited artist with that artist's page on the platform (Deezer, Spotify,
      …). An MB artist that carries the link is as certain as one carrying the release's
      Discogs link, so it is the same stage: one owner → linked, badged with the platform. */
-  // `type`: the artist link type to seed when MB's URL cleanup can't pick one itself (verified
-  // on the sandbox: Apple Music and Qobuz offer several, Volumo and HDtracks aren't recognised).
-  const PLATFORMS = [
-    { re: /(^|\.)deezer\.com$/i, abbr: 'dz', name: 'Deezer' },
-    { re: /(^|\.)spotify\.com$/i, abbr: 'sp', name: 'Spotify' },
-    { re: /(^|\.)tidal\.com$/i, abbr: 'td', name: 'Tidal' },
-    { re: /^(music|itunes)\.apple\.com$/i, abbr: 'am', name: 'Apple Music', type: 978 },   // streaming page
-    { re: /^music\.youtube\.com$/i, abbr: 'ytm', name: 'YouTube Music' },
-    { re: /(^|\.)bandcamp\.com$/i, abbr: 'bc', name: 'Bandcamp' },
-    { re: /(^|\.)beatport\.com$/i, abbr: 'bp', name: 'Beatport' },
-    { re: /(^|\.)qobuz\.com$/i, abbr: 'qz', name: 'Qobuz', type: 176 },                    // purchase music for download
-    { re: /(^|\.)soundcloud\.com$/i, abbr: 'sc', name: 'SoundCloud' },
-    { re: /^music\.amazon\./i, abbr: 'amz', name: 'Amazon Music' },
-    { re: /(^|\.)audiomack\.com$/i, abbr: 'amk', name: 'Audiomack', type: 194 },          // free streaming (MB offers free and paid, #664)
-    { re: /(^|\.)7digital\.com$/i, abbr: '7d', name: '7digital' },                       // MB allows only purchase for download, and picks it (#669)
-    { re: /^ototoy\.jp$/i, abbr: 'oto', name: 'Ototoy' },                                 // MB allows only purchase for download, and picks it (#670)
-    { re: /(^|\.)volumo\.com$/i, abbr: 'vo', name: 'Volumo', type: 176 },
-    { re: /(^|\.)hdtracks\.com$/i, abbr: 'hd', name: 'HDtracks', type: 176 },
-    { re: /(^|\.)discogs\.com$/i, abbr: 'disc', name: 'Discogs', type: DISCOGS_ARTIST_LINK_TYPE },
-  ];
-  function platformOf(url) { try { const h = new URL(url).hostname; return PLATFORMS.find(p => p.re.test(h)) || null; } catch (e) { return null; } }
-  // The /ws/2/url lookup matches the URL exactly as MusicBrainz stores it, and some platforms'
-  // links are stored under a storefront the album page doesn't say: Apple Music's under any
-  // country (music.apple.com/fr/artist/<id>, no slug), Amazon's under any of its domains, Qobuz's
-  // also as open.qobuz.com. Every form is asked in the same batched request.
-  const APPLE_CCS = ['us', 'gb', 'fr', 'de', 'jp', 'ca', 'au', 'nl', 'se', 'it', 'es', 'br', 'mx', 'pl', 'kr', 'be', 'ch', 'at', 'dk', 'no', 'fi', 'nz'];
-  const AMAZON_TLDS = ['com', 'co.uk', 'de', 'fr', 'it', 'es', 'ca', 'co.jp', 'com.au', 'com.br', 'com.mx', 'in'];
+  // #672: Apollo knows no platform. First Contact's handoff says what the platform is
+  // (`platform: { abbr, name, artistLinkType? }`: the badge, the name in logs and edit notes, the
+  // artist link type to seed where MB's URL cleanup can't pick one) and, on each link MB may store
+  // in other forms (Apple Music's other storefronts, Amazon's other domains, ...), all of them
+  // (`urlForms`). A link the handoff doesn't have, or an older (v1) handoff, gets the generic
+  // "link" badge and is looked up as it is. Discogs is Apollo's own source (the release's Discogs
+  // page), so a Discogs link is known without any handoff.
+  const DISCOGS_PLATFORM = { abbr: 'disc', name: 'Discogs', artistLinkType: DISCOGS_ARTIST_LINK_TYPE };
+  function platformOf(url) {
+    try { if (/(^|\.)discogs\.com$/i.test(new URL(url).hostname)) return DISCOGS_PLATFORM; } catch (e) { return null; }
+    const h = fcHandoff();
+    return h && h.platform && h.platform.abbr && fcUrlForms(url) ? h.platform : null;
+  }
+  // The /ws/2/url lookup matches the URL exactly as MusicBrainz stores it: every form the handoff
+  // gives is asked in the same batched request.
   function platformUrlForms(url) {
     const forms = [url];
     // a bare site (a Bandcamp account is handed over as its origin) is stored with the trailing slash
     if (/^https?:\/\/[^/?#]+$/i.test(url)) forms.push(url + '/');
     else if (/^https?:\/\/[^/?#]+\/$/i.test(url)) forms.push(url.slice(0, -1));
-    let m;
-    if ((m = url.match(/^https?:\/\/(?:music|itunes)\.apple\.com\/([a-z]{2})\/artist\/(?:[^/?#]+\/)?(?:id)?(\d+)/i))) {
-      const cc = m[1].toLowerCase();
-      [cc, ...APPLE_CCS.filter(c => c !== cc)].forEach(c => forms.push(`https://music.apple.com/${c}/artist/${m[2]}`));
-    } else if ((m = url.match(/^https?:\/\/music\.amazon\.[a-z.]+\/artists\/([A-Z0-9]{10})/i))) {
-      AMAZON_TLDS.forEach(t => forms.push(`https://music.amazon.${t}/artists/${m[1].toUpperCase()}`));
-    } else if ((m = url.match(/^https?:\/\/(?:www\.)?qobuz\.com\/[a-z]{2}-[a-z]{2}\/interpreter\/[^/]+\/(\d+)/i))) {
-      forms.push(`https://open.qobuz.com/artist/${m[1]}`);
-    }
+    forms.push(...(fcUrlForms(url) || []));
     return [...new Set(forms)];
   }
   // Resolve platform links to their MB owners, batched: /ws/2/url takes up to 100 `resource`s per
@@ -1307,12 +1287,22 @@ click to open the label`;
 
   // First Contact's handoff: on <html data-first-contact>, and again on its 'first-contact:seed'
   // event (asked for with 'first-contact:request', in case it came before us).
-  let _fcHandoff = null;
+  let _fcHandoff = null, _fcUrls = new Map();
+  // every link in a handoff → the forms it says MB may store it under ([] when only its own)
+  function handoffUrlIndex(h) {
+    const idx = new Map(), add = a => { if (a && a.url) idx.set(a.url, Array.isArray(a.urlForms) ? a.urlForms : []); };
+    (h.credit || []).forEach(add); (h.labels || []).forEach(add);
+    (h.mediums || []).forEach(m => (m.tracks || []).forEach(t => (t.credit || []).forEach(add)));
+    return idx;
+  }
   function takeFcHandoff(json, from) {
     try {
       const h = JSON.parse(json || 'null');
       if (!h || !h.mediums || (_fcHandoff && _fcHandoff.token === h.token)) return;
-      _fcHandoff = h;
+      _fcHandoff = h; _fcUrls = handoffUrlIndex(h);
+      const p = h.platform;
+      if (p) Log.debug('First Contact platform:', p.name, '- badge', p.abbr + ', artist link type', (p.artistLinkType || '(MB picks it)') + ',', [..._fcUrls.values()].filter(x => x.length).length, 'link(s) with other forms');
+      else Log.debug('First Contact handoff v' + (h.v || '?') + ' says nothing about the platform: generic "link" badge, links looked up as they are, no link type seeded');
       const n = [h.credit || []].concat(...h.mediums.map(m => m.tracks.map(t => t.credit || []))).reduce((k, c) => k + c.filter(a => a.url).length, 0);
       Log.info('First Contact handoff (' + from + '):', h.sourceName || h.source, '—', n, 'artist credit(s) carry a platform link', h.url ? '(' + h.url + ')' : '');
     } catch (e) { Log.warn('First Contact handoff unreadable:', e.message); }
@@ -1321,6 +1311,8 @@ click to open the label`;
     if (!_fcHandoff && document.documentElement.dataset.firstContact) takeFcHandoff(document.documentElement.dataset.firstContact, 'page');
     return _fcHandoff;
   }
+  // a link's forms per the handoff, or undefined for a link the handoff doesn't have
+  const fcUrlForms = url => (fcHandoff(), _fcUrls.get(url));
   if (/\/release\/add/.test(location.pathname)) {
     document.addEventListener('first-contact:seed', e => takeFcHandoff(e.detail, 'event'));
     try { document.dispatchEvent(new CustomEvent('first-contact:request')); } catch (e) { /* no First Contact */ }
@@ -1406,7 +1398,7 @@ click to open the label`;
     if (!(slot.committed && slot.gid)) { createArtist((slot.creditedAs || '').trim() || slot.name || '', slot, slot._discogsUrl || null, background); return; }
     const p = platformOf(url) || { name: 'platform' }, gid = slot.gid;
     const q = { 'edit-artist.url.0.text': url, 'edit-artist.edit_note': entityActionNote('Added ' + p.name + ' link') };
-    if (p.type) q['edit-artist.url.0.link_type_id'] = p.type;
+    if (p.artistLinkType) q['edit-artist.url.0.link_type_id'] = p.artistLinkType;
     const editUrl = `${ORIGIN}/artist/${gid}/edit?${new URLSearchParams(q)}`;
     const done = async () => {
       forgetPlatformUrl(url);
@@ -2344,7 +2336,7 @@ click to open the label`;
     // #651: and First Contact's platform link, unless another artist already has it
     const platUrl = slot && slot._platUrl && !slot._platConflict && slot._platUrl !== discogsUrl ? slot._platUrl : null;
     if (platUrl) {
-      const k = discogsUrl ? 1 : 0, pt = (platformOf(platUrl) || {}).type;
+      const k = discogsUrl ? 1 : 0, pt = (platformOf(platUrl) || {}).artistLinkType;
       url += `&edit-artist.url.${k}.text=${encodeURIComponent(platUrl)}` + (pt ? `&edit-artist.url.${k}.link_type_id=${pt}` : '');
       forgetPlatformUrl(platUrl);
       Log.info('create-artist: seeding the', (platformOf(platUrl) || { name: 'platform' }).name, 'link', platUrl);

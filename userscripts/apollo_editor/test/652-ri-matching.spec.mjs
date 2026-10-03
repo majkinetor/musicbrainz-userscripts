@@ -20,7 +20,7 @@ const seed = {
   'mediums.0.track.0.name': 'One', 'mediums.0.track.0.length': '200000', 'mediums.0.track.0.artist_credit.names.0.name': 'D. Punk',
 };
 const handoff = {
-  v: 1, token: 't652', created: Date.now(), source: 'deezer', sourceName: 'Deezer', url: 'https://www.deezer.com/album/1', title: seed.name,
+  v: 2, token: 't652', created: Date.now(), source: 'deezer', sourceName: 'Deezer', platform: { abbr: 'dz', name: 'Deezer' }, url: 'https://www.deezer.com/album/1', title: seed.name,
   credit: [{ name: 'D. Punk', join: ' & ', url: 'https://www.deezer.com/artist/27' }, { name: 'Zzq Nobody 652', join: '', url: null }],
   labels: [{ name: 'Warp', catno: '', url: 'https://www.discogs.com/label/23528' }],
   mediums: [{ tracks: [{ title: 'One', credit: [{ name: 'D. Punk', join: '', url: 'https://www.deezer.com/artist/27' }] }] }],
