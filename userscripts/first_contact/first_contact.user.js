@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         First Contact
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.3.182042
+// @version      2026.10.3.183414
 // @description  Import a release into MusicBrainz from the platform's album page with one click: the release editor opens with the title, tracklist, artists, date, label, barcode and link filled in. Each artist's platform link is handed to Apollo Editor for matching. By default the album page is also saved on the Internet Archive (it sends each imported URL to archive.org; off in the settings), and the edit note links the snapshot. Platforms: Deezer, Bandcamp, Discogs, Apple Music, Tidal, Qobuz, Beatport, Spotify, YouTube Music, Volumo, HDtracks, SoundCloud, Amazon Music, Audiomack, 7digital.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPkZpcnN0IENvbnRhY3Q8L3RpdGxlPgogIDwhLS0gdHJhY3RvciBiZWFtIC0tPgogIDxwYXRoIGQ9Ik01MCA0NCBMNzggNDQgTDEwNCAxMTIgTDI0IDExMiBaIiBmaWxsPSIjZjZjNDMxIiBvcGFjaXR5PSIwLjkiLz4KICA8cGF0aCBkPSJNNTYgNDQgTDcyIDQ0IEw4OCAxMTIgTDQwIDExMiBaIiBmaWxsPSIjZmRlNjhhIiBvcGFjaXR5PSIwLjciLz4KICA8IS0tIGxhbmRpbmcgcmluZyAtLT4KICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSIxMTQiIHJ4PSI0MiIgcnk9IjgiIGZpbGw9IiMxZTIzNDYiIHN0cm9rZT0iI2M5Y2RmMiIgc3Ryb2tlLXdpZHRoPSIzIi8+CiAgPGVsbGlwc2UgY3g9IjY0IiBjeT0iMTEzIiByeD0iMjYiIHJ5PSI0LjIiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2Y2YzQzMSIgc3Ryb2tlLXdpZHRoPSIyLjQiLz4KICA8IS0tIHNhdWNlcjogYSBwYWxlIHJpbSwgc28gaXQgc2hvd3Mgb24gYSBkYXJrIGJhY2tncm91bmQgdG9vIC0tPgogIDxwYXRoIGQ9Ik00MCAyNiBBMjQgMTggMCAwIDEgODggMjYgWiIgZmlsbD0iIzFlMjM0NiIgc3Ryb2tlPSIjYzljZGYyIiBzdHJva2Utd2lkdGg9IjMiLz4KICA8cGF0aCBkPSJNNTAgMTggQTEwIDYgMCAwIDEgNjAgMTQiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2ZmZiIgc3Ryb2tlLXdpZHRoPSIyLjYiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxlbGxpcHNlIGN4PSI2NCIgY3k9IjMyIiByeD0iNTYiIHJ5PSIxMyIgZmlsbD0iIzFlMjM0NiIgc3Ryb2tlPSIjYzljZGYyIiBzdHJva2Utd2lkdGg9IjMiLz4KICA8Y2lyY2xlIGN4PSIzOCIgY3k9IjMyIiByPSI0LjQiIGZpbGw9IiNmZmYiLz4KICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjM0IiByPSI0LjQiIGZpbGw9IiNmZmYiLz4KICA8Y2lyY2xlIGN4PSI5MCIgY3k9IjMyIiByPSI0LjQiIGZpbGw9IiNmZmYiLz4KICA8IS0tIHRoZSByZWxlYXNlIGJlaW5nIGJlYW1lZCB1cDogYSBwdXJwbGUgaGV4YWdvbiB3aXRoIGEgbm90ZSAtLT4KICA8cGF0aCBkPSJNNjQgNTggTDg0IDY5LjUgTDg0IDkyLjUgTDY0IDEwNCBMNDQgOTIuNSBMNDQgNjkuNSBaIiBmaWxsPSIjN2I0ZmQ2Ii8+CiAgPHBhdGggZD0iTTY0IDU4IEw4NCA2OS41IEw2NCA4MSBMNDQgNjkuNSBaIiBmaWxsPSIjOWI3MmVhIi8+CiAgPHBhdGggZD0iTTYwIDcyIEw3NCA2OSBMNzQgODkiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2ZmZiIgc3Ryb2tlLXdpZHRoPSIzLjQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz4KICA8cGF0aCBkPSJNNjAgNzIgTDYwIDkyIiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iMy40Ii8+CiAgPGVsbGlwc2UgY3g9IjU2IiBjeT0iOTIiIHJ4PSI0LjYiIHJ5PSIzLjYiIGZpbGw9IiNmZmYiLz4KICA8ZWxsaXBzZSBjeD0iNzAiIGN5PSI4OSIgcng9IjQuNiIgcnk9IjMuNiIgZmlsbD0iI2ZmZiIvPgogIDwhLS0gc3BhcmtsZXMgLS0+CiAgPHBhdGggZD0iTTE4IDU0IGwyLjUgNiA2IDIuNSAtNiAyLjUgLTIuNSA2IC0yLjUgLTYgLTYgLTIuNSA2IC0yLjUgWiIgZmlsbD0iI2Y2YzQzMSIvPgogIDxwYXRoIGQ9Ik0xMDggNTIgbDIuNSA2IDYgMi41IC02IDIuNSAtMi41IDYgLTIuNSAtNiAtNiAtMi41IDYgLTIuNSBaIiBmaWxsPSIjMWUyMzQ2Ii8+CiAgPHBhdGggZD0iTTExMiA4MiBsMS44IDQuMiA0LjIgMS44IC00LjIgMS44IC0xLjggNC4yIC0xLjggLTQuMiAtNC4yIC0xLjggNC4yIC0xLjggWiIgZmlsbD0iI2Y2YzQzMSIvPgogIDxwYXRoIGQ9Ik0xNCA4NiBsMS44IDQuMiA0LjIgMS44IC00LjIgMS44IC0xLjggNC4yIC0xLjggLTQuMiAtNC4yIC0xLjggNC4yIC0xLjggWiIgZmlsbD0iIzFlMjM0NiIvPgo8L3N2Zz4K
@@ -41,6 +41,7 @@
 // @grant        GM_getValue
 // @grant        GM_deleteValue
 // @grant        GM_listValues
+// @grant        GM_openInTab
 // @grant        unsafeWindow
 // @grant        window.close
 // @connect      api.deezer.com
@@ -93,6 +94,8 @@ const VARIOUS_ARTISTS_MBID = '89ad4ac3-39f7-470e-963a-56509c546377';
 // Handoffs (the platform links of every credited artist) wait in GM storage for the release
 // editor tab. They are small; a day is plenty for a tab that was opened and left.
 const HANDOFF_PREFIX = 'fc.handoff.';
+// A seed waiting for the editor's tab (sendSeed), pruned with the handoffs
+const SEED_PREFIX = HANDOFF_PREFIX + 'seed.';
 // majkinetor: "handoff probably shouldn't spam the settings?" — every import left its handoff in
 // the script's storage for a day. Now the release editor takes it out once it has it (keeping a
 // copy for that tab, so a reload still finds it), and one that was never picked up (the editor
@@ -2699,19 +2702,8 @@ async function importCurrent() {
     const label = go && go.querySelector('span');
     const server = settings().server;
     const token = Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
-    // Open the target tab now, inside the click: a window opened after the fetches would be
-    // a popup the browser blocks. The form posts into it once the data is in.
-    const target = 'fc-' + token;
-    const win = window.open('about:blank', target);
-    // majkinetor: "it opens MB page before it finishes". It has to (a tab opened later is blocked), so
-    // until the editor arrives the tab says what it is waiting for, rather than staying blank
-    if (win) try {
-        win.document.title = `${NAME}: reading ${provider.name}…`;
-        win.document.body.style.cssText = 'font: 15px/1.5 system-ui, sans-serif; margin: 3em;';
-        win.document.body.textContent = `${NAME} is reading the release from ${provider.name}. MusicBrainz's release editor opens in this tab when it's done.`;
-    } catch (e) { Log.debug(`the editor's tab can't be written to: ${e.message}`); }
     Log.info(`import ${location.href}`);
-    Log.info(`import ${provider.name} album ${id} → ${server} (token ${token}, tab ${win ? 'opened' : 'BLOCKED: posting in this tab'})`);
+    Log.info(`import ${provider.name} album ${id} → ${server} (token ${token})`);
     busy = true;
     if (go) go.setAttribute('aria-busy', 'true');
     const t0 = Date.now();
@@ -2755,34 +2747,67 @@ async function importCurrent() {
         Log.debug(`seed: ${params.length} parameters`);
         if (mbuTestHooks()) window.__fcLastSeed = { token, server, params, rel };
 
-        const form = document.createElement('form');
-        form.method = 'POST';
-        form.action = `https://${server}/release/add?first_contact=${token}`;
-        form.target = win ? target : '_self';
-        form.acceptCharset = 'UTF-8';
-        form.style.display = 'none';
-        for (const [k, v] of params) {
-            const inp = document.createElement('input');
-            inp.type = 'hidden'; inp.name = k; inp.value = v;
-            form.appendChild(inp);
-        }
-        document.body.appendChild(form);
-        form.submit();
-        form.remove();
-        Log.ok(`seeded ${server}/release/add with ${nTracks} track(s)`);
+        const where = sendSeed(server, token, params);
+        Log.ok(`seeded ${server}/release/add with ${nTracks} track(s) (${where === 'here' ? 'in this tab: the browser blocked a new one' : 'in a new tab'})`);
         if (settings().closeAfter) {
-            if (win) closeSourceTab();
+            if (where !== 'here') closeSourceTab();
             else Log.info('close after the import: skipped, the editor opened in this tab');
         }
     } catch (e) {
         Log.err(`import failed: ${e.message}`);
-        if (win) try { win.close(); } catch (_) { /* already gone */ }
         mbuToast(`✗ ${NAME}: ${e.message}`, { kind: 'warn', action: { label: 'Copy log', onClick: b => Log.copy(b) } });
     } finally {
         busy = false;
         if (go) go.removeAttribute('aria-busy');
         if (label) label.textContent = 'Import to MusicBrainz';
     }
+}
+
+// majkinetor: "why does it open tab while reading?" The editor's tab opens once the release is read,
+// not at the click. A tab a page opens that long after the click is a popup the browser blocks, but
+// one the userscript manager opens (GM_openInTab) isn't: the seed waits in the script's storage, and
+// First Contact on that page posts it there (mbPostSeed). Without GM_openInTab, the page opens the tab
+// itself and posts into it, or posts in this tab when the browser blocks it.
+// → 'tab' (a new tab) or 'here' (this one)
+function sendSeed(server, token, params) {
+    const action = `https://${server}/release/add?first_contact=${token}`;
+    if (typeof GM_openInTab === 'function') {
+        GM_setValue(SEED_PREFIX + token, { created: Date.now(), params });
+        GM_openInTab(`${action}&fc_post=1`, { active: true, insert: true });
+        return 'tab';
+    }
+    const target = 'fc-' + token;
+    const win = window.open('about:blank', target);
+    postForm(action, win ? target : '_self', params);
+    return win ? 'tab' : 'here';
+}
+function postForm(action, target, params) {
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = action;
+    form.target = target;
+    form.acceptCharset = 'UTF-8';
+    form.style.display = 'none';
+    for (const [k, v] of params) {
+        const inp = document.createElement('input');
+        inp.type = 'hidden'; inp.name = k; inp.value = v;
+        form.appendChild(inp);
+    }
+    (document.body || document.documentElement).appendChild(form);
+    form.submit();
+    form.remove();
+}
+// On the tab sendSeed opened: stop the empty release editor loading and post the seed to it, here
+function mbPostSeed(token) {
+    const key = SEED_PREFIX + token;
+    const seed = GM_getValue(key, null);
+    if (!seed || !Array.isArray(seed.params)) { Log.warn(`release editor opened to take the seed ${token}, but it is not stored (expired, or another browser)`); return; }
+    GM_deleteValue(key);
+    try { window.stop(); } catch (e) { /* it posts anyway */ }
+    Log.debug(`seed ${token}: ${seed.params.length} parameters, posting them to the release editor`);
+    const post = () => postForm(`/release/add?first_contact=${token}`, '_self', seed.params);
+    if (document.documentElement) post();   // at document-start the page may have no root yet
+    else new MutationObserver((m, o) => { if (document.documentElement) { o.disconnect(); post(); } }).observe(document, { childList: true });
 }
 
 // majkinetor: an option to close the page once the import is clicked. Only after the POST has
@@ -2822,8 +2847,10 @@ function platformMain() {
 // and can ask for it again with a 'first-contact:request' event on document.
 
 function mbMain() {
-    const token = new URLSearchParams(location.search).get('first_contact');
+    const q = new URLSearchParams(location.search);
+    const token = q.get('first_contact');
     if (!token) return;
+    if (q.get('fc_post')) { mbPostSeed(token); return; }
     pruneHandoffs();
     const key = HANDOFF_PREFIX + token;
     let h = GM_getValue(key, null), from = 'storage';

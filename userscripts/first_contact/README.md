@@ -23,7 +23,7 @@ Import a release into MusicBrainz from the platform's album page with one click:
 
 ## Import
 
-On a platform's album page, click **Import to MusicBrainz** in the bottom-right corner. A new tab opens with MusicBrainz's release editor, filled in:
+On a platform's album page, click **Import to MusicBrainz** in the bottom-right corner. Once the release is read (the button counts the tracks), a new tab opens with MusicBrainz's release editor, filled in:
 
 | Field                | From                                                                                                                                                 |
 | -------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
