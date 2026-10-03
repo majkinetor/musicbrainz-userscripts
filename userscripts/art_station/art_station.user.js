@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Art Station
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.2
+// @version      2026.10.3
 // @description  Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png
@@ -1117,6 +1117,9 @@
       // — the common case ("I almost always use import all"). preventDefault so
       // the browser's own context menu doesn't cover the sourcing slots it starts.
       src.oncontextmenu = e => { e.preventDefault(); e.stopPropagation(); sourceAllFromButton(src); };
+      // #667: middle click imports from all, then keeps only the best cover (see sourceBestFromButton)
+      src.onmousedown = e => { if (e.button === 1) e.preventDefault(); };   // no autoscroll cursor
+      src.onauxclick = e => { if (e.button !== 1) return; e.preventDefault(); e.stopPropagation(); sourceBestFromButton(src); };
       refreshSrcCount();   // show how many import sources are available on the button: "URL (3)"
     }
     const mhIc = root.querySelector('.as-mh-ic'); if (mhIc) mhIc.onerror = () => mhIc.replaceWith(document.createTextNode('🔍'));
@@ -2233,6 +2236,7 @@
       src.title = total
         ? `Source ${ENT.noun} — ${total} source${total > 1 ? 's' : ''} (linked platform${l.length === 1 && !m.length ? '' : 's'}, registered providers, or any URL)`
           + `\nRight-click: import from all ${total} at once, without opening this panel`
+          + `\nMiddle-click: import from all and keep only the best cover (highest resolution, then smallest file)`
         : `Source ${ENT.noun} from a linked platform, a registered provider, or any URL`;
     }).catch(() => {});
   }
@@ -2265,6 +2269,40 @@
       toast(`⬇ Importing from ${all.total} source${all.total > 1 ? 's' : ''}…`);
       sourceFromAll(all);
     }).catch(e => { asLog.warn('right-click import all failed: ' + (e && e.message)); openSourcePop(btn); });
+  }
+  // #667 (majkinetor): "Implement middle click on URL button so that it automatically chooses
+  // the best image - highest resolution lowest size. Only one cover is added as a result."
+  // Import from all (#558), wait until every sourcing slot is gone and the new covers have
+  // their dimensions, then pick max pixels (ties → fewest bytes) and keepOnly() it (#660).
+  // The pick carries _bestOf so its edit note says Art Station chose it.
+  function pickBest(cands) {
+    return cands.slice().sort((a, b) => (b.w * b.h - a.w * a.h) || ((a.bytes || Infinity) - (b.bytes || Infinity)))[0];
+  }
+  function sourceBestFromButton(btn) {
+    allSources().then(all => {
+      if (!all.total) { toast(`No sources found on this ${ENT.kind} — opening the panel`, 3500); openSourcePop(btn); return; }
+      const before = new Set(MODEL.map(x => x.id));
+      toast(`⬇ Importing from ${all.total} source${all.total > 1 ? 's' : ''}, keeping the best…`);
+      asLog.info(`Best cover: importing from ${all.total} source(s), will keep the best one`);
+      sourceFromAll(all);
+      const t0 = Date.now(); let idleSince = 0;
+      const tick = setInterval(() => {
+        const busy = MODEL.some(x => x._sourcing);
+        const fresh = MODEL.filter(x => !before.has(x.id) && x._new && !x._sourcing && !x._del && !x._pdf);
+        const sized = fresh.every(x => x.w > 0);
+        if (busy || !sized) { idleSince = 0; if (Date.now() - t0 < 240000) return; }
+        else if (!idleSince) { idleSince = Date.now(); return; }   // one more beat for late arrivals
+        else if (Date.now() - idleSince < 1000) return;
+        clearInterval(tick);
+        const cands = fresh.filter(x => x.w > 0);
+        asLog.debug(`Best cover: candidates ${cands.map(x => `${x._provider || x.id} ${x.w}×${x.h} ${x.bytes || '?'}b`).join(', ') || '(none)'}${busy ? ' (timed out while still sourcing)' : ''}`);
+        if (!cands.length) { toast('No cover could be imported', 4000); return; }
+        const best = pickBest(cands);
+        best._bestOf = cands.length;
+        asLog.info(`Best cover: ${best._provider || best.id} ${best.w}×${best.h} (${best.bytes ? fmtBytes(best.bytes) : '?'}) of ${cands.length}`);
+        if (cands.length > 1 || otherNews(best).length) keepOnly(best); else { toast(`Only one cover found — ${best._provider || 'kept'}`); render(); }
+      }, 500);
+    }).catch(e => { asLog.warn('middle-click best cover failed: ' + (e && e.message)); openSourcePop(btn); });
   }
   function openSourcePop(btn) {
     _srcBtn = btn;   // #250 remembered so a late provider registration can re-open this popover
@@ -2697,7 +2735,9 @@
     if (img && img !== main) s += `\nImage: ${img}`;   // #260 the direct image URL, when distinct from the page
     return s;
   };
-  const editNoteFor = (m, it) => [m.note && m.note.trim(), sourceLine(it), ATTRIBUTION].filter(Boolean).join('\n\n');
+  // #667 the best-cover pick says so in its note
+  const bestLine = it => (it && it._bestOf > 1) ? `Art Station chose this as the best of ${it._bestOf} imported covers (highest resolution, then smallest file): ${it.w}×${it.h}${it.bytes ? ', ' + fmtBytes(it.bytes) : ''}` : '';
+  const editNoteFor = (m, it) => [m.note && m.note.trim(), sourceLine(it), bestLine(it), ATTRIBUTION].filter(Boolean).join('\n\n');
   async function getPostForm(url) {
     const html = await fetch(url, { credentials: 'same-origin' }).then(r => { if (!r.ok) throw new Error('GET ' + r.status); return r.text(); });
     const doc = new DOMParser().parseFromString(html, 'text/html');
