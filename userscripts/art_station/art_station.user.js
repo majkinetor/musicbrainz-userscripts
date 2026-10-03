@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Art Station
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.3.163702
+// @version      2026.10.3.165140
 // @description  Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png
@@ -5025,7 +5025,7 @@
      to grow into extra room cleanly — just needed resize turned on. overflow:hidden
      here is what CSS resize requires (any value other than visible), and min-*
      keeps it from being dragged down to something unusable. */
-  .as-cm-box{background:var(--mbu-bg);border-radius:12px;box-shadow:0 12px 50px rgba(0,0,0,.4);width:min(680px,94vw);max-width:94vw;min-width:360px;max-height:88vh;min-height:220px;display:flex;flex-direction:column;padding:18px 20px;font:14px/1.4 var(--mbu-font);color:var(--mbu-text);resize:both;overflow:hidden}
+  .as-cm-box{background:var(--mbu-bg);border-radius:12px;box-shadow:0 12px 50px rgba(0,0,0,.4);width:min(980px,94vw);container-type:inline-size;max-width:94vw;min-width:360px;max-height:88vh;min-height:220px;display:flex;flex-direction:column;padding:18px 20px;font:14px/1.4 var(--mbu-font);color:var(--mbu-text);resize:both;overflow:hidden}
   .as-cm-h{font-size:16px;font-weight:700;color:var(--mbu-accent-deep-text);margin-bottom:12px;display:flex;align-items:center;gap:12px}
   .as-cm-h-t{flex:1;min-width:0}
   .as-cm-hist{flex:none;font-size:13px;font-weight:600;color:var(--mbu-accent-text);text-decoration:none;white-space:nowrap;padding:4px 12px;border:1px solid var(--mbu-accent);border-radius:8px;background:var(--mbu-bg)}
@@ -5074,7 +5074,12 @@
   .as-cm-x{flex:none;background:none;border:0;color:var(--mbu-text-dim);font-size:18px;line-height:1;cursor:pointer;padding:4px 6px;border-radius:6px}
   .as-cm-x:hover{color:var(--mbu-text);background:var(--mbu-bg-hover)}
   .as-cm-list{overflow:auto;border:1px solid var(--mbu-divider);border-radius:8px;padding:6px;margin:4px 0 12px;background:var(--mbu-bg-raised);flex:1 1 auto;min-height:0}   /* #263 flex so the note + buttons below stay pinned and the list scrolls */
-  .as-cm-op{padding:5px 6px;border-radius:var(--mbu-radius);font-size:13px}
+  .as-cm-op{padding:5px 6px;border-radius:var(--mbu-radius);font-size:13px;min-width:0}
+  /* #668 second variant (majkinetor): two columns of rows in a wider dialog, so a batch
+     shows twice as many covers and a failed row's error has room. Narrowed below
+     ~640px (a resize, or a small screen) it is one column again. */
+  .as-cm-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));align-content:start;column-gap:8px}
+  @container (max-width:640px){.as-cm-list{grid-template-columns:minmax(0,1fr)}}
   .as-cm-op.dry{background:var(--mbu-bg-hover)}.as-cm-op.err{background:var(--mbu-bg-hover)}
   .as-cm-line{display:flex;align-items:center;gap:10px}
   /* #668 cover thumbnail per row, label above its own full-width progress bar */

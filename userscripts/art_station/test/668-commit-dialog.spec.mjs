@@ -47,6 +47,13 @@ test('the edit note is folded, rows carry a cover, and Dry run lives in the Subm
     return { thumb: !!op.querySelector('.as-cm-th img, .as-cm-th .as-cm-thi'), barBelow: bar.getBoundingClientRect().top >= lb.getBoundingClientRect().bottom - 1 };
   });
   check(row.thumb, 'the row shows the cover it uploads');
+  // second variant: rows in two columns, side by side, in a wider dialog
+  const cols = await page.evaluate(() => {
+    const [a, b] = [...document.querySelectorAll('#as-commit .as-cm-op')].map(e => e.getBoundingClientRect());
+    return { sameRow: Math.abs(a.top - b.top) < 2 && b.left > a.right - 1, boxW: Math.round(document.querySelector('#as-commit .as-cm-box').getBoundingClientRect().width) };
+  });
+  check(cols.sameRow, 'the two operations sit side by side, in two columns');
+  check(cols.boxW > 900, `the dialog opens wider (${cols.boxW}px)`);
   check(row.barBelow, 'its progress bar sits under the label');
   await attachShot(testInfo, page.locator('#as-commit .as-cm-box'), 'folded');
 
