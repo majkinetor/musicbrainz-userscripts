@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.3
+// @version      2026.10.3.135554
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E
@@ -780,7 +780,17 @@
       if (!mine) st = cur.gid !== _riLabInit.get(lf) ? { status: 'user', title: 'chosen by you' } : { status: 'set', title: 'already set on the release' };
       const txt = st.abbr || ({ disc: 'disc', high: 'name', alias: 'alias' })[st.status] || st.status;
       if (!b) { b = document.createElement('span'); b.className = 'tc-ri-lab mbu-ui'; host.appendChild(b); }
-      if (b.dataset.t !== st.status + txt) { b.dataset.t = st.status + txt; b.innerHTML = `<span class="tc-badge ${esc(st.status)}" title="${esc(st.title || '')}">${esc(txt)}</span>`; }
+      // click opens the label in a new tab; the tooltip names it with its disambiguation
+      const tip = `${cur.name || ''}${cur.comment ? ' (' + cur.comment + ')' : ''}${st.title ? ' — ' + st.title : ''}
+click to open the label`;
+      const key = st.status + txt + cur.gid + tip;
+      if (b.dataset.t !== key) { b.dataset.t = key; b.innerHTML = `<span class="tc-badge ${esc(st.status)}" title="${esc(tip)}" style="cursor:pointer">${esc(txt)}</span>`; }
+      b.dataset.gid = cur.gid;
+      if (!b._wired) {
+        b._wired = true;
+        b.addEventListener('mousedown', e => { e.preventDefault(); e.stopPropagation(); });
+        b.addEventListener('click', e => { e.preventDefault(); e.stopPropagation(); Log.debug('label badge: open', b.dataset.gid); if (b.dataset.gid) window.open(`${ORIGIN}/label/${b.dataset.gid}`, '_blank', 'noopener'); });
+      }
       // the badge sits inside the field: reserve its room so it never covers the label's name
       const pr = Math.ceil(host.getBoundingClientRect().right - b.getBoundingClientRect().left) + 4;
       if (pr > 4) { inp.style.setProperty('box-sizing', 'border-box', 'important'); inp.style.setProperty('padding-right', pr + 'px', 'important'); }
