@@ -91,7 +91,7 @@ Click a mark to open the page; right-click to take it in or leave it out. **Run 
 - Only a [confirmed](#link-confidence) match counts: a link withheld by link confidence gives no artists or labels either.
 
 > [!NOTE]
-> The pages come from the album answers the scan already read, so they cost no extra platform requests. Opening the table asks MusicBrainz once which of the links it already has, and on whom. A platform cached before this feature shows nothing until you press ↻.
+> The pages come from the album answers the scan already read, so they cost no extra platform requests. Opening the table asks MusicBrainz once which of the links it already has, and on whom. A match cached before this feature is read again once, on the next scan of the release.
 
 ## Platforms
 

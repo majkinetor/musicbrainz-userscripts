@@ -141,3 +141,19 @@ test('existing links, the Falcon batch and the seeded edit page', { tag: '@unit'
   const q = new URL(seeded('artist', 'a', ['https://www.deezer.com/artist/1', 'https://www.qobuz.com/us-en/interpreter/x/2'], 'n'));
   check(!q.searchParams.has('edit-artist.url.0.link_type_id') && q.searchParams.get('edit-artist.url.1.link_type_id') === '176', `…the Qobuz link typed (${q})`);
 });
+
+test('a match cached before artist pages were kept is read again', { tag: '@unit' }, async () => {
+  const src = await functionSource('platform_check', ['PC_CREDIT_PROVIDERS', 'cacheGetScan']);
+  const store = {
+    deezer: { url: 'https://www.deezer.com/album/1', source: 'search' },                   // before #671
+    qobuz: { url: 'https://www.qobuz.com/us-en/album/x/1', source: 'MB rels', credits: null },
+    spotify: { url: 'https://open.spotify.com/album/1', source: 'search' },                // no pages to keep
+    tidal: null,
+    discogs: { url: null, source: 'search' },                                            // a cached no-match
+  };
+  const logs = [];
+  const get = new Function('cacheGet', 'appendLog', src + '\nreturn cacheGetScan;')((m, p) => store[p] || null, (l, m) => logs.push(m));
+  check(get('m', 'deezer', 'Deezer') === null && logs.length === 1, 'a credit platform\'s match without `credits`: a miss, so it is scanned again (and logged)');
+  check(get('m', 'qobuz') === store.qobuz && get('m', 'spotify') === store.spotify && get('m', 'discogs') === store.discogs && get('m', 'tidal') === null,
+    'kept: an entry that has them (even none), a platform with none to keep, a cached no-match');
+});

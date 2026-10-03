@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Platform Check
 // @namespace    http://tampermonkey.net/
-// @version      2026.10.3.231500
+// @version      2026.10.3.234500
 // @description  Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+DQogIDx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CiAgDQogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJhMWE1MiIgc3Ryb2tlLXdpZHRoPSI5IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik00MCA4OCBBMzQgMzQgMCAwIDEgNDAgNDAiLz4NCiAgICA8cGF0aCBkPSJNMjkgOTkgQTUwIDUwIDAgMCAxIDI5IDI5Ii8+DQogICAgPHBhdGggZD0iTTg4IDg4IEEzNCAzNCAwIDAgMCA4OCA0MCIvPg0KICAgIDxwYXRoIGQ9Ik05OSA5OSBBNTAgNTAgMCAwIDAgOTkgMjkiLz4NCiAgPC9nPg0KICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyMCIgZmlsbD0iI2U4MjAxYSIvPg0KPC9zdmc+DQo=
@@ -3675,6 +3675,20 @@ function pcPruneCache() {
 function cacheKey(mbid, platform) { return `pc:cache:v2:${platform}:${mbid}`; }   // v2: entries now carry `barcode` (#182)
 function cacheGet(mbid, platform) { return pcLsGet(cacheKey(mbid, platform)); }
 function cacheSet(mbid, platform, entry) { pcLsSet(cacheKey(mbid, platform), entry); }
+// the platforms whose album answer names artist or label pages (Spotify's, Tidal's, Amazon's,
+// 7digital's, Volumo's and HDtracks' don't, or not without another request)
+const PC_CREDIT_PROVIDERS = ['discogs', 'deezer', 'apple', 'qobuz', 'bandcamp', 'beatport', 'ytmusic', 'soundcloud', 'audiomack'];
+// A scanner's cache read (#671): a match cached before artist and label pages were kept has
+// no `credits`, and serving it would leave Artists & labels empty until ↻. It's read again
+// instead, once, and the new entry carries them.
+function cacheGetScan(mbid, platform, label) {
+    const c = cacheGet(mbid, platform);
+    if (c && c.url && !('credits' in c) && PC_CREDIT_PROVIDERS.includes(platform)) {
+        appendLog(label || platform, 'Cached match has no artist and label pages (cached before they were kept) — reading it again', 'info');
+        return null;
+    }
+    return c;
+}
 function cacheClear(mbid) {
     for (const p of ALL_PROVIDERS) localStorage.removeItem(cacheKey(mbid, p));   // all providers — not a stale hardcoded subset (else ↻ leaves Tidal/Beatport/Volumo cached)
     localStorage.removeItem(mbDataKey(mbid));
@@ -4170,7 +4184,7 @@ async function fetchQobuzScrape(albumUrl) {
 
 async function scanQobuz({ artist, album, mbTracks, existingUrl, mbid, isVariousArtists, barcode }) {
     const label = 'Qobuz';
-    const cached = cacheGet(mbid, 'qobuz');
+    const cached = cacheGetScan(mbid, 'qobuz', label);
     if (cached?.url && (!existingUrl || existingUrl === cached.url)) { applyCachedRow('qobuz', label, cached, mbTracks); return; }
     if (cached && !cached.url && !existingUrl && !barcode) { appendLog(label, `No match (cached from previous scan — use ↻ to force a re-search)`, 'warn'); applyCachedRow('qobuz', label, cached, mbTracks); return; }
 
@@ -4301,7 +4315,7 @@ async function scanDiscogs({ artist, album, mbTracks, existingUrl, mbid, isVario
     // from the MB release format (e.g. cache holds a Vinyl pressing but MB
     // says CD — possible when a prior scan ran without format extraction),
     // re-search so format-aware ranking can pick the matching edition.
-    const cached = cacheGet(mbid, 'discogs');
+    const cached = cacheGetScan(mbid, 'discogs', label);
     const wantFmt = mbFormatToDiscogs(format);
     const haveFmt = mbFormatToDiscogs(cached?.format);
     const formatMismatch = !!(wantFmt && haveFmt && wantFmt !== haveFmt && cached?.url && !existingUrl);
@@ -4584,7 +4598,7 @@ async function searchBandcampNative(query, label) {
 async function scanBandcamp({ artist, album, mbTracks, existingUrl, mbid, isVariousArtists }) {
     const label = 'Bandcamp';
 
-    const cached = cacheGet(mbid, 'bandcamp');
+    const cached = cacheGetScan(mbid, 'bandcamp', label);
     if (cached?.url && (!existingUrl || existingUrl === cached.url)) {
         applyCachedRow('bandcamp', label, cached, mbTracks);
         return;
@@ -4733,7 +4747,7 @@ async function fetchSoundcloudSet(setUrl) {
 // didn't match — not just the final pick or a bare "no match".
 async function scanSoundcloud({ artist, album, mbTracks, existingUrl, mbid, isVariousArtists }) {
     const label = 'SoundCloud';
-    const cached = cacheGet(mbid, 'soundcloud');
+    const cached = cacheGetScan(mbid, 'soundcloud', label);
     if (cached?.url && (!existingUrl || existingUrl === cached.url)) { applyCachedRow('soundcloud', label, cached, mbTracks); return; }
     if (cached && !cached.url && !existingUrl) { appendLog(label, `No match (cached from previous scan — use ↻ to force a re-search)`, 'warn'); applyCachedRow('soundcloud', label, cached, mbTracks); return; }
 
@@ -4852,7 +4866,7 @@ async function fetchAudiomack(url) {
 }
 async function scanAudiomack({ artist, album, mbTracks, existingUrl, mbid, isVariousArtists, barcode }) {
     const label = 'Audiomack';
-    const cached = cacheGet(mbid, 'audiomack');
+    const cached = cacheGetScan(mbid, 'audiomack', label);
     if (cached?.url && (!existingUrl || pcSameUrl(existingUrl, cached.url))) { applyCachedRow('audiomack', label, cached, mbTracks); return; }
     if (cached && !cached.url && !existingUrl) { appendLog(label, `No match (cached from previous scan — use ↻ to force a re-search)`, 'warn'); applyCachedRow('audiomack', label, cached, mbTracks); return; }
 
@@ -5044,7 +5058,7 @@ async function ytmAlbumIdOf(url, label = 'YouTube Music') {
 
 async function scanYtmusic({ artist, album, mbTracks, existingUrl, mbid, isVariousArtists, barcode }) {
     const label = 'YouTube Music';
-    const cached = cacheGet(mbid, 'ytmusic');
+    const cached = cacheGetScan(mbid, 'ytmusic', label);
     if (cached?.url && (!existingUrl || pcSameUrl(existingUrl, cached.url))) { applyCachedRow('ytmusic', label, cached, mbTracks); ytmNoteOtherVersions(cached.otherVersions, label); return; }
     if (cached && !cached.url && !existingUrl) { appendLog(label, `No match (cached from previous scan — use ↻ to force a re-search)`, 'warn'); applyCachedRow('ytmusic', label, cached, mbTracks); return; }
     const none = source => { cacheSet(mbid, 'ytmusic', { url: null, tracks: null, year: null, label: null, source }); updateRow('ytmusic', { url: null, mbTracks, remoteTracks: null }); };
@@ -5271,7 +5285,7 @@ async function fetchDeezerMeta(albumUrl) {
 async function scanDeezer({ artist, album, mbTracks, existingUrl, mbid, isVariousArtists, barcode }) {
     const label = 'Deezer';
 
-    const cached = cacheGet(mbid, 'deezer');
+    const cached = cacheGetScan(mbid, 'deezer', label);
     if (cached?.url && (!existingUrl || existingUrl === cached.url)) {
         applyCachedRow('deezer', label, cached, mbTracks);
         return;
@@ -5498,7 +5512,7 @@ function appleAlbumMeta(a) {
 async function scanApple(args) {
     const { mbTracks, existingUrl, mbid, barcode } = args;
     const label = 'Apple';
-    const cached = cacheGet(mbid, 'apple');
+    const cached = cacheGetScan(mbid, 'apple', label);
     if (cached?.url && (!existingUrl || existingUrl === cached.url)) {
         applyCachedRow('apple', label, cached, mbTracks);
         return;
@@ -5621,7 +5635,7 @@ async function scanAppleAmp({ artist, album, mbTracks, existingUrl, mbid, isVari
 async function scanAppleItunes({ artist, album, mbTracks, existingUrl, mbid, isVariousArtists, wikidataAppleId, barcode }) {
     const label = 'Apple';
 
-    const cached = cacheGet(mbid, 'apple');
+    const cached = cacheGetScan(mbid, 'apple', label);
     if (cached?.url && (!existingUrl || existingUrl === cached.url)) {
         applyCachedRow('apple', label, cached, mbTracks);
         return;
@@ -5827,7 +5841,7 @@ async function scanTidal({ artist, album, mbTracks, existingUrl, mbid, isVarious
 // → web search, surfaced UNVERIFIED (no track count).
 async function scanBeatport({ artist, album, existingUrl, mbTracks, mbid, isVariousArtists, wikidataBeatportId, barcode }) {
     const label = 'Beatport';
-    const cached = cacheGet(mbid, 'beatport');
+    const cached = cacheGetScan(mbid, 'beatport', label);
     const idFromUrl = u => (String(u || '').match(/beatport\.com\/release\/[^/]+\/(\d+)/) || [])[1];
     // A cached hit short-circuits — EXCEPT when we're now logged in and the
     // cached entry was never track-count verified (e.g. a web-search result
@@ -7018,9 +7032,6 @@ function pcSeededEditUrl(type, mbid, urls, note) {
     return `${MB_ORIGIN}/${type}/${mbid}/edit?${q.join('&')}`;
 }
 
-// the platforms whose album answer names artist or label pages (Spotify's, Tidal's, Amazon's,
-// 7digital's, Volumo's and HDtracks' don't, or not without another request)
-const PC_CREDIT_PROVIDERS = ['discogs', 'deezer', 'apple', 'qobuz', 'bandcamp', 'beatport', 'ytmusic', 'soundcloud', 'audiomack'];
 // The credits of the platforms whose album is a confirmed match: the same bar as +
 // (a ✓ that link confidence doesn't withhold), or a link the release already has.
 function pcConfirmedCredits() {
