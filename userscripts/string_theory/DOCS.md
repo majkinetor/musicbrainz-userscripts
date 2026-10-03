@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-10-03 22:33 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-10-03 23:46 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -1228,15 +1228,15 @@ The footer's **+** adds every confirmed link (middle-click or Alt+click: the wit
 
 A matched album usually names its artists' pages on that platform, and sometimes its label's. **Artists & labels**, in the footer next to **+** and **↗**, lists them against this release's MusicBrainz artists and labels: one row per artist or label, one column per platform.
 
-| Mark |                                                                                                                 |
-| ---- | --------------------------------------------------------------------------------------------------------------- |
-| ✓    | already linked in MusicBrainz                                                                                   |
-| +    | found, not linked yet: will be added                                                                            |
-| ⚠    | linked to a different MusicBrainz artist or label: not added; hover shows which                                 |
-| +?   | an account that may be the artist or the label (Bandcamp, SoundCloud, Audiomack): left out until you take it in |
-| ·    | no page, or the platform didn't find the release                                                                |
+| Mark |                                                                                                                                                       |
+| ---- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
+| ✓    | already linked in MusicBrainz                                                                                                                         |
+| +    | found, not linked yet: will be added                                                                                                                  |
+| ⚠    | linked to a different MusicBrainz artist or label: not added; hover shows which, click opens it to compare or merge (middle-click: the platform page) |
+| +?   | an account that may be the artist or the label (Bandcamp, SoundCloud, Audiomack): left out until you take it in                                       |
+| ·    | no page, or the platform didn't find the release                                                                                                      |
 
-Click a mark to open the page; right-click to take it in or leave it out. **Run N in Falcon** closes the table, queues every row with its new links in Falcon on this page and starts it; **▾ › Send only** queues them and Falcon waits for you to press Start. Where Falcon doesn't run, it opens in a new tab with the links queued, not started; the edit note names the release. Without Falcon, a row's **✎** opens that artist's or label's edit page with its new links filled in, for you to submit.
+Click a mark to open the page (a ⚠ opens the MusicBrainz artist or label that has it); right-click to take it in or leave it out. **Run N in Falcon** closes the table, queues every row with its new links in Falcon on this page and starts it; **▾ › Send only** queues them and Falcon waits for you to press Start. Where Falcon doesn't run, it opens in a new tab with the links queued, not started; the edit note names the release. Without Falcon, a row's **✎** opens that artist's or label's edit page with its new links filled in, for you to submit.
 
 - **Which artists**: the release's artist credit (not Various Artists) and each track's, which a compilation needs. Tracks are paired by position, so a platform with another track count gives no track artists.
 - **Matching**: by name, ignoring case, accents and *&* / *and*. When no name matches, by position, but only when both credits have as many artists; otherwise the artist is left out, and the log says why.

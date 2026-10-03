@@ -179,3 +179,18 @@ test('a link MusicBrainz holds under another locale is already linked', { tag: '
   check(asked.length === 1, `one request (${asked.length})`);
   check(who.length === 1 && who[0].mbid === 'pf', `the us-en link counts as linked to Pink Floyd (${JSON.stringify(who)})`);
 });
+
+// #671 (majkinetor, The Ultimate Italian Disco Funk Collection): a track whose recording is credited
+// to a same-named artist shows "Recording artist: Boeing" in its title cell. That link was read
+// as a track artist, paired first by name, and the right Boeing's Discogs link showed ⚠.
+test('a track\'s artists are its artist column, not the "Recording artist:" line', { tag: '@unit' }, async ({ page }) => {
+  await page.setContent(`<!DOCTYPE html><html><body>
+    <div class="releaseheader"><h1>X</h1><p class="subheader">~ Release by <a href="/artist/89ad4ac3-39f7-470e-963a-56509c546377">Various Artists</a></p></div>
+    <table class="tbl medium"><tbody>
+      <tr><td class="pos t"><a href="/track/1">1</a></td><td class="title wrap-anywhere"><a href="/recording/r1"><bdi>Dance on the Beat</bdi></a><div class="small">Recording artist: <bdi><a href="/artist/fce4abde-aede-4ba2-9119-1a9ba6e72da3" title="Boeing (Argentinian house producer)">Boeing</a></bdi></div><div class="ars"></div></td><td class="wrap-anywhere"><bdi><a href="/artist/36bf8efc-34ba-4f90-b02c-90af2c6d7856" title="Boeing (italo disco music)">Boeing</a></bdi></td></tr>
+      <tr><td class="pos t"><a href="/track/2">2</a></td><td class="title"><a href="/recording/r2"><bdi>Hang on It</bdi></a></td><td><bdi><a href="/artist/7a157e97-0000-4000-8000-000000000000" title="Trance">Trance</a></bdi></td></tr>
+    </tbody></table></body></html>`);
+  const src = await functionSource('platform_check', ['VA_MBID', 'pcMbCredits']);
+  const tracks = await page.evaluate(`(() => { ${src}; return pcMbCredits(document, 2).tracks.map(t => t.map(a => a.mbid)); })()`);
+  check(JSON.stringify(tracks) === JSON.stringify([['36bf8efc-34ba-4f90-b02c-90af2c6d7856'], ['7a157e97-0000-4000-8000-000000000000']]), `track 1 is the italo disco Boeing only (${JSON.stringify(tracks)})`);
+});

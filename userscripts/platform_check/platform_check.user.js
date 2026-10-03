@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Platform Check
 // @namespace    http://tampermonkey.net/
-// @version      2026.10.3.234700
+// @version      2026.10.3.234800
 // @description  Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+DQogIDx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CiAgDQogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJhMWE1MiIgc3Ryb2tlLXdpZHRoPSI5IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik00MCA4OCBBMzQgMzQgMCAwIDEgNDAgNDAiLz4NCiAgICA8cGF0aCBkPSJNMjkgOTkgQTUwIDUwIDAgMCAxIDI5IDI5Ii8+DQogICAgPHBhdGggZD0iTTg4IDg4IEEzNCAzNCAwIDAgMCA4OCA0MCIvPg0KICAgIDxwYXRoIGQ9Ik05OSA5OSBBNTAgNTAgMCAwIDAgOTkgMjkiLz4NCiAgPC9nPg0KICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyMCIgZmlsbD0iI2U4MjAxYSIvPg0KPC9zdmc+DQo=
@@ -6944,7 +6944,10 @@ function pcMbCredits(doc, mbTracks) {
     const credit = scope => {
         const out = [];
         for (const a of scope.querySelectorAll('a[href*="/artist/"]')) {
-            if (a.closest('.ars, dl.ars, div.ars, .release-rels, #mb-pc-panel')) continue;   // relationship credits, not the track's artists
+            // relationship credits, not the track's artists; nor the title cell's "Recording artist:"
+            // line, which MusicBrainz shows when the recording is credited differently (#671: a
+            // same-named artist there was paired first and shown ⚠)
+            if (a.closest('.ars, dl.ars, div.ars, .release-rels, #mb-pc-panel, td.title')) continue;
             const m = (a.getAttribute('href') || '').match(/\/artist\/([0-9a-f-]{36})(?:[/?#]|$)/);
             if (m && !out.some(x => x.mbid === m[1])) out.push({ mbid: m[1], name: a.textContent.trim(), alt: (a.getAttribute('title') || '').trim() });
         }
@@ -6996,7 +6999,7 @@ async function pcLinkedTo(urls) {
         const j = JSON.parse(r.responseText);
         for (const u of (j.urls || (j.resource ? [j] : []))) {
             const who = (u.relations || []).filter(x => x['target-type'] === 'artist' || x['target-type'] === 'label')
-                .map(x => ({ type: x['target-type'], mbid: (x.artist || x.label || {}).id, name: (x.artist || x.label || {}).name || '' }));
+                .map(x => ({ type: x['target-type'], mbid: (x.artist || x.label || {}).id, name: (x.artist || x.label || {}).name || '', disambiguation: (x.artist || x.label || {}).disambiguation || '' }));
             // a page MusicBrainz holds under another form counts for the url asked about
             for (const asked of back.get(u.resource) || [u.resource]) {
                 const k = pcUrlKey(asked), had = out.get(k) || [];
@@ -7163,9 +7166,14 @@ async function pcOpenLinksTable(btn) {
         // a + taken out is struck; a +? is amber, and highlighted once taken in
         return { text: MARK[lead.state], cls: lead.state === 'new' && !lead.on ? 'pc-lk-off' : `pc-lk-${lead.state}${lead.state === 'unsure' && lead.on ? ' pc-lk-on' : ''}` };
     };
-    const cellTitle = cs => cs.map(c => `${c.url}\n  ${c.state === 'linked' ? 'already linked in MusicBrainz'
-        : c.state === 'other' ? `linked to ${c.who.map(w => `${w.type} ${w.name || w.mbid}`).join(', ')} in MusicBrainz — not added`
-        : `${c.on ? 'will be added' : 'not added'}${c.state === 'unsure' ? ' (an account that may be the artist or the label)' : ''}${c.by === 'position' ? ' (matched by position, not name)' : ''}`}`).join('\n') + '\nclick: open · right-click: include or leave out';
+    // a ⚠ cell: the MusicBrainz artist or label that already has its link (#671: open it to
+    // compare, and merge it if it is a duplicate)
+    const otherOf = cs => { const c = cellMark(cs).text === MARK.other && cs.find(x => x.state === 'other'); return c && c.who[0] ? c.who[0] : null; };
+    const cellTitle = (cs, row) => cs.map(c => `${c.url}\n  ${c.state === 'linked' ? 'already linked in MusicBrainz'
+        : c.state === 'other' ? `linked to ${c.who.map(w => `${w.type} ${w.name || w.mbid}${w.disambiguation ? ` (${w.disambiguation})` : ''}`).join(', ')} in MusicBrainz — not added${c.who.some(w => pcNameKey(w.name) === pcNameKey(row.name)) ? '; same name: a duplicate to merge, or the wrong one credited' : ''}`
+        : `${c.on ? 'will be added' : 'not added'}${c.state === 'unsure' ? ' (an account that may be the artist or the label)' : ''}${c.by === 'position' ? ' (matched by position, not name)' : ''}`}`).join('\n') + (otherOf(cs)
+        ? `\nclick: open ${otherOf(cs).type} ${otherOf(cs).name || ''} in MusicBrainz · middle-click: the platform page`
+        : '\nclick: open · right-click: include or leave out');
 
     const tbl = document.createElement('table');
     const head = tbl.createTHead().insertRow();
@@ -7190,9 +7198,11 @@ async function pcOpenLinksTable(btn) {
             const td = tr.insertCell();
             const cs = r.cells[p];
             if (!cs) { td.className = 'pc-lk-none'; td.textContent = '·'; continue; }
-            const paint = () => { const m = cellMark(cs); td.className = `pc-lk-cell ${m.cls}`; td.textContent = m.text; td.title = cellTitle(cs); };
+            const paint = () => { const m = cellMark(cs); td.className = `pc-lk-cell ${m.cls}`; td.textContent = m.text; td.title = cellTitle(cs, r); };
             paint();
-            td.onclick = () => window.open(cs[0].url, '_blank', 'noopener');
+            td.onclick = () => { const o = otherOf(cs); window.open(o ? `${MB_ORIGIN}/${o.type}/${o.mbid}` : cs[0].url, '_blank', 'noopener'); };
+            td.onmousedown = e => { if (e.button === 1 && otherOf(cs)) e.preventDefault(); };   // no autoscroll
+            td.onauxclick = e => { if (e.button === 1 && otherOf(cs)) { e.preventDefault(); window.open(cs[0].url, '_blank', 'noopener'); } };
             td.oncontextmenu = e => {
                 e.preventDefault();
                 const can = cs.filter(c => c.state === 'new' || c.state === 'unsure');
