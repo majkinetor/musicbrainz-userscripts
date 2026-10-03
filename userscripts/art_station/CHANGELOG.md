@@ -1,5 +1,12 @@
 # Art Station Changelog
 
+## [2026.10.3](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.10.3)
+
+### Features
+
+1. Middle click on URL button gets best cover ([#667](https://github.com/majkinetor/musicbrainz-userscripts/issues/667))
+1. Option to keep only one imported image ([#660](https://github.com/majkinetor/musicbrainz-userscripts/issues/660))
+
 ## [2026.9.30](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.9.30)
 
 ### Features

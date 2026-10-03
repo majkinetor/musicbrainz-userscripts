@@ -1,5 +1,11 @@
 # Falcon 
 
+## [2026.10.3](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.10.3)
+
+### Features
+
+1. Interface redesign ([#663](https://github.com/majkinetor/musicbrainz-userscripts/issues/663))
+
 ## [2026.9.30](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.9.30)
 
 - Small improvements

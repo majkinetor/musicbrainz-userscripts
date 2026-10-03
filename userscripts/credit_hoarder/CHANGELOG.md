@@ -1,5 +1,11 @@
 # Credit Hoarder Changelog
 
+## [2026.10.3](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.10.3)
+
+### Features
+
+1. Right click in advanced artist popup to create it in background ([#657](https://github.com/majkinetor/musicbrainz-userscripts/issues/657))
+
 ## [2026.10.1](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.10.1)
 
 ### Features

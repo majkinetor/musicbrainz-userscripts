@@ -1,5 +1,9 @@
 # Fusion Changelog
 
+## [2026.10.3](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.10.3)
+
+- Small improvements
+
 ## [2026.9.30](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.9.30)
 
 ### Features

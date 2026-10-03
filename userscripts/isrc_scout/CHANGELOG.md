@@ -1,5 +1,12 @@
 # ISRC Scout Changelog
 
+## [2026.10.3](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.10.3)
+
+### Features
+
+1. Audiomack support ([#664](https://github.com/majkinetor/musicbrainz-userscripts/issues/664))
+1. Find links when ISRC result is similar enough ([#661](https://github.com/majkinetor/musicbrainz-userscripts/issues/661))
+
 ## [2026.10.1](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.10.1)
 
 - Small improvements

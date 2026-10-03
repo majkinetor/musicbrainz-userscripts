@@ -1,5 +1,11 @@
 # Group Therapy
 
+## [2026.10.3](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.10.3)
+
+### Features
+
+1. Text parser vocal types and guest/additional/co flags as attributes ([#666](https://github.com/majkinetor/musicbrainz-userscripts/issues/666))
+
 ## [2026.9.30](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.9.30)
 
 ### Fixes

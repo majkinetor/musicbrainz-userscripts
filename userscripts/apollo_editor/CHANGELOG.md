@@ -1,5 +1,18 @@
 # Apollo Editor Changelog
 
+## [2026.10.3](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.10.3)
+
+### Features
+
+1. Recording matching by the ISRCs First Contact hands over ([#662](https://github.com/majkinetor/musicbrainz-userscripts/issues/662))
+1. Tracklist match details ([#654](https://github.com/majkinetor/musicbrainz-userscripts/issues/654))
+1. Release Information artist matching on a par with Tracklist ([#652](https://github.com/majkinetor/musicbrainz-userscripts/issues/652))
+1. Artist matching by platform links from First Contact ([#651](https://github.com/majkinetor/musicbrainz-userscripts/issues/651))
+
+### Fixes
+
+1. Video indicator not removed from tracklist ([#655](https://github.com/majkinetor/musicbrainz-userscripts/issues/655))
+
 ## [2026.10.1](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.10.1)
 
 ### Fixes

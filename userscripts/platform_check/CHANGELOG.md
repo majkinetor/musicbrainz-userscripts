@@ -1,5 +1,12 @@
 # Platform Check Changelog
 
+## [2026.10.3](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.10.3)
+
+### Features
+
+1. Audiomack support ([#664](https://github.com/majkinetor/musicbrainz-userscripts/issues/664))
+1. Compact unmatched and low-confidence providers ([#653](https://github.com/majkinetor/musicbrainz-userscripts/issues/653))
+
 ## [2026.10.1](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.10.1)
 
 ### Features

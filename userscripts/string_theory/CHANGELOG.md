@@ -1,5 +1,56 @@
 # String Theory Changelog
 
+## [2026.10.3](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.10.3)
+
+### General
+
+#### Features
+
+1. Disable lower version of script when both standalone and ST bundle run together ([#656](https://github.com/majkinetor/musicbrainz-userscripts/issues/656))
+
+#### Changes
+
+1. Script, manager and browser at the start of every log ([#658](https://github.com/majkinetor/musicbrainz-userscripts/issues/658))
+
+### [Apollo Editor](../apollo_editor/CHANGELOG.md)
+
+1. Recording matching by the ISRCs First Contact hands over ([#662](https://github.com/majkinetor/musicbrainz-userscripts/issues/662))
+1. Tracklist match details ([#654](https://github.com/majkinetor/musicbrainz-userscripts/issues/654))
+1. Release Information artist matching on a par with Tracklist ([#652](https://github.com/majkinetor/musicbrainz-userscripts/issues/652))
+1. Artist matching by platform links from First Contact ([#651](https://github.com/majkinetor/musicbrainz-userscripts/issues/651))
+1. Video indicator not removed from tracklist ([#655](https://github.com/majkinetor/musicbrainz-userscripts/issues/655))
+
+### [Art Station](../art_station/CHANGELOG.md)
+
+1. Middle click on URL button gets best cover ([#667](https://github.com/majkinetor/musicbrainz-userscripts/issues/667))
+1. Option to keep only one imported image ([#660](https://github.com/majkinetor/musicbrainz-userscripts/issues/660))
+
+### [Credit Hoarder](../credit_hoarder/CHANGELOG.md)
+
+1. Right click in advanced artist popup to create it in background ([#657](https://github.com/majkinetor/musicbrainz-userscripts/issues/657))
+
+### [Fusion](../fusion/CHANGELOG.md)
+
+1. Small improvements
+
+### [Group Therapy](../group_therapy/CHANGELOG.md)
+
+1. Text parser vocal types and guest/additional/co flags as attributes ([#666](https://github.com/majkinetor/musicbrainz-userscripts/issues/666))
+
+### [ISRC Scout](../isrc_scout/CHANGELOG.md)
+
+1. Audiomack support ([#664](https://github.com/majkinetor/musicbrainz-userscripts/issues/664))
+1. Find links when ISRC result is similar enough ([#661](https://github.com/majkinetor/musicbrainz-userscripts/issues/661))
+
+### [Mammoth](../mammoth/CHANGELOG.md)
+
+1. Small improvements
+
+### [Platform Check](../platform_check/CHANGELOG.md)
+
+1. Audiomack support ([#664](https://github.com/majkinetor/musicbrainz-userscripts/issues/664))
+1. Compact unmatched and low-confidence providers ([#653](https://github.com/majkinetor/musicbrainz-userscripts/issues/653))
+
 ## [2026.10.1](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.10.1)
 
 ### General
