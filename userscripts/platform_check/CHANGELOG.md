@@ -1,5 +1,12 @@
 # Platform Check Changelog
 
+## [2026.10.4](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.10.4)
+
+### Features
+
+1. Artist and label links from platform matches ([#671](https://github.com/majkinetor/musicbrainz-userscripts/issues/671))
+1. 7digital support ([#669](https://github.com/majkinetor/musicbrainz-userscripts/issues/669))
+
 ## [2026.10.3](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.10.3)
 
 ### Features

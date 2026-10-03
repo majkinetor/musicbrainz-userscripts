@@ -1,5 +1,11 @@
 # Apollo Editor Changelog
 
+## [2026.10.4](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.10.4)
+
+### Features
+
+1. Removal of coupling between Apollo and First Contact ([#672](https://github.com/majkinetor/musicbrainz-userscripts/issues/672))
+
 ## [2026.10.3](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.10.3)
 
 ### Features

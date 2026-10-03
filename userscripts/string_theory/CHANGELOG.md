@@ -1,5 +1,40 @@
 # String Theory Changelog
 
+## [2026.10.4](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.10.4)
+
+### [Apollo Editor](../apollo_editor/README.md)
+
+1. Removal of coupling between Apollo and First Contact ([#672](https://github.com/majkinetor/musicbrainz-userscripts/issues/672))
+
+### [Art Station](../art_station/README.md)
+
+1. Enter edit redesign ([#668](https://github.com/majkinetor/musicbrainz-userscripts/issues/668))
+
+### [Credit Hoarder](../credit_hoarder/README.md)
+
+1. Small improvements
+
+### [Fusion](../fusion/README.md)
+
+1. Small improvements
+
+### [Group Therapy](../group_therapy/README.md)
+
+1. Small improvements
+
+### [ISRC Scout](../isrc_scout/README.md)
+
+1. 7digital support ([#669](https://github.com/majkinetor/musicbrainz-userscripts/issues/669))
+
+### [Mammoth](../mammoth/README.md)
+
+1. Small improvements
+
+### [Platform Check](../platform_check/README.md)
+
+1. Artist and label links from platform matches ([#671](https://github.com/majkinetor/musicbrainz-userscripts/issues/671))
+1. 7digital support ([#669](https://github.com/majkinetor/musicbrainz-userscripts/issues/669))
+
 ## [2026.10.3](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.10.3)
 
 ### General
