@@ -104,6 +104,8 @@ test("#663: list/grid views + keyboard walk", { tag: ['@sandbox', '@critical'] }
   check(grid.rows === 4, `one grid line per item (got ${grid.rows})`);
   check(grid.video === 3 && /svg/.test(grid.videoBg), `the recordings' Video is the shared camera glyph (got ${grid.video}, ${grid.videoBg})`);
   check(grid.label === 'List', 'the toggle now offers the list');
+  const vi = await page.evaluate(() => { const v = document.querySelector('.falcon-grid input.falcon-video-input[data-id="r1"]'); v.checked = true; const b = v.getBoundingClientRect(), c = v.closest('td').getBoundingClientRect(), cs = getComputedStyle(v); return [c.width, b.left - c.left, c.right - b.right, b.width, cs.marginLeft, cs.marginRight, cs.backgroundSize, cs.backgroundColor]; });
+  check(vi[3] === 18 && vi[1] >= 0 && vi[2] >= 0 && Math.abs(vi[1] - vi[2]) <= 1, `a checked Video box sits whole and centred in its cell (got ${JSON.stringify(vi)})`);
   await page.locator('.falcon-grid .falcon-rename-input[data-id="r1"]').focus();
   await page.keyboard.press('Enter'); await frames(page);
   at = await page.evaluate(() => document.activeElement.dataset.col + '@' + document.activeElement.dataset.id);
