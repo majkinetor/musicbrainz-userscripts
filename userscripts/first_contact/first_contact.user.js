@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         First Contact
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.3.175216
+// @version      2026.10.3.182042
 // @description  Import a release into MusicBrainz from the platform's album page with one click: the release editor opens with the title, tracklist, artists, date, label, barcode and link filled in. Each artist's platform link is handed to Apollo Editor for matching. By default the album page is also saved on the Internet Archive (it sends each imported URL to archive.org; off in the settings), and the edit note links the snapshot. Platforms: Deezer, Bandcamp, Discogs, Apple Music, Tidal, Qobuz, Beatport, Spotify, YouTube Music, Volumo, HDtracks, SoundCloud, Amazon Music, Audiomack, 7digital.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPkZpcnN0IENvbnRhY3Q8L3RpdGxlPgogIDwhLS0gdHJhY3RvciBiZWFtIC0tPgogIDxwYXRoIGQ9Ik01MCA0NCBMNzggNDQgTDEwNCAxMTIgTDI0IDExMiBaIiBmaWxsPSIjZjZjNDMxIiBvcGFjaXR5PSIwLjkiLz4KICA8cGF0aCBkPSJNNTYgNDQgTDcyIDQ0IEw4OCAxMTIgTDQwIDExMiBaIiBmaWxsPSIjZmRlNjhhIiBvcGFjaXR5PSIwLjciLz4KICA8IS0tIGxhbmRpbmcgcmluZyAtLT4KICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSIxMTQiIHJ4PSI0MiIgcnk9IjgiIGZpbGw9IiMxZTIzNDYiIHN0cm9rZT0iI2M5Y2RmMiIgc3Ryb2tlLXdpZHRoPSIzIi8+CiAgPGVsbGlwc2UgY3g9IjY0IiBjeT0iMTEzIiByeD0iMjYiIHJ5PSI0LjIiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2Y2YzQzMSIgc3Ryb2tlLXdpZHRoPSIyLjQiLz4KICA8IS0tIHNhdWNlcjogYSBwYWxlIHJpbSwgc28gaXQgc2hvd3Mgb24gYSBkYXJrIGJhY2tncm91bmQgdG9vIC0tPgogIDxwYXRoIGQ9Ik00MCAyNiBBMjQgMTggMCAwIDEgODggMjYgWiIgZmlsbD0iIzFlMjM0NiIgc3Ryb2tlPSIjYzljZGYyIiBzdHJva2Utd2lkdGg9IjMiLz4KICA8cGF0aCBkPSJNNTAgMTggQTEwIDYgMCAwIDEgNjAgMTQiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2ZmZiIgc3Ryb2tlLXdpZHRoPSIyLjYiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxlbGxpcHNlIGN4PSI2NCIgY3k9IjMyIiByeD0iNTYiIHJ5PSIxMyIgZmlsbD0iIzFlMjM0NiIgc3Ryb2tlPSIjYzljZGYyIiBzdHJva2Utd2lkdGg9IjMiLz4KICA8Y2lyY2xlIGN4PSIzOCIgY3k9IjMyIiByPSI0LjQiIGZpbGw9IiNmZmYiLz4KICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjM0IiByPSI0LjQiIGZpbGw9IiNmZmYiLz4KICA8Y2lyY2xlIGN4PSI5MCIgY3k9IjMyIiByPSI0LjQiIGZpbGw9IiNmZmYiLz4KICA8IS0tIHRoZSByZWxlYXNlIGJlaW5nIGJlYW1lZCB1cDogYSBwdXJwbGUgaGV4YWdvbiB3aXRoIGEgbm90ZSAtLT4KICA8cGF0aCBkPSJNNjQgNTggTDg0IDY5LjUgTDg0IDkyLjUgTDY0IDEwNCBMNDQgOTIuNSBMNDQgNjkuNSBaIiBmaWxsPSIjN2I0ZmQ2Ii8+CiAgPHBhdGggZD0iTTY0IDU4IEw4NCA2OS41IEw2NCA4MSBMNDQgNjkuNSBaIiBmaWxsPSIjOWI3MmVhIi8+CiAgPHBhdGggZD0iTTYwIDcyIEw3NCA2OSBMNzQgODkiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2ZmZiIgc3Ryb2tlLXdpZHRoPSIzLjQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz4KICA8cGF0aCBkPSJNNjAgNzIgTDYwIDkyIiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iMy40Ii8+CiAgPGVsbGlwc2UgY3g9IjU2IiBjeT0iOTIiIHJ4PSI0LjYiIHJ5PSIzLjYiIGZpbGw9IiNmZmYiLz4KICA8ZWxsaXBzZSBjeD0iNzAiIGN5PSI4OSIgcng9IjQuNiIgcnk9IjMuNiIgZmlsbD0iI2ZmZiIvPgogIDwhLS0gc3BhcmtsZXMgLS0+CiAgPHBhdGggZD0iTTE4IDU0IGwyLjUgNiA2IDIuNSAtNiAyLjUgLTIuNSA2IC0yLjUgLTYgLTYgLTIuNSA2IC0yLjUgWiIgZmlsbD0iI2Y2YzQzMSIvPgogIDxwYXRoIGQ9Ik0xMDggNTIgbDIuNSA2IDYgMi41IC02IDIuNSAtMi41IDYgLTIuNSAtNiAtNiAtMi41IDYgLTIuNSBaIiBmaWxsPSIjMWUyMzQ2Ii8+CiAgPHBhdGggZD0iTTExMiA4MiBsMS44IDQuMiA0LjIgMS44IC00LjIgMS44IC0xLjggNC4yIC0xLjggLTQuMiAtNC4yIC0xLjggNC4yIC0xLjggWiIgZmlsbD0iI2Y2YzQzMSIvPgogIDxwYXRoIGQ9Ik0xNCA4NiBsMS44IDQuMiA0LjIgMS44IC00LjIgMS44IC0xLjggNC4yIC0xLjggLTQuMiAtNC4yIC0xLjggNC4yIC0xLjggWiIgZmlsbD0iIzFlMjM0NiIvPgo8L3N2Zz4K
@@ -1880,35 +1880,47 @@ const SEVENDIGITAL = {
         const various = /^various artists$/i.test(artist);
         Log.info(`7digital release ${releaseId} (${country}): "${title}" by ${artist} · ${rows.length} track(s) · ${pageDate || 'no date'} · label "${pageLabel}"`);
 
-        // the release: its barcode, type and date (found by its title, as the store's key can't read it by id)
-        let rel = null;
-        for (const q of [title, `${artist} ${title}`]) {
-            try {
-                const j = await this.api('release/search', { q, country, pageSize: '50' });
-                rel = ((j.searchResults || {}).searchResult || []).map(x => x.release).find(r => r && String(r.id) === String(releaseId)) || null;
-            } catch (e) { Log.warn(`7digital: release search "${q}" failed: ${e.message}`); }
-            if (rel) break;
-        }
-        if (rel) Log.info(`7digital API: type ${rel.type} · UPC ${rel.barcode || '—'} · ${(rel.download || {}).releaseDate || 'no date'} · label "${(rel.label || {}).name || ''}"`);
-        else Log.warn('7digital: the release wasn\'t found in the API: no barcode, and the type is guessed');
+        // the release: its barcode, type and date (found by its title, as the store's key can't read it by id).
+        // 7digital's search can take 10 s or more, so it runs alongside the tracks' searches below.
+        const relP = (async () => {
+            for (const c of [...new Set([country, 'GB', 'US'])]) {
+                for (const q of [title, `${artist} ${title}`]) {
+                    try {
+                        const j = await this.api('release/search', { q, country: c, pageSize: '50' });
+                        const r = ((j.searchResults || {}).searchResult || []).map(x => x.release).find(x => x && String(x.id) === String(releaseId));
+                        if (r) return r;
+                    } catch (e) { Log.warn(`7digital: release search "${q}" (${c}) failed: ${e.message}`); }
+                }
+            }
+            return null;
+        })();
 
         // the tracks: each by its title with the album's (often the whole album comes back for one), after its
         // artist, or alone; a hit fills every row it is
         const hits = new Map();
-        const search = async q => {
+        const search = async (q, c) => {
             try {
-                const j = await this.api('track/search', { q, country, pageSize: '50' });
+                const j = await this.api('track/search', { q, country: c, pageSize: '50' });
                 for (const x of (j.searchResults || {}).searchResult || []) if (x.track && x.track.release && String(x.track.release.id) === String(releaseId)) hits.set(String(x.track.id), x.track);
             } catch (e) { Log.warn(`7digital: track search "${q}" failed: ${e.message}`); }
         };
-        let done = 0;
-        await mapLimit(rows, 6, async row => {
-            for (const q of [`${row.title} ${title}`, various ? null : `${artist} ${row.title}`, row.title]) {
-                if (hits.has(row.id)) break;
-                if (q) await search(q);
-            }
-            progress && progress(++done, rows.length);
-        });
+        // the count is of tracks found: one search often brings up the whole album at once
+        const found = () => rows.filter(r => hits.has(r.id)).length;
+        // the store's country first; a release its catalogue doesn't have (a UK compilation on the US
+        // store) is looked for in the UK's and the US's
+        for (const c of [...new Set([country, 'GB', 'US'])]) {
+            await mapLimit(rows, 6, async row => {
+                for (const q of [`${row.title} ${title}`, various ? null : `${artist} ${row.title}`, row.title]) {
+                    if (hits.has(row.id)) break;
+                    if (q) { await search(q, c); progress && progress(found(), rows.length); }
+                }
+            });
+            if (found()) break;
+            Log.info(`7digital: none of the tracks is in the ${c} catalogue`);
+        }
+        const rel = await relP;
+        if (rel) Log.info(`7digital API: type ${rel.type} · UPC ${rel.barcode || '—'} · ${(rel.download || {}).releaseDate || 'no date'} · label "${(rel.label || {}).name || ''}"`);
+        else Log.warn('7digital: the release wasn\'t found in the API: no barcode, and the type is guessed');
         Log.info(`7digital API: ${rows.filter(r => hits.has(r.id)).length} of ${rows.length} track(s) found, ${rows.filter(r => (hits.get(r.id) || {}).isrc).length} with an ISRC`);
 
         const storeArtist = a => (a && a.slug ? `${new URL(url).origin}/artist/${a.slug}` : null);
@@ -2691,6 +2703,13 @@ async function importCurrent() {
     // a popup the browser blocks. The form posts into it once the data is in.
     const target = 'fc-' + token;
     const win = window.open('about:blank', target);
+    // majkinetor: "it opens MB page before it finishes". It has to (a tab opened later is blocked), so
+    // until the editor arrives the tab says what it is waiting for, rather than staying blank
+    if (win) try {
+        win.document.title = `${NAME}: reading ${provider.name}…`;
+        win.document.body.style.cssText = 'font: 15px/1.5 system-ui, sans-serif; margin: 3em;';
+        win.document.body.textContent = `${NAME} is reading the release from ${provider.name}. MusicBrainz's release editor opens in this tab when it's done.`;
+    } catch (e) { Log.debug(`the editor's tab can't be written to: ${e.message}`); }
     Log.info(`import ${location.href}`);
     Log.info(`import ${provider.name} album ${id} → ${server} (token ${token}, tab ${win ? 'opened' : 'BLOCKED: posting in this tab'})`);
     busy = true;
