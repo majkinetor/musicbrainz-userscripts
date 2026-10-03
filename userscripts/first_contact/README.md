@@ -75,6 +75,7 @@ Without every track's length: 1 track is a Single, 3 to 6 an EP, 7 or more an Al
 | [Amazon Music](#amazon-music)   |            |            | from the ℗ line       | ℗ line         |
 | [Audiomack](#audiomack)         |     ✓      |     ✓      | from the ℗ line       | description    |
 | [7digital](#7digital)           |     ✓      |     ✓      | ✓                     | ℗ and © lines  |
+| [Ototoy](#ototoy)               |            |            | ✓                     | album info     |
 
 ### Deezer
 
@@ -203,6 +204,17 @@ Pages: `<store>.7digital.com/artist/<artist>/release/<slug>`
 - No 7digital account is needed. If the page asks you to prove you're human, do it first, then import.
 - The barcode, type, date, discs and ISRCs come from 7digital's catalogue, which can't list an album's tracks: each track is searched for, a few at a time.
 - A track's artists come from its artist line (*A, B & C*, *A x B*, *A feat. B*). The release artist has a 7digital link to hand off, and so does a track artist who is the whole line.
+
+### Ototoy
+
+Pages: `ototoy.jp/_/default/p/<id>`
+
+- No Ototoy account is needed.
+- Ototoy shows no barcode, ISRCs or type, so the type is guessed and the country is Japan.
+- The date is the original release date when the page has one.
+- A track's artists are all the artists Ototoy links for it, and the featured ones come from its title's *(feat. …)*. On some compilations those links include the arranger or the label, so check the track artists there.
+- The hi-res and CD-quality editions are separate pages; the format some titles carry (*Disc2(24bit/44.1kHz)*) is left out of the title.
+- The catalog number isn't filled in: Ototoy often shows the CD's or a distributor's code instead.
 
 ## Artist matching
 
