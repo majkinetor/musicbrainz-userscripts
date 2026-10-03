@@ -5,7 +5,7 @@
 //
 // The sandbox has Daft Punk, Pharrell Williams and Nile Rodgers with their Deezer links. Daft
 // Punk is credited as "D. Punk", which no name stage can find.
-import { test, check, loadFunctions } from '../../../dev/test/harness.mjs';
+import { test, check, functionSource } from '../../../dev/test/harness.mjs';
 import { openApollo, apolloGm, matchDone } from './ap.mjs';
 
 const DZ = id => `https://www.deezer.com/artist/${id}`;
@@ -22,7 +22,7 @@ const seed = {
 };
 const dp = { name: 'D. Punk', join: '', url: DZ(27) };
 const handoff = {
-  v: 1, token: 't651', created: Date.now(), source: 'deezer', sourceName: 'Deezer', url: 'https://www.deezer.com/album/6575789', title: seed.name,
+  v: 2, token: 't651', created: Date.now(), source: 'deezer', sourceName: 'Deezer', platform: { abbr: 'dz', name: 'Deezer' }, url: 'https://www.deezer.com/album/6575789', title: seed.name,
   credit: [dp],
   mediums: [{ tracks: [
     { title: 'One', credit: [dp] },
@@ -31,17 +31,32 @@ const handoff = {
   ] }],
 };
 
-test('the forms an artist link is looked up under', { tag: ['@unit', '@critical'] }, async () => {
-  const { platformUrlForms, platformOf } = await loadFunctions('apollo_editor', ['DISCOGS_ARTIST_LINK_TYPE', 'PLATFORMS', 'APPLE_CCS', 'AMAZON_TLDS', 'platformOf', 'platformUrlForms']);
-  check(JSON.stringify(platformUrlForms(DZ(27))) === JSON.stringify([DZ(27)]), 'a Deezer link is looked up as it is');
-  const apple = platformUrlForms('https://music.apple.com/us/artist/daft-punk/5468295');
-  check(apple.includes('https://music.apple.com/us/artist/5468295') && apple.includes('https://music.apple.com/fr/artist/5468295') && apple.length > 10, `Apple Music: without the slug, in other countries too (${apple.length} forms)`);
-  const qz = platformUrlForms('https://www.qobuz.com/fr-fr/interpreter/daft-punk/36819');
-  check(qz.includes('https://open.qobuz.com/artist/36819'), 'Qobuz: also as open.qobuz.com');
-  const amz = platformUrlForms('https://music.amazon.com/artists/B001E8WS3O');
-  check(amz.includes('https://music.amazon.fr/artists/B001E8WS3O'), 'Amazon Music: on its other domains too');
-  check(platformOf(DZ(27)).abbr === 'dz' && platformOf('https://open.spotify.com/artist/x').abbr === 'sp' && platformOf('https://example.com/') === null, 'the platform and its badge');
-  check(platformOf('https://music.apple.com/us/artist/5468295').type === 978 && platformOf('https://www.qobuz.com/x').type === 176 && !platformOf(DZ(1)).type, 'link types only where MusicBrainz cannot pick one');
+// #672: Apollo knows no platform: what it is and the forms its links are stored under come from
+// the handoff. Apollo's platformOf/platformUrlForms, over a handoff given here.
+async function platformFns(handoff) {
+  const src = await functionSource('apollo_editor', ['DISCOGS_ARTIST_LINK_TYPE', 'DISCOGS_PLATFORM', 'handoffUrlIndex', 'platformOf', 'platformUrlForms']);
+  return new Function('fcHandoff', 'fcUrlForms', src + '\nreturn { platformOf, platformUrlForms, handoffUrlIndex };')(
+    () => handoff, url => (handoff ? new Function(src + '\nreturn handoffUrlIndex;')()(handoff).get(url) : undefined));
+}
+const AM = 'https://music.apple.com/us/artist/daft-punk/5468295';
+const AM_FORMS = [AM, 'https://music.apple.com/us/artist/5468295', 'https://music.apple.com/fr/artist/5468295'];
+
+test('the platform and the forms an artist link is looked up under come from the handoff', { tag: ['@unit', '@critical'] }, async () => {
+  const dz = await platformFns({ ...handoff, v: 2, platform: { abbr: 'dz', name: 'Deezer' } });
+  check(JSON.stringify(dz.platformUrlForms(DZ(27))) === JSON.stringify([DZ(27)]), 'a Deezer link is looked up as it is');
+  check(dz.platformOf(DZ(27)).abbr === 'dz' && dz.platformOf(DZ(27)).name === 'Deezer' && !dz.platformOf(DZ(27)).artistLinkType, 'the platform and its badge; no link type where MB picks one');
+  check(dz.platformOf('https://open.spotify.com/artist/x') === null && dz.platformOf('https://example.com/') === null, 'a link the handoff does not have is no platform');
+  check(dz.platformOf('https://www.discogs.com/label/23528').abbr === 'disc', 'a Discogs link is known without a handoff (Apollo reads Discogs itself)');
+  check(JSON.stringify(dz.platformUrlForms('https://x.bandcamp.com')) === JSON.stringify(['https://x.bandcamp.com', 'https://x.bandcamp.com/']), 'a bare site also with the trailing slash');
+
+  const am = await platformFns({ v: 2, mediums: [], platform: { abbr: 'am', name: 'Apple Music', artistLinkType: 978 }, credit: [{ name: 'Daft Punk', url: AM, urlForms: AM_FORMS }] });
+  check(JSON.stringify(am.platformUrlForms(AM)) === JSON.stringify(AM_FORMS), `the forms the handoff gives (${JSON.stringify(am.platformUrlForms(AM))})`);
+  check(am.platformOf(AM).artistLinkType === 978, 'the link type the handoff gives');
+
+  const v1 = await platformFns({ ...handoff, v: 1, platform: undefined });
+  check(v1.platformOf(DZ(27)) === null && JSON.stringify(v1.platformUrlForms(DZ(27))) === JSON.stringify([DZ(27)]), 'an older (v1) handoff: no platform, the link as it is');
+  const none = await platformFns(null);
+  check(none.platformOf(DZ(27)) === null && none.platformUrlForms(DZ(27)).length === 1, 'no handoff at all');
 });
 
 test.describe('First Contact handoff', () => {
@@ -89,20 +104,22 @@ test.describe('First Contact handoff', () => {
       before: () => page.evaluate(h => { document.documentElement.dataset.firstContact = JSON.stringify(h); }, handoff),
     });
     await matchDone(page);
-    const r = await page.evaluate(async ({ NOBODY }) => {
+    const r = await page.evaluate(async ({ NOBODY, appleHandoff }) => {
       const A = window.__apolloEditor, opened = [];
       window.open = u => { opened.push(String(u)); return null; };   // nothing is really opened
-      const dp = A.model.tracks[0].slots[0];   // Daft Punk, matched by the link
-      // the same artist, now with a link it lacks (an Apple Music one: MB can't type it by itself)
-      await A.tagPlatformAddable(dp, 'https://music.apple.com/us/artist/x/1');
-      const addable = dp._platAddable;
-      A.addOrCreatePlatformLink(dp);
       const nobody = A.model.tracks[2].slots[0];
       await A.tagPlatformAddable(nobody, NOBODY);
       A.addOrCreatePlatformLink(nobody);
+      // #672: an Apple Music import (MB can't type its link by itself), whose handoff says so
+      document.dispatchEvent(new CustomEvent('first-contact:seed', { detail: JSON.stringify(appleHandoff) }));
+      const dp = A.model.tracks[0].slots[0];   // Daft Punk, matched by the link
+      // the same artist, now with a link it lacks
+      await A.tagPlatformAddable(dp, 'https://music.apple.com/us/artist/x/1');
+      const addable = dp._platAddable;
+      A.addOrCreatePlatformLink(dp);
       return { addable, opened };
-    }, { NOBODY });
-    const [edit, create] = r.opened.map(u => new URL(u));
+    }, { NOBODY, appleHandoff: { v: 2, token: 't651-am', source: 'apple', sourceName: 'Apple Music', platform: { abbr: 'am', name: 'Apple Music', artistLinkType: 978 }, credit: [], mediums: [{ tracks: [{ title: 'One', credit: [{ name: 'D. Punk', join: '', url: 'https://music.apple.com/us/artist/x/1' }] }] }] } });
+    const [create, edit] = r.opened.map(u => new URL(u));
     check(r.addable, 'a matched artist without the link is offered it');
     check(edit && /\/artist\/[0-9a-f-]{36}\/edit$/.test(edit.pathname) && edit.searchParams.get('edit-artist.url.0.text') === 'https://music.apple.com/us/artist/x/1' && edit.searchParams.get('edit-artist.url.0.link_type_id') === '978', `the artist's edit, with the link as a streaming page: ${edit && edit.href}`);
     check(/Added Apple Music link/.test(edit ? edit.searchParams.get('edit-artist.edit_note') || '' : ''), 'with an edit note');

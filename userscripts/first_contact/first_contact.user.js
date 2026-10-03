@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         First Contact
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.3
+// @version      2026.10.3.203209
 // @description  Import a release into MusicBrainz from the platform's album page with one click: the release editor opens with the title, tracklist, artists, date, label, barcode and link filled in. Each artist's platform link is handed to Apollo Editor for matching. By default the album page is also saved on the Internet Archive (it sends each imported URL to archive.org; off in the settings), and the edit note links the snapshot. Platforms: Deezer, Bandcamp, Discogs, Apple Music, Tidal, Qobuz, Beatport, Spotify, YouTube Music, Volumo, HDtracks, SoundCloud, Amazon Music, Audiomack.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPkZpcnN0IENvbnRhY3Q8L3RpdGxlPgogIDwhLS0gdHJhY3RvciBiZWFtIC0tPgogIDxwYXRoIGQ9Ik01MCA0NCBMNzggNDQgTDEwNCAxMTIgTDI0IDExMiBaIiBmaWxsPSIjZjZjNDMxIiBvcGFjaXR5PSIwLjkiLz4KICA8cGF0aCBkPSJNNTYgNDQgTDcyIDQ0IEw4OCAxMTIgTDQwIDExMiBaIiBmaWxsPSIjZmRlNjhhIiBvcGFjaXR5PSIwLjciLz4KICA8IS0tIGxhbmRpbmcgcmluZyAtLT4KICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSIxMTQiIHJ4PSI0MiIgcnk9IjgiIGZpbGw9IiMxZTIzNDYiIHN0cm9rZT0iI2M5Y2RmMiIgc3Ryb2tlLXdpZHRoPSIzIi8+CiAgPGVsbGlwc2UgY3g9IjY0IiBjeT0iMTEzIiByeD0iMjYiIHJ5PSI0LjIiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2Y2YzQzMSIgc3Ryb2tlLXdpZHRoPSIyLjQiLz4KICA8IS0tIHNhdWNlcjogYSBwYWxlIHJpbSwgc28gaXQgc2hvd3Mgb24gYSBkYXJrIGJhY2tncm91bmQgdG9vIC0tPgogIDxwYXRoIGQ9Ik00MCAyNiBBMjQgMTggMCAwIDEgODggMjYgWiIgZmlsbD0iIzFlMjM0NiIgc3Ryb2tlPSIjYzljZGYyIiBzdHJva2Utd2lkdGg9IjMiLz4KICA8cGF0aCBkPSJNNTAgMTggQTEwIDYgMCAwIDEgNjAgMTQiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2ZmZiIgc3Ryb2tlLXdpZHRoPSIyLjYiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxlbGxpcHNlIGN4PSI2NCIgY3k9IjMyIiByeD0iNTYiIHJ5PSIxMyIgZmlsbD0iIzFlMjM0NiIgc3Ryb2tlPSIjYzljZGYyIiBzdHJva2Utd2lkdGg9IjMiLz4KICA8Y2lyY2xlIGN4PSIzOCIgY3k9IjMyIiByPSI0LjQiIGZpbGw9IiNmZmYiLz4KICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjM0IiByPSI0LjQiIGZpbGw9IiNmZmYiLz4KICA8Y2lyY2xlIGN4PSI5MCIgY3k9IjMyIiByPSI0LjQiIGZpbGw9IiNmZmYiLz4KICA8IS0tIHRoZSByZWxlYXNlIGJlaW5nIGJlYW1lZCB1cDogYSBwdXJwbGUgaGV4YWdvbiB3aXRoIGEgbm90ZSAtLT4KICA8cGF0aCBkPSJNNjQgNTggTDg0IDY5LjUgTDg0IDkyLjUgTDY0IDEwNCBMNDQgOTIuNSBMNDQgNjkuNSBaIiBmaWxsPSIjN2I0ZmQ2Ii8+CiAgPHBhdGggZD0iTTY0IDU4IEw4NCA2OS41IEw2NCA4MSBMNDQgNjkuNSBaIiBmaWxsPSIjOWI3MmVhIi8+CiAgPHBhdGggZD0iTTYwIDcyIEw3NCA2OSBMNzQgODkiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2ZmZiIgc3Ryb2tlLXdpZHRoPSIzLjQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz4KICA8cGF0aCBkPSJNNjAgNzIgTDYwIDkyIiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iMy40Ii8+CiAgPGVsbGlwc2UgY3g9IjU2IiBjeT0iOTIiIHJ4PSI0LjYiIHJ5PSIzLjYiIGZpbGw9IiNmZmYiLz4KICA8ZWxsaXBzZSBjeD0iNzAiIGN5PSI4OSIgcng9IjQuNiIgcnk9IjMuNiIgZmlsbD0iI2ZmZiIvPgogIDwhLS0gc3BhcmtsZXMgLS0+CiAgPHBhdGggZD0iTTE4IDU0IGwyLjUgNiA2IDIuNSAtNiAyLjUgLTIuNSA2IC0yLjUgLTYgLTYgLTIuNSA2IC0yLjUgWiIgZmlsbD0iI2Y2YzQzMSIvPgogIDxwYXRoIGQ9Ik0xMDggNTIgbDIuNSA2IDYgMi41IC02IDIuNSAtMi41IDYgLTIuNSAtNiAtNiAtMi41IDYgLTIuNSBaIiBmaWxsPSIjMWUyMzQ2Ii8+CiAgPHBhdGggZD0iTTExMiA4MiBsMS44IDQuMiA0LjIgMS44IC00LjIgMS44IC0xLjggNC4yIC0xLjggLTQuMiAtNC4yIC0xLjggNC4yIC0xLjggWiIgZmlsbD0iI2Y2YzQzMSIvPgogIDxwYXRoIGQ9Ik0xNCA4NiBsMS44IDQuMiA0LjIgMS44IC00LjIgMS44IC0xLjggNC4yIC0xLjggLTQuMiAtNC4yIC0xLjggNC4yIC0xLjggWiIgZmlsbD0iIzFlMjM0NiIvPgo8L3N2Zz4K
@@ -330,6 +330,11 @@ function guessScript(texts) {
     return /^[\p{Script=Latin}]+$/u.test(letters) ? 'Latn' : null;
 }
 
+// The storefronts and domains MusicBrainz may store an Apple Music or Amazon Music artist link
+// under (the album page doesn't say which); see the providers' urlForms.
+const APPLE_STOREFRONTS = ['us', 'gb', 'fr', 'de', 'jp', 'ca', 'au', 'nl', 'se', 'it', 'es', 'br', 'mx', 'pl', 'kr', 'be', 'ch', 'at', 'dk', 'no', 'fi', 'nz'];
+const AMAZON_TLDS = ['com', 'co.uk', 'de', 'fr', 'it', 'es', 'ca', 'co.jp', 'com.au', 'com.br', 'com.mx', 'in'];
+
 /* ── providers ───────────────────────────────────────────────────────────────
    One object per platform. Kept deliberately thin: recognise the album page, fetch the
    release and return it in First Contact's model. Everything MusicBrainz-specific (the
@@ -345,6 +350,7 @@ function guessScript(texts) {
 const DEEZER = {
     id: 'deezer',
     name: 'Deezer',
+    abbr: 'dz',
     host: /^www\.deezer\.com$/,
     albumId(loc) { const m = loc.pathname.match(/^\/(?:[a-z]{2}(?:-[a-z]{2})?\/)?album\/(\d+)\/?$/i); return m ? m[1] : null; },
     albumUrl: id => `https://www.deezer.com/album/${id}`,
@@ -436,6 +442,7 @@ const DEEZER = {
 const BANDCAMP = {
     id: 'bandcamp',
     name: 'Bandcamp',
+    abbr: 'bc',
     host: /(^|\.)bandcamp\.com$/,
     albumId(loc) { return /^\/album\/[^/]+\/?$/.test(loc.pathname) ? loc.pathname.replace(/\/$/, '') : null; },
     VARIOUS: /^various( artists)?$/i,
@@ -533,6 +540,8 @@ const DISCOGS_PACKAGING = [[/cardboard|paper/, 'Cardboard/Paper Sleeve'], [/digi
 const DISCOGS = {
     id: 'discogs',
     name: 'Discogs',
+    abbr: 'disc',
+    artistLinkType: 180,   // MB's Discogs artist link
     host: /^(www\.)?discogs\.com$/,
     albumId(loc) { const m = loc.pathname.match(/^\/(?:[a-z]{2}\/)?release\/(\d+)(?:-[^/]*)?\/?$/i); return m ? m[1] : null; },
     VARIOUS: 194,
@@ -681,6 +690,15 @@ const DISCOGS = {
 const APPLE = {
     id: 'apple',
     name: 'Apple Music',
+    abbr: 'am',
+    artistLinkType: 978,   // streaming page: MB offers several for Apple Music
+    // MB stores an Apple Music artist under any storefront, without the slug
+    urlForms(url) {
+        const m = url.match(/^https?:\/\/(?:music|itunes)\.apple\.com\/([a-z]{2})\/artist\/(?:[^/?#]+\/)?(?:id)?(\d+)/i);
+        if (!m) return [];
+        const cc = m[1].toLowerCase();
+        return [cc, ...APPLE_STOREFRONTS.filter(c => c !== cc)].map(c => `https://music.apple.com/${c}/artist/${m[2]}`);
+    },
     host: /^music\.apple\.com$/,
     albumId(loc) {
         const m = loc.pathname.match(/^\/([a-z]{2})\/album\/(?:[^/]+\/)?(\d+)\/?$/i);
@@ -797,6 +815,7 @@ const APPLE = {
 const TIDAL = {
     id: 'tidal',
     name: 'Tidal',
+    abbr: 'td',
     host: /^(listen\.)?tidal\.com$/,
     albumId(loc) { const m = loc.pathname.match(/^\/(?:browse\/)?album\/(\d+)\/?$/); return m ? m[1] : null; },
     CLIENT: 'cRhhDJDpYXXBn82U:K7UX40jDOZ5p4y4JMYZgoiwKi7jymTHWcLMb4gkewKs=',
@@ -903,6 +922,13 @@ const TIDAL = {
 const QOBUZ = {
     id: 'qobuz',
     name: 'Qobuz',
+    abbr: 'qz',
+    artistLinkType: 176,   // purchase music for download: MB offers several for Qobuz
+    // MB stores a Qobuz artist also as open.qobuz.com
+    urlForms(url) {
+        const m = url.match(/^https?:\/\/(?:www\.)?qobuz\.com\/[a-z]{2}-[a-z]{2}\/interpreter\/[^/]+\/(\d+)/i);
+        return m ? [`https://open.qobuz.com/artist/${m[1]}`] : [];
+    },
     host: /^www\.qobuz\.com$/,
     albumId(loc) { return /^\/[a-z]{2}-[a-z]{2}\/album\/[^/]+\/[A-Za-z0-9]+\/?$/.test(loc.pathname) ? loc.pathname.replace(/\/$/, '') : null; },
     hms(t) { const p = String(t || '').trim().split(':').map(Number); return p.length > 1 && p.every(Number.isFinite) ? p.reduce((a, n) => a * 60 + n, 0) * 1000 : null; },
@@ -983,6 +1009,7 @@ const QOBUZ = {
 const BEATPORT = {
     id: 'beatport',
     name: 'Beatport',
+    abbr: 'bp',
     host: /^www\.beatport\.com$/,
     albumId(loc) { const m = loc.pathname.match(/^\/(?:[a-z]{2}\/)?release\/[^/]+\/(\d+)\/?$/i); return m ? m[1] : null; },
     TYPES: { Album: ['Album'], EP: ['EP'], Single: ['Single'], Compilation: ['Album', 'Compilation'] },
@@ -1071,6 +1098,7 @@ const BEATPORT = {
 const SPOTIFY = {
     id: 'spotify',
     name: 'Spotify',
+    abbr: 'sp',
     host: /^open\.spotify\.com$/,
     albumId(loc) { const m = loc.pathname.match(/^\/(?:intl-[a-z-]+\/)?album\/([A-Za-z0-9]{22})\/?$/); return m ? m[1] : null; },
     TYPES: { ALBUM: ['Album'], SINGLE: ['Single'], EP: ['EP'], COMPILATION: ['Album', 'Compilation'] },
@@ -1307,6 +1335,7 @@ const SPOTIFY = {
 const YTMUSIC = {
     id: 'ytmusic',
     name: 'YouTube Music',
+    abbr: 'ytm',
     host: /^music\.youtube\.com$/,
     albumId(loc) {
         const b = loc.pathname.match(/^\/browse\/(MPREb_[\w-]+)\/?$/);
@@ -1410,6 +1439,8 @@ const YTMUSIC = {
 const VOLUMO = {
     id: 'volumo',
     name: 'Volumo',
+    abbr: 'vo',
+    artistLinkType: 176,   // MB doesn't recognise Volumo
     host: /^(www\.)?volumo\.com$/,
     albumId(loc) { const m = loc.pathname.match(/^\/album\/(\d+)(?:-[^/]*)?\/?$/); return m ? m[1] : null; },
     artist: a => ({ name: a.name, url: `https://volumo.com/artist/${a.id}` }),
@@ -1464,6 +1495,8 @@ const VOLUMO = {
 const HDTRACKS = {
     id: 'hdtracks',
     name: 'HDtracks',
+    abbr: 'hd',
+    artistLinkType: 176,   // MB doesn't recognise HDtracks
     host: /^(www\.)?hdtracks\.com$/,
     albumId(loc) { const m = String(loc.hash || '').match(/^#\/album\/([a-f0-9]{24})\b/i) || loc.pathname.match(/^\/album\/([a-f0-9]{24})\/?$/i); return m ? m[1] : null; },
     API: 'https://hdtracks.azurewebsites.net/api/v1',
@@ -1515,6 +1548,7 @@ const HDTRACKS = {
 const SOUNDCLOUD = {
     id: 'soundcloud',
     name: 'SoundCloud',
+    abbr: 'sc',
     host: /^soundcloud\.com$/,
     albumId(loc) { return /^\/[^/]+\/sets\/[^/]+\/?$/.test(loc.pathname) ? loc.pathname.replace(/\/$/, '') : null; },
     API: 'https://api-v2.soundcloud.com',
@@ -1601,6 +1635,12 @@ const SOUNDCLOUD = {
 const AMAZON = {
     id: 'amazonmusic',
     name: 'Amazon Music',
+    abbr: 'amz',
+    // MB stores an Amazon Music artist under any of its domains
+    urlForms(url) {
+        const m = url.match(/^https?:\/\/music\.amazon\.[a-z.]+\/artists\/([A-Z0-9]{10})/i);
+        return m ? AMAZON_TLDS.map(t => `https://music.amazon.${t}/artists/${m[1].toUpperCase()}`) : [];
+    },
     host: /^music\.amazon\.(?:com|co\.uk|de|fr|it|es|ca|co\.jp|com\.au|com\.br|com\.mx|in)$/,
     albumId(loc) { const m = loc.pathname.match(/^\/albums\/([A-Z0-9]{10})\/?$/i); return m ? m[1].toUpperCase() : null; },
     API: 'https://na.mesk.skill.music.a2z.com/api/',
@@ -1733,6 +1773,8 @@ const AMAZON = {
 const AUDIOMACK = {
     id: 'audiomack',
     name: 'Audiomack',
+    abbr: 'amk',
+    artistLinkType: 194,   // free streaming: MB offers free and paid (#664)
     host: /^(www\.)?audiomack\.com$/,
     albumId(loc) { const m = loc.pathname.match(/^\/([^/]+)\/(album|song)\/([^/]+)\/?$/); return m ? `${m[1]}/${m[2]}/${m[3]}` : null; },
     API: 'https://api.audiomack.com/v1/',
@@ -1962,20 +2004,30 @@ async function archiveSources(plan, token) {
     }
 }
 
-// What Apollo needs to match: every credited artist with its platform link, by position.
+// What Apollo needs to match: every credited artist with its platform link, by position, and
+// what it needs to know about the platform (#672), so a new provider needs no change in Apollo:
+//   platform: { abbr, name, artistLinkType? }  the badge, the name in logs and edit notes, and the
+//                                              artist link type where MB can't pick one itself
+//   urlForms: [url, ...]                       on a link MB may store in other forms: all of them
 function handoffFor(rel, provider, token) {
-    const ac = c => (c || []).map(a => ({ name: a.name, artistName: a.artistName || a.name, join: a.join, url: a.url || null, mbid: a.mbid || null }));
+    const forms = url => {
+        if (!url || !provider.urlForms) return undefined;
+        const f = [...new Set([url, ...provider.urlForms(url)])];
+        return f.length > 1 ? f : undefined;
+    };
+    const ac = c => (c || []).map(a => ({ name: a.name, artistName: a.artistName || a.name, join: a.join, url: a.url || null, urlForms: forms(a.url), mbid: a.mbid || null }));
     return {
-        v: 1,
+        v: 2,
         token,
         created: Date.now(),
         source: provider.id,
         sourceName: provider.name,
+        platform: { abbr: provider.abbr, name: provider.name, artistLinkType: provider.artistLinkType },
         url: rel.url,
         title: rel.title,
         barcode: rel.barcode,
         credit: ac(rel.credit),
-        labels: (rel.labels || []).map(l => ({ name: l.name, catno: l.catno, url: l.url || null, mbid: l.mbid || null })),
+        labels: (rel.labels || []).map(l => ({ name: l.name, catno: l.catno, url: l.url || null, urlForms: forms(l.url), mbid: l.mbid || null })),
         mediums: rel.mediums.map(m => ({ tracks: m.tracks.map(t => ({ title: t.title, isrc: t.isrc, url: t.url, credit: ac(t.credit) })) })),
     };
 }

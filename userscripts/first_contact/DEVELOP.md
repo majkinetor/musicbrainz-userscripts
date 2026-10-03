@@ -12,6 +12,13 @@ The handoff is on the release editor page for any script to read:
 
 It lists the release and every track with each artist's name, join phrase and platform link, in tracklist order. [Apollo Editor](../apollo_editor/README.md#artist-matching) reads it to match artists.
 
+Apollo knows nothing about any platform: the handoff (`v: 2`) tells it what it needs. A new provider therefore needs no change in Apollo.
+
+- `platform: { abbr, name, artistLinkType }` comes from the provider's own fields. `abbr` is the match badge (**DZ**), `name` is used in Apollo's log and edit notes, and `artistLinkType` is the artist link type Apollo seeds when it adds the link to an artist. Set `artistLinkType` only where MusicBrainz can't pick the type itself: it offers several types for Apple Music, Qobuz and Audiomack, and doesn't recognise Volumo or HDtracks.
+- `urlForms` is set on a link MusicBrainz may store in other forms, and lists all of them, the link itself first. It comes from the provider's `urlForms(url)`. Apple Music artists are stored under any storefront and without the slug, Amazon Music artists under any of its domains, and Qobuz artists also as `open.qobuz.com`. A provider without `urlForms` sends none, and Apollo looks the link up as it is.
+
+An older `v: 1` handoff has neither. Apollo still matches by the plain link, but shows a generic **link** badge and seeds no link type.
+
 It travels in the script's storage under `fc.handoff.<token>`, the token in the editor URL's `first_contact` parameter. The editor tab copies it to its `sessionStorage` (so a reload still finds it) and deletes it from the storage. MusicBrainz's *Continue* confirmation page loads at the same URL first, so it is taken only once `#release-editor` is there. One that is never picked up is pruned after an hour.
 
 ## How each platform is read
