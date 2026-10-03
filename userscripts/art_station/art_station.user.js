@@ -636,7 +636,7 @@
       wrap.dataset.mbCorner = 'br'; wrap.dataset.mbCornerOrder = '10';
       const sw = document.createElement('button'); sw.id = 'as-switch';
       sw.onclick = () => { _showOrig = !_showOrig; SETTINGS.showOrig = _showOrig; save(); render(); };
-      const gear = document.createElement('button'); gear.id = 'as-setup-btn'; gear.textContent = '⚙︎'; gear.title = 'Art Station setup';
+      const gear = document.createElement('button'); gear.id = 'as-setup-btn'; gear.textContent = MBU_CFG_ICON; gear.title = 'Art Station setup';
       gear.onclick = openSetup;
       wrap.append(sw, gear); document.body.appendChild(wrap);   // label left, gear right — one pill
       mbRestackCorner('br');

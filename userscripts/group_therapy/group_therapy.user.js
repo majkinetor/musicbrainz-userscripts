@@ -2129,7 +2129,7 @@
     c2r.title = 'Recordings → release: collect the recordings’ credits onto the release — a union across all tracks (shows the track range each covers)';
     c2r.type = 'button'; c2r.onclick = () => openRecToRel(c2r);
     vwrap.append(r2r, c2r); bar.appendChild(vwrap);
-    const cfg = el('button', 'gt-cfg-btn', '⚙'); cfg.type = 'button'; cfg.title = 'Group Therapy — options, about / help';
+    const cfg = el('button', 'gt-cfg-btn', MBU_CFG_ICON); cfg.type = 'button'; cfg.title = 'Group Therapy — options, about / help';
     cfg.onclick = () => openAboutPopover(cfg); bar.appendChild(cfg);
     // #372 the toolbar goes at the top of the tab (right after the entity tabs), not on the heading
     const tabs = content.querySelector(':scope > .tabs');

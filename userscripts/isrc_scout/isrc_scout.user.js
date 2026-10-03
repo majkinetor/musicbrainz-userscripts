@@ -3806,7 +3806,7 @@
                maximize stay in the header; name/version/Log/Help live in the
                config window. -->
           <button class="ii-hico" id="ii-bulk-toggle" type="button" title="Bulk / Export">▤</button>
-          <button class="ii-hico" id="ii-setup-toggle" type="button" title="Settings, log &amp; help">⚙︎</button>
+          <button class="ii-hico" id="ii-setup-toggle" type="button" title="Settings, log &amp; help">${MBU_CFG_ICON}</button>
           <button class="ii-hico" id="ii-maximize-toggle" type="button" title="Maximize">⛶</button>
         </div>
       </div>

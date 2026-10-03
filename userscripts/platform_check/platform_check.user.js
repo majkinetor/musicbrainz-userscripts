@@ -2071,7 +2071,7 @@ ${MBU_TOKENS}${MBU_UI_CSS}
   </div>
   <div style="display: flex; align-items: center; gap: 6px;">
     <span id="mb-log-open-btn"    class="pc-icon-btn" title="Diagnostic log" style="${iconBtn} font-size: 11px;">log</span>
-    <span id="mb-token-setup-btn" class="pc-icon-btn" title="Settings" style="${iconBtn}">⚙︎</span>
+    <span id="mb-token-setup-btn" class="pc-icon-btn" title="Settings" style="${iconBtn}">${MBU_CFG_ICON}</span>
   </div>
 </div>
 `;

@@ -3693,7 +3693,7 @@ function buildShell() {
         + '"><i style="background:' + TIER_COLORS[c] + '"></i>' + c + '</span>').join('');
     overlay.innerHTML = '<div class="fs-cons" id="fs-cons">'
         + '<div class="fs-hdr" id="fs-hdr"><div class="fs-title">' + ICON + ' Fusion — Merge Recordings</div><span class="fs-busy" id="fs-busy" style="display:none" title="open the activity log"></span><span class="fs-bgtask" id="fs-bgtask" style="display:none" title="open the activity log"></span><span class="fs-netbanner" id="fs-netbanner" style="display:none"></span><div class="fs-scope" id="fs-scope" title="open the activity log">…</div><div class="fs-sp"></div>'
-        + '<button class="fs-cons-x" id="fs-max" type="button" title="Maximize / restore">⛶</button><button class="fs-cons-x" id="fs-cfg" type="button" title="Fusion — options / log / help">⚙</button><button class="fs-cons-x" id="fs-close" type="button" title="Close">✕</button></div>'
+        + '<button class="fs-cons-x" id="fs-max" type="button" title="Maximize / restore">⛶</button><button class="fs-cons-x" id="fs-cfg" type="button" title="Fusion — options / log / help">' + MBU_CFG_ICON + '</button><button class="fs-cons-x" id="fs-close" type="button" title="Close">✕</button></div>'
         + '<div class="fs-ctrl"><select id="fs-rg-editions" style="display:none;"><option value="">+ Load recordings from RG edition ▾</option></select>'
         + '<input type="text" id="fs-add-input" placeholder="paste a recording, release, or release-group MBID|URL…" title="Paste an MBID or MusicBrainz URL — it is added automatically">'
         + '<div class="fs-sp"></div><div class="fs-legend">'

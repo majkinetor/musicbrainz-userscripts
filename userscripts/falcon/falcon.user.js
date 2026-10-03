@@ -5484,7 +5484,7 @@
         <button type="button" id="falcon-tab-queue" class="falcon-tab" style="background:none;border:none;color:#fff;cursor:pointer;font:inherit">Queue</button>
         <button type="button" id="falcon-tab-workers" class="falcon-tab" style="background:none;border:none;color:#fff;cursor:pointer;font:inherit">Workers</button>
         <button type="button" id="falcon-tab-log" class="falcon-tab" style="margin-right:14px;background:none;border:none;color:#fff;cursor:pointer;font:inherit">Log</button>
-        <button type="button" id="falcon-tab-options" class="falcon-tab" title="Options" style="background:none;border:none;color:#fff;cursor:pointer;font:inherit;font-size:14px">⚙</button>
+        <button type="button" id="falcon-tab-options" class="falcon-tab" title="Options" style="background:none;border:none;color:#fff;cursor:pointer;font:inherit;font-size:14px">${MBU_CFG_ICON}</button>
         <button type="button" id="falcon-maximize" title="Maximize" style="background:none;border:none;color:#fff;cursor:pointer;font:inherit;font-size:14px">⛶</button>
         <button type="button" id="falcon-close" style="background:none;border:none;color:#fff;cursor:pointer;font:inherit;font-size:14px">✕</button>
       </div>

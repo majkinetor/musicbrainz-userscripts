@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         String Theory
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.3.170542
+// @version      2026.10.3.171952
 // @description  Unified bundle of 8 MusicBrainz userscripts (apollo_editor, art_station, credit_hoarder, fusion, group_therapy, isrc_scout, mammoth, platform_check). Built by userscripts/string_theory/build.mjs — do not hand-edit.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCIgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0Ij4KICA8IS0tIGh1Yi1hbmQtc3Bva2UgIm5ldHdvcmsiIGdseXBoLCBzaW5nbGUgdml2aWQgdmlvbGV0IG9uIHRyYW5zcGFyZW50IHNvIGl0IHJlYWRzIG9uIGJvdGggZGFyayBhbmQgbGlnaHQgcGFnZXMgLS0+CiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjN2M1Y2ZmIiBzdHJva2Utd2lkdGg9IjQuNiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj4KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMzIgMTUiLz4KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMNDYuNSAyMy41Ii8+CiAgICA8cGF0aCBkPSJNMzIgMzIgTDQ2LjUgNDAuNSIvPgogICAgPHBhdGggZD0iTTMyIDMyIEwzMiA0OSIvPgogICAgPHBhdGggZD0iTTMyIDMyIEwxNy41IDQwLjUiLz4KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMTcuNSAyMy41Ii8+CiAgPC9nPgogIDxnIGZpbGw9IiM3YzVjZmYiPgogICAgPGNpcmNsZSBjeD0iMzIiIGN5PSIzMiIgcj0iOC42Ii8+CiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjE5LjUiIHI9IjYuNCIvPgogICAgPGNpcmNsZSBjeD0iNDkiIGN5PSIxOS41IiByPSI2LjQiLz4KICAgIDxjaXJjbGUgY3g9IjMyIiBjeT0iNTciIHI9IjYuNCIvPgogIDwvZz4KICA8ZyBmaWxsPSJub25lIiBzdHJva2U9IiM3YzVjZmYiIHN0cm9rZS13aWR0aD0iMy44Ij4KICAgIDxjaXJjbGUgY3g9IjMyIiBjeT0iNyIgcj0iNC45Ii8+CiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjQ0LjUiIHI9IjQuOSIvPgogICAgPGNpcmNsZSBjeD0iNDkiIGN5PSI0NC41IiByPSI0LjkiLz4KICA8L2c+Cjwvc3ZnPgo=
@@ -88,7 +88,7 @@
 // Bundles (verbatim, each wrapped in a run-at gate): apollo_editor, art_station, credit_hoarder, fusion, group_therapy, isrc_scout, mammoth, platform_check.
 
 try {
-  console.log('%c String Theory %c v2026.10.3.170542 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
+  console.log('%c String Theory %c v2026.10.3.171952 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
   console.log("String Theory bundles:\n  · Apollo Editor v2026.10.3.175216\n  · Art Station v2026.10.3.170825\n  · Credit Hoarder v2026.10.3.155734\n  · Fusion v2026.10.3\n  · Group Therapy v2026.10.3\n  · ISRC Scout v2026.10.3.175216\n  · Mammoth v2026.10.3\n  · Platform Check v2026.10.3.190540");
 } catch (e) {}
 
@@ -6281,7 +6281,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     m = document.createElement('div'); m.id = 'tc-menu'; m.className = 'tc-menu';
     m.innerHTML = off.map(t => `<div class="tc-mi" data-act="${t.act}"><span class="tc-mi-ic">${iconHtml(TD(t.act).icon)}</span>${esc(TD(t.act).label)}</div>`).join('')
       + (off.length ? '<div class="tc-sep"></div>' : '')
-      + '<div class="tc-mi tc-mi-cfg" data-act="__cfg"><span class="tc-mi-ic">⚙︎</span>Customize…</div>';
+      + '<div class="tc-mi tc-mi-cfg" data-act="__cfg"><span class="tc-mi-ic">' + MBU_CFG_ICON + '</span>Customize…</div>';
     document.body.appendChild(m);
     const r = anchor.getBoundingClientRect(), mw = m.offsetWidth, mh = m.offsetHeight;
     const below = r.bottom + 4, above = r.top - 4 - mh;
@@ -7105,7 +7105,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
       SETTINGS.apolloEnabled = !apolloEnabled(); saveSettings();
       applyView(); applyNav(); applyAnnotationPage();
     };
-    const gear = document.createElement('span'); gear.className = 'tc-launch-gear'; gear.textContent = '⚙︎'; gear.title = 'Apollo Editor settings';
+    const gear = document.createElement('span'); gear.className = 'tc-launch-gear'; gear.textContent = MBU_CFG_ICON; gear.title = 'Apollo Editor settings';
     gear.onclick = () => openSettings(gear);   // the one settings entry point — gear removed from the toolbars
     b.append(lbl, gear);
     document.body.appendChild(b); relabelLauncher();
@@ -11989,7 +11989,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
       wrap.dataset.mbCorner = 'br'; wrap.dataset.mbCornerOrder = '10';
       const sw = document.createElement('button'); sw.id = 'as-switch';
       sw.onclick = () => { _showOrig = !_showOrig; SETTINGS.showOrig = _showOrig; save(); render(); };
-      const gear = document.createElement('button'); gear.id = 'as-setup-btn'; gear.textContent = '⚙︎'; gear.title = 'Art Station setup';
+      const gear = document.createElement('button'); gear.id = 'as-setup-btn'; gear.textContent = MBU_CFG_ICON; gear.title = 'Art Station setup';
       gear.onclick = openSetup;
       wrap.append(sw, gear); document.body.appendChild(wrap);   // label left, gear right — one pill
       mbRestackCorner('br');
@@ -30442,7 +30442,7 @@ function buildShell() {
         + '"><i style="background:' + TIER_COLORS[c] + '"></i>' + c + '</span>').join('');
     overlay.innerHTML = '<div class="fs-cons" id="fs-cons">'
         + '<div class="fs-hdr" id="fs-hdr"><div class="fs-title">' + ICON + ' Fusion — Merge Recordings</div><span class="fs-busy" id="fs-busy" style="display:none" title="open the activity log"></span><span class="fs-bgtask" id="fs-bgtask" style="display:none" title="open the activity log"></span><span class="fs-netbanner" id="fs-netbanner" style="display:none"></span><div class="fs-scope" id="fs-scope" title="open the activity log">…</div><div class="fs-sp"></div>'
-        + '<button class="fs-cons-x" id="fs-max" type="button" title="Maximize / restore">⛶</button><button class="fs-cons-x" id="fs-cfg" type="button" title="Fusion — options / log / help">⚙</button><button class="fs-cons-x" id="fs-close" type="button" title="Close">✕</button></div>'
+        + '<button class="fs-cons-x" id="fs-max" type="button" title="Maximize / restore">⛶</button><button class="fs-cons-x" id="fs-cfg" type="button" title="Fusion — options / log / help">' + MBU_CFG_ICON + '</button><button class="fs-cons-x" id="fs-close" type="button" title="Close">✕</button></div>'
         + '<div class="fs-ctrl"><select id="fs-rg-editions" style="display:none;"><option value="">+ Load recordings from RG edition ▾</option></select>'
         + '<input type="text" id="fs-add-input" placeholder="paste a recording, release, or release-group MBID|URL…" title="Paste an MBID or MusicBrainz URL — it is added automatically">'
         + '<div class="fs-sp"></div><div class="fs-legend">'
@@ -32729,7 +32729,7 @@ try {
     c2r.title = 'Recordings → release: collect the recordings’ credits onto the release — a union across all tracks (shows the track range each covers)';
     c2r.type = 'button'; c2r.onclick = () => openRecToRel(c2r);
     vwrap.append(r2r, c2r); bar.appendChild(vwrap);
-    const cfg = el('button', 'gt-cfg-btn', '⚙'); cfg.type = 'button'; cfg.title = 'Group Therapy — options, about / help';
+    const cfg = el('button', 'gt-cfg-btn', MBU_CFG_ICON); cfg.type = 'button'; cfg.title = 'Group Therapy — options, about / help';
     cfg.onclick = () => openAboutPopover(cfg); bar.appendChild(cfg);
     // #372 the toolbar goes at the top of the tab (right after the entity tabs), not on the heading
     const tabs = content.querySelector(':scope > .tabs');
@@ -40528,7 +40528,7 @@ Created this ${kind} while adding credits parsed from text to ${relUrl}`;
                maximize stay in the header; name/version/Log/Help live in the
                config window. -->
           <button class="ii-hico" id="ii-bulk-toggle" type="button" title="Bulk / Export">▤</button>
-          <button class="ii-hico" id="ii-setup-toggle" type="button" title="Settings, log &amp; help">⚙︎</button>
+          <button class="ii-hico" id="ii-setup-toggle" type="button" title="Settings, log &amp; help">${MBU_CFG_ICON}</button>
           <button class="ii-hico" id="ii-maximize-toggle" type="button" title="Maximize">⛶</button>
         </div>
       </div>
@@ -45370,7 +45370,7 @@ Created this ${kind} while adding credits parsed from text to ${relUrl}`;
     inst.minBtn = fb('–', 'Minimize to corner', 'mmth-min-btn', () => { restoredFromMin = false; setMinimized(!SET.minimized); });   // #265: left of the ? button
     ft.appendChild(inst.minBtn);
     ft.appendChild(fb('?', 'Edit-note syntax', 'mmth-pop-anchor', e => openSyntax(e.currentTarget)));
-    ft.appendChild(fb('⚙︎', 'Settings', 'mmth-pop-anchor', e => openSettings(e.currentTarget)));
+    ft.appendChild(fb(MBU_CFG_ICON, 'Settings', 'mmth-pop-anchor', e => openSettings(e.currentTarget)));
     inst.tabs = { saved: bSaved, history: bHist };
 
     ta.addEventListener('keydown', e => {
@@ -48227,7 +48227,7 @@ ${MBU_TOKENS}${MBU_UI_CSS}
   </div>
   <div style="display: flex; align-items: center; gap: 6px;">
     <span id="mb-log-open-btn"    class="pc-icon-btn" title="Diagnostic log" style="${iconBtn} font-size: 11px;">log</span>
-    <span id="mb-token-setup-btn" class="pc-icon-btn" title="Settings" style="${iconBtn}">⚙︎</span>
+    <span id="mb-token-setup-btn" class="pc-icon-btn" title="Settings" style="${iconBtn}">${MBU_CFG_ICON}</span>
   </div>
 </div>
 `;

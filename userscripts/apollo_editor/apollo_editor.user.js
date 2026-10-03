@@ -6204,7 +6204,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     m = document.createElement('div'); m.id = 'tc-menu'; m.className = 'tc-menu';
     m.innerHTML = off.map(t => `<div class="tc-mi" data-act="${t.act}"><span class="tc-mi-ic">${iconHtml(TD(t.act).icon)}</span>${esc(TD(t.act).label)}</div>`).join('')
       + (off.length ? '<div class="tc-sep"></div>' : '')
-      + '<div class="tc-mi tc-mi-cfg" data-act="__cfg"><span class="tc-mi-ic">⚙︎</span>Customize…</div>';
+      + '<div class="tc-mi tc-mi-cfg" data-act="__cfg"><span class="tc-mi-ic">' + MBU_CFG_ICON + '</span>Customize…</div>';
     document.body.appendChild(m);
     const r = anchor.getBoundingClientRect(), mw = m.offsetWidth, mh = m.offsetHeight;
     const below = r.bottom + 4, above = r.top - 4 - mh;
@@ -7028,7 +7028,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
       SETTINGS.apolloEnabled = !apolloEnabled(); saveSettings();
       applyView(); applyNav(); applyAnnotationPage();
     };
-    const gear = document.createElement('span'); gear.className = 'tc-launch-gear'; gear.textContent = '⚙︎'; gear.title = 'Apollo Editor settings';
+    const gear = document.createElement('span'); gear.className = 'tc-launch-gear'; gear.textContent = MBU_CFG_ICON; gear.title = 'Apollo Editor settings';
     gear.onclick = () => openSettings(gear);   // the one settings entry point — gear removed from the toolbars
     b.append(lbl, gear);
     document.body.appendChild(b); relabelLauncher();
