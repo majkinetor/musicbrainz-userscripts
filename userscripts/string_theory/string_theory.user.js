@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         String Theory
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.3.024700
+// @version      2026.10.3.102325
 // @description  Unified bundle of 8 MusicBrainz userscripts (apollo_editor, art_station, credit_hoarder, fusion, group_therapy, isrc_scout, mammoth, platform_check). Built by userscripts/string_theory/build.mjs — do not hand-edit.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCIgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0Ij4KICA8IS0tIGh1Yi1hbmQtc3Bva2UgIm5ldHdvcmsiIGdseXBoLCBzaW5nbGUgdml2aWQgdmlvbGV0IG9uIHRyYW5zcGFyZW50IHNvIGl0IHJlYWRzIG9uIGJvdGggZGFyayBhbmQgbGlnaHQgcGFnZXMgLS0+CiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjN2M1Y2ZmIiBzdHJva2Utd2lkdGg9IjQuNiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj4KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMzIgMTUiLz4KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMNDYuNSAyMy41Ii8+CiAgICA8cGF0aCBkPSJNMzIgMzIgTDQ2LjUgNDAuNSIvPgogICAgPHBhdGggZD0iTTMyIDMyIEwzMiA0OSIvPgogICAgPHBhdGggZD0iTTMyIDMyIEwxNy41IDQwLjUiLz4KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMTcuNSAyMy41Ii8+CiAgPC9nPgogIDxnIGZpbGw9IiM3YzVjZmYiPgogICAgPGNpcmNsZSBjeD0iMzIiIGN5PSIzMiIgcj0iOC42Ii8+CiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjE5LjUiIHI9IjYuNCIvPgogICAgPGNpcmNsZSBjeD0iNDkiIGN5PSIxOS41IiByPSI2LjQiLz4KICAgIDxjaXJjbGUgY3g9IjMyIiBjeT0iNTciIHI9IjYuNCIvPgogIDwvZz4KICA8ZyBmaWxsPSJub25lIiBzdHJva2U9IiM3YzVjZmYiIHN0cm9rZS13aWR0aD0iMy44Ij4KICAgIDxjaXJjbGUgY3g9IjMyIiBjeT0iNyIgcj0iNC45Ii8+CiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjQ0LjUiIHI9IjQuOSIvPgogICAgPGNpcmNsZSBjeD0iNDkiIGN5PSI0NC41IiByPSI0LjkiLz4KICA8L2c+Cjwvc3ZnPgo=
@@ -84,8 +84,8 @@
 // Bundles (verbatim, each wrapped in a run-at gate): apollo_editor, art_station, credit_hoarder, fusion, group_therapy, isrc_scout, mammoth, platform_check.
 
 try {
-  console.log('%c String Theory %c v2026.10.3.024700 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
-  console.log("String Theory bundles:\n  · Apollo Editor v2026.10.3.024658\n  · Art Station v2026.10.2\n  · Credit Hoarder v2026.10.3.021241\n  · Fusion v2026.10.1.210938\n  · Group Therapy v2026.10.1.210938\n  · ISRC Scout v2026.10.2\n  · Mammoth v2026.10.1.210938\n  · Platform Check v2026.10.2.160007");
+  console.log('%c String Theory %c v2026.10.3.102325 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
+  console.log("String Theory bundles:\n  · Apollo Editor v2026.10.3.024658\n  · Art Station v2026.10.2\n  · Credit Hoarder v2026.10.3.021241\n  · Fusion v2026.10.1.210938\n  · Group Therapy v2026.10.3\n  · ISRC Scout v2026.10.2\n  · Mammoth v2026.10.1.210938\n  · Platform Check v2026.10.2.160007");
 } catch (e) {}
 
 // ===== apollo_editor (@run-at document-start) =====================================
@@ -30436,7 +30436,7 @@ try {
 
 // ===== group_therapy (@run-at document-end) =====================================
 (function(__stGM){
-  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Group Therapy*","namespace":"https://github.com/majkinetor/musicbrainz-userscripts","version":"2026.10.1.210938","description":"MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48ZyBmaWxsPSJub25lIiBzdHJva2U9IiM1YjZiN2EiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9Ijk0IiB5Mj0iNDIiLz48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48bGluZSB4MT0iOTQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48L2c+PGcgZmlsbD0iIzJlOWU1YiIgc3Ryb2tlPSIjMjU2ZjQzIiBzdHJva2Utd2lkdGg9IjQiPjxjaXJjbGUgY3g9IjM0IiBjeT0iNDIiIHI9IjE2Ii8+PGNpcmNsZSBjeD0iOTQiIGN5PSI0MiIgcj0iMTYiLz48Y2lyY2xlIGN4PSI2NCIgY3k9Ijk0IiByPSIxNiIvPjwvZz48L3N2Zz4="}) }) : { script: {"name":"Group Therapy*","namespace":"https://github.com/majkinetor/musicbrainz-userscripts","version":"2026.10.1.210938","description":"MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48ZyBmaWxsPSJub25lIiBzdHJva2U9IiM1YjZiN2EiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9Ijk0IiB5Mj0iNDIiLz48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48bGluZSB4MT0iOTQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48L2c+PGcgZmlsbD0iIzJlOWU1YiIgc3Ryb2tlPSIjMjU2ZjQzIiBzdHJva2Utd2lkdGg9IjQiPjxjaXJjbGUgY3g9IjM0IiBjeT0iNDIiIHI9IjE2Ii8+PGNpcmNsZSBjeD0iOTQiIGN5PSI0MiIgcj0iMTYiLz48Y2lyY2xlIGN4PSI2NCIgY3k9Ijk0IiByPSIxNiIvPjwvZz48L3N2Zz4="} };
+  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Group Therapy*","namespace":"https://github.com/majkinetor/musicbrainz-userscripts","version":"2026.10.3","description":"MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48ZyBmaWxsPSJub25lIiBzdHJva2U9IiM1YjZiN2EiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9Ijk0IiB5Mj0iNDIiLz48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48bGluZSB4MT0iOTQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48L2c+PGcgZmlsbD0iIzJlOWU1YiIgc3Ryb2tlPSIjMjU2ZjQzIiBzdHJva2Utd2lkdGg9IjQiPjxjaXJjbGUgY3g9IjM0IiBjeT0iNDIiIHI9IjE2Ii8+PGNpcmNsZSBjeD0iOTQiIGN5PSI0MiIgcj0iMTYiLz48Y2lyY2xlIGN4PSI2NCIgY3k9Ijk0IiByPSIxNiIvPjwvZz48L3N2Zz4="}) }) : { script: {"name":"Group Therapy*","namespace":"https://github.com/majkinetor/musicbrainz-userscripts","version":"2026.10.3","description":"MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48ZyBmaWxsPSJub25lIiBzdHJva2U9IiM1YjZiN2EiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9Ijk0IiB5Mj0iNDIiLz48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48bGluZSB4MT0iOTQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48L2c+PGcgZmlsbD0iIzJlOWU1YiIgc3Ryb2tlPSIjMjU2ZjQzIiBzdHJva2Utd2lkdGg9IjQiPjxjaXJjbGUgY3g9IjM0IiBjeT0iNDIiIHI9IjE2Ii8+PGNpcmNsZSBjeD0iOTQiIGN5PSI0MiIgcj0iMTYiLz48Y2lyY2xlIGN4PSI2NCIgY3k9Ijk0IiByPSIxNiIvPjwvZz48L3N2Zz4="} };
   (f=>document.readyState!=='loading'?f():document.addEventListener('DOMContentLoaded',f,{once:true}))(function(){ try { (function(){
 /* eslint-disable no-undef */
 (function () {
@@ -34796,7 +34796,31 @@ try {
       const fuzzy = cands.filter(c => txpRoleStem(c.name) === stem);
       return fuzzy.length === 1 ? { hit: fuzzy[0], tier: 2 } : null;
     }
+    // #666: "Guest Vocals", "Additional Guitar", "Co-Producer", "Executive
+    // Producer" — a leading qualifier is an ATTRIBUTE, not part of the role.
+    // Strip it, classify the rest, and add the qualifier as an extra attribute
+    // when the resolved link type allows it (e.g. "co" is fine on producer,
+    // not on writer). Anything else — no qualifier, the rest doesn't resolve,
+    // or the type doesn't take that qualifier — falls back to classifying the
+    // whole text exactly as before.
     function classifyRoleText(rt, artistCands, labelCands, instrumentLt, instrumentCands, placeCands) {
+      const fm = TXP_FLAG_RE.exec(rt || '');
+      if (fm) {
+        const flagId = txpFlagAttrId(fm[1]);
+        const base = flagId ? classifyBaseRole(fm[2], artistCands, labelCands, instrumentLt, instrumentCands, placeCands) : null;
+        const m = base && (base.instrumentMatch || (base.forced === 'artist' ? base.artistMatch : null));
+        if (m && txpLtAllowsAttr(m.id, flagId)) {
+          const ids = [...(m.attributeIds || (m.attributeId ? [m.attributeId] : [])), flagId];
+          const withFlag = { id: m.id, name: `${fm[1]} ${m.name}`, attributeIds: ids };
+          try { console.debug('[Group Therapy] #666 role qualifier:', JSON.stringify({ rt, flag: fm[1], flagId, lt: m.id, ids })); } catch (e) {}
+          return { artistMatch: null, labelMatch: null, placeMatch: null, instrumentMatch: withFlag, forced: 'artist' };
+        }
+        try { console.debug('[Group Therapy] #666 qualifier not applied:', JSON.stringify({ rt, flag: fm[1], flagId, base: m ? m.id : null })); } catch (e) {}
+      }
+      return classifyBaseRole(rt, artistCands, labelCands, instrumentLt, instrumentCands, placeCands);
+    }
+    function classifyBaseRole(rt, artistCands, labelCands, instrumentLt, instrumentCands, placeCands) {
+      rt = TXP_VOCAL_SYNONYMS[rt] || rt;   // #666: "backing vocals" → "background vocals"
       const a = txpMatchRoleText(artistCands, rt);
       const l = txpMatchRoleText(labelCands, rt);
       const pl = txpMatchRoleText(placeCands || [], rt);
@@ -34804,7 +34828,18 @@ try {
       const labelMatch = l ? l.hit : null;
       const placeMatch = pl ? pl.hit : null;
       let instrumentMatch = null;
-      if (!a && !l && instrumentLt) {
+      // #666: vocal types. "lead vocals" LOOSELY matches the bare "vocal" link
+      // type (it contains "vocal"), so a vocal-attribute hit wins over that
+      // loose/stem hit — never over an exact link-type match. Only tried when
+      // the text says "vocal", so "Tenor" / "Soprano" stay with the
+      // saxophones in the instrument vocabulary as before.
+      const vocalLt = artistCands.find(c => c.name === 'vocal');
+      if (vocalLt && /vocal/.test(rt) && (!a || (a.hit.id === vocalLt.id && a.tier > 0))) {
+        const vHit = txpMatchRoleText(txpVocalCandidates(), rt);
+        if (vHit) instrumentMatch = { id: vocalLt.id, name: vHit.hit.name, attributeId: vHit.hit.id };
+        try { console.debug('[Group Therapy] #666 vocal type:', JSON.stringify({ rt, hit: vHit ? vHit.hit : null })); } catch (e) {}
+      }
+      if (!instrumentMatch && !a && !l && instrumentLt) {
         const iHit = txpMatchRoleText(instrumentCands, rt);
         if (iHit) instrumentMatch = { id: instrumentLt.id, name: iHit.hit.name, attributeId: iHit.hit.id };
       }
@@ -35318,12 +35353,16 @@ try {
       // split). #525: label-pair roles are offered too (tagged "(label)"
       // in their description) — a manual pick from either list is the
       // ultimate override for a role classifyRoleText couldn't force.
-      const instrumentOpts = instrumentLt ? txpInstrumentCandidates().map(c => ({ id: c.id, name: c.name, desc: 'instrument', _instrument: true, _entityType: 'artist' })) : [];
+      const instrumentOpts = instrumentLt ? txpInstrumentCandidates().map(c => ({ id: c.id, name: c.name, desc: 'instrument', _instrument: true, _ltId: instrumentLt.id, _entityType: 'artist' })) : [];
+      // #666: vocal types the same way — the "vocal" link type plus that attribute
+      const vocalLt = artistCands.find(c => c.name === 'vocal');
+      const vocalOpts = vocalLt ? txpVocalCandidates().map(c => ({ id: c.id, name: c.name, desc: 'vocal', _instrument: true, _ltId: vocalLt.id, _entityType: 'artist' })) : [];
       const roles = [
         ...artistCands.map(c => ({ ...c, _entityType: 'artist' })),
         ...labelCands.map(c => ({ ...c, _entityType: 'label', desc: (c.desc ? c.desc + ' ' : '') + '(label)' })),
         // #525: place roles too — "recorded at", "mixed at", "mastered at" …
         ...linkTypesForPair('place', scopeTarget).map(c => ({ ...c, _entityType: 'place', desc: (c.desc ? c.desc + ' ' : '') + '(place)' })),
+        ...vocalOpts,
         ...instrumentOpts,
       ];
       // #522 follow-up (majkinetor, live): "when clicking search on a role,
@@ -35331,7 +35370,7 @@ try {
       // pre-fill/pre-filter with the parsed role text, same as the entity
       // popover already does with r.entity.
       openRolePicker(roles, `Pick a role for “${trunc(r.entity || r.raw, 40)}”`, picked => {
-        const resolved = picked._instrument ? { id: instrumentLt.id, name: picked.name, attributeId: picked.id } : { id: picked.id, name: picked.name };
+        const resolved = picked._instrument ? { id: picked._ltId, name: picked.name, attributeId: picked.id } : { id: picked.id, name: picked.name };
         roleCache.set((r.role || '').toLowerCase().trim(), {
           artistMatch: picked._entityType === 'artist' && !picked._instrument ? resolved : null,
           labelMatch: picked._entityType === 'label' ? resolved : null,
@@ -35689,8 +35728,10 @@ try {
         const dates = txpNoticeDatePeriod(r.year);   // #574: "in 2021", not "from 2021 to present"
         if (dates) dated++;
         // an instrument-role match carries an attributeId (the "instrument"
-        // link type doesn't say WHICH instrument on its own).
-        const attrs = r.roleMatch.attributeId ? buildAttrTree([{ typeID: r.roleMatch.attributeId, text_value: '', credited_as: '' }]) : null;
+        // link type doesn't say WHICH instrument on its own). #666: vocal-type
+        // and qualifier matches carry attributeIds (one or more) instead.
+        const attrIds = r.roleMatch.attributeIds || (r.roleMatch.attributeId ? [r.roleMatch.attributeId] : []);
+        const attrs = attrIds.length ? buildAttrTree(attrIds.map(id => ({ typeID: id, text_value: '', credited_as: '' }))) : null;
         for (const target of targetsFor(r)) {
           const k = keyFor(r, target);
           if (appliedKeys.has(k)) continue;
@@ -36088,14 +36129,43 @@ Created this ${kind} while adding credits parsed from text to ${relUrl}`;
   // type is also tried against this vocabulary — a hit becomes the
   // "instrument" link type PLUS that attribute, not a link type on its own.
   const INSTRUMENT_ATTR_ROOT = 14;
-  function txpInstrumentCandidates() {
+  // #666: vocal types ("lead vocals", "background vocals", "soprano vocals" …)
+  // are the same shape — the "vocal" link type plus an attribute from root 3
+  // (live-verified on the sandbox: 4 lead, 12 background, 13 choir, 461 other …).
+  const VOCAL_ATTR_ROOT = 3;
+  function txpAttrCandidates(root) {
     const lat = (W.MB && W.MB.linkedEntities && W.MB.linkedEntities.link_attribute_type) || {};
     const seen = new Set();
     return Object.values(lat)
-      .filter(a => a && a.root_id === INSTRUMENT_ATTR_ROOT && a.id !== INSTRUMENT_ATTR_ROOT)
+      .filter(a => a && a.root_id === root && a.id !== root)
       .filter(a => { if (seen.has(a.id)) return false; seen.add(a.id); return true; })
       .map(a => ({ id: a.id, name: a.name }))
       .sort((p, q) => p.name.localeCompare(q.name));
+  }
+  const txpInstrumentCandidates = () => txpAttrCandidates(INSTRUMENT_ATTR_ROOT);
+  const txpVocalCandidates = () => txpAttrCandidates(VOCAL_ATTR_ROOT);
+  // #666: liner-note wordings MB's vocal vocabulary doesn't use. Applied to the
+  // whole (lower-cased, flag-stripped) role text before matching.
+  const TXP_VOCAL_SYNONYMS = {
+    'backing vocals': 'background vocals', 'backing vocal': 'background vocals', 'backing vocalist': 'background vocals',
+    'backup vocals': 'background vocals', 'backup vocal': 'background vocals', 'background vocal': 'background vocals',
+    'background vocalist': 'background vocals', 'backing': 'background vocals',
+    'lead vocal': 'lead vocals', 'lead vocalist': 'lead vocals', 'lead singer': 'lead vocals',
+    'choir': 'choir vocals', 'spoken word': 'spoken vocals',
+  };
+  // #666: qualifier words that are ATTRIBUTES on many link types ("Guest
+  // Vocals", "Co-Producer", "Executive Producer"). Names, not ids, are the key —
+  // the id is looked up from MB's own table at runtime.
+  const TXP_FLAG_RE = /^(guest|additional|solo|co|executive|assistant|associate)(?:\s*-\s*|\s+)(.+)$/;
+  function txpFlagAttrId(name) {
+    const lat = (W.MB && W.MB.linkedEntities && W.MB.linkedEntities.link_attribute_type) || {};
+    const hit = Object.values(lat).find(a => a && a.id === a.root_id && a.name === name);
+    return hit ? hit.id : null;
+  }
+  // does link type `ltId` accept attribute `attrId`? (its `attributes` map is keyed by attribute id)
+  function txpLtAllowsAttr(ltId, attrId) {
+    const lt = W.MB && W.MB.linkedEntities && W.MB.linkedEntities.link_type && W.MB.linkedEntities.link_type[ltId];
+    return !!(lt && lt.attributes && (lt.attributes[attrId] || lt.attributes[String(attrId)]));
   }
 
   const ROLE_HIST_KEY = 'gt-role-history';
@@ -36340,7 +36410,7 @@ Created this ${kind} while adding credits parsed from text to ${relUrl}`;
       txpCreateNote,   // #544
       txpClearAnnotation, txpFetchAnnotationForm, txpClearAnnotationNote,   // #550
       txpSearchArtist, txpResolveByExactAlias, txpFetchEntity, txpFetchAnnotation, txpAnnoHtmlToText,
-      txpSearchLabel, txpResolveLabelByExactAlias, txpParseCopyrightLine, txpNoticeDatePeriod, txpNarrowByScore, txpInstrumentCandidates,
+      txpSearchLabel, txpResolveLabelByExactAlias, txpParseCopyrightLine, txpNoticeDatePeriod, txpNarrowByScore, txpInstrumentCandidates, txpVocalCandidates,
       txpSplitCompoundCopyrightLines,
     }; } catch (e) {}
     console.log('[Group Therapy] ' + mbuStartupInfo('Group Therapy'));
