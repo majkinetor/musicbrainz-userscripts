@@ -199,6 +199,14 @@ Pages: `audiomack.com/<artist>/album/<slug>`, `audiomack.com/<artist>/song/<slug
 
 First Contact doesn't pick MusicBrainz artists itself. It hands every credited artist's platform link (the release's and each track's) to [Apollo Editor](../apollo_editor/README.md#artist-matching) on the release editor page, and Apollo matches them. Other scripts can read the same [handoff](#handoff).
 
+Apollo links an artist only when the evidence is strong, trying the most certain source first:
+
+1. **Platform link.** The MusicBrainz artist already links the artist's page on the platform you imported from (or the release's Discogs artist). This is the most reliable match, and why First Contact passes the links on.
+2. **Other releases.** The same track on another release of the release group, or at the same position on its other editions, credits this artist.
+3. **Unique name.** Exactly one MusicBrainz artist has the credited name as its name or alias, or exactly one artist of that name is usually credited next to an artist already on this release.
+
+Anything less certain is left unlinked and offered as a candidate for you to confirm. A badge on each artist shows which stage linked it. When the artist exists but lacks the platform link, Apollo offers to add it, so the next import of that artist matches at once; when it doesn't exist, Apollo offers to create it with the link.
+
 ## Archive
 
 On every import, First Contact asks the Internet Archive's Wayback Machine to save the album page, so anyone can later check what the platform showed, even after the page changes or is gone. The edit note links the snapshot:
