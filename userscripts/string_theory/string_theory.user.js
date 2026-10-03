@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         String Theory
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.3.165651
+// @version      2026.10.3.170827
 // @description  Unified bundle of 8 MusicBrainz userscripts (apollo_editor, art_station, credit_hoarder, fusion, group_therapy, isrc_scout, mammoth, platform_check). Built by userscripts/string_theory/build.mjs — do not hand-edit.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCIgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0Ij4KICA8IS0tIGh1Yi1hbmQtc3Bva2UgIm5ldHdvcmsiIGdseXBoLCBzaW5nbGUgdml2aWQgdmlvbGV0IG9uIHRyYW5zcGFyZW50IHNvIGl0IHJlYWRzIG9uIGJvdGggZGFyayBhbmQgbGlnaHQgcGFnZXMgLS0+CiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjN2M1Y2ZmIiBzdHJva2Utd2lkdGg9IjQuNiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj4KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMzIgMTUiLz4KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMNDYuNSAyMy41Ii8+CiAgICA8cGF0aCBkPSJNMzIgMzIgTDQ2LjUgNDAuNSIvPgogICAgPHBhdGggZD0iTTMyIDMyIEwzMiA0OSIvPgogICAgPHBhdGggZD0iTTMyIDMyIEwxNy41IDQwLjUiLz4KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMTcuNSAyMy41Ii8+CiAgPC9nPgogIDxnIGZpbGw9IiM3YzVjZmYiPgogICAgPGNpcmNsZSBjeD0iMzIiIGN5PSIzMiIgcj0iOC42Ii8+CiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjE5LjUiIHI9IjYuNCIvPgogICAgPGNpcmNsZSBjeD0iNDkiIGN5PSIxOS41IiByPSI2LjQiLz4KICAgIDxjaXJjbGUgY3g9IjMyIiBjeT0iNTciIHI9IjYuNCIvPgogIDwvZz4KICA8ZyBmaWxsPSJub25lIiBzdHJva2U9IiM3YzVjZmYiIHN0cm9rZS13aWR0aD0iMy44Ij4KICAgIDxjaXJjbGUgY3g9IjMyIiBjeT0iNyIgcj0iNC45Ii8+CiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjQ0LjUiIHI9IjQuOSIvPgogICAgPGNpcmNsZSBjeD0iNDkiIGN5PSI0NC41IiByPSI0LjkiLz4KICA8L2c+Cjwvc3ZnPgo=
@@ -85,8 +85,8 @@
 // Bundles (verbatim, each wrapped in a run-at gate): apollo_editor, art_station, credit_hoarder, fusion, group_therapy, isrc_scout, mammoth, platform_check.
 
 try {
-  console.log('%c String Theory %c v2026.10.3.165651 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
-  console.log("String Theory bundles:\n  · Apollo Editor v2026.10.3.140041\n  · Art Station v2026.10.3.165649\n  · Credit Hoarder v2026.10.3\n  · Fusion v2026.10.3\n  · Group Therapy v2026.10.3\n  · ISRC Scout v2026.10.3.155213\n  · Mammoth v2026.10.3\n  · Platform Check v2026.10.3.135706");
+  console.log('%c String Theory %c v2026.10.3.170827 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
+  console.log("String Theory bundles:\n  · Apollo Editor v2026.10.3.140041\n  · Art Station v2026.10.3.170825\n  · Credit Hoarder v2026.10.3\n  · Fusion v2026.10.3\n  · Group Therapy v2026.10.3\n  · ISRC Scout v2026.10.3.155213\n  · Mammoth v2026.10.3\n  · Platform Check v2026.10.3.135706");
 } catch (e) {}
 
 // ===== apollo_editor (@run-at document-start) =====================================
@@ -11364,7 +11364,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
 
 // ===== art_station (@run-at document-start) =======================================
 (function(__stGM){
-  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Art Station*","namespace":"https://musicbrainz.org/","version":"2026.10.3.165649","description":"Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png"}) }) : { script: {"name":"Art Station*","namespace":"https://musicbrainz.org/","version":"2026.10.3.165649","description":"Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png"} };
+  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Art Station*","namespace":"https://musicbrainz.org/","version":"2026.10.3.170825","description":"Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png"}) }) : { script: {"name":"Art Station*","namespace":"https://musicbrainz.org/","version":"2026.10.3.170825","description":"Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png"} };
   (f=>f())(function(){ try { (function(){
 //
 // Phase-1 PoC. Principle: "you get what you see" — the gallery is the staged
@@ -14292,8 +14292,14 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
      screen it is reopened on. */
   const AS_DLG_SIZE_KEY = 'artstation:dialogSize';
   function asDlgSizes() { try { return JSON.parse(gmLoad(AS_DLG_SIZE_KEY) || '{}') || {}; } catch (e) { return {}; } }
+  /* #668 the commit dialog's operations went to two columns, which need its new wider
+     default. A size saved before that (#595) would keep reopening it in one cramped
+     column, so ("ignore any saved size", majkinetor) a saved size without the `m`
+     mark is ignored and the default applies; resizes from now on are remembered. */
+  const DLG_MIG = 668;
   function rememberDialogSize(box, kind) {
-    const saved = asDlgSizes()[kind];
+    let saved = asDlgSizes()[kind];
+    if (saved && saved.m !== DLG_MIG) { asLog.debug(`Dialog ${kind}: ignoring a size saved before #668 (${saved.w}x${saved.h})`); saved = null; }
     if (saved && saved.w > 0 && saved.h > 0) {
       box.style.width = Math.min(saved.w, Math.round(window.innerWidth * 0.94)) + 'px';
       box.style.height = Math.min(saved.h, Math.round(window.innerHeight * 0.88)) + 'px';
@@ -14316,7 +14322,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
         const w = parseFloat(box.style.width), h = parseFloat(box.style.height);
         if (!(w > 0) || !(h > 0)) return;
         const all = asDlgSizes();
-        all[kind] = { w: Math.round(w), h: Math.round(h) };
+        all[kind] = { w: Math.round(w), h: Math.round(h), m: DLG_MIG };
         gmSave(AS_DLG_SIZE_KEY, JSON.stringify(all));
       }).observe(box);
     } catch (e) { /* no ResizeObserver — the dialog just won't remember its size */ }
@@ -16367,7 +16373,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
      to grow into extra room cleanly — just needed resize turned on. overflow:hidden
      here is what CSS resize requires (any value other than visible), and min-*
      keeps it from being dragged down to something unusable. */
-  .as-cm-box{background:var(--mbu-bg);border-radius:12px;box-shadow:0 12px 50px rgba(0,0,0,.4);width:min(980px,94vw);container-type:inline-size;max-width:94vw;min-width:360px;max-height:88vh;min-height:220px;display:flex;flex-direction:column;padding:18px 20px;font:14px/1.4 var(--mbu-font);color:var(--mbu-text);resize:both;overflow:hidden}
+  .as-cm-box{background:var(--mbu-bg);border-radius:12px;box-shadow:0 12px 50px rgba(0,0,0,.4);width:min(680px,94vw);container-type:inline-size;max-width:94vw;min-width:360px;max-height:88vh;min-height:220px;display:flex;flex-direction:column;padding:18px 20px;font:14px/1.4 var(--mbu-font);color:var(--mbu-text);resize:both;overflow:hidden}
   .as-cm-h{font-size:16px;font-weight:700;color:var(--mbu-accent-deep-text);margin-bottom:12px;display:flex;align-items:center;gap:12px}
   .as-cm-h-t{flex:1;min-width:0}
   .as-cm-hist{flex:none;font-size:13px;font-weight:600;color:var(--mbu-accent-text);text-decoration:none;white-space:nowrap;padding:4px 12px;border:1px solid var(--mbu-accent);border-radius:8px;background:var(--mbu-bg)}
@@ -16417,6 +16423,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
   /* #668 second variant (majkinetor): two columns of rows in a wider dialog, so a batch
      shows twice as many covers and a failed row's error has room. Narrowed below
      ~640px (a resize, or a small screen) it is one column again. */
+  #as-commit .as-cm-box{width:min(980px,94vw)}   /* #668 room for two columns; the report dialog keeps 680 */
   .as-cm-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));align-content:start;column-gap:8px}
   @container (max-width:640px){.as-cm-list{grid-template-columns:minmax(0,1fr)}}
   .as-cm-op.dry{background:var(--mbu-bg-hover)}.as-cm-op.err{background:var(--mbu-bg-hover)}

@@ -78,3 +78,24 @@ test('the edit note is folded, rows carry a cover, and Dry run lives in the Subm
   await attachShot(testInfo, page.locator('#as-commit .as-cm-box'), 'after-dry-run');
   check(!posts.some(u => /edit-cover-art|ws\/js\/edit/.test(u)), `nothing was submitted (${posts.length} POSTs, all aborted)`);
 });
+
+// "make sure default size is large enough to fit 2 cols … ignore any saved size": a
+// size remembered before the two-column layout (#595) must not reopen it narrow.
+test.describe('a dialog size saved before #668', () => {
+  test.use({ gm: { name: 'Art Station', values: { 'artstation:dialogSize': JSON.stringify({ commit: { w: 520, h: 420 } }) } } });
+  test('is ignored, and the dialog opens wide enough for two columns', { tag: ['@sandbox'] }, async ({ page, inject }) => {
+    await openArtStation(page, inject);
+    const idx = await page.evaluate(() => [...document.querySelectorAll('.as-card')].findIndex(c => c.querySelector('.as-pencil')));
+    const card = page.locator('.as-card').nth(idx);
+    await card.locator('.as-pencil').click();
+    await card.locator('.as-cmt').fill('as668size-' + Date.now());
+    await card.locator('.as-cmt').blur();
+    check(await until(() => page.evaluate(() => !document.querySelector('.as-commit').disabled)), 'a staged change enables the commit button');
+    await page.click('.as-commit');
+    await page.waitForSelector('#as-commit .as-cm-box', { timeout: 10000 });
+    const w = await page.evaluate(() => Math.round(document.querySelector('#as-commit .as-cm-box').getBoundingClientRect().width));
+    check(w > 900, `the old 520px is ignored (${w}px)`);
+    const cols = await page.evaluate(() => getComputedStyle(document.querySelector('#as-commit .as-cm-list')).gridTemplateColumns.split(' ').length);
+    check(cols === 2, `two columns (${cols})`);
+  });
+});

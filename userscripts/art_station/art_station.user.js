@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Art Station
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.3.165649
+// @version      2026.10.3.170825
 // @description  Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png
@@ -2943,8 +2943,14 @@
      screen it is reopened on. */
   const AS_DLG_SIZE_KEY = 'artstation:dialogSize';
   function asDlgSizes() { try { return JSON.parse(gmLoad(AS_DLG_SIZE_KEY) || '{}') || {}; } catch (e) { return {}; } }
+  /* #668 the commit dialog's operations went to two columns, which need its new wider
+     default. A size saved before that (#595) would keep reopening it in one cramped
+     column, so ("ignore any saved size", majkinetor) a saved size without the `m`
+     mark is ignored and the default applies; resizes from now on are remembered. */
+  const DLG_MIG = 668;
   function rememberDialogSize(box, kind) {
-    const saved = asDlgSizes()[kind];
+    let saved = asDlgSizes()[kind];
+    if (saved && saved.m !== DLG_MIG) { asLog.debug(`Dialog ${kind}: ignoring a size saved before #668 (${saved.w}x${saved.h})`); saved = null; }
     if (saved && saved.w > 0 && saved.h > 0) {
       box.style.width = Math.min(saved.w, Math.round(window.innerWidth * 0.94)) + 'px';
       box.style.height = Math.min(saved.h, Math.round(window.innerHeight * 0.88)) + 'px';
@@ -2967,7 +2973,7 @@
         const w = parseFloat(box.style.width), h = parseFloat(box.style.height);
         if (!(w > 0) || !(h > 0)) return;
         const all = asDlgSizes();
-        all[kind] = { w: Math.round(w), h: Math.round(h) };
+        all[kind] = { w: Math.round(w), h: Math.round(h), m: DLG_MIG };
         gmSave(AS_DLG_SIZE_KEY, JSON.stringify(all));
       }).observe(box);
     } catch (e) { /* no ResizeObserver — the dialog just won't remember its size */ }
@@ -5018,7 +5024,7 @@
      to grow into extra room cleanly — just needed resize turned on. overflow:hidden
      here is what CSS resize requires (any value other than visible), and min-*
      keeps it from being dragged down to something unusable. */
-  .as-cm-box{background:var(--mbu-bg);border-radius:12px;box-shadow:0 12px 50px rgba(0,0,0,.4);width:min(980px,94vw);container-type:inline-size;max-width:94vw;min-width:360px;max-height:88vh;min-height:220px;display:flex;flex-direction:column;padding:18px 20px;font:14px/1.4 var(--mbu-font);color:var(--mbu-text);resize:both;overflow:hidden}
+  .as-cm-box{background:var(--mbu-bg);border-radius:12px;box-shadow:0 12px 50px rgba(0,0,0,.4);width:min(680px,94vw);container-type:inline-size;max-width:94vw;min-width:360px;max-height:88vh;min-height:220px;display:flex;flex-direction:column;padding:18px 20px;font:14px/1.4 var(--mbu-font);color:var(--mbu-text);resize:both;overflow:hidden}
   .as-cm-h{font-size:16px;font-weight:700;color:var(--mbu-accent-deep-text);margin-bottom:12px;display:flex;align-items:center;gap:12px}
   .as-cm-h-t{flex:1;min-width:0}
   .as-cm-hist{flex:none;font-size:13px;font-weight:600;color:var(--mbu-accent-text);text-decoration:none;white-space:nowrap;padding:4px 12px;border:1px solid var(--mbu-accent);border-radius:8px;background:var(--mbu-bg)}
@@ -5068,6 +5074,7 @@
   /* #668 second variant (majkinetor): two columns of rows in a wider dialog, so a batch
      shows twice as many covers and a failed row's error has room. Narrowed below
      ~640px (a resize, or a small screen) it is one column again. */
+  #as-commit .as-cm-box{width:min(980px,94vw)}   /* #668 room for two columns; the report dialog keeps 680 */
   .as-cm-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));align-content:start;column-gap:8px}
   @container (max-width:640px){.as-cm-list{grid-template-columns:minmax(0,1fr)}}
   .as-cm-op.dry{background:var(--mbu-bg-hover)}.as-cm-op.err{background:var(--mbu-bg-hover)}
