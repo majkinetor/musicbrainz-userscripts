@@ -15,7 +15,7 @@ Finds a MusicBrainz release on the streaming and store platforms, checks each ma
 - **[Link confidence](#link-confidence)**: a match with a different barcode or format is a different release, and is not added.
 - **[Adding links](#adding-links)** to the release, one or all, in the foreground or in the background.
 - **Open all found**: every confirmed platform page not yet in MusicBrainz, each in a tab (plus the Discogs master). Mind the pop-up blocker.
-- **[Pasting a barcode](#pasting-a-barcode)** on a release that has none: the platforms are checked against it, and an added link adds it too.
+- **[Pasting a barcode](#pasting-a-barcode)** on a release that has none, or picking one the platforms report: the platforms are checked against it, and an added link adds it too.
 - **[Artists and labels](#artists-and-labels)**: the artist and label pages the matched albums name, added to the release's MusicBrainz artists and labels through [Falcon](../falcon/README.md).
 - A **log** with a filter per platform.
 
@@ -79,6 +79,8 @@ A release without a barcode can borrow one: copy it (from the cover, a store pag
 - A link added from the panel (icon or **+**, in the foreground or the background) puts the barcode on the release too, in the same edit, and the edit note says so.
 - It stays with the release, across reloads, until it's removed or the release has a barcode of its own.
 - A release that already has a barcode refuses the paste, with an error.
+
+The matched platforms often show a barcode the release lacks. On a release without one, a dashed barcode button next to ↻ counts the barcodes they report. Click it for the list: each barcode with the platforms that report it, the ones in this release's format (physical or digital) first. A barcode from another format, or with a wrong check digit, is marked ⚠. Click one to use it as if you pasted it; right-click to copy it.
 - Accepted: 8, 12, 13 or 14 digits, spaces and dashes allowed. A wrong check digit is used anyway, with a warning; MusicBrainz then asks you to confirm it in the editor.
 
 ## Artists and labels

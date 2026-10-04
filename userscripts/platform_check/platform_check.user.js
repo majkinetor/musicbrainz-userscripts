@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Platform Check
 // @namespace    http://tampermonkey.net/
-// @version      2026.10.4.180000
+// @version      2026.10.4.180500
 // @description  Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+DQogIDx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CiAgDQogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJhMWE1MiIgc3Ryb2tlLXdpZHRoPSI5IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik00MCA4OCBBMzQgMzQgMCAwIDEgNDAgNDAiLz4NCiAgICA8cGF0aCBkPSJNMjkgOTkgQTUwIDUwIDAgMCAxIDI5IDI5Ii8+DQogICAgPHBhdGggZD0iTTg4IDg4IEEzNCAzNCAwIDAgMCA4OCA0MCIvPg0KICAgIDxwYXRoIGQ9Ik05OSA5OSBBNTAgNTAgMCAwIDAgOTkgMjkiLz4NCiAgPC9nPg0KICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyMCIgZmlsbD0iI2U4MjAxYSIvPg0KPC9zdmc+DQo=
@@ -1907,6 +1907,19 @@ ${MBU_TOKENS}${MBU_UI_CSS}
   #sidebar .online-search-box a img[src*="external"] { display: none !important; }
   .online-search-box .pc-icon-btn:hover { background: var(--mbu-bg-sunken); color: var(--mbu-text); }
   #mb-links-btn.pc-links-on { color: var(--mbu-text); }
+  /* #674: the barcodes the platforms report, on a release that has none */
+  #mb-found-bc { border: 1px dashed currentColor; color: var(--mbu-accent-text); padding: 1px 5px; }
+  #pc-bc-pop { position: fixed; z-index: var(--mbu-z-pop); width: 250px; padding: 6px; background: var(--mbu-bg); color: var(--mbu-text); border: 1px solid var(--mbu-border); border-radius: var(--mbu-radius); box-shadow: var(--mbu-shadow-lg); font: 12px var(--mbu-font); }
+  #pc-bc-pop .pc-bc-h { margin: 0 4px 4px; font-size: 10px; font-weight: 700; letter-spacing: .4px; text-transform: uppercase; color: var(--mbu-text-dim); }
+  #pc-bc-pop .pc-bc-opt { display: grid; grid-template-columns: 1fr auto; gap: 2px 8px; padding: 5px 6px; border-radius: var(--mbu-radius); cursor: pointer; }
+  #pc-bc-pop .pc-bc-opt:hover { background: var(--mbu-bg-hover); }
+  #pc-bc-pop .pc-bc-code { font: 12px var(--mbu-font-mono); }
+  #pc-bc-pop .pc-bc-use { font-size: 11px; color: var(--mbu-accent-text); }
+  #pc-bc-pop .pc-bc-who, #pc-bc-pop .pc-bc-fmt { grid-column: 1 / -1; font-size: 11px; color: var(--mbu-text-weak); }
+  #pc-bc-pop .pc-bc-plat svg { vertical-align: -2px; margin-right: 2px; }
+  #pc-bc-pop .pc-bc-same { color: var(--mbu-ok); }
+  #pc-bc-pop .pc-bc-other { color: var(--mbu-warn); }
+  #pc-bc-pop .pc-bc-hint { margin: 4px 4px 0; padding-top: 5px; border-top: 1px solid var(--mbu-divider); font-size: 11px; color: var(--mbu-text-weak); }
   #mb-links-btn .pc-links-n { display: inline-block; min-width: 16px; margin-left: 4px; padding: 1px 5px; border-radius: 8px; background: var(--mbu-accent); color: var(--mbu-accent-fg); font-size: 10px; font-weight: 700; line-height: 1.3; text-align: center; vertical-align: 1px; }
   /* icons mode (toggle "Show platform icons"): the brand glyph REPLACES the ✓/×/~ text and carries the
    * state via a per-row class (pc-st-*): RING = already in MB (the only thing a ring means) · full colour =
@@ -2099,6 +2112,7 @@ ${MBU_TOKENS}${MBU_UI_CSS}
       <h3 style="margin: 0; font-size: 12px; font-weight: bold; text-transform: uppercase; letter-spacing: 0.5px; color: var(--mbu-text-dim);">Platform Check</h3>
       <span id="mb-refresh-btn" class="pc-icon-btn" title="Refresh — clear cache and re-scan" style="${iconBtn}">↻</span>
       <span id="mb-pasted-bc" class="pc-icon-btn" title="" style="${iconBtn} display: none; font-size: 10px; white-space: nowrap;"></span>
+      <span id="mb-found-bc" class="pc-icon-btn" title="" style="${iconBtn} display: none; font-size: 10px; white-space: nowrap;"></span>
     </div>
   </div>
 </div>
@@ -2978,6 +2992,8 @@ async function beatportApi(path) {
 let MB_BARCODE = null;
 // #673: the release's own barcode, without one pasted on the page (MB_BARCODE has that too)
 let MB_OWN_BARCODE = null;
+// #674: platform → { code, format } for each match that reports a barcode
+const PC_FOUND_BC = new Map();
 // Normalise a barcode for comparison: digits only, leading zeros stripped (a
 // 12-digit UPC-A and its 13-digit EAN form "0…" are the same barcode).
 function normBarcode(b) { return String(b || '').replace(/\D/g, '').replace(/^0+/, ''); }
@@ -3110,6 +3126,7 @@ function updateRow(p, { url, mbTracks, remoteTracks, year, label, source, fromCa
     // Format incompatibility (#182) — only marked when the option is on, since
     // "digital link on a physical release" is common enough to be noise otherwise.
     const fmtDiff = !!(url && GM_getValue('pc:respect-format', true) && formatMismatch(p, format));
+    pcNoteFoundBarcode(p, url ? barcode : null, format);   // #674
 
     // Source-on-hover: tooltip on the provider name. "via MB rels", "via
     // Wikidata", "via API search · cached", etc. Replaces the visible badge
@@ -6348,6 +6365,8 @@ function resetRows() {
         wireRowOpen(p);
     }
     refreshCompactStrip();   // #355: clear the strip while re-scanning
+    PC_FOUND_BC.clear();     // #674
+    pcShowFoundBarcodes();
 }
 
 // VA detection used by both the DOM and API parse paths. Hoisted so both
@@ -7389,6 +7408,87 @@ function pcShowPastedBarcode(code) {
     chip.style.display = code ? '' : 'none';
     chip.textContent = code ? `${code} ×` : '';
     chip.title = code ? `Pasted barcode ${code}: the platforms are checked against it, and a link you add adds it to the release too · click to remove it` : '';
+    pcShowFoundBarcodes();   // #674: the found ones give way to the pasted one
+}
+
+// ─── Found barcodes (#674) ──────────────────────────────────────────────────
+// The barcodes the matched platforms report, offered on a release that has none: a
+// button next to ↻ opens a list of them, and picking one is the same as pasting it.
+// updateRow records each platform's (PC_FOUND_BC); resetRows clears them.
+function pcNoteFoundBarcode(p, barcode, format) {
+    const code = barcode && (pcBarcodeOf(String(barcode)) || pcBarcodeOf(normBarcode(barcode).padStart(12, '0')));
+    if (code) PC_FOUND_BC.set(p, { code, format: format || null }); else PC_FOUND_BC.delete(p);
+    pcShowFoundBarcodes();
+}
+// One entry per barcode (UPC-A and its EAN-13 form are one), the platforms that report
+// it, and how its format sits with the release's (physical or digital, as link confidence
+// sees it): 'same' when one of them is in a format the release has, 'other' when every one
+// is in a format it hasn't, else 'unknown'. The ones in the release's format first, then
+// the most reported.
+function pcFoundBarcodes() {
+    const mbCats = formatCategories(MB_FORMAT);
+    const by = new Map();
+    for (const p of PROVIDER_ORDER) {
+        const f = PC_FOUND_BC.get(p); if (!f) continue;
+        const k = normBarcode(f.code);
+        if (!by.has(k)) by.set(k, { code: f.code, platforms: [], fits: [], kinds: new Set() });
+        const e = by.get(k);
+        e.platforms.push(p);
+        const remote = remoteFormatCategories(p, f.format);
+        remote.forEach(x => e.kinds.add(x));
+        e.fits.push(!mbCats.size || !remote.size ? null : [...remote].some(x => mbCats.has(x)));
+    }
+    const rank = { same: 0, unknown: 1, other: 2 };
+    return [...by.values()].map(e => ({
+        code: e.code, platforms: e.platforms, kinds: [...e.kinds],
+        format: e.fits.includes(true) ? 'same' : e.fits.length && e.fits.every(x => x === false) ? 'other' : 'unknown',
+    })).sort((a, b) => rank[a.format] - rank[b.format] || b.platforms.length - a.platforms.length);
+}
+const PC_BARCODE_SVG = '<svg width="13" height="9" viewBox="0 0 13 9" fill="currentColor" style="vertical-align: -1px;"><rect x="0" width="1.4" height="9"/><rect x="2.4" width="0.8" height="9"/><rect x="4.2" width="1.8" height="9"/><rect x="7" width="0.8" height="9"/><rect x="8.8" width="1.4" height="9"/><rect x="11.2" width="0.8" height="9"/><rect x="12.2" width="0.8" height="9"/></svg>';
+function pcShowFoundBarcodes() {
+    const btn = document.getElementById('mb-found-bc');
+    if (!btn) return;
+    const list = MB_OWN_BARCODE || pcPastedBarcode() ? [] : pcFoundBarcodes();
+    btn.style.display = list.length ? '' : 'none';
+    btn.innerHTML = mbuHtml(list.length ? `${PC_BARCODE_SVG} ${list.length}` : '');
+    btn.title = list.length === 1
+        ? `The release has no barcode; ${list[0].platforms.map(p => PROVIDER_NAME[p]).join(', ')} report${list[0].platforms.length === 1 ? 's' : ''} ${list[0].code} · click to choose`
+        : list.length ? `The release has no barcode; the platforms report ${list.length} different ones · click to choose` : '';
+    if (!list.length) document.getElementById('pc-bc-pop')?._pcClose?.();
+}
+function pcOpenFoundBarcodes(btn) {
+    const old = document.getElementById('pc-bc-pop');
+    if (old) { old._pcClose(); return; }
+    const list = pcFoundBarcodes();
+    if (!list.length) return;
+    const mbKind = [...formatCategories(MB_FORMAT)].join(' and ');
+    const pop = document.createElement('div');
+    pop.id = 'pc-bc-pop';
+    pop.innerHTML = mbuHtml(`<div class="pc-bc-h">Barcodes on the platforms</div>` + list.map(c => `
+      <div class="pc-bc-opt" data-code="${c.code}" title="Use ${c.code} as if it were pasted · right-click: copy it">
+        <span class="pc-bc-code">${c.code}</span><span class="pc-bc-use">use</span>
+        <span class="pc-bc-who">${c.platforms.map(p => `<span class="pc-bc-plat" title="${PROVIDER_NAME[p]}">${stIcon(p, 12)}</span>`).join('')} ${c.platforms.map(p => PROVIDER_NAME[p]).join(', ')}</span>
+        ${c.format === 'same' ? `<span class="pc-bc-fmt pc-bc-same">✓ ${mbKind}, like this release</span>`
+          : c.format === 'other' ? `<span class="pc-bc-fmt pc-bc-other">⚠ ${c.kinds.join(' and ')}: this release is ${mbKind}</span>` : ''}
+        ${pcGtinValid(c.code) ? '' : '<span class="pc-bc-fmt pc-bc-other">⚠ wrong check digit</span>'}
+      </div>`).join('') + `<div class="pc-bc-hint">Right-click to copy · Ctrl+V a barcode from anywhere else</div>`);
+    document.body.appendChild(pop);
+    const r = btn.getBoundingClientRect();
+    pop.style.top = `${r.bottom + 4}px`;
+    pop.style.left = `${Math.max(8, Math.min(r.left, window.innerWidth - pop.offsetWidth - 8))}px`;
+    const off = mbuDismissOn(pop, () => pop.remove(), { ignore: '#mb-found-bc' });
+    pop._pcClose = off;
+    pop.addEventListener('click', e => {
+        const opt = e.target.closest('.pc-bc-opt'); if (!opt) return;
+        off();
+        pcPasteBarcode(opt.dataset.code);
+    });
+    pop.addEventListener('contextmenu', e => {
+        const opt = e.target.closest('.pc-bc-opt'); if (!opt) return;
+        e.preventDefault();
+        navigator.clipboard.writeText(opt.dataset.code)
+            .then(() => mbuToast(`Copied ${opt.dataset.code}`), () => mbuToast(`✗ Couldn't copy ${opt.dataset.code}`, { kind: 'error' }));
+    });
 }
 // A pasted text that is a barcode: EAN-8, UPC-A, EAN-13 or GTIN-14, spaces and dashes allowed
 function pcBarcodeOf(text) {
@@ -7417,7 +7517,7 @@ function pcPasteBarcode(code) {
         return;
     }
     if (document.getElementById('mb-refresh-btn')?.classList.contains('pc-scanning')) {
-        mbuToast(`⚠ Platform Check is still scanning — paste the barcode again when it's done`, { kind: 'warn' });
+        mbuToast(`⚠ Platform Check is still scanning — try the barcode again when it's done`, { kind: 'warn' });
         return;
     }
     if (pcPastedBarcode() === code) { mbuToast(`Barcode ${code} is already in use`); return; }
@@ -7437,6 +7537,7 @@ document.addEventListener('paste', e => {
         pcPasteBarcode(code);
     } catch (err) { appendLog('System', `Paste: ${err && err.message}`, 'warn'); }
 });
+document.getElementById('mb-found-bc').addEventListener('click', e => pcOpenFoundBarcodes(e.currentTarget));
 document.getElementById('mb-pasted-bc').addEventListener('click', () => {
     const code = pcPastedBarcode();
     pcSetPastedBarcode(null);
