@@ -49,7 +49,7 @@ test("#512: followup fixes", { tag: ['@sandbox', '@login'] }, async ({ context, 
     const log = await page.evaluate(() => window.__falconTest.getLog());
     console.log('log after a fresh seed on a new page:', JSON.stringify(log));
     ck(!log.some(l => l.includes('an old, unrelated run')), 'the old, unrelated session\'s lines are NOT present in the new page\'s log');
-    ck(log.some(l => /=== session .* started \(seeded 1 item/.test(l)), 'a fresh seed starts its own new session, logged as such');
+    ck(log.some(l => /=== session .* started \(seeded from the falcon= URL param/.test(l)), 'a fresh seed starts its own new session, logged as such');
     ck(errs.length === 0, 'no page errors: ' + JSON.stringify(errs.slice(0, 3)));
   }
 

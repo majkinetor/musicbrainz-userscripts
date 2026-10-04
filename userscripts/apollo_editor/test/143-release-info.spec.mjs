@@ -1,8 +1,7 @@
 // Apollo's Release information view (#143), from majkinetor's review of it.
 //
-// Focusing an entity field (release group, label) shows a small popover holding the
-//   link to the selected entity — the help the native layout gave and Apollo's had lost;
-//   a plain field (barcode) shows none.
+// Focusing a field shows no help bubble, an entity field (release group) included: its
+//   badge says what is linked (#652 took the "You selected …" popover away).
 // An oversized favicon (Discogs's) stays inside its cell; checkbox labels are not bold;
 //   switching Apollo → Original leaves no native bubble floating mispositioned.
 // Dated relationships take two cells, not the whole row, so several dated types share a
@@ -21,7 +20,7 @@ async function releaseInfo(page) {
   await frames(page);
 }
 
-test('an entity field shows its link when focused', { tag: ['@sandbox', '@login'] }, async ({ page, inject }) => {
+test('a focused field shows no help bubble, an entity field included', { tag: ['@sandbox', '@login'] }, async ({ page, inject }) => {
   await openApollo(page, inject, { release: '51bdb849-5dfc-40c0-9fcb-f49fe7395cc7' });
   await releaseInfo(page);
   const focus = re => page.evaluate(async src => {
@@ -31,13 +30,13 @@ test('an entity field shows its link when focused', { tag: ['@sandbox', '@login'
     if (!f) return null;
     f.focus();
     await new Promise(z => setTimeout(z, 250));
-    const p = document.getElementById('tc-ri-help');
-    return { on: !!(p && p.classList.contains('on')), links: p ? [...p.querySelectorAll('a')].map(a => a.getAttribute('href') || '') : [] };
+    const shown = [...document.querySelectorAll('#tc-ri-help, #information .bubble')].filter(b => b.offsetParent !== null);
+    return { shown: shown.map(b => (b.textContent || '').trim().slice(0, 60)) };
   }, re.source);
-  const rg = await focus(/release group/);
-  check(rg && rg.on && rg.links.some(h => /\/release-group\/[0-9a-f-]{36}/.test(h)), `release group: a popover with its link (${JSON.stringify(rg)})`);
-  const bc = await focus(/barcode/);
-  check(bc && !bc.on, 'barcode: none');
+  for (const [name, re] of [['release group', /release group/], ['barcode', /barcode/]]) {
+    const r = await focus(re);
+    check(r && r.shown.length === 0, `${name}: no bubble (${JSON.stringify(r)})`);
+  }
 });
 
 test("the favicon fits, checkbox labels aren't bold, and switching leaves no stray bubble", { tag: ['@cosmetic', '@sandbox', '@login'] }, async ({ page, inject }) => {

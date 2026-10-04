@@ -53,7 +53,7 @@ test('a pos card names a duplicate-search release as such', { tag: ['@sandbox', 
     const A = window.__apolloEditor;
     return { dup: text(A.matchCardHtml(slot([ed('dup')]))), rg: text(A.matchCardHtml(slot([ed('rg')]))), mixed: text(A.matchCardHtml(slot([ed('rg'), ed('dup')]))) };
   });
-  check(/on 1 of 1 release:/.test(html.dup) && /Not in this release group: found by the duplicate search/.test(html.dup), `only a duplicate: "release", and where it came from (${html.dup.slice(0, 260)})`);
+  check(/on 1 of 1 release:/.test(html.dup) && /Not in this release group: found by Apollo's own duplicate search/.test(html.dup), `only a duplicate: "release", and where it came from (${html.dup.slice(0, 260)})`);
   check(/on 1 of 1 other edition:/.test(html.rg) && !/duplicate search/.test(html.rg), `a release-group edition: as before (${html.rg.slice(0, 160)})`);
   check(/Marked ⧉/.test(html.mixed) && /⧉ African Pearls/.test(html.mixed), `both: the duplicate is marked (${html.mixed.slice(0, 260)})`);
 });
