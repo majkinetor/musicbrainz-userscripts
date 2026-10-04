@@ -21,7 +21,7 @@ Finds a MusicBrainz release on the streaming and store platforms, checks each ma
 
 ## Dashboard
 
-A link already in the release's relationships is used as is. Otherwise each platform is searched: by barcode first, then the platform's own search, Wikidata, and a web search. The platform's details are fetched and shown next to MusicBrainz's, and the result is cached until you press ↻.
+A link already in the release's relationships is used as is. Otherwise each platform is searched: by barcode first, then the platform's own search, Wikidata, and a web search. The platform's details are fetched and shown next to MusicBrainz's, and the result is cached until you press ↻. While the platforms are searched, ↻ spins; click it to stop, which leaves the ones not done yet unchecked.
 
 | Icon and name |                                                                                                                                    |
 | ------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
@@ -80,7 +80,7 @@ A release without a barcode can borrow one: copy it (from the cover, a store pag
 - It stays with the release, across reloads, until it's removed or the release has a barcode of its own.
 - A release that already has a barcode refuses the paste, with an error.
 
-The matched platforms often show a barcode the release lacks. On a release without one, a dashed barcode button next to ↻ counts the barcodes they report. Click it for the list: each barcode with the platforms that report it, the ones in this release's format (physical or digital) first. A barcode from another format, or with a wrong check digit, is marked ⚠. Click one to use it as if you pasted it; right-click to copy it.
+The matched platforms often show a barcode the release lacks. On a release without one, a dashed barcode button next to ↻ counts the barcodes they report. Click it for the list: each barcode with the platforms that report it, the ones in this release's format (physical or digital) first. A barcode from another format, with a wrong check digit, or already on another MusicBrainz release (most likely that edition's) is marked ⚠, the last with a link to that release. Click one to use it as if you pasted it; right-click to copy it. A barcode picked or pasted while the platforms are still being searched stops that search and starts over with it.
 - Accepted: 8, 12, 13 or 14 digits, spaces and dashes allowed. A wrong check digit is used anyway, with a warning; MusicBrainz then asks you to confirm it in the editor.
 
 ## Artists and labels

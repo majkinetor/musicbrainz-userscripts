@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         String Theory
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.4.161816
+// @version      2026.10.4.165616
 // @description  Unified bundle of 8 MusicBrainz userscripts (apollo_editor, art_station, credit_hoarder, fusion, group_therapy, isrc_scout, mammoth, platform_check). Built by userscripts/string_theory/build.mjs — do not hand-edit.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCIgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0Ij4KICA8IS0tIGh1Yi1hbmQtc3Bva2UgIm5ldHdvcmsiIGdseXBoLCBzaW5nbGUgdml2aWQgdmlvbGV0IG9uIHRyYW5zcGFyZW50IHNvIGl0IHJlYWRzIG9uIGJvdGggZGFyayBhbmQgbGlnaHQgcGFnZXMgLS0+CiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjN2M1Y2ZmIiBzdHJva2Utd2lkdGg9IjQuNiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj4KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMzIgMTUiLz4KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMNDYuNSAyMy41Ii8+CiAgICA8cGF0aCBkPSJNMzIgMzIgTDQ2LjUgNDAuNSIvPgogICAgPHBhdGggZD0iTTMyIDMyIEwzMiA0OSIvPgogICAgPHBhdGggZD0iTTMyIDMyIEwxNy41IDQwLjUiLz4KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMTcuNSAyMy41Ii8+CiAgPC9nPgogIDxnIGZpbGw9IiM3YzVjZmYiPgogICAgPGNpcmNsZSBjeD0iMzIiIGN5PSIzMiIgcj0iOC42Ii8+CiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjE5LjUiIHI9IjYuNCIvPgogICAgPGNpcmNsZSBjeD0iNDkiIGN5PSIxOS41IiByPSI2LjQiLz4KICAgIDxjaXJjbGUgY3g9IjMyIiBjeT0iNTciIHI9IjYuNCIvPgogIDwvZz4KICA8ZyBmaWxsPSJub25lIiBzdHJva2U9IiM3YzVjZmYiIHN0cm9rZS13aWR0aD0iMy44Ij4KICAgIDxjaXJjbGUgY3g9IjMyIiBjeT0iNyIgcj0iNC45Ii8+CiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjQ0LjUiIHI9IjQuOSIvPgogICAgPGNpcmNsZSBjeD0iNDkiIGN5PSI0NC41IiByPSI0LjkiLz4KICA8L2c+Cjwvc3ZnPgo=
@@ -88,8 +88,8 @@
 // Bundles (verbatim, each wrapped in a run-at gate): apollo_editor, art_station, credit_hoarder, fusion, group_therapy, isrc_scout, mammoth, platform_check.
 
 try {
-  console.log('%c String Theory %c v2026.10.4.161816 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
-  console.log("String Theory bundles:\n  · Apollo Editor v2026.10.4.130000\n  · Art Station v2026.10.4\n  · Credit Hoarder v2026.10.4\n  · Fusion v2026.10.4\n  · Group Therapy v2026.10.4\n  · ISRC Scout v2026.10.4\n  · Mammoth v2026.10.4\n  · Platform Check v2026.10.4.180500");
+  console.log('%c String Theory %c v2026.10.4.165616 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
+  console.log("String Theory bundles:\n  · Apollo Editor v2026.10.4.130000\n  · Art Station v2026.10.4\n  · Credit Hoarder v2026.10.4\n  · Fusion v2026.10.4\n  · Group Therapy v2026.10.4\n  · ISRC Scout v2026.10.4\n  · Mammoth v2026.10.4\n  · Platform Check v2026.10.4.181500");
 } catch (e) {}
 
 // ===== apollo_editor (@run-at document-start) =====================================
@@ -46220,7 +46220,7 @@ Created this ${kind} while adding credits parsed from text to ${relUrl}`;
 
 // ===== platform_check (@run-at document-end) ====================================
 (function(__stGM){
-  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Platform Check*","namespace":"http://tampermonkey.net/","version":"2026.10.4.180500","description":"Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/platform_check/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+DQogIDx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CiAgDQogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJhMWE1MiIgc3Ryb2tlLXdpZHRoPSI5IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik00MCA4OCBBMzQgMzQgMCAwIDEgNDAgNDAiLz4NCiAgICA8cGF0aCBkPSJNMjkgOTkgQTUwIDUwIDAgMCAxIDI5IDI5Ii8+DQogICAgPHBhdGggZD0iTTg4IDg4IEEzNCAzNCAwIDAgMCA4OCA0MCIvPg0KICAgIDxwYXRoIGQ9Ik05OSA5OSBBNTAgNTAgMCAwIDAgOTkgMjkiLz4NCiAgPC9nPg0KICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyMCIgZmlsbD0iI2U4MjAxYSIvPg0KPC9zdmc+DQo="}) }) : { script: {"name":"Platform Check*","namespace":"http://tampermonkey.net/","version":"2026.10.4.180500","description":"Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/platform_check/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+DQogIDx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CiAgDQogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJhMWE1MiIgc3Ryb2tlLXdpZHRoPSI5IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik00MCA4OCBBMzQgMzQgMCAwIDEgNDAgNDAiLz4NCiAgICA8cGF0aCBkPSJNMjkgOTkgQTUwIDUwIDAgMCAxIDI5IDI5Ii8+DQogICAgPHBhdGggZD0iTTg4IDg4IEEzNCAzNCAwIDAgMCA4OCA0MCIvPg0KICAgIDxwYXRoIGQ9Ik05OSA5OSBBNTAgNTAgMCAwIDAgOTkgMjkiLz4NCiAgPC9nPg0KICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyMCIgZmlsbD0iI2U4MjAxYSIvPg0KPC9zdmc+DQo="} };
+  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Platform Check*","namespace":"http://tampermonkey.net/","version":"2026.10.4.181500","description":"Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/platform_check/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+DQogIDx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CiAgDQogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJhMWE1MiIgc3Ryb2tlLXdpZHRoPSI5IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik00MCA4OCBBMzQgMzQgMCAwIDEgNDAgNDAiLz4NCiAgICA8cGF0aCBkPSJNMjkgOTkgQTUwIDUwIDAgMCAxIDI5IDI5Ii8+DQogICAgPHBhdGggZD0iTTg4IDg4IEEzNCAzNCAwIDAgMCA4OCA0MCIvPg0KICAgIDxwYXRoIGQ9Ik05OSA5OSBBNTAgNTAgMCAwIDAgOTkgMjkiLz4NCiAgPC9nPg0KICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyMCIgZmlsbD0iI2U4MjAxYSIvPg0KPC9zdmc+DQo="}) }) : { script: {"name":"Platform Check*","namespace":"http://tampermonkey.net/","version":"2026.10.4.181500","description":"Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/platform_check/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+DQogIDx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CiAgDQogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJhMWE1MiIgc3Ryb2tlLXdpZHRoPSI5IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik00MCA4OCBBMzQgMzQgMCAwIDEgNDAgNDAiLz4NCiAgICA8cGF0aCBkPSJNMjkgOTkgQTUwIDUwIDAgMCAxIDI5IDI5Ii8+DQogICAgPHBhdGggZD0iTTg4IDg4IEEzNCAzNCAwIDAgMCA4OCA0MCIvPg0KICAgIDxwYXRoIGQ9Ik05OSA5OSBBNTAgNTAgMCAwIDAgOTkgMjkiLz4NCiAgPC9nPg0KICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyMCIgZmlsbD0iI2U4MjAxYSIvPg0KPC9zdmc+DQo="} };
   (f=>document.readyState!=='loading'?f():document.addEventListener('DOMContentLoaded',f,{once:true}))(function(){ try { (function(){
 (function () {
 'use strict';
@@ -48093,6 +48093,7 @@ ${MBU_TOKENS}${MBU_UI_CSS}
   #pc-bc-pop .pc-bc-plat svg { vertical-align: -2px; margin-right: 2px; }
   #pc-bc-pop .pc-bc-same { color: var(--mbu-ok); }
   #pc-bc-pop .pc-bc-other { color: var(--mbu-warn); }
+  #pc-bc-pop .pc-bc-mb a { color: inherit; text-decoration: underline; }
   #pc-bc-pop .pc-bc-hint { margin: 4px 4px 0; padding-top: 5px; border-top: 1px solid var(--mbu-divider); font-size: 11px; color: var(--mbu-text-weak); }
   #mb-links-btn .pc-links-n { display: inline-block; min-width: 16px; margin-left: 4px; padding: 1px 5px; border-radius: 8px; background: var(--mbu-accent); color: var(--mbu-accent-fg); font-size: 10px; font-weight: 700; line-height: 1.3; text-align: center; vertical-align: 1px; }
   /* icons mode (toggle "Show platform icons"): the brand glyph REPLACES the ✓/×/~ text and carries the
@@ -48140,10 +48141,10 @@ ${MBU_TOKENS}${MBU_UI_CSS}
      the panel doesn't jump/flash as results stream in. */
   @keyframes pcRise { from { opacity: 0; transform: translateY(-3px); } to { opacity: 1; transform: none; } }
   #mb-pc-panel .pc-row.pc-rise { animation: pcRise .28s ease; }
-  /* (#422) the ↻ refresh button doubles as the progress indicator: it spins (and is
-     unclickable) while scans run; the scan duration lands in its tooltip afterwards */
+  /* (#422) the ↻ refresh button doubles as the progress indicator: it spins while scans
+     run (a click stops them, #674); the scan duration lands in its tooltip afterwards */
   @keyframes pcSpin { to { transform: rotate(360deg); } }
-  #mb-refresh-btn.pc-scanning { display: inline-block; animation: pcSpin 1s linear infinite; pointer-events: none; color: var(--mbu-info); }
+  #mb-refresh-btn.pc-scanning { display: inline-block; animation: pcSpin 1s linear infinite; color: var(--mbu-info); }
   /* barcode mismatch (#182): a thin amber bar on the row's left edge — the barcode
      itself is never shown in the dash, only in the row tooltip + the log. */
   #mb-pc-panel .pc-row.pc-barcode-diff { box-shadow: inset 3px 0 0 #e0892a; }
@@ -48919,16 +48920,43 @@ appendLog('System', mbuStartupInfo('Platform Check') + ' — startup');
 // MusicBrainz's /ws/2 goes through the shared request gate (#633): its slot first, and its
 // hold after a 429/503 (one retry, which waits the hold out); everything else goes straight.
 const pcGateLog = (lv, m) => appendLog('MusicBrainz', m, lv === 'warn' ? 'warn' : undefined);
+// A cancelled scan (#674: a barcode picked or pasted mid-scan) is dropped where it waits: every
+// request it has in flight is aborted and never answers, so the scan's code never runs on to
+// write a row the next scan owns. A request is the scan's when it was made while one ran; it
+// carries that scan's number (PC_SCAN.n), and one made after the cancel by a scan still on its
+// way to the network (behind the MusicBrainz gate) is never sent.
+const PC_SCAN = { n: 0, busy: false, live: new Set() };
+const pcScanOf = () => (PC_SCAN.busy ? PC_SCAN.n : null);
+const pcStale = n => n != null && n !== PC_SCAN.n;
+function pcCancelScan() {
+    PC_SCAN.n++;
+    PC_SCAN.live.forEach(req => { try { req.abort(); } catch (e) {} });
+    PC_SCAN.live.clear();
+    // what the scans share would wait on a dropped request for good: asked again instead
+    // (a token or session already fetched stays: _appleTok, _sdKey; Amazon's is asked again)
+    _appleTokP = null; _sdKeyP = null; _amzSession = null;
+    searchChain = Promise.resolve();
+}
+// GM_xmlhttpRequest for a scan's request: resolve() is never called once the scan is cancelled
+function pcGmRequest(opts, resolve, n) {
+    if (pcStale(n)) return;
+    let req = null;
+    const done = f => (...a) => { PC_SCAN.live.delete(req); if (!pcStale(n)) resolve(f(...a)); };
+    opts.onload = done(opts.onload); opts.onerror = done(opts.onerror); opts.ontimeout = done(opts.ontimeout);
+    req = GM_xmlhttpRequest(opts);
+    if (n != null && req && req.abort) PC_SCAN.live.add(req);
+}
 async function gmGet(url, o) {
     if (!mbnGated(url)) return gmGetRaw(url, o);
+    const n = o && 'scan' in o ? o.scan : pcScanOf();   // { scan: null }: not a scan's, never dropped
     for (let attempt = 1; ; attempt++) {
         await mbnSlot({ label: '/ws/2/' + url.split('/ws/2/').pop(), log: pcGateLog });
-        const r = await gmGetRaw(url, o);
+        const r = await gmGetRaw(url, { ...o, scan: n });
         const a = await mbnAnswer(r.status, n => mbnRawHeader(r.responseHeaders, n), { log: pcGateLog });
         if (!a.throttled || attempt >= 2) return r;
     }
 }
-function gmGetRaw(url, { responseType, headers, timeout = 15000, anonymous } = {}) {
+function gmGetRaw(url, { responseType, headers, timeout = 15000, anonymous, scan = pcScanOf() } = {}) {
     return new Promise((resolve) => {
         const t0 = Date.now();
         const opts = {
@@ -48945,31 +48973,32 @@ function gmGetRaw(url, { responseType, headers, timeout = 15000, anonymous } = {
             timeout,
             onload(res) {
                 const ms = Date.now() - t0;
-                resolve({ ok: res.status >= 200 && res.status < 400, status: res.status, finalUrl: res.finalUrl || url, responseText: res.responseText || '', responseHeaders: res.responseHeaders || '', ms });
+                return { ok: res.status >= 200 && res.status < 400, status: res.status, finalUrl: res.finalUrl || url, responseText: res.responseText || '', responseHeaders: res.responseHeaders || '', ms };
             },
-            onerror(err)  { resolve({ ok: false, status: 0, finalUrl: url, responseText: '', error: String(err?.error || err?.statusText || err), ms: Date.now() - t0 }); },
-            ontimeout()   { resolve({ ok: false, status: 0, finalUrl: url, responseText: '', error: 'timeout', ms: Date.now() - t0 }); },
+            onerror(err)  { return { ok: false, status: 0, finalUrl: url, responseText: '', error: String(err?.error || err?.statusText || err), ms: Date.now() - t0 }; },
+            ontimeout()   { return { ok: false, status: 0, finalUrl: url, responseText: '', error: 'timeout', ms: Date.now() - t0 }; },
         };
         if (responseType) opts.responseType = responseType;
         if (anonymous) opts.anonymous = true;   // omit the browser's ambient cookies
-        GM_xmlhttpRequest(opts);
+        pcGmRequest(opts, resolve, scan);
     });
 }
 
 // POST counterpart of gmGet, used for the Tidal client-credentials token grant.
 function gmPost(url, data, { headers, timeout = 15000, anonymous } = {}) {
+    const scan = pcScanOf();
     return new Promise((resolve) => {
         const t0 = Date.now();
         const opts = {
             method: 'POST', url, data,
             headers: { 'Accept-Language': 'en-US,en;q=0.9', ...headers },
             timeout,
-            onload(res)  { resolve({ ok: res.status >= 200 && res.status < 400, status: res.status, finalUrl: res.finalUrl || url, responseText: res.responseText || '', responseHeaders: res.responseHeaders || '', ms: Date.now() - t0 }); },
-            onerror(err) { resolve({ ok: false, status: 0, responseText: '', error: String(err?.error || err?.statusText || err), ms: Date.now() - t0 }); },
-            ontimeout()  { resolve({ ok: false, status: 0, responseText: '', error: 'timeout', ms: Date.now() - t0 }); },
+            onload(res)  { return { ok: res.status >= 200 && res.status < 400, status: res.status, finalUrl: res.finalUrl || url, responseText: res.responseText || '', responseHeaders: res.responseHeaders || '', ms: Date.now() - t0 }; },
+            onerror(err) { return { ok: false, status: 0, responseText: '', error: String(err?.error || err?.statusText || err), ms: Date.now() - t0 }; },
+            ontimeout()  { return { ok: false, status: 0, responseText: '', error: 'timeout', ms: Date.now() - t0 }; },
         };
         if (anonymous) opts.anonymous = true;
-        GM_xmlhttpRequest(opts);
+        pcGmRequest(opts, resolve, scan);
     });
 }
 
@@ -52866,23 +52895,29 @@ function parseMbData(data) {
 }
 
 // (#422, per maintainer review) the ↻ button ITSELF is the progress indicator — it spins
-// and can't be clicked while scans run (no separate icon, no ticking seconds, no end-state
-// noise); the total scan time goes into the button's tooltip when done.
+// while scans run (no separate icon, no ticking seconds, no end-state noise), and a click
+// then stops them (#674); the total scan time goes into the button's tooltip when done.
 let _scanT0 = 0;
 const REFRESH_TITLE = 'Refresh — clear cache and re-scan';
 function setScanStatus(state) {
     const btn = document.getElementById('mb-refresh-btn'); if (!btn) return;
-    if (state === 'busy') { _scanT0 = Date.now(); btn.classList.add('pc-scanning'); btn.title = 'Scanning platforms…'; return; }
+    if (state === 'busy') { _scanT0 = Date.now(); btn.classList.add('pc-scanning'); btn.title = 'Scanning platforms… · click to stop'; return; }
     btn.classList.remove('pc-scanning');
     const secs = ((Date.now() - _scanT0) / 1000).toFixed(1);
-    btn.title = state === 'done' ? `${REFRESH_TITLE} (last scan: ${secs}s)` : `${REFRESH_TITLE} (last scan halted — see the log)`;
+    btn.title = state === 'done' ? `${REFRESH_TITLE} (last scan: ${secs}s)`
+        : state === 'stopped' ? `${REFRESH_TITLE} (last scan stopped after ${secs}s)` : `${REFRESH_TITLE} (last scan halted — see the log)`;
 }
 async function runScans() {
     // (#422) thin status wrapper — the scan body lives in runScansInner; `false` = halted.
+    // A scan cancelled by pcCancelScan (#674) never gets here past its await: the next one owns the status.
+    const n = PC_SCAN.n;
+    PC_SCAN.busy = true;
     setScanStatus('busy');
     let ok = false;
     try { ok = await runScansInner() !== false; }
     catch (e) { appendLog('System', `Scan failed: ${e && e.message}`, 'error'); }
+    if (pcStale(n)) return;
+    PC_SCAN.busy = false;
     setScanStatus(ok ? 'done' : 'halt');
 }
 async function runScansInner() {
@@ -53550,7 +53585,14 @@ async function pcOpenLinksTable(btn) {
 document.getElementById('mb-links-btn').addEventListener('click', e => pcOpenLinksTable(e.currentTarget));
 
 // ↻ REFRESH button: clear cached URLs for this MBID, blank the rows, re-run.
-document.getElementById('mb-refresh-btn').addEventListener('click', () => pcRescan('Refresh requested'));
+// ↻ while it spins: stop the scan (#674) — what it found stays, the platforms still out are left unchecked
+document.getElementById('mb-refresh-btn').addEventListener('click', () => {
+    if (!PC_SCAN.busy) { pcRescan('Refresh requested'); return; }
+    pcCancelScan();
+    PC_SCAN.busy = false;
+    setScanStatus('stopped');
+    appendLog('System', 'Scan stopped — the platforms not done yet are left unchecked (↻ scans again)', 'warn');
+});
 
 // ─── Pasted barcode (#673) ──────────────────────────────────────────────────
 // Ctrl+V of a barcode anywhere on a release page that has none: the platforms are
@@ -53630,6 +53672,25 @@ function pcShowFoundBarcodes() {
         : list.length ? `The release has no barcode; the platforms report ${list.length} different ones · click to choose` : '';
     if (!list.length) document.getElementById('pc-bc-pop')?._pcClose?.();
 }
+// The MusicBrainz releases that already have this barcode, other than this one: [{ id, title,
+// format, date }], [] for none, null when the search failed. Asked once per barcode per page;
+// not a scan's request, so stopping a scan never leaves it waiting.
+const PC_BC_ON_MB = new Map();
+function pcBarcodeOnMb(code) {
+    if (!PC_BC_ON_MB.has(code)) PC_BC_ON_MB.set(code, (async () => {
+        const n = normBarcode(code);
+        const forms = [...new Set([code, n, n.padStart(12, '0'), n.padStart(13, '0')])].filter(f => f.length >= 8);
+        const r = await gmGet(`${MB_ORIGIN}/ws/2/release?query=${encodeURIComponent(`barcode:(${forms.join(' OR ')})`)}&limit=10&fmt=json`, { headers: { Accept: 'application/json' }, scan: null });
+        let j = null; try { j = JSON.parse(r.responseText); } catch (e) {}
+        if (!r.ok || !j) { appendLog('MusicBrainz', `Barcode ${code}: search failed (HTTP ${r.status})`, 'warn'); PC_BC_ON_MB.delete(code); return null; }
+        const on = (j.releases || []).filter(x => x.id !== mbid && normBarcode(x.barcode) === n)
+            .map(x => ({ id: x.id, title: x.title || '', date: x.date || '', format: [...new Set((x.media || []).map(m => m.format).filter(Boolean))].join(' + ') }));
+        appendLog('MusicBrainz', `Barcode ${code}: ${on.length ? 'already on ' + on.map(x => x.id).join(', ') : 'on no other release'}`);
+        return on;
+    })());
+    return PC_BC_ON_MB.get(code);
+}
+const pcEsc = t => String(t).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
 function pcOpenFoundBarcodes(btn) {
     const old = document.getElementById('pc-bc-pop');
     if (old) { old._pcClose(); return; }
@@ -53645,6 +53706,7 @@ function pcOpenFoundBarcodes(btn) {
         ${c.format === 'same' ? `<span class="pc-bc-fmt pc-bc-same">✓ ${mbKind}, like this release</span>`
           : c.format === 'other' ? `<span class="pc-bc-fmt pc-bc-other">⚠ ${c.kinds.join(' and ')}: this release is ${mbKind}</span>` : ''}
         ${pcGtinValid(c.code) ? '' : '<span class="pc-bc-fmt pc-bc-other">⚠ wrong check digit</span>'}
+        <span class="pc-bc-fmt pc-bc-mb">checking MusicBrainz…</span>
       </div>`).join('') + `<div class="pc-bc-hint">Right-click to copy · Ctrl+V a barcode from anywhere else</div>`);
     document.body.appendChild(pop);
     const r = btn.getBoundingClientRect();
@@ -53652,7 +53714,18 @@ function pcOpenFoundBarcodes(btn) {
     pop.style.left = `${Math.max(8, Math.min(r.left, window.innerWidth - pop.offsetWidth - 8))}px`;
     const off = mbuDismissOn(pop, () => pop.remove(), { ignore: '#mb-found-bc' });
     pop._pcClose = off;
+    // #674: a barcode already on another release is most likely that release's, not this one's
+    pop.querySelectorAll('.pc-bc-opt').forEach(opt => pcBarcodeOnMb(opt.dataset.code).then(on => {
+        const line = opt.querySelector('.pc-bc-mb'); if (!line) return;
+        if (on === null) { line.textContent = "couldn't check MusicBrainz"; return; }
+        if (!on.length) { line.remove(); return; }
+        const r = on[0], more = on.length > 1 ? ` and ${on.length - 1} more` : '';
+        line.classList.add('pc-bc-other');
+        line.innerHTML = mbuHtml(`⚠ already on <a href="${MB_ORIGIN}/release/${r.id}" target="_blank" rel="noopener" title="${pcEsc([r.format, r.date].filter(Boolean).join(' · '))}">${pcEsc(r.title)}</a>${more}`);
+        opt.title = `${opt.dataset.code} is already on another MusicBrainz release — probably that edition's, not this one's · click to use it anyway · right-click: copy it`;
+    }));
     pop.addEventListener('click', e => {
+        if (e.target.closest('a')) return;   // the release it is already on: opened, not picked
         const opt = e.target.closest('.pc-bc-opt'); if (!opt) return;
         off();
         pcPasteBarcode(opt.dataset.code);
@@ -53679,6 +53752,8 @@ function pcGtinValid(code) {
     return (10 - sum % 10) % 10 === check;
 }
 function pcRescan(why) {
+    // #674: a scan still running was for the barcode before: it is dropped, not waited for
+    if (PC_SCAN.busy) { pcCancelScan(); appendLog('System', `${why} — the scan running is cancelled`, 'warn'); }
     appendLog('System', `${why} — clearing cache for ${mbid}`, 'warn');
     cacheClear(mbid);
     resetRows();
@@ -53688,10 +53763,6 @@ function pcPasteBarcode(code) {
     if (MB_OWN_BARCODE) {
         mbuToast(`✗ This release already has a barcode (${MB_OWN_BARCODE})`, { kind: 'error' });
         appendLog('System', `Pasted barcode ${code}: the release already has ${MB_OWN_BARCODE} — not used`, 'warn');
-        return;
-    }
-    if (document.getElementById('mb-refresh-btn')?.classList.contains('pc-scanning')) {
-        mbuToast(`⚠ Platform Check is still scanning — try the barcode again when it's done`, { kind: 'warn' });
         return;
     }
     if (pcPastedBarcode() === code) { mbuToast(`Barcode ${code} is already in use`); return; }
