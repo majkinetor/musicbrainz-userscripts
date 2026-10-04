@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Falcon — bulk MusicBrainz link editor
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.4.140000
+// @version      2026.10.4.170000
 // @description  Add external links to a BATCH of MusicBrainz artists/labels/recordings at once — no popup-per-entity, no tab churn. A small pool of persistent worker iframes churns through a queue, each submitting its own edit and moving straight to the next entity. Paste a list, hand it a queue via a `?falcon=` URL param, or click "Send to Falcon" on a Harmony actions page to import its suggested links directly.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHBhdGggZD0iTTY0IDEwIEM4MiAyOCA5MCA1NiA5MCA4MCBMMzggODAgQzM4IDU2IDQ2IDI4IDY0IDEwIFoiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzFiMmE0YSIgc3Ryb2tlLXdpZHRoPSI3IiBzdHJva2UtbGluZWpvaW49InJvdW5kIiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8cGF0aCBkPSJNMzggODAgTDIwIDExMCBMNDAgOTYgWiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxwYXRoIGQ9Ik05MCA4MCBMMTA4IDExMCBMODggOTYgWiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxjaXJjbGUgY3g9IjY0IiBjeT0iNDQiIHI9IjEwIiBmaWxsPSIjMWIyYTRhIi8+CiAgPHBhdGggZD0iTTUwIDgwIEw0NSAxMDggTDY0IDEyMiBMODMgMTA4IEw3OCA4MCBaIiBmaWxsPSIjZmY2YTAwIiBzdHJva2U9IiMxYjJhNGEiIHN0cm9rZS13aWR0aD0iNSIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgo8L3N2Zz4K
@@ -5385,7 +5385,10 @@
        A solid fill rather than the pale --mbu-ok-bg tint, because the ask is to
        spot this tab among many at a glance. */
     launcher.style.cssText = 'position:fixed;right:14px;bottom:14px;z-index:2147483646;width:40px;height:40px;border-radius:50%;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;'
-      + (done ? 'background:var(--mbu-ok, #1f9d6b);color:#fff;box-shadow:0 0 0 2px var(--mbu-ok-border, #9bd3b6),0 2px 10px rgba(31,157,107,.45);'
+      // literal, not var(--mbu-ok): once the panel has injected the tokens, the dark
+      // theme's --mbu-ok is a darker mix, and a self-closed panel's icon came out a
+      // different green from a reloaded page's
+      + (done ? 'background:#1f9d6b;color:#fff;box-shadow:0 0 0 2px #9bd3b6,0 2px 10px rgba(31,157,107,.45);'
         : 'background:color-mix(in srgb, var(--mbu-bg) 55%, transparent);color:var(--mbu-info);box-shadow:0 2px 8px rgba(0,0,0,.18);')
       + `transition:background .15s,transform .1s;opacity:${rest}`;
     if (done) launcher.title = `${NAME} — ${_closedClean ? 'closed itself' : 'this page was reloaded'} after a clean run (Ctrl+Alt+F for the log)`;
@@ -7133,6 +7136,20 @@
       e.preventDefault(); e.stopPropagation();
       togglePanel();
     });
+    // Esc closes the panel, or first whatever is open over it: an item's popup here, the
+    // add menu and the log window by their own Esc. Listened to on the way down, so it
+    // sees those still open. Typing in the page's own fields is left alone; in the
+    // panel's fields Esc still closes it.
+    document.addEventListener('keydown', e => {
+      if (e.key !== 'Escape' || e.defaultPrevented || e.ctrlKey || e.altKey || e.metaKey || e.shiftKey) return;
+      if (!panel || panel.style.display === 'none') return;
+      const pop = document.getElementById('falcon-item-popup');
+      if (pop && pop.style.display !== 'none') { pop.style.display = 'none'; _itemPopupId = null; e.stopPropagation(); return; }
+      if (document.querySelector('.falcon-addmenu, #mbu-logpop')) return;
+      const t = e.target;
+      if (t && t.closest && !t.closest('#falcon-panel') && (t.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName))) return;
+      panel.style.display = 'none';
+    }, true);
   }
 
   // Test hook only (#467) — no behavior change; built only on a test page (#623).
@@ -7178,6 +7195,7 @@
     reloadPending: () => !!_reloadTimer,
     // #588
     maybeReloadReleasePage, reloadedAfterImportHere, RELOADED_KEY,
+    maybeClosePanelAfterRun, setCloseWhenDone: v => { _closeWhenDone = v; }, showPanel,
     // #591
     parseRipLog, parseEacLog, parseWhipperLog, parseDbPowerampLog, parseCyanripLog,
     calcMbToc, mbDiscId, tocParam, readLogText, discIdFromLog,

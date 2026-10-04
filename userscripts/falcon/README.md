@@ -67,16 +67,16 @@ The [keyboard](#shortcuts) moves between fields in both views, like a spreadshee
 
 Review the queue (remove rows, edit fields), then press **Start**. Right-click a row's type to select every item of that type; the header chips (`art`, `lbl`, `rec`, `rel`, `rg`) exclude a type without removing it.
 
-| Status | |
-|---|---|
-| queued | not processed yet |
-| in progress | being processed |
-| done | everything went through |
-| partial | some of it failed |
-| failed | nothing went through |
-| manual | finished by you in a tab |
-| skipped | nothing to submit, or MusicBrainz reported no change |
-| excluded | its type's chip is off |
+| Status      |                                                      |
+| ----------- | ---------------------------------------------------- |
+| queued      | not processed yet                                    |
+| in progress | being processed                                      |
+| done        | everything went through                              |
+| partial     | some of it failed                                    |
+| failed      | nothing went through                                 |
+| manual      | finished by you in a tab                             |
+| skipped     | nothing to submit, or MusicBrainz reported no change |
+| excluded    | its type's chip is off                               |
 
 - A failed row shows MusicBrainz's own error on hover. **FAILED** / **PARTIAL** / **MANUAL** chips at the top filter the queue to those rows.
 - A worker that can't commit stays where it stopped, dimmed but live, and a fresh one takes over. Click a red status to jump to it in the **Workers** tab; **⛶** enlarges it.
@@ -92,11 +92,11 @@ A link MusicBrainz can't classify on its own (a Bandcamp track: purchase or stre
 
 ## Attributes
 
-| | artist | label | recording | release | release group |
-|---|:---:|:---:|:---:|:---:|:---:|
-| links, name, aliases, disambiguation | ✓ | ✓ | ✓ | ✓ | ✓ |
-| ISRCs, video | | | ✓ | | |
-| cover art | | | | ✓ | |
+|                                      | artist | label | recording | release | release group |
+| ------------------------------------ | :----: | :---: | :-------: | :-----: | :-----------: |
+| links, name, aliases, disambiguation |   ✓    |   ✓   |     ✓     |    ✓    |       ✓       |
+| ISRCs, video                         |        |       |     ✓     |         |               |
+| cover art                            |        |       |           |    ✓    |               |
 
 - **Name**: an expanded row's ✎ box starts with the current name, so a fix is an edit, not a retype. A rename is votable, so it shows once the edit passes.
 - **Aliases**: one row per alias, with its name, its language and **✕**; the **+** by the *Aliases* label adds one, or use [JSON](./examples/aliases.json) for many. A new alias takes the language last typed; `name@locale` typed in the name box sets the language too. Enter on a filled alias opens the next one, on an empty one moves on to the next row's aliases; Esc drops a new, still empty row.
@@ -113,10 +113,10 @@ A link MusicBrainz can't classify on its own (a Bandcamp track: purchase or stre
 
 Two settings carry a finished Harmony import to a finished run:
 
-| | Runs on | Does |
-|---|---|---|
-| *Auto send* | Harmony | presses *Send to Falcon* |
-| *Auto start Harmony import* | MusicBrainz | presses *Start* |
+|                             | Runs on     | Does                     |
+| --------------------------- | ----------- | ------------------------ |
+| *Auto send*                 | Harmony     | presses *Send to Falcon* |
+| *Auto start Harmony import* | MusicBrainz | presses *Start*          |
 
 *Auto send* waits until the import is complete (the page has a `release_mbid`) and Harmony has finished listing its actions. It stands down if there's nothing to send. It counts down on the button first; a click cancels.
 
@@ -131,12 +131,12 @@ Falcon is idempotent, so a partial run can be topped up later. *Reload release p
 
 On a release's **Disc IDs** tab, each medium gets a drop zone for a rip log. Falcon reads the TOC, computes the disc ID in the browser, and takes you straight to MusicBrainz's attach page with the edit note signed. **Enter edit** is yours.
 
-| Program | Reads |
-|---|---|
+| Program          | Reads                             |
+| ---------------- | --------------------------------- |
 | EAC, XLD, fre:ac | the TOC table (localised EAC too) |
-| whipper | the `TOC:` block |
-| dBpoweramp | `Track N: Ripped LBA x to y` |
-| cyanrip | `Start LSN` / `End LSN` |
+| whipper          | the `TOC:` block                  |
+| dBpoweramp       | `Track N: Ripped LBA x to y`      |
+| cyanrip          | `Start LSN` / `End LSN`           |
 
 Like Picard, whose parsers these are, it refuses a partial rip, a non-standard track sequence or an unknown file, and drops a trailing data track. A log whose track count doesn't match the medium asks before continuing.
 
@@ -157,51 +157,52 @@ What **Import** reads, **Export** writes, and Harmony and other scripts produce:
 }
 ```
 
-| Key | |
-|---|---|
-| `entityType` | `artist`, `label`, `recording`, `release`, `release_group` |
-| `mbid` | the entity |
-| `urls[]` | `{ url, linkTypeId }`; without a type, MusicBrainz classifies the link |
-| `rename` | a new name (`name` is the current one, read only) |
-| `disambiguation` | the disambiguation comment |
-| `aliases[]` | `{ name, locale, type, primary, sortName, begin, end, ended }`, or `"name@locale"`; each is its own edit. `type` as MusicBrainz names it (`Recording name`, `Search hint`…) |
-| `isrcs[]` | recordings |
-| `video` | recordings; only `true` does anything |
-| `cover[]` | releases: `{ url, type, comment, candidates }`, type defaulting to Front |
-| `note` | that item's own edit note |
-| `status`, `error`, `urlResults` | written by Export: the outcome of the last run |
+| Key                             |                                                                                                                                                                             |
+| ------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `entityType`                    | `artist`, `label`, `recording`, `release`, `release_group`                                                                                                                  |
+| `mbid`                          | the entity                                                                                                                                                                  |
+| `urls[]`                        | `{ url, linkTypeId }`; without a type, MusicBrainz classifies the link                                                                                                      |
+| `rename`                        | a new name (`name` is the current one, read only)                                                                                                                           |
+| `disambiguation`                | the disambiguation comment                                                                                                                                                  |
+| `aliases[]`                     | `{ name, locale, type, primary, sortName, begin, end, ended }`, or `"name@locale"`; each is its own edit. `type` as MusicBrainz names it (`Recording name`, `Search hint`…) |
+| `isrcs[]`                       | recordings                                                                                                                                                                  |
+| `video`                         | recordings; only `true` does anything                                                                                                                                       |
+| `cover[]`                       | releases: `{ url, type, comment, candidates }`, type defaulting to Front                                                                                                    |
+| `note`                          | that item's own edit note                                                                                                                                                   |
+| `status`, `error`, `urlResults` | written by Export: the outcome of the last run                                                                                                                              |
 
 ### From another script
 
-Append `?falcon=<base64(JSON)>` to any musicbrainz.org URL: Falcon opens with the queue seeded (it doesn't start). The JSON is the [model](#json-model) above, read as **Import** reads a file: the `note` becomes the batch edit note, and an item carries whatever a row can. On a page where Falcon already runs, a script can instead dispatch a `falcon:import` event on `document` with the JSON as a string `detail`: Falcon queues it on that page and answers with `falcon:import-ok`. `falcon:run` does the same and starts the queue; with `"closeWhenDone": true` at the JSON's root, the panel closes when that run finishes with every item done, and the corner icon turns green, as on a page reloaded after a clean run, until the next run starts. A `?falcon=` link never starts on its own. A batch handed over this way (event or link) adds an entity already queued to its row rather than queueing it twice, so sending the same batch again doesn't run it twice; **Import** restores a file as it is. [Platform Check](../platform_check/README.md#artists-and-labels) sends its artist and label links this way, and falls back to `?falcon=` in a new tab when no Falcon answers.
+Append `?falcon=<base64(JSON)>` to any musicbrainz.org URL: Falcon opens with the queue seeded (it doesn't start). The JSON is the [model](#json-model) above, read as **Import** reads a file: the `note` becomes the batch edit note, and an item carries whatever a row can. On a page where Falcon already runs, a script can instead dispatch a `falcon:import` event on `document` with the JSON as a string `detail`: Falcon queues it on that page and answers with `falcon:import-ok`. `falcon:run` does the same and starts the queue; with `"closeWhenDone": true` at the JSON's root, the panel closes when that run finishes with every item done, and the corner icon turns the same green as on a page reloaded after a clean run, until the next run starts. A `?falcon=` link never starts on its own. A batch handed over this way (event or link) adds an entity already queued to its row rather than queueing it twice, so sending the same batch again doesn't run it twice; **Import** restores a file as it is. [Platform Check](../platform_check/README.md#artists-and-labels) sends its artist and label links this way, and falls back to `?falcon=` in a new tab when no Falcon answers.
 
 ## Settings
 
-| Setting | Default | |
-|---|---|---|
+| Setting | Default |  |
+| --- | --- | --- |
 | Hide Falcon icon | off | Ctrl+Alt+F still opens it |
-| Add covers only when there aren't any | off | |
-| Ignore Harmony cover art | off | |
+| Add covers only when there aren't any | off |  |
+| Ignore Harmony cover art | off |  |
 | Auto send | off | see [Hands-free import](#hands-free-import) |
-| Auto start Harmony import | off | |
-| Reload release page after import without errors | off | |
+| Auto start Harmony import | off |  |
+| Reload release page after import without errors | off |  |
 | Open from Harmony in new tab | on | off navigates the Harmony tab |
 | Automatically send to Picard using port | off, 8000 | hand the release to [Picard](https://picard.musicbrainz.org/) after a run (needs its *Browser integration*). The port also gives MusicBrainz's own tagger button, ticked or not. |
 | Workers | 5 | entities processed at once |
-| Keep last N run logs | 20 | |
+| Keep last N run logs | 20 |  |
 
 > [!TIP]
 > To report a problem: leave **debug** on in the **Log** tab, reproduce it, then **Copy log** into the issue. Each run's log is kept separately; the dropdown lists past runs.
 
 ## Shortcuts
 
-| Key | |
-|---|---|
-| Ctrl+Alt+F | open or close Falcon |
-| Enter / Down | the same field on the next row |
-| Shift+Enter / Up | the same field on the previous row |
-| Tab / Shift+Tab | the next / previous field, on to the next / previous row |
-| Right / Left | the next / previous field, once the cursor is at the end / start of the text |
+| Key              |                                                                              |
+| ---------------- | ---------------------------------------------------------------------------- |
+| Ctrl+Alt+F       | open or close Falcon                                                         |
+| Esc              | hide Falcon (an item popup over it first); a run goes on                     |
+| Enter / Down     | the same field on the next row                                               |
+| Shift+Enter / Up | the same field on the previous row                                           |
+| Tab / Shift+Tab  | the next / previous field, on to the next / previous row                     |
+| Right / Left     | the next / previous field, once the cursor is at the end / start of the text |
 
 In an alias box with text in it, Enter adds the alias first; press it again to move on.
 
