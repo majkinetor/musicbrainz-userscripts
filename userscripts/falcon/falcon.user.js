@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Falcon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.4.220618
+// @version      2026.10.4.223000
 // @description  Edit a BATCH of MusicBrainz artists/labels/recordings at once — add external links, ISRCs, names, aliases, disambiguations and cover art — no popup-per-entity, no tab churn. A small pool of persistent worker iframes churns through a queue, each submitting its own edit and moving straight to the next entity. Paste a list, hand it a queue via a `?falcon=` URL param, or click "Send to Falcon" on a Harmony actions page to import its suggestions directly.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHBhdGggZD0iTTY0IDEwIEM4MiAyOCA5MCA1NiA5MCA4MCBMMzggODAgQzM4IDU2IDQ2IDI4IDY0IDEwIFoiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzFiMmE0YSIgc3Ryb2tlLXdpZHRoPSI3IiBzdHJva2UtbGluZWpvaW49InJvdW5kIiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8cGF0aCBkPSJNMzggODAgTDIwIDExMCBMNDAgOTYgWiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxwYXRoIGQ9Ik05MCA4MCBMMTA4IDExMCBMODggOTYgWiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxjaXJjbGUgY3g9IjY0IiBjeT0iNDQiIHI9IjEwIiBmaWxsPSIjMWIyYTRhIi8+CiAgPHBhdGggZD0iTTUwIDgwIEw0NSAxMDggTDY0IDEyMiBMODMgMTA4IEw3OCA4MCBaIiBmaWxsPSIjZmY2YTAwIiBzdHJva2U9IiMxYjJhNGEiIHN0cm9rZS13aWR0aD0iNSIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgo8L3N2Zz4K
@@ -6823,7 +6823,7 @@
       <div class="falcon-row" data-id="${it.id}" style="border-bottom:1px solid var(--mbu-border);color:var(--mbu-text);background:${ROW_BG[it.status] || ''};${excluded ? 'opacity:.45' : ''}">
         <div style="display:flex;align-items:center;gap:6px;padding:2px 0" title="${it.error ? esc(it.error) : excluded ? 'This type is toggled off above — won\'t be processed until turned back on' : ''}">
           <input type="checkbox" class="falcon-row-check" data-id="${it.id}" ${checked ? 'checked' : ''} ${isActive ? 'disabled' : ''} style="flex:0 0 auto" />
-          <button type="button" class="falcon-row-expand" data-id="${it.id}" title="${it.urls.length > 1 ? 'Show/hide urls' : it.entityType === 'recording' ? 'Show detail / edit disambiguation & ISRC' : DISAMBIGUATABLE.has(it.entityType) ? 'Show detail / edit disambiguation' + (it.entityType === 'release' ? ' & cover art image' : '') : 'Show url detail'}" style="border:none;background:none;cursor:pointer;color:var(--mbu-text-dim);flex:0 0 auto;font-size:15px;line-height:1;width:22px;height:22px;padding:0;display:flex;align-items:center;justify-content:center">${expanded ? '▾' : '▸'}</button>
+          <button type="button" class="falcon-row-expand" data-id="${it.id}" title="${groupedLinks(it).length > 1 ? 'Show/hide urls' : it.entityType === 'recording' ? 'Show detail / edit disambiguation & ISRC' : DISAMBIGUATABLE.has(it.entityType) ? 'Show detail / edit disambiguation' + (it.entityType === 'release' ? ' & cover art image' : '') : 'Show url detail'}" style="border:none;background:none;cursor:pointer;color:var(--mbu-text-dim);flex:0 0 auto;font-size:15px;line-height:1;width:22px;height:22px;padding:0;display:flex;align-items:center;justify-content:center">${expanded ? '▾' : '▸'}</button>
           <span style="width:8px;height:8px;border-radius:50%;background:${DOT[it.status] || '#999'};flex:0 0 auto"></span>
           <span class="falcon-row-type" data-id="${it.id}" data-type="${esc(it.entityType)}" title="Right-click to select every ${esc(it.entityType)} in the queue" style="width:32px;flex:0 0 auto;font-size:9px;text-transform:uppercase;color:var(--mbu-text-weak);text-align:center;cursor:context-menu">${esc(TYPE_BADGE[it.entityType] || it.entityType.slice(0, 3))}</span>
           <a href="${MB_ORIGIN}/${entityUrlSegment(it.entityType)}/${it.mbid}" target="_blank" rel="noopener" title="${esc(it.entityType)}/${esc(it.mbid)}" style="color:var(--mbu-info);text-decoration:none;font-weight:600;max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:0 1 auto">${esc(entityLabel(it))}</a>
@@ -6854,8 +6854,11 @@
             ].filter(Boolean).join(' + ');
             const coverTitle = hasCover && it.coverExistingCount
               ? esc(`already has ${it.coverExistingCount} cover image${it.coverExistingCount === 1 ? '' : 's'} — this may duplicate it`) : '';
-            if (it.urls.length > 1) return `<span style="color:var(--mbu-text-dim);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1" title="${coverTitle}">${it.urls.length} links${extras ? ' + ' + esc(extras) : ''}</span>`;
-            if (it.urls.length === 1) return `<span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1" title="${coverTitle}"><a href="${esc(it.urls[0].url)}" target="_blank" rel="noopener" style="color:var(--mbu-info);text-decoration:none">${esc(it.urls[0].url)}</a>${extras ? ` <span style="color:var(--mbu-text-dim)">+ ${esc(extras)}</span>` : ''}</span>`;
+            // Count distinct URLs, as the grid does — urls[] holds one entry
+            // per URL × link type, so a URL with two types counted twice.
+            const linkN = groupedLinks(it).length;
+            if (linkN > 1) return `<span style="color:var(--mbu-text-dim);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1" title="${coverTitle}">${linkN} links${extras ? ' + ' + esc(extras) : ''}</span>`;
+            if (linkN === 1) return `<span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1" title="${coverTitle}"><a href="${esc(it.urls[0].url)}" target="_blank" rel="noopener" style="color:var(--mbu-info);text-decoration:none">${esc(it.urls[0].url)}</a>${extras ? ` <span style="color:var(--mbu-text-dim)">+ ${esc(extras)}</span>` : ''}</span>`;
             // #494/#496: release rows never carry a urls[] entry — cover art
             // is their whole payload — so they always land here.
             if (extras) return `<span style="color:var(--mbu-text-dim);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1" title="${coverTitle}">${esc(extras)}</span>`;
