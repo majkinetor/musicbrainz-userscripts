@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         String Theory
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.4.100109
+// @version      2026.10.4.122203
 // @description  Unified bundle of 8 MusicBrainz userscripts (apollo_editor, art_station, credit_hoarder, fusion, group_therapy, isrc_scout, mammoth, platform_check). Built by userscripts/string_theory/build.mjs — do not hand-edit.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCIgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0Ij4KICA8IS0tIGh1Yi1hbmQtc3Bva2UgIm5ldHdvcmsiIGdseXBoLCBzaW5nbGUgdml2aWQgdmlvbGV0IG9uIHRyYW5zcGFyZW50IHNvIGl0IHJlYWRzIG9uIGJvdGggZGFyayBhbmQgbGlnaHQgcGFnZXMgLS0+CiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjN2M1Y2ZmIiBzdHJva2Utd2lkdGg9IjQuNiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj4KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMzIgMTUiLz4KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMNDYuNSAyMy41Ii8+CiAgICA8cGF0aCBkPSJNMzIgMzIgTDQ2LjUgNDAuNSIvPgogICAgPHBhdGggZD0iTTMyIDMyIEwzMiA0OSIvPgogICAgPHBhdGggZD0iTTMyIDMyIEwxNy41IDQwLjUiLz4KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMTcuNSAyMy41Ii8+CiAgPC9nPgogIDxnIGZpbGw9IiM3YzVjZmYiPgogICAgPGNpcmNsZSBjeD0iMzIiIGN5PSIzMiIgcj0iOC42Ii8+CiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjE5LjUiIHI9IjYuNCIvPgogICAgPGNpcmNsZSBjeD0iNDkiIGN5PSIxOS41IiByPSI2LjQiLz4KICAgIDxjaXJjbGUgY3g9IjMyIiBjeT0iNTciIHI9IjYuNCIvPgogIDwvZz4KICA8ZyBmaWxsPSJub25lIiBzdHJva2U9IiM3YzVjZmYiIHN0cm9rZS13aWR0aD0iMy44Ij4KICAgIDxjaXJjbGUgY3g9IjMyIiBjeT0iNyIgcj0iNC45Ii8+CiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjQ0LjUiIHI9IjQuOSIvPgogICAgPGNpcmNsZSBjeD0iNDkiIGN5PSI0NC41IiByPSI0LjkiLz4KICA8L2c+Cjwvc3ZnPgo=
@@ -88,8 +88,8 @@
 // Bundles (verbatim, each wrapped in a run-at gate): apollo_editor, art_station, credit_hoarder, fusion, group_therapy, isrc_scout, mammoth, platform_check.
 
 try {
-  console.log('%c String Theory %c v2026.10.4.100109 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
-  console.log("String Theory bundles:\n  · Apollo Editor v2026.10.4.100100\n  · Art Station v2026.10.4\n  · Credit Hoarder v2026.10.4\n  · Fusion v2026.10.4\n  · Group Therapy v2026.10.4\n  · ISRC Scout v2026.10.4\n  · Mammoth v2026.10.4\n  · Platform Check v2026.10.4.084500");
+  console.log('%c String Theory %c v2026.10.4.122203 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
+  console.log("String Theory bundles:\n  · Apollo Editor v2026.10.4.100100\n  · Art Station v2026.10.4\n  · Credit Hoarder v2026.10.4\n  · Fusion v2026.10.4\n  · Group Therapy v2026.10.4\n  · ISRC Scout v2026.10.4\n  · Mammoth v2026.10.4\n  · Platform Check v2026.10.4.120000");
 } catch (e) {}
 
 // ===== apollo_editor (@run-at document-start) =====================================
@@ -46226,7 +46226,7 @@ Created this ${kind} while adding credits parsed from text to ${relUrl}`;
 
 // ===== platform_check (@run-at document-end) ====================================
 (function(__stGM){
-  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Platform Check*","namespace":"http://tampermonkey.net/","version":"2026.10.4.084500","description":"Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/platform_check/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+DQogIDx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CiAgDQogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJhMWE1MiIgc3Ryb2tlLXdpZHRoPSI5IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik00MCA4OCBBMzQgMzQgMCAwIDEgNDAgNDAiLz4NCiAgICA8cGF0aCBkPSJNMjkgOTkgQTUwIDUwIDAgMCAxIDI5IDI5Ii8+DQogICAgPHBhdGggZD0iTTg4IDg4IEEzNCAzNCAwIDAgMCA4OCA0MCIvPg0KICAgIDxwYXRoIGQ9Ik05OSA5OSBBNTAgNTAgMCAwIDAgOTkgMjkiLz4NCiAgPC9nPg0KICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyMCIgZmlsbD0iI2U4MjAxYSIvPg0KPC9zdmc+DQo="}) }) : { script: {"name":"Platform Check*","namespace":"http://tampermonkey.net/","version":"2026.10.4.084500","description":"Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/platform_check/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+DQogIDx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CiAgDQogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJhMWE1MiIgc3Ryb2tlLXdpZHRoPSI5IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik00MCA4OCBBMzQgMzQgMCAwIDEgNDAgNDAiLz4NCiAgICA8cGF0aCBkPSJNMjkgOTkgQTUwIDUwIDAgMCAxIDI5IDI5Ii8+DQogICAgPHBhdGggZD0iTTg4IDg4IEEzNCAzNCAwIDAgMCA4OCA0MCIvPg0KICAgIDxwYXRoIGQ9Ik05OSA5OSBBNTAgNTAgMCAwIDAgOTkgMjkiLz4NCiAgPC9nPg0KICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyMCIgZmlsbD0iI2U4MjAxYSIvPg0KPC9zdmc+DQo="} };
+  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Platform Check*","namespace":"http://tampermonkey.net/","version":"2026.10.4.120000","description":"Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/platform_check/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+DQogIDx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CiAgDQogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJhMWE1MiIgc3Ryb2tlLXdpZHRoPSI5IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik00MCA4OCBBMzQgMzQgMCAwIDEgNDAgNDAiLz4NCiAgICA8cGF0aCBkPSJNMjkgOTkgQTUwIDUwIDAgMCAxIDI5IDI5Ii8+DQogICAgPHBhdGggZD0iTTg4IDg4IEEzNCAzNCAwIDAgMCA4OCA0MCIvPg0KICAgIDxwYXRoIGQ9Ik05OSA5OSBBNTAgNTAgMCAwIDAgOTkgMjkiLz4NCiAgPC9nPg0KICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyMCIgZmlsbD0iI2U4MjAxYSIvPg0KPC9zdmc+DQo="}) }) : { script: {"name":"Platform Check*","namespace":"http://tampermonkey.net/","version":"2026.10.4.120000","description":"Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/platform_check/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+DQogIDx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CiAgDQogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJhMWE1MiIgc3Ryb2tlLXdpZHRoPSI5IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik00MCA4OCBBMzQgMzQgMCAwIDEgNDAgNDAiLz4NCiAgICA8cGF0aCBkPSJNMjkgOTkgQTUwIDUwIDAgMCAxIDI5IDI5Ii8+DQogICAgPHBhdGggZD0iTTg4IDg4IEEzNCAzNCAwIDAgMCA4OCA0MCIvPg0KICAgIDxwYXRoIGQ9Ik05OSA5OSBBNTAgNTAgMCAwIDAgOTkgMjkiLz4NCiAgPC9nPg0KICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyMCIgZmlsbD0iI2U4MjAxYSIvPg0KPC9zdmc+DQo="} };
   (f=>document.readyState!=='loading'?f():document.addEventListener('DOMContentLoaded',f,{once:true}))(function(){ try { (function(){
 (function () {
 'use strict';
@@ -48393,6 +48393,10 @@ providerModal.innerHTML = `
         <label style="display: inline-flex; align-items: center; gap: 8px; cursor: pointer; user-select: none;" title="On: once the scans finish, MusicBrainz is asked which of the artist and label pages it already has (one request per 100 links), and Artists &amp; labels shows how many would be added. Off: it is asked only when you open the table.">
           <input type="checkbox" id="mb-links-count" style="margin: 0; width: 16px; height: 16px;"> <b>Count</b> artist and label links to add</label>
       </div>
+      <div style="display: flex; align-items: center; gap: 8px; margin: 5px 0;">
+        <label style="display: inline-flex; align-items: center; gap: 8px; cursor: pointer; user-select: none;" title="On: after Run in Falcon from Artists &amp; labels, Falcon closes its panel once the run finishes with every link added. A run with a failed or partial edit leaves it open, to read why. Send only, and a Falcon opened in a new tab, are not affected.">
+          <input type="checkbox" id="mb-links-close-falcon" style="margin: 0; width: 16px; height: 16px;"> <b>Close Falcon</b> after a successful import</label>
+      </div>
     </div>
 
     <div class="pc-setup-sec">Appearance</div>
@@ -48734,6 +48738,7 @@ document.getElementById('mb-token-setup-btn').addEventListener('click', () => {
     document.getElementById('mb-open-new-tab').checked = GM_getValue('pc:open-new-tab', true);
     document.getElementById('mb-bg-audio').checked = GM_getValue('pc:bg-audio', false);
     document.getElementById('mb-links-count').checked = GM_getValue('pc:links-count', true);
+    document.getElementById('mb-links-close-falcon').checked = GM_getValue('pc:links-close-falcon', false);
     const layout = GM_getValue('pc:layout', '1row');
     providerModal.querySelectorAll('input[name="mb-layout"]').forEach(r => { r.checked = r.value === layout; });
     document.getElementById('mb-compact-unmatched').checked = GM_getValue('pc:compact-unmatched', true);
@@ -48799,6 +48804,9 @@ document.getElementById('mb-format-mode').addEventListener('change', e => {
 document.getElementById('mb-links-count').addEventListener('change', e => {
     GM_setValue('pc:links-count', e.target.checked);       // #671 — count the links to add once the scans finish
     if (e.target.checked) pcCountLinks(); else pcShowLinksCount(null);
+});
+document.getElementById('mb-links-close-falcon').addEventListener('change', e => {
+    GM_setValue('pc:links-close-falcon', e.target.checked);   // Falcon closes its panel after a Run with nothing failed
 });
 document.getElementById('mb-open-new-tab').addEventListener('change', e => {
     GM_setValue('pc:open-new-tab', e.target.checked);      // #464 — off navigates the same tab instead of opening one
@@ -53279,10 +53287,11 @@ function pcLinkTypeFor(type, url) {
 }
 // The batch for Falcon's ?falcon= handoff, in Falcon's JSON model (what its Import reads):
 // one item per artist or label with its new links, the batch's edit note, and its name (the
-// session name in Falcon's history, #671)
-function pcFalconJson(rows, note, name) {
+// session name in Falcon's history, #671). closeWhenDone: Falcon closes its panel once the
+// run it starts finishes with nothing failed (read only with falcon:run).
+function pcFalconJson(rows, note, name, closeWhenDone) {
     const items = rows.map(r => ({ entityType: r.type, mbid: r.mbid, name: r.name, urls: r.urls.map(url => ({ url, linkTypeId: pcLinkTypeFor(r.type, url) })) }));
-    return JSON.stringify(name ? { name, note, items } : { note, items });
+    return JSON.stringify(Object.assign(name ? { name, note } : { note }, closeWhenDone ? { closeWhenDone: true } : {}, { items }));
 }
 function pcFalconPayload(rows, note, name) {
     return btoa(String.fromCharCode(...new TextEncoder().encode(pcFalconJson(rows, note, name))));
@@ -53502,7 +53511,7 @@ async function pcOpenLinksTable(btn) {
     const toFalcon = run => {
         const b = batch();
         if (!b.length) return;
-        const here = pcSendToFalconHere(pcFalconJson(b, pcLinksNote(), pcLinksName()), run);
+        const here = pcSendToFalconHere(pcFalconJson(b, pcLinksNote(), pcLinksName(), run && GM_getValue('pc:links-close-falcon', false)), run);
         appendLog('System', `Artists & labels: ${run && here ? 'running' : 'sent'} ${b.reduce((s, r) => s + r.urls.length, 0)} link(s) on ${b.length} artist(s)/label(s) ${run && here ? 'in' : 'to'} Falcon${here ? '' : ` (in a new tab: no Falcon on this page${run ? '; press Start there' : ''})`}`, 'ok');
         if (!here) window.open(`${MB_ORIGIN}/?falcon=${encodeURIComponent(pcFalconPayload(b, pcLinksNote(), pcLinksName()))}`, '_blank');
         // the links are on their way: the count and the lookup behind it no longer hold
