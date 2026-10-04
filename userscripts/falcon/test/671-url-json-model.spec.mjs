@@ -8,7 +8,7 @@ const DAFT = 'd31f76d2-1d8e-4271-8027-148f375979d7';
 
 // parseUrlParam for a given location.search
 async function parser() {
-  const src = await functionSource('falcon', ['MBID_RE', 'ENTITY_RE', 'normalizeEntityType', 'tryDecodeBase64Json', 'parseUrlParam']);
+  const src = await functionSource('falcon', ['MBID_RE', 'ENTITY_RE', 'normalizeEntityType', 'tryDecodeBase64Json', 'parseUrlParam', 'PENDING_TOKEN_RE', 'handedOver', 'decodeSeed']);
   return search => new Function('location', 'GM_getValue', 'GM_deleteValue', `
     const setBatchNote = () => {}, log = () => {};
     ${src}

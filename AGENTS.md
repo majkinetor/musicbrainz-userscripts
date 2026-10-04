@@ -78,6 +78,7 @@ Per-script low-level detail → that script's `DEVELOP.md`. Cross-cutting:
 - **Docs** use the compact one-shape style; every non-trivial feature gets README docs in the same change ([§12](STANDARDS.md#standard-12)).
 - **Changelogs** are written only by the release run, from issue titles — never hand-edit `CHANGELOG.md` during feature work. Bump the script's `@version` to today (`YYYY.M.D`, time appended for a same-day second change); read the current value before bumping.
 - `node --check` plus a real-browser load before sharing an install link.
+- **Never rename a script's `@name`** casually: a manager identifies a script by `@namespace` + `@name`, and the scripts have no `@updateURL`, so the next install is a *second* copy beside the old one. Copies don't share GM storage, and `mbuClaim` picks the running copy per site, so a cross-site GM handoff (Falcon's Harmony token) can land in the wrong copy.
 
 ## Keep this file alive
 
