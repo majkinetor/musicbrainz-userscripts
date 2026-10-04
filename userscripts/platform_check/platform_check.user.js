@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Platform Check
 // @namespace    http://tampermonkey.net/
-// @version      2026.10.4.181500
+// @version      2026.10.4.190000
 // @description  Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+DQogIDx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CiAgDQogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJhMWE1MiIgc3Ryb2tlLXdpZHRoPSI5IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik00MCA4OCBBMzQgMzQgMCAwIDEgNDAgNDAiLz4NCiAgICA8cGF0aCBkPSJNMjkgOTkgQTUwIDUwIDAgMCAxIDI5IDI5Ii8+DQogICAgPHBhdGggZD0iTTg4IDg4IEEzNCAzNCAwIDAgMCA4OCA0MCIvPg0KICAgIDxwYXRoIGQ9Ik05OSA5OSBBNTAgNTAgMCAwIDAgOTkgMjkiLz4NCiAgPC9nPg0KICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyMCIgZmlsbD0iI2U4MjAxYSIvPg0KPC9zdmc+DQo=
@@ -1909,7 +1909,7 @@ ${MBU_TOKENS}${MBU_UI_CSS}
   #mb-links-btn.pc-links-on { color: var(--mbu-text); }
   /* #674: the barcodes the platforms report, on a release that has none */
   #mb-found-bc { border: 1px dashed currentColor; color: var(--mbu-accent-text); padding: 1px 5px; }
-  #pc-bc-pop { position: fixed; z-index: var(--mbu-z-pop); width: 250px; padding: 6px; background: var(--mbu-bg); color: var(--mbu-text); border: 1px solid var(--mbu-border); border-radius: var(--mbu-radius); box-shadow: var(--mbu-shadow-lg); font: 12px var(--mbu-font); }
+  #pc-bc-pop { position: fixed; overflow-y: auto; box-sizing: border-box; z-index: var(--mbu-z-pop); width: 250px; padding: 6px; background: var(--mbu-bg); color: var(--mbu-text); border: 1px solid var(--mbu-border); border-radius: var(--mbu-radius); box-shadow: var(--mbu-shadow-lg); font: 12px var(--mbu-font); }
   #pc-bc-pop .pc-bc-h { margin: 0 4px 4px; font-size: 10px; font-weight: 700; letter-spacing: .4px; text-transform: uppercase; color: var(--mbu-text-dim); }
   #pc-bc-pop .pc-bc-opt { display: grid; grid-template-columns: 1fr auto; gap: 2px 8px; padding: 5px 6px; border-radius: var(--mbu-radius); cursor: pointer; }
   #pc-bc-pop .pc-bc-opt:hover { background: var(--mbu-bg-hover); }
@@ -7537,7 +7537,9 @@ function pcOpenFoundBarcodes(btn) {
     document.body.appendChild(pop);
     const r = btn.getBoundingClientRect();
     pop.style.top = `${r.bottom + 4}px`;
-    pop.style.left = `${Math.max(8, Math.min(r.left, window.innerWidth - pop.offsetWidth - 8))}px`;
+    // clientWidth leaves out the page's scrollbar, which innerWidth counts
+    pop.style.left = `${Math.max(8, Math.min(r.left, document.documentElement.clientWidth - pop.offsetWidth - 8))}px`;
+    pop.style.maxHeight = `${Math.max(120, document.documentElement.clientHeight - r.bottom - 12)}px`;
     const off = mbuDismissOn(pop, () => pop.remove(), { ignore: '#mb-found-bc' });
     pop._pcClose = off;
     // #674: a barcode already on another release is most likely that release's, not this one's
