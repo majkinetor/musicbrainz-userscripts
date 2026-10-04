@@ -93,7 +93,7 @@ A matched album usually names its artists' pages on that platform, and sometimes
 | +?   | an account that may be the artist or the label (Bandcamp, SoundCloud, Audiomack): left out until you take it in                                       |
 | ·    | no page, or the platform didn't find the release                                                                                                      |
 
-Click a mark to open the page (a ⚠ opens the MusicBrainz artist or label that has it); right-click to take it in or leave it out. **Run N in Falcon** closes the table, queues every row with its new links in Falcon on this page and starts it; **▾ › Send only** queues them and Falcon waits for you to press Start. Where Falcon doesn't run, it opens in a new tab with the links queued, not started; the edit note names the release. Without Falcon, a row's **✎** opens that artist's or label's edit page with its new links filled in, for you to submit.
+Click a mark to open the page (a ⚠ opens the MusicBrainz artist or label that has it); right-click to take it in or leave it out. **Run N in Falcon** closes the table, queues every row with its new links in Falcon on this page and starts it (with *Close Falcon after a successful import* on, Falcon closes once every link is added, and stays open when one fails); **▾ › Send only** queues them and Falcon waits for you to press Start. Where Falcon doesn't run, it opens in a new tab with the links queued, not started; the edit note names the release. Without Falcon, a row's **✎** opens that artist's or label's edit page with its new links filled in, for you to submit.
 
 - **Which artists**: the release's artist credit (not Various Artists) and each track's, which a compilation needs. Tracks are paired by position, so a platform with another track count gives no track artists.
 - **Matching**: by name, ignoring case, accents and *&* / *and*. When no name matches, by position, but only when both credits have as many artists; otherwise the artist is left out, and the log says why.
@@ -147,7 +147,7 @@ Click a mark to open the page (a ⚠ opens the MusicBrainz artist or label that 
 | --- | --- |
 | Platforms | order them, or leave some out |
 | Authentication | Beatport and Qobuz logins |
-| Link confidence | *Use barcodes* and *Use formats* (off, if they exist, strictly); *Add links in a new tab* (on; off navigates this tab); *Keep background-add tabs awake*; *Count artist and label links to add* (on) |
+| Link confidence | *Use barcodes* and *Use formats* (off, if they exist, strictly); *Add links in a new tab* (on; off navigates this tab); *Keep background-add tabs awake*; *Count artist and label links to add* (on); *Close Falcon after a successful import* (off) |
 | Appearance | icon and name size, *Compact unmatched providers*, *Compact low-confidence providers*, the MusicBrainz marker (ring, bold ring, ✓ badge, dot or rounded square), the format marker (circle or text), one or two rows |
 
 ## Shortcuts

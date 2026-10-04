@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Platform Check
 // @namespace    http://tampermonkey.net/
-// @version      2026.10.4.084500
+// @version      2026.10.4.120000
 // @description  Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+DQogIDx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CiAgDQogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJhMWE1MiIgc3Ryb2tlLXdpZHRoPSI5IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik00MCA4OCBBMzQgMzQgMCAwIDEgNDAgNDAiLz4NCiAgICA8cGF0aCBkPSJNMjkgOTkgQTUwIDUwIDAgMCAxIDI5IDI5Ii8+DQogICAgPHBhdGggZD0iTTg4IDg4IEEzNCAzNCAwIDAgMCA4OCA0MCIvPg0KICAgIDxwYXRoIGQ9Ik05OSA5OSBBNTAgNTAgMCAwIDAgOTkgMjkiLz4NCiAgPC9nPg0KICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyMCIgZmlsbD0iI2U4MjAxYSIvPg0KPC9zdmc+DQo=
@@ -2213,6 +2213,10 @@ providerModal.innerHTML = `
         <label style="display: inline-flex; align-items: center; gap: 8px; cursor: pointer; user-select: none;" title="On: once the scans finish, MusicBrainz is asked which of the artist and label pages it already has (one request per 100 links), and Artists &amp; labels shows how many would be added. Off: it is asked only when you open the table.">
           <input type="checkbox" id="mb-links-count" style="margin: 0; width: 16px; height: 16px;"> <b>Count</b> artist and label links to add</label>
       </div>
+      <div style="display: flex; align-items: center; gap: 8px; margin: 5px 0;">
+        <label style="display: inline-flex; align-items: center; gap: 8px; cursor: pointer; user-select: none;" title="On: after Run in Falcon from Artists &amp; labels, Falcon closes its panel once the run finishes with every link added. A run with a failed or partial edit leaves it open, to read why. Send only, and a Falcon opened in a new tab, are not affected.">
+          <input type="checkbox" id="mb-links-close-falcon" style="margin: 0; width: 16px; height: 16px;"> <b>Close Falcon</b> after a successful import</label>
+      </div>
     </div>
 
     <div class="pc-setup-sec">Appearance</div>
@@ -2554,6 +2558,7 @@ document.getElementById('mb-token-setup-btn').addEventListener('click', () => {
     document.getElementById('mb-open-new-tab').checked = GM_getValue('pc:open-new-tab', true);
     document.getElementById('mb-bg-audio').checked = GM_getValue('pc:bg-audio', false);
     document.getElementById('mb-links-count').checked = GM_getValue('pc:links-count', true);
+    document.getElementById('mb-links-close-falcon').checked = GM_getValue('pc:links-close-falcon', false);
     const layout = GM_getValue('pc:layout', '1row');
     providerModal.querySelectorAll('input[name="mb-layout"]').forEach(r => { r.checked = r.value === layout; });
     document.getElementById('mb-compact-unmatched').checked = GM_getValue('pc:compact-unmatched', true);
@@ -2619,6 +2624,9 @@ document.getElementById('mb-format-mode').addEventListener('change', e => {
 document.getElementById('mb-links-count').addEventListener('change', e => {
     GM_setValue('pc:links-count', e.target.checked);       // #671 — count the links to add once the scans finish
     if (e.target.checked) pcCountLinks(); else pcShowLinksCount(null);
+});
+document.getElementById('mb-links-close-falcon').addEventListener('change', e => {
+    GM_setValue('pc:links-close-falcon', e.target.checked);   // Falcon closes its panel after a Run with nothing failed
 });
 document.getElementById('mb-open-new-tab').addEventListener('change', e => {
     GM_setValue('pc:open-new-tab', e.target.checked);      // #464 — off navigates the same tab instead of opening one
@@ -7099,10 +7107,11 @@ function pcLinkTypeFor(type, url) {
 }
 // The batch for Falcon's ?falcon= handoff, in Falcon's JSON model (what its Import reads):
 // one item per artist or label with its new links, the batch's edit note, and its name (the
-// session name in Falcon's history, #671)
-function pcFalconJson(rows, note, name) {
+// session name in Falcon's history, #671). closeWhenDone: Falcon closes its panel once the
+// run it starts finishes with nothing failed (read only with falcon:run).
+function pcFalconJson(rows, note, name, closeWhenDone) {
     const items = rows.map(r => ({ entityType: r.type, mbid: r.mbid, name: r.name, urls: r.urls.map(url => ({ url, linkTypeId: pcLinkTypeFor(r.type, url) })) }));
-    return JSON.stringify(name ? { name, note, items } : { note, items });
+    return JSON.stringify(Object.assign(name ? { name, note } : { note }, closeWhenDone ? { closeWhenDone: true } : {}, { items }));
 }
 function pcFalconPayload(rows, note, name) {
     return btoa(String.fromCharCode(...new TextEncoder().encode(pcFalconJson(rows, note, name))));
@@ -7322,7 +7331,7 @@ async function pcOpenLinksTable(btn) {
     const toFalcon = run => {
         const b = batch();
         if (!b.length) return;
-        const here = pcSendToFalconHere(pcFalconJson(b, pcLinksNote(), pcLinksName()), run);
+        const here = pcSendToFalconHere(pcFalconJson(b, pcLinksNote(), pcLinksName(), run && GM_getValue('pc:links-close-falcon', false)), run);
         appendLog('System', `Artists & labels: ${run && here ? 'running' : 'sent'} ${b.reduce((s, r) => s + r.urls.length, 0)} link(s) on ${b.length} artist(s)/label(s) ${run && here ? 'in' : 'to'} Falcon${here ? '' : ` (in a new tab: no Falcon on this page${run ? '; press Start there' : ''})`}`, 'ok');
         if (!here) window.open(`${MB_ORIGIN}/?falcon=${encodeURIComponent(pcFalconPayload(b, pcLinksNote(), pcLinksName()))}`, '_blank');
         // the links are on their way: the count and the lookup behind it no longer hold

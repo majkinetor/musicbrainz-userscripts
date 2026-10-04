@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Falcon — bulk MusicBrainz link editor
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.4
+// @version      2026.10.4.120000
 // @description  Add external links to a BATCH of MusicBrainz artists/labels/recordings at once — no popup-per-entity, no tab churn. A small pool of persistent worker iframes churns through a queue, each submitting its own edit and moving straight to the next entity. Paste a list, hand it a queue via a `?falcon=` URL param, or click "Send to Falcon" on a Harmony actions page to import its suggested links directly.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHBhdGggZD0iTTY0IDEwIEM4MiAyOCA5MCA1NiA5MCA4MCBMMzggODAgQzM4IDU2IDQ2IDI4IDY0IDEwIFoiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzFiMmE0YSIgc3Ryb2tlLXdpZHRoPSI3IiBzdHJva2UtbGluZWpvaW49InJvdW5kIiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8cGF0aCBkPSJNMzggODAgTDIwIDExMCBMNDAgOTYgWiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxwYXRoIGQ9Ik05MCA4MCBMMTA4IDExMCBMODggOTYgWiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxjaXJjbGUgY3g9IjY0IiBjeT0iNDQiIHI9IjEwIiBmaWxsPSIjMWIyYTRhIi8+CiAgPHBhdGggZD0iTTUwIDgwIEw0NSAxMDggTDY0IDEyMiBMODMgMTA4IEw3OCA4MCBaIiBmaWxsPSIjZmY2YTAwIiBzdHJva2U9IiMxYjJhNGEiIHN0cm9rZS13aWR0aD0iNSIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgo8L3N2Zz4K
@@ -4878,6 +4878,7 @@
         renderProgress();
         log('info', '=== run finished — the tab and panel stay open; the log above is this session only ===');
         sendReleaseToPicard();   // #578
+        maybeClosePanelAfterRun();
         writeLogNow();
         // #588 — last, and after the log is flushed: this one can navigate.
         maybeReloadReleasePage();
@@ -5339,7 +5340,18 @@
     updateRunBtn();
     renderProgress();
   }
-  function stop() { running = false; stopHeartbeat(); resumeNameLookups(); resolveMissingNames(); log('info', 'stopping — in-flight items finish, no new ones start'); updateRunBtn(); renderProgress(); }
+  // Asked for by the falcon:run that started this run (closeWhenDone): hide the panel when
+  // every item settled as done or skipped. A failed, partial or manual one keeps it open.
+  let _closeWhenDone = false;
+  function maybeClosePanelAfterRun() {
+    if (!_closeWhenDone) return;
+    _closeWhenDone = false;
+    const bad = queue.filter(i => ['failed', 'partial', 'manual'].includes(i.status)).length;
+    if (bad) { log('info', `panel left open: ${bad} item(s) not fully done`); return; }
+    if (panel) panel.style.display = 'none';
+    log('info', 'panel closed: the run that asked for it finished with every item done');
+  }
+  function stop() { _closeWhenDone = false; running = false; stopHeartbeat(); resumeNameLookups(); resolveMissingNames(); log('info', 'stopping — in-flight items finish, no new ones start'); updateRunBtn(); renderProgress(); }
 
   /* ════════════════════════ UI ════════════════════════ */
   let launcher = null;
@@ -7057,12 +7069,18 @@
     // Import queues a file, and the ack tells the sender not to open a tab instead.
     // falcon:run also starts the queue (only a script already on this page can ask that;
     // a ?falcon= link never starts on its own).
+    // A root `closeWhenDone: true` on falcon:run closes the panel once that run finishes
+    // with nothing failed (Platform Check's "Close Falcon after a successful import").
     const fromPage = run => e => {
       if (typeof e.detail !== 'string') return;
       document.dispatchEvent(new CustomEvent('falcon:import-ok'));
       const r = importQueueJson(e.detail, 'a script on this page', { merge: true });
       showPanel();
-      if (run && r && (r.added || r.merged)) whenQueueSettles(20000).then(() => start());
+      if (run && r && (r.added || r.merged)) {
+        let close = false;
+        try { close = JSON.parse(e.detail).closeWhenDone === true; } catch (x) { /* importQueueJson logged it */ }
+        whenQueueSettles(20000).then(() => { start(); _closeWhenDone = close && running; });
+      }
     };
     document.addEventListener('falcon:import', fromPage(false));
     document.addEventListener('falcon:run', fromPage(true));

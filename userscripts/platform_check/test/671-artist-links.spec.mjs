@@ -119,6 +119,9 @@ test('existing links, the Falcon batch and the seeded edit page', { tag: '@unit'
   check(back.note === 'from Platform Check — “x”' && back.items.length === 2, `Falcon's JSON model, { note, items }, UTF-8 intact (${JSON.stringify(back)})`);
   check(back.items[0].entityType === 'artist' && back.items[0].mbid === 'a' && back.items[0].name === 'Björk' && back.items[0].urls.map(u => u.url).join() === 'https://u/1,https://u/2' && back.items[0].urls[0].linkTypeId === null && back.items[1].entityType === 'label',
     'one item per artist or label, its links in urls[]');
+  check(!('closeWhenDone' in back), 'no closeWhenDone unless asked');
+  const closing = JSON.parse(f.pcFalconJson([{ type: 'artist', mbid: 'a', name: 'A', urls: ['https://u/1'] }], 'n', 'nm', true));
+  check(closing.closeWhenDone === true && closing.name === 'nm' && closing.items.length === 1, `"Close Falcon after a successful import": closeWhenDone at the root (${JSON.stringify(closing)})`);
   const typed = JSON.parse(new TextDecoder().decode(Uint8Array.from(atob(f.pcFalconPayload([
     { type: 'artist', mbid: 'a', name: 'A', urls: ['https://www.qobuz.com/us-en/interpreter/miami-nights-1984/972118', 'https://music.apple.com/us/artist/1', 'https://www.deezer.com/artist/1'] },
     { type: 'label', mbid: 'l', name: 'L', urls: ['https://www.qobuz.com/us-en/label/x/download-streaming-albums/1'] }], 'n')), c => c.charCodeAt(0))));
