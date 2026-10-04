@@ -24,19 +24,21 @@ A decision about one script or feature lives on **its GitHub issue** — includi
 
 Bias to action, but know the edges.
 
-**Just go:** an issue **assigned to the bot** → start; after finishing one task, move to the next obvious one (don't pause to wait); push direct to `main` as the bot (small fixes → `main`; substantial work → feature branch `<topic>-<issue>`, merged when ready, then **delete the branch** remote + local after a verified merge — [DEVELOP](DEVELOP.md#branches-and-channels)); your own research/test **reads** of MusicBrainz.
+**Just go:** an issue **assigned to the bot** → start; after finishing one task, move to the next obvious one (don't pause to wait); push direct to `main` (under your environment's identity — see [GitHub work](#github-work)) (small fixes → `main`; substantial work → feature branch `<topic>-<issue>`, merged when ready, then **delete the branch** remote + local after a verified merge — [DEVELOP](DEVELOP.md#branches-and-channels)); your own research/test **reads** of MusicBrainz.
 
 **Confirm first:** a **new feature or non-trivial follow-on** you weren't asked for — even an "obvious" one, even a third party's suggestion (ask scope, not speed); a **new MusicBrainz request inside a shipped userscript** (server load); anything else hard to reverse or outward-facing beyond the above.
 
 **When the maintainer iterates by screenshot or terse note:** implement what's shown and ship — don't ask to confirm layout. Read every GitHub comment **in full** (instructions hide under `<details>` and past the first line); act on every imperative; a "ping" means engage substantively.
 
-## Bot GitHub work
+## GitHub work
 
-All assistant git/GitHub activity goes through **`claude-ai-milic`**, never the maintainer's `gh`. Full recipe: [STANDARDS §7](STANDARDS.md#standard-7), [DEVELOP → Bot identity](DEVELOP.md#bot-identity). Essentials:
+Who you post as depends on where you run:
 
-- Token at **`dev/.github-credentials.json`** (gitignored). Set it before any `gh` write *and* for commits — `gh` silently uses the maintainer's keyring when unset: `$env:GH_TOKEN = (Get-Content dev/.github-credentials.json | ConvertFrom-Json).token`
-- Commit as the bot with `-c user.name=… -c user.email=…`; **`git merge` needs the same `-c` flags**. Verify the author after.
-- Never `git push -u` a `user:TOKEN@…` URL (it persists the token into `.git/config`) — push the token URL without `-u`.
+- **Locally (Claude Code on the maintainer's machine)** the `gh` login is the *maintainer's own*, for human use — so assistant activity goes through the separate **`claude-ai-milic`** bot account to stay attributable ([STANDARDS §7](STANDARDS.md#standard-7), [DEVELOP → Bot identity](DEVELOP.md#bot-identity)). Its token is at **`dev/.github-credentials.json`** (gitignored); set it before any `gh` write *and* for commits, or `gh` silently posts as the maintainer: `$env:GH_TOKEN = (Get-Content dev/.github-credentials.json | ConvertFrom-Json).token`. Commit with `-c user.name=… -c user.email=…` (and **`git merge` needs the same `-c` flags**); verify the author after. Never `git push -u` a `user:TOKEN@…` URL (it persists the token into `.git/config`) — push the token URL without `-u`.
+- **In the cloud** there is no bot token, and that's intended: run as the environment's own GitHub identity (the maintainer's). The activity is already labelled "with Claude", so it stays distinguishable without the extra account — don't try to source a bot token or any secret.
+
+The rest applies whoever you post as:
+
 - Install links pin to a **commit SHA**, not a branch ([§10](STANDARDS.md#standard-10)): `[Install @<version>](…/raw/<sha>/<path>.user.js)`. Feature branch → pinned only; on main/stable → pinned + latest. **curl-check every link**: the repo slug is `majkinetor/musicbrainz-userscripts` (not the `mb-userscripts` folder), so folder-name raw links 404.
 - Post comments via `gh … --body-file <real .md>`, never an inline `--body` built from a JS/template string (it posts literal `` \` `` / `\n`); don't backslash-escape markdown.
 - Don't write `#1` / `#2` for "list point N" — GitHub links `#N` to issue/PR N.
