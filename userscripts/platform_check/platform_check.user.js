@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Platform Check
 // @namespace    http://tampermonkey.net/
-// @version      2026.10.4.150000
+// @version      2026.10.4.160000
 // @description  Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+DQogIDx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CiAgDQogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJhMWE1MiIgc3Ryb2tlLXdpZHRoPSI5IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik00MCA4OCBBMzQgMzQgMCAwIDEgNDAgNDAiLz4NCiAgICA8cGF0aCBkPSJNMjkgOTkgQTUwIDUwIDAgMCAxIDI5IDI5Ii8+DQogICAgPHBhdGggZD0iTTg4IDg4IEEzNCAzNCAwIDAgMCA4OCA0MCIvPg0KICAgIDxwYXRoIGQ9Ik05OSA5OSBBNTAgNTAgMCAwIDAgOTkgMjkiLz4NCiAgPC9nPg0KICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyMCIgZmlsbD0iI2U4MjAxYSIvPg0KPC9zdmc+DQo=
@@ -1906,6 +1906,8 @@ ${MBU_TOKENS}${MBU_UI_CSS}
   #sidebar .online-search-box a img.external,
   #sidebar .online-search-box a img[src*="external"] { display: none !important; }
   .online-search-box .pc-icon-btn:hover { background: var(--mbu-bg-sunken); color: var(--mbu-text); }
+  #mb-links-btn.pc-links-on { color: var(--mbu-text); }
+  #mb-links-btn .pc-links-n { display: inline-block; min-width: 16px; margin-left: 4px; padding: 1px 5px; border-radius: 8px; background: var(--mbu-accent); color: var(--mbu-accent-fg); font-size: 10px; font-weight: 700; line-height: 1.3; text-align: center; vertical-align: 1px; }
   /* icons mode (toggle "Show platform icons"): the brand glyph REPLACES the ✓/×/~ text and carries the
    * state via a per-row class (pc-st-*): RING = already in MB (the only thing a ring means) · full colour =
    * clean match · GRAY icon+name = found but track-count mismatch · faint = not found. Match vs mismatch is
@@ -7186,7 +7188,10 @@ const pcLinkedCached = urls => (_pcLinked && _pcLinked.key === pcLinkedKey(urls)
 const pcNewCount = (rows, linked) => rows.reduce((s, r) => s + Object.values(r.cells).reduce((t, cell) => t + pcMarkCell(r, cell, linked).filter(c => c.state === 'new').length, 0), 0);
 function pcShowLinksCount(n) {
     const b = document.getElementById('mb-links-btn');
-    if (b) b.textContent = n ? `Artists & labels (${n})` : 'Artists & labels';
+    if (!b) return;
+    // the count as a badge, like an unread count, so a release with links to add stands out
+    b.innerHTML = n ? `Artists &amp; labels<span class="pc-links-n">${n}</span>` : 'Artists &amp; labels';
+    b.classList.toggle('pc-links-on', !!n);
 }
 async function pcCountLinks() {
     if (!GM_getValue('pc:links-count', true)) return;

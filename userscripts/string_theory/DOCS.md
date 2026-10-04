@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-10-04 13:09 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-10-04 13:13 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -1237,7 +1237,7 @@ A release without a barcode can borrow one: copy it (from the cover, a store pag
 
 ### Artists and labels
 
-A matched album usually names its artists' pages on that platform, and sometimes its label's. **Artists & labels**, in the footer next to **+** and **↗**, lists them against this release's MusicBrainz artists and labels: one row per artist or label, one column per platform. Once the scans finish, the button shows how many links would be added, e.g. **Artists & labels (25)**.
+A matched album usually names its artists' pages on that platform, and sometimes its label's. **Artists & labels**, in the footer next to **+** and **↗**, lists them against this release's MusicBrainz artists and labels: one row per artist or label, one column per platform. Once the scans finish, the button shows how many links would be added as a purple badge beside its name, like an unread count.
 
 | Mark |                                                                                                                                                       |
 | ---- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |

@@ -203,7 +203,7 @@ test('a track\'s artists are its artist column, not the "Recording artist:" line
 test('Artists & labels shows how many links it would add, from one lookup', { tag: '@unit' }, async () => {
   const src = await functionSource('platform_check', ['pcUrlKey', 'pcMarkCell', 'pcLinkedKey', 'pcLinkedFresh', 'pcLinkedCached', 'pcNewCount', 'pcShowLinksCount', 'pcCountLinks']);
   const run = async (setting) => {
-    const btn = { textContent: 'Artists & labels' }, calls = [];
+    const btn = { innerHTML: 'Artists &amp; labels', classList: { on: false, toggle(c, v) { this.on = v; } } }, calls = [];
     let key = null;
     const rows = [
       { type: 'artist', mbid: 'a', name: 'A', cells: { discogs: [{ url: 'https://www.discogs.com/artist/1' }], deezer: [{ url: 'https://www.deezer.com/artist/2' }] } },
@@ -219,10 +219,10 @@ test('Artists & labels shows how many links it would add, from one lookup', { ta
     return { btn, calls, env, rows };
   };
   const on = await run(true);
-  check(on.btn.textContent === 'Artists & labels (2)', `two links to add (Deezer A, Discogs B; not A's linked one or the uncertain account): "${on.btn.textContent}"`);
+  check(on.btn.innerHTML === 'Artists &amp; labels<span class="pc-links-n">2</span>' && on.btn.classList.on, `two links to add, as a badge (Deezer A, Discogs B; not A's linked one or the uncertain account): "${on.btn.innerHTML}"`);
   check(on.calls.length === 1, `one lookup (${on.calls.length})`);
   await on.env.pcLinkedCached(on.rows.flatMap(r => Object.values(r.cells).flat().map(c => c.url)));
   check(on.calls.length === 1, 'opening the table reuses it');
   const off = await run(false);
-  check(off.calls.length === 0 && off.btn.textContent === 'Artists & labels', 'setting off: nothing asked, no number');
+  check(off.calls.length === 0 && off.btn.innerHTML === 'Artists &amp; labels' && !off.btn.classList.on, 'setting off: nothing asked, no number');
 });
