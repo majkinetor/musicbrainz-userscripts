@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.4.100100
+// @version      2026.10.4.120000
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E
@@ -3493,7 +3493,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     #tc-bar b{color:var(--mbu-accent-text)}#tc-bar .sp{flex:1 1 0;min-width:0}
     #tc-bar > .tc-btn{flex:none;white-space:nowrap}   /* #280: Match / ▾ never shrink → never wrap to 2 lines when toast text appears */
     .tc-globalstat{flex:none;font-size:12px;color:var(--mbu-text-weak);font-style:italic;white-space:nowrap}
-    .tc-am-lbl{flex:none;display:inline-flex;align-items:center;gap:5px;font-size:12px;color:var(--mbu-text-dim);white-space:nowrap}.tc-am-lbl select{font:12px Arial;padding:1px 3px}
+    .tc-am-lbl{flex:none;display:inline-flex;align-items:center;gap:5px;font-size:12px;color:var(--mbu-text-dim);white-space:nowrap}.tc-am-lbl b{color:var(--mbu-accent)}.tc-applymode{display:inline-flex;align-items:center;gap:3px}.tc-applymode input{position:absolute;opacity:0;width:0;height:0;margin:0}.tc-applymode label{cursor:pointer;padding:1px 2px;border-bottom:2px solid transparent;color:var(--mbu-text-dim)}.tc-applymode label:hover{color:var(--mbu-text)}.tc-applymode label:has(input:checked){color:var(--mbu-text);font-weight:bold;border-bottom-color:var(--mbu-accent)}.tc-applymode label:has(input:focus-visible){outline:2px solid var(--mbu-accent);outline-offset:1px}.tc-am-slash{color:var(--mbu-text-weak)}
     .tc-globalstat.tc-unres{font-style:normal;font-weight:bold;color:var(--mbu-text-on-accent);background:#d6342c;padding:1px 8px;border-radius:9px}
     /* #227: persistent "N missing Discogs links" badge (teal, like the DISC match badge) */
     .tc-discstat{flex:none;font-size:12px;color:var(--mbu-text-weak);font-style:italic;white-space:nowrap}
@@ -4203,13 +4203,13 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
       `<thead><tr>${COLS.map(c => `<th class="c-${c.k}">${c.label}${c.k === 'art' || c.k === 'act' || c.k === 'badge' ? '' : '<span class="tc-resizer"></span>'}</th>`).join('')}</tr></thead><tbody></tbody>`;
     return t;
   }
-  // the artist-selection-mode dropdown now lives in the Artist column header (right-aligned)
-  const AM_SELECT = `<select class="tc-applymode" title="when you pick an artist, apply it to…"><option value="all">all matching tracks</option><option value="single">single track</option></select>`;
-  // wire the apply-mode combo (now lives in the toolbar, was in the Artist header)
+  // the artist-selection-mode radios (all / one) — live in the toolbar; value is SETTINGS.applyMode ('all' | 'single')
+  let _amSeq = 0;
+  const amRadios = () => { const n = 'tc-am-' + (++_amSeq); return `<span class="tc-applymode" role="radiogroup" title="when you pick an artist, apply it to…"><label title="all matching tracks"><input type="radio" name="${n}" value="all">all</label><span class="tc-am-slash">/</span><label title="single track"><input type="radio" name="${n}" value="single">one</label></span>`; };
+  function syncApplyMode() { const v = SETTINGS.applyMode || 'all'; document.querySelectorAll('.tc-applymode input').forEach(r => { r.checked = r.value === v; }); }
   function wireApplyMode(root) {
     const am = (root || document).querySelector('.tc-applymode'); if (!am) return;
-    am.value = SETTINGS.applyMode || 'all';
-    am.onchange = () => { SETTINGS.applyMode = am.value; saveSettings(); document.querySelectorAll('.tc-applymode').forEach(s => { s.value = am.value; }); Log.info('applyMode =', am.value); };
+    am.querySelectorAll('input').forEach(r => { r.checked = r.value === (SETTINGS.applyMode || 'all'); r.onchange = () => { if (!r.checked) return; SETTINGS.applyMode = r.value; saveSettings(); syncApplyMode(); Log.info('applyMode =', r.value); }; });
   }
   // #330: per-medium "Pregap" / "Data track" checkboxes that drive MB's writable medium
   // observables hasPregap()/hasDataTracks() (the same thing native MB's buttons do), then
@@ -4297,12 +4297,6 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     container.innerHTML = '';
     const wrap = document.createElement('div'); wrap.className = 'tc-tablewrap'; container.appendChild(wrap);
     const table = buildTable(); wrap.appendChild(table); wireResizers(table);
-    const am = table.querySelector('.tc-applymode');
-    if (am) {
-      am.value = SETTINGS.applyMode || 'all';
-      am.onchange = () => { SETTINGS.applyMode = am.value; saveSettings(); document.querySelectorAll('.tc-applymode').forEach(s => { s.value = am.value; }); Log.info('applyMode =', am.value); };
-      ['mousedown', 'mousemove', 'click'].forEach(ev => am.addEventListener(ev, e => e.stopPropagation()));   // don't let the column resizer hijack it
-    }
     // Footer per medium: "Add N track(s)" (only when the medium can take new tracks —
     // a disc-ID medium has a fixed track count, #125) PLUS the pregap/data toggles. The
     // toggles render even on a locked medium (disabled, #330), so every medium shows them.
@@ -6792,7 +6786,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
   }
 
   const BAR = `<div class="tc-tools"><span class="tc-toolslabel" data-act="toolsmenu" title="more tools &amp; customize">Tools ▾</span><span class="tc-toolbtns"></span></div>`
-    + `<span class="tc-discstat"></span><span class="tc-globalstat"></span><label class="tc-am-lbl"><b>Change</b> ${AM_SELECT}</label><span class="tc-tbsep"></span><button class="tc-btn primary" data-act="match" title="search MusicBrainz for the unmatched artists">⚡ Match</button>`
+    + `<span class="tc-discstat"></span><span class="tc-globalstat"></span><span class="tc-am-lbl"><b>Change:</b> ${amRadios()}</span><span class="tc-tbsep"></span><button class="tc-btn primary" data-act="match" title="search MusicBrainz for the unmatched artists">⚡ Match</button>`
     + `<button class="tc-btn tc-caret" data-act="revertmenu" title="revert / clear all">▾</button>`;   // gear moved to the Apollo launcher
 
   /* ── floating window (kept for tests; the in-page table is the real UI) ── */
