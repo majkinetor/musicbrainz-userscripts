@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Platform Check
 // @namespace    http://tampermonkey.net/
-// @version      2026.10.4.180000
+// @version      2026.10.4.190000
 // @description  Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+DQogIDx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CiAgDQogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJhMWE1MiIgc3Ryb2tlLXdpZHRoPSI5IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik00MCA4OCBBMzQgMzQgMCAwIDEgNDAgNDAiLz4NCiAgICA8cGF0aCBkPSJNMjkgOTkgQTUwIDUwIDAgMCAxIDI5IDI5Ii8+DQogICAgPHBhdGggZD0iTTg4IDg4IEEzNCAzNCAwIDAgMCA4OCA0MCIvPg0KICAgIDxwYXRoIGQ9Ik05OSA5OSBBNTAgNTAgMCAwIDAgOTkgMjkiLz4NCiAgPC9nPg0KICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyMCIgZmlsbD0iI2U4MjAxYSIvPg0KPC9zdmc+DQo=
@@ -1907,6 +1907,20 @@ ${MBU_TOKENS}${MBU_UI_CSS}
   #sidebar .online-search-box a img[src*="external"] { display: none !important; }
   .online-search-box .pc-icon-btn:hover { background: var(--mbu-bg-sunken); color: var(--mbu-text); }
   #mb-links-btn.pc-links-on { color: var(--mbu-text); }
+  /* #674: the barcodes the platforms report, on a release that has none */
+  #mb-found-bc { border: 1px dashed currentColor; color: var(--mbu-accent-text); padding: 1px 5px; }
+  #pc-bc-pop { position: fixed; overflow-y: auto; box-sizing: border-box; z-index: var(--mbu-z-pop); width: 250px; padding: 6px; background: var(--mbu-bg); color: var(--mbu-text); border: 1px solid var(--mbu-border); border-radius: var(--mbu-radius); box-shadow: var(--mbu-shadow-lg); font: 12px var(--mbu-font); }
+  #pc-bc-pop .pc-bc-h { margin: 0 4px 4px; font-size: 10px; font-weight: 700; letter-spacing: .4px; text-transform: uppercase; color: var(--mbu-text-dim); }
+  #pc-bc-pop .pc-bc-opt { display: grid; grid-template-columns: 1fr auto; gap: 2px 8px; padding: 5px 6px; border-radius: var(--mbu-radius); cursor: pointer; }
+  #pc-bc-pop .pc-bc-opt:hover { background: var(--mbu-bg-hover); }
+  #pc-bc-pop .pc-bc-code { font: 12px var(--mbu-font-mono); }
+  #pc-bc-pop .pc-bc-use { font-size: 11px; color: var(--mbu-accent-text); }
+  #pc-bc-pop .pc-bc-who, #pc-bc-pop .pc-bc-fmt { grid-column: 1 / -1; font-size: 11px; color: var(--mbu-text-weak); }
+  #pc-bc-pop .pc-bc-plat svg { vertical-align: -2px; margin-right: 2px; }
+  #pc-bc-pop .pc-bc-same { color: var(--mbu-ok); }
+  #pc-bc-pop .pc-bc-other { color: var(--mbu-warn); }
+  #pc-bc-pop .pc-bc-mb a { color: inherit; text-decoration: underline; }
+  #pc-bc-pop .pc-bc-hint { margin: 4px 4px 0; padding-top: 5px; border-top: 1px solid var(--mbu-divider); font-size: 11px; color: var(--mbu-text-weak); }
   #mb-links-btn .pc-links-n { display: inline-block; min-width: 16px; margin-left: 4px; padding: 1px 5px; border-radius: 8px; background: var(--mbu-accent); color: var(--mbu-accent-fg); font-size: 10px; font-weight: 700; line-height: 1.3; text-align: center; vertical-align: 1px; }
   /* icons mode (toggle "Show platform icons"): the brand glyph REPLACES the ✓/×/~ text and carries the
    * state via a per-row class (pc-st-*): RING = already in MB (the only thing a ring means) · full colour =
@@ -1953,10 +1967,10 @@ ${MBU_TOKENS}${MBU_UI_CSS}
      the panel doesn't jump/flash as results stream in. */
   @keyframes pcRise { from { opacity: 0; transform: translateY(-3px); } to { opacity: 1; transform: none; } }
   #mb-pc-panel .pc-row.pc-rise { animation: pcRise .28s ease; }
-  /* (#422) the ↻ refresh button doubles as the progress indicator: it spins (and is
-     unclickable) while scans run; the scan duration lands in its tooltip afterwards */
+  /* (#422) the ↻ refresh button doubles as the progress indicator: it spins while scans
+     run (a click stops them, #674); the scan duration lands in its tooltip afterwards */
   @keyframes pcSpin { to { transform: rotate(360deg); } }
-  #mb-refresh-btn.pc-scanning { display: inline-block; animation: pcSpin 1s linear infinite; pointer-events: none; color: var(--mbu-info); }
+  #mb-refresh-btn.pc-scanning { display: inline-block; animation: pcSpin 1s linear infinite; color: var(--mbu-info); }
   /* barcode mismatch (#182): a thin amber bar on the row's left edge — the barcode
      itself is never shown in the dash, only in the row tooltip + the log. */
   #mb-pc-panel .pc-row.pc-barcode-diff { box-shadow: inset 3px 0 0 #e0892a; }
@@ -2099,6 +2113,7 @@ ${MBU_TOKENS}${MBU_UI_CSS}
       <h3 style="margin: 0; font-size: 12px; font-weight: bold; text-transform: uppercase; letter-spacing: 0.5px; color: var(--mbu-text-dim);">Platform Check</h3>
       <span id="mb-refresh-btn" class="pc-icon-btn" title="Refresh — clear cache and re-scan" style="${iconBtn}">↻</span>
       <span id="mb-pasted-bc" class="pc-icon-btn" title="" style="${iconBtn} display: none; font-size: 10px; white-space: nowrap;"></span>
+      <span id="mb-found-bc" class="pc-icon-btn" title="" style="${iconBtn} display: none; font-size: 10px; white-space: nowrap;"></span>
     </div>
   </div>
 </div>
@@ -2731,16 +2746,43 @@ appendLog('System', mbuStartupInfo('Platform Check') + ' — startup');
 // MusicBrainz's /ws/2 goes through the shared request gate (#633): its slot first, and its
 // hold after a 429/503 (one retry, which waits the hold out); everything else goes straight.
 const pcGateLog = (lv, m) => appendLog('MusicBrainz', m, lv === 'warn' ? 'warn' : undefined);
+// A cancelled scan (#674: a barcode picked or pasted mid-scan) is dropped where it waits: every
+// request it has in flight is aborted and never answers, so the scan's code never runs on to
+// write a row the next scan owns. A request is the scan's when it was made while one ran; it
+// carries that scan's number (PC_SCAN.n), and one made after the cancel by a scan still on its
+// way to the network (behind the MusicBrainz gate) is never sent.
+const PC_SCAN = { n: 0, busy: false, live: new Set() };
+const pcScanOf = () => (PC_SCAN.busy ? PC_SCAN.n : null);
+const pcStale = n => n != null && n !== PC_SCAN.n;
+function pcCancelScan() {
+    PC_SCAN.n++;
+    PC_SCAN.live.forEach(req => { try { req.abort(); } catch (e) {} });
+    PC_SCAN.live.clear();
+    // what the scans share would wait on a dropped request for good: asked again instead
+    // (a token or session already fetched stays: _appleTok, _sdKey; Amazon's is asked again)
+    _appleTokP = null; _sdKeyP = null; _amzSession = null;
+    searchChain = Promise.resolve();
+}
+// GM_xmlhttpRequest for a scan's request: resolve() is never called once the scan is cancelled
+function pcGmRequest(opts, resolve, n) {
+    if (pcStale(n)) return;
+    let req = null;
+    const done = f => (...a) => { PC_SCAN.live.delete(req); if (!pcStale(n)) resolve(f(...a)); };
+    opts.onload = done(opts.onload); opts.onerror = done(opts.onerror); opts.ontimeout = done(opts.ontimeout);
+    req = GM_xmlhttpRequest(opts);
+    if (n != null && req && req.abort) PC_SCAN.live.add(req);
+}
 async function gmGet(url, o) {
     if (!mbnGated(url)) return gmGetRaw(url, o);
+    const n = o && 'scan' in o ? o.scan : pcScanOf();   // { scan: null }: not a scan's, never dropped
     for (let attempt = 1; ; attempt++) {
         await mbnSlot({ label: '/ws/2/' + url.split('/ws/2/').pop(), log: pcGateLog });
-        const r = await gmGetRaw(url, o);
+        const r = await gmGetRaw(url, { ...o, scan: n });
         const a = await mbnAnswer(r.status, n => mbnRawHeader(r.responseHeaders, n), { log: pcGateLog });
         if (!a.throttled || attempt >= 2) return r;
     }
 }
-function gmGetRaw(url, { responseType, headers, timeout = 15000, anonymous } = {}) {
+function gmGetRaw(url, { responseType, headers, timeout = 15000, anonymous, scan = pcScanOf() } = {}) {
     return new Promise((resolve) => {
         const t0 = Date.now();
         const opts = {
@@ -2757,31 +2799,32 @@ function gmGetRaw(url, { responseType, headers, timeout = 15000, anonymous } = {
             timeout,
             onload(res) {
                 const ms = Date.now() - t0;
-                resolve({ ok: res.status >= 200 && res.status < 400, status: res.status, finalUrl: res.finalUrl || url, responseText: res.responseText || '', responseHeaders: res.responseHeaders || '', ms });
+                return { ok: res.status >= 200 && res.status < 400, status: res.status, finalUrl: res.finalUrl || url, responseText: res.responseText || '', responseHeaders: res.responseHeaders || '', ms };
             },
-            onerror(err)  { resolve({ ok: false, status: 0, finalUrl: url, responseText: '', error: String(err?.error || err?.statusText || err), ms: Date.now() - t0 }); },
-            ontimeout()   { resolve({ ok: false, status: 0, finalUrl: url, responseText: '', error: 'timeout', ms: Date.now() - t0 }); },
+            onerror(err)  { return { ok: false, status: 0, finalUrl: url, responseText: '', error: String(err?.error || err?.statusText || err), ms: Date.now() - t0 }; },
+            ontimeout()   { return { ok: false, status: 0, finalUrl: url, responseText: '', error: 'timeout', ms: Date.now() - t0 }; },
         };
         if (responseType) opts.responseType = responseType;
         if (anonymous) opts.anonymous = true;   // omit the browser's ambient cookies
-        GM_xmlhttpRequest(opts);
+        pcGmRequest(opts, resolve, scan);
     });
 }
 
 // POST counterpart of gmGet, used for the Tidal client-credentials token grant.
 function gmPost(url, data, { headers, timeout = 15000, anonymous } = {}) {
+    const scan = pcScanOf();
     return new Promise((resolve) => {
         const t0 = Date.now();
         const opts = {
             method: 'POST', url, data,
             headers: { 'Accept-Language': 'en-US,en;q=0.9', ...headers },
             timeout,
-            onload(res)  { resolve({ ok: res.status >= 200 && res.status < 400, status: res.status, finalUrl: res.finalUrl || url, responseText: res.responseText || '', responseHeaders: res.responseHeaders || '', ms: Date.now() - t0 }); },
-            onerror(err) { resolve({ ok: false, status: 0, responseText: '', error: String(err?.error || err?.statusText || err), ms: Date.now() - t0 }); },
-            ontimeout()  { resolve({ ok: false, status: 0, responseText: '', error: 'timeout', ms: Date.now() - t0 }); },
+            onload(res)  { return { ok: res.status >= 200 && res.status < 400, status: res.status, finalUrl: res.finalUrl || url, responseText: res.responseText || '', responseHeaders: res.responseHeaders || '', ms: Date.now() - t0 }; },
+            onerror(err) { return { ok: false, status: 0, responseText: '', error: String(err?.error || err?.statusText || err), ms: Date.now() - t0 }; },
+            ontimeout()  { return { ok: false, status: 0, responseText: '', error: 'timeout', ms: Date.now() - t0 }; },
         };
         if (anonymous) opts.anonymous = true;
-        GM_xmlhttpRequest(opts);
+        pcGmRequest(opts, resolve, scan);
     });
 }
 
@@ -2978,6 +3021,8 @@ async function beatportApi(path) {
 let MB_BARCODE = null;
 // #673: the release's own barcode, without one pasted on the page (MB_BARCODE has that too)
 let MB_OWN_BARCODE = null;
+// #674: platform → { code, format } for each match that reports a barcode
+const PC_FOUND_BC = new Map();
 // Normalise a barcode for comparison: digits only, leading zeros stripped (a
 // 12-digit UPC-A and its 13-digit EAN form "0…" are the same barcode).
 function normBarcode(b) { return String(b || '').replace(/\D/g, '').replace(/^0+/, ''); }
@@ -3110,6 +3155,7 @@ function updateRow(p, { url, mbTracks, remoteTracks, year, label, source, fromCa
     // Format incompatibility (#182) — only marked when the option is on, since
     // "digital link on a physical release" is common enough to be noise otherwise.
     const fmtDiff = !!(url && GM_getValue('pc:respect-format', true) && formatMismatch(p, format));
+    pcNoteFoundBarcode(p, url ? barcode : null, format);   // #674
 
     // Source-on-hover: tooltip on the provider name. "via MB rels", "via
     // Wikidata", "via API search · cached", etc. Replaces the visible badge
@@ -6348,6 +6394,8 @@ function resetRows() {
         wireRowOpen(p);
     }
     refreshCompactStrip();   // #355: clear the strip while re-scanning
+    PC_FOUND_BC.clear();     // #674
+    pcShowFoundBarcodes();
 }
 
 // VA detection used by both the DOM and API parse paths. Hoisted so both
@@ -6673,23 +6721,29 @@ function parseMbData(data) {
 }
 
 // (#422, per maintainer review) the ↻ button ITSELF is the progress indicator — it spins
-// and can't be clicked while scans run (no separate icon, no ticking seconds, no end-state
-// noise); the total scan time goes into the button's tooltip when done.
+// while scans run (no separate icon, no ticking seconds, no end-state noise), and a click
+// then stops them (#674); the total scan time goes into the button's tooltip when done.
 let _scanT0 = 0;
 const REFRESH_TITLE = 'Refresh — clear cache and re-scan';
 function setScanStatus(state) {
     const btn = document.getElementById('mb-refresh-btn'); if (!btn) return;
-    if (state === 'busy') { _scanT0 = Date.now(); btn.classList.add('pc-scanning'); btn.title = 'Scanning platforms…'; return; }
+    if (state === 'busy') { _scanT0 = Date.now(); btn.classList.add('pc-scanning'); btn.title = 'Scanning platforms… · click to stop'; return; }
     btn.classList.remove('pc-scanning');
     const secs = ((Date.now() - _scanT0) / 1000).toFixed(1);
-    btn.title = state === 'done' ? `${REFRESH_TITLE} (last scan: ${secs}s)` : `${REFRESH_TITLE} (last scan halted — see the log)`;
+    btn.title = state === 'done' ? `${REFRESH_TITLE} (last scan: ${secs}s)`
+        : state === 'stopped' ? `${REFRESH_TITLE} (last scan stopped after ${secs}s)` : `${REFRESH_TITLE} (last scan halted — see the log)`;
 }
 async function runScans() {
     // (#422) thin status wrapper — the scan body lives in runScansInner; `false` = halted.
+    // A scan cancelled by pcCancelScan (#674) never gets here past its await: the next one owns the status.
+    const n = PC_SCAN.n;
+    PC_SCAN.busy = true;
     setScanStatus('busy');
     let ok = false;
     try { ok = await runScansInner() !== false; }
     catch (e) { appendLog('System', `Scan failed: ${e && e.message}`, 'error'); }
+    if (pcStale(n)) return;
+    PC_SCAN.busy = false;
     setScanStatus(ok ? 'done' : 'halt');
 }
 async function runScansInner() {
@@ -7357,7 +7411,14 @@ async function pcOpenLinksTable(btn) {
 document.getElementById('mb-links-btn').addEventListener('click', e => pcOpenLinksTable(e.currentTarget));
 
 // ↻ REFRESH button: clear cached URLs for this MBID, blank the rows, re-run.
-document.getElementById('mb-refresh-btn').addEventListener('click', () => pcRescan('Refresh requested'));
+// ↻ while it spins: stop the scan (#674) — what it found stays, the platforms still out are left unchecked
+document.getElementById('mb-refresh-btn').addEventListener('click', () => {
+    if (!PC_SCAN.busy) { pcRescan('Refresh requested'); return; }
+    pcCancelScan();
+    PC_SCAN.busy = false;
+    setScanStatus('stopped');
+    appendLog('System', 'Scan stopped — the platforms not done yet are left unchecked (↻ scans again)', 'warn');
+});
 
 // ─── Pasted barcode (#673) ──────────────────────────────────────────────────
 // Ctrl+V of a barcode anywhere on a release page that has none: the platforms are
@@ -7389,6 +7450,120 @@ function pcShowPastedBarcode(code) {
     chip.style.display = code ? '' : 'none';
     chip.textContent = code ? `${code} ×` : '';
     chip.title = code ? `Pasted barcode ${code}: the platforms are checked against it, and a link you add adds it to the release too · click to remove it` : '';
+    pcShowFoundBarcodes();   // #674: the found ones give way to the pasted one
+}
+
+// ─── Found barcodes (#674) ──────────────────────────────────────────────────
+// The barcodes the matched platforms report, offered on a release that has none: a
+// button next to ↻ opens a list of them, and picking one is the same as pasting it.
+// updateRow records each platform's (PC_FOUND_BC); resetRows clears them.
+function pcNoteFoundBarcode(p, barcode, format) {
+    const code = barcode && (pcBarcodeOf(String(barcode)) || pcBarcodeOf(normBarcode(barcode).padStart(12, '0')));
+    if (code) PC_FOUND_BC.set(p, { code, format: format || null }); else PC_FOUND_BC.delete(p);
+    pcShowFoundBarcodes();
+}
+// One entry per barcode (UPC-A and its EAN-13 form are one), the platforms that report
+// it, and how its format sits with the release's (physical or digital, as link confidence
+// sees it): 'same' when one of them is in a format the release has, 'other' when every one
+// is in a format it hasn't, else 'unknown'. The ones in the release's format first, then
+// the most reported.
+function pcFoundBarcodes() {
+    const mbCats = formatCategories(MB_FORMAT);
+    const by = new Map();
+    for (const p of PROVIDER_ORDER) {
+        const f = PC_FOUND_BC.get(p); if (!f) continue;
+        const k = normBarcode(f.code);
+        if (!by.has(k)) by.set(k, { code: f.code, platforms: [], fits: [], kinds: new Set() });
+        const e = by.get(k);
+        e.platforms.push(p);
+        const remote = remoteFormatCategories(p, f.format);
+        remote.forEach(x => e.kinds.add(x));
+        e.fits.push(!mbCats.size || !remote.size ? null : [...remote].some(x => mbCats.has(x)));
+    }
+    const rank = { same: 0, unknown: 1, other: 2 };
+    return [...by.values()].map(e => ({
+        code: e.code, platforms: e.platforms, kinds: [...e.kinds],
+        format: e.fits.includes(true) ? 'same' : e.fits.length && e.fits.every(x => x === false) ? 'other' : 'unknown',
+    })).sort((a, b) => rank[a.format] - rank[b.format] || b.platforms.length - a.platforms.length);
+}
+const PC_BARCODE_SVG = '<svg width="13" height="9" viewBox="0 0 13 9" fill="currentColor" style="vertical-align: -1px;"><rect x="0" width="1.4" height="9"/><rect x="2.4" width="0.8" height="9"/><rect x="4.2" width="1.8" height="9"/><rect x="7" width="0.8" height="9"/><rect x="8.8" width="1.4" height="9"/><rect x="11.2" width="0.8" height="9"/><rect x="12.2" width="0.8" height="9"/></svg>';
+function pcShowFoundBarcodes() {
+    const btn = document.getElementById('mb-found-bc');
+    if (!btn) return;
+    const list = MB_OWN_BARCODE || pcPastedBarcode() ? [] : pcFoundBarcodes();
+    btn.style.display = list.length ? '' : 'none';
+    btn.innerHTML = mbuHtml(list.length ? `${PC_BARCODE_SVG} ${list.length}` : '');
+    btn.title = list.length === 1
+        ? `The release has no barcode; ${list[0].platforms.map(p => PROVIDER_NAME[p]).join(', ')} report${list[0].platforms.length === 1 ? 's' : ''} ${list[0].code} · click to choose`
+        : list.length ? `The release has no barcode; the platforms report ${list.length} different ones · click to choose` : '';
+    if (!list.length) document.getElementById('pc-bc-pop')?._pcClose?.();
+}
+// The MusicBrainz releases that already have this barcode, other than this one: [{ id, title,
+// format, date }], [] for none, null when the search failed. Asked once per barcode per page;
+// not a scan's request, so stopping a scan never leaves it waiting.
+const PC_BC_ON_MB = new Map();
+function pcBarcodeOnMb(code) {
+    if (!PC_BC_ON_MB.has(code)) PC_BC_ON_MB.set(code, (async () => {
+        const n = normBarcode(code);
+        const forms = [...new Set([code, n, n.padStart(12, '0'), n.padStart(13, '0')])].filter(f => f.length >= 8);
+        const r = await gmGet(`${MB_ORIGIN}/ws/2/release?query=${encodeURIComponent(`barcode:(${forms.join(' OR ')})`)}&limit=10&fmt=json`, { headers: { Accept: 'application/json' }, scan: null });
+        let j = null; try { j = JSON.parse(r.responseText); } catch (e) {}
+        if (!r.ok || !j) { appendLog('MusicBrainz', `Barcode ${code}: search failed (HTTP ${r.status})`, 'warn'); PC_BC_ON_MB.delete(code); return null; }
+        const on = (j.releases || []).filter(x => x.id !== mbid && normBarcode(x.barcode) === n)
+            .map(x => ({ id: x.id, title: x.title || '', date: x.date || '', format: [...new Set((x.media || []).map(m => m.format).filter(Boolean))].join(' + ') }));
+        appendLog('MusicBrainz', `Barcode ${code}: ${on.length ? 'already on ' + on.map(x => x.id).join(', ') : 'on no other release'}`);
+        return on;
+    })());
+    return PC_BC_ON_MB.get(code);
+}
+const pcEsc = t => String(t).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
+function pcOpenFoundBarcodes(btn) {
+    const old = document.getElementById('pc-bc-pop');
+    if (old) { old._pcClose(); return; }
+    const list = pcFoundBarcodes();
+    if (!list.length) return;
+    const mbKind = [...formatCategories(MB_FORMAT)].join(' and ');
+    const pop = document.createElement('div');
+    pop.id = 'pc-bc-pop';
+    pop.innerHTML = mbuHtml(`<div class="pc-bc-h">Barcodes on the platforms</div>` + list.map(c => `
+      <div class="pc-bc-opt" data-code="${c.code}" title="Use ${c.code} as if it were pasted · right-click: copy it">
+        <span class="pc-bc-code">${c.code}</span><span class="pc-bc-use">use</span>
+        <span class="pc-bc-who">${c.platforms.map(p => `<span class="pc-bc-plat" title="${PROVIDER_NAME[p]}">${stIcon(p, 12)}</span>`).join('')} ${c.platforms.map(p => PROVIDER_NAME[p]).join(', ')}</span>
+        ${c.format === 'same' ? `<span class="pc-bc-fmt pc-bc-same">✓ ${mbKind}, like this release</span>`
+          : c.format === 'other' ? `<span class="pc-bc-fmt pc-bc-other">⚠ ${c.kinds.join(' and ')}: this release is ${mbKind}</span>` : ''}
+        ${pcGtinValid(c.code) ? '' : '<span class="pc-bc-fmt pc-bc-other">⚠ wrong check digit</span>'}
+        <span class="pc-bc-fmt pc-bc-mb">checking MusicBrainz…</span>
+      </div>`).join('') + `<div class="pc-bc-hint">Right-click to copy · Ctrl+V a barcode from anywhere else</div>`);
+    document.body.appendChild(pop);
+    const r = btn.getBoundingClientRect();
+    pop.style.top = `${r.bottom + 4}px`;
+    // clientWidth leaves out the page's scrollbar, which innerWidth counts
+    pop.style.left = `${Math.max(8, Math.min(r.left, document.documentElement.clientWidth - pop.offsetWidth - 8))}px`;
+    pop.style.maxHeight = `${Math.max(120, document.documentElement.clientHeight - r.bottom - 12)}px`;
+    const off = mbuDismissOn(pop, () => pop.remove(), { ignore: '#mb-found-bc' });
+    pop._pcClose = off;
+    // #674: a barcode already on another release is most likely that release's, not this one's
+    pop.querySelectorAll('.pc-bc-opt').forEach(opt => pcBarcodeOnMb(opt.dataset.code).then(on => {
+        const line = opt.querySelector('.pc-bc-mb'); if (!line) return;
+        if (on === null) { line.textContent = "couldn't check MusicBrainz"; return; }
+        if (!on.length) { line.remove(); return; }
+        const r = on[0], more = on.length > 1 ? ` and ${on.length - 1} more` : '';
+        line.classList.add('pc-bc-other');
+        line.innerHTML = mbuHtml(`⚠ already on <a href="${MB_ORIGIN}/release/${r.id}" target="_blank" rel="noopener" title="${pcEsc([r.format, r.date].filter(Boolean).join(' · '))}">${pcEsc(r.title)}</a>${more}`);
+        opt.title = `${opt.dataset.code} is already on another MusicBrainz release — probably that edition's, not this one's · click to use it anyway · right-click: copy it`;
+    }));
+    pop.addEventListener('click', e => {
+        if (e.target.closest('a')) return;   // the release it is already on: opened, not picked
+        const opt = e.target.closest('.pc-bc-opt'); if (!opt) return;
+        off();
+        pcPasteBarcode(opt.dataset.code);
+    });
+    pop.addEventListener('contextmenu', e => {
+        const opt = e.target.closest('.pc-bc-opt'); if (!opt) return;
+        e.preventDefault();
+        navigator.clipboard.writeText(opt.dataset.code)
+            .then(() => mbuToast(`Copied ${opt.dataset.code}`), () => mbuToast(`✗ Couldn't copy ${opt.dataset.code}`, { kind: 'error' }));
+    });
 }
 // A pasted text that is a barcode: EAN-8, UPC-A, EAN-13 or GTIN-14, spaces and dashes allowed
 function pcBarcodeOf(text) {
@@ -7405,6 +7580,8 @@ function pcGtinValid(code) {
     return (10 - sum % 10) % 10 === check;
 }
 function pcRescan(why) {
+    // #674: a scan still running was for the barcode before: it is dropped, not waited for
+    if (PC_SCAN.busy) { pcCancelScan(); appendLog('System', `${why} — the scan running is cancelled`, 'warn'); }
     appendLog('System', `${why} — clearing cache for ${mbid}`, 'warn');
     cacheClear(mbid);
     resetRows();
@@ -7414,10 +7591,6 @@ function pcPasteBarcode(code) {
     if (MB_OWN_BARCODE) {
         mbuToast(`✗ This release already has a barcode (${MB_OWN_BARCODE})`, { kind: 'error' });
         appendLog('System', `Pasted barcode ${code}: the release already has ${MB_OWN_BARCODE} — not used`, 'warn');
-        return;
-    }
-    if (document.getElementById('mb-refresh-btn')?.classList.contains('pc-scanning')) {
-        mbuToast(`⚠ Platform Check is still scanning — paste the barcode again when it's done`, { kind: 'warn' });
         return;
     }
     if (pcPastedBarcode() === code) { mbuToast(`Barcode ${code} is already in use`); return; }
@@ -7437,6 +7610,7 @@ document.addEventListener('paste', e => {
         pcPasteBarcode(code);
     } catch (err) { appendLog('System', `Paste: ${err && err.message}`, 'warn'); }
 });
+document.getElementById('mb-found-bc').addEventListener('click', e => pcOpenFoundBarcodes(e.currentTarget));
 document.getElementById('mb-pasted-bc').addEventListener('click', () => {
     const code = pcPastedBarcode();
     pcSetPastedBarcode(null);
