@@ -229,7 +229,9 @@ export async function replayWs(page, file, { from = PROD, paths = /^\/ws\/2\//, 
   const mapped = key => { for (const [copy, orig] of Object.entries(as)) key = key.split(copy).join(orig); return key; };
   // a search whose terms are OR-ed in whatever order the script gathered them is one
   // search: keyed with its terms sorted
-  const canon = key => key.replace(/([?&]query=)([^&]*%20OR%20[^&]*)/, (m, p, q) => p + q.split('%20OR%20').sort().join('%20OR%20'));
+  // So is a /ws/2/url lookup of several resources, in whatever order the scans found them (#671)
+  const canon = key => key.replace(/([?&]query=)([^&]*%20OR%20[^&]*)/, (m, p, q) => p + q.split('%20OR%20').sort().join('%20OR%20'))
+    .replace(/^(\/ws\/2\/url\?)((?:resource=[^&]*&)+)/, (m, p, rs) => p + rs.split('&').filter(Boolean).sort().join('&') + '&');
   for (const k of Object.keys(store)) if (canon(k) !== k && !store[canon(k)]) store[canon(k)] = store[k];   // recordings made before keys were sorted
   // the answer for one read: recorded now, or from the fixture
   const answer = async u => {
@@ -262,7 +264,10 @@ export async function replayWs(page, file, { from = PROD, paths = /^\/ws\/2\//, 
     // Amazon Music's web-player API (#644) carries its guest session, a request id and the time in
     // the body's "headers" string: a request is keyed without it, or no two runs would match
     const stable = d => (/\.a2z\.com\//.test(url) && d ? String(d).replace(/,"headers":"(?:[^"\\]|\\.)*"/, '') : d);
-    const key = mapped((method === 'GET' ? '' : method + ' ') + url + (data ? ' ' + stable(data) : ''));
+    // Audiomack's signed API (#664) puts a nonce, the time and a signature over them in the URL:
+    // a request is keyed without them, for the same reason
+    const signed = u => (/^https:\/\/api\.audiomack\.com\//.test(u) ? u.replace(/[?&]oauth_(?:nonce|timestamp|signature)=[^&]*/g, '').replace(/^([^?]*)&/, '$1?') : u);
+    const key = mapped((method === 'GET' ? '' : method + ' ') + signed(url) + (data ? ' ' + stable(data) : ''));
     const reply = a => ({ status: a.status, url: a.url, headers: 'content-type: ' + a.type, body: a.b64 ? Buffer.from(a.b64, 'base64') : a.body });
     if (record && !store[key]) {
       let live;

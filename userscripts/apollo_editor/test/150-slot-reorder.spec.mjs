@@ -10,7 +10,7 @@ test.use({ gm: apolloGm() });
 test('dragging a slot handle reorders the credit, in the model and in MusicBrainz', { tag: ['@sandbox', '@login'] }, async ({ page, inject }) => {
   await page.clock.install();   // to run Apollo's debounced re-renders out, below
   const submitted = await openApollo(page, inject, { seed: 'seed-saigon', tab: 'tracklist' });
-  await page.waitForFunction(() => { const l = document.querySelector('.tc-mirror tr .tc-aslot'); return l && l.offsetParent !== null; }, null, { timeout: 20000 });
+  await page.waitForFunction(() => { const l = document.querySelector('.tc-mirror:not(.tc-ri-mirror) tr .tc-aslot'); return l && l.offsetParent !== null; }, null, { timeout: 20000 });
   // matching rebuilds the model as it finishes, and a debounced re-render follows
   // MusicBrainz's DOM changes: both are run out first, or the slots marked below are
   // replaced by fresh ones mid-test
@@ -21,7 +21,7 @@ test('dragging a slot handle reorders the credit, in the model and in MusicBrain
   const r = await page.evaluate(async () => {
     const eventually = async f => { for (let i = 0; i < 400 && !f(); i++) await new Promise(r => setTimeout(r, 25)); return f(); };
     const A = window.__apolloEditor;
-    const row = [...document.querySelectorAll('.tc-mirror tbody tr')].find(r => r.querySelector('.c-art .tc-aslot'));
+    const row = [...document.querySelectorAll('.tc-mirror:not(.tc-ri-mirror) tbody tr')].find(r => r.querySelector('.c-art .tc-aslot'));
     if (!row) return { err: 'no track row' };
     row.querySelector('.c-art .tc-aslot .tc-enter').click();   // a second slot
     const mi = +row.dataset.mi, ti = +row.dataset.ti;

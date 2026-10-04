@@ -44,10 +44,11 @@ test("#467: retire", { tag: ['@sandbox', '@login'] }, async ({ context, page }) 
     await page.click('#falcon-tab-workers');
     await page.evaluate(() => {
       window.__falconTest.setQueue([
-        // 1 worker, 2 items: item 1 is a REAL existing relationship (genuinely rejected,
-        // never submitted -> should retire its card); item 2 is fresh (should complete
+        // 1 worker, 2 items: item 1 is a url MusicBrainz refuses for an artist (genuinely
+        // rejected, never submitted -> should retire its card; a url the artist already has
+        // is nothing to do since #671, not a rejection); item 2 is fresh (should complete
         // on a NEW, replacement card).
-        { id: 'rej', entityType: 'artist', mbid: 'd31f76d2-1d8e-4271-8027-148f375979d7', urls: [{ url: 'https://www.facebook.com/derzirkel6665', linkTypeId: null }]   /* on the sandbox's Der Zirkel already */, urlResults: null, status: 'queued', error: '' },
+        { id: 'rej', entityType: 'artist', mbid: 'd31f76d2-1d8e-4271-8027-148f375979d7', urls: [{ url: 'https://www.deezer.com/album/662911171', linkTypeId: null }]   /* "not allowed for artists" */, urlResults: null, status: 'queued', error: '' },
         { id: 'ok', entityType: 'artist', mbid: '5441c29d-3602-4898-b1a1-b77fa23b8e50', urls: [{ url: 'https://myspace.com/retiretest1', linkTypeId: null }], urlResults: null, status: 'queued', error: '' },
       ]);
       window.__falconTest.cfg.workers = 1;

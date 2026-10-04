@@ -84,7 +84,7 @@ test("#467: item popup", { tag: ['@sandbox', '@login', '@flaky'] }, async ({ con
     });
     await page.evaluate(() => {
       window.__falconTest.setQueue([
-        { id: 'rej', entityType: 'artist', mbid: 'd31f76d2-1d8e-4271-8027-148f375979d7', urls: [{ url: 'https://www.facebook.com/derzirkel6665', linkTypeId: null }]   /* on the sandbox's Der Zirkel already */, name: null, urlResults: null, status: 'queued', error: '' },
+        { id: 'rej', entityType: 'artist', mbid: 'd31f76d2-1d8e-4271-8027-148f375979d7', urls: [{ url: 'https://www.deezer.com/album/662911171', linkTypeId: null }]   /* "not allowed for artists": refused, never submitted (a url already there is nothing to do, #671) */, name: null, urlResults: null, status: 'queued', error: '' },
       ]);
       window.__falconTest.cfg.workers = 1;
     });
@@ -128,7 +128,7 @@ test("#467: item popup", { tag: ['@sandbox', '@login', '@flaky'] }, async ({ con
     ck(afterFocus.cardWidth === '100%', 'the real card is zoomed (maximized), not shown in a separate popup');
     ck(afterFocus.cardOpacity === '1', 'the zoomed retired card is shown at full opacity, not dimmed, so it is actually readable');
     ck(afterFocus.iframeStillSameElement && afterFocus.mark === 'before' && afterFocus.url === iframeBefore.url, `the iframe is the SAME element with the SAME loaded page — never reloaded (mark ${afterFocus.mark}, bodyLen ${iframeBefore.bodyLen} → ${afterFocus.bodyLen})`);
-    ck(afterFocus.bannerVisible && /already present on the entity/i.test(afterFocus.bannerText || ''), `the real error is shown as a banner right on the card (got "${afterFocus.bannerText}")`);
+    ck(afterFocus.bannerVisible && /not allowed for artists/i.test(afterFocus.bannerText || ''), `the real error is shown as a banner right on the card (got "${afterFocus.bannerText}")`);
     ck(afterFocus.zoomBtnText === '❐', 'the card keeps its own maximize/restore toggle, now showing "restore"');
   }
 

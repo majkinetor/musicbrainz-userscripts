@@ -51,12 +51,14 @@ test("#467: harmony", { tag: ['@sandbox', '@login'] }, async ({ context, page })
     ck(bandcampEntries.length === 2 && bandcampEntries[0].url === bandcampEntries[1].url && bandcampEntries[0].linkTypeId !== bandcampEntries[1].linkTypeId, `the SAME bandcamp url appears twice with DIFFERENT link_type_id (268 vs 254) (${JSON.stringify(bandcampEntries.map(t => t.linkTypeId))})`);
 
     // 2. encodeFalconPayload -> parseUrlParam round-trip (what actually crosses the tab boundary).
+    // #671: a base64 payload comes back as the JSON model's text, which Import reads.
     const roundtrip = await page.evaluate((tuples) => {
       const { encodeFalconPayload } = window.__falconTest;
       const payload = encodeFalconPayload(tuples);
       const url = new URL('https://test.musicbrainz.org/?falcon=' + encodeURIComponent(payload));
       history.replaceState(null, '', url.pathname + url.search);
-      return window.__falconTest.parseUrlParam();
+      const seeded = window.__falconTest.parseUrlParam();
+      return seeded && seeded.importText ? JSON.parse(seeded.importText) : seeded;
     }, [...artist, ...label]);
     console.log('roundtrip:', JSON.stringify(roundtrip));
     ck(roundtrip && roundtrip.length === 3, `payload round-trips through encode -> URL -> parseUrlParam (got ${roundtrip?.length})`);

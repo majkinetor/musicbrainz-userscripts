@@ -54,12 +54,12 @@ for (const dark of [true, false]) {
   test(`tracklist inputs show the row through them (${dark ? 'dark userstyle' : 'no userstyle'})`, { tag: ['@cosmetic', '@sandbox', '@login', ...(dark ? ['@web'] : [])] }, async ({ page, inject }) => {
     const css = dark ? (await (await fetch('https://raw.githubusercontent.com/kellnerd/userstyles/main/musicbrainz-dark.user.css')).text()).replace(/^[\s\S]*?@-moz-document[^{]*\{/, '').replace(/\}\s*$/, '') : null;
     await openApollo(page, inject, { seed: 'seed-saigon', before: css ? () => page.addStyleTag({ content: css }) : null, tab: 'tracklist' });
-    await page.waitForSelector('.tc-mirror', { state: 'visible', timeout: 60000 });
+    await page.waitForSelector('.tc-mirror:not(.tc-ri-mirror)', { state: 'visible', timeout: 60000 });
     await settled(page);
     if (dark) await until(() => page.evaluate(() => document.documentElement.getAttribute('data-mbu-theme')), t => t === 'dark');
     const inputs = await page.evaluate(() => {
       const seen = new Map();
-      for (const el of document.querySelectorAll('.tc-mirror input')) { const k = el.className || '(none)'; if (!seen.has(k)) seen.set(k, { cls: k, bg: getComputedStyle(el).backgroundColor }); }
+      for (const el of document.querySelectorAll('.tc-mirror:not(.tc-ri-mirror) input')) { const k = el.className || '(none)'; if (!seen.has(k)) seen.set(k, { cls: k, bg: getComputedStyle(el).backgroundColor }); }
       return [...seen.values()];
     });
     // a field with no state shows the row; one that carries a state (diff, preview, pending) keeps its fill

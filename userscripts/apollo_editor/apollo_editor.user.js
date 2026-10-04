@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.4
+// @version      2026.10.4.100100
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E
@@ -720,7 +720,7 @@
     const sig = JSON.stringify(_riArt.map(p => [p.status, p.gid, !!p.committed, p.creditedAs, p.joinPhrase, p.name, !!p._discogsAddable, !!p._platAddable, p._platConflict && p._platConflict.gid, p._discogsConflict && p._discogsConflict.gid, !!p._pending]));
     if (!force && cell.dataset.sig === sig) return;   // re-applied every tick: only touch the DOM on a change
     cell.dataset.sig = sig; cell.textContent = '';
-    const tbl = document.createElement('table'); tbl.className = 'tc-mirror ' + (SETTINGS.gridRows !== false ? 'gridrows ' : '') + (SETTINGS.layout || 'normal');
+    const tbl = document.createElement('table'); tbl.className = 'tc-mirror tc-ri-mirror ' + (SETTINGS.gridRows !== false ? 'gridrows ' : '') + (SETTINGS.layout || 'normal');
     const tr = tbl.appendChild(document.createElement('tbody')).appendChild(document.createElement('tr'));
     const art = tr.appendChild(document.createElement('td')); art.className = 'c-art';
     const paintBadges = () => riBadges(td);
@@ -3969,9 +3969,11 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
   let ACTIVE = {};   // { mode, tbody, statusEl }
   // transient message (e.g. "matching d/n") shown in every table's Artist header
   const updateStatus = t => { document.querySelectorAll('.tc-medsec .tc-hstatus, #tc-panel .tc-hstatus, .tc-globalstat').forEach(e => { e.textContent = t; e.classList.remove('tc-unres'); }); };
+  // the Tracklist's tables: the release artist cell is drawn as one too (#652), and is not one of them
+  const TL_MIRROR = '.tc-mirror:not(.tc-ri-mirror)';
   // scroll to + focus the first unresolved artist search box (the white, non-matched one)
   function focusFirstUnresolved() {
-    const box = document.querySelector('.tc-mirror .tc-search:not(.matched)'); if (!box) return;
+    const box = document.querySelector(`${TL_MIRROR} .tc-search:not(.matched)`); if (!box) return;
     box.scrollIntoView({ block: 'center', behavior: 'smooth' });
     (box.querySelector('input.nm') || box).focus();
   }
@@ -4362,7 +4364,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
   function colsDefault() { SETTINGS.colWidths = {}; saveSettings(); applyColWidths(); Log.info('columns → default widths'); }
   // fit each text column (#, Title, Length) to its widest content; Artist absorbs the slack
   function colsFit() {
-    const tables = [...document.querySelectorAll('.tc-mirror')]; if (!tables.length) return;
+    const tables = [...document.querySelectorAll(TL_MIRROR)]; if (!tables.length) return;
     SETTINGS.colWidths = SETTINGS.colWidths || {};
     const probe = tables[0].querySelector('tbody input') || tables[0];
     const cx = (colsFit._cv || (colsFit._cv = document.createElement('canvas'))).getContext('2d');
@@ -4377,7 +4379,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
   }
   // "centered" / balanced: give Title and Artist an equal share of the row (Artist flexes to the other half)
   function colsBalanced() {
-    const table = document.querySelector('.tc-mirror'); if (!table) return;
+    const table = document.querySelector(TL_MIRROR); if (!table) return;
     SETTINGS.colWidths = SETTINGS.colWidths || {};
     const total = table.clientWidth || table.offsetWidth || 900;
     const fixed = colW('mv', 32) + colW('num', 38) + colW('len', 52) + colW('badge', 56) + colW('act', 44);

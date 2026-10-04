@@ -11,6 +11,7 @@ import { replayWs, answerGm, onSandbox, sandboxAs, SANDBOX } from '../../../dev/
 //   storage   localStorage entries to seed (Platform Check's cache and queue live there);
 //             every other pc:* entry is cleared first, so no earlier run's cache answers
 //   settle    wait until every scan has finished (default true)
+//             (the Artists & labels count is off: a spec that wants it sets pc:links-count)
 // Returns the replay (or null), for done().
 export async function openPc(page, inject, { release, replay = null, links = null, storage = {}, settle = true, before = null } = {}) {
   const ws = replay ? await replayWs(page, replay, { as: sandboxAs(release), web: true, trim }) : null;
@@ -37,6 +38,9 @@ export async function openPc(page, inject, { release, replay = null, links = nul
       document.querySelector('#sidebar ul.external_links, #sidebar')?.appendChild(a);
     }
   }, { storage, links: links && { drop: links.drop && { source: links.drop.source, flags: links.drop.flags }, add: links.add } });
+  // #671's count of artist and label links asks MusicBrainz once the scans finish, after a
+  // spec has read what it came for: off unless the spec sets it, so no run ends mid-request
+  await page.evaluate(() => { if (GM_getValue('pc:links-count') === undefined) GM_setValue('pc:links-count', false); });
   await inject('platform_check');   // no @run-at: document-end, as a manager runs it
   await page.waitForSelector('#mb-pc-panel', { state: 'attached', timeout: 30000 });
   if (settle) await scansDone(page);

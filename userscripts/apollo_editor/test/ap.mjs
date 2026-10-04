@@ -78,7 +78,7 @@ export async function toTab(page, name) {
     const b = [...document.querySelectorAll('#tc-nav-bar button, #tc-nav-bar a')].find(x => x.textContent.trim().toLowerCase().startsWith(name));
     if (b) b.click();
   }, name.toLowerCase());
-  if (/^track/i.test(name)) await page.waitForSelector('.tc-mirror', { state: 'attached', timeout: 30000 });
+  if (/^track/i.test(name)) await page.waitForSelector('.tc-mirror:not(.tc-ri-mirror)', { state: 'attached', timeout: 30000 });   // not the release artist's (#652)
   await settled(page);   // the tab has loaded what it shows (a medium's tracks) and rendered
   await frames(page);
 }

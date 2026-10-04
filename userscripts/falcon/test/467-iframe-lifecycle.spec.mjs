@@ -114,7 +114,7 @@ test("#467: iframe lifecycle", { tag: ['@sandbox', '@login'] }, async ({ context
     await page.evaluate(() => {
       window.__falconTest.setQueue([
         // a genuinely-rejected item (existing relationship) — never submits, retires its card.
-        { id: 'rej', entityType: 'artist', mbid: 'd31f76d2-1d8e-4271-8027-148f375979d7', urls: [{ url: 'https://www.facebook.com/derzirkel6665', linkTypeId: null }]   /* on the sandbox's Der Zirkel already */, name: null, urlResults: null, status: 'queued', error: '' },
+        { id: 'rej', entityType: 'artist', mbid: 'd31f76d2-1d8e-4271-8027-148f375979d7', urls: [{ url: 'https://www.deezer.com/album/662911171', linkTypeId: null }]   /* "not allowed for artists": refused, never submitted (a url already there is nothing to do, #671) */, name: null, urlResults: null, status: 'queued', error: '' },
       ]);
       window.__falconTest.cfg.workers = 1;
     });
