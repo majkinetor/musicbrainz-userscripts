@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Platform Check
 // @namespace    http://tampermonkey.net/
-// @version      2026.10.4.120000
+// @version      2026.10.4.150000
 // @description  Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+DQogIDx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CiAgDQogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJhMWE1MiIgc3Ryb2tlLXdpZHRoPSI5IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik00MCA4OCBBMzQgMzQgMCAwIDEgNDAgNDAiLz4NCiAgICA8cGF0aCBkPSJNMjkgOTkgQTUwIDUwIDAgMCAxIDI5IDI5Ii8+DQogICAgPHBhdGggZD0iTTg4IDg4IEEzNCAzNCAwIDAgMCA4OCA0MCIvPg0KICAgIDxwYXRoIGQ9Ik05OSA5OSBBNTAgNTAgMCAwIDAgOTkgMjkiLz4NCiAgPC9nPg0KICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyMCIgZmlsbD0iI2U4MjAxYSIvPg0KPC9zdmc+DQo=
@@ -1964,6 +1964,31 @@ ${MBU_TOKENS}${MBU_UI_CSS}
   /* setup panel (#188): section headers + nav-button hovers */
   #mb-provider-modal-card .pc-setup-sec { font-weight: 700; color: var(--mbu-text); font-size: 11px; letter-spacing: .05em; text-transform: uppercase; margin: 14px 0 4px; padding-bottom: 3px; border-bottom: 1px solid var(--mbu-divider); }
   #mb-provider-modal-card .pc-setup-nav:hover { background: var(--mbu-bg-raised); }
+  /* main view: a checkbox per row above, label · control under Appearance */
+  #mb-provider-modal-card .pc-set-row { display: flex; align-items: center; gap: 8px; margin: 5px 4px; }
+  #mb-setup-main label { display: inline-flex; align-items: center; gap: 8px; cursor: pointer; user-select: none; }
+  #mb-provider-modal-card .pc-set-row input[type=checkbox], #mb-provider-modal-card .pc-set-grid input[type=checkbox] { margin: 0; width: 16px; height: 16px; }
+  #mb-setup-main select { font-size: 12px; padding: 1px 3px; }
+  #mb-provider-modal-card .pc-set-grid { display: grid; grid-template-columns: 104px 1fr; align-items: center; column-gap: 10px; row-gap: 6px; margin: 6px 4px 0; }
+  #mb-provider-modal-card .pc-set-k { color: var(--mbu-text-dim); white-space: nowrap; }
+  #mb-provider-modal-card .pc-set-v { display: flex; align-items: center; gap: 8px; min-height: 26px; }
+  #mb-provider-modal-card .pc-set-v > label + label, #mb-provider-modal-card .pc-set-v > .pc-step + .pc-set-lbl, #mb-provider-modal-card .pc-set-v > label + .pc-set-lbl { margin-left: 6px; }
+  #mb-provider-modal-card .pc-set-lbl { font-size: 12px; color: var(--mbu-text-weak); }
+  #mb-provider-modal-card .pc-seg { display: inline-flex; border: 1px solid var(--mbu-border); border-radius: 6px; overflow: hidden; }
+  #mb-provider-modal-card .pc-seg label { gap: 0; }
+  #mb-provider-modal-card .pc-seg input { position: absolute; opacity: 0; pointer-events: none; }
+  #mb-provider-modal-card .pc-seg span { display: block; padding: 3px 10px; font-size: 12px; background: var(--mbu-bg-sunken); color: var(--mbu-text-dim); }
+  #mb-provider-modal-card .pc-seg label + label span { border-left: 1px solid var(--mbu-border); }
+  #mb-provider-modal-card .pc-seg input:checked + span { background: var(--mbu-accent); color: var(--mbu-accent-fg); }
+  #mb-provider-modal-card .pc-seg input:focus-visible + span { outline: 2px solid var(--mbu-accent); outline-offset: -2px; }
+  #mb-provider-modal-card .pc-step { display: inline-flex; align-items: center; border: 1px solid var(--mbu-border); border-radius: 6px; overflow: hidden; }
+  #mb-provider-modal-card .pc-step button { width: 22px; height: 24px; padding: 0; border: 0; border-radius: 0; background: var(--mbu-bg-sunken); color: var(--mbu-text-dim); cursor: pointer; font: 13px var(--mbu-font); }
+  #mb-provider-modal-card .pc-step button:hover { background: var(--mbu-bg-hover); }
+  #mb-provider-modal-card .pc-step input { width: 30px; margin: 0; padding: 0; border: 0; background: transparent; color: var(--mbu-text); text-align: center; font: 12px var(--mbu-font); font-variant-numeric: tabular-nums; -moz-appearance: textfield; appearance: textfield; }
+  #mb-provider-modal-card .pc-step input::-webkit-inner-spin-button, #mb-provider-modal-card .pc-step input::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+  #mb-provider-modal-card .pc-step.pc-off { opacity: .4; pointer-events: none; }
+  #mb-provider-modal-card .pc-set-close { padding: 6px 16px; border: 1px solid var(--mbu-border); border-radius: 6px; background: var(--mbu-bg-raised); color: var(--mbu-text); font: 13px var(--mbu-font); cursor: pointer; }
+  #mb-provider-modal-card .pc-set-close:hover { background: var(--mbu-bg-hover); }
   #mb-provider-modal-card .pc-setup-back:hover { text-decoration: underline; }
   #mb-pc-panel .pc-row.pc-format-diff { box-shadow: inset 3px 0 0 #7e57c2; }
   #mb-pc-panel .pc-row.pc-format-diff.pc-barcode-diff { box-shadow: inset 3px 0 0 #e0892a, inset 6px 0 0 #7e57c2; }
@@ -2183,96 +2208,51 @@ providerModal.innerHTML = `
   <!-- ───────── MAIN view ───────── -->
   <div id="mb-setup-main">
     <div style="display: flex; gap: 8px; margin: 14px 0 4px;">
-      <button class="pc-setup-nav" id="mb-view-order" type="button" style="flex: 1; text-align: left; padding: 8px 10px; background: var(--mbu-bg-raised); border: 1px solid var(--mbu-border); border-radius: 6px; font-size: 13px; cursor: pointer; display: flex; align-items: center; gap: 8px;">⋮⋮ <b>Platforms</b><span style="margin-left: auto; color: var(--mbu-text-weak);">›</span></button>
-      <button class="pc-setup-nav" id="mb-view-auth" type="button" style="flex: 1; text-align: left; padding: 8px 10px; background: var(--mbu-bg-raised); border: 1px solid var(--mbu-border); border-radius: 6px; font-size: 13px; cursor: pointer; display: flex; align-items: center; gap: 8px;">🔑 <b>Authentication</b><span id="mb-auth-badge" style="margin-left: auto; color: var(--mbu-text-weak);">›</span></button>
+      <button class="pc-setup-nav" id="mb-view-order" type="button" style="flex: 1; text-align: left; padding: 8px 10px; background: var(--mbu-bg-raised); border: 1px solid var(--mbu-border); border-radius: 6px; font-size: 13px; cursor: pointer; display: flex; align-items: center; gap: 8px;">⋮⋮ <b>Platforms</b><span id="mb-order-badge" style="margin-left: auto; font-size: 12px; color: var(--mbu-text-weak);">›</span></button>
+      <button class="pc-setup-nav" id="mb-view-auth" type="button" style="flex: 1; text-align: left; padding: 8px 10px; background: var(--mbu-bg-raised); border: 1px solid var(--mbu-border); border-radius: 6px; font-size: 13px; cursor: pointer; display: flex; align-items: center; gap: 8px;">🔑 <b>Logins</b><span id="mb-auth-badge" style="margin-left: auto; font-size: 12px; color: var(--mbu-text-weak);">›</span></button>
     </div>
 
     <div class="pc-setup-sec">Link confidence</div>
-    <div style="padding: 2px 4px;">
-      <div style="display: flex; align-items: center; gap: 8px; margin: 5px 0;">
-        <label style="display: inline-flex; align-items: center; gap: 8px; cursor: pointer; user-select: none;" title="When on, found links whose format is incompatible with MB's (e.g. a Digital-only platform on a CD release) are withheld from + / ↗. Digital-only platforms (Spotify, Apple, Tidal…) count as Digital; Bandcamp/Discogs use their actual format. A subtle violet left bar marks mismatches.">
-          <input type="checkbox" id="mb-respect-format" style="margin: 0; width: 16px; height: 16px;"> Use <b>formats</b></label>
-        <select id="mb-format-mode" style="font-size: 12px; padding: 1px 3px;" title="strictly: also withhold links whose format can't be determined. · if they exist: only withhold links whose format is known and incompatible.">
-          <option value="exists">if they exist</option><option value="strict">strictly</option></select>
-      </div>
-      <div style="display: flex; align-items: center; gap: 8px; margin: 5px 0;">
-        <label style="display: inline-flex; align-items: center; gap: 8px; cursor: pointer; user-select: none;" title="When on, found links whose barcode doesn't match MB's are withheld from + / ↗ (MB treats a different barcode as a different release). A subtle amber left bar marks known mismatches regardless of this setting.">
-          <input type="checkbox" id="mb-respect-barcode" style="margin: 0; width: 16px; height: 16px;"> Use <b>barcodes</b></label>
-        <select id="mb-barcode-mode" style="font-size: 12px; padding: 1px 3px;" title="strictly: only add barcode-confirmed links (also withholds links whose barcode can't be checked, e.g. Apple/Spotify). · if they exist: only withhold links whose barcode is known and differs.">
-          <option value="exists">if they exist</option><option value="strict">strictly</option></select>
-      </div>
-      <div style="display: flex; align-items: center; gap: 8px; margin: 5px 0;">
-        <label style="display: inline-flex; align-items: center; gap: 8px; cursor: pointer; user-select: none;" title="On: + opens the release editor in a new tab, leaving this one on the panel. Off: it navigates this tab instead. Either way, right-click on + (or a platform icon) always adds silently in a background tab that submits and closes itself.">
-          <input type="checkbox" id="mb-open-new-tab" style="margin: 0; width: 16px; height: 16px;"> Add links in a <b>new tab</b></label>
-      </div>
-      <div style="display: flex; align-items: center; gap: 8px; margin: 5px 0;">
-        <label style="display: inline-flex; align-items: center; gap: 8px; cursor: pointer; user-select: none;" title="#556. Firefox throttles timers in a background tab - to one step per second, and worse once the tab has spent its execution budget - and MusicBrainz's submit is a chain of them. A tab that is playing audio is exempt, so this plays an inaudible tone (30Hz, gain 0.0008) for the few seconds the background-add tab is alive. Measured on the same 2-link add: 20.2s without it, 3.7s with. REQUIRES allowing audio for musicbrainz.org (padlock menu > Autoplay > Allow Audio) - without it Firefox blocks the tone and the setting does nothing, which the Log says - and it lights the speaker icon while it runs. A WebRTC loopback was tried instead and does NOT work: it connects, and changes nothing.">
-          <input type="checkbox" id="mb-bg-audio" style="margin: 0; width: 16px; height: 16px;"> Keep background-add tabs <b>awake</b></label>
-      </div>
-      <div style="display: flex; align-items: center; gap: 8px; margin: 5px 0;">
-        <label style="display: inline-flex; align-items: center; gap: 8px; cursor: pointer; user-select: none;" title="On: once the scans finish, MusicBrainz is asked which of the artist and label pages it already has (one request per 100 links), and Artists &amp; labels shows how many would be added. Off: it is asked only when you open the table.">
-          <input type="checkbox" id="mb-links-count" style="margin: 0; width: 16px; height: 16px;"> <b>Count</b> artist and label links to add</label>
-      </div>
-      <div style="display: flex; align-items: center; gap: 8px; margin: 5px 0;">
-        <label style="display: inline-flex; align-items: center; gap: 8px; cursor: pointer; user-select: none;" title="On: after Run in Falcon from Artists &amp; labels, Falcon closes its panel once the run finishes with every link added. A run with a failed or partial edit leaves it open, to read why. Send only, and a Falcon opened in a new tab, are not affected.">
-          <input type="checkbox" id="mb-links-close-falcon" style="margin: 0; width: 16px; height: 16px;"> <b>Close Falcon</b> after a successful import</label>
-      </div>
-    </div>
+    <div class="pc-set-row"><label title="When on, found links whose barcode doesn't match MB's are withheld from + / ↗ (MB treats a different barcode as a different release). A subtle amber left bar marks known mismatches regardless of this setting."><input type="checkbox" id="mb-respect-barcode"> Use <b>barcodes</b></label>
+      <select id="mb-barcode-mode" title="strictly: only add barcode-confirmed links (also withholds links whose barcode can't be checked, e.g. Apple/Spotify). · if they exist: only withhold links whose barcode is known and differs."><option value="exists">if they exist</option><option value="strict">strictly</option></select></div>
+    <div class="pc-set-row"><label title="When on, found links whose format is incompatible with MB's (e.g. a Digital-only platform on a CD release) are withheld from + / ↗. Digital-only platforms (Spotify, Apple, Tidal…) count as Digital; Bandcamp/Discogs use their actual format. A subtle violet left bar marks mismatches."><input type="checkbox" id="mb-respect-format"> Use <b>formats</b></label>
+      <select id="mb-format-mode" title="strictly: also withhold links whose format can't be determined. · if they exist: only withhold links whose format is known and incompatible."><option value="exists">if they exist</option><option value="strict">strictly</option></select></div>
+
+    <div class="pc-setup-sec">Adding links</div>
+    <div class="pc-set-row"><label title="On: + opens the release editor in a new tab, leaving this one on the panel. Off: it navigates this tab instead. Either way, right-click on + (or a platform icon) always adds silently in a background tab that submits and closes itself."><input type="checkbox" id="mb-open-new-tab"> Open the editor in a <b>new tab</b></label></div>
+    <div class="pc-set-row"><label title="#556. Firefox throttles timers in a background tab - to one step per second, and worse once the tab has spent its execution budget - and MusicBrainz's submit is a chain of them. A tab that is playing audio is exempt, so this plays an inaudible tone (30Hz, gain 0.0008) for the few seconds the background-add tab is alive. Measured on the same 2-link add: 20.2s without it, 3.7s with. REQUIRES allowing audio for musicbrainz.org (padlock menu > Autoplay > Allow Audio) - without it Firefox blocks the tone and the setting does nothing, which the Log says - and it lights the speaker icon while it runs. A WebRTC loopback was tried instead and does NOT work: it connects, and changes nothing."><input type="checkbox" id="mb-bg-audio"> Keep background tabs <b>awake</b></label></div>
+
+    <div class="pc-setup-sec">Artists &amp; labels</div>
+    <div class="pc-set-row"><label title="On: once the scans finish, MusicBrainz is asked which of the artist and label pages it already has (one request per 100 links), and Artists &amp; labels shows how many would be added. Off: it is asked only when you open the table."><input type="checkbox" id="mb-links-count"> <b>Count</b> the links to add</label></div>
+    <div class="pc-set-row"><label title="On: after Run in Falcon from Artists &amp; labels, Falcon closes its panel once the run finishes with every link added. A run with a failed or partial edit leaves it open, to read why. Send only, and a Falcon opened in a new tab, are not affected."><input type="checkbox" id="mb-links-close-falcon"> <b>Close Falcon</b> after a successful import</label></div>
 
     <div class="pc-setup-sec">Appearance</div>
-    <div style="padding: 2px 4px;">
-      <div style="font-weight: 600; color: var(--mbu-text-dim); margin: 4px 0 2px;">Platform</div>
-      <div style="padding-left: 14px;">
-        <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; margin: 4px 0;">
-          <input type="checkbox" id="mb-show-icons" style="margin: 0; width: 16px; height: 16px;"><span style="min-width: 44px;">Icon</span>
-          <span style="color: var(--mbu-text-weak); font-size: 12px;">Size</span><input type="range" id="mb-icon-size" min="14" max="30" step="1" style="flex: 1; min-width: 0; margin: 0;"><span id="mb-icon-size-val" style="min-width: 18px; text-align: right; color: var(--mbu-text-dim);"></span>
-        </label>
-        <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; margin: 4px 0;">
-          <input type="checkbox" id="mb-show-names" style="margin: 0; width: 16px; height: 16px;"><span style="min-width: 44px;">Name</span>
-          <span style="color: var(--mbu-text-weak); font-size: 12px;">Size</span><input type="range" id="mb-name-size" min="8" max="14" step="1" style="flex: 1; min-width: 0; margin: 0;"><span id="mb-name-size-val" style="min-width: 18px; text-align: right; color: var(--mbu-text-dim);"></span>
-        </label>
-      </div>
-
-      <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; margin: 9px 0 4px;" title="A provider that found nothing (or is still searching) shrinks to a dimmed icon in a strip under the rows, and rises into a full row once it finds something. Discogs and Bandcamp always stay full rows. Click a strip icon to search that platform, just like clicking its row.">
-        <input type="checkbox" id="mb-compact-unmatched" style="margin: 0; width: 16px; height: 16px;"> Compact <b>unmatched</b> providers</label>
-      <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; margin: 4px 0;" title="A provider that found a release which isn't a clean match (a different barcode or format, or withheld by the strict barcode/format settings) also shrinks to an icon in the strip, with an amber ring. Off: it keeps its full row, so its tracks, year and label show.">
-        <input type="checkbox" id="mb-compact-nonstrict" style="margin: 0; width: 16px; height: 16px;"> Compact <b>low-confidence</b> providers</label>
-
-      <div style="display: flex; align-items: center; gap: 12px; margin: 9px 0 4px;">
-        <span style="font-weight: 600; color: var(--mbu-text-dim);">MB marker</span>
-        <select id="mb-marker" title="How an icon shows that its link is already on the release (icons mode)" style="font-size: 12px; padding: 2px 4px;">
+    <div class="pc-set-grid">
+      <div class="pc-set-k">Icon</div>
+      <div class="pc-set-v"><label><input type="checkbox" id="mb-show-icons"> Show</label><span class="pc-set-lbl">size</span><span class="pc-step"><button type="button" data-step="-1">−</button><input type="number" id="mb-icon-size" min="14" max="30" step="1"><button type="button" data-step="1">+</button></span></div>
+      <div class="pc-set-k">Name</div>
+      <div class="pc-set-v"><label><input type="checkbox" id="mb-show-names"> Show</label><span class="pc-set-lbl">size</span><span class="pc-step"><button type="button" data-step="-1">−</button><input type="number" id="mb-name-size" min="8" max="14" step="1"><button type="button" data-step="1">+</button></span></div>
+      <div class="pc-set-k">Compact</div>
+      <div class="pc-set-v"><label title="A provider that found nothing (or is still searching) shrinks to a dimmed icon in a strip under the rows, and rises into a full row once it finds something. Discogs and Bandcamp always stay full rows. Click a strip icon to search that platform, just like clicking its row."><input type="checkbox" id="mb-compact-unmatched"> Unmatched</label><label title="A provider that found a release which isn't a clean match (a different barcode or format, or withheld by the strict barcode/format settings) also shrinks to an icon in the strip, with an amber ring. Off: it keeps its full row, so its tracks, year and label show."><input type="checkbox" id="mb-compact-nonstrict"> Low-confidence</label></div>
+      <div class="pc-set-k">In MusicBrainz</div>
+      <div class="pc-set-v"><select id="mb-marker" title="How an icon shows that its link is already on the release (icons mode)">
           <option value="circle">Ring</option>
           <option value="bold">Bold ring</option>
           <option value="badge">✓ badge</option>
           <option value="dot">Dot</option>
           <option value="square">Rounded square</option>
-        </select>
-      </div>
-
-      <div style="display: flex; align-items: center; gap: 12px; margin: 4px 0;" title="Show each release's format as a compact 4-quadrant circle (Vinyl · Cassette · CD · Digital) or as text.">
-        <span style="font-weight: 600; color: var(--mbu-text-dim);">Format marker</span>
-        <label style="display: inline-flex; align-items: center; gap: 5px; cursor: pointer;"><input type="radio" name="format-marker" value="circle" style="margin: 0;"> Circle</label>
-        <label style="display: inline-flex; align-items: center; gap: 5px; cursor: pointer;"><input type="radio" name="format-marker" value="text" style="margin: 0;"> Text</label>
-      </div>
-
-      <div style="font-weight: 600; color: var(--mbu-text-dim); margin: 8px 0 2px;">Layout</div>
-      <div style="padding-left: 14px;">
-        <div style="display: flex; align-items: center; gap: 12px; margin: 4px 0;">
-          <span style="min-width: 44px;">Rows</span>
-          <label style="display: inline-flex; align-items: center; gap: 5px; cursor: pointer;"><input type="radio" name="mb-layout" value="1row" style="margin: 0;"> 1 row</label>
-          <label style="display: inline-flex; align-items: center; gap: 5px; cursor: pointer;"><input type="radio" name="mb-layout" value="2row" style="margin: 0;"> 2 rows</label>
-        </div>
-        <label style="display: flex; align-items: center; gap: 6px; cursor: pointer; margin: 4px 0;">
-          <span style="min-width: 44px;">Gap</span><span style="color: var(--mbu-text-weak); font-size: 12px;">row</span>
-          <input type="range" id="mb-row-gap" min="0" max="10" step="1" style="flex: 1; min-width: 0; margin: 0;"><span id="mb-row-gap-val" style="min-width: 14px; text-align: right; color: var(--mbu-text-dim);"></span>
-          <span style="color: var(--mbu-text-weak); font-size: 12px;" title="Column gap is only used in the 1-row layout">col</span>
-          <input type="range" id="mb-col-gap" min="0" max="10" step="1" style="flex: 1; min-width: 0; margin: 0;"><span id="mb-col-gap-val" style="min-width: 14px; text-align: right; color: var(--mbu-text-dim);"></span>
-        </label>
-      </div>
+        </select></div>
+      <div class="pc-set-k">Format</div>
+      <div class="pc-set-v" title="Show each release's format as a compact 4-quadrant circle (Vinyl · Cassette · CD · Digital) or as text."><span class="pc-seg"><label><input type="radio" name="format-marker" value="circle"><span>◔ Circle</span></label><label><input type="radio" name="format-marker" value="text"><span>Text</span></label></span></div>
+      <div class="pc-set-k">Layout</div>
+      <div class="pc-set-v"><span class="pc-seg"><label><input type="radio" name="mb-layout" value="1row"><span>1 row</span></label><label><input type="radio" name="mb-layout" value="2row"><span>2 rows</span></label></span></div>
+      <div class="pc-set-k">Spacing</div>
+      <div class="pc-set-v"><span class="pc-set-lbl">rows</span><span class="pc-step"><button type="button" data-step="-1">−</button><input type="number" id="mb-row-gap" min="0" max="10" step="1"><button type="button" data-step="1">+</button></span>
+        <span class="pc-set-lbl" title="Column spacing is only used in the 1-row layout">columns</span><span class="pc-step"><button type="button" data-step="-1">−</button><input type="number" id="mb-col-gap" min="0" max="10" step="1"><button type="button" data-step="1">+</button></span></div>
     </div>
 
-    <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 16px;">
-      <button id="mb-provider-close-btn" style="padding: 8px 16px; background: #1DB954; border: none; border-radius: 4px; font-size: 13px; color: #FFF; cursor: pointer;">Close</button>
+    <div style="display: flex; justify-content: flex-end; margin-top: 16px;">
+      <button id="mb-provider-close-btn" type="button" class="pc-set-close">Close</button>
     </div>
   </div>
 
@@ -2508,10 +2488,17 @@ for (const chip of logModal.querySelectorAll('.pc-log-chip')) {
     });
 }
 // Beatport-account UI state (logged in → show "Sign out"; logged out → show login form)
+// the counts on the Platforms and Logins buttons
+function pcSetupBadges() {
+    const o = document.getElementById('mb-order-badge'), a = document.getElementById('mb-auth-badge');
+    if (o) o.textContent = `${PROVIDER_ORDER.filter(p => GM_getValue(`pc:prov_${p}`, true)).length} on ›`;
+    if (a) a.textContent = `${[bpLoggedIn(), qbLoggedIn()].filter(Boolean).length} of 2 ›`;
+}
 function bpRefreshSetupUI(msg, isErr) {
     const st = document.getElementById('mb-bp-status'), form = document.getElementById('mb-bp-form'), out = document.getElementById('mb-bp-logout');
     if (!st) return;
     const inOk = bpLoggedIn();
+    pcSetupBadges();
     form.style.display = inOk ? 'none' : 'flex';
     out.style.display = inOk ? 'inline-block' : 'none';
     st.textContent = msg || (inOk ? 'signed in' : 'not signed in');
@@ -2531,6 +2518,7 @@ function qbRefreshSetupUI(msg, isErr) {
     const st = document.getElementById('mb-qb-status'), form = document.getElementById('mb-qb-form'), out = document.getElementById('mb-qb-logout');
     if (!st) return;
     const inOk = qbLoggedIn();
+    pcSetupBadges();
     form.style.display = inOk ? 'none' : 'flex';
     out.style.display = inOk ? 'inline-block' : 'none';
     st.textContent = msg || (inOk ? 'signed in' : 'not signed in');
@@ -2568,6 +2556,7 @@ document.getElementById('mb-token-setup-btn').addEventListener('click', () => {
     providerModal.querySelectorAll('input[name="format-marker"]').forEach(r => { r.checked = r.value === fmtMarkerMode; });
     bpRefreshSetupUI();
     qbRefreshSetupUI();
+    pcSetupSync();
     showSetupView('main');   // #188 always open on the main view
     pcOpenModal(providerModal, provCardEl(), 440, false);
 });
@@ -2586,6 +2575,7 @@ providerModal.querySelectorAll('.pc-setup-back').forEach(b => b.addEventListener
 PROVIDER_ORDER.forEach(p => {
     document.getElementById(`mb-toggle-${p}`).addEventListener('change', e => {
         GM_setValue(`pc:prov_${p}`, e.target.checked);
+        pcSetupBadges();
         if (providerRows[p]) providerRows[p].style.display = e.target.checked ? '' : 'none';
     });
 });
@@ -2653,14 +2643,35 @@ providerModal.querySelectorAll('input[name="format-marker"]').forEach(r => r.add
     GM_setValue('pc:format-marker', mode);
     container.classList.toggle('pc-fmt-text', mode === 'text');   // live — both are already in the DOM, CSS just swaps which shows
 }));
-// Compact-view sliders (#178): set the matching CSS variable live + persist.
+// A size is greyed out while its icon or name is hidden, and the column spacing in the
+// 2-row layout, where it isn't used.
+function pcSetupSync() {
+    const off = (id, on) => document.getElementById(id).closest('.pc-step').classList.toggle('pc-off', !on);
+    off('mb-icon-size', document.getElementById('mb-show-icons').checked);
+    off('mb-name-size', document.getElementById('mb-show-names').checked);
+    off('mb-col-gap', (providerModal.querySelector('input[name="mb-layout"]:checked') || {}).value !== '2row');
+}
+['mb-show-icons', 'mb-show-names'].forEach(id => document.getElementById(id).addEventListener('change', pcSetupSync));
+providerModal.querySelectorAll('input[name="mb-layout"]').forEach(r => r.addEventListener('change', pcSetupSync));
+// − / + beside a number: one step, kept within its min and max, applied as typing would be
+providerModal.querySelectorAll('.pc-step button').forEach(b => b.addEventListener('click', () => {
+    const el = b.parentElement.querySelector('input');
+    if (b.dataset.step === '1') el.stepUp(); else el.stepDown();
+    el.dispatchEvent(new Event('input', { bubbles: true }));
+}));
+// Compact-view sizes and spacing (#178): set the matching CSS variable live + persist.
 [['mb-row-gap', 'pc:row-gap', '--pc-row-gap', 5], ['mb-col-gap', 'pc:col-gap', '--pc-col-gap', 5], ['mb-name-size', 'pc:name-size', '--pc-name-size', 12], ['mb-icon-size', 'pc:icon-size', '--pc-icon-size', 22]].forEach(([id, key, prop, def]) => {
     const el = document.getElementById(id);
     const valEl = document.getElementById(`${id}-val`);
     const apply = v => { container.style.setProperty(prop, `${v}px`); if (valEl) valEl.textContent = String(v); };
     el.value = GM_getValue(key, def);
     apply(el.value);
-    el.addEventListener('input', () => { GM_setValue(key, Number(el.value)); apply(el.value); });
+    el.addEventListener('input', () => {
+        const v = Math.min(Number(el.max), Math.max(Number(el.min), Math.round(Number(el.value))));
+        if (!Number.isFinite(v) || el.value === '') return;   // mid-typing
+        GM_setValue(key, v); apply(v);
+    });
+    el.addEventListener('change', () => { el.value = GM_getValue(key, def); });   // a typed value out of range snaps back
 });
 document.getElementById('mb-modal-copy-btn').addEventListener('click', async function () {
     // Firefox throws NS_ERROR_NOT_INITIALIZED from clipboard.writeText when
