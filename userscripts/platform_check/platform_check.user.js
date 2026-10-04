@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Platform Check
 // @namespace    http://tampermonkey.net/
-// @version      2026.10.4.160000
+// @version      2026.10.4.180000
 // @description  Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+DQogIDx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CiAgDQogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJhMWE1MiIgc3Ryb2tlLXdpZHRoPSI5IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik00MCA4OCBBMzQgMzQgMCAwIDEgNDAgNDAiLz4NCiAgICA8cGF0aCBkPSJNMjkgOTkgQTUwIDUwIDAgMCAxIDI5IDI5Ii8+DQogICAgPHBhdGggZD0iTTg4IDg4IEEzNCAzNCAwIDAgMCA4OCA0MCIvPg0KICAgIDxwYXRoIGQ9Ik05OSA5OSBBNTAgNTAgMCAwIDAgOTkgMjkiLz4NCiAgPC9nPg0KICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyMCIgZmlsbD0iI2U4MjAxYSIvPg0KPC9zdmc+DQo=
@@ -1989,8 +1989,6 @@ ${MBU_TOKENS}${MBU_UI_CSS}
   #mb-provider-modal-card .pc-step input { width: 30px; margin: 0; padding: 0; border: 0; background: transparent; color: var(--mbu-text); text-align: center; font: 12px var(--mbu-font); font-variant-numeric: tabular-nums; -moz-appearance: textfield; appearance: textfield; }
   #mb-provider-modal-card .pc-step input::-webkit-inner-spin-button, #mb-provider-modal-card .pc-step input::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
   #mb-provider-modal-card .pc-step.pc-off { opacity: .4; pointer-events: none; }
-  #mb-provider-modal-card .pc-set-close { padding: 6px 16px; border: 1px solid var(--mbu-border); border-radius: 6px; background: var(--mbu-bg-raised); color: var(--mbu-text); font: 13px var(--mbu-font); cursor: pointer; }
-  #mb-provider-modal-card .pc-set-close:hover { background: var(--mbu-bg-hover); }
   #mb-provider-modal-card .pc-setup-back:hover { text-decoration: underline; }
   #mb-pc-panel .pc-row.pc-format-diff { box-shadow: inset 3px 0 0 #7e57c2; }
   #mb-pc-panel .pc-row.pc-format-diff.pc-barcode-diff { box-shadow: inset 3px 0 0 #e0892a, inset 6px 0 0 #7e57c2; }
@@ -2253,9 +2251,6 @@ providerModal.innerHTML = `
         <span class="pc-set-lbl" title="Column spacing is only used in the 1-row layout">columns</span><span class="pc-step"><button type="button" data-step="-1">−</button><input type="number" id="mb-col-gap" min="0" max="10" step="1"><button type="button" data-step="1">+</button></span></div>
     </div>
 
-    <div style="display: flex; justify-content: flex-end; margin-top: 16px;">
-      <button id="mb-provider-close-btn" type="button" class="pc-set-close">Close</button>
-    </div>
   </div>
 
   <!-- ───────── ORDER & VISIBILITY sub-view ───────── -->
@@ -2562,7 +2557,6 @@ document.getElementById('mb-token-setup-btn').addEventListener('click', () => {
     showSetupView('main');   // #188 always open on the main view
     pcOpenModal(providerModal, provCardEl(), 440, false);
 });
-document.getElementById('mb-provider-close-btn').addEventListener('click', closeAllModals);
 // #188 setup is split into a compact main view + "Order & visibility" and "Auth"
 // sub-views that replace the card content, each with a ‹ Back to the main view.
 function showSetupView(name) {
