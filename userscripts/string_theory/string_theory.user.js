@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         String Theory
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.4.004341
+// @version      2026.10.4.084817
 // @description  Unified bundle of 8 MusicBrainz userscripts (apollo_editor, art_station, credit_hoarder, fusion, group_therapy, isrc_scout, mammoth, platform_check). Built by userscripts/string_theory/build.mjs — do not hand-edit.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCIgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0Ij4KICA8IS0tIGh1Yi1hbmQtc3Bva2UgIm5ldHdvcmsiIGdseXBoLCBzaW5nbGUgdml2aWQgdmlvbGV0IG9uIHRyYW5zcGFyZW50IHNvIGl0IHJlYWRzIG9uIGJvdGggZGFyayBhbmQgbGlnaHQgcGFnZXMgLS0+CiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjN2M1Y2ZmIiBzdHJva2Utd2lkdGg9IjQuNiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj4KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMzIgMTUiLz4KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMNDYuNSAyMy41Ii8+CiAgICA8cGF0aCBkPSJNMzIgMzIgTDQ2LjUgNDAuNSIvPgogICAgPHBhdGggZD0iTTMyIDMyIEwzMiA0OSIvPgogICAgPHBhdGggZD0iTTMyIDMyIEwxNy41IDQwLjUiLz4KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMTcuNSAyMy41Ii8+CiAgPC9nPgogIDxnIGZpbGw9IiM3YzVjZmYiPgogICAgPGNpcmNsZSBjeD0iMzIiIGN5PSIzMiIgcj0iOC42Ii8+CiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjE5LjUiIHI9IjYuNCIvPgogICAgPGNpcmNsZSBjeD0iNDkiIGN5PSIxOS41IiByPSI2LjQiLz4KICAgIDxjaXJjbGUgY3g9IjMyIiBjeT0iNTciIHI9IjYuNCIvPgogIDwvZz4KICA8ZyBmaWxsPSJub25lIiBzdHJva2U9IiM3YzVjZmYiIHN0cm9rZS13aWR0aD0iMy44Ij4KICAgIDxjaXJjbGUgY3g9IjMyIiBjeT0iNyIgcj0iNC45Ii8+CiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjQ0LjUiIHI9IjQuOSIvPgogICAgPGNpcmNsZSBjeD0iNDkiIGN5PSI0NC41IiByPSI0LjkiLz4KICA8L2c+Cjwvc3ZnPgo=
@@ -88,8 +88,8 @@
 // Bundles (verbatim, each wrapped in a run-at gate): apollo_editor, art_station, credit_hoarder, fusion, group_therapy, isrc_scout, mammoth, platform_check.
 
 try {
-  console.log('%c String Theory %c v2026.10.4.004341 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
-  console.log("String Theory bundles:\n  · Apollo Editor v2026.10.4\n  · Art Station v2026.10.4\n  · Credit Hoarder v2026.10.4\n  · Fusion v2026.10.4\n  · Group Therapy v2026.10.4\n  · ISRC Scout v2026.10.4\n  · Mammoth v2026.10.4\n  · Platform Check v2026.10.4");
+  console.log('%c String Theory %c v2026.10.4.084817 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
+  console.log("String Theory bundles:\n  · Apollo Editor v2026.10.4\n  · Art Station v2026.10.4\n  · Credit Hoarder v2026.10.4\n  · Fusion v2026.10.4\n  · Group Therapy v2026.10.4\n  · ISRC Scout v2026.10.4\n  · Mammoth v2026.10.4\n  · Platform Check v2026.10.4.084500");
 } catch (e) {}
 
 // ===== apollo_editor (@run-at document-start) =====================================
@@ -46224,7 +46224,7 @@ Created this ${kind} while adding credits parsed from text to ${relUrl}`;
 
 // ===== platform_check (@run-at document-end) ====================================
 (function(__stGM){
-  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Platform Check*","namespace":"http://tampermonkey.net/","version":"2026.10.4","description":"Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/platform_check/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+DQogIDx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CiAgDQogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJhMWE1MiIgc3Ryb2tlLXdpZHRoPSI5IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik00MCA4OCBBMzQgMzQgMCAwIDEgNDAgNDAiLz4NCiAgICA8cGF0aCBkPSJNMjkgOTkgQTUwIDUwIDAgMCAxIDI5IDI5Ii8+DQogICAgPHBhdGggZD0iTTg4IDg4IEEzNCAzNCAwIDAgMCA4OCA0MCIvPg0KICAgIDxwYXRoIGQ9Ik05OSA5OSBBNTAgNTAgMCAwIDAgOTkgMjkiLz4NCiAgPC9nPg0KICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyMCIgZmlsbD0iI2U4MjAxYSIvPg0KPC9zdmc+DQo="}) }) : { script: {"name":"Platform Check*","namespace":"http://tampermonkey.net/","version":"2026.10.4","description":"Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/platform_check/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+DQogIDx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CiAgDQogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJhMWE1MiIgc3Ryb2tlLXdpZHRoPSI5IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik00MCA4OCBBMzQgMzQgMCAwIDEgNDAgNDAiLz4NCiAgICA8cGF0aCBkPSJNMjkgOTkgQTUwIDUwIDAgMCAxIDI5IDI5Ii8+DQogICAgPHBhdGggZD0iTTg4IDg4IEEzNCAzNCAwIDAgMCA4OCA0MCIvPg0KICAgIDxwYXRoIGQ9Ik05OSA5OSBBNTAgNTAgMCAwIDAgOTkgMjkiLz4NCiAgPC9nPg0KICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyMCIgZmlsbD0iI2U4MjAxYSIvPg0KPC9zdmc+DQo="} };
+  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Platform Check*","namespace":"http://tampermonkey.net/","version":"2026.10.4.084500","description":"Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/platform_check/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+DQogIDx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CiAgDQogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJhMWE1MiIgc3Ryb2tlLXdpZHRoPSI5IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik00MCA4OCBBMzQgMzQgMCAwIDEgNDAgNDAiLz4NCiAgICA8cGF0aCBkPSJNMjkgOTkgQTUwIDUwIDAgMCAxIDI5IDI5Ii8+DQogICAgPHBhdGggZD0iTTg4IDg4IEEzNCAzNCAwIDAgMCA4OCA0MCIvPg0KICAgIDxwYXRoIGQ9Ik05OSA5OSBBNTAgNTAgMCAwIDAgOTkgMjkiLz4NCiAgPC9nPg0KICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyMCIgZmlsbD0iI2U4MjAxYSIvPg0KPC9zdmc+DQo="}) }) : { script: {"name":"Platform Check*","namespace":"http://tampermonkey.net/","version":"2026.10.4.084500","description":"Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/platform_check/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+DQogIDx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CiAgDQogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJhMWE1MiIgc3Ryb2tlLXdpZHRoPSI5IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik00MCA4OCBBMzQgMzQgMCAwIDEgNDAgNDAiLz4NCiAgICA8cGF0aCBkPSJNMjkgOTkgQTUwIDUwIDAgMCAxIDI5IDI5Ii8+DQogICAgPHBhdGggZD0iTTg4IDg4IEEzNCAzNCAwIDAgMCA4OCA0MCIvPg0KICAgIDxwYXRoIGQ9Ik05OSA5OSBBNTAgNTAgMCAwIDAgOTkgMjkiLz4NCiAgPC9nPg0KICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyMCIgZmlsbD0iI2U4MjAxYSIvPg0KPC9zdmc+DQo="} };
   (f=>document.readyState!=='loading'?f():document.addEventListener('DOMContentLoaded',f,{once:true}))(function(){ try { (function(){
 (function () {
 'use strict';
@@ -47116,17 +47116,52 @@ async function injectInto(urls, storageKey) {
     // Set the edit note (as the script used to), and report the result quietly
     // inline next to the External links heading instead of a centred popup.
     const addedUrls = reports.filter(r => r.ok && !r.present).map(r => r.url);
-    if (addedUrls.length) setEditNote(pcEditNote(addedUrls, forced));
+    // #673: a barcode pasted on the release page goes in with the links
+    const relMbid = (storageKey.match(/^pc:pending:([0-9a-f-]{36})$/) || [])[1];
+    const barcode = relMbid && okUrls.length ? await pcFillBarcode(relMbid) : null;
+    if (addedUrls.length || barcode) setEditNote(pcEditNote(addedUrls, forced, barcode));
     // nothing actually attempted (every queued link was already there): stay silent — no banner on a plain edit
     if (reports.some(r => !r.present)) showInlineSummary(reports.filter(r => !r.present));
     return { injected, reports, okUrls };
+}
+
+// #673: the barcode pasted on the release page (pc:pending-barcode:<mbid>), typed into the
+// release editor's Barcode field. Returns it once the field has it, null otherwise. The key
+// is a literal: this runs on the editor page, before any module const is initialised.
+async function pcFillBarcode(relMbid) {
+    const key = `pc:pending-barcode:${relMbid}`;
+    let bc = null;
+    try { bc = localStorage.getItem(key); } catch (e) {}
+    if (!bc) return null;
+    const input = await pcWaitFor(() => document.getElementById('barcode'), 10000);
+    if (!input) { try { console.warn(`[Platform Check] inject: no Barcode field in the editor — barcode ${bc} not added, kept queued`); } catch (e) {} return null; }
+    const cur = String(input.value || '').replace(/\D/g, '');
+    if (cur && cur !== bc) {
+        try { console.warn(`[Platform Check] inject: the release has barcode ${cur} by now — pasted ${bc} dropped`); } catch (e) {}
+        try { localStorage.removeItem(key); } catch (e) {}
+        return null;
+    }
+    if (cur !== bc) {
+        // "This release does not have a barcode" disables the field
+        const none = document.getElementById('no-barcode');
+        if (none && none.checked) none.click();
+        const setVal = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value').set;
+        input.focus();
+        setVal.call(input, bc);
+        input.dispatchEvent(new Event('input',  { bubbles: true }));
+        input.dispatchEvent(new Event('change', { bubbles: true }));
+        input.blur();
+    }
+    try { localStorage.removeItem(key); } catch (e) {}
+    pcMark('barcode filled', bc);
+    return bc;
 }
 
 // Build the edit note: a header line (name/version/author/homepage from GM_info,
 // with fallbacks) + the links that were added — same shape as the other scripts.
 // forced (#641): { url: reason } for links added by a middle click over link confidence — each is
 // marked in the list, so the note never claims they passed it. A link that passed is listed plain.
-function pcEditNote(urls, forced) {
+function pcEditNote(urls, forced, barcode) {
     const s = (typeof GM_info !== 'undefined' && GM_info.script) || {};
     const homepage = s.homepageURL || s.homepage ||
         'https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/platform_check/README.md';
@@ -47139,7 +47174,10 @@ function pcEditNote(urls, forced) {
     if (GM_getValue('pc:respect-format', true))  conf.push('formats ' + modeWord('pc:format-mode'));
     if (GM_getValue('pc:respect-barcode', true)) conf.push('barcodes ' + modeWord('pc:barcode-mode'));
     const confLine = 'Link confidence: ' + (conf.length ? conf.join(', ') : 'off');
-    const lines = [header, confLine, '', 'Added ' + urls.length + ' external link' + (urls.length === 1 ? '' : 's') + ':'];
+    const lines = [header, confLine];
+    // #673: the platform links were matched on this barcode
+    if (barcode) lines.push('', 'Added barcode ' + barcode + ' (the links below were matched on it)');
+    if (urls.length) lines.push('', 'Added ' + urls.length + ' external link' + (urls.length === 1 ? '' : 's') + ':');
     const why = u => { const k = Object.keys(forced || {}).find(x => pcSameUrl(x, u) || x === u); return k ? forced[k] : null; };
     urls.forEach(u => { const w = why(u); lines.push(w ? u + '  (added by hand over link confidence: ' + w + ')' : u); });
     return lines.join('\n');
@@ -48213,6 +48251,7 @@ ${MBU_TOKENS}${MBU_UI_CSS}
     <div style="display: flex; align-items: center; gap: 4px;">
       <h3 style="margin: 0; font-size: 12px; font-weight: bold; text-transform: uppercase; letter-spacing: 0.5px; color: var(--mbu-text-dim);">Platform Check</h3>
       <span id="mb-refresh-btn" class="pc-icon-btn" title="Refresh — clear cache and re-scan" style="${iconBtn}">↻</span>
+      <span id="mb-pasted-bc" class="pc-icon-btn" title="" style="${iconBtn} display: none; font-size: 10px; white-space: nowrap;"></span>
     </div>
   </div>
 </div>
@@ -49100,6 +49139,8 @@ async function beatportApi(path) {
 // The MB release's barcode for the current scan (#182) — set by runScans so
 // updateRow can compare a found item's barcode against it.
 let MB_BARCODE = null;
+// #673: the release's own barcode, without one pasted on the page (MB_BARCODE has that too)
+let MB_OWN_BARCODE = null;
 // Normalise a barcode for comparison: digits only, leading zeros stripped (a
 // 12-digit UPC-A and its 13-digit EAN form "0…" are the same barcode).
 function normBarcode(b) { return String(b || '').replace(/\D/g, '').replace(/^0+/, ''); }
@@ -53021,9 +53062,20 @@ async function runScansInner() {
         return wdP.then(wd => wd?.[field] || null);
     };
 
-    MB_BARCODE = barcode || null;   // (#182) for the barcode-mismatch indicator
+    // #673: a barcode pasted on a release that has none is searched and checked as if it were the release's
+    MB_OWN_BARCODE = barcode || null;
+    let pasted = pcPastedBarcode();
+    if (pasted && barcode) {
+        appendLog('MusicBrainz', `The release has its own barcode now (${barcode}) — the pasted ${pasted} is dropped`, 'warn');
+        pcSetPastedBarcode(null);
+        pasted = null;
+    }
+    if (pasted) appendLog('MusicBrainz', `Using the pasted barcode ${pasted} — links you add will add it to the release`, 'ok');
+    pcShowPastedBarcode(pasted);
+    const scanBarcode = barcode || pasted || null;
+    MB_BARCODE = scanBarcode;   // (#182) for the barcode-mismatch indicator
     MB_FORMAT  = format  || null;   // (#182) for the format-confidence check
-    const ctx = { artist, album, mbTracks, mbid, isVariousArtists, format, barcode, mbYear: year || null, existingDiscogsMaster: existing.discogsMaster || null };
+    const ctx = { artist, album, mbTracks, mbid, isVariousArtists, format, barcode: scanBarcode, mbYear: year || null, existingDiscogsMaster: existing.discogsMaster || null };
     const tasks = [];
     if (providerEnabled('spotify')) tasks.push(wdFor('spotify', 'spotifyId').then(id => scanSpotify({ ...ctx, existingUrl: existing.spotify, wikidataSpotifyId: id })));
     if (providerEnabled('discogs')) tasks.push(scanDiscogs ({ ...ctx, existingUrl: existing.discogs  }));
@@ -53464,11 +53516,92 @@ async function pcOpenLinksTable(btn) {
 document.getElementById('mb-links-btn').addEventListener('click', e => pcOpenLinksTable(e.currentTarget));
 
 // ↻ REFRESH button: clear cached URLs for this MBID, blank the rows, re-run.
-document.getElementById('mb-refresh-btn').addEventListener('click', () => {
-    appendLog('System', `Refresh requested — clearing cache for ${mbid}`, 'warn');
+document.getElementById('mb-refresh-btn').addEventListener('click', () => pcRescan('Refresh requested'));
+
+// ─── Pasted barcode (#673) ──────────────────────────────────────────────────
+// Ctrl+V of a barcode anywhere on a release page that has none: the platforms are
+// searched and checked with it as if it were on the release, and a link added from
+// the panel (icon, +, in the foreground or the background) puts it on the release too.
+// Kept per release in localStorage until it's removed (× on the header chip) or the
+// release has a barcode of its own.
+function pcPastedBarcode() {
+    try { return localStorage.getItem(`pc:pasted-barcode:${mbid}`) || null; } catch (e) { return null; }
+}
+function pcSetPastedBarcode(code) {
+    try {
+        if (code) localStorage.setItem(`pc:pasted-barcode:${mbid}`, code);
+        else { localStorage.removeItem(`pc:pasted-barcode:${mbid}`); localStorage.removeItem(`pc:pending-barcode:${mbid}`); }
+    } catch (e) {}
+}
+// Queued with the links for the release editor; a stale one from an earlier add is cleared.
+function pcQueuePastedBarcode() {
+    const code = MB_OWN_BARCODE ? null : pcPastedBarcode();
+    try {
+        if (code) localStorage.setItem(`pc:pending-barcode:${mbid}`, code);
+        else localStorage.removeItem(`pc:pending-barcode:${mbid}`);
+    } catch (e) {}
+    if (code) appendLog('System', `Inject: barcode ${code} goes in with the links`, 'ok');
+}
+function pcShowPastedBarcode(code) {
+    const chip = document.getElementById('mb-pasted-bc');
+    if (!chip) return;
+    chip.style.display = code ? '' : 'none';
+    chip.textContent = code ? `${code} ×` : '';
+    chip.title = code ? `Pasted barcode ${code}: the platforms are checked against it, and a link you add adds it to the release too · click to remove it` : '';
+}
+// A pasted text that is a barcode: EAN-8, UPC-A, EAN-13 or GTIN-14, spaces and dashes allowed
+function pcBarcodeOf(text) {
+    const t = String(text || '').trim();
+    if (!/^[\d][\d\s-]*$/.test(t)) return null;
+    const d = t.replace(/\D/g, '');
+    return /^(?:\d{8}|\d{12,14})$/.test(d) ? d : null;
+}
+// GTIN check digit: weights 3,1,3,… from the right, the check digit excluded
+function pcGtinValid(code) {
+    const d = String(code).split('').map(Number);
+    const check = d.pop();
+    const sum = d.reverse().reduce((a, n, i) => a + n * (i % 2 ? 1 : 3), 0);
+    return (10 - sum % 10) % 10 === check;
+}
+function pcRescan(why) {
+    appendLog('System', `${why} — clearing cache for ${mbid}`, 'warn');
     cacheClear(mbid);
     resetRows();
     runScans();
+}
+function pcPasteBarcode(code) {
+    if (MB_OWN_BARCODE) {
+        mbuToast(`✗ This release already has a barcode (${MB_OWN_BARCODE})`, { kind: 'error' });
+        appendLog('System', `Pasted barcode ${code}: the release already has ${MB_OWN_BARCODE} — not used`, 'warn');
+        return;
+    }
+    if (document.getElementById('mb-refresh-btn')?.classList.contains('pc-scanning')) {
+        mbuToast(`⚠ Platform Check is still scanning — paste the barcode again when it's done`, { kind: 'warn' });
+        return;
+    }
+    if (pcPastedBarcode() === code) { mbuToast(`Barcode ${code} is already in use`); return; }
+    pcSetPastedBarcode(code);
+    mbuToast(pcGtinValid(code)
+        ? `✓ Barcode ${code}: checking the platforms with it`
+        : `⚠ Barcode ${code}: its check digit is wrong — checking the platforms with it anyway`, { kind: pcGtinValid(code) ? 'ok' : 'warn' });
+    pcRescan(`Barcode ${code} pasted`);
+}
+document.addEventListener('paste', e => {
+    try {
+        const t = e.target;
+        if (t && (/^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName) || t.isContentEditable)) return;   // typing somewhere
+        const code = pcBarcodeOf(e.clipboardData && e.clipboardData.getData('text'));
+        if (!code) return;
+        e.preventDefault();
+        pcPasteBarcode(code);
+    } catch (err) { appendLog('System', `Paste: ${err && err.message}`, 'warn'); }
+});
+document.getElementById('mb-pasted-bc').addEventListener('click', () => {
+    const code = pcPastedBarcode();
+    pcSetPastedBarcode(null);
+    pcShowPastedBarcode(null);
+    mbuToast(`Barcode ${code} removed`);
+    pcRescan(`Pasted barcode ${code} removed`);
 });
 
 // + INJECT button: collect every confirmed (✓) URL that ISN'T already in MB's
@@ -53650,6 +53783,7 @@ function addSingleUrl(platform, background, force) {
         return;
     }
     localStorage.setItem(`pc:pending:${mbid}`, JSON.stringify({ [platform]: cached.url }));
+    pcQueuePastedBarcode();   // #673
     // #641: a forced add is recorded for the edit note; any other add clears an old record
     const forcedWhy = force ? pcWithheldWhy(platform) : null;
     if (forcedWhy) localStorage.setItem(`pc:forced:${mbid}`, JSON.stringify({ [cached.url]: forcedWhy })); else localStorage.removeItem(`pc:forced:${mbid}`);
@@ -53769,6 +53903,7 @@ async function runInjectBtn(e, background, force) {
 
     if (releaseCount > 0) {
         localStorage.setItem(`pc:pending:${mbid}`, JSON.stringify(pendingRelease));
+        pcQueuePastedBarcode();   // #673
         if (Object.keys(forcedUrls).length) localStorage.setItem(`pc:forced:${mbid}`, JSON.stringify(forcedUrls)); else localStorage.removeItem(`pc:forced:${mbid}`);
         appendLog('System', `Inject (${background ? 'background' : 'click'}): queued ${releaseCount} release URL(s) — opening release editor`, 'ok');
         openReleaseEditTab(mbid, { background });

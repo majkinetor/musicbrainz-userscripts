@@ -15,6 +15,7 @@ Finds a MusicBrainz release on the streaming and store platforms, checks each ma
 - **[Link confidence](#link-confidence)**: a match with a different barcode or format is a different release, and is not added.
 - **[Adding links](#adding-links)** to the release, one or all, in the foreground or in the background.
 - **Open all found**: every confirmed platform page not yet in MusicBrainz, each in a tab (plus the Discogs master). Mind the pop-up blocker.
+- **[Pasting a barcode](#pasting-a-barcode)** on a release that has none: the platforms are checked against it, and an added link adds it too.
 - **[Artists and labels](#artists-and-labels)**: the artist and label pages the matched albums name, added to the release's MusicBrainz artists and labels through [Falcon](../falcon/README.md).
 - A **log** with a filter per platform.
 
@@ -69,6 +70,16 @@ The footer's **+** adds every confirmed link (middle-click or Alt+click: the wit
 
 > [!NOTE]
 > Firefox throttles background tabs hard, slowing a background add down. *Keep background-add tabs awake* plays an inaudible tone, which exempts the tab. It needs **Allow Audio** for musicbrainz.org (padlock → *Autoplay*); without it, the log reports the tone as blocked.
+
+## Pasting a barcode
+
+A release without a barcode can borrow one: copy it (from the cover, a store page, Harmony) and press Ctrl+V anywhere on the release page, outside a text field. The platforms are scanned again as if the release had it, so a barcode lookup finds what a text search misses, and [link confidence](#link-confidence) checks the matches against it.
+
+- The barcode shows next to ↻ in the header; click it to remove it and scan without it.
+- A link added from the panel (icon or **+**, in the foreground or the background) puts the barcode on the release too, in the same edit, and the edit note says so.
+- It stays with the release, across reloads, until it's removed or the release has a barcode of its own.
+- A release that already has a barcode refuses the paste, with an error.
+- Accepted: 8, 12, 13 or 14 digits, spaces and dashes allowed. A wrong check digit is used anyway, with a warning; MusicBrainz then asks you to confirm it in the editor.
 
 ## Artists and labels
 
@@ -144,5 +155,6 @@ Click a mark to open the page (a ⚠ opens the MusicBrainz artist or label that 
 | Key                                            |                                                                                                                                        |
 | ---------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
 | Esc                                            | close the open dialog                                                                                                                  |
+| Ctrl+V                                         | on a release without a barcode, [use the pasted barcode](#pasting-a-barcode)                                                           |
 | Alt+click                                      | the same as a middle click: add a link even when [link confidence](#link-confidence) withholds it; on **+**, add the withheld ones too |
 | Ctrl+middle-click, Ctrl+Alt+click (⌘ on a Mac) | the same, in the background                                                                                                            |
