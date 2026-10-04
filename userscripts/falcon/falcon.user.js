@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Falcon — bulk MusicBrainz link editor
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.4.120000
+// @version      2026.10.4.140000
 // @description  Add external links to a BATCH of MusicBrainz artists/labels/recordings at once — no popup-per-entity, no tab churn. A small pool of persistent worker iframes churns through a queue, each submitting its own edit and moving straight to the next entity. Paste a list, hand it a queue via a `?falcon=` URL param, or click "Send to Falcon" on a Harmony actions page to import its suggested links directly.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHBhdGggZD0iTTY0IDEwIEM4MiAyOCA5MCA1NiA5MCA4MCBMMzggODAgQzM4IDU2IDQ2IDI4IDY0IDEwIFoiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzFiMmE0YSIgc3Ryb2tlLXdpZHRoPSI3IiBzdHJva2UtbGluZWpvaW49InJvdW5kIiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8cGF0aCBkPSJNMzggODAgTDIwIDExMCBMNDAgOTYgWiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxwYXRoIGQ9Ik05MCA4MCBMMTA4IDExMCBMODggOTYgWiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxjaXJjbGUgY3g9IjY0IiBjeT0iNDQiIHI9IjEwIiBmaWxsPSIjMWIyYTRhIi8+CiAgPHBhdGggZD0iTTUwIDgwIEw0NSAxMDggTDY0IDEyMiBMODMgMTA4IEw3OCA4MCBaIiBmaWxsPSIjZmY2YTAwIiBzdHJva2U9IiMxYjJhNGEiIHN0cm9rZS13aWR0aD0iNSIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgo8L3N2Zz4K
@@ -5325,6 +5325,7 @@
     if (!queue.some(i => i.status === 'queued' && !_disabledTypes.has(i.entityType))) { log('warn', 'nothing queued that isn\'t excluded by a toggled-off type chip'); return; }
     running = true;
     _runStartedAt = Date.now();
+    if (_closedClean) { _closedClean = false; removeLauncher(); ensureLauncher(); }   // back to the usual icon
     // one log per run — majkinetor: "I DON'T WANT LOGS FROM OTHER RUNS"
     newSession(`${queue.filter(i => i.status === 'queued').length} queued, ${cfg.workers} worker(s), ${location.href}`);
     // #508 follow-up (majkinetor, live: "BTW, list options in the log, I had
@@ -5342,13 +5343,15 @@
   }
   // Asked for by the falcon:run that started this run (closeWhenDone): hide the panel when
   // every item settled as done or skipped. A failed, partial or manual one keeps it open.
-  let _closeWhenDone = false;
+  let _closeWhenDone = false, _closedClean = false;
   function maybeClosePanelAfterRun() {
     if (!_closeWhenDone) return;
     _closeWhenDone = false;
     const bad = queue.filter(i => ['failed', 'partial', 'manual'].includes(i.status)).length;
     if (bad) { log('info', `panel left open: ${bad} item(s) not fully done`); return; }
     if (panel) panel.style.display = 'none';
+    _closedClean = true;
+    removeLauncher(); ensureLauncher();   // rebuilt green, as after #588's reload
     log('info', 'panel closed: the run that asked for it finished with every item done');
   }
   function stop() { _closeWhenDone = false; running = false; stopHeartbeat(); resumeNameLookups(); resolveMissingNames(); log('info', 'stopping — in-flight items finish, no new ones start'); updateRunBtn(); renderProgress(); }
@@ -5370,7 +5373,9 @@
     // of the usual translucent one — majkinetor's ask was to be able to pick
     // that tab out of many. It is also the only visible trace that the reload
     // happened at all, since the page it lands on looks like any other.
-    const done = reloadedAfterImportHere();
+    // The same green when the panel closed itself after a clean run (closeWhenDone), so
+    // that tab stands out the same way; it lasts until the next run starts.
+    const done = reloadedAfterImportHere() || _closedClean;
     const rest = done ? '1' : '.55';
     /* ⚠ Literal colours with the tokens only as an override, NOT var() alone:
        MBU_TOKENS is injected by ensurePanel(), and the launcher exists long
@@ -5383,7 +5388,7 @@
       + (done ? 'background:var(--mbu-ok, #1f9d6b);color:#fff;box-shadow:0 0 0 2px var(--mbu-ok-border, #9bd3b6),0 2px 10px rgba(31,157,107,.45);'
         : 'background:color-mix(in srgb, var(--mbu-bg) 55%, transparent);color:var(--mbu-info);box-shadow:0 2px 8px rgba(0,0,0,.18);')
       + `transition:background .15s,transform .1s;opacity:${rest}`;
-    if (done) launcher.title = `${NAME} — this page was reloaded after a clean run (Ctrl+Alt+F for the log)`;
+    if (done) launcher.title = `${NAME} — ${_closedClean ? 'closed itself' : 'this page was reloaded'} after a clean run (Ctrl+Alt+F for the log)`;
     launcher.innerHTML = ICON;
     launcher.onmouseenter = () => { launcher.style.transform = 'scale(1.08)'; launcher.style.opacity = '1'; };
     launcher.onmouseleave = () => { launcher.style.transform = 'scale(1)'; launcher.style.opacity = rest; };
