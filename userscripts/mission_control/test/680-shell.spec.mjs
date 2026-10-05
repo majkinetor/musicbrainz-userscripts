@@ -19,6 +19,15 @@ test('#680: MC shell — launcher, track matrix, sidebars, modes', { tag: ['@san
   const rows = await page.locator('#mc-root .mc-tbl tbody tr[data-i]').count();
   const pageRows = await page.locator('#content table.medium tbody tr a[href*="/recording/"]').count();
   check(rows > 0 && rows === pageRows, `matrix has a row per track (${rows} of ${pageRows})`);
+  // the title is the release's own: not what other scripts append to the h1 (ISRC Scout's "ISRC ✓ 12/12")
+  const h1Link = await page.evaluate(() => document.querySelector('.releaseheader h1 a[href*="/release/"]').textContent.trim());
+  check((await page.locator('#mc-root .mc-ttl').textContent()) === h1Link, 'header title = the h1 link');
+  // a short window must not squeeze the track list (flex items shrink by default:
+  // a long Platforms card cut it to 3 rows); the centre pane scrolls instead
+  await page.setViewportSize({ width: 1600, height: 450 });
+  const clipped = await page.locator('#mc-root .mc-center > .mc-sect').first().evaluate(s => s.scrollHeight - s.clientHeight);
+  check(clipped <= 1, `the track list isn't clipped in a short window (${clipped}px hidden)`);
+  await page.setViewportSize({ width: 1600, height: 1000 });
   check(await page.locator('#mc-root .mc-badges .mc-bdg').count() === 5, 'a header badge per provider');
 
   // left of the header: the source icon and Probe, nothing else

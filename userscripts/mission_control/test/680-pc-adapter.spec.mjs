@@ -26,7 +26,17 @@ test('#680: Probe asks Platform Check and shows its platforms', { tag: ['@sandbo
   const enabled = await page.evaluate(() => document.querySelectorAll('[id^="mb-online-"]').length);
   console.log(`platform rows: ${rows} · PC panel rows: ${enabled}`);
   const none = await page.locator('#mc-root [data-card="pc"] .mc-none .mc-pico').count();
-  check(rows + none === enabled, `every platform PC scanned is a row or a not-found icon (${rows} + ${none} of ${enabled})`);
+  const linkedIcons = await page.locator('#mc-root .mc-linked .mc-pico').count();
+  check(rows + none + linkedIcons === enabled, `every platform PC scanned is a row, a linked icon in the header, or a not-found icon (${rows} + ${linkedIcons} + ${none} of ${enabled})`);
+  check(await page.locator('#mc-root [data-card="pc"] .mc-line.linked').count() === 0, 'linked platforms are not rows by default');
+  if (linkedIcons) {
+    await page.click('#mc-root .mc-linked');
+    check(await page.locator('#mc-root [data-card="pc"] .mc-line.linked').count() === linkedIcons, 'clicking the linked icons lists them as rows');
+    const order = await page.locator('#mc-root [data-card="pc"] .mc-line').evaluateAll(ls => ls.map(l => l.classList.contains('linked')));
+    check(order.indexOf(true) === -1 || order.slice(order.indexOf(true)).every(Boolean), 'linked rows come last');
+    await page.click('#mc-root .mc-linked');
+    check(await page.locator('#mc-root [data-card="pc"] .mc-line.linked').count() === 0, 'and fold back');
+  }
 
   const states = await page.locator('#mc-root [data-card="pc"] .mc-line').evaluateAll(ls => ls.map(l => l.className.replace('mc-line ', '')));
   console.log('states: ' + JSON.stringify(states));
