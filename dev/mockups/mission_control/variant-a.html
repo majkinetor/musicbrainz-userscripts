@@ -1,0 +1,119 @@
+<!doctype html><html><head><meta charset="utf-8">
+<title>Mission Control — Variant A</title>
+<link rel="stylesheet" href="base.css">
+<style>
+  .main{flex:1;display:grid;grid-template-columns:300px 1fr;min-height:0}
+  .rail{background:var(--mbu-bg-sunken);border-right:1px solid var(--mbu-border);padding:16px;overflow:auto}
+  .kpi{display:flex;align-items:center;gap:11px;padding:11px 12px;border-radius:var(--mbu-radius);border:1px solid transparent;cursor:pointer;margin-bottom:4px}
+  .kpi:hover{background:var(--mbu-bg-hover)}
+  .kpi.active{background:var(--mbu-bg-raised);border-color:var(--mbu-border)}
+  .kpi .ic{width:30px;height:30px;border-radius:7px;background:var(--mbu-accent-soft);display:grid;place-items:center;font-size:15px;flex:none}
+  .kpi .nm{font-weight:600;font-size:13px}
+  .kpi .st{font-size:11px;color:var(--mbu-text-dim)}
+  .kpi .rt{margin-left:auto;text-align:right}
+  .overall{margin:4px 0 16px;padding:14px;border-radius:var(--mbu-radius-lg);background:var(--mbu-bg-raised);border:1px solid var(--mbu-border)}
+  .overall .big{font-size:26px;font-weight:800}
+  .overall .lbl{font-size:11px;color:var(--mbu-text-weak);text-transform:uppercase;letter-spacing:.6px}
+  .plan{overflow:auto;padding:18px 20px}
+  .grp{margin-bottom:18px}
+  .grp-h{display:flex;align-items:center;gap:10px;padding:8px 2px;margin-bottom:2px}
+  .grp-h .t{font-weight:700;font-size:14px}
+  .grp-h .provider{font-size:11px;color:var(--mbu-text-weak);font-family:var(--mbu-mono)}
+  .row{display:grid;grid-template-columns:20px 150px 1fr auto;gap:12px;align-items:center;padding:9px 12px;border-radius:var(--mbu-radius);border:1px solid var(--mbu-border-soft);margin-bottom:5px;background:var(--mbu-bg-raised)}
+  .row.off{opacity:.5}
+  .row .k{font-size:13px;color:var(--mbu-text-dim)}
+  .row .v{font-size:13px}
+  .row .from{font-size:11px;color:var(--mbu-text-weak)}
+  .execbar{display:flex;align-items:center;gap:14px;padding:12px 20px;border-top:1px solid var(--mbu-border);background:var(--mbu-bg-raised)}
+  .execbar .count{font-size:13px;color:var(--mbu-text-dim)}
+  .info-note{font-size:12px;color:var(--mbu-text-dim);padding:10px 12px;border-radius:var(--mbu-radius);background:var(--mbu-info-bg);border:1px solid var(--mbu-info-border)}
+</style></head>
+<body><div class="app">
+  <div class="bar">
+    <div class="logo"><span class="glyph">◎</span> Mission&nbsp;Control</div>
+    <span class="ver">v2026.10.5</span>
+    <div class="spacer"></div>
+    <button class="btn ghost">↻ Re-probe</button>
+    <button class="btn ghost">Log</button>
+    <button class="btn ghost">? Help</button>
+    <button class="btn ghost">⚙</button>
+  </div>
+
+  <div class="source">
+    <div class="cover">front</div>
+    <div>
+      <div class="rel-title">Daft Punk — Discovery</div>
+      <div class="rel-sub">Album · 14 tracks · 2001 · <span class="mono">8f4e…c21a</span></div>
+    </div>
+    <div style="margin-left:auto;display:flex;gap:7px;align-items:center">
+      <span class="chip src">from Falcon · Spotify</span>
+      <span class="chip ok">● probe complete · 2.1s</span>
+    </div>
+  </div>
+
+  <div class="main">
+    <!-- LEFT: dashboard -->
+    <div class="rail">
+      <div class="overall">
+        <div class="lbl">Ready to apply</div>
+        <div class="big">17 <span style="font-size:14px;font-weight:600;color:var(--mbu-text-dim)">changes</span></div>
+        <div style="margin-top:6px;display:flex;gap:6px;flex-wrap:wrap">
+          <span class="pill add">4 platforms</span><span class="pill add">6 ISRCs</span>
+          <span class="pill add">1 cover</span><span class="pill add">2 rels</span>
+        </div>
+      </div>
+      <h2 class="sec">Providers</h2>
+      <div class="kpi active"><span class="ic">🔗</span><div><div class="nm">Platforms</div><div class="st">Platform Check</div></div><div class="rt"><div class="pill warn">+4</div><div class="st">1 present</div></div></div>
+      <div class="kpi"><span class="ic">👤</span><div><div class="nm">Artists &amp; links</div><div class="st">Platform Check</div></div><div class="rt"><div class="pill warn">+2</div><div class="st">rel. missing</div></div></div>
+      <div class="kpi"><span class="ic">#</span><div><div class="nm">ISRCs</div><div class="st">ISRC Scout</div></div><div class="rt"><div class="pill warn">8/14</div><div class="st">+6 found</div></div></div>
+      <div class="kpi"><span class="ic">🖼</span><div><div class="nm">Cover art</div><div class="st">Art Station</div></div><div class="rt"><div class="pill warn">none</div><div class="st">1 found</div></div></div>
+      <div class="kpi"><span class="ic">🎚</span><div><div class="nm">Credits</div><div class="st">Credit Hoarder · info</div></div><div class="rt"><div class="pill info">42</div><div class="st">cached</div></div></div>
+      <div class="kpi" style="opacity:.6"><span class="ic">⌦</span><div><div class="nm">Recordings</div><div class="st">Fusion · phase 2</div></div><div class="rt"><div class="pill">2</div><div class="st">mergeable</div></div></div>
+    </div>
+
+    <!-- RIGHT: unified plan -->
+    <div style="display:flex;flex-direction:column;min-height:0">
+      <div class="plan">
+        <h2 class="sec">Review plan — deselect anything you don't want written</h2>
+
+        <div class="grp">
+          <div class="grp-h"><span class="cb on"></span><span class="t">Platforms</span><span class="provider">PC · writable</span><span class="pill add" style="margin-left:auto">4 add</span></div>
+          <div class="row"><span class="cb on"></span><span class="k">Deezer</span><span class="v mono">deezer.com/album/12217…</span><span class="from">matched by UPC</span></div>
+          <div class="row"><span class="cb on"></span><span class="k">Apple Music</span><span class="v mono">music.apple.com/us/album/697…</span><span class="from">matched by UPC</span></div>
+          <div class="row"><span class="cb on"></span><span class="k">Tidal</span><span class="v mono">tidal.com/album/40689…</span><span class="from">matched by name+artist</span></div>
+          <div class="row off"><span class="cb"></span><span class="k">Qobuz</span><span class="v mono">qobuz.com/album/0724…</span><span class="from">low confidence — review</span></div>
+        </div>
+
+        <div class="grp">
+          <div class="grp-h"><span class="cb on"></span><span class="t">Artists &amp; links</span><span class="provider">PC · writable</span><span class="pill add" style="margin-left:auto">2 add</span></div>
+          <div class="row"><span class="cb on"></span><span class="k">Thomas Bangalter</span><span class="v">member of band rel.</span><span class="from">from Spotify artist</span></div>
+          <div class="row"><span class="cb on"></span><span class="k">Guy-Manuel …</span><span class="v">member of band rel.</span><span class="from">from Spotify artist</span></div>
+        </div>
+
+        <div class="grp">
+          <div class="grp-h"><span class="cb on"></span><span class="t">ISRCs</span><span class="provider">IS · writable</span><span class="pill add" style="margin-left:auto">6 add</span></div>
+          <div class="row"><span class="cb on"></span><span class="k">#3 Digital Love</span><span class="v mono">GBDUW0000059</span><span class="from">Spotify · Deezer agree</span></div>
+          <div class="row"><span class="cb on"></span><span class="k">#4 Harder Better…</span><span class="v mono">GBDUW0000060</span><span class="from">Spotify · Deezer agree</span></div>
+          <div class="row"><span class="cb on"></span><span class="k">+4 more tracks</span><span class="v weak">expand…</span><span class="from"></span></div>
+        </div>
+
+        <div class="grp">
+          <div class="grp-h"><span class="cb on"></span><span class="t">Cover art</span><span class="provider">AS · writable</span><span class="pill add" style="margin-left:auto">1 add</span></div>
+          <div class="row"><span class="cb on"></span><span class="k">Front</span><span class="v">1400×1400 · Apple Music</span><span class="from">no front on release</span></div>
+        </div>
+
+        <div class="grp">
+          <div class="grp-h"><span class="dot info"></span><span class="t">Credits</span><span class="provider">CH · info only</span><span class="pill info" style="margin-left:auto">not written here</span></div>
+          <div class="info-note">42 credits found across 14 tracks (Tidal · 31, AllMusic · 11). CH doesn't write relationships through the batch — these are surfaced for the glance view and the cache is primed, so opening Credit Hoarder shows the review table instantly.</div>
+        </div>
+      </div>
+
+      <div class="execbar">
+        <span class="cb on"></span><span class="count"><b>14 of 17</b> changes selected · 1 low-confidence held back</span>
+        <div class="spacer" style="flex:1"></div>
+        <button class="btn">Save plan as draft</button>
+        <button class="btn primary lg">Execute via Falcon →</button>
+      </div>
+    </div>
+  </div>
+</div></body></html>

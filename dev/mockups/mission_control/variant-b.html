@@ -1,0 +1,106 @@
+<!doctype html><html><head><meta charset="utf-8">
+<title>Mission Control — Variant B</title>
+<link rel="stylesheet" href="base.css">
+<style>
+  .tabs{display:flex;gap:4px;padding:0 18px;background:var(--mbu-bg-raised);border-bottom:1px solid var(--mbu-border)}
+  .tab{padding:11px 16px;font-size:13px;font-weight:600;color:var(--mbu-text-dim);border-bottom:2px solid transparent;cursor:pointer;display:flex;gap:8px;align-items:center}
+  .tab.on{color:var(--mbu-text);border-bottom-color:var(--mbu-accent)}
+  .tab .n{font-size:11px;background:var(--mbu-bg-sunken);border:1px solid var(--mbu-border);border-radius:20px;padding:0 7px}
+  .main{flex:1;display:grid;grid-template-columns:330px 1fr;min-height:0}
+  .pipe{background:var(--mbu-bg-sunken);border-right:1px solid var(--mbu-border);padding:20px 18px;overflow:auto}
+  .stage{position:relative;padding-left:34px;padding-bottom:18px}
+  .stage::before{content:"";position:absolute;left:12px;top:24px;bottom:-4px;width:2px;background:var(--mbu-border)}
+  .stage:last-child::before{display:none}
+  .node{position:absolute;left:3px;top:3px;width:20px;height:20px;border-radius:50%;border:2px solid var(--mbu-border-strong);background:var(--mbu-bg-raised);display:grid;place-items:center;font-size:11px}
+  .node.done{background:var(--mbu-ok);border-color:var(--mbu-ok);color:#fff}
+  .node.run{background:var(--mbu-accent);border-color:var(--mbu-accent);color:#fff}
+  .node.wait{color:var(--mbu-text-weak)}
+  .stage .nm{font-weight:600;font-size:14px}
+  .stage .meta{font-size:11px;color:var(--mbu-text-dim);margin-top:1px}
+  .parallel{margin:8px 0 0;padding:10px 12px;border:1px dashed var(--mbu-border-strong);border-radius:var(--mbu-radius);background:var(--mbu-bg-raised)}
+  .parallel .lbl{font-size:10px;letter-spacing:.6px;text-transform:uppercase;color:var(--mbu-accent-text);font-weight:700;margin-bottom:8px}
+  .lane{display:flex;align-items:center;gap:9px;padding:5px 0;font-size:13px}
+  .lane .prog{margin-left:auto;font-size:11px;color:var(--mbu-text-dim);font-family:var(--mbu-mono)}
+  .barline{height:4px;border-radius:4px;background:var(--mbu-bg-sunken);overflow:hidden;margin-top:4px}
+  .barline > i{display:block;height:100%;background:var(--mbu-accent)}
+  .detail{overflow:auto;padding:20px 24px}
+  .runrow{display:grid;grid-template-columns:22px 1fr auto;gap:12px;align-items:center;padding:10px 14px;border:1px solid var(--mbu-border-soft);border-radius:var(--mbu-radius);margin-bottom:6px;background:var(--mbu-bg-raised)}
+  .runrow .t{font-size:13px}
+  .runrow .s{font-size:11px;color:var(--mbu-text-dim)}
+  .spin{width:16px;height:16px;border-radius:50%;border:2px solid var(--mbu-border);border-top-color:var(--mbu-accent)}
+  .foot{display:flex;align-items:center;gap:14px;padding:12px 24px;border-top:1px solid var(--mbu-border);background:var(--mbu-bg-raised)}
+</style></head>
+<body><div class="app">
+  <div class="bar">
+    <div class="logo"><span class="glyph">◎</span> Mission&nbsp;Control</div>
+    <span class="ver">v2026.10.5</span>
+    <div class="spacer"></div>
+    <button class="btn ghost">Log</button><button class="btn ghost">? Help</button><button class="btn ghost">⚙</button>
+  </div>
+  <div class="tabs">
+    <div class="tab">① Probe <span class="n">done</span></div>
+    <div class="tab">② Review <span class="n">14</span></div>
+    <div class="tab on">③ Execute <span class="n">running</span></div>
+  </div>
+  <div class="source">
+    <div class="cover">front</div>
+    <div><div class="rel-title">Daft Punk — Discovery</div><div class="rel-sub">Album · 14 tracks · <span class="mono">8f4e…c21a</span></div></div>
+    <div style="margin-left:auto"><span class="chip src">from Falcon · Spotify</span></div>
+  </div>
+
+  <div class="main">
+    <!-- LEFT: dependency pipeline -->
+    <div class="pipe">
+      <h2 class="sec">Execution order</h2>
+      <div class="stage">
+        <span class="node done">✓</span>
+        <div class="nm">Platforms &amp; artists</div>
+        <div class="meta">Platform Check · 4 links + 2 artist rels written</div>
+      </div>
+      <div class="stage">
+        <span class="node run"></span>
+        <div class="nm">Enrich — parallel</div>
+        <div class="meta">different APIs · run concurrently</div>
+        <div class="parallel">
+          <div class="lbl">⇶ running together</div>
+          <div class="lane"><span class="dot info"></span> ISRC Scout <span class="prog">4/6</span></div>
+          <div class="barline"><i style="width:66%"></i></div>
+          <div class="lane" style="margin-top:7px"><span class="dot info"></span> Art Station <span class="prog">0/1 ↑</span></div>
+          <div class="barline"><i style="width:30%"></i></div>
+        </div>
+      </div>
+      <div class="stage">
+        <span class="node wait">◦</span>
+        <div class="nm">Credits <span class="pill info">info</span></div>
+        <div class="meta">Credit Hoarder · cache primed, not written</div>
+      </div>
+      <div class="stage">
+        <span class="node wait">◦</span>
+        <div class="nm">Recordings merge</div>
+        <div class="meta">Fusion · phase 2 · skipped</div>
+      </div>
+    </div>
+
+    <!-- RIGHT: live run detail -->
+    <div style="display:flex;flex-direction:column;min-height:0">
+      <div class="detail">
+        <h2 class="sec">Live run — ISRC Scout &nbsp;·&nbsp; 4 of 6</h2>
+        <div class="runrow"><span class="dot ok"></span><div><div class="t">#3 Digital Love → <span class="mono">GBDUW0000059</span></div><div class="s">edit #118342011 submitted</div></div><span class="pill ok">done</span></div>
+        <div class="runrow"><span class="dot ok"></span><div><div class="t">#4 Harder, Better… → <span class="mono">GBDUW0000060</span></div><div class="s">edit #118342012 submitted</div></div><span class="pill ok">done</span></div>
+        <div class="runrow"><span class="dot ok"></span><div><div class="t">#5 Crescendolls → <span class="mono">GBDUW0000061</span></div><div class="s">edit #118342013 submitted</div></div><span class="pill ok">done</span></div>
+        <div class="runrow"><span class="dot ok"></span><div><div class="t">#6 Nightvision → <span class="mono">GBDUW0000062</span></div><div class="s">edit #118342014 submitted</div></div><span class="pill ok">done</span></div>
+        <div class="runrow" style="border-color:var(--mbu-border-strong)"><span class="spin"></span><div><div class="t">#8 Superheroes → <span class="mono">GBDUW0000064</span></div><div class="s">writing…</div></div><span class="pill info">running</span></div>
+        <div class="runrow" style="opacity:.6"><span class="dot idle"></span><div><div class="t">#10 Something About Us</div><div class="s">queued</div></div><span class="pill">wait</span></div>
+
+        <h2 class="sec" style="margin-top:22px">Art Station &nbsp;·&nbsp; uploading front</h2>
+        <div class="runrow" style="border-color:var(--mbu-border-strong)"><span class="spin"></span><div><div class="t">Front cover · 1400×1400 · Apple Music</div><div class="s">uploading to CAA… 30%</div></div><span class="pill info">running</span></div>
+      </div>
+      <div class="foot">
+        <span class="count dim"><b>6 done</b> · 2 running · 1 queued · 0 failed</span>
+        <div class="spacer" style="flex:1"></div>
+        <button class="btn">Pause</button>
+        <button class="btn">Abort run</button>
+      </div>
+    </div>
+  </div>
+</div></body></html>
