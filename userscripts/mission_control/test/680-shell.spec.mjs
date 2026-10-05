@@ -50,6 +50,7 @@ test('#680: MC shell — launcher, track matrix, sidebars, modes', { tag: ['@san
   check(await page.locator('#mc-root .mc-stage.off[data-p="ch"]').count() === 1, 'CH step marked off');
 
   await page.screenshot({ path: 'test-results/mc-680-shell.png' });
+  await page.locator('#mc-root .mc-hdr').screenshot({ path: 'test-results/mc-680-header.png' });
   await page.keyboard.press('Escape');
   check(await page.locator('#mc-root').count() === 0, 'Esc closes');
   check(await page.locator('#mc-launch').isVisible(), 'launcher back after closing');
