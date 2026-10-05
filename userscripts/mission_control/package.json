@@ -1,0 +1,12 @@
+{
+  "name": "mission-control-userscript",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Mission Control — one review of what every member script would add to a release",
+  "scripts": {
+    "test": "pnpm -C ../.. test --project=mission_control",
+    "test:headed": "pnpm -C ../.. test --project=mission_control --headed",
+    "login": "node ../../dev/test/login.mjs"
+  }
+}

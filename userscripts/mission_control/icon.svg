@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+  <title>Mission Control</title>
+  <g fill="none" stroke="#5f3ec0" stroke-width="7">
+    <circle cx="64" cy="64" r="52"/>
+    <circle cx="64" cy="64" r="30"/>
+    <path d="M64 4v22M64 102v22M4 64h22M102 64h22"/>
+  </g>
+  <circle cx="64" cy="64" r="11" fill="#8a5cf6"/>
+</svg>
