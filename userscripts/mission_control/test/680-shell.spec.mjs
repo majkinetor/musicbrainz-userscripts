@@ -25,7 +25,8 @@ test('#680: MC shell — launcher, track matrix, sidebars, modes', { tag: ['@san
   check(/^Track /.test(await page.locator('#mc-root .mc-insp-t').textContent()), 'inspector shows the selected track');
 
   // hiding the order sidebar shows the horizontal strip; both persist
-  await page.click('#mc-root [data-side="left"]');
+  check(await page.locator('#mc-root .mc-hdr .r button').count() === 2, 'header right holds only settings and close');
+  await page.click('#mc-root [data-close="left"]');
   check(await page.locator('#mc-root .mc-side.left').isHidden(), 'order sidebar hidden');
   check(await page.locator('#mc-root .mc-strip').isVisible(), 'strip shown instead');
   check((await page.evaluate(() => window.__mcTest.settings())).left === false, 'left=false stored');
@@ -33,7 +34,10 @@ test('#680: MC shell — launcher, track matrix, sidebars, modes', { tag: ['@san
   // CH off drops its column and its step
   const heads = () => page.locator('#mc-root .mc-tbl th').allTextContents();
   check((await heads()).some(h => h.includes('Credits')), 'credits column present');
-  await page.click('#mc-root [data-side="left"]');
+  await page.click('#mc-root [data-act="cfg"]');
+  await page.check('.mc-cfg input[data-k="left"]');
+  await page.keyboard.press('Escape');
+  check(await page.locator('#mc-root .mc-side.left').isVisible(), 'settings bring the sidebar back');
   await page.click('#mc-root .mc-seg[data-mode="ch"] button[data-v="off"]');
   check(!(await heads()).some(h => h.includes('Credits')), 'credits column gone with CH off');
   check(await page.locator('#mc-root .mc-stage.off[data-p="ch"]').count() === 1, 'CH step marked off');

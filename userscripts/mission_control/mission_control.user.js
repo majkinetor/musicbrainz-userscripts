@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Mission Control
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.5
+// @version      2026.10.5.183322
 // @description  One window on the release page that asks the other scripts (Platform Check, ISRC Scout, Art Station, Fusion, Credit Hoarder) what is missing, shows it all in one review, and applies the ticked changes in order.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPk1pc3Npb24gQ29udHJvbDwvdGl0bGU+CiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjNWYzZWMwIiBzdHJva2Utd2lkdGg9IjciPgogICAgPGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iNTIiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjMwIi8+CiAgICA8cGF0aCBkPSJNNjQgNHYyMk02NCAxMDJ2MjJNNCA2NGgyMk0xMDIgNjRoMjIiLz4KICA8L2c+CiAgPGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iMTEiIGZpbGw9IiM4YTVjZjYiLz4KPC9zdmc+Cg==
@@ -225,9 +225,7 @@ function header() {
         + '<div style="min-width:0"><div class="mc-ttl" title="' + esc(rel.title) + '">' + esc((rel.artist ? rel.artist + ' — ' : '') + rel.title) + '</div>'
         + '<div class="mc-sub">existing · <span class="mono">' + RELEASE.slice(0, 4) + '…' + RELEASE.slice(-4) + '</span> · ' + rel.tracks.length + ' tr · ' + rel.media + ' medium' + (rel.media === 1 ? '' : 's') + '</div></div>'
         + '<div class="mc-badges"></div></div>'
-        + '<div class="r"><button type="button" class="mc-btn tog" data-side="left" title="Execution order sidebar">⫷ Order</button>'
-        + '<button type="button" class="mc-btn tog" data-side="right" title="Track inspector sidebar">Inspector ⫸</button><span class="mc-sep"></span>'
-        + '<button type="button" class="mc-btn ghost" data-act="log" title="Open the activity log">Log</button>' + mbuHelpHtml('mission_control')
+        + '<div class="r">'
         + '<button type="button" class="mc-btn ghost" data-act="cfg" title="Settings">' + MBU_CFG_ICON + '</button>'
         + '<button type="button" class="mc-btn ghost" data-act="close" title="Close (Esc)">✕</button></div>');
     return h;
@@ -341,7 +339,6 @@ function paintBadges() {
 function paintSides() {
     ui.classList.toggle('no-left', !S.left);
     ui.classList.toggle('no-right', !S.right);
-    ui.querySelectorAll('[data-side]').forEach(b => b.classList.toggle('on', !!S[b.dataset.side]));
     fitStrip();
 }
 function fitStrip() { if (ui && !S.left) mbuFitToolbar(ui.querySelector('.mc-strip'), { gap: 6 }); }
