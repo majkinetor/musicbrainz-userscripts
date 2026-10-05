@@ -32,7 +32,8 @@ One finding per thing the provider looked at:
 | `name` | the label to show |
 | `url` | what was found, if anything |
 | `state` | `new` · `linked` · `withheld` · `unsure` · `none` |
-| `why` | for `withheld`: what holds it back |
+| `why` | for `withheld` / `unsure`: what holds it back |
+| `icon` | the ST-ICONS key, when it isn't `key` |
 
 `new` rows start ticked. `withheld` and `unsure` rows can be ticked by hand, `linked` ones can't, and the `none` rows collapse into one line of icons.
 
@@ -47,7 +48,9 @@ Ask-mode providers aren't asked on Probe. Their matrix column shows a **Fetch** 
 
 ### Not on the release page
 
-**Art Station** runs on `/release/<mbid>/cover-art` and **Credit Hoarder** on `/release/<mbid>/edit-relationships`, so neither hears these events on the release page. How to reach them is still open (#680).
+Art Station and Credit Hoarder have their own pages, so their `@match` now includes the release page as well. There they start no UI: only the adapter, which then returns.
+
+- **Art Station** (`as`): release level. The probe reads the Cover Art Archive listing (the card's `summary`) and the release's own external links (the sidebar block headed "External links", not the release group's). It offers each linked platform AS can source from, with `icon` naming its ST-ICONS key. Rows start ticked only when there's no front cover. Apply opens `/release/<mbid>/cover-art?mc_source=[links]`, where AS imports from those links and keeps the best cover (the same as middle-clicking its URL button), for you to review and enter.
 
 ### Execute
 
@@ -55,7 +58,7 @@ Execute runs the steps in order and sends `mc:apply` to every provider that has 
 
 ### Still to specify
 
-- Credit Hoarder (per track, info only) and Art Station (release level).
+- Credit Hoarder (per track, info only).
 
 ## Layout
 

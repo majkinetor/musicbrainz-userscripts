@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Mission Control
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.5.205655
+// @version      2026.10.5.210859
 // @description  One window on the release page that asks the other scripts (Platform Check, ISRC Scout, Art Station, Fusion, Credit Hoarder) what is missing, shows it all in one review, and applies the ticked changes in order.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPk1pc3Npb24gQ29udHJvbDwvdGl0bGU+CiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjNWYzZWMwIiBzdHJva2Utd2lkdGg9IjciPgogICAgPGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iNTIiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjMwIi8+CiAgICA8cGF0aCBkPSJNNjQgNHYyMk02NCAxMDJ2MjJNNCA2NGgyMk0xMDIgNjRoMjIiLz4KICA8L2c+CiAgPGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iMTEiIGZpbGw9IiM4YTVjZjYiLz4KPC9zdmc+Cg==
@@ -106,7 +106,7 @@ document.addEventListener('mc:progress', e => {
 document.addEventListener('mc:findings', e => {
     const d = busEvent(e, 'mc:findings'); if (!d) return;
     const findings = Array.isArray(d.findings) ? d.findings : [];
-    results[d.id] = { state: 'done', findings };
+    results[d.id] = { state: 'done', findings, summary: d.summary || '' };
     // ticked by default: only what the provider is sure of
     picked[d.id] = new Set(findings.filter(x => x.state === 'new').map(x => x.key));
     const tally = findings.reduce((t, x) => (t[x.state] = (t[x.state] || 0) + 1, t), {});
@@ -299,6 +299,7 @@ function mcStyle() {
         + '#mc-root .mc-fetch{font:600 10px var(--mbu-font);text-transform:none;letter-spacing:0;padding:1px 8px;margin-left:4px;border:1px solid var(--mbu-border-strong);border-radius:20px;background:var(--mbu-accent-soft);color:var(--mbu-accent-text);cursor:pointer}'
         + '.mc-add{color:var(--mbu-accent-text);font-weight:600}.mc-warn{color:var(--mbu-warn);font-weight:600}.mc-why{font-size:11px;color:var(--mbu-warn);margin:2px 0 4px}'
         + '.mc-tbl td .mc-pick{vertical-align:-2px;margin:0 2px 0 0}'
+        + '.mc-summary{padding:5px 10px;font-size:11.5px;color:var(--mbu-text-dim);border-bottom:1px solid var(--mbu-divider)}'
         + '.mc-applied{padding:5px 10px;font-size:11.5px;font-weight:600;border-bottom:1px solid var(--mbu-divider)}.mc-applied.ok{color:var(--mbu-ok);background:var(--mbu-ok-bg)}.mc-applied.err{color:var(--mbu-error);background:var(--mbu-error-bg)}'
         + '.mc-none{display:flex;flex-wrap:wrap;align-items:center;gap:6px;padding:6px 10px;font-size:11px;color:var(--mbu-text-weak)}.mc-none span:first-child{margin-right:4px}.mc-none .mc-pico{opacity:.6}'
         + '.mc-line.linked,.mc-line.none{opacity:.7}.mc-line .mc-lt{min-width:0}.mc-line .t{font-size:12px}'
@@ -483,7 +484,8 @@ function paintCards() {
     ui.querySelectorAll('[data-card]').forEach(box => {
         const id = box.dataset.card, p = PROVIDERS.find(x => x.id === id), r = results[id];
         if (!r || r.state !== 'done') { box.innerHTML = mbuHtml('<div class="mc-empty">' + esc(p.provider) + ': ' + esc(stateText(p)) + (r ? '' : '. Probe fills this in.') + '</div>'); return; }
-        if (!r.findings.length) { box.innerHTML = mbuHtml('<div class="mc-empty">Nothing to report.</div>'); return; }
+        if (!r.findings.length) { box.innerHTML = mbuHtml((r.summary ? '<div class="mc-summary">' + esc(r.summary) + '</div>' : '') + '<div class="mc-empty">Nothing to report.</div>'); return; }
+        const sum = r.summary ? '<div class="mc-summary">' + esc(r.summary) + '</div>' : '';
         const ap = r.applied ? '<div class="mc-applied ' + (r.applied.ok ? 'ok' : 'err') + '">' + (r.applied.ok ? '✓ ' : '✕ ') + esc(r.applied.note || (r.applied.ok ? 'done' : 'failed')) + '</div>' : '';
         // 'not found' is one line of icons, not a row each: it's most of the list and needs no action.
         // 'linked' needs none either: icons in the card's header, so the rows that need a decision
@@ -494,19 +496,19 @@ function paintCards() {
         const slot = box.parentNode.querySelector('.mc-sect-h .end');
         if (slot) slot.innerHTML = mbuHtml(linked.length ? '<button type="button" class="mc-linked' + (S.linkedRows ? ' on' : '') + '" data-act="linked" title="'
             + esc('Already linked: ' + linked.map(x => x.name || x.key).join(', ') + (S.linkedRows ? '. Click to fold them back here.' : '. Click to list them below.')) + '">'
-            + linked.map(x => '<span class="mc-pico">' + stIcon(x.key, 14) + '</span>').join('') + '<span class="mc-lk">✓ ' + linked.length + '</span></button>' : '');
-        box.innerHTML = mbuHtml(ap + rows.map(x => {
+            + linked.map(x => '<span class="mc-pico">' + stIcon(x.icon || x.key, 14) + '</span>').join('') + '<span class="mc-lk">✓ ' + linked.length + '</span></button>' : '');
+        box.innerHTML = mbuHtml(sum + ap + rows.map(x => {
             const pick = x.state === 'new' || x.state === 'withheld' || x.state === 'unsure';
             const pill = PILL[x.state] || ['idle', x.state];
             return '<div class="mc-line ' + esc(x.state) + '">'
                 + (pick ? '<input type="checkbox" class="mc-pick" data-prov="' + id + '" data-key="' + esc(x.key) + '"' + (picked[id] && picked[id].has(x.key) ? ' checked' : '') + '>' : '<span></span>')
-                + '<span class="mc-pico">' + stIcon(x.key, 14) + '</span>'
+                + '<span class="mc-pico">' + stIcon(x.icon || x.key, 14) + '</span>'
                 + '<div class="mc-lt"><div class="t">' + esc(x.name || x.key) + '</div>'
                 + (x.url ? '<a class="s" target="_blank" rel="noopener" href="' + esc(x.url) + '" title="' + esc(x.url) + '">' + esc(shortUrl(x.url)) + '</a>' : '')
                 + (x.why ? '<div class="s">' + esc(x.why) + '</div>' : '') + '</div>'
                 + '<span class="mc-pill ' + pill[0] + '">' + pill[1] + '</span></div>';
         }).join('') + (none.length ? '<div class="mc-none" title="' + esc('Not found: ' + none.map(x => x.name || x.key).join(', ')) + '"><span>Not found</span>'
-            + none.map(x => '<span class="mc-pico" title="' + esc(x.name || x.key) + '">' + stIcon(x.key, 14) + '</span>').join('') + '</div>' : ''));
+            + none.map(x => '<span class="mc-pico" title="' + esc(x.name || x.key) + '">' + stIcon(x.icon || x.key, 14) + '</span>').join('') + '</div>' : ''));
     });
 }
 function changeCount() { return Object.values(picked).reduce((n, set) => n + set.size, 0); }

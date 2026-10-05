@@ -1,10 +1,11 @@
 // ==UserScript==
 // @name         Art Station
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.5.111552
+// @version      2026.10.5.210859
 // @description  Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png
+// @match        *://*.musicbrainz.org/release/*
 // @match        *://*.musicbrainz.org/release/*/cover-art*
 // @match        *://*.musicbrainz.org/release/*/add-cover-art*
 // @match        *://*.musicbrainz.org/event/*/event-art*
@@ -137,6 +138,90 @@
   // Works on BOTH a release's cover art and an event's event art — same gallery,
   // same flow, only the entity differs (archive host, the */-art endpoint suffix,
   // and the type vocabulary). Everything downstream goes through ENT. (#241)
+  // the platforms Art Station can source art from (providerOf) — above the page check,
+  // because the Mission Control adapter on the release page needs it too (#680)
+  const ART_PROVIDERS = [
+    { re: /(^|\.)discogs\.com$/i, name: 'Discogs', domain: 'discogs.com' },
+    { re: /(^|\.)bandcamp\.com$/i, name: 'Bandcamp', domain: 'bandcamp.com' },
+    { re: /(^|\.)music\.apple\.com$|(^|\.)itunes\.apple\.com$/i, name: 'Apple Music', domain: 'music.apple.com' },
+    { re: /(^|\.)open\.spotify\.com$|(^|\.)spotify\.com$/i, name: 'Spotify', domain: 'spotify.com' },
+    { re: /(^|\.)amazon\./i, name: 'Amazon', domain: 'amazon.com' },
+    { re: /(^|\.)deezer\.com$/i, name: 'Deezer', domain: 'deezer.com' },
+    { re: /(^|\.)tidal\.com$/i, name: 'Tidal', domain: 'tidal.com' },
+    { re: /(^|\.)qobuz\.com$/i, name: 'Qobuz', domain: 'qobuz.com' },
+    { re: /(^|\.)vgmdb\.net$/i, name: 'VGMdb', domain: 'vgmdb.net' },
+    { re: /7digital\./i, name: '7digital', domain: '7digital.com' },
+    { re: /(^|\.)beatport\.com$/i, name: 'Beatport', domain: 'beatport.com' },
+    { re: /(^|\.)junodownload\.com$|(^|\.)juno\.co\.uk$/i, name: 'Juno', domain: 'junodownload.com' },
+  ];
+
+  /* ── Mission Control adapter (#680) ─────────────────────────────────────────
+     On the release page itself Art Station has no UI: it only answers Mission
+     Control (document events, JSON-string details — see
+     userscripts/mission_control/DEVELOP.md). A probe reads the Cover Art Archive's
+     listing for the release and the release's own external links (the sidebar's
+     "External links" block, not the release group's), and offers each linked
+     platform Art Station can source from. Ticked by default only when the release
+     has no front cover yet. Apply opens this release's cover-art page seeded with
+     the ticked links: there Art Station imports from them and keeps the best
+     cover (as middle-click on its URL button does), for you to review and enter. */
+  const MC_OV = location.pathname.match(/^\/release\/([0-9a-f-]{36})\/?$/i);
+  if (MC_OV) {
+    const rel = MC_OV[1].toLowerCase();
+    const log = mbuLog({ name: 'Art Station', version: () => (typeof GM_info !== 'undefined' && GM_info.script && GM_info.script.version) || '?', key: 'artstation:logwin' });
+    const send = (type, detail) => document.dispatchEvent(new CustomEvent(type, { detail: JSON.stringify(detail) }));
+    const ver = (typeof GM_info !== 'undefined' && GM_info.script && GM_info.script.version) || '?';
+    const hello = () => send('mc:provider', { id: 'as', name: 'Art Station', version: ver, release: rel, capabilities: ['probe', 'apply'] });
+    let last = [];
+    const releaseLinks = () => {
+      for (const ul of document.querySelectorAll('ul.external_links')) {
+        let h = ul.previousElementSibling; while (h && !/^H\d$/.test(h.tagName)) h = h.previousElementSibling;
+        if (h && /^external links$/i.test(h.textContent.trim())) return [...ul.querySelectorAll('a[href^="http"]')].map(a => a.href);
+      }
+      return [];
+    };
+    const caa = () => new Promise(res => {
+      try {
+        GM_xmlhttpRequest({ method: 'GET', url: 'https://coverartarchive.org/release/' + rel, timeout: 20000,
+          onload: r => { try { res(r.status === 200 ? JSON.parse(r.responseText) : { images: [] }); } catch (e) { res(null); } },
+          onerror: () => res(null), ontimeout: () => res(null) });
+      } catch (e) { res(null); }
+    });
+    document.addEventListener('mc:discover', () => { log.info('Mission Control asked — answering as provider as'); hello(); });
+    document.addEventListener('mc:probe', async e => {
+      let d = {};
+      try { d = JSON.parse(e.detail) || {}; } catch (x) { return; }
+      if ((d.release && d.release !== rel) || (d.only && !d.only.includes('as'))) return;
+      send('mc:progress', { id: 'as', run: d.run, state: 'busy', note: 'reading the Cover Art Archive' });
+      const j = await caa();
+      const imgs = (j && j.images) || [];
+      const front = imgs.some(i => i.front || (i.types || []).includes('Front'));
+      const seen = new Set();
+      last = releaseLinks().map(u => ({ u, p: providerOf(u) })).filter(x => x.p && !seen.has(x.p.name) && seen.add(x.p.name));
+      const why = front ? 'the release already has a front cover' : null;
+      const findings = last.map(x => Object.assign({ key: x.p.name, name: x.p.name, icon: (Object.entries({ 'Apple Music': 'apple', Spotify: 'spotify', Deezer: 'deezer', Tidal: 'tidal', Qobuz: 'qobuz', Bandcamp: 'bandcamp', Discogs: 'discogs', Beatport: 'beatport', '7digital': 'sevendigital', Amazon: 'amazonmusic' }).find(([n]) => n === x.p.name) || [])[1] || null, url: x.u, state: front ? 'unsure' : 'new' }, why ? { why } : {}));
+      const summary = j == null ? 'Cover Art Archive: could not be read'
+        : imgs.length ? 'Cover Art Archive: ' + imgs.length + ' image' + (imgs.length === 1 ? '' : 's') + (front ? ', front cover ✓' : ', no front cover') : 'Cover Art Archive: no cover art yet';
+      log.info('Mission Control probe ' + d.run + ': ' + summary + ' · ' + findings.length + ' source(s): ' + findings.map(x => x.name).join(', '));
+      send('mc:findings', { id: 'as', run: d.run, release: rel, summary, findings });
+    });
+    document.addEventListener('mc:apply', e => {
+      let d = {};
+      try { d = JSON.parse(e.detail) || {}; } catch (x) { return; }
+      if (d.id !== 'as' || (d.release && d.release !== rel)) return;
+      const urls = last.filter(x => (d.keys || []).includes(x.p.name)).map(x => x.u);
+      const reply = o => send('mc:applied', Object.assign({ id: 'as', run: d.run, release: rel }, o));
+      if (!urls.length) { reply({ ok: true, sent: 0, note: 'nothing to source' }); return; }
+      const href = location.origin + '/release/' + rel + '/cover-art?mc_source=' + encodeURIComponent(JSON.stringify(urls));
+      if (d.dry) { reply({ ok: true, sent: 0, note: 'dry run: would open Art Station to source from ' + urls.length + ' link' + (urls.length === 1 ? '' : 's') }); return; }
+      const w = window.open(href, '_blank');
+      log.info('Mission Control apply: ' + (w ? 'opened' : 'could NOT open (pop-up blocked?)') + ' ' + href);
+      reply(w ? { ok: true, sent: urls.length, note: 'opened Art Station: review the best cover there, then Enter edit' } : { ok: false, sent: 0, note: 'the browser blocked the new tab' });
+    });
+    hello();
+    return;
+  }
+
   const M = location.pathname.match(/\/(release|event)\/([0-9a-f-]{36})\/(add-)?(?:cover|event)-art/i);
   if (!M) return;
 
@@ -2033,20 +2118,7 @@
   // popover can offer "Import from <provider>" the way the native add page does.
   // domain = the provider's CANONICAL site (not the linked subdomain, e.g.
   // analogafrica.bandcamp.com → bandcamp.com) — favicons come from there.
-  const ART_PROVIDERS = [
-    { re: /(^|\.)discogs\.com$/i, name: 'Discogs', domain: 'discogs.com' },
-    { re: /(^|\.)bandcamp\.com$/i, name: 'Bandcamp', domain: 'bandcamp.com' },
-    { re: /(^|\.)music\.apple\.com$|(^|\.)itunes\.apple\.com$/i, name: 'Apple Music', domain: 'music.apple.com' },
-    { re: /(^|\.)open\.spotify\.com$|(^|\.)spotify\.com$/i, name: 'Spotify', domain: 'spotify.com' },
-    { re: /(^|\.)amazon\./i, name: 'Amazon', domain: 'amazon.com' },
-    { re: /(^|\.)deezer\.com$/i, name: 'Deezer', domain: 'deezer.com' },
-    { re: /(^|\.)tidal\.com$/i, name: 'Tidal', domain: 'tidal.com' },
-    { re: /(^|\.)qobuz\.com$/i, name: 'Qobuz', domain: 'qobuz.com' },
-    { re: /(^|\.)vgmdb\.net$/i, name: 'VGMdb', domain: 'vgmdb.net' },
-    { re: /7digital\./i, name: '7digital', domain: '7digital.com' },
-    { re: /(^|\.)beatport\.com$/i, name: 'Beatport', domain: 'beatport.com' },
-    { re: /(^|\.)junodownload\.com$|(^|\.)juno\.co\.uk$/i, name: 'Juno', domain: 'junodownload.com' },
-  ];
+  // ART_PROVIDERS is defined above the page check: the Mission Control adapter on the release page uses it too (#680)
   // Shared platform icons (#404) — stIcon(name, size) / stColor(name). Source of truth is
   // dev/ui/platform-icons.mjs; the block below is generated by dev/ui/sync-icons.mjs (pre-commit hook).
   // <ST-ICONS> — generated by dev/ui/sync-icons.mjs from dev/ui/platform-icons.mjs — DO NOT EDIT
@@ -2281,6 +2353,11 @@
   function sourceBestFromButton(btn) {
     allSources().then(all => {
       if (!all.total) { toast(`No sources found on this ${ENT.kind} — opening the panel`, 3500); openSourcePop(btn); return; }
+      sourceBest(all);
+    }).catch(e => { asLog.warn('middle-click best cover failed: ' + (e && e.message)); openSourcePop(btn); });
+  }
+  function sourceBest(all) {
+    {
       const before = new Set(MODEL.map(x => x.id));
       toast(`⬇ Importing from ${all.total} source${all.total > 1 ? 's' : ''}, keeping the best…`);
       asLog.info(`Best cover: importing from ${all.total} source(s), will keep the best one`);
@@ -2308,7 +2385,19 @@
         toast(cands.length > 1 ? `Kept the best of ${cands.length}: ${best._provider || ''} ${best.w}×${best.h}` : `Only one cover found — ${best._provider || 'kept'}`);
         render();
       }, 500);
-    }).catch(e => { asLog.warn('middle-click best cover failed: ' + (e && e.message)); openSourcePop(btn); });
+    }
+  }
+  // #680: Mission Control opened this page with ?mc_source=[links] — import from those
+  // links and keep the best cover, as a middle-click on the URL button does
+  function mcSeeded() {
+    let urls = [];
+    try { urls = JSON.parse(new URLSearchParams(location.search).get('mc_source') || '[]'); } catch (e) { asLog.warn('Mission Control: unreadable mc_source'); }
+    urls = (Array.isArray(urls) ? urls : []).filter(u => providerOf(u));
+    if (!urls.length) return;
+    const provs = urls.map(u => { const p = providerOf(u); let host = ''; try { host = new URL(u).hostname; } catch (e) {} return { name: p.name, url: u, icon: provIconUrl(host) }; });
+    asLog.info('Mission Control: sourcing the best cover from ' + provs.map(p => p.name).join(', '));
+    toast(`⬇ Mission Control: importing from ${provs.length} source${provs.length > 1 ? 's' : ''}, keeping the best…`);
+    sourceBest({ provs, custom: [], total: provs.length });
   }
   function openSourcePop(btn) {
     _srcBtn = btn;   // #250 remembered so a late provider registration can re-open this popover
@@ -5344,6 +5433,6 @@
   }
 
   // we run at document-start; wait for #content before mounting the gallery
-  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', () => loadArt().then(initAdd), { once: true });
-  else loadArt().then(initAdd);
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', () => loadArt().then(initAdd).then(mcSeeded), { once: true });
+  else loadArt().then(initAdd).then(mcSeeded);
 })();

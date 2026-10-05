@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         String Theory
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.6.212257
+// @version      2026.10.6.212258
 // @description  Unified bundle of 9 MusicBrainz userscripts (apollo_editor, art_station, credit_hoarder, fusion, group_therapy, isrc_scout, mammoth, mission_control, platform_check). Built by userscripts/string_theory/build.mjs — do not hand-edit.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCIgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0Ij4KICA8IS0tIGh1Yi1hbmQtc3Bva2UgIm5ldHdvcmsiIGdseXBoLCBzaW5nbGUgdml2aWQgdmlvbGV0IG9uIHRyYW5zcGFyZW50IHNvIGl0IHJlYWRzIG9uIGJvdGggZGFyayBhbmQgbGlnaHQgcGFnZXMgLS0+CiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjN2M1Y2ZmIiBzdHJva2Utd2lkdGg9IjQuNiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj4KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMzIgMTUiLz4KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMNDYuNSAyMy41Ii8+CiAgICA8cGF0aCBkPSJNMzIgMzIgTDQ2LjUgNDAuNSIvPgogICAgPHBhdGggZD0iTTMyIDMyIEwzMiA0OSIvPgogICAgPHBhdGggZD0iTTMyIDMyIEwxNy41IDQwLjUiLz4KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMTcuNSAyMy41Ii8+CiAgPC9nPgogIDxnIGZpbGw9IiM3YzVjZmYiPgogICAgPGNpcmNsZSBjeD0iMzIiIGN5PSIzMiIgcj0iOC42Ii8+CiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjE5LjUiIHI9IjYuNCIvPgogICAgPGNpcmNsZSBjeD0iNDkiIGN5PSIxOS41IiByPSI2LjQiLz4KICAgIDxjaXJjbGUgY3g9IjMyIiBjeT0iNTciIHI9IjYuNCIvPgogIDwvZz4KICA8ZyBmaWxsPSJub25lIiBzdHJva2U9IiM3YzVjZmYiIHN0cm9rZS13aWR0aD0iMy44Ij4KICAgIDxjaXJjbGUgY3g9IjMyIiBjeT0iNyIgcj0iNC45Ii8+CiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjQ0LjUiIHI9IjQuOSIvPgogICAgPGNpcmNsZSBjeD0iNDkiIGN5PSI0NC41IiByPSI0LjkiLz4KICA8L2c+Cjwvc3ZnPgo=
@@ -17,6 +17,7 @@
 // @grant        GM_setValue
 // @grant        unsafeWindow
 // @connect      *
+// @match        *://*.musicbrainz.org/release/*
 // @match        *://*.musicbrainz.org/release/*/cover-art*
 // @match        *://*.musicbrainz.org/release/*/add-cover-art*
 // @match        *://*.musicbrainz.org/event/*/event-art*
@@ -88,8 +89,8 @@
 // Bundles (verbatim, each wrapped in a run-at gate): apollo_editor, art_station, credit_hoarder, fusion, group_therapy, isrc_scout, mammoth, mission_control, platform_check.
 
 try {
-  console.log('%c String Theory %c v2026.10.6.212257 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
-  console.log("String Theory bundles:\n  · Apollo Editor v2026.10.6\n  · Art Station v2026.10.5.111552\n  · Credit Hoarder v2026.10.5.150448\n  · Fusion v2026.10.5.205655\n  · Group Therapy v2026.10.4\n  · ISRC Scout v2026.10.6.204207\n  · Mammoth v2026.10.4\n  · Mission Control v2026.10.5.205655\n  · Platform Check v2026.10.6.193036");
+  console.log('%c String Theory %c v2026.10.6.212258 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
+  console.log("String Theory bundles:\n  · Apollo Editor v2026.10.6\n  · Art Station v2026.10.5.210859\n  · Credit Hoarder v2026.10.5.150448\n  · Fusion v2026.10.5.205655\n  · Group Therapy v2026.10.4\n  · ISRC Scout v2026.10.6.204207\n  · Mammoth v2026.10.4\n  · Mission Control v2026.10.5.210859\n  · Platform Check v2026.10.6.193036");
 } catch (e) {}
 
 // ===== apollo_editor (@run-at document-start) =====================================
@@ -11369,7 +11370,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
 
 // ===== art_station (@run-at document-start) =======================================
 (function(__stGM){
-  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Art Station*","namespace":"https://musicbrainz.org/","version":"2026.10.5.111552","description":"Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png"}) }) : { script: {"name":"Art Station*","namespace":"https://musicbrainz.org/","version":"2026.10.5.111552","description":"Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png"} };
+  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Art Station*","namespace":"https://musicbrainz.org/","version":"2026.10.5.210859","description":"Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png"}) }) : { script: {"name":"Art Station*","namespace":"https://musicbrainz.org/","version":"2026.10.5.210859","description":"Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png"} };
   (f=>f())(function(){ try { (function(){
 //
 // Phase-1 PoC. Principle: "you get what you see" — the gallery is the staged
@@ -11491,6 +11492,90 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
   // Works on BOTH a release's cover art and an event's event art — same gallery,
   // same flow, only the entity differs (archive host, the */-art endpoint suffix,
   // and the type vocabulary). Everything downstream goes through ENT. (#241)
+  // the platforms Art Station can source art from (providerOf) — above the page check,
+  // because the Mission Control adapter on the release page needs it too (#680)
+  const ART_PROVIDERS = [
+    { re: /(^|\.)discogs\.com$/i, name: 'Discogs', domain: 'discogs.com' },
+    { re: /(^|\.)bandcamp\.com$/i, name: 'Bandcamp', domain: 'bandcamp.com' },
+    { re: /(^|\.)music\.apple\.com$|(^|\.)itunes\.apple\.com$/i, name: 'Apple Music', domain: 'music.apple.com' },
+    { re: /(^|\.)open\.spotify\.com$|(^|\.)spotify\.com$/i, name: 'Spotify', domain: 'spotify.com' },
+    { re: /(^|\.)amazon\./i, name: 'Amazon', domain: 'amazon.com' },
+    { re: /(^|\.)deezer\.com$/i, name: 'Deezer', domain: 'deezer.com' },
+    { re: /(^|\.)tidal\.com$/i, name: 'Tidal', domain: 'tidal.com' },
+    { re: /(^|\.)qobuz\.com$/i, name: 'Qobuz', domain: 'qobuz.com' },
+    { re: /(^|\.)vgmdb\.net$/i, name: 'VGMdb', domain: 'vgmdb.net' },
+    { re: /7digital\./i, name: '7digital', domain: '7digital.com' },
+    { re: /(^|\.)beatport\.com$/i, name: 'Beatport', domain: 'beatport.com' },
+    { re: /(^|\.)junodownload\.com$|(^|\.)juno\.co\.uk$/i, name: 'Juno', domain: 'junodownload.com' },
+  ];
+
+  /* ── Mission Control adapter (#680) ─────────────────────────────────────────
+     On the release page itself Art Station has no UI: it only answers Mission
+     Control (document events, JSON-string details — see
+     userscripts/mission_control/DEVELOP.md). A probe reads the Cover Art Archive's
+     listing for the release and the release's own external links (the sidebar's
+     "External links" block, not the release group's), and offers each linked
+     platform Art Station can source from. Ticked by default only when the release
+     has no front cover yet. Apply opens this release's cover-art page seeded with
+     the ticked links: there Art Station imports from them and keeps the best
+     cover (as middle-click on its URL button does), for you to review and enter. */
+  const MC_OV = location.pathname.match(/^\/release\/([0-9a-f-]{36})\/?$/i);
+  if (MC_OV) {
+    const rel = MC_OV[1].toLowerCase();
+    const log = mbuLog({ name: 'Art Station', version: () => (typeof GM_info !== 'undefined' && GM_info.script && GM_info.script.version) || '?', key: 'artstation:logwin' });
+    const send = (type, detail) => document.dispatchEvent(new CustomEvent(type, { detail: JSON.stringify(detail) }));
+    const ver = (typeof GM_info !== 'undefined' && GM_info.script && GM_info.script.version) || '?';
+    const hello = () => send('mc:provider', { id: 'as', name: 'Art Station', version: ver, release: rel, capabilities: ['probe', 'apply'] });
+    let last = [];
+    const releaseLinks = () => {
+      for (const ul of document.querySelectorAll('ul.external_links')) {
+        let h = ul.previousElementSibling; while (h && !/^H\d$/.test(h.tagName)) h = h.previousElementSibling;
+        if (h && /^external links$/i.test(h.textContent.trim())) return [...ul.querySelectorAll('a[href^="http"]')].map(a => a.href);
+      }
+      return [];
+    };
+    const caa = () => new Promise(res => {
+      try {
+        GM_xmlhttpRequest({ method: 'GET', url: 'https://coverartarchive.org/release/' + rel, timeout: 20000,
+          onload: r => { try { res(r.status === 200 ? JSON.parse(r.responseText) : { images: [] }); } catch (e) { res(null); } },
+          onerror: () => res(null), ontimeout: () => res(null) });
+      } catch (e) { res(null); }
+    });
+    document.addEventListener('mc:discover', () => { log.info('Mission Control asked — answering as provider as'); hello(); });
+    document.addEventListener('mc:probe', async e => {
+      let d = {};
+      try { d = JSON.parse(e.detail) || {}; } catch (x) { return; }
+      if ((d.release && d.release !== rel) || (d.only && !d.only.includes('as'))) return;
+      send('mc:progress', { id: 'as', run: d.run, state: 'busy', note: 'reading the Cover Art Archive' });
+      const j = await caa();
+      const imgs = (j && j.images) || [];
+      const front = imgs.some(i => i.front || (i.types || []).includes('Front'));
+      const seen = new Set();
+      last = releaseLinks().map(u => ({ u, p: providerOf(u) })).filter(x => x.p && !seen.has(x.p.name) && seen.add(x.p.name));
+      const why = front ? 'the release already has a front cover' : null;
+      const findings = last.map(x => Object.assign({ key: x.p.name, name: x.p.name, icon: (Object.entries({ 'Apple Music': 'apple', Spotify: 'spotify', Deezer: 'deezer', Tidal: 'tidal', Qobuz: 'qobuz', Bandcamp: 'bandcamp', Discogs: 'discogs', Beatport: 'beatport', '7digital': 'sevendigital', Amazon: 'amazonmusic' }).find(([n]) => n === x.p.name) || [])[1] || null, url: x.u, state: front ? 'unsure' : 'new' }, why ? { why } : {}));
+      const summary = j == null ? 'Cover Art Archive: could not be read'
+        : imgs.length ? 'Cover Art Archive: ' + imgs.length + ' image' + (imgs.length === 1 ? '' : 's') + (front ? ', front cover ✓' : ', no front cover') : 'Cover Art Archive: no cover art yet';
+      log.info('Mission Control probe ' + d.run + ': ' + summary + ' · ' + findings.length + ' source(s): ' + findings.map(x => x.name).join(', '));
+      send('mc:findings', { id: 'as', run: d.run, release: rel, summary, findings });
+    });
+    document.addEventListener('mc:apply', e => {
+      let d = {};
+      try { d = JSON.parse(e.detail) || {}; } catch (x) { return; }
+      if (d.id !== 'as' || (d.release && d.release !== rel)) return;
+      const urls = last.filter(x => (d.keys || []).includes(x.p.name)).map(x => x.u);
+      const reply = o => send('mc:applied', Object.assign({ id: 'as', run: d.run, release: rel }, o));
+      if (!urls.length) { reply({ ok: true, sent: 0, note: 'nothing to source' }); return; }
+      const href = location.origin + '/release/' + rel + '/cover-art?mc_source=' + encodeURIComponent(JSON.stringify(urls));
+      if (d.dry) { reply({ ok: true, sent: 0, note: 'dry run: would open Art Station to source from ' + urls.length + ' link' + (urls.length === 1 ? '' : 's') }); return; }
+      const w = window.open(href, '_blank');
+      log.info('Mission Control apply: ' + (w ? 'opened' : 'could NOT open (pop-up blocked?)') + ' ' + href);
+      reply(w ? { ok: true, sent: urls.length, note: 'opened Art Station: review the best cover there, then Enter edit' } : { ok: false, sent: 0, note: 'the browser blocked the new tab' });
+    });
+    hello();
+    return;
+  }
+
   const M = location.pathname.match(/\/(release|event)\/([0-9a-f-]{36})\/(add-)?(?:cover|event)-art/i);
   if (!M) return;
 
@@ -13387,20 +13472,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
   // popover can offer "Import from <provider>" the way the native add page does.
   // domain = the provider's CANONICAL site (not the linked subdomain, e.g.
   // analogafrica.bandcamp.com → bandcamp.com) — favicons come from there.
-  const ART_PROVIDERS = [
-    { re: /(^|\.)discogs\.com$/i, name: 'Discogs', domain: 'discogs.com' },
-    { re: /(^|\.)bandcamp\.com$/i, name: 'Bandcamp', domain: 'bandcamp.com' },
-    { re: /(^|\.)music\.apple\.com$|(^|\.)itunes\.apple\.com$/i, name: 'Apple Music', domain: 'music.apple.com' },
-    { re: /(^|\.)open\.spotify\.com$|(^|\.)spotify\.com$/i, name: 'Spotify', domain: 'spotify.com' },
-    { re: /(^|\.)amazon\./i, name: 'Amazon', domain: 'amazon.com' },
-    { re: /(^|\.)deezer\.com$/i, name: 'Deezer', domain: 'deezer.com' },
-    { re: /(^|\.)tidal\.com$/i, name: 'Tidal', domain: 'tidal.com' },
-    { re: /(^|\.)qobuz\.com$/i, name: 'Qobuz', domain: 'qobuz.com' },
-    { re: /(^|\.)vgmdb\.net$/i, name: 'VGMdb', domain: 'vgmdb.net' },
-    { re: /7digital\./i, name: '7digital', domain: '7digital.com' },
-    { re: /(^|\.)beatport\.com$/i, name: 'Beatport', domain: 'beatport.com' },
-    { re: /(^|\.)junodownload\.com$|(^|\.)juno\.co\.uk$/i, name: 'Juno', domain: 'junodownload.com' },
-  ];
+  // ART_PROVIDERS is defined above the page check: the Mission Control adapter on the release page uses it too (#680)
   // Shared platform icons (#404) — stIcon(name, size) / stColor(name). Source of truth is
   // dev/ui/platform-icons.mjs; the block below is generated by dev/ui/sync-icons.mjs (pre-commit hook).
   // <ST-ICONS> — generated by dev/ui/sync-icons.mjs from dev/ui/platform-icons.mjs — DO NOT EDIT
@@ -13635,6 +13707,11 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
   function sourceBestFromButton(btn) {
     allSources().then(all => {
       if (!all.total) { toast(`No sources found on this ${ENT.kind} — opening the panel`, 3500); openSourcePop(btn); return; }
+      sourceBest(all);
+    }).catch(e => { asLog.warn('middle-click best cover failed: ' + (e && e.message)); openSourcePop(btn); });
+  }
+  function sourceBest(all) {
+    {
       const before = new Set(MODEL.map(x => x.id));
       toast(`⬇ Importing from ${all.total} source${all.total > 1 ? 's' : ''}, keeping the best…`);
       asLog.info(`Best cover: importing from ${all.total} source(s), will keep the best one`);
@@ -13662,7 +13739,19 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
         toast(cands.length > 1 ? `Kept the best of ${cands.length}: ${best._provider || ''} ${best.w}×${best.h}` : `Only one cover found — ${best._provider || 'kept'}`);
         render();
       }, 500);
-    }).catch(e => { asLog.warn('middle-click best cover failed: ' + (e && e.message)); openSourcePop(btn); });
+    }
+  }
+  // #680: Mission Control opened this page with ?mc_source=[links] — import from those
+  // links and keep the best cover, as a middle-click on the URL button does
+  function mcSeeded() {
+    let urls = [];
+    try { urls = JSON.parse(new URLSearchParams(location.search).get('mc_source') || '[]'); } catch (e) { asLog.warn('Mission Control: unreadable mc_source'); }
+    urls = (Array.isArray(urls) ? urls : []).filter(u => providerOf(u));
+    if (!urls.length) return;
+    const provs = urls.map(u => { const p = providerOf(u); let host = ''; try { host = new URL(u).hostname; } catch (e) {} return { name: p.name, url: u, icon: provIconUrl(host) }; });
+    asLog.info('Mission Control: sourcing the best cover from ' + provs.map(p => p.name).join(', '));
+    toast(`⬇ Mission Control: importing from ${provs.length} source${provs.length > 1 ? 's' : ''}, keeping the best…`);
+    sourceBest({ provs, custom: [], total: provs.length });
   }
   function openSourcePop(btn) {
     _srcBtn = btn;   // #250 remembered so a late provider registration can re-open this popover
@@ -16698,8 +16787,8 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
   }
 
   // we run at document-start; wait for #content before mounting the gallery
-  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', () => loadArt().then(initAdd), { once: true });
-  else loadArt().then(initAdd);
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', () => loadArt().then(initAdd).then(mcSeeded), { once: true });
+  else loadArt().then(initAdd).then(mcSeeded);
 })();
 })(); } catch (e) { try { console.error('[String Theory] art_station failed while starting — the other scripts carry on:', e); } catch (x) {} } });
 })(typeof GM_info !== 'undefined' ? GM_info : undefined);
@@ -46536,7 +46625,7 @@ Created this ${kind} while adding credits parsed from text to ${relUrl}`;
 
 // ===== mission_control (@run-at document-end) ===================================
 (function(__stGM){
-  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Mission Control*","namespace":"https://musicbrainz.org/","version":"2026.10.5.205655","description":"One window on the release page that asks the other scripts (Platform Check, ISRC Scout, Art Station, Fusion, Credit Hoarder) what is missing, shows it all in one review, and applies the ticked changes in order.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/mission_control/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPk1pc3Npb24gQ29udHJvbDwvdGl0bGU+CiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjNWYzZWMwIiBzdHJva2Utd2lkdGg9IjciPgogICAgPGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iNTIiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjMwIi8+CiAgICA8cGF0aCBkPSJNNjQgNHYyMk02NCAxMDJ2MjJNNCA2NGgyMk0xMDIgNjRoMjIiLz4KICA8L2c+CiAgPGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iMTEiIGZpbGw9IiM4YTVjZjYiLz4KPC9zdmc+Cg=="}) }) : { script: {"name":"Mission Control*","namespace":"https://musicbrainz.org/","version":"2026.10.5.205655","description":"One window on the release page that asks the other scripts (Platform Check, ISRC Scout, Art Station, Fusion, Credit Hoarder) what is missing, shows it all in one review, and applies the ticked changes in order.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/mission_control/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPk1pc3Npb24gQ29udHJvbDwvdGl0bGU+CiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjNWYzZWMwIiBzdHJva2Utd2lkdGg9IjciPgogICAgPGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iNTIiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjMwIi8+CiAgICA8cGF0aCBkPSJNNjQgNHYyMk02NCAxMDJ2MjJNNCA2NGgyMk0xMDIgNjRoMjIiLz4KICA8L2c+CiAgPGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iMTEiIGZpbGw9IiM4YTVjZjYiLz4KPC9zdmc+Cg=="} };
+  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Mission Control*","namespace":"https://musicbrainz.org/","version":"2026.10.5.210859","description":"One window on the release page that asks the other scripts (Platform Check, ISRC Scout, Art Station, Fusion, Credit Hoarder) what is missing, shows it all in one review, and applies the ticked changes in order.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/mission_control/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPk1pc3Npb24gQ29udHJvbDwvdGl0bGU+CiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjNWYzZWMwIiBzdHJva2Utd2lkdGg9IjciPgogICAgPGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iNTIiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjMwIi8+CiAgICA8cGF0aCBkPSJNNjQgNHYyMk02NCAxMDJ2MjJNNCA2NGgyMk0xMDIgNjRoMjIiLz4KICA8L2c+CiAgPGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iMTEiIGZpbGw9IiM4YTVjZjYiLz4KPC9zdmc+Cg=="}) }) : { script: {"name":"Mission Control*","namespace":"https://musicbrainz.org/","version":"2026.10.5.210859","description":"One window on the release page that asks the other scripts (Platform Check, ISRC Scout, Art Station, Fusion, Credit Hoarder) what is missing, shows it all in one review, and applies the ticked changes in order.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/mission_control/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPk1pc3Npb24gQ29udHJvbDwvdGl0bGU+CiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjNWYzZWMwIiBzdHJva2Utd2lkdGg9IjciPgogICAgPGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iNTIiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjMwIi8+CiAgICA8cGF0aCBkPSJNNjQgNHYyMk02NCAxMDJ2MjJNNCA2NGgyMk0xMDIgNjRoMjIiLz4KICA8L2c+CiAgPGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iMTEiIGZpbGw9IiM4YTVjZjYiLz4KPC9zdmc+Cg=="} };
   (f=>document.readyState!=='loading'?f():document.addEventListener('DOMContentLoaded',f,{once:true}))(function(){ try { (function(){
 (function () {
 'use strict';
@@ -46633,7 +46722,7 @@ document.addEventListener('mc:progress', e => {
 document.addEventListener('mc:findings', e => {
     const d = busEvent(e, 'mc:findings'); if (!d) return;
     const findings = Array.isArray(d.findings) ? d.findings : [];
-    results[d.id] = { state: 'done', findings };
+    results[d.id] = { state: 'done', findings, summary: d.summary || '' };
     // ticked by default: only what the provider is sure of
     picked[d.id] = new Set(findings.filter(x => x.state === 'new').map(x => x.key));
     const tally = findings.reduce((t, x) => (t[x.state] = (t[x.state] || 0) + 1, t), {});
@@ -46826,6 +46915,7 @@ function mcStyle() {
         + '#mc-root .mc-fetch{font:600 10px var(--mbu-font);text-transform:none;letter-spacing:0;padding:1px 8px;margin-left:4px;border:1px solid var(--mbu-border-strong);border-radius:20px;background:var(--mbu-accent-soft);color:var(--mbu-accent-text);cursor:pointer}'
         + '.mc-add{color:var(--mbu-accent-text);font-weight:600}.mc-warn{color:var(--mbu-warn);font-weight:600}.mc-why{font-size:11px;color:var(--mbu-warn);margin:2px 0 4px}'
         + '.mc-tbl td .mc-pick{vertical-align:-2px;margin:0 2px 0 0}'
+        + '.mc-summary{padding:5px 10px;font-size:11.5px;color:var(--mbu-text-dim);border-bottom:1px solid var(--mbu-divider)}'
         + '.mc-applied{padding:5px 10px;font-size:11.5px;font-weight:600;border-bottom:1px solid var(--mbu-divider)}.mc-applied.ok{color:var(--mbu-ok);background:var(--mbu-ok-bg)}.mc-applied.err{color:var(--mbu-error);background:var(--mbu-error-bg)}'
         + '.mc-none{display:flex;flex-wrap:wrap;align-items:center;gap:6px;padding:6px 10px;font-size:11px;color:var(--mbu-text-weak)}.mc-none span:first-child{margin-right:4px}.mc-none .mc-pico{opacity:.6}'
         + '.mc-line.linked,.mc-line.none{opacity:.7}.mc-line .mc-lt{min-width:0}.mc-line .t{font-size:12px}'
@@ -47010,7 +47100,8 @@ function paintCards() {
     ui.querySelectorAll('[data-card]').forEach(box => {
         const id = box.dataset.card, p = PROVIDERS.find(x => x.id === id), r = results[id];
         if (!r || r.state !== 'done') { box.innerHTML = mbuHtml('<div class="mc-empty">' + esc(p.provider) + ': ' + esc(stateText(p)) + (r ? '' : '. Probe fills this in.') + '</div>'); return; }
-        if (!r.findings.length) { box.innerHTML = mbuHtml('<div class="mc-empty">Nothing to report.</div>'); return; }
+        if (!r.findings.length) { box.innerHTML = mbuHtml((r.summary ? '<div class="mc-summary">' + esc(r.summary) + '</div>' : '') + '<div class="mc-empty">Nothing to report.</div>'); return; }
+        const sum = r.summary ? '<div class="mc-summary">' + esc(r.summary) + '</div>' : '';
         const ap = r.applied ? '<div class="mc-applied ' + (r.applied.ok ? 'ok' : 'err') + '">' + (r.applied.ok ? '✓ ' : '✕ ') + esc(r.applied.note || (r.applied.ok ? 'done' : 'failed')) + '</div>' : '';
         // 'not found' is one line of icons, not a row each: it's most of the list and needs no action.
         // 'linked' needs none either: icons in the card's header, so the rows that need a decision
@@ -47021,19 +47112,19 @@ function paintCards() {
         const slot = box.parentNode.querySelector('.mc-sect-h .end');
         if (slot) slot.innerHTML = mbuHtml(linked.length ? '<button type="button" class="mc-linked' + (S.linkedRows ? ' on' : '') + '" data-act="linked" title="'
             + esc('Already linked: ' + linked.map(x => x.name || x.key).join(', ') + (S.linkedRows ? '. Click to fold them back here.' : '. Click to list them below.')) + '">'
-            + linked.map(x => '<span class="mc-pico">' + stIcon(x.key, 14) + '</span>').join('') + '<span class="mc-lk">✓ ' + linked.length + '</span></button>' : '');
-        box.innerHTML = mbuHtml(ap + rows.map(x => {
+            + linked.map(x => '<span class="mc-pico">' + stIcon(x.icon || x.key, 14) + '</span>').join('') + '<span class="mc-lk">✓ ' + linked.length + '</span></button>' : '');
+        box.innerHTML = mbuHtml(sum + ap + rows.map(x => {
             const pick = x.state === 'new' || x.state === 'withheld' || x.state === 'unsure';
             const pill = PILL[x.state] || ['idle', x.state];
             return '<div class="mc-line ' + esc(x.state) + '">'
                 + (pick ? '<input type="checkbox" class="mc-pick" data-prov="' + id + '" data-key="' + esc(x.key) + '"' + (picked[id] && picked[id].has(x.key) ? ' checked' : '') + '>' : '<span></span>')
-                + '<span class="mc-pico">' + stIcon(x.key, 14) + '</span>'
+                + '<span class="mc-pico">' + stIcon(x.icon || x.key, 14) + '</span>'
                 + '<div class="mc-lt"><div class="t">' + esc(x.name || x.key) + '</div>'
                 + (x.url ? '<a class="s" target="_blank" rel="noopener" href="' + esc(x.url) + '" title="' + esc(x.url) + '">' + esc(shortUrl(x.url)) + '</a>' : '')
                 + (x.why ? '<div class="s">' + esc(x.why) + '</div>' : '') + '</div>'
                 + '<span class="mc-pill ' + pill[0] + '">' + pill[1] + '</span></div>';
         }).join('') + (none.length ? '<div class="mc-none" title="' + esc('Not found: ' + none.map(x => x.name || x.key).join(', ')) + '"><span>Not found</span>'
-            + none.map(x => '<span class="mc-pico" title="' + esc(x.name || x.key) + '">' + stIcon(x.key, 14) + '</span>').join('') + '</div>' : ''));
+            + none.map(x => '<span class="mc-pico" title="' + esc(x.name || x.key) + '">' + stIcon(x.icon || x.key, 14) + '</span>').join('') + '</div>' : ''));
     });
 }
 function changeCount() { return Object.values(picked).reduce((n, set) => n + set.size, 0); }
