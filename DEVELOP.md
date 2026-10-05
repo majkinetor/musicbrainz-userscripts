@@ -42,7 +42,7 @@ node dev/publish.mjs --silent --yes   # silent release
 
 A run:
 
-1. collects the closed issues not yet labelled `released` that have an `area | <script>` label and `bug` or `enhancement`, plus those labelled `general` (not `skip changelog` or `wontfix`); the labels are in [Standard 2](STANDARDS.md#standard-2);
+1. collects the closed issues not yet labelled `released` that have an `area | <script>` label and `bug` or `enhancement`, plus those labelled `general` (not `skip changelog` or `wontfix`); the labels are in [STANDARDS → Labels](STANDARDS.md#labels);
 2. prepends a dated section to each script's `CHANGELOG.md` (*Features* from `enhancement`, *Fixes* from `bug`), with the `general` issues first in String Theory's;
 3. lists the scripts whose `.user.js` changed since the last GitHub release, each with a pinned install link and one that follows `stable`;
 4. with `--yes`: commits the changelogs, merges `main` into `stable`, pushes both, creates the release, attaches String Theory's `DOCS.pdf` to it, and labels the issues `released`.
@@ -63,7 +63,7 @@ Nothing here ships. A script belongs in its subsystem's folder, next to that fol
 | `github-notifications/`, `notif-channel/` | GitHub notifications into the assistant's channel |
 | [`script-metrics/`](dev/script-metrics/README.md) | edits made with these scripts, counted from the MusicBrainz database dump, in Docker |
 | `site-proposals/`, `reports/` | design proposals and measurement reports kept for reference |
-| `templates/` | starting points: a script's README in the [compact style](STANDARDS.md#standard-12) |
+| `templates/` | starting points: a script's README in the [compact style](STANDARDS.md#script-readmes) |
 | `publish.mjs` | the release (run by `release.yml`) |
 | `regen.mjs` | rebuilds everything the pre-commit hook builds; `--check` fails if that changes anything |
 | `gh-inbox.mjs` | every issue comment newer than the bot's last reply |
