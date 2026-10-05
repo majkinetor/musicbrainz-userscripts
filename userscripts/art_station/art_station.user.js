@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Art Station
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.5.111153
+// @version      2026.10.5.111552
 // @description  Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png
@@ -2743,17 +2743,10 @@
   };
   // #667 the best-cover pick says so in its note
   const bestLine = it => (it && it._bestOf > 1) ? `Art Station chose this as the best of ${it._bestOf} imported covers (highest resolution, then smallest file): ${it.w}×${it.h}${it.bytes ? ', ' + fmtBytes(it.bytes) : ''}` : '';
-  // #678 a rotation's provenance goes in the SHARED note (pre-filled + visible in the commit
-  // dialog, see rotateNote) so it rides on BOTH the add and the paired removal — not a hidden
-  // per-cover line that only the add carried and nobody could see before submitting.
-  const editNoteFor = (m, it) => [m.note && m.note.trim(), sourceLine(it), bestLine(it), ATTRIBUTION].filter(Boolean).join('\n\n');
-  // the default edit note when a rotated-replacement is staged (#678); '' when none is
-  const rotateNote = () => {
-    const rots = MODEL.filter(it => it._new && !it._del && it._rotatedFrom);
-    if (!rots.length) return '';
-    if (rots.length === 1) return `Rotated existing ${ITEM} #${rots[0]._rotatedFrom} by ${rots[0]._rotDeg || 90}° and re-uploaded it; CoverArtArchive images can't be edited in place, so the original is removed.`;
-    return `Rotated ${rots.length} existing ${ITEMS} and re-uploaded them; CoverArtArchive images can't be edited in place, so the originals are removed.`;
-  };
+  // #678 a cover rotated from an existing one records, in its own add edit note, that it
+  // replaces the original (the angle stays accurate through repeated rotations — see _rotDeg)
+  const rotLine = it => (it && it._rotatedFrom) ? `Rotated ${it._rotDeg || 90}° from this release's existing image ${it._rotatedFrom} (which this edit replaces)` : '';
+  const editNoteFor = (m, it) => [m.note && m.note.trim(), sourceLine(it), bestLine(it), rotLine(it), ATTRIBUTION].filter(Boolean).join('\n\n');
   async function getPostForm(url) {
     const html = await fetch(url, { credentials: 'same-origin' }).then(r => { if (!r.ok) throw new Error('GET ' + r.status); return r.text(); });
     const doc = new DOMParser().parseFromString(html, 'text/html');
@@ -3029,7 +3022,6 @@
     }));
     const noteEl = ov.querySelector('.as-cm-note'), nb = ov.querySelector('.as-cm-nb');
     if (_seedNote) noteEl.value = _seedNote;   // #248/#364 carry over a seeded edit note (native add page, or captured from a hidden ECAU sourcing frame)
-    if (!noteEl.value) { const rn = rotateNote(); if (rn) noteEl.value = rn; }   // #678 pre-fill (editable) the rotation provenance so it's visible and rides every edit
     const paintNote = () => {
       const v = noteEl.value.trim(), lines = v ? v.split('\n').length : 0;
       ov.querySelector('.as-cm-nl').textContent = lines ? `${lines} line${lines === 1 ? '' : 's'}` : 'empty';

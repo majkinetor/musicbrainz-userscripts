@@ -78,13 +78,5 @@ test.describe('rotate in the viewer (#678)', () => {
     const after = await until(() => counts(page), c => c.neu >= before.neu + 1 && c.del >= 1, { timeout: 30000 });
     check(after.neu === before.neu + 1, `one rotated copy staged (${JSON.stringify(after)})`);
     check(after.del >= 1, `the original is marked for removal (${JSON.stringify(after)})`);
-
-    // the rotation is recorded in a VISIBLE, editable edit note (#678) — it rides every edit
-    // in the batch (the add and the paired removal), not a hidden per-cover line. The commit
-    // dialog renders locally, so this needs no login/network.
-    await page.keyboard.press('Escape');   // close the viewer
-    await page.click('.as-commit');
-    const note = await until(() => page.evaluate(() => (document.querySelector('.as-cm-note') || {}).value || ''), v => !!v, { timeout: 10000 });
-    check(/rotated/i.test(note), `the edit note mentions the rotation (${JSON.stringify(note)})`);
   });
 });
