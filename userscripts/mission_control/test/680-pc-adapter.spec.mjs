@@ -41,5 +41,33 @@ test('#680: Probe asks Platform Check and shows its platforms', { tag: ['@sandbo
     check((await page.locator('#mc-root .mc-foot .big').textContent()).startsWith((nNew - 1) + ' change'), 'unticking lowers the count');
   }
   check(!/…/.test(await page.locator('#mc-root .mc-bdg').first().textContent()), 'PC badge no longer busy');
+
+  // Apply. No Falcon on the page first: PC says so, and the card shows the failure.
+  const pickable = page.locator('#mc-root [data-card="pc"] .mc-pick');
+  test.skip(!(await pickable.count()), 'no platform to tick on this fixture');
+  await page.evaluate(() => document.querySelectorAll('#mc-root .mc-pick').forEach(c => { if (c.checked) c.click(); }));
+  await pickable.first().check();
+  check(await page.locator('#mc-root [data-act="exec"]').isEnabled(), 'Execute enabled once something is ticked');
+  await page.click('#mc-root [data-act="exec"]');
+  await page.waitForSelector('#mc-root [data-card="pc"] .mc-applied');
+  check(/Falcon is not running/.test(await page.locator('#mc-root [data-card="pc"] .mc-applied.err').textContent()), 'no Falcon: failure on the card');
+
+  // A stand-in for Falcon records what it's handed (Falcon's own run is its own tests' job).
+  await page.evaluate(() => {
+    window.__falconGot = [];
+    for (const ev of ['falcon:run', 'falcon:import']) document.addEventListener(ev, e => { window.__falconGot.push({ ev, json: JSON.parse(e.detail) }); document.dispatchEvent(new CustomEvent('falcon:import-ok')); });
+  });
+  await page.click('#mc-root [data-act="dry"]');
+  await page.waitForSelector('#mc-root [data-card="pc"] .mc-applied.ok');
+  await page.click('#mc-root [data-act="exec"]');
+  await page.waitForFunction(() => window.__falconGot.length === 2);
+  const got = await page.evaluate(() => window.__falconGot);
+  check(got[0].ev === 'falcon:import' && got[1].ev === 'falcon:run', 'dry run queues, Execute runs');
+  const item = got[1].json.items[0];
+  check(item.entityType === 'release' && item.mbid === RELEASE && item.urls.length === 1, 'one release item with the ticked link');
+  const state = await pickable.first().evaluate(c => c.closest('.mc-line').className);
+  if (/withheld/.test(state)) check(/added by hand over link confidence/.test(got[1].json.note), 'a withheld link ticked by hand is noted as forced');
+  // the header line names GM_info's script, which in this test is the shared shim's; the confidence line is PC's own
+  check(/Link confidence:/.test(got[1].json.note), "PC's own edit note");
   await page.screenshot({ path: 'test-results/mc-680-pc.png' });
 });

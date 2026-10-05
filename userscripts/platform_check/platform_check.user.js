@@ -7993,7 +7993,7 @@ document.getElementById('mb-openall-btn').addEventListener('click', (e) => {
 // Mission Control asks over document events, with JSON-string details (see
 // userscripts/mission_control/DEVELOP.md). PC already scans on load, so a probe
 // waits for the scan running (or the last one) and reports what it found — it
-// never starts a second scan. Probe only for now; apply comes with Falcon.
+// never starts a second scan. Apply hands the ticked links to Falcon.
 function pcScan() { PC_SCAN.last = runScans(); return PC_SCAN.last; }
 const PC_MC_VERSION = (typeof GM_info !== 'undefined' && GM_info.script && GM_info.script.version) || '?';
 // One platform's state, as MC shows it:
@@ -8017,7 +8017,7 @@ function pcMcSend(type, detail) {
     document.dispatchEvent(new CustomEvent(type, { detail: JSON.stringify(detail) }));
 }
 function pcMcHello() {
-    pcMcSend('mc:provider', { id: 'pc', name: 'Platform Check', version: PC_MC_VERSION, release: mbid, capabilities: ['probe'] });
+    pcMcSend('mc:provider', { id: 'pc', name: 'Platform Check', version: PC_MC_VERSION, release: mbid, capabilities: ['probe', 'apply'] });
 }
 document.addEventListener('mc:discover', () => { appendLog('System', 'Mission Control asked — answering as provider pc'); pcMcHello(); });
 document.addEventListener('mc:probe', async e => {
@@ -8033,6 +8033,24 @@ document.addEventListener('mc:probe', async e => {
     const tally = findings.reduce((t, f) => (t[f.state] = (t[f.state] || 0) + 1, t), {});
     appendLog('System', `Mission Control probe ${d.run || ''} answered: ${JSON.stringify(tally)}`, 'ok');
     pcMcSend('mc:findings', { id: 'pc', run: d.run, release: mbid, findings });
+});
+// Apply: the ticked platforms' links go to Falcon as one release item, with PC's
+// own edit note; Falcon runs it. A withheld link ticked by hand is noted as forced,
+// like a middle-click + (#641). Answers mc:applied — ok:false when no Falcon heard it.
+document.addEventListener('mc:apply', e => {
+    let d = {};
+    try { d = JSON.parse(e.detail) || {}; } catch (x) { appendLog('System', `Mission Control apply with unreadable detail: ${x.message}`, 'warn'); return; }
+    if (d.id !== 'pc' || (d.release && d.release !== mbid)) return;
+    const picked = (d.keys || []).map(pcMcFinding).filter(f => f.url && f.state !== 'linked' && f.state !== 'none');
+    const reply = o => pcMcSend('mc:applied', Object.assign({ id: 'pc', run: d.run, release: mbid }, o));
+    if (!picked.length) { appendLog('System', 'Mission Control apply: nothing left to add', 'warn'); reply({ ok: true, sent: 0, note: 'nothing left to add' }); return; }
+    const urls = picked.map(f => f.url);
+    const forced = Object.fromEntries(picked.filter(f => f.state === 'withheld').map(f => [f.url, f.why]));
+    const album = mbDataGet(mbid)?.album || mbid;
+    const json = JSON.stringify({ name: `${album} — platform links`, note: pcEditNote(urls, forced, pcPastedBarcode()), items: [{ entityType: 'release', mbid, name: album, urls: urls.map(url => ({ url, linkTypeId: null })) }] });
+    const ok = pcSendToFalconHere(json, !d.dry);
+    appendLog('System', `Mission Control apply${d.dry ? ' (dry run: queued, not run)' : ''}: ${urls.length} link(s) ${ok ? 'handed to Falcon' : 'NOT taken — no Falcon on this page'}: ${urls.join(' ')}`, ok ? 'ok' : 'error');
+    reply(ok ? { ok: true, sent: urls.length, via: 'falcon', note: `${urls.length} link${urls.length === 1 ? '' : 's'} ${d.dry ? 'queued in' : 'sent to'} Falcon` } : { ok: false, sent: 0, note: 'Falcon is not running on this page' });
 });
 pcMcHello();   // MC may have asked before PC loaded
 if (mbuTestHooks()) window.__pcTest680 = { pcMcFinding, pcScan };

@@ -15,6 +15,8 @@ Every `detail` is a **JSON string**, never an object. Each userscript runs in it
 | `mc:probe` | MC | `{ release, run, only, source }`: `only` lists the provider ids asked |
 | `mc:progress` | provider | `{ id, run, state: 'busy', note }` |
 | `mc:findings` | provider | `{ id, run, release, findings: [...] }` |
+| `mc:apply` | MC | `{ id, run, release, keys, dry }`: the ticked finding keys of one provider |
+| `mc:applied` | provider | `{ id, run, ok, sent, note }` |
 
 `id` is one of `pc`, `is`, `as`, `fusion`, `ch` (the `STEPS` table in the script). A provider answers `mc:discover`, and also sends `mc:provider` once when it loads, so the load order doesn't matter.
 
@@ -36,11 +38,14 @@ One finding per thing the provider looked at:
 
 ### Adapters
 
-- **Platform Check** (`pc`): PC already scans on load, so a probe waits for the scan that's running (or the last one) and never starts a second. If a rescan replaces that scan, the probe waits for the new one. The states mirror PC's own panel: `linked` is a link the release already has, `new` is a ✓ that link confidence lets through, and `withheld` is held back by barcode or format confidence.
+- **Platform Check** (`pc`): PC already scans on load, so a probe waits for the scan that's running (or the last one) and never starts a second. If a rescan replaces that scan, the probe waits for the new one. The states mirror PC's own panel: `linked` is a link the release already has, `new` is a ✓ that link confidence lets through, and `withheld` is held back by barcode or format confidence. Apply hands the ticked links to Falcon as one release item, with PC's own edit note. A withheld link ticked by hand is noted as forced, as with a middle-click on +. Without Falcon on the page, apply fails and says why. A dry run queues the batch in Falcon without running it.
+
+### Execute
+
+Execute runs the steps in order and sends `mc:apply` to every provider that has ticked findings and lists `apply` among its capabilities. The lanes of a parallel step run together. A provider that doesn't answer `mc:applied` within 15 s counts as failed, and the next step runs anyway. Dry run sends the same with `dry: true`. Each card shows its provider's outcome above its rows.
 
 ### Still to specify
 
-- `apply`: runs the ticked findings and reports an outcome for each. Form-driven writes go to Falcon as a batch.
 - Per-track findings (ISRC Scout, Fusion, CH) for the matrix columns.
 
 ## Layout
