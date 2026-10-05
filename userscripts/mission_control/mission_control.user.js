@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Mission Control
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.5.204251
+// @version      2026.10.5.205014
 // @description  One window on the release page that asks the other scripts (Platform Check, ISRC Scout, Art Station, Fusion, Credit Hoarder) what is missing, shows it all in one review, and applies the ticked changes in order.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPk1pc3Npb24gQ29udHJvbDwvdGl0bGU+CiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjNWYzZWMwIiBzdHJva2Utd2lkdGg9IjciPgogICAgPGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iNTIiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjMwIi8+CiAgICA8cGF0aCBkPSJNNjQgNHYyMk02NCAxMDJ2MjJNNCA2NGgyMk0xMDIgNjRoMjIiLz4KICA8L2c+CiAgPGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iMTEiIGZpbGw9IiM4YTVjZjYiLz4KPC9zdmc+Cg==
@@ -160,7 +160,7 @@ async function execute(dry) {
             paintAll();
         }
     } finally { executing = false; paintFooter(); }
-    mbuToast(failed ? failed + ' step' + (failed === 1 ? '' : 's') + ' failed: see the cards and the log' : (dry ? 'Queued in Falcon, not run: ' : 'Handed over: ') + sent + ' change' + (sent === 1 ? '' : 's'), { kind: failed ? 'error' : 'ok' });
+    mbuToast(failed ? failed + ' step' + (failed === 1 ? '' : 's') + ' failed: see the cards and the log' : (dry ? 'Dry run done: nothing was written' : 'Done: ' + sent + ' change' + (sent === 1 ? '' : 's') + ' applied or handed over'), { kind: failed ? 'error' : 'ok' });
 }
 function discover() {
     Log.info('discover: asking providers for release ' + RELEASE);
@@ -281,10 +281,12 @@ function mcStyle() {
         + '.mc-sect-h .ic img{width:16px;height:16px;object-fit:contain;display:block}.mc-sect-h .t{font-weight:700;font-size:12.5px}.mc-sect-h .p{font-size:10.5px;color:var(--mbu-text-weak)}'
         + '.mc-empty{padding:10px;color:var(--mbu-text-weak);font-size:12px}'
         + '.mc-line{display:grid;grid-template-columns:16px 16px 1fr auto;gap:8px;align-items:center;padding:4px 10px;border-bottom:1px solid var(--mbu-divider)}.mc-line:last-child{border-bottom:0}'
-        + '.mc-sect-h .end{margin-left:auto;display:flex;align-items:center}'
+        + '.mc-sect-h .end{margin-left:auto;display:flex;align-items:center;gap:6px}.mc-sect-h .mc-applied{border:0;border-radius:20px;padding:1px 9px}'
         + '#mc-root .mc-linked{display:inline-flex;align-items:center;gap:3px;padding:2px 7px;border:1px solid transparent;border-radius:20px;background:none;cursor:pointer;opacity:.75}'
         + '#mc-root .mc-linked:hover,#mc-root .mc-linked.on{opacity:1;border-color:var(--mbu-ok-border);background:var(--mbu-ok-bg)}'
         + '.mc-lk{font-size:10.5px;font-weight:700;color:var(--mbu-ok);margin-left:3px}'
+        + '.mc-add{color:var(--mbu-accent-text);font-weight:600}.mc-warn{color:var(--mbu-warn);font-weight:600}.mc-why{font-size:11px;color:var(--mbu-warn);margin:2px 0 4px}'
+        + '.mc-tbl td .mc-pick{vertical-align:-2px;margin:0 2px 0 0}'
         + '.mc-applied{padding:5px 10px;font-size:11.5px;font-weight:600;border-bottom:1px solid var(--mbu-divider)}.mc-applied.ok{color:var(--mbu-ok);background:var(--mbu-ok-bg)}.mc-applied.err{color:var(--mbu-error);background:var(--mbu-error-bg)}'
         + '.mc-none{display:flex;flex-wrap:wrap;align-items:center;gap:6px;padding:6px 10px;font-size:11px;color:var(--mbu-text-weak)}.mc-none span:first-child{margin-right:4px}.mc-none .mc-pico{opacity:.6}'
         + '.mc-line.linked,.mc-line.none{opacity:.7}.mc-line .mc-lt{min-width:0}.mc-line .t{font-size:12px}'
@@ -333,7 +335,7 @@ function stateText(p) {
     const t = r.findings.reduce((a, x) => (a[x.state] = (a[x.state] || 0) + 1, a), {});
     return [t.new && t.new + ' new', t.linked && t.linked + ' linked', t.withheld && t.withheld + ' withheld', t.unsure && t.unsure + ' unsure', t.none && t.none + ' not found'].filter(Boolean).join(' · ') || 'nothing';
 }
-function paintAll() { if (!ui) return; paintBadges(); paintCards(); paintFooter(); }
+function paintAll() { if (!ui) return; paintBadges(); paintCards(); paintMatrix(); paintInspector(); paintFooter(); }
 
 function header() {
     const h = el('header', 'mc-hdr');
@@ -383,16 +385,49 @@ function strip() {
 
 // One row per track, a column per track-level provider. Values arrive with
 // the providers' probe; until then a cell says why it is empty.
+// A track-level provider's finding carries the recording MBID in `track`; a column
+// renders it. `pick`: the column holds the tick box for that provider's finding.
 const COLS = [
-    { p: 'is', head: 'ISRC · IS' },
-    { p: 'is', head: 'Rec links · IS' },
-    { p: 'fusion', head: 'RG duplicates · Fusion' },
-    { p: 'ch', head: 'Credits · CH' },
+    { id: 'isrc', p: 'is', head: 'ISRC · IS', pick: true, cell: x =>
+        x.state === 'new' ? '<span class="mc-add mono">+ ' + esc(x.isrc) + '</span>'
+        : x.state === 'unsure' ? '<span class="mc-warn mono" title="' + esc(x.why || '') + '">+ ' + esc(x.isrc) + ' ⚠</span>'
+        : x.state === 'linked' ? '<span class="weak mono" title="' + esc((x.existing || []).join(', ')) + '">' + esc((x.existing || [])[0] || x.isrc || '') + ((x.existing || []).length > 1 ? ' +' + (x.existing.length - 1) : '') + '</span>'
+        : '<span class="pend">none found</span>' },
+    { id: 'links', p: 'is', head: 'Rec links · IS', cell: x =>
+        x.links ? '<span title="' + esc((x.linkUrls || []).join('\n')) + '">' + x.links + ' link' + (x.links === 1 ? '' : 's') + '</span>' : '<span class="pend">none</span>' },
+    { id: 'fusion', p: 'fusion', head: 'RG duplicates · Fusion', pick: true, cell: x =>
+        x.state === 'new' ? '<span class="mc-pill warn">' + x.matches.length + ' match' + (x.matches.length === 1 ? '' : 'es') + '</span> <span class="weak">' + esc(x.matches.map(m => m.release || '').filter(Boolean).slice(0, 2).join(', ')) + '</span>'
+        : '<span class="pend">—</span>' },
+    { id: 'ch', p: 'ch', head: 'Credits · CH', cell: x =>
+        x.credits ? '<span title="' + esc((x.list || []).map(c => c.name + ' — ' + c.role).join('\n')) + '">' + x.credits + '</span>' : '<span class="pend">—</span>' },
 ];
+function trackFinding(pid, rec) {
+    const r = results[pid];
+    return r && r.state === 'done' && r.findings ? r.findings.find(x => x.track === rec) || null : null;
+}
+const PICKABLE = { new: 1, withheld: 1, unsure: 1 };
+function cellHtml(c, t) {
+    const p = PROVIDERS.find(x => x.id === c.p), r = results[c.p];
+    if (r && r.state === 'busy') return '<span class="pend">…</span>';
+    const x = trackFinding(c.p, t.rec);
+    if (!x) return '<span class="pend">—</span>';
+    const box = c.pick && PICKABLE[x.state] ? '<input type="checkbox" class="mc-pick" data-prov="' + p.id + '" data-key="' + esc(x.key) + '"' + (picked[p.id] && picked[p.id].has(x.key) ? ' checked' : '') + '> ' : '';
+    return box + c.cell(x);
+}
+function paintMatrix() {
+    // track-level providers have no card: their apply outcome goes in the Tracks header
+    const slot = ui.querySelector('.mc-tapplied');
+    if (slot) slot.innerHTML = mbuHtml(COLS.map(c => c.p).filter((p, i, a) => a.indexOf(p) === i).map(p => results[p] && results[p].applied)
+        .filter(Boolean).map(a => '<span class="mc-applied ' + (a.ok ? 'ok' : 'err') + '" title="' + esc(a.id) + '">' + (a.ok ? '✓ ' : '✕ ') + esc(PROVIDERS.find(x => x.id === a.id).short + ': ' + (a.note || '')) + '</span>').join(''));
+    ui.querySelectorAll('.mc-tbl tbody tr[data-i]').forEach(tr => {
+        const t = rel.tracks[+tr.dataset.i];
+        tr.querySelectorAll('td[data-col]').forEach(td => { td.innerHTML = mbuHtml(cellHtml(COLS.find(c => c.id === td.dataset.col), t)); });
+    });
+}
 function matrix() {
     const sec = el('section', 'mc-sect');
     const cols = COLS.filter(c => modeOf(PROVIDERS.find(p => p.id === c.p)) !== 'off');
-    let html = '<div class="mc-sect-h"><span class="ic">≡</span><span class="t">Tracks</span><span class="p">one row per track · a column per provider</span></div>'
+    let html = '<div class="mc-sect-h"><span class="ic">≡</span><span class="t">Tracks</span><span class="p">one row per track · a column per provider</span><span class="end mc-tapplied"></span></div>'
         + '<table class="mc-tbl"><thead><tr><th>#</th><th>Title</th><th>Len</th>'
         + cols.map(c => { const p = PROVIDERS.find(x => x.id === c.p); return '<th>' + esc(c.head) + (p.mode ? '<span class="mc-mode">' + S[p.mode] + '</span>' : '') + '</th>'; }).join('')
         + '</tr></thead><tbody>';
@@ -400,7 +435,7 @@ function matrix() {
     rel.tracks.forEach((t, i) => {
         if (rel.media > 1 && t.medium !== lastMed) { lastMed = t.medium; html += '<tr class="med"><td colspan="' + (3 + cols.length) + '">Medium ' + t.medium + '</td></tr>'; }
         html += '<tr data-i="' + i + '"' + (selected === i ? ' class="sel"' : '') + '><td class="n">' + esc(t.pos) + '</td><td class="ttl">' + esc(t.title) + '</td><td class="mono">' + esc(t.len) + '</td>'
-            + cols.map(c => '<td class="pend">—</td>').join('') + '</tr>';
+            + cols.map(c => '<td data-col="' + c.id + '"></td>').join('') + '</tr>';
     });
     if (!rel.tracks.length) html += '<tr><td colspan="' + (3 + cols.length) + '" class="weak">No tracklist on this page.</td></tr>';
     sec.innerHTML = mbuHtml(html + '</tbody></table>');
@@ -472,11 +507,24 @@ function paintInspector() {
     const box = ui.querySelector('.mc-insp'), ttl = ui.querySelector('.mc-insp-t');
     if (!t) { ttl.textContent = 'Inspector'; box.innerHTML = mbuHtml('<div class="weak" style="font-size:12px">Select a track to see what each provider found for it.</div>'); return; }
     ttl.textContent = 'Track ' + t.pos + ' · ' + t.title;
-    const blk = (h, p) => '<div class="mc-insp-block"><h2 class="mc-sec">' + h + '</h2><div class="weak" style="font-size:11.5px">' + esc(stateText(PROVIDERS.find(x => x.id === p))) + ' · not probed</div></div>';
+    const blk = (h, p, body) => {
+        const x = trackFinding(p, t.rec);
+        const inner = x ? body(x) : '<div class="weak" style="font-size:11.5px">' + esc(stateText(PROVIDERS.find(y => y.id === p))) + '</div>';
+        return '<div class="mc-insp-block"><h2 class="mc-sec">' + h + '</h2>' + inner + '</div>';
+    };
+    const mini = (a, b) => '<div class="mc-mini">' + a + '<span class="n">' + (b || '') + '</span></div>';
+    const isrcBody = x => (x.existing || []).map(i => mini('<span class="mono">' + esc(i) + '</span>', 'on MB')).join('')
+        + (x.isrc && !(x.existing || []).includes(x.isrc) ? mini('<span class="mono mc-add">+ ' + esc(x.isrc) + '</span>', esc(x.source || '')) : '')
+        + (x.why ? '<div class="mc-why">' + esc(x.why) + '</div>' : '')
+        + (!x.isrc && !(x.existing || []).length ? '<div class="weak" style="font-size:11.5px">none found</div>' : '');
+    const linksBody = x => (x.linkUrls || []).map(u => '<div class="mc-mini"><a target="_blank" rel="noopener" href="' + esc(u) + '">' + esc(shortUrl(u)) + '</a></div>').join('') || '<div class="weak" style="font-size:11.5px">none</div>';
+    const fusionBody = x => (x.matches || []).map(m => mini('<a target="_blank" href="/recording/' + esc(m.gid) + '">' + esc(m.title || m.gid.slice(0, 8)) + '</a>', esc((m.release || '') + (m.len ? ' · ' + m.len : '')))).join('')
+        + (x.why ? '<div class="mc-why">' + esc(x.why) + '</div>' : '') || '<div class="weak" style="font-size:11.5px">no duplicates</div>';
+    const chBody = x => (x.list || []).map(c => mini(esc(c.name), esc(c.role))).join('') || '<div class="weak" style="font-size:11.5px">no credits</div>';
     box.innerHTML = mbuHtml('<div class="mc-mini">Recording<a class="n" target="_blank" href="/recording/' + esc(t.rec) + '">' + esc((t.rec || '').slice(0, 8)) + '</a></div>'
         + '<div class="mc-mini">Length<span class="n">' + esc(t.len || '?') + '</span></div><div style="height:10px"></div>'
-        + blk('ISRCs', 'is') + blk('Recording links', 'is')
-        + (S.fusion !== 'off' ? blk('Fusion matches', 'fusion') : '') + (S.ch !== 'off' ? blk('Credits', 'ch') : ''));
+        + blk('ISRCs', 'is', isrcBody) + blk('Recording links', 'is', linksBody)
+        + (S.fusion !== 'off' ? blk('Fusion matches', 'fusion', fusionBody) : '') + (S.ch !== 'off' ? blk('Credits', 'ch', chBody) : ''));
 }
 
 function footer() {

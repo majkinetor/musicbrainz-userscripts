@@ -7155,4 +7155,101 @@
     });
   }
 
+  /* ── Mission Control adapter (#680) ──────────────────────────────────────
+     Mission Control asks over document events with JSON-string details (see
+     userscripts/mission_control/DEVELOP.md). A probe runs headless: no dialog.
+     It takes the release IS already loaded, imports ONE album source (the first
+     one with an album link, in MB or confidently found by Platform Check), and
+     only its first batch (STREAM_BATCH_LIMIT), like the dialog does before it
+     pauses. Then it maps each ISRC to a track the way the dialog does: position
+     first, then a title that is unambiguous. One finding per track; apply
+     submits the ticked ones through the same OAuth web-service call as Submit. */
+  if (IS_OVERVIEW) {
+    const mcSend = (type, detail) => document.dispatchEvent(new CustomEvent(type, { detail: JSON.stringify(detail) }));
+    const mcHello = () => mcSend('mc:provider', { id: 'is', name: 'ISRC Scout', version: SCRIPT_VERSION, release: mbid, capabilities: ['probe', 'apply'] });
+    let mcFound = {};   // recId -> { isrc, source } from the last probe
+    // the album sources in IS's order, Spotify last (its import goes through a third party)
+    const mcSources = () => Object.values(ALBUM_PROVIDERS).map(p => ({ source: p.source, fetcher: p.fetcher, id: providerAlbumId(p.source, RELEASE[p.idField]) }))
+      .concat([{ source: 'Spotify', fetcher: fetchSpotify, id: providerAlbumId('Spotify', RELEASE.spotifyId) }])
+      .filter(x => x.id);
+    function mcTrackOf(s) {
+      let idx = RELEASE.tracks.findIndex(t => (+t.trackPos === +s.pos) && ((+t.mediumPos === +s.disc) || RELEASE.tracks.filter(x => +x.mediumPos === +s.disc).length === 0));
+      if (idx < 0) { const p = pickTrackByTitle(s, RELEASE.tracks); idx = p.ambiguous ? -1 : p.idx; }
+      return idx;
+    }
+    function mcFinding(t) {
+      const f = mcFound[t.recId];
+      const base = { key: t.recId, name: t.title, track: t.recId, existing: t.existing.slice(), links: t.recUrls.length, linkUrls: t.recUrls.slice() };
+      if (f && t.existing.includes(f.isrc)) return Object.assign(base, { state: 'linked', isrc: f.isrc, source: f.source });
+      if (f && t.existing.length) return Object.assign(base, { state: 'unsure', isrc: f.isrc, source: f.source, why: 'the recording already has ' + t.existing.join(', ') });
+      if (f) return Object.assign(base, { state: 'new', isrc: f.isrc, source: f.source });
+      return Object.assign(base, { state: t.existing.length ? 'linked' : 'none', isrc: t.existing[0] || null });
+    }
+    document.addEventListener('mc:discover', () => { Log.info('Mission Control asked — answering as provider is'); mcHello(); });
+    document.addEventListener('mc:probe', async e => {
+      let d = {};
+      try { d = JSON.parse(e.detail) || {}; } catch (x) { Log.warn('Mission Control probe with unreadable detail: ' + x.message); return; }
+      if ((d.release && d.release !== mbid) || (d.only && !d.only.includes('is'))) return;
+      const progress = note => mcSend('mc:progress', { id: 'is', run: d.run, state: 'busy', note });
+      progress('loading the release');
+      try { await fetchRelease(); } catch (x) { Log.err('Mission Control probe: release load failed: ' + errText(x)); mcSend('mc:findings', { id: 'is', run: d.run, release: mbid, findings: [], note: 'release load failed' }); return; }
+      mcFound = {};
+      const srcs = mcSources();
+      Log.info('Mission Control probe ' + d.run + ': sources ' + (srcs.map(x => x.source).join(', ') || 'none'));
+      let used = null, more = false;
+      for (const src of srcs) {
+        if (RELEASE.tracks.every(t => mcFound[t.recId] || t.existing.length)) break;
+        progress(src.source);
+        let n = 0;
+        try {
+          const res = await src.fetcher(src.id, () => {}, s => {
+            const isrc = normalizeIsrc(s.isrc);
+            if (!isValidIsrc(isrc)) return;
+            const idx = mcTrackOf(s);
+            if (idx < 0) { Log.info('MC probe ' + src.source + ': no track for ' + isrc + ' "' + s.title + '"'); return; }
+            const t = RELEASE.tracks[idx];
+            if (!mcFound[t.recId]) { mcFound[t.recId] = { isrc, source: src.source }; n++; }
+          }, 0);
+          if (res && res.next != null) more = true;
+        } catch (x) { Log.warn('Mission Control probe: ' + src.source + ' failed: ' + errText(x)); continue; }
+        Log.info('Mission Control probe: ' + src.source + ' gave ' + n + ' ISRC(s)');
+        if (n) { used = src.source; break; }
+      }
+      const findings = RELEASE.tracks.map(mcFinding);
+      const tally = findings.reduce((a, f) => (a[f.state] = (a[f.state] || 0) + 1, a), {});
+      Log.info('Mission Control probe ' + d.run + ' answered' + (used ? ' from ' + used : '') + ': ' + JSON.stringify(tally));
+      mcSend('mc:findings', { id: 'is', run: d.run, release: mbid, source: used, more, findings });
+    });
+    document.addEventListener('mc:apply', async e => {
+      let d = {};
+      try { d = JSON.parse(e.detail) || {}; } catch (x) { return; }
+      if (d.id !== 'is' || (d.release && d.release !== mbid)) return;
+      const reply = o => mcSend('mc:applied', Object.assign({ id: 'is', run: d.run, release: mbid }, o));
+      const map = {}, used = {};
+      (d.keys || []).forEach(rid => {
+        const t = RELEASE && RELEASE.tracks.find(x => x.recId === rid), f = mcFound[rid];
+        if (!t || !f || t.existing.includes(f.isrc)) return;
+        (map[rid] = map[rid] || []).push(f.isrc);
+        used[f.source] = (used[f.source] || 0) + 1;
+      });
+      const n = Object.keys(map).length;
+      if (!n) { reply({ ok: true, sent: 0, note: 'nothing left to add' }); return; }
+      const note = [noteHeader(), '', 'Release: ' + MB_ROOT + '/release/' + mbid,
+        'Added ' + n + ' ISRC' + (n === 1 ? '' : 's') + ': ' + Object.keys(used).sort().map(s => s + ' (' + used[s] + ')').join(', '), 'Via Mission Control'].join('\n');
+      if (d.dry) { Log.info('Mission Control dry run: would submit ' + JSON.stringify(map)); reply({ ok: true, sent: 0, note: 'dry run: ' + n + ' ISRC' + (n === 1 ? '' : 's') + ' would be submitted' }); return; }
+      try {
+        await submitIsrcs(map, note);
+        Object.entries(map).forEach(([rid, isrcs]) => { const t = RELEASE.tracks.find(x => x.recId === rid); if (t) t.existing.push(...isrcs); });
+        try { updateBtnStatus(); } catch (x) { /* the page button only */ }
+        Log.info('Mission Control apply: submitted ' + n + ' ISRC(s) ' + JSON.stringify(map));
+        reply({ ok: true, sent: n, note: n + ' ISRC' + (n === 1 ? '' : 's') + ' submitted' });
+      } catch (x) {
+        Log.err('Mission Control apply failed: ' + errText(x));
+        reply({ ok: false, sent: 0, note: errText(x) });
+      }
+    });
+    mcHello();
+    if (mbuTestHooks()) window.__isTest680 = { mcFinding, mcTrackOf, mcSources, found: () => mcFound };
+  }
+
 })();
