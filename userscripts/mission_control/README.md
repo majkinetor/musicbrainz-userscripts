@@ -15,13 +15,13 @@ One window on a release page that asks the other scripts what's missing, shows e
 
 Open it with the ◎ button in the bottom-right corner of a release page.
 
-- **Header**: on the left the source link and **Probe**; in the middle the release, with a badge per provider; on the right the sidebar toggles, Log, Help, ⚙ and ✕.
+- **Header**: on the left the source link and **Probe**; in the middle the release, with a badge per provider; on the right ⚙ (settings, which also has Log and Help) and ✕.
 - **Tracks**: one row per track, with a column for each track-level provider: ISRCs and recording links (ISRC Scout), duplicates in the release group (Fusion), and credits (Credit Hoarder).
 - **Release-level cards** under the tracks: platforms and artists (Platform Check) and cover art (Art Station).
 - **Inspector** (right): what each provider found for the selected track.
 - **Footer**: how many changes are ticked, with **Dry run** and **Execute**.
 
-Each sidebar can be hidden with its header toggle or its ×, for a more focused view. Hiding the execution order shows it as a single strip under the header instead. When the strip is too narrow for every step, the steps shrink to icons, and their names move to tooltips.
+Each sidebar can be hidden with its ×, for a more focused view, and brought back from ⚙. Hiding the execution order shows it as a single strip under the header instead. When the strip is too narrow for every step, the steps shrink to icons, and their names move to tooltips.
 
 ## Execution order
 
