@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Fusion
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.4
+// @version      2026.10.5.205655
 // @description  Merge-recordings assistant for MusicBrainz: gather a pool of candidate recordings from a release / release group / recording page (or paste any MBID/URL), auto-match them into merge groups by ISRC / AcoustID / length / title+artist, review and adjust the groups, then submit the merges directly in the background — no MB merge page involved.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPkZ1c2lvbjwvdGl0bGU+CiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjOGE1Y2Y2IiBzdHJva2Utd2lkdGg9IjciPgogICAgPGVsbGlwc2UgY3g9IjY0IiBjeT0iNjQiIHJ4PSI1MiIgcnk9IjIyIi8+CiAgICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSI2NCIgcng9IjUyIiByeT0iMjIiIHRyYW5zZm9ybT0icm90YXRlKDYwIDY0IDY0KSIvPgogICAgPGVsbGlwc2UgY3g9IjY0IiBjeT0iNjQiIHJ4PSI1MiIgcnk9IjIyIiB0cmFuc2Zvcm09InJvdGF0ZSgxMjAgNjQgNjQpIi8+CiAgPC9nPgogIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjE0IiBmaWxsPSIjNmQzZmYwIi8+Cjwvc3ZnPgo=
@@ -3842,6 +3842,77 @@ function boot() {
     setTimeout(() => { try { Log.reopen(); } catch (e) {} }, 800);   // #283 reopen the log if it was left open
 }
 boot();
+
+/* ── Mission Control adapter (#680) ──────────────────────────────────────────
+   Mission Control asks over document events with JSON-string details (see
+   userscripts/mission_control/DEVELOP.md). On a release page a probe loads the
+   release group's recordings (the slow fetch MC's Auto/Ask switch exists for),
+   auto-matches them with Fusion's own settings (ISRCs and AcoustIDs are not
+   enriched here: that is minutes more, the Fusion window does it), and reports
+   per track of THIS release the group it falls in. Apply merges the ticked
+   tracks' groups through mergeGroup, one at a time (MB's merge queue is one per
+   session). The adapter's groups never touch Fusion's board. */
+if (SCOPE.type === 'release') {
+    const mcSend = (type, detail) => document.dispatchEvent(new CustomEvent(type, { detail: JSON.stringify(detail) }));
+    const mcHello = () => mcSend('mc:provider', { id: 'fusion', name: 'Fusion', version: VERSION, release: SCOPE.mbid, capabilities: ['probe', 'apply'] });
+    let mcGroups = new Map();   // recording gid of this release's track -> group
+    const rgOfPage = () => { const a = document.querySelector('.releaseheader a[href*="/release-group/"]'); return a ? (a.getAttribute('href').match(/[0-9a-f-]{36}/) || [])[0] : null; };
+    document.addEventListener('mc:discover', () => { Log.info('Mission Control asked — answering as provider fusion'); mcHello(); });
+    document.addEventListener('mc:probe', async e => {
+        let d = {};
+        try { d = JSON.parse(e.detail) || {}; } catch (x) { Log.warn('Mission Control probe with unreadable detail: ' + x.message); return; }
+        if ((d.release && d.release !== SCOPE.mbid) || (d.only && !d.only.includes('fusion'))) return;
+        const progress = note => mcSend('mc:progress', { id: 'fusion', run: d.run, state: 'busy', note });
+        const done = (findings, note) => mcSend('mc:findings', { id: 'fusion', run: d.run, release: SCOPE.mbid, findings, note });
+        try {
+            progress('loading the release');
+            const own = await fetchReleaseRecordings(SCOPE.mbid);
+            const rg = rgOfPage();
+            if (!rg) { Log.warn('Mission Control probe: no release group link on the page'); done([], 'no release group'); return; }
+            progress('loading the release group');
+            const { recordings } = await fetchRGRecordings(rg, (p, n, got) => progress('release group page ' + p + (n ? '/' + n : '') + ' · ' + got + ' recordings'));
+            Log.info('Mission Control probe: ' + recordings.length + ' recording(s) in the release group, auto-matching at "' + SETTINGS.matchCutoff + '"');
+            progress('matching ' + recordings.length + ' recordings');
+            const byGid = new Map(recordings.map(r => [r.gid, r]));
+            const groups = autoMatch(recordings, SETTINGS.lengthToleranceMs, SETTINGS.matchCutoff);
+            mcGroups = new Map();
+            for (const g of groups) for (const gid of g.memberGids) mcGroups.set(gid, { g, byGid });
+            const findings = own.recordings.map(r => {
+                const hit = mcGroups.get(r.gid);
+                const base = { key: r.gid, track: r.gid, name: r.title };
+                if (!hit) return Object.assign(base, { state: 'none', matches: [] });
+                const others = hit.g.memberGids.filter(x => x !== r.gid).map(x => byGid.get(x)).filter(Boolean);
+                return Object.assign(base, {
+                    state: 'new', confidence: hit.g.confidence, why: hit.g.signals.join(', '),
+                    matches: others.map(o => ({ gid: o.gid, title: o.title, len: dur(o.length), release: (o.releases[0] || {}).title || '' })),
+                });
+            });
+            Log.info('Mission Control probe answered: ' + groups.length + ' group(s), ' + findings.filter(f => f.state === 'new').length + ' track(s) with duplicates');
+            done(findings);
+        } catch (x) {
+            Log.error('Mission Control probe failed: ' + (x && x.message));
+            done([], 'failed: ' + (x && x.message));
+        }
+    });
+    document.addEventListener('mc:apply', async e => {
+        let d = {};
+        try { d = JSON.parse(e.detail) || {}; } catch (x) { return; }
+        if (d.id !== 'fusion' || (d.release && d.release !== SCOPE.mbid)) return;
+        const reply = o => mcSend('mc:applied', Object.assign({ id: 'fusion', run: d.run, release: SCOPE.mbid }, o));
+        const seen = new Set(), groups = [];
+        for (const k of d.keys || []) { const h = mcGroups.get(k); if (h && !seen.has(h.g)) { seen.add(h.g); groups.push(h); } }
+        if (!groups.length) { reply({ ok: true, sent: 0, note: 'nothing to merge' }); return; }
+        if (d.dry) { reply({ ok: true, sent: 0, note: 'dry run: ' + groups.length + ' merge' + (groups.length === 1 ? '' : 's') + ' would be submitted' }); return; }
+        let ok = 0; const errs = [];
+        for (const { g, byGid } of groups) {
+            g.memberGids.forEach(gid => { if (!STATE.recordings.has(gid)) STATE.recordings.set(gid, byGid.get(gid)); });   // mergeGroup reads its members from here
+            await mergeGroup(g);
+            if (g.state === 'done') ok++; else errs.push(g.error || 'failed');
+        }
+        reply(errs.length ? { ok: false, sent: ok, note: ok + ' merged, ' + errs.length + ' failed: ' + errs[0] } : { ok: true, sent: ok, note: ok + ' merge' + (ok === 1 ? '' : 's') + ' submitted' });
+    });
+    mcHello();
+}
 
 try {
     W.__fusion = {

@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Mission Control
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.5.205014
+// @version      2026.10.5.205655
 // @description  One window on the release page that asks the other scripts (Platform Check, ISRC Scout, Art Station, Fusion, Credit Hoarder) what is missing, shows it all in one review, and applies the ticked changes in order.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPk1pc3Npb24gQ29udHJvbDwvdGl0bGU+CiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjNWYzZWMwIiBzdHJva2Utd2lkdGg9IjciPgogICAgPGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iNTIiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjMwIi8+CiAgICA8cGF0aCBkPSJNNjQgNHYyMk02NCAxMDJ2MjJNNCA2NGgyMk0xMDIgNjRoMjIiLz4KICA8L2c+CiAgPGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iMTEiIGZpbGw9IiM4YTVjZjYiLz4KPC9zdmc+Cg==
@@ -124,6 +124,17 @@ function probe() {
     document.dispatchEvent(new CustomEvent('mc:probe', { detail: JSON.stringify({ release: RELEASE, run, only: ask, source: source || null }) }));
     paintAll();
     return ask.length;
+}
+// An Ask-mode provider is probed on its own Fetch button, inside the current run
+// (a run is started if there is none), leaving the others' results alone.
+function probeOne(id) {
+    if (!found[id]) return;
+    if (!run) run = Date.now().toString(36);
+    delete picked[id];
+    results[id] = { state: 'busy', note: '' };
+    Log.info('probe ' + id + ' on request · run ' + run);
+    document.dispatchEvent(new CustomEvent('mc:probe', { detail: JSON.stringify({ release: RELEASE, run, only: [id], source: source || null }) }));
+    paintAll();
 }
 // Execute: the steps in order, the lanes of a parallel step together. Each
 // provider with ticked findings gets 'mc:apply' { id, run, release, keys, dry }
@@ -285,6 +296,7 @@ function mcStyle() {
         + '#mc-root .mc-linked{display:inline-flex;align-items:center;gap:3px;padding:2px 7px;border:1px solid transparent;border-radius:20px;background:none;cursor:pointer;opacity:.75}'
         + '#mc-root .mc-linked:hover,#mc-root .mc-linked.on{opacity:1;border-color:var(--mbu-ok-border);background:var(--mbu-ok-bg)}'
         + '.mc-lk{font-size:10.5px;font-weight:700;color:var(--mbu-ok);margin-left:3px}'
+        + '#mc-root .mc-fetch{font:600 10px var(--mbu-font);text-transform:none;letter-spacing:0;padding:1px 8px;margin-left:4px;border:1px solid var(--mbu-border-strong);border-radius:20px;background:var(--mbu-accent-soft);color:var(--mbu-accent-text);cursor:pointer}'
         + '.mc-add{color:var(--mbu-accent-text);font-weight:600}.mc-warn{color:var(--mbu-warn);font-weight:600}.mc-why{font-size:11px;color:var(--mbu-warn);margin:2px 0 4px}'
         + '.mc-tbl td .mc-pick{vertical-align:-2px;margin:0 2px 0 0}'
         + '.mc-applied{padding:5px 10px;font-size:11.5px;font-weight:600;border-bottom:1px solid var(--mbu-divider)}.mc-applied.ok{color:var(--mbu-ok);background:var(--mbu-ok-bg)}.mc-applied.err{color:var(--mbu-error);background:var(--mbu-error-bg)}'
@@ -401,6 +413,15 @@ const COLS = [
     { id: 'ch', p: 'ch', head: 'Credits · CH', cell: x =>
         x.credits ? '<span title="' + esc((x.list || []).map(c => c.name + ' — ' + c.role).join('\n')) + '">' + x.credits + '</span>' : '<span class="pend">—</span>' },
 ];
+const FETCH_LABEL = { fusion: 'Fetch RG', ch: 'Fetch credits' };
+function colHead(c) {
+    const p = PROVIDERS.find(x => x.id === c.p);
+    if (!p.mode) return esc(c.head);
+    const r = results[p.id];
+    const ask = S[p.mode] === 'ask' && found[p.id] && (!r || r.state !== 'busy');
+    return esc(c.head) + (ask && FETCH_LABEL[p.id] ? ' <button type="button" class="mc-fetch" data-fetch="' + p.id + '" title="Run this slow fetch now">' + (r ? '↻ ' : '') + FETCH_LABEL[p.id] + '</button>'
+        : '<span class="mc-mode">' + S[p.mode] + '</span>');
+}
 function trackFinding(pid, rec) {
     const r = results[pid];
     return r && r.state === 'done' && r.findings ? r.findings.find(x => x.track === rec) || null : null;
@@ -415,6 +436,7 @@ function cellHtml(c, t) {
     return box + c.cell(x);
 }
 function paintMatrix() {
+    ui.querySelectorAll('.mc-tbl th[data-colh]').forEach(th => { th.innerHTML = mbuHtml(colHead(COLS.find(c => c.id === th.dataset.colh))); });
     // track-level providers have no card: their apply outcome goes in the Tracks header
     const slot = ui.querySelector('.mc-tapplied');
     if (slot) slot.innerHTML = mbuHtml(COLS.map(c => c.p).filter((p, i, a) => a.indexOf(p) === i).map(p => results[p] && results[p].applied)
@@ -429,7 +451,7 @@ function matrix() {
     const cols = COLS.filter(c => modeOf(PROVIDERS.find(p => p.id === c.p)) !== 'off');
     let html = '<div class="mc-sect-h"><span class="ic">≡</span><span class="t">Tracks</span><span class="p">one row per track · a column per provider</span><span class="end mc-tapplied"></span></div>'
         + '<table class="mc-tbl"><thead><tr><th>#</th><th>Title</th><th>Len</th>'
-        + cols.map(c => { const p = PROVIDERS.find(x => x.id === c.p); return '<th>' + esc(c.head) + (p.mode ? '<span class="mc-mode">' + S[p.mode] + '</span>' : '') + '</th>'; }).join('')
+        + cols.map(c => '<th data-colh="' + c.id + '">' + colHead(c) + '</th>').join('')
         + '</tr></thead><tbody>';
     let lastMed = 0;
     rel.tracks.forEach((t, i) => {
@@ -649,6 +671,8 @@ function onClick(e) {
         Log.debug('selected track ' + rel.tracks[selected].pos + ' (' + rel.tracks[selected].rec + ')');
         return;
     }
+    const fetchBtn = t.closest('[data-fetch]');
+    if (fetchBtn) { probeOne(fetchBtn.dataset.fetch); return; }
     const act = t.closest('[data-act]');
     if (!act) return;
     switch (act.dataset.act) {

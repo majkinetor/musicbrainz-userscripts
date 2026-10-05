@@ -40,13 +40,22 @@ One finding per thing the provider looked at:
 
 - **Platform Check** (`pc`): PC already scans on load, so a probe waits for the scan that's running (or the last one) and never starts a second. If a rescan replaces that scan, the probe waits for the new one. The states mirror PC's own panel: `linked` is a link the release already has, `new` is a ✓ that link confidence lets through, and `withheld` is held back by barcode or format confidence. Apply hands the ticked links to Falcon as one release item, with PC's own edit note. A withheld link ticked by hand is noted as forced, as with a middle-click on +. Without Falcon on the page, apply fails and says why. A dry run queues the batch in Falcon without running it.
 
+- **ISRC Scout** (`is`): per track. `key` and `track` are the recording MBID. The probe runs without IS's dialog. It imports one album source: the first one with a link in MB, or one Platform Check found with confidence. It takes only that source's first batch, as the dialog does before it pauses, and maps each ISRC to a track the way the dialog does (by position, then by a title that's unambiguous). The states are `new`; `unsure` (the recording already has another ISRC); `linked`; and `none`. A finding also carries `isrc`, `existing`, `source`, and the recording's current links (`links`, `linkUrls`). Apply submits the ticked ISRCs through IS's own OAuth web-service call, with its usual edit note.
+- **Fusion** (`fusion`): per track, and slow, so it runs in Ask mode by default. The probe loads the release group's recordings and auto-matches them with Fusion's own settings, without ISRC or AcoustID enrichment (the Fusion window does that). It reports, for each track of this release, the group the track falls in: `new` with `matches` (the other recordings) and `why` (the signals). Apply merges the ticked tracks' groups one at a time through `mergeGroup`, because MB's merge queue is one per session. The adapter's groups never touch Fusion's own board.
+
+Ask-mode providers aren't asked on Probe. Their matrix column shows a **Fetch** button that probes just that provider, within the current run.
+
+### Not on the release page
+
+**Art Station** runs on `/release/<mbid>/cover-art` and **Credit Hoarder** on `/release/<mbid>/edit-relationships`, so neither hears these events on the release page. How to reach them is still open (#680).
+
 ### Execute
 
 Execute runs the steps in order and sends `mc:apply` to every provider that has ticked findings and lists `apply` among its capabilities. The lanes of a parallel step run together. A provider that doesn't answer `mc:applied` within 15 s counts as failed, and the next step runs anyway. Dry run sends the same with `dry: true`. Each card shows its provider's outcome above its rows.
 
 ### Still to specify
 
-- Per-track findings (ISRC Scout, Fusion, CH) for the matrix columns.
+- Credit Hoarder (per track, info only) and Art Station (release level).
 
 ## Layout
 
