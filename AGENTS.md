@@ -34,7 +34,8 @@ Learn something durable → write it down: in the general file if it would hold 
 - **Settings** → `GM_setValue` / `GM_getValue`, never `localStorage`.
 - Bump the script's `@version` to today (`YYYY.M.D`, time appended for a same-day second change); read the current value before bumping.
 - `node --check` plus a real-browser load before sharing an install link.
-- **Never rename a script's `@name`** casually: a manager identifies a script by `@namespace` + `@name`, and the scripts have no `@updateURL`, so the next install is a *second* copy beside the old one. Copies don't share GM storage, and `mbuClaim` picks the running copy per site, so a cross-site GM handoff (Falcon's Harmony token) can land in the wrong copy.
+- **Never rename a script's `@name`** casually: a manager identifies a script by `@namespace` + `@name`, so installing a renamed script from a link makes a *second* copy beside the old one. Copies don't share GM storage, and `mbuClaim` picks the running copy per site, so a cross-site GM handoff (Falcon's Harmony token) can land in the wrong copy. Whether an *auto-update* that brings a new `@name` replaces the script in place is untested (likely in Violentmonkey, unknown in Tampermonkey).
+- **No `@updateURL` / `@downloadURL`, on purpose**: without them a manager checks the URL the script was installed from, which is what makes the channels work — a `stable` link follows releases, a `main` link follows latest, and a commit-pinned link stays frozen ([Standard 10](STANDARDS.md#standard-10)). A fixed `@updateURL` would send every install to that one URL: pinned links would start updating, and `main` installs would stall on (then drop to) stable. It wouldn't help renames either — updates already come from a fixed URL; the second copy comes from a manual install.
 
 ## MusicBrainz facts that bite
 
