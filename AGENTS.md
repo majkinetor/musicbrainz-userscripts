@@ -39,6 +39,7 @@ Who you post as depends on where you run:
 
 The rest applies whoever you post as:
 
+- Issue titles are **Telegraphic English** — no articles, auxiliaries or filler; no leading verb; user-visible symptom or feature name ([§1](STANDARDS.md#standard-1)).
 - Install links pin to a **commit SHA**, not a branch ([§10](STANDARDS.md#standard-10)): `[Install @<version>](…/raw/<sha>/<path>.user.js)`. Feature branch → pinned only; on main/stable → pinned + latest. **curl-check every link**: the repo slug is `majkinetor/musicbrainz-userscripts` (not the `mb-userscripts` folder), so folder-name raw links 404.
 - Post comments via `gh … --body-file <real .md>`, never an inline `--body` built from a JS/template string (it posts literal `` \` `` / `\n`); don't backslash-escape markdown.
 - Don't write `#1` / `#2` for "list point N" — GitHub links `#N` to issue/PR N.
