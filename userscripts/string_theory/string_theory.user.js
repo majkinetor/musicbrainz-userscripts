@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         String Theory
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.7.094808
+// @version      2026.10.6.212252
 // @description  Unified bundle of 8 MusicBrainz userscripts (apollo_editor, art_station, credit_hoarder, fusion, group_therapy, isrc_scout, mammoth, platform_check). Built by userscripts/string_theory/build.mjs — do not hand-edit.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCIgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0Ij4KICA8IS0tIGh1Yi1hbmQtc3Bva2UgIm5ldHdvcmsiIGdseXBoLCBzaW5nbGUgdml2aWQgdmlvbGV0IG9uIHRyYW5zcGFyZW50IHNvIGl0IHJlYWRzIG9uIGJvdGggZGFyayBhbmQgbGlnaHQgcGFnZXMgLS0+CiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjN2M1Y2ZmIiBzdHJva2Utd2lkdGg9IjQuNiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj4KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMzIgMTUiLz4KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMNDYuNSAyMy41Ii8+CiAgICA8cGF0aCBkPSJNMzIgMzIgTDQ2LjUgNDAuNSIvPgogICAgPHBhdGggZD0iTTMyIDMyIEwzMiA0OSIvPgogICAgPHBhdGggZD0iTTMyIDMyIEwxNy41IDQwLjUiLz4KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMTcuNSAyMy41Ii8+CiAgPC9nPgogIDxnIGZpbGw9IiM3YzVjZmYiPgogICAgPGNpcmNsZSBjeD0iMzIiIGN5PSIzMiIgcj0iOC42Ii8+CiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjE5LjUiIHI9IjYuNCIvPgogICAgPGNpcmNsZSBjeD0iNDkiIGN5PSIxOS41IiByPSI2LjQiLz4KICAgIDxjaXJjbGUgY3g9IjMyIiBjeT0iNTciIHI9IjYuNCIvPgogIDwvZz4KICA8ZyBmaWxsPSJub25lIiBzdHJva2U9IiM3YzVjZmYiIHN0cm9rZS13aWR0aD0iMy44Ij4KICAgIDxjaXJjbGUgY3g9IjMyIiBjeT0iNyIgcj0iNC45Ii8+CiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjQ0LjUiIHI9IjQuOSIvPgogICAgPGNpcmNsZSBjeD0iNDkiIGN5PSI0NC41IiByPSI0LjkiLz4KICA8L2c+Cjwvc3ZnPgo=
@@ -88,8 +88,8 @@
 // Bundles (verbatim, each wrapped in a run-at gate): apollo_editor, art_station, credit_hoarder, fusion, group_therapy, isrc_scout, mammoth, platform_check.
 
 try {
-  console.log('%c String Theory %c v2026.10.7.094808 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
-  console.log("String Theory bundles:\n  · Apollo Editor v2026.10.6\n  · Art Station v2026.10.5.111552\n  · Credit Hoarder v2026.10.5.150448\n  · Fusion v2026.10.4\n  · Group Therapy v2026.10.4\n  · ISRC Scout v2026.10.7.093000\n  · Mammoth v2026.10.4\n  · Platform Check v2026.10.7.100000");
+  console.log('%c String Theory %c v2026.10.6.212252 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
+  console.log("String Theory bundles:\n  · Apollo Editor v2026.10.6\n  · Art Station v2026.10.5.111552\n  · Credit Hoarder v2026.10.5.150448\n  · Fusion v2026.10.4\n  · Group Therapy v2026.10.4\n  · ISRC Scout v2026.10.6.204207\n  · Mammoth v2026.10.4\n  · Platform Check v2026.10.6.193036");
 } catch (e) {}
 
 // ===== apollo_editor (@run-at document-start) =====================================
@@ -53924,7 +53924,7 @@ function pcRescan(why) {
     appendLog('System', `${why} — clearing cache for ${mbid}`, 'warn');
     cacheClear(mbid);
     resetRows();
-    runScans();
+    pcScan();
 }
 function pcPasteBarcode(code) {
     if (MB_OWN_BARCODE) {
@@ -54311,7 +54311,55 @@ document.getElementById('mb-openall-btn').addEventListener('click', (e) => {
     flashInfo(e.currentTarget, `Opened ${uniq.length}`);
 });
 
-runScans();
+// ─── Mission Control adapter (#680) ─────────────────────────────────────────
+// Mission Control asks over document events, with JSON-string details (see
+// userscripts/mission_control/DEVELOP.md). PC already scans on load, so a probe
+// waits for the scan running (or the last one) and reports what it found — it
+// never starts a second scan. Probe only for now; apply comes with Falcon.
+function pcScan() { PC_SCAN.last = runScans(); return PC_SCAN.last; }
+const PC_MC_VERSION = (typeof GM_info !== 'undefined' && GM_info.script && GM_info.script.version) || '?';
+// One platform's state, as MC shows it:
+//   linked   — the release already has the link
+//   new      — a confirmed match (the ✓ that + would add)
+//   withheld — found, but barcode/format confidence holds it back (why says which)
+//   unsure   — found, but not a confident match
+//   none     — nothing found
+function pcMcFinding(p) {
+    const c = cacheGet(mbid, p) || {};
+    const existing = mbDataGet(mbid)?.existing?.[p] || null;
+    const base = { key: p, name: PROVIDER_NAME[p], url: c.url || existing || null, source: c.source || null };
+    if (existing || c.source === 'MB rels') return { ...base, state: 'linked' };
+    if (!c.url) return { ...base, state: 'none' };
+    const why = pcWithheldWhy(p);
+    if (why) return { ...base, state: 'withheld', why };
+    const sure = document.getElementById(`ico-${p}`)?.textContent?.trim() === '✓';
+    return { ...base, state: sure ? 'new' : 'unsure' };
+}
+function pcMcSend(type, detail) {
+    document.dispatchEvent(new CustomEvent(type, { detail: JSON.stringify(detail) }));
+}
+function pcMcHello() {
+    pcMcSend('mc:provider', { id: 'pc', name: 'Platform Check', version: PC_MC_VERSION, release: mbid, capabilities: ['probe'] });
+}
+document.addEventListener('mc:discover', () => { appendLog('System', 'Mission Control asked — answering as provider pc'); pcMcHello(); });
+document.addEventListener('mc:probe', async e => {
+    let d = {};
+    try { d = JSON.parse(e.detail) || {}; } catch (x) { appendLog('System', `Mission Control probe with unreadable detail: ${x.message}`, 'warn'); return; }
+    if (d.release && d.release !== mbid) { appendLog('System', `Mission Control probe for ${d.release}, not this release (${mbid}) — ignored`, 'warn'); return; }
+    if (d.only && !d.only.includes('pc')) return;
+    appendLog('System', `Mission Control probe ${d.run || ''}: ${PC_SCAN.busy ? 'waiting for the scan running' : 'reporting the last scan'}`);
+    pcMcSend('mc:progress', { id: 'pc', run: d.run, state: 'busy', note: PC_SCAN.busy ? 'scanning platforms' : '' });
+    // a rescan (pasted barcode, ↻) replaces the scan we waited for: wait for that one instead
+    try { let p; do { p = PC_SCAN.last || pcScan(); await p; } while (p !== PC_SCAN.last); } catch (x) { appendLog('System', `scan failed for Mission Control: ${x.message}`, 'error'); }
+    const findings = PROVIDER_ORDER.filter(providerEnabled).map(pcMcFinding);
+    const tally = findings.reduce((t, f) => (t[f.state] = (t[f.state] || 0) + 1, t), {});
+    appendLog('System', `Mission Control probe ${d.run || ''} answered: ${JSON.stringify(tally)}`, 'ok');
+    pcMcSend('mc:findings', { id: 'pc', run: d.run, release: mbid, findings });
+});
+pcMcHello();   // MC may have asked before PC loaded
+if (mbuTestHooks()) window.__pcTest680 = { pcMcFinding, pcScan };
+
+pcScan();
 
 })();
 })(); } catch (e) { try { console.error('[String Theory] platform_check failed while starting — the other scripts carry on:', e); } catch (x) {} } });

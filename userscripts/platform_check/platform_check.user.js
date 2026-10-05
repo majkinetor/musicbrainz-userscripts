@@ -7602,7 +7602,7 @@ function pcRescan(why) {
     appendLog('System', `${why} — clearing cache for ${mbid}`, 'warn');
     cacheClear(mbid);
     resetRows();
-    runScans();
+    pcScan();
 }
 function pcPasteBarcode(code) {
     if (MB_OWN_BARCODE) {
@@ -7989,6 +7989,54 @@ document.getElementById('mb-openall-btn').addEventListener('click', (e) => {
     flashInfo(e.currentTarget, `Opened ${uniq.length}`);
 });
 
-runScans();
+// ─── Mission Control adapter (#680) ─────────────────────────────────────────
+// Mission Control asks over document events, with JSON-string details (see
+// userscripts/mission_control/DEVELOP.md). PC already scans on load, so a probe
+// waits for the scan running (or the last one) and reports what it found — it
+// never starts a second scan. Probe only for now; apply comes with Falcon.
+function pcScan() { PC_SCAN.last = runScans(); return PC_SCAN.last; }
+const PC_MC_VERSION = (typeof GM_info !== 'undefined' && GM_info.script && GM_info.script.version) || '?';
+// One platform's state, as MC shows it:
+//   linked   — the release already has the link
+//   new      — a confirmed match (the ✓ that + would add)
+//   withheld — found, but barcode/format confidence holds it back (why says which)
+//   unsure   — found, but not a confident match
+//   none     — nothing found
+function pcMcFinding(p) {
+    const c = cacheGet(mbid, p) || {};
+    const existing = mbDataGet(mbid)?.existing?.[p] || null;
+    const base = { key: p, name: PROVIDER_NAME[p], url: c.url || existing || null, source: c.source || null };
+    if (existing || c.source === 'MB rels') return { ...base, state: 'linked' };
+    if (!c.url) return { ...base, state: 'none' };
+    const why = pcWithheldWhy(p);
+    if (why) return { ...base, state: 'withheld', why };
+    const sure = document.getElementById(`ico-${p}`)?.textContent?.trim() === '✓';
+    return { ...base, state: sure ? 'new' : 'unsure' };
+}
+function pcMcSend(type, detail) {
+    document.dispatchEvent(new CustomEvent(type, { detail: JSON.stringify(detail) }));
+}
+function pcMcHello() {
+    pcMcSend('mc:provider', { id: 'pc', name: 'Platform Check', version: PC_MC_VERSION, release: mbid, capabilities: ['probe'] });
+}
+document.addEventListener('mc:discover', () => { appendLog('System', 'Mission Control asked — answering as provider pc'); pcMcHello(); });
+document.addEventListener('mc:probe', async e => {
+    let d = {};
+    try { d = JSON.parse(e.detail) || {}; } catch (x) { appendLog('System', `Mission Control probe with unreadable detail: ${x.message}`, 'warn'); return; }
+    if (d.release && d.release !== mbid) { appendLog('System', `Mission Control probe for ${d.release}, not this release (${mbid}) — ignored`, 'warn'); return; }
+    if (d.only && !d.only.includes('pc')) return;
+    appendLog('System', `Mission Control probe ${d.run || ''}: ${PC_SCAN.busy ? 'waiting for the scan running' : 'reporting the last scan'}`);
+    pcMcSend('mc:progress', { id: 'pc', run: d.run, state: 'busy', note: PC_SCAN.busy ? 'scanning platforms' : '' });
+    // a rescan (pasted barcode, ↻) replaces the scan we waited for: wait for that one instead
+    try { let p; do { p = PC_SCAN.last || pcScan(); await p; } while (p !== PC_SCAN.last); } catch (x) { appendLog('System', `scan failed for Mission Control: ${x.message}`, 'error'); }
+    const findings = PROVIDER_ORDER.filter(providerEnabled).map(pcMcFinding);
+    const tally = findings.reduce((t, f) => (t[f.state] = (t[f.state] || 0) + 1, t), {});
+    appendLog('System', `Mission Control probe ${d.run || ''} answered: ${JSON.stringify(tally)}`, 'ok');
+    pcMcSend('mc:findings', { id: 'pc', run: d.run, release: mbid, findings });
+});
+pcMcHello();   // MC may have asked before PC loaded
+if (mbuTestHooks()) window.__pcTest680 = { pcMcFinding, pcScan };
+
+pcScan();
 
 })();

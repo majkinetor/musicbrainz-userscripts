@@ -8,20 +8,40 @@ Mission Control is a planner and a dashboard. What to probe and how to apply it 
 
 Every `detail` is a **JSON string**, never an object. Each userscript runs in its own sandbox, and Firefox's Xray wrappers hide an object's fields from another realm. Falcon's `falcon:*` events follow the same rule.
 
-| Event | From | `detail` |
+| Event | From |  |
 |---|---|---|
-| `mc:discover` | MC | `{ release, mc }`: the release MBID and MC's version |
-| `mc:provider` | provider | `{ id, name, version, capabilities: [...] }` |
+|  | MC | : the release MBID and MC's version |
+|  | provider |  |
+|  | MC | :  lists the provider ids asked |
+|  | provider |  |
+|  | provider |  |
 
-`id` is one of `pc`, `is`, `as`, `fusion`, `ch` (the `STEPS` table in the script). A provider listens for `mc:discover` and answers it. It answers again if it loads after MC asked, so the load order doesn't matter.
+ is one of , , , ,  (the  table in the script). A provider answers , and also sends  once when it loads, so the load order doesn't matter.
+
+Each probe has a  id, and MC drops progress or findings that carry an older one. A provider ignores a probe for another release, or one whose  leaves it out. Fusion and CH are only asked in Auto mode.
+
+### Findings
+
+One finding per thing the provider looked at:
+
+| Field | |
+|---|---|
+|  | unique within the provider (PC: the platform key, also its ST-ICONS name) |
+|  | label to show |
+|  | what was found, if anything |
+|  |  ·  ·  ·  ·  |
+|  | for : what holds it back |
+
+ rows start ticked.  and  rows can be ticked by hand,  ones can't, and  collapses into one line of icons.
+
+### Adapters
+
+- **Platform Check** (): PC already scans on load, so a probe waits for the scan that's running (or the last one) and never starts a second. The states mirror PC's own panel:  is a link the release has,  is a ✓ that link confidence lets through, and  is held back by barcode or format confidence.
 
 ### Still to specify
 
-These come with the first adapter (step 3 of #680):
-
-- `probe(ctx)`: read-only findings, each with what exists, what is missing and what the provider would add, per track or per release.
-- `apply(ctx, selection)`: runs the ticked findings and reports an outcome for each. Form-driven writes go to Falcon as a batch.
-- Progress events for the Execute view, so the parallel lanes can show live status.
+- : runs the ticked findings and reports an outcome for each. Form-driven writes go to Falcon as a batch.
+- Per-track findings (ISRC Scout, Fusion, CH) for the matrix columns.
 
 ## Layout
 

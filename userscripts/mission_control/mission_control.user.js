@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Mission Control
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.5.190115
+// @version      2026.10.5.190535
 // @description  One window on the release page that asks the other scripts (Platform Check, ISRC Scout, Art Station, Fusion, Credit Hoarder) what is missing, shows it all in one review, and applies the ticked changes in order.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPk1pc3Npb24gQ29udHJvbDwvdGl0bGU+CiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjNWYzZWMwIiBzdHJva2Utd2lkdGg9IjciPgogICAgPGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iNTIiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjMwIi8+CiAgICA8cGF0aCBkPSJNNjQgNHYyMk02NCAxMDJ2MjJNNCA2NGgyMk0xMDIgNjRoMjIiLz4KICA8L2c+CiAgPGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iMTEiIGZpbGw9IiM4YTVjZjYiLz4KPC9zdmc+Cg==
@@ -82,6 +82,48 @@ document.addEventListener('mc:provider', e => {
     Log.info('provider ' + d.id + ' answered: ' + (d.name || '?') + ' v' + (d.version || '?') + ' · ' + JSON.stringify(d.capabilities || []));
     if (ui) paintBadges();
 });
+
+// Probe: MC sends 'mc:probe' { release, run, only }; a provider answers with
+// 'mc:progress' { id, run, state, note } while it works and 'mc:findings'
+// { id, run, findings } when done. Events from an older run are ignored.
+const results = {};   // provider id -> { state: 'busy' | 'done', note, findings }
+const picked = {};    // provider id -> Set of finding keys ticked for Execute
+let run = null;
+function busEvent(e, kind) {
+    let d;
+    try { d = JSON.parse(e.detail); } catch (x) { Log.warn(kind + ' with unreadable detail: ' + x.message); return null; }
+    if (!d || !d.id) { Log.warn(kind + ' without an id'); return null; }
+    if (d.run !== run) { Log.debug(kind + ' from ' + d.id + ' for run ' + d.run + ', not the current ' + run + ' — ignored'); return null; }
+    return d;
+}
+document.addEventListener('mc:progress', e => {
+    const d = busEvent(e, 'mc:progress'); if (!d) return;
+    results[d.id] = Object.assign(results[d.id] || {}, { state: 'busy', note: d.note || '' });
+    Log.debug('progress ' + d.id + ': ' + (d.note || d.state));
+    paintAll();
+});
+document.addEventListener('mc:findings', e => {
+    const d = busEvent(e, 'mc:findings'); if (!d) return;
+    const findings = Array.isArray(d.findings) ? d.findings : [];
+    results[d.id] = { state: 'done', findings };
+    // ticked by default: only what the provider is sure of
+    picked[d.id] = new Set(findings.filter(x => x.state === 'new').map(x => x.key));
+    const tally = findings.reduce((t, x) => (t[x.state] = (t[x.state] || 0) + 1, t), {});
+    Log.ok('findings ' + d.id + ': ' + findings.length + ' ' + JSON.stringify(tally));
+    findings.forEach(x => Log.debug('  ' + d.id + ' ' + x.key + ' ' + x.state + (x.why ? ' (' + x.why + ')' : '') + (x.url ? ' ' + x.url : '')));
+    paintAll();
+});
+function probe() {
+    run = Date.now().toString(36);
+    for (const k in results) delete results[k];
+    for (const k in picked) delete picked[k];
+    const ask = PROVIDERS.filter(p => found[p.id] && modeOf(p) === 'auto').map(p => p.id);
+    ask.forEach(id => { results[id] = { state: 'busy', note: '' }; });
+    Log.info('probe run ' + run + ' · asking ' + (ask.join(', ') || 'nobody') + (source ? ' · source ' + source : ''));
+    document.dispatchEvent(new CustomEvent('mc:probe', { detail: JSON.stringify({ release: RELEASE, run, only: ask, source: source || null }) }));
+    paintAll();
+    return ask.length;
+}
 function discover() {
     Log.info('discover: asking providers for release ' + RELEASE);
     document.dispatchEvent(new CustomEvent('mc:discover', { detail: JSON.stringify({ release: RELEASE, mc: VERSION }) }));
@@ -195,6 +237,16 @@ function mcStyle() {
         + '.mc-sect-h .ic{width:22px;height:22px;border-radius:6px;background:var(--mbu-accent-soft);display:grid;place-items:center;font-size:12px;flex:none}'
         + '.mc-sect-h .ic img{width:16px;height:16px;object-fit:contain;display:block}.mc-sect-h .t{font-weight:700;font-size:12.5px}.mc-sect-h .p{font-size:10.5px;color:var(--mbu-text-weak)}'
         + '.mc-empty{padding:10px;color:var(--mbu-text-weak);font-size:12px}'
+        + '.mc-line{display:grid;grid-template-columns:16px 16px 1fr auto;gap:8px;align-items:center;padding:4px 10px;border-bottom:1px solid var(--mbu-divider)}.mc-line:last-child{border-bottom:0}'
+        + '.mc-none{display:flex;flex-wrap:wrap;align-items:center;gap:6px;padding:6px 10px;font-size:11px;color:var(--mbu-text-weak)}.mc-none span:first-child{margin-right:4px}.mc-none .mc-pico{opacity:.6}'
+        + '.mc-line.linked,.mc-line.none{opacity:.7}.mc-line .mc-lt{min-width:0}.mc-line .t{font-size:12px}'
+        + '#mc-root .mc-line .s{display:block;font-size:10.5px;color:var(--mbu-text-weak);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-decoration:none}#mc-root .mc-line a.s:hover{color:var(--mbu-accent-text);text-decoration:underline}'
+        + '.mc-pico{display:inline-flex;width:16px;height:16px;align-items:center;justify-content:center}.mc-pico svg{display:block}'
+        + '.mc-pill{font-size:10px;font-weight:700;padding:1px 7px;border-radius:20px;white-space:nowrap;border:1px solid var(--mbu-border)}'
+        + '.mc-pill.add{color:var(--mbu-accent-text);background:var(--mbu-accent-soft);border-color:var(--mbu-border-strong)}.mc-pill.ok{color:var(--mbu-ok);background:var(--mbu-ok-bg);border-color:var(--mbu-ok-border)}'
+        + '.mc-pill.warn{color:var(--mbu-warn);background:var(--mbu-warn-bg);border-color:var(--mbu-warn-border)}.mc-pill.idle{color:var(--mbu-text-weak);border-style:dashed}'
+        + '.mc-bdg.add{color:var(--mbu-accent-text);background:var(--mbu-accent-soft);border-color:var(--mbu-border-strong)}.mc-bdg.ok{color:var(--mbu-ok);background:var(--mbu-ok-bg);border-color:var(--mbu-ok-border)}.mc-bdg.busy{border-style:dotted}'
+        + '.mc-dot.busy{background:var(--mbu-info)}.mc-dot.add{background:var(--mbu-accent)}.mc-dot.ok{background:var(--mbu-ok)}'
         + '.mc-row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}'
         + '.mc-tbl{width:100%;border-collapse:collapse;font-size:12px}'
         + '.mc-tbl th{font-size:10px;text-transform:uppercase;letter-spacing:.6px;color:var(--mbu-text-weak);text-align:left;padding:6px 8px;background:var(--mbu-bg-raised);border-bottom:1px solid var(--mbu-border);position:sticky;top:0;white-space:nowrap}'
@@ -217,12 +269,23 @@ function mcStyle() {
 function modeOf(p) { return p.mode ? S[p.mode] : 'auto'; }
 function stateOf(p) {
     if (modeOf(p) === 'off') return 'off';
-    return found[p.id] ? 'ready' : 'idle';
+    if (!found[p.id]) return 'idle';
+    const r = results[p.id];
+    if (!r) return 'ready';
+    if (r.state === 'busy') return 'busy';
+    return countNew(p.id) ? 'add' : 'ok';
 }
+function countNew(id) { const r = results[id]; return r && r.findings ? r.findings.filter(x => x.state === 'new').length : 0; }
 function stateText(p) {
-    const st = stateOf(p);
-    return st === 'off' ? 'off' : st === 'ready' ? 'connected' : 'no adapter yet';
+    const st = stateOf(p), r = results[p.id];
+    if (st === 'off') return 'off';
+    if (st === 'idle') return 'no adapter yet';
+    if (st === 'ready') return 'connected · not probed';
+    if (st === 'busy') return 'probing' + (r.note ? ': ' + r.note : '') + '…';
+    const t = r.findings.reduce((a, x) => (a[x.state] = (a[x.state] || 0) + 1, a), {});
+    return [t.new && t.new + ' new', t.linked && t.linked + ' linked', t.withheld && t.withheld + ' withheld', t.unsure && t.unsure + ' unsure', t.none && t.none + ' not found'].filter(Boolean).join(' · ') || 'nothing';
 }
+function paintAll() { if (!ui) return; paintBadges(); paintCards(); paintFooter(); }
 
 function header() {
     const h = el('header', 'mc-hdr');
@@ -301,10 +364,43 @@ function releaseCards() {
     const card = (id, t) => {
         const p = PROVIDERS.find(x => x.id === id);
         return '<section class="mc-sect"><div class="mc-sect-h"><span class="ic" title="' + esc(p.provider) + '"><img alt="" src="' + PROVIDER_ICONS[id] + '"></span><span class="t">' + t + '</span></div>'
-            + '<div class="mc-empty" data-p="' + id + '">' + esc(p.provider) + ': <span class="st"></span>. Probe fills this in.</div></section>';
+            + '<div class="mc-card-body" data-card="' + id + '"></div></section>';
     };
     row.innerHTML = mbuHtml(card('pc', 'Platforms &amp; artists') + card('as', 'Cover art'));
     return row;
+}
+
+// A provider's release-level findings: one row each; ticked rows go to Execute.
+const PILL = { new: ['add', 'new'], linked: ['ok', 'linked'], withheld: ['warn', 'withheld'], unsure: ['warn', 'unsure'], none: ['idle', 'not found'] };
+const ORDER = { new: 0, withheld: 1, unsure: 2, linked: 3, none: 4 };
+function shortUrl(u) { try { const x = new URL(u); return x.hostname.replace(/^www\./, '') + x.pathname.replace(/\/$/, ''); } catch (e) { return u; } }
+function paintCards() {
+    ui.querySelectorAll('[data-card]').forEach(box => {
+        const id = box.dataset.card, p = PROVIDERS.find(x => x.id === id), r = results[id];
+        if (!r || r.state !== 'done') { box.innerHTML = mbuHtml('<div class="mc-empty">' + esc(p.provider) + ': ' + esc(stateText(p)) + (r ? '' : '. Probe fills this in.') + '</div>'); return; }
+        if (!r.findings.length) { box.innerHTML = mbuHtml('<div class="mc-empty">Nothing to report.</div>'); return; }
+        // 'not found' is one line of icons, not a row each: it's most of the list and needs no action
+        const rows = r.findings.filter(x => x.state !== 'none').sort((a, b) => ORDER[a.state] - ORDER[b.state]);
+        const none = r.findings.filter(x => x.state === 'none');
+        box.innerHTML = mbuHtml(rows.map(x => {
+            const pick = x.state === 'new' || x.state === 'withheld' || x.state === 'unsure';
+            const pill = PILL[x.state] || ['idle', x.state];
+            return '<div class="mc-line ' + esc(x.state) + '">'
+                + (pick ? '<input type="checkbox" class="mc-pick" data-prov="' + id + '" data-key="' + esc(x.key) + '"' + (picked[id] && picked[id].has(x.key) ? ' checked' : '') + '>' : '<span></span>')
+                + '<span class="mc-pico">' + stIcon(x.key, 14) + '</span>'
+                + '<div class="mc-lt"><div class="t">' + esc(x.name || x.key) + '</div>'
+                + (x.url ? '<a class="s" target="_blank" rel="noopener" href="' + esc(x.url) + '" title="' + esc(x.url) + '">' + esc(shortUrl(x.url)) + '</a>' : '')
+                + (x.why ? '<div class="s">' + esc(x.why) + '</div>' : '') + '</div>'
+                + '<span class="mc-pill ' + pill[0] + '">' + pill[1] + '</span></div>';
+        }).join('') + (none.length ? '<div class="mc-none" title="' + esc('Not found: ' + none.map(x => x.name || x.key).join(', ')) + '"><span>Not found</span>'
+            + none.map(x => '<span class="mc-pico" title="' + esc(x.name || x.key) + '">' + stIcon(x.key, 14) + '</span>').join('') + '</div>' : ''));
+    });
+}
+function changeCount() { return Object.values(picked).reduce((n, set) => n + set.size, 0); }
+function paintFooter() {
+    const big = ui.querySelector('.mc-foot .big'); if (!big) return;
+    const n = changeCount();
+    big.textContent = n + ' change' + (n === 1 ? '' : 's');
 }
 
 function inspector() {
@@ -328,8 +424,8 @@ function paintInspector() {
 function footer() {
     const f = el('div', 'mc-foot');
     f.innerHTML = mbuHtml('<div><div class="big">0 changes</div><div class="weak" style="font-size:11px">' + esc(orderText()) + '</div></div><span class="sp"></span>'
-        + '<button type="button" class="mc-btn" disabled title="Nothing to run until the providers are connected (#680)">Dry run</button>'
-        + '<button type="button" class="mc-btn primary lg" disabled title="Nothing to run until the providers are connected (#680)">Execute →</button>');
+        + '<button type="button" class="mc-btn" disabled title="Applying comes next (#680): probing only for now">Dry run</button>'
+        + '<button type="button" class="mc-btn primary lg" disabled title="Applying comes next (#680): probing only for now">Execute →</button>');
     return f;
 }
 function orderText() {
@@ -338,7 +434,11 @@ function orderText() {
 
 function paintBadges() {
     if (!ui) return;
-    ui.querySelector('.mc-badges').innerHTML = mbuHtml(PROVIDERS.map(p => '<span class="mc-bdg ' + stateOf(p) + '" title="' + esc(p.provider + ' — ' + stateText(p)) + '"><img alt="" src="' + PROVIDER_ICONS[p.id] + '">' + esc(p.short) + '</span>').join(''));
+    ui.querySelector('.mc-badges').innerHTML = mbuHtml(PROVIDERS.map(p => {
+        const st = stateOf(p), n = countNew(p.id);
+        return '<span class="mc-bdg ' + st + '" title="' + esc(p.provider + ' — ' + stateText(p)) + '"><img alt="" src="' + PROVIDER_ICONS[p.id] + '">' + esc(p.short)
+            + (st === 'add' ? ' <b>+' + n + '</b>' : st === 'ok' ? ' ✓' : st === 'busy' ? ' …' : '') + '</span>';
+    }).join(''));
     ui.querySelectorAll('[data-p]').forEach(n => {
         const p = PROVIDERS.find(x => x.id === n.dataset.p); if (!p) return;
         const dot = n.querySelector('.mc-dot'); if (dot) dot.className = 'mc-dot ' + stateOf(p);
@@ -359,7 +459,7 @@ function rebuildBody() {
     const main = ui.querySelector('.mc-main');
     main.replaceWith(body());
     ui.querySelector('.mc-foot').replaceWith(footer());
-    paintBadges(); paintInspector();
+    paintAll(); paintInspector();
 }
 function body() {
     const m = el('div', 'mc-main');
@@ -378,8 +478,15 @@ function open() {
     document.body.appendChild(ui);
     document.documentElement.style.overflow = 'hidden';
     document.documentElement.classList.add('mc-open');
-    paintSides(); paintBadges(); paintInspector();
+    paintSides(); paintAll(); paintInspector();
     ui.addEventListener('click', onClick);
+    ui.addEventListener('change', e => {
+        const c = e.target.closest('.mc-pick'); if (!c) return;
+        const set = picked[c.dataset.prov] || (picked[c.dataset.prov] = new Set());
+        if (c.checked) set.add(c.dataset.key); else set.delete(c.dataset.key);
+        Log.debug((c.checked ? 'ticked ' : 'unticked ') + c.dataset.prov + ' ' + c.dataset.key);
+        paintFooter();
+    });
     document.addEventListener('keydown', onKey);
     window.addEventListener('resize', fitStrip);
     Log.info('opened · sidebars ' + (S.left ? 'order ' : '') + (S.right ? 'inspector' : '') + ' · fusion ' + S.fusion + ' · ch ' + S.ch);
@@ -421,9 +528,7 @@ function onClick(e) {
     if (!act) return;
     switch (act.dataset.act) {
         case 'probe': {
-            Log.info('probe' + (source ? ' with source ' + source : '') + ' · fusion ' + S.fusion + ' · ch ' + S.ch);
-            discover();
-            mbuToast('Providers are not connected yet: Probe only checks which are installed (#680).');
+            if (!probe()) mbuToast('No provider to ask: none is installed with a Mission Control adapter yet.');
             break;
         }
         case 'src': sourcePopover(act); break;
@@ -497,6 +602,12 @@ function launcher() {
 }
 
 if (mbuTestHooks()) window.__mcTest = { open, close, settings: () => Object.assign({}, S), found: () => Object.assign({}, found), release: () => rel };
+
+// <ST-ICONS> — generated by dev/ui/sync-icons.mjs from dev/ui/platform-icons.mjs — DO NOT EDIT
+const ST_ICONS = {"musicbrainz":{"color":"#eb743b","svg":"<svg viewBox=\"0 0 30 30\" xmlns=\"http://www.w3.org/2000/svg\"><g transform=\"translate(1.5)\"><path d=\"m13 1-12 7v14l12 7z\" fill=\"#ba478f\"/><path d=\"m14 1 12 7v14l-12 7z\" fill=\"#eb743b\"/></g></svg>"},"discogs":{"color":"#333333","svg":"<svg viewBox=\"0 0 1024 1024\" xmlns=\"http://www.w3.org/2000/svg\"><g transform=\"translate(512 512) scale(0.86) translate(-512 -512)\"><circle cx=\"512\" cy=\"512\" r=\"496\" fill=\"#333\" stroke=\"#9a9a9a\" stroke-width=\"32\"/><path fill=\"#fff\" d=\"M439.84 511.58A72.58 72.58 0 0 1 512.41 439 72.54 72.54 0 0 1 585 511.58a72.56 72.56 0 0 1-72.57 72.56 72.56 72.56 0 0 1-72.57-72.56zm3.18 0A69.48 69.48 0 0 0 512.41 581a69.4 69.4 0 0 0 69.4-69.38 69.49 69.49 0 0 0-69.4-69.43A69.44 69.44 0 0 0 443 511.58zm69.42-11.44a11.43 11.43 0 1 0 11.47 11.45 11.45 11.45 0 0 0-11.48-11.45zm-131.08 11.43a130.68 130.68 0 0 0 40.3 94.43l24.68-26.69.33.3a94.59 94.59 0 0 1 113.08-149.95l17.51-31.95a130.23 130.23 0 0 0-64.82-17.22c-72.27.01-131.08 58.81-131.08 131.08zm225.73 0a94.6 94.6 0 0 1-138.64 83.79l-17.83 31.74a130.26 130.26 0 0 0 61.82 15.53c72.28 0 131.08-58.8 131.08-131.08a130.63 130.63 0 0 0-37.73-91.9L581 446.39a94.3 94.3 0 0 1 26.1 65.2zm-267.34 0a172.17 172.17 0 0 0 53.68 125l25-27.07a135.38 135.38 0 0 1-41.82-97.89c0-74.88 60.92-135.8 135.8-135.8a134.92 134.92 0 0 1 67.08 17.8l17.73-32.34a171.57 171.57 0 0 0-84.81-22.35c-95.19-.03-172.66 77.43-172.66 172.65zm308.49 0c0 74.88-60.92 135.8-135.8 135.8a135 135 0 0 1-64.14-16.14l-18.07 32.17a171.62 171.62 0 0 0 82.21 20.86c95.22 0 172.69-77.47 172.69-172.69a172.15 172.15 0 0 0-51-122.4l-25.12 27a135.35 135.35 0 0 1 39.23 95.4zm41.61 0c0 97.83-79.58 177.43-177.41 177.43a176.32 176.32 0 0 1-84.52-21.46l-18.18 32.36a213.21 213.21 0 0 0 102.7 26.23C630.74 726.11 727 629.87 727 511.57a213.87 213.87 0 0 0-64.38-153l-25.26 27.18a176.85 176.85 0 0 1 52.49 125.82zm-392 0A213.9 213.9 0 0 0 365 667.24L390.23 640A176.88 176.88 0 0 1 335 511.57c0-97.82 79.59-177.41 177.41-177.41a176.26 176.26 0 0 1 87.08 22.93l17.84-32.55A213.14 213.14 0 0 0 512.44 297c-118.3 0-214.54 96.28-214.54 214.57zm392.55-183-24.64 26.49a218.57 218.57 0 0 1 65.94 156.51c0 120.9-98.36 219.26-219.26 219.26a217.9 217.9 0 0 1-105-26.84l-18.24 32.47A255.43 255.43 0 0 0 512 768c141.39 0 256-114.64 256-256a255.23 255.23 0 0 0-77.55-183.41zm-397.27 183c0-120.9 98.36-219.26 219.26-219.26a217.84 217.84 0 0 1 107.19 28.09L637 288.65A254.46 254.46 0 0 0 516.12 256H512c-140.54.22-254.42 113.26-256 253.5v2.5a255.69 255.69 0 0 0 80.51 186.08l25.31-27.36a218.61 218.61 0 0 1-68.64-159.15z\"/></g></svg>"},"spotify":{"color":"#1DB954","svg":"<svg viewBox=\"0 0 24 24\" fill=\"#1DB954\"><path transform=\"translate(12 12) scale(.875) translate(-12 -12)\" d=\"M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.42 1.56-.299.421-1.02.599-1.559.3z\"/></svg>"},"apple":{"color":"#FA243C","svg":"<svg viewBox=\"0 0 24 24\" fill=\"#FA243C\"><path d=\"M17.05 12.04c-.03-2.5 2.04-3.7 2.13-3.76-1.16-1.7-2.97-1.93-3.61-1.96-1.54-.16-3 .9-3.78.9-.78 0-1.97-.88-3.24-.86-1.67.03-3.21.97-4.07 2.46-1.73 3.01-.44 7.47 1.24 9.92.82 1.2 1.8 2.54 3.08 2.49 1.24-.05 1.71-.8 3.21-.8 1.5 0 1.92.8 3.23.77 1.33-.02 2.18-1.22 3-2.42.94-1.39 1.33-2.73 1.35-2.8-.03-.01-2.59-.99-2.62-3.93zM14.6 4.59c.68-.83 1.14-1.97 1.01-3.11-.98.04-2.17.65-2.87 1.47-.63.73-1.18 1.9-1.03 3.02 1.09.08 2.21-.55 2.89-1.38z\"/></svg>"},"deezer":{"color":"#A238FF","svg":"<svg viewBox=\"0 0 24 24\"><path transform=\"translate(12 12) scale(.74) translate(-12 -12)\" d=\"M4 2h6v2h-6zM14 2h6v2h-6zM2 4h20v2h-20zM0 6h24v2h-24zM0 8h24v2h-24zM0 10h24v2h-24zM2 12h20v2h-20zM4 14h16v2h-16zM6 16h12v2h-12zM8 18h8v2h-8zM10 20h4v2h-4z\" fill=\"#A238FF\"/></svg>"},"tidal":{"color":"#000000","svg":"<svg viewBox=\"0 0 24 24\"><path d=\"M6 6l3 3-3 3-3-3zM12 6l3 3-3 3-3-3zM18 6l3 3-3 3-3-3zM12 12l3 3-3 3-3-3z\" style=\"fill:var(--mbu-text,currentColor)\"/></svg>"},"qobuz":{"color":"#0070ef","svg":"<svg viewBox=\"0 0 24 24\"><circle cx=\"12\" cy=\"12\" r=\"10\" fill=\"#0070ef\"/><circle cx=\"12\" cy=\"12\" r=\"5\" fill=\"none\" stroke=\"#fff\" stroke-width=\"2.2\"/><path d=\"M14.5 14.5 19 19\" stroke=\"#fff\" stroke-width=\"2.2\" stroke-linecap=\"round\"/></svg>"},"beatport":{"color":"#01FF95","svg":"<svg viewBox=\"0 0 24 24\"><circle cx=\"12\" cy=\"12\" r=\"11\" fill=\"#000\"/><g transform=\"translate(12 12) scale(0.84) translate(-12 -12)\" fill=\"none\" stroke=\"#01FF95\" stroke-width=\"2.5\"><path d=\"M10.9 3V8.3c0 1.2-.4 1.9-1.1 2.6L5.6 15.1\"/><circle cx=\"13.9\" cy=\"15.8\" r=\"4.05\" stroke-width=\"2.35\"/></g></svg>"},"bandcamp":{"color":"#629AA9","svg":"<svg viewBox=\"0 0 24 24\" fill=\"#629AA9\"><path transform=\"translate(12 12) scale(.8) translate(-12 -12)\" d=\"M0 18.75l7.437-13.5H24l-7.438 13.5z\"/></svg>"},"volumo":{"color":"#7c4dff","svg":"<svg viewBox=\"0 0 24 24\"><circle cx=\"12\" cy=\"12\" r=\"10\" fill=\"#7c4dff\"/><path d=\"M7 8h2.2l2.8 6 2.8-6H17l-4 9h-2z\" fill=\"#fff\"/></svg>"},"hdtracks":{"color":"#e63329","svg":"<svg viewBox=\"0 0 24 24\"><circle cx=\"12\" cy=\"12\" r=\"10\" fill=\"#e63329\"/><path d=\"M5 7.5h1.7v3.1h2.6V7.5H11v8H9.3v-3.2H6.7v3.2H5zm7.2 0h2.9c2 0 3.4 1.6 3.4 4s-1.4 4-3.4 4h-2.9zm1.7 1.5v5h1.1c1.1 0 1.8-1 1.8-2.5s-.7-2.5-1.8-2.5z\" fill=\"#fff\"/></svg>"},"soundcloud":{"color":"#ff5500","svg":"<svg viewBox=\"0 0 24 24\"><circle cx=\"12\" cy=\"12\" r=\"10\" fill=\"#ff5500\"/><g fill=\"#fff\"><rect x=\"6\" y=\"12\" width=\"1.4\" height=\"4\" rx=\".6\"/><rect x=\"8.5\" y=\"10\" width=\"1.4\" height=\"6\" rx=\".6\"/><rect x=\"11\" y=\"8.5\" width=\"1.4\" height=\"7.5\" rx=\".6\"/><rect x=\"13.5\" y=\"10.5\" width=\"1.4\" height=\"5.5\" rx=\".6\"/><rect x=\"16\" y=\"11.5\" width=\"1.4\" height=\"4.5\" rx=\".6\"/></g></svg>"},"audiomack":{"color":"#FFA200","svg":"<svg viewBox=\"0 0 24 24\"><circle cx=\"12\" cy=\"12\" r=\"10\" fill=\"#FFA200\"/><path d=\"M5 13.5l2-2 1.6 2.4 2.2-5.4 2.4 6.6 2.2-4 1.6 2.4H19\" fill=\"none\" stroke=\"#fff\" stroke-width=\"1.6\" stroke-linejoin=\"round\" stroke-linecap=\"round\"/></svg>"},"sevendigital":{"color":"#07606E","svg":"<svg viewBox=\"0 0 24 24\"><circle cx=\"12\" cy=\"12\" r=\"10\" fill=\"#07606E\"/><path d=\"M7.8 6.8h8.4v1.9l-4.5 8.9H9.4l4.4-8.7h-6z\" fill=\"#fff\"/></svg>"},"ytmusic":{"color":"#FF0000","svg":"<svg viewBox=\"0 0 24 24\"><circle cx=\"12\" cy=\"12\" r=\"10\" fill=\"#FF0000\"/><circle cx=\"12\" cy=\"12\" r=\"5.6\" fill=\"none\" stroke=\"#fff\" stroke-width=\"1.4\"/><path d=\"M10.4 9.5v5l4.2-2.5z\" fill=\"#fff\"/></svg>"},"amazonmusic":{"color":"#25D1DA","svg":"<svg viewBox=\"0 0 24 24\"><circle cx=\"12\" cy=\"12\" r=\"10\" fill=\"#25D1DA\"/><path d=\"M5.8 11.2c3.5 3.2 8.9 3.5 12.4.9\" fill=\"none\" stroke=\"#0F1111\" stroke-width=\"1.9\" stroke-linecap=\"round\"/><path d=\"M15.5 10.7l3 1.3-.9 3.1\" fill=\"none\" stroke=\"#0F1111\" stroke-width=\"1.7\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/></svg>"},"soundexchange":{"color":"#6f42c1","svg":"<svg viewBox=\"0 0 24 24\"><circle cx=\"12\" cy=\"12\" r=\"10\" fill=\"#6f42c1\"/><path d=\"M6.5 12h1.3l1-3 1.6 6 1.6-9 1.6 12 1.4-6h1.5\" fill=\"none\" stroke=\"#fff\" stroke-width=\"1.4\" stroke-linejoin=\"round\" stroke-linecap=\"round\"/></svg>"},"globe":{"color":"#6f7d75","svg":"<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"#6f7d75\" stroke-width=\"1.8\"><circle cx=\"12\" cy=\"12\" r=\"9\"/><path d=\"M3 12h18M12 3a15 15 0 0 1 0 18M12 3a15 15 0 0 0 0 18\"/></svg>"}};
+function stIcon(name, size) { var i = ST_ICONS[name]; if (!i) return ''; size = size || 16; return i.svg.replace(/<svg\b([^>]*)>/, function (m, a) { a = a.replace(/\s(?:width|height)="[^"]*"/g, ''); var ns = /\bxmlns=/.test(a) ? '' : ' xmlns="http://www.w3.org/2000/svg"'; return '<svg' + a + ns + ' width="' + size + '" height="' + size + '">'; }); }
+function stColor(name) { return (ST_ICONS[name] && ST_ICONS[name].color) || ''; }
+// </ST-ICONS>
 
 // <ST-TOKENS> — generated by dev/tokens/sync-tokens.mjs from dev/tokens/design-tokens.mjs — DO NOT EDIT
 const MBU_TOKENS = ':root{--mbu-bg:var(--background, #fff);--mbu-bg-raised:#faf9fe;--mbu-bg-raised:color-mix(in srgb, var(--mbu-bg) 96%, var(--mbu-accent));--mbu-bg-sunken:#f4f2f9;--mbu-bg-sunken:color-mix(in srgb, var(--mbu-bg) 94%, var(--mbu-text));--mbu-bg-hover:#f3eefe;--mbu-bg-hover:color-mix(in srgb, var(--mbu-bg) 91%, var(--mbu-accent));--mbu-text:var(--text, #222);--mbu-text-dim:#555;--mbu-text-dim:color-mix(in srgb, var(--mbu-text) 78%, var(--mbu-bg));--mbu-text-weak:#999;--mbu-text-weak:color-mix(in srgb, var(--mbu-text) 52%, var(--mbu-bg));--mbu-text-on-accent:#fff;--mbu-border:var(--border, #cfc6e6);--mbu-border-soft:#e2dcef;--mbu-border-strong:#9a8ccb;--mbu-border-strong:color-mix(in srgb, var(--mbu-border) 70%, var(--mbu-text));--mbu-divider:#eee;--mbu-divider:color-mix(in srgb, var(--mbu-bg) 92%, var(--mbu-text));--mbu-accent:#5f3ec0;--mbu-accent-hover:#4e329f;--mbu-accent-deep:#3b2c70;--mbu-accent-soft:#ece4ff;--mbu-accent-soft:color-mix(in srgb, var(--mbu-bg) 86%, var(--mbu-accent));--mbu-accent-fg:#fff;--mbu-accent-text:#5f3ec0;--mbu-accent-deep-text:#3b2c70;--mbu-ok:#1f9d6b;--mbu-ok:color-mix(in srgb, #1f9d6b 78%, var(--mbu-text));--mbu-ok-bg:#eef7f1;--mbu-ok-bg:color-mix(in srgb, var(--mbu-bg) 88%, var(--mbu-ok));--mbu-ok-border:#9bd3b6;--mbu-warn:#a05a00;--mbu-warn:color-mix(in srgb, #b4791f 78%, var(--mbu-text));--mbu-warn-bg:#fff7e6;--mbu-warn-bg:color-mix(in srgb, var(--mbu-bg) 88%, var(--mbu-warn));--mbu-warn-border:#f0c877;--mbu-error:#c0392b;--mbu-error:color-mix(in srgb, #d0473a 78%, var(--mbu-text));--mbu-error-bg:#fdecec;--mbu-error-bg:color-mix(in srgb, var(--mbu-bg) 90%, var(--mbu-error));--mbu-error-border:#e2a1a1;--mbu-info:#2f7fbf;--mbu-info:color-mix(in srgb, #3f8fd0 78%, var(--mbu-text));--mbu-info-bg:#eef4fb;--mbu-info-bg:color-mix(in srgb, var(--mbu-bg) 90%, var(--mbu-info));--mbu-info-border:#a9c8e6;--mbu-font:-apple-system,Segoe UI,Roboto,Arial,sans-serif;--mbu-font-mono:ui-monospace,SFMono-Regular,Consolas,Menlo,monospace;--mbu-fs:14px;--mbu-fs-sm:12px;--mbu-fs-xs:11px;--mbu-radius:6px;--mbu-radius-lg:10px;--mbu-shadow:0 1px 5px rgba(60,40,110,.07);--mbu-shadow-lg:0 8px 30px rgba(40,20,80,.3);--mbu-z-panel:30;--mbu-z-pop:99998;--mbu-z-modal:2147483000;--mbu-z-modal-panel:2147483001}:root[data-mbu-theme="dark"]{--mbu-bg:#1e1b24;--mbu-text:#e9e5f2;--mbu-border:#3b3548;--mbu-accent-text:#b9a7f0;--mbu-accent-deep-text:#a493e0}:root[data-mbu-theme="dark"][data-mbu-seed="theme"]{--mbu-bg:var(--background, #1e1b24);--mbu-text:var(--text, #e9e5f2);--mbu-border:var(--border, #3b3548)}';
