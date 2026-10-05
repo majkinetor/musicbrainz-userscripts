@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Platform Check
 // @namespace    http://tampermonkey.net/
-// @version      2026.10.4.190000
+// @version      2026.10.5
 // @description  Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+DQogIDx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CiAgDQogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJhMWE1MiIgc3Ryb2tlLXdpZHRoPSI5IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik00MCA4OCBBMzQgMzQgMCAwIDEgNDAgNDAiLz4NCiAgICA8cGF0aCBkPSJNMjkgOTkgQTUwIDUwIDAgMCAxIDI5IDI5Ii8+DQogICAgPHBhdGggZD0iTTg4IDg4IEEzNCAzNCAwIDAgMCA4OCA0MCIvPg0KICAgIDxwYXRoIGQ9Ik05OSA5OSBBNTAgNTAgMCAwIDAgOTkgMjkiLz4NCiAgPC9nPg0KICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyMCIgZmlsbD0iI2U4MjAxYSIvPg0KPC9zdmc+DQo=
@@ -3714,7 +3714,7 @@ function pcUrlKey(u) {
         [/(?:www\.)?beatport\.com\/release\/[^/]+\/(\d+)/i,                   'beatport'],
         // #639: the id is in the query string, which the normalisation below drops, so
         // without this every YouTube Music album would count as the same link
-        [/music\.youtube\.com\/(?:playlist\?(?:[^#]*&)?list=|browse\/)(OLAK5uy_[\w-]+|MPREb_[\w-]+)/i, 'ytmusic'],
+        [/(?:(?:music|www|m)\.)?youtube\.com\/(?:playlist\?(?:[^#]*&)?list=|browse\/)(OLAK5uy_[\w-]+|MPREb_[\w-]+)/i, 'ytmusic'],
         [/music\.amazon\.[a-z.]+\/albums\/([A-Z0-9]{10})/i,              'amazonmusic'],   // #644: any country's domain, one album
         [/(?:7digital\.com|zdigital\.com\.au)\/artist\/[^/?#]+\/release\/(?:[^/?#]*-)?(\d{3,})/i, 'sevendigital'],   // #669: any country's store, one release
     ]);
@@ -6488,7 +6488,7 @@ function parseMbFromDom() {
             beatport:      externalHrefs.find(u => /^https?:\/\/(?:www\.)?beatport\.com\/release\/[^/]+\/\d+/i.test(u)) || null,
             volumo:        externalHrefs.find(u => /^https?:\/\/(?:www\.)?volumo\.com\/album\//i.test(u)) || null,
             hdtracks:      externalHrefs.find(u => /^https?:\/\/(?:www\.)?hdtracks\.com\//i.test(u)) || null,
-            ytmusic:       externalHrefs.find(u => /^https?:\/\/music\.youtube\.com\/(?:playlist\?(?:[^#]*&)?list=OLAK5uy_|browse\/MPREb_)/i.test(u)) || null,
+            ytmusic:       externalHrefs.find(u => /^https?:\/\/(?:(?:music|www|m)\.)?youtube\.com\/(?:playlist\?(?:[^#]*&)?list=OLAK5uy_|browse\/MPREb_)/i.test(u)) || null,
             amazonmusic:   externalHrefs.find(u => /^https?:\/\/music\.amazon\.[a-z.]+\/albums\/[A-Z0-9]{10}/i.test(u)) || null,
             soundcloud:    externalHrefs.find(u => /^https?:\/\/(?:www\.|m\.)?soundcloud\.com\/[^/?#]+\/(?:sets\/)?[^/?#]+/i.test(u)) || null,
             audiomack:     externalHrefs.find(u => /^https?:\/\/(?:www\.)?audiomack\.com\/[^/?#]+\/(?:album|song)\/[^/?#]+/i.test(u)) || null,
@@ -6702,7 +6702,7 @@ function parseMbData(data) {
         beatport:      relUrls.find(u => /^https?:\/\/(?:www\.)?beatport\.com\/release\/[^/]+\/\d+/i.test(u)) || null,
         volumo:        relUrls.find(u => /^https?:\/\/(?:www\.)?volumo\.com\/album\//i.test(u)) || null,
         hdtracks:      relUrls.find(u => /^https?:\/\/(?:www\.)?hdtracks\.com\//i.test(u)) || null,
-        ytmusic:       relUrls.find(u => /^https?:\/\/music\.youtube\.com\/(?:playlist\?(?:[^#]*&)?list=OLAK5uy_|browse\/MPREb_)/i.test(u)) || null,
+        ytmusic:       relUrls.find(u => /^https?:\/\/(?:(?:music|www|m)\.)?youtube\.com\/(?:playlist\?(?:[^#]*&)?list=OLAK5uy_|browse\/MPREb_)/i.test(u)) || null,
         amazonmusic:   relUrls.find(u => /^https?:\/\/music\.amazon\.[a-z.]+\/albums\/[A-Z0-9]{10}/i.test(u)) || null,
         soundcloud:    relUrls.find(u => /^https?:\/\/(?:www\.|m\.)?soundcloud\.com\/[^/?#]+\/(?:sets\/)?[^/?#]+/i.test(u)) || null,
         audiomack:     relUrls.find(u => /^https?:\/\/(?:www\.)?audiomack\.com\/[^/?#]+\/(?:album|song)\/[^/?#]+/i.test(u)) || null,

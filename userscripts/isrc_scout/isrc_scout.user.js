@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         ISRC Scout
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.4
+// @version      2026.10.5
 // @description  Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify / Beatport / Tidal / Volumo / HDtracks / Qobuz, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPklTUkMgU2NvdXQ8L3RpdGxlPgogICAgPHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPgogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjQwIi8+CiAgICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyNiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2U9IiNiOWEzZTgiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPgogIDwvZz4KICA8bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+Cjwvc3ZnPgo=
@@ -1901,7 +1901,7 @@
   function matchProviderLink(u) {
     let m;
     // #640: the release's YouTube Music album — its tracklist resolves the per-track links
-    if ((m = u.match(/music\.youtube\.com\/(?:playlist\?(?:[^#]*&)?list=(OLAK5uy_[\w-]+)|browse\/(MPREb_[\w-]+))/i))) return { k: 'ytmUrl', v: m[1] ? 'https://music.youtube.com/playlist?list=' + m[1] : 'https://music.youtube.com/browse/' + m[2] };
+    if ((m = u.match(/(?:^|\/\/)(?:(?:music|www|m)\.)?youtube\.com\/(?:playlist\?(?:[^#]*&)?list=(OLAK5uy_[\w-]+)|browse\/(MPREb_[\w-]+))/i))) return { k: 'ytmUrl', v: m[1] ? 'https://music.youtube.com/playlist?list=' + m[1] : 'https://music.youtube.com/browse/' + m[2] };
     // #644: the release's Amazon Music album — its tracklist resolves the per-track links
     if ((m = u.match(/^https?:\/\/music\.amazon\.([a-z.]+)\/albums\/([A-Z0-9]{10})/i))) return { k: 'amzUrl', v: 'https://music.amazon.' + m[1].toLowerCase() + '/albums/' + m[2].toUpperCase() };
     if ((m = u.match(/^https?:\/\/[a-z0-9-]+\.bandcamp\.com\/album\/[^?#]+/i))) return { k: 'bandcampUrl', v: m[0] };  // #300: per-track URLs by position
