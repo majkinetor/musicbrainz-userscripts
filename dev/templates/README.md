@@ -50,4 +50,4 @@ The ⚙ window.
 
 Only for what is neither a feature nor a setting. Delete this section otherwise.
 
-<!-- The shape and the writing rules: STANDARDS.md, Standard 12. Remove this comment. -->
+<!-- The shape and the writing rules: STANDARDS.md, Script READMEs. Remove this comment. -->
