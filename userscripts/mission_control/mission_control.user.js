@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Mission Control
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.5.183627
+// @version      2026.10.5.183925
 // @description  One window on the release page that asks the other scripts (Platform Check, ISRC Scout, Art Station, Fusion, Credit Hoarder) what is missing, shows it all in one review, and applies the ticked changes in order.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPk1pc3Npb24gQ29udHJvbDwvdGl0bGU+CiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjNWYzZWMwIiBzdHJva2Utd2lkdGg9IjciPgogICAgPGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iNTIiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjMwIi8+CiAgICA8cGF0aCBkPSJNNjQgNHYyMk02NCAxMDJ2MjJNNCA2NGgyMk0xMDIgNjRoMjIiLz4KICA8L2c+CiAgPGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iMTEiIGZpbGw9IiM4YTVjZjYiLz4KPC9zdmc+Cg==
@@ -156,7 +156,9 @@ function mcStyle() {
         + '#mc-root.no-left .mc-strip{display:flex}'
         + '.mc-chip{display:inline-flex;align-items:center;gap:5px;font-size:12px;padding:2px 9px;border:1px solid var(--mbu-border);border-radius:20px;background:var(--mbu-bg-raised);flex:none}'
         + '.mc-chip.opt{border-style:dashed}.mc-chip.par{background:var(--mbu-bg-sunken)}.mc-arrow{color:var(--mbu-text-weak);flex:none}'
-        + '.mc-strip.mbu-compact .mbu-bt{display:none}'
+        + '.mc-strip.mbu-compact .mbu-bt{display:none}.mc-strip{cursor:pointer}.mc-strip:hover{background:var(--mbu-bg-hover)}.mc-exp{color:var(--mbu-text-weak);flex:none}'
+        // the corner launchers (Falcon, Fusion, ours) share MC's z-index; hide them while MC is open
+        + 'html.mc-open [data-mb-corner]{display:none!important}'
         // three panes
         + '.mc-main{flex:1;display:grid;grid-template-columns:220px 1fr 300px;min-height:0}'
         + '#mc-root.no-left .mc-main{grid-template-columns:1fr 300px}#mc-root.no-right .mc-main{grid-template-columns:220px 1fr}#mc-root.no-left.no-right .mc-main{grid-template-columns:1fr}'
@@ -252,9 +254,10 @@ function orderSidebar() {
 }
 
 function strip() {
-    const d = el('div', 'mc-strip');
+    // B (#680): the strip is the collapsed order sidebar; clicking it expands it
+    const d = el('div', 'mc-strip'); d.dataset.side = 'left'; d.title = 'Show the execution order';
     const chip = p => '<span class="mc-chip' + (p.mode ? ' opt' : '') + '" data-p="' + p.id + '" title="' + esc(p.provider + ': ' + p.name) + '"><span class="mc-dot"></span>' + esc(p.glyph) + '<span class="mbu-bt">' + esc(p.short) + '</span></span>';
-    d.innerHTML = mbuHtml(STEPS.map(s => s.lanes ? '<span class="mc-chip par" title="run in parallel">' + s.lanes.map(chip).join(' ∥ ') + '</span>' : chip(s)).join('<span class="mc-arrow">→</span>'));
+    d.innerHTML = mbuHtml('<span class="mc-exp">▸</span>' + STEPS.map(s => s.lanes ? '<span class="mc-chip par" title="run in parallel">' + s.lanes.map(chip).join(' ∥ ') + '</span>' : chip(s)).join('<span class="mc-arrow">→</span>'));
     return d;
 }
 
@@ -365,6 +368,7 @@ function open() {
     ui.append(header(), strip(), body(), footer());
     document.body.appendChild(ui);
     document.documentElement.style.overflow = 'hidden';
+    document.documentElement.classList.add('mc-open');
     paintSides(); paintBadges(); paintInspector();
     ui.addEventListener('click', onClick);
     document.addEventListener('keydown', onKey);
@@ -376,6 +380,7 @@ function close() {
     if (!ui) return;
     ui.remove(); ui = null;
     document.documentElement.style.overflow = '';
+    document.documentElement.classList.remove('mc-open');
     document.removeEventListener('keydown', onKey);
     window.removeEventListener('resize', fitStrip);
     Log.info('closed');
@@ -388,7 +393,7 @@ function onKey(e) {
 function onClick(e) {
     const t = e.target;
     const side = t.closest('[data-side]');
-    if (side) { S[side.dataset.side] = !S[side.dataset.side]; saveSettings(); paintSides(); return; }
+    if (side) { S[side.dataset.side] = true; saveSettings(); paintSides(); return; }
     const x = t.closest('[data-close]');
     if (x) { S[x.dataset.close] = false; saveSettings(); paintSides(); return; }
     const m = t.closest('.mc-seg button');

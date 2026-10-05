@@ -15,6 +15,7 @@ test('#680: MC shell — launcher, track matrix, sidebars, modes', { tag: ['@san
 
   await page.click('#mc-launch');
   await page.waitForSelector('#mc-root');
+  check(await page.locator('#mc-launch').isHidden(), 'corner launchers hidden while MC is open');
   const rows = await page.locator('#mc-root .mc-tbl tbody tr[data-i]').count();
   const pageRows = await page.locator('#content table.medium tbody tr a[href*="/recording/"]').count();
   check(rows > 0 && rows === pageRows, `matrix has a row per track (${rows} of ${pageRows})`);
@@ -41,10 +42,9 @@ test('#680: MC shell — launcher, track matrix, sidebars, modes', { tag: ['@san
   // CH off drops its column and its step
   const heads = () => page.locator('#mc-root .mc-tbl th').allTextContents();
   check((await heads()).some(h => h.includes('Credits')), 'credits column present');
-  await page.click('#mc-root [data-act="cfg"]');
-  await page.check('.mc-cfg input[data-k="left"]');
-  await page.keyboard.press('Escape');
-  check(await page.locator('#mc-root .mc-side.left').isVisible(), 'settings bring the sidebar back');
+  await page.click('#mc-root .mc-strip');
+  check(await page.locator('#mc-root .mc-side.left').isVisible(), 'clicking the strip expands the sidebar');
+  check(await page.locator('#mc-root .mc-strip').isHidden(), 'strip gone again');
   await page.click('#mc-root .mc-seg[data-mode="ch"] button[data-v="off"]');
   check(!(await heads()).some(h => h.includes('Credits')), 'credits column gone with CH off');
   check(await page.locator('#mc-root .mc-stage.off[data-p="ch"]').count() === 1, 'CH step marked off');
@@ -52,4 +52,5 @@ test('#680: MC shell — launcher, track matrix, sidebars, modes', { tag: ['@san
   await page.screenshot({ path: 'test-results/mc-680-shell.png' });
   await page.keyboard.press('Escape');
   check(await page.locator('#mc-root').count() === 0, 'Esc closes');
+  check(await page.locator('#mc-launch').isVisible(), 'launcher back after closing');
 });
