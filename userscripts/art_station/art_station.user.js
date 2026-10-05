@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Art Station
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.5
+// @version      2026.10.5.111153
 // @description  Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png
@@ -2743,9 +2743,17 @@
   };
   // #667 the best-cover pick says so in its note
   const bestLine = it => (it && it._bestOf > 1) ? `Art Station chose this as the best of ${it._bestOf} imported covers (highest resolution, then smallest file): ${it.w}×${it.h}${it.bytes ? ', ' + fmtBytes(it.bytes) : ''}` : '';
-  // #678 a cover rotated from an existing one records that it replaces the original
-  const rotLine = it => (it && it._rotatedFrom) ? `Rotated ${it._rotDeg || ''}° from this release's existing image ${it._rotatedFrom} (which this edit replaces)` : '';
-  const editNoteFor = (m, it) => [m.note && m.note.trim(), sourceLine(it), bestLine(it), rotLine(it), ATTRIBUTION].filter(Boolean).join('\n\n');
+  // #678 a rotation's provenance goes in the SHARED note (pre-filled + visible in the commit
+  // dialog, see rotateNote) so it rides on BOTH the add and the paired removal — not a hidden
+  // per-cover line that only the add carried and nobody could see before submitting.
+  const editNoteFor = (m, it) => [m.note && m.note.trim(), sourceLine(it), bestLine(it), ATTRIBUTION].filter(Boolean).join('\n\n');
+  // the default edit note when a rotated-replacement is staged (#678); '' when none is
+  const rotateNote = () => {
+    const rots = MODEL.filter(it => it._new && !it._del && it._rotatedFrom);
+    if (!rots.length) return '';
+    if (rots.length === 1) return `Rotated existing ${ITEM} #${rots[0]._rotatedFrom} by ${rots[0]._rotDeg || 90}° and re-uploaded it; CoverArtArchive images can't be edited in place, so the original is removed.`;
+    return `Rotated ${rots.length} existing ${ITEMS} and re-uploaded them; CoverArtArchive images can't be edited in place, so the originals are removed.`;
+  };
   async function getPostForm(url) {
     const html = await fetch(url, { credentials: 'same-origin' }).then(r => { if (!r.ok) throw new Error('GET ' + r.status); return r.text(); });
     const doc = new DOMParser().parseFromString(html, 'text/html');
@@ -3021,6 +3029,7 @@
     }));
     const noteEl = ov.querySelector('.as-cm-note'), nb = ov.querySelector('.as-cm-nb');
     if (_seedNote) noteEl.value = _seedNote;   // #248/#364 carry over a seeded edit note (native add page, or captured from a hidden ECAU sourcing frame)
+    if (!noteEl.value) { const rn = rotateNote(); if (rn) noteEl.value = rn; }   // #678 pre-fill (editable) the rotation provenance so it's visible and rides every edit
     const paintNote = () => {
       const v = noteEl.value.trim(), lines = v ? v.split('\n').length : 0;
       ov.querySelector('.as-cm-nl').textContent = lines ? `${lines} line${lines === 1 ? '' : 's'}` : 'empty';
@@ -3503,6 +3512,7 @@
     paintLightbox();
     preloadNeighbors();
     ov.style.display = 'flex';
+    document.body.classList.add('as-lb-open');   // #678 shift toasts clear of the viewer's footer bar
   }
   // prefetch the adjacent covers' 1200px so arrow-nav is instant
   const _preloaded = new Set();
@@ -3577,6 +3587,7 @@
   function closeLightbox() {
     stopPlay(); resetZoom(); _lb = null;
     const ov = document.getElementById('as-lb'); if (ov) ov.style.display = 'none';
+    document.body.classList.remove('as-lb-open');
     const dm = ov && ov.querySelector('.as-lb-dlmenu'); if (dm) dm.classList.remove('open');   // don't reopen with the menu still showing
     if (_lbDirty) { _lbDirty = false; render(); }   // reflect comment edits in the grid
   }
@@ -3656,6 +3667,7 @@
         it._fileObj = new File([r.blob], name, { type: r.type });
         it.bytes = r.blob.size; it.fmt = fileFormat(r.type) || it.fmt;
         it._contentKey = await fileKey(it._fileObj);
+        if (it._rotatedFrom) it._rotDeg = (((it._rotDeg || 0) + deg) % 360 + 360) % 360;   // #678 further rotations of a staged replacement keep the note's angle accurate
         if (ow && oh) { it.w = r.swap ? oh : ow; it.h = r.swap ? ow : oh; } else { it.w = 0; it.h = 0; measure(it); }
         _imgCache.delete(String(it.id));
         resetZoom(); paintLightbox();
@@ -5010,6 +5022,9 @@
   .as-bulk-cmt{width:100%;box-sizing:border-box;font-size:13px;font-family:inherit;border:1px solid var(--mbu-accent);border-radius:var(--mbu-radius);padding:5px 8px;margin:2px 0 2px;background:var(--mbu-bg-raised);color:var(--mbu-text)}
   /* lightbox */
   #as-lb{display:none;position:fixed;inset:0;z-index:9999;background:rgba(15,12,28,.92);align-items:center;justify-content:center;flex-direction:column;padding:30px}
+  /* #678 (majkinetor): the viewer's footer bar sits where a bottom toast lands — while the
+     viewer is open, raise the toast to the top so it doesn't cover Download/Rotate. */
+  body.as-lb-open #mbu-toast{bottom:auto;top:20px}
   /* #564 (majkinetor: "AS dark gallery mode buttons top right not visible … image
      type (front) hardly visible … and download btn"). kellnerd's dark userstyle
      applies filter:var(--invert-value) to every <button> on the page, and the
