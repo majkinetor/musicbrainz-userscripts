@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Mission Control
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.5.184247
+// @version      2026.10.5.190115
 // @description  One window on the release page that asks the other scripts (Platform Check, ISRC Scout, Art Station, Fusion, Credit Hoarder) what is missing, shows it all in one review, and applies the ticked changes in order.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPk1pc3Npb24gQ29udHJvbDwvdGl0bGU+CiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjNWYzZWMwIiBzdHJva2Utd2lkdGg9IjciPgogICAgPGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iNTIiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjMwIi8+CiAgICA8cGF0aCBkPSJNNjQgNHYyMk02NCAxMDJ2MjJNNCA2NGgyMk0xMDIgNjRoMjIiLz4KICA8L2c+CiAgPGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iMTEiIGZpbGw9IiM4YTVjZjYiLz4KPC9zdmc+Cg==
@@ -193,7 +193,7 @@ function mcStyle() {
         + '.mc-sect{border:1px solid var(--mbu-border);border-radius:var(--mbu-radius-lg);background:var(--mbu-bg);box-shadow:var(--mbu-shadow);overflow:hidden}'
         + '.mc-sect-h{display:flex;align-items:center;gap:8px;padding:7px 10px;background:var(--mbu-bg-raised);border-bottom:1px solid var(--mbu-border-soft)}'
         + '.mc-sect-h .ic{width:22px;height:22px;border-radius:6px;background:var(--mbu-accent-soft);display:grid;place-items:center;font-size:12px;flex:none}'
-        + '.mc-sect-h .t{font-weight:700;font-size:12.5px}.mc-sect-h .p{font-size:10.5px;color:var(--mbu-text-weak)}'
+        + '.mc-sect-h .ic img{width:16px;height:16px;object-fit:contain;display:block}.mc-sect-h .t{font-weight:700;font-size:12.5px}.mc-sect-h .p{font-size:10.5px;color:var(--mbu-text-weak)}'
         + '.mc-empty{padding:10px;color:var(--mbu-text-weak);font-size:12px}'
         + '.mc-row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}'
         + '.mc-tbl{width:100%;border-collapse:collapse;font-size:12px}'
@@ -298,12 +298,12 @@ function matrix() {
 
 function releaseCards() {
     const row = el('div', 'mc-row2');
-    const card = (id, ic, t) => {
+    const card = (id, t) => {
         const p = PROVIDERS.find(x => x.id === id);
-        return '<section class="mc-sect"><div class="mc-sect-h"><span class="ic">' + ic + '</span><span class="t">' + t + '</span><span class="p">' + p.short + '</span></div>'
+        return '<section class="mc-sect"><div class="mc-sect-h"><span class="ic" title="' + esc(p.provider) + '"><img alt="" src="' + PROVIDER_ICONS[id] + '"></span><span class="t">' + t + '</span></div>'
             + '<div class="mc-empty" data-p="' + id + '">' + esc(p.provider) + ': <span class="st"></span>. Probe fills this in.</div></section>';
     };
-    row.innerHTML = mbuHtml(card('pc', '🔗', 'Platforms &amp; artists') + card('as', '🖼', 'Cover art'));
+    row.innerHTML = mbuHtml(card('pc', 'Platforms &amp; artists') + card('as', 'Cover art'));
     return row;
 }
 
