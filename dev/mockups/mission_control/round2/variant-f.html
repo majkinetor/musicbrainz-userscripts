@@ -1,0 +1,96 @@
+<!doctype html><html><head><meta charset="utf-8">
+<title>Mission Control — Variant F (track matrix)</title>
+<link rel="stylesheet" href="base.css">
+<style>
+  .main{flex:1;display:grid;grid-template-columns:220px 1fr 300px;min-height:0}
+  body.no-left .main{grid-template-columns:1fr 300px}
+  body.no-right .main{grid-template-columns:220px 1fr}
+  body.no-left.no-right .main{grid-template-columns:1fr}
+  .center{overflow:auto;padding:12px 14px;display:flex;flex-direction:column;gap:10px}
+  table{width:100%;border-collapse:collapse;font-size:12px}
+  th{font-size:10px;text-transform:uppercase;letter-spacing:.6px;color:var(--mbu-text-weak);text-align:left;padding:6px 8px;background:var(--mbu-bg-sunken);border-bottom:1px solid var(--mbu-border);position:sticky;top:0}
+  td{padding:4px 8px;border-bottom:1px solid var(--mbu-divider);white-space:nowrap}
+  td.n{color:var(--mbu-text-weak);font-family:var(--mbu-mono);width:24px}
+  tr:hover td{background:var(--mbu-bg-hover)}
+  .add{color:var(--mbu-accent-text);font-weight:600}
+  .has{color:var(--mbu-text-weak)}
+  .cell-off{color:var(--mbu-border-strong)}
+  .row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .row2 .sect{margin:0}
+</style></head>
+<body><div class="app">
+<header class="hdr" data-mode="existing"></header>
+
+<div class="main">
+  <aside class="side left">
+    <h2 class="sec">Execution order <span class="x" data-close="left" title="Hide">×</span></h2>
+    <div class="stage"><span class="node"></span><div class="nm">Platforms &amp; artists</div><div class="meta">PC · 6 edits</div></div>
+    <div class="stage"><span class="node"></span><div class="nm">Enrich</div>
+      <div class="par"><div class="lbl">⇶ parallel</div>
+        <div class="lane"><span class="dot idle"></span>ISRC Scout<span class="prog">6</span></div>
+        <div class="lane"><span class="dot idle"></span>Art Station<span class="prog">1</span></div></div></div>
+    <div class="stage"><span class="node opt"></span><div class="nm">Merge suggestions</div><div class="meta">Fusion · 3 found</div>
+      <div class="seg"><span class="on">Auto</span><span>Ask</span><span>Off</span></div></div>
+    <div class="stage"><span class="node opt"></span><div class="nm">Credits <span class="pill info">info</span></div><div class="meta">CH · 42 cached</div>
+      <div class="seg"><span class="on">Auto</span><span>Ask</span><span>Off</span></div></div>
+  </aside>
+
+  <main class="center">
+    <!-- per-track matrix: every track-level provider is a column -->
+    <section class="sect" style="margin:0">
+      <div class="sect-h"><span class="ic">≡</span><span class="t">Tracks</span><span class="p">one row per track · columns per provider</span><span class="end"><span class="pill add">+6 ISRC</span><span class="pill warn">3 merge</span><span class="pill info">42 credits</span></span></div>
+      <table>
+        <tr><th></th><th>#</th><th>Title</th><th>Len</th><th>ISRC · IS</th><th>RG duplicates · Fusion</th><th>Credits · CH</th></tr>
+        <tr><td><span class="cb on"></span></td><td class="n">1</td><td>One More Time</td><td class="mono">5:20</td><td class="has mono">GBDUW0000053</td><td><span class="pill warn">1 match</span> <span class="weak">Japan ed.</span></td><td>4</td></tr>
+        <tr><td><span class="cb on"></span></td><td class="n">2</td><td>Aerodynamic</td><td class="mono">3:27</td><td class="has mono">GBDUW0000054</td><td class="cell-off">—</td><td>3</td></tr>
+        <tr><td><span class="cb on"></span></td><td class="n">3</td><td>Digital Love</td><td class="mono">4:58</td><td class="add mono">+ GBDUW0000059</td><td class="cell-off">—</td><td>5</td></tr>
+        <tr><td><span class="cb on"></span></td><td class="n">4</td><td>Harder, Better, Faster, Stronger</td><td class="mono">3:44</td><td class="add mono">+ GBDUW0000060</td><td><span class="pill warn">1 match</span> <span class="weak">2xLP</span></td><td>3</td></tr>
+        <tr><td><span class="cb on"></span></td><td class="n">5</td><td>Crescendolls</td><td class="mono">3:31</td><td class="add mono">+ GBDUW0000061</td><td class="cell-off">—</td><td>2</td></tr>
+        <tr><td><span class="cb on"></span></td><td class="n">6</td><td>Nightvision</td><td class="mono">1:44</td><td class="add mono">+ GBDUW0000062</td><td class="cell-off">—</td><td>2</td></tr>
+        <tr><td><span class="cb half"></span></td><td class="n">7</td><td>Superheroes</td><td class="mono">3:57</td><td><span class="pill warn">conflict</span> <span class="mono weak">…064 / …065</span></td><td><span class="pill warn">1 match</span> <span class="weak">2xLP</span></td><td>3</td></tr>
+        <tr><td><span class="cb on"></span></td><td class="n">8</td><td>High Life</td><td class="mono">3:22</td><td class="add mono">+ GBDUW0000066</td><td class="cell-off">—</td><td>3</td></tr>
+        <tr><td><span class="cb"></span></td><td class="n">9</td><td>Something About Us</td><td class="mono">3:51</td><td class="cell-off">none found</td><td class="cell-off">—</td><td>4</td></tr>
+        <tr><td><span class="cb"></span></td><td class="n">10</td><td>Voyager</td><td class="mono">3:47</td><td class="cell-off">none found</td><td class="cell-off">—</td><td>3</td></tr>
+        <tr><td colspan="7" class="weak" style="text-align:center">… 4 more · scroll or <a href="#">show all</a></td></tr>
+      </table>
+    </section>
+
+    <!-- release-level providers below, two columns -->
+    <div class="row2">
+      <section class="sect"><div class="sect-h"><span class="cb on"></span><span class="ic">🔗</span><span class="t">Platforms &amp; artists</span><span class="p">PC</span><span class="end"><span class="pill add">+6</span></span></div>
+        <div class="line"><span class="cb on"></span><div><div class="t">Deezer · Apple Music · Tidal</div><div class="s">UPC</div></div><span class="pill add">+3</span></div>
+        <div class="line"><span class="cb half"></span><div><div class="t">Qobuz</div><div class="s">title only</div></div><span class="pill warn">review</span></div>
+        <div class="line"><span class="cb on"></span><div><div class="t">Daft Punk → Tidal, Qobuz</div><div class="s">artist links</div></div><span class="pill add">+2</span></div>
+      </section>
+      <section class="sect"><div class="sect-h"><span class="cb on"></span><span class="ic">🖼</span><span class="t">Cover art</span><span class="p">AS</span><span class="end"><span class="pill add">+1</span></span></div>
+        <div class="line"><span class="cb on"></span><div><div class="t">Front · 3000×3000 · Apple Music</div><div class="s">replaces 600×600</div></div><span class="pill add">+1</span></div>
+        <div class="line"><span class="cb"></span><div><div class="t">Back · 1500×1500 · Discogs</div><div class="s">optional</div></div><span class="pill idle">skip</span></div>
+      </section>
+    </div>
+  </main>
+
+  <!-- RIGHT: inspector for the selected row -->
+  <aside class="side right">
+    <h2 class="sec">Track 7 · Superheroes <span class="x" data-close="right" title="Hide">×</span></h2>
+    <h2 class="sec" style="margin-top:4px">ISRC conflict</h2>
+    <div class="mini"><span class="cb"></span><span class="mono">GBDUW0000064</span><span class="n">Spotify, Deezer</span></div>
+    <div class="mini"><span class="cb"></span><span class="mono">GBDUW0000065</span><span class="n">Apple Music</span></div>
+    <div class="weak" style="font-size:11px;margin:4px 0 12px">Pick one, or leave both unticked.</div>
+    <h2 class="sec">Fusion match</h2>
+    <div class="mini"><span class="cb on"></span>Superheroes<span class="n">2xLP · 3:57</span></div>
+    <div class="weak" style="font-size:11px;margin:4px 0 12px">Same length ±1s, same ISRC → merge into this recording.</div>
+    <h2 class="sec">Credits (3)</h2>
+    <div class="mini">Thomas Bangalter<span class="n">producer</span></div>
+    <div class="mini">Guy-Manuel de Homem-Christo<span class="n">producer</span></div>
+    <div class="mini">Daft Punk<span class="n">written-by</span></div>
+  </aside>
+</div>
+
+<div class="foot">
+  <span class="cb on"></span>
+  <div><div class="big">17 changes · 2 need review</div><div class="dim" style="font-size:11px">PC → IS ∥ AS → Fusion merges · CH cache primed</div></div>
+  <span class="spacer"></span><button class="btn">Dry run</button><button class="btn primary lg">Execute →</button>
+</div>
+</div>
+<script src="parts.js"></script>
+</body></html>

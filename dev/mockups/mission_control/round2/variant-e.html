@@ -1,0 +1,90 @@
+<!doctype html><html><head><meta charset="utf-8">
+<title>Mission Control — Variant E (pipeline strip, 3-col grid)</title>
+<link rel="stylesheet" href="base.css">
+<style>
+  /* B's execution order, laid horizontally under the header: costs ~44px, frees the whole width */
+  .strip{display:flex;align-items:stretch;gap:0;padding:6px 12px;background:var(--mbu-bg-raised);border-bottom:1px solid var(--mbu-border)}
+  .st{display:flex;align-items:center;gap:7px;padding:3px 10px;border-radius:var(--mbu-radius);font-size:12px;white-space:nowrap}
+  .st .k{width:18px;height:18px;border-radius:50%;display:grid;place-items:center;font-size:10px;color:#fff;background:var(--mbu-ok);flex:none}
+  .st .k.run{background:var(--mbu-accent)} .st .k.opt{background:#fff;border:2px dashed var(--mbu-border-strong)}
+  .st .m{font-size:10.5px;color:var(--mbu-text-weak)}
+  .arrow{align-self:center;color:var(--mbu-border-strong);padding:0 2px}
+  .st.par{border:1px dashed var(--mbu-border-strong);background:var(--mbu-bg-sunken);gap:12px}
+  .st.par .bar{width:70px}
+  .main{flex:1;display:grid;grid-template-columns:1fr 280px;min-height:0}
+  body.no-right .main{grid-template-columns:1fr}
+  .center{overflow:auto;padding:12px 14px}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(330px,1fr));gap:10px;align-items:start}
+  .grid .sect{margin:0}
+  .runrow{display:grid;grid-template-columns:14px 1fr auto;gap:8px;align-items:center;padding:4px 0;font-size:11.5px;border-bottom:1px solid var(--mbu-divider)}
+  .spin{width:12px;height:12px;border-radius:50%;border:2px solid var(--mbu-border);border-top-color:var(--mbu-accent)}
+</style></head>
+<body class=""><div class="app">
+<header class="hdr" data-mode="existing"></header>
+
+<div class="strip">
+  <div class="st"><span class="k">✓</span><div><b>Platforms &amp; artists</b><div class="m">PC · 6 edits</div></div></div>
+  <span class="arrow">→</span>
+  <div class="st par"><span class="k run"></span>
+    <div><b>ISRC Scout</b> <span class="m mono">4/6</span><div class="bar"><i style="width:66%"></i></div></div>
+    <div><b>Art Station</b> <span class="m mono">0/1</span><div class="bar"><i style="width:30%"></i></div></div>
+    <span class="m">⇶ parallel</span></div>
+  <span class="arrow">→</span>
+  <div class="st"><span class="k opt"></span><div><b>Fusion</b><div class="seg" style="margin:0"><span>Auto</span><span class="on">Ask</span><span>Off</span></div></div></div>
+  <div class="st"><span class="k opt"></span><div><b>Credits</b> <span class="pill info">info</span><div class="seg" style="margin:0"><span>Auto</span><span class="on">Ask</span><span>Off</span></div></div></div>
+</div>
+
+<div class="main">
+  <main class="center"><div class="grid">
+    <section class="sect"><div class="sect-h"><span class="cb on"></span><span class="ic">🔗</span><span class="t">Platforms</span><span class="p">PC</span><span class="end"><span class="pill ok">done</span></span></div>
+      <div class="line"><span class="dot ok"></span><div><div class="t">Deezer · Apple Music · Tidal</div><div class="s">edits #118342001–003</div></div><span class="pill ok">+3</span></div>
+      <div class="line"><span class="dot ok"></span><div><div class="t">Qobuz</div><div class="s">edit #118342004</div></div><span class="pill ok">+1</span></div>
+    </section>
+    <section class="sect"><div class="sect-h"><span class="cb on"></span><span class="ic">👤</span><span class="t">Artists</span><span class="p">PC</span><span class="end"><span class="pill ok">done</span></span></div>
+      <div class="line"><span class="dot ok"></span><div><div class="t">Daft Punk → Tidal, Qobuz</div><div class="s">edits #118342005–006</div></div><span class="pill ok">+2</span></div>
+      <div class="line"><span class="dot idle"></span><div><div class="t">Thomas Bangalter · Guy-Man</div><div class="s">already linked</div></div><span class="pill idle">has</span></div>
+    </section>
+    <section class="sect"><div class="sect-h"><span class="cb on"></span><span class="ic">🖼</span><span class="t">Cover art</span><span class="p">AS</span><span class="end"><span class="pill info">uploading</span></span></div>
+      <div class="line"><span class="spin"></span><div><div class="t">Front · 3000×3000 · Apple Music</div><div class="s">replaces 600×600 · 30%</div></div><span class="pill info">run</span></div>
+      <div class="line"><span class="cb"></span><div><div class="t">Back · 1500×1500 · Discogs</div><div class="s">unticked by you</div></div><span class="pill idle">skip</span></div>
+    </section>
+    <section class="sect" style="grid-row:span 2"><div class="sect-h"><span class="cb on"></span><span class="ic">#</span><span class="t">ISRCs</span><span class="p">IS</span><span class="end"><span class="pill info">4/6</span></span></div>
+      <div style="padding:2px 10px 6px">
+        <div class="runrow"><span class="dot ok"></span><span>3 Digital Love <span class="mono weak">GBDUW0000059</span></span><span class="pill ok">done</span></div>
+        <div class="runrow"><span class="dot ok"></span><span>4 Harder, Better… <span class="mono weak">GBDUW0000060</span></span><span class="pill ok">done</span></div>
+        <div class="runrow"><span class="dot ok"></span><span>5 Crescendolls <span class="mono weak">GBDUW0000061</span></span><span class="pill ok">done</span></div>
+        <div class="runrow"><span class="dot ok"></span><span>6 Nightvision <span class="mono weak">GBDUW0000062</span></span><span class="pill ok">done</span></div>
+        <div class="runrow"><span class="spin"></span><span>7 Superheroes <span class="mono weak">GBDUW0000064</span></span><span class="pill info">run</span></div>
+        <div class="runrow" style="border:0"><span class="dot idle"></span><span>9 Something About Us</span><span class="pill idle">queued</span></div>
+      </div>
+    </section>
+    <section class="sect muted"><div class="sect-h"><span class="dot idle"></span><span class="ic">⧉</span><span class="t">RG recording matches</span><span class="p">Fusion</span><span class="end"><button class="btn">Fetch RG</button></span></div>
+      <div class="line"><span></span><div><div class="t">6 releases in RG · ~180 recordings</div><div class="s">heavy — waiting for you (Ask)</div></div><span class="pill idle">idle</span></div>
+    </section>
+    <section class="sect muted"><div class="sect-h"><span class="dot idle"></span><span class="ic">🎚</span><span class="t">Credits</span><span class="p">CH · info</span><span class="end"><button class="btn">Fetch credits</button></span></div>
+      <div class="line"><span></span><div><div class="t">Tidal + Qobuz available</div><div class="s">fetch primes the CH review cache</div></div><span class="pill idle">idle</span></div>
+    </section>
+  </div></main>
+
+  <aside class="side right">
+    <h2 class="sec">Missing at a glance <span class="x" data-close="right" title="Hide">×</span></h2>
+    <div class="mini"><span class="dot ok"></span>Platforms<span class="n">5/5</span></div>
+    <div class="mini"><span class="dot warn"></span>ISRCs<span class="n">6/14</span></div>
+    <div class="mini"><span class="dot ok"></span>Front cover<span class="n">3000²</span></div>
+    <div class="mini"><span class="dot err"></span>Back cover<span class="n">—</span></div>
+    <div class="mini"><span class="dot warn"></span>Recording rels<span class="n">0/14</span></div>
+    <div class="mini"><span class="dot idle"></span>RG duplicates<span class="n">?</span></div>
+    <h2 class="sec" style="margin-top:12px">Live log</h2>
+    <div class="mono" style="font-size:10.5px;color:var(--mbu-text-dim);line-height:1.6">
+      13:42:07 IS write #7 …<br>13:42:06 AS upload 30%<br>13:42:05 IS #6 → 118342014<br>13:42:04 IS #5 → 118342013<br>13:42:01 PC done · 6 edits
+    </div>
+  </aside>
+</div>
+
+<div class="foot">
+  <div><div class="big">6 done · 2 running · 1 queued · 0 failed</div><div class="dim" style="font-size:11px">existing release · edits go through Falcon</div></div>
+  <span class="spacer"></span><button class="btn">Pause</button><button class="btn">Abort</button>
+</div>
+</div>
+<script src="parts.js"></script>
+</body></html>

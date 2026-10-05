@@ -1,0 +1,109 @@
+<!doctype html><html><head><meta charset="utf-8">
+<title>Mission Control — Variant D (3-pane, 2-col review)</title>
+<link rel="stylesheet" href="base.css">
+<style>
+  .main{flex:1;display:grid;grid-template-columns:250px 1fr 270px;min-height:0}
+  body.no-left .main{grid-template-columns:1fr 270px}
+  body.no-right .main{grid-template-columns:250px 1fr}
+  body.no-left.no-right .main{grid-template-columns:1fr}
+  .center{overflow:auto;padding:12px 14px}
+  .cols{columns:2 400px;column-gap:10px}
+  .trk{display:grid;grid-template-columns:22px 1fr auto auto;gap:6px;font-size:11.5px;padding:2px 0;border-bottom:1px solid var(--mbu-divider);align-items:center}
+  .trk:last-child{border:0}
+  .trk .n{color:var(--mbu-text-weak);font-family:var(--mbu-mono);font-size:10.5px}
+  .thumbs{display:flex;gap:6px;padding:6px 10px 8px}
+  .th{width:58px;height:58px;border-radius:4px;background:linear-gradient(135deg,#2b2440,#6a46d6);position:relative;border:2px solid transparent}
+  .th.on{border-color:var(--mbu-accent)}
+  .th span{position:absolute;bottom:2px;left:3px;font-size:9px;color:#fff;font-weight:700}
+</style></head>
+<body><div class="app">
+<header class="hdr" data-mode="new"></header>
+
+<div class="main">
+  <!-- LEFT: B's execution order -->
+  <aside class="side left">
+    <h2 class="sec">Execution order <span class="x" data-close="left" title="Hide">×</span></h2>
+    <div class="stage"><span class="node done">✓</span><div class="nm">Core release</div><div class="meta">MC · one POST · no 7-day wait</div></div>
+    <div class="stage"><span class="node done">✓</span><div class="nm">Platforms &amp; artists</div><div class="meta">Platform Check · 4 links · 2 rels</div></div>
+    <div class="stage"><span class="node run"></span><div class="nm">Enrich</div><div class="meta">separate APIs → parallel</div>
+      <div class="par"><div class="lbl">⇶ together</div>
+        <div class="lane"><span class="dot info"></span>ISRC Scout<span class="prog">4/6</span></div><div class="bar"><i style="width:66%"></i></div>
+        <div class="lane"><span class="dot info"></span>Art Station<span class="prog">0/1</span></div><div class="bar"><i style="width:30%"></i></div>
+      </div></div>
+    <div class="stage"><span class="node opt"></span><div class="nm">RG recording matches</div><div class="meta">Fusion · can take minutes</div>
+      <div class="seg"><span>Auto</span><span class="on">Ask</span><span>Off</span></div></div>
+    <div class="stage"><span class="node opt"></span><div class="nm">Credits <span class="pill info">info</span></div><div class="meta">Credit Hoarder · primes CH cache</div>
+      <div class="seg"><span class="on">Auto</span><span>Ask</span><span>Off</span></div></div>
+  </aside>
+
+  <!-- CENTER: C's sections, two columns -->
+  <main class="center"><div class="cols">
+    <section class="sect"><div class="sect-h"><span class="cb on"></span><span class="ic">📀</span><span class="t">Core release</span><span class="p">POST</span><span class="end"><span class="pill ok">ready</span></span></div>
+      <div class="line"><span class="cb on"></span><div><div class="t">Title, credit, date, 14 tracks</div><div class="s">Spotify · First Contact parse</div></div><span class="pill ok">ok</span></div>
+      <div class="line"><span class="cb on"></span><div><div class="t">Barcode <span class="mono">724384960650</span> · CD</div><div class="s">single barcode — no split</div></div><span class="pill ok">ok</span></div>
+      <div class="line"><span class="cb on"></span><div><div class="t">Label Virgin · cat. <span class="mono">7243 8 49606 0 6</span></div><div class="s">Apple Music ✓ Deezer ✓</div></div><span class="pill ok">agree</span></div>
+    </section>
+
+    <section class="sect"><div class="sect-h"><span class="cb on"></span><span class="ic">🔗</span><span class="t">Platforms</span><span class="p">Platform Check</span><span class="end"><span class="pill add">+4</span></span></div>
+      <div class="line"><span class="cb on"></span><div><div class="t">Deezer · Apple Music · Tidal</div><div class="s">UPC match</div></div><span class="pill add">+3</span></div>
+      <div class="line"><span class="cb half"></span><div><div class="t">Qobuz</div><div class="s">title match only · 13/14 tracks</div></div><span class="pill warn">review</span></div>
+      <div class="line"><span class="cb on"></span><div><div class="t">Bandcamp — none found</div><div class="s">searched by title + artist</div></div><span class="pill idle">—</span></div>
+    </section>
+
+    <section class="sect"><div class="sect-h"><span class="cb on"></span><span class="ic">👤</span><span class="t">Artists</span><span class="p">Platform Check</span><span class="end"><span class="pill add">+2</span></span></div>
+      <div class="line"><span class="cb on"></span><div><div class="t">Daft Punk → Tidal, Qobuz artist links</div><div class="s">existing MB artist</div></div><span class="pill add">+2</span></div>
+    </section>
+
+    <section class="sect"><div class="sect-h"><span class="cb on"></span><span class="ic">#</span><span class="t">ISRCs</span><span class="p">ISRC Scout</span><span class="end"><span class="pill add">+6</span><span class="pill ok">0 conflicts</span></span></div>
+      <div style="padding:4px 10px 6px">
+        <div class="trk"><span class="n">1</span>One More Time<span class="mono weak">GBDUW0000053</span><span class="pill ok">has</span></div>
+        <div class="trk"><span class="n">3</span>Digital Love<span class="mono">GBDUW0000059</span><span class="pill add">add</span></div>
+        <div class="trk"><span class="n">4</span>Harder, Better, Faster…<span class="mono">GBDUW0000060</span><span class="pill add">add</span></div>
+        <div class="trk"><span class="n">5</span>Crescendolls<span class="mono">GBDUW0000061</span><span class="pill add">add</span></div>
+        <div class="trk"><span class="n">7</span>Voyager<span class="weak">—</span><span class="pill idle">none</span></div>
+        <div class="trk"><span class="n"></span><span class="weak">+ 9 more…</span><span></span><span></span></div>
+      </div>
+    </section>
+
+    <section class="sect"><div class="sect-h"><span class="cb on"></span><span class="ic">🖼</span><span class="t">Cover art</span><span class="p">Art Station</span><span class="end"><span class="pill add">+1</span></span></div>
+      <div class="thumbs"><div class="th on"><span>3000²</span></div><div class="th"><span>1400²</span></div><div class="th"><span>640²</span></div></div>
+      <div class="line"><span class="cb on"></span><div><div class="t">Front · 3000×3000 · Apple Music</div><div class="s">best of 3</div></div><span class="pill ok">ready</span></div>
+    </section>
+
+    <section class="sect muted"><div class="sect-h"><span class="dot idle"></span><span class="ic">⧉</span><span class="t">RG recording matches</span><span class="p">Fusion · optional</span><span class="end"><button class="btn">Fetch RG</button></span></div>
+      <div class="line"><span></span><div><div class="t">RG has 6 releases · ~180 recordings</div><div class="s">may take minutes · set to <b>Ask</b></div></div><span class="pill idle">not fetched</span></div>
+    </section>
+
+    <section class="sect"><div class="sect-h"><span class="dot info"></span><span class="ic">🎚</span><span class="t">Credits</span><span class="p">Credit Hoarder · info only</span><span class="end"><span class="pill info">cached</span></span></div>
+      <div class="line"><span></span><div><div class="t">42 credits · 11 people · 3 sources</div><div class="s">not written here — CH opens instantly from cache</div></div><button class="btn ghost">Open CH</button></div>
+    </section>
+  </div></main>
+
+  <!-- RIGHT: facts that used to eat C's margins -->
+  <aside class="side right">
+    <h2 class="sec">Release <span class="x" data-close="right" title="Hide">×</span></h2>
+    <dl class="kv">
+      <dt>Artist</dt><dd>Daft Punk</dd><dt>Date</dt><dd>2001-03-12 · FR</dd>
+      <dt>Format</dt><dd>CD · 14 tracks · 60:50</dd><dt>Label</dt><dd>Virgin</dd>
+      <dt>Barcode</dt><dd class="mono">724384960650</dd><dt>RG</dt><dd>Discovery (6 releases)</dd>
+    </dl>
+    <h2 class="sec">Sources</h2>
+    <div class="mini"><span class="dot ok"></span>Spotify<span class="n">primary</span></div>
+    <div class="mini"><span class="dot ok"></span>Apple Music<span class="n">UPC</span></div>
+    <div class="mini"><span class="dot ok"></span>Deezer<span class="n">UPC</span></div>
+    <div class="mini"><span class="dot ok"></span>Tidal<span class="n">UPC</span></div>
+    <div class="mini"><span class="dot warn"></span>Qobuz<span class="n">title</span></div>
+    <h2 class="sec" style="margin-top:12px">Warnings</h2>
+    <div class="mini"><span class="dot warn"></span>Qobuz misses track 14</div>
+    <div class="mini"><span class="dot warn"></span>8 tracks without ISRC</div>
+  </aside>
+</div>
+
+<div class="foot">
+  <span class="cb on"></span>
+  <div><div class="big">18 changes · 1 held back</div><div class="dim" style="font-size:11px">POST → PC → IS ∥ AS · Fusion: ask · CH: auto (info)</div></div>
+  <span class="spacer"></span><button class="btn">Dry run</button><button class="btn primary lg">Create &amp; execute →</button>
+</div>
+</div>
+<script src="parts.js"></script>
+</body></html>
