@@ -53,6 +53,8 @@ Each cover shows its size and resolution. *Show each cover's file type next to i
 
 ← → move between covers, ↑ ↓ zoom (the level is remembered). When zoomed, the image follows the mouse (switch it off in ⚙ to drag instead). **P** runs a slideshow, **Enter** edits the comment, **Delete** marks the cover for removal. See [Shortcuts](#shortcuts).
 
+**Rotate** (↶ ↷ next to **Download**) turns the cover 90° at a time; repeat for 180°/270°. A cover you added but haven't submitted rotates in place. An existing, published cover can't be changed on the archive, so rotating it stages the rotated copy as a new cover — same type, comment and position — and marks the original for removal; on **Enter edit** that's an add plus a remove. PNGs rotate losslessly; JPEGs are re-saved at high quality.
+
 ## File names ⇄ types
 
 When an added image has no type, it's guessed from its file name (switch it off in ⚙):
