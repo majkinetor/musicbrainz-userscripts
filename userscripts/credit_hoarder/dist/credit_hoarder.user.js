@@ -1,10 +1,11 @@
 // ==UserScript==
 // @name         Credit Hoarder
 // @namespace    majkinetor
-// @version      2026.10.5.150448
+// @version      2026.10.5.213219
 // @description  Import per-track release credits from streaming/database providers (Discogs, Tidal, Qobuz, Deezer) into MusicBrainz relationships, with a review phase
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij4KICANCiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMmY2ZjU0IiBzdHJva2Utd2lkdGg9IjkiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGNpcmNsZSBjeD0iMzQiIGN5PSIzOCIgcj0iMi41IiBmaWxsPSIjMmY2ZjU0IiBzdHJva2U9Im5vbmUiLz4NCiAgICA8bGluZSB4MT0iNTAiIHkxPSIzOCIgeDI9Ijk4IiB5Mj0iMzgiLz4NCiAgICA8Y2lyY2xlIGN4PSIzNCIgY3k9IjY0IiByPSIyLjUiIGZpbGw9IiMyZjZmNTQiIHN0cm9rZT0ibm9uZSIvPg0KICAgIDxsaW5lIHgxPSI1MCIgeTE9IjY0IiB4Mj0iOTgiIHkyPSI2NCIvPg0KICAgIDxjaXJjbGUgY3g9IjM0IiBjeT0iOTAiIHI9IjIuNSIgZmlsbD0iIzJmNmY1NCIgc3Ryb2tlPSJub25lIi8+DQogICAgPGxpbmUgeDE9IjUwIiB5MT0iOTAiIHgyPSI3NCIgeTI9IjkwIi8+DQogIDwvZz4NCiAgPGNpcmNsZSBjeD0iOTIiIGN5PSI5MiIgcj0iMjMiIGZpbGw9IiMyZTllNWIiLz4NCiAgPGcgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGxpbmUgeDE9IjkyIiB5MT0iODEiIHgyPSI5MiIgeTI9IjEwMyIvPg0KICAgIDxsaW5lIHgxPSI4MSIgeTE9IjkyIiB4Mj0iMTAzIiB5Mj0iOTIiLz4NCiAgPC9nPg0KPC9zdmc+DQo=
+// @match        https://*.musicbrainz.org/release/*
 // @match        https://*.musicbrainz.org/release/*/edit-relationships
 // @match        https://*.musicbrainz.org/artist/*
 // @match        https://*.musicbrainz.org/label/*
@@ -10040,6 +10041,108 @@ ${lines}
     });
   }
 
+  // src/mc-adapter.js
+  var send = (type, detail) => document.dispatchEvent(new CustomEvent(type, { detail: JSON.stringify(detail) }));
+  var version = () => typeof GM_info !== "undefined" && GM_info.script && GM_info.script.version || "?";
+  function releaseLinks() {
+    for (const ul of document.querySelectorAll("ul.external_links")) {
+      let h = ul.previousElementSibling;
+      while (h && !/^H\d$/.test(h.tagName)) h = h.previousElementSibling;
+      if (h && /^external links$/i.test(h.textContent.trim())) return [...ul.querySelectorAll('a[href^="http"]')].map((a) => a.href);
+    }
+    return [];
+  }
+  function pageTracks() {
+    const out = [];
+    let medium = 0;
+    document.querySelectorAll("#content table.medium").forEach((tbl) => {
+      medium++;
+      let pos = 0;
+      tbl.querySelectorAll("tbody tr").forEach((tr) => {
+        const a = tr.querySelector('a[href*="/recording/"]');
+        if (!a) return;
+        pos++;
+        out.push({ medium, pos, rec: (a.getAttribute("href").match(/[0-9a-f-]{36}/) || [])[0] });
+      });
+    });
+    return out;
+  }
+  function withMedia(list) {
+    let medium = 1, last = 0;
+    return list.map((t) => {
+      if (t.index <= last) medium++;
+      last = t.index;
+      return Object.assign({ medium }, t);
+    });
+  }
+  var flatRoles = (c) => (c.roles || [c.role]).filter(Boolean).join(", ");
+  async function readSource(links) {
+    const find = (re) => links.find((u) => re.test(u));
+    const discogs = find(/discogs\.com\/(?:[a-z-]+\/)?release\/\d+/i);
+    if (discogs) {
+      const url = discogs.replace(/^https?:\/\/(www\.)?discogs\.com\/(?:[a-z-]+\/)?release\//i, "https://www.discogs.com/release/").split(/[?#]/)[0];
+      const json = await getDiscogsReleaseData(url);
+      const tracks = [];
+      const walk = (arr) => (arr || []).forEach((t) => {
+        if (t.sub_tracks) walk(t.sub_tracks);
+        else if (t.type_ === "track" || !t.type_) tracks.push(t);
+      });
+      walk(json.tracklist);
+      return { source: "Discogs", perTrack: tracks.map((t, i) => ({ medium: 0, index: i + 1, credits: (t.extraartists || []).map((a) => ({ name: a.name, role: a.role })) })), flat: true };
+    }
+    const qobuz = find(/qobuz\.com\//i) && parseQobuzAlbumUrl(find(/qobuz\.com\//i));
+    if (qobuz) return { source: "Qobuz", perTrack: withMedia(extractQobuzCredits(await fetchQobuzAlbumPage(qobuz.pageUrl))) };
+    const deezer = find(/deezer\.com\//i) && parseDeezerAlbumUrl(find(/deezer\.com\//i));
+    if (deezer) return { source: "Deezer", perTrack: withMedia(extractDeezerCredits(await fetchDeezerAlbumPage(deezer.pageUrl))) };
+    const apple = find(/(music|itunes)\.apple\.com\//i) && parseAppleAlbumUrl(find(/(music|itunes)\.apple\.com\//i));
+    if (apple) return { source: "Apple", perTrack: withMedia((await fetchAppleCredits(apple.storefront, apple.id)).tracks) };
+    return null;
+  }
+  function startMcAdapter() {
+    const m = location.pathname.match(/^\/release\/([0-9a-f-]{36})\/?$/i);
+    if (!m) return false;
+    const rel = m[1].toLowerCase();
+    const hello = () => send("mc:provider", { id: "ch", name: "Credit Hoarder", version: version(), release: rel, capabilities: ["probe"] });
+    document.addEventListener("mc:discover", () => {
+      log.info("Mission Control asked \u2014 answering as provider ch");
+      hello();
+    });
+    document.addEventListener("mc:probe", async (e) => {
+      let d = {};
+      try {
+        d = JSON.parse(e.detail) || {};
+      } catch (x) {
+        return;
+      }
+      if (d.release && d.release !== rel || d.only && !d.only.includes("ch")) return;
+      const done = (findings, summary) => send("mc:findings", { id: "ch", run: d.run, release: rel, findings, summary });
+      try {
+        send("mc:progress", { id: "ch", run: d.run, state: "busy", note: "reading credits" });
+        const links = releaseLinks();
+        const got = await readSource(links);
+        if (!got) {
+          log.info("Mission Control probe: no credit source linked (Discogs, Qobuz, Deezer, Apple)");
+          done([], "No credit source linked (Discogs, Qobuz, Deezer, Apple)");
+          return;
+        }
+        const tracks = pageTracks();
+        const findings = tracks.map((t, i) => {
+          const hit = got.flat ? got.perTrack[i] : got.perTrack.find((x) => x.medium === t.medium && x.index === t.pos);
+          const list = hit ? hit.credits.map((c) => ({ name: c.name, role: flatRoles(c) })) : [];
+          return { key: t.rec, track: t.rec, state: list.length ? "info" : "none", credits: list.length, list, source: got.source };
+        });
+        const total = findings.reduce((n, f) => n + f.credits, 0);
+        log.info(`Mission Control probe: ${got.source} \u2014 ${total} credit(s) on ${findings.filter((f) => f.credits).length} of ${tracks.length} track(s)`);
+        done(findings, `${got.source}: ${total} credit${total === 1 ? "" : "s"} on ${findings.filter((f) => f.credits).length} of ${tracks.length} tracks`);
+      } catch (x) {
+        log.error("Mission Control probe failed: " + (x && x.message || x));
+        done([], "failed: " + (x && x.message || x));
+      }
+    });
+    hello();
+    return true;
+  }
+
   // src/credit_hoarder.user.js
   try {
     pageWindow.__creditHoarder = { resolveAll, ARTIST_KIND, buildReleaseContext, releaseArtistMbids, wantsAliasButton, submitAliasBackground, openAddAliasForm };
@@ -10132,6 +10235,7 @@ ${lines}
   })();
   var T0 = typeof performance !== "undefined" ? performance.now() : Date.now();
   var since = () => Math.round((typeof performance !== "undefined" ? performance.now() : Date.now()) - T0);
+  if (/musicbrainz\.org$/i.test(location.hostname)) startMcAdapter();
   if (/musicbrainz\.org$/i.test(location.hostname)) (function() {
     const re = /musicbrainz\.org\/release\/([a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12})\/edit-relationships/i;
     const m = window.location.href.match(re);

@@ -51,6 +51,7 @@ Ask-mode providers aren't asked on Probe. Their matrix column shows a **Fetch** 
 Art Station and Credit Hoarder have their own pages, so their `@match` now includes the release page as well. There they start no UI: only the adapter, which then returns.
 
 - **Art Station** (`as`): release level. The probe reads the Cover Art Archive listing (the card's `summary`) and the release's own external links (the sidebar block headed "External links", not the release group's). It offers each linked platform AS can source from, with `icon` naming its ST-ICONS key. Rows start ticked only when there's no front cover. Apply opens `/release/<mbid>/cover-art?mc_source=[links]`, where AS imports from those links and keeps the best cover (the same as middle-clicking its URL button), for you to review and enter.
+- **Credit Hoarder** (`ch`): per track, info only (`capabilities: ['probe']`; it never writes from here), and Ask mode by default. The probe reads the same sidebar links as AS, so it makes no MusicBrainz request, and reads one source's credits: the first linked of Discogs, Qobuz, Deezer and Apple. Each track gets `state: 'info'`, `credits` (a count) and `list` (`{ name, role }`), mapped by the source's own track order per medium. Nothing is cached for CH's own page yet: its caches are per page, and CH opens on edit-relationships. The adapter lives in `credit_hoarder/src/mc-adapter.js`.
 
 ### Execute
 
@@ -58,7 +59,7 @@ Execute runs the steps in order and sends `mc:apply` to every provider that has 
 
 ### Still to specify
 
-- Credit Hoarder (per track, info only).
+- Progress events during Execute, for live per-lane status.
 
 ## Layout
 

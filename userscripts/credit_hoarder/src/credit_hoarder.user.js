@@ -25,6 +25,7 @@ import { resolveAll, ARTIST_KIND }   from './preflight.js';
 import { buildReleaseContext, releaseArtistMbids } from './match-context.js';
 import { wantsAliasButton, submitAliasBackground, openAddAliasForm } from './alias-add.js';
 import { pageWindow }                from './constants.js';
+import { startMcAdapter }            from './mc-adapter.js';
 
 // Test hook (like Apollo's __apolloEditor): lets the verify scripts drive the matching
 // pipeline on a real MB page without walking the whole import UI. Read-only by itself.
@@ -175,6 +176,9 @@ if (/(^|\.)metal-archives\.com$/i.test(location.hostname)) {
 // needing a repro.
 const T0 = (typeof performance !== 'undefined' ? performance.now() : Date.now());
 const since = () => Math.round((typeof performance !== 'undefined' ? performance.now() : Date.now()) - T0);
+// the release page itself: only the Mission Control adapter (#680), no UI
+if (/musicbrainz\.org$/i.test(location.hostname)) startMcAdapter();
+
 if (/musicbrainz\.org$/i.test(location.hostname)) (function () {
     const re = /musicbrainz\.org\/release\/([a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12})\/edit-relationships/i;
     const m = window.location.href.match(re);
