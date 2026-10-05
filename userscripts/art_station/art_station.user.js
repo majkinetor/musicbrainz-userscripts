@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Art Station
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.4
+// @version      2026.10.5
 // @description  Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png
@@ -2743,7 +2743,9 @@
   };
   // #667 the best-cover pick says so in its note
   const bestLine = it => (it && it._bestOf > 1) ? `Art Station chose this as the best of ${it._bestOf} imported covers (highest resolution, then smallest file): ${it.w}×${it.h}${it.bytes ? ', ' + fmtBytes(it.bytes) : ''}` : '';
-  const editNoteFor = (m, it) => [m.note && m.note.trim(), sourceLine(it), bestLine(it), ATTRIBUTION].filter(Boolean).join('\n\n');
+  // #678 a cover rotated from an existing one records that it replaces the original
+  const rotLine = it => (it && it._rotatedFrom) ? `Rotated ${it._rotDeg || ''}° from this release's existing image ${it._rotatedFrom} (which this edit replaces)` : '';
+  const editNoteFor = (m, it) => [m.note && m.note.trim(), sourceLine(it), bestLine(it), rotLine(it), ATTRIBUTION].filter(Boolean).join('\n\n');
   async function getPostForm(url) {
     const html = await fetch(url, { credentials: 'same-origin' }).then(r => { if (!r.ok) throw new Error('GET ' + r.status); return r.text(); });
     const doc = new DOMParser().parseFromString(html, 'text/html');
@@ -3394,7 +3396,8 @@
         <button class="as-lb-nav as-lb-next" title="next (→)">›</button>
         <div class="as-lb-bar"><div class="as-lb-caprow"><div class="as-lb-cap"></div>
           <div class="as-lb-dlwrap"><button class="as-lb-dl" title="Download original">⬇ Download</button><button class="as-lb-dlcaret" title="Other sizes">▾</button>
-            <div class="as-lb-dlmenu"><button data-sz="original">Original</button><button data-sz="1200">1200 px</button><button data-sz="500">500 px</button><button data-sz="250">250 px</button></div></div></div>
+            <div class="as-lb-dlmenu"><button data-sz="original">Original</button><button data-sz="1200">1200 px</button><button data-sz="500">500 px</button><button data-sz="250">250 px</button></div></div>
+          <div class="as-lb-rotwrap"><button class="as-lb-rot" data-deg="-90" title="Rotate left 90°">↶</button><button class="as-lb-rot" data-deg="90" title="Rotate right 90°">↷</button></div></div>
           <div class="as-lb-cmtarea"></div></div>`;
       document.body.appendChild(ov);
       ov.querySelector('.as-lb-x').onclick = closeLightbox;
@@ -3404,6 +3407,7 @@
       ov.querySelector('.as-lb-dl').onclick = e => { e.stopPropagation(); dlMenu.classList.remove('open'); const it = byId(_lb); if (it) dlOne(it); };
       ov.querySelector('.as-lb-dlcaret').onclick = e => { e.stopPropagation(); dlMenu.classList.toggle('open'); };
       dlMenu.querySelectorAll('button').forEach(b => b.onclick = e => { e.stopPropagation(); dlMenu.classList.remove('open'); const it = byId(_lb); if (it) dlOne(it, b.dataset.sz); });
+      ov.querySelectorAll('.as-lb-rot').forEach(b => b.onclick = e => { e.stopPropagation(); rotateLbCover(+b.dataset.deg); });
       // click anywhere outside the Download control closes its size menu (capture so it
       // fires regardless of stopPropagation). _dlJustClosed bridges the mousedown→click
       // gap so a backdrop click that dismisses the menu doesn't also close the viewer.
@@ -3604,6 +3608,79 @@
     const nx = rest[Math.min(i, rest.length - 1)];
     resetZoom();
     _lb = nx.id; _cursorId = nx.id; _lbEditCmt = false; paintLightbox(); markCursor(true); preloadNeighbors();
+  }
+
+  // ── rotate (#678) ─────────────────────────────────────────────────────────────
+  // Rotate an image blob by a right angle (CW degrees) on a canvas and re-encode.
+  // Anything that isn't JPEG re-encodes losslessly as PNG; JPEG is recompressed at
+  // high quality — a truly lossless right-angle JPEG rotation would need a block-level
+  // transform, out of scope here. Returns { blob, type, swap } (swap = dims transposed).
+  async function rotateImageBlob(blob, deg) {
+    const rot = ((deg % 360) + 360) % 360;
+    const bmp = await createImageBitmap(blob);
+    try {
+      const swap = rot === 90 || rot === 270, w = bmp.width, h = bmp.height;
+      const cv = document.createElement('canvas');
+      cv.width = swap ? h : w; cv.height = swap ? w : h;
+      const ctx = cv.getContext('2d');
+      ctx.translate(cv.width / 2, cv.height / 2);
+      ctx.rotate(rot * Math.PI / 180);
+      ctx.drawImage(bmp, -w / 2, -h / 2);
+      const type = blob.type === 'image/jpeg' ? 'image/jpeg' : 'image/png';
+      const out = await new Promise(res => cv.toBlob(res, type, type === 'image/jpeg' ? 0.95 : undefined));
+      return out ? { blob: out, type: out.type || type, swap } : null;
+    } finally { bmp.close && bmp.close(); }
+  }
+  let _rotBusy = false;
+  async function rotateLbCover(deg) {
+    if (_rotBusy) return;
+    const it = byId(_lb); if (!it || it._pdf || it._sourcing) return;
+    const ov = document.getElementById('as-lb');
+    _rotBusy = true; if (ov) ov.classList.add('as-lb-rotbusy');
+    asLog.info(`Rotate: ${it._new ? 'new' : 'existing #' + it.id} by ${deg}° (${it._new ? 'in place' : 'replace'})`);
+    try {
+      // source pixels: a staged new cover already holds its blob; an existing cover is
+      // fetched full-resolution from CAA (same CORS path Download uses)
+      // upgrade http→https so fetching an existing original isn't blocked as mixed content
+      const srcUrl = (it._new ? it._file : (it._img || imgUrl(it.id))).replace(/^http:\/\//i, 'https://');
+      const srcBlob = (it._new && it._fileObj) ? it._fileObj
+        : await fetch(srcUrl).then(r => { if (!r.ok) throw new Error('fetch ' + r.status); return r.blob(); });
+      const r = await rotateImageBlob(srcBlob, deg);
+      if (!r) { toast('Rotate failed — the image could not be re-encoded'); return; }
+      const ow = it.w, oh = it.h, ext = r.type === 'image/png' ? 'png' : 'jpg';
+      if (it._new) {
+        // #678 rotate the staged blob in place — nothing was ever on the release, so no replace
+        try { URL.revokeObjectURL(it._file); } catch (e) {}
+        const name = (it._fileObj && it._fileObj.name) || ('image.' + ext);
+        it._file = URL.createObjectURL(r.blob);
+        it._fileObj = new File([r.blob], name, { type: r.type });
+        it.bytes = r.blob.size; it.fmt = fileFormat(r.type) || it.fmt;
+        it._contentKey = await fileKey(it._fileObj);
+        if (ow && oh) { it.w = r.swap ? oh : ow; it.h = r.swap ? ow : oh; } else { it.w = 0; it.h = 0; measure(it); }
+        _imgCache.delete(String(it.id));
+        resetZoom(); paintLightbox();
+      } else {
+        // #678 existing published cover: CAA images are immutable, so stage the rotated copy
+        // as a NEW cover in the same slot (keeping its types + comment) and mark the original removed
+        const file = new File([r.blob], `${it.id}-rot.${ext}`, { type: r.type });
+        const nu = newItem(file, { types: it.types.slice(), comment: it.comment, exactName: true });
+        nu._contentKey = await fileKey(file);
+        nu._rotatedFrom = it.id; nu._rotDeg = ((deg % 360) + 360) % 360;
+        if (ow && oh) { nu.w = r.swap ? oh : ow; nu.h = r.swap ? ow : oh; }
+        it._del = true; it._sel = false;
+        const rest = MODEL.slice().sort((a, b) => a.order - b.order);
+        rest.splice(rest.indexOf(it) + 1, 0, nu);
+        MODEL = rest; MODEL.forEach((m, i) => m.order = i);
+        if (!(ow && oh)) measure(nu);
+        _lb = nu.id; _cursorId = nu.id; resetZoom(); paintLightbox();
+        toast('Rotated — staged as a replacement; the original is marked for removal');
+      }
+      render();
+    } catch (e) {
+      logErr('Rotate failed', e); toast('Rotate failed — see the log');
+    } finally {
+      _rotBusy = false; if (ov) ov.classList.remove('as-lb-rotbusy');
+    }
   }
 
   // ── keyboard cursor (arrows select / move; Enter opens lightbox) ──────────────
@@ -4978,6 +5055,13 @@
   .as-lb-dlmenu.open{display:flex}
   .as-lb-dlmenu button{text-align:left;background:none;border:none;color:var(--mbu-text);font:13px Arial;padding:7px 10px;border-radius:var(--mbu-radius);cursor:pointer}
   .as-lb-dlmenu button:hover{background:var(--mbu-bg-hover);color:var(--mbu-accent-text)}
+  .as-lb-rotwrap{display:inline-flex;align-items:center;gap:1px}
+  .as-lb-rot{font:600 17px Arial;line-height:1;color:var(--mbu-text-on-accent);background:rgba(255,255,255,.08);border:1px solid transparent;height:34px;min-width:40px;cursor:pointer;border-radius:0}
+  .as-lb-rotwrap .as-lb-rot:first-child{border-radius:8px 0 0 8px}
+  .as-lb-rotwrap .as-lb-rot:last-child{border-radius:0 8px 8px 0}
+  .as-lb-rot:hover{background:rgba(255,255,255,.25)}
+  .as-lb-rotwrap:hover .as-lb-rot{border-color:rgba(255,255,255,.28)}
+  .as-lb-rotbusy .as-lb-rot{pointer-events:none;opacity:.45}
   /* z-index:2 keeps the footer above a ZOOMED image — the image's transform makes a
      stacking context that would otherwise paint over the bar (it sits below in flow). */
   .as-lb-bar{margin-top:14px;display:flex;flex-direction:column;align-items:center;gap:8px;width:min(560px,84vw);position:relative;z-index:2}
@@ -5012,7 +5096,7 @@
     #as-root .as-pencil{min-height:34px;padding:0 12px}
     #as-root .as-tbtn{opacity:1;padding:8px 11px}
     #as-root .as-only{opacity:1;padding:8px 11px}
-    .as-lb-x,.as-lb-play,.as-lb-del,.as-lb-dl,.as-lb-dlcaret{min-width:46px;min-height:46px;font-size:18px}
+    .as-lb-x,.as-lb-play,.as-lb-del,.as-lb-dl,.as-lb-dlcaret,.as-lb-rot{min-width:46px;min-height:46px;font-size:18px}
     .as-lb-cmtadd,.as-lb-type{min-height:40px;padding:9px 16px}
     .as-lb-dlmenu button{padding:12px 14px}
   }
