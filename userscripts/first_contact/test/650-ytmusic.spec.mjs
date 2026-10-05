@@ -46,4 +46,13 @@ test.describe('on the live page', () => {
     await page.locator('#fc-root .fc-more').click();
     check(await page.locator('#fc-panel .fc-server').isVisible(), 'the settings panel opens');
   });
+  // #679: the same album playlist on www.youtube.com, as MusicBrainz often keeps it
+  test('the button shows on www.youtube.com for an album playlist, not for a user playlist', { tag: ['@web'] }, async ({ page, inject }) => {
+    await inject('first_contact', { atStart: true });
+    await page.goto('https://www.youtube.com/playlist?list=' + LIST, { waitUntil: 'domcontentloaded' });
+    const shown = await page.locator('#fc-root .fc-go').waitFor({ state: 'visible', timeout: 30000 }).then(() => true, () => false);
+    check(shown, 'the button is on the www.youtube.com album playlist');
+    const id = await page.evaluate(() => window.__fcTest && window.__fcTest.providers.find(p => p.id === 'ytmusic').albumId({ pathname: '/playlist', search: '?list=PLFgquLnL59alCl_2TQvOiD5Vgm1hCaGSI' }));
+    check(id == null, `a user playlist (PL…) is not an album: ${id}`);
+  });
 });

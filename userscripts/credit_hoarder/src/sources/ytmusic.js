@@ -31,7 +31,9 @@ import { log, logDebug } from '../log.js';
 export const YTM_API = 'https://music.youtube.com/youtubei/v1/';
 const YTM_CLIENT = { clientName: 'WEB_REMIX', clientVersion: '1.20250101.01.00', hl: 'en', gl: 'US' };
 
-const YTM_ALBUM_RE = /music\.youtube\.com\/(?:playlist\?(?:[^#]*&)?list=(OLAK5uy_[\w-]+)|browse\/(MPREb_[\w-]+))/i;
+// #679: an album playlist is the same on www.youtube.com (MB keeps such links as entered);
+// the OLAK5uy_ prefix, not the host, is what marks it as an album rather than a user playlist.
+export const YTM_ALBUM_RE = /(?:^|\/\/)(?:(?:music|www|m)\.)?youtube\.com\/(?:playlist\?(?:[^#]*&)?list=(OLAK5uy_[\w-]+)|browse\/(MPREb_[\w-]+))/i;
 
 /** Parse a YouTube Music album link → `{ list }` (OLAK5uy_ playlist) or `{ album }`
  *  (MPREb_ album page), or `null`. */
