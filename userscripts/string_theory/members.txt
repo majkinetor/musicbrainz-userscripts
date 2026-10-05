@@ -21,4 +21,5 @@ fusion
 group_therapy
 isrc_scout
 mammoth
+mission_control
 platform_check
