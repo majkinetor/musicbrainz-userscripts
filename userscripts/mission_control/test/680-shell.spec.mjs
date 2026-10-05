@@ -20,6 +20,13 @@ test('#680: MC shell — launcher, track matrix, sidebars, modes', { tag: ['@san
   check(rows > 0 && rows === pageRows, `matrix has a row per track (${rows} of ${pageRows})`);
   check(await page.locator('#mc-root .mc-badges .mc-bdg').count() === 5, 'a header badge per provider');
 
+  // left of the header: the source icon and Probe, nothing else
+  check(await page.locator('#mc-root .mc-hdr .l > *').count() === 2, 'header left holds the source icon and Probe');
+  await page.click('#mc-root [data-act="src"]');
+  await page.fill('#mc-root .mc-srcpop input', 'https://open.spotify.com/album/x');
+  await page.keyboard.press('Enter');
+  check(await page.locator('#mc-root .mc-srcbtn.set').count() === 1, 'source icon lit once a link is set');
+
   // inspector follows the selected row
   await page.locator('#mc-root .mc-tbl tbody tr[data-i]').first().click();
   check(/^Track /.test(await page.locator('#mc-root .mc-insp-t').textContent()), 'inspector shows the selected track');

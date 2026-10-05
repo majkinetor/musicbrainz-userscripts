@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Mission Control
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.5.183322
+// @version      2026.10.5.183627
 // @description  One window on the release page that asks the other scripts (Platform Check, ISRC Scout, Art Station, Fusion, Credit Hoarder) what is missing, shows it all in one review, and applies the ticked changes in order.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPk1pc3Npb24gQ29udHJvbDwvdGl0bGU+CiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjNWYzZWMwIiBzdHJva2Utd2lkdGg9IjciPgogICAgPGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iNTIiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjMwIi8+CiAgICA8cGF0aCBkPSJNNjQgNHYyMk02NCAxMDJ2MjJNNCA2NGgyMk0xMDIgNjRoMjIiLz4KICA8L2c+CiAgPGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iMTEiIGZpbGw9IiM4YTVjZjYiLz4KPC9zdmc+Cg==
@@ -135,10 +135,9 @@ function mcStyle() {
         + '.mc-hdr .c{display:flex;align-items:center;gap:10px;min-width:0}'
         + '.mc-cover{width:30px;height:30px;border-radius:4px;object-fit:cover;flex:none;background:var(--mbu-accent-soft)}'
         + '.mc-ttl{font-weight:700;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:36vw}.mc-sub{font-size:11px;color:var(--mbu-text-weak);white-space:nowrap}'
-        + '.mc-logo{display:flex;align-items:center;gap:6px;font-weight:700;white-space:nowrap;color:var(--mbu-accent-text)}'
-        + '.mc-ver{font-size:10px;font-weight:600;color:var(--mbu-accent-text);background:var(--mbu-accent-soft);padding:1px 6px;border-radius:20px}'
-        + '.mc-src{display:flex;align-items:center;gap:4px;border:1px solid var(--mbu-border);border-radius:var(--mbu-radius);background:var(--mbu-bg-sunken);padding:2px 2px 2px 8px;min-width:0;flex:1;max-width:380px}'
-        + '#mc-root .mc-src input{border:0;background:transparent;font:11px var(--mbu-font-mono);color:var(--mbu-text-dim);flex:1;min-width:0;outline:none;padding:0}'
+        + '#mc-root .mc-srcbtn{font-size:14px;padding:3px 7px;filter:grayscale(1);opacity:.6}#mc-root .mc-srcbtn.set{filter:none;opacity:1;background:var(--mbu-accent-soft)}'
+        + '.mc-srcpop{position:fixed;z-index:var(--mbu-z-modal-panel);width:min(420px,90vw);padding:6px;background:var(--mbu-bg);border:1px solid var(--mbu-border);border-radius:var(--mbu-radius);box-shadow:var(--mbu-shadow-lg)}'
+        + '#mc-root .mc-srcpop input{width:100%;font:12px var(--mbu-font-mono);padding:4px 6px;border:1px solid var(--mbu-border);border-radius:var(--mbu-radius)}'
         + '.mc-sep{width:1px;height:20px;background:var(--mbu-border);margin:0 4px}'
         + '#mc-root .mc-btn{display:inline-flex;align-items:center;gap:5px;border:1px solid var(--mbu-border);background:var(--mbu-bg);color:var(--mbu-text);padding:4px 10px;border-radius:var(--mbu-radius);font:inherit;font-size:12px;cursor:pointer;white-space:nowrap}'
         + '#mc-root .mc-btn:hover:not(:disabled){background:var(--mbu-bg-hover);border-color:var(--mbu-border-strong)}'
@@ -217,10 +216,9 @@ function stateText(p) {
 function header() {
     const h = el('header', 'mc-hdr');
     h.innerHTML = mbuHtml(
-        '<div class="l"><span class="mc-logo"><span>' + ICON + '</span>MC</span><span class="mc-ver" title="installed script version">' + esc(VERSION) + '</span>'
-        + '<span class="mc-sep"></span>'
-        + '<label class="mc-src" title="Source link (or one handed over from First Contact)"><input placeholder="Source link (optional)" spellcheck="false">'
-        + '<button type="button" class="mc-btn primary" data-act="probe" title="Ask every provider what is missing">Probe</button></label></div>'
+        // logo and version live in ⚙; the source link is an icon that opens a field
+        '<div class="l"><button type="button" class="mc-btn ghost mc-srcbtn" data-act="src" title="Source link (optional)">🔗</button>'
+        + '<button type="button" class="mc-btn primary" data-act="probe" title="Ask every provider what is missing">Probe</button></div>'
         + '<div class="c">' + (rel.cover ? '<img class="mc-cover" alt="" src="' + esc(rel.cover) + '">' : '<span class="mc-cover"></span>')
         + '<div style="min-width:0"><div class="mc-ttl" title="' + esc(rel.title) + '">' + esc((rel.artist ? rel.artist + ' — ' : '') + rel.title) + '</div>'
         + '<div class="mc-sub">existing · <span class="mono">' + RELEASE.slice(0, 4) + '…' + RELEASE.slice(-4) + '</span> · ' + rel.tracks.length + ' tr · ' + rel.media + ' medium' + (rel.media === 1 ? '' : 's') + '</div></div>'
@@ -409,16 +407,36 @@ function onClick(e) {
     if (!act) return;
     switch (act.dataset.act) {
         case 'probe': {
-            const src = ui.querySelector('.mc-src input').value.trim();
-            Log.info('probe' + (src ? ' with source ' + src : '') + ' · fusion ' + S.fusion + ' · ch ' + S.ch);
+            Log.info('probe' + (source ? ' with source ' + source : '') + ' · fusion ' + S.fusion + ' · ch ' + S.ch);
             discover();
             mbuToast('Providers are not connected yet: Probe only checks which are installed (#680).');
             break;
         }
-        case 'log': Log.open(); break;
+        case 'src': sourcePopover(act); break;
         case 'cfg': settingsWindow(); break;
         case 'close': close(); break;
     }
+}
+
+// The source link (optional; First Contact will hand one over). The icon is
+// lit while one is set, and its tooltip shows it.
+let source = '';
+function sourcePopover(btn) {
+    if (ui.querySelector('.mc-srcpop')) return;
+    const r = btn.getBoundingClientRect();
+    const pop = el('div', 'mc-srcpop', '<input placeholder="Source link (optional)" spellcheck="false">');
+    pop.style.left = r.left + 'px'; pop.style.top = (r.bottom + 4) + 'px';
+    ui.appendChild(pop);
+    const inp = pop.querySelector('input');
+    inp.value = source; inp.focus(); inp.select();
+    const done = () => {
+        source = inp.value.trim(); pop.remove();
+        btn.classList.toggle('set', !!source);
+        btn.title = source ? 'Source: ' + source : 'Source link (optional)';
+        Log.info('source ' + (source || '(none)'));
+    };
+    const off = mbuDismissOn(pop, done);
+    inp.addEventListener('keydown', e => { if (e.key === 'Enter') off(); });
 }
 
 function setMode(key, v) {
