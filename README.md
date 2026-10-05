@@ -33,8 +33,6 @@ Reads the release's existing ISRCs and streaming links and fills in the missing 
 [Mammoth](./userscripts/mammoth/README.md)<img src="./userscripts/mammoth/icon.svg" align="left" width="32"><br>
 Remembers your edit notes and options and lets you save and recall them
 
-[Mission Control](./userscripts/mission_control/README.md)<img src="./userscripts/mission_control/icon.svg" align="left" width="32"><br>
-One review of what every other script would add to a release, applied in order *(work in progress)*
 
 [Platform Check](./userscripts/platform_check/README.md)<img src="./userscripts/platform_check/icon.svg" align="left" width="32"><br>
 Find and verify URLs for a particular MusicBrainz release on online platforms

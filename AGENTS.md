@@ -37,6 +37,7 @@ Learn something durable → write it down: in the general file if it would hold 
 
 - Install links pin to a **commit SHA**, not a branch ([Standard 10](STANDARDS.md#standard-10)): `[Install @<version>](…/raw/<sha>/<path>.user.js)`. Feature branch → pinned only; on main/stable → pinned + latest. **curl-check every link**: the repo slug is `majkinetor/musicbrainz-userscripts` (not the `mb-userscripts` folder), so folder-name raw links 404.
 - **Settings** → `GM_setValue` / `GM_getValue`, never `localStorage`.
+- **No README while a script's design is still forming.** A new script in its design or scaffolding phase gets no README (not its own, and no entry in the root list), because the design changes too much. Write it once majkinetor settles the design. This is the one exception to "document every feature".
 - Bump the script's `@version` to today (`YYYY.M.D`, time appended for a same-day second change); read the current value before bumping.
 - `node --check` plus a real-browser load before sharing an install link.
 - **Never rename a script's `@name`** casually: a manager identifies a script by `@namespace` + `@name`, so installing a renamed script from a link makes a *second* copy beside the old one. Copies don't share GM storage, and `mbuClaim` picks the running copy per site, so a cross-site GM handoff (Falcon's Harmony token) can land in the wrong copy. Whether an *auto-update* that brings a new `@name` replaces the script in place is untested (likely in Violentmonkey, unknown in Tampermonkey).
