@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         ISRC Scout
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.6
+// @version      2026.10.6.204207
 // @description  Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify / Beatport / Tidal / Volumo / HDtracks / Qobuz, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPklTUkMgU2NvdXQ8L3RpdGxlPgogICAgPHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPgogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjQwIi8+CiAgICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyNiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2U9IiNiOWEzZTgiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPgogIDwvZz4KICA8bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+Cjwvc3ZnPgo=
@@ -458,7 +458,8 @@
     // #623 (sweep, X10): any script — keeping only [a-z0-9] reduced a mixed-script title to
     // its Latin fragments ("Love ~夜~" = "Love ~朝~"). Diacritics still fold on Latin, Greek
     // and Cyrillic letters; other scripts keep their marks.
-    return String(s || '').toLowerCase().normalize('NFKD')
+    // #681: an apostrophe joins its letters ("Don't", "Don’t" and "Dont" are one word), never splits them
+    return String(s || '').toLowerCase().replace(/['’‘`´]/g, '').normalize('NFKD')
       .replace(/(?<=[\p{Script=Latin}\p{Script=Greek}\p{Script=Cyrillic}])\p{M}+/gu, '').normalize('NFC')
       .replace(/[^\p{L}\p{N}\p{M} ]/gu, ' ')
       .replace(/\s+/g, ' ').trim();
@@ -479,9 +480,11 @@
   // of both titles. Guest lists differ between databases too ("Daft Punk feat. Pharrell Williams" on
   // MusicBrainz, "Daft Punk, Pharrell Williams, Nile Rodgers" on Deezer), so when the whole credits
   // don't match, the main artist is looked for in the other side's credit.
+  // #681: a bare "Feat. X" ends at the next bracket, not at the title's end: Bandcamp's "Letter From
+  // The Space Feat. Tinavie (Long Arm Remix)" keeps its remix tag, as MusicBrainz's title has it
   function unfeat(s) {
     return String(s || '').replace(/\s*[([](?:feat\.?|ft\.?|featuring)\s[^)\]]*[)\]]/gi, '')
-      .replace(/\s+(?:feat\.?|ft\.?|featuring)\s.*$/i, '').trim();
+      .replace(/\s+(?:feat\.?|ft\.?|featuring)\s[^()[\]]*/gi, ' ').replace(/\s{2,}/g, ' ').trim();
   }
   function mainArtist(s) { return String(s || '').split(/\s+(?:feat\.?|ft\.?|featuring)\s+|\s*[,;]\s*/i)[0].trim(); }
   // Per-field comparisons between an SoundExchange result and the MB track,
@@ -4632,11 +4635,12 @@
     // #463 keep ALL Unicode letters/numbers, not just ASCII — else a non-Latin title (Cyrillic,
     // CJK, …) collapses to '' and the position title-guard bails, refusing an otherwise-identical
     // match (e.g. "слезы завтра"). NFD + the 0x300-0x36f drop still folds Latin diacritics (café→cafe).
-    const _nrm = s => [...(s || '').toLowerCase().normalize('NFD')].filter(c => { const x = c.charCodeAt(0); return x < 0x300 || x > 0x36f; }).join('').replace(/[^\p{L}\p{N}]+/gu, ' ').trim();
+    const _nrm = s => [...String(s || '').toLowerCase().replace(/['’‘`´]/g, '').normalize('NFD')].filter(c => { const x = c.charCodeAt(0); return x < 0x300 || x > 0x36f; }).join('').replace(/[^\p{L}\p{N}]+/gu, ' ').trim();
     // A position match agrees on the title: the same, one inside the other (a version tag), or the
     // same words with a typo in one (#661: Apple's "Les Ecrocs" is MusicBrainz's "Les Escrocs")
+    // #681: guests are left out of both (MusicBrainz moves a title's "feat." into the artist credit)
     function _sameTitle(x, y) {
-      const a = _nrm(x), b = _nrm(y);
+      const a = _nrm(unfeat(x)), b = _nrm(unfeat(y));
       if (!a || !b) return false;
       if (a === b || a.indexOf(b) >= 0 || b.indexOf(a) >= 0) return true;
       const aw = a.split(' '), bw = b.split(' ');

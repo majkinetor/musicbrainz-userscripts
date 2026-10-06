@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-10-06 19:31 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-10-06 20:42 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -955,7 +955,7 @@ The **Links** tab shows, per track, what each recording already links to (**Link
 
 <img width="1000" src="../isrc_scout/screenshots/links.png" />
 
-**🔗 Find links** resolves every track on every available provider, in parallel. A provider matched by position (Apple Music, Bandcamp, SoundCloud, Audiomack, Spotify, YouTube Music, Amazon Music) must have the track's title there; a typo in it, as above, still counts. A Deezer track that no longer plays anywhere is not offered. **➕ Add links** adds everything found; adding goes through your logged-in session (no OAuth), with ISRC Scout's edit note.
+**🔗 Find links** resolves every track on every available provider, in parallel. A provider matched by position (Apple Music, Bandcamp, SoundCloud, Audiomack, Spotify, YouTube Music, Amazon Music) must have the track's title there; a typo in it, as above, still counts, and so do a "feat." the platform keeps in the title where MusicBrainz moved it to the artist credit, and an apostrophe written differently. A Deezer track that no longer plays anywhere is not offered. **➕ Add links** adds everything found; adding goes through your logged-in session (no OAuth), with ISRC Scout's edit note.
 
 | Click | on an **Add** icon | on a **Linked** icon |
 |---|---|---|

@@ -22,7 +22,7 @@ test('a typo in a title is the same song, but only as a warning', { tag: ['@unit
 });
 
 test('Find links: a position match agrees with a typo in the title', { tag: ['@unit', '@critical'] }, async () => {
-  const { _sameTitle } = await loadFunctions('isrc_scout', ['wordTypo', '_nrm', '_sameTitle']);
+  const { _sameTitle } = await loadFunctions('isrc_scout', ['wordTypo', 'unfeat', '_nrm', '_sameTitle']);
   check(_sameTitle('Les Ecrocs', 'Les Escrocs'), 'Apple\'s Les Ecrocs is track 16, Les Escrocs');
   check(_sameTitle('Les Escrocs (Remastered)', 'Les Escrocs'), 'a version tag still fits');
   check(!_sameTitle('Live Forever', 'Love Forever'), 'a short word one letter off is another title');
