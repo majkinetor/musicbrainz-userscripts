@@ -2,7 +2,7 @@
 // MC loads first and PC second, so PC's hello on load is what connects them (not
 // MC's discover). Probe then waits for PC's own scan and fills the Platforms card
 // with one row per platform; the confirmed ones are ticked and counted.
-// Read only: Execute is not wired yet, nothing is submitted.
+// Nothing is submitted: Execute goes to a stand-in Falcon.
 import { test, check } from '../../../dev/test/harness.mjs';
 
 test.use({ gm: { name: 'Mission Control' } });
@@ -15,6 +15,11 @@ test('#680: Probe asks Platform Check and shows its platforms', { tag: ['@sandbo
   await inject('mission_control', { waitFor: '__mcTest' });
   await inject('platform_check', { waitFor: '__pcTest680' });
   check(!!(await page.evaluate(() => window.__mcTest.found().pc)), 'PC announced itself to MC on load');
+  // a release link where MusicBrainz offers several types and picks none goes to Falcon with PC's
+  // own pick, or Falcon drops it as "ambiguous relationship type" (Bandcamp album, #680)
+  const types = await page.evaluate(() => ['https://fingersinthenoise.bandcamp.com/album/discret-lounge-june-2011', 'https://music.apple.com/us/album/x/123', 'https://www.qobuz.com/gb-en/album/x/abc', 'https://open.spotify.com/album/abc']
+    .map(u => window.__pcTest680.pcMcReleaseLinkTypes(u)[0].linkTypeId));
+  check(JSON.stringify(types) === '[85,980,74,null]', `release link types: Bandcamp 85, Apple 980, Qobuz 74, Spotify left to MusicBrainz (${JSON.stringify(types)})`);
 
   await page.click('#mc-launch');
   await page.waitForSelector('#mc-root');
@@ -77,7 +82,9 @@ test('#680: Probe asks Platform Check and shows its platforms', { tag: ['@sandbo
   const got = await page.evaluate(() => window.__falconGot);
   check(got[0].ev === 'falcon:import' && got[1].ev === 'falcon:run', 'dry run queues, Execute runs');
   const item = got[1].json.items[0];
-  check(item.entityType === 'release' && item.mbid === RELEASE && item.urls.length === 1, 'one release item with the ticked link');
+  check(item.entityType === 'release' && item.mbid === RELEASE && new Set(item.urls.map(u => u.url)).size === 1, 'one release item with the ticked link');
+  const want = await page.evaluate(u => window.__pcTest680.pcMcReleaseLinkTypes(u), item.urls[0].url);
+  check(JSON.stringify(item.urls) === JSON.stringify(want), `the link goes with PC's link type (${JSON.stringify(item.urls)})`);
   const state = await pickable.first().evaluate(c => c.closest('.mc-line').className);
   if (/withheld/.test(state)) check(/added by hand over link confidence/.test(got[1].json.note), 'a withheld link ticked by hand is noted as forced');
   // the header line names GM_info's script, which in this test is the shared shim's; the confidence line is PC's own

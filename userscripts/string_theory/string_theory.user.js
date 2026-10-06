@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         String Theory
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.6.212307
+// @version      2026.10.6.215719
 // @description  Unified bundle of 9 MusicBrainz userscripts (apollo_editor, art_station, credit_hoarder, fusion, group_therapy, isrc_scout, mammoth, mission_control, platform_check). Built by userscripts/string_theory/build.mjs — do not hand-edit.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCIgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0Ij4KICA8IS0tIGh1Yi1hbmQtc3Bva2UgIm5ldHdvcmsiIGdseXBoLCBzaW5nbGUgdml2aWQgdmlvbGV0IG9uIHRyYW5zcGFyZW50IHNvIGl0IHJlYWRzIG9uIGJvdGggZGFyayBhbmQgbGlnaHQgcGFnZXMgLS0+CiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjN2M1Y2ZmIiBzdHJva2Utd2lkdGg9IjQuNiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj4KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMzIgMTUiLz4KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMNDYuNSAyMy41Ii8+CiAgICA8cGF0aCBkPSJNMzIgMzIgTDQ2LjUgNDAuNSIvPgogICAgPHBhdGggZD0iTTMyIDMyIEwzMiA0OSIvPgogICAgPHBhdGggZD0iTTMyIDMyIEwxNy41IDQwLjUiLz4KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMTcuNSAyMy41Ii8+CiAgPC9nPgogIDxnIGZpbGw9IiM3YzVjZmYiPgogICAgPGNpcmNsZSBjeD0iMzIiIGN5PSIzMiIgcj0iOC42Ii8+CiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjE5LjUiIHI9IjYuNCIvPgogICAgPGNpcmNsZSBjeD0iNDkiIGN5PSIxOS41IiByPSI2LjQiLz4KICAgIDxjaXJjbGUgY3g9IjMyIiBjeT0iNTciIHI9IjYuNCIvPgogIDwvZz4KICA8ZyBmaWxsPSJub25lIiBzdHJva2U9IiM3YzVjZmYiIHN0cm9rZS13aWR0aD0iMy44Ij4KICAgIDxjaXJjbGUgY3g9IjMyIiBjeT0iNyIgcj0iNC45Ii8+CiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjQ0LjUiIHI9IjQuOSIvPgogICAgPGNpcmNsZSBjeD0iNDkiIGN5PSI0NC41IiByPSI0LjkiLz4KICA8L2c+Cjwvc3ZnPgo=
@@ -89,8 +89,8 @@
 // Bundles (verbatim, each wrapped in a run-at gate): apollo_editor, art_station, credit_hoarder, fusion, group_therapy, isrc_scout, mammoth, mission_control, platform_check.
 
 try {
-  console.log('%c String Theory %c v2026.10.6.212307 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
-  console.log("String Theory bundles:\n  · Apollo Editor v2026.10.6\n  · Art Station v2026.10.6.202240\n  · Credit Hoarder v2026.10.6.195729\n  · Fusion v2026.10.5.205655\n  · Group Therapy v2026.10.4\n  · ISRC Scout v2026.10.6.204207\n  · Mammoth v2026.10.4\n  · Mission Control v2026.10.6.203110\n  · Platform Check v2026.10.6.193036");
+  console.log('%c String Theory %c v2026.10.6.215719 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
+  console.log("String Theory bundles:\n  · Apollo Editor v2026.10.6\n  · Art Station v2026.10.6.202240\n  · Credit Hoarder v2026.10.6.195729\n  · Fusion v2026.10.5.205655\n  · Group Therapy v2026.10.4\n  · ISRC Scout v2026.10.6.204207\n  · Mammoth v2026.10.4\n  · Mission Control v2026.10.6.203110\n  · Platform Check v2026.10.6.215245");
 } catch (e) {}
 
 // ===== apollo_editor (@run-at document-start) =====================================
@@ -48650,7 +48650,7 @@ launcher();
 
 // ===== platform_check (@run-at document-end) ====================================
 (function(__stGM){
-  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Platform Check*","namespace":"http://tampermonkey.net/","version":"2026.10.7.100000","description":"Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/platform_check/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+DQogIDx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CiAgDQogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJhMWE1MiIgc3Ryb2tlLXdpZHRoPSI5IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik00MCA4OCBBMzQgMzQgMCAwIDEgNDAgNDAiLz4NCiAgICA8cGF0aCBkPSJNMjkgOTkgQTUwIDUwIDAgMCAxIDI5IDI5Ii8+DQogICAgPHBhdGggZD0iTTg4IDg4IEEzNCAzNCAwIDAgMCA4OCA0MCIvPg0KICAgIDxwYXRoIGQ9Ik05OSA5OSBBNTAgNTAgMCAwIDAgOTkgMjkiLz4NCiAgPC9nPg0KICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyMCIgZmlsbD0iI2U4MjAxYSIvPg0KPC9zdmc+DQo="}) }) : { script: {"name":"Platform Check*","namespace":"http://tampermonkey.net/","version":"2026.10.7.100000","description":"Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/platform_check/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+DQogIDx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CiAgDQogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJhMWE1MiIgc3Ryb2tlLXdpZHRoPSI5IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik00MCA4OCBBMzQgMzQgMCAwIDEgNDAgNDAiLz4NCiAgICA8cGF0aCBkPSJNMjkgOTkgQTUwIDUwIDAgMCAxIDI5IDI5Ii8+DQogICAgPHBhdGggZD0iTTg4IDg4IEEzNCAzNCAwIDAgMCA4OCA0MCIvPg0KICAgIDxwYXRoIGQ9Ik05OSA5OSBBNTAgNTAgMCAwIDAgOTkgMjkiLz4NCiAgPC9nPg0KICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyMCIgZmlsbD0iI2U4MjAxYSIvPg0KPC9zdmc+DQo="} };
+  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Platform Check*","namespace":"http://tampermonkey.net/","version":"2026.10.6.215245","description":"Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/platform_check/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+DQogIDx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CiAgDQogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJhMWE1MiIgc3Ryb2tlLXdpZHRoPSI5IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik00MCA4OCBBMzQgMzQgMCAwIDEgNDAgNDAiLz4NCiAgICA8cGF0aCBkPSJNMjkgOTkgQTUwIDUwIDAgMCAxIDI5IDI5Ii8+DQogICAgPHBhdGggZD0iTTg4IDg4IEEzNCAzNCAwIDAgMCA4OCA0MCIvPg0KICAgIDxwYXRoIGQ9Ik05OSA5OSBBNTAgNTAgMCAwIDAgOTkgMjkiLz4NCiAgPC9nPg0KICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyMCIgZmlsbD0iI2U4MjAxYSIvPg0KPC9zdmc+DQo="}) }) : { script: {"name":"Platform Check*","namespace":"http://tampermonkey.net/","version":"2026.10.6.215245","description":"Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/platform_check/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+DQogIDx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CiAgDQogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJhMWE1MiIgc3Ryb2tlLXdpZHRoPSI5IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik00MCA4OCBBMzQgMzQgMCAwIDEgNDAgNDAiLz4NCiAgICA8cGF0aCBkPSJNMjkgOTkgQTUwIDUwIDAgMCAxIDI5IDI5Ii8+DQogICAgPHBhdGggZD0iTTg4IDg4IEEzNCAzNCAwIDAgMCA4OCA0MCIvPg0KICAgIDxwYXRoIGQ9Ik05OSA5OSBBNTAgNTAgMCAwIDAgOTkgMjkiLz4NCiAgPC9nPg0KICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyMCIgZmlsbD0iI2U4MjAxYSIvPg0KPC9zdmc+DQo="} };
   (f=>document.readyState!=='loading'?f():document.addEventListener('DOMContentLoaded',f,{once:true}))(function(){ try { (function(){
 (function () {
 'use strict';
@@ -49289,43 +49289,8 @@ async function injectInto(urls, storageKey) {
     // <select.link-type>, because MB's chooser only offers types that are
     // applicable to that URL host (Apple Music offers 980 'streaming page'
     // but not 85; Bandcamp offers 85 'stream for free' but not 980). IDs
-    // verified live on MB via probe. Inline-local because the IIFE's
-    // early-return path calls injectInto before any module-level const
-    // after the return is initialised (temporal dead zone).
-    const TYPE_FORCE = [
-        { test: u => /music\.apple\.com\/.*\/album\//i.test(u),     ids: ['980', '85'], name: 'streaming page' },
-        { test: u => /[a-z0-9-]+\.bandcamp\.com\/album\//i.test(u), ids: ['85', '980'], name: 'stream for free' },
-        // HDtracks (MBS-9023) and Volumo have no dedicated MB link type, so MB's
-        // classifier leaves both blank on insert. Both are paid download stores →
-        // 74 'purchase for download' (verified live: MB auto-types Deezer/Spotify/
-        // Tidal/Beatport but leaves hdtracks.com and volumo.com unset).
-        { test: u => /hdtracks\.com\//i.test(u),                    ids: ['74'],        name: 'purchase for download' },
-        { test: u => /volumo\.com\/album\//i.test(u),               ids: ['74'],        name: 'purchase for download' },
-        // Qobuz: MB's URLCleanup recognises it but allows BOTH 'purchase for download'
-        // and 'streaming page' (paid) — so MB can't auto-pick one and leaves the type
-        // blank ("Please select a link type", chaban-mb #201). Qobuz is a hi-res download
-        // store first (like HDtracks/Volumo), so prefer 74; fall back to 980 if that's the
-        // only one MB offers for the row.
-        { test: u => /qobuz\.com\/(?:[a-z]{2}-[a-z]{2}\/)?album\//i.test(u), ids: ['74', '980'], name: 'purchase for download' },
-        // SoundCloud (#469, chaban-mb): MB offers the whole "get the music" family
-        // for a SoundCloud URL (73/74/75/85/980) and picks none of them, so the row
-        // is left with a blank REQUIRED select and "Please select a link type for
-        // the URL you've entered" — which blocks the release editor's submit
-        // entirely (and therefore also #465's auto-submit), not just this one link.
-        // Verified live: both example sets from the issue render exactly this.
-        // 85 'stream for free' is the right default — a SoundCloud set is free
-        // streaming unless it's Go-only. Picking between 85 and 980 *correctly*
-        // needs the per-track monetization_model/policy signal chaban described
-        // (policy 'SNIP' + truncated durations => Go-gated => 980); that's a
-        // refinement, deliberately out of scope here since the reported problem is
-        // the blocked submission, not the choice of type.
-        { test: u => /^https?:\/\/(?:www\.|m\.)?soundcloud\.com\//i.test(u), ids: ['85', '980'], name: 'stream for free' },
-        // YouTube Music (#639): MB offers 85 and 980 and picks neither — the same blocked
-        // submit as SoundCloud (verified on the sandbox). Its free tier plays every album, with ads.
-        { test: u => /^https?:\/\/music\.youtube\.com\//i.test(u), ids: ['85', '980'], name: 'stream for free' },
-        // Audiomack (#664): MB offers 85 and 980 and picks neither, as for YouTube Music. Free with ads.
-        { test: u => /^https?:\/\/(?:www\.)?audiomack\.com\//i.test(u), ids: ['85', '980'], name: 'stream for free' },
-    ];
+    // verified live on MB via probe. The list is pcTypeForce, below.
+    const TYPE_FORCE = pcTypeForce();
     const setVal = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value').set;
     const setSel = Object.getOwnPropertyDescriptor(window.HTMLSelectElement.prototype, 'value').set;
     const reports = [];
@@ -49549,6 +49514,46 @@ async function injectInto(urls, storageKey) {
     // nothing actually attempted (every queued link was already there): stay silent — no banner on a plain edit
     if (reports.some(r => !r.present)) showInlineSummary(reports.filter(r => !r.present));
     return { injected, reports, okUrls };
+}
+
+// injectInto's TYPE_FORCE, also read by Mission Control's apply (which hands Falcon a
+// link type per url). A function declaration, so it is hoisted: the IIFE's early-return
+// path calls injectInto before any module-level const down here is initialised.
+function pcTypeForce() {
+    return [
+        { test: u => /music\.apple\.com\/.*\/album\//i.test(u),     ids: ['980', '85'], name: 'streaming page' },
+        { test: u => /[a-z0-9-]+\.bandcamp\.com\/album\//i.test(u), ids: ['85', '980'], name: 'stream for free' },
+        // HDtracks (MBS-9023) and Volumo have no dedicated MB link type, so MB's
+        // classifier leaves both blank on insert. Both are paid download stores →
+        // 74 'purchase for download' (verified live: MB auto-types Deezer/Spotify/
+        // Tidal/Beatport but leaves hdtracks.com and volumo.com unset).
+        { test: u => /hdtracks\.com\//i.test(u),                    ids: ['74'],        name: 'purchase for download' },
+        { test: u => /volumo\.com\/album\//i.test(u),               ids: ['74'],        name: 'purchase for download' },
+        // Qobuz: MB's URLCleanup recognises it but allows BOTH 'purchase for download'
+        // and 'streaming page' (paid) — so MB can't auto-pick one and leaves the type
+        // blank ("Please select a link type", chaban-mb #201). Qobuz is a hi-res download
+        // store first (like HDtracks/Volumo), so prefer 74; fall back to 980 if that's the
+        // only one MB offers for the row.
+        { test: u => /qobuz\.com\/(?:[a-z]{2}-[a-z]{2}\/)?album\//i.test(u), ids: ['74', '980'], name: 'purchase for download' },
+        // SoundCloud (#469, chaban-mb): MB offers the whole "get the music" family
+        // for a SoundCloud URL (73/74/75/85/980) and picks none of them, so the row
+        // is left with a blank REQUIRED select and "Please select a link type for
+        // the URL you've entered" — which blocks the release editor's submit
+        // entirely (and therefore also #465's auto-submit), not just this one link.
+        // Verified live: both example sets from the issue render exactly this.
+        // 85 'stream for free' is the right default — a SoundCloud set is free
+        // streaming unless it's Go-only. Picking between 85 and 980 *correctly*
+        // needs the per-track monetization_model/policy signal chaban described
+        // (policy 'SNIP' + truncated durations => Go-gated => 980); that's a
+        // refinement, deliberately out of scope here since the reported problem is
+        // the blocked submission, not the choice of type.
+        { test: u => /^https?:\/\/(?:www\.|m\.)?soundcloud\.com\//i.test(u), ids: ['85', '980'], name: 'stream for free' },
+        // YouTube Music (#639): MB offers 85 and 980 and picks neither — the same blocked
+        // submit as SoundCloud (verified on the sandbox). Its free tier plays every album, with ads.
+        { test: u => /^https?:\/\/music\.youtube\.com\//i.test(u), ids: ['85', '980'], name: 'stream for free' },
+        // Audiomack (#664): MB offers 85 and 980 and picks neither, as for YouTube Music. Free with ads.
+        { test: u => /^https?:\/\/(?:www\.)?audiomack\.com\//i.test(u), ids: ['85', '980'], name: 'stream for free' },
+    ];
 }
 
 // #673: the barcode pasted on the release page (pc:pending-barcode:<mbid>), typed into the
@@ -56663,6 +56668,17 @@ document.addEventListener('mc:probe', async e => {
     appendLog('System', `Mission Control probe ${d.run || ''} answered: ${JSON.stringify(tally)}`, 'ok');
     pcMcSend('mc:findings', { id: 'pc', run: d.run, release: mbid, findings });
 });
+// A release link for Falcon with the type PC's own + would pick (pcTypeForce): where MusicBrainz
+// offers several and picks none (Bandcamp, Apple Music, Qobuz, ...), Falcon has no type to give
+// the row and drops the url as ambiguous. A Bandcamp album with a digital release also gets 74
+// 'purchase for download' beside 85 'stream for free', like injectInto (#423).
+function pcMcReleaseLinkTypes(url) {
+    const force = pcTypeForce().find(t => t.test(url));
+    const out = [{ url, linkTypeId: force ? Number(force.ids[0]) : null }];
+    const bc = /[a-z0-9-]+\.bandcamp\.com\/album\//i.test(url) ? cacheGet(mbid, 'bandcamp') : null;
+    if (force?.ids[0] === '85' && bc && /\b(digital|file)\b/i.test(bc.format || '')) out.push({ url, linkTypeId: 74 });
+    return out;
+}
 // Apply: the ticked platforms' links go to Falcon as one release item, with PC's
 // own edit note; Falcon runs it. A withheld link ticked by hand is noted as forced,
 // like a middle-click + (#641). Answers mc:applied — ok:false when no Falcon heard it.
@@ -56686,7 +56702,7 @@ document.addEventListener('mc:apply', e => {
     const urls = picked.map(f => f.url);
     const forced = Object.fromEntries(picked.filter(f => f.state === 'withheld').map(f => [f.url, f.why]));
     const album = mbDataGet(mbid)?.album || mbid;
-    const items = (urls.length ? [{ entityType: 'release', mbid, name: album, urls: urls.map(url => ({ url, linkTypeId: null })) }] : [])
+    const items = (urls.length ? [{ entityType: 'release', mbid, name: album, urls: urls.flatMap(pcMcReleaseLinkTypes) }] : [])
         .concat([...ents.values()].map(r => ({ entityType: r.type, mbid: r.mbid, name: r.name, urls: r.urls.map(url => ({ url, linkTypeId: pcLinkTypeFor(r.type, url) })) })));
     // one edit note for the batch: the release's links note, or the artist/label one when there are none
     const note = urls.length ? pcEditNote(urls, forced, pcPastedBarcode()) + (entN ? `\n\n${pcLinksNote()}` : '') : pcLinksNote();
@@ -56699,7 +56715,7 @@ document.addEventListener('mc:apply', e => {
     reply(ok ? { ok: true, sent: n, via: 'falcon', tag: `mc:pc:${d.run}`, note: `${n} link${n === 1 ? '' : 's'} ${d.dry ? 'queued in' : 'sent to'} Falcon` } : { ok: false, sent: 0, note: 'Falcon is not running on this page' });
 });
 pcMcHello();   // MC may have asked before PC loaded
-if (mbuTestHooks()) window.__pcTest680 = { pcMcFinding, pcScan };
+if (mbuTestHooks()) window.__pcTest680 = { pcMcFinding, pcScan, pcMcReleaseLinkTypes };
 
 pcScan();
 
