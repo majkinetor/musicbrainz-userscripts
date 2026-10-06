@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Mission Control
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.7.000454
+// @version      2026.10.7.000919
 // @description  One window on the release page that asks the other scripts (Platform Check, ISRC Scout, Art Station, Fusion, Credit Hoarder) what is missing, shows it all in one review, and applies the ticked changes in order.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPk1pc3Npb24gQ29udHJvbDwvdGl0bGU+CiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjNWYzZWMwIiBzdHJva2Utd2lkdGg9IjciPgogICAgPGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iNTIiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjMwIi8+CiAgICA8cGF0aCBkPSJNNjQgNHYyMk02NCAxMDJ2MjJNNCA2NGgyMk0xMDIgNjRoMjIiLz4KICA8L2c+CiAgPGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iMTEiIGZpbGw9IiM4YTVjZjYiLz4KPC9zdmc+Cg==
@@ -769,7 +769,9 @@ function paintCards() {
                 + '<span class="mc-pill ' + pill[0] + '">' + pill[1] + '</span></div>';
         };
         // PC's artist and label links (`entity`) under their own sub-heading, after the release's
-        const relRows = rows.filter(x => !x.entity), entRows = rows.filter(x => x.entity);
+        // (the Discogs master is the release group's, but reads as the release's own)
+        const own = x => !x.entity || x.entity.type === 'release_group';
+        const relRows = rows.filter(own), entRows = rows.filter(x => !own(x));
         setCard(box, mbuHtml(sum + ap + relRows.map(line).join('')
             + (entRows.length ? '<div class="mc-sub">Artists &amp; labels</div>' + entRows.map(line).join('') : '') + (none.length ? '<div class="mc-none" title="' + esc('Not found: ' + none.map(x => x.name || x.key).join(', ')) + '"><span>Not found</span>'
             + none.map(x => '<span class="mc-pico" title="' + esc(x.name || x.key) + '">' + stIcon(x.icon || x.key, 14) + '</span>').join('') + '</div>' : '')));

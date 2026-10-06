@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Platform Check
 // @namespace    http://tampermonkey.net/
-// @version      2026.10.6.215245
+// @version      2026.10.7.000913
 // @description  Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+DQogIDx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CiAgDQogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJhMWE1MiIgc3Ryb2tlLXdpZHRoPSI5IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik00MCA4OCBBMzQgMzQgMCAwIDEgNDAgNDAiLz4NCiAgICA8cGF0aCBkPSJNMjkgOTkgQTUwIDUwIDAgMCAxIDI5IDI5Ii8+DQogICAgPHBhdGggZD0iTTg4IDg4IEEzNCAzNCAwIDAgMCA4OCA0MCIvPg0KICAgIDxwYXRoIGQ9Ik05OSA5OSBBNTAgNTAgMCAwIDAgOTkgMjkiLz4NCiAgPC9nPg0KICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyMCIgZmlsbD0iI2U4MjAxYSIvPg0KPC9zdmc+DQo=
@@ -8043,6 +8043,20 @@ async function pcMcEntityFindings() {
     appendLog('System', `Mission Control: ${out.length} artist/label link(s) from ${rows.length} artist(s)/label(s)`);
     return out;
 }
+// The Discogs master the found Discogs release belongs to, for the release group (#680): what PC's
+// master slot would add. Its trust follows the Discogs release's; a different master already on the
+// release group is withheld. Null when there is neither a found master nor one on the release group.
+function pcMcMasterFinding() {
+    const rec = mbDataGet(mbid) || {}, have = rec.existing?.discogsMaster || null, url = cacheGet(mbid, 'discogs')?.masterUrl || null;
+    if (!url && !have) return null;
+    const base = { key: 'discogsmaster', name: 'Discogs master', icon: 'discogs', url: url || have,
+        entity: { type: 'release_group', mbid: rec.releaseGroupMbid || null, name: rec.album || 'release group' } };
+    if (have && (!url || pcSameUrl(have, url))) return { ...base, url: have, state: 'linked' };
+    if (have) return { ...base, state: 'withheld', why: `the release group has another Discogs master: ${have}` };
+    if (!rec.releaseGroupMbid) return { ...base, state: 'unsure', why: 'the release group is not known' };
+    const rel = pcMcFinding('discogs').state;
+    return { ...base, state: rel === 'new' || rel === 'linked' ? 'new' : 'unsure', why: rel === 'new' || rel === 'linked' ? 'for the release group' : 'from a Discogs release that is not a sure match' };
+}
 function pcMcSend(type, detail) {
     document.dispatchEvent(new CustomEvent(type, { detail: JSON.stringify(detail) }));
 }
@@ -8059,7 +8073,7 @@ document.addEventListener('mc:probe', async e => {
     pcMcSend('mc:progress', { id: 'pc', run: d.run, state: 'busy', note: PC_SCAN.busy ? 'scanning platforms' : '' });
     // a rescan (pasted barcode, ↻) replaces the scan we waited for: wait for that one instead
     try { let p; do { p = PC_SCAN.last || pcScan(); await p; } while (p !== PC_SCAN.last); } catch (x) { appendLog('System', `scan failed for Mission Control: ${x.message}`, 'error'); }
-    const findings = PROVIDER_ORDER.filter(providerEnabled).map(pcMcFinding).concat(await pcMcEntityFindings());
+    const findings = PROVIDER_ORDER.filter(providerEnabled).map(pcMcFinding).concat(providerEnabled('discogs') ? [pcMcMasterFinding()].filter(Boolean) : [], await pcMcEntityFindings());
     const tally = findings.reduce((t, f) => (t[f.state] = (t[f.state] || 0) + 1, t), {});
     appendLog('System', `Mission Control probe ${d.run || ''} answered: ${JSON.stringify(tally)}`, 'ok');
     pcMcSend('mc:findings', { id: 'pc', run: d.run, release: mbid, findings });
@@ -8092,6 +8106,10 @@ document.addEventListener('mc:apply', e => {
         if (!ents.has(k)) ents.set(k, { type: f.entity.type, mbid: f.entity.mbid, name: f.entity.name, urls: [] });
         ents.get(k).urls.push(f.url);
     }
+    // the Discogs master goes on the release group, typed 90 'discogs'
+    const master = keys.includes('discogsmaster') ? pcMcMasterFinding() : null;
+    if (master && master.state !== 'linked' && master.entity.mbid)
+        ents.set('release_group', { type: 'release_group', mbid: master.entity.mbid, name: master.entity.name, urls: [master.url] });
     const reply = o => pcMcSend('mc:applied', Object.assign({ id: 'pc', run: d.run, release: mbid }, o));
     const entN = [...ents.values()].reduce((n, r) => n + r.urls.length, 0);
     if (!picked.length && !entN) { appendLog('System', 'Mission Control apply: nothing left to add', 'warn'); reply({ ok: true, sent: 0, note: 'nothing left to add' }); return; }
@@ -8099,7 +8117,7 @@ document.addEventListener('mc:apply', e => {
     const forced = Object.fromEntries(picked.filter(f => f.state === 'withheld').map(f => [f.url, f.why]));
     const album = mbDataGet(mbid)?.album || mbid;
     const items = (urls.length ? [{ entityType: 'release', mbid, name: album, urls: urls.flatMap(pcMcReleaseLinkTypes) }] : [])
-        .concat([...ents.values()].map(r => ({ entityType: r.type, mbid: r.mbid, name: r.name, urls: r.urls.map(url => ({ url, linkTypeId: pcLinkTypeFor(r.type, url) })) })));
+        .concat([...ents.values()].map(r => ({ entityType: r.type, mbid: r.mbid, name: r.name, urls: r.urls.map(url => ({ url, linkTypeId: r.type === 'release_group' ? 90 : pcLinkTypeFor(r.type, url) })) })));
     // one edit note for the batch: the release's links note, or the artist/label one when there are none
     const note = urls.length ? pcEditNote(urls, forced, pcPastedBarcode()) + (entN ? `\n\n${pcLinksNote()}` : '') : pcLinksNote();
     // headless: Falcon keeps its panel shut and reports the batch as falcon:status, tagged, for MC's card
@@ -8111,7 +8129,7 @@ document.addEventListener('mc:apply', e => {
     reply(ok ? { ok: true, sent: n, via: 'falcon', tag: `mc:pc:${d.run}`, note: `${n} link${n === 1 ? '' : 's'} ${d.dry ? 'queued in' : 'sent to'} Falcon` } : { ok: false, sent: 0, note: 'Falcon is not running on this page' });
 });
 pcMcHello();   // MC may have asked before PC loaded
-if (mbuTestHooks()) window.__pcTest680 = { pcMcFinding, pcScan, pcMcReleaseLinkTypes };
+if (mbuTestHooks()) window.__pcTest680 = { pcMcFinding, pcMcMasterFinding, pcScan, pcMcReleaseLinkTypes };
 
 pcScan();
 
