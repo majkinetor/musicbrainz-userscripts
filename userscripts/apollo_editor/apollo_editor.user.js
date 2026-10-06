@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.4.190000
+// @version      2026.10.6
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E
@@ -3698,6 +3698,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     /* #280 — pinned tools' params on the 2nd toolbar row (scrolls if they overflow) */
     .tc-bar2{display:flex;align-items:center;gap:10px;padding:2px 4px 7px;flex-wrap:nowrap;overflow-x:auto;scrollbar-width:thin}
     .tc-opt{display:inline-flex;align-items:center;gap:7px;background:var(--mbu-bg-raised);border:1px solid var(--mbu-accent);border-radius:7px;padding:3px 9px;flex:none}
+    .tc-opt.tc-collapsed{cursor:pointer}
     .tc-optname{font:700 12px Arial;color:var(--mbu-accent-text);display:inline-flex;align-items:center;gap:4px;white-space:nowrap}
     .tc-opttrig{cursor:pointer;border-radius:5px;padding:2px 5px;border:1px solid transparent}
     .tc-opttrig:hover{background:var(--mbu-bg-hover);border-color:var(--mbu-accent)}
@@ -6296,6 +6297,10 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     const name = document.createElement('span'); name.className = 'tc-optname tc-opttrig';
     name.innerHTML = (t.icon ? `<span class="tc-tbic">${iconHtml(TD(act).icon)}</span>` : '') + (t.text ? `<span class="tc-tblab">${esc(TD(act).label)}</span>` : '');
     name.onclick = () => triggerTool(act);
+    // collapsed: the group's padding around the trigger acts as the trigger too (clicks on the
+    // params/flyout bubble here with a different target, so they're left alone)
+    grp.addEventListener('click', e => { if (e.target === grp && grp.classList.contains('tc-collapsed')) triggerTool(act); });
+    grp.addEventListener('contextmenu', e => { if (e.target === grp) name.oncontextmenu(e); });
     // collapsed: drop the title so the native tooltip can't pop up over the flyout
     const setTitle = () => { name.title = grp.classList.contains('tc-collapsed') ? '' : TOOL[act].label + ' — click to run, right-click to collapse parameters'; };
     // #280: right-click the name collapses/expands its params (state remembered);
