@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Mission Control
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.6.220312
+// @version      2026.10.6.220755
 // @description  One window on the release page that asks the other scripts (Platform Check, ISRC Scout, Art Station, Fusion, Credit Hoarder) what is missing, shows it all in one review, and applies the ticked changes in order.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPk1pc3Npb24gQ29udHJvbDwvdGl0bGU+CiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjNWYzZWMwIiBzdHJva2Utd2lkdGg9IjciPgogICAgPGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iNTIiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjMwIi8+CiAgICA8cGF0aCBkPSJNNjQgNHYyMk02NCAxMDJ2MjJNNCA2NGgyMk0xMDIgNjRoMjIiLz4KICA8L2c+CiAgPGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iMTEiIGZpbGw9IiM4YTVjZjYiLz4KPC9zdmc+Cg==
@@ -117,15 +117,37 @@ document.addEventListener('mc:findings', e => {
     Log.ok('findings ' + d.id + ': ' + findings.length + ' ' + JSON.stringify(tally));
     findings.forEach(x => Log.debug('  ' + d.id + ' ' + x.key + ' ' + x.state + (x.why ? ' (' + x.why + ')' : '') + (x.url ? ' ' + x.url : '')));
     paintAll();
+    syncIsLinks();
 });
+// ISRC Scout reads the release's album links (Bandcamp, Spotify, Apple…) for its ISRCs and
+// recording links. The album links ticked in Platform Check's card are not on the release yet
+// (Execute adds them first), so IS is probed with them too: again whenever the ticked set
+// changes, once the probe out is answered. Nothing is asked of IS before the first Probe.
+let isLinksAsked = null;   // the album links IS's current findings were probed with (JSON)
+function pcAlbumLinks() {
+    const r = results.pc, set = picked.pc;
+    if (!r || r.state !== 'done' || !set) return [];
+    return (r.findings || []).filter(x => !x.entity && x.url && x.state !== 'linked' && x.state !== 'none' && set.has(x.key)).map(x => x.url).sort();
+}
+let _isLinksTimer = 0;
+function syncIsLinks(delay) {
+    clearTimeout(_isLinksTimer);
+    if (delay) { _isLinksTimer = setTimeout(syncIsLinks, delay); return; }
+    const r = results.is;
+    if (!found.is || !r || r.state === 'busy' || executing) return;
+    if (JSON.stringify(pcAlbumLinks()) === isLinksAsked) return;
+    Log.info('the ticked album links changed: asking ISRC Scout again');
+    probeOne('is');
+}
 function probe() {
     run = Date.now().toString(36);
     for (const k in results) delete results[k];
     for (const k in picked) delete picked[k];
     const ask = PROVIDERS.filter(p => found[p.id] && modeOf(p) === 'auto').map(p => p.id);
     ask.forEach(id => { results[id] = { state: 'busy', note: '' }; });
+    isLinksAsked = '[]';   // nothing is ticked yet
     Log.info('probe run ' + run + ' · asking ' + (ask.join(', ') || 'nobody') + '');
-    document.dispatchEvent(new CustomEvent('mc:probe', { detail: JSON.stringify({ release: RELEASE, run, only: ask }) }));
+    document.dispatchEvent(new CustomEvent('mc:probe', { detail: JSON.stringify({ release: RELEASE, run, only: ask, links: [] }) }));
     paintAll();
     return ask.length;
 }
@@ -136,8 +158,10 @@ function probeOne(id) {
     if (!run) run = Date.now().toString(36);
     delete picked[id];
     results[id] = { state: 'busy', note: '' };
-    Log.info('probe ' + id + ' on request · run ' + run);
-    document.dispatchEvent(new CustomEvent('mc:probe', { detail: JSON.stringify({ release: RELEASE, run, only: [id] }) }));
+    const links = pcAlbumLinks();
+    if (id === 'is') isLinksAsked = JSON.stringify(links);
+    Log.info('probe ' + id + ' on request · run ' + run + (links.length ? ' · ticked album links ' + links.join(' ') : ''));
+    document.dispatchEvent(new CustomEvent('mc:probe', { detail: JSON.stringify({ release: RELEASE, run, only: [id], links }) }));
     paintAll();
 }
 // Execute: the steps in order, the lanes of a parallel step together. Each
@@ -843,6 +867,7 @@ function onClick(e) {
         Log.debug((on ? 'taken in ' : 'left out ') + pk.dataset.prov + ' ' + pk.dataset.key);
         if (pk.closest('.mc-tbl')) paintMatrix(); else paintCards();
         paintFooter();
+        if (pk.dataset.prov === 'pc') syncIsLinks(700);
         if (!pk.closest('.mc-tbl')) return;   // in the matrix the click also selects the track
     }
     const row = t.closest('.mc-tbl tbody tr[data-i]');

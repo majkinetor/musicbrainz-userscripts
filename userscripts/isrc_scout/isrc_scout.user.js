@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         ISRC Scout
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.7.093000
+// @version      2026.10.6.220755
 // @description  Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify / Beatport / Tidal / Volumo / HDtracks / Qobuz, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPklTUkMgU2NvdXQ8L3RpdGxlPgogICAgPHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPgogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjQwIi8+CiAgICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyNiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2U9IiNiOWEzZTgiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPgogIDwvZz4KICA8bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+Cjwvc3ZnPgo=
@@ -7270,6 +7270,14 @@
       const progress = note => mcSend('mc:progress', { id: 'is', run: d.run, state: 'busy', note });
       progress('loading the release');
       try { await fetchRelease(); } catch (x) { Log.err('Mission Control probe: release load failed: ' + errText(x)); mcSend('mc:findings', { id: 'is', run: d.run, release: mbid, findings: [], note: 'release load failed' }); return; }
+      // #680: album links ticked in Mission Control, not on the release yet (Execute adds them
+      // before it runs IS): read as if they were, where the release has none of that provider.
+      // RELEASE is the cached load the dialog uses too, so they come off again before the answer.
+      const lent = [];
+      (Array.isArray(d.links) ? d.links : []).forEach(u => {
+        const hit = matchProviderLink(String(u));
+        if (hit && !RELEASE[hit.k]) { RELEASE[hit.k] = hit.v; lent.push(hit.k); Log.info('Mission Control probe: using the ticked ' + hit.k + ' ' + hit.v); }
+      });
       mcFound = {};
       const srcs = mcSources();
       Log.info('Mission Control probe ' + d.run + ': sources ' + (srcs.map(x => x.source).join(', ') || 'none'));
@@ -7301,6 +7309,7 @@
           list.forEach(l => { const k = 'link:' + t.recId + ':' + l.url; mcLinks[k] = Object.assign({ rec: t.recId, idx: +idx }, l); });
         });
       } catch (x) { Log.warn('Mission Control probe: Find links failed: ' + errText(x)); }
+      lent.forEach(k => { RELEASE[k] = null; });
       const linkFindings = Object.entries(mcLinks).map(([key, l]) => ({ key, kind: 'link', track: l.rec, name: l.name, url: l.url, state: 'new' }));
       Log.info('Mission Control probe: ' + linkFindings.length + ' recording link(s) to add');
       linkFindings.forEach(f => Log.info('  link ' + f.track + ' ' + f.name + ' ' + f.url));
@@ -7359,7 +7368,7 @@
       reply({ ok: !errs.length, sent: sentN, note: [done.length && done.join(' and ') + ' submitted', errs.join('; ')].filter(Boolean).join(' · ') });
     });
     mcHello();
-    if (mbuTestHooks()) window.__isTest680 = { mcFinding, mcTrackOf, mcSources, found: () => mcFound };
+    if (mbuTestHooks()) window.__isTest680 = { mcFinding, mcTrackOf, mcSources, found: () => mcFound, release: () => RELEASE, log: () => Log.text() };
   }
 
 })();

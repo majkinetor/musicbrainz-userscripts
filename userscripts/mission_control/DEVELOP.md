@@ -12,7 +12,7 @@ Every `detail` is a **JSON string**, never an object. Each userscript runs in it
 |---|---|---|
 | `mc:discover` | MC | `{ release, mc }`: the release MBID and MC's version |
 | `mc:provider` | provider | `{ id, name, version, release, capabilities: [...] }` |
-| `mc:probe` | MC | `{ release, run, only }`: `only` lists the provider ids asked |
+| `mc:probe` | MC | `{ release, run, only, links }`: `only` lists the provider ids asked; `links`, the album links ticked in PC's card |
 | `mc:progress` | provider | `{ id, run, state: 'busy', note }` |
 | `mc:findings` | provider | `{ id, run, release, findings: [...] }` |
 | `mc:apply` | MC | `{ id, run, release, keys, dry }`: the ticked finding keys of one provider |
@@ -21,6 +21,8 @@ Every `detail` is a **JSON string**, never an object. Each userscript runs in it
 `id` is one of `pc`, `is`, `as`, `fusion`, `ch` (the `STEPS` table in the script). A provider answers `mc:discover`, and also sends `mc:provider` once when it loads, so the load order doesn't matter.
 
 Each probe has a `run` id, and MC drops progress or findings that carry an older one. A provider ignores a probe for another release, or one whose `only` leaves it out. Fusion and CH are only asked in Auto mode.
+
+The album links ticked in PC's card aren't on the release yet (Execute adds them before IS runs), so IS is probed with them in `links` and reads them as if they were: a ticked Bandcamp album gives the tracks its Bandcamp links before Execute. MC asks IS again whenever the ticked set changes, once IS's answer to the last probe is in; IS takes them off its release load again before it answers.
 
 ### Findings
 
