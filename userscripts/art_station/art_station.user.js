@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Art Station
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.6.195725
+// @version      2026.10.6.201134
 // @description  Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png
@@ -267,8 +267,15 @@
       const busy = note => send('mc:progress', { id: 'as', run: d.run, state: 'busy', note });
       if (!urls.length) { reply({ ok: true, sent: 0, note: 'nothing to source' }); return; }
       if (d.dry) { reply({ ok: true, sent: 0, note: 'dry run: would enter the best cover of ' + urls.length + ' source' + (urls.length === 1 ? '' : 's') + (frame && frame.best ? ' (' + frame.best.provider + ' ' + frame.best.w + '×' + frame.best.h + ')' : '') }); return; }
-      // the ticked sources changed since the probe (or it sourced none): source again first
-      if (!frame || !frame.best || frame.urls !== urls.slice().sort().join(' ')) {
+      // the probe's best is reused when it came from a ticked source and every ticked source was in
+      // that probe: the best of more sources is also the best of the ticked ones. Otherwise source again.
+      const probed = frame ? frame.urls.split(' ') : [];
+      const bp = String((frame && frame.best && frame.best.provider) || '').toLowerCase();
+      const bestUrl = bp && (last.find(x => bp === x.p.name.toLowerCase() || bp.includes(x.p.name.toLowerCase())) || {}).u;
+      const same = !!frame && probed.slice().sort().join(' ') === urls.slice().sort().join(' ');
+      const reuse = !!(frame && frame.best && urls.every(u => probed.includes(u)) && (same || (bestUrl && urls.includes(bestUrl))));
+      log.info('Mission Control apply: ' + (reuse ? 'reusing the best cover from the probe (' + frame.best.provider + ')' : 'sourcing again for ' + urls.join(' ')));
+      if (!reuse) {
         busy('finding the best cover');
         const r = await mcSource(urls, busy);
         if (!r || !r.best) { reply({ ok: false, sent: 0, note: 'no cover could be imported' }); return; }
