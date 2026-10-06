@@ -66,7 +66,7 @@ Art Station and Credit Hoarder have their own pages, so their `@match` now inclu
 
 ### Execute
 
-Execute runs the steps in order and sends `mc:apply` to every provider that has ticked findings and lists `apply` among its capabilities. The lanes of a parallel step run together. A provider that doesn't answer `mc:applied` within 15 s counts as failed, and the next step runs anyway. A provider still working sends `mc:progress`, which restarts the wait and shows its note above the card's rows (the findings stay). Dry run sends the same with `dry: true`. Each card shows its provider's outcome above its rows.
+Execute runs the steps in order and sends `mc:apply` to every provider that has ticked findings and lists `apply` among its capabilities. The lanes of a parallel step run together. A provider that doesn't answer `mc:applied` within 15 s counts as failed, and the next step runs anyway. A provider still working sends `mc:progress`, which restarts the wait and shows its note above the card's rows (the findings stay). What a provider applied shows as linked from then on: its rows join the linked icons, an IS link joins the track's linked icons, and an IS ISRC becomes the track's. A batch handed to Falcon turns linked item by item, as `falcon:status` reports each one done or skipped; a failed one stays picked. Dry run sends the same with `dry: true`. Each card shows its provider's outcome above its rows.
 
 ### Still to specify
 

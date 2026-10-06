@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Art Station
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.6.201134
+// @version      2026.10.6.202240
 // @description  Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png
@@ -234,12 +234,21 @@
       if (e.origin !== location.origin || !e.data || e.data.mcAs !== 1 || !frame || e.data.token !== frame.token) return;
       frameMsgs.forEach(f => f(e.data));
     });
+    // the ticks are a self-ending setTimeout chain, not setInterval: in Violentmonkey on Firefox the
+    // interval outlived its clearInterval and kept reporting "finding the best cover" after the answer (#680)
     const waitFrame = (type, ms, onTick) => new Promise(res => {
       const t0 = Date.now();
-      const iv = setInterval(() => { if (Date.now() - t0 > ms) { done(null); return; } if (onTick) onTick(Math.round((Date.now() - t0) / 1000)); }, 3000);
+      let over = false;
       const f = m => { if (m.type === type) done(m); };
-      const done = m => { clearInterval(iv); frameMsgs.delete(f); res(m); };
+      const done = m => { if (over) return; over = true; frameMsgs.delete(f); res(m); };
+      const tick = () => {
+        if (over) return;
+        if (Date.now() - t0 > ms) { done(null); return; }
+        if (onTick) onTick(Math.round((Date.now() - t0) / 1000));
+        setTimeout(tick, 3000);
+      };
       frameMsgs.add(f);
+      setTimeout(tick, 3000);
     });
     async function mcSource(urls, onTick) {
       if (frame) { frame.el.remove(); frame = null; }

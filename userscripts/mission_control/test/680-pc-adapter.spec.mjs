@@ -94,5 +94,10 @@ test('#680: Probe asks Platform Check and shows its platforms', { tag: ['@sandbo
   await page.evaluate(() => window.__st('failed', 'MB said no'));
   await page.waitForSelector('#mc-root [data-card="pc"] .mc-falcon.bad .mc-falcon-open');
   check(/MB said no/.test(await page.locator('#mc-root [data-card="pc"] .mc-falcon').textContent()), 'a failed item shows why, with Open Falcon');
+  check(await page.locator('#mc-root [data-card="pc"] .mc-pick.on').count() === 1, 'a failed item stays picked');
+  // once Falcon reports it done, the link shows as linked: no longer a picked row
+  await page.evaluate(() => window.__st('done', ''));
+  await page.waitForFunction(() => document.querySelectorAll('#mc-root [data-card="pc"] .mc-pick.on').length === 0, null, { timeout: 5000 }).catch(() => {});
+  check(await page.locator('#mc-root [data-card="pc"] .mc-pick.on').count() === 0, 'a done item turns linked');
   await page.screenshot({ path: 'test-results/mc-680-pc.png' });
 });

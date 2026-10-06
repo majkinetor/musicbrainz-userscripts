@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Mission Control
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.6.195725
+// @version      2026.10.6.202240
 // @description  One window on the release page that asks the other scripts (Platform Check, ISRC Scout, Art Station, Fusion, Credit Hoarder) what is missing, shows it all in one review, and applies the ticked changes in order.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPk1pc3Npb24gQ29udHJvbDwvdGl0bGU+CiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjNWYzZWMwIiBzdHJva2Utd2lkdGg9IjciPgogICAgPGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iNTIiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjMwIi8+CiAgICA8cGF0aCBkPSJNNjQgNHYyMk02NCAxMDJ2MjJNNCA2NGgyMk0xMDIgNjRoMjIiLz4KICA8L2c+CiAgPGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iMTEiIGZpbGw9IiM4YTVjZjYiLz4KPC9zdmc+Cg==
@@ -151,7 +151,7 @@ function applyOne(id, dry) {
     return new Promise(resolve => {
         // a provider still working says so with mc:progress, and each one restarts the wait (#680: a cover upload takes minutes)
         const done = o => { document.removeEventListener('mc:applied', on); document.removeEventListener('mc:progress', alive); clearTimeout(t); if (results[id]) delete results[id].working; resolve(o); };
-        const on = e => { const d = busEvent(e, 'mc:applied'); if (d && d.id === id) done(d); };
+        const on = e => { const d = busEvent(e, 'mc:applied'); if (d && d.id === id) done(Object.assign({ keys }, d)); };
         const timeout = () => setTimeout(() => done({ id, ok: false, sent: 0, note: 'no answer in ' + APPLY_WAIT / 1000 + ' s' }), APPLY_WAIT);
         let t = timeout();
         const alive = e => { let d = null; try { d = JSON.parse(e.detail); } catch (x) { return; } if (d && d.id === id && d.run === run) { clearTimeout(t); t = timeout(); } };
@@ -168,7 +168,12 @@ document.addEventListener('falcon:status', e => {
     try { d = JSON.parse(e.detail); } catch (x) { return; }
     const m = d && /^mc:([a-z]+):(.+)$/.exec(d.tag || '');
     if (!m || m[2] !== run || !results[m[1]]) return;
-    results[m[1]].falcon = { running: !!d.running, items: d.items || [] };
+    const r = results[m[1]];
+    r.falcon = { running: !!d.running, items: d.items || [] };
+    // the findings of each item Falcon finished (done, or skipped as already there) are linked now
+    const fin = (d.items || []).filter(i => i.status === 'done' || i.status === 'skipped');
+    const keys = (r.falconKeys || []).filter(k => { const x = (r.findings || []).find(f => f.key === k); return x && fin.some(i => x.entity ? i.mbid === x.entity.mbid : i.entityType === 'release'); });
+    if (keys.length) { markApplied(m[1], keys); r.falconKeys = r.falconKeys.filter(k => !keys.includes(k)); }
     Log.info('falcon ' + m[1] + ': ' + (d.items || []).map(i => i.entityType + ' ' + (i.name || i.mbid) + ' ' + i.status + (i.error ? ' (' + i.error + ')' : '')).join(' · '));
     paintAll();
 });
@@ -200,6 +205,27 @@ function falconHtml(f) {
         + f.items.map(i => { const k = FALCON_MARK[i.status] || ['?', i.status]; return '<div class="mc-falcon-i st-' + esc(i.status) + '" title="' + esc(k[1] + (i.error ? ': ' + i.error : '')) + '"><span class="mk">' + k[0] + '</span><span class="ty">' + esc(i.entityType.replace('_', ' ')) + '</span><span class="nm">' + esc(i.name || i.mbid) + '</span><span class="ct">'
             + esc([i.urls ? i.urls + ' link' + (i.urls === 1 ? '' : 's') : '', i.cover ? 'cover' : ''].filter(Boolean).join(' + ')) + '</span>' + (i.error ? '<span class="er">' + esc(i.error) + '</span>' : '') + '</div>'; }).join('') + '</div>';
 }
+// #680: what a provider applied shows as linked from then on: its rows move to the linked icons,
+// a found link joins the track's linked icons, a found ISRC becomes the track's. Not picked any more.
+function markApplied(id, keys) {
+    const r = results[id];
+    if (!r || !r.findings) return;
+    const set = new Set(keys);
+    if (id === 'is') {
+        r.findings = r.findings.filter(x => {
+            if (!set.has(x.key)) return true;
+            if (x.kind === 'link') {
+                const main = r.findings.find(f => f.track === x.track && !f.kind);
+                if (main) { main.linkUrls = (main.linkUrls || []).concat(x.url); main.links = main.linkUrls.length; }
+                return false;
+            }
+            if (x.isrc) { x.existing = (x.existing || []).concat(x.isrc); x.state = 'linked'; }
+            return true;
+        });
+    } else r.findings.forEach(x => { if (set.has(x.key) && PICKABLE[x.state]) { x.state = 'linked'; delete x.why; } });
+    keys.forEach(k => picked[id] && picked[id].delete(k));
+    Log.info('applied ' + id + ': ' + keys.length + ' item(s) now shown as linked');
+}
 async function execute(dry) {
     if (executing) return;
     executing = true; paintFooter();
@@ -213,6 +239,9 @@ async function execute(dry) {
             const outs = await Promise.all(ids.map(id => applyOne(id, dry)));
             outs.forEach(o => {
                 results[o.id] = Object.assign(results[o.id] || {}, { applied: o });
+                // a batch handed to Falcon turns linked item by item, as Falcon reports it done (falcon:status)
+                if (o.ok && !dry && o.sent && o.via !== 'falcon') markApplied(o.id, o.keys || []);
+                if (o.via === 'falcon') results[o.id].falconKeys = o.keys || [];
                 if (o.ok) { sent += o.sent || 0; Log.ok(o.id + ': ' + (o.note || 'done')); } else { failed++; Log.err(o.id + ': ' + (o.note || 'failed')); }
             });
             paintAll();
