@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Art Station
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.5.210859
+// @version      2026.10.6.190310
 // @description  Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png
@@ -203,20 +203,71 @@
       const summary = j == null ? 'Cover Art Archive: could not be read'
         : imgs.length ? 'Cover Art Archive: ' + imgs.length + ' image' + (imgs.length === 1 ? '' : 's') + (front ? ', front cover ✓' : ', no front cover') : 'Cover Art Archive: no cover art yet';
       log.info('Mission Control probe ' + d.run + ': ' + summary + ' · ' + findings.length + ' source(s): ' + findings.map(x => x.name).join(', '));
-      send('mc:findings', { id: 'as', run: d.run, release: rel, summary, findings });
+      // no front cover: source the best one now, headless, so MC shows it before Execute
+      let best = null;
+      if (!front && last.length) {
+        send('mc:progress', { id: 'as', run: d.run, state: 'busy', note: 'finding the best cover' });
+        best = await mcSource(last.map(x => x.u), note => send('mc:progress', { id: 'as', run: d.run, state: 'busy', note }));
+      }
+      send('mc:findings', { id: 'as', run: d.run, release: rel, summary, findings, best: best && best.best });
     });
-    document.addEventListener('mc:apply', e => {
+    // #680: covers are sourced and entered in a hidden frame of the cover-art page, where Art
+    // Station runs headless (mc_frame) and talks back by postMessage. One frame at a time.
+    let frame = null;   // { el, token, urls, best }
+    const frameMsgs = new Set();
+    window.addEventListener('message', e => {
+      if (e.origin !== location.origin || !e.data || e.data.mcAs !== 1 || !frame || e.data.token !== frame.token) return;
+      frameMsgs.forEach(f => f(e.data));
+    });
+    const waitFrame = (type, ms, onTick) => new Promise(res => {
+      const t0 = Date.now();
+      const iv = setInterval(() => { if (Date.now() - t0 > ms) { done(null); return; } if (onTick) onTick(Math.round((Date.now() - t0) / 1000)); }, 3000);
+      const f = m => { if (m.type === type) done(m); };
+      const done = m => { clearInterval(iv); frameMsgs.delete(f); res(m); };
+      frameMsgs.add(f);
+    });
+    async function mcSource(urls, onTick) {
+      if (frame) { frame.el.remove(); frame = null; }
+      const token = Math.random().toString(36).slice(2);
+      const el = document.createElement('iframe');
+      el.setAttribute('aria-hidden', 'true'); el.tabIndex = -1;
+      el.style.cssText = 'position:fixed;left:-20000px;top:0;width:1200px;height:900px;border:0;opacity:0;pointer-events:none';
+      el.src = location.origin + '/release/' + rel + '/cover-art?mc_frame=' + token + '&mc_source=' + encodeURIComponent(JSON.stringify(urls));
+      frame = { el, token, urls: urls.slice().sort().join(' '), best: null };
+      log.info('Mission Control: sourcing the best cover in a hidden frame from ' + urls.join(' '));
+      const got = waitFrame('best', 300000, s => onTick && onTick('finding the best cover (' + s + ' s)'));
+      document.body.appendChild(el);
+      const m = await got;
+      if (!frame || frame.token !== token) return null;
+      frame.best = m ? m.best : null;
+      log.info('Mission Control: best cover ' + (frame.best ? frame.best.provider + ' ' + frame.best.w + '×' + frame.best.h + ' of ' + frame.best.of : m ? 'none could be imported' : 'timed out'));
+      return { best: frame.best };
+    }
+    document.addEventListener('mc:apply', async e => {
       let d = {};
       try { d = JSON.parse(e.detail) || {}; } catch (x) { return; }
       if (d.id !== 'as' || (d.release && d.release !== rel)) return;
       const urls = last.filter(x => (d.keys || []).includes(x.p.name)).map(x => x.u);
       const reply = o => send('mc:applied', Object.assign({ id: 'as', run: d.run, release: rel }, o));
+      const busy = note => send('mc:progress', { id: 'as', run: d.run, state: 'busy', note });
       if (!urls.length) { reply({ ok: true, sent: 0, note: 'nothing to source' }); return; }
-      const href = location.origin + '/release/' + rel + '/cover-art?mc_source=' + encodeURIComponent(JSON.stringify(urls));
-      if (d.dry) { reply({ ok: true, sent: 0, note: 'dry run: would open Art Station to source from ' + urls.length + ' link' + (urls.length === 1 ? '' : 's') }); return; }
-      const w = window.open(href, '_blank');
-      log.info('Mission Control apply: ' + (w ? 'opened' : 'could NOT open (pop-up blocked?)') + ' ' + href);
-      reply(w ? { ok: true, sent: urls.length, note: 'opened Art Station: review the best cover there, then Enter edit' } : { ok: false, sent: 0, note: 'the browser blocked the new tab' });
+      if (d.dry) { reply({ ok: true, sent: 0, note: 'dry run: would enter the best cover of ' + urls.length + ' source' + (urls.length === 1 ? '' : 's') + (frame && frame.best ? ' (' + frame.best.provider + ' ' + frame.best.w + '×' + frame.best.h + ')' : '') }); return; }
+      // the ticked sources changed since the probe (or it sourced none): source again first
+      if (!frame || !frame.best || frame.urls !== urls.slice().sort().join(' ')) {
+        busy('finding the best cover');
+        const r = await mcSource(urls, busy);
+        if (!r || !r.best) { reply({ ok: false, sent: 0, note: 'no cover could be imported' }); return; }
+        send('mc:progress', { id: 'as', run: d.run, state: 'busy', note: 'entering the cover', best: r.best });
+      }
+      busy('entering the cover');
+      const got = waitFrame('entered', 600000, s => busy('entering the cover (' + s + ' s)'));
+      frame.el.contentWindow.postMessage({ mcAs: 1, token: frame.token, type: 'enter', note: 'Via Mission Control: ' + location.origin + '/release/' + rel }, location.origin);
+      const m = await got;
+      log.info('Mission Control apply: ' + JSON.stringify(m));
+      const b = frame.best;
+      if (!m) reply({ ok: false, sent: 0, note: 'Art Station did not finish within 10 minutes' });
+      else if (m.ok) reply({ ok: true, sent: 1, note: 'entered ' + b.provider + ' ' + b.w + '×' + b.h + ' as the front cover' });
+      else reply({ ok: false, sent: 0, note: m.cancelled ? 'cancelled' : 'the edit failed' + (m.error ? ': ' + m.error : '') });
     });
     hello();
     return;
@@ -2356,7 +2407,8 @@
       sourceBest(all);
     }).catch(e => { asLog.warn('middle-click best cover failed: ' + (e && e.message)); openSourcePop(btn); });
   }
-  function sourceBest(all) {
+  function sourceBest(all, onDone) {   // onDone(best or null), #680 Mission Control's frame
+    onDone = onDone || (() => {});
     {
       const before = new Set(MODEL.map(x => x.id));
       toast(`⬇ Importing from ${all.total} source${all.total > 1 ? 's' : ''}, keeping the best…`);
@@ -2373,7 +2425,7 @@
         clearInterval(tick);
         const cands = fresh.filter(x => x.w > 0);
         asLog.debug(`Best cover: candidates ${cands.map(x => `${x._provider || x.id} ${x.w}×${x.h} ${x.bytes || '?'}b`).join(', ') || '(none)'}${busy ? ' (timed out while still sourcing)' : ''}`);
-        if (!cands.length) { toast('No cover could be imported', 4000); return; }
+        if (!cands.length) { toast('No cover could be imported', 4000); onDone(null); return; }
         const best = pickBest(cands);
         best._bestOf = cands.length;
         asLog.info(`Best cover: ${best._provider || best.id} ${best.w}×${best.h} (${best.bytes ? fmtBytes(best.bytes) : '?'}) of ${cands.length}`);
@@ -2384,6 +2436,7 @@
         asLog.info(`Best cover: removed the other ${drop.length} imported ${drop.length === 1 ? ITEM : ITEMS}${drop.length ? ` (${drop.map(x => `${x._provider || x.id} ${x.w}×${x.h}`).join(', ')})` : ''}`);
         toast(cands.length > 1 ? `Kept the best of ${cands.length}: ${best._provider || ''} ${best.w}×${best.h}` : `Only one cover found — ${best._provider || 'kept'}`);
         render();
+        onDone(best);
       }, 500);
     }
   }
@@ -2397,8 +2450,33 @@
     const provs = urls.map(u => { const p = providerOf(u); let host = ''; try { host = new URL(u).hostname; } catch (e) {} return { name: p.name, url: u, icon: provIconUrl(host) }; });
     asLog.info('Mission Control: sourcing the best cover from ' + provs.map(p => p.name).join(', '));
     toast(`⬇ Mission Control: importing from ${provs.length} source${provs.length > 1 ? 's' : ''}, keeping the best…`);
-    sourceBest({ provs, custom: [], total: provs.length });
+    sourceBest({ provs, custom: [], total: provs.length }, best => {
+      if (!MC_FRAME) return;
+      // the preview goes to Mission Control as a data URL: a blob URL dies with this frame
+      const out = best ? { provider: best._provider || '', w: best.w, h: best.h, bytes: best.bytes || 0, of: best._bestOf || 1 } : null;
+      if (!best || !best._file) { mcFramePost({ type: 'best', best: out }); return; }
+      fetch(best._file).then(r => r.blob()).then(b => createImageBitmap(b)).then(bmp => {
+        const k = Math.min(1, 500 / Math.max(bmp.width, bmp.height)), c = document.createElement('canvas');
+        c.width = Math.round(bmp.width * k); c.height = Math.round(bmp.height * k);
+        c.getContext('2d').drawImage(bmp, 0, 0, c.width, c.height);
+        out.thumb = c.toDataURL('image/jpeg', 0.85);
+      }).catch(e => asLog.warn('Mission Control: preview failed: ' + (e && e.message))).then(() => mcFramePost({ type: 'best', best: out }));
+    });
   }
+  // #680: Mission Control's hidden frame (…/cover-art?mc_source=[…]&mc_frame=<token>): the best
+  // cover goes back to the release page as { mcAs, token, type: 'best' }; on { type: 'enter' }
+  // the frame runs Enter edit and answers { type: 'entered', ok, errs, total }.
+  const MC_FRAME = window.top !== window ? new URLSearchParams(location.search).get('mc_frame') : null;
+  function mcFramePost(o) { try { window.parent.postMessage(Object.assign({ mcAs: 1, token: MC_FRAME }, o), location.origin); } catch (e) { asLog.warn('Mission Control: post failed: ' + (e && e.message)); } }
+  if (MC_FRAME) window.addEventListener('message', e => {
+    const d = e.data;
+    if (e.origin !== location.origin || !d || d.mcAs !== 1 || d.token !== MC_FRAME || d.type !== 'enter') return;
+    asLog.info('Mission Control: Enter edit' + (d.note ? ' with its note' : ''));
+    if (d.note) _seedNote = [_seedNote, d.note].filter(Boolean).join('\n\n');
+    _mcCommitDone = r => mcFramePost(Object.assign({ type: 'entered' }, r));
+    enterEdit(true);
+  });
+  let _mcCommitDone = null;
   function openSourcePop(btn) {
     _srcBtn = btn;   // #250 remembered so a late provider registration can re-open this popover
     document.querySelectorAll('.as-pop').forEach(p => p.remove());
@@ -3331,12 +3409,18 @@
       tickOverall();
       asLog.warn('Commit: cancelled by user');
       goBtn.textContent = 'Cancelled'; goBtn.disabled = true;
+      if (_mcCommitDone) { _mcCommitDone({ ok: false, errs: 0, total: ops.length, cancelled: true }); _mcCommitDone = null; }
       return;
     }
     if (!meta.dry) {
       const b = ov.querySelector('.as-cm-go');
       const errs = ov.querySelectorAll('.as-cm-op.err').length;
       asLog[errs ? 'warn' : 'ok'](`Commit: finished — ${errs ? `${errs} failed of ${ops.length}` : `all ${ops.length} succeeded`}`);
+      if (_mcCommitDone) {   // #680: Mission Control's frame reports back, and doesn't reload
+        _mcCommitDone({ ok: !errs, errs, total: ops.length, error: errs ? [...ov.querySelectorAll('.as-cm-op.err .as-cm-payload')].map(x => x.textContent.trim()).filter(Boolean).join(' | ').slice(0, 300) : '' });
+        _mcCommitDone = null;
+        return;
+      }
       if (!errs) {
         // #234: clean run → reload automatically so the gallery shows the new
         // state (brief pause so the ✅s are visible first).

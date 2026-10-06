@@ -1,6 +1,6 @@
 // #680 Mission Control ↔ ISRC Scout: per-track findings in the matrix.
 // The sandbox copy of Mocky's "Music Will Explain" links Deezer and has no ISRCs,
-// so IS's headless probe imports Deezer and every matched track comes back new.
+// so IS's headless probe imports the fastest source it links and every matched track comes back new.
 // Read only: apply is exercised as a dry run (a real one submits through IS's
 // OAuth, which this harness doesn't hold for the sandbox).
 import { test, check } from '../../../dev/test/harness.mjs';
@@ -29,7 +29,8 @@ test('#680: Probe asks ISRC Scout; the matrix shows each track\'s ISRC', { tag: 
 
   // the inspector shows the found ISRC and its source
   await page.locator('#mc-root .mc-tbl tbody tr[data-i]').first().locator('td.ttl').click();
-  check(/Deezer/.test(await page.locator('#mc-root .mc-insp').textContent()), 'inspector names the source');
+  // the fastest source the release links (Find everything's order): Audiomack here, before Deezer
+  check(/Audiomack|Deezer|Qobuz|Apple/.test(await page.locator('#mc-root .mc-insp').textContent()), 'inspector names the source');
 
   await page.click('#mc-root [data-act="dry"]');
   await page.waitForSelector('#mc-root .mc-tapplied .mc-applied', { timeout: 20_000 });

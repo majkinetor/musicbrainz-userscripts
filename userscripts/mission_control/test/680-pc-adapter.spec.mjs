@@ -82,5 +82,17 @@ test('#680: Probe asks Platform Check and shows its platforms', { tag: ['@sandbo
   if (/withheld/.test(state)) check(/added by hand over link confidence/.test(got[1].json.note), 'a withheld link ticked by hand is noted as forced');
   // the header line names GM_info's script, which in this test is the shared shim's; the confidence line is PC's own
   check(/Link confidence:/.test(got[1].json.note), "PC's own edit note");
+  // #680: Execute runs Falcon headless, tagged; Falcon's falcon:status for that tag shows in the card
+  const tag = got[1].json.tag;
+  check(got[1].json.headless === true && /^mc:pc:/.test(tag || '') && !got[0].json.headless, `Execute is headless and tagged (${tag}); a dry run is not`);
+  await page.evaluate(([tag, mbid]) => {
+    const st = (status, error) => document.dispatchEvent(new CustomEvent('falcon:status', { detail: JSON.stringify({ tag, running: status === 'active', items: [{ entityType: 'release', mbid, name: 'Bad Boys!', status, error, urls: 1, cover: 0 }] }) }));
+    st('active', ''); window.__st = st;
+  }, [tag, RELEASE]);
+  await page.waitForSelector('#mc-root [data-card="pc"] .mc-falcon .mc-falcon-i.st-active');
+  check(/Falcon is running: 0 of 1 finished/.test(await page.locator('#mc-root [data-card="pc"] .mc-falcon').textContent()), 'the card shows Falcon running');
+  await page.evaluate(() => window.__st('failed', 'MB said no'));
+  await page.waitForSelector('#mc-root [data-card="pc"] .mc-falcon.bad .mc-falcon-open');
+  check(/MB said no/.test(await page.locator('#mc-root [data-card="pc"] .mc-falcon').textContent()), 'a failed item shows why, with Open Falcon');
   await page.screenshot({ path: 'test-results/mc-680-pc.png' });
 });

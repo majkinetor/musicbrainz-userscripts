@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Mission Control
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.6.155602
+// @version      2026.10.6.190310
 // @description  One window on the release page that asks the other scripts (Platform Check, ISRC Scout, Art Station, Fusion, Credit Hoarder) what is missing, shows it all in one review, and applies the ticked changes in order.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPk1pc3Npb24gQ29udHJvbDwvdGl0bGU+CiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjNWYzZWMwIiBzdHJva2Utd2lkdGg9IjciPgogICAgPGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iNTIiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjMwIi8+CiAgICA8cGF0aCBkPSJNNjQgNHYyMk02NCAxMDJ2MjJNNCA2NGgyMk0xMDIgNjRoMjIiLz4KICA8L2c+CiAgPGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iMTEiIGZpbGw9IiM4YTVjZjYiLz4KPC9zdmc+Cg==
@@ -99,14 +99,17 @@ function busEvent(e, kind) {
 }
 document.addEventListener('mc:progress', e => {
     const d = busEvent(e, 'mc:progress'); if (!d) return;
-    results[d.id] = Object.assign(results[d.id] || {}, { state: 'busy', note: d.note || '' });
+    const r = results[d.id];
+    // during Execute a provider that already answered keeps its findings: the note goes beside them
+    if (r && r.state === 'done') { r.working = d.note || 'working'; if (d.best) r.best = d.best; }
+    else results[d.id] = Object.assign(r || {}, { state: 'busy', note: d.note || '' });
     Log.debug('progress ' + d.id + ': ' + (d.note || d.state));
     paintAll();
 });
 document.addEventListener('mc:findings', e => {
     const d = busEvent(e, 'mc:findings'); if (!d) return;
     const findings = Array.isArray(d.findings) ? d.findings : [];
-    results[d.id] = { state: 'done', findings, summary: d.summary || '' };
+    results[d.id] = { state: 'done', findings, summary: d.summary || '', best: d.best || null };
     // ticked by default: only what the provider is sure of
     picked[d.id] = new Set(findings.filter(x => x.state === 'new').map(x => x.key));
     const tally = findings.reduce((t, x) => (t[x.state] = (t[x.state] || 0) + 1, t), {});
@@ -145,13 +148,47 @@ let executing = false;
 function applyOne(id, dry) {
     const keys = Array.from(picked[id] || []);
     return new Promise(resolve => {
-        const done = o => { document.removeEventListener('mc:applied', on); clearTimeout(t); resolve(o); };
+        // a provider still working says so with mc:progress, and each one restarts the wait (#680: a cover upload takes minutes)
+        const done = o => { document.removeEventListener('mc:applied', on); document.removeEventListener('mc:progress', alive); clearTimeout(t); if (results[id]) delete results[id].working; resolve(o); };
         const on = e => { const d = busEvent(e, 'mc:applied'); if (d && d.id === id) done(d); };
-        const t = setTimeout(() => done({ id, ok: false, sent: 0, note: 'no answer in ' + APPLY_WAIT / 1000 + ' s' }), APPLY_WAIT);
+        const timeout = () => setTimeout(() => done({ id, ok: false, sent: 0, note: 'no answer in ' + APPLY_WAIT / 1000 + ' s' }), APPLY_WAIT);
+        let t = timeout();
+        const alive = e => { let d = null; try { d = JSON.parse(e.detail); } catch (x) { return; } if (d && d.id === id && d.run === run) { clearTimeout(t); t = timeout(); } };
         document.addEventListener('mc:applied', on);
+        document.addEventListener('mc:progress', alive);
         Log.info((dry ? 'dry run' : 'apply') + ' ' + id + ': ' + keys.length + ' item(s) ' + JSON.stringify(keys));
         document.dispatchEvent(new CustomEvent('mc:apply', { detail: JSON.stringify({ id, run, release: RELEASE, keys, dry: !!dry }) }));
     });
+}
+// #680: a provider that hands its edits to Falcon tags the batch 'mc:<id>:<run>'. Falcon runs
+// it with its panel shut and reports each change as falcon:status; the card shows it.
+document.addEventListener('falcon:status', e => {
+    let d = null;
+    try { d = JSON.parse(e.detail); } catch (x) { return; }
+    const m = d && /^mc:([a-z]+):(.+)$/.exec(d.tag || '');
+    if (!m || m[2] !== run || !results[m[1]]) return;
+    results[m[1]].falcon = { running: !!d.running, items: d.items || [] };
+    Log.info('falcon ' + m[1] + ': ' + (d.items || []).map(i => i.entityType + ' ' + (i.name || i.mbid) + ' ' + i.status + (i.error ? ' (' + i.error + ')' : '')).join(' · '));
+    paintAll();
+});
+const FALCON_MARK = { queued: ['…', 'waiting'], active: ['⟳', 'running'], done: ['✓', 'done'], skipped: ['✓', 'already there'], partial: ['!', 'partly done'], failed: ['✕', 'failed'], manual: ['✋', 'needs you'] };
+// #680: the cover Art Station picked (headless), shown before Execute enters it
+function bestHtml(b) {
+    if (!b) return '';
+    const size = b.bytes ? (b.bytes > 1048576 ? (b.bytes / 1048576).toFixed(1) + ' MB' : Math.round(b.bytes / 1024) + ' KB') : '';
+    return '<div class="mc-best">' + (b.thumb ? '<img alt="" src="' + esc(b.thumb) + '">' : '<span class="mc-best-no">🖼</span>')
+        + '<div class="mc-best-t"><b>Best cover</b><span>' + esc(b.provider || '?') + '</span><span>' + esc(b.w + ' × ' + b.h + (size ? ' · ' + size : '')) + '</span>'
+        + '<span class="dim">' + esc(b.of > 1 ? 'the largest of ' + b.of + ' found' : 'the only one found') + '</span><span class="dim">Execute enters it as the front cover</span></div></div>';
+}
+function falconHtml(f) {
+    if (!f || !f.items.length) return '';
+    const settled = f.items.filter(i => !['queued', 'active'].includes(i.status)).length;
+    const bad = f.items.filter(i => ['failed', 'partial', 'manual'].includes(i.status)).length;
+    const head = 'Falcon ' + (settled < f.items.length ? 'is running: ' + settled + ' of ' + f.items.length + ' finished' : bad ? 'finished, ' + bad + ' need' + (bad === 1 ? 's' : '') + ' a look' : 'finished');
+    return '<div class="mc-falcon' + (bad ? ' bad' : settled === f.items.length ? ' ok' : '') + '"><div class="mc-falcon-h">' + esc(head)
+        + (bad ? ' <button type="button" class="mc-falcon-open" data-act="falcon-open" title="Open Falcon\'s panel to see why and retry">Open Falcon</button>' : '') + '</div>'
+        + f.items.map(i => { const k = FALCON_MARK[i.status] || ['?', i.status]; return '<div class="mc-falcon-i st-' + esc(i.status) + '" title="' + esc(k[1] + (i.error ? ': ' + i.error : '')) + '"><span class="mk">' + k[0] + '</span><span class="ty">' + esc(i.entityType.replace('_', ' ')) + '</span><span class="nm">' + esc(i.name || i.mbid) + '</span><span class="ct">'
+            + esc([i.urls ? i.urls + ' link' + (i.urls === 1 ? '' : 's') : '', i.cover ? 'cover' : ''].filter(Boolean).join(' + ')) + '</span>' + (i.error ? '<span class="er">' + esc(i.error) + '</span>' : '') + '</div>'; }).join('') + '</div>';
 }
 async function execute(dry) {
     if (executing) return;
@@ -310,6 +347,14 @@ function mcStyle() {
         + '.mc-have{opacity:.8}.mc-isep{width:1px;height:14px;background:var(--mbu-border);margin:0 2px}'
         + '.mc-icons{display:inline-flex;gap:4px;align-items:center}.mc-icons a.mc-pico:hover{transform:scale(1.15)}'
         + '.mc-summary{padding:5px 10px;font-size:11.5px;color:var(--mbu-text-dim);border-bottom:1px solid var(--mbu-divider)}'
+        + '.mc-best{display:flex;gap:12px;align-items:flex-start;padding:8px 10px;border-bottom:1px solid var(--mbu-divider)}.mc-best img{width:120px;height:120px;object-fit:contain;border-radius:var(--mbu-radius);background:var(--mbu-bg-sunken);border:1px solid var(--mbu-border-soft);flex:0 0 auto}'
+        + '.mc-best-no{width:120px;height:120px;display:flex;align-items:center;justify-content:center;font-size:32px;background:var(--mbu-bg-sunken);border-radius:var(--mbu-radius);flex:0 0 auto}.mc-best-t{display:flex;flex-direction:column;gap:2px;font-size:12px;min-width:0}.mc-best-t .dim{color:var(--mbu-text-weak);font-size:11px}'
+        + '.mc-working{display:flex;align-items:center;gap:7px;padding:5px 10px;font-size:11.5px;color:var(--mbu-accent-text);border-bottom:1px solid var(--mbu-divider)}'
+        + '.mc-spin{width:10px;height:10px;border:2px solid var(--mbu-accent-soft);border-top-color:var(--mbu-accent);border-radius:50%;animation:mc-spin .8s linear infinite;flex:0 0 auto}@keyframes mc-spin{to{transform:rotate(360deg)}}'
+        + '.mc-falcon{border-bottom:1px solid var(--mbu-divider);padding:5px 10px;font-size:11.5px}.mc-falcon-h{display:flex;align-items:center;gap:8px;font-weight:600;color:var(--mbu-text-dim);margin-bottom:3px}.mc-falcon.ok .mc-falcon-h{color:var(--mbu-ok)}.mc-falcon.bad .mc-falcon-h{color:var(--mbu-warn)}'
+        + '.mc-falcon-open{margin-left:auto;font:inherit;font-weight:600;padding:1px 8px;border:1px solid var(--mbu-border);border-radius:var(--mbu-radius);background:var(--mbu-bg-raised);color:var(--mbu-accent-text);cursor:pointer}'
+        + '.mc-falcon-i{display:flex;align-items:baseline;gap:7px;padding:1px 0;min-width:0}.mc-falcon-i .mk{flex:0 0 14px;text-align:center;font-weight:700}.mc-falcon-i .ty{flex:0 0 auto;color:var(--mbu-text-weak);text-transform:capitalize}.mc-falcon-i .nm{flex:0 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.mc-falcon-i .ct{flex:0 0 auto;color:var(--mbu-text-weak)}.mc-falcon-i .er{flex:1 1 0;min-width:0;color:var(--mbu-error);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}'
+        + '.mc-falcon-i.st-done .mk,.mc-falcon-i.st-skipped .mk{color:var(--mbu-ok)}.mc-falcon-i.st-failed .mk{color:var(--mbu-error)}.mc-falcon-i.st-partial .mk,.mc-falcon-i.st-manual .mk{color:var(--mbu-warn)}.mc-falcon-i.st-active .mk{color:var(--mbu-accent-text)}'
         + '.mc-applied{padding:5px 10px;font-size:11.5px;font-weight:600;border-bottom:1px solid var(--mbu-divider)}.mc-applied.ok{color:var(--mbu-ok);background:var(--mbu-ok-bg)}.mc-applied.err{color:var(--mbu-error);background:var(--mbu-error-bg)}'
         + '.mc-none{display:flex;flex-wrap:wrap;align-items:center;gap:6px;padding:6px 10px;font-size:11px;color:var(--mbu-text-weak)}.mc-none span:first-child{margin-right:4px}.mc-none .mc-pico{opacity:.6}'
         + '.mc-line.linked,.mc-line.none{opacity:.7}.mc-line .mc-lt{min-width:0}.mc-line .t{font-size:12px}'
@@ -544,7 +589,8 @@ function paintCards() {
         if (!r || r.state !== 'done') { box.innerHTML = mbuHtml('<div class="mc-empty">' + esc(p.provider) + ': ' + esc(stateText(p)) + (r ? '' : '. Probe fills this in.') + '</div>'); return; }
         if (!r.findings.length) { box.innerHTML = mbuHtml((r.summary ? '<div class="mc-summary">' + esc(r.summary) + '</div>' : '') + '<div class="mc-empty">Nothing to report.</div>'); return; }
         const sum = r.summary ? '<div class="mc-summary">' + esc(r.summary) + '</div>' : '';
-        const ap = r.applied ? '<div class="mc-applied ' + (r.applied.ok ? 'ok' : 'err') + '">' + (r.applied.ok ? '✓ ' : '✕ ') + esc(r.applied.note || (r.applied.ok ? 'done' : 'failed')) + '</div>' : '';
+        const ap = (r.applied ? '<div class="mc-applied ' + (r.applied.ok ? 'ok' : 'err') + '">' + (r.applied.ok ? '✓ ' : '✕ ') + esc(r.applied.note || (r.applied.ok ? 'done' : 'failed')) + '</div>' : '')
+            + (r.working ? '<div class="mc-working"><span class="mc-spin"></span>' + esc(r.working) + '</div>' : '') + falconHtml(r.falcon) + bestHtml(r.best);
         // 'not found' is one line of icons, not a row each: it's most of the list and needs no action.
         // 'linked' needs none either: icons in the card's header, so the rows that need a decision
         // lead; clicking them lists them as rows at the bottom instead (S.linkedRows).
@@ -756,6 +802,7 @@ function onClick(e) {
         }
         case 'src': sourcePopover(act); break;
         case 'linked': S.linkedRows = !S.linkedRows; saveSettings(); paintCards(); break;
+        case 'falcon-open': document.dispatchEvent(new CustomEvent('falcon:show')); break;
         case 'dry': execute(true); break;
         case 'exec': execute(false); break;
         case 'cfg': settingsWindow(); break;

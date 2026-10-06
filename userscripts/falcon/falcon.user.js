@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Falcon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.4.223000
+// @version      2026.10.6.190310
 // @description  Edit a BATCH of MusicBrainz artists/labels/recordings at once — add external links, ISRCs, names, aliases, disambiguations and cover art — no popup-per-entity, no tab churn. A small pool of persistent worker iframes churns through a queue, each submitting its own edit and moving straight to the next entity. Paste a list, hand it a queue via a `?falcon=` URL param, or click "Send to Falcon" on a Harmony actions page to import its suggestions directly.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHBhdGggZD0iTTY0IDEwIEM4MiAyOCA5MCA1NiA5MCA4MCBMMzggODAgQzM4IDU2IDQ2IDI4IDY0IDEwIFoiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzFiMmE0YSIgc3Ryb2tlLXdpZHRoPSI3IiBzdHJva2UtbGluZWpvaW49InJvdW5kIiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8cGF0aCBkPSJNMzggODAgTDIwIDExMCBMNDAgOTYgWiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxwYXRoIGQ9Ik05MCA4MCBMMTA4IDExMCBMODggOTYgWiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxjaXJjbGUgY3g9IjY0IiBjeT0iNDQiIHI9IjEwIiBmaWxsPSIjMWIyYTRhIi8+CiAgPHBhdGggZD0iTTUwIDgwIEw0NSAxMDggTDY0IDEyMiBMODMgMTA4IEw3OCA4MCBaIiBmaWxsPSIjZmY2YTAwIiBzdHJva2U9IiMxYjJhNGEiIHN0cm9rZS13aWR0aD0iNSIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgo8L3N2Zz4K
@@ -6414,8 +6414,17 @@
     if (t === 'workers') renderWorkerLayout();   // sizes were computed while off-screen; recompute for the real viewport
     fitBars();   // a bar that was hidden measured 0-wide; re-fit now it's laid out
   }
-  function showPanel() { ensurePanel(); panel.style.display = 'flex'; renderQueue(); fitBars(); }
-  function togglePanel() { ensurePanel(); if (panel.style.display === 'none') showPanel(); else panel.style.display = 'none'; }
+  function showPanel() {
+    ensurePanel();
+    if (panel.dataset.headless) {   // #680: back from a headless batch's off-screen spot
+      let was = {}; try { was = JSON.parse(panel.dataset.headless); } catch (e) {}
+      delete panel.dataset.headless;
+      panel.style.left = was.left || '50%'; panel.style.top = was.top || '50%';
+      panel.style.removeProperty('opacity'); panel.style.removeProperty('pointer-events');
+    }
+    panel.style.display = 'flex'; renderQueue(); fitBars();
+  }
+  function togglePanel() { ensurePanel(); if (panel.style.display === 'none' || panel.dataset.headless) showPanel(); else panel.style.display = 'none'; }
 
   // #467 (majkinetor): "maximize" — grows the whole panel (and, on the Workers tab,
   // gives each worker card more natural room) so log/queue/worker content isn't
@@ -6793,7 +6802,28 @@
       `<span class="falcon-selcount" id="falcon-select-count" title="Selected rows">${_selectedIds.size || ''}</span>`];
     return cells ? parts.map(x => `<th class="falcon-selhead">${x}</th>`).join('') : `<span class="falcon-selhead">${parts.join('')}</span>`;
   }
+  // #680: a headless batch (Mission Control's, through falcon:run with `headless` and `tag`)
+  // never opens the panel; each change to its items is reported as falcon:status instead,
+  // { tag, running, items: [{ entityType, mbid, name, status, error, urls }] }, once a tick.
+  const _tagged = new Map();   // item id -> tag
+  let _statusQueued = false;
+  function emitTaggedStatus() {
+    if (!_tagged.size || _statusQueued) return;
+    _statusQueued = true;
+    setTimeout(() => {
+      _statusQueued = false;
+      const byTag = new Map();
+      queue.forEach(i => { const t = _tagged.get(i.id); if (t) (byTag.get(t) || byTag.set(t, []).get(t)).push(i); });
+      byTag.forEach((items, tag) => {
+        const detail = JSON.stringify({ tag, running, items: items.map(i => ({ entityType: i.entityType, mbid: i.mbid, name: i.name || '', status: i.status, error: i.error || '', urls: (i.urls || []).length, cover: (i.cover || []).length })) });
+        document.dispatchEvent(new CustomEvent('falcon:status', { detail }));
+        // forget a tag once every item settled and the run is over
+        if (!running && items.every(i => !['queued', 'active'].includes(i.status))) items.forEach(i => _tagged.delete(i.id));
+      });
+    }, 0);
+  }
   function renderQueue() {
+    emitTaggedStatus();
     renderTypeChips();
     renderStatusChips();
     const list = document.getElementById('falcon-queue-list'); if (!list) return;
@@ -6898,6 +6928,7 @@
   // the successes. Bar turns amber if anything failed, so a run that completed
   // but left casualties doesn't read as a clean green sweep.
   function renderProgress() {
+    emitTaggedStatus();
     const bar = document.getElementById('falcon-progress-bar');
     const track = document.getElementById('falcon-progress-track');
     const txt = document.getElementById('falcon-progress-text');
@@ -7139,11 +7170,28 @@
     // a ?falcon= link never starts on its own).
     // A root `closeWhenDone: true` on falcon:run closes the panel once that run finishes
     // with nothing failed (Platform Check's "Close Falcon after a successful import").
+    // #680: a root `headless: true` keeps the panel shut, and `tag` names the batch in the
+    // falcon:status reports (see emitTaggedStatus). A failed item still shows on the launcher.
     const fromPage = run => e => {
       if (typeof e.detail !== 'string') return;
       document.dispatchEvent(new CustomEvent('falcon:import-ok'));
+      let root = {};
+      try { root = JSON.parse(e.detail) || {}; } catch (x) { /* importQueueJson logs it */ }
+      const before = new Set(queue.map(i => i.id));
       const r = importQueueJson(e.detail, 'a script on this page', { merge: true });
-      showPanel();
+      if (root.tag) {
+        const keys = new Set((root.items || []).map(x => normalizeEntityType(x.entityType) + ':' + String(x.mbid || '').toLowerCase()));
+        queue.forEach(i => { if (!before.has(i.id) || (i.status === 'queued' && keys.has(i.entityType + ':' + String(i.mbid).toLowerCase()))) _tagged.set(i.id, String(root.tag)); });
+        log('info', `batch tagged ${JSON.stringify(String(root.tag))}: ${[..._tagged.values()].filter(t => t === String(root.tag)).length} item(s)${root.headless ? ', headless (panel stays shut)' : ''}`);
+        emitTaggedStatus();
+      }
+      if (!root.headless) showPanel();
+      else if (!panel || panel.style.display !== 'flex' || panel.dataset.headless) {
+        // the workers live in the panel's strip, so build it, but off-screen (showPanel brings it back)
+        ensurePanel();
+        if (!panel.dataset.headless) panel.dataset.headless = JSON.stringify({ left: panel.style.left, top: panel.style.top });
+        panel.style.cssText += ';display:flex;left:-20000px;top:0;opacity:0;pointer-events:none';
+      }
       if (run && r && (r.added || r.merged)) {
         let close = false;
         try { close = JSON.parse(e.detail).closeWhenDone === true; } catch (x) { /* importQueueJson logged it */ }
@@ -7152,6 +7200,7 @@
     };
     document.addEventListener('falcon:import', fromPage(false));
     document.addEventListener('falcon:run', fromPage(true));
+    document.addEventListener('falcon:show', () => showPanel());   // #680: Mission Control's "Open Falcon"
     // #591 — both halves of the rip-log flow live on ordinary MusicBrainz pages
     // and are independent of the queue, so they run whether or not this tab was
     // seeded with anything.

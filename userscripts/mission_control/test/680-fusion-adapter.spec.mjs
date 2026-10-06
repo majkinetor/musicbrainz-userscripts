@@ -31,7 +31,7 @@ test('#680: Fusion runs on Fetch RG and marks the tracks with duplicates', { tag
   check(await page.locator('#mc-root .mc-tbl td[data-col="fusion"] .mc-pick.on').count() === hits, 'and start ticked');
 
   const row = page.locator('#mc-root .mc-tbl td[data-col="fusion"] .mc-pill').first().locator('xpath=ancestor::tr');
-  await row.click();
+  await row.locator('td.ttl').click();   // the title cell: the row's middle can be a pick cell
   check(await page.locator('#mc-root .mc-insp a[href^="/recording/"]').count() >= 2, 'inspector lists the matching recordings');
 
   await page.click('#mc-root [data-act="dry"]');
