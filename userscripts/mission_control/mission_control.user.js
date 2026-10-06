@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Mission Control
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.6.233627
+// @version      2026.10.6.234537
 // @description  One window on the release page that asks the other scripts (Platform Check, ISRC Scout, Art Station, Fusion, Credit Hoarder) what is missing, shows it all in one review, and applies the ticked changes in order.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPk1pc3Npb24gQ29udHJvbDwvdGl0bGU+CiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjNWYzZWMwIiBzdHJva2Utd2lkdGg9IjciPgogICAgPGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iNTIiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjMwIi8+CiAgICA8cGF0aCBkPSJNNjQgNHYyMk02NCAxMDJ2MjJNNCA2NGgyMk0xMDIgNjRoMjIiLz4KICA8L2c+CiAgPGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iMTEiIGZpbGw9IiM4YTVjZjYiLz4KPC9zdmc+Cg==
@@ -355,12 +355,14 @@ function mcStyle() {
         // #680: one header row — the release, the steps (C, on one line), Execute (N), ⚙ and ✕
         + '.mc-hdr{display:flex;align-items:center;gap:14px;height:52px;padding:0 10px 0 16px;background:var(--mbu-bg);border-bottom:1px solid var(--mbu-border);box-shadow:var(--mbu-shadow)}'
         + '.mc-rel{display:flex;flex-direction:column;min-width:0;flex:0 1 230px;line-height:1.2}.mc-ttl{font-weight:700;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.mc-art{font-size:12px;color:var(--mbu-text-dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}'
-        + '.mc-hdr .mc-act{display:flex;align-items:center;gap:4px;flex:none}'
+        + '.mc-hdr .mc-act{display:flex;align-items:center;gap:4px;flex:none}#mc-root .mc-act [data-act="exec"]{min-width:124px;font-variant-numeric:tabular-nums}'
         // the steps: a ring, then the name and the state beside it, all on one centre line; a click shows or hides the order sidebar
         + '.mc-steps{display:flex;align-items:center;justify-content:center;gap:6px;flex:1 1 auto;min-width:0;height:100%;cursor:pointer}'
         + '#mc-root .mc-re{flex:none;width:26px;height:26px;margin-right:4px;padding:0;border-radius:50%;border:1px solid var(--mbu-border);background:var(--mbu-bg);color:var(--mbu-text-dim);font-size:14px;line-height:1;cursor:pointer}#mc-root .mc-re:hover{background:var(--mbu-bg-hover);color:var(--mbu-accent-text)}'
         + '.mc-step{display:inline-flex;align-items:center;gap:7px;min-width:0;flex:0 1 auto;padding:0 4px}'
-        + '.mc-step .tx{display:flex;flex-direction:column;min-width:0;line-height:1.2}.mc-step b{font-size:12.5px;color:var(--mbu-text)}.mc-step i{font-style:normal;font-size:11.5px;color:var(--mbu-text-dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:150px}'
+        // a step's words take a fixed width (cut with …, the whole of it in the tooltip): changing words and
+        // ticking seconds must not move the steps; only the window's width does
+        + '.mc-step .tx{display:flex;flex-direction:column;flex:0 1 130px;width:130px;min-width:0;line-height:1.2}.mc-step b{font-size:12.5px;color:var(--mbu-text)}.mc-step i{font-style:normal;font-size:11.5px;color:var(--mbu-text-dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-variant-numeric:tabular-nums}'
         + '.mc-ring{position:relative;flex:none;display:grid;place-items:center;width:28px;height:28px;border-radius:50%;border:2px solid var(--mbu-border);background:var(--mbu-bg);box-sizing:border-box}'
         + '.mc-ring img{width:16px;height:16px;object-fit:contain;display:block;margin:0;vertical-align:0}'
         + '.mc-ring sup{position:absolute;right:-8px;top:-6px;min-width:15px;height:15px;padding:0 3px;box-sizing:border-box;border-radius:8px;background:var(--mbu-accent);color:var(--mbu-text-on-accent);font-size:10px;font-weight:700;line-height:15px;text-align:center}'

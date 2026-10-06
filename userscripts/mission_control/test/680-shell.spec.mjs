@@ -92,6 +92,13 @@ test('#680: MC shell — launcher, track matrix, sidebars, modes', { tag: ['@san
   // A stand-in Art Station answers nothing at first, then a step, then its findings.
   const step = async () => page.locator('#mc-root .mc-step[data-step="as"]').evaluate(n => ({ cls: n.className, say: n.querySelector('i').textContent, mark: n.querySelector('sup').hidden ? '' : n.querySelector('sup').textContent }));
   check((await step()).say === 'not installed', `a provider not on the page says so (${JSON.stringify(await step())})`);
+  // the steps stay put whatever they say (changing words moved them, distracting)
+  const places = () => page.evaluate(() => [...document.querySelectorAll('#mc-root .mc-step')].map(n => Math.round(n.getBoundingClientRect().left)).join(','));
+  // nor does Execute's label (its count, "Executing…"): the button is as wide as its longest
+  const exW = await page.evaluate(() => { const b = document.querySelector('#mc-root [data-act="exec"]'), was = b.textContent;
+    const w = ['Execute', 'Execute (9)', 'Execute (99)', 'Executing…'].map(s => { b.textContent = s; return Math.round(b.getBoundingClientRect().width); }); b.textContent = was; return w; });
+  check(new Set(exW).size === 1, `Execute keeps one width whatever it says (${exW})`);
+  const at = await places();
   await page.evaluate(() => {
     window.__mcTest.setStall(1500);
     document.addEventListener('mc:probe', e => { window.__asRun = JSON.parse(e.detail).run; });
@@ -115,10 +122,12 @@ test('#680: MC shell — launcher, track matrix, sidebars, modes', { tag: ['@san
   const pulse = await page.evaluate(() => { const h = document.querySelector('#mc-root .mc-hdr'); const a = h.getAnimations({ subtree: true }).find(x => x.animationName === 'mc-busy-pulse');
     return { on: h.classList.contains('mc-busy'), layer: a && a.effect.pseudoElement, props: a ? [...new Set(a.effect.getKeyframes().flatMap(k => Object.keys(k).filter(p => !['offset', 'computedOffset', 'easing', 'composite'].includes(p))))] : [] }; });
   check(pulse.on && pulse.layer === '::after' && JSON.stringify(pulse.props) === '["opacity"]', `the header pulses on its ::after, in opacity only (${JSON.stringify(pulse)})`);
+  check(await places() === at, `a long step and its ticking seconds move no step (${at} → ${await places()})`);
   const found = await step();
   check(await page.locator('#mc-root .mc-hdr.mc-busy').count() === 1, 'the answer does not cut the pulse off');
   check(!(await until(() => page.locator('#mc-root .mc-hdr.mc-busy').count(), n => n === 0, { timeout: 4000 })), 'it fades out within a cycle');
   check(/\badd\b/.test(found.cls) && found.say === '1 new' && found.mark === '1', `findings: what there is to add, counted on the ring (${JSON.stringify(found)})`);
+  check(await places() === at, `nor does the answer (${at} → ${await places()})`);
 
   await page.screenshot({ path: 'test-results/mc-680-shell.png' });
   await page.locator('#mc-root .mc-hdr').screenshot({ path: 'test-results/mc-680-header.png' });
