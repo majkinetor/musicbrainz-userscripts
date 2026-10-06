@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         String Theory
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.6.235348
+// @version      2026.10.7.000038
 // @description  Unified bundle of 9 MusicBrainz userscripts (apollo_editor, art_station, credit_hoarder, fusion, group_therapy, isrc_scout, mammoth, mission_control, platform_check). Built by userscripts/string_theory/build.mjs — do not hand-edit.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCIgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0Ij4KICA8IS0tIGh1Yi1hbmQtc3Bva2UgIm5ldHdvcmsiIGdseXBoLCBzaW5nbGUgdml2aWQgdmlvbGV0IG9uIHRyYW5zcGFyZW50IHNvIGl0IHJlYWRzIG9uIGJvdGggZGFyayBhbmQgbGlnaHQgcGFnZXMgLS0+CiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjN2M1Y2ZmIiBzdHJva2Utd2lkdGg9IjQuNiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj4KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMzIgMTUiLz4KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMNDYuNSAyMy41Ii8+CiAgICA8cGF0aCBkPSJNMzIgMzIgTDQ2LjUgNDAuNSIvPgogICAgPHBhdGggZD0iTTMyIDMyIEwzMiA0OSIvPgogICAgPHBhdGggZD0iTTMyIDMyIEwxNy41IDQwLjUiLz4KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMTcuNSAyMy41Ii8+CiAgPC9nPgogIDxnIGZpbGw9IiM3YzVjZmYiPgogICAgPGNpcmNsZSBjeD0iMzIiIGN5PSIzMiIgcj0iOC42Ii8+CiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjE5LjUiIHI9IjYuNCIvPgogICAgPGNpcmNsZSBjeD0iNDkiIGN5PSIxOS41IiByPSI2LjQiLz4KICAgIDxjaXJjbGUgY3g9IjMyIiBjeT0iNTciIHI9IjYuNCIvPgogIDwvZz4KICA8ZyBmaWxsPSJub25lIiBzdHJva2U9IiM3YzVjZmYiIHN0cm9rZS13aWR0aD0iMy44Ij4KICAgIDxjaXJjbGUgY3g9IjMyIiBjeT0iNyIgcj0iNC45Ii8+CiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjQ0LjUiIHI9IjQuOSIvPgogICAgPGNpcmNsZSBjeD0iNDkiIGN5PSI0NC41IiByPSI0LjkiLz4KICA8L2c+Cjwvc3ZnPgo=
@@ -89,8 +89,8 @@
 // Bundles (verbatim, each wrapped in a run-at gate): apollo_editor, art_station, credit_hoarder, fusion, group_therapy, isrc_scout, mammoth, mission_control, platform_check.
 
 try {
-  console.log('%c String Theory %c v2026.10.6.235348 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
-  console.log("String Theory bundles:\n  · Apollo Editor v2026.10.6\n  · Art Station v2026.10.6.202240\n  · Credit Hoarder v2026.10.6.195729\n  · Fusion v2026.10.5.205655\n  · Group Therapy v2026.10.4\n  · ISRC Scout v2026.10.6.220755\n  · Mammoth v2026.10.4\n  · Mission Control v2026.10.6.235156\n  · Platform Check v2026.10.6.215245");
+  console.log('%c String Theory %c v2026.10.7.000038 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
+  console.log("String Theory bundles:\n  · Apollo Editor v2026.10.6\n  · Art Station v2026.10.6.202240\n  · Credit Hoarder v2026.10.6.195729\n  · Fusion v2026.10.5.205655\n  · Group Therapy v2026.10.4\n  · ISRC Scout v2026.10.6.220755\n  · Mammoth v2026.10.4\n  · Mission Control v2026.10.6.235529\n  · Platform Check v2026.10.6.215245");
 } catch (e) {}
 
 // ===== apollo_editor (@run-at document-start) =====================================
@@ -47001,7 +47001,7 @@ Created this ${kind} while adding credits parsed from text to ${relUrl}`;
 
 // ===== mission_control (@run-at document-end) ===================================
 (function(__stGM){
-  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Mission Control*","namespace":"https://musicbrainz.org/","version":"2026.10.6.235156","description":"One window on the release page that asks the other scripts (Platform Check, ISRC Scout, Art Station, Fusion, Credit Hoarder) what is missing, shows it all in one review, and applies the ticked changes in order.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/mission_control/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPk1pc3Npb24gQ29udHJvbDwvdGl0bGU+CiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjNWYzZWMwIiBzdHJva2Utd2lkdGg9IjciPgogICAgPGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iNTIiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjMwIi8+CiAgICA8cGF0aCBkPSJNNjQgNHYyMk02NCAxMDJ2MjJNNCA2NGgyMk0xMDIgNjRoMjIiLz4KICA8L2c+CiAgPGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iMTEiIGZpbGw9IiM4YTVjZjYiLz4KPC9zdmc+Cg=="}) }) : { script: {"name":"Mission Control*","namespace":"https://musicbrainz.org/","version":"2026.10.6.235156","description":"One window on the release page that asks the other scripts (Platform Check, ISRC Scout, Art Station, Fusion, Credit Hoarder) what is missing, shows it all in one review, and applies the ticked changes in order.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/mission_control/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPk1pc3Npb24gQ29udHJvbDwvdGl0bGU+CiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjNWYzZWMwIiBzdHJva2Utd2lkdGg9IjciPgogICAgPGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iNTIiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjMwIi8+CiAgICA8cGF0aCBkPSJNNjQgNHYyMk02NCAxMDJ2MjJNNCA2NGgyMk0xMDIgNjRoMjIiLz4KICA8L2c+CiAgPGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iMTEiIGZpbGw9IiM4YTVjZjYiLz4KPC9zdmc+Cg=="} };
+  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Mission Control*","namespace":"https://musicbrainz.org/","version":"2026.10.6.235529","description":"One window on the release page that asks the other scripts (Platform Check, ISRC Scout, Art Station, Fusion, Credit Hoarder) what is missing, shows it all in one review, and applies the ticked changes in order.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/mission_control/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPk1pc3Npb24gQ29udHJvbDwvdGl0bGU+CiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjNWYzZWMwIiBzdHJva2Utd2lkdGg9IjciPgogICAgPGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iNTIiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjMwIi8+CiAgICA8cGF0aCBkPSJNNjQgNHYyMk02NCAxMDJ2MjJNNCA2NGgyMk0xMDIgNjRoMjIiLz4KICA8L2c+CiAgPGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iMTEiIGZpbGw9IiM4YTVjZjYiLz4KPC9zdmc+Cg=="}) }) : { script: {"name":"Mission Control*","namespace":"https://musicbrainz.org/","version":"2026.10.6.235529","description":"One window on the release page that asks the other scripts (Platform Check, ISRC Scout, Art Station, Fusion, Credit Hoarder) what is missing, shows it all in one review, and applies the ticked changes in order.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/mission_control/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPk1pc3Npb24gQ29udHJvbDwvdGl0bGU+CiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjNWYzZWMwIiBzdHJva2Utd2lkdGg9IjciPgogICAgPGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iNTIiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjMwIi8+CiAgICA8cGF0aCBkPSJNNjQgNHYyMk02NCAxMDJ2MjJNNCA2NGgyMk0xMDIgNjRoMjIiLz4KICA8L2c+CiAgPGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iMTEiIGZpbGw9IiM4YTVjZjYiLz4KPC9zdmc+Cg=="} };
   (f=>document.readyState!=='loading'?f():document.addEventListener('DOMContentLoaded',f,{once:true}))(function(){ try { (function(){
 (function () {
 'use strict';
@@ -47073,7 +47073,7 @@ document.addEventListener('mc:provider', e => {
     if (!d || !d.id) { Log.warn('mc:provider without an id'); return; }
     found[d.id] = d;
     Log.info('provider ' + d.id + ' answered: ' + (d.name || '?') + ' v' + (d.version || '?') + ' · ' + JSON.stringify(d.capabilities || []));
-    if (ui) paintBadges();
+    if (ui) { paintBadges(); fitCards(); }
 });
 
 // Probe: MC sends 'mc:probe' { release, run, only }; a provider answers with
@@ -47435,7 +47435,7 @@ function mcStyle() {
         + '.mc-pill.add{color:var(--mbu-accent-text);background:var(--mbu-accent-soft);border-color:var(--mbu-border-strong)}.mc-pill.ok{color:var(--mbu-ok);background:var(--mbu-ok-bg);border-color:var(--mbu-ok-border)}'
         + '.mc-pill.warn{color:var(--mbu-warn);background:var(--mbu-warn-bg);border-color:var(--mbu-warn-border)}.mc-pill.idle{color:var(--mbu-text-weak);border-style:dashed}'
         + '.mc-dot.busy{background:var(--mbu-info)}.mc-dot.add{background:var(--mbu-accent)}.mc-dot.ok{background:var(--mbu-ok)}'
-        + '.mc-row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}'
+        + '.mc-row2{display:grid;grid-template-columns:1fr 1fr;gap:10px;align-items:start}.mc-row2.one{grid-template-columns:1fr}.mc-col{display:flex;flex-direction:column;gap:10px;min-width:0}.mc-col>.mc-sect{margin:0}'
         + '.mc-tbl{width:100%;border-collapse:collapse;font-size:12px}'
         + '.mc-tbl th{font-size:10px;text-transform:uppercase;letter-spacing:.6px;color:var(--mbu-text-weak);text-align:left;padding:6px 8px;background:var(--mbu-bg-raised);border-bottom:1px solid var(--mbu-border);position:sticky;top:0;white-space:nowrap}'
         + '.mc-tbl td{padding:4px 8px;border-bottom:1px solid var(--mbu-divider);white-space:nowrap}'
@@ -47474,7 +47474,7 @@ function stateText(p) {
     const t = r.findings.reduce((a, x) => (a[x.state] = (a[x.state] || 0) + 1, a), {});
     return [t.new && t.new + ' new', t.linked && t.linked + ' linked', t.withheld && t.withheld + ' withheld', t.unsure && t.unsure + ' unsure', t.none && t.none + ' not found'].filter(Boolean).join(' · ') || 'nothing';
 }
-function paintAll() { if (!ui) return; paintBadges(); paintCards(); paintReleaseCredits(); paintMatrix(); paintInspector(); paintExec(); }
+function paintAll() { if (!ui) return; paintBadges(); paintCards(); paintReleaseCredits(); fitCards(); paintMatrix(); paintInspector(); paintExec(); }
 
 function header() {
     const h = el('header', 'mc-hdr');
@@ -47653,6 +47653,9 @@ function matrix() {
     return sec;
 }
 
+// Two columns that stack on their own (a card is as tall as what it holds, not as its neighbour):
+// release and entity links with the release credits under them, and cover art. A card whose
+// provider isn't on the page is left out, and a column left empty gives the other the width.
 function releaseCards() {
     const row = el('div', 'mc-row2');
     const card = (id, t) => {
@@ -47660,8 +47663,20 @@ function releaseCards() {
         return '<section class="mc-sect"><div class="mc-sect-h"><span class="ic" title="' + esc(p.provider) + '"><img alt="" src="' + PROVIDER_ICONS[id] + '"></span><span class="t">' + t + '</span><span class="end"></span></div>'
             + '<div class="mc-card-body" data-card="' + id + '"></div></section>';
     };
-    row.innerHTML = mbuHtml(card('pc', 'Release and entity links') + card('as', 'Cover art'));
+    row.innerHTML = mbuHtml('<div class="mc-col">' + card('pc', 'Release and entity links') + '</div><div class="mc-col">' + card('as', 'Cover art') + '</div>');
+    if (S.ch !== 'off') row.firstChild.append(releaseCredits());
     return row;
+}
+function fitCards() {
+    const row = ui && ui.querySelector('.mc-row2'); if (!row) return;
+    row.querySelectorAll('.mc-sect').forEach(s => {
+        const id = s.querySelector('[data-card]') ? s.querySelector('[data-card]').dataset.card : 'ch';
+        s.hidden = stateOf(PROVIDERS.find(x => x.id === id)) === 'idle';
+    });
+    const cols = [...row.children];
+    cols.forEach(c => { c.hidden = ![...c.children].some(s => !s.hidden); });
+    row.classList.toggle('one', cols.filter(c => !c.hidden).length < 2);
+    row.hidden = cols.every(c => c.hidden);
 }
 
 // CH's release-level credits (#680): its finding with no `track`. Info only, like its column.
@@ -47819,7 +47834,6 @@ function body() {
     const m = el('div', 'mc-main');
     const c = el('main', 'mc-center');
     c.append(matrix(), releaseCards());
-    if (S.ch !== 'off') c.append(releaseCredits());
     m.append(orderSidebar(), c, inspector());
     return m;
 }

@@ -61,6 +61,17 @@ test('#680: Probe asks Platform Check and shows its platforms', { tag: ['@sandbo
     check((await page.locator('#mc-root [data-act="exec"]').textContent()) === (nNew - 1 ? 'Execute (' + (nNew - 1) + ')' : 'Execute'), 'unticking lowers the count');
   }
   check(!/busy|stalled/.test(await page.locator('#mc-root .mc-step[data-step="pc"]').getAttribute('class')), 'PC step no longer busy');
+
+  // the cards under the tracks: only installed providers' (AS and CH aren't here), so PC has the width
+  const cards = () => page.evaluate(() => { const row = document.querySelector('#mc-root .mc-row2'), vis = s => !!(s && s.offsetParent);
+    return { one: row.classList.contains('one'), pc: vis(document.querySelector('#mc-root [data-card="pc"]')), as: vis(document.querySelector('#mc-root [data-card="as"]')), ch: vis(document.querySelector('#mc-root .mc-chrel')),
+      chUnderPc: !!row.querySelector('.mc-col:first-child .mc-chrel'), align: getComputedStyle(row).alignItems }; });
+  const c1 = await cards();
+  check(c1.pc && !c1.as && !c1.ch && c1.one, `no empty card for a provider not on the page; PC alone takes the width (${JSON.stringify(c1)})`);
+  // a provider that turns up brings its card: Art Station beside, Credit Hoarder's release credits under the links
+  await page.evaluate(() => ['as', 'ch'].forEach(id => document.dispatchEvent(new CustomEvent('mc:provider', { detail: JSON.stringify({ id, name: id, version: 1, capabilities: ['probe'] }) }))));
+  const c2 = await cards();
+  check(c2.pc && c2.as && c2.ch && !c2.one && c2.chUnderPc && c2.align === 'start', `two columns, release credits under the links, no card stretched to its neighbour (${JSON.stringify(c2)})`);
   check(await page.evaluate(() => window.__busySeen), 'the header pulsed while probing');
   // it ends where a pulse cycle does (a fade, not a cut), so within one cycle
   check(!(await until(() => page.locator('#mc-root .mc-hdr.mc-busy').count(), n => n === 0, { timeout: 4000 })), 'and stopped once the probe was answered');
