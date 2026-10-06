@@ -5381,6 +5381,42 @@
       }
     }
 
+    // Find links without the dialog (#680, for Mission Control): the same providers, pools and
+    // gaps as resolveProvider, but the results come back as data, never into the table.
+    // isrcOf(t): an ISRC found for the track but not on MusicBrainz yet (tried first).
+    // → { <idx>: [{ code, name, url, linkTypeID }] }
+    async function findHeadless(isrcOf, onProvider) {
+      const out = {};
+      await Promise.all(PROV.map(async p => {
+        if (p.album && !(RELEASE && RELEASE[p.urlKey])) return;
+        const jobs = [];
+        RELEASE.tracks.forEach((t, idx) => {
+          if (!t.recId || linkedUrl(t, p)) return;
+          const isrcs = [normalizeIsrc(isrcOf(t) || ''), ...(t.existing || []).map(normalizeIsrc)].filter((v, i, a) => isValidIsrc(v) && a.indexOf(v) === i);
+          if (!p.album && !isrcs.length && !(p.code === 'yt' && RELEASE.ytmUrl)) return;
+          jobs.push({ idx, isrcs, t });
+        });
+        if (!jobs.length) return;
+        if (onProvider) onProvider(p.name);
+        let next = 0, hits = 0;
+        const worker = async () => {
+          while (next < jobs.length) {
+            const j = jobs[next++];
+            let url = null;
+            for (const isrc of (j.isrcs.length ? j.isrcs : [''])) {
+              try { url = await p.resolve(isrc, j.t, j.idx); } catch (e) { /* rate-limited / not found */ }
+              if (url) { url = normalizeProviderUrl(p.code, url); break; }
+            }
+            if (url) { (out[j.idx] = out[j.idx] || []).push({ code: p.code, name: p.name, url, linkTypeID: p.linkTypeID }); hits++; }
+            if (p.gap && next < jobs.length) await sleep(p.gap);
+          }
+        };
+        await Promise.all(Array.from({ length: Math.min(p.conc || 1, jobs.length) }, worker));
+        Log.info('Find links (headless) ' + p.name + ': ' + hits + ' of ' + jobs.length + ' track(s)');
+      }));
+      return out;
+    }
+
     // #301: per-track streaming links for export — what's linked plus what Find
     // links resolved, across our providers.
     function linkRows() {
@@ -5402,7 +5438,7 @@
     if (mbuTestHooks()) window.__isrcScoutTest664 = { audiomackRelease };
     if (mbuTestHooks()) window.__isrcScoutTest669 = { sevendigitalRelease, sdRef, sdKey, setSdKey: k => { _sdKey = k; } };
 
-    return { linkedHtml, addHtml, resolve, addAll, clearResolved, missingCount, refresh: updateAddBtn, removeOne, removeTrack, removeProvider, endOne, endTrack, endProvider, linkRows };
+    return { findHeadless, submitRels, noteFor, linkedHtml, addHtml, resolve, addAll, clearResolved, missingCount, refresh: updateAddBtn, removeOne, removeTrack, removeProvider, endOne, endTrack, endProvider, linkRows };
   })();
 
   /* ── render the track table ── */
@@ -7168,6 +7204,7 @@
     const mcSend = (type, detail) => document.dispatchEvent(new CustomEvent(type, { detail: JSON.stringify(detail) }));
     const mcHello = () => mcSend('mc:provider', { id: 'is', name: 'ISRC Scout', version: SCRIPT_VERSION, release: mbid, capabilities: ['probe', 'apply'] });
     let mcFound = {};   // recId -> { isrc, source } from the last probe
+    let mcLinks = {};   // 'link:<recId>:<url>' -> { rec, idx, code, name, url, linkTypeID } from the last probe
     // the album sources in IS's order, Spotify last (its import goes through a third party)
     const mcSources = () => Object.values(ALBUM_PROVIDERS).map(p => ({ source: p.source, fetcher: p.fetcher, id: providerAlbumId(p.source, RELEASE[p.idField]) }))
       .concat([{ source: 'Spotify', fetcher: fetchSpotify, id: providerAlbumId('Spotify', RELEASE.spotifyId) }])
@@ -7215,7 +7252,19 @@
         Log.info('Mission Control probe: ' + src.source + ' gave ' + n + ' ISRC(s)');
         if (n) { used = src.source; break; }
       }
-      const findings = RELEASE.tracks.map(mcFinding);
+      // then Find links, with the ISRCs just found as well as MB's (#680: one step, as the dialog's two)
+      mcLinks = {};
+      try {
+        const got = await TrackLinks.findHeadless(t => mcFound[t.recId] && mcFound[t.recId].isrc, name => progress('links: ' + name));
+        Object.entries(got).forEach(([idx, list]) => {
+          const t = RELEASE.tracks[+idx];
+          list.forEach(l => { const k = 'link:' + t.recId + ':' + l.url; mcLinks[k] = Object.assign({ rec: t.recId, idx: +idx }, l); });
+        });
+      } catch (x) { Log.warn('Mission Control probe: Find links failed: ' + errText(x)); }
+      const linkFindings = Object.entries(mcLinks).map(([key, l]) => ({ key, kind: 'link', track: l.rec, name: l.name, url: l.url, state: 'new' }));
+      Log.info('Mission Control probe: ' + linkFindings.length + ' recording link(s) to add');
+      linkFindings.forEach(f => Log.info('  link ' + f.track + ' ' + f.name + ' ' + f.url));
+      const findings = RELEASE.tracks.map(mcFinding).concat(linkFindings);
       const tally = findings.reduce((a, f) => (a[f.state] = (a[f.state] || 0) + 1, a), {});
       Log.info('Mission Control probe ' + d.run + ' answered' + (used ? ' from ' + used : '') + ': ' + JSON.stringify(tally));
       mcSend('mc:findings', { id: 'is', run: d.run, release: mbid, source: used, more, findings });
@@ -7226,27 +7275,48 @@
       if (d.id !== 'is' || (d.release && d.release !== mbid)) return;
       const reply = o => mcSend('mc:applied', Object.assign({ id: 'is', run: d.run, release: mbid }, o));
       const map = {}, used = {};
-      (d.keys || []).forEach(rid => {
+      const keys = d.keys || [];
+      keys.filter(k => !k.startsWith('link:')).forEach(rid => {
         const t = RELEASE && RELEASE.tracks.find(x => x.recId === rid), f = mcFound[rid];
         if (!t || !f || t.existing.includes(f.isrc)) return;
         (map[rid] = map[rid] || []).push(f.isrc);
         used[f.source] = (used[f.source] || 0) + 1;
       });
-      const n = Object.keys(map).length;
-      if (!n) { reply({ ok: true, sent: 0, note: 'nothing left to add' }); return; }
+      // recording links (Find links), skipping any the recording got since the probe
+      const links = keys.filter(k => k.startsWith('link:')).map(k => mcLinks[k]).filter(l => {
+        const t = l && RELEASE.tracks.find(x => x.recId === l.rec);
+        return t && !(t.recUrls || []).includes(l.url);
+      });
+      const n = Object.keys(map).length, nl = links.length;
+      const plural = (k, w) => k + ' ' + w + (k === 1 ? '' : 's');
+      if (!n && !nl) { reply({ ok: true, sent: 0, note: 'nothing left to add' }); return; }
       const note = [noteHeader(), '', 'Release: ' + MB_ROOT + '/release/' + mbid,
         'Added ' + n + ' ISRC' + (n === 1 ? '' : 's') + ': ' + Object.keys(used).sort().map(s => s + ' (' + used[s] + ')').join(', '), 'Via Mission Control'].join('\n');
-      if (d.dry) { Log.info('Mission Control dry run: would submit ' + JSON.stringify(map)); reply({ ok: true, sent: 0, note: 'dry run: ' + n + ' ISRC' + (n === 1 ? '' : 's') + ' would be submitted' }); return; }
-      try {
-        await submitIsrcs(map, note);
-        Object.entries(map).forEach(([rid, isrcs]) => { const t = RELEASE.tracks.find(x => x.recId === rid); if (t) t.existing.push(...isrcs); });
-        try { updateBtnStatus(); } catch (x) { /* the page button only */ }
-        Log.info('Mission Control apply: submitted ' + n + ' ISRC(s) ' + JSON.stringify(map));
-        reply({ ok: true, sent: n, note: n + ' ISRC' + (n === 1 ? '' : 's') + ' submitted' });
-      } catch (x) {
-        Log.err('Mission Control apply failed: ' + errText(x));
-        reply({ ok: false, sent: 0, note: errText(x) });
+      if (d.dry) {
+        Log.info('Mission Control dry run: would submit ' + JSON.stringify(map) + ' and links ' + JSON.stringify(links.map(l => l.url)));
+        reply({ ok: true, sent: 0, note: 'dry run: ' + [n && plural(n, 'ISRC'), nl && plural(nl, 'link')].filter(Boolean).join(' and ') + ' would be submitted' });
+        return;
       }
+      const done = [], errs = [];
+      let sentN = 0;
+      if (n) {
+        try {
+          await submitIsrcs(map, note);
+          Object.entries(map).forEach(([rid, isrcs]) => { const t = RELEASE.tracks.find(x => x.recId === rid); if (t) t.existing.push(...isrcs); });
+          try { updateBtnStatus(); } catch (x) { /* the page button only */ }
+          Log.info('Mission Control apply: submitted ' + n + ' ISRC(s) ' + JSON.stringify(map));
+          done.push(plural(n, 'ISRC')); sentN += n;
+        } catch (x) { Log.err('Mission Control apply (ISRCs) failed: ' + errText(x)); errs.push('ISRCs: ' + errText(x)); }
+      }
+      if (nl) {
+        try {
+          await TrackLinks.submitRels(links.map(l => ({ recGid: l.rec, url: l.url, linkTypeID: l.linkTypeID })), TrackLinks.noteFor(links.map(l => ({ name: l.name })), links.map(l => l.url)) + '\nVia Mission Control');
+          links.forEach(l => { const t = RELEASE.tracks.find(x => x.recId === l.rec); if (t) (t.recUrls = t.recUrls || []).push(l.url); });
+          Log.info('Mission Control apply: linked ' + nl + ' recording link(s) ' + JSON.stringify(links.map(l => l.url)));
+          done.push(plural(nl, 'link')); sentN += nl;
+        } catch (x) { Log.err('Mission Control apply (links) failed: ' + errText(x)); errs.push('links: ' + errText(x)); }
+      }
+      reply({ ok: !errs.length, sent: sentN, note: [done.length && done.join(' and ') + ' submitted', errs.join('; ')].filter(Boolean).join(' · ') });
     });
     mcHello();
     if (mbuTestHooks()) window.__isTest680 = { mcFinding, mcTrackOf, mcSources, found: () => mcFound };

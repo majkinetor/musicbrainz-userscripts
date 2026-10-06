@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Credit Hoarder
 // @namespace    majkinetor
-// @version      2026.10.5.213219
+// @version      2026.10.6.160935
 // @description  Import per-track release credits from streaming/database providers (Discogs, Tidal, Qobuz, Deezer) into MusicBrainz relationships, with a review phase
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij4KICANCiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMmY2ZjU0IiBzdHJva2Utd2lkdGg9IjkiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGNpcmNsZSBjeD0iMzQiIGN5PSIzOCIgcj0iMi41IiBmaWxsPSIjMmY2ZjU0IiBzdHJva2U9Im5vbmUiLz4NCiAgICA8bGluZSB4MT0iNTAiIHkxPSIzOCIgeDI9Ijk4IiB5Mj0iMzgiLz4NCiAgICA8Y2lyY2xlIGN4PSIzNCIgY3k9IjY0IiByPSIyLjUiIGZpbGw9IiMyZjZmNTQiIHN0cm9rZT0ibm9uZSIvPg0KICAgIDxsaW5lIHgxPSI1MCIgeTE9IjY0IiB4Mj0iOTgiIHkyPSI2NCIvPg0KICAgIDxjaXJjbGUgY3g9IjM0IiBjeT0iOTAiIHI9IjIuNSIgZmlsbD0iIzJmNmY1NCIgc3Ryb2tlPSJub25lIi8+DQogICAgPGxpbmUgeDE9IjUwIiB5MT0iOTAiIHgyPSI3NCIgeTI9IjkwIi8+DQogIDwvZz4NCiAgPGNpcmNsZSBjeD0iOTIiIGN5PSI5MiIgcj0iMjMiIGZpbGw9IiMyZTllNWIiLz4NCiAgPGcgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGxpbmUgeDE9IjkyIiB5MT0iODEiIHgyPSI5MiIgeTI9IjEwMyIvPg0KICAgIDxsaW5lIHgxPSI4MSIgeTE9IjkyIiB4Mj0iMTAzIiB5Mj0iOTIiLz4NCiAgPC9nPg0KPC9zdmc+DQo=
@@ -10088,7 +10088,8 @@ ${lines}
         else if (t.type_ === "track" || !t.type_) tracks.push(t);
       });
       walk(json.tracklist);
-      return { source: "Discogs", perTrack: tracks.map((t, i) => ({ medium: 0, index: i + 1, credits: (t.extraartists || []).map((a) => ({ name: a.name, role: a.role })) })), flat: true };
+      const release = (json.extraartists || []).map((a) => ({ name: a.name, role: a.role + (a.tracks ? ` (tracks ${a.tracks})` : "") }));
+      return { source: "Discogs", perTrack: tracks.map((t, i) => ({ medium: 0, index: i + 1, credits: (t.extraartists || []).map((a) => ({ name: a.name, role: a.role })) })), flat: true, release };
     }
     const qobuz = find(/qobuz\.com\//i) && parseQobuzAlbumUrl(find(/qobuz\.com\//i));
     if (qobuz) return { source: "Qobuz", perTrack: withMedia(extractQobuzCredits(await fetchQobuzAlbumPage(qobuz.pageUrl))) };
@@ -10132,8 +10133,11 @@ ${lines}
           return { key: t.rec, track: t.rec, state: list.length ? "info" : "none", credits: list.length, list, source: got.source };
         });
         const total = findings.reduce((n, f) => n + f.credits, 0);
-        log.info(`Mission Control probe: ${got.source} \u2014 ${total} credit(s) on ${findings.filter((f) => f.credits).length} of ${tracks.length} track(s)`);
-        done(findings, `${got.source}: ${total} credit${total === 1 ? "" : "s"} on ${findings.filter((f) => f.credits).length} of ${tracks.length} tracks`);
+        const relList = got.release || [];
+        if (relList.length) findings.push({ key: "release", state: "info", credits: relList.length, list: relList, source: got.source, level: "release" });
+        log.info(`Mission Control probe: ${got.source} \u2014 ${total} track credit(s) on ${findings.filter((f) => f.track && f.credits).length} of ${tracks.length} track(s), ${relList.length} release credit(s)`);
+        relList.forEach((c) => log.info(`  release credit: ${c.name} \u2014 ${c.role}`));
+        done(findings, `${got.source}: ${total} credit${total === 1 ? "" : "s"} on ${findings.filter((f) => f.track && f.credits).length} of ${tracks.length} tracks` + (relList.length ? `, ${relList.length} on the release` : ""));
       } catch (x) {
         log.error("Mission Control probe failed: " + (x && x.message || x));
         done([], "failed: " + (x && x.message || x));

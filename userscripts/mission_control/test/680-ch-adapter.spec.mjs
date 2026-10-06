@@ -27,11 +27,14 @@ test('#680: Credit Hoarder reports credits per track on Fetch credits', { tag: [
   check(/(Qobuz|Deezer|Apple|Discogs): \d+ credits? on \d+ of 12 tracks|No credit source linked/.test(meta), `the step says what CH read ("${meta}")`);
   const total = Number(((await page.locator('#mc-root .mc-bdg').nth(4).textContent()).match(/\d+/) || [0])[0]);
   const cells = (await page.locator('#mc-root .mc-tbl td[data-col="ch"]').allTextContents()).map(t => Number(t.trim()) || 0);
-  check(cells.reduce((a, b) => a + b, 0) === total, `the badge total matches the column (${total})`);
+  // the badge counts the release's own credits too (#680: the Release credits card)
+  const relN = await page.locator('#mc-root .mc-chrel .mc-mini').count();
+  console.log('release credits: ' + relN);
+  check(cells.reduce((a, b) => a + b, 0) + relN === total, `the badge total matches the column and the release card (${total})`);
   check(await page.locator('#mc-root .mc-tbl td[data-col="ch"] .mc-pick').count() === 0, 'info only: nothing to tick');
-  if (total) {
+  if (cells.some(n => n > 0)) {
     const i = cells.findIndex(n => n > 0);
-    await page.locator('#mc-root .mc-tbl tbody tr[data-i]').nth(i).click();
+    await page.locator('#mc-root .mc-tbl tbody tr[data-i]').nth(i).locator('td.ttl').click();
     check(await page.locator('#mc-root .mc-insp .mc-mini').count() >= cells[i], 'inspector lists the credits');
   }
   await page.screenshot({ path: 'test-results/mc-680-ch.png' });

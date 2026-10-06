@@ -28,7 +28,7 @@ test('#680: Fusion runs on Fetch RG and marks the tracks with duplicates', { tag
   await page.waitForFunction(() => document.querySelector('#mc-root [data-fetch="fusion"]'), null, { timeout: 120_000 });   // back once the probe is done
   const hits = await page.locator('#mc-root .mc-tbl td[data-col="fusion"] .mc-pill').count();
   check(hits > 0, `tracks with duplicates in the release group are marked (${hits})`);
-  check(await page.locator('#mc-root .mc-tbl td[data-col="fusion"] .mc-pick:checked').count() === hits, 'and start ticked');
+  check(await page.locator('#mc-root .mc-tbl td[data-col="fusion"] .mc-pick.on').count() === hits, 'and start ticked');
 
   const row = page.locator('#mc-root .mc-tbl td[data-col="fusion"] .mc-pill').first().locator('xpath=ancestor::tr');
   await row.click();

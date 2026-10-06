@@ -8013,6 +8013,31 @@ function pcMcFinding(p) {
     const sure = document.getElementById(`ico-${p}`)?.textContent?.trim() === '✓';
     return { ...base, state: sure ? 'new' : 'unsure' };
 }
+// The Artists & labels links (#671) as MC findings, one per link: key `ent:<type>:<mbid>:<url>`,
+// with `entity` { type, mbid, name } and `icon` the platform. MusicBrainz is asked which links
+// it already has through the same cached lookup as the count; a link on someone else is
+// withheld. Kept from the last probe so Apply needn't ask again.
+let _pcMcEnt = [];
+async function pcMcEntityFindings() {
+    const mbRec = mbDataGet(mbid) || {};
+    const { rows } = pcLinkRows(pcMbCredits(document, mbRec.mbTracks || 0), pcConfirmedCredits().byProvider);
+    const urls = rows.flatMap(r => Object.values(r.cells).flat().map(c => c.url));
+    let linked = new Map(), asked = false;
+    if (urls.length) {
+        try { linked = await pcLinkedCached(urls); asked = true; } catch (x) { appendLog('System', `Mission Control: couldn't ask MusicBrainz which artist and label links it has (${x.message})`, 'warn'); }
+    }
+    const out = [];
+    for (const r of rows) for (const [p, cell] of Object.entries(r.cells)) for (const c of pcMarkCell(r, cell, linked)) {
+        const who = (c.who || []).map(w => `${w.type} ${w.name || w.mbid}`).join(', ');
+        const state = c.state === 'linked' ? 'linked' : c.state === 'other' ? 'withheld' : !asked ? 'unsure' : c.state === 'unsure' ? 'unsure' : 'new';
+        const why = c.state === 'other' ? `already linked to ${who}` : !asked ? 'MusicBrainz couldn\'t be asked whether it has this link'
+            : c.state === 'unsure' ? 'an account that may be the artist or the label' : c.by === 'position' ? 'matched by position, not name' : '';
+        out.push({ key: `ent:${r.type}:${r.mbid}:${c.url}`, name: `${r.name} · ${PROVIDER_NAME[p]}`, icon: p, url: c.url, state, why: why || undefined, entity: { type: r.type, mbid: r.mbid, name: r.name } });
+    }
+    _pcMcEnt = out;
+    appendLog('System', `Mission Control: ${out.length} artist/label link(s) from ${rows.length} artist(s)/label(s)`);
+    return out;
+}
 function pcMcSend(type, detail) {
     document.dispatchEvent(new CustomEvent(type, { detail: JSON.stringify(detail) }));
 }
@@ -8029,7 +8054,7 @@ document.addEventListener('mc:probe', async e => {
     pcMcSend('mc:progress', { id: 'pc', run: d.run, state: 'busy', note: PC_SCAN.busy ? 'scanning platforms' : '' });
     // a rescan (pasted barcode, ↻) replaces the scan we waited for: wait for that one instead
     try { let p; do { p = PC_SCAN.last || pcScan(); await p; } while (p !== PC_SCAN.last); } catch (x) { appendLog('System', `scan failed for Mission Control: ${x.message}`, 'error'); }
-    const findings = PROVIDER_ORDER.filter(providerEnabled).map(pcMcFinding);
+    const findings = PROVIDER_ORDER.filter(providerEnabled).map(pcMcFinding).concat(await pcMcEntityFindings());
     const tally = findings.reduce((t, f) => (t[f.state] = (t[f.state] || 0) + 1, t), {});
     appendLog('System', `Mission Control probe ${d.run || ''} answered: ${JSON.stringify(tally)}`, 'ok');
     pcMcSend('mc:findings', { id: 'pc', run: d.run, release: mbid, findings });
@@ -8041,16 +8066,32 @@ document.addEventListener('mc:apply', e => {
     let d = {};
     try { d = JSON.parse(e.detail) || {}; } catch (x) { appendLog('System', `Mission Control apply with unreadable detail: ${x.message}`, 'warn'); return; }
     if (d.id !== 'pc' || (d.release && d.release !== mbid)) return;
-    const picked = (d.keys || []).map(pcMcFinding).filter(f => f.url && f.state !== 'linked' && f.state !== 'none');
+    const keys = d.keys || [];
+    const picked = keys.filter(k => !k.startsWith('ent:')).map(pcMcFinding).filter(f => f.url && f.state !== 'linked' && f.state !== 'none');
+    // artist and label links: from the last probe, grouped per entity (a link on someone else only when ticked by hand)
+    const ents = new Map();
+    for (const f of _pcMcEnt) {
+        if (!keys.includes(f.key) || f.state === 'linked') continue;
+        const k = `${f.entity.type}:${f.entity.mbid}`;
+        if (!ents.has(k)) ents.set(k, { type: f.entity.type, mbid: f.entity.mbid, name: f.entity.name, urls: [] });
+        ents.get(k).urls.push(f.url);
+    }
     const reply = o => pcMcSend('mc:applied', Object.assign({ id: 'pc', run: d.run, release: mbid }, o));
-    if (!picked.length) { appendLog('System', 'Mission Control apply: nothing left to add', 'warn'); reply({ ok: true, sent: 0, note: 'nothing left to add' }); return; }
+    const entN = [...ents.values()].reduce((n, r) => n + r.urls.length, 0);
+    if (!picked.length && !entN) { appendLog('System', 'Mission Control apply: nothing left to add', 'warn'); reply({ ok: true, sent: 0, note: 'nothing left to add' }); return; }
     const urls = picked.map(f => f.url);
     const forced = Object.fromEntries(picked.filter(f => f.state === 'withheld').map(f => [f.url, f.why]));
     const album = mbDataGet(mbid)?.album || mbid;
-    const json = JSON.stringify({ name: `${album} — platform links`, note: pcEditNote(urls, forced, pcPastedBarcode()), items: [{ entityType: 'release', mbid, name: album, urls: urls.map(url => ({ url, linkTypeId: null })) }] });
+    const items = (urls.length ? [{ entityType: 'release', mbid, name: album, urls: urls.map(url => ({ url, linkTypeId: null })) }] : [])
+        .concat([...ents.values()].map(r => ({ entityType: r.type, mbid: r.mbid, name: r.name, urls: r.urls.map(url => ({ url, linkTypeId: pcLinkTypeFor(r.type, url) })) })));
+    // one edit note for the batch: the release's links note, or the artist/label one when there are none
+    const note = urls.length ? pcEditNote(urls, forced, pcPastedBarcode()) + (entN ? `\n\n${pcLinksNote()}` : '') : pcLinksNote();
+    const json = JSON.stringify({ name: `${album} — platform links`, note, items });
     const ok = pcSendToFalconHere(json, !d.dry);
-    appendLog('System', `Mission Control apply${d.dry ? ' (dry run: queued, not run)' : ''}: ${urls.length} link(s) ${ok ? 'handed to Falcon' : 'NOT taken — no Falcon on this page'}: ${urls.join(' ')}`, ok ? 'ok' : 'error');
-    reply(ok ? { ok: true, sent: urls.length, via: 'falcon', note: `${urls.length} link${urls.length === 1 ? '' : 's'} ${d.dry ? 'queued in' : 'sent to'} Falcon` } : { ok: false, sent: 0, note: 'Falcon is not running on this page' });
+    const n = urls.length + entN;
+    if (ok && entN) { _pcLinked = null; pcShowLinksCount(null); }
+    appendLog('System', `Mission Control apply${d.dry ? ' (dry run: queued, not run)' : ''}: ${urls.length} release link(s), ${entN} artist/label link(s) ${ok ? 'handed to Falcon' : 'NOT taken — no Falcon on this page'}: ${urls.concat([...ents.values()].flatMap(r => r.urls)).join(' ')}`, ok ? 'ok' : 'error');
+    reply(ok ? { ok: true, sent: n, via: 'falcon', note: `${n} link${n === 1 ? '' : 's'} ${d.dry ? 'queued in' : 'sent to'} Falcon` } : { ok: false, sent: 0, note: 'Falcon is not running on this page' });
 });
 pcMcHello();   // MC may have asked before PC loaded
 if (mbuTestHooks()) window.__pcTest680 = { pcMcFinding, pcScan };

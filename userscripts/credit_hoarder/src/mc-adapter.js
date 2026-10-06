@@ -63,7 +63,9 @@ async function readSource(links) {
         const tracks = [];
         const walk = arr => (arr || []).forEach(t => { if (t.sub_tracks) walk(t.sub_tracks); else if (t.type_ === 'track' || !t.type_) tracks.push(t); });
         walk(json.tracklist);
-        return { source: 'Discogs', perTrack: tracks.map((t, i) => ({ medium: 0, index: i + 1, credits: (t.extraartists || []).map(a => ({ name: a.name, role: a.role })) })), flat: true };
+        // the release's own credits (#680), with the tracks they cover when Discogs names them ("1 to 3")
+        const release = (json.extraartists || []).map(a => ({ name: a.name, role: a.role + (a.tracks ? ` (tracks ${a.tracks})` : '') }));
+        return { source: 'Discogs', perTrack: tracks.map((t, i) => ({ medium: 0, index: i + 1, credits: (t.extraartists || []).map(a => ({ name: a.name, role: a.role })) })), flat: true, release };
     }
     const qobuz = find(/qobuz\.com\//i) && parseQobuzAlbumUrl(find(/qobuz\.com\//i));
     if (qobuz) return { source: 'Qobuz', perTrack: withMedia(extractQobuzCredits(await fetchQobuzAlbumPage(qobuz.pageUrl))) };
@@ -97,8 +99,12 @@ export function startMcAdapter() {
                 return { key: t.rec, track: t.rec, state: list.length ? 'info' : 'none', credits: list.length, list, source: got.source };
             });
             const total = findings.reduce((n, f) => n + f.credits, 0);
-            log.info(`Mission Control probe: ${got.source} — ${total} credit(s) on ${findings.filter(f => f.credits).length} of ${tracks.length} track(s)`);
-            done(findings, `${got.source}: ${total} credit${total === 1 ? '' : 's'} on ${findings.filter(f => f.credits).length} of ${tracks.length} tracks`);
+            // release-level credits: one finding with no `track` (only Discogs has them)
+            const relList = got.release || [];
+            if (relList.length) findings.push({ key: 'release', state: 'info', credits: relList.length, list: relList, source: got.source, level: 'release' });
+            log.info(`Mission Control probe: ${got.source} — ${total} track credit(s) on ${findings.filter(f => f.track && f.credits).length} of ${tracks.length} track(s), ${relList.length} release credit(s)`);
+            relList.forEach(c => log.info(`  release credit: ${c.name} — ${c.role}`));
+            done(findings, `${got.source}: ${total} credit${total === 1 ? '' : 's'} on ${findings.filter(f => f.track && f.credits).length} of ${tracks.length} tracks` + (relList.length ? `, ${relList.length} on the release` : ''));
         } catch (x) {
             log.error('Mission Control probe failed: ' + ((x && x.message) || x));
             done([], 'failed: ' + ((x && x.message) || x));

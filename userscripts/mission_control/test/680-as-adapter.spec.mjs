@@ -27,8 +27,8 @@ test('#680: Probe asks Art Station; Execute opens the cover-art page seeded', { 
   check(rows > 0, `a row per linked platform AS can source from (${rows})`);
   check(await page.locator('#mc-root [data-card="as"] .mc-line svg').count() === rows, 'each with its platform icon');
 
-  await page.evaluate(() => document.querySelectorAll('#mc-root .mc-pick').forEach(c => { if (c.checked) c.click(); }));
-  await page.locator('#mc-root [data-card="as"] .mc-pick').first().check();
+  await page.evaluate(() => { let c, n = 0; while ((c = document.querySelector('#mc-root .mc-pick.on')) && n++ < 500) c.click(); });
+  await page.locator('#mc-root [data-card="as"] .mc-pick .mc-tick').first().click();
   await page.click('#mc-root [data-act="dry"]');
   await page.waitForSelector('#mc-root [data-card="as"] .mc-applied.ok');
   check(/dry run: would open Art Station/.test(await page.locator('#mc-root [data-card="as"] .mc-applied').textContent()), 'dry run says what it would open');

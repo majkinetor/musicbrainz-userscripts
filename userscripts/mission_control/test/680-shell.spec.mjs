@@ -38,7 +38,7 @@ test('#680: MC shell — launcher, track matrix, sidebars, modes', { tag: ['@san
   check(await page.locator('#mc-root .mc-srcbtn.set').count() === 1, 'source icon lit once a link is set');
 
   // inspector follows the selected row
-  await page.locator('#mc-root .mc-tbl tbody tr[data-i]').first().click();
+  await page.locator('#mc-root .mc-tbl tbody tr[data-i]').first().locator('td.ttl').click();
   check(/^Track /.test(await page.locator('#mc-root .mc-insp-t').textContent()), 'inspector shows the selected track');
 
   // hiding the order sidebar shows the horizontal strip; both persist

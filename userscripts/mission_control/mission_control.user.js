@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Mission Control
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.5.213217
+// @version      2026.10.6.155602
 // @description  One window on the release page that asks the other scripts (Platform Check, ISRC Scout, Art Station, Fusion, Credit Hoarder) what is missing, shows it all in one review, and applies the ticked changes in order.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPk1pc3Npb24gQ29udHJvbDwvdGl0bGU+CiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjNWYzZWMwIiBzdHJva2Utd2lkdGg9IjciPgogICAgPGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iNTIiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjMwIi8+CiAgICA8cGF0aCBkPSJNNjQgNHYyMk02NCAxMDJ2MjJNNCA2NGgyMk0xMDIgNjRoMjIiLz4KICA8L2c+CiAgPGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iMTEiIGZpbGw9IiM4YTVjZjYiLz4KPC9zdmc+Cg==
@@ -50,7 +50,7 @@ function saveSettings() {
 // different APIs with their own rate limits). `mode` names the setting that can
 // switch an optional step to auto / ask / off.
 const STEPS = [
-    { id: 'pc', name: 'Platforms & artists', short: 'PC', provider: 'Platform Check', glyph: '🔗' },
+    { id: 'pc', name: 'Release and entity links', short: 'PC', provider: 'Platform Check', glyph: '🔗' },
     { id: 'enrich', name: 'Enrich', glyph: '⇶', lanes: [
         { id: 'is', name: 'ISRCs & recording links', short: 'IS', provider: 'ISRC Scout', glyph: '#' },
         { id: 'as', name: 'Cover art', short: 'AS', provider: 'Art Station', glyph: '🖼' },
@@ -298,7 +298,17 @@ function mcStyle() {
         + '.mc-lk{font-size:10.5px;font-weight:700;color:var(--mbu-ok);margin-left:3px}'
         + '#mc-root .mc-fetch{font:600 10px var(--mbu-font);text-transform:none;letter-spacing:0;padding:1px 8px;margin-left:4px;border:1px solid var(--mbu-border-strong);border-radius:20px;background:var(--mbu-accent-soft);color:var(--mbu-accent-text);cursor:pointer}'
         + '.mc-add{color:var(--mbu-accent-text);font-weight:600}.mc-warn{color:var(--mbu-warn);font-weight:600}.mc-why{font-size:11px;color:var(--mbu-warn);margin:2px 0 4px}'
-        + '.mc-tbl td .mc-pick{vertical-align:-2px;margin:0 2px 0 0}'
+        // #680: no tick boxes; a pickable row/cell is the toggle, tinted with a ✓ once taken in
+        + '.mc-line.mc-pick{cursor:pointer}.mc-line.mc-pick:hover{background:var(--mbu-bg-hover)}'
+        + '.mc-line.on{background:var(--mbu-accent-soft);box-shadow:inset 3px 0 0 var(--mbu-accent)}.mc-line.on:hover{background:var(--mbu-accent-soft)}'
+        + '.mc-tick{display:block;min-height:16px;line-height:16px;color:var(--mbu-accent-text);font-weight:700;text-align:center}'
+        + '.mc-tbl .mc-pick{display:inline-block;cursor:pointer;padding:1px 6px;margin:-1px -6px;border-radius:var(--mbu-radius);border:1px dashed transparent}'
+        + '.mc-tbl .mc-pick:hover{border-color:var(--mbu-border-strong)}.mc-tbl .mc-pick.on{background:var(--mbu-accent-soft);border:1px solid var(--mbu-border-strong)}'
+        + '.mc-tbl .mc-pick:not(.on) .mc-add{opacity:.55;text-decoration:line-through}'
+        + '.mc-sub{font-size:10px;letter-spacing:.6px;text-transform:uppercase;font-weight:700;color:var(--mbu-text-weak);padding:6px 10px 3px;background:var(--mbu-bg-raised);border-bottom:1px solid var(--mbu-divider)}'
+        + '.mc-tbl .mc-lnk{display:inline-flex;align-items:center;gap:1px;margin:0;padding:1px 4px;font-weight:700;color:var(--mbu-accent-text)}.mc-tbl .mc-lnk:not(.on){opacity:.45}'
+        + '.mc-have{opacity:.8}.mc-isep{width:1px;height:14px;background:var(--mbu-border);margin:0 2px}'
+        + '.mc-icons{display:inline-flex;gap:4px;align-items:center}.mc-icons a.mc-pico:hover{transform:scale(1.15)}'
         + '.mc-summary{padding:5px 10px;font-size:11.5px;color:var(--mbu-text-dim);border-bottom:1px solid var(--mbu-divider)}'
         + '.mc-applied{padding:5px 10px;font-size:11.5px;font-weight:600;border-bottom:1px solid var(--mbu-divider)}.mc-applied.ok{color:var(--mbu-ok);background:var(--mbu-ok-bg)}.mc-applied.err{color:var(--mbu-error);background:var(--mbu-error-bg)}'
         + '.mc-none{display:flex;flex-wrap:wrap;align-items:center;gap:6px;padding:6px 10px;font-size:11px;color:var(--mbu-text-weak)}.mc-none span:first-child{margin-right:4px}.mc-none .mc-pico{opacity:.6}'
@@ -317,11 +327,11 @@ function mcStyle() {
         + '.mc-tbl td.n{color:var(--mbu-text-weak);font-family:var(--mbu-font-mono);width:32px}'
         + '.mc-tbl td.ttl{white-space:normal}'
         + '.mc-tbl td.pend{color:var(--mbu-border-strong)}'
-        + '.mc-tbl tbody tr{cursor:pointer}.mc-tbl tbody tr:hover td{background:var(--mbu-bg-hover)}.mc-tbl tbody tr.sel td{background:var(--mbu-accent-soft)}'
+        + '.mc-tbl tbody tr{cursor:pointer}.mc-tbl tbody tr:hover td{background:var(--mbu-bg-hover)}.mc-tbl tbody tr.sel td{background:color-mix(in srgb, var(--mbu-accent) 22%, var(--mbu-bg))}.mc-tbl tbody tr.sel td:first-child{box-shadow:inset 3px 0 0 var(--mbu-accent)}'
         + '.mc-tbl tr.med td{background:var(--mbu-bg-raised);font-size:10.5px;font-weight:700;color:var(--mbu-text-weak);cursor:default}'
         + '.mc-mode{font-size:9.5px;font-weight:700;padding:0 6px;border-radius:20px;border:1px dashed var(--mbu-border-strong);color:var(--mbu-text-weak);margin-left:4px;text-transform:none;letter-spacing:0}'
         + '.mc-mini{display:flex;align-items:center;gap:6px;font-size:11.5px;padding:3px 0;border-bottom:1px solid var(--mbu-divider)}.mc-mini:last-child{border-bottom:0}'
-        + '.mc-mini .n{margin-left:auto;font-family:var(--mbu-font-mono);font-size:10.5px;color:var(--mbu-text-dim)}'
+        + '.mc-mini .n{margin-left:auto;font-family:var(--mbu-font-mono);font-size:10.5px;color:var(--mbu-text-dim);white-space:nowrap;flex:none;padding-left:6px}.mc-mini a:not(.n){min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}'
         + '.mc-insp-block{margin-bottom:12px}'
         + '.mc-foot{display:flex;align-items:center;gap:12px;padding:8px 14px;background:var(--mbu-bg);border-top:1px solid var(--mbu-border)}'
         + '.mc-foot .big{font-weight:700;font-size:13.5px}.mc-foot .sp{flex:1}'
@@ -351,7 +361,7 @@ function stateText(p) {
     const t = r.findings.reduce((a, x) => (a[x.state] = (a[x.state] || 0) + 1, a), {});
     return [t.new && t.new + ' new', t.linked && t.linked + ' linked', t.withheld && t.withheld + ' withheld', t.unsure && t.unsure + ' unsure', t.none && t.none + ' not found'].filter(Boolean).join(' · ') || 'nothing';
 }
-function paintAll() { if (!ui) return; paintBadges(); paintCards(); paintMatrix(); paintInspector(); paintFooter(); }
+function paintAll() { if (!ui) return; paintBadges(); paintCards(); paintReleaseCredits(); paintMatrix(); paintInspector(); paintFooter(); }
 
 function header() {
     const h = el('header', 'mc-hdr');
@@ -409,8 +419,8 @@ const COLS = [
         : x.state === 'unsure' ? '<span class="mc-warn mono" title="' + esc(x.why || '') + '">+ ' + esc(x.isrc) + ' ⚠</span>'
         : x.state === 'linked' ? '<span class="weak mono" title="' + esc((x.existing || []).join(', ')) + '">' + esc((x.existing || [])[0] || x.isrc || '') + ((x.existing || []).length > 1 ? ' +' + (x.existing.length - 1) : '') + '</span>'
         : '<span class="pend">none found</span>' },
-    { id: 'links', p: 'is', head: 'Rec links · IS', cell: x =>
-        x.links ? '<span title="' + esc((x.linkUrls || []).join('\n')) + '">' + x.links + ' link' + (x.links === 1 ? '' : 's') + '</span>' : '<span class="pend">none</span>' },
+    // rendered by linksCell: IS's linked icons plus the links Find links found (#680)
+    { id: 'links', p: 'is', head: 'Rec links · IS', cell: () => '' },
     { id: 'fusion', p: 'fusion', head: 'RG duplicates · Fusion', pick: true, cell: x =>
         x.state === 'new' ? '<span class="mc-pill warn">' + x.matches.length + ' match' + (x.matches.length === 1 ? '' : 'es') + '</span> <span class="weak">' + esc(x.matches.map(m => m.release || '').filter(Boolean).slice(0, 2).join(', ')) + '</span>'
         : '<span class="pend">—</span>' },
@@ -428,16 +438,35 @@ function colHead(c) {
 }
 function trackFinding(pid, rec) {
     const r = results[pid];
-    return r && r.state === 'done' && r.findings ? r.findings.find(x => x.track === rec) || null : null;
+    return r && r.state === 'done' && r.findings ? r.findings.find(x => x.track === rec && !x.kind) || null : null;
+}
+// IS's recording links to add (#680: Find links runs in the probe): its `kind: 'link'` findings
+function trackLinks(rec) {
+    const r = results.is;
+    return r && r.state === 'done' && r.findings ? r.findings.filter(x => x.track === rec && x.kind === 'link') : [];
+}
+// the links column: what's linked (plain icons), then what Find links found (each its own toggle)
+function linksCell(t) {
+    const x = trackFinding('is', t.rec), add = trackLinks(t.rec);
+    const have = (x && x.linkUrls || []).map(u => '<a class="mc-pico mc-have" target="_blank" rel="noopener" href="' + esc(u) + '" title="' + esc('Linked: ' + u) + '">' + stIcon(urlIcon(u), 14) + '</a>');
+    const neu = add.map(l => {
+        const on = picked.is && picked.is.has(l.key);
+        return '<span class="mc-pick mc-lnk' + (on ? ' on' : '') + '" data-prov="is" data-key="' + esc(l.key) + '" title="' + esc(l.name + ': ' + l.url + (on ? '\nTaken in: click to leave out' : '\nClick to take in')) + '">+' + stIcon(urlIcon(l.url), 14) + '</span>';
+    });
+    if (!have.length && !neu.length) return '<span class="pend">none</span>';
+    return '<span class="mc-icons">' + have.join('') + (have.length && neu.length ? '<span class="mc-isep"></span>' : '') + neu.join('') + '</span>';
 }
 const PICKABLE = { new: 1, withheld: 1, unsure: 1 };
 function cellHtml(c, t) {
     const p = PROVIDERS.find(x => x.id === c.p), r = results[c.p];
     if (r && r.state === 'busy') return '<span class="pend">…</span>';
+    if (c.id === 'links') return r && r.state === 'done' ? linksCell(t) : '<span class="pend">—</span>';
     const x = trackFinding(c.p, t.rec);
     if (!x) return '<span class="pend">—</span>';
-    const box = c.pick && PICKABLE[x.state] ? '<input type="checkbox" class="mc-pick" data-prov="' + p.id + '" data-key="' + esc(x.key) + '"' + (picked[p.id] && picked[p.id].has(x.key) ? ' checked' : '') + '> ' : '';
-    return box + c.cell(x);
+    // a pickable cell is its own toggle, no tick box (#680): a click takes it in or leaves it out
+    if (!c.pick || !PICKABLE[x.state]) return c.cell(x);
+    const on = picked[p.id] && picked[p.id].has(x.key);
+    return '<span class="mc-pick' + (on ? ' on' : '') + '" data-prov="' + p.id + '" data-key="' + esc(x.key) + '" title="' + (on ? 'Taken in: click to leave out' : 'Click to take in') + '">' + c.cell(x) + '</span>';
 }
 function paintMatrix() {
     ui.querySelectorAll('.mc-tbl th[data-colh]').forEach(th => { th.innerHTML = mbuHtml(colHead(COLS.find(c => c.id === th.dataset.colh))); });
@@ -475,13 +504,39 @@ function releaseCards() {
         return '<section class="mc-sect"><div class="mc-sect-h"><span class="ic" title="' + esc(p.provider) + '"><img alt="" src="' + PROVIDER_ICONS[id] + '"></span><span class="t">' + t + '</span><span class="end"></span></div>'
             + '<div class="mc-card-body" data-card="' + id + '"></div></section>';
     };
-    row.innerHTML = mbuHtml(card('pc', 'Platforms &amp; artists') + card('as', 'Cover art'));
+    row.innerHTML = mbuHtml(card('pc', 'Release and entity links') + card('as', 'Cover art'));
     return row;
+}
+
+// CH's release-level credits (#680): its finding with no `track`. Info only, like its column.
+function releaseCredits() {
+    const sec = el('section', 'mc-sect');
+    sec.innerHTML = mbuHtml('<div class="mc-sect-h"><span class="ic" title="Credit Hoarder"><img alt="" src="' + PROVIDER_ICONS.ch + '"></span><span class="t">Release credits</span><span class="mc-mode">info</span></div><div class="mc-chrel"></div>');
+    return sec;
+}
+function paintReleaseCredits() {
+    const box = ui.querySelector('.mc-chrel'); if (!box) return;
+    const p = PROVIDERS.find(x => x.id === 'ch'), r = results.ch;
+    if (!r || r.state !== 'done') { box.innerHTML = mbuHtml('<div class="mc-empty">Credit Hoarder: ' + esc(stateText(p)) + (r ? '' : '. Fetch credits fills this in.') + '</div>'); return; }
+    const x = (r.findings || []).find(f => !f.track);
+    if (!x) { box.innerHTML = mbuHtml('<div class="mc-empty">' + esc(r.summary ? r.summary + '. ' : '') + 'No release-level credits in the source.</div>'); return; }
+    box.innerHTML = mbuHtml('<div class="mc-summary">' + esc(x.source || '') + ': ' + x.list.length + ' credit' + (x.list.length === 1 ? '' : 's') + ' on the release</div>'
+        + '<div style="padding:4px 10px 8px">' + x.list.map(c => '<div class="mc-mini">' + esc(c.name) + '<span class="n">' + esc(c.role) + '</span></div>').join('') + '</div>');
 }
 
 // A provider's release-level findings: one row each; ticked rows go to Execute.
 const PILL = { new: ['add', 'new'], linked: ['ok', 'linked'], withheld: ['warn', 'withheld'], unsure: ['warn', 'unsure'], none: ['idle', 'not found'] };
 const ORDER = { new: 0, withheld: 1, unsure: 2, linked: 3, none: 4 };
+// a link's platform, as its ST-ICONS key (globe when MC has no icon for it)
+const HOST_ICON = [[/discogs\.com$/, 'discogs'], [/spotify\.com$/, 'spotify'], [/apple\.com$/, 'apple'], [/deezer\.com$/, 'deezer'], [/tidal\.com$/, 'tidal'], [/qobuz\.com$/, 'qobuz'],
+    [/beatport\.com$/, 'beatport'], [/bandcamp\.com$/, 'bandcamp'], [/volumo\.com$/, 'volumo'], [/hdtracks\.com$/, 'hdtracks'], [/soundcloud\.com$/, 'soundcloud'], [/audiomack\.com$/, 'audiomack'],
+    [/7digital\.com$/, 'sevendigital'], [/music\.youtube\.com$/, 'ytmusic'], [/amazon\.[a-z.]+$/, 'amazonmusic'], [/musicbrainz\.org$/, 'musicbrainz']];
+function urlIcon(u) {
+    let h = '';
+    try { h = new URL(u, location.href).hostname; } catch (e) { return 'globe'; }
+    const m = HOST_ICON.find(x => x[0].test(h));
+    return m ? m[1] : 'globe';
+}
 function shortUrl(u) { try { const x = new URL(u); return x.hostname.replace(/^www\./, '') + x.pathname.replace(/\/$/, ''); } catch (e) { return u; } }
 function paintCards() {
     ui.querySelectorAll('[data-card]').forEach(box => {
@@ -499,18 +554,25 @@ function paintCards() {
         const slot = box.parentNode.querySelector('.mc-sect-h .end');
         if (slot) slot.innerHTML = mbuHtml(linked.length ? '<button type="button" class="mc-linked' + (S.linkedRows ? ' on' : '') + '" data-act="linked" title="'
             + esc('Already linked: ' + linked.map(x => x.name || x.key).join(', ') + (S.linkedRows ? '. Click to fold them back here.' : '. Click to list them below.')) + '">'
-            + linked.map(x => '<span class="mc-pico">' + stIcon(x.icon || x.key, 14) + '</span>').join('') + '<span class="mc-lk">✓ ' + linked.length + '</span></button>' : '');
-        box.innerHTML = mbuHtml(sum + ap + rows.map(x => {
-            const pick = x.state === 'new' || x.state === 'withheld' || x.state === 'unsure';
+            + linked.map(x => '<span class="mc-pico' + (x.entity ? ' mc-ent' : '') + '" title="' + esc(x.name || x.key) + '">' + stIcon(x.icon || x.key, 14) + '</span>').join('') + '<span class="mc-lk">✓ ' + linked.length + '</span></button>' : '');
+        // the row is the toggle, no tick box (#680); a taken-in row is tinted and marked ✓
+        const line = x => {
+            const pick = !!PICKABLE[x.state];
+            const on = pick && picked[id] && picked[id].has(x.key);
             const pill = PILL[x.state] || ['idle', x.state];
-            return '<div class="mc-line ' + esc(x.state) + '">'
-                + (pick ? '<input type="checkbox" class="mc-pick" data-prov="' + id + '" data-key="' + esc(x.key) + '"' + (picked[id] && picked[id].has(x.key) ? ' checked' : '') + '>' : '<span></span>')
+            return '<div class="mc-line ' + esc(x.state) + (x.entity ? ' mc-ent' : '') + (pick ? ' mc-pick' : '') + (on ? ' on' : '') + '"'
+                + (pick ? ' data-prov="' + id + '" data-key="' + esc(x.key) + '" title="' + (on ? 'Taken in: click to leave out' : 'Click to take in') + '"' : '') + '>'
+                + '<span class="mc-tick">' + (on ? '✓' : '') + '</span>'
                 + '<span class="mc-pico">' + stIcon(x.icon || x.key, 14) + '</span>'
                 + '<div class="mc-lt"><div class="t">' + esc(x.name || x.key) + '</div>'
                 + (x.url ? '<a class="s" target="_blank" rel="noopener" href="' + esc(x.url) + '" title="' + esc(x.url) + '">' + esc(shortUrl(x.url)) + '</a>' : '')
                 + (x.why ? '<div class="s">' + esc(x.why) + '</div>' : '') + '</div>'
                 + '<span class="mc-pill ' + pill[0] + '">' + pill[1] + '</span></div>';
-        }).join('') + (none.length ? '<div class="mc-none" title="' + esc('Not found: ' + none.map(x => x.name || x.key).join(', ')) + '"><span>Not found</span>'
+        };
+        // PC's artist and label links (`entity`) under their own sub-heading, after the release's
+        const relRows = rows.filter(x => !x.entity), entRows = rows.filter(x => x.entity);
+        box.innerHTML = mbuHtml(sum + ap + relRows.map(line).join('')
+            + (entRows.length ? '<div class="mc-sub">Artists &amp; labels</div>' + entRows.map(line).join('') : '') + (none.length ? '<div class="mc-none" title="' + esc('Not found: ' + none.map(x => x.name || x.key).join(', ')) + '"><span>Not found</span>'
             + none.map(x => '<span class="mc-pico" title="' + esc(x.name || x.key) + '">' + stIcon(x.icon || x.key, 14) + '</span>').join('') + '</div>' : ''));
     });
 }
@@ -544,7 +606,9 @@ function paintInspector() {
         + (x.isrc && !(x.existing || []).includes(x.isrc) ? mini('<span class="mono mc-add">+ ' + esc(x.isrc) + '</span>', esc(x.source || '')) : '')
         + (x.why ? '<div class="mc-why">' + esc(x.why) + '</div>' : '')
         + (!x.isrc && !(x.existing || []).length ? '<div class="weak" style="font-size:11.5px">none found</div>' : '');
-    const linksBody = x => (x.linkUrls || []).map(u => '<div class="mc-mini"><a target="_blank" rel="noopener" href="' + esc(u) + '">' + esc(shortUrl(u)) + '</a></div>').join('') || '<div class="weak" style="font-size:11.5px">none</div>';
+    const linksBody = x => (x.linkUrls || []).map(u => mini('<span class="mc-pico">' + stIcon(urlIcon(u), 14) + '</span> <a target="_blank" rel="noopener" href="' + esc(u) + '">' + esc(shortUrl(u)) + '</a>', 'on MB')).join('')
+        + trackLinks(t.rec).map(l => mini('<span class="mc-pico">' + stIcon(urlIcon(l.url), 14) + '</span> <a class="mc-add" target="_blank" rel="noopener" href="' + esc(l.url) + '">+ ' + esc(shortUrl(l.url)) + '</a>', esc(l.name))).join('')
+        || '<div class="weak" style="font-size:11.5px">none</div>';
     const fusionBody = x => (x.matches || []).map(m => mini('<a target="_blank" href="/recording/' + esc(m.gid) + '">' + esc(m.title || m.gid.slice(0, 8)) + '</a>', esc((m.release || '') + (m.len ? ' · ' + m.len : '')))).join('')
         + (x.why ? '<div class="mc-why">' + esc(x.why) + '</div>' : '') || '<div class="weak" style="font-size:11.5px">no duplicates</div>';
     const chBody = x => (x.list || []).map(c => mini(esc(c.name), esc(c.role))).join('') || '<div class="weak" style="font-size:11.5px">no credits</div>';
@@ -598,6 +662,7 @@ function body() {
     const m = el('div', 'mc-main');
     const c = el('main', 'mc-center');
     c.append(matrix(), releaseCards());
+    if (S.ch !== 'off') c.append(releaseCredits());
     m.append(orderSidebar(), c, inspector());
     return m;
 }
@@ -614,13 +679,6 @@ function open() {
     document.documentElement.classList.add('mc-open');
     paintSides(); paintAll(); paintInspector();
     ui.addEventListener('click', onClick);
-    ui.addEventListener('change', e => {
-        const c = e.target.closest('.mc-pick'); if (!c) return;
-        const set = picked[c.dataset.prov] || (picked[c.dataset.prov] = new Set());
-        if (c.checked) set.add(c.dataset.key); else set.delete(c.dataset.key);
-        Log.debug((c.checked ? 'ticked ' : 'unticked ') + c.dataset.prov + ' ' + c.dataset.key);
-        paintFooter();
-    });
     document.addEventListener('keydown', onKey);
     window.addEventListener('resize', fitStrip);
     Log.info('opened · sidebars ' + (S.left ? 'order ' : '') + (S.right ? 'inspector' : '') + ' · fusion ' + S.fusion + ' · ch ' + S.ch);
@@ -666,8 +724,19 @@ function onClick(e) {
     if (x) { S[x.dataset.close] = false; saveSettings(); paintSides(); return; }
     const m = t.closest('.mc-seg button');
     if (m) { setMode(m.closest('.mc-seg').dataset.mode, m.dataset.v); return; }
+    // a pickable row or cell toggles on click (#680); a link inside it still just opens
+    const pk = !t.closest('a') && t.closest('.mc-pick');
+    if (pk) {
+        const set = picked[pk.dataset.prov] || (picked[pk.dataset.prov] = new Set());
+        const on = !set.has(pk.dataset.key);
+        if (on) set.add(pk.dataset.key); else set.delete(pk.dataset.key);
+        Log.debug((on ? 'taken in ' : 'left out ') + pk.dataset.prov + ' ' + pk.dataset.key);
+        if (pk.closest('.mc-tbl')) paintMatrix(); else paintCards();
+        paintFooter();
+        if (!pk.closest('.mc-tbl')) return;   // in the matrix the click also selects the track
+    }
     const row = t.closest('.mc-tbl tbody tr[data-i]');
-    if (row) {
+    if (row && !t.closest('a')) {
         selected = Number(row.dataset.i);
         ui.querySelectorAll('.mc-tbl tr.sel').forEach(r => r.classList.remove('sel'));
         row.classList.add('sel');

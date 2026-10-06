@@ -22,16 +22,19 @@ test('#680: Probe asks Platform Check and shows its platforms', { tag: ['@sandbo
 
   await page.click('#mc-root [data-act="probe"]');
   await page.waitForSelector('#mc-root [data-card="pc"] .mc-line', { timeout: 180_000 });
-  const rows = await page.locator('#mc-root [data-card="pc"] .mc-line').count();
+  // the release's platforms only: PC's artist and label links (#680) are rows too, marked mc-ent
+  const rows = await page.locator('#mc-root [data-card="pc"] .mc-line:not(.mc-ent)').count();
+  console.log('artist/label link rows: ' + await page.locator('#mc-root [data-card="pc"] .mc-line.mc-ent').count());
   const enabled = await page.evaluate(() => document.querySelectorAll('[id^="mb-online-"]').length);
   console.log(`platform rows: ${rows} · PC panel rows: ${enabled}`);
   const none = await page.locator('#mc-root [data-card="pc"] .mc-none .mc-pico').count();
-  const linkedIcons = await page.locator('#mc-root .mc-linked .mc-pico').count();
+  const linkedIcons = await page.locator('#mc-root .mc-linked .mc-pico:not(.mc-ent)').count();
+  const linkedAll = await page.locator('#mc-root .mc-linked .mc-pico').count();
   check(rows + none + linkedIcons === enabled, `every platform PC scanned is a row, a linked icon in the header, or a not-found icon (${rows} + ${linkedIcons} + ${none} of ${enabled})`);
   check(await page.locator('#mc-root [data-card="pc"] .mc-line.linked').count() === 0, 'linked platforms are not rows by default');
   if (linkedIcons) {
     await page.click('#mc-root .mc-linked');
-    check(await page.locator('#mc-root [data-card="pc"] .mc-line.linked').count() === linkedIcons, 'clicking the linked icons lists them as rows');
+    check(await page.locator('#mc-root [data-card="pc"] .mc-line.linked').count() === linkedAll, 'clicking the linked icons lists them as rows');
     const order = await page.locator('#mc-root [data-card="pc"] .mc-line').evaluateAll(ls => ls.map(l => l.classList.contains('linked')));
     check(order.indexOf(true) === -1 || order.slice(order.indexOf(true)).every(Boolean), 'linked rows come last');
     await page.click('#mc-root .mc-linked');
@@ -41,13 +44,13 @@ test('#680: Probe asks Platform Check and shows its platforms', { tag: ['@sandbo
   const states = await page.locator('#mc-root [data-card="pc"] .mc-line').evaluateAll(ls => ls.map(l => l.className.replace('mc-line ', '')));
   console.log('states: ' + JSON.stringify(states));
   const nNew = states.filter(s => s === 'new').length;
-  const ticked = await page.locator('#mc-root [data-card="pc"] .mc-pick:checked').count();
+  const ticked = await page.locator('#mc-root [data-card="pc"] .mc-pick.on').count();
   check(ticked === nNew, `ticked by default = the confirmed ones (${ticked} of ${nNew})`);
   check((await page.locator('#mc-root .mc-foot .big').textContent()).startsWith(nNew + ' change'), 'footer counts the ticked rows');
 
   // unticking one changes the count
   if (nNew) {
-    await page.locator('#mc-root [data-card="pc"] .mc-pick:checked').first().uncheck();
+    await page.locator('#mc-root [data-card="pc"] .mc-pick.on .mc-tick').first().click();
     check((await page.locator('#mc-root .mc-foot .big').textContent()).startsWith((nNew - 1) + ' change'), 'unticking lowers the count');
   }
   check(!/…/.test(await page.locator('#mc-root .mc-bdg').first().textContent()), 'PC badge no longer busy');
@@ -55,8 +58,8 @@ test('#680: Probe asks Platform Check and shows its platforms', { tag: ['@sandbo
   // Apply. No Falcon on the page first: PC says so, and the card shows the failure.
   const pickable = page.locator('#mc-root [data-card="pc"] .mc-pick');
   test.skip(!(await pickable.count()), 'no platform to tick on this fixture');
-  await page.evaluate(() => document.querySelectorAll('#mc-root .mc-pick').forEach(c => { if (c.checked) c.click(); }));
-  await pickable.first().check();
+  await page.evaluate(() => { let c, n = 0; while ((c = document.querySelector('#mc-root .mc-pick.on')) && n++ < 500) c.click(); });
+  await pickable.first().locator('.mc-tick').click();   // the row's edge: its middle can be the url, a link that opens
   check(await page.locator('#mc-root [data-act="exec"]').isEnabled(), 'Execute enabled once something is ticked');
   await page.click('#mc-root [data-act="exec"]');
   await page.waitForSelector('#mc-root [data-card="pc"] .mc-applied');

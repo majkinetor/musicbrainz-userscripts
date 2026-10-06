@@ -24,16 +24,19 @@ test('#680: Probe asks ISRC Scout; the matrix shows each track\'s ISRC', { tag: 
   const cells = await page.locator('#mc-root .mc-tbl td[data-col="isrc"]').allTextContents();
   const added = cells.filter(c => /^\s*\+ [A-Z]{2}[A-Z0-9]{3}\d{7}/.test(c)).length;
   check(added > 0, `ISRC column shows found ISRCs (${added} of ${cells.length})`);
-  const ticked = await page.locator('#mc-root .mc-tbl td[data-col="isrc"] .mc-pick:checked').count();
+  const ticked = await page.locator('#mc-root .mc-tbl td[data-col="isrc"] .mc-pick.on').count();
   check(ticked === added, `the new ones start ticked (${ticked})`);
 
   // the inspector shows the found ISRC and its source
-  await page.locator('#mc-root .mc-tbl tbody tr[data-i]').first().click();
+  await page.locator('#mc-root .mc-tbl tbody tr[data-i]').first().locator('td.ttl').click();
   check(/Deezer/.test(await page.locator('#mc-root .mc-insp').textContent()), 'inspector names the source');
 
   await page.click('#mc-root [data-act="dry"]');
   await page.waitForSelector('#mc-root .mc-tapplied .mc-applied', { timeout: 20_000 });
   const note = await page.locator('#mc-root .mc-tapplied').textContent();
-  check(new RegExp(`dry run: ${ticked} ISRCs? would be submitted`).test(note), `dry run reports what IS would submit, without submitting ("${note}")`);
+  // #680: Find links runs in the probe too, so its ticked links ride along
+  const links = await page.locator('#mc-root .mc-tbl td[data-col="links"] .mc-pick.on').count();
+  console.log('links ticked: ' + links);
+  check(new RegExp(`dry run: ${ticked} ISRCs?${links ? ` and ${links} links?` : ''} would be submitted`).test(note), `dry run reports what IS would submit, without submitting ("${note}")`);
   await page.screenshot({ path: 'test-results/mc-680-is.png' });
 });
