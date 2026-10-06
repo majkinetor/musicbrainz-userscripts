@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Mission Control
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.6.234537
+// @version      2026.10.6.235156
 // @description  One window on the release page that asks the other scripts (Platform Check, ISRC Scout, Art Station, Fusion, Credit Hoarder) what is missing, shows it all in one review, and applies the ticked changes in order.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPk1pc3Npb24gQ29udHJvbDwvdGl0bGU+CiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjNWYzZWMwIiBzdHJva2Utd2lkdGg9IjciPgogICAgPGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iNTIiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjMwIi8+CiAgICA8cGF0aCBkPSJNNjQgNHYyMk02NCAxMDJ2MjJNNCA2NGgyMk0xMDIgNjRoMjIiLz4KICA8L2c+CiAgPGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iMTEiIGZpbGw9IiM4YTVjZjYiLz4KPC9zdmc+Cg==
@@ -355,7 +355,7 @@ function mcStyle() {
         // #680: one header row — the release, the steps (C, on one line), Execute (N), ⚙ and ✕
         + '.mc-hdr{display:flex;align-items:center;gap:14px;height:52px;padding:0 10px 0 16px;background:var(--mbu-bg);border-bottom:1px solid var(--mbu-border);box-shadow:var(--mbu-shadow)}'
         + '.mc-rel{display:flex;flex-direction:column;min-width:0;flex:0 1 230px;line-height:1.2}.mc-ttl{font-weight:700;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.mc-art{font-size:12px;color:var(--mbu-text-dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}'
-        + '.mc-hdr .mc-act{display:flex;align-items:center;gap:4px;flex:none}#mc-root .mc-act [data-act="exec"]{min-width:124px;font-variant-numeric:tabular-nums}'
+        + '.mc-hdr .mc-act{display:flex;align-items:center;gap:4px;flex:none}#mc-root .mc-act .mc-exec{justify-content:center;min-width:96px;height:28px;padding:0 12px;font-size:12.5px;font-weight:600;font-variant-numeric:tabular-nums;background:var(--mbu-accent-soft);border-color:var(--mbu-border-strong);color:var(--mbu-accent-text)}#mc-root .mc-act .mc-exec:hover:not(:disabled){background:var(--mbu-accent);border-color:var(--mbu-accent);color:var(--mbu-accent-fg)}#mc-root .mc-act .mc-exec:disabled{background:var(--mbu-bg);border-color:var(--mbu-border);color:var(--mbu-text-weak);cursor:default}'
         // the steps: a ring, then the name and the state beside it, all on one centre line; a click shows or hides the order sidebar
         + '.mc-steps{display:flex;align-items:center;justify-content:center;gap:6px;flex:1 1 auto;min-width:0;height:100%;cursor:pointer}'
         + '#mc-root .mc-re{flex:none;width:26px;height:26px;margin-right:4px;padding:0;border-radius:50%;border:1px solid var(--mbu-border);background:var(--mbu-bg);color:var(--mbu-text-dim);font-size:14px;line-height:1;cursor:pointer}#mc-root .mc-re:hover{background:var(--mbu-bg-hover);color:var(--mbu-accent-text)}'
@@ -491,7 +491,7 @@ function header() {
     // Execute with its count; logo, version and Auto probe live in ⚙
     h.innerHTML = mbuHtml('<div class="mc-rel"><div class="mc-ttl" title="' + esc(rel.title) + '">' + esc(rel.title) + '</div>'
         + '<div class="mc-art" title="' + esc(rel.artist) + '">' + esc(rel.artist || '') + '</div></div>'
-        + '<div class="mc-act"><button type="button" class="mc-btn primary lg" data-act="exec" disabled title="Apply the ticked changes, step by step">Execute</button>'
+        + '<div class="mc-act"><button type="button" class="mc-btn mc-exec" data-act="exec" disabled title="Apply the ticked changes, step by step">Execute</button>'
         + '<button type="button" class="mc-btn ghost" data-act="cfg" title="Settings">' + MBU_CFG_ICON + '</button>'
         + '<button type="button" class="mc-btn ghost" data-act="close" title="Close (Esc)">✕</button></div>');
     h.insertBefore(steps(), h.querySelector('.mc-act'));
