@@ -2,7 +2,7 @@
 // launcher, reads the tracklist from the page (no request), and the sidebar
 // toggles and the Fusion/CH modes change what is on screen and persist.
 // Read only: nothing is submitted.
-import { test, check } from '../../../dev/test/harness.mjs';
+import { test, check, until } from '../../../dev/test/harness.mjs';
 
 test.use({ gm: { name: 'Mission Control' } });
 
@@ -37,7 +37,8 @@ test('#680: MC shell — launcher, track matrix, sidebars, modes', { tag: ['@san
   });
   check(cover.same.figs === 1 && /Already the best cover/.test(cover.same.text) && /same image as the best found \(Discogs\)/.test(cover.same.text), `best cover = current front: one figure, "already the best" (${JSON.stringify(cover.same)})`);
   check(cover.smaller.figs === 2 && /Not larger than the current front/.test(cover.smaller.text), `a different image of the same size is still compared (${JSON.stringify(cover.smaller)})`);
-  check(await page.locator('#mc-root .mc-badges .mc-bdg').count() === 5, 'a header badge per provider');
+  check(await page.locator('#mc-root .mc-steps .mc-step').count() === 5, 'a step per provider, under the header');
+  check(await page.locator('#mc-root .mc-steps .mc-par .mc-step').count() === 2, 'IS and AS side by side, in parallel');
 
   // left of the header: Probe and its Auto switch, nothing else (#680: no source link)
   check(await page.locator('#mc-root .mc-hdr .l > *').count() === 2 && await page.locator('#mc-root [data-act="src"]').count() === 0, 'header left holds Probe and Auto');
@@ -55,18 +56,45 @@ test('#680: MC shell — launcher, track matrix, sidebars, modes', { tag: ['@san
   check(await page.locator('#mc-root .mc-hdr .r button').count() === 2, 'header right holds only settings and close');
   await page.click('#mc-root [data-close="left"]');
   check(await page.locator('#mc-root .mc-side.left').isHidden(), 'order sidebar hidden');
-  check(await page.locator('#mc-root .mc-strip').isVisible(), 'strip shown instead');
+  check(await page.locator('#mc-root .mc-steps .mc-exp').isVisible(), 'the steps offer ▸ to bring it back');
   check((await page.evaluate(() => window.__mcTest.settings())).left === false, 'left=false stored');
 
   // CH off drops its column and its step
   const heads = () => page.locator('#mc-root .mc-tbl th').allTextContents();
   check((await heads()).some(h => h.includes('Credits')), 'credits column present');
-  await page.click('#mc-root .mc-strip');
-  check(await page.locator('#mc-root .mc-side.left').isVisible(), 'clicking the strip expands the sidebar');
-  check(await page.locator('#mc-root .mc-strip').isHidden(), 'strip gone again');
+  await page.click('#mc-root .mc-steps .mc-exp');
+  check(await page.locator('#mc-root .mc-side.left').isVisible(), '▸ expands the sidebar');
+  check(await page.locator('#mc-root .mc-steps .mc-exp').isHidden(), '▸ gone again');
+  check(await page.locator('#mc-root .mc-steps').isVisible(), 'the steps stay');
   await page.click('#mc-root .mc-seg[data-mode="ch"] button[data-v="off"]');
   check(!(await heads()).some(h => h.includes('Credits')), 'credits column gone with CH off');
   check(await page.locator('#mc-root .mc-stage.off[data-p="ch"]').count() === 1, 'CH step marked off');
+  check(await page.locator('#mc-root .mc-step.off[data-step="ch"]').count() === 1, 'and dimmed in the steps');
+
+  // #680 C: a step says what its provider is doing and for how long, and turns amber when it goes quiet.
+  // A stand-in Art Station answers nothing at first, then a step, then its findings.
+  const step = async () => page.locator('#mc-root .mc-step[data-step="as"]').evaluate(n => ({ cls: n.className, say: n.querySelector('i').textContent, mark: n.querySelector('sup').hidden ? '' : n.querySelector('sup').textContent }));
+  check((await step()).say === 'not installed', `a provider not on the page says so (${JSON.stringify(await step())})`);
+  await page.evaluate(() => {
+    window.__mcTest.setStall(1500);
+    document.addEventListener('mc:probe', e => { window.__asRun = JSON.parse(e.detail).run; });
+    document.dispatchEvent(new CustomEvent('mc:provider', { detail: JSON.stringify({ id: 'as', name: 'Art Station', version: 1, capabilities: ['probe'] }) }));
+  });
+  check((await step()).say === 'not probed', 'connected, it waits for Probe');
+  await page.click('#mc-root [data-act="probe"]');
+  check(/\bbusy\b/.test((await step()).cls), 'probing: busy');
+  const quiet = await until(step, s => /\bstalled\b/.test(s.cls), { timeout: 5000 });
+  check(/^no word for \d+ s · starting$/.test(quiet.say) && quiet.mark === '!', `no word: stalled, with the time (${JSON.stringify(quiet)})`);
+  const send = (type, d) => page.evaluate(([type, d]) => document.dispatchEvent(new CustomEvent(type, { detail: JSON.stringify(Object.assign({ id: 'as', run: window.__asRun }, d)) })), [type, d]);
+  await page.evaluate(() => window.__mcTest.setStall(8000));   // room for the seconds to show (from 2 s)
+  await send('mc:progress', { state: 'busy', note: 'finding the best cover' });
+  const busy = await step();
+  check(/\bbusy\b/.test(busy.cls) && busy.say === 'finding the best cover', `a progress note: busy again, saying the step (${JSON.stringify(busy)})`);
+  const ticking = await until(step, s => / · \d+ s$/.test(s.say), { timeout: 4000 });
+  check(/^finding the best cover · \d+ s$/.test(ticking.say), `the seconds count up while it works (${ticking.say})`);
+  await send('mc:findings', { release: await page.evaluate(() => window.__mcTest.release().mbid || ''), findings: [{ key: 'cover:1', state: 'new' }, { key: 'cover:2', state: 'linked' }] });
+  const found = await step();
+  check(/\badd\b/.test(found.cls) && found.say === '1 new' && found.mark === '1', `findings: what there is to add, counted on the ring (${JSON.stringify(found)})`);
 
   await page.screenshot({ path: 'test-results/mc-680-shell.png' });
   await page.locator('#mc-root .mc-hdr').screenshot({ path: 'test-results/mc-680-header.png' });

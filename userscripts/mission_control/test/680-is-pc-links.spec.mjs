@@ -35,7 +35,7 @@ test('#680: a ticked Bandcamp album gives ISRC Scout its track links', { tag: ['
   await page.click('#mc-root [data-act="probe"]');
   const pcRow = page.locator('#mc-root [data-card="pc"] .mc-pick');
   await pcRow.first().waitFor();
-  await page.waitForFunction(() => /\+|✓/.test(document.querySelectorAll('#mc-root .mc-bdg')[1].textContent), null, { timeout: 120_000 });
+  await page.waitForFunction(() => /\b(add|ok)\b/.test(document.querySelector('#mc-root .mc-step[data-step="is"]').className), null, { timeout: 120_000 });
   const linkCells = () => page.locator('#mc-root .mc-tbl td[data-col="links"]').allTextContents();
   check(!(await linkCells()).some(c => /bandcamp/i.test(c)), 'no Bandcamp track links before the album is ticked');
   check(JSON.stringify(await page.evaluate(() => window.__isAsked)) === '[[]]', 'the first probe asks IS with no album links');

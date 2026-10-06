@@ -23,7 +23,7 @@ test('#680: Probe asks Platform Check and shows its platforms', { tag: ['@sandbo
 
   await page.click('#mc-launch');
   await page.waitForSelector('#mc-root');
-  check(/connected/.test(await page.locator('#mc-root .mc-bdg').first().getAttribute('title')), 'PC badge reads connected');
+  check(/connected/.test(await page.locator('#mc-root .mc-step[data-step="pc"]').getAttribute('title')), 'PC step reads connected');
 
   // the header pulses while the probe is out (seen at any point), and stops once it's answered
   await page.evaluate(() => { const h = document.querySelector('#mc-root .mc-hdr'); window.__busySeen = h.classList.contains('mc-busy'); new MutationObserver(() => { if (h.classList.contains('mc-busy')) window.__busySeen = true; }).observe(h, { attributes: true }); });
@@ -60,7 +60,7 @@ test('#680: Probe asks Platform Check and shows its platforms', { tag: ['@sandbo
     await page.locator('#mc-root [data-card="pc"] .mc-pick.on .mc-tick').first().click();
     check((await page.locator('#mc-root .mc-foot .big').textContent()).startsWith((nNew - 1) + ' change'), 'unticking lowers the count');
   }
-  check(!/…/.test(await page.locator('#mc-root .mc-bdg').first().textContent()), 'PC badge no longer busy');
+  check(!/busy|stalled/.test(await page.locator('#mc-root .mc-step[data-step="pc"]').getAttribute('class')), 'PC step no longer busy');
   check(await page.evaluate(() => window.__busySeen), 'the header pulsed while probing');
   check(!(await page.locator('#mc-root .mc-hdr.mc-busy').count()), 'and stopped once the probe was answered');
 

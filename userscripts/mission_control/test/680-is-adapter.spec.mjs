@@ -19,7 +19,7 @@ test('#680: Probe asks ISRC Scout; the matrix shows each track\'s ISRC', { tag: 
   await page.click('#mc-launch');
   await page.waitForSelector('#mc-root');
   await page.click('#mc-root [data-act="probe"]');
-  await page.waitForFunction(() => /\+|✓/.test(document.querySelectorAll('#mc-root .mc-bdg')[1].textContent), null, { timeout: 120_000 });
+  await page.waitForFunction(() => /\b(add|ok)\b/.test(document.querySelector('#mc-root .mc-step[data-step="is"]').className), null, { timeout: 120_000 });
 
   const cells = await page.locator('#mc-root .mc-tbl td[data-col="isrc"]').allTextContents();
   const added = cells.filter(c => /^\s*\+ [A-Z]{2}[A-Z0-9]{3}\d{7}/.test(c)).length;

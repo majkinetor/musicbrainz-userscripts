@@ -24,6 +24,8 @@ Each probe has a `run` id, and MC drops progress or findings that carry an older
 
 The album links ticked in PC's card aren't on the release yet (Execute adds them before IS runs), so IS is probed with them in `links` and reads them as if they were: a ticked Bandcamp album gives the tracks its Bandcamp links before Execute. MC asks IS again whenever the ticked set changes, once IS's answer to the last probe is in; IS takes them off its release load again before it answers.
 
+The steps under the header show each provider's last `mc:progress` note and the seconds since it came, and turn amber ("no word for N s") after 20 s without one. A provider working longer than that sends a note at least every 20 s, or it reads as stuck.
+
 ### Findings
 
 One finding per thing the provider looked at:

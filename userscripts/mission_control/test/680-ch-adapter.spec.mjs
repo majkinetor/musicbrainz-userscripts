@@ -25,7 +25,7 @@ test('#680: Credit Hoarder reports credits per track on Fetch credits', { tag: [
 
   const meta = await page.locator('#mc-root .mc-stage[data-p="ch"] .meta').textContent();
   check(/(Qobuz|Deezer|Apple|Discogs): \d+ credits? on \d+ of 12 tracks|No credit source linked/.test(meta), `the step says what CH read ("${meta}")`);
-  const total = Number(((await page.locator('#mc-root .mc-bdg').nth(4).textContent()).match(/\d+/) || [0])[0]);
+  const total = Number(((await page.locator('#mc-root .mc-step[data-step="ch"] i').textContent()).match(/\d+/) || [0])[0]);
   const cells = (await page.locator('#mc-root .mc-tbl td[data-col="ch"]').allTextContents()).map(t => Number(t.trim()) || 0);
   // the badge counts the release's own credits too (#680: the Release credits card)
   const relN = await page.locator('#mc-root .mc-chrel .mc-mini').count();
