@@ -45,6 +45,7 @@ The rest applies whoever you post as:
 
 ## Testing and live verification
 
+- **Iterating on looks (layout, spacing, colour) by screenshot: no test suites per tweak** — syntax check, one real-page screenshot, push. Run the full suites (and add the regression checks) when the maintainer says the batch is done, or before merging. Behaviour changes still get their tests as usual.
 - **Tests run against a sandbox / test instance, never production** — and the harness should guard production writes.
 - **Prove a regression fixture fails on the broken build first** — fixtures have passed for the wrong reason.
 - **A faked / intercepted / 302'd submit proves nothing** — back a write path with a real sandbox end-to-end test that reads the entity back. When production is logged out, use the sandbox rather than shipping an "unverified" caveat.
