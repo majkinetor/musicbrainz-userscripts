@@ -32,7 +32,7 @@ test('#680: Probe asks ISRC Scout; the matrix shows each track\'s ISRC', { tag: 
   // the fastest source the release links (Find everything's order): Audiomack here, before Deezer
   check(/Audiomack|Deezer|Qobuz|Apple/.test(await page.locator('#mc-root .mc-insp').textContent()), 'inspector names the source');
 
-  await page.click('#mc-root [data-act="dry"]');
+  await page.evaluate(() => { window.__mcTest.execute(true); });   // Dry run: the test hook only (#680)
   await page.waitForSelector('#mc-root .mc-tapplied .mc-applied', { timeout: 20_000 });
   const note = await page.locator('#mc-root .mc-tapplied').textContent();
   // #680: Find links runs in the probe too, so its ticked links ride along

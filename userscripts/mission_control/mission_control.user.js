@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Mission Control
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.6.231132
+// @version      2026.10.6.233627
 // @description  One window on the release page that asks the other scripts (Platform Check, ISRC Scout, Art Station, Fusion, Credit Hoarder) what is missing, shows it all in one review, and applies the ticked changes in order.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPk1pc3Npb24gQ29udHJvbDwvdGl0bGU+CiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjNWYzZWMwIiBzdHJva2Utd2lkdGg9IjciPgogICAgPGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iNTIiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjMwIi8+CiAgICA8cGF0aCBkPSJNNjQgNHYyMk02NCAxMDJ2MjJNNCA2NGgyMk0xMDIgNjRoMjIiLz4KICA8L2c+CiAgPGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iMTEiIGZpbGw9IiM4YTVjZjYiLz4KPC9zdmc+Cg==
@@ -258,7 +258,7 @@ function markApplied(id, keys) {
 }
 async function execute(dry) {
     if (executing) return;
-    executing = true; paintFooter();
+    executing = true; paintExec();
     let failed = 0, sent = 0;
     try {
         for (const step of STEPS) {
@@ -276,7 +276,7 @@ async function execute(dry) {
             });
             paintAll();
         }
-    } finally { executing = false; paintFooter(); }
+    } finally { executing = false; paintExec(); }
     mbuToast(failed ? failed + ' step' + (failed === 1 ? '' : 's') + ' failed: see the cards and the log' : (dry ? 'Dry run done: nothing was written' : 'Done: ' + sent + ' change' + (sent === 1 ? '' : 's') + ' applied or handed over'), { kind: failed ? 'error' : 'ok' });
 }
 function discover() {
@@ -338,14 +338,11 @@ function mcStyle() {
         + '#mc-root *{box-sizing:border-box}'
         + '#mc-root .mono{font-family:var(--mbu-font-mono)}#mc-root .weak{color:var(--mbu-text-weak)}'
         // header: actions | album (center) | actions — Apollo's layout
-        + '.mc-hdr{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:14px;padding:6px 12px;background:var(--mbu-bg);border-bottom:1px solid var(--mbu-border);box-shadow:var(--mbu-shadow)}'
-        + '.mc-hdr .l,.mc-hdr .r{display:flex;align-items:center;gap:6px;min-width:0}.mc-hdr .r{justify-content:flex-end}'
-        + '@keyframes mc-busy-pulse{0%,100%{box-shadow:var(--mbu-shadow),inset 0 0 0 9999px transparent}50%{box-shadow:var(--mbu-shadow),inset 0 0 0 9999px color-mix(in srgb, var(--mbu-info) 18%, transparent)}}'
-        + '.mc-hdr.mc-busy{animation:mc-busy-pulse 1.1s ease-in-out infinite}'
-        + '.mc-hdr .c{display:flex;align-items:center;gap:10px;min-width:0}'
-        + '.mc-cover{width:30px;height:30px;border-radius:4px;object-fit:cover;flex:none;background:var(--mbu-accent-soft)}'
-        + '.mc-ttl{font-weight:700;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:36vw}.mc-art{font-size:11.5px;color:var(--mbu-text-dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:36vw}'
-        + '#mc-root .mc-auto{display:inline-flex;align-items:center;gap:6px;margin-left:8px;padding:3px 8px;font:600 12px var(--mbu-font);color:var(--mbu-text-dim);background:none;border:1px solid var(--mbu-border);border-radius:20px;cursor:pointer}#mc-root .mc-auto .k{position:relative;width:24px;height:13px;border-radius:7px;background:var(--mbu-border);transition:background .15s}#mc-root .mc-auto .k::after{content:"";position:absolute;left:2px;top:2px;width:9px;height:9px;border-radius:50%;background:#fff;transition:left .15s}#mc-root .mc-auto.on{color:var(--mbu-accent-text);border-color:var(--mbu-accent)}#mc-root .mc-auto.on .k{background:var(--mbu-accent)}#mc-root .mc-auto.on .k::after{left:13px}'
+        // an opacity pulse on a layer under the header's contents: the compositor runs it, so it stays
+        // smooth while the page's thread is busy (a box-shadow pulse froze and jumped: flashing)
+        + '.mc-hdr{position:relative;isolation:isolate}.mc-hdr::after{content:"";position:absolute;inset:0;z-index:-1;pointer-events:none;opacity:0;background:color-mix(in srgb, var(--mbu-info) 18%, transparent)}'
+        + '@keyframes mc-busy-pulse{0%,100%{opacity:0}50%{opacity:1}}.mc-hdr.mc-busy::after{animation:mc-busy-pulse 1.4s ease-in-out infinite;will-change:opacity}'
+        + '@media (prefers-reduced-motion: reduce){.mc-hdr.mc-busy::after{animation:none;opacity:.5}}'
         + '.mc-sep{width:1px;height:20px;background:var(--mbu-border);margin:0 4px}'
         + '#mc-root .mc-btn{display:inline-flex;align-items:center;gap:5px;border:1px solid var(--mbu-border);background:var(--mbu-bg);color:var(--mbu-text);padding:4px 10px;border-radius:var(--mbu-radius);font:inherit;font-size:12px;cursor:pointer;white-space:nowrap}'
         + '#mc-root .mc-btn:hover:not(:disabled){background:var(--mbu-bg-hover);border-color:var(--mbu-border-strong)}'
@@ -355,21 +352,25 @@ function mcStyle() {
         + '#mc-root .mc-btn.primary:hover:not(:disabled){background:var(--mbu-accent-hover)}'
         + '#mc-root .mc-btn.tog{color:var(--mbu-text-weak)}#mc-root .mc-btn.tog.on{background:var(--mbu-accent-soft);border-color:var(--mbu-border-strong);color:var(--mbu-accent-text)}'
         + '#mc-root .mc-btn.lg{padding:7px 16px;font-size:13px}'
-        // #680 C: the execution order as a stepper, a ring per provider and its state in words under it
-        + '.mc-steps{display:flex;align-items:flex-start;gap:6px;padding:8px 12px 6px;background:var(--mbu-bg);border-bottom:1px solid var(--mbu-border);overflow:hidden}'
-        + '.mc-steps .mc-exp{display:none;align-self:center;cursor:pointer;color:var(--mbu-text-weak);padding:4px 6px;border-radius:4px}.mc-steps .mc-exp:hover{background:var(--mbu-bg-hover)}#mc-root.no-left .mc-steps .mc-exp{display:block}'
-        + '.mc-step{display:flex;flex-direction:column;align-items:center;gap:2px;width:132px;flex:0 1 132px;min-width:72px;text-align:center}'
-        + '.mc-step b{font-size:12.5px;color:var(--mbu-text)}.mc-step i{font-style:normal;font-size:11.5px;line-height:1.25;color:var(--mbu-text-dim);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;max-width:100%}'
-        + '.mc-ring{position:relative;display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;border-radius:50%;border:2.5px solid var(--mbu-border);background:var(--mbu-bg);box-sizing:border-box}'
-        + '.mc-ring img{width:16px;height:16px;object-fit:contain;display:block}'
+        // #680: one header row — the release, the steps (C, on one line), Execute (N), ⚙ and ✕
+        + '.mc-hdr{display:flex;align-items:center;gap:14px;height:52px;padding:0 10px 0 16px;background:var(--mbu-bg);border-bottom:1px solid var(--mbu-border);box-shadow:var(--mbu-shadow)}'
+        + '.mc-rel{display:flex;flex-direction:column;min-width:0;flex:0 1 230px;line-height:1.2}.mc-ttl{font-weight:700;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.mc-art{font-size:12px;color:var(--mbu-text-dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}'
+        + '.mc-hdr .mc-act{display:flex;align-items:center;gap:4px;flex:none}'
+        // the steps: a ring, then the name and the state beside it, all on one centre line; a click shows or hides the order sidebar
+        + '.mc-steps{display:flex;align-items:center;justify-content:center;gap:6px;flex:1 1 auto;min-width:0;height:100%;cursor:pointer}'
+        + '#mc-root .mc-re{flex:none;width:26px;height:26px;margin-right:4px;padding:0;border-radius:50%;border:1px solid var(--mbu-border);background:var(--mbu-bg);color:var(--mbu-text-dim);font-size:14px;line-height:1;cursor:pointer}#mc-root .mc-re:hover{background:var(--mbu-bg-hover);color:var(--mbu-accent-text)}'
+        + '.mc-step{display:inline-flex;align-items:center;gap:7px;min-width:0;flex:0 1 auto;padding:0 4px}'
+        + '.mc-step .tx{display:flex;flex-direction:column;min-width:0;line-height:1.2}.mc-step b{font-size:12.5px;color:var(--mbu-text)}.mc-step i{font-style:normal;font-size:11.5px;color:var(--mbu-text-dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:150px}'
+        + '.mc-ring{position:relative;flex:none;display:grid;place-items:center;width:28px;height:28px;border-radius:50%;border:2px solid var(--mbu-border);background:var(--mbu-bg);box-sizing:border-box}'
+        + '.mc-ring img{width:16px;height:16px;object-fit:contain;display:block;margin:0;vertical-align:0}'
         + '.mc-ring sup{position:absolute;right:-8px;top:-6px;min-width:15px;height:15px;padding:0 3px;box-sizing:border-box;border-radius:8px;background:var(--mbu-accent);color:var(--mbu-text-on-accent);font-size:10px;font-weight:700;line-height:15px;text-align:center}'
         + '.mc-step.ok .mc-ring{border-color:var(--mbu-ok)}.mc-step.ok sup{background:var(--mbu-ok)}'
         + '.mc-step.add .mc-ring{border-color:var(--mbu-accent)}.mc-step.add i{color:var(--mbu-accent-text);font-weight:600}'
-        + '.mc-step.busy .mc-ring{border-color:var(--mbu-info-border)}.mc-step.busy .mc-ring::before{content:"";position:absolute;inset:-2.5px;border-radius:50%;border:2.5px solid transparent;border-top-color:var(--mbu-info);border-left-color:var(--mbu-info);animation:mc-spin .9s linear infinite}.mc-step.busy i{color:var(--mbu-info)}'
-        + '.mc-step.stalled .mc-ring,.mc-step.err .mc-ring{border-color:var(--mbu-warn);background:var(--mbu-warn-bg)}.mc-step.stalled sup,.mc-step.err sup{background:var(--mbu-warn)}.mc-step.stalled i,.mc-step.stalled b,.mc-step.err i{color:var(--mbu-warn)}'
+        + '.mc-step.busy .mc-ring{border-color:var(--mbu-info-border)}.mc-step.busy .mc-ring::before{content:"";position:absolute;inset:-2px;border-radius:50%;border:2px solid transparent;border-top-color:var(--mbu-info);border-left-color:var(--mbu-info);animation:mc-spin .9s linear infinite}.mc-step.busy i{color:var(--mbu-info)}'
+        + '.mc-step.stalled .mc-ring{border-color:var(--mbu-warn);background:var(--mbu-warn-bg)}.mc-step.stalled sup{background:var(--mbu-warn)}.mc-step.stalled i,.mc-step.stalled b{color:var(--mbu-warn)}'
         + '.mc-step.err .mc-ring{border-color:var(--mbu-error);background:var(--mbu-error-bg)}.mc-step.err sup{background:var(--mbu-error)}.mc-step.err i{color:var(--mbu-error)}'
         + '.mc-step.wait .mc-ring{border-style:dashed}.mc-step.wait b{color:var(--mbu-text-weak)}.mc-step.off{opacity:.45}.mc-step.off b{text-decoration:line-through}'
-        + '.mc-steps .mc-arrow{color:var(--mbu-text-weak);flex:none;padding-top:6px}.mc-steps .mc-par{display:flex;gap:2px;padding:2px 2px 4px;border:1px dashed var(--mbu-border);border-radius:10px;flex:0 1 auto;min-width:0}'
+        + '.mc-steps .mc-arrow{color:var(--mbu-text-weak);flex:none}.mc-steps .mc-par{display:inline-flex;align-items:center;gap:4px;height:40px;margin:0;background:none;padding:0 6px;border:1px dashed var(--mbu-border);border-radius:10px;box-sizing:border-box;min-width:0}'
         + '@media (prefers-reduced-motion: reduce){.mc-step.busy .mc-ring::before{animation:none}}'
         // the corner launchers (Falcon, Fusion, ours) share MC's z-index; hide them while MC is open
         + 'html.mc-open [data-mb-corner]{display:none!important}'
@@ -453,8 +454,6 @@ function mcStyle() {
         + '.mc-mini{display:flex;align-items:center;gap:6px;font-size:11.5px;padding:3px 0;border-bottom:1px solid var(--mbu-divider)}.mc-mini:last-child{border-bottom:0}'
         + '.mc-mini .n{margin-left:auto;font-family:var(--mbu-font-mono);font-size:10.5px;color:var(--mbu-text-dim);white-space:nowrap;flex:none;padding-left:6px}.mc-mini a:not(.n){min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}'
         + '.mc-insp-block{margin-bottom:12px}'
-        + '.mc-foot{display:flex;align-items:center;gap:12px;padding:8px 14px;background:var(--mbu-bg);border-top:1px solid var(--mbu-border)}'
-        + '.mc-foot .big{font-weight:700;font-size:13.5px}.mc-foot .sp{flex:1}'
         + '.mc-cfg label{display:flex;align-items:center;gap:10px;margin:8px 0;font-size:13px}.mc-cfg label span{min-width:150px}';
     document.head.appendChild(s);
 }
@@ -481,21 +480,19 @@ function stateText(p) {
     const t = r.findings.reduce((a, x) => (a[x.state] = (a[x.state] || 0) + 1, a), {});
     return [t.new && t.new + ' new', t.linked && t.linked + ' linked', t.withheld && t.withheld + ' withheld', t.unsure && t.unsure + ' unsure', t.none && t.none + ' not found'].filter(Boolean).join(' · ') || 'nothing';
 }
-function paintAll() { if (!ui) return; paintBadges(); paintCards(); paintReleaseCredits(); paintMatrix(); paintInspector(); paintFooter(); }
+function paintAll() { if (!ui) return; paintBadges(); paintCards(); paintReleaseCredits(); paintMatrix(); paintInspector(); paintExec(); }
 
 function header() {
     const h = el('header', 'mc-hdr');
-    h.innerHTML = mbuHtml(
-        // logo and version live in ⚙; Auto probes on open (#680)
-        '<div class="l"><button type="button" class="mc-btn primary" data-act="probe" title="Ask every provider what is missing">Probe</button>'
-        + '<button type="button" class="mc-auto' + (S.autoProbe ? ' on' : '') + '" data-act="auto" role="switch" aria-checked="' + !!S.autoProbe + '" title="Auto: probe as soon as Mission Control opens"><span class="k"></span>Auto</button></div>'
-        + '<div class="c">' + (rel.cover ? '<img class="mc-cover" alt="" src="' + esc(rel.cover) + '">' : '<span class="mc-cover"></span>')
-        + '<div style="min-width:0"><div class="mc-art" title="' + esc(rel.artist) + '">' + esc(rel.artist || '') + '</div>'
-        + '<div class="mc-ttl" title="' + esc(rel.title) + '">' + esc(rel.title) + '</div></div>'
-        + '</div>'
-        + '<div class="r">'
+    h.addEventListener('animationiteration', e => { if (e.target === h && e.pseudoElement === '::after' && !isBusy()) h.classList.remove('mc-busy'); });
+    // #680: the release where Probe was (the cover is the one in the Cover art card), the steps, then
+    // Execute with its count; logo, version and Auto probe live in ⚙
+    h.innerHTML = mbuHtml('<div class="mc-rel"><div class="mc-ttl" title="' + esc(rel.title) + '">' + esc(rel.title) + '</div>'
+        + '<div class="mc-art" title="' + esc(rel.artist) + '">' + esc(rel.artist || '') + '</div></div>'
+        + '<div class="mc-act"><button type="button" class="mc-btn primary lg" data-act="exec" disabled title="Apply the ticked changes, step by step">Execute</button>'
         + '<button type="button" class="mc-btn ghost" data-act="cfg" title="Settings">' + MBU_CFG_ICON + '</button>'
         + '<button type="button" class="mc-btn ghost" data-act="close" title="Close (Esc)">✕</button></div>');
+    h.insertBefore(steps(), h.querySelector('.mc-act'));
     return h;
 }
 
@@ -525,12 +522,14 @@ function orderSidebar() {
 function sIcon(id) { return PROVIDER_ICONS[id] ? '<img class="mc-sic" alt="" src="' + PROVIDER_ICONS[id] + '">' : ''; }
 // C (#680): the execution order as a stepper under the header, a ring per provider and what it
 // is doing in words: the step it is on and for how long, amber when no word came for STALL_MS
-// (what is stuck), or what it found. ▸ expands the order sidebar when it is hidden.
+// (what is stuck), or what it found. ↻ probes again; a click elsewhere on them shows or hides the
+// order sidebar.
 let STALL_MS = 20000;
 function steps() {
     const d = el('div', 'mc-steps');
-    const node = p => '<span class="mc-step" data-step="' + p.id + '"><span class="mc-ring">' + sIcon(p.id) + '<sup hidden></sup></span><b>' + esc(p.short) + '</b><i></i></span>';
-    d.innerHTML = mbuHtml('<span class="mc-exp" data-side="left" title="Show the execution order and its switches">▸</span>'
+    d.title = 'Click to show or hide the execution order and its switches';
+    const node = p => '<span class="mc-step" data-step="' + p.id + '"><span class="mc-ring">' + sIcon(p.id) + '<sup hidden></sup></span><span class="tx"><b>' + esc(p.short) + '</b><i></i></span></span>';
+    d.innerHTML = mbuHtml('<button type="button" class="mc-re" data-act="probe" title="Probe: ask every provider what is missing (⚙: probe on open)">↻</button>'
         + STEPS.map(s => s.lanes ? '<span class="mc-par" title="run in parallel">' + s.lanes.map(node).join('') + '</span>' : node(s)).join('<span class="mc-arrow">→</span>'));
     return d;
 }
@@ -753,13 +752,16 @@ function changeCount() { return Object.values(picked).reduce((n, set) => n + set
 // Probe or Execute in flight, or a Falcon batch that Execute handed over still running: the
 // header pulses, as Apollo's bar does while an edit saves (#412).
 function isBusy() { return executing || Object.values(results).some(r => r.state === 'busy' || (r.falcon && r.falcon.running)); }
-function paintFooter() {
-    const hdr = ui.querySelector('.mc-hdr'); if (hdr) hdr.classList.toggle('mc-busy', isBusy());
-    const big = ui.querySelector('.mc-foot .big'); if (!big) return;
+function paintExec() {
+    // on at once (the pulse starts from nothing); off only where a cycle ends, so it fades out and a
+    // gap between two answers doesn't flash (header() ends it on animationiteration)
+    const hdr = ui.querySelector('.mc-hdr');
+    if (hdr && isBusy()) hdr.classList.add('mc-busy');
+    else if (hdr && matchMedia('(prefers-reduced-motion: reduce)').matches) hdr.classList.remove('mc-busy');
+    const ex = ui.querySelector('[data-act="exec"]'); if (!ex) return;
     const n = changeCount();
-    big.textContent = n + ' change' + (n === 1 ? '' : 's');
-    ui.querySelectorAll('.mc-foot [data-act="dry"], .mc-foot [data-act="exec"]').forEach(b => { b.disabled = executing || !n; });
-    const ex = ui.querySelector('.mc-foot [data-act="exec"]'); if (ex) ex.textContent = executing ? 'Executing…' : 'Execute →';
+    ex.disabled = executing || !n;
+    ex.textContent = executing ? 'Executing…' : n ? 'Execute (' + n + ')' : 'Execute';
 }
 
 function inspector() {
@@ -796,16 +798,6 @@ function paintInspector() {
         + (S.fusion !== 'off' ? blk('Fusion matches', 'fusion', fusionBody) : '') + (S.ch !== 'off' ? blk('Credits', 'ch', chBody) : ''));
 }
 
-function footer() {
-    const f = el('div', 'mc-foot');
-    f.innerHTML = mbuHtml('<div><div class="big">0 changes</div><div class="weak" style="font-size:11px">' + esc(orderText()) + '</div></div><span class="sp"></span>'
-        + '<button type="button" class="mc-btn" data-act="dry" disabled title="Queue the ticked changes in Falcon without running them">Dry run</button>'
-        + '<button type="button" class="mc-btn primary lg" data-act="exec" disabled title="Apply the ticked changes, step by step">Execute →</button>');
-    return f;
-}
-function orderText() {
-    return STEPS.map(s => s.lanes ? s.lanes.map(l => l.short).join(' ∥ ') : (modeOf(s) === 'off' ? null : s.short + (s.info ? ' (info)' : ''))).filter(Boolean).join(' → ');
-}
 
 function paintBadges() {
     if (!ui) return;
@@ -827,7 +819,6 @@ function paintSides() {
 function rebuildBody() {
     const main = ui.querySelector('.mc-main');
     main.replaceWith(body());
-    ui.querySelector('.mc-foot').replaceWith(footer());
     paintAll(); paintInspector();
 }
 function body() {
@@ -845,7 +836,7 @@ function open() {
     rel = readRelease();
     watchTracks();
     ui = el('div', 'mbu-ui'); ui.id = 'mc-root';
-    ui.append(header(), steps(), body(), footer());
+    ui.append(header(), body());
     document.body.appendChild(ui);
     document.documentElement.style.overflow = 'hidden';
     document.documentElement.classList.add('mc-open');
@@ -906,7 +897,7 @@ function onClick(e) {
         if (on) set.add(pk.dataset.key); else set.delete(pk.dataset.key);
         Log.debug((on ? 'taken in ' : 'left out ') + pk.dataset.prov + ' ' + pk.dataset.key);
         if (pk.closest('.mc-tbl')) paintMatrix(); else paintCards();
-        paintFooter();
+        paintExec();
         if (pk.dataset.prov === 'pc') syncIsLinks(700);
         if (!pk.closest('.mc-tbl')) return;   // in the matrix the click also selects the track
     }
@@ -923,16 +914,15 @@ function onClick(e) {
     const fetchBtn = t.closest('[data-fetch]');
     if (fetchBtn) { probeOne(fetchBtn.dataset.fetch); return; }
     const act = t.closest('[data-act]');
+    if (!act && t.closest('.mc-steps')) { S.left = !S.left; saveSettings(); paintSides(); return; }
     if (!act) return;
     switch (act.dataset.act) {
         case 'probe': {
             if (!probe()) mbuToast('No provider to ask: none is installed with a Mission Control adapter yet.');
             break;
         }
-        case 'auto': S.autoProbe = !S.autoProbe; saveSettings(); act.classList.toggle('on', S.autoProbe); act.setAttribute('aria-checked', String(S.autoProbe)); Log.info('auto probe ' + (S.autoProbe ? 'on' : 'off')); break;
         case 'linked': S.linkedRows = !S.linkedRows; saveSettings(); paintCards(); break;
         case 'falcon-open': document.dispatchEvent(new CustomEvent('falcon:show')); break;
-        case 'dry': execute(true); break;
         case 'exec': execute(false); break;
         case 'cfg': settingsWindow(); break;
         case 'close': close(); break;
@@ -944,7 +934,7 @@ function setMode(key, v) {
     if (S[key] === v) return;
     Log.info(key + ' mode ' + S[key] + ' → ' + v);
     S[key] = v; saveSettings();
-    if (ui) { rebuildBody(); const f = ui.querySelector('.mc-foot .weak'); if (f) f.textContent = orderText(); }
+    if (ui) rebuildBody();
 }
 
 function settingsWindow() {
@@ -956,6 +946,7 @@ function settingsWindow() {
     panel.innerHTML = mbuHtml('<div class="mbu-ov-body">' + mbuCfgHeader({ script: 'mission_control', name: 'Mission Control', version: VERSION, icon: '<span style="font-size:20px;color:var(--mbu-accent-text)">' + ICON + '</span>', log: true })
         + '<div class="weak" style="font-size:12px;margin-bottom:6px">Both fetches can take minutes on a big release group or tracklist. Auto runs them during Probe, Ask waits for a button, Off skips the step.</div>'
         + opt('fusion', 'Fusion: RG duplicates') + opt('ch', 'Credit Hoarder: credits')
+        + '<label><input type="checkbox" data-k="autoProbe"' + (S.autoProbe ? ' checked' : '') + '>Probe as soon as Mission Control opens</label>'
         + '<label><input type="checkbox" data-k="left"' + (S.left ? ' checked' : '') + '>Show the execution order</label>'
         + '<label><input type="checkbox" data-k="right"' + (S.right ? ' checked' : '') + '>Show the track inspector</label></div>');
     ov.appendChild(panel);

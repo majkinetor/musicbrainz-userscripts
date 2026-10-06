@@ -39,7 +39,7 @@ test('#680: Probe asks Art Station; covers are sourced in a hidden frame', { tag
   // tick one source: Execute sources again for it in the hidden frame
   await page.evaluate(() => { let c, n = 0; while ((c = document.querySelector('#mc-root .mc-pick.on')) && n++ < 500) c.click(); });
   await page.locator('#mc-root [data-card="as"] .mc-pick .mc-tick').first().click();
-  await page.click('#mc-root [data-act="dry"]');
+  await page.evaluate(() => { window.__mcTest.execute(true); });   // Dry run: the test hook only (#680)
   await page.waitForSelector('#mc-root [data-card="as"] .mc-applied.ok');
   check(/dry run: would enter the best cover of 1 source/.test(await page.locator('#mc-root [data-card="as"] .mc-applied').textContent()), 'dry run says what it would do');
 

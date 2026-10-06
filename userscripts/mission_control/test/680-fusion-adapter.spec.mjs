@@ -34,7 +34,7 @@ test('#680: Fusion runs on Fetch RG and marks the tracks with duplicates', { tag
   await row.locator('td.ttl').click();   // the title cell: the row's middle can be a pick cell
   check(await page.locator('#mc-root .mc-insp a[href^="/recording/"]').count() >= 2, 'inspector lists the matching recordings');
 
-  await page.click('#mc-root [data-act="dry"]');
+  await page.evaluate(() => { window.__mcTest.execute(true); });   // Dry run: the test hook only (#680)
   await page.waitForSelector('#mc-root .mc-tapplied .mc-applied', { timeout: 20_000 });
   check(/Fusion: dry run: \d+ merges? would be submitted/.test(await page.locator('#mc-root .mc-tapplied').textContent()), 'dry run reports the merges, without submitting');
   await page.screenshot({ path: 'test-results/mc-680-fusion.png' });

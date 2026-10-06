@@ -3,7 +3,7 @@
 // MC's discover). Probe then waits for PC's own scan and fills the Platforms card
 // with one row per platform; the confirmed ones are ticked and counted.
 // Nothing is submitted: Execute goes to a stand-in Falcon.
-import { test, check } from '../../../dev/test/harness.mjs';
+import { test, check, until } from '../../../dev/test/harness.mjs';
 
 test.use({ gm: { name: 'Mission Control' } });
 
@@ -53,16 +53,17 @@ test('#680: Probe asks Platform Check and shows its platforms', { tag: ['@sandbo
   const nNew = states.filter(s => s === 'new').length;
   const ticked = await page.locator('#mc-root [data-card="pc"] .mc-pick.on').count();
   check(ticked === nNew, `ticked by default = the confirmed ones (${ticked} of ${nNew})`);
-  check((await page.locator('#mc-root .mc-foot .big').textContent()).startsWith(nNew + ' change'), 'footer counts the ticked rows');
+  check((await page.locator('#mc-root [data-act="exec"]').textContent()) === (nNew ? 'Execute (' + nNew + ')' : 'Execute'), 'Execute counts the ticked rows');
 
   // unticking one changes the count
   if (nNew) {
     await page.locator('#mc-root [data-card="pc"] .mc-pick.on .mc-tick').first().click();
-    check((await page.locator('#mc-root .mc-foot .big').textContent()).startsWith((nNew - 1) + ' change'), 'unticking lowers the count');
+    check((await page.locator('#mc-root [data-act="exec"]').textContent()) === (nNew - 1 ? 'Execute (' + (nNew - 1) + ')' : 'Execute'), 'unticking lowers the count');
   }
   check(!/busy|stalled/.test(await page.locator('#mc-root .mc-step[data-step="pc"]').getAttribute('class')), 'PC step no longer busy');
   check(await page.evaluate(() => window.__busySeen), 'the header pulsed while probing');
-  check(!(await page.locator('#mc-root .mc-hdr.mc-busy').count()), 'and stopped once the probe was answered');
+  // it ends where a pulse cycle does (a fade, not a cut), so within one cycle
+  check(!(await until(() => page.locator('#mc-root .mc-hdr.mc-busy').count(), n => n === 0, { timeout: 4000 })), 'and stopped once the probe was answered');
 
   // Apply. No Falcon on the page first: PC says so, and the card shows the failure.
   const pickable = page.locator('#mc-root [data-card="pc"] .mc-pick');
@@ -79,7 +80,7 @@ test('#680: Probe asks Platform Check and shows its platforms', { tag: ['@sandbo
     window.__falconGot = [];
     for (const ev of ['falcon:run', 'falcon:import']) document.addEventListener(ev, e => { window.__falconGot.push({ ev, json: JSON.parse(e.detail) }); document.dispatchEvent(new CustomEvent('falcon:import-ok')); });
   });
-  await page.click('#mc-root [data-act="dry"]');
+  await page.evaluate(() => { window.__mcTest.execute(true); });   // Dry run: the test hook only (#680)
   await page.waitForSelector('#mc-root [data-card="pc"] .mc-applied.ok');
   await page.click('#mc-root [data-act="exec"]');
   await page.waitForFunction(() => window.__falconGot.length === 2);
@@ -106,7 +107,7 @@ test('#680: Probe asks Platform Check and shows its platforms', { tag: ['@sandbo
   await page.evaluate(() => window.__st('failed', 'MB said no'));
   await page.waitForSelector('#mc-root [data-card="pc"] .mc-falcon.bad .mc-falcon-open');
   check(/MB said no/.test(await page.locator('#mc-root [data-card="pc"] .mc-falcon').textContent()), 'a failed item shows why, with Open Falcon');
-  check(!(await page.locator('#mc-root .mc-hdr.mc-busy').count()), 'and stops when Falcon has finished');
+  check(!(await until(() => page.locator('#mc-root .mc-hdr.mc-busy').count(), n => n === 0, { timeout: 4000 })), 'and stops when Falcon has finished');
   check(await page.locator('#mc-root [data-card="pc"] .mc-pick.on').count() === 1, 'a failed item stays picked');
   // once Falcon reports it done, the link shows as linked: no longer a picked row
   await page.evaluate(() => window.__st('done', ''));

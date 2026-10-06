@@ -37,35 +37,52 @@ test('#680: MC shell — launcher, track matrix, sidebars, modes', { tag: ['@san
   });
   check(cover.same.figs === 1 && /Already the best cover/.test(cover.same.text) && /same image as the best found \(Discogs\)/.test(cover.same.text), `best cover = current front: one figure, "already the best" (${JSON.stringify(cover.same)})`);
   check(cover.smaller.figs === 2 && /Not larger than the current front/.test(cover.smaller.text), `a different image of the same size is still compared (${JSON.stringify(cover.smaller)})`);
-  check(await page.locator('#mc-root .mc-steps .mc-step').count() === 5, 'a step per provider, under the header');
+  check(await page.locator('#mc-root .mc-hdr .mc-steps .mc-step').count() === 5, 'a step per provider, in the header');
   check(await page.locator('#mc-root .mc-steps .mc-par .mc-step').count() === 2, 'IS and AS side by side, in parallel');
 
-  // left of the header: Probe and its Auto switch, nothing else (#680: no source link)
-  check(await page.locator('#mc-root .mc-hdr .l > *').count() === 2 && await page.locator('#mc-root [data-act="src"]').count() === 0, 'header left holds Probe and Auto');
-  check(await page.locator('#mc-root .mc-auto.on').count() === 0, 'Auto is off by default');
-  await page.click('#mc-root [data-act="auto"]');
-  check(await page.locator('#mc-root .mc-auto.on[aria-checked="true"]').count() === 1, 'a click turns Auto on');
-  await page.click('#mc-root [data-act="auto"]');
-  check(await page.locator('#mc-root .mc-auto.on').count() === 0, 'and off again');
+  // #680 round 4: one header row: the release (no cover), ↻ and the steps on one line, Execute, ⚙, ✕;
+  // no footer, no Dry run, no Probe or Auto button
+  const row = await page.evaluate(() => {
+    const h = document.querySelector('#mc-root .mc-hdr');
+    const kids = [...h.children].map(c => c.className);
+    const mid = el => { const r = el.getBoundingClientRect(); return Math.round(r.top + r.height / 2); };
+    const rings = [...h.querySelectorAll('.mc-ring')].map(mid);
+    const off = [...h.querySelectorAll('.mc-ring')].map(r => { const a = r.getBoundingClientRect(), b = r.querySelector('img').getBoundingClientRect(); return Math.round(Math.abs((a.left + a.width / 2) - (b.left + b.width / 2)) + Math.abs((a.top + a.height / 2) - (b.top + b.height / 2))); });
+    return { kids, rings, off, cover: !!h.querySelector('.mc-cover'), foot: !!document.querySelector('#mc-root .mc-foot'), dry: !!document.querySelector('#mc-root [data-act="dry"]'), auto: !!document.querySelector('#mc-root [data-act="auto"]'), probe: document.querySelectorAll('#mc-root .mc-steps .mc-re[data-act="probe"]').length };
+  });
+  check(JSON.stringify(row.kids) === '["mc-rel","mc-steps","mc-act"]', `header: release, steps, actions (${JSON.stringify(row.kids)})`);
+  check(!row.cover && !row.foot && !row.dry && !row.auto && row.probe === 1, `no cover, footer, Dry run or Auto; ↻ probes (${JSON.stringify(row)})`);
+  check(Math.max(...row.rings) - Math.min(...row.rings) <= 1, `the rings sit on one line, the parallel ones too (${row.rings})`);
+  check(Math.max(...row.off) <= 1, `each icon is centred in its ring (${row.off})`);
+  check(await page.locator('#mc-root [data-act="exec"]').textContent() === 'Execute' && await page.locator('#mc-root [data-act="exec"]').isDisabled(), 'Execute, off with nothing ticked');
+  // Auto probe is in ⚙
+  check(!(await page.evaluate(() => window.__mcTest.settings())).autoProbe, 'Auto probe is off by default');
+  await page.click('#mc-root [data-act="cfg"]');
+  await page.locator('.mc-cfg input[data-k="autoProbe"]').check();
+  check((await page.evaluate(() => window.__mcTest.settings())).autoProbe === true, 'ticking it in ⚙ stores it');
+  await page.locator('.mc-cfg input[data-k="autoProbe"]').uncheck();
+  check((await page.evaluate(() => window.__mcTest.settings())).autoProbe === false, 'and unticking');
+  await page.keyboard.press('Escape');
+  await page.locator('.mc-cfg').waitFor({ state: 'detached' });
 
   // inspector follows the selected row
   await page.locator('#mc-root .mc-tbl tbody tr[data-i]').first().locator('td.ttl').click();
   check(/^Track /.test(await page.locator('#mc-root .mc-insp-t').textContent()), 'inspector shows the selected track');
 
-  // hiding the order sidebar shows the horizontal strip; both persist
-  check(await page.locator('#mc-root .mc-hdr .r button').count() === 2, 'header right holds only settings and close');
+  // the order sidebar hides with its ×, and a click on the steps brings it back (and hides it again)
   await page.click('#mc-root [data-close="left"]');
   check(await page.locator('#mc-root .mc-side.left').isHidden(), 'order sidebar hidden');
-  check(await page.locator('#mc-root .mc-steps .mc-exp').isVisible(), 'the steps offer ▸ to bring it back');
   check((await page.evaluate(() => window.__mcTest.settings())).left === false, 'left=false stored');
 
   // CH off drops its column and its step
   const heads = () => page.locator('#mc-root .mc-tbl th').allTextContents();
   check((await heads()).some(h => h.includes('Credits')), 'credits column present');
-  await page.click('#mc-root .mc-steps .mc-exp');
-  check(await page.locator('#mc-root .mc-side.left').isVisible(), '▸ expands the sidebar');
-  check(await page.locator('#mc-root .mc-steps .mc-exp').isHidden(), '▸ gone again');
-  check(await page.locator('#mc-root .mc-steps').isVisible(), 'the steps stay');
+  await page.click('#mc-root .mc-step[data-step="fusion"]');
+  check(await page.locator('#mc-root .mc-side.left').isVisible(), 'a click on the steps shows the sidebar');
+  await page.click('#mc-root .mc-step[data-step="pc"]');
+  check(await page.locator('#mc-root .mc-side.left').isHidden(), 'and another hides it');
+  await page.click('#mc-root .mc-steps .mc-arrow >> nth=0');
+  check(await page.locator('#mc-root .mc-side.left').isVisible(), 'anywhere on the steps');
   await page.click('#mc-root .mc-seg[data-mode="ch"] button[data-v="off"]');
   check(!(await heads()).some(h => h.includes('Credits')), 'credits column gone with CH off');
   check(await page.locator('#mc-root .mc-stage.off[data-p="ch"]').count() === 1, 'CH step marked off');
@@ -93,7 +110,14 @@ test('#680: MC shell — launcher, track matrix, sidebars, modes', { tag: ['@san
   const ticking = await until(step, s => / · \d+ s$/.test(s.say), { timeout: 4000 });
   check(/^finding the best cover · \d+ s$/.test(ticking.say), `the seconds count up while it works (${ticking.say})`);
   await send('mc:findings', { release: await page.evaluate(() => window.__mcTest.release().mbid || ''), findings: [{ key: 'cover:1', state: 'new' }, { key: 'cover:2', state: 'linked' }] });
+  // the header pulse is opacity on a layer (the compositor's, smooth on a busy page); its answer doesn't
+  // cut it off mid-pulse (that flashed): it ends where a cycle does, within one
+  const pulse = await page.evaluate(() => { const h = document.querySelector('#mc-root .mc-hdr'); const a = h.getAnimations({ subtree: true }).find(x => x.animationName === 'mc-busy-pulse');
+    return { on: h.classList.contains('mc-busy'), layer: a && a.effect.pseudoElement, props: a ? [...new Set(a.effect.getKeyframes().flatMap(k => Object.keys(k).filter(p => !['offset', 'computedOffset', 'easing', 'composite'].includes(p))))] : [] }; });
+  check(pulse.on && pulse.layer === '::after' && JSON.stringify(pulse.props) === '["opacity"]', `the header pulses on its ::after, in opacity only (${JSON.stringify(pulse)})`);
   const found = await step();
+  check(await page.locator('#mc-root .mc-hdr.mc-busy').count() === 1, 'the answer does not cut the pulse off');
+  check(!(await until(() => page.locator('#mc-root .mc-hdr.mc-busy').count(), n => n === 0, { timeout: 4000 })), 'it fades out within a cycle');
   check(/\badd\b/.test(found.cls) && found.say === '1 new' && found.mark === '1', `findings: what there is to add, counted on the ring (${JSON.stringify(found)})`);
 
   await page.screenshot({ path: 'test-results/mc-680-shell.png' });
