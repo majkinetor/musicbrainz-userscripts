@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         String Theory
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.6.115324
+// @version      2026.10.6.125249
 // @description  Unified bundle of 8 MusicBrainz userscripts (apollo_editor, art_station, credit_hoarder, fusion, group_therapy, isrc_scout, mammoth, platform_check). Built by userscripts/string_theory/build.mjs — do not hand-edit.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCIgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0Ij4KICA8IS0tIGh1Yi1hbmQtc3Bva2UgIm5ldHdvcmsiIGdseXBoLCBzaW5nbGUgdml2aWQgdmlvbGV0IG9uIHRyYW5zcGFyZW50IHNvIGl0IHJlYWRzIG9uIGJvdGggZGFyayBhbmQgbGlnaHQgcGFnZXMgLS0+CiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjN2M1Y2ZmIiBzdHJva2Utd2lkdGg9IjQuNiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj4KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMzIgMTUiLz4KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMNDYuNSAyMy41Ii8+CiAgICA8cGF0aCBkPSJNMzIgMzIgTDQ2LjUgNDAuNSIvPgogICAgPHBhdGggZD0iTTMyIDMyIEwzMiA0OSIvPgogICAgPHBhdGggZD0iTTMyIDMyIEwxNy41IDQwLjUiLz4KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMTcuNSAyMy41Ii8+CiAgPC9nPgogIDxnIGZpbGw9IiM3YzVjZmYiPgogICAgPGNpcmNsZSBjeD0iMzIiIGN5PSIzMiIgcj0iOC42Ii8+CiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjE5LjUiIHI9IjYuNCIvPgogICAgPGNpcmNsZSBjeD0iNDkiIGN5PSIxOS41IiByPSI2LjQiLz4KICAgIDxjaXJjbGUgY3g9IjMyIiBjeT0iNTciIHI9IjYuNCIvPgogIDwvZz4KICA8ZyBmaWxsPSJub25lIiBzdHJva2U9IiM3YzVjZmYiIHN0cm9rZS13aWR0aD0iMy44Ij4KICAgIDxjaXJjbGUgY3g9IjMyIiBjeT0iNyIgcj0iNC45Ii8+CiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjQ0LjUiIHI9IjQuOSIvPgogICAgPGNpcmNsZSBjeD0iNDkiIGN5PSI0NC41IiByPSI0LjkiLz4KICA8L2c+Cjwvc3ZnPgo=
@@ -88,8 +88,8 @@
 // Bundles (verbatim, each wrapped in a run-at gate): apollo_editor, art_station, credit_hoarder, fusion, group_therapy, isrc_scout, mammoth, platform_check.
 
 try {
-  console.log('%c String Theory %c v2026.10.6.115324 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
-  console.log("String Theory bundles:\n  · Apollo Editor v2026.10.6\n  · Art Station v2026.10.5.111552\n  · Credit Hoarder v2026.10.5.150448\n  · Fusion v2026.10.4\n  · Group Therapy v2026.10.4\n  · ISRC Scout v2026.10.5\n  · Mammoth v2026.10.4\n  · Platform Check v2026.10.6");
+  console.log('%c String Theory %c v2026.10.6.125249 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
+  console.log("String Theory bundles:\n  · Apollo Editor v2026.10.6\n  · Art Station v2026.10.5.111552\n  · Credit Hoarder v2026.10.5.150448\n  · Fusion v2026.10.4\n  · Group Therapy v2026.10.4\n  · ISRC Scout v2026.10.6\n  · Mammoth v2026.10.4\n  · Platform Check v2026.10.6");
 } catch (e) {}
 
 // ===== apollo_editor (@run-at document-start) =====================================
@@ -36875,7 +36875,7 @@ Created this ${kind} while adding credits parsed from text to ${relUrl}`;
 
 // ===== isrc_scout (@run-at document-start) ========================================
 (function(__stGM){
-  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"ISRC Scout*","namespace":"https://musicbrainz.org/","version":"2026.10.5","description":"Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify / Beatport / Tidal / Volumo / HDtracks / Qobuz, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/isrc_scout/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPklTUkMgU2NvdXQ8L3RpdGxlPgogICAgPHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPgogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjQwIi8+CiAgICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyNiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2U9IiNiOWEzZTgiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPgogIDwvZz4KICA8bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+Cjwvc3ZnPgo="}) }) : { script: {"name":"ISRC Scout*","namespace":"https://musicbrainz.org/","version":"2026.10.5","description":"Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify / Beatport / Tidal / Volumo / HDtracks / Qobuz, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/isrc_scout/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPklTUkMgU2NvdXQ8L3RpdGxlPgogICAgPHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPgogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjQwIi8+CiAgICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyNiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2U9IiNiOWEzZTgiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPgogIDwvZz4KICA8bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+Cjwvc3ZnPgo="} };
+  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"ISRC Scout*","namespace":"https://musicbrainz.org/","version":"2026.10.6","description":"Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify / Beatport / Tidal / Volumo / HDtracks / Qobuz, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/isrc_scout/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPklTUkMgU2NvdXQ8L3RpdGxlPgogICAgPHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPgogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjQwIi8+CiAgICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyNiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2U9IiNiOWEzZTgiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPgogIDwvZz4KICA8bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+Cjwvc3ZnPgo="}) }) : { script: {"name":"ISRC Scout*","namespace":"https://musicbrainz.org/","version":"2026.10.6","description":"Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify / Beatport / Tidal / Volumo / HDtracks / Qobuz, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/isrc_scout/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPklTUkMgU2NvdXQ8L3RpdGxlPgogICAgPHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPgogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjQwIi8+CiAgICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyNiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2U9IiNiOWEzZTgiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPgogIDwvZz4KICA8bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+Cjwvc3ZnPgo="} };
   (f=>f())(function(){ try { (function(){
 /*
  * ─────────────────────────────────────────────────────────────────────────
@@ -37017,6 +37017,13 @@ Created this ${kind} while adding credits parsed from text to ${relUrl}`;
   const _setTimeout  = _timerHost.setTimeout.bind(_timerHost);
   const _setInterval = _timerHost.setInterval.bind(_timerHost);
 
+  // OAuth tokens belong to one MusicBrainz account database: musicbrainz.org and
+  // beta share one, test.musicbrainz.org (any other host) has its own. GM storage
+  // is shared by every *.musicbrainz.org page, so key the OAuth values per database
+  // or a production token shows "Authorized" on test and fails there (#683).
+  // Production keeps the bare keys, so existing authorizations survive.
+  const OAUTH_SITE = /^(beta\.)?musicbrainz\.org$/i.test(location.hostname) ? '' : '@' + location.hostname.toLowerCase();
+
   /* ═══════════════════════════════════════════════════════════════════════
      OAUTH OUT-OF-BAND CODE CATCHER
      After you approve, MusicBrainz lands on /oauth2/oob?code=… showing the code.
@@ -37026,7 +37033,7 @@ Created this ${kind} while adding credits parsed from text to ${relUrl}`;
   if (/oauth2\/oob$/.test(location.pathname)) {
     const code = new URLSearchParams(location.search).get('code');
     if (code) {
-      try { GM_setValue('ii:oauth_oob_code', { code: code, ts: Date.now() }); } catch (e) {}
+      try { GM_setValue('ii:oauth_oob_code' + OAUTH_SITE, { code: code, ts: Date.now() }); } catch (e) {}
       const finishOob = () => {
         try { window.close(); } catch (e) {}
         // Browsers block window.close() on a tab that has navigated (authorize → oob);
@@ -38907,9 +38914,9 @@ Created this ${kind} while adding credits parsed from text to ${relUrl}`;
   ═══════════════════════════════════════════════════════════════════════ */
   const Auth = {
     // baked-in shared app, with an optional GM-storage override for power users
-    clientId()     { return store.get('oauth_client_id', '')     || OAUTH.clientId; },
-    clientSecret() { return store.get('oauth_client_secret', '') || OAUTH.clientSecret; },
-    refreshTok()   { return store.get('oauth_refresh_token', ''); },
+    clientId()     { return store.get('oauth_client_id' + OAUTH_SITE, '')     || OAUTH.clientId; },
+    clientSecret() { return store.get('oauth_client_secret' + OAUTH_SITE, '') || OAUTH.clientSecret; },
+    refreshTok()   { return store.get('oauth_refresh_token' + OAUTH_SITE, ''); },
     isAuthorized() { return !!this.refreshTok(); },
 
     authorizeUrl() {
@@ -38934,14 +38941,14 @@ Created this ${kind} while adding credits parsed from text to ${relUrl}`;
       const r = await gmPost(OAUTH.tokenUrl, body, { 'Content-Type': 'application/x-www-form-urlencoded' });
       const j = JSON.parse(r.responseText || '{}');
       if (!j.refresh_token) throw new Error(j.error_description || j.error || ('token exchange failed (' + r.status + ')'));
-      store.set('oauth_refresh_token', j.refresh_token);
-      store.set('oauth_access_token', j.access_token || '');
-      store.set('oauth_access_expiry', Date.now() + ((j.expires_in || 3600) * 1000));
+      store.set('oauth_refresh_token' + OAUTH_SITE, j.refresh_token);
+      store.set('oauth_access_token' + OAUTH_SITE, j.access_token || '');
+      store.set('oauth_access_expiry' + OAUTH_SITE, Date.now() + ((j.expires_in || 3600) * 1000));
     },
 
     async accessToken() {
-      const tok = store.get('oauth_access_token', '');
-      const exp = store.get('oauth_access_expiry', 0);
+      const tok = store.get('oauth_access_token' + OAUTH_SITE, '');
+      const exp = store.get('oauth_access_expiry' + OAUTH_SITE, 0);
       if (tok && Date.now() < exp - 60000) return tok;
       const refresh = this.refreshTok();
       if (!refresh) throw new Error('not authorized — open ⚙ Setup');
@@ -38952,16 +38959,24 @@ Created this ${kind} while adding credits parsed from text to ${relUrl}`;
         client_secret: this.clientSecret(),
       }).toString();
       const r = await gmPost(OAUTH.tokenUrl, body, { 'Content-Type': 'application/x-www-form-urlencoded' });
-      const j = JSON.parse(r.responseText || '{}');
+      let j = {}; try { j = JSON.parse(r.responseText || '{}'); } catch (e) {}
+      // The server no longer knows the app or the grant (revoked, or test's OAuth
+      // data reset): the stored token is dead, so forget it rather than keep
+      // showing "Authorized" while every submit fails (#683).
+      if (j.error === 'invalid_client' || j.error === 'invalid_grant') {
+        this.signOut();
+        const err = new Error('MusicBrainz rejected the stored authorization (' + (j.error_description || j.error) + ') — click Authorize again in ⚙ Setup');
+        err.authCleared = true;
+        throw err;
+      }
       if (!j.access_token) throw new Error(j.error_description || j.error || ('token refresh failed (' + r.status + ')'));
-      store.set('oauth_access_token', j.access_token);
-      store.set('oauth_access_expiry', Date.now() + ((j.expires_in || 3600) * 1000));
+      store.set('oauth_access_token' + OAUTH_SITE, j.access_token);
+      store.set('oauth_access_expiry' + OAUTH_SITE, Date.now() + ((j.expires_in || 3600) * 1000));
       return j.access_token;
     },
 
     signOut() {
-      store.del('oauth_refresh_token');
-      ['oauth_access_token', 'oauth_access_expiry'].forEach(store.del);
+      ['oauth_refresh_token', 'oauth_access_token', 'oauth_access_expiry'].forEach(k => store.del(k + OAUTH_SITE));
     },
   };
 
@@ -41255,12 +41270,14 @@ Created this ${kind} while adding credits parsed from text to ${relUrl}`;
     if (code) code.style.display = authed ? 'none' : '';
     if (out)  out.style.display  = authed ? '' : 'none';
     if (authed && code) code.value = '';
+    // a non-production server keeps its own authorization (#683) — say which
+    const on = OAUTH_SITE ? ' on ' + OAUTH_SITE.slice(1) : '';
     if (authed) {
       el.className = 'ii-authstate ok';
-      el.textContent = '✓ Authorized — submit is ready.';
+      el.textContent = '✓ Authorized' + on + ' — submit is ready.';
     } else {
       el.className = 'ii-authstate no';
-      el.textContent = '• Not authorized yet. Click Authorize (one time).';
+      el.textContent = '• Not authorized' + on + ' yet. Click Authorize (one time).';
       pane.classList.add('open'); // nudge first-time users
     }
   }
@@ -43572,16 +43589,16 @@ Created this ${kind} while adding credits parsed from text to ${relUrl}`;
   }
   function onAuthorize() {
     Log.info('OAuth: opening authorize URL');
-    store.del('oauth_oob_code');
+    store.del('oauth_oob_code' + OAUTH_SITE);
     // not 'noopener' so the oob tab can close itself once it captures the code
     const w = window.open(Auth.authorizeUrl(), '_blank');
     const ci = modal.querySelector('#ii-oauth-code');
     if (ci) _setTimeout(() => ci.focus(), 100);   // ready for a manual paste if the tab can't close
     let n = 0;
     const iv = _setInterval(() => {
-      const oob = store.get('oauth_oob_code', null);
+      const oob = store.get('oauth_oob_code' + OAUTH_SITE, null);
       if (oob && oob.code) {
-        clearInterval(iv); store.del('oauth_oob_code');
+        clearInterval(iv); store.del('oauth_oob_code' + OAUTH_SITE);
         try { w && w.close(); } catch (e) {}
         if (ci) ci.value = oob.code;              // show it auto-filled, then exchange
         exchangeAndFinish(oob.code, 'auto-captured');
@@ -43672,6 +43689,7 @@ Created this ${kind} while adding credits parsed from text to ${relUrl}`;
         });
       } catch (e) {
         isrcOk = false;
+        if (e.authCleared) refreshAuthState();   // shows "Not authorized" and opens ⚙ Setup
         Log.err('ISRC submit failed: ' + e.message);
         toast('ISRC submit failed: ' + e.message, 'err');
       }
