@@ -28,6 +28,15 @@ test('#680: MC shell — launcher, track matrix, sidebars, modes', { tag: ['@san
   const clipped = await page.locator('#mc-root .mc-center > .mc-sect').first().evaluate(s => s.scrollHeight - s.clientHeight);
   check(clipped <= 1, `the track list isn't clipped in a short window (${clipped}px hidden)`);
   await page.setViewportSize({ width: 1600, height: 1000 });
+  // Art Station's best cover: the same image as the current front is not a comparison
+  const cover = await page.evaluate(() => {
+    const best = { provider: 'Discogs', w: 600, h: 600, bytes: 60416, of: 1, larger: false, replace: false };
+    const box = h => { const d = document.createElement('div'); d.innerHTML = h; return { text: d.textContent, figs: d.querySelectorAll('.mc-best-c').length }; };
+    return { same: box(window.__mcTest.bestHtml(Object.assign({ current: { w: 600, h: 600, bytes: 60416 } }, best))),
+             smaller: box(window.__mcTest.bestHtml(Object.assign({ current: { w: 600, h: 600, bytes: 70000 } }, best))) };
+  });
+  check(cover.same.figs === 1 && /Already the best cover/.test(cover.same.text) && /same image as the best found \(Discogs\)/.test(cover.same.text), `best cover = current front: one figure, "already the best" (${JSON.stringify(cover.same)})`);
+  check(cover.smaller.figs === 2 && /Not larger than the current front/.test(cover.smaller.text), `a different image of the same size is still compared (${JSON.stringify(cover.smaller)})`);
   check(await page.locator('#mc-root .mc-badges .mc-bdg').count() === 5, 'a header badge per provider');
 
   // left of the header: Probe and its Auto switch, nothing else (#680: no source link)

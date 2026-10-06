@@ -25,6 +25,8 @@ test('#680: Probe asks Platform Check and shows its platforms', { tag: ['@sandbo
   await page.waitForSelector('#mc-root');
   check(/connected/.test(await page.locator('#mc-root .mc-bdg').first().getAttribute('title')), 'PC badge reads connected');
 
+  // the header pulses while the probe is out (seen at any point), and stops once it's answered
+  await page.evaluate(() => { const h = document.querySelector('#mc-root .mc-hdr'); window.__busySeen = h.classList.contains('mc-busy'); new MutationObserver(() => { if (h.classList.contains('mc-busy')) window.__busySeen = true; }).observe(h, { attributes: true }); });
   await page.click('#mc-root [data-act="probe"]');
   await page.waitForSelector('#mc-root [data-card="pc"] .mc-line', { timeout: 180_000 });
   // the release's platforms only: PC's artist and label links (#680) are rows too, marked mc-ent
@@ -59,6 +61,8 @@ test('#680: Probe asks Platform Check and shows its platforms', { tag: ['@sandbo
     check((await page.locator('#mc-root .mc-foot .big').textContent()).startsWith((nNew - 1) + ' change'), 'unticking lowers the count');
   }
   check(!/…/.test(await page.locator('#mc-root .mc-bdg').first().textContent()), 'PC badge no longer busy');
+  check(await page.evaluate(() => window.__busySeen), 'the header pulsed while probing');
+  check(!(await page.locator('#mc-root .mc-hdr.mc-busy').count()), 'and stopped once the probe was answered');
 
   // Apply. No Falcon on the page first: PC says so, and the card shows the failure.
   const pickable = page.locator('#mc-root [data-card="pc"] .mc-pick');
@@ -98,9 +102,11 @@ test('#680: Probe asks Platform Check and shows its platforms', { tag: ['@sandbo
   }, [tag, RELEASE]);
   await page.waitForSelector('#mc-root [data-card="pc"] .mc-falcon .mc-falcon-i.st-active');
   check(/Falcon is running: 0 of 1 finished/.test(await page.locator('#mc-root [data-card="pc"] .mc-falcon').textContent()), 'the card shows Falcon running');
+  check(await page.locator('#mc-root .mc-hdr.mc-busy').count() === 1, 'the header pulses while Falcon runs the batch Execute handed over');
   await page.evaluate(() => window.__st('failed', 'MB said no'));
   await page.waitForSelector('#mc-root [data-card="pc"] .mc-falcon.bad .mc-falcon-open');
   check(/MB said no/.test(await page.locator('#mc-root [data-card="pc"] .mc-falcon').textContent()), 'a failed item shows why, with Open Falcon');
+  check(!(await page.locator('#mc-root .mc-hdr.mc-busy').count()), 'and stops when Falcon has finished');
   check(await page.locator('#mc-root [data-card="pc"] .mc-pick.on').count() === 1, 'a failed item stays picked');
   // once Falcon reports it done, the link shows as linked: no longer a picked row
   await page.evaluate(() => window.__st('done', ''));
