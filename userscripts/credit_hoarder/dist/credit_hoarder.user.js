@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Credit Hoarder
 // @namespace    majkinetor
-// @version      2026.10.6.160935
+// @version      2026.10.6.195729
 // @description  Import per-track release credits from streaming/database providers (Discogs, Tidal, Qobuz, Deezer) into MusicBrainz relationships, with a review phase
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij4KICANCiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMmY2ZjU0IiBzdHJva2Utd2lkdGg9IjkiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGNpcmNsZSBjeD0iMzQiIGN5PSIzOCIgcj0iMi41IiBmaWxsPSIjMmY2ZjU0IiBzdHJva2U9Im5vbmUiLz4NCiAgICA8bGluZSB4MT0iNTAiIHkxPSIzOCIgeDI9Ijk4IiB5Mj0iMzgiLz4NCiAgICA8Y2lyY2xlIGN4PSIzNCIgY3k9IjY0IiByPSIyLjUiIGZpbGw9IiMyZjZmNTQiIHN0cm9rZT0ibm9uZSIvPg0KICAgIDxsaW5lIHgxPSI1MCIgeTE9IjY0IiB4Mj0iOTgiIHkyPSI2NCIvPg0KICAgIDxjaXJjbGUgY3g9IjM0IiBjeT0iOTAiIHI9IjIuNSIgZmlsbD0iIzJmNmY1NCIgc3Ryb2tlPSJub25lIi8+DQogICAgPGxpbmUgeDE9IjUwIiB5MT0iOTAiIHgyPSI3NCIgeTI9IjkwIi8+DQogIDwvZz4NCiAgPGNpcmNsZSBjeD0iOTIiIGN5PSI5MiIgcj0iMjMiIGZpbGw9IiMyZTllNWIiLz4NCiAgPGcgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGxpbmUgeDE9IjkyIiB5MT0iODEiIHgyPSI5MiIgeTI9IjEwMyIvPg0KICAgIDxsaW5lIHgxPSI4MSIgeTE9IjkyIiB4Mj0iMTAzIiB5Mj0iOTIiLz4NCiAgPC9nPg0KPC9zdmc+DQo=
@@ -10048,7 +10048,7 @@ ${lines}
     for (const ul of document.querySelectorAll("ul.external_links")) {
       let h = ul.previousElementSibling;
       while (h && !/^H\d$/.test(h.tagName)) h = h.previousElementSibling;
-      if (h && /^external links$/i.test(h.textContent.trim())) return [...ul.querySelectorAll('a[href^="http"]')].map((a) => a.href);
+      if (h && /^external links$/i.test(h.textContent.trim())) return [...ul.querySelectorAll("a[href]")].map((a) => a.href).filter((u) => /^https?:/.test(u));
     }
     return [];
   }
@@ -10076,10 +10076,11 @@ ${lines}
     });
   }
   var flatRoles = (c) => (c.roles || [c.role]).filter(Boolean).join(", ");
-  async function readSource(links) {
+  async function readSources(links) {
     const find = (re) => links.find((u) => re.test(u));
+    const jobs = [];
     const discogs = find(/discogs\.com\/(?:[a-z-]+\/)?release\/\d+/i);
-    if (discogs) {
+    if (discogs) jobs.push(["Discogs", async () => {
       const url = discogs.replace(/^https?:\/\/(www\.)?discogs\.com\/(?:[a-z-]+\/)?release\//i, "https://www.discogs.com/release/").split(/[?#]/)[0];
       const json = await getDiscogsReleaseData(url);
       const tracks = [];
@@ -10090,14 +10091,19 @@ ${lines}
       walk(json.tracklist);
       const release = (json.extraartists || []).map((a) => ({ name: a.name, role: a.role + (a.tracks ? ` (tracks ${a.tracks})` : "") }));
       return { source: "Discogs", perTrack: tracks.map((t, i) => ({ medium: 0, index: i + 1, credits: (t.extraartists || []).map((a) => ({ name: a.name, role: a.role })) })), flat: true, release };
-    }
+    }]);
     const qobuz = find(/qobuz\.com\//i) && parseQobuzAlbumUrl(find(/qobuz\.com\//i));
-    if (qobuz) return { source: "Qobuz", perTrack: withMedia(extractQobuzCredits(await fetchQobuzAlbumPage(qobuz.pageUrl))) };
+    if (qobuz) jobs.push(["Qobuz", async () => ({ source: "Qobuz", perTrack: withMedia(extractQobuzCredits(await fetchQobuzAlbumPage(qobuz.pageUrl))) })]);
     const deezer = find(/deezer\.com\//i) && parseDeezerAlbumUrl(find(/deezer\.com\//i));
-    if (deezer) return { source: "Deezer", perTrack: withMedia(extractDeezerCredits(await fetchDeezerAlbumPage(deezer.pageUrl))) };
+    if (deezer) jobs.push(["Deezer", async () => ({ source: "Deezer", perTrack: withMedia(extractDeezerCredits(await fetchDeezerAlbumPage(deezer.pageUrl))) })]);
     const apple = find(/(music|itunes)\.apple\.com\//i) && parseAppleAlbumUrl(find(/(music|itunes)\.apple\.com\//i));
-    if (apple) return { source: "Apple", perTrack: withMedia((await fetchAppleCredits(apple.storefront, apple.id)).tracks) };
-    return null;
+    if (apple) jobs.push(["Apple", async () => ({ source: "Apple", perTrack: withMedia((await fetchAppleCredits(apple.storefront, apple.id)).tracks) })]);
+    log.info("Mission Control probe: credit sources linked: " + (jobs.map((j) => j[0]).join(", ") || "none"));
+    const out = await Promise.all(jobs.map(([name, run]) => run().catch((x) => {
+      log.warn(`Mission Control probe: ${name} failed: ${x && x.message || x}`);
+      return null;
+    })));
+    return out.filter(Boolean);
   }
   function startMcAdapter() {
     const m = location.pathname.match(/^\/release\/([0-9a-f-]{36})\/?$/i);
@@ -10119,25 +10125,35 @@ ${lines}
       const done = (findings, summary) => send("mc:findings", { id: "ch", run: d.run, release: rel, findings, summary });
       try {
         send("mc:progress", { id: "ch", run: d.run, state: "busy", note: "reading credits" });
-        const links = releaseLinks();
-        const got = await readSource(links);
-        if (!got) {
-          log.info("Mission Control probe: no credit source linked (Discogs, Qobuz, Deezer, Apple)");
+        const all = await readSources(releaseLinks());
+        if (!all.length) {
+          log.info("Mission Control probe: no credit source linked or readable (Discogs, Qobuz, Deezer, Apple)");
           done([], "No credit source linked (Discogs, Qobuz, Deezer, Apple)");
           return;
         }
         const tracks = pageTracks();
+        const names = all.map((g) => g.source);
         const findings = tracks.map((t, i) => {
-          const hit = got.flat ? got.perTrack[i] : got.perTrack.find((x) => x.medium === t.medium && x.index === t.pos);
-          const list = hit ? hit.credits.map((c) => ({ name: c.name, role: flatRoles(c) })) : [];
-          return { key: t.rec, track: t.rec, state: list.length ? "info" : "none", credits: list.length, list, source: got.source };
+          const merged = /* @__PURE__ */ new Map();
+          for (const got of all) {
+            const hit = got.flat ? got.perTrack[i] : got.perTrack.find((x) => x.medium === t.medium && x.index === t.pos);
+            (hit ? hit.credits : []).forEach((c) => {
+              const role = flatRoles(c), k = String(c.name || "").toLowerCase() + "|" + role.toLowerCase();
+              const mm = merged.get(k) || merged.set(k, { name: c.name, role, sources: [] }).get(k);
+              if (!mm.sources.includes(got.source)) mm.sources.push(got.source);
+            });
+          }
+          const list = [...merged.values()].map((c) => ({ name: c.name, role: c.role, sources: c.sources }));
+          return { key: t.rec, track: t.rec, state: list.length ? "info" : "none", credits: list.length, list, source: names.join(", ") };
         });
         const total = findings.reduce((n, f) => n + f.credits, 0);
-        const relList = got.release || [];
-        if (relList.length) findings.push({ key: "release", state: "info", credits: relList.length, list: relList, source: got.source, level: "release" });
-        log.info(`Mission Control probe: ${got.source} \u2014 ${total} track credit(s) on ${findings.filter((f) => f.track && f.credits).length} of ${tracks.length} track(s), ${relList.length} release credit(s)`);
+        const withCredits = findings.filter((f) => f.track && f.credits).length;
+        const relList = all.flatMap((g) => g.release || []);
+        if (relList.length) findings.push({ key: "release", state: "info", credits: relList.length, list: relList, source: "Discogs", level: "release" });
+        all.forEach((g) => log.info(`Mission Control probe: ${g.source} gave credits for ${g.perTrack.filter((x) => x.credits && x.credits.length).length} track(s)`));
+        log.info(`Mission Control probe: ${names.join(" + ")} \u2014 ${total} track credit(s), merged, on ${withCredits} of ${tracks.length} track(s), ${relList.length} release credit(s)`);
         relList.forEach((c) => log.info(`  release credit: ${c.name} \u2014 ${c.role}`));
-        done(findings, `${got.source}: ${total} credit${total === 1 ? "" : "s"} on ${findings.filter((f) => f.track && f.credits).length} of ${tracks.length} tracks` + (relList.length ? `, ${relList.length} on the release` : ""));
+        done(findings, `${names.join(" + ")}: ${total} credit${total === 1 ? "" : "s"} on ${withCredits} of ${tracks.length} tracks` + (relList.length ? `, ${relList.length} on the release` : ""));
       } catch (x) {
         log.error("Mission Control probe failed: " + (x && x.message || x));
         done([], "failed: " + (x && x.message || x));

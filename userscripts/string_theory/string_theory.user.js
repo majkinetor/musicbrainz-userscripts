@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         String Theory
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.6.212303
+// @version      2026.10.6.212304
 // @description  Unified bundle of 9 MusicBrainz userscripts (apollo_editor, art_station, credit_hoarder, fusion, group_therapy, isrc_scout, mammoth, mission_control, platform_check). Built by userscripts/string_theory/build.mjs — do not hand-edit.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCIgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0Ij4KICA8IS0tIGh1Yi1hbmQtc3Bva2UgIm5ldHdvcmsiIGdseXBoLCBzaW5nbGUgdml2aWQgdmlvbGV0IG9uIHRyYW5zcGFyZW50IHNvIGl0IHJlYWRzIG9uIGJvdGggZGFyayBhbmQgbGlnaHQgcGFnZXMgLS0+CiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjN2M1Y2ZmIiBzdHJva2Utd2lkdGg9IjQuNiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj4KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMzIgMTUiLz4KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMNDYuNSAyMy41Ii8+CiAgICA8cGF0aCBkPSJNMzIgMzIgTDQ2LjUgNDAuNSIvPgogICAgPHBhdGggZD0iTTMyIDMyIEwzMiA0OSIvPgogICAgPHBhdGggZD0iTTMyIDMyIEwxNy41IDQwLjUiLz4KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMTcuNSAyMy41Ii8+CiAgPC9nPgogIDxnIGZpbGw9IiM3YzVjZmYiPgogICAgPGNpcmNsZSBjeD0iMzIiIGN5PSIzMiIgcj0iOC42Ii8+CiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjE5LjUiIHI9IjYuNCIvPgogICAgPGNpcmNsZSBjeD0iNDkiIGN5PSIxOS41IiByPSI2LjQiLz4KICAgIDxjaXJjbGUgY3g9IjMyIiBjeT0iNTciIHI9IjYuNCIvPgogIDwvZz4KICA8ZyBmaWxsPSJub25lIiBzdHJva2U9IiM3YzVjZmYiIHN0cm9rZS13aWR0aD0iMy44Ij4KICAgIDxjaXJjbGUgY3g9IjMyIiBjeT0iNyIgcj0iNC45Ii8+CiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjQ0LjUiIHI9IjQuOSIvPgogICAgPGNpcmNsZSBjeD0iNDkiIGN5PSI0NC41IiByPSI0LjkiLz4KICA8L2c+Cjwvc3ZnPgo=
@@ -89,8 +89,8 @@
 // Bundles (verbatim, each wrapped in a run-at gate): apollo_editor, art_station, credit_hoarder, fusion, group_therapy, isrc_scout, mammoth, mission_control, platform_check.
 
 try {
-  console.log('%c String Theory %c v2026.10.6.212303 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
-  console.log("String Theory bundles:\n  · Apollo Editor v2026.10.6\n  · Art Station v2026.10.6.190310\n  · Credit Hoarder v2026.10.6.160935\n  · Fusion v2026.10.5.205655\n  · Group Therapy v2026.10.4\n  · ISRC Scout v2026.10.6.204207\n  · Mammoth v2026.10.4\n  · Mission Control v2026.10.6.190310\n  · Platform Check v2026.10.6.193036");
+  console.log('%c String Theory %c v2026.10.6.212304 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
+  console.log("String Theory bundles:\n  · Apollo Editor v2026.10.6\n  · Art Station v2026.10.6.195725\n  · Credit Hoarder v2026.10.6.195729\n  · Fusion v2026.10.5.205655\n  · Group Therapy v2026.10.4\n  · ISRC Scout v2026.10.6.204207\n  · Mammoth v2026.10.4\n  · Mission Control v2026.10.6.195725\n  · Platform Check v2026.10.6.193036");
 } catch (e) {}
 
 // ===== apollo_editor (@run-at document-start) =====================================
@@ -11370,7 +11370,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
 
 // ===== art_station (@run-at document-start) =======================================
 (function(__stGM){
-  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Art Station*","namespace":"https://musicbrainz.org/","version":"2026.10.6.190310","description":"Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png"}) }) : { script: {"name":"Art Station*","namespace":"https://musicbrainz.org/","version":"2026.10.6.190310","description":"Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png"} };
+  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Art Station*","namespace":"https://musicbrainz.org/","version":"2026.10.6.195725","description":"Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png"}) }) : { script: {"name":"Art Station*","namespace":"https://musicbrainz.org/","version":"2026.10.6.195725","description":"Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png"} };
   (f=>f())(function(){ try { (function(){
 //
 // Phase-1 PoC. Principle: "you get what you see" — the gallery is the staged
@@ -11526,11 +11526,11 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     const send = (type, detail) => document.dispatchEvent(new CustomEvent(type, { detail: JSON.stringify(detail) }));
     const ver = (typeof GM_info !== 'undefined' && GM_info.script && GM_info.script.version) || '?';
     const hello = () => send('mc:provider', { id: 'as', name: 'Art Station', version: ver, release: rel, capabilities: ['probe', 'apply'] });
-    let last = [];
+    let last = [], mcPlan = { replace: false };   // mcPlan: what the last probe decided for Enter
     const releaseLinks = () => {
       for (const ul of document.querySelectorAll('ul.external_links')) {
         let h = ul.previousElementSibling; while (h && !/^H\d$/.test(h.tagName)) h = h.previousElementSibling;
-        if (h && /^external links$/i.test(h.textContent.trim())) return [...ul.querySelectorAll('a[href^="http"]')].map(a => a.href);
+        if (h && /^external links$/i.test(h.textContent.trim())) return [...ul.querySelectorAll('a[href]')].map(a => a.href).filter(u => /^https?:/.test(u));   // MB writes some hrefs protocol-relative (//x.bandcamp.com): a.href resolves them
       }
       return [];
     };
@@ -11549,21 +11549,36 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
       send('mc:progress', { id: 'as', run: d.run, state: 'busy', note: 'reading the Cover Art Archive' });
       const j = await caa();
       const imgs = (j && j.images) || [];
-      const front = imgs.some(i => i.front || (i.types || []).includes('Front'));
+      // the page's own "Cover art (N)" tab as well: the archive's listing can lag behind (#680)
+      const tabN = +((([...document.querySelectorAll('.tabs a, ul.tabs a')].find(a => /\/cover-art$/.test(a.getAttribute('href') || '')) || {}).textContent || '').match(/\((\d+)\)/) || [])[1] || 0;
+      let front = imgs.some(i => i.front || (i.types || []).includes('Front'));
       const seen = new Set();
       last = releaseLinks().map(u => ({ u, p: providerOf(u) })).filter(x => x.p && !seen.has(x.p.name) && seen.add(x.p.name));
-      const why = front ? 'the release already has a front cover' : null;
-      const findings = last.map(x => Object.assign({ key: x.p.name, name: x.p.name, icon: (Object.entries({ 'Apple Music': 'apple', Spotify: 'spotify', Deezer: 'deezer', Tidal: 'tidal', Qobuz: 'qobuz', Bandcamp: 'bandcamp', Discogs: 'discogs', Beatport: 'beatport', '7digital': 'sevendigital', Amazon: 'amazonmusic' }).find(([n]) => n === x.p.name) || [])[1] || null, url: x.u, state: front ? 'unsure' : 'new' }, why ? { why } : {}));
-      const summary = j == null ? 'Cover Art Archive: could not be read'
-        : imgs.length ? 'Cover Art Archive: ' + imgs.length + ' image' + (imgs.length === 1 ? '' : 's') + (front ? ', front cover ✓' : ', no front cover') : 'Cover Art Archive: no cover art yet';
-      log.info('Mission Control probe ' + d.run + ': ' + summary + ' · ' + findings.length + ' source(s): ' + findings.map(x => x.name).join(', '));
-      // no front cover: source the best one now, headless, so MC shows it before Execute
-      let best = null;
-      if (!front && last.length) {
+      const icon = name => (Object.entries({ 'Apple Music': 'apple', Spotify: 'spotify', Deezer: 'deezer', Tidal: 'tidal', Qobuz: 'qobuz', Bandcamp: 'bandcamp', Discogs: 'discogs', Beatport: 'beatport', '7digital': 'sevendigital', Amazon: 'amazonmusic' }).find(([n]) => n === name) || [])[1] || null;
+      // the best cover, sourced headless, compared with the fronts already there (the frame measures them)
+      let got = null;
+      if (last.length) {
         send('mc:progress', { id: 'as', run: d.run, state: 'busy', note: 'finding the best cover' });
-        best = await mcSource(last.map(x => x.u), note => send('mc:progress', { id: 'as', run: d.run, state: 'busy', note }));
+        got = await mcSource(last.map(x => x.u), note => send('mc:progress', { id: 'as', run: d.run, state: 'busy', note }));
       }
-      send('mc:findings', { id: 'as', run: d.run, release: rel, summary, findings, best: best && best.best });
+      const best = got && got.best, existing = (got && got.existing) || [];
+      if (existing.length) front = true;
+      const px = x => (x.w || 0) * (x.h || 0);
+      const top = existing.slice().sort((a, b) => px(b) - px(a))[0];
+      const larger = !!(best && (!top || px(best) > px(top)));
+      // a larger cover replaces the one front there; with several fronts it's only added
+      const replace = !!(best && top && larger && existing.length === 1);
+      mcPlan = { replace };
+      const why = !front ? null : !best ? 'the release already has a front cover'
+        : larger ? (replace ? `larger than the current front (${top.w}×${top.h}), which it replaces` : `larger than the current fronts (up to ${top.w}×${top.h}); added beside them`)
+        : `not larger than the current front (${top.w}×${top.h})`;
+      const state = !front || larger ? 'new' : 'unsure';
+      const findings = last.map(x => Object.assign({ key: x.p.name, name: x.p.name, icon: icon(x.p.name), url: x.u, state }, why ? { why } : {}));
+      const n = Math.max(imgs.length, tabN, existing.length);
+      const summary = j == null && !n ? 'Cover Art Archive: could not be read'
+        : n ? 'Cover art: ' + n + ' image' + (n === 1 ? '' : 's') + (front ? ', front cover ✓' : ', no front cover') : 'Cover art: none yet';
+      log.info('Mission Control probe ' + d.run + ': ' + summary + ' (archive ' + imgs.length + ', tab ' + tabN + ', frame ' + existing.length + ') · ' + findings.length + ' source(s): ' + findings.map(x => x.name).join(', ') + (why ? ' · ' + why : ''));
+      send('mc:findings', { id: 'as', run: d.run, release: rel, summary, findings, best: best ? Object.assign({ larger, replace, current: top || null }, best) : null });
     });
     // #680: covers are sourced and entered in a hidden frame of the cover-art page, where Art
     // Station runs headless (mc_frame) and talks back by postMessage. One frame at a time.
@@ -11593,9 +11608,9 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
       document.body.appendChild(el);
       const m = await got;
       if (!frame || frame.token !== token) return null;
-      frame.best = m ? m.best : null;
+      frame.best = m ? m.best : null; frame.existing = (m && m.existing) || [];
       log.info('Mission Control: best cover ' + (frame.best ? frame.best.provider + ' ' + frame.best.w + '×' + frame.best.h + ' of ' + frame.best.of : m ? 'none could be imported' : 'timed out'));
-      return { best: frame.best };
+      return { best: frame.best, existing: frame.existing };
     }
     document.addEventListener('mc:apply', async e => {
       let d = {};
@@ -11611,16 +11626,20 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
         busy('finding the best cover');
         const r = await mcSource(urls, busy);
         if (!r || !r.best) { reply({ ok: false, sent: 0, note: 'no cover could be imported' }); return; }
-        send('mc:progress', { id: 'as', run: d.run, state: 'busy', note: 'entering the cover', best: r.best });
+        // the same comparison as the probe's, for the new pick
+        const px = x => (x.w || 0) * (x.h || 0), top = r.existing.slice().sort((a, b) => px(b) - px(a))[0];
+        const larger = !top || px(r.best) > px(top);
+        mcPlan = { replace: !!(top && larger && r.existing.length === 1) };
+        send('mc:progress', { id: 'as', run: d.run, state: 'busy', note: 'entering the cover', best: Object.assign({ larger, replace: mcPlan.replace, current: top || null }, r.best) });
       }
       busy('entering the cover');
       const got = waitFrame('entered', 600000, s => busy('entering the cover (' + s + ' s)'));
-      frame.el.contentWindow.postMessage({ mcAs: 1, token: frame.token, type: 'enter', note: 'Via Mission Control: ' + location.origin + '/release/' + rel }, location.origin);
+      frame.el.contentWindow.postMessage({ mcAs: 1, token: frame.token, type: 'enter', replace: mcPlan.replace, note: 'Via Mission Control: ' + location.origin + '/release/' + rel }, location.origin);
       const m = await got;
       log.info('Mission Control apply: ' + JSON.stringify(m));
       const b = frame.best;
       if (!m) reply({ ok: false, sent: 0, note: 'Art Station did not finish within 10 minutes' });
-      else if (m.ok) reply({ ok: true, sent: 1, note: 'entered ' + b.provider + ' ' + b.w + '×' + b.h + ' as the front cover' });
+      else if (m.ok) reply({ ok: true, sent: 1, note: 'entered ' + b.provider + ' ' + b.w + '×' + b.h + ' as the front cover' + (mcPlan.replace ? ', and removed the smaller one' : '') });
       else reply({ ok: false, sent: 0, note: m.cancelled ? 'cancelled' : 'the edit failed' + (m.error ? ': ' + m.error : '') });
     });
     hello();
@@ -13808,13 +13827,22 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
       if (!MC_FRAME) return;
       // the preview goes to Mission Control as a data URL: a blob URL dies with this frame
       const out = best ? { provider: best._provider || '', w: best.w, h: best.h, bytes: best.bytes || 0, of: best._bestOf || 1 } : null;
-      if (!best || !best._file) { mcFramePost({ type: 'best', best: out }); return; }
+      _mcBest = best;
+      // the covers already there and typed Front, measured (the card compares the best one with them)
+      const fronts = () => MODEL.filter(x => !x._new && !x._del && (x.types || []).includes('Front'));
+      const measured = new Promise(res => { const t0 = Date.now(); const iv = setInterval(() => { if (fronts().every(x => x.w > 0) || Date.now() - t0 > 15000) { clearInterval(iv); res(); } }, 300); });
+      const post = () => measured.then(() => {
+        const existing = fronts().map(x => ({ id: x.id, w: x.w || 0, h: x.h || 0, bytes: x.bytes || 0, thumb: x.id ? thumb(x.id, 250) : '' }));
+        asLog.info(`Mission Control: existing front cover(s): ${existing.map(x => `#${x.id} ${x.w}×${x.h}`).join(', ') || 'none'}`);
+        mcFramePost({ type: 'best', best: out, existing });
+      });
+      if (!best || !best._file) { post(); return; }
       fetch(best._file).then(r => r.blob()).then(b => createImageBitmap(b)).then(bmp => {
         const k = Math.min(1, 500 / Math.max(bmp.width, bmp.height)), c = document.createElement('canvas');
         c.width = Math.round(bmp.width * k); c.height = Math.round(bmp.height * k);
         c.getContext('2d').drawImage(bmp, 0, 0, c.width, c.height);
         out.thumb = c.toDataURL('image/jpeg', 0.85);
-      }).catch(e => asLog.warn('Mission Control: preview failed: ' + (e && e.message))).then(() => mcFramePost({ type: 'best', best: out }));
+      }).catch(e => asLog.warn('Mission Control: preview failed: ' + (e && e.message))).then(post);
     });
   }
   // #680: Mission Control's hidden frame (…/cover-art?mc_source=[…]&mc_frame=<token>): the best
@@ -13827,10 +13855,16 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     if (e.origin !== location.origin || !d || d.mcAs !== 1 || d.token !== MC_FRAME || d.type !== 'enter') return;
     asLog.info('Mission Control: Enter edit' + (d.note ? ' with its note' : ''));
     if (d.note) _seedNote = [_seedNote, d.note].filter(Boolean).join('\n\n');
+    // replace: the one existing front is smaller, so it goes and the best becomes the front
+    if (d.replace && _mcBest) {
+      const old = MODEL.filter(x => !x._new && !x._del && (x.types || []).includes('Front'));
+      if (old.length === 1) { old[0]._del = true; old[0]._sel = false; asLog.info(`Mission Control: removing the smaller front #${old[0].id} ${old[0].w}×${old[0].h}`); }
+      if (!(_mcBest.types || []).includes('Front')) _mcBest.types = ['Front'].concat(_mcBest.types || []);
+    }
     _mcCommitDone = r => mcFramePost(Object.assign({ type: 'entered' }, r));
     enterEdit(true);
   });
-  let _mcCommitDone = null;
+  let _mcCommitDone = null, _mcBest = null;
   function openSourcePop(btn) {
     _srcBtn = btn;   // #250 remembered so a late provider registration can re-open this popover
     document.querySelectorAll('.as-pop').forEach(p => p.remove());
@@ -16879,7 +16913,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
 
 // ===== credit_hoarder (@run-at document-end) ====================================
 (function(__stGM){
-  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Credit Hoarder*","namespace":"majkinetor","version":"2026.10.6.160935","description":"Import per-track release credits from streaming/database providers (Discogs, Tidal, Qobuz, Deezer) into MusicBrainz relationships, with a review phase","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/credit_hoarder/README.md","supportURL":"https://github.com/majkinetor/musicbrainz-userscripts/issues","icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij4KICANCiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMmY2ZjU0IiBzdHJva2Utd2lkdGg9IjkiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGNpcmNsZSBjeD0iMzQiIGN5PSIzOCIgcj0iMi41IiBmaWxsPSIjMmY2ZjU0IiBzdHJva2U9Im5vbmUiLz4NCiAgICA8bGluZSB4MT0iNTAiIHkxPSIzOCIgeDI9Ijk4IiB5Mj0iMzgiLz4NCiAgICA8Y2lyY2xlIGN4PSIzNCIgY3k9IjY0IiByPSIyLjUiIGZpbGw9IiMyZjZmNTQiIHN0cm9rZT0ibm9uZSIvPg0KICAgIDxsaW5lIHgxPSI1MCIgeTE9IjY0IiB4Mj0iOTgiIHkyPSI2NCIvPg0KICAgIDxjaXJjbGUgY3g9IjM0IiBjeT0iOTAiIHI9IjIuNSIgZmlsbD0iIzJmNmY1NCIgc3Ryb2tlPSJub25lIi8+DQogICAgPGxpbmUgeDE9IjUwIiB5MT0iOTAiIHgyPSI3NCIgeTI9IjkwIi8+DQogIDwvZz4NCiAgPGNpcmNsZSBjeD0iOTIiIGN5PSI5MiIgcj0iMjMiIGZpbGw9IiMyZTllNWIiLz4NCiAgPGcgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGxpbmUgeDE9IjkyIiB5MT0iODEiIHgyPSI5MiIgeTI9IjEwMyIvPg0KICAgIDxsaW5lIHgxPSI4MSIgeTE9IjkyIiB4Mj0iMTAzIiB5Mj0iOTIiLz4NCiAgPC9nPg0KPC9zdmc+DQo="}) }) : { script: {"name":"Credit Hoarder*","namespace":"majkinetor","version":"2026.10.6.160935","description":"Import per-track release credits from streaming/database providers (Discogs, Tidal, Qobuz, Deezer) into MusicBrainz relationships, with a review phase","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/credit_hoarder/README.md","supportURL":"https://github.com/majkinetor/musicbrainz-userscripts/issues","icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij4KICANCiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMmY2ZjU0IiBzdHJva2Utd2lkdGg9IjkiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGNpcmNsZSBjeD0iMzQiIGN5PSIzOCIgcj0iMi41IiBmaWxsPSIjMmY2ZjU0IiBzdHJva2U9Im5vbmUiLz4NCiAgICA8bGluZSB4MT0iNTAiIHkxPSIzOCIgeDI9Ijk4IiB5Mj0iMzgiLz4NCiAgICA8Y2lyY2xlIGN4PSIzNCIgY3k9IjY0IiByPSIyLjUiIGZpbGw9IiMyZjZmNTQiIHN0cm9rZT0ibm9uZSIvPg0KICAgIDxsaW5lIHgxPSI1MCIgeTE9IjY0IiB4Mj0iOTgiIHkyPSI2NCIvPg0KICAgIDxjaXJjbGUgY3g9IjM0IiBjeT0iOTAiIHI9IjIuNSIgZmlsbD0iIzJmNmY1NCIgc3Ryb2tlPSJub25lIi8+DQogICAgPGxpbmUgeDE9IjUwIiB5MT0iOTAiIHgyPSI3NCIgeTI9IjkwIi8+DQogIDwvZz4NCiAgPGNpcmNsZSBjeD0iOTIiIGN5PSI5MiIgcj0iMjMiIGZpbGw9IiMyZTllNWIiLz4NCiAgPGcgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGxpbmUgeDE9IjkyIiB5MT0iODEiIHgyPSI5MiIgeTI9IjEwMyIvPg0KICAgIDxsaW5lIHgxPSI4MSIgeTE9IjkyIiB4Mj0iMTAzIiB5Mj0iOTIiLz4NCiAgPC9nPg0KPC9zdmc+DQo="} };
+  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Credit Hoarder*","namespace":"majkinetor","version":"2026.10.6.195729","description":"Import per-track release credits from streaming/database providers (Discogs, Tidal, Qobuz, Deezer) into MusicBrainz relationships, with a review phase","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/credit_hoarder/README.md","supportURL":"https://github.com/majkinetor/musicbrainz-userscripts/issues","icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij4KICANCiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMmY2ZjU0IiBzdHJva2Utd2lkdGg9IjkiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGNpcmNsZSBjeD0iMzQiIGN5PSIzOCIgcj0iMi41IiBmaWxsPSIjMmY2ZjU0IiBzdHJva2U9Im5vbmUiLz4NCiAgICA8bGluZSB4MT0iNTAiIHkxPSIzOCIgeDI9Ijk4IiB5Mj0iMzgiLz4NCiAgICA8Y2lyY2xlIGN4PSIzNCIgY3k9IjY0IiByPSIyLjUiIGZpbGw9IiMyZjZmNTQiIHN0cm9rZT0ibm9uZSIvPg0KICAgIDxsaW5lIHgxPSI1MCIgeTE9IjY0IiB4Mj0iOTgiIHkyPSI2NCIvPg0KICAgIDxjaXJjbGUgY3g9IjM0IiBjeT0iOTAiIHI9IjIuNSIgZmlsbD0iIzJmNmY1NCIgc3Ryb2tlPSJub25lIi8+DQogICAgPGxpbmUgeDE9IjUwIiB5MT0iOTAiIHgyPSI3NCIgeTI9IjkwIi8+DQogIDwvZz4NCiAgPGNpcmNsZSBjeD0iOTIiIGN5PSI5MiIgcj0iMjMiIGZpbGw9IiMyZTllNWIiLz4NCiAgPGcgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGxpbmUgeDE9IjkyIiB5MT0iODEiIHgyPSI5MiIgeTI9IjEwMyIvPg0KICAgIDxsaW5lIHgxPSI4MSIgeTE9IjkyIiB4Mj0iMTAzIiB5Mj0iOTIiLz4NCiAgPC9nPg0KPC9zdmc+DQo="}) }) : { script: {"name":"Credit Hoarder*","namespace":"majkinetor","version":"2026.10.6.195729","description":"Import per-track release credits from streaming/database providers (Discogs, Tidal, Qobuz, Deezer) into MusicBrainz relationships, with a review phase","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/credit_hoarder/README.md","supportURL":"https://github.com/majkinetor/musicbrainz-userscripts/issues","icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij4KICANCiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMmY2ZjU0IiBzdHJva2Utd2lkdGg9IjkiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGNpcmNsZSBjeD0iMzQiIGN5PSIzOCIgcj0iMi41IiBmaWxsPSIjMmY2ZjU0IiBzdHJva2U9Im5vbmUiLz4NCiAgICA8bGluZSB4MT0iNTAiIHkxPSIzOCIgeDI9Ijk4IiB5Mj0iMzgiLz4NCiAgICA8Y2lyY2xlIGN4PSIzNCIgY3k9IjY0IiByPSIyLjUiIGZpbGw9IiMyZjZmNTQiIHN0cm9rZT0ibm9uZSIvPg0KICAgIDxsaW5lIHgxPSI1MCIgeTE9IjY0IiB4Mj0iOTgiIHkyPSI2NCIvPg0KICAgIDxjaXJjbGUgY3g9IjM0IiBjeT0iOTAiIHI9IjIuNSIgZmlsbD0iIzJmNmY1NCIgc3Ryb2tlPSJub25lIi8+DQogICAgPGxpbmUgeDE9IjUwIiB5MT0iOTAiIHgyPSI3NCIgeTI9IjkwIi8+DQogIDwvZz4NCiAgPGNpcmNsZSBjeD0iOTIiIGN5PSI5MiIgcj0iMjMiIGZpbGw9IiMyZTllNWIiLz4NCiAgPGcgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGxpbmUgeDE9IjkyIiB5MT0iODEiIHgyPSI5MiIgeTI9IjEwMyIvPg0KICAgIDxsaW5lIHgxPSI4MSIgeTE9IjkyIiB4Mj0iMTAzIiB5Mj0iOTIiLz4NCiAgPC9nPg0KPC9zdmc+DQo="} };
   (f=>document.readyState!=='loading'?f():document.addEventListener('DOMContentLoaded',f,{once:true}))(function(){ try { (function(){
 (() => {
 // one copy per page: with String Theory and a standalone install both on, the newer one runs (#653)
@@ -26895,7 +26929,7 @@ ${lines}
     for (const ul of document.querySelectorAll("ul.external_links")) {
       let h = ul.previousElementSibling;
       while (h && !/^H\d$/.test(h.tagName)) h = h.previousElementSibling;
-      if (h && /^external links$/i.test(h.textContent.trim())) return [...ul.querySelectorAll('a[href^="http"]')].map((a) => a.href);
+      if (h && /^external links$/i.test(h.textContent.trim())) return [...ul.querySelectorAll("a[href]")].map((a) => a.href).filter((u) => /^https?:/.test(u));
     }
     return [];
   }
@@ -26923,10 +26957,11 @@ ${lines}
     });
   }
   var flatRoles = (c) => (c.roles || [c.role]).filter(Boolean).join(", ");
-  async function readSource(links) {
+  async function readSources(links) {
     const find = (re) => links.find((u) => re.test(u));
+    const jobs = [];
     const discogs = find(/discogs\.com\/(?:[a-z-]+\/)?release\/\d+/i);
-    if (discogs) {
+    if (discogs) jobs.push(["Discogs", async () => {
       const url = discogs.replace(/^https?:\/\/(www\.)?discogs\.com\/(?:[a-z-]+\/)?release\//i, "https://www.discogs.com/release/").split(/[?#]/)[0];
       const json = await getDiscogsReleaseData(url);
       const tracks = [];
@@ -26937,14 +26972,19 @@ ${lines}
       walk(json.tracklist);
       const release = (json.extraartists || []).map((a) => ({ name: a.name, role: a.role + (a.tracks ? ` (tracks ${a.tracks})` : "") }));
       return { source: "Discogs", perTrack: tracks.map((t, i) => ({ medium: 0, index: i + 1, credits: (t.extraartists || []).map((a) => ({ name: a.name, role: a.role })) })), flat: true, release };
-    }
+    }]);
     const qobuz = find(/qobuz\.com\//i) && parseQobuzAlbumUrl(find(/qobuz\.com\//i));
-    if (qobuz) return { source: "Qobuz", perTrack: withMedia(extractQobuzCredits(await fetchQobuzAlbumPage(qobuz.pageUrl))) };
+    if (qobuz) jobs.push(["Qobuz", async () => ({ source: "Qobuz", perTrack: withMedia(extractQobuzCredits(await fetchQobuzAlbumPage(qobuz.pageUrl))) })]);
     const deezer = find(/deezer\.com\//i) && parseDeezerAlbumUrl(find(/deezer\.com\//i));
-    if (deezer) return { source: "Deezer", perTrack: withMedia(extractDeezerCredits(await fetchDeezerAlbumPage(deezer.pageUrl))) };
+    if (deezer) jobs.push(["Deezer", async () => ({ source: "Deezer", perTrack: withMedia(extractDeezerCredits(await fetchDeezerAlbumPage(deezer.pageUrl))) })]);
     const apple = find(/(music|itunes)\.apple\.com\//i) && parseAppleAlbumUrl(find(/(music|itunes)\.apple\.com\//i));
-    if (apple) return { source: "Apple", perTrack: withMedia((await fetchAppleCredits(apple.storefront, apple.id)).tracks) };
-    return null;
+    if (apple) jobs.push(["Apple", async () => ({ source: "Apple", perTrack: withMedia((await fetchAppleCredits(apple.storefront, apple.id)).tracks) })]);
+    log.info("Mission Control probe: credit sources linked: " + (jobs.map((j) => j[0]).join(", ") || "none"));
+    const out = await Promise.all(jobs.map(([name, run]) => run().catch((x) => {
+      log.warn(`Mission Control probe: ${name} failed: ${x && x.message || x}`);
+      return null;
+    })));
+    return out.filter(Boolean);
   }
   function startMcAdapter() {
     const m = location.pathname.match(/^\/release\/([0-9a-f-]{36})\/?$/i);
@@ -26966,25 +27006,35 @@ ${lines}
       const done = (findings, summary) => send("mc:findings", { id: "ch", run: d.run, release: rel, findings, summary });
       try {
         send("mc:progress", { id: "ch", run: d.run, state: "busy", note: "reading credits" });
-        const links = releaseLinks();
-        const got = await readSource(links);
-        if (!got) {
-          log.info("Mission Control probe: no credit source linked (Discogs, Qobuz, Deezer, Apple)");
+        const all = await readSources(releaseLinks());
+        if (!all.length) {
+          log.info("Mission Control probe: no credit source linked or readable (Discogs, Qobuz, Deezer, Apple)");
           done([], "No credit source linked (Discogs, Qobuz, Deezer, Apple)");
           return;
         }
         const tracks = pageTracks();
+        const names = all.map((g) => g.source);
         const findings = tracks.map((t, i) => {
-          const hit = got.flat ? got.perTrack[i] : got.perTrack.find((x) => x.medium === t.medium && x.index === t.pos);
-          const list = hit ? hit.credits.map((c) => ({ name: c.name, role: flatRoles(c) })) : [];
-          return { key: t.rec, track: t.rec, state: list.length ? "info" : "none", credits: list.length, list, source: got.source };
+          const merged = /* @__PURE__ */ new Map();
+          for (const got of all) {
+            const hit = got.flat ? got.perTrack[i] : got.perTrack.find((x) => x.medium === t.medium && x.index === t.pos);
+            (hit ? hit.credits : []).forEach((c) => {
+              const role = flatRoles(c), k = String(c.name || "").toLowerCase() + "|" + role.toLowerCase();
+              const mm = merged.get(k) || merged.set(k, { name: c.name, role, sources: [] }).get(k);
+              if (!mm.sources.includes(got.source)) mm.sources.push(got.source);
+            });
+          }
+          const list = [...merged.values()].map((c) => ({ name: c.name, role: c.role, sources: c.sources }));
+          return { key: t.rec, track: t.rec, state: list.length ? "info" : "none", credits: list.length, list, source: names.join(", ") };
         });
         const total = findings.reduce((n, f) => n + f.credits, 0);
-        const relList = got.release || [];
-        if (relList.length) findings.push({ key: "release", state: "info", credits: relList.length, list: relList, source: got.source, level: "release" });
-        log.info(`Mission Control probe: ${got.source} \u2014 ${total} track credit(s) on ${findings.filter((f) => f.track && f.credits).length} of ${tracks.length} track(s), ${relList.length} release credit(s)`);
+        const withCredits = findings.filter((f) => f.track && f.credits).length;
+        const relList = all.flatMap((g) => g.release || []);
+        if (relList.length) findings.push({ key: "release", state: "info", credits: relList.length, list: relList, source: "Discogs", level: "release" });
+        all.forEach((g) => log.info(`Mission Control probe: ${g.source} gave credits for ${g.perTrack.filter((x) => x.credits && x.credits.length).length} track(s)`));
+        log.info(`Mission Control probe: ${names.join(" + ")} \u2014 ${total} track credit(s), merged, on ${withCredits} of ${tracks.length} track(s), ${relList.length} release credit(s)`);
         relList.forEach((c) => log.info(`  release credit: ${c.name} \u2014 ${c.role}`));
-        done(findings, `${got.source}: ${total} credit${total === 1 ? "" : "s"} on ${findings.filter((f) => f.track && f.credits).length} of ${tracks.length} tracks` + (relList.length ? `, ${relList.length} on the release` : ""));
+        done(findings, `${names.join(" + ")}: ${total} credit${total === 1 ? "" : "s"} on ${withCredits} of ${tracks.length} tracks` + (relList.length ? `, ${relList.length} on the release` : ""));
       } catch (x) {
         log.error("Mission Control probe failed: " + (x && x.message || x));
         done([], "failed: " + (x && x.message || x));
@@ -46926,7 +46976,7 @@ Created this ${kind} while adding credits parsed from text to ${relUrl}`;
 
 // ===== mission_control (@run-at document-end) ===================================
 (function(__stGM){
-  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Mission Control*","namespace":"https://musicbrainz.org/","version":"2026.10.6.190310","description":"One window on the release page that asks the other scripts (Platform Check, ISRC Scout, Art Station, Fusion, Credit Hoarder) what is missing, shows it all in one review, and applies the ticked changes in order.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/mission_control/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPk1pc3Npb24gQ29udHJvbDwvdGl0bGU+CiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjNWYzZWMwIiBzdHJva2Utd2lkdGg9IjciPgogICAgPGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iNTIiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjMwIi8+CiAgICA8cGF0aCBkPSJNNjQgNHYyMk02NCAxMDJ2MjJNNCA2NGgyMk0xMDIgNjRoMjIiLz4KICA8L2c+CiAgPGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iMTEiIGZpbGw9IiM4YTVjZjYiLz4KPC9zdmc+Cg=="}) }) : { script: {"name":"Mission Control*","namespace":"https://musicbrainz.org/","version":"2026.10.6.190310","description":"One window on the release page that asks the other scripts (Platform Check, ISRC Scout, Art Station, Fusion, Credit Hoarder) what is missing, shows it all in one review, and applies the ticked changes in order.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/mission_control/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPk1pc3Npb24gQ29udHJvbDwvdGl0bGU+CiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjNWYzZWMwIiBzdHJva2Utd2lkdGg9IjciPgogICAgPGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iNTIiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjMwIi8+CiAgICA8cGF0aCBkPSJNNjQgNHYyMk02NCAxMDJ2MjJNNCA2NGgyMk0xMDIgNjRoMjIiLz4KICA8L2c+CiAgPGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iMTEiIGZpbGw9IiM4YTVjZjYiLz4KPC9zdmc+Cg=="} };
+  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Mission Control*","namespace":"https://musicbrainz.org/","version":"2026.10.6.195725","description":"One window on the release page that asks the other scripts (Platform Check, ISRC Scout, Art Station, Fusion, Credit Hoarder) what is missing, shows it all in one review, and applies the ticked changes in order.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/mission_control/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPk1pc3Npb24gQ29udHJvbDwvdGl0bGU+CiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjNWYzZWMwIiBzdHJva2Utd2lkdGg9IjciPgogICAgPGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iNTIiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjMwIi8+CiAgICA8cGF0aCBkPSJNNjQgNHYyMk02NCAxMDJ2MjJNNCA2NGgyMk0xMDIgNjRoMjIiLz4KICA8L2c+CiAgPGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iMTEiIGZpbGw9IiM4YTVjZjYiLz4KPC9zdmc+Cg=="}) }) : { script: {"name":"Mission Control*","namespace":"https://musicbrainz.org/","version":"2026.10.6.195725","description":"One window on the release page that asks the other scripts (Platform Check, ISRC Scout, Art Station, Fusion, Credit Hoarder) what is missing, shows it all in one review, and applies the ticked changes in order.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/mission_control/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPk1pc3Npb24gQ29udHJvbDwvdGl0bGU+CiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjNWYzZWMwIiBzdHJva2Utd2lkdGg9IjciPgogICAgPGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iNTIiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjMwIi8+CiAgICA8cGF0aCBkPSJNNjQgNHYyMk02NCAxMDJ2MjJNNCA2NGgyMk0xMDIgNjRoMjIiLz4KICA8L2c+CiAgPGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iMTEiIGZpbGw9IiM4YTVjZjYiLz4KPC9zdmc+Cg=="} };
   (f=>document.readyState!=='loading'?f():document.addEventListener('DOMContentLoaded',f,{once:true}))(function(){ try { (function(){
 (function () {
 'use strict';
@@ -47018,7 +47068,8 @@ document.addEventListener('mc:progress', e => {
     const d = busEvent(e, 'mc:progress'); if (!d) return;
     const r = results[d.id];
     // during Execute a provider that already answered keeps its findings: the note goes beside them
-    if (r && r.state === 'done') { r.working = d.note || 'working'; if (d.best) r.best = d.best; }
+    // (a late tick from the probe, after its findings, is dropped: no stuck spinner)
+    if (r && r.state === 'done') { if (executing) { r.working = d.note || 'working'; if (d.best) r.best = d.best; } }
     else results[d.id] = Object.assign(r || {}, { state: 'busy', note: d.note || '' });
     Log.debug('progress ' + d.id + ': ' + (d.note || d.state));
     paintAll();
@@ -47090,12 +47141,21 @@ document.addEventListener('falcon:status', e => {
 });
 const FALCON_MARK = { queued: ['…', 'waiting'], active: ['⟳', 'running'], done: ['✓', 'done'], skipped: ['✓', 'already there'], partial: ['!', 'partly done'], failed: ['✕', 'failed'], manual: ['✋', 'needs you'] };
 // #680: the cover Art Station picked (headless), shown before Execute enters it
+// with the current front beside it when there is one, and what Execute would do
 function bestHtml(b) {
     if (!b) return '';
-    const size = b.bytes ? (b.bytes > 1048576 ? (b.bytes / 1048576).toFixed(1) + ' MB' : Math.round(b.bytes / 1024) + ' KB') : '';
-    return '<div class="mc-best">' + (b.thumb ? '<img alt="" src="' + esc(b.thumb) + '">' : '<span class="mc-best-no">🖼</span>')
-        + '<div class="mc-best-t"><b>Best cover</b><span>' + esc(b.provider || '?') + '</span><span>' + esc(b.w + ' × ' + b.h + (size ? ' · ' + size : '')) + '</span>'
-        + '<span class="dim">' + esc(b.of > 1 ? 'the largest of ' + b.of + ' found' : 'the only one found') + '</span><span class="dim">Execute enters it as the front cover</span></div></div>';
+    const kb = n => n ? (n > 1048576 ? (n / 1048576).toFixed(1) + ' MB' : Math.round(n / 1024) + ' KB') : '';
+    const fig = (src, title, lines) => '<div class="mc-best-c">' + (src ? '<img alt="" src="' + esc(src) + '">' : '<span class="mc-best-no">🖼</span>')
+        + '<div class="mc-best-t"><b>' + esc(title) + '</b>' + lines.filter(Boolean).map(l => '<span>' + esc(l) + '</span>').join('') + '</div></div>';
+    const c = b.current;
+    const what = !c ? 'Execute enters it as the front cover'
+        : b.replace ? 'Larger than the current front: Execute enters it and removes the current one'
+        : b.larger ? 'Larger than the current fronts: Execute adds it beside them'
+        : 'Not larger than the current front: nothing to gain (tick a source to add it anyway)';
+    return '<div class="mc-best' + (c && !b.larger ? ' no' : '') + '"><div class="mc-best-row">'
+        + fig(b.thumb, 'Best cover', [b.provider || '?', b.w + ' × ' + b.h + (b.bytes ? ' · ' + kb(b.bytes) : ''), b.of > 1 ? 'the largest of ' + b.of + ' found' : 'the only one found'])
+        + (c ? '<span class="mc-best-vs">' + (b.larger ? '>' : '≤') + '</span>' + fig(c.thumb, 'Current front', [c.w + ' × ' + c.h + (c.bytes ? ' · ' + kb(c.bytes) : '')]) : '')
+        + '</div><div class="mc-best-what">' + esc(what) + '</div></div>';
 }
 function falconHtml(f) {
     if (!f || !f.items.length) return '';
@@ -47229,7 +47289,7 @@ function mcStyle() {
         // B's vertical execution order
         + '.mc-stage{position:relative;padding-left:26px;padding-bottom:12px}'
         + '.mc-stage::before{content:"";position:absolute;left:8px;top:20px;bottom:-2px;width:2px;background:var(--mbu-border)}.mc-stage:last-child::before{display:none}'
-        + '.mc-node{position:absolute;left:0;top:2px;width:18px;height:18px;border-radius:50%;border:2px solid var(--mbu-border-strong);background:var(--mbu-bg)}.mc-node.opt{border-style:dashed}'
+        + '.mc-node{position:absolute;left:0;top:2px;width:18px;height:18px;border-radius:50%;border:2px solid var(--mbu-border-strong);background:var(--mbu-bg);display:flex;align-items:center;justify-content:center}.mc-node .mc-sic{width:12px;height:12px;margin:0}.mc-sic{width:15px;height:15px;object-fit:contain;vertical-align:-3px;margin-right:4px;flex:0 0 auto}.mc-node.opt{border-style:dashed}'
         + '.mc-stage .nm{font-weight:600;font-size:12.5px;display:flex;align-items:center;gap:6px}.mc-stage .meta{font-size:11px;color:var(--mbu-text-dim)}'
         + '.mc-stage.off .nm,.mc-stage.off .meta{opacity:.45}'
         + '.mc-par{margin-top:6px;padding:6px 8px;border:1px dashed var(--mbu-border-strong);border-radius:var(--mbu-radius);background:var(--mbu-bg-sunken)}'
@@ -47264,10 +47324,12 @@ function mcStyle() {
         + '.mc-have{opacity:.8}.mc-isep{width:1px;height:14px;background:var(--mbu-border);margin:0 2px}'
         + '.mc-icons{display:inline-flex;gap:4px;align-items:center}.mc-icons a.mc-pico:hover{transform:scale(1.15)}'
         + '.mc-summary{padding:5px 10px;font-size:11.5px;color:var(--mbu-text-dim);border-bottom:1px solid var(--mbu-divider)}'
-        + '.mc-best{display:flex;gap:12px;align-items:flex-start;padding:8px 10px;border-bottom:1px solid var(--mbu-divider)}.mc-best img{width:120px;height:120px;object-fit:contain;border-radius:var(--mbu-radius);background:var(--mbu-bg-sunken);border:1px solid var(--mbu-border-soft);flex:0 0 auto}'
-        + '.mc-best-no{width:120px;height:120px;display:flex;align-items:center;justify-content:center;font-size:32px;background:var(--mbu-bg-sunken);border-radius:var(--mbu-radius);flex:0 0 auto}.mc-best-t{display:flex;flex-direction:column;gap:2px;font-size:12px;min-width:0}.mc-best-t .dim{color:var(--mbu-text-weak);font-size:11px}'
+        + '.mc-best{padding:8px 10px;border-bottom:1px solid var(--mbu-divider)}.mc-best-row{display:flex;gap:10px;align-items:center}.mc-best-c{flex:1 1 0;min-width:0}.mc-best-c{display:flex;gap:10px;align-items:flex-start}.mc-best-vs{font-size:20px;font-weight:700;color:var(--mbu-text-weak)}'
+        + '.mc-best-what{margin-top:6px;font-size:11.5px;font-weight:600;color:var(--mbu-ok)}.mc-best.no .mc-best-what{color:var(--mbu-text-weak)}.mc-best img{width:72px;height:72px;object-fit:contain;border-radius:var(--mbu-radius);background:var(--mbu-bg-sunken);border:1px solid var(--mbu-border-soft);flex:0 0 auto}'
+        + '.mc-best-no{width:72px;height:72px;display:flex;align-items:center;justify-content:center;font-size:32px;background:var(--mbu-bg-sunken);border-radius:var(--mbu-radius);flex:0 0 auto}.mc-best-t{display:flex;flex-direction:column;gap:2px;font-size:12px;min-width:0}.mc-best-t .dim{color:var(--mbu-text-weak);font-size:11px}'
         + '.mc-working{display:flex;align-items:center;gap:7px;padding:5px 10px;font-size:11.5px;color:var(--mbu-accent-text);border-bottom:1px solid var(--mbu-divider)}'
         + '.mc-spin{width:10px;height:10px;border:2px solid var(--mbu-accent-soft);border-top-color:var(--mbu-accent);border-radius:50%;animation:mc-spin .8s linear infinite;flex:0 0 auto}@keyframes mc-spin{to{transform:rotate(360deg)}}'
+        + '.mc-pdiv{display:inline-block;width:1px;height:14px;background:var(--mbu-border);margin:0 3px;vertical-align:middle}.mc-pico sub{font-size:9px;font-weight:700;margin-left:1px}.mc-pico.mc-ent{width:auto}'
         + '.mc-falcon{border-bottom:1px solid var(--mbu-divider);padding:5px 10px;font-size:11.5px}.mc-falcon-h{display:flex;align-items:center;gap:8px;font-weight:600;color:var(--mbu-text-dim);margin-bottom:3px}.mc-falcon.ok .mc-falcon-h{color:var(--mbu-ok)}.mc-falcon.bad .mc-falcon-h{color:var(--mbu-warn)}'
         + '.mc-falcon-open{margin-left:auto;font:inherit;font-weight:600;padding:1px 8px;border:1px solid var(--mbu-border);border-radius:var(--mbu-radius);background:var(--mbu-bg-raised);color:var(--mbu-accent-text);cursor:pointer}'
         + '.mc-falcon-i{display:flex;align-items:baseline;gap:7px;padding:1px 0;min-width:0}.mc-falcon-i .mk{flex:0 0 14px;text-align:center;font-weight:700}.mc-falcon-i .ty{flex:0 0 auto;color:var(--mbu-text-weak);text-transform:capitalize}.mc-falcon-i .nm{flex:0 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.mc-falcon-i .ct{flex:0 0 auto;color:var(--mbu-text-weak)}.mc-falcon-i .er{flex:1 1 0;min-width:0;color:var(--mbu-error);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}'
@@ -47275,7 +47337,7 @@ function mcStyle() {
         + '.mc-applied{padding:5px 10px;font-size:11.5px;font-weight:600;border-bottom:1px solid var(--mbu-divider)}.mc-applied.ok{color:var(--mbu-ok);background:var(--mbu-ok-bg)}.mc-applied.err{color:var(--mbu-error);background:var(--mbu-error-bg)}'
         + '.mc-none{display:flex;flex-wrap:wrap;align-items:center;gap:6px;padding:6px 10px;font-size:11px;color:var(--mbu-text-weak)}.mc-none span:first-child{margin-right:4px}.mc-none .mc-pico{opacity:.6}'
         + '.mc-line.linked,.mc-line.none{opacity:.7}.mc-line .mc-lt{min-width:0}.mc-line .t{font-size:12px}'
-        + '#mc-root .mc-line .s{display:block;font-size:10.5px;color:var(--mbu-text-weak);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-decoration:none}#mc-root .mc-line a.s:hover{color:var(--mbu-accent-text);text-decoration:underline}'
+        + '#mc-root .mc-line .s{display:block;width:fit-content;max-width:100%;font-size:10.5px;color:var(--mbu-text-weak);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-decoration:none}#mc-root .mc-line a.s:hover{color:var(--mbu-accent-text);text-decoration:underline}'
         + '.mc-pico{display:inline-flex;width:16px;height:16px;align-items:center;justify-content:center}.mc-pico svg{display:block}'
         + '.mc-pill{font-size:10px;font-weight:700;padding:1px 7px;border-radius:20px;white-space:nowrap;border:1px solid var(--mbu-border)}'
         + '.mc-pill.add{color:var(--mbu-accent-text);background:var(--mbu-accent-soft);border-color:var(--mbu-border-strong)}.mc-pill.ok{color:var(--mbu-ok);background:var(--mbu-ok-bg);border-color:var(--mbu-ok-border)}'
@@ -47352,9 +47414,9 @@ function orderSidebar() {
     for (const s of STEPS) {
         if (s.lanes) {
             html += '<div class="mc-stage"><span class="mc-node"></span><div class="nm">' + esc(s.name) + '</div><div class="mc-par"><div class="lbl">⇶ parallel</div>'
-                + s.lanes.map(l => '<div class="mc-lane" data-p="' + l.id + '"><span class="mc-dot"></span>' + esc(l.provider) + '</div>').join('') + '</div></div>';
+                + s.lanes.map(l => '<div class="mc-lane" data-p="' + l.id + '"><span class="mc-dot"></span>' + sIcon(l.id) + esc(l.provider) + '</div>').join('') + '</div></div>';
         } else {
-            html += '<div class="mc-stage' + (modeOf(s) === 'off' ? ' off' : '') + '" data-p="' + s.id + '"><span class="mc-node' + (s.mode ? ' opt' : '') + '"></span>'
+            html += '<div class="mc-stage' + (modeOf(s) === 'off' ? ' off' : '') + '" data-p="' + s.id + '"><span class="mc-node' + (s.mode ? ' opt' : '') + '">' + sIcon(s.id) + '</span>'
                 + '<div class="nm">' + esc(s.name) + (s.info ? ' <span class="mc-mode">info</span>' : '') + '</div>'
                 + '<div class="meta">' + esc(s.provider) + ' · <span class="st"></span></div>' + (s.mode ? seg(s) : '') + '</div>';
         }
@@ -47363,10 +47425,12 @@ function orderSidebar() {
     return a;
 }
 
+// a provider's own userscript icon (#680: in the execution order, not a glyph)
+function sIcon(id) { return PROVIDER_ICONS[id] ? '<img class="mc-sic" alt="" src="' + PROVIDER_ICONS[id] + '">' : ''; }
 function strip() {
     // B (#680): the strip is the collapsed order sidebar; clicking it expands it
     const d = el('div', 'mc-strip'); d.dataset.side = 'left'; d.title = 'Show the execution order';
-    const chip = p => '<span class="mc-chip' + (p.mode ? ' opt' : '') + '" data-p="' + p.id + '" title="' + esc(p.provider + ': ' + p.name) + '"><span class="mc-dot"></span>' + esc(p.glyph) + '<span class="mbu-bt">' + esc(p.short) + '</span></span>';
+    const chip = p => '<span class="mc-chip' + (p.mode ? ' opt' : '') + '" data-p="' + p.id + '" title="' + esc(p.provider + ': ' + p.name) + '"><span class="mc-dot"></span>' + sIcon(p.id) + '<span class="mbu-bt">' + esc(p.short) + '</span></span>';
     d.innerHTML = mbuHtml('<span class="mc-exp">▸</span>' + STEPS.map(s => s.lanes ? '<span class="mc-chip par" title="run in parallel">' + s.lanes.map(chip).join(' ∥ ') + '</span>' : chip(s)).join('<span class="mc-arrow">→</span>'));
     return d;
 }
@@ -47500,6 +47564,15 @@ function urlIcon(u) {
     return m ? m[1] : 'globe';
 }
 function shortUrl(u) { try { const x = new URL(u); return x.hostname.replace(/^www\./, '') + x.pathname.replace(/\/$/, ''); } catch (e) { return u; } }
+// the header's linked icons: the release's own, then a divider and the artists' and labels',
+// one icon per platform with a count (three Discogs artists are one Discogs ×3, #680)
+function linkedIcons(linked) {
+    const rel = linked.filter(x => !x.entity), ent = new Map();
+    linked.filter(x => x.entity).forEach(x => { const k = x.icon || x.key; (ent.get(k) || ent.set(k, []).get(k)).push(x); });
+    return rel.map(x => '<span class="mc-pico" title="' + esc(x.name || x.key) + '">' + stIcon(x.icon || x.key, 14) + '</span>').join('')
+        + (ent.size ? (rel.length ? '<span class="mc-pdiv"></span>' : '') + [...ent].map(([k, xs]) => '<span class="mc-pico mc-ent" title="' + esc(xs.map(x => (x.entity.name || '') + ' · ' + (x.name || x.key)).join(', ')) + '">'
+            + stIcon(k, 14) + (xs.length > 1 ? '<sub>' + xs.length + '</sub>' : '') + '</span>').join('') : '');
+}
 function paintCards() {
     ui.querySelectorAll('[data-card]').forEach(box => {
         const id = box.dataset.card, p = PROVIDERS.find(x => x.id === id), r = results[id];
@@ -47517,7 +47590,7 @@ function paintCards() {
         const slot = box.parentNode.querySelector('.mc-sect-h .end');
         if (slot) slot.innerHTML = mbuHtml(linked.length ? '<button type="button" class="mc-linked' + (S.linkedRows ? ' on' : '') + '" data-act="linked" title="'
             + esc('Already linked: ' + linked.map(x => x.name || x.key).join(', ') + (S.linkedRows ? '. Click to fold them back here.' : '. Click to list them below.')) + '">'
-            + linked.map(x => '<span class="mc-pico' + (x.entity ? ' mc-ent' : '') + '" title="' + esc(x.name || x.key) + '">' + stIcon(x.icon || x.key, 14) + '</span>').join('') + '<span class="mc-lk">✓ ' + linked.length + '</span></button>' : '');
+            + linkedIcons(linked) + '<span class="mc-lk">✓ ' + linked.length + '</span></button>' : '');
         // the row is the toggle, no tick box (#680); a taken-in row is tinted and marked ✓
         const line = x => {
             const pick = !!PICKABLE[x.state];
@@ -47574,7 +47647,8 @@ function paintInspector() {
         || '<div class="weak" style="font-size:11.5px">none</div>';
     const fusionBody = x => (x.matches || []).map(m => mini('<a target="_blank" href="/recording/' + esc(m.gid) + '">' + esc(m.title || m.gid.slice(0, 8)) + '</a>', esc((m.release || '') + (m.len ? ' · ' + m.len : '')))).join('')
         + (x.why ? '<div class="mc-why">' + esc(x.why) + '</div>' : '') || '<div class="weak" style="font-size:11.5px">no duplicates</div>';
-    const chBody = x => (x.list || []).map(c => mini(esc(c.name), esc(c.role))).join('') || '<div class="weak" style="font-size:11.5px">no credits</div>';
+    // each credit names the sources that give it, when more than one source was read (#680)
+    const chBody = x => (x.list || []).map(c => mini(esc(c.name), esc(c.role) + (c.sources && /,/.test(x.source || '') ? ' <span class="weak">· ' + esc(c.sources.join(', ')) + '</span>' : ''))).join('') || '<div class="weak" style="font-size:11.5px">no credits</div>';
     box.innerHTML = mbuHtml('<div class="mc-mini">Recording<a class="n" target="_blank" href="/recording/' + esc(t.rec) + '">' + esc((t.rec || '').slice(0, 8)) + '</a></div>'
         + '<div class="mc-mini">Length<span class="n">' + esc(t.len || '?') + '</span></div><div style="height:10px"></div>'
         + blk('ISRCs', 'is', isrcBody) + blk('Recording links', 'is', linksBody)

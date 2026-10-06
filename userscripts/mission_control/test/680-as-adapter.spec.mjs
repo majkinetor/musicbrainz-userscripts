@@ -31,7 +31,7 @@ test('#680: Probe asks Art Station; covers are sourced in a hidden frame', { tag
   await page.click('#mc-root [data-act="probe"]');
   await page.waitForSelector('#mc-root [data-card="as"] .mc-summary', { timeout: 120_000 });
   const summary = await page.locator('#mc-root [data-card="as"] .mc-summary').textContent();
-  check(/Cover Art Archive/.test(summary), 'card summary: the Cover Art Archive state');
+  check(/Cover art/i.test(summary), `card summary: the cover art state (${summary})`);
   const rows = await page.locator('#mc-root [data-card="as"] .mc-line').count();
   check(rows > 0, `a row per linked platform AS can source from (${rows})`);
   check(await page.locator('#mc-root [data-card="as"] .mc-line svg').count() === rows, 'each with its platform icon');

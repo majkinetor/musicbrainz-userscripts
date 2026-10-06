@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Mission Control
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.6.190310
+// @version      2026.10.6.195725
 // @description  One window on the release page that asks the other scripts (Platform Check, ISRC Scout, Art Station, Fusion, Credit Hoarder) what is missing, shows it all in one review, and applies the ticked changes in order.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPk1pc3Npb24gQ29udHJvbDwvdGl0bGU+CiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjNWYzZWMwIiBzdHJva2Utd2lkdGg9IjciPgogICAgPGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iNTIiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjMwIi8+CiAgICA8cGF0aCBkPSJNNjQgNHYyMk02NCAxMDJ2MjJNNCA2NGgyMk0xMDIgNjRoMjIiLz4KICA8L2c+CiAgPGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iMTEiIGZpbGw9IiM4YTVjZjYiLz4KPC9zdmc+Cg==
@@ -101,7 +101,8 @@ document.addEventListener('mc:progress', e => {
     const d = busEvent(e, 'mc:progress'); if (!d) return;
     const r = results[d.id];
     // during Execute a provider that already answered keeps its findings: the note goes beside them
-    if (r && r.state === 'done') { r.working = d.note || 'working'; if (d.best) r.best = d.best; }
+    // (a late tick from the probe, after its findings, is dropped: no stuck spinner)
+    if (r && r.state === 'done') { if (executing) { r.working = d.note || 'working'; if (d.best) r.best = d.best; } }
     else results[d.id] = Object.assign(r || {}, { state: 'busy', note: d.note || '' });
     Log.debug('progress ' + d.id + ': ' + (d.note || d.state));
     paintAll();
@@ -173,12 +174,21 @@ document.addEventListener('falcon:status', e => {
 });
 const FALCON_MARK = { queued: ['…', 'waiting'], active: ['⟳', 'running'], done: ['✓', 'done'], skipped: ['✓', 'already there'], partial: ['!', 'partly done'], failed: ['✕', 'failed'], manual: ['✋', 'needs you'] };
 // #680: the cover Art Station picked (headless), shown before Execute enters it
+// with the current front beside it when there is one, and what Execute would do
 function bestHtml(b) {
     if (!b) return '';
-    const size = b.bytes ? (b.bytes > 1048576 ? (b.bytes / 1048576).toFixed(1) + ' MB' : Math.round(b.bytes / 1024) + ' KB') : '';
-    return '<div class="mc-best">' + (b.thumb ? '<img alt="" src="' + esc(b.thumb) + '">' : '<span class="mc-best-no">🖼</span>')
-        + '<div class="mc-best-t"><b>Best cover</b><span>' + esc(b.provider || '?') + '</span><span>' + esc(b.w + ' × ' + b.h + (size ? ' · ' + size : '')) + '</span>'
-        + '<span class="dim">' + esc(b.of > 1 ? 'the largest of ' + b.of + ' found' : 'the only one found') + '</span><span class="dim">Execute enters it as the front cover</span></div></div>';
+    const kb = n => n ? (n > 1048576 ? (n / 1048576).toFixed(1) + ' MB' : Math.round(n / 1024) + ' KB') : '';
+    const fig = (src, title, lines) => '<div class="mc-best-c">' + (src ? '<img alt="" src="' + esc(src) + '">' : '<span class="mc-best-no">🖼</span>')
+        + '<div class="mc-best-t"><b>' + esc(title) + '</b>' + lines.filter(Boolean).map(l => '<span>' + esc(l) + '</span>').join('') + '</div></div>';
+    const c = b.current;
+    const what = !c ? 'Execute enters it as the front cover'
+        : b.replace ? 'Larger than the current front: Execute enters it and removes the current one'
+        : b.larger ? 'Larger than the current fronts: Execute adds it beside them'
+        : 'Not larger than the current front: nothing to gain (tick a source to add it anyway)';
+    return '<div class="mc-best' + (c && !b.larger ? ' no' : '') + '"><div class="mc-best-row">'
+        + fig(b.thumb, 'Best cover', [b.provider || '?', b.w + ' × ' + b.h + (b.bytes ? ' · ' + kb(b.bytes) : ''), b.of > 1 ? 'the largest of ' + b.of + ' found' : 'the only one found'])
+        + (c ? '<span class="mc-best-vs">' + (b.larger ? '>' : '≤') + '</span>' + fig(c.thumb, 'Current front', [c.w + ' × ' + c.h + (c.bytes ? ' · ' + kb(c.bytes) : '')]) : '')
+        + '</div><div class="mc-best-what">' + esc(what) + '</div></div>';
 }
 function falconHtml(f) {
     if (!f || !f.items.length) return '';
@@ -312,7 +322,7 @@ function mcStyle() {
         // B's vertical execution order
         + '.mc-stage{position:relative;padding-left:26px;padding-bottom:12px}'
         + '.mc-stage::before{content:"";position:absolute;left:8px;top:20px;bottom:-2px;width:2px;background:var(--mbu-border)}.mc-stage:last-child::before{display:none}'
-        + '.mc-node{position:absolute;left:0;top:2px;width:18px;height:18px;border-radius:50%;border:2px solid var(--mbu-border-strong);background:var(--mbu-bg)}.mc-node.opt{border-style:dashed}'
+        + '.mc-node{position:absolute;left:0;top:2px;width:18px;height:18px;border-radius:50%;border:2px solid var(--mbu-border-strong);background:var(--mbu-bg);display:flex;align-items:center;justify-content:center}.mc-node .mc-sic{width:12px;height:12px;margin:0}.mc-sic{width:15px;height:15px;object-fit:contain;vertical-align:-3px;margin-right:4px;flex:0 0 auto}.mc-node.opt{border-style:dashed}'
         + '.mc-stage .nm{font-weight:600;font-size:12.5px;display:flex;align-items:center;gap:6px}.mc-stage .meta{font-size:11px;color:var(--mbu-text-dim)}'
         + '.mc-stage.off .nm,.mc-stage.off .meta{opacity:.45}'
         + '.mc-par{margin-top:6px;padding:6px 8px;border:1px dashed var(--mbu-border-strong);border-radius:var(--mbu-radius);background:var(--mbu-bg-sunken)}'
@@ -347,10 +357,12 @@ function mcStyle() {
         + '.mc-have{opacity:.8}.mc-isep{width:1px;height:14px;background:var(--mbu-border);margin:0 2px}'
         + '.mc-icons{display:inline-flex;gap:4px;align-items:center}.mc-icons a.mc-pico:hover{transform:scale(1.15)}'
         + '.mc-summary{padding:5px 10px;font-size:11.5px;color:var(--mbu-text-dim);border-bottom:1px solid var(--mbu-divider)}'
-        + '.mc-best{display:flex;gap:12px;align-items:flex-start;padding:8px 10px;border-bottom:1px solid var(--mbu-divider)}.mc-best img{width:120px;height:120px;object-fit:contain;border-radius:var(--mbu-radius);background:var(--mbu-bg-sunken);border:1px solid var(--mbu-border-soft);flex:0 0 auto}'
-        + '.mc-best-no{width:120px;height:120px;display:flex;align-items:center;justify-content:center;font-size:32px;background:var(--mbu-bg-sunken);border-radius:var(--mbu-radius);flex:0 0 auto}.mc-best-t{display:flex;flex-direction:column;gap:2px;font-size:12px;min-width:0}.mc-best-t .dim{color:var(--mbu-text-weak);font-size:11px}'
+        + '.mc-best{padding:8px 10px;border-bottom:1px solid var(--mbu-divider)}.mc-best-row{display:flex;gap:10px;align-items:center}.mc-best-c{flex:1 1 0;min-width:0}.mc-best-c{display:flex;gap:10px;align-items:flex-start}.mc-best-vs{font-size:20px;font-weight:700;color:var(--mbu-text-weak)}'
+        + '.mc-best-what{margin-top:6px;font-size:11.5px;font-weight:600;color:var(--mbu-ok)}.mc-best.no .mc-best-what{color:var(--mbu-text-weak)}.mc-best img{width:72px;height:72px;object-fit:contain;border-radius:var(--mbu-radius);background:var(--mbu-bg-sunken);border:1px solid var(--mbu-border-soft);flex:0 0 auto}'
+        + '.mc-best-no{width:72px;height:72px;display:flex;align-items:center;justify-content:center;font-size:32px;background:var(--mbu-bg-sunken);border-radius:var(--mbu-radius);flex:0 0 auto}.mc-best-t{display:flex;flex-direction:column;gap:2px;font-size:12px;min-width:0}.mc-best-t .dim{color:var(--mbu-text-weak);font-size:11px}'
         + '.mc-working{display:flex;align-items:center;gap:7px;padding:5px 10px;font-size:11.5px;color:var(--mbu-accent-text);border-bottom:1px solid var(--mbu-divider)}'
         + '.mc-spin{width:10px;height:10px;border:2px solid var(--mbu-accent-soft);border-top-color:var(--mbu-accent);border-radius:50%;animation:mc-spin .8s linear infinite;flex:0 0 auto}@keyframes mc-spin{to{transform:rotate(360deg)}}'
+        + '.mc-pdiv{display:inline-block;width:1px;height:14px;background:var(--mbu-border);margin:0 3px;vertical-align:middle}.mc-pico sub{font-size:9px;font-weight:700;margin-left:1px}.mc-pico.mc-ent{width:auto}'
         + '.mc-falcon{border-bottom:1px solid var(--mbu-divider);padding:5px 10px;font-size:11.5px}.mc-falcon-h{display:flex;align-items:center;gap:8px;font-weight:600;color:var(--mbu-text-dim);margin-bottom:3px}.mc-falcon.ok .mc-falcon-h{color:var(--mbu-ok)}.mc-falcon.bad .mc-falcon-h{color:var(--mbu-warn)}'
         + '.mc-falcon-open{margin-left:auto;font:inherit;font-weight:600;padding:1px 8px;border:1px solid var(--mbu-border);border-radius:var(--mbu-radius);background:var(--mbu-bg-raised);color:var(--mbu-accent-text);cursor:pointer}'
         + '.mc-falcon-i{display:flex;align-items:baseline;gap:7px;padding:1px 0;min-width:0}.mc-falcon-i .mk{flex:0 0 14px;text-align:center;font-weight:700}.mc-falcon-i .ty{flex:0 0 auto;color:var(--mbu-text-weak);text-transform:capitalize}.mc-falcon-i .nm{flex:0 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.mc-falcon-i .ct{flex:0 0 auto;color:var(--mbu-text-weak)}.mc-falcon-i .er{flex:1 1 0;min-width:0;color:var(--mbu-error);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}'
@@ -358,7 +370,7 @@ function mcStyle() {
         + '.mc-applied{padding:5px 10px;font-size:11.5px;font-weight:600;border-bottom:1px solid var(--mbu-divider)}.mc-applied.ok{color:var(--mbu-ok);background:var(--mbu-ok-bg)}.mc-applied.err{color:var(--mbu-error);background:var(--mbu-error-bg)}'
         + '.mc-none{display:flex;flex-wrap:wrap;align-items:center;gap:6px;padding:6px 10px;font-size:11px;color:var(--mbu-text-weak)}.mc-none span:first-child{margin-right:4px}.mc-none .mc-pico{opacity:.6}'
         + '.mc-line.linked,.mc-line.none{opacity:.7}.mc-line .mc-lt{min-width:0}.mc-line .t{font-size:12px}'
-        + '#mc-root .mc-line .s{display:block;font-size:10.5px;color:var(--mbu-text-weak);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-decoration:none}#mc-root .mc-line a.s:hover{color:var(--mbu-accent-text);text-decoration:underline}'
+        + '#mc-root .mc-line .s{display:block;width:fit-content;max-width:100%;font-size:10.5px;color:var(--mbu-text-weak);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-decoration:none}#mc-root .mc-line a.s:hover{color:var(--mbu-accent-text);text-decoration:underline}'
         + '.mc-pico{display:inline-flex;width:16px;height:16px;align-items:center;justify-content:center}.mc-pico svg{display:block}'
         + '.mc-pill{font-size:10px;font-weight:700;padding:1px 7px;border-radius:20px;white-space:nowrap;border:1px solid var(--mbu-border)}'
         + '.mc-pill.add{color:var(--mbu-accent-text);background:var(--mbu-accent-soft);border-color:var(--mbu-border-strong)}.mc-pill.ok{color:var(--mbu-ok);background:var(--mbu-ok-bg);border-color:var(--mbu-ok-border)}'
@@ -435,9 +447,9 @@ function orderSidebar() {
     for (const s of STEPS) {
         if (s.lanes) {
             html += '<div class="mc-stage"><span class="mc-node"></span><div class="nm">' + esc(s.name) + '</div><div class="mc-par"><div class="lbl">⇶ parallel</div>'
-                + s.lanes.map(l => '<div class="mc-lane" data-p="' + l.id + '"><span class="mc-dot"></span>' + esc(l.provider) + '</div>').join('') + '</div></div>';
+                + s.lanes.map(l => '<div class="mc-lane" data-p="' + l.id + '"><span class="mc-dot"></span>' + sIcon(l.id) + esc(l.provider) + '</div>').join('') + '</div></div>';
         } else {
-            html += '<div class="mc-stage' + (modeOf(s) === 'off' ? ' off' : '') + '" data-p="' + s.id + '"><span class="mc-node' + (s.mode ? ' opt' : '') + '"></span>'
+            html += '<div class="mc-stage' + (modeOf(s) === 'off' ? ' off' : '') + '" data-p="' + s.id + '"><span class="mc-node' + (s.mode ? ' opt' : '') + '">' + sIcon(s.id) + '</span>'
                 + '<div class="nm">' + esc(s.name) + (s.info ? ' <span class="mc-mode">info</span>' : '') + '</div>'
                 + '<div class="meta">' + esc(s.provider) + ' · <span class="st"></span></div>' + (s.mode ? seg(s) : '') + '</div>';
         }
@@ -446,10 +458,12 @@ function orderSidebar() {
     return a;
 }
 
+// a provider's own userscript icon (#680: in the execution order, not a glyph)
+function sIcon(id) { return PROVIDER_ICONS[id] ? '<img class="mc-sic" alt="" src="' + PROVIDER_ICONS[id] + '">' : ''; }
 function strip() {
     // B (#680): the strip is the collapsed order sidebar; clicking it expands it
     const d = el('div', 'mc-strip'); d.dataset.side = 'left'; d.title = 'Show the execution order';
-    const chip = p => '<span class="mc-chip' + (p.mode ? ' opt' : '') + '" data-p="' + p.id + '" title="' + esc(p.provider + ': ' + p.name) + '"><span class="mc-dot"></span>' + esc(p.glyph) + '<span class="mbu-bt">' + esc(p.short) + '</span></span>';
+    const chip = p => '<span class="mc-chip' + (p.mode ? ' opt' : '') + '" data-p="' + p.id + '" title="' + esc(p.provider + ': ' + p.name) + '"><span class="mc-dot"></span>' + sIcon(p.id) + '<span class="mbu-bt">' + esc(p.short) + '</span></span>';
     d.innerHTML = mbuHtml('<span class="mc-exp">▸</span>' + STEPS.map(s => s.lanes ? '<span class="mc-chip par" title="run in parallel">' + s.lanes.map(chip).join(' ∥ ') + '</span>' : chip(s)).join('<span class="mc-arrow">→</span>'));
     return d;
 }
@@ -583,6 +597,15 @@ function urlIcon(u) {
     return m ? m[1] : 'globe';
 }
 function shortUrl(u) { try { const x = new URL(u); return x.hostname.replace(/^www\./, '') + x.pathname.replace(/\/$/, ''); } catch (e) { return u; } }
+// the header's linked icons: the release's own, then a divider and the artists' and labels',
+// one icon per platform with a count (three Discogs artists are one Discogs ×3, #680)
+function linkedIcons(linked) {
+    const rel = linked.filter(x => !x.entity), ent = new Map();
+    linked.filter(x => x.entity).forEach(x => { const k = x.icon || x.key; (ent.get(k) || ent.set(k, []).get(k)).push(x); });
+    return rel.map(x => '<span class="mc-pico" title="' + esc(x.name || x.key) + '">' + stIcon(x.icon || x.key, 14) + '</span>').join('')
+        + (ent.size ? (rel.length ? '<span class="mc-pdiv"></span>' : '') + [...ent].map(([k, xs]) => '<span class="mc-pico mc-ent" title="' + esc(xs.map(x => (x.entity.name || '') + ' · ' + (x.name || x.key)).join(', ')) + '">'
+            + stIcon(k, 14) + (xs.length > 1 ? '<sub>' + xs.length + '</sub>' : '') + '</span>').join('') : '');
+}
 function paintCards() {
     ui.querySelectorAll('[data-card]').forEach(box => {
         const id = box.dataset.card, p = PROVIDERS.find(x => x.id === id), r = results[id];
@@ -600,7 +623,7 @@ function paintCards() {
         const slot = box.parentNode.querySelector('.mc-sect-h .end');
         if (slot) slot.innerHTML = mbuHtml(linked.length ? '<button type="button" class="mc-linked' + (S.linkedRows ? ' on' : '') + '" data-act="linked" title="'
             + esc('Already linked: ' + linked.map(x => x.name || x.key).join(', ') + (S.linkedRows ? '. Click to fold them back here.' : '. Click to list them below.')) + '">'
-            + linked.map(x => '<span class="mc-pico' + (x.entity ? ' mc-ent' : '') + '" title="' + esc(x.name || x.key) + '">' + stIcon(x.icon || x.key, 14) + '</span>').join('') + '<span class="mc-lk">✓ ' + linked.length + '</span></button>' : '');
+            + linkedIcons(linked) + '<span class="mc-lk">✓ ' + linked.length + '</span></button>' : '');
         // the row is the toggle, no tick box (#680); a taken-in row is tinted and marked ✓
         const line = x => {
             const pick = !!PICKABLE[x.state];
@@ -657,7 +680,8 @@ function paintInspector() {
         || '<div class="weak" style="font-size:11.5px">none</div>';
     const fusionBody = x => (x.matches || []).map(m => mini('<a target="_blank" href="/recording/' + esc(m.gid) + '">' + esc(m.title || m.gid.slice(0, 8)) + '</a>', esc((m.release || '') + (m.len ? ' · ' + m.len : '')))).join('')
         + (x.why ? '<div class="mc-why">' + esc(x.why) + '</div>' : '') || '<div class="weak" style="font-size:11.5px">no duplicates</div>';
-    const chBody = x => (x.list || []).map(c => mini(esc(c.name), esc(c.role))).join('') || '<div class="weak" style="font-size:11.5px">no credits</div>';
+    // each credit names the sources that give it, when more than one source was read (#680)
+    const chBody = x => (x.list || []).map(c => mini(esc(c.name), esc(c.role) + (c.sources && /,/.test(x.source || '') ? ' <span class="weak">· ' + esc(c.sources.join(', ')) + '</span>' : ''))).join('') || '<div class="weak" style="font-size:11.5px">no credits</div>';
     box.innerHTML = mbuHtml('<div class="mc-mini">Recording<a class="n" target="_blank" href="/recording/' + esc(t.rec) + '">' + esc((t.rec || '').slice(0, 8)) + '</a></div>'
         + '<div class="mc-mini">Length<span class="n">' + esc(t.len || '?') + '</span></div><div style="height:10px"></div>'
         + blk('ISRCs', 'is', isrcBody) + blk('Recording links', 'is', linksBody)

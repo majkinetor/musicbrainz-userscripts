@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Art Station
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.6.190310
+// @version      2026.10.6.195725
 // @description  Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png
@@ -172,11 +172,11 @@
     const send = (type, detail) => document.dispatchEvent(new CustomEvent(type, { detail: JSON.stringify(detail) }));
     const ver = (typeof GM_info !== 'undefined' && GM_info.script && GM_info.script.version) || '?';
     const hello = () => send('mc:provider', { id: 'as', name: 'Art Station', version: ver, release: rel, capabilities: ['probe', 'apply'] });
-    let last = [];
+    let last = [], mcPlan = { replace: false };   // mcPlan: what the last probe decided for Enter
     const releaseLinks = () => {
       for (const ul of document.querySelectorAll('ul.external_links')) {
         let h = ul.previousElementSibling; while (h && !/^H\d$/.test(h.tagName)) h = h.previousElementSibling;
-        if (h && /^external links$/i.test(h.textContent.trim())) return [...ul.querySelectorAll('a[href^="http"]')].map(a => a.href);
+        if (h && /^external links$/i.test(h.textContent.trim())) return [...ul.querySelectorAll('a[href]')].map(a => a.href).filter(u => /^https?:/.test(u));   // MB writes some hrefs protocol-relative (//x.bandcamp.com): a.href resolves them
       }
       return [];
     };
@@ -195,21 +195,36 @@
       send('mc:progress', { id: 'as', run: d.run, state: 'busy', note: 'reading the Cover Art Archive' });
       const j = await caa();
       const imgs = (j && j.images) || [];
-      const front = imgs.some(i => i.front || (i.types || []).includes('Front'));
+      // the page's own "Cover art (N)" tab as well: the archive's listing can lag behind (#680)
+      const tabN = +((([...document.querySelectorAll('.tabs a, ul.tabs a')].find(a => /\/cover-art$/.test(a.getAttribute('href') || '')) || {}).textContent || '').match(/\((\d+)\)/) || [])[1] || 0;
+      let front = imgs.some(i => i.front || (i.types || []).includes('Front'));
       const seen = new Set();
       last = releaseLinks().map(u => ({ u, p: providerOf(u) })).filter(x => x.p && !seen.has(x.p.name) && seen.add(x.p.name));
-      const why = front ? 'the release already has a front cover' : null;
-      const findings = last.map(x => Object.assign({ key: x.p.name, name: x.p.name, icon: (Object.entries({ 'Apple Music': 'apple', Spotify: 'spotify', Deezer: 'deezer', Tidal: 'tidal', Qobuz: 'qobuz', Bandcamp: 'bandcamp', Discogs: 'discogs', Beatport: 'beatport', '7digital': 'sevendigital', Amazon: 'amazonmusic' }).find(([n]) => n === x.p.name) || [])[1] || null, url: x.u, state: front ? 'unsure' : 'new' }, why ? { why } : {}));
-      const summary = j == null ? 'Cover Art Archive: could not be read'
-        : imgs.length ? 'Cover Art Archive: ' + imgs.length + ' image' + (imgs.length === 1 ? '' : 's') + (front ? ', front cover ✓' : ', no front cover') : 'Cover Art Archive: no cover art yet';
-      log.info('Mission Control probe ' + d.run + ': ' + summary + ' · ' + findings.length + ' source(s): ' + findings.map(x => x.name).join(', '));
-      // no front cover: source the best one now, headless, so MC shows it before Execute
-      let best = null;
-      if (!front && last.length) {
+      const icon = name => (Object.entries({ 'Apple Music': 'apple', Spotify: 'spotify', Deezer: 'deezer', Tidal: 'tidal', Qobuz: 'qobuz', Bandcamp: 'bandcamp', Discogs: 'discogs', Beatport: 'beatport', '7digital': 'sevendigital', Amazon: 'amazonmusic' }).find(([n]) => n === name) || [])[1] || null;
+      // the best cover, sourced headless, compared with the fronts already there (the frame measures them)
+      let got = null;
+      if (last.length) {
         send('mc:progress', { id: 'as', run: d.run, state: 'busy', note: 'finding the best cover' });
-        best = await mcSource(last.map(x => x.u), note => send('mc:progress', { id: 'as', run: d.run, state: 'busy', note }));
+        got = await mcSource(last.map(x => x.u), note => send('mc:progress', { id: 'as', run: d.run, state: 'busy', note }));
       }
-      send('mc:findings', { id: 'as', run: d.run, release: rel, summary, findings, best: best && best.best });
+      const best = got && got.best, existing = (got && got.existing) || [];
+      if (existing.length) front = true;
+      const px = x => (x.w || 0) * (x.h || 0);
+      const top = existing.slice().sort((a, b) => px(b) - px(a))[0];
+      const larger = !!(best && (!top || px(best) > px(top)));
+      // a larger cover replaces the one front there; with several fronts it's only added
+      const replace = !!(best && top && larger && existing.length === 1);
+      mcPlan = { replace };
+      const why = !front ? null : !best ? 'the release already has a front cover'
+        : larger ? (replace ? `larger than the current front (${top.w}×${top.h}), which it replaces` : `larger than the current fronts (up to ${top.w}×${top.h}); added beside them`)
+        : `not larger than the current front (${top.w}×${top.h})`;
+      const state = !front || larger ? 'new' : 'unsure';
+      const findings = last.map(x => Object.assign({ key: x.p.name, name: x.p.name, icon: icon(x.p.name), url: x.u, state }, why ? { why } : {}));
+      const n = Math.max(imgs.length, tabN, existing.length);
+      const summary = j == null && !n ? 'Cover Art Archive: could not be read'
+        : n ? 'Cover art: ' + n + ' image' + (n === 1 ? '' : 's') + (front ? ', front cover ✓' : ', no front cover') : 'Cover art: none yet';
+      log.info('Mission Control probe ' + d.run + ': ' + summary + ' (archive ' + imgs.length + ', tab ' + tabN + ', frame ' + existing.length + ') · ' + findings.length + ' source(s): ' + findings.map(x => x.name).join(', ') + (why ? ' · ' + why : ''));
+      send('mc:findings', { id: 'as', run: d.run, release: rel, summary, findings, best: best ? Object.assign({ larger, replace, current: top || null }, best) : null });
     });
     // #680: covers are sourced and entered in a hidden frame of the cover-art page, where Art
     // Station runs headless (mc_frame) and talks back by postMessage. One frame at a time.
@@ -239,9 +254,9 @@
       document.body.appendChild(el);
       const m = await got;
       if (!frame || frame.token !== token) return null;
-      frame.best = m ? m.best : null;
+      frame.best = m ? m.best : null; frame.existing = (m && m.existing) || [];
       log.info('Mission Control: best cover ' + (frame.best ? frame.best.provider + ' ' + frame.best.w + '×' + frame.best.h + ' of ' + frame.best.of : m ? 'none could be imported' : 'timed out'));
-      return { best: frame.best };
+      return { best: frame.best, existing: frame.existing };
     }
     document.addEventListener('mc:apply', async e => {
       let d = {};
@@ -257,16 +272,20 @@
         busy('finding the best cover');
         const r = await mcSource(urls, busy);
         if (!r || !r.best) { reply({ ok: false, sent: 0, note: 'no cover could be imported' }); return; }
-        send('mc:progress', { id: 'as', run: d.run, state: 'busy', note: 'entering the cover', best: r.best });
+        // the same comparison as the probe's, for the new pick
+        const px = x => (x.w || 0) * (x.h || 0), top = r.existing.slice().sort((a, b) => px(b) - px(a))[0];
+        const larger = !top || px(r.best) > px(top);
+        mcPlan = { replace: !!(top && larger && r.existing.length === 1) };
+        send('mc:progress', { id: 'as', run: d.run, state: 'busy', note: 'entering the cover', best: Object.assign({ larger, replace: mcPlan.replace, current: top || null }, r.best) });
       }
       busy('entering the cover');
       const got = waitFrame('entered', 600000, s => busy('entering the cover (' + s + ' s)'));
-      frame.el.contentWindow.postMessage({ mcAs: 1, token: frame.token, type: 'enter', note: 'Via Mission Control: ' + location.origin + '/release/' + rel }, location.origin);
+      frame.el.contentWindow.postMessage({ mcAs: 1, token: frame.token, type: 'enter', replace: mcPlan.replace, note: 'Via Mission Control: ' + location.origin + '/release/' + rel }, location.origin);
       const m = await got;
       log.info('Mission Control apply: ' + JSON.stringify(m));
       const b = frame.best;
       if (!m) reply({ ok: false, sent: 0, note: 'Art Station did not finish within 10 minutes' });
-      else if (m.ok) reply({ ok: true, sent: 1, note: 'entered ' + b.provider + ' ' + b.w + '×' + b.h + ' as the front cover' });
+      else if (m.ok) reply({ ok: true, sent: 1, note: 'entered ' + b.provider + ' ' + b.w + '×' + b.h + ' as the front cover' + (mcPlan.replace ? ', and removed the smaller one' : '') });
       else reply({ ok: false, sent: 0, note: m.cancelled ? 'cancelled' : 'the edit failed' + (m.error ? ': ' + m.error : '') });
     });
     hello();
@@ -2454,13 +2473,22 @@
       if (!MC_FRAME) return;
       // the preview goes to Mission Control as a data URL: a blob URL dies with this frame
       const out = best ? { provider: best._provider || '', w: best.w, h: best.h, bytes: best.bytes || 0, of: best._bestOf || 1 } : null;
-      if (!best || !best._file) { mcFramePost({ type: 'best', best: out }); return; }
+      _mcBest = best;
+      // the covers already there and typed Front, measured (the card compares the best one with them)
+      const fronts = () => MODEL.filter(x => !x._new && !x._del && (x.types || []).includes('Front'));
+      const measured = new Promise(res => { const t0 = Date.now(); const iv = setInterval(() => { if (fronts().every(x => x.w > 0) || Date.now() - t0 > 15000) { clearInterval(iv); res(); } }, 300); });
+      const post = () => measured.then(() => {
+        const existing = fronts().map(x => ({ id: x.id, w: x.w || 0, h: x.h || 0, bytes: x.bytes || 0, thumb: x.id ? thumb(x.id, 250) : '' }));
+        asLog.info(`Mission Control: existing front cover(s): ${existing.map(x => `#${x.id} ${x.w}×${x.h}`).join(', ') || 'none'}`);
+        mcFramePost({ type: 'best', best: out, existing });
+      });
+      if (!best || !best._file) { post(); return; }
       fetch(best._file).then(r => r.blob()).then(b => createImageBitmap(b)).then(bmp => {
         const k = Math.min(1, 500 / Math.max(bmp.width, bmp.height)), c = document.createElement('canvas');
         c.width = Math.round(bmp.width * k); c.height = Math.round(bmp.height * k);
         c.getContext('2d').drawImage(bmp, 0, 0, c.width, c.height);
         out.thumb = c.toDataURL('image/jpeg', 0.85);
-      }).catch(e => asLog.warn('Mission Control: preview failed: ' + (e && e.message))).then(() => mcFramePost({ type: 'best', best: out }));
+      }).catch(e => asLog.warn('Mission Control: preview failed: ' + (e && e.message))).then(post);
     });
   }
   // #680: Mission Control's hidden frame (…/cover-art?mc_source=[…]&mc_frame=<token>): the best
@@ -2473,10 +2501,16 @@
     if (e.origin !== location.origin || !d || d.mcAs !== 1 || d.token !== MC_FRAME || d.type !== 'enter') return;
     asLog.info('Mission Control: Enter edit' + (d.note ? ' with its note' : ''));
     if (d.note) _seedNote = [_seedNote, d.note].filter(Boolean).join('\n\n');
+    // replace: the one existing front is smaller, so it goes and the best becomes the front
+    if (d.replace && _mcBest) {
+      const old = MODEL.filter(x => !x._new && !x._del && (x.types || []).includes('Front'));
+      if (old.length === 1) { old[0]._del = true; old[0]._sel = false; asLog.info(`Mission Control: removing the smaller front #${old[0].id} ${old[0].w}×${old[0].h}`); }
+      if (!(_mcBest.types || []).includes('Front')) _mcBest.types = ['Front'].concat(_mcBest.types || []);
+    }
     _mcCommitDone = r => mcFramePost(Object.assign({ type: 'entered' }, r));
     enterEdit(true);
   });
-  let _mcCommitDone = null;
+  let _mcCommitDone = null, _mcBest = null;
   function openSourcePop(btn) {
     _srcBtn = btn;   // #250 remembered so a late provider registration can re-open this popover
     document.querySelectorAll('.as-pop').forEach(p => p.remove());
