@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Platform Check
 // @namespace    http://tampermonkey.net/
-// @version      2026.10.6
+// @version      2026.10.6.193036
 // @description  Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+DQogIDx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CiAgDQogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJhMWE1MiIgc3Ryb2tlLXdpZHRoPSI5IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik00MCA4OCBBMzQgMzQgMCAwIDEgNDAgNDAiLz4NCiAgICA8cGF0aCBkPSJNMjkgOTkgQTUwIDUwIDAgMCAxIDI5IDI5Ii8+DQogICAgPHBhdGggZD0iTTg4IDg4IEEzNCAzNCAwIDAgMCA4OCA0MCIvPg0KICAgIDxwYXRoIGQ9Ik05OSA5OSBBNTAgNTAgMCAwIDAgOTkgMjkiLz4NCiAgPC9nPg0KICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyMCIgZmlsbD0iI2U4MjAxYSIvPg0KPC9zdmc+DQo=
@@ -7206,15 +7206,16 @@ function pcSeededEditUrl(type, mbid, urls, note) {
     return `${MB_ORIGIN}/${type}/${mbid}/edit?${q.join('&')}`;
 }
 
-// The credits of the platforms whose album is a confirmed match: the same bar as +
-// (a ✓ that link confidence doesn't withhold), or a link the release already has.
+// The credits of the platforms whose album is a match (a ✓), or a link the release already has.
+// Unlike +, a ✓ that barcode or format confidence withholds counts: another edition of the
+// album still has the same artists and labels.
 function pcConfirmedCredits() {
     const out = {}, stale = [];
     for (const p of PROVIDER_ORDER) {
         if (!providerEnabled(p)) continue;
         const c = cacheGet(mbid, p);
         if (!c || !c.url) continue;
-        const ok = c.source === 'MB rels' || (document.getElementById(`ico-${p}`)?.textContent?.trim() === '✓' && !barcodeBlocks(p) && !formatBlocks(p));
+        const ok = c.source === 'MB rels' || (document.getElementById(`ico-${p}`)?.textContent?.trim() === '✓');   // link confidence stays out of it: another edition still has the same artists and labels
         if (!ok) continue;
         if (!('credits' in c)) { if (PC_CREDIT_PROVIDERS.includes(p)) stale.push(p); continue; }   // cached before #671: ↻ reads it again
         if (c.credits) out[p] = c.credits;

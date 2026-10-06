@@ -226,3 +226,15 @@ test('Artists & labels shows how many links it would add, from one lookup', { ta
   const off = await run(false);
   check(off.calls.length === 0 && off.btn.innerHTML === 'Artists &amp; labels' && !off.btn.classList.on, 'setting off: nothing asked, no number');
 });
+
+// #671 (reopened): a ✓ that barcode or format confidence withholds still gives its artists and labels.
+// Another edition of the album has the same ones; only the release link waits for confidence.
+test('a match withheld by link confidence still gives artists and labels', { tag: '@unit' }, async ({ page }) => {
+  const src = await functionSource('platform_check', ['pcConfirmedCredits']);
+  const cr = { artists: [{ name: 'A', url: 'https://x/a' }], labels: [], tracks: [] };
+  const store = { deezer: { url: 'https://www.deezer.com/album/1', source: 'search', credits: cr }, qobuz: { url: 'https://www.qobuz.com/x/1', source: 'search', credits: cr }, tidal: { url: 'https://tidal.com/album/1', source: 'search', credits: cr } };
+  await page.setContent('<span id="ico-deezer">✓</span><span id="ico-qobuz">✓</span><span id="ico-tidal">?</span>');
+  const got = await page.evaluate(([src, store]) => new Function('PROVIDER_ORDER', 'providerEnabled', 'cacheGet', 'mbid', 'PC_CREDIT_PROVIDERS', 'barcodeBlocks', 'formatBlocks',
+    src + '\nreturn pcConfirmedCredits();')(['deezer', 'qobuz', 'tidal'], () => true, (m, p) => store[p] || null, 'm', [], p => p === 'deezer', p => p === 'qobuz'), [src, store]);
+  check(Object.keys(got.byProvider).sort().join() === 'deezer,qobuz', `a ✓ counts whether or not barcode (deezer) or format (qobuz) withholds it; no match (tidal) doesn't (${Object.keys(got.byProvider)})`);
+});
