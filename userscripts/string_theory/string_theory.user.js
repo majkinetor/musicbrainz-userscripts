@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         String Theory
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.6.212301
+// @version      2026.10.6.212302
 // @description  Unified bundle of 9 MusicBrainz userscripts (apollo_editor, art_station, credit_hoarder, fusion, group_therapy, isrc_scout, mammoth, mission_control, platform_check). Built by userscripts/string_theory/build.mjs — do not hand-edit.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCIgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0Ij4KICA8IS0tIGh1Yi1hbmQtc3Bva2UgIm5ldHdvcmsiIGdseXBoLCBzaW5nbGUgdml2aWQgdmlvbGV0IG9uIHRyYW5zcGFyZW50IHNvIGl0IHJlYWRzIG9uIGJvdGggZGFyayBhbmQgbGlnaHQgcGFnZXMgLS0+CiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjN2M1Y2ZmIiBzdHJva2Utd2lkdGg9IjQuNiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj4KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMzIgMTUiLz4KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMNDYuNSAyMy41Ii8+CiAgICA8cGF0aCBkPSJNMzIgMzIgTDQ2LjUgNDAuNSIvPgogICAgPHBhdGggZD0iTTMyIDMyIEwzMiA0OSIvPgogICAgPHBhdGggZD0iTTMyIDMyIEwxNy41IDQwLjUiLz4KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMTcuNSAyMy41Ii8+CiAgPC9nPgogIDxnIGZpbGw9IiM3YzVjZmYiPgogICAgPGNpcmNsZSBjeD0iMzIiIGN5PSIzMiIgcj0iOC42Ii8+CiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjE5LjUiIHI9IjYuNCIvPgogICAgPGNpcmNsZSBjeD0iNDkiIGN5PSIxOS41IiByPSI2LjQiLz4KICAgIDxjaXJjbGUgY3g9IjMyIiBjeT0iNTciIHI9IjYuNCIvPgogIDwvZz4KICA8ZyBmaWxsPSJub25lIiBzdHJva2U9IiM3YzVjZmYiIHN0cm9rZS13aWR0aD0iMy44Ij4KICAgIDxjaXJjbGUgY3g9IjMyIiBjeT0iNyIgcj0iNC45Ii8+CiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjQ0LjUiIHI9IjQuOSIvPgogICAgPGNpcmNsZSBjeD0iNDkiIGN5PSI0NC41IiByPSI0LjkiLz4KICA8L2c+Cjwvc3ZnPgo=
@@ -89,7 +89,7 @@
 // Bundles (verbatim, each wrapped in a run-at gate): apollo_editor, art_station, credit_hoarder, fusion, group_therapy, isrc_scout, mammoth, mission_control, platform_check.
 
 try {
-  console.log('%c String Theory %c v2026.10.6.212301 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
+  console.log('%c String Theory %c v2026.10.6.212302 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
   console.log("String Theory bundles:\n  · Apollo Editor v2026.10.6\n  · Art Station v2026.10.5.210859\n  · Credit Hoarder v2026.10.6.160935\n  · Fusion v2026.10.5.205655\n  · Group Therapy v2026.10.4\n  · ISRC Scout v2026.10.6.204207\n  · Mammoth v2026.10.4\n  · Mission Control v2026.10.6.155602\n  · Platform Check v2026.10.6.193036");
 } catch (e) {}
 
@@ -41101,6 +41101,7 @@ Created this ${kind} while adding credits parsed from text to ${relUrl}`;
 
       <div id="ii-foot">
         <!-- #471: both summaries always shown now (no ISRCs/Links scope toggle) -->
+        <button class="ii-tbtn sx" id="ii-find-all" type="button" title="Import ISRCs from the fastest source this release links (the next one if it fails or gives none), then Find links">🔎 Find everything</button>
         <span class="ii-summary" id="ii-summary"></span>
         <span class="ii-summary" id="ii-summary-links"></span>
         <button class="ii-tbtn" id="ii-delete" title="Delete the checked existing ISRCs" disabled>🗑 Delete ISRC</button>
@@ -41157,6 +41158,7 @@ Created this ${kind} while adding credits parsed from text to ${relUrl}`;
     modal.querySelector('#ii-bulk-toggle').addEventListener('click', () => togglePane('ii-bulk-pane'));
     modal.querySelector('#ii-maximize-toggle').addEventListener('click', toggleMaximize);
     modal.querySelector('#ii-links-btn').addEventListener('click', () => TrackLinks.resolve());        // #219: resolve candidates
+    modal.querySelector('#ii-find-all').addEventListener('click', findEverything);                     // #680
     // #406: no separate "Add links" button — the single Submit button below adds every
     // resolved link together with any pending ISRCs (right-click a candidate still adds one).
     modal.querySelector('#ii-sx-all').addEventListener('click', runSxAll);   // bulk SoundExchange — unchanged (#181)
@@ -42940,12 +42942,12 @@ Created this ${kind} while adding credits parsed from text to ${relUrl}`;
     _isrcMissing = missing;
     updateHdrStatus();   // #471: header status text replaced the old ISRCs-tab badge
     const seq = iterativeSequence();
-    summaryEl.innerHTML =
-      '<b>' + RELEASE.tracks.length + '</b> tracks' +
-      (bad ? ' · <span style="color:var(--mbu-error)">' + bad + ' invalid</span>' : '') +
-      (dup ? ' · <span style="color:var(--mbu-warn)">' + dup + ' already present</span>' : '') +
-      (crossDup ? ' · <span style="color:var(--mbu-error)">' + crossDup + ' duplicated across tracks (blocked)</span>' : '') +
-      (missing ? ' · ' + missing + ' still missing' : '') +
+    // #680: no track count here (the links summary has it); Find everything takes its place
+    summaryEl.innerHTML = [
+      bad ? '<span style="color:var(--mbu-error)">' + bad + ' invalid</span>' : '',
+      dup ? '<span style="color:var(--mbu-warn)">' + dup + ' already present</span>' : '',
+      crossDup ? '<span style="color:var(--mbu-error)">' + crossDup + ' duplicated across tracks (blocked)</span>' : '',
+      missing ? missing + ' still missing' : ''].filter(Boolean).join(' · ') +
       (seq ? ' <span class="ii-seq-badge" title="Every track\'s ISRC is the previous one + 1: ' +
         esc(seq.from) + ' → ' + esc(seq.to) + '">⛓ sequential ' + esc(seq.from) + ' → ' + esc(seq.to) + '</span>' : '');
     _validIsrcCount = valid;
@@ -43800,6 +43802,46 @@ Created this ${kind} while adding credits parsed from text to ${relUrl}`;
     const pc = platformCheckUrl(source);
     return pc ? parseStreamingId(source, pc) : null;
   }
+  // #680 Find everything: the ISRC sources this release has, fastest first. One-request
+  // album reads (Qobuz, Audiomack, Apple, …) lead; per-track ones (Deezer, 7digital) and
+  // Spotify (a third party) come last. A link pulled from the release group (#302) is left
+  // out: whether it fits this release needs the user to look.
+  const ISRC_SPEED_ORDER = ['qobuz', 'audiomack', 'apple', 'tidal', 'hdtracks', 'volumo', 'beatport', 'soundcloud', 'deezer', 'sevendigital'];
+  function isrcSourcesFastest() {
+    const rg = (RELEASE && RELEASE.rgFrom) || {};
+    return ISRC_SPEED_ORDER.map(k => ALBUM_PROVIDERS[k]).filter(Boolean)
+      .map(p => ({ source: p.source, fetcher: p.fetcher, id: rg[p.idField] ? null : providerAlbumId(p.source, RELEASE[p.idField]) }))
+      .concat([{ source: 'Spotify', fetcher: fetchSpotify, id: rg.spotifyId ? null : providerAlbumId('Spotify', RELEASE.spotifyId) }])
+      .filter(x => x.id);
+  }
+  // the dialog's Find everything: ISRCs from the fastest source that gives any (the next one
+  // when a source fails or gives none), then Find links with them
+  let _findingAll = false;
+  async function findEverything() {
+    if (_findingAll) return;
+    _findingAll = true;
+    const btn = modal.querySelector('#ii-find-all');
+    if (btn) btn.disabled = true;
+    try {
+      const srcs = isrcSourcesFastest();
+      Log.info('Find everything: ISRC sources in order ' + (srcs.map(x => x.source).join(', ') || 'none'));
+      for (const src of srcs) {
+        if (RELEASE.tracks.every(t => t.existing.length || isValidIsrc(normalizeIsrc(t.pending)))) { Log.info('Find everything: every track has an ISRC, no import needed'); break; }
+        _stream = null;
+        await runStreamingSource(src.source, src.id, src.fetcher);
+        const filled = (_stream && _stream.counts && _stream.counts.filled) || 0;
+        Log.info('Find everything: ' + src.source + ' filled ' + filled);
+        if (filled) break;
+      }
+      Log.info('Find everything: Find links');
+      await TrackLinks.resolve();
+    } catch (e) {
+      Log.err('Find everything failed: ' + errText(e));
+    } finally {
+      _findingAll = false;
+      if (btn) btn.disabled = false;
+    }
+  }
   // Detect which streaming platform a pasted URL belongs to (domain-based, so a
   // bare numeric id — ambiguous across platforms — is intentionally not matched).
   function detectSource(input) {
@@ -44293,7 +44335,7 @@ Created this ${kind} while adding credits parsed from text to ${relUrl}`;
      Mission Control asks over document events with JSON-string details (see
      userscripts/mission_control/DEVELOP.md). A probe runs headless: no dialog.
      It takes the release IS already loaded, imports ONE album source (the first
-     one with an album link, in MB or confidently found by Platform Check), and
+     one in Find everything's fastest-first order that gives any), and
      only its first batch (STREAM_BATCH_LIMIT), like the dialog does before it
      pauses. Then it maps each ISRC to a track the way the dialog does: position
      first, then a title that is unambiguous. One finding per track; apply
@@ -44303,10 +44345,8 @@ Created this ${kind} while adding credits parsed from text to ${relUrl}`;
     const mcHello = () => mcSend('mc:provider', { id: 'is', name: 'ISRC Scout', version: SCRIPT_VERSION, release: mbid, capabilities: ['probe', 'apply'] });
     let mcFound = {};   // recId -> { isrc, source } from the last probe
     let mcLinks = {};   // 'link:<recId>:<url>' -> { rec, idx, code, name, url, linkTypeID } from the last probe
-    // the album sources in IS's order, Spotify last (its import goes through a third party)
-    const mcSources = () => Object.values(ALBUM_PROVIDERS).map(p => ({ source: p.source, fetcher: p.fetcher, id: providerAlbumId(p.source, RELEASE[p.idField]) }))
-      .concat([{ source: 'Spotify', fetcher: fetchSpotify, id: providerAlbumId('Spotify', RELEASE.spotifyId) }])
-      .filter(x => x.id);
+    // the same sources and order as the dialog's Find everything
+    const mcSources = isrcSourcesFastest;
     function mcTrackOf(s) {
       let idx = RELEASE.tracks.findIndex(t => (+t.trackPos === +s.pos) && ((+t.mediumPos === +s.disc) || RELEASE.tracks.filter(x => +x.mediumPos === +s.disc).length === 0));
       if (idx < 0) { const p = pickTrackByTitle(s, RELEASE.tracks); idx = p.ambiguous ? -1 : p.idx; }
