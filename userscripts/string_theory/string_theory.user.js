@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         String Theory
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.5.150448
+// @version      2026.10.6.094752
 // @description  Unified bundle of 8 MusicBrainz userscripts (apollo_editor, art_station, credit_hoarder, fusion, group_therapy, isrc_scout, mammoth, platform_check). Built by userscripts/string_theory/build.mjs — do not hand-edit.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCIgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0Ij4KICA8IS0tIGh1Yi1hbmQtc3Bva2UgIm5ldHdvcmsiIGdseXBoLCBzaW5nbGUgdml2aWQgdmlvbGV0IG9uIHRyYW5zcGFyZW50IHNvIGl0IHJlYWRzIG9uIGJvdGggZGFyayBhbmQgbGlnaHQgcGFnZXMgLS0+CiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjN2M1Y2ZmIiBzdHJva2Utd2lkdGg9IjQuNiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj4KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMzIgMTUiLz4KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMNDYuNSAyMy41Ii8+CiAgICA8cGF0aCBkPSJNMzIgMzIgTDQ2LjUgNDAuNSIvPgogICAgPHBhdGggZD0iTTMyIDMyIEwzMiA0OSIvPgogICAgPHBhdGggZD0iTTMyIDMyIEwxNy41IDQwLjUiLz4KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMTcuNSAyMy41Ii8+CiAgPC9nPgogIDxnIGZpbGw9IiM3YzVjZmYiPgogICAgPGNpcmNsZSBjeD0iMzIiIGN5PSIzMiIgcj0iOC42Ii8+CiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjE5LjUiIHI9IjYuNCIvPgogICAgPGNpcmNsZSBjeD0iNDkiIGN5PSIxOS41IiByPSI2LjQiLz4KICAgIDxjaXJjbGUgY3g9IjMyIiBjeT0iNTciIHI9IjYuNCIvPgogIDwvZz4KICA8ZyBmaWxsPSJub25lIiBzdHJva2U9IiM3YzVjZmYiIHN0cm9rZS13aWR0aD0iMy44Ij4KICAgIDxjaXJjbGUgY3g9IjMyIiBjeT0iNyIgcj0iNC45Ii8+CiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjQ0LjUiIHI9IjQuOSIvPgogICAgPGNpcmNsZSBjeD0iNDkiIGN5PSI0NC41IiByPSI0LjkiLz4KICA8L2c+Cjwvc3ZnPgo=
@@ -88,8 +88,8 @@
 // Bundles (verbatim, each wrapped in a run-at gate): apollo_editor, art_station, credit_hoarder, fusion, group_therapy, isrc_scout, mammoth, platform_check.
 
 try {
-  console.log('%c String Theory %c v2026.10.5.150448 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
-  console.log("String Theory bundles:\n  · Apollo Editor v2026.10.4.190000\n  · Art Station v2026.10.5.111552\n  · Credit Hoarder v2026.10.5.150448\n  · Fusion v2026.10.4\n  · Group Therapy v2026.10.4\n  · ISRC Scout v2026.10.5\n  · Mammoth v2026.10.4\n  · Platform Check v2026.10.5");
+  console.log('%c String Theory %c v2026.10.6.094752 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
+  console.log("String Theory bundles:\n  · Apollo Editor v2026.10.4.190000\n  · Art Station v2026.10.5.111552\n  · Credit Hoarder v2026.10.5.150448\n  · Fusion v2026.10.4\n  · Group Therapy v2026.10.4\n  · ISRC Scout v2026.10.5\n  · Mammoth v2026.10.4\n  · Platform Check v2026.10.6");
 } catch (e) {}
 
 // ===== apollo_editor (@run-at document-start) =====================================
@@ -46314,7 +46314,7 @@ Created this ${kind} while adding credits parsed from text to ${relUrl}`;
 
 // ===== platform_check (@run-at document-end) ====================================
 (function(__stGM){
-  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Platform Check*","namespace":"http://tampermonkey.net/","version":"2026.10.5","description":"Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/platform_check/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+DQogIDx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CiAgDQogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJhMWE1MiIgc3Ryb2tlLXdpZHRoPSI5IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik00MCA4OCBBMzQgMzQgMCAwIDEgNDAgNDAiLz4NCiAgICA8cGF0aCBkPSJNMjkgOTkgQTUwIDUwIDAgMCAxIDI5IDI5Ii8+DQogICAgPHBhdGggZD0iTTg4IDg4IEEzNCAzNCAwIDAgMCA4OCA0MCIvPg0KICAgIDxwYXRoIGQ9Ik05OSA5OSBBNTAgNTAgMCAwIDAgOTkgMjkiLz4NCiAgPC9nPg0KICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyMCIgZmlsbD0iI2U4MjAxYSIvPg0KPC9zdmc+DQo="}) }) : { script: {"name":"Platform Check*","namespace":"http://tampermonkey.net/","version":"2026.10.5","description":"Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/platform_check/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+DQogIDx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CiAgDQogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJhMWE1MiIgc3Ryb2tlLXdpZHRoPSI5IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik00MCA4OCBBMzQgMzQgMCAwIDEgNDAgNDAiLz4NCiAgICA8cGF0aCBkPSJNMjkgOTkgQTUwIDUwIDAgMCAxIDI5IDI5Ii8+DQogICAgPHBhdGggZD0iTTg4IDg4IEEzNCAzNCAwIDAgMCA4OCA0MCIvPg0KICAgIDxwYXRoIGQ9Ik05OSA5OSBBNTAgNTAgMCAwIDAgOTkgMjkiLz4NCiAgPC9nPg0KICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyMCIgZmlsbD0iI2U4MjAxYSIvPg0KPC9zdmc+DQo="} };
+  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Platform Check*","namespace":"http://tampermonkey.net/","version":"2026.10.6","description":"Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/platform_check/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+DQogIDx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CiAgDQogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJhMWE1MiIgc3Ryb2tlLXdpZHRoPSI5IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik00MCA4OCBBMzQgMzQgMCAwIDEgNDAgNDAiLz4NCiAgICA8cGF0aCBkPSJNMjkgOTkgQTUwIDUwIDAgMCAxIDI5IDI5Ii8+DQogICAgPHBhdGggZD0iTTg4IDg4IEEzNCAzNCAwIDAgMCA4OCA0MCIvPg0KICAgIDxwYXRoIGQ9Ik05OSA5OSBBNTAgNTAgMCAwIDAgOTkgMjkiLz4NCiAgPC9nPg0KICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyMCIgZmlsbD0iI2U4MjAxYSIvPg0KPC9zdmc+DQo="}) }) : { script: {"name":"Platform Check*","namespace":"http://tampermonkey.net/","version":"2026.10.6","description":"Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/platform_check/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+DQogIDx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CiAgDQogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJhMWE1MiIgc3Ryb2tlLXdpZHRoPSI5IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik00MCA4OCBBMzQgMzQgMCAwIDEgNDAgNDAiLz4NCiAgICA8cGF0aCBkPSJNMjkgOTkgQTUwIDUwIDAgMCAxIDI5IDI5Ii8+DQogICAgPHBhdGggZD0iTTg4IDg4IEEzNCAzNCAwIDAgMCA4OCA0MCIvPg0KICAgIDxwYXRoIGQ9Ik05OSA5OSBBNTAgNTAgMCAwIDAgOTkgMjkiLz4NCiAgPC9nPg0KICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyMCIgZmlsbD0iI2U4MjAxYSIvPg0KPC9zdmc+DQo="} };
   (f=>document.readyState!=='loading'?f():document.addEventListener('DOMContentLoaded',f,{once:true}))(function(){ try { (function(){
 (function () {
 'use strict';
@@ -49374,6 +49374,9 @@ function wireRowOpen(p) {
     if (!row || !a) return;
     const open = (e, preferSearch) => {
         if (e.target.closest('.pc-cell-ico') || e.target.closest('a')) return;
+        // #682: a clickable Discogs master ✓ adds the master; the row must not
+        // also open the Discogs page (or its search, on a right-click) beside it
+        if (e.target.closest('.pc-cell-master')?.dataset.pcAddMaster) return;
         const search = a.dataset.searchUrl || null;
         const href   = a.getAttribute('href');
         const found  = href && href !== search && /^https?:\/\//.test(href) ? href : null;
@@ -49528,6 +49531,8 @@ function updateRow(p, { url, mbTracks, remoteTracks, year, label, source, fromCa
         } else {
             masterEl.innerHTML  = '';
             masterEl.onclick    = null;
+            masterEl.oncontextmenu = null;
+            delete masterEl.dataset.pcAddMaster;
             masterEl.style.cursor = 'default';
             masterEl.title      = '';
             masterEl.classList.remove('pc-ico-circled');
@@ -49696,10 +49701,14 @@ function applyMasterIcon(el, state) {
     el.classList.toggle('pc-ico-circled', !!state.circled);
     if (state.clickable && state.addMasterUrl) {
         el.style.cursor = 'pointer';
+        el.dataset.pcAddMaster = '1';   // #682: the row's open handler stands aside
         el.onclick = () => addMasterUrl(state.addMasterUrl);
+        el.oncontextmenu = (e) => { e.preventDefault(); addMasterUrl(state.addMasterUrl, true); };   // #682
     } else {
         el.style.cursor = 'default';
+        delete el.dataset.pcAddMaster;
         el.onclick = null;
+        el.oncontextmenu = null;
     }
 }
 
@@ -49726,7 +49735,7 @@ function discogsMasterState(cachedMasterUrl, existingDiscogsMaster) {
     if (existingDiscogsMaster) {
         return { glyph: '~', circled: true,  clickable: false, masterUrl: existingDiscogsMaster, title: `MB has a different Discogs master on the release-group: ${existingDiscogsMaster}` };
     }
-    return     { glyph: '✓', circled: false, clickable: true,  masterUrl: cachedMasterUrl, title: 'Click to add this Discogs master URL to the release-group', addMasterUrl: cachedMasterUrl };
+    return     { glyph: '✓', circled: false, clickable: true,  masterUrl: cachedMasterUrl, title: 'Click to add this Discogs master URL to the release-group · right-click: add it silently in the background', addMasterUrl: cachedMasterUrl };
 }
 
 // ─── Helpers ───────────────────────────────────────────────────────────────
@@ -54028,7 +54037,7 @@ function openRgEditTab(rgMbid, { background = false, sameTabAllowed = false } = 
 // Test hook only (#464) — no behavior change; lets verify-464.mjs exercise the
 // tab-open decision + background-commit channel without driving the full row UI
 // (which would mean faking a live ✓ match render for no added coverage).
-if (mbuTestHooks()) window.__pcTest464 = { openReleaseEditTab, openRgEditTab, PC_CHANNEL };
+if (mbuTestHooks()) window.__pcTest464 = { openReleaseEditTab, openRgEditTab, PC_CHANNEL, applyMasterIcon, discogsMasterState };   // #682: the master slot's clicks
 // #556 test hook — URL identity + the inject helper, so the cache-staleness and
 // payload-preservation paths can be driven without a live ✓ match render.
 // #627 test hook — the amp-api pieces, driven against the live API without a row render
@@ -54075,9 +54084,10 @@ function addSingleUrl(platform, background, force) {
 }
 
 // Click-to-add on the Discogs master slot — queues the master URL for the
-// release-group's edit page (different target than the release URLs). No
-// background variant: release-group has no plain landing page to detect commit on.
-function addMasterUrl(masterUrl) {
+// release-group's edit page (different target than the release URLs).
+// #682: right-click adds it in the background, as the + does since #559 — the
+// only background route for a master the + won't queue (Discogs release not ✓).
+function addMasterUrl(masterUrl, background = false) {
     const mb = mbDataGet(mbid);
     const rgMbid = mb?.releaseGroupMbid;
     if (!rgMbid) {
@@ -54085,12 +54095,11 @@ function addMasterUrl(masterUrl) {
         return;
     }
     localStorage.setItem(`pc:pending:rg:${rgMbid}`, JSON.stringify({ 'discogs-master': masterUrl }));
-    appendLog('System', `Inject (master): queued ${masterUrl} for release-group ${rgMbid}`, 'ok');
+    appendLog('System', `Inject (master${background ? ', background' : ''}): queued ${masterUrl} for release-group ${rgMbid}`, 'ok');
     // #559: same opener as the + button's release-group bucket, so there is one
-    // place that knows how to reach the release-group editor. Behaviour here is
-    // unchanged — this path is a plain click on the master icon, never background,
-    // and it is always the only tab being opened.
-    openRgEditTab(rgMbid, { background: false, sameTabAllowed: true });
+    // place that knows how to reach the release-group editor. It is always the
+    // only tab being opened, so a foreground add may take this one.
+    openRgEditTab(rgMbid, { background, sameTabAllowed: true });
 }
 
 // force (#641, middle click on +): barcode/format confidence doesn't withhold anything.
