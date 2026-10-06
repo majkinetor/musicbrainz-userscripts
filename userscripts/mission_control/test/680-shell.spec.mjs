@@ -30,12 +30,13 @@ test('#680: MC shell — launcher, track matrix, sidebars, modes', { tag: ['@san
   await page.setViewportSize({ width: 1600, height: 1000 });
   check(await page.locator('#mc-root .mc-badges .mc-bdg').count() === 5, 'a header badge per provider');
 
-  // left of the header: the source icon and Probe, nothing else
-  check(await page.locator('#mc-root .mc-hdr .l > *').count() === 2, 'header left holds the source icon and Probe');
-  await page.click('#mc-root [data-act="src"]');
-  await page.fill('#mc-root .mc-srcpop input', 'https://open.spotify.com/album/x');
-  await page.keyboard.press('Enter');
-  check(await page.locator('#mc-root .mc-srcbtn.set').count() === 1, 'source icon lit once a link is set');
+  // left of the header: Probe and its Auto switch, nothing else (#680: no source link)
+  check(await page.locator('#mc-root .mc-hdr .l > *').count() === 2 && await page.locator('#mc-root [data-act="src"]').count() === 0, 'header left holds Probe and Auto');
+  check(await page.locator('#mc-root .mc-auto.on').count() === 0, 'Auto is off by default');
+  await page.click('#mc-root [data-act="auto"]');
+  check(await page.locator('#mc-root .mc-auto.on[aria-checked="true"]').count() === 1, 'a click turns Auto on');
+  await page.click('#mc-root [data-act="auto"]');
+  check(await page.locator('#mc-root .mc-auto.on').count() === 0, 'and off again');
 
   // inspector follows the selected row
   await page.locator('#mc-root .mc-tbl tbody tr[data-i]').first().locator('td.ttl').click();

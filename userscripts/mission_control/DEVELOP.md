@@ -12,7 +12,7 @@ Every `detail` is a **JSON string**, never an object. Each userscript runs in it
 |---|---|---|
 | `mc:discover` | MC | `{ release, mc }`: the release MBID and MC's version |
 | `mc:provider` | provider | `{ id, name, version, release, capabilities: [...] }` |
-| `mc:probe` | MC | `{ release, run, only, source }`: `only` lists the provider ids asked |
+| `mc:probe` | MC | `{ release, run, only }`: `only` lists the provider ids asked |
 | `mc:progress` | provider | `{ id, run, state: 'busy', note }` |
 | `mc:findings` | provider | `{ id, run, release, findings: [...] }` |
 | `mc:apply` | MC | `{ id, run, release, keys, dry }`: the ticked finding keys of one provider |
@@ -73,5 +73,7 @@ Execute runs the steps in order and sends `mc:apply` to every provider that has 
 - Live status in the sidebar's lanes during Execute (the cards show it already).
 
 ## Layout
+
+**Auto** beside Probe (`autoProbe` in the settings, off by default) probes as soon as MC opens, once discover has had its moment. There is no source link in the header any more: consolidating releases MusicBrainz doesn't have yet will be a mode of its own later.
 
 The layout follows variant F of the round-2 mockups (`dev/mockups/mission_control/round2/variant-f.html`). The sidebar flags and the Fusion and CH modes live in `GM_setValue('mc.settings')`.
