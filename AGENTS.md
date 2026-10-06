@@ -24,6 +24,9 @@ Learn something durable → write it down: in the general file if it would hold 
 - **Notifications** arrive via `notif-channel` (`dev/notif-channel`); treat them per the general rules.
 - **Confirm first** a **new MusicBrainz request inside a shipped userscript** (server load). Your own research/test reads of MusicBrainz are fine.
 - **Tests run on `test.musicbrainz.org`**, never production (the harness guards prod writes). `pnpm test`; `@critical` is the fast pre-merge subset, `@unit` needs no network; a new regression test is a harness spec. The sandbox login is a **separate account DB** (test.metabrainz.org SSO), not prod credentials. The harness is **Chromium-only**.
+- **Sandbox MB login**: `majkinetor` / `mb`. test.musicbrainz.org's *Log in* redirects to the test.metabrainz.org SSO page; enter it there. Logged out, test redirects *every* page (edit pages too) to that login.
+- **Test edit IDs are test's own**, not copies of production: the same `/edit/<n>` is a different edit on each server. Read a test edit logged in on test, never by looking the number up on prod.
+- **OAuth on test** is a separate app registry: the baked-in production OAuth client gets `invalid_client` ("Client not authentified") from test's `/oauth2/token` ([#683](https://github.com/majkinetor/musicbrainz-userscripts/issues/683)). Test's *Applications* page lists what the sandbox account has registered/authorized.
 - **Shared blocks** (`// <ST-TOKENS/UI/ICONS/MATCH>`) are hook-synced; never edit inside the markers ([DEVELOP](DEVELOP.md#shared-blocks)).
 - **Tokens** are the one place the look is set; a `<style>` starts with `MBU_TOKENS`.
 - **Branches**: `main` is latest, `stable` the release ([DEVELOP](DEVELOP.md#branches-and-channels)).
