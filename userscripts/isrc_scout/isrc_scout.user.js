@@ -314,9 +314,15 @@
   // redirect urn:ietf:wg:oauth:2.0:oob, scope submit_isrc). Baked in so users only
   // click "Authorize" once — no per-user app registration. The secret is not truly
   // confidential for an installed app (same model as MagicISRC / isrchunt).
+  // test.musicbrainz.org keeps its own app registry (#683), so it has its own app,
+  // registered there under the sandbox account.
+  const OAUTH_APPS = {
+    '':                      { clientId: 'axXnet_AiWglKOQEVSiM8xF6EAlKFBzM',            clientSecret: 'gi-S0GuLeKtOgFs5QRZAEEVATD4Lo6l9' },
+    '@test.musicbrainz.org': { clientId: 'Xn2w0xRom5aZmq0423yt68tR8gRovWITUHNkgVsg8l0', clientSecret: 'jqbQOC8iv7FdZ4zj-oBVhIabwOSb5fXgIb-ZlEZkefE' },
+  };
   const OAUTH = {
-    clientId:     'axXnet_AiWglKOQEVSiM8xF6EAlKFBzM',
-    clientSecret: 'gi-S0GuLeKtOgFs5QRZAEEVATD4Lo6l9',
+    clientId:     (OAUTH_APPS[OAUTH_SITE] || OAUTH_APPS['']).clientId,
+    clientSecret: (OAUTH_APPS[OAUTH_SITE] || OAUTH_APPS['']).clientSecret,
     authUrl:  MB_ROOT + '/oauth2/authorize',
     tokenUrl: MB_ROOT + '/oauth2/token',
     redirect: 'urn:ietf:wg:oauth:2.0:oob',
