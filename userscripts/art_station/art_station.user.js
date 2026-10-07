@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Art Station
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.7.235959
+// @version      2026.10.8.3
 // @description  Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png
@@ -219,7 +219,16 @@
         : larger ? (replace ? `larger than the current front (${top.w}×${top.h}), which it replaces` : `larger than the current fronts (up to ${top.w}×${top.h}); added beside them`)
         : `not larger than the current front (${top.w}×${top.h})`;
       const state = !front || larger ? 'new' : 'unsure';
-      const findings = last.map(x => Object.assign({ key: x.p.name, name: x.p.name, icon: icon(x.p.name), url: x.u, state }, why ? { why } : {}));
+      // the rows are the sources searched, not covers to enter: only the best cover's row is entered
+      // (role 'best'), the others only took part in the search (role 'searched')
+      const bp = String((best && best.provider) || '').toLowerCase();
+      const won = bp && (last.find(x => bp === x.p.name.toLowerCase() || bp.includes(x.p.name.toLowerCase())) || {}).p;
+      const findings = last.map(x => {
+        const f = { key: x.p.name, name: x.p.name, icon: icon(x.p.name), url: x.u, state };
+        if (!won) return Object.assign(f, why ? { why } : {});
+        if (x.p === won) return Object.assign(f, { role: 'best', why: 'the best cover (' + best.w + '×' + best.h + ')' + (why ? '; ' + why : ': entered as the front cover') });
+        return Object.assign(f, { role: 'searched', why: 'searched; ' + (larger ? 'only ' + won.name + '\'s larger cover is entered' : won.name + '\'s was the largest found') });
+      }).sort((a, b) => (b.role === 'best') - (a.role === 'best'));   // the one entered leads
       const n = Math.max(imgs.length, tabN, existing.length);
       const summary = j == null && !n ? 'Cover Art Archive: could not be read'
         : n ? 'Cover art: ' + n + ' image' + (n === 1 ? '' : 's') + (front ? ', front cover ✓' : ', no front cover') : 'Cover art: none yet';

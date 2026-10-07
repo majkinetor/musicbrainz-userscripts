@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Mission Control
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.8.2
+// @version      2026.10.8.3
 // @description  One window on the release page that asks the other scripts (Platform Check, ISRC Scout, Art Station, Fusion, Credit Hoarder) what is missing, shows it all in one review, and applies the ticked changes in order.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPk1pc3Npb24gQ29udHJvbDwvdGl0bGU+CiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjNWYzZWMwIiBzdHJva2Utd2lkdGg9IjciPgogICAgPGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iNTIiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjMwIi8+CiAgICA8cGF0aCBkPSJNNjQgNHYyMk02NCAxMDJ2MjJNNCA2NGgyMk0xMDIgNjRoMjIiLz4KICA8L2c+CiAgPGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iMTEiIGZpbGw9IiM4YTVjZjYiLz4KPC9zdmc+Cg==
@@ -606,7 +606,8 @@ function stateOf(p) {
 }
 // an info-only provider (CH) counts what it found instead of what it would add
 function infoCount(id) { const r = results[id]; return r && r.findings ? r.findings.reduce((n, x) => n + (x.credits || 0), 0) : 0; }
-function countNew(id) { const r = results[id]; return r && r.findings ? r.findings.filter(x => x.state === 'new').length : 0; }
+// a 'searched' row (AS's sources other than the best cover's) is in the pool, not something entered
+function countNew(id) { const r = results[id]; return r && r.findings ? r.findings.filter(x => x.state === 'new' && x.role !== 'searched').length : 0; }
 function stateText(p) {
     const st = stateOf(p), r = results[p.id];
     if (st === 'off') return 'off';
@@ -614,8 +615,8 @@ function stateText(p) {
     if (st === 'ready') return 'connected · not probed';
     if (st === 'busy') return 'probing' + (r.note ? ': ' + r.note : '') + '…';
     if (r.summary && !r.findings.some(x => PICKABLE[x.state])) return r.summary;
-    const t = r.findings.reduce((a, x) => (a[x.state] = (a[x.state] || 0) + 1, a), {});
-    return [t.new && t.new + ' new', t.linked && t.linked + ' linked', t.withheld && t.withheld + ' withheld', t.unsure && t.unsure + ' unsure', t.blocked && t.blocked + ' blocked', t.none && t.none + ' not found'].filter(Boolean).join(' · ') || 'nothing';
+    const t = r.findings.reduce((a, x) => { const k = x.role === 'searched' ? 'searched' : x.state; a[k] = (a[k] || 0) + 1; return a; }, {});
+    return [t.new && t.new + ' new', t.searched && t.searched + ' searched', t.linked && t.linked + ' linked', t.withheld && t.withheld + ' withheld', t.unsure && t.unsure + ' unsure', t.blocked && t.blocked + ' blocked', t.none && t.none + ' not found'].filter(Boolean).join(' · ') || 'nothing';
 }
 function paintAll() { if (!ui) return; paintBadges(); paintCards(); paintReleaseCredits(); fitCards(); paintMatrix(); paintInspector(); paintExec(); }
 
@@ -671,10 +672,11 @@ function steps() {
     return d;
 }
 function addText(p) {
-    const xs = ((results[p.id] || {}).findings || []).filter(x => x.state === 'new');
+    const xs = ((results[p.id] || {}).findings || []).filter(x => x.state === 'new' && x.role !== 'searched');
     const n = (k, w) => k + ' ' + w + (k === 1 ? '' : 's');
     if (p.id === 'is') { const l = xs.filter(x => x.kind === 'link').length, i = xs.length - l; return [i && n(i, 'ISRC'), l && n(l, 'link')].filter(Boolean).join(' · ') + ' to add'; }
     if (p.id === 'pc') return n(xs.length, 'link') + ' to add';
+    if (p.id === 'as' && xs.some(x => x.role === 'best')) return '1 cover to enter';
     return xs.length + ' new';
 }
 // [class, words, mark on the ring]
@@ -1023,7 +1025,7 @@ function paintCards() {
         const line = (x, lane) => {
             const pick = !!PICKABLE[x.state];
             const on = pick && picked[id] && picked[id].has(x.key);
-            const pill = PILL[x.state] || ['idle', x.state];
+            const pill = x.role === 'searched' ? ['idle', 'searched'] : x.role === 'best' && x.state === 'new' ? ['add', 'enters'] : PILL[x.state] || ['idle', x.state];
             // in a lane, the barcode and its reason are on the lane: only a differently written barcode stays
             return '<div class="mc-line ' + esc(x.state) + (x.entity ? ' mc-ent' : '') + (lane ? ' mc-in' : '') + (pick ? ' mc-pick' : '') + (on ? ' on' : '') + '"'
                 + (pick ? ' data-prov="' + id + '" data-key="' + esc(x.key) + '" title="' + (on ? 'Taken in: click to leave out' : 'Click to take in') + '"' : '') + '>'
