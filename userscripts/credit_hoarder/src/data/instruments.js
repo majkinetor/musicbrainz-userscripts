@@ -664,6 +664,8 @@ export const INSTRUMENTS = {
     Sequencer: null,
     'Software Instrument': null,
     Talkbox: 'talkbox',
+    // not a Discogs role; a bracket names it ("Soloist [Moog Solo]") and MB has it
+    Moog: 'Moog',
     Tannerin: null,
     Tape: 'tape',
     Turntables: 'turntable',

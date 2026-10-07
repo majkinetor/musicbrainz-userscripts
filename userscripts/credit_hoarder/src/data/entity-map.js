@@ -195,6 +195,11 @@ export const ENTITY_TYPE_MAP = {
         entityType: 'artist',
         linkType: 'vocal',
     },
+    // Discogs "Voice [Humming]" and the like: a vocal (it was dropped, unmapped)
+    Voice: {
+        entityType: 'artist',
+        linkType: 'vocal',
+    },
     'Backing Vocals': {
         entityType: 'artist',
         linkType: 'vocal',

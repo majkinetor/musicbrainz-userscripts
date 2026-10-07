@@ -17,6 +17,23 @@ const INSTRUMENTS_CI = Object.fromEntries(
     Object.entries(INSTRUMENTS).map(([k, v]) => [k.toLowerCase(), v])
 );
 
+// A bracket that names a more specific MB instrument than its (mapped) base: "Electric Organ
+// [B3]" is a Hammond organ, "Electric Piano [Rhodes]" a Rhodes piano, "Synthesizer [Moog]" a
+// Moog. Only these pairs: a bracket never overrides a known base on its own ("Bass [Guitar]"
+// stays bass, #223). Names as MB has them.
+const BRACKET_REFINES = [
+    [/^(electronic organ|organ)$/, /\b(b-?3|hammond)\b/i, 'Hammond organ'],
+    [/^electric piano$/, /\brhodes\b/i, 'Rhodes piano'],
+    [/^(guitar|acoustic guitar)$/, /\b(12|twelve)[- ]string\b/i, '12 string guitar'],
+    [/^(guitar|acoustic guitar)$/, /\bnylon\b/i, 'classical guitar'],
+    [/^lute$/, /\b(tanpura|tambura)\b/i, 'tambura'],
+    [/^synthesizer$/, /\bmoog\b/i, 'Moog'],
+];
+// the bare-instrument roles that only say "played something" (Discogs Band / Musician /
+// Performer …): next to a named instrument or a vocal of the same artist they add nothing,
+// and MB shows each as one more line under "instruments:"
+const isBareInstrument = r => r.linkType === 'instrument' && !(r.attributes || []).some(a => a && a._type === 'instrument');
+
 // the sort-name guess is shared with Apollo (dev/match/artist-match.mjs, #623)
 export { mbmGuessSortName as guessSortName } from '../../../dev/match/artist-match.mjs';
 
@@ -261,9 +278,16 @@ export function getArtistRoles(artist) {
                 // vibraphone. Gated on `!instrumentName` so a known base is
                 // never overridden by its bracket (e.g. "Bass [Guitar]" must
                 // stay "bass", not become "guitar").
-                if (!instrumentName && rolePart[1]) {
-                    const bracket = rolePart[1].replace(/]/g, '').trim();
-                    for (const candidate of [bracket, bracket.split(',')[0].trim()]) {
+                const bracket = rolePart[1] ? rolePart[1].replace(/]/g, '').trim() : '';
+                if (instrumentName && bracket) {
+                    const ref = BRACKET_REFINES.find(([base, re]) => base.test(instrumentName.toLowerCase()) && re.test(bracket));
+                    if (ref) instrumentName = ref[2];
+                }
+                if (!instrumentName && bracket) {
+                    // "Soloist [Trumpet Solo]": the instrument with "Solo" taken off (solo itself
+                    // is an attribute, below)
+                    const noSolo = bracket.replace(/\s*\bsolos?\b\s*/ig, ' ').trim();
+                    for (const candidate of [bracket, bracket.split(',')[0].trim(), noSolo]) {
                         const lc = candidate.toLowerCase();
                         if (lc && Object.prototype.hasOwnProperty.call(INSTRUMENTS_CI, lc) && INSTRUMENTS_CI[lc]) {
                             instrumentName = INSTRUMENTS_CI[lc];
@@ -271,9 +295,13 @@ export function getArtistRoles(artist) {
                         }
                     }
                 }
+                // the bracket's solo / guest / additional ride along: they were dropped here before,
+                // so "Soloist [Trumpet Solo]" lost the solo (the other bracket words aren't
+                // instrument attributes)
+                const extra = additionalAttributes.filter(a => a === 'solo' || a === 'guest' || a === 'additional');
                 return Object.assign({}, role, {
                     artist: artist,
-                    attributes: instrumentName ? [{ _type: 'instrument', value: instrumentName.toLowerCase() }] : [],
+                    attributes: (instrumentName ? [{ _type: 'instrument', value: instrumentName.toLowerCase() }] : []).concat(extra),
                 });
             }
             if (!mapping) {
@@ -296,7 +324,9 @@ export function getArtistRoles(artist) {
         })
         .filter(resolvedRole => {
             return !!resolvedRole;
-        });
+        })
+        .filter((r, i, all) => !isBareInstrument(r)
+            || !all.some(o => o.linkType === 'vocal' || (o.linkType === 'instrument' && !isBareInstrument(o))));
 }
 
 // #433: visual-art credits attached to EVERY track belong on the RELEASE — MB's
