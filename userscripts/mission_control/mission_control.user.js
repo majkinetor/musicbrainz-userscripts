@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Mission Control
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.7.180000
+// @version      2026.10.7.181000
 // @description  One window on the release page that asks the other scripts (Platform Check, ISRC Scout, Art Station, Fusion, Credit Hoarder) what is missing, shows it all in one review, and applies the ticked changes in order.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPk1pc3Npb24gQ29udHJvbDwvdGl0bGU+CiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjNWYzZWMwIiBzdHJva2Utd2lkdGg9IjciPgogICAgPGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iNTIiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjMwIi8+CiAgICA8cGF0aCBkPSJNNjQgNHYyMk02NCAxMDJ2MjJNNCA2NGgyMk0xMDIgNjRoMjIiLz4KICA8L2c+CiAgPGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iMTEiIGZpbGw9IiM4YTVjZjYiLz4KPC9zdmc+Cg==
@@ -460,11 +460,11 @@ function mcStyle() {
         + '.mc-empty{padding:10px;color:var(--mbu-text-weak);font-size:12px}'
         + '.mc-line{display:grid;grid-template-columns:16px 16px 1fr auto;gap:8px;align-items:center;padding:4px 10px;border-bottom:1px solid var(--mbu-divider)}.mc-line.mc-hasbc{grid-template-columns:16px 16px 1fr 130px 84px}.mc-line.mc-hasbc>.mc-pill{justify-self:end}'
         + '.mc-bc{display:inline-block;font:600 12px/1.5 ui-monospace,Consolas,monospace;color:var(--bc);background:color-mix(in srgb,var(--bc) 12%,transparent);border:1px solid color-mix(in srgb,var(--bc) 45%,transparent);border-radius:5px;padding:1px 6px;white-space:nowrap}'
-        + '.mc-bccol{text-align:right}.mc-sect-h.mc-hasbc{display:grid;grid-template-columns:22px minmax(0,max-content) minmax(0,1fr) 130px 84px}.mc-sect-h.mc-hasbc .t{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.mc-sect-h.mc-hasbc .end{justify-content:flex-end;min-width:0}.mc-sect-h .mc-hbc{display:none}.mc-sect-h.mc-hasbc .mc-hbc{display:block;text-align:right}'
-        + '#mc-root .mc-sect-h .mc-icsw{border:0;padding:0;margin:0;font:inherit;color:inherit;cursor:pointer;position:relative;box-shadow:0 0 0 3px transparent;transition:box-shadow .12s}'
-        + '#mc-root .mc-sect-h .mc-icsw:hover{box-shadow:0 0 0 3px var(--mbu-bg-hover),0 0 0 4px var(--mbu-border)}#mc-root .mc-sect-h .mc-icsw:focus-visible{outline:2px solid var(--mbu-accent);outline-offset:2px}'
-        + '.mc-sect.mc-off .mc-icsw{background:var(--mbu-bg-sunken)}.mc-sect.mc-off .mc-icsw>*{filter:grayscale(1);opacity:.55}'
-        + '.mc-sect.mc-off .mc-icsw::after{content:"";position:absolute;left:-2px;right:-2px;top:50%;height:2px;margin-top:-1px;border-radius:1px;background:var(--mbu-text-weak);transform:rotate(-45deg)}'
+        + '.mc-bccol{text-align:right}.mc-sect-h.mc-hasbc{display:grid;grid-template-columns:minmax(0,max-content) minmax(0,1fr) 130px 84px}.mc-sect-h.mc-hasbc .t{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.mc-sect-h.mc-hasbc .end{justify-content:flex-end;min-width:0}.mc-sect-h .mc-hbc{display:none}.mc-sect-h.mc-hasbc .mc-hbc{display:block;text-align:right}'
+        + '#mc-root .mc-sect-h .mc-icsw{all:unset;box-sizing:border-box;display:inline-flex;align-items:center;gap:8px;min-width:0;cursor:pointer;padding:3px 8px 3px 3px;margin:-3px -8px -3px -3px;border-radius:8px;transition:background .12s}#mc-root .mc-icsw .ic{position:relative}'
+        + '#mc-root .mc-sect-h .mc-icsw:hover{background:var(--mbu-bg-hover)}#mc-root .mc-sect-h .mc-icsw:focus-visible{outline:2px solid var(--mbu-accent);outline-offset:1px}'
+        + '.mc-sect.mc-off .mc-icsw .ic{background:var(--mbu-bg-sunken)}.mc-sect.mc-off .mc-icsw .ic>*{filter:grayscale(1);opacity:.55}.mc-sect.mc-off .mc-icsw .t{opacity:.45}'
+        + '.mc-sect.mc-off .mc-icsw .ic::after{content:"";position:absolute;left:-2px;right:-2px;top:50%;height:2px;margin-top:-1px;border-radius:1px;background:var(--mbu-text-weak);transform:rotate(-45deg)}'
         + '.mc-sect.mc-off>:not(.mc-sect-h){display:none}.mc-sect.mc-off .mc-sect-h{border-bottom:0}.mc-sect.mc-off .mc-sect-h>:not(.mc-icsw){opacity:.45}.mc-bc.none{--bc:var(--mbu-text-weak);font-weight:400;font-style:italic}.mc-line:last-child{border-bottom:0}'
         + '.mc-sect-h .end{margin-left:auto;display:flex;align-items:center;gap:6px}.mc-chlbl{font-size:12.5px;color:var(--mbu-text-dim)}'
         + '.mc-chopen{flex-wrap:wrap;justify-content:flex-end}#mc-root a.mc-chsrc{padding:6px 12px;gap:7px;font-size:13px;font-weight:600;color:var(--mbu-text);text-decoration:none}#mc-root a.mc-chsrc:hover{background:var(--mbu-bg-hover);border-color:var(--mbu-accent)}'
@@ -718,7 +718,7 @@ function matrix() {
     const sec = el('section', 'mc-sect');
     sec.dataset.sect = 'tracks';
     const cols = COLS.filter(c => modeOf(PROVIDERS.find(p => p.id === c.p)) !== 'off');
-    let html = '<div class="mc-sect-h">' + cardIcon('tracks', '≡') + '<span class="t">Tracks</span><span class="p">one row per track · a column per provider</span><span class="end mc-tapplied"></span></div>'
+    let html = '<div class="mc-sect-h">' + cardTitle('tracks', '≡', 'Tracks') + '<span class="p">one row per track · a column per provider</span><span class="end mc-tapplied"></span></div>'
         + '<table class="mc-tbl"><thead><tr><th>#</th><th>Title</th><th>Len</th>'
         + cols.map(c => '<th data-colh="' + c.id + '">' + colHead(c) + '</th>').join('')
         + '</tr></thead><tbody>';
@@ -741,7 +741,7 @@ function releaseCards() {
     const row = el('div', 'mc-row2');
     const card = (id, t) => {
         const p = PROVIDERS.find(x => x.id === id);
-        return '<section class="mc-sect" data-sect="' + id + '"><div class="mc-sect-h">' + cardIcon(id, '<img alt="" src="' + PROVIDER_ICONS[id] + '">') + '<span class="t">' + t + '</span><span class="end"></span><span class="mc-hbc"></span><span class="mc-hsp"></span></div>'
+        return '<section class="mc-sect" data-sect="' + id + '"><div class="mc-sect-h">' + cardTitle(id, '<img alt="" src="' + PROVIDER_ICONS[id] + '">', t) + '<span class="end"></span><span class="mc-hbc"></span><span class="mc-hsp"></span></div>'
             + '<div class="mc-card-body" data-card="' + id + '"></div></section>';
     };
     row.innerHTML = mbuHtml(card('pc', 'Release and entity links') + card('as', 'Cover art'));
@@ -786,7 +786,7 @@ function layoutCards(row) {
 function releaseCredits() {
     const sec = el('section', 'mc-sect');
     sec.dataset.sect = 'ch';
-    sec.innerHTML = mbuHtml('<div class="mc-sect-h">' + cardIcon('ch', '<img alt="" src="' + PROVIDER_ICONS.ch + '">') + '<span class="t">Release credits</span><span class="mc-mode">info</span><span class="end mc-chopen"></span></div><div class="mc-chrel"></div>');
+    sec.innerHTML = mbuHtml('<div class="mc-sect-h">' + cardTitle('ch', '<img alt="" src="' + PROVIDER_ICONS.ch + '">', 'Release credits') + '<span class="mc-mode">info</span><span class="end mc-chopen"></span></div><div class="mc-chrel"></div>');
     return sec;
 }
 function paintReleaseCredits() {
@@ -1081,9 +1081,10 @@ function setMode(key, v) {
     if (ui) rebuildBody();
 }
 
-// A card's own icon is its On / Off switch: nothing more in the header. Off: the icon greyed and struck through.
-function cardIcon(id, inner) {
-    return '<button type="button" class="ic mc-icsw" data-act="card-onoff" data-sect="' + id + '" aria-pressed="true">' + inner + '</button>';
+// A card's icon and title are its On / Off switch, one button: nothing more in the header. Off: the
+// icon greyed and struck through, the title faded.
+function cardTitle(id, icon, title) {
+    return '<button type="button" class="mc-icsw" data-act="card-onoff" data-sect="' + id + '" aria-pressed="true"><span class="ic">' + icon + '</span><span class="t">' + title + '</span></button>';
 }
 function paintOnOff() {
     ui.querySelectorAll('.mc-sect[data-sect]').forEach(s => {

@@ -38,7 +38,7 @@ test('#680: a card switched off is left out of Execute', { tag: ['@sandbox'] }, 
   const sw = id => page.locator(`#mc-root .mc-sect[data-sect="${id}"] .mc-sect-h .mc-icsw`);
   check(await page.locator('#mc-root .mc-sect-h .mc-icsw').count() === 4, "every card's icon is its switch: tracks, links, cover art, release credits");
   check(await sw('pc').getAttribute('aria-pressed') === 'true', 'on to begin with');
-  await sw('pc').click();
+  await sw('pc').locator('.ic').click();   // the icon
   check(await sw('pc').getAttribute('aria-pressed') === 'false' && /Left out/.test(await sw('pc').getAttribute('title')), 'a click on the icon switches it off, and its tooltip says so');
   check(!(await page.locator('#mc-root [data-card="pc"]').isVisible()) && await page.locator('#mc-root .mc-sect[data-sect="pc"] .mc-sect-h').isVisible(), 'the off card is folded to its header');
   check(await exec.textContent() === 'Execute (1)', `its tick leaves the count (${await exec.textContent()})`);
@@ -50,7 +50,7 @@ test('#680: a card switched off is left out of Execute', { tag: ['@sandbox'] }, 
   const saved = await page.evaluate(() => JSON.stringify(window.__mcTest.settings()));
   check(!/pc|off/.test(saved.replace(/"(fusion|ch)":"\w+",?/g, '')), `nothing about it is saved (${saved})`);
 
-  await sw('pc').click();
+  await sw('pc').locator('.t').click();   // the title: icon and title are one switch
   check(await page.locator('#mc-root [data-card="pc"]').isVisible() && await exec.textContent() === 'Execute (2)', 'on again: unfolded, and counted');
   await sw('tracks').click();
   check(!(await page.locator('#mc-root .mc-tbl').isVisible()), 'Tracks can be switched off too');
