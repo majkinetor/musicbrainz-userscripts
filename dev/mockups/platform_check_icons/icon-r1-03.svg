@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+<title>Platform Check — Radar</title>
+<defs><radialGradient id="pc03-sw" cx="64" cy="64" r="56" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#3dff8a" stop-opacity=".0"/><stop offset="1" stop-color="#3dff8a" stop-opacity=".55"/></radialGradient></defs>
+<circle cx="64" cy="64" r="58" fill="#062b1a"/><g fill="none" stroke="#1f7a4a" stroke-width="2"><circle cx="64" cy="64" r="40"/><circle cx="64" cy="64" r="22"/><path d="M64 8 V120 M8 64 H120"/></g>
+<path d="M64 64 L64 6 A58 58 0 0 1 114 35 Z" fill="url(#pc03-sw)"/><path d="M64 64 L114 35" stroke="#7dffb0" stroke-width="3" stroke-linecap="round"/><circle cx="64" cy="64" r="58" fill="none" stroke="#3dff8a" stroke-width="4"/>
+<circle cx="88" cy="38" r="6" fill="#ff5ea8"/><circle cx="40" cy="44" r="5" fill="#ffd23f"/><circle cx="44" cy="92" r="5" fill="#4dc9ff"/><circle cx="92" cy="86" r="5" fill="#b983ff"/>
+</svg>

@@ -1,0 +1,4 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+<title>Platform Check — Swiss poster</title>
+<rect x="4" y="4" width="120" height="120" fill="#f2efe6"/><circle cx="22" cy="22" r="9" fill="#111"/><circle cx="50" cy="22" r="5" fill="#111"/><circle cx="78" cy="22" r="5" fill="#111"/><circle cx="106" cy="22" r="9" fill="#111"/><circle cx="22" cy="50" r="5" fill="#111"/><circle cx="50" cy="50" r="5" fill="#111"/><circle cx="78" cy="50" r="13" fill="#e30613"/><circle cx="106" cy="50" r="5" fill="#111"/><circle cx="22" cy="78" r="5" fill="#111"/><circle cx="50" cy="78" r="9" fill="#111"/><circle cx="78" cy="78" r="5" fill="#111"/><circle cx="106" cy="78" r="5" fill="#111"/><circle cx="22" cy="106" r="9" fill="#111"/><circle cx="50" cy="106" r="5" fill="#111"/><circle cx="78" cy="106" r="5" fill="#111"/><circle cx="106" cy="106" r="9" fill="#111"/><path d="M4 120 H124" stroke="#e30613" stroke-width="8"/>
+</svg>

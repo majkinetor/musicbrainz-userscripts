@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+<title>Platform Check — Station sign</title>
+<path d="M36 6 V30 M92 6 V30" stroke="#5b5b66" stroke-width="5"/><rect x="8" y="30" width="112" height="66" rx="10" fill="#0b3d91" stroke="#fff" stroke-width="4"/><rect x="8" y="30" width="112" height="66" rx="10" fill="none" stroke="#0b3d91" stroke-width="1.5"/>
+<text x="64" y="80" text-anchor="middle" font-family="Arial Black,Helvetica,sans-serif" font-weight="900" font-size="44" fill="#fff">PC</text><text x="64" y="47" text-anchor="middle" font-family="Helvetica,Arial,sans-serif" font-weight="700" font-size="10" letter-spacing="3" fill="#ffd400">PLATFORM</text>
+<circle cx="104" cy="104" r="18" fill="#1db954" stroke="#fff" stroke-width="4"/><path d="M95.75 104 L101.75 110 L113 98" fill="none" stroke="#fff" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

@@ -1,0 +1,4 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+<title>Platform Check — Isometric platforms</title>
+<path d="M64 64 l44 22 l-44 22 l-44 -22Z" fill="#bde0fe"/><path d="M20 86 l44 22 v10 l-44 -22Z" fill="#8ab6e8"/><path d="M108 86 l-44 22 v10 l44 -22Z" fill="#5a8fd0"/><path d="M64 44 l44 22 l-44 22 l-44 -22Z" fill="#ffc8dd"/><path d="M20 66 l44 22 v10 l-44 -22Z" fill="#f19bb8"/><path d="M108 66 l-44 22 v10 l44 -22Z" fill="#d06e93"/><path d="M64 24 l44 22 l-44 22 l-44 -22Z" fill="#caffbf"/><path d="M20 46 l44 22 v10 l-44 -22Z" fill="#94d88a"/><path d="M108 46 l-44 22 v10 l44 -22Z" fill="#5eaf55"/><g transform="translate(64 46) matrix(1 .5 -1 .5 0 0)"><path d="M-14 4 L-4 12 L10 -14" fill="none" stroke="#1d3b17" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/></g>
+</svg>

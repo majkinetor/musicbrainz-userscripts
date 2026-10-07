@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+<title>Platform Check — Lighthouse</title>
+<defs><linearGradient id="pc11-sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0.00" stop-color="#2b2d6e"/><stop offset="1.00" stop-color="#f28482"/></linearGradient></defs><rect x="4" y="4" width="120" height="120" rx="20" fill="url(#pc11-sky)"/><path d="M58 40 L6 22 V58Z M70 40 L122 22 V58Z" fill="#fff6a8" opacity=".55"/>
+<path d="M54 46 L50 108 H78 L74 46Z" fill="#fff"/><path d="M51.8 70 H76.2 L77 84 H51Z" fill="#e63946"/><rect x="52" y="32" width="24" height="14" rx="2" fill="#ffd166"/><path d="M50 32 L64 20 L78 32Z" fill="#e63946"/>
+<path d="M4 108 Q20 100 36 108 T68 108 T100 108 T132 108 V124 H4Z" fill="#457b9d"/>
+</svg>

@@ -1,0 +1,4 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+<title>Platform Check — Constellation</title>
+<rect x="4" y="4" width="120" height="120" rx="26" fill="#0f172a"/><g stroke="#64748b" stroke-width="2"><path d="M64 64 L24 30"/><path d="M64 64 L58 18"/><path d="M64 64 L100 26"/><path d="M64 64 L108 74"/><path d="M64 64 L70 104"/><path d="M64 64 L22 88"/></g><circle cx="24" cy="30" r="7" fill="#f472b6"/><circle cx="58" cy="18" r="7" fill="#facc15"/><circle cx="100" cy="26" r="7" fill="#4ade80"/><circle cx="108" cy="74" r="7" fill="#38bdf8"/><circle cx="70" cy="104" r="7" fill="#a78bfa"/><circle cx="22" cy="88" r="7" fill="#fb923c"/><circle cx="64" cy="64" r="20" fill="#fff"/><path d="M55.75 64 L61.75 70 L73 58" fill="none" stroke="#0f172a" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

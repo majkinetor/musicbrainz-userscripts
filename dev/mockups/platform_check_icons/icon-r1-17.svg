@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+<title>Platform Check — Neon tick</title>
+<defs><filter id="pc17-g" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="3" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter><pattern id="pc17-br" width="24" height="12" patternUnits="userSpaceOnUse"><rect width="24" height="12" fill="#3b1f2b"/><path d="M0 11.5 H24 M12 0 V6 M0 6 H24 M24 6 V12 M0 6 V12" stroke="#2a141e" stroke-width="1.4"/></pattern></defs>
+<rect x="4" y="4" width="120" height="120" rx="20" fill="url(#pc17-br)"/><g filter="url(#pc17-g)" fill="none" stroke-linecap="round" stroke-linejoin="round"><rect x="16" y="16" width="96" height="96" rx="18" stroke="#ff4fd8" stroke-width="4"/><path d="M40.9 64 L57.7 80.8 L89.2 47.2" fill="none" stroke="#3dfcff" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/></g>
+</svg>
