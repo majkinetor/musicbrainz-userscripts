@@ -42,8 +42,12 @@ test('#680: Probe asks Platform Check and shows its platforms', { tag: ['@sandbo
   check(rows + none + linkedIcons === enabled, `every platform PC scanned is a row, a linked icon on Release, or a not-found icon (${rows} + ${linkedIcons} + ${none} of ${enabled})`);
   check(await page.locator('#mc-root [data-card="pc"] .mc-line.linked').count() === 0, 'linked platforms are not rows by default');
   if (linkedAll) {
-    await page.locator('#mc-root .mc-linked').first().click();
-    check(await page.locator('#mc-root [data-card="pc"] .mc-line.linked').count() === linkedAll, 'clicking the linked icons lists them as rows');
+    // each section opens on its own: clicking one section's icons lists that section's only
+    const first = page.locator('#mc-root .mc-linked').first();
+    const firstN = +(await first.locator('.mc-lk').textContent()).replace(/\D/g, '');
+    await first.click();
+    check(await page.locator('#mc-root [data-card="pc"] .mc-line.linked').count() === firstN, `clicking a section's linked icons lists only its ${firstN} as rows`);
+    check(await page.locator('#mc-root .mc-linked.on').count() === 1, 'the other sections stay folded');
     const order = await page.locator('#mc-root [data-card="pc"] .mc-line').evaluateAll(ls => ls.map(l => l.classList.contains('linked')));
     check(order.indexOf(true) === -1 || order.slice(order.indexOf(true)).every(Boolean), 'linked rows come last');
     await page.locator('#mc-root .mc-linked').first().click();

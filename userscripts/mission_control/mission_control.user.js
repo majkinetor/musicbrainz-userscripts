@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Mission Control
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.8.3
+// @version      2026.10.8.4
 // @description  One window on the release page that asks the other scripts (Platform Check, ISRC Scout, Art Station, Fusion, Credit Hoarder) what is missing, shows it all in one review, and applies the ticked changes in order.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPk1pc3Npb24gQ29udHJvbDwvdGl0bGU+CiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjNWYzZWMwIiBzdHJva2Utd2lkdGg9IjciPgogICAgPGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iNTIiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjMwIi8+CiAgICA8cGF0aCBkPSJNNjQgNHYyMk02NCAxMDJ2MjJNNCA2NGgyMk0xMDIgNjRoMjIiLz4KICA8L2c+CiAgPGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iMTEiIGZpbGw9IiM4YTVjZjYiLz4KPC9zdmc+Cg==
@@ -31,9 +31,10 @@ Log.info(mbuStartupInfo('Mission Control'));
 
 // fusion / ch: 'auto' fetches during Probe, 'ask' waits for the card's Fetch
 // button, 'off' drops the step. Both fetches can take minutes (#680).
-// linkedRows: list what's already linked as rows (else: icons in the card's header)
+// linkedOpen: the sections whose already-linked are listed as rows (else: icons on its heading), one
+// key each: a card's id, or PC's 'pc:release' / 'pc:artist' / 'pc:label'
 // reloadAfter: reload the release page after an Execute without errors
-const DEFAULTS = { fusion: 'ask', ch: 'ask', left: true, right: true, linkedRows: false, autoProbe: false, reloadAfter: false };
+const DEFAULTS = { fusion: 'ask', ch: 'ask', left: true, right: true, linkedOpen: [], autoProbe: false, reloadAfter: false };
 // a card and the providers whose ticks it holds (Tracks: the per-track ones without a card of their own)
 const CARDS = [['tracks', ['is', 'fusion']], ['pc', ['pc']], ['as', ['as']], ['ch', ['ch']]];
 // The cards switched off with the switch in their header: folded, and Execute leaves out what is ticked
@@ -977,13 +978,15 @@ function shortUrl(u) { try { const x = new URL(u); return x.hostname.replace(/^w
 // as the toggle that lists them as rows: the release's in the card's header, the artists' and
 // labels' on their sub-heading
 const isEnt = x => x.entity && x.entity.type !== 'release_group';
-function linkedBtn(linked) {
+const linkedOpen = k => Array.isArray(S.linkedOpen) && S.linkedOpen.includes(k);
+function linkedBtn(linked, k) {
     if (!linked.length) return '';
+    const open = linkedOpen(k);
     const by = new Map();
     linked.forEach(x => { const k = x.icon || x.key; (by.get(k) || by.set(k, []).get(k)).push(x); });
     const nm = x => (isEnt(x) ? (x.entity.name || '') + ' · ' : '') + (x.name || x.key);
-    return '<button type="button" class="mc-linked' + (S.linkedRows ? ' on' : '') + '" data-act="linked" title="'
-        + esc('Already linked: ' + linked.map(nm).join(', ') + (S.linkedRows ? '. Click to fold them back.' : '. Click to list them as rows.')) + '">'
+    return '<button type="button" class="mc-linked' + (open ? ' on' : '') + '" data-act="linked" data-lk="' + esc(k) + '" title="'
+        + esc('Already linked: ' + linked.map(nm).join(', ') + (open ? '. Click to fold them back.' : '. Click to list them as rows.')) + '">'
         + [...by].map(([k, xs]) => '<span class="mc-pico' + (xs[0].entity ? ' mc-ent' : '') + '" title="' + esc(xs.map(nm).join(', ')) + '">' + stIcon(k, 14) + (xs.length > 1 ? '<sub>' + xs.length + '</sub>' : '') + '</span>').join('')
         + '<span class="mc-lk">✓ ' + linked.length + '</span></button>';
 }
@@ -1008,14 +1011,15 @@ function paintCards() {
             + (r.working ? '<div class="mc-working"><span class="mc-spin"></span>' + esc(r.working) + '</div>' : '') + falconHtml(r.falcon) + bestHtml(r.best);
         // 'not found' is one line of icons, not a row each: it's most of the list and needs no action.
         // 'linked' needs none either: icons on their section's sub-heading (Release, Artists, Labels),
-        // so the rows that need a decision lead; clicking them lists them as rows instead (S.linkedRows).
+        // so the rows that need a decision lead; clicking them lists them as rows instead, each section on its own (S.linkedOpen).
         const linked = r.findings.filter(x => x.state === 'linked');
-        const rows = r.findings.filter(x => x.state !== 'none' && (S.linkedRows || x.state !== 'linked')).sort((a, b) => ORDER[a.state] - ORDER[b.state]);
-        const none = r.findings.filter(x => x.state === 'none');
-        const slot = box.parentNode.querySelector('.mc-sect-h .end');
         // PC's card is in sections, each with its own linked icons; another card's are in its header
         const pc = id === 'pc';
-        if (slot) slot.innerHTML = mbuHtml(pc ? '' : linkedBtn(linked));
+        const lkKey = x => pc ? 'pc:' + (isEnt(x) ? x.entity.type : 'release') : id;
+        const rows = r.findings.filter(x => x.state !== 'none' && (x.state !== 'linked' || linkedOpen(lkKey(x)))).sort((a, b) => ORDER[a.state] - ORDER[b.state]);
+        const none = r.findings.filter(x => x.state === 'none');
+        const slot = box.parentNode.querySelector('.mc-sect-h .end');
+        if (slot) slot.innerHTML = mbuHtml(pc ? '' : linkedBtn(linked, id));
         // the row is the toggle, no tick box (#680); a taken-in row is tinted and marked ✓
         // PC's barcodes (#680): the release's links grouped by barcode, a lane each (leading zeros
         // aside, as PC compares them): the release's own first, in green, then the others by size,
@@ -1045,7 +1049,7 @@ function paintCards() {
         if (grouped) {
             // a linked link with a barcode joins its lane too (a ✓ icon), so the release's own lane
             // shows what the release already has: its Discogs release, say (#680)
-            const laneRows = r.findings.filter(x => !x.entity && x.state !== 'none' && (x.state !== 'linked' || x.barcode || S.linkedRows)).sort((a, b) => ORDER[a.state] - ORDER[b.state]);
+            const laneRows = r.findings.filter(x => !x.entity && x.state !== 'none' && (x.state !== 'linked' || x.barcode || linkedOpen('pc:release'))).sort((a, b) => ORDER[a.state] - ORDER[b.state]);
             // one form for a barcode however a platform writes it: 12 digits (UPC) when it fits, else 13 (EAN)
             const bcShow = k => k.length <= 12 ? k.padStart(12, '0') : k;
             const lanes = new Map(), relK = bcNorm(r.barcode);
@@ -1080,7 +1084,7 @@ function paintCards() {
             if (relK && !lanes.get(relK).rows.length && top && top.rows.length > 1)
                 hint = '<div class="mc-bchint">ⓘ ' + top.rows.length + ' of ' + total + ' platforms agree on <b>' + bcShow(top.k) + '</b>; none has the release\'s <b>' + bcShow(relK) + '</b>. Likely a different edition.</div>';
         }
-        const sect = (sub, title, body, lk) => !pc ? body : body || lk.length ? '<div class="mc-sub" data-sub="' + sub + '"><span>' + title + '</span>' + linkedBtn(lk) + '</div>' + body : '';
+        const sect = (sub, title, body, lk) => !pc ? body : body || lk.length ? '<div class="mc-sub" data-sub="' + sub + '"><span>' + title + '</span>' + linkedBtn(lk, 'pc:' + sub) + '</div>' + body : '';
         const entSect = (type, title) => sect(type, title, entRows.filter(x => x.entity.type === type).map(x => line(x)).join(''), linked.filter(x => isEnt(x) && x.entity.type === type));
         setCard(box, mbuHtml(sum + ap + sect('release', 'Release', rgRows.map(x => line(x)).join('') + relHtml + hint, linked.filter(x => !isEnt(x)))
             + entSect('artist', 'Artists') + entSect('label', 'Labels') + (none.length ? '<div class="mc-none" title="' + esc('Not found: ' + none.map(x => x.name || x.key).join(', ')) + '"><span>Not found</span>'
@@ -1278,7 +1282,12 @@ function onClick(e) {
             if (!probe()) mbuToast('No provider to ask: none is installed with a Mission Control adapter yet.');
             break;
         }
-        case 'linked': S.linkedRows = !S.linkedRows; saveSettings(); paintCards(); break;
+        case 'linked': {
+            // each section's linked icons open that section only
+            const k = act.dataset.lk, open = Array.isArray(S.linkedOpen) ? S.linkedOpen.filter(x => x !== k) : [];
+            if (!linkedOpen(k)) open.push(k);
+            S.linkedOpen = open; saveSettings(); paintCards(); break;
+        }
         case 'lane': {
             if (act.classList.contains('empty')) break;
             const k = act.dataset.lane;
