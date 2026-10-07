@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+<title>Credit Hoarder — Blueprint</title>
+<defs><pattern id="d09p" width="8" height="8" patternUnits="userSpaceOnUse"><path d="M8 0 H0 V8" fill="none" stroke="#3d74c8" stroke-width=".6"/></pattern></defs><rect x="4" y="4" width="120" height="120" rx="6" fill="#1d4e9e"/><rect x="4" y="4" width="120" height="120" rx="6" fill="url(#d09p)"/>
+<g fill="none" stroke="#e8f1ff" stroke-width="2.4" stroke-linejoin="round"><path d="M24 62 C24 40 104 40 104 62"/><rect x="24" y="62" width="80" height="42"/><path d="M24 74 H104 M44 62 V104 M84 62 V104"/><rect x="56" y="68" width="16" height="14"/>
+<path d="M24 112 H104 M24 109 V115 M104 109 V115" stroke-width="1.4"/><path d="M114 62 V104 M111 62 H117 M111 104 H117" stroke-width="1.4"/></g><text x="64" y="123" font-family="monospace" font-size="7" fill="#e8f1ff" text-anchor="middle">CH-01  1:1</text>
+</svg>

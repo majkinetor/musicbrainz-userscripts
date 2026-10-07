@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+<title>Credit Hoarder — Tattoo flash</title>
+<rect x="4" y="4" width="120" height="120" rx="10" fill="#f3e9d2"/><g stroke="#111" stroke-width="3.5" stroke-linejoin="round">
+<path d="M18 50 C34 40 52 44 62 54 C70 46 84 40 98 42 L112 30 L106 46 C100 60 82 70 66 70 C56 78 40 82 26 76 L10 82 L20 70 C14 64 14 56 18 50Z" fill="#1f5f8b"/>
+<path d="M66 70 C70 62 78 56 90 54" fill="none"/><path d="M62 54 C66 62 66 66 66 70" fill="#c0392b"/><circle cx="90" cy="48" r="2" fill="#111"/><path d="M98 42 L108 40 L100 47Z" fill="#e8b33a"/></g>
+<g stroke="#111" stroke-width="3" transform="rotate(12 70 96)"><path d="M52 86 H96 V106 H52 L42 96Z" fill="#e8b33a"/><circle cx="50" cy="96" r="2.5" fill="#111"/><path d="M58 96 H90" stroke-width="2"/></g><path d="M44 74 Q48 82 46 88" stroke="#111" stroke-width="2" fill="none"/>
+</svg>

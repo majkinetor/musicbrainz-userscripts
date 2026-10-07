@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+<title>Credit Hoarder — Comic burst</title>
+<path d="M64 6 L74 36 L104 18 L94 48 L124 54 L96 68 L118 94 L86 88 L88 120 L66 98 L48 124 L42 92 L10 104 L28 76 L4 58 L34 48 L18 20 L48 32Z" fill="#ffde00" stroke="#111" stroke-width="4" stroke-linejoin="round"/>
+<path d="M64 26 L70 46 L90 38 L82 56 L100 64 L80 70 L88 90 L68 80 L58 98 L52 78 L32 84 L42 66 L26 56 L46 50 L40 32Z" fill="#ff3d3d" stroke="#111" stroke-width="3" stroke-linejoin="round"/><g transform="translate(58 54) scale(1.4)" fill="#fff"><ellipse cx="0" cy="10" rx="6" ry="4.5" transform="rotate(-20 0 10)"/><rect x="4.2" y="-14" width="2.6" height="24"/><path d="M6.8 -14 C14 -11 16 -6 13 0 C13 -5 10 -7 6.8 -8Z"/></g><path d="M54 56 C56 52 60 50 64 50" stroke="#111" stroke-width="0"/>
+</svg>

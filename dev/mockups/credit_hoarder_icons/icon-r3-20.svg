@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+<title>Credit Hoarder — Terminal</title>
+<rect x="4" y="12" width="120" height="104" rx="10" fill="#0b0f0c" stroke="#2b3a2e" stroke-width="2"/><circle cx="16" cy="22" r="3" fill="#ff5f56"/><circle cx="26" cy="22" r="3" fill="#ffbd2e"/><circle cx="36" cy="22" r="3" fill="#27c93f"/>
+<g font-family="Menlo,Consolas,monospace" font-size="13" fill="#39ff6a"><text x="12" y="50">&gt; hoard</text><text x="12" y="70" fill="#1f9a40">credits: 294</text><text x="12" y="90">&gt; ♪♪♪</text></g><rect x="62" y="80" width="8" height="13" fill="#39ff6a"/>
+</svg>

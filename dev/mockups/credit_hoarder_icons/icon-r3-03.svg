@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+<title>Credit Hoarder — Neon dragon</title>
+<defs><filter id="d03g" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="2.4" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>
+<rect x="4" y="4" width="120" height="120" rx="26" fill="#0d0221"/><g fill="none" stroke-linecap="round" stroke-linejoin="round" filter="url(#d03g)">
+<path d="M24 104 C30 90 98 90 104 104" stroke="#ffd319" stroke-width="3"/><path d="M38 98 h0 M52 94 h0 M66 93 h0 M80 94 h0 M92 98 h0" stroke="#ffd319" stroke-width="6"/>
+<path d="M34 92 C28 70 42 52 62 54 C80 56 86 72 78 88" stroke="#ff2a6d" stroke-width="3.5"/><path d="M62 54 C60 40 70 30 84 30 C96 30 102 40 96 48 C90 54 78 52 72 50" stroke="#ff2a6d" stroke-width="3.5"/>
+<path d="M52 56 L46 38 L58 48 L62 34 L68 50" stroke="#05d9e8" stroke-width="3"/><circle cx="86" cy="38" r="2.5" stroke="#05d9e8" stroke-width="3"/><path d="M78 88 C92 84 104 74 100 62" stroke="#ff2a6d" stroke-width="3.5"/></g>
+</svg>
