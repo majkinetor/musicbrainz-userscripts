@@ -35,11 +35,11 @@ test('#680: Probe asks Platform Check and shows its platforms', { tag: ['@sandbo
   const enabled = await page.evaluate(() => document.querySelectorAll('[id^="mb-online-"]').length);
   console.log(`platform rows: ${rows} · PC panel rows: ${enabled}`);
   const none = await page.locator('#mc-root [data-card="pc"] .mc-none .mc-pico').count();
-  // the release's linked platforms are icons in the card's header; the artists' and labels' sit on their sub-heading
-  const linkedIcons = await page.locator('#mc-root .mc-sect-h .mc-linked .mc-pico:not(.mc-ent)').count();
-  check(await page.locator('#mc-root .mc-sect-h .mc-linked .mc-pico.mc-ent').evaluateAll(ps => ps.every(p => !/·/.test(p.title))), 'no artist or label icon in the header');
+  // the linked platforms are icons on their section's sub-heading: the release's on Release, none in the card's header
+  const linkedIcons = await page.locator('#mc-root [data-card="pc"] .mc-sub[data-sub="release"] .mc-linked .mc-pico').count();
+  check(await page.locator('#mc-root .mc-sect[data-sect="pc"] .mc-sect-h .mc-linked').count() === 0, 'no linked icons in the card header');
   const linkedAll = (await page.locator('#mc-root .mc-linked .mc-lk').allTextContents()).reduce((n, t) => n + +t.replace(/\D/g, ''), 0);
-  check(rows + none + linkedIcons === enabled, `every platform PC scanned is a row, a linked icon in the header, or a not-found icon (${rows} + ${linkedIcons} + ${none} of ${enabled})`);
+  check(rows + none + linkedIcons === enabled, `every platform PC scanned is a row, a linked icon on Release, or a not-found icon (${rows} + ${linkedIcons} + ${none} of ${enabled})`);
   check(await page.locator('#mc-root [data-card="pc"] .mc-line.linked').count() === 0, 'linked platforms are not rows by default');
   if (linkedAll) {
     await page.locator('#mc-root .mc-linked').first().click();

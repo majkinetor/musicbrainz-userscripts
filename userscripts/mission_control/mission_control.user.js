@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Mission Control
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.7.233000
+// @version      2026.10.7.234500
 // @description  One window on the release page that asks the other scripts (Platform Check, ISRC Scout, Art Station, Fusion, Credit Hoarder) what is missing, shows it all in one review, and applies the ticked changes in order.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPk1pc3Npb24gQ29udHJvbDwvdGl0bGU+CiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjNWYzZWMwIiBzdHJva2Utd2lkdGg9IjciPgogICAgPGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iNTIiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjMwIi8+CiAgICA8cGF0aCBkPSJNNjQgNHYyMk02NCAxMDJ2MjJNNCA2NGgyMk0xMDIgNjRoMjIiLz4KICA8L2c+CiAgPGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iMTEiIGZpbGw9IiM4YTVjZjYiLz4KPC9zdmc+Cg==
@@ -889,14 +889,15 @@ function paintCards() {
         const ap = (r.applied ? '<div class="mc-applied ' + (r.applied.ok ? 'ok' : 'err') + '">' + (r.applied.ok ? '✓ ' : '✕ ') + esc(r.applied.note || (r.applied.ok ? 'done' : 'failed')) + '</div>' : '')
             + (r.working ? '<div class="mc-working"><span class="mc-spin"></span>' + esc(r.working) + '</div>' : '') + falconHtml(r.falcon) + bestHtml(r.best);
         // 'not found' is one line of icons, not a row each: it's most of the list and needs no action.
-        // 'linked' needs none either: icons in the card's header (the artists' and labels' on their
-        // sub-heading), so the rows that need a decision lead; clicking them lists them as rows instead (S.linkedRows).
+        // 'linked' needs none either: icons on their section's sub-heading (Release, Artists, Labels),
+        // so the rows that need a decision lead; clicking them lists them as rows instead (S.linkedRows).
         const linked = r.findings.filter(x => x.state === 'linked');
         const rows = r.findings.filter(x => x.state !== 'none' && (S.linkedRows || x.state !== 'linked')).sort((a, b) => ORDER[a.state] - ORDER[b.state]);
         const none = r.findings.filter(x => x.state === 'none');
         const slot = box.parentNode.querySelector('.mc-sect-h .end');
-        const entLinked = linked.filter(isEnt);
-        if (slot) slot.innerHTML = mbuHtml(linkedBtn(linked.filter(x => !isEnt(x))));
+        // PC's card is in sections, each with its own linked icons; another card's are in its header
+        const pc = id === 'pc';
+        if (slot) slot.innerHTML = mbuHtml(pc ? '' : linkedBtn(linked));
         // the row is the toggle, no tick box (#680); a taken-in row is tinted and marked ✓
         // PC's barcodes (#680): the release's links grouped by barcode, a lane each (leading zeros
         // aside, as PC compares them): the release's own first, in green, then the others by size,
@@ -917,8 +918,9 @@ function paintCards() {
                 + (x.why && !(lane && /barcode/.test(x.why)) ? '<div class="s">' + esc(x.why) + '</div>' : '') + '</div>'
                 + (lane && x.state !== 'linked' ? '<span></span>' : '<span class="mc-pill ' + pill[0] + '">' + pill[1] + '</span>') + '</div>';
         };
-        // PC's artist and label links (`entity`) under their own sub-heading, after the release's
-        // (the Discogs master is the release group's, but reads as the release's own and leads)
+        // PC's links in sections: the release's, then the artists', then the labels', each under its
+        // sub-heading and shown only when it has something (the Discogs master is the release
+        // group's, but reads as the release's own and leads)
         const rgRows = rows.filter(x => x.entity && x.entity.type === 'release_group'), relRows = rows.filter(x => !x.entity), entRows = rows.filter(x => x.entity && x.entity.type !== 'release_group');
         const grouped = !!r.barcode || relRows.some(x => x.barcode);
         let relHtml = relRows.map(x => line(x)).join(''), hint = '';
@@ -959,8 +961,10 @@ function paintCards() {
             if (relK && !lanes.get(relK).rows.length && top && top.rows.length > 1)
                 hint = '<div class="mc-bchint">ⓘ ' + top.rows.length + ' of ' + total + ' platforms agree on <b>' + bcShow(top.k) + '</b>; none has the release\'s <b>' + bcShow(relK) + '</b>. Likely a different edition.</div>';
         }
-        setCard(box, mbuHtml(sum + ap + rgRows.map(x => line(x)).join('') + relHtml + hint
-            + (entRows.length || entLinked.length ? '<div class="mc-sub"><span>Artists &amp; labels</span>' + linkedBtn(entLinked) + '</div>' + entRows.map(x => line(x)).join('') : '') + (none.length ? '<div class="mc-none" title="' + esc('Not found: ' + none.map(x => x.name || x.key).join(', ')) + '"><span>Not found</span>'
+        const sect = (sub, title, body, lk) => !pc ? body : body || lk.length ? '<div class="mc-sub" data-sub="' + sub + '"><span>' + title + '</span>' + linkedBtn(lk) + '</div>' + body : '';
+        const entSect = (type, title) => sect(type, title, entRows.filter(x => x.entity.type === type).map(x => line(x)).join(''), linked.filter(x => isEnt(x) && x.entity.type === type));
+        setCard(box, mbuHtml(sum + ap + sect('release', 'Release', rgRows.map(x => line(x)).join('') + relHtml + hint, linked.filter(x => !isEnt(x)))
+            + entSect('artist', 'Artists') + entSect('label', 'Labels') + (none.length ? '<div class="mc-none" title="' + esc('Not found: ' + none.map(x => x.name || x.key).join(', ')) + '"><span>Not found</span>'
             + none.map(x => '<span class="mc-pico" title="' + esc(x.name || x.key) + '">' + stIcon(x.icon || x.key, 14) + '</span>').join('') + '</div>' : '')));
     });
 }
