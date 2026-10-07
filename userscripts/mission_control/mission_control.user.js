@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Mission Control
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.7.174000
+// @version      2026.10.7.174500
 // @description  One window on the release page that asks the other scripts (Platform Check, ISRC Scout, Art Station, Fusion, Credit Hoarder) what is missing, shows it all in one review, and applies the ticked changes in order.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPk1pc3Npb24gQ29udHJvbDwvdGl0bGU+CiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjNWYzZWMwIiBzdHJva2Utd2lkdGg9IjciPgogICAgPGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iNTIiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjMwIi8+CiAgICA8cGF0aCBkPSJNNjQgNHYyMk02NCAxMDJ2MjJNNCA2NGgyMk0xMDIgNjRoMjIiLz4KICA8L2c+CiAgPGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iMTEiIGZpbGw9IiM4YTVjZjYiLz4KPC9zdmc+Cg==
@@ -130,6 +130,7 @@ document.addEventListener('mc:findings', e => {
 // recording links. The album links ticked in Platform Check's card are not on the release yet
 // (Execute adds them first), so IS is probed with them too: again whenever the ticked set
 // changes, once the probe out is answered. Nothing is asked of IS before the first Probe.
+const laneOpen = new Set();   // PC barcode lanes opened into rows (#680), by barcode digits
 let isLinksAsked = null;   // the album links IS's current findings were probed with (JSON)
 function pcAlbumLinks() {
     const r = results.pc, set = picked.pc;
@@ -458,15 +459,19 @@ function mcStyle() {
         + '.mc-sect-h .ic{width:22px;height:22px;border-radius:6px;background:var(--mbu-accent-soft);display:grid;place-items:center;font-size:12px;flex:none}'
         + '.mc-sect-h .ic img{width:16px;height:16px;object-fit:contain;display:block}.mc-sect-h .t{font-weight:700;font-size:12.5px}.mc-sect-h .p{font-size:10.5px;color:var(--mbu-text-weak)}'
         + '.mc-empty{padding:10px;color:var(--mbu-text-weak);font-size:12px}'
-        + '.mc-line{display:grid;grid-template-columns:16px 16px 1fr auto;gap:8px;align-items:center;padding:4px 10px;border-bottom:1px solid var(--mbu-divider)}.mc-line.mc-hasbc{grid-template-columns:16px 16px 1fr 130px 84px}.mc-line.mc-hasbc>.mc-pill{justify-self:end}'
+        + '.mc-line{display:grid;grid-template-columns:16px 16px 1fr auto;gap:8px;align-items:center;padding:4px 10px;border-bottom:1px solid var(--mbu-divider)}'
         + '.mc-bc{display:inline-block;font:600 12px/1.5 ui-monospace,Consolas,monospace;color:var(--bc);background:color-mix(in srgb,var(--bc) 12%,transparent);border:1px solid color-mix(in srgb,var(--bc) 45%,transparent);border-radius:5px;padding:1px 6px;white-space:nowrap}'
-        + '.mc-bccol{text-align:right}.mc-sect-h.mc-hasbc{display:grid;grid-template-columns:22px minmax(0,max-content) minmax(0,1fr) 130px 84px}.mc-sect-h.mc-hasbc .t{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.mc-sect-h.mc-hasbc .end{justify-content:flex-end;min-width:0}.mc-sect-h .mc-hbc{display:none}.mc-sect-h.mc-hasbc .mc-hbc{display:block;text-align:right}.mc-sect-h.mc-hasbc .mc-onoff{justify-self:end}'
+        + '.mc-lane{display:grid;grid-template-columns:10px max-content max-content minmax(0,1fr) auto auto;gap:8px;align-items:center;padding:4px 10px;border-bottom:1px solid var(--mbu-divider);cursor:pointer}.mc-lane:hover{background:var(--mbu-bg-hover)}.mc-lane.empty{cursor:default;opacity:.75}.mc-lane.empty:hover{background:none}'
+        + '.mc-tri{font-size:9px;color:var(--mbu-text-weak)}.mc-lane-t{font-size:12px;font-weight:600;white-space:nowrap}.mc-lane-ic{display:flex;flex-wrap:wrap;gap:3px;min-width:0}.mc-lane-no{font-size:11px;color:var(--mbu-text-weak)}'
+        + '.mc-ti{display:inline-grid;place-items:center;width:24px;height:24px;border-radius:6px;border:1px solid transparent;opacity:.55}.mc-ti.mc-pick{cursor:pointer}.mc-ti.mc-pick:hover{opacity:1;border-color:var(--mbu-border-strong)}.mc-ti.on{opacity:1;border-color:var(--mbu-accent);background:var(--mbu-accent-soft)}'
+        + '#mc-root .mc-all{font:600 11px inherit;padding:2px 9px;border-radius:12px;border:1px solid var(--mbu-border-strong);background:var(--mbu-bg);color:var(--mbu-accent-text);cursor:pointer;white-space:nowrap}#mc-root .mc-all:hover{border-color:var(--mbu-accent)}'
+        + '.mc-line.mc-in{padding-left:28px}.mc-as{font:10.5px ui-monospace,Consolas,monospace;color:var(--mbu-text-weak);white-space:nowrap}.mc-bchint{padding:6px 10px;font-size:11px;color:var(--mbu-text-dim);background:var(--mbu-bg-raised);border-bottom:1px solid var(--mbu-divider)}'
         + '#mc-root .mc-onoff{all:unset;box-sizing:border-box;cursor:pointer;flex:none;height:28px;min-width:64px;padding:0 10px 0 4px;display:inline-flex;align-items:center;gap:7px;border-radius:14px;border:1px solid var(--mbu-border);background:var(--mbu-bg);font-size:12px;font-weight:600;color:var(--mbu-text-dim)}'
         + '#mc-root .mc-onoff .k{width:30px;height:18px;border-radius:9px;background:var(--mbu-border);position:relative;transition:background .15s}'
         + '#mc-root .mc-onoff .k::after{content:"";position:absolute;top:2px;left:2px;width:14px;height:14px;border-radius:50%;background:#fff;box-shadow:0 1px 2px rgba(0,0,0,.3);transition:left .15s}'
         + '#mc-root .mc-onoff[aria-pressed="true"] .k{background:var(--mbu-ok)}#mc-root .mc-onoff[aria-pressed="true"] .k::after{left:14px}'
-        + '#mc-root .mc-onoff:hover{border-color:var(--mbu-accent)}#mc-root .mc-onoff:focus-visible{outline:2px solid var(--mbu-accent)}.mc-sect-h .end+.mc-onoff,.mc-sect-h .end+.mc-hbc+.mc-onoff{margin-left:6px}'
-        + '.mc-sect.mc-off>:not(.mc-sect-h){display:none}.mc-sect.mc-off .mc-sect-h{border-bottom:0}.mc-sect.mc-off .mc-sect-h>:not(.mc-onoff){opacity:.45}.mc-bc.none{--bc:var(--mbu-text-weak);font-weight:400;font-style:italic}.mc-line:last-child{border-bottom:0}'
+        + '#mc-root .mc-onoff:hover{border-color:var(--mbu-accent)}#mc-root .mc-onoff:focus-visible{outline:2px solid var(--mbu-accent)}.mc-sect-h .end+.mc-onoff{margin-left:6px}'
+        + '.mc-sect.mc-off>:not(.mc-sect-h){display:none}.mc-sect.mc-off .mc-sect-h{border-bottom:0}.mc-sect.mc-off .mc-sect-h>:not(.mc-onoff){opacity:.45}.mc-bc.none{--bc:var(--mbu-text-weak);min-width:12px;text-align:center}.mc-line:last-child{border-bottom:0}'
         + '.mc-sect-h .end{margin-left:auto;display:flex;align-items:center;gap:6px}.mc-chlbl{font-size:12.5px;color:var(--mbu-text-dim)}'
         + '.mc-chopen{flex-wrap:wrap;justify-content:flex-end}#mc-root a.mc-chsrc{padding:6px 12px;gap:7px;font-size:13px;font-weight:600;color:var(--mbu-text);text-decoration:none}#mc-root a.mc-chsrc:hover{background:var(--mbu-bg-hover);border-color:var(--mbu-accent)}'
         + '.mc-sect-h .mc-applied{border:0;border-radius:20px;padding:1px 9px}'
@@ -742,7 +747,7 @@ function releaseCards() {
     const row = el('div', 'mc-row2');
     const card = (id, t) => {
         const p = PROVIDERS.find(x => x.id === id);
-        return '<section class="mc-sect" data-sect="' + id + '"><div class="mc-sect-h"><span class="ic" title="' + esc(p.provider) + '"><img alt="" src="' + PROVIDER_ICONS[id] + '"></span><span class="t">' + t + '</span><span class="end"></span><span class="mc-hbc"></span>' + onOffHtml(id) + '</div>'
+        return '<section class="mc-sect" data-sect="' + id + '"><div class="mc-sect-h"><span class="ic" title="' + esc(p.provider) + '"><img alt="" src="' + PROVIDER_ICONS[id] + '"></span><span class="t">' + t + '</span><span class="end"></span>' + onOffHtml(id) + '</div>'
             + '<div class="mc-card-body" data-card="' + id + '"></div></section>';
     };
     row.innerHTML = mbuHtml(card('pc', 'Release and entity links') + card('as', 'Cover art'));
@@ -858,36 +863,67 @@ function paintCards() {
             + esc('Already linked: ' + linked.map(x => x.name || x.key).join(', ') + (S.linkedRows ? '. Click to fold them back here.' : '. Click to list them below.')) + '">'
             + linkedIcons(linked) + '<span class="mc-lk">✓ ' + linked.length + '</span></button>' : '');
         // the row is the toggle, no tick box (#680); a taken-in row is tinted and marked ✓
-        // PC's barcodes (#680): a column of their own, one colour per barcode (by its digits without
-        // leading zeros, as PC compares them); the release's own is green, in the card header
-        const bcs = r.findings.some(x => x.barcode), bcNorm = b => String(b || '').replace(/\D/g, '').replace(/^0+/, '');
-        const bcColor = new Map(r.barcode ? [[bcNorm(r.barcode), 'var(--mbu-ok)']] : []);
-        r.findings.forEach(x => { const k = bcNorm(x.barcode); if (k && !bcColor.has(k)) bcColor.set(k, BC_COLORS[(bcColor.size - (r.barcode ? 1 : 0)) % BC_COLORS.length]); });
-        const bcChip = (b, tip) => '<span class="mc-bc" style="--bc:' + bcColor.get(bcNorm(b)) + '" title="' + esc(tip) + '">' + esc(b) + '</span>';
-        // the release's own in the card header, in the same column, with MB in the pill column: no extra line
-        const sh = box.parentNode.querySelector('.mc-sect-h'), hbc = sh && sh.querySelector('.mc-hbc');
-        if (sh) sh.classList.toggle('mc-hasbc', bcs);
-        if (hbc) { const h = bcs ? (r.barcode ? bcChip(r.barcode, "The release's barcode in MusicBrainz") : '<span class="mc-bc none" title="The release has no barcode in MusicBrainz">none</span>') : ''; if (hbc._mcHtml !== h) { hbc._mcHtml = h; hbc.innerHTML = mbuHtml(h); } }
-        const line = x => {
+        // PC's barcodes (#680): the release's links grouped by barcode, a lane each (leading zeros
+        // aside, as PC compares them): the release's own first, in green, then the others by size,
+        // then the platforms that gave none. A lane is one line: its platforms as icons that toggle
+        // one by one, and take all in; ▸ opens it into rows.
+        const bcNorm = b => String(b || '').replace(/\D/g, '').replace(/^0+/, '');
+        const line = (x, lane) => {
             const pick = !!PICKABLE[x.state];
             const on = pick && picked[id] && picked[id].has(x.key);
             const pill = PILL[x.state] || ['idle', x.state];
-            return '<div class="mc-line ' + esc(x.state) + (x.entity ? ' mc-ent' : '') + (pick ? ' mc-pick' : '') + (on ? ' on' : '') + (bcs ? ' mc-hasbc' : '') + '"'
+            // in a lane, the barcode and its reason are on the lane: only a differently written barcode stays
+            const as = lane && x.barcode && x.barcode !== lane.show ? '<span class="mc-as" title="The same barcode, written differently">as ' + esc(x.barcode) + '</span>' : '';
+            return '<div class="mc-line ' + esc(x.state) + (x.entity ? ' mc-ent' : '') + (lane ? ' mc-in' : '') + (pick ? ' mc-pick' : '') + (on ? ' on' : '') + '"'
                 + (pick ? ' data-prov="' + id + '" data-key="' + esc(x.key) + '" title="' + (on ? 'Taken in: click to leave out' : 'Click to take in') + '"' : '') + '>'
                 + '<span class="mc-tick">' + (on ? '✓' : '') + '</span>'
                 + '<span class="mc-pico">' + stIcon(x.icon || x.key, 14) + '</span>'
                 + '<div class="mc-lt"><div class="t">' + esc(x.name || x.key) + '</div>'
                 + (x.url ? '<a class="s" target="_blank" rel="noopener" href="' + esc(x.url) + '" title="' + esc(x.url) + '">' + esc(shortUrl(x.url)) + '</a>' : '')
-                + (x.why ? '<div class="s">' + esc(x.why) + '</div>' : '') + '</div>'
-                + (bcs ? '<span class="mc-bccol">' + (x.barcode ? bcChip(x.barcode, (x.name || x.key) + "'s barcode" + (bcNorm(x.barcode) === bcNorm(r.barcode) ? ": the release's" : r.barcode ? ": not the release's" : '')) : '') + '</span>' : '')
-                + '<span class="mc-pill ' + pill[0] + '">' + pill[1] + '</span></div>';
+                + (x.why && !(lane && /barcode/.test(x.why)) ? '<div class="s">' + esc(x.why) + '</div>' : '') + '</div>'
+                + (lane ? as || '<span></span>' : '<span class="mc-pill ' + pill[0] + '">' + pill[1] + '</span>') + '</div>';
         };
         // PC's artist and label links (`entity`) under their own sub-heading, after the release's
-        // (the Discogs master is the release group's, but reads as the release's own)
-        const own = x => !x.entity || x.entity.type === 'release_group';
-        const relRows = rows.filter(own), entRows = rows.filter(x => !own(x));
-        setCard(box, mbuHtml(sum + ap + relRows.map(line).join('')
-            + (entRows.length ? '<div class="mc-sub">Artists &amp; labels</div>' + entRows.map(line).join('') : '') + (none.length ? '<div class="mc-none" title="' + esc('Not found: ' + none.map(x => x.name || x.key).join(', ')) + '"><span>Not found</span>'
+        // (the Discogs master is the release group's, but reads as the release's own and leads)
+        const rgRows = rows.filter(x => x.entity && x.entity.type === 'release_group'), relRows = rows.filter(x => !x.entity), entRows = rows.filter(x => x.entity && x.entity.type !== 'release_group');
+        const grouped = !!r.barcode || relRows.some(x => x.barcode);
+        let relHtml = relRows.map(x => line(x)).join(''), hint = '';
+        if (grouped) {
+            const lanes = new Map(), relK = bcNorm(r.barcode);
+            if (relK) lanes.set(relK, { k: relK, show: r.barcode, rows: [], color: 'var(--mbu-ok)', title: "the release's", tip: "The release's barcode in MusicBrainz" });
+            relRows.forEach(x => {
+                const k = bcNorm(x.barcode);
+                if (!lanes.has(k)) lanes.set(k, k ? { k, show: x.barcode, rows: [], title: "not the release's", tip: 'A barcode the release does not have' } : { k, rows: [], title: 'not confirmed', tip: "The platform doesn't give a barcode" });
+                const l = lanes.get(k);
+                if (x.barcode && x.barcode.replace(/\D/g, '').length > String(l.show).replace(/\D/g, '').length) l.show = x.barcode;   // the 13-digit form over the 12
+                l.rows.push(x);
+            });
+            const others = [...lanes.values()].filter(l => l.k && l.k !== relK).sort((a, b) => b.rows.length - a.rows.length);
+            others.forEach((l, i) => { l.color = BC_COLORS[i % BC_COLORS.length]; });
+            const order = [lanes.get(relK), ...others, lanes.get('')].filter(Boolean);
+            relHtml = order.map(l => {
+                const open = laneOpen.has(l.k), picks = l.rows.filter(x => PICKABLE[x.state]), n = picks.filter(x => picked[id] && picked[id].has(x.key)).length;
+                const states = [...new Set(l.rows.map(x => x.state))], pill = states.length === 1 ? PILL[states[0]] || ['idle', states[0]] : null;
+                const chip = l.k ? '<span class="mc-bc" style="--bc:' + l.color + '" title="' + esc(l.tip) + '">' + esc(l.show) + '</span>' : '<span class="mc-bc none" title="' + esc(l.tip) + '">?</span>';
+                const icons = l.rows.length ? l.rows.map(x => {
+                    const pk = !!PICKABLE[x.state], on = pk && picked[id] && picked[id].has(x.key);
+                    return '<span class="mc-ti' + (pk ? ' mc-pick' : '') + (on ? ' on' : '') + '"' + (pk ? ' data-prov="' + id + '" data-key="' + esc(x.key) + '"' : '')
+                        + ' title="' + esc((x.name || x.key) + (x.url ? ' — ' + x.url : '') + (x.why ? ' (' + x.why + ')' : '') + (pk ? (on ? '. Taken in: click to leave out' : '. Click to take in') : '')) + '">' + stIcon(x.icon || x.key, 16) + '</span>';
+                }).join('') : '<span class="mc-lane-no">no platform found it</span>';
+                const all = picks.length ? '<button type="button" class="mc-all" data-act="lane-all" data-lane="' + esc(l.k) + '" title="Take every link in this group in, or leave them all out">'
+                    + (n === picks.length ? '✓ all taken in' : n ? n + ' of ' + picks.length + ' · take all' : 'take all in') + '</button>' : '<span></span>';
+                return '<div class="mc-lane' + (open ? ' open' : '') + (l.rows.length ? '' : ' empty') + '" data-act="lane" data-lane="' + esc(l.k) + '"' + (l.rows.length ? ' title="' + (open ? 'Fold into one line' : 'Open into rows') + '"' : '') + '>'
+                    + '<span class="mc-tri">' + (l.rows.length ? (open ? '▾' : '▸') : '') + '</span>' + chip + '<span class="mc-lane-t">' + esc(l.title) + '</span>'
+                    + '<span class="mc-lane-ic">' + icons + '</span>' + all + (pill ? '<span class="mc-pill ' + pill[0] + '">' + pill[1] + '</span>' : '<span></span>') + '</div>'
+                    + (open ? l.rows.map(x => line(x, l)).join('') : '');
+            }).join('');
+            // what the lanes suggest: most platforms agree on a barcode the release doesn't have
+            const top = others[0], total = relRows.filter(x => x.barcode || x.state === 'withheld').length;
+            if (relK && !lanes.get(relK).rows.length && top && top.rows.length > 1)
+                hint = '<div class="mc-bchint">ⓘ ' + top.rows.length + ' of ' + total + ' platforms agree on <b>' + esc(top.show) + '</b>; none has the release\'s <b>' + esc(r.barcode) + '</b>. Likely a different edition.</div>';
+        }
+        setCard(box, mbuHtml(sum + ap + rgRows.map(x => line(x)).join('') + relHtml + hint
+            + (entRows.length ? '<div class="mc-sub">Artists &amp; labels</div>' + entRows.map(x => line(x)).join('') : '') + (none.length ? '<div class="mc-none" title="' + esc('Not found: ' + none.map(x => x.name || x.key).join(', ')) + '"><span>Not found</span>'
             + none.map(x => '<span class="mc-pico" title="' + esc(x.name || x.key) + '">' + stIcon(x.icon || x.key, 14) + '</span>').join('') + '</div>' : '')));
     });
 }
@@ -1065,6 +1101,23 @@ function onClick(e) {
             break;
         }
         case 'linked': S.linkedRows = !S.linkedRows; saveSettings(); paintCards(); break;
+        case 'lane': {
+            if (act.classList.contains('empty')) break;
+            const k = act.dataset.lane;
+            if (laneOpen.has(k)) laneOpen.delete(k); else laneOpen.add(k);
+            paintCards();
+            break;
+        }
+        case 'lane-all': {
+            const r = results.pc, k = act.dataset.lane, norm = b => String(b || '').replace(/\D/g, '').replace(/^0+/, '');
+            if (!r || !r.findings) break;
+            const keys = r.findings.filter(x => !x.entity && PICKABLE[x.state] && norm(x.barcode) === k).map(x => x.key);
+            const set = picked.pc || (picked.pc = new Set()), all = keys.every(x => set.has(x));
+            keys.forEach(x => all ? set.delete(x) : set.add(x));
+            Log.debug((all ? 'left out ' : 'taken in ') + 'pc lane ' + (k || '(no barcode)') + ': ' + keys.join(', '));
+            paintCards(); paintExec(); syncIsLinks(700);
+            break;
+        }
         case 'falcon-open': document.dispatchEvent(new CustomEvent('falcon:show')); break;
         case 'card-onoff': setCardOff(act.dataset.sect, !cardOff(act.dataset.sect)); break;
         case 'cover': coverViewer(coverList(results.as && results.as.best), Number(act.dataset.i) || 0); break;
