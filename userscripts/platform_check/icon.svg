@@ -1,11 +1,4 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
-  <title>MB Platform Check</title>
-  
-  <g fill="none" stroke="#2a1a52" stroke-width="9" stroke-linecap="round">
-    <path d="M40 88 A34 34 0 0 1 40 40"/>
-    <path d="M29 99 A50 50 0 0 1 29 29"/>
-    <path d="M88 88 A34 34 0 0 0 88 40"/>
-    <path d="M99 99 A50 50 0 0 0 99 29"/>
-  </g>
-  <circle cx="64" cy="64" r="20" fill="#e8201a"/>
+<title>MB Platform Check</title>
+<g stroke="#94a3b8" stroke-width="4" stroke-linecap="round"><path d="M64 64 L88 22.4"/><path d="M64 64 L112 64"/><path d="M64 64 L88 105.6"/><path d="M64 64 L40 105.6"/><path d="M64 64 L16 64"/><path d="M64 64 L40 22.4"/></g><circle cx="88" cy="22.4" r="12" fill="#f472b6"/><circle cx="112" cy="64" r="12" fill="#facc15"/><circle cx="88" cy="105.6" r="12" fill="#4ade80"/><circle cx="40" cy="105.6" r="12" fill="#38bdf8"/><circle cx="16" cy="64" r="12" fill="#a78bfa"/><circle cx="40" cy="22.4" r="12" fill="#fb923c"/><circle cx="64" cy="64" r="24" fill="#0f172a"/><path d="M54.22222222222222 64 L61.333333333333336 71.11111111111111 L74.66666666666667 56.888888888888886" fill="none" stroke="#fff" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
 </svg>
