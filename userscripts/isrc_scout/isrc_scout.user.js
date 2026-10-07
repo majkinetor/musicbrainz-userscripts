@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         ISRC Scout
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.6.204207
+// @version      2026.10.7.093000
 // @description  Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify / Beatport / Tidal / Volumo / HDtracks / Qobuz, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPklTUkMgU2NvdXQ8L3RpdGxlPgogICAgPHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPgogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjQwIi8+CiAgICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyNiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2U9IiNiOWEzZTgiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPgogIDwvZz4KICA8bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+Cjwvc3ZnPgo=
@@ -6381,13 +6381,31 @@
   // shifts 0s, a different recording shifts tens of seconds. Suspicious fills are KEPT
   // (dropping would kill legit cases — maintainer) but flagged: amber input + tooltip,
   // a Log warning per row and a count in the import summary.
-  function flagImplausibleFill(idx, s, label) {
-    const t = RELEASE.tracks[idx];
+  // → { suspicious, durOff }: duration decides when both sides know it; title/artist only judges when it doesn't
+  function fillCheck(t, s) {
     const a = mmssToSec(t.dur), b = mmssToSec(s.dur);
     const durOff = (a != null && b != null) ? Math.abs(a - b) : null;
-    // duration decides when both sides know it; title/artist only judges when it doesn't
-    const suspicious = durOff != null ? durOff > DUR_TOLERANCE_SEC
-      : !!(s.title && t.title && !isGoodMatch(s.title, s.artist, t.title, t.artist));
+    return { durOff, suspicious: durOff != null ? durOff > DUR_TOLERANCE_SEC
+      : !!(s.title && t.title && !isGoodMatch(s.title, s.artist, t.title, t.artist)) };
+  }
+  // A fetched ISRC's track: the one at its disc and position, unless that one is plainly another
+  // song and exactly one track has the title, at a length that fits. A provider numbers around the
+  // tracks it doesn't carry (Apple: 1.8 then 1.10, when 1.9 isn't sold in the storefront), which
+  // shifts every position after the gap onto the next song.
+  // → { idx, byPos, loose } or { idx: -1, ambiguous: N }
+  function trackForSource(s) {
+    const tracks = RELEASE.tracks;
+    const pos = tracks.findIndex(t =>
+      (+t.trackPos === +s.pos) && ((+t.mediumPos === +s.disc) || tracks.filter(x => +x.mediumPos === +s.disc).length === 0));
+    if (pos >= 0 && !fillCheck(tracks[pos], s).suspicious) return { idx: pos, byPos: true };
+    const p = pickTrackByTitle(s, tracks);
+    if (pos < 0) return Object.assign(p, { byPos: false });
+    if (p.idx >= 0 && !p.loose && p.idx !== pos && !fillCheck(tracks[p.idx], s).suspicious) return { idx: p.idx, byPos: false, moved: true };
+    return { idx: pos, byPos: true };
+  }
+  function flagImplausibleFill(idx, s, label) {
+    const t = RELEASE.tracks[idx];
+    const { suspicious, durOff } = fillCheck(t, s);
     if (!suspicious) return;
     const input = rowInput(idx); if (!input) return;
     const why = durOff != null
@@ -6427,21 +6445,23 @@
   // Map ONE fetched ISRC to a track and fill it immediately (live, as it arrives).
   // Returns 'filled' | 'already' | 'skipped' | 'unmatched'.
   function mapOneToTrack(s, label) {
-    let byPos = true;
-    let idx = RELEASE.tracks.findIndex(t =>
-      (+t.trackPos === +s.pos) && ((+t.mediumPos === +s.disc) || RELEASE.tracks.filter(x => +x.mediumPos === +s.disc).length === 0));
-    let loose = false;
-    if (idx < 0) {
-      byPos = false;
-      const p = pickTrackByTitle(s, RELEASE.tracks);
-      if (p.ambiguous) { Log.warn(label + ': ' + p.ambiguous + ' tracks match "' + s.title + '" by title — not guessing which one gets ' + s.isrc); return 'unmatched'; }
-      idx = p.idx; loose = p.loose;
-    }
+    const m = trackForSource(s);
+    if (m.ambiguous) { Log.warn(label + ': ' + m.ambiguous + ' tracks match "' + s.title + '" by title — not guessing which one gets ' + s.isrc); return 'unmatched'; }
+    const idx = m.idx, byPos = m.byPos, loose = !!m.loose;
+    if (m.moved) Log.info(label + ' ' + s.disc + '.' + s.pos + ' "' + s.title + '" goes on track ' + (RELEASE.tracks[idx].number || RELEASE.tracks[idx].trackPos) + ' by its title: the track at that position is another song');
     if (idx < 0) { Log.warn(label + ': no track matched ' + s.isrc + ' "' + s.title + '" (disc ' + s.disc + ' pos ' + s.pos + ')'); return 'unmatched'; }
     const t = RELEASE.tracks[idx];
     if (t.existing.includes(s.isrc)) return 'already';
-    if (t.pending) return 'skipped';
+    // a song this import put here by position, flagged as another one, gives way to the song itself
+    const amber = t.pending && m.moved && t.source === label && rowInput(idx)?.classList.contains('ii-in-suspect');
+    if (t.pending && !amber) return 'skipped';
+    if (amber) Log.info(label + ' #' + (t.number || t.trackPos) + ' "' + t.title + '": ' + s.isrc + ' by title replaces ' + t.pending + ', which was another song at that position');
     setPending(idx, s.isrc, true, label);   // fills the input box right now
+    if (amber) {   // the same track, filled once: counted as put right, no longer implausible
+      if (_stream && _stream.suspects) _stream.suspects = _stream.suspects.filter(i => i !== idx);
+      updateSummary();
+      return 'replaced';
+    }
     if (byPos) flagImplausibleFill(idx, s, label);   // #431
     else if (loose) flagLooseTitleFill(idx, s, label);   // #623
     updateSummary();
@@ -6505,7 +6525,7 @@
     beginCollect();   // #406: Submit stays live during the import (count fills in as ISRCs land)
     try {
     if (!resume || !_stream) {
-      _stream = { label, albumId, fetcher, cursor: 0, counts: { filled: 0, already: 0, skipped: 0, unmatched: 0 } };
+      _stream = { label, albumId, fetcher, cursor: 0, counts: { filled: 0, already: 0, skipped: 0, unmatched: 0, replaced: 0 } };
     }
     const st = _stream, counts = st.counts;
     setProg(label + ': starting…');
@@ -6542,6 +6562,7 @@
     const total = (res && res.total != null) ? res.total : st.cursor;
     const next  = (res && res.next  != null) ? res.next  : null;
     const parts = [counts.filled + ' filled'];
+    if (counts.replaced)  parts.push(counts.replaced + ' put right by title');
     if (counts.already)   parts.push(counts.already + ' already present');
     if (counts.skipped)   parts.push(counts.skipped + ' already entered');
     if (counts.unmatched) parts.push(counts.unmatched + ' unmatched');
