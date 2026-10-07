@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Mission Control
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.7.235950
+// @version      2026.10.7.235959
 // @description  One window on the release page that asks the other scripts (Platform Check, ISRC Scout, Art Station, Fusion, Credit Hoarder) what is missing, shows it all in one review, and applies the ticked changes in order.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPk1pc3Npb24gQ29udHJvbDwvdGl0bGU+CiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjNWYzZWMwIiBzdHJva2Utd2lkdGg9IjciPgogICAgPGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iNTIiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjMwIi8+CiAgICA8cGF0aCBkPSJNNjQgNHYyMk02NCAxMDJ2MjJNNCA2NGgyMk0xMDIgNjRoMjIiLz4KICA8L2c+CiAgPGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iMTEiIGZpbGw9IiM4YTVjZjYiLz4KPC9zdmc+Cg==
@@ -574,7 +574,7 @@ function mcStyle() {
         + '.mc-mini .n{margin-left:auto;font-family:var(--mbu-font-mono);font-size:10.5px;color:var(--mbu-text-dim);white-space:nowrap;flex:none;padding-left:6px}.mc-mini a:not(.n){min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}'
         + '.mc-insp-block{margin-bottom:12px}'
         + '.mc-fxo{display:inline-flex;align-items:center;gap:4px;font:inherit;font-size:11px;font-weight:700;padding:1px 8px;border-radius:20px;cursor:pointer;color:var(--mbu-warn);background:var(--mbu-warn-bg);border:1px solid var(--mbu-warn-border)}'
-        + '.mc-fxo:hover{border-color:var(--mbu-warn)}.mc-fxo.err{color:var(--mbu-error);background:var(--mbu-error-bg);border-color:var(--mbu-error-border)}.mc-fxo.err:hover{border-color:var(--mbu-error)}'
+        + '.mc-fxo:hover{border-color:var(--mbu-warn)}.mc-fxp{font-size:11px;font-weight:700;color:var(--mbu-warn);text-decoration:none}.mc-fxp:hover{text-decoration:underline}'
         + '.mc-fxo .car{display:inline-block;transition:transform .15s}.mc-fxo[aria-expanded="true"] .car{transform:rotate(90deg)}'
         + '.mc-tbl tr.mc-fxd{cursor:default}.mc-tbl tr.mc-fxd>td,.mc-tbl tr.mc-fxd:hover>td{background:var(--mbu-bg-sunken);white-space:normal;padding:10px 12px 12px 40px}'
         + '.mc-fxh{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin-bottom:8px;font-size:11.5px}.mc-fxh .sp{flex:1}'
@@ -731,7 +731,10 @@ const COLS = [
     { id: 'links', p: 'is', head: 'Rec links · IS', cell: () => '' },
     // the count (fxPill, before the cell) opens Fusion's comparison under the row; the release names are the tick
     { id: 'fusion', p: 'fusion', head: 'RG duplicates · Fusion', pick: true, cell: x =>
-        FX_SHOWN[x.state] ? '<span class="weak">' + esc(fxReleases(x)) + '</span>' : '<span class="pend">—</span>' },
+        FX_SHOWN[x.state] ? '<span class="weak">' + esc(fxReleases(x)) + '</span>'
+        // as Fusion's pool badge: this recording has an open edit, so Fusion groups it with nothing
+        : x.pending ? '<a class="mc-fxp" target="_blank" href="/recording/' + esc(x.key) + '/open_edits" title="This recording has an open edit: Fusion leaves it out of auto-match until the edit closes">⏳ pending</a>'
+        : '<span class="pend">—</span>' },
     { id: 'ch', p: 'ch', head: 'Credits · CH', cell: x =>
         x.credits ? '<span title="' + esc((x.list || []).map(c => c.name + ' — ' + c.role).join('\n')) + '">' + x.credits + '</span>' : '<span class="pend">—</span>' },
 ];
@@ -782,7 +785,7 @@ function cellHtml(c, t) {
 // match, with artist, release and track, length, ISRCs, AcoustIDs and open edits, what differs
 // marked, and the signal chips. A chip is lit when every pair agrees (Fusion's signalsAll), half
 // lit when some do, dashed when it wasn't looked up; Check asks Fusion to look up the group's.
-const FX_SHOWN = { new: 1, blocked: 1 };
+const FX_SHOWN = { new: 1 };
 const FX_SIGNALS = [['isrc', 'ISRC'], ['acoustid', 'AcoustID'], ['length', 'Length'], ['title', 'Title'], ['artist', 'Artist']];
 const FX_TIER = { strict: 'holds at the strict cutoff: ISRC or AcoustID', normal: 'holds at the normal cutoff: title and artist, with the length', loose: 'holds only at the loose cutoff: title with the artist or the length', manual: 'no cutoff forms it' };
 const fxReleases = x => (x.matches || []).map(m => m.release || '').filter((v, i, a) => v && a.indexOf(v) === i).slice(0, 2).join(', ');
@@ -796,9 +799,8 @@ const fxOpenBtn = x => fxCan('open') ? '<button type="button" class="mc-btn prim
 function fxPill(x) {
     if (!FX_SHOWN[x.state]) return '';
     const open = fxOpen.has(x.key), n = (x.matches || []).length;
-    return '<button type="button" class="mc-fxo' + (x.state === 'blocked' ? ' err' : '') + '" data-act="fx" data-key="' + esc(x.key) + '" aria-expanded="' + open + '" title="'
-        + esc((x.state === 'blocked' ? 'Blocked: ' + (x.why || '') + '\n' : '') + (open ? 'Hide' : 'Show') + ' what Fusion compared') + '"><span class="car">▸</span>'
-        + (x.state === 'blocked' ? '⊘ pending edit' : n + ' match' + (n === 1 ? '' : 'es')) + '</button> ';
+    return '<button type="button" class="mc-fxo" data-act="fx" data-key="' + esc(x.key) + '" aria-expanded="' + open + '" title="' + (open ? 'Hide' : 'Show') + ' what Fusion compared">'
+        + '<span class="car">▸</span>' + n + ' match' + (n === 1 ? '' : 'es') + '</button> ';
 }
 function fxDetail(x) {
     const me = x.self || null, ck = x.checked || {}, all = x.signals || [], any = x.any || [];
@@ -828,8 +830,7 @@ function fxDetail(x) {
         + fxOpenBtn(x) + '</div>'
         + '<div class="mc-fxwrap"><table class="mc-fxtbl"><thead><tr><th></th><th>Recording</th><th>Artist</th><th>Release · track</th><th>Length</th><th>ISRCs</th><th>AcoustID</th><th>Edits</th></tr></thead><tbody>'
         + (me ? row('this', me, false) : '') + (x.matches || []).map(m => row('match', m, !!me)).join('') + '</tbody></table></div>'
-        + (x.state === 'blocked' ? '<div class="mc-why">Blocked: ' + esc(x.why || '') + '</div>'
-            : x.cutoff ? '<div class="mc-fxn">Matched at Fusion\'s <b>' + esc(x.cutoff) + '</b> cutoff, the one set in Fusion\'s window.</div>' : '');
+        + (x.cutoff ? '<div class="mc-fxn">Matched at Fusion\'s <b>' + esc(x.cutoff) + '</b> cutoff, the one set in Fusion\'s window.</div>' : '');
 }
 function fxAct(b) {
     const k = b.dataset.key;
@@ -1125,7 +1126,7 @@ function paintInspector() {
         + trackLinks(t.rec).map(l => mini('<span class="mc-pico">' + stIcon(urlIcon(l.url), 14) + '</span> <a class="mc-add" target="_blank" rel="noopener" href="' + esc(l.url) + '">+ ' + esc(shortUrl(l.url)) + '</a>', esc(l.name))).join('')
         || '<div class="weak" style="font-size:11.5px">none</div>';
     const fusionBody = x => !(x.matches || []).length ? '<div class="weak" style="font-size:11.5px">no duplicates</div>'
-        : mini(x.state === 'blocked' ? '<span class="mc-err">⊘ pending edit</span>' : 'Fusion group', x.tier ? '<span class="mc-fxt ' + esc(x.tier) + '">' + esc(x.tier) + '</span>' : '')
+        : mini('Fusion group', x.tier ? '<span class="mc-fxt ' + esc(x.tier) + '">' + esc(x.tier) + '</span>' : '')
         + x.matches.map(m => '<div class="mc-fxm">' + mini('<a target="_blank" href="/recording/' + esc(m.gid) + '"><b>' + esc(m.title || m.gid.slice(0, 8)) + '</b></a>', esc(m.gid.slice(0, 8)))
             + '<div class="mc-kv"><span>release</span><span>' + esc(fxRel(m)) + '</span>'
             + '<span>length</span><span>' + esc(m.len || '?') + fxLenDiff(x.self, m) + '</span>'
@@ -1133,7 +1134,6 @@ function paintInspector() {
             + (m.isrcs ? '<span>ISRCs</span><span class="mono">' + (esc(m.isrcs.join(', ')) || 'none') + '</span>' : '')
             + '<span>edits</span><span>' + (m.pending ? '<span class="mc-err">open edit</span>' : 'none') + '</span></div></div>').join('')
         + (x.signals ? '<div class="weak" style="font-size:11px;margin:4px 0">every pair agrees on: ' + esc(x.signals.join(', ') || 'nothing') + '</div>' : '')
-        + (x.state === 'blocked' && x.why ? '<div class="mc-why">' + esc(x.why) + '</div>' : '')
         + fxOpenBtn(x);
     // each credit names the sources that give it, when more than one source was read (#680)
     const chBody = x => (x.list || []).map(c => mini(esc(c.name), esc(c.role) + (c.sources && /,/.test(x.source || '') ? ' <span class="weak">· ' + esc(c.sources.join(', ')) + '</span>' : ''))).join('') || '<div class="weak" style="font-size:11.5px">no credits</div>';

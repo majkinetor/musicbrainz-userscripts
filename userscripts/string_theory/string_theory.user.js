@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         String Theory
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.7.235950
+// @version      2026.10.7.154548
 // @description  Unified bundle of 9 MusicBrainz userscripts (apollo_editor, art_station, credit_hoarder, fusion, group_therapy, isrc_scout, mammoth, mission_control, platform_check). Built by userscripts/string_theory/build.mjs — do not hand-edit.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCIgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0Ij4KICA8IS0tIGh1Yi1hbmQtc3Bva2UgIm5ldHdvcmsiIGdseXBoLCBzaW5nbGUgdml2aWQgdmlvbGV0IG9uIHRyYW5zcGFyZW50IHNvIGl0IHJlYWRzIG9uIGJvdGggZGFyayBhbmQgbGlnaHQgcGFnZXMgLS0+CiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjN2M1Y2ZmIiBzdHJva2Utd2lkdGg9IjQuNiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj4KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMzIgMTUiLz4KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMNDYuNSAyMy41Ii8+CiAgICA8cGF0aCBkPSJNMzIgMzIgTDQ2LjUgNDAuNSIvPgogICAgPHBhdGggZD0iTTMyIDMyIEwzMiA0OSIvPgogICAgPHBhdGggZD0iTTMyIDMyIEwxNy41IDQwLjUiLz4KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMTcuNSAyMy41Ii8+CiAgPC9nPgogIDxnIGZpbGw9IiM3YzVjZmYiPgogICAgPGNpcmNsZSBjeD0iMzIiIGN5PSIzMiIgcj0iOC42Ii8+CiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjE5LjUiIHI9IjYuNCIvPgogICAgPGNpcmNsZSBjeD0iNDkiIGN5PSIxOS41IiByPSI2LjQiLz4KICAgIDxjaXJjbGUgY3g9IjMyIiBjeT0iNTciIHI9IjYuNCIvPgogIDwvZz4KICA8ZyBmaWxsPSJub25lIiBzdHJva2U9IiM3YzVjZmYiIHN0cm9rZS13aWR0aD0iMy44Ij4KICAgIDxjaXJjbGUgY3g9IjMyIiBjeT0iNyIgcj0iNC45Ii8+CiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjQ0LjUiIHI9IjQuOSIvPgogICAgPGNpcmNsZSBjeD0iNDkiIGN5PSI0NC41IiByPSI0LjkiLz4KICA8L2c+Cjwvc3ZnPgo=
@@ -89,8 +89,8 @@
 // Bundles (verbatim, each wrapped in a run-at gate): apollo_editor, art_station, credit_hoarder, fusion, group_therapy, isrc_scout, mammoth, mission_control, platform_check.
 
 try {
-  console.log('%c String Theory %c v2026.10.7.154431 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
-  console.log("String Theory bundles:\n  · Apollo Editor v2026.10.7\n  · Art Station v2026.10.7.210000\n  · Credit Hoarder v2026.10.7.235500\n  · Fusion v2026.10.7.235900\n  · Group Therapy v2026.10.4\n  · ISRC Scout v2026.10.7.210000\n  · Mammoth v2026.10.4\n  · Mission Control v2026.10.7.235950\n  · Platform Check v2026.10.7.210000");
+  console.log('%c String Theory %c v2026.10.7.154548 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
+  console.log("String Theory bundles:\n  · Apollo Editor v2026.10.7\n  · Art Station v2026.10.7.210000\n  · Credit Hoarder v2026.10.7.235500\n  · Fusion v2026.10.7.235930\n  · Group Therapy v2026.10.4\n  · ISRC Scout v2026.10.7.210000\n  · Mammoth v2026.10.4\n  · Mission Control v2026.10.7.235959\n  · Platform Check v2026.10.7.210000");
 } catch (e) {}
 
 // ===== apollo_editor (@run-at document-start) =====================================
@@ -27301,7 +27301,7 @@ ${lines}
 
 // ===== fusion (@run-at document-end) ============================================
 (function(__stGM){
-  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Fusion*","namespace":"https://musicbrainz.org/","version":"2026.10.7.235900","description":"Merge-recordings assistant for MusicBrainz: gather a pool of candidate recordings from a release / release group / recording page (or paste any MBID/URL), auto-match them into merge groups by ISRC / AcoustID / length / title+artist, review and adjust the groups, then submit the merges directly in the background — no MB merge page involved.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/fusion/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPkZ1c2lvbjwvdGl0bGU+CiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjOGE1Y2Y2IiBzdHJva2Utd2lkdGg9IjciPgogICAgPGVsbGlwc2UgY3g9IjY0IiBjeT0iNjQiIHJ4PSI1MiIgcnk9IjIyIi8+CiAgICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSI2NCIgcng9IjUyIiByeT0iMjIiIHRyYW5zZm9ybT0icm90YXRlKDYwIDY0IDY0KSIvPgogICAgPGVsbGlwc2UgY3g9IjY0IiBjeT0iNjQiIHJ4PSI1MiIgcnk9IjIyIiB0cmFuc2Zvcm09InJvdGF0ZSgxMjAgNjQgNjQpIi8+CiAgPC9nPgogIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjE0IiBmaWxsPSIjNmQzZmYwIi8+Cjwvc3ZnPgo="}) }) : { script: {"name":"Fusion*","namespace":"https://musicbrainz.org/","version":"2026.10.7.235900","description":"Merge-recordings assistant for MusicBrainz: gather a pool of candidate recordings from a release / release group / recording page (or paste any MBID/URL), auto-match them into merge groups by ISRC / AcoustID / length / title+artist, review and adjust the groups, then submit the merges directly in the background — no MB merge page involved.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/fusion/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPkZ1c2lvbjwvdGl0bGU+CiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjOGE1Y2Y2IiBzdHJva2Utd2lkdGg9IjciPgogICAgPGVsbGlwc2UgY3g9IjY0IiBjeT0iNjQiIHJ4PSI1MiIgcnk9IjIyIi8+CiAgICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSI2NCIgcng9IjUyIiByeT0iMjIiIHRyYW5zZm9ybT0icm90YXRlKDYwIDY0IDY0KSIvPgogICAgPGVsbGlwc2UgY3g9IjY0IiBjeT0iNjQiIHJ4PSI1MiIgcnk9IjIyIiB0cmFuc2Zvcm09InJvdGF0ZSgxMjAgNjQgNjQpIi8+CiAgPC9nPgogIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjE0IiBmaWxsPSIjNmQzZmYwIi8+Cjwvc3ZnPgo="} };
+  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Fusion*","namespace":"https://musicbrainz.org/","version":"2026.10.7.235930","description":"Merge-recordings assistant for MusicBrainz: gather a pool of candidate recordings from a release / release group / recording page (or paste any MBID/URL), auto-match them into merge groups by ISRC / AcoustID / length / title+artist, review and adjust the groups, then submit the merges directly in the background — no MB merge page involved.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/fusion/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPkZ1c2lvbjwvdGl0bGU+CiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjOGE1Y2Y2IiBzdHJva2Utd2lkdGg9IjciPgogICAgPGVsbGlwc2UgY3g9IjY0IiBjeT0iNjQiIHJ4PSI1MiIgcnk9IjIyIi8+CiAgICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSI2NCIgcng9IjUyIiByeT0iMjIiIHRyYW5zZm9ybT0icm90YXRlKDYwIDY0IDY0KSIvPgogICAgPGVsbGlwc2UgY3g9IjY0IiBjeT0iNjQiIHJ4PSI1MiIgcnk9IjIyIiB0cmFuc2Zvcm09InJvdGF0ZSgxMjAgNjQgNjQpIi8+CiAgPC9nPgogIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjE0IiBmaWxsPSIjNmQzZmYwIi8+Cjwvc3ZnPgo="}) }) : { script: {"name":"Fusion*","namespace":"https://musicbrainz.org/","version":"2026.10.7.235930","description":"Merge-recordings assistant for MusicBrainz: gather a pool of candidate recordings from a release / release group / recording page (or paste any MBID/URL), auto-match them into merge groups by ISRC / AcoustID / length / title+artist, review and adjust the groups, then submit the merges directly in the background — no MB merge page involved.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/fusion/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPkZ1c2lvbjwvdGl0bGU+CiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjOGE1Y2Y2IiBzdHJva2Utd2lkdGg9IjciPgogICAgPGVsbGlwc2UgY3g9IjY0IiBjeT0iNjQiIHJ4PSI1MiIgcnk9IjIyIi8+CiAgICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSI2NCIgcng9IjUyIiByeT0iMjIiIHRyYW5zZm9ybT0icm90YXRlKDYwIDY0IDY0KSIvPgogICAgPGVsbGlwc2UgY3g9IjY0IiBjeT0iNjQiIHJ4PSI1MiIgcnk9IjIyIiB0cmFuc2Zvcm09InJvdGF0ZSgxMjAgNjQgNjQpIi8+CiAgPC9nPgogIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjE0IiBmaWxsPSIjNmQzZmYwIi8+Cjwvc3ZnPgo="} };
   (f=>document.readyState!=='loading'?f():document.addEventListener('DOMContentLoaded',f,{once:true}))(function(){ try { (function(){
 (function () {
 'use strict';
@@ -31135,8 +31135,10 @@ boot();
    enriched here: that is minutes more, the Fusion window does it), and reports
    per track of THIS release the group it falls in, with what Fusion's group
    shows: each member's artist, release and track, length, ISRCs, AcoustIDs and
-   open edits, and the signals. A group with an open edit on a member is reported
-   blocked (#529: never proposed). MC can then ask to check one group's ISRCs and
+   open edits, and the signals. As in the window, a group with an open edit on a
+   member is dropped (#529: never proposed) and its recordings stay ungrouped; a
+   track whose own recording has one says so (`pending`), like the window's pool
+   badge. MC can then ask to check one group's ISRCs and
    AcoustIDs (a few requests, not the release group's), or to open it in Fusion's
    window. Apply merges the ticked tracks' groups through mergeGroup, one at a
    time (MB's merge queue is one per session). Only Open puts a group on Fusion's
@@ -31144,8 +31146,9 @@ boot();
 if (SCOPE.type === 'release') {
     const mcSend = (type, detail) => document.dispatchEvent(new CustomEvent(type, { detail: JSON.stringify(detail) }));
     const mcHello = () => mcSend('mc:provider', { id: 'fusion', name: 'Fusion', version: VERSION, release: SCOPE.mbid, capabilities: ['probe', 'apply', 'check', 'open'] });
-    let mcGroups = new Map();   // recording gid of this release's track -> { g, byGid, bad }
+    let mcGroups = new Map();   // recording gid of this release's track -> { g, byGid }
     let mcOwn = [];             // this release's recordings, from the last probe
+    let mcByGid = new Map();    // the release group's recordings, from the last probe
     const rgOfPage = () => { const a = document.querySelector('.releaseheader a[href*="/release-group/"]'); return a ? (a.getAttribute('href').match(/[0-9a-f-]{36}/) || [])[0] : null; };
     const parse = (e, what) => { try { return JSON.parse(e.detail) || {}; } catch (x) { Log.warn('Mission Control ' + what + ' with unreadable detail: ' + x.message); return null; } };
     const membersOf = hit => hit.g.memberGids.map(x => hit.byGid.get(x)).filter(Boolean);
@@ -31160,13 +31163,13 @@ if (SCOPE.type === 'release') {
     const mcFinding = r => {
         const hit = mcGroups.get(r.gid);
         const base = { key: r.gid, track: r.gid, name: r.title };
-        if (!hit) return Object.assign(base, { state: 'none', matches: [] });
+        if (!hit) return Object.assign(base, { state: 'none', matches: [], pending: !!(mcByGid.get(r.gid) || {}).editsPending });
         const members = membersOf(hit);
         return Object.assign(base, {
-            state: hit.bad.length ? 'blocked' : 'new', confidence: hit.g.confidence, tier: hit.g.tier, cutoff: SETTINGS.matchCutoff,
+            state: 'new', confidence: hit.g.confidence, tier: hit.g.tier, cutoff: SETTINGS.matchCutoff,
             signals: hit.g.signalsAll, any: hit.g.signals,
             checked: { isrc: members.every(m => m.isrcsKnown), acoustid: members.every(m => m.acoustids != null) },
-            why: hit.bad.length ? 'pending edit on ' + hit.bad.map(b => b.title + ' (' + ((b.releases[0] || {}).title || b.gid.slice(0, 8)) + ')').join(', ') + ': resolve it in MB first' : hit.g.signals.join(', '),
+            why: hit.g.signals.join(', '),
             self: recInfo(hit.byGid.get(r.gid) || r, r.releases[0]),
             matches: members.filter(o => o.gid !== r.gid).map(o => recInfo(o)),
         });
@@ -31189,17 +31192,20 @@ if (SCOPE.type === 'release') {
             const byGid = new Map(recordings.map(r => [r.gid, r]));
             const groups = autoMatch(recordings, SETTINGS.lengthToleranceMs, SETTINGS.matchCutoff);
             // as the window does: a group with a pending edit on a member is never
-            // proposed (#529). It is reported blocked, so MC shows why and never ticks it.
+            // proposed (#529), and its recordings stay ungrouped
             const grouped = groups.flatMap(g => g.memberGids).map(x => byGid.get(x)).filter(Boolean);
             if (grouped.length) { progress('checking ' + grouped.length + ' grouped recordings for pending edits'); await enrichPendingEdits(grouped, 2); }
             mcGroups = new Map();
+            let dropped = 0;
             for (const g of groups) {
                 const bad = g.memberGids.map(x => byGid.get(x)).filter(r => r && r.editsPending);
-                for (const gid of g.memberGids) mcGroups.set(gid, { g, byGid, bad });
+                if (bad.length) { dropped++; Log.warn('Dropped a proposed group — pending edit(s) on: ' + bad.map(r => r.title).join(', ')); continue; }
+                for (const gid of g.memberGids) mcGroups.set(gid, { g, byGid });
             }
             mcOwn = own.recordings;
+            mcByGid = byGid;
             const findings = mcOwn.map(mcFinding);
-            Log.info('Mission Control probe answered: ' + groups.length + ' group(s), ' + findings.filter(f => f.state === 'new').length + ' track(s) with duplicates, ' + findings.filter(f => f.state === 'blocked').length + ' blocked by a pending edit');
+            Log.info('Mission Control probe answered: ' + (groups.length - dropped) + ' group(s), ' + findings.filter(f => f.state === 'new').length + ' track(s) with duplicates' + (dropped ? ', ' + dropped + ' group(s) dropped for a pending edit' : ''));
             done(findings);
         } catch (x) {
             Log.error('Mission Control probe failed: ' + (x && x.message));
@@ -31255,7 +31261,7 @@ if (SCOPE.type === 'release') {
         if (d.id !== 'fusion' || (d.release && d.release !== SCOPE.mbid)) return;
         const reply = o => mcSend('mc:applied', Object.assign({ id: 'fusion', run: d.run, release: SCOPE.mbid }, o));
         const seen = new Set(), groups = [];
-        for (const k of d.keys || []) { const h = mcGroups.get(k); if (h && !h.bad.length && !seen.has(h.g)) { seen.add(h.g); groups.push(h); } }
+        for (const k of d.keys || []) { const h = mcGroups.get(k); if (h && !seen.has(h.g)) { seen.add(h.g); groups.push(h); } }
         if (!groups.length) { reply({ ok: true, sent: 0, note: 'nothing to merge' }); return; }
         if (d.dry) { reply({ ok: true, sent: 0, note: 'dry run: ' + groups.length + ' merge' + (groups.length === 1 ? '' : 's') + ' would be submitted' }); return; }
         let ok = 0; const errs = [];
@@ -47181,7 +47187,7 @@ Created this ${kind} while adding credits parsed from text to ${relUrl}`;
 
 // ===== mission_control (@run-at document-end) ===================================
 (function(__stGM){
-  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Mission Control*","namespace":"https://musicbrainz.org/","version":"2026.10.7.235950","description":"One window on the release page that asks the other scripts (Platform Check, ISRC Scout, Art Station, Fusion, Credit Hoarder) what is missing, shows it all in one review, and applies the ticked changes in order.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/mission_control/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPk1pc3Npb24gQ29udHJvbDwvdGl0bGU+CiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjNWYzZWMwIiBzdHJva2Utd2lkdGg9IjciPgogICAgPGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iNTIiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjMwIi8+CiAgICA8cGF0aCBkPSJNNjQgNHYyMk02NCAxMDJ2MjJNNCA2NGgyMk0xMDIgNjRoMjIiLz4KICA8L2c+CiAgPGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iMTEiIGZpbGw9IiM4YTVjZjYiLz4KPC9zdmc+Cg=="}) }) : { script: {"name":"Mission Control*","namespace":"https://musicbrainz.org/","version":"2026.10.7.235950","description":"One window on the release page that asks the other scripts (Platform Check, ISRC Scout, Art Station, Fusion, Credit Hoarder) what is missing, shows it all in one review, and applies the ticked changes in order.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/mission_control/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPk1pc3Npb24gQ29udHJvbDwvdGl0bGU+CiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjNWYzZWMwIiBzdHJva2Utd2lkdGg9IjciPgogICAgPGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iNTIiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjMwIi8+CiAgICA8cGF0aCBkPSJNNjQgNHYyMk02NCAxMDJ2MjJNNCA2NGgyMk0xMDIgNjRoMjIiLz4KICA8L2c+CiAgPGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iMTEiIGZpbGw9IiM4YTVjZjYiLz4KPC9zdmc+Cg=="} };
+  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Mission Control*","namespace":"https://musicbrainz.org/","version":"2026.10.7.235959","description":"One window on the release page that asks the other scripts (Platform Check, ISRC Scout, Art Station, Fusion, Credit Hoarder) what is missing, shows it all in one review, and applies the ticked changes in order.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/mission_control/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPk1pc3Npb24gQ29udHJvbDwvdGl0bGU+CiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjNWYzZWMwIiBzdHJva2Utd2lkdGg9IjciPgogICAgPGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iNTIiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjMwIi8+CiAgICA8cGF0aCBkPSJNNjQgNHYyMk02NCAxMDJ2MjJNNCA2NGgyMk0xMDIgNjRoMjIiLz4KICA8L2c+CiAgPGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iMTEiIGZpbGw9IiM4YTVjZjYiLz4KPC9zdmc+Cg=="}) }) : { script: {"name":"Mission Control*","namespace":"https://musicbrainz.org/","version":"2026.10.7.235959","description":"One window on the release page that asks the other scripts (Platform Check, ISRC Scout, Art Station, Fusion, Credit Hoarder) what is missing, shows it all in one review, and applies the ticked changes in order.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/mission_control/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPk1pc3Npb24gQ29udHJvbDwvdGl0bGU+CiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjNWYzZWMwIiBzdHJva2Utd2lkdGg9IjciPgogICAgPGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iNTIiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjMwIi8+CiAgICA8cGF0aCBkPSJNNjQgNHYyMk02NCAxMDJ2MjJNNCA2NGgyMk0xMDIgNjRoMjIiLz4KICA8L2c+CiAgPGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iMTEiIGZpbGw9IiM4YTVjZjYiLz4KPC9zdmc+Cg=="} };
   (f=>document.readyState!=='loading'?f():document.addEventListener('DOMContentLoaded',f,{once:true}))(function(){ try { (function(){
 (function () {
 'use strict';
@@ -47746,7 +47752,7 @@ function mcStyle() {
         + '.mc-mini .n{margin-left:auto;font-family:var(--mbu-font-mono);font-size:10.5px;color:var(--mbu-text-dim);white-space:nowrap;flex:none;padding-left:6px}.mc-mini a:not(.n){min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}'
         + '.mc-insp-block{margin-bottom:12px}'
         + '.mc-fxo{display:inline-flex;align-items:center;gap:4px;font:inherit;font-size:11px;font-weight:700;padding:1px 8px;border-radius:20px;cursor:pointer;color:var(--mbu-warn);background:var(--mbu-warn-bg);border:1px solid var(--mbu-warn-border)}'
-        + '.mc-fxo:hover{border-color:var(--mbu-warn)}.mc-fxo.err{color:var(--mbu-error);background:var(--mbu-error-bg);border-color:var(--mbu-error-border)}.mc-fxo.err:hover{border-color:var(--mbu-error)}'
+        + '.mc-fxo:hover{border-color:var(--mbu-warn)}.mc-fxp{font-size:11px;font-weight:700;color:var(--mbu-warn);text-decoration:none}.mc-fxp:hover{text-decoration:underline}'
         + '.mc-fxo .car{display:inline-block;transition:transform .15s}.mc-fxo[aria-expanded="true"] .car{transform:rotate(90deg)}'
         + '.mc-tbl tr.mc-fxd{cursor:default}.mc-tbl tr.mc-fxd>td,.mc-tbl tr.mc-fxd:hover>td{background:var(--mbu-bg-sunken);white-space:normal;padding:10px 12px 12px 40px}'
         + '.mc-fxh{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin-bottom:8px;font-size:11.5px}.mc-fxh .sp{flex:1}'
@@ -47903,7 +47909,10 @@ const COLS = [
     { id: 'links', p: 'is', head: 'Rec links · IS', cell: () => '' },
     // the count (fxPill, before the cell) opens Fusion's comparison under the row; the release names are the tick
     { id: 'fusion', p: 'fusion', head: 'RG duplicates · Fusion', pick: true, cell: x =>
-        FX_SHOWN[x.state] ? '<span class="weak">' + esc(fxReleases(x)) + '</span>' : '<span class="pend">—</span>' },
+        FX_SHOWN[x.state] ? '<span class="weak">' + esc(fxReleases(x)) + '</span>'
+        // as Fusion's pool badge: this recording has an open edit, so Fusion groups it with nothing
+        : x.pending ? '<a class="mc-fxp" target="_blank" href="/recording/' + esc(x.key) + '/open_edits" title="This recording has an open edit: Fusion leaves it out of auto-match until the edit closes">⏳ pending</a>'
+        : '<span class="pend">—</span>' },
     { id: 'ch', p: 'ch', head: 'Credits · CH', cell: x =>
         x.credits ? '<span title="' + esc((x.list || []).map(c => c.name + ' — ' + c.role).join('\n')) + '">' + x.credits + '</span>' : '<span class="pend">—</span>' },
 ];
@@ -47954,7 +47963,7 @@ function cellHtml(c, t) {
 // match, with artist, release and track, length, ISRCs, AcoustIDs and open edits, what differs
 // marked, and the signal chips. A chip is lit when every pair agrees (Fusion's signalsAll), half
 // lit when some do, dashed when it wasn't looked up; Check asks Fusion to look up the group's.
-const FX_SHOWN = { new: 1, blocked: 1 };
+const FX_SHOWN = { new: 1 };
 const FX_SIGNALS = [['isrc', 'ISRC'], ['acoustid', 'AcoustID'], ['length', 'Length'], ['title', 'Title'], ['artist', 'Artist']];
 const FX_TIER = { strict: 'holds at the strict cutoff: ISRC or AcoustID', normal: 'holds at the normal cutoff: title and artist, with the length', loose: 'holds only at the loose cutoff: title with the artist or the length', manual: 'no cutoff forms it' };
 const fxReleases = x => (x.matches || []).map(m => m.release || '').filter((v, i, a) => v && a.indexOf(v) === i).slice(0, 2).join(', ');
@@ -47968,9 +47977,8 @@ const fxOpenBtn = x => fxCan('open') ? '<button type="button" class="mc-btn prim
 function fxPill(x) {
     if (!FX_SHOWN[x.state]) return '';
     const open = fxOpen.has(x.key), n = (x.matches || []).length;
-    return '<button type="button" class="mc-fxo' + (x.state === 'blocked' ? ' err' : '') + '" data-act="fx" data-key="' + esc(x.key) + '" aria-expanded="' + open + '" title="'
-        + esc((x.state === 'blocked' ? 'Blocked: ' + (x.why || '') + '\n' : '') + (open ? 'Hide' : 'Show') + ' what Fusion compared') + '"><span class="car">▸</span>'
-        + (x.state === 'blocked' ? '⊘ pending edit' : n + ' match' + (n === 1 ? '' : 'es')) + '</button> ';
+    return '<button type="button" class="mc-fxo" data-act="fx" data-key="' + esc(x.key) + '" aria-expanded="' + open + '" title="' + (open ? 'Hide' : 'Show') + ' what Fusion compared">'
+        + '<span class="car">▸</span>' + n + ' match' + (n === 1 ? '' : 'es') + '</button> ';
 }
 function fxDetail(x) {
     const me = x.self || null, ck = x.checked || {}, all = x.signals || [], any = x.any || [];
@@ -48000,8 +48008,7 @@ function fxDetail(x) {
         + fxOpenBtn(x) + '</div>'
         + '<div class="mc-fxwrap"><table class="mc-fxtbl"><thead><tr><th></th><th>Recording</th><th>Artist</th><th>Release · track</th><th>Length</th><th>ISRCs</th><th>AcoustID</th><th>Edits</th></tr></thead><tbody>'
         + (me ? row('this', me, false) : '') + (x.matches || []).map(m => row('match', m, !!me)).join('') + '</tbody></table></div>'
-        + (x.state === 'blocked' ? '<div class="mc-why">Blocked: ' + esc(x.why || '') + '</div>'
-            : x.cutoff ? '<div class="mc-fxn">Matched at Fusion\'s <b>' + esc(x.cutoff) + '</b> cutoff, the one set in Fusion\'s window.</div>' : '');
+        + (x.cutoff ? '<div class="mc-fxn">Matched at Fusion\'s <b>' + esc(x.cutoff) + '</b> cutoff, the one set in Fusion\'s window.</div>' : '');
 }
 function fxAct(b) {
     const k = b.dataset.key;
@@ -48297,7 +48304,7 @@ function paintInspector() {
         + trackLinks(t.rec).map(l => mini('<span class="mc-pico">' + stIcon(urlIcon(l.url), 14) + '</span> <a class="mc-add" target="_blank" rel="noopener" href="' + esc(l.url) + '">+ ' + esc(shortUrl(l.url)) + '</a>', esc(l.name))).join('')
         || '<div class="weak" style="font-size:11.5px">none</div>';
     const fusionBody = x => !(x.matches || []).length ? '<div class="weak" style="font-size:11.5px">no duplicates</div>'
-        : mini(x.state === 'blocked' ? '<span class="mc-err">⊘ pending edit</span>' : 'Fusion group', x.tier ? '<span class="mc-fxt ' + esc(x.tier) + '">' + esc(x.tier) + '</span>' : '')
+        : mini('Fusion group', x.tier ? '<span class="mc-fxt ' + esc(x.tier) + '">' + esc(x.tier) + '</span>' : '')
         + x.matches.map(m => '<div class="mc-fxm">' + mini('<a target="_blank" href="/recording/' + esc(m.gid) + '"><b>' + esc(m.title || m.gid.slice(0, 8)) + '</b></a>', esc(m.gid.slice(0, 8)))
             + '<div class="mc-kv"><span>release</span><span>' + esc(fxRel(m)) + '</span>'
             + '<span>length</span><span>' + esc(m.len || '?') + fxLenDiff(x.self, m) + '</span>'
@@ -48305,7 +48312,6 @@ function paintInspector() {
             + (m.isrcs ? '<span>ISRCs</span><span class="mono">' + (esc(m.isrcs.join(', ')) || 'none') + '</span>' : '')
             + '<span>edits</span><span>' + (m.pending ? '<span class="mc-err">open edit</span>' : 'none') + '</span></div></div>').join('')
         + (x.signals ? '<div class="weak" style="font-size:11px;margin:4px 0">every pair agrees on: ' + esc(x.signals.join(', ') || 'nothing') + '</div>' : '')
-        + (x.state === 'blocked' && x.why ? '<div class="mc-why">' + esc(x.why) + '</div>' : '')
         + fxOpenBtn(x);
     // each credit names the sources that give it, when more than one source was read (#680)
     const chBody = x => (x.list || []).map(c => mini(esc(c.name), esc(c.role) + (c.sources && /,/.test(x.source || '') ? ' <span class="weak">· ' + esc(c.sources.join(', ')) + '</span>' : ''))).join('') || '<div class="weak" style="font-size:11.5px">no credits</div>';
