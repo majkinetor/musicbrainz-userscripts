@@ -53,3 +53,22 @@ test('the button shows on an Apple Music album page', { tag: ['@web'] }, async (
   await page.locator('#fc-root .fc-go').waitFor({ state: 'visible' });
   check(await page.locator('#fc-root .fc-go').isVisible(), 'the import button shows');
 });
+
+// #684: Eddie Harris, "Artist's Choice: The Eddie Harris Anthology" (gb/852547): 24 tracks, of which
+// the storefront offers 20 (not 1.9, 2.1, 2.4, 2.6). The API leaves them out and numbers around them,
+// so the tracklist has 20: the log, the edit note and a toast say which are missing. Random Access
+// Memories, whole, has none.
+test('an Apple album with tracks the storefront does not offer says which', { tag: ['@web'] }, async ({ page, inject }) => {
+  await page.goto(SANDBOX + '/', { waitUntil: 'domcontentloaded' });
+  await inject('first_contact', { waitFor: '__fcTest' });
+  const r = await page.evaluate(async () => {
+    const T = window.__fcTest, ap = T.providers.find(p => p.id === 'apple');
+    const eh = await ap.fetchRelease('gb/852547'), ram = await ap.fetchRelease('us/617154241');
+    return { missing: eh.missing, n: eh.mediums.map(m => m.tracks.length), note: T.editNoteFor(eh, ap, null), ram: ram.missing, ramNote: T.editNoteFor(ram, ap, null) };
+  });
+  console.log(JSON.stringify(r));
+  check(JSON.stringify(r.n) === '[12,8]', `the 20 it offers (${r.n})`);
+  check(r.missing && r.missing.of === 24 && r.missing.count === 4 && r.missing.at.join() === '1.9,2.1,2.4,2.6', `the 4 missing, by position (${JSON.stringify(r.missing)})`);
+  check(/Apple Music lists 24 tracks but offers 20: 4 are missing from this tracklist \(1\.9, 2\.1, 2\.4, 2\.6\)\./.test(r.note), `the edit note says so (${r.note})`);
+  check(!r.ram && !/missing/.test(r.ramNote), 'a whole album has nothing missing');
+});

@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Platform Check
 // @namespace    http://tampermonkey.net/
-// @version      2026.10.6.215950
+// @version      2026.10.7.100000
 // @description  Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+DQogIDx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CiAgDQogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJhMWE1MiIgc3Ryb2tlLXdpZHRoPSI5IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik00MCA4OCBBMzQgMzQgMCAwIDEgNDAgNDAiLz4NCiAgICA8cGF0aCBkPSJNMjkgOTkgQTUwIDUwIDAgMCAxIDI5IDI5Ii8+DQogICAgPHBhdGggZD0iTTg4IDg4IEEzNCAzNCAwIDAgMCA4OCA0MCIvPg0KICAgIDxwYXRoIGQ9Ik05OSA5OSBBNTAgNTAgMCAwIDAgOTkgMjkiLz4NCiAgPC9nPg0KICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyMCIgZmlsbD0iI2U4MjAxYSIvPg0KPC9zdmc+DQo=
@@ -3143,7 +3143,7 @@ function pcWireForce(el, fn) {
         }, true);
     }
 }
-function updateRow(p, { url, mbTracks, remoteTracks, year, label, source, fromCache, format, masterState, hiddenTracks, barcode }) {
+function updateRow(p, { url, mbTracks, remoteTracks, year, label, source, fromCache, format, masterState, hiddenTracks, unoffered, barcode }) {
     const a    = document.getElementById(`mb-online-${p}`);
     const ico  = document.getElementById(`ico-${p}`);
     const val  = document.getElementById(`val-${p}`);
@@ -3178,8 +3178,11 @@ function updateRow(p, { url, mbTracks, remoteTracks, year, label, source, fromCa
         // Bandcamp hidden download-only tracks (#183): mark the count with a "ⁿ"
         // superscript + tooltip so the editor knows N of the tracks aren't
         // streamable (the count itself already includes them).
-        val.textContent = String(remoteTracks) + (hiddenTracks > 0 ? 'ⁿ' : '');
-        const hiddenNote = hiddenTracks > 0 ? `\n${hiddenTracks} download-only track(s) hidden from streaming on Bandcamp` : '';
+        // An Apple album with tracks the storefront doesn't offer (#684): its API leaves them out, so the
+        // count is what's offered, and the album's own count follows it ("20/24"). It matches on the first.
+        val.textContent = String(remoteTracks) + (hiddenTracks > 0 ? 'ⁿ' : '') + (unoffered > 0 ? '/' + (parseInt(remoteTracks, 10) + unoffered) : '');
+        const hiddenNote = (hiddenTracks > 0 ? `\n${hiddenTracks} download-only track(s) hidden from streaming on Bandcamp` : '')
+            + (unoffered > 0 ? `\nThe album has ${parseInt(remoteTracks, 10) + unoffered} tracks: ${unoffered} not offered by ${PROVIDER_NAME[p]}, so missing from its track list` : '');
         if (parseInt(remoteTracks, 10) === parseInt(mbTracks, 10)) {
             ico.textContent = '✓';
             const tone = fromCache ? '#5B82B0' : '#008000';
@@ -3845,6 +3848,7 @@ function applyCachedRow(platform, label, cached, mbTracks, masterState) {
         fromCache:    true,
         masterState:  masterState   ?? null,
         hiddenTracks: cached.hiddenTracks ?? 0,
+        unoffered:    cached.unoffered ?? 0,
         barcode:      cached.barcode ?? null,
     });
 }
@@ -5628,7 +5632,10 @@ function appleAlbumMeta(a) {
     return {
         url: String(at.url || '').split('?')[0], title: at.name || null, artist: at.artistName || null,
         tracks: songs ?? at.trackCount ?? null,
-        tracksNote: songs == null ? 'its trackCount, which may include videos' : list.length > songs ? `${list.length - songs} video(s) left out` : 'songs',
+        tracksNote: (songs == null ? 'its trackCount, which may include videos' : list.length > songs ? `${list.length - songs} video(s) left out` : 'songs')
+            + (list && at.trackCount > list.length ? `; the album has ${at.trackCount - list.length} more the storefront doesn't offer` : ''),
+        // tracks the album lists but the storefront doesn't offer: the API leaves them out (#684)
+        unoffered: list && at.trackCount > list.length ? at.trackCount - list.length : 0,
         year: at.releaseDate ? at.releaseDate.slice(0, 4) : null, label: at.recordLabel || null, barcode: at.upc || null,
         credits: pcCreditsApple(a, appleStorefront(at.url)),   // #671
     };
@@ -5655,8 +5662,8 @@ async function scanAppleAmp({ artist, album, mbTracks, existingUrl, mbid, isVari
     const label = 'Apple', sf = appleStorefront(existingUrl);
     const done = (meta, source) => {
         appendLog(label, `Album: "${meta.title}" — ${meta.tracks ?? '?'} track(s) (${meta.tracksNote}), ${meta.year || '?'}, ${meta.label || '?'}, UPC ${meta.barcode || '?'}`, meta.tracks ? 'ok' : 'warn');
-        cacheSet(mbid, 'apple', { url: meta.url, tracks: meta.tracks, year: meta.year, label: meta.label, source, barcode: meta.barcode, credits: pcKeep(label, meta.credits) });
-        updateRow('apple', { url: meta.url, mbTracks, remoteTracks: meta.tracks, year: meta.year, label: meta.label, source, barcode: meta.barcode });
+        cacheSet(mbid, 'apple', { url: meta.url, tracks: meta.tracks, unoffered: meta.unoffered, year: meta.year, label: meta.label, source, barcode: meta.barcode, credits: pcKeep(label, meta.credits) });
+        updateRow('apple', { url: meta.url, mbTracks, remoteTracks: meta.tracks, unoffered: meta.unoffered, year: meta.year, label: meta.label, source, barcode: meta.barcode });
         return true;
     };
     const none = source => {
@@ -7774,7 +7781,7 @@ if (mbuTestHooks()) window.__pcTest464 = { openReleaseEditTab, openRgEditTab, PC
 // #556 test hook — URL identity + the inject helper, so the cache-staleness and
 // payload-preservation paths can be driven without a live ✓ match render.
 // #627 test hook — the amp-api pieces, driven against the live API without a row render
-if (mbuTestHooks()) window.__pcTest627 = { appleAmp, appleToken, appleAlbumMeta, applePickByUpc, appleStorefront, appleEach, appleAllStorefronts, APPLE_SHORTLIST, setAppleToken: t => { _appleTok = t; } };
+if (mbuTestHooks()) window.__pcTest627 = { appleAmp, appleToken, appleAlbumMeta, updateRow, applePickByUpc, appleStorefront, appleEach, appleAllStorefronts, APPLE_SHORTLIST, setAppleToken: t => { _appleTok = t; } };
 if (mbuTestHooks()) window.__pcTest639 = { ytmCall, ytmAlbumResults, fetchYtmAlbum, ytmAlbumIdOf, ytmAlbumLabel, ytmCreditSections, YTM_ALBUMS_FILTER };
 if (mbuTestHooks()) window.__pcTest644 = { amzCall, amzAlbumResults, fetchAmzAlbum };
 if (mbuTestHooks()) window.__pcTest664 = { audiomackGet, fetchAudiomack, audiomackRef, scanAudiomack, cacheGet };

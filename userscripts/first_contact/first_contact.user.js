@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         First Contact
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.5
+// @version      2026.10.7.100000
 // @description  Import a release into MusicBrainz from the platform's album page with one click: the release editor opens with the title, tracklist, artists, date, label, barcode and link filled in. Each artist's platform link is handed to Apollo Editor for matching. By default the album page is also saved on the Internet Archive (it sends each imported URL to archive.org; off in the settings), and the edit note links the snapshot. Platforms: Deezer, Bandcamp, Discogs, Apple Music, Tidal, Qobuz, Beatport, Spotify, YouTube Music, Volumo, HDtracks, SoundCloud, Amazon Music, Audiomack, 7digital, Ototoy.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPkZpcnN0IENvbnRhY3Q8L3RpdGxlPgogIDwhLS0gdHJhY3RvciBiZWFtIC0tPgogIDxwYXRoIGQ9Ik01MCA0NCBMNzggNDQgTDEwNCAxMTIgTDI0IDExMiBaIiBmaWxsPSIjZjZjNDMxIiBvcGFjaXR5PSIwLjkiLz4KICA8cGF0aCBkPSJNNTYgNDQgTDcyIDQ0IEw4OCAxMTIgTDQwIDExMiBaIiBmaWxsPSIjZmRlNjhhIiBvcGFjaXR5PSIwLjciLz4KICA8IS0tIGxhbmRpbmcgcmluZyAtLT4KICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSIxMTQiIHJ4PSI0MiIgcnk9IjgiIGZpbGw9IiMxZTIzNDYiIHN0cm9rZT0iI2M5Y2RmMiIgc3Ryb2tlLXdpZHRoPSIzIi8+CiAgPGVsbGlwc2UgY3g9IjY0IiBjeT0iMTEzIiByeD0iMjYiIHJ5PSI0LjIiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2Y2YzQzMSIgc3Ryb2tlLXdpZHRoPSIyLjQiLz4KICA8IS0tIHNhdWNlcjogYSBwYWxlIHJpbSwgc28gaXQgc2hvd3Mgb24gYSBkYXJrIGJhY2tncm91bmQgdG9vIC0tPgogIDxwYXRoIGQ9Ik00MCAyNiBBMjQgMTggMCAwIDEgODggMjYgWiIgZmlsbD0iIzFlMjM0NiIgc3Ryb2tlPSIjYzljZGYyIiBzdHJva2Utd2lkdGg9IjMiLz4KICA8cGF0aCBkPSJNNTAgMTggQTEwIDYgMCAwIDEgNjAgMTQiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2ZmZiIgc3Ryb2tlLXdpZHRoPSIyLjYiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxlbGxpcHNlIGN4PSI2NCIgY3k9IjMyIiByeD0iNTYiIHJ5PSIxMyIgZmlsbD0iIzFlMjM0NiIgc3Ryb2tlPSIjYzljZGYyIiBzdHJva2Utd2lkdGg9IjMiLz4KICA8Y2lyY2xlIGN4PSIzOCIgY3k9IjMyIiByPSI0LjQiIGZpbGw9IiNmZmYiLz4KICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjM0IiByPSI0LjQiIGZpbGw9IiNmZmYiLz4KICA8Y2lyY2xlIGN4PSI5MCIgY3k9IjMyIiByPSI0LjQiIGZpbGw9IiNmZmYiLz4KICA8IS0tIHRoZSByZWxlYXNlIGJlaW5nIGJlYW1lZCB1cDogYSBwdXJwbGUgaGV4YWdvbiB3aXRoIGEgbm90ZSAtLT4KICA8cGF0aCBkPSJNNjQgNTggTDg0IDY5LjUgTDg0IDkyLjUgTDY0IDEwNCBMNDQgOTIuNSBMNDQgNjkuNSBaIiBmaWxsPSIjN2I0ZmQ2Ii8+CiAgPHBhdGggZD0iTTY0IDU4IEw4NCA2OS41IEw2NCA4MSBMNDQgNjkuNSBaIiBmaWxsPSIjOWI3MmVhIi8+CiAgPHBhdGggZD0iTTYwIDcyIEw3NCA2OSBMNzQgODkiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2ZmZiIgc3Ryb2tlLXdpZHRoPSIzLjQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz4KICA8cGF0aCBkPSJNNjAgNzIgTDYwIDkyIiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iMy40Ii8+CiAgPGVsbGlwc2UgY3g9IjU2IiBjeT0iOTIiIHJ4PSI0LjYiIHJ5PSIzLjYiIGZpbGw9IiNmZmYiLz4KICA8ZWxsaXBzZSBjeD0iNzAiIGN5PSI4OSIgcng9IjQuNiIgcnk9IjMuNiIgZmlsbD0iI2ZmZiIvPgogIDwhLS0gc3BhcmtsZXMgLS0+CiAgPHBhdGggZD0iTTE4IDU0IGwyLjUgNiA2IDIuNSAtNiAyLjUgLTIuNSA2IC0yLjUgLTYgLTYgLTIuNSA2IC0yLjUgWiIgZmlsbD0iI2Y2YzQzMSIvPgogIDxwYXRoIGQ9Ik0xMDggNTIgbDIuNSA2IDYgMi41IC02IDIuNSAtMi41IDYgLTIuNSAtNiAtNiAtMi41IDYgLTIuNSBaIiBmaWxsPSIjMWUyMzQ2Ii8+CiAgPHBhdGggZD0iTTExMiA4MiBsMS44IDQuMiA0LjIgMS44IC00LjIgMS44IC0xLjggNC4yIC0xLjggLTQuMiAtNC4yIC0xLjggNC4yIC0xLjggWiIgZmlsbD0iI2Y2YzQzMSIvPgogIDxwYXRoIGQ9Ik0xNCA4NiBsMS44IDQuMiA0LjIgMS44IC00LjIgMS44IC0xLjggNC4yIC0xLjggLTQuMiAtNC4yIC0xLjggNC4yIC0xLjggWiIgZmlsbD0iIzFlMjM0NiIvPgo8L3N2Zz4K
@@ -352,7 +352,8 @@ const AMAZON_TLDS = ['com', 'co.uk', 'de', 'fr', 'it', 'es', 'ca', 'co.jp', 'com
    Model:
      { source, url, title, credit:[Credit], types:[primary, ...secondary], status, packaging,
        date:{year,month,day}, country, barcode, labels:[{name, catno}], urls:[{url, linkType}],
-       mediums:[{ format, name, tracks:[{ title, lengthMs, isrc, url, credit:[Credit] }] }] }
+       mediums:[{ format, name, tracks:[{ title, lengthMs, isrc, url, credit:[Credit] }] }],
+       missing?:{ of, count, at:['disc.pos'] } }   (tracks the album has but the platform didn't give)
      Credit = { name, url?, mbid?, join }
 */
 
@@ -788,6 +789,17 @@ const APPLE = {
             Log.debug(`track ${disc}.${x.trackNumber}: "${tf.title}" — ${credit.map(c => c.name + c.join).join('')} (${x.isrc || 'no ISRC'})`);
         });
 
+        // #684: an album can have tracks the storefront doesn't offer (Eddie Harris, "Artist's Choice":
+        // 24 tracks, 1.9, 2.1, 2.4 and 2.6 not offered). The API leaves them out and numbers around
+        // them, so the tracklist is short: named in the log, the edit note and a toast.
+        const at0 = new Map();
+        items.forEach(t => { const x = t.attributes || {}, d = x.discNumber || 1; (at0.get(d) || at0.set(d, new Set()).get(d)).add(+x.trackNumber); });
+        const gaps = [];
+        [...at0.keys()].sort((a, b) => a - b).forEach(d => { const s = at0.get(d); for (let n = 1; n < Math.max(...s); n++) if (!s.has(n)) gaps.push(d + '.' + n); });
+        const lack = Math.max((at.trackCount || 0) - items.length, gaps.length);
+        const missing = lack ? { of: items.length + lack, count: lack, at: gaps } : null;
+        if (missing) Log.warn(`Apple Music: the album has ${missing.of} tracks, ${lack} not offered in the "${sf}" storefront${gaps.length ? ` (${gaps.join(', ')})` : ''}: they are not in this tracklist`);
+
         // " - Single" / " - EP" is Apple's label for the release, not part of its title
         const suffix = (String(at.name || '').match(/\s+-\s+(Single|EP)$/) || [])[1];
         const af = splitFeat(String(at.name || '').replace(/\s+-\s+(Single|EP)$/, ''));
@@ -812,6 +824,7 @@ const APPLE = {
             labels: at.recordLabel ? [{ name: at.recordLabel, catno: '' }] : [],
             urls: [{ url, linkType: 980 }],   // 980 = streaming page (paid)
             mediums,
+            missing,
         };
     },
 };
@@ -2155,8 +2168,14 @@ function seedParams(rel, editNote) {
     return p;
 }
 
+// #684: the album has tracks the platform didn't give (Apple: not offered in the storefront)
+function missingText(rel, provider) {
+    const m = rel.missing;
+    return `${provider.name} lists ${m.of} tracks but offers ${m.of - m.count}: ${m.count} ${m.count === 1 ? 'is' : 'are'} missing from this tracklist${m.at.length ? ` (${m.at.join(', ')})` : ''}.`;
+}
 function editNoteFor(rel, provider, archive) {
     const lines = [`Imported from ${provider.name}: ${rel.url}`];
+    if (rel.missing) lines.push(missingText(rel, provider));
     if (archive) {
         // the snapshot is made after the seed, so its exact time isn't known yet: the import's time
         // is, and Wayback sends /web/<time>/<url> to the snapshot nearest to it
@@ -2905,6 +2924,7 @@ async function importCurrent() {
 
         const where = sendSeed(server, token, params);
         Log.ok(`seeded ${server}/release/add with ${nTracks} track(s) (${where === 'here' ? 'in this tab: the browser blocked a new one' : 'in a new tab'})`);
+        if (rel.missing) mbuToast(`⚠ ${NAME}: ${missingText(rel, provider)} Add them in the editor.`, { kind: 'warn', ms: 15000 });
         if (settings().closeAfter) {
             if (where !== 'here') closeSourceTab();
             else Log.info('close after the import: skipped, the editor opened in this tab');
@@ -3794,6 +3814,6 @@ try {
 } catch (e) {
     try { Log.err(`startup: ${e.stack || e.message}`); } catch (_) { /* nothing left to log with */ }
 }
-if (mbuTestHooks()) window.__fcTest = { splitFeat, creditFromTitle, seedParams, guessScript, splitLabels, providers: PROVIDERS, importCurrent };
+if (mbuTestHooks()) window.__fcTest = { splitFeat, creditFromTitle, seedParams, editNoteFor, guessScript, splitLabels, providers: PROVIDERS, importCurrent };
 
 })();
