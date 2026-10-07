@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         String Theory
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.7.220000
+// @version      2026.10.7.150049
 // @description  Unified bundle of 9 MusicBrainz userscripts (apollo_editor, art_station, credit_hoarder, fusion, group_therapy, isrc_scout, mammoth, mission_control, platform_check). Built by userscripts/string_theory/build.mjs — do not hand-edit.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCIgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0Ij4KICA8IS0tIGh1Yi1hbmQtc3Bva2UgIm5ldHdvcmsiIGdseXBoLCBzaW5nbGUgdml2aWQgdmlvbGV0IG9uIHRyYW5zcGFyZW50IHNvIGl0IHJlYWRzIG9uIGJvdGggZGFyayBhbmQgbGlnaHQgcGFnZXMgLS0+CiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjN2M1Y2ZmIiBzdHJva2Utd2lkdGg9IjQuNiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj4KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMzIgMTUiLz4KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMNDYuNSAyMy41Ii8+CiAgICA8cGF0aCBkPSJNMzIgMzIgTDQ2LjUgNDAuNSIvPgogICAgPHBhdGggZD0iTTMyIDMyIEwzMiA0OSIvPgogICAgPHBhdGggZD0iTTMyIDMyIEwxNy41IDQwLjUiLz4KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMTcuNSAyMy41Ii8+CiAgPC9nPgogIDxnIGZpbGw9IiM3YzVjZmYiPgogICAgPGNpcmNsZSBjeD0iMzIiIGN5PSIzMiIgcj0iOC42Ii8+CiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjE5LjUiIHI9IjYuNCIvPgogICAgPGNpcmNsZSBjeD0iNDkiIGN5PSIxOS41IiByPSI2LjQiLz4KICAgIDxjaXJjbGUgY3g9IjMyIiBjeT0iNTciIHI9IjYuNCIvPgogIDwvZz4KICA8ZyBmaWxsPSJub25lIiBzdHJva2U9IiM3YzVjZmYiIHN0cm9rZS13aWR0aD0iMy44Ij4KICAgIDxjaXJjbGUgY3g9IjMyIiBjeT0iNyIgcj0iNC45Ii8+CiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjQ0LjUiIHI9IjQuOSIvPgogICAgPGNpcmNsZSBjeD0iNDkiIGN5PSI0NC41IiByPSI0LjkiLz4KICA8L2c+Cjwvc3ZnPgo=
@@ -89,8 +89,8 @@
 // Bundles (verbatim, each wrapped in a run-at gate): apollo_editor, art_station, credit_hoarder, fusion, group_therapy, isrc_scout, mammoth, mission_control, platform_check.
 
 try {
-  console.log('%c String Theory %c v2026.10.7.220000 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
-  console.log("String Theory bundles:\n  · Apollo Editor v2026.10.6\n  · Art Station v2026.10.7.210000\n  · Credit Hoarder v2026.10.7.142859\n  · Fusion v2026.10.5.205655\n  · Group Therapy v2026.10.4\n  · ISRC Scout v2026.10.7.210000\n  · Mammoth v2026.10.4\n  · Mission Control v2026.10.7.220000\n  · Platform Check v2026.10.7.210000");
+  console.log('%c String Theory %c v2026.10.7.150049 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
+  console.log("String Theory bundles:\n  · Apollo Editor v2026.10.6\n  · Art Station v2026.10.7.210000\n  · Credit Hoarder v2026.10.7.142859\n  · Fusion v2026.10.5.205655\n  · Group Therapy v2026.10.4\n  · ISRC Scout v2026.10.7.210000\n  · Mammoth v2026.10.4\n  · Mission Control v2026.10.7.223000\n  · Platform Check v2026.10.7.210000");
 } catch (e) {}
 
 // ===== apollo_editor (@run-at document-start) =====================================
@@ -47071,7 +47071,7 @@ Created this ${kind} while adding credits parsed from text to ${relUrl}`;
 
 // ===== mission_control (@run-at document-end) ===================================
 (function(__stGM){
-  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Mission Control*","namespace":"https://musicbrainz.org/","version":"2026.10.7.220000","description":"One window on the release page that asks the other scripts (Platform Check, ISRC Scout, Art Station, Fusion, Credit Hoarder) what is missing, shows it all in one review, and applies the ticked changes in order.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/mission_control/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPk1pc3Npb24gQ29udHJvbDwvdGl0bGU+CiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjNWYzZWMwIiBzdHJva2Utd2lkdGg9IjciPgogICAgPGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iNTIiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjMwIi8+CiAgICA8cGF0aCBkPSJNNjQgNHYyMk02NCAxMDJ2MjJNNCA2NGgyMk0xMDIgNjRoMjIiLz4KICA8L2c+CiAgPGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iMTEiIGZpbGw9IiM4YTVjZjYiLz4KPC9zdmc+Cg=="}) }) : { script: {"name":"Mission Control*","namespace":"https://musicbrainz.org/","version":"2026.10.7.220000","description":"One window on the release page that asks the other scripts (Platform Check, ISRC Scout, Art Station, Fusion, Credit Hoarder) what is missing, shows it all in one review, and applies the ticked changes in order.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/mission_control/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPk1pc3Npb24gQ29udHJvbDwvdGl0bGU+CiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjNWYzZWMwIiBzdHJva2Utd2lkdGg9IjciPgogICAgPGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iNTIiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjMwIi8+CiAgICA8cGF0aCBkPSJNNjQgNHYyMk02NCAxMDJ2MjJNNCA2NGgyMk0xMDIgNjRoMjIiLz4KICA8L2c+CiAgPGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iMTEiIGZpbGw9IiM4YTVjZjYiLz4KPC9zdmc+Cg=="} };
+  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Mission Control*","namespace":"https://musicbrainz.org/","version":"2026.10.7.223000","description":"One window on the release page that asks the other scripts (Platform Check, ISRC Scout, Art Station, Fusion, Credit Hoarder) what is missing, shows it all in one review, and applies the ticked changes in order.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/mission_control/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPk1pc3Npb24gQ29udHJvbDwvdGl0bGU+CiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjNWYzZWMwIiBzdHJva2Utd2lkdGg9IjciPgogICAgPGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iNTIiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjMwIi8+CiAgICA8cGF0aCBkPSJNNjQgNHYyMk02NCAxMDJ2MjJNNCA2NGgyMk0xMDIgNjRoMjIiLz4KICA8L2c+CiAgPGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iMTEiIGZpbGw9IiM4YTVjZjYiLz4KPC9zdmc+Cg=="}) }) : { script: {"name":"Mission Control*","namespace":"https://musicbrainz.org/","version":"2026.10.7.223000","description":"One window on the release page that asks the other scripts (Platform Check, ISRC Scout, Art Station, Fusion, Credit Hoarder) what is missing, shows it all in one review, and applies the ticked changes in order.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/mission_control/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPk1pc3Npb24gQ29udHJvbDwvdGl0bGU+CiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjNWYzZWMwIiBzdHJva2Utd2lkdGg9IjciPgogICAgPGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iNTIiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjMwIi8+CiAgICA8cGF0aCBkPSJNNjQgNHYyMk02NCAxMDJ2MjJNNCA2NGgyMk0xMDIgNjRoMjIiLz4KICA8L2c+CiAgPGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iMTEiIGZpbGw9IiM4YTVjZjYiLz4KPC9zdmc+Cg=="} };
   (f=>document.readyState!=='loading'?f():document.addEventListener('DOMContentLoaded',f,{once:true}))(function(){ try { (function(){
 (function () {
 'use strict';
@@ -47280,21 +47280,22 @@ function bestHtml(b) {
     const kb = n => n ? (n > 1048576 ? (n / 1048576).toFixed(1) + ' MB' : Math.round(n / 1024) + ' KB') : '';
     // a click on a cover opens it full screen, the other one a ← / → away (coverViewer)
     let n = 0;
-    const fig = (src, title, lines) => '<div class="mc-best-c">' + (src ? '<button type="button" class="mc-cov" data-act="cover" data-i="' + (n++) + '" title="Show full screen (← → to compare)"><img alt="" src="' + esc(src) + '"></button>' : '<span class="mc-best-no">🖼</span>')
+    // `alt`: the full image, for a thumbnail that fails (a cover in an open edit has no CAA thumbnails yet)
+    const fig = (src, alt, title, lines) => '<div class="mc-best-c">' + (src ? '<button type="button" class="mc-cov" data-act="cover" data-i="' + (n++) + '" title="Show full screen (← → to compare)"><img alt="" src="' + esc(src) + '"' + (alt && alt !== src ? ' data-alt="' + esc(alt) + '"' : '') + '></button>' : '<span class="mc-best-no">🖼</span>')
         + '<div class="mc-best-t"><b>' + esc(title) + '</b>' + lines.filter(Boolean).map(l => '<span>' + esc(l) + '</span>').join('') + '</div></div>';
     const c = b.current;
     // the same size to the pixel and the byte: the front already is the best cover (imported earlier), not a comparison
     if (c && c.bytes && c.bytes === b.bytes && c.w === b.w && c.h === b.h)
         return '<div class="mc-best no"><div class="mc-best-row">'
-            + fig(c.thumb || b.thumb, 'Front cover', [c.w + ' × ' + c.h + ' · ' + kb(c.bytes), 'the same image as the best found (' + (b.provider || '?') + ')'])
+            + fig(c.thumb || b.thumb, c.full || b.full, 'Front cover', [c.w + ' × ' + c.h + ' · ' + kb(c.bytes), 'the same image as the best found (' + (b.provider || '?') + ')'])
             + '</div><div class="mc-best-what">Already the best cover: nothing to do</div></div>';
     const what = !c ? 'Execute enters it as the front cover'
         : b.replace ? 'Larger than the current front: Execute enters it and removes the current one'
         : b.larger ? 'Larger than the current fronts: Execute adds it beside them'
         : 'Not larger than the current front: nothing to gain (tick a source to add it anyway)';
     return '<div class="mc-best' + (c && !b.larger ? ' no' : '') + '"><div class="mc-best-row">'
-        + fig(b.thumb, 'Best cover', [b.provider || '?', b.w + ' × ' + b.h + (b.bytes ? ' · ' + kb(b.bytes) : ''), b.of > 1 ? 'the largest of ' + b.of + ' found' : 'the only one found'])
-        + (c ? '<span class="mc-best-vs">' + (b.larger ? '>' : '≤') + '</span>' + fig(c.thumb, 'Current front', [c.w + ' × ' + c.h + (c.bytes ? ' · ' + kb(c.bytes) : '')]) : '')
+        + fig(b.thumb, b.full, 'Best cover', [b.provider || '?', b.w + ' × ' + b.h + (b.bytes ? ' · ' + kb(b.bytes) : ''), b.of > 1 ? 'the largest of ' + b.of + ' found' : 'the only one found'])
+        + (c ? '<span class="mc-best-vs">' + (b.larger ? '>' : '≤') + '</span>' + fig(c.thumb, c.full, 'Current front', [c.w + ' × ' + c.h + (c.bytes ? ' · ' + kb(c.bytes) : '')]) : '')
         + '</div><div class="mc-best-what">' + esc(what) + '</div></div>';
 }
 // The covers of AS's card, full size: the best one found and the current front (one when they are
@@ -47905,7 +47906,8 @@ function setCard(box, html) {
     const s = String(html);
     if (box._mcHtml === s) return;
     box._mcHtml = s;
-    const old = new Map([...box.querySelectorAll('img')].map(i => [i.getAttribute('src'), i]));
+    // an image that fell back to its full one (data-from) is matched by the src it was given
+    const old = new Map([...box.querySelectorAll('img')].map(i => [i.dataset.from || i.getAttribute('src'), i]));
     box.innerHTML = html;
     box.querySelectorAll('img').forEach(i => { const o = old.get(i.getAttribute('src')); if (o) { old.delete(i.getAttribute('src')); i.replaceWith(o); } });
 }
@@ -48088,6 +48090,8 @@ function open() {
     document.documentElement.classList.add('mc-open');
     paintSides(); paintAll(); paintInspector();
     ui.addEventListener('click', onClick);
+    // a cover thumbnail that fails falls back to its full image once (errors don't bubble: capture)
+    ui.addEventListener('error', e => { const i = e.target; if (i.tagName === 'IMG' && i.dataset.alt) { const a = i.dataset.alt; delete i.dataset.alt; i.dataset.from = i.getAttribute('src'); i.src = a; } }, true);
     document.addEventListener('keydown', onKey);
     stepClock = setInterval(() => { if (isBusy()) paintSteps(); }, 1000);
     Log.info('opened · sidebars ' + (S.left ? 'order ' : '') + (S.right ? 'inspector' : '') + ' · fusion ' + S.fusion + ' · ch ' + S.ch + ' · auto probe ' + (S.autoProbe ? 'on' : 'off'));
