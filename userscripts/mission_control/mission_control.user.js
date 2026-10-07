@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Mission Control
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.7.153000
+// @version      2026.10.7.160000
 // @description  One window on the release page that asks the other scripts (Platform Check, ISRC Scout, Art Station, Fusion, Credit Hoarder) what is missing, shows it all in one review, and applies the ticked changes in order.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPk1pc3Npb24gQ29udHJvbDwvdGl0bGU+CiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjNWYzZWMwIiBzdHJva2Utd2lkdGg9IjciPgogICAgPGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iNTIiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjMwIi8+CiAgICA8cGF0aCBkPSJNNjQgNHYyMk02NCAxMDJ2MjJNNCA2NGgyMk0xMDIgNjRoMjIiLz4KICA8L2c+CiAgPGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iMTEiIGZpbGw9IiM4YTVjZjYiLz4KPC9zdmc+Cg==
@@ -407,7 +407,7 @@ function mcStyle() {
         + '.mc-empty{padding:10px;color:var(--mbu-text-weak);font-size:12px}'
         + '.mc-line{display:grid;grid-template-columns:16px 16px 1fr auto;gap:8px;align-items:center;padding:4px 10px;border-bottom:1px solid var(--mbu-divider)}.mc-line.mc-hasbc{grid-template-columns:16px 16px 1fr 130px 84px}.mc-line.mc-hasbc>.mc-pill{justify-self:end}'
         + '.mc-bc{display:inline-block;font:600 12px/1.5 ui-monospace,Consolas,monospace;color:var(--bc);background:color-mix(in srgb,var(--bc) 12%,transparent);border:1px solid color-mix(in srgb,var(--bc) 45%,transparent);border-radius:5px;padding:1px 6px;white-space:nowrap}'
-        + '.mc-bccol{text-align:right}.mc-bcrel{display:flex;align-items:center;gap:8px;justify-content:flex-end;padding:6px 102px 6px 10px;border-bottom:1px solid var(--mbu-divider);font-size:12px;color:var(--mbu-text-dim)}.mc-line:last-child{border-bottom:0}'
+        + '.mc-bccol{text-align:right}.mc-sect-h.mc-hasbc{display:grid;grid-template-columns:22px minmax(0,max-content) minmax(0,1fr) 130px 84px}.mc-sect-h.mc-hasbc .t{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.mc-sect-h.mc-hasbc .end{justify-content:flex-end;min-width:0}.mc-sect-h .mc-hbc,.mc-sect-h .mc-hmb{display:none}.mc-sect-h.mc-hasbc .mc-hbc{display:block;text-align:right}.mc-sect-h.mc-hasbc .mc-hmb{display:inline-block;justify-self:end}.mc-pill.mb{color:var(--mbu-ok);border-color:color-mix(in srgb,var(--mbu-ok) 50%,transparent);background:color-mix(in srgb,var(--mbu-ok) 10%,transparent)}.mc-bc.none{--bc:var(--mbu-text-weak);font-weight:400;font-style:italic}.mc-line:last-child{border-bottom:0}'
         + '.mc-sect-h .end{margin-left:auto;display:flex;align-items:center;gap:6px}.mc-chlbl{font-size:12.5px;color:var(--mbu-text-dim)}'
         + '.mc-chopen{flex-wrap:wrap;justify-content:flex-end}#mc-root a.mc-chsrc{padding:6px 12px;gap:7px;font-size:13px;font-weight:600;color:var(--mbu-text);text-decoration:none}#mc-root a.mc-chsrc:hover{background:var(--mbu-bg-hover);border-color:var(--mbu-accent)}'
         + '.mc-sect-h .mc-applied{border:0;border-radius:20px;padding:1px 9px}'
@@ -674,7 +674,7 @@ function releaseCards() {
     const row = el('div', 'mc-row2');
     const card = (id, t) => {
         const p = PROVIDERS.find(x => x.id === id);
-        return '<section class="mc-sect"><div class="mc-sect-h"><span class="ic" title="' + esc(p.provider) + '"><img alt="" src="' + PROVIDER_ICONS[id] + '"></span><span class="t">' + t + '</span><span class="end"></span></div>'
+        return '<section class="mc-sect"><div class="mc-sect-h"><span class="ic" title="' + esc(p.provider) + '"><img alt="" src="' + PROVIDER_ICONS[id] + '"></span><span class="t">' + t + '</span><span class="end"></span><span class="mc-hbc"></span><span class="mc-pill mb mc-hmb" title="The release\'s barcode in MusicBrainz">MB</span></div>'
             + '<div class="mc-card-body" data-card="' + id + '"></div></section>';
     };
     row.innerHTML = mbuHtml('<div class="mc-col">' + card('pc', 'Release and entity links') + '</div><div class="mc-col">' + card('as', 'Cover art') + '</div>');
@@ -768,12 +768,15 @@ function paintCards() {
             + linkedIcons(linked) + '<span class="mc-lk">✓ ' + linked.length + '</span></button>' : '');
         // the row is the toggle, no tick box (#680); a taken-in row is tinted and marked ✓
         // PC's barcodes (#680): a column of their own, one colour per barcode (by its digits without
-        // leading zeros, as PC compares them); the release's own is green, and named above the rows
+        // leading zeros, as PC compares them); the release's own is green, in the card header
         const bcs = r.findings.some(x => x.barcode), bcNorm = b => String(b || '').replace(/\D/g, '').replace(/^0+/, '');
         const bcColor = new Map(r.barcode ? [[bcNorm(r.barcode), 'var(--mbu-ok)']] : []);
         r.findings.forEach(x => { const k = bcNorm(x.barcode); if (k && !bcColor.has(k)) bcColor.set(k, BC_COLORS[(bcColor.size - (r.barcode ? 1 : 0)) % BC_COLORS.length]); });
         const bcChip = (b, tip) => '<span class="mc-bc" style="--bc:' + bcColor.get(bcNorm(b)) + '" title="' + esc(tip) + '">' + esc(b) + '</span>';
-        const bcHead = bcs ? '<div class="mc-bcrel">Release barcode: ' + (r.barcode ? bcChip(r.barcode, "The release's barcode in MusicBrainz") : '<span class="weak">none</span>') + '</div>' : '';
+        // the release's own in the card header, in the same column, with MB in the pill column: no extra line
+        const sh = box.parentNode.querySelector('.mc-sect-h'), hbc = sh && sh.querySelector('.mc-hbc');
+        if (sh) sh.classList.toggle('mc-hasbc', bcs);
+        if (hbc) { const h = bcs ? (r.barcode ? bcChip(r.barcode, "The release's barcode in MusicBrainz") : '<span class="mc-bc none" title="The release has no barcode in MusicBrainz">none</span>') : ''; if (hbc._mcHtml !== h) { hbc._mcHtml = h; hbc.innerHTML = mbuHtml(h); } }
         const line = x => {
             const pick = !!PICKABLE[x.state];
             const on = pick && picked[id] && picked[id].has(x.key);
@@ -792,7 +795,7 @@ function paintCards() {
         // (the Discogs master is the release group's, but reads as the release's own)
         const own = x => !x.entity || x.entity.type === 'release_group';
         const relRows = rows.filter(own), entRows = rows.filter(x => !own(x));
-        setCard(box, mbuHtml(sum + ap + bcHead + relRows.map(line).join('')
+        setCard(box, mbuHtml(sum + ap + relRows.map(line).join('')
             + (entRows.length ? '<div class="mc-sub">Artists &amp; labels</div>' + entRows.map(line).join('') : '') + (none.length ? '<div class="mc-none" title="' + esc('Not found: ' + none.map(x => x.name || x.key).join(', ')) + '"><span>Not found</span>'
             + none.map(x => '<span class="mc-pico" title="' + esc(x.name || x.key) + '">' + stIcon(x.icon || x.key, 14) + '</span>').join('') + '</div>' : '')));
     });
