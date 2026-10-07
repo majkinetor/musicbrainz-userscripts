@@ -25,9 +25,9 @@ test('#680: links grouped by barcode, a lane each', { tag: ['@sandbox'] }, async
         { key: 'tidal2', icon: 'tidal', name: 'Tidal', url: 'https://tidal.com/album/214316434', state: 'withheld', why, barcode: '730167335256' },
         { key: 'apple', name: 'Apple', url: 'https://music.apple.com/us/album/for-bird-and-bags/1868545067', state: 'withheld', why: 'barcode not confirmed' },
         { key: 'qobuz', name: 'Qobuz', url: 'https://www.qobuz.com/gb-en/album/x/abc', state: 'withheld', why, barcode: '0886443927087' },
-        { key: 'discogs', name: 'Discogs', url: 'https://www.discogs.com/release/8846789', state: 'new', barcode: '081227946025' },
+        { key: 'discogs', name: 'Discogs', url: 'https://www.discogs.com/release/8846789', state: 'linked', barcode: '081227946025' },   // the release's own Discogs: a ✓ in the release's lane
         { key: 'discogs-master', icon: 'discogs', name: 'Discogs master', url: 'https://www.discogs.com/master/669461', state: 'new', entity: { type: 'release_group' } },
-        { key: 'tidal', name: 'Tidal', url: 'https://tidal.com/album/214316433', state: 'linked', barcode: '730167335256' },   // an icon in the header, not in a lane
+        { key: 'tidal', name: 'Tidal', url: 'https://tidal.com/album/214316433', state: 'linked', barcode: '730167335256' },   // linked, in its barcode's lane too
         { key: 'spotify', name: 'Spotify', state: 'none' }] }), 50);
     });
     send('mc:provider', { id: 'pc', name: 'Platform Check', version: 1, capabilities: ['probe', 'apply'] });
@@ -45,16 +45,16 @@ test('#680: links grouped by barcode, a lane each', { tag: ['@sandbox'] }, async
   let L = await lanes();
   console.log(JSON.stringify(L, null, 1));
   check(L.length === 4, `four lanes: the release's, two others, not confirmed (${L.length})`);
-  check(L[0].bc === '0081227946025' && L[0].t === "the release's" && L[0].icons.join() === 'discogs' && L[0].on.join() === 'discogs', "the release's lane leads, with Discogs, taken in as new");
+  check(L[0].bc === '0081227946025' && L[0].t === "the release's" && L[0].on.length === 0 && L[0].pill === 'linked' && L[0].all === '', "the release's lane leads, with its linked Discogs");
+  check(await card.locator('.mc-lane').nth(0).locator('.mc-ti.linked:not(.mc-pick)').count() === 1, 'the linked Discogs is a ✓ icon, not a toggle');
   const ok = await page.evaluate(() => { const s = document.createElement('span'); s.className = 'mc-bc'; s.style.setProperty('--bc', 'var(--mbu-ok)'); document.querySelector('#mc-root .mc-lane').append(s); const c = getComputedStyle(s).color; s.remove(); return c; });
   check(L[0].c === ok, `the release's is green (${L[0].c})`);
-  check(L[1].bc === '0730167335256' && L[1].icons.join() === 'bandcamp,deezer,tidal2' && L[1].pill === 'withheld', 'the biggest other lane next: one barcode with or without its leading 0, shown in its 13-digit form');
+  check(L[1].bc === '0730167335256' && L[1].icons.join() === 'bandcamp,deezer,tidal2,' && L[1].pill === 'withheld', 'the biggest other lane next: one barcode with or without its leading 0, shown in its 13-digit form');
   check(L[2].bc === '0886443927087' && L[2].icons.join() === 'qobuz', 'then the smaller one');
   check(L[3].bc === '?' && L[3].t === 'not confirmed' && L[3].icons.join() === 'apple', 'the platforms without a barcode last');
   check(new Set(L.map(l => l.c)).size === 4, 'one colour per lane');
   check(await card.locator('.mc-sect-h .mc-bc, .mc-hbc').count() === 0, "no barcode in the card header");
   check(await card.locator('.mc-line:has-text("Discogs master")').count() === 1 && await card.locator('.mc-lane .mc-ti[data-key="discogs-master"]').count() === 0, 'the Discogs master is a row of its own, out of the lanes');
-  check(await card.locator('.mc-ti[data-key="tidal"]').count() === 0, 'a linked link is not in a lane');
 
   // an icon toggles one link; take all in takes the rest, a second click leaves them all out
   await card.locator('.mc-ti[data-key="deezer"]').click();
@@ -63,18 +63,18 @@ test('#680: links grouped by barcode, a lane each', { tag: ['@sandbox'] }, async
   await card.locator('.mc-lane').nth(1).locator('.mc-all').click();
   L = await lanes();
   check(L[1].on.length === 3 && L[1].all.includes('all taken in'), 'take all in takes the lane in');
-  check((await page.evaluate(() => window.__mcTest.picked().pc)).sort().join() === 'bandcamp,deezer,discogs,discogs-master,tidal2', 'and Execute gets them');
+  check((await page.evaluate(() => window.__mcTest.picked().pc)).sort().join() === 'bandcamp,deezer,discogs-master,tidal2', 'and Execute gets them');
   await card.locator('.mc-lane').nth(1).locator('.mc-all').click();
   L = await lanes();
   check(L[1].on.length === 0 && L[1].all === 'take all in', 'a second click leaves them all out');
-  check(L[0].on.join() === 'discogs', 'other lanes keep theirs');
+  check(L[0].pill === 'linked' && (await page.evaluate(() => window.__mcTest.picked().pc)).join() === 'discogs-master', 'the rest are untouched');
 
   // a click on the lane opens it into rows; the 12-digit form is noted, the reason isn't repeated
   check(await card.locator('.mc-line.mc-in').count() === 0, 'lanes start folded');
   await card.locator('.mc-lane').nth(1).locator('.mc-lane-t').click();
   const rows = await card.locator('.mc-line.mc-in').evaluateAll(rs => rs.map(r => ({ t: r.querySelector('.t').textContent, as: (r.querySelector('.mc-as') || {}).textContent || '', s: r.textContent })));
   console.log(JSON.stringify(rows));
-  check(rows.length === 3 && rows.map(r => r.t).join() === 'Bandcamp,Deezer,Tidal', 'the lane opens into its three rows');
+  check(rows.length === 4 && rows.map(r => r.t).join() === 'Bandcamp,Deezer,Tidal,Tidal' && rows[3].s.includes('linked'), 'the lane opens into its rows, the linked one last with its pill');
   check(rows[0].as === '' && rows[1].as === 'as 730167335256', 'a differently written barcode is noted on its row');
   check(rows.every(r => !r.s.includes('differs')), 'the lane says the reason; the rows don\'t repeat it');
   await card.locator('.mc-line.mc-in').nth(0).click();

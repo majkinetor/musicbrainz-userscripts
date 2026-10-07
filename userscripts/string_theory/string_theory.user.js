@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         String Theory
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.7.174500
+// @version      2026.10.7.112906
 // @description  Unified bundle of 9 MusicBrainz userscripts (apollo_editor, art_station, credit_hoarder, fusion, group_therapy, isrc_scout, mammoth, mission_control, platform_check). Built by userscripts/string_theory/build.mjs — do not hand-edit.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCIgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0Ij4KICA8IS0tIGh1Yi1hbmQtc3Bva2UgIm5ldHdvcmsiIGdseXBoLCBzaW5nbGUgdml2aWQgdmlvbGV0IG9uIHRyYW5zcGFyZW50IHNvIGl0IHJlYWRzIG9uIGJvdGggZGFyayBhbmQgbGlnaHQgcGFnZXMgLS0+CiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjN2M1Y2ZmIiBzdHJva2Utd2lkdGg9IjQuNiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj4KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMzIgMTUiLz4KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMNDYuNSAyMy41Ii8+CiAgICA8cGF0aCBkPSJNMzIgMzIgTDQ2LjUgNDAuNSIvPgogICAgPHBhdGggZD0iTTMyIDMyIEwzMiA0OSIvPgogICAgPHBhdGggZD0iTTMyIDMyIEwxNy41IDQwLjUiLz4KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMTcuNSAyMy41Ii8+CiAgPC9nPgogIDxnIGZpbGw9IiM3YzVjZmYiPgogICAgPGNpcmNsZSBjeD0iMzIiIGN5PSIzMiIgcj0iOC42Ii8+CiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjE5LjUiIHI9IjYuNCIvPgogICAgPGNpcmNsZSBjeD0iNDkiIGN5PSIxOS41IiByPSI2LjQiLz4KICAgIDxjaXJjbGUgY3g9IjMyIiBjeT0iNTciIHI9IjYuNCIvPgogIDwvZz4KICA8ZyBmaWxsPSJub25lIiBzdHJva2U9IiM3YzVjZmYiIHN0cm9rZS13aWR0aD0iMy44Ij4KICAgIDxjaXJjbGUgY3g9IjMyIiBjeT0iNyIgcj0iNC45Ii8+CiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjQ0LjUiIHI9IjQuOSIvPgogICAgPGNpcmNsZSBjeD0iNDkiIGN5PSI0NC41IiByPSI0LjkiLz4KICA8L2c+Cjwvc3ZnPgo=
@@ -89,8 +89,8 @@
 // Bundles (verbatim, each wrapped in a run-at gate): apollo_editor, art_station, credit_hoarder, fusion, group_therapy, isrc_scout, mammoth, mission_control, platform_check.
 
 try {
-  console.log('%c String Theory %c v2026.10.7.111807 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
-  console.log("String Theory bundles:\n  · Apollo Editor v2026.10.6\n  · Art Station v2026.10.7.170000\n  · Credit Hoarder v2026.10.7.113250\n  · Fusion v2026.10.5.205655\n  · Group Therapy v2026.10.4\n  · ISRC Scout v2026.10.7.093000\n  · Mammoth v2026.10.4\n  · Mission Control v2026.10.7.174500\n  · Platform Check v2026.10.7.153000");
+  console.log('%c String Theory %c v2026.10.7.112906 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
+  console.log("String Theory bundles:\n  · Apollo Editor v2026.10.6\n  · Art Station v2026.10.7.170000\n  · Credit Hoarder v2026.10.7.113250\n  · Fusion v2026.10.5.205655\n  · Group Therapy v2026.10.4\n  · ISRC Scout v2026.10.7.093000\n  · Mammoth v2026.10.4\n  · Mission Control v2026.10.7.181500\n  · Platform Check v2026.10.7.153000");
 } catch (e) {}
 
 // ===== apollo_editor (@run-at document-start) =====================================
@@ -47071,7 +47071,7 @@ Created this ${kind} while adding credits parsed from text to ${relUrl}`;
 
 // ===== mission_control (@run-at document-end) ===================================
 (function(__stGM){
-  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Mission Control*","namespace":"https://musicbrainz.org/","version":"2026.10.7.174500","description":"One window on the release page that asks the other scripts (Platform Check, ISRC Scout, Art Station, Fusion, Credit Hoarder) what is missing, shows it all in one review, and applies the ticked changes in order.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/mission_control/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPk1pc3Npb24gQ29udHJvbDwvdGl0bGU+CiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjNWYzZWMwIiBzdHJva2Utd2lkdGg9IjciPgogICAgPGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iNTIiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjMwIi8+CiAgICA8cGF0aCBkPSJNNjQgNHYyMk02NCAxMDJ2MjJNNCA2NGgyMk0xMDIgNjRoMjIiLz4KICA8L2c+CiAgPGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iMTEiIGZpbGw9IiM4YTVjZjYiLz4KPC9zdmc+Cg=="}) }) : { script: {"name":"Mission Control*","namespace":"https://musicbrainz.org/","version":"2026.10.7.174500","description":"One window on the release page that asks the other scripts (Platform Check, ISRC Scout, Art Station, Fusion, Credit Hoarder) what is missing, shows it all in one review, and applies the ticked changes in order.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/mission_control/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPk1pc3Npb24gQ29udHJvbDwvdGl0bGU+CiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjNWYzZWMwIiBzdHJva2Utd2lkdGg9IjciPgogICAgPGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iNTIiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjMwIi8+CiAgICA8cGF0aCBkPSJNNjQgNHYyMk02NCAxMDJ2MjJNNCA2NGgyMk0xMDIgNjRoMjIiLz4KICA8L2c+CiAgPGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iMTEiIGZpbGw9IiM4YTVjZjYiLz4KPC9zdmc+Cg=="} };
+  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Mission Control*","namespace":"https://musicbrainz.org/","version":"2026.10.7.181500","description":"One window on the release page that asks the other scripts (Platform Check, ISRC Scout, Art Station, Fusion, Credit Hoarder) what is missing, shows it all in one review, and applies the ticked changes in order.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/mission_control/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPk1pc3Npb24gQ29udHJvbDwvdGl0bGU+CiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjNWYzZWMwIiBzdHJva2Utd2lkdGg9IjciPgogICAgPGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iNTIiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjMwIi8+CiAgICA8cGF0aCBkPSJNNjQgNHYyMk02NCAxMDJ2MjJNNCA2NGgyMk0xMDIgNjRoMjIiLz4KICA8L2c+CiAgPGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iMTEiIGZpbGw9IiM4YTVjZjYiLz4KPC9zdmc+Cg=="}) }) : { script: {"name":"Mission Control*","namespace":"https://musicbrainz.org/","version":"2026.10.7.181500","description":"One window on the release page that asks the other scripts (Platform Check, ISRC Scout, Art Station, Fusion, Credit Hoarder) what is missing, shows it all in one review, and applies the ticked changes in order.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/mission_control/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPk1pc3Npb24gQ29udHJvbDwvdGl0bGU+CiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjNWYzZWMwIiBzdHJva2Utd2lkdGg9IjciPgogICAgPGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iNTIiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjMwIi8+CiAgICA8cGF0aCBkPSJNNjQgNHYyMk02NCAxMDJ2MjJNNCA2NGgyMk0xMDIgNjRoMjIiLz4KICA8L2c+CiAgPGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iMTEiIGZpbGw9IiM4YTVjZjYiLz4KPC9zdmc+Cg=="} };
   (f=>document.readyState!=='loading'?f():document.addEventListener('DOMContentLoaded',f,{once:true}))(function(){ try { (function(){
 (function () {
 'use strict';
@@ -47525,15 +47525,14 @@ function mcStyle() {
         + '.mc-bc{display:inline-block;font:600 12px/1.5 ui-monospace,Consolas,monospace;color:var(--bc);background:color-mix(in srgb,var(--bc) 12%,transparent);border:1px solid color-mix(in srgb,var(--bc) 45%,transparent);border-radius:5px;padding:1px 6px;white-space:nowrap}'
         + '.mc-lane{display:grid;grid-template-columns:10px max-content max-content minmax(0,1fr) auto auto;gap:8px;align-items:center;padding:4px 10px;border-bottom:1px solid var(--mbu-divider);cursor:pointer}.mc-lane:hover{background:var(--mbu-bg-hover)}.mc-lane.empty{cursor:default;opacity:.75}.mc-lane.empty:hover{background:none}'
         + '.mc-tri{font-size:9px;color:var(--mbu-text-weak)}.mc-lane-t{font-size:12px;font-weight:600;white-space:nowrap}.mc-lane-ic{display:flex;flex-wrap:wrap;gap:3px;min-width:0}.mc-lane-no{font-size:11px;color:var(--mbu-text-weak)}'
-        + '.mc-ti{display:inline-grid;place-items:center;width:24px;height:24px;border-radius:6px;border:1px solid transparent;opacity:.55}.mc-ti.mc-pick{cursor:pointer}.mc-ti.mc-pick:hover{opacity:1;border-color:var(--mbu-border-strong)}.mc-ti.on{opacity:1;border-color:var(--mbu-accent);background:var(--mbu-accent-soft)}'
+        + '.mc-ti{display:inline-grid;place-items:center;width:24px;height:24px;border-radius:6px;border:1px solid transparent;opacity:.55}.mc-ti.mc-pick{cursor:pointer}.mc-ti.mc-pick:hover{opacity:1;border-color:var(--mbu-border-strong)}.mc-ti.on{opacity:1;border-color:var(--mbu-accent);background:var(--mbu-accent-soft)}.mc-ti.linked{opacity:1;position:relative}.mc-ti.linked::after{content:"✓";position:absolute;right:-1px;bottom:-4px;font-size:10px;font-weight:700;color:var(--mbu-ok)}'
         + '#mc-root .mc-all{font:600 11px inherit;padding:2px 9px;border-radius:12px;border:1px solid var(--mbu-border-strong);background:var(--mbu-bg);color:var(--mbu-accent-text);cursor:pointer;white-space:nowrap}#mc-root .mc-all:hover{border-color:var(--mbu-accent)}'
         + '.mc-line.mc-in{padding-left:28px}.mc-as{font:10.5px ui-monospace,Consolas,monospace;color:var(--mbu-text-weak);white-space:nowrap}.mc-bchint{padding:6px 10px;font-size:11px;color:var(--mbu-text-dim);background:var(--mbu-bg-raised);border-bottom:1px solid var(--mbu-divider)}'
-        + '#mc-root .mc-onoff{all:unset;box-sizing:border-box;cursor:pointer;flex:none;height:28px;min-width:64px;padding:0 10px 0 4px;display:inline-flex;align-items:center;gap:7px;border-radius:14px;border:1px solid var(--mbu-border);background:var(--mbu-bg);font-size:12px;font-weight:600;color:var(--mbu-text-dim)}'
-        + '#mc-root .mc-onoff .k{width:30px;height:18px;border-radius:9px;background:var(--mbu-border);position:relative;transition:background .15s}'
-        + '#mc-root .mc-onoff .k::after{content:"";position:absolute;top:2px;left:2px;width:14px;height:14px;border-radius:50%;background:#fff;box-shadow:0 1px 2px rgba(0,0,0,.3);transition:left .15s}'
-        + '#mc-root .mc-onoff[aria-pressed="true"] .k{background:var(--mbu-ok)}#mc-root .mc-onoff[aria-pressed="true"] .k::after{left:14px}'
-        + '#mc-root .mc-onoff:hover{border-color:var(--mbu-accent)}#mc-root .mc-onoff:focus-visible{outline:2px solid var(--mbu-accent)}.mc-sect-h .end+.mc-onoff{margin-left:6px}'
-        + '.mc-sect.mc-off>:not(.mc-sect-h){display:none}.mc-sect.mc-off .mc-sect-h{border-bottom:0}.mc-sect.mc-off .mc-sect-h>:not(.mc-onoff){opacity:.45}.mc-bc.none{--bc:var(--mbu-text-weak);min-width:12px;text-align:center}.mc-line:last-child{border-bottom:0}'
+        + '#mc-root .mc-sect-h .mc-icsw{border:0;padding:0;margin:0;font:inherit;color:inherit;cursor:pointer;position:relative;box-shadow:0 0 0 3px transparent;transition:box-shadow .12s}'
+        + '#mc-root .mc-sect-h .mc-icsw:hover{box-shadow:0 0 0 3px var(--mbu-bg-hover),0 0 0 4px var(--mbu-border)}#mc-root .mc-sect-h .mc-icsw:focus-visible{outline:2px solid var(--mbu-accent);outline-offset:2px}'
+        + '.mc-sect.mc-off .mc-icsw{background:var(--mbu-bg-sunken)}.mc-sect.mc-off .mc-icsw>*{filter:grayscale(1);opacity:.55}'
+        + '.mc-sect.mc-off .mc-icsw::after{content:"";position:absolute;left:-2px;right:-2px;top:50%;height:2px;margin-top:-1px;border-radius:1px;background:var(--mbu-text-weak);transform:rotate(-45deg)}'
+        + '.mc-sect.mc-off>:not(.mc-sect-h){display:none}.mc-sect.mc-off .mc-sect-h{border-bottom:0}.mc-sect.mc-off .mc-sect-h>:not(.mc-icsw){opacity:.45}.mc-bc.none{--bc:var(--mbu-text-weak);min-width:12px;text-align:center}.mc-line:last-child{border-bottom:0}'
         + '.mc-sect-h .end{margin-left:auto;display:flex;align-items:center;gap:6px}.mc-chlbl{font-size:12.5px;color:var(--mbu-text-dim)}'
         + '.mc-chopen{flex-wrap:wrap;justify-content:flex-end}#mc-root a.mc-chsrc{padding:6px 12px;gap:7px;font-size:13px;font-weight:600;color:var(--mbu-text);text-decoration:none}#mc-root a.mc-chsrc:hover{background:var(--mbu-bg-hover);border-color:var(--mbu-accent)}'
         + '.mc-sect-h .mc-applied{border:0;border-radius:20px;padding:1px 9px}'
@@ -47786,7 +47785,7 @@ function matrix() {
     const sec = el('section', 'mc-sect');
     sec.dataset.sect = 'tracks';
     const cols = COLS.filter(c => modeOf(PROVIDERS.find(p => p.id === c.p)) !== 'off');
-    let html = '<div class="mc-sect-h"><span class="ic">≡</span><span class="t">Tracks</span><span class="p">one row per track · a column per provider</span><span class="end mc-tapplied"></span>' + onOffHtml('tracks') + '</div>'
+    let html = '<div class="mc-sect-h">' + cardIcon('tracks', '≡') + '<span class="t">Tracks</span><span class="p">one row per track · a column per provider</span><span class="end mc-tapplied"></span></div>'
         + '<table class="mc-tbl"><thead><tr><th>#</th><th>Title</th><th>Len</th>'
         + cols.map(c => '<th data-colh="' + c.id + '">' + colHead(c) + '</th>').join('')
         + '</tr></thead><tbody>';
@@ -47809,7 +47808,7 @@ function releaseCards() {
     const row = el('div', 'mc-row2');
     const card = (id, t) => {
         const p = PROVIDERS.find(x => x.id === id);
-        return '<section class="mc-sect" data-sect="' + id + '"><div class="mc-sect-h"><span class="ic" title="' + esc(p.provider) + '"><img alt="" src="' + PROVIDER_ICONS[id] + '"></span><span class="t">' + t + '</span><span class="end"></span>' + onOffHtml(id) + '</div>'
+        return '<section class="mc-sect" data-sect="' + id + '"><div class="mc-sect-h">' + cardIcon(id, '<img alt="" src="' + PROVIDER_ICONS[id] + '">') + '<span class="t">' + t + '</span><span class="end"></span></div>'
             + '<div class="mc-card-body" data-card="' + id + '"></div></section>';
     };
     row.innerHTML = mbuHtml(card('pc', 'Release and entity links') + card('as', 'Cover art'));
@@ -47854,7 +47853,7 @@ function layoutCards(row) {
 function releaseCredits() {
     const sec = el('section', 'mc-sect');
     sec.dataset.sect = 'ch';
-    sec.innerHTML = mbuHtml('<div class="mc-sect-h"><span class="ic" title="Credit Hoarder"><img alt="" src="' + PROVIDER_ICONS.ch + '"></span><span class="t">Release credits</span><span class="mc-mode">info</span><span class="end mc-chopen"></span>' + onOffHtml('ch') + '</div><div class="mc-chrel"></div>');
+    sec.innerHTML = mbuHtml('<div class="mc-sect-h">' + cardIcon('ch', '<img alt="" src="' + PROVIDER_ICONS.ch + '">') + '<span class="t">Release credits</span><span class="mc-mode">info</span><span class="end mc-chopen"></span></div><div class="mc-chrel"></div>');
     return sec;
 }
 function paintReleaseCredits() {
@@ -47943,7 +47942,7 @@ function paintCards() {
                 + '<div class="mc-lt"><div class="t">' + esc(x.name || x.key) + '</div>'
                 + (x.url ? '<a class="s" target="_blank" rel="noopener" href="' + esc(x.url) + '" title="' + esc(x.url) + '">' + esc(shortUrl(x.url)) + '</a>' : '')
                 + (x.why && !(lane && /barcode/.test(x.why)) ? '<div class="s">' + esc(x.why) + '</div>' : '') + '</div>'
-                + (lane ? as || '<span></span>' : '<span class="mc-pill ' + pill[0] + '">' + pill[1] + '</span>') + '</div>';
+                + (lane && x.state !== 'linked' ? as || '<span></span>' : '<span class="mc-pill ' + pill[0] + '">' + pill[1] + '</span>') + '</div>';
         };
         // PC's artist and label links (`entity`) under their own sub-heading, after the release's
         // (the Discogs master is the release group's, but reads as the release's own and leads)
@@ -47951,9 +47950,12 @@ function paintCards() {
         const grouped = !!r.barcode || relRows.some(x => x.barcode);
         let relHtml = relRows.map(x => line(x)).join(''), hint = '';
         if (grouped) {
+            // a linked link with a barcode joins its lane too (a ✓ icon), so the release's own lane
+            // shows what the release already has: its Discogs release, say (#680)
+            const laneRows = r.findings.filter(x => !x.entity && x.state !== 'none' && (x.state !== 'linked' || x.barcode || S.linkedRows)).sort((a, b) => ORDER[a.state] - ORDER[b.state]);
             const lanes = new Map(), relK = bcNorm(r.barcode);
             if (relK) lanes.set(relK, { k: relK, show: r.barcode, rows: [], color: 'var(--mbu-ok)', title: "the release's", tip: "The release's barcode in MusicBrainz" });
-            relRows.forEach(x => {
+            laneRows.forEach(x => {
                 const k = bcNorm(x.barcode);
                 if (!lanes.has(k)) lanes.set(k, k ? { k, show: x.barcode, rows: [], title: "not the release's", tip: 'A barcode the release does not have' } : { k, rows: [], title: 'not confirmed', tip: "The platform doesn't give a barcode" });
                 const l = lanes.get(k);
@@ -47965,12 +47967,12 @@ function paintCards() {
             const order = [lanes.get(relK), ...others, lanes.get('')].filter(Boolean);
             relHtml = order.map(l => {
                 const open = laneOpen.has(l.k), picks = l.rows.filter(x => PICKABLE[x.state]), n = picks.filter(x => picked[id] && picked[id].has(x.key)).length;
-                const states = [...new Set(l.rows.map(x => x.state))], pill = states.length === 1 ? PILL[states[0]] || ['idle', states[0]] : null;
+                const states = [...new Set(l.rows.filter(x => x.state !== 'linked').map(x => x.state))].concat(l.rows.every(x => x.state === 'linked') ? ['linked'] : []), pill = states.length === 1 ? PILL[states[0]] || ['idle', states[0]] : null;
                 const chip = l.k ? '<span class="mc-bc" style="--bc:' + l.color + '" title="' + esc(l.tip) + '">' + esc(l.show) + '</span>' : '<span class="mc-bc none" title="' + esc(l.tip) + '">?</span>';
                 const icons = l.rows.length ? l.rows.map(x => {
                     const pk = !!PICKABLE[x.state], on = pk && picked[id] && picked[id].has(x.key);
-                    return '<span class="mc-ti' + (pk ? ' mc-pick' : '') + (on ? ' on' : '') + '"' + (pk ? ' data-prov="' + id + '" data-key="' + esc(x.key) + '"' : '')
-                        + ' title="' + esc((x.name || x.key) + (x.url ? ' — ' + x.url : '') + (x.why ? ' (' + x.why + ')' : '') + (pk ? (on ? '. Taken in: click to leave out' : '. Click to take in') : '')) + '">' + stIcon(x.icon || x.key, 16) + '</span>';
+                    return '<span class="mc-ti ' + esc(x.state) + (pk ? ' mc-pick' : '') + (on ? ' on' : '') + '"' + (pk ? ' data-prov="' + id + '" data-key="' + esc(x.key) + '"' : '')
+                        + ' title="' + esc((x.name || x.key) + (x.url ? ' — ' + x.url : '') + (x.why ? ' (' + x.why + ')' : '') + (x.state === 'linked' ? '. Already linked' : '') + (pk ? (on ? '. Taken in: click to leave out' : '. Click to take in') : '')) + '">' + stIcon(x.icon || x.key, 16) + '</span>';
                 }).join('') : '<span class="mc-lane-no">no platform found it</span>';
                 const all = picks.length ? '<button type="button" class="mc-all" data-act="lane-all" data-lane="' + esc(l.k) + '" title="Take every link in this group in, or leave them all out">'
                     + (n === picks.length ? '✓ all taken in' : n ? n + ' of ' + picks.length + ' · take all' : 'take all in') + '</button>' : '<span></span>';
@@ -47980,7 +47982,7 @@ function paintCards() {
                     + (open ? l.rows.map(x => line(x, l)).join('') : '');
             }).join('');
             // what the lanes suggest: most platforms agree on a barcode the release doesn't have
-            const top = others[0], total = relRows.filter(x => x.barcode || x.state === 'withheld').length;
+            const top = others[0], total = laneRows.filter(x => x.barcode || x.state === 'withheld').length;
             if (relK && !lanes.get(relK).rows.length && top && top.rows.length > 1)
                 hint = '<div class="mc-bchint">ⓘ ' + top.rows.length + ' of ' + total + ' platforms agree on <b>' + esc(top.show) + '</b>; none has the release\'s <b>' + esc(r.barcode) + '</b>. Likely a different edition.</div>';
         }
@@ -48197,18 +48199,17 @@ function setMode(key, v) {
     if (ui) rebuildBody();
 }
 
-// A card's On / Off switch, at the right end of its header
-function onOffHtml(id) {
-    return '<button type="button" class="mc-onoff" data-act="card-onoff" data-sect="' + id + '"><span class="k"></span><span class="l"></span></button>';
+// A card's own icon is its On / Off switch: nothing more in the header. Off: the icon greyed and struck through.
+function cardIcon(id, inner) {
+    return '<button type="button" class="ic mc-icsw" data-act="card-onoff" data-sect="' + id + '" aria-pressed="true">' + inner + '</button>';
 }
 function paintOnOff() {
     ui.querySelectorAll('.mc-sect[data-sect]').forEach(s => {
-        const id = s.dataset.sect, off = cardOff(id), b = s.querySelector('.mc-onoff');
+        const id = s.dataset.sect, off = cardOff(id), b = s.querySelector('.mc-icsw');
         s.classList.toggle('mc-off', off);
         if (!b) return;
         b.setAttribute('aria-pressed', String(!off));
-        b.querySelector('.l').textContent = off ? 'Off' : 'On';
-        b.title = off ? 'Off: Execute leaves this card out. Click to switch it on' : 'On: Execute applies what is ticked here. Click to switch it off';
+        b.title = off ? 'Left out: Execute skips this card. Click to take it in' : 'Click to leave this card out of Execute';
     });
 }
 function setCardOff(id, off) {
