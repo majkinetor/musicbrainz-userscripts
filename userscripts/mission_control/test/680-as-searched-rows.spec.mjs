@@ -37,5 +37,7 @@ test('#680: AS rows: the best enters, the rest were searched', { tag: ['@sandbox
   const step = await page.locator('#mc-root .mc-step[data-step="as"]').innerText();
   console.log(step);
   check(/1 cover to enter/.test(step), 'the step counts one cover, not one per row');
+  const exec = await page.locator('#mc-root [data-act="exec"]').textContent();
+  check(exec === 'Execute (1)', `Execute counts the one cover, not the 3 sources (${exec})`);
   await page.locator('#mc-root [data-card="as"]').screenshot({ path: 'test-results/mc-680-as-searched-rows.png' });
 });
