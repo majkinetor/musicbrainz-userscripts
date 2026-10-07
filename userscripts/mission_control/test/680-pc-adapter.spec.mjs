@@ -112,6 +112,8 @@ test('#680: Probe asks Platform Check and shows its platforms', { tag: ['@sandbo
   if (/withheld/.test(state)) check(/added by hand over link confidence/.test(got[1].json.note), 'a withheld link ticked by hand is noted as forced');
   // the header line names GM_info's script, which in this test is the shared shim's; the confidence line is PC's own
   check(/Link confidence:/.test(got[1].json.note), "PC's own edit note");
+  // the harness runs every script as version "test"
+  check(/\nVia Mission Control v\S+: https:\/\/test\.musicbrainz\.org\/release\/[0-9a-f-]{36}$/.test(got[1].json.note), 'the note ends with the Mission Control version and the release');
   // #680: Execute runs Falcon headless, tagged; Falcon's falcon:status for that tag shows in the card
   const tag = got[1].json.tag;
   check(got[1].json.headless === true && /^mc:pc:/.test(tag || '') && !got[0].json.headless, `Execute is headless and tagged (${tag}); a dry run is not`);

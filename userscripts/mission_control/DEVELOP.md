@@ -15,7 +15,7 @@ Every `detail` is a **JSON string**, never an object. Each userscript runs in it
 | `mc:probe` | MC | `{ release, run, only, links }`: `only` lists the provider ids asked; `links`, the album links ticked in PC's card |
 | `mc:progress` | provider | `{ id, run, state: 'busy', note }` |
 | `mc:findings` | provider | `{ id, run, release, findings: [...] }` |
-| `mc:apply` | MC | `{ id, run, release, keys, dry }`: the ticked finding keys of one provider |
+| `mc:apply` | MC | `{ id, run, release, keys, dry, mc }`: the ticked finding keys of one provider, and MC's version. Every edit note a provider writes for it ends with `Via Mission Control v<mc>: <release URL>` |
 | `mc:applied` | provider | `{ id, run, ok, sent, note }` |
 | `mc:check` | MC | `{ id, run, release, key }`: look up more for one finding (Fusion: its group's ISRCs and AcoustIDs) |
 | `mc:update` | provider | `{ id, run, release, keys, findings, error }`: findings sent again; each replaces the one with its key and keeps its tick unless it can't be ticked any more |

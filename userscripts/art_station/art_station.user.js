@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Art Station
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.7.210000
+// @version      2026.10.7.235959
 // @description  Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png
@@ -296,7 +296,7 @@
       }
       busy('entering the cover');
       const got = waitFrame('entered', 600000, s => busy('entering the cover (' + s + ' s)'));
-      frame.el.contentWindow.postMessage({ mcAs: 1, token: frame.token, type: 'enter', replace: mcPlan.replace, note: 'Via Mission Control: ' + location.origin + '/release/' + rel }, location.origin);
+      frame.el.contentWindow.postMessage({ mcAs: 1, token: frame.token, type: 'enter', replace: mcPlan.replace, note: 'Via Mission Control' + (d.mc ? ' v' + d.mc : '') + ': ' + location.origin + '/release/' + rel }, location.origin);
       const m = await got;
       log.info('Mission Control apply: ' + JSON.stringify(m));
       const b = frame.best;

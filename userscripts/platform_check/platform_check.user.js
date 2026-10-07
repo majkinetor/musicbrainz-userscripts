@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Platform Check
 // @namespace    http://tampermonkey.net/
-// @version      2026.10.7.210000
+// @version      2026.10.7.235959
 // @description  Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+DQogIDx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CiAgDQogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJhMWE1MiIgc3Ryb2tlLXdpZHRoPSI5IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik00MCA4OCBBMzQgMzQgMCAwIDEgNDAgNDAiLz4NCiAgICA8cGF0aCBkPSJNMjkgOTkgQTUwIDUwIDAgMCAxIDI5IDI5Ii8+DQogICAgPHBhdGggZD0iTTg4IDg4IEEzNCAzNCAwIDAgMCA4OCA0MCIvPg0KICAgIDxwYXRoIGQ9Ik05OSA5OSBBNTAgNTAgMCAwIDAgOTkgMjkiLz4NCiAgPC9nPg0KICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyMCIgZmlsbD0iI2U4MjAxYSIvPg0KPC9zdmc+DQo=
@@ -8121,7 +8121,8 @@ document.addEventListener('mc:apply', e => {
     const items = (urls.length ? [{ entityType: 'release', mbid, name: album, urls: urls.flatMap(pcMcReleaseLinkTypes) }] : [])
         .concat([...ents.values()].map(r => ({ entityType: r.type, mbid: r.mbid, name: r.name, urls: r.urls.map(url => ({ url, linkTypeId: r.type === 'release_group' ? 90 : pcLinkTypeFor(r.type, url) })) })));
     // one edit note for the batch: the release's links note, or the artist/label one when there are none
-    const note = urls.length ? pcEditNote(urls, forced, pcPastedBarcode()) + (entN ? `\n\n${pcLinksNote()}` : '') : pcLinksNote();
+    const note = (urls.length ? pcEditNote(urls, forced, pcPastedBarcode()) + (entN ? `\n\n${pcLinksNote()}` : '') : pcLinksNote())
+        + '\n' + 'Via Mission Control' + (d.mc ? ' v' + d.mc : '') + ': ' + location.origin + '/release/' + mbid;
     // headless: Falcon keeps its panel shut and reports the batch as falcon:status, tagged, for MC's card
     const json = JSON.stringify({ name: `${album} — platform links`, note, items, headless: !d.dry, tag: `mc:pc:${d.run}` });
     const ok = pcSendToFalconHere(json, !d.dry);

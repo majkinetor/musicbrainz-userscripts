@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Fusion
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.7.235930
+// @version      2026.10.7.235959
 // @description  Merge-recordings assistant for MusicBrainz: gather a pool of candidate recordings from a release / release group / recording page (or paste any MBID/URL), auto-match them into merge groups by ISRC / AcoustID / length / title+artist, review and adjust the groups, then submit the merges directly in the background — no MB merge page involved.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPkZ1c2lvbjwvdGl0bGU+CiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjOGE1Y2Y2IiBzdHJva2Utd2lkdGg9IjciPgogICAgPGVsbGlwc2UgY3g9IjY0IiBjeT0iNjQiIHJ4PSI1MiIgcnk9IjIyIi8+CiAgICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSI2NCIgcng9IjUyIiByeT0iMjIiIHRyYW5zZm9ybT0icm90YXRlKDYwIDY0IDY0KSIvPgogICAgPGVsbGlwc2UgY3g9IjY0IiBjeT0iNjQiIHJ4PSI1MiIgcnk9IjIyIiB0cmFuc2Zvcm09InJvdGF0ZSgxMjAgNjQgNjQpIi8+CiAgPC9nPgogIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjE0IiBmaWxsPSIjNmQzZmYwIi8+Cjwvc3ZnPgo=
@@ -1318,7 +1318,7 @@ function autoEditNote(group) {
 // always appended so the edit stays traceable either way.
 function buildEditNote(group) {
     const body = (group.editNote && group.editNote.trim()) ? group.editNote.trim() : autoEditNote(group);
-    return body + '\n\nFusion v' + VERSION + ' by majkinetor - ' + HELP_URL;
+    return body + '\n\nFusion v' + VERSION + ' by majkinetor - ' + HELP_URL + (group.via ? '\n' + group.via : '');
 }
 async function ensureInternalIds(gids) {
     const ids = [];
@@ -3982,6 +3982,7 @@ if (SCOPE.type === 'release') {
         if (d.dry) { reply({ ok: true, sent: 0, note: 'dry run: ' + groups.length + ' merge' + (groups.length === 1 ? '' : 's') + ' would be submitted' }); return; }
         let ok = 0; const errs = [];
         for (const { g, byGid } of groups) {
+            g.via = 'Via Mission Control' + (d.mc ? ' v' + d.mc : '') + ': ' + location.origin + '/release/' + SCOPE.mbid;   // the note's last line (buildEditNote)
             g.memberGids.forEach(gid => { if (!STATE.recordings.has(gid)) STATE.recordings.set(gid, byGid.get(gid)); });   // mergeGroup reads its members from here
             await mergeGroup(g);
             if (g.state === 'done') ok++; else errs.push(g.error || 'failed');
