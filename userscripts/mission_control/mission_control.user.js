@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Mission Control
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.7.140000
+// @version      2026.10.7.151000
 // @description  One window on the release page that asks the other scripts (Platform Check, ISRC Scout, Art Station, Fusion, Credit Hoarder) what is missing, shows it all in one review, and applies the ticked changes in order.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPk1pc3Npb24gQ29udHJvbDwvdGl0bGU+CiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjNWYzZWMwIiBzdHJva2Utd2lkdGg9IjciPgogICAgPGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iNTIiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjMwIi8+CiAgICA8cGF0aCBkPSJNNjQgNHYyMk02NCAxMDJ2MjJNNCA2NGgyMk0xMDIgNjRoMjIiLz4KICA8L2c+CiAgPGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iMTEiIGZpbGw9IiM4YTVjZjYiLz4KPC9zdmc+Cg==
@@ -406,8 +406,8 @@ function mcStyle() {
         + '.mc-sect-h .ic img{width:16px;height:16px;object-fit:contain;display:block}.mc-sect-h .t{font-weight:700;font-size:12.5px}.mc-sect-h .p{font-size:10.5px;color:var(--mbu-text-weak)}'
         + '.mc-empty{padding:10px;color:var(--mbu-text-weak);font-size:12px}'
         + '.mc-line{display:grid;grid-template-columns:16px 16px 1fr auto;gap:8px;align-items:center;padding:4px 10px;border-bottom:1px solid var(--mbu-divider)}.mc-line:last-child{border-bottom:0}'
-        + '.mc-sect-h .end{margin-left:auto;display:flex;align-items:center;gap:6px}.mc-chlbl{font-size:11px;color:var(--mbu-text-weak)}'
-        + '.mc-chsrc{display:inline-flex;align-items:center;padding:2px 4px;border:1px solid var(--mbu-border);border-radius:5px;text-decoration:none}.mc-chsrc:hover{background:var(--mbu-bg-hover);border-color:var(--mbu-accent)}.mc-chall{font-size:11px;font-weight:600;color:var(--mbu-accent-text)}'
+        + '.mc-sect-h .end{margin-left:auto;display:flex;align-items:center;gap:6px}.mc-chlbl{font-size:12.5px;color:var(--mbu-text-dim)}'
+        + '.mc-chopen{flex-wrap:wrap;justify-content:flex-end}#mc-root a.mc-chsrc{padding:6px 12px;gap:7px;font-size:13px;font-weight:600;color:var(--mbu-text);text-decoration:none}#mc-root a.mc-chsrc:hover{background:var(--mbu-bg-hover);border-color:var(--mbu-accent)}'
         + '.mc-sect-h .mc-applied{border:0;border-radius:20px;padding:1px 9px}'
         + '#mc-root .mc-linked{display:inline-flex;align-items:center;gap:3px;padding:2px 7px;border:1px solid transparent;border-radius:20px;background:none;cursor:pointer;opacity:.75}'
         + '#mc-root .mc-linked:hover,#mc-root .mc-linked.on{opacity:1;border-color:var(--mbu-ok-border);background:var(--mbu-ok-bg)}'
@@ -703,8 +703,8 @@ function paintReleaseCredits() {
     // CH's import sources: each opens edit-relationships, where CH presses that source's button
     // and its pre-flight starts (the same choice as CH's toolbar, #680)
     const open = (r && r.open) || (found.ch && found.ch.open) || [], slot = box.parentNode.querySelector('.mc-chopen');
-    const openHtml = open.length ? '<span class="mc-chlbl">Open in CH:</span>' + open.map(o => '<a class="mc-pico mc-chsrc" href="' + esc(o.url) + '" title="' + esc(o.title || o.label) + '">'
-        + (o.icon ? stIcon(o.icon, 14) : '<span class="mc-chall">' + esc(o.label) + '</span>') + '</a>').join('') : '';
+    const openHtml = open.length ? '<span class="mc-chlbl">Open in CH:</span>' + open.map(o => '<a class="mc-btn mc-chsrc" href="' + esc(o.url) + '" title="' + esc(o.title || o.label) + '">'
+        + (o.icon ? stIcon(o.icon, 18) : '') + '<span>' + esc(o.label) + '</span></a>').join('') : '';
     if (slot && slot._mcHtml !== openHtml) { slot._mcHtml = openHtml; slot.innerHTML = mbuHtml(openHtml); }
     if (!r || r.state !== 'done') { box.innerHTML = mbuHtml('<div class="mc-empty">Credit Hoarder: ' + esc(stateText(p)) + (r ? '' : '. Fetch credits fills this in.') + '</div>'); return; }
     const x = (r.findings || []).find(f => !f.track);
