@@ -21,6 +21,21 @@ test('#680: Probe asks ISRC Scout; the matrix shows each track\'s ISRC', { tag: 
   await page.click('#mc-root [data-act="probe"]');
   await page.waitForFunction(() => /\b(add|ok)\b/.test(document.querySelector('#mc-root .mc-step[data-step="is"]').className), null, { timeout: 120_000 });
 
+  // the probe reads only the release's album links and the ones ticked in MC: never a Platform
+  // Check find straight from its sidebar (a withheld Deezer album gave a release its ISRCs)
+  const srcs = await page.evaluate(() => {
+    // 7digital: one this release doesn't link
+    const row = document.createElement('div');
+    row.id = 'row-sevendigital'; row.className = 'pc-st-match';
+    row.innerHTML = '<a id="mb-online-sevendigital" href="https://uk.7digital.com/artist/planted/release/planted-7353960"></a>';
+    document.body.append(row);
+    const t = window.__isTest680, out = { dialog: t.fastest().map(x => x.source), probe: t.mcSources().map(x => x.source) };
+    row.remove();
+    return out;
+  });
+  check(srcs.dialog.includes('7digital'), `the dialog still falls back to Platform Check's find (${srcs.dialog.join(', ')})`);
+  check(!srcs.probe.includes('7digital'), `the MC probe does not (${srcs.probe.join(', ')})`);
+
   const cells = await page.locator('#mc-root .mc-tbl td[data-col="isrc"]').allTextContents();
   const added = cells.filter(c => /^\s*\+ [A-Z]{2}[A-Z0-9]{3}\d{7}/.test(c)).length;
   check(added > 0, `ISRC column shows found ISRCs (${added} of ${cells.length})`);

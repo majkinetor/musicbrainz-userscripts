@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         ISRC Scout
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.7.235959
+// @version      2026.10.8.1
 // @description  Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify / Beatport / Tidal / Volumo / HDtracks / Qobuz, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPklTUkMgU2NvdXQ8L3RpdGxlPgogICAgPHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPgogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjQwIi8+CiAgICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyNiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2U9IiNiOWEzZTgiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPgogIDwvZz4KICA8bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+Cjwvc3ZnPgo=
@@ -6709,11 +6709,14 @@
   // Spotify (a third party) come last. A link pulled from the release group (#302) is left
   // out: whether it fits this release needs the user to look.
   const ISRC_SPEED_ORDER = ['qobuz', 'audiomack', 'apple', 'tidal', 'hdtracks', 'volumo', 'beatport', 'soundcloud', 'deezer', 'sevendigital'];
-  function isrcSourcesFastest() {
+  // linkedOnly: the release's own links only, not Platform Check's sidebar finds (Mission Control
+  // passes the ones ticked in its card instead: an unticked or withheld album is not this release's)
+  function isrcSourcesFastest(linkedOnly) {
     const rg = (RELEASE && RELEASE.rgFrom) || {};
+    const idOf = (source, mbId) => linkedOnly ? mbId : providerAlbumId(source, mbId);
     return ISRC_SPEED_ORDER.map(k => ALBUM_PROVIDERS[k]).filter(Boolean)
-      .map(p => ({ source: p.source, fetcher: p.fetcher, id: rg[p.idField] ? null : providerAlbumId(p.source, RELEASE[p.idField]) }))
-      .concat([{ source: 'Spotify', fetcher: fetchSpotify, id: rg.spotifyId ? null : providerAlbumId('Spotify', RELEASE.spotifyId) }])
+      .map(p => ({ source: p.source, fetcher: p.fetcher, id: rg[p.idField] ? null : idOf(p.source, RELEASE[p.idField]) }))
+      .concat([{ source: 'Spotify', fetcher: fetchSpotify, id: rg.spotifyId ? null : idOf('Spotify', RELEASE.spotifyId) }])
       .filter(x => x.id);
   }
   // the dialog's Find everything: ISRCs from the fastest source that gives any (the next one
@@ -7247,8 +7250,9 @@
     const mcHello = () => mcSend('mc:provider', { id: 'is', name: 'ISRC Scout', version: SCRIPT_VERSION, release: mbid, capabilities: ['probe', 'apply'] });
     let mcFound = {};   // recId -> { isrc, source } from the last probe
     let mcLinks = {};   // 'link:<recId>:<url>' -> { rec, idx, code, name, url, linkTypeID } from the last probe
-    // the same sources and order as the dialog's Find everything
-    const mcSources = isrcSourcesFastest;
+    // the same sources and order as the dialog's Find everything, but only the release's links and
+    // the album links ticked in Mission Control (d.links): never a Platform Check find it didn't tick
+    const mcSources = () => isrcSourcesFastest(true);
     // the dialog's mapping (trackForSource); a position fill that looks like another song is unsure
     function mcTrackOf(s) {
       const m = trackForSource(s);
@@ -7390,7 +7394,7 @@
       reply({ ok: !errs.length, sent: sentN, note: [done.length && done.join(' and ') + ' submitted', errs.join('; ')].filter(Boolean).join(' · ') });
     });
     mcHello();
-    if (mbuTestHooks()) window.__isTest680 = { mcFinding, mcDups, mcTrackOf, trackForSource, mcSources, found: () => mcFound, release: () => RELEASE, log: () => Log.text() };
+    if (mbuTestHooks()) window.__isTest680 = { mcFinding, mcDups, mcTrackOf, trackForSource, mcSources, fastest: isrcSourcesFastest, found: () => mcFound, release: () => RELEASE, log: () => Log.text() };
   }
 
 })();
