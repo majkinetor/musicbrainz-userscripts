@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Fusion
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.5.205655
+// @version      2026.10.7.235500
 // @description  Merge-recordings assistant for MusicBrainz: gather a pool of candidate recordings from a release / release group / recording page (or paste any MBID/URL), auto-match them into merge groups by ISRC / AcoustID / length / title+artist, review and adjust the groups, then submit the merges directly in the background — no MB merge page involved.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPkZ1c2lvbjwvdGl0bGU+CiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjOGE1Y2Y2IiBzdHJva2Utd2lkdGg9IjciPgogICAgPGVsbGlwc2UgY3g9IjY0IiBjeT0iNjQiIHJ4PSI1MiIgcnk9IjIyIi8+CiAgICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSI2NCIgcng9IjUyIiByeT0iMjIiIHRyYW5zZm9ybT0icm90YXRlKDYwIDY0IDY0KSIvPgogICAgPGVsbGlwc2UgY3g9IjY0IiBjeT0iNjQiIHJ4PSI1MiIgcnk9IjIyIiB0cmFuc2Zvcm09InJvdGF0ZSgxMjAgNjQgNjQpIi8+CiAgPC9nPgogIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjE0IiBmaWxsPSIjNmQzZmYwIi8+Cjwvc3ZnPgo=
@@ -3875,19 +3875,29 @@ if (SCOPE.type === 'release') {
             progress('matching ' + recordings.length + ' recordings');
             const byGid = new Map(recordings.map(r => [r.gid, r]));
             const groups = autoMatch(recordings, SETTINGS.lengthToleranceMs, SETTINGS.matchCutoff);
+            // as the window does: a group with a pending edit on a member is never
+            // proposed (#529). It is reported blocked, so MC shows why and never ticks it.
+            const grouped = groups.flatMap(g => g.memberGids).map(x => byGid.get(x)).filter(Boolean);
+            if (grouped.length) { progress('checking ' + grouped.length + ' grouped recordings for pending edits'); await enrichPendingEdits(grouped, 2); }
+            const pendingOf = g => g.memberGids.map(x => byGid.get(x)).filter(r => r && r.editsPending);
             mcGroups = new Map();
-            for (const g of groups) for (const gid of g.memberGids) mcGroups.set(gid, { g, byGid });
+            const blockedOf = new Map();
+            for (const g of groups) {
+                const bad = pendingOf(g);
+                for (const gid of g.memberGids) (bad.length ? blockedOf : mcGroups).set(gid, bad.length ? { g, byGid, bad } : { g, byGid });
+            }
             const findings = own.recordings.map(r => {
-                const hit = mcGroups.get(r.gid);
+                const hit = mcGroups.get(r.gid) || blockedOf.get(r.gid);
                 const base = { key: r.gid, track: r.gid, name: r.title };
                 if (!hit) return Object.assign(base, { state: 'none', matches: [] });
                 const others = hit.g.memberGids.filter(x => x !== r.gid).map(x => byGid.get(x)).filter(Boolean);
                 return Object.assign(base, {
-                    state: 'new', confidence: hit.g.confidence, why: hit.g.signals.join(', '),
+                    state: hit.bad ? 'blocked' : 'new', confidence: hit.g.confidence,
+                    why: hit.bad ? 'pending edit on ' + hit.bad.map(b => b.title + ' (' + ((b.releases[0] || {}).title || b.gid.slice(0, 8)) + ')').join(', ') + ': resolve it in MB first' : hit.g.signals.join(', '),
                     matches: others.map(o => ({ gid: o.gid, title: o.title, len: dur(o.length), release: (o.releases[0] || {}).title || '' })),
                 });
             });
-            Log.info('Mission Control probe answered: ' + groups.length + ' group(s), ' + findings.filter(f => f.state === 'new').length + ' track(s) with duplicates');
+            Log.info('Mission Control probe answered: ' + groups.length + ' group(s), ' + findings.filter(f => f.state === 'new').length + ' track(s) with duplicates, ' + findings.filter(f => f.state === 'blocked').length + ' blocked by a pending edit');
             done(findings);
         } catch (x) {
             Log.error('Mission Control probe failed: ' + (x && x.message));
