@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+<title>Art Station — Wireframe peaks</title>
+<defs><linearGradient id="i06bg" x1="0" y1="0" x2="0" y2="1"><stop offset="0.00" stop-color="#1b0f3b"/><stop offset="0.50" stop-color="#3a1670"/><stop offset="1.00" stop-color="#8a2a9c"/></linearGradient><clipPath id="i06c"><rect x="8" y="8" width="112" height="112" rx="22"/></clipPath></defs>
+<g clip-path="url(#i06c)"><rect x="8" y="8" width="112" height="112" fill="url(#i06bg)"/>
+<g fill="#fff"><circle cx="24" cy="24" r="1.2"/><circle cx="102" cy="20" r="1.4"/><circle cx="88" cy="36" r="1"/><circle cx="38" cy="40" r="1"/></g>
+<defs><linearGradient id="i06sg646024" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fffb96"/><stop offset="1" stop-color="#ff71ce"/></linearGradient>
+<mask id="i06sm646024"><rect x="0" y="0" width="128" height="128" fill="#fff"/><rect x="40" y="50.9" width="48" height="1.2" fill="#000"/><rect x="40" y="53.5" width="48" height="1.5" fill="#000"/><rect x="40" y="56.8" width="48" height="1.9" fill="#000"/><rect x="40" y="60.9" width="48" height="2.3" fill="#000"/><rect x="40" y="66.1" width="48" height="2.9" fill="#000"/><rect x="40" y="72.5" width="48" height="3.7" fill="#000"/><rect x="40" y="80.6" width="48" height="4.6" fill="#000"/></mask></defs>
+<circle cx="64" cy="60" r="24" fill="url(#i06sg646024)" mask="url(#i06sm646024)"/>
+<path d="M8 84 L34 50 L50 70 L70 42 L96 76 L106 64 L120 80 V120 H8Z" fill="#1b0f3b"/>
+<path d="M8 84 L34 50 L50 70 L70 42 L96 76 L106 64 L120 80" fill="none" stroke="#01cdfe" stroke-width="3" stroke-linejoin="round"/>
+<path d="M34 50 L40 84 M50 70 L54 84 M70 42 L66 84 M70 42 L82 84 M96 76 L94 84" stroke="#01cdfe" stroke-width="1.4" opacity=".7"/>
+<path d="M8 84H120M8 88.3H120M8 94.3H120M8 103.6H120M8 117.9H120M43.6 84L-76.0 120M48.7 84L-41.0 120M53.8 84L-6.0 120M58.9 84L29.0 120M64.0 84L64.0 120M69.1 84L99.0 120M74.2 84L134.0 120M79.3 84L169.0 120M84.4 84L204.0 120" stroke="#ff71ce" stroke-width="1.4" fill="none" stroke-linecap="round"/></g>
+<rect x="8" y="8" width="112" height="112" rx="22" fill="none" stroke="#ff71ce" stroke-width="3"/>
+</svg>

@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+<title>Art Station — Vinyl sunset</title>
+<defs><linearGradient id="i02rim" x1="0" y1="0" x2="1" y2="1"><stop offset="0.00" stop-color="#ff71ce"/><stop offset="0.50" stop-color="#b967ff"/><stop offset="1.00" stop-color="#01cdfe"/></linearGradient><clipPath id="i02c"><circle cx="64" cy="64" r="24"/></clipPath><linearGradient id="i02lab" x1="0" y1="0" x2="0" y2="1"><stop offset="0.00" stop-color="#3d1b7a"/><stop offset="0.50" stop-color="#b967ff"/><stop offset="1.00" stop-color="#ffb17a"/></linearGradient></defs>
+<circle cx="64" cy="64" r="56" fill="#1b0f3b" stroke="url(#i02rim)" stroke-width="5"/>
+<g fill="none" stroke="#3b2770" stroke-width="1.6"><circle cx="64" cy="64" r="46"/><circle cx="64" cy="64" r="39"/><circle cx="64" cy="64" r="32"/></g>
+<path d="M30 36 A44 44 0 0 1 64 20" fill="none" stroke="#01cdfe" stroke-width="3" stroke-linecap="round" opacity=".8"/>
+<g clip-path="url(#i02c)"><rect x="40" y="40" width="48" height="48" fill="url(#i02lab)"/><defs><linearGradient id="i02sg646615" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fffb96"/><stop offset="1" stop-color="#ff71ce"/></linearGradient>
+<mask id="i02sm646615"><rect x="0" y="0" width="128" height="128" fill="#fff"/><rect x="49" y="60.3" width="30" height="0.8" fill="#000"/><rect x="49" y="61.9" width="30" height="0.9" fill="#000"/><rect x="49" y="64.0" width="30" height="1.2" fill="#000"/><rect x="49" y="66.6" width="30" height="1.5" fill="#000"/><rect x="49" y="69.8" width="30" height="1.8" fill="#000"/><rect x="49" y="73.8" width="30" height="2.3" fill="#000"/><rect x="49" y="78.9" width="30" height="2.9" fill="#000"/></mask></defs>
+<circle cx="64" cy="66" r="15" fill="url(#i02sg646615)" mask="url(#i02sm646615)"/><rect x="40" y="68" width="48" height="20" fill="#1b0f3b"/><path d="M40 68H88M40 70.4H88M40 73.7H88M40 78.9H88M40 86.8H88M55.3 68L4.0 88M57.5 68L19.0 88M59.6 68L34.0 88M61.8 68L49.0 88M64.0 68L64.0 88M66.2 68L79.0 88M68.4 68L94.0 88M70.5 68L109.0 88M72.7 68L124.0 88" stroke="#ff71ce" stroke-width="1.1" fill="none" stroke-linecap="round"/></g>
+<circle cx="64" cy="64" r="24" fill="none" stroke="#fffb96" stroke-width="2"/><circle cx="64" cy="64" r="3" fill="#fff"/>
+</svg>
