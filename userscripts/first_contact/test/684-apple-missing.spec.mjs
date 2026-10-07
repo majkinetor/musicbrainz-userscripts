@@ -1,6 +1,7 @@
 // #684: an Apple album with tracks the storefront doesn't offer asks before the editor opens.
 // Eddie Harris, "Artist's Choice" (gb/852547): 24 tracks, 20 offered. Cancel stops the import, no tab
-// opens; Import anyway opens the editor with the 20 and the edit note naming the 4.
+// opens; Import anyway opens the editor with the 20 and an empty track at each missing position,
+// and the edit note names them.
 // music.apple.com's Content Security Policy refuses the harness's inline script: bypassed here.
 import { test, check } from '../../../dev/test/harness.mjs';
 
@@ -23,7 +24,7 @@ test('tracks Apple does not offer: asked before the import', { tag: ['@web'] }, 
   await warn.waitFor({ timeout: 30_000 });
   const text = await warn.textContent();
   console.log(text);
-  check(/Apple Music lists 24 tracks but offers 20: 4 are missing from this tracklist \(1\.9, 2\.1, 2\.4, 2\.6\)/.test(text), 'the warning names the missing tracks');
+  check(/Apple Music lists 24 tracks but offers 20: 4 are missing \(1\.9, 2\.1, 2\.4, 2\.6\), left as empty tracks/.test(text), 'the warning names the missing tracks');
   await page.screenshot({ path: 'test-results/fc-684-warn.png' });
   await warn.locator('.fc-warn-no').click();
   await page.waitForTimeout(1500);
@@ -37,6 +38,9 @@ test('tracks Apple does not offer: asked before the import', { tag: ['@web'] }, 
   await page.waitForFunction(() => !!window.__fcLastSeed, null, { timeout: 30_000 });
   const seed = await page.evaluate(() => window.__fcLastSeed);
   const note = (seed.params.find(p => p[0] === 'edit_note') || [])[1] || '';
-  check(seed.rel.mediums.map(m => m.tracks.length).join() === '12,8', 'Import anyway: the 20 offered');
-  check(/4 are missing from this tracklist/.test(note), 'with the edit note naming the missing');
+  check(seed.rel.mediums.map(m => m.tracks.length).join() === '13,11', 'Import anyway: the 20 offered and 4 empty tracks');
+  // the seed: no name for an empty track, its number, and the next one keeps its own
+  const has = k => seed.params.some(p => p[0] === k);
+  check(!has('mediums.0.track.8.name') && has('mediums.0.track.8.number') && seed.params.find(p => p[0] === 'mediums.0.track.9.name')[1] === 'Funkorama', 'track 1.9 is seeded empty; 1.10 is Funkorama');
+  check(/4 are missing \(1\.9, 2\.1, 2\.4, 2\.6\), left as empty tracks/.test(note), 'with the edit note naming the missing');
 });

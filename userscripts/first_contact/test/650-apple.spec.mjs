@@ -64,11 +64,13 @@ test('an Apple album with tracks the storefront does not offer says which', { ta
   const r = await page.evaluate(async () => {
     const T = window.__fcTest, ap = T.providers.find(p => p.id === 'apple');
     const eh = await ap.fetchRelease('gb/852547'), ram = await ap.fetchRelease('us/617154241');
-    return { missing: eh.missing, n: eh.mediums.map(m => m.tracks.length), note: T.editNoteFor(eh, ap, null), ram: ram.missing, ramNote: T.editNoteFor(ram, ap, null) };
+    const empty = eh.mediums.flatMap((m, i) => m.tracks.map((t, j) => !t.title ? (i + 1) + '.' + (j + 1) : null)).filter(Boolean);
+    return { missing: eh.missing, n: eh.mediums.map(m => m.tracks.length), empty, funk: eh.mediums[0].tracks[9].title, note: T.editNoteFor(eh, ap, null), ram: ram.missing, ramNote: T.editNoteFor(ram, ap, null) };
   });
   console.log(JSON.stringify(r));
-  check(JSON.stringify(r.n) === '[12,8]', `the 20 it offers (${r.n})`);
+  check(JSON.stringify(r.n) === '[13,11]' && r.empty.join() === '1.9,2.1,2.4,2.6', `the 20 it offers, an empty track at each missing position (${r.n}; ${r.empty})`);
+  check(r.funk === 'Funkorama', `so the songs keep their numbers: 1.10 is Funkorama (${r.funk})`);
   check(r.missing && r.missing.of === 24 && r.missing.count === 4 && r.missing.at.join() === '1.9,2.1,2.4,2.6', `the 4 missing, by position (${JSON.stringify(r.missing)})`);
-  check(/Apple Music lists 24 tracks but offers 20: 4 are missing from this tracklist \(1\.9, 2\.1, 2\.4, 2\.6\)\./.test(r.note), `the edit note says so (${r.note})`);
+  check(/Apple Music lists 24 tracks but offers 20: 4 are missing \(1\.9, 2\.1, 2\.4, 2\.6\), left as empty tracks to fill in\./.test(r.note), `the edit note says so (${r.note})`);
   check(!r.ram && !/missing/.test(r.ramNote), 'a whole album has nothing missing');
 });

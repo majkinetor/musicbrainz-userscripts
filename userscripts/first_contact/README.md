@@ -112,7 +112,7 @@ Pages: `music.apple.com/<country>/album/…`
 - Every track has its ISRC; every artist its Apple link.
 - *- Single* / *- EP* at the end of the title is the type, not part of the title.
 - Music videos are left out.
-- An album can list tracks Apple doesn't offer. Apple leaves them out of the album data and numbers the others around them, so 1.8 is followed by 1.10. When that happens, First Contact names the missing tracks and asks before it opens the editor. If you choose *Import anyway*, the edit note lists them.
+- An album can list tracks Apple doesn't offer. Apple leaves them out of the album data and numbers the others around them, so 1.8 is followed by 1.10. When that happens, First Contact names the missing tracks and asks before it opens the editor. If you choose *Import anyway*, each missing track is an empty track at its own position, so the others keep their numbers. Give each empty track its title, or remove it. The edit note lists them.
 
 ### Tidal
 
