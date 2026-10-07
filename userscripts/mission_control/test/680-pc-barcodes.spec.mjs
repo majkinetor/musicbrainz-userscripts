@@ -86,3 +86,32 @@ test('#680: links grouped by barcode, a lane each', { tag: ['@sandbox'] }, async
   await card.locator('.mc-bcl').nth(1).locator('.mc-bc').click();
   check(await card.locator('.mc-line.mc-in').count() === 0, 'a second click folds it');
 });
+
+// A release without a barcode (Namito, Stone Flower) showed the empty-barcode lane twice: once as
+// the release's own, once for the platforms that gave none.
+test('#680: a release without a barcode has one empty-barcode lane', { tag: ['@sandbox'] }, async ({ page, inject }) => {
+  await page.goto(`https://test.musicbrainz.org/release/${RELEASE}`, { waitUntil: 'domcontentloaded' });
+  await page.waitForSelector('#content table.medium');
+  await inject('mission_control', { waitFor: '__mcTest' });
+  await page.evaluate(() => {
+    const send = (t, d) => document.dispatchEvent(new CustomEvent(t, { detail: JSON.stringify(d) }));
+    document.addEventListener('mc:probe', e => {
+      const d = JSON.parse(e.detail);
+      setTimeout(() => send('mc:findings', { id: 'pc', run: d.run, barcode: null, findings: [
+        { key: 'bandcamp', name: 'Bandcamp', url: 'https://solselectas.bandcamp.com/album/stone-flower', state: 'withheld', why: 'barcode not confirmed' },
+        { key: 'apple', name: 'Apple', url: 'https://music.apple.com/us/album/stone-flower-single/1460686797', state: 'withheld', why: 'barcode not confirmed' },
+        { key: 'deezer', name: 'Deezer', url: 'https://www.deezer.com/album/94575752', state: 'withheld', why: 'barcode differs from the release\'s', barcode: '853565702496' },
+        { key: 'beatport', name: 'Beatport', url: 'https://www.beatport.com/release/stone-flower/2576581', state: 'linked', barcode: '853565702496' }] }), 50);
+    });
+    send('mc:provider', { id: 'pc', name: 'Platform Check', version: 1, capabilities: ['probe', 'apply'] });
+  });
+  await page.click('#mc-launch');
+  await page.waitForSelector('#mc-root');
+  await page.click('#mc-root [data-act="probe"]');
+  await page.waitForSelector('#mc-root [data-card="pc"] .mc-bcl');
+  const L = await page.locator('#mc-root [data-card="pc"] .mc-bcl').evaluateAll(ls => ls.map(l => ({ bc: l.querySelector('.mc-bc').innerText.trim(), keys: [...l.querySelectorAll('.mc-ti')].map(i => i.dataset.key || 'linked') })));
+  console.log(JSON.stringify(L));
+  check(L.length === 2, `two lanes, not three (${L.length})`);
+  check(L[0].bc === '853565702496' && L[0].keys.join() === 'deezer,linked', 'the platforms\' barcode first');
+  check(L[1].bc === '' && L[1].keys.join() === 'bandcamp,apple', 'one empty-barcode lane, last');
+});
