@@ -67,11 +67,11 @@ test('#680: Fusion runs on Fetch RG and marks the tracks with duplicates', { tag
   await page.screenshot({ path: 'test-results/mc-680-fusion.png' });
 });
 
-// A group with a pending edit on a member is never proposed (#529): the Fusion
-// window drops it, and the probe reports it blocked rather than ticked. Every
-// recording reads as having a pending edit here (the entity lookup is rewritten),
-// so no track is offered for merging.
-test('#680: Fusion reports a group with a pending edit as blocked, not ticked', { tag: ['@sandbox'] }, async ({ page, inject }) => {
+// A group with a pending edit on a member is never proposed (#529): Fusion's
+// window drops it and leaves its recordings in the pool, the one with the edit
+// badged "pending". MC does the same. Every recording reads as having a pending
+// edit here (the entity lookup is rewritten), so nothing is offered for merging.
+test('#680: Fusion offers no group with a pending edit, and marks the recording pending', { tag: ['@sandbox'] }, async ({ page, inject }) => {
   await page.route('**/ws/js/entity/**', async route => {
     const res = await route.fetch();
     const j = await res.json().catch(() => null);
@@ -86,12 +86,10 @@ test('#680: Fusion reports a group with a pending edit as blocked, not ticked', 
   await page.click('#mc-root [data-act="probe"]');
   await page.click('#mc-root [data-fetch="fusion"]');
   await page.waitForFunction(() => document.querySelector('#mc-root [data-fetch="fusion"]'), null, { timeout: 120_000 });
-  const blocked = await page.locator('#mc-root .mc-tbl td[data-col="fusion"] .mc-fxo.err').count();
-  check(blocked > 0, `tracks whose group has a pending edit are marked blocked (${blocked})`);
-  check(await page.locator('#mc-root .mc-tbl td[data-col="fusion"] .mc-fxo:not(.err)').count() === 0, 'none is offered as a match');
-  check(await page.locator('#mc-root .mc-tbl td[data-col="fusion"] .mc-pick.on').count() === 0, 'none is ticked');
-  check(/pending edit/.test(await page.locator('#mc-root .mc-tbl td[data-col="fusion"] .mc-fxo.err').first().getAttribute('title')), 'the tooltip names the pending edit');
-  await page.locator('#mc-root .mc-tbl td[data-col="fusion"] .mc-fxo.err').first().click();
-  check(await page.locator('#mc-root tr.mc-fxd:not([hidden]) a[href$="/open_edits"]').count() > 0, 'the comparison links the open edits');
-  await page.screenshot({ path: 'test-results/mc-680-fusion-blocked.png' });
+  check(await page.locator('#mc-root .mc-tbl td[data-col="fusion"] .mc-fxo').count() === 0, 'no group is offered');
+  check(await page.locator('#mc-root .mc-tbl td[data-col="fusion"] .mc-pick').count() === 0, 'nothing can be ticked');
+  const pend = page.locator('#mc-root .mc-tbl td[data-col="fusion"] a.mc-fxp');
+  check(await pend.count() > 0, `the recordings with an open edit are marked pending (${await pend.count()})`);
+  check(/\/open_edits$/.test(await pend.first().getAttribute('href')), 'and link their open edits');
+  await page.screenshot({ path: 'test-results/mc-680-fusion-pending.png' });
 });
