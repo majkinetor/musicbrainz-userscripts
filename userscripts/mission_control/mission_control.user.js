@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Mission Control
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.7.090500
+// @version      2026.10.7.140000
 // @description  One window on the release page that asks the other scripts (Platform Check, ISRC Scout, Art Station, Fusion, Credit Hoarder) what is missing, shows it all in one review, and applies the ticked changes in order.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPk1pc3Npb24gQ29udHJvbDwvdGl0bGU+CiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjNWYzZWMwIiBzdHJva2Utd2lkdGg9IjciPgogICAgPGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iNTIiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjMwIi8+CiAgICA8cGF0aCBkPSJNNjQgNHYyMk02NCAxMDJ2MjJNNCA2NGgyMk0xMDIgNjRoMjIiLz4KICA8L2c+CiAgPGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iMTEiIGZpbGw9IiM4YTVjZjYiLz4KPC9zdmc+Cg==
@@ -81,7 +81,7 @@ document.addEventListener('mc:provider', e => {
     if (!d || !d.id) { Log.warn('mc:provider without an id'); return; }
     found[d.id] = d;
     Log.info('provider ' + d.id + ' answered: ' + (d.name || '?') + ' v' + (d.version || '?') + ' · ' + JSON.stringify(d.capabilities || []));
-    if (ui) { paintBadges(); fitCards(); }
+    if (ui) { paintBadges(); paintReleaseCredits(); fitCards(); }
 });
 
 // Probe: MC sends 'mc:probe' { release, run, only }; a provider answers with
@@ -110,7 +110,7 @@ document.addEventListener('mc:progress', e => {
 document.addEventListener('mc:findings', e => {
     const d = busEvent(e, 'mc:findings'); if (!d) return;
     const findings = Array.isArray(d.findings) ? d.findings : [];
-    results[d.id] = { state: 'done', findings, summary: d.summary || '', best: d.best || null };
+    results[d.id] = { state: 'done', findings, summary: d.summary || '', best: d.best || null, open: Array.isArray(d.open) ? d.open : null };
     // ticked by default: only what the provider is sure of
     picked[d.id] = new Set(findings.filter(x => x.state === 'new').map(x => x.key));
     const tally = findings.reduce((t, x) => (t[x.state] = (t[x.state] || 0) + 1, t), {});
@@ -406,7 +406,9 @@ function mcStyle() {
         + '.mc-sect-h .ic img{width:16px;height:16px;object-fit:contain;display:block}.mc-sect-h .t{font-weight:700;font-size:12.5px}.mc-sect-h .p{font-size:10.5px;color:var(--mbu-text-weak)}'
         + '.mc-empty{padding:10px;color:var(--mbu-text-weak);font-size:12px}'
         + '.mc-line{display:grid;grid-template-columns:16px 16px 1fr auto;gap:8px;align-items:center;padding:4px 10px;border-bottom:1px solid var(--mbu-divider)}.mc-line:last-child{border-bottom:0}'
-        + '.mc-sect-h .end{margin-left:auto;display:flex;align-items:center;gap:6px}.mc-sect-h .mc-applied{border:0;border-radius:20px;padding:1px 9px}'
+        + '.mc-sect-h .end{margin-left:auto;display:flex;align-items:center;gap:6px}.mc-chlbl{font-size:11px;color:var(--mbu-text-weak)}'
+        + '.mc-chsrc{display:inline-flex;align-items:center;padding:2px 4px;border:1px solid var(--mbu-border);border-radius:5px;text-decoration:none}.mc-chsrc:hover{background:var(--mbu-bg-hover);border-color:var(--mbu-accent)}.mc-chall{font-size:11px;font-weight:600;color:var(--mbu-accent-text)}'
+        + '.mc-sect-h .mc-applied{border:0;border-radius:20px;padding:1px 9px}'
         + '#mc-root .mc-linked{display:inline-flex;align-items:center;gap:3px;padding:2px 7px;border:1px solid transparent;border-radius:20px;background:none;cursor:pointer;opacity:.75}'
         + '#mc-root .mc-linked:hover,#mc-root .mc-linked.on{opacity:1;border-color:var(--mbu-ok-border);background:var(--mbu-ok-bg)}'
         + '.mc-lk{font-size:10.5px;font-weight:700;color:var(--mbu-ok);margin-left:3px}'
@@ -692,12 +694,18 @@ function fitCards() {
 // CH's release-level credits (#680): its finding with no `track`. Info only, like its column.
 function releaseCredits() {
     const sec = el('section', 'mc-sect');
-    sec.innerHTML = mbuHtml('<div class="mc-sect-h"><span class="ic" title="Credit Hoarder"><img alt="" src="' + PROVIDER_ICONS.ch + '"></span><span class="t">Release credits</span><span class="mc-mode">info</span></div><div class="mc-chrel"></div>');
+    sec.innerHTML = mbuHtml('<div class="mc-sect-h"><span class="ic" title="Credit Hoarder"><img alt="" src="' + PROVIDER_ICONS.ch + '"></span><span class="t">Release credits</span><span class="mc-mode">info</span><span class="end mc-chopen"></span></div><div class="mc-chrel"></div>');
     return sec;
 }
 function paintReleaseCredits() {
     const box = ui.querySelector('.mc-chrel'); if (!box) return;
     const p = PROVIDERS.find(x => x.id === 'ch'), r = results.ch;
+    // CH's import sources: each opens edit-relationships, where CH presses that source's button
+    // and its pre-flight starts (the same choice as CH's toolbar, #680)
+    const open = (r && r.open) || (found.ch && found.ch.open) || [], slot = box.parentNode.querySelector('.mc-chopen');
+    const openHtml = open.length ? '<span class="mc-chlbl">Open in CH:</span>' + open.map(o => '<a class="mc-pico mc-chsrc" href="' + esc(o.url) + '" title="' + esc(o.title || o.label) + '">'
+        + (o.icon ? stIcon(o.icon, 14) : '<span class="mc-chall">' + esc(o.label) + '</span>') + '</a>').join('') : '';
+    if (slot && slot._mcHtml !== openHtml) { slot._mcHtml = openHtml; slot.innerHTML = mbuHtml(openHtml); }
     if (!r || r.state !== 'done') { box.innerHTML = mbuHtml('<div class="mc-empty">Credit Hoarder: ' + esc(stateText(p)) + (r ? '' : '. Fetch credits fills this in.') + '</div>'); return; }
     const x = (r.findings || []).find(f => !f.track);
     if (!x) { box.innerHTML = mbuHtml('<div class="mc-empty">' + esc(r.summary ? r.summary + '. ' : '') + 'No release-level credits in the source.</div>'); return; }

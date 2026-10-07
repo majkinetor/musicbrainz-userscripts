@@ -55,6 +55,26 @@ function withMedia(list) {
 }
 const flatRoles = c => (c.roles || [c.role]).filter(Boolean).join(', ');
 
+// The toolbar's import sources among the release's links, by its button names (ui-bar.js, the
+// same tests as getSourceUrlsForRelease). MC's Release credits card opens each in CH's page:
+// edit-relationships with #ch-import=<name>, where CH presses that button and the pre-flight runs.
+const IMPORT_SOURCES = [
+    ['Discogs', 'discogs', /discogs\.com\/(?:[a-z-]+\/)?release\/\d+/i],
+    ['Tidal', 'tidal', /(^|\/\/)(www\.|listen\.)?tidal\.com\/(browse\/)?album\/\d+/i],
+    ['Qobuz', 'qobuz', /(^|\/\/)(www\.|play\.|open\.)?qobuz\.com\/([a-z]{2}-[a-z]{2}\/)?album\//i],
+    ['Deezer', 'deezer', /(^|\/\/)(www\.)?deezer\.com\/([a-z]{2}\/)?album\/\d+/i],
+    ['Apple', 'apple', /(^|\/\/)(?:music|itunes)\.apple\.com\/(?:[a-z]{2}\/)?album\/(?:[^/?#]+\/)?(?:id)?\d+/i],
+    ['Metal Archives', 'globe', /(^|\/\/)(www\.)?metal-archives\.com\/albums\/[^/]+\/[^/]+\/\d+/i],
+    ['YouTube Music', 'ytmusic', /(^|\/\/)((music|www|m)\.)?youtube\.com\/(?:playlist\?(?:[^#]*&)?list=OLAK5uy_|browse\/MPREb_)/i],
+];
+function openLinks(rel, links) {
+    const names = IMPORT_SOURCES.filter(([, , re]) => links.some(u => re.test(u)));
+    const url = name => `/release/${rel}/edit-relationships#ch-import=${encodeURIComponent(name)}`;
+    const out = names.map(([name, icon]) => ({ label: name, icon, url: url(name), title: `Import the credits from ${name} in Credit Hoarder` }));
+    if (out.length > 1) out.push({ label: 'All', icon: '', url: url('All'), title: `Import from all ${out.length} sources at once in Credit Hoarder` });
+    return out;
+}
+
 // every linked source, each read on its own (#680: not only the first); one that fails doesn't stop the rest
 async function readSources(links) {
     const find = re => links.find(u => re.test(u));
@@ -85,13 +105,13 @@ export function startMcAdapter() {
     const m = location.pathname.match(/^\/release\/([0-9a-f-]{36})\/?$/i);
     if (!m) return false;
     const rel = m[1].toLowerCase();
-    const hello = () => send('mc:provider', { id: 'ch', name: 'Credit Hoarder', version: version(), release: rel, capabilities: ['probe'] });
+    const hello = () => send('mc:provider', { id: 'ch', name: 'Credit Hoarder', version: version(), release: rel, capabilities: ['probe'], open: openLinks(rel, releaseLinks()) });
     document.addEventListener('mc:discover', () => { log.info('Mission Control asked — answering as provider ch'); hello(); });
     document.addEventListener('mc:probe', async e => {
         let d = {};
         try { d = JSON.parse(e.detail) || {}; } catch (x) { return; }
         if ((d.release && d.release !== rel) || (d.only && !d.only.includes('ch'))) return;
-        const done = (findings, summary) => send('mc:findings', { id: 'ch', run: d.run, release: rel, findings, summary });
+        const done = (findings, summary) => send('mc:findings', { id: 'ch', run: d.run, release: rel, findings, summary, open: openLinks(rel, releaseLinks()) });
         try {
             send('mc:progress', { id: 'ch', run: d.run, state: 'busy', note: 'reading credits' });
             const all = await readSources(releaseLinks());

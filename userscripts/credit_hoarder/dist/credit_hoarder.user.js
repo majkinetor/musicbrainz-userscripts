@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Credit Hoarder
 // @namespace    majkinetor
-// @version      2026.10.6.195729
+// @version      2026.10.7.113250
 // @description  Import per-track release credits from streaming/database providers (Discogs, Tidal, Qobuz, Deezer) into MusicBrainz relationships, with a review phase
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij4KICANCiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMmY2ZjU0IiBzdHJva2Utd2lkdGg9IjkiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGNpcmNsZSBjeD0iMzQiIGN5PSIzOCIgcj0iMi41IiBmaWxsPSIjMmY2ZjU0IiBzdHJva2U9Im5vbmUiLz4NCiAgICA8bGluZSB4MT0iNTAiIHkxPSIzOCIgeDI9Ijk4IiB5Mj0iMzgiLz4NCiAgICA8Y2lyY2xlIGN4PSIzNCIgY3k9IjY0IiByPSIyLjUiIGZpbGw9IiMyZjZmNTQiIHN0cm9rZT0ibm9uZSIvPg0KICAgIDxsaW5lIHgxPSI1MCIgeTE9IjY0IiB4Mj0iOTgiIHkyPSI2NCIvPg0KICAgIDxjaXJjbGUgY3g9IjM0IiBjeT0iOTAiIHI9IjIuNSIgZmlsbD0iIzJmNmY1NCIgc3Ryb2tlPSJub25lIi8+DQogICAgPGxpbmUgeDE9IjUwIiB5MT0iOTAiIHgyPSI3NCIgeTI9IjkwIi8+DQogIDwvZz4NCiAgPGNpcmNsZSBjeD0iOTIiIGN5PSI5MiIgcj0iMjMiIGZpbGw9IiMyZTllNWIiLz4NCiAgPGcgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+DQogICAgPGxpbmUgeDE9IjkyIiB5MT0iODEiIHgyPSI5MiIgeTI9IjEwMyIvPg0KICAgIDxsaW5lIHgxPSI4MSIgeTE9IjkyIiB4Mj0iMTAzIiB5Mj0iOTIiLz4NCiAgPC9nPg0KPC9zdmc+DQo=
@@ -10076,6 +10076,22 @@ ${lines}
     });
   }
   var flatRoles = (c) => (c.roles || [c.role]).filter(Boolean).join(", ");
+  var IMPORT_SOURCES = [
+    ["Discogs", "discogs", /discogs\.com\/(?:[a-z-]+\/)?release\/\d+/i],
+    ["Tidal", "tidal", /(^|\/\/)(www\.|listen\.)?tidal\.com\/(browse\/)?album\/\d+/i],
+    ["Qobuz", "qobuz", /(^|\/\/)(www\.|play\.|open\.)?qobuz\.com\/([a-z]{2}-[a-z]{2}\/)?album\//i],
+    ["Deezer", "deezer", /(^|\/\/)(www\.)?deezer\.com\/([a-z]{2}\/)?album\/\d+/i],
+    ["Apple", "apple", /(^|\/\/)(?:music|itunes)\.apple\.com\/(?:[a-z]{2}\/)?album\/(?:[^/?#]+\/)?(?:id)?\d+/i],
+    ["Metal Archives", "globe", /(^|\/\/)(www\.)?metal-archives\.com\/albums\/[^/]+\/[^/]+\/\d+/i],
+    ["YouTube Music", "ytmusic", /(^|\/\/)((music|www|m)\.)?youtube\.com\/(?:playlist\?(?:[^#]*&)?list=OLAK5uy_|browse\/MPREb_)/i]
+  ];
+  function openLinks(rel, links) {
+    const names = IMPORT_SOURCES.filter(([, , re]) => links.some((u) => re.test(u)));
+    const url = (name) => `/release/${rel}/edit-relationships#ch-import=${encodeURIComponent(name)}`;
+    const out = names.map(([name, icon]) => ({ label: name, icon, url: url(name), title: `Import the credits from ${name} in Credit Hoarder` }));
+    if (out.length > 1) out.push({ label: "All", icon: "", url: url("All"), title: `Import from all ${out.length} sources at once in Credit Hoarder` });
+    return out;
+  }
   async function readSources(links) {
     const find = (re) => links.find((u) => re.test(u));
     const jobs = [];
@@ -10109,7 +10125,7 @@ ${lines}
     const m = location.pathname.match(/^\/release\/([0-9a-f-]{36})\/?$/i);
     if (!m) return false;
     const rel = m[1].toLowerCase();
-    const hello = () => send("mc:provider", { id: "ch", name: "Credit Hoarder", version: version(), release: rel, capabilities: ["probe"] });
+    const hello = () => send("mc:provider", { id: "ch", name: "Credit Hoarder", version: version(), release: rel, capabilities: ["probe"], open: openLinks(rel, releaseLinks()) });
     document.addEventListener("mc:discover", () => {
       log.info("Mission Control asked \u2014 answering as provider ch");
       hello();
@@ -10122,7 +10138,7 @@ ${lines}
         return;
       }
       if (d.release && d.release !== rel || d.only && !d.only.includes("ch")) return;
-      const done = (findings, summary) => send("mc:findings", { id: "ch", run: d.run, release: rel, findings, summary });
+      const done = (findings, summary) => send("mc:findings", { id: "ch", run: d.run, release: rel, findings, summary, open: openLinks(rel, releaseLinks()) });
       try {
         send("mc:progress", { id: "ch", run: d.run, state: "busy", note: "reading credits" });
         const all = await readSources(releaseLinks());
@@ -10308,6 +10324,32 @@ ${lines}
       if (!probe.failed && !hasProvider && remixCount === 0) return;
       insertDiscogsBar(sources.discogs, sources, { titlesRemixCount: remixCount, sourceProbeFailed: probe.failed });
       log.info(`Boot: toolbar mounted (+${since()}ms from script start)`);
+      pressRequestedSource();
     }
+  }
+  function pressRequestedSource() {
+    const m = location.hash.match(/ch-import=([^&]+)/);
+    if (!m) return;
+    let name = m[1];
+    try {
+      name = decodeURIComponent(name);
+    } catch (e) {
+    }
+    window.history.replaceState(null, "", location.pathname + location.search);
+    let tries = 0;
+    const press = () => {
+      const b = [...document.querySelectorAll(".discogs-bar .discogs-src-ico")].find((x) => x.dataset.src === name);
+      if (b) {
+        log.info(`Mission Control asked to import from ${name}`);
+        b.click();
+        return;
+      }
+      if (tries++ < 50) {
+        setTimeout(press, 200);
+        return;
+      }
+      log.warn(`Mission Control asked to import from ${name}, but the toolbar has no such source`);
+    };
+    press();
   }
 })();

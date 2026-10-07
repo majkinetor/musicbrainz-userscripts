@@ -260,5 +260,25 @@ function bootstrapBar(probe, remix, releaseMbid) {
         if (!probe.failed && !hasProvider && remixCount === 0) return;   // MB says there is nothing to import
         insertDiscogsBar(sources.discogs, sources, { titlesRemixCount: remixCount, sourceProbeFailed: probe.failed });
         log.info(`Boot: toolbar mounted (+${since()}ms from script start)`);
+        pressRequestedSource();
     }
+}
+
+// #680: Mission Control's Release credits card links here with #ch-import=<source> (a toolbar
+// button's name, or All): press that button, so the pre-flight starts at once. The hash goes
+// first, so a reload doesn't import again. Titles joins the toolbar late, hence the wait.
+function pressRequestedSource() {
+    const m = location.hash.match(/ch-import=([^&]+)/);
+    if (!m) return;
+    let name = m[1];
+    try { name = decodeURIComponent(name); } catch (e) { /* as is */ }
+    window.history.replaceState(null, '', location.pathname + location.search);
+    let tries = 0;
+    const press = () => {
+        const b = [...document.querySelectorAll('.discogs-bar .discogs-src-ico')].find(x => x.dataset.src === name);
+        if (b) { log.info(`Mission Control asked to import from ${name}`); b.click(); return; }
+        if (tries++ < 50) { setTimeout(press, 200); return; }
+        log.warn(`Mission Control asked to import from ${name}, but the toolbar has no such source`);
+    };
+    press();
 }
