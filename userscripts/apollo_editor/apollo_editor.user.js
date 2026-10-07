@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.6
+// @version      2026.10.7
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E
@@ -5194,11 +5194,28 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     if (!_artistAutoMatchedOnce) { _artistAutoMatchedOnce = true; matchReleaseArtist().catch(e => Log.warn('artist auto-match failed', e.message)); }
     srApplyDefaultOnStart();   // #410: run the marked default S&R once, now the tracklist is rendered
   }
+  /* #685: a rebuild removes and re-adds every row (mirror mode the whole section),
+     so the page and any scrolling panel briefly lose their height and the browser
+     clamps the scroll to the top: a dropped track sent the view back to track 1.
+     Note every scroll position first and put it back after the rows are there. */
+  function keepScroll() {
+    const at = [[document.scrollingElement || document.documentElement, 0]];
+    const seen = new Set();
+    [ACTIVE.tbody, ...(ACTIVE.sections || []).map(s => s.tbody)].forEach(tb => {
+      for (let n = tb && tb.parentElement; n && n !== document.body; n = n.parentElement) if (n.scrollHeight > n.clientHeight && !seen.has(n)) { seen.add(n); at.push([n, 0]); }
+    });
+    at.forEach(p => { p[1] = p[0].scrollTop; });
+    Log.debug('keep scroll', at.map(p => p[1]));
+    // clamped = only where the view sits at the top now: a later call (after matching) mustn't undo the user's own scrolling
+    return clamped => at.forEach(([n, top]) => { if (n.isConnected && n.scrollTop !== top && (!clamped || n.scrollTop === 0)) n.scrollTop = top; });
+  }
   async function rebuild(noMatch) {
+    const restore = keepScroll();
     MODEL = buildShell();
     if (ACTIVE.mode === 'mirror') { mountMediums(); syncNative(); }
     rerender();
-    if (!noMatch && SETTINGS.autoMatch !== false) await matchModel();
+    restore();
+    if (!noMatch && SETTINGS.autoMatch !== false) { await matchModel(); restore(true); }
     else if (!noMatch) tagDiscogsForAll();   // #227: tag 'set' artists when auto-match is off — but NOT on a clear/revert (it would check zero matched artists); refreshStatus clears the badge instead
     enrichResolvedAliasesSoon();
   }
