@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+<title>Credit Hoarder — Risograph raccoon</title>
+<rect x="4" y="4" width="120" height="120" rx="8" fill="#f7f0e3"/><g style="mix-blend-mode:multiply"><g transform="translate(-3 -2)" opacity=".9"><path d="M30 104 C22 80 30 54 52 50 C50 40 56 30 66 30 C78 30 84 40 82 50 C102 54 108 80 100 104Z" fill="#ff48b0"/><path d="M50 48 C56 56 76 56 82 48 C80 60 52 60 50 48Z" fill="#1d1d1d" opacity=".0"/><circle cx="94" cy="88" r="22" fill="#ff48b0"/></g>
+<g transform="translate(2 2)" opacity=".85"><path d="M48 40 C54 34 78 34 84 40 L88 52 C78 46 54 46 44 52Z" fill="#0078bf"/><path d="M44 52 C56 58 76 58 88 52 L86 62 C76 66 56 66 46 62Z" fill="#0078bf"/><circle cx="56" cy="56" r="4" fill="#f7f0e3"/><circle cx="76" cy="56" r="4" fill="#f7f0e3"/><path d="M50 36 L46 22 L58 32 M82 36 L86 22 L74 32" fill="#0078bf"/>
+<path d="M84 72 C82 64 106 64 104 72 C116 80 116 106 94 108 C74 108 72 82 84 72Z" fill="#0078bf"/><path d="M88 70 L100 70" stroke="#f7f0e3" stroke-width="3"/></g></g>
+</svg>
