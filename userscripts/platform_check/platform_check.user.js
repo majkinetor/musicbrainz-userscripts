@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Platform Check
 // @namespace    http://tampermonkey.net/
-// @version      2026.10.7.121000
+// @version      2026.10.7.153000
 // @description  Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+DQogIDx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CiAgDQogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJhMWE1MiIgc3Ryb2tlLXdpZHRoPSI5IiBzdHJva2UtbGluZWNhcD0icm91bmQiPg0KICAgIDxwYXRoIGQ9Ik00MCA4OCBBMzQgMzQgMCAwIDEgNDAgNDAiLz4NCiAgICA8cGF0aCBkPSJNMjkgOTkgQTUwIDUwIDAgMCAxIDI5IDI5Ii8+DQogICAgPHBhdGggZD0iTTg4IDg4IEEzNCAzNCAwIDAgMCA4OCA0MCIvPg0KICAgIDxwYXRoIGQ9Ik05OSA5OSBBNTAgNTAgMCAwIDAgOTkgMjkiLz4NCiAgPC9nPg0KICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyMCIgZmlsbD0iI2U4MjAxYSIvPg0KPC9zdmc+DQo=
@@ -8010,7 +8010,7 @@ const PC_MC_VERSION = (typeof GM_info !== 'undefined' && GM_info.script && GM_in
 function pcMcFinding(p) {
     const c = cacheGet(mbid, p) || {};
     const existing = mbDataGet(mbid)?.existing?.[p] || null;
-    const base = { key: p, name: PROVIDER_NAME[p], url: c.url || existing || null, source: c.source || null };
+    const base = { key: p, name: PROVIDER_NAME[p], url: c.url || existing || null, source: c.source || null, barcode: c.url && c.barcode || null };
     if (existing || c.source === 'MB rels') return { ...base, state: 'linked' };
     if (!c.url) return { ...base, state: 'none' };
     const why = pcWithheldWhy(p);
@@ -8076,7 +8076,8 @@ document.addEventListener('mc:probe', async e => {
     const findings = PROVIDER_ORDER.filter(providerEnabled).map(pcMcFinding).concat(providerEnabled('discogs') ? [pcMcMasterFinding()].filter(Boolean) : [], await pcMcEntityFindings());
     const tally = findings.reduce((t, f) => (t[f.state] = (t[f.state] || 0) + 1, t), {});
     appendLog('System', `Mission Control probe ${d.run || ''} answered: ${JSON.stringify(tally)}`, 'ok');
-    pcMcSend('mc:findings', { id: 'pc', run: d.run, release: mbid, findings });
+    // the release's barcode beside each platform's: MC shows them in a column, one colour per barcode
+    pcMcSend('mc:findings', { id: 'pc', run: d.run, release: mbid, findings, barcode: MB_BARCODE || null });
 });
 // A release link for Falcon with the type PC's own + would pick (pcTypeForce): where MusicBrainz
 // offers several and picks none (Bandcamp, Apple Music, Qobuz, ...), Falcon has no type to give

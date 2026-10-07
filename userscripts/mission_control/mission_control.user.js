@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Mission Control
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.7.151000
+// @version      2026.10.7.153000
 // @description  One window on the release page that asks the other scripts (Platform Check, ISRC Scout, Art Station, Fusion, Credit Hoarder) what is missing, shows it all in one review, and applies the ticked changes in order.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPk1pc3Npb24gQ29udHJvbDwvdGl0bGU+CiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjNWYzZWMwIiBzdHJva2Utd2lkdGg9IjciPgogICAgPGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iNTIiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjMwIi8+CiAgICA8cGF0aCBkPSJNNjQgNHYyMk02NCAxMDJ2MjJNNCA2NGgyMk0xMDIgNjRoMjIiLz4KICA8L2c+CiAgPGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iMTEiIGZpbGw9IiM4YTVjZjYiLz4KPC9zdmc+Cg==
@@ -110,7 +110,7 @@ document.addEventListener('mc:progress', e => {
 document.addEventListener('mc:findings', e => {
     const d = busEvent(e, 'mc:findings'); if (!d) return;
     const findings = Array.isArray(d.findings) ? d.findings : [];
-    results[d.id] = { state: 'done', findings, summary: d.summary || '', best: d.best || null, open: Array.isArray(d.open) ? d.open : null };
+    results[d.id] = { state: 'done', findings, summary: d.summary || '', best: d.best || null, open: Array.isArray(d.open) ? d.open : null, barcode: d.barcode || null };
     // ticked by default: only what the provider is sure of
     picked[d.id] = new Set(findings.filter(x => x.state === 'new').map(x => x.key));
     const tally = findings.reduce((t, x) => (t[x.state] = (t[x.state] || 0) + 1, t), {});
@@ -405,7 +405,9 @@ function mcStyle() {
         + '.mc-sect-h .ic{width:22px;height:22px;border-radius:6px;background:var(--mbu-accent-soft);display:grid;place-items:center;font-size:12px;flex:none}'
         + '.mc-sect-h .ic img{width:16px;height:16px;object-fit:contain;display:block}.mc-sect-h .t{font-weight:700;font-size:12.5px}.mc-sect-h .p{font-size:10.5px;color:var(--mbu-text-weak)}'
         + '.mc-empty{padding:10px;color:var(--mbu-text-weak);font-size:12px}'
-        + '.mc-line{display:grid;grid-template-columns:16px 16px 1fr auto;gap:8px;align-items:center;padding:4px 10px;border-bottom:1px solid var(--mbu-divider)}.mc-line:last-child{border-bottom:0}'
+        + '.mc-line{display:grid;grid-template-columns:16px 16px 1fr auto;gap:8px;align-items:center;padding:4px 10px;border-bottom:1px solid var(--mbu-divider)}.mc-line.mc-hasbc{grid-template-columns:16px 16px 1fr 130px 84px}.mc-line.mc-hasbc>.mc-pill{justify-self:end}'
+        + '.mc-bc{display:inline-block;font:600 12px/1.5 ui-monospace,Consolas,monospace;color:var(--bc);background:color-mix(in srgb,var(--bc) 12%,transparent);border:1px solid color-mix(in srgb,var(--bc) 45%,transparent);border-radius:5px;padding:1px 6px;white-space:nowrap}'
+        + '.mc-bccol{text-align:right}.mc-bcrel{display:flex;align-items:center;gap:8px;justify-content:flex-end;padding:6px 102px 6px 10px;border-bottom:1px solid var(--mbu-divider);font-size:12px;color:var(--mbu-text-dim)}.mc-line:last-child{border-bottom:0}'
         + '.mc-sect-h .end{margin-left:auto;display:flex;align-items:center;gap:6px}.mc-chlbl{font-size:12.5px;color:var(--mbu-text-dim)}'
         + '.mc-chopen{flex-wrap:wrap;justify-content:flex-end}#mc-root a.mc-chsrc{padding:6px 12px;gap:7px;font-size:13px;font-weight:600;color:var(--mbu-text);text-decoration:none}#mc-root a.mc-chsrc:hover{background:var(--mbu-bg-hover);border-color:var(--mbu-accent)}'
         + '.mc-sect-h .mc-applied{border:0;border-radius:20px;padding:1px 9px}'
@@ -765,28 +767,37 @@ function paintCards() {
             + esc('Already linked: ' + linked.map(x => x.name || x.key).join(', ') + (S.linkedRows ? '. Click to fold them back here.' : '. Click to list them below.')) + '">'
             + linkedIcons(linked) + '<span class="mc-lk">✓ ' + linked.length + '</span></button>' : '');
         // the row is the toggle, no tick box (#680); a taken-in row is tinted and marked ✓
+        // PC's barcodes (#680): a column of their own, one colour per barcode (by its digits without
+        // leading zeros, as PC compares them); the release's own is green, and named above the rows
+        const bcs = r.findings.some(x => x.barcode), bcNorm = b => String(b || '').replace(/\D/g, '').replace(/^0+/, '');
+        const bcColor = new Map(r.barcode ? [[bcNorm(r.barcode), 'var(--mbu-ok)']] : []);
+        r.findings.forEach(x => { const k = bcNorm(x.barcode); if (k && !bcColor.has(k)) bcColor.set(k, BC_COLORS[(bcColor.size - (r.barcode ? 1 : 0)) % BC_COLORS.length]); });
+        const bcChip = (b, tip) => '<span class="mc-bc" style="--bc:' + bcColor.get(bcNorm(b)) + '" title="' + esc(tip) + '">' + esc(b) + '</span>';
+        const bcHead = bcs ? '<div class="mc-bcrel">Release barcode: ' + (r.barcode ? bcChip(r.barcode, "The release's barcode in MusicBrainz") : '<span class="weak">none</span>') + '</div>' : '';
         const line = x => {
             const pick = !!PICKABLE[x.state];
             const on = pick && picked[id] && picked[id].has(x.key);
             const pill = PILL[x.state] || ['idle', x.state];
-            return '<div class="mc-line ' + esc(x.state) + (x.entity ? ' mc-ent' : '') + (pick ? ' mc-pick' : '') + (on ? ' on' : '') + '"'
+            return '<div class="mc-line ' + esc(x.state) + (x.entity ? ' mc-ent' : '') + (pick ? ' mc-pick' : '') + (on ? ' on' : '') + (bcs ? ' mc-hasbc' : '') + '"'
                 + (pick ? ' data-prov="' + id + '" data-key="' + esc(x.key) + '" title="' + (on ? 'Taken in: click to leave out' : 'Click to take in') + '"' : '') + '>'
                 + '<span class="mc-tick">' + (on ? '✓' : '') + '</span>'
                 + '<span class="mc-pico">' + stIcon(x.icon || x.key, 14) + '</span>'
                 + '<div class="mc-lt"><div class="t">' + esc(x.name || x.key) + '</div>'
                 + (x.url ? '<a class="s" target="_blank" rel="noopener" href="' + esc(x.url) + '" title="' + esc(x.url) + '">' + esc(shortUrl(x.url)) + '</a>' : '')
                 + (x.why ? '<div class="s">' + esc(x.why) + '</div>' : '') + '</div>'
+                + (bcs ? '<span class="mc-bccol">' + (x.barcode ? bcChip(x.barcode, (x.name || x.key) + "'s barcode" + (bcNorm(x.barcode) === bcNorm(r.barcode) ? ": the release's" : r.barcode ? ": not the release's" : '')) : '') + '</span>' : '')
                 + '<span class="mc-pill ' + pill[0] + '">' + pill[1] + '</span></div>';
         };
         // PC's artist and label links (`entity`) under their own sub-heading, after the release's
         // (the Discogs master is the release group's, but reads as the release's own)
         const own = x => !x.entity || x.entity.type === 'release_group';
         const relRows = rows.filter(own), entRows = rows.filter(x => !own(x));
-        setCard(box, mbuHtml(sum + ap + relRows.map(line).join('')
+        setCard(box, mbuHtml(sum + ap + bcHead + relRows.map(line).join('')
             + (entRows.length ? '<div class="mc-sub">Artists &amp; labels</div>' + entRows.map(line).join('') : '') + (none.length ? '<div class="mc-none" title="' + esc('Not found: ' + none.map(x => x.name || x.key).join(', ')) + '"><span>Not found</span>'
             + none.map(x => '<span class="mc-pico" title="' + esc(x.name || x.key) + '">' + stIcon(x.icon || x.key, 14) + '</span>').join('') + '</div>' : '')));
     });
 }
+const BC_COLORS = ['#2563eb', '#c2410c', '#9333ea', '#0e7490', '#be185d', '#a16207', '#4d7c0f', '#6d28d9'];
 function changeCount() { return Object.values(picked).reduce((n, set) => n + set.size, 0); }
 // Probe or Execute in flight, or a Falcon batch that Execute handed over still running: the
 // header pulses, as Apollo's bar does while an edit saves (#412).

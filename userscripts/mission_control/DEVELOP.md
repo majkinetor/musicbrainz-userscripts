@@ -40,6 +40,7 @@ One finding per thing the provider looked at:
 | `icon` | the ST-ICONS key, when it isn't `key` |
 | `track` | the recording MBID, for a per-track finding |
 | `kind` | a second kind of per-track finding beside the main one (IS: `link`) |
+| `barcode` | PC: the barcode the platform gives; `mc:findings` carries the release's own as `barcode` too. MC shows them in a column, one colour per barcode (leading zeros aside, as PC compares them), the release's green |
 | `entity` | `{ type, mbid, name }`: the artist or label a PC link is for |
 
 `new` rows start ticked. `withheld` and `unsure` rows can be ticked by hand, `linked` ones can't, and the `none` rows collapse into one line of icons. There are no tick boxes: a click on a row (or a matrix cell) takes it in or leaves it out, and a taken-in one is tinted with a ✓. A link inside a row only opens.
