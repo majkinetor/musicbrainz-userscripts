@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         ISRC Scout
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.7.090500
+// @version      2026.10.7.093000
 // @description  Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify / Beatport / Tidal / Volumo / HDtracks / Qobuz, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPklTUkMgU2NvdXQ8L3RpdGxlPgogICAgPHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPgogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjQwIi8+CiAgICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyNiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2U9IiNiOWEzZTgiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPgogIDwvZz4KICA8bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+Cjwvc3ZnPgo=
@@ -7249,10 +7249,13 @@
     let mcLinks = {};   // 'link:<recId>:<url>' -> { rec, idx, code, name, url, linkTypeID } from the last probe
     // the same sources and order as the dialog's Find everything
     const mcSources = isrcSourcesFastest;
+    // the dialog's mapping (trackForSource); a position fill that looks like another song is unsure
     function mcTrackOf(s) {
-      let idx = RELEASE.tracks.findIndex(t => (+t.trackPos === +s.pos) && ((+t.mediumPos === +s.disc) || RELEASE.tracks.filter(x => +x.mediumPos === +s.disc).length === 0));
-      if (idx < 0) { const p = pickTrackByTitle(s, RELEASE.tracks); idx = p.ambiguous ? -1 : p.idx; }
-      return idx;
+      const m = trackForSource(s);
+      if (m.idx < 0) return { idx: -1 };
+      const c = m.byPos ? fillCheck(RELEASE.tracks[m.idx], s) : {};
+      return { idx: m.idx, why: m.loose ? 'matched by a similar title only ("' + s.title + '")'
+        : c.suspicious ? (c.durOff != null ? 'matched by position only, but the length differs by ' + c.durOff + 's (' + (s.dur || '?') + ' at the source)' : 'matched by position only, but the title is "' + s.title + '"') : null };
     }
     // ISRCs on more than one recording of the release, found or already there → isrc -> [track numbers].
     // The dialog blocks these (highlightDuplicates), so Mission Control does too (#680).
@@ -7271,6 +7274,7 @@
       if (f && t.existing.includes(f.isrc)) return Object.assign(base, { state: 'linked', isrc: f.isrc, source: f.source });
       if (f && dups.has(f.isrc)) return Object.assign(base, { state: 'blocked', isrc: f.isrc, source: f.source, why: f.isrc + ' would be on tracks ' + dups.get(f.isrc).join(', ') + ': an ISRC goes on one recording' });
       if (f && t.existing.length) return Object.assign(base, { state: 'unsure', isrc: f.isrc, source: f.source, why: 'the recording already has ' + t.existing.join(', ') });
+      if (f && f.why) return Object.assign(base, { state: 'unsure', isrc: f.isrc, source: f.source, why: f.why });
       if (f) return Object.assign(base, { state: 'new', isrc: f.isrc, source: f.source });
       return Object.assign(base, { state: t.existing.length ? 'linked' : 'none', isrc: t.existing[0] || null });
     }
@@ -7302,10 +7306,12 @@
           const res = await src.fetcher(src.id, () => {}, s => {
             const isrc = normalizeIsrc(s.isrc);
             if (!isValidIsrc(isrc)) return;
-            const idx = mcTrackOf(s);
+            const { idx, why } = mcTrackOf(s);
             if (idx < 0) { Log.info('MC probe ' + src.source + ': no track for ' + isrc + ' "' + s.title + '"'); return; }
             const t = RELEASE.tracks[idx];
-            if (!mcFound[t.recId]) { mcFound[t.recId] = { isrc, source: src.source }; n++; }
+            // first come, except that a sure fill replaces an unsure one (another song at that position)
+            const had = mcFound[t.recId];
+            if (!had || (had.why && !why)) { mcFound[t.recId] = Object.assign({ isrc, source: src.source }, why ? { why } : {}); if (!had) n++; }
           }, 0);
           if (res && res.next != null) more = true;
         } catch (x) { Log.warn('Mission Control probe: ' + src.source + ' failed: ' + errText(x)); continue; }
@@ -7383,7 +7389,7 @@
       reply({ ok: !errs.length, sent: sentN, note: [done.length && done.join(' and ') + ' submitted', errs.join('; ')].filter(Boolean).join(' · ') });
     });
     mcHello();
-    if (mbuTestHooks()) window.__isTest680 = { mcFinding, mcDups, mcTrackOf, mcSources, found: () => mcFound, release: () => RELEASE, log: () => Log.text() };
+    if (mbuTestHooks()) window.__isTest680 = { mcFinding, mcDups, mcTrackOf, trackForSource, mcSources, found: () => mcFound, release: () => RELEASE, log: () => Log.text() };
   }
 
 })();
