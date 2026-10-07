@@ -35,16 +35,18 @@ test('#680: Probe asks Platform Check and shows its platforms', { tag: ['@sandbo
   const enabled = await page.evaluate(() => document.querySelectorAll('[id^="mb-online-"]').length);
   console.log(`platform rows: ${rows} · PC panel rows: ${enabled}`);
   const none = await page.locator('#mc-root [data-card="pc"] .mc-none .mc-pico').count();
-  const linkedIcons = await page.locator('#mc-root .mc-linked .mc-pico:not(.mc-ent)').count();
-  const linkedAll = await page.locator('#mc-root .mc-linked .mc-pico').count();
+  // the release's linked platforms are icons in the card's header; the artists' and labels' sit on their sub-heading
+  const linkedIcons = await page.locator('#mc-root .mc-sect-h .mc-linked .mc-pico:not(.mc-ent)').count();
+  check(await page.locator('#mc-root .mc-sect-h .mc-linked .mc-pico.mc-ent').evaluateAll(ps => ps.every(p => !/·/.test(p.title))), 'no artist or label icon in the header');
+  const linkedAll = (await page.locator('#mc-root .mc-linked .mc-lk').allTextContents()).reduce((n, t) => n + +t.replace(/\D/g, ''), 0);
   check(rows + none + linkedIcons === enabled, `every platform PC scanned is a row, a linked icon in the header, or a not-found icon (${rows} + ${linkedIcons} + ${none} of ${enabled})`);
   check(await page.locator('#mc-root [data-card="pc"] .mc-line.linked').count() === 0, 'linked platforms are not rows by default');
-  if (linkedIcons) {
-    await page.click('#mc-root .mc-linked');
+  if (linkedAll) {
+    await page.locator('#mc-root .mc-linked').first().click();
     check(await page.locator('#mc-root [data-card="pc"] .mc-line.linked').count() === linkedAll, 'clicking the linked icons lists them as rows');
     const order = await page.locator('#mc-root [data-card="pc"] .mc-line').evaluateAll(ls => ls.map(l => l.classList.contains('linked')));
     check(order.indexOf(true) === -1 || order.slice(order.indexOf(true)).every(Boolean), 'linked rows come last');
-    await page.click('#mc-root .mc-linked');
+    await page.locator('#mc-root .mc-linked').first().click();
     check(await page.locator('#mc-root [data-card="pc"] .mc-line.linked').count() === 0, 'and fold back');
   }
 
