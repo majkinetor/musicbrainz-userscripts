@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Mission Control
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.7.190000
+// @version      2026.10.7.200000
 // @description  One window on the release page that asks the other scripts (Platform Check, ISRC Scout, Art Station, Fusion, Credit Hoarder) what is missing, shows it all in one review, and applies the ticked changes in order.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPk1pc3Npb24gQ29udHJvbDwvdGl0bGU+CiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjNWYzZWMwIiBzdHJva2Utd2lkdGg9IjciPgogICAgPGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iNTIiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjMwIi8+CiAgICA8cGF0aCBkPSJNNjQgNHYyMk02NCAxMDJ2MjJNNCA2NGgyMk0xMDIgNjRoMjIiLz4KICA8L2c+CiAgPGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iMTEiIGZpbGw9IiM4YTVjZjYiLz4KPC9zdmc+Cg==
@@ -470,8 +470,12 @@ function mcStyle() {
         + '#mc-root .mc-sect-h .mc-icsw:hover{background:var(--mbu-bg-hover)}#mc-root .mc-sect-h .mc-icsw:focus-visible{outline:2px solid var(--mbu-accent);outline-offset:1px}'
         + '.mc-sect.mc-off .mc-icsw .ic{background:var(--mbu-bg-sunken)}.mc-sect.mc-off .mc-icsw .ic>*{filter:grayscale(1);opacity:.55}.mc-sect.mc-off .mc-icsw .t{opacity:.45}'
         + '.mc-sect.mc-off>:not(.mc-sect-h){display:none}.mc-sect.mc-off .mc-sect-h{border-bottom:0}.mc-sect.mc-off .mc-sect-h>:not(.mc-icsw){opacity:.45}.mc-bc.none{--bc:var(--mbu-text-weak);border-style:dashed;background:none}.mc-bc.none i{visibility:hidden}.mc-line:last-child{border-bottom:0}'
-        + '.mc-sect-h .end{margin-left:auto;display:flex;align-items:center;gap:6px}.mc-chlbl{font-size:12.5px;color:var(--mbu-text-dim)}'
-        + '.mc-chopen{flex-wrap:wrap;justify-content:flex-end}#mc-root a.mc-chsrc{padding:6px 12px;gap:7px;font-size:13px;font-weight:600;color:var(--mbu-text);text-decoration:none}#mc-root a.mc-chsrc:hover{background:var(--mbu-bg-hover);border-color:var(--mbu-accent)}'
+        + '.mc-sect-h .end{margin-left:auto;display:flex;align-items:center;gap:6px}.mc-chlbl{font-size:13px;font-weight:700;color:var(--mbu-text)}'
+        // CH's own toolbar look: a square per source, then an orange ⚛ All (#680)
+        + '.mc-chopen{flex-wrap:wrap;justify-content:flex-end;gap:5px}#mc-root a.mc-chsrc{width:32px;height:32px;padding:0;justify-content:center;color:var(--mbu-text-dim);text-decoration:none}'
+        + '#mc-root a.mc-chsrc:hover{background:var(--mbu-bg-raised);border-color:var(--mbu-warn);color:var(--mbu-warn)}'
+        + '#mc-root a.mc-chall{width:auto;padding:0 10px;gap:5px;margin-left:6px;border-color:var(--mbu-warn);color:var(--mbu-warn);font-size:13.5px;font-weight:600}#mc-root a.mc-chall b{font-size:16px;font-weight:400;line-height:1}'
+        + '#mc-root a.mc-chall:hover{background:var(--mbu-warn);color:var(--mbu-text-on-accent)}'
         + '.mc-sect-h .mc-applied{border:0;border-radius:20px;padding:1px 9px}'
         + '#mc-root .mc-linked{display:inline-flex;align-items:center;gap:3px;padding:2px 7px;border:1px solid transparent;border-radius:20px;background:none;cursor:pointer;opacity:.75}'
         + '#mc-root .mc-linked:hover,#mc-root .mc-linked.on{opacity:1;border-color:var(--mbu-ok-border);background:var(--mbu-ok-bg)}'
@@ -799,8 +803,9 @@ function paintReleaseCredits() {
     // CH's import sources: each opens edit-relationships, where CH presses that source's button
     // and its pre-flight starts (the same choice as CH's toolbar, #680)
     const open = (r && r.open) || (found.ch && found.ch.open) || [], slot = box.parentNode.querySelector('.mc-chopen');
-    const openHtml = open.length ? '<span class="mc-chlbl">Open in CH:</span>' + open.map(o => '<a class="mc-btn mc-chsrc" href="' + esc(o.url) + '" title="' + esc(o.title || o.label) + '">'
-        + (o.icon ? stIcon(o.icon, 18) : '') + '<span>' + esc(o.label) + '</span></a>').join('') : '';
+    // drawn as CH's toolbar draws them: an icon per source, All (no icon) as ⚛ All
+    const openHtml = open.length ? '<span class="mc-chlbl">Import credits:</span>' + open.map(o => '<a class="mc-btn mc-chsrc' + (o.icon ? '' : ' mc-chall') + '" href="' + esc(o.url) + '" title="' + esc(o.title || o.label) + '" aria-label="' + esc(o.label) + '">'
+        + (o.icon ? stIcon(o.icon, 18) : '<b>⚛</b>' + esc(o.label)) + '</a>').join('') : '';
     if (slot && slot._mcHtml !== openHtml) { slot._mcHtml = openHtml; slot.innerHTML = mbuHtml(openHtml); }
     if (!r || r.state !== 'done') { box.innerHTML = mbuHtml('<div class="mc-empty">Credit Hoarder: ' + esc(stateText(p)) + (r ? '' : '. Fetch credits fills this in.') + '</div>'); return; }
     const x = (r.findings || []).find(f => !f.track);
