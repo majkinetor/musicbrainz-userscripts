@@ -1,4 +1,4 @@
-// #680: each card has an On / Off switch in its header. An off card folds to its header, and
+// #680: a card's own icon in its header switches it on and off. An off card folds to its header, and
 // Execute leaves out what is ticked in it, and so does its count. For this page only: nothing is
 // saved. Stand-in PC and AS answer the probe with one ticked finding each and record what is applied.
 import { test, check } from '../../../dev/test/harness.mjs';
@@ -35,11 +35,11 @@ test('#680: a card switched off is left out of Execute', { tag: ['@sandbox'] }, 
   const exec = page.locator('#mc-root [data-act="exec"]');
   check(await exec.textContent() === 'Execute (2)', `both cards count (${await exec.textContent()})`);
 
-  const sw = id => page.locator(`#mc-root .mc-sect[data-sect="${id}"] .mc-onoff`);
-  check(await page.locator('#mc-root .mc-onoff').count() === 4, 'every card has the switch: tracks, links, cover art, release credits');
-  check(await sw('pc').getAttribute('aria-pressed') === 'true' && /On/.test(await sw('pc').textContent()), 'on to begin with');
+  const sw = id => page.locator(`#mc-root .mc-sect[data-sect="${id}"] .mc-sect-h .mc-icsw`);
+  check(await page.locator('#mc-root .mc-sect-h .mc-icsw').count() === 4, "every card's icon is its switch: tracks, links, cover art, release credits");
+  check(await sw('pc').getAttribute('aria-pressed') === 'true', 'on to begin with');
   await sw('pc').click();
-  check(await sw('pc').getAttribute('aria-pressed') === 'false' && /Off/.test(await sw('pc').textContent()), 'a click switches it off');
+  check(await sw('pc').getAttribute('aria-pressed') === 'false' && /Left out/.test(await sw('pc').getAttribute('title')), 'a click on the icon switches it off, and its tooltip says so');
   check(!(await page.locator('#mc-root [data-card="pc"]').isVisible()) && await page.locator('#mc-root .mc-sect[data-sect="pc"] .mc-sect-h').isVisible(), 'the off card is folded to its header');
   check(await exec.textContent() === 'Execute (1)', `its tick leaves the count (${await exec.textContent()})`);
   await page.screenshot({ path: 'test-results/mc-680-card-onoff.png' });

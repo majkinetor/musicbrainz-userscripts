@@ -49,8 +49,8 @@ test('#680: barcodes in a column, one colour each', { tag: ['@sandbox'] }, async
   // the column lines up: every chip in a row, and the header's, ends at the same x; MB over the pills
   const xs = await card.locator('.mc-line .mc-bccol .mc-bc, .mc-sect-h .mc-hbc .mc-bc').evaluateAll(cs => cs.map(c => Math.round(c.getBoundingClientRect().right)));
   check(xs.length === 5 && new Set(xs).size === 1, `one column, the header's too (${xs})`);
-  const pr = await card.locator('.mc-line .mc-pill, .mc-sect-h .mc-onoff').evaluateAll(cs => cs.map(c => Math.round(c.getBoundingClientRect().right)));
-  check(pr.length === 6 && new Set(pr).size === 1, `the card's switch stands over the pills (${pr})`);
+  const pr = await card.locator('.mc-line .mc-pill, .mc-sect-h .mc-hsp').evaluateAll(cs => cs.map(c => Math.round(c.getBoundingClientRect().right)));
+  check(pr.length === 6 && new Set(pr).size === 1, `the header's last column stands over the pills (${pr})`);
   // no extra line: the header is as tall as a header without barcodes (Art Station's card)
   const hh = await page.evaluate(() => [...document.querySelectorAll('#mc-root .mc-sect-h')].map(h => [h.classList.contains('mc-hasbc'), Math.round(h.getBoundingClientRect().height)]));
   console.log('header heights: ' + JSON.stringify(hh));
