@@ -26,7 +26,7 @@ test('#680: a found Discogs master goes to the release group', { tag: ['@sandbox
   check(f && MASTER.test(f.url) && f.entity.type === 'release_group' && f.entity.mbid === RG, `PC reports the master for the release group (${JSON.stringify(f)})`);
   const row = page.locator('#mc-root [data-card="pc"] .mc-line[data-key="discogsmaster"]');
   check(await row.count() === 1, 'the master is a row');
-  check(await page.locator('#mc-root [data-card="pc"] .mc-sub ~ .mc-line[data-key="discogsmaster"]').count() === 0, 'with the release\'s own rows, not under Artists & labels');
+  check(await page.locator('#mc-root [data-card="pc"] .mc-sub:not([data-sub="release"]) ~ .mc-line[data-key="discogsmaster"]').count() === 0, 'with the release\'s own rows, not under Artists or Labels');
 
   // only the master ticked
   await page.evaluate(() => { let c, n = 0; while ((c = document.querySelector('#mc-root .mc-pick.on')) && n++ < 500) c.click(); });
