@@ -39,7 +39,7 @@ test('#680: links grouped by barcode, a lane each', { tag: ['@sandbox'] }, async
 
   const card = page.locator('#mc-root .mc-sect:has([data-card="pc"])');
   const lanes = () => card.locator('.mc-lane').evaluateAll(ls => ls.map(l => ({
-    bc: l.querySelector('.mc-bc').textContent, c: getComputedStyle(l.querySelector('.mc-bc')).color, t: l.querySelector('.mc-lane-t').textContent,
+    bc: l.querySelector('.mc-bc').innerText, c: getComputedStyle(l.querySelector('.mc-bc')).color, t: l.querySelector('.mc-lane-t').textContent,
     icons: [...l.querySelectorAll('.mc-ti')].map(i => i.dataset.key), on: [...l.querySelectorAll('.mc-ti.on')].map(i => i.dataset.key),
     all: (l.querySelector('.mc-all') || {}).textContent || '', pill: (l.querySelector('.mc-pill') || {}).textContent || '', open: l.classList.contains('open') })));
   let L = await lanes();
@@ -51,7 +51,9 @@ test('#680: links grouped by barcode, a lane each', { tag: ['@sandbox'] }, async
   check(L[0].c === ok, `the release's is green (${L[0].c})`);
   check(L[1].bc === '0730167335256' && L[1].icons.join() === 'bandcamp,deezer,tidal2,' && L[1].pill === 'withheld', 'the biggest other lane next: one barcode with or without its leading 0, shown in its 13-digit form');
   check(L[2].bc === '0886443927087' && L[2].icons.join() === 'qobuz', 'then the smaller one');
-  check(L[3].bc === '?' && L[3].t === 'not confirmed' && L[3].icons.join() === 'apple', 'the platforms without a barcode last');
+  check(L[3].bc.trim() === '' && L[3].t === 'not confirmed' && L[3].icons.join() === 'apple', 'the platforms without a barcode last, under an empty barcode');
+  const w = await card.locator('.mc-lane .mc-bc').evaluateAll(cs => cs.map(c => Math.round(c.getBoundingClientRect().width)));
+  check(Math.abs(w[3] - w[1]) <= 2, `the empty barcode is as wide as a 13-digit one (${w})`);
   check(new Set(L.map(l => l.c)).size === 4, 'one colour per lane');
   check(await card.locator('.mc-sect-h .mc-bc, .mc-hbc').count() === 0, "no barcode in the card header");
   check(await card.locator('.mc-line:has-text("Discogs master")').count() === 1 && await card.locator('.mc-lane .mc-ti[data-key="discogs-master"]').count() === 0, 'the Discogs master is a row of its own, out of the lanes');
