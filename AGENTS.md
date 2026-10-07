@@ -36,6 +36,7 @@ Learn something durable → write it down: in the general file if it would hold 
 ## Userscripts
 
 - Install links pin to a **commit SHA**, not a branch ([Standard 10](STANDARDS.md#standard-10)): `[Install @<version>](…/raw/<sha>/<path>.user.js)`. Feature branch → pinned only; on main/stable → pinned + latest. **curl-check every link**: the repo slug is `majkinetor/musicbrainz-userscripts` (not the `mb-userscripts` folder), so folder-name raw links 404.
+- **Always give a String Theory link too** (maintainer): every time you share install links, whatever script changed, include String Theory's, pinned to the same commit. The maintainer runs the bundle.
 - **Settings** → `GM_setValue` / `GM_getValue`, never `localStorage`.
 - Bump the script's `@version` to today (`YYYY.M.D`, time appended for a same-day second change); read the current value before bumping.
 - `node --check` plus a real-browser load before sharing an install link.
