@@ -26,7 +26,7 @@ test('#680: links grouped by barcode, a lane each', { tag: ['@sandbox'] }, async
         { key: 'deezer', name: 'Deezer', url: 'https://www.deezer.com/album/291098232', state: 'withheld', why, barcode: '730167335256' },
         { key: 'tidal2', icon: 'tidal', name: 'Tidal', url: 'https://tidal.com/album/214316434', state: 'withheld', why, barcode: '730167335256' },
         { key: 'apple', name: 'Apple', url: 'https://music.apple.com/us/album/for-bird-and-bags/1868545067', state: 'withheld', why: 'barcode not confirmed' },
-        { key: 'qobuz', name: 'Qobuz', url: 'https://www.qobuz.com/gb-en/album/x/abc', state: 'withheld', why, barcode: '0886443927087' },
+        { key: 'qobuz', name: 'Qobuz', url: 'https://www.qobuz.com/gb-en/album/x/abc', state: 'withheld', why, barcode: '5099963645750' },
         { key: 'discogs', name: 'Discogs', url: 'https://www.discogs.com/release/8846789', state: 'linked', barcode: '081227946025' },   // the release's own Discogs: a ✓ in the release's lane
         { key: 'discogs-master', icon: 'discogs', name: 'Discogs master', url: 'https://www.discogs.com/master/669461', state: 'new', entity: { type: 'release_group' } },
         { key: 'tidal', name: 'Tidal', url: 'https://tidal.com/album/214316433', state: 'linked', barcode: '730167335256' },   // linked, in its barcode's lane too
@@ -52,10 +52,10 @@ test('#680: links grouped by barcode, a lane each', { tag: ['@sandbox'] }, async
   const ok = await page.evaluate(() => { const s = document.createElement('span'); s.className = 'mc-bc'; s.style.setProperty('--bc', 'var(--mbu-ok)'); document.querySelector('#mc-root .mc-bcl').append(s); const c = getComputedStyle(s).color; s.remove(); return c; });
   check(L[0].c === ok, `the release's is green (${L[0].c})`);
   check(L[1].bc === '730167335256' && L[1].t === "Not the release's barcode" && L[1].icons.join() === 'bandcamp,deezer,tidal2,' && L[1].pill === 'withheld', 'the biggest other lane next: one barcode with or without its leading 0, shown in one form: 12 digits');
-  check(L[2].bc === '886443927087' && L[2].icons.join() === 'qobuz', 'then the smaller one');
+  check(L[2].bc === '5099963645750' && L[2].icons.join() === 'qobuz', 'then the smaller one');
   check(L[3].bc.trim() === '' && L[3].t.startsWith('Empty barcode') && L[3].icons.join() === 'apple', 'the platforms without a barcode last, under an empty barcode');
   const w = await card.locator('.mc-bcl .mc-bc').evaluateAll(cs => cs.map(c => Math.round(c.getBoundingClientRect().width)));
-  check(Math.abs(w[3] - w[1]) <= 2, `the empty barcode is as wide as a 12-digit one (${w})`);
+  check(Math.max(...w) - Math.min(...w) <= 1, `every barcode chip is one width, the empty one too (${w})`);
   check(new Set(L.map(l => l.c)).size === 4, 'one colour per lane');
   check(await card.locator('.mc-sect-h .mc-bc, .mc-hbc').count() === 0, "no barcode in the card header");
   check(await card.locator('.mc-line:has-text("Discogs master")').count() === 1 && await card.locator('.mc-bcl .mc-ti[data-key="discogs-master"]').count() === 0, 'the Discogs master is a row of its own, out of the lanes');

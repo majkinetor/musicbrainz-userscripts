@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Mission Control
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.7.235959
+// @version      2026.10.8.1
 // @description  One window on the release page that asks the other scripts (Platform Check, ISRC Scout, Art Station, Fusion, Credit Hoarder) what is missing, shows it all in one review, and applies the ticked changes in order.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPk1pc3Npb24gQ29udHJvbDwvdGl0bGU+CiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjNWYzZWMwIiBzdHJva2Utd2lkdGg9IjciPgogICAgPGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iNTIiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjMwIi8+CiAgICA8cGF0aCBkPSJNNjQgNHYyMk02NCAxMDJ2MjJNNCA2NGgyMk0xMDIgNjRoMjIiLz4KICA8L2c+CiAgPGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iMTEiIGZpbGw9IiM4YTVjZjYiLz4KPC9zdmc+Cg==
@@ -509,7 +509,7 @@ function mcStyle() {
         + '#mc-root .mc-sect-h .mc-icsw{all:unset;box-sizing:border-box;display:inline-flex;align-items:center;gap:8px;min-width:0;cursor:pointer;padding:3px 8px 3px 3px;margin:-3px -8px -3px -3px;border-radius:8px;transition:background .12s}#mc-root .mc-icsw .ic{position:relative}'
         + '#mc-root .mc-sect-h .mc-icsw:hover{background:var(--mbu-bg-hover)}#mc-root .mc-sect-h .mc-icsw:focus-visible{outline:2px solid var(--mbu-accent);outline-offset:1px}'
         + '.mc-sect.mc-off .mc-icsw .ic{background:var(--mbu-bg-sunken)}.mc-sect.mc-off .mc-icsw .ic>*{filter:grayscale(1);opacity:.55}.mc-sect.mc-off .mc-icsw .t{opacity:.45}'
-        + '.mc-sect.mc-off>:not(.mc-sect-h){display:none}.mc-sect.mc-off .mc-sect-h{border-bottom:0}.mc-sect.mc-off .mc-sect-h>:not(.mc-icsw){opacity:.45}.mc-bc.none{--bc:var(--mbu-text-weak);border-style:dashed;background:none}.mc-bc.none i{visibility:hidden}.mc-line:last-child{border-bottom:0}'
+        + '.mc-sect.mc-off>:not(.mc-sect-h){display:none}.mc-sect.mc-off .mc-sect-h{border-bottom:0}.mc-sect.mc-off .mc-sect-h>:not(.mc-icsw){opacity:.45}.mc-bc.none{--bc:var(--mbu-text-weak);border-style:dashed;background:none}.mc-bcl .mc-bc{display:inline-grid;justify-items:center}.mc-bcl .mc-bc>*{grid-area:1/1;font:inherit}.mc-bcl .mc-bc>i{visibility:hidden}.mc-line:last-child{border-bottom:0}'
         + '.mc-sect-h .end{margin-left:auto;display:flex;align-items:center;gap:6px}.mc-chlbl{font-size:13px;font-weight:700;color:var(--mbu-text)}'
         // CH's own toolbar look: an icon per source, its box only on hover, then an orange ⚛ All (#680)
         + '.mc-chopen{flex-wrap:wrap;justify-content:flex-end;gap:2px}#mc-root a.mc-chsrc{width:24px;height:24px;padding:0;justify-content:center;color:var(--mbu-text-dim);text-decoration:none;background:none;border-color:transparent}'
@@ -1059,7 +1059,8 @@ function paintCards() {
             relHtml = order.map(l => {
                 const open = laneOpen.has(l.k), picks = l.rows.filter(x => PICKABLE[x.state]), n = picks.filter(x => picked[id] && picked[id].has(x.key)).length;
                 const states = [...new Set(l.rows.filter(x => x.state !== 'linked').map(x => x.state))].concat(l.rows.every(x => x.state === 'linked') ? ['linked'] : []), pill = states.length === 1 ? PILL[states[0]] || ['idle', states[0]] : null;
-                const chip = l.k ? '<span class="mc-bc" style="--bc:' + l.color + '" title="' + esc(l.tip) + '">' + bcShow(l.k) + '</span>' : '<span class="mc-bc none" title="' + esc(l.tip) + '"><i>000000000000</i></span>';
+                // every chip as wide as a 13-digit barcode, the digits centred: the icons line up in every lane
+                const chip = '<span class="mc-bc' + (l.k ? '' : ' none') + '"' + (l.k ? ' style="--bc:' + l.color + '"' : '') + ' title="' + esc(l.tip) + '"><i>0000000000000</i>' + (l.k ? '<b>' + bcShow(l.k) + '</b>' : '') + '</span>';
                 const icons = l.rows.length ? l.rows.map(x => {
                     const pk = !!PICKABLE[x.state], on = pk && picked[id] && picked[id].has(x.key);
                     return '<span class="mc-ti ' + esc(x.state) + (pk ? ' mc-pick' : '') + (on ? ' on' : '') + '"' + (pk ? ' data-prov="' + id + '" data-key="' + esc(x.key) + '"' : '')
