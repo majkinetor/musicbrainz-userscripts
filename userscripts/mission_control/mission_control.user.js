@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Mission Control
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.7.160000
+// @version      2026.10.7.163000
 // @description  One window on the release page that asks the other scripts (Platform Check, ISRC Scout, Art Station, Fusion, Credit Hoarder) what is missing, shows it all in one review, and applies the ticked changes in order.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPk1pc3Npb24gQ29udHJvbDwvdGl0bGU+CiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjNWYzZWMwIiBzdHJva2Utd2lkdGg9IjciPgogICAgPGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iNTIiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjMwIi8+CiAgICA8cGF0aCBkPSJNNjQgNHYyMk02NCAxMDJ2MjJNNCA2NGgyMk0xMDIgNjRoMjIiLz4KICA8L2c+CiAgPGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iMTEiIGZpbGw9IiM4YTVjZjYiLz4KPC9zdmc+Cg==
@@ -447,7 +447,7 @@ function mcStyle() {
         + '.mc-pill.add{color:var(--mbu-accent-text);background:var(--mbu-accent-soft);border-color:var(--mbu-border-strong)}.mc-pill.ok{color:var(--mbu-ok);background:var(--mbu-ok-bg);border-color:var(--mbu-ok-border)}'
         + '.mc-pill.warn{color:var(--mbu-warn);background:var(--mbu-warn-bg);border-color:var(--mbu-warn-border)}.mc-pill.idle{color:var(--mbu-text-weak);border-style:dashed}.mc-pill.err{color:var(--mbu-error);border-color:var(--mbu-error)}'
         + '.mc-dot.busy{background:var(--mbu-info)}.mc-dot.add{background:var(--mbu-accent)}.mc-dot.ok{background:var(--mbu-ok)}'
-        + '.mc-row2{display:grid;grid-template-columns:1fr 1fr;gap:10px;align-items:start}.mc-row2.one{grid-template-columns:1fr}.mc-col{display:flex;flex-direction:column;gap:10px;min-width:0}.mc-col>.mc-sect{margin:0}'
+        + '.mc-row2{display:flex;flex-wrap:wrap;gap:10px;align-items:flex-start}.mc-row2>.mc-sect{flex:1 1 520px;min-width:0;margin:0}'
         + '.mc-tbl{width:100%;border-collapse:collapse;font-size:12px}'
         + '.mc-tbl th{font-size:10px;text-transform:uppercase;letter-spacing:.6px;color:var(--mbu-text-weak);text-align:left;padding:6px 8px;background:var(--mbu-bg-raised);border-bottom:1px solid var(--mbu-border);position:sticky;top:0;white-space:nowrap}'
         + '.mc-tbl td{padding:4px 8px;border-bottom:1px solid var(--mbu-divider);white-space:nowrap}'
@@ -667,9 +667,10 @@ function matrix() {
     return sec;
 }
 
-// Two columns that stack on their own (a card is as tall as what it holds, not as its neighbour):
-// release and entity links with the release credits under them, and cover art. A card whose
-// provider isn't on the page is left out, and a column left empty gives the other the width.
+// The cards flow left to right in reading order (release and entity links, cover art, release
+// credits), as many across as fit at 520 px or more, the next line when there's no room (#680:
+// two fixed columns left a hole under the shorter one). A card is as tall as what it holds, not as
+// its neighbour. A card whose provider isn't on the page is left out, and the rest share the width.
 function releaseCards() {
     const row = el('div', 'mc-row2');
     const card = (id, t) => {
@@ -677,8 +678,8 @@ function releaseCards() {
         return '<section class="mc-sect"><div class="mc-sect-h"><span class="ic" title="' + esc(p.provider) + '"><img alt="" src="' + PROVIDER_ICONS[id] + '"></span><span class="t">' + t + '</span><span class="end"></span><span class="mc-hbc"></span><span class="mc-pill mb mc-hmb" title="The release\'s barcode in MusicBrainz">MB</span></div>'
             + '<div class="mc-card-body" data-card="' + id + '"></div></section>';
     };
-    row.innerHTML = mbuHtml('<div class="mc-col">' + card('pc', 'Release and entity links') + '</div><div class="mc-col">' + card('as', 'Cover art') + '</div>');
-    if (S.ch !== 'off') row.firstChild.append(releaseCredits());
+    row.innerHTML = mbuHtml(card('pc', 'Release and entity links') + card('as', 'Cover art'));
+    if (S.ch !== 'off') row.append(releaseCredits());
     return row;
 }
 function fitCards() {
@@ -687,10 +688,7 @@ function fitCards() {
         const id = s.querySelector('[data-card]') ? s.querySelector('[data-card]').dataset.card : 'ch';
         s.hidden = stateOf(PROVIDERS.find(x => x.id === id)) === 'idle';
     });
-    const cols = [...row.children];
-    cols.forEach(c => { c.hidden = ![...c.children].some(s => !s.hidden); });
-    row.classList.toggle('one', cols.filter(c => !c.hidden).length < 2);
-    row.hidden = cols.every(c => c.hidden);
+    row.hidden = [...row.children].every(s => s.hidden);
 }
 
 // CH's release-level credits (#680): its finding with no `track`. Info only, like its column.
