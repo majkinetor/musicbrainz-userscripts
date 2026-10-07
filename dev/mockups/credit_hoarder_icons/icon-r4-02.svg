@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+<title>Credit Hoarder — Origami</title>
+<path d="M10 76 L52 62 L64 30 L76 62 L118 50 L80 80 L64 96 L48 80Z" fill="#e94f37"/><path d="M52 62 L64 30 L64 96 L48 80Z" fill="#c23a24"/><path d="M76 62 L118 50 L80 80Z" fill="#f2765f"/><path d="M10 76 L52 62 L48 80Z" fill="#a52d1a"/>
+<path d="M118 50 L124 40 L112 48Z" fill="#a52d1a"/><g transform="translate(58 98) scale(1)" fill="#393e41"><ellipse cx="0" cy="10" rx="6" ry="4.5" transform="rotate(-20 0 10)"/><rect x="4.2" y="-14" width="2.6" height="24"/><path d="M6.8 -14 C14 -11 16 -6 13 0 C13 -5 10 -7 6.8 -8Z"/></g>
+</svg>

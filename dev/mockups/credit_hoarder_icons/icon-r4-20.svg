@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+<title>Credit Hoarder — Ensō</title>
+<defs><filter id="e20i" x="-20%" y="-20%" width="140%" height="140%"><feTurbulence type="fractalNoise" baseFrequency=".08" numOctaves="2" seed="2"/><feDisplacementMap in="SourceGraphic" scale="6"/></filter></defs><rect x="4" y="4" width="120" height="120" rx="6" fill="#f6f1e7"/>
+<path d="M98 34 C84 16 48 14 30 34 C12 56 22 94 52 106 C80 116 108 96 108 70" fill="none" stroke="#1a1a1a" stroke-width="11" stroke-linecap="round" filter="url(#e20i)"/><g transform="translate(56 58) scale(1.8)" fill="#b5121b"><ellipse cx="0" cy="10" rx="6" ry="4.5" transform="rotate(-20 0 10)"/><rect x="4.2" y="-14" width="2.6" height="24"/><path d="M6.8 -14 C14 -11 16 -6 13 0 C13 -5 10 -7 6.8 -8Z"/></g>
+</svg>
