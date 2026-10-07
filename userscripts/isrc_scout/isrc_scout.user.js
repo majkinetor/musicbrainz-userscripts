@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         ISRC Scout
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.6.220755
+// @version      2026.10.7.090500
 // @description  Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify / Beatport / Tidal / Volumo / HDtracks / Qobuz, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPklTUkMgU2NvdXQ8L3RpdGxlPgogICAgPHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPgogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjQwIi8+CiAgICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyNiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2U9IiNiOWEzZTgiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPgogIDwvZz4KICA8bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+Cjwvc3ZnPgo=
@@ -7254,10 +7254,22 @@
       if (idx < 0) { const p = pickTrackByTitle(s, RELEASE.tracks); idx = p.ambiguous ? -1 : p.idx; }
       return idx;
     }
-    function mcFinding(t) {
+    // ISRCs on more than one recording of the release, found or already there → isrc -> [track numbers].
+    // The dialog blocks these (highlightDuplicates), so Mission Control does too (#680).
+    function mcDups() {
+      const recs = {}, multi = RELEASE.tracks.some(x => +x.mediumPos > 1);
+      RELEASE.tracks.forEach((t, i) => {
+        const add = raw => { const v = normalizeIsrc(raw); if (v) (recs[v] = recs[v] || new Map()).set(t.recId || 'i' + i, (multi ? t.mediumPos + '.' : '') + (t.number || i + 1)); };
+        t.existing.forEach(add);
+        if (mcFound[t.recId]) add(mcFound[t.recId].isrc);
+      });
+      return new Map(Object.entries(recs).filter(([, m]) => m.size > 1).map(([v, m]) => [v, [...m.values()]]));
+    }
+    function mcFinding(t, dups = mcDups()) {
       const f = mcFound[t.recId];
       const base = { key: t.recId, name: t.title, track: t.recId, existing: t.existing.slice(), links: t.recUrls.length, linkUrls: t.recUrls.slice() };
       if (f && t.existing.includes(f.isrc)) return Object.assign(base, { state: 'linked', isrc: f.isrc, source: f.source });
+      if (f && dups.has(f.isrc)) return Object.assign(base, { state: 'blocked', isrc: f.isrc, source: f.source, why: f.isrc + ' would be on tracks ' + dups.get(f.isrc).join(', ') + ': an ISRC goes on one recording' });
       if (f && t.existing.length) return Object.assign(base, { state: 'unsure', isrc: f.isrc, source: f.source, why: 'the recording already has ' + t.existing.join(', ') });
       if (f) return Object.assign(base, { state: 'new', isrc: f.isrc, source: f.source });
       return Object.assign(base, { state: t.existing.length ? 'linked' : 'none', isrc: t.existing[0] || null });
@@ -7302,8 +7314,9 @@
       }
       // then Find links, with the ISRCs just found as well as MB's (#680: one step, as the dialog's two)
       mcLinks = {};
+      const dups = mcDups();   // a duplicated ISRC finds another track's links: leave it out of the search
       try {
-        const got = await TrackLinks.findHeadless(t => mcFound[t.recId] && mcFound[t.recId].isrc, name => progress('links: ' + name));
+        const got = await TrackLinks.findHeadless(t => mcFound[t.recId] && !dups.has(mcFound[t.recId].isrc) && mcFound[t.recId].isrc, name => progress('links: ' + name));
         Object.entries(got).forEach(([idx, list]) => {
           const t = RELEASE.tracks[+idx];
           list.forEach(l => { const k = 'link:' + t.recId + ':' + l.url; mcLinks[k] = Object.assign({ rec: t.recId, idx: +idx }, l); });
@@ -7313,7 +7326,7 @@
       const linkFindings = Object.entries(mcLinks).map(([key, l]) => ({ key, kind: 'link', track: l.rec, name: l.name, url: l.url, state: 'new' }));
       Log.info('Mission Control probe: ' + linkFindings.length + ' recording link(s) to add');
       linkFindings.forEach(f => Log.info('  link ' + f.track + ' ' + f.name + ' ' + f.url));
-      const findings = RELEASE.tracks.map(mcFinding).concat(linkFindings);
+      const findings = RELEASE.tracks.map(t => mcFinding(t, dups)).concat(linkFindings);
       const tally = findings.reduce((a, f) => (a[f.state] = (a[f.state] || 0) + 1, a), {});
       Log.info('Mission Control probe ' + d.run + ' answered' + (used ? ' from ' + used : '') + ': ' + JSON.stringify(tally));
       mcSend('mc:findings', { id: 'is', run: d.run, release: mbid, source: used, more, findings });
@@ -7325,9 +7338,11 @@
       const reply = o => mcSend('mc:applied', Object.assign({ id: 'is', run: d.run, release: mbid }, o));
       const map = {}, used = {};
       const keys = d.keys || [];
+      const dups = RELEASE ? mcDups() : new Map();   // never submit an ISRC that's on >1 recording, as Submit
       keys.filter(k => !k.startsWith('link:')).forEach(rid => {
         const t = RELEASE && RELEASE.tracks.find(x => x.recId === rid), f = mcFound[rid];
         if (!t || !f || t.existing.includes(f.isrc)) return;
+        if (dups.has(f.isrc)) { Log.warn('Mission Control apply: ' + f.isrc + ' left out, it would be on tracks ' + dups.get(f.isrc).join(', ')); return; }
         (map[rid] = map[rid] || []).push(f.isrc);
         used[f.source] = (used[f.source] || 0) + 1;
       });
@@ -7368,7 +7383,7 @@
       reply({ ok: !errs.length, sent: sentN, note: [done.length && done.join(' and ') + ' submitted', errs.join('; ')].filter(Boolean).join(' · ') });
     });
     mcHello();
-    if (mbuTestHooks()) window.__isTest680 = { mcFinding, mcTrackOf, mcSources, found: () => mcFound, release: () => RELEASE, log: () => Log.text() };
+    if (mbuTestHooks()) window.__isTest680 = { mcFinding, mcDups, mcTrackOf, mcSources, found: () => mcFound, release: () => RELEASE, log: () => Log.text() };
   }
 
 })();
