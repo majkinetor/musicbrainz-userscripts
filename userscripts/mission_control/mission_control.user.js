@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Mission Control
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.7.230000
+// @version      2026.10.7.231000
 // @description  One window on the release page that asks the other scripts (Platform Check, ISRC Scout, Art Station, Fusion, Credit Hoarder) what is missing, shows it all in one review, and applies the ticked changes in order.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPk1pc3Npb24gQ29udHJvbDwvdGl0bGU+CiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjNWYzZWMwIiBzdHJva2Utd2lkdGg9IjciPgogICAgPGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iNTIiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjMwIi8+CiAgICA8cGF0aCBkPSJNNjQgNHYyMk02NCAxMDJ2MjJNNCA2NGgyMk0xMDIgNjRoMjIiLz4KICA8L2c+CiAgPGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iMTEiIGZpbGw9IiM4YTVjZjYiLz4KPC9zdmc+Cg==
@@ -32,7 +32,8 @@ Log.info(mbuStartupInfo('Mission Control'));
 // fusion / ch: 'auto' fetches during Probe, 'ask' waits for the card's Fetch
 // button, 'off' drops the step. Both fetches can take minutes (#680).
 // linkedRows: list what's already linked as rows (else: icons in the card's header)
-const DEFAULTS = { fusion: 'ask', ch: 'ask', left: true, right: true, linkedRows: false, autoProbe: false };
+// reloadAfter: reload the release page after an Execute without errors
+const DEFAULTS = { fusion: 'ask', ch: 'ask', left: true, right: true, linkedRows: false, autoProbe: false, reloadAfter: false };
 // a card and the providers whose ticks it holds (Tracks: the per-track ones without a card of their own)
 const CARDS = [['tracks', ['is', 'fusion']], ['pc', ['pc']], ['as', ['as']], ['ch', ['ch']]];
 // The cards switched off with the switch in their header: folded, and Execute leaves out what is ticked
@@ -209,7 +210,19 @@ document.addEventListener('falcon:status', e => {
     if (keys.length) { markApplied(m[1], keys); r.falconKeys = r.falconKeys.filter(k => !keys.includes(k)); }
     Log.info('falcon ' + m[1] + ': ' + (d.items || []).map(i => i.entityType + ' ' + (i.name || i.mbid) + ' ' + i.status + (i.error ? ' (' + i.error + ')' : '')).join(' · '));
     paintAll();
+    if (reloadPending) reloadWhenClean();
 });
+// reloadAfter: an Execute with no errors reloads the release page so it shows the new data. A batch
+// handed to Falcon runs in this page, so the reload waits for it and drops if an item went wrong.
+let reloadPending = false;
+function reloadWhenClean() {
+    const fs = Object.values(results).map(r => r.falcon).filter(Boolean);
+    if (fs.some(f => f.running)) return;
+    reloadPending = false;
+    if (fs.some(f => f.items.some(i => !['done', 'skipped'].includes(i.status)))) { Log.warn('reload after Execute dropped: Falcon reported a problem'); return; }
+    Log.info('Execute done without errors: reloading the release page');
+    setTimeout(() => location.reload(), 1200);
+}
 const FALCON_MARK = { queued: ['…', 'waiting'], active: ['⟳', 'running'], done: ['✓', 'done'], skipped: ['✓', 'already there'], partial: ['!', 'partly done'], failed: ['✕', 'failed'], manual: ['✋', 'needs you'] };
 // #680: the cover Art Station picked (headless), shown before Execute enters it
 // with the current front beside it when there is one, and what Execute would do
@@ -333,6 +346,7 @@ async function execute(dry) {
         }
     } finally { executing = false; paintExec(); }
     mbuToast(failed ? failed + ' step' + (failed === 1 ? '' : 's') + ' failed: see the cards and the log' : (dry ? 'Dry run done: nothing was written' : 'Done: ' + sent + ' change' + (sent === 1 ? '' : 's') + ' applied or handed over'), { kind: failed ? 'error' : 'ok' });
+    if (S.reloadAfter && !dry && !failed && sent) { reloadPending = true; reloadWhenClean(); }
 }
 function discover() {
     Log.info('discover: asking providers for release ' + RELEASE);
@@ -1179,14 +1193,10 @@ function settingsWindow() {
     const ov = el('div', 'mbu-ov');
     const panel = el('div', 'mbu-ov-panel mc-cfg');
     panel.style.width = 'min(460px, 94vw)';
-    const opt = (key, label) => '<label><span>' + label + '</span><select data-k="' + key + '">'
-        + ['auto', 'ask', 'off'].map(m => '<option value="' + m + '"' + (S[key] === m ? ' selected' : '') + '>' + m + '</option>').join('') + '</select></label>';
+    const chk = (key, label) => '<label><input type="checkbox" data-k="' + key + '"' + (S[key] ? ' checked' : '') + '>' + label + '</label>';
     panel.innerHTML = mbuHtml('<div class="mbu-ov-body">' + mbuCfgHeader({ script: 'mission_control', name: 'Mission Control', version: VERSION, icon: '<span style="font-size:20px;color:var(--mbu-accent-text)">' + ICON + '</span>', log: true })
-        + '<div class="weak" style="font-size:12px;margin-bottom:6px">Both fetches can take minutes on a big release group or tracklist. Auto runs them during Probe, Ask waits for a button, Off skips the step.</div>'
-        + opt('fusion', 'Fusion: RG duplicates') + opt('ch', 'Credit Hoarder: credits')
-        + '<label><input type="checkbox" data-k="autoProbe"' + (S.autoProbe ? ' checked' : '') + '>Probe as soon as Mission Control opens</label>'
-        + '<label><input type="checkbox" data-k="left"' + (S.left ? ' checked' : '') + '>Show the execution order</label>'
-        + '<label><input type="checkbox" data-k="right"' + (S.right ? ' checked' : '') + '>Show the track inspector</label>'
+        + chk('autoProbe', 'Probe as soon as Mission Control opens')
+        + chk('reloadAfter', 'Reload the release page after an Execute without errors')
         + '</div>');
     ov.appendChild(panel);
     document.body.appendChild(ov);
@@ -1195,8 +1205,7 @@ function settingsWindow() {
     panel.querySelector('.mbu-cfg-log').onclick = () => Log.open();
     panel.addEventListener('change', e => {
         const k = e.target.dataset.k; if (!k) return;
-        if (e.target.type === 'checkbox') { S[k] = e.target.checked; saveSettings(); if (ui) paintSides(); }
-        else setMode(k, e.target.value);
+        S[k] = e.target.checked; saveSettings();
     });
 }
 

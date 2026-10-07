@@ -85,4 +85,6 @@ A click on a card's icon or title, at the left of its header (one button), switc
 
 **Auto** beside Probe (`autoProbe` in the settings, off by default) probes as soon as MC opens, once discover has had its moment. There is no source link in the header any more: consolidating releases MusicBrainz doesn't have yet will be a mode of its own later.
 
-The layout follows variant F of the round-2 mockups (`dev/mockups/mission_control/round2/variant-f.html`). The sidebar flags and the Fusion and CH modes live in `GM_setValue('mc.settings')`.
+The layout follows variant F of the round-2 mockups (`dev/mockups/mission_control/round2/variant-f.html`). The sidebar flags and the Fusion and CH modes live in `GM_setValue('mc.settings')`, but the settings window shows only `autoProbe` and `reloadAfter`: the sidebars toggle in place (click the stepper; a track opens the inspector) and the modes are set on the stepper's segmented switch.
+
+`reloadAfter` (off by default) reloads the release page after a real Execute that sent something and had no failed step. A batch handed to Falcon runs in the page, so the reload waits until every Falcon batch stops running, and is dropped if any item ended other than done or skipped.
