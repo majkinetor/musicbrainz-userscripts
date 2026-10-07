@@ -68,13 +68,15 @@ test('#680: Probe asks Platform Check and shows its platforms', { tag: ['@sandbo
     const pc = document.querySelector('#mc-root [data-card="pc"]'), as = document.querySelector('#mc-root [data-card="as"]'), ch = document.querySelector('#mc-root .mc-chrel');
     // reading order: each card right of the one before on its line, or on a line below it
     const order = [pc, as, ch].filter(vis).map(box).every((b, i, a) => !i || (b.top === a[i - 1].top ? b.left > a[i - 1].left : b.top > a[i - 1].top));
-    return { pc: vis(pc), as: vis(as), ch: vis(ch), pcFull: vis(pc) && Math.abs(box(pc).width - rw) < 2, order, align: getComputedStyle(row).alignItems }; });
+    // no hole: with two columns the third card goes under the shorter of the first two
+    const under = vis(ch) && vis(as) ? (box(as).bottom <= box(pc).bottom ? box(ch).left === box(as).left : box(ch).left === box(pc).left) : null;
+    return { pc: vis(pc), as: vis(as), ch: vis(ch), pcFull: vis(pc) && Math.abs(box(pc).width - rw) < 2, order, under, align: getComputedStyle(row).alignItems }; });
   const c1 = await cards();
   check(c1.pc && !c1.as && !c1.ch && c1.pcFull, `no empty card for a provider not on the page; PC alone takes the width (${JSON.stringify(c1)})`);
   // a provider that turns up brings its card, after the links in reading order
   await page.evaluate(() => ['as', 'ch'].forEach(id => document.dispatchEvent(new CustomEvent('mc:provider', { detail: JSON.stringify({ id, name: id, version: 1, capabilities: ['probe'] }) }))));
   const c2 = await cards();
-  check(c2.pc && c2.as && c2.ch && !c2.pcFull && c2.order && c2.align === 'flex-start', `left to right: links, cover art, release credits, none stretched to its neighbour (${JSON.stringify(c2)})`);
+  check(c2.pc && c2.as && c2.ch && !c2.pcFull && c2.order && c2.under && c2.align === 'flex-start', `reading order, release credits under the shorter card, none stretched to its neighbour (${JSON.stringify(c2)})`);
   check(await page.evaluate(() => window.__busySeen), 'the header pulsed while probing');
   // it ends where a pulse cycle does (a fade, not a cut), so within one cycle
   check(!(await until(() => page.locator('#mc-root .mc-hdr.mc-busy').count(), n => n === 0, { timeout: 4000 })), 'and stopped once the probe was answered');

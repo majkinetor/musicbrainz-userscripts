@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Art Station
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.6.202240
+// @version      2026.10.7.170000
 // @description  Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).
 // @author       majkinetor
 // @icon         https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png
@@ -2494,16 +2494,23 @@
       const fronts = () => MODEL.filter(x => !x._new && !x._del && (x.types || []).includes('Front'));
       const measured = new Promise(res => { const t0 = Date.now(); const iv = setInterval(() => { if (fronts().every(x => x.w > 0) || Date.now() - t0 > 15000) { clearInterval(iv); res(); } }, 300); });
       const post = () => measured.then(() => {
-        const existing = fronts().map(x => ({ id: x.id, w: x.w || 0, h: x.h || 0, bytes: x.bytes || 0, thumb: x.id ? thumb(x.id, 250) : '' }));
+        // full: the archive's own image, for Mission Control's full-screen view
+        const existing = fronts().map(x => ({ id: x.id, w: x.w || 0, h: x.h || 0, bytes: x.bytes || 0, thumb: x.id ? thumb(x.id, 250) : '', full: x._img || (x.id ? thumb(x.id, 1200) : '') }));
         asLog.info(`Mission Control: existing front cover(s): ${existing.map(x => `#${x.id} ${x.w}×${x.h}`).join(', ') || 'none'}`);
         mcFramePost({ type: 'best', best: out, existing });
       });
       if (!best || !best._file) { post(); return; }
-      fetch(best._file).then(r => r.blob()).then(b => createImageBitmap(b)).then(bmp => {
-        const k = Math.min(1, 500 / Math.max(bmp.width, bmp.height)), c = document.createElement('canvas');
+      // the preview (500 px) and the full image for Mission Control's full-screen view: the file
+      // itself up to 12 MB, or 2400 px across above that
+      const scaled = (bmp, n, q) => { const k = Math.min(1, n / Math.max(bmp.width, bmp.height)), c = document.createElement('canvas');
         c.width = Math.round(bmp.width * k); c.height = Math.round(bmp.height * k);
         c.getContext('2d').drawImage(bmp, 0, 0, c.width, c.height);
-        out.thumb = c.toDataURL('image/jpeg', 0.85);
+        return c.toDataURL('image/jpeg', q); };
+      const asData = b => new Promise((res, rej) => { const fr = new FileReader(); fr.onload = () => res(fr.result); fr.onerror = () => rej(fr.error); fr.readAsDataURL(b); });
+      fetch(best._file).then(r => r.blob()).then(async b => {
+        const bmp = await createImageBitmap(b);
+        out.thumb = scaled(bmp, 500, 0.85);
+        out.full = b.size <= 12 * 1048576 ? await asData(b) : scaled(bmp, 2400, 0.92);
       }).catch(e => asLog.warn('Mission Control: preview failed: ' + (e && e.message))).then(post);
     });
   }
