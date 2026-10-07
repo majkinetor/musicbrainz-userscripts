@@ -36,7 +36,7 @@ Learn something durable → write it down: in the general file if it would hold 
 ## Userscripts
 
 - Install links pin to a **commit SHA**, not a branch ([Standard 10](STANDARDS.md#standard-10)): `[Install @<version>](…/raw/<sha>/<path>.user.js)`. Feature branch → pinned only; on main/stable → pinned + latest. **curl-check every link**: the repo slug is `majkinetor/musicbrainz-userscripts` (not the `mb-userscripts` folder), so folder-name raw links 404.
-- **Always give a String Theory link too** (maintainer): every time you share install links, whatever script changed, include String Theory's, pinned to the same commit. The maintainer runs the bundle.
+- **Always give a String Theory link too** (maintainer): every time you share install links, whatever script changed, include String Theory's. The maintainer runs the bundle. Build it from the branch with the work in progress (`mission-control-680` while Mission Control is unmerged, after merging `main` into it), not from `main`: `main`'s String Theory has no Mission Control.
 - **Settings** → `GM_setValue` / `GM_getValue`, never `localStorage`.
 - **No README while a script's design is still forming.** A new script in its design or scaffolding phase gets no README (not its own, and no entry in the root list), because the design changes too much. Write it once majkinetor settles the design. This is the one exception to "document every feature".
 - Bump the script's `@version` to today (`YYYY.M.D`, time appended for a same-day second change); read the current value before bumping.
