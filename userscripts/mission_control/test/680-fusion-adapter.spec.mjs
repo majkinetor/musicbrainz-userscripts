@@ -26,13 +26,40 @@ test('#680: Fusion runs on Fetch RG and marks the tracks with duplicates', { tag
 
   await page.click('#mc-root [data-fetch="fusion"]');
   await page.waitForFunction(() => document.querySelector('#mc-root [data-fetch="fusion"]'), null, { timeout: 120_000 });   // back once the probe is done
-  const hits = await page.locator('#mc-root .mc-tbl td[data-col="fusion"] .mc-pill').count();
+  const hits = await page.locator('#mc-root .mc-tbl td[data-col="fusion"] .mc-fxo:not(.err)').count();
   check(hits > 0, `tracks with duplicates in the release group are marked (${hits})`);
   check(await page.locator('#mc-root .mc-tbl td[data-col="fusion"] .mc-pick.on').count() === hits, 'and start ticked');
 
-  const row = page.locator('#mc-root .mc-tbl td[data-col="fusion"] .mc-pill').first().locator('xpath=ancestor::tr');
+  const row = page.locator('#mc-root .mc-tbl td[data-col="fusion"] .mc-fxo').first().locator('xpath=ancestor::tr');
   await row.locator('td.ttl').click();   // the title cell: the row's middle can be a pick cell
   check(await page.locator('#mc-root .mc-insp a[href^="/recording/"]').count() >= 2, 'inspector lists the matching recordings');
+
+  // the count opens Fusion's comparison under the row: this track's recording and each match
+  await page.locator('#mc-root .mc-tbl td[data-col="fusion"] .mc-fxo').first().click();
+  const det = page.locator('#mc-root .mc-tbl tr.mc-fxd:not([hidden])');
+  await det.waitFor();
+  check(await det.locator('.mc-fxtbl tbody tr').count() >= 2, 'the comparison lists this recording and its match');
+  check(await det.locator('.mc-fxtbl .who').first().textContent() === 'this', 'this release\'s recording comes first');
+  check(await det.locator('.mc-fxc').count() === 5, 'with the five signal chips');
+  check(await det.locator('.mc-fxc.on').count() > 0, 'and at least one lit');
+  check(await page.locator('#mc-root .mc-pick.on').count() === hits, 'opening it leaves the ticks alone');
+
+  // Check looks up this group's AcoustIDs; the chips are known after it
+  const chk = det.locator('[data-act="fx-check"]');
+  if (await chk.count()) {
+    await chk.click();
+    await page.waitForFunction(() => !document.querySelector('#mc-root tr.mc-fxd:not([hidden]) [data-act="fx-check"]'), null, { timeout: 60_000 });
+    check(await det.locator('.mc-fxc.unk').count() === 0, 'after Check no chip is unknown');
+  }
+  await page.screenshot({ path: 'test-results/mc-680-fusion-detail.png' });
+
+  // Open in Fusion puts the group on Fusion's board
+  const members = await det.locator('.mc-fxtbl tbody tr').count();
+  await det.locator('[data-act="fx-fusion"]').click();
+  await page.waitForSelector('#fs-overlay .fs-gcard', { timeout: 60_000 });
+  check(await page.locator('#fs-overlay .fs-gcard').first().locator('.fs-grow').count() === members, 'Fusion shows the group with its ' + members + ' recordings');
+  await page.screenshot({ path: 'test-results/mc-680-fusion-open.png' });
+  await page.locator('#fs-overlay').evaluate(n => n.remove());
 
   await page.evaluate(() => { window.__mcTest.execute(true); });   // Dry run: the test hook only (#680)
   await page.waitForSelector('#mc-root .mc-tapplied .mc-applied', { timeout: 20_000 });
@@ -59,9 +86,12 @@ test('#680: Fusion reports a group with a pending edit as blocked, not ticked', 
   await page.click('#mc-root [data-act="probe"]');
   await page.click('#mc-root [data-fetch="fusion"]');
   await page.waitForFunction(() => document.querySelector('#mc-root [data-fetch="fusion"]'), null, { timeout: 120_000 });
-  const blocked = await page.locator('#mc-root .mc-tbl td[data-col="fusion"] .mc-err').count();
+  const blocked = await page.locator('#mc-root .mc-tbl td[data-col="fusion"] .mc-fxo.err').count();
   check(blocked > 0, `tracks whose group has a pending edit are marked blocked (${blocked})`);
-  check(await page.locator('#mc-root .mc-tbl td[data-col="fusion"] .mc-pill').count() === 0, 'none is offered as a match');
+  check(await page.locator('#mc-root .mc-tbl td[data-col="fusion"] .mc-fxo:not(.err)').count() === 0, 'none is offered as a match');
   check(await page.locator('#mc-root .mc-tbl td[data-col="fusion"] .mc-pick.on').count() === 0, 'none is ticked');
-  check(/pending edit/.test(await page.locator('#mc-root .mc-tbl td[data-col="fusion"] .mc-err').first().getAttribute('title')), 'the tooltip names the pending edit');
+  check(/pending edit/.test(await page.locator('#mc-root .mc-tbl td[data-col="fusion"] .mc-fxo.err').first().getAttribute('title')), 'the tooltip names the pending edit');
+  await page.locator('#mc-root .mc-tbl td[data-col="fusion"] .mc-fxo.err').first().click();
+  check(await page.locator('#mc-root tr.mc-fxd:not([hidden]) a[href$="/open_edits"]').count() > 0, 'the comparison links the open edits');
+  await page.screenshot({ path: 'test-results/mc-680-fusion-blocked.png' });
 });

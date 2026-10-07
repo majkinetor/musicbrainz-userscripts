@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         String Theory
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.7.171435
+// @version      2026.10.7.173605
 // @description  Unified bundle of 9 MusicBrainz userscripts (apollo_editor, art_station, credit_hoarder, fusion, group_therapy, isrc_scout, mammoth, mission_control, platform_check). Built by userscripts/string_theory/build.mjs — do not hand-edit.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCIgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0Ij4KICA8IS0tIGh1Yi1hbmQtc3Bva2UgIm5ldHdvcmsiIGdseXBoLCBzaW5nbGUgdml2aWQgdmlvbGV0IG9uIHRyYW5zcGFyZW50IHNvIGl0IHJlYWRzIG9uIGJvdGggZGFyayBhbmQgbGlnaHQgcGFnZXMgLS0+CiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjN2M1Y2ZmIiBzdHJva2Utd2lkdGg9IjQuNiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj4KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMzIgMTUiLz4KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMNDYuNSAyMy41Ii8+CiAgICA8cGF0aCBkPSJNMzIgMzIgTDQ2LjUgNDAuNSIvPgogICAgPHBhdGggZD0iTTMyIDMyIEwzMiA0OSIvPgogICAgPHBhdGggZD0iTTMyIDMyIEwxNy41IDQwLjUiLz4KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMTcuNSAyMy41Ii8+CiAgPC9nPgogIDxnIGZpbGw9IiM3YzVjZmYiPgogICAgPGNpcmNsZSBjeD0iMzIiIGN5PSIzMiIgcj0iOC42Ii8+CiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjE5LjUiIHI9IjYuNCIvPgogICAgPGNpcmNsZSBjeD0iNDkiIGN5PSIxOS41IiByPSI2LjQiLz4KICAgIDxjaXJjbGUgY3g9IjMyIiBjeT0iNTciIHI9IjYuNCIvPgogIDwvZz4KICA8ZyBmaWxsPSJub25lIiBzdHJva2U9IiM3YzVjZmYiIHN0cm9rZS13aWR0aD0iMy44Ij4KICAgIDxjaXJjbGUgY3g9IjMyIiBjeT0iNyIgcj0iNC45Ii8+CiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjQ0LjUiIHI9IjQuOSIvPgogICAgPGNpcmNsZSBjeD0iNDkiIGN5PSI0NC41IiByPSI0LjkiLz4KICA8L2c+Cjwvc3ZnPgo=
@@ -89,8 +89,8 @@
 // Bundles (verbatim, each wrapped in a run-at gate): apollo_editor, art_station, credit_hoarder, fusion, group_therapy, isrc_scout, mammoth, mission_control, platform_check.
 
 try {
-  console.log('%c String Theory %c v2026.10.7.171435 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
-  console.log("String Theory bundles:\n  · Apollo Editor v2026.10.6\n  · Art Station v2026.10.7.210000\n  · Credit Hoarder v2026.10.7.142859\n  · Fusion v2026.10.7.235500\n  · Group Therapy v2026.10.4\n  · ISRC Scout v2026.10.7.210000\n  · Mammoth v2026.10.4\n  · Mission Control v2026.10.7.235500\n  · Platform Check v2026.10.7.210000");
+  console.log('%c String Theory %c v2026.10.7.173605 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
+  console.log("String Theory bundles:\n  · Apollo Editor v2026.10.6\n  · Art Station v2026.10.7.210000\n  · Credit Hoarder v2026.10.7.142859\n  · Fusion v2026.10.7.235900\n  · Group Therapy v2026.10.4\n  · ISRC Scout v2026.10.7.210000\n  · Mammoth v2026.10.4\n  · Mission Control v2026.10.7.235900\n  · Platform Check v2026.10.7.210000");
 } catch (e) {}
 
 // ===== apollo_editor (@run-at document-start) =====================================
@@ -27262,7 +27262,7 @@ ${lines}
 
 // ===== fusion (@run-at document-end) ============================================
 (function(__stGM){
-  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Fusion*","namespace":"https://musicbrainz.org/","version":"2026.10.7.235500","description":"Merge-recordings assistant for MusicBrainz: gather a pool of candidate recordings from a release / release group / recording page (or paste any MBID/URL), auto-match them into merge groups by ISRC / AcoustID / length / title+artist, review and adjust the groups, then submit the merges directly in the background — no MB merge page involved.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/fusion/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPkZ1c2lvbjwvdGl0bGU+CiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjOGE1Y2Y2IiBzdHJva2Utd2lkdGg9IjciPgogICAgPGVsbGlwc2UgY3g9IjY0IiBjeT0iNjQiIHJ4PSI1MiIgcnk9IjIyIi8+CiAgICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSI2NCIgcng9IjUyIiByeT0iMjIiIHRyYW5zZm9ybT0icm90YXRlKDYwIDY0IDY0KSIvPgogICAgPGVsbGlwc2UgY3g9IjY0IiBjeT0iNjQiIHJ4PSI1MiIgcnk9IjIyIiB0cmFuc2Zvcm09InJvdGF0ZSgxMjAgNjQgNjQpIi8+CiAgPC9nPgogIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjE0IiBmaWxsPSIjNmQzZmYwIi8+Cjwvc3ZnPgo="}) }) : { script: {"name":"Fusion*","namespace":"https://musicbrainz.org/","version":"2026.10.7.235500","description":"Merge-recordings assistant for MusicBrainz: gather a pool of candidate recordings from a release / release group / recording page (or paste any MBID/URL), auto-match them into merge groups by ISRC / AcoustID / length / title+artist, review and adjust the groups, then submit the merges directly in the background — no MB merge page involved.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/fusion/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPkZ1c2lvbjwvdGl0bGU+CiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjOGE1Y2Y2IiBzdHJva2Utd2lkdGg9IjciPgogICAgPGVsbGlwc2UgY3g9IjY0IiBjeT0iNjQiIHJ4PSI1MiIgcnk9IjIyIi8+CiAgICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSI2NCIgcng9IjUyIiByeT0iMjIiIHRyYW5zZm9ybT0icm90YXRlKDYwIDY0IDY0KSIvPgogICAgPGVsbGlwc2UgY3g9IjY0IiBjeT0iNjQiIHJ4PSI1MiIgcnk9IjIyIiB0cmFuc2Zvcm09InJvdGF0ZSgxMjAgNjQgNjQpIi8+CiAgPC9nPgogIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjE0IiBmaWxsPSIjNmQzZmYwIi8+Cjwvc3ZnPgo="} };
+  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Fusion*","namespace":"https://musicbrainz.org/","version":"2026.10.7.235900","description":"Merge-recordings assistant for MusicBrainz: gather a pool of candidate recordings from a release / release group / recording page (or paste any MBID/URL), auto-match them into merge groups by ISRC / AcoustID / length / title+artist, review and adjust the groups, then submit the merges directly in the background — no MB merge page involved.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/fusion/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPkZ1c2lvbjwvdGl0bGU+CiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjOGE1Y2Y2IiBzdHJva2Utd2lkdGg9IjciPgogICAgPGVsbGlwc2UgY3g9IjY0IiBjeT0iNjQiIHJ4PSI1MiIgcnk9IjIyIi8+CiAgICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSI2NCIgcng9IjUyIiByeT0iMjIiIHRyYW5zZm9ybT0icm90YXRlKDYwIDY0IDY0KSIvPgogICAgPGVsbGlwc2UgY3g9IjY0IiBjeT0iNjQiIHJ4PSI1MiIgcnk9IjIyIiB0cmFuc2Zvcm09InJvdGF0ZSgxMjAgNjQgNjQpIi8+CiAgPC9nPgogIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjE0IiBmaWxsPSIjNmQzZmYwIi8+Cjwvc3ZnPgo="}) }) : { script: {"name":"Fusion*","namespace":"https://musicbrainz.org/","version":"2026.10.7.235900","description":"Merge-recordings assistant for MusicBrainz: gather a pool of candidate recordings from a release / release group / recording page (or paste any MBID/URL), auto-match them into merge groups by ISRC / AcoustID / length / title+artist, review and adjust the groups, then submit the merges directly in the background — no MB merge page involved.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/fusion/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPkZ1c2lvbjwvdGl0bGU+CiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjOGE1Y2Y2IiBzdHJva2Utd2lkdGg9IjciPgogICAgPGVsbGlwc2UgY3g9IjY0IiBjeT0iNjQiIHJ4PSI1MiIgcnk9IjIyIi8+CiAgICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSI2NCIgcng9IjUyIiByeT0iMjIiIHRyYW5zZm9ybT0icm90YXRlKDYwIDY0IDY0KSIvPgogICAgPGVsbGlwc2UgY3g9IjY0IiBjeT0iNjQiIHJ4PSI1MiIgcnk9IjIyIiB0cmFuc2Zvcm09InJvdGF0ZSgxMjAgNjQgNjQpIi8+CiAgPC9nPgogIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjE0IiBmaWxsPSIjNmQzZmYwIi8+Cjwvc3ZnPgo="} };
   (f=>document.readyState!=='loading'?f():document.addEventListener('DOMContentLoaded',f,{once:true}))(function(){ try { (function(){
 (function () {
 'use strict';
@@ -31094,18 +31094,47 @@ boot();
    release group's recordings (the slow fetch MC's Auto/Ask switch exists for),
    auto-matches them with Fusion's own settings (ISRCs and AcoustIDs are not
    enriched here: that is minutes more, the Fusion window does it), and reports
-   per track of THIS release the group it falls in. Apply merges the ticked
-   tracks' groups through mergeGroup, one at a time (MB's merge queue is one per
-   session). The adapter's groups never touch Fusion's board. */
+   per track of THIS release the group it falls in, with what Fusion's group
+   shows: each member's artist, release and track, length, ISRCs, AcoustIDs and
+   open edits, and the signals. A group with an open edit on a member is reported
+   blocked (#529: never proposed). MC can then ask to check one group's ISRCs and
+   AcoustIDs (a few requests, not the release group's), or to open it in Fusion's
+   window. Apply merges the ticked tracks' groups through mergeGroup, one at a
+   time (MB's merge queue is one per session). Only Open puts a group on Fusion's
+   board. */
 if (SCOPE.type === 'release') {
     const mcSend = (type, detail) => document.dispatchEvent(new CustomEvent(type, { detail: JSON.stringify(detail) }));
-    const mcHello = () => mcSend('mc:provider', { id: 'fusion', name: 'Fusion', version: VERSION, release: SCOPE.mbid, capabilities: ['probe', 'apply'] });
-    let mcGroups = new Map();   // recording gid of this release's track -> group
+    const mcHello = () => mcSend('mc:provider', { id: 'fusion', name: 'Fusion', version: VERSION, release: SCOPE.mbid, capabilities: ['probe', 'apply', 'check', 'open'] });
+    let mcGroups = new Map();   // recording gid of this release's track -> { g, byGid, bad }
+    let mcOwn = [];             // this release's recordings, from the last probe
     const rgOfPage = () => { const a = document.querySelector('.releaseheader a[href*="/release-group/"]'); return a ? (a.getAttribute('href').match(/[0-9a-f-]{36}/) || [])[0] : null; };
+    const parse = (e, what) => { try { return JSON.parse(e.detail) || {}; } catch (x) { Log.warn('Mission Control ' + what + ' with unreadable detail: ' + x.message); return null; } };
+    const membersOf = hit => hit.g.memberGids.map(x => hit.byGid.get(x)).filter(Boolean);
+    // one recording as MC's comparison shows it; rel is the release to name (this one, for our own track)
+    const recInfo = (o, rel) => {
+        rel = rel || o.releases[0] || {};
+        return {
+            gid: o.gid, title: o.title, artist: o.artistCredit || '', release: rel.title || '', pos: rel.trackNumber || null, of: rel.trackCount || null,
+            more: Math.max(0, o.releases.length - 1), len: dur(o.length), ms: o.length, isrcs: o.isrcs || [], acoustids: o.acoustids, pending: !!o.editsPending,
+        };
+    };
+    const mcFinding = r => {
+        const hit = mcGroups.get(r.gid);
+        const base = { key: r.gid, track: r.gid, name: r.title };
+        if (!hit) return Object.assign(base, { state: 'none', matches: [] });
+        const members = membersOf(hit);
+        return Object.assign(base, {
+            state: hit.bad.length ? 'blocked' : 'new', confidence: hit.g.confidence, tier: hit.g.tier, cutoff: SETTINGS.matchCutoff,
+            signals: hit.g.signalsAll, any: hit.g.signals,
+            checked: { isrc: members.every(m => m.isrcsKnown), acoustid: members.every(m => m.acoustids != null) },
+            why: hit.bad.length ? 'pending edit on ' + hit.bad.map(b => b.title + ' (' + ((b.releases[0] || {}).title || b.gid.slice(0, 8)) + ')').join(', ') + ': resolve it in MB first' : hit.g.signals.join(', '),
+            self: recInfo(hit.byGid.get(r.gid) || r, r.releases[0]),
+            matches: members.filter(o => o.gid !== r.gid).map(o => recInfo(o)),
+        });
+    };
     document.addEventListener('mc:discover', () => { Log.info('Mission Control asked — answering as provider fusion'); mcHello(); });
     document.addEventListener('mc:probe', async e => {
-        let d = {};
-        try { d = JSON.parse(e.detail) || {}; } catch (x) { Log.warn('Mission Control probe with unreadable detail: ' + x.message); return; }
+        const d = parse(e, 'probe'); if (!d) return;
         if ((d.release && d.release !== SCOPE.mbid) || (d.only && !d.only.includes('fusion'))) return;
         const progress = note => mcSend('mc:progress', { id: 'fusion', run: d.run, state: 'busy', note });
         const done = (findings, note) => mcSend('mc:findings', { id: 'fusion', run: d.run, release: SCOPE.mbid, findings, note });
@@ -31124,24 +31153,13 @@ if (SCOPE.type === 'release') {
             // proposed (#529). It is reported blocked, so MC shows why and never ticks it.
             const grouped = groups.flatMap(g => g.memberGids).map(x => byGid.get(x)).filter(Boolean);
             if (grouped.length) { progress('checking ' + grouped.length + ' grouped recordings for pending edits'); await enrichPendingEdits(grouped, 2); }
-            const pendingOf = g => g.memberGids.map(x => byGid.get(x)).filter(r => r && r.editsPending);
             mcGroups = new Map();
-            const blockedOf = new Map();
             for (const g of groups) {
-                const bad = pendingOf(g);
-                for (const gid of g.memberGids) (bad.length ? blockedOf : mcGroups).set(gid, bad.length ? { g, byGid, bad } : { g, byGid });
+                const bad = g.memberGids.map(x => byGid.get(x)).filter(r => r && r.editsPending);
+                for (const gid of g.memberGids) mcGroups.set(gid, { g, byGid, bad });
             }
-            const findings = own.recordings.map(r => {
-                const hit = mcGroups.get(r.gid) || blockedOf.get(r.gid);
-                const base = { key: r.gid, track: r.gid, name: r.title };
-                if (!hit) return Object.assign(base, { state: 'none', matches: [] });
-                const others = hit.g.memberGids.filter(x => x !== r.gid).map(x => byGid.get(x)).filter(Boolean);
-                return Object.assign(base, {
-                    state: hit.bad ? 'blocked' : 'new', confidence: hit.g.confidence,
-                    why: hit.bad ? 'pending edit on ' + hit.bad.map(b => b.title + ' (' + ((b.releases[0] || {}).title || b.gid.slice(0, 8)) + ')').join(', ') + ': resolve it in MB first' : hit.g.signals.join(', '),
-                    matches: others.map(o => ({ gid: o.gid, title: o.title, len: dur(o.length), release: (o.releases[0] || {}).title || '' })),
-                });
-            });
+            mcOwn = own.recordings;
+            const findings = mcOwn.map(mcFinding);
             Log.info('Mission Control probe answered: ' + groups.length + ' group(s), ' + findings.filter(f => f.state === 'new').length + ' track(s) with duplicates, ' + findings.filter(f => f.state === 'blocked').length + ' blocked by a pending edit');
             done(findings);
         } catch (x) {
@@ -31149,13 +31167,56 @@ if (SCOPE.type === 'release') {
             done([], 'failed: ' + (x && x.message));
         }
     });
+    // check one group's ISRCs and AcoustIDs, then send its tracks' findings again
+    document.addEventListener('mc:check', async e => {
+        const d = parse(e, 'check'); if (!d) return;
+        if (d.id !== 'fusion' || (d.release && d.release !== SCOPE.mbid)) return;
+        const hit = mcGroups.get(d.key);
+        const update = o => mcSend('mc:update', Object.assign({ id: 'fusion', run: d.run, release: SCOPE.mbid, keys: [d.key] }, o));
+        if (!hit) { update({ findings: [], error: 'that group is gone: fetch the release group again' }); return; }
+        const members = membersOf(hit);
+        try {
+            Log.info('Mission Control: checking ISRCs and AcoustIDs of ' + members.length + ' recording(s) in the group of ' + d.key);
+            await enrichIsrcs(members, 2);
+            await enrichAcoustIds(members, 4);
+            Object.assign(hit.g, computeGroupConfidence(members));
+            Log.info('Mission Control check: tier ' + hit.g.tier + ', signals on every pair [' + hit.g.signalsAll.join(', ') + ']');
+            update({ findings: mcOwn.filter(r => hit.g.memberGids.includes(r.gid)).map(mcFinding) });
+        } catch (x) {
+            Log.error('Mission Control check failed: ' + (x && x.message));
+            update({ findings: [], error: 'the check failed: ' + (x && x.message) });
+        }
+    });
+    // open Fusion's window with this group on the board
+    document.addEventListener('mc:open', async e => {
+        const d = parse(e, 'open'); if (!d) return;
+        if (d.id !== 'fusion' || (d.release && d.release !== SCOPE.mbid)) return;
+        const hit = mcGroups.get(d.key);
+        if (!hit) { Log.warn('Mission Control open: no group for ' + d.key); return; }
+        await openFusion();
+        const members = membersOf(hit);
+        // each member into the pool first: out of any group it sits in, or added if the window never loaded it
+        members.forEach(m => {
+            const was = STATE.groups.find(g => g.memberGids.includes(m.gid));
+            if (was) returnToPool(m.gid, was.id);
+            else if (!STATE.recordings.has(m.gid)) addToPool(m);
+            else if (!STATE.poolOrder.includes(m.gid)) STATE.poolOrder.push(m.gid);
+        });
+        const target = members.some(m => m.gid === hit.g.target) ? hit.g.target : members[0].gid;
+        const g = createGroupWithMember(target);
+        if (!g) return;
+        members.forEach(m => { if (m.gid !== target) addToGroup(m.gid, g.id); });
+        g.target = target;
+        STATE.activeGroupId = g.id;
+        Log.info('Mission Control opened the group of ' + d.key + ' in Fusion (' + g.memberGids.length + ' recordings)');
+        renderAll();
+    });
     document.addEventListener('mc:apply', async e => {
-        let d = {};
-        try { d = JSON.parse(e.detail) || {}; } catch (x) { return; }
+        const d = parse(e, 'apply'); if (!d) return;
         if (d.id !== 'fusion' || (d.release && d.release !== SCOPE.mbid)) return;
         const reply = o => mcSend('mc:applied', Object.assign({ id: 'fusion', run: d.run, release: SCOPE.mbid }, o));
         const seen = new Set(), groups = [];
-        for (const k of d.keys || []) { const h = mcGroups.get(k); if (h && !seen.has(h.g)) { seen.add(h.g); groups.push(h); } }
+        for (const k of d.keys || []) { const h = mcGroups.get(k); if (h && !h.bad.length && !seen.has(h.g)) { seen.add(h.g); groups.push(h); } }
         if (!groups.length) { reply({ ok: true, sent: 0, note: 'nothing to merge' }); return; }
         if (d.dry) { reply({ ok: true, sent: 0, note: 'dry run: ' + groups.length + ' merge' + (groups.length === 1 ? '' : 's') + ' would be submitted' }); return; }
         let ok = 0; const errs = [];
@@ -47081,7 +47142,7 @@ Created this ${kind} while adding credits parsed from text to ${relUrl}`;
 
 // ===== mission_control (@run-at document-end) ===================================
 (function(__stGM){
-  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Mission Control*","namespace":"https://musicbrainz.org/","version":"2026.10.7.235500","description":"One window on the release page that asks the other scripts (Platform Check, ISRC Scout, Art Station, Fusion, Credit Hoarder) what is missing, shows it all in one review, and applies the ticked changes in order.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/mission_control/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPk1pc3Npb24gQ29udHJvbDwvdGl0bGU+CiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjNWYzZWMwIiBzdHJva2Utd2lkdGg9IjciPgogICAgPGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iNTIiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjMwIi8+CiAgICA8cGF0aCBkPSJNNjQgNHYyMk02NCAxMDJ2MjJNNCA2NGgyMk0xMDIgNjRoMjIiLz4KICA8L2c+CiAgPGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iMTEiIGZpbGw9IiM4YTVjZjYiLz4KPC9zdmc+Cg=="}) }) : { script: {"name":"Mission Control*","namespace":"https://musicbrainz.org/","version":"2026.10.7.235500","description":"One window on the release page that asks the other scripts (Platform Check, ISRC Scout, Art Station, Fusion, Credit Hoarder) what is missing, shows it all in one review, and applies the ticked changes in order.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/mission_control/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPk1pc3Npb24gQ29udHJvbDwvdGl0bGU+CiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjNWYzZWMwIiBzdHJva2Utd2lkdGg9IjciPgogICAgPGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iNTIiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjMwIi8+CiAgICA8cGF0aCBkPSJNNjQgNHYyMk02NCAxMDJ2MjJNNCA2NGgyMk0xMDIgNjRoMjIiLz4KICA8L2c+CiAgPGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iMTEiIGZpbGw9IiM4YTVjZjYiLz4KPC9zdmc+Cg=="} };
+  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Mission Control*","namespace":"https://musicbrainz.org/","version":"2026.10.7.235900","description":"One window on the release page that asks the other scripts (Platform Check, ISRC Scout, Art Station, Fusion, Credit Hoarder) what is missing, shows it all in one review, and applies the ticked changes in order.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/mission_control/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPk1pc3Npb24gQ29udHJvbDwvdGl0bGU+CiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjNWYzZWMwIiBzdHJva2Utd2lkdGg9IjciPgogICAgPGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iNTIiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjMwIi8+CiAgICA8cGF0aCBkPSJNNjQgNHYyMk02NCAxMDJ2MjJNNCA2NGgyMk0xMDIgNjRoMjIiLz4KICA8L2c+CiAgPGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iMTEiIGZpbGw9IiM4YTVjZjYiLz4KPC9zdmc+Cg=="}) }) : { script: {"name":"Mission Control*","namespace":"https://musicbrainz.org/","version":"2026.10.7.235900","description":"One window on the release page that asks the other scripts (Platform Check, ISRC Scout, Art Station, Fusion, Credit Hoarder) what is missing, shows it all in one review, and applies the ticked changes in order.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/mission_control/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPk1pc3Npb24gQ29udHJvbDwvdGl0bGU+CiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjNWYzZWMwIiBzdHJva2Utd2lkdGg9IjciPgogICAgPGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iNTIiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjMwIi8+CiAgICA8cGF0aCBkPSJNNjQgNHYyMk02NCAxMDJ2MjJNNCA2NGgyMk0xMDIgNjRoMjIiLz4KICA8L2c+CiAgPGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iMTEiIGZpbGw9IiM4YTVjZjYiLz4KPC9zdmc+Cg=="} };
   (f=>document.readyState!=='loading'?f():document.addEventListener('DOMContentLoaded',f,{once:true}))(function(){ try { (function(){
 (function () {
 'use strict';
@@ -47169,6 +47230,8 @@ document.addEventListener('mc:provider', e => {
 // { id, run, findings } when done. Events from an older run are ignored.
 const results = {};   // provider id -> { state: 'busy' | 'done', note, findings }
 const picked = {};    // provider id -> Set of finding keys ticked for Execute
+const fxOpen = new Set();   // tracks (recording MBIDs) whose Fusion comparison is open under their row
+const fxBusy = new Set();   // tracks whose group Fusion is checking for ISRCs and AcoustIDs
 let run = null;
 function busEvent(e, kind) {
     let d;
@@ -47198,6 +47261,24 @@ document.addEventListener('mc:findings', e => {
     findings.forEach(x => Log.debug('  ' + d.id + ' ' + x.key + ' ' + x.state + (x.why ? ' (' + x.why + ')' : '') + (x.url ? ' ' + x.url : '')));
     paintAll();
     syncIsLinks();
+});
+// a provider sends some findings again (Fusion, after checking one group's ISRCs and AcoustIDs):
+// each replaces the one with its key and keeps its tick, unless it can't be ticked any more
+document.addEventListener('mc:update', e => {
+    const d = busEvent(e, 'mc:update'); if (!d) return;
+    (d.keys || []).forEach(k => fxBusy.delete(k));
+    if (d.error) mbuToast(((PROVIDERS.find(p => p.id === d.id) || {}).short || d.id) + ': ' + d.error);
+    const r = results[d.id];
+    if (r && r.state === 'done' && r.findings) {
+        for (const x of Array.isArray(d.findings) ? d.findings : []) {
+            const i = r.findings.findIndex(y => y.key === x.key);
+            if (i === -1) r.findings.push(x); else r.findings[i] = x;
+            if (!PICKABLE[x.state] && picked[d.id]) picked[d.id].delete(x.key);
+            fxBusy.delete(x.key);
+        }
+        Log.ok('update ' + d.id + ': ' + (d.findings || []).length + ' finding(s)');
+    }
+    paintAll();
 });
 // ISRC Scout reads the release's album links (Bandcamp, Spotify, Apple…) for its ISRCs and
 // recording links. The album links ticked in Platform Check's card are not on the release yet
@@ -47625,6 +47706,24 @@ function mcStyle() {
         + '.mc-mini{display:flex;align-items:center;gap:6px;font-size:11.5px;padding:3px 0;border-bottom:1px solid var(--mbu-divider)}.mc-mini:last-child{border-bottom:0}'
         + '.mc-mini .n{margin-left:auto;font-family:var(--mbu-font-mono);font-size:10.5px;color:var(--mbu-text-dim);white-space:nowrap;flex:none;padding-left:6px}.mc-mini a:not(.n){min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}'
         + '.mc-insp-block{margin-bottom:12px}'
+        + '.mc-fxo{display:inline-flex;align-items:center;gap:4px;font:inherit;font-size:11px;font-weight:700;padding:1px 8px;border-radius:20px;cursor:pointer;color:var(--mbu-warn);background:var(--mbu-warn-bg);border:1px solid var(--mbu-warn-border)}'
+        + '.mc-fxo:hover{border-color:var(--mbu-warn)}.mc-fxo.err{color:var(--mbu-error);background:var(--mbu-error-bg);border-color:var(--mbu-error-border)}.mc-fxo.err:hover{border-color:var(--mbu-error)}'
+        + '.mc-fxo .car{display:inline-block;transition:transform .15s}.mc-fxo[aria-expanded="true"] .car{transform:rotate(90deg)}'
+        + '.mc-tbl tr.mc-fxd{cursor:default}.mc-tbl tr.mc-fxd>td,.mc-tbl tr.mc-fxd:hover>td{background:var(--mbu-bg-sunken);white-space:normal;padding:10px 12px 12px 40px}'
+        + '.mc-fxh{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin-bottom:8px;font-size:11.5px}.mc-fxh .sp{flex:1}'
+        + '.mc-fxc{font-size:11px;border-radius:5px;padding:1px 7px;border:1px solid var(--mbu-border);color:var(--mbu-text-weak);background:var(--mbu-bg)}'
+        + '.mc-fxc.on{background:var(--mbu-ok-bg);color:var(--mbu-ok);border-color:var(--mbu-ok-border);font-weight:700}.mc-fxc.some{color:var(--mbu-ok);border-color:var(--mbu-ok-border)}.mc-fxc.unk{border-style:dashed}'
+        + '.mc-fxt{font-size:11px;font-weight:700;border-radius:5px;padding:0 7px;border:1px solid var(--mbu-border);color:var(--mbu-text-weak);font-family:var(--mbu-font)}'
+        + '.mc-fxt.strict{color:var(--mbu-ok);background:var(--mbu-ok-bg);border-color:var(--mbu-ok-border)}.mc-fxt.normal{color:var(--mbu-info);background:var(--mbu-info-bg);border-color:var(--mbu-info-border)}.mc-fxt.loose{color:var(--mbu-warn);background:var(--mbu-warn-bg);border-color:var(--mbu-warn-border)}'
+        + '.mc-fxwrap{overflow-x:auto}.mc-fxtbl{border-collapse:collapse;background:var(--mbu-bg);border:1px solid var(--mbu-border);font-size:12px}'
+        + '.mc-tbl .mc-fxtbl th{position:static;background:var(--mbu-bg-raised)}.mc-tbl .mc-fxtbl tr,.mc-tbl .mc-fxtbl tr:hover td{cursor:default;background:var(--mbu-bg)}'
+        + '.mc-tbl .mc-fxtbl td{padding:5px 8px;vertical-align:top;background:var(--mbu-bg)}.mc-tbl .mc-fxtbl tr:last-child td{border-bottom:0}'
+        + '.mc-fxtbl .who{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--mbu-text-weak)}'
+        + '.mc-fxdiff{background:var(--mbu-warn-bg);color:var(--mbu-warn);border-radius:4px;padding:0 4px}.mc-fxs::after{content:" ✓";color:var(--mbu-ok)}'
+        + '.mc-fxn{margin-top:6px;font-size:11.5px;color:var(--mbu-text-weak)}'
+        + '.mc-fxm{border:1px solid var(--mbu-border);border-radius:var(--mbu-radius);padding:2px 8px 6px;margin:6px 0;background:var(--mbu-bg-raised)}'
+        + '.mc-kv{display:grid;grid-template-columns:auto minmax(0,1fr);gap:1px 10px;font-size:11.5px}.mc-kv>span:nth-child(odd){color:var(--mbu-text-weak)}'
+        + '@media (prefers-reduced-motion:reduce){.mc-fxo .car{transition:none}}'
         + '.mc-cfg label{display:flex;align-items:center;gap:10px;margin:8px 0;font-size:13px}.mc-cfg label span{min-width:150px}';
     document.head.appendChild(s);
 }
@@ -47763,10 +47862,9 @@ const COLS = [
         : '<span class="pend">none found</span>' },
     // rendered by linksCell: IS's linked icons plus the links Find links found (#680)
     { id: 'links', p: 'is', head: 'Rec links · IS', cell: () => '' },
+    // the count (fxPill, before the cell) opens Fusion's comparison under the row; the release names are the tick
     { id: 'fusion', p: 'fusion', head: 'RG duplicates · Fusion', pick: true, cell: x =>
-        x.state === 'new' ? '<span class="mc-pill warn">' + x.matches.length + ' match' + (x.matches.length === 1 ? '' : 'es') + '</span> <span class="weak">' + esc(x.matches.map(m => m.release || '').filter(Boolean).slice(0, 2).join(', ')) + '</span>'
-        : x.state === 'blocked' ? '<span class="mc-err" title="' + esc('Blocked: ' + (x.why || '')) + '">⊘ pending edit</span> <span class="weak">' + esc(x.matches.map(m => m.release || '').filter(Boolean).slice(0, 2).join(', ')) + '</span>'
-        : '<span class="pend">—</span>' },
+        FX_SHOWN[x.state] ? '<span class="weak">' + esc(fxReleases(x)) + '</span>' : '<span class="pend">—</span>' },
     { id: 'ch', p: 'ch', head: 'Credits · CH', cell: x =>
         x.credits ? '<span title="' + esc((x.list || []).map(c => c.name + ' — ' + c.role).join('\n')) + '">' + x.credits + '</span>' : '<span class="pend">—</span>' },
 ];
@@ -47806,10 +47904,80 @@ function cellHtml(c, t) {
     if (c.id === 'links') return r && r.state === 'done' ? linksCell(t) : '<span class="pend">—</span>';
     const x = trackFinding(c.p, t.rec);
     if (!x) return '<span class="pend">—</span>';
+    const lead = c.id === 'fusion' ? fxPill(x) : '';
     // a pickable cell is its own toggle, no tick box (#680): a click takes it in or leaves it out
-    if (!c.pick || !PICKABLE[x.state]) return c.cell(x);
+    if (!c.pick || !PICKABLE[x.state]) return lead + c.cell(x);
     const on = picked[p.id] && picked[p.id].has(x.key);
-    return '<span class="mc-pick' + (on ? ' on' : '') + '" data-prov="' + p.id + '" data-key="' + esc(x.key) + '" title="' + (on ? 'Taken in: click to leave out' : 'Click to take in') + '">' + c.cell(x) + '</span>';
+    return lead + '<span class="mc-pick' + (on ? ' on' : '') + '" data-prov="' + p.id + '" data-key="' + esc(x.key) + '" title="' + (on ? 'Taken in: click to leave out' : 'Click to take in') + '">' + c.cell(x) + '</span>';
+}
+
+// Fusion's comparison (#680), the way a Fusion group shows it: the track's recording and each
+// match, with artist, release and track, length, ISRCs, AcoustIDs and open edits, what differs
+// marked, and the signal chips. A chip is lit when every pair agrees (Fusion's signalsAll), half
+// lit when some do, dashed when it wasn't looked up; Check asks Fusion to look up the group's.
+const FX_SHOWN = { new: 1, blocked: 1 };
+const FX_SIGNALS = [['isrc', 'ISRC'], ['acoustid', 'AcoustID'], ['length', 'Length'], ['title', 'Title'], ['artist', 'Artist']];
+const FX_TIER = { strict: 'holds at the strict cutoff: ISRC or AcoustID', normal: 'holds at the normal cutoff: title and artist, with the length', loose: 'holds only at the loose cutoff: title with the artist or the length', manual: 'no cutoff forms it' };
+const fxReleases = x => (x.matches || []).map(m => m.release || '').filter((v, i, a) => v && a.indexOf(v) === i).slice(0, 2).join(', ');
+const fxRel = m => (m.release || '?') + (m.pos ? ' · ' + m.pos + (m.of ? '/' + m.of : '') : '') + (m.more ? ' +' + m.more : '');
+const fxLenDiff = (me, m) => {
+    const d = me && me.ms != null && m.ms != null ? Math.round((m.ms - me.ms) / 1000) : 0;
+    return d ? ' <span class="mc-fxdiff">' + (d > 0 ? '+' : '−') + Math.abs(d) + 's</span>' : '';
+};
+const fxCan = cap => !!(found.fusion && (found.fusion.capabilities || []).includes(cap));
+const fxOpenBtn = x => fxCan('open') ? '<button type="button" class="mc-btn primary" data-act="fx-fusion" data-key="' + esc(x.key) + '" title="Open Fusion\'s window with this group on the board">Open in Fusion</button>' : '';
+function fxPill(x) {
+    if (!FX_SHOWN[x.state]) return '';
+    const open = fxOpen.has(x.key), n = (x.matches || []).length;
+    return '<button type="button" class="mc-fxo' + (x.state === 'blocked' ? ' err' : '') + '" data-act="fx" data-key="' + esc(x.key) + '" aria-expanded="' + open + '" title="'
+        + esc((x.state === 'blocked' ? 'Blocked: ' + (x.why || '') + '\n' : '') + (open ? 'Hide' : 'Show') + ' what Fusion compared') + '"><span class="car">▸</span>'
+        + (x.state === 'blocked' ? '⊘ pending edit' : n + ' match' + (n === 1 ? '' : 'es')) + '</button> ';
+}
+function fxDetail(x) {
+    const me = x.self || null, ck = x.checked || {}, all = x.signals || [], any = x.any || [];
+    const need = [!ck.isrc && 'ISRC', !ck.acoustid && 'AcoustID'].filter(Boolean);
+    const chips = FX_SIGNALS.map(([k, label]) => {
+        const lit = all.includes(k), some = !lit && any.includes(k), unk = !lit && !some && ((k === 'isrc' && !ck.isrc) || (k === 'acoustid' && !ck.acoustid));
+        const tip = lit ? 'Every pair in the group agrees' : some ? 'Some pairs agree, not every one' : unk ? 'Not looked up yet: Check does' : 'No pair agrees';
+        return '<span class="mc-fxc' + (lit ? ' on' : some ? ' some' : unk ? ' unk' : '') + '" title="' + tip + '">' + label + (unk ? ' ?' : '') + '</span>';
+    }).join('');
+    const ids = (list, mine, known, short) => list == null || (!known && !list.length) ? '<span class="weak">not checked</span>'
+        : list.map(v => '<span' + (mine && mine.includes(v) ? ' class="mc-fxs"' : '') + ' title="' + esc(v) + '">' + esc(short ? v.slice(0, 8) + '…' : v) + '</span>').join('<br>') || '<span class="weak">none</span>';
+    const row = (who, m, other) => {
+        const diff = (a, b, v) => other && a !== b ? '<span class="mc-fxdiff">' + v + '</span>' : v;
+        return '<tr><td class="who">' + who + '</td>'
+            + '<td><a target="_blank" href="/recording/' + esc(m.gid) + '">' + diff(m.title, me && me.title, esc(m.title || '?')) + '</a> <span class="mono weak">' + esc((m.gid || '').slice(0, 8)) + '</span></td>'
+            + '<td>' + diff(m.artist, me && me.artist, esc(m.artist || '?')) + '</td>'
+            + '<td>' + esc(fxRel(m)) + '</td>'
+            + '<td class="mono">' + esc(m.len || '?') + (other ? fxLenDiff(me, m) : '') + '</td>'
+            + '<td class="mono">' + ids(m.isrcs, other && me && me.isrcs, ck.isrc) + '</td>'
+            + '<td class="mono">' + ids(m.acoustids, other && me && me.acoustids, ck.acoustid, true) + '</td>'
+            + '<td>' + (m.pending ? '<a class="mc-err" target="_blank" href="/recording/' + esc(m.gid) + '/open_edits">open edit</a>' : '<span class="weak">none</span>') + '</td></tr>';
+    };
+    const busy = fxBusy.has(x.key);
+    return '<div class="mc-fxh">' + (x.tier ? '<span class="mc-fxt ' + esc(x.tier) + '" title="' + esc('Fusion\'s tier: the group ' + (FX_TIER[x.tier] || '')) + '">' + esc(x.tier) + '</span>' : '')
+        + '<span class="weak">matched on</span>' + chips + '<span class="sp"></span>'
+        + (need.length && fxCan('check') ? '<button type="button" class="mc-btn" data-act="fx-check" data-key="' + esc(x.key) + '"' + (busy ? ' disabled' : '') + ' title="Look these up for this group\'s recordings only">' + (busy ? 'Checking…' : 'Check ' + need.join(' & ')) + '</button>' : '')
+        + fxOpenBtn(x) + '</div>'
+        + '<div class="mc-fxwrap"><table class="mc-fxtbl"><thead><tr><th></th><th>Recording</th><th>Artist</th><th>Release · track</th><th>Length</th><th>ISRCs</th><th>AcoustID</th><th>Edits</th></tr></thead><tbody>'
+        + (me ? row('this', me, false) : '') + (x.matches || []).map(m => row('match', m, !!me)).join('') + '</tbody></table></div>'
+        + (x.state === 'blocked' ? '<div class="mc-why">Blocked: ' + esc(x.why || '') + '</div>'
+            : x.cutoff ? '<div class="mc-fxn">Matched at Fusion\'s <b>' + esc(x.cutoff) + '</b> cutoff, the one set in Fusion\'s window.</div>' : '');
+}
+function fxAct(b) {
+    const k = b.dataset.key;
+    if (b.dataset.act === 'fx') { if (fxOpen.has(k)) fxOpen.delete(k); else fxOpen.add(k); paintMatrix(); return; }
+    if (b.dataset.act === 'fx-check') {
+        fxBusy.add(k); paintMatrix();
+        Log.info('asking Fusion to check the group of ' + k);
+        document.dispatchEvent(new CustomEvent('mc:check', { detail: JSON.stringify({ id: 'fusion', run, release: RELEASE, key: k }) }));
+        setTimeout(() => { if (fxBusy.delete(k)) { mbuToast('Fusion did not answer the check'); paintMatrix(); } }, 120000);
+        return;
+    }
+    if (b.dataset.act === 'fx-fusion') {
+        Log.info('opening the group of ' + k + ' in Fusion');
+        document.dispatchEvent(new CustomEvent('mc:open', { detail: JSON.stringify({ id: 'fusion', release: RELEASE, key: k }) }));
+    }
 }
 function paintMatrix() {
     ui.querySelectorAll('.mc-tbl th[data-colh]').forEach(th => { th.innerHTML = mbuHtml(colHead(COLS.find(c => c.id === th.dataset.colh))); });
@@ -47820,6 +47988,12 @@ function paintMatrix() {
     ui.querySelectorAll('.mc-tbl tbody tr[data-i]').forEach(tr => {
         const t = rel.tracks[+tr.dataset.i];
         tr.querySelectorAll('td[data-col]').forEach(td => { td.innerHTML = mbuHtml(cellHtml(COLS.find(c => c.id === td.dataset.col), t)); });
+    });
+    ui.querySelectorAll('.mc-tbl tr.mc-fxd').forEach(tr => {
+        const t = rel.tracks[+tr.dataset.fx], x = S.fusion !== 'off' && t ? trackFinding('fusion', t.rec) : null;
+        const show = !!(x && FX_SHOWN[x.state] && fxOpen.has(x.key));
+        tr.hidden = !show;
+        tr.firstElementChild.innerHTML = mbuHtml(show ? fxDetail(x) : '');
     });
 }
 function matrix() {
@@ -47834,7 +48008,8 @@ function matrix() {
     rel.tracks.forEach((t, i) => {
         if (rel.media > 1 && t.medium !== lastMed) { lastMed = t.medium; html += '<tr class="med"><td colspan="' + (3 + cols.length) + '">Medium ' + t.medium + '</td></tr>'; }
         html += '<tr data-i="' + i + '"' + (selected === i ? ' class="sel"' : '') + '><td class="n">' + esc(t.pos) + '</td><td class="ttl">' + esc(t.title) + '</td><td class="mono">' + esc(t.len) + '</td>'
-            + cols.map(c => '<td data-col="' + c.id + '"></td>').join('') + '</tr>';
+            + cols.map(c => '<td data-col="' + c.id + '"></td>').join('') + '</tr>'
+            + '<tr class="mc-fxd" data-fx="' + i + '" hidden><td colspan="' + (3 + cols.length) + '"></td></tr>';
     });
     if (!rel.tracks.length) html += '<tr><td colspan="' + (3 + cols.length) + '" class="weak">No tracklist on this page.</td></tr>';
     sec.innerHTML = mbuHtml(html + '</tbody></table>');
@@ -48078,8 +48253,17 @@ function paintInspector() {
     const linksBody = x => (x.linkUrls || []).map(u => mini('<span class="mc-pico">' + stIcon(urlIcon(u), 14) + '</span> <a target="_blank" rel="noopener" href="' + esc(u) + '">' + esc(shortUrl(u)) + '</a>', 'on MB')).join('')
         + trackLinks(t.rec).map(l => mini('<span class="mc-pico">' + stIcon(urlIcon(l.url), 14) + '</span> <a class="mc-add" target="_blank" rel="noopener" href="' + esc(l.url) + '">+ ' + esc(shortUrl(l.url)) + '</a>', esc(l.name))).join('')
         || '<div class="weak" style="font-size:11.5px">none</div>';
-    const fusionBody = x => (x.matches || []).map(m => mini('<a target="_blank" href="/recording/' + esc(m.gid) + '">' + esc(m.title || m.gid.slice(0, 8)) + '</a>', esc((m.release || '') + (m.len ? ' · ' + m.len : '')))).join('')
-        + (x.why ? '<div class="mc-why">' + esc(x.why) + '</div>' : '') || '<div class="weak" style="font-size:11.5px">no duplicates</div>';
+    const fusionBody = x => !(x.matches || []).length ? '<div class="weak" style="font-size:11.5px">no duplicates</div>'
+        : mini(x.state === 'blocked' ? '<span class="mc-err">⊘ pending edit</span>' : 'Fusion group', x.tier ? '<span class="mc-fxt ' + esc(x.tier) + '">' + esc(x.tier) + '</span>' : '')
+        + x.matches.map(m => '<div class="mc-fxm">' + mini('<a target="_blank" href="/recording/' + esc(m.gid) + '"><b>' + esc(m.title || m.gid.slice(0, 8)) + '</b></a>', esc(m.gid.slice(0, 8)))
+            + '<div class="mc-kv"><span>release</span><span>' + esc(fxRel(m)) + '</span>'
+            + '<span>length</span><span>' + esc(m.len || '?') + fxLenDiff(x.self, m) + '</span>'
+            + (m.artist ? '<span>artist</span><span>' + esc(m.artist) + '</span>' : '')
+            + (m.isrcs ? '<span>ISRCs</span><span class="mono">' + (esc(m.isrcs.join(', ')) || 'none') + '</span>' : '')
+            + '<span>edits</span><span>' + (m.pending ? '<span class="mc-err">open edit</span>' : 'none') + '</span></div></div>').join('')
+        + (x.signals ? '<div class="weak" style="font-size:11px;margin:4px 0">every pair agrees on: ' + esc(x.signals.join(', ') || 'nothing') + '</div>' : '')
+        + (x.state === 'blocked' && x.why ? '<div class="mc-why">' + esc(x.why) + '</div>' : '')
+        + fxOpenBtn(x);
     // each credit names the sources that give it, when more than one source was read (#680)
     const chBody = x => (x.list || []).map(c => mini(esc(c.name), esc(c.role) + (c.sources && /,/.test(x.source || '') ? ' <span class="weak">· ' + esc(c.sources.join(', ')) + '</span>' : ''))).join('') || '<div class="weak" style="font-size:11.5px">no credits</div>';
     box.innerHTML = mbuHtml('<div class="mc-mini">Recording<a class="n" target="_blank" href="/recording/' + esc(t.rec) + '">' + esc((t.rec || '').slice(0, 8)) + '</a></div>'
@@ -48172,6 +48356,15 @@ function onKey(e) {
     close();
 }
 
+function selectTrack(i) {
+    selected = i;
+    ui.querySelectorAll('.mc-tbl tr.sel').forEach(r => r.classList.remove('sel'));
+    const row = ui.querySelector('.mc-tbl tbody tr[data-i="' + i + '"]');
+    if (row) row.classList.add('sel');
+    if (!S.right) { S.right = true; saveSettings(); paintSides(); }
+    paintInspector();
+    Log.debug('selected track ' + rel.tracks[selected].pos + ' (' + rel.tracks[selected].rec + ')');
+}
 function onClick(e) {
     const t = e.target;
     const side = t.closest('[data-side]');
@@ -48180,6 +48373,13 @@ function onClick(e) {
     if (x) { S[x.dataset.close] = false; saveSettings(); paintSides(); return; }
     const m = t.closest('.mc-seg button');
     if (m) { setMode(m.closest('.mc-seg').dataset.mode, m.dataset.v); return; }
+    const fx = t.closest('[data-act^="fx"]');
+    if (fx) {
+        const row = fx.dataset.act === 'fx' && fx.closest('.mc-tbl tbody tr[data-i]');
+        fxAct(fx);
+        if (row) selectTrack(Number(row.dataset.i));   // the count also selects its track
+        return;
+    }
     // a pickable row or cell toggles on click (#680); a link inside it still just opens
     const pk = !t.closest('a') && t.closest('.mc-pick');
     if (pk) {
@@ -48193,15 +48393,7 @@ function onClick(e) {
         if (!pk.closest('.mc-tbl')) return;   // in the matrix the click also selects the track
     }
     const row = t.closest('.mc-tbl tbody tr[data-i]');
-    if (row && !t.closest('a')) {
-        selected = Number(row.dataset.i);
-        ui.querySelectorAll('.mc-tbl tr.sel').forEach(r => r.classList.remove('sel'));
-        row.classList.add('sel');
-        if (!S.right) { S.right = true; saveSettings(); paintSides(); }
-        paintInspector();
-        Log.debug('selected track ' + rel.tracks[selected].pos + ' (' + rel.tracks[selected].rec + ')');
-        return;
-    }
+    if (row && !t.closest('a')) { selectTrack(Number(row.dataset.i)); return; }
     const fetchBtn = t.closest('[data-fetch]');
     if (fetchBtn) { probeOne(fetchBtn.dataset.fetch); return; }
     const act = t.closest('[data-act]');

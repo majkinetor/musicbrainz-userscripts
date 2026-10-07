@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Fusion
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.7.235500
+// @version      2026.10.7.235900
 // @description  Merge-recordings assistant for MusicBrainz: gather a pool of candidate recordings from a release / release group / recording page (or paste any MBID/URL), auto-match them into merge groups by ISRC / AcoustID / length / title+artist, review and adjust the groups, then submit the merges directly in the background — no MB merge page involved.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPkZ1c2lvbjwvdGl0bGU+CiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjOGE1Y2Y2IiBzdHJva2Utd2lkdGg9IjciPgogICAgPGVsbGlwc2UgY3g9IjY0IiBjeT0iNjQiIHJ4PSI1MiIgcnk9IjIyIi8+CiAgICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSI2NCIgcng9IjUyIiByeT0iMjIiIHRyYW5zZm9ybT0icm90YXRlKDYwIDY0IDY0KSIvPgogICAgPGVsbGlwc2UgY3g9IjY0IiBjeT0iNjQiIHJ4PSI1MiIgcnk9IjIyIiB0cmFuc2Zvcm09InJvdGF0ZSgxMjAgNjQgNjQpIi8+CiAgPC9nPgogIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjE0IiBmaWxsPSIjNmQzZmYwIi8+Cjwvc3ZnPgo=
@@ -3849,18 +3849,47 @@ boot();
    release group's recordings (the slow fetch MC's Auto/Ask switch exists for),
    auto-matches them with Fusion's own settings (ISRCs and AcoustIDs are not
    enriched here: that is minutes more, the Fusion window does it), and reports
-   per track of THIS release the group it falls in. Apply merges the ticked
-   tracks' groups through mergeGroup, one at a time (MB's merge queue is one per
-   session). The adapter's groups never touch Fusion's board. */
+   per track of THIS release the group it falls in, with what Fusion's group
+   shows: each member's artist, release and track, length, ISRCs, AcoustIDs and
+   open edits, and the signals. A group with an open edit on a member is reported
+   blocked (#529: never proposed). MC can then ask to check one group's ISRCs and
+   AcoustIDs (a few requests, not the release group's), or to open it in Fusion's
+   window. Apply merges the ticked tracks' groups through mergeGroup, one at a
+   time (MB's merge queue is one per session). Only Open puts a group on Fusion's
+   board. */
 if (SCOPE.type === 'release') {
     const mcSend = (type, detail) => document.dispatchEvent(new CustomEvent(type, { detail: JSON.stringify(detail) }));
-    const mcHello = () => mcSend('mc:provider', { id: 'fusion', name: 'Fusion', version: VERSION, release: SCOPE.mbid, capabilities: ['probe', 'apply'] });
-    let mcGroups = new Map();   // recording gid of this release's track -> group
+    const mcHello = () => mcSend('mc:provider', { id: 'fusion', name: 'Fusion', version: VERSION, release: SCOPE.mbid, capabilities: ['probe', 'apply', 'check', 'open'] });
+    let mcGroups = new Map();   // recording gid of this release's track -> { g, byGid, bad }
+    let mcOwn = [];             // this release's recordings, from the last probe
     const rgOfPage = () => { const a = document.querySelector('.releaseheader a[href*="/release-group/"]'); return a ? (a.getAttribute('href').match(/[0-9a-f-]{36}/) || [])[0] : null; };
+    const parse = (e, what) => { try { return JSON.parse(e.detail) || {}; } catch (x) { Log.warn('Mission Control ' + what + ' with unreadable detail: ' + x.message); return null; } };
+    const membersOf = hit => hit.g.memberGids.map(x => hit.byGid.get(x)).filter(Boolean);
+    // one recording as MC's comparison shows it; rel is the release to name (this one, for our own track)
+    const recInfo = (o, rel) => {
+        rel = rel || o.releases[0] || {};
+        return {
+            gid: o.gid, title: o.title, artist: o.artistCredit || '', release: rel.title || '', pos: rel.trackNumber || null, of: rel.trackCount || null,
+            more: Math.max(0, o.releases.length - 1), len: dur(o.length), ms: o.length, isrcs: o.isrcs || [], acoustids: o.acoustids, pending: !!o.editsPending,
+        };
+    };
+    const mcFinding = r => {
+        const hit = mcGroups.get(r.gid);
+        const base = { key: r.gid, track: r.gid, name: r.title };
+        if (!hit) return Object.assign(base, { state: 'none', matches: [] });
+        const members = membersOf(hit);
+        return Object.assign(base, {
+            state: hit.bad.length ? 'blocked' : 'new', confidence: hit.g.confidence, tier: hit.g.tier, cutoff: SETTINGS.matchCutoff,
+            signals: hit.g.signalsAll, any: hit.g.signals,
+            checked: { isrc: members.every(m => m.isrcsKnown), acoustid: members.every(m => m.acoustids != null) },
+            why: hit.bad.length ? 'pending edit on ' + hit.bad.map(b => b.title + ' (' + ((b.releases[0] || {}).title || b.gid.slice(0, 8)) + ')').join(', ') + ': resolve it in MB first' : hit.g.signals.join(', '),
+            self: recInfo(hit.byGid.get(r.gid) || r, r.releases[0]),
+            matches: members.filter(o => o.gid !== r.gid).map(o => recInfo(o)),
+        });
+    };
     document.addEventListener('mc:discover', () => { Log.info('Mission Control asked — answering as provider fusion'); mcHello(); });
     document.addEventListener('mc:probe', async e => {
-        let d = {};
-        try { d = JSON.parse(e.detail) || {}; } catch (x) { Log.warn('Mission Control probe with unreadable detail: ' + x.message); return; }
+        const d = parse(e, 'probe'); if (!d) return;
         if ((d.release && d.release !== SCOPE.mbid) || (d.only && !d.only.includes('fusion'))) return;
         const progress = note => mcSend('mc:progress', { id: 'fusion', run: d.run, state: 'busy', note });
         const done = (findings, note) => mcSend('mc:findings', { id: 'fusion', run: d.run, release: SCOPE.mbid, findings, note });
@@ -3879,24 +3908,13 @@ if (SCOPE.type === 'release') {
             // proposed (#529). It is reported blocked, so MC shows why and never ticks it.
             const grouped = groups.flatMap(g => g.memberGids).map(x => byGid.get(x)).filter(Boolean);
             if (grouped.length) { progress('checking ' + grouped.length + ' grouped recordings for pending edits'); await enrichPendingEdits(grouped, 2); }
-            const pendingOf = g => g.memberGids.map(x => byGid.get(x)).filter(r => r && r.editsPending);
             mcGroups = new Map();
-            const blockedOf = new Map();
             for (const g of groups) {
-                const bad = pendingOf(g);
-                for (const gid of g.memberGids) (bad.length ? blockedOf : mcGroups).set(gid, bad.length ? { g, byGid, bad } : { g, byGid });
+                const bad = g.memberGids.map(x => byGid.get(x)).filter(r => r && r.editsPending);
+                for (const gid of g.memberGids) mcGroups.set(gid, { g, byGid, bad });
             }
-            const findings = own.recordings.map(r => {
-                const hit = mcGroups.get(r.gid) || blockedOf.get(r.gid);
-                const base = { key: r.gid, track: r.gid, name: r.title };
-                if (!hit) return Object.assign(base, { state: 'none', matches: [] });
-                const others = hit.g.memberGids.filter(x => x !== r.gid).map(x => byGid.get(x)).filter(Boolean);
-                return Object.assign(base, {
-                    state: hit.bad ? 'blocked' : 'new', confidence: hit.g.confidence,
-                    why: hit.bad ? 'pending edit on ' + hit.bad.map(b => b.title + ' (' + ((b.releases[0] || {}).title || b.gid.slice(0, 8)) + ')').join(', ') + ': resolve it in MB first' : hit.g.signals.join(', '),
-                    matches: others.map(o => ({ gid: o.gid, title: o.title, len: dur(o.length), release: (o.releases[0] || {}).title || '' })),
-                });
-            });
+            mcOwn = own.recordings;
+            const findings = mcOwn.map(mcFinding);
             Log.info('Mission Control probe answered: ' + groups.length + ' group(s), ' + findings.filter(f => f.state === 'new').length + ' track(s) with duplicates, ' + findings.filter(f => f.state === 'blocked').length + ' blocked by a pending edit');
             done(findings);
         } catch (x) {
@@ -3904,13 +3922,56 @@ if (SCOPE.type === 'release') {
             done([], 'failed: ' + (x && x.message));
         }
     });
+    // check one group's ISRCs and AcoustIDs, then send its tracks' findings again
+    document.addEventListener('mc:check', async e => {
+        const d = parse(e, 'check'); if (!d) return;
+        if (d.id !== 'fusion' || (d.release && d.release !== SCOPE.mbid)) return;
+        const hit = mcGroups.get(d.key);
+        const update = o => mcSend('mc:update', Object.assign({ id: 'fusion', run: d.run, release: SCOPE.mbid, keys: [d.key] }, o));
+        if (!hit) { update({ findings: [], error: 'that group is gone: fetch the release group again' }); return; }
+        const members = membersOf(hit);
+        try {
+            Log.info('Mission Control: checking ISRCs and AcoustIDs of ' + members.length + ' recording(s) in the group of ' + d.key);
+            await enrichIsrcs(members, 2);
+            await enrichAcoustIds(members, 4);
+            Object.assign(hit.g, computeGroupConfidence(members));
+            Log.info('Mission Control check: tier ' + hit.g.tier + ', signals on every pair [' + hit.g.signalsAll.join(', ') + ']');
+            update({ findings: mcOwn.filter(r => hit.g.memberGids.includes(r.gid)).map(mcFinding) });
+        } catch (x) {
+            Log.error('Mission Control check failed: ' + (x && x.message));
+            update({ findings: [], error: 'the check failed: ' + (x && x.message) });
+        }
+    });
+    // open Fusion's window with this group on the board
+    document.addEventListener('mc:open', async e => {
+        const d = parse(e, 'open'); if (!d) return;
+        if (d.id !== 'fusion' || (d.release && d.release !== SCOPE.mbid)) return;
+        const hit = mcGroups.get(d.key);
+        if (!hit) { Log.warn('Mission Control open: no group for ' + d.key); return; }
+        await openFusion();
+        const members = membersOf(hit);
+        // each member into the pool first: out of any group it sits in, or added if the window never loaded it
+        members.forEach(m => {
+            const was = STATE.groups.find(g => g.memberGids.includes(m.gid));
+            if (was) returnToPool(m.gid, was.id);
+            else if (!STATE.recordings.has(m.gid)) addToPool(m);
+            else if (!STATE.poolOrder.includes(m.gid)) STATE.poolOrder.push(m.gid);
+        });
+        const target = members.some(m => m.gid === hit.g.target) ? hit.g.target : members[0].gid;
+        const g = createGroupWithMember(target);
+        if (!g) return;
+        members.forEach(m => { if (m.gid !== target) addToGroup(m.gid, g.id); });
+        g.target = target;
+        STATE.activeGroupId = g.id;
+        Log.info('Mission Control opened the group of ' + d.key + ' in Fusion (' + g.memberGids.length + ' recordings)');
+        renderAll();
+    });
     document.addEventListener('mc:apply', async e => {
-        let d = {};
-        try { d = JSON.parse(e.detail) || {}; } catch (x) { return; }
+        const d = parse(e, 'apply'); if (!d) return;
         if (d.id !== 'fusion' || (d.release && d.release !== SCOPE.mbid)) return;
         const reply = o => mcSend('mc:applied', Object.assign({ id: 'fusion', run: d.run, release: SCOPE.mbid }, o));
         const seen = new Set(), groups = [];
-        for (const k of d.keys || []) { const h = mcGroups.get(k); if (h && !seen.has(h.g)) { seen.add(h.g); groups.push(h); } }
+        for (const k of d.keys || []) { const h = mcGroups.get(k); if (h && !h.bad.length && !seen.has(h.g)) { seen.add(h.g); groups.push(h); } }
         if (!groups.length) { reply({ ok: true, sent: 0, note: 'nothing to merge' }); return; }
         if (d.dry) { reply({ ok: true, sent: 0, note: 'dry run: ' + groups.length + ' merge' + (groups.length === 1 ? '' : 's') + ' would be submitted' }); return; }
         let ok = 0; const errs = [];
