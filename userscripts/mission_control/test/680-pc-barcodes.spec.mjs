@@ -47,5 +47,11 @@ test('#680: barcodes in a column, one colour each', { tag: ['@sandbox'] }, async
   // the column lines up: every chip in a row starts at the same x
   const xs = await page.locator('#mc-root [data-card="pc"] .mc-line .mc-bccol').evaluateAll(cs => cs.map(c => Math.round(c.getBoundingClientRect().left)));
   check(new Set(xs).size === 1, `one column (${xs})`);
+  // and the pill stays on the row's line, right of the barcode, not wrapped under it
+  const wrapped = await page.locator('#mc-root [data-card="pc"] .mc-line.mc-hasbc').evaluateAll(ls => ls.filter(l => {
+    const p = l.querySelector('.mc-pill').getBoundingClientRect(), b = l.querySelector('.mc-bccol').getBoundingClientRect();
+    return p.left < b.right || p.top > b.bottom || p.bottom < b.top;
+  }).length);
+  check(wrapped === 0, `every pill beside its barcode (${wrapped} wrapped)`);
   await page.locator('#mc-root [data-card="pc"]').screenshot({ path: 'test-results/mc-680-pc-barcodes.png' });
 });
