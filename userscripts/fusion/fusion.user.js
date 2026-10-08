@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Fusion
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.7.235959
+// @version      2026.10.8
 // @description  Merge-recordings assistant for MusicBrainz: gather a pool of candidate recordings from a release / release group / recording page (or paste any MBID/URL), auto-match them into merge groups by ISRC / AcoustID / length / title+artist, review and adjust the groups, then submit the merges directly in the background — no MB merge page involved.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPkZ1c2lvbjwvdGl0bGU+CiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjOGE1Y2Y2IiBzdHJva2Utd2lkdGg9IjciPgogICAgPGVsbGlwc2UgY3g9IjY0IiBjeT0iNjQiIHJ4PSI1MiIgcnk9IjIyIi8+CiAgICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSI2NCIgcng9IjUyIiByeT0iMjIiIHRyYW5zZm9ybT0icm90YXRlKDYwIDY0IDY0KSIvPgogICAgPGVsbGlwc2UgY3g9IjY0IiBjeT0iNjQiIHJ4PSI1MiIgcnk9IjIyIiB0cmFuc2Zvcm09InJvdGF0ZSgxMjAgNjQgNjQpIi8+CiAgPC9nPgogIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjE0IiBmaWxsPSIjNmQzZmYwIi8+Cjwvc3ZnPgo=
@@ -27,6 +27,8 @@ if (!mbuClaim('fusion', 'Fusion')) return;
 const VERSION = (typeof GM_info !== 'undefined' && GM_info && GM_info.script && GM_info.script.version) || '?';   // GM_info carries the real one; every script manager provides it (a hard-coded copy only ever went stale)
 const HELP_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/fusion/README.md';
 const ICON = '⚛';
+// the corner launcher wears the script's own icon (the same picture as @icon)
+const ICON_URL = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPkZ1c2lvbjwvdGl0bGU+CiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjOGE1Y2Y2IiBzdHJva2Utd2lkdGg9IjciPgogICAgPGVsbGlwc2UgY3g9IjY0IiBjeT0iNjQiIHJ4PSI1MiIgcnk9IjIyIi8+CiAgICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSI2NCIgcng9IjUyIiByeT0iMjIiIHRyYW5zZm9ybT0icm90YXRlKDYwIDY0IDY0KSIvPgogICAgPGVsbGlwc2UgY3g9IjY0IiBjeT0iNjQiIHJ4PSI1MiIgcnk9IjIyIiB0cmFuc2Zvcm09InJvdGF0ZSgxMjAgNjQgNjQpIi8+CiAgPC9nPgogIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjE0IiBmaWxsPSIjNmQzZmYwIi8+Cjwvc3ZnPgo=';
 const W = (typeof unsafeWindow !== 'undefined' ? unsafeWindow : window);
 
 // Only mount on the exact entity pages Fusion knows how to seed from — never on
@@ -2248,9 +2250,9 @@ function fsStyle() {
         // colour differ, so the stack is uniform but each is still identifiable.
         + '.fs-launch{position:fixed;z-index:2147483000;width:40px;height:40px;border-radius:50%;border:none;padding:0;'
           + 'display:flex;align-items:center;justify-content:center;cursor:pointer;'
-          + 'background:color-mix(in srgb, var(--mbu-bg) 55%, transparent);color:var(--mbu-accent-text);box-shadow:0 2px 8px rgba(0,0,0,.18);'
+          + 'background:transparent;box-shadow:none;'
           + 'opacity:.85;transition:background .15s,transform .1s,opacity .15s}'
-        + '.fs-launch-i{font-size:21px;line-height:1}'
+        + '.fs-launch img{width:34px;height:34px;display:block;pointer-events:none}'
         + '.fs-launch:hover{opacity:1;transform:scale(1.08)}'
         + '.fs-overlay{position:fixed;inset:0;background:rgba(15,12,28,.45);z-index:var(--mbu-z-modal);display:flex;align-items:center;justify-content:center}'
         // Light palette (#529: "make UI white") — every colour in the window is
@@ -3828,7 +3830,7 @@ function ensureLauncher() {
     if (document.getElementById('fs-launch')) return;
     fsStyle();
     const btn = el('button', 'fs-launch'); btn.id = 'fs-launch'; btn.type = 'button';
-    btn.innerHTML = '<span class="fs-launch-i">' + ICON + '</span>';
+    const img = document.createElement('img'); img.src = ICON_URL; img.alt = ''; btn.appendChild(img);
     btn.title = 'Fusion — merge recordings';   // icon-only: the tooltip carries the name
     btn.dataset.mbCorner = 'br'; btn.dataset.mbCornerOrder = '30';
     btn.onclick = () => openFusion();
