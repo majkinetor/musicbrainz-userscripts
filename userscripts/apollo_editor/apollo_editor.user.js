@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.7
+// @version      2026.10.8
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E
@@ -3459,7 +3459,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     .tc-acpop{position:fixed;z-index:100002;background:var(--mbu-bg);border:1px solid var(--mbu-accent);border-radius:4px;box-shadow:0 6px 22px rgba(40,20,80,.3);max-height:300px;overflow:auto;font:12px Arial;min-width:210px}
     .tc-acrow{display:flex;align-items:center;gap:7px;padding:4px 9px;cursor:pointer}
     .tc-acrow:hover,.tc-acrow.hi{background:var(--mbu-bg-hover)}
-    .tc-acrow .tic{flex:none;width:17px;display:inline-flex;align-items:center;justify-content:center;color:var(--mbu-accent-text)}
+    .tc-acrow .tic{flex:none;width:17px;display:inline-flex;align-items:center;justify-content:center;color:var(--mbu-accent-text)}.tc-acrow a.tic{text-decoration:none}.tc-acrow a.tic:hover{color:var(--mbu-accent-deep-text)}
     .tc-acrow .nm{font-weight:600;color:var(--mbu-text)}.tc-acrow .cmt{color:var(--mbu-text-weak);font-size:11px}
     .tc-acrow .tc-aka{color:var(--mbu-ok);font-size:11px;font-style:italic}
     .tc-acrow.none{color:var(--mbu-text-weak);font-style:italic;cursor:default}
@@ -4815,8 +4815,11 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
       const of = lead.length ? slot._pos.of : 0;
       const sec = (i) => !lead.length ? '' : i === 0 ? '<div class="tc-acsec">On other editions at this position</div>' : i === lead.length ? '<div class="tc-acsec">Search</div>' : '';
       const votesHtml = c => votes.has(c.gid) ? `<span class="tc-acvotes" title="credited on this track on ${votes.get(c.gid)} of ${of} other edition${of === 1 ? '' : 's'} of the release">${votes.get(c.gid)} of ${of} edition${of === 1 ? '' : 's'}</span>` : '';
-      pop.innerHTML = arr.length ? arr.map((c, i) => sec(i) + `<div class="tc-acrow${sameName(c.name, q) ? ' exact' : ''}" data-i="${i}"><span class="tic">${typeSvg(c)}</span><span class="nm">${esc(c.name)}</span>${akaHtml(c)}${c.comment ? `<span class="cmt">${esc(c.comment)}</span>` : ''}${votesHtml(c)}</div>`).join('') : `<div class="tc-acrow none">no matches — use ＋ to create</div>`;
+      pop.innerHTML = arr.length ? arr.map((c, i) => sec(i) + `<div class="tc-acrow${sameName(c.name, q) ? ' exact' : ''}" data-i="${i}">${c.gid ? `<a class="tic" href="${ORIGIN}/artist/${esc(c.gid)}" target="_blank" rel="noopener" title="open artist page">${typeSvg(c)}</a>` : `<span class="tic">${typeSvg(c)}</span>`}<span class="nm">${esc(c.name)}</span>${akaHtml(c)}${c.comment ? `<span class="cmt">${esc(c.comment)}</span>` : ''}${votesHtml(c)}</div>`).join('') : `<div class="tc-acrow none">no matches — use ＋ to create</div>`;
       [...pop.querySelectorAll('.tc-acrow[data-i]')].forEach(row => { row.title = 'click to set · Ctrl-click to set on all unresolved tracks'; row.onmousedown = e => { e.preventDefault(); const c = arr[+row.dataset.i]; if (e.ctrlKey || e.metaKey) { close(); pickArtistAllUnresolved(c); } else choose(c); }; });
+      // #689: the type icon opens the artist in a new tab, like the one beside a resolved field — its
+      // mousedown stays off the row (no pick) and off the input (focus, so the popup stays open)
+      pop.querySelectorAll('a.tic').forEach(a => { a.onmousedown = e => { e.preventDefault(); e.stopPropagation(); }; });
       if (curQuery && res.length >= curLimit && curLimit < 100) {   // likely more available → a clickable "Show more…" footer
         const more = document.createElement('div'); more.className = 'tc-acrow tc-acmore'; more.textContent = 'Show more…';
         more.onmousedown = e => { e.preventDefault(); loadMore(); };
