@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+<title>Mission Control — Telescope</title>
+<defs><filter id="mcs13-h" x="-10%" y="-10%" width="120%" height="120%"><feMorphology in="SourceAlpha" operator="dilate" radius="1.5" result="d"/><feFlood flood-color="#fff" flood-opacity=".7"/><feComposite in2="d" operator="in"/><feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs><g filter="url(#mcs13-h)"><path d="M58 72 L34 118 M64 74 L64 118 M70 72 L94 118" stroke="#22223b" stroke-width="5" stroke-linecap="round"/>
+<g transform="rotate(-30 64 60)"><rect x="18" y="48" width="78" height="24" rx="6" fill="#7a57e8" stroke="#22223b" stroke-width="5"/><rect x="96" y="44" width="16" height="32" rx="4" fill="#b9a8ec" stroke="#22223b" stroke-width="5"/><rect x="6" y="54" width="12" height="12" rx="2" fill="#22223b"/><path d="M48 48 V72" stroke="#ffc94a" stroke-width="5"/></g><path d="M108.0 5.0 L110.4 10.7 L116.6 11.2 L111.9 15.3 L113.3 21.3 L108.0 18.1 L102.7 21.3 L104.1 15.3 L99.4 11.2 L105.6 10.7Z" fill="#ffc94a"/><circle cx="122" cy="40" r="2.5" fill="#ffc94a"/></g>
+</svg>

@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+<title>Mission Control — Reporting in</title>
+<defs><filter id="mcs07-h" x="-10%" y="-10%" width="120%" height="120%"><feMorphology in="SourceAlpha" operator="dilate" radius="1.5" result="d"/><feFlood flood-color="#fff" flood-opacity=".7"/><feComposite in2="d" operator="in"/><feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs><g filter="url(#mcs07-h)"><circle cx="64" cy="64" r="28" fill="#3fb6f0" stroke="#22223b" stroke-width="5"/><path d="M48 50 Q60 56 54 70 Q66 74 70 62 Q80 60 78 48" fill="#2ea44f" stroke="#22223b" stroke-width="3" stroke-linejoin="round"/>
+<ellipse cx="64" cy="64" rx="58" ry="22" fill="none" stroke="#7a57e8" stroke-width="4" stroke-dasharray="7 6" transform="rotate(-20 64 64)"/>
+<circle cx="10" cy="82" r="7" fill="#f3722c" stroke="#22223b" stroke-width="3"/><circle cx="44" cy="92" r="7" fill="#ffc94a" stroke="#22223b" stroke-width="3"/><circle cx="118" cy="46" r="7" fill="#e63946" stroke="#22223b" stroke-width="3"/><circle cx="88" cy="30" r="7" fill="#b9a8ec" stroke="#22223b" stroke-width="3"/></g>
+</svg>

@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+<title>Mission Control — Ringed planet</title>
+<defs><filter id="mcs10-h" x="-10%" y="-10%" width="120%" height="120%"><feMorphology in="SourceAlpha" operator="dilate" radius="1.5" result="d"/><feFlood flood-color="#fff" flood-opacity=".7"/><feComposite in2="d" operator="in"/><feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs><g filter="url(#mcs10-h)"><circle cx="60" cy="68" r="34" fill="#7a57e8" stroke="#22223b" stroke-width="5"/><path d="M30 56 Q60 50 90 58 M28 76 Q60 70 92 80" stroke="#b9a8ec" stroke-width="5" fill="none" stroke-linecap="round"/>
+<path d="M18 92 C-6 108 34 104 64 92 S130 52 102 46" fill="none" stroke="#ffc94a" stroke-width="7" stroke-linecap="round"/><path d="M106.0 6.0 L109.7 14.9 L119.3 15.7 L112.0 21.9 L114.2 31.3 L106.0 26.3 L97.8 31.3 L100.0 21.9 L92.7 15.7 L102.3 14.9Z" fill="#ffc94a"/></g>
+</svg>

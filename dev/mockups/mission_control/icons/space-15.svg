@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+<title>Mission Control — Orbital sunrise</title>
+<defs><filter id="mcs15-h" x="-10%" y="-10%" width="120%" height="120%"><feMorphology in="SourceAlpha" operator="dilate" radius="1.5" result="d"/><feFlood flood-color="#fff" flood-opacity=".7"/><feComposite in2="d" operator="in"/><feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs><g filter="url(#mcs15-h)"><circle cx="64" cy="70" r="14" fill="#ffc94a"/><g stroke="#ffc94a" stroke-width="4" stroke-linecap="round"><path d="M44.9 59.0 L36.3 54.0"/><path d="M53.0 50.9 L48.0 42.3"/><path d="M64.0 48.0 L64.0 38.0"/><path d="M75.0 50.9 L80.0 42.3"/><path d="M83.1 59.0 L91.7 54.0"/></g>
+<path d="M2 120 Q64 60 126 120Z" fill="#3fb6f0" stroke="#22223b" stroke-width="5" stroke-linejoin="round"/><path d="M30 104 Q46 92 58 100 Q72 90 84 98" fill="none" stroke="#2ea44f" stroke-width="5" stroke-linecap="round"/>
+<g transform="translate(100 22) rotate(-20)"><rect x="-14" y="-4" width="10" height="8" fill="#3fb6f0" stroke="#22223b" stroke-width="2"/><rect x="4" y="-4" width="10" height="8" fill="#3fb6f0" stroke="#22223b" stroke-width="2"/><rect x="-5" y="-6" width="10" height="12" rx="2" fill="#7a57e8" stroke="#22223b" stroke-width="2"/></g></g>
+</svg>
