@@ -1,0 +1,4 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+<title>Apollo Editor — Chunky</title>
+<g transform="translate(64 64) rotate(0) scale(3.9) translate(-16 -16.25)"><path d="M13.4 22 L18.6 22 L16 30 Z" fill="#ff8c3b"/><path d="M14.6 22 L17.4 22 L16 26.8 Z" fill="#ffd24a"/><path d="M10.4 16.5 L5.5 24 L10.4 22 Z M21.6 16.5 L26.5 24 L21.6 22 Z" fill="#3d2470"/><path d="M16 4 C20.6 7.6 21.6 12 21.6 16 L21.6 22 L10.4 22 L10.4 16 C10.4 12 11.4 7.6 16 4 Z" fill="#5f3ec0"/><circle cx="16" cy="12.5" r="3" fill="#cfe8ff" stroke="#2a1a52" stroke-width="1"/></g>
+</svg>
