@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+<title>Apollo Editor — Amphora</title>
+<path d="M34 46 C18 46 18 66 36 70 M94 46 C110 46 110 66 92 70" fill="none" stroke="#1a1410" stroke-width="5"/><rect x="42" y="12" width="44" height="8" rx="2" fill="#1a1410"/>
+<path d="M48 20 H80 L78 34 C104 46 108 92 84 116 H44 C20 92 24 46 50 34Z" fill="#d7743b"/><path d="M38 44 H90" stroke="#1a1410" stroke-width="3"/><path d="M36 50 h6 v-4 h6 v4 h6 v-4 h6 v4 h6 v-4 h6 v4 h6 v-4 h6 v4 h6" fill="none" stroke="#1a1410" stroke-width="2"/>
+<path d="M64 56 C71 64 71 80 69 94 H59 C57 80 57 64 64 56Z" fill="#1a1410"/><path d="M59 86 L52 98 L59 94Z M69 86 L76 98 L69 94Z" fill="#1a1410"/><path d="M60 98 L64 110 L68 98" fill="none" stroke="#1a1410" stroke-width="2.5"/><circle cx="64" cy="70" r="3" fill="#d7743b"/><path d="M30 104 H98" stroke="#1a1410" stroke-width="3"/>
+</svg>

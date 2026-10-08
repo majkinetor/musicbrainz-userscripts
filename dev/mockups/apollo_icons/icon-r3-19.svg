@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+<title>Apollo Editor — Cassette</title>
+<rect x="6" y="24" width="116" height="80" rx="10" fill="#3b2290"/><rect x="16" y="32" width="96" height="48" rx="5" fill="#f4efe4"/><rect x="16" y="32" width="96" height="10" rx="3" fill="#ff8c3b"/>
+<rect x="32" y="50" width="64" height="24" rx="12" fill="#2a1a52"/><circle cx="44" cy="62" r="10" fill="#2d6fd6"/><path d="M38 58 q4 -4 8 0 q2 4 -2 8 q-4 -2 -6 -8Z" fill="#5cc26b"/><circle cx="84" cy="62" r="10" fill="#c9ccd4"/><g fill="#8a8e9e"><circle cx="80" cy="59" r="2.2"/><circle cx="87" cy="66" r="2.8"/></g>
+<path d="M44 52 C60 48 70 48 84 52" stroke="#5a4a2a" stroke-width="1.5" fill="none"/><path d="M28 104 L36 88 H92 L100 104Z" fill="#2a1a52"/><g fill="#3b2290"><circle cx="44" cy="96" r="3"/><circle cx="84" cy="96" r="3"/></g>
+</svg>

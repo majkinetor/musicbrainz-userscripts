@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+<title>Apollo Editor — T-minus</title>
+<rect x="4" y="4" width="120" height="120" rx="20" fill="#1b1b1f"/><rect x="12" y="34" width="104" height="52" rx="6" fill="#0a0a0c" stroke="#3a3a42" stroke-width="2"/>
+<text x="64" y="73" text-anchor="middle" font-family="Consolas,Courier New,monospace" font-weight="700" font-size="34" fill="#ff8c3b">3:47</text><text x="20" y="27" font-family="Helvetica,Arial,sans-serif" font-weight="700" font-size="13" fill="#9a9aa6">T−</text>
+<circle cx="102" cy="22" r="5" fill="#e63946"/><path d="M12 100 H116" stroke="#3a3a42" stroke-width="6" stroke-linecap="round"/><path d="M12 100 H84" stroke="#ff8c3b" stroke-width="6" stroke-linecap="round"/>
+</svg>

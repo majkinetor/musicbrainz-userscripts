@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+<title>Apollo Editor — Paper plane</title>
+<defs><clipPath id="ap309-w"><path d="M118 20 L10 58 L56 70Z"/></clipPath></defs><path d="M10 104 C24 104 30 92 24 84 C18 76 8 86 18 92 C30 98 42 86 50 78" fill="none" stroke="#8f7fd6" stroke-width="3" stroke-dasharray="4 5" stroke-linecap="round"/>
+<path d="M118 20 L10 58 L56 70Z" fill="#fff" stroke="#3d2470" stroke-width="3" stroke-linejoin="round"/><g clip-path="url(#ap309-w)" stroke="#b9a8ec" stroke-width="2.5"><path d="M0 48 L128 8"/><path d="M0 55 L128 15"/><path d="M0 62 L128 22"/><path d="M0 69 L128 29"/><path d="M0 76 L128 36"/></g>
+<path d="M118 20 L56 70 L64 84Z" fill="#cbbdf5" stroke="#3d2470" stroke-width="3" stroke-linejoin="round"/><path d="M118 20 L64 84 L72 110Z" fill="#ece6ff" stroke="#3d2470" stroke-width="3" stroke-linejoin="round"/>
+</svg>

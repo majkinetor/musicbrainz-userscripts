@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+<title>Apollo Editor — Pick moon</title>
+<defs><radialGradient id="ap316-m" cx="0.38" cy="0.32" r=".8"><stop offset="0" stop-color="#f1f1f5"/><stop offset="1" stop-color="#9da1b0"/></radialGradient><clipPath id="ap316-p"><path d="M64 118 C40 94 12 58 16 34 C20 14 44 8 64 8 C84 8 108 14 112 34 C116 58 88 94 64 118Z"/></clipPath></defs>
+<g clip-path="url(#ap316-p)"><rect width="128" height="128" fill="url(#ap316-m)"/><circle cx="104" cy="70" r="56" fill="#2a1a52" opacity=".35"/><g fill="#8a8e9e"><circle cx="40" cy="36" r="8"/><circle cx="74" cy="26" r="5"/><circle cx="58" cy="70" r="10"/><circle cx="42" cy="84" r="4"/><circle cx="84" cy="50" r="4"/></g></g>
+<path d="M64 118 C40 94 12 58 16 34 C20 14 44 8 64 8 C84 8 108 14 112 34 C116 58 88 94 64 118Z" fill="none" stroke="#5c6070" stroke-width="3"/>
+</svg>
