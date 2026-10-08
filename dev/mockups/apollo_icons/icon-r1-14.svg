@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+<title>Apollo Editor — Footprint</title>
+<rect x="4" y="4" width="120" height="120" rx="26" fill="#a7abb7"/><g fill="#959aa7"><circle cx="24" cy="30" r="6"/><circle cx="104" cy="98" r="8"/><circle cx="100" cy="24" r="3"/><circle cx="22" cy="104" r="4"/></g>
+<g transform="rotate(-18 64 64)"><path d="M48 18 C48 8 80 8 80 18 L80 62 C80 66 76 68 76 72 L76 108 C76 118 52 118 52 108 L52 72 C52 68 48 66 48 62Z" fill="#6f7482"/>
+<g stroke="#a7abb7" stroke-width="3.5"><path d="M50 22 H78"/><path d="M50 32 H78"/><path d="M50 42 H78"/><path d="M50 52 H78"/><path d="M54 80 H74"/><path d="M54 90 H74"/><path d="M54 100 H74"/></g></g>
+</svg>

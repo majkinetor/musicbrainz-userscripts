@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+<title>Apollo Editor — Lyre</title>
+<rect x="4" y="4" width="120" height="120" rx="26" fill="#2b1b5e"/>
+<g fill="none" stroke="#e6b422" stroke-width="9" stroke-linecap="round"><path d="M48 98 C30 82 26 54 40 32 C44 25 37 18 30 23"/><path d="M80 98 C98 82 102 54 88 32 C84 25 91 18 98 23"/></g>
+<path d="M36 40 H92" stroke="#e6b422" stroke-width="7" stroke-linecap="round"/><g stroke="#fff3c4" stroke-width="2.2"><path d="M54 40 V98 M61.3 40 V98 M68.6 40 V98 M76 40 V98" transform="translate(-1 0)"/></g>
+<rect x="38" y="94" width="52" height="14" rx="5" fill="#b8860b"/>
+</svg>

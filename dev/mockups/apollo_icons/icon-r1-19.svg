@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+<title>Apollo Editor — Splashdown</title>
+<rect x="4" y="4" width="120" height="120" rx="26" fill="#cfe9fb"/><path d="M19 34 A15 13 0 0 1 49 34 Z" fill="#e94b4b" stroke="#a23b3b" stroke-width="1.5"/><path d="M19 34 L64 76 M49 34 L64 76" stroke="#555" stroke-width="1"/><path d="M79 34 A15 13 0 0 1 109 34 Z" fill="#e94b4b" stroke="#a23b3b" stroke-width="1.5"/><path d="M79 34 L64 76 M109 34 L64 76" stroke="#555" stroke-width="1"/><path d="M49 24 A15 13 0 0 1 79 24 Z" fill="#fff" stroke="#a23b3b" stroke-width="1.5"/><path d="M49 24 L64 76 M79 24 L64 76" stroke="#555" stroke-width="1"/>
+<path d="M52 96 L58 76 H70 L76 96Z" fill="#c8ccd4" stroke="#556070" stroke-width="2"/><path d="M4 96 H124 V98 Q124 124 98 124 H30 Q4 124 4 98Z" fill="#1e6fb8"/><path d="M14 106 q8 -5 16 0 t16 0 M70 112 q8 -5 16 0 t16 0" stroke="#fff" stroke-width="3" fill="none" stroke-linecap="round"/>
+</svg>

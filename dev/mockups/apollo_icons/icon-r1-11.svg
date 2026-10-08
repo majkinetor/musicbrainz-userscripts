@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+<title>Apollo Editor — Rocket A</title>
+<path d="M64 6 L106 106 H84 L64 54 L44 106 H22Z" fill="#5f3ec0"/><path d="M64 6 L74 30 H54Z" fill="#3d2470"/><circle cx="64" cy="40" r="7" fill="#cfe8ff" stroke="#2a1a52" stroke-width="2.5"/>
+<path d="M22 106 L12 118 L36 106Z M106 106 L116 118 L92 106Z" fill="#3d2470"/><path d="M52 92 H76 L64 124Z" fill="#ff8c3b"/><path d="M57 92 H71 L64 112Z" fill="#ffd24a"/>
+</svg>

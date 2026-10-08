@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+<title>Apollo Editor — Helmet</title>
+<defs><linearGradient id="ap09-v" x1="0" y1="0" x2="1" y2="1"><stop offset="0.00" stop-color="#ffd76a"/><stop offset="0.50" stop-color="#d4891c"/><stop offset="1.00" stop-color="#8a4a10"/></linearGradient><clipPath id="ap09-c"><ellipse cx="64" cy="58" rx="36" ry="30"/></clipPath></defs>
+<rect x="34" y="96" width="60" height="22" rx="8" fill="#b9bfcc"/><circle cx="64" cy="60" r="50" fill="#f4f5f8" stroke="#9aa1b1" stroke-width="3"/><ellipse cx="64" cy="58" rx="38" ry="32" fill="#4a4f5c"/>
+<ellipse cx="64" cy="58" rx="36" ry="30" fill="url(#ap09-v)"/><g clip-path="url(#ap09-c)" fill="#fff6d8" opacity=".75"><rect x="36" y="42" width="40" height="4" rx="2"/><rect x="38" y="52" width="30" height="4" rx="2"/><rect x="40" y="62" width="36" height="4" rx="2"/><rect x="42" y="72" width="24" height="4" rx="2"/></g><path d="M40 40 Q50 32 62 31" stroke="#fff" stroke-width="4" fill="none" stroke-linecap="round" opacity=".8"/><circle cx="20" cy="70" r="5" fill="#d0d4de"/><circle cx="108" cy="70" r="5" fill="#d0d4de"/>
+</svg>

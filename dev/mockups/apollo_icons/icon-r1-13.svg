@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+<title>Apollo Editor — Pencil rocket</title>
+<g transform="rotate(-40 64 64)"><path d="M16 59 L0 64 L16 69Z" fill="#ff8c3b"/><path d="M16 61 L8 64 L16 67Z" fill="#ffd24a"/><rect x="16" y="54" width="9" height="20" rx="3" fill="#ff8fab"/><rect x="25" y="54" width="7" height="20" fill="#b9bfcc"/>
+<rect x="32" y="54" width="56" height="20" fill="#ffcc33"/><path d="M32 60.5 H88 M32 67.5 H88" stroke="#e0a800" stroke-width="1.5"/><path d="M88 54 L108 64 L88 74Z" fill="#f3d9a4"/><path d="M100 60 L108 64 L100 68Z" fill="#333"/>
+<path d="M34 54 L24 38 L48 54Z M34 74 L24 90 L48 74Z" fill="#5f3ec0"/></g>
+</svg>

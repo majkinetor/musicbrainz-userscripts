@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+<title>Apollo Editor — Drachma</title>
+<defs><radialGradient id="ap10-g" cx=".35" cy=".3" r=".8"><stop offset="0" stop-color="#ffe38a"/><stop offset="1" stop-color="#c08a1e"/></radialGradient></defs>
+<circle cx="64" cy="64" r="58" fill="url(#ap10-g)" stroke="#8a5f10" stroke-width="3"/><circle cx="64" cy="64" r="46" fill="none" stroke="#8a5f10" stroke-width="7" stroke-dasharray="5 4"/><circle cx="64" cy="64" r="40" fill="none" stroke="#8a5f10" stroke-width="1.5"/>
+<g transform="translate(40 18) scale(1.5)"><path d="M13 22 L19 22 L16 30 Z" fill="#9a6a12"/><path d="M14.4 22 L17.6 22 L16 27 Z" fill="#b98417"/><path d="M12 18 L8 23.5 L12 22 Z M20 18 L24 23.5 L20 22 Z" fill="#7a5210"/>
+<path d="M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z" fill="#9a6a12"/><circle cx="16" cy="12.5" r="3" fill="#ffe38a" stroke="#7a5210" stroke-width="1"/></g>
+</svg>
