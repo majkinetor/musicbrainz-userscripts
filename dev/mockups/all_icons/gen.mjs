@@ -16,7 +16,6 @@ const SWAP = {
   credit_hoarder: { file: join(dir, '../credit_hoarder_icons/icon-ant3-04.svg'), note: 'Ant 02 with the ant grown ×1.55, badge as it was (ant3 04)' },
   mission_control: { file: join(dir, '../mission_control/icons/open-13.svg'), note: 'One tile lifting off the pyramid (open 13)' },
   string_theory: { file: join(dir, '../string_theory_icons/loop-02.svg'), note: 'Closed string, three lobes (loop 02)' },
-  group_therapy: { file: join(dir, '../group_therapy_icons/venn-03.svg'), note: 'Venn of three, outlines only (venn 03)' },
   mammoth: { file: join(root, 'mammoth/icon.svg'), note: 'its icon.svg in place of the 🦣 emoji' },
 };
 const SKIP = new Set(['discogs_credits', 'bandcamp_player_enhanced']); // discogs_credits is frozen (Credit Hoarder replaced it); Bandcamp Player Enhanced is left out of the set
