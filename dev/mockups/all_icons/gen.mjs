@@ -12,7 +12,7 @@ const { chromium } = await import(pathToFileURL(join(dir, '../../../node_modules
 // candidate icons standing in for a script's own, by folder name (a file path)
 const SWAP = {
   falcon: { file: join(dir, '../falcon_icons/icon-r6-08.svg'), note: 'Flat out (falcon round 6, 08)' },
-  apollo_editor: { file: join(root, 'falcon/icon.svg'), note: "Falcon's current icon" },
+  apollo_editor: { file: join(dir, '../apollo_icons/icon-r8-09.svg'), note: 'Line rocket, red porthole (apollo round 8, 09)' },
   mammoth: { file: join(root, 'mammoth/icon.svg'), note: 'its icon.svg in place of the 🦣 emoji' },
 };
 const SKIP = new Set(['discogs_credits']); // frozen, superseded by Credit Hoarder
