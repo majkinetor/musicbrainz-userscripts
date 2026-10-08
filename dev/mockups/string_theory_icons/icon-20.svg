@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+<title>String Theory — Tag</title>
+<defs><filter id="st20-h" x="-10%" y="-10%" width="120%" height="120%"><feMorphology in="SourceAlpha" operator="dilate" radius="1.5" result="d"/><feFlood flood-color="#fff" flood-opacity=".7"/><feComposite in2="d" operator="in"/><feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs><g filter="url(#st20-h)"><path d="M44 40 Q20 10 52 8 Q80 8 66 30" fill="none" stroke="#22223b" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/><path d="M44 40 Q20 10 52 8 Q80 8 66 30" fill="none" stroke="#7a57e8" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/><path d="M30 46 L58 26 L112 84 Q116 90 110 96 L88 116 Q82 120 76 114 L22 58Z" fill="#ffc94a" stroke="#22223b" stroke-width="4" stroke-linejoin="round" stroke-linecap="round"/><circle cx="48" cy="44" r="7" fill="#fff" stroke="#22223b" stroke-width="3.5" stroke-linejoin="round" stroke-linecap="round"/>
+<path d="M58 74 L84 102 M70 66 L96 94" stroke="#22223b" stroke-width="4" stroke-linecap="round" opacity=".5"/></g>
+</svg>

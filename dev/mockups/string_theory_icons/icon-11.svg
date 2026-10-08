@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+<title>String Theory — Harp</title>
+<defs><filter id="st11-h" x="-10%" y="-10%" width="120%" height="120%"><feMorphology in="SourceAlpha" operator="dilate" radius="1.5" result="d"/><feFlood flood-color="#fff" flood-opacity=".7"/><feComposite in2="d" operator="in"/><feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs><g filter="url(#st11-h)"><path d="M38 34 V104 M52 40 V100 M66 48 V96 M80 58 V92 M94 70 V88" stroke="#ffc94a" stroke-width="3.5" stroke-linecap="round"/>
+<path d="M24 22 Q22 14 32 14 Q72 20 112 70 L104 82 Q72 40 34 32 V112 H24Z" fill="#7a57e8" stroke="#22223b" stroke-width="4" stroke-linejoin="round" stroke-linecap="round"/><path d="M34 112 L104 82 L112 70 L118 74 L44 120 H18 V112Z" fill="#4b2e83" stroke="#22223b" stroke-width="4" stroke-linejoin="round" stroke-linecap="round"/></g>
+</svg>
