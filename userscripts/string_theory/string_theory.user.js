@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         String Theory
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.8.113522
+// @version      2026.10.8.114231
 // @description  Unified bundle of 8 MusicBrainz userscripts (apollo_editor, art_station, credit_hoarder, fusion, group_therapy, isrc_scout, mammoth, platform_check). Built by userscripts/string_theory/build.mjs — do not hand-edit.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCIgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0Ij4KICA8IS0tIGh1Yi1hbmQtc3Bva2UgIm5ldHdvcmsiIGdseXBoLCBzaW5nbGUgdml2aWQgdmlvbGV0IG9uIHRyYW5zcGFyZW50IHNvIGl0IHJlYWRzIG9uIGJvdGggZGFyayBhbmQgbGlnaHQgcGFnZXMgLS0+CiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjN2M1Y2ZmIiBzdHJva2Utd2lkdGg9IjQuNiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj4KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMzIgMTUiLz4KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMNDYuNSAyMy41Ii8+CiAgICA8cGF0aCBkPSJNMzIgMzIgTDQ2LjUgNDAuNSIvPgogICAgPHBhdGggZD0iTTMyIDMyIEwzMiA0OSIvPgogICAgPHBhdGggZD0iTTMyIDMyIEwxNy41IDQwLjUiLz4KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMTcuNSAyMy41Ii8+CiAgPC9nPgogIDxnIGZpbGw9IiM3YzVjZmYiPgogICAgPGNpcmNsZSBjeD0iMzIiIGN5PSIzMiIgcj0iOC42Ii8+CiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjE5LjUiIHI9IjYuNCIvPgogICAgPGNpcmNsZSBjeD0iNDkiIGN5PSIxOS41IiByPSI2LjQiLz4KICAgIDxjaXJjbGUgY3g9IjMyIiBjeT0iNTciIHI9IjYuNCIvPgogIDwvZz4KICA8ZyBmaWxsPSJub25lIiBzdHJva2U9IiM3YzVjZmYiIHN0cm9rZS13aWR0aD0iMy44Ij4KICAgIDxjaXJjbGUgY3g9IjMyIiBjeT0iNyIgcj0iNC45Ii8+CiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjQ0LjUiIHI9IjQuOSIvPgogICAgPGNpcmNsZSBjeD0iNDkiIGN5PSI0NC41IiByPSI0LjkiLz4KICA8L2c+Cjwvc3ZnPgo=
@@ -71,6 +71,7 @@
 // @connect      js-cdn.7digital.com
 // @connect      a-v2.sndcdn.com
 // @connect      open.spotify.com
+// @connect      www.youtube.com
 // @connect      music.amazon.com
 // @connect      na.mesk.skill.music.a2z.com
 // @match        https://*.musicbrainz.org/*
@@ -88,8 +89,8 @@
 // Bundles (verbatim, each wrapped in a run-at gate): apollo_editor, art_station, credit_hoarder, fusion, group_therapy, isrc_scout, mammoth, platform_check.
 
 try {
-  console.log('%c String Theory %c v2026.10.8.113522 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
-  console.log("String Theory bundles:\n  · Apollo Editor v2026.10.8.100227\n  · Art Station v2026.10.5.111552\n  · Credit Hoarder v2026.10.7.145215\n  · Fusion v2026.10.4\n  · Group Therapy v2026.10.4\n  · ISRC Scout v2026.10.7.093000\n  · Mammoth v2026.10.8\n  · Platform Check v2026.10.7.100000");
+  console.log('%c String Theory %c v2026.10.8.114231 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
+  console.log("String Theory bundles:\n  · Apollo Editor v2026.10.8.100227\n  · Art Station v2026.10.5.111552\n  · Credit Hoarder v2026.10.7.145215\n  · Fusion v2026.10.4\n  · Group Therapy v2026.10.4\n  · ISRC Scout v2026.10.8\n  · Mammoth v2026.10.8\n  · Platform Check v2026.10.7.100000");
 } catch (e) {}
 
 // ===== apollo_editor (@run-at document-start) =====================================
@@ -37097,7 +37098,7 @@ Created this ${kind} while adding credits parsed from text to ${relUrl}`;
 
 // ===== isrc_scout (@run-at document-start) ========================================
 (function(__stGM){
-  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"ISRC Scout*","namespace":"https://musicbrainz.org/","version":"2026.10.7.093000","description":"Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify / Beatport / Tidal / Volumo / HDtracks / Qobuz, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/isrc_scout/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPklTUkMgU2NvdXQ8L3RpdGxlPgogICAgPHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPgogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjQwIi8+CiAgICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyNiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2U9IiNiOWEzZTgiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPgogIDwvZz4KICA8bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+Cjwvc3ZnPgo="}) }) : { script: {"name":"ISRC Scout*","namespace":"https://musicbrainz.org/","version":"2026.10.7.093000","description":"Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify / Beatport / Tidal / Volumo / HDtracks / Qobuz, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/isrc_scout/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPklTUkMgU2NvdXQ8L3RpdGxlPgogICAgPHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPgogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjQwIi8+CiAgICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyNiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2U9IiNiOWEzZTgiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPgogIDwvZz4KICA8bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+Cjwvc3ZnPgo="} };
+  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"ISRC Scout*","namespace":"https://musicbrainz.org/","version":"2026.10.8","description":"Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify / Beatport / Tidal / Volumo / HDtracks / Qobuz, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/isrc_scout/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPklTUkMgU2NvdXQ8L3RpdGxlPgogICAgPHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPgogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjQwIi8+CiAgICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyNiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2U9IiNiOWEzZTgiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPgogIDwvZz4KICA8bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+Cjwvc3ZnPgo="}) }) : { script: {"name":"ISRC Scout*","namespace":"https://musicbrainz.org/","version":"2026.10.8","description":"Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify / Beatport / Tidal / Volumo / HDtracks / Qobuz, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/isrc_scout/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPklTUkMgU2NvdXQ8L3RpdGxlPgogICAgPHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPgogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjQwIi8+CiAgICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyNiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2U9IiNiOWEzZTgiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPgogIDwvZz4KICA8bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+Cjwvc3ZnPgo="} };
   (f=>f())(function(){ try { (function(){
 /*
  * ─────────────────────────────────────────────────────────────────────────
@@ -41710,7 +41711,11 @@ Created this ${kind} while adding credits parsed from text to ${relUrl}`;
     // YouTube Music (#640), through the API its web player uses (anonymous). Two routes:
     //   · the release's own YouTube Music album, when it has a link to one: its tracklist,
     //     matched by position (or, when the album lists fewer songs, the one song with the
-    //     track's title), with the title and length checked;
+    //     track's title), with the title and length checked. The tracklist is the album's
+    //     OLAK5uy_ playlist as YouTube's own client (WEB) lists it: only the album's tracks.
+    //     YouTube Music's album page, read logged out, swaps in the music video for a track that
+    //     has one (#690: Gallina's "Uberi ruki" got Moon Records' MV), so it is only the
+    //     fallback, and there a row counts only when it is official audio (ATV);
     //   · otherwise, or for a track the album doesn't have: the ISRC searched with the "songs"
     //     filter. Of the first three results, one that is official audio (MUSIC_VIDEO_TYPE_ATV,
     //     not a user upload), has the track's title, is within 3 s of its length, AND comes from
@@ -41721,7 +41726,7 @@ Created this ${kind} while adding credits parsed from text to ${relUrl}`;
     // Where each link came from is kept for the edit note (ytSource): once a song is delisted
     // or geo-blocked, its URL alone no longer says which album it was.
     const YTM_SONGS_FILTER = 'EgWKAQIIAWoKEAkQBRAKEAMQBA==';
-    const ytSource = new Map();   // watch URL → { album, albumId, how }
+    const ytSource = new Map();   // watch URL → { album, albumUrl, how }
     const ytText = x => (x && x.runs ? x.runs.map(r => r.text).join('') : '');
     const ytWatch = vid => 'https://music.youtube.com/watch?v=' + vid;
     const ytSame = _sameTitle;
@@ -41762,7 +41767,35 @@ Created this ${kind} while adding credits parsed from text to ${relUrl}`;
       if (want != null && (s.len == null || Math.abs(s.len - want) > 3)) return 'another length (' + (s.len == null ? '?' : msToMmSs(s.len * 1000)) + ' vs ' + t.dur + ')';
       return '';
     }
-    // The release's YouTube Music album (fetched once): { id, name, tracks: [song…] }.
+    // The songs of an album playlist as YouTube's own client lists it (#690): the album's own
+    // tracks, each { vid, title, artist, len, type: 'ATV' }. A video hidden in this region is
+    // left out by YouTube (positions then shift; the title match catches it).
+    function ytPlaylistSongs(j) {
+      const out = [];
+      const walk = o => {
+        if (!o || typeof o !== 'object') return;
+        const r = o.playlistVideoRenderer;
+        if (r) {
+          if (r.videoId && r.isPlayable !== false) out.push({ vid: r.videoId, title: ytText(r.title) || (r.title && r.title.simpleText) || '', type: 'ATV',
+            artist: ytText(r.shortBylineText).replace(/ - Topic$/, ''), len: r.lengthSeconds != null ? +r.lengthSeconds : durToSec(r.lengthText && r.lengthText.simpleText) });
+          return;
+        }
+        for (const k in o) walk(o[k]);
+      };
+      walk(j);
+      return out;
+    }
+    async function ytWebPlaylist(list) {
+      const r = await gmPost('https://www.youtube.com/youtubei/v1/browse?prettyPrint=false',
+        JSON.stringify({ context: { client: { clientName: 'WEB', clientVersion: '2.20250101.01.00', hl: 'en', gl: 'US' } }, browseId: 'VL' + list }), { 'Content-Type': 'application/json' });
+      let j = null; try { j = JSON.parse(r.responseText || 'null'); } catch (e) {}
+      if (r.status !== 200 || !j) { Log.warn('YouTube: playlist ' + list + ' failed (HTTP ' + r.status + ') — its API may have changed; using the YouTube Music album page'); return null; }
+      const md = j.metadata && j.metadata.playlistMetadataRenderer;
+      // "Album - Random Access Memories"
+      const name = ((md && md.title) || '').replace(/^(?:Album|EP|Single) - /, '');
+      return { name, tracks: ytPlaylistSongs(j) };
+    }
+    // The release's YouTube Music album (fetched once): { id, name, url, tracks: [song…] }.
     let _ytAlbum = null, _ytAlbumP = null;
     async function ytAlbum() {
       if (_ytAlbum) return _ytAlbum;
@@ -41771,16 +41804,30 @@ Created this ${kind} while adding credits parsed from text to ${relUrl}`;
       if (!url) return { tracks: [] };
       _ytAlbumP = (async () => {
         let id = (url.match(/browse\/(MPREb_[\w-]+)/) || [])[1];
-        const list = (url.match(/[?&]list=(OLAK5uy_[\w-]+)/) || [])[1];
-        if (!id && list) { const pj = await ytCall('browse', { browseId: 'VL' + list }); id = pj && (JSON.stringify(pj).match(/"(MPREb_[\w-]+)"/) || [])[1]; }
+        let list = (url.match(/[?&]list=(OLAK5uy_[\w-]+)/) || [])[1];
+        let page = null;   // the YouTube Music album page, when read
+        const readPage = async () => {
+          const j = await ytCall('browse', { browseId: id });
+          let h = null; const walk = o => { if (!o || typeof o !== 'object' || h) return; if (o.musicResponsiveHeaderRenderer) { h = o.musicResponsiveHeaderRenderer; return; } for (const k in o) walk(o[k]); };
+          walk(j);
+          const canon = (j && j.microformat && j.microformat.microformatDataRenderer && j.microformat.microformatDataRenderer.urlCanonical) || '';
+          return { name: h ? ytText(h.title) : '', list: (canon.match(/[?&]list=(OLAK5uy_[\w-]+)/) || [])[1], tracks: j ? ytSongs(j) : [] };
+        };
+        // a link to the album page only: the page names its playlist
+        if (!list && id) { page = await readPage(); list = page.list; }
+        if (list) {
+          const pl = await ytWebPlaylist(list);
+          if (pl && pl.tracks.length) {
+            Log.info('YouTube Music album "' + pl.name + '" (' + list + '): ' + pl.tracks.length + ' song(s), from the release\'s link');
+            return { id: list, name: pl.name, url: 'https://www.youtube.com/playlist?list=' + list, tracks: pl.tracks };
+          }
+          if (pl) Log.info('YouTube: playlist ' + list + ' lists no songs here — using the YouTube Music album page');
+          if (!id) { const pj = await ytCall('browse', { browseId: 'VL' + list }); id = pj && (JSON.stringify(pj).match(/"(MPREb_[\w-]+)"/) || [])[1]; }
+        }
         if (!id) { Log.warn('YouTube Music: the release\'s album link ' + url + ' names no album — each track falls back to its ISRC'); return { tracks: [] }; }
-        const j = await ytCall('browse', { browseId: id });
-        let h = null; const walk = o => { if (!o || typeof o !== 'object' || h) return; if (o.musicResponsiveHeaderRenderer) { h = o.musicResponsiveHeaderRenderer; return; } for (const k in o) walk(o[k]); };
-        walk(j);
-        const name = h ? ytText(h.title) : '';
-        const tracks = j ? ytSongs(j) : [];
-        Log.info('YouTube Music album "' + name + '" (' + id + '): ' + tracks.length + ' song(s), from the release\'s link');
-        return { id, name, tracks };
+        if (!page) page = await readPage();
+        Log.info('YouTube Music album "' + page.name + '" (' + id + '): ' + page.tracks.length + ' song(s), from the release\'s link');
+        return { id, name: page.name, url: 'https://music.youtube.com/browse/' + id, tracks: page.tracks };
       })();
       const res = await _ytAlbumP.catch(() => ({ tracks: [] }));
       _ytAlbumP = null;
@@ -41791,17 +41838,19 @@ Created this ${kind} while adding credits parsed from text to ${relUrl}`;
       // 1. the release's own album: by position, else the one song with the track's title
       const alb = await ytAlbum();
       if (alb.tracks.length) {
+        // #690: only official audio — on the album page a music video can stand in for the track
+        const why = x => x.type && x.type !== 'ATV' ? 'not official audio (' + x.type + ')' : ytMismatch(x, t);
         const at = alb.tracks[idx];
-        let s = at && !ytMismatch(at, t) ? at : null;
-        if (!s) { const c = alb.tracks.filter(x => !ytMismatch(x, t)); if (c.length === 1) s = c[0]; }
+        let s = at && !why(at) ? at : null;
+        if (!s) { const c = alb.tracks.filter(x => !why(x)); if (c.length === 1) s = c[0]; }
         if (s) {
           const url = ytWatch(s.vid);
           const sib = RELEASE.rgFrom && RELEASE.rgFrom.ytmUrl;   // #302: the link came from a sibling release
-          ytSource.set(url, { album: alb.name, albumId: alb.id, how: (sib ? 'the album linked from ' + MB_ROOT + '/release/' + sib.release : 'the release\'s album') + ', track ' + (alb.tracks.indexOf(s) + 1) });
+          ytSource.set(url, { album: alb.name, albumUrl: alb.url, how: (sib ? 'the album linked from ' + MB_ROOT + '/release/' + sib.release : 'the release\'s album') + ', track ' + (alb.tracks.indexOf(s) + 1) });
           Log.info('YouTube Music track ' + (idx + 1) + ' → "' + s.title + '" ' + (s.len == null ? '' : msToMmSs(s.len * 1000)) + ' from the album "' + alb.name + '"');
           return url;
         }
-        Log.info('YouTube Music track ' + (idx + 1) + ' "' + t.title + '": not on the album "' + alb.name + '"' + (at ? ' (position ' + (idx + 1) + ' is "' + at.title + '", ' + ytMismatch(at, t) + ')' : '') + (isrc ? ' — trying its ISRC' : ''));
+        Log.info('YouTube Music track ' + (idx + 1) + ' "' + t.title + '": not on the album "' + alb.name + '"' + (at ? ' (position ' + (idx + 1) + ' is "' + at.title + '", ' + why(at) + ')' : '') + (isrc ? ' — trying its ISRC' : ''));
       }
       // 2. the ISRC, searched
       if (!isrc) return null;
@@ -41812,7 +41861,7 @@ Created this ${kind} while adding credits parsed from text to ${relUrl}`;
         const why = s.type !== 'ATV' ? 'not official audio (' + (s.type || '?') + ')'
           : ytMismatch(s, t) || (!ytSame(s.album, RELEASE.title) ? 'from the album "' + (s.album || '?') + '", not "' + RELEASE.title + '" — the ISRC may be shared with another version' : '');
         Log.info('YouTube Music ' + isrc + ' → "' + s.title + '" by ' + (s.artist || '?') + ' ' + (s.len == null ? '' : msToMmSs(s.len * 1000)) + (s.album ? ' on "' + s.album + '"' : '') + (why ? ' — skipped: ' + why : ' — matches "' + t.title + '"'));
-        if (!why) { const url = ytWatch(s.vid); ytSource.set(url, { album: s.album, albumId: s.albumId, how: 'ISRC ' + isrc }); return url; }
+        if (!why) { const url = ytWatch(s.vid); ytSource.set(url, { album: s.album, albumUrl: s.albumId ? 'https://music.youtube.com/browse/' + s.albumId : null, how: 'ISRC ' + isrc }); return url; }
       }
       if (!songs.length) Log.info('YouTube Music ' + isrc + ': no songs');
       return null;
@@ -42152,7 +42201,7 @@ Created this ${kind} while adding credits parsed from text to ${relUrl}`;
         // album it was — so each YouTube Music link names it, and how it was found
         ...(urls || []).filter(u => ytSource.has(u)).map(u => {
           const y = ytSource.get(u);
-          return 'YouTube Music ' + u + ' ← album "' + (y.album || '?') + '"' + (y.albumId ? ' https://music.youtube.com/browse/' + y.albumId : '') + ' (' + y.how + ')';
+          return 'YouTube Music ' + u + ' ← album "' + (y.album || '?') + '"' + (y.albumUrl ? ' ' + y.albumUrl : '') + ' (' + y.how + ')';
         }),
       ].join('\n');
     }

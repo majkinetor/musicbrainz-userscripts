@@ -54,14 +54,15 @@ test('#640: with the release\'s YouTube Music album linked, its tracklist resolv
     return { found: n('.new'), absent: n('.absent'), spinning: n('.spin') };
   }), r => r.spinning === 0 && r.found + r.absent > 0, { timeout: 120000 });
   const log = await page.evaluate(() => (document.getElementById('ii-log-out')?.textContent || '').split('\n').filter(l => /YouTube Music/.test(l)));
-  check(log.some(l => /YouTube Music album "Random Access Memories" \(MPREb_[\w-]+\): 13 song/.test(l)), `the album is read once from the release's link (${log.find(l => /album "/.test(l))})`);
+  // #690: from the album's playlist, as YouTube's own client lists it (the album page can hold music videos)
+  check(log.some(l => /YouTube Music album "Random Access Memories" \(OLAK5uy_[\w-]+\): 13 song/.test(l)), `the album is read once, from its playlist (${log.find(l => /album "/.test(l))})`);
   check(r.found === 13, `all 13 tracks resolve from it (${r.found}, ${r.absent} not)`);
   check(!log.some(l => /YouTube Music USQX/.test(l)), 'no ISRC search was needed');
   // right-click one: the note names the album it came from
   await page.evaluate(() => document.querySelector('#ii-modal tr[data-idx="0"] .ii-tl.new[data-code="yt"]').dispatchEvent(new MouseEvent('contextmenu', { bubbles: true, cancelable: true })));
   await until(() => notes.length, n => n > 0, { timeout: 15000 });
   console.log(notes[0]);
-  check(/YouTube Music https:\/\/music\.youtube\.com\/watch\?v=[\w-]{11} ← album "Random Access Memories" https:\/\/music\.youtube\.com\/browse\/MPREb_[\w-]+ \(the release's album, track 1\)/.test(notes[0] || ''), 'the edit note names the YouTube Music album and how the link was found');
+  check(/YouTube Music https:\/\/music\.youtube\.com\/watch\?v=[\w-]{11} ← album "Random Access Memories" https:\/\/www\.youtube\.com\/playlist\?list=OLAK5uy_[\w-]+ \(the release's album, track 1\)/.test(notes[0] || ''), 'the edit note names the YouTube Music album and how the link was found');
   await ws.done();
 });
 
