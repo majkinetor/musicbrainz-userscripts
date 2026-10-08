@@ -13,7 +13,7 @@ const { chromium } = await import(pathToFileURL(join(dir, '../../../node_modules
 const SWAP = {
   falcon: { file: join(dir, '../falcon_icons/icon-r6-08.svg'), note: 'Flat out (falcon round 6, 08)' },
   apollo_editor: { file: join(dir, '../apollo_icons/icon-r8-09.svg'), note: 'Line rocket, red porthole (apollo round 8, 09)' },
-  credit_hoarder: { file: join(dir, '../credit_hoarder_icons/icon-ant-02.svg'), note: 'Ant, no tile, halo 1.5 at 70% (ant 02)' },
+  credit_hoarder: { file: join(dir, '../credit_hoarder_icons/icon-ant3-04.svg'), note: 'Ant 02 with the ant grown ×1.55, badge as it was (ant3 04)' },
   mission_control: { file: join(dir, '../mission_control/icons/open-13.svg'), note: 'One tile lifting off the pyramid (open 13)' },
   string_theory: { file: join(dir, '../string_theory_icons/loop-02.svg'), note: 'Closed string, three lobes (loop 02)' },
   group_therapy: { file: join(dir, '../group_therapy_icons/venn-03.svg'), note: 'Venn of three, outlines only (venn 03)' },
