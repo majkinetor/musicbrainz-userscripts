@@ -3,9 +3,11 @@
 // every member as ☑/☐, and a click flips it in storage and relabels the entry.
 //
 // test.musicbrainz.org, a release page (ISRC Scout's button and Platform Check's panel both show there).
+import { readFileSync } from 'node:fs';
 import { test, check, until, SANDBOX } from '../../../dev/test/harness.mjs';
 
 const RELEASE = 'ec116461-5b0d-4c98-bb44-a4de5de63076';
+const MEMBERS = readFileSync(new URL('../members.txt', import.meta.url), 'utf8').split(/\r?\n/).map(l => l.replace(/#.*/, '').trim()).filter(Boolean).length;
 
 test.describe('Platform Check turned off', () => {
   test.use({ gm: { name: 'String Theory', values: { 'string_theory.off': ['platform_check'] } } });
@@ -33,12 +35,12 @@ test('the menu lists every member, and a click flips it and relabels the entry',
   await inject('string_theory');
   const captions = () => page.evaluate(() => [...window.__menu.values()].map(e => e.caption));
   const before = await captions();
-  check(before.length === 8 && before.every(c => c.startsWith('☑ ')), `8 entries, all on (${before.join(' · ')})`);
+  check(before.length === MEMBERS && before.every(c => c.startsWith('☑ ')), `${MEMBERS} entries, all on (${before.join(' · ')})`);
   check(before.includes('☑ Platform Check'), 'labelled with the script\'s name');
 
   await page.evaluate(() => [...window.__menu.values()].find(e => /Platform Check/.test(e.caption)).fn());
   const after = await captions();
-  check(after.length === 8, `still 8 entries, not doubled (${after.length})`);
+  check(after.length === MEMBERS, `still ${MEMBERS} entries, not doubled (${after.length})`);
   check(after.includes('☐ Platform Check') && after.filter(c => c.startsWith('☐ ')).length === 1, `Platform Check shows off, nothing else (${after.join(' · ')})`);
   check(JSON.stringify(await page.evaluate(() => GM_getValue('string_theory.off'))) === '["platform_check"]', 'stored as off');
 
