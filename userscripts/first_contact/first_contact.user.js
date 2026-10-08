@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         First Contact
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.8
+// @version      2026.10.8.080234
 // @description  Import a release into MusicBrainz from the platform's album page with one click: the release editor opens with the title, tracklist, artists, date, label, barcode and link filled in. Each artist's platform link is handed to Apollo Editor for matching. A second button sends the album to Harmony instead. By default the album page is also saved on the Internet Archive (it sends each imported URL to archive.org; off in the settings), and the edit note links the snapshot. Platforms: Deezer, Bandcamp, Discogs, Apple Music, Tidal, Qobuz, Beatport, Spotify, YouTube Music, Volumo, HDtracks, SoundCloud, Amazon Music, Audiomack, 7digital, Ototoy.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPkZpcnN0IENvbnRhY3Q8L3RpdGxlPgogIDwhLS0gdHJhY3RvciBiZWFtIC0tPgogIDxwYXRoIGQ9Ik01MCA0NCBMNzggNDQgTDEwNCAxMTIgTDI0IDExMiBaIiBmaWxsPSIjZjZjNDMxIiBvcGFjaXR5PSIwLjkiLz4KICA8cGF0aCBkPSJNNTYgNDQgTDcyIDQ0IEw4OCAxMTIgTDQwIDExMiBaIiBmaWxsPSIjZmRlNjhhIiBvcGFjaXR5PSIwLjciLz4KICA8IS0tIGxhbmRpbmcgcmluZyAtLT4KICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSIxMTQiIHJ4PSI0MiIgcnk9IjgiIGZpbGw9IiMxZTIzNDYiIHN0cm9rZT0iI2M5Y2RmMiIgc3Ryb2tlLXdpZHRoPSIzIi8+CiAgPGVsbGlwc2UgY3g9IjY0IiBjeT0iMTEzIiByeD0iMjYiIHJ5PSI0LjIiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2Y2YzQzMSIgc3Ryb2tlLXdpZHRoPSIyLjQiLz4KICA8IS0tIHNhdWNlcjogYSBwYWxlIHJpbSwgc28gaXQgc2hvd3Mgb24gYSBkYXJrIGJhY2tncm91bmQgdG9vIC0tPgogIDxwYXRoIGQ9Ik00MCAyNiBBMjQgMTggMCAwIDEgODggMjYgWiIgZmlsbD0iIzFlMjM0NiIgc3Ryb2tlPSIjYzljZGYyIiBzdHJva2Utd2lkdGg9IjMiLz4KICA8cGF0aCBkPSJNNTAgMTggQTEwIDYgMCAwIDEgNjAgMTQiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2ZmZiIgc3Ryb2tlLXdpZHRoPSIyLjYiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxlbGxpcHNlIGN4PSI2NCIgY3k9IjMyIiByeD0iNTYiIHJ5PSIxMyIgZmlsbD0iIzFlMjM0NiIgc3Ryb2tlPSIjYzljZGYyIiBzdHJva2Utd2lkdGg9IjMiLz4KICA8Y2lyY2xlIGN4PSIzOCIgY3k9IjMyIiByPSI0LjQiIGZpbGw9IiNmZmYiLz4KICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjM0IiByPSI0LjQiIGZpbGw9IiNmZmYiLz4KICA8Y2lyY2xlIGN4PSI5MCIgY3k9IjMyIiByPSI0LjQiIGZpbGw9IiNmZmYiLz4KICA8IS0tIHRoZSByZWxlYXNlIGJlaW5nIGJlYW1lZCB1cDogYSBwdXJwbGUgaGV4YWdvbiB3aXRoIGEgbm90ZSAtLT4KICA8cGF0aCBkPSJNNjQgNTggTDg0IDY5LjUgTDg0IDkyLjUgTDY0IDEwNCBMNDQgOTIuNSBMNDQgNjkuNSBaIiBmaWxsPSIjN2I0ZmQ2Ii8+CiAgPHBhdGggZD0iTTY0IDU4IEw4NCA2OS41IEw2NCA4MSBMNDQgNjkuNSBaIiBmaWxsPSIjOWI3MmVhIi8+CiAgPHBhdGggZD0iTTYwIDcyIEw3NCA2OSBMNzQgODkiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2ZmZiIgc3Ryb2tlLXdpZHRoPSIzLjQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz4KICA8cGF0aCBkPSJNNjAgNzIgTDYwIDkyIiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iMy40Ii8+CiAgPGVsbGlwc2UgY3g9IjU2IiBjeT0iOTIiIHJ4PSI0LjYiIHJ5PSIzLjYiIGZpbGw9IiNmZmYiLz4KICA8ZWxsaXBzZSBjeD0iNzAiIGN5PSI4OSIgcng9IjQuNiIgcnk9IjMuNiIgZmlsbD0iI2ZmZiIvPgogIDwhLS0gc3BhcmtsZXMgLS0+CiAgPHBhdGggZD0iTTE4IDU0IGwyLjUgNiA2IDIuNSAtNiAyLjUgLTIuNSA2IC0yLjUgLTYgLTYgLTIuNSA2IC0yLjUgWiIgZmlsbD0iI2Y2YzQzMSIvPgogIDxwYXRoIGQ9Ik0xMDggNTIgbDIuNSA2IDYgMi41IC02IDIuNSAtMi41IDYgLTIuNSAtNiAtNiAtMi41IDYgLTIuNSBaIiBmaWxsPSIjMWUyMzQ2Ii8+CiAgPHBhdGggZD0iTTExMiA4MiBsMS44IDQuMiA0LjIgMS44IC00LjIgMS44IC0xLjggNC4yIC0xLjggLTQuMiAtNC4yIC0xLjggNC4yIC0xLjggWiIgZmlsbD0iI2Y2YzQzMSIvPgogIDxwYXRoIGQ9Ik0xNCA4NiBsMS44IDQuMiA0LjIgMS44IC00LjIgMS44IC0xLjggNC4yIC0xLjggLTQuMiAtNC4yIC0xLjggNC4yIC0xLjggWiIgZmlsbD0iIzFlMjM0NiIvPgo8L3N2Zz4K
@@ -2150,11 +2150,15 @@ const HARMONY_URLS = {
 };
 // Platforms Harmony doesn't know and whose albums never carry a barcode: nothing to send
 const HARMONY_NONE = new Set(['ytmusic', 'amazonmusic']);
-function harmonyLookup({ url, gtin, region }) {
+// spoonkuh: "it does not follow my harmony settings". A link names its providers itself, and one that
+// names none looks the album up on its own platform only (a barcode alone, on none). category=preferred
+// is the providers ticked in Harmony's settings (its cookies), and with no region in the link Harmony
+// takes the settings' region too; Apple's link carries its own country store.
+function harmonyLookup({ url, gtin }) {
     const q = new URLSearchParams();
     if (url) q.set('url', url);
     if (gtin) q.set('gtin', gtin);
-    if (region) q.set('region', region.toUpperCase());
+    q.set('category', 'preferred');
     return `${HARMONY}?${q}`;
 }
 // Harmony's own mark, so the button says where it goes
@@ -2865,7 +2869,7 @@ function togglePanel(anchor) {
         + SERVERS.map(h => `<option value="${h}"${h === s.server ? ' selected' : ''}>${h}</option>`).join('')
         + '</select></label>'
         + `<label class="fc-check" title="On ${here} only: the album's notes on the platform (Bandcamp's about and credits, Discogs's notes, Qobuz's and Apple's reviews, Beatport's and YouTube Music's description, Amazon Music's ℗ line), with a line saying where they come from. Reviews are the critic's text: check you may copy it before you submit."><input type="checkbox" class="fc-annotation"${annotationOn(here) ? ' checked' : ''}> Annotation from ${here}'s notes</label>`
-        + `<label class="fc-check" title="Once the release editor has the release, this platform tab closes. It stays open when the import fails, or when the browser blocked the new tab and the editor opened here."><input type="checkbox" class="fc-close-after"${s.closeAfter ? ' checked' : ''}> Close this page after the import</label>`
+        + `<label class="fc-check" title="Once the release editor has the release, or the album is sent to Harmony, this platform tab closes. It stays open when the import fails, or when the browser blocked the new tab and the editor or Harmony opened here."><input type="checkbox" class="fc-close-after"${s.closeAfter ? ' checked' : ''}> Close this page after the import</label>`
         + `<label class="fc-check" title="A button between Import and ⚙︎ that looks this album up on Harmony instead, with every platform that has its barcode; Falcon carries on from there"><input type="checkbox" class="fc-harmony-opt"${s.harmony ? ' checked' : ''}> Send to Harmony button</label>`
         + '<div class="fc-sec">Archive</div>'
         // #659: majkinetor: "It should be ON by default or many people will not use it"
@@ -3064,7 +3068,7 @@ async function sendToHarmony() {
     if (HARMONY_NONE.has(provider.id)) { mbuToast(harmonyWhy(provider).replace(/^Send to Harmony: /, ''), { kind: 'warn' }); return; }
     const direct = HARMONY_URLS[provider.id];
     if (direct) {
-        openHarmony(harmonyLookup({ url: direct(id), region: provider.id === 'apple' ? id.split('/')[0] : null }));
+        openHarmony(harmonyLookup({ url: direct(id) }));
         return;
     }
     const root = document.getElementById('fc-root');
@@ -3093,13 +3097,23 @@ async function sendToHarmony() {
     }
 }
 // A tab the manager opens isn't a blocked popup, even after the read; without it the page opens one
+// majkinetor: "Option to close page after import should apply to Harmony too". Only when Harmony got a
+// tab of its own: when the browser blocked it, Harmony is in this one.
 function openHarmony(url) {
     Log.ok(`sent to Harmony: ${url}`);
     if (mbuTestHooks()) window.__fcLastHarmony = url;
-    if (typeof GM_openInTab === 'function') { GM_openInTab(url, { active: true, insert: true }); return; }
-    const w = window.open(url, '_blank');
-    if (w) w.opener = null;
-    else location.assign(url);
+    let here = false;
+    if (typeof GM_openInTab === 'function') GM_openInTab(url, { active: true, insert: true });
+    else {
+        const w = window.open(url, '_blank');
+        if (w) w.opener = null;
+        else here = true;
+    }
+    if (settings().closeAfter) {
+        if (!here) closeSourceTab();
+        else Log.info('close after sending to Harmony: skipped, the browser blocked a new tab and Harmony opens in this one');
+    }
+    if (here) location.assign(url);
 }
 
 // majkinetor: "why does it open tab while reading?" The editor's tab opens once the release is read,
