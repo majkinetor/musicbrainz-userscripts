@@ -25,6 +25,7 @@
 | [Mammoth](../mammoth) | Remember & recall edit notes and field values |
 | [Platform Check](../platform_check) | Find/verify/add a release's URLs on online platforms |
 
+- **Turn a script off** in the userscript manager's menu (the Tampermonkey / Violentmonkey popup): each bundled script has an entry, ☑ on or ☐ off. A click flips it, and the change applies from the next page load. A script that is off doesn't run at all, so its standalone copy, if you have one installed, can run in its place.
 - The bundled scripts are listed in [`members.txt`](./members.txt)
 - In edit notes, all userscripts are marked with `*` (e.g. `Apollo Editor*`)
 
@@ -61,5 +62,6 @@ The repo **pre-commit hook** rebuilds it automatically whenever a constituent (o
 
 ## Notes
 
+- The on/off list is the GM value `string_theory.off` (folder names). The build wraps each body in a check against it and adds the menu, which goes only in the top frame.
 - All constituents share **one** userscript-manager storage namespace here (vs one each when installed separately). In practice this is fine — each script prefixes its keys — but it's a shared surface.
 - `@icon`, `@run-at` and single-valued metadata are the bundle's own; multi-valued ones (`@match`, `@grant`, `@connect`, `@require`, `@resource`) are the union of all members.
