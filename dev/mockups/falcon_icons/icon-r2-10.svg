@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+<title>Falcon — Seventies</title>
+<path d="M4 112 A60 60 0 0 1 124 112" fill="none" stroke="#7a3b10" stroke-width="12" transform="translate(0 0)"/><path d="M4 112 A48 48 0 0 1 100 112" fill="none" stroke="#d9541e" stroke-width="12" transform="translate(12 0)"/><path d="M4 112 A36 36 0 0 1 76 112" fill="none" stroke="#f08a24" stroke-width="12" transform="translate(24 0)"/><path d="M4 112 A24 24 0 0 1 52 112" fill="none" stroke="#f5c518" stroke-width="12" transform="translate(36 0)"/>
+<g transform="translate(64 54) rotate(0) scale(0.78) translate(-64 -64)"><path d="M64 26 C67 26 70 30 70 36 C72 40 74 42 76 44 C92 42 108 36 124 34 C112 44 96 54 78 62 C76 68 74 74 74 80 L80 100 C74 104 68 104 64 104 Z" fill="#3a2a1f"/><path d="M64 26 C67 26 70 30 70 36 C72 40 74 42 76 44 C92 42 108 36 124 34 C112 44 96 54 78 62 C76 68 74 74 74 80 L80 100 C74 104 68 104 64 104 Z" fill="#3a2a1f" transform="translate(128 0) scale(-1 1)"/></g>
+</svg>

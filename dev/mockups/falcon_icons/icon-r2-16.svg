@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+<title>Falcon — Chalk</title>
+<defs><filter id="fa216-r"><feTurbulence type="fractalNoise" baseFrequency=".9" numOctaves="2" seed="2"/><feDisplacementMap in="SourceGraphic" scale="2.6"/></filter></defs><rect x="4" y="4" width="120" height="120" rx="14" fill="#2e3b33"/><rect x="4" y="4" width="120" height="120" rx="14" fill="none" stroke="#8a5a32" stroke-width="5"/>
+<g transform="translate(14 10) scale(.8)" fill="none" stroke="#f1f1e8" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round" filter="url(#fa216-r)" opacity=".92"><path d="M34 118 C26 86 28 54 46 37 C60 24 82 22 96 31 C100 34 102 38 103 41 C111 42 118 50 118 61 L113 66 C112 61 108 58 103 59 C100 66 94 73 86 77 C79 83 75 98 79 118 Z"/><path d="M101 61 C98 68 93 73 86 77 C76 84 72 98 74 118"/><ellipse cx="50" cy="84" rx="10" ry="15" transform="rotate(-12 50 84)"/><circle cx="82" cy="47" r="7"/><path d="M102 59 L118 61"/></g>
+</svg>

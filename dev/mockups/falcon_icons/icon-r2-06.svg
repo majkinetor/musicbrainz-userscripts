@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+<title>Falcon — Art deco</title>
+<rect x="4" y="4" width="120" height="120" rx="16" fill="#111"/><rect x="9" y="9" width="110" height="110" rx="12" fill="none" stroke="#d4af37" stroke-width="2"/><g stroke="#d4af37" stroke-width="3" stroke-linecap="round"><path d="M64 52 L118 36" /><path d="M64 57 L109 42" /><path d="M64 62 L100 48" /><path d="M64 67 L91 54" /><path d="M64 72 L82 60" /><path d="M64 77 L73 66" /><g transform="translate(128 0) scale(-1 1)"><path d="M64 52 L118 36" /><path d="M64 57 L109 42" /><path d="M64 62 L100 48" /><path d="M64 67 L91 54" /><path d="M64 72 L82 60" /><path d="M64 77 L73 66" /></g></g>
+<path d="M56 50 L64 30 L72 50 L70 84 L76 104 H52 L58 84Z" fill="#d4af37"/><path d="M64 30 L70 36 L64 40Z" fill="#111"/><path d="M58 90 H70 M58 96 H70" stroke="#111" stroke-width="2"/>
+</svg>
