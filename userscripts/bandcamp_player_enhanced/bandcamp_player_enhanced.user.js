@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Bandcamp Player Enhanced
 // @namespace    http://violentmonkey.net/
-// @version      2026.9.30
+// @version      2026.10.8
 // @description  Custom sticky 2-row player. Space=play/pause, Shift+Space=scroll, Up/Down=prev/next, Shift+Up/Down=volume, Left/Right=seek 5s (Shift=30s). P=preview mode.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPkJhbmRjYW1wIFBsYXllciBFbmhhbmNlZDwvdGl0bGU+CiAgPGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iNTgiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzFkYTBjMyIgc3Ryb2tlLXdpZHRoPSI3Ii8+CiAgPHBvbHlnb24gcG9pbnRzPSI0OCwzOCA5Niw2NCA0OCw5MCIgZmlsbD0iIzFkYTBjMyIvPgo8L3N2Zz4K
@@ -105,14 +105,39 @@
 
     // ─── Theme persistence ──────────────────────────────────────────────────────────
 
+    // 'page' follows the album page, as First Contact's button does: an artist's dark
+    // page gets the dark bar, a light one the light bar. Dark and Light pin it.
     const THEME_KEY = 'bcp_theme';
+    const THEMES    = ['page', 'dark', 'light'];
 
     function loadTheme() {
-        try { return gmLoad(THEME_KEY) === 'dark' ? 'dark' : 'light'; } catch(e) { return 'light'; }
+        try {
+            // once: a saved Light was the old default, so it follows the page now; Dark stays
+            if (!gmLoad('bcp_theme_page')) {
+                gmSave('bcp_theme_page', 1);
+                if (gmLoad(THEME_KEY) === 'light') gmSave(THEME_KEY, 'page');
+            }
+            const t = gmLoad(THEME_KEY);
+            return THEMES.includes(t) ? t : 'page';
+        } catch(e) { return 'page'; }
     }
     function saveTheme(t) {
         try { gmSave(THEME_KEY, t); } catch(e) {}
     }
+
+    // The page's own background: the artist's colour is on #pgBd (the content column),
+    // the page around it on body. The first opaque one decides.
+    function pageTheme() {
+        for (const el of [document.getElementById('pgBd'), document.body, document.documentElement]) {
+            if (!el) continue;
+            const m = getComputedStyle(el).backgroundColor.match(/[\d.]+/g);
+            if (!m || m.length < 3 || (m.length > 3 && +m[3] < 0.5)) continue;
+            const [r, g, b] = m.map(Number);
+            return (0.2126 * r + 0.7152 * g + 0.0722 * b) / 255 < 0.35 ? 'dark' : 'light';
+        }
+        return 'light';
+    }
+    const isLight = () => (theme === 'page' ? pageTheme() : theme) === 'light';
 
     let theme = loadTheme();
 
@@ -385,7 +410,7 @@
 
         const bar = document.createElement('div');
         bar.id = 'bc-sticky-player';
-        bar.classList.toggle('bcp-light', theme === 'light');
+        bar.classList.toggle('bcp-light', isLight());
         bar.style.zoom = String(scale / 100);
         // #bcp-settings-panel counter-zooms itself back to 100% below (nested `zoom` values
         // multiply), so the Scale slider affects the player bar only — not its own dialog.
@@ -666,6 +691,7 @@
     </div>
 
     <div class="bcp-opt-label">Theme</div>
+    <label><input type="radio" name="bcp-theme" id="bcp-opt-theme-page"  ${theme === 'page'  ? 'checked' : ''}> Page <span class="bcp-opt-hint">(follows the album page)</span></label>
     <label><input type="radio" name="bcp-theme" id="bcp-opt-theme-dark"  ${theme === 'dark'  ? 'checked' : ''}> Dark</label>
     <label><input type="radio" name="bcp-theme" id="bcp-opt-theme-light" ${theme === 'light' ? 'checked' : ''}> Light</label>
 
@@ -829,13 +855,14 @@
             savePreloadEnabled(preloadEnabled);
             // takes effect next page load — preloadDone already latched for THIS load
         });
-        [['bcp-opt-theme-dark', 'dark'], ['bcp-opt-theme-light', 'light']].forEach(([id, val]) => {
+        THEMES.forEach(val => {
+            const id = 'bcp-opt-theme-' + val;
             const rb = document.getElementById(id);
             rb.addEventListener('change', () => {
                 if (!rb.checked) return;
                 theme = val;
                 saveTheme(theme);
-                bar.classList.toggle('bcp-light', theme === 'light');   // live — swaps the CSS variable set
+                bar.classList.toggle('bcp-light', isLight());   // live — swaps the CSS variable set
             });
         });
         const scaleInput = document.getElementById('bcp-opt-scale'), scaleVal = document.getElementById('bcp-scale-val');
