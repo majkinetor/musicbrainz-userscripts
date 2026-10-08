@@ -18,7 +18,7 @@ const SWAP = {
   string_theory: { file: join(dir, '../string_theory_icons/loop-02.svg'), note: 'Closed string, three lobes (loop 02)' },
   mammoth: { file: join(root, 'mammoth/icon.svg'), note: 'its icon.svg in place of the 🦣 emoji' },
 };
-const SKIP = new Set(['discogs_credits']); // frozen, superseded by Credit Hoarder
+const SKIP = new Set(['discogs_credits', 'bandcamp_player_enhanced']); // discogs_credits is frozen (Credit Hoarder replaced it); Bandcamp Player Enhanced is left out of the set
 const toData = f => `data:${extname(f) === '.png' ? 'image/png' : 'image/svg+xml'};base64,${readFileSync(f).toString('base64')}`;
 
 const icons = readdirSync(root, { withFileTypes: true }).filter(d => d.isDirectory() && !SKIP.has(d.name)).map(d => {
@@ -41,10 +41,11 @@ const metrics = await page.evaluate(async srcs => Promise.all(srcs.map(src => ne
 await browser.close();
 
 // Fit: the longer side of the drawn box fills the icon, less a margin. Solid tiles and discs carry more weight than open
-// line shapes, so they get a little more margin (an optical correction, not a pixel one).
+// line shapes, so they get a little more margin (an optical correction, not a pixel one) — but only when roughly square:
+// a wide or tall icon already looks smaller, its short side well short of the box, so it gets the least margin.
 mkdirSync(join(dir, 'norm'), { recursive: true });
 icons.forEach((ic, i) => { const m = metrics[i], w = m.x1 - m.x0 + 1, h = m.y1 - m.y0 + 1, cx = m.x0 + w / 2, cy = m.y0 + h / 2;
-  const margin = m.fill > .85 ? .07 : m.fill > .6 ? .05 : .03, side = Math.max(w, h) / (1 - 2 * margin);
+  const square = Math.min(w, h) / Math.max(w, h) > .8, margin = !square ? .02 : m.fill > .85 ? .07 : m.fill > .6 ? .05 : .03, side = Math.max(w, h) / (1 - 2 * margin);
   ic.m = { ...m, margin };
   writeFileSync(join(dir, 'norm', `${ic.key}.svg`), `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${(cx - side / 2).toFixed(1)} ${(cy - side / 2).toFixed(1)} ${side.toFixed(1)} ${side.toFixed(1)}" width="128" height="128">\n<title>${ic.name}</title>\n<image href="${ic.src}" width="512" height="512"/>\n</svg>\n`); });
 
