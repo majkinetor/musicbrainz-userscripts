@@ -1,0 +1,4 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+<title>Group Therapy — closer, more overlap</title>
+<defs><filter id="gtv11-h" x="-10%" y="-10%" width="120%" height="120%"><feMorphology in="SourceAlpha" operator="dilate" radius="1.5" result="d"/><feFlood flood-color="#fff" flood-opacity=".7"/><feComposite in2="d" operator="in"/><feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs><g filter="url(#gtv11-h)"><g style="isolation:isolate"><circle cx="64" cy="48" r="34" fill="#f3722c" fill-opacity="0.75"/><circle cx="77.9" cy="72" r="34" fill="#2ea44f" fill-opacity="0.75"/><circle cx="50.1" cy="72" r="34" fill="#3fb6f0" fill-opacity="0.75"/></g><circle cx="64" cy="48" r="34" fill="none" stroke="#22223b" stroke-width="4"/><circle cx="77.9" cy="72" r="34" fill="none" stroke="#22223b" stroke-width="4"/><circle cx="50.1" cy="72" r="34" fill="none" stroke="#22223b" stroke-width="4"/></g>
+</svg>
