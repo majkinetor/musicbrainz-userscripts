@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         First Contact
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.7.120000
-// @description  Import a release into MusicBrainz from the platform's album page with one click: the release editor opens with the title, tracklist, artists, date, label, barcode and link filled in. Each artist's platform link is handed to Apollo Editor for matching. By default the album page is also saved on the Internet Archive (it sends each imported URL to archive.org; off in the settings), and the edit note links the snapshot. Platforms: Deezer, Bandcamp, Discogs, Apple Music, Tidal, Qobuz, Beatport, Spotify, YouTube Music, Volumo, HDtracks, SoundCloud, Amazon Music, Audiomack, 7digital, Ototoy.
+// @version      2026.10.8.080234
+// @description  Import a release into MusicBrainz from the platform's album page with one click: the release editor opens with the title, tracklist, artists, date, label, barcode and link filled in. Each artist's platform link is handed to Apollo Editor for matching. A second button sends the album to Harmony instead. By default the album page is also saved on the Internet Archive (it sends each imported URL to archive.org; off in the settings), and the edit note links the snapshot. Platforms: Deezer, Bandcamp, Discogs, Apple Music, Tidal, Qobuz, Beatport, Spotify, YouTube Music, Volumo, HDtracks, SoundCloud, Amazon Music, Audiomack, 7digital, Ototoy.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPkZpcnN0IENvbnRhY3Q8L3RpdGxlPgogIDwhLS0gdHJhY3RvciBiZWFtIC0tPgogIDxwYXRoIGQ9Ik01MCA0NCBMNzggNDQgTDEwNCAxMTIgTDI0IDExMiBaIiBmaWxsPSIjZjZjNDMxIiBvcGFjaXR5PSIwLjkiLz4KICA8cGF0aCBkPSJNNTYgNDQgTDcyIDQ0IEw4OCAxMTIgTDQwIDExMiBaIiBmaWxsPSIjZmRlNjhhIiBvcGFjaXR5PSIwLjciLz4KICA8IS0tIGxhbmRpbmcgcmluZyAtLT4KICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSIxMTQiIHJ4PSI0MiIgcnk9IjgiIGZpbGw9IiMxZTIzNDYiIHN0cm9rZT0iI2M5Y2RmMiIgc3Ryb2tlLXdpZHRoPSIzIi8+CiAgPGVsbGlwc2UgY3g9IjY0IiBjeT0iMTEzIiByeD0iMjYiIHJ5PSI0LjIiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2Y2YzQzMSIgc3Ryb2tlLXdpZHRoPSIyLjQiLz4KICA8IS0tIHNhdWNlcjogYSBwYWxlIHJpbSwgc28gaXQgc2hvd3Mgb24gYSBkYXJrIGJhY2tncm91bmQgdG9vIC0tPgogIDxwYXRoIGQ9Ik00MCAyNiBBMjQgMTggMCAwIDEgODggMjYgWiIgZmlsbD0iIzFlMjM0NiIgc3Ryb2tlPSIjYzljZGYyIiBzdHJva2Utd2lkdGg9IjMiLz4KICA8cGF0aCBkPSJNNTAgMTggQTEwIDYgMCAwIDEgNjAgMTQiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2ZmZiIgc3Ryb2tlLXdpZHRoPSIyLjYiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxlbGxpcHNlIGN4PSI2NCIgY3k9IjMyIiByeD0iNTYiIHJ5PSIxMyIgZmlsbD0iIzFlMjM0NiIgc3Ryb2tlPSIjYzljZGYyIiBzdHJva2Utd2lkdGg9IjMiLz4KICA8Y2lyY2xlIGN4PSIzOCIgY3k9IjMyIiByPSI0LjQiIGZpbGw9IiNmZmYiLz4KICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjM0IiByPSI0LjQiIGZpbGw9IiNmZmYiLz4KICA8Y2lyY2xlIGN4PSI5MCIgY3k9IjMyIiByPSI0LjQiIGZpbGw9IiNmZmYiLz4KICA8IS0tIHRoZSByZWxlYXNlIGJlaW5nIGJlYW1lZCB1cDogYSBwdXJwbGUgaGV4YWdvbiB3aXRoIGEgbm90ZSAtLT4KICA8cGF0aCBkPSJNNjQgNTggTDg0IDY5LjUgTDg0IDkyLjUgTDY0IDEwNCBMNDQgOTIuNSBMNDQgNjkuNSBaIiBmaWxsPSIjN2I0ZmQ2Ii8+CiAgPHBhdGggZD0iTTY0IDU4IEw4NCA2OS41IEw2NCA4MSBMNDQgNjkuNSBaIiBmaWxsPSIjOWI3MmVhIi8+CiAgPHBhdGggZD0iTTYwIDcyIEw3NCA2OSBMNzQgODkiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2ZmZiIgc3Ryb2tlLXdpZHRoPSIzLjQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz4KICA8cGF0aCBkPSJNNjAgNzIgTDYwIDkyIiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iMy40Ii8+CiAgPGVsbGlwc2UgY3g9IjU2IiBjeT0iOTIiIHJ4PSI0LjYiIHJ5PSIzLjYiIGZpbGw9IiNmZmYiLz4KICA8ZWxsaXBzZSBjeD0iNzAiIGN5PSI4OSIgcng9IjQuNiIgcnk9IjMuNiIgZmlsbD0iI2ZmZiIvPgogIDwhLS0gc3BhcmtsZXMgLS0+CiAgPHBhdGggZD0iTTE4IDU0IGwyLjUgNiA2IDIuNSAtNiAyLjUgLTIuNSA2IC0yLjUgLTYgLTYgLTIuNSA2IC0yLjUgWiIgZmlsbD0iI2Y2YzQzMSIvPgogIDxwYXRoIGQ9Ik0xMDggNTIgbDIuNSA2IDYgMi41IC02IDIuNSAtMi41IDYgLTIuNSAtNiAtNiAtMi41IDYgLTIuNSBaIiBmaWxsPSIjMWUyMzQ2Ii8+CiAgPHBhdGggZD0iTTExMiA4MiBsMS44IDQuMiA0LjIgMS44IC00LjIgMS44IC0xLjggNC4yIC0xLjggLTQuMiAtNC4yIC0xLjggNC4yIC0xLjggWiIgZmlsbD0iI2Y2YzQzMSIvPgogIDxwYXRoIGQ9Ik0xNCA4NiBsMS44IDQuMiA0LjIgMS44IC00LjIgMS44IC0xLjggNC4yIC0xLjggLTQuMiAtNC4yIC0xLjggNC4yIC0xLjggWiIgZmlsbD0iIzFlMjM0NiIvPgo8L3N2Zz4K
 // @homepageURL  https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/first_contact/README.md
@@ -111,7 +111,7 @@ Log.info(mbuStartupInfo(NAME));
 mbuToast.log = (kind, msg) => (kind === 'warn' ? Log.warn(msg) : kind === 'ok' ? Log.ok(msg) : Log.info(msg));
 
 function settings() {
-    const s = Object.assign({ server: 'musicbrainz.org', iconOnly: false, gearOnHover: false, closeAfter: false, archive: true, iaKey: '', iaSecret: '' }, GM_getValue('fc.settings', {}));
+    const s = Object.assign({ server: 'musicbrainz.org', iconOnly: false, gearOnHover: false, closeAfter: false, harmony: true, archive: true, iaKey: '', iaSecret: '' }, GM_getValue('fc.settings', {}));
     if (!SERVERS.includes(s.server)) s.server = 'musicbrainz.org';
     return s;
 }
@@ -2132,6 +2132,41 @@ const OTOTOY = {
 
 const PROVIDERS = [DEEZER, BANDCAMP, DISCOGS, APPLE, TIDAL, QOBUZ, BEATPORT, SPOTIFY, YTMUSIC, VOLUMO, HDTRACKS, SOUNDCLOUD, AMAZON, AUDIOMACK, SEVENDIGITAL, OTOTOY];
 
+/* ── Harmony (#687): the album sent to Harmony's release lookup instead of the editor ── */
+const HARMONY = 'https://harmony.pulsewidth.org.uk/release';
+// The album link in the form Harmony reads, for the platforms Harmony looks up by URL; Harmony then
+// finds the others by the barcode it reads there. Checked against Harmony's lookup (each form is
+// recognised; Beatport's slug can be '-', as Harmony itself writes it).
+const HARMONY_URLS = {
+    deezer: id => `https://www.deezer.com/album/${id}`,
+    bandcamp: id => `https://${location.hostname}${id}`,
+    discogs: id => `https://www.discogs.com/release/${id}`,
+    apple: id => { const [cc, n] = id.split('/'); return `https://music.apple.com/${cc}/album/${n}`; },
+    tidal: id => `https://tidal.com/album/${id}`,
+    qobuz: id => `https://www.qobuz.com${id}`,
+    beatport: id => `https://www.beatport.com/release/-/${id}`,
+    spotify: id => `https://open.spotify.com/album/${id}`,
+    ototoy: id => `https://ototoy.jp/_/default/p/${id}`,
+};
+// Platforms Harmony doesn't know and whose albums never carry a barcode: nothing to send
+const HARMONY_NONE = new Set(['ytmusic', 'amazonmusic']);
+// spoonkuh: "it does not follow my harmony settings". A link names its providers itself, and one that
+// names none looks the album up on its own platform only (a barcode alone, on none). category=preferred
+// is the providers ticked in Harmony's settings (its cookies), and with no region in the link Harmony
+// takes the settings' region too; Apple's link carries its own country store.
+function harmonyLookup({ url, gtin }) {
+    const q = new URLSearchParams();
+    if (url) q.set('url', url);
+    if (gtin) q.set('gtin', gtin);
+    q.set('category', 'preferred');
+    return `${HARMONY}?${q}`;
+}
+// Harmony's own mark, so the button says where it goes
+const HARMONY_SVG = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="18" height="18" aria-hidden="true">'
+    + '<defs><linearGradient id="fc-harmony-g" x1="-7.71" y1="30.11" x2="45.71" y2="-.24" gradientUnits="userSpaceOnUse"><stop offset=".29" stop-color="#ffb92c"/><stop offset="1" stop-color="#c45555"/></linearGradient></defs>'
+    + '<path fill="url(#fc-harmony-g)" d="M17.13,0l-6.27,3.6v6.56c.74-.3,1.53-.45,2.34-.45,3.47,0,6.29,2.82,6.29,6.29s-2.82,6.29-6.29,6.29c-.81,0-1.6-.15-2.34-.45v6.56l6.27,3.6,13.63-7.82V7.82L17.13,0Z"/>'
+    + '<path fill="#c45555" d="M13.2,11.7c-.85,0-1.65.25-2.32.68-.05,0-.1,0-.15,0-.39,0-.78-.08-1.1-.3-.48-.32-.69-1.03-.76-1.76V3.45L1.24,7.82v16.36l7.62,4.37v-6.88c.08-.73.29-1.44.76-1.76.33-.22.72-.3,1.1-.3.05,0,.11,0,.16,0,.67.43,1.46.68,2.31.68,2.37,0,4.29-1.92,4.29-4.29s-1.92-4.29-4.29-4.29Z"/></svg>';
+
 /* ── the seed: model → the release editor's POST parameters ──────────────── */
 // https://musicbrainz.org/doc/Development/Release_Editor_Seeding
 
@@ -2360,6 +2395,13 @@ function injectStyle() {
 #fc-root .fc-go { border-radius: 8px 0 0 8px; font-weight: 600; }
 #fc-root .fc-more { border-radius: 0 8px 8px 0; border-left: none; min-width: 30px; justify-content: center; padding: 8px 10px; }
 #fc-root .fc-go[aria-busy="true"] { cursor: progress; }
+/* #687: Send to Harmony, between Import and ⚙︎ */
+#fc-root .fc-harmony { border-left: none; padding: 8px 9px; justify-content: center; }
+#fc-root .fc-harmony[hidden] { display: none; }
+#fc-root .fc-harmony[aria-disabled="true"] { cursor: default; opacity: .45; }
+#fc-root .fc-harmony[aria-disabled="true"]:hover { background: var(--mbu-bg); }
+#fc-root .fc-harmony[aria-busy="true"] { cursor: progress; }
+#fc-root .fc-harmony svg { display: block; }
 /* majkinetor: "after the click nothing happens … make it obvious it works": a spinner while it reads */
 #fc-root .fc-go[aria-busy="true"]::after { content: ''; width: 14px; height: 14px; flex: 0 0 auto; box-sizing: border-box;
   border: 2px solid var(--mbu-border); border-top-color: var(--mbu-accent-text); border-right-color: var(--mbu-accent-text); border-radius: 50%; animation: fc-spin .8s linear infinite; }
@@ -2381,6 +2423,8 @@ function injectStyle() {
 /* ⚙︎ only on hover: a tab on the button's edge, above it (below when the button sits near the
    top), so showing it never shifts Import out from under the pointer */
 #fc-root.fc-gear-hover .fc-go { border-radius: 8px; }
+#fc-root.fc-gear-hover:has(.fc-harmony:not([hidden])) .fc-go { border-radius: 8px 0 0 8px; }
+#fc-root.fc-gear-hover .fc-harmony { border-radius: 0 8px 8px 0; }
 #fc-root.fc-gear-hover .fc-more { position: absolute; right: 8px; bottom: 100%; min-width: 0; padding: 3px 8px;
   border: 1px solid var(--mbu-border); border-bottom: none; border-radius: 8px 8px 0 0; visibility: hidden; }
 #fc-root.fc-gear-hover.fc-gear-below .fc-more { bottom: auto; top: 100%; border-bottom: 1px solid var(--mbu-border); border-top: none; border-radius: 0 0 8px 8px; }
@@ -2461,7 +2505,12 @@ function mountButton(provider, id) {
         more.title = 'Settings';
         more.setAttribute('aria-label', more.title);
         more.addEventListener('click', e => { e.stopPropagation(); togglePanel(more); });
-        root.append(go, more);
+        const harmony = document.createElement('button');
+        harmony.type = 'button';
+        harmony.className = 'fc-harmony';
+        harmony.innerHTML = mbuHtml(HARMONY_SVG);
+        harmony.addEventListener('click', () => { sendToHarmony(); });
+        root.append(go, harmony, more);
         document.body.appendChild(root);
         makeMovable(root);
         root.addEventListener('mouseenter', () => root.classList.toggle('fc-gear-below', root.getBoundingClientRect().top < 40));
@@ -2471,6 +2520,7 @@ function mountButton(provider, id) {
     root.classList.toggle('fc-iconly', !!settings().iconOnly);   // majkinetor: an option to hide the button's text
     root.classList.toggle('fc-gear-hover', !!settings().gearOnHover);   // majkinetor: an option to show ⚙︎ only on hover
     root.querySelector('.fc-go').title = `Import to MusicBrainz: open the release editor with this ${provider.name} release filled in`;
+    showHarmony(root, provider);
     root.style.display = '';
     migrateScrollSetting();
     placeButton(root);
@@ -2819,7 +2869,8 @@ function togglePanel(anchor) {
         + SERVERS.map(h => `<option value="${h}"${h === s.server ? ' selected' : ''}>${h}</option>`).join('')
         + '</select></label>'
         + `<label class="fc-check" title="On ${here} only: the album's notes on the platform (Bandcamp's about and credits, Discogs's notes, Qobuz's and Apple's reviews, Beatport's and YouTube Music's description, Amazon Music's ℗ line), with a line saying where they come from. Reviews are the critic's text: check you may copy it before you submit."><input type="checkbox" class="fc-annotation"${annotationOn(here) ? ' checked' : ''}> Annotation from ${here}'s notes</label>`
-        + `<label class="fc-check" title="Once the release editor has the release, this platform tab closes. It stays open when the import fails, or when the browser blocked the new tab and the editor opened here."><input type="checkbox" class="fc-close-after"${s.closeAfter ? ' checked' : ''}> Close this page after the import</label>`
+        + `<label class="fc-check" title="Once the release editor has the release, or the album is sent to Harmony, this platform tab closes. It stays open when the import fails, or when the browser blocked the new tab and the editor or Harmony opened here."><input type="checkbox" class="fc-close-after"${s.closeAfter ? ' checked' : ''}> Close this page after the import</label>`
+        + `<label class="fc-check" title="A button between Import and ⚙︎ that looks this album up on Harmony instead, with every platform that has its barcode; Falcon carries on from there"><input type="checkbox" class="fc-harmony-opt"${s.harmony ? ' checked' : ''}> Send to Harmony button</label>`
         + '<div class="fc-sec">Archive</div>'
         // #659: majkinetor: "It should be ON by default or many people will not use it"
         + `<label class="fc-check" title="On every import, ask the Internet Archive's Wayback Machine to save the album page (and, for Deezer and Apple Music, the album data FC read), and link the snapshots in the edit note. This sends each imported URL to archive.org."><input type="checkbox" class="fc-archive"${s.archive ? ' checked' : ''}> Archive the album page on the Internet Archive</label>`
@@ -2866,6 +2917,13 @@ function togglePanel(anchor) {
         const root = document.getElementById('fc-root');
         if (root) placeButton(root);
         Log.info(`moved button on ${here}: ${e.target.checked ? 'scrolls with the page' : 'stays on the screen'}`);
+    });
+    panel.querySelector('.fc-harmony-opt').addEventListener('change', e => {
+        const next = Object.assign(settings(), { harmony: e.target.checked });
+        saveSettings(next);
+        const root = document.getElementById('fc-root');
+        if (root && current) showHarmony(root, current.provider);
+        Log.info(`Send to Harmony button: ${next.harmony ? 'shown' : 'hidden'}`);
     });
     panel.querySelector('.fc-gear-hover-opt').addEventListener('change', e => {
         const next = Object.assign(settings(), { gearOnHover: e.target.checked });
@@ -2985,6 +3043,77 @@ async function importCurrent() {
         if (go) go.removeAttribute('aria-busy');
         if (label) label.textContent = 'Import to MusicBrainz';
     }
+}
+
+// #687: Send to Harmony. A platform Harmony knows goes by its album link, at once; Harmony finds the
+// others by the barcode it reads there. Any other platform goes by the barcode, read here first as
+// Import reads the album. YouTube Music and Amazon Music have neither, so the button is greyed out.
+function showHarmony(root, provider) {
+    const b = root.querySelector('.fc-harmony');
+    if (!b) return;
+    b.hidden = !settings().harmony;
+    const none = HARMONY_NONE.has(provider.id);
+    b.setAttribute('aria-disabled', String(none));
+    b.setAttribute('aria-label', 'Send to Harmony');
+    b.title = harmonyWhy(provider);
+}
+function harmonyWhy(provider) {
+    if (HARMONY_NONE.has(provider.id)) return `Send to Harmony: Harmony can't look up ${provider.name}, and ${provider.name} shows no barcode`;
+    if (HARMONY_URLS[provider.id]) return `Send to Harmony: look this ${provider.name} album up on Harmony, with every platform that has its barcode`;
+    return `Send to Harmony: read the barcode here first (Harmony can't look up ${provider.name}), then look it up on Harmony`;
+}
+async function sendToHarmony() {
+    if (busy || !current) return;
+    const { provider, id } = current;
+    if (HARMONY_NONE.has(provider.id)) { mbuToast(harmonyWhy(provider).replace(/^Send to Harmony: /, ''), { kind: 'warn' }); return; }
+    const direct = HARMONY_URLS[provider.id];
+    if (direct) {
+        openHarmony(harmonyLookup({ url: direct(id) }));
+        return;
+    }
+    const root = document.getElementById('fc-root');
+    const go = root && root.querySelector('.fc-go'), hb = root && root.querySelector('.fc-harmony');
+    const label = go && go.querySelector('span');
+    busy = true;
+    for (const b of [go, hb]) if (b) b.setAttribute('aria-busy', 'true');
+    const t0 = Date.now();
+    let count = '';
+    const show = () => { if (label) label.textContent = `Reading ${provider.name} for Harmony…${count ? ' ' + count : ''} · ${Math.round((Date.now() - t0) / 1000)} s`; };
+    show();
+    const ticker = setInterval(show, 1000);
+    try {
+        Log.info(`Harmony: reading the barcode of ${provider.name} album ${id}`);
+        const rel = await provider.fetchRelease(id, (n, total) => { count = `${n}/${total}`; show(); });
+        if (!rel.barcode) throw new Error(`${provider.name} gives no barcode for this album, so Harmony can't look it up`);
+        openHarmony(harmonyLookup({ gtin: rel.barcode }));
+    } catch (e) {
+        Log.err(`Send to Harmony failed: ${e.message}`);
+        mbuToast(`✗ ${NAME}: ${e.message}`, { kind: 'warn', action: { label: 'Copy log', onClick: b => Log.copy(b) } });
+    } finally {
+        clearInterval(ticker);
+        busy = false;
+        for (const b of [go, hb]) if (b) b.removeAttribute('aria-busy');
+        if (label) label.textContent = 'Import to MusicBrainz';
+    }
+}
+// A tab the manager opens isn't a blocked popup, even after the read; without it the page opens one
+// majkinetor: "Option to close page after import should apply to Harmony too". Only when Harmony got a
+// tab of its own: when the browser blocked it, Harmony is in this one.
+function openHarmony(url) {
+    Log.ok(`sent to Harmony: ${url}`);
+    if (mbuTestHooks()) window.__fcLastHarmony = url;
+    let here = false;
+    if (typeof GM_openInTab === 'function') GM_openInTab(url, { active: true, insert: true });
+    else {
+        const w = window.open(url, '_blank');
+        if (w) w.opener = null;
+        else here = true;
+    }
+    if (settings().closeAfter) {
+        if (!here) closeSourceTab();
+        else Log.info('close after sending to Harmony: skipped, the browser blocked a new tab and Harmony opens in this one');
+    }
+    if (here) location.assign(url);
 }
 
 // majkinetor: "why does it open tab while reading?" The editor's tab opens once the release is read,

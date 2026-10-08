@@ -30,6 +30,7 @@ Rules for the title itself (so the verbatim copy reads well):
 
 - No leading verb (`Fix`, `Add`, `Persist`, `Refactor`, …).
 - Telegraphic English: drop articles, auxiliaries and filler (`Release title lost on reload`, not `The release title is lost when the page is reloaded`).
+- No component prefix (`Apollo Editor: …`) — the area label says which component it is ([Standard 2](#standard-2)).
 - No internal implementation details — no line numbers, exact counts, internal variable names, file paths.
 - Describe what the user observes (for bugs) or what the feature is (for enhancements), not how it's implemented.
 

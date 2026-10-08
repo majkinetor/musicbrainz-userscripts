@@ -24,7 +24,7 @@ The mouse wheel over the player bar seeks too; over the open track list it scrol
 
 | Setting | Default | |
 |---|---|---|
-| Theme | Light | or Dark |
+| Theme | Page | follows the album page: dark on a dark page, light on a light one; or always Dark or Light |
 | Scale | 100% | 70–130% |
 | Start from track 1 | on | Bandcamp sometimes starts a page on a "featured" track; this moves the player to track 1 without playing it |
 | Hide on page | the native player | also the track list and the tags row |

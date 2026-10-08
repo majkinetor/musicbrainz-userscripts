@@ -1,0 +1,289 @@
+<!doctype html><html data-mbu-theme="dark"><head><meta charset="utf-8"><title>First Contact: Send to Harmony</title><style>:root{--mbu-bg:var(--background, #fff);--mbu-bg-raised:#faf9fe;--mbu-bg-raised:color-mix(in srgb, var(--mbu-bg) 96%, var(--mbu-accent));--mbu-bg-sunken:#f4f2f9;--mbu-bg-sunken:color-mix(in srgb, var(--mbu-bg) 94%, var(--mbu-text));--mbu-bg-hover:#f3eefe;--mbu-bg-hover:color-mix(in srgb, var(--mbu-bg) 91%, var(--mbu-accent));--mbu-text:var(--text, #222);--mbu-text-dim:#555;--mbu-text-dim:color-mix(in srgb, var(--mbu-text) 78%, var(--mbu-bg));--mbu-text-weak:#999;--mbu-text-weak:color-mix(in srgb, var(--mbu-text) 52%, var(--mbu-bg));--mbu-text-on-accent:#fff;--mbu-border:var(--border, #cfc6e6);--mbu-border-soft:#e2dcef;--mbu-border-strong:#9a8ccb;--mbu-border-strong:color-mix(in srgb, var(--mbu-border) 70%, var(--mbu-text));--mbu-divider:#eee;--mbu-divider:color-mix(in srgb, var(--mbu-bg) 92%, var(--mbu-text));--mbu-accent:#5f3ec0;--mbu-accent-hover:#4e329f;--mbu-accent-deep:#3b2c70;--mbu-accent-soft:#ece4ff;--mbu-accent-soft:color-mix(in srgb, var(--mbu-bg) 86%, var(--mbu-accent));--mbu-accent-fg:#fff;--mbu-accent-text:#5f3ec0;--mbu-accent-deep-text:#3b2c70;--mbu-ok:#1f9d6b;--mbu-ok:color-mix(in srgb, #1f9d6b 78%, var(--mbu-text));--mbu-ok-bg:#eef7f1;--mbu-ok-bg:color-mix(in srgb, var(--mbu-bg) 88%, var(--mbu-ok));--mbu-ok-border:#9bd3b6;--mbu-warn:#a05a00;--mbu-warn:color-mix(in srgb, #b4791f 78%, var(--mbu-text));--mbu-warn-bg:#fff7e6;--mbu-warn-bg:color-mix(in srgb, var(--mbu-bg) 88%, var(--mbu-warn));--mbu-warn-border:#f0c877;--mbu-error:#c0392b;--mbu-error:color-mix(in srgb, #d0473a 78%, var(--mbu-text));--mbu-error-bg:#fdecec;--mbu-error-bg:color-mix(in srgb, var(--mbu-bg) 90%, var(--mbu-error));--mbu-error-border:#e2a1a1;--mbu-info:#2f7fbf;--mbu-info:color-mix(in srgb, #3f8fd0 78%, var(--mbu-text));--mbu-info-bg:#eef4fb;--mbu-info-bg:color-mix(in srgb, var(--mbu-bg) 90%, var(--mbu-info));--mbu-info-border:#a9c8e6;--mbu-font:-apple-system,Segoe UI,Roboto,Arial,sans-serif;--mbu-font-mono:ui-monospace,SFMono-Regular,Consolas,Menlo,monospace;--mbu-fs:14px;--mbu-fs-sm:12px;--mbu-fs-xs:11px;--mbu-radius:6px;--mbu-radius-lg:10px;--mbu-shadow:0 1px 5px rgba(60,40,110,.07);--mbu-shadow-lg:0 8px 30px rgba(40,20,80,.3);--mbu-z-panel:30;--mbu-z-pop:99998;--mbu-z-modal:2147483000;--mbu-z-modal-panel:2147483001}:root[data-mbu-theme="dark"]{--mbu-bg:#1e1b24;--mbu-text:#e9e5f2;--mbu-border:#3b3548;--mbu-accent-text:#b9a7f0;--mbu-accent-deep-text:#a493e0}:root[data-mbu-theme="dark"][data-mbu-seed="theme"]{--mbu-bg:var(--background, #1e1b24);--mbu-text:var(--text, #e9e5f2);--mbu-border:var(--border, #3b3548)}.mbu-help{font-size:12px;color:var(--mbu-accent-text);text-decoration:none;border:1px solid var(--mbu-border);border-radius:var(--mbu-radius);padding:1px 8px;white-space:nowrap;line-height:1.6;background:none}.mbu-help:hover{background:var(--mbu-bg-hover);border-color:var(--mbu-accent);text-decoration:none}h4>.mbu-help,.mbu-cfg-h>.mbu-help{margin-left:8px;flex:0 0 auto;font-weight:normal}#mbu-toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);z-index:var(--mbu-z-pop);background:var(--mbu-accent-deep);color:var(--mbu-text-on-accent);padding:10px 16px;border-radius:9px;font:13px/1.35 var(--mbu-font);box-shadow:var(--mbu-shadow-lg);opacity:0;transition:opacity .2s;pointer-events:none;max-width:80vw;text-align:center;white-space:pre-wrap}#mbu-toast.mbu-toast-on{opacity:1}#mbu-toast.mbu-toast-act{pointer-events:auto}#mbu-toast .mbu-toast-btn{margin-left:10px;padding:2px 9px;border:1px solid currentColor;border-radius:5px;background:transparent;color:inherit;font:inherit;cursor:pointer}#mbu-toast .mbu-toast-btn:hover{background:rgba(255,255,255,.18)}#mbu-toast.mbu-toast-ok{background:var(--mbu-ok)}#mbu-toast.mbu-toast-warn{background:var(--mbu-warn)}#mbu-toast.mbu-toast-error{background:var(--mbu-error)}.mbu-cfg-h{display:flex;align-items:center;gap:8px;margin:0 0 10px;padding:0 0 9px;border-bottom:1px solid var(--mbu-border-soft);font:600 15px/1.3 var(--mbu-font);color:var(--mbu-text)}.mbu-cfg-ic{flex:0 0 auto;display:inline-flex;align-items:center;width:22px;height:22px}.mbu-cfg-ic img,.mbu-cfg-ic svg{width:22px;height:22px;object-fit:contain;display:block}.mbu-cfg-name{flex:0 0 auto;font-weight:700;color:var(--mbu-accent-text)}.mbu-cfg-ver{flex:0 0 auto;font:400 11px var(--mbu-font);color:var(--mbu-text-weak);white-space:nowrap}.mbu-cfg-sp{flex:1 1 auto;min-width:8px}.mbu-cfg-log{flex:0 0 auto;font:400 12px var(--mbu-font);color:var(--mbu-accent-text);cursor:pointer;background:none;border:1px solid transparent;border-radius:var(--mbu-radius);padding:1px 8px;line-height:1.6}.mbu-cfg-log:hover{background:var(--mbu-bg-hover);border-color:var(--mbu-border)}#mbu-logpop{position:fixed;top:74px;left:50%;transform:translateX(-50%);z-index:var(--mbu-z-modal);display:flex;flex-direction:column;width:min(720px,94vw);max-height:72vh;background:var(--mbu-bg);border:1px solid var(--mbu-border);border-radius:11px;box-shadow:var(--mbu-shadow-lg);font:13px var(--mbu-font);color:var(--mbu-text);overflow:hidden}.mbu-logpop-h{display:flex;align-items:center;gap:8px;padding:10px 13px;border-bottom:1px solid var(--mbu-border-soft);color:var(--mbu-accent-text);cursor:move;user-select:none}.mbu-logpop-sp{margin-left:auto}.mbu-logpop-clear,.mbu-logpop-copy,.mbu-logpop-x,.mbu-logpop-min{font-size:12px;color:var(--mbu-accent-text);background:var(--mbu-bg-hover);border:1px solid var(--mbu-border);border-radius:5px;padding:2px 9px;cursor:pointer;font-family:inherit}.mbu-logpop-clear:hover,.mbu-logpop-copy:hover,.mbu-logpop-x:hover,.mbu-logpop-min:hover{background:var(--mbu-accent-soft)}#mbu-logpop.min .mbu-log-list,#mbu-logpop.min .mbu-logpop-clear,#mbu-logpop.min .mbu-logpop-copy,#mbu-logpop.min .mbu-logpop-x{display:none}#mbu-logpop.min{max-height:none;width:auto}#mbu-logpop.min .mbu-logpop-sp{display:none}.mbu-log-badge{color:var(--mbu-border-strong);font-size:11px}.mbu-log-list{flex:1 1 auto;overflow:auto;overscroll-behavior:contain;padding:9px 13px;display:flex;flex-direction:column;gap:3px}.mbu-log-li{display:flex;gap:9px;white-space:pre-wrap;word-break:break-word}.mbu-log-t{color:var(--mbu-text-weak);flex:0 0 auto;font-variant-numeric:tabular-nums}.mbu-log-m{flex:1 1 auto;color:var(--mbu-text-dim)}#mbu-logpop .mbu-log-m a{color:var(--mbu-accent-text)}.mbu-log-ok .mbu-log-m{color:var(--mbu-ok)}.mbu-log-warn .mbu-log-m{color:var(--mbu-warn)}.mbu-log-error .mbu-log-m{color:var(--mbu-error)}.mbu-log-debug{opacity:.85}.mbu-log-debug .mbu-log-m{color:var(--mbu-text-weak)}.mbu-log-empty{color:var(--mbu-text-weak)}.mbu-ov{position:fixed;inset:0;z-index:var(--mbu-z-modal);background:rgba(15,12,28,.45);display:flex;align-items:center;justify-content:center;padding:24px}.mbu-ov-panel{background:var(--mbu-bg);color:var(--mbu-text);border-radius:var(--mbu-radius-lg);box-shadow:var(--mbu-shadow-lg);max-width:94vw;max-height:88vh;display:flex;flex-direction:column;overflow:hidden}.mbu-ov-h{display:flex;align-items:center;gap:10px;padding:12px 16px;border-bottom:1px solid var(--mbu-border-soft);font-weight:700}.mbu-ov-h .mbu-ov-title{flex:1 1 auto;min-width:0}.mbu-ov-x{flex:0 0 auto;width:26px;height:26px;display:inline-flex;align-items:center;justify-content:center;font-size:15px;line-height:1;cursor:pointer;color:var(--mbu-text-dim);background:none;border:none;border-radius:var(--mbu-radius)}.mbu-ov-x:hover{background:var(--mbu-bg-hover);color:var(--mbu-text)}.mbu-ov-body{flex:1 1 auto;overflow:auto;padding:14px 16px}:where(.mbu-ov,.mbu-ui,#mbu-logpop,.discogs-bar,.discogs-review-panel-li,#as-root,#as-setup,.as-pop,#as-switch-wrap,#ii-btn,.fs-launch,#tc-bar,#tc-nav-bar,#tc-settings,#tc-anno-wrap,.tc-panel,.tc-toolcfg,.tc-acpop,.tc-recpop,.tc-lppop,.tc-tpppop,.tc-tpp-mpop,.tc-anno-help-pop,.tc-mirror,.tc-addrow,.tc-medopts,.tc-tools,#tc-recwrap,#tc-ri-toolbar,.tc-fmt-flat,.gt-toolbar,.gt-cons,.gt-menu,.gt-pop,.gt-cfg-pop,.gt-wm-pop,#ii-modal,#ii-sxpanel,#mb-pc-panel,#mb-provider-modal-card,.fs-cons,#fs-settings,.fs-overlay,.mmth-pop,.mmth-cfg,.mmth-side,.mmth-pinbar,.mmthf-pop,.mmthf-bar,#falcon-panel,#falcon-launcher,#falcon-item-popup,#falcon-add-page,.falcon-bar,.falcon-addmenu) ::placeholder{color:var(--mbu-text-weak);opacity:1;font-style:italic}:where(.mbu-ov,.mbu-ui,#mbu-logpop,.discogs-bar,.discogs-review-panel-li,#as-root,#as-setup,.as-pop,#as-switch-wrap,#ii-btn,.fs-launch,#tc-bar,#tc-nav-bar,#tc-settings,#tc-anno-wrap,.tc-panel,.tc-toolcfg,.tc-acpop,.tc-recpop,.tc-lppop,.tc-tpppop,.tc-tpp-mpop,.tc-anno-help-pop,.tc-mirror,.tc-addrow,.tc-medopts,.tc-tools,#tc-recwrap,#tc-ri-toolbar,.tc-fmt-flat,.gt-toolbar,.gt-cons,.gt-menu,.gt-pop,.gt-cfg-pop,.gt-wm-pop,#ii-modal,#ii-sxpanel,#mb-pc-panel,#mb-provider-modal-card,.fs-cons,#fs-settings,.fs-overlay,.mmth-pop,.mmth-cfg,.mmth-side,.mmth-pinbar,.mmthf-pop,.mmthf-bar,#falcon-panel,#falcon-launcher,#falcon-item-popup,#falcon-add-page,.falcon-bar,.falcon-addmenu){color:var(--mbu-text)}:where(.mbu-ov,.mbu-ui,#mbu-logpop,.discogs-bar,.discogs-review-panel-li,#as-root,#as-setup,.as-pop,#as-switch-wrap,#ii-btn,.fs-launch,#tc-bar,#tc-nav-bar,#tc-settings,#tc-anno-wrap,.tc-panel,.tc-toolcfg,.tc-acpop,.tc-recpop,.tc-lppop,.tc-tpppop,.tc-tpp-mpop,.tc-anno-help-pop,.tc-mirror,.tc-addrow,.tc-medopts,.tc-tools,#tc-recwrap,#tc-ri-toolbar,.tc-fmt-flat,.gt-toolbar,.gt-cons,.gt-menu,.gt-pop,.gt-cfg-pop,.gt-wm-pop,#ii-modal,#ii-sxpanel,#mb-pc-panel,#mb-provider-modal-card,.fs-cons,#fs-settings,.fs-overlay,.mmth-pop,.mmth-cfg,.mmth-side,.mmth-pinbar,.mmthf-pop,.mmthf-bar,#falcon-panel,#falcon-launcher,#falcon-item-popup,#falcon-add-page,.falcon-bar,.falcon-addmenu) :is(table,td,th,div,span,label)[style*=background]{color:var(--mbu-text)}:where(.mbu-ov,.mbu-ui,#mbu-logpop,.discogs-bar,.discogs-review-panel-li,#as-root,#as-setup,.as-pop,#as-switch-wrap,#ii-btn,.fs-launch,#tc-bar,#tc-nav-bar,#tc-settings,#tc-anno-wrap,.tc-panel,.tc-toolcfg,.tc-acpop,.tc-recpop,.tc-lppop,.tc-tpppop,.tc-tpp-mpop,.tc-anno-help-pop,.tc-mirror,.tc-addrow,.tc-medopts,.tc-tools,#tc-recwrap,#tc-ri-toolbar,.tc-fmt-flat,.gt-toolbar,.gt-cons,.gt-menu,.gt-pop,.gt-cfg-pop,.gt-wm-pop,#ii-modal,#ii-sxpanel,#mb-pc-panel,#mb-provider-modal-card,.fs-cons,#fs-settings,.fs-overlay,.mmth-pop,.mmth-cfg,.mmth-side,.mmth-pinbar,.mmthf-pop,.mmthf-bar,#falcon-panel,#falcon-launcher,#falcon-item-popup,#falcon-add-page,.falcon-bar,.falcon-addmenu) input:not(:where([type=checkbox],[type=radio],[type=range],[type=color],[type=file])),:where(.mbu-ov,.mbu-ui,#mbu-logpop,.discogs-bar,.discogs-review-panel-li,#as-root,#as-setup,.as-pop,#as-switch-wrap,#ii-btn,.fs-launch,#tc-bar,#tc-nav-bar,#tc-settings,#tc-anno-wrap,.tc-panel,.tc-toolcfg,.tc-acpop,.tc-recpop,.tc-lppop,.tc-tpppop,.tc-tpp-mpop,.tc-anno-help-pop,.tc-mirror,.tc-addrow,.tc-medopts,.tc-tools,#tc-recwrap,#tc-ri-toolbar,.tc-fmt-flat,.gt-toolbar,.gt-cons,.gt-menu,.gt-pop,.gt-cfg-pop,.gt-wm-pop,#ii-modal,#ii-sxpanel,#mb-pc-panel,#mb-provider-modal-card,.fs-cons,#fs-settings,.fs-overlay,.mmth-pop,.mmth-cfg,.mmth-side,.mmth-pinbar,.mmthf-pop,.mmthf-bar,#falcon-panel,#falcon-launcher,#falcon-item-popup,#falcon-add-page,.falcon-bar,.falcon-addmenu) textarea,:where(.mbu-ov,.mbu-ui,#mbu-logpop,.discogs-bar,.discogs-review-panel-li,#as-root,#as-setup,.as-pop,#as-switch-wrap,#ii-btn,.fs-launch,#tc-bar,#tc-nav-bar,#tc-settings,#tc-anno-wrap,.tc-panel,.tc-toolcfg,.tc-acpop,.tc-recpop,.tc-lppop,.tc-tpppop,.tc-tpp-mpop,.tc-anno-help-pop,.tc-mirror,.tc-addrow,.tc-medopts,.tc-tools,#tc-recwrap,#tc-ri-toolbar,.tc-fmt-flat,.gt-toolbar,.gt-cons,.gt-menu,.gt-pop,.gt-cfg-pop,.gt-wm-pop,#ii-modal,#ii-sxpanel,#mb-pc-panel,#mb-provider-modal-card,.fs-cons,#fs-settings,.fs-overlay,.mmth-pop,.mmth-cfg,.mmth-side,.mmth-pinbar,.mmthf-pop,.mmthf-bar,#falcon-panel,#falcon-launcher,#falcon-item-popup,#falcon-add-page,.falcon-bar,.falcon-addmenu) select{background:var(--mbu-bg-sunken);color:var(--mbu-text);border-color:var(--mbu-border)}:where(.mbu-ov,.mbu-ui,#mbu-logpop,.discogs-bar,.discogs-review-panel-li,#as-root,#as-setup,.as-pop,#as-switch-wrap,#ii-btn,.fs-launch,#tc-bar,#tc-nav-bar,#tc-settings,#tc-anno-wrap,.tc-panel,.tc-toolcfg,.tc-acpop,.tc-recpop,.tc-lppop,.tc-tpppop,.tc-tpp-mpop,.tc-anno-help-pop,.tc-mirror,.tc-addrow,.tc-medopts,.tc-tools,#tc-recwrap,#tc-ri-toolbar,.tc-fmt-flat,.gt-toolbar,.gt-cons,.gt-menu,.gt-pop,.gt-cfg-pop,.gt-wm-pop,#ii-modal,#ii-sxpanel,#mb-pc-panel,#mb-provider-modal-card,.fs-cons,#fs-settings,.fs-overlay,.mmth-pop,.mmth-cfg,.mmth-side,.mmth-pinbar,.mmthf-pop,.mmthf-bar,#falcon-panel,#falcon-launcher,#falcon-item-popup,#falcon-add-page,.falcon-bar,.falcon-addmenu) input:focus-visible,:where(.mbu-ov,.mbu-ui,#mbu-logpop,.discogs-bar,.discogs-review-panel-li,#as-root,#as-setup,.as-pop,#as-switch-wrap,#ii-btn,.fs-launch,#tc-bar,#tc-nav-bar,#tc-settings,#tc-anno-wrap,.tc-panel,.tc-toolcfg,.tc-acpop,.tc-recpop,.tc-lppop,.tc-tpppop,.tc-tpp-mpop,.tc-anno-help-pop,.tc-mirror,.tc-addrow,.tc-medopts,.tc-tools,#tc-recwrap,#tc-ri-toolbar,.tc-fmt-flat,.gt-toolbar,.gt-cons,.gt-menu,.gt-pop,.gt-cfg-pop,.gt-wm-pop,#ii-modal,#ii-sxpanel,#mb-pc-panel,#mb-provider-modal-card,.fs-cons,#fs-settings,.fs-overlay,.mmth-pop,.mmth-cfg,.mmth-side,.mmth-pinbar,.mmthf-pop,.mmthf-bar,#falcon-panel,#falcon-launcher,#falcon-item-popup,#falcon-add-page,.falcon-bar,.falcon-addmenu) textarea:focus-visible,:where(.mbu-ov,.mbu-ui,#mbu-logpop,.discogs-bar,.discogs-review-panel-li,#as-root,#as-setup,.as-pop,#as-switch-wrap,#ii-btn,.fs-launch,#tc-bar,#tc-nav-bar,#tc-settings,#tc-anno-wrap,.tc-panel,.tc-toolcfg,.tc-acpop,.tc-recpop,.tc-lppop,.tc-tpppop,.tc-tpp-mpop,.tc-anno-help-pop,.tc-mirror,.tc-addrow,.tc-medopts,.tc-tools,#tc-recwrap,#tc-ri-toolbar,.tc-fmt-flat,.gt-toolbar,.gt-cons,.gt-menu,.gt-pop,.gt-cfg-pop,.gt-wm-pop,#ii-modal,#ii-sxpanel,#mb-pc-panel,#mb-provider-modal-card,.fs-cons,#fs-settings,.fs-overlay,.mmth-pop,.mmth-cfg,.mmth-side,.mmth-pinbar,.mmthf-pop,.mmthf-bar,#falcon-panel,#falcon-launcher,#falcon-item-popup,#falcon-add-page,.falcon-bar,.falcon-addmenu) select:focus-visible{outline:2px solid var(--mbu-accent);outline-offset:1px}:where(.mbu-ov,.mbu-ui,#mbu-logpop,.discogs-bar,.discogs-review-panel-li,#as-root,#as-setup,.as-pop,#as-switch-wrap,#ii-btn,.fs-launch,#tc-bar,#tc-nav-bar,#tc-settings,#tc-anno-wrap,.tc-panel,.tc-toolcfg,.tc-acpop,.tc-recpop,.tc-lppop,.tc-tpppop,.tc-tpp-mpop,.tc-anno-help-pop,.tc-mirror,.tc-addrow,.tc-medopts,.tc-tools,#tc-recwrap,#tc-ri-toolbar,.tc-fmt-flat,.gt-toolbar,.gt-cons,.gt-menu,.gt-pop,.gt-cfg-pop,.gt-wm-pop,#ii-modal,#ii-sxpanel,#mb-pc-panel,#mb-provider-modal-card,.fs-cons,#fs-settings,.fs-overlay,.mmth-pop,.mmth-cfg,.mmth-side,.mmth-pinbar,.mmthf-pop,.mmthf-bar,#falcon-panel,#falcon-launcher,#falcon-item-popup,#falcon-add-page,.falcon-bar,.falcon-addmenu) :where(input[type=checkbox],input[type=radio],input[type=range]){accent-color:var(--mbu-accent)}:root[data-mbu-theme=dark] :where(.mbu-ov,.mbu-ui,#mbu-logpop,.discogs-bar,.discogs-review-panel-li,#as-root,#as-setup,.as-pop,#as-switch-wrap,#ii-btn,.fs-launch,#tc-bar,#tc-nav-bar,#tc-settings,#tc-anno-wrap,.tc-panel,.tc-toolcfg,.tc-acpop,.tc-recpop,.tc-lppop,.tc-tpppop,.tc-tpp-mpop,.tc-anno-help-pop,.tc-mirror,.tc-addrow,.tc-medopts,.tc-tools,#tc-recwrap,#tc-ri-toolbar,.tc-fmt-flat,.gt-toolbar,.gt-cons,.gt-menu,.gt-pop,.gt-cfg-pop,.gt-wm-pop,#ii-modal,#ii-sxpanel,#mb-pc-panel,#mb-provider-modal-card,.fs-cons,#fs-settings,.fs-overlay,.mmth-pop,.mmth-cfg,.mmth-side,.mmth-pinbar,.mmthf-pop,.mmthf-bar,#falcon-panel,#falcon-launcher,#falcon-item-popup,#falcon-add-page,.falcon-bar,.falcon-addmenu){color-scheme:dark;--invert-value:none;--invert:none}:where(.mbu-ov,.mbu-ui,#mbu-logpop,.discogs-bar,.discogs-review-panel-li,#as-root,#as-setup,.as-pop,#as-switch-wrap,#ii-btn,.fs-launch,#tc-bar,#tc-nav-bar,#tc-settings,#tc-anno-wrap,.tc-panel,.tc-toolcfg,.tc-acpop,.tc-recpop,.tc-lppop,.tc-tpppop,.tc-tpp-mpop,.tc-anno-help-pop,.tc-mirror,.tc-addrow,.tc-medopts,.tc-tools,#tc-recwrap,#tc-ri-toolbar,.tc-fmt-flat,.gt-toolbar,.gt-cons,.gt-menu,.gt-pop,.gt-cfg-pop,.gt-wm-pop,#ii-modal,#ii-sxpanel,#mb-pc-panel,#mb-provider-modal-card,.fs-cons,#fs-settings,.fs-overlay,.mmth-pop,.mmth-cfg,.mmth-side,.mmth-pinbar,.mmthf-pop,.mmthf-bar,#falcon-panel,#falcon-launcher,#falcon-item-popup,#falcon-add-page,.falcon-bar,.falcon-addmenu) button{background-color:var(--mbu-bg-raised);color:var(--mbu-text);border-color:var(--mbu-border)}.mbu-compact .mbu-bt{display:none}:is(.mbu-video,body.tc-ri-on #external-links-editor tr.relationship-item .attribute-container input){-webkit-appearance:none;-moz-appearance:none;appearance:none;width:18px;height:18px;margin:0;border:none;border-radius:3px;cursor:pointer;background:transparent url("data:image/svg+xml,%3Csvg%20xmlns=%27http://www.w3.org/2000/svg%27%20viewBox=%270%200%2016%2016%27%20fill=%27%23888%27%3E%3Crect%20x=%271%27%20y=%273.5%27%20width=%2710%27%20height=%279%27%20rx=%271.5%27/%3E%3Cpath%20d=%27M11.5%207L15%204.8v6.4L11.5%209z%27/%3E%3C/svg%3E") center/13px no-repeat;opacity:.45;box-shadow:none;flex:0 0 auto;vertical-align:middle}:is(.mbu-video,body.tc-ri-on #external-links-editor tr.relationship-item .attribute-container input):hover{opacity:1}:is(.mbu-video,body.tc-ri-on #external-links-editor tr.relationship-item .attribute-container input):checked{opacity:1;background-color:var(--mbu-accent);background-image:url("data:image/svg+xml,%3Csvg%20xmlns=%27http://www.w3.org/2000/svg%27%20viewBox=%270%200%2016%2016%27%20fill=%27%23fff%27%3E%3Crect%20x=%271%27%20y=%273.5%27%20width=%2710%27%20height=%279%27%20rx=%271.5%27/%3E%3Cpath%20d=%27M11.5%207L15%204.8v6.4L11.5%209z%27/%3E%3C/svg%3E")}:is(.mbu-video,body.tc-ri-on #external-links-editor tr.relationship-item .attribute-container input):focus-visible{outline:1px solid var(--mbu-accent);outline-offset:1px}:is(.mbu-video,body.tc-ri-on #external-links-editor tr.relationship-item .attribute-container input):disabled{cursor:default;opacity:.3}
+.fc-root { position: fixed; z-index: 2147483000; display: flex; gap: 0; font: 13px/1.3 system-ui, sans-serif;
+  box-shadow: var(--mbu-shadow, 0 2px 10px rgba(0,0,0,.25)); border-radius: 8px; }
+.fc-root button { all: unset; box-sizing: border-box; cursor: pointer; display: inline-flex; align-items: center; gap: 6px;
+  padding: 8px 12px; background: var(--mbu-bg); color: var(--mbu-text); border: 1px solid var(--mbu-border); }
+.fc-root button:hover { background: var(--mbu-bg-hover); }
+.fc-root button:focus-visible { outline: 2px solid var(--mbu-accent); outline-offset: -2px; }
+.fc-root .fc-go { border-radius: 8px 0 0 8px; font-weight: 600; }
+.fc-root .fc-more { border-radius: 0 8px 8px 0; border-left: none; min-width: 30px; justify-content: center; padding: 8px 10px; }
+.fc-root .fc-go[aria-busy="true"] { cursor: progress; }
+/* majkinetor: "after the click nothing happens … make it obvious it works": a spinner while it reads */
+.fc-root .fc-go[aria-busy="true"]::after { content: ''; width: 14px; height: 14px; flex: 0 0 auto; box-sizing: border-box;
+  border: 2px solid var(--mbu-border); border-top-color: var(--mbu-accent-text); border-right-color: var(--mbu-accent-text); border-radius: 50%; animation: fc-spin .8s linear infinite; }
+@keyframes fc-spin { to { transform: rotate(360deg); } }
+.fc-root .fc-go[aria-busy="true"] span { font-variant-numeric: tabular-nums; }
+.fc-root { touch-action: none; animation: fc-fadein .4s ease; }
+/* fades in when it appears, as Mammoth's pins do */
+@keyframes fc-fadein { from { opacity: 0; } }
+.fc-root.fc-settling { opacity: 0 !important; pointer-events: none !important; }
+.fc-root.fc-fadein { transition: opacity .4s ease; }
+.fc-root.fc-dragging, .fc-root.fc-dragging button { cursor: grabbing; }
+/* the readable accent (as Log's): --mbu-accent alone is a deep purple that vanishes on the dark panel */
+#fc-panel .fc-reset { justify-self: start; color: var(--mbu-text-weak); }
+#fc-panel .fc-reset button { all: unset; cursor: pointer; color: var(--mbu-accent-text); text-decoration: underline; padding: 0 2px; }
+#fc-panel .fc-reset button:hover { color: var(--mbu-text); }
+#fc-panel .fc-reset button:focus-visible { outline: 2px solid var(--mbu-accent); outline-offset: 1px; }
+.fc-root.fc-iconly .fc-go span { display: none; }
+.fc-root.fc-iconly .fc-go[aria-busy="true"] span { display: inline; }   /* the progress still shows while it reads */
+/* ⚙︎ only on hover: a tab on the button's edge, above it (below when the button sits near the
+   top), so showing it never shifts Import out from under the pointer */
+.fc-root.fc-gear-hover .fc-go { border-radius: 8px; }
+.fc-root.fc-gear-hover .fc-more { position: absolute; right: 8px; bottom: 100%; min-width: 0; padding: 3px 8px;
+  border: 1px solid var(--mbu-border); border-bottom: none; border-radius: 8px 8px 0 0; visibility: hidden; }
+.fc-root.fc-gear-hover.fc-gear-below .fc-more { bottom: auto; top: 100%; border-bottom: 1px solid var(--mbu-border); border-top: none; border-radius: 0 0 8px 8px; }
+/* majkinetor: "settings on hover should kick in after a sec or so, so that on normal usage it doesn't
+   pop up when you click to import": the tab shows after the pointer has rested on the button for 1 s,
+   and hides at once. The keyboard (focus-visible, not the focus a click leaves) and open settings show it now.
+   Never while the button is being dragged (majkinetor: "do not show settings button while dragging"). */
+.fc-root.fc-gear-hover:not(.fc-dragging):hover .fc-more { visibility: visible; transition: visibility 0s linear 1s; }
+.fc-root.fc-gear-hover:not(.fc-dragging):has(:focus-visible) .fc-more, body:has(#fc-panel) .fc-root.fc-gear-hover:not(.fc-dragging) .fc-more { visibility: visible; transition: none; }
+#fc-panel { position: fixed; z-index: 2147483001; box-sizing: border-box; width: max-content; max-width: calc(100vw - 16px);
+  overflow: auto; overscroll-behavior: contain; background: var(--mbu-bg); color: var(--mbu-text);
+  border: 1px solid var(--mbu-border); border-radius: 8px; box-shadow: var(--mbu-shadow, 0 4px 18px rgba(0,0,0,.3));
+  font: 12px/1.3 system-ui, sans-serif; padding: 10px 12px; }
+#fc-panel .mbu-cfg-h { margin: 0 0 9px; padding: 0 0 8px; font-size: 13px; gap: 6px; }
+#fc-panel .mbu-cfg-ic, #fc-panel .mbu-cfg-ic svg { width: 18px; height: 18px; }
+#fc-panel .fc-body { display: grid; gap: 7px; }
+#fc-panel .fc-reset { margin-top: 2px; }
+/* the sections (Import, Archive, Button), headed as Platform Check's settings are */
+#fc-panel .fc-sec { font-weight: 700; color: var(--mbu-text); font-size: 11px; letter-spacing: .05em; text-transform: uppercase;
+  margin: 8px 0 0; padding-bottom: 3px; border-bottom: 1px solid var(--mbu-divider, var(--mbu-border-soft)); }
+#fc-panel .fc-sec:first-child { margin-top: 0; }
+/* the whole margin, not just the indent: qobuz.com gives every label an 8px bottom margin, which spread the rows apart */
+#fc-panel .fc-body > :not(.fc-sec) { margin: 0 0 0 8px; }
+#fc-panel .fc-pos { color: var(--mbu-text); margin-right: 14px; }
+#fc-panel label { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+#fc-panel label.fc-check { justify-content: flex-start; gap: 6px; cursor: pointer; }
+/* #659: the archive.org keys, under the archive checkbox; dimmed while archiving is off */
+#fc-panel .fc-body > .fc-ia { display: grid; grid-template-columns: 1fr 1fr; gap: 4px 6px; margin: -2px 0 0 27px; }
+#fc-panel .fc-ia.fc-off { opacity: .5; }
+/* no password-manager icon in the key fields: they opt out by attribute (LastPass, 1Password,
+   Bitwarden, Dashlane), and the secret is a text field masked in CSS, since type=password draws every manager in */
+#fc-panel .fc-ia .fc-ia-secret { -webkit-text-security: disc; }
+#fc-panel .fc-ia-h { grid-column: 1 / -1; color: var(--mbu-text-weak); }
+#fc-panel .fc-ia-h a { color: var(--mbu-accent-text); margin-left: 4px; }
+#fc-panel .fc-ia input { all: revert; box-sizing: border-box; width: 100%; min-width: 0; font: 12px var(--mbu-font-mono, monospace);
+  padding: 3px 6px; border: 1px solid var(--mbu-border); border-radius: 4px; background: var(--mbu-bg-sunken); color: var(--mbu-text); }
+/* the browser's own checkbox, whatever the site's sheet says: qobuz.com's sets appearance:none
+   in a rule only Firefox applies, and our checkboxes drew as nothing there (#650) */
+#fc-panel input[type=checkbox] { all: revert; margin: 0; accent-color: var(--mbu-accent); cursor: pointer; }
+/* native controls follow our theme, not the page's: qobuz.com declares color-scheme dark on a light page */
+.fc-root, #fc-panel { color-scheme: light; }
+:root[data-mbu-theme=dark] :is(.fc-root, #fc-panel) { color-scheme: dark; }
+/* appearance: qobuz.com sets none on every select, which dropped the server list's arrow */
+#fc-panel select { appearance: auto; font: inherit; color: inherit; background: var(--mbu-bg); border: 1px solid var(--mbu-border); border-radius: 4px; padding: 2px 4px; }
+/* #684: tracks the platform didn't give: asked before the editor opens */
+#fc-warn { position: fixed; right: 16px; bottom: 16px; z-index: 2147483002; box-sizing: border-box; max-width: min(380px, calc(100vw - 16px));
+  background: var(--mbu-bg); color: var(--mbu-text); border: 1px solid var(--mbu-warn); border-radius: 8px;
+  box-shadow: var(--mbu-shadow, 0 4px 18px rgba(0,0,0,.3)); font: 12.5px/1.4 system-ui, sans-serif; padding: 10px 12px; color-scheme: light; }
+:root[data-mbu-theme=dark] #fc-warn { color-scheme: dark; }
+#fc-warn .fc-warn-h { font-weight: 700; color: var(--mbu-warn); margin: 0 0 6px; }
+#fc-warn p { margin: 0 0 8px; }
+#fc-warn .fc-warn-b { display: flex; justify-content: flex-end; gap: 8px; margin-top: 10px; }
+#fc-warn button { all: revert; font: inherit; cursor: pointer; padding: 4px 12px; border-radius: 5px; border: 1px solid var(--mbu-border); background: var(--mbu-bg); color: var(--mbu-text); }
+#fc-warn button.fc-warn-go { background: var(--mbu-accent); border-color: var(--mbu-accent); color: #fff; }
+/* links (? Help, get them) in the readable accent: --mbu-accent is the deep purple that vanishes on the dark panel */
+#fc-panel a { color: var(--mbu-accent-text); }
+
+body { margin: 0; background: #121016; color: #e9e5f2; font: 14px/1.45 system-ui, sans-serif; padding: 24px 28px 40px; }
+h1 { font-size: 20px; margin: 0 0 4px; } h2 { font-size: 16px; margin: 0 0 4px; color: #cdbdf7; }
+.lead { color: #a9a3b8; margin: 0 0 22px; max-width: 980px; }
+.v { border: 1px solid #3b3548; border-radius: 10px; padding: 16px 18px 18px; margin: 0 0 18px; background: #18151d; }
+.v .why { color: #a9a3b8; margin: 0 0 14px; max-width: 980px; }
+.v .rec { display: inline-block; font-size: 11px; font-weight: 700; color: #1e1b24; background: #b9a7f0; border-radius: 4px; padding: 1px 6px; margin-left: 8px; vertical-align: 2px; }
+.row { display: flex; flex-wrap: wrap; gap: 22px 34px; align-items: flex-end; }
+.cell { display: flex; flex-direction: column; align-items: flex-end; gap: 6px; }
+.cap { font-size: 12px; color: #8f88a3; align-self: stretch; text-align: right; }
+.fc-root { position: relative !important; animation: none; }
+.fc-root .fc-harm { border-left: none; padding: 8px 9px; min-width: 0; justify-content: center; }
+.fc-root .fc-harm[aria-disabled=true] { opacity: .4; cursor: default; }
+.fc-root .fc-go.fc-split { border-radius: 8px 0 0 8px; }
+.fc-root .fc-caret { border-left: 1px solid var(--mbu-border); padding: 8px 8px; }
+.tip { background: #f4f2f9; color: #1e1b24; font-size: 12px; padding: 4px 8px; border-radius: 4px; max-width: 360px; box-shadow: 0 2px 8px rgba(0,0,0,.4); }
+.menu { background: var(--mbu-bg); border: 1px solid var(--mbu-border); border-radius: 8px; box-shadow: 0 4px 18px rgba(0,0,0,.4); padding: 4px; font-size: 13px; min-width: 260px; }
+.menu div { display: flex; align-items: center; gap: 8px; padding: 6px 10px; border-radius: 5px; }
+.menu div.hl { background: var(--mbu-bg-hover); }
+.menu small { color: var(--mbu-text-weak); margin-left: auto; padding-left: 12px; }
+.panel { position: static !important; }
+.panel .new { outline: 1px dashed #b9a7f0; outline-offset: 2px; border-radius: 3px; }
+table { border-collapse: collapse; font-size: 13px; margin-top: 4px; }
+td, th { border-bottom: 1px solid #2c2736; padding: 5px 14px 5px 0; text-align: left; vertical-align: top; }
+th { color: #8f88a3; font-weight: 600; } code { color: #d7ccf6; }
+</style></head><body>
+<h1>First Contact: Send to Harmony</h1>
+<p class="lead">Mockup for the Harmony option, drawn with First Contact's own button CSS (dark theme). The button sends the album to <b>Harmony</b> (<code>harmony.pulsewidth.org.uk/release?url=…</code>) instead of opening MusicBrainz's release editor. Harmony then looks up the other platforms by barcode, and Falcon carries on from there as it does now.</p>
+
+<div class="v"><h2>A. A Harmony button between Import and ⚙︎<span class="rec">recommended</span></h2>
+<p class="why">One click, always in view, and Import keeps working as it does now. The Harmony icon says where it goes. A setting can hide it. In <i>Icon only</i> mode it's the third square, and with <i>Settings button only on hover</i> the ⚙︎ tab still sits above it.</p>
+<div class="row">
+<div class="cell"><div class="tip">Send to Harmony: look this Spotify album up on Harmony, with every platform that has its barcode</div><div class="fc-root"><button class="fc-go"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="18" height="18" aria-hidden="true"><path d="M50 44 L78 44 L104 112 L24 112 Z" fill="#f6c431"/><ellipse cx="64" cy="114" rx="42" ry="8" fill="#1e2346" stroke="#c9cdf2" stroke-width="3"/><path d="M40 26 A24 18 0 0 1 88 26 Z" fill="#1e2346" stroke="#c9cdf2" stroke-width="3"/><ellipse cx="64" cy="32" rx="56" ry="13" fill="#1e2346" stroke="#c9cdf2" stroke-width="3"/><circle cx="38" cy="32" r="4.4" fill="#fff"/><circle cx="64" cy="34" r="4.4" fill="#fff"/><circle cx="90" cy="32" r="4.4" fill="#fff"/><path d="M64 58 L84 69.5 L84 92.5 L64 104 L44 92.5 L44 69.5 Z" fill="#7b4fd6"/><path d="M60 72 L74 69 L74 89 M60 72 L60 92" fill="none" stroke="#fff" stroke-width="3.4"/><ellipse cx="56" cy="92" rx="4.6" ry="3.6" fill="#fff"/><ellipse cx="70" cy="89" rx="4.6" ry="3.6" fill="#fff"/></svg><span>Import to MusicBrainz</span></button><button class="fc-harm" title="Send to Harmony"><svg id="Layer_1" data-name="Layer 1" xmlns="http://www.w3.org/2000/svg" width="18" height="18" aria-hidden="true" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 32 32">
+  <defs>
+    <style>
+      .h1-1 {
+        fill: url(#hg-1);
+      }
+
+      .h1-1, .h1-2 {
+        stroke-width: 0px;
+      }
+
+      .h1-2 {
+        fill: #c45555;
+      }
+    </style>
+    <linearGradient id="hg-1" x1="-7.71" y1="30.11" x2="45.71" y2="-.24" gradientUnits="userSpaceOnUse">
+      <stop offset=".29" stop-color="#ffb92c"/>
+      <stop offset="1" stop-color="#c45555"/>
+    </linearGradient>
+  </defs>
+  <path class="h1-1" d="M17.13,0l-6.27,3.6v6.56c.74-.3,1.53-.45,2.34-.45,3.47,0,6.29,2.82,6.29,6.29s-2.82,6.29-6.29,6.29c-.81,0-1.6-.15-2.34-.45v6.56l6.27,3.6,13.63-7.82V7.82L17.13,0Z"/>
+  <path class="h1-2" d="M13.2,11.7c-.85,0-1.65.25-2.32.68-.05,0-.1,0-.15,0-.39,0-.78-.08-1.1-.3-.48-.32-.69-1.03-.76-1.76V3.45L1.24,7.82v16.36l7.62,4.37v-6.88c.08-.73.29-1.44.76-1.76.33-.22.72-.3,1.1-.3.05,0,.11,0,.16,0,.67.43,1.46.68,2.31.68,2.37,0,4.29-1.92,4.29-4.29s-1.92-4.29-4.29-4.29Z"/>
+</svg>
+</button><button class="fc-more">⚙︎</button></div><span class="cap">Spotify: sends the album link at once</span></div>
+<div class="cell"><div class="fc-root"><button class="fc-go"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="18" height="18" aria-hidden="true"><path d="M50 44 L78 44 L104 112 L24 112 Z" fill="#f6c431"/><ellipse cx="64" cy="114" rx="42" ry="8" fill="#1e2346" stroke="#c9cdf2" stroke-width="3"/><path d="M40 26 A24 18 0 0 1 88 26 Z" fill="#1e2346" stroke="#c9cdf2" stroke-width="3"/><ellipse cx="64" cy="32" rx="56" ry="13" fill="#1e2346" stroke="#c9cdf2" stroke-width="3"/><circle cx="38" cy="32" r="4.4" fill="#fff"/><circle cx="64" cy="34" r="4.4" fill="#fff"/><circle cx="90" cy="32" r="4.4" fill="#fff"/><path d="M64 58 L84 69.5 L84 92.5 L64 104 L44 92.5 L44 69.5 Z" fill="#7b4fd6"/><path d="M60 72 L74 69 L74 89 M60 72 L60 92" fill="none" stroke="#fff" stroke-width="3.4"/><ellipse cx="56" cy="92" rx="4.6" ry="3.6" fill="#fff"/><ellipse cx="70" cy="89" rx="4.6" ry="3.6" fill="#fff"/></svg><span style="display:none">Import to MusicBrainz</span></button><button class="fc-harm" title="Send to Harmony"><svg id="Layer_1" data-name="Layer 1" xmlns="http://www.w3.org/2000/svg" width="18" height="18" aria-hidden="true" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 32 32">
+  <defs>
+    <style>
+      .h2-1 {
+        fill: url(#hg-2);
+      }
+
+      .h2-1, .h2-2 {
+        stroke-width: 0px;
+      }
+
+      .h2-2 {
+        fill: #c45555;
+      }
+    </style>
+    <linearGradient id="hg-2" x1="-7.71" y1="30.11" x2="45.71" y2="-.24" gradientUnits="userSpaceOnUse">
+      <stop offset=".29" stop-color="#ffb92c"/>
+      <stop offset="1" stop-color="#c45555"/>
+    </linearGradient>
+  </defs>
+  <path class="h2-1" d="M17.13,0l-6.27,3.6v6.56c.74-.3,1.53-.45,2.34-.45,3.47,0,6.29,2.82,6.29,6.29s-2.82,6.29-6.29,6.29c-.81,0-1.6-.15-2.34-.45v6.56l6.27,3.6,13.63-7.82V7.82L17.13,0Z"/>
+  <path class="h2-2" d="M13.2,11.7c-.85,0-1.65.25-2.32.68-.05,0-.1,0-.15,0-.39,0-.78-.08-1.1-.3-.48-.32-.69-1.03-.76-1.76V3.45L1.24,7.82v16.36l7.62,4.37v-6.88c.08-.73.29-1.44.76-1.76.33-.22.72-.3,1.1-.3.05,0,.11,0,.16,0,.67.43,1.46.68,2.31.68,2.37,0,4.29-1.92,4.29-4.29s-1.92-4.29-4.29-4.29Z"/>
+</svg>
+</button><button class="fc-more">⚙︎</button></div><span class="cap">Icon only</span></div>
+<div class="cell"><div class="tip">Send to Harmony: reads the barcode here first (Volumo isn’t a Harmony platform), then looks it up on Harmony</div><div class="fc-root"><button class="fc-go"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="18" height="18" aria-hidden="true"><path d="M50 44 L78 44 L104 112 L24 112 Z" fill="#f6c431"/><ellipse cx="64" cy="114" rx="42" ry="8" fill="#1e2346" stroke="#c9cdf2" stroke-width="3"/><path d="M40 26 A24 18 0 0 1 88 26 Z" fill="#1e2346" stroke="#c9cdf2" stroke-width="3"/><ellipse cx="64" cy="32" rx="56" ry="13" fill="#1e2346" stroke="#c9cdf2" stroke-width="3"/><circle cx="38" cy="32" r="4.4" fill="#fff"/><circle cx="64" cy="34" r="4.4" fill="#fff"/><circle cx="90" cy="32" r="4.4" fill="#fff"/><path d="M64 58 L84 69.5 L84 92.5 L64 104 L44 92.5 L44 69.5 Z" fill="#7b4fd6"/><path d="M60 72 L74 69 L74 89 M60 72 L60 92" fill="none" stroke="#fff" stroke-width="3.4"/><ellipse cx="56" cy="92" rx="4.6" ry="3.6" fill="#fff"/><ellipse cx="70" cy="89" rx="4.6" ry="3.6" fill="#fff"/></svg><span>Import to MusicBrainz</span></button><button class="fc-harm" title="Send to Harmony"><svg id="Layer_1" data-name="Layer 1" xmlns="http://www.w3.org/2000/svg" width="18" height="18" aria-hidden="true" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 32 32">
+  <defs>
+    <style>
+      .h3-1 {
+        fill: url(#hg-3);
+      }
+
+      .h3-1, .h3-2 {
+        stroke-width: 0px;
+      }
+
+      .h3-2 {
+        fill: #c45555;
+      }
+    </style>
+    <linearGradient id="hg-3" x1="-7.71" y1="30.11" x2="45.71" y2="-.24" gradientUnits="userSpaceOnUse">
+      <stop offset=".29" stop-color="#ffb92c"/>
+      <stop offset="1" stop-color="#c45555"/>
+    </linearGradient>
+  </defs>
+  <path class="h3-1" d="M17.13,0l-6.27,3.6v6.56c.74-.3,1.53-.45,2.34-.45,3.47,0,6.29,2.82,6.29,6.29s-2.82,6.29-6.29,6.29c-.81,0-1.6-.15-2.34-.45v6.56l6.27,3.6,13.63-7.82V7.82L17.13,0Z"/>
+  <path class="h3-2" d="M13.2,11.7c-.85,0-1.65.25-2.32.68-.05,0-.1,0-.15,0-.39,0-.78-.08-1.1-.3-.48-.32-.69-1.03-.76-1.76V3.45L1.24,7.82v16.36l7.62,4.37v-6.88c.08-.73.29-1.44.76-1.76.33-.22.72-.3,1.1-.3.05,0,.11,0,.16,0,.67.43,1.46.68,2.31.68,2.37,0,4.29-1.92,4.29-4.29s-1.92-4.29-4.29-4.29Z"/>
+</svg>
+</button><button class="fc-more">⚙︎</button></div><span class="cap">Volumo: reads the barcode, then sends it</span></div>
+<div class="cell"><div class="tip">Harmony can’t look up YouTube Music, and YouTube Music shows no barcode</div><div class="fc-root"><button class="fc-go"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="18" height="18" aria-hidden="true"><path d="M50 44 L78 44 L104 112 L24 112 Z" fill="#f6c431"/><ellipse cx="64" cy="114" rx="42" ry="8" fill="#1e2346" stroke="#c9cdf2" stroke-width="3"/><path d="M40 26 A24 18 0 0 1 88 26 Z" fill="#1e2346" stroke="#c9cdf2" stroke-width="3"/><ellipse cx="64" cy="32" rx="56" ry="13" fill="#1e2346" stroke="#c9cdf2" stroke-width="3"/><circle cx="38" cy="32" r="4.4" fill="#fff"/><circle cx="64" cy="34" r="4.4" fill="#fff"/><circle cx="90" cy="32" r="4.4" fill="#fff"/><path d="M64 58 L84 69.5 L84 92.5 L64 104 L44 92.5 L44 69.5 Z" fill="#7b4fd6"/><path d="M60 72 L74 69 L74 89 M60 72 L60 92" fill="none" stroke="#fff" stroke-width="3.4"/><ellipse cx="56" cy="92" rx="4.6" ry="3.6" fill="#fff"/><ellipse cx="70" cy="89" rx="4.6" ry="3.6" fill="#fff"/></svg><span>Import to MusicBrainz</span></button><button class="fc-harm" aria-disabled="true" title="Send to Harmony"><svg id="Layer_1" data-name="Layer 1" xmlns="http://www.w3.org/2000/svg" width="18" height="18" aria-hidden="true" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 32 32">
+  <defs>
+    <style>
+      .h4-1 {
+        fill: url(#hg-4);
+      }
+
+      .h4-1, .h4-2 {
+        stroke-width: 0px;
+      }
+
+      .h4-2 {
+        fill: #c45555;
+      }
+    </style>
+    <linearGradient id="hg-4" x1="-7.71" y1="30.11" x2="45.71" y2="-.24" gradientUnits="userSpaceOnUse">
+      <stop offset=".29" stop-color="#ffb92c"/>
+      <stop offset="1" stop-color="#c45555"/>
+    </linearGradient>
+  </defs>
+  <path class="h4-1" d="M17.13,0l-6.27,3.6v6.56c.74-.3,1.53-.45,2.34-.45,3.47,0,6.29,2.82,6.29,6.29s-2.82,6.29-6.29,6.29c-.81,0-1.6-.15-2.34-.45v6.56l6.27,3.6,13.63-7.82V7.82L17.13,0Z"/>
+  <path class="h4-2" d="M13.2,11.7c-.85,0-1.65.25-2.32.68-.05,0-.1,0-.15,0-.39,0-.78-.08-1.1-.3-.48-.32-.69-1.03-.76-1.76V3.45L1.24,7.82v16.36l7.62,4.37v-6.88c.08-.73.29-1.44.76-1.76.33-.22.72-.3,1.1-.3.05,0,.11,0,.16,0,.67.43,1.46.68,2.31.68,2.37,0,4.29-1.92,4.29-4.29s-1.92-4.29-4.29-4.29Z"/>
+</svg>
+</button><button class="fc-more">⚙︎</button></div><span class="cap">YouTube Music: nothing to send</span></div>
+</div>
+<div class="row" style="margin-top:18px"><div id="fc-panel" class="panel"><div class="mbu-cfg-h"><span class="mbu-cfg-ic"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="18" height="18" aria-hidden="true"><path d="M50 44 L78 44 L104 112 L24 112 Z" fill="#f6c431"/><ellipse cx="64" cy="114" rx="42" ry="8" fill="#1e2346" stroke="#c9cdf2" stroke-width="3"/><path d="M40 26 A24 18 0 0 1 88 26 Z" fill="#1e2346" stroke="#c9cdf2" stroke-width="3"/><ellipse cx="64" cy="32" rx="56" ry="13" fill="#1e2346" stroke="#c9cdf2" stroke-width="3"/><circle cx="38" cy="32" r="4.4" fill="#fff"/><circle cx="64" cy="34" r="4.4" fill="#fff"/><circle cx="90" cy="32" r="4.4" fill="#fff"/><path d="M64 58 L84 69.5 L84 92.5 L64 104 L44 92.5 L44 69.5 Z" fill="#7b4fd6"/><path d="M60 72 L74 69 L74 89 M60 72 L60 92" fill="none" stroke="#fff" stroke-width="3.4"/><ellipse cx="56" cy="92" rx="4.6" ry="3.6" fill="#fff"/><ellipse cx="70" cy="89" rx="4.6" ry="3.6" fill="#fff"/></svg></span><span class="mbu-cfg-name">First Contact</span><span class="mbu-cfg-ver">v2026.10.8</span><span class="mbu-cfg-sp"></span><button class="mbu-cfg-log">Log</button><a class="mbu-help">? Help</a></div>
+<div class="fc-body"><div class="fc-sec">Import</div>
+<label>MusicBrainz server <select><option>musicbrainz.org</option></select></label>
+<label class="fc-check"><input type="checkbox" checked> Annotation from Spotify's notes</label>
+<label class="fc-check"><input type="checkbox"> Close this page after the import</label>
+<label class="fc-check new"><input type="checkbox" checked> Send to Harmony button</label>
+<div class="fc-sec">Archive</div>
+<label class="fc-check"><input type="checkbox" checked> Archive the album page on the Internet Archive</label>
+<div class="fc-sec">Button</div>
+<label class="fc-check"><input type="checkbox"> Icon only</label>
+<label class="fc-check"><input type="checkbox"> Settings button only on hover</label></div></div></div></div>
+
+<div class="v"><h2>B. A ▾ menu on Import</h2>
+<p class="why">The button stays the same width, and the menu has room for more destinations later, but it takes two clicks.</p>
+<div class="row"><div class="cell"><div class="menu"><div class="hl"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="18" height="18" aria-hidden="true"><path d="M50 44 L78 44 L104 112 L24 112 Z" fill="#f6c431"/><ellipse cx="64" cy="114" rx="42" ry="8" fill="#1e2346" stroke="#c9cdf2" stroke-width="3"/><path d="M40 26 A24 18 0 0 1 88 26 Z" fill="#1e2346" stroke="#c9cdf2" stroke-width="3"/><ellipse cx="64" cy="32" rx="56" ry="13" fill="#1e2346" stroke="#c9cdf2" stroke-width="3"/><circle cx="38" cy="32" r="4.4" fill="#fff"/><circle cx="64" cy="34" r="4.4" fill="#fff"/><circle cx="90" cy="32" r="4.4" fill="#fff"/><path d="M64 58 L84 69.5 L84 92.5 L64 104 L44 92.5 L44 69.5 Z" fill="#7b4fd6"/><path d="M60 72 L74 69 L74 89 M60 72 L60 92" fill="none" stroke="#fff" stroke-width="3.4"/><ellipse cx="56" cy="92" rx="4.6" ry="3.6" fill="#fff"/><ellipse cx="70" cy="89" rx="4.6" ry="3.6" fill="#fff"/></svg> Import to MusicBrainz</div><div><svg id="Layer_1" data-name="Layer 1" xmlns="http://www.w3.org/2000/svg" width="18" height="18" aria-hidden="true" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 32 32">
+  <defs>
+    <style>
+      .h5-1 {
+        fill: url(#hg-5);
+      }
+
+      .h5-1, .h5-2 {
+        stroke-width: 0px;
+      }
+
+      .h5-2 {
+        fill: #c45555;
+      }
+    </style>
+    <linearGradient id="hg-5" x1="-7.71" y1="30.11" x2="45.71" y2="-.24" gradientUnits="userSpaceOnUse">
+      <stop offset=".29" stop-color="#ffb92c"/>
+      <stop offset="1" stop-color="#c45555"/>
+    </linearGradient>
+  </defs>
+  <path class="h5-1" d="M17.13,0l-6.27,3.6v6.56c.74-.3,1.53-.45,2.34-.45,3.47,0,6.29,2.82,6.29,6.29s-2.82,6.29-6.29,6.29c-.81,0-1.6-.15-2.34-.45v6.56l6.27,3.6,13.63-7.82V7.82L17.13,0Z"/>
+  <path class="h5-2" d="M13.2,11.7c-.85,0-1.65.25-2.32.68-.05,0-.1,0-.15,0-.39,0-.78-.08-1.1-.3-.48-.32-.69-1.03-.76-1.76V3.45L1.24,7.82v16.36l7.62,4.37v-6.88c.08-.73.29-1.44.76-1.76.33-.22.72-.3,1.1-.3.05,0,.11,0,.16,0,.67.43,1.46.68,2.31.68,2.37,0,4.29-1.92,4.29-4.29s-1.92-4.29-4.29-4.29Z"/>
+</svg>
+ Send to Harmony <small>looks up every platform</small></div></div>
+<div class="fc-root"><button class="fc-go fc-split"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="18" height="18" aria-hidden="true"><path d="M50 44 L78 44 L104 112 L24 112 Z" fill="#f6c431"/><ellipse cx="64" cy="114" rx="42" ry="8" fill="#1e2346" stroke="#c9cdf2" stroke-width="3"/><path d="M40 26 A24 18 0 0 1 88 26 Z" fill="#1e2346" stroke="#c9cdf2" stroke-width="3"/><ellipse cx="64" cy="32" rx="56" ry="13" fill="#1e2346" stroke="#c9cdf2" stroke-width="3"/><circle cx="38" cy="32" r="4.4" fill="#fff"/><circle cx="64" cy="34" r="4.4" fill="#fff"/><circle cx="90" cy="32" r="4.4" fill="#fff"/><path d="M64 58 L84 69.5 L84 92.5 L64 104 L44 92.5 L44 69.5 Z" fill="#7b4fd6"/><path d="M60 72 L74 69 L74 89 M60 72 L60 92" fill="none" stroke="#fff" stroke-width="3.4"/><ellipse cx="56" cy="92" rx="4.6" ry="3.6" fill="#fff"/><ellipse cx="70" cy="89" rx="4.6" ry="3.6" fill="#fff"/></svg><span>Import to MusicBrainz</span></button><button class="fc-caret">▾</button><button class="fc-more">⚙︎</button></div><span class="cap">▾ opens the menu</span></div></div></div>
+
+<div class="v"><h2>C. A setting picks where Import goes</h2>
+<p class="why">⚙︎ → <i>Import to: MusicBrainz / Harmony</i>, and the one button does that. Good if you always go through Harmony, but then the direct import is a settings change away.</p>
+<div class="row"><div class="cell"><div class="fc-root"><button class="fc-go"><svg id="Layer_1" data-name="Layer 1" xmlns="http://www.w3.org/2000/svg" width="18" height="18" aria-hidden="true" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 32 32">
+  <defs>
+    <style>
+      .h6-1 {
+        fill: url(#hg-6);
+      }
+
+      .h6-1, .h6-2 {
+        stroke-width: 0px;
+      }
+
+      .h6-2 {
+        fill: #c45555;
+      }
+    </style>
+    <linearGradient id="hg-6" x1="-7.71" y1="30.11" x2="45.71" y2="-.24" gradientUnits="userSpaceOnUse">
+      <stop offset=".29" stop-color="#ffb92c"/>
+      <stop offset="1" stop-color="#c45555"/>
+    </linearGradient>
+  </defs>
+  <path class="h6-1" d="M17.13,0l-6.27,3.6v6.56c.74-.3,1.53-.45,2.34-.45,3.47,0,6.29,2.82,6.29,6.29s-2.82,6.29-6.29,6.29c-.81,0-1.6-.15-2.34-.45v6.56l6.27,3.6,13.63-7.82V7.82L17.13,0Z"/>
+  <path class="h6-2" d="M13.2,11.7c-.85,0-1.65.25-2.32.68-.05,0-.1,0-.15,0-.39,0-.78-.08-1.1-.3-.48-.32-.69-1.03-.76-1.76V3.45L1.24,7.82v16.36l7.62,4.37v-6.88c.08-.73.29-1.44.76-1.76.33-.22.72-.3,1.1-.3.05,0,.11,0,.16,0,.67.43,1.46.68,2.31.68,2.37,0,4.29-1.92,4.29-4.29s-1.92-4.29-4.29-4.29Z"/>
+</svg>
+<span>Import via Harmony</span></button><button class="fc-more">⚙︎</button></div><span class="cap">Import to: Harmony</span></div></div></div>
+
+<div class="v"><h2>What gets sent</h2>
+<table><tr><th>Platform</th><th>Harmony knows it</th><th>Sent</th></tr>
+<tr><td>Deezer, Apple Music, Spotify, Tidal, Qobuz, Bandcamp, Beatport, Discogs, Ototoy</td><td>yes</td><td>the album link at once (Apple's country store as the region)</td></tr>
+<tr><td>Volumo, HDtracks, SoundCloud (label sets), Audiomack, 7digital</td><td>no</td><td>the barcode, read from the page first (the button counts tracks while it reads)</td></tr>
+<tr><td>YouTube Music, Amazon Music, a SoundCloud set without a barcode</td><td>no</td><td>nothing: the button is greyed out and says why</td></tr></table></div>
+</body></html>
