@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+<title>Falcon — Top down</title>
+<rect x="4" y="4" width="120" height="120" rx="20" fill="#3a3f47"/><path d="M64 4 V124" stroke="#f6efe2" stroke-width="3" stroke-dasharray="10 8"/><g transform="translate(36 0)"><rect x="-18" y="18" width="36" height="92" rx="12" fill="#d62828"/><rect x="-21" y="28" width="4" height="16" rx="2" fill="#16181d"/><rect x="17" y="28" width="4" height="16" rx="2" fill="#16181d"/><rect x="-21" y="84" width="4" height="16" rx="2" fill="#16181d"/><rect x="17" y="84" width="4" height="16" rx="2" fill="#16181d"/>
+<path d="M-14 46 H14 L11 56 H-11Z" fill="#2a2f38"/><path d="M-12 82 H12 L10 76 H-10Z" fill="#2a2f38"/><rect x="-6" y="18" width="4" height="92" fill="#f6efe2"/><rect x="2" y="18" width="4" height="92" fill="#f6efe2"/><rect x="-14" y="18" width="7" height="4" fill="#ffe9a3"/><rect x="7" y="18" width="7" height="4" fill="#ffe9a3"/></g>
+<g transform="translate(94 40)"><rect x="-12" y="0" width="24" height="60" rx="8" fill="#5d6b7a" opacity=".55"/></g>
+</svg>

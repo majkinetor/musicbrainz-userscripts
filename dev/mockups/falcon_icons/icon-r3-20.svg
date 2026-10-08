@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+<title>Falcon — Wheel</title>
+<circle cx="64" cy="64" r="54" fill="none" stroke="#16181d" stroke-width="11"/><circle cx="64" cy="64" r="54" fill="none" stroke="#3a3f47" stroke-width="2"/><path d="M14 58 C34 54 48 56 52 62 M114 58 C94 54 80 56 76 62 M64 80 V116" stroke="#d9dde4" stroke-width="9" stroke-linecap="round" fill="none"/>
+<circle cx="64" cy="66" r="20" fill="#16181d" stroke="#d9dde4" stroke-width="3"/><g transform="translate(64 66) rotate(0) scale(0.27) translate(-64 -64)"><path d="M64 26 C67 26 70 30 70 36 C72 40 74 42 76 44 C92 42 108 36 124 34 C112 44 96 54 78 62 C76 68 74 74 74 80 L80 100 C74 104 68 104 64 104 Z" fill="#f5c518"/><path d="M64 26 C67 26 70 30 70 36 C72 40 74 42 76 44 C92 42 108 36 124 34 C112 44 96 54 78 62 C76 68 74 74 74 80 L80 100 C74 104 68 104 64 104 Z" fill="#f5c518" transform="translate(128 0) scale(-1 1)"/></g>
+</svg>

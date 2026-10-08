@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+<title>Falcon — Toy</title>
+<path d="M14 88 C10 70 20 62 36 60 L44 42 C46 38 50 36 56 36 H76 C82 36 86 38 88 42 L96 60 C112 62 120 70 114 88Z" fill="#ff6a00"/><path d="M48 58 L54 44 H64 V58Z M70 44 H76 C79 44 81 46 82 48 L86 58 H70Z" fill="#bfe3f2"/><circle cx="104" cy="72" r="5" fill="#ffe9a3"/>
+<circle cx="38" cy="90" r="17" fill="#16181d"/><circle cx="38" cy="90" r="8" fill="#d9dde4"/><circle cx="92" cy="90" r="17" fill="#16181d"/><circle cx="92" cy="90" r="8" fill="#d9dde4"/><path d="M44 30 C50 22 60 20 66 24" stroke="#ff6a00" stroke-width="3" fill="none" stroke-linecap="round" opacity=".5"/>
+</svg>
