@@ -1,0 +1,4 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+<title>Falcon — Geometric</title>
+<circle cx="58" cy="62" r="46" fill="#1b2a4a"/><path d="M58 62 A46 46 0 0 1 22 90 L58 108Z" fill="#f6efe2"/><path d="M70 108 L104 72 L104 108Z" fill="#f6efe2"/><path d="M100 40 L124 58 L104 70Z" fill="#f5c518"/><path d="M110 56 L124 58 L116 68Z" fill="#5b6b80"/><circle cx="78" cy="46" r="10" fill="#f5c518"/><circle cx="78" cy="46" r="6" fill="#0d0d0d"/>
+</svg>

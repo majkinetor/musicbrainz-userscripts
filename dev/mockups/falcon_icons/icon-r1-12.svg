@@ -1,0 +1,4 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+<title>Falcon — Horus</title>
+<rect x="4" y="4" width="120" height="120" rx="26" fill="#1d3b8a"/><g fill="none" stroke="#f5c518" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"><path d="M16 34 C40 26 80 26 112 32"/><path d="M14 56 C34 40 76 40 106 54 L118 54"/><path d="M14 56 C34 70 76 72 106 54"/><path d="M58 70 V104"/><path d="M76 70 C80 86 92 98 102 96 C110 94 110 84 102 82 C96 82 94 88 98 92"/></g><circle cx="60" cy="54" r="11" fill="#f5c518"/>
+</svg>

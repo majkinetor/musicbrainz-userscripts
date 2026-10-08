@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+<title>Falcon — Peregrine</title>
+<path d="M34 118 C26 86 28 54 46 37 C60 24 82 22 96 31 C100 34 102 38 103 41 C111 42 118 50 118 61 L113 66 C112 61 108 58 103 59 C100 66 94 73 86 77 C79 83 75 98 79 118 Z" fill="#1b2a4a"/><path d="M101 61 C98 68 93 73 86 77 C79 83 75 98 79 118 L60 118 C58 100 62 88 70 80 C78 72 86 66 92 62 Z" fill="#f6efe2"/><ellipse cx="50" cy="84" rx="10" ry="15" fill="#f6efe2" transform="rotate(-12 50 84)"/>
+<path d="M101 40 C111 41 118 50 118 61 L113 66 C112 61 108 58 102 59 Z" fill="#5b6b80"/><path d="M98 37 C103 37 106 41 105 46 C103 50 99 50 97 46Z" fill="#f5c518"/><circle cx="82" cy="47" r="8.5" fill="#f5c518"/><circle cx="82" cy="47" r="5.8" fill="#0d0d0d"/><circle cx="84.2" cy="44.8" r="1.8" fill="#fff"/>
+</svg>

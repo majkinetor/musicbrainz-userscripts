@@ -1,0 +1,4 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+<title>Falcon — Sunset badge</title>
+<defs><linearGradient id="fa15-s" x1="0" y1="0" x2="0" y2="1"><stop offset="0.00" stop-color="#ffcf6b"/><stop offset="0.50" stop-color="#ff6a00"/><stop offset="1.00" stop-color="#b5122b"/></linearGradient><clipPath id="fa15-c"><circle cx="64" cy="64" r="58"/></clipPath></defs><circle cx="64" cy="64" r="58" fill="url(#fa15-s)"/><g clip-path="url(#fa15-c)"><g transform="translate(60 76) rotate(0) scale(1.05) translate(-64 -64)"><path d="M34 118 C26 86 28 54 46 37 C60 24 82 22 96 31 C100 34 102 38 103 41 C111 42 118 50 118 61 L113 66 C112 61 108 58 103 59 C100 66 94 73 86 77 C79 83 75 98 79 118 Z" fill="#1b2a4a"/><circle cx="82" cy="47" r="6" fill="#ffcf6b"/></g></g>
+</svg>

@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+<title>Falcon — Hood</title>
+<path d="M64 30 C58 18 50 12 44 12 C52 18 56 24 58 30Z M64 30 C64 16 68 8 74 4 C72 14 70 22 68 30Z M66 30 C72 20 80 16 88 16 C80 22 74 26 70 31Z" fill="#ff6a00"/>
+<path d="M26 104 C20 64 36 32 64 30 C92 30 108 54 104 78 L114 96 C104 100 92 98 86 92 L84 104 Z" fill="#8a4b22"/><path d="M26 104 C22 80 26 60 36 48 C40 62 44 80 44 104Z" fill="#6b3818"/>
+<path d="M30 92 C50 86 70 86 86 92" fill="none" stroke="#f5c518" stroke-width="5"/><circle cx="64" cy="31" r="5" fill="#f5c518"/><g stroke="#c98a5a" stroke-width="2" stroke-dasharray="3 3" fill="none"><path d="M52 40 C70 36 88 46 96 66"/></g><ellipse cx="80" cy="58" rx="9" ry="6" fill="#6b3818"/>
+</svg>
