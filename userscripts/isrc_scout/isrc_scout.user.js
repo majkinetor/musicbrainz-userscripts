@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         ISRC Scout
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.8.114600
+// @version      2026.10.8.115500
 // @description  Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify / Beatport / Tidal / Volumo / HDtracks / Qobuz, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPklTUkMgU2NvdXQ8L3RpdGxlPgogICAgPHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPgogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjQwIi8+CiAgICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyNiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2U9IiNiOWEzZTgiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPgogIDwvZz4KICA8bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+Cjwvc3ZnPgo=
@@ -4717,8 +4717,9 @@
     // The songs of an album playlist as YouTube's own client lists it (#690): the album's own
     // tracks, each { vid, title, artist, len, type: 'ATV' }. A video hidden in this region is
     // left out by YouTube (positions then shift; the title match catches it). Unlike YouTube
-    // Music, this client lists a song a free listener can't play (Premium only) with its video,
-    // flagged unplayable (rinsuki); such a song is left out.
+    // Music, this client lists a song a free listener can't play with its video, flagged
+    // unplayable (rinsuki); such a song is left out. It may be Premium only or not available at
+    // all, which only the watch page or a Premium login tells apart; either way it is no free stream.
     function ytPlaylistSongs(j) {
       const out = [];
       const walk = o => {
@@ -4793,11 +4794,12 @@
           const pl = await ytWebPlaylist(list);
           if (pl && pl.tracks.length) {
             let tracks = pl.tracks;
-            // a song the album page has no video for is Premium only — unless the page didn't list them all
+            // a song the album page has no video for a free listener can't play (Premium only, or not
+            // available at all) — unless the page didn't list them all
             if (page && page.tracks.length && page.rows >= tracks.length) {
               const out = tracks.filter(s => !page.tracks.some(p => ytSame(p.title, s.title)));
-              if (out.length) { Log.info('YouTube Music album: ' + out.map(s => '"' + s.title + '"').join(', ') + ' not playable without Premium — left out'); tracks = tracks.filter(s => !out.includes(s)); }
-            } else if (!page) Log.info('YouTube Music: no album page for the playlist ' + list + ' — its songs aren\'t checked for Premium-only or music videos');
+              if (out.length) { Log.info('YouTube Music album: ' + out.map(s => '"' + s.title + '"').join(', ') + ' not playable for a free listener (Premium only, or not available) — left out'); tracks = tracks.filter(s => !out.includes(s)); }
+            } else if (!page) Log.info('YouTube Music: no album page for the playlist ' + list + ' — its songs aren\'t checked for being playable for a free listener');
             Log.info('YouTube Music album "' + (pl.name || (page && page.name)) + '" (' + list + '): ' + tracks.length + ' song(s), from the release\'s link');
             return { id: list, name: pl.name || (page && page.name), url: 'https://www.youtube.com/playlist?list=' + list, tracks };
           }

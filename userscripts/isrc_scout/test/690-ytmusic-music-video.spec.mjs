@@ -4,7 +4,7 @@
 // playlist, as YouTube's own client (WEB) lists it, holds only the album's tracks; the album
 // page is the fallback, and there only official audio (ATV) counts. Following rinsuki: a link
 // to the album's other playlist (music videos in) goes to the album's own, a long playlist is
-// read page by page, and a song only Premium plays is left out.
+// read page by page, and a song a free listener can't play (Premium only, or not available) is left out.
 //
 // test.musicbrainz.org, read-only. YouTube's answers are faked: the release's first track
 // has a music video on the album page, every track its own audio in the playlist.
@@ -55,7 +55,7 @@ const playlist = (tracks, opt) => ({
 });
 const nextPage = (tracks, opt) => ({ onResponseReceivedActions: [{ appendContinuationItemsAction: { continuationItems: rows(tracks, opt) } }] });
 
-// pageSize: songs per playlist page; premium: tracks only Premium plays (no video on the album
+// pageSize: songs per playlist page; premium: tracks a free listener can't play (no video on the album
 // page, playable in the playlist); unplayable: tracks the playlist flags unplayable
 async function run(page, context, inject, { link, web = 200, pageSize = 0, premium = [], unplayable = [] }) {
   const tracks = [];
@@ -132,10 +132,10 @@ test('#690: a long playlist is read page by page', { tag: ['@sandbox'] }, async 
   check(calls.web[0] === 'VL' + LIST && calls.web.slice(1, 3).join() === 'page1,page2', `the next pages follow the first (${calls.web.join(', ')})`);
 });
 
-test('#690: a song only Premium plays gets no link', { tag: ['@sandbox'] }, async ({ page, context, inject }) => {
+test('#690: a song a free listener can\'t play gets no link', { tag: ['@sandbox'] }, async ({ page, context, inject }) => {
   const { urls, log } = await run(page, context, inject, { link: 'https://music.youtube.com/playlist?list=' + LIST, premium: [1], unplayable: [2] });
   check(urls[0] === 'https://music.youtube.com/watch?v=' + vid('aud', 0), `track 1 still resolves (${urls[0]})`);
   check(urls[1] === null, `track 2, without a video on the album page, gets no link (${urls[1]})`);
   check(urls[2] === null, `track 3, unplayable in the playlist, gets no link (${urls[2]})`);
-  check(log.some(l => /not playable without Premium — left out/.test(l)), 'the log names the Premium-only song');
+  check(log.some(l => /not playable for a free listener \(Premium only, or not available\) — left out/.test(l)), 'the log names the song a free listener can\'t play');
 });
