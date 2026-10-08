@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+<title>Mission Control — Mission patch</title>
+<defs><filter id="mc08-h" x="-10%" y="-10%" width="120%" height="120%"><feMorphology in="SourceAlpha" operator="dilate" radius="1.5" result="d"/><feFlood flood-color="#fff" flood-opacity=".7"/><feComposite in2="d" operator="in"/><feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs><g filter="url(#mc08-h)"><ellipse cx="64" cy="64" rx="48" ry="58" fill="#22223b" stroke="#ffc94a" stroke-width="6"/><ellipse cx="64" cy="64" rx="38" ry="48" fill="#7a57e8"/>
+<path d="M28 82 Q64 40 104 50" fill="none" stroke="#f3722c" stroke-width="6" stroke-linecap="round"/><path d="M64 34 L70 50 L87 50 L73 60 L78 76 L64 66 L50 76 L55 60 L41 50 L58 50Z" fill="#ffc94a"/>
+<g fill="#fff"><circle cx="40" cy="44" r="2.5"/><circle cx="88" cy="80" r="2.5"/><circle cx="56" cy="92" r="2"/></g></g>
+</svg>

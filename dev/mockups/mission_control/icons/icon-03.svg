@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+<title>Mission Control — Launch button</title>
+<defs><filter id="mc03-h" x="-10%" y="-10%" width="120%" height="120%"><feMorphology in="SourceAlpha" operator="dilate" radius="1.5" result="d"/><feFlood flood-color="#fff" flood-opacity=".7"/><feComposite in2="d" operator="in"/><feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs><g filter="url(#mc03-h)"><defs><pattern id="mc03-s" width="12" height="12" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="12" height="12" fill="#ffc94a"/><rect width="6" height="12" fill="#22223b"/></pattern></defs>
+<path d="M10 84 V96 A54 16 0 0 0 118 96 V84Z" fill="url(#mc03-s)"/><ellipse cx="64" cy="84" rx="54" ry="16" fill="#22223b"/>
+<path d="M30 80 V60 A34 13 0 0 1 98 60 V80 A34 13 0 0 1 30 80Z" fill="#b51d2a"/><ellipse cx="64" cy="58" rx="34" ry="13" fill="#e63946"/><ellipse cx="54" cy="54" rx="12" ry="4" fill="#fff" opacity=".45"/></g>
+</svg>

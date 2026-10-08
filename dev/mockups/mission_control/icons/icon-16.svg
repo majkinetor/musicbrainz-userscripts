@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+<title>Mission Control — In order</title>
+<defs><filter id="mc16-h" x="-10%" y="-10%" width="120%" height="120%"><feMorphology in="SourceAlpha" operator="dilate" radius="1.5" result="d"/><feFlood flood-color="#fff" flood-opacity=".7"/><feComposite in2="d" operator="in"/><feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs><g filter="url(#mc16-h)"><path d="M30 96 C40 70 52 70 60 62 M68 58 C80 46 88 42 96 34" fill="none" stroke="#22223b" stroke-width="4" stroke-dasharray="5 6" stroke-linecap="round"/>
+<circle cx="24" cy="102" r="17" fill="#f3722c" stroke="#22223b" stroke-width="4"/><text x="24" y="111" text-anchor="middle" font-family="Arial Black,Helvetica,sans-serif" font-weight="900" font-size="24" fill="#22223b">1</text><circle cx="64" cy="62" r="17" fill="#ffc94a" stroke="#22223b" stroke-width="4"/><text x="64" y="71" text-anchor="middle" font-family="Arial Black,Helvetica,sans-serif" font-weight="900" font-size="24" fill="#22223b">2</text>
+<circle cx="102" cy="26" r="20" fill="#2ea44f" stroke="#22223b" stroke-width="4"/><path d="M92 26 L99 33 L112 19" fill="none" stroke="#fff" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round"/></g>
+</svg>

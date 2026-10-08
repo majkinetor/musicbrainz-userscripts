@@ -1,0 +1,4 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+<title>Mission Control — Approved</title>
+<defs><filter id="mc11-h" x="-10%" y="-10%" width="120%" height="120%"><feMorphology in="SourceAlpha" operator="dilate" radius="1.5" result="d"/><feFlood flood-color="#fff" flood-opacity=".7"/><feComposite in2="d" operator="in"/><feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs><g filter="url(#mc11-h)"><rect x="12" y="18" width="104" height="92" rx="14" fill="#7a57e8"/><rect x="20" y="36" width="88" height="66" rx="6" fill="#fff"/><g fill="#fff"><circle cx="26" cy="27" r="3.5"/><circle cx="37" cy="27" r="3.5"/><circle cx="48" cy="27" r="3.5"/></g><path d="M42 70 L57.4 85.4 L86 54.6" fill="none" stroke="#2ea44f" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/></g>
+</svg>
