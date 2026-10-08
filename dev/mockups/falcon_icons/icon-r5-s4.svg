@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+<title>Falcon — Half gauge</title>
+<path d="M8 92 A56 56 0 0 1 120 92Z" fill="#1b2a4a"/><path d="M16.0 92.0 A48 48 0 0 1 88.0 50.4" stroke="#4a5a78" stroke-width="9" fill="none"/><path d="M88.0 50.4 A48 48 0 0 1 112.0 92.0" stroke="#ff6a00" stroke-width="9" fill="none"/>
+<g transform="translate(64 92) rotate(55)"><path d="M0 -44 L4 0 L-4 0Z" fill="#f6efe2"/></g><circle cx="64" cy="92" r="9" fill="#f6efe2"/><g transform="translate(64 92) rotate(0) scale(0.1) translate(-64 -64)"><path d="M64 26 C67 26 70 30 70 36 C72 40 74 42 76 44 C92 42 108 36 124 34 C112 44 96 54 78 62 C76 68 74 74 74 80 L80 100 C74 104 68 104 64 104 Z" fill="#1b2a4a"/><path d="M64 26 C67 26 70 30 70 36 C72 40 74 42 76 44 C92 42 108 36 124 34 C112 44 96 54 78 62 C76 68 74 74 74 80 L80 100 C74 104 68 104 64 104 Z" fill="#1b2a4a" transform="translate(128 0) scale(-1 1)"/></g><rect x="8" y="92" width="112" height="6" rx="3" fill="#1b2a4a"/>
+</svg>
