@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+<title>Apollo Editor — Gold line</title>
+
+<path d="M64 10 C82 28 90 56 90 80 L38 80 C38 56 46 28 64 10 Z" fill="none"/><path d="M38 80 L20 110 L40 96 Z" fill="none"/><path d="M90 80 L108 110 L88 96 Z" fill="none"/><g fill="none" stroke="#c9a227" stroke-width="7" stroke-linejoin="round" stroke-linecap="round"><path d="M64 10 C82 28 90 56 90 80 L38 80 C38 56 46 28 64 10 Z"/><path d="M38 80 L20 110 L40 96 Z"/><path d="M90 80 L108 110 L88 96 Z"/></g><circle cx="64" cy="44" r="10" fill="#c9a227"/>
+<path d="M50 80 L45 108 L64 122 L83 108 L78 80 Z" fill="#ff6a00" stroke="#c9a227" stroke-width="5" stroke-linejoin="round"/>
+</svg>
