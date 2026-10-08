@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         ISRC Scout
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.8
+// @version      2026.10.8.114600
 // @description  Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify / Beatport / Tidal / Volumo / HDtracks / Qobuz, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPklTUkMgU2NvdXQ8L3RpdGxlPgogICAgPHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPgogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjQwIi8+CiAgICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyNiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2U9IiNiOWEzZTgiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPgogIDwvZz4KICA8bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+Cjwvc3ZnPgo=
@@ -4716,14 +4716,16 @@
     }
     // The songs of an album playlist as YouTube's own client lists it (#690): the album's own
     // tracks, each { vid, title, artist, len, type: 'ATV' }. A video hidden in this region is
-    // left out by YouTube (positions then shift; the title match catches it).
+    // left out by YouTube (positions then shift; the title match catches it). Unlike YouTube
+    // Music, this client lists a song a free listener can't play (Premium only) with its video,
+    // flagged unplayable (rinsuki); such a song is left out.
     function ytPlaylistSongs(j) {
       const out = [];
       const walk = o => {
         if (!o || typeof o !== 'object') return;
         const r = o.playlistVideoRenderer;
         if (r) {
-          if (r.videoId && r.isPlayable !== false) out.push({ vid: r.videoId, title: ytText(r.title) || (r.title && r.title.simpleText) || '', type: 'ATV',
+          if (r.videoId && r.isPlayable !== false && !r.unplayableText) out.push({ vid: r.videoId, title: ytText(r.title) || (r.title && r.title.simpleText) || '', type: 'ATV',
             artist: ytText(r.shortBylineText).replace(/ - Topic$/, ''), len: r.lengthSeconds != null ? +r.lengthSeconds : durToSec(r.lengthText && r.lengthText.simpleText) });
           return;
         }
@@ -4732,17 +4734,40 @@
       walk(j);
       return out;
     }
+    // The next page's token: the playlist lists 100 songs a page (rinsuki: a soundtrack has more).
+    function ytNextPage(j) {
+      let tok = null;
+      const walk = o => { if (!o || typeof o !== 'object' || tok) return; if (o.continuationCommand && o.continuationCommand.token) { tok = o.continuationCommand.token; return; } for (const k in o) walk(o[k]); };
+      const find = o => { if (!o || typeof o !== 'object' || tok) return; if (o.continuationItemRenderer) { walk(o.continuationItemRenderer); return; } for (const k in o) find(o[k]); };
+      find(j);
+      return tok;
+    }
     async function ytWebPlaylist(list) {
-      const r = await gmPost('https://www.youtube.com/youtubei/v1/browse?prettyPrint=false',
-        JSON.stringify({ context: { client: { clientName: 'WEB', clientVersion: '2.20250101.01.00', hl: 'en', gl: 'US' } }, browseId: 'VL' + list }), { 'Content-Type': 'application/json' });
+      const call = body => gmPost('https://www.youtube.com/youtubei/v1/browse?prettyPrint=false',
+        JSON.stringify(Object.assign({ context: { client: { clientName: 'WEB', clientVersion: '2.20250101.01.00', hl: 'en', gl: 'US' } } }, body)), { 'Content-Type': 'application/json' });
+      const r = await call({ browseId: 'VL' + list });
       let j = null; try { j = JSON.parse(r.responseText || 'null'); } catch (e) {}
       if (r.status !== 200 || !j) { Log.warn('YouTube: playlist ' + list + ' failed (HTTP ' + r.status + ') — its API may have changed; using the YouTube Music album page'); return null; }
       const md = j.metadata && j.metadata.playlistMetadataRenderer;
       // "Album - Random Access Memories"
       const name = ((md && md.title) || '').replace(/^(?:Album|EP|Single) - /, '');
-      return { name, tracks: ytPlaylistSongs(j) };
+      const tracks = ytPlaylistSongs(j);
+      // the rest of a long album, page by page (at most 2000 songs)
+      for (let n = 1, tok = ytNextPage(j); tok && n < 20; n++) {
+        const rc = await call({ continuation: tok });
+        let jc = null; try { jc = JSON.parse(rc.responseText || 'null'); } catch (e) {}
+        if (rc.status !== 200 || !jc) { Log.warn('YouTube: playlist ' + list + ', page ' + (n + 1) + ' failed (HTTP ' + rc.status + ') — only its first ' + tracks.length + ' song(s)'); break; }
+        tracks.push(...ytPlaylistSongs(jc));
+        tok = ytNextPage(jc);
+      }
+      return { name, tracks };
     }
     // The release's YouTube Music album (fetched once): { id, name, url, tracks: [song…] }.
+    // YouTube Music is asked first, even for a link to a playlist: an album has two playlists,
+    // the album's own and one that puts the music videos in (rinsuki), and both lead to the
+    // album page, which names the album's own (its canonical URL). That playlist, read through
+    // YouTube's own client, gives the tracks; the album page also says which songs a free
+    // listener can play (a song that can't be has no video there).
     let _ytAlbum = null, _ytAlbumP = null;
     async function ytAlbum() {
       if (_ytAlbum) return _ytAlbum;
@@ -4751,28 +4776,34 @@
       if (!url) return { tracks: [] };
       _ytAlbumP = (async () => {
         let id = (url.match(/browse\/(MPREb_[\w-]+)/) || [])[1];
-        let list = (url.match(/[?&]list=(OLAK5uy_[\w-]+)/) || [])[1];
-        let page = null;   // the YouTube Music album page, when read
-        const readPage = async () => {
+        const linked = (url.match(/[?&]list=(OLAK5uy_[\w-]+)/) || [])[1];
+        if (!id && linked) { const pj = await ytCall('browse', { browseId: 'VL' + linked }); id = pj && (JSON.stringify(pj).match(/"(MPREb_[\w-]+)"/) || [])[1]; }
+        let page = null;   // the YouTube Music album page: { name, list, tracks, rows }
+        if (id) {
           const j = await ytCall('browse', { browseId: id });
-          let h = null; const walk = o => { if (!o || typeof o !== 'object' || h) return; if (o.musicResponsiveHeaderRenderer) { h = o.musicResponsiveHeaderRenderer; return; } for (const k in o) walk(o[k]); };
+          let h = null, rows = 0;
+          const walk = o => { if (!o || typeof o !== 'object') return; if (o.musicResponsiveHeaderRenderer && !h) h = o.musicResponsiveHeaderRenderer; if (o.musicResponsiveListItemRenderer) { rows++; return; } for (const k in o) walk(o[k]); };
           walk(j);
           const canon = (j && j.microformat && j.microformat.microformatDataRenderer && j.microformat.microformatDataRenderer.urlCanonical) || '';
-          return { name: h ? ytText(h.title) : '', list: (canon.match(/[?&]list=(OLAK5uy_[\w-]+)/) || [])[1], tracks: j ? ytSongs(j) : [] };
-        };
-        // a link to the album page only: the page names its playlist
-        if (!list && id) { page = await readPage(); list = page.list; }
+          page = { name: h ? ytText(h.title) : '', list: (canon.match(/[?&]list=(OLAK5uy_[\w-]+)/) || [])[1], tracks: j ? ytSongs(j) : [], rows };
+        }
+        const list = (page && page.list) || linked;
+        if (linked && list !== linked) Log.info('YouTube Music: the release links the playlist ' + linked + ', the album\'s own is ' + list + ' — using that');
         if (list) {
           const pl = await ytWebPlaylist(list);
           if (pl && pl.tracks.length) {
-            Log.info('YouTube Music album "' + pl.name + '" (' + list + '): ' + pl.tracks.length + ' song(s), from the release\'s link');
-            return { id: list, name: pl.name, url: 'https://www.youtube.com/playlist?list=' + list, tracks: pl.tracks };
+            let tracks = pl.tracks;
+            // a song the album page has no video for is Premium only — unless the page didn't list them all
+            if (page && page.tracks.length && page.rows >= tracks.length) {
+              const out = tracks.filter(s => !page.tracks.some(p => ytSame(p.title, s.title)));
+              if (out.length) { Log.info('YouTube Music album: ' + out.map(s => '"' + s.title + '"').join(', ') + ' not playable without Premium — left out'); tracks = tracks.filter(s => !out.includes(s)); }
+            } else if (!page) Log.info('YouTube Music: no album page for the playlist ' + list + ' — its songs aren\'t checked for Premium-only or music videos');
+            Log.info('YouTube Music album "' + (pl.name || (page && page.name)) + '" (' + list + '): ' + tracks.length + ' song(s), from the release\'s link');
+            return { id: list, name: pl.name || (page && page.name), url: 'https://www.youtube.com/playlist?list=' + list, tracks };
           }
           if (pl) Log.info('YouTube: playlist ' + list + ' lists no songs here — using the YouTube Music album page');
-          if (!id) { const pj = await ytCall('browse', { browseId: 'VL' + list }); id = pj && (JSON.stringify(pj).match(/"(MPREb_[\w-]+)"/) || [])[1]; }
         }
-        if (!id) { Log.warn('YouTube Music: the release\'s album link ' + url + ' names no album — each track falls back to its ISRC'); return { tracks: [] }; }
-        if (!page) page = await readPage();
+        if (!page) { Log.warn('YouTube Music: the release\'s album link ' + url + ' names no album — each track falls back to its ISRC'); return { tracks: [] }; }
         Log.info('YouTube Music album "' + page.name + '" (' + id + '): ' + page.tracks.length + ' song(s), from the release\'s link');
         return { id, name: page.name, url: 'https://music.youtube.com/browse/' + id, tracks: page.tracks };
       })();
