@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.8
+// @version      2026.10.8.100227
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E
@@ -10,6 +10,7 @@
 // @match        https://*.musicbrainz.org/release/*/edit
 // @match        https://*.musicbrainz.org/*/edit_annotation
 // @match        https://*.musicbrainz.org/artist/*
+// @match        https://*.musicbrainz.org/label/*
 // @grant        GM_xmlhttpRequest
 // @grant        GM_openInTab
 // @grant        GM_getValue
@@ -527,6 +528,7 @@
       if (url) {
         const p = platformOf(url) || { abbr: 'link', name: 'platform' };
         const hits = (await resolvePlatformUrls([url], 'label')).get(url);
+        if (hits && !hits.length) _riLabUrl.set(lf, { name, url });   // no label has it yet: ＋ creates the label with it
         if (hits && hits.length === 1) {
           const ent = await fetchEntity(hits[0].gid, 'label');
           if (ent && ent.gid) {
@@ -756,6 +758,7 @@
   /* ── #652: a label by its Discogs or platform link ───────────────────────────────── */
   const _riLabInit = new WeakMap();   // the label field → the label gid it had when Apollo first saw it ('' = empty)
   const _riLab = new WeakMap();   // the label field → { status, abbr } for its badge
+  const _riLabUrl = new WeakMap();   // the label field → { name, url }: its Discogs or platform link no MB label has yet
   function riLabelUrl(name, i, n, dmap, h) {
     const pick = (list, prefer) => {
       if (!list || !list.length) return null;
@@ -772,13 +775,15 @@
     labels.forEach((lf, i) => {
       const inp = document.getElementById('label-' + i); if (!inp) return;
       const host = inp.closest('span.autocomplete') || inp.parentElement;
+      riLabelTakeover(inp, host, lf);
       let b = host.querySelector(':scope > .tc-ri-lab');
       let st = _riLab.get(lf); const cur = lf && typeof lf.label === 'function' ? lf.label() : null;
       // #652: a label already on the release (not matched by Apollo) shows "set", as the artist does
       const mine = st && cur && cur.gid === st.gid;
       if (!_riLabInit.has(lf) && lf) _riLabInit.set(lf, cur && cur.gid || '');
+      if (riWant()) mbuCls(host, 'tc-lab-matched', !!(cur && cur.gid));
       const show = riWant() && cur && cur.gid;
-      if (!show) { if (b) b.remove(); inp.style.removeProperty('padding-right'); return; }
+      if (!show) { if (b) b.remove(); inp.style.removeProperty('padding-right'); riLabelDisamb(inp, host, null, null); return; }
       // a label picked by hand (differs from what the release had and from Apollo's match) shows "user", as the artist does
       if (!mine) st = cur.gid !== _riLabInit.get(lf) ? { status: 'user', title: 'chosen by you' } : { status: 'set', title: 'already set on the release' };
       const txt = st.abbr || ({ disc: 'disc', high: 'name', alias: 'alias' })[st.status] || st.status;
@@ -796,8 +801,149 @@ click to open the label`;
       }
       // the badge sits inside the field: reserve its room so it never covers the label's name
       const pr = Math.ceil(host.getBoundingClientRect().right - b.getBoundingClientRect().left) + 4;
-      if (pr > 4) { inp.style.setProperty('box-sizing', 'border-box', 'important'); inp.style.setProperty('padding-right', pr + 'px', 'important'); }
+      if (pr > 4 && inp.style.getPropertyValue('padding-right') !== pr + 'px') { inp.style.setProperty('box-sizing', 'border-box', 'important'); inp.style.setProperty('padding-right', pr + 'px', 'important'); }
+      riLabelDisamb(inp, host, cur, b);
     });
+  }
+  /* ── the Label field's search: Apollo's picker in place of MusicBrainz's ─────────────────
+     majkinetor: "replace native label search with ours, like artist … along with + on the
+     right to create new". MusicBrainz's own input stays (its id, Knockout binding and the
+     scripts that read it, Mammoth's recall among them); only its jQuery UI lookup is switched
+     off, and the search icon gives its place to ＋. Typing still renames the label through
+     MusicBrainz's binding, which unlinks it, as before. */
+  const LABEL_SVG = '<svg viewBox="0 0 16 16" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" aria-hidden="true"><path d="M2 2.5h6l6 6-5.5 5.5-6.5-6z"/><circle cx="5.5" cy="5.5" r="1.2" fill="currentColor" stroke="none"/></svg>';
+  // a MusicBrainz /label/<mbid> URL or a bare MBID → the gid
+  function labelMbidFrom(v) {
+    v = (v || '').trim();
+    const url = v.match(new RegExp('musicbrainz\\.org/label/(' + MBID_RE.source + ')', 'i')); if (url) return url[1].toLowerCase();
+    const m = v.match(new RegExp('^(' + MBID_RE.source + ')$', 'i')); return m ? m[1].toLowerCase() : null;
+  }
+  const _labCache = new Map();
+  async function searchLabel(name, limit) {
+    limit = limit || 8;
+    const k = fold(name) + '|' + limit; if (!fold(name)) return [];
+    if (_labCache.has(k)) return _labCache.get(k);
+    let list = [];
+    try { const j = await fetch(`${ORIGIN}/ws/js/label?q=${encodeURIComponent(name)}&limit=${limit}&direct=false`, { headers: { Accept: 'application/json' } }).then(r => r.json()); list = Array.isArray(j) ? j : (j.results || []); }
+    catch (e) { Log.warn('label search failed:', name, e.message); return []; }
+    list = list.filter(c => c && c.gid && (c.name || '').trim());   // drop the trailing paging entry
+    _labCache.set(k, list); return list;
+  }
+  // type · area · label code · years, as MusicBrainz's own popup lists them
+  function labelMeta(c) {
+    const y = d => (d && (d.year || String(d).slice(0, 4))) || '';
+    const b = y(c.begin_date), e = y(c.end_date);
+    return [c.typeName || '', (c.area && c.area.name) || '', c.label_code ? 'LC ' + String(c.label_code).padStart(5, '0') : '', b || e ? (b || '?') + '–' + e : ''].filter(Boolean).join(' · ');
+  }
+  async function riPickLabel(lf, c) {
+    if (!lf || typeof lf.label !== 'function' || !c || !c.gid) return;
+    const ent = c.id ? c : await fetchEntity(c.gid, 'label');
+    if (!ent || !ent.gid) { Log.warn('label pick: could not load', c.gid); return; }
+    let e = ent; try { if (W.MB && typeof W.MB.entity === 'function') e = W.MB.entity(ent, 'label'); } catch (x) {}
+    lf.label(e); _riLab.delete(lf);
+    Log.info('Label picked:', ent.name, '(' + ent.gid + ')');
+    renderRiLabels();
+  }
+  // switch the field to Apollo's search, or back to MusicBrainz's in the Original view
+  function riLabelTakeover(inp, host, lf) {
+    inp._tcLabLf = lf;   // re-read on every tick: the row's label field, whatever Knockout did to the rows
+    const on = riWant();
+    if (on) mbuCls(host, 'tc-lab-empty', !inp.value.trim());
+    if (!!inp._tcLabOn === on) return;
+    inp._tcLabOn = on;
+    try { const w = W.jQuery && W.jQuery(inp).data('mbEntitylookup'); if (w) { if (on) w.close(); w.option('disabled', on); } }
+    catch (e) { Log.warn('label field: MusicBrainz\'s lookup could not be switched', on ? 'off' : 'on', '—', e.message); }
+    mbuCls(host, 'tc-ri-labhost', on);
+    if (!on) { host.querySelectorAll(':scope > .tc-ri-labmk, :scope > .tc-ri-labdis').forEach(x => x.remove()); return; }
+    if (!inp._tcLabWired) { inp._tcLabWired = true; wireLabelPicker(inp, host); }
+    if (!host.querySelector(':scope > .tc-ri-labmk')) {
+      const mk = document.createElement('button'); mk.type = 'button'; mk.className = 'tc-ri-labmk mbu-ui'; mk.textContent = '＋';
+      mk.title = 'create this label on MusicBrainz  ·  right-click: create silently in a background tab';
+      const go = bg => { const n = inp.value.trim(); if (n) createLabel(n, inp._tcLabLf, bg); else inp.focus(); };
+      mk.onmousedown = e => { if (e.button === 2) return; e.preventDefault(); e.stopPropagation(); go(false); };
+      mk.oncontextmenu = e => { e.preventDefault(); e.stopPropagation(); go(true); };
+      host.appendChild(mk);
+    }
+    Log.debug('label field: Apollo\'s search replaces MusicBrainz\'s');
+  }
+  // the label's disambiguation, grey after its name, as on the artist bar
+  function riLabelDisamb(inp, host, cur, badge) {
+    let d = host.querySelector(':scope > .tc-ri-labdis');
+    const txt = riWant() && cur && cur.gid && cur.comment ? cur.comment : '';
+    if (!txt || !_nmMeasCtx) { if (d) d.remove(); return; }
+    if (!d) { d = document.createElement('span'); d.className = 'tc-ri-labdis mbu-ui'; host.appendChild(d); }
+    if (d.title !== txt) { d.title = txt; d.textContent = '(' + txt + ')'; }
+    const cs = getComputedStyle(inp);
+    _nmMeasCtx.font = `${cs.fontStyle} ${cs.fontWeight} ${cs.fontSize} ${cs.fontFamily}`;
+    const left = Math.ceil(inp.offsetLeft + parseFloat(cs.borderLeftWidth || 0) + parseFloat(cs.paddingLeft || 0) + _nmMeasCtx.measureText(inp.value).width + 6) + 'px';
+    const right = Math.ceil(badge ? host.getBoundingClientRect().right - badge.getBoundingClientRect().left + 6 : 30) + 'px';
+    if (d.style.left !== left) d.style.left = left;
+    if (d.style.right !== right) d.style.right = right;
+  }
+  function wireLabelPicker(inp, host) {
+    let pop = null, list = [], hi = -1, seq = 0, tmr = 0, onScroll = null, curQuery = '', curLimit = 8;
+    const live = () => inp._tcLabOn && inp.isConnected;
+    const position = () => { if (!pop) return; const r = inp.getBoundingClientRect(); pop.style.left = r.left + 'px'; pop.style.top = (r.bottom + 2) + 'px'; pop.style.minWidth = Math.max(210, r.width) + 'px'; };
+    const close = () => { if (pop) pop.remove(); pop = null; hi = -1; list = []; if (onScroll) { window.removeEventListener('scroll', onScroll, true); window.removeEventListener('resize', onScroll); onScroll = null; } };
+    const ensure = () => { if (pop) return; pop = document.createElement('div'); pop.className = 'tc-acpop tc-labpop'; document.body.appendChild(pop); onScroll = () => { if (!pop || !pop.isConnected) close(); else position(); }; window.addEventListener('scroll', onScroll, true); window.addEventListener('resize', onScroll); position(); };
+    const say = msg => { ensure(); list = []; pop.innerHTML = `<div class="tc-acrow none">${esc(msg)}</div>`; position(); };
+    const choose = c => { close(); riPickLabel(inp._tcLabLf, c); };
+    const hiliteRow = () => { const rows = [...pop.querySelectorAll('[data-i]')]; rows.forEach((r, i) => r.classList.toggle('hi', i === hi)); if (rows[hi]) rows[hi].scrollIntoView({ block: 'nearest' }); };
+    const draw = (res, q) => {
+      ensure(); list = res; hi = -1;
+      pop.innerHTML = res.length ? res.map((c, i) => {
+        const aka = aliasStr(c), meta = labelMeta(c);
+        return `<div class="tc-acrow${sameName(c.name, q) ? ' exact' : ''}" data-i="${i}" title="click to set this label"><a class="tic" href="${ORIGIN}/label/${esc(c.gid)}" target="_blank" rel="noopener" title="open label page">${LABEL_SVG}</a><span class="nm">${esc(c.name)}</span>${aka ? `<span class="tc-aka">${esc(aka)}</span>` : ''}${c.comment ? `<span class="cmt">${esc(c.comment)}</span>` : ''}${meta ? `<span class="tc-acmeta">${esc(meta)}</span>` : ''}</div>`;
+      }).join('') : '<div class="tc-acrow none">no matches — use ＋ to create</div>';
+      pop.querySelectorAll('.tc-acrow[data-i]').forEach(row => { row.onmousedown = e => { e.preventDefault(); choose(res[+row.dataset.i]); }; });
+      // the icon opens the label in a new tab: its mousedown stays off the row (no pick) and off the input (the popup stays)
+      pop.querySelectorAll('a.tic').forEach(a => { a.onmousedown = e => { e.preventDefault(); e.stopPropagation(); }; });
+      if (res.length >= curLimit && curLimit < 100) {   // a full page: probably more, as MusicBrainz's popup offers
+        const more = document.createElement('div'); more.className = 'tc-acrow tc-acmore'; more.textContent = 'Show more…';
+        more.onmousedown = e => { e.preventDefault(); more.textContent = 'Loading…'; run(curQuery, curLimit >= 50 ? 100 : curLimit >= 25 ? 50 : 25); };
+        pop.appendChild(more);
+      }
+      position();
+    };
+    const run = (q, limit) => {
+      curQuery = q; curLimit = limit || 8; const my = ++seq;
+      if (!pop || curLimit === 8) say('Searching…');
+      searchLabel(q, curLimit).then(res => { if (my === seq && live() && document.activeElement === inp) draw(res, q); });
+    };
+    // a pasted MBID or /label/ URL, or one Mammoth recalls: set that label straight away
+    const resolveByGid = async gid => {
+      const focused = document.activeElement === inp; if (focused) say('Resolving…');
+      const ent = await fetchEntity(gid, 'label');
+      if (labelMbidFrom(inp.value) !== gid) return;
+      if (ent && ent.gid && (ent.entityType || 'label') === 'label') { close(); riPickLabel(inp._tcLabLf, ent); }
+      else if (focused && document.activeElement === inp) say('no label has this MBID');
+    };
+    inp.addEventListener('focus', () => {
+      if (!live()) return;
+      host.classList.add('tc-lab-focus');
+      const q = inp.value.trim(); if (q && !labelMbidFrom(q)) run(q);
+    });
+    inp.addEventListener('input', () => {
+      if (!live()) return;
+      clearTimeout(tmr); ++seq;
+      mbuCls(host, 'tc-lab-empty', !inp.value.trim());
+      const gid = labelMbidFrom(inp.value); if (gid) { resolveByGid(gid); return; }
+      if (!inp.value.trim() || document.activeElement !== inp) { close(); return; }   // a value written from outside opens no popup
+      if (!pop) say('Searching…');
+      tmr = setTimeout(() => run(inp.value.trim()), 250);
+    });
+    inp.addEventListener('keydown', e => {
+      if (!live()) return;
+      const browsing = pop && list.length;
+      if (e.key === 'Escape') { if (pop) { e.preventDefault(); e.stopPropagation(); close(); } }
+      else if (e.key === 'ArrowDown') { e.preventDefault(); if (browsing) { hi = Math.min(list.length - 1, hi + 1); hiliteRow(); } else if (inp.value.trim()) run(inp.value.trim()); }
+      else if (e.key === 'ArrowUp') { if (browsing) { e.preventDefault(); hi = Math.max(0, hi - 1); hiliteRow(); } }
+      else if (e.key === 'Enter') {
+        e.preventDefault(); e.stopPropagation();   // never MusicBrainz's form (Enter switches its tabs)
+        if (browsing) choose(list[hi >= 0 ? hi : 0]); else close();
+      }
+    });
+    inp.addEventListener('blur', () => { host.classList.remove('tc-lab-focus'); setTimeout(() => { if (document.activeElement !== inp) close(); }, 160); });
   }
   // full alias arrays for display (the js search only carries primaryAlias, often empty). One WS2
   // search per query returns every result's aliases with locale — no per-artist fetch. Cached.
@@ -2362,9 +2508,36 @@ click to open the label`;
       Log.info('create-artist for', JSON.stringify(name), '— will auto-insert on save');
     } else { Log.info('open MB create-artist for', JSON.stringify(name)); }
   }
-  // runs on a freshly-saved /artist/<mbid> page opened by createArtist: post the MBID back, then close
+  // the Label field's ＋: MusicBrainz's create-label form, seeded with the name and with the label's
+  // Discogs or platform link when no label has it yet; the saved label is set on the field, as a
+  // created artist is
+  function createLabel(name, lf, background) {
+    let url = `${ORIGIN}/label/create?edit-label.name=${encodeURIComponent(name)}`;
+    const link = lf && _riLabUrl.get(lf);
+    if (link && sameName(link.name, name)) {
+      url += `&edit-label.url.0.text=${encodeURIComponent(link.url)}`;
+      platformUrlForms(link.url).forEach(f => { _discogsResolveCache.delete('label:' + f); _ddrop('resolve', 'label:' + f); });
+      Log.info('create-label: seeding the link', link.url);
+    }
+    url += `&edit-label.edit_note=${encodeURIComponent(entityActionNote('Created this label'))}`;
+    const token = (lf && ART_CHANNEL) ? ('tc-' + Date.now() + '-' + (++_createSeq)) : null;
+    const pend = { slot: { _onPick: ent => riPickLabel(lf, ent) } };
+    if (background && token && typeof GM_openInTab === 'function') {
+      pend.bgTab = GM_openInTab(`${url}#tc-autocommit=${encodeURIComponent(token)}`, { active: false, insert: true });
+      _pendingCreates.set(token, pend);
+      Log.info('create-label (background) for', JSON.stringify(name), '— will be set on save');
+      return;
+    }
+    const tab = W.open(url, '_blank');   // NOT noopener — we set a token on the new tab's sessionStorage
+    if (tab && token) {
+      _pendingCreates.set(token, pend);
+      const trySet = () => { try { tab.sessionStorage.setItem(PENDING_KEY, token); } catch (e) { setTimeout(trySet, 50); } }; trySet();
+      Log.info('create-label for', JSON.stringify(name), '— will be set on save');
+    } else Log.info('open MB create-label for', JSON.stringify(name));
+  }
+  // runs on a freshly-saved /artist/<mbid> (or /label/<mbid>) page opened by createArtist (createLabel): post the MBID back, then close
   function handleArtistPageCallback() {
-    const m = location.pathname.match(new RegExp('^/artist/(' + MBID_RE.source + ')', 'i')); if (!m) return false;
+    const m = location.pathname.match(new RegExp('^/(?:artist|label)/(' + MBID_RE.source + ')', 'i')); if (!m) return false;
     let token = null; try { token = sessionStorage.getItem(PENDING_KEY); } catch (e) {} if (!token) return false;
     try { sessionStorage.removeItem(PENDING_KEY); } catch (e) {}
     const gid = m[1].toLowerCase();
@@ -9942,7 +10115,15 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     #information .tc-ri-art .tc-search:not(.matched):not(.tc-has-nm) input.nm{flex:1 1 auto}
     .tc-ri-art .tc-acts{width:auto;min-width:22px}
     /* inside the label field, left of its search icon: the cell is too narrow for it beside the field */
-    #information span.autocomplete:has(> .tc-ri-lab){position:relative}
+    #information span.autocomplete:has(> .tc-ri-lab),#information .tc-ri-labhost{position:relative}
+    /* the Label field's search is Apollo's: ＋ takes the search icon's place */
+    #information .tc-ri-labhost > img.search{display:none!important}
+    .tc-ri-labmk{all:unset;position:absolute;right:4px;top:50%;transform:translateY(-50%);width:18px;height:18px;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;color:var(--mbu-ok);font:bold 15px/1 var(--mbu-font)}
+    .tc-ri-labmk:hover{color:var(--mbu-accent-text)}
+    .tc-ri-labhost.tc-lab-matched:not(.tc-lab-focus) > .tc-ri-labmk,.tc-ri-labhost.tc-lab-empty > .tc-ri-labmk{display:none}
+    .tc-ri-labdis{position:absolute;top:50%;transform:translateY(-50%);color:var(--mbu-text-weak);font:italic 11px var(--mbu-font);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;pointer-events:none}
+    .tc-ri-labhost.tc-lab-focus > .tc-ri-labdis{display:none}
+    .tc-labpop .tc-acmeta{margin-left:auto;padding-left:10px;font-size:10px;color:var(--mbu-text-weak);white-space:nowrap}
     .tc-ri-lab{position:absolute;right:28px;top:50%;transform:translateY(-50%);line-height:1;pointer-events:auto}
     html:has(.mmthf-pin) .tc-ri-lab{right:48px}   /* Mammoth pins its icon inside the field, just left of the search icon: sit clear of it */
     :is(.tc-ri-am,.tc-ri-lab,.tc-ri-rb) .tc-badge{font-size:10px;font-weight:bold;border-radius:9px;padding:1px 7px;color:var(--mbu-text-on-accent);white-space:nowrap;cursor:help;text-transform:none}
@@ -11245,7 +11426,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     fix();
   }
 
-  W.__apolloEditor = { matchCardHtml, readTracklist, buildModel, commitTrack, resetTrack, revertTrack, trackChanged, removeTrack, moveTrack, addTracks, searchArtist, fetchEntity, createArtist, openPanel, showMirror, hideMirror, revertAll, revertSlot, pickArtist, addSlot, removeSlot, splitSlot, matchSlot, snapshotOriginals, readRecordings, showRecMirror, hideRecMirror, recordingsVisible, recConfidence, applyView, applyNav, applyReleaseInfo, releaseInfoVisible, ensureApolloEditNote, checkAllLinks, checkUrl, linkRows, alExtractUrls, alAddUrls, installMultiLinkPaste, alApplyHint, AL_HINT, discogsReleaseUrlFromPage, loadDiscogsMap, resolveByDiscogsUrl, discogsFeatUrlFor, tagDiscogsAddable, tagDiscogsForAll, addOrCreateDiscogsLink, reTagAfterDiscogsLink, artistDiscogsUrls, platformOf, platformUrlForms, resolvePlatformUrls, resolveByPlatformUrl, fcHandoff, fcPlatformUrl, tagPlatformAddable, tagPlatformForAll, addOrCreatePlatformLink, matchReleaseArtist, matchReleaseLabels, riEditionArtists, riPick, get riArt() { return _riArt; }, dhRun, acLinksDiff, fetchRgPositionIndex, fetchDuplicatePositionIndex, recSimilar, recComboLevel, recPickBest, pickSibArtist, loadSiblingMap, autoMatchRecordings, setDataBoundary, videoBlockedHere, NON_VIDEO_FORMAT_IDS, trackRecIsVideo, newRecordingFor, logMarkdown, openLengthParser, lpParse, lpValid, lpExtractFromHtml, lpNoteSource, openTrackPatternParser, tpCompile, resolveByExactAlias, wsJson, stopMatching, lenShadeAlpha, lenShade, dupLenShade, mergeMediums, splitMedium, pickTool, runAction, slotContextGids, releaseArtistGids, positionArtists, posNameMatch, tallyPosArtists, artistPosRgIndex, artistPosDupIndex, rgReleases, duplicateReleases, enteredTracklist, buildDupDetail, get apolloOn() { return apolloOn(); }, get model() { return MODEL; }, get settings() { return SETTINGS; } };
+  W.__apolloEditor = { matchCardHtml, readTracklist, buildModel, commitTrack, resetTrack, revertTrack, trackChanged, removeTrack, moveTrack, addTracks, searchArtist, fetchEntity, createArtist, openPanel, showMirror, hideMirror, revertAll, revertSlot, pickArtist, addSlot, removeSlot, splitSlot, matchSlot, snapshotOriginals, readRecordings, showRecMirror, hideRecMirror, recordingsVisible, recConfidence, applyView, applyNav, applyReleaseInfo, releaseInfoVisible, ensureApolloEditNote, checkAllLinks, checkUrl, linkRows, alExtractUrls, alAddUrls, installMultiLinkPaste, alApplyHint, AL_HINT, discogsReleaseUrlFromPage, loadDiscogsMap, resolveByDiscogsUrl, discogsFeatUrlFor, tagDiscogsAddable, tagDiscogsForAll, addOrCreateDiscogsLink, reTagAfterDiscogsLink, artistDiscogsUrls, platformOf, platformUrlForms, resolvePlatformUrls, resolveByPlatformUrl, fcHandoff, fcPlatformUrl, tagPlatformAddable, tagPlatformForAll, addOrCreatePlatformLink, matchReleaseArtist, matchReleaseLabels, searchLabel, createLabel, riPickLabel, riEditionArtists, riPick, get riArt() { return _riArt; }, dhRun, acLinksDiff, fetchRgPositionIndex, fetchDuplicatePositionIndex, recSimilar, recComboLevel, recPickBest, pickSibArtist, loadSiblingMap, autoMatchRecordings, setDataBoundary, videoBlockedHere, NON_VIDEO_FORMAT_IDS, trackRecIsVideo, newRecordingFor, logMarkdown, openLengthParser, lpParse, lpValid, lpExtractFromHtml, lpNoteSource, openTrackPatternParser, tpCompile, resolveByExactAlias, wsJson, stopMatching, lenShadeAlpha, lenShade, dupLenShade, mergeMediums, splitMedium, pickTool, runAction, slotContextGids, releaseArtistGids, positionArtists, posNameMatch, tallyPosArtists, artistPosRgIndex, artistPosDupIndex, rgReleases, duplicateReleases, enteredTracklist, buildDupDetail, get apolloOn() { return apolloOn(); }, get model() { return MODEL; }, get settings() { return SETTINGS; } };
 
   // #267 auto-confirm a seeded Add/Edit-release submission. When another site seeds the editor,
   // MusicBrainz shows a `.confirm-seed` interstitial with a single submit button; clicking it
@@ -11266,7 +11447,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
 
   (async function main() {
     if (handleAutoCommit()) { Log.info('auto-commit (background create/link) — submitting the seeded form'); return; }
-    if (handleArtistPageCallback()) { Log.info('artist-create callback — posting MBID back and closing'); return; }
+    if (handleArtistPageCallback()) { Log.info('artist/label-create callback — posting MBID back and closing'); return; }
     if (handleEditLinkClose()) { Log.info('Discogs-link edit committed — closing tab'); return; }
     if (await autoConfirmSeed()) return;   // handled the seed-confirmation interstitial (clicked, or option off) — no editor here
     if (ANNO_PAGE_RE.test(location.pathname)) {   // #394 standalone Edit annotation page for ANY entity (no releaseEditor)
@@ -11274,7 +11455,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
       if (!tryMount()) { const t = setInterval(() => { if (tryMount()) clearInterval(t); }, 200); setTimeout(() => clearInterval(t), 8000); }
       return;
     }
-    if (!/^\/release\/(add|.+\/edit)/.test(location.pathname)) return;   // /artist/* (non-callback) just loads the channel listener
+    if (!/^\/release\/(add|.+\/edit)/.test(location.pathname)) return;   // /artist/* and /label/* (non-callback) just load the channel listener
     const ed = await waitFor(() => { const e = getEditor(); try { return e && u(e.rootField.release) && u(u(e.rootField.release).mediums) ? e : null; } catch (x) { return null; } });
     if (!ed) { Log.err('MB.releaseEditor never became ready'); return; }
     try {   // line 2: the MB release, as a full link (real title now the editor is up)
