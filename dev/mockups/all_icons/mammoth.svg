@@ -1,18 +1,10 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
 <title>Mammoth</title>
-<g fill="#7a4e33">
-  <rect x="44" y="76" width="15" height="38" rx="5"/><rect x="66" y="80" width="14" height="34" rx="5"/><rect x="86" y="78" width="14" height="36" rx="5"/><rect x="100" y="74" width="12" height="38" rx="5"/>
+<g transform="translate(-87.787 -59.404) scale(1.23404)">
+<path d="M104 75 H128 A42 51 0 0 1 170 126 H101 C100 122 96 119 96 114.5 C96 110.5 98 108 100 106Z" fill="#784818"/>
+<circle cx="107.5" cy="84.4" r="22.9" fill="#784818"/>
+<rect x="105" y="118" width="12.5" height="20.5" rx="6.2" fill="#784818"/><rect x="142.5" y="118" width="13" height="20.5" rx="6.4" fill="#784818"/>
+<path d="M89 100.5 C92.5 102.8 95.5 105 99.5 106.5 C97.2 109.8 95.6 113.8 96 117.8 C96.4 121.8 99.8 124.4 100.6 128.4 C95 127.6 90.8 123.4 89.8 117.4 C89.2 111.6 88.6 106 89 100.5Z" fill="#e8e0d0"/>
+<path d="M88 78 C81 84 76 93 76 104 C76 116 80 127.5 88 129.5 H98.5 C101.5 129.5 102 126.6 99.5 126.2 C94.5 125.5 90.6 121 89.8 115.5 C89.2 110 88.8 105 89.2 100.5 L96 96Z" fill="#784818"/>
 </g>
-<g fill="#9a6644">
-  <ellipse cx="78" cy="66" rx="40" ry="30"/>
-  <circle cx="62" cy="40" r="20"/>
-  <circle cx="40" cy="48" r="24"/>
-  <rect x="50" y="76" width="15" height="38" rx="5"/><rect x="92" y="78" width="14" height="36" rx="5"/>
-</g>
-<path d="M28 58 C14 74 16 98 28 106 C33 109 37 104 33 100 C26 92 26 76 36 64Z" fill="#9a6644"/>
-<path d="M44 94 l6 -8 6 8 6 -8 6 8 6 -8 6 8 6 -8 6 8 6 -8 6 6" fill="none" stroke="#7a4e33" stroke-width="4" stroke-linejoin="round"/>
-<ellipse cx="54" cy="54" rx="9" ry="13" fill="#7a4e33"/>
-<path d="M40 70 C36 90 52 100 70 90" fill="none" stroke="#f6efe2" stroke-width="7" stroke-linecap="round"/>
-<circle cx="38" cy="44" r="3.4" fill="#2a1a12"/>
-<path d="M117 62 C122 66 122 74 118 78" fill="none" stroke="#7a4e33" stroke-width="4" stroke-linecap="round"/>
 </svg>
