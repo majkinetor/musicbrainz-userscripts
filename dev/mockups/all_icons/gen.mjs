@@ -13,7 +13,7 @@ const { chromium } = await import(pathToFileURL(join(dir, '../../../node_modules
 const SWAP = {
   falcon: { file: join(dir, '../falcon_icons/icon-r6-08.svg'), note: 'Flat out (falcon round 6, 08)' },
   apollo_editor: { file: join(root, 'falcon/icon.svg'), note: "Falcon's current icon" },
-  mammoth: { file: join(dir, 'mammoth.svg'), note: 'SVG in place of the 🦣 emoji' },
+  mammoth: { file: join(root, 'mammoth/icon.svg'), note: 'its icon.svg in place of the 🦣 emoji' },
 };
 const SKIP = new Set(['discogs_credits']); // frozen, superseded by Credit Hoarder
 const toData = f => `data:${extname(f) === '.png' ? 'image/png' : 'image/svg+xml'};base64,${readFileSync(f).toString('base64')}`;
