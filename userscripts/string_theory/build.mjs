@@ -15,6 +15,7 @@
 import { readFileSync, writeFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, resolve } from 'node:path';
+import { UI_JS } from '../../dev/ui/ui-components.mjs';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(HERE, '../..');
@@ -133,8 +134,17 @@ const startupLog = `try {\n  console.log('%c String Theory %c v${version} ', 'ba
 // once here; an off member's body doesn't run, so its standalone copy (if installed) can claim the page.
 // The menu goes only in the top frame, or a manager lists it again for every iframe.
 const OFF_KEY = 'string_theory.off';
+// The corner launchers' layout: a column (the default) or a row along the page's edge. The GM value
+// FLOW_KEY becomes <html data-mb-corner-flow>, which every member's mbRestackCorner reads (standalone
+// copies too). It's set before the bodies run, in every frame; the menu entry flips it and restacks
+// the corners at once, with the same mbRestackCorner the members carry.
+const FLOW_KEY = 'string_theory.cornerFlow';
+const RESTACK = (UI_JS.match(/function mbRestackCorner\(corner\) \{[\s\S]*?\n\}\n/) || [])[0];
+if (!RESTACK) throw new Error('mbRestackCorner not found in dev/ui/ui-components.mjs');
 const toggles = `function __stReadOff() { try { var v = GM_getValue(${JSON.stringify(OFF_KEY)}, []); return Array.isArray(v) ? v : []; } catch (e) { return []; } }
 var __stOff = __stReadOff();
+function __stFlow(v) { try { if (v === 'row') document.documentElement.setAttribute('data-mb-corner-flow', 'row'); else document.documentElement.removeAttribute('data-mb-corner-flow'); } catch (e) {} }
+try { __stFlow(GM_getValue(${JSON.stringify(FLOW_KEY)}, 'column')); } catch (e) {}
 (function () {
   if (typeof GM_registerMenuCommand !== 'function') return;
   try { if (window.top !== window.self) return; } catch (e) { return; }
@@ -149,6 +159,17 @@ var __stOff = __stReadOff();
       return GM_registerMenuCommand((on ? '☑ ' : '☐ ') + m[1], function () { flip(m[0]); },
         { autoClose: false, title: (on ? 'On' : 'Off') + ' — click to turn ' + (on ? 'off' : 'on') + '; applies from the next page load' });
     });
+    var row = GM_getValue(${JSON.stringify(FLOW_KEY)}, 'column') === 'row';
+    ids.push(GM_registerMenuCommand(row ? '↔ Launchers in a row' : '↕ Launchers in a column', flipFlow,
+      { autoClose: false, title: 'The round launchers in the page corner — click to put them in a ' + (row ? 'column' : 'row') }));
+  }
+  ${RESTACK.replace(/\n/g, '\n  ').trimEnd()}
+  function flipFlow() {
+    var v = GM_getValue(${JSON.stringify(FLOW_KEY)}, 'column') === 'row' ? 'column' : 'row';
+    GM_setValue(${JSON.stringify(FLOW_KEY)}, v);
+    __stFlow(v);
+    ['br', 'bl', 'tr', 'tl'].forEach(mbRestackCorner);
+    draw();
   }
   function flip(key) {
     var off = GM_getValue(${JSON.stringify(OFF_KEY)}, []);

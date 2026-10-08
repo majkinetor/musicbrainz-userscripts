@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.8.203404
+// @version      2026.10.8.223209
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5BcG9sbG8gRWRpdG9yPC90aXRsZT4KPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZmZmIiBzdHJva2UtbGluZWpvaW49InJvdW5kIiBzdHJva2UtbGluZWNhcD0icm91bmQiIG9wYWNpdHk9IjAuNyI+PHBhdGggZD0iTTY0IDEwIEM4MiAyOCA5MCA1NiA5MCA4MCBMMzggODAgQzM4IDU2IDQ2IDI4IDY0IDEwIFoiIHN0cm9rZS13aWR0aD0iMTEiLz48cGF0aCBkPSJNMzggODAgTDIwIDExMCBMNDAgOTYgWiIgc3Ryb2tlLXdpZHRoPSIxMSIvPjxwYXRoIGQ9Ik05MCA4MCBMMTA4IDExMCBMODggOTYgWiIgc3Ryb2tlLXdpZHRoPSIxMSIvPjxwYXRoIGQ9Ik01MCA4MCBMNDUgMTA4IEw2NCAxMjIgTDgzIDEwOCBMNzggODAgWiIgc3Ryb2tlLXdpZHRoPSI5Ii8+PC9nPjxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzFiMmE0YSIgc3Ryb2tlLXdpZHRoPSI3IiBzdHJva2UtbGluZWpvaW49InJvdW5kIiBzdHJva2UtbGluZWNhcD0icm91bmQiPjxwYXRoIGQ9Ik02NCAxMCBDODIgMjggOTAgNTYgOTAgODAgTDM4IDgwIEMzOCA1NiA0NiAyOCA2NCAxMCBaIi8+PHBhdGggZD0iTTM4IDgwIEwyMCAxMTAgTDQwIDk2IFoiLz48cGF0aCBkPSJNOTAgODAgTDEwOCAxMTAgTDg4IDk2IFoiLz48L2c+PGNpcmNsZSBjeD0iNjQiIGN5PSI0NCIgcj0iMTAiIGZpbGw9IiNlNjM5NDYiLz4KPHBhdGggZD0iTTUwIDgwIEw0NSAxMDggTDY0IDEyMiBMODMgMTA4IEw3OCA4MCBaIiBmaWxsPSIjZmY2YTAwIiBzdHJva2U9IiMxYjJhNGEiIHN0cm9rZS13aWR0aD0iNSIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgo8L3N2Zz4K
@@ -2865,17 +2865,21 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
   // whatever order they loaded in, so two launchers never land on the same pixel.
   // Orders in use: Apollo and Art Station 10 (never on the same page), Falcon 20,
   // Fusion above Falcon. Scribe is not on the shared block and keeps a copy of this.
+  // The stack is a column; <html data-mb-corner-flow="row"> (String Theory's menu sets it)
+  // lines it up along the bottom/top edge instead, the lowest order still nearest the corner.
   function mbRestackCorner(corner) {
       var bottom = corner[0] === 'b', right = corner[1] === 'r';
+      var row = document.documentElement.getAttribute('data-mb-corner-flow') === 'row';
       var els = Array.prototype.slice.call(document.querySelectorAll('[data-mb-corner="' + corner + '"]'))
           // offsetParent is always null for position:fixed, so it can't tell visibility here
           .filter(function (el) { return getComputedStyle(el).display !== 'none'; })
           .sort(function (a, b) { return (Number(a.dataset.mbCornerOrder) || 0) - (Number(b.dataset.mbCornerOrder) || 0); });
       var pos = 14;
       els.forEach(function (el) {
-          el.style[bottom ? 'bottom' : 'top'] = pos + 'px';
-          el.style[right ? 'right' : 'left'] = '14px';
-          pos += el.getBoundingClientRect().height + 8;
+          var r = el.getBoundingClientRect();
+          el.style[bottom ? 'bottom' : 'top'] = (row ? 14 : pos) + 'px';
+          el.style[right ? 'right' : 'left'] = (row ? pos : 14) + 'px';
+          pos += (row ? r.width : r.height) + 8;
       });
   }
 

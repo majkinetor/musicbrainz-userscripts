@@ -27,4 +27,9 @@ test('launchers in one corner stack by order, and a hidden one leaves no gap', {
   await page.evaluate(() => { document.getElementById('falcon').style.display = 'none'; mbRestackCorner('br'); });
   const b = await at();
   check(b.falcon === null && b.fusion.bottom === '72px', `a hidden launcher gives up its slot (${JSON.stringify(b)})`);
+  // String Theory's horizontal option: the same order, along the bottom edge
+  await page.evaluate(() => { document.getElementById('falcon').style.display = ''; document.documentElement.setAttribute('data-mb-corner-flow', 'row'); mbRestackCorner('br'); });
+  const c = await at();
+  check(c.apollo.right === '14px' && c.falcon.right === '62px' && c.fusion.right === '110px', `a row by order from the corner (${JSON.stringify(c)})`);
+  check(c.apollo.bottom === '14px' && c.fusion.bottom === '14px', 'all on the bottom edge');
 });

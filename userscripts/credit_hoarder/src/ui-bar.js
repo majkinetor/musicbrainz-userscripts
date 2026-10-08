@@ -340,17 +340,21 @@ export function insertDiscogsBar(discogsUrl, sources = {}, meta = {}) {
     // whatever order they loaded in, so two launchers never land on the same pixel.
     // Orders in use: Apollo and Art Station 10 (never on the same page), Falcon 20,
     // Fusion above Falcon. Scribe is not on the shared block and keeps a copy of this.
+    // The stack is a column; <html data-mb-corner-flow="row"> (String Theory's menu sets it)
+    // lines it up along the bottom/top edge instead, the lowest order still nearest the corner.
     function mbRestackCorner(corner) {
         var bottom = corner[0] === 'b', right = corner[1] === 'r';
+        var row = document.documentElement.getAttribute('data-mb-corner-flow') === 'row';
         var els = Array.prototype.slice.call(document.querySelectorAll('[data-mb-corner="' + corner + '"]'))
             // offsetParent is always null for position:fixed, so it can't tell visibility here
             .filter(function (el) { return getComputedStyle(el).display !== 'none'; })
             .sort(function (a, b) { return (Number(a.dataset.mbCornerOrder) || 0) - (Number(b.dataset.mbCornerOrder) || 0); });
         var pos = 14;
         els.forEach(function (el) {
-            el.style[bottom ? 'bottom' : 'top'] = pos + 'px';
-            el.style[right ? 'right' : 'left'] = '14px';
-            pos += el.getBoundingClientRect().height + 8;
+            var r = el.getBoundingClientRect();
+            el.style[bottom ? 'bottom' : 'top'] = (row ? 14 : pos) + 'px';
+            el.style[right ? 'right' : 'left'] = (row ? pos : 14) + 'px';
+            pos += (row ? r.width : r.height) + 8;
         });
     }
 

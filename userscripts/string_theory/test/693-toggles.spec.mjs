@@ -33,7 +33,8 @@ test('the menu lists every member, and a click flips it and relabels the entry',
     window.GM_unregisterMenuCommand = id => menu.delete(id);
   });
   await inject('string_theory');
-  const captions = () => page.evaluate(() => [...window.__menu.values()].map(e => e.caption));
+  // the members' entries (☑/☐); the corner-layout entry (↕/↔) has a test of its own
+  const captions = () => page.evaluate(() => [...window.__menu.values()].map(e => e.caption).filter(c => /^[☑☐] /.test(c)));
   const before = await captions();
   check(before.length === MEMBERS && before.every(c => c.startsWith('☑ ')), `${MEMBERS} entries, all on (${before.join(' · ')})`);
   check(before.includes('☑ Platform Check'), 'labelled with the script\'s name');
@@ -47,4 +48,36 @@ test('the menu lists every member, and a click flips it and relabels the entry',
   await page.evaluate(() => [...window.__menu.values()].find(e => /Platform Check/.test(e.caption)).fn());
   check((await captions()).every(c => c.startsWith('☑ ')), 'a second click turns it back on');
   check(JSON.stringify(await page.evaluate(() => GM_getValue('string_theory.off'))) === '[]', 'and stores it so');
+});
+
+// The corner launchers' layout: one menu entry, ↕ column (the default) or ↔ row. A click stores it as
+// 'string_theory.cornerFlow', marks <html data-mb-corner-flow> and restacks the corner at once.
+test('the layout entry lines the corner launchers up in a row and back', { tag: ['@sandbox'] }, async ({ page, inject }, info) => {
+  await page.setViewportSize({ width: 1400, height: 900 });
+  await page.goto(`${SANDBOX}/release/${RELEASE}`, { waitUntil: 'load', timeout: 60000 });
+  await page.evaluate(() => {
+    const menu = window.__menu = new Map(); let next = 1;
+    window.GM_registerMenuCommand = (caption, fn) => { const id = next++; menu.set(id, { caption, fn }); return id; };
+    window.GM_unregisterMenuCommand = id => menu.delete(id);
+  });
+  await inject('string_theory');
+  await until(() => page.evaluate(() => document.querySelectorAll('[data-mb-corner="br"]').length), n => n >= 2, { timeout: 30000 });
+  const flow = () => page.evaluate(() => [...window.__menu.values()].map(e => e.caption).find(c => /Launchers/.test(c)));
+  const at = () => page.evaluate(() => [...document.querySelectorAll('[data-mb-corner="br"]')].filter(e => getComputedStyle(e).display !== 'none')
+    .map(e => ({ id: e.id, bottom: e.style.bottom, right: e.style.right })));
+  check(await flow() === '↕ Launchers in a column', `a column by default (${await flow()})`);
+  const col = await at();
+  check(col.every(e => e.right === '14px') && new Set(col.map(e => e.bottom)).size === col.length, `stacked up the right edge (${JSON.stringify(col)})`);
+
+  await page.evaluate(() => [...window.__menu.values()].find(e => /Launchers/.test(e.caption)).fn());
+  const row = await at();
+  check(await flow() === '↔ Launchers in a row', `relabelled (${await flow()})`);
+  check(await page.evaluate(() => document.documentElement.dataset.mbCornerFlow) === 'row', 'the page is marked');
+  check(await page.evaluate(() => GM_getValue('string_theory.cornerFlow')) === 'row', 'stored');
+  check(row.every(e => e.bottom === '14px') && new Set(row.map(e => e.right)).size === row.length, `in a row along the bottom (${JSON.stringify(row)})`);
+  await page.screenshot({ path: info.outputPath('row.png'), clip: { x: 1400 - 260, y: 900 - 80, width: 260, height: 80 } });
+
+  await page.evaluate(() => [...window.__menu.values()].find(e => /Launchers/.test(e.caption)).fn());
+  check(JSON.stringify(await at()) === JSON.stringify(col), 'a second click puts them back in the column');
+  check(!(await page.evaluate(() => document.documentElement.hasAttribute('data-mb-corner-flow'))), 'and unmarks the page');
 });

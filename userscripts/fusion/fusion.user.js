@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Fusion
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.8
+// @version      2026.10.8.223209
 // @description  Merge-recordings assistant for MusicBrainz: gather a pool of candidate recordings from a release / release group / recording page (or paste any MBID/URL), auto-match them into merge groups by ISRC / AcoustID / length / title+artist, review and adjust the groups, then submit the merges directly in the background — no MB merge page involved.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPkZ1c2lvbjwvdGl0bGU+CiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjOGE1Y2Y2IiBzdHJva2Utd2lkdGg9IjciPgogICAgPGVsbGlwc2UgY3g9IjY0IiBjeT0iNjQiIHJ4PSI1MiIgcnk9IjIyIi8+CiAgICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSI2NCIgcng9IjUyIiByeT0iMjIiIHRyYW5zZm9ybT0icm90YXRlKDYwIDY0IDY0KSIvPgogICAgPGVsbGlwc2UgY3g9IjY0IiBjeT0iNjQiIHJ4PSI1MiIgcnk9IjIyIiB0cmFuc2Zvcm09InJvdGF0ZSgxMjAgNjQgNjQpIi8+CiAgPC9nPgogIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjE0IiBmaWxsPSIjNmQzZmYwIi8+Cjwvc3ZnPgo=
@@ -1730,17 +1730,21 @@ function mbuTestHooks() {
 // whatever order they loaded in, so two launchers never land on the same pixel.
 // Orders in use: Apollo and Art Station 10 (never on the same page), Falcon 20,
 // Fusion above Falcon. Scribe is not on the shared block and keeps a copy of this.
+// The stack is a column; <html data-mb-corner-flow="row"> (String Theory's menu sets it)
+// lines it up along the bottom/top edge instead, the lowest order still nearest the corner.
 function mbRestackCorner(corner) {
     var bottom = corner[0] === 'b', right = corner[1] === 'r';
+    var row = document.documentElement.getAttribute('data-mb-corner-flow') === 'row';
     var els = Array.prototype.slice.call(document.querySelectorAll('[data-mb-corner="' + corner + '"]'))
         // offsetParent is always null for position:fixed, so it can't tell visibility here
         .filter(function (el) { return getComputedStyle(el).display !== 'none'; })
         .sort(function (a, b) { return (Number(a.dataset.mbCornerOrder) || 0) - (Number(b.dataset.mbCornerOrder) || 0); });
     var pos = 14;
     els.forEach(function (el) {
-        el.style[bottom ? 'bottom' : 'top'] = pos + 'px';
-        el.style[right ? 'right' : 'left'] = '14px';
-        pos += el.getBoundingClientRect().height + 8;
+        var r = el.getBoundingClientRect();
+        el.style[bottom ? 'bottom' : 'top'] = (row ? 14 : pos) + 'px';
+        el.style[right ? 'right' : 'left'] = (row ? pos : 14) + 'px';
+        pos += (row ? r.width : r.height) + 8;
     });
 }
 
