@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+<title>Group Therapy — Paper clip</title>
+<defs><filter id="gt11-h" x="-10%" y="-10%" width="120%" height="120%"><feMorphology in="SourceAlpha" operator="dilate" radius="1.5" result="d"/><feFlood flood-color="#fff" flood-opacity=".7"/><feComposite in2="d" operator="in"/><feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs><g filter="url(#gt11-h)"><rect x="22" y="34" width="72" height="84" rx="6" fill="#fff" stroke="#22223b" stroke-width="4" stroke-linejoin="round" stroke-linecap="round"/><rect x="34" y="24" width="72" height="84" rx="6" fill="#3fb6f0" stroke="#22223b" stroke-width="4" stroke-linejoin="round" stroke-linecap="round"/><path d="M48 54 H92 M48 68 H86 M48 82 H90" stroke="#fff" stroke-width="5" stroke-linecap="round"/>
+<path d="M84 46 V14 Q84 6 92 6 Q100 6 100 14 V50 Q100 62 88 62 Q76 62 76 50 V20" fill="none" stroke="#22223b" stroke-width="9" stroke-linecap="round"/><path d="M84 46 V14 Q84 6 92 6 Q100 6 100 14 V50 Q100 62 88 62 Q76 62 76 50 V20" fill="none" stroke="#d9dce6" stroke-width="4" stroke-linecap="round"/></g>
+</svg>

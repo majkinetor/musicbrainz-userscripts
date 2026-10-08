@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+<title>Group Therapy — Box of tissues</title>
+<defs><filter id="gt04-h" x="-10%" y="-10%" width="120%" height="120%"><feMorphology in="SourceAlpha" operator="dilate" radius="1.5" result="d"/><feFlood flood-color="#fff" flood-opacity=".7"/><feComposite in2="d" operator="in"/><feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs><g filter="url(#gt04-h)"><path d="M52 44 Q40 20 62 16 Q70 30 66 24 Q84 10 88 30 Q92 44 76 46Z" fill="#fff" stroke="#22223b" stroke-width="4" stroke-linejoin="round" stroke-linecap="round"/><rect x="16" y="46" width="96" height="66" rx="8" fill="#3fb6f0" stroke="#22223b" stroke-width="4" stroke-linejoin="round" stroke-linecap="round"/>
+<rect x="44" y="40" width="40" height="12" rx="6" fill="#22223b"/><path d="M16 74 H112" stroke="#22223b" stroke-width="3" opacity=".35"/><path d="M30 92 Q46 80 62 92 T94 92" fill="none" stroke="#fff" stroke-width="4" stroke-linecap="round"/></g>
+</svg>
