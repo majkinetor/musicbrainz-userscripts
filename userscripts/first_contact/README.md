@@ -15,11 +15,12 @@ Import a release into MusicBrainz from the platform's album page with one click:
 ## Features
 
 - **[Import](#import)** a release from the album page into the MusicBrainz release editor.
+- **[Send to Harmony](#send-to-harmony)**: look the album up on Harmony instead, with every platform that has its barcode.
 - **[Platforms](#platforms)**: what is read from each one.
 - **[Artist matching](#artist-matching)** is left to Apollo Editor, which gets every artist's platform link.
 - **[Archive](#archive)**: the album page is saved on the Internet Archive, and the edit note links the snapshot.
 - **[Moving the button](#moving-the-button)**: drag it anywhere; each platform remembers its place.
-- **[Settings](#settings)**: the MusicBrainz server, an icon-only button, a settings button only on hover, the annotation, closing the page after the import, and archiving.
+- **[Settings](#settings)**: the MusicBrainz server, an icon-only button, a settings button only on hover, the annotation, closing the page after the import, the Harmony button, and archiving.
 
 ## Import
 
@@ -55,6 +56,18 @@ When the platform gives no type, or only a plain *album* while the title says ot
 | 2 tracks or more, up to 30 minutes                                                                | EP     |
 
 Without every track's length: 1 track is a Single, 3 to 6 an EP, 7 or more an Album, and 2 are left for you. The log says which sign decided.
+
+## Send to Harmony
+
+The button between **Import to MusicBrainz** and **⚙︎**, with [Harmony](https://harmony.pulsewidth.org.uk/)'s icon, opens the album in Harmony's release lookup in a new tab instead. Harmony then finds the album on the other platforms by its barcode, and [Falcon](../falcon/README.md) works there as usual.
+
+| Platform | Sent |
+| --- | --- |
+| Deezer, Bandcamp, Discogs, Apple Music, Tidal, Qobuz, Beatport, Spotify, Ototoy | the album link, at once; Apple Music's also its country store as the region |
+| Volumo, HDtracks, SoundCloud, Audiomack, 7digital | the barcode: Harmony can't read these platforms, so First Contact reads the album first, as for an import. Without a barcode (a SoundCloud set that isn't a label's), nothing is sent and a message says why |
+| YouTube Music, Amazon Music | nothing: Harmony can't read them and they show no barcode, so the button is greyed out |
+
+Turn the button off in [Settings](#settings).
 
 ## Platforms
 
@@ -274,6 +287,7 @@ The **⚙︎** button next to **Import to MusicBrainz** opens them, in three sec
 | MusicBrainz server | musicbrainz.org | where the release editor opens: musicbrainz.org, beta.musicbrainz.org or test.musicbrainz.org |
 | Annotation from *platform*'s notes | on | on this platform only, the album's [notes on the platform](#platforms) go into the annotation, followed by *From <platform>: <album page>*. A review is the critic's text (Qobuz's and Apple's are usually AllMusic's): check you may copy it before you submit. |
 | Close this page after the import | off | the platform's tab closes once the release editor has the release; it stays open when the import fails |
+| Send to Harmony button | on | the [Harmony button](#send-to-harmony) between **Import to MusicBrainz** and **⚙︎** |
 
 ### Archive
 
