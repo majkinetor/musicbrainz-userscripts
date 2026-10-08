@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+<title>Falcon — Crate</title>
+<rect x="28" y="22" width="8" height="40" rx="2" fill="#ff6a00"/><rect x="44" y="28" width="8" height="40" rx="2" fill="#1b2a4a"/><rect x="60" y="22" width="8" height="40" rx="2" fill="#2fb37a"/><rect x="76" y="28" width="8" height="40" rx="2" fill="#4a5a78"/><rect x="92" y="22" width="8" height="40" rx="2" fill="#f5c518"/><rect x="14" y="54" width="100" height="58" rx="4" fill="#c98b5a"/><path d="M14 72 H114 M14 92 H114" stroke="#a46a3e" stroke-width="3"/><path d="M14 54 L114 112 M114 54 L14 112" stroke="#a46a3e" stroke-width="5"/>
+<rect x="14" y="54" width="100" height="58" rx="4" fill="none" stroke="#7a4a26" stroke-width="4"/><rect x="44" y="76" width="40" height="14" fill="#f6efe2"/><text x="64" y="87" text-anchor="middle" font-family="Arial Black,Helvetica,sans-serif" font-weight="900" font-size="11" fill="#1b2a4a">BULK</text>
+</svg>

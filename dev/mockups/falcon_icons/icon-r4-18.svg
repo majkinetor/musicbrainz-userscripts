@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+<title>Falcon — Times N</title>
+<rect x="4" y="4" width="120" height="120" rx="24" fill="#1b2a4a"/><rect x="18" y="26" width="52" height="14" rx="4" fill="#fff"/><rect x="18" y="46" width="52" height="14" rx="4" fill="#fff" opacity=".6"/><rect x="18" y="66" width="52" height="14" rx="4" fill="#fff" opacity=".35"/><rect x="18" y="86" width="52" height="14" rx="4" fill="#fff" opacity=".15"/>
+<text x="96" y="80" text-anchor="middle" font-family="Arial Black,Helvetica,sans-serif" font-weight="900" font-size="38" fill="#ff6a00">×n</text>
+</svg>
