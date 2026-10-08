@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+<title>Apollo Editor — Glass</title>
+<defs><filter id="ap208-b"><feGaussianBlur stdDeviation="8"/></filter><clipPath id="ap208-c"><rect x="4" y="4" width="120" height="120" rx="28"/></clipPath></defs>
+<g clip-path="url(#ap208-c)"><rect x="4" y="4" width="120" height="120" fill="#5f3ec0"/><g filter="url(#ap208-b)"><circle cx="30" cy="30" r="30" fill="#ff8c3b"/><circle cx="104" cy="96" r="36" fill="#4cc9f0"/><circle cx="96" cy="26" r="20" fill="#ff4fd8"/></g>
+<rect x="18" y="18" width="92" height="92" rx="20" fill="#fff" opacity=".18" stroke="#fff" stroke-opacity=".6" stroke-width="2"/></g>
+<text x="64" y="94" text-anchor="middle" font-family="Helvetica,Arial,sans-serif" font-weight="800" font-size="72" fill="#fff">A</text>
+</svg>

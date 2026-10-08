@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+<title>Apollo Editor — Cute rocket</title>
+<rect x="4" y="4" width="120" height="120" rx="26" fill="#ffe6f1"/><g transform="translate(16 4) scale(3)"><path d="M13 22 L19 22 L16 30 Z" fill="#ff8c3b"/><path d="M14.4 22 L17.6 22 L16 27 Z" fill="#ffd24a"/><path d="M12 18 L8 23.5 L12 22 Z M20 18 L24 23.5 L20 22 Z" fill="#ff6fa8"/><path d="M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z" fill="#8f6cff"/><circle cx="16" cy="12.5" r="3" fill="#fff" stroke="#5f3ec0" stroke-width="1"/></g><g fill="#2a1a52"><circle cx="58" cy="44" r="2.2"/><circle cx="70" cy="44" r="2.2"/></g><path d="M60 50 Q64 54 68 50" stroke="#2a1a52" stroke-width="2" fill="none" stroke-linecap="round"/>
+<circle cx="54" cy="50" r="2.6" fill="#ff9cc4"/><circle cx="74" cy="50" r="2.6" fill="#ff9cc4"/>
+</svg>

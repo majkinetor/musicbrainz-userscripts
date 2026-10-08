@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+<title>Apollo Editor — Star rocket</title>
+<rect x="4" y="4" width="120" height="120" rx="26" fill="#0b1238"/><path d="M64,10 L76,34 L80,62 L80,88 L96,104 L64,96 L32,104 L48,88 L48,62 L52,34Z" fill="none" stroke="#7f8ccf" stroke-width="1.8"/><circle cx="64" cy="50" r="8" fill="none" stroke="#7f8ccf" stroke-width="1.8"/>
+<circle cx="64" cy="10" r="5" fill="#ffe680"/><circle cx="76" cy="34" r="3.4" fill="#fff"/><circle cx="80" cy="62" r="3.4" fill="#fff"/><circle cx="80" cy="88" r="3.4" fill="#fff"/><circle cx="96" cy="104" r="3.4" fill="#fff"/><circle cx="64" cy="96" r="3.4" fill="#fff"/><circle cx="32" cy="104" r="3.4" fill="#fff"/><circle cx="48" cy="88" r="3.4" fill="#fff"/><circle cx="48" cy="62" r="3.4" fill="#fff"/><circle cx="52" cy="34" r="3.4" fill="#fff"/><path d="M58 104 L64 120 L70 104" fill="none" stroke="#ff8c3b" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>
+</svg>

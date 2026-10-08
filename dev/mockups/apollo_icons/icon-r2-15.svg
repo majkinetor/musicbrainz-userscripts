@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+<title>Apollo Editor — Temple</title>
+<rect x="4" y="4" width="120" height="120" rx="26" fill="#f4efe4"/><path d="M14 46 L64 16 L114 46Z" fill="#5f3ec0"/><circle cx="64" cy="35" r="5" fill="#ffd24a"/><rect x="16" y="46" width="96" height="8" fill="#3d2470"/>
+<rect x="22" y="56" width="10" height="44" rx="2" fill="#7a57e8"/><rect x="40" y="56" width="10" height="36" rx="2" fill="#7a57e8"/><rect x="58" y="56" width="10" height="48" rx="2" fill="#7a57e8"/><rect x="76" y="56" width="10" height="40" rx="2" fill="#7a57e8"/><rect x="94" y="56" width="10" height="30" rx="2" fill="#7a57e8"/><rect x="12" y="106" width="104" height="8" rx="2" fill="#3d2470"/>
+</svg>

@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+<title>Apollo Editor — Comet</title>
+<rect x="4" y="4" width="120" height="120" rx="26" fill="#140e33"/><path d="M18 59 L88 30" stroke="#ffd24a" stroke-width="5" stroke-linecap="round" opacity="1"/><path d="M32 58.800000000000004 L88 36" stroke="#ff8c3b" stroke-width="5" stroke-linecap="round" opacity="0.85"/><path d="M24 43.2 L88 42" stroke="#ff4d6d" stroke-width="5" stroke-linecap="round" opacity="0.7"/><path d="M42 45.800000000000004 L88 48" stroke="#b983ff" stroke-width="5" stroke-linecap="round" opacity="0.55"/>
+<circle cx="92" cy="34" r="14" fill="#fff4c2"/><circle cx="92" cy="34" r="9" fill="#fff"/>
+</svg>
