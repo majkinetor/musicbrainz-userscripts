@@ -30,7 +30,7 @@ test('failed uploads repeat by themselves, say so in the footer, stop at the lim
   await openArtStation(page, inject, { path: 'add-cover-art' });
 
   // ── the setting (its defaults and their migration are 566b's) ─────────────────
-  await page.click('#as-setup-btn');
+  await page.click('#as-switch', { button: 'right' });
   await page.waitForSelector('#as-setup', { timeout: 5000 });
   const ui = await page.evaluate(() => {
     const cb = document.querySelector('.as-setup-autorepeat');
@@ -57,7 +57,7 @@ test('failed uploads repeat by themselves, say so in the footer, stop at the lim
   // ── drive a real commit whose upload fails ──────────────────────────────────
   const arm = async (on, minutes, times) => page.evaluate(async ([on2, m, t]) => {
     document.getElementById('as-setup')?.remove();
-    document.getElementById('as-setup-btn').click();
+    document.getElementById('as-switch').dispatchEvent(new MouseEvent('contextmenu', { bubbles: true, cancelable: true }));
     for (let i = 0; i < 200 && !document.querySelector('.as-setup-autorepeat'); i++) await new Promise(r => setTimeout(r, 25));
     const set = (sel, v, isCheck) => {
       const i = document.querySelector(sel);

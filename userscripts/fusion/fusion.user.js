@@ -3625,6 +3625,7 @@ function openSettings(anchor) {
     document.body.appendChild(s);
     const r = anchor.getBoundingClientRect();
     s.style.top = (r.bottom + 6) + 'px'; s.style.right = '14px';
+    if (r.bottom + 6 + s.offsetHeight > window.innerHeight - 8) { s.style.top = 'auto'; s.style.bottom = (window.innerHeight - r.top + 6) + 'px'; }   // #695: from the corner launcher, open upward
     s.querySelector('#fs-opt-votable').checked = !!SETTINGS.makeVotable;
     s.querySelector('#fs-opt-acoustid').checked = SETTINGS.acoustidEnrich !== false;
     s.querySelector('#fs-opt-automatch').checked = !!SETTINGS.autoMatchOnOpen;
@@ -3638,7 +3639,7 @@ function openSettings(anchor) {
     s.querySelector('#fs-opt-tol').onchange = e => { SETTINGS.lengthToleranceMs = Math.max(0, Number(e.target.value) || 0) * 1000; saveSettings(); };
     s.querySelector('#fs-opt-gross').onchange = e => { SETTINGS.grossLengthMs = Math.max(5, Number(e.target.value) || 30) * 1000; saveSettings(); Log.info('Gross-length guard set to ' + Math.round(SETTINGS.grossLengthMs / 1000) + 's'); };
     s.querySelector('.mbu-cfg-log').onclick = () => { s.remove(); openLog(); };
-    const off = e => { if (!s.contains(e.target) && e.target !== anchor) { s.remove(); document.removeEventListener('mousedown', off); } };
+    const off = e => { if (!s.contains(e.target) && !anchor.contains(e.target)) { s.remove(); document.removeEventListener('mousedown', off); } };
     setTimeout(() => document.addEventListener('mousedown', off), 0);
 }
 
@@ -3850,9 +3851,10 @@ function ensureLauncher() {
     fsStyle();
     const btn = el('button', 'fs-launch'); btn.id = 'fs-launch'; btn.type = 'button';
     const img = document.createElement('img'); img.src = ICON_URL; img.alt = ''; btn.appendChild(img);
-    btn.title = 'Fusion — merge recordings';   // icon-only: the tooltip carries the name
+    btn.title = 'Fusion — merge recordings\nRight-click: settings';   // icon-only: the tooltip carries the name
     btn.dataset.mbCorner = 'br'; btn.dataset.mbCornerOrder = '30';
     btn.onclick = () => openFusion();
+    btn.oncontextmenu = e => { e.preventDefault(); if (document.getElementById('fs-settings')) document.getElementById('fs-settings').remove(); else openSettings(btn); };   // #695: right-click on every corner launcher opens its settings
     document.body.appendChild(btn);
     mbRestackCorner('br');
 }

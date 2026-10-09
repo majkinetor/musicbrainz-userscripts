@@ -1370,9 +1370,10 @@ function launcher() {
     if (document.getElementById('mc-launch')) return;
     mcStyle();
     const b = el('button', 'mc-launch'); b.id = 'mc-launch'; b.type = 'button';
-    const img = document.createElement('img'); img.src = ICON_URL; img.alt = ''; b.appendChild(img); b.title = 'Mission Control';
+    const img = document.createElement('img'); img.src = ICON_URL; img.alt = ''; b.appendChild(img); b.title = 'Mission Control\nRight-click: settings';
     b.dataset.mbCorner = 'br'; b.dataset.mbCornerOrder = '40';   // above Fusion
     b.onclick = () => open();
+    b.oncontextmenu = e => { e.preventDefault(); settingsWindow(); };   // #695: right-click on every corner launcher opens its settings
     document.body.appendChild(b);
     mbRestackCorner('br');
 }

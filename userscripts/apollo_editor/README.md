@@ -20,7 +20,7 @@ A faster release editor for MusicBrainz: artists and recordings matched in one p
 - **[Annotation editor](#annotation-editor)**: Markdown with a live preview.
 - **[Highlighting](#highlighting)**: confusable punctuation, invisible characters and missing spaces made visible.
 
-Each part is optional, and the **Original / Apollo** button switches back to MusicBrainz's own editor at any time.
+Each part is optional, and Apollo's icon in the bottom-right corner switches back to MusicBrainz's own editor at any time; it's highlighted while Apollo is on.
 
 ## Release information
 
@@ -245,7 +245,7 @@ Apollo follows a dark MusicBrainz theme, such as kellnerd's [userstyle](https://
 
 ## Settings
 
-**⚙** on the **Original / Apollo** button. Column widths, the toolbar layout, **Change**, **Cutoff** and the picker's folded sections are remembered as you use them.
+Right-click Apollo's corner icon. Column widths, the toolbar layout, **Change**, **Cutoff** and the picker's folded sections are remembered as you use them.
 
 | Setting                                                       | Default |                                                                                                |
 | ------------------------------------------------------------- | ------- | ---------------------------------------------------------------------------------------------- |

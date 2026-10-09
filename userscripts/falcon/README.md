@@ -25,7 +25,7 @@ Untouched rows and aliases the entity already has are skipped, not submitted aga
 
 ## Filling the queue
 
-Open Falcon on any MusicBrainz page with **Ctrl+Alt+F** (or its corner icon). The icon stays off the release editor (`/release/<mbid>/edit` and `/release/add`), which is [Apollo Editor](../apollo_editor)'s page and nothing Falcon acts on; **Ctrl+Alt+F** still opens it there.
+Open Falcon on any MusicBrainz page with **Ctrl+Alt+F** (or its corner icon; right-click the icon for **Options**). The icon stays off the release editor (`/release/<mbid>/edit` and `/release/add`), which is [Apollo Editor](../apollo_editor)'s page and nothing Falcon acts on; **Ctrl+Alt+F** still opens it there.
 
 ### From Harmony
 

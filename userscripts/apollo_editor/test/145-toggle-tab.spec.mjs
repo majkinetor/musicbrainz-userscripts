@@ -15,7 +15,7 @@ test('the tracklist is right on the first frame after a toggle', { tag: ['@sandb
     window.__t = {
       clickTab: key => document.querySelector(`#release-editor ul.ui-tabs-nav a[href="#${key}"]`)?.click(),
       on: () => window.__apolloEditor.apolloOn,
-      toggle: () => document.querySelector('#tc-launch .tc-launch-lbl').click(),
+      toggle: () => document.querySelector('#tc-launch').click(),
       mirror: () => !!document.getElementById('tc-mirror-wrap'),
       clickAndSample: (key, frames) => new Promise(res => {
         const samples = [];

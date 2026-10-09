@@ -46,7 +46,7 @@ test('the upload timeout is a setting, and reaches the upload request', { tag: [
   await idle(page);
 
   // ── the setup control ───────────────────────────────────────────────────────
-  await page.click('#as-setup-btn');
+  await page.click('#as-switch', { button: 'right' });
   await page.waitForSelector('#as-setup', { timeout: 5000 });
   const ui = await page.evaluate(() => {
     const inp = document.querySelector('.as-setup-uptimeout');
@@ -104,7 +104,7 @@ test('the upload timeout is a setting, and reaches the upload request', { tag: [
   // back to the default and re-measure, so the first result can't be a coincidence
   // close the commit window first: it covers the setup button
   await page.evaluate(() => { document.querySelector('#as-commit .as-cm-cancel')?.click(); document.getElementById('as-commit')?.remove(); document.getElementById('as-setup')?.remove(); });
-  await page.click('#as-setup-btn');
+  await page.click('#as-switch', { button: 'right' });
   await page.waitForSelector('.as-setup-uptimeout', { timeout: 5000 });
   await page.evaluate(() => { const i = document.querySelector('.as-setup-uptimeout'); i.value = '10'; i.dispatchEvent(new Event('change', { bubbles: true })); document.getElementById('as-setup').remove(); });
   const at10 = await runCommit();
@@ -119,7 +119,7 @@ test('the upload timeout is a setting, and reaches the upload request', { tag: [
   // user-facing text rather than assert that a string exists in the source.
   hangUploads = true;
   await page.evaluate(() => { document.querySelector('#as-commit .as-cm-cancel')?.click(); document.getElementById('as-commit')?.remove(); document.getElementById('as-setup')?.remove(); });
-  await page.click('#as-setup-btn');
+  await page.click('#as-switch', { button: 'right' });
   await page.waitForSelector('.as-setup-uptimeout', { timeout: 5000 });
   await page.evaluate(() => { const i = document.querySelector('.as-setup-uptimeout'); i.value = '1'; i.dispatchEvent(new Event('change', { bubbles: true })); document.getElementById('as-setup').remove(); });
   await page.evaluate(() => {

@@ -2599,6 +2599,8 @@ click to open the label`;
     const releaseUrl = location.href.split(/[?#]/)[0].replace(/\/edit(-relationships)?$/, '');
     return apolloAttribution() + '\n\n' + action + ' while editing ' + releaseUrl;
   }
+  // the corner launcher wears the script's own icon (the same picture as @icon)
+  const ICON_URL = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5BcG9sbG8gRWRpdG9yPC90aXRsZT4KPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZmZmIiBzdHJva2UtbGluZWpvaW49InJvdW5kIiBzdHJva2UtbGluZWNhcD0icm91bmQiIG9wYWNpdHk9IjAuNyI+PHBhdGggZD0iTTY0IDEwIEM4MiAyOCA5MCA1NiA5MCA4MCBMMzggODAgQzM4IDU2IDQ2IDI4IDY0IDEwIFoiIHN0cm9rZS13aWR0aD0iMTEiLz48cGF0aCBkPSJNMzggODAgTDIwIDExMCBMNDAgOTYgWiIgc3Ryb2tlLXdpZHRoPSIxMSIvPjxwYXRoIGQ9Ik05MCA4MCBMMTA4IDExMCBMODggOTYgWiIgc3Ryb2tlLXdpZHRoPSIxMSIvPjxwYXRoIGQ9Ik01MCA4MCBMNDUgMTA4IEw2NCAxMjIgTDgzIDEwOCBMNzggODAgWiIgc3Ryb2tlLXdpZHRoPSI5Ii8+PC9nPjxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzFiMmE0YSIgc3Ryb2tlLXdpZHRoPSI3IiBzdHJva2UtbGluZWpvaW49InJvdW5kIiBzdHJva2UtbGluZWNhcD0icm91bmQiPjxwYXRoIGQ9Ik02NCAxMCBDODIgMjggOTAgNTYgOTAgODAgTDM4IDgwIEMzOCA1NiA0NiAyOCA2NCAxMCBaIi8+PHBhdGggZD0iTTM4IDgwIEwyMCAxMTAgTDQwIDk2IFoiLz48cGF0aCBkPSJNOTAgODAgTDEwOCAxMTAgTDg4IDk2IFoiLz48L2c+PGNpcmNsZSBjeD0iNjQiIGN5PSI0NCIgcj0iMTAiIGZpbGw9IiNlNjM5NDYiLz4KPHBhdGggZD0iTTUwIDgwIEw0NSAxMDggTDY0IDEyMiBMODMgMTA4IEw3OCA4MCBaIiBmaWxsPSIjZmY2YTAwIiBzdHJva2U9IiMxYjJhNGEiIHN0cm9rZS13aWR0aD0iNSIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgo8L3N2Zz4K';
   // Apollo Editor — a launching rocket in the theme purple (recreated from the requested clipart)
   const ICON = '<svg class="tc-ico" viewBox="0 0 32 32" width="22" height="22" aria-hidden="true" style="vertical-align:-5px">' +
     '<path d="M13 22 L19 22 L16 30 Z" fill="#ff8c3b"/>' +                                   // flame (outer)
@@ -3969,11 +3971,11 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     #tc-settings .tc-tab-pane[hidden]{display:none}
     #tc-settings .tc-tab-pane .tc-s-top{margin-top:0}
     #tc-settings .tc-s-row.lentol{gap:7px}
-    #tc-launch{position:fixed;bottom:14px;right:14px;z-index:var(--mbu-z-pop);display:inline-flex;align-items:stretch;background:var(--mbu-accent);color:var(--mbu-text-on-accent);border-radius:20px;font:bold 13px Arial;box-shadow:0 3px 12px rgba(40,20,80,.3);overflow:hidden}
-    #tc-launch .tc-launch-lbl{padding:8px 13px;cursor:pointer}
-    #tc-launch .tc-launch-lbl:hover{background:rgba(255,255,255,.13)}
-    #tc-launch .tc-launch-gear{padding:8px 11px;cursor:pointer;font-size:14px;display:flex;align-items:center;border-left:1px solid rgba(255,255,255,.28)}
-    #tc-launch .tc-launch-gear:hover{background:rgba(255,255,255,.13)}
+    /* #695: a round icon like every other corner launcher (Falcon, Fusion); highlighted like Falcon's while Apollo is on */
+    #tc-launch{position:fixed;bottom:14px;right:14px;z-index:var(--mbu-z-pop);width:40px;height:40px;border-radius:50%;border:none;padding:0;display:flex;align-items:center;justify-content:center;cursor:pointer;background:transparent;box-shadow:none;opacity:.85;transition:background .15s,transform .1s,opacity .15s}
+    #tc-launch:hover{opacity:1;transform:scale(1.08)}
+    #tc-launch.on{background:#1f9d6b;box-shadow:0 0 0 2px #9bd3b6,0 2px 10px rgba(31,157,107,.45);opacity:1}
+    #tc-launch img{width:34px;height:34px;display:block;pointer-events:none}
     #tc-btn,#tc-gear-btn{vertical-align:middle}
 
     /* ──────────────────────────────────────────────────────────────────
@@ -4096,7 +4098,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     const place = () => {
       s.style.left = Math.max(8, Math.min(r.right - s.offsetWidth, window.innerWidth - s.offsetWidth - 10)) + 'px';
       const h = Math.min(s.offsetHeight, maxH); let top = r.bottom + 6;
-      if (top + h > window.innerHeight - 8) top = Math.max(8, window.innerHeight - h - 8);
+      if (top + h > window.innerHeight - 8) top = r.top - h - 6 >= 8 ? r.top - h - 6 : Math.max(8, window.innerHeight - h - 8);   // #695: from the corner icon, open above it
       s.style.top = top + 'px';
     };
     // tabs: show one pane at a time so the panel stays short (#294)
@@ -4152,7 +4154,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     zen.onchange = () => { SETTINGS.zenMode = zen.checked; saveSettings(); applyZen(); };
     const aconf = s.querySelector('#tc-s-autoconfirm'); if (aconf) { aconf.checked = SETTINGS.autoConfirmSeed !== false; aconf.onchange = () => { SETTINGS.autoConfirmSeed = aconf.checked; saveSettings(); }; }
     const kcaret = s.querySelector('#tc-s-keepcaret'); if (kcaret) { kcaret.checked = SETTINGS.keepCaretColumn !== false; kcaret.onchange = () => { SETTINGS.keepCaretColumn = kcaret.checked; saveSettings(); }; }   // #279
-    const off = e => { if (!s.contains(e.target) && e.target !== anchor) { s.remove(); document.removeEventListener('mousedown', off); } };
+    const off = e => { if (!s.contains(e.target) && !(anchor && anchor.contains(e.target))) { s.remove(); document.removeEventListener('mousedown', off); } };
     const lbtn = s.querySelector('.tc-logbtn'); if (lbtn) lbtn.onclick = () => { s.remove(); document.removeEventListener('mousedown', off); openLog(); };
     setTimeout(() => document.addEventListener('mousedown', off), 0);
   }
@@ -7215,11 +7217,13 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
   function riWant() { return apolloEnabled() && SETTINGS.replaceReleaseInfo !== false; }
   function releaseInfoVisible() { const p = document.getElementById('information'); return !!(p && p.offsetParent !== null); }
   function apolloOn() { return apolloEnabled(); }
-  // #569: guarded. Assigning textContent replaces the child text node whether or
-  // not the string changed, so this was dispatching a childList record twice a
-  // second — the last idle mutation left after the class guards. Safe here
-  // because the span holds text and nothing else (see mbuProp's warning).
-  function relabelLauncher() { const lbl = document.querySelector('#tc-launch .tc-launch-lbl'); if (lbl) mbuProp(lbl, 'textContent', apolloEnabled() ? 'Original' : 'Apollo Editor'); }
+  // #695: the launcher is an icon, highlighted while Apollo is on; the tooltip says what a click does
+  function relabelLauncher() {
+    const b = document.getElementById('tc-launch'); if (!b) return;
+    const on = apolloEnabled();
+    mbuCls(b, 'on', on);
+    mbuAttr(b, 'title', (on ? 'Apollo Editor is on · click: show the original editor' : 'Apollo Editor is off · click: turn it on') + ' (every tab, stays until you switch back)\nRight-click: settings');
+  }
   // show/hide each visible managed tab's mirror per its want
   function applyView() {
     recStyle();   // make sure the recordings CSS (incl. the native-table hide rule) exists up front
@@ -7231,16 +7235,14 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
   }
   function ensureLauncher() {
     if (document.getElementById('tc-launch')) { relabelLauncher(); return; }
-    style(); const b = document.createElement('div'); b.id = 'tc-launch';
+    style(); const b = document.createElement('button'); b.type = 'button'; b.id = 'tc-launch';
     b.dataset.mbCorner = 'br'; b.dataset.mbCornerOrder = '10';
-    const lbl = document.createElement('span'); lbl.className = 'tc-launch-lbl'; lbl.title = 'Toggle Apollo / the original editor for ALL tabs — stays this way (across pages) until you switch back';
-    lbl.onclick = () => {   // GLOBAL toggle — flips Apollo for every tab/feature and persists across pages
+    const img = document.createElement('img'); img.src = ICON_URL; img.alt = ''; b.appendChild(img);
+    b.onclick = () => {   // GLOBAL toggle — flips Apollo for every tab/feature and persists across pages
       SETTINGS.apolloEnabled = !apolloEnabled(); saveSettings();
       applyView(); applyNav(); applyAnnotationPage();
     };
-    const gear = document.createElement('span'); gear.className = 'tc-launch-gear'; gear.textContent = MBU_CFG_ICON; gear.title = 'Apollo Editor settings';
-    gear.onclick = () => openSettings(gear);   // the one settings entry point — gear removed from the toolbars
-    b.append(lbl, gear);
+    b.oncontextmenu = e => { e.preventDefault(); openSettings(b); };   // #695: the one settings entry point (right-click on every corner launcher)
     document.body.appendChild(b); relabelLauncher();
     mbRestackCorner('br');
   }

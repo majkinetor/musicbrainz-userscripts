@@ -90,10 +90,10 @@ test.describe('in the release editor', () => {
     await until(async () => (await md()) === '' && (await model()) === '');
     check((await md()) === '' && (await model()) === '', 'Clear empties the surface and the model');
 
-    await page.click('#tc-launch .tc-launch-lbl');   // Apollo off
+    await page.click('#tc-launch');   // Apollo off
     const off = await until(() => page.evaluate(() => { const ta = document.getElementById('annotation'); return { wrap: !!document.querySelector('#tc-anno-wrap'), riOn: document.body.classList.contains('tc-ri-on'), native: !!ta && ta.offsetParent !== null }; }), o => !o.wrap && !o.riOn && o.native);
     check(!off.wrap && !off.riOn && off.native, `Apollo off: the editor is gone, the native field back (${JSON.stringify(off)})`);
-    await page.click('#tc-launch .tc-launch-lbl');
+    await page.click('#tc-launch');
     check(await until(() => page.$('#tc-anno-bar #tc-anno-join')), 'on again: it comes back');
     check(submitted.length === 0, 'nothing submitted');
   });

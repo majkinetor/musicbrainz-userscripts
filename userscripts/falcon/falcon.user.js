@@ -5445,7 +5445,7 @@
     if (launcher) return;
     launcher = document.createElement('button');
     launcher.type = 'button'; launcher.id = 'falcon-launcher';
-    launcher.title = `${NAME} — bulk MusicBrainz editor (Ctrl+Alt+F)`;
+    launcher.title = `${NAME} — bulk MusicBrainz editor (Ctrl+Alt+F)\nRight-click: settings`;
     launcher.dataset.mbCorner = 'br'; launcher.dataset.mbCornerOrder = '20';
     // #588: a page Falcon reloaded after a clean run wears a green icon instead
     // of the usual translucent one — majkinetor's ask was to be able to pick
@@ -5469,11 +5469,12 @@
       + (done ? 'background:#1f9d6b;color:#fff;box-shadow:0 0 0 2px #9bd3b6,0 2px 10px rgba(31,157,107,.45);'
         : 'background:transparent;box-shadow:none;')
       + `transition:background .15s,transform .1s;opacity:${rest}`;
-    if (done) launcher.title = `${NAME} — ${_closedClean ? 'closed itself' : 'this page was reloaded'} after a clean run (Ctrl+Alt+F for the log)`;
+    if (done) launcher.title = `${NAME} — ${_closedClean ? 'closed itself' : 'this page was reloaded'} after a clean run (Ctrl+Alt+F for the log)\nRight-click: settings`;
     const img = document.createElement('img'); img.src = ICON_URL; img.alt = ''; img.style.cssText = 'width:34px;height:34px;display:block;pointer-events:none'; launcher.appendChild(img);
     launcher.onmouseenter = () => { launcher.style.transform = 'scale(1.08)'; launcher.style.opacity = '1'; };
     launcher.onmouseleave = () => { launcher.style.transform = 'scale(1)'; launcher.style.opacity = rest; };
     launcher.onclick = () => togglePanel();
+    launcher.oncontextmenu = e => { e.preventDefault(); showPanel(); setTab('options'); };   // #695: right-click on every corner launcher opens its settings
     document.body.appendChild(launcher);
     mbRestackCorner('br');
   }

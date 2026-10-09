@@ -77,7 +77,7 @@ It is an ordinary edit on your account: unless you're an auto-editor, it goes to
 
 ## Settings
 
-The ⚙ window, which also holds the activity **Log**:
+The ⚙ window (or right-click Fusion's corner icon), which also holds the activity **Log**:
 
 | Setting | Default | |
 |---|---|---|

@@ -57,7 +57,7 @@ test.describe('label search', () => {
 
     // Original view: MusicBrainz's lookup and search icon come back
     await page.locator('#catno-0').click();
-    await page.evaluate(() => document.querySelector('#tc-launch .tc-launch-lbl').click());
+    await page.evaluate(() => document.querySelector('#tc-launch').click());
     await idle(page);
     const f2 = await until(() => field(page), v => !v.taken);
     check(!f2.taken && !f2.nativeOff && f2.icon && !f2.mk, `the Original view hands the field back: ${JSON.stringify(f2)}`);

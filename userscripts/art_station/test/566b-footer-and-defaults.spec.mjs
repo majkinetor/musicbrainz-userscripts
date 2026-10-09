@@ -17,7 +17,7 @@ import { openArtStation, blockPosts } from './as.mjs';
 
 const seeded = stored => ({ gm: { name: 'Art Station', values: stored ? { 'artstation:settings': JSON.stringify(stored) } : {} } });
 const panel = async page => {
-  await page.click('#as-setup-btn');
+  await page.click('#as-switch', { button: 'right' });
   await page.waitForSelector('#as-setup', { timeout: 5000 });
   return page.evaluate(() => ({
     checked: document.querySelector('.as-setup-autorepeat').checked,

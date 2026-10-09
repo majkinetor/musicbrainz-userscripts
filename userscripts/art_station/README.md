@@ -20,6 +20,8 @@ A cover and event art editor for MusicBrainz: one gallery to view, sort, reorder
 - **[File names ⇄ types](#file-names--types)**: a downloaded archive re-adds with its types and comments.
 - **[Applying changes](#applying-changes)** as parallel edits, with automatic retries.
 
+Art Station's icon in the bottom-right corner switches to MusicBrainz's own page and back; it's highlighted while Art Station shows. Right-click it for the settings (⚙ below).
+
 | Grouped by type | Detailed view |
 |---|---|
 | ![](./screenshots/screenshot2.png) | ![](./screenshots/screenshot3.png) |

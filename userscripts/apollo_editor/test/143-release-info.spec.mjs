@@ -54,7 +54,7 @@ test("the favicon fits, checkbox labels aren't bold, and switching leaves no str
   });
   check(s.fav && s.fav.w <= s.fav.cellW, `the favicon stays inside its cell (${JSON.stringify(s.fav)})`);
   check(s.boxes > 0 && s.bold.length === 0, `checkbox labels are not bold (${s.boxes} checked) (${JSON.stringify(s.bold)})`);
-  await page.evaluate(() => document.querySelector('#tc-launch .tc-launch-lbl')?.click());
+  await page.evaluate(() => document.querySelector('#tc-launch')?.click());
   await page.waitForFunction(() => !document.body.classList.contains('tc-ri-on'), null, { timeout: 8000 });
   await frames(page);
   const bubbles = await page.evaluate(() => { const d = document.querySelector('#information > div.documentation'); return d ? [...d.querySelectorAll('.bubble')].filter(b => b.offsetParent !== null).length : 0; });

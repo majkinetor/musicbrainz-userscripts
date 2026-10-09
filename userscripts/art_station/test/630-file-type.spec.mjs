@@ -35,7 +35,7 @@ test.describe('off by default', () => {
     check(cards.every(c => /^\d+(\.\d)?[KM]b$/.test(c.size)), `new covers: the size alone (${JSON.stringify(cards)})`);
     const old = await until(() => existing(page), s => s.length && s.every(Boolean), { timeout: 30000 });
     check(old.every(s => !/\b(JPEG|PNG|GIF|WEBP|PDF)\b/.test(s)), `existing covers: no file type (${JSON.stringify(old)})`);
-    await page.click('#as-setup-btn');
+    await page.click('#as-switch', { button: 'right' });
     check(await page.evaluate(() => document.querySelector('.as-setup-filetype').checked === false), 'the option is there, and off');
   });
 });
@@ -55,7 +55,7 @@ test.describe('turned on', () => {
     check(old.length && old.every(typed), `existing covers show theirs (${JSON.stringify(old)})`);
 
     // turning it off in the setup panel takes it away at once
-    await page.click('#as-setup-btn');
+    await page.click('#as-switch', { button: 'right' });
     await page.click('.as-setup-filetype');
     const off = await until(() => page.evaluate(() => [...document.querySelectorAll('.as-card .as-dim-sz')].map(e => e.textContent)), t => t.every(x => !/ (JPEG|PNG|GIF|WEBP|PDF)$/.test(x)));
     check(off.every(x => !/ (JPEG|PNG|GIF|WEBP|PDF)$/.test(x)), `unticked: sizes only (${JSON.stringify(off)})`);

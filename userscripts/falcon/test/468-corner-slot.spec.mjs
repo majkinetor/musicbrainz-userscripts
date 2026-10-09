@@ -68,11 +68,11 @@ test("#468: corner slot", { tag: ['@cosmetic', '@sandbox', '@login'] }, async ({
     await page.addScriptTag({ content: falconCode });
     await page.addScriptTag({ content: artStationCode });
     await page.waitForSelector('#falcon-launcher', { timeout: 10000 });
-    await page.waitForSelector('#as-switch-wrap', { timeout: 10000 }).catch(() => {});
+    await page.waitForSelector('#as-switch', { timeout: 10000 }).catch(() => {});
     await frames(page);
-    const r = await checkNoOverlap(page, '#falcon-launcher', '#as-switch-wrap');
+    const r = await checkNoOverlap(page, '#falcon-launcher', '#as-switch');
     console.log('Falcon vs Art Station:', JSON.stringify(r));
-    ck(r.ok, `Falcon launcher and Art Station's #as-switch-wrap do not overlap (${JSON.stringify(r)})`);
+    ck(r.ok, `Falcon launcher and Art Station's #as-switch do not overlap (${JSON.stringify(r)})`);
     ck(r.ra && r.rb && r.ra.bottom <= r.rb.top, 'Falcon (order 20) sits ABOVE Art Station (order 10, keeps its old spot)');
     ck(errs.length === 0, 'no page errors: ' + JSON.stringify(errs.slice(0, 3)));
     await page.close();

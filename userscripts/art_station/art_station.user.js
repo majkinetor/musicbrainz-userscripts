@@ -807,23 +807,22 @@
   function applyHideFooter() {
     footerStyle.disabled = !(SETTINGS.hideMbFooter && !_showOrig);
   }
-  // #234: an Apollo-style fixed switcher (bottom-right) toggling Original ⇄ Art
-  // Station, plus a ⚙ setup button — always visible.
+  // #234: a fixed switcher (bottom-right) toggling Original ⇄ Art Station — always visible.
+  // #695: the script's round icon like every other corner launcher, highlighted (as Falcon's
+  // is) while Art Station shows; a right-click opens the setup.
   function ensureSwitch() {
-    let wrap = document.getElementById('as-switch-wrap');
-    if (!wrap) {
-      wrap = document.createElement('div'); wrap.id = 'as-switch-wrap';
-      wrap.dataset.mbCorner = 'br'; wrap.dataset.mbCornerOrder = '10';
-      const sw = document.createElement('button'); sw.id = 'as-switch';
+    let sw = document.getElementById('as-switch');
+    if (!sw) {
+      sw = document.createElement('button'); sw.type = 'button'; sw.id = 'as-switch';
+      sw.dataset.mbCorner = 'br'; sw.dataset.mbCornerOrder = '10';
+      sw.innerHTML = `<img src="${ICON_URL}" alt="">`;
       sw.onclick = () => { _showOrig = !_showOrig; SETTINGS.showOrig = _showOrig; save(); render(); };
-      const gear = document.createElement('button'); gear.id = 'as-setup-btn'; gear.textContent = MBU_CFG_ICON; gear.title = 'Art Station setup';
-      gear.onclick = openSetup;
-      wrap.append(sw, gear); document.body.appendChild(wrap);   // label left, gear right — one pill
+      sw.oncontextmenu = e => { e.preventDefault(); if (document.getElementById('as-setup')) document.getElementById('as-setup').remove(); else openSetup(); };
+      document.body.appendChild(sw);
       mbRestackCorner('br');
     }
-    const sw = document.getElementById('as-switch');
-    sw.textContent = _showOrig ? 'Art Station' : 'Original';
-    sw.title = _showOrig ? 'Switch back to the Art Station gallery' : 'Show the original MusicBrainz cover-art page';
+    mbuCls(sw, 'on', !_showOrig);
+    mbuAttr(sw, 'title', (_showOrig ? 'Art Station is off · click: back to the Art Station gallery' : 'Art Station is on · click: show the original MusicBrainz cover-art page') + '\nRight-click: settings');
   }
   // setup panel (Apollo-style): script info + help + toggles
   function openSetup() {
@@ -884,7 +883,7 @@
       e.target.value = String(arTimes());
       asLog.info(`Auto-repeat limit set to ${arTimes()} attempts (first retry after ${Math.round(arDelayMs(1) / 1000)}s, backing off as attempts pile up)`);
     };
-    const off = e => { if (!panel.contains(e.target) && e.target.id !== 'as-setup-btn') { panel.remove(); document.removeEventListener('mousedown', off); } };
+    const off = e => { if (!panel.contains(e.target) && !e.target.closest('#as-switch')) { panel.remove(); document.removeEventListener('mousedown', off); } };
     panel.querySelector('.as-setup-logbtn').onclick = () => { panel.remove(); document.removeEventListener('mousedown', off); openLog(); };
     setTimeout(() => document.addEventListener('mousedown', off), 0);
   }
@@ -5015,12 +5014,11 @@
   .as-bar>*{flex:0 0 auto}
   /* "Original" (Apollo-style switch): hide the whole Art Station UI, MB's native page shows through */
   #as-root.as-orig{display:none}
-  /* one unified pill like Apollo's launcher: label segment + a divider + the gear */
-  #as-switch-wrap{position:fixed;bottom:14px;right:14px;z-index:var(--mbu-z-pop);display:inline-flex;align-items:stretch;background:var(--as-acc);color:var(--mbu-text-on-accent);border-radius:20px;font:bold 13px Arial;box-shadow:0 3px 12px rgba(40,20,80,.3);overflow:hidden}
-  #as-switch{padding:8px 14px;cursor:pointer;background:none;border:none;color:var(--mbu-text-on-accent);font:inherit}
-  #as-switch:hover{background:rgba(255,255,255,.13)}
-  #as-setup-btn{padding:8px 12px;cursor:pointer;font-size:14px;display:flex;align-items:center;background:none;border:none;border-left:1px solid rgba(255,255,255,.28);color:inherit}
-  #as-setup-btn:hover{background:rgba(255,255,255,.13)}
+  /* #695: a round icon like every other corner launcher (Falcon, Fusion); highlighted like Falcon's while Art Station shows */
+  #as-switch{position:fixed;bottom:14px;right:14px;z-index:var(--mbu-z-pop);width:40px;height:40px;border-radius:50%;border:none;padding:0;display:flex;align-items:center;justify-content:center;cursor:pointer;background:transparent;box-shadow:none;opacity:.85;transition:background .15s,transform .1s,opacity .15s}
+  #as-switch:hover{opacity:1;transform:scale(1.08)}
+  #as-switch.on{background:#1f9d6b;box-shadow:0 0 0 2px #9bd3b6,0 2px 10px rgba(31,157,107,.45);opacity:1}
+  #as-switch img{width:34px;height:34px;display:block;pointer-events:none}
   #as-setup{position:fixed;bottom:58px;right:14px;z-index:99999;width:max-content;min-width:320px;max-width:92vw;background:var(--mbu-bg);border:1px solid var(--mbu-accent);border-radius:var(--mbu-radius-lg);box-shadow:0 8px 28px rgba(40,20,80,.32);font:13px Arial;color:var(--mbu-text)}
   /* #283 activity-log popup */
   /* floating, movable, NON-modal window (no backdrop) */
