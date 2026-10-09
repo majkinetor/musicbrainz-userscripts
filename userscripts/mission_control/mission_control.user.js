@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Mission Control
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.9.110354
+// @version      2026.10.9.115924
 // @description  One window on the release page that asks the other scripts (Platform Check, ISRC Scout, Art Station, Fusion, Credit Hoarder) what is missing, shows it all in one review, and applies the selected changes in order.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5NaXNzaW9uIENvbnRyb2w8L3RpdGxlPgo8ZGVmcz48ZmlsdGVyIGlkPSJtY28xMy1oIiB4PSItMTAlIiB5PSItMTAlIiB3aWR0aD0iMTIwJSIgaGVpZ2h0PSIxMjAlIj48ZmVNb3JwaG9sb2d5IGluPSJTb3VyY2VBbHBoYSIgb3BlcmF0b3I9ImRpbGF0ZSIgcmFkaXVzPSIxLjUiIHJlc3VsdD0iZCIvPjxmZUZsb29kIGZsb29kLWNvbG9yPSIjZmZmIiBmbG9vZC1vcGFjaXR5PSIuNyIvPjxmZUNvbXBvc2l0ZSBpbjI9ImQiIG9wZXJhdG9yPSJpbiIvPjxmZU1lcmdlPjxmZU1lcmdlTm9kZS8+PGZlTWVyZ2VOb2RlIGluPSJTb3VyY2VHcmFwaGljIi8+PC9mZU1lcmdlPjwvZmlsdGVyPjwvZGVmcz48ZyBmaWx0ZXI9InVybCgjbWNvMTMtaCkiPjxwYXRoIGQ9Ik03NyAzNS41IEw2NCA0MyBMNTEgMzUuNSBMNTEgMjAuNSBMNjQgMTMgTDc3IDIwLjVaIiBmaWxsPSIjN2E1N2U4IiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik01OS43IDc3LjUgTDQ2LjcgODUgTDMzLjcgNzcuNSBMMzMuNyA2Mi41IEw0Ni43IDU1IEw1OS43IDYyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik05NC4zIDc3LjUgTDgxLjMgODUgTDY4LjMgNzcuNSBMNjguMyA2Mi41IEw4MS4zIDU1IEw5NC4zIDYyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik00Mi4zIDEwNy41IEwyOS40IDExNSBMMTYuNCAxMDcuNSBMMTYuNCA5Mi41IEwyOS40IDg1IEw0Mi4zIDkyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik03NyAxMDcuNSBMNjQgMTE1IEw1MSAxMDcuNSBMNTEgOTIuNSBMNjQgODUgTDc3IDkyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik0xMTEuNiAxMDcuNSBMOTguNiAxMTUgTDg1LjcgMTA3LjUgTDg1LjcgOTIuNSBMOTguNiA4NSBMMTExLjYgOTIuNVoiIGZpbGw9IiNmZmM5NGEiIHN0cm9rZT0iIzIyMjIzYiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PC9nPgo8L3N2Zz4K
@@ -479,8 +479,8 @@ function mcStyle() {
         // the corner launchers (Falcon, Fusion, ours) share MC's z-index; hide them while MC is open
         + 'html.mc-open [data-mb-corner]{display:none!important}'
         // three panes
-        + '.mc-main{flex:1;display:grid;grid-template-columns:220px 1fr 300px;min-height:0}'
-        + '#mc-root.no-left .mc-main{grid-template-columns:1fr 300px}#mc-root.no-right .mc-main{grid-template-columns:220px 1fr}#mc-root.no-left.no-right .mc-main{grid-template-columns:1fr}'
+        + '.mc-main{flex:1;display:grid;grid-template-columns:300px 1fr 300px;min-height:0}'
+        + '#mc-root.no-left .mc-main{grid-template-columns:1fr 300px}#mc-root.no-right .mc-main{grid-template-columns:300px 1fr}#mc-root.no-left.no-right .mc-main{grid-template-columns:1fr}'
         + '#mc-root.no-left .mc-side.left,#mc-root.no-right .mc-side.right{display:none}'
         + '.mc-side{background:var(--mbu-bg);border-right:1px solid var(--mbu-border);padding:12px;overflow:auto;min-width:0}.mc-side.right{border-right:0;border-left:1px solid var(--mbu-border)}'
         + '.mc-center{overflow:auto;padding:12px 14px;display:flex;flex-direction:column;gap:10px;min-width:0}'
@@ -504,8 +504,9 @@ function mcStyle() {
         + '.mc-chip.ok{background:var(--mbu-ok-bg);color:var(--mbu-ok);border-color:var(--mbu-ok-border)}.mc-chip.info{background:var(--mbu-info-bg);color:var(--mbu-info);border-color:var(--mbu-info-border)}'
         + '.mc-chip.add{background:var(--mbu-accent-soft);color:var(--mbu-accent-text);border-color:var(--mbu-border-strong)}.mc-chip.busy{color:var(--mbu-info);border-color:var(--mbu-info-border)}'
         + '.mc-chip.err,.mc-chip.stalled{background:var(--mbu-warn-bg);color:var(--mbu-warn);border-color:var(--mbu-warn-border)}'
-        + '.mc-lanes{margin-top:6px;display:flex;flex-direction:column;gap:8px;border-left:2px solid var(--mbu-accent-soft);padding-left:10px}'
-        + '.mc-lane{display:grid;grid-template-columns:24px minmax(0,1fr) auto;gap:8px;align-items:start;font-size:12.5px}.mc-lane .mc-sic{width:24px;height:24px;margin:0}.mc-lane .meta{font-size:11px}'
+        // a parallel step's scripts: rows of their own on the same line, a smaller icon, no number
+        + '.mc-stage.head{padding-bottom:8px}.mc-stage.sub{padding-bottom:10px}.mc-stage.sub .mc-node .mc-sic{width:24px;height:24px}.mc-stage.sub::before{top:31px}'
+        + '.mc-stage.sub .nm{font-weight:500;font-size:12.5px}'
         + '.mc-covbar{height:4px;border-radius:2px;background:var(--mbu-bg-sunken);overflow:hidden;margin-top:5px;display:flex}.mc-covbar:empty{display:none}.mc-covbar i{display:block;height:100%}'
         + '.mc-covbar .linked{background:var(--mbu-ok)}.mc-covbar .new{background:var(--mbu-accent)}.mc-covbar .held{background:var(--mbu-warn)}.mc-covbar .none{background:var(--mbu-border-strong)}'
         + '.mc-hint{font-size:10.5px;color:var(--mbu-text-weak);margin-top:3px}'
@@ -709,8 +710,9 @@ function orderSidebar() {
         const node = '<span class="mc-node">' + (s.lanes ? '<span class="par" title="run in parallel">⇶</span>' : sIcon(s.id)) + '<span class="num">' + (k + 1) + '</span></span>';
         const last = k === STEPS.length - 1 ? ' last' : '';
         if (s.lanes) {
-            html += '<div class="mc-stage' + last + '">' + node + '<div><div class="nm">' + esc(s.name) + ' <span class="tag">parallel</span></div><div class="mc-lanes">'
-                + s.lanes.map(l => '<div class="mc-lane" data-p="' + l.id + '">' + sIcon(l.id) + '<div><div>' + esc(l.name) + '</div>' + pv(l) + '<div class="meta st"></div></div><span class="mc-chip"></span></div>').join('') + '</div></div></div>';
+            html += '<div class="mc-stage head">' + node + '<div><div class="nm">' + esc(s.name) + ' <span class="tag">parallel</span></div></div></div>'
+                + s.lanes.map((l, n) => '<div class="mc-stage sub' + (n === s.lanes.length - 1 ? last : '') + '" data-p="' + l.id + '"><span class="mc-node">' + sIcon(l.id) + '</span>'
+                    + '<div><div class="nm">' + esc(l.name) + '<span class="mc-chip"></span></div>' + pv(l) + '<div class="meta st"></div></div></div>').join('');
         } else {
             html += '<div class="mc-stage' + last + (modeOf(s) === 'off' ? ' off' : '') + '" data-p="' + s.id + '">' + node
                 + '<div><div class="nm">' + esc(s.name) + (s.info ? ' <span class="mc-mode">info</span>' : '') + '<span class="mc-chip"></span></div>' + pv(s)
