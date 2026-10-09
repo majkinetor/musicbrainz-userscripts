@@ -20,6 +20,7 @@ Batch operations and helpers for the MusicBrainz *Edit relationships* page.
 - **[Text parser](#text-parser)** turns liner notes into relationships.
 - **[Replace role](#replace-role)** on many credits at once.
 - **[Highlight](#highlight)** a role or an entity everywhere, with counts.
+- **[Edit note](#edit-note)**: a line per action, under Group Therapy's signature.
 
 Everything works on existing and newly added relationships, and everything except consolidation only stages changes: you review and save.
 
@@ -65,7 +66,7 @@ When the relationship you right-click has a date (a *recorded at* with a date, s
 - **Apply** sets the date on every ticked credit that has none.
 
 > [!NOTE]
-> It fills blanks only: MusicBrainz's editor keeps an existing date when a relationship is updated, so dated credits are shown but left unchanged. See #385.
+> It fills blanks only: MusicBrainz's editor keeps an existing date when a relationship is updated, so dated credits are shown but left unchanged.
 
 ## Release group consolidation
 
@@ -84,12 +85,12 @@ When the relationship you right-click has a date (a *recorded at* with a date, s
 
 <img width="800" src="./screenshots/match-works.png" />
 
-| Dot | |
-|---|---|
-| 🔵 | confirmed by a shared ISRC |
-| 🟢 | the only work with this title |
-| 🟡 | exact title and clearly the most recorded, but others share the title |
-| 🔴 | ambiguous; check it |
+| Dot |                                                                       |
+| --- | --------------------------------------------------------------------- |
+| 🔵   | confirmed by a shared ISRC                                            |
+| 🟢   | the only work with this title                                         |
+| 🟡   | exact title and clearly the most recorded, but others share the title |
+| 🔴   | ambiguous; check it                                                   |
 
 **⚡ Match** selects the rows at or above the **Cutoff**. ✎ on a row searches, takes a pasted work MBID or URL, or creates a work. **＋ New work for unresolved** creates one for every unmatched recording. **Apply** stages the performance relationships.
 
@@ -97,12 +98,12 @@ When the relationship you right-click has a date (a *recorded at* with a date, s
 
 **✎ Text parser…** turns credit text (liner notes, a credits block, or the release's annotation via **Load annotation**) into relationships, with a pattern like [Apollo's track parser](../apollo_editor/README.md#pattern-parser):
 
-| Pattern | Line |
-|---|---|
-| `R: E` | `Mastering: Nick Robbins` |
-| `E - R` | `Nick Robbins - Mastering` |
-| `E[,] - R[,]` | `Cameron Allen - Flute, Tenor Saxophone` → one row per role |
-| `R: E[&]` | `Graphic Design: Ricardo H Fernandes & Yacine Blaeich` → one row per name |
+| Pattern       | Line                                                                      |
+| ------------- | ------------------------------------------------------------------------- |
+| `R: E`        | `Mastering: Nick Robbins`                                                 |
+| `E - R`       | `Nick Robbins - Mastering`                                                |
+| `E[,] - R[,]` | `Cameron Allen - Flute, Tenor Saxophone` → one row per role               |
+| `R: E[&]`     | `Graphic Design: Ricardo H Fernandes & Yacine Blaeich` → one row per name |
 
 `R` is the role, `E` the entity: an artist, label or place, decided per row. `[,]` splits on commas (`[, and]` also on "and", `[&]` on "&"); a `;` separates several credits on one line.
 
@@ -126,14 +127,14 @@ The text and the resolutions last until the page reloads.
 
 ### Track selector
 
-| You type | You get |
-|---|---|
-| `3`, `A1` | that track, as numbered in the editor |
-| `5-7`, `1,3` | a range, a list |
-| `2:4`, `2:4-6` | track 4 (4–6) on medium 2 |
-| `2:*` | every track on medium 2 |
-| `all` | every track |
-| *(empty)* | the ticked tracks |
+| You type       | You get                               |
+| -------------- | ------------------------------------- |
+| `3`, `A1`      | that track, as numbered in the editor |
+| `5-7`, `1,3`   | a range, a list                       |
+| `2:4`, `2:4-6` | track 4 (4–6) on medium 2             |
+| `2:*`          | every track on medium 2               |
+| `all`          | every track                           |
+| *(empty)*      | the ticked tracks                     |
 
 A number that matches no track position counts as the Nth track, so on a vinyl `1, 2, 4` finds A1, A2, B1.
 
@@ -156,24 +157,24 @@ Once you use Group Therapy on a page, it adds its signature to the edit note, fo
 
 ## Settings
 
-| Setting | Default | |
-|---|---|---|
-| Hide help text | on | hide MusicBrainz's help above the relationships |
-| Hide native batch tools | off | |
-| Auto-match on start | off | open the work matcher and match on page load |
-| Auto-match on open | off | match when the work matcher opens |
-| Uncollapse media on start | off | expand every medium on load |
+| Setting                   | Default |                                                 |
+| ------------------------- | ------- | ----------------------------------------------- |
+| Hide help text            | on      | hide MusicBrainz's help above the relationships |
+| Hide native batch tools   | off     | hide MusicBrainz's own batch-tools table        |
+| Auto-match on start       | off     | open the work matcher and match on page load    |
+| Auto-match on open        | off     | match when the work matcher opens               |
+| Uncollapse media on start | off     | expand every medium on load                     |
 
 ## Shortcuts
 
-| Gesture | |
-|---|---|
-| right-click a relationship's **×** | [batch delete](#batch-delete) |
+| Gesture                                      |                                           |
+| -------------------------------------------- | ----------------------------------------- |
+| right-click a relationship's **×**           | [batch delete](#batch-delete)             |
 | right-click a recording's or work's checkbox | [copy / move](#copy-and-move) its credits |
-| right-click an entity name | open that relationship's edit dialog |
-| right-click a credit's pencil | replace role, or set dates |
-| right-click a credit in the copy list | keep only that role (Shift adds it) |
-| hover an entity or role | highlight it |
+| right-click an entity name                   | open that relationship's edit dialog      |
+| right-click a credit's pencil                | replace role, or set dates                |
+| right-click a credit in the copy list        | keep only that role (Shift adds it)       |
+| hover an entity or role                      | highlight it                              |
 
 ## Notes
 

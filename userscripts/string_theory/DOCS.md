@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-10-09 14:33 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-10-09 14:53 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -280,11 +280,11 @@ Right-click Apollo's corner icon. Column widths, the toolbar layout, **Change**,
 | Ignore punctuation                                            | on      | `&`/*and*, brackets, quotes, dashes and dots don't count                                       |
 | Enable detailed highlighting                                  | on      | see [Highlighting](#highlighting)                                                              |
 | Row layout                                                    | normal  | compact, normal or cozy                                                                        |
-| Alternate row colors                                          | off     |                                                                                                |
+| Alternate row colors                                          | off     | every other track tinted                                                                       |
 | Show grid                                                     | rows    | lines between rows and/or columns                                                              |
 | Enlarge punctuation by                                        | 3 px    | `0` stops the enlarging; the markers stay                                                      |
 | Keep caret position on row navigation                         | on      | off: a cell is selected whole on arrival                                                       |
-| Highlight all instances of an artist on hover                 | off     |                                                                                                |
+| Highlight all instances of an artist on hover                 | off     | hovering an artist highlights it on every track                                                |
 
 ### Shortcuts
 
@@ -315,18 +315,21 @@ A cover and event art editor for MusicBrainz: one gallery to view, sort, reorder
 
 ### Features
 
-- **Gallery** on a release's *Cover art* and an event's *Event art* tab: thumbnail size, grid or detailed view, group by [type](https://musicbrainz.org/doc/Cover_Art/Types), sort by position, type, dimensions or date.
-- **Reorder** by dragging one cover or a whole selection. Select with right-click or right-drag.
+- **[Gallery](#gallery)** on a release's *Cover art* and an event's *Event art* tab: views, grouping, sorting and reordering by drag.
 - **[Actions](#actions)** on one cover or the selection: type, comment, remove, download, report.
 - **[Add images](#add-images)**: files, folders, zips, URLs, MH Covers, reverse-image search.
 - **[Full-screen viewer](#full-screen-viewer)** with zoom, pan and slideshow.
 - **[File names ⇄ types](#file-names--types)**: a downloaded archive re-adds with its types and comments.
 - **[Applying changes](#applying-changes)** as parallel edits, with automatic retries.
 
+### Gallery
+
+Thumbnail size, a grid or a detailed view, grouping by [type](https://musicbrainz.org/doc/Cover_Art/Types), and sorting by position, type, dimensions or date. Drag one cover, or a whole selection, to reorder; select with right-click or right-drag.
+
 Art Station's icon in the bottom-right corner switches to MusicBrainz's own page and back; it's in colour while Art Station shows and grey while off. Right-click it for the settings (⚙ below).
 
-| Grouped by type | Detailed view |
-|---|---|
+| Grouped by type                    | Detailed view                      |
+| ---------------------------------- | ---------------------------------- |
 | ![](../art_station/screenshots/screenshot2.png) | ![](../art_station/screenshots/screenshot3.png) |
 
 Each cover shows its size and resolution. *Show each cover's file type next to its size* (⚙, off by default) adds the format: `3.2Mb PNG`.
@@ -342,12 +345,12 @@ Each cover shows its size and resolution. *Show each cover's file type next to i
 
 ### Add images
 
-| Source | |
-|---|---|
+| Source |  |
+| --- | --- |
 | Files | drop or pick; the type is [guessed from the name](#file-names--types) |
 | Folder | drop one, or Shift-click the drop zone; one level of subfolders, up to 100 files |
 | Zip | drop or pick one; unpacked in the browser like a folder. An Art Station download restores each cover's types and comment. |
-| URL | **Ctrl+V** a URL anywhere on the gallery, or the **URL (N)** panel: one import per source the release links, plus [registered providers](#plugin-api). Right-click **URL (N)** to import from all of them; middle-click to import from all and keep only the best cover (highest resolution, then smallest file); the others are discarded, and the edit note says Art Station chose it. Needs [Enhanced Cover Art Uploads](https://raw.github.com/ROpdebee/mb-userscripts/dist/mb_enhanced_cover_art_uploads.user.js). |
+| URL | **Ctrl+V** a URL anywhere on the gallery, or the **URL (N)** panel: one import per source the release links, plus [registered providers](../art_station/DEVELOP.md#plugin-api). Right-click **URL (N)** to import from all of them; middle-click to import from all and keep only the best cover (highest resolution, then smallest file); the others are discarded, and the edit note says Art Station chose it. Needs [Enhanced Cover Art Uploads](https://raw.github.com/ROpdebee/mb-userscripts/dist/mb_enhanced_cover_art_uploads.user.js). |
 | [MH Covers](https://covers.musichoarders.xyz) | pick a cover; it's staged as a new one |
 | Reverse-image search | 🔍 on a cover searches Yandex, Google Lens, TinEye or Bing for a bigger copy. With the [Picker](../art_station/as_picker/README.md), clicking the copy on the results sends it back to the gallery. |
 
@@ -365,7 +368,7 @@ Each cover shows its size and resolution. *Show each cover's file type next to i
 When an added image has no type, it's guessed from its file name (switch it off in ⚙):
 
 | Type | Name contains |
-|---|---|
+| --- | --- |
 | Front | `front`, `folder`, `cover`, `frontal`, `recto` |
 | Back | `back`, `rear`, `verso` |
 | Booklet | `booklet`, `inlay`, `insert` |
@@ -392,51 +395,31 @@ Downloads are named `<NN> <types> <comment>.<ext>`, with `none` for no type, e.g
 > [!NOTE]
 > *Upload timeout* (⚙, default 10 minutes, at most 120) is how long one file may take to reach the Internet Archive. Raise it for large PDF booklets when the Archive is slow; the failure message says when this limit was hit.
 
-### Plugin API
-
-Another userscript can add its own source. It appears as **Import from &lt;name&gt;** in the URL panel, and its images are staged like any other. A site script that's logged in to a fan site, say, can fetch with its own session and hand the images over:
-
-```js
-window.ArtStation?.registerProvider({
-  name: 'SpringsteenLyrics',              // the button label
-  id: 'springsteen',                      // optional de-dupe key (defaults to name)
-  icon: 'https://example.com/favicon.ico',// optional
-  match: 'springsteenlyrics.com',         // optional: string | string[] | RegExp | (url) => boolean
-  async run(ctx) {                        // ctx = { mbid, entity: 'release'|'event', artist, title, url, link, links }
-    return [{ url: 'https://…/front.jpg', types: ['Front'], comment: '' }];
-  },
-});
-```
-
-- **`match`** shows the button only when the release or event links a matching URL; those are passed as `ctx.link` and `ctx.links`.
-- Each returned item is `{ types?, comment? }` plus one image: **`url`** or **`dataUrl`** (preferred: Art Station fetches it itself), or **`blob`** with its **`source`** URL.
-- If your manager isolates `window` between scripts, dispatch `artstation:register-provider` with the provider as `detail` instead.
-
 ### Shortcuts
 
-| Key | Where | |
-|---|---|---|
-| Ctrl+V | gallery | import the URL on the clipboard |
-| ← → ↑ ↓ | gallery | move between covers |
-| Enter | gallery | open the cover full-screen |
-| Space | gallery | select or deselect the cover |
-| Delete | gallery, viewer | mark for removal |
-| ← → / ↑ ↓ | viewer | previous, next / zoom |
-| Enter | viewer | edit the comment |
-| D | viewer | download the original |
-| P | viewer | slideshow |
+| Key       | Where           |                                 |
+| --------- | --------------- | ------------------------------- |
+| Ctrl+V    | gallery         | import the URL on the clipboard |
+| ← → ↑ ↓   | gallery         | move between covers             |
+| Enter     | gallery         | open the cover full-screen      |
+| Space     | gallery         | select or deselect the cover    |
+| Delete    | gallery, viewer | mark for removal                |
+| ← → / ↑ ↓ | viewer          | previous, next / zoom           |
+| Enter     | viewer          | edit the comment                |
+| D         | viewer          | download the original           |
+| P         | viewer          | slideshow                       |
 
-| Mouse | |
-|---|---|
-| right-click / right-drag | select / paint-select covers |
-| right-click **URL (N)** | import from every source |
-| middle-click **URL (N)** | import from every source, keep only the best cover |
-| wheel on the size slider, or right button held + wheel | resize thumbnails |
-| viewer: wheel | zoom toward the cursor |
+| Mouse                                                  |                                                    |
+| ------------------------------------------------------ | -------------------------------------------------- |
+| right-click / right-drag                               | select / paint-select covers                       |
+| right-click **URL (N)**                                | import from every source                           |
+| middle-click **URL (N)**                               | import from every source, keep only the best cover |
+| wheel on the size slider, or right button held + wheel | resize thumbnails                                  |
+| viewer: wheel                                          | zoom toward the cursor                             |
 
 ### Notes
 
-- [Development documentation](../art_station/DEVELOP.md)
+Another userscript can add its own image source, shown as **Import from &lt;name&gt;** in the URL panel; how is in [DEVELOP.md](../art_station/DEVELOP.md#plugin-api).
 
 ---
 
@@ -457,10 +440,11 @@ It appears on a release's **Edit relationships** page when there's something to 
 
 ### Features
 
-- **[Import bar](#import-bar)**: pick a source and the import options.
+- **[Import bar](#import-bar)**: pick a [source](#providers) and the import options.
 - **[Review table](#review-table)**: confirm each credited name's MusicBrainz match, with automatic matching, search and entity creation.
 - **[Consolidated import](#consolidated-import)** of every source at once, de-duplicated.
 - **[Instant Fill](#instant-fill)** writes the confirmed relationships into the editor in one pass.
+- **[Diagnostics](#diagnostics)**: a log of every step, to copy into an issue.
 
 The flow: Credit Hoarder fetches the credits and lists every artist, label and place in the review table; clear matches are selected for you. You resolve the rest (or leave them out) and confirm. Instant Fill adds the relationships, and you review and submit the edit as usual.
 
@@ -471,24 +455,24 @@ The flow: Credit Hoarder fetches the credits and lists every artist, label and p
 - **Import credits:** one icon per source available on this release. Click to import; right-click opens the source's page. Several sources can run in one session; their edits stack.
 - **⚛ All** (with more than one source) runs a [consolidated import](#consolidated-import).
 
-| Option | |
-|---|---|
-| Per-track credits | import track credits as well as release credits |
-| Move release credits to tracks | put release-level recording credits (instruments, vocals, producer, mix…) on every track |
-| Use works | off: never touch works. *create none* (default): use existing works only. *create needed*: also create a work a composer, lyricist or writer credit needs. |
-| Equivalence sets | skip a role when an equivalent one is already there (writer ≡ composer) |
-| Duplicate roles | skip a role the recording already has |
+| Option                         |                                                                                                                                                            |
+| ------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Per-track credits              | import track credits as well as release credits                                                                                                            |
+| Move release credits to tracks | put release-level recording credits (instruments, vocals, producer, mix…) on every track                                                                   |
+| Use works                      | off: never touch works. *create none* (default): use existing works only. *create needed*: also create a work a composer, lyricist or writer credit needs. |
+| Equivalence sets               | skip a role when an equivalent one is already there (writer ≡ composer)                                                                                    |
+| Duplicate roles                | skip a role the recording already has                                                                                                                      |
 
 ### Review table
 
 One row per credited entity:
 
-| Row | |
-|---|---|
-| ⚪ | matched automatically |
-| 🟢 | picked by you |
-| 🟡 | matched by URL, but the names differ; worth a look |
-| 🔴 | unresolved |
+| Row |                                                    |
+| --- | -------------------------------------------------- |
+| ⚪   | matched automatically                              |
+| 🟢   | picked by you                                      |
+| 🟡   | matched by URL, but the names differ; worth a look |
+| 🔴   | unresolved                                         |
 
 For sources that give an artist URL (Discogs, Tidal, Metal Archives), a chip shows it: ✓ already linked in MusicBrainz, 🔗 add it (opens the edit page prefilled), ⚠ linked to a different entity.
 
@@ -529,16 +513,16 @@ The edit note carries the statistics, one block per source when several ran. Wha
 
 ### Providers
 
-| Source | Credits | Artist identity | Login |
-|---|---|---|---|
-| Discogs | the fullest: performers, instruments, engineering, production, artwork, mastering | Discogs artist ID | |
-| Tidal | per track (producer, engineers, writers, publisher) and release-level (instruments, vocals, conductor, artwork) | Tidal artist ID, on nearly all credits | |
-| Metal Archives | the lineup with instruments, work credits, other staff | Metal Archives artist ID | |
-| Qobuz | composer, lyricist, producer, publisher, performers | names, except the composer and main artist | optional |
-| Apple Music | composer, writer, lyricist, producer, engineers, arranger, vocals | names | |
-| YouTube Music | writer, producer | names | |
-| Deezer | composers only | names | |
-| Titles | remixers named in the release's own track titles | names | |
+| Source         | Credits                                                                                                         | Artist identity                            | Login    |
+| -------------- | --------------------------------------------------------------------------------------------------------------- | ------------------------------------------ | -------- |
+| Discogs        | the fullest: performers, instruments, engineering, production, artwork, mastering                               | Discogs artist ID                          |          |
+| Tidal          | per track (producer, engineers, writers, publisher) and release-level (instruments, vocals, conductor, artwork) | Tidal artist ID, on nearly all credits     |          |
+| Metal Archives | the lineup with instruments, work credits, other staff                                                          | Metal Archives artist ID                   |          |
+| Qobuz          | composer, lyricist, producer, publisher, performers                                                             | names, except the composer and main artist | optional |
+| Apple Music    | composer, writer, lyricist, producer, engineers, arranger, vocals                                               | names                                      |          |
+| YouTube Music  | writer, producer                                                                                                | names                                      |          |
+| Deezer         | composers only                                                                                                  | names                                      |          |
+| Titles         | remixers named in the release's own track titles                                                                | names                                      |          |
 
 A source with an artist ID resolves to the exact MusicBrainz artist; a name-only credit goes through matching and your review.
 
@@ -548,14 +532,14 @@ A source with an artist ID resolves to the exact MusicBrainz artist; a name-only
 - **Metal Archives**: guitars and bass default to electric; guests get the *guest* attribute; on a split release, each band's credits stay on its own tracks.
 - **Titles** reads named remixes: *Song (Artist Remix)*, *Track (KiNK Dub)*, *Tune (Tom Moulton Mix)*, *Cut (Remixed by Someone)* each give that recording a remixer. *(Extended Mix)*, *(Radio Edit)*, a bare *(Remix)* and *(Mixed by …)* don't. It's a heuristic over a naming habit, so check what it finds.
 
-| Streaming role | MusicBrainz relationship |
-|---|---|
-| Composer, Lyricist, Writer, Orchestrator | on the work (created if *Use works* allows) |
+| Streaming role                                | MusicBrainz relationship                                                                    |
+| --------------------------------------------- | ------------------------------------------------------------------------------------------- |
+| Composer, Lyricist, Writer, Orchestrator      | on the work (created if *Use works* allows)                                                 |
 | Producer, Mixing / Recording / Sound Engineer | on the recording (*mix*, *recording*, *sound*); an assistant gets the *assistant* attribute |
-| Instruments, Vocals, Conductor | on the recording |
-| Artwork | on the release |
-| Music Publisher | a label, *publishing* the work (`Copyright Control` is dropped) |
-| Distributor | a label, *distributed* the release |
+| Instruments, Vocals, Conductor                | on the recording                                                                            |
+| Artwork                                       | on the release                                                                              |
+| Music Publisher                               | a label, *publishing* the work (`Copyright Control` is dropped)                             |
+| Distributor                                   | a label, *distributed* the release                                                          |
 
 Not imported, but listed as skipped: main and featured artists and the record label (set elsewhere), mastering engineer (belongs on the release), sound editor, studio personnel.
 
@@ -565,10 +549,10 @@ The log records every step. Its menu copies the log with or without the raw data
 
 ### Shortcuts
 
-| Key | |
-|---|---|
+| Key   |                                          |
+| ----- | ---------------------------------------- |
 | Enter | run the search; confirm the artist popup |
-| Esc | close the artist popup |
+| Esc   | close the artist popup                   |
 
 ### Notes
 
@@ -611,12 +595,12 @@ In a group:
 
 Fusion opens with a pool already filled from the page you launched it on:
 
-| Page | Pool |
-|---|---|
-| Release | its recordings; *Load recordings from RG edition* adds another edition |
-| Release group | the recordings of every release in the group |
-| Recording | that recording |
-| Artist → Recordings | the artist's entire catalogue, not just the visible page (up to 2000) |
+| Page                | Pool                                                                   |
+| ------------------- | ---------------------------------------------------------------------- |
+| Release             | its recordings; *Load recordings from RG edition* adds another edition |
+| Release group       | the recordings of every release in the group                           |
+| Recording           | that recording                                                         |
+| Artist → Recordings | the artist's entire catalogue, not just the visible page (up to 2000)  |
 
 On any page, pasting a recording, release or release-group MBID or URL into the input adds it (a release adds all of its recordings).
 
@@ -624,11 +608,11 @@ On any page, pasting a recording, release or release-group MBID or URL into the 
 
 Match groups the recordings still in the pool, so a group you built by hand is never undone. The **Cutoff** sets how much evidence it needs:
 
-| Cutoff | Groups two recordings when they share… |
-|---|---|
-| strict | an ISRC or an AcoustID |
+| Cutoff             | Groups two recordings when they share…                                     |
+| ------------------ | -------------------------------------------------------------------------- |
+| strict             | an ISRC or an AcoustID                                                     |
 | normal *(default)* | …or a similar title and artist, with lengths within tolerance (or unknown) |
-| loose | …or a similar title with either the length or the artist |
+| loose              | …or a similar title with either the length or the artist                   |
 
 Titles tolerate small typos. Artists are compared by MBID when both recordings have them, so *Radium* and *DJ Radium* credited to the same artist match.
 
@@ -658,14 +642,14 @@ It is an ordinary edit on your account: unless you're an auto-editor, it goes to
 
 The ⚙ window (or right-click Fusion's corner icon), which also holds the activity **Log**:
 
-| Setting | Default | |
-|---|---|---|
-| Always require a vote | off | send even your auto-edits to a vote |
-| Look up AcoustIDs | on | fetch the pool's AcoustIDs from acoustid.org |
-| Match on open | off | run Match once the pool has loaded |
-| Preload group release details | off | fetch every grouped recording's releases in the background |
-| Length tolerance | 5 s | lengths this close count as the same |
-| Match never groups if lengths differ by more than | 30 s | |
+| Setting                                           | Default |                                                            |
+| ------------------------------------------------- | ------- | ---------------------------------------------------------- |
+| Always require a vote                             | off     | send even your auto-edits to a vote                        |
+| Look up AcoustIDs                                 | on      | fetch the pool's AcoustIDs from acoustid.org               |
+| Match on open                                     | off     | run Match once the pool has loaded                         |
+| Preload group release details                     | off     | fetch every grouped recording's releases in the background |
+| Length tolerance                                  | 5 s     | lengths this close count as the same                       |
+| Match never groups if lengths differ by more than | 30 s    | whatever else matches; grouping by hand still can          |
 
 ---
 
@@ -691,6 +675,7 @@ Batch operations and helpers for the MusicBrainz *Edit relationships* page.
 - **[Text parser](#text-parser)** turns liner notes into relationships.
 - **[Replace role](#replace-role)** on many credits at once.
 - **[Highlight](#highlight)** a role or an entity everywhere, with counts.
+- **[Edit note](#edit-note)**: a line per action, under Group Therapy's signature.
 
 Everything works on existing and newly added relationships, and everything except consolidation only stages changes: you review and save.
 
@@ -736,7 +721,7 @@ When the relationship you right-click has a date (a *recorded at* with a date, s
 - **Apply** sets the date on every ticked credit that has none.
 
 > [!NOTE]
-> It fills blanks only: MusicBrainz's editor keeps an existing date when a relationship is updated, so dated credits are shown but left unchanged. See #385.
+> It fills blanks only: MusicBrainz's editor keeps an existing date when a relationship is updated, so dated credits are shown but left unchanged.
 
 ### Release group consolidation
 
@@ -755,12 +740,12 @@ When the relationship you right-click has a date (a *recorded at* with a date, s
 
 <img width="800" src="../group_therapy/screenshots/match-works.png" />
 
-| Dot | |
-|---|---|
-| 🔵 | confirmed by a shared ISRC |
-| 🟢 | the only work with this title |
-| 🟡 | exact title and clearly the most recorded, but others share the title |
-| 🔴 | ambiguous; check it |
+| Dot |                                                                       |
+| --- | --------------------------------------------------------------------- |
+| 🔵   | confirmed by a shared ISRC                                            |
+| 🟢   | the only work with this title                                         |
+| 🟡   | exact title and clearly the most recorded, but others share the title |
+| 🔴   | ambiguous; check it                                                   |
 
 **⚡ Match** selects the rows at or above the **Cutoff**. ✎ on a row searches, takes a pasted work MBID or URL, or creates a work. **＋ New work for unresolved** creates one for every unmatched recording. **Apply** stages the performance relationships.
 
@@ -768,12 +753,12 @@ When the relationship you right-click has a date (a *recorded at* with a date, s
 
 **✎ Text parser…** turns credit text (liner notes, a credits block, or the release's annotation via **Load annotation**) into relationships, with a pattern like [Apollo's track parser](../apollo_editor/README.md#pattern-parser):
 
-| Pattern | Line |
-|---|---|
-| `R: E` | `Mastering: Nick Robbins` |
-| `E - R` | `Nick Robbins - Mastering` |
-| `E[,] - R[,]` | `Cameron Allen - Flute, Tenor Saxophone` → one row per role |
-| `R: E[&]` | `Graphic Design: Ricardo H Fernandes & Yacine Blaeich` → one row per name |
+| Pattern       | Line                                                                      |
+| ------------- | ------------------------------------------------------------------------- |
+| `R: E`        | `Mastering: Nick Robbins`                                                 |
+| `E - R`       | `Nick Robbins - Mastering`                                                |
+| `E[,] - R[,]` | `Cameron Allen - Flute, Tenor Saxophone` → one row per role               |
+| `R: E[&]`     | `Graphic Design: Ricardo H Fernandes & Yacine Blaeich` → one row per name |
 
 `R` is the role, `E` the entity: an artist, label or place, decided per row. `[,]` splits on commas (`[, and]` also on "and", `[&]` on "&"); a `;` separates several credits on one line.
 
@@ -797,14 +782,14 @@ The text and the resolutions last until the page reloads.
 
 #### Track selector
 
-| You type | You get |
-|---|---|
-| `3`, `A1` | that track, as numbered in the editor |
-| `5-7`, `1,3` | a range, a list |
-| `2:4`, `2:4-6` | track 4 (4–6) on medium 2 |
-| `2:*` | every track on medium 2 |
-| `all` | every track |
-| *(empty)* | the ticked tracks |
+| You type       | You get                               |
+| -------------- | ------------------------------------- |
+| `3`, `A1`      | that track, as numbered in the editor |
+| `5-7`, `1,3`   | a range, a list                       |
+| `2:4`, `2:4-6` | track 4 (4–6) on medium 2             |
+| `2:*`          | every track on medium 2               |
+| `all`          | every track                           |
+| *(empty)*      | the ticked tracks                     |
 
 A number that matches no track position counts as the Nth track, so on a vinyl `1, 2, 4` finds A1, A2, B1.
 
@@ -827,24 +812,24 @@ Once you use Group Therapy on a page, it adds its signature to the edit note, fo
 
 ### Settings
 
-| Setting | Default | |
-|---|---|---|
-| Hide help text | on | hide MusicBrainz's help above the relationships |
-| Hide native batch tools | off | |
-| Auto-match on start | off | open the work matcher and match on page load |
-| Auto-match on open | off | match when the work matcher opens |
-| Uncollapse media on start | off | expand every medium on load |
+| Setting                   | Default |                                                 |
+| ------------------------- | ------- | ----------------------------------------------- |
+| Hide help text            | on      | hide MusicBrainz's help above the relationships |
+| Hide native batch tools   | off     | hide MusicBrainz's own batch-tools table        |
+| Auto-match on start       | off     | open the work matcher and match on page load    |
+| Auto-match on open        | off     | match when the work matcher opens               |
+| Uncollapse media on start | off     | expand every medium on load                     |
 
 ### Shortcuts
 
-| Gesture | |
-|---|---|
-| right-click a relationship's **×** | [batch delete](#batch-delete) |
+| Gesture                                      |                                           |
+| -------------------------------------------- | ----------------------------------------- |
+| right-click a relationship's **×**           | [batch delete](#batch-delete)             |
 | right-click a recording's or work's checkbox | [copy / move](#copy-and-move) its credits |
-| right-click an entity name | open that relationship's edit dialog |
-| right-click a credit's pencil | replace role, or set dates |
-| right-click a credit in the copy list | keep only that role (Shift adds it) |
-| hover an entity or role | highlight it |
+| right-click an entity name                   | open that relationship's edit dialog      |
+| right-click a credit's pencil                | replace role, or set dates                |
+| right-click a credit in the copy list        | keep only that role (Shift adds it)       |
+| hover an entity or role                      | highlight it                              |
 
 ### Notes
 
@@ -865,36 +850,30 @@ Shows a release's ISRCs, fills in the missing ones from several providers, and f
 
 ### Features
 
+- **[Providers](#providers-1)** found through the release group and [Platform Check](../platform_check/README.md), not just the release's own links.
 - **[ISRC badge](#isrc-editor)** by the release title, showing how many tracks lack an ISRC.
 - **[ISRC editor](#isrc-editor)**: every track's ISRCs, with validation, provider [imports](#importing-isrcs), [per-track lookups](#per-track-lookup), bulk paste, export and deletion.
 - **[Links](#links)**: find and add the recordings' streaming and store links, and end or remove existing ones.
-- **[Providers](#providers-1)** found through the release group and [Platform Check](../platform_check/README.md), not just the release's own links.
 
 ### Providers
 
-| Provider | ISRC import | Track links | Resolved by |
-|---|:---:|:---:|---|
-| Deezer | ✓ | ✓ | ISRC, on any release |
-| Tidal | ✓ | ✓ | ISRC, on any release |
-| Beatport | ✓ | ✓ | the album, matched by ISRC |
-| Volumo | ✓ | ✓ | the album, matched by ISRC |
-| Qobuz | ✓ | ✓ | the album; ISRCs by position, links by ISRC |
-| Apple Music | ✓ | ✓ | the album; by position (+ title for links) |
-| SoundCloud | ✓ | ✓ | the set (a track URL counts as a one-track release); by position (+ title for links) |
-| Audiomack | ✓ | ✓ | the album (a song URL counts as a one-track release); by position (+ title for links) |
-| Spotify | ✓ | ✓ | ISRCs through [a lookup service](#spotify); links from the album, by position + title |
-| Bandcamp | | ✓ | the album page, by position + title |
-| YouTube Music | | ✓ | the album, when linked (by position + title); else ISRC, on any release |
-| Amazon Music | | ✓ | the album, when linked (by position + title) |
-| HDtracks | ✓ | | the album |
-| 7digital | ✓ | | the album: each track searched by title |
-| SoundExchange | ✓ | | a title and artist search |
-
-**YouTube Music** shows no ISRCs. When the release links its YouTube Music album (Platform Check finds it), each track is taken from that album's tracklist, by position and title. The tracklist is the album's playlist as YouTube lists it, which holds only the album's own tracks; YouTube Music's album page, read logged out, shows a track's music video in its place where there is one, so it is used only when the playlist can't be read, and then only for official audio. An album has a second playlist that puts the music videos in, so even a link to a playlist goes through YouTube Music, which names the album's own. A song a free listener can't play is left out, since the links are free streaming: it may be YouTube Premium only, or not available at all. Otherwise its ISRC is searched. An ISRC it doesn't know brings up unrelated songs instead of nothing, and labels sometimes reuse an ISRC for another version of a song with the same title and length: [JP92Q2400507](https://musicbrainz.org/isrc/JP92Q2400507) is both *メズマライザー* and its *Critical Damage ver.* So a search result counts only when it is official audio (not a user upload), has the track's title, is within 3 s of its length, and comes from this release's album. The log names every result it skipped, and why. The edit note names each link's YouTube Music album, since a song's URL no longer says which album it was once it is delisted. Links are added as *free streaming*.
-
-**Amazon Music** shows no ISRCs either, and has no ISRC search, so its track links come only from the release's Amazon Music album, when the release links it (Platform Check finds it by name). Each track is taken from the album's tracklist by position, or by title when the album orders it differently, and only when the title matches and the length is within 3 seconds. It is read as a guest, with no Amazon account, and the links are added as *streaming page*.
-
-**7digital** is read through the catalogue its web store uses, with no login. It can't list an album's tracks, so each track of the release is searched for by its title (with the album's title, then with its artist), and the results from the linked 7digital album are kept, each with its ISRC, disc and position. One search often brings up the whole album; when it doesn't, there is a search per track, a few at a time, which takes some seconds on a long album. A 7digital track has no page of its own, so there are no track links.
+| Provider                        | ISRC import | Track links | Resolved by                                                                           |
+| ------------------------------- | :---------: | :---------: | ------------------------------------------------------------------------------------- |
+| Deezer                          |      ✓      |      ✓      | ISRC, on any release                                                                  |
+| Tidal                           |      ✓      |      ✓      | ISRC, on any release                                                                  |
+| Beatport                        |      ✓      |      ✓      | the album, matched by ISRC                                                            |
+| Volumo                          |      ✓      |      ✓      | the album, matched by ISRC                                                            |
+| Qobuz                           |      ✓      |      ✓      | the album; ISRCs by position, links by ISRC                                           |
+| Apple Music                     |      ✓      |      ✓      | the album; by position (+ title for links)                                            |
+| SoundCloud                      |      ✓      |      ✓      | the set (a track URL counts as a one-track release); by position (+ title for links)  |
+| Audiomack                       |      ✓      |      ✓      | the album (a song URL counts as a one-track release); by position (+ title for links) |
+| Spotify                         |      ✓      |      ✓      | ISRCs through [a lookup service](#spotify); links from the album, by position + title |
+| Bandcamp                        |             |      ✓      | the album page, by position + title                                                   |
+| [YouTube Music](#youtube-music) |             |      ✓      | the album, when linked (by position + title); else ISRC, on any release               |
+| [Amazon Music](#amazon-music)   |             |      ✓      | the album, when linked (by position + title)                                          |
+| HDtracks                        |      ✓      |             | the album                                                                             |
+| [7digital](#7digital)           |      ✓      |             | the album: each track searched by title                                               |
+| SoundExchange                   |      ✓      |             | a title and artist search                                                             |
 
 An album-based provider needs the release's album link: already in MusicBrainz, found by Platform Check, or pasted with **(+)**. No login is needed anywhere except Qobuz outside the countries it serves (see [Qobuz](#qobuz)).
 
@@ -911,10 +890,10 @@ The toolbar shows the providers available for this release:
 
 <img width="800" src="../isrc_scout/screenshots/toolbar.png" />
 
-| Icon | Comes from |
-|---|---|
-| circled | the release's own links |
-| plain | [Platform Check](../platform_check/README.md) |
+| Icon     | Comes from                                                                         |
+| -------- | ---------------------------------------------------------------------------------- |
+| circled  | the release's own links                                                            |
+| plain    | [Platform Check](../platform_check/README.md)                                      |
 | blue dot | another release in the group (option *Use providers from the whole release group*) |
 
 **(+)** imports from any album URL you paste. **⟳ SoundExchange** searches every track by title and artist, fills the confident matches, and shows the other candidates per row; it searches 30 tracks at a time, so click a *Not searched* row to continue. Deezer, which needs a request per track, fetches 50 at a time the same way.
@@ -935,11 +914,11 @@ The toolbar shows the providers available for this release:
   - **All** is also the last button in the toolbar, when the release has more than one provider: it checks every track, as a right-click on a row's **All** does.
 - **⚙** opens a SoundExchange search you can tune (title, artist, release, exact), with a link to run it on their site.
 
-| Check | Mismatch when |
-|---|---|
+| Check         | Mismatch when                                                             |
+| ------------- | ------------------------------------------------------------------------- |
 | Title, artist | the words don't match (a couple of extra words, like a version, are fine) |
-| Year | recorded after the release year (+1) |
-| Length | more than 10 s off; MusicBrainz's length is shown alongside |
+| Year          | recorded after the release year (+1)                                      |
+| Length        | more than 10 s off; MusicBrainz's length is shown alongside               |
 
 A result passing every check fills an empty field (blue); a length mismatch only warns (yellow). Lookups don't run while you type: only when you leave a field you typed into, press the button, or run the SoundExchange search. A SoundExchange captcha or rate limit shows in the toolbar; solve it there and continue.
 
@@ -965,14 +944,14 @@ The **Links** tab shows, per track, what each recording already links to (**Link
 
 **⚡ Match**, at the right of the toolbar after **Find links**, does both steps in one click. It imports ISRCs from the fastest source the release links: one-request sources (Qobuz, Audiomack, Apple Music, Tidal, …) before per-track ones (Deezer, 7digital) and Spotify. If a source fails or gives nothing, it tries the next. Then it runs **Find links** with the ISRCs it found. A link pulled from the release group is skipped, since whether it fits this release needs you to look. Mission Control's probe uses the same order.
 
-| Click | on an **Add** icon | on a **Linked** icon |
-|---|---|---|
-| left | open the provider's track | open the provider's track |
-| right | add this link | toggle *ended* (shown faded) |
-| Ctrl + right | add every link on the track | end every link on the track |
-| Alt + right | add this provider on every track | end this provider on every track |
-| middle | | remove this link |
-| Ctrl / Alt + middle | | remove on the track / this provider everywhere |
+| Click               | on an **Add** icon               | on a **Linked** icon                           |
+| ------------------- | -------------------------------- | ---------------------------------------------- |
+| left                | open the provider's track        | open the provider's track                      |
+| right               | add this link                    | toggle *ended* (shown faded)                   |
+| Ctrl + right        | add every link on the track      | end every link on the track                    |
+| Alt + right         | add this provider on every track | end this provider on every track               |
+| middle              |                                  | remove this link                               |
+| Ctrl / Alt + middle |                                  | remove on the track / this provider everywhere |
 
 End a link when the release is taken down and it no longer resolves ([MusicBrainz style](https://musicbrainz.org/doc/Style/Relationships/URLs#When_to_remove)). Ending and removing work on any linked provider.
 
@@ -983,24 +962,39 @@ End a link when the release is taken down and it no longer resolves ([MusicBrain
 
 <img width="1000" src="../isrc_scout/screenshots/options.png" />
 
-| Setting | Default | |
-|---|---|---|
-| Authorize | | OAuth for submitting ISRCs |
-| Import buttons | icons | icons, text, or both |
-| Use providers from the whole release group | off | take missing providers from sibling releases (one more lookup) |
-| Ignore Platform Check link confidence | off | use links Platform Check withheld for a barcode or format mismatch |
-| Spotify ISRC source | molla | or ISRC Hunt |
+| Setting                                    | Default |                                                                    |
+| ------------------------------------------ | ------- | ------------------------------------------------------------------ |
+| Authorize                                  |         | OAuth for submitting ISRCs                                         |
+| Import buttons                             | icons   | icons, text, or both                                               |
+| Use providers from the whole release group | off     | take missing providers from sibling releases (one more lookup)     |
+| Ignore Platform Check link confidence      | off     | use links Platform Check withheld for a barcode or format mismatch |
+| Spotify ISRC source                        | molla   | or ISRC Hunt                                                       |
 
 ### Shortcuts
 
-| Key | |
-|---|---|
-| Esc | close the open panel, else the editor |
+| Key   |                                                               |
+| ----- | ------------------------------------------------------------- |
+| Esc   | close the open panel, else the editor                         |
 | Enter | submit the focused URL input, or run the SoundExchange search |
 
 The mouse gestures on links are in the [Links](#links) table.
 
 ### Notes
+
+#### YouTube Music
+
+YouTube Music shows no ISRCs. When the release links its YouTube Music album (Platform Check finds it), each track is taken from that album's tracklist by position and title, as official audio, never a music video. A song a free listener can't play (YouTube Premium only, or not available at all) is left out, since the links are added as *free streaming*. Without a linked album, the track's ISRC is searched, and a result counts only when it is official audio (not a user upload), has the track's title, is within 3 s of its length, and comes from this release's album. The log names every result it skipped, and why. The edit note names each link's YouTube Music album.
+
+> [!NOTE]
+> A search for an ISRC YouTube Music doesn't know brings up unrelated songs instead of nothing, and labels sometimes reuse an ISRC for another version of a song with the same title and length: [JP92Q2400507](https://musicbrainz.org/isrc/JP92Q2400507) is both *メズマライザー* and its *Critical Damage ver.* Hence the strict search. The album's tracklist is read from its own playlist, because its album page, seen without logging in, shows a track's music video in its place. The edit note names the album because a song's URL stops saying which album it was on once it is delisted.
+
+#### Amazon Music
+
+Amazon Music shows no ISRCs, and has no ISRC search, so its track links come only from the release's Amazon Music album, when the release links it (Platform Check finds it by name). Each track is taken from the album's tracklist by position, or by title when the album orders it differently, and only when the title matches and the length is within 3 seconds. It is read as a guest, with no Amazon account, and the links are added as *streaming page*.
+
+#### 7digital
+
+7digital is read through the catalogue its web store uses, with no login. It can't list an album's tracks, so each track of the release is searched for by its title (with the album's title, then with its artist), and the results from the linked 7digital album are kept, each with its ISRC, disc and position. One search often brings up the whole album; when it doesn't, there is a search per track, a few at a time, which takes some seconds on a long album. A 7digital track has no page of its own, so there are no track links.
 
 #### Spotify
 
@@ -1035,7 +1029,7 @@ Reusable edit notes in a panel beside the edit-note field of every edit form, an
 - **[History](#saved-notes)** of the notes you submitted.
 - **[Mammoth babies](#mammoth-babies)**: the same for other fields (catalogue number, label, artist…), and **[any field you choose](#custom-fields)**.
 - **[Import and export](#settings-4)** of notes.
-- **[Integration](#using-mammoth-from-another-userscript)** with other userscripts' edit-note fields.
+- **[Other scripts' edit-note fields](#notes-4)** get the same panel.
 
 ### Saved notes
 
@@ -1057,12 +1051,12 @@ A 🦣 pin in a field recalls the values saved for it, shared across releases. T
 
 In the pin's panel, **＋** saves the current value and **✕** clears the field. On a saved value:
 
-| | |
-|---|---|
-| ★ | pin it as a button under the field |
-| ◉ | make it the default, filled in when the field is empty |
-| 🗑 | delete |
-| ⠿ | drag to reorder |
+|     |                                                        |
+| --- | ------------------------------------------------------ |
+| ★   | pin it as a button under the field                     |
+| ◉   | make it the default, filled in when the field is empty |
+| 🗑   | delete                                                 |
+| ⠿   | drag to reorder                                        |
 
 Label and Artist save the selected entity's MBID, so a recalled value is the real entity, not a new search.
 
@@ -1074,13 +1068,13 @@ Put a 🦣 on any field of any MusicBrainz page: **⚙ → Babies → ＋ Add fi
 
 <img src="../mammoth/screenshots/custom-fields.png" width=600 />
 
-| Column | |
-|---|---|
-| **Selector** | the field's CSS selector (Inspect → *Copy selector*); comma-separate to cover several fields. A *matches N* readout checks it. |
-| **Label** | the panel's title, and the field's identity: fields with the same label share one list |
-| **px** | nudge the pin sideways, clear of the field's own icon |
-| **lvl** | where the button bar attaches: `0` floats under the field; `N` inserts it after the field's Nth ancestor, pushing the page down |
-| **↵** | submit the field's form after a recall, like pressing Enter (tags, header search) |
+| Column       |                                                                                                                                 |
+| ------------ | ------------------------------------------------------------------------------------------------------------------------------- |
+| **Selector** | the field's CSS selector (Inspect → *Copy selector*); comma-separate to cover several fields. A *matches N* readout checks it.  |
+| **Label**    | the panel's title, and the field's identity: fields with the same label share one list                                          |
+| **px**       | nudge the pin sideways, clear of the field's own icon                                                                           |
+| **lvl**      | where the button bar attaches: `0` floats under the field; `N` inserts it after the field's Nth ancestor, pushing the page down |
+| **↵**        | submit the field's form after a recall, like pressing Enter (tags, header search)                                               |
 
 Changes apply live. Works on `<input>`, `<select>` and `<textarea>`.
 
@@ -1105,60 +1099,43 @@ Keys: `selector` (required), `label`, `deltax` (px), `deltav` (lvl), `submit`, `
 
 <img src="../mammoth/screenshots/options.png" width=350/>
 
-| Setting | Default | |
-|---|---|---|
-| Scope per resource | off | separate notes per edit-note type |
-| Hide help text | off | hide MusicBrainz's help above the field |
-| Default click action | replace | or append; right-click does the other |
-| Insert new line when appending | on | |
-| Show note search | off | |
-| Sort saved notes | Manual | or Most used, Recent |
-| Button label length | 24 | characters on pinned buttons (4–80) |
-| Items shown | 6 | rows before the list scrolls |
-| History size | 10 | submitted notes to remember (1–50) |
-| Show mammoth babies | on | |
+| Setting                        | Default |                                                       |
+| ------------------------------ | ------- | ----------------------------------------------------- |
+| Scope per resource             | off     | separate notes per edit-note type                     |
+| Hide help text                 | off     | hide MusicBrainz's help above the field               |
+| Default click action           | replace | or append; right-click does the other                 |
+| Insert new line when appending | on      | an appended note starts on a new line                 |
+| Show note search               | off     | a search box over the saved notes                     |
+| Sort saved notes               | Manual  | or Most used, Recent                                  |
+| Button label length            | 24      | characters on pinned buttons (4–80)                   |
+| Items shown                    | 6       | rows before the list scrolls                          |
+| History size                   | 10      | submitted notes to remember (1–50)                    |
+| Show mammoth babies            | on      | the [Mammoth babies](#mammoth-babies) on other fields |
 
 ### Shortcuts
 
 In the edit-note field:
 
-| Key | |
-|---|---|
-| Ctrl + Enter | submit the edit |
-| Ctrl + ↑ / ↓ | cycle through saved notes |
+| Key          |                                                             |
+| ------------ | ----------------------------------------------------------- |
+| Ctrl + Enter | submit the edit                                             |
+| Ctrl + ↑ / ↓ | cycle through saved notes                                   |
 | Ctrl + B / I | bold / italic around the selection or the word at the caret |
-| Ctrl + , | focus the note search |
+| Ctrl + ,     | focus the note search                                       |
 
 On a saved note or a pinned button:
 
-| | |
-|---|---|
-| click | apply with the default action |
-| right-click | apply the other way |
+|              |                                       |
+| ------------ | ------------------------------------- |
+| click        | apply with the default action         |
+| right-click  | apply the other way                   |
 | Ctrl + click | replace the field and submit the edit |
 
 In a baby field, **Ctrl + ,** opens its panel with the filter focused; ↑ / ↓ and Enter pick a value. (Ctrl is ⌘ on a Mac.)
 
-### Using Mammoth from another userscript
+### Notes
 
-Mammoth enhances **any** `textarea.edit-note` on the page, including fields another script adds later, so another script can host the panel with no API:
-
-1. Give your edit-note field `class="edit-note"`.
-2. History is recorded when a button whose text starts with *Enter edit*, *Submit*, *Add edit* or *Save* (or with class `submit`) is clicked.
-3. Fit the layout with CSS scoped to your container, for example:
-
-   ```css
-   #your-dialog .mmth-wrap { margin: 0 0 12px; max-width: none; gap: 10px; }
-   #your-dialog .mmth-vsep { display: none; }
-   ```
-
-For a baby on your own field, add `class="mmth-pin"`:
-
-```html
-<input class="mmth-pin" data-mmth-key="my-cat-no" data-mmth-label="Catalogue №">
-```
-
-`data-mmth-key` (fields sharing a key share values), `data-mmth-label` (the panel title) and `data-mmth-dx` (pin nudge, px) are optional.
+Mammoth adds its panel to every edit-note field on the page, including the ones other userscripts add, such as their own edit windows. How another script hosts it, and adds a baby to its own fields, is in [DEVELOP.md](../mammoth/DEVELOP.md).
 
 ---
 
@@ -1177,11 +1154,9 @@ Finds a MusicBrainz release on the streaming and store platforms, checks each ma
 
 - **[Dashboard](#dashboard)** on every release page: each [platform](#platforms), with its track count, year, label and format beside MusicBrainz's.
 - **[Link confidence](#link-confidence)**: a match with a different barcode or format is a different release, and is not added.
-- **[Adding links](#adding-links)** to the release, one or all, in the foreground or in the background.
-- **Open all found**: every confirmed platform page not yet in MusicBrainz, each in a tab (plus the Discogs master). Mind the pop-up blocker.
+- **[Adding links](#adding-links)** to the release, one or all, in the foreground or in the background, or opening all the pages found.
 - **[Pasting a barcode](#pasting-a-barcode)** on a release that has none, or picking one the platforms report: the platforms are checked against it, and an added link adds it too.
 - **[Artists and labels](#artists-and-labels)**: the artist and label pages the matched albums name, added to the release's MusicBrainz artists and labels through [Falcon](../falcon/README.md).
-- A **log** with a filter per platform.
 
 ### Dashboard
 
@@ -1326,6 +1301,10 @@ Click a mark to open the page (a ⚠ opens the MusicBrainz artist or label that 
 | Ctrl+V                                         | on a release without a barcode, [use the pasted barcode](#pasting-a-barcode)                                                           |
 | Alt+click                                      | the same as a middle click: add a link even when [link confidence](#link-confidence) withholds it; on **+**, add the withheld ones too |
 | Ctrl+middle-click, Ctrl+Alt+click (⌘ on a Mac) | the same, in the background                                                                                                            |
+
+### Notes
+
+The **Log** keeps every lookup, with a filter per platform.
 
 
 ---

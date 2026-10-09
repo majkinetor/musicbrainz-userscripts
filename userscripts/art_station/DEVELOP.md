@@ -1,6 +1,6 @@
 # Develop
 
-*Reference for maintainers*.
+*Reference for maintainers and other scripts' authors*. The repo-wide procedure is in the root [DEVELOP.md](../../DEVELOP.md).
 
 ## Server communication (internals)
 
@@ -34,3 +34,23 @@ It runs **last**, after every register, and is **re-run whenever a failed upload
 - **Remove** — `POST /release/<mbid>/remove-<art>/<id>` (a 404 is treated as *already removed*, not an error).
 
 Every edit body also carries `.edit_note` (crediting Art Station and the image's source, if any) and `.make_votable=1` when that box is ticked. **Dry run** (the ▾ menu on **Submit edits**) prints each request's method / URL / body instead of POSTing.
+
+## Plugin API
+
+Another userscript can add its own source. It appears as **Import from &lt;name&gt;** in the URL panel, and its images are staged like any other. A site script that's logged in to a fan site, say, can fetch with its own session and hand the images over:
+
+```js
+window.ArtStation?.registerProvider({
+  name: 'SpringsteenLyrics',              // the button label
+  id: 'springsteen',                      // optional de-dupe key (defaults to name)
+  icon: 'https://example.com/favicon.ico',// optional
+  match: 'springsteenlyrics.com',         // optional: string | string[] | RegExp | (url) => boolean
+  async run(ctx) {                        // ctx = { mbid, entity: 'release'|'event', artist, title, url, link, links }
+    return [{ url: 'https://…/front.jpg', types: ['Front'], comment: '' }];
+  },
+});
+```
+
+- **`match`** shows the button only when the release or event links a matching URL; those are passed as `ctx.link` and `ctx.links`.
+- Each returned item is `{ types?, comment? }` plus one image: **`url`** or **`dataUrl`** (preferred: Art Station fetches it itself), or **`blob`** with its **`source`** URL.
+- If your manager isolates `window` between scripts, dispatch `artstation:register-provider` with the provider as `detail` instead.

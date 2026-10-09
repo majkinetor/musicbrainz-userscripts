@@ -263,11 +263,11 @@ Right-click Apollo's corner icon. Column widths, the toolbar layout, **Change**,
 | Ignore punctuation                                            | on      | `&`/*and*, brackets, quotes, dashes and dots don't count                                       |
 | Enable detailed highlighting                                  | on      | see [Highlighting](#highlighting)                                                              |
 | Row layout                                                    | normal  | compact, normal or cozy                                                                        |
-| Alternate row colors                                          | off     |                                                                                                |
+| Alternate row colors                                          | off     | every other track tinted                                                                       |
 | Show grid                                                     | rows    | lines between rows and/or columns                                                              |
 | Enlarge punctuation by                                        | 3 px    | `0` stops the enlarging; the markers stay                                                      |
 | Keep caret position on row navigation                         | on      | off: a cell is selected whole on arrival                                                       |
-| Highlight all instances of an artist on hover                 | off     |                                                                                                |
+| Highlight all instances of an artist on hover                 | off     | hovering an artist highlights it on every track                                                |
 
 ## Shortcuts
 

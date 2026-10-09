@@ -12,18 +12,21 @@ A cover and event art editor for MusicBrainz: one gallery to view, sort, reorder
 
 ## Features
 
-- **Gallery** on a release's *Cover art* and an event's *Event art* tab: thumbnail size, grid or detailed view, group by [type](https://musicbrainz.org/doc/Cover_Art/Types), sort by position, type, dimensions or date.
-- **Reorder** by dragging one cover or a whole selection. Select with right-click or right-drag.
+- **[Gallery](#gallery)** on a release's *Cover art* and an event's *Event art* tab: views, grouping, sorting and reordering by drag.
 - **[Actions](#actions)** on one cover or the selection: type, comment, remove, download, report.
 - **[Add images](#add-images)**: files, folders, zips, URLs, MH Covers, reverse-image search.
 - **[Full-screen viewer](#full-screen-viewer)** with zoom, pan and slideshow.
 - **[File names ⇄ types](#file-names--types)**: a downloaded archive re-adds with its types and comments.
 - **[Applying changes](#applying-changes)** as parallel edits, with automatic retries.
 
+## Gallery
+
+Thumbnail size, a grid or a detailed view, grouping by [type](https://musicbrainz.org/doc/Cover_Art/Types), and sorting by position, type, dimensions or date. Drag one cover, or a whole selection, to reorder; select with right-click or right-drag.
+
 Art Station's icon in the bottom-right corner switches to MusicBrainz's own page and back; it's in colour while Art Station shows and grey while off. Right-click it for the settings (⚙ below).
 
-| Grouped by type | Detailed view |
-|---|---|
+| Grouped by type                    | Detailed view                      |
+| ---------------------------------- | ---------------------------------- |
 | ![](./screenshots/screenshot2.png) | ![](./screenshots/screenshot3.png) |
 
 Each cover shows its size and resolution. *Show each cover's file type next to its size* (⚙, off by default) adds the format: `3.2Mb PNG`.
@@ -39,12 +42,12 @@ Each cover shows its size and resolution. *Show each cover's file type next to i
 
 ## Add images
 
-| Source | |
-|---|---|
+| Source |  |
+| --- | --- |
 | Files | drop or pick; the type is [guessed from the name](#file-names--types) |
 | Folder | drop one, or Shift-click the drop zone; one level of subfolders, up to 100 files |
 | Zip | drop or pick one; unpacked in the browser like a folder. An Art Station download restores each cover's types and comment. |
-| URL | **Ctrl+V** a URL anywhere on the gallery, or the **URL (N)** panel: one import per source the release links, plus [registered providers](#plugin-api). Right-click **URL (N)** to import from all of them; middle-click to import from all and keep only the best cover (highest resolution, then smallest file); the others are discarded, and the edit note says Art Station chose it. Needs [Enhanced Cover Art Uploads](https://raw.github.com/ROpdebee/mb-userscripts/dist/mb_enhanced_cover_art_uploads.user.js). |
+| URL | **Ctrl+V** a URL anywhere on the gallery, or the **URL (N)** panel: one import per source the release links, plus [registered providers](DEVELOP.md#plugin-api). Right-click **URL (N)** to import from all of them; middle-click to import from all and keep only the best cover (highest resolution, then smallest file); the others are discarded, and the edit note says Art Station chose it. Needs [Enhanced Cover Art Uploads](https://raw.github.com/ROpdebee/mb-userscripts/dist/mb_enhanced_cover_art_uploads.user.js). |
 | [MH Covers](https://covers.musichoarders.xyz) | pick a cover; it's staged as a new one |
 | Reverse-image search | 🔍 on a cover searches Yandex, Google Lens, TinEye or Bing for a bigger copy. With the [Picker](./as_picker/README.md), clicking the copy on the results sends it back to the gallery. |
 
@@ -62,7 +65,7 @@ Each cover shows its size and resolution. *Show each cover's file type next to i
 When an added image has no type, it's guessed from its file name (switch it off in ⚙):
 
 | Type | Name contains |
-|---|---|
+| --- | --- |
 | Front | `front`, `folder`, `cover`, `frontal`, `recto` |
 | Back | `back`, `rear`, `verso` |
 | Booklet | `booklet`, `inlay`, `insert` |
@@ -89,48 +92,28 @@ Downloads are named `<NN> <types> <comment>.<ext>`, with `none` for no type, e.g
 > [!NOTE]
 > *Upload timeout* (⚙, default 10 minutes, at most 120) is how long one file may take to reach the Internet Archive. Raise it for large PDF booklets when the Archive is slow; the failure message says when this limit was hit.
 
-## Plugin API
-
-Another userscript can add its own source. It appears as **Import from &lt;name&gt;** in the URL panel, and its images are staged like any other. A site script that's logged in to a fan site, say, can fetch with its own session and hand the images over:
-
-```js
-window.ArtStation?.registerProvider({
-  name: 'SpringsteenLyrics',              // the button label
-  id: 'springsteen',                      // optional de-dupe key (defaults to name)
-  icon: 'https://example.com/favicon.ico',// optional
-  match: 'springsteenlyrics.com',         // optional: string | string[] | RegExp | (url) => boolean
-  async run(ctx) {                        // ctx = { mbid, entity: 'release'|'event', artist, title, url, link, links }
-    return [{ url: 'https://…/front.jpg', types: ['Front'], comment: '' }];
-  },
-});
-```
-
-- **`match`** shows the button only when the release or event links a matching URL; those are passed as `ctx.link` and `ctx.links`.
-- Each returned item is `{ types?, comment? }` plus one image: **`url`** or **`dataUrl`** (preferred: Art Station fetches it itself), or **`blob`** with its **`source`** URL.
-- If your manager isolates `window` between scripts, dispatch `artstation:register-provider` with the provider as `detail` instead.
-
 ## Shortcuts
 
-| Key | Where | |
-|---|---|---|
-| Ctrl+V | gallery | import the URL on the clipboard |
-| ← → ↑ ↓ | gallery | move between covers |
-| Enter | gallery | open the cover full-screen |
-| Space | gallery | select or deselect the cover |
-| Delete | gallery, viewer | mark for removal |
-| ← → / ↑ ↓ | viewer | previous, next / zoom |
-| Enter | viewer | edit the comment |
-| D | viewer | download the original |
-| P | viewer | slideshow |
+| Key       | Where           |                                 |
+| --------- | --------------- | ------------------------------- |
+| Ctrl+V    | gallery         | import the URL on the clipboard |
+| ← → ↑ ↓   | gallery         | move between covers             |
+| Enter     | gallery         | open the cover full-screen      |
+| Space     | gallery         | select or deselect the cover    |
+| Delete    | gallery, viewer | mark for removal                |
+| ← → / ↑ ↓ | viewer          | previous, next / zoom           |
+| Enter     | viewer          | edit the comment                |
+| D         | viewer          | download the original           |
+| P         | viewer          | slideshow                       |
 
-| Mouse | |
-|---|---|
-| right-click / right-drag | select / paint-select covers |
-| right-click **URL (N)** | import from every source |
-| middle-click **URL (N)** | import from every source, keep only the best cover |
-| wheel on the size slider, or right button held + wheel | resize thumbnails |
-| viewer: wheel | zoom toward the cursor |
+| Mouse                                                  |                                                    |
+| ------------------------------------------------------ | -------------------------------------------------- |
+| right-click / right-drag                               | select / paint-select covers                       |
+| right-click **URL (N)**                                | import from every source                           |
+| middle-click **URL (N)**                               | import from every source, keep only the best cover |
+| wheel on the size slider, or right button held + wheel | resize thumbnails                                  |
+| viewer: wheel                                          | zoom toward the cursor                             |
 
 ## Notes
 
-- [Development documentation](./DEVELOP.md)
+Another userscript can add its own image source, shown as **Import from &lt;name&gt;** in the URL panel; how is in [DEVELOP.md](DEVELOP.md#plugin-api).

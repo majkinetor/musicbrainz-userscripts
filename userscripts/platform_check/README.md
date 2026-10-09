@@ -13,11 +13,9 @@ Finds a MusicBrainz release on the streaming and store platforms, checks each ma
 
 - **[Dashboard](#dashboard)** on every release page: each [platform](#platforms), with its track count, year, label and format beside MusicBrainz's.
 - **[Link confidence](#link-confidence)**: a match with a different barcode or format is a different release, and is not added.
-- **[Adding links](#adding-links)** to the release, one or all, in the foreground or in the background.
-- **Open all found**: every confirmed platform page not yet in MusicBrainz, each in a tab (plus the Discogs master). Mind the pop-up blocker.
+- **[Adding links](#adding-links)** to the release, one or all, in the foreground or in the background, or opening all the pages found.
 - **[Pasting a barcode](#pasting-a-barcode)** on a release that has none, or picking one the platforms report: the platforms are checked against it, and an added link adds it too.
 - **[Artists and labels](#artists-and-labels)**: the artist and label pages the matched albums name, added to the release's MusicBrainz artists and labels through [Falcon](../falcon/README.md).
-- A **log** with a filter per platform.
 
 ## Dashboard
 
@@ -162,3 +160,7 @@ Click a mark to open the page (a ⚠ opens the MusicBrainz artist or label that 
 | Ctrl+V                                         | on a release without a barcode, [use the pasted barcode](#pasting-a-barcode)                                                           |
 | Alt+click                                      | the same as a middle click: add a link even when [link confidence](#link-confidence) withholds it; on **+**, add the withheld ones too |
 | Ctrl+middle-click, Ctrl+Alt+click (⌘ on a Mac) | the same, in the background                                                                                                            |
+
+## Notes
+
+The **Log** keeps every lookup, with a filter per platform.

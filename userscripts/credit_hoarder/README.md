@@ -15,10 +15,11 @@ It appears on a release's **Edit relationships** page when there's something to 
 
 ## Features
 
-- **[Import bar](#import-bar)**: pick a source and the import options.
+- **[Import bar](#import-bar)**: pick a [source](#providers) and the import options.
 - **[Review table](#review-table)**: confirm each credited name's MusicBrainz match, with automatic matching, search and entity creation.
 - **[Consolidated import](#consolidated-import)** of every source at once, de-duplicated.
 - **[Instant Fill](#instant-fill)** writes the confirmed relationships into the editor in one pass.
+- **[Diagnostics](#diagnostics)**: a log of every step, to copy into an issue.
 
 The flow: Credit Hoarder fetches the credits and lists every artist, label and place in the review table; clear matches are selected for you. You resolve the rest (or leave them out) and confirm. Instant Fill adds the relationships, and you review and submit the edit as usual.
 
@@ -29,24 +30,24 @@ The flow: Credit Hoarder fetches the credits and lists every artist, label and p
 - **Import credits:** one icon per source available on this release. Click to import; right-click opens the source's page. Several sources can run in one session; their edits stack.
 - **⚛ All** (with more than one source) runs a [consolidated import](#consolidated-import).
 
-| Option | |
-|---|---|
-| Per-track credits | import track credits as well as release credits |
-| Move release credits to tracks | put release-level recording credits (instruments, vocals, producer, mix…) on every track |
-| Use works | off: never touch works. *create none* (default): use existing works only. *create needed*: also create a work a composer, lyricist or writer credit needs. |
-| Equivalence sets | skip a role when an equivalent one is already there (writer ≡ composer) |
-| Duplicate roles | skip a role the recording already has |
+| Option                         |                                                                                                                                                            |
+| ------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Per-track credits              | import track credits as well as release credits                                                                                                            |
+| Move release credits to tracks | put release-level recording credits (instruments, vocals, producer, mix…) on every track                                                                   |
+| Use works                      | off: never touch works. *create none* (default): use existing works only. *create needed*: also create a work a composer, lyricist or writer credit needs. |
+| Equivalence sets               | skip a role when an equivalent one is already there (writer ≡ composer)                                                                                    |
+| Duplicate roles                | skip a role the recording already has                                                                                                                      |
 
 ## Review table
 
 One row per credited entity:
 
-| Row | |
-|---|---|
-| ⚪ | matched automatically |
-| 🟢 | picked by you |
-| 🟡 | matched by URL, but the names differ; worth a look |
-| 🔴 | unresolved |
+| Row |                                                    |
+| --- | -------------------------------------------------- |
+| ⚪   | matched automatically                              |
+| 🟢   | picked by you                                      |
+| 🟡   | matched by URL, but the names differ; worth a look |
+| 🔴   | unresolved                                         |
 
 For sources that give an artist URL (Discogs, Tidal, Metal Archives), a chip shows it: ✓ already linked in MusicBrainz, 🔗 add it (opens the edit page prefilled), ⚠ linked to a different entity.
 
@@ -87,16 +88,16 @@ The edit note carries the statistics, one block per source when several ran. Wha
 
 ## Providers
 
-| Source | Credits | Artist identity | Login |
-|---|---|---|---|
-| Discogs | the fullest: performers, instruments, engineering, production, artwork, mastering | Discogs artist ID | |
-| Tidal | per track (producer, engineers, writers, publisher) and release-level (instruments, vocals, conductor, artwork) | Tidal artist ID, on nearly all credits | |
-| Metal Archives | the lineup with instruments, work credits, other staff | Metal Archives artist ID | |
-| Qobuz | composer, lyricist, producer, publisher, performers | names, except the composer and main artist | optional |
-| Apple Music | composer, writer, lyricist, producer, engineers, arranger, vocals | names | |
-| YouTube Music | writer, producer | names | |
-| Deezer | composers only | names | |
-| Titles | remixers named in the release's own track titles | names | |
+| Source         | Credits                                                                                                         | Artist identity                            | Login    |
+| -------------- | --------------------------------------------------------------------------------------------------------------- | ------------------------------------------ | -------- |
+| Discogs        | the fullest: performers, instruments, engineering, production, artwork, mastering                               | Discogs artist ID                          |          |
+| Tidal          | per track (producer, engineers, writers, publisher) and release-level (instruments, vocals, conductor, artwork) | Tidal artist ID, on nearly all credits     |          |
+| Metal Archives | the lineup with instruments, work credits, other staff                                                          | Metal Archives artist ID                   |          |
+| Qobuz          | composer, lyricist, producer, publisher, performers                                                             | names, except the composer and main artist | optional |
+| Apple Music    | composer, writer, lyricist, producer, engineers, arranger, vocals                                               | names                                      |          |
+| YouTube Music  | writer, producer                                                                                                | names                                      |          |
+| Deezer         | composers only                                                                                                  | names                                      |          |
+| Titles         | remixers named in the release's own track titles                                                                | names                                      |          |
 
 A source with an artist ID resolves to the exact MusicBrainz artist; a name-only credit goes through matching and your review.
 
@@ -106,14 +107,14 @@ A source with an artist ID resolves to the exact MusicBrainz artist; a name-only
 - **Metal Archives**: guitars and bass default to electric; guests get the *guest* attribute; on a split release, each band's credits stay on its own tracks.
 - **Titles** reads named remixes: *Song (Artist Remix)*, *Track (KiNK Dub)*, *Tune (Tom Moulton Mix)*, *Cut (Remixed by Someone)* each give that recording a remixer. *(Extended Mix)*, *(Radio Edit)*, a bare *(Remix)* and *(Mixed by …)* don't. It's a heuristic over a naming habit, so check what it finds.
 
-| Streaming role | MusicBrainz relationship |
-|---|---|
-| Composer, Lyricist, Writer, Orchestrator | on the work (created if *Use works* allows) |
+| Streaming role                                | MusicBrainz relationship                                                                    |
+| --------------------------------------------- | ------------------------------------------------------------------------------------------- |
+| Composer, Lyricist, Writer, Orchestrator      | on the work (created if *Use works* allows)                                                 |
 | Producer, Mixing / Recording / Sound Engineer | on the recording (*mix*, *recording*, *sound*); an assistant gets the *assistant* attribute |
-| Instruments, Vocals, Conductor | on the recording |
-| Artwork | on the release |
-| Music Publisher | a label, *publishing* the work (`Copyright Control` is dropped) |
-| Distributor | a label, *distributed* the release |
+| Instruments, Vocals, Conductor                | on the recording                                                                            |
+| Artwork                                       | on the release                                                                              |
+| Music Publisher                               | a label, *publishing* the work (`Copyright Control` is dropped)                             |
+| Distributor                                   | a label, *distributed* the release                                                          |
 
 Not imported, but listed as skipped: main and featured artists and the record label (set elsewhere), mastering engineer (belongs on the release), sound editor, studio personnel.
 
@@ -123,10 +124,10 @@ The log records every step. Its menu copies the log with or without the raw data
 
 ## Shortcuts
 
-| Key | |
-|---|---|
+| Key   |                                          |
+| ----- | ---------------------------------------- |
 | Enter | run the search; confirm the artist popup |
-| Esc | close the artist popup |
+| Esc   | close the artist popup                   |
 
 ## Notes
 

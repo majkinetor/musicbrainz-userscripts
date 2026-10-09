@@ -14,7 +14,7 @@ Reusable edit notes in a panel beside the edit-note field of every edit form, an
 - **[History](#saved-notes)** of the notes you submitted.
 - **[Mammoth babies](#mammoth-babies)**: the same for other fields (catalogue number, label, artist…), and **[any field you choose](#custom-fields)**.
 - **[Import and export](#settings)** of notes.
-- **[Integration](#using-mammoth-from-another-userscript)** with other userscripts' edit-note fields.
+- **[Other scripts' edit-note fields](#notes)** get the same panel.
 
 ## Saved notes
 
@@ -36,12 +36,12 @@ A 🦣 pin in a field recalls the values saved for it, shared across releases. T
 
 In the pin's panel, **＋** saves the current value and **✕** clears the field. On a saved value:
 
-| | |
-|---|---|
-| ★ | pin it as a button under the field |
-| ◉ | make it the default, filled in when the field is empty |
-| 🗑 | delete |
-| ⠿ | drag to reorder |
+|     |                                                        |
+| --- | ------------------------------------------------------ |
+| ★   | pin it as a button under the field                     |
+| ◉   | make it the default, filled in when the field is empty |
+| 🗑   | delete                                                 |
+| ⠿   | drag to reorder                                        |
 
 Label and Artist save the selected entity's MBID, so a recalled value is the real entity, not a new search.
 
@@ -53,13 +53,13 @@ Put a 🦣 on any field of any MusicBrainz page: **⚙ → Babies → ＋ Add fi
 
 <img src="./screenshots/custom-fields.png" width=600 />
 
-| Column | |
-|---|---|
-| **Selector** | the field's CSS selector (Inspect → *Copy selector*); comma-separate to cover several fields. A *matches N* readout checks it. |
-| **Label** | the panel's title, and the field's identity: fields with the same label share one list |
-| **px** | nudge the pin sideways, clear of the field's own icon |
-| **lvl** | where the button bar attaches: `0` floats under the field; `N` inserts it after the field's Nth ancestor, pushing the page down |
-| **↵** | submit the field's form after a recall, like pressing Enter (tags, header search) |
+| Column       |                                                                                                                                 |
+| ------------ | ------------------------------------------------------------------------------------------------------------------------------- |
+| **Selector** | the field's CSS selector (Inspect → *Copy selector*); comma-separate to cover several fields. A *matches N* readout checks it.  |
+| **Label**    | the panel's title, and the field's identity: fields with the same label share one list                                          |
+| **px**       | nudge the pin sideways, clear of the field's own icon                                                                           |
+| **lvl**      | where the button bar attaches: `0` floats under the field; `N` inserts it after the field's Nth ancestor, pushing the page down |
+| **↵**        | submit the field's form after a recall, like pressing Enter (tags, header search)                                               |
 
 Changes apply live. Works on `<input>`, `<select>` and `<textarea>`.
 
@@ -84,57 +84,40 @@ Keys: `selector` (required), `label`, `deltax` (px), `deltav` (lvl), `submit`, `
 
 <img src="screenshots/options.png" width=350/>
 
-| Setting | Default | |
-|---|---|---|
-| Scope per resource | off | separate notes per edit-note type |
-| Hide help text | off | hide MusicBrainz's help above the field |
-| Default click action | replace | or append; right-click does the other |
-| Insert new line when appending | on | |
-| Show note search | off | |
-| Sort saved notes | Manual | or Most used, Recent |
-| Button label length | 24 | characters on pinned buttons (4–80) |
-| Items shown | 6 | rows before the list scrolls |
-| History size | 10 | submitted notes to remember (1–50) |
-| Show mammoth babies | on | |
+| Setting                        | Default |                                                       |
+| ------------------------------ | ------- | ----------------------------------------------------- |
+| Scope per resource             | off     | separate notes per edit-note type                     |
+| Hide help text                 | off     | hide MusicBrainz's help above the field               |
+| Default click action           | replace | or append; right-click does the other                 |
+| Insert new line when appending | on      | an appended note starts on a new line                 |
+| Show note search               | off     | a search box over the saved notes                     |
+| Sort saved notes               | Manual  | or Most used, Recent                                  |
+| Button label length            | 24      | characters on pinned buttons (4–80)                   |
+| Items shown                    | 6       | rows before the list scrolls                          |
+| History size                   | 10      | submitted notes to remember (1–50)                    |
+| Show mammoth babies            | on      | the [Mammoth babies](#mammoth-babies) on other fields |
 
 ## Shortcuts
 
 In the edit-note field:
 
-| Key | |
-|---|---|
-| Ctrl + Enter | submit the edit |
-| Ctrl + ↑ / ↓ | cycle through saved notes |
+| Key          |                                                             |
+| ------------ | ----------------------------------------------------------- |
+| Ctrl + Enter | submit the edit                                             |
+| Ctrl + ↑ / ↓ | cycle through saved notes                                   |
 | Ctrl + B / I | bold / italic around the selection or the word at the caret |
-| Ctrl + , | focus the note search |
+| Ctrl + ,     | focus the note search                                       |
 
 On a saved note or a pinned button:
 
-| | |
-|---|---|
-| click | apply with the default action |
-| right-click | apply the other way |
+|              |                                       |
+| ------------ | ------------------------------------- |
+| click        | apply with the default action         |
+| right-click  | apply the other way                   |
 | Ctrl + click | replace the field and submit the edit |
 
 In a baby field, **Ctrl + ,** opens its panel with the filter focused; ↑ / ↓ and Enter pick a value. (Ctrl is ⌘ on a Mac.)
 
-## Using Mammoth from another userscript
+## Notes
 
-Mammoth enhances **any** `textarea.edit-note` on the page, including fields another script adds later, so another script can host the panel with no API:
-
-1. Give your edit-note field `class="edit-note"`.
-2. History is recorded when a button whose text starts with *Enter edit*, *Submit*, *Add edit* or *Save* (or with class `submit`) is clicked.
-3. Fit the layout with CSS scoped to your container, for example:
-
-   ```css
-   #your-dialog .mmth-wrap { margin: 0 0 12px; max-width: none; gap: 10px; }
-   #your-dialog .mmth-vsep { display: none; }
-   ```
-
-For a baby on your own field, add `class="mmth-pin"`:
-
-```html
-<input class="mmth-pin" data-mmth-key="my-cat-no" data-mmth-label="Catalogue №">
-```
-
-`data-mmth-key` (fields sharing a key share values), `data-mmth-label` (the panel title) and `data-mmth-dx` (pin nudge, px) are optional.
+Mammoth adds its panel to every edit-note field on the page, including the ones other userscripts add, such as their own edit windows. How another script hosts it, and adds a baby to its own fields, is in [DEVELOP.md](DEVELOP.md).

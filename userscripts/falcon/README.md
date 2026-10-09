@@ -12,14 +12,14 @@ An importer like [Harmony] hands you 20–50 artists, recordings and labels that
 
 ## Features
 
-- **[Queue from anywhere](#filling-the-queue)**: a [Harmony](#from-harmony) import, [the page you're on](#from-the-current-page), [a series](#from-a-series), a [JSON file](#json-model), or [another script](#from-another-script) such as Platform Check.
-- **[Attributes](#attributes)**: links, names, disambiguations, aliases, ISRCs, the video flag, cover art.
+- **[Queue from anywhere](#filling-the-queue)**: a [Harmony](#from-harmony) import, [the page you're on](#from-the-current-page), [a series](#from-a-series), a [JSON file](#json-model) or [another script](#from-another-script).
+- **[Editing the queue](#editing-the-queue)** as a list of forms or a spreadsheet-like grid.
 - **[Failures you can inspect](#the-run)**: MusicBrainz's own error on the row, the worker left where it stopped, retry in place.
-- **Export and import** a run as JSON, with each item's outcome, so a partial batch can be rerun without repeating what went through.
+- **[Attributes](#attributes)**: links, names, disambiguations, aliases, ISRCs, the video flag, cover art.
 - **[Batch edit note](#batch-edit-note)** on every edit of a run.
-- **[Hands-free Harmony import](#hands-free-import)**, including retries when MusicBrainz errors.
+- **[Hands-free Harmony import](#hands-free-import)**, including retries when MusicBrainz errors, and a hand-off to Picard once the run finishes.
 - **[Disc IDs from a rip log](#disc-ids-from-a-rip-log)**, computed in the browser.
-- **[Picard](#settings)** hand-off once a run finishes.
+- **[Export and import](#json-model)** a run as JSON, with each item's outcome, so a partial batch can be rerun without repeating what went through.
 
 Untouched rows and aliases the entity already has are skipped, not submitted again. So is a link the entity already has, even in another locale: a Qobuz or Apple Music page already linked as `gb-en` or `/gb/` (or open.qobuz.com, itunes.apple.com) isn't added again as `us-en`. The row says which link it already is.
 
@@ -85,10 +85,10 @@ Review the queue (remove rows, edit fields), then press **Start**. Right-click a
 
 <img src="./screenshots/workers.png">
 
+A link MusicBrainz can't classify on its own (a Bandcamp track: purchase or streaming?) fails with that reason instead of blocking its row; use **⇗** to pick the type.
+
 > [!NOTE]
 > Workers are MusicBrainz edit pages in same-origin iframes. Each is loaded with MusicBrainz's seed parameters, so the page fills itself. Falcon only touches the form for what seeding can't express (a link that needs two types, a row MusicBrainz couldn't classify), and submits. Where MusicBrainz has an API (cover art, aliases), Falcon uses it instead. The worker count never grows with the queue.
-
-A link MusicBrainz can't classify on its own (a Bandcamp track: purchase or streaming?) fails with that reason instead of blocking its row; use **⇗** to pick the type.
 
 ## Attributes
 
@@ -180,15 +180,15 @@ Append `?falcon=<base64(JSON)>` to any musicbrainz.org URL: Falcon opens with th
 | Setting | Default |  |
 | --- | --- | --- |
 | Hide Falcon icon | off | Ctrl+Alt+F still opens it |
-| Add covers only when there aren't any | off |  |
-| Ignore Harmony cover art | off |  |
+| Add covers only when there aren't any | off | a release that already has cover art gets none from the queue |
+| Ignore Harmony cover art | off | a Harmony import queues no cover art |
 | Auto send | off | see [Hands-free import](#hands-free-import) |
-| Auto start Harmony import | off |  |
-| Reload release page after import without errors | off |  |
+| Auto start Harmony import | off | see [Hands-free import](#hands-free-import) |
+| Reload release page after import without errors | off | see [Hands-free import](#hands-free-import) |
 | Open from Harmony in new tab | on | off navigates the Harmony tab |
 | Automatically send to Picard using port | off, 8000 | hand the release to [Picard](https://picard.musicbrainz.org/) after a run (needs its *Browser integration*). The port also gives MusicBrainz's own tagger button, ticked or not. |
 | Workers | 5 | entities processed at once |
-| Keep last N run logs | 20 |  |
+| Keep last N run logs | 20 | the past runs the **Log** tab lists |
 
 > [!TIP]
 > To report a problem: leave **debug** on in the **Log** tab, reproduce it, then **Copy log** into the issue. Each run's log is kept separately; the dropdown lists past runs.

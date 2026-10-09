@@ -32,12 +32,12 @@ In a group:
 
 Fusion opens with a pool already filled from the page you launched it on:
 
-| Page | Pool |
-|---|---|
-| Release | its recordings; *Load recordings from RG edition* adds another edition |
-| Release group | the recordings of every release in the group |
-| Recording | that recording |
-| Artist → Recordings | the artist's entire catalogue, not just the visible page (up to 2000) |
+| Page                | Pool                                                                   |
+| ------------------- | ---------------------------------------------------------------------- |
+| Release             | its recordings; *Load recordings from RG edition* adds another edition |
+| Release group       | the recordings of every release in the group                           |
+| Recording           | that recording                                                         |
+| Artist → Recordings | the artist's entire catalogue, not just the visible page (up to 2000)  |
 
 On any page, pasting a recording, release or release-group MBID or URL into the input adds it (a release adds all of its recordings).
 
@@ -45,11 +45,11 @@ On any page, pasting a recording, release or release-group MBID or URL into the 
 
 Match groups the recordings still in the pool, so a group you built by hand is never undone. The **Cutoff** sets how much evidence it needs:
 
-| Cutoff | Groups two recordings when they share… |
-|---|---|
-| strict | an ISRC or an AcoustID |
+| Cutoff             | Groups two recordings when they share…                                     |
+| ------------------ | -------------------------------------------------------------------------- |
+| strict             | an ISRC or an AcoustID                                                     |
 | normal *(default)* | …or a similar title and artist, with lengths within tolerance (or unknown) |
-| loose | …or a similar title with either the length or the artist |
+| loose              | …or a similar title with either the length or the artist                   |
 
 Titles tolerate small typos. Artists are compared by MBID when both recordings have them, so *Radium* and *DJ Radium* credited to the same artist match.
 
@@ -79,11 +79,11 @@ It is an ordinary edit on your account: unless you're an auto-editor, it goes to
 
 The ⚙ window (or right-click Fusion's corner icon), which also holds the activity **Log**:
 
-| Setting | Default | |
-|---|---|---|
-| Always require a vote | off | send even your auto-edits to a vote |
-| Look up AcoustIDs | on | fetch the pool's AcoustIDs from acoustid.org |
-| Match on open | off | run Match once the pool has loaded |
-| Preload group release details | off | fetch every grouped recording's releases in the background |
-| Length tolerance | 5 s | lengths this close count as the same |
-| Match never groups if lengths differ by more than | 30 s | |
+| Setting                                           | Default |                                                            |
+| ------------------------------------------------- | ------- | ---------------------------------------------------------- |
+| Always require a vote                             | off     | send even your auto-edits to a vote                        |
+| Look up AcoustIDs                                 | on      | fetch the pool's AcoustIDs from acoustid.org               |
+| Match on open                                     | off     | run Match once the pool has loaded                         |
+| Preload group release details                     | off     | fetch every grouped recording's releases in the background |
+| Length tolerance                                  | 5 s     | lengths this close count as the same                       |
+| Match never groups if lengths differ by more than | 30 s    | whatever else matches; grouping by hand still can          |

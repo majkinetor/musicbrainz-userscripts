@@ -11,36 +11,30 @@ Shows a release's ISRCs, fills in the missing ones from several providers, and f
 
 ## Features
 
+- **[Providers](#providers)** found through the release group and [Platform Check](../platform_check/README.md), not just the release's own links.
 - **[ISRC badge](#isrc-editor)** by the release title, showing how many tracks lack an ISRC.
 - **[ISRC editor](#isrc-editor)**: every track's ISRCs, with validation, provider [imports](#importing-isrcs), [per-track lookups](#per-track-lookup), bulk paste, export and deletion.
 - **[Links](#links)**: find and add the recordings' streaming and store links, and end or remove existing ones.
-- **[Providers](#providers)** found through the release group and [Platform Check](../platform_check/README.md), not just the release's own links.
 
 ## Providers
 
-| Provider | ISRC import | Track links | Resolved by |
-|---|:---:|:---:|---|
-| Deezer | ✓ | ✓ | ISRC, on any release |
-| Tidal | ✓ | ✓ | ISRC, on any release |
-| Beatport | ✓ | ✓ | the album, matched by ISRC |
-| Volumo | ✓ | ✓ | the album, matched by ISRC |
-| Qobuz | ✓ | ✓ | the album; ISRCs by position, links by ISRC |
-| Apple Music | ✓ | ✓ | the album; by position (+ title for links) |
-| SoundCloud | ✓ | ✓ | the set (a track URL counts as a one-track release); by position (+ title for links) |
-| Audiomack | ✓ | ✓ | the album (a song URL counts as a one-track release); by position (+ title for links) |
-| Spotify | ✓ | ✓ | ISRCs through [a lookup service](#spotify); links from the album, by position + title |
-| Bandcamp | | ✓ | the album page, by position + title |
-| YouTube Music | | ✓ | the album, when linked (by position + title); else ISRC, on any release |
-| Amazon Music | | ✓ | the album, when linked (by position + title) |
-| HDtracks | ✓ | | the album |
-| 7digital | ✓ | | the album: each track searched by title |
-| SoundExchange | ✓ | | a title and artist search |
-
-**YouTube Music** shows no ISRCs. When the release links its YouTube Music album (Platform Check finds it), each track is taken from that album's tracklist, by position and title. The tracklist is the album's playlist as YouTube lists it, which holds only the album's own tracks; YouTube Music's album page, read logged out, shows a track's music video in its place where there is one, so it is used only when the playlist can't be read, and then only for official audio. An album has a second playlist that puts the music videos in, so even a link to a playlist goes through YouTube Music, which names the album's own. A song a free listener can't play is left out, since the links are free streaming: it may be YouTube Premium only, or not available at all. Otherwise its ISRC is searched. An ISRC it doesn't know brings up unrelated songs instead of nothing, and labels sometimes reuse an ISRC for another version of a song with the same title and length: [JP92Q2400507](https://musicbrainz.org/isrc/JP92Q2400507) is both *メズマライザー* and its *Critical Damage ver.* So a search result counts only when it is official audio (not a user upload), has the track's title, is within 3 s of its length, and comes from this release's album. The log names every result it skipped, and why. The edit note names each link's YouTube Music album, since a song's URL no longer says which album it was once it is delisted. Links are added as *free streaming*.
-
-**Amazon Music** shows no ISRCs either, and has no ISRC search, so its track links come only from the release's Amazon Music album, when the release links it (Platform Check finds it by name). Each track is taken from the album's tracklist by position, or by title when the album orders it differently, and only when the title matches and the length is within 3 seconds. It is read as a guest, with no Amazon account, and the links are added as *streaming page*.
-
-**7digital** is read through the catalogue its web store uses, with no login. It can't list an album's tracks, so each track of the release is searched for by its title (with the album's title, then with its artist), and the results from the linked 7digital album are kept, each with its ISRC, disc and position. One search often brings up the whole album; when it doesn't, there is a search per track, a few at a time, which takes some seconds on a long album. A 7digital track has no page of its own, so there are no track links.
+| Provider                        | ISRC import | Track links | Resolved by                                                                           |
+| ------------------------------- | :---------: | :---------: | ------------------------------------------------------------------------------------- |
+| Deezer                          |      ✓      |      ✓      | ISRC, on any release                                                                  |
+| Tidal                           |      ✓      |      ✓      | ISRC, on any release                                                                  |
+| Beatport                        |      ✓      |      ✓      | the album, matched by ISRC                                                            |
+| Volumo                          |      ✓      |      ✓      | the album, matched by ISRC                                                            |
+| Qobuz                           |      ✓      |      ✓      | the album; ISRCs by position, links by ISRC                                           |
+| Apple Music                     |      ✓      |      ✓      | the album; by position (+ title for links)                                            |
+| SoundCloud                      |      ✓      |      ✓      | the set (a track URL counts as a one-track release); by position (+ title for links)  |
+| Audiomack                       |      ✓      |      ✓      | the album (a song URL counts as a one-track release); by position (+ title for links) |
+| Spotify                         |      ✓      |      ✓      | ISRCs through [a lookup service](#spotify); links from the album, by position + title |
+| Bandcamp                        |             |      ✓      | the album page, by position + title                                                   |
+| [YouTube Music](#youtube-music) |             |      ✓      | the album, when linked (by position + title); else ISRC, on any release               |
+| [Amazon Music](#amazon-music)   |             |      ✓      | the album, when linked (by position + title)                                          |
+| HDtracks                        |      ✓      |             | the album                                                                             |
+| [7digital](#7digital)           |      ✓      |             | the album: each track searched by title                                               |
+| SoundExchange                   |      ✓      |             | a title and artist search                                                             |
 
 An album-based provider needs the release's album link: already in MusicBrainz, found by Platform Check, or pasted with **(+)**. No login is needed anywhere except Qobuz outside the countries it serves (see [Qobuz](#qobuz)).
 
@@ -57,10 +51,10 @@ The toolbar shows the providers available for this release:
 
 <img width="800" src="./screenshots/toolbar.png" />
 
-| Icon | Comes from |
-|---|---|
-| circled | the release's own links |
-| plain | [Platform Check](../platform_check/README.md) |
+| Icon     | Comes from                                                                         |
+| -------- | ---------------------------------------------------------------------------------- |
+| circled  | the release's own links                                                            |
+| plain    | [Platform Check](../platform_check/README.md)                                      |
 | blue dot | another release in the group (option *Use providers from the whole release group*) |
 
 **(+)** imports from any album URL you paste. **⟳ SoundExchange** searches every track by title and artist, fills the confident matches, and shows the other candidates per row; it searches 30 tracks at a time, so click a *Not searched* row to continue. Deezer, which needs a request per track, fetches 50 at a time the same way.
@@ -81,11 +75,11 @@ The toolbar shows the providers available for this release:
   - **All** is also the last button in the toolbar, when the release has more than one provider: it checks every track, as a right-click on a row's **All** does.
 - **⚙** opens a SoundExchange search you can tune (title, artist, release, exact), with a link to run it on their site.
 
-| Check | Mismatch when |
-|---|---|
+| Check         | Mismatch when                                                             |
+| ------------- | ------------------------------------------------------------------------- |
 | Title, artist | the words don't match (a couple of extra words, like a version, are fine) |
-| Year | recorded after the release year (+1) |
-| Length | more than 10 s off; MusicBrainz's length is shown alongside |
+| Year          | recorded after the release year (+1)                                      |
+| Length        | more than 10 s off; MusicBrainz's length is shown alongside               |
 
 A result passing every check fills an empty field (blue); a length mismatch only warns (yellow). Lookups don't run while you type: only when you leave a field you typed into, press the button, or run the SoundExchange search. A SoundExchange captcha or rate limit shows in the toolbar; solve it there and continue.
 
@@ -111,14 +105,14 @@ The **Links** tab shows, per track, what each recording already links to (**Link
 
 **⚡ Match**, at the right of the toolbar after **Find links**, does both steps in one click. It imports ISRCs from the fastest source the release links: one-request sources (Qobuz, Audiomack, Apple Music, Tidal, …) before per-track ones (Deezer, 7digital) and Spotify. If a source fails or gives nothing, it tries the next. Then it runs **Find links** with the ISRCs it found. A link pulled from the release group is skipped, since whether it fits this release needs you to look. Mission Control's probe uses the same order.
 
-| Click | on an **Add** icon | on a **Linked** icon |
-|---|---|---|
-| left | open the provider's track | open the provider's track |
-| right | add this link | toggle *ended* (shown faded) |
-| Ctrl + right | add every link on the track | end every link on the track |
-| Alt + right | add this provider on every track | end this provider on every track |
-| middle | | remove this link |
-| Ctrl / Alt + middle | | remove on the track / this provider everywhere |
+| Click               | on an **Add** icon               | on a **Linked** icon                           |
+| ------------------- | -------------------------------- | ---------------------------------------------- |
+| left                | open the provider's track        | open the provider's track                      |
+| right               | add this link                    | toggle *ended* (shown faded)                   |
+| Ctrl + right        | add every link on the track      | end every link on the track                    |
+| Alt + right         | add this provider on every track | end this provider on every track               |
+| middle              |                                  | remove this link                               |
+| Ctrl / Alt + middle |                                  | remove on the track / this provider everywhere |
 
 End a link when the release is taken down and it no longer resolves ([MusicBrainz style](https://musicbrainz.org/doc/Style/Relationships/URLs#When_to_remove)). Ending and removing work on any linked provider.
 
@@ -129,24 +123,39 @@ End a link when the release is taken down and it no longer resolves ([MusicBrain
 
 <img width="1000" src="./screenshots/options.png" />
 
-| Setting | Default | |
-|---|---|---|
-| Authorize | | OAuth for submitting ISRCs |
-| Import buttons | icons | icons, text, or both |
-| Use providers from the whole release group | off | take missing providers from sibling releases (one more lookup) |
-| Ignore Platform Check link confidence | off | use links Platform Check withheld for a barcode or format mismatch |
-| Spotify ISRC source | molla | or ISRC Hunt |
+| Setting                                    | Default |                                                                    |
+| ------------------------------------------ | ------- | ------------------------------------------------------------------ |
+| Authorize                                  |         | OAuth for submitting ISRCs                                         |
+| Import buttons                             | icons   | icons, text, or both                                               |
+| Use providers from the whole release group | off     | take missing providers from sibling releases (one more lookup)     |
+| Ignore Platform Check link confidence      | off     | use links Platform Check withheld for a barcode or format mismatch |
+| Spotify ISRC source                        | molla   | or ISRC Hunt                                                       |
 
 ## Shortcuts
 
-| Key | |
-|---|---|
-| Esc | close the open panel, else the editor |
+| Key   |                                                               |
+| ----- | ------------------------------------------------------------- |
+| Esc   | close the open panel, else the editor                         |
 | Enter | submit the focused URL input, or run the SoundExchange search |
 
 The mouse gestures on links are in the [Links](#links) table.
 
 ## Notes
+
+### YouTube Music
+
+YouTube Music shows no ISRCs. When the release links its YouTube Music album (Platform Check finds it), each track is taken from that album's tracklist by position and title, as official audio, never a music video. A song a free listener can't play (YouTube Premium only, or not available at all) is left out, since the links are added as *free streaming*. Without a linked album, the track's ISRC is searched, and a result counts only when it is official audio (not a user upload), has the track's title, is within 3 s of its length, and comes from this release's album. The log names every result it skipped, and why. The edit note names each link's YouTube Music album.
+
+> [!NOTE]
+> A search for an ISRC YouTube Music doesn't know brings up unrelated songs instead of nothing, and labels sometimes reuse an ISRC for another version of a song with the same title and length: [JP92Q2400507](https://musicbrainz.org/isrc/JP92Q2400507) is both *メズマライザー* and its *Critical Damage ver.* Hence the strict search. The album's tracklist is read from its own playlist, because its album page, seen without logging in, shows a track's music video in its place. The edit note names the album because a song's URL stops saying which album it was on once it is delisted.
+
+### Amazon Music
+
+Amazon Music shows no ISRCs, and has no ISRC search, so its track links come only from the release's Amazon Music album, when the release links it (Platform Check finds it by name). Each track is taken from the album's tracklist by position, or by title when the album orders it differently, and only when the title matches and the length is within 3 seconds. It is read as a guest, with no Amazon account, and the links are added as *streaming page*.
+
+### 7digital
+
+7digital is read through the catalogue its web store uses, with no login. It can't list an album's tracks, so each track of the release is searched for by its title (with the album's title, then with its artist), and the results from the linked 7digital album are kept, each with its ISRC, disc and position. One search often brings up the whole album; when it doesn't, there is a search per track, a few at a time, which takes some seconds on a long album. A 7digital track has no page of its own, so there are no track links.
 
 ### Spotify
 

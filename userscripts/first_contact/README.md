@@ -20,7 +20,6 @@ Import a release into MusicBrainz from the platform's album page with one click:
 - **[Artist matching](#artist-matching)** is left to Apollo Editor, which gets every artist's platform link.
 - **[Archive](#archive)**: the album page is saved on the Internet Archive, and the edit note links the snapshot.
 - **[Moving the button](#moving-the-button)**: drag it anywhere; each platform remembers its place.
-- **[Settings](#settings)**: the MusicBrainz server, an icon-only button, a settings button only on hover, the annotation, closing the page after the import, the Harmony button, and archiving.
 
 ## Import
 
@@ -61,11 +60,13 @@ Without every track's length: 1 track is a Single, 3 to 6 an EP, 7 or more an Al
 
 The button between **Import to MusicBrainz** and **⚙︎**, with [Harmony](https://harmony.pulsewidth.org.uk/)'s icon, opens the album in Harmony's release lookup in a new tab instead. Harmony then finds the album by its barcode on the platforms ticked in [Harmony's settings](https://harmony.pulsewidth.org.uk/settings), in the region set there, and [Falcon](../falcon/README.md) works there as usual. Open those settings once: until then Harmony has none, so it looks an album link up on its own platform only, and a barcode on none.
 
-| Platform | Sent |
-| --- | --- |
-| Deezer, Bandcamp, Discogs, Apple Music, Tidal, Qobuz, Beatport, Spotify, Ototoy | the album link, at once |
-| Volumo, HDtracks, SoundCloud, Audiomack, 7digital | the barcode: Harmony can't read these platforms, so First Contact reads the album first, as for an import. Without a barcode (a SoundCloud set that isn't a label's), nothing is sent and a message says why |
-| YouTube Music, Amazon Music | nothing: Harmony can't read them and they show no barcode, so the button is greyed out |
+| Platform                                                                        | Sent                                |
+| ------------------------------------------------------------------------------- | ----------------------------------- |
+| Deezer, Bandcamp, Discogs, Apple Music, Tidal, Qobuz, Beatport, Spotify, Ototoy | the album link, at once             |
+| Volumo, HDtracks, SoundCloud, Audiomack, 7digital                               | the barcode, once the album is read |
+| YouTube Music, Amazon Music                                                     | nothing; the button is greyed out   |
+
+Harmony can't read the platforms in the last two rows. For the middle row, First Contact reads the album first, as for an import, and sends its barcode; an album without one (a SoundCloud set that isn't a label's) sends nothing, and a message says why. YouTube Music and Amazon Music show no barcode either, so there is nothing to send.
 
 Turn the button off in [Settings](#settings).
 

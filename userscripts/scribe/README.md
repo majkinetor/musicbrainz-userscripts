@@ -4,6 +4,7 @@ Edit MusicBrainz text fields, or a whole release as Markdown, in your own editor
 
 - Install: [stable](https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/refs/heads/stable/userscripts/scribe/scribe.user.js) or [latest](https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/refs/heads/main/userscripts/scribe/scribe.user.js)
 - The helper: **[Windows](https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/refs/heads/main/userscripts/scribe/helper/dist/scribe.exe)** · **[macOS arm64](https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/refs/heads/main/userscripts/scribe/helper/dist/scribe-osx-arm64)** · **[macOS x64](https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/refs/heads/main/userscripts/scribe/helper/dist/scribe-osx-x64)** · **[Linux x64](https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/refs/heads/main/userscripts/scribe/helper/dist/scribe-linux-x64)** (needs the [.NET 9 runtime](https://dotnet.microsoft.com/download/dotnet/9.0)), or [build it](./helper/BUILD.md)
+- [Changelog](./CHANGELOG.md)
 
 https://github.com/user-attachments/assets/3fb448db-a46c-487a-9d5d-5f3dce997cbf
 
@@ -24,8 +25,8 @@ On a release's **Edit** page, Scribe's icon appears bottom-right, with the other
 
 A window beside the icons lists what changed this session. A value that can't be applied (an invalid status, say) is flagged there with a ⌖ button to its field, and counted in the header. **✕** stops editing.
 
-| | |
-|---|---|
+|  |  |
+| --- | --- |
 | **Applied** | release info (title, disambiguation, status, packaging, language, script, barcode, annotation), release events, labels and catalogue numbers, track titles and lengths, medium titles, artist credits |
 | **Not yet** | external links; adding, removing or reordering tracks (they round-trip unchanged, so use the native editor) |
 
@@ -47,33 +48,26 @@ chmod +x scribe && ./scribe --editor "code -r"   # macOS / Linux: runs headless
 ./scribe --startup on                            # start at login (off to undo)
 ```
 
-| Option | Default | |
-|---|---|---|
-| `--port` | 17999 | listen port |
-| `--token` | extedit | shared secret; set the same one in the userscript (manager menu → *Set token*) |
+| Option             | Default            |                                                                                               |
+| ------------------ | ------------------ | --------------------------------------------------------------------------------------------- |
+| `--port`           | 17999              | listen port                                                                                   |
+| `--token`          | extedit            | shared secret; set the same one in the userscript (manager menu → *Set token*)                |
 | `--editor "<cmd>"` | the OS default app | e.g. `"code -r"`, `subl`, `vim`; `none` only writes the file. Remembered after the first run. |
-| `--startup` | | run at startup (`on`/`off` on macOS and Linux) |
+| `--startup`        |                    | run at startup (`on`/`off` on macOS and Linux)                                                |
 
 On Windows, the tray menu has *Set editor…*, *Open log*, *Run at startup* and *Exit*. A path with spaces goes in inner quotes: `--editor "'C:\Program Files\Microsoft VS Code\Code.exe' -r"`.
 
-| | Log and settings | Run at startup |
-|---|---|---|
-| Windows | `%LOCALAPPDATA%\Scribe\` | `HKCU\…\Run` |
-| macOS | `~/Library/Application Support/Scribe/` | `~/Library/LaunchAgents/…plist` |
-| Linux | `~/.local/share/Scribe/` | `~/.config/autostart/scribe.desktop` |
+|         | Log and settings                        | Run at startup                       |
+| ------- | --------------------------------------- | ------------------------------------ |
+| Windows | `%LOCALAPPDATA%\Scribe\`                | `HKCU\…\Run`                         |
+| macOS   | `~/Library/Application Support/Scribe/` | `~/Library/LaunchAgents/…plist`      |
+| Linux   | `~/.local/share/Scribe/`                | `~/.config/autostart/scribe.desktop` |
 
-> [!NOTE]
-> A normal page can't call a `http://localhost` service from `https://` (mixed content, CORS). The userscript uses `GM_xmlhttpRequest` instead, which the userscript manager runs outside the page. Saving is a long poll: the userscript keeps a request open, and the helper answers it when the file's modified time changes.
->
-> ```
-> hotkey ─POST /open {id,content}→ helper ─writes the file, opens your editor
->        ─GET /result?id (long poll)→ helper ─waits for a save…
->        ←──── 200 {content} ───────  the text goes back into the field
-> ```
+How the userscript and the helper talk is in [DEVELOP.md](DEVELOP.md).
 
 ## Shortcuts
 
-| Key | Where | |
-|---|---|---|
-| Ctrl+Alt+E | any text field | edit it in your editor |
+| Key        | Where                 |                                         |
+| ---------- | --------------------- | --------------------------------------- |
+| Ctrl+Alt+E | any text field        | edit it in your editor                  |
 | Ctrl+Alt+R | a release's Edit page | start or stop editing the whole release |
