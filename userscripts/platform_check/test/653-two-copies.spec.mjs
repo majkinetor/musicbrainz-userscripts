@@ -29,8 +29,8 @@ const state = page => page.evaluate(() => ({
 }));
 
 test('the newer copy runs, the older one stays off without a word', { tag: ['@sandbox', '@critical'] }, async ({ page, inject }) => {
-  const said = [];
-  page.on('console', m => said.push(m.text()));
+  // the running copy notes it in its own log (#697: Platform Check is on the shared log)
+  const said = () => page.evaluate(() => (window.__pcLog ? window.__pcLog.messages() : []).filter(t => /installed twice/.test(t)));
 
   // newer first: the older copy stays off
   await open(page);
@@ -41,8 +41,8 @@ test('the newer copy runs, the older one stays off without a word', { tag: ['@sa
   let s = await state(page);
   check(s.runs === 'standalone v2026.10.1.120000' && s.panels === 1, `newer first: the newer copy runs, one panel (${JSON.stringify(s)})`);
   check(!/installed twice/.test(s.toast), `no toast on the page ("${s.toast}")`);
-  check(await until(() => said.some(t => /installed twice: standalone v2026\.10\.1\.120000 runs, String Theory v2026\.9\.1 is switched off/.test(t)), Boolean),
-    `the running copy logs it (${said.filter(t => /installed twice/.test(t)).join(' | ')})`);
+  const heard = await until(said, l => l.some(t => /installed twice: standalone v2026\.10\.1\.120000 runs, String Theory v2026\.9\.1 is switched off/.test(t)));
+  check(heard.some(t => /switched off/.test(t)), `the running copy logs it (${heard.join(' | ')})`);
 
   // older first: it keeps this page, the newer one notes itself for the next load
   await open(page);

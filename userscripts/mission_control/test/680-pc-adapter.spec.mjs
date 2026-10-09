@@ -10,6 +10,8 @@ test.use({ gm: { name: 'Mission Control' } });
 const RELEASE = 'e91b84a9-6b98-4d64-b4fc-753a9c674c4c';   // sandbox copy of "Bad Boys!" (dev/test/sandbox-copies.json)
 
 test('#680: Probe asks Platform Check and shows its platforms', { tag: ['@sandbox'] }, async ({ page, inject }) => {
+  // two card columns need 2 × 520 px beside both sidebars (300 px each)
+  await page.setViewportSize({ width: 1800, height: 1000 });
   await page.goto(`https://test.musicbrainz.org/release/${RELEASE}`, { waitUntil: 'domcontentloaded' });
   await page.waitForSelector('#content table.medium');
   await inject('mission_control', { waitFor: '__mcTest' });

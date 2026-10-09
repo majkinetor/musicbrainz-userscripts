@@ -19,7 +19,7 @@ const paste = (page, text) => page.evaluate(text => {
   const dt = new DataTransfer(); dt.setData('text/plain', text);
   document.body.dispatchEvent(new ClipboardEvent('paste', { clipboardData: dt, bubbles: true, cancelable: true }));
 }, text);
-const scans = page => page.evaluate(() => (document.getElementById('mb-finder-log-panel')?.textContent.match(/All scans completed/g) || []).length);
+const scans = page => page.evaluate(() => (window.__pcLog ? window.__pcLog.messages().filter(m => /All scans completed/.test(m)) : []).length);
 const toast = page => page.evaluate(() => { const t = document.getElementById('mbu-toast'); return t && /mbu-toast-on/.test(t.className) ? { text: t.textContent, cls: t.className } : null; });
 
 test('a pasted barcode finds the release, and goes in with the links', { tag: ['@sandbox'] }, async ({ page, inject, context }) => {

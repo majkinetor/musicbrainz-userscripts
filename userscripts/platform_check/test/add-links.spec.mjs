@@ -118,7 +118,7 @@ test.describe('without provider answers', () => {
       // does nothing, and has done it once the script has run and the page is idle
       if (key) await until(() => p.evaluate(() => window.__closed && window.__heard.length > 0).catch(() => false));
       else await idle(p);
-      const r = await p.evaluate(key => ({ heard: window.__heard, closed: window.__closed, marker: key && sessionStorage.getItem(key), panel: !!document.getElementById('mb-pc-panel'), modals: document.querySelectorAll('#mb-log-modal-overlay, #mb-provider-modal-overlay').length }), key);
+      const r = await p.evaluate(key => ({ heard: window.__heard, closed: window.__closed, marker: key && sessionStorage.getItem(key), panel: !!document.getElementById('mb-pc-panel'), modals: document.querySelectorAll('#mbu-logpop, #mb-provider-modal-overlay').length }), key);
       await p.close();
       return r;
     };

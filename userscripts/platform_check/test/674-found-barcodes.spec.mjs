@@ -15,7 +15,7 @@ const ONLY_DEEZER = Object.fromEntries(['discogs', 'bandcamp', 'spotify', 'apple
 // format confidence off: the sandbox release is a CD, and Deezer is digital
 test.use({ gm: { name: 'Platform Check', values: { ...ONLY_DEEZER, 'pc:respect-format': false } } });
 
-const scans = page => page.evaluate(() => (document.getElementById('mb-finder-log-panel')?.textContent.match(/All scans completed/g) || []).length);
+const scans = page => page.evaluate(() => (window.__pcLog ? window.__pcLog.messages().filter(m => /All scans completed/.test(m)) : []).length);
 const button = page => page.evaluate(() => { const b = document.getElementById('mb-found-bc'); return { shown: getComputedStyle(b).display !== 'none', text: b.textContent.trim(), title: b.title }; });
 
 // Deezer's search finds the album asked for, by the artist asked for, with nb_tracks tracks.
