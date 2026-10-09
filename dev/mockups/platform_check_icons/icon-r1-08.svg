@@ -1,5 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
-<title>Platform Check — Traffic light</title>
-<rect x="6" y="38" width="116" height="52" rx="26" fill="#2b2d42"/><circle cx="32" cy="64" r="16" fill="#3a1d1d"/><circle cx="64" cy="64" r="16" fill="#3a331d"/><circle cx="96" cy="64" r="16" fill="#22c55e"/><circle cx="96" cy="64" r="22" fill="#22c55e" opacity=".25"/><path d="M89.18 63 L94.14 67.96 L103.44 58.04" fill="none" stroke="#fff" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round"/>
-<path d="M64 90 V122" stroke="#2b2d42" stroke-width="8"/><path d="M14 38 L28 26 H100 L114 38" fill="#2b2d42"/>
-</svg>

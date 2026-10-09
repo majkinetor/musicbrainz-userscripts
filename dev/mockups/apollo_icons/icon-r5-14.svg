@@ -1,6 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
-<title>Apollo Editor — Orange tile</title>
-<rect x="4" y="4" width="120" height="120" rx="26" fill="#ff6a00"/><g transform="translate(64 64) scale(.78) translate(-64 -66)">
-<path d="M64 10 C82 28 90 56 90 80 L38 80 C38 56 46 28 64 10 Z" fill="#ffffff"/><path d="M38 80 L20 110 L40 96 Z" fill="#ffffff"/><path d="M90 80 L108 110 L88 96 Z" fill="#ffffff"/><g fill="none" stroke="#1b2a4a" stroke-width="7" stroke-linejoin="round" stroke-linecap="round"><path d="M64 10 C82 28 90 56 90 80 L38 80 C38 56 46 28 64 10 Z"/><path d="M38 80 L20 110 L40 96 Z"/><path d="M90 80 L108 110 L88 96 Z"/></g><circle cx="64" cy="44" r="10" fill="#1b2a4a"/>
-<path d="M50 80 L45 108 L64 122 L83 108 L78 80 Z" fill="#ffd24a" stroke="#1b2a4a" stroke-width="5" stroke-linejoin="round"/></g>
-</svg>

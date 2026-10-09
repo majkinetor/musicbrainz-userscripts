@@ -1,5 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
-<title>Falcon — Glass</title>
-<defs><filter id="fa215-b"><feGaussianBlur stdDeviation="9"/></filter><clipPath id="fa215-c"><rect x="4" y="4" width="120" height="120" rx="28"/></clipPath></defs><g clip-path="url(#fa215-c)"><rect x="4" y="4" width="120" height="120" rx="28" fill="#1b2a4a"/><g filter="url(#fa215-b)"><circle cx="28" cy="96" r="34" fill="#ff6a00"/><circle cx="104" cy="30" r="32" fill="#39b5ff"/><circle cx="96" cy="104" r="20" fill="#9b5cff"/></g>
-<rect x="16" y="16" width="96" height="96" rx="22" fill="#fff" opacity=".14" stroke="#fff" stroke-opacity=".5" stroke-width="2"/></g><g transform="translate(64 62) rotate(0) scale(0.66) translate(-64 -64)"><path d="M64 26 C67 26 70 30 70 36 C72 40 74 42 76 44 C92 42 108 36 124 34 C112 44 96 54 78 62 C76 68 74 74 74 80 L80 100 C74 104 68 104 64 104 Z" fill="#fff"/><path d="M64 26 C67 26 70 30 70 36 C72 40 74 42 76 44 C92 42 108 36 124 34 C112 44 96 54 78 62 C76 68 74 74 74 80 L80 100 C74 104 68 104 64 104 Z" fill="#fff" transform="translate(128 0) scale(-1 1)"/></g>
-</svg>

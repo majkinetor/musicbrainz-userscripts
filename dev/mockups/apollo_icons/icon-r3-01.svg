@@ -1,6 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
-<title>Apollo Editor — Bullseye</title>
-<rect x="4" y="4" width="120" height="120" rx="26" fill="#fdf1dc"/><circle cx="58" cy="70" r="44" fill="#17121f"/><g fill="none" stroke="#3a3346" stroke-width="1.4"><circle cx="58" cy="70" r="37"/><circle cx="58" cy="70" r="31"/><circle cx="58" cy="70" r="25"/></g><circle cx="58" cy="70" r="17" fill="#e63946"/><circle cx="58" cy="70" r="11.5" fill="#fff"/><circle cx="58" cy="70" r="6" fill="#e63946"/>
-<path d="M60 68 L112 16" stroke="#7a4a1e" stroke-width="4.5" stroke-linecap="round"/><path d="M104 24 L100 10 L112 16Z M104 24 L118 28 L112 16Z" fill="#2a9d8f"/><path d="M98 30 L94 18 L104 24Z M98 30 L110 34 L104 24Z" fill="#e9c46a"/>
-<path d="M30 30 L40 38 M22 46 L34 50 M44 20 L50 32" stroke="#e63946" stroke-width="3" stroke-linecap="round" opacity=".55"/>
-</svg>

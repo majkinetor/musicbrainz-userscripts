@@ -1,4 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
-<title>Falcon — Gradient tile</title>
-<defs><linearGradient id="fa219-g" x1="0" y1="0" x2="1" y2="1"><stop offset="0.00" stop-color="#6a3df0"/><stop offset="0.50" stop-color="#d63c8a"/><stop offset="1.00" stop-color="#ff8a3d"/></linearGradient></defs><rect x="4" y="4" width="120" height="120" rx="28" fill="url(#fa219-g)"/><g transform="translate(14 12) scale(.8)"><path d="M34 118 C26 86 28 54 46 37 C60 24 82 22 96 31 C100 34 102 38 103 41 C111 42 118 50 118 61 L113 66 C112 61 108 58 103 59 C100 66 94 73 86 77 C79 83 75 98 79 118 Z" fill="#fff"/><path d="M101 61 C98 68 93 73 86 77 C79 83 75 98 79 118 L60 118 C58 100 62 88 70 80 C78 72 86 66 92 62 Z" fill="#fff" opacity=".0"/><path d="M101 61 C98 68 93 73 86 77 C79 83 75 98 79 118" fill="none" stroke="#d63c8a" stroke-width="4"/><circle cx="82" cy="47" r="7" fill="#6a3df0"/></g>
-</svg>

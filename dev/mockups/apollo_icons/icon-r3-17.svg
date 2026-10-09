@@ -1,6 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
-<title>Apollo Editor — Moon flag</title>
-<defs><clipPath id="ap317-c"><rect x="4" y="4" width="120" height="120" rx="26"/></clipPath></defs><g clip-path="url(#ap317-c)"><rect x="4" y="4" width="120" height="120" rx="26" fill="#120c2c"/><g fill="#fff"><circle cx="18" cy="18" r="1.3"/><circle cx="110" cy="22" r="1.6"/><circle cx="96" cy="60" r="1"/><circle cx="24" cy="56" r="1.3"/></g><path d="M4 98 Q64 80 124 98 V124 H4Z" fill="#a7abb7"/>
-<path d="M44 96 V20" stroke="#d9dce3" stroke-width="4" stroke-linecap="round"/><path d="M46 22 C62 18 74 28 104 22 V60 C74 66 62 56 46 60Z" fill="#7a57e8"/><path d="M70 30 V50 M70 30 L82 34" stroke="#fff" stroke-width="3.5" fill="none" stroke-linecap="round"/><circle cx="66" cy="51" r="4.5" fill="#fff"/>
-<g fill="#8a8f9c"><ellipse cx="72" cy="104" rx="3.5" ry="2"/><ellipse cx="82" cy="110" rx="3.5" ry="2"/><ellipse cx="92" cy="104" rx="3.5" ry="2"/><ellipse cx="102" cy="110" rx="3.5" ry="2"/></g></g>
-</svg>

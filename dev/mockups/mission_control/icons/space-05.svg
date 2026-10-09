@@ -1,6 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
-<title>Mission Control — Splashdown</title>
-<defs><filter id="mcs05-h" x="-10%" y="-10%" width="120%" height="120%"><feMorphology in="SourceAlpha" operator="dilate" radius="1.5" result="d"/><feFlood flood-color="#fff" flood-opacity=".7"/><feComposite in2="d" operator="in"/><feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs><g filter="url(#mcs05-h)"><path d="M10 52 A54 44 0 0 1 118 52 Q109 46 100 52 Q91 46 82 52 Q73 46 64 52 Q55 46 46 52 Q37 46 28 52 Q19 46 10 52Z" fill="#e63946" stroke="#22223b" stroke-width="4" stroke-linejoin="round"/>
-<path d="M46 52 Q46 20 64 8 Q82 20 82 52" fill="#fff" stroke="#22223b" stroke-width="3"/><path d="M10 52 L52 96 M46 52 L56 96 M82 52 L72 96 M118 52 L76 96" stroke="#22223b" stroke-width="2.5"/>
-<path d="M54 94 H74 L82 116 H46Z" fill="#d9dce6" stroke="#22223b" stroke-width="4" stroke-linejoin="round"/><circle cx="64" cy="106" r="4" fill="#3fb6f0"/></g>
-</svg>

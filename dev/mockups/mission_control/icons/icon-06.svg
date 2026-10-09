@@ -1,6 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
-<title>Mission Control — One window</title>
-<defs><filter id="mc06-h" x="-10%" y="-10%" width="120%" height="120%"><feMorphology in="SourceAlpha" operator="dilate" radius="1.5" result="d"/><feFlood flood-color="#fff" flood-opacity=".7"/><feComposite in2="d" operator="in"/><feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs><g filter="url(#mc06-h)"><rect x="10" y="16" width="108" height="96" rx="12" fill="#fff" stroke="#22223b" stroke-width="6"/><path d="M10 28 A12 12 0 0 1 22 16 H106 A12 12 0 0 1 118 28 V38 H10Z" fill="#7a57e8" stroke="#22223b" stroke-width="6" stroke-linejoin="round"/>
-<g fill="#fff"><circle cx="24" cy="27" r="3.5"/><circle cx="35" cy="27" r="3.5"/><circle cx="46" cy="27" r="3.5"/></g>
-<rect x="22" y="48" width="38" height="24" rx="5" fill="#f3722c"/><rect x="68" y="48" width="38" height="24" rx="5" fill="#3fb6f0"/><rect x="22" y="78" width="38" height="24" rx="5" fill="#ffc94a"/><rect x="68" y="78" width="38" height="24" rx="5" fill="#2ea44f"/></g>
-</svg>

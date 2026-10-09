@@ -1,6 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
-<title>Falcon — Conveyor</title>
-<rect x="56" y="10" width="16" height="30" fill="#4a5a78"/><rect x="46" y="38" width="36" height="12" rx="3" fill="#ff6a00"/><path d="M64 54 V60" stroke="#ff6a00" stroke-width="3" stroke-dasharray="2 2"/>
-<rect x="18" y="64" width="24" height="24" rx="4" fill="#b8c4da" stroke="#1b2a4a" stroke-width="3"/><rect x="52" y="64" width="24" height="24" rx="4" fill="#fff" stroke="#1b2a4a" stroke-width="3"/><rect x="86" y="64" width="24" height="24" rx="4" fill="#2fb37a" stroke="#1b2a4a" stroke-width="3"/><path d="M92.4 76 L96.4 80 L104.4 71.2" fill="none" stroke="#fff" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>
-<rect x="8" y="90" width="112" height="14" rx="7" fill="#1b2a4a"/><circle cx="18" cy="97" r="3.5" fill="#b8c4da"/><circle cx="38" cy="97" r="3.5" fill="#b8c4da"/><circle cx="58" cy="97" r="3.5" fill="#b8c4da"/><circle cx="78" cy="97" r="3.5" fill="#b8c4da"/><circle cx="98" cy="97" r="3.5" fill="#b8c4da"/><circle cx="112" cy="97" r="3.5" fill="#b8c4da"/><path d="M12 112 H30 M40 112 H58" stroke="#b8c4da" stroke-width="3" stroke-linecap="round"/>
-</svg>

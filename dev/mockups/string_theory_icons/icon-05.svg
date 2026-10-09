@@ -1,5 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
-<title>String Theory — Ball of yarn</title>
-<defs><filter id="st05-h" x="-10%" y="-10%" width="120%" height="120%"><feMorphology in="SourceAlpha" operator="dilate" radius="1.5" result="d"/><feFlood flood-color="#fff" flood-opacity=".7"/><feComposite in2="d" operator="in"/><feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs><g filter="url(#st05-h)"><path d="M96 96 Q110 112 98 120 Q88 126 112 122" fill="none" stroke="#22223b" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/><path d="M96 96 Q110 112 98 120 Q88 126 112 122" fill="none" stroke="#7a57e8" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/><circle cx="58" cy="62" r="46" fill="#7a57e8" stroke="#22223b" stroke-width="4" stroke-linejoin="round" stroke-linecap="round"/>
-<path d="M22 44 Q60 30 92 50 M16 66 Q58 50 102 72 M24 90 Q60 74 96 92 M42 20 Q30 62 50 106 M70 18 Q94 56 78 106" fill="none" stroke="#4b2e83" stroke-width="4" stroke-linecap="round"/></g>
-</svg>

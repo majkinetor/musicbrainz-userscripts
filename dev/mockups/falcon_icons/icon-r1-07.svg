@@ -1,7 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
-<title>Falcon — On the glove</title>
-<rect x="4" y="4" width="120" height="120" rx="26" fill="#eef3f8"/><path d="M4 104 C30 96 60 94 92 100 L124 108 V124 H4Z" fill="#8a4b22"/><path d="M76 98 L72 122 L86 122 L88 98Z" fill="#4a5a78"/>
-<path d="M54 44 C80 40 94 62 90 86 L84 104 L64 104 C52 98 46 84 46 68 C46 56 48 48 54 44Z" fill="#4a5a78"/><path d="M60 58 C54 66 54 84 62 98 L72 98 C64 86 62 70 66 58Z" fill="#f6efe2"/><g stroke="#4a5a78" stroke-width="2" stroke-linecap="round"><path d="M58 70 h4 M60 78 h4 M58 86 h4 M62 92 h4"/></g>
-<circle cx="60" cy="38" r="16" fill="#1b2a4a"/><path d="M50 46 C52 52 58 54 62 52 L60 44Z" fill="#f6efe2"/><path d="M44 34 C38 34 34 40 36 46 L42 42Z" fill="#5b6b80"/><circle cx="52" cy="34" r="4.5" fill="#f5c518"/><circle cx="52" cy="34" r="2.6" fill="#0d0d0d"/>
-<path d="M60 104 l-3 6 M68 104 l0 6" stroke="#f5c518" stroke-width="3" stroke-linecap="round"/>
-</svg>

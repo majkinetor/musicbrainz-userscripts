@@ -1,6 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
-<title>Credit Hoarder — Neon jar</title>
-<defs><filter id="e08g" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="2.2" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>
-<rect x="4" y="4" width="120" height="120" rx="26" fill="#10002b"/><g filter="url(#e08g)" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M44 26 H84 M48 26 V36 C34 42 32 52 32 60 V98 C32 106 38 110 46 110 H82 C90 110 96 106 96 98 V60 C96 52 94 42 80 36 V26" stroke="#4cc9f0" stroke-width="3.5"/></g>
-<g filter="url(#e08g)"><g transform="translate(52 68) scale(1.2)" fill="#f72585"><ellipse cx="0" cy="10" rx="6" ry="4.5" transform="rotate(-20 0 10)"/><rect x="4.2" y="-14" width="2.6" height="24"/><path d="M6.8 -14 C14 -11 16 -6 13 0 C13 -5 10 -7 6.8 -8Z"/></g><g transform="translate(72 82) scale(1)" fill="#ffd60a"><ellipse cx="0" cy="10" rx="6" ry="4.5" transform="rotate(-20 0 10)"/><rect x="4.2" y="-14" width="2.6" height="24"/><path d="M6.8 -14 C14 -11 16 -6 13 0 C13 -5 10 -7 6.8 -8Z"/></g></g>
-</svg>

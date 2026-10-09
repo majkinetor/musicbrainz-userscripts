@@ -1,8 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
-<title>Apollo Editor — Orbit</title>
-<defs><radialGradient id="ap12-p" cx=".35" cy=".3" r=".8"><stop offset="0" stop-color="#9b7bff"/><stop offset="1" stop-color="#3d2470"/></radialGradient></defs>
-<g transform="rotate(-20 64 64)"><path d="M10 64 A54 18 0 0 1 118 64" fill="none" stroke="#b9a8ec" stroke-width="3"/></g><circle cx="64" cy="64" r="28" fill="url(#ap12-p)"/>
-<g transform="rotate(-20 64 64)"><path d="M118 64 A54 18 0 0 1 10 64" fill="none" stroke="#b9a8ec" stroke-width="3"/><circle cx="112.1" cy="72.2" r="4.5" fill="#ff8c3b"/><circle cx="88.5" cy="80.0" r="4.5" fill="#ffd24a"/><circle cx="55.6" cy="81.8" r="4.5" fill="#5cc26b"/><circle cx="25.8" cy="76.7" r="4.5" fill="#3a9bd5"/></g>
-<g transform="rotate(70 108 40)"><g transform="translate(96 22) scale(0.75)"><path d="M13 22 L19 22 L16 30 Z" fill="#ff8c3b"/><path d="M14.4 22 L17.6 22 L16 27 Z" fill="#ffd24a"/><path d="M12 18 L8 23.5 L12 22 Z M20 18 L24 23.5 L20 22 Z" fill="#3d2470"/>
-<path d="M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z" fill="#5f3ec0"/><circle cx="16" cy="12.5" r="3" fill="#cfe8ff" stroke="#2a1a52" stroke-width="1"/></g></g>
-</svg>

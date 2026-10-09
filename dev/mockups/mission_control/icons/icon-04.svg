@@ -1,6 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
-<title>Mission Control — Headset</title>
-<defs><filter id="mc04-h" x="-10%" y="-10%" width="120%" height="120%"><feMorphology in="SourceAlpha" operator="dilate" radius="1.5" result="d"/><feFlood flood-color="#fff" flood-opacity=".7"/><feComposite in2="d" operator="in"/><feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs><g filter="url(#mc04-h)"><path d="M22 74 A42 42 0 0 1 106 74" fill="none" stroke="#22223b" stroke-width="9" stroke-linecap="round"/>
-<rect x="10" y="62" width="26" height="40" rx="10" fill="#7a57e8"/><rect x="92" y="62" width="26" height="40" rx="10" fill="#7a57e8"/><rect x="16" y="70" width="6" height="24" rx="3" fill="#b9a8ec"/><rect x="106" y="70" width="6" height="24" rx="3" fill="#b9a8ec"/>
-<path d="M26 100 Q30 118 58 116" fill="none" stroke="#22223b" stroke-width="5" stroke-linecap="round"/><rect x="56" y="108" width="20" height="14" rx="7" fill="#f3722c"/></g>
-</svg>

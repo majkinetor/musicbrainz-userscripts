@@ -1,6 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
-<title>Platform Check — Boarding pass</title>
-<g transform="rotate(-8 64 64)"><path d="M8 34 H120 V52 A8 8 0 0 0 120 68 V94 H8 V68 A8 8 0 0 0 8 52Z" fill="#fef3c7" stroke="#22223b" stroke-width="3.5"/><path d="M86 38 V90" stroke="#22223b" stroke-width="2" stroke-dasharray="4 4"/>
-<rect x="16" y="42" width="60" height="10" rx="2" fill="#e76f51"/><text x="16" y="72" font-family="Arial Black,Helvetica,sans-serif" font-weight="900" font-size="18" fill="#22223b">PLAT</text><text x="16" y="88" font-family="Helvetica,Arial,sans-serif" font-size="10" fill="#22223b">ALL GATES</text>
-<circle cx="103" cy="64" r="12" fill="none" stroke="#2a9d8f" stroke-width="3.5"/><path d="M98.05 64 L101.65 67.6 L108.4 60.4" fill="none" stroke="#2a9d8f" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/></g>
-</svg>

@@ -1,6 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
-<title>Credit Hoarder — Cel-shaded tree hollow</title>
-<rect x="22" y="4" width="84" height="124" fill="#8d5a3b"/><rect x="22" y="4" width="22" height="124" fill="#6e4329"/><path d="M84 4 V128" stroke="#a9744f" stroke-width="5"/>
-<ellipse cx="64" cy="64" rx="28" ry="34" fill="#2a1a10"/><ellipse cx="64" cy="64" rx="28" ry="34" fill="none" stroke="#4a2c1a" stroke-width="5"/>
-<g transform="rotate(-18 60 59)"><path d="M52 52 H76 V66 H52 L46 59Z" fill="#ffd166" stroke="#1a0f08" stroke-width="2.5"/><path d="M52 61 H76 V66 H52Z" fill="#000" opacity=".2"/></g><g transform="rotate(10 72 77)"><path d="M64 70 H88 V84 H64 L58 77Z" fill="#ef476f" stroke="#1a0f08" stroke-width="2.5"/><path d="M64 79 H88 V84 H64Z" fill="#000" opacity=".2"/></g><g transform="rotate(-6 64 89)"><path d="M56 82 H80 V96 H56 L50 89Z" fill="#06d6a0" stroke="#1a0f08" stroke-width="2.5"/><path d="M56 91 H80 V96 H56Z" fill="#000" opacity=".2"/></g><g transform="rotate(14 78 55)"><path d="M70 48 H94 V62 H70 L64 55Z" fill="#118ab2" stroke="#1a0f08" stroke-width="2.5"/><path d="M70 57 H94 V62 H70Z" fill="#000" opacity=".2"/></g>
-</svg>

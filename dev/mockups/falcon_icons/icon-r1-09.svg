@@ -1,5 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
-<title>Falcon — Eye</title>
-<defs><clipPath id="fa09-c"><rect x="4" y="4" width="120" height="120" rx="26"/></clipPath></defs><g clip-path="url(#fa09-c)"><rect width="128" height="128" fill="#1b2a4a"/><path d="M60 128 C62 104 70 90 84 80 C96 72 112 70 128 72 V128Z" fill="#f6efe2"/><path d="M0 128 V96 C14 92 28 98 34 128Z" fill="#f6efe2"/>
-<circle cx="60" cy="48" r="28" fill="#f5c518"/><circle cx="60" cy="48" r="19" fill="#0d0d0d"/><circle cx="67" cy="40" r="6" fill="#fff"/></g>
-</svg>

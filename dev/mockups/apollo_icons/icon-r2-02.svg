@@ -1,6 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
-<title>Apollo Editor — Swoosh seal</title>
-<circle cx="64" cy="64" r="58" fill="#3b2290"/><g fill="#fff"><circle cx="30" cy="40" r="1.6"/><circle cx="44" cy="92" r="1.2"/><circle cx="96" cy="30" r="1.4"/><circle cx="100" cy="96" r="1.2"/><circle cx="80" cy="22" r="1"/></g>
-<ellipse cx="64" cy="64" rx="50" ry="17" fill="none" stroke="#fff" stroke-width="3.5" transform="rotate(-24 64 64)"/><path d="M14 92 C46 74 78 60 118 30 C90 64 60 84 30 102 Z" fill="#ff4d4d"/>
-<text x="64" y="76" text-anchor="middle" font-family="Arial Black,Helvetica,sans-serif" font-weight="900" font-size="38" fill="#fff" font-style="italic">AE</text>
-</svg>

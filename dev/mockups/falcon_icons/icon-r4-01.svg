@@ -1,5 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
-<title>Falcon — Done stack</title>
-<rect x="46" y="46" width="74" height="54" rx="8" fill="#b8c4da" transform="rotate(3 64 64)"/><rect x="38" y="36" width="74" height="54" rx="8" fill="#6b7a98" transform="rotate(0 64 64)"/><rect x="30" y="26" width="74" height="54" rx="8" fill="#4a5a78" transform="rotate(-3 64 64)"/><rect x="22" y="16" width="74" height="54" rx="8" fill="#1b2a4a" transform="rotate(-6 64 64)"/>
-<rect x="22" y="46" width="78" height="62" rx="9" fill="#fff" stroke="#1b2a4a" stroke-width="4"/><circle cx="44" cy="77" r="12" fill="#2fb37a"/><path d="M37 77 L42 82 L52 71" fill="none" stroke="#fff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/><path d="M62 70 H88 M62 84 H80" stroke="#b8c4da" stroke-width="5" stroke-linecap="round"/>
-</svg>

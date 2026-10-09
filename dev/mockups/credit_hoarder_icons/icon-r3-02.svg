@@ -1,5 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
-<title>Credit Hoarder — Monoline</title>
-<g fill="none" stroke="#1d1d1f" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"><path d="M40 28 H88 M44 28 V40 C30 46 28 56 28 66 V100 C28 108 34 114 42 114 H86 C94 114 100 108 100 100 V66 C100 56 98 46 84 40 V28"/>
-<path d="M50 96 V70 L66 64 V90"/><circle cx="45" cy="96" r="5"/><circle cx="61" cy="90" r="5"/><path d="M78 84 V66"/><circle cx="73" cy="84" r="5"/></g><circle cx="98" cy="26" r="5" fill="#ff5a3c"/>
-</svg>

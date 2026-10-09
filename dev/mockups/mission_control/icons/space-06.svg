@@ -1,6 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
-<title>Mission Control — Lander</title>
-<defs><filter id="mcs06-h" x="-10%" y="-10%" width="120%" height="120%"><feMorphology in="SourceAlpha" operator="dilate" radius="1.5" result="d"/><feFlood flood-color="#fff" flood-opacity=".7"/><feComposite in2="d" operator="in"/><feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs><g filter="url(#mcs06-h)"><path d="M30 78 L14 112 M98 78 L114 112 M44 82 L38 112 M84 82 L90 112" stroke="#22223b" stroke-width="5" stroke-linecap="round"/><path d="M6 112 H22 M106 112 H122" stroke="#22223b" stroke-width="5" stroke-linecap="round"/>
-<path d="M26 60 H102 L96 86 H32Z" fill="#ffc94a" stroke="#22223b" stroke-width="5" stroke-linejoin="round"/><path d="M38 60 L42 26 L64 16 L86 26 L90 60Z" fill="#d9dce6" stroke="#22223b" stroke-width="5" stroke-linejoin="round"/>
-<path d="M54 34 L64 30 L74 34 L72 46 H56Z" fill="#4b2e83" stroke="#22223b" stroke-width="3.5" stroke-linejoin="round"/><path d="M84 22 L96 10" stroke="#22223b" stroke-width="4" stroke-linecap="round"/><circle cx="98" cy="8" r="4" fill="#e63946"/></g>
-</svg>

@@ -1,7 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
-<title>Apollo Editor — Sunrise launch</title>
-<defs><linearGradient id="ap18-sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0.00" stop-color="#3d2470"/><stop offset="0.50" stop-color="#c2448f"/><stop offset="1.00" stop-color="#ff8c3b"/></linearGradient><clipPath id="ap18-c"><rect x="4" y="4" width="120" height="120" rx="26"/></clipPath></defs>
-<g clip-path="url(#ap18-c)"><rect x="4" y="4" width="120" height="120" fill="url(#ap18-sky)"/><circle cx="64" cy="98" r="38" fill="#ffd24a"/><rect x="20" y="80" width="88" height="2" fill="#ff8c3b"/><rect x="20" y="89" width="88" height="3" fill="#ff8c3b"/><rect x="20" y="97" width="88" height="4" fill="#ff8c3b"/><rect x="20" y="104" width="88" height="5" fill="#ff8c3b"/><rect x="4" y="104" width="120" height="20" fill="#2a1a52"/>
-<path d="M64 104 C62 90 66 80 64 70" stroke="#fff" stroke-width="5" fill="none" stroke-linecap="round" opacity=".6"/><g transform="translate(48 18) scale(1.1)"><path d="M13 22 L19 22 L16 30 Z" fill="#fff"/><path d="M14.4 22 L17.6 22 L16 27 Z" fill="#ffd24a"/><path d="M12 18 L8 23.5 L12 22 Z M20 18 L24 23.5 L20 22 Z" fill="#1a0f33"/>
-<path d="M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z" fill="#1a0f33"/><circle cx="16" cy="12.5" r="3" fill="#ffd24a" stroke="#1a0f33" stroke-width="1"/></g></g>
-</svg>

@@ -1,6 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
-<title>Apollo Editor — Gramophone thruster</title>
-<defs><linearGradient id="ap312-b" x1="0" y1="0" x2="1" y2="0"><stop offset="0.00" stop-color="#e9ecf2"/><stop offset="1.00" stop-color="#8d94a5"/></linearGradient></defs><path d="M98 18 C118 26 120 10 112 6 M106 30 C126 30 124 18 118 14" stroke="#ff8c3b" stroke-width="5" fill="none" stroke-linecap="round"/><path d="M90 20 L116 2 L110 26 L124 32 L98 40Z" fill="#ffb547"/>
-<path d="M56 74 L60 66 C74 56 84 42 90 20 L112 42 C92 50 76 60 66 76Z" fill="url(#ap312-b)" stroke="#4b5263" stroke-width="2.5" stroke-linejoin="round"/><ellipse cx="101" cy="31" rx="15" ry="5" transform="rotate(45 101 31)" fill="#4b5263"/>
-<rect x="18" y="86" width="74" height="28" rx="4" fill="#8a4b22"/><rect x="18" y="86" width="74" height="6" fill="#a8622f"/><ellipse cx="50" cy="84" rx="26" ry="6" fill="#17121f"/><path d="M62 78 L54 84" stroke="#4b5263" stroke-width="4" stroke-linecap="round"/>
-</svg>

@@ -1,5 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
-<title>Apollo Editor — Crescent lyre</title>
-<rect x="4" y="4" width="120" height="120" rx="26" fill="#1b2a4a"/><mask id="ap209-m"><rect width="128" height="128" fill="#fff"/><circle cx="64" cy="46" r="38" fill="#000"/></mask><circle cx="64" cy="62" r="46" fill="#f2e6b8" mask="url(#ap209-m)"/>
-<g stroke="#fff3c4" stroke-width="2.4"><path d="M28 44 H100" stroke="#f2e6b8" stroke-width="4"/><path d="M44 44 V92 M54 44 V96 M64 44 V98 M74 44 V96 M84 44 V92"/></g><path d="M100 22 L101.68 26.32 L106 28 L101.68 29.68 L100 34 L98.32 29.68 L94 28 L98.32 26.32Z" fill="#ffd24a"/>
-</svg>

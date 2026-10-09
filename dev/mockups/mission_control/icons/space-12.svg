@@ -1,5 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
-<title>Mission Control — Moon flag</title>
-<defs><filter id="mcs12-h" x="-10%" y="-10%" width="120%" height="120%"><feMorphology in="SourceAlpha" operator="dilate" radius="1.5" result="d"/><feFlood flood-color="#fff" flood-opacity=".7"/><feComposite in2="d" operator="in"/><feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs><g filter="url(#mcs12-h)"><path d="M62 14 A52 52 0 1 0 114 70 A40 40 0 1 1 62 14Z" fill="#ffc94a" stroke="#22223b" stroke-width="5" stroke-linejoin="round"/>
-<path d="M76 70 V18" stroke="#22223b" stroke-width="5" stroke-linecap="round"/><path d="M78 20 H120 L112 34 L120 48 H78Z" fill="#7a57e8" stroke="#22223b" stroke-width="4" stroke-linejoin="round"/><path d="M89 34 L94.6 39.6 L105 28.4" fill="none" stroke="#fff" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round"/></g>
-</svg>

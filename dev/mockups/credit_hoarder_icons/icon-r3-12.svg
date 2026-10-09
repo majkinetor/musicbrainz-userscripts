@@ -1,6 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
-<title>Credit Hoarder — Glassmorphism</title>
-<defs><linearGradient id="d12b" x1="0" y1="0" x2="1" y2="1"><stop offset="0.00" stop-color="#ff6ec4"/><stop offset="1.00" stop-color="#7873f5"/></linearGradient><linearGradient id="d12w" x1="0" y1="0" x2="1" y2="1"><stop offset="0.00" stop-color="rgba(255,255,255,.65)"/><stop offset="1.00" stop-color="rgba(255,255,255,.25)"/></linearGradient><filter id="d12bl"><feGaussianBlur stdDeviation="6"/></filter></defs>
-<circle cx="50" cy="50" r="34" fill="url(#d12b)"/><circle cx="88" cy="84" r="26" fill="#4ade80" filter="url(#d12bl)"/>
-<rect x="30" y="24" width="72" height="50" rx="12" fill="url(#d12w)" stroke="rgba(255,255,255,.8)" stroke-width="1.5" transform="rotate(-8 66 49)"/><rect x="24" y="48" width="80" height="56" rx="14" fill="url(#d12w)" stroke="rgba(255,255,255,.9)" stroke-width="1.5"/><g transform="translate(56 66) scale(1.4)" fill="#3b2d6b"><ellipse cx="0" cy="10" rx="6" ry="4.5" transform="rotate(-20 0 10)"/><rect x="4.2" y="-14" width="2.6" height="24"/><path d="M6.8 -14 C14 -11 16 -6 13 0 C13 -5 10 -7 6.8 -8Z"/></g>
-</svg>

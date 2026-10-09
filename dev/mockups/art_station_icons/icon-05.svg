@@ -1,9 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
-<title>Art Station — Polaroid</title>
-<defs><linearGradient id="i05sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0.00" stop-color="#7fe7ff"/><stop offset="0.33" stop-color="#d9a6ff"/><stop offset="0.67" stop-color="#ff71ce"/><stop offset="1.00" stop-color="#ffb17a"/></linearGradient><clipPath id="i05c"><rect x="32" y="24" width="64" height="60"/></clipPath></defs>
-<g transform="rotate(-7 64 64)"><rect x="22" y="14" width="84" height="102" rx="5" fill="#fdf7ff" stroke="#b967ff" stroke-width="3"/>
-<g clip-path="url(#i05c)"><rect x="32" y="24" width="64" height="60" fill="url(#i05sky)"/><defs><linearGradient id="i05sg646620" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff6a8"/><stop offset="1" stop-color="#ff7aa8"/></linearGradient>
-<mask id="i05sm646620"><rect x="0" y="0" width="128" height="128" fill="#fff"/><rect x="44" y="58.4" width="40" height="1.0" fill="#000"/><rect x="44" y="60.6" width="40" height="1.3" fill="#000"/><rect x="44" y="63.4" width="40" height="1.6" fill="#000"/><rect x="44" y="66.8" width="40" height="2.0" fill="#000"/><rect x="44" y="71.1" width="40" height="2.4" fill="#000"/><rect x="44" y="76.5" width="40" height="3.1" fill="#000"/><rect x="44" y="83.2" width="40" height="3.8" fill="#000"/></mask></defs>
-<circle cx="64" cy="66" r="20" fill="url(#i05sg646620)" mask="url(#i05sm646620)"/><rect x="32" y="68" width="64" height="16" fill="#b967ff"/><path d="M32 68H96M32 69.9H96M32 72.6H96M32 76.7H96M32 83.1H96M52.4 68L-16.0 84M55.3 68L4.0 84M58.2 68L24.0 84M61.1 68L44.0 84M64.0 68L64.0 84M66.9 68L84.0 84M69.8 68L104.0 84M72.7 68L124.0 84M75.6 68L144.0 84" stroke="#fffb96" stroke-width="1.1" fill="none" stroke-linecap="round"/></g>
-<path d="M44 100 C52 94 58 104 66 98 S80 96 84 100" stroke="#ff71ce" stroke-width="3" fill="none" stroke-linecap="round"/></g>
-</svg>

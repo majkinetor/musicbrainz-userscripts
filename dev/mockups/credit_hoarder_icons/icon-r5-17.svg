@@ -1,6 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
-<title>Credit Hoarder — Doodle sack</title>
-<defs><filter id="f17d"><feTurbulence baseFrequency=".05" numOctaves="2" seed="9"/><feDisplacementMap in="SourceGraphic" scale="4"/></filter></defs><rect x="4" y="4" width="120" height="120" rx="12" fill="#fffef6"/>
-<g filter="url(#f17d)" fill="none" stroke="#222" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M44 40 C30 56 22 76 26 94 C30 112 98 112 102 94 C106 76 98 56 84 40"/><path d="M45 42 C31 58 24 78 28 95 M83 42 C97 58 104 78 100 95"/><path d="M44 40 C54 46 74 46 84 40 M48 32 L44 40 M80 32 L84 40 M50 34 C58 30 70 30 78 34"/>
-<rect x="46" y="16" width="20" height="14" rx="2" transform="rotate(-14 56 23)"/><rect x="64" y="12" width="20" height="14" rx="2" transform="rotate(10 74 19)"/><path d="M56 70 l8 8 l12 -14"/></g><path d="M50 24 h8 M68 18 h8" stroke="#e63946" stroke-width="3"/>
-</svg>

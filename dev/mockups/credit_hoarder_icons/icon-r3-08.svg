@@ -1,7 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
-<title>Credit Hoarder — Rubber stamp</title>
-<defs><path id="d08arc" d="M24 64 A40 40 0 0 1 104 64"/><path id="d08arc2" d="M28 70 A36 36 0 0 0 100 70"/><filter id="d08r"><feTurbulence baseFrequency=".9" numOctaves="2" seed="3"/><feColorMatrix values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 -2.2 1.6"/><feComposite in="SourceGraphic" operator="in"/></filter></defs>
-<g filter="url(#d08r)" fill="#c8102e" stroke="#c8102e" transform="rotate(-10 64 64)"><circle cx="64" cy="64" r="56" fill="none" stroke-width="5"/><circle cx="64" cy="64" r="47" fill="none" stroke-width="2"/>
-<text font-family="Arial Black,Arial,sans-serif" font-weight="900" font-size="15" stroke="none" letter-spacing="2"><textPath href="#d08arc" startOffset="50%" text-anchor="middle">CREDITS</textPath></text>
-<text font-family="Arial Black,Arial,sans-serif" font-weight="900" font-size="13" stroke="none" letter-spacing="2"><textPath href="#d08arc2" startOffset="50%" text-anchor="middle">HOARDED</textPath></text><g transform="translate(60 58) scale(1.2)" fill="#c8102e"><ellipse cx="0" cy="10" rx="6" ry="4.5" transform="rotate(-20 0 10)"/><rect x="4.2" y="-14" width="2.6" height="24"/><path d="M6.8 -14 C14 -11 16 -6 13 0 C13 -5 10 -7 6.8 -8Z"/></g></g>
-</svg>

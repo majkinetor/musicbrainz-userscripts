@@ -1,4 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
-<title>Mission Control — Pyramid of three</title>
-<defs><filter id="mct02-h" x="-10%" y="-10%" width="120%" height="120%"><feMorphology in="SourceAlpha" operator="dilate" radius="1.5" result="d"/><feFlood flood-color="#fff" flood-opacity=".7"/><feComposite in2="d" operator="in"/><feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs><g filter="url(#mct02-h)"><path d="M88.9 54.4 L64 68.8 L39.1 54.4 L39.1 25.6 L64 11.2 L88.9 25.6Z" fill="#7a57e8" stroke="#22223b" stroke-width="6.4" stroke-linejoin="round"/><path d="M61.2 102.4 L36.3 116.8 L11.3 102.4 L11.3 73.6 L36.3 59.2 L61.2 73.6Z" fill="#ffc94a" stroke="#22223b" stroke-width="6.4" stroke-linejoin="round"/><path d="M116.7 102.4 L91.7 116.8 L66.8 102.4 L66.8 73.6 L91.7 59.2 L116.7 73.6Z" fill="#ffc94a" stroke="#22223b" stroke-width="6.4" stroke-linejoin="round"/></g>
-</svg>

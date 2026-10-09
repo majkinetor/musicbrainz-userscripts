@@ -1,5 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
-<title>Mission Control — Go / no-go</title>
-<defs><filter id="mc09-h" x="-10%" y="-10%" width="120%" height="120%"><feMorphology in="SourceAlpha" operator="dilate" radius="1.5" result="d"/><feFlood flood-color="#fff" flood-opacity=".7"/><feComposite in2="d" operator="in"/><feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs><g filter="url(#mc09-h)"><rect x="38" y="6" width="52" height="116" rx="22" fill="#22223b"/><circle cx="64" cy="32" r="14" fill="#e63946"/><circle cx="64" cy="64" r="14" fill="#ffc94a"/><circle cx="64" cy="96" r="14" fill="#2ea44f"/>
-<g fill="#fff" opacity=".5"><circle cx="59" cy="27" r="4"/><circle cx="59" cy="59" r="4"/><circle cx="59" cy="91" r="4"/></g><path d="M38 24 H26 M38 56 H26 M38 88 H26 M90 24 H102 M90 56 H102 M90 88 H102" stroke="#22223b" stroke-width="6" stroke-linecap="round"/></g>
-</svg>

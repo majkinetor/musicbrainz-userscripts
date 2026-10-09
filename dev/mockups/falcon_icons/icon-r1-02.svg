@@ -1,5 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
-<title>Falcon — Stoop</title>
-<defs><linearGradient id="fa02-s" x1="0" y1="0" x2="0" y2="1"><stop offset="0.00" stop-color="#8ec5ff"/><stop offset="1.00" stop-color="#e8f3ff"/></linearGradient></defs><rect x="4" y="4" width="120" height="120" rx="26" fill="url(#fa02-s)"/><g stroke="#fff" stroke-width="4" stroke-linecap="round"><path d="M20 22 L44 50 M36 14 L56 38 M14 44 L30 62"/></g>
-<g transform="translate(72 70) rotate(-40)"><path d="M0 44 C8 30 13 0 17 -40 L6 -22 L4 -48 L-4 -48 L-6 -22 L-17 -40 C-13 0 -8 30 0 44 Z" fill="#4a5a78"/><path d="M0 44 C4 36 6 28 6 22 L-6 22 C-6 28 -4 36 0 44Z" fill="#1b2a4a"/><path d="M-3 30 L3 30 L0 44Z" fill="#f5c518"/></g>
-</svg>

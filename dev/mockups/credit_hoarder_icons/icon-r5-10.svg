@@ -1,6 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
-<title>Credit Hoarder — Felt plush</title>
-<defs><filter id="f10f"><feTurbulence baseFrequency=".9" numOctaves="2" seed="5" result="t"/><feColorMatrix in="t" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 .25 0" result="g"/><feComposite in="g" in2="SourceGraphic" operator="in" result="n"/><feMerge><feMergeNode in="SourceGraphic"/><feMergeNode in="n"/></feMerge></filter></defs>
-<g filter="url(#f10f)"><ellipse cx="64" cy="72" rx="48" ry="44" fill="#d4a373"/><circle cx="34" cy="34" r="12" fill="#d4a373"/><circle cx="94" cy="34" r="12" fill="#d4a373"/><circle cx="34" cy="34" r="6" fill="#e5989b"/><circle cx="94" cy="34" r="6" fill="#e5989b"/><ellipse cx="96" cy="84" rx="22" ry="20" fill="#e9c46a"/><ellipse cx="40" cy="84" rx="14" ry="12" fill="#faedcd"/></g>
-<g fill="none" stroke="#5e3b1e" stroke-width="2" stroke-dasharray="3 3"><ellipse cx="64" cy="72" rx="44" ry="40"/><ellipse cx="96" cy="84" rx="18" ry="16"/></g><path d="M44 58 l8 8 m0 -8 l-8 8 M72 58 l8 8 m0 -8 l-8 8" stroke="#3d2614" stroke-width="3" stroke-linecap="round"/><path d="M60 74 q4 4 8 0" stroke="#3d2614" stroke-width="2.5" fill="none"/>
-</svg>

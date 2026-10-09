@@ -1,4 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
-<title>Apollo Editor — Cutout disc</title>
-<mask id="ap1017-m" maskUnits="userSpaceOnUse" x="0" y="0" width="128" height="128"><circle cx="64" cy="64" r="58" fill="#fff"/><g fill="#000"><g transform="translate(64 64) rotate(0) scale(0.8) translate(-64 -67)"><path d="M42 64 C28 72 22 90 24 110 L42 98 Z"/><path d="M86 64 C100 72 106 90 104 110 L86 98 Z"/><path d="M48 90 L80 90 L76 100 L52 100 Z"/><path d="M64 8 C84 24 90 52 88 90 L40 90 C38 52 44 24 64 8 Z"/><path d="M52 100 C54 112 60 118 64 126 C68 118 74 112 76 100 Z"/></g></g><g transform="translate(64 64) rotate(0) scale(0.8) translate(-64 -67)"><circle cx="64" cy="50" r="8" fill="#fff"/></g></mask><circle cx="64" cy="64" r="58" fill="#ff6a00" mask="url(#ap1017-m)"/>
-</svg>

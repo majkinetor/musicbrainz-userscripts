@@ -1,6 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
-<title>Apollo Editor — Golden record</title>
-<defs><radialGradient id="ap303-g" cx="0.38" cy="0.32" r=".8"><stop offset="0" stop-color="#ffe9a3"/><stop offset="1" stop-color="#b8811c"/></radialGradient></defs><circle cx="64" cy="64" r="58" fill="url(#ap303-g)" stroke="#8a5f10" stroke-width="2.5"/><g fill="none" stroke="#c99a3a" stroke-width="1.4"><circle cx="64" cy="64" r="52"/><circle cx="64" cy="64" r="47"/></g>
-<g stroke="#6b4508" stroke-width="1.6" fill="none" stroke-linecap="round"><circle cx="34" cy="86" r="9"/><circle cx="96" cy="40" r="5"/><path d="M42 80 C56 50 74 70 90 44" stroke-dasharray="3 3"/>
-<path d="M72.0 64.0 L86.0 64.0"/><path d="M70.1 69.1 L87.0 83.3"/><path d="M64.7 72.0 L65.6 81.9"/><path d="M57.9 69.1 L44.1 80.7"/><path d="M56.5 61.3 L32.1 52.4"/><path d="M61.3 56.5 L57.2 45.2"/><path d="M68.0 57.1 L78.0 39.8"/></g><circle cx="64" cy="64" r="3.5" fill="#6b4508"/>
-</svg>

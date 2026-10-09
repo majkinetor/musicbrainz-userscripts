@@ -1,6 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
-<title>Apollo Editor — Swan note</title>
-<rect x="4" y="4" width="120" height="120" rx="26" fill="#1d3b8a"/><path d="M16 104 q10 -5 20 0 t20 0 t20 0 t20 0 t20 0" stroke="#5f86d9" stroke-width="3" fill="none" stroke-linecap="round"/>
-<path d="M78 92 C92 72 72 56 80 34 C84 22 98 22 100 32" fill="none" stroke="#fff" stroke-width="10" stroke-linecap="round"/><path d="M100 30 L114 34 L100 38Z" fill="#ff8c3b"/><circle cx="96" cy="31" r="2" fill="#1d3b8a"/>
-<ellipse cx="56" cy="92" rx="30" ry="15" fill="#fff" transform="rotate(-12 56 92)"/><path d="M34 86 C44 70 64 70 74 80" fill="none" stroke="#c9d6f5" stroke-width="3" stroke-linecap="round"/>
-</svg>

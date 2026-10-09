@@ -1,4 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
-<title>Apollo Editor — Needle</title>
-<filter id="ap1013-h" x="-15%" y="-15%" width="130%" height="130%"><feMorphology in="SourceAlpha" operator="dilate" radius="3" result="d"/><feFlood flood-color="#fff" flood-opacity="0.7"/><feComposite in2="d" operator="in" result="h"/><feMerge><feMergeNode in="h"/><feMergeNode in="SourceGraphic"/></feMerge></filter><g filter="url(#ap1013-h)"><path d="M58 96 L64 126 L70 96 Z" fill="#ff6a00"/><g stroke="#1b2a4a" stroke-width="4" stroke-linejoin="round"><path d="M57 78 L42 114 L57 104 Z" fill="#1b2a4a"/><path d="M71 78 L86 114 L71 104 Z" fill="#1b2a4a"/><path d="M64 4 C70 20 72 40 72 96 L56 96 C56 40 58 20 64 4 Z" fill="#fff"/></g><circle cx="64" cy="42" r="5" fill="#e63946"/></g>
-</svg>

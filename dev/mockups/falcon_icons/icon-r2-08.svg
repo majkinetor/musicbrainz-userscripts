@@ -1,5 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
-<title>Falcon — Watercolour</title>
-<defs><filter id="fa208-w" x="-20%" y="-20%" width="140%" height="140%"><feTurbulence type="fractalNoise" baseFrequency=".035" numOctaves="3" seed="4"/><feDisplacementMap in="SourceGraphic" scale="9"/><feGaussianBlur stdDeviation=".9"/></filter></defs>
-<g filter="url(#fa208-w)" opacity=".85"><circle cx="70" cy="58" r="44" fill="#bfe0f2"/><g transform="translate(64 64) rotate(0) scale(0.95) translate(-64 -64)"><path d="M64 26 C67 26 70 30 70 36 C72 40 74 42 76 44 C92 42 108 36 124 34 C112 44 96 54 78 62 C76 68 74 74 74 80 L80 100 C74 104 68 104 64 104 Z" fill="#3b6ea8"/><path d="M64 26 C67 26 70 30 70 36 C72 40 74 42 76 44 C92 42 108 36 124 34 C112 44 96 54 78 62 C76 68 74 74 74 80 L80 100 C74 104 68 104 64 104 Z" fill="#3b6ea8" transform="translate(128 0) scale(-1 1)"/></g><path d="M64 26 C67 26 70 30 70 36 L58 36 C58 30 61 26 64 26Z" fill="#1b2a4a"/></g>
-</svg>

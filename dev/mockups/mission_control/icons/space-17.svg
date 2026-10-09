@@ -1,7 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
-<title>Mission Control — Spacewalk</title>
-<defs><filter id="mcs17-h" x="-10%" y="-10%" width="120%" height="120%"><feMorphology in="SourceAlpha" operator="dilate" radius="1.5" result="d"/><feFlood flood-color="#fff" flood-opacity=".7"/><feComposite in2="d" operator="in"/><feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs><g filter="url(#mcs17-h)"><rect x="40" y="52" width="48" height="40" rx="14" fill="#fff" stroke="#22223b" stroke-width="5"/><rect x="30" y="48" width="14" height="40" rx="5" fill="#d9dce6" stroke="#22223b" stroke-width="4"/>
-<path d="M84 60 L104 34" stroke="#22223b" stroke-width="15" stroke-linecap="round"/><path d="M84 60 L104 34" stroke="#fff" stroke-width="7" stroke-linecap="round"/><path d="M44 66 L30 92" stroke="#22223b" stroke-width="15" stroke-linecap="round"/><path d="M44 66 L30 92" stroke="#fff" stroke-width="7" stroke-linecap="round"/>
-<path d="M52 92 L48 118 M76 92 L82 118" stroke="#22223b" stroke-width="15" stroke-linecap="round"/><path d="M52 92 L48 118 M76 92 L82 118" stroke="#fff" stroke-width="7" stroke-linecap="round"/>
-<circle cx="66" cy="30" r="22" fill="#fff" stroke="#22223b" stroke-width="5"/><rect x="52" y="20" width="30" height="20" rx="9" fill="#4b2e83"/><rect x="58" y="62" width="18" height="12" rx="3" fill="#f3722c"/><path d="M58 26 Q64 22 70 24" stroke="#fff" stroke-width="3" fill="none" stroke-linecap="round" opacity=".6"/></g>
-</svg>

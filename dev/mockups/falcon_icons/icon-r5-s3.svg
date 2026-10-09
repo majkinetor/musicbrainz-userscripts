@@ -1,5 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
-<title>Falcon — Neon</title>
-<defs><filter id="fa5s3-g" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="2.2" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs><rect x="4" y="4" width="120" height="120" rx="26" fill="#120a1f"/>
-<g filter="url(#fa5s3-g)" fill="none" stroke-linecap="round"><path d="M24.2 95.0 A46 46 0 0 1 103.8 49.0" stroke="#39d0ff" stroke-width="4"/><path d="M103.8 49.0 A46 46 0 0 1 103.8 95.0" stroke="#ff4fd8" stroke-width="4"/><g transform="translate(64 72) rotate(45)"><path d="M0 -40 V0" stroke="#ffd24a" stroke-width="4"/></g></g><circle cx="64" cy="72" r="5" fill="#ffd24a"/>
-</svg>

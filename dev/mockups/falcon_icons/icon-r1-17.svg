@@ -1,4 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
-<title>Falcon — Bolt</title>
-<rect x="4" y="4" width="120" height="120" rx="26" fill="#120c2c"/><path d="M70 6 L40 64 H62 L48 122 L92 50 H68 L84 6Z" fill="#f5c518"/><g transform="translate(64 60) rotate(0) scale(0.8) translate(-64 -64)"><path d="M64 26 C67 26 70 30 70 36 C72 40 74 42 76 44 C92 42 108 36 124 34 C112 44 96 54 78 62 C76 68 74 74 74 80 L80 100 C74 104 68 104 64 104 Z" fill="#f6efe2"/><path d="M64 26 C67 26 70 30 70 36 C72 40 74 42 76 44 C92 42 108 36 124 34 C112 44 96 54 78 62 C76 68 74 74 74 80 L80 100 C74 104 68 104 64 104 Z" fill="#f6efe2" transform="translate(128 0) scale(-1 1)"/><path d="M64 26 C67 26 70 30 70 36 L58 36 C58 30 61 26 64 26Z" fill="#1b2a4a"/></g>
-</svg>

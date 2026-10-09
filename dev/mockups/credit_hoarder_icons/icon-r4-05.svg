@@ -1,5 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
-<title>Credit Hoarder — Duotone line</title>
-<g transform="translate(5 5)"><path d="M22 58 C22 38 106 38 106 58Z" fill="#ffd166"/><rect x="22" y="58" width="84" height="46" rx="4" fill="#ffd166"/></g>
-<g fill="none" stroke="#073b4c" stroke-width="5" stroke-linejoin="round" stroke-linecap="round"><path d="M22 58 C22 38 106 38 106 58Z"/><rect x="22" y="58" width="84" height="46" rx="4"/><path d="M22 72 H106"/><rect x="56" y="64" width="16" height="16" rx="3"/></g>
-</svg>

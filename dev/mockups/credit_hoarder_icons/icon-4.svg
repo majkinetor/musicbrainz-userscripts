@@ -1,9 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
-<title>Credit Hoarder — Magpie with a credit</title>
-<path d="M14 84 C30 80 44 84 52 92 L40 104 C30 98 22 92 14 84Z" fill="#1f1a3d"/>
-<path d="M40 96 C40 66 58 48 82 50 C100 52 108 66 104 82 C100 98 80 108 60 106 C50 105 44 102 40 96Z" fill="#fff" stroke="#1f1a3d" stroke-width="4" stroke-linejoin="round" stroke-linecap="round"/>
-<path d="M58 56 C70 48 92 50 102 64 C96 64 84 62 74 70 C66 76 56 74 52 70Z" fill="#1f1a3d"/><path d="M60 82 C70 72 88 72 96 80 C88 92 70 96 60 82Z" fill="#1f1a3d"/><path d="M64 84 C74 78 86 78 92 82" stroke="#3f7fd9" stroke-width="3" fill="none"/>
-<circle cx="94" cy="44" r="16" fill="#1f1a3d"/><circle cx="98" cy="40" r="3.5" fill="#fff"/><circle cx="98.5" cy="40" r="1.6" fill="#1f1a3d"/><path d="M108 44 L122 48 L108 52Z" fill="#1f1a3d"/>
-<path d="M70 106 L66 118 M82 104 L82 118" stroke="#1f1a3d" stroke-width="4" stroke-linecap="round"/>
-<g transform="rotate(30 109 59)"><path d="M98 52 H120 V66 H98 L91 59Z" fill="#f6c445" stroke="#1f1a3d" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/><circle cx="97" cy="59" r="2" fill="#1f1a3d"/><path d="M103 57.04 H115 M103 61.52 H111.2" stroke="#2f6f54" stroke-width="2.4" stroke-linecap="round"/></g>
-</svg>

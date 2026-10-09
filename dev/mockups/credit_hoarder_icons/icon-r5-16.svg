@@ -1,6 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
-<title>Credit Hoarder — Holographic card</title>
-<defs><linearGradient id="f16h" x1="0" y1="0" x2="1" y2="1"><stop offset="0.00" stop-color="#ff9de2"/><stop offset="0.25" stop-color="#b0f3f1"/><stop offset="0.50" stop-color="#fff5b7"/><stop offset="0.75" stop-color="#c8a8ff"/><stop offset="1.00" stop-color="#9ef0c3"/></linearGradient><linearGradient id="f16sh" x1="0" y1="0" x2="1" y2="0"><stop offset="0.00" stop-color="rgba(255,255,255,0)"/><stop offset="0.50" stop-color="rgba(255,255,255,.8)"/><stop offset="1.00" stop-color="rgba(255,255,255,0)"/></linearGradient></defs>
-<g transform="rotate(-8 64 64)"><rect x="18" y="26" width="92" height="66" rx="10" fill="url(#f16h)" stroke="#5b4b8a" stroke-width="3"/><rect x="18" y="26" width="92" height="66" rx="10" fill="url(#f16sh)" opacity=".7"/>
-<circle cx="44" cy="52" r="10" fill="#5b4b8a"/><path d="M28 82 C28 66 60 66 60 82Z" fill="#5b4b8a"/><path d="M68 50 H98 M68 62 H90 M68 74 H96" stroke="#5b4b8a" stroke-width="5" stroke-linecap="round"/><path d="M88 34 l4 -6 l4 6 l-4 6z" fill="#fff"/></g>
-</svg>

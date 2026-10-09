@@ -1,5 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
-<title>Mission Control — Funnel</title>
-<defs><filter id="mc07-h" x="-10%" y="-10%" width="120%" height="120%"><feMorphology in="SourceAlpha" operator="dilate" radius="1.5" result="d"/><feFlood flood-color="#fff" flood-opacity=".7"/><feComposite in2="d" operator="in"/><feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs><g filter="url(#mc07-h)"><circle cx="28" cy="14" r="8" fill="#f3722c"/><circle cx="52" cy="10" r="8" fill="#3fb6f0"/><circle cx="76" cy="10" r="8" fill="#ffc94a"/><circle cx="100" cy="14" r="8" fill="#b9a8ec"/>
-<path d="M12 30 H116 L76 72 V88 H52 V72Z" fill="#7a57e8" stroke="#22223b" stroke-width="5" stroke-linejoin="round"/><circle cx="64" cy="106" r="16" fill="#2ea44f"/><path d="M56 106 L61.6 111.6 L72 100.4" fill="none" stroke="#fff" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round"/></g>
-</svg>

@@ -1,5 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
-<title>Falcon — Bird band</title>
-<rect x="4" y="34" width="120" height="60" rx="8" fill="#fff" stroke="#16181d" stroke-width="4"/><path d="M6 36 H28 V92 H6Z" fill="#1b2a4a"/><g transform="translate(17 60) rotate(0) scale(0.17) translate(-64 -64)"><path d="M64 26 C67 26 70 30 70 36 C72 40 74 42 76 44 C92 42 108 36 124 34 C112 44 96 54 78 62 C76 68 74 74 74 80 L80 100 C74 104 68 104 64 104 Z" fill="#f5c518"/><path d="M64 26 C67 26 70 30 70 36 C72 40 74 42 76 44 C92 42 108 36 124 34 C112 44 96 54 78 62 C76 68 74 74 74 80 L80 100 C74 104 68 104 64 104 Z" fill="#f5c518" transform="translate(128 0) scale(-1 1)"/></g><text x="22" y="86" text-anchor="middle" font-family="Helvetica,Arial,sans-serif" font-weight="700" font-size="8" fill="#fff" dx="-5">MB</text>
-<text x="76" y="76" text-anchor="middle" font-family="Arial Narrow,Arial,Helvetica,sans-serif" font-weight="700" font-size="28" fill="#16181d">FALCON</text>
-</svg>

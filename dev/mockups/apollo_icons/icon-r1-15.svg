@@ -1,5 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
-<title>Apollo Editor — Flat badge</title>
-<defs><linearGradient id="ap15-b" x1="0" y1="0" x2="1" y2="1"><stop offset="0.00" stop-color="#7a57e8"/><stop offset="1.00" stop-color="#3b2290"/></linearGradient></defs><rect x="4" y="4" width="120" height="120" rx="28" fill="url(#ap15-b)"/>
-<text x="60" y="102" text-anchor="middle" font-family="Arial Black,Helvetica,sans-serif" font-weight="900" font-size="88" fill="#fff">A</text><path d="M98 17 L101.64 26.36 L111 30 L101.64 33.64 L98 43 L94.36 33.64 L85 30 L94.36 26.36Z" fill="#ffd24a"/>
-</svg>

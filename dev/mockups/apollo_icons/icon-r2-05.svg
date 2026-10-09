@@ -1,6 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
-<title>Apollo Editor — Stained glass</title>
-<rect x="10" y="4" width="108" height="120" rx="54" ry="40" fill="#22223b" />
-<g stroke="#22223b" stroke-width="3"><path d="M14 44 Q64 -20 114 44 V120 H14Z" fill="#3a86ff"/><path d="M14 44 L64 64 L114 44" fill="none"/><path d="M14 44 L64 64 V120 H14Z" fill="#8338ec"/><path d="M114 44 L64 64 V120 H114Z" fill="#3a0ca3"/><path d="M14 90 L64 64 L114 90 L64 120Z" fill="#ff006e" opacity=".85"/></g>
-<g fill="none" stroke="#ffbe0b" stroke-width="7" stroke-linecap="round"><path d="M52 104 C40 92 38 68 48 52"/><path d="M76 104 C88 92 90 68 80 52"/><path d="M44 58 H84"/></g><g stroke="#fff3c4" stroke-width="2"><path d="M58 58 V102 M64 58 V102 M70 58 V102"/></g><rect x="46" y="100" width="36" height="9" rx="3" fill="#ffbe0b"/>
-</svg>

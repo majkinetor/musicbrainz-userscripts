@@ -1,4 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
-<title>Mission Control — three cells</title>
-<defs><filter id="mcc10-h" x="-10%" y="-10%" width="120%" height="120%"><feMorphology in="SourceAlpha" operator="dilate" radius="1.5" result="d"/><feFlood flood-color="#fff" flood-opacity=".7"/><feComposite in2="d" operator="in"/><feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs><g filter="url(#mcc10-h)"><path d="M86 46 L75 65.1 L53 65.1 L42 46 L53 26.9 L75 26.9Z" fill="#7a57e8" stroke="#22223b" stroke-width="4" stroke-linejoin="round" stroke-linecap="round"/><path d="M67 79 L56 98.1 L34 98.1 L23 79 L34 59.9 L56 59.9Z" fill="#ffc94a" stroke="#22223b" stroke-width="4" stroke-linejoin="round" stroke-linecap="round"/><path d="M105 79 L94 98.1 L72 98.1 L61 79 L72 59.9 L94 59.9Z" fill="#ffc94a" stroke="#22223b" stroke-width="4" stroke-linejoin="round" stroke-linecap="round"/></g>
-</svg>

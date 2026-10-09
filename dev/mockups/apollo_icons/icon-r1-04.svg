@@ -1,8 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
-<title>Apollo Editor — Saturn V</title>
-<defs><linearGradient id="ap04-sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0.00" stop-color="#7fc8f8"/><stop offset="1.00" stop-color="#ffe3b3"/></linearGradient></defs><rect x="4" y="4" width="120" height="120" rx="26" fill="url(#ap04-sky)"/>
-<g stroke="#c0392b" stroke-width="2.5" fill="none"><path d="M30 24 V112 M40 24 V112"/><path d="M30 34 L40 44 L30 54 L40 64 L30 74 L40 84 L30 94 L40 104"/><path d="M40 40 H56 M40 70 H56"/></g>
-<path d="M58 20 L64 6 L70 20Z" fill="#222"/><path d="M64 6 V0" stroke="#222" stroke-width="2"/><rect x="57" y="20" width="14" height="70" fill="#fafafa" stroke="#222" stroke-width="1.5"/>
-<path d="M57 34 H71 M57 58 H71" stroke="#222" stroke-width="5"/><path d="M57 82 L50 94 H57Z M71 82 L78 94 H71Z" fill="#222"/>
-<path d="M58 90 L64 106 L70 90Z" fill="#ff8c3b"/><g fill="#fff" stroke="#d7d7d7" stroke-width="1.5"><circle cx="44" cy="112" r="14"/><circle cx="84" cy="112" r="14"/><circle cx="64" cy="114" r="14"/><circle cx="26" cy="118" r="10"/><circle cx="102" cy="118" r="10"/></g>
-</svg>

@@ -1,4 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
-<title>Falcon — Monoline</title>
-<g transform="translate(64 66) rotate(0) scale(0.98) translate(-64 -64)"><g fill="none" stroke="#1b2a4a" stroke-width="4.5" stroke-linejoin="round" stroke-linecap="round"><path d="M8 82 L10 70 C12 66 18 64 28 63 L46 62 L60 48 C62 46 65 45 69 45 L86 45 C90 45 93 47 95 50 L104 61 L116 63 C120 64 121 68 121 72 L121 82 C121 85 119 86 116 86 L108 86 A12 12 0 0 0 84 86 L46 86 A12 12 0 0 0 22 86 L12 86 C9 86 8 84 8 82Z"/><path d="M48 61 L61 50 C63 49 65 49 68 49 L84 49 C87 49 89 50 91 52 L100 61Z"/><circle cx="34" cy="86" r="7"/><circle cx="96" cy="86" r="7"/></g><path d="M10 72 H121" stroke="#ff6a00" stroke-width="4"/></g>
-</svg>

@@ -1,5 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
-<title>Falcon — Stoop needle</title>
-<circle cx="64" cy="70" r="58" fill="#1b2a4a" stroke="#d9dde4" stroke-width="5"/><path d="M107.3 45.0 A50 50 0 0 1 107.3 95.0" stroke="#ff6a00" stroke-width="6" fill="none"/><g stroke="#f6efe2" stroke-width="3" stroke-linecap="round"><path d="M20.7 95.0 L29.4 90.0"/><path d="M14.3 75.2 L19.2 74.7"/><path d="M16.4 54.5 L26.0 57.6"/><path d="M26.8 36.5 L30.6 39.9"/><path d="M43.7 24.3 L47.7 33.5"/><path d="M64.0 20.0 L64.0 25.0"/><path d="M84.3 24.3 L80.3 33.5"/><path d="M101.2 36.5 L97.4 39.9"/><path d="M111.6 54.5 L102.0 57.6"/><path d="M113.7 75.2 L108.8 74.7"/><path d="M107.3 95.0 L98.6 90.0"/></g>
-<g transform="translate(64 70) rotate(-130) translate(0 -2) scale(.7)"><path d="M0 44 C8 30 13 0 17 -40 L6 -22 L4 -48 L-4 -48 L-6 -22 L-17 -40 C-13 0 -8 30 0 44 Z" fill="#f5c518" transform="translate(0 -6)"/></g><circle cx="64" cy="70" r="5" fill="#f5c518"/>
-</svg>

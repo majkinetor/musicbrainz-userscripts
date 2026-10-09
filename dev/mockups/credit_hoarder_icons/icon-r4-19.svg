@@ -1,5 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
-<title>Credit Hoarder — Playing card</title>
-<rect x="22" y="8" width="84" height="112" rx="9" fill="#fffdf7" stroke="#1d1d1d" stroke-width="3"/><path d="M44 46 L50 30 L58 42 L64 26 L70 42 L78 30 L84 46Z" fill="#e0a500" stroke="#1d1d1d" stroke-width="2.5" stroke-linejoin="round"/>
-<g transform="translate(56 66) scale(1.6)" fill="#c1121f"><ellipse cx="0" cy="10" rx="6" ry="4.5" transform="rotate(-20 0 10)"/><rect x="4.2" y="-14" width="2.6" height="24"/><path d="M6.8 -14 C14 -11 16 -6 13 0 C13 -5 10 -7 6.8 -8Z"/></g><g transform="translate(30 18) scale(0.55)" fill="#c1121f"><ellipse cx="0" cy="10" rx="6" ry="4.5" transform="rotate(-20 0 10)"/><rect x="4.2" y="-14" width="2.6" height="24"/><path d="M6.8 -14 C14 -11 16 -6 13 0 C13 -5 10 -7 6.8 -8Z"/></g><g transform="rotate(180 94 108)"><g transform="translate(92 104) scale(0.55)" fill="#c1121f"><ellipse cx="0" cy="10" rx="6" ry="4.5" transform="rotate(-20 0 10)"/><rect x="4.2" y="-14" width="2.6" height="24"/><path d="M6.8 -14 C14 -11 16 -6 13 0 C13 -5 10 -7 6.8 -8Z"/></g></g>
-</svg>

@@ -1,7 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
-<title>Apollo Editor — Lunar module</title>
-<rect x="4" y="4" width="120" height="120" rx="26" fill="#0d1330"/><circle cx="100" cy="26" r="10" fill="#3a7bd5"/><path d="M94 22 q4 -4 8 0 q2 4 -2 8 q-4 -2 -6 -8Z" fill="#5cc26b"/>
-<path d="M4 104 Q64 88 124 104 V98 124 Q124 124 98 124 H30 Q4 124 4 98Z" fill="#8d93a3"/><path d="M4 104 Q64 88 124 104" fill="none" stroke="#b4b9c6" stroke-width="2"/>
-<g stroke="#c7ccd6" stroke-width="3.5" stroke-linecap="round"><path d="M44 82 L28 104 M84 82 L100 104 M52 84 L46 102 M76 84 L82 102"/></g><path d="M22 104 H34 M94 104 H106" stroke="#c7ccd6" stroke-width="4" stroke-linecap="round"/>
-<path d="M38 64 H90 L86 86 H42Z" fill="#e3a82b"/><path d="M42 64 L48 42 L64 34 L80 42 L86 64Z" fill="#dfe2e9"/><path d="M54 48 L64 44 L66 56 L54 58Z" fill="#1c2440"/><path d="M76 38 L84 28" stroke="#dfe2e9" stroke-width="2.5"/><circle cx="85" cy="27" r="4" fill="none" stroke="#dfe2e9" stroke-width="2.5"/>
-</svg>
