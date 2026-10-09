@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Mission Control
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.9.101503
+// @version      2026.10.9.103105
 // @description  One window on the release page that asks the other scripts (Platform Check, ISRC Scout, Art Station, Fusion, Credit Hoarder) what is missing, shows it all in one review, and applies the ticked changes in order.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5NaXNzaW9uIENvbnRyb2w8L3RpdGxlPgo8ZGVmcz48ZmlsdGVyIGlkPSJtY28xMy1oIiB4PSItMTAlIiB5PSItMTAlIiB3aWR0aD0iMTIwJSIgaGVpZ2h0PSIxMjAlIj48ZmVNb3JwaG9sb2d5IGluPSJTb3VyY2VBbHBoYSIgb3BlcmF0b3I9ImRpbGF0ZSIgcmFkaXVzPSIxLjUiIHJlc3VsdD0iZCIvPjxmZUZsb29kIGZsb29kLWNvbG9yPSIjZmZmIiBmbG9vZC1vcGFjaXR5PSIuNyIvPjxmZUNvbXBvc2l0ZSBpbjI9ImQiIG9wZXJhdG9yPSJpbiIvPjxmZU1lcmdlPjxmZU1lcmdlTm9kZS8+PGZlTWVyZ2VOb2RlIGluPSJTb3VyY2VHcmFwaGljIi8+PC9mZU1lcmdlPjwvZmlsdGVyPjwvZGVmcz48ZyBmaWx0ZXI9InVybCgjbWNvMTMtaCkiPjxwYXRoIGQ9Ik03NyAzNS41IEw2NCA0MyBMNTEgMzUuNSBMNTEgMjAuNSBMNjQgMTMgTDc3IDIwLjVaIiBmaWxsPSIjN2E1N2U4IiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik01OS43IDc3LjUgTDQ2LjcgODUgTDMzLjcgNzcuNSBMMzMuNyA2Mi41IEw0Ni43IDU1IEw1OS43IDYyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik05NC4zIDc3LjUgTDgxLjMgODUgTDY4LjMgNzcuNSBMNjguMyA2Mi41IEw4MS4zIDU1IEw5NC4zIDYyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik00Mi4zIDEwNy41IEwyOS40IDExNSBMMTYuNCAxMDcuNSBMMTYuNCA5Mi41IEwyOS40IDg1IEw0Mi4zIDkyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik03NyAxMDcuNSBMNjQgMTE1IEw1MSAxMDcuNSBMNTEgOTIuNSBMNjQgODUgTDc3IDkyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik0xMTEuNiAxMDcuNSBMOTguNiAxMTUgTDg1LjcgMTA3LjUgTDg1LjcgOTIuNSBMOTguNiA4NSBMMTExLjYgOTIuNVoiIGZpbGw9IiNmZmM5NGEiIHN0cm9rZT0iIzIyMjIzYiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PC9nPgo8L3N2Zz4K
@@ -392,6 +392,8 @@ function readRelease() {
     const title = tl ? tl.textContent.trim() : h1 ? h1.textContent.trim() : document.title;
     const artist = h && h.querySelector('.subheader') ? Array.from(h.querySelectorAll('.subheader a[href*="/artist/"]')).map(a => a.textContent.trim()).join(', ') : '';
     const cover = document.querySelector('.cover-art img');
+    const fmt = document.querySelector('#sidebar dd.format');
+    const format = fmt ? fmt.textContent.trim() : '';
     const tracks = [];
     let medium = 0;
     document.querySelectorAll('#content table.medium').forEach(tbl => {
@@ -407,8 +409,8 @@ function readRelease() {
             });
         });
     });
-    Log.info('release: "' + title + '" by ' + (artist || '?') + ' · ' + tracks.length + ' tracks on ' + medium + ' medium(s)');
-    return { title, artist, cover: cover ? cover.src : '', tracks, media: medium };
+    Log.info('release: "' + title + '" by ' + (artist || '?') + ' · ' + tracks.length + ' tracks on ' + medium + ' medium(s) · format ' + (format || '?'));
+    return { title, artist, cover: cover ? cover.src : '', tracks, media: medium, format };
 }
 
 /* ── UI ────────────────────────────────────────────────────────────────────── */
@@ -444,7 +446,8 @@ function mcStyle() {
         + '#mc-root .mc-btn.tog{color:var(--mbu-text-weak)}#mc-root .mc-btn.tog.on{background:var(--mbu-accent-soft);border-color:var(--mbu-border-strong);color:var(--mbu-accent-text)}'
         + '#mc-root .mc-btn.lg{padding:7px 16px;font-size:13px}'
         // #680: one header row — the release, the steps (C, on one line), Execute (N), ⚙ and ✕
-        + '.mc-hdr{display:flex;align-items:center;gap:14px;height:52px;padding:0 10px 0 16px;background:var(--mbu-bg);border-bottom:1px solid var(--mbu-border);box-shadow:var(--mbu-shadow)}'
+        + '.mc-hdr{display:flex;align-items:center;gap:14px;height:52px;padding:0 10px 0 12px;background:var(--mbu-bg);border-bottom:1px solid var(--mbu-border);box-shadow:var(--mbu-shadow)}'
+        + '.mc-fmt{flex:none;display:grid;place-items:center;width:30px;height:30px;color:var(--mbu-text-dim)}.mc-fmt svg{width:28px;height:28px;display:block}'
         + '.mc-rel{display:flex;flex-direction:column;min-width:0;flex:0 1 230px;line-height:1.2}.mc-ttl{font-weight:700;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.mc-art{font-size:12px;color:var(--mbu-text-dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}'
         + '.mc-hdr .mc-act{display:flex;align-items:center;gap:4px;flex:none}#mc-root .mc-act .mc-exec{justify-content:center;min-width:96px;height:28px;padding:0 12px;font-size:12.5px;font-weight:600;font-variant-numeric:tabular-nums;background:var(--mbu-accent-soft);border-color:var(--mbu-border-strong);color:var(--mbu-accent-text)}#mc-root .mc-act .mc-exec:hover:not(:disabled){background:var(--mbu-accent);border-color:var(--mbu-accent);color:var(--mbu-accent-fg)}#mc-root .mc-act .mc-exec:disabled{background:var(--mbu-bg);border-color:var(--mbu-border);color:var(--mbu-text-weak);cursor:default}'
         // the steps: a ring, then the name and the state beside it, all on one centre line; a click shows or hides the order sidebar
@@ -454,15 +457,16 @@ function mcStyle() {
         // a step's words take a fixed width (cut with …, the whole of it in the tooltip): changing words and
         // ticking seconds must not move the steps; only the window's width does
         + '.mc-step .tx{display:flex;flex-direction:column;flex:0 1 130px;width:130px;min-width:0;line-height:1.2}.mc-step b{font-size:12.5px;color:var(--mbu-text)}.mc-step i{font-style:normal;font-size:11.5px;color:var(--mbu-text-dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-variant-numeric:tabular-nums}'
-        + '.mc-ring{position:relative;flex:none;display:grid;place-items:center;width:28px;height:28px;border-radius:50%;border:2px solid var(--mbu-border);background:var(--mbu-bg);box-sizing:border-box}'
-        + '.mc-ring img{width:16px;height:16px;object-fit:contain;display:block;margin:0;vertical-align:0}'
-        + '.mc-ring sup{position:absolute;right:-8px;top:-6px;min-width:15px;height:15px;padding:0 3px;box-sizing:border-box;border-radius:8px;background:var(--mbu-accent);color:var(--mbu-text-on-accent);font-size:10px;font-weight:700;line-height:15px;text-align:center}'
-        + '.mc-step.ok .mc-ring{border-color:var(--mbu-ok)}.mc-step.ok sup{background:var(--mbu-ok)}'
-        + '.mc-step.add .mc-ring{border-color:var(--mbu-accent)}.mc-step.add i{color:var(--mbu-accent-text);font-weight:600}'
-        + '.mc-step.busy .mc-ring{border-color:var(--mbu-info-border)}.mc-step.busy .mc-ring::before{content:"";position:absolute;inset:-2px;border-radius:50%;border:2px solid transparent;border-top-color:var(--mbu-info);border-left-color:var(--mbu-info);animation:mc-spin .9s linear infinite}.mc-step.busy i{color:var(--mbu-info)}'
-        + '.mc-step.stalled .mc-ring{border-color:var(--mbu-warn);background:var(--mbu-warn-bg)}.mc-step.stalled sup{background:var(--mbu-warn)}.mc-step.stalled i,.mc-step.stalled b{color:var(--mbu-warn)}'
-        + '.mc-step.err .mc-ring{border-color:var(--mbu-error);background:var(--mbu-error-bg)}.mc-step.err sup{background:var(--mbu-error)}.mc-step.err i{color:var(--mbu-error)}'
-        + '.mc-step.wait .mc-ring{border-style:dashed}.mc-step.wait b{color:var(--mbu-text-weak)}.mc-step.off{opacity:.45}.mc-step.off b{text-decoration:line-through}'
+        // #680: no ring: the provider's own icon, bigger, so it reads; the state rides on the badge and the text
+        + '.mc-ring{position:relative;flex:none;display:grid;place-items:center;width:28px;height:28px}'
+        + '.mc-ring img{width:28px;height:28px;object-fit:contain;display:block;margin:0;vertical-align:0}'
+        + '.mc-ring sup{position:absolute;right:-7px;top:-6px;min-width:15px;height:15px;padding:0 3px;box-sizing:border-box;border-radius:8px;background:var(--mbu-accent);color:var(--mbu-text-on-accent);font-size:10px;font-weight:700;line-height:15px;text-align:center;box-shadow:0 0 0 2px var(--mbu-bg)}'
+        + '.mc-step.ok sup{background:var(--mbu-ok)}'
+        + '.mc-step.add i{color:var(--mbu-accent-text);font-weight:600}'
+        + '.mc-step.busy .mc-ring::before{content:"";position:absolute;left:2px;right:2px;bottom:-6px;height:2px;border-radius:1px;background:linear-gradient(90deg,transparent,var(--mbu-info),transparent);background-size:200% 100%;animation:mc-sweep 1s linear infinite}@keyframes mc-sweep{from{background-position:100% 0}to{background-position:-100% 0}}.mc-step.busy i{color:var(--mbu-info)}'
+        + '.mc-step.stalled sup{background:var(--mbu-warn)}.mc-step.stalled i,.mc-step.stalled b{color:var(--mbu-warn)}'
+        + '.mc-step.err sup{background:var(--mbu-error)}.mc-step.err i{color:var(--mbu-error)}'
+        + '.mc-step.wait .mc-ring img{filter:grayscale(1);opacity:.5}.mc-step.wait b{color:var(--mbu-text-weak)}.mc-step.off{opacity:.45}.mc-step.off .mc-ring img{filter:grayscale(1)}.mc-step.off b{text-decoration:line-through}'
         + '.mc-steps .mc-arrow{color:var(--mbu-text-weak);flex:none}.mc-steps .mc-par{display:inline-flex;align-items:center;gap:4px;height:40px;margin:0;background:none;padding:0 6px;border:1px dashed var(--mbu-border);border-radius:10px;box-sizing:border-box;min-width:0}'
         + '@media (prefers-reduced-motion: reduce){.mc-step.busy .mc-ring::before{animation:none}}'
         // the corner launchers (Falcon, Fusion, ours) share MC's z-index; hide them while MC is open
@@ -627,13 +631,28 @@ function header() {
     h.addEventListener('animationiteration', e => { if (e.target === h && e.pseudoElement === '::after' && !isBusy()) h.classList.remove('mc-busy'); });
     // #680: the release where Probe was (the cover is the one in the Cover art card), the steps, then
     // Execute with its count; logo, version and Auto probe live in ⚙
-    h.innerHTML = mbuHtml('<div class="mc-rel"><div class="mc-ttl" title="' + esc(rel.title) + '">' + esc(rel.title) + '</div>'
+    h.innerHTML = mbuHtml(fmtIcon(rel.format) + '<div class="mc-rel"><div class="mc-ttl" title="' + esc(rel.title) + '">' + esc(rel.title) + '</div>'
         + '<div class="mc-art" title="' + esc(rel.artist) + '">' + esc(rel.artist || '') + '</div></div>'
         + '<div class="mc-act"><button type="button" class="mc-btn mc-exec" data-act="exec" disabled title="Apply the ticked changes, step by step">Execute</button>'
         + '<button type="button" class="mc-btn ghost" data-act="cfg" title="Settings">' + MBU_CFG_ICON + '</button>'
         + '<button type="button" class="mc-btn ghost" data-act="close" title="Close (Esc)">✕</button></div>');
     h.insertBefore(steps(), h.querySelector('.mc-act'));
     return h;
+}
+
+// #680: the release's format as an icon left of the title, its name in the tooltip. Only the
+// first medium counts ("2×CD + DVD" is a CD); anything that isn't digital, vinyl or tape is a disc.
+const FORMAT_ICONS = {
+    digital: '<path d="M4 16h2M8 12v8M12 7v18M16 10v12M20 5v22M24 11v10"/>',
+    vinyl: '<circle cx="16" cy="16" r="13"/><circle cx="16" cy="16" r="9" stroke-width="1" opacity=".5"/><circle cx="16" cy="16" r="5" fill="currentColor"/><circle cx="16" cy="16" r="1.2" fill="var(--mbu-bg)" stroke="none"/>',
+    cassette: '<rect x="3" y="7" width="26" height="18" rx="2.5"/><circle cx="11" cy="15" r="2.6"/><circle cx="21" cy="15" r="2.6"/><path d="M11 12.4h10M9 25l2-4h10l2 4"/>',
+    disc: '<circle cx="16" cy="16" r="13"/><circle cx="16" cy="16" r="3.5"/><path d="M16 7a9 9 0 0 1 9 9" opacity=".55"/>',
+};
+function fmtIcon(format) {
+    if (!format) return '';
+    const first = format.split('+')[0];
+    const k = /digital/i.test(first) ? 'digital' : /vinyl|"|shellac|flexi/i.test(first) ? 'vinyl' : /cassette|tape|cartridge/i.test(first) ? 'cassette' : 'disc';
+    return '<span class="mc-fmt" title="' + esc(format) + '"><svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round">' + FORMAT_ICONS[k] + '</svg></span>';
 }
 
 function seg(p) {
