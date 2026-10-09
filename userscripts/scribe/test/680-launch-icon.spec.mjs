@@ -4,7 +4,8 @@
 // Station's launchers do while they're on (#695).
 //
 // test.musicbrainz.org, a release's edit page, nothing edited. The launcher shows only while the extedit
-// helper answers, so a stand-in helper runs on a spare port.
+// helper answers, so a stand-in helper runs on a spare port. It stands bottom-right with the other
+// launchers, and its session window sits beside them, not over them.
 import { createServer } from 'node:http';
 import { test, check, until, idle, requireLogin, SANDBOX } from '../../../dev/test/harness.mjs';
 
@@ -20,6 +21,7 @@ test('#680: Scribe\'s launcher shows its icon, no disc; a session shows it in co
     await page.goto(`${SANDBOX}/release/${RELEASE}/edit`, { waitUntil: 'domcontentloaded' });
     await requireLogin(page);
     await idle(page);
+    await inject('apollo_editor');
     await inject('scribe');
     await page.waitForSelector('#scribe-launcher img', { state: 'visible', timeout: 20000 });
     const read = () => page.evaluate(() => {
@@ -42,6 +44,16 @@ test('#680: Scribe\'s launcher shows its icon, no disc; a session shows it in co
     const on = await until(read, l => !l.grey, { timeout: 10000 });
     check(!on.grey, `a session shows the icon in colour (${JSON.stringify(on)})`);
     check(clear(on), 'and still no disc or ring');
+    const geo = await page.evaluate(() => {
+      const b = document.getElementById('scribe-launcher'), p = document.getElementById('scribe-panel').getBoundingClientRect();
+      const hit = [...document.querySelectorAll('[data-mb-corner]')].filter(e => getComputedStyle(e).display !== 'none').map(e => e.getBoundingClientRect())
+        .filter(r => r.left < p.right && r.right > p.left && r.top < p.bottom && r.bottom > p.top).length;
+      const apollo = document.querySelector('[data-mb-corner="br"][data-mb-corner-order="10"]');
+      return { corner: b.dataset.mbCorner, right: b.style.right, hit, apollo: !!apollo, aboveApollo: !!apollo && b.getBoundingClientRect().bottom <= apollo.getBoundingClientRect().top };
+    });
+    check(geo.corner === 'br' && geo.right === '14px', `bottom-right with the other launchers (${JSON.stringify(geo)})`);
+    check(geo.apollo && geo.aboveApollo, `Apollo keeps the corner, Scribe just above it (${JSON.stringify(geo)})`);
+    check(geo.hit === 0, `the session window covers no launcher (${geo.hit})`);
     await info.attach('session', { body: await page.screenshot({ clip: box }), contentType: 'image/png' });
   } finally {
     helper.closeAllConnections(); await new Promise(r => helper.close(r));

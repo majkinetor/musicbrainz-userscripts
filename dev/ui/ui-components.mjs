@@ -547,8 +547,8 @@ function mbuShared(key, value) {
 // calls mbRestackCorner(corner) right after it shows, hides, creates or removes it.
 // That recomputes every element in the corner, whichever script owns it and
 // whatever order they loaded in, so two launchers never land on the same pixel.
-// Orders in use: Apollo and Art Station 10 (never on the same page), Falcon 20,
-// Fusion above Falcon. Scribe is not on the shared block and keeps a copy of this.
+// Orders in use, all bottom-right: Apollo and Art Station 10 (never on the same page), Scribe 15
+// (above Apollo on the edit page), Falcon 20, Fusion 30, Mission Control 40. Scribe is not on the shared block and keeps a copy of this.
 // The stack is a column; the shared setting cornerFlow = 'row' (mbuShared, set from String
 // Theory's menu) lines it up along the bottom/top edge instead, the lowest order still nearest the corner.
 function mbRestackCorner(corner) {

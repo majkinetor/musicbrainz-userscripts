@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         Scribe
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.9.092604
-// @description  Edit MusicBrainz in your real editor (VS Code, Vim, Notepad…) via the bundled `scribe` localhost helper. Two ways, chosen by trigger: Ctrl+Alt+E edits the FOCUSED text field; on a release Edit page, the bottom-left button (or Ctrl+Alt+R) edits the WHOLE release as one Markdown document and applies your saves back. Cross-browser via GM_xmlhttpRequest.
+// @version      2026.10.9.094239
+// @description  Edit MusicBrainz in your real editor (VS Code, Vim, Notepad…) via the bundled `scribe` localhost helper. Two ways, chosen by trigger: Ctrl+Alt+E edits the FOCUSED text field; on a release Edit page, the corner button (or Ctrl+Alt+R) edits the WHOLE release as one Markdown document and applies your saves back. Cross-browser via GM_xmlhttpRequest.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48cGF0aCBkPSJNNDYgMjQgTDI2IDI0IEwyNiAxMDQgTDQ2IDEwNCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMmY2ZjU0IiBzdHJva2Utd2lkdGg9IjkiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik04MiAyNCBMMTAyIDI0IEwxMDIgMTA0IEw4MiAxMDQiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJmNmY1NCIgc3Ryb2tlLXdpZHRoPSI5IiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz48cGF0aCBkPSJNNjQgNDAgTDUxIDY2IEw2NCA5NCBMNzcgNjYgWiIgZmlsbD0iIzJlOWU1YiIgc3Ryb2tlPSIjMmY2ZjU0IiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz48bGluZSB4MT0iNjQiIHkxPSI3NCIgeDI9IjY0IiB5Mj0iOTIiIHN0cm9rZT0iI2ZmZmZmZiIgc3Ryb2tlLXdpZHRoPSIzLjUiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPjwvc3ZnPg==
 // @match        *://*.musicbrainz.org/*
@@ -111,7 +111,16 @@
     // re-render when MusicBrainz's own validation state flips (reliable observable — no DOM polling)
     try { const ee = W.MB.releaseEditor.validation.errorsExist; if (ee && ee.subscribe) ee.subscribe(() => { if (session && session.active && !collapsed) renderSession(); }); } catch (e) {}
   }
-  function showPanel() { ensurePanel(); panel.style.display = ''; }
+  // the window sits bottom-right, beside the corner launchers (Scribe's own among them), not over them:
+  // left of a column of them, above a row
+  function placePanel() {
+    const els = [...document.querySelectorAll('[data-mb-corner="br"]')].filter(e => getComputedStyle(e).display !== 'none').map(e => e.getBoundingClientRect());
+    let row = false;
+    try { row = JSON.parse(localStorage.getItem('mbu.cornerFlow')) === 'row'; } catch (e) { /* storage blocked */ }
+    panel.style.right = (!els.length || row ? 12 : Math.round(innerWidth - Math.min(...els.map(r => r.left))) + 8) + 'px';
+    panel.style.bottom = (!els.length || !row ? 12 : Math.round(innerHeight - Math.min(...els.map(r => r.top))) + 8) + 'px';
+  }
+  function showPanel() { ensurePanel(); panel.style.display = ''; placePanel(); }
   // bring the editor window to the front so a flagged value can be fixed
   function reopenEditor() { if (session && session.active) gm({ method: 'POST', url: base() + '/open', headers: { 'Content-Type': 'application/json' }, data: JSON.stringify({ id: session.id }) }).catch(() => {}); }
   // scroll to + focus + briefly highlight a native MB field (the error row's "go to field" action)
@@ -579,14 +588,14 @@
   }
   window.addEventListener('pagehide', () => { if (session && session.active) gm({ url: `${base()}/close?id=${encodeURIComponent(session.id)}` }).catch(() => {}); });
 
-  // ── bottom-left launcher: shown only while the extedit helper is reachable (pinged) ──
+  // ── corner launcher, bottom-right with the other scripts' launchers: shown only while the extedit helper is reachable (pinged) ──
   let launcher = null, _helperUp = false;
   function ensureLauncher() {
     if (launcher) return;
     launcher = document.createElement('button');
     launcher.type = 'button'; launcher.id = 'scribe-launcher';
-    launcher.dataset.mbCorner = 'bl'; launcher.dataset.mbCornerOrder = '10';
-    launcher.style.cssText = 'position:fixed;left:14px;bottom:14px;z-index:2147483646;width:40px;height:40px;border-radius:50%;border:none;padding:0;cursor:pointer;display:none;align-items:center;justify-content:center;background:transparent;box-shadow:none;transition:opacity .15s,transform .1s';
+    launcher.dataset.mbCorner = 'br'; launcher.dataset.mbCornerOrder = '15';   // just above Apollo (10), which keeps the corner on the edit page
+    launcher.style.cssText = 'position:fixed;right:14px;bottom:14px;z-index:2147483646;width:40px;height:40px;border-radius:50%;border:none;padding:0;cursor:pointer;display:none;align-items:center;justify-content:center;background:transparent;box-shadow:none;transition:opacity .15s,transform .1s';
     const img = document.createElement('img'); img.src = ICON_URL; img.alt = ''; img.style.cssText = 'width:34px;height:34px;display:block;pointer-events:none'; launcher.appendChild(img);
     launcher.onmouseenter = () => { launcher.style.transform = 'scale(1.06)'; };
     launcher.onmouseleave = () => { launcher.style.transform = 'scale(1)'; };
@@ -604,7 +613,8 @@
     launcher.style.opacity = active ? '1' : '.85';
     launcher.title = !_helperUp ? `${NAME} — start the extedit helper to enable`
       : active ? `${NAME} — editing this release · click to stop` : `${NAME} — edit this release as Markdown (Ctrl+Alt+R)`;
-    mbRestackCorner('bl');
+    mbRestackCorner('br');
+    if (panel && panel.style.display !== 'none') placePanel();
   }
   async function pollHelper() {
     while (true) {
@@ -624,7 +634,7 @@
   if (onEditPage()) { ensureLauncher(); pollHelper(); }
   // test/automation hook
   try { W.__releaseMd = W.__scribe = { exportMd, parse, emit, toModel, applyMd, diffMd, refreshApollo, startSession, stopSession }; } catch (e) {}
-  console.log(`[${NAME}] release editor ready — bottom-left button appears when the helper is running (${base()})`);
+  console.log(`[${NAME}] release editor ready — corner button appears when the helper is running (${base()})`);
 })();
 
 // ══════════════════════════════════════════════════════════════════════════════
