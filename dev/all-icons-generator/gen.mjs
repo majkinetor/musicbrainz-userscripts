@@ -1,14 +1,14 @@
 // Every userscript's icon side by side, as each script ships it (its @icon), with candidate swaps — then each one measured
 // and fitted to the same box, so the set reads as one bundle: same visual size, centred both ways.
 // Writes norm/<script>.svg and preview.html (128, 48, 28, 16 px on white and black, plus a toolbar strip).
-//   node dev/mockups/all_icons/gen.mjs
+//   node dev/all-icons-generator/gen.mjs
 import { readFileSync, readdirSync, existsSync, writeFileSync, mkdirSync } from 'node:fs';
 import { dirname, join, extname } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 
 const dir = dirname(fileURLToPath(import.meta.url));
-const root = join(dir, '../../../userscripts');
-const { chromium } = await import(pathToFileURL(join(dir, '../../../node_modules/@playwright/test/index.mjs')).href);
+const root = join(dir, '../../userscripts');
+const { chromium } = await import(pathToFileURL(join(dir, '../../node_modules/@playwright/test/index.mjs')).href);
 // candidate icons standing in for a script's own, by folder name (a file path)
 const SWAP = {
   mammoth: { file: join(root, 'mammoth/icon.svg'), note: 'its icon.svg in place of the emoji' },

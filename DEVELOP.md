@@ -59,6 +59,7 @@ Nothing here ships. A script belongs in its subsystem's folder, next to that fol
 | [`ui/`](dev/ui/README.md) | the shared components and platform icons, with their live checks |
 | `match/` | the shared artist matcher (Apollo, Group Therapy, Credit Hoarder) |
 | [`test/`](dev/test/README.md) | the test runner and harness |
+| [`all-icons-generator/`](dev/all-icons-generator/README.md) | every script's icon side by side, fitted to one box |
 | `screens/ui/` | generated screenshots; numbers are stable, so never renumber, only append |
 | `github-notifications/`, `notif-channel/` | GitHub notifications into the assistant's channel |
 | [`script-metrics/`](dev/script-metrics/README.md) | edits made with these scripts, counted from the MusicBrainz database dump, in Docker |
