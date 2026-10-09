@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Mission Control
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.9.105851
+// @version      2026.10.9.110354
 // @description  One window on the release page that asks the other scripts (Platform Check, ISRC Scout, Art Station, Fusion, Credit Hoarder) what is missing, shows it all in one review, and applies the selected changes in order.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5NaXNzaW9uIENvbnRyb2w8L3RpdGxlPgo8ZGVmcz48ZmlsdGVyIGlkPSJtY28xMy1oIiB4PSItMTAlIiB5PSItMTAlIiB3aWR0aD0iMTIwJSIgaGVpZ2h0PSIxMjAlIj48ZmVNb3JwaG9sb2d5IGluPSJTb3VyY2VBbHBoYSIgb3BlcmF0b3I9ImRpbGF0ZSIgcmFkaXVzPSIxLjUiIHJlc3VsdD0iZCIvPjxmZUZsb29kIGZsb29kLWNvbG9yPSIjZmZmIiBmbG9vZC1vcGFjaXR5PSIuNyIvPjxmZUNvbXBvc2l0ZSBpbjI9ImQiIG9wZXJhdG9yPSJpbiIvPjxmZU1lcmdlPjxmZU1lcmdlTm9kZS8+PGZlTWVyZ2VOb2RlIGluPSJTb3VyY2VHcmFwaGljIi8+PC9mZU1lcmdlPjwvZmlsdGVyPjwvZGVmcz48ZyBmaWx0ZXI9InVybCgjbWNvMTMtaCkiPjxwYXRoIGQ9Ik03NyAzNS41IEw2NCA0MyBMNTEgMzUuNSBMNTEgMjAuNSBMNjQgMTMgTDc3IDIwLjVaIiBmaWxsPSIjN2E1N2U4IiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik01OS43IDc3LjUgTDQ2LjcgODUgTDMzLjcgNzcuNSBMMzMuNyA2Mi41IEw0Ni43IDU1IEw1OS43IDYyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik05NC4zIDc3LjUgTDgxLjMgODUgTDY4LjMgNzcuNSBMNjguMyA2Mi41IEw4MS4zIDU1IEw5NC4zIDYyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik00Mi4zIDEwNy41IEwyOS40IDExNSBMMTYuNCAxMDcuNSBMMTYuNCA5Mi41IEwyOS40IDg1IEw0Mi4zIDkyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik03NyAxMDcuNSBMNjQgMTE1IEw1MSAxMDcuNSBMNTEgOTIuNSBMNjQgODUgTDc3IDkyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik0xMTEuNiAxMDcuNSBMOTguNiAxMTUgTDg1LjcgMTA3LjUgTDg1LjcgOTIuNSBMOTguNiA4NSBMMTExLjYgOTIuNVoiIGZpbGw9IiNmZmM5NGEiIHN0cm9rZT0iIzIyMjIzYiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PC9nPgo8L3N2Zz4K
@@ -127,6 +127,7 @@ document.addEventListener('mc:findings', e => {
     picked[d.id] = new Set(findings.filter(x => x.state === 'new').map(x => x.key));
     const tally = findings.reduce((t, x) => (t[x.state] = (t[x.state] || 0) + 1, t), {});
     Log.ok('findings ' + d.id + ': ' + findings.length + ' ' + JSON.stringify(tally));
+    noteProbeDone();
     findings.forEach(x => Log.debug('  ' + d.id + ' ' + x.key + ' ' + x.state + (x.why ? ' (' + x.why + ')' : '') + (x.url ? ' ' + x.url : '')));
     paintAll();
     syncIsLinks();
@@ -176,6 +177,7 @@ function probe() {
     for (const k in picked) delete picked[k];
     const ask = PROVIDERS.filter(p => found[p.id] && modeOf(p) === 'auto').map(p => p.id);
     ask.forEach(id => { results[id] = { state: 'busy', note: '', at: Date.now() }; });
+    probeAt = Date.now(); probeTook = 0;
     isLinksAsked = '[]';   // nothing is selected yet
     Log.info('probe run ' + run + ' · asking ' + (ask.join(', ') || 'nobody') + '');
     document.dispatchEvent(new CustomEvent('mc:probe', { detail: JSON.stringify({ release: RELEASE, run, only: ask, links: [] }) }));
@@ -189,6 +191,7 @@ function probeOne(id) {
     if (!run) run = Date.now().toString(36);
     delete picked[id];
     results[id] = { state: 'busy', note: '', at: Date.now() };
+    probeAt = Date.now(); probeTook = 0;
     const links = pcAlbumLinks();
     if (id === 'is') isLinksAsked = JSON.stringify(links);
     Log.info('probe ' + id + ' on request · run ' + run + (links.length ? ' · selected album links ' + links.join(' ') : ''));
@@ -366,7 +369,7 @@ async function execute(dry) {
             });
             paintAll();
         }
-    } finally { executing = false; paintExec(); }
+    } finally { executing = false; lastRun = { at: Date.now(), sent, failed, dry: !!dry }; Log.info('run done · ' + sent + ' sent · ' + failed + ' failed' + (dry ? ' · dry' : '')); paintExec(); paintFoot(); }
     mbuToast(failed ? failed + ' step' + (failed === 1 ? '' : 's') + ' failed: see the cards and the log' : (dry ? 'Dry run done: nothing was written' : 'Done: ' + sent + ' change' + (sent === 1 ? '' : 's') + ' applied or handed over'), { kind: failed ? 'error' : 'ok' });
     if (S.reloadAfter && !dry && !failed && sent) { reloadPending = true; reloadWhenClean(); }
 }
@@ -485,15 +488,30 @@ function mcStyle() {
         + '.mc-center>*{flex:none}'
         + '.mc-sec{font-size:10.5px;letter-spacing:.8px;text-transform:uppercase;color:var(--mbu-text-weak);margin:0 0 8px;font-weight:700;display:flex;align-items:center;gap:6px}'
         + '.mc-x{margin-left:auto;cursor:pointer;font-size:14px;letter-spacing:0;color:var(--mbu-text-weak);background:none;border:0;padding:0 4px}'
-        // B's vertical execution order
-        + '.mc-stage{position:relative;padding-left:26px;padding-bottom:12px}'
-        + '.mc-stage::before{content:"";position:absolute;left:8px;top:20px;bottom:-2px;width:2px;background:var(--mbu-border)}.mc-stage:last-child::before{display:none}'
-        + '.mc-node{position:absolute;left:0;top:2px;width:18px;height:18px;border-radius:50%;border:2px solid var(--mbu-border-strong);background:var(--mbu-bg);display:flex;align-items:center;justify-content:center}.mc-node .mc-sic{width:12px;height:12px;margin:0}.mc-sic{width:15px;height:15px;object-fit:contain;vertical-align:-3px;margin-right:4px;flex:0 0 auto}.mc-node.opt{border-style:dashed}'
-        + '.mc-stage .nm{font-weight:600;font-size:12.5px;display:flex;align-items:center;gap:6px}.mc-stage .meta{font-size:11px;color:var(--mbu-text-dim)}'
-        + '.mc-stage.off .nm,.mc-stage.off .meta{opacity:.45}'
-        + '.mc-par{margin-top:6px;padding:6px 8px;border:1px dashed var(--mbu-border-strong);border-radius:var(--mbu-radius);background:var(--mbu-bg-sunken)}'
-        + '.mc-par .lbl{font-size:9.5px;letter-spacing:.6px;text-transform:uppercase;color:var(--mbu-accent-text);font-weight:700;margin-bottom:3px}'
-        + '.mc-lane{display:flex;align-items:center;gap:7px;font-size:12px;padding:2px 0}'
+        // B's vertical execution order (#680): the provider's icon on the rail with the step's number, what the
+        // step does and its state chip, the script on its own small line, then only data; a footer with the runs
+        + '.mc-stage{position:relative;display:grid;grid-template-columns:30px minmax(0,1fr);column-gap:10px;padding-bottom:14px}'
+        + '.mc-stage::before{content:"";position:absolute;left:14px;top:36px;bottom:4px;width:2px;border-radius:1px;background:var(--mbu-border)}.mc-stage.last::before{display:none}'
+        + '.mc-node{position:relative;width:30px;height:30px;display:grid;place-items:center}.mc-node .mc-sic{width:30px;height:30px;margin:0}.mc-node .par{font-size:18px;color:var(--mbu-accent-text)}'
+        + '.mc-sic{width:15px;height:15px;object-fit:contain;vertical-align:-3px;margin-right:4px;flex:0 0 auto}'
+        + '.mc-node .num{position:absolute;left:-4px;top:-4px;width:14px;height:14px;display:grid;place-items:center;border-radius:50%;border:1px solid var(--mbu-border);background:var(--mbu-bg);font:700 9px var(--mbu-font-mono);color:var(--mbu-text-dim)}'
+        + '.mc-stage .nm{font-weight:600;font-size:13px;display:flex;align-items:center;gap:6px;line-height:1.25;min-height:18px}'
+        + '.mc-pv{font-size:9.5px;letter-spacing:.5px;text-transform:uppercase;color:var(--mbu-text-weak);font-weight:600;line-height:1.3;margin-top:1px}'
+        + '.mc-stage .meta{font-size:11.5px;color:var(--mbu-text-dim);line-height:1.35;margin-top:1px;overflow-wrap:anywhere}'
+        + '.mc-stage.off .nm,.mc-stage.off .mc-pv,.mc-stage.off .meta,.mc-stage.off .mc-node{opacity:.45}'
+        + '.mc-stage .tag{font:600 9.5px var(--mbu-font);letter-spacing:.5px;text-transform:uppercase;color:var(--mbu-accent-text)}'
+        + '.mc-chip{margin-left:auto;flex:none;font:600 10.5px var(--mbu-font);padding:0 7px;border-radius:10px;white-space:nowrap;border:1px solid transparent;line-height:16px;font-variant-numeric:tabular-nums}.mc-chip:empty{display:none}'
+        + '.mc-chip.ok{background:var(--mbu-ok-bg);color:var(--mbu-ok);border-color:var(--mbu-ok-border)}.mc-chip.info{background:var(--mbu-info-bg);color:var(--mbu-info);border-color:var(--mbu-info-border)}'
+        + '.mc-chip.add{background:var(--mbu-accent-soft);color:var(--mbu-accent-text);border-color:var(--mbu-border-strong)}.mc-chip.busy{color:var(--mbu-info);border-color:var(--mbu-info-border)}'
+        + '.mc-chip.err,.mc-chip.stalled{background:var(--mbu-warn-bg);color:var(--mbu-warn);border-color:var(--mbu-warn-border)}'
+        + '.mc-lanes{margin-top:6px;display:flex;flex-direction:column;gap:8px;border-left:2px solid var(--mbu-accent-soft);padding-left:10px}'
+        + '.mc-lane{display:grid;grid-template-columns:24px minmax(0,1fr) auto;gap:8px;align-items:start;font-size:12.5px}.mc-lane .mc-sic{width:24px;height:24px;margin:0}.mc-lane .meta{font-size:11px}'
+        + '.mc-covbar{height:4px;border-radius:2px;background:var(--mbu-bg-sunken);overflow:hidden;margin-top:5px;display:flex}.mc-covbar:empty{display:none}.mc-covbar i{display:block;height:100%}'
+        + '.mc-covbar .linked{background:var(--mbu-ok)}.mc-covbar .new{background:var(--mbu-accent)}.mc-covbar .held{background:var(--mbu-warn)}.mc-covbar .none{background:var(--mbu-border-strong)}'
+        + '.mc-hint{font-size:10.5px;color:var(--mbu-text-weak);margin-top:3px}'
+        + '.mc-runs{border-top:1px solid var(--mbu-border);margin-top:2px;padding-top:10px;font-size:11.5px;color:var(--mbu-text-dim);display:grid;gap:4px}'
+        + '.mc-runs>div{display:flex;justify-content:space-between;gap:8px}.mc-runs b{color:var(--mbu-text);font-weight:600;text-align:right}'
+        + '#mc-root .mc-runs .mc-loglink{background:none;border:0;padding:0;font:inherit;color:var(--mbu-accent-text);cursor:pointer}#mc-root .mc-runs .mc-loglink:hover{text-decoration:underline}'
         + '.mc-dot{width:8px;height:8px;border-radius:50%;display:inline-block;flex:none;background:var(--mbu-border-strong)}.mc-dot.ready{background:var(--mbu-accent)}'
         + '.mc-seg{display:inline-flex;border:1px solid var(--mbu-border);border-radius:20px;overflow:hidden;margin-top:4px}'
         + '#mc-root .mc-seg button{font:600 10px var(--mbu-font);padding:2px 9px;color:var(--mbu-text-weak);cursor:pointer;background:none;border:0;border-radius:0}'
@@ -686,18 +704,71 @@ function seg(p) {
 function orderSidebar() {
     const a = el('aside', 'mc-side left');
     let html = '<h2 class="mc-sec">Execution order <button type="button" class="mc-x" data-close="left" title="Hide">×</button></h2>';
-    for (const s of STEPS) {
+    const pv = p => '<div class="mc-pv">' + esc(p.provider) + '</div>';
+    STEPS.forEach((s, k) => {
+        const node = '<span class="mc-node">' + (s.lanes ? '<span class="par" title="run in parallel">⇶</span>' : sIcon(s.id)) + '<span class="num">' + (k + 1) + '</span></span>';
+        const last = k === STEPS.length - 1 ? ' last' : '';
         if (s.lanes) {
-            html += '<div class="mc-stage"><span class="mc-node"></span><div class="nm">' + esc(s.name) + '</div><div class="mc-par"><div class="lbl">⇶ parallel</div>'
-                + s.lanes.map(l => '<div class="mc-lane" data-p="' + l.id + '"><span class="mc-dot"></span>' + sIcon(l.id) + esc(l.provider) + '</div>').join('') + '</div></div>';
+            html += '<div class="mc-stage' + last + '">' + node + '<div><div class="nm">' + esc(s.name) + ' <span class="tag">parallel</span></div><div class="mc-lanes">'
+                + s.lanes.map(l => '<div class="mc-lane" data-p="' + l.id + '">' + sIcon(l.id) + '<div><div>' + esc(l.name) + '</div>' + pv(l) + '<div class="meta st"></div></div><span class="mc-chip"></span></div>').join('') + '</div></div></div>';
         } else {
-            html += '<div class="mc-stage' + (modeOf(s) === 'off' ? ' off' : '') + '" data-p="' + s.id + '"><span class="mc-node' + (s.mode ? ' opt' : '') + '">' + sIcon(s.id) + '</span>'
-                + '<div class="nm">' + esc(s.name) + (s.info ? ' <span class="mc-mode">info</span>' : '') + '</div>'
-                + '<div class="meta">' + esc(s.provider) + ' · <span class="st"></span></div>' + (s.mode ? seg(s) : '') + '</div>';
+            html += '<div class="mc-stage' + last + (modeOf(s) === 'off' ? ' off' : '') + '" data-p="' + s.id + '">' + node
+                + '<div><div class="nm">' + esc(s.name) + (s.info ? ' <span class="mc-mode">info</span>' : '') + '<span class="mc-chip"></span></div>' + pv(s)
+                + '<div class="meta st"></div>' + (s.id === 'pc' ? '<div class="mc-covbar"></div>' : '') + (s.mode ? seg(s) + '<div class="mc-hint">' + modeHint(s) + '</div>' : '') + '</div></div>';
         }
-    }
+    });
+    html += '<div class="mc-runs"><div><span>Probed</span><b class="f-probe"></b></div><div><span>On Execute</span><b class="f-exec"></b></div>'
+        + '<div><span>Last run</span><b><span class="f-run"></span> · <button type="button" class="mc-loglink" data-act="log" title="Mission Control’s log">Log</button></b></div></div>';
     a.innerHTML = mbuHtml(html);
     return a;
+}
+function modeHint(p) { return { auto: 'fetches during Probe', ask: 'waits for ' + (FETCH_LABEL[p.id] || 'Fetch'), off: 'left out' }[modeOf(p)] || ''; }
+// the sidebar's words for a step: only data (the script has its own line)
+function sideText(p) {
+    const st = stateOf(p), r = results[p.id];
+    if (st === 'off') return 'off';
+    if (st === 'idle') return 'not installed';
+    if (st === 'ready') return modeOf(p) === 'ask' ? 'not fetched yet' : 'not probed yet';
+    let t = stateText(p);
+    // CH: "Qobuz + Deezer: 99 credits on 18 of 18 tracks" → the count first, the sources after
+    const m = p.id === 'ch' && /^([^:]+): (.+)$/.exec(t);
+    if (m) t = m[2] + ', from ' + m[1];
+    // IS: how many tracks already have an ISRC, before what it found
+    if (p.id === 'is' && st !== 'busy' && r.findings) {
+        const has = r.findings.filter(x => x.kind !== 'link' && (x.state === 'linked' || (x.existing || []).length)).length;
+        t = has + ' of ' + rel.tracks.length + ' tracks have an ISRC · ' + t;
+    }
+    return t;
+}
+// [chip class, chip text] from the header's state
+function chipOf(p) {
+    const [cls, , mark] = stepState(p);
+    if (cls === 'add') return ['add', mark];
+    if (cls === 'ok') return p.info ? ['info', String(infoCount(p.id))] : ['ok', '✓'];
+    if (cls === 'busy') return ['busy', '…'];
+    if (cls === 'err' || cls === 'stalled') return [cls, '!'];
+    return ['', ''];
+}
+// PC's links as one bar: linked, to add, held back, not found
+function paintCoverage(n) {
+    const bar = n.querySelector('.mc-covbar'); if (!bar) return;
+    const r = results.pc, xs = r && r.state === 'done' ? r.findings || [] : [];
+    const t = { linked: 0, new: 0, held: 0, none: 0 };
+    xs.forEach(x => { t[x.state === 'withheld' || x.state === 'unsure' ? 'held' : x.state in t ? x.state : 'none']++; });
+    bar.innerHTML = mbuHtml(xs.length ? Object.keys(t).filter(k => t[k]).map(k => '<i class="' + k + '" style="width:' + (100 * t[k] / xs.length).toFixed(2) + '%"></i>').join('') : '');
+    bar.title = xs.length ? t.linked + ' linked · ' + t.new + ' to add · ' + t.held + ' held back · ' + t.none + ' not found' : '';
+}
+// the footer: when the last probe ran and how long it took, what Execute would send, the last run
+let probeAt = 0, probeTook = 0, lastRun = null;
+function ago(t) { const s = Math.round((Date.now() - t) / 1000); return s < 10 ? 'just now' : s < 60 ? s + ' s ago' : s < 3600 ? Math.round(s / 60) + ' min ago' : Math.round(s / 3600) + ' h ago'; }
+function isProbing() { return Object.values(results).some(r => r.state === 'busy'); }
+function noteProbeDone() { if (probeAt && !probeTook && !isProbing()) { probeTook = Date.now() - probeAt; Log.debug('probe took ' + probeTook + ' ms'); } }
+function paintFoot() {
+    const f = ui && ui.querySelector('.mc-runs'); if (!f) return;
+    f.querySelector('.f-probe').textContent = !probeAt ? 'not yet' : isProbing() ? 'probing · ' + Math.round((Date.now() - probeAt) / 1000) + ' s' : ago(probeAt) + (probeTook ? ' · took ' + Math.max(1, Math.round(probeTook / 1000)) + ' s' : '');
+    const n = changeCount();
+    f.querySelector('.f-exec').textContent = executing ? 'executing…' : n ? n + ' selected' : 'nothing selected';
+    f.querySelector('.f-run').textContent = !lastRun ? 'none' : ago(lastRun.at) + ' · ' + (lastRun.dry ? 'dry run' : lastRun.sent + ' applied') + (lastRun.failed ? ' · ' + lastRun.failed + ' failed' : '');
 }
 
 // a provider's own userscript icon (#680: in the execution order, not a glyph)
@@ -1202,8 +1273,11 @@ function paintBadges() {
     ui.querySelectorAll('[data-p]').forEach(n => {
         const p = PROVIDERS.find(x => x.id === n.dataset.p); if (!p) return;
         const dot = n.querySelector('.mc-dot'); if (dot) dot.className = 'mc-dot ' + stateOf(p);
-        const st = n.querySelector('.st'); if (st) st.textContent = stateText(p);
+        const st = n.querySelector('.st'); if (st) { st.textContent = sideText(p); st.title = stateText(p); }
+        const chip = n.querySelector('.mc-chip'); if (chip) { const [c, t] = chipOf(p); chip.className = 'mc-chip ' + c; chip.textContent = t; }
+        if (p.id === 'pc') paintCoverage(n);
     });
+    paintFoot();
 }
 
 function paintSides() {
@@ -1241,7 +1315,7 @@ function open() {
     // a cover thumbnail that fails falls back to its full image once (errors don't bubble: capture)
     ui.addEventListener('error', e => { const i = e.target; if (i.tagName === 'IMG' && i.dataset.alt) { const a = i.dataset.alt; delete i.dataset.alt; i.dataset.from = i.getAttribute('src'); i.src = a; } }, true);
     document.addEventListener('keydown', onKey);
-    stepClock = setInterval(() => { if (isBusy()) paintSteps(); }, 1000);
+    stepClock = setInterval(() => { if (isBusy()) paintSteps(); paintFoot(); }, 1000);
     Log.info('opened · sidebars ' + (S.left ? 'order ' : '') + (S.right ? 'inspector' : '') + ' · fusion ' + S.fusion + ' · ch ' + S.ch + ' · auto probe ' + (S.autoProbe ? 'on' : 'off'));
     discover();
     // Auto: probe once the providers had discover's moment to answer
@@ -1354,6 +1428,7 @@ function onClick(e) {
         case 'card-onoff': setCardOff(act.dataset.sect, !cardOff(act.dataset.sect)); break;
         case 'cover': coverViewer(coverList(results.as && results.as.best), Number(act.dataset.i) || 0); break;
         case 'exec': execute(false); break;
+        case 'log': Log.open(); break;
         case 'cfg': settingsWindow(); break;
         case 'close': close(); break;
     }

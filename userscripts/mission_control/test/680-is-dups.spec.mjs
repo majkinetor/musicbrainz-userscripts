@@ -34,7 +34,7 @@ test('#680: IS blocks an ISRC that would be on two recordings', { tag: ['@sandbo
   check(/dry run: 1 ISRC would be submitted/.test(note), `apply leaves the blocked ones out ("${note}")`);
 });
 
-test('#680: MC shows a blocked finding without a tick', { tag: ['@sandbox'] }, async ({ page, inject }) => {
+test('#680: MC shows a blocked finding that can\'t be selected', { tag: ['@sandbox'] }, async ({ page, inject }) => {
   await page.goto(`https://test.musicbrainz.org/release/${RELEASE}`, { waitUntil: 'domcontentloaded' });
   await page.waitForSelector('#content table.medium');
   await inject('mission_control', { waitFor: '__mcTest' });
@@ -55,7 +55,7 @@ test('#680: MC shows a blocked finding without a tick', { tag: ['@sandbox'] }, a
   await page.waitForSelector('#mc-root .mc-tbl td[data-col="isrc"] .mc-err');
   const cells = page.locator('#mc-root .mc-tbl td[data-col="isrc"]');
   check(/⊘ USAT20107139/.test(await cells.nth(0).textContent()), 'the blocked ISRC shows, marked');
-  check(await cells.nth(0).locator('.mc-pick').count() === 0, 'and has no tick');
+  check(await cells.nth(0).locator('.mc-pick').count() === 0, 'and can\'t be selected');
   check(await cells.nth(1).locator('.mc-pick.on').count() === 1, 'the new one is selected');
   check(JSON.stringify((await page.evaluate(() => window.__mcTest.picked())).is) === JSON.stringify([await page.evaluate(() => window.__mcTest.release().tracks[1].rec)]), 'only the new one is picked');
 });

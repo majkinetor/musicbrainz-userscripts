@@ -47,6 +47,23 @@ test('#680: MC shell — launcher, track matrix, sidebars, modes', { tag: ['@san
   check(cover.same.figs === 1 && /Already the best cover/.test(cover.same.text) && /same image as the best found \(Discogs\)/.test(cover.same.text), `best cover = current front: one figure, "already the best" (${JSON.stringify(cover.same)})`);
   check(cover.smaller.figs === 2 && /Not larger than the current front/.test(cover.smaller.text), `a different image of the same size is still compared (${JSON.stringify(cover.smaller)})`);
   check(await page.locator('#mc-root .mc-hdr .mc-steps .mc-step').count() === 5, 'a step per provider, in the header');
+  // the execution order: numbered steps, icons without a ring, the script on its own line apart from the data, a footer
+  const side = await page.evaluate(() => {
+    const a = document.querySelector('#mc-root .mc-side.left');
+    const icon = a.querySelector('.mc-stage[data-p="pc"] .mc-node .mc-sic');
+    return { nums: [...a.querySelectorAll('.mc-node .num')].map(n => n.textContent).join(''),
+             iconW: icon.getBoundingClientRect().width, ring: getComputedStyle(a.querySelector('.mc-node')).borderTopStyle,
+             pv: [...a.querySelectorAll('.mc-pv')].map(n => n.textContent), metas: [...a.querySelectorAll('.meta')].map(n => n.textContent),
+             foot: a.querySelector('.mc-runs') && a.querySelector('.mc-runs').textContent };
+  });
+  check(side.nums === '1234', `steps numbered 1 to 4 (${side.nums})`);
+  check(side.iconW >= 28 && side.ring === 'none', `the icon is the node, no ring (${side.iconW}px, border ${side.ring})`);
+  check(side.pv.join() === 'Platform Check,ISRC Scout,Art Station,Fusion,Credit Hoarder', `each script on its own line (${side.pv})`);
+  check(side.metas.every(m => !side.pv.some(n => m.includes(n))), `no script name in the data lines (${JSON.stringify(side.metas)})`);
+  check(/Probed/.test(side.foot) && /nothing selected|\d+ selected/.test(side.foot) && /Last run/.test(side.foot), `the footer (${side.foot})`);
+  await page.click('#mc-root .mc-runs [data-act="log"]');
+  check(await until(() => page.evaluate(() => !!document.getElementById('mbu-logpop'))), 'Log opens the log');
+  await page.click('#mbu-logpop .mbu-logpop-x');
   check(await page.locator('#mc-root .mc-steps .mc-par .mc-step').count() === 2, 'IS and AS side by side, in parallel');
 
   // #680 round 4: one header row: the release (no cover), ↻ and the steps on one line, Execute, ⚙, ✕;
