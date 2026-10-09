@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Scribe
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.9
+// @version      2026.10.9.091436
 // @description  Edit MusicBrainz in your real editor (VS Code, Vim, Notepad…) via the bundled `scribe` localhost helper. Two ways, chosen by trigger: Ctrl+Alt+E edits the FOCUSED text field; on a release Edit page, the bottom-left button (or Ctrl+Alt+R) edits the WHOLE release as one Markdown document and applies your saves back. Cross-browser via GM_xmlhttpRequest.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48cGF0aCBkPSJNNDYgMjQgTDI2IDI0IEwyNiAxMDQgTDQ2IDEwNCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMmY2ZjU0IiBzdHJva2Utd2lkdGg9IjkiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik04MiAyNCBMMTAyIDI0IEwxMDIgMTA0IEw4MiAxMDQiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJmNmY1NCIgc3Ryb2tlLXdpZHRoPSI5IiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz48cGF0aCBkPSJNNjQgNDAgTDUxIDY2IEw2NCA5NCBMNzcgNjYgWiIgZmlsbD0iIzJlOWU1YiIgc3Ryb2tlPSIjMmY2ZjU0IiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz48bGluZSB4MT0iNjQiIHkxPSI3NCIgeDI9IjY0IiB5Mj0iOTIiIHN0cm9rZT0iI2ZmZmZmZiIgc3Ryb2tlLXdpZHRoPSIzLjUiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPjwvc3ZnPg==
@@ -27,6 +27,8 @@
   const VERSION = (() => { try { return (typeof GM_info !== 'undefined' && GM_info.script && GM_info.script.version) || '?'; } catch (e) { return '?'; } })();   // GM_info carries the real one; every script manager provides it (a hard-coded copy only ever went stale)
   const NAME = 'Scribe';
   // [ … ] reference-link brackets around a quill nib (currentColor — sits on the dark launcher/panel)
+  // the corner launcher wears the script's own icon (the same picture as @icon), like the other launchers
+  const ICON_URL = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48cGF0aCBkPSJNNDYgMjQgTDI2IDI0IEwyNiAxMDQgTDQ2IDEwNCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMmY2ZjU0IiBzdHJva2Utd2lkdGg9IjkiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik04MiAyNCBMMTAyIDI0IEwxMDIgMTA0IEw4MiAxMDQiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJmNmY1NCIgc3Ryb2tlLXdpZHRoPSI5IiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz48cGF0aCBkPSJNNjQgNDAgTDUxIDY2IEw2NCA5NCBMNzcgNjYgWiIgZmlsbD0iIzJlOWU1YiIgc3Ryb2tlPSIjMmY2ZjU0IiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz48bGluZSB4MT0iNjQiIHkxPSI3NCIgeDI9IjY0IiB5Mj0iOTIiIHN0cm9rZT0iI2ZmZmZmZiIgc3Ryb2tlLXdpZHRoPSIzLjUiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPjwvc3ZnPg==';
   const SCRIBE_ICON = '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8.5 4 L5 4 L5 20 L8.5 20"/><path d="M15.5 4 L19 4 L19 20 L15.5 20"/><path d="M12 7.5 L9.6 12.5 L12 17.5 L14.4 12.5 Z" fill="currentColor" stroke="none"/></svg>';
   // the PAGE window (MB.releaseEditor lives here); a userscript sandbox `window` is isolated,
   // so reach the editor model via unsafeWindow (same as Apollo). Falls back to window for tests.
@@ -584,8 +586,8 @@
     launcher = document.createElement('button');
     launcher.type = 'button'; launcher.id = 'scribe-launcher';
     launcher.dataset.mbCorner = 'bl'; launcher.dataset.mbCornerOrder = '10';
-    launcher.style.cssText = 'position:fixed;left:14px;bottom:14px;z-index:2147483646;width:44px;height:44px;border-radius:50%;border:none;cursor:pointer;display:none;align-items:center;justify-content:center;background:transparent;color:#7a2622;box-shadow:0 2px 9px rgba(0,0,0,.2);transition:background .15s,color .15s,transform .1s';
-    launcher.innerHTML = SCRIBE_ICON;
+    launcher.style.cssText = 'position:fixed;left:14px;bottom:14px;z-index:2147483646;width:40px;height:40px;border-radius:50%;border:none;padding:0;cursor:pointer;display:none;align-items:center;justify-content:center;background:transparent;box-shadow:none;transition:box-shadow .15s,opacity .15s,transform .1s';
+    const img = document.createElement('img'); img.src = ICON_URL; img.alt = ''; img.style.cssText = 'width:34px;height:34px;display:block;pointer-events:none'; launcher.appendChild(img);
     launcher.onmouseenter = () => { launcher.style.transform = 'scale(1.06)'; };
     launcher.onmouseleave = () => { launcher.style.transform = 'scale(1)'; };
     launcher.onclick = () => { if (session && session.active) stopSession(); else startSession(); };
@@ -595,8 +597,10 @@
     if (!launcher) return;
     const active = !!(session && session.active);
     launcher.style.display = _helperUp ? 'flex' : 'none';
-    launcher.style.background = 'transparent';   // 100% transparent; active state is shown by the icon colour
-    launcher.style.color = active ? '#2e9e5b' : '#7a2622';
+    // no disc, as the other launchers; a session in progress wears a green ring round the icon (as
+    // Falcon's clean run does), and the idle launcher rests at .85 like the others
+    launcher.style.boxShadow = active ? '0 0 0 2px #2e9e5b, 0 2px 10px rgba(46,158,91,.45)' : 'none';
+    launcher.style.opacity = active ? '1' : '.85';
     launcher.title = !_helperUp ? `${NAME} — start the extedit helper to enable`
       : active ? `${NAME} — editing this release · click to stop` : `${NAME} — edit this release as Markdown (Ctrl+Alt+R)`;
     mbRestackCorner('bl');
