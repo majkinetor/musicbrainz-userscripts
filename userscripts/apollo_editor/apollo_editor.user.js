@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.8.100227
+// @version      2026.10.9
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13 22 L19 22 L16 30 Z' fill='%23ff8c3b'/%3E%3Cpath d='M14.4 22 L17.6 22 L16 27 Z' fill='%23ffd24a'/%3E%3Cpath d='M12 18 L8 23.5 L12 22 Z' fill='%233d2470'/%3E%3Cpath d='M20 18 L24 23.5 L20 22 Z' fill='%233d2470'/%3E%3Cpath d='M16 2.5 C19 7 20 12 20 16 L20 22 L12 22 L12 16 C12 12 13 7 16 2.5 Z' fill='%235f3ec0'/%3E%3Ccircle cx='16' cy='12.5' r='3' fill='%23cfe8ff' stroke='%232a1a52' stroke-width='1'/%3E%3C/svg%3E
@@ -10072,11 +10072,77 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
   function watchSubmitFlash() {
     const obs = new MutationObserver(muts => {
       for (const m of muts) {
-        for (const n of m.addedNodes)   if (_isSubmitNode(n)) document.body.classList.add('tc-saving');
-        for (const n of m.removedNodes) if (_isSubmitNode(n)) document.body.classList.remove('tc-saving');
+        for (const n of m.addedNodes)   if (_isSubmitNode(n)) { document.body.classList.add('tc-saving'); submitRateShow(n); }
+        for (const n of m.removedNodes) if (_isSubmitNode(n)) { document.body.classList.remove('tc-saving'); submitRateHide(); }
       }
     });
     obs.observe(document.body, { childList: true, subtree: true });
+  }
+
+  // #698: the upload rate while MB submits, after its own "Submitting edits..." in the Enter edit screen.
+  // The editor sends its edits as a chain of POSTs to /ws/js/edit/create (release group, release, labels,
+  // mediums, …), one after another. Each is watched as it goes out: its edits, its bytes, how fast they
+  // upload, then MB saving them. Hooked on the page's XHR, as jQuery sends them; nothing is sent of our own.
+  const SUBMIT_STAGE = { 20: 'release group', 21: 'release group', 31: 'release', 32: 'release', 34: 'labels', 35: 'annotation', 36: 'labels', 37: 'labels', 51: 'mediums', 52: 'mediums', 53: 'mediums', 55: 'disc IDs', 313: 'medium order', 90: 'links', 91: 'links', 92: 'links' };
+  let _sub = null;        // this submission: { t0, total, done, sent, upMs, req: { stage, edits, bytes, loaded, t0, t1 } }
+  let _subNode = null, _subTick = 0;
+  function hookSubmitRate() {
+    let XP; try { XP = W.XMLHttpRequest && W.XMLHttpRequest.prototype; } catch (e) { return; }
+    if (!XP || XP.__tcSubRate) return;
+    const wrap = fn => (typeof exportFunction === 'function' ? exportFunction(fn, W) : fn);
+    const oOpen = XP.open, oSend = XP.send;
+    XP.open = wrap(function (method, url) { try { this.__tcSub = /\/ws\/js\/edit\/create(?:[?#]|$)/.test(String(url)); } catch (e) {} return oOpen.apply(this, arguments); });
+    XP.send = wrap(function (body) { try { if (this.__tcSub) submitSent(this, body); } catch (e) { Log.debug('submit rate:', e.message); } return oSend.apply(this, arguments); });
+    XP.__tcSubRate = true;
+  }
+  function submitSent(xhr, body) {
+    const s = typeof body === 'string' ? body : '';
+    let edits = []; try { edits = JSON.parse(s).edits || []; } catch (e) {}
+    const now = performance.now();
+    if (!_sub) { let total = 0; try { total = u(getEditor().allEdits).length || 0; } catch (e) {} _sub = { t0: now, total, done: 0, sent: 0, upMs: 0, req: null }; }
+    const req = { stage: SUBMIT_STAGE[edits[0] && edits[0].edit_type] || 'edits', edits: edits.length, bytes: new TextEncoder().encode(s).length, loaded: 0, t0: now, t1: 0, end: false };
+    const sub = _sub; sub.req = req;
+    const on = (t, ev, fn) => t.addEventListener(ev, typeof exportFunction === 'function' ? exportFunction(fn, W) : fn);
+    on(xhr.upload, 'progress', e => { req.loaded = e.loaded; submitRateRender(); });
+    on(xhr.upload, 'load', () => { req.loaded = req.bytes; req.t1 = performance.now(); sub.sent += req.bytes; sub.upMs += req.t1 - req.t0; submitRateRender(); });
+    on(xhr, 'loadend', () => {
+      const ok = xhr.status >= 200 && xhr.status < 300;
+      req.end = true; if (ok) sub.done += req.edits;
+      Log.info('submit:', req.stage, '—', req.edits, req.edits === 1 ? 'edit,' : 'edits,', fmtBytes(req.bytes), 'uploaded in', Math.round((req.t1 || performance.now()) - req.t0), 'ms,', ok ? 'saved' : 'failed (' + xhr.status + ')', 'after', ((performance.now() - req.t0) / 1000).toFixed(1), 's');
+      submitRateRender();
+    });
+    submitRateRender();
+  }
+  const fmtBytes = n => n < 1024 ? n + ' B' : n < 1048576 ? (n / 1024).toFixed(1) + ' KB' : (n / 1048576).toFixed(2) + ' MB';
+  function submitRateText(sub, now) {
+    const r = sub.req; if (!r) return '';
+    const uploading = !r.t1;
+    const rate = uploading ? r.loaded / Math.max(now - r.t0, 1) * 1000 : sub.upMs ? sub.sent / sub.upMs * 1000 : 0;
+    const sec = Math.floor((now - sub.t0) / 1000);
+    return [
+      (uploading ? 'uploading ' : 'saving ') + r.stage,
+      sub.done + ' of ' + Math.max(sub.total, sub.done + (r.end ? 0 : r.edits)) + ' edits',   // allEdits() can undercount what MB sends
+      (uploading ? fmtBytes(r.loaded) + ' of ' + fmtBytes(r.bytes) : fmtBytes(sub.sent) + ' sent') + (rate ? ' at ' + fmtBytes(Math.round(rate)) + '/s' : ''),
+      Math.floor(sec / 60) + ':' + String(sec % 60).padStart(2, '0'),
+    ].join(' · ');
+  }
+  function submitRateRender() {
+    if (!_sub || !_subNode || !_subNode.isConnected) return;
+    let el = _subNode.querySelector('.tc-subrate');
+    if (!el) {
+      if (!document.getElementById('tc-subrate-style')) { const st = document.createElement('style'); st.id = 'tc-subrate-style'; st.textContent = MBU_TOKENS + '.tc-subrate{margin-left:6px;color:var(--mbu-text-dim);font-variant-numeric:tabular-nums}'; document.head.appendChild(st); }
+      el = document.createElement('span'); el.className = 'tc-subrate'; _subNode.appendChild(el);
+    }
+    const t = submitRateText(_sub, performance.now());
+    el.textContent = t ? '— ' + t : '';
+  }
+  function submitRateShow(n) {
+    _subNode = n;
+    clearInterval(_subTick); _subTick = setInterval(submitRateRender, 250);   // the clock and the live rate between XHR events
+    submitRateRender();
+  }
+  function submitRateHide() {   // the submission failed (MB took its message away); a retry starts its own count
+    clearInterval(_subTick); _subTick = 0; _subNode = null; _sub = null;
   }
 
   /* ── Release information takeover (#129): tidy the first tab — hide the help bubble, clean the
@@ -11485,6 +11551,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     applyNav();                     // compact navigation — hide native step-tabs + footer, relocate compactly
     watchSubmit();                  // append an Apollo credit to the edit note on submit (keeps existing notes)
     watchSubmitFlash();             // #412 — pulse the toolbar while MB is saving the edit
+    hookSubmitRate();               // #698 — the upload rate after MB's "Submitting edits..."
     watchTabs();                    // #119 — single watcher drives the tracklist + recordings takeovers + the shared toggle
   })();
 })();

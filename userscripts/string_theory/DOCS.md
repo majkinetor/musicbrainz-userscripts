@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-10-08 11:55 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-10-09 10:05 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -235,6 +235,10 @@ Apollo lists a button another userscript adds to the page like one of its own. A
 <img width="1200" src="../apollo_editor/screenshots/duplicates.png" />
 
 On the Add release *Duplicates* tab, a **Similarity** score for each existing release, from the titles, the artist and the track count. Click a score for a track-by-track comparison. Once artists are matched, the *Seeded* artists there are links, and the unmatched ones are underlined in amber.
+
+### Entering the edit
+
+While MusicBrainz submits, Apollo's bar pulses, and after **Submitting edits...** a line follows the upload live: the part going out (release group, release, labels, mediums, links…), the edits saved so far, the bytes sent and their rate, and the time taken. For example: *saving mediums · 1 of 2 edits · 6.2 KB sent at 28.0 KB/s · 0:01*.
 
 ### Annotation editor
 
