@@ -83,7 +83,7 @@ function trim(key, body) {
 
 // Waits until the ↻ button stops spinning: every scan has reported.
 export const scansDone = (page, timeout = 120000) =>
-  page.waitForFunction(() => { const b = document.getElementById('mb-refresh-btn'); return b && !b.classList.contains('pc-scanning') && /All scans completed/.test(document.getElementById('mb-finder-log-panel')?.textContent || ''); }, null, { timeout });
+  page.waitForFunction(() => { const b = document.getElementById('mb-refresh-btn'); return b && !b.classList.contains('pc-scanning') && /All scans completed/.test(window.__pcLog ? window.__pcLog.messages().join(' ') : ''); }, null, { timeout });
 
 // One provider row, as the panel shows it.
 export const row = (page, p) => page.evaluate(p => {
@@ -97,8 +97,8 @@ export const row = (page, p) => page.evaluate(p => {
   };
 }, p);
 
-// The diagnostic log's text.
-export const logText = page => page.evaluate(() => document.getElementById('mb-finder-log-panel')?.innerText || '');
+// The diagnostic log's text (the shared log, through its test hook).
+export const logText = page => page.evaluate(() => window.__pcLog ? window.__pcLog.lines().join('\n') : '');
 
 // A cache entry Platform Check wrote for this page's release.
 export const cached = (page, p) => page.evaluate(p => {

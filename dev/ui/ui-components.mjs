@@ -144,7 +144,7 @@ const CSS = [
     'padding:2px 9px;cursor:pointer;font-family:inherit}',
     '.mbu-logpop-clear:hover,.mbu-logpop-copy:hover,.mbu-logpop-x:hover,.mbu-logpop-min:hover{background:var(--mbu-accent-soft)}',
     // minimised: just the header bar, so it can sit out of the way mid-run
-    '#mbu-logpop.min .mbu-log-list,#mbu-logpop.min .mbu-logpop-clear,#mbu-logpop.min .mbu-logpop-copy,#mbu-logpop.min .mbu-logpop-x{display:none}',
+    '#mbu-logpop.min .mbu-log-list,#mbu-logpop.min .mbu-log-f,#mbu-logpop.min .mbu-logpop-clear,#mbu-logpop.min .mbu-logpop-copy,#mbu-logpop.min .mbu-logpop-x{display:none}',
     '#mbu-logpop.min{max-height:none;width:auto}',
     '#mbu-logpop.min .mbu-logpop-sp{display:none}',
     '.mbu-log-badge{color:var(--mbu-border-strong);font-size:11px}',
@@ -152,6 +152,18 @@ const CSS = [
     'display:flex;flex-direction:column;gap:3px}',
     '.mbu-log-li{display:flex;gap:9px;white-space:pre-wrap;word-break:break-word}',
     '.mbu-log-t{color:var(--mbu-text-weak);flex:0 0 auto;font-variant-numeric:tabular-nums}',
+    // a line's category (#697): a quiet tag before the message
+    '.mbu-log-c{color:var(--mbu-text-weak);flex:0 0 auto}',
+    // the filter row: plain words, shown only when there is something to pick between
+    '.mbu-log-f{display:flex;flex-wrap:wrap;align-items:center;gap:2px 4px;padding:5px 13px;',
+    'border-bottom:1px solid var(--mbu-border-soft);font-size:11px}',
+    '.mbu-log-f[hidden]{display:none}',
+    '.mbu-log-fg{display:contents}',
+    '.mbu-log-fs{width:1px;height:12px;background:var(--mbu-border);margin:0 6px}',
+    '#mbu-logpop .mbu-log-fb{font:inherit;color:var(--mbu-text-weak);background:none;border:1px solid transparent;',
+    'border-radius:5px;padding:0 6px;line-height:1.6;cursor:pointer}',
+    '#mbu-logpop .mbu-log-fb:hover{color:var(--mbu-text);border-color:var(--mbu-border)}',
+    '#mbu-logpop .mbu-log-fb.on{color:var(--mbu-accent-text);background:var(--mbu-accent-soft);border-color:var(--mbu-border)}',
     '.mbu-log-m{flex:1 1 auto;color:var(--mbu-text-dim)}',
     '#mbu-logpop .mbu-log-m a{color:var(--mbu-accent-text)}',
     // severity, on the message only — the timestamp stays quiet
@@ -555,6 +567,13 @@ function mbRestackCorner(corner) {
 //   LOG.info('…'); LOG.warn(…); LOG.err(…) (or .error); LOG.ok(…); LOG.debug(…)
 //   LOG.open(); LOG.close(); LOG.reopen()   // reopen: only if it was left open
 //   LOG.markdown(); LOG.copy(btn); LOG.clear(); LOG.lines(); LOG.messages(); LOG.counts()
+//   LOG.cat('Spotify').info(…)        // the same calls, each line tagged with a category
+//
+// Categories (#697) are optional. A tagged line shows its category before the
+// message and in the Markdown ("WARN [Spotify] …"). The window grows a row of
+// filters only when there is a choice: the levels once two of them have lines
+// (ok counts as info), the categories once there are two. Click one to see only
+// those lines, click it again to see all; Copy always takes everything.
 //
 // o.name / o.version  the Markdown summary's title (version may be a function)
 // o.subtitle          optional function; its text follows the title (e.g. the release)
@@ -572,6 +591,10 @@ function mbRestackCorner(corner) {
 function mbuLog(o) {
     o = o || {};
     var max = o.max || 20000, buf = [], dropped = 0, warn = 0, error = 0, win = null;
+    // categories in the order first seen, the levels seen, and the window's filter (null: all)
+    var cats = [], catIx = {}, sevs = {}, fSev = null, fCat = null, bound = {};
+    var LEVELS = ['error', 'warn', 'info', 'debug'];
+    var group = function (sev) { return sev === 'ok' ? 'info' : sev; };
     var pad = function (n, w) { return String(n).padStart(w || 2, '0'); };
     var ts = function (d) { return pad(d.getHours()) + ':' + pad(d.getMinutes()) + ':' + pad(d.getSeconds()) + '.' + pad(d.getMilliseconds(), 3); };
     var str = function (v) {
@@ -597,12 +620,18 @@ function mbuLog(o) {
     var remember = function (patch) { try { save(o.key, JSON.stringify(Object.assign(state(), patch))); } catch (e) { /* see save */ } };
     var tally = function (e, d) { if (e.sev === 'warn') warn += d; else if (e.sev === 'error') error += d; };
     var PRE = { info: '', ok: 'OK   ', warn: 'WARN ', error: 'ERR  ', debug: 'DBG  ' };
-    var line = function (e) { return ts(e.t) + '  ' + (PRE[e.sev] || '') + e.msg; };
+    var line = function (e) { return ts(e.t) + '  ' + (PRE[e.sev] || '') + (e.cat ? '[' + e.cat + '] ' : '') + e.msg; };
 
-    function add(sev, args) {
+    function add(sev, args, cat) {
         var msg = Array.prototype.map.call(args, str).join(' ').replace(/\\s+/g, ' ').trim();
         if (!msg) return;
-        var e = { t: new Date(), sev: sev === 'err' ? 'error' : sev, msg: msg };
+        var e = { t: new Date(), sev: sev === 'err' ? 'error' : sev, msg: msg }, grew = false;
+        if (cat) {
+            e.cat = String(cat);
+            if (!(e.cat in catIx)) { catIx[e.cat] = cats.length; cats.push(e.cat); grew = true; }
+        }
+        if (!sevs[group(e.sev)]) { sevs[group(e.sev)] = true; grew = true; }
+        if (grew && win) win.filters();
         buf.push(e); tally(e, 1);
         // trim in chunks, not one shift per line
         if (buf.length > max + Math.ceil(max / 10)) {
@@ -654,6 +683,7 @@ function mbuLog(o) {
             + '<button class="mbu-logpop-copy" type="button" title="Copy as Markdown (paste into a GitHub issue)">⧉ Copy</button>'
             + '<button class="mbu-logpop-min" type="button" title="Minimize">–</button>'
             + '<button class="mbu-logpop-x" type="button" title="Close">✕</button></div>'
+            + '<div class="mbu-log-f" hidden></div><style class="mbu-log-fcss"></style>'
             + '<div class="mbu-log-list"></div>');
         document.body.appendChild(pop);
         if (st.left != null) { pop.style.left = st.left; pop.style.top = st.top; pop.style.right = 'auto'; pop.style.transform = 'none'; }
@@ -662,8 +692,30 @@ function mbuLog(o) {
         var row = function (e) {
             var d = document.createElement('div');
             d.className = 'mbu-log-li mbu-log-' + e.sev;
-            d.innerHTML = mbuHtml('<span class="mbu-log-t">' + ts(e.t) + '</span><span class="mbu-log-m">' + linkify(e.msg) + '</span>');
+            d.dataset.s = group(e.sev);
+            if (e.cat) d.dataset.c = catIx[e.cat];
+            d.innerHTML = mbuHtml('<span class="mbu-log-t">' + ts(e.t) + '</span>'
+                + (e.cat ? '<span class="mbu-log-c">' + esc(e.cat) + '</span>' : '')
+                + '<span class="mbu-log-m">' + linkify(e.msg) + '</span>');
             return d;
+        };
+        // the filter row, redrawn when a level or category first appears; hiding is one
+        // rule in the window's own <style>, not a walk over the rows
+        var fRow = pop.querySelector('.mbu-log-f'), fCss = pop.querySelector('.mbu-log-fcss');
+        var filters = function () {
+            var lv = LEVELS.filter(function (l) { return sevs[l]; });
+            var showL = lv.length > 1, showC = cats.length > 1;
+            if (fSev && !sevs[fSev]) fSev = null;
+            if (fCat != null && !(fCat in catIx)) fCat = null;
+            var b = function (kind, v, on) {
+                return '<button type="button" class="mbu-log-fb' + (on ? ' on' : '') + '" data-' + kind + '="' + esc(v) + '">' + esc(v) + '</button>';
+            };
+            fRow.innerHTML = mbuHtml((showL ? '<span class="mbu-log-fg">' + lv.map(function (l) { return b('sev', l, fSev === l); }).join('') + '</span>' : '')
+                + (showL && showC ? '<span class="mbu-log-fs"></span>' : '')
+                + (showC ? '<span class="mbu-log-fg">' + cats.map(function (c) { return b('cat', c, fCat === c); }).join('') + '</span>' : ''));
+            fRow.hidden = !showL && !showC;
+            fCss.textContent = (fSev ? '#mbu-logpop .mbu-log-li:not([data-s="' + fSev + '"]){display:none}' : '')
+                + (fCat != null ? '#mbu-logpop .mbu-log-li:not([data-c="' + catIx[fCat] + '"]){display:none}' : '');
         };
         var showBadge = function () { badge.textContent = '(' + buf.length + ')' + (warn || error ? ' · ' + warn + '⚠ ' + error + '✖' : ''); };
         // the rows, once; later lines are appended one by one
@@ -678,6 +730,14 @@ function mbuLog(o) {
         list.addEventListener('scroll', function () { follow = list.scrollHeight - list.scrollTop - list.clientHeight < 40; });
         var paint = function () { queued = false; showBadge(); if (follow) list.scrollTop = list.scrollHeight; };
         var onKey = function (e) { if (e.key === 'Escape') close(); };
+        fRow.addEventListener('click', function (ev) {
+            var t = ev.target.closest('.mbu-log-fb'); if (!t) return;
+            if (t.dataset.sev) fSev = fSev === t.dataset.sev ? null : t.dataset.sev;
+            else fCat = fCat === t.dataset.cat ? null : t.dataset.cat;
+            filters();
+            follow = true; list.scrollTop = list.scrollHeight;
+        });
+        filters();
         win = {
             el: pop,
             append: function (e) {
@@ -687,7 +747,8 @@ function mbuLog(o) {
                 if (!queued) { queued = true; requestAnimationFrame(paint); }
             },
             off: function () { document.removeEventListener('keydown', onKey); },
-            cleared: function () { list.innerHTML = mbuHtml('<div class="mbu-log-empty">No activity yet.</div>'); showBadge(); },
+            cleared: function () { list.innerHTML = mbuHtml('<div class="mbu-log-empty">No activity yet.</div>'); showBadge(); filters(); },
+            filters: filters,
         };
         pop.querySelector('.mbu-logpop-clear').onclick = function () { clear(); };
         pop.querySelector('.mbu-logpop-copy').onclick = function () { copy(pop.querySelector('.mbu-logpop-copy')); };
@@ -726,6 +787,7 @@ function mbuLog(o) {
     // empty the log: the lines, the counts and the "earlier lines not kept" note
     function clear() {
         buf = []; dropped = 0; warn = 0; error = 0;
+        cats = []; catIx = {}; sevs = {}; fSev = null; fCat = null;
         if (win) win.cleared();
     }
     // quiet: closing to reopen, so the remembered "open" stays as it is
@@ -742,6 +804,20 @@ function mbuLog(o) {
         ok: function () { add('ok', arguments); },
         debug: function () { add('debug', arguments); },
         add: function (sev) { add(sev, Array.prototype.slice.call(arguments, 1)); },
+        // a logger whose lines carry this category; the same object for the same name
+        cat: function (name) {
+            if (!name) return api;
+            if (!bound[name]) bound[name] = {
+                info: function () { add('info', arguments, name); },
+                warn: function () { add('warn', arguments, name); },
+                err: function () { add('error', arguments, name); },
+                error: function () { add('error', arguments, name); },
+                ok: function () { add('ok', arguments, name); },
+                debug: function () { add('debug', arguments, name); },
+                add: function (sev) { add(sev, Array.prototype.slice.call(arguments, 1), name); },
+            };
+            return bound[name];
+        },
         open: open,
         close: function () { close(); },
         reopen: function () { if (state().open) open(); },

@@ -38,16 +38,20 @@ FIXTURES.forEach((f, i) => {
       check(year === e.headerYear, `the header's year: ${e.headerYear} (shows "${year}")`);
     }
     if (i === 0) {
-      // the log's source filter, for a source with a space in its name: picking Beatport hides YouTube
-      // Music's lines too ("YouTube Music" made classList.toggle throw, so its lines showed under every filter)
+      // the log's platform filter, for a platform with a space in its name: picking Beatport hides
+      // YouTube Music's lines too (#452, #697: each line's platform is its category in the shared log)
       const shown = await page.evaluate(() => {
-        document.querySelector('.pc-log-chip[data-source="beatport"]').click();
-        const vis = p => [...document.querySelectorAll('#mb-finder-log-panel [data-platform="' + p + '"]')].filter(d => getComputedStyle(d).display !== 'none').length;
-        const r = { ytm: vis('youtube-music'), ytmAll: document.querySelectorAll('#mb-finder-log-panel [data-platform="youtube-music"]').length, beatport: vis('beatport') };
-        document.querySelector('.pc-log-chip[data-source="beatport"]').click();   // and off again
+        document.getElementById('mb-log-open-btn').click();
+        const pick = () => document.querySelector('#mbu-logpop .mbu-log-fb[data-cat="Beatport"]').click();
+        pick();
+        const rows = c => [...document.querySelectorAll('#mbu-logpop .mbu-log-li')].filter(d => d.querySelector('.mbu-log-c')?.textContent === c);
+        const vis = c => rows(c).filter(d => getComputedStyle(d).display !== 'none').length;
+        const r = { ytm: vis('YouTube Music'), ytmAll: rows('YouTube Music').length, beatport: vis('Beatport') };
+        pick();   // and off again
+        document.getElementById('mb-log-open-btn').click();
         return r;
       });
-      check(shown.ytmAll > 0 && shown.ytm === 0, `the Beatport filter hides YouTube Music's lines (${shown.ytm} of ${shown.ytmAll} still shown)`);
+      check(shown.ytmAll > 0 && shown.ytm === 0 && shown.beatport > 0, `the Beatport filter hides YouTube Music's lines (${shown.ytm} of ${shown.ytmAll} still shown, ${shown.beatport} Beatport)`);
     }
     await attachShot(testInfo, page.locator('#mb-pc-panel'), 'panel');
     await ws.done();

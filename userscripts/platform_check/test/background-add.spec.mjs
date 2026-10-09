@@ -85,8 +85,8 @@ test('#464, #556: a background add lands on the release, closes its tab, and lea
   check((await page.evaluate(() => sessionStorage.getItem('__closedByOpener'))) === '1', 'the opener closed it, through its GM_openInTab handle');
   check((await linksOf('release')).includes(url), `the link is on the release now (${url})`);
 
-  await page.waitForFunction(() => /background add/.test(document.getElementById('mb-finder-log-panel')?.textContent || ''), null, { timeout: 30000 }).catch(() => {});
-  const log = await page.evaluate(() => document.getElementById('mb-finder-log-panel')?.textContent || '');
+  await page.waitForFunction(() => /background add/.test(window.__pcLog ? window.__pcLog.messages().join('\n') : ''), null, { timeout: 30000 }).catch(() => {});
+  const log = await page.evaluate(() => window.__pcLog ? window.__pcLog.messages().join('\n') : '');
   check(/Enter edit clicked/.test(log) && /edit committed/.test(log), "the add's timeline, written in the tab that closed, is in the reloaded opener's Log");
   check((log.match(/Enter edit clicked/g) || []).length === 1, 'each entry once');
 });

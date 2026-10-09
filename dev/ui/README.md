@@ -26,6 +26,8 @@ The live checks run against `test.musicbrainz.org` and abort every POST.
 
 Every script's activity log is `mbuLog()`: the last 20,000 lines of the session (about 4 MB), in a floating window with **Clear** (empties it, counts and all) and **⧉ Copy** (the whole log as Markdown, ready for a GitHub issue). Older lines past the limit are dropped, and the Markdown says how many.
 
+A line can carry a **category** (`LOG.cat('Spotify').warn(…)`): a quiet tag before the message, and `[Spotify]` in the Markdown. A row of filters appears under the header only when there is a choice: the levels (error, warn, info, debug; ok counts as info) once two have lines, the categories once there are two. Click one to see only those lines, again to see all; Copy always takes the whole log. Platform Check tags each line with its platform.
+
 `mbuToast(msg, { action: { label, onClick } })` puts one button on a toast: it then takes clicks and stays up 12 s. A script uses it to ask for the log when something goes wrong in the wild, as Apollo does for #638.
 
 ## The four theme worlds

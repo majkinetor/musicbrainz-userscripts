@@ -109,3 +109,37 @@ test('a toast with an action is clickable, runs it, and closes', { tag: ['@unit'
   check(r.ran === 1 && r.closed, 'the button runs its action, and the toast closes');
   check(r.plainInert && r.plainNoBtn, 'a toast without an action stays click-through, with no button');
 });
+
+// #697: a line can carry a category; the window filters by level and by category,
+// and shows the filter row only when there is something to choose between.
+test('categories: tagged lines, a filter row only when needed, one-click filters', { tag: ['@unit'] }, async ({ page }) => {
+  const vis = () => page.evaluate(() => [...document.querySelectorAll('#mbu-logpop .mbu-log-li')].filter(d => getComputedStyle(d).display !== 'none').length);
+  const row = () => page.evaluate(() => { const f = document.querySelector('#mbu-logpop .mbu-log-f'); return f.hidden ? null : [...f.querySelectorAll('.mbu-log-fb')].map(b => b.textContent + (b.classList.contains('on') ? '*' : '')).join(' '); });
+  await page.evaluate(() => { window.L = mk(); L.info('plain'); L.ok('done'); L.open(); });
+  check(await row() === null, 'info and ok alone: no filter row');
+  await page.evaluate(() => { L.cat('Spotify').info('sp one'); L.cat('Spotify').warn('sp two'); });
+  check(await row() === 'warn info', `a second level brings the level filters, ok counted as info (${await row()})`);
+  await page.evaluate(() => { L.cat('Deezer').err('dz'); });
+  check(await row() === 'error warn info Spotify Deezer', `a second category brings the category filters (${await row()})`);
+  check(await page.evaluate(() => L.cat('Spotify') === L.cat('Spotify')), 'the same category gives the same logger');
+  const tag = await page.evaluate(() => [...document.querySelectorAll('#mbu-logpop .mbu-log-li')].map(d => d.querySelector('.mbu-log-c')?.textContent || '-').join(','));
+  check(tag === '-,-,Spotify,Spotify,Deezer', `rows carry their category tag (${tag})`);
+  await page.click('#mbu-logpop .mbu-log-fb[data-cat="Spotify"]');
+  check(await vis() === 2, 'Spotify: only its two lines');
+  await page.click('#mbu-logpop .mbu-log-fb[data-sev="warn"]');
+  check(await vis() === 1 && await row() === 'error warn* info Spotify* Deezer', `and warn on top of it: one line (${await row()})`);
+  await page.click('#mbu-logpop .mbu-log-fb[data-sev="warn"]');
+  await page.click('#mbu-logpop .mbu-log-fb[data-sev="info"]');
+  check(await vis() === 1, 'info with Spotify: its one info line, none of the untagged ones');
+  await page.click('#mbu-logpop .mbu-log-fb[data-cat="Spotify"]');
+  check(await vis() === 3, 'Spotify off again: info covers the plain, ok and Spotify info lines');
+  await page.click('#mbu-logpop .mbu-log-fb[data-sev="info"]');
+  check(await vis() === 5, 'and everything shows when nothing is picked');
+  const md = await page.evaluate(() => L.markdown());
+  check(/WARN \[Spotify\] sp two/.test(md) && /ERR {2}\[Deezer\] dz/.test(md) && /OK {3}done/.test(md), 'the Markdown carries the category after the level');
+  await page.click('#mbu-logpop .mbu-log-fb[data-cat="Deezer"]');
+  await page.click('#mbu-logpop .mbu-logpop-clear');
+  await page.evaluate(() => { L.info('fresh'); });
+  await frames(page);
+  check(await row() === null && await vis() === 1, 'Clear forgets the categories and the filter');
+});
