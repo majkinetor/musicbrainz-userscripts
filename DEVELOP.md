@@ -106,7 +106,7 @@ Code several scripts need is written once and copied into each between marker co
 
 Settings go in `GM_setValue` / `GM_getValue`, never `localStorage`: the manager backs them up and syncs them, and they're private to the script (#501). `localStorage` is for what isn't a setting: caches with a lifetime, tokens several scripts share on MusicBrainz's origin, and `sessionStorage` for state that belongs to one tab.
 
-The exception is a **shared setting**: one that belongs to all the scripts at once, so it can't sit in any one script's GM storage. It goes through `mbuShared(key[, value])` (the ST-UI block), which keeps it as JSON in the page's `localStorage` under `mbu.<key>`, where every script reads the same value, bundled or standalone. It's per origin (musicbrainz.org, beta and test each keep their own) and the manager doesn't back it up, so keep shared settings few and cosmetic. In use: `cornerFlow` (`'row'`, or unset for a column), the corner launchers' layout, which `mbRestackCorner` reads and String Theory's menu sets. By hand, in the console on a MusicBrainz page: `localStorage.setItem('mbu.cornerFlow', '"row"')`, or `removeItem` for the column.
+The exception is a **shared setting**, one that belongs to all the scripts at once: it goes in [shared storage](#shared-storage).
 
 A script that also reads the page's own globals uses `@grant unsafeWindow`, not `@grant none` (which can't be combined with GM grants):
 
@@ -115,6 +115,23 @@ const pageWindow = typeof unsafeWindow !== 'undefined' ? unsafeWindow : window;
 ```
 
 Specs get a working GM store from the harness (`test.use({ gm: … })`); a no-op mock would swallow every save.
+
+### Shared storage
+
+Most settings belong to one script and live in its GM storage, which no other script can read. A few belong to all the scripts at once, like the corner launchers' layout, and those live in **shared storage**: MusicBrainz's own `localStorage`, where every script sees the same value, whether it runs in String Theory or on its own.
+
+- **Read and write** with `mbuShared(key[, value])` from the ST-UI block. One argument reads the value (`undefined` when unset or storage is blocked); two write it; `null` removes it.
+- **Keys** are stored as `mbu.<key>`, with the value as JSON.
+- **Per origin**: musicbrainz.org, beta and test each keep their own copy.
+- **No backup**: the userscript manager doesn't back it up or sync it, so keep shared settings few and cosmetic.
+- **A script off the ST-UI block** (Scribe) reads the key itself: `JSON.parse(localStorage.getItem('mbu.<key>'))`.
+- **By hand**: in the browser console (F12) on a MusicBrainz page, `localStorage.setItem('mbu.<key>', '<JSON>')` sets a key and `localStorage.removeItem('mbu.<key>')` clears it. Reload to see the change.
+
+| Key | Values | What reads it | Set by |
+| --- | --- | --- | --- |
+| `cornerFlow` | `"row"`; unset is a column | `mbRestackCorner`: the corner launchers' layout | String Theory's menu |
+
+A new shared setting gets a row here.
 
 ## Bot identity
 

@@ -4466,6 +4466,7 @@
   // localStorage on MusicBrainz's origin, as JSON under 'mbu.<key>'; every script, bundled or
   // standalone, reads the same value. One argument reads (undefined when unset or blocked), two
   // write, and null removes. Per-origin: musicbrainz.org, beta and test each keep their own.
+  // Every key is listed in DEVELOP.md → Shared storage.
   function mbuShared(key, value) {
       var k = 'mbu.' + key;
       try {
