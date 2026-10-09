@@ -22,6 +22,15 @@ test('#680: MC shell — launcher, track matrix, sidebars, modes', { tag: ['@san
   // the title is the release's own: not what other scripts append to the h1 (ISRC Scout's "ISRC ✓ 12/12")
   const h1Link = await page.evaluate(() => document.querySelector('.releaseheader h1 a[href*="/release/"]').textContent.trim());
   check((await page.locator('#mc-root .mc-ttl').textContent()) === h1Link, 'header title = the h1 link');
+  // the release group's versions, from the page header's "see all versions" link
+  const ver = await page.evaluate(() => {
+    const va = [...document.querySelectorAll('.releaseheader .subheader a')].find(a => /version/i.test(a.textContent));
+    const mc = document.querySelector('#mc-root .mc-art .mc-ver');
+    return { page: va ? va.textContent.trim() : null, href: va && va.href, mc: mc ? mc.textContent : null, mcHref: mc && mc.href };
+  });
+  console.log('versions', JSON.stringify(ver));
+  const n = ver.page && (ver.page.match(/\d+/) || [])[0];
+  check(ver.page ? ver.mc === '(' + (n ? n + (n === '1' ? ' version' : ' versions') : 'all versions') + ')' && ver.mcHref === ver.href : ver.mc === null, `header shows the RG versions (${JSON.stringify(ver)})`);
   // a short window must not squeeze the track list (flex items shrink by default:
   // a long Platforms card cut it to 3 rows); the centre pane scrolls instead
   await page.setViewportSize({ width: 1600, height: 450 });
