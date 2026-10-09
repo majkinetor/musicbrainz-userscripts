@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Mission Control
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.8.223209
+// @version      2026.10.9
 // @description  One window on the release page that asks the other scripts (Platform Check, ISRC Scout, Art Station, Fusion, Credit Hoarder) what is missing, shows it all in one review, and applies the ticked changes in order.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5NaXNzaW9uIENvbnRyb2w8L3RpdGxlPgo8ZGVmcz48ZmlsdGVyIGlkPSJtY28xMy1oIiB4PSItMTAlIiB5PSItMTAlIiB3aWR0aD0iMTIwJSIgaGVpZ2h0PSIxMjAlIj48ZmVNb3JwaG9sb2d5IGluPSJTb3VyY2VBbHBoYSIgb3BlcmF0b3I9ImRpbGF0ZSIgcmFkaXVzPSIxLjUiIHJlc3VsdD0iZCIvPjxmZUZsb29kIGZsb29kLWNvbG9yPSIjZmZmIiBmbG9vZC1vcGFjaXR5PSIuNyIvPjxmZUNvbXBvc2l0ZSBpbjI9ImQiIG9wZXJhdG9yPSJpbiIvPjxmZU1lcmdlPjxmZU1lcmdlTm9kZS8+PGZlTWVyZ2VOb2RlIGluPSJTb3VyY2VHcmFwaGljIi8+PC9mZU1lcmdlPjwvZmlsdGVyPjwvZGVmcz48ZyBmaWx0ZXI9InVybCgjbWNvMTMtaCkiPjxwYXRoIGQ9Ik03NyAzNS41IEw2NCA0MyBMNTEgMzUuNSBMNTEgMjAuNSBMNjQgMTMgTDc3IDIwLjVaIiBmaWxsPSIjN2E1N2U4IiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik01OS43IDc3LjUgTDQ2LjcgODUgTDMzLjcgNzcuNSBMMzMuNyA2Mi41IEw0Ni43IDU1IEw1OS43IDYyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik05NC4zIDc3LjUgTDgxLjMgODUgTDY4LjMgNzcuNSBMNjguMyA2Mi41IEw4MS4zIDU1IEw5NC4zIDYyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik00Mi4zIDEwNy41IEwyOS40IDExNSBMMTYuNCAxMDcuNSBMMTYuNCA5Mi41IEwyOS40IDg1IEw0Mi4zIDkyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik03NyAxMDcuNSBMNjQgMTE1IEw1MSAxMDcuNSBMNTEgOTIuNSBMNjQgODUgTDc3IDkyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik0xMTEuNiAxMDcuNSBMOTguNiAxMTUgTDg1LjcgMTA3LjUgTDg1LjcgOTIuNSBMOTguNiA4NSBMMTExLjYgOTIuNVoiIGZpbGw9IiNmZmM5NGEiIHN0cm9rZT0iIzIyMjIzYiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PC9nPgo8L3N2Zz4K
@@ -1614,6 +1614,20 @@ function mbuTestHooks() {
     try { return typeof window !== 'undefined' && window.__mbuTest === true; } catch (e) { return false; }
 }
 
+// Shared settings: the few that belong to all the scripts at once, not to one (the corner
+// launchers' layout). GM storage is private to each script, so these live in the page's
+// localStorage on MusicBrainz's origin, as JSON under 'mbu.<key>'; every script, bundled or
+// standalone, reads the same value. One argument reads (undefined when unset or blocked), two
+// write, and null removes. Per-origin: musicbrainz.org, beta and test each keep their own.
+function mbuShared(key, value) {
+    var k = 'mbu.' + key;
+    try {
+        if (arguments.length < 2) { var v = localStorage.getItem(k); return v == null ? undefined : JSON.parse(v); }
+        if (value == null) localStorage.removeItem(k); else localStorage.setItem(k, JSON.stringify(value));
+    } catch (e) { /* storage blocked */ }
+    return value;
+}
+
 // Corner slots (#468). Every floating launcher (Apollo Editor, Art Station, Falcon,
 // Fusion, Scribe) tags its element with data-mb-corner (which screen corner: 'br',
 // 'bl', 'tr', 'tl') and data-mb-corner-order (lower sits closer to the corner), and
@@ -1622,11 +1636,11 @@ function mbuTestHooks() {
 // whatever order they loaded in, so two launchers never land on the same pixel.
 // Orders in use: Apollo and Art Station 10 (never on the same page), Falcon 20,
 // Fusion above Falcon. Scribe is not on the shared block and keeps a copy of this.
-// The stack is a column; <html data-mb-corner-flow="row"> (String Theory's menu sets it)
-// lines it up along the bottom/top edge instead, the lowest order still nearest the corner.
+// The stack is a column; the shared setting cornerFlow = 'row' (mbuShared, set from String
+// Theory's menu) lines it up along the bottom/top edge instead, the lowest order still nearest the corner.
 function mbRestackCorner(corner) {
     var bottom = corner[0] === 'b', right = corner[1] === 'r';
-    var row = document.documentElement.getAttribute('data-mb-corner-flow') === 'row';
+    var row = mbuShared('cornerFlow') === 'row';
     var els = Array.prototype.slice.call(document.querySelectorAll('[data-mb-corner="' + corner + '"]'))
         // offsetParent is always null for position:fixed, so it can't tell visibility here
         .filter(function (el) { return getComputedStyle(el).display !== 'none'; })

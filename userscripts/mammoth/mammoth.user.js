@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Mammoth
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.8.223209
+// @version      2026.10.9
 // @description  Edit-note memory for MusicBrainz: auto-remembers your last edit notes and lets you save reusable ones, recalling them from a compact panel beside the edit-note field on every edit form. A nicer replacement for Elephant Editor.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB2aWV3Qm94PSIwIDAgMjQgMjQiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGcgZmlsbD0iIzdhNGExZiI+PHBhdGggZD0iTTIxIDE5QzIxIDEyLjUgMTcuNSA4LjUgMTEuNSA4LjVDNyA4LjUgNC4yIDExLjIgNC4yIDE1TDQuMiAxOVoiLz48Y2lyY2xlIGN4PSI3LjYiIGN5PSIxMC42IiByPSI1Ii8+PHJlY3QgeD0iNyIgeT0iMTYuNSIgd2lkdGg9IjIuOCIgaGVpZ2h0PSI1LjIiIHJ4PSIxLjMiLz48cmVjdCB4PSIxNSIgeT0iMTYuNSIgd2lkdGg9IjIuOCIgaGVpZ2h0PSI1LjIiIHJ4PSIxLjMiLz48L2c+PHBhdGggZD0iTTMuMSAxMS4yQzEuNiAxMy42IDIgMTYuNiAzLjcgMTguMUM0LjYgMTguOSA1LjkgMTguNiA2LjEgMTcuNUM2LjMgMTYuNSA1LjcgMTUuOCA1LjMgMTUuMyIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjN2E0YTFmIiBzdHJva2Utd2lkdGg9IjIuNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8+PHBhdGggZD0iTTUuMiAxNS4yQzQuMSAxNi42IDQuMyAxOC4yIDUuNiAxOC45IiBmaWxsPSJub25lIiBzdHJva2U9IiNlZmU3ZDIiIHN0cm9rZS13aWR0aD0iMS40IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz48L3N2Zz4NCg==
@@ -476,6 +476,20 @@
       try { return typeof window !== 'undefined' && window.__mbuTest === true; } catch (e) { return false; }
   }
 
+  // Shared settings: the few that belong to all the scripts at once, not to one (the corner
+  // launchers' layout). GM storage is private to each script, so these live in the page's
+  // localStorage on MusicBrainz's origin, as JSON under 'mbu.<key>'; every script, bundled or
+  // standalone, reads the same value. One argument reads (undefined when unset or blocked), two
+  // write, and null removes. Per-origin: musicbrainz.org, beta and test each keep their own.
+  function mbuShared(key, value) {
+      var k = 'mbu.' + key;
+      try {
+          if (arguments.length < 2) { var v = localStorage.getItem(k); return v == null ? undefined : JSON.parse(v); }
+          if (value == null) localStorage.removeItem(k); else localStorage.setItem(k, JSON.stringify(value));
+      } catch (e) { /* storage blocked */ }
+      return value;
+  }
+
   // Corner slots (#468). Every floating launcher (Apollo Editor, Art Station, Falcon,
   // Fusion, Scribe) tags its element with data-mb-corner (which screen corner: 'br',
   // 'bl', 'tr', 'tl') and data-mb-corner-order (lower sits closer to the corner), and
@@ -484,11 +498,11 @@
   // whatever order they loaded in, so two launchers never land on the same pixel.
   // Orders in use: Apollo and Art Station 10 (never on the same page), Falcon 20,
   // Fusion above Falcon. Scribe is not on the shared block and keeps a copy of this.
-  // The stack is a column; <html data-mb-corner-flow="row"> (String Theory's menu sets it)
-  // lines it up along the bottom/top edge instead, the lowest order still nearest the corner.
+  // The stack is a column; the shared setting cornerFlow = 'row' (mbuShared, set from String
+  // Theory's menu) lines it up along the bottom/top edge instead, the lowest order still nearest the corner.
   function mbRestackCorner(corner) {
       var bottom = corner[0] === 'b', right = corner[1] === 'r';
-      var row = document.documentElement.getAttribute('data-mb-corner-flow') === 'row';
+      var row = mbuShared('cornerFlow') === 'row';
       var els = Array.prototype.slice.call(document.querySelectorAll('[data-mb-corner="' + corner + '"]'))
           // offsetParent is always null for position:fixed, so it can't tell visibility here
           .filter(function (el) { return getComputedStyle(el).display !== 'none'; })

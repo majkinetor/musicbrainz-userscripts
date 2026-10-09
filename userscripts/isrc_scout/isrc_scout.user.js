@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         ISRC Scout
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.8.223209
+// @version      2026.10.9
 // @description  Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify / Beatport / Tidal / Volumo / HDtracks / Qobuz, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPklTUkMgU2NvdXQ8L3RpdGxlPgogICAgPHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPgogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjQwIi8+CiAgICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyNiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2U9IiNiOWEzZTgiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPgogIDwvZz4KICA8bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+Cjwvc3ZnPgo=
@@ -837,6 +837,20 @@
       try { return typeof window !== 'undefined' && window.__mbuTest === true; } catch (e) { return false; }
   }
 
+  // Shared settings: the few that belong to all the scripts at once, not to one (the corner
+  // launchers' layout). GM storage is private to each script, so these live in the page's
+  // localStorage on MusicBrainz's origin, as JSON under 'mbu.<key>'; every script, bundled or
+  // standalone, reads the same value. One argument reads (undefined when unset or blocked), two
+  // write, and null removes. Per-origin: musicbrainz.org, beta and test each keep their own.
+  function mbuShared(key, value) {
+      var k = 'mbu.' + key;
+      try {
+          if (arguments.length < 2) { var v = localStorage.getItem(k); return v == null ? undefined : JSON.parse(v); }
+          if (value == null) localStorage.removeItem(k); else localStorage.setItem(k, JSON.stringify(value));
+      } catch (e) { /* storage blocked */ }
+      return value;
+  }
+
   // Corner slots (#468). Every floating launcher (Apollo Editor, Art Station, Falcon,
   // Fusion, Scribe) tags its element with data-mb-corner (which screen corner: 'br',
   // 'bl', 'tr', 'tl') and data-mb-corner-order (lower sits closer to the corner), and
@@ -845,11 +859,11 @@
   // whatever order they loaded in, so two launchers never land on the same pixel.
   // Orders in use: Apollo and Art Station 10 (never on the same page), Falcon 20,
   // Fusion above Falcon. Scribe is not on the shared block and keeps a copy of this.
-  // The stack is a column; <html data-mb-corner-flow="row"> (String Theory's menu sets it)
-  // lines it up along the bottom/top edge instead, the lowest order still nearest the corner.
+  // The stack is a column; the shared setting cornerFlow = 'row' (mbuShared, set from String
+  // Theory's menu) lines it up along the bottom/top edge instead, the lowest order still nearest the corner.
   function mbRestackCorner(corner) {
       var bottom = corner[0] === 'b', right = corner[1] === 'r';
-      var row = document.documentElement.getAttribute('data-mb-corner-flow') === 'row';
+      var row = mbuShared('cornerFlow') === 'row';
       var els = Array.prototype.slice.call(document.querySelectorAll('[data-mb-corner="' + corner + '"]'))
           // offsetParent is always null for position:fixed, so it can't tell visibility here
           .filter(function (el) { return getComputedStyle(el).display !== 'none'; })

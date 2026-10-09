@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Platform Check
 // @namespace    http://tampermonkey.net/
-// @version      2026.10.8.223209
+// @version      2026.10.9
 // @description  Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CjxnIHN0cm9rZT0iIzk0YTNiOCIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2UtbGluZWNhcD0icm91bmQiPjxwYXRoIGQ9Ik02NCA2NCBMODggMjIuNCIvPjxwYXRoIGQ9Ik02NCA2NCBMMTEyIDY0Ii8+PHBhdGggZD0iTTY0IDY0IEw4OCAxMDUuNiIvPjxwYXRoIGQ9Ik02NCA2NCBMNDAgMTA1LjYiLz48cGF0aCBkPSJNNjQgNjQgTDE2IDY0Ii8+PHBhdGggZD0iTTY0IDY0IEw0MCAyMi40Ii8+PC9nPjxjaXJjbGUgY3g9Ijg4IiBjeT0iMjIuNCIgcj0iMTIiIGZpbGw9IiNmNDcyYjYiLz48Y2lyY2xlIGN4PSIxMTIiIGN5PSI2NCIgcj0iMTIiIGZpbGw9IiNmYWNjMTUiLz48Y2lyY2xlIGN4PSI4OCIgY3k9IjEwNS42IiByPSIxMiIgZmlsbD0iIzRhZGU4MCIvPjxjaXJjbGUgY3g9IjQwIiBjeT0iMTA1LjYiIHI9IjEyIiBmaWxsPSIjMzhiZGY4Ii8+PGNpcmNsZSBjeD0iMTYiIGN5PSI2NCIgcj0iMTIiIGZpbGw9IiNhNzhiZmEiLz48Y2lyY2xlIGN4PSI0MCIgY3k9IjIyLjQiIHI9IjEyIiBmaWxsPSIjZmI5MjNjIi8+PGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iMjQiIGZpbGw9IiMwZjE3MmEiLz48cGF0aCBkPSJNNTQuMjIyMjIyMjIyMjIyMjIgNjQgTDYxLjMzMzMzMzMzMzMzMzMzNiA3MS4xMTExMTExMTExMTExMSBMNzQuNjY2NjY2NjY2NjY2NjcgNTYuODg4ODg4ODg4ODg4ODg2IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iNiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+Cjwvc3ZnPgo=
@@ -1384,6 +1384,20 @@ function mbuTestHooks() {
     try { return typeof window !== 'undefined' && window.__mbuTest === true; } catch (e) { return false; }
 }
 
+// Shared settings: the few that belong to all the scripts at once, not to one (the corner
+// launchers' layout). GM storage is private to each script, so these live in the page's
+// localStorage on MusicBrainz's origin, as JSON under 'mbu.<key>'; every script, bundled or
+// standalone, reads the same value. One argument reads (undefined when unset or blocked), two
+// write, and null removes. Per-origin: musicbrainz.org, beta and test each keep their own.
+function mbuShared(key, value) {
+    var k = 'mbu.' + key;
+    try {
+        if (arguments.length < 2) { var v = localStorage.getItem(k); return v == null ? undefined : JSON.parse(v); }
+        if (value == null) localStorage.removeItem(k); else localStorage.setItem(k, JSON.stringify(value));
+    } catch (e) { /* storage blocked */ }
+    return value;
+}
+
 // Corner slots (#468). Every floating launcher (Apollo Editor, Art Station, Falcon,
 // Fusion, Scribe) tags its element with data-mb-corner (which screen corner: 'br',
 // 'bl', 'tr', 'tl') and data-mb-corner-order (lower sits closer to the corner), and
@@ -1392,11 +1406,11 @@ function mbuTestHooks() {
 // whatever order they loaded in, so two launchers never land on the same pixel.
 // Orders in use: Apollo and Art Station 10 (never on the same page), Falcon 20,
 // Fusion above Falcon. Scribe is not on the shared block and keeps a copy of this.
-// The stack is a column; <html data-mb-corner-flow="row"> (String Theory's menu sets it)
-// lines it up along the bottom/top edge instead, the lowest order still nearest the corner.
+// The stack is a column; the shared setting cornerFlow = 'row' (mbuShared, set from String
+// Theory's menu) lines it up along the bottom/top edge instead, the lowest order still nearest the corner.
 function mbRestackCorner(corner) {
     var bottom = corner[0] === 'b', right = corner[1] === 'r';
-    var row = document.documentElement.getAttribute('data-mb-corner-flow') === 'row';
+    var row = mbuShared('cornerFlow') === 'row';
     var els = Array.prototype.slice.call(document.querySelectorAll('[data-mb-corner="' + corner + '"]'))
         // offsetParent is always null for position:fixed, so it can't tell visibility here
         .filter(function (el) { return getComputedStyle(el).display !== 'none'; })

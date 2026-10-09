@@ -106,6 +106,8 @@ Code several scripts need is written once and copied into each between marker co
 
 Settings go in `GM_setValue` / `GM_getValue`, never `localStorage`: the manager backs them up and syncs them, and they're private to the script (#501). `localStorage` is for what isn't a setting: caches with a lifetime, tokens several scripts share on MusicBrainz's origin, and `sessionStorage` for state that belongs to one tab.
 
+The exception is a **shared setting**: one that belongs to all the scripts at once, so it can't sit in any one script's GM storage. It goes through `mbuShared(key[, value])` (the ST-UI block), which keeps it as JSON in the page's `localStorage` under `mbu.<key>`, where every script reads the same value, bundled or standalone. It's per origin (musicbrainz.org, beta and test each keep their own) and the manager doesn't back it up, so keep shared settings few and cosmetic. In use: `cornerFlow` (`'row'`, or unset for a column), the corner launchers' layout, which `mbRestackCorner` reads and String Theory's menu sets. By hand, in the console on a MusicBrainz page: `localStorage.setItem('mbu.cornerFlow', '"row"')`, or `removeItem` for the column.
+
 A script that also reads the page's own globals uses `@grant unsafeWindow`, not `@grant none` (which can't be combined with GM grants):
 
 ```js

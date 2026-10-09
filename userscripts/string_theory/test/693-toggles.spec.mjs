@@ -51,7 +51,7 @@ test('the menu lists every member, and a click flips it and relabels the entry',
 });
 
 // The corner launchers' layout: one menu entry, ↕ column (the default) or ↔ row. A click stores it as
-// 'string_theory.cornerFlow', marks <html data-mb-corner-flow> and restacks the corner at once.
+// the shared setting (localStorage 'mbu.cornerFlow', which every script reads) and restacks the corner at once.
 test('the layout entry lines the corner launchers up in a row and back', { tag: ['@sandbox'] }, async ({ page, inject }, info) => {
   await page.setViewportSize({ width: 1400, height: 900 });
   await page.goto(`${SANDBOX}/release/${RELEASE}`, { waitUntil: 'load', timeout: 60000 });
@@ -72,12 +72,19 @@ test('the layout entry lines the corner launchers up in a row and back', { tag: 
   await page.evaluate(() => [...window.__menu.values()].find(e => /Launchers/.test(e.caption)).fn());
   const row = await at();
   check(await flow() === '↔ Launchers in a row', `relabelled (${await flow()})`);
-  check(await page.evaluate(() => document.documentElement.dataset.mbCornerFlow) === 'row', 'the page is marked');
-  check(await page.evaluate(() => GM_getValue('string_theory.cornerFlow')) === 'row', 'stored');
+  check(await page.evaluate(() => localStorage.getItem('mbu.cornerFlow')) === '"row"', 'stored as the shared setting');
   check(row.every(e => e.bottom === '14px') && new Set(row.map(e => e.right)).size === row.length, `in a row along the bottom (${JSON.stringify(row)})`);
   await page.screenshot({ path: info.outputPath('row.png'), clip: { x: 1400 - 260, y: 900 - 80, width: 260, height: 80 } });
 
   await page.evaluate(() => [...window.__menu.values()].find(e => /Launchers/.test(e.caption)).fn());
   check(JSON.stringify(await at()) === JSON.stringify(col), 'a second click puts them back in the column');
-  check(!(await page.evaluate(() => document.documentElement.hasAttribute('data-mb-corner-flow'))), 'and unmarks the page');
+  check(await page.evaluate(() => localStorage.getItem('mbu.cornerFlow')) === null, 'and clears the setting');
+  // a standalone launcher follows the shared setting with no String Theory on the page: Falcon on its own
+  await page.evaluate(() => localStorage.setItem('mbu.cornerFlow', '"row"'));
+  await page.reload({ waitUntil: 'load' });
+  await inject('falcon'); await inject('fusion');
+  await page.waitForSelector('#falcon-launcher'); await page.waitForSelector('#fs-launch');
+  const solo = await at();
+  check(solo.length === 2 && solo.every(e => e.bottom === '14px') && new Set(solo.map(e => e.right)).size === 2, `standalone scripts line up in the row (${JSON.stringify(solo)})`);
+  await page.evaluate(() => localStorage.removeItem('mbu.cornerFlow'));
 });
