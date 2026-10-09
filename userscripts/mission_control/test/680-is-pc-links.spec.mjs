@@ -2,7 +2,7 @@
 // yet, but ISRC Scout is probed with it, so its recording links show before Execute adds it.
 // The sandbox copy of "Discret Lounge" has no Bandcamp link; a stand-in for Platform Check
 // offers the album as withheld (as PC did on production), and ticking it brings the five
-// Bandcamp track links into the matrix. Read only: nothing is submitted.
+// Bandcamp track links into the matrix. A found link opens on click and toggles on right-click. Read only: nothing is submitted.
 // Bandcamp answers a request from the harness with its "Client Challenge" page, so the album
 // page is a recording (RECORD_WS=fresh to make it again).
 import { test, check, until, replayWs } from '../../../dev/test/harness.mjs';
@@ -40,7 +40,7 @@ test('#680: a selected Bandcamp album gives ISRC Scout its track links', { tag: 
   check(!(await linkCells()).some(c => /bandcamp/i.test(c)), 'no Bandcamp track links before the album is selected');
   check(JSON.stringify(await page.evaluate(() => window.__isAsked)) === '[[]]', 'the first probe asks IS with no album links');
 
-  await pcRow.first().locator('.mc-tick').click();
+  await pcRow.first().click();
   const asked = await until(() => page.evaluate(() => window.__isAsked), a => a.length === 2, { timeout: 5000 });
   check(JSON.stringify(asked[1]) === JSON.stringify([ALBUM]), `ticking it asks IS again, with the album (${JSON.stringify(asked)})`);
   const bc = await until(async () => (await page.locator('#mc-root .mc-tbl td[data-col="links"] .mc-lnk[title*="bandcamp.com/track/"]').count()), n => n >= 5, { timeout: 120_000 });
@@ -48,8 +48,20 @@ test('#680: a selected Bandcamp album gives ISRC Scout its track links', { tag: 
   check(bc === tracks, `every track gets its Bandcamp link (${bc} of ${tracks})`);
   check(!(await page.evaluate(() => window.__isTest680 && window.__isTest680.release && window.__isTest680.release().bandcampUrl)), "IS's own release load keeps no Bandcamp link it doesn't have");
 
+  // a found link opens on click and is taken in or left out on right-click
+  const lnk = page.locator('#mc-root .mc-tbl td[data-col="links"] .mc-lnk[title*="bandcamp.com/track/"]').first();
+  const was = await lnk.evaluate(el => el.classList.contains('on'));
+  const [popup] = await Promise.all([page.waitForEvent('popup'), lnk.click()]);
+  check(/bandcamp\.com\/track\//.test(popup.url()), `left-click opens the track link (${popup.url()})`);
+  await popup.close();
+  check(await lnk.evaluate(el => el.classList.contains('on')) === was, 'left-click leaves the pick as it was');
+  await lnk.click({ button: 'right' });
+  check(await lnk.evaluate(el => el.classList.contains('on')) === !was, 'right-click toggles it');
+  await lnk.click({ button: 'right' });
+  check(await lnk.evaluate(el => el.classList.contains('on')) === was, 'a second right-click toggles it back');
+
   // unticking takes them away again
-  await pcRow.first().locator('.mc-tick').click();
+  await pcRow.first().click();
   const gone = await until(async () => (await page.locator('#mc-root .mc-tbl td[data-col="links"] .mc-lnk[title*="bandcamp.com/track/"]').count()), n => n === 0, { timeout: 120_000 });
   check(gone === 0, `unticking the album drops its track links (${gone} left)`);
   await page.screenshot({ path: 'test-results/mc-680-is-pc-links.png' });
