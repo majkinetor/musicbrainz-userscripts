@@ -25,7 +25,7 @@
 | [Mammoth](../mammoth) | Remember & recall edit notes and field values |
 | [Platform Check](../platform_check) | Find/verify/add a release's URLs on online platforms |
 
-- **Turn a script off** in the userscript manager's menu (the Tampermonkey / Violentmonkey popup): each bundled script has an entry, ☑ on or ☐ off. A click flips it, and the change applies from the next page load. A script that is off doesn't run at all, so its standalone copy, if you have one installed, can run in its place.
+- **Turn a script off** in the userscript manager's menu (the Tampermonkey / Violentmonkey popup): each bundled script has an entry with its version, ☑ on or ☐ off. A click flips it in place, and the change applies from the next page load. A script that is off doesn't run at all, so its standalone copy, if you have one installed, can run in its place.
 - **Lay out the corner launchers** from the same menu: the round buttons in the page's corner (Mission Control, Fusion, Falcon, …) stand in a column (**↕ Launchers in a column**, the default) or in a row along the page's bottom edge (**↔ Launchers in a row**). A click switches the layout at once, and it stays that way on every page. All the scripts share it, so a standalone script (Falcon, Scribe, First Contact) follows it too, on any page, String Theory there or not.
 - The bundled scripts are listed in [`members.txt`](./members.txt)
 - In edit notes, all userscripts are marked with `*` (e.g. `Apollo Editor*`)
