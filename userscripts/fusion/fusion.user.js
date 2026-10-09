@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Fusion
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.9.111436
+// @version      2026.10.9.174839
 // @description  Merge-recordings assistant for MusicBrainz: gather a pool of candidate recordings from a release / release group / recording page (or paste any MBID/URL), auto-match them into merge groups by ISRC / AcoustID / length / title+artist, review and adjust the groups, then submit the merges directly in the background — no MB merge page involved.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPkZ1c2lvbjwvdGl0bGU+CiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjOGE1Y2Y2IiBzdHJva2Utd2lkdGg9IjciPgogICAgPGVsbGlwc2UgY3g9IjY0IiBjeT0iNjQiIHJ4PSI1MiIgcnk9IjIyIi8+CiAgICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSI2NCIgcng9IjUyIiByeT0iMjIiIHRyYW5zZm9ybT0icm90YXRlKDYwIDY0IDY0KSIvPgogICAgPGVsbGlwc2UgY3g9IjY0IiBjeT0iNjQiIHJ4PSI1MiIgcnk9IjIyIiB0cmFuc2Zvcm09InJvdGF0ZSgxMjAgNjQgNjQpIi8+CiAgPC9nPgogIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjE0IiBmaWxsPSIjNmQzZmYwIi8+Cjwvc3ZnPgo=
@@ -2662,7 +2662,7 @@ function fsStyle() {
         + '.fs-sum{color:var(--fs-muted);font-size:12px}'
         + '.fs-sum b{color:var(--fs-text)}'
         + '.fs-note{color:var(--fs-muted);font-size:11px}'
-        + '.fs-settings{position:fixed;z-index:2147483001;background:var(--mbu-bg);color:var(--mbu-text);border:1px solid var(--mbu-border);border-radius:8px;padding:10px 14px;width:280px;box-shadow:0 8px 26px rgba(0,0,0,.25);font:13px -apple-system,Segoe UI,Arial,sans-serif}'
+        + '.fs-settings{position:fixed;z-index:2147483001;background:var(--mbu-bg);color:var(--mbu-text);border:1px solid var(--mbu-border);border-radius:8px;padding:10px 14px;width:max-content;min-width:300px;max-width:min(460px,calc(100vw - 28px));box-sizing:border-box;box-shadow:0 8px 26px rgba(0,0,0,.25);font:13px -apple-system,Segoe UI,Arial,sans-serif}'
         + '.fs-settings .fs-ver{font-size:11px;color:var(--mbu-text-weak);font-weight:normal}'
         + '.fs-opt{display:block;margin:8px 0;font-size:12px}'
         + '.fs-opt textarea{width:100%;box-sizing:border-box;margin-top:4px;font-size:12px;font-family:inherit}'
@@ -3759,6 +3759,14 @@ function openSettings(anchor) {
     s.querySelector('.mbu-cfg-log').onclick = () => { s.remove(); openLog(); };
     const off = e => { if (!s.contains(e.target) && !anchor.contains(e.target)) { s.remove(); document.removeEventListener('mousedown', off); } };
     setTimeout(() => document.addEventListener('mousedown', off), 0);
+    // Escape closes the popup only (capture, so the main window's own Escape doesn't also fire)
+    const esc = e => {
+        if (!s.isConnected) { document.removeEventListener('keydown', esc, true); return; }
+        if (e.key !== 'Escape') return;
+        e.stopPropagation(); s.remove();
+        document.removeEventListener('keydown', esc, true); document.removeEventListener('mousedown', off);
+    };
+    document.addEventListener('keydown', esc, true);
 }
 
 // #529 follow-up: "Window should be movable and maximizable" — remembered

@@ -403,6 +403,21 @@ test('Fusion end to end: matching engine, UI, and real merges on the sandbox', {
   await page.evaluate(() => { document.getElementById('fs-settings')?.remove(); document.getElementById('mbu-logpop')?.remove(); });
   await page.click('#fs-cfg');
   check(await until(() => page.evaluate(() => !!document.getElementById('fs-settings'))), 'the ⚙ settings popup opens');
+  // majkinetor: "help overflows, and last option splits to another row" — the header and every
+  // option fit inside the popup, each option on one line
+  const fit = await page.evaluate(() => {
+      const s = document.getElementById('fs-settings'), r = s.getBoundingClientRect();
+      const help = s.querySelector('.mbu-help').getBoundingClientRect();
+      const lines = [...s.querySelectorAll('.fs-opt')].map(l => l.getClientRects().length === 1 && l.offsetHeight < 40);
+      return { helpInside: help.right <= r.right - 4, oneLine: lines.every(Boolean) };
+  });
+  check(fit.helpInside && fit.oneLine, 'settings popup fits its header and options: ' + JSON.stringify(fit));
+  if (process.env.FS_SHOT) await page.locator('#fs-settings').screenshot({ path: process.env.FS_SHOT });
+  await page.keyboard.press('Escape');
+  check(await page.evaluate(() => !document.getElementById('fs-settings') && !!document.getElementById('fs-overlay')),
+      'Escape closes the settings popup, and only it');
+  await page.click('#fs-cfg');
+  await until(() => page.evaluate(() => !!document.getElementById('fs-settings')));
   await page.click('#fs-settings .mbu-cfg-log');
   const logVis = await until(() => page.evaluate(() => {
       const pop = document.getElementById('mbu-logpop');
