@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.9
+// @version      2026.10.9.090703
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5BcG9sbG8gRWRpdG9yPC90aXRsZT4KPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZmZmIiBzdHJva2UtbGluZWpvaW49InJvdW5kIiBzdHJva2UtbGluZWNhcD0icm91bmQiIG9wYWNpdHk9IjAuNyI+PHBhdGggZD0iTTY0IDEwIEM4MiAyOCA5MCA1NiA5MCA4MCBMMzggODAgQzM4IDU2IDQ2IDI4IDY0IDEwIFoiIHN0cm9rZS13aWR0aD0iMTEiLz48cGF0aCBkPSJNMzggODAgTDIwIDExMCBMNDAgOTYgWiIgc3Ryb2tlLXdpZHRoPSIxMSIvPjxwYXRoIGQ9Ik05MCA4MCBMMTA4IDExMCBMODggOTYgWiIgc3Ryb2tlLXdpZHRoPSIxMSIvPjxwYXRoIGQ9Ik01MCA4MCBMNDUgMTA4IEw2NCAxMjIgTDgzIDEwOCBMNzggODAgWiIgc3Ryb2tlLXdpZHRoPSI5Ii8+PC9nPjxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzFiMmE0YSIgc3Ryb2tlLXdpZHRoPSI3IiBzdHJva2UtbGluZWpvaW49InJvdW5kIiBzdHJva2UtbGluZWNhcD0icm91bmQiPjxwYXRoIGQ9Ik02NCAxMCBDODIgMjggOTAgNTYgOTAgODAgTDM4IDgwIEMzOCA1NiA0NiAyOCA2NCAxMCBaIi8+PHBhdGggZD0iTTM4IDgwIEwyMCAxMTAgTDQwIDk2IFoiLz48cGF0aCBkPSJNOTAgODAgTDEwOCAxMTAgTDg4IDk2IFoiLz48L2c+PGNpcmNsZSBjeD0iNjQiIGN5PSI0NCIgcj0iMTAiIGZpbGw9IiNlNjM5NDYiLz4KPHBhdGggZD0iTTUwIDgwIEw0NSAxMDggTDY0IDEyMiBMODMgMTA4IEw3OCA4MCBaIiBmaWxsPSIjZmY2YTAwIiBzdHJva2U9IiMxYjJhNGEiIHN0cm9rZS13aWR0aD0iNSIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgo8L3N2Zz4K
@@ -3971,10 +3971,11 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     #tc-settings .tc-tab-pane[hidden]{display:none}
     #tc-settings .tc-tab-pane .tc-s-top{margin-top:0}
     #tc-settings .tc-s-row.lentol{gap:7px}
-    /* #695: a round icon like every other corner launcher (Falcon, Fusion); highlighted like Falcon's while Apollo is on */
+    /* #695: a round icon like every other corner launcher (Falcon, Fusion); a green status dot while Apollo is on */
     #tc-launch{position:fixed;bottom:14px;right:14px;z-index:var(--mbu-z-pop);width:40px;height:40px;border-radius:50%;border:none;padding:0;display:flex;align-items:center;justify-content:center;cursor:pointer;background:transparent;box-shadow:none;opacity:.85;transition:background .15s,transform .1s,opacity .15s}
     #tc-launch:hover{opacity:1;transform:scale(1.08)}
-    #tc-launch.on{background:#1f9d6b;box-shadow:0 0 0 2px #9bd3b6,0 2px 10px rgba(31,157,107,.45);opacity:1}
+    #tc-launch.on{opacity:1}
+    #tc-launch.on::after{content:"";position:absolute;right:1px;bottom:1px;width:11px;height:11px;border-radius:50%;background:#1f9d6b;box-shadow:0 0 0 2px var(--mbu-bg, #fff);pointer-events:none}
     #tc-launch img{width:34px;height:34px;display:block;pointer-events:none}
     #tc-btn,#tc-gear-btn{vertical-align:middle}
 
@@ -7217,7 +7218,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
   function riWant() { return apolloEnabled() && SETTINGS.replaceReleaseInfo !== false; }
   function releaseInfoVisible() { const p = document.getElementById('information'); return !!(p && p.offsetParent !== null); }
   function apolloOn() { return apolloEnabled(); }
-  // #695: the launcher is an icon, highlighted while Apollo is on; the tooltip says what a click does
+  // #695: the launcher is an icon with a green status dot while Apollo is on; the tooltip says what a click does
   function relabelLauncher() {
     const b = document.getElementById('tc-launch'); if (!b) return;
     const on = apolloEnabled();

@@ -20,7 +20,7 @@ A faster release editor for MusicBrainz: artists and recordings matched in one p
 - **[Annotation editor](#annotation-editor)**: Markdown with a live preview.
 - **[Highlighting](#highlighting)**: confusable punctuation, invisible characters and missing spaces made visible.
 
-Each part is optional, and Apollo's icon in the bottom-right corner switches back to MusicBrainz's own editor at any time; it's highlighted while Apollo is on.
+Each part is optional, and Apollo's icon in the bottom-right corner switches back to MusicBrainz's own editor at any time; a green dot on it means Apollo is on.
 
 ## Release information
 

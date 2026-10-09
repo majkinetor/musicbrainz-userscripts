@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-10-09 09:02 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-10-09 09:07 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -37,7 +37,7 @@ A faster release editor for MusicBrainz: artists and recordings matched in one p
 - **[Annotation editor](#annotation-editor)**: Markdown with a live preview.
 - **[Highlighting](#highlighting)**: confusable punctuation, invisible characters and missing spaces made visible.
 
-Each part is optional, and Apollo's icon in the bottom-right corner switches back to MusicBrainz's own editor at any time; it's highlighted while Apollo is on.
+Each part is optional, and Apollo's icon in the bottom-right corner switches back to MusicBrainz's own editor at any time; a green dot on it means Apollo is on.
 
 ### Release information
 
@@ -323,7 +323,7 @@ A cover and event art editor for MusicBrainz: one gallery to view, sort, reorder
 - **[File names ⇄ types](#file-names--types)**: a downloaded archive re-adds with its types and comments.
 - **[Applying changes](#applying-changes)** as parallel edits, with automatic retries.
 
-Art Station's icon in the bottom-right corner switches to MusicBrainz's own page and back; it's highlighted while Art Station shows. Right-click it for the settings (⚙ below).
+Art Station's icon in the bottom-right corner switches to MusicBrainz's own page and back; a green dot on it means Art Station shows. Right-click it for the settings (⚙ below).
 
 | Grouped by type | Detailed view |
 |---|---|
