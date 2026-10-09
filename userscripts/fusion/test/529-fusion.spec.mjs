@@ -918,7 +918,7 @@ test('Fusion end to end: matching engine, UI, and real merges on the sandbox', {
   });
   check(!icons.cardHasLightning, 'the in-card Merge button no longer uses the lightning bolt');
   check(icons.cardHasIcon, 'it uses a merge icon instead');
-  check(icons.toolbarHasLightning, 'the lightning bolt stays reserved for Auto-match');
+  check(icons.toolbarHasLightning, 'the lightning bolt stays reserved for Match');
 
   // #529: "what does this legend represent … can probably be removed?" — removed,
   // along with the presence dots it explained; cards show the values themselves.

@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         String Theory
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.9.111127
+// @version      2026.10.9.111619
 // @description  Unified bundle of 9 MusicBrainz userscripts (apollo_editor, art_station, credit_hoarder, fusion, group_therapy, isrc_scout, mammoth, mission_control, platform_check). Built by userscripts/string_theory/build.mjs — do not hand-edit.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5TdHJpbmcgVGhlb3J5PC90aXRsZT4KPGRlZnM+PGZpbHRlciBpZD0ic3RsMDItaCIgeD0iLTEwJSIgeT0iLTEwJSIgd2lkdGg9IjEyMCUiIGhlaWdodD0iMTIwJSI+PGZlTW9ycGhvbG9neSBpbj0iU291cmNlQWxwaGEiIG9wZXJhdG9yPSJkaWxhdGUiIHJhZGl1cz0iMS41IiByZXN1bHQ9ImQiLz48ZmVGbG9vZCBmbG9vZC1jb2xvcj0iI2ZmZiIgZmxvb2Qtb3BhY2l0eT0iLjciLz48ZmVDb21wb3NpdGUgaW4yPSJkIiBvcGVyYXRvcj0iaW4iLz48ZmVNZXJnZT48ZmVNZXJnZU5vZGUvPjxmZU1lcmdlTm9kZSBpbj0iU291cmNlR3JhcGhpYyIvPjwvZmVNZXJnZT48L2ZpbHRlcj48L2RlZnM+PGcgZmlsdGVyPSJ1cmwoI3N0bDAyLWgpIj48cGF0aCBkPSJNNjQgMTAgTDY2LjQgMTAuMiBMNjguNyAxMC42IEw3MC45IDExLjQgTDczLjEgMTIuNCBMNzUuMiAxMy43IEw3Ny4xIDE1LjIgTDc4LjggMTcgTDgwLjQgMTguOSBMODEuOCAyMSBMODMuMSAyMy4xIEw4NC4xIDI1LjQgTDg1IDI3LjYgTDg1LjcgMjkuOSBMODYuMyAzMi4xIEw4Ni44IDM0LjMgTDg3LjEgMzYuNCBMODcuNCAzOC40IEw4Ny43IDQwLjMgTDg3LjkgNDIuMSBMODguMiA0My43IEw4OC41IDQ1LjIgTDg4LjkgNDYuNiBMODkuNCA0Ny44IEw5MCA0OSBMOTAuNyA1MC4xIEw5MS42IDUxLjEgTDkyLjYgNTIuMiBMOTMuNyA1My4yIEw5NSA1NC4yIEw5Ni40IDU1LjMgTDk3LjkgNTYuNSBMOTkuNSA1Ny43IEwxMDEuMSA1OS4xIEwxMDIuNyA2MC42IEwxMDQuNCA2Mi4yIEwxMDYgNjQgTDEwNy41IDY1LjkgTDEwOC45IDY3LjkgTDExMC4yIDcwLjEgTDExMS4zIDcyLjMgTDExMi4xIDc0LjcgTDExMi44IDc3LjEgTDExMy4xIDc5LjUgTDExMy4yIDgxLjkgTDExMyA4NC4zIEwxMTIuNiA4Ni42IEwxMTEuOCA4OC45IEwxMTAuOCA5MSBMMTA5LjUgOTMgTDEwNy45IDk0LjcgTDEwNi4xIDk2LjMgTDEwNC4xIDk3LjcgTDEwMiA5OC44IEw5OS43IDk5LjcgTDk3LjMgMTAwLjQgTDk0LjkgMTAwLjggTDkyLjQgMTAxIEw4OS45IDEwMC45IEw4Ny40IDEwMC43IEw4NSAxMDAuNCBMODIuNyA5OS45IEw4MC40IDk5LjMgTDc4LjMgOTguNiBMNzYuMyA5Ny44IEw3NC40IDk3LjEgTDcyLjcgOTYuNCBMNzEgOTUuNyBMNjkuNSA5NS4xIEw2OCA5NC42IEw2Ni43IDk0LjMgTDY1LjMgOTQuMSBMNjQgOTQgTDYyLjcgOTQuMSBMNjEuMyA5NC4zIEw2MCA5NC42IEw1OC41IDk1LjEgTDU3IDk1LjcgTDU1LjMgOTYuNCBMNTMuNiA5Ny4xIEw1MS43IDk3LjggTDQ5LjcgOTguNiBMNDcuNiA5OS4zIEw0NS4zIDk5LjkgTDQzIDEwMC40IEw0MC42IDEwMC43IEwzOC4xIDEwMC45IEwzNS42IDEwMSBMMzMuMSAxMDAuOCBMMzAuNyAxMDAuNCBMMjguMyA5OS43IEwyNiA5OC44IEwyMy45IDk3LjcgTDIxLjkgOTYuMyBMMjAuMSA5NC43IEwxOC41IDkzIEwxNy4yIDkxIEwxNi4yIDg4LjkgTDE1LjQgODYuNiBMMTUgODQuMyBMMTQuOCA4MS45IEwxNC45IDc5LjUgTDE1LjIgNzcuMSBMMTUuOSA3NC43IEwxNi43IDcyLjMgTDE3LjggNzAuMSBMMTkuMSA2Ny45IEwyMC41IDY1LjkgTDIyIDY0IEwyMy42IDYyLjIgTDI1LjMgNjAuNiBMMjYuOSA1OS4xIEwyOC41IDU3LjcgTDMwLjEgNTYuNSBMMzEuNiA1NS4zIEwzMyA1NC4yIEwzNC4zIDUzLjIgTDM1LjQgNTIuMiBMMzYuNCA1MS4xIEwzNy4zIDUwLjEgTDM4IDQ5IEwzOC42IDQ3LjggTDM5LjEgNDYuNiBMMzkuNSA0NS4yIEwzOS44IDQzLjcgTDQwLjEgNDIuMSBMNDAuMyA0MC4zIEw0MC42IDM4LjQgTDQwLjkgMzYuNCBMNDEuMiAzNC4zIEw0MS43IDMyLjEgTDQyLjMgMjkuOSBMNDMgMjcuNiBMNDMuOSAyNS40IEw0NC45IDIzLjEgTDQ2LjIgMjEgTDQ3LjYgMTguOSBMNDkuMiAxNyBMNTAuOSAxNS4yIEw1Mi44IDEzLjcgTDU0LjkgMTIuNCBMNTcuMSAxMS40IEw1OS4zIDEwLjYgTDYxLjYgMTAuMloiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2I5YThlYyIgc3Ryb2tlLXdpZHRoPSI1IiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PHBhdGggZD0iTTY0IDM0IEw2NS4zIDMzLjkgTDY2LjcgMzMuNyBMNjggMzMuNCBMNjkuNSAzMi45IEw3MSAzMi4zIEw3Mi43IDMxLjYgTDc0LjQgMzAuOSBMNzYuMyAzMC4yIEw3OC4zIDI5LjQgTDgwLjQgMjguNyBMODIuNyAyOC4xIEw4NSAyNy42IEw4Ny40IDI3LjMgTDg5LjkgMjcuMSBMOTIuNCAyNyBMOTQuOSAyNy4yIEw5Ny4zIDI3LjYgTDk5LjcgMjguMyBMMTAyIDI5LjIgTDEwNC4xIDMwLjMgTDEwNi4xIDMxLjcgTDEwNy45IDMzLjMgTDEwOS41IDM1IEwxMTAuOCAzNyBMMTExLjggMzkuMSBMMTEyLjYgNDEuNCBMMTEzIDQzLjcgTDExMy4yIDQ2LjEgTDExMy4xIDQ4LjUgTDExMi44IDUwLjkgTDExMi4xIDUzLjMgTDExMS4zIDU1LjcgTDExMC4yIDU3LjkgTDEwOC45IDYwLjEgTDEwNy41IDYyLjEgTDEwNiA2NCBMMTA0LjQgNjUuOCBMMTAyLjcgNjcuNCBMMTAxLjEgNjguOSBMOTkuNSA3MC4zIEw5Ny45IDcxLjUgTDk2LjQgNzIuNyBMOTUgNzMuOCBMOTMuNyA3NC44IEw5Mi42IDc1LjggTDkxLjYgNzYuOSBMOTAuNyA3Ny45IEw5MCA3OSBMODkuNCA4MC4yIEw4OC45IDgxLjQgTDg4LjUgODIuOCBMODguMiA4NC4zIEw4Ny45IDg1LjkgTDg3LjcgODcuNyBMODcuNCA4OS42IEw4Ny4xIDkxLjYgTDg2LjggOTMuNyBMODYuMyA5NS45IEw4NS43IDk4LjEgTDg1IDEwMC40IEw4NC4xIDEwMi42IEw4My4xIDEwNC45IEw4MS44IDEwNyBMODAuNCAxMDkuMSBMNzguOCAxMTEgTDc3LjEgMTEyLjggTDc1LjIgMTE0LjMgTDczLjEgMTE1LjYgTDcwLjkgMTE2LjYgTDY4LjcgMTE3LjQgTDY2LjQgMTE3LjggTDY0IDExOCBMNjEuNiAxMTcuOCBMNTkuMyAxMTcuNCBMNTcuMSAxMTYuNiBMNTQuOSAxMTUuNiBMNTIuOCAxMTQuMyBMNTAuOSAxMTIuOCBMNDkuMiAxMTEgTDQ3LjYgMTA5LjEgTDQ2LjIgMTA3IEw0NC45IDEwNC45IEw0My45IDEwMi42IEw0MyAxMDAuNCBMNDIuMyA5OC4xIEw0MS43IDk1LjkgTDQxLjIgOTMuNyBMNDAuOSA5MS42IEw0MC42IDg5LjYgTDQwLjMgODcuNyBMNDAuMSA4NS45IEwzOS44IDg0LjMgTDM5LjUgODIuOCBMMzkuMSA4MS40IEwzOC42IDgwLjIgTDM4IDc5IEwzNy4zIDc3LjkgTDM2LjQgNzYuOSBMMzUuNCA3NS44IEwzNC4zIDc0LjggTDMzIDczLjggTDMxLjYgNzIuNyBMMzAuMSA3MS41IEwyOC41IDcwLjMgTDI2LjkgNjguOSBMMjUuMyA2Ny40IEwyMy42IDY1LjggTDIyIDY0IEwyMC41IDYyLjEgTDE5LjEgNjAuMSBMMTcuOCA1Ny45IEwxNi43IDU1LjcgTDE1LjkgNTMuMyBMMTUuMiA1MC45IEwxNC45IDQ4LjUgTDE0LjggNDYuMSBMMTUgNDMuNyBMMTUuNCA0MS40IEwxNi4yIDM5LjEgTDE3LjIgMzcgTDE4LjUgMzUgTDIwLjEgMzMuMyBMMjEuOSAzMS43IEwyMy45IDMwLjMgTDI2IDI5LjIgTDI4LjMgMjguMyBMMzAuNyAyNy42IEwzMy4xIDI3LjIgTDM1LjYgMjcgTDM4LjEgMjcuMSBMNDAuNiAyNy4zIEw0MyAyNy42IEw0NS4zIDI4LjEgTDQ3LjYgMjguNyBMNDkuNyAyOS40IEw1MS43IDMwLjIgTDUzLjYgMzAuOSBMNTUuMyAzMS42IEw1NyAzMi4zIEw1OC41IDMyLjkgTDYwIDMzLjQgTDYxLjMgMzMuNyBMNjIuNyAzMy45WiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMjIyMjNiIiBzdHJva2Utd2lkdGg9IjExIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PHBhdGggZD0iTTY0IDM0IEw2NS4zIDMzLjkgTDY2LjcgMzMuNyBMNjggMzMuNCBMNjkuNSAzMi45IEw3MSAzMi4zIEw3Mi43IDMxLjYgTDc0LjQgMzAuOSBMNzYuMyAzMC4yIEw3OC4zIDI5LjQgTDgwLjQgMjguNyBMODIuNyAyOC4xIEw4NSAyNy42IEw4Ny40IDI3LjMgTDg5LjkgMjcuMSBMOTIuNCAyNyBMOTQuOSAyNy4yIEw5Ny4zIDI3LjYgTDk5LjcgMjguMyBMMTAyIDI5LjIgTDEwNC4xIDMwLjMgTDEwNi4xIDMxLjcgTDEwNy45IDMzLjMgTDEwOS41IDM1IEwxMTAuOCAzNyBMMTExLjggMzkuMSBMMTEyLjYgNDEuNCBMMTEzIDQzLjcgTDExMy4yIDQ2LjEgTDExMy4xIDQ4LjUgTDExMi44IDUwLjkgTDExMi4xIDUzLjMgTDExMS4zIDU1LjcgTDExMC4yIDU3LjkgTDEwOC45IDYwLjEgTDEwNy41IDYyLjEgTDEwNiA2NCBMMTA0LjQgNjUuOCBMMTAyLjcgNjcuNCBMMTAxLjEgNjguOSBMOTkuNSA3MC4zIEw5Ny45IDcxLjUgTDk2LjQgNzIuNyBMOTUgNzMuOCBMOTMuNyA3NC44IEw5Mi42IDc1LjggTDkxLjYgNzYuOSBMOTAuNyA3Ny45IEw5MCA3OSBMODkuNCA4MC4yIEw4OC45IDgxLjQgTDg4LjUgODIuOCBMODguMiA4NC4zIEw4Ny45IDg1LjkgTDg3LjcgODcuNyBMODcuNCA4OS42IEw4Ny4xIDkxLjYgTDg2LjggOTMuNyBMODYuMyA5NS45IEw4NS43IDk4LjEgTDg1IDEwMC40IEw4NC4xIDEwMi42IEw4My4xIDEwNC45IEw4MS44IDEwNyBMODAuNCAxMDkuMSBMNzguOCAxMTEgTDc3LjEgMTEyLjggTDc1LjIgMTE0LjMgTDczLjEgMTE1LjYgTDcwLjkgMTE2LjYgTDY4LjcgMTE3LjQgTDY2LjQgMTE3LjggTDY0IDExOCBMNjEuNiAxMTcuOCBMNTkuMyAxMTcuNCBMNTcuMSAxMTYuNiBMNTQuOSAxMTUuNiBMNTIuOCAxMTQuMyBMNTAuOSAxMTIuOCBMNDkuMiAxMTEgTDQ3LjYgMTA5LjEgTDQ2LjIgMTA3IEw0NC45IDEwNC45IEw0My45IDEwMi42IEw0MyAxMDAuNCBMNDIuMyA5OC4xIEw0MS43IDk1LjkgTDQxLjIgOTMuNyBMNDAuOSA5MS42IEw0MC42IDg5LjYgTDQwLjMgODcuNyBMNDAuMSA4NS45IEwzOS44IDg0LjMgTDM5LjUgODIuOCBMMzkuMSA4MS40IEwzOC42IDgwLjIgTDM4IDc5IEwzNy4zIDc3LjkgTDM2LjQgNzYuOSBMMzUuNCA3NS44IEwzNC4zIDc0LjggTDMzIDczLjggTDMxLjYgNzIuNyBMMzAuMSA3MS41IEwyOC41IDcwLjMgTDI2LjkgNjguOSBMMjUuMyA2Ny40IEwyMy42IDY1LjggTDIyIDY0IEwyMC41IDYyLjEgTDE5LjEgNjAuMSBMMTcuOCA1Ny45IEwxNi43IDU1LjcgTDE1LjkgNTMuMyBMMTUuMiA1MC45IEwxNC45IDQ4LjUgTDE0LjggNDYuMSBMMTUgNDMuNyBMMTUuNCA0MS40IEwxNi4yIDM5LjEgTDE3LjIgMzcgTDE4LjUgMzUgTDIwLjEgMzMuMyBMMjEuOSAzMS43IEwyMy45IDMwLjMgTDI2IDI5LjIgTDI4LjMgMjguMyBMMzAuNyAyNy42IEwzMy4xIDI3LjIgTDM1LjYgMjcgTDM4LjEgMjcuMSBMNDAuNiAyNy4zIEw0MyAyNy42IEw0NS4zIDI4LjEgTDQ3LjYgMjguNyBMNDkuNyAyOS40IEw1MS43IDMwLjIgTDUzLjYgMzAuOSBMNTUuMyAzMS42IEw1NyAzMi4zIEw1OC41IDMyLjkgTDYwIDMzLjQgTDYxLjMgMzMuNyBMNjIuNyAzMy45WiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjN2E1N2U4IiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz48L2c+Cjwvc3ZnPgo=
@@ -92,8 +92,8 @@
 // Bundles (verbatim, each wrapped in a run-at gate): apollo_editor, art_station, credit_hoarder, fusion, group_therapy, isrc_scout, mammoth, mission_control, platform_check.
 
 try {
-  console.log('%c String Theory %c v2026.10.9.111127 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
-  console.log("String Theory bundles:\n  · Apollo Editor v2026.10.9.101621\n  · Art Station v2026.10.9.092604\n  · Credit Hoarder v2026.10.9.094335\n  · Fusion v2026.10.9\n  · Group Therapy v2026.10.9\n  · ISRC Scout v2026.10.9\n  · Mammoth v2026.10.9\n  · Mission Control v2026.10.9.110354\n  · Platform Check v2026.10.9");
+  console.log('%c String Theory %c v2026.10.9.111619 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
+  console.log("String Theory bundles:\n  · Apollo Editor v2026.10.9.101621\n  · Art Station v2026.10.9.092604\n  · Credit Hoarder v2026.10.9.094335\n  · Fusion v2026.10.9.111436\n  · Group Therapy v2026.10.9\n  · ISRC Scout v2026.10.9.111436\n  · Mammoth v2026.10.9\n  · Mission Control v2026.10.9.110354\n  · Platform Check v2026.10.9");
 } catch (e) {}
 
 function __stReadOff() { try { var v = GM_getValue("string_theory.off", []); return Array.isArray(v) ? v : []; } catch (e) { return []; } }
@@ -101,7 +101,7 @@ var __stOff = __stReadOff();
 (function () {
   if (typeof GM_registerMenuCommand !== 'function') return;
   try { if (window.top !== window.self) return; } catch (e) { return; }
-  var members = [["apollo_editor","Apollo Editor","2026.10.9.101621"],["art_station","Art Station","2026.10.9.092604"],["credit_hoarder","Credit Hoarder","2026.10.9.094335"],["fusion","Fusion","2026.10.9"],["group_therapy","Group Therapy","2026.10.9"],["isrc_scout","ISRC Scout","2026.10.9"],["mammoth","Mammoth","2026.10.9"],["mission_control","Mission Control","2026.10.9.110354"],["platform_check","Platform Check","2026.10.9"]];
+  var members = [["apollo_editor","Apollo Editor","2026.10.9.101621"],["art_station","Art Station","2026.10.9.092604"],["credit_hoarder","Credit Hoarder","2026.10.9.094335"],["fusion","Fusion","2026.10.9.111436"],["group_therapy","Group Therapy","2026.10.9"],["isrc_scout","ISRC Scout","2026.10.9.111436"],["mammoth","Mammoth","2026.10.9"],["mission_control","Mission Control","2026.10.9.110354"],["platform_check","Platform Check","2026.10.9"]];
   // Each entry carries a stable id (options.id): Violentmonkey and Tampermonkey then relabel it in
   // place, where it stands. Unregister-and-add left Violentmonkey's open menu with the old entry
   // still there and the new one appended at the end. A manager that ignores options.id hands back
@@ -27618,7 +27618,7 @@ ${lines}
 
 // ===== fusion (@run-at document-end) ============================================
 if (__stOff.indexOf("fusion") < 0) (function(__stGM){
-  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Fusion*","namespace":"https://musicbrainz.org/","version":"2026.10.9","description":"Merge-recordings assistant for MusicBrainz: gather a pool of candidate recordings from a release / release group / recording page (or paste any MBID/URL), auto-match them into merge groups by ISRC / AcoustID / length / title+artist, review and adjust the groups, then submit the merges directly in the background — no MB merge page involved.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/fusion/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPkZ1c2lvbjwvdGl0bGU+CiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjOGE1Y2Y2IiBzdHJva2Utd2lkdGg9IjciPgogICAgPGVsbGlwc2UgY3g9IjY0IiBjeT0iNjQiIHJ4PSI1MiIgcnk9IjIyIi8+CiAgICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSI2NCIgcng9IjUyIiByeT0iMjIiIHRyYW5zZm9ybT0icm90YXRlKDYwIDY0IDY0KSIvPgogICAgPGVsbGlwc2UgY3g9IjY0IiBjeT0iNjQiIHJ4PSI1MiIgcnk9IjIyIiB0cmFuc2Zvcm09InJvdGF0ZSgxMjAgNjQgNjQpIi8+CiAgPC9nPgogIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjE0IiBmaWxsPSIjNmQzZmYwIi8+Cjwvc3ZnPgo="}) }) : { script: {"name":"Fusion*","namespace":"https://musicbrainz.org/","version":"2026.10.9","description":"Merge-recordings assistant for MusicBrainz: gather a pool of candidate recordings from a release / release group / recording page (or paste any MBID/URL), auto-match them into merge groups by ISRC / AcoustID / length / title+artist, review and adjust the groups, then submit the merges directly in the background — no MB merge page involved.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/fusion/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPkZ1c2lvbjwvdGl0bGU+CiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjOGE1Y2Y2IiBzdHJva2Utd2lkdGg9IjciPgogICAgPGVsbGlwc2UgY3g9IjY0IiBjeT0iNjQiIHJ4PSI1MiIgcnk9IjIyIi8+CiAgICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSI2NCIgcng9IjUyIiByeT0iMjIiIHRyYW5zZm9ybT0icm90YXRlKDYwIDY0IDY0KSIvPgogICAgPGVsbGlwc2UgY3g9IjY0IiBjeT0iNjQiIHJ4PSI1MiIgcnk9IjIyIiB0cmFuc2Zvcm09InJvdGF0ZSgxMjAgNjQgNjQpIi8+CiAgPC9nPgogIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjE0IiBmaWxsPSIjNmQzZmYwIi8+Cjwvc3ZnPgo="} };
+  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Fusion*","namespace":"https://musicbrainz.org/","version":"2026.10.9.111436","description":"Merge-recordings assistant for MusicBrainz: gather a pool of candidate recordings from a release / release group / recording page (or paste any MBID/URL), auto-match them into merge groups by ISRC / AcoustID / length / title+artist, review and adjust the groups, then submit the merges directly in the background — no MB merge page involved.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/fusion/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPkZ1c2lvbjwvdGl0bGU+CiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjOGE1Y2Y2IiBzdHJva2Utd2lkdGg9IjciPgogICAgPGVsbGlwc2UgY3g9IjY0IiBjeT0iNjQiIHJ4PSI1MiIgcnk9IjIyIi8+CiAgICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSI2NCIgcng9IjUyIiByeT0iMjIiIHRyYW5zZm9ybT0icm90YXRlKDYwIDY0IDY0KSIvPgogICAgPGVsbGlwc2UgY3g9IjY0IiBjeT0iNjQiIHJ4PSI1MiIgcnk9IjIyIiB0cmFuc2Zvcm09InJvdGF0ZSgxMjAgNjQgNjQpIi8+CiAgPC9nPgogIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjE0IiBmaWxsPSIjNmQzZmYwIi8+Cjwvc3ZnPgo="}) }) : { script: {"name":"Fusion*","namespace":"https://musicbrainz.org/","version":"2026.10.9.111436","description":"Merge-recordings assistant for MusicBrainz: gather a pool of candidate recordings from a release / release group / recording page (or paste any MBID/URL), auto-match them into merge groups by ISRC / AcoustID / length / title+artist, review and adjust the groups, then submit the merges directly in the background — no MB merge page involved.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/fusion/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPkZ1c2lvbjwvdGl0bGU+CiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjOGE1Y2Y2IiBzdHJva2Utd2lkdGg9IjciPgogICAgPGVsbGlwc2UgY3g9IjY0IiBjeT0iNjQiIHJ4PSI1MiIgcnk9IjIyIi8+CiAgICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSI2NCIgcng9IjUyIiByeT0iMjIiIHRyYW5zZm9ybT0icm90YXRlKDYwIDY0IDY0KSIvPgogICAgPGVsbGlwc2UgY3g9IjY0IiBjeT0iNjQiIHJ4PSI1MiIgcnk9IjIyIiB0cmFuc2Zvcm09InJvdGF0ZSgxMjAgNjQgNjQpIi8+CiAgPC9nPgogIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjE0IiBmaWxsPSIjNmQzZmYwIi8+Cjwvc3ZnPgo="} };
   (f=>document.readyState!=='loading'?f():document.addEventListener('DOMContentLoaded',f,{once:true}))(function(){ try { (function(){
 (function () {
 'use strict';
@@ -28353,7 +28353,7 @@ async function enrichPendingEdits(recs, concurrency, onProgress) {
         }
     }
     await Promise.all(Array.from({ length: Math.min(concurrency, todo.length) }, worker));
-    if (flagged) Log.warn(flagged + ' recording(s) have pending edits — excluded from auto-match and blocked from merging');
+    if (flagged) Log.warn(flagged + ' recording(s) have pending edits — excluded from matching and blocked from merging');
 }
 const _idCache = new Map();
 async function resolveInternalId(gid) {
@@ -30193,7 +30193,7 @@ function releasesSummary(rec) {
 const MERGE_MARK = '<svg class="fs-mergeicon" viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 3v6a5 5 0 0 0 5 5h7"/><path d="M18 3v6a5 5 0 0 1-5 5h-2"/><polyline points="15 11 19 14 15 17"/></svg>';
 const VIDEO_MARK = '<span class="fs-rec-video" title="This recording is a video"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg></span>';
 function videoBadge(rec) { return rec.video === true ? VIDEO_MARK + ' ' : ''; }
-function pendingBadge(rec) { return rec.editsPending ? '<span class="fs-pending" title="This recording has pending edits in MusicBrainz — excluded from auto-match and blocked from merging until they are applied">⏳ pending</span> ' : ''; }
+function pendingBadge(rec) { return rec.editsPending ? '<span class="fs-pending" title="This recording has pending edits in MusicBrainz — excluded from matching and blocked from merging until they are applied">⏳ pending</span> ' : ''; }
 // #529 follow-up: "we should see isrc and accousticid in the card too" — the
 // pool card only showed presence dots; show the actual values (AcoustID
 // truncated, it's a 36-char UUID — full value is in the tooltip).
@@ -30874,10 +30874,10 @@ async function onAutoMatch() {
     const btn = document.getElementById('fs-automatch'); if (!btn) return;
     btn.disabled = true; const orig = btn.textContent;
     btn.textContent = 'Matching…';
-    busyStart('auto-matching…');
+    busyStart('matching…');
     try {
         const poolRecs = STATE.poolOrder.map(g => STATE.recordings.get(g)).filter(Boolean);
-        Log.info('Auto-match starting on ' + poolRecs.length + ' pool recording(s), cutoff=' + SETTINGS.matchCutoff);
+        Log.info('Match starting on ' + poolRecs.length + ' pool recording(s), cutoff=' + SETTINGS.matchCutoff);
         poolRecs.forEach(r => Log.info('  pool: ' + describeRecordingForLog(r)));
         // Enrich EVERY known recording, not just ungrouped ones (#529): members
         // already sitting in a group were previously never looked up, so two rows
@@ -30908,7 +30908,7 @@ async function onAutoMatch() {
             });
             if (before !== groupings.length) Log.warn((before - groupings.length) + ' proposed group(s) dropped because a member has pending edits');
         }
-        Log.info('Auto-match formed ' + groupings.length + ' group(s) from ' + poolRecs.length + ' pool recording(s)');
+        Log.info('Match formed ' + groupings.length + ' group(s) from ' + poolRecs.length + ' pool recording(s)');
         groupings.forEach(g => {
             Log.info('  formed group ' + g.id + ' — confidence=' + g.confidence + ' signals=[' + g.signals.join(',') + ']');
             g.memberGids.forEach(gid => Log.info('    ' + gid + (gid === g.target ? ' (target)' : '') + ': ' + describeRecordingForLog(STATE.recordings.get(gid))));
@@ -30920,15 +30920,15 @@ async function onAutoMatch() {
         // Short in the header (it is one line), full sentence in the tooltip.
         if (!groupings.length) {
             showNotice('none',
-                'Auto-match found nothing to group in ' + poolRecs.length + ' pool recording(s) at the "'
+                'Match found nothing to group in ' + poolRecs.length + ' pool recording(s) at the "'
                 + SETTINGS.matchCutoff + '" cutoff. Try a looser cutoff, or group by hand.',
-                'auto-match: nothing matched at "' + SETTINGS.matchCutoff + '"');
+                'match: nothing matched at "' + SETTINGS.matchCutoff + '"');
         } else {
             const recs = groupings.reduce((a, g) => a + g.memberGids.length, 0);
             showNotice('ok',
-                'Auto-match formed ' + groupings.length + ' group' + (groupings.length === 1 ? '' : 's')
+                'Match formed ' + groupings.length + ' group' + (groupings.length === 1 ? '' : 's')
                 + ' from ' + recs + ' recording' + (recs === 1 ? '' : 's') + ' at the "' + SETTINGS.matchCutoff + '" cutoff.',
-                'auto-match: +' + groupings.length + ' group' + (groupings.length === 1 ? '' : 's'));
+                'match: +' + groupings.length + ' group' + (groupings.length === 1 ? '' : 's'));
         }
         renderAll();
     } finally { busyEnd(); btn.disabled = false; btn.textContent = orig; }
@@ -31219,10 +31219,10 @@ function openSettings(anchor) {
     s.innerHTML = mbuCfgHeader({ script: 'fusion', name: 'Fusion', version: VERSION, icon: ICON, log: true })
         + '<label class="fs-opt"><input type="checkbox" id="fs-opt-votable"> Always require a vote (make_votable)</label>'
         + '<label class="fs-opt"><input type="checkbox" id="fs-opt-acoustid"> Look up AcoustIDs (acoustid.org, batched)</label>'
-        + '<label class="fs-opt" title="Run Auto-match by itself as soon as the pool has finished loading, instead of waiting for you to press the button."><input type="checkbox" id="fs-opt-automatch"> Auto-match on open</label>'
+        + '<label class="fs-opt" title="Run Match by itself as soon as the pool has finished loading, instead of waiting for you to press the button."><input type="checkbox" id="fs-opt-automatch"> Match on open</label>'
         + '<label class="fs-opt" title="As soon as a group is formed, fetch the full release list for every recording in it, so expanding a row is instant. Costs one request per grouped recording; off by default because seeding already makes a lot of them. Runs in the background, never blocks the UI, and the header stop button halts it."><input type="checkbox" id="fs-opt-prefetch"> Preload group release details in the background</label>'
         + '<label class="fs-opt">Length tolerance <input type="number" id="fs-opt-tol" min="0" max="60" style="width:48px"> s</label>'
-        + '<label class="fs-opt" title="Auto-match never groups two recordings whose known lengths differ by more than this, whatever else matches. Manual grouping is unaffected.">Never auto-group if lengths differ by more than <input type="number" id="fs-opt-gross" min="5" max="600" style="width:56px"> s</label>';
+        + '<label class="fs-opt" title="Match never groups two recordings whose known lengths differ by more than this, whatever else matches. Manual grouping is unaffected.">Match never groups if lengths differ by more than <input type="number" id="fs-opt-gross" min="5" max="600" style="width:56px"> s</label>';
     document.body.appendChild(s);
     const r = anchor.getBoundingClientRect();
     s.style.top = (r.bottom + 6) + 'px'; s.style.right = '14px';
@@ -31235,7 +31235,7 @@ function openSettings(anchor) {
     s.querySelector('#fs-opt-prefetch').checked = !!SETTINGS.prefetchGroupReleases;
     s.querySelector('#fs-opt-votable').onchange = e => { SETTINGS.makeVotable = e.target.checked; saveSettings(); };
     s.querySelector('#fs-opt-acoustid').onchange = e => { SETTINGS.acoustidEnrich = e.target.checked; saveSettings(); };
-    s.querySelector('#fs-opt-automatch').onchange = e => { SETTINGS.autoMatchOnOpen = e.target.checked; saveSettings(); Log.info('Auto-match on open: ' + (SETTINGS.autoMatchOnOpen ? 'on' : 'off')); };
+    s.querySelector('#fs-opt-automatch').onchange = e => { SETTINGS.autoMatchOnOpen = e.target.checked; saveSettings(); Log.info('Match on open: ' + (SETTINGS.autoMatchOnOpen ? 'on' : 'off')); };
     s.querySelector('#fs-opt-prefetch').onchange = e => { SETTINGS.prefetchGroupReleases = e.target.checked; saveSettings(); Log.info('Background release prefetch: ' + (SETTINGS.prefetchGroupReleases ? 'on' : 'off')); if (SETTINGS.prefetchGroupReleases) prefetchGroupReleases(); };
     s.querySelector('#fs-opt-tol').onchange = e => { SETTINGS.lengthToleranceMs = Math.max(0, Number(e.target.value) || 0) * 1000; saveSettings(); };
     s.querySelector('#fs-opt-gross').onchange = e => { SETTINGS.grossLengthMs = Math.max(5, Number(e.target.value) || 30) * 1000; saveSettings(); Log.info('Gross-length guard set to ' + Math.round(SETTINGS.grossLengthMs / 1000) + 's'); };
@@ -31324,11 +31324,11 @@ function buildShell() {
         + '<div class="fs-ctrl"><select id="fs-rg-editions" style="display:none;"><option value="">+ Load recordings from RG edition ▾</option></select>'
         + '<input type="text" id="fs-add-input" placeholder="paste a recording, release, or release-group MBID|URL…" title="Paste an MBID or MusicBrainz URL — it is added automatically">'
         + '<div class="fs-sp"></div><div class="fs-legend">'
-        + '<span>Cutoff <select id="fs-cutoff" title="How strict Auto-match is. Hover an option for what it means.">' + cutoffOpts + '</select></span>'
+        + '<span>Cutoff <select id="fs-cutoff" title="How strict Match is. Hover an option for what it means.">' + cutoffOpts + '</select></span>'
         + '<span class="fs-tierlegend" title="Each group card is tinted by the strictest cutoff at which it still holds together">' + tierKey + '</span></div>'
-        + '<button type="button" id="fs-automatch" class="fs-btn fs-primary">⚡ Auto-match</button></div>'
+        + '<button type="button" id="fs-automatch" class="fs-btn fs-primary">⚡ Match</button></div>'
 
-        + '<div class="fs-body" id="fs-body"><div class="fs-col fs-pool"><div class="fs-colhdr">Pool <span class="fs-cnt" id="fs-pool-cnt">0</span><span class="fs-sp"></span><input type="text" id="fs-pool-filter" class="fs-poolfilter" placeholder="filter the pool…" title="Filter by title, artist, release, ISRC or AcoustID. Auto-match still considers the whole pool."><span class="fs-pooltog" id="fs-pooltog" title="collapse the pool to give the groups the full width">◀</span></div>'
+        + '<div class="fs-body" id="fs-body"><div class="fs-col fs-pool"><div class="fs-colhdr">Pool <span class="fs-cnt" id="fs-pool-cnt">0</span><span class="fs-sp"></span><input type="text" id="fs-pool-filter" class="fs-poolfilter" placeholder="filter the pool…" title="Filter by title, artist, release, ISRC or AcoustID. Match still considers the whole pool."><span class="fs-pooltog" id="fs-pooltog" title="collapse the pool to give the groups the full width">◀</span></div>'
         + '<div class="fs-colbody" id="fs-pool-body"></div></div>'
         + '<div class="fs-poolrail" id="fs-poolrail" title="show the pool again"><span class="fs-railarrow">▶</span><span class="fs-raillabel">POOL <span id="fs-rail-cnt">0</span></span></div>'
         + '<div class="fs-col fs-groups"><div class="fs-colhdr">Groups <span class="fs-cnt" id="fs-groups-cnt">0</span><span class="fs-subcnt" id="fs-groups-recs"></span><button type="button" id="fs-expandall-deep" class="fs-btn" title="expand every group and every release table (or collapse it all again)">⇲ All details</button><button type="button" id="fs-collapseall" class="fs-btn" title="collapse or expand every group card">▼ Collapse all</button><span class="fs-matchmsg" id="fs-matchmsg" style="display:none"></span><span class="fs-sp"></span><span class="fs-clearset">Clear: <button type="button" id="fs-clearboard" class="fs-btn fs-clearboard-btn" title="dissolve every group — all recordings return to the pool">all</button><button type="button" id="fs-clearmerged" class="fs-btn fs-clearboard-btn" title="remove groups that have already been merged — their recordings leave the board (the merged-away ones no longer exist in MusicBrainz)">merged</button></span></div>'
@@ -31431,11 +31431,11 @@ async function seedFromScope() {
 // the identifiers land would just produce weaker groups.
 async function maybeAutoMatchOnOpen() {
     if (!SETTINGS.autoMatchOnOpen) return;
-    if (!STATE.poolOrder.length) { Log.info('Auto-match on open: nothing in the pool'); return; }
+    if (!STATE.poolOrder.length) { Log.info('Match on open: nothing in the pool'); return; }
     // eslint-disable-next-line no-unmodified-loop-condition -- busyEnd() lowers it while this awaits
     for (let i = 0; i < 120 && _busyCount > 0; i++) await new Promise(r => setTimeout(r, 250));
     if (!FUSION_OPEN) return;
-    Log.info('Auto-match on open: starting');
+    Log.info('Match on open: starting');
     await onAutoMatch();
 }
 async function openFusion() {
@@ -31444,7 +31444,7 @@ async function openFusion() {
     fsStyle();
     buildShell();
     renderAll();
-    if (STATE.recordings.size === 0) { await seedFromScope(); maybeAutoMatchOnOpen().catch(e => Log.error('Auto-match on open failed: ' + e.message)); }
+    if (STATE.recordings.size === 0) { await seedFromScope(); maybeAutoMatchOnOpen().catch(e => Log.error('Match on open failed: ' + e.message)); }
 }
 
 function ensureLauncher() {
@@ -31527,7 +31527,7 @@ if (SCOPE.type === 'release') {
             if (!rg) { Log.warn('Mission Control probe: no release group link on the page'); done([], 'no release group'); return; }
             progress('loading the release group');
             const { recordings } = await fetchRGRecordings(rg, (p, n, got) => progress('release group page ' + p + (n ? '/' + n : '') + ' · ' + got + ' recordings'));
-            Log.info('Mission Control probe: ' + recordings.length + ' recording(s) in the release group, auto-matching at "' + SETTINGS.matchCutoff + '"');
+            Log.info('Mission Control probe: ' + recordings.length + ' recording(s) in the release group, matching at "' + SETTINGS.matchCutoff + '"');
             progress('matching ' + recordings.length + ' recordings');
             const byGid = new Map(recordings.map(r => [r.gid, r]));
             const groups = autoMatch(recordings, SETTINGS.lengthToleranceMs, SETTINGS.matchCutoff);
@@ -37817,7 +37817,7 @@ Created this ${kind} while adding credits parsed from text to ${relUrl}`;
 
 // ===== isrc_scout (@run-at document-start) ========================================
 if (__stOff.indexOf("isrc_scout") < 0) (function(__stGM){
-  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"ISRC Scout*","namespace":"https://musicbrainz.org/","version":"2026.10.9","description":"Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify / Beatport / Tidal / Volumo / HDtracks / Qobuz, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/isrc_scout/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPklTUkMgU2NvdXQ8L3RpdGxlPgogICAgPHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPgogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjQwIi8+CiAgICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyNiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2U9IiNiOWEzZTgiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPgogIDwvZz4KICA8bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+Cjwvc3ZnPgo="}) }) : { script: {"name":"ISRC Scout*","namespace":"https://musicbrainz.org/","version":"2026.10.9","description":"Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify / Beatport / Tidal / Volumo / HDtracks / Qobuz, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/isrc_scout/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPklTUkMgU2NvdXQ8L3RpdGxlPgogICAgPHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPgogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjQwIi8+CiAgICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyNiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2U9IiNiOWEzZTgiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPgogIDwvZz4KICA8bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+Cjwvc3ZnPgo="} };
+  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"ISRC Scout*","namespace":"https://musicbrainz.org/","version":"2026.10.9.111436","description":"Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify / Beatport / Tidal / Volumo / HDtracks / Qobuz, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/isrc_scout/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPklTUkMgU2NvdXQ8L3RpdGxlPgogICAgPHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPgogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjQwIi8+CiAgICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyNiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2U9IiNiOWEzZTgiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPgogIDwvZz4KICA8bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+Cjwvc3ZnPgo="}) }) : { script: {"name":"ISRC Scout*","namespace":"https://musicbrainz.org/","version":"2026.10.9.111436","description":"Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify / Beatport / Tidal / Volumo / HDtracks / Qobuz, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/isrc_scout/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPklTUkMgU2NvdXQ8L3RpdGxlPgogICAgPHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPgogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjQwIi8+CiAgICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyNiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2U9IiNiOWEzZTgiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPgogIDwvZz4KICA8bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+Cjwvc3ZnPgo="} };
   (f=>f())(function(){ try { (function(){
 /*
  * ─────────────────────────────────────────────────────────────────────────
@@ -39212,7 +39212,7 @@ if (__stOff.indexOf("isrc_scout") < 0) (function(__stGM){
     /* toolbar */
     #ii-tools { display: flex; align-items: center; flex-wrap: wrap; gap: 6px;
       padding: 8px 16px; border-bottom: 1px solid var(--mbu-divider); flex-shrink: 0; background: var(--mbu-bg); }
-    #ii-tools #ii-links-btn { margin-left: auto; }   /* pins Find links + the Clear caret to the toolbar's right edge */
+    #ii-tools #ii-links-btn { margin-left: auto; }   /* pins Find links, Match and the Clear caret to the toolbar's right edge */
     .ii-tbtn { display: inline-flex; align-items: center; gap: 5px; padding: 4px 11px;
       font-size: 12px; font-weight: 600; border-radius: 5px; cursor: pointer; text-decoration: none;
       border: 1px solid var(--mbu-border); background: var(--mbu-bg); color: var(--mbu-text); white-space: nowrap; }
@@ -41704,7 +41704,7 @@ if (__stOff.indexOf("isrc_scout") < 0) (function(__stGM){
         <div class="ii-cfg-grp" style="margin-top:16px">Links</div>
         <div>
           <div class="ii-help" style="margin-top:0">
-            Export this release's recording streaming links — what's already linked plus what <b>🔗 Find links</b> resolved (Deezer / Tidal / Bandcamp / Apple Music). Copied to the clipboard.
+            Export this release's recording streaming links — what's already linked plus what <b>Find links</b> resolved (Deezer / Tidal / Bandcamp / Apple Music). Copied to the clipboard.
           </div>
           <div class="row" style="margin-top:8px">
             <button class="ii-tbtn" id="ii-link-export-csv">Export CSV</button>
@@ -41762,7 +41762,9 @@ if (__stOff.indexOf("isrc_scout") < 0) (function(__stGM){
           <input class="ii-urladd-input" type="text" id="ii-url-input" placeholder="Paste a streaming album URL…" autocomplete="off">
         </span>
         <span class="ii-prog" id="ii-prog"></span>
-        <button class="ii-tbtn sx" id="ii-links-btn" type="button" title="Resolve each track on Deezer / Tidal / Bandcamp and show what's linkable — grey = already linked in MB, colour = found and addable">🔗 Find links</button>
+        <button class="ii-tbtn sx" id="ii-links-btn" type="button" title="Resolve each track on Deezer / Tidal / Bandcamp and show what's linkable — grey = already linked in MB, colour = found and addable"><svg class="ii-flat-ico" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.07 0l3-3a5 5 0 0 0-7.07-7.07l-1.5 1.5"/><path d="M14 11a5 5 0 0 0-7.07 0l-3 3a5 5 0 0 0 7.07 7.07l1.5-1.5"/></svg> Find links</button>
+        <!-- #680: Match imports ISRCs, then runs Find links, so it sits after it -->
+        <button class="ii-tbtn sx" id="ii-find-all" type="button" title="Import ISRCs from the fastest source this release links (the next one if it fails or gives none), then Find links">⚡ Match</button>
         <span class="ii-clear-wrap">
           <button class="ii-clear-toggle" id="ii-clear-toggle" type="button" title="Clear…" aria-expanded="false">▾</button>
           <div class="ii-clear-menu" id="ii-clear-menu">
@@ -41795,7 +41797,6 @@ if (__stOff.indexOf("isrc_scout") < 0) (function(__stGM){
 
       <div id="ii-foot">
         <!-- #471: both summaries always shown now (no ISRCs/Links scope toggle) -->
-        <button class="ii-tbtn sx" id="ii-find-all" type="button" title="Import ISRCs from the fastest source this release links (the next one if it fails or gives none), then Find links">🔎 Find everything</button>
         <span class="ii-summary" id="ii-summary"></span>
         <span class="ii-summary" id="ii-summary-links"></span>
         <button class="ii-tbtn" id="ii-delete" title="Delete the checked existing ISRCs" disabled>🗑 Delete ISRC</button>
@@ -43717,7 +43718,7 @@ if (__stOff.indexOf("isrc_scout") < 0) (function(__stGM){
     _isrcMissing = missing;
     updateHdrStatus();   // #471: header status text replaced the old ISRCs-tab badge
     const seq = iterativeSequence();
-    // #680: no track count here (the links summary has it); Find everything takes its place
+    // #680: no track count here (the links summary has it); the footer starts with the sequential badge since Match moved to the toolbar
     summaryEl.innerHTML = [
       bad ? '<span style="color:var(--mbu-error)">' + bad + ' invalid</span>' : '',
       dup ? '<span style="color:var(--mbu-warn)">' + dup + ' already present</span>' : '',
@@ -43731,7 +43732,7 @@ if (__stOff.indexOf("isrc_scout") < 0) (function(__stGM){
 
   // #406: the one Submit button covers BOTH pending ISRCs and resolved streaming links,
   // so it shows the breakdown ("(2 ISRCs · 1 link)") and stays live while a collection —
-  // an ISRC import or 🔗 Find links — is running, rather than graying out until it lands
+  // an ISRC import or Find links — is running, rather than graying out until it lands
   // (majkinetor follow-up). `updateSummary` (ISRC side) and TrackLinks' `updateAddBtn`
   // (links side) each call this after recomputing their half; the collection wrappers
   // call it on start/finish.
@@ -43887,7 +43888,7 @@ if (__stOff.indexOf("isrc_scout") < 0) (function(__stGM){
   function exportLinks(fmt) {
     const rows = TrackLinks.linkRows();
     const note = modal.querySelector('#ii-link-export-note');
-    if (!rows.length) { if (note) note.textContent = 'No links yet — run 🔗 Find links first (or this release has none of our providers linked).'; toast('No links to export', 'err'); return; }
+    if (!rows.length) { if (note) note.textContent = 'No links yet — run Find links first (or this release has none of our providers linked).'; toast('No links to export', 'err'); return; }
     let out, msg;
     if (fmt === 'urls') {
       out = [...new Set(rows.map(r => r.url))].join('\n'); msg = out.split('\n').length + ' URLs copied';
@@ -44577,7 +44578,7 @@ if (__stOff.indexOf("isrc_scout") < 0) (function(__stGM){
     const pc = platformCheckUrl(source);
     return pc ? parseStreamingId(source, pc) : null;
   }
-  // #680 Find everything: the ISRC sources this release has, fastest first. One-request
+  // #680 Match: the ISRC sources this release has, fastest first. One-request
   // album reads (Qobuz, Audiomack, Apple, …) lead; per-track ones (Deezer, 7digital) and
   // Spotify (a third party) come last. A link pulled from the release group (#302) is left
   // out: whether it fits this release needs the user to look.
@@ -44592,7 +44593,7 @@ if (__stOff.indexOf("isrc_scout") < 0) (function(__stGM){
       .concat([{ source: 'Spotify', fetcher: fetchSpotify, id: rg.spotifyId ? null : idOf('Spotify', RELEASE.spotifyId) }])
       .filter(x => x.id);
   }
-  // the dialog's Find everything: ISRCs from the fastest source that gives any (the next one
+  // the dialog's Match: ISRCs from the fastest source that gives any (the next one
   // when a source fails or gives none), then Find links with them
   let _findingAll = false;
   async function findEverything() {
@@ -44602,19 +44603,19 @@ if (__stOff.indexOf("isrc_scout") < 0) (function(__stGM){
     if (btn) btn.disabled = true;
     try {
       const srcs = isrcSourcesFastest();
-      Log.info('Find everything: ISRC sources in order ' + (srcs.map(x => x.source).join(', ') || 'none'));
+      Log.info('Match: ISRC sources in order ' + (srcs.map(x => x.source).join(', ') || 'none'));
       for (const src of srcs) {
-        if (RELEASE.tracks.every(t => t.existing.length || isValidIsrc(normalizeIsrc(t.pending)))) { Log.info('Find everything: every track has an ISRC, no import needed'); break; }
+        if (RELEASE.tracks.every(t => t.existing.length || isValidIsrc(normalizeIsrc(t.pending)))) { Log.info('Match: every track has an ISRC, no import needed'); break; }
         _stream = null;
         await runStreamingSource(src.source, src.id, src.fetcher);
         const filled = (_stream && _stream.counts && _stream.counts.filled) || 0;
-        Log.info('Find everything: ' + src.source + ' filled ' + filled);
+        Log.info('Match: ' + src.source + ' filled ' + filled);
         if (filled) break;
       }
-      Log.info('Find everything: Find links');
+      Log.info('Match: Find links');
       await TrackLinks.resolve();
     } catch (e) {
-      Log.err('Find everything failed: ' + errText(e));
+      Log.err('Match failed: ' + errText(e));
     } finally {
       _findingAll = false;
       if (btn) btn.disabled = false;
@@ -44809,10 +44810,10 @@ if (__stOff.indexOf("isrc_scout") < 0) (function(__stGM){
       (map[t.recId] = map[t.recId] || []).push(v);
       isrcCount++;
     });
-    // 2) resolved, addable streaming links (from 🔗 Find links)
+    // 2) resolved, addable streaming links (from Find links)
     const linkCount = modal.querySelectorAll('.ii-tl-add .ii-tl.new').length;
 
-    if (!isrcCount && !linkCount) { toast('Nothing to submit — enter ISRCs or 🔗 Find links first', 'err'); return; }
+    if (!isrcCount && !linkCount) { toast('Nothing to submit — enter ISRCs or Find links first', 'err'); return; }
     // #431 follow-up (maintainer): flagged fills about to be submitted need explicit
     // confirmation — the amber inputs + summary count alone were too easy to miss.
     const suspectN = isrcCount ? [...modal.querySelectorAll('input.ii-in-suspect')].filter(i => i.value.trim()).length : 0;
@@ -45113,7 +45114,7 @@ if (__stOff.indexOf("isrc_scout") < 0) (function(__stGM){
      Mission Control asks over document events with JSON-string details (see
      userscripts/mission_control/DEVELOP.md). A probe runs headless: no dialog.
      It takes the release IS already loaded, imports ONE album source (the first
-     one in Find everything's fastest-first order that gives any), and
+     one in Match's fastest-first order that gives any), and
      only its first batch (STREAM_BATCH_LIMIT), like the dialog does before it
      pauses. Then it maps each ISRC to a track the way the dialog does: position
      first, then a title that is unambiguous. One finding per track; apply
@@ -45123,7 +45124,7 @@ if (__stOff.indexOf("isrc_scout") < 0) (function(__stGM){
     const mcHello = () => mcSend('mc:provider', { id: 'is', name: 'ISRC Scout', version: SCRIPT_VERSION, release: mbid, capabilities: ['probe', 'apply'] });
     let mcFound = {};   // recId -> { isrc, source } from the last probe
     let mcLinks = {};   // 'link:<recId>:<url>' -> { rec, idx, code, name, url, linkTypeID } from the last probe
-    // the same sources and order as the dialog's Find everything, but only the release's links and
+    // the same sources and order as the dialog's Match, but only the release's links and
     // the album links ticked in Mission Control (d.links): never a Platform Check find it didn't tick
     const mcSources = () => isrcSourcesFastest(true);
     // the dialog's mapping (trackForSource); a position fill that looks like another song is unsure

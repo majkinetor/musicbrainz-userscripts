@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Fusion
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.9
+// @version      2026.10.9.111436
 // @description  Merge-recordings assistant for MusicBrainz: gather a pool of candidate recordings from a release / release group / recording page (or paste any MBID/URL), auto-match them into merge groups by ISRC / AcoustID / length / title+artist, review and adjust the groups, then submit the merges directly in the background — no MB merge page involved.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPkZ1c2lvbjwvdGl0bGU+CiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjOGE1Y2Y2IiBzdHJva2Utd2lkdGg9IjciPgogICAgPGVsbGlwc2UgY3g9IjY0IiBjeT0iNjQiIHJ4PSI1MiIgcnk9IjIyIi8+CiAgICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSI2NCIgcng9IjUyIiByeT0iMjIiIHRyYW5zZm9ybT0icm90YXRlKDYwIDY0IDY0KSIvPgogICAgPGVsbGlwc2UgY3g9IjY0IiBjeT0iNjQiIHJ4PSI1MiIgcnk9IjIyIiB0cmFuc2Zvcm09InJvdGF0ZSgxMjAgNjQgNjQpIi8+CiAgPC9nPgogIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjE0IiBmaWxsPSIjNmQzZmYwIi8+Cjwvc3ZnPgo=
@@ -752,7 +752,7 @@ async function enrichPendingEdits(recs, concurrency, onProgress) {
         }
     }
     await Promise.all(Array.from({ length: Math.min(concurrency, todo.length) }, worker));
-    if (flagged) Log.warn(flagged + ' recording(s) have pending edits — excluded from auto-match and blocked from merging');
+    if (flagged) Log.warn(flagged + ' recording(s) have pending edits — excluded from matching and blocked from merging');
 }
 const _idCache = new Map();
 async function resolveInternalId(gid) {
@@ -2592,7 +2592,7 @@ function releasesSummary(rec) {
 const MERGE_MARK = '<svg class="fs-mergeicon" viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 3v6a5 5 0 0 0 5 5h7"/><path d="M18 3v6a5 5 0 0 1-5 5h-2"/><polyline points="15 11 19 14 15 17"/></svg>';
 const VIDEO_MARK = '<span class="fs-rec-video" title="This recording is a video"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg></span>';
 function videoBadge(rec) { return rec.video === true ? VIDEO_MARK + ' ' : ''; }
-function pendingBadge(rec) { return rec.editsPending ? '<span class="fs-pending" title="This recording has pending edits in MusicBrainz — excluded from auto-match and blocked from merging until they are applied">⏳ pending</span> ' : ''; }
+function pendingBadge(rec) { return rec.editsPending ? '<span class="fs-pending" title="This recording has pending edits in MusicBrainz — excluded from matching and blocked from merging until they are applied">⏳ pending</span> ' : ''; }
 // #529 follow-up: "we should see isrc and accousticid in the card too" — the
 // pool card only showed presence dots; show the actual values (AcoustID
 // truncated, it's a 36-char UUID — full value is in the tooltip).
@@ -3273,10 +3273,10 @@ async function onAutoMatch() {
     const btn = document.getElementById('fs-automatch'); if (!btn) return;
     btn.disabled = true; const orig = btn.textContent;
     btn.textContent = 'Matching…';
-    busyStart('auto-matching…');
+    busyStart('matching…');
     try {
         const poolRecs = STATE.poolOrder.map(g => STATE.recordings.get(g)).filter(Boolean);
-        Log.info('Auto-match starting on ' + poolRecs.length + ' pool recording(s), cutoff=' + SETTINGS.matchCutoff);
+        Log.info('Match starting on ' + poolRecs.length + ' pool recording(s), cutoff=' + SETTINGS.matchCutoff);
         poolRecs.forEach(r => Log.info('  pool: ' + describeRecordingForLog(r)));
         // Enrich EVERY known recording, not just ungrouped ones (#529): members
         // already sitting in a group were previously never looked up, so two rows
@@ -3307,7 +3307,7 @@ async function onAutoMatch() {
             });
             if (before !== groupings.length) Log.warn((before - groupings.length) + ' proposed group(s) dropped because a member has pending edits');
         }
-        Log.info('Auto-match formed ' + groupings.length + ' group(s) from ' + poolRecs.length + ' pool recording(s)');
+        Log.info('Match formed ' + groupings.length + ' group(s) from ' + poolRecs.length + ' pool recording(s)');
         groupings.forEach(g => {
             Log.info('  formed group ' + g.id + ' — confidence=' + g.confidence + ' signals=[' + g.signals.join(',') + ']');
             g.memberGids.forEach(gid => Log.info('    ' + gid + (gid === g.target ? ' (target)' : '') + ': ' + describeRecordingForLog(STATE.recordings.get(gid))));
@@ -3319,15 +3319,15 @@ async function onAutoMatch() {
         // Short in the header (it is one line), full sentence in the tooltip.
         if (!groupings.length) {
             showNotice('none',
-                'Auto-match found nothing to group in ' + poolRecs.length + ' pool recording(s) at the "'
+                'Match found nothing to group in ' + poolRecs.length + ' pool recording(s) at the "'
                 + SETTINGS.matchCutoff + '" cutoff. Try a looser cutoff, or group by hand.',
-                'auto-match: nothing matched at "' + SETTINGS.matchCutoff + '"');
+                'match: nothing matched at "' + SETTINGS.matchCutoff + '"');
         } else {
             const recs = groupings.reduce((a, g) => a + g.memberGids.length, 0);
             showNotice('ok',
-                'Auto-match formed ' + groupings.length + ' group' + (groupings.length === 1 ? '' : 's')
+                'Match formed ' + groupings.length + ' group' + (groupings.length === 1 ? '' : 's')
                 + ' from ' + recs + ' recording' + (recs === 1 ? '' : 's') + ' at the "' + SETTINGS.matchCutoff + '" cutoff.',
-                'auto-match: +' + groupings.length + ' group' + (groupings.length === 1 ? '' : 's'));
+                'match: +' + groupings.length + ' group' + (groupings.length === 1 ? '' : 's'));
         }
         renderAll();
     } finally { busyEnd(); btn.disabled = false; btn.textContent = orig; }
@@ -3618,10 +3618,10 @@ function openSettings(anchor) {
     s.innerHTML = mbuCfgHeader({ script: 'fusion', name: 'Fusion', version: VERSION, icon: ICON, log: true })
         + '<label class="fs-opt"><input type="checkbox" id="fs-opt-votable"> Always require a vote (make_votable)</label>'
         + '<label class="fs-opt"><input type="checkbox" id="fs-opt-acoustid"> Look up AcoustIDs (acoustid.org, batched)</label>'
-        + '<label class="fs-opt" title="Run Auto-match by itself as soon as the pool has finished loading, instead of waiting for you to press the button."><input type="checkbox" id="fs-opt-automatch"> Auto-match on open</label>'
+        + '<label class="fs-opt" title="Run Match by itself as soon as the pool has finished loading, instead of waiting for you to press the button."><input type="checkbox" id="fs-opt-automatch"> Match on open</label>'
         + '<label class="fs-opt" title="As soon as a group is formed, fetch the full release list for every recording in it, so expanding a row is instant. Costs one request per grouped recording; off by default because seeding already makes a lot of them. Runs in the background, never blocks the UI, and the header stop button halts it."><input type="checkbox" id="fs-opt-prefetch"> Preload group release details in the background</label>'
         + '<label class="fs-opt">Length tolerance <input type="number" id="fs-opt-tol" min="0" max="60" style="width:48px"> s</label>'
-        + '<label class="fs-opt" title="Auto-match never groups two recordings whose known lengths differ by more than this, whatever else matches. Manual grouping is unaffected.">Never auto-group if lengths differ by more than <input type="number" id="fs-opt-gross" min="5" max="600" style="width:56px"> s</label>';
+        + '<label class="fs-opt" title="Match never groups two recordings whose known lengths differ by more than this, whatever else matches. Manual grouping is unaffected.">Match never groups if lengths differ by more than <input type="number" id="fs-opt-gross" min="5" max="600" style="width:56px"> s</label>';
     document.body.appendChild(s);
     const r = anchor.getBoundingClientRect();
     s.style.top = (r.bottom + 6) + 'px'; s.style.right = '14px';
@@ -3634,7 +3634,7 @@ function openSettings(anchor) {
     s.querySelector('#fs-opt-prefetch').checked = !!SETTINGS.prefetchGroupReleases;
     s.querySelector('#fs-opt-votable').onchange = e => { SETTINGS.makeVotable = e.target.checked; saveSettings(); };
     s.querySelector('#fs-opt-acoustid').onchange = e => { SETTINGS.acoustidEnrich = e.target.checked; saveSettings(); };
-    s.querySelector('#fs-opt-automatch').onchange = e => { SETTINGS.autoMatchOnOpen = e.target.checked; saveSettings(); Log.info('Auto-match on open: ' + (SETTINGS.autoMatchOnOpen ? 'on' : 'off')); };
+    s.querySelector('#fs-opt-automatch').onchange = e => { SETTINGS.autoMatchOnOpen = e.target.checked; saveSettings(); Log.info('Match on open: ' + (SETTINGS.autoMatchOnOpen ? 'on' : 'off')); };
     s.querySelector('#fs-opt-prefetch').onchange = e => { SETTINGS.prefetchGroupReleases = e.target.checked; saveSettings(); Log.info('Background release prefetch: ' + (SETTINGS.prefetchGroupReleases ? 'on' : 'off')); if (SETTINGS.prefetchGroupReleases) prefetchGroupReleases(); };
     s.querySelector('#fs-opt-tol').onchange = e => { SETTINGS.lengthToleranceMs = Math.max(0, Number(e.target.value) || 0) * 1000; saveSettings(); };
     s.querySelector('#fs-opt-gross').onchange = e => { SETTINGS.grossLengthMs = Math.max(5, Number(e.target.value) || 30) * 1000; saveSettings(); Log.info('Gross-length guard set to ' + Math.round(SETTINGS.grossLengthMs / 1000) + 's'); };
@@ -3723,11 +3723,11 @@ function buildShell() {
         + '<div class="fs-ctrl"><select id="fs-rg-editions" style="display:none;"><option value="">+ Load recordings from RG edition ▾</option></select>'
         + '<input type="text" id="fs-add-input" placeholder="paste a recording, release, or release-group MBID|URL…" title="Paste an MBID or MusicBrainz URL — it is added automatically">'
         + '<div class="fs-sp"></div><div class="fs-legend">'
-        + '<span>Cutoff <select id="fs-cutoff" title="How strict Auto-match is. Hover an option for what it means.">' + cutoffOpts + '</select></span>'
+        + '<span>Cutoff <select id="fs-cutoff" title="How strict Match is. Hover an option for what it means.">' + cutoffOpts + '</select></span>'
         + '<span class="fs-tierlegend" title="Each group card is tinted by the strictest cutoff at which it still holds together">' + tierKey + '</span></div>'
-        + '<button type="button" id="fs-automatch" class="fs-btn fs-primary">⚡ Auto-match</button></div>'
+        + '<button type="button" id="fs-automatch" class="fs-btn fs-primary">⚡ Match</button></div>'
 
-        + '<div class="fs-body" id="fs-body"><div class="fs-col fs-pool"><div class="fs-colhdr">Pool <span class="fs-cnt" id="fs-pool-cnt">0</span><span class="fs-sp"></span><input type="text" id="fs-pool-filter" class="fs-poolfilter" placeholder="filter the pool…" title="Filter by title, artist, release, ISRC or AcoustID. Auto-match still considers the whole pool."><span class="fs-pooltog" id="fs-pooltog" title="collapse the pool to give the groups the full width">◀</span></div>'
+        + '<div class="fs-body" id="fs-body"><div class="fs-col fs-pool"><div class="fs-colhdr">Pool <span class="fs-cnt" id="fs-pool-cnt">0</span><span class="fs-sp"></span><input type="text" id="fs-pool-filter" class="fs-poolfilter" placeholder="filter the pool…" title="Filter by title, artist, release, ISRC or AcoustID. Match still considers the whole pool."><span class="fs-pooltog" id="fs-pooltog" title="collapse the pool to give the groups the full width">◀</span></div>'
         + '<div class="fs-colbody" id="fs-pool-body"></div></div>'
         + '<div class="fs-poolrail" id="fs-poolrail" title="show the pool again"><span class="fs-railarrow">▶</span><span class="fs-raillabel">POOL <span id="fs-rail-cnt">0</span></span></div>'
         + '<div class="fs-col fs-groups"><div class="fs-colhdr">Groups <span class="fs-cnt" id="fs-groups-cnt">0</span><span class="fs-subcnt" id="fs-groups-recs"></span><button type="button" id="fs-expandall-deep" class="fs-btn" title="expand every group and every release table (or collapse it all again)">⇲ All details</button><button type="button" id="fs-collapseall" class="fs-btn" title="collapse or expand every group card">▼ Collapse all</button><span class="fs-matchmsg" id="fs-matchmsg" style="display:none"></span><span class="fs-sp"></span><span class="fs-clearset">Clear: <button type="button" id="fs-clearboard" class="fs-btn fs-clearboard-btn" title="dissolve every group — all recordings return to the pool">all</button><button type="button" id="fs-clearmerged" class="fs-btn fs-clearboard-btn" title="remove groups that have already been merged — their recordings leave the board (the merged-away ones no longer exist in MusicBrainz)">merged</button></span></div>'
@@ -3830,11 +3830,11 @@ async function seedFromScope() {
 // the identifiers land would just produce weaker groups.
 async function maybeAutoMatchOnOpen() {
     if (!SETTINGS.autoMatchOnOpen) return;
-    if (!STATE.poolOrder.length) { Log.info('Auto-match on open: nothing in the pool'); return; }
+    if (!STATE.poolOrder.length) { Log.info('Match on open: nothing in the pool'); return; }
     // eslint-disable-next-line no-unmodified-loop-condition -- busyEnd() lowers it while this awaits
     for (let i = 0; i < 120 && _busyCount > 0; i++) await new Promise(r => setTimeout(r, 250));
     if (!FUSION_OPEN) return;
-    Log.info('Auto-match on open: starting');
+    Log.info('Match on open: starting');
     await onAutoMatch();
 }
 async function openFusion() {
@@ -3843,7 +3843,7 @@ async function openFusion() {
     fsStyle();
     buildShell();
     renderAll();
-    if (STATE.recordings.size === 0) { await seedFromScope(); maybeAutoMatchOnOpen().catch(e => Log.error('Auto-match on open failed: ' + e.message)); }
+    if (STATE.recordings.size === 0) { await seedFromScope(); maybeAutoMatchOnOpen().catch(e => Log.error('Match on open failed: ' + e.message)); }
 }
 
 function ensureLauncher() {
@@ -3926,7 +3926,7 @@ if (SCOPE.type === 'release') {
             if (!rg) { Log.warn('Mission Control probe: no release group link on the page'); done([], 'no release group'); return; }
             progress('loading the release group');
             const { recordings } = await fetchRGRecordings(rg, (p, n, got) => progress('release group page ' + p + (n ? '/' + n : '') + ' · ' + got + ' recordings'));
-            Log.info('Mission Control probe: ' + recordings.length + ' recording(s) in the release group, auto-matching at "' + SETTINGS.matchCutoff + '"');
+            Log.info('Mission Control probe: ' + recordings.length + ' recording(s) in the release group, matching at "' + SETTINGS.matchCutoff + '"');
             progress('matching ' + recordings.length + ' recordings');
             const byGid = new Map(recordings.map(r => [r.gid, r]));
             const groups = autoMatch(recordings, SETTINGS.lengthToleranceMs, SETTINGS.matchCutoff);

@@ -105,11 +105,11 @@ The **Links** tab shows, per track, what each recording already links to (**Link
 
 <img width="1000" src="./screenshots/links.png" />
 
-**🔗 Find links** resolves every track on every available provider, in parallel. A provider matched by position (Apple Music, Bandcamp, SoundCloud, Audiomack, Spotify, YouTube Music, Amazon Music) must have the track's title there; a typo in it, as above, still counts, and so do a "feat." the platform keeps in the title where MusicBrainz moved it to the artist credit, and an apostrophe written differently. A Deezer track that no longer plays anywhere is not offered. **➕ Add links** adds everything found; adding goes through your logged-in session (no OAuth), with ISRC Scout's edit note.
+**Find links** resolves every track on every available provider, in parallel. A provider matched by position (Apple Music, Bandcamp, SoundCloud, Audiomack, Spotify, YouTube Music, Amazon Music) must have the track's title there; a typo in it, as above, still counts, and so do a "feat." the platform keeps in the title where MusicBrainz moved it to the artist credit, and an apostrophe written differently. A Deezer track that no longer plays anywhere is not offered. **➕ Add links** adds everything found; adding goes through your logged-in session (no OAuth), with ISRC Scout's edit note.
 
-### Find everything
+### Match
 
-**🔎 Find everything**, bottom left, does both steps in one click. It imports ISRCs from the fastest source the release links: one-request sources (Qobuz, Audiomack, Apple Music, Tidal, …) before per-track ones (Deezer, 7digital) and Spotify. If a source fails or gives nothing, it tries the next. Then it runs **🔗 Find links** with the ISRCs it found. A link pulled from the release group is skipped, since whether it fits this release needs you to look. Mission Control's probe uses the same order.
+**⚡ Match**, at the right of the toolbar after **Find links**, does both steps in one click. It imports ISRCs from the fastest source the release links: one-request sources (Qobuz, Audiomack, Apple Music, Tidal, …) before per-track ones (Deezer, 7digital) and Spotify. If a source fails or gives nothing, it tries the next. Then it runs **Find links** with the ISRCs it found. A link pulled from the release group is skipped, since whether it fits this release needs you to look. Mission Control's probe uses the same order.
 
 | Click | on an **Add** icon | on a **Linked** icon |
 |---|---|---|

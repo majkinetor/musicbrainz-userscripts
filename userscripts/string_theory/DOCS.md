@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-10-09 11:11 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-10-09 11:16 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -578,7 +578,7 @@ The log records every step. Its menu copies the log with or without the raw data
 
 ## Fusion
 
-A merge assistant for MusicBrainz recordings: gather candidates, let Auto-match group the duplicates, adjust by hand, and submit every merge from one window.
+A merge assistant for MusicBrainz recordings: gather candidates, let Match group the duplicates, adjust by hand, and submit every merge from one window.
 
 - Install: [stable](https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/refs/heads/stable/userscripts/fusion/fusion.user.js) or [latest](https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/refs/heads/main/userscripts/fusion/fusion.user.js)
     - Or via bundle: [String Theory](../string_theory/README.md)
@@ -591,7 +591,7 @@ A merge assistant for MusicBrainz recordings: gather candidates, let Auto-match 
 
 - **[Pool and groups](#pool-and-groups)**: candidates on the left, merge groups on the right.
 - **[Seeding](#seeding)** from a release, a release group, a recording, or an artist's whole catalogue.
-- **[Auto-match](#auto-match)** groups likely duplicates by ISRC, AcoustID, title, artist and length.
+- **[Match](#match)** groups likely duplicates by ISRC, AcoustID, title, artist and length.
 - **[Merging](#merging)** submits the merges in the background, each with an itemised edit note.
 
 ### Pool and groups
@@ -619,9 +619,9 @@ Fusion opens with a pool already filled from the page you launched it on:
 
 On any page, pasting a recording, release or release-group MBID or URL into the input adds it (a release adds all of its recordings).
 
-### Auto-match
+### Match
 
-Auto-match groups the recordings still in the pool, so a group you built by hand is never undone. The **Cutoff** sets how much evidence it needs:
+Match groups the recordings still in the pool, so a group you built by hand is never undone. The **Cutoff** sets how much evidence it needs:
 
 | Cutoff | Groups two recordings when they share… |
 |---|---|
@@ -631,7 +631,7 @@ Auto-match groups the recordings still in the pool, so a group you built by hand
 
 Titles tolerate small typos. Artists are compared by MBID when both recordings have them, so *Radium* and *DJ Radium* credited to the same artist match.
 
-Auto-match never groups:
+Match never groups:
 
 - a video with an audio recording (not even with a shared ISRC; manual grouping refuses it too);
 - a recording that has an open edit;
@@ -661,10 +661,10 @@ The ⚙ window (or right-click Fusion's corner icon), which also holds the activ
 |---|---|---|
 | Always require a vote | off | send even your auto-edits to a vote |
 | Look up AcoustIDs | on | fetch the pool's AcoustIDs from acoustid.org |
-| Auto-match on open | off | run Auto-match once the pool has loaded |
+| Match on open | off | run Match once the pool has loaded |
 | Preload group release details | off | fetch every grouped recording's releases in the background |
 | Length tolerance | 5 s | lengths this close count as the same |
-| Never auto-group if lengths differ by more than | 30 s | |
+| Match never groups if lengths differ by more than | 30 s | |
 
 ---
 
@@ -958,11 +958,11 @@ The **Links** tab shows, per track, what each recording already links to (**Link
 
 <img width="1000" src="../isrc_scout/screenshots/links.png" />
 
-**🔗 Find links** resolves every track on every available provider, in parallel. A provider matched by position (Apple Music, Bandcamp, SoundCloud, Audiomack, Spotify, YouTube Music, Amazon Music) must have the track's title there; a typo in it, as above, still counts, and so do a "feat." the platform keeps in the title where MusicBrainz moved it to the artist credit, and an apostrophe written differently. A Deezer track that no longer plays anywhere is not offered. **➕ Add links** adds everything found; adding goes through your logged-in session (no OAuth), with ISRC Scout's edit note.
+**Find links** resolves every track on every available provider, in parallel. A provider matched by position (Apple Music, Bandcamp, SoundCloud, Audiomack, Spotify, YouTube Music, Amazon Music) must have the track's title there; a typo in it, as above, still counts, and so do a "feat." the platform keeps in the title where MusicBrainz moved it to the artist credit, and an apostrophe written differently. A Deezer track that no longer plays anywhere is not offered. **➕ Add links** adds everything found; adding goes through your logged-in session (no OAuth), with ISRC Scout's edit note.
 
-#### Find everything
+#### Match
 
-**🔎 Find everything**, bottom left, does both steps in one click. It imports ISRCs from the fastest source the release links: one-request sources (Qobuz, Audiomack, Apple Music, Tidal, …) before per-track ones (Deezer, 7digital) and Spotify. If a source fails or gives nothing, it tries the next. Then it runs **🔗 Find links** with the ISRCs it found. A link pulled from the release group is skipped, since whether it fits this release needs you to look. Mission Control's probe uses the same order.
+**⚡ Match**, at the right of the toolbar after **Find links**, does both steps in one click. It imports ISRCs from the fastest source the release links: one-request sources (Qobuz, Audiomack, Apple Music, Tidal, …) before per-track ones (Deezer, 7digital) and Spotify. If a source fails or gives nothing, it tries the next. Then it runs **Find links** with the ISRCs it found. A link pulled from the release group is skipped, since whether it fits this release needs you to look. Mission Control's probe uses the same order.
 
 | Click | on an **Add** icon | on a **Linked** icon |
 |---|---|---|

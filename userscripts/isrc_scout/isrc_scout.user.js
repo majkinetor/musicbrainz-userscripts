@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         ISRC Scout
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.9
+// @version      2026.10.9.111436
 // @description  Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify / Beatport / Tidal / Volumo / HDtracks / Qobuz, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPklTUkMgU2NvdXQ8L3RpdGxlPgogICAgPHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPgogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjQwIi8+CiAgICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyNiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2U9IiNiOWEzZTgiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPgogIDwvZz4KICA8bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+Cjwvc3ZnPgo=
@@ -1440,7 +1440,7 @@
     /* toolbar */
     #ii-tools { display: flex; align-items: center; flex-wrap: wrap; gap: 6px;
       padding: 8px 16px; border-bottom: 1px solid var(--mbu-divider); flex-shrink: 0; background: var(--mbu-bg); }
-    #ii-tools #ii-links-btn { margin-left: auto; }   /* pins Find links + the Clear caret to the toolbar's right edge */
+    #ii-tools #ii-links-btn { margin-left: auto; }   /* pins Find links, Match and the Clear caret to the toolbar's right edge */
     .ii-tbtn { display: inline-flex; align-items: center; gap: 5px; padding: 4px 11px;
       font-size: 12px; font-weight: 600; border-radius: 5px; cursor: pointer; text-decoration: none;
       border: 1px solid var(--mbu-border); background: var(--mbu-bg); color: var(--mbu-text); white-space: nowrap; }
@@ -3932,7 +3932,7 @@
         <div class="ii-cfg-grp" style="margin-top:16px">Links</div>
         <div>
           <div class="ii-help" style="margin-top:0">
-            Export this release's recording streaming links — what's already linked plus what <b>🔗 Find links</b> resolved (Deezer / Tidal / Bandcamp / Apple Music). Copied to the clipboard.
+            Export this release's recording streaming links — what's already linked plus what <b>Find links</b> resolved (Deezer / Tidal / Bandcamp / Apple Music). Copied to the clipboard.
           </div>
           <div class="row" style="margin-top:8px">
             <button class="ii-tbtn" id="ii-link-export-csv">Export CSV</button>
@@ -3990,7 +3990,9 @@
           <input class="ii-urladd-input" type="text" id="ii-url-input" placeholder="Paste a streaming album URL…" autocomplete="off">
         </span>
         <span class="ii-prog" id="ii-prog"></span>
-        <button class="ii-tbtn sx" id="ii-links-btn" type="button" title="Resolve each track on Deezer / Tidal / Bandcamp and show what's linkable — grey = already linked in MB, colour = found and addable">🔗 Find links</button>
+        <button class="ii-tbtn sx" id="ii-links-btn" type="button" title="Resolve each track on Deezer / Tidal / Bandcamp and show what's linkable — grey = already linked in MB, colour = found and addable"><svg class="ii-flat-ico" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.07 0l3-3a5 5 0 0 0-7.07-7.07l-1.5 1.5"/><path d="M14 11a5 5 0 0 0-7.07 0l-3 3a5 5 0 0 0 7.07 7.07l1.5-1.5"/></svg> Find links</button>
+        <!-- #680: Match imports ISRCs, then runs Find links, so it sits after it -->
+        <button class="ii-tbtn sx" id="ii-find-all" type="button" title="Import ISRCs from the fastest source this release links (the next one if it fails or gives none), then Find links">⚡ Match</button>
         <span class="ii-clear-wrap">
           <button class="ii-clear-toggle" id="ii-clear-toggle" type="button" title="Clear…" aria-expanded="false">▾</button>
           <div class="ii-clear-menu" id="ii-clear-menu">
@@ -4023,7 +4025,6 @@
 
       <div id="ii-foot">
         <!-- #471: both summaries always shown now (no ISRCs/Links scope toggle) -->
-        <button class="ii-tbtn sx" id="ii-find-all" type="button" title="Import ISRCs from the fastest source this release links (the next one if it fails or gives none), then Find links">🔎 Find everything</button>
         <span class="ii-summary" id="ii-summary"></span>
         <span class="ii-summary" id="ii-summary-links"></span>
         <button class="ii-tbtn" id="ii-delete" title="Delete the checked existing ISRCs" disabled>🗑 Delete ISRC</button>
@@ -5945,7 +5946,7 @@
     _isrcMissing = missing;
     updateHdrStatus();   // #471: header status text replaced the old ISRCs-tab badge
     const seq = iterativeSequence();
-    // #680: no track count here (the links summary has it); Find everything takes its place
+    // #680: no track count here (the links summary has it); the footer starts with the sequential badge since Match moved to the toolbar
     summaryEl.innerHTML = [
       bad ? '<span style="color:var(--mbu-error)">' + bad + ' invalid</span>' : '',
       dup ? '<span style="color:var(--mbu-warn)">' + dup + ' already present</span>' : '',
@@ -5959,7 +5960,7 @@
 
   // #406: the one Submit button covers BOTH pending ISRCs and resolved streaming links,
   // so it shows the breakdown ("(2 ISRCs · 1 link)") and stays live while a collection —
-  // an ISRC import or 🔗 Find links — is running, rather than graying out until it lands
+  // an ISRC import or Find links — is running, rather than graying out until it lands
   // (majkinetor follow-up). `updateSummary` (ISRC side) and TrackLinks' `updateAddBtn`
   // (links side) each call this after recomputing their half; the collection wrappers
   // call it on start/finish.
@@ -6115,7 +6116,7 @@
   function exportLinks(fmt) {
     const rows = TrackLinks.linkRows();
     const note = modal.querySelector('#ii-link-export-note');
-    if (!rows.length) { if (note) note.textContent = 'No links yet — run 🔗 Find links first (or this release has none of our providers linked).'; toast('No links to export', 'err'); return; }
+    if (!rows.length) { if (note) note.textContent = 'No links yet — run Find links first (or this release has none of our providers linked).'; toast('No links to export', 'err'); return; }
     let out, msg;
     if (fmt === 'urls') {
       out = [...new Set(rows.map(r => r.url))].join('\n'); msg = out.split('\n').length + ' URLs copied';
@@ -6805,7 +6806,7 @@
     const pc = platformCheckUrl(source);
     return pc ? parseStreamingId(source, pc) : null;
   }
-  // #680 Find everything: the ISRC sources this release has, fastest first. One-request
+  // #680 Match: the ISRC sources this release has, fastest first. One-request
   // album reads (Qobuz, Audiomack, Apple, …) lead; per-track ones (Deezer, 7digital) and
   // Spotify (a third party) come last. A link pulled from the release group (#302) is left
   // out: whether it fits this release needs the user to look.
@@ -6820,7 +6821,7 @@
       .concat([{ source: 'Spotify', fetcher: fetchSpotify, id: rg.spotifyId ? null : idOf('Spotify', RELEASE.spotifyId) }])
       .filter(x => x.id);
   }
-  // the dialog's Find everything: ISRCs from the fastest source that gives any (the next one
+  // the dialog's Match: ISRCs from the fastest source that gives any (the next one
   // when a source fails or gives none), then Find links with them
   let _findingAll = false;
   async function findEverything() {
@@ -6830,19 +6831,19 @@
     if (btn) btn.disabled = true;
     try {
       const srcs = isrcSourcesFastest();
-      Log.info('Find everything: ISRC sources in order ' + (srcs.map(x => x.source).join(', ') || 'none'));
+      Log.info('Match: ISRC sources in order ' + (srcs.map(x => x.source).join(', ') || 'none'));
       for (const src of srcs) {
-        if (RELEASE.tracks.every(t => t.existing.length || isValidIsrc(normalizeIsrc(t.pending)))) { Log.info('Find everything: every track has an ISRC, no import needed'); break; }
+        if (RELEASE.tracks.every(t => t.existing.length || isValidIsrc(normalizeIsrc(t.pending)))) { Log.info('Match: every track has an ISRC, no import needed'); break; }
         _stream = null;
         await runStreamingSource(src.source, src.id, src.fetcher);
         const filled = (_stream && _stream.counts && _stream.counts.filled) || 0;
-        Log.info('Find everything: ' + src.source + ' filled ' + filled);
+        Log.info('Match: ' + src.source + ' filled ' + filled);
         if (filled) break;
       }
-      Log.info('Find everything: Find links');
+      Log.info('Match: Find links');
       await TrackLinks.resolve();
     } catch (e) {
-      Log.err('Find everything failed: ' + errText(e));
+      Log.err('Match failed: ' + errText(e));
     } finally {
       _findingAll = false;
       if (btn) btn.disabled = false;
@@ -7037,10 +7038,10 @@
       (map[t.recId] = map[t.recId] || []).push(v);
       isrcCount++;
     });
-    // 2) resolved, addable streaming links (from 🔗 Find links)
+    // 2) resolved, addable streaming links (from Find links)
     const linkCount = modal.querySelectorAll('.ii-tl-add .ii-tl.new').length;
 
-    if (!isrcCount && !linkCount) { toast('Nothing to submit — enter ISRCs or 🔗 Find links first', 'err'); return; }
+    if (!isrcCount && !linkCount) { toast('Nothing to submit — enter ISRCs or Find links first', 'err'); return; }
     // #431 follow-up (maintainer): flagged fills about to be submitted need explicit
     // confirmation — the amber inputs + summary count alone were too easy to miss.
     const suspectN = isrcCount ? [...modal.querySelectorAll('input.ii-in-suspect')].filter(i => i.value.trim()).length : 0;
@@ -7341,7 +7342,7 @@
      Mission Control asks over document events with JSON-string details (see
      userscripts/mission_control/DEVELOP.md). A probe runs headless: no dialog.
      It takes the release IS already loaded, imports ONE album source (the first
-     one in Find everything's fastest-first order that gives any), and
+     one in Match's fastest-first order that gives any), and
      only its first batch (STREAM_BATCH_LIMIT), like the dialog does before it
      pauses. Then it maps each ISRC to a track the way the dialog does: position
      first, then a title that is unambiguous. One finding per track; apply
@@ -7351,7 +7352,7 @@
     const mcHello = () => mcSend('mc:provider', { id: 'is', name: 'ISRC Scout', version: SCRIPT_VERSION, release: mbid, capabilities: ['probe', 'apply'] });
     let mcFound = {};   // recId -> { isrc, source } from the last probe
     let mcLinks = {};   // 'link:<recId>:<url>' -> { rec, idx, code, name, url, linkTypeID } from the last probe
-    // the same sources and order as the dialog's Find everything, but only the release's links and
+    // the same sources and order as the dialog's Match, but only the release's links and
     // the album links ticked in Mission Control (d.links): never a Platform Check find it didn't tick
     const mcSources = () => isrcSourcesFastest(true);
     // the dialog's mapping (trackForSource); a position fill that looks like another song is unsure
