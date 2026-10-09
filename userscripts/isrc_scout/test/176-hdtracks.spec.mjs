@@ -27,7 +27,7 @@ test('a pasted HDtracks URL imports its 13 ISRCs', { tag: ['@sandbox', '@web'] }
   await page.dispatchEvent('#ii-url-input', 'input');
   check((await page.evaluate(() => document.getElementById('ii-url-btn')?.title || '')).includes('HDtracks'), 'the + button recognises HDtracks');
   await page.press('#ii-url-input', 'Enter');
-  await page.waitForFunction(() => /HDtracks done/i.test(document.getElementById('ii-log-out')?.textContent || ''), null, { timeout: 30000 }).catch(() => {});
+  await page.waitForFunction(() => /HDtracks done/i.test(window.__isrcScoutLog?.() || ''), null, { timeout: 30000 }).catch(() => {});
   const log = await logText(page);
   check(/HDtracks album .*: 13 track\(s\)/i.test(log), '13 tracks came back from HDtracks');
   const m = log.match(/HDtracks done — (\d+) filled, (\d+) already present/i);

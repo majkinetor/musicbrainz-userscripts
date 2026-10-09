@@ -29,7 +29,7 @@ test('a SoundCloud set fills ISRCs, and a pasted set URL imports', { tag: ['@san
   await page.click('#ii-url-btn');
   await page.fill('#ii-url-input', SET);
   await page.press('#ii-url-input', 'Enter');
-  await page.waitForFunction(() => /importing pasted album/.test(document.getElementById('ii-log-out')?.textContent || ''), null, { timeout: 30000 }).catch(() => {});
+  await page.waitForFunction(() => /importing pasted album/.test(window.__isrcScoutLog?.() || ''), null, { timeout: 30000 }).catch(() => {});
   log = await ended(page, 'SoundCloud');
   check(/importing pasted album/.test(log) && !/fetcher is not a function/.test(log), 'the pasted set URL imports');
   await ws.done();

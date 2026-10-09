@@ -31,7 +31,7 @@ export async function openScout(page, inject, { release = ANY_RELEASE, replay = 
   await page.evaluate(() => document.getElementById('ii-btn').click());
   await page.waitForSelector('#ii-modal.open', { timeout: 15000 });
   await page.waitForFunction(() => document.querySelectorAll('#ii-tbody tr[data-idx]').length > 0, null, { timeout: 45000 });
-  await page.waitForFunction(() => /Release "/.test(document.getElementById('ii-log-out')?.textContent || ''), null, { timeout: 30000 }).catch(() => {});
+  await page.waitForFunction(() => /Release "/.test(window.__isrcScoutLog?.() || ''), null, { timeout: 30000 }).catch(() => {});
   return ws;
 }
 
@@ -57,7 +57,7 @@ export async function openStub(page, context, inject) {
 
 // The log pane's text.
 // the log pane redraws once a frame (#623), so a line logged just now is on the next one
-export const logText = async page => { await frames(page, 2); return page.evaluate(() => document.getElementById('ii-log-out')?.textContent || ''); };
+export const logText = async page => { await frames(page, 2); return page.evaluate(() => window.__isrcScoutLog?.() || ''); };
 
 // Until a provider's import has ended: its status says "<label> done — …" or
 // "⚠ <label> failed — see Log", its last line either way. Returns the log.

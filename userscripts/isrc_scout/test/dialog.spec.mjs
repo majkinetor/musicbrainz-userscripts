@@ -55,7 +55,7 @@ test('#490: SoundExchange search is a row-hover icon that survives "Clear ISRCs"
 test('#580: a status that says "see Log" opens the log; ordinary progress does not look clickable', { tag: ['@sandbox'] }, async ({ page, inject }) => {
   await openScout(page, inject);
   await page.waitForFunction(() => !!(window.__isrcScoutTestProg && window.__isrcScoutTestProg.setProg), null, { timeout: 5000 });
-  const probe = () => page.evaluate(() => { const el = document.getElementById('ii-prog'), pane = document.getElementById('ii-log-pane'); return { tolog: el.classList.contains('tolog'), err: el.classList.contains('err'), cursor: getComputedStyle(el).cursor, title: el.title, click: typeof el.onclick === 'function', open: !!pane && pane.classList.contains('open') }; });
+  const probe = () => page.evaluate(() => { const el = document.getElementById('ii-prog'), pane = document.getElementById('mbu-logpop'); return { tolog: el.classList.contains('tolog'), err: el.classList.contains('err'), cursor: getComputedStyle(el).cursor, title: el.title, click: typeof el.onclick === 'function', open: !!pane }; });
   await page.evaluate(() => window.__isrcScoutTestProg.setProg('reading tracklist…', false));
   const plain = await probe();
   check(!plain.tolog && !plain.click && plain.cursor !== 'pointer', `a progress line is not clickable (${JSON.stringify(plain)})`);
@@ -65,6 +65,8 @@ test('#580: a status that says "see Log" opens the log; ordinary progress does n
   check(!bad.open, 'the log is still shut before a click');
   await page.evaluate(() => document.getElementById('ii-prog').click());
   check((await until(probe, p => p.open)).open, 'clicking it opens the log');
+  // #701: the shared log window, over the dialog rather than under it
+  check(await page.evaluate(() => { const r = document.getElementById('mbu-logpop').getBoundingClientRect(); return !!document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2)?.closest('#mbu-logpop'); }), 'the log window shows over the dialog');
   await page.evaluate(() => document.getElementById('ii-prog').click());
   await frames(page);   // the click has been handled and drawn: a toggle would have shut it
   check((await probe()).open, 'a second click leaves it open');

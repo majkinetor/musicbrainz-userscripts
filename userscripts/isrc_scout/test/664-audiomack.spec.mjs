@@ -28,7 +28,7 @@ test('an Audiomack album gives its ISRCs, and a pasted album URL imports', { tag
   await page.click('#ii-url-btn');
   await page.fill('#ii-url-input', 'https://www.audiomack.com/burna-boy/song/tatata-feat-travis-scott-2564133');
   await page.press('#ii-url-input', 'Enter');
-  await page.waitForFunction(() => /Audiomack: importing pasted album/.test(document.getElementById('ii-log-out')?.textContent || ''), null, { timeout: 30000 }).catch(() => {});
+  await page.waitForFunction(() => /Audiomack: importing pasted album/.test(window.__isrcScoutLog?.() || ''), null, { timeout: 30000 }).catch(() => {});
   log = await ended(page, 'Audiomack');
   check(/Audiomack: importing pasted album https:\/\/audiomack\.com\/burna-boy\/song\/tatata/.test(log) && /Audiomack "TaTaTa[^"]*": 1 track/.test(log), 'a pasted song URL imports as a one-track release');
 

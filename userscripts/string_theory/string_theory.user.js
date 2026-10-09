@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         String Theory
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.9.174950
+// @version      2026.10.9.175934
 // @description  Unified bundle of 9 MusicBrainz userscripts (apollo_editor, art_station, credit_hoarder, fusion, group_therapy, isrc_scout, mammoth, mission_control, platform_check). Built by userscripts/string_theory/build.mjs — do not hand-edit.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5TdHJpbmcgVGhlb3J5PC90aXRsZT4KPGRlZnM+PGZpbHRlciBpZD0ic3RsMDItaCIgeD0iLTEwJSIgeT0iLTEwJSIgd2lkdGg9IjEyMCUiIGhlaWdodD0iMTIwJSI+PGZlTW9ycGhvbG9neSBpbj0iU291cmNlQWxwaGEiIG9wZXJhdG9yPSJkaWxhdGUiIHJhZGl1cz0iMS41IiByZXN1bHQ9ImQiLz48ZmVGbG9vZCBmbG9vZC1jb2xvcj0iI2ZmZiIgZmxvb2Qtb3BhY2l0eT0iLjciLz48ZmVDb21wb3NpdGUgaW4yPSJkIiBvcGVyYXRvcj0iaW4iLz48ZmVNZXJnZT48ZmVNZXJnZU5vZGUvPjxmZU1lcmdlTm9kZSBpbj0iU291cmNlR3JhcGhpYyIvPjwvZmVNZXJnZT48L2ZpbHRlcj48L2RlZnM+PGcgZmlsdGVyPSJ1cmwoI3N0bDAyLWgpIj48cGF0aCBkPSJNNjQgMTAgTDY2LjQgMTAuMiBMNjguNyAxMC42IEw3MC45IDExLjQgTDczLjEgMTIuNCBMNzUuMiAxMy43IEw3Ny4xIDE1LjIgTDc4LjggMTcgTDgwLjQgMTguOSBMODEuOCAyMSBMODMuMSAyMy4xIEw4NC4xIDI1LjQgTDg1IDI3LjYgTDg1LjcgMjkuOSBMODYuMyAzMi4xIEw4Ni44IDM0LjMgTDg3LjEgMzYuNCBMODcuNCAzOC40IEw4Ny43IDQwLjMgTDg3LjkgNDIuMSBMODguMiA0My43IEw4OC41IDQ1LjIgTDg4LjkgNDYuNiBMODkuNCA0Ny44IEw5MCA0OSBMOTAuNyA1MC4xIEw5MS42IDUxLjEgTDkyLjYgNTIuMiBMOTMuNyA1My4yIEw5NSA1NC4yIEw5Ni40IDU1LjMgTDk3LjkgNTYuNSBMOTkuNSA1Ny43IEwxMDEuMSA1OS4xIEwxMDIuNyA2MC42IEwxMDQuNCA2Mi4yIEwxMDYgNjQgTDEwNy41IDY1LjkgTDEwOC45IDY3LjkgTDExMC4yIDcwLjEgTDExMS4zIDcyLjMgTDExMi4xIDc0LjcgTDExMi44IDc3LjEgTDExMy4xIDc5LjUgTDExMy4yIDgxLjkgTDExMyA4NC4zIEwxMTIuNiA4Ni42IEwxMTEuOCA4OC45IEwxMTAuOCA5MSBMMTA5LjUgOTMgTDEwNy45IDk0LjcgTDEwNi4xIDk2LjMgTDEwNC4xIDk3LjcgTDEwMiA5OC44IEw5OS43IDk5LjcgTDk3LjMgMTAwLjQgTDk0LjkgMTAwLjggTDkyLjQgMTAxIEw4OS45IDEwMC45IEw4Ny40IDEwMC43IEw4NSAxMDAuNCBMODIuNyA5OS45IEw4MC40IDk5LjMgTDc4LjMgOTguNiBMNzYuMyA5Ny44IEw3NC40IDk3LjEgTDcyLjcgOTYuNCBMNzEgOTUuNyBMNjkuNSA5NS4xIEw2OCA5NC42IEw2Ni43IDk0LjMgTDY1LjMgOTQuMSBMNjQgOTQgTDYyLjcgOTQuMSBMNjEuMyA5NC4zIEw2MCA5NC42IEw1OC41IDk1LjEgTDU3IDk1LjcgTDU1LjMgOTYuNCBMNTMuNiA5Ny4xIEw1MS43IDk3LjggTDQ5LjcgOTguNiBMNDcuNiA5OS4zIEw0NS4zIDk5LjkgTDQzIDEwMC40IEw0MC42IDEwMC43IEwzOC4xIDEwMC45IEwzNS42IDEwMSBMMzMuMSAxMDAuOCBMMzAuNyAxMDAuNCBMMjguMyA5OS43IEwyNiA5OC44IEwyMy45IDk3LjcgTDIxLjkgOTYuMyBMMjAuMSA5NC43IEwxOC41IDkzIEwxNy4yIDkxIEwxNi4yIDg4LjkgTDE1LjQgODYuNiBMMTUgODQuMyBMMTQuOCA4MS45IEwxNC45IDc5LjUgTDE1LjIgNzcuMSBMMTUuOSA3NC43IEwxNi43IDcyLjMgTDE3LjggNzAuMSBMMTkuMSA2Ny45IEwyMC41IDY1LjkgTDIyIDY0IEwyMy42IDYyLjIgTDI1LjMgNjAuNiBMMjYuOSA1OS4xIEwyOC41IDU3LjcgTDMwLjEgNTYuNSBMMzEuNiA1NS4zIEwzMyA1NC4yIEwzNC4zIDUzLjIgTDM1LjQgNTIuMiBMMzYuNCA1MS4xIEwzNy4zIDUwLjEgTDM4IDQ5IEwzOC42IDQ3LjggTDM5LjEgNDYuNiBMMzkuNSA0NS4yIEwzOS44IDQzLjcgTDQwLjEgNDIuMSBMNDAuMyA0MC4zIEw0MC42IDM4LjQgTDQwLjkgMzYuNCBMNDEuMiAzNC4zIEw0MS43IDMyLjEgTDQyLjMgMjkuOSBMNDMgMjcuNiBMNDMuOSAyNS40IEw0NC45IDIzLjEgTDQ2LjIgMjEgTDQ3LjYgMTguOSBMNDkuMiAxNyBMNTAuOSAxNS4yIEw1Mi44IDEzLjcgTDU0LjkgMTIuNCBMNTcuMSAxMS40IEw1OS4zIDEwLjYgTDYxLjYgMTAuMloiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2I5YThlYyIgc3Ryb2tlLXdpZHRoPSI1IiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PHBhdGggZD0iTTY0IDM0IEw2NS4zIDMzLjkgTDY2LjcgMzMuNyBMNjggMzMuNCBMNjkuNSAzMi45IEw3MSAzMi4zIEw3Mi43IDMxLjYgTDc0LjQgMzAuOSBMNzYuMyAzMC4yIEw3OC4zIDI5LjQgTDgwLjQgMjguNyBMODIuNyAyOC4xIEw4NSAyNy42IEw4Ny40IDI3LjMgTDg5LjkgMjcuMSBMOTIuNCAyNyBMOTQuOSAyNy4yIEw5Ny4zIDI3LjYgTDk5LjcgMjguMyBMMTAyIDI5LjIgTDEwNC4xIDMwLjMgTDEwNi4xIDMxLjcgTDEwNy45IDMzLjMgTDEwOS41IDM1IEwxMTAuOCAzNyBMMTExLjggMzkuMSBMMTEyLjYgNDEuNCBMMTEzIDQzLjcgTDExMy4yIDQ2LjEgTDExMy4xIDQ4LjUgTDExMi44IDUwLjkgTDExMi4xIDUzLjMgTDExMS4zIDU1LjcgTDExMC4yIDU3LjkgTDEwOC45IDYwLjEgTDEwNy41IDYyLjEgTDEwNiA2NCBMMTA0LjQgNjUuOCBMMTAyLjcgNjcuNCBMMTAxLjEgNjguOSBMOTkuNSA3MC4zIEw5Ny45IDcxLjUgTDk2LjQgNzIuNyBMOTUgNzMuOCBMOTMuNyA3NC44IEw5Mi42IDc1LjggTDkxLjYgNzYuOSBMOTAuNyA3Ny45IEw5MCA3OSBMODkuNCA4MC4yIEw4OC45IDgxLjQgTDg4LjUgODIuOCBMODguMiA4NC4zIEw4Ny45IDg1LjkgTDg3LjcgODcuNyBMODcuNCA4OS42IEw4Ny4xIDkxLjYgTDg2LjggOTMuNyBMODYuMyA5NS45IEw4NS43IDk4LjEgTDg1IDEwMC40IEw4NC4xIDEwMi42IEw4My4xIDEwNC45IEw4MS44IDEwNyBMODAuNCAxMDkuMSBMNzguOCAxMTEgTDc3LjEgMTEyLjggTDc1LjIgMTE0LjMgTDczLjEgMTE1LjYgTDcwLjkgMTE2LjYgTDY4LjcgMTE3LjQgTDY2LjQgMTE3LjggTDY0IDExOCBMNjEuNiAxMTcuOCBMNTkuMyAxMTcuNCBMNTcuMSAxMTYuNiBMNTQuOSAxMTUuNiBMNTIuOCAxMTQuMyBMNTAuOSAxMTIuOCBMNDkuMiAxMTEgTDQ3LjYgMTA5LjEgTDQ2LjIgMTA3IEw0NC45IDEwNC45IEw0My45IDEwMi42IEw0MyAxMDAuNCBMNDIuMyA5OC4xIEw0MS43IDk1LjkgTDQxLjIgOTMuNyBMNDAuOSA5MS42IEw0MC42IDg5LjYgTDQwLjMgODcuNyBMNDAuMSA4NS45IEwzOS44IDg0LjMgTDM5LjUgODIuOCBMMzkuMSA4MS40IEwzOC42IDgwLjIgTDM4IDc5IEwzNy4zIDc3LjkgTDM2LjQgNzYuOSBMMzUuNCA3NS44IEwzNC4zIDc0LjggTDMzIDczLjggTDMxLjYgNzIuNyBMMzAuMSA3MS41IEwyOC41IDcwLjMgTDI2LjkgNjguOSBMMjUuMyA2Ny40IEwyMy42IDY1LjggTDIyIDY0IEwyMC41IDYyLjEgTDE5LjEgNjAuMSBMMTcuOCA1Ny45IEwxNi43IDU1LjcgTDE1LjkgNTMuMyBMMTUuMiA1MC45IEwxNC45IDQ4LjUgTDE0LjggNDYuMSBMMTUgNDMuNyBMMTUuNCA0MS40IEwxNi4yIDM5LjEgTDE3LjIgMzcgTDE4LjUgMzUgTDIwLjEgMzMuMyBMMjEuOSAzMS43IEwyMy45IDMwLjMgTDI2IDI5LjIgTDI4LjMgMjguMyBMMzAuNyAyNy42IEwzMy4xIDI3LjIgTDM1LjYgMjcgTDM4LjEgMjcuMSBMNDAuNiAyNy4zIEw0MyAyNy42IEw0NS4zIDI4LjEgTDQ3LjYgMjguNyBMNDkuNyAyOS40IEw1MS43IDMwLjIgTDUzLjYgMzAuOSBMNTUuMyAzMS42IEw1NyAzMi4zIEw1OC41IDMyLjkgTDYwIDMzLjQgTDYxLjMgMzMuNyBMNjIuNyAzMy45WiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMjIyMjNiIiBzdHJva2Utd2lkdGg9IjExIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PHBhdGggZD0iTTY0IDM0IEw2NS4zIDMzLjkgTDY2LjcgMzMuNyBMNjggMzMuNCBMNjkuNSAzMi45IEw3MSAzMi4zIEw3Mi43IDMxLjYgTDc0LjQgMzAuOSBMNzYuMyAzMC4yIEw3OC4zIDI5LjQgTDgwLjQgMjguNyBMODIuNyAyOC4xIEw4NSAyNy42IEw4Ny40IDI3LjMgTDg5LjkgMjcuMSBMOTIuNCAyNyBMOTQuOSAyNy4yIEw5Ny4zIDI3LjYgTDk5LjcgMjguMyBMMTAyIDI5LjIgTDEwNC4xIDMwLjMgTDEwNi4xIDMxLjcgTDEwNy45IDMzLjMgTDEwOS41IDM1IEwxMTAuOCAzNyBMMTExLjggMzkuMSBMMTEyLjYgNDEuNCBMMTEzIDQzLjcgTDExMy4yIDQ2LjEgTDExMy4xIDQ4LjUgTDExMi44IDUwLjkgTDExMi4xIDUzLjMgTDExMS4zIDU1LjcgTDExMC4yIDU3LjkgTDEwOC45IDYwLjEgTDEwNy41IDYyLjEgTDEwNiA2NCBMMTA0LjQgNjUuOCBMMTAyLjcgNjcuNCBMMTAxLjEgNjguOSBMOTkuNSA3MC4zIEw5Ny45IDcxLjUgTDk2LjQgNzIuNyBMOTUgNzMuOCBMOTMuNyA3NC44IEw5Mi42IDc1LjggTDkxLjYgNzYuOSBMOTAuNyA3Ny45IEw5MCA3OSBMODkuNCA4MC4yIEw4OC45IDgxLjQgTDg4LjUgODIuOCBMODguMiA4NC4zIEw4Ny45IDg1LjkgTDg3LjcgODcuNyBMODcuNCA4OS42IEw4Ny4xIDkxLjYgTDg2LjggOTMuNyBMODYuMyA5NS45IEw4NS43IDk4LjEgTDg1IDEwMC40IEw4NC4xIDEwMi42IEw4My4xIDEwNC45IEw4MS44IDEwNyBMODAuNCAxMDkuMSBMNzguOCAxMTEgTDc3LjEgMTEyLjggTDc1LjIgMTE0LjMgTDczLjEgMTE1LjYgTDcwLjkgMTE2LjYgTDY4LjcgMTE3LjQgTDY2LjQgMTE3LjggTDY0IDExOCBMNjEuNiAxMTcuOCBMNTkuMyAxMTcuNCBMNTcuMSAxMTYuNiBMNTQuOSAxMTUuNiBMNTIuOCAxMTQuMyBMNTAuOSAxMTIuOCBMNDkuMiAxMTEgTDQ3LjYgMTA5LjEgTDQ2LjIgMTA3IEw0NC45IDEwNC45IEw0My45IDEwMi42IEw0MyAxMDAuNCBMNDIuMyA5OC4xIEw0MS43IDk1LjkgTDQxLjIgOTMuNyBMNDAuOSA5MS42IEw0MC42IDg5LjYgTDQwLjMgODcuNyBMNDAuMSA4NS45IEwzOS44IDg0LjMgTDM5LjUgODIuOCBMMzkuMSA4MS40IEwzOC42IDgwLjIgTDM4IDc5IEwzNy4zIDc3LjkgTDM2LjQgNzYuOSBMMzUuNCA3NS44IEwzNC4zIDc0LjggTDMzIDczLjggTDMxLjYgNzIuNyBMMzAuMSA3MS41IEwyOC41IDcwLjMgTDI2LjkgNjguOSBMMjUuMyA2Ny40IEwyMy42IDY1LjggTDIyIDY0IEwyMC41IDYyLjEgTDE5LjEgNjAuMSBMMTcuOCA1Ny45IEwxNi43IDU1LjcgTDE1LjkgNTMuMyBMMTUuMiA1MC45IEwxNC45IDQ4LjUgTDE0LjggNDYuMSBMMTUgNDMuNyBMMTUuNCA0MS40IEwxNi4yIDM5LjEgTDE3LjIgMzcgTDE4LjUgMzUgTDIwLjEgMzMuMyBMMjEuOSAzMS43IEwyMy45IDMwLjMgTDI2IDI5LjIgTDI4LjMgMjguMyBMMzAuNyAyNy42IEwzMy4xIDI3LjIgTDM1LjYgMjcgTDM4LjEgMjcuMSBMNDAuNiAyNy4zIEw0MyAyNy42IEw0NS4zIDI4LjEgTDQ3LjYgMjguNyBMNDkuNyAyOS40IEw1MS43IDMwLjIgTDUzLjYgMzAuOSBMNTUuMyAzMS42IEw1NyAzMi4zIEw1OC41IDMyLjkgTDYwIDMzLjQgTDYxLjMgMzMuNyBMNjIuNyAzMy45WiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjN2E1N2U4IiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz48L2c+Cjwvc3ZnPgo=
@@ -92,8 +92,8 @@
 // Bundles (verbatim, each wrapped in a run-at gate): apollo_editor, art_station, credit_hoarder, fusion, group_therapy, isrc_scout, mammoth, mission_control, platform_check.
 
 try {
-  console.log('%c String Theory %c v2026.10.9.174950 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
-  console.log("String Theory bundles:\n  · Apollo Editor v2026.10.9.101621\n  · Art Station v2026.10.9.141722\n  · Credit Hoarder v2026.10.9.131649\n  · Fusion v2026.10.9.174839\n  · Group Therapy v2026.10.9\n  · ISRC Scout v2026.10.9.111436\n  · Mammoth v2026.10.9\n  · Mission Control v2026.10.9.132954\n  · Platform Check v2026.10.9.131324");
+  console.log('%c String Theory %c v2026.10.9.175934 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
+  console.log("String Theory bundles:\n  · Apollo Editor v2026.10.9.101621\n  · Art Station v2026.10.9.141722\n  · Credit Hoarder v2026.10.9.131649\n  · Fusion v2026.10.9.174839\n  · Group Therapy v2026.10.9\n  · ISRC Scout v2026.10.9.175454\n  · Mammoth v2026.10.9\n  · Mission Control v2026.10.9.132954\n  · Platform Check v2026.10.9.131324");
 } catch (e) {}
 
 function __stReadOff() { try { var v = GM_getValue("string_theory.off", []); return Array.isArray(v) ? v : []; } catch (e) { return []; } }
@@ -101,7 +101,7 @@ var __stOff = __stReadOff();
 (function () {
   if (typeof GM_registerMenuCommand !== 'function') return;
   try { if (window.top !== window.self) return; } catch (e) { return; }
-  var members = [["apollo_editor","Apollo Editor","2026.10.9.101621"],["art_station","Art Station","2026.10.9.141722"],["credit_hoarder","Credit Hoarder","2026.10.9.131649"],["fusion","Fusion","2026.10.9.174839"],["group_therapy","Group Therapy","2026.10.9"],["isrc_scout","ISRC Scout","2026.10.9.111436"],["mammoth","Mammoth","2026.10.9"],["mission_control","Mission Control","2026.10.9.132954"],["platform_check","Platform Check","2026.10.9.131324"]];
+  var members = [["apollo_editor","Apollo Editor","2026.10.9.101621"],["art_station","Art Station","2026.10.9.141722"],["credit_hoarder","Credit Hoarder","2026.10.9.131649"],["fusion","Fusion","2026.10.9.174839"],["group_therapy","Group Therapy","2026.10.9"],["isrc_scout","ISRC Scout","2026.10.9.175454"],["mammoth","Mammoth","2026.10.9"],["mission_control","Mission Control","2026.10.9.132954"],["platform_check","Platform Check","2026.10.9.131324"]];
   // Each entry carries a stable id (options.id): Violentmonkey and Tampermonkey then relabel it in
   // place, where it stands. Unregister-and-add left Violentmonkey's open menu with the old entry
   // still there and the new one appended at the end. A manager that ignores options.id hands back
@@ -38476,7 +38476,7 @@ Created this ${kind} while adding credits parsed from text to ${relUrl}`;
 
 // ===== isrc_scout (@run-at document-start) ========================================
 if (__stOff.indexOf("isrc_scout") < 0) (function(__stGM){
-  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"ISRC Scout*","namespace":"https://musicbrainz.org/","version":"2026.10.9.111436","description":"Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify / Beatport / Tidal / Volumo / HDtracks / Qobuz, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/isrc_scout/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPklTUkMgU2NvdXQ8L3RpdGxlPgogICAgPHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPgogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjQwIi8+CiAgICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyNiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2U9IiNiOWEzZTgiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPgogIDwvZz4KICA8bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+Cjwvc3ZnPgo="}) }) : { script: {"name":"ISRC Scout*","namespace":"https://musicbrainz.org/","version":"2026.10.9.111436","description":"Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify / Beatport / Tidal / Volumo / HDtracks / Qobuz, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/isrc_scout/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPklTUkMgU2NvdXQ8L3RpdGxlPgogICAgPHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPgogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjQwIi8+CiAgICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyNiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2U9IiNiOWEzZTgiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPgogIDwvZz4KICA8bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+Cjwvc3ZnPgo="} };
+  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"ISRC Scout*","namespace":"https://musicbrainz.org/","version":"2026.10.9.175454","description":"Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify / Beatport / Tidal / Volumo / HDtracks / Qobuz, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/isrc_scout/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPklTUkMgU2NvdXQ8L3RpdGxlPgogICAgPHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPgogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjQwIi8+CiAgICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyNiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2U9IiNiOWEzZTgiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPgogIDwvZz4KICA8bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+Cjwvc3ZnPgo="}) }) : { script: {"name":"ISRC Scout*","namespace":"https://musicbrainz.org/","version":"2026.10.9.175454","description":"Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify / Beatport / Tidal / Volumo / HDtracks / Qobuz, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/isrc_scout/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPklTUkMgU2NvdXQ8L3RpdGxlPgogICAgPHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPgogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjQwIi8+CiAgICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyNiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2U9IiNiOWEzZTgiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPgogIDwvZz4KICA8bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+Cjwvc3ZnPgo="} };
   (f=>f())(function(){ try { (function(){
 /*
  * ─────────────────────────────────────────────────────────────────────────
@@ -38492,7 +38492,7 @@ if (__stOff.indexOf("isrc_scout") < 0) (function(__stGM){
  *  approve in the MusicBrainz tab, paste the code it shows back. Done forever.
  *
  *  Everything except the final "Submit" runs without any credentials.
- *  Trouble? Open the editor's "Log" pane — every action is recorded there.
+ *  Trouble? Open the activity log (⚙ Setup → Log) — every action is recorded there.
  * ─────────────────────────────────────────────────────────────────────────
  */
 
@@ -38998,32 +38998,14 @@ if (__stOff.indexOf("isrc_scout") < 0) (function(__stGM){
   function toast(msg, kind) { return mbuToast(msg == null ? '' : msg, kind ? { kind: kind === 'err' ? 'error' : kind } : undefined); }
 
   /* ═══════════════════════════════════════════════════════════════════════
-     LOG — console + in-modal pane, for troubleshooting
+     LOG — the shared activity log (mbuLog, ST-UI block), for troubleshooting (#701)
   ═══════════════════════════════════════════════════════════════════════ */
-  const Log = (function () {
-    const buf = [], MAX = 800;
-    let paneEl = null;
-    const stamp = () => { const d = new Date(); return d.toTimeString().slice(0, 8) + '.' + String(d.getMilliseconds()).padStart(3, '0'); };
-    const fmt = (d) => { if (d === undefined) return ''; try { return ' ' + (typeof d === 'string' ? d : JSON.stringify(d)); } catch (e) { return ' ' + String(d); } };
-    function render() { if (paneEl) { paneEl.textContent = buf.join('\n'); paneEl.scrollTop = paneEl.scrollHeight; } }
-    // the open pane is redrawn once per frame, not once per line: a busy lookup logs
-    // dozens of lines at a time (X12 of #623)
-    let queued = false;
-    function add(level, msg, data) {
-      const line = '[' + stamp() + '] ' + String(level).toUpperCase().padEnd(5) + ' ' + msg + fmt(data);
-      buf.push(line); if (buf.length > MAX) buf.shift();
-      if (paneEl && !queued) { queued = true; requestAnimationFrame(() => { queued = false; render(); }); }
-    }
-    return {
-      setPane: el => { paneEl = el; render(); },
-      text:    () => buf.join('\n'),
-      clear:   () => { buf.length = 0; render(); },
-      info: (m, d) => add('info', m, d),
-      warn: (m, d) => add('warn', m, d),
-      err:  (m, d) => add('error', m, d),
-      net:  (m, d) => add('net', m, d),
-    };
-  })();
+  const Log = mbuLog({ name: 'ISRC Scout', version: () => SCRIPT_VERSION, key: 'isrcScout.logwin' });
+  // every request and its answer, tagged so the window can show them alone
+  const NetLog = Log.cat('Net');
+  Log.net = (m, d) => NetLog.debug(m, d);
+  // test hook only: the log as text, for specs that wait on a line
+  if (mbuTestHooks()) window.__isrcScoutLog = () => Log.lines().join('\n');
   // Keep the FULL url — scheme + query — in the NET log so an API call's real
   // arguments (album_id, app_id, …) are visible for debugging; only redact
   // token/secret/signature values, and cap length. (#201: the query was being
@@ -40240,11 +40222,8 @@ if (__stOff.indexOf("isrc_scout") < 0) (function(__stGM){
     .ii-authstate.ok  { color: var(--mbu-ok); }
     .ii-authstate.no  { color: var(--mbu-error); }
 
-    /* log pane */
-    #ii-log-out { font-family: 'Courier New', monospace; font-size: 11px; line-height: 1.45;
-      white-space: pre-wrap; word-break: break-word; background: #0d1117; color: #c9d1d9;   /* the console keeps a FIXED dark ground in both themes, so its text must be fixed too: var(--mbu-info) is dark in the light theme, which put dark text on #0d1117 */
-      padding: 8px 10px; border-radius: 5px; max-height: 240px; overflow: auto; margin: 0; }
-    #ii-log-pane h3 { display: flex; align-items: center; gap: 8px; }
+    /* the shared log window opens over the dialog, not under it (#701) */
+    body #mbu-logpop { z-index: calc(var(--mbu-z-modal-panel) + 1); }
     .ii-sx-group { display: inline-flex; align-items: center; gap: 7px; padding: 3px 8px 3px 4px;
       border: 1px solid var(--mbu-accent); background: var(--mbu-bg-raised); border-radius: 7px; }
     /* per-track ISRC-provider selector (#181): a split [icon|▾] on each row's button */
@@ -42500,14 +42479,6 @@ if (__stOff.indexOf("isrc_scout") < 0) (function(__stGM){
         <div class="ii-help" style="margin-top:0">Attached to every ISRC add/remove you submit. Auto-filled with the script name + counts; edit freely (your text is kept until you Reset).</div>
       </div>
 
-      <div class="ii-pane" id="ii-log-pane">
-        <h3><button class="ii-pane-x" title="Close">✕</button>Activity log
-          <button class="ii-tbtn" id="ii-log-copy" style="padding:2px 9px;font-size:11px">Copy</button>
-          <button class="ii-tbtn ghost" id="ii-log-clear" style="padding:2px 9px;font-size:11px">Clear</button>
-        </h3>
-        <pre id="ii-log-out"></pre>
-      </div>
-
       <!-- #471 review: Find links / Clear moved back here from the header
            (pinned top-right, where Clear alone used to sit), and the progress
            readout is back right of the "+" url-add button — both restored to
@@ -42667,15 +42638,8 @@ if (__stOff.indexOf("isrc_scout") < 0) (function(__stGM){
       closeProvMenu();
     });
 
-    // log pane — opened from the config window's "Log" link (#301)
-    Log.setPane(modal.querySelector('#ii-log-out'));
-    modal.querySelector('#ii-log-link').addEventListener('click', () => togglePane('ii-log-pane'));
-    modal.querySelector('#ii-log-copy').addEventListener('click', () => {
-      // Wrap in a collapsed <details> + fenced block so it pastes into a GitHub
-      // issue/comment as a tidy, foldable log rather than a wall of text.
-      try { navigator.clipboard.writeText('<details><summary>ISRC Scout Log</summary>\n\n```\n' + Log.text().trim() + '\n```\n\n</details>\n'); toast('Log copied'); } catch (e) { toast('Copy failed', 'err'); }
-    });
-    modal.querySelector('#ii-log-clear').addEventListener('click', () => Log.clear());
+    // the shared log window — opened from the config window's "Log" link (#301, #701)
+    modal.querySelector('#ii-log-link').addEventListener('click', () => Log.open());
 
     // SX exact toggles + their collapsible container (collapsed state persisted)
     const sxGroup = modal.querySelector('#ii-sx-group');
@@ -45191,7 +45155,7 @@ if (__stOff.indexOf("isrc_scout") < 0) (function(__stGM){
     // nothing to open and should not look clickable.
     progEl.classList.toggle('tolog', !!isErr);
     progEl.title = isErr ? 'Open the log' : '';
-    if (isErr) progEl.onclick = () => showPane('ii-log-pane');
+    if (isErr) progEl.onclick = () => Log.open();
   };
   // test hook only — no behaviour change. The affordance below is a contract of
   // setProg (an error offers the log, a plain message doesn't), so a test should
@@ -46045,7 +46009,7 @@ if (__stOff.indexOf("isrc_scout") < 0) (function(__stGM){
       reply({ ok: !errs.length, sent: sentN, note: [done.length && done.join(' and ') + ' submitted', errs.join('; ')].filter(Boolean).join(' · ') });
     });
     mcHello();
-    if (mbuTestHooks()) window.__isTest680 = { mcFinding, mcDups, mcTrackOf, trackForSource, mcSources, fastest: isrcSourcesFastest, found: () => mcFound, release: () => RELEASE, log: () => Log.text() };
+    if (mbuTestHooks()) window.__isTest680 = { mcFinding, mcDups, mcTrackOf, trackForSource, mcSources, fastest: isrcSourcesFastest, found: () => mcFound, release: () => RELEASE, log: () => Log.lines().join('\n') };
   }
 
 })();

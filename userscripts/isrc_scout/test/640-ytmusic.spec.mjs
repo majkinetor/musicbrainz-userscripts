@@ -24,7 +24,7 @@ test('#640: YouTube Music track links, by ISRC, title- and length-checked', { ta
     const n = sel => document.querySelectorAll('#ii-modal .ii-tl' + sel + '[data-code="yt"]').length;
     return { found: n('.new'), absent: n('.absent'), spinning: n('.spin'), hrefs: [...document.querySelectorAll('#ii-modal .ii-tl.new[data-code="yt"]')].map(a => a.href) };
   }), r => r.spinning === 0 && r.found + r.absent > 0, { timeout: 120000 });
-  const log = await page.evaluate(() => (document.getElementById('ii-log-out')?.textContent || '').split('\n').filter(l => /YouTube Music/.test(l)));
+  const log = await page.evaluate(() => (window.__isrcScoutLog?.() || '').split('\n').filter(l => /YouTube Music/.test(l)));
   console.log(JSON.stringify({ cands, ...r, log: log.slice(0, 40) }, null, 1));
   check(cands === 13, `every track offers a YouTube Music slot (${cands})`);
   // live search: which songs an ISRC brings up varies a little from run to run (10–11 of 13 seen)
@@ -53,7 +53,7 @@ test('#640: with the release\'s YouTube Music album linked, its tracklist resolv
     const n = sel => document.querySelectorAll('#ii-modal .ii-tl' + sel + '[data-code="yt"]').length;
     return { found: n('.new'), absent: n('.absent'), spinning: n('.spin') };
   }), r => r.spinning === 0 && r.found + r.absent > 0, { timeout: 120000 });
-  const log = await page.evaluate(() => (document.getElementById('ii-log-out')?.textContent || '').split('\n').filter(l => /YouTube Music/.test(l)));
+  const log = await page.evaluate(() => (window.__isrcScoutLog?.() || '').split('\n').filter(l => /YouTube Music/.test(l)));
   // #690: from the album's playlist, as YouTube's own client lists it (the album page can hold music videos)
   check(log.some(l => /YouTube Music album "Random Access Memories" \(OLAK5uy_[\w-]+\): 13 song/.test(l)), `the album is read once, from its playlist (${log.find(l => /album "/.test(l))})`);
   check(r.found === 13, `all 13 tracks resolve from it (${r.found}, ${r.absent} not)`);
@@ -77,7 +77,7 @@ for (const [album, want] of [['Critical Damage', false], ['Mesmerizer', true]]) 
       const yt = window.__isrcScoutTest466.PROV.find(p => p.code === 'yt');
       return yt.resolve('JP92Q2400507', { title: 'メズマライザー', dur: '2:37' }, 0);
     });
-    const log = await page.evaluate(() => (document.getElementById('ii-log-out')?.textContent || '').split('\n').filter(l => /JP92Q2400507/.test(l)));
+    const log = await page.evaluate(() => (window.__isrcScoutLog?.() || '').split('\n').filter(l => /JP92Q2400507/.test(l)));
     console.log(JSON.stringify({ album, url, log }, null, 1));
     if (want) check(/^https:\/\/music\.youtube\.com\/watch\?v=[\w-]{11}$/.test(url || ''), `on "Mesmerizer" the song is taken (${url})`);
     else {

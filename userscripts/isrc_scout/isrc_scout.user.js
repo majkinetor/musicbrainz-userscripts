@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         ISRC Scout
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.9.111436
+// @version      2026.10.9.175454
 // @description  Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify / Beatport / Tidal / Volumo / HDtracks / Qobuz, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPklTUkMgU2NvdXQ8L3RpdGxlPgogICAgPHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPgogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjQwIi8+CiAgICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyNiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2U9IiNiOWEzZTgiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPgogIDwvZz4KICA8bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+Cjwvc3ZnPgo=
@@ -61,7 +61,7 @@
  *  approve in the MusicBrainz tab, paste the code it shows back. Done forever.
  *
  *  Everything except the final "Submit" runs without any credentials.
- *  Trouble? Open the editor's "Log" pane — every action is recorded there.
+ *  Trouble? Open the activity log (⚙ Setup → Log) — every action is recorded there.
  * ─────────────────────────────────────────────────────────────────────────
  */
 
@@ -567,32 +567,14 @@
   function toast(msg, kind) { return mbuToast(msg == null ? '' : msg, kind ? { kind: kind === 'err' ? 'error' : kind } : undefined); }
 
   /* ═══════════════════════════════════════════════════════════════════════
-     LOG — console + in-modal pane, for troubleshooting
+     LOG — the shared activity log (mbuLog, ST-UI block), for troubleshooting (#701)
   ═══════════════════════════════════════════════════════════════════════ */
-  const Log = (function () {
-    const buf = [], MAX = 800;
-    let paneEl = null;
-    const stamp = () => { const d = new Date(); return d.toTimeString().slice(0, 8) + '.' + String(d.getMilliseconds()).padStart(3, '0'); };
-    const fmt = (d) => { if (d === undefined) return ''; try { return ' ' + (typeof d === 'string' ? d : JSON.stringify(d)); } catch (e) { return ' ' + String(d); } };
-    function render() { if (paneEl) { paneEl.textContent = buf.join('\n'); paneEl.scrollTop = paneEl.scrollHeight; } }
-    // the open pane is redrawn once per frame, not once per line: a busy lookup logs
-    // dozens of lines at a time (X12 of #623)
-    let queued = false;
-    function add(level, msg, data) {
-      const line = '[' + stamp() + '] ' + String(level).toUpperCase().padEnd(5) + ' ' + msg + fmt(data);
-      buf.push(line); if (buf.length > MAX) buf.shift();
-      if (paneEl && !queued) { queued = true; requestAnimationFrame(() => { queued = false; render(); }); }
-    }
-    return {
-      setPane: el => { paneEl = el; render(); },
-      text:    () => buf.join('\n'),
-      clear:   () => { buf.length = 0; render(); },
-      info: (m, d) => add('info', m, d),
-      warn: (m, d) => add('warn', m, d),
-      err:  (m, d) => add('error', m, d),
-      net:  (m, d) => add('net', m, d),
-    };
-  })();
+  const Log = mbuLog({ name: 'ISRC Scout', version: () => SCRIPT_VERSION, key: 'isrcScout.logwin' });
+  // every request and its answer, tagged so the window can show them alone
+  const NetLog = Log.cat('Net');
+  Log.net = (m, d) => NetLog.debug(m, d);
+  // test hook only: the log as text, for specs that wait on a line
+  if (mbuTestHooks()) window.__isrcScoutLog = () => Log.lines().join('\n');
   // Keep the FULL url — scheme + query — in the NET log so an API call's real
   // arguments (album_id, app_id, …) are visible for debugging; only redact
   // token/secret/signature values, and cap length. (#201: the query was being
@@ -1809,11 +1791,8 @@
     .ii-authstate.ok  { color: var(--mbu-ok); }
     .ii-authstate.no  { color: var(--mbu-error); }
 
-    /* log pane */
-    #ii-log-out { font-family: 'Courier New', monospace; font-size: 11px; line-height: 1.45;
-      white-space: pre-wrap; word-break: break-word; background: #0d1117; color: #c9d1d9;   /* the console keeps a FIXED dark ground in both themes, so its text must be fixed too: var(--mbu-info) is dark in the light theme, which put dark text on #0d1117 */
-      padding: 8px 10px; border-radius: 5px; max-height: 240px; overflow: auto; margin: 0; }
-    #ii-log-pane h3 { display: flex; align-items: center; gap: 8px; }
+    /* the shared log window opens over the dialog, not under it (#701) */
+    body #mbu-logpop { z-index: calc(var(--mbu-z-modal-panel) + 1); }
     .ii-sx-group { display: inline-flex; align-items: center; gap: 7px; padding: 3px 8px 3px 4px;
       border: 1px solid var(--mbu-accent); background: var(--mbu-bg-raised); border-radius: 7px; }
     /* per-track ISRC-provider selector (#181): a split [icon|▾] on each row's button */
@@ -4069,14 +4048,6 @@
         <div class="ii-help" style="margin-top:0">Attached to every ISRC add/remove you submit. Auto-filled with the script name + counts; edit freely (your text is kept until you Reset).</div>
       </div>
 
-      <div class="ii-pane" id="ii-log-pane">
-        <h3><button class="ii-pane-x" title="Close">✕</button>Activity log
-          <button class="ii-tbtn" id="ii-log-copy" style="padding:2px 9px;font-size:11px">Copy</button>
-          <button class="ii-tbtn ghost" id="ii-log-clear" style="padding:2px 9px;font-size:11px">Clear</button>
-        </h3>
-        <pre id="ii-log-out"></pre>
-      </div>
-
       <!-- #471 review: Find links / Clear moved back here from the header
            (pinned top-right, where Clear alone used to sit), and the progress
            readout is back right of the "+" url-add button — both restored to
@@ -4236,15 +4207,8 @@
       closeProvMenu();
     });
 
-    // log pane — opened from the config window's "Log" link (#301)
-    Log.setPane(modal.querySelector('#ii-log-out'));
-    modal.querySelector('#ii-log-link').addEventListener('click', () => togglePane('ii-log-pane'));
-    modal.querySelector('#ii-log-copy').addEventListener('click', () => {
-      // Wrap in a collapsed <details> + fenced block so it pastes into a GitHub
-      // issue/comment as a tidy, foldable log rather than a wall of text.
-      try { navigator.clipboard.writeText('<details><summary>ISRC Scout Log</summary>\n\n```\n' + Log.text().trim() + '\n```\n\n</details>\n'); toast('Log copied'); } catch (e) { toast('Copy failed', 'err'); }
-    });
-    modal.querySelector('#ii-log-clear').addEventListener('click', () => Log.clear());
+    // the shared log window — opened from the config window's "Log" link (#301, #701)
+    modal.querySelector('#ii-log-link').addEventListener('click', () => Log.open());
 
     // SX exact toggles + their collapsible container (collapsed state persisted)
     const sxGroup = modal.querySelector('#ii-sx-group');
@@ -6760,7 +6724,7 @@
     // nothing to open and should not look clickable.
     progEl.classList.toggle('tolog', !!isErr);
     progEl.title = isErr ? 'Open the log' : '';
-    if (isErr) progEl.onclick = () => showPane('ii-log-pane');
+    if (isErr) progEl.onclick = () => Log.open();
   };
   // test hook only — no behaviour change. The affordance below is a contract of
   // setProg (an error offers the log, a plain message doesn't), so a test should
@@ -7614,7 +7578,7 @@
       reply({ ok: !errs.length, sent: sentN, note: [done.length && done.join(' and ') + ' submitted', errs.join('; ')].filter(Boolean).join(' · ') });
     });
     mcHello();
-    if (mbuTestHooks()) window.__isTest680 = { mcFinding, mcDups, mcTrackOf, trackForSource, mcSources, fastest: isrcSourcesFastest, found: () => mcFound, release: () => RELEASE, log: () => Log.text() };
+    if (mbuTestHooks()) window.__isTest680 = { mcFinding, mcDups, mcTrackOf, trackForSource, mcSources, fastest: isrcSourcesFastest, found: () => mcFound, release: () => RELEASE, log: () => Log.lines().join('\n') };
   }
 
 })();

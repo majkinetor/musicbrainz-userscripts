@@ -27,7 +27,7 @@ test('#644: Amazon Music track links from the release\'s album, by position, tit
     const n = sel => document.querySelectorAll('#ii-modal .ii-tl' + sel + '[data-code="az"]').length;
     return { found: n('.new'), absent: n('.absent'), spinning: n('.spin'), hrefs: [...document.querySelectorAll('#ii-modal .ii-tl.new[data-code="az"]')].map(a => a.href) };
   }), r => r.spinning === 0 && r.found + r.absent > 0, { timeout: 120000 });
-  const log = await page.evaluate(() => (document.getElementById('ii-log-out')?.textContent || '').split('\n').filter(l => /Amazon Music/.test(l)));
+  const log = await page.evaluate(() => (window.__isrcScoutLog?.() || '').split('\n').filter(l => /Amazon Music/.test(l)));
   console.log(JSON.stringify({ ...r, log: log.slice(0, 20) }, null, 1));
   check(r.found === 13, `all 13 tracks resolve (${r.found}, ${r.absent} not)`);
   check(r.hrefs.every(h => /^https:\/\/music\.amazon\.com\/tracks\/[A-Z0-9]{10}$/.test(h)) && new Set(r.hrefs).size === 13, `each its own track link (${r.hrefs.slice(0, 2).join(', ')})`);
