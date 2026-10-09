@@ -2,7 +2,7 @@
 // Station and Fusion each had their own copy, with a buffer that grew for the whole
 // session and a window that rebuilt its whole list on every new line. On a blank page,
 // nothing fetched.
-import { test, check, frames } from '../test/harness.mjs';
+import { test, check, frames, until } from '../test/harness.mjs';
 import { UI_CSS, UI_JS } from './ui-components.mjs';
 
 test.use({ profile: 'fresh', gm: false });
@@ -142,4 +142,64 @@ test('categories: tagged lines, a filter row only when needed, one-click filters
   await page.evaluate(() => { L.info('fresh'); });
   await frames(page);
   check(await row() === null && await vis() === 1, 'Clear forgets the categories and the filter');
+});
+
+// #697: the window resizes from its corner grip and goes full screen; both are remembered.
+test('the window resizes from its corner, goes full screen, and remembers both', { tag: ['@unit'] }, async ({ page }) => {
+  await page.setViewportSize({ width: 1200, height: 800 });
+  await page.evaluate(() => { window.L = mk(); for (let i = 0; i < 80; i++) L.info('line ' + i); L.open(); });
+  const box = () => page.evaluate(() => { const r = document.getElementById('mbu-logpop').getBoundingClientRect(); return { x: Math.round(r.left), y: Math.round(r.top), w: Math.round(r.width), h: Math.round(r.height) }; });
+  const b0 = await box();
+  const g = await page.locator('#mbu-logpop .mbu-logpop-grip').boundingBox();
+  await page.mouse.move(g.x + 8, g.y + 8); await page.mouse.down();
+  await page.mouse.move(g.x + 8 + 150, g.y + 8 - 200, { steps: 4 }); await page.mouse.up();
+  const b1 = await box();
+  check(b1.x === b0.x && b1.y === b0.y, `the top-left corner stays put (${JSON.stringify(b0)} → ${JSON.stringify(b1)})`);
+  check(Math.abs(b1.w - (b0.w + 150)) <= 2 && Math.abs(b1.h - (b0.h - 200)) <= 2, `the grip sets the size (${b0.w}×${b0.h} → ${b1.w}×${b1.h})`);
+  const st = await page.evaluate(() => JSON.parse(window.__store.get('k')));
+  check(st.w === b1.w + 'px' && st.h === b1.h + 'px', `the size is remembered (${st.w} × ${st.h})`);
+
+  await page.click('#mbu-logpop .mbu-logpop-full');
+  const f = await box();
+  check(f.x === 12 && f.y === 12 && f.w === 1200 - 24 && f.h === 800 - 24, `full screen fills the viewport less 12px (${JSON.stringify(f)})`);
+  check(await page.evaluate(() => JSON.parse(window.__store.get('k')).full === true), 'and is remembered');
+  await page.dblclick('#mbu-logpop .mbu-logpop-h b');
+  const back = await box();
+  check(JSON.stringify(back) === JSON.stringify(b1), `a double-click on the title bar restores the size it had (${JSON.stringify(back)})`);
+
+  await page.click('#mbu-logpop .mbu-logpop-full');
+  await page.click('#mbu-logpop .mbu-logpop-min');
+  const m = await page.evaluate(() => ({ full: document.getElementById('mbu-logpop').classList.contains('full'), st: JSON.parse(window.__store.get('k')) }));
+  check(!m.full && m.st.full === false && m.st.min === true, `minimising leaves full screen (${JSON.stringify(m)})`);
+  await page.click('#mbu-logpop .mbu-logpop-min');
+  await page.evaluate(() => { L.close(); L.open(); });
+  const again = await box();
+  check(again.w === b1.w && again.h === b1.h, `reopened, it has the size it was given (${JSON.stringify(again)})`);
+});
+
+// #697: a text filter in the title bar; it combines with the level and category filters.
+test('the text filter shows only the lines with its text, and Escape empties it', { tag: ['@unit'] }, async ({ page }) => {
+  const vis = () => page.evaluate(() => [...document.querySelectorAll('#mbu-logpop .mbu-log-li')].filter(d => getComputedStyle(d).display !== 'none').map(d => d.querySelector('.mbu-log-m').textContent));
+  await page.evaluate(() => { window.L = mk(); L.cat('Spotify').info('Search picked album'); L.cat('Deezer').warn('No album found'); L.cat('Tidal').info('HTTP 429'); L.open(); });
+  await page.fill('#mbu-logpop .mbu-log-q', 'ALBUM');
+  await until(vis, v => v.length === 2);
+  check((await vis()).join('|') === 'Search picked album|No album found', `case-insensitive, on the message (${(await vis()).join('|')})`);
+  await page.fill('#mbu-logpop .mbu-log-q', 'tidal');
+  await until(vis, v => v.length === 1);
+  check((await vis()).join('|') === 'HTTP 429', 'and on the category');
+  await page.fill('#mbu-logpop .mbu-log-q', 'album');
+  await page.click('#mbu-logpop .mbu-log-fb[data-sev="warn"]');
+  await until(vis, v => v.length === 1);
+  check((await vis()).join('|') === 'No album found', 'it combines with the level filter');
+  await page.click('#mbu-logpop .mbu-log-fb[data-sev="warn"]');
+  await page.evaluate(() => L.cat('Qobuz').info('album arrives later'));
+  await until(vis, v => v.length === 3);
+  check((await vis()).includes('album arrives later'), 'a new line that matches shows; one that does not stays hidden');
+  await page.evaluate(() => L.info('unrelated'));
+  await frames(page);
+  check(!(await vis()).includes('unrelated'), '…and one that does not stays hidden');
+  await page.focus('#mbu-logpop .mbu-log-q');
+  await page.keyboard.press('Escape');
+  await until(vis, v => v.length === 5);
+  check(await page.evaluate(() => !!document.getElementById('mbu-logpop') && document.querySelector('#mbu-logpop .mbu-log-q').value === ''), 'Escape in the filter empties it and keeps the window open');
 });

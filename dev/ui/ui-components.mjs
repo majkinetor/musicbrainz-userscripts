@@ -139,15 +139,30 @@ const CSS = [
     '.mbu-logpop-h{display:flex;align-items:center;gap:8px;padding:10px 13px;',
     'border-bottom:1px solid var(--mbu-border-soft);color:var(--mbu-accent-text);cursor:move;user-select:none}',
     '.mbu-logpop-sp{margin-left:auto}',
-    '.mbu-logpop-clear,.mbu-logpop-copy,.mbu-logpop-x,.mbu-logpop-min{font-size:12px;color:var(--mbu-accent-text);',
+    '.mbu-logpop-clear,.mbu-logpop-copy,.mbu-logpop-x,.mbu-logpop-min,.mbu-logpop-full{font-size:12px;color:var(--mbu-accent-text);',
     'background:var(--mbu-bg-hover);border:1px solid var(--mbu-border);border-radius:5px;',
     'padding:2px 9px;cursor:pointer;font-family:inherit}',
-    '.mbu-logpop-clear:hover,.mbu-logpop-copy:hover,.mbu-logpop-x:hover,.mbu-logpop-min:hover{background:var(--mbu-accent-soft)}',
+    '.mbu-logpop-clear:hover,.mbu-logpop-copy:hover,.mbu-logpop-x:hover,.mbu-logpop-min:hover,.mbu-logpop-full:hover{background:var(--mbu-accent-soft)}',
     // minimised: just the header bar, so it can sit out of the way mid-run
-    '#mbu-logpop.min .mbu-log-list,#mbu-logpop.min .mbu-log-f,#mbu-logpop.min .mbu-logpop-clear,#mbu-logpop.min .mbu-logpop-copy,#mbu-logpop.min .mbu-logpop-x{display:none}',
-    '#mbu-logpop.min{max-height:none;width:auto}',
+    '#mbu-logpop.min .mbu-log-list,#mbu-logpop.min .mbu-log-f,#mbu-logpop.min .mbu-logpop-clear,#mbu-logpop.min .mbu-logpop-copy,#mbu-logpop.min .mbu-logpop-x,#mbu-logpop.min .mbu-logpop-full{display:none}',
+    '#mbu-logpop.min{max-height:none;width:auto!important;height:auto!important}',
+    // resized by its corner grip: the size is the user's, no cap
+    '#mbu-logpop.sized{max-height:none}',
+    '.mbu-logpop-grip{position:absolute;right:0;bottom:0;width:16px;height:16px;cursor:nwse-resize;opacity:.6;',
+    'background:linear-gradient(135deg,transparent 55%,var(--mbu-border-strong) 55%,var(--mbu-border-strong) 62%,transparent 62%,transparent 75%,var(--mbu-border-strong) 75%,var(--mbu-border-strong) 82%,transparent 82%)}',
+    '.mbu-logpop-grip:hover{opacity:1}',
+    '#mbu-logpop.min .mbu-logpop-grip,#mbu-logpop.full .mbu-logpop-grip{display:none}',
+    // full screen: the whole viewport less a margin, whatever the window was
+    '#mbu-logpop.full{top:12px!important;left:12px!important;right:12px!important;bottom:12px!important;',
+    'width:auto!important;height:auto!important;max-height:none;transform:none!important}',
+    '#mbu-logpop.full .mbu-logpop-h{cursor:default}',
     '#mbu-logpop.min .mbu-logpop-sp{display:none}',
     '.mbu-log-badge{color:var(--mbu-border-strong);font-size:11px}',
+    // the text filter beside the counts: lines without the text are hidden
+    '#mbu-logpop .mbu-log-q{flex:0 1 200px;min-width:80px;margin-left:6px;font:12px var(--mbu-font);padding:2px 8px;',
+    'border:1px solid var(--mbu-border);border-radius:5px;cursor:text}',
+    '#mbu-logpop.min .mbu-log-q{display:none}',
+    '#mbu-logpop .mbu-log-li.mbu-log-nq{display:none}',
     '.mbu-log-list{flex:1 1 auto;overflow:auto;overscroll-behavior:contain;padding:9px 13px;',
     'display:flex;flex-direction:column;gap:3px}',
     '.mbu-log-li{display:flex;gap:9px;white-space:pre-wrap;word-break:break-word}',
@@ -690,20 +705,27 @@ function mbuLog(o) {
         remember({ open: true });
         var st = state();
         var pop = document.createElement('div'); pop.id = 'mbu-logpop'; pop.className = 'mbu-logpop';
-        pop.innerHTML = mbuHtml('<div class="mbu-logpop-h"><b>' + esc(o.header || 'Activity log') + '</b> <span class="mbu-log-badge"></span><span class="mbu-logpop-sp"></span>'
+        pop.innerHTML = mbuHtml('<div class="mbu-logpop-h"><b>' + esc(o.header || 'Activity log') + '</b> <span class="mbu-log-badge"></span>'
+            + '<input class="mbu-log-q" type="search" placeholder="Filter" title="Show only the lines with this text" autocomplete="off">'
+            + '<span class="mbu-logpop-sp"></span>'
             + '<button class="mbu-logpop-clear" type="button" title="Clear the log (the lines so far are gone)">Clear</button>'
             + '<button class="mbu-logpop-copy" type="button" title="Copy as Markdown (paste into a GitHub issue)">⧉ Copy</button>'
+            + '<button class="mbu-logpop-full" type="button" title="Full screen (or double-click the title bar)">⛶</button>'
             + '<button class="mbu-logpop-min" type="button" title="Minimize">–</button>'
             + '<button class="mbu-logpop-x" type="button" title="Close">✕</button></div>'
             + '<div class="mbu-log-f" hidden></div><style class="mbu-log-fcss"></style>'
-            + '<div class="mbu-log-list"></div>');
+            + '<div class="mbu-log-list"></div><div class="mbu-logpop-grip" title="Resize"></div>');
         document.body.appendChild(pop);
         if (st.left != null) { pop.style.left = st.left; pop.style.top = st.top; pop.style.right = 'auto'; pop.style.transform = 'none'; }
         var restore = { left: pop.style.left, top: pop.style.top, right: pop.style.right, bottom: pop.style.bottom, transform: pop.style.transform };
         var list = pop.querySelector('.mbu-log-list'), badge = pop.querySelector('.mbu-log-badge');
+        var qEl = pop.querySelector('.mbu-log-q'), q = '';
+        var miss = function (e) { return !!q && ((e.cat || '') + ' ' + e.msg).toLowerCase().indexOf(q) < 0; };
         var row = function (e) {
             var d = document.createElement('div');
+            d._e = e;
             d.className = 'mbu-log-li mbu-log-' + e.sev;
+            if (miss(e)) d.classList.add('mbu-log-nq');
             d.dataset.s = group(e.sev);
             if (e.cat) d.dataset.c = catIx[e.cat];
             d.innerHTML = mbuHtml('<span class="mbu-log-t">' + ts(e.t) + '</span>'
@@ -742,7 +764,19 @@ function mbuLog(o) {
         var queued = false, follow = true;
         list.addEventListener('scroll', function () { follow = list.scrollHeight - list.scrollTop - list.clientHeight < 40; });
         var paint = function () { queued = false; showBadge(); if (follow) list.scrollTop = list.scrollHeight; };
-        var onKey = function (e) { if (e.key === 'Escape') close(); };
+        // Escape in a filled filter empties it; anywhere else it closes the window
+        var onKey = function (e) {
+            if (e.key !== 'Escape') return;
+            if (e.target === qEl && qEl.value) { qEl.value = ''; refilter(); return; }
+            close();
+        };
+        var qTimer = 0;
+        var refilter = function () {
+            q = qEl.value.trim().toLowerCase();
+            for (var d = list.firstElementChild; d; d = d.nextElementSibling) if (d._e) d.classList.toggle('mbu-log-nq', miss(d._e));
+            follow = true; list.scrollTop = list.scrollHeight;
+        };
+        qEl.addEventListener('input', function () { clearTimeout(qTimer); qTimer = setTimeout(refilter, 120); });
         fRow.addEventListener('click', function (ev) {
             var t = ev.target.closest('.mbu-log-fb'); if (!t) return;
             if (t.dataset.sev) fSev = fSev === t.dataset.sev ? null : t.dataset.sev;
@@ -771,12 +805,46 @@ function mbuLog(o) {
             if (m) { pop.style.left = '14px'; pop.style.bottom = '14px'; pop.style.top = 'auto'; pop.style.right = 'auto'; pop.style.transform = 'none'; }   // dock to the bottom
             else Object.assign(pop.style, restore);
         };
-        minBtn.onclick = function () { var m = pop.classList.toggle('min'); setMin(m); remember({ min: m }); };
+        var fullBtn = pop.querySelector('.mbu-logpop-full');
+        var setFull = function (f) {
+            pop.classList.toggle('full', f);
+            fullBtn.textContent = f ? '❐' : '⛶'; fullBtn.title = f ? 'Restore the size (or double-click the title bar)' : 'Full screen (or double-click the title bar)';
+        };
+        minBtn.onclick = function () {
+            var m = pop.classList.toggle('min');
+            if (m && pop.classList.contains('full')) { setFull(false); remember({ full: false }); }   // minimising leaves full screen
+            setMin(m); remember({ min: m });
+        };
+        fullBtn.onclick = function () { var f = !pop.classList.contains('full'); setFull(f); remember({ full: f }); };
+        pop.querySelector('.mbu-logpop-h').addEventListener('dblclick', function (e) {
+            if (!e.target.closest('button, input') && !pop.classList.contains('min')) fullBtn.click();
+        });
+        // a size the user gave it, from the corner grip
+        if (st.w && st.h) { pop.style.width = st.w; pop.style.height = st.h; pop.classList.add('sized'); }
         if (st.min) { pop.classList.add('min'); setMin(true); }
+        else if (st.full) setFull(true);
+        pop.querySelector('.mbu-logpop-grip').addEventListener('mousedown', function (e) {
+            e.preventDefault(); e.stopPropagation();
+            var r = pop.getBoundingClientRect();
+            // pin the top-left corner, so only the right and bottom edges move
+            pop.style.left = r.left + 'px'; pop.style.top = r.top + 'px'; pop.style.right = 'auto'; pop.style.bottom = ''; pop.style.transform = 'none';
+            pop.classList.add('sized');
+            var x0 = e.clientX, y0 = e.clientY;
+            var mv = function (ev) {
+                pop.style.width = Math.max(320, Math.min(window.innerWidth - r.left, r.width + ev.clientX - x0)) + 'px';
+                pop.style.height = Math.max(120, Math.min(window.innerHeight - r.top, r.height + ev.clientY - y0)) + 'px';
+            };
+            var up = function () {
+                document.removeEventListener('mousemove', mv); document.removeEventListener('mouseup', up);
+                restore = { left: pop.style.left, top: pop.style.top, right: 'auto', bottom: '', transform: 'none' };
+                remember({ left: pop.style.left, top: pop.style.top, w: pop.style.width, h: pop.style.height });
+            };
+            document.addEventListener('mousemove', mv); document.addEventListener('mouseup', up);
+        });
         pop.querySelector('.mbu-logpop-x').onclick = function () { close(); };
         // floating and non-modal: dragged by its header
         pop.querySelector('.mbu-logpop-h').addEventListener('mousedown', function (e) {
-            if (e.target.closest('button')) return;
+            if (e.target.closest('button, input') || pop.classList.contains('full')) return;
             e.preventDefault();
             var r = pop.getBoundingClientRect();
             pop.style.left = r.left + 'px'; pop.style.top = r.top + 'px'; pop.style.right = 'auto'; pop.style.transform = 'none';
