@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         String Theory
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.8.115514
+// @version      2026.10.9.110119
 // @description  Unified bundle of 8 MusicBrainz userscripts (apollo_editor, art_station, credit_hoarder, fusion, group_therapy, isrc_scout, mammoth, platform_check). Built by userscripts/string_theory/build.mjs — do not hand-edit.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCIgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0Ij4KICA8IS0tIGh1Yi1hbmQtc3Bva2UgIm5ldHdvcmsiIGdseXBoLCBzaW5nbGUgdml2aWQgdmlvbGV0IG9uIHRyYW5zcGFyZW50IHNvIGl0IHJlYWRzIG9uIGJvdGggZGFyayBhbmQgbGlnaHQgcGFnZXMgLS0+CiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjN2M1Y2ZmIiBzdHJva2Utd2lkdGg9IjQuNiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj4KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMzIgMTUiLz4KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMNDYuNSAyMy41Ii8+CiAgICA8cGF0aCBkPSJNMzIgMzIgTDQ2LjUgNDAuNSIvPgogICAgPHBhdGggZD0iTTMyIDMyIEwzMiA0OSIvPgogICAgPHBhdGggZD0iTTMyIDMyIEwxNy41IDQwLjUiLz4KICAgIDxwYXRoIGQ9Ik0zMiAzMiBMMTcuNSAyMy41Ii8+CiAgPC9nPgogIDxnIGZpbGw9IiM3YzVjZmYiPgogICAgPGNpcmNsZSBjeD0iMzIiIGN5PSIzMiIgcj0iOC42Ii8+CiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjE5LjUiIHI9IjYuNCIvPgogICAgPGNpcmNsZSBjeD0iNDkiIGN5PSIxOS41IiByPSI2LjQiLz4KICAgIDxjaXJjbGUgY3g9IjMyIiBjeT0iNTciIHI9IjYuNCIvPgogIDwvZz4KICA8ZyBmaWxsPSJub25lIiBzdHJva2U9IiM3YzVjZmYiIHN0cm9rZS13aWR0aD0iMy44Ij4KICAgIDxjaXJjbGUgY3g9IjMyIiBjeT0iNyIgcj0iNC45Ii8+CiAgICA8Y2lyY2xlIGN4PSIxNSIgY3k9IjQ0LjUiIHI9IjQuOSIvPgogICAgPGNpcmNsZSBjeD0iNDkiIGN5PSI0NC41IiByPSI0LjkiLz4KICA8L2c+Cjwvc3ZnPgo=
@@ -89,8 +89,8 @@
 // Bundles (verbatim, each wrapped in a run-at gate): apollo_editor, art_station, credit_hoarder, fusion, group_therapy, isrc_scout, mammoth, platform_check.
 
 try {
-  console.log('%c String Theory %c v2026.10.8.115514 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
-  console.log("String Theory bundles:\n  · Apollo Editor v2026.10.8.100227\n  · Art Station v2026.10.5.111552\n  · Credit Hoarder v2026.10.7.145215\n  · Fusion v2026.10.4\n  · Group Therapy v2026.10.4\n  · ISRC Scout v2026.10.8.115500\n  · Mammoth v2026.10.8\n  · Platform Check v2026.10.7.100000");
+  console.log('%c String Theory %c v2026.10.9.110119 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
+  console.log("String Theory bundles:\n  · Apollo Editor v2026.10.8.100227\n  · Art Station v2026.10.9\n  · Credit Hoarder v2026.10.7.145215\n  · Fusion v2026.10.4\n  · Group Therapy v2026.10.4\n  · ISRC Scout v2026.10.8.115500\n  · Mammoth v2026.10.8\n  · Platform Check v2026.10.7.100000");
 } catch (e) {}
 
 // ===== apollo_editor (@run-at document-start) =====================================
@@ -11570,7 +11570,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
 
 // ===== art_station (@run-at document-start) =======================================
 (function(__stGM){
-  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Art Station*","namespace":"https://musicbrainz.org/","version":"2026.10.5.111552","description":"Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png"}) }) : { script: {"name":"Art Station*","namespace":"https://musicbrainz.org/","version":"2026.10.5.111552","description":"Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png"} };
+  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Art Station*","namespace":"https://musicbrainz.org/","version":"2026.10.9","description":"Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png"}) }) : { script: {"name":"Art Station*","namespace":"https://musicbrainz.org/","version":"2026.10.9","description":"Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/icon.png"} };
   (f=>f())(function(){ try { (function(){
 //
 // Phase-1 PoC. Principle: "you get what you see" — the gallery is the staged
@@ -14694,19 +14694,43 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     const fail = (op, e) => { const row = rowOf(op); row.querySelector('.as-cm-st').textContent = '❌'; row.querySelector('.as-cm-payload').textContent = String(e && e.message || e); row.classList.add('err'); op._err = true; setRowBar(row, 100, 'err'); logErr(`Upload: ${op.label}`, e); };
     const stop = (op) => { setSt(op, '⛔'); op._err = true; setRowBar(rowOf(op), 100, 'cancel'); };
     addOps.forEach(op => { setSt(op, '⏳'); setRowBar(rowOf(op), null, 'busy'); });
+    // #698: bytes per upload, for the upload rate on the overall bar (see upRateText)
+    const up = ctl.up = { t0: performance.now(), tEnd: 0, over: false, size: {}, sent: {}, samples: [] };
+    addOps.forEach(op => { up.size[op._i] = (op.it && op.it._fileObj && op.it._fileObj.size) || 0; });
     await pool(addOps, 4, async op => {
       if (ctl && ctl.aborted) return stop(op);
       // #278: the live upload % drives the per-row bar (was a cramped inline "⏫94%")
       const sz = (op.it && op.it._fileObj && op.it._fileObj.size) ? ` (${fmtBytes(op.it._fileObj.size)})` : '';
       asLog.info(`Upload: ${op.label}${sz} — uploading to archive.org…`);
       try {
-        await uploadStep(op.it, (l, t) => { setSt(op, '⏫'); setRowBar(rowOf(op), l / t * 100, ''); }, ctl);
-        setSt(op, '⏫'); setRowBar(rowOf(op), 100, ''); asLog.debug(`Upload: ${op.label} — uploaded, registering`);
+        const t0 = performance.now();
+        await uploadStep(op.it, (l, t) => { up.sent[op._i] = l; up.size[op._i] = t; setSt(op, '⏫'); setRowBar(rowOf(op), l / t * 100, ''); }, ctl);
+        up.sent[op._i] = up.size[op._i]; up.tEnd = performance.now();
+        const sec = (up.tEnd - t0) / 1000;
+        setSt(op, '⏫'); setRowBar(rowOf(op), 100, ''); asLog.debug(`Upload: ${op.label} — uploaded ${fmtBytes(up.size[op._i])} in ${sec.toFixed(1)} s (${fmtBytes(Math.round(up.size[op._i] / Math.max(sec, 0.001)))}/s), registering`);
         if (ctl && ctl.aborted) return stop(op);
         await registerStep(op.it, meta, ctl);
         setSt(op, '✅'); setRowBar(rowOf(op), 100, 'done'); asLog.ok(`Upload: ${op.label} — registered on MusicBrainz ✓`);
       } catch (e) { (ctl && ctl.aborted) ? stop(op) : fail(op, e); }
     });  // parallel upload+register w/ progress (abortable via ctl); order fixed by the reorder edit below
+    up.over = true;
+  }
+  /* #698 (majkinetor): "Show real time upload rate in Enter Edit screen." The bytes the
+     uploads have sent and their rate, on the overall bar: live over the last 3 seconds
+     while any upload runs (all of them together, up to 4 in parallel), then the
+     average from the first byte to the last upload's end. Read on the bar's 150 ms
+     tick; nothing when the run has no uploads. */
+  function upRateText(up) {
+    if (!up) return '';
+    let sent = 0, size = 0;
+    for (const k in up.size) { size += up.size[k]; sent += up.sent[k] || 0; }
+    const now = performance.now();
+    const rate = b => fmtBytes(Math.round(b)) + '/s';
+    if (up.over || (sent >= size && up.tEnd)) return sent && up.tEnd ? ` · ↑ ${fmtBytes(sent)} at ${rate(sent / Math.max((up.tEnd - up.t0) / 1000, 0.001))}` : '';
+    up.samples.push([now, sent]);
+    while (up.samples.length > 2 && now - up.samples[0][0] > 3000) up.samples.shift();
+    const [t0, b0] = up.samples[0];
+    return ` · ↑ ${fmtBytes(sent)} / ${fmtBytes(size)}` + (now - t0 >= 500 ? ` · ${rate((sent - b0) / ((now - t0) / 1000))}` : '');
   }
   async function runPlan(ov, plan, meta, opsToRun) {
     const goBtn = ov.querySelector('.as-cm-go'), cancelBtn = ov.querySelector('.as-cm-cancel');
@@ -14773,7 +14797,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
       for (const op of plan) { const r = ov.querySelector(`.as-cm-op[data-i="${op._i}"]`); const s = r ? r.querySelector('.as-cm-st').textContent : ''; if ('✅👁❌⛔⏭'.includes(s)) done++; }
       const total = plan.length, pct = total ? Math.round(done / total * 100) : 100;
       progFill.style.width = pct + '%';
-      progTxt.textContent = `${done} / ${total} · ${pct}%`;
+      progTxt.textContent = `${done} / ${total} · ${pct}%${upRateText(ctl.up)}`;
     };
     prog.hidden = false; tickOverall();
     if (ov._ar) ov._ar.running = true;   // #566 — no schedule may fire while a run is in flight

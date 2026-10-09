@@ -17,7 +17,7 @@ The **Source** popover doesn't touch MB directly. It seeds ROpdebee's *Enhanced 
 `uploadStep` → `registerStep`:
 
 1. **Sign** — `GET /ws/js/<art>-upload/<mbid>?mime_type=<mime>` → `{ action, image_id, formdata, nonce }`. Reserves an id and fetches an Internet Archive S3 policy. Concurrent sign calls for the same release **race and 500**, so signing is **serialised through a gate** (`_signGate`) and retries transient 5xx/429 with backoff + jitter.
-2. **Upload** — `POST <action>` (an archive.org S3 URL) as **multipart**: the returned `formdata` policy fields + the file. Uses `XMLHttpRequest` (for upload progress + a 5-min timeout); the live XHR is registered on the run's `AbortController` so **Cancel** aborts it mid-upload. Runs in **parallel** (concurrency 4).
+2. **Upload** — `POST <action>` (an archive.org S3 URL) as **multipart**: the returned `formdata` policy fields + the file. Uses `XMLHttpRequest` for the upload progress, which also feeds the commit window's upload rate (#698), and the *Upload timeout* setting (#560); the live XHR is registered on the run's `AbortController` so **Cancel** aborts it mid-upload. Runs in **parallel** (concurrency 4).
 3. **Register** — `POST /release/<mbid>/add-<art>` with `add-<art>.id` (= `image_id`), `.nonce`, `.mime_type`, `.position`, `.type_id` (repeated per type), `.comment`, `.edit_note`. Creates the *add artwork* edit. Also runs in **parallel** (#362).
 
 ### Ordering — the reorder edit
