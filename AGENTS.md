@@ -36,6 +36,11 @@ Learn something durable → write it down: in the general file if it would hold 
 ## Userscripts
 
 - Install links pin to a **commit SHA**, not a branch ([Standard 10](STANDARDS.md#standard-10)): `[Install @<version>](…/raw/<sha>/<path>.user.js)`. Feature branch → pinned only; on main/stable → pinned + latest. **curl-check every link**: the repo slug is `majkinetor/musicbrainz-userscripts` (not the `mb-userscripts` folder), so folder-name raw links 404.
+- **Report finished work on its issue, not only in chat** (cloud agents included): when work on an issue is pushed, comment on that issue with a few lines on what changed and the install links. That comment is the handoff: open no PR, and don't wait for the maintainer to test; move on to the next task. He confirms on the issue, and then the work is merged.
+  - **Pinned**: `[Install @<version> (pinned)](https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/<sha>/userscripts/<dir>/<file>.user.js)`. Use the **full 40-character SHA** of the pushed commit (a short SHA 404s), and the `@version` read from the pushed file.
+  - **Latest**, only once the work is on `main` (or `stable`), never for a feature branch: `[Install @<version> (latest, auto-updates)](https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/refs/heads/main/userscripts/<dir>/<file>.user.js)`.
+  - Always clickable `[label](url)` links, never bare URLs, with String Theory's beside them (next bullet).
+  - End the comment with the footer `<sub>Claude Opus 5.5 · effort: <label> (<value>)</sub>`. Use the model actually running and the effort value of the current message. The label comes from the value: 5 is low, 10 medium, 15 high, 40 extra, max is max; any other value goes in alone. Never take it from `$CLAUDE_EFFORT`. The footer goes on every GitHub post: comments, issue bodies, PR bodies.
 - **Always give a String Theory link too** (maintainer): every time you share install links, whatever script changed, include String Theory's, pinned to the same commit. The maintainer runs the bundle.
 - **Settings** → `GM_setValue` / `GM_getValue`, never `localStorage`.
 - Bump the script's `@version` to today (`YYYY.M.D`, time appended for a same-day second change); read the current value before bumping.
