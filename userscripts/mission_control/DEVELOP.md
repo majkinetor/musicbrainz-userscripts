@@ -1,6 +1,6 @@
-# Mission Control: development
+# Develop
 
-`pnpm test` here runs this script's specs (`--project=mission_control`) on test.musicbrainz.org.
+*Reference for maintainers and other scripts' authors*. The repo-wide procedure is in the root [DEVELOP.md](../../DEVELOP.md); the user docs are in [README.md](README.md). `pnpm test` here runs this script's specs (`--project=mission_control`) on test.musicbrainz.org.
 
 ## Provider bus
 
