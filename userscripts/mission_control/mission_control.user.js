@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Mission Control
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.9.131340
+// @version      2026.10.9.132954
 // @description  One window on the release page that asks the other scripts (Platform Check, ISRC Scout, Art Station, Fusion, Credit Hoarder) what is missing, shows it all in one review, and applies the selected changes in order.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5NaXNzaW9uIENvbnRyb2w8L3RpdGxlPgo8ZGVmcz48ZmlsdGVyIGlkPSJtY28xMy1oIiB4PSItMTAlIiB5PSItMTAlIiB3aWR0aD0iMTIwJSIgaGVpZ2h0PSIxMjAlIj48ZmVNb3JwaG9sb2d5IGluPSJTb3VyY2VBbHBoYSIgb3BlcmF0b3I9ImRpbGF0ZSIgcmFkaXVzPSIxLjUiIHJlc3VsdD0iZCIvPjxmZUZsb29kIGZsb29kLWNvbG9yPSIjZmZmIiBmbG9vZC1vcGFjaXR5PSIuNyIvPjxmZUNvbXBvc2l0ZSBpbjI9ImQiIG9wZXJhdG9yPSJpbiIvPjxmZU1lcmdlPjxmZU1lcmdlTm9kZS8+PGZlTWVyZ2VOb2RlIGluPSJTb3VyY2VHcmFwaGljIi8+PC9mZU1lcmdlPjwvZmlsdGVyPjwvZGVmcz48ZyBmaWx0ZXI9InVybCgjbWNvMTMtaCkiPjxwYXRoIGQ9Ik03NyAzNS41IEw2NCA0MyBMNTEgMzUuNSBMNTEgMjAuNSBMNjQgMTMgTDc3IDIwLjVaIiBmaWxsPSIjN2E1N2U4IiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik01OS43IDc3LjUgTDQ2LjcgODUgTDMzLjcgNzcuNSBMMzMuNyA2Mi41IEw0Ni43IDU1IEw1OS43IDYyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik05NC4zIDc3LjUgTDgxLjMgODUgTDY4LjMgNzcuNSBMNjguMyA2Mi41IEw4MS4zIDU1IEw5NC4zIDYyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik00Mi4zIDEwNy41IEwyOS40IDExNSBMMTYuNCAxMDcuNSBMMTYuNCA5Mi41IEwyOS40IDg1IEw0Mi4zIDkyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik03NyAxMDcuNSBMNjQgMTE1IEw1MSAxMDcuNSBMNTEgOTIuNSBMNjQgODUgTDc3IDkyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik0xMTEuNiAxMDcuNSBMOTguNiAxMTUgTDg1LjcgMTA3LjUgTDg1LjcgOTIuNSBMOTguNiA4NSBMMTExLjYgOTIuNVoiIGZpbGw9IiNmZmM5NGEiIHN0cm9rZT0iIzIyMjIzYiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PC9nPgo8L3N2Zz4K
@@ -559,7 +559,7 @@ function mcStyle() {
         + '.mc-tbl .mc-pick:hover{border-color:var(--mbu-border-strong)}.mc-tbl .mc-pick.on{background:var(--mbu-accent-soft);border:1px solid var(--mbu-border-strong)}'
         + '.mc-tbl .mc-pick:not(.on) .mc-add{opacity:.55;text-decoration:line-through}'
         + '.mc-sub{display:flex;align-items:center;justify-content:space-between;gap:8px;min-height:28px;box-sizing:border-box;font-size:10px;letter-spacing:.6px;text-transform:uppercase;font-weight:700;color:var(--mbu-text-weak);padding:6px 10px 3px;background:var(--mbu-bg-raised);border-bottom:1px solid var(--mbu-divider)}'
-        + '.mc-tbl .mc-lnk{display:inline-flex;align-items:center;gap:1px;margin:0;padding:1px 4px;font-weight:700;color:var(--mbu-accent-text)}.mc-tbl .mc-lnk:not(.on){opacity:.45}'
+        + '.mc-tbl .mc-lnk{text-decoration:none;display:inline-flex;align-items:center;gap:1px;margin:0;padding:1px 4px;font-weight:700;color:var(--mbu-accent-text)}.mc-tbl .mc-lnk:not(.on){opacity:.45}'
         + '.mc-have{opacity:.8}.mc-isep{width:1px;height:14px;background:var(--mbu-border);margin:0 2px}'
         + '.mc-icons{display:inline-flex;gap:4px;align-items:center}.mc-icons a.mc-pico:hover{transform:scale(1.15)}'
         + '.mc-summary{padding:5px 10px;font-size:11.5px;color:var(--mbu-text-dim);border-bottom:1px solid var(--mbu-divider)}'
@@ -881,7 +881,8 @@ function linksCell(t) {
     const have = (x && x.linkUrls || []).map(u => '<a class="mc-pico mc-have" target="_blank" rel="noopener" href="' + esc(u) + '" title="' + esc('Linked: ' + u) + '">' + stIcon(urlIcon(u), 14) + '</a>');
     const neu = add.map(l => {
         const on = picked.is && picked.is.has(l.key);
-        return '<span class="mc-pick mc-lnk' + (on ? ' on' : '') + '" data-prov="is" data-key="' + esc(l.key) + '" title="' + esc(l.name + ': ' + l.url + (on ? '\nTaken in: click to leave out' : '\nClick to take in')) + '">+' + stIcon(urlIcon(l.url), 14) + '</span>';
+        // a found link opens on click like a linked one; right-click takes it in or leaves it out
+        return '<a class="mc-pick mc-lnk' + (on ? ' on' : '') + '" data-prov="is" data-key="' + esc(l.key) + '" target="_blank" rel="noopener" href="' + esc(l.url) + '" title="' + esc(l.name + ': ' + l.url + '\nClick to open · right-click to ' + (on ? 'leave out (taken in)' : 'take in')) + '">+' + stIcon(urlIcon(l.url), 14) + '</a>';
     });
     if (!have.length && !neu.length) return '<span class="pend">none</span>';
     return '<span class="mc-icons">' + have.join('') + (have.length && neu.length ? '<span class="mc-isep"></span>' : '') + neu.join('') + '</span>';
@@ -1314,6 +1315,7 @@ function open() {
     document.documentElement.classList.add('mc-open');
     paintSides(); paintAll(); paintInspector();
     ui.addEventListener('click', onClick);
+    ui.addEventListener('contextmenu', onContextMenu);
     // a cover thumbnail that fails falls back to its full image once (errors don't bubble: capture)
     ui.addEventListener('error', e => { const i = e.target; if (i.tagName === 'IMG' && i.dataset.alt) { const a = i.dataset.alt; delete i.dataset.alt; i.dataset.from = i.getAttribute('src'); i.src = a; } }, true);
     document.addEventListener('keydown', onKey);
@@ -1364,6 +1366,22 @@ function selectTrack(i) {
     paintInspector();
     Log.debug('selected track ' + rel.tracks[selected].pos + ' (' + rel.tracks[selected].rec + ')');
 }
+function togglePick(pk) {
+    const set = picked[pk.dataset.prov] || (picked[pk.dataset.prov] = new Set());
+    const on = !set.has(pk.dataset.key);
+    if (on) set.add(pk.dataset.key); else set.delete(pk.dataset.key);
+    Log.debug((on ? 'taken in ' : 'left out ') + pk.dataset.prov + ' ' + pk.dataset.key);
+    if (pk.closest('.mc-tbl')) paintMatrix(); else paintCards();
+    paintExec();
+    if (pk.dataset.prov === 'pc') syncIsLinks(700);
+}
+// a found track link is an <a> (a click opens it): right-click takes it in or leaves it out
+function onContextMenu(e) {
+    const pk = e.target.closest('a.mc-lnk.mc-pick');
+    if (!pk) return;
+    e.preventDefault();
+    togglePick(pk);
+}
 function onClick(e) {
     const t = e.target;
     const side = t.closest('[data-side]');
@@ -1382,13 +1400,7 @@ function onClick(e) {
     // a pickable row or cell toggles on click (#680); a link inside it still just opens
     const pk = !t.closest('a') && t.closest('.mc-pick');
     if (pk) {
-        const set = picked[pk.dataset.prov] || (picked[pk.dataset.prov] = new Set());
-        const on = !set.has(pk.dataset.key);
-        if (on) set.add(pk.dataset.key); else set.delete(pk.dataset.key);
-        Log.debug((on ? 'taken in ' : 'left out ') + pk.dataset.prov + ' ' + pk.dataset.key);
-        if (pk.closest('.mc-tbl')) paintMatrix(); else paintCards();
-        paintExec();
-        if (pk.dataset.prov === 'pc') syncIsLinks(700);
+        togglePick(pk);
         if (!pk.closest('.mc-tbl')) return;   // in the matrix the click also selects the track
     }
     const row = t.closest('.mc-tbl tbody tr[data-i]');
