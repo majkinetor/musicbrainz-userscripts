@@ -20,7 +20,7 @@ Focus a text field and press **Ctrl+Alt+E**: its text opens in your editor as a 
 
 ## Edit a whole release
 
-On a release's **Edit** page, a ✎ button appears bottom-left while the helper runs. Click it, or press **Ctrl+Alt+R**, to open the release as one Markdown document ([format](./RELEASE_MD_SPEC.md)). Each save applies the changes to the release editor; you review and submit as usual.
+On a release's **Edit** page, Scribe's icon appears bottom-left while the helper runs, with a green dot on it while you're editing. Click it, or press **Ctrl+Alt+R**, to open the release as one Markdown document ([format](./RELEASE_MD_SPEC.md)). Each save applies the changes to the release editor; you review and submit as usual.
 
 A window bottom-right lists what changed this session. A value that can't be applied (an invalid status, say) is flagged there with a ⌖ button to its field, and counted in the header. **✕** stops editing.
 
