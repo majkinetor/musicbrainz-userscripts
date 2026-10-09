@@ -44,7 +44,7 @@ test('#680: Probe asks ISRC Scout; the matrix shows each track\'s ISRC', { tag: 
 
   // the inspector shows the found ISRC and its source
   await page.locator('#mc-root .mc-tbl tbody tr[data-i]').first().locator('td.ttl').click();
-  // the fastest source the release links (Find everything's order): Audiomack here, before Deezer
+  // the fastest source the release links (Match's order): Audiomack here, before Deezer
   check(/Audiomack|Deezer|Qobuz|Apple/.test(await page.locator('#mc-root .mc-insp').textContent()), 'inspector names the source');
 
   await page.evaluate(() => { window.__mcTest.execute(true); });   // Dry run: the test hook only (#680)

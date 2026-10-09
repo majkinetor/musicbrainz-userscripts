@@ -1,6 +1,6 @@
 # Fusion <img src="icon.svg" align="left" width="48">
 
-A merge assistant for MusicBrainz recordings: gather candidates, let Auto-match group the duplicates, adjust by hand, and submit every merge from one window.
+A merge assistant for MusicBrainz recordings: gather candidates, let Match group the duplicates, adjust by hand, and submit every merge from one window.
 
 - Install: [stable](https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/refs/heads/stable/userscripts/fusion/fusion.user.js) or [latest](https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/refs/heads/main/userscripts/fusion/fusion.user.js)
     - Or via bundle: [String Theory](../string_theory/README.md)
@@ -13,7 +13,7 @@ A merge assistant for MusicBrainz recordings: gather candidates, let Auto-match 
 
 - **[Pool and groups](#pool-and-groups)**: candidates on the left, merge groups on the right.
 - **[Seeding](#seeding)** from a release, a release group, a recording, or an artist's whole catalogue.
-- **[Auto-match](#auto-match)** groups likely duplicates by ISRC, AcoustID, title, artist and length.
+- **[Match](#match)** groups likely duplicates by ISRC, AcoustID, title, artist and length.
 - **[Merging](#merging)** submits the merges in the background, each with an itemised edit note.
 
 ## Pool and groups
@@ -41,9 +41,9 @@ Fusion opens with a pool already filled from the page you launched it on:
 
 On any page, pasting a recording, release or release-group MBID or URL into the input adds it (a release adds all of its recordings).
 
-## Auto-match
+## Match
 
-Auto-match groups the recordings still in the pool, so a group you built by hand is never undone. The **Cutoff** sets how much evidence it needs:
+Match groups the recordings still in the pool, so a group you built by hand is never undone. The **Cutoff** sets how much evidence it needs:
 
 | Cutoff | Groups two recordings when they share… |
 |---|---|
@@ -53,7 +53,7 @@ Auto-match groups the recordings still in the pool, so a group you built by hand
 
 Titles tolerate small typos. Artists are compared by MBID when both recordings have them, so *Radium* and *DJ Radium* credited to the same artist match.
 
-Auto-match never groups:
+Match never groups:
 
 - a video with an audio recording (not even with a shared ISRC; manual grouping refuses it too);
 - a recording that has an open edit;
@@ -83,7 +83,7 @@ The ⚙ window (or right-click Fusion's corner icon), which also holds the activ
 |---|---|---|
 | Always require a vote | off | send even your auto-edits to a vote |
 | Look up AcoustIDs | on | fetch the pool's AcoustIDs from acoustid.org |
-| Auto-match on open | off | run Auto-match once the pool has loaded |
+| Match on open | off | run Match once the pool has loaded |
 | Preload group release details | off | fetch every grouped recording's releases in the background |
 | Length tolerance | 5 s | lengths this close count as the same |
-| Never auto-group if lengths differ by more than | 30 s | |
+| Match never groups if lengths differ by more than | 30 s | |
