@@ -1,0 +1,4 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+<title>Apollo Editor — Delta wings</title>
+<filter id="ap1010-h" x="-15%" y="-15%" width="130%" height="130%"><feMorphology in="SourceAlpha" operator="dilate" radius="3" result="d"/><feFlood flood-color="#fff" flood-opacity="0.7"/><feComposite in2="d" operator="in" result="h"/><feMerge><feMergeNode in="h"/><feMergeNode in="SourceGraphic"/></feMerge></filter><g filter="url(#ap1010-h)"><path d="M57 96 L64 124 L71 96 Z" fill="#ff6a00"/><g stroke="#1b2a4a" stroke-width="4" stroke-linejoin="round"><path d="M56 50 L12 100 L12 110 L56 96 Z" fill="#e63946"/><path d="M72 50 L116 100 L116 110 L72 96 Z" fill="#e63946"/><path d="M64 6 C72 16 74 30 74 46 L74 96 L54 96 L54 46 C54 30 56 16 64 6 Z" fill="#fff"/></g><circle cx="64" cy="38" r="6" fill="#5ec8ff" stroke="#1b2a4a" stroke-width="3.5"/></g>
+</svg>

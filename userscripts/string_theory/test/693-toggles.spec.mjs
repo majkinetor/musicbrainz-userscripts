@@ -26,10 +26,11 @@ test.describe('Platform Check turned off', () => {
 
 test('the menu lists every member, and a click flips it and relabels the entry', { tag: ['@sandbox'] }, async ({ page, inject }) => {
   await page.goto(`${SANDBOX}/release/${RELEASE}`, { waitUntil: 'load', timeout: 60000 });
-  // a manager's menu: entries by id, unregister removes one
+  // a manager's menu like Violentmonkey's: an options.id names the entry, and registering that id
+  // again relabels it where it stands; unregister removes one
   await page.evaluate(() => {
     const menu = window.__menu = new Map(); let next = 1;
-    window.GM_registerMenuCommand = (caption, fn) => { const id = next++; menu.set(id, { caption, fn }); return id; };
+    window.GM_registerMenuCommand = (caption, fn, o) => { const id = (o && o.id) || next++; menu.set(id, { caption, fn }); return id; };
     window.GM_unregisterMenuCommand = id => menu.delete(id);
   });
   await inject('string_theory');
@@ -37,12 +38,13 @@ test('the menu lists every member, and a click flips it and relabels the entry',
   const captions = () => page.evaluate(() => [...window.__menu.values()].map(e => e.caption).filter(c => /^[☑☐] /.test(c)));
   const before = await captions();
   check(before.length === MEMBERS && before.every(c => c.startsWith('☑ ')), `${MEMBERS} entries, all on (${before.join(' · ')})`);
-  check(before.includes('☑ Platform Check'), 'labelled with the script\'s name');
+  check(before.some(c => /^☑ Platform Check v\d{4}\.\d+\.\d+/.test(c)), 'labelled with the script\'s name and version');
 
   await page.evaluate(() => [...window.__menu.values()].find(e => /Platform Check/.test(e.caption)).fn());
   const after = await captions();
   check(after.length === MEMBERS, `still ${MEMBERS} entries, not doubled (${after.length})`);
-  check(after.includes('☐ Platform Check') && after.filter(c => c.startsWith('☐ ')).length === 1, `Platform Check shows off, nothing else (${after.join(' · ')})`);
+  check(after.findIndex(c => c.startsWith('☐ Platform Check')) === before.findIndex(c => c.startsWith('☑ Platform Check')), `relabelled where it stood (${after.join(' · ')})`);
+  check(after.some(c => c.startsWith('☐ Platform Check')) && after.filter(c => c.startsWith('☐ ')).length === 1, `Platform Check shows off, nothing else (${after.join(' · ')})`);
   check(JSON.stringify(await page.evaluate(() => GM_getValue('string_theory.off'))) === '["platform_check"]', 'stored as off');
 
   await page.evaluate(() => [...window.__menu.values()].find(e => /Platform Check/.test(e.caption)).fn());
@@ -86,5 +88,12 @@ test('the layout entry lines the corner launchers up in a row and back', { tag: 
   await page.waitForSelector('#falcon-launcher'); await page.waitForSelector('#fs-launch');
   const solo = await at();
   check(solo.length === 2 && solo.every(e => e.bottom === '14px') && new Set(solo.map(e => e.right)).size === 2, `standalone scripts line up in the row (${JSON.stringify(solo)})`);
+  // and the bundle keeps the row on a fresh page load, not only on the click
+  await page.reload({ waitUntil: 'load' });
+  await inject('string_theory');
+  await until(() => page.evaluate(() => document.querySelectorAll('[data-mb-corner="br"]').length), n => n >= 2, { timeout: 30000 });
+  await page.waitForTimeout(3000);
+  const loaded = await at();
+  check(loaded.every(e => e.bottom === '14px') && new Set(loaded.map(e => e.right)).size === loaded.length, `the bundle loads in the row (${JSON.stringify(loaded)})`);
   await page.evaluate(() => localStorage.removeItem('mbu.cornerFlow'));
 });
