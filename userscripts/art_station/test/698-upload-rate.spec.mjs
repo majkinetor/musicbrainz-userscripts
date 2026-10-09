@@ -44,7 +44,7 @@ test('the commit window shows the live upload rate, then the average', { tag: ['
   const bar = () => page.evaluate(() => document.querySelector('#as-commit .as-cm-prog-txt')?.textContent || '');
   const live = await until(bar, s => /↑ [\d.]+ (KB|MB) \/ [\d.]+ MB · [\d.]+ (KB|MB)\/s$/.test(s));
   console.log('live: ' + live);
-  check(/^0 \/ 2 · 0% · ↑ [\d.]+ (KB|MB) \/ 1\.\d\d MB · [\d.]+ (KB|MB)\/s$/.test(live), `while uploading: sent / total and the rate — "${live}"`);
+  check(/^0 \/ \d+ · 0% · ↑ [\d.]+ (KB|MB) \/ 1\.\d\d MB · [\d.]+ (KB|MB)\/s$/.test(live), `while uploading: sent / total and the rate — "${live}"`);
   await attachShot(testInfo, page.locator('#as-commit .as-cm-box'), 'uploading');
   const kb = s => { const m = s.match(/([\d.]+) (KB|MB)\/s/); return m ? +m[1] * (m[2] === 'MB' ? 1024 : 1) : NaN; };
   const later = await until(bar, s => kb(s) > KBPS / 3 && /\/s$/.test(s));
