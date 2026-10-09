@@ -27,7 +27,7 @@ Bias to action, but know the edges.
 Who you post as depends on where you run:
 
 - **Locally (Claude Code on the maintainer's machine)** the `gh` login is the *maintainer's own*, for human use — so assistant activity goes through a separate **bot account** to stay attributable ([Standard 7](STANDARDS.general.md#standard-7)). Its token is at **`dev/.github-credentials.json`** (gitignored); set it before any `gh` write *and* for commits, or `gh` silently posts as the maintainer: `$env:GH_TOKEN = (Get-Content dev/.github-credentials.json | ConvertFrom-Json).token`. Commit with `-c user.name=… -c user.email=…` (and **`git merge` needs the same `-c` flags**); verify the author after. Never `git push -u` a `user:TOKEN@…` URL (it persists the token into `.git/config`) — push the token URL without `-u`.
-- **In the cloud** there is no bot token, and that's intended: run as the environment's own GitHub identity (the maintainer's). The activity is already labelled "with Claude", so it stays distinguishable without the extra account — don't try to source a bot token or any secret.
+- **In the cloud** there is no bot token, and that's intended: run as the environment's own GitHub identity (the maintainer's). The activity is already labelled "with Claude", so it stays distinguishable without the extra account — don't try to source a bot token or any secret. **Delete the branches you created** once their work is merged (a declined or abandoned one too). The proxy may refuse deletes, even of your own branch: then end your report with the branch names and their last commits, so a local session deletes them.
 
 The rest applies whoever you post as:
 
