@@ -63,6 +63,12 @@ For [Standard 12](#standard-12), every script's README follows one shape, so a r
 
 Screenshots live in the script's `screenshots/` folder. String Theory's `DOCS.md` is generated from the members' READMEs; never edit it.
 
+**Exceptions**, agreed in the 2026-09 tidy-up: [Bandcamp Player Enhanced](userscripts/bandcamp_player_enhanced/README.md) is mostly keys, so it has no feature sections and puts Shortcuts first; [String Theory's README](userscripts/string_theory/README.md) is about the bundle, not a script.
+
+**A script's `DEVELOP.md`** is for maintainers and other scripts' authors. It opens with *Reference for maintainers and other scripts' authors* and a link to the root [DEVELOP.md](DEVELOP.md), then has one `##` per topic: a handoff, how each source is read, a plugin API, storage. [First Contact's](userscripts/first_contact/DEVELOP.md) is the model.
+
+[`dev/check-readme.mjs`](dev/check-readme.mjs) checks a README against this shape and the rules of Standard 12 that a script can check.
+
 ### Tables
 
 For [Standard 5](#standard-5), the enforcer is [`dev/align-md-tables.mjs`](dev/align-md-tables.mjs) (generic, takes any markdown files as args).

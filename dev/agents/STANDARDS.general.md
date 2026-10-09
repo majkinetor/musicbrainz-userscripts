@@ -107,6 +107,10 @@ The goal is *zero-friction verification*: every claim that names a thing carries
 
 Every user doc of one kind (a component's README, say) follows **one shape**, so a reader who knows one knows them all. The repo's `STANDARDS.md` gives the shape and a template; the order is always: title and pitch → a one-line-per-feature list → a section per feature → settings → shortcuts → notes (only if needed).
 
+- The feature list links every feature section, in the sections' order; a reference section (a list of sources, say) may be linked from inside a feature's line instead. One short paragraph after the list may say how the features fit together.
+- Settings, shortcuts and notes aren't features and aren't in the list.
+- Every setting says what it does, under its name exactly as the settings window shows it.
+
 **Writing**
 
 - Short sentences, plain words. Say what the user sees and does, not how the code does it.
@@ -115,12 +119,13 @@ Every user doc of one kind (a component's README, say) follows **one shape**, so
 - Background, reasons and "how it works" go in a `> [!NOTE]` at the end of their section, so they don't break the flow of the instructions.
 - Leave out everyday UI behaviour: Esc closes a window, a button shows on hover, there's no button to press.
 - Say each thing once. A feature's behaviour is in its section; the Features list only names it.
-- No history in the prose: no "used to", no "since #123", no "(#456)" after a sentence. The changelog and the issues keep the history.
+- No history in the prose: no "used to", no "is now", no "since #123", no "(#456)" or bare issue number. Describe a changed feature as it is. The changelog and the issues keep the history.
 - When a doc is touched, what went stale is corrected in the same change; code examples a spec reads must stay valid.
 
 **Where things go**
 
 - The README is for users. How to build, test or change a component goes in its `DEVELOP.md`, and the repo-wide procedure in the root `DEVELOP.md`.
+- How other programs use a component (its API, a handoff, a plugin interface, a protocol) goes in its `DEVELOP.md`, unless it is something a user types.
 - Screenshots are real captures, not mockups.
 - Generated docs are never edited by hand.
 
