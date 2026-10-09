@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-10-09 13:16 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-10-09 14:17 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -381,6 +381,7 @@ Downloads are named `<NN> <types> <comment>.<ext>`, with `none` for no type, e.g
 **Enter edit** lists the staged operations and submits them as MusicBrainz edits, with one edit note and *make votable* for all.
 
 - Operations are listed in two columns (one in a narrow window). Each shows the cover it acts on and its own progress bar; the bar at the top counts the whole batch.
+- While images upload, the top bar also shows what's been sent and the live upload rate, *↑ 256.0 KB / 1.61 MB · 213.4 KB/s*; once they're done, the total and the average, *↑ 1.61 MB at 254.0 KB/s*.
 - The edit note starts folded to one line: its line count and first line. Click it to edit.
 - **Dry run** is in the menu on **Submit edits** (▾): it shows what each edit would send, and submits nothing.
 - Removes, edits and uploads run in parallel; one reorder edit runs last and sets the final order.

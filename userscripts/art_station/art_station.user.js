@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Art Station
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.9.092604
+// @version      2026.10.9.141722
 // @description  Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5BcnQgU3RhdGlvbjwvdGl0bGU+CjxjaXJjbGUgY3g9Ijg2IiBjeT0iNjQiIHI9IjM4IiBmaWxsPSIjMWIwZjNiIiBzdHJva2U9IiNiOTY3ZmYiIHN0cm9rZS13aWR0aD0iMyIvPgo8Y2lyY2xlIGN4PSI4NiIgY3k9IjY0IiByPSIyOC44OCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjNGEzNDgwIiBzdHJva2Utd2lkdGg9IjEuNSIvPjxjaXJjbGUgY3g9Ijg2IiBjeT0iNjQiIHI9IjIwLjkwMDAwMDAwMDAwMDAwMiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjNGEzNDgwIiBzdHJva2Utd2lkdGg9IjEuNSIvPgo8Y2lyY2xlIGN4PSI4NiIgY3k9IjY0IiByPSIxMS4wMiIgZmlsbD0iI2ZmNzFjZSIvPjxjaXJjbGUgY3g9Ijg2IiBjeT0iNjQiIHI9IjIuNTA4IiBmaWxsPSIjMWIwZjNiIi8+PGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJhcy1za3ljIiB4MT0iMCIgeTE9IjAiIHgyPSIwIiB5Mj0iMSI+PHN0b3Agb2Zmc2V0PSIwLjAwIiBzdG9wLWNvbG9yPSIjN2ZlN2ZmIi8+PHN0b3Agb2Zmc2V0PSIwLjUwIiBzdG9wLWNvbG9yPSIjZDlhNmZmIi8+PHN0b3Agb2Zmc2V0PSIxLjAwIiBzdG9wLWNvbG9yPSIjZmY3MWNlIi8+PC9saW5lYXJHcmFkaWVudD48Y2xpcFBhdGggaWQ9ImFzLWNjIj48cmVjdCB4PSIxMCIgeT0iMjIiIHdpZHRoPSI3OCIgaGVpZ2h0PSI4NCIgcng9IjgiLz48L2NsaXBQYXRoPjwvZGVmcz4KPGcgY2xpcC1wYXRoPSJ1cmwoI2FzLWNjKSI+PHJlY3QgeD0iMTAiIHk9IjIyIiB3aWR0aD0iNzgiIGhlaWdodD0iODQiIGZpbGw9InVybCgjYXMtc2t5YykiLz4KPGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJhcy1nczIiIHgxPSIwIiB5MT0iMCIgeDI9IjAiIHkyPSIxIj48c3RvcCBvZmZzZXQ9IjAiIHN0b3AtY29sb3I9IiNmZmY2YTgiLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiNmZjhhNWMiLz48L2xpbmVhckdyYWRpZW50Pgo8bWFzayBpZD0iYXMtbXMyIj48cmVjdCB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCIgZmlsbD0iI2ZmZiIvPjxyZWN0IHg9IjI1LjYiIHk9IjY3LjIiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjEuMiIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9IjY5LjgiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjEuNSIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9IjczLjAiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjEuOCIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9Ijc3LjAiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjIuMyIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9IjgyLjAiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjIuOSIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9Ijg4LjMiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjMuNiIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9Ijk2LjIiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjQuNSIgZmlsbD0iIzAwMCIvPjwvbWFzaz48L2RlZnM+CjxjaXJjbGUgY3g9IjQ5IiBjeT0iNzYuMDgiIHI9IjIzLjQiIGZpbGw9InVybCgjYXMtZ3MyKSIgbWFzaz0idXJsKCNhcy1tczIpIi8+PHJlY3QgeD0iMTAiIHk9Ijc0LjA4IiB3aWR0aD0iNzgiIGhlaWdodD0iMzEuOTIiIGZpbGw9IiNiOTY3ZmYiLz48cGF0aCBkPSJNMTAgNzQuMDhIODhNMTAgNzcuOUg4OE0xMCA4My4ySDg4TTEwIDkxLjRIODhNMTAgMTA0LjJIODhNMzQuOCA3NC4wOEwtNDguNSAxMDZNMzguNCA3NC4wOEwtMjQuMSAxMDZNNDEuOSA3NC4wOEwwLjMgMTA2TTQ1LjUgNzQuMDhMMjQuNiAxMDZNNDkuMCA3NC4wOEw0OS4wIDEwNk01Mi41IDc0LjA4TDczLjQgMTA2TTU2LjEgNzQuMDhMOTcuOCAxMDZNNTkuNiA3NC4wOEwxMjIuMSAxMDZNNjMuMiA3NC4wOEwxNDYuNSAxMDYiIHN0cm9rZT0iI2ZmZmI5NiIgc3Ryb2tlLXdpZHRoPSIxLjMiIGZpbGw9Im5vbmUiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPjwvZz48cmVjdCB4PSIxMCIgeT0iMjIiIHdpZHRoPSI3OCIgaGVpZ2h0PSI4NCIgcng9IjgiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJhMTQ1OCIgc3Ryb2tlLXdpZHRoPSIzIi8+Cjwvc3ZnPgo=
@@ -3371,19 +3371,43 @@
     const fail = (op, e) => { const row = rowOf(op); row.querySelector('.as-cm-st').textContent = '❌'; row.querySelector('.as-cm-payload').textContent = String(e && e.message || e); row.classList.add('err'); op._err = true; setRowBar(row, 100, 'err'); logErr(`Upload: ${op.label}`, e); };
     const stop = (op) => { setSt(op, '⛔'); op._err = true; setRowBar(rowOf(op), 100, 'cancel'); };
     addOps.forEach(op => { setSt(op, '⏳'); setRowBar(rowOf(op), null, 'busy'); });
+    // #698: bytes per upload, for the upload rate on the overall bar (see upRateText)
+    const up = ctl.up = { t0: performance.now(), tEnd: 0, over: false, size: {}, sent: {}, samples: [] };
+    addOps.forEach(op => { up.size[op._i] = (op.it && op.it._fileObj && op.it._fileObj.size) || 0; });
     await pool(addOps, 4, async op => {
       if (ctl && ctl.aborted) return stop(op);
       // #278: the live upload % drives the per-row bar (was a cramped inline "⏫94%")
       const sz = (op.it && op.it._fileObj && op.it._fileObj.size) ? ` (${fmtBytes(op.it._fileObj.size)})` : '';
       asLog.info(`Upload: ${op.label}${sz} — uploading to archive.org…`);
       try {
-        await uploadStep(op.it, (l, t) => { setSt(op, '⏫'); setRowBar(rowOf(op), l / t * 100, ''); }, ctl);
-        setSt(op, '⏫'); setRowBar(rowOf(op), 100, ''); asLog.debug(`Upload: ${op.label} — uploaded, registering`);
+        const t0 = performance.now();
+        await uploadStep(op.it, (l, t) => { up.sent[op._i] = l; up.size[op._i] = t; setSt(op, '⏫'); setRowBar(rowOf(op), l / t * 100, ''); }, ctl);
+        up.sent[op._i] = up.size[op._i]; up.tEnd = performance.now();
+        const sec = (up.tEnd - t0) / 1000;
+        setSt(op, '⏫'); setRowBar(rowOf(op), 100, ''); asLog.debug(`Upload: ${op.label} — uploaded ${fmtBytes(up.size[op._i])} in ${sec.toFixed(1)} s (${fmtBytes(Math.round(up.size[op._i] / Math.max(sec, 0.001)))}/s), registering`);
         if (ctl && ctl.aborted) return stop(op);
         await registerStep(op.it, meta, ctl);
         setSt(op, '✅'); setRowBar(rowOf(op), 100, 'done'); asLog.ok(`Upload: ${op.label} — registered on MusicBrainz ✓`);
       } catch (e) { (ctl && ctl.aborted) ? stop(op) : fail(op, e); }
     });  // parallel upload+register w/ progress (abortable via ctl); order fixed by the reorder edit below
+    up.over = true;
+  }
+  /* #698 (majkinetor): "Show real time upload rate in Enter Edit screen." The bytes the
+     uploads have sent and their rate, on the overall bar: live over the last 3 seconds
+     while any upload runs (all of them together, up to 4 in parallel), then the
+     average from the first byte to the last upload's end. Read on the bar's 150 ms
+     tick; nothing when the run has no uploads. */
+  function upRateText(up) {
+    if (!up) return '';
+    let sent = 0, size = 0;
+    for (const k in up.size) { size += up.size[k]; sent += up.sent[k] || 0; }
+    const now = performance.now();
+    const rate = b => fmtBytes(Math.round(b)) + '/s';
+    if (up.over || (sent >= size && up.tEnd)) return sent && up.tEnd ? ` · ↑ ${fmtBytes(sent)} at ${rate(sent / Math.max((up.tEnd - up.t0) / 1000, 0.001))}` : '';
+    up.samples.push([now, sent]);
+    while (up.samples.length > 2 && now - up.samples[0][0] > 3000) up.samples.shift();
+    const [t0, b0] = up.samples[0];
+    return ` · ↑ ${fmtBytes(sent)} / ${fmtBytes(size)}` + (now - t0 >= 500 ? ` · ${rate((sent - b0) / ((now - t0) / 1000))}` : '');
   }
   async function runPlan(ov, plan, meta, opsToRun) {
     const goBtn = ov.querySelector('.as-cm-go'), cancelBtn = ov.querySelector('.as-cm-cancel');
@@ -3450,7 +3474,7 @@
       for (const op of plan) { const r = ov.querySelector(`.as-cm-op[data-i="${op._i}"]`); const s = r ? r.querySelector('.as-cm-st').textContent : ''; if ('✅👁❌⛔⏭'.includes(s)) done++; }
       const total = plan.length, pct = total ? Math.round(done / total * 100) : 100;
       progFill.style.width = pct + '%';
-      progTxt.textContent = `${done} / ${total} · ${pct}%`;
+      progTxt.textContent = `${done} / ${total} · ${pct}%${upRateText(ctl.up)}`;
     };
     prog.hidden = false; tickOverall();
     if (ov._ar) ov._ar.running = true;   // #566 — no schedule may fire while a run is in flight

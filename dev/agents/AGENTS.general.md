@@ -28,7 +28,6 @@ Who you post as depends on where you run:
 
 - **Locally (Claude Code on the maintainer's machine)** the `gh` login is the *maintainer's own*, for human use — so assistant activity goes through a separate **bot account** to stay attributable ([Standard 7](STANDARDS.general.md#standard-7)). Its token is at **`dev/.github-credentials.json`** (gitignored); set it before any `gh` write *and* for commits, or `gh` silently posts as the maintainer: `$env:GH_TOKEN = (Get-Content dev/.github-credentials.json | ConvertFrom-Json).token`. Commit with `-c user.name=… -c user.email=…` (and **`git merge` needs the same `-c` flags**); verify the author after. Never `git push -u` a `user:TOKEN@…` URL (it persists the token into `.git/config`) — push the token URL without `-u`.
 - **In the cloud** there is no bot token, and that's intended: run as the environment's own GitHub identity (the maintainer's). The activity is already labelled "with Claude", so it stays distinguishable without the extra account — don't try to source a bot token or any secret.
-
 The rest applies whoever you post as:
 
 - Issue titles are **Telegraphic English** — no articles, auxiliaries or filler; no leading verb; user-visible symptom or feature name ([Standard 1](STANDARDS.general.md#standard-1)).
@@ -36,6 +35,7 @@ The rest applies whoever you post as:
 - Don't write `#1` / `#2` for "list point N" — GitHub links `#N` to issue/PR N.
 - Link every named thing to its closest anchor ([Standard 9](STANDARDS.general.md#standard-9)).
 - End every GitHub post with the model + effort footer, per the maintainer's current convention.
+- **Sweep stale agent branches** (`claude/*`, the cloud sessions' prefix) at the end of a task, whoever made them — a session can't know which it made once its context is cleared. Delete one whose work is verified on `main` or on the branch it was merged into (`git cherry`, and by content when it landed under another SHA); report, don't delete, one whose work is nowhere else. Note each deleted branch's last commit. The cloud proxy refuses branch deletes: there, list them in your report so a local session deletes them.
 
 ## Docs and changelog
 
