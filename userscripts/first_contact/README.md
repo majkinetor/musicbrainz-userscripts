@@ -25,19 +25,19 @@ Import a release into MusicBrainz from the platform's album page with one click:
 
 On a platform's album page, click **Import to MusicBrainz** in the bottom-right corner. Once the release is read (the button counts the tracks), a new tab opens with MusicBrainz's release editor, filled in:
 
-| Field                | From                                                                                                                                                 |
-| -------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Title, artist credit | the album, with any *feat.* artists split off the title into the credit                                                                              |
-| Type                 | the platform's album / EP / single / compilation, or a [guess](#release-type) when it doesn't say                                                    |
-| Status, packaging    | Official, None                                                                                                                                       |
-| Release event        | the platform's release date, Worldwide                                                                                                               |
-| Label                | the platform's label text; two labels written as one (*Crystal Method / Geffen*) become two. A slash without spaces (*AC/DC Records*) stays one name |
-| Barcode              | the platform's UPC                                                                                                                                   |
-| Script               | Latin, when every title is in Latin letters; otherwise left for you                                                                                  |
-| Tracklist            | one Digital Media medium per disc, with titles, track artists and lengths                                                                            |
-| External link        | the album page                                                                                                                                       |
-| Annotation           | the platform's [notes](#platforms), and where they come from; can be turned off per platform (see [Settings](#settings))                             |
-| Edit note            | the album page, links to its [Internet Archive snapshots](#archive), and the script's name and version                                               |
+| Field                | From                                                                                              |
+| -------------------- | ------------------------------------------------------------------------------------------------- |
+| Title, artist credit | the album, with any *feat.* artists split off the title into the credit                           |
+| Type                 | the platform's album / EP / single / compilation, or a [guess](#release-type) when it doesn't say |
+| Status, packaging    | Official, None                                                                                    |
+| Release event        | the platform's release date, Worldwide                                                            |
+| Label                | the platform's label; *A / B* becomes two labels, *AC/DC Records* stays one                       |
+| Barcode              | the platform's UPC                                                                                |
+| Script               | Latin, when every title is in Latin letters; otherwise left for you                               |
+| Tracklist            | one Digital Media medium per disc, with titles, track artists and lengths                         |
+| External link        | the album page                                                                                    |
+| Annotation           | the platform's [notes](#platforms), with their source; off per platform in [Settings](#settings)  |
+| Edit note            | the album page, its [Internet Archive snapshots](#archive), the script and its version            |
 
 A compilation the platform credits to one of its artists becomes Various Artists and a Compilation, when the credited artists are on fewer than half the tracks and the tracks have five or more artists.
 
@@ -45,14 +45,14 @@ A compilation the platform credits to one of its artists becomes Various Artists
 
 When the platform gives no type, or only a plain *album* while the title says otherwise, it is guessed, the most certain sign first:
 
-| Sign                                                                                              | Type   |
-| ------------------------------------------------------------------------------------------------- | ------ |
-| *EP* or *E.P.* in the title                                                                       | EP     |
-| the title ends in *Single*, or says *single* on up to 8 tracks and 50 minutes                     | Single |
-| every track is the same song in another version (*Remix*, *Instrumental*, *Extended Mix*, *VIP*…) | Single |
-| 7 tracks or more, or over 30 minutes                                                              | Album  |
-| up to 7 minutes                                                                                   | Single |
-| 2 tracks or more, up to 30 minutes                                                                | EP     |
+| Sign                                                                          | Type   |
+| ----------------------------------------------------------------------------- | ------ |
+| *EP* or *E.P.* in the title                                                   | EP     |
+| the title ends in *Single*, or says *single* on up to 8 tracks and 50 minutes | Single |
+| every track is one song in other versions (*Remix*, *Instrumental*, *VIP*…)   | Single |
+| 7 tracks or more, or over 30 minutes                                          | Album  |
+| up to 7 minutes                                                               | Single |
+| 2 tracks or more, up to 30 minutes                                            | EP     |
 
 Without every track's length: 1 track is a Single, 3 to 6 an EP, 7 or more an Album, and 2 are left for you. The log says which sign decided.
 
@@ -283,28 +283,30 @@ The **⚙︎** button next to **Import to MusicBrainz** opens them, in three sec
 
 ### Import
 
-| Setting | Default |  |
-| --- | --- | --- |
-| MusicBrainz server | musicbrainz.org | where the release editor opens: musicbrainz.org, beta.musicbrainz.org or test.musicbrainz.org |
-| Annotation from *platform*'s notes | on | on this platform only, the album's [notes on the platform](#platforms) go into the annotation, followed by *From <platform>: <album page>*. A review is the critic's text (Qobuz's and Apple's are usually AllMusic's): check you may copy it before you submit. |
-| Close this page after the import | off | the platform's tab closes once the release editor has the release, or once the album is [sent to Harmony](#send-to-harmony); it stays open when the import fails |
-| Send to Harmony button | on | the [Harmony button](#send-to-harmony) between **Import to MusicBrainz** and **⚙︎** |
+| Setting                            | Default         |                                                                                                          |
+| ---------------------------------- | --------------- | -------------------------------------------------------------------------------------------------------- |
+| MusicBrainz server                 | musicbrainz.org | where the release editor opens: musicbrainz.org, beta or test                                            |
+| Annotation from *platform*'s notes | on              | the album's [notes](#platforms) go into the annotation, with *From <platform>: <album page>*             |
+| Close this page after the import   | off             | the platform's tab closes once the editor or [Harmony](#send-to-harmony) has the album; not on a failure |
+| Send to Harmony button             | on              | the [Harmony button](#send-to-harmony) between **Import to MusicBrainz** and **⚙︎**                      |
+
+A review in the notes is the critic's text (Qobuz's and Apple's are usually AllMusic's): check you may copy it before you submit.
 
 ### Archive
 
-| Setting                                        | Default |                                                                                                                               |
-| ---------------------------------------------- | ------- | ----------------------------------------------------------------------------------------------------------------------------- |
-| Archive the album page on the Internet Archive | on      | each import saves the album page on the Internet Archive and links the snapshot in the edit note; see [Archive](#archive)     |
-| archive.org keys                               | none    | your archive.org access key and secret: higher limits and a screenshot of each page; see [archive.org keys](#archiveorg-keys) |
+| Setting                                        | Default |                                                                                            |
+| ---------------------------------------------- | ------- | ------------------------------------------------------------------------------------------ |
+| Archive the album page on the Internet Archive | on      | each import saves the album page and links the snapshot; see [Archive](#archive)           |
+| archive.org keys                               | none    | your access key and secret: higher limits, plus a screenshot; see [keys](#archiveorg-keys) |
 
 ### Button
 
-| Setting                                          | Default |                                                                                                                                                                          |
-| ------------------------------------------------ | ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Icon only                                        | off     | the button shows only its icon; the tooltip still says *Import to MusicBrainz*, and the progress still shows while it reads the platform                                 |
-| Settings button only on hover                    | off     | the **⚙︎** button shows only once the pointer has rested on **Import to MusicBrainz** for a second, as a small tab on its edge, so a click to import doesn't bring it up |
-| Moved button scrolls with the page on *platform* | off     | on this platform only, a [moved](#moving-the-button) button stays on its spot on the page and scrolls with it                                                            |
-| Position: Reset                                  |         | **this one** puts the button back in the bottom-right corner on this platform, **all** on every platform; see [Moving the button](#moving-the-button)                    |
+| Setting                                          | Default |                                                                                                               |
+| ------------------------------------------------ | ------- | ------------------------------------------------------------------------------------------------------------- |
+| Icon only                                        | off     | the button shows only its icon; its tooltip and progress stay                                                 |
+| Settings button only on hover                    | off     | **⚙︎** appears, as a tab on the button's edge, only after a second's hover                                    |
+| Moved button scrolls with the page on *platform* | off     | on this platform only, a [moved](#moving-the-button) button stays on its spot on the page and scrolls with it |
+| Position: Reset                                  |         | **this one**: back to the bottom-right corner on this platform; **all**: on every platform                    |
 
 ## Notes
 

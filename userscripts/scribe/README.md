@@ -25,10 +25,12 @@ On a release's **Edit** page, Scribe's icon appears bottom-right, with the other
 
 A window beside the icons lists what changed this session. A value that can't be applied (an invalid status, say) is flagged there with a ⌖ button to its field, and counted in the header. **✕** stops editing.
 
-|  |  |
-| --- | --- |
-| **Applied** | release info (title, disambiguation, status, packaging, language, script, barcode, annotation), release events, labels and catalogue numbers, track titles and lengths, medium titles, artist credits |
-| **Not yet** | external links; adding, removing or reordering tracks (they round-trip unchanged, so use the native editor) |
+|             |                                                                                     |
+| ----------- | ----------------------------------------------------------------------------------- |
+| **Applied** | release info and events, labels, catalogue numbers, titles, lengths, artist credits |
+| **Not yet** | external links; adding, removing or reordering tracks (use the native editor)       |
+
+Titles are the track and medium titles; release info is the title, disambiguation, status, packaging, language, script, barcode and annotation.
 
 Existing artists and labels are referenced by an MBID link at the bottom of the document; a `[Name]` without one creates a new entity.
 
@@ -48,12 +50,12 @@ chmod +x scribe && ./scribe --editor "code -r"   # macOS / Linux: runs headless
 ./scribe --startup on                            # start at login (off to undo)
 ```
 
-| Option             | Default            |                                                                                               |
-| ------------------ | ------------------ | --------------------------------------------------------------------------------------------- |
-| `--port`           | 17999              | listen port                                                                                   |
-| `--token`          | extedit            | shared secret; set the same one in the userscript (manager menu → *Set token*)                |
-| `--editor "<cmd>"` | the OS default app | e.g. `"code -r"`, `subl`, `vim`; `none` only writes the file. Remembered after the first run. |
-| `--startup`        |                    | run at startup (`on`/`off` on macOS and Linux)                                                |
+| Option             | Default            |                                                                                |
+| ------------------ | ------------------ | ------------------------------------------------------------------------------ |
+| `--port`           | 17999              | listen port                                                                    |
+| `--token`          | extedit            | shared secret; set the same one in the userscript (manager menu → *Set token*) |
+| `--editor "<cmd>"` | the OS default app | `"code -r"`, `subl`, `vim`…; `none` only writes the file; remembered           |
+| `--startup`        |                    | run at startup (`on`/`off` on macOS and Linux)                                 |
 
 On Windows, the tray menu has *Set editor…*, *Open log*, *Run at startup* and *Exit*. A path with spaces goes in inner quotes: `--editor "'C:\Program Files\Microsoft VS Code\Code.exe' -r"`.
 

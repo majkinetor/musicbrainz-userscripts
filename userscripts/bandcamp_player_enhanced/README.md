@@ -22,11 +22,11 @@ The mouse wheel over the player bar seeks too; over the open track list it scrol
 
 **⚙** on the player bar:
 
-| Setting            | Default           |                                                                                                             |
-| ------------------ | ----------------- | ----------------------------------------------------------------------------------------------------------- |
-| Theme              | Page              | follows the album page: dark on a dark page, light on a light one; or always Dark or Light                  |
-| Scale              | 100%              | 70–130%                                                                                                     |
-| Start from track 1 | on                | Bandcamp sometimes starts a page on a "featured" track; this moves the player to track 1 without playing it |
-| Hide on page       | the native player | also the track list and the tags row                                                                        |
+| Setting            | Default           |                                                                                            |
+| ------------------ | ----------------- | ------------------------------------------------------------------------------------------ |
+| Theme              | Page              | follows the album page: dark on a dark page, light on a light one; or always Dark or Light |
+| Scale              | 100%              | 70–130%                                                                                    |
+| Start from track 1 | on                | when Bandcamp opens on a "featured" track, the player moves to track 1 without playing     |
+| Hide on page       | the native player | also the track list and the tags row                                                       |
 
 <img width="300" src="./screenshots/config.png" />

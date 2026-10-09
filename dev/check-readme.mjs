@@ -85,7 +85,8 @@ for (const file of files) {
       if (!anchors.has(m[2])) err(i + 1, `Features links #${m[2]}, which no heading makes`);
       if (['settings', 'shortcuts', 'notes'].includes(slug(m[1]))) warn(i + 1, `#${m[2]} isn't a feature; it has its own section after the features`);
       linked.push(m[2]);
-      if (l.length > 220) warn(i + 1, `a long Features line (${l.length} chars); one line, no detail`);
+      const shown = l.replace(/\]\([^)]*\)/g, ']').length;
+      if (shown > 220) warn(i + 1, `a long Features line (${shown} chars); one line, no detail`);
     }
     const sections = h2.filter(h => !FIXED.includes(h.text)).map(h => slug(h.text));
     // A reference section (Platforms, Providers) may be linked from inside a feature's line instead.
@@ -133,7 +134,9 @@ for (const file of files) {
     // Tables keep short facts.
     if (/^\|/.test(l) && !/^\|[\s|:-]+\|?$/.test(l)) {
       const cells = l.split('|').slice(1, -1).map(c => c.trim().replace(/\]\([^)]*\)/g, ']'));
-      const long = cells.filter(c => c.length > 90);
+      // A cell that is mostly literal values (`tray`, `obi`, …) is a list of facts, not prose.
+      const codeShare = c => (c.match(/`[^`]*`/g) || []).join('').length / c.length;
+      const long = cells.filter(c => c.length > 90 && codeShare(c) < 0.5);
       if (long.length) warn(i + 1, `a table cell of ${Math.max(...long.map(c => c.length))} chars; long text goes under its own heading below the table`);
     }
 

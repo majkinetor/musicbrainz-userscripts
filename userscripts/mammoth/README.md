@@ -53,13 +53,13 @@ Put a 🦣 on any field of any MusicBrainz page: **⚙ → Babies → ＋ Add fi
 
 <img src="./screenshots/custom-fields.png" width=600 />
 
-| Column       |                                                                                                                                 |
-| ------------ | ------------------------------------------------------------------------------------------------------------------------------- |
-| **Selector** | the field's CSS selector (Inspect → *Copy selector*); comma-separate to cover several fields. A *matches N* readout checks it.  |
-| **Label**    | the panel's title, and the field's identity: fields with the same label share one list                                          |
-| **px**       | nudge the pin sideways, clear of the field's own icon                                                                           |
-| **lvl**      | where the button bar attaches: `0` floats under the field; `N` inserts it after the field's Nth ancestor, pushing the page down |
-| **↵**        | submit the field's form after a recall, like pressing Enter (tags, header search)                                               |
+| Column       |                                                                                        |
+| ------------ | -------------------------------------------------------------------------------------- |
+| **Selector** | its selector (Inspect → *Copy selector*); commas for several; *matches N* checks it    |
+| **Label**    | the panel's title, and the field's identity: fields with the same label share one list |
+| **px**       | nudge the pin sideways, clear of the field's own icon                                  |
+| **lvl**      | where the bar attaches: `0` floats under the field, `N` goes after its Nth ancestor    |
+| **↵**        | submit the field's form after a recall, like pressing Enter (tags, header search)      |
 
 Changes apply live. Works on `<input>`, `<select>` and `<textarea>`.
 

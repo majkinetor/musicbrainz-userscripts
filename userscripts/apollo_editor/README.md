@@ -103,18 +103,20 @@ Green means matched confidently; a white search box means unresolved, counted by
 
 The card stays open while the pointer is on it, so its links can be followed; Esc or moving away closes it. It only shows what the match already read, so it makes no requests.
 
-| Badge | Meaning |
-| --- | --- |
-| **DISC** | the Discogs artist credited on the release is linked from this MusicBrainz artist |
-| **DZ**, **SP**, **TD**, … | the artist's page on the platform the release was imported from is linked from this MusicBrainz artist: **DZ** Deezer, **SP** Spotify, **TD** Tidal, **AM** Apple Music, **YTM** YouTube Music, **BC** Bandcamp, **BP** Beatport, **QZ** Qobuz, **SC** SoundCloud, **AMZ** Amazon Music, **VO** Volumo, **HD** HDtracks, **AMK** Audiomack, **7D** 7digital, **OTO** Ototoy |
-| **RG** | another release in the release group credits this artist on the same track |
-| **POS** | other editions credit this artist on the track at this position |
-| **NAME** | the only MusicBrainz artist with this name (aliases checked too) |
-| **ALIAS** | the only MusicBrainz artist with this credit as an alias |
-| **CRED** | credited alongside an artist already on this release, more often than any other artist of this name |
-| **USER** | picked by you |
-| **SET** | linked before Apollo matched: by the release, the seed or the page |
-| **LOW** | uncertain; the card lists what each stage found |
+| Badge                     | Meaning                                                                               |
+| ------------------------- | ------------------------------------------------------------------------------------- |
+| **DISC**                  | the Discogs artist credited on the release is linked from this MusicBrainz artist     |
+| **DZ**, **SP**, **TD**, … | its page on the platform the release came from is linked from this MusicBrainz artist |
+| **RG**                    | another release in the release group credits this artist on the same track            |
+| **POS**                   | other editions credit this artist on the track at this position                       |
+| **NAME**                  | the only MusicBrainz artist with this name (aliases checked too)                      |
+| **ALIAS**                 | the only MusicBrainz artist with this credit as an alias                              |
+| **CRED**                  | credited beside an artist already on this release, more often than any namesake       |
+| **USER**                  | picked by you                                                                         |
+| **SET**                   | linked before Apollo matched: by the release, the seed or the page                    |
+| **LOW**                   | uncertain; the card lists what each stage found                                       |
+
+The platform badges: **DZ** Deezer, **SP** Spotify, **TD** Tidal, **AM** Apple Music, **YTM** YouTube Music, **BC** Bandcamp, **BP** Beatport, **QZ** Qobuz, **SC** SoundCloud, **AMZ** Amazon Music, **VO** Volumo, **HD** HDtracks, **AMK** Audiomack, **7D** 7digital, **OTO** Ototoy.
 
 **Discogs links.** When the Discogs link is known, the type icon offers what's missing: **🔗** creates the artist with the link, or adds the link to the matched artist. **⚠** warns that the link belongs to a different artist, or that the artist links a different Discogs page (often a wrong match). **🔗 N links** in the toolbar counts them and steps through them.
 
@@ -247,27 +249,27 @@ Apollo follows a dark MusicBrainz theme, such as kellnerd's [userstyle](https://
 
 Right-click Apollo's corner icon. Column widths, the toolbar layout, **Change**, **Cutoff** and the picker's folded sections are remembered as you use them.
 
-| Setting                                                       | Default |                                                                                                |
-| ------------------------------------------------------------- | ------- | ---------------------------------------------------------------------------------------------- |
-| Modify Release information, Tracklist, Recordings, Duplicates | on      | replace that part of the editor                                                                |
-| Modify annotations with Markdown                              | on      | the [annotation editor](#annotation-editor)                                                    |
-| Modify header and footer                                      | on      | a compact step switcher instead of the tabs and footer                                         |
-| Zen editing                                                   | on      | hide the site header, title and footer; the title moves into Apollo's bar                      |
-| Auto confirm release submissions                              | on      | skip the confirmation page when a site seeds a release (`?skip_confirmation` bypasses it once) |
-| Auto-match on start: Tracklist, Recordings                    | off     | match on load                                                                                  |
-| Auto-match on start: Label, Artist                            | on      | match the release [artist and label](#release-information) on load                             |
-| Discogs artist link matching                                  | on      | match by [Discogs link](#artist-matching) and offer missing links                              |
-| Length tolerance                                              | 5 s     | `0` for exact                                                                                  |
-| Title tolerance                                               | 1       | differing characters allowed                                                                   |
-| Ignore casing                                                 | on      | case, accents and spacing don't count                                                          |
-| Ignore punctuation                                            | on      | `&`/*and*, brackets, quotes, dashes and dots don't count                                       |
-| Enable detailed highlighting                                  | on      | see [Highlighting](#highlighting)                                                              |
-| Row layout                                                    | normal  | compact, normal or cozy                                                                        |
-| Alternate row colors                                          | off     | every other track tinted                                                                       |
-| Show grid                                                     | rows    | lines between rows and/or columns                                                              |
-| Enlarge punctuation by                                        | 3 px    | `0` stops the enlarging; the markers stay                                                      |
-| Keep caret position on row navigation                         | on      | off: a cell is selected whole on arrival                                                       |
-| Highlight all instances of an artist on hover                 | off     | hovering an artist highlights it on every track                                                |
+| Setting                                                       | Default |                                                                           |
+| ------------------------------------------------------------- | ------- | ------------------------------------------------------------------------- |
+| Modify Release information, Tracklist, Recordings, Duplicates | on      | replace that part of the editor                                           |
+| Modify annotations with Markdown                              | on      | the [annotation editor](#annotation-editor)                               |
+| Modify header and footer                                      | on      | a compact step switcher instead of the tabs and footer                    |
+| Zen editing                                                   | on      | hide the site header, title and footer; the title moves into Apollo's bar |
+| Auto confirm release submissions                              | on      | skip the confirmation page when a site seeds a release                    |
+| Auto-match on start: Tracklist, Recordings                    | off     | match on load                                                             |
+| Auto-match on start: Label, Artist                            | on      | match the release [artist and label](#release-information) on load        |
+| Discogs artist link matching                                  | on      | match by [Discogs link](#artist-matching) and offer missing links         |
+| Length tolerance                                              | 5 s     | `0` for exact                                                             |
+| Title tolerance                                               | 1       | differing characters allowed                                              |
+| Ignore casing                                                 | on      | case, accents and spacing don't count                                     |
+| Ignore punctuation                                            | on      | `&`/*and*, brackets, quotes, dashes and dots don't count                  |
+| Enable detailed highlighting                                  | on      | see [Highlighting](#highlighting)                                         |
+| Row layout                                                    | normal  | compact, normal or cozy                                                   |
+| Alternate row colors                                          | off     | every other track tinted                                                  |
+| Show grid                                                     | rows    | lines between rows and/or columns                                         |
+| Enlarge punctuation by                                        | 3 px    | `0` stops the enlarging; the markers stay                                 |
+| Keep caret position on row navigation                         | on      | off: a cell is selected whole on arrival                                  |
+| Highlight all instances of an artist on hover                 | off     | hovering an artist highlights it on every track                           |
 
 ## Shortcuts
 

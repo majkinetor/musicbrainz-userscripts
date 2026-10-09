@@ -177,18 +177,20 @@ Append `?falcon=<base64(JSON)>` to any musicbrainz.org URL: Falcon opens with th
 
 ## Settings
 
-| Setting | Default |  |
-| --- | --- | --- |
-| Hide Falcon icon | off | Ctrl+Alt+F still opens it |
-| Add covers only when there aren't any | off | a release that already has cover art gets none from the queue |
-| Ignore Harmony cover art | off | a Harmony import queues no cover art |
-| Auto send | off | see [Hands-free import](#hands-free-import) |
-| Auto start Harmony import | off | see [Hands-free import](#hands-free-import) |
-| Reload release page after import without errors | off | see [Hands-free import](#hands-free-import) |
-| Open from Harmony in new tab | on | off navigates the Harmony tab |
-| Automatically send to Picard using port | off, 8000 | hand the release to [Picard](https://picard.musicbrainz.org/) after a run (needs its *Browser integration*). The port also gives MusicBrainz's own tagger button, ticked or not. |
-| Workers | 5 | entities processed at once |
-| Keep last N run logs | 20 | the past runs the **Log** tab lists |
+| Setting                                         | Default   |                                                                                                             |
+| ----------------------------------------------- | --------- | ----------------------------------------------------------------------------------------------------------- |
+| Hide Falcon icon                                | off       | Ctrl+Alt+F still opens it                                                                                   |
+| Add covers only when there aren't any           | off       | a release that already has cover art gets none from the queue                                               |
+| Ignore Harmony cover art                        | off       | a Harmony import queues no cover art                                                                        |
+| Auto send                                       | off       | see [Hands-free import](#hands-free-import)                                                                 |
+| Auto start Harmony import                       | off       | see [Hands-free import](#hands-free-import)                                                                 |
+| Reload release page after import without errors | off       | see [Hands-free import](#hands-free-import)                                                                 |
+| Open from Harmony in new tab                    | on        | off navigates the Harmony tab                                                                               |
+| Automatically send to Picard using port         | off, 8000 | hand the release to [Picard](https://picard.musicbrainz.org/) after a run (needs its *Browser integration*) |
+| Workers                                         | 5         | entities processed at once                                                                                  |
+| Keep last N run logs                            | 20        | the past runs the **Log** tab lists                                                                         |
+
+The Picard port also sets MusicBrainz's own tagger button, whether *Automatically send to Picard* is ticked or not.
 
 > [!TIP]
 > To report a problem: leave **debug** on in the **Log** tab, reproduce it, then **Copy log** into the issue. Each run's log is kept separately; the dropdown lists past runs.
