@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Mission Control
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.9.103410
+// @version      2026.10.9.103659
 // @description  One window on the release page that asks the other scripts (Platform Check, ISRC Scout, Art Station, Fusion, Credit Hoarder) what is missing, shows it all in one review, and applies the ticked changes in order.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5NaXNzaW9uIENvbnRyb2w8L3RpdGxlPgo8ZGVmcz48ZmlsdGVyIGlkPSJtY28xMy1oIiB4PSItMTAlIiB5PSItMTAlIiB3aWR0aD0iMTIwJSIgaGVpZ2h0PSIxMjAlIj48ZmVNb3JwaG9sb2d5IGluPSJTb3VyY2VBbHBoYSIgb3BlcmF0b3I9ImRpbGF0ZSIgcmFkaXVzPSIxLjUiIHJlc3VsdD0iZCIvPjxmZUZsb29kIGZsb29kLWNvbG9yPSIjZmZmIiBmbG9vZC1vcGFjaXR5PSIuNyIvPjxmZUNvbXBvc2l0ZSBpbjI9ImQiIG9wZXJhdG9yPSJpbiIvPjxmZU1lcmdlPjxmZU1lcmdlTm9kZS8+PGZlTWVyZ2VOb2RlIGluPSJTb3VyY2VHcmFwaGljIi8+PC9mZU1lcmdlPjwvZmlsdGVyPjwvZGVmcz48ZyBmaWx0ZXI9InVybCgjbWNvMTMtaCkiPjxwYXRoIGQ9Ik03NyAzNS41IEw2NCA0MyBMNTEgMzUuNSBMNTEgMjAuNSBMNjQgMTMgTDc3IDIwLjVaIiBmaWxsPSIjN2E1N2U4IiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik01OS43IDc3LjUgTDQ2LjcgODUgTDMzLjcgNzcuNSBMMzMuNyA2Mi41IEw0Ni43IDU1IEw1OS43IDYyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik05NC4zIDc3LjUgTDgxLjMgODUgTDY4LjMgNzcuNSBMNjguMyA2Mi41IEw4MS4zIDU1IEw5NC4zIDYyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik00Mi4zIDEwNy41IEwyOS40IDExNSBMMTYuNCAxMDcuNSBMMTYuNCA5Mi41IEwyOS40IDg1IEw0Mi4zIDkyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik03NyAxMDcuNSBMNjQgMTE1IEw1MSAxMDcuNSBMNTEgOTIuNSBMNjQgODUgTDc3IDkyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik0xMTEuNiAxMDcuNSBMOTguNiAxMTUgTDg1LjcgMTA3LjUgTDg1LjcgOTIuNSBMOTguNiA4NSBMMTExLjYgOTIuNVoiIGZpbGw9IiNmZmM5NGEiIHN0cm9rZT0iIzIyMjIzYiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PC9nPgo8L3N2Zz4K
@@ -641,17 +641,35 @@ function header() {
 }
 
 // #680: the release's format as an icon left of the title, its name in the tooltip. Only the
-// first medium counts ("2×CD + DVD" is a CD); anything that isn't digital, vinyl or tape is a disc.
+// first medium counts ("2×CD + DVD" is a CD); a format with no icon of its own is a disc.
 const FORMAT_ICONS = {
     digital: '<path d="M8 25h16a6 6 0 0 0 .8-11.95A9 9 0 0 0 7.4 15.2 5 5 0 0 0 8 25z"/>',
-    vinyl: '<circle cx="16" cy="16" r="13"/><circle cx="16" cy="16" r="9" stroke-width="1" opacity=".5"/><circle cx="16" cy="16" r="5" fill="currentColor"/><circle cx="16" cy="16" r="1.2" fill="var(--mbu-bg)" stroke="none"/>',
+    // a record sliding out of its sleeve, so it doesn't read as a CD
+    vinyl: '<circle cx="19" cy="16" r="10.5"/><circle cx="19" cy="16" r="6.5" stroke-width="1" opacity=".5"/><circle cx="19" cy="16" r="2.4" fill="currentColor"/><rect x="3" y="4" width="14" height="24" rx="1.5" fill="var(--mbu-bg)"/>',
     cassette: '<rect x="3" y="7" width="26" height="18" rx="2.5"/><circle cx="11" cy="15" r="2.6"/><circle cx="21" cy="15" r="2.6"/><path d="M11 12.4h10M9 25l2-4h10l2 4"/>',
+    reel: '<circle cx="9" cy="12" r="6.5"/><circle cx="23" cy="12" r="6.5"/><circle cx="9" cy="12" r="1.6" fill="currentColor"/><circle cx="23" cy="12" r="1.6" fill="currentColor"/><path d="M9 18.5l3 8.5h8l3-8.5"/>',
+    video: '<rect x="2.5" y="8" width="27" height="16" rx="1.5"/><rect x="10" y="12" width="12" height="7" rx="1"/><circle cx="13" cy="15.5" r="1.4" fill="currentColor" stroke="none"/><circle cx="19" cy="15.5" r="1.4" fill="currentColor" stroke="none"/><path d="M6 21h20" stroke-width="1.4" opacity=".55"/>',
+    usb: '<rect x="10" y="12" width="12" height="17" rx="2.5"/><path d="M12 12V4h8v8"/><path d="M14.5 7.5h0M17.5 7.5h0" stroke-width="2.4"/>',
+    card: '<path d="M10 3h12a2 2 0 0 1 2 2v22a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2V7z"/><path d="M12 4v5M15.5 4v5M19 4v5" stroke-width="1.6"/>',
+    floppy: '<path d="M5 5h18l4 4v18H5z"/><path d="M10 5v7h11V5"/><path d="M18 7.5v2.5"/><rect x="9" y="17" width="14" height="10"/>',
+    other: '<rect x="4" y="4" width="24" height="24" rx="5"/><path d="M11 16h0M16 16h0M21 16h0" stroke-width="3"/>',
     disc: '<circle cx="16" cy="16" r="13"/><circle cx="16" cy="16" r="3.5"/><path d="M16 7a9 9 0 0 1 9 9" opacity=".55"/>',
 };
+const FORMAT_KINDS = [
+    ['digital', /digital|download/i],
+    ['vinyl', /vinyl|"|shellac|flexi|acetate|phonograph/i],
+    ['reel', /reel/i],
+    ['video', /vhs|betamax|video8|u-matic|\bhi8\b|\bvhd\b/i],
+    ['cassette', /cassette|tape|cartridge|\bDAT\b|\bDCC\b/i],
+    ['usb', /usb/i],
+    ['card', /\bcard\b/i],
+    ['floppy', /floppy|zip disk/i],
+    ['other', /^\s*other\s*$/i],
+];
 function fmtIcon(format) {
     if (!format) return '';
     const first = format.split('+')[0];
-    const k = /digital|download/i.test(first) ? 'digital' : /vinyl|"|shellac|flexi/i.test(first) ? 'vinyl' : /cassette|tape|cartridge|\bDAT\b|\bDCC\b/i.test(first) ? 'cassette' : 'disc';
+    const k = (FORMAT_KINDS.find(([, re]) => re.test(first)) || ['disc'])[0];
     return '<span class="mc-fmt" title="' + esc(format) + '"><svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round">' + FORMAT_ICONS[k] + '</svg></span>';
 }
 
