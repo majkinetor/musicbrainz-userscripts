@@ -154,6 +154,11 @@ const CSS = [
     '.mbu-log-t{color:var(--mbu-text-weak);flex:0 0 auto;font-variant-numeric:tabular-nums}',
     // a line's category (#697): a quiet tag before the message
     '.mbu-log-c{color:var(--mbu-text-weak);flex:0 0 auto}',
+    // with categories the list is a grid, so time, category and message each keep their column
+    '.mbu-log-list:not(.mbu-log-cats) .mbu-log-c{display:none}',
+    '.mbu-log-list.mbu-log-cats{display:grid;grid-template-columns:auto auto minmax(0,1fr);gap:3px 9px;align-content:start}',
+    '.mbu-log-cats .mbu-log-li{display:contents}',
+    '.mbu-log-cats .mbu-log-empty{grid-column:1/-1}',
     // the filter row: plain words, shown only when there is something to pick between
     '.mbu-log-f{display:flex;flex-wrap:wrap;align-items:center;gap:2px 4px;padding:5px 13px;',
     'border-bottom:1px solid var(--mbu-border-soft);font-size:11px}',
@@ -164,13 +169,20 @@ const CSS = [
     'border-radius:5px;padding:0 6px;line-height:1.6;cursor:pointer}',
     '#mbu-logpop .mbu-log-fb:hover{color:var(--mbu-text);border-color:var(--mbu-border)}',
     '#mbu-logpop .mbu-log-fb.on{color:var(--mbu-accent-text);background:var(--mbu-accent-soft);border-color:var(--mbu-border)}',
+    // levels are words in their own colour; categories are tags, so the two never read as one list
+    '#mbu-logpop .mbu-log-fb[data-sev=error]{color:var(--mbu-error)}',
+    '#mbu-logpop .mbu-log-fb[data-sev=warn]{color:var(--mbu-warn)}',
+    '#mbu-logpop .mbu-log-fb[data-sev=info]{color:var(--mbu-text-dim)}',
+    '#mbu-logpop .mbu-log-fb[data-sev].on{background:var(--mbu-bg-hover);border-color:currentColor;font-weight:600}',
+    '#mbu-logpop .mbu-log-fb[data-cat]{border-color:var(--mbu-border-soft);background:var(--mbu-bg-raised);border-radius:999px;padding:0 8px}',
+    '#mbu-logpop .mbu-log-fb[data-cat].on{color:var(--mbu-accent-text);background:var(--mbu-accent-soft);border-color:var(--mbu-accent)}',
     '.mbu-log-m{flex:1 1 auto;color:var(--mbu-text-dim)}',
     '#mbu-logpop .mbu-log-m a{color:var(--mbu-accent-text)}',
     // severity, on the message only — the timestamp stays quiet
     '.mbu-log-ok .mbu-log-m{color:var(--mbu-ok)}',
     '.mbu-log-warn .mbu-log-m{color:var(--mbu-warn)}',
     '.mbu-log-error .mbu-log-m{color:var(--mbu-error)}',
-    '.mbu-log-debug{opacity:.85}',
+    '.mbu-log-debug>*{opacity:.85}',
     '.mbu-log-debug .mbu-log-m{color:var(--mbu-text-weak)}',
     '.mbu-log-empty{color:var(--mbu-text-weak)}',
 
@@ -695,7 +707,7 @@ function mbuLog(o) {
             d.dataset.s = group(e.sev);
             if (e.cat) d.dataset.c = catIx[e.cat];
             d.innerHTML = mbuHtml('<span class="mbu-log-t">' + ts(e.t) + '</span>'
-                + (e.cat ? '<span class="mbu-log-c">' + esc(e.cat) + '</span>' : '')
+                + '<span class="mbu-log-c">' + esc(e.cat || '') + '</span>'
                 + '<span class="mbu-log-m">' + linkify(e.msg) + '</span>');
             return d;
         };
@@ -714,6 +726,7 @@ function mbuLog(o) {
                 + (showL && showC ? '<span class="mbu-log-fs"></span>' : '')
                 + (showC ? '<span class="mbu-log-fg">' + cats.map(function (c) { return b('cat', c, fCat === c); }).join('') + '</span>' : ''));
             fRow.hidden = !showL && !showC;
+            list.classList.toggle('mbu-log-cats', cats.length > 0);
             fCss.textContent = (fSev ? '#mbu-logpop .mbu-log-li:not([data-s="' + fSev + '"]){display:none}' : '')
                 + (fCat != null ? '#mbu-logpop .mbu-log-li:not([data-c="' + catIx[fCat] + '"]){display:none}' : '');
         };
