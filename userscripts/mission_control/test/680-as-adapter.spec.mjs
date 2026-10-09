@@ -47,7 +47,7 @@ test('#680: Probe asks Art Station; covers are sourced in a hidden frame', { tag
   const frame = await page.waitForFunction(() => { const f = document.querySelector('iframe[src*="mc_frame="]'); return f && f.src; }, null, { timeout: 30_000 }).then(h => h.jsonValue());
   const url = new URL(frame);
   check(url.pathname === `/release/${RELEASE}/cover-art`, 'the hidden frame is this release\'s cover-art page');
-  check(JSON.parse(url.searchParams.get('mc_source') || '[]').length === 1, 'seeded with the one ticked link');
+  check(JSON.parse(url.searchParams.get('mc_source') || '[]').length === 1, 'seeded with the one selected link');
   check(!/new tab/.test(await page.locator('#mc-root').textContent()), 'no new tab');
   await page.waitForFunction(() => { const a = document.querySelector('#mc-root [data-card="as"] .mc-applied'); return a && !/dry run/.test(a.textContent); }, null, { timeout: 180_000 });
   const note = await page.locator('#mc-root [data-card="as"] .mc-applied').textContent();

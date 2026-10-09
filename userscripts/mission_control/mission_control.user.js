@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         Mission Control
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.9.105127
-// @description  One window on the release page that asks the other scripts (Platform Check, ISRC Scout, Art Station, Fusion, Credit Hoarder) what is missing, shows it all in one review, and applies the ticked changes in order.
+// @version      2026.10.9.105851
+// @description  One window on the release page that asks the other scripts (Platform Check, ISRC Scout, Art Station, Fusion, Credit Hoarder) what is missing, shows it all in one review, and applies the selected changes in order.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5NaXNzaW9uIENvbnRyb2w8L3RpdGxlPgo8ZGVmcz48ZmlsdGVyIGlkPSJtY28xMy1oIiB4PSItMTAlIiB5PSItMTAlIiB3aWR0aD0iMTIwJSIgaGVpZ2h0PSIxMjAlIj48ZmVNb3JwaG9sb2d5IGluPSJTb3VyY2VBbHBoYSIgb3BlcmF0b3I9ImRpbGF0ZSIgcmFkaXVzPSIxLjUiIHJlc3VsdD0iZCIvPjxmZUZsb29kIGZsb29kLWNvbG9yPSIjZmZmIiBmbG9vZC1vcGFjaXR5PSIuNyIvPjxmZUNvbXBvc2l0ZSBpbjI9ImQiIG9wZXJhdG9yPSJpbiIvPjxmZU1lcmdlPjxmZU1lcmdlTm9kZS8+PGZlTWVyZ2VOb2RlIGluPSJTb3VyY2VHcmFwaGljIi8+PC9mZU1lcmdlPjwvZmlsdGVyPjwvZGVmcz48ZyBmaWx0ZXI9InVybCgjbWNvMTMtaCkiPjxwYXRoIGQ9Ik03NyAzNS41IEw2NCA0MyBMNTEgMzUuNSBMNTEgMjAuNSBMNjQgMTMgTDc3IDIwLjVaIiBmaWxsPSIjN2E1N2U4IiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik01OS43IDc3LjUgTDQ2LjcgODUgTDMzLjcgNzcuNSBMMzMuNyA2Mi41IEw0Ni43IDU1IEw1OS43IDYyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik05NC4zIDc3LjUgTDgxLjMgODUgTDY4LjMgNzcuNSBMNjguMyA2Mi41IEw4MS4zIDU1IEw5NC4zIDYyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik00Mi4zIDEwNy41IEwyOS40IDExNSBMMTYuNCAxMDcuNSBMMTYuNCA5Mi41IEwyOS40IDg1IEw0Mi4zIDkyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik03NyAxMDcuNSBMNjQgMTE1IEw1MSAxMDcuNSBMNTEgOTIuNSBMNjQgODUgTDc3IDkyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik0xMTEuNiAxMDcuNSBMOTguNiAxMTUgTDg1LjcgMTA3LjUgTDg1LjcgOTIuNSBMOTguNiA4NSBMMTExLjYgOTIuNVoiIGZpbGw9IiNmZmM5NGEiIHN0cm9rZT0iIzIyMjIzYiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PC9nPgo8L3N2Zz4K
 // @homepageURL  https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/mission_control/README.md
@@ -36,9 +36,9 @@ Log.info(mbuStartupInfo('Mission Control'));
 // key each: a card's id, or PC's 'pc:release' / 'pc:artist' / 'pc:label'
 // reloadAfter: reload the release page after an Execute without errors
 const DEFAULTS = { fusion: 'ask', ch: 'ask', left: true, right: true, linkedOpen: [], autoProbe: false, reloadAfter: false };
-// a card and the providers whose ticks it holds (Tracks: the per-track ones without a card of their own)
+// a card and the providers whose selections it holds (Tracks: the per-track ones without a card of their own)
 const CARDS = [['tracks', ['is', 'fusion']], ['pc', ['pc']], ['as', ['as']], ['ch', ['ch']]];
-// The cards switched off with the switch in their header: folded, and Execute leaves out what is ticked
+// The cards switched off with the switch in their header: folded, and Execute leaves out what is selected
 // in them. For this page only, never saved: the next release starts with every card on.
 const OFF = new Set();
 const cardOff = id => OFF.has(id);
@@ -98,7 +98,7 @@ document.addEventListener('mc:provider', e => {
 // 'mc:progress' { id, run, state, note } while it works and 'mc:findings'
 // { id, run, findings } when done. Events from an older run are ignored.
 const results = {};   // provider id -> { state: 'busy' | 'done', note, findings }
-const picked = {};    // provider id -> Set of finding keys ticked for Execute
+const picked = {};    // provider id -> Set of finding keys selected for Execute
 const fxOpen = new Set();   // tracks (recording MBIDs) whose Fusion comparison is open under their row
 const fxBusy = new Set();   // tracks whose group Fusion is checking for ISRCs and AcoustIDs
 let run = null;
@@ -123,7 +123,7 @@ document.addEventListener('mc:findings', e => {
     const d = busEvent(e, 'mc:findings'); if (!d) return;
     const findings = Array.isArray(d.findings) ? d.findings : [];
     results[d.id] = { state: 'done', findings, summary: d.summary || '', best: d.best || null, open: Array.isArray(d.open) ? d.open : null, barcode: d.barcode || null };
-    // ticked by default: only what the provider is sure of
+    // selected by default: only what the provider is sure of
     picked[d.id] = new Set(findings.filter(x => x.state === 'new').map(x => x.key));
     const tally = findings.reduce((t, x) => (t[x.state] = (t[x.state] || 0) + 1, t), {});
     Log.ok('findings ' + d.id + ': ' + findings.length + ' ' + JSON.stringify(tally));
@@ -132,7 +132,7 @@ document.addEventListener('mc:findings', e => {
     syncIsLinks();
 });
 // a provider sends some findings again (Fusion, after checking one group's ISRCs and AcoustIDs):
-// each replaces the one with its key and keeps its tick, unless it can't be ticked any more
+// each replaces the one with its key and keeps its selection, unless it can't be selected any more
 document.addEventListener('mc:update', e => {
     const d = busEvent(e, 'mc:update'); if (!d) return;
     (d.keys || []).forEach(k => fxBusy.delete(k));
@@ -150,8 +150,8 @@ document.addEventListener('mc:update', e => {
     paintAll();
 });
 // ISRC Scout reads the release's album links (Bandcamp, Spotify, Apple…) for its ISRCs and
-// recording links. The album links ticked in Platform Check's card are not on the release yet
-// (Execute adds them first), so IS is probed with them too: again whenever the ticked set
+// recording links. The album links selected in Platform Check's card are not on the release yet
+// (Execute adds them first), so IS is probed with them too: again whenever the selected set
 // changes, once the probe out is answered. Nothing is asked of IS before the first Probe.
 const laneOpen = new Set();   // PC barcode lanes opened into rows (#680), by barcode digits
 let isLinksAsked = null;   // the album links IS's current findings were probed with (JSON)
@@ -167,7 +167,7 @@ function syncIsLinks(delay) {
     const r = results.is;
     if (!found.is || !r || r.state === 'busy' || executing) return;
     if (JSON.stringify(pcAlbumLinks()) === isLinksAsked) return;
-    Log.info('the ticked album links changed: asking ISRC Scout again');
+    Log.info('the selected album links changed: asking ISRC Scout again');
     probeOne('is');
 }
 function probe() {
@@ -176,7 +176,7 @@ function probe() {
     for (const k in picked) delete picked[k];
     const ask = PROVIDERS.filter(p => found[p.id] && modeOf(p) === 'auto').map(p => p.id);
     ask.forEach(id => { results[id] = { state: 'busy', note: '', at: Date.now() }; });
-    isLinksAsked = '[]';   // nothing is ticked yet
+    isLinksAsked = '[]';   // nothing is selected yet
     Log.info('probe run ' + run + ' · asking ' + (ask.join(', ') || 'nobody') + '');
     document.dispatchEvent(new CustomEvent('mc:probe', { detail: JSON.stringify({ release: RELEASE, run, only: ask, links: [] }) }));
     paintAll();
@@ -191,12 +191,12 @@ function probeOne(id) {
     results[id] = { state: 'busy', note: '', at: Date.now() };
     const links = pcAlbumLinks();
     if (id === 'is') isLinksAsked = JSON.stringify(links);
-    Log.info('probe ' + id + ' on request · run ' + run + (links.length ? ' · ticked album links ' + links.join(' ') : ''));
+    Log.info('probe ' + id + ' on request · run ' + run + (links.length ? ' · selected album links ' + links.join(' ') : ''));
     document.dispatchEvent(new CustomEvent('mc:probe', { detail: JSON.stringify({ release: RELEASE, run, only: [id], links }) }));
     paintAll();
 }
 // Execute: the steps in order, the lanes of a parallel step together. Each
-// provider with ticked findings gets 'mc:apply' { id, run, release, keys, dry }
+// provider with selected findings gets 'mc:apply' { id, run, release, keys, dry }
 // and answers 'mc:applied' { id, run, ok, sent, note }. A provider that doesn't
 // answer within APPLY_WAIT counts as failed, and the next step still runs.
 const APPLY_WAIT = 15000;
@@ -265,7 +265,7 @@ function bestHtml(b) {
     const what = !c ? 'Execute enters it as the front cover'
         : b.replace ? 'Larger than the current front: Execute enters it and removes the current one'
         : b.larger ? 'Larger than the current fronts: Execute adds it beside them'
-        : 'Not larger than the current front: nothing to gain (tick a source to add it anyway)';
+        : 'Not larger than the current front: nothing to gain (select a source to add it anyway)';
     return '<div class="mc-best' + (c && !b.larger ? ' no' : '') + '"><div class="mc-best-row">'
         + fig(b.thumb, b.full, 'Best cover', [b.provider || '?', b.w + ' × ' + b.h + (b.bytes ? ' · ' + kb(b.bytes) : ''), b.of > 1 ? 'the largest of ' + b.of + ' found' : 'the only one found'])
         + (c ? '<span class="mc-best-vs">' + (b.larger ? '>' : '≤') + '</span>' + fig(c.thumb, c.full, 'Current front', [c.w + ' × ' + c.h + (c.bytes ? ' · ' + kb(c.bytes) : '')]) : '')
@@ -638,7 +638,7 @@ function header() {
     h.innerHTML = mbuHtml(fmtIcon(rel.format) + '<div class="mc-rel"><div class="mc-ttl" title="' + esc(rel.title) + '">' + esc(rel.title) + '</div>'
         + '<div class="mc-art" title="' + esc(rel.artist) + '">' + esc(rel.artist || '')
         + (rel.versions ? ' <a class="mc-ver" href="' + esc(rel.versions.href) + '" target="_blank" rel="noopener" title="All versions of this release">(' + esc(rel.versions.text) + ')</a>' : '') + '</div></div>'
-        + '<div class="mc-act"><button type="button" class="mc-btn mc-exec" data-act="exec" disabled title="Apply the ticked changes, step by step">Execute</button>'
+        + '<div class="mc-act"><button type="button" class="mc-btn mc-exec" data-act="exec" disabled title="Apply the selected changes, step by step">Execute</button>'
         + '<button type="button" class="mc-btn ghost" data-act="cfg" title="Settings">' + MBU_CFG_ICON + '</button>'
         + '<button type="button" class="mc-btn ghost" data-act="close" title="Close (Esc)">✕</button></div>');
     h.insertBefore(steps(), h.querySelector('.mc-act'));
@@ -775,7 +775,7 @@ const COLS = [
         : '<span class="pend">none found</span>' },
     // rendered by linksCell: IS's linked icons plus the links Find links found (#680)
     { id: 'links', p: 'is', head: 'Rec links · IS', cell: () => '' },
-    // the count (fxPill, before the cell) opens Fusion's comparison under the row; the release names are the tick
+    // the count (fxPill, before the cell) opens Fusion's comparison under the row; the release names are the toggle
     { id: 'fusion', p: 'fusion', head: 'RG duplicates · Fusion', pick: true, cell: x =>
         FX_SHOWN[x.state] ? '<span class="weak">' + esc(fxReleases(x)) + '</span>'
         // as Fusion's pool badge: this recording has an open edit, so Fusion groups it with nothing
@@ -1003,7 +1003,7 @@ function paintReleaseCredits() {
         + '<div style="padding:4px 10px 8px">' + x.list.map(c => '<div class="mc-mini">' + esc(c.name) + '<span class="n">' + esc(c.role) + '</span></div>').join('') + '</div>');
 }
 
-// A provider's release-level findings: one row each; ticked rows go to Execute.
+// A provider's release-level findings: one row each; selected rows go to Execute.
 const PILL = { new: ['add', 'new'], linked: ['ok', 'linked'], withheld: ['warn', 'withheld'], unsure: ['warn', 'unsure'], blocked: ['err', 'blocked'], none: ['idle', 'not found'] };
 const ORDER = { new: 0, withheld: 1, unsure: 2, blocked: 3, linked: 4, none: 5 };
 // a link's platform, as its ST-ICONS key (globe when MC has no icon for it)
@@ -1135,7 +1135,7 @@ function paintCards() {
     });
 }
 const BC_COLORS = ['#2563eb', '#c2410c', '#9333ea', '#0e7490', '#be185d', '#a16207', '#4d7c0f', '#6d28d9'];
-// AS's ticked rows are the pool its one cover comes from, so they count once, not once each
+// AS's selected rows are the pool its one cover comes from, so they count once, not once each
 const isPool = id => ((results[id] || {}).findings || []).some(x => x.role === 'searched' || x.role === 'best');
 function changeCount() { return Object.entries(picked).reduce((n, [id, set]) => n + (providerOff(id) ? 0 : isPool(id) ? Math.min(1, set.size) : set.size), 0); }
 // Probe or Execute in flight, or a Falcon batch that Execute handed over still running: the

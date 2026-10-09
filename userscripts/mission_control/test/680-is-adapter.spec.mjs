@@ -21,7 +21,7 @@ test('#680: Probe asks ISRC Scout; the matrix shows each track\'s ISRC', { tag: 
   await page.click('#mc-root [data-act="probe"]');
   await page.waitForFunction(() => /\b(add|ok)\b/.test(document.querySelector('#mc-root .mc-step[data-step="is"]').className), null, { timeout: 120_000 });
 
-  // the probe reads only the release's album links and the ones ticked in MC: never a Platform
+  // the probe reads only the release's album links and the ones selected in MC: never a Platform
   // Check find straight from its sidebar (a withheld Deezer album gave a release its ISRCs)
   const srcs = await page.evaluate(() => {
     // 7digital: one this release doesn't link
@@ -39,8 +39,8 @@ test('#680: Probe asks ISRC Scout; the matrix shows each track\'s ISRC', { tag: 
   const cells = await page.locator('#mc-root .mc-tbl td[data-col="isrc"]').allTextContents();
   const added = cells.filter(c => /^\s*\+ [A-Z]{2}[A-Z0-9]{3}\d{7}/.test(c)).length;
   check(added > 0, `ISRC column shows found ISRCs (${added} of ${cells.length})`);
-  const ticked = await page.locator('#mc-root .mc-tbl td[data-col="isrc"] .mc-pick.on').count();
-  check(ticked === added, `the new ones start ticked (${ticked})`);
+  const selected = await page.locator('#mc-root .mc-tbl td[data-col="isrc"] .mc-pick.on').count();
+  check(selected === added, `the new ones start selected (${selected})`);
 
   // the inspector shows the found ISRC and its source
   await page.locator('#mc-root .mc-tbl tbody tr[data-i]').first().locator('td.ttl').click();
@@ -50,9 +50,9 @@ test('#680: Probe asks ISRC Scout; the matrix shows each track\'s ISRC', { tag: 
   await page.evaluate(() => { window.__mcTest.execute(true); });   // Dry run: the test hook only (#680)
   await page.waitForSelector('#mc-root .mc-tapplied .mc-applied', { timeout: 20_000 });
   const note = await page.locator('#mc-root .mc-tapplied').textContent();
-  // #680: Find links runs in the probe too, so its ticked links ride along
+  // #680: Find links runs in the probe too, so its selected links ride along
   const links = await page.locator('#mc-root .mc-tbl td[data-col="links"] .mc-pick.on').count();
-  console.log('links ticked: ' + links);
-  check(new RegExp(`dry run: ${ticked} ISRCs?${links ? ` and ${links} links?` : ''} would be submitted`).test(note), `dry run reports what IS would submit, without submitting ("${note}")`);
+  console.log('links selected: ' + links);
+  check(new RegExp(`dry run: ${selected} ISRCs?${links ? ` and ${links} links?` : ''} would be submitted`).test(note), `dry run reports what IS would submit, without submitting ("${note}")`);
   await page.screenshot({ path: 'test-results/mc-680-is.png' });
 });

@@ -1,7 +1,7 @@
 // #680 Mission Control ↔ Platform Check: the first provider adapter.
 // MC loads first and PC second, so PC's hello on load is what connects them (not
 // MC's discover). Probe then waits for PC's own scan and fills the Platforms card
-// with one row per platform; the confirmed ones are ticked and counted.
+// with one row per platform; the confirmed ones are selected and counted.
 // Nothing is submitted: Execute goes to a stand-in Falcon.
 import { test, check, until } from '../../../dev/test/harness.mjs';
 
@@ -57,9 +57,9 @@ test('#680: Probe asks Platform Check and shows its platforms', { tag: ['@sandbo
   const states = await page.locator('#mc-root [data-card="pc"] .mc-line').evaluateAll(ls => ls.map(l => l.className.replace('mc-line ', '')));
   console.log('states: ' + JSON.stringify(states));
   const nNew = states.filter(s => s === 'new').length;
-  const ticked = await page.locator('#mc-root [data-card="pc"] .mc-pick.on').count();
-  check(ticked === nNew, `ticked by default = the confirmed ones (${ticked} of ${nNew})`);
-  check((await page.locator('#mc-root [data-act="exec"]').textContent()) === (nNew ? 'Execute (' + nNew + ')' : 'Execute'), 'Execute counts the ticked rows');
+  const selected = await page.locator('#mc-root [data-card="pc"] .mc-pick.on').count();
+  check(selected === nNew, `selected by default = the confirmed ones (${selected} of ${nNew})`);
+  check((await page.locator('#mc-root [data-act="exec"]').textContent()) === (nNew ? 'Execute (' + nNew + ')' : 'Execute'), 'Execute counts the selected rows');
 
   // unticking one changes the count
   if (nNew) {
@@ -92,7 +92,7 @@ test('#680: Probe asks Platform Check and shows its platforms', { tag: ['@sandbo
   test.skip(!(await pickable.count()), 'no platform to tick on this fixture');
   await page.evaluate(() => { let c, n = 0; while ((c = document.querySelector('#mc-root .mc-pick.on')) && n++ < 500) c.click(); });
   await pickable.first().locator('.mc-tick').click();   // the row's edge: its middle can be the url, a link that opens
-  check(await page.locator('#mc-root [data-act="exec"]').isEnabled(), 'Execute enabled once something is ticked');
+  check(await page.locator('#mc-root [data-act="exec"]').isEnabled(), 'Execute enabled once something is selected');
   await page.click('#mc-root [data-act="exec"]');
   await page.waitForSelector('#mc-root [data-card="pc"] .mc-applied');
   check(/Falcon is not running/.test(await page.locator('#mc-root [data-card="pc"] .mc-applied.err').textContent()), 'no Falcon: failure on the card');
@@ -109,11 +109,11 @@ test('#680: Probe asks Platform Check and shows its platforms', { tag: ['@sandbo
   const got = await page.evaluate(() => window.__falconGot);
   check(got[0].ev === 'falcon:import' && got[1].ev === 'falcon:run', 'dry run queues, Execute runs');
   const item = got[1].json.items[0];
-  check(item.entityType === 'release' && item.mbid === RELEASE && new Set(item.urls.map(u => u.url)).size === 1, 'one release item with the ticked link');
+  check(item.entityType === 'release' && item.mbid === RELEASE && new Set(item.urls.map(u => u.url)).size === 1, 'one release item with the selected link');
   const want = await page.evaluate(u => window.__pcTest680.pcMcReleaseLinkTypes(u), item.urls[0].url);
   check(JSON.stringify(item.urls) === JSON.stringify(want), `the link goes with PC's link type (${JSON.stringify(item.urls)})`);
   const state = await pickable.first().evaluate(c => c.closest('.mc-line').className);
-  if (/withheld/.test(state)) check(/added by hand over link confidence/.test(got[1].json.note), 'a withheld link ticked by hand is noted as forced');
+  if (/withheld/.test(state)) check(/added by hand over link confidence/.test(got[1].json.note), 'a withheld link selected by hand is noted as forced');
   // the header line names GM_info's script, which in this test is the shared shim's; the confidence line is PC's own
   check(/Link confidence:/.test(got[1].json.note), "PC's own edit note");
   // the harness runs every script as version "test"

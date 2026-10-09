@@ -33,7 +33,7 @@ test('#680: AS rows: the best enters, the rest were searched', { tag: ['@sandbox
   const by = n => got.find(x => x.t === n) || {};
   check(by('Bandcamp').pill === 'enters', 'the best cover\'s row: enters');
   check(by('Discogs').pill === 'searched' && by('Deezer').pill === 'searched', 'the other rows: searched');
-  check(got.every(x => x.on), 'every source stays ticked: they are the pool the best comes from');
+  check(got.every(x => x.on), 'every source stays selected: they are the pool the best comes from');
   const step = await page.locator('#mc-root .mc-step[data-step="as"]').innerText();
   console.log(step);
   check(/1 cover to enter/.test(step), 'the step counts one cover, not one per row');

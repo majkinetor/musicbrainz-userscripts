@@ -28,7 +28,7 @@ test('#680: Fusion runs on Fetch RG and marks the tracks with duplicates', { tag
   await page.waitForFunction(() => document.querySelector('#mc-root [data-fetch="fusion"]'), null, { timeout: 120_000 });   // back once the probe is done
   const hits = await page.locator('#mc-root .mc-tbl td[data-col="fusion"] .mc-fxo:not(.err)').count();
   check(hits > 0, `tracks with duplicates in the release group are marked (${hits})`);
-  check(await page.locator('#mc-root .mc-tbl td[data-col="fusion"] .mc-pick.on').count() === hits, 'and start ticked');
+  check(await page.locator('#mc-root .mc-tbl td[data-col="fusion"] .mc-pick.on').count() === hits, 'and start selected');
 
   const row = page.locator('#mc-root .mc-tbl td[data-col="fusion"] .mc-fxo').first().locator('xpath=ancestor::tr');
   await row.locator('td.ttl').click();   // the title cell: the row's middle can be a pick cell
@@ -87,7 +87,7 @@ test('#680: Fusion offers no group with a pending edit, and marks the recording 
   await page.click('#mc-root [data-fetch="fusion"]');
   await page.waitForFunction(() => document.querySelector('#mc-root [data-fetch="fusion"]'), null, { timeout: 120_000 });
   check(await page.locator('#mc-root .mc-tbl td[data-col="fusion"] .mc-fxo').count() === 0, 'no group is offered');
-  check(await page.locator('#mc-root .mc-tbl td[data-col="fusion"] .mc-pick').count() === 0, 'nothing can be ticked');
+  check(await page.locator('#mc-root .mc-tbl td[data-col="fusion"] .mc-pick').count() === 0, 'nothing can be selected');
   const pend = page.locator('#mc-root .mc-tbl td[data-col="fusion"] a.mc-fxp');
   check(await pend.count() > 0, `the recordings with an open edit are marked pending (${await pend.count()})`);
   check(/\/open_edits$/.test(await pend.first().getAttribute('href')), 'and link their open edits');

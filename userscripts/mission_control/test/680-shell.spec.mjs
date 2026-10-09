@@ -65,7 +65,7 @@ test('#680: MC shell — launcher, track matrix, sidebars, modes', { tag: ['@san
   check(!row.cover && !row.foot && !row.dry && !row.auto && row.probe === 1, `no cover, footer, Dry run or Auto; ↻ probes (${JSON.stringify(row)})`);
   check(Math.max(...row.rings) - Math.min(...row.rings) <= 1, `the rings sit on one line, the parallel ones too (${row.rings})`);
   check(Math.max(...row.off) <= 1, `each icon is centred in its ring (${row.off})`);
-  check(await page.locator('#mc-root [data-act="exec"]').textContent() === 'Execute' && await page.locator('#mc-root [data-act="exec"]').isDisabled(), 'Execute, off with nothing ticked');
+  check(await page.locator('#mc-root [data-act="exec"]').textContent() === 'Execute' && await page.locator('#mc-root [data-act="exec"]').isDisabled(), 'Execute, off with nothing selected');
   // Auto probe is in ⚙
   check(!(await page.evaluate(() => window.__mcTest.settings())).autoProbe, 'Auto probe is off by default');
   await page.click('#mc-root [data-act="cfg"]');

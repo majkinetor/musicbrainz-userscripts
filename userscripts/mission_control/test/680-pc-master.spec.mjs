@@ -28,7 +28,7 @@ test('#680: a found Discogs master goes to the release group', { tag: ['@sandbox
   check(await row.count() === 1, 'the master is a row');
   check(await page.locator('#mc-root [data-card="pc"] .mc-sub:not([data-sub="release"]) ~ .mc-line[data-key="discogsmaster"]').count() === 0, 'with the release\'s own rows, not under Artists or Labels');
 
-  // only the master ticked
+  // only the master selected
   await page.evaluate(() => { let c, n = 0; while ((c = document.querySelector('#mc-root .mc-pick.on')) && n++ < 500) c.click(); });
   await row.locator('.mc-tick').click();
   await page.evaluate(() => {

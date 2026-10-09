@@ -1,6 +1,6 @@
 // #680 Mission Control ↔ ISRC Scout: an ISRC the probe found that is also on another recording of
 // the release (found there too, or already on it) is blocked, as the dialog's Submit blocks it: it
-// shows in the matrix but can't be ticked, and apply leaves it out even when asked for it.
+// shows in the matrix but can't be selected, and apply leaves it out even when asked for it.
 import { test, check } from '../../../dev/test/harness.mjs';
 
 test.use({ gm: { name: 'Mission Control' } });
@@ -56,6 +56,6 @@ test('#680: MC shows a blocked finding without a tick', { tag: ['@sandbox'] }, a
   const cells = page.locator('#mc-root .mc-tbl td[data-col="isrc"]');
   check(/⊘ USAT20107139/.test(await cells.nth(0).textContent()), 'the blocked ISRC shows, marked');
   check(await cells.nth(0).locator('.mc-pick').count() === 0, 'and has no tick');
-  check(await cells.nth(1).locator('.mc-pick.on').count() === 1, 'the new one is ticked');
+  check(await cells.nth(1).locator('.mc-pick.on').count() === 1, 'the new one is selected');
   check(JSON.stringify((await page.evaluate(() => window.__mcTest.picked())).is) === JSON.stringify([await page.evaluate(() => window.__mcTest.release().tracks[1].rec)]), 'only the new one is picked');
 });

@@ -1,6 +1,6 @@
 // #680: a card's own icon in its header switches it on and off. An off card folds to its header, and
-// Execute leaves out what is ticked in it, and so does its count. For this page only: nothing is
-// saved. Stand-in PC and AS answer the probe with one ticked finding each and record what is applied.
+// Execute leaves out what is selected in it, and so does its count. For this page only: nothing is
+// saved. Stand-in PC and AS answer the probe with one selected finding each and record what is applied.
 import { test, check } from '../../../dev/test/harness.mjs';
 
 test.use({ gm: { name: 'Mission Control' } });

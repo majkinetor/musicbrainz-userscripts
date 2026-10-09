@@ -1,6 +1,6 @@
 // #680: ⚙ holds only Auto probe and "reload after Execute". With the reload on, an Execute
 // without errors reloads the release page; a failed step leaves the page as it is.
-// A stand-in PC answers the probe with one ticked finding and pretends to apply it: nothing is written.
+// A stand-in PC answers the probe with one selected finding and pretends to apply it: nothing is written.
 import { test, check, until } from '../../../dev/test/harness.mjs';
 
 test.use({ gm: { name: 'Mission Control' } });

@@ -1,4 +1,4 @@
-// #680 Mission Control: an album link ticked in Platform Check's card is not on the release
+// #680 Mission Control: an album link selected in Platform Check's card is not on the release
 // yet, but ISRC Scout is probed with it, so its recording links show before Execute adds it.
 // The sandbox copy of "Discret Lounge" has no Bandcamp link; a stand-in for Platform Check
 // offers the album as withheld (as PC did on production), and ticking it brings the five
@@ -12,7 +12,7 @@ test.use({ gm: { name: 'Mission Control' } });
 const RELEASE = 'd5ecc3bf-98df-4e2d-8b33-ed48dbf30391';   // sandbox copy of "Discret Lounge" (dev/test/sandbox-copies.json)
 const ALBUM = 'https://fingersinthenoise.bandcamp.com/album/discret-lounge-june-2011';
 
-test('#680: a ticked Bandcamp album gives ISRC Scout its track links', { tag: ['@sandbox'] }, async ({ page, inject }) => {
+test('#680: a selected Bandcamp album gives ISRC Scout its track links', { tag: ['@sandbox'] }, async ({ page, inject }) => {
   const ws = await replayWs(page, new URL('./fixtures/bandcamp-discret-lounge.json.gz', import.meta.url), { paths: /(?!)/, web: /(^|\.)bandcamp\.com$/ });
   await page.goto(`https://test.musicbrainz.org/release/${RELEASE}`, { waitUntil: 'domcontentloaded' });
   await page.waitForSelector('#content table.medium');
@@ -37,7 +37,7 @@ test('#680: a ticked Bandcamp album gives ISRC Scout its track links', { tag: ['
   await pcRow.first().waitFor();
   await page.waitForFunction(() => /\b(add|ok)\b/.test(document.querySelector('#mc-root .mc-step[data-step="is"]').className), null, { timeout: 120_000 });
   const linkCells = () => page.locator('#mc-root .mc-tbl td[data-col="links"]').allTextContents();
-  check(!(await linkCells()).some(c => /bandcamp/i.test(c)), 'no Bandcamp track links before the album is ticked');
+  check(!(await linkCells()).some(c => /bandcamp/i.test(c)), 'no Bandcamp track links before the album is selected');
   check(JSON.stringify(await page.evaluate(() => window.__isAsked)) === '[[]]', 'the first probe asks IS with no album links');
 
   await pcRow.first().locator('.mc-tick').click();
