@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Art Station
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.10.230425
+// @version      2026.10.11
 // @description  Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5BcnQgU3RhdGlvbjwvdGl0bGU+CjxjaXJjbGUgY3g9Ijg2IiBjeT0iNjQiIHI9IjM4IiBmaWxsPSIjMWIwZjNiIiBzdHJva2U9IiNiOTY3ZmYiIHN0cm9rZS13aWR0aD0iMyIvPgo8Y2lyY2xlIGN4PSI4NiIgY3k9IjY0IiByPSIyOC44OCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjNGEzNDgwIiBzdHJva2Utd2lkdGg9IjEuNSIvPjxjaXJjbGUgY3g9Ijg2IiBjeT0iNjQiIHI9IjIwLjkwMDAwMDAwMDAwMDAwMiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjNGEzNDgwIiBzdHJva2Utd2lkdGg9IjEuNSIvPgo8Y2lyY2xlIGN4PSI4NiIgY3k9IjY0IiByPSIxMS4wMiIgZmlsbD0iI2ZmNzFjZSIvPjxjaXJjbGUgY3g9Ijg2IiBjeT0iNjQiIHI9IjIuNTA4IiBmaWxsPSIjMWIwZjNiIi8+PGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJhcy1za3ljIiB4MT0iMCIgeTE9IjAiIHgyPSIwIiB5Mj0iMSI+PHN0b3Agb2Zmc2V0PSIwLjAwIiBzdG9wLWNvbG9yPSIjN2ZlN2ZmIi8+PHN0b3Agb2Zmc2V0PSIwLjUwIiBzdG9wLWNvbG9yPSIjZDlhNmZmIi8+PHN0b3Agb2Zmc2V0PSIxLjAwIiBzdG9wLWNvbG9yPSIjZmY3MWNlIi8+PC9saW5lYXJHcmFkaWVudD48Y2xpcFBhdGggaWQ9ImFzLWNjIj48cmVjdCB4PSIxMCIgeT0iMjIiIHdpZHRoPSI3OCIgaGVpZ2h0PSI4NCIgcng9IjgiLz48L2NsaXBQYXRoPjwvZGVmcz4KPGcgY2xpcC1wYXRoPSJ1cmwoI2FzLWNjKSI+PHJlY3QgeD0iMTAiIHk9IjIyIiB3aWR0aD0iNzgiIGhlaWdodD0iODQiIGZpbGw9InVybCgjYXMtc2t5YykiLz4KPGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJhcy1nczIiIHgxPSIwIiB5MT0iMCIgeDI9IjAiIHkyPSIxIj48c3RvcCBvZmZzZXQ9IjAiIHN0b3AtY29sb3I9IiNmZmY2YTgiLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiNmZjhhNWMiLz48L2xpbmVhckdyYWRpZW50Pgo8bWFzayBpZD0iYXMtbXMyIj48cmVjdCB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCIgZmlsbD0iI2ZmZiIvPjxyZWN0IHg9IjI1LjYiIHk9IjY3LjIiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjEuMiIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9IjY5LjgiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjEuNSIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9IjczLjAiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjEuOCIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9Ijc3LjAiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjIuMyIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9IjgyLjAiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjIuOSIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9Ijg4LjMiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjMuNiIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9Ijk2LjIiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjQuNSIgZmlsbD0iIzAwMCIvPjwvbWFzaz48L2RlZnM+CjxjaXJjbGUgY3g9IjQ5IiBjeT0iNzYuMDgiIHI9IjIzLjQiIGZpbGw9InVybCgjYXMtZ3MyKSIgbWFzaz0idXJsKCNhcy1tczIpIi8+PHJlY3QgeD0iMTAiIHk9Ijc0LjA4IiB3aWR0aD0iNzgiIGhlaWdodD0iMzEuOTIiIGZpbGw9IiNiOTY3ZmYiLz48cGF0aCBkPSJNMTAgNzQuMDhIODhNMTAgNzcuOUg4OE0xMCA4My4ySDg4TTEwIDkxLjRIODhNMTAgMTA0LjJIODhNMzQuOCA3NC4wOEwtNDguNSAxMDZNMzguNCA3NC4wOEwtMjQuMSAxMDZNNDEuOSA3NC4wOEwwLjMgMTA2TTQ1LjUgNzQuMDhMMjQuNiAxMDZNNDkuMCA3NC4wOEw0OS4wIDEwNk01Mi41IDc0LjA4TDczLjQgMTA2TTU2LjEgNzQuMDhMOTcuOCAxMDZNNTkuNiA3NC4wOEwxMjIuMSAxMDZNNjMuMiA3NC4wOEwxNDYuNSAxMDYiIHN0cm9rZT0iI2ZmZmI5NiIgc3Ryb2tlLXdpZHRoPSIxLjMiIGZpbGw9Im5vbmUiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPjwvZz48cmVjdCB4PSIxMCIgeT0iMjIiIHdpZHRoPSI3OCIgaGVpZ2h0PSI4NCIgcng9IjgiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJhMTQ1OCIgc3Ryb2tlLXdpZHRoPSIzIi8+Cjwvc3ZnPgo=
@@ -187,6 +187,17 @@
           onerror: () => res(null), ontimeout: () => res(null) });
       } catch (e) { res(null); }
     });
+    // the best cover against the fronts already there: a larger one replaces the one front there,
+    // with several fronts it's only added. A front still 0×0 couldn't be measured (no cover is
+    // 0×0: the Cover Art Archive hasn't processed it yet, or it's a PDF), so nothing is compared
+    // and nothing replaced (#715)
+    const vsFronts = (best, existing) => {
+      const px = x => (x.w || 0) * (x.h || 0);
+      const top = existing.slice().sort((a, b) => px(b) - px(a))[0];
+      const unknown = existing.some(x => !x.w);
+      const larger = !!(best && !unknown && (!top || px(best) > px(top)));
+      return { top, larger, unknown, replace: !!(best && top && larger && existing.length === 1) };
+    };
     document.addEventListener('mc:discover', () => { log.info('Mission Control asked — answering as provider as'); hello(); });
     document.addEventListener('mc:probe', async e => {
       let d = {};
@@ -209,13 +220,10 @@
       }
       const best = got && got.best, existing = (got && got.existing) || [];
       if (existing.length) front = true;
-      const px = x => (x.w || 0) * (x.h || 0);
-      const top = existing.slice().sort((a, b) => px(b) - px(a))[0];
-      const larger = !!(best && (!top || px(best) > px(top)));
-      // a larger cover replaces the one front there; with several fronts it's only added
-      const replace = !!(best && top && larger && existing.length === 1);
+      const { top, larger, replace, unknown } = vsFronts(best, existing);
       mcPlan = { replace };
       const why = !front ? null : !best ? 'the release already has a front cover'
+        : unknown ? "the current front isn't processed by the Cover Art Archive yet, so its size is unknown; probe again later"
         : larger ? (replace ? `larger than the current front (${top.w}×${top.h}), which it replaces` : `larger than the current fronts (up to ${top.w}×${top.h}); added beside them`)
         : `not larger than the current front (${top.w}×${top.h})`;
       const state = !front || larger ? 'new' : 'unsure';
@@ -233,7 +241,7 @@
       const summary = j == null && !n ? 'Cover Art Archive: could not be read'
         : n ? 'Cover art: ' + n + ' image' + (n === 1 ? '' : 's') + (front ? ', front cover ✓' : ', no front cover') : 'Cover art: none yet';
       log.info('Mission Control probe ' + d.run + ': ' + summary + ' (archive ' + imgs.length + ', tab ' + tabN + ', frame ' + existing.length + ') · ' + findings.length + ' source(s): ' + findings.map(x => x.name).join(', ') + (why ? ' · ' + why : ''));
-      send('mc:findings', { id: 'as', run: d.run, release: rel, summary, findings, best: best ? Object.assign({ larger, replace, current: top || null }, best) : null });
+      send('mc:findings', { id: 'as', run: d.run, release: rel, summary, findings, best: best ? Object.assign({ larger, replace, unknown, current: top || null }, best) : null });
     });
     // #680: covers are sourced and entered in a hidden frame of the cover-art page, where Art
     // Station runs headless (mc_frame) and talks back by postMessage. One frame at a time.
@@ -298,10 +306,9 @@
         const r = await mcSource(urls, busy);
         if (!r || !r.best) { reply({ ok: false, sent: 0, note: 'no cover could be imported' }); return; }
         // the same comparison as the probe's, for the new pick
-        const px = x => (x.w || 0) * (x.h || 0), top = r.existing.slice().sort((a, b) => px(b) - px(a))[0];
-        const larger = !top || px(r.best) > px(top);
-        mcPlan = { replace: !!(top && larger && r.existing.length === 1) };
-        send('mc:progress', { id: 'as', run: d.run, state: 'busy', note: 'entering the cover', best: Object.assign({ larger, replace: mcPlan.replace, current: top || null }, r.best) });
+        const { top, larger, replace, unknown } = vsFronts(r.best, r.existing);
+        mcPlan = { replace };
+        send('mc:progress', { id: 'as', run: d.run, state: 'busy', note: 'entering the cover', best: Object.assign({ larger, replace, unknown, current: top || null }, r.best) });
       }
       busy('entering the cover');
       const got = waitFrame('entered', 600000, s => busy('entering the cover (' + s + ' s)'));
@@ -663,6 +670,7 @@
       // dimension sort can't place a cover until its size is known — re-sort once it is
       if (SETTINGS.sort === 'dim') scheduleResort();
     };
+    img.onerror = () => { it._noDim = true; };   // not processed by the Cover Art Archive yet: stays 0×0, its size unknown (#715)
     img.src = src;
   }
   // debounce: several new covers measure near-simultaneously; re-render the grid once
@@ -2500,11 +2508,11 @@
       _mcBest = best;
       // the covers already there and typed Front, measured (the card compares the best one with them)
       const fronts = () => MODEL.filter(x => !x._new && !x._del && (x.types || []).includes('Front'));
-      const measured = new Promise(res => { const t0 = Date.now(); const iv = setInterval(() => { if (fronts().every(x => x.w > 0) || Date.now() - t0 > 15000) { clearInterval(iv); res(); } }, 300); });
+      const measured = new Promise(res => { const t0 = Date.now(); const iv = setInterval(() => { if (fronts().every(x => x.w > 0 || x._noDim || x._pdf) || Date.now() - t0 > 15000) { clearInterval(iv); res(); } }, 300); });
       const post = () => measured.then(() => {
         // full: the archive's own image, for Mission Control's full-screen view
         const existing = fronts().map(x => ({ id: x.id, w: x.w || 0, h: x.h || 0, bytes: x.bytes || 0, thumb: x.id ? thumb(x.id, 250) : '', full: x._img || (x.id ? thumb(x.id, 1200) : '') }));
-        asLog.info(`Mission Control: existing front cover(s): ${existing.map(x => `#${x.id} ${x.w}×${x.h}`).join(', ') || 'none'}`);
+        asLog.info(`Mission Control: existing front cover(s): ${existing.map(x => `#${x.id} ${x.w ? x.w + '×' + x.h : 'size unknown (not processed yet?)'}`).join(', ') || 'none'}`);
         mcFramePost({ type: 'best', best: out, existing });
       });
       if (!best || !best._file) { post(); return; }
