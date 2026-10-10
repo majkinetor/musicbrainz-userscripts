@@ -14,7 +14,7 @@ A faster release editor for MusicBrainz: artists and recordings matched in one p
 - **[Release information](#release-information)**: external links in a right column with a dead-link checker, a cover thumbnail, no help bubbles.
 - **[Tracklist](#tracklist)**: an artist table with confidence colours, splitting, reordering and keyboard navigation.
 - **[Recordings](#recordings)**: track and recording side by side, with the differing characters highlighted.
-- **[Matching](#matching)**: artists, recordings, the release label and the release artist matched automatically.
+- **[Matching](#matching)**: artists, recordings, the release label and the release artist matched automatically, and a missing language and script detected.
 - **[Tools](#tools)**: a configurable toolbar with the native tools and Apollo's own.
 - **[Duplicates](#duplicates)**: a similarity score for each existing release, with a track-by-track comparison.
 - **[Annotation editor](#annotation-editor)**: Markdown with a live preview.
@@ -143,6 +143,17 @@ All the release group's recordings come in one request and are matched by title,
 
 **Cutoff** in the toolbar sets the lowest confidence that's linked. *Credited as* doesn't affect matching.
 
+### Language and script
+
+When the release has no **Language** or **Script**, Apollo fills them in from the release and track titles, and marks the field **auto**. Bracketed parts such as *(Live)* or *[Remastered]* and anything after *feat.* are left out.
+
+- **Script**: the one that more than 70% of the letters are written in. Kana makes it *Japanese* and Hangul *Korean*. When no script reaches 70%, as with parallel titles like *Laula Mulle Laulu = Обійми*, it's *[Multiple scripts]*.
+- **Language**: [lande](https://github.com/fabiospampinato/lande), the detector Harmony uses, reads each script's words on their own and needs three titles or more and 80% confidence. It knows 50 languages and works in every browser. When the titles mix Latin with another script, that script's language is used, since the Latin is usually its translation or transliteration. When lande isn't sure, a script that implies its language names one: Japanese, Korean, Greek, Hebrew, Thai, Armenian or Georgian.
+
+Every language and script found is listed at the top of the field's list under **Detected by Apollo**, most likely first, with *[Multiple languages]* or *[Multiple scripts]* to pick them all.
+
+A field that a seed or you already set is never touched. Apollo keeps updating its guess while you type titles, until you change the field yourself. Hover **auto** to see how the guess was made.
+
 ## Tools
 
 <img width="1200" src="./screenshots/tools.png" />
@@ -259,6 +270,7 @@ Right-click Apollo's corner icon. Column widths, the toolbar layout, **Change**,
 | Auto-match on start: Tracklist, Recordings                    | off     | match on load                                                             |
 | Auto-match on start: Label, Artist                            | on      | match the release [artist and label](#release-information) on load        |
 | Discogs artist link matching                                  | on      | match by [Discogs link](#artist-matching) and offer missing links         |
+| Detect language and script                                    | on      | fill in a missing [language and script](#language-and-script)             |
 | Length tolerance                                              | 5 s     | `0` for exact                                                             |
 | Title tolerance                                               | 1       | differing characters allowed                                              |
 | Ignore casing                                                 | on      | case, accents and spacing don't count                                     |
