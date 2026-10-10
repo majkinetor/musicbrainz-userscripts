@@ -98,6 +98,16 @@ test.describe('the consolidation page', () => {
       const win = await page.evaluate(id => window.__mccTest.model().tracks.rows.find(r => r.id === id).win.keys, id);
       check(win.includes(k), `${k}'s version is taken by hand (${win.join(', ')})`);
     }
+    // "N differ" opens every row that differs, and a second click closes them all
+    if (m.differ) {
+      const tog = page.locator('#mcc-root [data-cc="differ"]');
+      const openRows = () => page.evaluate(() => { const m = window.__mccTest.model(); return m.tracks.rows.filter(r => r.versions.length > 1 && document.querySelector('#mcc-root tr.ver[data-r="' + r.id + '"]')).length; });
+      await tog.click();
+      check(await openRows() === m.differ, `the differ chip opens all ${m.differ} rows that differ`);
+      await info.attach('differ-open', { body: await page.screenshot(), contentType: 'image/png' });
+      await page.locator('#mcc-root [data-cc="differ"]').click();
+      check(await openRows() === 0, 'and closes them all');
+    }
     // a field's other value, taken by a click
     const alt = page.locator('#mcc-root .mcc-f[data-field="date"] .mcc-alt').first();
     if (await alt.count()) {

@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Mission Control
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.10.221921
+// @version      2026.10.10.224321
 // @description  One window on the release page that asks the other scripts (Platform Check, ISRC Scout, Art Station, Fusion, Credit Hoarder) what is missing, shows it all in one review, and applies the selected changes in order.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5NaXNzaW9uIENvbnRyb2w8L3RpdGxlPgo8ZGVmcz48ZmlsdGVyIGlkPSJtY28xMy1oIiB4PSItMTAlIiB5PSItMTAlIiB3aWR0aD0iMTIwJSIgaGVpZ2h0PSIxMjAlIj48ZmVNb3JwaG9sb2d5IGluPSJTb3VyY2VBbHBoYSIgb3BlcmF0b3I9ImRpbGF0ZSIgcmFkaXVzPSIxLjUiIHJlc3VsdD0iZCIvPjxmZUZsb29kIGZsb29kLWNvbG9yPSIjZmZmIiBmbG9vZC1vcGFjaXR5PSIuNyIvPjxmZUNvbXBvc2l0ZSBpbjI9ImQiIG9wZXJhdG9yPSJpbiIvPjxmZU1lcmdlPjxmZU1lcmdlTm9kZS8+PGZlTWVyZ2VOb2RlIGluPSJTb3VyY2VHcmFwaGljIi8+PC9mZU1lcmdlPjwvZmlsdGVyPjwvZGVmcz48ZyBmaWx0ZXI9InVybCgjbWNvMTMtaCkiPjxwYXRoIGQ9Ik03NyAzNS41IEw2NCA0MyBMNTEgMzUuNSBMNTEgMjAuNSBMNjQgMTMgTDc3IDIwLjVaIiBmaWxsPSIjN2E1N2U4IiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik01OS43IDc3LjUgTDQ2LjcgODUgTDMzLjcgNzcuNSBMMzMuNyA2Mi41IEw0Ni43IDU1IEw1OS43IDYyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik05NC4zIDc3LjUgTDgxLjMgODUgTDY4LjMgNzcuNSBMNjguMyA2Mi41IEw4MS4zIDU1IEw5NC4zIDYyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik00Mi4zIDEwNy41IEwyOS40IDExNSBMMTYuNCAxMDcuNSBMMTYuNCA5Mi41IEwyOS40IDg1IEw0Mi4zIDkyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik03NyAxMDcuNSBMNjQgMTE1IEw1MSAxMDcuNSBMNTEgOTIuNSBMNjQgODUgTDc3IDkyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik0xMTEuNiAxMDcuNSBMOTguNiAxMTUgTDg1LjcgMTA3LjUgTDg1LjcgOTIuNSBMOTguNiA4NSBMMTExLjYgOTIuNVoiIGZpbGw9IiNmZmM5NGEiIHN0cm9rZT0iIzIyMjIzYiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PC9nPgo8L3N2Zz4K
@@ -1713,6 +1713,7 @@ function ccStyle() {
         + '.mcc-sect{background:var(--mbu-bg);border:1px solid var(--mbu-border);border-radius:var(--mbu-radius-lg);margin:0 0 14px;overflow:hidden}'
         + '.mcc-sect-h{display:flex;align-items:center;gap:10px;padding:8px 12px;background:var(--mbu-accent-soft);border-bottom:1px solid var(--mbu-border)}.mcc-sect-h b{font-size:14px}.mcc-sect-h .hint{flex:1;font-size:12px;color:var(--mbu-text-dim)}'
         + '.mcc-chip{font-size:11px;padding:1px 8px;border-radius:999px;border:1px solid var(--mbu-border);white-space:nowrap}.mcc-chip.ok{background:var(--mbu-ok-bg);border-color:var(--mbu-ok-border);color:var(--mbu-ok)}'
+        + '.mcc-chip-btn{font:inherit;font-size:11px;cursor:pointer}.mcc-chip-btn:hover{filter:brightness(1.15)}.mcc-chip-btn .mcc-caret{display:inline-block;min-width:10px;text-align:center}'
         + '.mcc-chip.warn{background:var(--mbu-warn-bg);border-color:var(--mbu-warn-border);color:var(--mbu-warn)}'
         + '.mcc-fields{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:8px;padding:10px}'
         + '.mcc-f{border:1px solid var(--mbu-border);border-radius:var(--mbu-radius);padding:8px 10px;min-width:0}.mcc-f.differ{background:var(--mbu-warn-bg);border-color:var(--mbu-warn-border)}'
@@ -2132,7 +2133,7 @@ function ccTracksHtml(m) {
     const t = m.tracks;
     const agree = t.rows.filter(r => r.versions.length === 1).length, differ = t.rows.length - agree;
     let h = '<section class="mcc-sect" data-sect="tracks"><div class="mcc-sect-h"><b>Tracks</b><span class="hint">one row per track, the version most platforms have · a row that differs opens into its versions</span>'
-        + '<span class="mcc-chip ok">' + agree + ' agree</span>' + (differ ? '<span class="mcc-chip warn">' + differ + ' differ</span>' : '') + (t.extras.length ? '<span class="mcc-chip">' + t.extras.length + ' only on one</span>' : '') + '</div>'
+        + '<span class="mcc-chip ok">' + agree + ' agree</span>' + (differ ? (() => { const all = t.rows.every(r => r.versions.length === 1 || CC.open.has(r.id)); return '<button type="button" class="mcc-chip warn mcc-chip-btn" data-cc="differ" aria-expanded="' + all + '" title="' + (all ? 'Close' : 'Open') + ' every track that differs">' + differ + ' differ <span class="mcc-caret">' + (all ? '▾' : '▸') + '</span></button>'; })() : '') + (t.extras.length ? '<span class="mcc-chip">' + t.extras.length + ' only on one</span>' : '') + '</div>'
         + '<table class="mcc-tbl"><thead><tr><th>#</th><th>Title</th><th>Len</th><th>ISRC</th><th>Agree</th><th></th></tr></thead><tbody>';
     const nM = new Set(t.rows.map(r => r.mi)).size;
     t.rows.forEach((r, i) => {
@@ -2220,6 +2221,13 @@ function ccOnClick(e) {
             CC.sel = id;
             if (CC.open.has(id)) CC.open.delete(id); else CC.open.add(id);
             ccPaintCenter(); ccPaintInspector();
+            return;
+        }
+        case 'differ': {
+            const rows = ccModel().tracks.rows.filter(r => r.versions.length > 1), all = rows.every(r => CC.open.has(r.id));
+            rows.forEach(r => all ? CC.open.delete(r.id) : CC.open.add(r.id));
+            Log.info((all ? 'closed ' : 'opened ') + rows.length + ' track(s) that differ');
+            ccPaintCenter();
             return;
         }
         case 'ver': CC.rowPick[a.dataset.r] = a.dataset.k; CC.sel = a.dataset.r; Log.info('track ' + a.dataset.r + ': ' + ccName(a.dataset.k) + '\'s version taken'); ccPaint(); return;
