@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         String Theory
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.10.110512
+// @version      2026.10.10.122114
 // @description  Unified bundle of 9 MusicBrainz userscripts (apollo_editor, art_station, credit_hoarder, fusion, group_therapy, isrc_scout, mammoth, mission_control, platform_check). Built by userscripts/string_theory/build.mjs — do not hand-edit.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5TdHJpbmcgVGhlb3J5PC90aXRsZT4KPGRlZnM+PGZpbHRlciBpZD0ic3RsMDItaCIgeD0iLTEwJSIgeT0iLTEwJSIgd2lkdGg9IjEyMCUiIGhlaWdodD0iMTIwJSI+PGZlTW9ycGhvbG9neSBpbj0iU291cmNlQWxwaGEiIG9wZXJhdG9yPSJkaWxhdGUiIHJhZGl1cz0iMS41IiByZXN1bHQ9ImQiLz48ZmVGbG9vZCBmbG9vZC1jb2xvcj0iI2ZmZiIgZmxvb2Qtb3BhY2l0eT0iLjciLz48ZmVDb21wb3NpdGUgaW4yPSJkIiBvcGVyYXRvcj0iaW4iLz48ZmVNZXJnZT48ZmVNZXJnZU5vZGUvPjxmZU1lcmdlTm9kZSBpbj0iU291cmNlR3JhcGhpYyIvPjwvZmVNZXJnZT48L2ZpbHRlcj48L2RlZnM+PGcgZmlsdGVyPSJ1cmwoI3N0bDAyLWgpIj48cGF0aCBkPSJNNjQgMTAgTDY2LjQgMTAuMiBMNjguNyAxMC42IEw3MC45IDExLjQgTDczLjEgMTIuNCBMNzUuMiAxMy43IEw3Ny4xIDE1LjIgTDc4LjggMTcgTDgwLjQgMTguOSBMODEuOCAyMSBMODMuMSAyMy4xIEw4NC4xIDI1LjQgTDg1IDI3LjYgTDg1LjcgMjkuOSBMODYuMyAzMi4xIEw4Ni44IDM0LjMgTDg3LjEgMzYuNCBMODcuNCAzOC40IEw4Ny43IDQwLjMgTDg3LjkgNDIuMSBMODguMiA0My43IEw4OC41IDQ1LjIgTDg4LjkgNDYuNiBMODkuNCA0Ny44IEw5MCA0OSBMOTAuNyA1MC4xIEw5MS42IDUxLjEgTDkyLjYgNTIuMiBMOTMuNyA1My4yIEw5NSA1NC4yIEw5Ni40IDU1LjMgTDk3LjkgNTYuNSBMOTkuNSA1Ny43IEwxMDEuMSA1OS4xIEwxMDIuNyA2MC42IEwxMDQuNCA2Mi4yIEwxMDYgNjQgTDEwNy41IDY1LjkgTDEwOC45IDY3LjkgTDExMC4yIDcwLjEgTDExMS4zIDcyLjMgTDExMi4xIDc0LjcgTDExMi44IDc3LjEgTDExMy4xIDc5LjUgTDExMy4yIDgxLjkgTDExMyA4NC4zIEwxMTIuNiA4Ni42IEwxMTEuOCA4OC45IEwxMTAuOCA5MSBMMTA5LjUgOTMgTDEwNy45IDk0LjcgTDEwNi4xIDk2LjMgTDEwNC4xIDk3LjcgTDEwMiA5OC44IEw5OS43IDk5LjcgTDk3LjMgMTAwLjQgTDk0LjkgMTAwLjggTDkyLjQgMTAxIEw4OS45IDEwMC45IEw4Ny40IDEwMC43IEw4NSAxMDAuNCBMODIuNyA5OS45IEw4MC40IDk5LjMgTDc4LjMgOTguNiBMNzYuMyA5Ny44IEw3NC40IDk3LjEgTDcyLjcgOTYuNCBMNzEgOTUuNyBMNjkuNSA5NS4xIEw2OCA5NC42IEw2Ni43IDk0LjMgTDY1LjMgOTQuMSBMNjQgOTQgTDYyLjcgOTQuMSBMNjEuMyA5NC4zIEw2MCA5NC42IEw1OC41IDk1LjEgTDU3IDk1LjcgTDU1LjMgOTYuNCBMNTMuNiA5Ny4xIEw1MS43IDk3LjggTDQ5LjcgOTguNiBMNDcuNiA5OS4zIEw0NS4zIDk5LjkgTDQzIDEwMC40IEw0MC42IDEwMC43IEwzOC4xIDEwMC45IEwzNS42IDEwMSBMMzMuMSAxMDAuOCBMMzAuNyAxMDAuNCBMMjguMyA5OS43IEwyNiA5OC44IEwyMy45IDk3LjcgTDIxLjkgOTYuMyBMMjAuMSA5NC43IEwxOC41IDkzIEwxNy4yIDkxIEwxNi4yIDg4LjkgTDE1LjQgODYuNiBMMTUgODQuMyBMMTQuOCA4MS45IEwxNC45IDc5LjUgTDE1LjIgNzcuMSBMMTUuOSA3NC43IEwxNi43IDcyLjMgTDE3LjggNzAuMSBMMTkuMSA2Ny45IEwyMC41IDY1LjkgTDIyIDY0IEwyMy42IDYyLjIgTDI1LjMgNjAuNiBMMjYuOSA1OS4xIEwyOC41IDU3LjcgTDMwLjEgNTYuNSBMMzEuNiA1NS4zIEwzMyA1NC4yIEwzNC4zIDUzLjIgTDM1LjQgNTIuMiBMMzYuNCA1MS4xIEwzNy4zIDUwLjEgTDM4IDQ5IEwzOC42IDQ3LjggTDM5LjEgNDYuNiBMMzkuNSA0NS4yIEwzOS44IDQzLjcgTDQwLjEgNDIuMSBMNDAuMyA0MC4zIEw0MC42IDM4LjQgTDQwLjkgMzYuNCBMNDEuMiAzNC4zIEw0MS43IDMyLjEgTDQyLjMgMjkuOSBMNDMgMjcuNiBMNDMuOSAyNS40IEw0NC45IDIzLjEgTDQ2LjIgMjEgTDQ3LjYgMTguOSBMNDkuMiAxNyBMNTAuOSAxNS4yIEw1Mi44IDEzLjcgTDU0LjkgMTIuNCBMNTcuMSAxMS40IEw1OS4zIDEwLjYgTDYxLjYgMTAuMloiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2I5YThlYyIgc3Ryb2tlLXdpZHRoPSI1IiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PHBhdGggZD0iTTY0IDM0IEw2NS4zIDMzLjkgTDY2LjcgMzMuNyBMNjggMzMuNCBMNjkuNSAzMi45IEw3MSAzMi4zIEw3Mi43IDMxLjYgTDc0LjQgMzAuOSBMNzYuMyAzMC4yIEw3OC4zIDI5LjQgTDgwLjQgMjguNyBMODIuNyAyOC4xIEw4NSAyNy42IEw4Ny40IDI3LjMgTDg5LjkgMjcuMSBMOTIuNCAyNyBMOTQuOSAyNy4yIEw5Ny4zIDI3LjYgTDk5LjcgMjguMyBMMTAyIDI5LjIgTDEwNC4xIDMwLjMgTDEwNi4xIDMxLjcgTDEwNy45IDMzLjMgTDEwOS41IDM1IEwxMTAuOCAzNyBMMTExLjggMzkuMSBMMTEyLjYgNDEuNCBMMTEzIDQzLjcgTDExMy4yIDQ2LjEgTDExMy4xIDQ4LjUgTDExMi44IDUwLjkgTDExMi4xIDUzLjMgTDExMS4zIDU1LjcgTDExMC4yIDU3LjkgTDEwOC45IDYwLjEgTDEwNy41IDYyLjEgTDEwNiA2NCBMMTA0LjQgNjUuOCBMMTAyLjcgNjcuNCBMMTAxLjEgNjguOSBMOTkuNSA3MC4zIEw5Ny45IDcxLjUgTDk2LjQgNzIuNyBMOTUgNzMuOCBMOTMuNyA3NC44IEw5Mi42IDc1LjggTDkxLjYgNzYuOSBMOTAuNyA3Ny45IEw5MCA3OSBMODkuNCA4MC4yIEw4OC45IDgxLjQgTDg4LjUgODIuOCBMODguMiA4NC4zIEw4Ny45IDg1LjkgTDg3LjcgODcuNyBMODcuNCA4OS42IEw4Ny4xIDkxLjYgTDg2LjggOTMuNyBMODYuMyA5NS45IEw4NS43IDk4LjEgTDg1IDEwMC40IEw4NC4xIDEwMi42IEw4My4xIDEwNC45IEw4MS44IDEwNyBMODAuNCAxMDkuMSBMNzguOCAxMTEgTDc3LjEgMTEyLjggTDc1LjIgMTE0LjMgTDczLjEgMTE1LjYgTDcwLjkgMTE2LjYgTDY4LjcgMTE3LjQgTDY2LjQgMTE3LjggTDY0IDExOCBMNjEuNiAxMTcuOCBMNTkuMyAxMTcuNCBMNTcuMSAxMTYuNiBMNTQuOSAxMTUuNiBMNTIuOCAxMTQuMyBMNTAuOSAxMTIuOCBMNDkuMiAxMTEgTDQ3LjYgMTA5LjEgTDQ2LjIgMTA3IEw0NC45IDEwNC45IEw0My45IDEwMi42IEw0MyAxMDAuNCBMNDIuMyA5OC4xIEw0MS43IDk1LjkgTDQxLjIgOTMuNyBMNDAuOSA5MS42IEw0MC42IDg5LjYgTDQwLjMgODcuNyBMNDAuMSA4NS45IEwzOS44IDg0LjMgTDM5LjUgODIuOCBMMzkuMSA4MS40IEwzOC42IDgwLjIgTDM4IDc5IEwzNy4zIDc3LjkgTDM2LjQgNzYuOSBMMzUuNCA3NS44IEwzNC4zIDc0LjggTDMzIDczLjggTDMxLjYgNzIuNyBMMzAuMSA3MS41IEwyOC41IDcwLjMgTDI2LjkgNjguOSBMMjUuMyA2Ny40IEwyMy42IDY1LjggTDIyIDY0IEwyMC41IDYyLjEgTDE5LjEgNjAuMSBMMTcuOCA1Ny45IEwxNi43IDU1LjcgTDE1LjkgNTMuMyBMMTUuMiA1MC45IEwxNC45IDQ4LjUgTDE0LjggNDYuMSBMMTUgNDMuNyBMMTUuNCA0MS40IEwxNi4yIDM5LjEgTDE3LjIgMzcgTDE4LjUgMzUgTDIwLjEgMzMuMyBMMjEuOSAzMS43IEwyMy45IDMwLjMgTDI2IDI5LjIgTDI4LjMgMjguMyBMMzAuNyAyNy42IEwzMy4xIDI3LjIgTDM1LjYgMjcgTDM4LjEgMjcuMSBMNDAuNiAyNy4zIEw0MyAyNy42IEw0NS4zIDI4LjEgTDQ3LjYgMjguNyBMNDkuNyAyOS40IEw1MS43IDMwLjIgTDUzLjYgMzAuOSBMNTUuMyAzMS42IEw1NyAzMi4zIEw1OC41IDMyLjkgTDYwIDMzLjQgTDYxLjMgMzMuNyBMNjIuNyAzMy45WiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMjIyMjNiIiBzdHJva2Utd2lkdGg9IjExIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PHBhdGggZD0iTTY0IDM0IEw2NS4zIDMzLjkgTDY2LjcgMzMuNyBMNjggMzMuNCBMNjkuNSAzMi45IEw3MSAzMi4zIEw3Mi43IDMxLjYgTDc0LjQgMzAuOSBMNzYuMyAzMC4yIEw3OC4zIDI5LjQgTDgwLjQgMjguNyBMODIuNyAyOC4xIEw4NSAyNy42IEw4Ny40IDI3LjMgTDg5LjkgMjcuMSBMOTIuNCAyNyBMOTQuOSAyNy4yIEw5Ny4zIDI3LjYgTDk5LjcgMjguMyBMMTAyIDI5LjIgTDEwNC4xIDMwLjMgTDEwNi4xIDMxLjcgTDEwNy45IDMzLjMgTDEwOS41IDM1IEwxMTAuOCAzNyBMMTExLjggMzkuMSBMMTEyLjYgNDEuNCBMMTEzIDQzLjcgTDExMy4yIDQ2LjEgTDExMy4xIDQ4LjUgTDExMi44IDUwLjkgTDExMi4xIDUzLjMgTDExMS4zIDU1LjcgTDExMC4yIDU3LjkgTDEwOC45IDYwLjEgTDEwNy41IDYyLjEgTDEwNiA2NCBMMTA0LjQgNjUuOCBMMTAyLjcgNjcuNCBMMTAxLjEgNjguOSBMOTkuNSA3MC4zIEw5Ny45IDcxLjUgTDk2LjQgNzIuNyBMOTUgNzMuOCBMOTMuNyA3NC44IEw5Mi42IDc1LjggTDkxLjYgNzYuOSBMOTAuNyA3Ny45IEw5MCA3OSBMODkuNCA4MC4yIEw4OC45IDgxLjQgTDg4LjUgODIuOCBMODguMiA4NC4zIEw4Ny45IDg1LjkgTDg3LjcgODcuNyBMODcuNCA4OS42IEw4Ny4xIDkxLjYgTDg2LjggOTMuNyBMODYuMyA5NS45IEw4NS43IDk4LjEgTDg1IDEwMC40IEw4NC4xIDEwMi42IEw4My4xIDEwNC45IEw4MS44IDEwNyBMODAuNCAxMDkuMSBMNzguOCAxMTEgTDc3LjEgMTEyLjggTDc1LjIgMTE0LjMgTDczLjEgMTE1LjYgTDcwLjkgMTE2LjYgTDY4LjcgMTE3LjQgTDY2LjQgMTE3LjggTDY0IDExOCBMNjEuNiAxMTcuOCBMNTkuMyAxMTcuNCBMNTcuMSAxMTYuNiBMNTQuOSAxMTUuNiBMNTIuOCAxMTQuMyBMNTAuOSAxMTIuOCBMNDkuMiAxMTEgTDQ3LjYgMTA5LjEgTDQ2LjIgMTA3IEw0NC45IDEwNC45IEw0My45IDEwMi42IEw0MyAxMDAuNCBMNDIuMyA5OC4xIEw0MS43IDk1LjkgTDQxLjIgOTMuNyBMNDAuOSA5MS42IEw0MC42IDg5LjYgTDQwLjMgODcuNyBMNDAuMSA4NS45IEwzOS44IDg0LjMgTDM5LjUgODIuOCBMMzkuMSA4MS40IEwzOC42IDgwLjIgTDM4IDc5IEwzNy4zIDc3LjkgTDM2LjQgNzYuOSBMMzUuNCA3NS44IEwzNC4zIDc0LjggTDMzIDczLjggTDMxLjYgNzIuNyBMMzAuMSA3MS41IEwyOC41IDcwLjMgTDI2LjkgNjguOSBMMjUuMyA2Ny40IEwyMy42IDY1LjggTDIyIDY0IEwyMC41IDYyLjEgTDE5LjEgNjAuMSBMMTcuOCA1Ny45IEwxNi43IDU1LjcgTDE1LjkgNTMuMyBMMTUuMiA1MC45IEwxNC45IDQ4LjUgTDE0LjggNDYuMSBMMTUgNDMuNyBMMTUuNCA0MS40IEwxNi4yIDM5LjEgTDE3LjIgMzcgTDE4LjUgMzUgTDIwLjEgMzMuMyBMMjEuOSAzMS43IEwyMy45IDMwLjMgTDI2IDI5LjIgTDI4LjMgMjguMyBMMzAuNyAyNy42IEwzMy4xIDI3LjIgTDM1LjYgMjcgTDM4LjEgMjcuMSBMNDAuNiAyNy4zIEw0MyAyNy42IEw0NS4zIDI4LjEgTDQ3LjYgMjguNyBMNDkuNyAyOS40IEw1MS43IDMwLjIgTDUzLjYgMzAuOSBMNTUuMyAzMS42IEw1NyAzMi4zIEw1OC41IDMyLjkgTDYwIDMzLjQgTDYxLjMgMzMuNyBMNjIuNyAzMy45WiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjN2E1N2U4IiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz48L2c+Cjwvc3ZnPgo=
@@ -92,8 +92,8 @@
 // Bundles (verbatim, each wrapped in a run-at gate): apollo_editor, art_station, credit_hoarder, fusion, group_therapy, isrc_scout, mammoth, mission_control, platform_check.
 
 try {
-  console.log('%c String Theory %c v2026.10.10.110512 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
-  console.log("String Theory bundles:\n  · Apollo Editor v2026.10.10.125509\n  · Art Station v2026.10.10\n  · Credit Hoarder v2026.10.10.124041\n  · Fusion v2026.10.9.174839\n  · Group Therapy v2026.10.9\n  · ISRC Scout v2026.10.9.175454\n  · Mammoth v2026.10.9\n  · Mission Control v2026.10.9.132954\n  · Platform Check v2026.10.10.2");
+  console.log('%c String Theory %c v2026.10.10.122114 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
+  console.log("String Theory bundles:\n  · Apollo Editor v2026.10.10.150000\n  · Art Station v2026.10.10\n  · Credit Hoarder v2026.10.10.124041\n  · Fusion v2026.10.9.174839\n  · Group Therapy v2026.10.9\n  · ISRC Scout v2026.10.9.175454\n  · Mammoth v2026.10.9\n  · Mission Control v2026.10.9.132954\n  · Platform Check v2026.10.10.2");
 } catch (e) {}
 
 function __stReadOff() { try { var v = GM_getValue("string_theory.off", []); return Array.isArray(v) ? v : []; } catch (e) { return []; } }
@@ -101,7 +101,7 @@ var __stOff = __stReadOff();
 (function () {
   if (typeof GM_registerMenuCommand !== 'function') return;
   try { if (window.top !== window.self) return; } catch (e) { return; }
-  var members = [["apollo_editor","Apollo Editor","2026.10.10.125509"],["art_station","Art Station","2026.10.10"],["credit_hoarder","Credit Hoarder","2026.10.10.124041"],["fusion","Fusion","2026.10.9.174839"],["group_therapy","Group Therapy","2026.10.9"],["isrc_scout","ISRC Scout","2026.10.9.175454"],["mammoth","Mammoth","2026.10.9"],["mission_control","Mission Control","2026.10.9.132954"],["platform_check","Platform Check","2026.10.10.2"]];
+  var members = [["apollo_editor","Apollo Editor","2026.10.10.150000"],["art_station","Art Station","2026.10.10"],["credit_hoarder","Credit Hoarder","2026.10.10.124041"],["fusion","Fusion","2026.10.9.174839"],["group_therapy","Group Therapy","2026.10.9"],["isrc_scout","ISRC Scout","2026.10.9.175454"],["mammoth","Mammoth","2026.10.9"],["mission_control","Mission Control","2026.10.9.132954"],["platform_check","Platform Check","2026.10.10.2"]];
   // Each entry carries a stable id (options.id): Violentmonkey and Tampermonkey then relabel it in
   // place, where it stands. Unregister-and-add left Violentmonkey's open menu with the old entry
   // still there and the new one appended at the end. A manager that ignores options.id hands back
@@ -165,7 +165,7 @@ try { if (__stOff.length) console.log('String Theory: turned off in the manager 
 
 // ===== apollo_editor (@run-at document-start) =====================================
 if (__stOff.indexOf("apollo_editor") < 0) (function(__stGM){
-  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Apollo Editor*","namespace":"https://musicbrainz.org/","version":"2026.10.10.125509","description":"Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5BcG9sbG8gRWRpdG9yPC90aXRsZT4KPG1hc2sgaWQ9ImFwLW0iIG1hc2tVbml0cz0idXNlclNwYWNlT25Vc2UiIHg9IjAiIHk9IjAiIHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4Ij48Zz48ZyBmaWxsPSIjZmZmIj48cGF0aCBkPSJNNDIgNjQgQzI4IDcyIDIyIDkwIDI0IDExMCBMNDIgOTggWiIvPjxwYXRoIGQ9Ik04NiA2NCBDMTAwIDcyIDEwNiA5MCAxMDQgMTEwIEw4NiA5OCBaIi8+PC9nPjxnIGZpbGw9IiNmZmYiPjxwYXRoIGQ9Ik02NCA4IEM4NCAyNCA5MCA1MiA4OCA5MCBMNDAgOTAgQzM4IDUyIDQ0IDI0IDY0IDggWiIvPjxwYXRoIGQ9Ik00OCA5MCBMODAgOTAgTDc2IDEwMCBMNTIgMTAwIFoiLz48L2c+PGcgc3Ryb2tlPSIjMDAwIiBzdHJva2Utd2lkdGg9IjMuNSI+PHBhdGggZD0iTTM2IDkwLjUgTDkyIDkwLjUiLz48L2c+PGNpcmNsZSBjeD0iNjQiIGN5PSI1MCIgcj0iOCIgZmlsbD0iIzAwMCIvPjwvZz48L21hc2s+PGc+PHBhdGggZD0iTTUyIDEwMCBDNTQgMTEyIDYwIDExOCA2NCAxMjYgQzY4IDExOCA3NCAxMTIgNzYgMTAwIFoiIGZpbGw9IiNlYjc0M2IiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDAgMykiLz48L2c+PHJlY3Qgd2lkdGg9IjEyOCIgaGVpZ2h0PSIxMjgiIGZpbGw9IiNiYTQ3OGYiIG1hc2s9InVybCgjYXAtbSkiLz4KPC9zdmc+Cg=="}) }) : { script: {"name":"Apollo Editor*","namespace":"https://musicbrainz.org/","version":"2026.10.10.125509","description":"Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5BcG9sbG8gRWRpdG9yPC90aXRsZT4KPG1hc2sgaWQ9ImFwLW0iIG1hc2tVbml0cz0idXNlclNwYWNlT25Vc2UiIHg9IjAiIHk9IjAiIHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4Ij48Zz48ZyBmaWxsPSIjZmZmIj48cGF0aCBkPSJNNDIgNjQgQzI4IDcyIDIyIDkwIDI0IDExMCBMNDIgOTggWiIvPjxwYXRoIGQ9Ik04NiA2NCBDMTAwIDcyIDEwNiA5MCAxMDQgMTEwIEw4NiA5OCBaIi8+PC9nPjxnIGZpbGw9IiNmZmYiPjxwYXRoIGQ9Ik02NCA4IEM4NCAyNCA5MCA1MiA4OCA5MCBMNDAgOTAgQzM4IDUyIDQ0IDI0IDY0IDggWiIvPjxwYXRoIGQ9Ik00OCA5MCBMODAgOTAgTDc2IDEwMCBMNTIgMTAwIFoiLz48L2c+PGcgc3Ryb2tlPSIjMDAwIiBzdHJva2Utd2lkdGg9IjMuNSI+PHBhdGggZD0iTTM2IDkwLjUgTDkyIDkwLjUiLz48L2c+PGNpcmNsZSBjeD0iNjQiIGN5PSI1MCIgcj0iOCIgZmlsbD0iIzAwMCIvPjwvZz48L21hc2s+PGc+PHBhdGggZD0iTTUyIDEwMCBDNTQgMTEyIDYwIDExOCA2NCAxMjYgQzY4IDExOCA3NCAxMTIgNzYgMTAwIFoiIGZpbGw9IiNlYjc0M2IiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDAgMykiLz48L2c+PHJlY3Qgd2lkdGg9IjEyOCIgaGVpZ2h0PSIxMjgiIGZpbGw9IiNiYTQ3OGYiIG1hc2s9InVybCgjYXAtbSkiLz4KPC9zdmc+Cg=="} };
+  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Apollo Editor*","namespace":"https://musicbrainz.org/","version":"2026.10.10.150000","description":"Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5BcG9sbG8gRWRpdG9yPC90aXRsZT4KPG1hc2sgaWQ9ImFwLW0iIG1hc2tVbml0cz0idXNlclNwYWNlT25Vc2UiIHg9IjAiIHk9IjAiIHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4Ij48Zz48ZyBmaWxsPSIjZmZmIj48cGF0aCBkPSJNNDIgNjQgQzI4IDcyIDIyIDkwIDI0IDExMCBMNDIgOTggWiIvPjxwYXRoIGQ9Ik04NiA2NCBDMTAwIDcyIDEwNiA5MCAxMDQgMTEwIEw4NiA5OCBaIi8+PC9nPjxnIGZpbGw9IiNmZmYiPjxwYXRoIGQ9Ik02NCA4IEM4NCAyNCA5MCA1MiA4OCA5MCBMNDAgOTAgQzM4IDUyIDQ0IDI0IDY0IDggWiIvPjxwYXRoIGQ9Ik00OCA5MCBMODAgOTAgTDc2IDEwMCBMNTIgMTAwIFoiLz48L2c+PGcgc3Ryb2tlPSIjMDAwIiBzdHJva2Utd2lkdGg9IjMuNSI+PHBhdGggZD0iTTM2IDkwLjUgTDkyIDkwLjUiLz48L2c+PGNpcmNsZSBjeD0iNjQiIGN5PSI1MCIgcj0iOCIgZmlsbD0iIzAwMCIvPjwvZz48L21hc2s+PGc+PHBhdGggZD0iTTUyIDEwMCBDNTQgMTEyIDYwIDExOCA2NCAxMjYgQzY4IDExOCA3NCAxMTIgNzYgMTAwIFoiIGZpbGw9IiNlYjc0M2IiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDAgMykiLz48L2c+PHJlY3Qgd2lkdGg9IjEyOCIgaGVpZ2h0PSIxMjgiIGZpbGw9IiNiYTQ3OGYiIG1hc2s9InVybCgjYXAtbSkiLz4KPC9zdmc+Cg=="}) }) : { script: {"name":"Apollo Editor*","namespace":"https://musicbrainz.org/","version":"2026.10.10.150000","description":"Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5BcG9sbG8gRWRpdG9yPC90aXRsZT4KPG1hc2sgaWQ9ImFwLW0iIG1hc2tVbml0cz0idXNlclNwYWNlT25Vc2UiIHg9IjAiIHk9IjAiIHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4Ij48Zz48ZyBmaWxsPSIjZmZmIj48cGF0aCBkPSJNNDIgNjQgQzI4IDcyIDIyIDkwIDI0IDExMCBMNDIgOTggWiIvPjxwYXRoIGQ9Ik04NiA2NCBDMTAwIDcyIDEwNiA5MCAxMDQgMTEwIEw4NiA5OCBaIi8+PC9nPjxnIGZpbGw9IiNmZmYiPjxwYXRoIGQ9Ik02NCA4IEM4NCAyNCA5MCA1MiA4OCA5MCBMNDAgOTAgQzM4IDUyIDQ0IDI0IDY0IDggWiIvPjxwYXRoIGQ9Ik00OCA5MCBMODAgOTAgTDc2IDEwMCBMNTIgMTAwIFoiLz48L2c+PGcgc3Ryb2tlPSIjMDAwIiBzdHJva2Utd2lkdGg9IjMuNSI+PHBhdGggZD0iTTM2IDkwLjUgTDkyIDkwLjUiLz48L2c+PGNpcmNsZSBjeD0iNjQiIGN5PSI1MCIgcj0iOCIgZmlsbD0iIzAwMCIvPjwvZz48L21hc2s+PGc+PHBhdGggZD0iTTUyIDEwMCBDNTQgMTEyIDYwIDExOCA2NCAxMjYgQzY4IDExOCA3NCAxMTIgNzYgMTAwIFoiIGZpbGw9IiNlYjc0M2IiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDAgMykiLz48L2c+PHJlY3Qgd2lkdGg9IjEyOCIgaGVpZ2h0PSIxMjgiIGZpbGw9IiNiYTQ3OGYiIG1hc2s9InVybCgjYXAtbSkiLz4KPC9zdmc+Cg=="} };
   (f=>f())(function(){ try { (function(){
 /*
  * Editor model (discovered via test/ spikes):
@@ -823,7 +823,7 @@ if (__stOff.indexOf("apollo_editor") < 0) (function(__stGM){
       if (was) Object.assign(ps, { status: was.status, entity: was.entity, candidates: was.candidates || [], _pos: was._pos || null, _why: was._why || null, _at: was._at });
       const durl = relDisc ? relDisc[i] : null, purl = h ? fcCreditUrl(h.credit, i, ps.creditedAs, names.length) : null;
       if (!gid && nm) {
-        const m = await matchSlot(nm, null, durl, ctx, () => riEditionArtists(nm), purl);
+        const m = await matchSlot(nm, null, durl, ctx, () => riEditionArtists(nm), purl, 'release artist');
         if (m.why && m.why.pos) m.why.pos.ri = true;
         Object.assign(ps, { status: slotStatusOf(m), entity: m.entity, gid: m.entity ? m.entity.gid : null, name: m.entity ? m.entity.name : '', candidates: m.candidates || [], _pos: m.pos || null, _why: m.why || null, _at: Date.now() });
         if (m.entity && autoCommittable(ps)) {
@@ -2167,13 +2167,40 @@ click to open the label`;
      found — the Discogs link, the release-group sibling (which release and track), the other
      editions at this position, the name/alias search, the co-credits — and when. The slot keeps
      it as _why and the badge's card shows it. Nothing extra is fetched for it. */
-  async function matchSlot(creditedAs, sib, discogsUrl, contextGids, pos, platUrl) {
+  /* A pass over a tracklist where one artist sits on every track logged the same
+     "Lou Rawls → Lou Rawls — via Qobuz link …" line once per track, with nothing to
+     tell the lines apart (majkinetor). Each match line now says which track it is,
+     and while a pass runs (_matchSeen) only the first track a name resolves a given
+     way logs it at info; the rest go to debug and endMatchLog() sums them up in one
+     line. A match that isn't a track's (the release artist, which can resolve while
+     a pass runs) always logs, as does one outside a pass (a revert). */
+  let _matchSeen = null;   // Map: the line's text → the tracks it came from, while a pass runs
+  function matchLog(where, ...args) {
+    const L = Log.cat('Artist'), head = where ? [where + ':'] : [];
+    if (_matchSeen && /^track /.test(where || '')) {
+      const key = args.join(' '), seen = _matchSeen.get(key);
+      if (seen) { seen.push(where); L.debug(...head, ...args); return; }
+      _matchSeen.set(key, [where]);
+    }
+    L.info(...head, ...args);
+  }
+  function startMatchLog() { _matchSeen = new Map(); }
+  function endMatchLog() {
+    const seen = _matchSeen; _matchSeen = null;
+    if (seen) seen.forEach((wh, key) => {
+      if (wh.length < 2) return;
+      const more = wh.slice(1).map(w => w.replace(/^track /, '')).sort((a, b) => a.localeCompare(b, undefined, { numeric: true }));
+      Log.cat('Artist').info(key, '— also on track' + (more.length === 1 ? '' : 's'), more.join(', '));
+    });
+  }
+  const trackWhere = t => 'track ' + (t.number || (t.ti + 1));
+  async function matchSlot(creditedAs, sib, discogsUrl, contextGids, pos, platUrl, where) {
     const why = { at: Date.now() };
-    const m = await matchSlotCore(creditedAs, sib, discogsUrl, contextGids, pos, why, platUrl);
+    const m = await matchSlotCore(creditedAs, sib, discogsUrl, contextGids, pos, why, platUrl, where);
     m.why = why;
     return m;
   }
-  async function matchSlotCore(creditedAs, sib, discogsUrl, contextGids, pos, why, platUrl) {
+  async function matchSlotCore(creditedAs, sib, discogsUrl, contextGids, pos, why, platUrl, where) {
     const who = creditedAs || '(track artist)';
     let posInfo = null;   // { of, artists: [{ entity, votes }] } — kept on the slot for the picker's section
     // #224: a Discogs artist-link match outranks the name search.
@@ -2182,14 +2209,14 @@ click to open the label`;
       why.discogs = { url: discogsUrl, n: hits ? hits.length : null };
       if (hits && hits.length === 1) {
         const e = await fetchEntity(hits[0].gid);
-        if (e && e.gid) { Log.cat('Artist').info(who, '→', e.name, '— via Discogs URL'); return { entity: e, source: 'discogs', confidence: 'high', candidates: [e] }; }
+        if (e && e.gid) { matchLog(where, who, '→', e.name, '— via Discogs URL'); return { entity: e, source: 'discogs', confidence: 'high', candidates: [e] }; }
       } else if (hits && hits.length > 1) {
         // ambiguous — surface every linked artist plus the name-search hits and let the user pick
         const named = await searchArtist(creditedAs);
         const ents = [];
         for (const h of hits) { const e = await fetchEntity(h.gid); if (e && e.gid) ents.push(e); }
         const merged = [...ents, ...named.filter(c => !ents.some(e => e.gid === (c.gid || c.id)))];
-        if (ents.length) { Log.cat('Artist').info(who, '—', ents.length, 'MB artists link that Discogs URL; pick one'); return { entity: ents[0], source: 'discogs', confidence: 'low', candidates: merged }; }
+        if (ents.length) { matchLog(where, who, '—', ents.length, 'MB artists link that Discogs URL; pick one'); return { entity: ents[0], source: 'discogs', confidence: 'low', candidates: merged }; }
       }
       // couldn't resolve via the URL → fall back to name search. 0 hits = the
       // Discogs URL the release credits isn't linked to any MB artist (e.g. the
@@ -2204,13 +2231,13 @@ click to open the label`;
       why.plat = { url: platUrl, abbr: p.abbr, name: p.name, n: hits ? hits.length : null };
       if (hits && hits.length === 1) {
         const e = await fetchEntity(hits[0].gid);
-        if (e && e.gid) { Log.cat('Artist').info(who, '→', e.name, '— via', p.name, 'link', platUrl); return { entity: e, source: 'plat', confidence: 'high', candidates: [e] }; }
+        if (e && e.gid) { matchLog(where, who, '→', e.name, '— via', p.name, 'link', platUrl); return { entity: e, source: 'plat', confidence: 'high', candidates: [e] }; }
       } else if (hits && hits.length > 1) {
         const named = await searchArtist(creditedAs);
         const ents = [];
         for (const h of hits) { const e = await fetchEntity(h.gid); if (e && e.gid) ents.push(e); }
         const merged = [...ents, ...named.filter(c => !ents.some(e => e.gid === (c.gid || c.id)))];
-        if (ents.length) { Log.cat('Artist').info(who, '—', ents.length, 'MB artists link', p.name, platUrl + '; pick one'); return { entity: ents[0], source: 'plat', confidence: 'low', candidates: merged }; }
+        if (ents.length) { matchLog(where, who, '—', ents.length, 'MB artists link', p.name, platUrl + '; pick one'); return { entity: ents[0], source: 'plat', confidence: 'low', candidates: merged }; }
       }
       if (hits && hits.length === 0) Log.cat('Artist').debug(who, '—', p.name, 'link', platUrl, 'not in MusicBrainz → the next stages');
       else if (hits == null) Log.cat('Artist').debug(who, '—', p.name, 'link lookup unavailable → the next stages');
@@ -2238,11 +2265,11 @@ click to open the label`;
       if (ents.length) posInfo = { of: posRes.of, artists: ents, editions: posRes.editions || [] };
       if (ents.length === 1) {
         const e = ents[0].entity;
-        Log.cat('Artist').info(who, '→', e.name, `— via the same position on ${ents[0].votes} of ${posRes.of} other edition${posRes.of === 1 ? '' : 's'}`);
+        matchLog(where, who, '→', e.name, `— via the same position on ${ents[0].votes} of ${posRes.of} other edition${posRes.of === 1 ? '' : 's'}`);
         return { entity: e, source: 'pos', confidence: 'high', candidates: [e, ...candidates.filter(c => (c.gid || c.id) !== e.gid)], pos: posInfo };
       }
       if (ents.length > 1) {
-        Log.cat('Artist').info(who, '— other editions credit', ents.length, 'different matching artists at this position (' + ents.map(x => x.entity.name + ' ×' + x.votes).join(', ') + '); pick one');
+        matchLog(where, who, '— other editions credit', ents.length, 'different matching artists at this position (' + ents.map(x => x.entity.name + ' ×' + x.votes).join(', ') + '); pick one');
         candidates = [...ents.map(x => x.entity), ...candidates.filter(c => !ents.some(x => x.entity.gid === (c.gid || c.id)))];
       }
     }
@@ -2261,7 +2288,7 @@ click to open the label`;
       why.ident = aliasSeen(creditedAs) || { status: 'unknown' };
       if (idHit && idHit.entity && idHit.entity.gid) {
         const e = idHit.entity, rest = candidates.filter(c => (c.gid || c.id) !== e.gid);
-        Log.cat('Artist').info(who, '→', e.name, idHit.via === 'alias' ? '— via exact alias' : '— via name (exact)');
+        matchLog(where, who, '→', e.name, idHit.via === 'alias' ? '— via exact alias' : '— via name (exact)');
         return { entity: e, source: idHit.via === 'alias' ? 'alias' : 'search', confidence: 'high', candidates: [e, ...rest], pos: posInfo };
       }
       // #437: no unique exact identity → try credit co-occurrence against the release's known
@@ -2270,7 +2297,7 @@ click to open the label`;
         const cred = await resolveByCredit(creditedAs, contextGids);
         why.cred = { counts: cred.counts || [], ctx: cred.ctx || 0 };
         if (cred.entity) {
-          Log.cat('Artist').info(who, '→', cred.entity.name, '— via existing artist credits');
+          matchLog(where, who, '→', cred.entity.name, '— via existing artist credits');
           return { entity: cred.entity, source: 'cred', confidence: 'high', candidates: [cred.entity, ...candidates.filter(c => (c.gid || c.id) !== cred.entity.gid)], pos: posInfo };
         }
         if (cred.candidates.length) { candidates = [...cred.candidates, ...candidates.filter(c => !cred.candidates.some(e => e.gid === (c.gid || c.id)))]; top = candidates[0]; }
@@ -2289,6 +2316,7 @@ click to open the label`;
     const tracks = [];
     const todo = tl.filter(t => t.names.some(n => !n.artistGid));
     let done = 0;
+    startMatchLog();
     for (let ti = 0; ti < tl.length; ti++) {
       const t = tl[ti];
       const sib = siblings.get(fold(t.title)) || null;
@@ -2300,7 +2328,7 @@ click to open the label`;
         else {
           const ctxGids = [...new Set(slots.map(s => s.gid).filter(Boolean).concat(releaseArtistGids()))].filter(coCreditCtx).slice(0, 6);   // #437 co-artists so far + release artist(s), never special-purpose (#618)
           const dUrl = (durls && durls[i]) || discogsFeatUrlFor(dmap, t.title, ti, tl.length, n.creditedAs);   // #442 fall back to the Discogs "Featuring" credit for a feat slot
-          const m = await matchSlot(n.creditedAs, sib && pickSibArtist(sib, n.creditedAs, i), dUrl, ctxGids, undefined, fcCreditUrl((fcTrackFor(t) || {}).credit, i, n.creditedAs, t.names.length));
+          const m = await matchSlot(n.creditedAs, sib && pickSibArtist(sib, n.creditedAs, i), dUrl, ctxGids, undefined, fcCreditUrl((fcTrackFor(t) || {}).credit, i, n.creditedAs, t.names.length), trackWhere(t));
           const status = slotStatusOf(m);
           const slot = { creditedAs: n.creditedAs, joinPhrase: n.joinPhrase, status, entity: m.entity, gid: m.entity ? m.entity.gid : null, name: m.entity ? m.entity.name : '', candidates: m.candidates, committed: false, _pos: m.pos || null, _why: m.why || null };
           await tagDiscogsAddable(slot, dUrl);   // #227
@@ -2313,6 +2341,7 @@ click to open the label`;
       tracks.push(te);
       if (t.names.some(n => !n.artistGid)) { done++; if (onProgress) onProgress(done, todo.length); }
     }
+    endMatchLog();
     return { tracks };
   }
 
@@ -2404,6 +2433,7 @@ click to open the label`;
     setMatching(true);
     // hoisted out of the try so the finally can report how far it got (#577)
     let stopped = false, done = 0, planned = 0;
+    startMatchLog();
     try {
       const siblings = await loadSiblingMap();
       const dmap = await loadDiscogsMap();
@@ -2439,7 +2469,7 @@ click to open the label`;
             const s = t.slots[i]; if (!s._pending) continue;
             if (s._editing) { Log.cat('Artist').debug('slot skipped — the user is editing it'); continue; }   // #580: stays _pending, so leaving the field lets a later pass have it
             const dUrl = (durls && durls[i]) || discogsFeatUrlFor(dmap, t.title, ti, total, s.creditedAs);   // #442 fall back to the Discogs "Featuring" credit for a feat slot
-            const m = await matchSlot(s.creditedAs, sib && pickSibArtist(sib, s.creditedAs, i), dUrl, slotContextGids(t, i), () => positionArtists(t, s.creditedAs), fcPlatformUrl(t, i, s.creditedAs));   // #437, #626, #651
+            const m = await matchSlot(s.creditedAs, sib && pickSibArtist(sib, s.creditedAs, i), dUrl, slotContextGids(t, i), () => positionArtists(t, s.creditedAs), fcPlatformUrl(t, i, s.creditedAs), trackWhere(t));   // #437, #626, #651
             Object.assign(s, { status: slotStatusOf(m), entity: m.entity, gid: m.entity ? m.entity.gid : null, name: m.entity ? m.entity.name : '', candidates: m.candidates, _pos: m.pos || null, _why: m.why || null }); delete s._pending;
             await tagDiscogsAddable(s, dUrl);   // #227
           }
@@ -2453,6 +2483,7 @@ click to open the label`;
         }
       };
       await Promise.all(Array.from({ length: Math.min(MATCH_LANES, todo.length) }, lane));
+      endMatchLog();
       if (!isEditing()) rerender();
       // #577: say so, and say what survived — a silent stop looks like a crash.
       // Announced before the finally's refreshStatus, which would overwrite it,
@@ -2462,6 +2493,7 @@ click to open the label`;
       // looked like the whole thing finishing while artists were still resolving.
       else if (planned) Log.cat('Artist').info('tracklist match: ' + planned + ' track' + (planned === 1 ? '' : 's') + ' matched — Discogs link checks and alias enrichment continue in the background');
     } finally {
+      endMatchLog();   // a no-op once the pass summed up; covers a pass that threw
       setMatching(false);
       refreshStatus();   // set the final per-medium badges once the pass is done
       if (stopped) updateStatus('matching stopped — ' + done + '/' + planned + ' done, the rest are still unmatched');
@@ -5152,7 +5184,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     slot.creditedAs = on.creditedAs; slot.joinPhrase = on.joinPhrase; slot.query = null;
     const a = u(on.artist) || {}, gid = u(a.gid);
     if (gid) Object.assign(slot, { status: 'set', gid, name: u(a.name), entity: { gid, name: u(a.name), id: u(a.id) }, candidates: [], committed: true });
-    else { const sib = (await loadSiblingMap()).get(fold(entry.title)); const durls = (await loadDiscogsMap())?.get(fold(entry.title)); const pUrl = fcPlatformUrl(entry, i, on.creditedAs); const m = await matchSlot(on.creditedAs, sib && pickSibArtist(sib, on.creditedAs, i), durls && durls[i], slotContextGids(slot._entry, i), () => positionArtists(entry, on.creditedAs), pUrl); Object.assign(slot, { status: slotStatusOf(m), entity: m.entity, gid: m.entity ? m.entity.gid : null, name: m.entity ? m.entity.name : '', candidates: m.candidates, _pos: m.pos || null, _why: m.why || null, committed: false }); await tagDiscogsAddable(slot, durls && durls[i]); await tagPlatformAddable(slot, pUrl); }
+    else { const sib = (await loadSiblingMap()).get(fold(entry.title)); const durls = (await loadDiscogsMap())?.get(fold(entry.title)); const pUrl = fcPlatformUrl(entry, i, on.creditedAs); const m = await matchSlot(on.creditedAs, sib && pickSibArtist(sib, on.creditedAs, i), durls && durls[i], slotContextGids(slot._entry, i), () => positionArtists(entry, on.creditedAs), pUrl, trackWhere(entry)); Object.assign(slot, { status: slotStatusOf(m), entity: m.entity, gid: m.entity ? m.entity.gid : null, name: m.entity ? m.entity.name : '', candidates: m.candidates, _pos: m.pos || null, _why: m.why || null, committed: false }); await tagDiscogsAddable(slot, durls && durls[i]); await tagPlatformAddable(slot, pUrl); }
     commitTrack(entry); Log.cat('Artist').info('reverted slot', i, 'of track', entry.number); rerender();
   }
 
