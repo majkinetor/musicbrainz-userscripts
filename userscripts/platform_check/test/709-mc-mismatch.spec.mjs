@@ -2,6 +2,8 @@
 // gives every reason against the link, a different track count first: "10 tracks, the release
 // has 13 · barcode not confirmed", where it used to say only "barcode not confirmed". The
 // reasons that say it is another release are in mismatch, which MC marks and take all in skips.
+// #712: the format is compared by medium (CD, vinyl, cassette, MiniDisc, digital), so a vinyl album
+// on a CD release is a mismatch too.
 import { test, check } from '../../../dev/test/harness.mjs';
 
 test.use({ gm: { name: 'Platform Check', values: { 'pc:barcode-mode': 'strict' } } });
@@ -30,6 +32,6 @@ test('#709: the MC finding says the track count and format', { tag: ['@sandbox']
   check(r.yt.state === 'withheld' && r.yt.tracks === r.n - 3 && r.yt.mbTracks === r.n, 'YouTube Music carries its track count and the release\'s');
   check(r.yt.why === [short, dig, bc].join(' · ') && r.yt.mismatch.join() === [short, dig].join(), `its why leads with the track count, then the format (${r.yt.why})`);
   check(r.am.why === [dig, bc].join(' · ') && r.am.mismatch.join() === dig, `a matching track count adds nothing (${r.am.why})`);
-  check(r.vinyl.format === 'Vinyl' && r.vinyl.why === bc && !r.vinyl.mismatch, `vinyl on a CD is physical too: no mismatch (${r.vinyl.why})`);
+  check(r.vinyl.format === 'Vinyl' && r.vinyl.mismatch.join() === 'Vinyl, the release is CD' && r.vinyl.why === ['Vinyl, the release is CD', bc].join(' · '), `#712: vinyl on a CD is another medium (${r.vinyl.why})`);
   check(r.digital.mismatch.join() === dig && r.digital.why === [dig, bc].join(' · '), `a digital Bandcamp album on a CD says so once, not again as "format not confirmed" (${r.digital.why})`);
 });

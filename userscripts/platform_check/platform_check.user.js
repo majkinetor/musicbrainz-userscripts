@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Platform Check
 // @namespace    http://tampermonkey.net/
-// @version      2026.10.10.3
+// @version      2026.10.10.4
 // @description  Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CjxnIHN0cm9rZT0iIzk0YTNiOCIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2UtbGluZWNhcD0icm91bmQiPjxwYXRoIGQ9Ik02NCA2NCBMODggMjIuNCIvPjxwYXRoIGQ9Ik02NCA2NCBMMTEyIDY0Ii8+PHBhdGggZD0iTTY0IDY0IEw4OCAxMDUuNiIvPjxwYXRoIGQ9Ik02NCA2NCBMNDAgMTA1LjYiLz48cGF0aCBkPSJNNjQgNjQgTDE2IDY0Ii8+PHBhdGggZD0iTTY0IDY0IEw0MCAyMi40Ii8+PC9nPjxjaXJjbGUgY3g9Ijg4IiBjeT0iMjIuNCIgcj0iMTIiIGZpbGw9IiNmNDcyYjYiLz48Y2lyY2xlIGN4PSIxMTIiIGN5PSI2NCIgcj0iMTIiIGZpbGw9IiNmYWNjMTUiLz48Y2lyY2xlIGN4PSI4OCIgY3k9IjEwNS42IiByPSIxMiIgZmlsbD0iIzRhZGU4MCIvPjxjaXJjbGUgY3g9IjQwIiBjeT0iMTA1LjYiIHI9IjEyIiBmaWxsPSIjMzhiZGY4Ii8+PGNpcmNsZSBjeD0iMTYiIGN5PSI2NCIgcj0iMTIiIGZpbGw9IiNhNzhiZmEiLz48Y2lyY2xlIGN4PSI0MCIgY3k9IjIyLjQiIHI9IjEyIiBmaWxsPSIjZmI5MjNjIi8+PGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iMjQiIGZpbGw9IiMwZjE3MmEiLz48cGF0aCBkPSJNNTQuMjIyMjIyMjIyMjIyMjIgNjQgTDYxLjMzMzMzMzMzMzMzMzMzNiA3MS4xMTExMTExMTExMTExMSBMNzQuNjY2NjY2NjY2NjY2NjcgNTYuODg4ODg4ODg4ODg4ODg2IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iNiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+Cjwvc3ZnPgo=
@@ -3369,12 +3369,17 @@ let MB_FORMAT = null;
 // means "Digital" for the check (otherwise strict mode would withhold every
 // streaming link). Those two are excluded and judged on their actual format.
 const DIGITAL_ONLY_PROVIDERS = new Set(['spotify', 'apple', 'deezer', 'tidal', 'qobuz', 'beatport', 'volumo', 'hdtracks', 'sevendigital', 'soundcloud', 'audiomack', 'ytmusic', 'amazonmusic']);
-// Bucket a format string into {physical, digital} categories. A multi-format
-// string ("Digital, CD") yields both; an unknown/empty string yields neither.
+// The media a format string names: CD, vinyl, cassette, MiniDisc or digital. A different medium
+// is a different MB release, so vinyl on a CD release is a mismatch (#709); DVD and Blu-ray count
+// as CD, as MB files them. A multi-format string ("2×CD + DVD", "Digital, CD") yields each one;
+// an unknown/empty string yields none, so nothing is judged.
 function formatCategories(s) {
     const t = String(s || '').toLowerCase();
     const cats = new Set();
-    if (/\b(cd|vinyl|cassette|sacd|dvd|blu-?ray|flexi|minidisc|lp|shm|7"|10"|12")\b/.test(t)) cats.add('physical');
+    if (/\b(cd|cd-?r|sacd|hdcd|shm|blu-?spec|dualdisc|compact disc|dvd|blu-?ray)\b/.test(t)) cats.add('CD');
+    if (/\b(vinyl|lp|flexi(-?disc)?)\b|(^|[^\d])(7|10|12)("|''|″| ?inch)/.test(t)) cats.add('vinyl');
+    if (/\b(cassette|tape)\b/.test(t)) cats.add('cassette');
+    if (/\b(minidisc|md)\b/.test(t)) cats.add('MiniDisc');
     if (/\b(digital|file|stream|lossless|web|wav|flac|mp3|aac|hi-?res)\b/.test(t)) cats.add('digital');
     return cats;
 }
@@ -7810,7 +7815,7 @@ function pcNoteFoundBarcode(p, barcode, format) {
     pcShowFoundBarcodes();
 }
 // One entry per barcode (UPC-A and its EAN-13 form are one), the platforms that report
-// it, and how its format sits with the release's (physical or digital, as link confidence
+// it, and how its format sits with the release's (its medium, as link confidence
 // sees it): 'same' when one of them is in a format the release has, 'other' when every one
 // is in a format it hasn't, else 'unknown'. The ones in the release's format first, then
 // the most reported.

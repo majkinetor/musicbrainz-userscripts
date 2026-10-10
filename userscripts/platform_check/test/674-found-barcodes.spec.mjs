@@ -66,7 +66,7 @@ test('the barcodes the platforms report are offered, and picking one uses it', {
   await page.click('#mb-found-bc');
   const pop = await page.evaluate(() => [...document.querySelectorAll('#pc-bc-pop .pc-bc-opt')].map(o => ({ code: o.dataset.code, text: o.textContent.replace(/\s+/g, ' ').trim() })));
   check(pop.length === 1 && pop[0].code === CODE && /Deezer/.test(pop[0].text), `the list has it, with who reports it (${JSON.stringify(pop)})`);
-  check(/digital: this release is physical/.test(pop[0].text), 'a digital barcode on a CD is flagged');
+  check(/digital: this release is CD/.test(pop[0].text), 'a digital barcode on a CD is flagged');
   const fit = await page.evaluate(() => { const r = document.getElementById('pc-bc-pop').getBoundingClientRect(); return { right: r.right, bottom: r.bottom, w: document.documentElement.clientWidth, h: document.documentElement.clientHeight }; });
   check(fit.right <= fit.w && fit.bottom <= fit.h, `the list stays clear of the scrollbar and the window's edge (${JSON.stringify(fit)})`);
   const onMb = await until(() => page.evaluate(() => { const l = document.querySelector('#pc-bc-pop .pc-bc-mb'); return l && !/checking/.test(l.textContent) ? { text: l.textContent, href: l.querySelector('a')?.href || '' } : null; }), Boolean);
