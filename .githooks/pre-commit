@@ -117,7 +117,7 @@ fi
 ST_MEMBERS=$(sed 's/#.*//' userscripts/string_theory/members.txt 2>/dev/null | tr -d '[:blank:]' | grep -v '^$' | paste -sd '|' -)
 if [ -n "$ST_MEMBERS" ] && { printf '%s\n' "$STAGED" | grep -qE "^userscripts/($ST_MEMBERS)/.+\.user\.js$" \
    || printf '%s\n' "$STAGED" | grep -qE "^userscripts/($ST_MEMBERS)/README\.md$" \
-   || printf '%s\n' "$STAGED" | grep -qE '^userscripts/string_theory/(build\.mjs|icon\.svg|members\.txt)$'; }; then
+   || printf '%s\n' "$STAGED" | grep -qE '^userscripts/string_theory/(build\.mjs|match\.mjs|icon\.svg|members\.txt)$'; }; then
     echo "[pre-commit] rebuilding userscripts/string_theory/…"
     node userscripts/string_theory/build.mjs >/dev/null
     git add userscripts/string_theory/string_theory.user.js userscripts/string_theory/DOCS.md
