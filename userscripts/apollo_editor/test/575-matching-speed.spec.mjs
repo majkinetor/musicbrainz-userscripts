@@ -188,8 +188,10 @@ test.describe('round 4: Stop answers at once', () => {
 });
 
 test.describe('round 5: no resync storm', () => {
-  // auto-match off: his setup, a manual Match
-  test.use({ gm: apolloGm({ apolloEnabled: true, autoMatch: false, autoMatchRec: false, autoMatchLabel: true, autoMatchArtist: true, discogsUrlMatch: true }) });
+  // auto-match off: his setup, a manual Match. The log's debug switch is on: the
+  // "resync deferred" lines this counts are debug lines, off by default since #705.
+  const gm = apolloGm({ apolloEnabled: true, autoMatch: false, autoMatchRec: false, autoMatchLabel: true, autoMatchArtist: true, discogsUrlMatch: true });
+  test.use({ gm: { ...gm, values: { ...gm.values, 'apolloEditor.logwin': JSON.stringify({ debug: true }) } } });
 
   test('a running pass keeps its status and its table', { tag: ['@sandbox', '@login'] }, async ({ page, inject }) => {
     const submitted = await importAndHold(page, inject);

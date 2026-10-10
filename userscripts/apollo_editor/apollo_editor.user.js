@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.10.110000
+// @version      2026.10.10.150000
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5BcG9sbG8gRWRpdG9yPC90aXRsZT4KPG1hc2sgaWQ9ImFwLW0iIG1hc2tVbml0cz0idXNlclNwYWNlT25Vc2UiIHg9IjAiIHk9IjAiIHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4Ij48Zz48ZyBmaWxsPSIjZmZmIj48cGF0aCBkPSJNNDIgNjQgQzI4IDcyIDIyIDkwIDI0IDExMCBMNDIgOTggWiIvPjxwYXRoIGQ9Ik04NiA2NCBDMTAwIDcyIDEwNiA5MCAxMDQgMTEwIEw4NiA5OCBaIi8+PC9nPjxnIGZpbGw9IiNmZmYiPjxwYXRoIGQ9Ik02NCA4IEM4NCAyNCA5MCA1MiA4OCA5MCBMNDAgOTAgQzM4IDUyIDQ0IDI0IDY0IDggWiIvPjxwYXRoIGQ9Ik00OCA5MCBMODAgOTAgTDc2IDEwMCBMNTIgMTAwIFoiLz48L2c+PGcgc3Ryb2tlPSIjMDAwIiBzdHJva2Utd2lkdGg9IjMuNSI+PHBhdGggZD0iTTM2IDkwLjUgTDkyIDkwLjUiLz48L2c+PGNpcmNsZSBjeD0iNjQiIGN5PSI1MCIgcj0iOCIgZmlsbD0iIzAwMCIvPjwvZz48L21hc2s+PGc+PHBhdGggZD0iTTUyIDEwMCBDNTQgMTEyIDYwIDExOCA2NCAxMjYgQzY4IDExOCA3NCAxMTIgNzYgMTAwIFoiIGZpbGw9IiNlYjc0M2IiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDAgMykiLz48L2c+PHJlY3Qgd2lkdGg9IjEyOCIgaGVpZ2h0PSIxMjgiIGZpbGw9IiNiYTQ3OGYiIG1hc2s9InVybCgjYXAtbSkiLz4KPC9zdmc+Cg==
@@ -168,7 +168,7 @@
   const gmSave = (key, raw) => { try { GM_setValue(key, raw); } catch (e) {} };
   // first log line: the script + version. The MB release line is logged once the
   // editor is ready (so it carries the real title) — see init().
-  Log.info(mbuStartupInfo('Apollo Editor'));
+  Log.cat('System').info(mbuStartupInfo('Apollo Editor'));
 
   const W = (typeof unsafeWindow !== 'undefined' && unsafeWindow) || window;
   const ORIGIN = location.origin;
@@ -305,7 +305,7 @@
     const d = e.data; if (!d || d.type !== 'tc-artist-created') return;
     const pend = _pendingCreates.get(d.token); if (!pend) return;
     _pendingCreates.delete(d.token);
-    if (!d.gid) { Log.warn('artist created but no gid came back'); return; }
+    if (!d.gid) { Log.cat('Create').warn('artist created but no gid came back'); return; }
     // The postMessage can only carry a plain {gid,name,id}, but commitTrack writes
     // `artist: <entity>` into the NATIVE artist credit — and MB only treats it as a
     // real linked artist when it's the WHOLE entity (the same shape fetchEntity / the
@@ -317,7 +317,7 @@
       else pickArtist(pend.slot, ent || { gid: d.gid, name: d.name, id: d.id });
       // #273: close the background create tab via its handle (a GM-opened tab can't always self-close).
       try { if (pend.bgTab && typeof pend.bgTab.close === 'function') pend.bgTab.close(); } catch (x) {}
-      Log.info('inserted newly-created artist', JSON.stringify(d.name), 'into the table' + (ent ? '' : ' (plain fallback — native link may be incomplete)'));
+      Log.cat('Create').info('inserted newly-created artist', JSON.stringify(d.name), 'into the table' + (ent ? '' : ' (plain fallback — native link may be incomplete)'));
     });
   });
 
@@ -407,7 +407,7 @@
   function snapshotOriginals() {
     ORIGINALS.clear();
     mediums().forEach((med, mi) => (u(med.tracks) || []).forEach((t, ti) => ORIGINALS.set(origKeyOf(mi, t, ti), snapTrack(t))));
-    Log.info('snapshot of', ORIGINALS.size, 'original tracks');
+    Log.cat('System').info('snapshot of', ORIGINALS.size, 'original tracks');
   }
   // MB lazy-loads each medium's tracks asynchronously, so the startup snapshot misses mediums that
   // hadn't loaded yet. Capture the page-load state of any track that appears later — before matching
@@ -415,7 +415,7 @@
   function snapshotMissing() {
     let added = 0;
     mediums().forEach((med, mi) => (u(med.tracks) || []).forEach((t, ti) => { const k = origKeyOf(mi, t, ti); if (!ORIGINALS.has(k)) { ORIGINALS.set(k, snapTrack(t)); added++; } }));
-    if (added) Log.info('snapshot +', added, 'newly loaded original track(s) →', ORIGINALS.size, 'total');
+    if (added) Log.cat('System').info('snapshot +', added, 'newly loaded original track(s) →', ORIGINALS.size, 'total');
   }
 
   function readTracklist() {
@@ -434,7 +434,7 @@
     try { const j = await fetch(`${ORIGIN}/ws/js/entity/${gid}`, { headers: { Accept: 'application/json' } }).then(r => r.json());
       // return the WHOLE entity (like a search hit) so the credit write-back has every field it needs
       if (j && j.gid) { if (!j.entityType) j.entityType = kind || 'artist'; return j; } }
-    catch (e) { Log.warn('fetch entity failed', gid, e.message); }
+    catch (e) { Log.cat(kind === 'label' ? 'Label' : 'Artist').warn('fetch entity failed', gid, e.message); }
     return null;
   }
   async function searchArtist(name, limit) {
@@ -443,7 +443,7 @@
     if (_cache.has(k)) return _cache.get(k);
     let list = [];
     try { const j = await fetch(`${ORIGIN}/ws/js/artist?q=${encodeURIComponent(name)}&limit=${limit}&direct=false`, { headers: { Accept: 'application/json' } }).then(r => r.json()); list = Array.isArray(j) ? j : (j.results || []); }
-    catch (e) { Log.warn('search failed:', name, e.message); }
+    catch (e) { Log.cat('Artist').warn('search failed:', name, e.message); }
     list = list.filter(c => c && (c.name || '').trim());   // drop the trailing empty placeholder entry
     list.forEach(c => noteDisamb(c.gid || c.id, c.comment));   // cache disambiguations for the table after a pick (#195)
     _cache.set(k, list); return list;
@@ -470,13 +470,13 @@
     // a throttled lookup must NOT be cached as "no match" — that would freeze a
     // transient 503 into a permanent auto-match failure for this name (#555)
     const res = await wsJson(`${ORIGIN}/ws/2/${kind}?query=${encodeURIComponent(q)}&fmt=json&limit=${MBM_EXACT_LIMIT}`, { label: kind + ' alias search' });
-    if (!res.json) { Log.warn('alias search failed:', name, '— not cached, a later pass retries'); return null; }
+    if (!res.json) { Log.cat(kind === 'label' ? 'Label' : 'Artist').warn('alias search failed:', name, '— not cached, a later pass retries'); return null; }
     // #613: unique only when MB returned EVERY match. The search doesn't rank exact holders
     // first — `artist:"kim"` matches 2,777 artists and the one exact "Kim" among the first 25
     // was taken as unique. A common name that can't be proven unique stays a candidate.
     const idn = mbmExactIdentity(res.json, name);
-    Log.debug(kind + ' alias search:', JSON.stringify(name), '→', (res.json.artists || res.json.labels || []).length, 'of', res.json.count, 'match(es),', idn.exact.length, 'exact —', idn.status);
-    if (idn.status === 'incomplete' && idn.exact.length) Log.info('Match:', JSON.stringify(name), '— one exact name/alias seen, but', res.json.count, 'artists match; not provably unique → left to pick (#613)');
+    Log.cat(kind === 'label' ? 'Label' : 'Artist').debug(kind + ' alias search:', JSON.stringify(name), '→', (res.json.artists || res.json.labels || []).length, 'of', res.json.count, 'match(es),', idn.exact.length, 'exact —', idn.status);
+    if (idn.status === 'incomplete' && idn.exact.length) Log.cat(kind === 'label' ? 'Label' : 'Artist').info(JSON.stringify(name), '— one exact name/alias seen, but', res.json.count, 'artists match; not provably unique → left to pick');
     _aliasSeen.set(key, { status: idn.status, exact: idn.exact.length, count: res.json.count, via: idn.via || null });   // #654: the tooltip says why it was or wasn't unique
     let out = null;   // unambiguous only
     if (idn.status === 'unique') {
@@ -532,19 +532,19 @@
         if (hits && hits.length === 1) {
           const ent = await fetchEntity(hits[0].gid, 'label');
           if (ent && ent.gid) {
-            try { set(ent, { status: p.abbr === 'disc' ? 'disc' : 'plat', abbr: p.abbr, title: `matched by its ${p.name} link: ${url}` }); Log.info('Label match:', name, '→', ent.name, '(' + ent.gid + ') — via', p.name, 'link', url); continue; }
-            catch (e) { Log.warn('label set failed', name, e.message); }
+            try { set(ent, { status: p.abbr === 'disc' ? 'disc' : 'plat', abbr: p.abbr, title: `matched by its ${p.name} link: ${url}` }); Log.cat('Label').info(name, '→', ent.name, '(' + ent.gid + ') — via', p.name, 'link', url); continue; }
+            catch (e) { Log.cat('Label').warn('label set failed', name, e.message); }
           }
-        } else Log.debug('Label:', name, '—', p.name, 'link', url, hits == null ? 'lookup unavailable' : hits.length ? hits.length + ' labels have it' : 'not in MusicBrainz', '→ the name');
+        } else Log.cat('Label').debug(name, '—', p.name, 'link', url, hits == null ? 'lookup unavailable' : hits.length ? hits.length + ' labels have it' : 'not in MusicBrainz', '→ the name');
       }
       // #623 (sweep, A5): "exactly one exact hit" was judged on the first 8 search results,
       // which don't rank exact matches first — a second label of that name further down was
       // invisible. The same rule as track artists now: unique by name or alias among ALL
       // matches (#613), else left for a human.
       const idHit = await resolveByExactAlias(name, 'label');
-      if (!idHit) { Log.info('Label:', name, '— no unique exact MB label (name or alias) — left unset'); continue; }
-      try { set(idHit.entity, { status: idHit.via === 'alias' ? 'alias' : 'high', title: idHit.via === 'alias' ? 'the only MusicBrainz label with this name as an alias' : 'the only MusicBrainz label with this name' }); Log.info('Label match:', name, '→', idHit.entity.name, '(' + idHit.entity.gid + ')'); }
-      catch (e) { Log.warn('label set failed', name, e.message); }
+      if (!idHit) { Log.cat('Label').info(name, '— no unique exact MB label (name or alias) — left unset'); continue; }
+      try { set(idHit.entity, { status: idHit.via === 'alias' ? 'alias' : 'high', title: idHit.via === 'alias' ? 'the only MusicBrainz label with this name as an alias' : 'the only MusicBrainz label with this name' }); Log.cat('Label').info(name, '→', idHit.entity.name, '(' + idHit.entity.gid + ')'); }
+      catch (e) { Log.cat('Label').warn('label set failed', name, e.message); }
     }
     renderRiLabels();
     if (linked) toast(linked === 1 ? ('✓ Label matched: ' + lastName) : ('✓ Auto-matched ' + linked + ' labels'));
@@ -593,7 +593,7 @@
       rels = rels.concat((dups || []).map(r => Object.assign({ _from: 'dup' }, r)));
       res = riTallyEditions(rels, creditedAs, self);
     }
-    Log.debug('release artist editions:', JSON.stringify(creditedAs), '—', res.of, 'edition(s);', res.artists.length ? res.artists.map(a => a.name + ' ×' + a.votes).join(', ') : 'none credit a matching name');
+    Log.cat('Artist').debug('release artist editions:', JSON.stringify(creditedAs), '—', res.of, 'edition(s);', res.artists.length ? res.artists.map(a => a.name + ' ×' + a.votes).join(', ') : 'none credit a matching name');
     return res.artists.length ? res : null;
   }
   // write one name of the release artist credit, keeping the others as they are
@@ -602,14 +602,14 @@
     if (!names[i]) return false;
     const e = ent;
     const out = names.map((n, j) => ({ artist: j === i ? e : u(n.artist), name: u(n.name) || '', joinPhrase: u(n.joinPhrase) || '' }));
-    try { rel.artistCredit({ names: out }); return true; } catch (x) { Log.warn('release artist: writing', ent && ent.name, 'failed —', x.message); return false; }
+    try { rel.artistCredit({ names: out }); return true; } catch (x) { Log.cat('Artist').warn('release artist: writing', ent && ent.name, 'failed —', x.message); return false; }
   }
   // the user's pick (a candidate, or an artist just created) into name i
   async function riPick(i, ent, how) {
     if (ent && ent.gid && !ent.id) ent = (await fetchEntity(ent.gid)) || ent;
     const ps = _riArt[i]; if (!ent || !ent.gid || !ps) return;
     pickArtist(ps, ent);   // the cell's own pick: writes the whole credit through riCommit
-    Log.info('Release artist', i + 1, '→', ent.name, '(' + ent.gid + ')', how || 'picked');
+    Log.cat('Artist').info('Release artist', i + 1, '→', ent.name, '(' + ent.gid + ')', how || 'picked');
     await riRetag();
   }
   /* #652: the release Artist field IS the Tracklist's artist cell. MusicBrainz's box, its Edit
@@ -638,7 +638,7 @@
     });
     if (!_riArt.length) _riArt = [{ creditedAs: '', joinPhrase: '', status: 'none', entity: null, gid: null, name: '', candidates: [], committed: false }];
     riBind(); _riCommittedKey = key;
-    Log.debug('release artist cell: read the credit', key);
+    Log.cat('Artist').debug('release artist cell: read the credit', key);
   }
   function riCommit(entry) {
     const rel = release(); if (!rel || typeof rel.artistCredit !== 'function') return;
@@ -650,9 +650,9 @@
       return { artist: { name: cr }, name: cr, joinPhrase: p.joinPhrase || '' };
     });
     _selfEdit = true;
-    try { rel.artistCredit({ names }); } catch (x) { Log.warn('release artist: writing the credit failed —', x.message); } finally { _selfEdit = false; }
+    try { rel.artistCredit({ names }); } catch (x) { Log.cat('Artist').warn('release artist: writing the credit failed —', x.message); } finally { _selfEdit = false; }
     _riCommittedKey = riLiveKey();
-    Log.info('release artist credit →', JSON.stringify(names.map(n => n.name + n.joinPhrase).join('')), '·', names.map(n => (n.artist && n.artist.gid) ? 'linked' : 'unlinked').join(', '));
+    Log.cat('Artist').info('release artist credit →', JSON.stringify(names.map(n => n.name + n.joinPhrase).join('')), '·', names.map(n => (n.artist && n.artist.gid) ? 'linked' : 'unlinked').join(', '));
   }
   async function matchReleaseArtist(manual) {
     if (SETTINGS.autoMatchArtist === false && !manual) return;
@@ -663,7 +663,7 @@
     const h = fcHandoff();
     if (h && h.credit) await resolvePlatformUrls(h.credit.map(a => a.url).filter(Boolean));   // one batched lookup
     const ctx = riContextGids();
-    Log.debug('release artist: matching', names.length, 'name(s);', relDisc ? 'Discogs artists known;' : '', h ? 'First Contact links known;' : '', ctx.length, 'track artist(s) as co-credit context');
+    Log.cat('Artist').debug('release artist: matching', names.length, 'name(s);', relDisc ? 'Discogs artists known;' : '', h ? 'First Contact links known;' : '', ctx.length, 'track artist(s) as co-credit context');
     let linked = 0, lastName = '';
     const state = [];
     _riMatching = true;   // the pass writes as it goes: the cell waits for the whole result
@@ -676,13 +676,13 @@
       if (was) Object.assign(ps, { status: was.status, entity: was.entity, candidates: was.candidates || [], _pos: was._pos || null, _why: was._why || null, _at: was._at });
       const durl = relDisc ? relDisc[i] : null, purl = h ? fcCreditUrl(h.credit, i, ps.creditedAs, names.length) : null;
       if (!gid && nm) {
-        const m = await matchSlot(nm, null, durl, ctx, () => riEditionArtists(nm), purl);
+        const m = await matchSlot(nm, null, durl, ctx, () => riEditionArtists(nm), purl, 'release artist');
         if (m.why && m.why.pos) m.why.pos.ri = true;
         Object.assign(ps, { status: slotStatusOf(m), entity: m.entity, gid: m.entity ? m.entity.gid : null, name: m.entity ? m.entity.name : '', candidates: m.candidates || [], _pos: m.pos || null, _why: m.why || null, _at: Date.now() });
         if (m.entity && autoCommittable(ps)) {
           const ent = m.entity.id ? m.entity : await fetchEntity(m.entity.gid);
-          if (ent && ent.id && riWriteArtist(i, ent)) { ps.committed = true; ps.entity = ent; linked++; lastName = ent.name; Log.info('Artist match:', nm, '→', ent.name, '(' + ent.gid + ') —', ps.status); }
-        } else Log.info('Artist:', nm, '—', m.entity ? 'uncertain, ' + m.entity.name + ' is the best candidate; left for you' : 'no match; left unset');
+          if (ent && ent.id && riWriteArtist(i, ent)) { ps.committed = true; ps.entity = ent; linked++; lastName = ent.name; Log.cat('Artist').info(nm, '→', ent.name, '(' + ent.gid + ') —', ps.status); }
+        } else Log.cat('Artist').info(nm, '—', m.entity ? 'uncertain, ' + m.entity.name + ' is the best candidate; left for you' : 'no match; left unset');
       }
       await tagDiscogsAddable(ps, durl);
       await tagPlatformAddable(ps, purl);
@@ -712,7 +712,7 @@
     if (th) { th.classList.add('tc-ri-artlbl'); td.style.setProperty('--tc-ri-lead-w', Math.max(80, th.getBoundingClientRect().width - 14) + 'px'); }
     if (!cell) {
       cell = document.createElement('div'); cell.className = 'tc-ri-art mbu-ui'; td.prepend(cell); td.classList.add('tc-ri-artcell');
-      Log.debug('release artist: the Tracklist cell replaces MusicBrainz\'s artist field');
+      Log.cat('Artist').debug('release artist: the Tracklist cell replaces MusicBrainz\'s artist field');
     }
     if (_riMatching || (!force && cell.contains(document.activeElement))) return;   // never rebuild under the user's caret; the next tick catches up
     riSyncSlots();
@@ -797,7 +797,7 @@ click to open the label`;
       if (!b._wired) {
         b._wired = true;
         b.addEventListener('mousedown', e => { e.preventDefault(); e.stopPropagation(); });
-        b.addEventListener('click', e => { e.preventDefault(); e.stopPropagation(); Log.debug('label badge: open', b.dataset.gid); if (b.dataset.gid) window.open(`${ORIGIN}/label/${b.dataset.gid}`, '_blank', 'noopener'); });
+        b.addEventListener('click', e => { e.preventDefault(); e.stopPropagation(); Log.cat('Label').debug('label badge: open', b.dataset.gid); if (b.dataset.gid) window.open(`${ORIGIN}/label/${b.dataset.gid}`, '_blank', 'noopener'); });
       }
       // the badge sits inside the field: reserve its room so it never covers the label's name
       const pr = Math.ceil(host.getBoundingClientRect().right - b.getBoundingClientRect().left) + 4;
@@ -825,7 +825,7 @@ click to open the label`;
     if (_labCache.has(k)) return _labCache.get(k);
     let list = [];
     try { const j = await fetch(`${ORIGIN}/ws/js/label?q=${encodeURIComponent(name)}&limit=${limit}&direct=false`, { headers: { Accept: 'application/json' } }).then(r => r.json()); list = Array.isArray(j) ? j : (j.results || []); }
-    catch (e) { Log.warn('label search failed:', name, e.message); return []; }
+    catch (e) { Log.cat('Label').warn('label search failed:', name, e.message); return []; }
     list = list.filter(c => c && c.gid && (c.name || '').trim());   // drop the trailing paging entry
     _labCache.set(k, list); return list;
   }
@@ -838,10 +838,10 @@ click to open the label`;
   async function riPickLabel(lf, c) {
     if (!lf || typeof lf.label !== 'function' || !c || !c.gid) return;
     const ent = c.id ? c : await fetchEntity(c.gid, 'label');
-    if (!ent || !ent.gid) { Log.warn('label pick: could not load', c.gid); return; }
+    if (!ent || !ent.gid) { Log.cat('Label').warn('label pick: could not load', c.gid); return; }
     let e = ent; try { if (W.MB && typeof W.MB.entity === 'function') e = W.MB.entity(ent, 'label'); } catch (x) {}
     lf.label(e); _riLab.delete(lf);
-    Log.info('Label picked:', ent.name, '(' + ent.gid + ')');
+    Log.cat('Label').info('Label picked:', ent.name, '(' + ent.gid + ')');
     renderRiLabels();
   }
   // switch the field to Apollo's search, or back to MusicBrainz's in the Original view
@@ -860,7 +860,7 @@ click to open the label`;
         if (!w._tcNoSuggest) { w._tcNoSuggest = true; const sug = w._suggest; w._suggest = function () { if (this.options.disabled) return; return sug.apply(this, arguments); }; }
       }
     }
-    catch (e) { Log.warn('label field: MusicBrainz\'s lookup could not be switched', on ? 'off' : 'on', '—', e.message); }
+    catch (e) { Log.cat('Label').warn('label field: MusicBrainz\'s lookup could not be switched', on ? 'off' : 'on', '—', e.message); }
     mbuCls(host, 'tc-ri-labhost', on);
     if (!on) { host.querySelectorAll(':scope > .tc-ri-labmk, :scope > .tc-ri-labdis').forEach(x => x.remove()); return; }
     if (!inp._tcLabWired) { inp._tcLabWired = true; wireLabelPicker(inp, host); }
@@ -872,7 +872,7 @@ click to open the label`;
       mk.oncontextmenu = e => { e.preventDefault(); e.stopPropagation(); go(true); };
       host.appendChild(mk);
     }
-    Log.debug('label field: Apollo\'s search replaces MusicBrainz\'s');
+    Log.cat('Label').debug('label field: Apollo\'s search replaces MusicBrainz\'s');
   }
   // the label's disambiguation, grey after its name, as on the artist bar
   function riLabelDisamb(inp, host, cur, badge) {
@@ -965,7 +965,7 @@ click to open the label`;
     for (let i = 0; i < uniq.length; i += 90) {
       const q = uniq.slice(i, i + 90).map(g => 'arid:' + g).join(' OR ');
       const res = await wsJson(`${ORIGIN}/ws/2/artist?query=${encodeURIComponent(q)}&limit=100&fmt=json`, { label: 'batch alias fetch' });
-      if (!res.json) { Log.warn('batch alias fetch failed for', uniq.slice(i, i + 90).length, 'artist(s)'); continue; }
+      if (!res.json) { Log.cat('Artist').warn('batch alias fetch failed for', uniq.slice(i, i + 90).length, 'artist(s)'); continue; }
       (res.json.artists || []).forEach(a => { cacheAliases(a.id, a.aliases || []); noteDisamb(a.id, a.disambiguation); });
     }
   }
@@ -995,7 +995,7 @@ click to open the label`;
   let _enrichT = 0;
   function enrichResolvedAliasesSoon() {
     clearTimeout(_enrichT);
-    _enrichT = setTimeout(() => { enrichResolvedAliases().catch(e => Log.warn('alias enrich failed', e.message)); }, 1200);
+    _enrichT = setTimeout(() => { enrichResolvedAliases().catch(e => Log.cat('Artist').warn('alias enrich failed', e.message)); }, 1200);
   }
   // the alias(es) to show next to a result: the English-locale one(s) if present, otherwise the first
   // alias — joined with ", " and capped so it never gets too long
@@ -1029,11 +1029,11 @@ click to open the label`;
     if (!rgGid) return Promise.resolve(null);
     if (_rgRelCache.has(rgGid)) return _rgRelCache.get(rgGid);
     const p = wsJson(`${ORIGIN}/ws/2/release?release-group=${rgGid}&inc=recordings+artist-credits&fmt=json&limit=100`, { label: 'release-group editions' }).then(res => {
-      if (!res.json) { _rgRelCache.delete(rgGid); Log.warn('release-group editions: lookup failed for', rgGid, '— not cached'); return null; }
+      if (!res.json) { _rgRelCache.delete(rgGid); Log.cat('MusicBrainz').warn('release-group editions: lookup failed for', rgGid, '— not cached'); return null; }
       const rels = res.json.releases || [];
-      Log.debug('release-group editions:', rels.length, 'release(s) in', rgGid);
+      Log.cat('MusicBrainz').debug('release-group editions:', rels.length, 'release(s) in', rgGid);
       return rels;
-    }, e => { _rgRelCache.delete(rgGid); Log.warn('release-group editions failed:', e.message); return null; });
+    }, e => { _rgRelCache.delete(rgGid); Log.cat('MusicBrainz').warn('release-group editions failed:', e.message); return null; });
     _rgRelCache.set(rgGid, p);
     return p;
   }
@@ -1048,19 +1048,19 @@ click to open the label`;
         const src = { gid: rel.id, title: rel.title || '', date: rel.date || '', format: med.format || '', pos: (med.position || 1) + '.' + (t.position || t.number || ''), track: t.title || (t.recording && t.recording.title) || '' };   // #654: the tooltip names it
         map.set(title, ac.map(x => ({ gid: x.artist.id, name: x.artist.name, creditedAs: x.name || x.artist.name, joinPhrase: x.joinphrase || '', src })));
       })));
-    } catch (e) { Log.warn('sibling load failed:', e.message); }
+    } catch (e) { Log.cat('Artist').warn('sibling load failed:', e.message); }
     return map;
   }
   let _sibCache = { gid: undefined, map: null };
   async function loadSiblingMap(force) {
     const rg = u(release().releaseGroup); const rgGid = rg ? u(rg.gid) : null;
-    if (!rgGid) { Log.info('no release group linked → search-only'); return new Map(); }
+    if (!rgGid) { Log.cat('Artist').info('no release group linked → search-only'); return new Map(); }
     if (!force && _sibCache.gid === rgGid && _sibCache.map && _sibCache.map.size) return _sibCache.map;
     let map = new Map();
     for (let i = 0; i < 3 && !map.size; i++) { if (i) await new Promise(r => setTimeout(r, 1100)); map = await fetchSiblings(rgGid); }
     _sibCache = { gid: rgGid, map };
-    if (map.size) Log.info('sibling map:', map.size, 'titles from RG', rgGid);
-    else Log.warn('sibling map empty (RG', rgGid + ') — search only; retries on rebuild');
+    if (map.size) Log.cat('Artist').info('sibling map:', map.size, 'titles from RG', rgGid);
+    else Log.cat('Artist').warn('sibling map empty (RG', rgGid + ') — search only; retries on rebuild');
     return map;
   }
 
@@ -1080,7 +1080,7 @@ click to open the label`;
     let url = null;
     for (const a of document.querySelectorAll('a[href*="discogs.com/release/"]')) { const m = re.exec(a.getAttribute('href') || ''); if (m) { url = `https://www.discogs.com/release/${m[1]}`; break; } }
     if (!url) for (const inp of document.querySelectorAll('input')) { const m = re.exec(inp.value || ''); if (m) { url = `https://www.discogs.com/release/${m[1]}`; break; } }
-    if (url && !_discogsUrlLogged) { _discogsUrlLogged = true; Log.info('Discogs: release link found —', url); }
+    if (url && !_discogsUrlLogged) { _discogsUrlLogged = true; Log.cat('Discogs').info('release link found —', url); }
     return url;
   }
   // Map folded track title → array of Discogs artist www-URLs (one per credited
@@ -1102,14 +1102,14 @@ click to open the label`;
     for (let attempt = 0; attempt < 4; attempt++) {
       let r;
       try { r = await fetch(api); }
-      catch (e) { Log.warn('Discogs match: fetch failed —', e.message); await _sleep(800 * (attempt + 1)); continue; }   // network → retry, don't cache
+      catch (e) { Log.cat('Discogs').warn('fetch failed —', e.message); await _sleep(800 * (attempt + 1)); continue; }   // network → retry, don't cache
       if (r.status === 429 || r.status === 503) {                       // rate limited → back off, don't cache
         const ra = parseInt(r.headers.get('retry-after') || '', 10);
-        Log.warn('Discogs match: rate limited (HTTP', r.status + ') — backing off');
+        Log.cat('Discogs').warn('rate limited (HTTP', r.status + ') — backing off');
         await _sleep(Math.max(1000, (ra > 0 ? ra : 2) * 1000));
         continue;
       }
-      if (!r.ok) { Log.warn('Discogs match: HTTP', r.status); await _sleep(800 * (attempt + 1)); continue; }   // transient → retry, don't cache
+      if (!r.ok) { Log.cat('Discogs').warn('HTTP', r.status); await _sleep(800 * (attempt + 1)); continue; }   // transient → retry, don't cache
       let json = null;
       try { json = await r.json(); } catch (e) { await _sleep(800); continue; }
       const map = new Map();
@@ -1152,12 +1152,12 @@ click to open the label`;
         });
         // this loads the Discogs release for the link CHECK (and for URL-matching unset
         // artists) — not re-matching already-set ones, hence "loaded" not "matched".
-        Log.info('Discogs: loaded release —', map.size, 'track title(s)' + (map.releaseArtists.length ? ` + ${map.releaseArtists.length} release artist(s)` : ''), 'from', url);
-      } else { Log.warn('Discogs: release JSON had no tracklist'); }
+        Log.cat('Discogs').info('loaded release —', map.size, 'track title(s)' + (map.releaseArtists.length ? ` + ${map.releaseArtists.length} release artist(s)` : ''), 'from', url);
+      } else { Log.cat('Discogs').warn('release JSON had no tracklist'); }
       _discogsMap = { url, map };   // cache ONLY a real response (success or genuine empty)
       return map;
     }
-    Log.warn('Discogs match: could not load release JSON after retries (rate-limited?) — leaving uncached');
+    Log.cat('Discogs').warn('could not load release JSON after retries (rate-limited?) — leaving uncached');
     return null;   // all retries exhausted → unknown, NOT cached, so the next call retries
   }
   // #283: a track's per-slot Discogs artist URLs — by folded title, falling back to
@@ -1218,7 +1218,7 @@ click to open the label`;
   const WS_MAX_INFLIGHT = 4;    // a burst ceiling; the gate's pace is what bounds the rate
   let _wsInFlight = 0;
   const wsLanes = () => (mbnHot() ? 1 : WS_MAX_INFLIGHT);   // while throttled, probe with one
-  const wsGateLog = (lv, m) => (lv === 'warn' ? Log.warn : Log.info)(m);
+  const wsGateLog = (lv, m) => (lv === 'warn' ? Log.cat('MusicBrainz').warn : Log.cat('MusicBrainz').info)(m);
   // opts.stale() → true means "this request has been superseded" (the picker types
   // a new query while an older one still queues). Checked while it waits for its slot
   // AND once it has one, so a stale call costs no request. #555
@@ -1275,7 +1275,7 @@ click to open the label`;
     const o = opts || {};
     if (o.stale || o.onThrottle) return wsJsonOnce(url, o);
     const inflight = _wsFlight.get(url);
-    if (inflight) { Log.debug((o.label || 'ws2') + ': joined an identical request already in flight —', url); return inflight; }
+    if (inflight) { Log.cat('MusicBrainz').debug((o.label || 'ws2') + ': joined an identical request already in flight —', url); return inflight; }
     const p = wsJsonOnce(url, o);
     _wsFlight.set(url, p);
     // settle-or-fail, then release: the next caller must be able to retry
@@ -1287,27 +1287,27 @@ click to open the label`;
     for (let attempt = 1; attempt <= WS_TRIES; attempt++) {
       let r;
       try { r = await wsGet(url, o); }
-      catch (e) { Log.warn(label + ': network error —', e.message, '(attempt ' + attempt + '/' + WS_TRIES + ')', url); await _sleep(600 * attempt); continue; }
-      if (!r) { Log.debug(label + ': superseded while queued, dropped —', url); return { stale: true }; }
-      Log.debug(label + ': HTTP', r.status, url);
+      catch (e) { Log.cat('MusicBrainz').warn(label + ': network error —', e.message, '(attempt ' + attempt + '/' + WS_TRIES + ')', url); await _sleep(600 * attempt); continue; }
+      if (!r) { Log.cat('MusicBrainz').debug(label + ': superseded while queued, dropped —', url); return { stale: true }; }
+      Log.cat('MusicBrainz').debug(label + ': HTTP', r.status, url);
       const a = await wsAnswer(r);
       if (a.throttled) {
         // #575 round 3: hold every lane, not just this one. wsGet waits in the gate for
         // the shared deadline, so the retry needs no sleep of its own — sleeping here
         // too would stack a private penalty on top of the shared one.
-        Log.warn(label + ': throttled by MusicBrainz (HTTP ' + r.status + ') — all requests holding ' + a.hold + 'ms (attempt ' + attempt + '/' + WS_TRIES + ')');
+        Log.cat('MusicBrainz').warn(label + ': throttled by MusicBrainz (HTTP ' + r.status + ') — all requests holding ' + a.hold + 'ms (attempt ' + attempt + '/' + WS_TRIES + ')');
         if (o.onThrottle) { try { o.onThrottle(attempt); } catch (e) {} }
         continue;
       }
-      if (r.status === 404) { Log.debug(label + ': 404 not found —', url); return { notFound: true }; }
-      if (!r.ok) { Log.warn(label + ': HTTP ' + r.status + ' — retrying (attempt ' + attempt + '/' + WS_TRIES + ')', url); await _sleep(600 * attempt); continue; }
+      if (r.status === 404) { Log.cat('MusicBrainz').debug(label + ': 404 not found —', url); return { notFound: true }; }
+      if (!r.ok) { Log.cat('MusicBrainz').warn(label + ': HTTP ' + r.status + ' — retrying (attempt ' + attempt + '/' + WS_TRIES + ')', url); await _sleep(600 * attempt); continue; }
       let j; try { j = await r.json(); }
-      catch (e) { Log.warn(label + ': unparsable JSON —', e.message, url); return { failed: true }; }
+      catch (e) { Log.cat('MusicBrainz').warn(label + ': unparsable JSON —', e.message, url); return { failed: true }; }
       // some edges answer 200 with an error envelope — treat it as a failure, never as 0 hits
-      if (j && typeof j.error === 'string') { Log.warn(label + ': web service error —', j.error); return { failed: true }; }
+      if (j && typeof j.error === 'string') { Log.cat('MusicBrainz').warn(label + ': web service error —', j.error); return { failed: true }; }
       return { json: j };
     }
-    Log.err(label + ': gave up after ' + WS_TRIES + ' attempts —', url);
+    Log.cat('MusicBrainz').err(label + ': gave up after ' + WS_TRIES + ' attempts —', url);
     return { failed: true };
   }
   async function resolveByDiscogsUrl(discogsUrl, force) {
@@ -1412,8 +1412,8 @@ click to open the label`;
       while (i < need.length && chunk.length < 100 && len < 6000) { chunk.push(need[i]); len += encodeURIComponent(need[i]).length + 10; i++; }
       const q = chunk.map(f => 'resource=' + encodeURIComponent(f)).join('&');
       const r = await wsJson(`${ORIGIN}/ws/2/url?${q}&inc=${kind}-rels&fmt=json`, { label: kind === 'artist' ? 'platform links' : kind + ' links' });
-      if (r.notFound) { chunk.forEach(f => { _discogsResolveCache.set(key(f), []); _dput('resolve', key(f), []); }); Log.debug('platform links: none of', chunk.length, 'URL(s) is in MusicBrainz'); continue; }
-      if (!r.json) { chunk.forEach(f => failed.add(f)); Log.warn('platform links: lookup of', chunk.length, 'URL(s) failed; they are asked again on the next pass'); continue; }
+      if (r.notFound) { chunk.forEach(f => { _discogsResolveCache.set(key(f), []); _dput('resolve', key(f), []); }); Log.cat('Links').debug('none of', chunk.length, 'URL(s) is in MusicBrainz'); continue; }
+      if (!r.json) { chunk.forEach(f => failed.add(f)); Log.cat('Links').warn('lookup of', chunk.length, 'URL(s) failed; they are asked again on the next pass'); continue; }
       const list = r.json.urls || (r.json.resource ? [r.json] : []);
       const by = new Map(list.map(x => [String(x.resource).toLowerCase(), x]));
       let known = 0;
@@ -1424,7 +1424,7 @@ click to open the label`;
         if (own.length) known++;
         _discogsResolveCache.set(key(f), own); _dput('resolve', key(f), own);
       });
-      Log.debug('platform links: looked up', chunk.length, 'URL form(s) in one request,', known, 'owned by an MB artist');
+      Log.cat('Links').debug('looked up', chunk.length, 'URL form(s) in one request,', known, 'owned by an MB artist');
     }
     const out = new Map();
     urls.forEach(url => {
@@ -1455,11 +1455,11 @@ click to open the label`;
       if (!h || !h.mediums || (_fcHandoff && _fcHandoff.token === h.token)) return;
       _fcHandoff = h; _fcUrls = handoffUrlIndex(h);
       const p = h.platform;
-      if (p) Log.debug('First Contact platform:', p.name, '- badge', p.abbr + ', artist link type', (p.artistLinkType || '(MB picks it)') + ',', [..._fcUrls.values()].filter(x => x.length).length, 'link(s) with other forms');
-      else Log.debug('First Contact handoff v' + (h.v || '?') + ' says nothing about the platform: generic "link" badge, links looked up as they are, no link type seeded');
+      if (p) Log.cat('Links').debug('First Contact platform:', p.name, '- badge', p.abbr + ', artist link type', (p.artistLinkType || '(MB picks it)') + ',', [..._fcUrls.values()].filter(x => x.length).length, 'link(s) with other forms');
+      else Log.cat('Links').debug('First Contact handoff v' + (h.v || '?') + ' says nothing about the platform: generic "link" badge, links looked up as they are, no link type seeded');
       const n = [h.credit || []].concat(...h.mediums.map(m => m.tracks.map(t => t.credit || []))).reduce((k, c) => k + c.filter(a => a.url).length, 0);
-      Log.info('First Contact handoff (' + from + '):', h.sourceName || h.source, '—', n, 'artist credit(s) carry a platform link', h.url ? '(' + h.url + ')' : '');
-    } catch (e) { Log.warn('First Contact handoff unreadable:', e.message); }
+      Log.cat('Links').info('First Contact handoff (' + from + '):', h.sourceName || h.source, '—', n, 'artist credit(s) carry a platform link', h.url ? '(' + h.url + ')' : '');
+    } catch (e) { Log.cat('Links').warn('First Contact handoff unreadable:', e.message); }
   }
   function fcHandoff() {
     if (!_fcHandoff && document.documentElement.dataset.firstContact) takeFcHandoff(document.documentElement.dataset.firstContact, 'page');
@@ -1493,10 +1493,10 @@ click to open the label`;
     if (!fcHandoff()) return;
     const urls = [];
     tracks.forEach(t => t.slots.forEach((s, i) => { const u = fcPlatformUrl(t, i, s.creditedAs); if (u) urls.push(u); }));
-    if (!urls.length) { Log.debug('platform links: the handoff has none for these slots'); return; }
+    if (!urls.length) { Log.cat('Links').debug('the handoff has none for these slots'); return; }
     const t0 = Date.now(), res = await resolvePlatformUrls(urls), uniq = [...res.keys()];
     const owned = uniq.filter(u => res.get(u) && res.get(u).length).length, failed = uniq.filter(u => res.get(u) === null).length;
-    Log.info('platform links:', uniq.length, 'distinct artist link(s) from', _fcHandoff.sourceName || 'First Contact', '—', owned, 'owned by an MB artist,', uniq.length - owned - failed, 'not in MusicBrainz' + (failed ? ', ' + failed + ' lookup(s) failed' : ''), '(' + (Date.now() - t0) + ' ms)');
+    Log.cat('Links').info(uniq.length, 'distinct artist link(s) from', _fcHandoff.sourceName || 'First Contact', '—', owned, 'owned by an MB artist,', uniq.length - owned - failed, 'not in MusicBrainz' + (failed ? ', ' + failed + ' lookup(s) failed' : ''), '(' + (Date.now() - t0) + ' ms)');
   }
 
   // 🔗 / ⚠ for a slot's platform link, as for Discogs (#227): a matched artist without the link
@@ -1530,7 +1530,7 @@ click to open the label`;
       const linked = s => !!(s.committed && s.gid);   // an uncommitted candidate isn't the slot's artist yet
       const add = jobs.filter(([s]) => s._platAddable && linked(s)).length, create = jobs.filter(([s]) => s._platAddable && !linked(s)).length, conf = jobs.filter(([s]) => s._platConflict).length;
       const outcome = `${jobs.length} slot(s) with a platform link: ${add} link(s) can be added, ${create} artist(s) can be created with theirs, ${conf} owned by another artist`;
-      if (outcome !== _lastPlatCheck) { _lastPlatCheck = outcome; Log.info('platform links:', outcome); }
+      if (outcome !== _lastPlatCheck) { _lastPlatCheck = outcome; Log.cat('Links').info(outcome); }
       if (!isEditingNow()) rerender();
     } finally {
       _tagPlatRunning = false;
@@ -1563,7 +1563,7 @@ click to open the label`;
         forgetPlatformUrl(url); await _sleep(800 * (attempt + 1));
       }
       if (hits && hits.some(h => h.gid === gid)) { MODEL && MODEL.tracks.forEach(t => t.slots.forEach(s => { if (s.gid === gid) s._flash = true; })); discMsg(`added ${p.name} link to ${slot.name || 'the artist'}`); }
-      else Log.warn(p.name, 'link for', slot.name || gid, 'not visible yet; it stays offered until the next check');
+      else Log.cat('Links').warn(p.name, 'link for', slot.name || gid, 'not visible yet; it stays offered until the next check');
       await tagPlatformForAll();
     };
     if (background && typeof GM_openInTab === 'function' && ART_CHANNEL) {
@@ -1575,12 +1575,12 @@ click to open the label`;
         done();
       };
       ART_CHANNEL.addEventListener('message', onCommitted);
-      Log.info(p.name, 'link (background) for', slot.name || gid, '→', url);
+      Log.cat('Links').info(p.name, 'link (background) for', slot.name || gid, '→', url);
       return;
     }
     const tab = W.open(editUrl, '_blank');
     if (tab) { const trySet = () => { try { tab.sessionStorage.setItem(CLOSE_KEY, '1'); } catch (e) { setTimeout(trySet, 50); } }; trySet(); }
-    Log.info(p.name, 'link: opening the edit of', slot.name || gid, '→', url);
+    Log.cat('Links').info(p.name, 'link: opening the edit of', slot.name || gid, '→', url);
     const onReturn = async () => {
       if (document.visibilityState !== 'visible') return;
       document.removeEventListener('visibilitychange', onReturn);
@@ -1717,15 +1717,15 @@ click to open the label`;
         setDiscProgress('');
         // nothing to check (no per-track and no release-level artist links). Empty
         // model = still loading → stay silent; dedupe so re-runs don't repeat it.
-        if (MODEL.tracks && MODEL.tracks.length && _lastDiscCheck !== 'none') { _lastDiscCheck = 'none'; Log.info('Discogs check: no artist links to verify'); }
+        if (MODEL.tracks && MODEL.tracks.length && _lastDiscCheck !== 'none') { _lastDiscCheck = 'none'; Log.cat('Links').info('no Discogs artist links to verify'); }
         return;
       }
       const firstCheck = _discVerifyUrl !== relUrl;
-      if (firstCheck) { _discVerifyUrl = relUrl; Log.info('Discogs check: verifying', jobs.length, 'artist link(s) across', total, total === 1 ? 'track' : 'tracks', (posUsed ? `(${posUsed} matched by position)` : '') + '…'); }
+      if (firstCheck) { _discVerifyUrl = relUrl; Log.cat('Links').info('verifying', jobs.length, 'Discogs artist link(s) across', total, total === 1 ? 'track' : 'tracks', (posUsed ? `(${posUsed} matched by position)` : '') + '…'); }
       let done = 0, lastRender = 0;
       for (const [s, durl] of jobs) {
         await tagDiscogsAddable(s, durl);
-        if (firstCheck) Log.debug('Discogs:', (s.name || s.gid || 'slot'), '—', s._discogsPending ? 'pending (will re-check)' : !s._discogsAddable ? 'already linked' : discAddTooltip(s), s._discByPos ? '(matched by position)' : '');
+        if (firstCheck) Log.cat('Links').debug('Discogs:', (s.name || s.gid || 'slot'), '—', s._discogsPending ? 'pending (will re-check)' : !s._discogsAddable ? 'already linked' : discAddTooltip(s), s._discByPos ? '(matched by position)' : '');
         done++;
         // update rows + the progress text together, throttled — set the text AFTER
         // rerender so refreshStatus can't blank it
@@ -1748,7 +1748,7 @@ click to open the label`;
       const outcome = (addable === 0
         ? `all ${jobs.length} artist link(s) already in MusicBrainz ✓`
         : `${addable} of ${jobs.length} link(s) can be added to MusicBrainz`) + (pendLeft ? ` (${pendLeft} pending)` : '');
-      if (outcome !== _lastDiscCheck) { _lastDiscCheck = outcome; Log.info('Discogs check:', outcome); }   // dedupe identical re-run results
+      if (outcome !== _lastDiscCheck) { _lastDiscCheck = outcome; Log.cat('Links').info('Discogs:', outcome); }   // dedupe identical re-run results
       if (!isEditingNow()) rerender();
     } finally {
       _tagDiscogsRunning = false;
@@ -1792,7 +1792,7 @@ click to open the label`;
       if (attempt < 5) await _sleep(800 * (attempt + 1));
     }
     if (own && own.some(u => discogsIdOf(u) === wantId)) { MODEL && MODEL.tracks.forEach(t => t.slots.forEach(s => { if (s.gid === gid) s._flash = true; })); discMsg(`added Discogs link to ${name}`); }
-    else Log.warn('Discogs link for', name || gid, 'still not visible via /ws/js/entity after retrying — will keep showing as addable until the next check');
+    else Log.cat('Links').warn('Discogs link for', name || gid, 'still not visible via /ws/js/entity after retrying — will keep showing as addable until the next check');
     await tagDiscogsForAll();
     if (_riArt.length) await riRetag();   // #652
   }
@@ -1815,13 +1815,13 @@ click to open the label`;
           reTagAfterDiscogsLink(gid, url, slot.name);
         };
         ART_CHANNEL.addEventListener('message', onCommitted);
-        Log.info('Discogs link (background) for', slot.name || gid, '→', url);
+        Log.cat('Links').info('Discogs link (background) for', slot.name || gid, '→', url);
         return;
       }
       // foreground: open the edit form, flag it to auto-close after submit, verify on return
       const tab = W.open(editUrl, '_blank');
       if (tab) { const trySet = () => { try { tab.sessionStorage.setItem(CLOSE_KEY, '1'); } catch (e) { setTimeout(trySet, 50); } }; trySet(); }
-      Log.info('Discogs link: opening edit for', slot.name || gid, '→', url);
+      Log.cat('Links').info('Discogs link: opening edit for', slot.name || gid, '→', url);
       const onReturn = async () => {
         if (document.visibilityState !== 'visible') return;
         document.removeEventListener('visibilitychange', onReturn);
@@ -1865,7 +1865,7 @@ click to open the label`;
   async function resolveByCredit(creditedAs, contextGids) {
     const name = (creditedAs || '').trim();
     if (contextGids && contextGids.some(g => g && !coCreditCtx(g))) {   // #618 belt and braces — whatever a caller passes
-      Log.debug('cred lookup: skipping special-purpose context artist(s)', contextGids.filter(g => g && !coCreditCtx(g)).join(', '));
+      Log.cat('Artist').debug('cred lookup: skipping special-purpose context artist(s)', contextGids.filter(g => g && !coCreditCtx(g)).join(', '));
       contextGids = contextGids.filter(coCreditCtx);
     }
     if (!name || !contextGids || !contextGids.length) return { entity: null, candidates: [] };
@@ -1877,7 +1877,7 @@ click to open the label`;
         hits = [];
         const q = `arid:${ctx} AND artistname:${_lucenePhrase(name)}`;
         const res = await wsJson(`${ORIGIN}/ws/2/recording?query=${encodeURIComponent(q)}&inc=artist-credits&limit=25&fmt=json`, { label: 'cred lookup' });
-        if (!res.json) { Log.warn('cred lookup failed for', JSON.stringify(name), 'in', ctx, '— not cached'); continue; }   // a throttled miss must not be cached (#555)
+        if (!res.json) { Log.cat('Artist').warn('cred lookup failed for', JSON.stringify(name), 'in', ctx, '— not cached'); continue; }   // a throttled miss must not be cached (#555)
         for (const rec of (res.json.recordings || [])) {
           for (const c of (rec['artist-credit'] || [])) {
             const a = c.artist; if (!a || !a.id || a.id === ctx) continue;   // the co-credited artist, not the context one
@@ -1956,7 +1956,7 @@ click to open the label`;
     const rels = await rgReleases(rgGid); if (!rels) return null;
     const idx = new Map(); rels.forEach(r => addReleaseToArtistPos(r, idx, self, 'rg'));
     _artPosRg = { gid: rgGid, self, idx };
-    Log.debug('artist position index: release group', rgGid, '→', rels.length, 'edition(s),', idx.size, 'position(s)');
+    Log.cat('Artist').debug('artist position index: release group', rgGid, '→', rels.length, 'edition(s),', idx.size, 'position(s)');
     return idx;
   }
   // … and, only when those don't settle a credit, the duplicates: first the ones the
@@ -1974,7 +1974,7 @@ click to open the label`;
       if (!rels.length) { rels = await duplicateReleases(title, artistGid, rgGid); from = 'a duplicate search'; }
       _artPosDupFromTab = from === "the Duplicates tab";
       const idx = new Map(); rels.forEach(r => addReleaseToArtistPos(r, idx, self, 'dup'));
-      Log.debug('artist position index: duplicates from', from, '→', rels.length, 'release(s),', idx.size, 'position(s)');
+      Log.cat('Artist').debug('artist position index: duplicates from', from, '→', rels.length, 'release(s),', idx.size, 'position(s)');
       return idx;
     })();
     _artPosDup = { key, p };
@@ -2009,7 +2009,7 @@ click to open the label`;
     let hits = at(await artistPosRgIndex());
     let res = tallyPosArtists(hits, creditedAs);
     if (res.artists.length !== 1) { hits = hits.concat(at(await artistPosDupIndex())); res = tallyPosArtists(hits, creditedAs); }
-    Log.debug('position source:', JSON.stringify(creditedAs), 'at', key, '—', res.of, 'edition(s) agree on the track;', res.artists.length ? res.artists.map(a => a.name + ' ×' + a.votes).join(', ') : 'none credit a matching name');
+    Log.cat('Artist').debug('position source:', JSON.stringify(creditedAs), 'at', key, '—', res.of, 'edition(s) agree on the track;', res.artists.length ? res.artists.map(a => a.name + ' ×' + a.votes).join(', ') : 'none credit a matching name');
     return res.artists.length ? res : null;
   }
 
@@ -2020,13 +2020,40 @@ click to open the label`;
      found — the Discogs link, the release-group sibling (which release and track), the other
      editions at this position, the name/alias search, the co-credits — and when. The slot keeps
      it as _why and the badge's card shows it. Nothing extra is fetched for it. */
-  async function matchSlot(creditedAs, sib, discogsUrl, contextGids, pos, platUrl) {
+  /* A pass over a tracklist where one artist sits on every track logged the same
+     "Lou Rawls → Lou Rawls — via Qobuz link …" line once per track, with nothing to
+     tell the lines apart (majkinetor). Each match line now says which track it is,
+     and while a pass runs (_matchSeen) only the first track a name resolves a given
+     way logs it at info; the rest go to debug and endMatchLog() sums them up in one
+     line. A match that isn't a track's (the release artist, which can resolve while
+     a pass runs) always logs, as does one outside a pass (a revert). */
+  let _matchSeen = null;   // Map: the line's text → the tracks it came from, while a pass runs
+  function matchLog(where, ...args) {
+    const L = Log.cat('Artist'), head = where ? [where + ':'] : [];
+    if (_matchSeen && /^track /.test(where || '')) {
+      const key = args.join(' '), seen = _matchSeen.get(key);
+      if (seen) { seen.push(where); L.debug(...head, ...args); return; }
+      _matchSeen.set(key, [where]);
+    }
+    L.info(...head, ...args);
+  }
+  function startMatchLog() { _matchSeen = new Map(); }
+  function endMatchLog() {
+    const seen = _matchSeen; _matchSeen = null;
+    if (seen) seen.forEach((wh, key) => {
+      if (wh.length < 2) return;
+      const more = wh.slice(1).map(w => w.replace(/^track /, '')).sort((a, b) => a.localeCompare(b, undefined, { numeric: true }));
+      Log.cat('Artist').info(key, '— also on track' + (more.length === 1 ? '' : 's'), more.join(', '));
+    });
+  }
+  const trackWhere = t => 'track ' + (t.number || (t.ti + 1));
+  async function matchSlot(creditedAs, sib, discogsUrl, contextGids, pos, platUrl, where) {
     const why = { at: Date.now() };
-    const m = await matchSlotCore(creditedAs, sib, discogsUrl, contextGids, pos, why, platUrl);
+    const m = await matchSlotCore(creditedAs, sib, discogsUrl, contextGids, pos, why, platUrl, where);
     m.why = why;
     return m;
   }
-  async function matchSlotCore(creditedAs, sib, discogsUrl, contextGids, pos, why, platUrl) {
+  async function matchSlotCore(creditedAs, sib, discogsUrl, contextGids, pos, why, platUrl, where) {
     const who = creditedAs || '(track artist)';
     let posInfo = null;   // { of, artists: [{ entity, votes }] } — kept on the slot for the picker's section
     // #224: a Discogs artist-link match outranks the name search.
@@ -2035,20 +2062,20 @@ click to open the label`;
       why.discogs = { url: discogsUrl, n: hits ? hits.length : null };
       if (hits && hits.length === 1) {
         const e = await fetchEntity(hits[0].gid);
-        if (e && e.gid) { Log.info('Match:', who, '→', e.name, '— via Discogs URL'); return { entity: e, source: 'discogs', confidence: 'high', candidates: [e] }; }
+        if (e && e.gid) { matchLog(where, who, '→', e.name, '— via Discogs URL'); return { entity: e, source: 'discogs', confidence: 'high', candidates: [e] }; }
       } else if (hits && hits.length > 1) {
         // ambiguous — surface every linked artist plus the name-search hits and let the user pick
         const named = await searchArtist(creditedAs);
         const ents = [];
         for (const h of hits) { const e = await fetchEntity(h.gid); if (e && e.gid) ents.push(e); }
         const merged = [...ents, ...named.filter(c => !ents.some(e => e.gid === (c.gid || c.id)))];
-        if (ents.length) { Log.info('Match:', who, '—', ents.length, 'MB artists link that Discogs URL; pick one'); return { entity: ents[0], source: 'discogs', confidence: 'low', candidates: merged }; }
+        if (ents.length) { matchLog(where, who, '—', ents.length, 'MB artists link that Discogs URL; pick one'); return { entity: ents[0], source: 'discogs', confidence: 'low', candidates: merged }; }
       }
       // couldn't resolve via the URL → fall back to name search. 0 hits = the
       // Discogs URL the release credits isn't linked to any MB artist (e.g. the
       // mismatch case); null = the lookup was rate-limited.
-      if (hits && hits.length === 0) Log.debug('Match:', who, '— Discogs URL not linked to any MB artist → name search');
-      else if (hits == null) Log.debug('Match:', who, '— Discogs URL lookup unavailable (rate-limited) → name search');
+      if (hits && hits.length === 0) Log.cat('Artist').debug(who, '— Discogs URL not linked to any MB artist → name search');
+      else if (hits == null) Log.cat('Artist').debug(who, '— Discogs URL lookup unavailable (rate-limited) → name search');
     }
     // #651: the artist's page on the platform First Contact imported from — as certain as Discogs
     if (platUrl) {
@@ -2057,16 +2084,16 @@ click to open the label`;
       why.plat = { url: platUrl, abbr: p.abbr, name: p.name, n: hits ? hits.length : null };
       if (hits && hits.length === 1) {
         const e = await fetchEntity(hits[0].gid);
-        if (e && e.gid) { Log.info('Match:', who, '→', e.name, '— via', p.name, 'link', platUrl); return { entity: e, source: 'plat', confidence: 'high', candidates: [e] }; }
+        if (e && e.gid) { matchLog(where, who, '→', e.name, '— via', p.name, 'link', platUrl); return { entity: e, source: 'plat', confidence: 'high', candidates: [e] }; }
       } else if (hits && hits.length > 1) {
         const named = await searchArtist(creditedAs);
         const ents = [];
         for (const h of hits) { const e = await fetchEntity(h.gid); if (e && e.gid) ents.push(e); }
         const merged = [...ents, ...named.filter(c => !ents.some(e => e.gid === (c.gid || c.id)))];
-        if (ents.length) { Log.info('Match:', who, '—', ents.length, 'MB artists link', p.name, platUrl + '; pick one'); return { entity: ents[0], source: 'plat', confidence: 'low', candidates: merged }; }
+        if (ents.length) { matchLog(where, who, '—', ents.length, 'MB artists link', p.name, platUrl + '; pick one'); return { entity: ents[0], source: 'plat', confidence: 'low', candidates: merged }; }
       }
-      if (hits && hits.length === 0) Log.debug('Match:', who, '—', p.name, 'link', platUrl, 'not in MusicBrainz → the next stages');
-      else if (hits == null) Log.debug('Match:', who, '—', p.name, 'link lookup unavailable → the next stages');
+      if (hits && hits.length === 0) Log.cat('Artist').debug(who, '—', p.name, 'link', platUrl, 'not in MusicBrainz → the next stages');
+      else if (hits == null) Log.cat('Artist').debug(who, '—', p.name, 'link lookup unavailable → the next stages');
     }
     let candidates = await searchArtist(creditedAs);
     let entity = null, source = 'search', confidence = 'low';
@@ -2091,11 +2118,11 @@ click to open the label`;
       if (ents.length) posInfo = { of: posRes.of, artists: ents, editions: posRes.editions || [] };
       if (ents.length === 1) {
         const e = ents[0].entity;
-        Log.info('Match:', who, '→', e.name, `— via the same position on ${ents[0].votes} of ${posRes.of} other edition${posRes.of === 1 ? '' : 's'}`);
+        matchLog(where, who, '→', e.name, `— via the same position on ${ents[0].votes} of ${posRes.of} other edition${posRes.of === 1 ? '' : 's'}`);
         return { entity: e, source: 'pos', confidence: 'high', candidates: [e, ...candidates.filter(c => (c.gid || c.id) !== e.gid)], pos: posInfo };
       }
       if (ents.length > 1) {
-        Log.info('Match:', who, '— other editions credit', ents.length, 'different matching artists at this position (' + ents.map(x => x.entity.name + ' ×' + x.votes).join(', ') + '); pick one');
+        matchLog(where, who, '— other editions credit', ents.length, 'different matching artists at this position (' + ents.map(x => x.entity.name + ' ×' + x.votes).join(', ') + '); pick one');
         candidates = [...ents.map(x => x.entity), ...candidates.filter(c => !ents.some(x => x.entity.gid === (c.gid || c.id)))];
       }
     }
@@ -2114,7 +2141,7 @@ click to open the label`;
       why.ident = aliasSeen(creditedAs) || { status: 'unknown' };
       if (idHit && idHit.entity && idHit.entity.gid) {
         const e = idHit.entity, rest = candidates.filter(c => (c.gid || c.id) !== e.gid);
-        Log.info('Match:', who, '→', e.name, idHit.via === 'alias' ? '— via exact alias' : '— via name (exact)');
+        matchLog(where, who, '→', e.name, idHit.via === 'alias' ? '— via exact alias' : '— via name (exact)');
         return { entity: e, source: idHit.via === 'alias' ? 'alias' : 'search', confidence: 'high', candidates: [e, ...rest], pos: posInfo };
       }
       // #437: no unique exact identity → try credit co-occurrence against the release's known
@@ -2123,7 +2150,7 @@ click to open the label`;
         const cred = await resolveByCredit(creditedAs, contextGids);
         why.cred = { counts: cred.counts || [], ctx: cred.ctx || 0 };
         if (cred.entity) {
-          Log.info('Match:', who, '→', cred.entity.name, '— via existing artist credits');
+          matchLog(where, who, '→', cred.entity.name, '— via existing artist credits');
           return { entity: cred.entity, source: 'cred', confidence: 'high', candidates: [cred.entity, ...candidates.filter(c => (c.gid || c.id) !== cred.entity.gid)], pos: posInfo };
         }
         if (cred.candidates.length) { candidates = [...cred.candidates, ...candidates.filter(c => !cred.candidates.some(e => e.gid === (c.gid || c.id)))]; top = candidates[0]; }
@@ -2142,6 +2169,7 @@ click to open the label`;
     const tracks = [];
     const todo = tl.filter(t => t.names.some(n => !n.artistGid));
     let done = 0;
+    startMatchLog();
     for (let ti = 0; ti < tl.length; ti++) {
       const t = tl[ti];
       const sib = siblings.get(fold(t.title)) || null;
@@ -2153,7 +2181,7 @@ click to open the label`;
         else {
           const ctxGids = [...new Set(slots.map(s => s.gid).filter(Boolean).concat(releaseArtistGids()))].filter(coCreditCtx).slice(0, 6);   // #437 co-artists so far + release artist(s), never special-purpose (#618)
           const dUrl = (durls && durls[i]) || discogsFeatUrlFor(dmap, t.title, ti, tl.length, n.creditedAs);   // #442 fall back to the Discogs "Featuring" credit for a feat slot
-          const m = await matchSlot(n.creditedAs, sib && pickSibArtist(sib, n.creditedAs, i), dUrl, ctxGids, undefined, fcCreditUrl((fcTrackFor(t) || {}).credit, i, n.creditedAs, t.names.length));
+          const m = await matchSlot(n.creditedAs, sib && pickSibArtist(sib, n.creditedAs, i), dUrl, ctxGids, undefined, fcCreditUrl((fcTrackFor(t) || {}).credit, i, n.creditedAs, t.names.length), trackWhere(t));
           const status = slotStatusOf(m);
           const slot = { creditedAs: n.creditedAs, joinPhrase: n.joinPhrase, status, entity: m.entity, gid: m.entity ? m.entity.gid : null, name: m.entity ? m.entity.name : '', candidates: m.candidates, committed: false, _pos: m.pos || null, _why: m.why || null };
           await tagDiscogsAddable(slot, dUrl);   // #227
@@ -2166,6 +2194,7 @@ click to open the label`;
       tracks.push(te);
       if (t.names.some(n => !n.artistGid)) { done++; if (onProgress) onProgress(done, todo.length); }
     }
+    endMatchLog();
     return { tracks };
   }
 
@@ -2226,7 +2255,7 @@ click to open the label`;
     if (MODEL && MODEL.tracks) {
       const prev = MODEL.tracks.flatMap(t => t.slots.map((s, j) => (t.ti + 1) + '.' + (j + 1) + '=' + (s.status || '?') + (s.committed ? '' : '(uncommitted)') + (s._pending ? '(pending)' : '')));
       const now = tracks.flatMap(t => t.slots.map((s, j) => (t.ti + 1) + '.' + (j + 1) + '=' + s.status));
-      Log.debug('table rebuilt: before ' + prev.join(' ') + ' → after ' + now.join(' '));
+      Log.cat('System').debug('table rebuilt: before ' + prev.join(' ') + ' → after ' + now.join(' '));
       const was = new Map();
       MODEL.tracks.forEach(t => t.slots.forEach((s, j) => { if (s.gid && s.status && !['set', 'none', 'low'].includes(s.status)) was.set(t.mi + '.' + t.ti + '.' + j, s); }));
       const lost = [];
@@ -2235,7 +2264,7 @@ click to open the label`;
         if (p && s.status === 'set' && s.gid === p.gid) lost.push('track ' + (t.ti + 1) + ' "' + s.creditedAs + '" lost ' + p.status.toUpperCase() + (p.committed ? '' : ' (it was uncommitted)') + (p._pending ? ' (it was pending)' : ''));
       }));
       if (lost.length) {
-        Log.warn('#638 a table rebuild lost ' + lost.length + ' match badge(s): ' + lost.join('; '));
+        Log.cat('System').warn('a table rebuild lost ' + lost.length + ' match badge(s): ' + lost.join('; '));
         if (!_badgeLossToasted) {
           _badgeLossToasted = true;
           mbuToast('⚠ Apollo lost ' + lost.length + ' match badge' + (lost.length === 1 ? '' : 's') + ' (#638). The links are fine — please copy the log to the issue.', { action: { label: 'Copy log', onClick: b => Log.copy(b) } });
@@ -2257,6 +2286,7 @@ click to open the label`;
     setMatching(true);
     // hoisted out of the try so the finally can report how far it got (#577)
     let stopped = false, done = 0, planned = 0;
+    startMatchLog();
     try {
       const siblings = await loadSiblingMap();
       const dmap = await loadDiscogsMap();
@@ -2290,9 +2320,9 @@ click to open the label`;
           for (let i = 0; i < t.slots.length; i++) {
             if (_matchStop) { stopped = true; break; }   // #577: a track can hold several artists, each its own round trip
             const s = t.slots[i]; if (!s._pending) continue;
-            if (s._editing) { Log.debug('match: slot skipped — the user is editing it (#580)'); continue; }   // stays _pending, so leaving the field lets a later pass have it
+            if (s._editing) { Log.cat('Artist').debug('slot skipped — the user is editing it'); continue; }   // #580: stays _pending, so leaving the field lets a later pass have it
             const dUrl = (durls && durls[i]) || discogsFeatUrlFor(dmap, t.title, ti, total, s.creditedAs);   // #442 fall back to the Discogs "Featuring" credit for a feat slot
-            const m = await matchSlot(s.creditedAs, sib && pickSibArtist(sib, s.creditedAs, i), dUrl, slotContextGids(t, i), () => positionArtists(t, s.creditedAs), fcPlatformUrl(t, i, s.creditedAs));   // #437, #626, #651
+            const m = await matchSlot(s.creditedAs, sib && pickSibArtist(sib, s.creditedAs, i), dUrl, slotContextGids(t, i), () => positionArtists(t, s.creditedAs), fcPlatformUrl(t, i, s.creditedAs), trackWhere(t));   // #437, #626, #651
             Object.assign(s, { status: slotStatusOf(m), entity: m.entity, gid: m.entity ? m.entity.gid : null, name: m.entity ? m.entity.name : '', candidates: m.candidates, _pos: m.pos || null, _why: m.why || null }); delete s._pending;
             await tagDiscogsAddable(s, dUrl);   // #227
           }
@@ -2306,15 +2336,17 @@ click to open the label`;
         }
       };
       await Promise.all(Array.from({ length: Math.min(MATCH_LANES, todo.length) }, lane));
+      endMatchLog();
       if (!isEditing()) rerender();
       // #577: say so, and say what survived — a silent stop looks like a crash.
       // Announced before the finally's refreshStatus, which would overwrite it,
       // so the message is set after instead.
-      if (stopped) Log.info('matching stopped after ' + done + ' of ' + planned + ' track' + (planned === 1 ? '' : 's') + ' — what matched is kept');
+      if (stopped) Log.cat('Artist').info('matching stopped after ' + done + ' of ' + planned + ' track' + (planned === 1 ? '' : 's') + ' — what matched is kept');
       // #575: the artist pass had no end marker, so the recordings pass's summary
       // looked like the whole thing finishing while artists were still resolving.
-      else if (planned) Log.info('tracklist match: ' + planned + ' track' + (planned === 1 ? '' : 's') + ' matched — Discogs link checks and alias enrichment continue in the background');
+      else if (planned) Log.cat('Artist').info('tracklist match: ' + planned + ' track' + (planned === 1 ? '' : 's') + ' matched — Discogs link checks and alias enrichment continue in the background');
     } finally {
+      endMatchLog();   // a no-op once the pass summed up; covers a pass that threw
       setMatching(false);
       refreshStatus();   // set the final per-medium badges once the pass is done
       if (stopped) updateStatus('matching stopped — ' + done + '/' + planned + ' done, the rest are still unmatched');
@@ -2360,9 +2392,9 @@ click to open the label`;
       if (restoreDataFlag && typeof t.isDataTrack === 'function' && !!t.isDataTrack() !== !!orig.isDataTrack) t.isDataTrack(!!orig.isDataTrack);
     } finally { _selfEdit = false; }
     if (!restoreDataFlag && typeof t.isDataTrack === 'function' && !!t.isDataTrack() !== !!orig.isDataTrack)
-      Log.info('reset track ' + entry.number + ': it is still ' + (t.isDataTrack() ? 'a data track' : 'an audio track')
+      Log.cat('Tracklist').info('reset track ' + entry.number + ': it is still ' + (t.isDataTrack() ? 'a data track' : 'an audio track')
         + ' — use ⤒/⤓ to move the data-track boundary, which has to stay one trailing block');
-    Log.info('reset track', entry.number, 'to original (all cells)');
+    Log.cat('Tracklist').info('reset track', entry.number, 'to original (all cells)');
   }
   let _selfEdit = false;   // true while WE mutate the tracklist, so the change-watcher ignores it
   // a medium with a CD disc ID (TOC) has a fixed track count — native MB locks adding/removing/
@@ -2409,35 +2441,35 @@ click to open the label`;
         before.insertAdjacentHTML('beforebegin', VIDEO_MARK_PRE); added++;
       } else if (!want && mk) { mk.remove(); removed++; }
     });
-    if (added || removed) Log.debug('tracklist video markers: ' + added + ' added, ' + removed + ' removed (a recording link changed)');
+    if (added || removed) Log.cat('Tracklist').debug('tracklist video markers: ' + added + ' added, ' + removed + ' removed (a recording link changed)');
   }
   // #329: on a disc-ID (TOC) medium the audio tracks' lengths are fixed by the TOC, so
   // native MB makes them read-only. Pregap + data tracks aren't covered by the audio TOC
   // and stay editable — mirror that for Apollo's length cells.
   function trackLenLocked(entry) { return mediumLocked(entry.mi) && trackKind(entry) === 'audio'; }
-  function removeTrack(entry) { if (mediumLocked(entry.mi)) { Log.info('medium', entry.mi + 1, 'disc-ID locked — remove blocked'); return; } _selfEdit = true; try { getEditor().removeTrack(koTrack(entry.mi, entry.ti)); } finally { _selfEdit = false; } Log.info('removed track', entry.number); }
-  function moveTrack(entry, dir) { if (mediumLocked(entry.mi)) { Log.info('medium', entry.mi + 1, 'disc-ID locked — move blocked'); return; } const ed = getEditor(); const t = koTrack(entry.mi, entry.ti); _selfEdit = true; try { (dir < 0 ? ed.moveTrackUp : ed.moveTrackDown).call(ed, t); } finally { _selfEdit = false; } }
+  function removeTrack(entry) { if (mediumLocked(entry.mi)) { Log.cat('Tracklist').info('medium', entry.mi + 1, 'disc-ID locked — remove blocked'); return; } _selfEdit = true; try { getEditor().removeTrack(koTrack(entry.mi, entry.ti)); } finally { _selfEdit = false; } Log.cat('Tracklist').info('removed track', entry.number); }
+  function moveTrack(entry, dir) { if (mediumLocked(entry.mi)) { Log.cat('Tracklist').info('medium', entry.mi + 1, 'disc-ID locked — move blocked'); return; } const ed = getEditor(); const t = koTrack(entry.mi, entry.ti); _selfEdit = true; try { (dir < 0 ? ed.moveTrackUp : ed.moveTrackDown).call(ed, t); } finally { _selfEdit = false; } }
   // move a track to a target index WITHIN its medium by stepping MB's own up/down ops — never touches the
   // model array directly, so the editor can't diverge (drag-to-reorder rides on this)
   function moveTrackToIndex(entry, destTi) {
-    if (mediumLocked(entry.mi)) { Log.info('medium', entry.mi + 1, 'disc-ID locked — reorder blocked'); return false; }
+    if (mediumLocked(entry.mi)) { Log.cat('Tracklist').info('medium', entry.mi + 1, 'disc-ID locked — reorder blocked'); return false; }
     const ed = getEditor(), t = koTrack(entry.mi, entry.ti); const n = (u(mediums()[entry.mi].tracks) || []).length;
     destTi = Math.max(0, Math.min(n - 1, destTi)); let cur = entry.ti;
     if (cur === destTi) return false;
     _selfEdit = true;
     try { while (cur > destTi) { ed.moveTrackUp.call(ed, t); cur--; } while (cur < destTi) { ed.moveTrackDown.call(ed, t); cur++; } }
-    catch (e) { Log.warn('move-to-index failed', e.message); }
+    catch (e) { Log.cat('Tracklist').warn('move-to-index failed', e.message); }
     finally { _selfEdit = false; }
-    Log.info('moved track', entry.number, 'from', entry.ti, '→', destTi, 'in medium', entry.mi + 1);
+    Log.cat('Tracklist').info('moved track', entry.number, 'from', entry.ti, '→', destTi, 'in medium', entry.mi + 1);
     return true;
   }
   // add N blank tracks to a medium by driving MB's own "Add tracks" control (the green ＋)
   function addTracks(mi, n) {
-    if (mediumLocked(mi)) { Log.info('medium', mi + 1, 'disc-ID locked — add blocked'); return; }
+    if (mediumLocked(mi)) { Log.cat('Tracklist').info('medium', mi + 1, 'disc-ID locked — add blocked'); return; }
     const btns = [...document.querySelectorAll('button[data-click="addNewTracks"]')];
     const inputs = [...document.querySelectorAll('input[data-bind*="addTrackCount"]')];
     const btn = btns[mi] || btns[btns.length - 1]; const inp = inputs[mi] || inputs[inputs.length - 1];
-    if (!btn) { Log.warn('no native add-tracks button found'); return; }
+    if (!btn) { Log.cat('Tracklist').warn('no native add-tracks button found'); return; }
     const med = mediums()[mi]; const before = med ? (u(med.tracks) || []).length : 0;
     _selfEdit = true;
     try { if (inp) { inp.value = String(n); inp.dispatchEvent(new Event('input', { bubbles: true })); inp.dispatchEvent(new Event('change', { bubbles: true })); } btn.click(); }
@@ -2450,7 +2482,7 @@ click to open the label`;
       try { for (let i = before; i < tks.length; i++) try { tks[i].artistCredit({ names: [{ artist: null, name: '', joinPhrase: '' }] }); } catch (e) {} }
       finally { _selfEdit = false; }
     }
-    Log.info('added', n, 'track(s) to medium', mi + 1);
+    Log.cat('Tracklist').info('added', n, 'track(s) to medium', mi + 1);
     // refresh immediately (blank tracks need no matching) instead of the 400ms watcher + match pass
     MODEL = buildShell(); if (ACTIVE.mode === 'mirror') { mountMediums(); syncNative(); } rerender();
   }
@@ -2461,15 +2493,15 @@ click to open the label`;
   // since moved it (tab/click to the next field). _selfEdit tells the watcher
   // this write is ours, same guard already used for remove/move/reset/etc.
   function setTitle(entry, v) { _selfEdit = true; try { koTrack(entry.mi, entry.ti).name(v); } finally { _selfEdit = false; } }
-  function setNumber(entry, v) { try { koTrack(entry.mi, entry.ti).number(v); } catch (e) { Log.warn('set number failed', v, e.message); } }
-  function setLength(entry, v) { const t = koTrack(entry.mi, entry.ti); try { if (typeof t.formattedLength === 'function') t.formattedLength(v); else { const ed = getEditor(); const ms = ed.utils && ed.utils.unformatTrackLength ? ed.utils.unformatTrackLength(v) : null; if (ms != null && !isNaN(ms)) t.length(ms); } } catch (e) { Log.warn('set length failed', v, e.message); } }
+  function setNumber(entry, v) { try { koTrack(entry.mi, entry.ti).number(v); } catch (e) { Log.cat('Tracklist').warn('set number failed', v, e.message); } }
+  function setLength(entry, v) { const t = koTrack(entry.mi, entry.ti); try { if (typeof t.formattedLength === 'function') t.formattedLength(v); else { const ed = getEditor(); const ms = ed.utils && ed.utils.unformatTrackLength ? ed.utils.unformatTrackLength(v) : null; if (ms != null && !isNaN(ms)) t.length(ms); } } catch (e) { Log.cat('Tracklist').warn('set length failed', v, e.message); } }
   // MB guess case: preview into track.previewName (no mutation) to detect the diff; click-type to apply
   function guessTitleStr(entry) {
     const ed = getEditor(), t = koTrack(entry.mi, entry.ti);
     try { ed.guessCaseTrackName(t, { type: 'mouseenter', buttons: 0 }); const g = u(t.previewName); ed.guessCaseTrackName(t, { type: 'mouseleave' }); return (g == null) ? u(t.name) : g; }
     catch (e) { return u(t.name); }
   }
-  function applyGuessTitle(entry) { try { getEditor().guessCaseTrackName(koTrack(entry.mi, entry.ti), { type: 'click' }); } catch (e) { Log.warn('guess case failed', e.message); } }
+  function applyGuessTitle(entry) { try { getEditor().guessCaseTrackName(koTrack(entry.mi, entry.ti), { type: 'click' }); } catch (e) { Log.cat('Tool').warn('guess case failed', e.message); } }
   // Lazily get the absolute overlay that hosts a title cell's action buttons
   // (Aa / ⋔), so they don't reserve flex width and shrink the input. #153
   function tActions(wrap) {
@@ -2493,7 +2525,7 @@ click to open the label`;
       const k = discogsUrl ? 1 : 0, pt = (platformOf(platUrl) || {}).artistLinkType;
       url += `&edit-artist.url.${k}.text=${encodeURIComponent(platUrl)}` + (pt ? `&edit-artist.url.${k}.link_type_id=${pt}` : '');
       forgetPlatformUrl(platUrl);
-      Log.info('create-artist: seeding the', (platformOf(platUrl) || { name: 'platform' }).name, 'link', platUrl);
+      Log.cat('Create').info('seeding the', (platformOf(platUrl) || { name: 'platform' }).name, 'link', platUrl);
     }
     url += `&edit-artist.edit_note=${encodeURIComponent(entityActionNote('Created this artist'))}`;   // proper attribution on the created artist
     const token = (slot && ART_CHANNEL) ? ('tc-' + Date.now() + '-' + (++_createSeq)) : null;
@@ -2506,15 +2538,15 @@ click to open the label`;
     if (background && token && typeof GM_openInTab === 'function') {
       const bgTab = GM_openInTab(`${url}#tc-autocommit=${encodeURIComponent(token)}`, { active: false, insert: true });
       _pendingCreates.set(token, { slot, bgTab });
-      Log.info('create-artist (background) for', JSON.stringify(name), '— will auto-insert on save');
+      Log.cat('Create').info('artist (background) for', JSON.stringify(name), '— will auto-insert on save');
       return;
     }
     const tab = W.open(url, '_blank');   // NOT noopener — we set a token on the new tab's sessionStorage
     if (tab && token) {
       _pendingCreates.set(token, { slot });
       const trySet = () => { try { tab.sessionStorage.setItem(PENDING_KEY, token); } catch (e) { setTimeout(trySet, 50); } }; trySet();
-      Log.info('create-artist for', JSON.stringify(name), '— will auto-insert on save');
-    } else { Log.info('open MB create-artist for', JSON.stringify(name)); }
+      Log.cat('Create').info('artist for', JSON.stringify(name), '— will auto-insert on save');
+    } else { Log.cat('Create').info('open MB create-artist for', JSON.stringify(name)); }
   }
   // the Label field's ＋: MusicBrainz's create-label form, seeded with the name and with the label's
   // Discogs or platform link when no label has it yet; the saved label is set on the field, as a
@@ -2525,7 +2557,7 @@ click to open the label`;
     if (link && sameName(link.name, name)) {
       url += `&edit-label.url.0.text=${encodeURIComponent(link.url)}`;
       platformUrlForms(link.url).forEach(f => { _discogsResolveCache.delete('label:' + f); _ddrop('resolve', 'label:' + f); });
-      Log.info('create-label: seeding the link', link.url);
+      Log.cat('Create').info('seeding the link', link.url);
     }
     url += `&edit-label.edit_note=${encodeURIComponent(entityActionNote('Created this label'))}`;
     const token = (lf && ART_CHANNEL) ? ('tc-' + Date.now() + '-' + (++_createSeq)) : null;
@@ -2533,15 +2565,15 @@ click to open the label`;
     if (background && token && typeof GM_openInTab === 'function') {
       pend.bgTab = GM_openInTab(`${url}#tc-autocommit=${encodeURIComponent(token)}`, { active: false, insert: true });
       _pendingCreates.set(token, pend);
-      Log.info('create-label (background) for', JSON.stringify(name), '— will be set on save');
+      Log.cat('Create').info('label (background) for', JSON.stringify(name), '— will be set on save');
       return;
     }
     const tab = W.open(url, '_blank');   // NOT noopener — we set a token on the new tab's sessionStorage
     if (tab && token) {
       _pendingCreates.set(token, pend);
       const trySet = () => { try { tab.sessionStorage.setItem(PENDING_KEY, token); } catch (e) { setTimeout(trySet, 50); } }; trySet();
-      Log.info('create-label for', JSON.stringify(name), '— will be set on save');
-    } else Log.info('open MB create-label for', JSON.stringify(name));
+      Log.cat('Create').info('label for', JSON.stringify(name), '— will be set on save');
+    } else Log.cat('Create').info('open MB create-label for', JSON.stringify(name));
   }
   // runs on a freshly-saved /artist/<mbid> (or /label/<mbid>) page opened by createArtist (createLabel): post the MBID back, then close
   function handleArtistPageCallback() {
@@ -4788,7 +4820,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
   function syncApplyMode() { const v = SETTINGS.applyMode || 'all'; document.querySelectorAll('.tc-applymode input').forEach(r => { r.checked = r.value === v; }); }
   function wireApplyMode(root) {
     const am = (root || document).querySelector('.tc-applymode'); if (!am) return;
-    am.querySelectorAll('input').forEach(r => { r.checked = r.value === (SETTINGS.applyMode || 'all'); r.onchange = () => { if (!r.checked) return; SETTINGS.applyMode = r.value; saveSettings(); syncApplyMode(); Log.info('applyMode =', r.value); }; });
+    am.querySelectorAll('input').forEach(r => { r.checked = r.value === (SETTINGS.applyMode || 'all'); r.onchange = () => { if (!r.checked) return; SETTINGS.applyMode = r.value; saveSettings(); syncApplyMode(); Log.cat('Artist').info('applyMode =', r.value); }; });
   }
   // #330: per-medium "Pregap" / "Data track" checkboxes that drive MB's writable medium
   // observables hasPregap()/hasDataTracks() (the same thing native MB's buttons do), then
@@ -4807,9 +4839,9 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
       try { cb.checked = typeof med[prop] === 'function' && !!med[prop](); } catch (e) {}
       cb.onchange = () => {
         _selfEdit = true;
-        try { med[prop](cb.checked); } catch (e) { Log.warn(`${label} toggle failed`, e.message); }
+        try { med[prop](cb.checked); } catch (e) { Log.cat('Tracklist').warn(`${label} toggle failed`, e.message); }
         finally { _selfEdit = false; }
-        Log.info(`medium ${target + 1}: ${label} ${cb.checked ? 'added' : 'removed'}`);
+        Log.cat('Tracklist').info(`medium ${target + 1}: ${label} ${cb.checked ? 'added' : 'removed'}`);
         MODEL = buildShell(); if (ACTIVE.mode === 'mirror') { mountMediums(); syncNative(); } rerender();
       };
       lbl.appendChild(cb); lbl.appendChild(document.createTextNode(' ' + label));
@@ -4851,7 +4883,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
      buttons: crossing the boundary either way would contradict the TOC. */
   function setDataBoundary(mi, ti, toData) {
     const med = mediums()[mi]; if (!med) return;
-    if (mediumLocked(mi)) { Log.warn('medium ' + (mi + 1) + ': the data-track boundary is fixed by the Disc ID'); return; }
+    if (mediumLocked(mi)) { Log.cat('Tracklist').warn('medium ' + (mi + 1) + ': the data-track boundary is fixed by the Disc ID'); return; }
     const tracks = u(med.tracks) || [];
     let n = 0;
     _selfEdit = true;
@@ -4864,9 +4896,9 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
         if (want !== is) { t.isDataTrack(want); n++; }
       });
       if (typeof med.toc === 'function') med.toc(null);   // native clears the TOC on every boundary move
-    } catch (e) { Log.warn('data-track move failed', e.message); }
+    } catch (e) { Log.cat('Tracklist').warn('data-track move failed', e.message); }
     finally { _selfEdit = false; }
-    Log.info('medium ' + (mi + 1) + ': moved ' + n + ' track' + (n === 1 ? '' : 's')
+    Log.cat('Tracklist').info('medium ' + (mi + 1) + ': moved ' + n + ' track' + (n === 1 ? '' : 's')
       + (toData ? ' into the data-track section (from #' + (ti + 1) + ' down)' : ' back into the audio section (through #' + (ti + 1) + ')'));
     MODEL = buildShell(); if (ACTIVE.mode === 'mirror') { mountMediums(); syncNative(); } rerender();
   }
@@ -4934,7 +4966,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
       COLS.forEach((c, i) => { if (!cols[i]) return; cols[i].style.width = c.k === 'art' ? '' : colW(c.k, c.w) + 'px'; });
     });
   }
-  function colsDefault() { SETTINGS.colWidths = {}; saveSettings(); applyColWidths(); Log.info('columns → default widths'); }
+  function colsDefault() { SETTINGS.colWidths = {}; saveSettings(); applyColWidths(); Log.cat('Tool').info('columns → default widths'); }
   // fit each text column (#, Title, Length) to its widest content; Artist absorbs the slack
   function colsFit() {
     const tables = [...document.querySelectorAll(TL_MIRROR)]; if (!tables.length) return;
@@ -4948,7 +4980,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
       tables.forEach(t => t.querySelectorAll(`tbody td.c-${k} input`).forEach(inp => { max = Math.max(max, cx.measureText(inp.value || '').width); }));
       SETTINGS.colWidths[k] = Math.min(CAP[k], Math.max(36, Math.round(max) + PAD[k]));
     });
-    saveSettings(); applyColWidths(); Log.info('columns → fit content', JSON.stringify(SETTINGS.colWidths));
+    saveSettings(); applyColWidths(); Log.cat('Tool').info('columns → fit content', JSON.stringify(SETTINGS.colWidths));
   }
   // "centered" / balanced: give Title and Artist an equal share of the row (Artist flexes to the other half)
   function colsBalanced() {
@@ -4957,7 +4989,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     const total = table.clientWidth || table.offsetWidth || 900;
     const fixed = colW('mv', 32) + colW('num', 38) + colW('len', 52) + colW('badge', 56) + colW('act', 44);
     SETTINGS.colWidths.title = Math.max(160, Math.round((total - fixed) / 2));
-    saveSettings(); applyColWidths(); Log.info('columns → balanced (Title = Artist)', SETTINGS.colWidths.title);
+    saveSettings(); applyColWidths(); Log.cat('Tool').info('columns → balanced (Title = Artist)', SETTINGS.colWidths.title);
   }
 
   // picking an artist writes through immediately; in "all" mode it also copies to every other
@@ -4975,7 +5007,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     // whole-credit match, like MB's native "all matching tracks": copy this track's resulting
     // credit (the picked artist included) to every other track that shared its credit string.
     const copies = propagateCredit(entry, beforeKey);
-    if (copies) { slot._marked = true; Log.info('propagated', c.name, '→', copies, 'matching track(s)'); }
+    if (copies) { slot._marked = true; Log.cat('Artist').info('propagated', c.name, '→', copies, 'matching track(s)'); }
     rerender();
     if (copies) toast(`linked “${c.name}” — also on ${copies} matching track${copies > 1 ? 's' : ''}`);
     // #227: the new artist may lack the slot's Discogs link — recompute the add affordance
@@ -5005,8 +5037,8 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     slot.creditedAs = on.creditedAs; slot.joinPhrase = on.joinPhrase; slot.query = null;
     const a = u(on.artist) || {}, gid = u(a.gid);
     if (gid) Object.assign(slot, { status: 'set', gid, name: u(a.name), entity: { gid, name: u(a.name), id: u(a.id) }, candidates: [], committed: true });
-    else { const sib = (await loadSiblingMap()).get(fold(entry.title)); const durls = (await loadDiscogsMap())?.get(fold(entry.title)); const pUrl = fcPlatformUrl(entry, i, on.creditedAs); const m = await matchSlot(on.creditedAs, sib && pickSibArtist(sib, on.creditedAs, i), durls && durls[i], slotContextGids(slot._entry, i), () => positionArtists(entry, on.creditedAs), pUrl); Object.assign(slot, { status: slotStatusOf(m), entity: m.entity, gid: m.entity ? m.entity.gid : null, name: m.entity ? m.entity.name : '', candidates: m.candidates, _pos: m.pos || null, _why: m.why || null, committed: false }); await tagDiscogsAddable(slot, durls && durls[i]); await tagPlatformAddable(slot, pUrl); }
-    commitTrack(entry); Log.info('reverted slot', i, 'of track', entry.number); rerender();
+    else { const sib = (await loadSiblingMap()).get(fold(entry.title)); const durls = (await loadDiscogsMap())?.get(fold(entry.title)); const pUrl = fcPlatformUrl(entry, i, on.creditedAs); const m = await matchSlot(on.creditedAs, sib && pickSibArtist(sib, on.creditedAs, i), durls && durls[i], slotContextGids(slot._entry, i), () => positionArtists(entry, on.creditedAs), pUrl, trackWhere(entry)); Object.assign(slot, { status: slotStatusOf(m), entity: m.entity, gid: m.entity ? m.entity.gid : null, name: m.entity ? m.entity.name : '', candidates: m.candidates, _pos: m.pos || null, _why: m.why || null, committed: false }); await tagDiscogsAddable(slot, durls && durls[i]); await tagPlatformAddable(slot, pUrl); }
+    commitTrack(entry); Log.cat('Artist').info('reverted slot', i, 'of track', entry.number); rerender();
   }
 
   const blankSlot = entry => ({ creditedAs: '', joinPhrase: '', status: 'none', entity: null, gid: null, name: '', candidates: [], committed: false, _entry: entry });
@@ -5049,7 +5081,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     commitTrack(entry);
     const n = propagateCredit(entry, beforeKey);
     if (liveRerender || n) rerender();
-    Log.info(verb, 'on track', entry.number, n ? ('· +' + n + ' matching') : '');
+    Log.cat('Artist').info(verb, 'on track', entry.number, n ? ('· +' + n + ' matching') : '');
     if (n) toast(`${verb} — also on ${n} matching track${n > 1 ? 's' : ''}`);
     return n;
   }
@@ -5104,8 +5136,8 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     const fresh = parts.map((p, i) => { const s = blankSlot(entry); s.creditedAs = p.name; s.joinPhrase = i < parts.length - 1 ? normJoin(p.sep) : ''; s._pending = true; return s; });
     entry.slots.splice(idx, 1, ...fresh); entry.slots.forEach(s => { s._entry = entry; });
     commitTrack(entry); rerender();
-    if (entry.release) { fresh.forEach(s => { delete s._pending; }); Log.info('split the release artist', JSON.stringify(slot.creditedAs || slot.name), '→', parts.map(p => p.name).join(' · ')); await matchReleaseArtist(true); return; }   // #652: matched by the release artist's stages
-    Log.info('split', JSON.stringify(slot.creditedAs || slot.name), '→', parts.map(p => p.name).join(' · '));
+    if (entry.release) { fresh.forEach(s => { delete s._pending; }); Log.cat('Artist').info('split the release artist', JSON.stringify(slot.creditedAs || slot.name), '→', parts.map(p => p.name).join(' · ')); await matchReleaseArtist(true); return; }   // #652: matched by the release artist's stages
+    Log.cat('Artist').info('split', JSON.stringify(slot.creditedAs || slot.name), '→', parts.map(p => p.name).join(' · '));
     if (SETTINGS.autoMatch !== false) await matchModel();
     else fresh.forEach(s => { delete s._pending; });
     // remove the credited-as override on the matched parts (the artist name is the credit)
@@ -5113,7 +5145,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     commitTrack(entry);
     const n = propagateCredit(entry, beforeKey);   // apply the finished split to every track that shared the old credit
     rerender();
-    if (n) { Log.info('split — also on', n, 'matching track(s)'); toast(`split — also on ${n} matching track${n > 1 ? 's' : ''}`); }
+    if (n) { Log.cat('Artist').info('split — also on', n, 'matching track(s)'); toast(`split — also on ${n} matching track${n > 1 ? 's' : ''}`); }
   }
 
   // ＋ create-button at the right end of the box (before the join), only when the slot is unmatched;
@@ -5251,7 +5283,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     c.addEventListener('mouseenter', () => clearTimeout(_mtHideT));
     c.addEventListener('mouseleave', () => { _mtHideT = setTimeout(closeMatchCard, 250); });
     _mtCard = c; _mtFor = badge;
-    Log.debug('match card: ' + slot.status + ' for "' + slot.creditedAs + '"' + (slot._why ? '' : ' (no match record: linked before this session or picked)'));
+    Log.cat('Artist').debug('match card: ' + slot.status + ' for "' + slot.creditedAs + '"' + (slot._why ? '' : ' (no match record: linked before this session or picked)'));
   }
   // one listener for every badge, now and after any re-render
   function wireMatchCards() {
@@ -5387,7 +5419,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     const draw = res => {
       ensure(); const q = inp.value.trim() || slot.creditedAs;
       const lead = posLead(), leadG = new Set(lead.map(x => x.entity.gid)), votes = new Map(lead.map(x => [x.entity.gid, x.votes]));
-      Log.debug(`picker "${slot.creditedAs}": ${lead.length} artist(s) from other editions at this position, ${res.length} from the search (slot ${slot.status}${slot._pos ? ', position data kept' : ', no position data'})`);
+      Log.cat('Artist').debug(`picker "${slot.creditedAs}": ${lead.length} artist(s) from other editions at this position, ${res.length} from the search (slot ${slot.status}${slot._pos ? ', position data kept' : ', no position data'})`);
       const arr = lead.length ? [...lead.map(x => x.entity), ...res.filter(c => !leadG.has(c.gid || c.id))] : res;
       list = arr;
       const of = lead.length ? slot._pos.of : 0;
@@ -5771,8 +5803,8 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     enrichResolvedAliasesSoon();   // batch-fetch aliases for resolved artists (existing releases too) — coalesced, see #575
     // #407: resolve an unset release label to its unique exact MB hit — once, independent of the
     // tracklist auto-match toggle (the label lives in the release-info model, not the tracklist).
-    if (!_labelsAutoMatchedOnce) { _labelsAutoMatchedOnce = true; matchReleaseLabels().catch(e => Log.warn('label auto-match failed', e.message)); }
-    if (!_artistAutoMatchedOnce) { _artistAutoMatchedOnce = true; matchReleaseArtist().catch(e => Log.warn('artist auto-match failed', e.message)); }
+    if (!_labelsAutoMatchedOnce) { _labelsAutoMatchedOnce = true; matchReleaseLabels().catch(e => Log.cat('Label').warn('label auto-match failed', e.message)); }
+    if (!_artistAutoMatchedOnce) { _artistAutoMatchedOnce = true; matchReleaseArtist().catch(e => Log.cat('Artist').warn('artist auto-match failed', e.message)); }
     srApplyDefaultOnStart();   // #410: run the marked default S&R once, now the tracklist is rendered
   }
   /* #685: a rebuild removes and re-adds every row (mirror mode the whole section),
@@ -5786,7 +5818,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
       for (let n = tb && tb.parentElement; n && n !== document.body; n = n.parentElement) if (n.scrollHeight > n.clientHeight && !seen.has(n)) { seen.add(n); at.push([n, 0]); }
     });
     at.forEach(p => { p[1] = p[0].scrollTop; });
-    Log.debug('keep scroll', at.map(p => p[1]));
+    Log.cat('System').debug('keep scroll', at.map(p => p[1]));
     // clamped = only where the view sits at the top now: a later call (after matching) mustn't undo the user's own scrolling
     return clamped => at.forEach(([n, top]) => { if (n.isConnected && n.scrollTop !== top && (!clamped || n.scrollTop === 0)) n.scrollTop = top; });
   }
@@ -5802,7 +5834,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
   }
   // revert to the page-load state, but DON'T auto-match (that only runs on startup) — Match is manual here
   function revertAll() { if (!MODEL) return; if (!W.confirm("Revert every track to what it was when the page loaded?")) return; MODEL.tracks.forEach(t => resetTrack(t, true)); rebuild(true); }   // #586: true = also restore the data-track boundary
-  function guessCaseAll() { if (!MODEL) return; MODEL.tracks.forEach(t => { applyGuessTitle(t); t.title = u(koTrack(t.mi, t.ti).name); t.guessTitle = guessTitleStr(t); }); rerender(); Log.info('guess case → all titles'); }
+  function guessCaseAll() { if (!MODEL) return; MODEL.tracks.forEach(t => { applyGuessTitle(t); t.title = u(koTrack(t.mi, t.ti).name); t.guessTitle = guessTitleStr(t); }); rerender(); Log.cat('Tool').info('guess case → all titles'); }
   // titles carrying a featured-artist credit ("Foo feat. X", "ft.", "featuring") — detect so the
   // row can flag them and offer the split inline (#124). Needs a space/bracket/start before the
   // marker and whitespace/bracket/end after, so words like "soft"/"feats"/"drift" don't trip it.
@@ -5810,18 +5842,18 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
   // integrated MB feature: pull "feat. X" out of titles into artist credits, then re-read + re-match
   async function guessFeatAll() {
     const ed = getEditor();
-    mediums().forEach(med => (u(med.tracks) || []).forEach(t => { try { ed.guessTrackFeatArtists(t); } catch (e) { try { ed.guessTrackFeatArtists(t, { type: 'click' }); } catch (e2) { Log.warn('guess feat failed', e2.message); } } }));
-    await loadAndRender(); Log.info('guessed feat artists from titles');
+    mediums().forEach(med => (u(med.tracks) || []).forEach(t => { try { ed.guessTrackFeatArtists(t); } catch (e) { try { ed.guessTrackFeatArtists(t, { type: 'click' }); } catch (e2) { Log.cat('Tool').warn('guess feat failed', e2.message); } } }));
+    await loadAndRender(); Log.cat('Tool').info('guessed feat artists from titles');
   }
   // single-track variant — fired by the per-track ⋔ split button (#124)
   async function guessFeatTrack(entry) {
     const ed = getEditor(), t = koTrack(entry.mi, entry.ti);
-    try { ed.guessTrackFeatArtists(t); } catch (e) { try { ed.guessTrackFeatArtists(t, { type: 'click' }); } catch (e2) { Log.warn('guess feat failed', e2.message); } }
-    await loadAndRender(); Log.info('guessed feat artists for track', entry.number);
+    try { ed.guessTrackFeatArtists(t); } catch (e) { try { ed.guessTrackFeatArtists(t, { type: 'click' }); } catch (e2) { Log.cat('Tool').warn('guess feat failed', e2.message); } }
+    await loadAndRender(); Log.cat('Tool').info('guessed feat artists for track', entry.number);
   }
   // medium-scoped tools — each acts on one medium (chosen via the inline medium combo)
-  async function swapMedium(mi) { const ed = getEditor(), m = mediums()[mi]; if (!m) return; _selfEdit = true; try { ed.swapTitlesWithArtists(m); } catch (e) { Log.warn('swap failed', e.message); } finally { _selfEdit = false; } await loadAndRender(); Log.info('swapped titles ↔ artists on medium', mi + 1); }
-  function resetNumbers(mi) { const ed = getEditor(), m = mediums()[mi]; if (!m) return; _selfEdit = true; try { ed.resetTrackNumbers(m); } catch (e) { Log.warn('reset numbers failed', e.message); } finally { _selfEdit = false; } rebuild(); }
+  async function swapMedium(mi) { const ed = getEditor(), m = mediums()[mi]; if (!m) return; _selfEdit = true; try { ed.swapTitlesWithArtists(m); } catch (e) { Log.cat('Tool').warn('swap failed', e.message); } finally { _selfEdit = false; } await loadAndRender(); Log.cat('Tool').info('swapped titles ↔ artists on medium', mi + 1); }
+  function resetNumbers(mi) { const ed = getEditor(), m = mediums()[mi]; if (!m) return; _selfEdit = true; try { ed.resetTrackNumbers(m); } catch (e) { Log.cat('Tool').warn('reset numbers failed', e.message); } finally { _selfEdit = false; } rebuild(); }
 
   /* ── #615 Merge / Split mediums ─────────────────────────────────────────────
    * majkinetor: "Merge all or subset of mediums (keep only one and move tracks to
@@ -5850,11 +5882,11 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
   async function loadMediums(meds) {
     const pending = meds.filter(m => !medLoaded(m));
     if (!pending.length) return true;
-    Log.info('#615 loading', pending.length, 'collapsed medium(s) first');
-    pending.forEach(m => { try { if (typeof m.loadTracks === 'function') m.loadTracks(); } catch (e) { Log.warn('loadTracks failed', e.message); } });
+    Log.cat('Tool').info('loading', pending.length, 'collapsed medium(s) first');
+    pending.forEach(m => { try { if (typeof m.loadTracks === 'function') m.loadTracks(); } catch (e) { Log.cat('Tool').warn('loadTracks failed', e.message); } });
     for (let n = 0; n < 150 && !pending.every(medLoaded); n++) await new Promise(r => setTimeout(r, 200));
     const ok = pending.every(medLoaded);
-    if (!ok) Log.warn('#615 medium(s) did not finish loading:', pending.filter(m => !medLoaded(m)).map(m => u(m.position)).join(', '));
+    if (!ok) Log.cat('Tool').warn('medium(s) did not finish loading:', pending.filter(m => !medLoaded(m)).map(m => u(m.position)).join(', '));
     return ok;
   }
   // a live KO track → constructor data for a NEW track that keeps the same recording (MB's own copy path)
@@ -5867,13 +5899,13 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
   async function mergeMediums(indices) {
     const ed = getEditor(), all = mediums(), F = W.MB && W.MB.releaseEditor && W.MB.releaseEditor.fields;
     const sel = [...new Set(indices)].filter(i => all[i]).sort((a, b) => a - b);
-    if (sel.length < 2) { toast('Merge: tick at least two mediums'); Log.warn('#615 merge: fewer than two mediums selected', JSON.stringify(indices)); return; }
-    if (!F || !F.Track) { Log.err('#615 merge: MB release-editor fields not available'); toast('Merge failed — see Log'); return; }
+    if (sel.length < 2) { toast('Merge: tick at least two mediums'); Log.cat('Tool').warn('merge: fewer than two mediums selected', JSON.stringify(indices)); return; }
+    if (!F || !F.Track) { Log.cat('Tool').err('merge: MB release-editor fields not available'); toast('Merge failed — see Log'); return; }
     const meds = sel.map(i => all[i]), target = meds[0], sources = meds.slice(1);
     const locked = sel.filter(i => medHasToc(all[i]));
-    if (locked.length) { toast('Merge: medium ' + locked.map(i => i + 1).join(', ') + ' has a disc ID — MB locks its tracklist'); Log.warn('#615 merge refused — disc ID on medium(s)', locked.map(i => i + 1).join(', ')); return; }
+    if (locked.length) { toast('Merge: medium ' + locked.map(i => i + 1).join(', ') + ' has a disc ID — MB locks its tracklist'); Log.cat('Tool').warn('merge refused — disc ID on medium(s)', locked.map(i => i + 1).join(', ')); return; }
     if (!(await loadMediums(meds))) { toast('Merge: a medium did not load — try again'); return; }
-    Log.info('#615 merge: mediums', sel.map(i => i + 1).join(', '), '→ medium', sel[0] + 1, '·', meds.map((m, k) => (sel[k] + 1) + ':' + u(m.tracks).length).join(' '));
+    Log.cat('Tool').info('merge: mediums', sel.map(i => i + 1).join(', '), '→ medium', sel[0] + 1, '·', meds.map((m, k) => (sel[k] + 1) + ':' + u(m.tracks).length).join(' '));
     _selfEdit = true;
     let moved = 0;
     try {
@@ -5881,10 +5913,10 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
       const movAudio = [], movData = [];
       for (const src of sources) {
         for (const t of u(src.tracks)) {
-          if (u(t.position) === 0) Log.warn('#615 merge: medium', u(src.position), 'pregap track "' + (u(t.name) || '') + '" becomes a regular track');
+          if (u(t.position) === 0) Log.cat('Tool').warn('merge: medium', u(src.position), 'pregap track "' + (u(t.name) || '') + '" becomes a regular track');
           const nt = new F.Track(trackCopyData(t), target);
           (u(nt.isDataTrack) ? movData : movAudio).push(nt);
-          Log.debug('#615   ' + u(src.position) + '.' + u(t.number) + ' "' + (u(t.name) || '') + '" → medium ' + (sel[0] + 1) + (nt.recording && u(nt.recording) && u(nt.recording).gid ? ' · recording ' + u(nt.recording).gid : ' · new recording'));
+          Log.cat('Tool').debug(''+ u(src.position) + '.' + u(t.number) + ' "' + (u(t.name) || '') + '" → medium ' + (sel[0] + 1) + (nt.recording && u(nt.recording) && u(nt.recording).gid ? ' · recording ' + u(nt.recording).gid : ' · new recording'));
           moved++;
         }
       }
@@ -5893,9 +5925,9 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
       for (const src of sources.slice().reverse()) ed.removeMedium(src);   // last first, so MB's renumbering of the rest stays simple
       ed.resetTrackNumbers(target);
       try { target.toc(null); } catch (e) {}
-    } catch (e) { Log.err('#615 merge failed:', e.message); toast('Merge failed — see Log'); }
+    } catch (e) { Log.cat('Tool').err('merge failed:', e.message); toast('Merge failed — see Log'); }
     finally { _selfEdit = false; }
-    Log.ok('#615 merged', sources.length, 'medium(s) into medium', sel[0] + 1, '—', moved, 'track(s) moved, recordings kept, numbers reset');
+    Log.cat('Tool').ok('merged', sources.length, 'medium(s) into medium', sel[0] + 1, '—', moved, 'track(s) moved, recordings kept, numbers reset');
     toast('Merged ' + (sources.length + 1) + ' mediums into medium ' + (sel[0] + 1) + ' (' + moved + ' tracks moved)');
     _mergeSel = null;
     await loadAndRender(); renderToolbar();
@@ -5904,13 +5936,13 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
   async function splitMedium(mi, at) {
     const ed = getEditor(), rel = release(), m = mediums()[mi], F = W.MB && W.MB.releaseEditor && W.MB.releaseEditor.fields;
     if (!m) return;
-    if (!F || !F.Track || !F.Medium) { Log.err('#615 split: MB release-editor fields not available'); toast('Split failed — see Log'); return; }
-    if (medHasToc(m)) { toast('Split: medium ' + (mi + 1) + ' has a disc ID — MB locks its tracklist'); Log.warn('#615 split refused — disc ID on medium', mi + 1); return; }
+    if (!F || !F.Track || !F.Medium) { Log.cat('Tool').err('split: MB release-editor fields not available'); toast('Split failed — see Log'); return; }
+    if (medHasToc(m)) { toast('Split: medium ' + (mi + 1) + ' has a disc ID — MB locks its tracklist'); Log.cat('Tool').warn('split refused — disc ID on medium', mi + 1); return; }
     if (!(await loadMediums([m]))) { toast('Split: the medium did not load — try again'); return; }
     const tracks = u(m.tracks);
-    if (!(at > 0 && at < tracks.length)) { toast('Split: pick a track after the first one'); Log.warn('#615 split: bad split index', at, 'of', tracks.length); return; }
+    if (!(at > 0 && at < tracks.length)) { toast('Split: pick a track after the first one'); Log.cat('Tool').warn('split: bad split index', at, 'of', tracks.length); return; }
     const moving = tracks.slice(at);
-    Log.info('#615 split: medium', mi + 1, 'at track', u(tracks[at].number), '"' + (u(tracks[at].name) || '') + '" —', moving.length, 'of', tracks.length, 'track(s) to a new medium', mi + 2);
+    Log.cat('Tool').info('split: medium', mi + 1, 'at track', u(tracks[at].number), '"' + (u(tracks[at].name) || '') + '" —', moving.length, 'of', tracks.length, 'track(s) to a new medium', mi + 2);
     _selfEdit = true;
     try {
       const nm = new F.Medium({ position: u(m.position) + 1, format_id: u(m.formatID), name: '', tracks: [] }, rel);
@@ -5922,9 +5954,9 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
       ed.resetTrackNumbers(m); ed.resetTrackNumbers(nm);
       try { m.toc(null); } catch (e) {}
       try { if (typeof nm.loaded === 'function') nm.loaded(true); if (typeof nm.collapsed === 'function') nm.collapsed(false); } catch (e) {}
-    } catch (e) { Log.err('#615 split failed:', e.message); toast('Split failed — see Log'); }
+    } catch (e) { Log.cat('Tool').err('split failed:', e.message); toast('Split failed — see Log'); }
     finally { _selfEdit = false; }
-    Log.ok('#615 split medium', mi + 1, '→ new medium', mi + 2, 'with', moving.length, 'track(s), recordings kept, numbers reset on both');
+    Log.cat('Tool').ok('split medium', mi + 1, '→ new medium', mi + 2, 'with', moving.length, 'track(s), recordings kept, numbers reset on both');
     toast('Split medium ' + (mi + 1) + ': ' + moving.length + ' tracks moved to new medium ' + (mi + 2));
     await loadAndRender(); renderToolbar();
   }
@@ -6085,7 +6117,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     } };
   }
 
-  function openParser(mi) { const ed = getEditor(), m = mediums()[mi]; if (!m) return; try { ed.openTrackParser(m); } catch (e) { Log.warn('open parser failed', e.message); } }
+  function openParser(mi) { const ed = getEditor(), m = mediums()[mi]; if (!m) return; try { ed.openTrackParser(m); } catch (e) { Log.cat('Tool').warn('open parser failed', e.message); } }
 
   function openTrackPatternParser(mi) {
     document.getElementById('tc-tpppop')?.remove();
@@ -6181,14 +6213,14 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
           if (i >= nT) return; const pr = parseRow(r); if (!pr) return;
           const entry = { mi: curMi, ti: i };
           if ((which === 'all' || which === 'title') && pr.title != null && pr.title !== '') setTitle(entry, pr.title);
-          if ((which === 'all' || which === 'artist') && pr.artist != null && pr.artist !== '') { try { koTrack(curMi, i).artistCredit({ names: [{ artist: null, name: pr.artist, joinPhrase: '' }] }); } catch (e) { Log.warn('set artist failed', e.message); } }
+          if ((which === 'all' || which === 'artist') && pr.artist != null && pr.artist !== '') { try { koTrack(curMi, i).artistCredit({ names: [{ artist: null, name: pr.artist, joinPhrase: '' }] }); } catch (e) { Log.cat('Tool').warn('set artist failed', e.message); } }
           if ((which === 'all' || which === 'length') && pr.length && lpValid(pr.length)) setLength(entry, pr.length);
           if ((which === 'all' || which === 'pos') && pr.pos != null && pr.pos !== '') setNumber(entry, pr.pos);
           wrote++;
         });
       } finally { _selfEdit = false; }
       rebuild(true);
-      Log.info('track parser: applied', which, 'from pattern', JSON.stringify(_tpPattern), 'to', wrote, 'row(s) on medium', curMi + 1);
+      Log.cat('Tool').info('track parser: applied', which, 'from pattern', JSON.stringify(_tpPattern), 'to', wrote, 'row(s) on medium', curMi + 1);
       toast(`Applied ${wrote} row${wrote !== 1 ? 's' : ''} to Medium ${curMi + 1}`);
       close();
     }
@@ -6464,13 +6496,13 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
       if (!txt) return;
       if (LP_URL_RE.test(txt)) {
         e.preventDefault(); e.stopPropagation();
-        Log.info('length parser: pasted a link — reading track lengths from', txt);
+        Log.cat('Tool').info('length parser: pasted a link — reading track lengths from', txt);
         fetchLink(txt);
         return;
       }
       if (!typing && chooser.style.display !== 'none') {
         e.preventDefault(); e.stopPropagation();
-        Log.debug('length parser: pasted', txt.length, 'chars of text onto the chooser');
+        Log.cat('Tool').debug('length parser: pasted', txt.length, 'chars of text onto the chooser');
         setChooser(false); ta.value = txt; sourceUrl = null; items = lpParse(txt); render(); showChooser(); ta.focus();
       }
     }
@@ -6526,7 +6558,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
       if (!applied) return;
       if (sourceUrl) lpNoteSource(sourceUrl);   // #455.2 credit the source in the edit note
       rebuild(true);
-      Log.info('length parser: applied', applied, 'track length(s) on medium', curMi + 1, kept.length ? ('· left as is (empty): track ' + kept.join(', ')) : '', sourceUrl ? ('from ' + sourceUrl) : '');
+      Log.cat('Tool').info('length parser: applied', applied, 'track length(s) on medium', curMi + 1, kept.length ? ('· left as is (empty): track ' + kept.join(', ')) : '', sourceUrl ? ('from ' + sourceUrl) : '');
       toast(`Applied ${applied} track length${applied !== 1 ? 's' : ''}` + (kept.length ? ` · ${kept.length} left as is` : ''));
       close();
     }
@@ -6553,14 +6585,14 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     // rebinds every [data-act] to runAction, overriding pickTool), so re-sync the bridge map HERE too —
     // otherwise a stale map (a prior sync while the external button was hidden) means nothing fires, while
     // the Tools menu (which goes through pickTool/getToolCfg) still works.
-    if (String(a).startsWith('x:')) { syncBridges(); const b = _bridgeMap[a]; if (b) fireBridge(b); else Log.warn('Apollo bridge not present:', a); return; }
+    if (String(a).startsWith('x:')) { syncBridges(); const b = _bridgeMap[a]; if (b) fireBridge(b); else Log.cat('Tool').warn('bridge not present:', a); return; }
     if (a === 'match') { if (_matching) stopMatching(); else matchAll(); }   // #577: the same button stops a running pass
     else if (a === 'revert') revertAll();
     else if (a === 'guesscase') guessCaseAll();
     else if (a === 'guessfeat') guessFeatAll();
     else if (a === 'cols') colsFit();   // the Columns button's default action is Fit
     else if (a === 'mergemed') { const all = mediums(); const sel = _mergeSel ? [..._mergeSel].filter(i => all[i]) : all.map((_, i) => i); mergeMediums(sel); }   // #615
-    else if (a === 'splitmed') { const mi = toolMedium(); const m = mediums()[mi]; const n = m && medLoaded(m) ? u(m.tracks).length : 0; Log.debug('#615 split requested: medium', mi + 1, '· chosen index', _splitAt, '· tracks', n); splitMedium(mi, _splitAt != null ? _splitAt : Math.floor(n / 2)); }   // #615
+    else if (a === 'splitmed') { const mi = toolMedium(); const m = mediums()[mi]; const n = m && medLoaded(m) ? u(m.tracks).length : 0; Log.cat('Tool').debug('split requested: medium', mi + 1, '· chosen index', _splitAt, '· tracks', n); splitMedium(mi, _splitAt != null ? _splitAt : Math.floor(n / 2)); }   // #615
     else if (MEDIUM_TOOLS.has(a)) runMediumTool(a, 0);
     else if (_bridgeMap[a]) fireBridge(_bridgeMap[a]);
   }
@@ -6600,7 +6632,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
         } catch (e) {}
       });
     } finally { _selfEdit = false; }
-    Log.info('cleared all track artist selections (kept credited-as text)'); rebuild(true);   // no re-match, or it would instantly re-link the kept text
+    Log.cat('Artist').info('cleared all track artist selections (kept credited-as text)'); rebuild(true);   // no re-match, or it would instantly re-link the kept text
   }
 
   /* ── Configurable Tools bar (#280) ───────────────────────────────────────────
@@ -6668,7 +6700,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     // #441 — only log when the set actually CHANGES; syncBridges runs on every tick and
     // was spamming the same line ~2×/s. Dedupe against the last signature.
     const sig = out.length ? out.map(b => b.act + (b.el ? '' : '(no-el)')).join(', ') : '(none)';
-    if (sig !== _lastBridgeSig) { _lastBridgeSig = sig; Log.debug('Apollo bridges synced:', sig); }   // #378 diagnostics
+    if (sig !== _lastBridgeSig) { _lastBridgeSig = sig; Log.cat('Tool').debug('bridges synced:', sig); }   // #378 diagnostics
     return out;
   }
   // tool-def accessor: native tools + present bridges, so render/customize treat them alike
@@ -6678,17 +6710,17 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
   const isImgIcon = v => typeof v === 'string' && /^(?:data:|https?:\/\/)/.test(v);
   const iconHtml = v => isImgIcon(v) ? `<img class="tc-icimg" src="${esc(v)}" alt="">` : esc(v == null ? '' : v);
   async function fireBridge(it) {
-    if (!it) { Log.warn('Apollo bridge: nothing to fire (no tool)'); return; }
+    if (!it) { Log.cat('Tool').warn('bridge: nothing to fire (no tool)'); return; }
     // #378 re-resolve the LIVE element at fire time: the cached one can be stale, and a fresh find() also
     // avoids firing Apollo's own surfaced copy of the tool. Fall back to the cached element.
     let el = it.el;
     const reg = BRIDGE.find(b => b.act === it.act);
-    try { if (reg && reg.find) { const fresh = reg.find(); if (fresh) el = fresh; } } catch (e) { Log.warn('Apollo bridge: find() threw', e.message); }
-    Log.info('Apollo bridge:', it.label, '· cached el', it.el ? 'yes' : 'null', '· resolved', !el ? 'null' : (el === it.el ? 'cached' : 'fresh'), '· ourUI', !!(el && el.closest && el.closest('.tc-tools,.tc-toolbtns,.tc-menu,#tc-panel')));
-    if (!el) { Log.warn('Apollo bridge: element gone —', it.label); return; }
-    Log.info('Apollo bridge: clicking', it.label, '→', el.tagName + '.' + ((el.className || '').toString().split(' ')[0] || ''));
+    try { if (reg && reg.find) { const fresh = reg.find(); if (fresh) el = fresh; } } catch (e) { Log.cat('Tool').warn('bridge: find() threw', e.message); }
+    Log.cat('Tool').info('bridge:', it.label, '· cached el', it.el ? 'yes' : 'null', '· resolved', !el ? 'null' : (el === it.el ? 'cached' : 'fresh'), '· ourUI', !!(el && el.closest && el.closest('.tc-tools,.tc-toolbtns,.tc-menu,#tc-panel')));
+    if (!el) { Log.cat('Tool').warn('bridge: element gone —', it.label); return; }
+    Log.cat('Tool').info('bridge: clicking', it.label, '→', el.tagName + '.' + ((el.className || '').toString().split(' ')[0] || ''));
     el.click();
-    try { await rebuild(true); } catch (e) { Log.warn('Apollo bridge: re-render failed', e.message); }   // re-read (no re-match)
+    try { await rebuild(true); } catch (e) { Log.cat('Tool').warn('bridge: re-render failed', e.message); }   // re-read (no re-match)
   }
   // default Tools bar (in display order) for a fresh install — every other tool starts
   // in the Tools ▾ menu. Each entry sets the tool's icon/text and whether its params
@@ -6766,7 +6798,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     return b;
   }
   function pickTool(act) {
-    if (String(act).startsWith('x:')) Log.info('Apollo: external tool activated —', act, '· in map:', !!_bridgeMap[act]);   // #378 diagnostics (bar button or Tools-menu item)
+    if (String(act).startsWith('x:')) Log.cat('Tool').info('external tool activated —', act, '· in map:', !!_bridgeMap[act]);   // #378 diagnostics (bar button or Tools-menu item)
     if (_bridgeMap[act]) return runAction(act);                  // bridged external tool — fire-and-forget
     if (OPTLESS.has(act)) return runAction(act);                 // instant (Guess feat.)
     // #280: a param tool picked from the Tools menu has nowhere to show its controls
@@ -6776,7 +6808,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
       if (!cfgOf(act).onBar) { TEMP_BAR.add(act); renderToolbar(); }
       // #615: Merge / Split restructure the release — picking them only SHOWS their params
       // (which mediums / which track); they run on their icon/name click, never on the pick.
-      if (PICK_SHOWS_ONLY.has(act)) { Log.info('#615', TD(act).label, '— set it up in the toolbar, then click its name to run'); return; }
+      if (PICK_SHOWS_ONLY.has(act)) { Log.cat('Tool').info(TD(act).label, '— set it up in the toolbar, then click its name to run'); return; }
       return triggerTool(act);
     }
     if (MEDIUM_TOOLS.has(act)) return runMediumTool(act, toolMedium());
@@ -6875,7 +6907,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
       if (_splitAt == null || _splitAt <= 0 || _splitAt >= tr.length) _splitAt = Math.floor(tr.length / 2) || null;
       if (_splitAt != null) at.value = String(_splitAt);
       at.disabled = tr.length < 2;
-      at.onchange = () => { _splitAt = parseInt(at.value, 10) || null; Log.debug('#615 split: new medium will start at track index', _splitAt, '(#' + at.options[at.selectedIndex].textContent + ')'); };
+      at.onchange = () => { _splitAt = parseInt(at.value, 10) || null; Log.cat('Tool').debug('split: new medium will start at track index', _splitAt, '(#' + at.options[at.selectedIndex].textContent + ')'); };
       box.append(lab, at); host.appendChild(box);
     } else if (MEDIUM_TOOLS.has(act) && mediums().length > 1) {
       const box = document.createElement('span'); box.className = 'tc-medo';
@@ -7077,7 +7109,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
       t._srFlash = !!(pats.length && text !== base);
     });
     rerender();
-    Log.debug('S&R chain', chain.name, auto ? '(auto default)' : '', '→', changed, 'title(s) replaced');
+    Log.cat('Tool').debug('S&R chain', chain.name, auto ? '(auto default)' : '', '→', changed, 'title(s) replaced');
     if (changed) toast(`Search and Replace: ${changed} title${changed !== 1 ? 's' : ''} replaced (${chain.name})`);
     else if (!auto) toast(`Search and Replace: ${chain.name}: no matches`);
   }
@@ -7125,7 +7157,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     // buildToolParams already called srActivate() BEFORE the model existed — leaving a stale/empty
     // snapshot that srApplyChain/srLive would then reuse (→ "no match", or a no-op for a pattern).
     srActivate();
-    try { srApplyDefaultItem(item, true); Log.info('Applied default S&R:', name); } catch (e) { Log.warn('default S&R failed', e.message); }
+    try { srApplyDefaultItem(item, true); Log.cat('Tool').info('Applied default S&R:', name); } catch (e) { Log.cat('Tool').warn('default S&R failed', e.message); }
   }
   // #409: chain "mode" — a chain isn't editable (it's several patterns), so when one is applied the
   // search/replace inputs are swapped for a read-only chip showing the chain name (✕ exits back to S&R).
@@ -7458,7 +7490,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
   function expandAllTracklistMediums() {
     const btns = document.querySelectorAll('fieldset.advanced-medium button.icon.expand-medium');
     if (!btns.length) return;
-    Log.info('expand all media (tracklist):', btns.length, 'collapsed');
+    Log.cat('System').info('expand all media (tracklist):', btns.length, 'collapsed');
     btns.forEach(b => { try { b.click(); } catch (e) {} });
   }
   // tidy the format header to a minimal look — but ONLY once a format is chosen. With no format the
@@ -7503,7 +7535,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     // Logged on the FIRST deferral of an episode, not on every re-check. The
     // match branch below re-arms twice a second, and logging each tick buried a
     // whole session's log under itself — "spamming now like crazy" (majkinetor).
-    if (isEditingNow()) { if (!_syncDeferred) Log.debug('tracklist resync deferred — a field is being edited (#580)'); _syncDeferred = true; return; }
+    if (isEditingNow()) { if (!_syncDeferred) Log.cat('System').debug('tracklist resync deferred — a field is being edited'); _syncDeferred = true; return; }   // #580
     /* #575 (majkinetor: "'auto-match off - click match' shows while match is
        running. It switches between 'matched N/M' and it periodically"). Every
        committed track writes the credit back to Knockout, MusicBrainz echoes a
@@ -7517,12 +7549,12 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     // written nothing — holding the resync for it is what kept a just-expanded
     // medium's tracks out of the table for the rest of that wait.
     if (_matching || (_autoMatching && !_autoMatchWaiting)) {
-      if (!_syncDeferred) Log.debug('tracklist resync deferred until the match pass finishes (#575)');
+      if (!_syncDeferred) Log.cat('System').debug('tracklist resync deferred until the match pass finishes');   // #575
       _syncDeferred = true;
       clearTimeout(_syncTimer); _syncTimer = setTimeout(runSync, 500);
       return;
     }
-    if (_syncDeferred) Log.debug('match pass finished — running the deferred tracklist resync (#575)');
+    if (_syncDeferred) Log.cat('System').debug('match pass finished — running the deferred tracklist resync');   // #575
     _syncDeferred = false;
     if (document.getElementById('tc-mirror-wrap')) loadAndRender();
   }
@@ -7531,7 +7563,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
   // of our fields to the next must not count as leaving.
   document.addEventListener('focusout', () => {
     if (!_syncDeferred) return;
-    setTimeout(() => { if (_syncDeferred && !isEditingNow()) { Log.debug('field left — running the deferred tracklist resync (#580)'); runSync(); } }, 0);
+    setTimeout(() => { if (_syncDeferred && !isEditingNow()) { Log.cat('System').debug('field left — running the deferred tracklist resync'); runSync(); } }, 0);   // #580
   }, true);
   // #472: med.tracks.subscribe below only fires on STRUCTURAL changes to that
   // array (added/removed/reordered) — a track edited IN PLACE (a bookmarklet
@@ -7559,8 +7591,8 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
       (u(rel.mediums) || []).forEach(subMed);
       // watch the mediums list itself so adding/removing a medium re-renders + re-hides the new native bits
       if (!_subscribed && rel.mediums && rel.mediums.subscribe) { rel.mediums.subscribe(() => { if (!_selfEdit) { (u(rel.mediums) || []).forEach(subMed); scheduleSync(); } }); }
-      _subscribed = true; Log.info('watching tracklist + mediums for external changes');
-    } catch (e) { Log.warn('subscribe failed', e.message); }
+      _subscribed = true; Log.cat('System').info('watching tracklist + mediums for external changes');
+    } catch (e) { Log.cat('System').warn('subscribe failed', e.message); }
   }
   // Keep the global toolbar pinned at the TOP of the tracklist (right before the
   // first medium). A native knockout re-render — notably clicking "Add medium" —
@@ -7683,11 +7715,11 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
   // { lang, conf, top } from lande, or null; the model is built on the first call (~100 ms)
   function lsDetectLanguage(text) {
     try {
-      if (!_lande) { const t0 = performance.now(); _lande = landeLoad(); Log.debug('language detect: lande ready in', Math.round(performance.now() - t0), 'ms'); }
+      if (!_lande) { const t0 = performance.now(); _lande = landeLoad(); Log.cat('Language').debug('lande ready in', Math.round(performance.now() - t0), 'ms'); }
       const res = _lande(text) || [], best = res[0];
       const top = res.slice(0, 4).map(([c, p]) => c + ' ' + Math.round(p * 100) + '%').join(', ');
       return best ? { lang: best[0], conf: best[1], top, all: res } : null;
-    } catch (e) { Log.warn('language detect failed', e && e.message); return null; }
+    } catch (e) { Log.cat('Language').warn('detection failed', e && e.message); return null; }
   }
   // a word's script group: kana and Han read together (lande tells Japanese from Chinese)
   function lsWordGroup(w) {
@@ -7742,8 +7774,8 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     const out = [];
     for (const k of ['language', 'script']) {
       const sel = document.querySelector('select#' + k), st = _ls[k]; if (!sel || st.state === 'off') continue;
-      if (st.state === 'idle' && sel.value) { st.state = 'off'; Log.debug('language detect:', k, 'is given (' + (sel.selectedOptions[0] || {}).textContent + '), left alone'); continue; }
-      if (st.state === 'auto' && sel.value !== st.value) { st.state = 'off'; Log.info('language detect:', k, 'changed by hand, left alone'); continue; }
+      if (st.state === 'idle' && sel.value) { st.state = 'off'; Log.cat('Language').debug(k, 'is given (' + (sel.selectedOptions[0] || {}).textContent + '), left alone'); continue; }
+      if (st.state === 'auto' && sel.value !== st.value) { st.state = 'off'; Log.cat('Language').info(k, 'changed by hand, left alone'); continue; }
       out.push(k);
     }
     return out;
@@ -7753,21 +7785,21 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     lsBadges();
     if (_lsBusy) return;
     // off: the Detected lists go, and come back from scratch once it is on again
-    if (!apolloEnabled() || SETTINGS.autoLangScript === false) { if (lsOffer(null)) { Log.info('language detect:', apolloEnabled() ? 'the setting is off' : 'Apollo is off', '— the Detected lists are taken away'); } _lsDone = ''; _lsSig = ''; return; }
+    if (!apolloEnabled() || SETTINGS.autoLangScript === false) { if (lsOffer(null)) { Log.cat('Language').info(apolloEnabled() ? 'the setting is off' : 'Apollo is off', '— the Detected lists are taken away'); } _lsDone = ''; _lsSig = ''; return; }
     let titles;
     try { const rel = release(); titles = [u(rel.name) || ''].concat(readTracklist().map(t => t.title)).map(lsClean).filter(Boolean); } catch (e) { return; }
     const sig = titles.join('\n');
     if (sig !== _lsSig) { _lsSig = sig; _lsSigAt = Date.now(); return; }
     if (!sig || sig === _lsDone || Date.now() - _lsSigAt < 1500) return;
     _lsDone = sig; _lsBusy = true;
-    detectLangScript(titles).catch(e => Log.warn('language detect:', e && e.message)).finally(() => { _lsBusy = false; });
+    detectLangScript(titles).catch(e => Log.cat('Language').warn('detection failed:', e && e.message)).finally(() => { _lsBusy = false; });
   }
   // everything the titles suggest, most likely first: { language: [{ name, conf, why }], script: [...] },
   // and the one each field is filled with when nothing is given (best: { language, script })
   function lsCandidates(titles) {
     const text = titles.join('\n'), sc = lsDetectScript(text);
     const out = { language: [], script: [], best: {} };
-    Log.debug('language detect:', titles.length, 'titles · scripts', JSON.stringify(sc && sc.counts));
+    Log.cat('Language').debug(titles.length, 'titles · scripts', JSON.stringify(sc && sc.counts));
     if (!sc) return out;
     const add = (list, name, conf, why) => { if (!name) return; const e = list.find(x => x.name === name); if (!e) list.push({ name, conf, why }); else if (conf > e.conf) Object.assign(e, { conf, why }); };
     // scripts: each with 5% of the letters or more
@@ -7780,13 +7812,13 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     // languages: lande on each script's words alone (guesses from one or two titles are wrong
     // more often than not, Harmony), and the language a script implies
     const groups = lsByScript(titles), dets = {};
-    Log.debug('language detect: by script', JSON.stringify(Object.fromEntries(Object.entries(groups).map(([k, e]) => [k, e.letters]))));
+    Log.cat('Language').debug('by script', JSON.stringify(Object.fromEntries(Object.entries(groups).map(([k, e]) => [k, e.letters]))));
     for (const [g, e] of Object.entries(groups)) {
       if (e.letters / sc.letters < 0.05) continue;
       const implied = g === 'CJK' ? (sc.counts.Hiragana || sc.counts.Katakana ? 'Japanese' : null) : LS_SCRIPT_LANG[g];
       const det = e.titles > 2 ? lsDetectLanguage(e.text) : null; dets[g] = det;
       if (det) {
-        Log.debug('language detect: lande says', det.top, 'for the', g, 'words');
+        Log.cat('Language').debug('lande says', det.top, 'for the', g, 'words');
         for (const [c, p] of det.all) if (p >= 0.1 && LS_LANDE[c]) add(out.language, LS_LANDE[c], p, Math.round(p * 100) + '% (' + c + '), the ' + g + ' words');
       }
       if (implied && !(det && det.conf >= 0.8)) add(out.language, implied, 0.5, 'from the ' + (g === 'CJK' ? 'kana' : g) + ' script');
@@ -7802,7 +7834,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     const implied = pick === 'CJK' ? (sc.counts.Hiragana || sc.counts.Katakana ? 'Japanese' : null) : LS_SCRIPT_LANG[pick];
     if (det && det.conf >= 0.8 && LS_LANDE[det.lang]) out.best.language = { name: LS_LANDE[det.lang], why: Math.round(det.conf * 100) + '% (' + det.lang + ')' + (sc.script === 'Multiple' ? ', from the ' + pick + ' words' : '') };
     else if (implied) out.best.language = { name: implied, why: 'from the ' + (pick === 'CJK' ? 'kana' : pick) + ' script' };
-    else if (!pick || !groups[pick] || groups[pick].titles <= 2) Log.debug('language detect: too few titles for a language');
+    else if (!pick || !groups[pick] || groups[pick].titles <= 2) Log.cat('Language').debug('too few titles for a language');
     return out;
   }
   // "Detected by Apollo" at the top of each field's list: one of them, or all of them as
@@ -7819,13 +7851,13 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
       if (list.length) {
         const og = document.createElement('optgroup'); og.className = 'tc-ls-found'; og.label = 'Detected by Apollo';
         for (const c of list) {
-          const src = lsOption(sel, c.name); if (!src) { Log.debug('language detect: MusicBrainz has no', k, JSON.stringify(c.name)); continue; }
+          const src = lsOption(sel, c.name); if (!src) { Log.cat('Language').debug('MusicBrainz has no', k, JSON.stringify(c.name)); continue; }
           const o = document.createElement('option'); o.value = src.value; o.textContent = c.name; o.title = c.why; og.appendChild(o);
         }
         if (og.children.length) sel.insertBefore(og, sel.options[0] && !sel.options[0].value ? sel.options[0].nextSibling : sel.firstChild);
       }
       if (sel.value !== v) sel.value = v;
-      if (cands) Log.debug('language detect: offered for', k, list.map(c => c.name + ' ' + Math.round(c.conf * 100) + '%').join(', ') || 'nothing found');
+      if (cands) Log.cat('Language').debug('offered for', k, list.map(c => c.name + ' ' + Math.round(c.conf * 100) + '%').join(', ') || 'nothing found');
     }
     return removed;
   }
@@ -7836,11 +7868,11 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     for (const k of open) {
       const want = cands.best[k]; if (!want) continue;
       const sel = document.querySelector('select#' + k), opt = sel && lsOption(sel, want.name);
-      if (!opt) { Log.warn('language detect: MusicBrainz has no', k, JSON.stringify(want.name)); continue; }
+      if (!opt) { Log.cat('Language').warn('MusicBrainz has no', k, JSON.stringify(want.name)); continue; }
       if (lsOpen().indexOf(k) < 0 || sel.value === opt.value) continue;   // the user got there first
       sel.value = opt.value; sel.dispatchEvent(new Event('change', { bubbles: true }));
       _ls[k] = { state: 'auto', value: sel.value, why: 'Detected by Apollo from the titles: ' + want.why };
-      Log.info('language detect:', k, '→', want.name, '·', want.why);
+      Log.cat('Language').info(k, '→', want.name, '·', want.why);
       done.push(want.name);
     }
     lsBadges();
@@ -7852,14 +7884,14 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     const tick = () => {
       const tl = tracklistVisible(), rec = recordingsVisible();
       if (document.getElementById('tc-mirror-wrap')) syncNative();   // keep native tracklist bits in their chosen state if MB re-renders
-      if (tl && !_tlPrev) { _tlPrev = true; Log.info('entered Tracklist tab');
+      if (tl && !_tlPrev) { _tlPrev = true; Log.cat('System').info('entered Tracklist tab');
         // #638: this tick lands up to half a second after the tab opened, so a Match clicked at
         // once is already running: rebuilding the table then left the pass filling in the old one,
         // and every badge it set was gone ("set") in the table shown. Wait for the pass (#575).
         if (tlWant()) { if (!document.getElementById('tc-mirror-wrap')) showMirror(); else if (!_tlRefreshed) { _tlRefreshed = true; if (_matching || _autoMatching) runSync(); else loadAndRender(); } } else hideMirror(); }
       else if (!tl && _tlPrev) { _tlPrev = false; }
       if (tl && document.getElementById('tc-mirror-wrap')) syncTlVideoMarks();   // #655
-      if (rec && !_recPrev) { _recPrev = true; Log.info('entered Recordings tab'); }
+      if (rec && !_recPrev) { _recPrev = true; Log.cat('System').info('entered Recordings tab'); }
       else if (!rec && _recPrev) { _recPrev = false; }
       // mount as soon as the (lazily-built) native table exists — retry each tick so there's no native flash
       if (rec) { if (recWant()) { if (!document.getElementById('tc-recwrap')) showRecMirror(); else if (recSig() !== _lastRecSig) rerenderRec(); } else hideRecMirror(); }   // re-render when MB mutates a recording externally (e.g. cleared on a title edit)
@@ -8030,7 +8062,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
           };
         }),
       }));
-    } catch (e) { Log.warn('dup tracklist fetch failed', e.message); return null; }
+    } catch (e) { Log.cat('Recording').warn('dup tracklist fetch failed', e.message); return null; }
   }
   const dupFmtLen = ms => ms ? (Math.floor(ms / 60000) + ':' + String(Math.round(ms / 1000) % 60).padStart(2, '0')) : '';
   // char-level LCS diff (same as the recordings detailed highlight) — only the
@@ -8859,7 +8891,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     wireRecCellDrag(wrap, tbl, { copyOn, eligible });
     tbl.addEventListener('contextmenu', e => {
       // #635: a right-button drag already did its work on every cell it touched
-      if (_recDragSwallow) { e.preventDefault(); _recDragSwallow = false; Log.debug('#635 contextmenu after a right-drag — swallowed'); return; }
+      if (_recDragSwallow) { e.preventDefault(); _recDragSwallow = false; Log.cat('Recording').debug('contextmenu after a right-drag — swallowed'); return; }
       const tr = e.target.closest('tr.tc-recrow'); if (!tr) return;
       const recRows = () => wrap.querySelectorAll('tbody tr.tc-recrow');
       const wholeSide = e.ctrlKey && e.altKey;   // #443: both fields, every row = the whole side
@@ -8885,7 +8917,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
               let full = null; if (gid) { if (!_sideEntCache.has(gid)) _sideEntCache.set(gid, await fetchEntity(gid)); full = _sideEntCache.get(gid); }
               names.push({ artist: full || a, name: u(n.name) || '', joinPhrase: u(n.joinPhrase) || '' });   // full entity persists the match (#348)
             }
-            _selfEdit = true; try { t.artistCredit({ names }); } catch (x) { Log.warn(`#443 side copy: track ${m}.${i} artistCredit setter threw: ${x && x.message}`); } finally { _selfEdit = false; }
+            _selfEdit = true; try { t.artistCredit({ names }); } catch (x) { Log.cat('Recording').warn(`side copy: track ${m}.${i} artistCredit setter threw: ${x && x.message}`); } finally { _selfEdit = false; }   // #443
           }
           if (u(t.updateRecordingArtist)) setCopy('artist', { mi: m, ti: i }, false);
         }
@@ -8901,7 +8933,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
           if (rn != null && rn !== '' && u(t.name) !== rn) { _selfEdit = true; try { t.name(rn); } catch (x) {} finally { _selfEdit = false; } }
           // #420: the track title now equals the recording's, so a pending "rename recording"
           // flag is a no-op — clear it (and its green indicator) instead of leaving it stale.
-          if (t && u(t.updateRecordingTitle)) { setCopy('title', { mi: m, ti: i }, false); Log.info(`#420 track ${m}.${i}: title copied from recording — cleared the now-moot rename-recording flag`); }
+          if (t && u(t.updateRecordingTitle)) { setCopy('title', { mi: m, ti: i }, false); Log.cat('Recording').info(`track ${m}.${i}: title copied from recording — cleared the now-moot rename-recording flag`); }
         };
         if (e.altKey) wrap.querySelectorAll('tbody tr.tc-recrow').forEach(row => setFromRec(+row.dataset.mi, +row.dataset.ti));
         else setFromRec(+tr.dataset.mi, +tr.dataset.ti);
@@ -8921,12 +8953,12 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
         const setArtistFromRec = async (m, i) => {
           const t = koTrack(m, i), rec = t && u(t.recording), recAc = rec && u(rec.artistCredit);
           const recNames = recAc && (u(recAc.names) || []);
-          if (!recNames || !recNames.length) { Log.warn(`#348 artist copy: track ${m}.${i} — recording has no artist credit (recording ${rec ? 'present' : 'null'}) — nothing to copy`); return; }
+          if (!recNames || !recNames.length) { Log.cat('Recording').warn(`artist copy: track ${m}.${i} — recording has no artist credit (recording ${rec ? 'present' : 'null'}) — nothing to copy`); return; }
           // #420 (artist twin): once track and recording agree, a pending "update recording
           // artist" flag is a no-op — clear it so its indicator doesn't linger.
-          const clearMootArtistFlag = () => { if (u(t.updateRecordingArtist)) { setCopy('artist', { mi: m, ti: i }, false); Log.info(`#420 track ${m}.${i}: artist copied from recording — cleared the now-moot update-recording-artist flag`); } };
+          const clearMootArtistFlag = () => { if (u(t.updateRecordingArtist)) { setCopy('artist', { mi: m, ti: i }, false); Log.cat('Recording').info(`track ${m}.${i}: artist copied from recording — cleared the now-moot update-recording-artist flag`); } };
           const tNames = u(u(t.artistCredit).names) || [];
-          if (tNames.length === recNames.length && tNames.every((n, k) => nameKey(n) === nameKey(recNames[k]))) { Log.info(`#348 artist copy: track ${m}.${i} — track artist already identical to the recording's — skipped`); clearMootArtistFlag(); return; }
+          if (tNames.length === recNames.length && tNames.every((n, k) => nameKey(n) === nameKey(recNames[k]))) { Log.cat('Recording').info(`artist copy: track ${m}.${i} — track artist already identical to the recording's — skipped`); clearMootArtistFlag(); return; }
           const gids = recNames.map(n => (n.artist ? (u(u(n.artist).gid) || '∅') : '∅')).join(', ');
           // Fetch the FULL artist entity for each credit (same as the paste-MBID resolve → pickArtist
           // path). Verified live: writing the recording's own LEAN artist — or W.MB.entity(gid,name) —
@@ -8943,9 +8975,9 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
             // read back the WRITTEN track credit — ∅ here (vs a real gid in the recording) means
             // the entity link was dropped and only the credited text stuck (the "set without match" bug).
             const wrote = (u(u(t.artistCredit).names) || []).map(n => (n.artist ? (u(u(n.artist).gid) || '∅') : '∅')).join(', ');
-            Log.info(`#348 artist copy: track ${m}.${i} ← recording "${acText(u(t.artistCredit))}" (recording gid(s): ${gids} · written track gid(s): ${wrote})`);
+            Log.cat('Recording').info(`artist copy: track ${m}.${i} ← recording "${acText(u(t.artistCredit))}" (recording gid(s): ${gids} · written track gid(s): ${wrote})`);
             clearMootArtistFlag();
-          } catch (x) { Log.warn(`#348 artist copy: track ${m}.${i} — artistCredit setter threw: ${x && x.message}`); }
+          } catch (x) { Log.cat('Recording').warn(`artist copy: track ${m}.${i} — artistCredit setter threw: ${x && x.message}`); }
         };
         (async () => {
         if (e.altKey) { for (const row of wrap.querySelectorAll('tbody tr.tc-recrow')) await setArtistFromRec(+row.dataset.mi, +row.dataset.ti); }
@@ -9021,7 +9053,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
         if (drag.side === 'rec') {
           const t = koTrack(c.mi, c.ti);
           if (eligible(t, c.field)) setCopy(c.field, { mi: c.mi, ti: c.ti }, drag.target);
-          else Log.debug(`#635 right-drag: ${c.key} has no copy to offer — skipped`);
+          else Log.cat('Recording').debug(`right-drag: ${c.key} has no copy to offer — skipped`);
           rerenderRec();
         } else {
           // the right-click's own copy for this one cell (the handler's plain, no-modifier path),
@@ -9029,7 +9061,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
           const sel = Object.keys(REC_DRAG_CELLS).find(s => REC_DRAG_CELLS[s][0] === 'track' && REC_DRAG_CELLS[s][1] === c.field);
           const td = wrap.querySelector(`tbody tr.tc-recrow[data-mi="${c.mi}"][data-ti="${c.ti}"] ${sel}`);
           if (td) td.dispatchEvent(new MouseEvent('contextmenu', { bubbles: true, cancelable: true, button: 2 }));
-          else Log.warn(`#635 right-drag: row ${c.key} is gone from the table — not copied`);
+          else Log.cat('Recording').warn(`right-drag: row ${c.key} is gone from the table — not copied`);
         }
         mark();
       };
@@ -9039,7 +9071,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
         if (!c || c.side !== drag.side || (!drag.moved && c.key === start.key)) return;
         if (!drag.moved) {
           drag.moved = true;
-          Log.info(`#635 right-drag on the ${drag.side === 'rec' ? 'recording' : 'track'} side from ${start.key}` + (drag.side === 'rec' ? ` — ${drag.target ? 'marking' : 'unmarking'} copies` : ' — copying from the recordings'));
+          Log.cat('Recording').info(`right-drag on the ${drag.side === 'rec' ? 'recording' : 'track'} side from ${start.key}` + (drag.side === 'rec' ? ` — ${drag.target ? 'marking' : 'unmarking'} copies` : ' — copying from the recordings'));
           touch(start);
         }
         touch(c);
@@ -9052,17 +9084,17 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
         // the pointer, which may be outside the table (majkinetor, #635): swallow it page-wide.
         // Where it fired on the press already (Linux, macOS), nothing comes: waiting for one would
         // swallow the next right-click instead (a CI run on Linux caught that).
-        if (drag.menuSeen) Log.debug('#635 the contextmenu came with the press — nothing to swallow on release');
+        if (drag.menuSeen) Log.cat('Recording').debug('the contextmenu came with the press — nothing to swallow on release');
         else {
         _recDragSwallow = true;
-        const swallow = ev => { ev.preventDefault(); ev.stopPropagation(); _recDragSwallow = false; window.removeEventListener('contextmenu', swallow, true); Log.debug('#635 contextmenu after a right-drag — swallowed (' + ((ev.target && ev.target.tagName) || '?') + ')'); };
+        const swallow = ev => { ev.preventDefault(); ev.stopPropagation(); _recDragSwallow = false; window.removeEventListener('contextmenu', swallow, true); Log.cat('Recording').debug('contextmenu after a right-drag — swallowed (' + ((ev.target && ev.target.tagName) || '?') + ')'); };
         window.addEventListener('contextmenu', swallow, true);
         setTimeout(() => { _recDragSwallow = false; window.removeEventListener('contextmenu', swallow, true); }, 400);
         }
         wrap.querySelectorAll('.tc-rdrag').forEach(td => td.classList.remove('tc-rdrag'));
         if (drag.side === 'track') { _tlRefreshed = false; scheduleSync(); }
         rerenderRec();
-        Log.info(`#635 right-drag done: ${drag.touched.size} cell(s) — ${[...drag.touched.keys()].join(', ')}`);
+        Log.cat('Recording').info(`right-drag done: ${drag.touched.size} cell(s) — ${[...drag.touched.keys()].join(', ')}`);
       };
       window.addEventListener('mousemove', move, true); window.addEventListener('mouseup', end, true);
     });
@@ -9164,8 +9196,8 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
   function expandRecMedium(mi, btn) {
     const med = mediums()[mi]; if (!med) return;
     if (btn) { btn.classList.add('loading'); btn.textContent = '⏳ Medium ' + (mi + 1) + ' — loading…'; }
-    try { if (typeof med.loadTracks === 'function') { Log.info('loading recordings for medium ' + (mi + 1)); med.loadTracks(); } }
-    catch (e) { Log.warn('loadTracks failed', e.message); }
+    try { if (typeof med.loadTracks === 'function') { Log.cat('Recording').info('loading recordings for medium ' + (mi + 1)); med.loadTracks(); } }
+    catch (e) { Log.cat('Recording').warn('loadTracks failed', e.message); }
     let n = 0;
     // loadTracks makes MB re-render the recordings panel, which can wipe our
     // mounted table — so re-mount via showRecMirror (re-anchors to the now-loaded
@@ -9179,9 +9211,9 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
   function expandAllRecMediums(btn) {
     const pending = mediums().filter(med => !mediumLoadedRec(med));
     if (!pending.length) return;
-    Log.info('expand all media (recordings):', pending.length, 'collapsed');
+    Log.cat('System').info('expand all media (recordings):', pending.length, 'collapsed');
     if (btn) { btn.classList.add('loading'); btn.textContent = '⏳ expanding all media…'; }
-    pending.forEach(med => { try { if (typeof med.loadTracks === 'function') med.loadTracks(); } catch (e) { Log.warn('loadTracks failed', e.message); } });
+    pending.forEach(med => { try { if (typeof med.loadTracks === 'function') med.loadTracks(); } catch (e) { Log.cat('System').warn('loadTracks failed', e.message); } });
     let n = 0;
     const poll = () => { n++; if (pending.every(mediumLoadedRec) || n > 100) { snapshotRecOriginals(); showRecMirror(); } else setTimeout(poll, 200); };
     setTimeout(poll, 200);
@@ -9548,12 +9580,12 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
           rows = readRecordings();
         }
       } finally { _autoMatchWaiting = false; }
-      if (!allLoaded()) Log.debug('recording auto-match: ' + mediums().filter(m => !mediumLoadedRec(m)).length + ' medium(s) collapsed and not loading — deciding on the ' + rows.length + ' track(s) that are loaded');
+      if (!allLoaded()) Log.cat('Recording').debug('auto-match: ' + mediums().filter(m => !mediumLoadedRec(m)).length + ' medium(s) collapsed and not loading — deciding on the ' + rows.length + ' track(s) that are loaded');
       if (!stopped && !rows.filter(r => !r.recGid).length) {
         noWork = rows.length
           ? 'all ' + rows.length + ' recording' + (rows.length === 1 ? '' : 's') + ' already linked'
           : 'no tracks loaded — nothing to match';
-        Log.info('recording auto-match: skipped — ' + noWork + ' (no release-group lookup needed)');
+        Log.cat('Recording').info('auto-match: skipped — ' + noWork + ' (no release-group lookup needed)');
         return;   // the finally below still restores the button and writes the status
       }
       // ONE request: pull the whole release group's recordings, index by normalised title, match locally
@@ -9567,8 +9599,8 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
           pool = await fetchRgRecordings(rgGid); pool.forEach(p => { const k = recFold(p.name); if (!byTitle.has(k)) byTitle.set(k, []); byTitle.get(k).push(p); });
           posIndex = await fetchRgPositionIndex(rgGid);   // #440 position index from the RG's editions
         }
-      } catch (e) { Log.warn('RG pool load failed', e.message); }
-      Log.debug('rec-match: rg=' + (rgGidForDup || 'none') + ' pool=' + pool.length + ' posIndex=' + posIndex.size + ' relTitle="' + relTitleForDup + '" relArtist=' + (relArtistGidForDup || 'none') + ' cutoff=' + (SETTINGS.recCutoff || 'near') + '(' + maxLevel + ')');   // #440 diag
+      } catch (e) { Log.cat('Recording').warn('RG pool load failed', e.message); }
+      Log.cat('Recording').debug('rg=' + (rgGidForDup || 'none') + ' pool=' + pool.length + ' posIndex=' + posIndex.size + ' relTitle="' + relTitleForDup + '" relArtist=' + (relArtistGidForDup || 'none') + ' cutoff=' + (SETTINGS.recCutoff || 'near') + '(' + maxLevel + ')');   // #440 diag
       // #440 — the edit track's "<medium>.<track>" position, to look up sibling/duplicate recordings placed there.
       const posKeyOf = (r, ko) => { try { return (u(mediums()[r.mi].position) || (r.mi + 1)) + '.' + (u(ko.position) || r.number || (r.ti + 1)); } catch (e) { return null; } };
       const todo = readRecordings().filter(r => !r.recGid);
@@ -9606,26 +9638,26 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
         const considerPos = d => { let lvl = recComboLevel(d, ctx); if (d.length && ctx.length && recLenGap(d.length, ctx.length) === 0) lvl = Math.min(lvl, CUTOFF.near); note(d, lvl); };
         // #662: the track's ISRC from First Contact, ahead of every other tier
         const isrc = fcIsrcFor(r.mi, r.ti, r.title);
-        if (!isrc && fcHandoff()) Log.debug('rec-match #' + (r.number || (r.ti + 1)) + ' no ISRC in the First Contact handoff for this track');
+        if (!isrc && fcHandoff()) Log.cat('Recording').debug('track ' + (r.number || (r.ti + 1)) + ' no ISRC in the First Contact handoff for this track');
         if (isrc) {
           setStatus('auto-matching ' + (i + 1) + '/' + todo.length + '… (ISRC)');
           const held = (await isrcRecordings(isrc)).filter(d => !(videoBlocked && d.video));
           const agree = held.filter(d => isrcAgrees(d, ctx));
-          Log.info('rec-match #' + (r.number || (r.ti + 1)) + ' ISRC ' + isrc + ' → ' + held.length + ' recording(s)' + (held.length ? ': ' + held.map(d => '"' + d.name + '" [' + (d.gid || '').slice(0, 8) + ']' + (isrcAgrees(d, ctx) ? ' agrees' : ' differs')).join(', ') : ''));
+          Log.cat('Recording').info('track ' + (r.number || (r.ti + 1)) + ' ISRC ' + isrc + ' → ' + held.length + ' recording(s)' + (held.length ? ': ' + held.map(d => '"' + d.name + '" [' + (d.gid || '').slice(0, 8) + ']' + (isrcAgrees(d, ctx) ? ' agrees' : ' differs')).join(', ') : ''));
           if (held.length === 1 && agree.length === 1) {
             note(agree[0], -1);   // unique and agreeing: ranks above even an exact title match, so it can never tie with one
-            Log.info('rec-match #' + (r.number || (r.ti + 1)) + ' ISRC: "' + agree[0].name + '" is the only recording with ' + isrc + ' and agrees on title and artist, ranked first');
+            Log.cat('Recording').info('track ' + (r.number || (r.ti + 1)) + ' ISRC: "' + agree[0].name + '" is the only recording with ' + isrc + ' and agrees on title and artist, ranked first');
           } else {
             // several holders, or one that disagrees: offered on their own merits, never forced
             held.forEach(consider);
-            if (held.length) Log.info('rec-match #' + (r.number || (r.ti + 1)) + ' ISRC: ' + (held.length > 1 ? held.length + ' recordings share ' + isrc : 'the recording with ' + isrc + ' differs from the track') + ', not linked on the ISRC alone');
+            if (held.length) Log.cat('Recording').info('track ' + (r.number || (r.ti + 1)) + ' ISRC: ' + (held.length > 1 ? held.length + ' recordings share ' + isrc : 'the recording with ' + isrc + ' differs from the track') + ', not linked on the ISRC alone');
           }
         }
         let cands = byTitle.get(recFold(r.title)) || [];
         if (!cands.length && (SETTINGS.recTitleTol || 0) > 0 && pool.length) cands = pool.filter(p => recTitleEq(p.name, r.title));
         cands.forEach(consider);
         const _pkDiag = posKeyOf(r, ko);   // #440 diag
-        Log.debug('rec-match #' + (r.number || (r.ti + 1)) + ' "' + r.title + '" pos=' + _pkDiag + ' len=' + (r.trackLen || '?') + ' → titleCands=' + cands.length + ' bestLevel=' + (best ? bestLevel : '∞'));
+        Log.cat('Recording').debug('track ' + (r.number || (r.ti + 1)) + ' "' + r.title + '" pos=' + _pkDiag + ' len=' + (r.trackLen || '?') + ' → titleCands=' + cands.length + ' bestLevel=' + (best ? bestLevel : '∞'));
         // #440 — position + similarity from the RG's editions (and possible duplicates
         // outside the RG), when the title match didn't already clear the cutoff. The
         // same slot in a duplicate holds the right recording even when its title is
@@ -9633,14 +9665,14 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
         // keeps a divergent edition from mislinking an unrelated song at that position.
         if (!best || bestLevel > maxLevel) {
           const pk = posKeyOf(r, ko);
-          const tryPos = (tag) => { const at = (posIndex.get(pk) || []); const sim = at.filter(c => c.gid && posTitleAgrees(c, r)); Log.debug('rec-match #' + (r.number || (r.ti + 1)) + ' posTier[' + tag + '] pos=' + pk + ' atSlot=' + at.length + ' similar=' + sim.length + (at.length ? ' [' + at.slice(0, 4).map(c => '"' + c.name + '"' + (recSimilar(c.name, r.title) ? '✓' : posTitleAgrees(c, r) ? '✓script' : '✗') + (c.length && r.trackLen && recLenGap(c.length, r.trackLen) === 0 ? '=len' : '')).join(', ') + ']' : '')); sim.forEach(considerPos); };   // #440 diag
+          const tryPos = (tag) => { const at = (posIndex.get(pk) || []); const sim = at.filter(c => c.gid && posTitleAgrees(c, r)); Log.cat('Recording').debug('track ' + (r.number || (r.ti + 1)) + ' posTier[' + tag + '] pos=' + pk + ' atSlot=' + at.length + ' similar=' + sim.length + (at.length ? ' [' + at.slice(0, 4).map(c => '"' + c.name + '"' + (recSimilar(c.name, r.title) ? '✓' : posTitleAgrees(c, r) ? '✓script' : '✗') + (c.length && r.trackLen && recLenGap(c.length, r.trackLen) === 0 ? '=len' : '')).join(', ') + ']' : '')); sim.forEach(considerPos); };   // #440 diag
           if (pk) {
             tryPos('rg');
             if ((!best || bestLevel > maxLevel) && !dupFetched && relTitleForDup) {   // widen to possible duplicates once (works even on a fresh import with no RG yet, #440)
               dupFetched = true; setStatus('scanning duplicates…');
               const before = posIndex.size;
               await fetchDuplicatePositionIndex(relTitleForDup, relArtistGidForDup, rgGidForDup, posIndex);
-              Log.debug('rec-match: duplicate search for "' + relTitleForDup + '" (artist=' + (relArtistGidForDup || 'none') + ') → posIndex ' + before + '→' + posIndex.size);
+              Log.cat('Recording').debug('duplicate search for "' + relTitleForDup + '" (artist=' + (relArtistGidForDup || 'none') + ') → posIndex ' + before + '→' + posIndex.size);
               /* #575 round 4: "it often shows 'scanning duplicates', although
                  there either aren't any or all are 0% similar". The status was
                  written when the scan STARTED and never again until the next
@@ -9670,21 +9702,21 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
         best = pick.best; bestLevel = pick.level;
         if (pick.ambiguous && bestLevel <= maxLevel) {
           ambiguous++;
-          Log.warn('rec-match #' + (r.number || (r.ti + 1)) + ' AMBIGUOUS — ' + pick.tied.length + ' recordings tie at level ' + bestLevel
+          Log.cat('Recording').warn('track ' + (r.number || (r.ti + 1)) + ' AMBIGUOUS — ' + pick.tied.length + ' recordings tie at level ' + bestLevel
             + ': ' + pick.tied.map(c => '"' + c.name + '" [' + (c.gid || '').slice(0, 8) + ']' + (c.length ? ' ' + Math.round(c.length / 1000) + 's' : '')).join(', ')
             + ' — left unset, pick one by hand (the release group disagrees about which belongs here)');
         } else if (best && bestLevel <= maxLevel) {
-          Log.debug('rec-match #' + (r.number || (r.ti + 1)) + ' LINK → "' + best.name + '" [' + (best.gid || '').slice(0, 8) + '] level=' + bestLevel + ' (≤' + maxLevel + ')');
+          Log.cat('Recording').debug('track ' + (r.number || (r.ti + 1)) + ' LINK → "' + best.name + '" [' + (best.gid || '').slice(0, 8) + '] level=' + bestLevel + ' (≤' + maxLevel + ')');
           // #541: a release can legitimately carry the same recording twice, so
           // this still links — but say so, because the usual cause is the
           // matcher spending one candidate on two slots.
-          if (pick.reused) Log.warn('rec-match #' + (r.number || (r.ti + 1)) + ' reuses "' + best.name + '" [' + (best.gid || '').slice(0, 8) + '], already linked to an earlier track — correct only if this release really repeats it');
-          try { ko.setRecordingValue(recEntityFrom(best)); linked++; if (best.gid) _takenGids.add(best.gid); renderRecBody(); } catch (e) { Log.warn('auto-match set failed', e.message); }
+          if (pick.reused) Log.cat('Recording').warn('track ' + (r.number || (r.ti + 1)) + ' reuses "' + best.name + '" [' + (best.gid || '').slice(0, 8) + '], already linked to an earlier track — correct only if this release really repeats it');
+          try { ko.setRecordingValue(recEntityFrom(best)); linked++; if (best.gid) _takenGids.add(best.gid); renderRecBody(); } catch (e) { Log.cat('Recording').warn('auto-match set failed', e.message); }
         }
-        else Log.debug('rec-match #' + (r.number || (r.ti + 1)) + ' NO LINK — best=' + (best ? '"' + best.name + '" level=' + bestLevel + ' > cutoff ' + maxLevel : 'none'));   // #440 diag
+        else Log.cat('Recording').debug('track ' + (r.number || (r.ti + 1)) + ' NO LINK — best=' + (best ? '"' + best.name + '" level=' + bestLevel + ' > cutoff ' + maxLevel : 'none'));   // #440 diag
         if (vidSkipped) {   // #585
           vidBlocked += vidSkipped;
-          Log.info('rec-match #' + (r.number || (r.ti + 1)) + ': skipped ' + vidSkipped + ' video recording(s) — this medium’s format cannot hold video and the track is not a data track (MusicBrainz would list it under "Videos in non-video mediums")');
+          Log.cat('Recording').info('track ' + (r.number || (r.ti + 1)) + ': skipped ' + vidSkipped + ' video recording(s) — this medium’s format cannot hold video and the track is not a data track (MusicBrainz would list it under "Videos in non-video mediums")');
         }
       }
     } finally {
@@ -9702,14 +9734,14 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
       if (e) e.textContent = _recLastStatus;
       // #575: named for its pass. Plain "auto-match:" read as the whole match
       // finishing, while the tracklist's artist pass was still going.
-      if (!noWork) Log.info('recording auto-match:' + (stopped ? ' STOPPED —' : ''), 'linked', linked, 'of', considered, 'unset tracks' + (ambiguous ? ', ' + ambiguous + ' left unset as ambiguous' : '') + (vidBlocked ? ', ' + vidBlocked + ' video candidate(s) refused on an audio-only medium (#585)' : '') + (stopped ? ' — the rest are untouched' : ''));
+      if (!noWork) Log.cat('Recording').info('auto-match:' + (stopped ? ' STOPPED —' : ''), 'linked', linked, 'of', considered, 'unset tracks' + (ambiguous ? ', ' + ambiguous + ' left unset as ambiguous' : '') + (vidBlocked ? ', ' + vidBlocked + ' video candidate(s) refused on an audio-only medium' : '') + (stopped ? ' — the rest are untouched' : ''));   // #585
       if (!_matching) _matchStop = false;   // #575: leave it set while the tracklist pass is still winding down
     }
   }
   // submit-flag setters (per track / all tracks) + a light re-render of the recordings table
   function setCopy(field, entry, on) {
     try { const t = koTrack(entry.mi, entry.ti); if (field === 'title') t.updateRecordingTitle(on); else t.updateRecordingArtist(on); }
-    catch (e) { Log.warn('set copy ' + field + ' failed', e.message); }
+    catch (e) { Log.cat('Recording').warn('set copy ' + field + ' failed', e.message); }
   }
   function rerenderRec() { renderRecBody(); }   // body only — keeps the toolbar (status / inputs) intact
 
@@ -9728,7 +9760,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
   }
   function _restoreRec(entry, o) {
     const ko = koTrack(entry.mi, entry.ti);
-    try { if (o.isNew) ko.hasNewRecording(true); else if (o.entity) ko.setRecordingValue(o.entity); } catch (e) { Log.warn('revert recording failed', e.message); }
+    try { if (o.isNew) ko.hasNewRecording(true); else if (o.entity) ko.setRecordingValue(o.entity); } catch (e) { Log.cat('Recording').warn('revert recording failed', e.message); }
   }
   function recChangedFromOrig(mi, ti) {
     const o = _recOrig.get(mi + ':' + ti); if (!o) return false;
@@ -9736,12 +9768,12 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     const curGid = r ? u(r.gid) : null, curNew = typeof ko.hasNewRecording === 'function' ? !!u(ko.hasNewRecording) : false;
     return curGid !== o.gid || curNew !== o.isNew;
   }
-  function revertRecording(entry) { const o = _recOrig.get(entry.mi + ':' + entry.ti); if (o) { _restoreRec(entry, o); rerenderRec(); Log.info('reverted recording for track', entry.ti + 1); } }
-  function revertAllRecordings() { _recOrig.forEach((o, key) => { const p = key.split(':'); _restoreRec({ mi: +p[0], ti: +p[1] }, o); }); rerenderRec(); Log.info('reverted all recordings to the page-load state'); }
+  function revertRecording(entry) { const o = _recOrig.get(entry.mi + ':' + entry.ti); if (o) { _restoreRec(entry, o); rerenderRec(); Log.cat('Recording').info('reverted recording for track', entry.ti + 1); } }
+  function revertAllRecordings() { _recOrig.forEach((o, key) => { const p = key.split(':'); _restoreRec({ mi: +p[0], ti: +p[1] }, o); }); rerenderRec(); Log.cat('Recording').info('reverted all recordings to the page-load state'); }
   function clearAllRecordings() {
     if (!W.confirm('Set every track to a NEW recording (clear all existing recording links)?')) return;
     mediums().forEach(med => (u(med.tracks) || []).forEach(t => { try { t.hasNewRecording(true); } catch (e) {} }));
-    rerenderRec(); Log.info('cleared all recording links → new recordings');
+    rerenderRec(); Log.cat('Recording').info('cleared all recording links → new recordings');
   }
 
   /* ── #583 — unset a recording link from the row ─────────────────────
@@ -9760,8 +9792,8 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
   function newRecordingFor(entry) {
     try {
       koTrack(entry.mi, entry.ti).hasNewRecording(true);
-      Log.info('unset the recording on track ' + (entry.number || (entry.ti + 1)) + ' — it will create a NEW recording on submit (↺ puts the original back)');
-    } catch (e) { Log.warn('unset recording failed for track ' + (entry.number || (entry.ti + 1)), e.message); }
+      Log.cat('Recording').info('unset the recording on track ' + (entry.number || (entry.ti + 1)) + ' — it will create a NEW recording on submit (↺ puts the original back)');
+    } catch (e) { Log.cat('Recording').warn('unset recording failed for track ' + (entry.number || (entry.ti + 1)), e.message); }
     rerenderRec();
   }
 
@@ -9829,7 +9861,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     const out = []; let offset = 0;
     for (let page = 0; page < 12; page++) {
       const res = await wsJson(`${ORIGIN}/ws/2/recording?query=rgid:${encodeURIComponent(rgGid)}&fmt=json&limit=100&offset=${offset}&inc=artist-credits+releases+release-groups+isrcs`, { label: 'RG recordings' });
-      const j = res.json; if (!j) { Log.warn('RG recordings: page', page + 1, 'failed — pool may be incomplete'); break; }
+      const j = res.json; if (!j) { Log.cat('Recording').warn('RG recordings: page', page + 1, 'failed — pool may be incomplete'); break; }
       (j.recordings || []).forEach(r => out.push(mapWsRec(r)));
       offset += 100; if (!(j.recordings || []).length || offset >= (j.count || 0)) break;
     }
@@ -9865,7 +9897,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     const idx = new Map();
     const rels = await rgReleases(rgGid);
     if (rels) rels.forEach(rel => addReleaseToPosIndex(rel, idx, rgGid));
-    Log.debug('RG position index:', idx.size, 'position(s) from', (rels || []).length, 'edition(s)');
+    Log.cat('Recording').debug('RG position index:', idx.size, 'position(s) from', (rels || []).length, 'edition(s)');
     return idx;
   }
   // Cross-RG duplicates (#440, majkinetor: "go outside RG too, but consider Similarity").
@@ -9876,7 +9908,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
   async function fetchDuplicatePositionIndex(title, artistGid, rgGid, into) {
     const rels = await duplicateReleases(title, artistGid, rgGid);
     rels.forEach(rel => addReleaseToPosIndex(rel, into, rgGid));
-    Log.debug('duplicate position index:', rels.length, 'outside-RG edition(s) folded in →', into.size, 'position(s)');
+    Log.cat('Recording').debug('duplicate position index:', rels.length, 'outside-RG edition(s) folded in →', into.size, 'position(s)');
     return into;
   }
   // #626: the search behind it, shared with the artist position source — the Tracklist and
@@ -9911,8 +9943,8 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
           const res = await wsJson(`${ORIGIN}/ws/2/release/${rl.id}?inc=recordings+artist-credits+release-groups&fmt=json`, { label: 'duplicate release detail' });
           if (res.json) out.push(res.json); else failed = true;
         }
-        Log.debug('duplicate releases for "' + title + '":', out.length, 'outside the release group' + (failed ? ' (a lookup failed — not cached)' : ''));
-      } catch (e) { failed = true; Log.warn('duplicate release search failed', e.message); }
+        Log.cat('Recording').debug('duplicate releases for "' + title + '":', out.length, 'outside the release group' + (failed ? ' (a lookup failed — not cached)' : ''));
+      } catch (e) { failed = true; Log.cat('Recording').warn('duplicate release search failed', e.message); }
       if (failed) _dupRelCache.delete(key);
       return out;
     })();
@@ -9967,12 +9999,12 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
   // was #555: an intermittent 503 rendered a silent "no matches".
   async function searchRecordings(q, opts) {
     q = (q || '').trim(); if (!q) return [];
-    Log.debug('recording search:', JSON.stringify(q));
+    Log.cat('Recording').debug('recording search:', JSON.stringify(q));
     const url = `${ORIGIN}/ws/2/recording?query=${encodeURIComponent(q)}&fmt=json&limit=15&inc=artist-credits+releases+release-groups+isrcs`;
     const res = await wsJson(url, Object.assign({ label: 'recording search' }, opts || {}));
-    if (!res.json) { Log.warn('recording search:', JSON.stringify(q), '→ no result (' + (res.stale ? 'superseded' : 'lookup failed') + ')'); return null; }
+    if (!res.json) { Log.cat('Recording').warn('recording search:', JSON.stringify(q), '→ no result (' + (res.stale ? 'superseded' : 'lookup failed') + ')'); return null; }
     const out = (res.json.recordings || []).map(mapWsRec);
-    Log.debug('recording search:', JSON.stringify(q), '→', out.length, 'hit(s) of', res.json.count != null ? res.json.count : out.length);
+    Log.cat('Recording').debug('recording search:', JSON.stringify(q), '→', out.length, 'hit(s) of', res.json.count != null ? res.json.count : out.length);
     return out;
   }
   // direct lookup of one recording by MBID — backs pasting a recording MBID / URL
@@ -9980,7 +10012,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
   async function fetchRecordingById(gid) {
     const res = await wsJson(`${ORIGIN}/ws/2/recording/${gid}?fmt=json&inc=artist-credits+releases+release-groups+isrcs`, { label: 'recording lookup' });
     const j = res.json;
-    Log.debug('recording lookup:', gid, '→', j && j.id ? JSON.stringify(j.title || '') : 'none');
+    Log.cat('Recording').debug('recording lookup:', gid, '→', j && j.id ? JSON.stringify(j.title || '') : 'none');
     return j && j.id ? mapWsRec(j) : null;
   }
   // recordings sharing an ISRC — backs pasting an ISRC into the picker's search
@@ -9991,7 +10023,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     // recordings, which is why an existing ISRC came back "not found". #196
     const res = await wsJson(`${ORIGIN}/ws/2/isrc/${encodeURIComponent(isrc)}?fmt=json&inc=artist-credits+releases+isrcs`, { label: 'ISRC lookup' });
     const out = ((res.json && res.json.recordings) || []).map(mapWsRec);
-    Log.debug('ISRC lookup:', isrc, '→', out.length, 'recording(s)');
+    Log.cat('Recording').debug('ISRC lookup:', isrc, '→', out.length, 'recording(s)');
     return out;
   }
   /* #662: First Contact hands over each track's ISRC (Deezer, Apple Music, Tidal, …).
@@ -10028,7 +10060,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
       recs.push(...page);
       if (!page.length || recs.length >= (res.json.count || 0)) break;   // past 100 hits: the next page
     }
-    Log.debug('ISRC batch search:', isrcs.length, 'ISRC(s) →', recs.length, 'recording(s)');
+    Log.cat('Recording').debug('ISRC batch search:', isrcs.length, 'ISRC(s) →', recs.length, 'recording(s)');
     return recs;
   }
   function isrcBatch(isrcs) {
@@ -10038,8 +10070,8 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
       const all = searchRecordingsByIsrcs(chunk);
       chunk.forEach(isrc => _isrcRecCache.set(isrc, all
         .then(recs => recs.filter(r => (r.isrcs || []).some(x => String(x).toUpperCase() === isrc)).map(r => Object.assign({}, r, { _isrc: isrc })))
-        .then(recs => { Log.debug('ISRC', isrc, '→', recs.length, 'recording(s)'); return recs; })
-        .catch(e => { Log.warn('ISRC batch search failed for', isrc, '—', e.message); _isrcRecCache.delete(isrc); return []; })));
+        .then(recs => { Log.cat('Recording').debug('ISRC', isrc, '→', recs.length, 'recording(s)'); return recs; })
+        .catch(e => { Log.cat('Recording').warn('ISRC batch search failed for', isrc, '—', e.message); _isrcRecCache.delete(isrc); return []; })));
     }
   }
   function isrcRecordings(isrc) {
@@ -10064,19 +10096,19 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
         })) };
       }
       return W.MB.entity(spec, 'recording');
-    } catch (e) { Log.warn('build recording entity failed', e.message); return null; }
+    } catch (e) { Log.cat('Recording').warn('build recording entity failed', e.message); return null; }
   }
   function pickRecording(entry, data) {
     if (!data) return;
     const ent = recEntityFrom(data); if (!ent) return;
-    try { koTrack(entry.mi, entry.ti).setRecordingValue(ent); Log.info('linked recording', JSON.stringify(data.name), '→ track', entry.number); }
-    catch (e) { Log.warn('setRecordingValue failed', e.message); }
+    try { koTrack(entry.mi, entry.ti).setRecordingValue(ent); Log.cat('Recording').info('linked recording', JSON.stringify(data.name), '→ track', entry.number); }
+    catch (e) { Log.cat('Recording').warn('setRecordingValue failed', e.message); }
     closeRecPop(); rerenderRec();
   }
   // "Add a new recording" — native binds this to the per-track hasNewRecording observable (#119)
   function pickNewRecording(entry) {
-    try { koTrack(entry.mi, entry.ti).hasNewRecording(true); Log.info('new recording for track', entry.number); }
-    catch (e) { Log.warn('hasNewRecording failed', e.message); }
+    try { koTrack(entry.mi, entry.ti).hasNewRecording(true); Log.cat('Recording').info('new recording for track', entry.number); }
+    catch (e) { Log.cat('Recording').warn('hasNewRecording failed', e.message); }
     closeRecPop(); rerenderRec();
   }
   // pull display data off a suggestion entity (releases live in appearsOn.results; isrcs may be objects)
@@ -10269,7 +10301,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
       suggGids.clear(); list.forEach(s => suggGids.add(s.gid));
       suggBox.innerHTML = list.map(d => recRowHtml(d, ctx)).join(''); wire(suggBox);
       setSuggCount(list.length);
-      Log.debug('picker suggestions for track', entry.number, '→', list.length);
+      Log.cat('Recording').debug('picker suggestions for track', entry.number, '→', list.length);
       if (lastResults.length) paintResults();   // suggestions arrived after a search → drop any now-duplicate rows
       return mbList.length > 0;   // keep waiting for MB's own when only the ISRC holders are in
     };
@@ -10277,12 +10309,12 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
       const isrc = fcIsrcFor(entry.mi, entry.ti, u(ko.name));
       if (isrc) isrcRecordings(isrc).then(recs => {
         if (!_recPop || !recs.length) return;
-        isrcList = recs; Log.debug('picker: ISRC', isrc, '→', recs.length, 'recording(s) on top');
+        isrcList = recs; Log.cat('Recording').debug('picker: ISRC', isrc, '→', recs.length, 'recording(s) on top');
         renderSugg();
       });
     }
     if (!renderSugg()) {
-      try { getEditor().recordingAssociation.findRecordingSuggestions(ko); } catch (e) { Log.warn('findRecordingSuggestions failed', e.message); }
+      try { getEditor().recordingAssociation.findRecordingSuggestions(ko); } catch (e) { Log.cat('Recording').warn('findRecordingSuggestions failed', e.message); }
       let tries = 0;
       const poll = () => {
         if (!_recPop) return;
@@ -11255,9 +11287,9 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     finally { _alBusy = false; }
     const ok = results.filter(r => r.ok).length;
     const typed = results.filter(r => r.typed).length;
-    Log.info('multi-link paste: added ' + ok + '/' + results.length + ' url(s)'
+    Log.cat('Links').info('multi-link paste: added ' + ok + '/' + results.length + ' url(s)'
       + (typed ? ', set ' + typed + ' link type(s) MusicBrainz left blank' : ''));
-    results.filter(r => !r.ok).forEach(r => Log.warn('multi-link paste: ' + r.url + ' -- ' + r.why));
+    results.filter(r => !r.ok).forEach(r => Log.cat('Links').warn('multi-link paste: ' + r.url + ' -- ' + r.why));
     return results;
   }
   /* majkinetor: "Make a hint show that it can be multiple links." MB's own
@@ -12053,17 +12085,17 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     await whenDomReady();
     const btn = document.querySelector('.confirm-seed button[type="submit"], form.confirm-seed button[type="submit"]');
     if (!btn) return false;                                                        // not the seed interstitial → let the normal flow run
-    if (SETTINGS.autoConfirmSeed === false) { Log.info('seed interstitial — auto-confirm off'); return true; }
-    if (new URLSearchParams(location.search).has('skip_confirmation')) { Log.info('seed interstitial — skip_confirmation set'); return true; }
-    Log.info('auto-confirming seeded submission (#267)');
+    if (SETTINGS.autoConfirmSeed === false) { Log.cat('Create').info('seed interstitial — auto-confirm off'); return true; }
+    if (new URLSearchParams(location.search).has('skip_confirmation')) { Log.cat('Create').info('seed interstitial — skip_confirmation set'); return true; }
+    Log.cat('Create').info('auto-confirming seeded submission');   // #267
     btn.click();
     return true;                                                                   // clicked → page navigates into the editor
   }
 
   (async function main() {
-    if (handleAutoCommit()) { Log.info('auto-commit (background create/link) — submitting the seeded form'); return; }
-    if (handleArtistPageCallback()) { Log.info('artist/label-create callback — posting MBID back and closing'); return; }
-    if (handleEditLinkClose()) { Log.info('Discogs-link edit committed — closing tab'); return; }
+    if (handleAutoCommit()) { Log.cat('Create').info('auto-commit (background create/link) — submitting the seeded form'); return; }
+    if (handleArtistPageCallback()) { Log.cat('Create').info('artist/label-create callback — posting MBID back and closing'); return; }
+    if (handleEditLinkClose()) { Log.cat('Create').info('Discogs-link edit committed — closing tab'); return; }
     if (await autoConfirmSeed()) return;   // handled the seed-confirmation interstitial (clicked, or option off) — no editor here
     if (ANNO_PAGE_RE.test(location.pathname)) {   // #394 standalone Edit annotation page for ANY entity (no releaseEditor)
       const tryMount = () => { if (document.querySelector('textarea[name="edit-annotation.text"]')) { applyAnnotationPage(); return true; } return false; };
@@ -12072,15 +12104,15 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     }
     if (!/^\/release\/(add|.+\/edit)/.test(location.pathname)) return;   // /artist/* and /label/* (non-callback) just load the channel listener
     const ed = await waitFor(() => { const e = getEditor(); try { return e && u(e.rootField.release) && u(u(e.rootField.release).mediums) ? e : null; } catch (x) { return null; } });
-    if (!ed) { Log.err('MB.releaseEditor never became ready'); return; }
+    if (!ed) { Log.cat('System').err('MB.releaseEditor never became ready'); return; }
     try {   // line 2: the MB release, as a full link (real title now the editor is up)
       const rel = u(ed.rootField.release);
       const nm = rel ? (u(rel.name) || '') : '';
       const gid = rel ? (u(rel.gid) || '') : '';
       const mbid = gid || (location.pathname.match(/[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}/i) || [''])[0];
-      Log.info('Release:', (nm ? nm + ' — ' : '') + (mbid ? ORIGIN + '/release/' + mbid : location.href));
+      Log.cat('System').info('Release:', (nm ? nm + ' — ' : '') + (mbid ? ORIGIN + '/release/' + mbid : location.href));
     } catch (e) {}
-    Log.info('editor ready');
+    Log.cat('System').info('editor ready');
     // #543: the multi-url paste hook belongs to the editor, not to Apollo's
     // release-info panel — the (+) link row is MB's and is there whether or not
     // that panel is showing. One delegated listener, self-guarded by the
@@ -12089,7 +12121,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     setTimeout(() => { try { Log.reopen(); } catch (e) {} }, 1200);   // #283 reopen the log if it was left open
     snapshotOriginals();
     const tl = readTracklist();
-    Log.info('tracklist:', tl.length, 'tracks ·', tl.reduce((n, t) => n + t.names.filter(x => !x.artistGid).length, 0), 'unresolved slots');
+    Log.cat('System').info('tracklist:', tl.length, 'tracks ·', tl.reduce((n, t) => n + t.names.filter(x => !x.artistGid).length, 0), 'unresolved slots');
     if (tlWant()) showMirror();   // pre-build the tracklist takeover inside the (possibly hidden) #tracklist panel
     // pre-hide the native recordings table right after edit is entered (recStyle's `body.tc-rec-on` rule
     // applies even before MB lazily builds the table), and pre-mount the Apollo table if it already exists —

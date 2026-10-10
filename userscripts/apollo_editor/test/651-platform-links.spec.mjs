@@ -78,6 +78,9 @@ test.describe('First Contact handoff', () => {
     const flat = slots.flat();
     const dpSlots = flat.filter(s => s.c === 'D. Punk');
     check(dpSlots.length === 2 && dpSlots.every(s => s.status === 'plat' && s.committed && s.name === 'Daft Punk'), `"D. Punk" → Daft Punk by its Deezer link, on both tracks: ${JSON.stringify(dpSlots)}`);
+    // the same match on two tracks logs once, with its track, plus one "also on" line — not once per track
+    const dpLog = (await page.evaluate(() => window.__apolloEditor.logMarkdown())).split('\n').filter(l => /\[Artist\] (track \d+: )?D\. Punk → Daft Punk/.test(l));
+    check(dpLog.length === 2 && /\[Artist\] track \d+: D\. Punk → Daft Punk — via Deezer link/.test(dpLog[0]) && /— also on track \d+$/.test(dpLog[1]), `the D. Punk match logs once per pass: ${JSON.stringify(dpLog)}`);
     const pw = flat.find(s => s.c === 'Pharrell Williams'), nr = flat.find(s => s.c === 'Nile Rodgers');
     check(pw && pw.status === 'plat' && pw.name === 'Pharrell Williams' && nr && nr.status === 'plat' && nr.name === 'Nile Rodgers', `the featured artists too: ${JSON.stringify([pw, nr])}`);
     check(flat.filter(s => s.status === 'plat').every(s => !s.add), 'a matched artist that has the link is offered nothing');
