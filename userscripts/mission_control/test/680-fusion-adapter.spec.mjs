@@ -48,6 +48,9 @@ test('#680: Fusion runs on Fetch RG and marks the tracks with duplicates', { tag
   check(await page.locator('#mc-root [data-act="fx-check"]').count() === 0, 'no Check button');
   await page.waitForFunction(() => window.__mcTest.fxChecking() === 0, null, { timeout: 120_000 });
   check(await det.locator('.mc-fxc.unk').count() === 0, 'once checked, no chip is unknown');
+  check(/AcoustIDs/.test(await page.locator('#mc-root .mc-insp .mc-fxm').first().textContent()), 'the inspector lists the match\'s AcoustIDs');
+  check(!/not checked/.test(await page.locator('#mc-root .mc-insp .mc-fxm').first().textContent()), 'and they are checked');
+  check(await det.locator('[data-act="fx-fusion"] img').count() === 1 && await det.locator('[data-act="fx-fusion"]').getAttribute('title') !== null, 'Open in Fusion is Fusion\'s icon, with a tooltip');
 
   // Expand all opens every comparison, Collapse all folds them
   const all = page.locator('#mc-root .mc-fxall [data-act="fx-all"]');
