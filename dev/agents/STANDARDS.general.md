@@ -107,7 +107,7 @@ The goal is *zero-friction verification*: every claim that names a thing carries
 
 - **Small fixes** go straight to `main`.
 - **Substantial work** goes on a feature branch named after its issue, `<topic>-<issue>`, and is merged when it's ready to ship.
-- After a verified merge, **delete the branch**, remote and local.
+- After a verified merge, **delete the branch**, remote and local (in the cloud, list it instead: [AGENTS.general → GitHub work](AGENTS.general.md#github-work)).
 
 ---
 

@@ -37,7 +37,7 @@ The rest applies whoever you post as:
 - Don't write `#1` / `#2` for "list point N" — GitHub links `#N` to issue/PR N.
 - Before posting or writing a doc, read [Standard 9](STANDARDS.general.md#standard-9) (links).
 - End every GitHub post with the model + effort footer, per the maintainer's current convention.
-- **Sweep stale agent branches** (`claude/*`, the cloud sessions' prefix) at the end of a task, whoever made them — a session can't know which it made once its context is cleared. Delete one whose work is verified on `main` or on the branch it was merged into (`git cherry`, and by content when it landed under another SHA); report, don't delete, one whose work is nowhere else. Note each deleted branch's last commit. The cloud proxy refuses branch deletes: there, list them in your report so a local session deletes them.
+- **Sweep stale agent branches** (`claude/*`, the cloud sessions' prefix) at the end of a task, whoever made them — a session can't know which it made once its context is cleared. Delete one whose work is verified on `main` or on the branch it was merged into (`git cherry`, and by content when it landed under another SHA); report, don't delete, one whose work is nowhere else. Note each deleted branch's last commit. **In the cloud, never try to delete a branch**, not even when the maintainer allows it: the proxy refuses every delete (HTTP 403) and no tool there can do it. Don't offer to, and don't ask for permission. List the stale branches with their last commits in your report, and a local session deletes them.
 
 ## Docs and changelog
 
