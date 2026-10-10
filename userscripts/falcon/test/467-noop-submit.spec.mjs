@@ -36,6 +36,7 @@ test("#467: noop submit", { tag: ['@sandbox', '@login'] }, async ({ context, pag
   await idle(page);
   await page.addScriptTag({ content: code });
   await page.waitForFunction(() => !!window.__falconTest, { timeout: 10000 });
+  await page.evaluate(() => window.__falconTest.Log.setDebug(true));   // #705: debug is off by default; this checks the trace
   await page.evaluate(() => document.getElementById('falcon-launcher').click());
   await page.waitForFunction(() => document.getElementById('falcon-panel')?.style.display === 'flex', null, { timeout: 10000 });
 

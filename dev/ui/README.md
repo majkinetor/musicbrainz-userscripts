@@ -30,7 +30,7 @@ A line can carry a **category** (`LOG.cat('Spotify').warn(…)`): a quiet tag be
 
 `LOG.pre(text)` keeps a block as written: line breaks, spacing, monospace (Falcon's run summary table). `LOG.mount(el, { tools })` draws the same viewer into a script's own panel, without the window buttons, with an optional `tools` element of the script's in its toolbar (Falcon's Log tab).
 
-Every viewer has a **debug** switch, remembered per script (default on): off, `LOG.debug()` lines are not recorded at all. `LOG.debugOn()` / `LOG.setDebug(v)` read and set it.
+Every viewer has a **debug** switch, remembered per script and off by default: off, `LOG.debug()` lines are not recorded at all. `LOG.debugOn()` / `LOG.setDebug(v)` read and set it.
 
 **History** (#705) is opt-in, per script (`o.history`; only Falcon so far). Only a session the script marks with `LOG.keep()` is stored, in the page's `localStorage` under `<prefix><id>`, within 100 ms of each line, so a crashed tab keeps its log. A long session keeps its first and last lines and says how many went between; the newest *keep* sessions stay. The viewer gets a session list (date and `LOG.name()`; `LOG.refresh()` redraws it, only when it changed) and **Clear history**; a past session is read-only, and Copy takes it. `LOG.session()` starts a new one, `LOG.resume(LOG.last())` carries one on across a navigation.
 

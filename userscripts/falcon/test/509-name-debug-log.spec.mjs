@@ -31,6 +31,7 @@ test("#509: name debug log", { tag: ['@sandbox', '@login'] }, async ({ context, 
   await page.goto('https://test.musicbrainz.org/', { waitUntil: 'load' });
   await page.addScriptTag({ content: code });
   await page.waitForFunction(() => !!window.__falconTest, { timeout: 5000 });
+  await page.evaluate(() => window.__falconTest.Log.setDebug(true));   // #705: debug is off by default; this checks the trace
 
   await page.evaluate(({ NAMED_MBID, FETCH_MBID }) => {
     const t = window.__falconTest;

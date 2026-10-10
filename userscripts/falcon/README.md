@@ -92,7 +92,7 @@ A link MusicBrainz can't classify on its own (a Bandcamp track: purchase or stre
 
 ### The log
 
-The **Log** tab is the activity log every script shares: filter by level or by worker (`w1`, `w2`, …), search the text, and **⧉ Copy** it as Markdown for an issue. **debug** records each worker's every step.
+The **Log** tab is the activity log every script shares: filter by level or by worker (`w1`, `w2`, …), search the text, and **⧉ Copy** it as Markdown for an issue. **debug** (off by default) also records each worker's every step.
 
 Each run keeps its own log in this browser, so a run whose tab crashed or navigated away can still be read. Pick a past run from the list beside the filter (they go by date and release); **Clear history** deletes them. A long run keeps its start and its end.
 
@@ -199,7 +199,7 @@ Append `?falcon=<base64(JSON)>` to any musicbrainz.org URL: Falcon opens with th
 The Picard port also sets MusicBrainz's own tagger button, whether *Automatically send to Picard* is ticked or not.
 
 > [!TIP]
-> To report a problem: leave **debug** on in the **Log** tab, reproduce it, then **⧉ Copy** the log into the issue.
+> To report a problem: turn **debug** on in the **Log** tab, reproduce it, then **⧉ Copy** the log into the issue.
 
 ## Shortcuts
 

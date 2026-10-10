@@ -95,6 +95,7 @@ test("#593: historic log", { tag: ['@sandbox', '@login'] }, async ({ context, pa
     const F = window.__falconTest;
     const MAX = F.LOG_PERSIST_MAX();
     // a run shaped like his: a real opening, a lot of worker chatter, a summary
+    F.Log.setDebug(true);   // #705: debug is off by default; the chatter below is debug
     F.newSession('seeded 29 item(s)');
     F.log('info', '[names] release:65df7705-599b-4c6a-9116-ac2866583bcc — fetched: "Deep Heads Dubstep Vol. 4"');
     F.log('info', 'starting 5 worker(s)');

@@ -309,17 +309,18 @@ test('history: keep, name, head-and-tail window, the newest N, resume, the sessi
   check(r4.ok && r4.same && r4.lines.join('|') === 'run B|live while looking back|after', `resume carries the session on (${JSON.stringify(r4)})`);
 });
 
-// #705 (majkinetor): "We have debug option but we shouldn't as component should have its own UI for that"
-test('every viewer has a debug switch: off, debug lines are not recorded; it is remembered', { tag: ['@unit'] }, async ({ page }) => {
+// #705 (majkinetor): "We have debug option but we shouldn't as component should have its own UI for that",
+// then "lets keep the switch on component and it should be disabled by default"
+test('every viewer has a debug switch, off by default: off, debug lines are not recorded; it is remembered', { tag: ['@unit'] }, async ({ page }) => {
   await page.evaluate(() => { window.L = mk(); L.open(); });
   const box = '#mbu-logpop .mbu-log-dbg input';
-  check(await page.isChecked(box), 'debug is on by default');
-  await page.evaluate(() => L.debug('recorded'));
-  await page.uncheck(box);
+  check(!(await page.isChecked(box)), 'debug is off by default');
   await page.evaluate(() => { L.debug('dropped'); L.cat('w1').debug('dropped too'); L.info('info still'); });
+  await page.check(box);
+  await page.evaluate(() => { L.debug('recorded'); L.cat('w1').debug('recorded too'); });
   const msgs = await page.evaluate(() => L.messages());
-  check(msgs.join('|') === 'recorded|info still', `off: no debug lines, the rest as before (${msgs.join('|')})`);
-  check(await page.evaluate(() => mk().debugOn()) === false, 'the switch is remembered for the next page');
-  await page.evaluate(() => L.setDebug(true));
-  check(await page.isChecked(box), 'LOG.setDebug moves the switch');
+  check(msgs.join('|') === 'info still|recorded|recorded too', `debug lines only while it is on, the rest always (${msgs.join('|')})`);
+  check(await page.evaluate(() => mk().debugOn()) === true, 'the switch is remembered for the next page');
+  await page.evaluate(() => L.setDebug(false));
+  check(!(await page.isChecked(box)), 'LOG.setDebug moves the switch');
 });

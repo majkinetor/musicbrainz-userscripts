@@ -1870,9 +1870,9 @@ function mbuLog(o) {
     var save = o.save || function (k, v) { try { GM_setValue(k, v); } catch (e) { /* no storage: the window just forgets */ } };
     var state = function () { try { return JSON.parse(load(o.key) || '{}') || {}; } catch (e) { return {}; } };
     var remember = function (patch) { try { save(o.key, JSON.stringify(Object.assign(state(), patch))); } catch (e) { /* see save */ } };
-    // debug lines are recorded only while the viewer's debug switch is on (default on), per script
+    // debug lines are recorded only while the viewer's debug switch is on (default off: majkinetor, #705), per script
     var dbgOn = null;
-    var debugOn = function () { if (dbgOn === null) dbgOn = state().debug !== false; return dbgOn; };
+    var debugOn = function () { if (dbgOn === null) dbgOn = state().debug === true; return dbgOn; };
     var setDebug = function (v) { dbgOn = !!v; remember({ debug: dbgOn }); views.forEach(function (w) { if (w.dbg) w.dbg.checked = dbgOn; }); };
     var tally = function (e, d) { if (e.sev === 'warn') warn += d; else if (e.sev === 'error') error += d; };
     var PRE = { info: '', ok: 'OK   ', warn: 'WARN ', error: 'ERR  ', debug: 'DBG  ' };
