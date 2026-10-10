@@ -20,11 +20,11 @@ This repo's numbered conventions. The ones that hold on any project are in [`dev
 Every userscript install link shared in chat or on GitHub comes with one pinned to an **immutable commit SHA**. A pinned link always resolves to the exact reviewed code, so a later push can't silently change what it installs.
 
 ```markdown
-[Install @<version> (pinned)](https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/<sha>/userscripts/<dir>/<file>.user.js)
+[Install @<version> (pinned)](https://github.com/majkinetor/musicbrainz-userscripts/raw/<sha>/userscripts/<dir>/<file>.user.js)
 [Install @<version> (latest, auto-updates)](https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/refs/heads/main/userscripts/<dir>/<file>.user.js)
 ```
 
-- **Pinned**, always: the **full 40-character SHA** of the pushed commit (a short SHA 404s), and the `@version` read from the file at that commit.
+- **Pinned**, always: the **full 40-character SHA** of the pushed commit, and the `@version` read from the file at that commit. It goes through `github.com/<repo>/raw/<sha>/…`, which redirects to the raw file: a `raw.githubusercontent.com` URL holding a full SHA gets wrapped in backticks when a cloud session posts it.
 - **Latest**, besides the pinned one, only once the work is on `main` (or `stable`, as `refs/heads/stable`); never for a feature branch.
 - Clickable `[label](url)` links, never bare URLs, and never with the URL wrapped in backticks, which GitHub shows as plain text.
 - **Make the links with [`dev/install-links`](dev/install-links/README.md), never by hand.** `node dev/install-links/install-links.mjs <script> [...] --sha <sha>` prints them: pinned, latest once the commit is on `main`, and String Theory's for a bundled script. Each link is checked before it's printed (full SHA, HTTP 200, the label's `@version` equal to the file's). Paste its output unchanged, or write the body to a file with a `<!-- install-links -->` line and let `--into <file>` fill that line in.

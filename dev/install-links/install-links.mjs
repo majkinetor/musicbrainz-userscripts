@@ -14,6 +14,11 @@ import { fileURLToPath } from 'node:url';
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..', '..');
 const REPO = 'majkinetor/musicbrainz-userscripts';
 const RAW = `https://raw.githubusercontent.com/${REPO}/`;
+// A pinned link goes through github.com, which redirects to the same raw file: a
+// raw.githubusercontent.com URL holding a full SHA gets wrapped in backticks when a cloud
+// session posts it (the proxy does it, on every post and edit), which breaks the link.
+const PIN = `https://github.com/${REPO}/raw/`;
+const HOSTS = /raw\.githubusercontent\.com|github\.com\/[^\s/]+\/[^\s/]+\/raw\//;
 const MARKER = '<!-- install-links -->';
 
 const git = (...a) => execFileSync('git', a, { cwd: ROOT, encoding: 'utf8', maxBuffer: 64 << 20, stdio: ['ignore', 'pipe', 'pipe'] }).trim();
@@ -23,8 +28,10 @@ const die = m => { console.error(`✗ ${m}`); process.exit(1); };
 // --- the checks, shared by both modes --------------------------------------------------
 
 // A link that renders: [label](url), not inside a code span, the target with no backtick or space.
-const LINK = /\[([^\]\n]+)\]\((https:\/\/raw\.githubusercontent\.com\/[^\s()`<>]+)\)/g;
-const URL_SHAPE = new RegExp(`^${RAW.replace(/[.]/g, '\\.')}([0-9a-f]{40}|refs/heads/(?:main|stable))/userscripts/[\\w/.-]+\\.user\\.js$`);
+const LINK = /\[([^\]\n]+)\]\((https:\/\/(?:raw\.githubusercontent\.com|github\.com)\/[^\s()`<>]+)\)/g;
+const esc = s => s.replace(/[.]/g, '\\.');
+// pinned: github.com/<repo>/raw/<40-char SHA>/…; latest: raw.githubusercontent.com/<repo>/refs/heads/<main|stable>/…
+const URL_SHAPE = new RegExp(`^(?:${esc(PIN)}([0-9a-f]{40})|${esc(RAW)}(refs/heads/(?:main|stable)))/userscripts/[\\w/.-]+\\.user\\.js$`);
 
 function fetchRaw(url) {
   // curl, not fetch: it goes through the proxy in a cloud session and ships with Windows.
@@ -38,15 +45,15 @@ function check(text) {
   let inFence = false, links = 0;
   text.replace(/\r/g, '').split('\n').forEach((line, n) => {
     if (/^\s*```/.test(line)) { inFence = !inFence; return; }
-    if (inFence || !line.includes('raw.githubusercontent.com')) return;
+    if (inFence || !HOSTS.test(line)) return;
     const at = `line ${n + 1}`;
     for (const m of line.matchAll(LINK)) {
       const [, label, url] = m;
       links++;
       if ((line.slice(0, m.index).match(/`/g) || []).length % 2) errors.push(`${at}: link is inside a code span: ${m[0]}`);
       const shape = url.match(URL_SHAPE);
-      if (!shape) { errors.push(`${at}: not ${RAW}<40-char SHA | refs/heads/main | refs/heads/stable>/userscripts/…user.js: ${url}`); continue; }
-      const pinned = !shape[1].startsWith('refs/');
+      if (!shape) { errors.push(`${at}: not ${PIN}<40-char SHA>/… (pinned) or ${RAW}refs/heads/<main|stable>/… (latest), …/userscripts/…user.js: ${url}`); continue; }
+      const pinned = !!shape[1];
       const { status, body } = fetchRaw(url);
       if (status !== 200) { errors.push(`${at}: HTTP ${status}: ${url}`); continue; }
       const version = body.match(/^\/\/\s*@version\s+(\S+)/m)?.[1];
@@ -57,7 +64,7 @@ function check(text) {
         (pinned ? errors : warnings).push(`${at}: label says @${said}, the file says @${version}${pinned ? '' : ' (a branch link can lag a push by a few minutes)'}: ${url}`);
       }
     }
-    if (line.replace(LINK, '').includes('raw.githubusercontent.com')) errors.push(`${at}: a raw URL that is not a clickable [label](url) link: ${line.trim()}`);
+    if (HOSTS.test(line.replace(LINK, ''))) errors.push(`${at}: an install URL that is not a clickable [label](url) link: ${line.trim()}`);
   });
   if (!links) errors.push('no install links found');
   return { errors, warnings, links };
@@ -117,7 +124,7 @@ if (!files.includes(ST) && files.some(f => members.includes(folder(f)))) files.p
 const lines = [];
 for (const f of files) {
   const name = header(sha, f, 'name');
-  lines.push(`[Install ${name} @${header(sha, f, 'version')} (pinned)](${RAW}${sha}/${f})`);
+  lines.push(`[Install ${name} @${header(sha, f, 'version')} (pinned)](${PIN}${sha}/${f})`);
   if (onMain && exists('origin/main', f)) lines.push(`[Install ${name} @${header('origin/main', f, 'version')} (latest, auto-updates)](${RAW}refs/heads/main/${f})`);
 }
 const block = lines.join('\n');

@@ -22,6 +22,8 @@ It needs Node, `git`, `curl`, and `gh` for `--check` on a comment URL. It runs t
   - a **latest** link beside each pinned one when the commit is on `origin/main`. Run `git fetch` first, so `origin/main` is current.
 - **Output:** the links go to stdout, one per line, ready to paste unchanged. With `--into <file>`, they replace the line `<!-- install-links -->` in that file, or are appended when the file has none. Write the comment body with that line where the links belong, and post the file.
 
+A pinned link goes through `github.com/<repo>/raw/<sha>/…`, which redirects to the raw file. A cloud session's proxy wraps a `raw.githubusercontent.com` URL holding a full SHA in backticks on every post and edit, which breaks the link; the `github.com` form passes untouched.
+
 Every link is checked before it's printed. When a check fails, nothing is printed and the exit code is 1.
 
 ## Checking a posted comment
@@ -34,9 +36,9 @@ It reads a GitHub comment (`…/issues/<n>#issuecomment-<id>`, through `gh`) or 
 
 | Check                                                                                                | Fails on                                                  |
 | ---------------------------------------------------------------------------------------------------- | --------------------------------------------------------- |
-| Every raw URL is a clickable `[label](url)`                                                          | a URL in backticks, a bare URL, a link inside a code span |
-| The URL is `raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/<ref>/userscripts/…user.js` | a short SHA, a wrong repo slug, a bare `main`             |
-| `<ref>` is a full 40-character SHA, `refs/heads/main` or `refs/heads/stable`                         | anything else                                             |
+| Every install URL is a clickable `[label](url)`                                                      | a URL in backticks, a bare URL, a link inside a code span |
+| A pinned URL is `github.com/majkinetor/musicbrainz-userscripts/raw/<40-char SHA>/userscripts/…user.js` | a short SHA, a wrong repo slug, a `raw.githubusercontent.com` SHA URL |
+| A latest URL is `raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/refs/heads/<main or stable>/userscripts/…user.js` | a bare `main`, any other ref |
 | The URL answers HTTP 200                                                                             | a 404 (unpushed commit, wrong path)                       |
 | The label's `@version` equals the file's                                                             | a mismatch on a pinned link                               |
 | The text has at least one install link                                                               | none found                                                |
