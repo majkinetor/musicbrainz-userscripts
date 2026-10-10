@@ -100,7 +100,7 @@ test("#467: session log", { tag: ['@sandbox', '@login'] }, async ({ context, pag
   const s3id = await page.evaluate(() => window.__falconTest.getSessionId());
   const marked = await page.evaluate(id => {
     const raw = localStorage.getItem('falcon:session:' + id);
-    return raw ? JSON.parse(raw).join('\n') : '';
+    return raw ? JSON.parse(raw).map(x => x[3]).join('\n') : '';
   }, s3id);
   ck(/THIS TAB IS BEING UNLOADED/.test(marked), 'unloading records that the PAGE went away — not that Falcon closed itself');
   ck(/musicbrainz\.org/.test(marked), 'and records where it was when that happened');
@@ -114,7 +114,7 @@ test("#467: session log", { tag: ['@sandbox', '@login'] }, async ({ context, pag
   const restored = await page.evaluate(() => {
     document.getElementById('falcon-launcher').click();
     document.getElementById('falcon-tab-log').click();
-    return { text: document.getElementById('falcon-log-text').textContent };
+    return { text: document.querySelector('#falcon-body-log .mbu-log-list').textContent };
   });
   // The panel deliberately does NOT force itself open here any more: that was
   // scaffolding for chasing the tab-closing bug, and with the panel already open

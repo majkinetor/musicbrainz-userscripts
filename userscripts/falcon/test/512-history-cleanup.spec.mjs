@@ -36,8 +36,10 @@ test("#512: history cleanup", { tag: ['@sandbox', '@login'] }, async ({ context,
   // 1a. sessionHasRealWork() itself.
   const noiseLines = ['[15:46:15] ERROR *** THIS TAB IS BEING UNLOADED (after the run finished) *** via beforeunload', '[15:46:16] WARN  falcon= param present but neither valid base64 JSON nor a known pending token'];
   const realLines = ['[16:00:53] INFO  === session started ===', '[16:00:53] INFO  starting 6 worker(s) for 15 queued item(s)'];
-  const noiseCheck = await page.evaluate((l) => window.__falconTest.sessionHasRealWork(l), noiseLines);
-  const realCheck = await page.evaluate((l) => window.__falconTest.sessionHasRealWork(l), realLines);
+  // #705: a stored run reads back as log lines ({ msg, … }), the old text format parsed
+  const asLines = l => l.map(x => ({ msg: x.replace(/^\[[^\]]*\] \w+\s+/, '') }));
+  const noiseCheck = await page.evaluate((l) => window.__falconTest.sessionHasRealWork(l), asLines(noiseLines));
+  const realCheck = await page.evaluate((l) => window.__falconTest.sessionHasRealWork(l), asLines(realLines));
   ck(noiseCheck === false, `pure unload/warn noise is correctly NOT real work (got ${noiseCheck})`);
   ck(realCheck === true, `a session with a "starting N worker(s)" line is correctly real work (got ${realCheck})`);
 
@@ -76,15 +78,11 @@ test("#512: history cleanup", { tag: ['@sandbox', '@login'] }, async ({ context,
   ck(survived === null, 'the noise-only session is deleted once a real session starts, not left to clutter history');
 
   // 2. release name in the history label.
-  const label = await page.evaluate(() => {
-    const t = window.__falconTest;
-    const lines = ['[16:00:53] INFO  === session started ===', '[16:01:02] DEBUG [names] release:bc55a0a0-0025-40fd-a9d9-627fc3f5b1f3 — fetched: "Music Will Explain (Choir Music Vol. 1)"'];
-    return t.extractReleaseName(lines);
-  });
+  const label = await page.evaluate((lines) => window.__falconTest.extractReleaseName(lines), asLines(['[16:00:53] INFO  === session started ===', '[16:01:02] DEBUG [names] release:bc55a0a0-0025-40fd-a9d9-627fc3f5b1f3 — fetched: "Music Will Explain (Choir Music Vol. 1)"']));
   console.log('extracted release name:', JSON.stringify(label));
   ck(label === 'Music Will Explain (Choir Music Vol. 1)', `extractReleaseName() pulls the name out of the existing [names] debug line (got "${label}")`);
 
-  const noNameLabel = await page.evaluate(() => window.__falconTest.extractReleaseName(['[16:00:53] INFO  === session started ===']));
+  const noNameLabel = await page.evaluate((l) => window.__falconTest.extractReleaseName(l), asLines(['[16:00:53] INFO  === session started ===']));
   ck(noNameLabel === null, `returns null when no release name was ever resolved in that session (got ${noNameLabel})`);
 
   ck(errs.length === 0, 'no page errors: ' + JSON.stringify(errs.slice(0, 3)));

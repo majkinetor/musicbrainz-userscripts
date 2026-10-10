@@ -36,6 +36,7 @@ test("#467: noop submit", { tag: ['@sandbox', '@login'] }, async ({ context, pag
   await idle(page);
   await page.addScriptTag({ content: code });
   await page.waitForFunction(() => !!window.__falconTest, { timeout: 10000 });
+  await page.evaluate(() => window.__falconTest.Log.setDebug(true));   // #705: debug is off by default; this checks the trace
   await page.evaluate(() => document.getElementById('falcon-launcher').click());
   await page.waitForFunction(() => document.getElementById('falcon-panel')?.style.display === 'flex', null, { timeout: 10000 });
 
@@ -92,7 +93,7 @@ test("#467: noop submit", { tag: ['@sandbox', '@login'] }, async ({ context, pag
   ck(elapsed < 20000, `it resolves promptly instead of burning the ~50s submit timeout (${elapsed}ms)`);
   ck(posts === 0, `nothing was submitted into the void (POST attempts: ${posts})`);
 
-  const logText = await page.evaluate(() => { document.getElementById('falcon-tab-log').click(); return document.getElementById('falcon-log-text').textContent; });
+  const logText = await page.evaluate(() => { document.getElementById('falcon-tab-log').click(); return document.querySelector('#falcon-body-log .mbu-log-list').textContent; });
   ck(/no pending change/i.test(logText), 'the log explains why it skipped (MB shows no pending change)');
   ck(/already up to date/i.test(logText), 'and says the entity is already up to date');
 

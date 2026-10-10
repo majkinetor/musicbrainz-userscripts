@@ -32,7 +32,7 @@
 // are not.
 const ROOTS = [
     // shared
-    '.mbu-ov', '.mbu-ui', '#mbu-logpop', '.discogs-bar', '.discogs-review-panel-li',
+    '.mbu-ov', '.mbu-ui', '#mbu-logpop', '.mbu-logemb', '.discogs-bar', '.discogs-review-panel-li',
     // art_station — #as-switch-wrap is the floating pill; its two buttons sit
     // OUTSIDE #as-root, so nothing scoped to that reached them
     '#as-root', '#as-setup', '.as-pop', '#as-switch-wrap',
@@ -139,10 +139,10 @@ const CSS = [
     '.mbu-logpop-h{display:flex;align-items:center;gap:8px;padding:10px 13px;',
     'border-bottom:1px solid var(--mbu-border-soft);color:var(--mbu-accent-text);cursor:move;user-select:none}',
     '.mbu-logpop-sp{margin-left:auto}',
-    '.mbu-logpop-clear,.mbu-logpop-copy,.mbu-logpop-x,.mbu-logpop-min,.mbu-logpop-full{font-size:12px;color:var(--mbu-accent-text);',
+    '.mbu-logpop-hclear,.mbu-logpop-clear,.mbu-logpop-copy,.mbu-logpop-x,.mbu-logpop-min,.mbu-logpop-full{font-size:12px;color:var(--mbu-accent-text);',
     'background:var(--mbu-bg-hover);border:1px solid var(--mbu-border);border-radius:5px;',
     'padding:2px 9px;cursor:pointer;font-family:inherit}',
-    '.mbu-logpop-clear:hover,.mbu-logpop-copy:hover,.mbu-logpop-x:hover,.mbu-logpop-min:hover,.mbu-logpop-full:hover{background:var(--mbu-accent-soft)}',
+    '.mbu-logpop-hclear:hover,.mbu-logpop-clear:hover,.mbu-logpop-copy:hover,.mbu-logpop-x:hover,.mbu-logpop-min:hover,.mbu-logpop-full:hover{background:var(--mbu-accent-soft)}',
     // minimised: just the header bar, so it can sit out of the way mid-run
     '#mbu-logpop.min .mbu-log-list,#mbu-logpop.min .mbu-log-f,#mbu-logpop.min .mbu-logpop-clear,#mbu-logpop.min .mbu-logpop-copy,#mbu-logpop.min .mbu-logpop-x,#mbu-logpop.min .mbu-logpop-full{display:none}',
     '#mbu-logpop.min{max-height:none;width:auto!important;height:auto!important}',
@@ -158,14 +158,33 @@ const CSS = [
     '#mbu-logpop.full .mbu-logpop-h{cursor:default}',
     '#mbu-logpop.min .mbu-logpop-sp{display:none}',
     '.mbu-log-badge{color:var(--mbu-border-strong);font-size:11px}',
+    // the viewer mounted in a script's own panel (#705): no window, it fills its host
+    '.mbu-logemb{display:flex;flex-direction:column;height:100%;min-height:0;background:var(--mbu-bg);font:13px var(--mbu-font);color:var(--mbu-text)}',
+    // one row: the filter and the session list give way before anything wraps
+    '.mbu-logemb .mbu-logpop-h{cursor:default;padding:7px 10px;flex-wrap:nowrap}',
+    '.mbu-logemb .mbu-logpop-h>*{flex-shrink:0}',
+    '.mbu-logemb .mbu-logpop-h>.mbu-log-q{flex:0 1 160px;min-width:60px;margin-left:0}',
+    '.mbu-logemb .mbu-logpop-h>.mbu-log-ses{flex:0 1 240px;min-width:90px}',
+    '.mbu-logemb .mbu-logpop-h>.mbu-logpop-sp{flex:1 1 0;min-width:0}',
+    // the session list (#705) and the past session it shows: read-only, so no Clear
+    '.mbu-logpop .mbu-log-ses{flex:0 1 260px;min-width:120px;max-width:100%;font:12px var(--mbu-font);padding:2px 4px;border:1px solid var(--mbu-border);border-radius:5px}',
+    '.mbu-logpop-hclear:disabled{opacity:.5;cursor:default}',
+    '.mbu-log-dbg{display:inline-flex;align-items:center;gap:4px;font-size:12px;color:var(--mbu-text);cursor:pointer;white-space:nowrap}',
+    '.mbu-log-dbg input{margin:0}',
+    '#mbu-logpop.min .mbu-log-dbg{display:none}',
+    '.mbu-log-past .mbu-logpop-clear{display:none}',
+    '#mbu-logpop.min .mbu-log-ses,#mbu-logpop.min .mbu-logpop-hclear{display:none}',
     // the text filter beside the counts: lines without the text are hidden
-    '#mbu-logpop .mbu-log-q{flex:0 1 200px;min-width:80px;margin-left:6px;font:12px var(--mbu-font);padding:2px 8px;',
+    '.mbu-logpop .mbu-log-q{flex:0 1 200px;min-width:80px;margin-left:6px;font:12px var(--mbu-font);padding:2px 8px;',
     'border:1px solid var(--mbu-border);border-radius:5px;cursor:text}',
     '#mbu-logpop.min .mbu-log-q{display:none}',
-    '#mbu-logpop .mbu-log-li.mbu-log-nq{display:none}',
+    '.mbu-logpop .mbu-log-li.mbu-log-nq{display:none}',
     '.mbu-log-list{flex:1 1 auto;overflow:auto;overscroll-behavior:contain;padding:9px 13px;',
     'display:flex;flex-direction:column;gap:3px}',
     '.mbu-log-li{display:flex;gap:9px;white-space:pre-wrap;word-break:break-word}',
+    // a block kept as written (#705): a table, a dump. No scroller of its own: in the
+    // category grid a scrolling cell is sized to one line; the list scrolls sideways instead
+    '.mbu-log-pre .mbu-log-m{white-space:pre;font:12px/1.35 ui-monospace,Consolas,monospace;word-break:normal}',
     '.mbu-log-t{color:var(--mbu-text-weak);flex:0 0 auto;font-variant-numeric:tabular-nums}',
     // a line's category (#697): a quiet tag before the message
     '.mbu-log-c{color:var(--mbu-text-weak);flex:0 0 auto}',
@@ -180,19 +199,19 @@ const CSS = [
     '.mbu-log-f[hidden]{display:none}',
     '.mbu-log-fg{display:contents}',
     '.mbu-log-fs{width:1px;height:12px;background:var(--mbu-border);margin:0 6px}',
-    '#mbu-logpop .mbu-log-fb{font:inherit;color:var(--mbu-text-weak);background:none;border:1px solid transparent;',
+    '.mbu-logpop .mbu-log-fb{font:inherit;color:var(--mbu-text-weak);background:none;border:1px solid transparent;',
     'border-radius:5px;padding:0 6px;line-height:1.6;cursor:pointer}',
-    '#mbu-logpop .mbu-log-fb:hover{color:var(--mbu-text);border-color:var(--mbu-border)}',
-    '#mbu-logpop .mbu-log-fb.on{color:var(--mbu-accent-text);background:var(--mbu-accent-soft);border-color:var(--mbu-border)}',
+    '.mbu-logpop .mbu-log-fb:hover{color:var(--mbu-text);border-color:var(--mbu-border)}',
+    '.mbu-logpop .mbu-log-fb.on{color:var(--mbu-accent-text);background:var(--mbu-accent-soft);border-color:var(--mbu-border)}',
     // levels are words in their own colour; categories are tags, so the two never read as one list
-    '#mbu-logpop .mbu-log-fb[data-sev=error]{color:var(--mbu-error)}',
-    '#mbu-logpop .mbu-log-fb[data-sev=warn]{color:var(--mbu-warn)}',
-    '#mbu-logpop .mbu-log-fb[data-sev=info]{color:var(--mbu-text-dim)}',
-    '#mbu-logpop .mbu-log-fb[data-sev].on{background:var(--mbu-bg-hover);border-color:currentColor;font-weight:600}',
-    '#mbu-logpop .mbu-log-fb[data-cat]{border-color:var(--mbu-border-soft);background:var(--mbu-bg-raised);border-radius:999px;padding:0 8px}',
-    '#mbu-logpop .mbu-log-fb[data-cat].on{color:var(--mbu-accent-text);background:var(--mbu-accent-soft);border-color:var(--mbu-accent)}',
+    '.mbu-logpop .mbu-log-fb[data-sev=error]{color:var(--mbu-error)}',
+    '.mbu-logpop .mbu-log-fb[data-sev=warn]{color:var(--mbu-warn)}',
+    '.mbu-logpop .mbu-log-fb[data-sev=info]{color:var(--mbu-text-dim)}',
+    '.mbu-logpop .mbu-log-fb[data-sev].on{background:var(--mbu-bg-hover);border-color:currentColor;font-weight:600}',
+    '.mbu-logpop .mbu-log-fb[data-cat]{border-color:var(--mbu-border-soft);background:var(--mbu-bg-raised);border-radius:999px;padding:0 8px}',
+    '.mbu-logpop .mbu-log-fb[data-cat].on{color:var(--mbu-accent-text);background:var(--mbu-accent-soft);border-color:var(--mbu-accent)}',
     '.mbu-log-m{flex:1 1 auto;color:var(--mbu-text-dim)}',
-    '#mbu-logpop .mbu-log-m a{color:var(--mbu-accent-text)}',
+    '.mbu-logpop .mbu-log-m a{color:var(--mbu-accent-text)}',
     // severity, on the message only — the timestamp stays quiet
     '.mbu-log-ok .mbu-log-m{color:var(--mbu-ok)}',
     '.mbu-log-warn .mbu-log-m{color:var(--mbu-warn)}',
@@ -606,7 +625,7 @@ function mbRestackCorner(corner) {
     });
 }
 
-// Activity log: the session's log lines plus the floating window that shows them
+// Activity log: the session's log lines plus the viewers that show them
 // (#283's viewer, shared since X12 of #623). A script makes its log once:
 //
 //   var LOG = mbuLog({ name: 'Fusion', version: VERSION, key: 'fusion.logwin' });
@@ -614,12 +633,20 @@ function mbRestackCorner(corner) {
 //   LOG.open(); LOG.close(); LOG.reopen()   // reopen: only if it was left open
 //   LOG.markdown(); LOG.copy(btn); LOG.clear(); LOG.lines(); LOG.messages(); LOG.counts()
 //   LOG.cat('Spotify').info(…)        // the same calls, each line tagged with a category
+//   LOG.pre(text)                     // a block kept as written: line breaks, spacing, monospace (#705)
+//   LOG.mount(el, { tools })          // the viewer inside the script's own panel (#705)
 //
 // Categories (#697) are optional. A tagged line shows its category before the
-// message and in the Markdown ("WARN [Spotify] …"). The window grows a row of
+// message and in the Markdown ("WARN [Spotify] …"). The viewer grows a row of
 // filters only when there is a choice: the levels once two of them have lines
 // (ok counts as info), the categories once there are two. Click one to see only
 // those lines, click it again to see all; Copy always takes everything.
+//
+// The floating window (open) and a mounted viewer (mount) are the same viewer;
+// mount draws it into an element of the script's, without the title bar's
+// window buttons, and o.tools (an element) sits in its toolbar before Clear.
+// Every viewer has a debug switch: off, LOG.debug() lines are not recorded at all
+// (remembered per script under o.key; LOG.debugOn(), LOG.setDebug(v)).
 //
 // o.name / o.version  the Markdown summary's title (version may be a function)
 // o.subtitle          optional function; its text follows the title (e.g. the release)
@@ -628,21 +655,38 @@ function mbRestackCorner(corner) {
 // o.load / o.save     that storage (default GM_getValue / GM_setValue)
 // o.before            called before the window opens (e.g. to inject the script's CSS)
 // o.max               lines kept (default 20000: about 4 MB; 2000 dropped a long session's start)
+// o.history           opt-in history of past sessions (#705), below
 //
 // A long run keeps only the last o.max lines, and the Markdown says how many went
 // before them; the copies this replaced grew for the whole session. An open
-// window appends each new line and drops the oldest row past the cap; the copies
+// viewer appends each new line and drops the oldest row past the cap; the copies
 // rebuilt the whole list with innerHTML on every line, which is quadratic over a
 // long matching run.
+//
+// History (#705, Falcon's run logs of #512 made shared). Off unless o.history is given:
+//
+//   o.history = { prefix: 'falcon:session:', keep: () => 20, lines: 400, head: 140,
+//                 parse: s => entry, nameOf: entries => name, store }
+//
+// A session starts with the page, or with LOG.session(reason) (Falcon: each run).
+// Only a session the script marks with LOG.keep() is stored, so a page that did
+// nothing worth reading back leaves nothing behind; LOG.name(text) names it (the
+// first name stays). It is stored in the page's localStorage under prefix + id,
+// within 100 ms of each line and at once on LOG.flush(), so a crashed tab keeps
+// its log; a session longer than \`lines\` keeps its first \`head\` lines and its
+// end, and says how many went between. The newest \`keep\` sessions are kept.
+// prefix + 'current' holds the last kept session's id (LOG.last()), so LOG.resume(id)
+// can carry on a session across a navigation. The viewer gets a session list and Clear history.
+//   LOG.sessionId(); LOG.last(); LOG.isKept(); LOG.refresh(); LOG.sessions(); LOG.load(id); LOG.forget(id); LOG.clearHistory(); LOG.flush()
+// parse reads a stored line that is a string (an older format); nameOf names a
+// session stored without a name; store ({ get, set, del, keys }) replaces localStorage.
 function mbuLog(o) {
     o = o || {};
-    var max = o.max || 20000, buf = [], dropped = 0, warn = 0, error = 0, win = null;
-    // categories in the order first seen, the levels seen, and the window's filter (null: all)
-    var cats = [], catIx = {}, sevs = {}, fSev = null, fCat = null, bound = {};
+    var max = o.max || 20000, buf = [], dropped = 0, warn = 0, error = 0, views = [], bound = {};
     var LEVELS = ['error', 'warn', 'info', 'debug'];
     var group = function (sev) { return sev === 'ok' ? 'info' : sev; };
     var pad = function (n, w) { return String(n).padStart(w || 2, '0'); };
-    var ts = function (d) { return pad(d.getHours()) + ':' + pad(d.getMinutes()) + ':' + pad(d.getSeconds()) + '.' + pad(d.getMilliseconds(), 3); };
+    var ts = function (d) { return d ? pad(d.getHours()) + ':' + pad(d.getMinutes()) + ':' + pad(d.getSeconds()) + '.' + pad(d.getMilliseconds(), 3) : '--:--:--.---'; };
     var str = function (v) {
         if (typeof v === 'string') return v;
         if (v instanceof Error) return v.message || String(v);
@@ -664,20 +708,132 @@ function mbuLog(o) {
     var save = o.save || function (k, v) { try { GM_setValue(k, v); } catch (e) { /* no storage: the window just forgets */ } };
     var state = function () { try { return JSON.parse(load(o.key) || '{}') || {}; } catch (e) { return {}; } };
     var remember = function (patch) { try { save(o.key, JSON.stringify(Object.assign(state(), patch))); } catch (e) { /* see save */ } };
+    // debug lines are recorded only while the viewer's debug switch is on (default off: majkinetor, #705), per script
+    var dbgOn = null;
+    var debugOn = function () { if (dbgOn === null) dbgOn = state().debug === true; return dbgOn; };
+    var setDebug = function (v) { dbgOn = !!v; remember({ debug: dbgOn }); views.forEach(function (w) { if (w.dbg) w.dbg.checked = dbgOn; }); };
     var tally = function (e, d) { if (e.sev === 'warn') warn += d; else if (e.sev === 'error') error += d; };
     var PRE = { info: '', ok: 'OK   ', warn: 'WARN ', error: 'ERR  ', debug: 'DBG  ' };
-    var line = function (e) { return ts(e.t) + '  ' + (PRE[e.sev] || '') + (e.cat ? '[' + e.cat + '] ' : '') + e.msg; };
+    var line = function (e) { return ts(e.t) + '  ' + (PRE[e.sev] || '') + (e.cat ? '[' + e.cat + '] ' : '') + (e.pre ? '\\n' : '') + e.msg; };
+    var countOf = function (list) {
+        var c = { warn: 0, error: 0 };
+        list.forEach(function (e) { if (e.sev === 'warn') c.warn++; else if (e.sev === 'error') c.error++; });
+        return c;
+    };
 
-    function add(sev, args, cat) {
-        var msg = Array.prototype.map.call(args, str).join(' ').replace(/\\s+/g, ' ').trim();
-        if (!msg) return;
-        var e = { t: new Date(), sev: sev === 'err' ? 'error' : sev, msg: msg }, grew = false;
-        if (cat) {
-            e.cat = String(cat);
-            if (!(e.cat in catIx)) { catIx[e.cat] = cats.length; cats.push(e.cat); grew = true; }
+    // ── history (#705) ──
+    var H = o.history || null, hp = H && (H.prefix || ((o.key || 'mbu') + ':session:'));
+    var ID_RE = /^\\d{14}-\\d+$/, sid = '', kept = false, sname = '', savedName = '', seq = 0, pTimer = 0, lastSaved = '';
+    var store = H && (H.store || {
+        get: function (k) { try { return localStorage.getItem(k); } catch (e) { return null; } },
+        set: function (k, v) { try { localStorage.setItem(k, v); } catch (e) { /* full or blocked: the session just isn't kept */ } },
+        del: function (k) { try { localStorage.removeItem(k); } catch (e) { /* nothing to do */ } },
+        // one call for all the keys: a userscript reaches localStorage through Firefox's
+        // Xray wrapper, where each call costs, and the page may hold hundreds of keys
+        keys: function () {
+            try { var all = Object.keys(localStorage); if (all.length === localStorage.length) return all; } catch (e) { /* the loop below */ }
+            var out = []; try { for (var i = 0; i < localStorage.length; i++) out.push(localStorage.key(i)); } catch (e) { /* none */ } return out;
+        },
+    });
+    var keepN = function () { var n = Number(typeof H.keep === 'function' ? H.keep() : H.keep); return n > 0 ? n : 10; };
+    var newId = function () { return new Date().toISOString().replace(/[^0-9]/g, '').slice(0, 14) + '-' + (++seq); };
+    // the id is the session's start in UTC: YYYYMMDDHHMMSS-n
+    var idDate = function (id) {
+        var m = /^(\\d{4})(\\d\\d)(\\d\\d)(\\d\\d)(\\d\\d)(\\d\\d)/.exec(id || '');
+        return m ? new Date(Date.UTC(+m[1], m[2] - 1, +m[3], +m[4], +m[5], +m[6])) : null;
+    };
+    function ids() {
+        if (!H) return [];
+        return store.keys().filter(function (k) { return k && k.indexOf(hp) === 0 && ID_RE.test(k.slice(hp.length)); })
+            .map(function (k) { return k.slice(hp.length); }).sort();   // the id's own timestamp sorts as a string
+    }
+    // a stored line: [time ms | null, sev, cat | 0, msg, pre 1/0]; a string is an older format, read by H.parse
+    function fromStored(x, id) {
+        if (typeof x === 'string') {
+            var p = null;
+            try { p = H.parse ? H.parse(x, idDate(id)) : null; } catch (e) { /* unreadable: kept as text */ }
+            return p ? { t: p.t || null, sev: p.sev || 'info', cat: p.cat || '', msg: String(p.msg == null ? x : p.msg), pre: !!p.pre } : { t: null, sev: 'info', msg: x };
         }
-        if (!sevs[group(e.sev)]) { sevs[group(e.sev)] = true; grew = true; }
-        if (grew && win) win.filters();
+        if (!Array.isArray(x)) return null;
+        var e = { t: x[0] != null ? new Date(x[0]) : null, sev: x[1] || 'info', msg: String(x[3] == null ? '' : x[3]) };
+        if (x[2]) e.cat = String(x[2]);
+        if (x[4]) e.pre = true;
+        return e;
+    }
+    function loadSession(id) {
+        if (!H || !id) return null;
+        var raw = store.get(hp + id);
+        if (raw == null) return null;
+        try { return (JSON.parse(raw) || []).map(function (x) { return fromStored(x, id); }).filter(Boolean); } catch (e) { return null; }
+    }
+    // a past session's name doesn't change, so it is read (or mined from its lines) once
+    var names = {};
+    function nameOf(id, entries) {
+        if (id in names) return names[id];
+        var n = store.get(hp + id + ':name');
+        if (!n) { try { n = H.nameOf ? H.nameOf(entries || loadSession(id) || []) || '' : ''; } catch (e) { n = ''; } }
+        return (names[id] = n || '');
+    }
+    // the first \`head\` lines and the end, and a line saying how many went between
+    function storedWindow() {
+        var cap = H.lines || 400, head = Math.min(H.head || 140, cap - 2);
+        var pack = function (e) { return [e.t ? e.t.getTime() : null, e.sev, e.cat || 0, e.msg, e.pre ? 1 : 0]; };
+        if (buf.length <= cap) return buf.map(pack);
+        var tail = cap - head - 1, cut = buf.length - head - tail;
+        return buf.slice(0, head).map(pack)
+            .concat([[null, 'info', 0, '——— ' + cut + ' line(s) from the middle of this session were dropped to fit the stored-log budget; its start and end are kept in full ———', 0]])
+            .concat(buf.slice(-tail).map(pack));
+    }
+    function flush() {
+        clearTimeout(pTimer); pTimer = 0;
+        if (!H || !sid || !kept) return;
+        try {
+            var payload = JSON.stringify(storedWindow());
+            if (payload === lastSaved) return;
+            lastSaved = payload;
+            store.set(hp + sid, payload);
+            if (sname && savedName !== sname) { store.set(hp + sid + ':name', sname); savedName = sname; }
+        } catch (e) { /* not stored */ }
+    }
+    var persist = function () { if (H && kept && !pTimer) pTimer = setTimeout(flush, 100); };
+    function forget(id) { if (H && id) { store.del(hp + id); store.del(hp + id + ':name'); delete names[id]; } }
+    function prune() {
+        var all = ids().filter(function (id) { return id !== sid; });
+        var excess = all.length + (kept ? 1 : 0) - keepN();
+        if (excess > 0) all.slice(0, excess).forEach(forget);
+    }
+    // past sessions, newest first, without the current one
+    function sessions() {
+        return ids().filter(function (id) { return id !== sid; }).reverse()
+            .map(function (id) { return { id: id, date: idDate(id), name: nameOf(id) }; });
+    }
+    var sessionLabel = function (s) {
+        var d = s.date, when = d ? d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()) + ' ' + pad(d.getHours()) + ':' + pad(d.getMinutes()) + ':' + pad(d.getSeconds()) : s.id;
+        return when + (s.name ? ' — ' + s.name : '');
+    };
+    function startSession() {
+        flush();
+        sid = newId(); kept = false; sname = ''; savedName = ''; lastSaved = '';
+        reset();
+    }
+    function resume(id) {
+        var entries = loadSession(id);
+        if (!entries) return false;
+        flush();
+        reset();
+        sid = id; kept = true; sname = savedName = store.get(hp + id + ':name') || '';
+        lastSaved = store.get(hp + id) || '';
+        store.set(hp + 'current', sid);
+        entries.forEach(function (e) { push(e); });
+        return true;
+    }
+
+    // ── the live lines ──
+    function reset() {
+        buf = []; dropped = 0; warn = 0; error = 0;
+        views.forEach(function (v) { if (!v.past) v.show(null); v.sessions(); });
+    }
+    function push(e) {
         buf.push(e); tally(e, 1);
         // trim in chunks, not one shift per line
         if (buf.length > max + Math.ceil(max / 10)) {
@@ -685,23 +841,38 @@ function mbuLog(o) {
             gone.forEach(function (g) { tally(g, -1); });
             dropped += gone.length;
         }
-        if (win) win.append(e);
+        views = views.filter(function (v) { return v.el.isConnected; });
+        views.forEach(function (v) { if (!v.past) v.append(e); });
     }
-    function title() {
+    function add(sev, args, cat, pre) {
+        var msg = Array.prototype.map.call(args, str).join(' ');
+        msg = pre ? msg.replace(/\\s+$/, '') : msg.replace(/\\s+/g, ' ').trim();
+        if (!msg) return;
+        var e = { t: new Date(), sev: sev === 'err' ? 'error' : sev, msg: msg };
+        if (e.sev === 'debug' && !debugOn()) return;
+        if (cat) e.cat = String(cat);
+        if (pre) e.pre = true;
+        push(e);
+        persist();
+    }
+    function title(bare) {
         var v = typeof o.version === 'function' ? (function () { try { return o.version(); } catch (e) { return ''; } })() : o.version;
         var t = (o.name || 'Log') + (v ? ' v' + v : '');
-        try { var s = o.subtitle && o.subtitle(); if (s) t += ' — ' + s; } catch (e) { /* no subtitle */ }
+        try { var s = !bare && o.subtitle && o.subtitle(); if (s) t += ' — ' + s; } catch (e) { /* no subtitle */ }
         return t;
     }
-    function markdown() {
-        var body = buf.length ? buf.map(line).join('\\n') : '(no activity logged)';
-        if (dropped) body = '(' + dropped + ' earlier line' + (dropped === 1 ? '' : 's') + ' not kept)\\n' + body;
-        var n = (warn || error) ? ' (' + warn + ' warning' + (warn === 1 ? '' : 's') + ', ' + error + ' error' + (error === 1 ? '' : 's') + ')' : '';
+    // past: { id, entries } to copy a stored session instead of this one
+    function markdown(past) {
+        var list = past ? past.entries : buf, c = past ? countOf(list) : { warn: warn, error: error };
+        var body = list.length ? list.map(line).join('\\n') : '(no activity logged)';
+        if (!past && dropped) body = '(' + dropped + ' earlier line' + (dropped === 1 ? '' : 's') + ' not kept)\\n' + body;
+        var n = (c.warn || c.error) ? ' (' + c.warn + ' warning' + (c.warn === 1 ? '' : 's') + ', ' + c.error + ' error' + (c.error === 1 ? '' : 's') + ')' : '';
+        var what = past ? 'log of ' + sessionLabel({ id: past.id, date: idDate(past.id), name: nameOf(past.id, list) }) : 'session log';
         var fence = String.fromCharCode(96, 96, 96);
-        return '<details><summary>' + title() + ' — session log' + n + '</summary>\\n\\n' + fence + 'log\\n' + body + '\\n' + fence + '\\n\\n</details>';
+        return '<details><summary>' + title(!!past) + ' — ' + what + n + '</summary>\\n\\n' + fence + 'log\\n' + body + '\\n' + fence + '\\n\\n</details>';
     }
-    function copy(btn) {
-        var md = markdown();
+    function copy(btn, past) {
+        var md = markdown(past);
         var done = function (ok) {
             if (!btn) return;
             var was = btn.dataset.lbl || btn.textContent; btn.dataset.lbl = was;
@@ -718,32 +889,45 @@ function mbuLog(o) {
         };
         try { navigator.clipboard.writeText(md).then(function () { done(true); }, fallback); } catch (e) { fallback(); }
     }
-    function open() {
-        close(true);
-        if (typeof o.before === 'function') { try { o.before(); } catch (e) { /* the window still opens */ } }
-        remember({ open: true });
-        var st = state();
-        var pop = document.createElement('div'); pop.id = 'mbu-logpop'; pop.className = 'mbu-logpop';
-        pop.innerHTML = mbuHtml('<div class="mbu-logpop-h"><b>' + esc(o.header || 'Activity log') + '</b> <span class="mbu-log-badge"></span>'
+
+    // ── a viewer: the floating window or one mounted in the script's panel ──
+    var vseq = 0;
+    function view(root, floating, tools) {
+        var vid = String(++vseq);
+        root.classList.add('mbu-logpop');
+        root.dataset.mbuLv = vid;
+        root.innerHTML = mbuHtml('<div class="mbu-logpop-h">' + (floating ? '<b>' + esc(o.header || 'Activity log') + '</b> ' : '') + '<span class="mbu-log-badge"></span>'
             + '<input class="mbu-log-q" type="search" placeholder="Filter" title="Show only the lines with this text" autocomplete="off">'
+            + (H ? '<select class="mbu-log-ses" title="The session shown: this one, or a past one kept in this browser"></select>' : '')
             + '<span class="mbu-logpop-sp"></span>'
+            + (H ? '<button class="mbu-logpop-hclear" type="button" title="Delete every past session (this one stays)">Clear history</button>' : '')
+            + '<label class="mbu-log-dbg" title="Record each step in detail. Leave it on when reporting a problem"><input type="checkbox"> debug</label>'
             + '<button class="mbu-logpop-clear" type="button" title="Clear the log (the lines so far are gone)">Clear</button>'
             + '<button class="mbu-logpop-copy" type="button" title="Copy as Markdown (paste into a GitHub issue)">⧉ Copy</button>'
-            + '<button class="mbu-logpop-full" type="button" title="Full screen (or double-click the title bar)">⛶</button>'
-            + '<button class="mbu-logpop-min" type="button" title="Minimize">–</button>'
-            + '<button class="mbu-logpop-x" type="button" title="Close">✕</button></div>'
+            + (floating ? '<button class="mbu-logpop-full" type="button" title="Full screen (or double-click the title bar)">⛶</button>'
+                + '<button class="mbu-logpop-min" type="button" title="Minimize">–</button>'
+                + '<button class="mbu-logpop-x" type="button" title="Close">✕</button>' : '') + '</div>'
             + '<div class="mbu-log-f" hidden></div><style class="mbu-log-fcss"></style>'
-            + '<div class="mbu-log-list"></div><div class="mbu-logpop-grip" title="Resize"></div>');
-        document.body.appendChild(pop);
-        if (st.left != null) { pop.style.left = st.left; pop.style.top = st.top; pop.style.right = 'auto'; pop.style.transform = 'none'; }
-        var restore = { left: pop.style.left, top: pop.style.top, right: pop.style.right, bottom: pop.style.bottom, transform: pop.style.transform };
-        var list = pop.querySelector('.mbu-log-list'), badge = pop.querySelector('.mbu-log-badge');
-        var qEl = pop.querySelector('.mbu-log-q'), q = '';
+            + '<div class="mbu-log-list"></div>' + (floating ? '<div class="mbu-logpop-grip" title="Resize"></div>' : ''));
+        if (tools) root.querySelector('.mbu-logpop-clear').before(tools);
+        var list = root.querySelector('.mbu-log-list'), badge = root.querySelector('.mbu-log-badge');
+        var qEl = root.querySelector('.mbu-log-q'), q = '', sel = root.querySelector('.mbu-log-ses');
+        var fRow = root.querySelector('.mbu-log-f'), fCss = root.querySelector('.mbu-log-fcss');
+        // what this viewer shows: the live lines, or a past session (read-only)
+        var past = null, src = buf, cats = [], catIx = {}, sevs = {}, fSev = null, fCat = null;
+        var scope = '.mbu-logpop[data-mbu-lv="' + vid + '"] ';
         var miss = function (e) { return !!q && ((e.cat || '') + ' ' + e.msg).toLowerCase().indexOf(q) < 0; };
+        // note a line's level and category; true when the filter row must change
+        var note = function (e) {
+            var grew = false;
+            if (e.cat && !(e.cat in catIx)) { catIx[e.cat] = cats.length; cats.push(e.cat); grew = true; }
+            if (!sevs[group(e.sev)]) { sevs[group(e.sev)] = true; grew = true; }
+            return grew;
+        };
         var row = function (e) {
             var d = document.createElement('div');
             d._e = e;
-            d.className = 'mbu-log-li mbu-log-' + e.sev;
+            d.className = 'mbu-log-li mbu-log-' + e.sev + (e.pre ? ' mbu-log-pre' : '');
             if (miss(e)) d.classList.add('mbu-log-nq');
             d.dataset.s = group(e.sev);
             if (e.cat) d.dataset.c = catIx[e.cat];
@@ -753,8 +937,7 @@ function mbuLog(o) {
             return d;
         };
         // the filter row, redrawn when a level or category first appears; hiding is one
-        // rule in the window's own <style>, not a walk over the rows
-        var fRow = pop.querySelector('.mbu-log-f'), fCss = pop.querySelector('.mbu-log-fcss');
+        // rule in the viewer's own <style>, not a walk over the rows
         var filters = function () {
             var lv = LEVELS.filter(function (l) { return sevs[l]; });
             var showL = lv.length > 1, showC = cats.length > 1;
@@ -768,27 +951,29 @@ function mbuLog(o) {
                 + (showC ? '<span class="mbu-log-fg">' + cats.map(function (c) { return b('cat', c, fCat === c); }).join('') + '</span>' : ''));
             fRow.hidden = !showL && !showC;
             list.classList.toggle('mbu-log-cats', cats.length > 0);
-            fCss.textContent = (fSev ? '#mbu-logpop .mbu-log-li:not([data-s="' + fSev + '"]){display:none}' : '')
-                + (fCat != null ? '#mbu-logpop .mbu-log-li:not([data-c="' + catIx[fCat] + '"]){display:none}' : '');
+            fCss.textContent = (fSev ? scope + '.mbu-log-li:not([data-s="' + fSev + '"]){display:none}' : '')
+                + (fCat != null ? scope + '.mbu-log-li:not([data-c="' + catIx[fCat] + '"]){display:none}' : '');
         };
-        var showBadge = function () { badge.textContent = '(' + buf.length + ')' + (warn || error ? ' · ' + warn + '⚠ ' + error + '✖' : ''); };
-        // the rows, once; later lines are appended one by one
-        var frag = document.createDocumentFragment();
-        buf.forEach(function (e) { frag.appendChild(row(e)); });
-        if (buf.length) list.appendChild(frag);
-        else list.innerHTML = mbuHtml('<div class="mbu-log-empty">No activity yet.</div>');
-        showBadge();
-        list.scrollTop = list.scrollHeight;
-        // badge and scroll once per frame, however many lines arrive in it
+        var showBadge = function () {
+            var c = past ? countOf(src) : { warn: warn, error: error };
+            badge.textContent = '(' + src.length + ')' + (c.warn || c.error ? ' · ' + c.warn + '⚠ ' + c.error + '✖' : '');
+        };
+        var empty = function () { return '<div class="mbu-log-empty">' + (past ? 'Nothing was kept of this session.' : 'No activity yet.') + '</div>'; };
         var queued = false, follow = true;
-        list.addEventListener('scroll', function () { follow = list.scrollHeight - list.scrollTop - list.clientHeight < 40; });
         var paint = function () { queued = false; showBadge(); if (follow) list.scrollTop = list.scrollHeight; };
-        // Escape in a filled filter empties it; anywhere else it closes the window
-        var onKey = function (e) {
-            if (e.key !== 'Escape') return;
-            if (e.target === qEl && qEl.value) { qEl.value = ''; refilter(); return; }
-            close();
+        // all rows at once: on opening, and when the session shown changes
+        var draw = function () {
+            cats = []; catIx = {}; sevs = {};
+            src.forEach(note);
+            var frag = document.createDocumentFragment();
+            src.forEach(function (e) { frag.appendChild(row(e)); });
+            list.innerHTML = mbuHtml(src.length ? '' : empty());
+            if (src.length) list.appendChild(frag);
+            filters(); showBadge();
+            follow = true; list.scrollTop = list.scrollHeight;
+            root.classList.toggle('mbu-log-past', !!past);
         };
+        list.addEventListener('scroll', function () { follow = list.scrollHeight - list.scrollTop - list.clientHeight < 40; });
         var qTimer = 0;
         var refilter = function () {
             q = qEl.value.trim().toLowerCase();
@@ -803,21 +988,74 @@ function mbuLog(o) {
             filters();
             follow = true; list.scrollTop = list.scrollHeight;
         });
-        filters();
-        win = {
-            el: pop,
+        var v = {
+            el: root, floating: floating, past: null, q: qEl,
             append: function (e) {
-                var empty = list.querySelector('.mbu-log-empty'); if (empty) empty.remove();
+                var em = list.querySelector('.mbu-log-empty'); if (em) em.remove();
+                if (note(e)) filters();
                 list.appendChild(row(e));
                 while (list.childElementCount > buf.length) list.firstElementChild.remove();
                 if (!queued) { queued = true; requestAnimationFrame(paint); }
             },
-            off: function () { document.removeEventListener('keydown', onKey); },
-            cleared: function () { list.innerHTML = mbuHtml('<div class="mbu-log-empty">No activity yet.</div>'); showBadge(); filters(); },
+            // null: the live lines; an id: that past session
+            show: function (id) {
+                var entries = id ? loadSession(id) : null;
+                if (id && !entries) entries = [{ t: null, sev: 'warn', msg: 'This session could not be read (it may have been deleted in another tab).' }];
+                past = id && entries ? id : null; v.past = past;
+                src = past ? entries : buf;
+                if (sel && sel.value !== (past || '')) sel.value = past || '';
+                draw();
+            },
+            // the session list, refreshed when it is opened and when a session starts
+            sessions: function () {
+                if (!sel) return;
+                var all = sessions(), sig = all.map(function (x) { return x.id + '=' + x.name; }).join('|');
+                if (sig === v.sig && !(past && !all.some(function (x) { return x.id === past; }))) return;
+                v.sig = sig;
+                if (past && !all.some(function (s) { return s.id === past; })) { past = null; v.past = null; src = buf; draw(); }
+                sel.innerHTML = mbuHtml('<option value="">Current session</option>' + all.map(function (s) {
+                    return '<option value="' + esc(s.id) + '">' + esc(sessionLabel(s)) + '</option>';
+                }).join(''));
+                sel.value = past || '';
+                var hc = root.querySelector('.mbu-logpop-hclear'); if (hc) hc.disabled = !all.length;
+            },
             filters: filters,
         };
-        pop.querySelector('.mbu-logpop-clear').onclick = function () { clear(); };
-        pop.querySelector('.mbu-logpop-copy').onclick = function () { copy(pop.querySelector('.mbu-logpop-copy')); };
+        if (sel) {
+            sel.addEventListener('change', function () { v.show(sel.value || null); });
+            root.querySelector('.mbu-logpop-hclear').onclick = function () { clearHistory(); };
+        }
+        root.querySelector('.mbu-logpop-clear').onclick = function () { clear(); };
+        v.dbg = root.querySelector('.mbu-log-dbg input');
+        v.dbg.checked = debugOn();
+        v.dbg.onchange = function () { setDebug(v.dbg.checked); };
+        root.querySelector('.mbu-logpop-copy').onclick = function () {
+            copy(root.querySelector('.mbu-logpop-copy'), past ? { id: past, entries: src } : null);
+        };
+        v.sessions();
+        draw();
+        views.push(v);
+        return v;
+    }
+
+    var win = null;
+    function open() {
+        close(true);
+        if (typeof o.before === 'function') { try { o.before(); } catch (e) { /* the window still opens */ } }
+        remember({ open: true });
+        var st = state();
+        var pop = document.createElement('div'); pop.id = 'mbu-logpop';
+        document.body.appendChild(pop);
+        var v = view(pop, true);
+        if (st.left != null) { pop.style.left = st.left; pop.style.top = st.top; pop.style.right = 'auto'; pop.style.transform = 'none'; }
+        var restore = { left: pop.style.left, top: pop.style.top, right: pop.style.right, bottom: pop.style.bottom, transform: pop.style.transform };
+        // Escape in a filled filter empties it; anywhere else it closes the window
+        var onKey = function (e) {
+            if (e.key !== 'Escape') return;
+            if (e.target === v.q && v.q.value) { v.q.value = ''; v.q.dispatchEvent(new Event('input')); return; }
+            close();
+        };
+        win = { el: pop, v: v, off: function () { document.removeEventListener('keydown', onKey); } };
         var minBtn = pop.querySelector('.mbu-logpop-min');
         var setMin = function (m) {
             minBtn.textContent = m ? '▢' : '–'; minBtn.title = m ? 'Restore' : 'Minimize';
@@ -836,7 +1074,7 @@ function mbuLog(o) {
         };
         fullBtn.onclick = function () { var f = !pop.classList.contains('full'); setFull(f); remember({ full: f }); };
         pop.querySelector('.mbu-logpop-h').addEventListener('dblclick', function (e) {
-            if (!e.target.closest('button, input') && !pop.classList.contains('min')) fullBtn.click();
+            if (!e.target.closest('button, input, select') && !pop.classList.contains('min')) fullBtn.click();
         });
         // a size the user gave it, from the corner grip
         if (st.w && st.h) { pop.style.width = st.w; pop.style.height = st.h; pop.classList.add('sized'); }
@@ -863,7 +1101,7 @@ function mbuLog(o) {
         pop.querySelector('.mbu-logpop-x').onclick = function () { close(); };
         // floating and non-modal: dragged by its header
         pop.querySelector('.mbu-logpop-h').addEventListener('mousedown', function (e) {
-            if (e.target.closest('button, input') || pop.classList.contains('full')) return;
+            if (e.target.closest('button, input, select') || pop.classList.contains('full')) return;
             e.preventDefault();
             var r = pop.getBoundingClientRect();
             pop.style.left = r.left + 'px'; pop.style.top = r.top + 'px'; pop.style.right = 'auto'; pop.style.transform = 'none';
@@ -884,16 +1122,33 @@ function mbuLog(o) {
         document.addEventListener('keydown', onKey);
         return pop;
     }
-    // empty the log: the lines, the counts and the "earlier lines not kept" note
+    // the viewer inside an element of the script's; a second mount there replaces the first
+    function mount(host, opts) {
+        if (!host) return null;
+        views = views.filter(function (v) { if (v.el.parentNode === host) { v.el.remove(); return false; } return true; });
+        var el = document.createElement('div'); el.className = 'mbu-logemb';
+        host.appendChild(el);
+        return view(el, false, opts && opts.tools).el;
+    }
+    // empty the live log: the lines, the counts and the "earlier lines not kept" note
     function clear() {
         buf = []; dropped = 0; warn = 0; error = 0;
-        cats = []; catIx = {}; sevs = {}; fSev = null; fCat = null;
-        if (win) win.cleared();
+        if (H && sid) { store.del(hp + sid); lastSaved = ''; }
+        views.forEach(function (v) { if (!v.past) v.show(null); });
+    }
+    function clearHistory() {
+        if (!H) return;
+        ids().forEach(function (id) { if (id !== sid) forget(id); });
+        views.forEach(function (v) { v.sessions(); });
     }
     // quiet: closing to reopen, so the remembered "open" stays as it is
     function close(quiet) {
         var stray = document.getElementById('mbu-logpop');
-        if (win) { win.off(); win.el.remove(); win = null; if (!quiet) remember({ open: false }); }
+        if (win) {
+            win.off(); win.el.remove();
+            views = views.filter(function (v) { return v !== win.v; });
+            win = null; if (!quiet) remember({ open: false });
+        }
         if (stray) stray.remove();   // another script's window: one log window at a time
     }
     var api = {
@@ -904,6 +1159,10 @@ function mbuLog(o) {
         ok: function () { add('ok', arguments); },
         debug: function () { add('debug', arguments); },
         add: function (sev) { add(sev, Array.prototype.slice.call(arguments, 1)); },
+        // the debug switch: are debug lines recorded?
+        debugOn: function () { return debugOn(); },
+        setDebug: setDebug,
+        pre: function () { add('info', arguments, null, true); },
         // a logger whose lines carry this category; the same object for the same name
         cat: function (name) {
             if (!name) return api;
@@ -915,20 +1174,39 @@ function mbuLog(o) {
                 ok: function () { add('ok', arguments, name); },
                 debug: function () { add('debug', arguments, name); },
                 add: function (sev) { add(sev, Array.prototype.slice.call(arguments, 1), name); },
+                pre: function () { add('info', arguments, name, true); },
             };
             return bound[name];
         },
         open: open,
+        mount: mount,
         close: function () { close(); },
         reopen: function () { if (state().open) open(); },
         isOpen: function () { return !!win; },
-        markdown: markdown,
-        copy: copy,
+        markdown: function () { return markdown(); },
+        copy: function (btn) { copy(btn); },
         clear: clear,
         lines: function () { return buf.map(line); },
+        entries: function () { return buf.slice(); },
         messages: function () { return buf.map(function (e) { return e.msg; }); },
         counts: function () { return { warn: warn, error: error }; },
+        // history (#705); harmless without o.history
+        session: function () { if (H) startSession(); return sid; },
+        resume: function (id) { return H ? resume(id) : false; },
+        keep: function () { if (H && sid && !kept) { kept = true; store.set(hp + 'current', sid); flush(); prune(); views.forEach(function (v) { v.sessions(); }); } },
+        name: function (text) { if (H && text && !sname) { sname = String(text); if (kept) store.set(hp + sid + ':name', sname); } },
+        sessionId: function () { return sid; },
+        last: function () { return H ? store.get(hp + 'current') : null; },
+        isKept: function () { return kept; },
+        sessions: function () { return H ? sessions() : []; },
+        load: function (id) { return loadSession(id); },
+        forget: function (id) { forget(id); views.forEach(function (v) { v.sessions(); }); },
+        clearHistory: clearHistory,
+        // redraw the session lists (a script showing its mounted viewer again); only a changed list is redrawn
+        refresh: function () { views.forEach(function (v) { v.sessions(); }); },
+        flush: flush,
     };
+    if (H) sid = newId();
     mbuLog.active = api;   // the script's own log, for helpers that note things in it (mbuClaim)
     return api;
 }

@@ -41,7 +41,7 @@ test("#517: load diagnostics", { tag: ['@sandbox', '@login'] }, async ({ context
   await page.waitForFunction(() => !!window.__falconTest, { timeout: 5000 });
   await page.click('#falcon-launcher');
   await page.waitForSelector('#falcon-panel', { timeout: 5000 });
-  await page.evaluate(() => document.getElementById('falcon-log-debug').checked = true);
+  await page.evaluate(() => window.__falconTest.Log.setDebug(true));
   await page.evaluate(() => { window.__falconTest.cfg.workers = 1; });
 
   await page.evaluate((RECORDING) => {
