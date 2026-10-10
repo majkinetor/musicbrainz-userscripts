@@ -108,6 +108,11 @@ test.describe('the consolidation page', () => {
       await page.locator('#mcc-root [data-cc="differ"]').click();
       check(await openRows() === 0, 'and closes them all');
     }
+    // the other dates earliest first, in two columns
+    const dates = await page.locator('#mcc-root .mcc-f[data-field="date"] .mcc-alt').evaluateAll(as => as.map(a => a.dataset.v));
+    check(dates.length < 2 || dates.every((d, i) => !i || dates[i - 1].localeCompare(d) <= 0), `the dates are earliest first, down the first column then the second: ${dates.join(' ')}`);
+    check(await page.locator('#mcc-root .mcc-f[data-field="date"] .mcc-alts').evaluate(e => getComputedStyle(e).gridTemplateColumns.split(' ').length) === 2, 'in two columns');
+    await info.attach('dates', { body: await page.locator('#mcc-root .mcc-f[data-field="date"]').screenshot(), contentType: 'image/png' });
     // a field's other value, taken by a click
     const alt = page.locator('#mcc-root .mcc-f[data-field="date"] .mcc-alt').first();
     if (await alt.count()) {
