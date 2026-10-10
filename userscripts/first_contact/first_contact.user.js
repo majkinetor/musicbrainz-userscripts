@@ -3315,7 +3315,7 @@ function mcSeed(detail) {
     if (mbuTestHooks()) window.__fcLastSeed = { token, params, rel: d.rel, mc: true };
     document.dispatchEvent(new CustomEvent('fc:seeded', { detail: JSON.stringify({ run: d.run, token }) }));
     if (d.dry) return;
-    // majkinetor: the browser asked "leave page?" on Open in release editor. MB's editor warns on
+    // majkinetor: the browser asked "leave page?" on Add release. MB's editor warns on
     // beforeunload even while empty, once the page has had a click, unless rootField.redirecting
     // (its own flag for leaving on purpose). This page is only Mission Control's: nothing is lost.
     try {

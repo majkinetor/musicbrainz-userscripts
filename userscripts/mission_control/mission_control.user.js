@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Mission Control
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.10.224321
+// @version      2026.10.10.225238
 // @description  One window on the release page that asks the other scripts (Platform Check, ISRC Scout, Art Station, Fusion, Credit Hoarder) what is missing, shows it all in one review, and applies the selected changes in order.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5NaXNzaW9uIENvbnRyb2w8L3RpdGxlPgo8ZGVmcz48ZmlsdGVyIGlkPSJtY28xMy1oIiB4PSItMTAlIiB5PSItMTAlIiB3aWR0aD0iMTIwJSIgaGVpZ2h0PSIxMjAlIj48ZmVNb3JwaG9sb2d5IGluPSJTb3VyY2VBbHBoYSIgb3BlcmF0b3I9ImRpbGF0ZSIgcmFkaXVzPSIxLjUiIHJlc3VsdD0iZCIvPjxmZUZsb29kIGZsb29kLWNvbG9yPSIjZmZmIiBmbG9vZC1vcGFjaXR5PSIuNyIvPjxmZUNvbXBvc2l0ZSBpbjI9ImQiIG9wZXJhdG9yPSJpbiIvPjxmZU1lcmdlPjxmZU1lcmdlTm9kZS8+PGZlTWVyZ2VOb2RlIGluPSJTb3VyY2VHcmFwaGljIi8+PC9mZU1lcmdlPjwvZmlsdGVyPjwvZGVmcz48ZyBmaWx0ZXI9InVybCgjbWNvMTMtaCkiPjxwYXRoIGQ9Ik03NyAzNS41IEw2NCA0MyBMNTEgMzUuNSBMNTEgMjAuNSBMNjQgMTMgTDc3IDIwLjVaIiBmaWxsPSIjN2E1N2U4IiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik01OS43IDc3LjUgTDQ2LjcgODUgTDMzLjcgNzcuNSBMMzMuNyA2Mi41IEw0Ni43IDU1IEw1OS43IDYyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik05NC4zIDc3LjUgTDgxLjMgODUgTDY4LjMgNzcuNSBMNjguMyA2Mi41IEw4MS4zIDU1IEw5NC4zIDYyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik00Mi4zIDEwNy41IEwyOS40IDExNSBMMTYuNCAxMDcuNSBMMTYuNCA5Mi41IEwyOS40IDg1IEw0Mi4zIDkyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik03NyAxMDcuNSBMNjQgMTE1IEw1MSAxMDcuNSBMNTEgOTIuNSBMNjQgODUgTDc3IDkyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik0xMTEuNiAxMDcuNSBMOTguNiAxMTUgTDg1LjcgMTA3LjUgTDg1LjcgOTIuNSBMOTguNiA4NSBMMTExLjYgOTIuNVoiIGZpbGw9IiNmZmM5NGEiIHN0cm9rZT0iIzIyMjIzYiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PC9nPgo8L3N2Zz4K
@@ -1706,7 +1706,7 @@ function ccStyle() {
         + '.mcc-lane{margin:0 0 14px}.mcc-bc{display:inline-block;font-family:var(--mbu-font-mono);font-size:12px;padding:1px 7px;border-radius:5px;border:1px solid var(--mbu-border);margin-bottom:4px}'
         + '.mcc-bc.own{border-color:var(--mbu-ok-border);background:var(--mbu-ok-bg);color:var(--mbu-ok)}.mcc-lane-note{font-size:12px;color:var(--mbu-text-dim);margin:2px 0 4px}'
         + '.mcc-src{display:flex;align-items:center;gap:7px;padding:3px 4px;border-radius:5px;cursor:pointer}.mcc-src:hover{background:var(--mbu-bg-hover)}'
-        + '.mcc-src input{margin:0;cursor:pointer}.mcc-src .nm{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.mcc-src .meta{font-size:11px;color:var(--mbu-text-weak);white-space:nowrap}'
+        + '.mcc-src input{margin:0;cursor:pointer}.mcc-src .nm{flex:1 0 auto;max-width:60%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.mcc-src .meta{flex:0 1 auto;min-width:0;margin-left:auto;overflow:hidden;text-overflow:ellipsis;font-size:11px;color:var(--mbu-text-weak);white-space:nowrap}'
         + '.mcc-src.off .nm{color:var(--mbu-text-weak)}.mcc-src .meta.err{color:var(--mbu-error)}.mcc-src .meta.busy{color:var(--mbu-info)}.mcc-src .meta.warn{color:var(--mbu-warn)}'
         + '.mcc-src.source{cursor:default}'
         + '.mcc-icos{display:inline-flex;gap:2px;align-items:center;vertical-align:middle}.mcc-icos svg{display:block}.mcc-abbr{font-size:9px;font-weight:700;border:1px solid var(--mbu-border);border-radius:3px;padding:0 2px;line-height:12px}'
@@ -1732,7 +1732,10 @@ function ccStyle() {
         + '.mcc-note{border:1px dashed var(--mbu-border-strong);border-radius:var(--mbu-radius-lg);padding:10px 12px;font-size:12px;color:var(--mbu-text-dim);background:var(--mbu-bg)}'
         + '.mcc-insp dl{display:grid;grid-template-columns:auto 1fr;gap:3px 10px;margin:0 0 12px;font-size:12px}.mcc-insp dt{color:var(--mbu-text-weak)}.mcc-insp dd{margin:0;word-break:break-word}'
         + '.mcc-insp p{font-size:12px;color:var(--mbu-text-dim);margin:0 0 12px}.mcc-tick{display:flex;gap:8px;align-items:flex-start;font-size:12px;margin:0 0 6px;cursor:pointer}.mcc-tick input{margin:2px 0 0}'
-        + '.mcc-foot{display:flex;align-items:center;gap:10px;padding:8px 14px;background:var(--mbu-bg);border-top:1px solid var(--mbu-border)}.mcc-foot .sum{flex:1;font-size:12px;color:var(--mbu-text-dim)}'
+        + '.mcc-split{position:relative;display:inline-flex}.mcc-split>.mcc-btn:first-child{border-top-right-radius:0;border-bottom-right-radius:0}'
+        + '.mcc-split>.mcc-more{border-top-left-radius:0;border-bottom-left-radius:0;border-left:1px solid var(--mbu-accent-hover);padding:6px 10px;min-width:32px;justify-content:center}'
+        + '.mcc-menu{position:absolute;right:0;top:calc(100% + 4px);z-index:2;min-width:180px;background:var(--mbu-bg);border:1px solid var(--mbu-border);border-radius:var(--mbu-radius);box-shadow:0 6px 18px rgba(0,0,0,.25);padding:4px}'
+        + '.mcc-menu button{all:unset;box-sizing:border-box;display:block;width:100%;padding:7px 10px;border-radius:5px;cursor:pointer;color:var(--mbu-text);white-space:nowrap}.mcc-menu button:hover{background:var(--mbu-bg-hover)}'
         + '.mcc-err{margin:40px auto;max-width:520px;background:var(--mbu-bg);border:1px solid var(--mbu-error-border);border-radius:var(--mbu-radius-lg);padding:16px 18px}'
         + '.mcc-spin{display:inline-block;width:10px;height:10px;border:2px solid var(--mbu-border);border-top-color:var(--mbu-info);border-radius:50%;animation:mcc-spin .8s linear infinite;vertical-align:-1px}@keyframes mcc-spin{to{transform:rotate(360deg)}}';
     document.head.appendChild(s);
@@ -2017,9 +2020,9 @@ function ccOpenEditor() {
     let got = false;
     const on = e => { let d = null; try { d = JSON.parse(e.detail); } catch (x) { return; } if (d && d.run === CC.run) { got = true; document.removeEventListener('fc:seeded', on); Log.ok('First Contact took the seed (handoff ' + d.token + ')'); } };
     document.addEventListener('fc:seeded', on);
-    CC.seeded = true; ccPaintHeader(); ccPaintFoot();
+    CC.seeded = true; ccPaintHeader();
     document.dispatchEvent(new CustomEvent('fc:seed', { detail: JSON.stringify({ rel, platform: CC.src.platform, editNote: ccEditNote(m), run: CC.run, dry: !!CC.dry }) }));
-    setTimeout(() => { if (!got) { CC.seeded = false; ccPaintHeader(); ccPaintFoot(); Log.err('First Contact did not take the seed: is it running on this page?'); mbuToast('First Contact did not answer: it seeds the release editor', { kind: 'error' }); } }, 3000);
+    setTimeout(() => { if (!got) { CC.seeded = false; ccPaintHeader(); Log.err('First Contact did not take the seed: is it running on this page?'); mbuToast('First Contact did not answer: it seeds the release editor', { kind: 'error' }); } }, 3000);
     if (mbuTestHooks()) window.__mccLastSeed = { rel, note: ccEditNote(m) };
 }
 
@@ -2073,7 +2076,8 @@ function ccPaintHeader() {
     const artist = m.fields && m.fields.artist.win ? m.fields.artist.win.val : CC.src ? ccCredit(CC.src.rel.credit) : '';
     if (t) { t.textContent = title; t.title = title; }
     if (sub) sub.innerHTML = mbuHtml('New release · ' + esc(artist) + (CC.src ? ' · from First Contact on <a href="' + esc(CC.src.page || CC.src.url) + '" target="_blank" rel="noopener">' + esc(CC.src.sourceName) + '</a>' : ''));
-    CC.ui.querySelectorAll('[data-cc="open"]').forEach(b => { b.disabled = !m.fields || CC.seeded; b.textContent = CC.seeded ? 'Opening the release editor…' : 'Open in release editor →'; });
+    CC.ui.querySelectorAll('[data-cc="open"]').forEach(b => { b.disabled = !m.fields || CC.seeded; b.textContent = CC.seeded ? 'Opening the release editor…' : 'Add release →'; });
+    CC.ui.querySelectorAll('[data-cc="more"]').forEach(b => { b.disabled = !m.fields || CC.seeded; });
     ccPaintSteps();
 }
 function ccSideHtml() {
@@ -2159,7 +2163,7 @@ function ccPaintCenter() {
     const m = ccModel();
     if (!m.fields) { c.innerHTML = mbuHtml('<div class="mcc-note">Nothing read yet.</div>'); return; }
     c.innerHTML = mbuHtml(ccFieldsHtml(m) + ccTracksHtml(m)
-        + '<div class="mcc-note"><b>What Open in release editor does:</b> the editor opens in this tab, seeded with what is taken here: the fields, the tracklist, every link of the platforms ticked on the left, and, for Apollo to match artists by, each artist\'s links on all the platforms read. '
+        + '<div class="mcc-note"><b>What Add release does:</b> MusicBrainz\'s release editor opens in this tab, seeded with what is taken here: the fields, the tracklist, every link of the platforms ticked on the left, and, for Apollo to match artists by, each artist\'s links on all the platforms read. '
         + (S.consAfter ? 'Once you save it, Mission Control opens on the new release for what the editor can\'t take: the boxes on the right.' : 'Mission Control doesn\'t open after saving (⚙).') + '</div>');
 }
 function ccPaintInspector() {
@@ -2189,18 +2193,26 @@ function ccPaintInspector() {
     }
     box.innerHTML = mbuHtml(h);
 }
-function ccPaintFoot() {
-    const f = CC.ui && CC.ui.querySelector('.mcc-foot .sum'); if (!f) return;
-    const m = CC.src ? ccModel() : null;
-    if (!m || !m.fields) { f.textContent = ''; return; }
-    const differ = CC_FIELDS.filter(([k]) => m.fields[k].groups.length > 1).length;
-    const extra = m.tracks.extras.filter(x => CC.extraTake[x.id]).length, left = m.tracks.extras.length - extra;
-    const links = CC.sources.filter(s => s.take).length;
-    f.textContent = 'Taken in: ' + CC_FIELDS.filter(([k]) => m.fields[k].win).length + ' fields (' + differ + ' differed) · ' + (m.tracks.rows.length + extra) + ' tracks' + (left ? ' (' + left + ' left out)' : '')
-        + ' · ' + links + ' platform link' + (links === 1 ? '' : 's') + ' · ' + m.tracks.rows.filter(x => x.win.isrc).length + ' ISRCs · compared ' + m.reads.length + ' platform' + (m.reads.length === 1 ? '' : 's');
-}
-function ccPaint() { ccPaintHeader(); ccPaintSide(); ccPaintCenter(); ccPaintInspector(); ccPaintFoot(); }
+function ccPaint() { ccPaintHeader(); ccPaintSide(); ccPaintCenter(); ccPaintInspector(); }
 
+// Add release's ▾ menu (Copy as Markdown). A mousedown outside closes it and swallows the click it
+// starts, so that click doesn't also tick or open what is under it; Escape closes it too.
+function ccMenu(open) {
+    const menu = CC.ui && CC.ui.querySelector('.mcc-menu'), more = CC.ui && CC.ui.querySelector('[data-cc="more"]');
+    if (!menu) return;
+    const show = open === undefined ? menu.hidden : open;
+    menu.hidden = !show; more.setAttribute('aria-expanded', String(show));
+    document.removeEventListener('mousedown', ccMenuOutside, true); document.removeEventListener('keydown', ccMenuKey, true);
+    if (show) { document.addEventListener('mousedown', ccMenuOutside, true); document.addEventListener('keydown', ccMenuKey, true); }
+}
+function ccMenuOutside(e) {
+    if (e.target.closest && e.target.closest('.mcc-split')) return;
+    ccMenu(false);
+    const swallow = ev => { ev.stopPropagation(); ev.preventDefault(); };
+    document.addEventListener('click', swallow, { capture: true, once: true });
+    setTimeout(() => document.removeEventListener('click', swallow, true), 400);
+}
+function ccMenuKey(e) { if (e.key === 'Escape') { e.stopPropagation(); ccMenu(false); } }
 function ccOnClick(e) {
     const t = e.target;
     const a = t.closest('[data-cc]');
@@ -2234,7 +2246,9 @@ function ccOnClick(e) {
         case 'extra': CC.extraTake[a.dataset.x] = !CC.extraTake[a.dataset.x]; CC.sel = a.dataset.x; ccPaint(); return;
         case 'tick': CC.ticks[a.dataset.t] = a.checked; Log.info('after saving: ' + a.dataset.t + ' ' + (a.checked ? 'on' : 'off')); ccPaintInspector(); return;
         case 'open': ccOpenEditor(); return;
+        case 'more': ccMenu(); return;
         case 'md': {
+            ccMenu(false);
             const md = ccMarkdown();
             if (mbuTestHooks()) window.__mccMarkdown = md;
             navigator.clipboard.writeText(md).then(() => mbuToast('Copied as Markdown', { kind: 'ok' }), x => mbuToast('Copy failed: ' + x.message, { kind: 'error' }));
@@ -2280,10 +2294,11 @@ function ccOpen() {
     mcStyle(); ccStyle();
     const ui = el('div', 'mbu-ui'); ui.id = 'mcc-root';
     ui.innerHTML = mbuHtml('<header class="mcc-hdr"><img src="' + ICON_URL + '" alt="" width="28" height="28"><div class="mcc-rel"><div class="mcc-ttl"></div><div class="mcc-sub"></div></div><div class="mcc-steps"></div>'
-        + '<button type="button" class="mcc-btn go" data-cc="open" disabled>Open in release editor →</button>'
+        + '<div class="mcc-split"><button type="button" class="mcc-btn go" data-cc="open" disabled title="Open MusicBrainz\'s release editor in this tab, seeded with what is taken here">Add release →</button>'
+        + '<button type="button" class="mcc-btn go mcc-more" data-cc="more" disabled aria-haspopup="menu" aria-expanded="false" title="More">▾</button>'
+        + '<div class="mcc-menu" role="menu" hidden><button type="button" role="menuitem" data-cc="md" title="The whole comparison as Markdown tables, for an issue or an edit note">Copy as Markdown</button></div></div>'
         + '<button type="button" class="mcc-btn ghost" data-cc="cfg" title="Settings">' + MBU_CFG_ICON + '</button><button type="button" class="mcc-btn ghost" data-cc="close" title="Close: the empty release editor is under it">✕</button></header>'
-        + '<div class="mcc-main"><aside class="mcc-side"></aside><main class="mcc-center"></main><aside class="mcc-insp"></aside></div>'
-        + '<footer class="mcc-foot"><span class="sum"></span><button type="button" class="mcc-btn" data-cc="md" title="The whole comparison as a Markdown table, for an issue or an edit note">Copy as Markdown</button><button type="button" class="mcc-btn go" data-cc="open" disabled>Open in release editor →</button></footer>');
+        + '<div class="mcc-main"><aside class="mcc-side"></aside><main class="mcc-center"></main><aside class="mcc-insp"></aside></div>');
     document.body.appendChild(ui);
     CC.ui = ui;
     document.documentElement.style.overflow = 'hidden';
@@ -2350,7 +2365,7 @@ if (mbuTestHooks()) window.__mccTest = { state: () => CC, model: ccModel, seedRe
 
 /* after saving: Mission Control on the new release (#702) */
 
-// Open in release editor notes, in this tab's sessionStorage, what Mission Control should do once
+// Add release notes, in this tab's sessionStorage, what Mission Control should do once
 // the release is saved: the new release page then opens it, probes, and takes in only what was
 // ticked; ISRC Scout gets the ISRCs taken in the consolidation, by track.
 let AFTER = null;

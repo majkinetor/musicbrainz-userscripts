@@ -121,12 +121,23 @@ test.describe('the consolidation page', () => {
     check(dp.url === 'https://www.deezer.com/artist/27' && (dp.alt || []).length >= 1, `Daft Punk keeps its Deezer link and carries ${(dp.alt || []).length} more: ${(dp.alt || []).map(a => a.platform.abbr + ' ' + a.url).join(' ')}`);
     const md = await page.evaluate(() => window.__mccTest.markdown());
     check(/^## Discovery: \d+ platforms compared/.test(md) && /\| Title \| Discovery/.test(md), 'Copy as Markdown has the comparison');
+    // there is no footer: Copy as Markdown is in Add release's menu
+    check(await page.locator('#mcc-root .mcc-foot').count() === 0, 'no footer');
+    check((await page.locator('#mcc-root [data-cc="open"]').innerText()).startsWith('Add release'), 'the button is Add release');
+    await page.click('#mcc-root [data-cc="more"]');
+    await page.locator('#mcc-root .mcc-menu [data-cc="md"]').waitFor();
+    await info.attach('menu', { body: await page.screenshot(), contentType: 'image/png' });
+    await page.click('#mcc-root .mcc-menu [data-cc="md"]');
+    check(await page.evaluate(() => (window.__mccMarkdown || '').startsWith('## Discovery')) && await page.locator('#mcc-root .mcc-menu').isHidden(), 'the menu copies the Markdown, and closes');
+    await page.click('#mcc-root [data-cc="more"]');
+    await page.mouse.click(5, 300);
+    check(await page.locator('#mcc-root .mcc-menu').isHidden(), 'a click outside closes the menu');
 
-    // Open in release editor: First Contact posts the seed to the editor in this tab, with no
+    // Add release: First Contact posts the seed to the editor in this tab, with no
     // "leave page?" from the empty editor (it asks only after a click on the page, as here)
     const dialogs = [];
     page.on('dialog', dl => { dialogs.push(dl.type()); dl.accept(); });
-    await Promise.all([page.waitForURL(/\/release\/add\?first_contact=/, { timeout: 60_000 }), page.click('#mcc-root .mcc-foot [data-cc="open"]')]);
+    await Promise.all([page.waitForURL(/\/release\/add\?first_contact=/, { timeout: 60_000 }), page.click('#mcc-root [data-cc="open"]')]);
     check(!dialogs.length, `no dialog on the way to the editor (${dialogs.join(', ') || 'none'})`);
     await page.waitForSelector('#release-editor', { timeout: 60_000 });
     const name = await page.locator('#name').inputValue();
