@@ -14,7 +14,9 @@ import { fileURLToPath } from 'node:url';
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..', '..');
 const REPO = 'majkinetor/musicbrainz-userscripts';
 const RAW = `https://raw.githubusercontent.com/${REPO}/`;
-// Links follow a branch: main once the work is there, else the feature branch it is on.
+// Links follow a branch: main once the work is there, else the feature branch it is on. They go
+// through github.com/<repo>/raw/refs/heads/…, which redirects to raw.githubusercontent.com: a cloud
+// session's proxy wrapped the raw.githubusercontent.com form of a session branch's link in backticks.
 // Pinned links (a commit SHA) are only for releases, which dev/publish.mjs writes; --check
 // still accepts them, through github.com (raw.githubusercontent.com with a full SHA gets
 // wrapped in backticks when a cloud session posts it).
@@ -32,7 +34,7 @@ const die = m => { console.error(`✗ ${m}`); process.exit(1); };
 const LINK = /\[([^\]\n]+)\]\((https:\/\/(?:raw\.githubusercontent\.com|github\.com)\/[^\s()`<>]+)\)/g;
 const esc = s => s.replace(/[.]/g, '\\.');
 // branch: raw.githubusercontent.com/<repo>/refs/heads/<branch>/…; pinned (releases): github.com/<repo>/raw/<40-char SHA>/…
-const URL_SHAPE = new RegExp(`^(?:${esc(PIN)}([0-9a-f]{40})|${esc(RAW)}refs/heads/([\\w.-]+(?:/[\\w.-]+)*?))/userscripts/[\\w/.-]+\\.user\\.js$`);
+const URL_SHAPE = new RegExp(`^(?:${esc(PIN)}([0-9a-f]{40})|(?:${esc(RAW)}|${esc(PIN)})refs/heads/([\\w.-]+(?:/[\\w.-]+)*?))/userscripts/[\\w/.-]+\\.user\\.js$`);
 
 function fetchRaw(url) {
   // curl, not fetch: it goes through the proxy in a cloud session and ships with Windows.
@@ -129,7 +131,7 @@ if (!files.includes(ST) && files.some(f => members.includes(folder(f)))) files.p
 const lines = [];
 for (const f of files) {
   const name = header(sha, f, 'name');
-  lines.push(`[Install ${name} @${header(sha, f, 'version')} (${branch === 'main' ? 'latest' : 'branch ' + branch}, auto-updates)](${RAW}refs/heads/${branch}/${f})`);
+  lines.push(`[Install ${name} @${header(sha, f, 'version')} (${branch === 'main' ? 'latest' : 'branch ' + branch}, auto-updates)](${PIN}refs/heads/${branch}/${f})`);
 }
 const block = lines.join('\n');
 report(check(block));

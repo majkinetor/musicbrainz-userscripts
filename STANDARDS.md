@@ -20,8 +20,8 @@ This repo's numbered conventions. The ones that hold on any project are in [`dev
 Every userscript install link shared in chat or on GitHub follows the branch the work is on: `main` once it's there, the feature branch before. Pinned links (a commit SHA) are only for releases, and the release script writes those ([DEVELOP → Releasing](DEVELOP.md#releasing)); never post one anywhere else.
 
 ```markdown
-[Install @<version> (latest, auto-updates)](https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/refs/heads/main/userscripts/<dir>/<file>.user.js)
-[Install @<version> (branch <name>, auto-updates)](https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/refs/heads/<name>/userscripts/<dir>/<file>.user.js)
+[Install @<version> (latest, auto-updates)](https://github.com/majkinetor/musicbrainz-userscripts/raw/refs/heads/main/userscripts/<dir>/<file>.user.js)
+[Install @<version> (branch <name>, auto-updates)](https://github.com/majkinetor/musicbrainz-userscripts/raw/refs/heads/<name>/userscripts/<dir>/<file>.user.js)
 ```
 
 - **Latest** once the work is on `main`; a **branch** link while it's on a feature branch, never both.

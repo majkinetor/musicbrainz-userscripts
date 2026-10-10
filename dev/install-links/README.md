@@ -32,7 +32,7 @@ It reads a GitHub comment (`…/issues/<n>#issuecomment-<id>`, through `gh`) or 
 | Check | Fails on |
 | --- | --- |
 | Every install URL is a clickable `[label](url)` | a URL in backticks, a bare URL, a link inside a code span |
-| A URL is `raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/refs/heads/<branch>/userscripts/…user.js`, or a release's pinned `github.com/…/raw/<40-char SHA>/…` | a bare `main`, a short SHA, a wrong repo slug |
+| A URL is `github.com/majkinetor/musicbrainz-userscripts/raw/refs/heads/<branch>/userscripts/…user.js` (or `raw.githubusercontent.com/…/refs/heads/<branch>/…`), or a release's pinned `github.com/…/raw/<40-char SHA>/…` | a bare `main`, a short SHA, a wrong repo slug |
 | The URL answers HTTP 200 | a 404 (unpushed commit, wrong path) |
 | The label's `@version` equals the file's | a mismatch on a pinned link (a warning on a branch link) |
 | The text has at least one install link | none found |
