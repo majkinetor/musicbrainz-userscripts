@@ -54,6 +54,6 @@ Delete **one branch per command**, with the name spelled out. The allow rule mat
 gh api -X DELETE repos/majkinetor/musicbrainz-userscripts/git/refs/heads/<branch>
 ```
 
-`gh auth status` can say `GH_TOKEN` is invalid in a cloud session while API calls still go through the proxy. Trust a real call, such as `gh api repos/majkinetor/musicbrainz-userscripts/branches --jq '.[].name'`. Locally, set the bot token first ([AGENTS.general → GitHub work](../../../dev/agents/AGENTS.general.md#github-work)).
+In a cloud session, stop after step 2: the proxy refuses every branch delete (HTTP 403), so report the branches and their tip SHAs for a local session to delete ([AGENTS.general → GitHub work](../../../dev/agents/AGENTS.general.md#github-work)). Locally, set the bot token first ([AGENTS.general → GitHub work](../../../dev/agents/AGENTS.general.md#github-work)).
 
 Then `git fetch --prune -q origin` and list what's left.
