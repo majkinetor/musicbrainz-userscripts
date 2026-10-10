@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         String Theory
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.10.065552
+// @version      2026.10.10.100127
 // @description  Unified bundle of 9 MusicBrainz userscripts (apollo_editor, art_station, credit_hoarder, fusion, group_therapy, isrc_scout, mammoth, mission_control, platform_check). Built by userscripts/string_theory/build.mjs — do not hand-edit.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5TdHJpbmcgVGhlb3J5PC90aXRsZT4KPGRlZnM+PGZpbHRlciBpZD0ic3RsMDItaCIgeD0iLTEwJSIgeT0iLTEwJSIgd2lkdGg9IjEyMCUiIGhlaWdodD0iMTIwJSI+PGZlTW9ycGhvbG9neSBpbj0iU291cmNlQWxwaGEiIG9wZXJhdG9yPSJkaWxhdGUiIHJhZGl1cz0iMS41IiByZXN1bHQ9ImQiLz48ZmVGbG9vZCBmbG9vZC1jb2xvcj0iI2ZmZiIgZmxvb2Qtb3BhY2l0eT0iLjciLz48ZmVDb21wb3NpdGUgaW4yPSJkIiBvcGVyYXRvcj0iaW4iLz48ZmVNZXJnZT48ZmVNZXJnZU5vZGUvPjxmZU1lcmdlTm9kZSBpbj0iU291cmNlR3JhcGhpYyIvPjwvZmVNZXJnZT48L2ZpbHRlcj48L2RlZnM+PGcgZmlsdGVyPSJ1cmwoI3N0bDAyLWgpIj48cGF0aCBkPSJNNjQgMTAgTDY2LjQgMTAuMiBMNjguNyAxMC42IEw3MC45IDExLjQgTDczLjEgMTIuNCBMNzUuMiAxMy43IEw3Ny4xIDE1LjIgTDc4LjggMTcgTDgwLjQgMTguOSBMODEuOCAyMSBMODMuMSAyMy4xIEw4NC4xIDI1LjQgTDg1IDI3LjYgTDg1LjcgMjkuOSBMODYuMyAzMi4xIEw4Ni44IDM0LjMgTDg3LjEgMzYuNCBMODcuNCAzOC40IEw4Ny43IDQwLjMgTDg3LjkgNDIuMSBMODguMiA0My43IEw4OC41IDQ1LjIgTDg4LjkgNDYuNiBMODkuNCA0Ny44IEw5MCA0OSBMOTAuNyA1MC4xIEw5MS42IDUxLjEgTDkyLjYgNTIuMiBMOTMuNyA1My4yIEw5NSA1NC4yIEw5Ni40IDU1LjMgTDk3LjkgNTYuNSBMOTkuNSA1Ny43IEwxMDEuMSA1OS4xIEwxMDIuNyA2MC42IEwxMDQuNCA2Mi4yIEwxMDYgNjQgTDEwNy41IDY1LjkgTDEwOC45IDY3LjkgTDExMC4yIDcwLjEgTDExMS4zIDcyLjMgTDExMi4xIDc0LjcgTDExMi44IDc3LjEgTDExMy4xIDc5LjUgTDExMy4yIDgxLjkgTDExMyA4NC4zIEwxMTIuNiA4Ni42IEwxMTEuOCA4OC45IEwxMTAuOCA5MSBMMTA5LjUgOTMgTDEwNy45IDk0LjcgTDEwNi4xIDk2LjMgTDEwNC4xIDk3LjcgTDEwMiA5OC44IEw5OS43IDk5LjcgTDk3LjMgMTAwLjQgTDk0LjkgMTAwLjggTDkyLjQgMTAxIEw4OS45IDEwMC45IEw4Ny40IDEwMC43IEw4NSAxMDAuNCBMODIuNyA5OS45IEw4MC40IDk5LjMgTDc4LjMgOTguNiBMNzYuMyA5Ny44IEw3NC40IDk3LjEgTDcyLjcgOTYuNCBMNzEgOTUuNyBMNjkuNSA5NS4xIEw2OCA5NC42IEw2Ni43IDk0LjMgTDY1LjMgOTQuMSBMNjQgOTQgTDYyLjcgOTQuMSBMNjEuMyA5NC4zIEw2MCA5NC42IEw1OC41IDk1LjEgTDU3IDk1LjcgTDU1LjMgOTYuNCBMNTMuNiA5Ny4xIEw1MS43IDk3LjggTDQ5LjcgOTguNiBMNDcuNiA5OS4zIEw0NS4zIDk5LjkgTDQzIDEwMC40IEw0MC42IDEwMC43IEwzOC4xIDEwMC45IEwzNS42IDEwMSBMMzMuMSAxMDAuOCBMMzAuNyAxMDAuNCBMMjguMyA5OS43IEwyNiA5OC44IEwyMy45IDk3LjcgTDIxLjkgOTYuMyBMMjAuMSA5NC43IEwxOC41IDkzIEwxNy4yIDkxIEwxNi4yIDg4LjkgTDE1LjQgODYuNiBMMTUgODQuMyBMMTQuOCA4MS45IEwxNC45IDc5LjUgTDE1LjIgNzcuMSBMMTUuOSA3NC43IEwxNi43IDcyLjMgTDE3LjggNzAuMSBMMTkuMSA2Ny45IEwyMC41IDY1LjkgTDIyIDY0IEwyMy42IDYyLjIgTDI1LjMgNjAuNiBMMjYuOSA1OS4xIEwyOC41IDU3LjcgTDMwLjEgNTYuNSBMMzEuNiA1NS4zIEwzMyA1NC4yIEwzNC4zIDUzLjIgTDM1LjQgNTIuMiBMMzYuNCA1MS4xIEwzNy4zIDUwLjEgTDM4IDQ5IEwzOC42IDQ3LjggTDM5LjEgNDYuNiBMMzkuNSA0NS4yIEwzOS44IDQzLjcgTDQwLjEgNDIuMSBMNDAuMyA0MC4zIEw0MC42IDM4LjQgTDQwLjkgMzYuNCBMNDEuMiAzNC4zIEw0MS43IDMyLjEgTDQyLjMgMjkuOSBMNDMgMjcuNiBMNDMuOSAyNS40IEw0NC45IDIzLjEgTDQ2LjIgMjEgTDQ3LjYgMTguOSBMNDkuMiAxNyBMNTAuOSAxNS4yIEw1Mi44IDEzLjcgTDU0LjkgMTIuNCBMNTcuMSAxMS40IEw1OS4zIDEwLjYgTDYxLjYgMTAuMloiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2I5YThlYyIgc3Ryb2tlLXdpZHRoPSI1IiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PHBhdGggZD0iTTY0IDM0IEw2NS4zIDMzLjkgTDY2LjcgMzMuNyBMNjggMzMuNCBMNjkuNSAzMi45IEw3MSAzMi4zIEw3Mi43IDMxLjYgTDc0LjQgMzAuOSBMNzYuMyAzMC4yIEw3OC4zIDI5LjQgTDgwLjQgMjguNyBMODIuNyAyOC4xIEw4NSAyNy42IEw4Ny40IDI3LjMgTDg5LjkgMjcuMSBMOTIuNCAyNyBMOTQuOSAyNy4yIEw5Ny4zIDI3LjYgTDk5LjcgMjguMyBMMTAyIDI5LjIgTDEwNC4xIDMwLjMgTDEwNi4xIDMxLjcgTDEwNy45IDMzLjMgTDEwOS41IDM1IEwxMTAuOCAzNyBMMTExLjggMzkuMSBMMTEyLjYgNDEuNCBMMTEzIDQzLjcgTDExMy4yIDQ2LjEgTDExMy4xIDQ4LjUgTDExMi44IDUwLjkgTDExMi4xIDUzLjMgTDExMS4zIDU1LjcgTDExMC4yIDU3LjkgTDEwOC45IDYwLjEgTDEwNy41IDYyLjEgTDEwNiA2NCBMMTA0LjQgNjUuOCBMMTAyLjcgNjcuNCBMMTAxLjEgNjguOSBMOTkuNSA3MC4zIEw5Ny45IDcxLjUgTDk2LjQgNzIuNyBMOTUgNzMuOCBMOTMuNyA3NC44IEw5Mi42IDc1LjggTDkxLjYgNzYuOSBMOTAuNyA3Ny45IEw5MCA3OSBMODkuNCA4MC4yIEw4OC45IDgxLjQgTDg4LjUgODIuOCBMODguMiA4NC4zIEw4Ny45IDg1LjkgTDg3LjcgODcuNyBMODcuNCA4OS42IEw4Ny4xIDkxLjYgTDg2LjggOTMuNyBMODYuMyA5NS45IEw4NS43IDk4LjEgTDg1IDEwMC40IEw4NC4xIDEwMi42IEw4My4xIDEwNC45IEw4MS44IDEwNyBMODAuNCAxMDkuMSBMNzguOCAxMTEgTDc3LjEgMTEyLjggTDc1LjIgMTE0LjMgTDczLjEgMTE1LjYgTDcwLjkgMTE2LjYgTDY4LjcgMTE3LjQgTDY2LjQgMTE3LjggTDY0IDExOCBMNjEuNiAxMTcuOCBMNTkuMyAxMTcuNCBMNTcuMSAxMTYuNiBMNTQuOSAxMTUuNiBMNTIuOCAxMTQuMyBMNTAuOSAxMTIuOCBMNDkuMiAxMTEgTDQ3LjYgMTA5LjEgTDQ2LjIgMTA3IEw0NC45IDEwNC45IEw0My45IDEwMi42IEw0MyAxMDAuNCBMNDIuMyA5OC4xIEw0MS43IDk1LjkgTDQxLjIgOTMuNyBMNDAuOSA5MS42IEw0MC42IDg5LjYgTDQwLjMgODcuNyBMNDAuMSA4NS45IEwzOS44IDg0LjMgTDM5LjUgODIuOCBMMzkuMSA4MS40IEwzOC42IDgwLjIgTDM4IDc5IEwzNy4zIDc3LjkgTDM2LjQgNzYuOSBMMzUuNCA3NS44IEwzNC4zIDc0LjggTDMzIDczLjggTDMxLjYgNzIuNyBMMzAuMSA3MS41IEwyOC41IDcwLjMgTDI2LjkgNjguOSBMMjUuMyA2Ny40IEwyMy42IDY1LjggTDIyIDY0IEwyMC41IDYyLjEgTDE5LjEgNjAuMSBMMTcuOCA1Ny45IEwxNi43IDU1LjcgTDE1LjkgNTMuMyBMMTUuMiA1MC45IEwxNC45IDQ4LjUgTDE0LjggNDYuMSBMMTUgNDMuNyBMMTUuNCA0MS40IEwxNi4yIDM5LjEgTDE3LjIgMzcgTDE4LjUgMzUgTDIwLjEgMzMuMyBMMjEuOSAzMS43IEwyMy45IDMwLjMgTDI2IDI5LjIgTDI4LjMgMjguMyBMMzAuNyAyNy42IEwzMy4xIDI3LjIgTDM1LjYgMjcgTDM4LjEgMjcuMSBMNDAuNiAyNy4zIEw0MyAyNy42IEw0NS4zIDI4LjEgTDQ3LjYgMjguNyBMNDkuNyAyOS40IEw1MS43IDMwLjIgTDUzLjYgMzAuOSBMNTUuMyAzMS42IEw1NyAzMi4zIEw1OC41IDMyLjkgTDYwIDMzLjQgTDYxLjMgMzMuNyBMNjIuNyAzMy45WiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMjIyMjNiIiBzdHJva2Utd2lkdGg9IjExIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PHBhdGggZD0iTTY0IDM0IEw2NS4zIDMzLjkgTDY2LjcgMzMuNyBMNjggMzMuNCBMNjkuNSAzMi45IEw3MSAzMi4zIEw3Mi43IDMxLjYgTDc0LjQgMzAuOSBMNzYuMyAzMC4yIEw3OC4zIDI5LjQgTDgwLjQgMjguNyBMODIuNyAyOC4xIEw4NSAyNy42IEw4Ny40IDI3LjMgTDg5LjkgMjcuMSBMOTIuNCAyNyBMOTQuOSAyNy4yIEw5Ny4zIDI3LjYgTDk5LjcgMjguMyBMMTAyIDI5LjIgTDEwNC4xIDMwLjMgTDEwNi4xIDMxLjcgTDEwNy45IDMzLjMgTDEwOS41IDM1IEwxMTAuOCAzNyBMMTExLjggMzkuMSBMMTEyLjYgNDEuNCBMMTEzIDQzLjcgTDExMy4yIDQ2LjEgTDExMy4xIDQ4LjUgTDExMi44IDUwLjkgTDExMi4xIDUzLjMgTDExMS4zIDU1LjcgTDExMC4yIDU3LjkgTDEwOC45IDYwLjEgTDEwNy41IDYyLjEgTDEwNiA2NCBMMTA0LjQgNjUuOCBMMTAyLjcgNjcuNCBMMTAxLjEgNjguOSBMOTkuNSA3MC4zIEw5Ny45IDcxLjUgTDk2LjQgNzIuNyBMOTUgNzMuOCBMOTMuNyA3NC44IEw5Mi42IDc1LjggTDkxLjYgNzYuOSBMOTAuNyA3Ny45IEw5MCA3OSBMODkuNCA4MC4yIEw4OC45IDgxLjQgTDg4LjUgODIuOCBMODguMiA4NC4zIEw4Ny45IDg1LjkgTDg3LjcgODcuNyBMODcuNCA4OS42IEw4Ny4xIDkxLjYgTDg2LjggOTMuNyBMODYuMyA5NS45IEw4NS43IDk4LjEgTDg1IDEwMC40IEw4NC4xIDEwMi42IEw4My4xIDEwNC45IEw4MS44IDEwNyBMODAuNCAxMDkuMSBMNzguOCAxMTEgTDc3LjEgMTEyLjggTDc1LjIgMTE0LjMgTDczLjEgMTE1LjYgTDcwLjkgMTE2LjYgTDY4LjcgMTE3LjQgTDY2LjQgMTE3LjggTDY0IDExOCBMNjEuNiAxMTcuOCBMNTkuMyAxMTcuNCBMNTcuMSAxMTYuNiBMNTQuOSAxMTUuNiBMNTIuOCAxMTQuMyBMNTAuOSAxMTIuOCBMNDkuMiAxMTEgTDQ3LjYgMTA5LjEgTDQ2LjIgMTA3IEw0NC45IDEwNC45IEw0My45IDEwMi42IEw0MyAxMDAuNCBMNDIuMyA5OC4xIEw0MS43IDk1LjkgTDQxLjIgOTMuNyBMNDAuOSA5MS42IEw0MC42IDg5LjYgTDQwLjMgODcuNyBMNDAuMSA4NS45IEwzOS44IDg0LjMgTDM5LjUgODIuOCBMMzkuMSA4MS40IEwzOC42IDgwLjIgTDM4IDc5IEwzNy4zIDc3LjkgTDM2LjQgNzYuOSBMMzUuNCA3NS44IEwzNC4zIDc0LjggTDMzIDczLjggTDMxLjYgNzIuNyBMMzAuMSA3MS41IEwyOC41IDcwLjMgTDI2LjkgNjguOSBMMjUuMyA2Ny40IEwyMy42IDY1LjggTDIyIDY0IEwyMC41IDYyLjEgTDE5LjEgNjAuMSBMMTcuOCA1Ny45IEwxNi43IDU1LjcgTDE1LjkgNTMuMyBMMTUuMiA1MC45IEwxNC45IDQ4LjUgTDE0LjggNDYuMSBMMTUgNDMuNyBMMTUuNCA0MS40IEwxNi4yIDM5LjEgTDE3LjIgMzcgTDE4LjUgMzUgTDIwLjEgMzMuMyBMMjEuOSAzMS43IEwyMy45IDMwLjMgTDI2IDI5LjIgTDI4LjMgMjguMyBMMzAuNyAyNy42IEwzMy4xIDI3LjIgTDM1LjYgMjcgTDM4LjEgMjcuMSBMNDAuNiAyNy4zIEw0MyAyNy42IEw0NS4zIDI4LjEgTDQ3LjYgMjguNyBMNDkuNyAyOS40IEw1MS43IDMwLjIgTDUzLjYgMzAuOSBMNTUuMyAzMS42IEw1NyAzMi4zIEw1OC41IDMyLjkgTDYwIDMzLjQgTDYxLjMgMzMuNyBMNjIuNyAzMy45WiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjN2E1N2U4IiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz48L2c+Cjwvc3ZnPgo=
@@ -92,8 +92,8 @@
 // Bundles (verbatim, each wrapped in a run-at gate): apollo_editor, art_station, credit_hoarder, fusion, group_therapy, isrc_scout, mammoth, mission_control, platform_check.
 
 try {
-  console.log('%c String Theory %c v2026.10.10.065552 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
-  console.log("String Theory bundles:\n  · Apollo Editor v2026.10.10.065551\n  · Art Station v2026.10.9.141722\n  · Credit Hoarder v2026.10.9.131649\n  · Fusion v2026.10.9.111436\n  · Group Therapy v2026.10.9\n  · ISRC Scout v2026.10.9.111436\n  · Mammoth v2026.10.9\n  · Mission Control v2026.10.9.132954\n  · Platform Check v2026.10.9.131324");
+  console.log('%c String Theory %c v2026.10.10.100127 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
+  console.log("String Theory bundles:\n  · Apollo Editor v2026.10.10.100123\n  · Art Station v2026.10.9.141722\n  · Credit Hoarder v2026.10.9.131649\n  · Fusion v2026.10.9.111436\n  · Group Therapy v2026.10.9\n  · ISRC Scout v2026.10.9.111436\n  · Mammoth v2026.10.9\n  · Mission Control v2026.10.9.132954\n  · Platform Check v2026.10.9.131324");
 } catch (e) {}
 
 function __stReadOff() { try { var v = GM_getValue("string_theory.off", []); return Array.isArray(v) ? v : []; } catch (e) { return []; } }
@@ -101,7 +101,7 @@ var __stOff = __stReadOff();
 (function () {
   if (typeof GM_registerMenuCommand !== 'function') return;
   try { if (window.top !== window.self) return; } catch (e) { return; }
-  var members = [["apollo_editor","Apollo Editor","2026.10.10.065551"],["art_station","Art Station","2026.10.9.141722"],["credit_hoarder","Credit Hoarder","2026.10.9.131649"],["fusion","Fusion","2026.10.9.111436"],["group_therapy","Group Therapy","2026.10.9"],["isrc_scout","ISRC Scout","2026.10.9.111436"],["mammoth","Mammoth","2026.10.9"],["mission_control","Mission Control","2026.10.9.132954"],["platform_check","Platform Check","2026.10.9.131324"]];
+  var members = [["apollo_editor","Apollo Editor","2026.10.10.100123"],["art_station","Art Station","2026.10.9.141722"],["credit_hoarder","Credit Hoarder","2026.10.9.131649"],["fusion","Fusion","2026.10.9.111436"],["group_therapy","Group Therapy","2026.10.9"],["isrc_scout","ISRC Scout","2026.10.9.111436"],["mammoth","Mammoth","2026.10.9"],["mission_control","Mission Control","2026.10.9.132954"],["platform_check","Platform Check","2026.10.9.131324"]];
   // Each entry carries a stable id (options.id): Violentmonkey and Tampermonkey then relabel it in
   // place, where it stands. Unregister-and-add left Violentmonkey's open menu with the old entry
   // still there and the new one appended at the end. A manager that ignores options.id hands back
@@ -165,7 +165,7 @@ try { if (__stOff.length) console.log('String Theory: turned off in the manager 
 
 // ===== apollo_editor (@run-at document-start) =====================================
 if (__stOff.indexOf("apollo_editor") < 0) (function(__stGM){
-  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Apollo Editor*","namespace":"https://musicbrainz.org/","version":"2026.10.10.065551","description":"Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5BcG9sbG8gRWRpdG9yPC90aXRsZT4KPG1hc2sgaWQ9ImFwLW0iIG1hc2tVbml0cz0idXNlclNwYWNlT25Vc2UiIHg9IjAiIHk9IjAiIHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4Ij48Zz48ZyBmaWxsPSIjZmZmIj48cGF0aCBkPSJNNDIgNjQgQzI4IDcyIDIyIDkwIDI0IDExMCBMNDIgOTggWiIvPjxwYXRoIGQ9Ik04NiA2NCBDMTAwIDcyIDEwNiA5MCAxMDQgMTEwIEw4NiA5OCBaIi8+PC9nPjxnIGZpbGw9IiNmZmYiPjxwYXRoIGQ9Ik02NCA4IEM4NCAyNCA5MCA1MiA4OCA5MCBMNDAgOTAgQzM4IDUyIDQ0IDI0IDY0IDggWiIvPjxwYXRoIGQ9Ik00OCA5MCBMODAgOTAgTDc2IDEwMCBMNTIgMTAwIFoiLz48L2c+PGcgc3Ryb2tlPSIjMDAwIiBzdHJva2Utd2lkdGg9IjMuNSI+PHBhdGggZD0iTTM2IDkwLjUgTDkyIDkwLjUiLz48L2c+PGNpcmNsZSBjeD0iNjQiIGN5PSI1MCIgcj0iOCIgZmlsbD0iIzAwMCIvPjwvZz48L21hc2s+PGc+PHBhdGggZD0iTTUyIDEwMCBDNTQgMTEyIDYwIDExOCA2NCAxMjYgQzY4IDExOCA3NCAxMTIgNzYgMTAwIFoiIGZpbGw9IiNlYjc0M2IiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDAgMykiLz48L2c+PHJlY3Qgd2lkdGg9IjEyOCIgaGVpZ2h0PSIxMjgiIGZpbGw9IiNiYTQ3OGYiIG1hc2s9InVybCgjYXAtbSkiLz4KPC9zdmc+Cg=="}) }) : { script: {"name":"Apollo Editor*","namespace":"https://musicbrainz.org/","version":"2026.10.10.065551","description":"Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5BcG9sbG8gRWRpdG9yPC90aXRsZT4KPG1hc2sgaWQ9ImFwLW0iIG1hc2tVbml0cz0idXNlclNwYWNlT25Vc2UiIHg9IjAiIHk9IjAiIHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4Ij48Zz48ZyBmaWxsPSIjZmZmIj48cGF0aCBkPSJNNDIgNjQgQzI4IDcyIDIyIDkwIDI0IDExMCBMNDIgOTggWiIvPjxwYXRoIGQ9Ik04NiA2NCBDMTAwIDcyIDEwNiA5MCAxMDQgMTEwIEw4NiA5OCBaIi8+PC9nPjxnIGZpbGw9IiNmZmYiPjxwYXRoIGQ9Ik02NCA4IEM4NCAyNCA5MCA1MiA4OCA5MCBMNDAgOTAgQzM4IDUyIDQ0IDI0IDY0IDggWiIvPjxwYXRoIGQ9Ik00OCA5MCBMODAgOTAgTDc2IDEwMCBMNTIgMTAwIFoiLz48L2c+PGcgc3Ryb2tlPSIjMDAwIiBzdHJva2Utd2lkdGg9IjMuNSI+PHBhdGggZD0iTTM2IDkwLjUgTDkyIDkwLjUiLz48L2c+PGNpcmNsZSBjeD0iNjQiIGN5PSI1MCIgcj0iOCIgZmlsbD0iIzAwMCIvPjwvZz48L21hc2s+PGc+PHBhdGggZD0iTTUyIDEwMCBDNTQgMTEyIDYwIDExOCA2NCAxMjYgQzY4IDExOCA3NCAxMTIgNzYgMTAwIFoiIGZpbGw9IiNlYjc0M2IiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDAgMykiLz48L2c+PHJlY3Qgd2lkdGg9IjEyOCIgaGVpZ2h0PSIxMjgiIGZpbGw9IiNiYTQ3OGYiIG1hc2s9InVybCgjYXAtbSkiLz4KPC9zdmc+Cg=="} };
+  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Apollo Editor*","namespace":"https://musicbrainz.org/","version":"2026.10.10.100123","description":"Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5BcG9sbG8gRWRpdG9yPC90aXRsZT4KPG1hc2sgaWQ9ImFwLW0iIG1hc2tVbml0cz0idXNlclNwYWNlT25Vc2UiIHg9IjAiIHk9IjAiIHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4Ij48Zz48ZyBmaWxsPSIjZmZmIj48cGF0aCBkPSJNNDIgNjQgQzI4IDcyIDIyIDkwIDI0IDExMCBMNDIgOTggWiIvPjxwYXRoIGQ9Ik04NiA2NCBDMTAwIDcyIDEwNiA5MCAxMDQgMTEwIEw4NiA5OCBaIi8+PC9nPjxnIGZpbGw9IiNmZmYiPjxwYXRoIGQ9Ik02NCA4IEM4NCAyNCA5MCA1MiA4OCA5MCBMNDAgOTAgQzM4IDUyIDQ0IDI0IDY0IDggWiIvPjxwYXRoIGQ9Ik00OCA5MCBMODAgOTAgTDc2IDEwMCBMNTIgMTAwIFoiLz48L2c+PGcgc3Ryb2tlPSIjMDAwIiBzdHJva2Utd2lkdGg9IjMuNSI+PHBhdGggZD0iTTM2IDkwLjUgTDkyIDkwLjUiLz48L2c+PGNpcmNsZSBjeD0iNjQiIGN5PSI1MCIgcj0iOCIgZmlsbD0iIzAwMCIvPjwvZz48L21hc2s+PGc+PHBhdGggZD0iTTUyIDEwMCBDNTQgMTEyIDYwIDExOCA2NCAxMjYgQzY4IDExOCA3NCAxMTIgNzYgMTAwIFoiIGZpbGw9IiNlYjc0M2IiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDAgMykiLz48L2c+PHJlY3Qgd2lkdGg9IjEyOCIgaGVpZ2h0PSIxMjgiIGZpbGw9IiNiYTQ3OGYiIG1hc2s9InVybCgjYXAtbSkiLz4KPC9zdmc+Cg=="}) }) : { script: {"name":"Apollo Editor*","namespace":"https://musicbrainz.org/","version":"2026.10.10.100123","description":"Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5BcG9sbG8gRWRpdG9yPC90aXRsZT4KPG1hc2sgaWQ9ImFwLW0iIG1hc2tVbml0cz0idXNlclNwYWNlT25Vc2UiIHg9IjAiIHk9IjAiIHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4Ij48Zz48ZyBmaWxsPSIjZmZmIj48cGF0aCBkPSJNNDIgNjQgQzI4IDcyIDIyIDkwIDI0IDExMCBMNDIgOTggWiIvPjxwYXRoIGQ9Ik04NiA2NCBDMTAwIDcyIDEwNiA5MCAxMDQgMTEwIEw4NiA5OCBaIi8+PC9nPjxnIGZpbGw9IiNmZmYiPjxwYXRoIGQ9Ik02NCA4IEM4NCAyNCA5MCA1MiA4OCA5MCBMNDAgOTAgQzM4IDUyIDQ0IDI0IDY0IDggWiIvPjxwYXRoIGQ9Ik00OCA5MCBMODAgOTAgTDc2IDEwMCBMNTIgMTAwIFoiLz48L2c+PGcgc3Ryb2tlPSIjMDAwIiBzdHJva2Utd2lkdGg9IjMuNSI+PHBhdGggZD0iTTM2IDkwLjUgTDkyIDkwLjUiLz48L2c+PGNpcmNsZSBjeD0iNjQiIGN5PSI1MCIgcj0iOCIgZmlsbD0iIzAwMCIvPjwvZz48L21hc2s+PGc+PHBhdGggZD0iTTUyIDEwMCBDNTQgMTEyIDYwIDExOCA2NCAxMjYgQzY4IDExOCA3NCAxMTIgNzYgMTAwIFoiIGZpbGw9IiNlYjc0M2IiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDAgMykiLz48L2c+PHJlY3Qgd2lkdGg9IjEyOCIgaGVpZ2h0PSIxMjgiIGZpbGw9IiNiYTQ3OGYiIG1hc2s9InVybCgjYXAtbSkiLz4KPC9zdmc+Cg=="} };
   (f=>f())(function(){ try { (function(){
 /*
  * Editor model (discovered via test/ spikes):
@@ -4334,7 +4334,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
           <div class="tc-s-group">
             <div class="tc-s-row" style="gap:14px"><label class="tc-s-rad" title="Tracklist tab: match track artists to MusicBrainz on load. Off: use the Match button."><input type="checkbox" id="tc-s-automatch"> Tracklist</label><label class="tc-s-rad" title="Recordings tab: auto-match unset recordings on load. Off: use the Match button."><input type="checkbox" id="tc-s-automatchrec"> Recordings</label><label class="tc-s-rad" title="Release-info Label field: when the seeded/typed label name has exactly one exact MusicBrainz match, select it automatically on load. Ambiguous names (e.g. Columbia) are left for you to pick."><input type="checkbox" id="tc-s-automatchlabel"> Label</label><label class="tc-s-rad" title="Release-info Artist field: when the seeded/typed release artist has exactly one exact MusicBrainz match, select it automatically on load. Ambiguous names are left for you to pick."><input type="checkbox" id="tc-s-automatchartist"> Artist</label></div>
             <label title="When the release has a Discogs link, match each track artist by its Discogs URL (a strong, human-verified signal) before the name search. A single linked MusicBrainz artist is used directly; several are offered as candidates."><input type="checkbox" id="tc-s-discogsmatch"> <span>Discogs artist link matching</span></label>
-            <label title="When the release has no language or script, fill them in from the release and track titles. A field a seed or you set is never touched, nor one you change after Apollo filled it. The language needs three titles or more and 80% confidence from lande, Harmony's detector (50 languages); when it isn't sure, a script that implies its language (Japanese, Korean, Greek…) names one."><input type="checkbox" id="tc-s-langscript"> <span>Detect language and script</span></label>
+            <label title="When the release has no language or script, fill them in from the release and track titles. A field a seed or you set is never touched, nor one you change after Apollo filled it. Everything found is offered at the top of the field's list. The language needs three titles or more and 80% confidence from lande, Harmony's detector (50 languages); when it isn't sure, a script that implies its language (Japanese, Korean, Greek…) names one."><input type="checkbox" id="tc-s-langscript"> <span>Detect language and script</span></label>
           </div>
           <div class="tc-s-sub">Recording</div>
           <div class="tc-s-group">
@@ -7535,7 +7535,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
      while it holds the value Apollo put there: a field given by a seed or the user, or
      changed after Apollo filled it, is never touched again. */
   // our script → MusicBrainz's option text
-  const LS_SCRIPTS = { Latin: 'Latin', Cyrillic: 'Cyrillic', Greek: 'Greek', Arabic: 'Arabic', Hebrew: 'Hebrew', Thai: 'Thai', Armenian: 'Armenian', Georgian: 'Georgian', Devanagari: 'Devanagari', Bengali: 'Bengali', Tamil: 'Tamil', Telugu: 'Telugu', Kannada: 'Kannada', Malayalam: 'Malayalam', Gujarati: 'Gujarati', Gurmukhi: 'Gurmukhi', Ethiopic: 'Ethiopic', Khmer: 'Khmer', Lao: 'Lao', Myanmar: 'Myanmar', Sinhala: 'Sinhala', Tibetan: 'Tibetan', Han: 'Han (Hanzi, Kanji, Hanja)', Japanese: 'Japanese', Korean: 'Korean' };
+  const LS_SCRIPTS = { Latin: 'Latin', Cyrillic: 'Cyrillic', Greek: 'Greek', Arabic: 'Arabic', Hebrew: 'Hebrew', Thai: 'Thai', Armenian: 'Armenian', Georgian: 'Georgian', Devanagari: 'Devanagari', Bengali: 'Bengali', Tamil: 'Tamil', Telugu: 'Telugu', Kannada: 'Kannada', Malayalam: 'Malayalam', Gujarati: 'Gujarati', Gurmukhi: 'Gurmukhi', Ethiopic: 'Ethiopic', Khmer: 'Khmer', Lao: 'Lao', Myanmar: 'Myanmar', Sinhala: 'Sinhala', Tibetan: 'Tibetan', Han: 'Han (Hanzi, Kanji, Hanja)', Japanese: 'Japanese', Korean: 'Korean', Multiple: '[Multiple scripts]' };
   const LS_SCRIPT_LANG = { Japanese: 'Japanese', Korean: 'Korean', Greek: 'Greek', Hebrew: 'Hebrew', Thai: 'Thai', Armenian: 'Armenian', Georgian: 'Georgian' };
   // lande's languages (ISO 639-3) → MusicBrainz's option text
   const LS_LANDE = { afr: 'Afrikaans', ara: 'Arabic', aze: 'Azerbaijani', bel: 'Belarusian', ben: 'Bengali', bul: 'Bulgarian', cat: 'Catalan', ces: 'Czech', ckb: 'Kurdish', cmn: 'Chinese', dan: 'Danish', deu: 'German', ell: 'Greek', eng: 'English', est: 'Estonian', eus: 'Basque', fin: 'Finnish', fra: 'French', hau: 'Hausa', heb: 'Hebrew', hin: 'Hindi', hrv: 'Croatian', hun: 'Hungarian', hye: 'Armenian', ind: 'Indonesian', isl: 'Icelandic', ita: 'Italian', jpn: 'Japanese', kat: 'Georgian', kaz: 'Kazakh', kor: 'Korean', lit: 'Lithuanian', mar: 'Marathi', mkd: 'Macedonian', nld: 'Dutch', nob: 'Norwegian Bokmål', pes: 'Persian', pol: 'Polish', por: 'Portuguese', ron: 'Romanian', run: 'Rundi', rus: 'Russian', slk: 'Slovak', spa: 'Spanish', srp: 'Serbian', swe: 'Swedish', tgl: 'Tagalog', tur: 'Turkish', ukr: 'Ukrainian', vie: 'Vietnamese' };
@@ -7554,6 +7554,8 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     else {
       const top = Object.entries(c).filter(([s]) => LS_SCRIPTS[s]).sort((a, b) => b[1] - a[1])[0];
       if (top && top[1] / n > 0.7) { script = top[0]; freq = top[1] / n; }
+      // no script holds 70%: parallel titles ("Laula mulle laulu = Обійми") or a real mix (#703)
+      else if (top) { script = 'Multiple'; freq = top[1] / n; }
     }
     return { script, freq, letters: n, counts: Object.fromEntries(Object.entries(c).filter(([, v]) => v)) };
   }
@@ -7568,8 +7570,52 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
       if (!_lande) { const t0 = performance.now(); _lande = landeLoad(); Log.debug('language detect: lande ready in', Math.round(performance.now() - t0), 'ms'); }
       const res = _lande(text) || [], best = res[0];
       const top = res.slice(0, 4).map(([c, p]) => c + ' ' + Math.round(p * 100) + '%').join(', ');
-      return best ? { lang: best[0], conf: best[1], top } : null;
+      return best ? { lang: best[0], conf: best[1], top, all: res } : null;
     } catch (e) { Log.warn('language detect failed', e && e.message); return null; }
+  }
+  // a word's script group: kana and Han read together (lande tells Japanese from Chinese)
+  function lsWordGroup(w) {
+    let best = null, bn = 0;
+    for (const [sc, re] of Object.entries(LS_RE)) { const k = (w.match(re) || []).length; if (k > bn) { bn = k; best = sc; } }
+    return best === 'Hiragana' || best === 'Katakana' || best === 'Han' ? 'CJK' : best === 'Hangul' ? 'Korean' : best;
+  }
+  // the titles split by script, word by word: { group: { text, titles, letters } }. lande is
+  // only ever given one script: mixed Latin and Cyrillic read as Serbian, which is written in
+  // both ("Laula Mulle Laulu = Обійми" came out Serbian 95%; each half alone is Finnish 98%
+  // and Ukrainian 100%) (#703)
+  function lsByScript(titles) {
+    const g = {};
+    titles.forEach(t => {
+      const per = {};
+      for (const w of t.split(/\s+/)) { if (!/\p{Letter}/u.test(w)) continue; const k = lsWordGroup(w); if (k) (per[k] = per[k] || []).push(w); }
+      for (const [k, ws] of Object.entries(per)) {
+        const e = g[k] = g[k] || { text: [], titles: 0, letters: 0 };
+        e.text.push(ws.join(' ')); e.titles++; e.letters += ws.join('').replace(/\P{Letter}/gu, '').length;
+      }
+    });
+    for (const e of Object.values(g)) e.text = e.text.join('\n');
+    return g;
+  }
+  const LS_GROUP_OF = { Japanese: 'CJK', Han: 'CJK', Korean: 'Korean' };
+  // the "auto" badge inside a field Apollo filled, after the Label field's (#703 majkinetor:
+  // "It would also be good to mark those fields as auto set")
+  function lsBadges() {
+    for (const k of ['language', 'script']) {
+      const sel = document.querySelector('select#' + k); if (!sel) continue;
+      const host = sel.parentElement, st = _ls[k];
+      let b = host.querySelector(':scope > .tc-ls-auto');
+      const want = st.state === 'auto' && sel.value === st.value && apolloEnabled();
+      if (!want) { if (b) b.remove(); continue; }
+      if (!b) {
+        b = document.createElement('span'); b.className = 'tc-ls-auto mbu-ui';
+        b.innerHTML = '<span class="tc-badge auto">auto</span>'; host.appendChild(b);
+        if (getComputedStyle(host).position === 'static') host.style.position = 'relative';
+      }
+      b.firstChild.title = st.why || '';
+      // level with the field's right end, wherever the cell's edge is
+      const pin = document.documentElement.querySelector('.mmthf-pin') ? 48 : 28;
+      b.style.right = Math.max(0, host.clientWidth - (sel.offsetLeft + sel.offsetWidth)) + pin + 'px';
+    }
   }
   // the option of a select whose text is the name (MB lists frequent ones twice: the first will do)
   const lsOption = (sel, name) => name ? [...sel.options].find(o => o.value && o.textContent.trim() === name) : null;
@@ -7588,8 +7634,8 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
   }
   // every tick: once the titles have been still for a moment, guess what is still open
   function applyLangScript() {
-    if (!apolloEnabled() || SETTINGS.autoLangScript === false || _lsBusy) return;
-    if (!lsOpen().length) return;
+    lsBadges();
+    if (!apolloEnabled() || SETTINGS.autoLangScript === false || _lsBusy) { lsOffer(null); return; }
     let titles;
     try { const rel = release(); titles = [u(rel.name) || ''].concat(readTracklist().map(t => t.title)).map(lsClean).filter(Boolean); } catch (e) { return; }
     const sig = titles.join('\n');
@@ -7598,32 +7644,86 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     _lsDone = sig; _lsBusy = true;
     detectLangScript(titles).catch(e => Log.warn('language detect:', e && e.message)).finally(() => { _lsBusy = false; });
   }
-  async function detectLangScript(titles) {
-    const open = lsOpen(); if (!open.length) return;
+  // everything the titles suggest, most likely first: { language: [{ name, conf, why }], script: [...] },
+  // and the one each field is filled with when nothing is given (best: { language, script })
+  function lsCandidates(titles) {
     const text = titles.join('\n'), sc = lsDetectScript(text);
+    const out = { language: [], script: [], best: {} };
     Log.debug('language detect:', titles.length, 'titles · scripts', JSON.stringify(sc && sc.counts));
-    const set = {};
-    if (open.includes('script') && sc && sc.script) set.script = { name: LS_SCRIPTS[sc.script], why: Math.round(sc.freq * 100) + '% of letters' };
-    if (open.includes('language')) {
-      // guesses from one or two titles are wrong more often than not (Harmony)
-      const det = titles.length > 2 ? lsDetectLanguage(text) : null;
-      if (det) Log.debug('language detect: lande says', det.top);
-      if (det && det.conf >= 0.8 && LS_LANDE[det.lang]) set.language = { name: LS_LANDE[det.lang], why: Math.round(det.conf * 100) + '% (' + det.lang + ')' };
-      else if (sc && LS_SCRIPT_LANG[sc.script]) set.language = { name: LS_SCRIPT_LANG[sc.script], why: 'from the ' + sc.script + ' script' };
-      else if (titles.length <= 2) Log.debug('language detect: too few titles for a language');
+    if (!sc) return out;
+    const add = (list, name, conf, why) => { if (!name) return; const e = list.find(x => x.name === name); if (!e) list.push({ name, conf, why }); else if (conf > e.conf) Object.assign(e, { conf, why }); };
+    // scripts: each with 5% of the letters or more
+    const sCount = {};
+    for (const [s, n] of Object.entries(sc.counts)) { const k = s === 'Hiragana' || s === 'Katakana' ? (sc.script === 'Japanese' ? 'Japanese' : 'Han') : s === 'Hangul' ? 'Korean' : s; sCount[k] = (sCount[k] || 0) + n; }
+    if (sc.script === 'Japanese' || sc.script === 'Korean') { sCount[sc.script] = (sCount[sc.script] || 0) + (sCount.Han || 0); delete sCount.Han; }
+    for (const [s, n] of Object.entries(sCount).sort((a, b) => b[1] - a[1])) if (LS_SCRIPTS[s] && n / sc.letters >= 0.05) add(out.script, LS_SCRIPTS[s], n / sc.letters, Math.round(n / sc.letters * 100) + '% of the letters');
+    if (out.script.length > 1) add(out.script, LS_SCRIPTS.Multiple, 0, 'all of them');
+    if (sc.script) out.best.script = { name: LS_SCRIPTS[sc.script], why: sc.script === 'Multiple' ? 'no script holds 70% of the letters' : Math.round(sc.freq * 100) + '% of the letters' };
+    // languages: lande on each script's words alone (guesses from one or two titles are wrong
+    // more often than not, Harmony), and the language a script implies
+    const groups = lsByScript(titles), dets = {};
+    Log.debug('language detect: by script', JSON.stringify(Object.fromEntries(Object.entries(groups).map(([k, e]) => [k, e.letters]))));
+    for (const [g, e] of Object.entries(groups)) {
+      if (e.letters / sc.letters < 0.05) continue;
+      const implied = g === 'CJK' ? (sc.counts.Hiragana || sc.counts.Katakana ? 'Japanese' : null) : LS_SCRIPT_LANG[g];
+      const det = e.titles > 2 ? lsDetectLanguage(e.text) : null; dets[g] = det;
+      if (det) {
+        Log.debug('language detect: lande says', det.top, 'for the', g, 'words');
+        for (const [c, p] of det.all) if (p >= 0.1 && LS_LANDE[c]) add(out.language, LS_LANDE[c], p, Math.round(p * 100) + '% (' + c + '), the ' + g + ' words');
+      }
+      if (implied && !(det && det.conf >= 0.8)) add(out.language, implied, 0.5, 'from the ' + (g === 'CJK' ? 'kana' : g) + ' script');
     }
-    const done = [];
+    out.language.sort((a, b) => b.conf - a.conf);
+    if (out.language.length > 1) add(out.language, '[Multiple languages]', 0, 'all of them');
+    // the one to fill in: the main script's words; mixed, the non-Latin script's, as the Latin
+    // is mostly its translation or transliteration (#703 majkinetor: "ukrainian is right")
+    const pick = sc.script === 'Multiple'
+      ? Object.keys(groups).filter(k => k !== 'Latin').sort((a, b) => groups[b].letters - groups[a].letters)[0]
+      : (LS_GROUP_OF[sc.script] || sc.script);
+    const det = pick && dets[pick];
+    const implied = pick === 'CJK' ? (sc.counts.Hiragana || sc.counts.Katakana ? 'Japanese' : null) : LS_SCRIPT_LANG[pick];
+    if (det && det.conf >= 0.8 && LS_LANDE[det.lang]) out.best.language = { name: LS_LANDE[det.lang], why: Math.round(det.conf * 100) + '% (' + det.lang + ')' + (sc.script === 'Multiple' ? ', from the ' + pick + ' words' : '') };
+    else if (implied) out.best.language = { name: implied, why: 'from the ' + (pick === 'CJK' ? 'kana' : pick) + ' script' };
+    else if (!pick || !groups[pick] || groups[pick].titles <= 2) Log.debug('language detect: too few titles for a language');
+    return out;
+  }
+  // "Detected by Apollo" at the top of each field's list: one of them, or all of them as
+  // [Multiple …] (#703 majkinetor: "User should be able to select one or all of the found
+  // languages by lande (the same for script)"). null takes the groups away.
+  function lsOffer(cands) {
+    for (const k of ['language', 'script']) {
+      const sel = document.querySelector('select#' + k); if (!sel) continue;
+      const list = cands ? cands[k] : [], old = sel.querySelector(':scope > optgroup.tc-ls-found');
+      if (!old && !list.length) continue;
+      const v = sel.value;   // removing the chosen option would move the field to the first one
+      if (old) old.remove();
+      if (list.length) {
+        const og = document.createElement('optgroup'); og.className = 'tc-ls-found'; og.label = 'Detected by Apollo';
+        for (const c of list) {
+          const src = lsOption(sel, c.name); if (!src) { Log.debug('language detect: MusicBrainz has no', k, JSON.stringify(c.name)); continue; }
+          const o = document.createElement('option'); o.value = src.value; o.textContent = c.name; o.title = c.why; og.appendChild(o);
+        }
+        if (og.children.length) sel.insertBefore(og, sel.options[0] && !sel.options[0].value ? sel.options[0].nextSibling : sel.firstChild);
+      }
+      if (sel.value !== v) sel.value = v;
+      Log.debug('language detect: offered for', k, list.map(c => c.name + ' ' + Math.round(c.conf * 100) + '%').join(', ') || 'nothing');
+    }
+  }
+  async function detectLangScript(titles) {
+    const cands = lsCandidates(titles);
+    lsOffer(cands);
+    const open = lsOpen(), done = [];
     for (const k of open) {
-      const want = set[k]; if (!want) continue;
+      const want = cands.best[k]; if (!want) continue;
       const sel = document.querySelector('select#' + k), opt = sel && lsOption(sel, want.name);
       if (!opt) { Log.warn('language detect: MusicBrainz has no', k, JSON.stringify(want.name)); continue; }
       if (lsOpen().indexOf(k) < 0 || sel.value === opt.value) continue;   // the user got there first
       sel.value = opt.value; sel.dispatchEvent(new Event('change', { bubbles: true }));
-      _ls[k] = { state: 'auto', value: sel.value };
-      sel.title = 'Detected by Apollo from the titles (' + want.why + ')';
+      _ls[k] = { state: 'auto', value: sel.value, why: 'Detected by Apollo from the titles: ' + want.why };
       Log.info('language detect:', k, '→', want.name, '·', want.why);
       done.push(want.name);
     }
+    lsBadges();
     if (done.length) toast('Detected ' + done.join(' · '));
   }
 
@@ -10522,6 +10622,8 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     :is(.tc-ri-am,.tc-ri-lab,.tc-ri-rb) .tc-badge{font-size:10px;font-weight:bold;border-radius:9px;padding:1px 7px;color:var(--mbu-text-on-accent);white-space:nowrap;cursor:help;text-transform:none}
     :is(.tc-ri-am,.tc-ri-lab,.tc-ri-rb) .tc-badge.rg{background:#1f8a4c}:is(.tc-ri-am,.tc-ri-lab,.tc-ri-rb) .tc-badge.set{background:#6c757d}:is(.tc-ri-am,.tc-ri-lab,.tc-ri-rb) .tc-badge.high{background:#2f6fd6}:is(.tc-ri-am,.tc-ri-lab,.tc-ri-rb) .tc-badge.disc{background:#0a7a8c}
     :is(.tc-ri-am,.tc-ri-lab,.tc-ri-rb) .tc-badge.low{background:#e0a800}:is(.tc-ri-am,.tc-ri-lab,.tc-ri-rb) .tc-badge.user{background:var(--mbu-accent)}:is(.tc-ri-am,.tc-ri-lab,.tc-ri-rb) .tc-badge.cred{background:#b5179e}:is(.tc-ri-am,.tc-ri-lab,.tc-ri-rb) .tc-badge.alias{background:#1f8a7a}:is(.tc-ri-am,.tc-ri-lab,.tc-ri-rb) .tc-badge.pos{background:#a0522d}:is(.tc-ri-am,.tc-ri-lab,.tc-ri-rb) .tc-badge.plat{background:#0b6e99}
+    .tc-ls-auto{position:absolute;top:50%;transform:translateY(-50%);line-height:1;pointer-events:auto}
+    .tc-ls-auto .tc-badge{font-size:10px;font-weight:bold;border-radius:9px;padding:1px 7px;color:var(--mbu-text-on-accent);white-space:nowrap;cursor:help;text-transform:none;background:#6f42c1}
     :is(.tc-ri-am,.tc-ri-rb) .tc-badge.tc-ri-pick{cursor:pointer}
     .tc-ri-am .tc-tic{display:inline-flex;align-items:center;justify-content:center;min-width:22px;min-height:22px;color:#0a7a8c;text-decoration:none;cursor:pointer}
     .tc-ri-am .tc-tic.discogs-conflict{color:#c0392b}.tc-ri-am .tc-tic.discogs-mismatch{color:#b4791f}
@@ -11819,7 +11921,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     fix();
   }
 
-  W.__apolloEditor = { lsDetectScript, lsDetectLanguage, LS_LANDE, lsClean, detectLangScript, matchCardHtml, readTracklist, buildModel, commitTrack, resetTrack, revertTrack, trackChanged, removeTrack, moveTrack, addTracks, searchArtist, fetchEntity, createArtist, openPanel, showMirror, hideMirror, revertAll, revertSlot, pickArtist, addSlot, removeSlot, splitSlot, matchSlot, snapshotOriginals, readRecordings, showRecMirror, hideRecMirror, recordingsVisible, recConfidence, applyView, applyNav, applyReleaseInfo, releaseInfoVisible, ensureApolloEditNote, checkAllLinks, checkUrl, linkRows, alExtractUrls, alAddUrls, installMultiLinkPaste, alApplyHint, AL_HINT, discogsReleaseUrlFromPage, loadDiscogsMap, resolveByDiscogsUrl, discogsFeatUrlFor, tagDiscogsAddable, tagDiscogsForAll, addOrCreateDiscogsLink, reTagAfterDiscogsLink, artistDiscogsUrls, platformOf, platformUrlForms, resolvePlatformUrls, resolveByPlatformUrl, fcHandoff, fcPlatformUrl, tagPlatformAddable, tagPlatformForAll, addOrCreatePlatformLink, matchReleaseArtist, matchReleaseLabels, searchLabel, createLabel, riPickLabel, riEditionArtists, riPick, get riArt() { return _riArt; }, dhRun, acLinksDiff, fetchRgPositionIndex, fetchDuplicatePositionIndex, recSimilar, recComboLevel, recPickBest, pickSibArtist, loadSiblingMap, autoMatchRecordings, setDataBoundary, videoBlockedHere, NON_VIDEO_FORMAT_IDS, trackRecIsVideo, newRecordingFor, logMarkdown, openLengthParser, lpParse, lpValid, lpExtractFromHtml, lpNoteSource, openTrackPatternParser, tpCompile, resolveByExactAlias, wsJson, stopMatching, lenShadeAlpha, lenShade, dupLenShade, mergeMediums, splitMedium, pickTool, runAction, slotContextGids, releaseArtistGids, positionArtists, posNameMatch, tallyPosArtists, artistPosRgIndex, artistPosDupIndex, rgReleases, duplicateReleases, enteredTracklist, buildDupDetail, get apolloOn() { return apolloOn(); }, get model() { return MODEL; }, get settings() { return SETTINGS; } };
+  W.__apolloEditor = { lsDetectScript, lsByScript, lsCandidates, lsDetectLanguage, LS_LANDE, lsClean, detectLangScript, matchCardHtml, readTracklist, buildModel, commitTrack, resetTrack, revertTrack, trackChanged, removeTrack, moveTrack, addTracks, searchArtist, fetchEntity, createArtist, openPanel, showMirror, hideMirror, revertAll, revertSlot, pickArtist, addSlot, removeSlot, splitSlot, matchSlot, snapshotOriginals, readRecordings, showRecMirror, hideRecMirror, recordingsVisible, recConfidence, applyView, applyNav, applyReleaseInfo, releaseInfoVisible, ensureApolloEditNote, checkAllLinks, checkUrl, linkRows, alExtractUrls, alAddUrls, installMultiLinkPaste, alApplyHint, AL_HINT, discogsReleaseUrlFromPage, loadDiscogsMap, resolveByDiscogsUrl, discogsFeatUrlFor, tagDiscogsAddable, tagDiscogsForAll, addOrCreateDiscogsLink, reTagAfterDiscogsLink, artistDiscogsUrls, platformOf, platformUrlForms, resolvePlatformUrls, resolveByPlatformUrl, fcHandoff, fcPlatformUrl, tagPlatformAddable, tagPlatformForAll, addOrCreatePlatformLink, matchReleaseArtist, matchReleaseLabels, searchLabel, createLabel, riPickLabel, riEditionArtists, riPick, get riArt() { return _riArt; }, dhRun, acLinksDiff, fetchRgPositionIndex, fetchDuplicatePositionIndex, recSimilar, recComboLevel, recPickBest, pickSibArtist, loadSiblingMap, autoMatchRecordings, setDataBoundary, videoBlockedHere, NON_VIDEO_FORMAT_IDS, trackRecIsVideo, newRecordingFor, logMarkdown, openLengthParser, lpParse, lpValid, lpExtractFromHtml, lpNoteSource, openTrackPatternParser, tpCompile, resolveByExactAlias, wsJson, stopMatching, lenShadeAlpha, lenShade, dupLenShade, mergeMediums, splitMedium, pickTool, runAction, slotContextGids, releaseArtistGids, positionArtists, posNameMatch, tallyPosArtists, artistPosRgIndex, artistPosDupIndex, rgReleases, duplicateReleases, enteredTracklist, buildDupDetail, get apolloOn() { return apolloOn(); }, get model() { return MODEL; }, get settings() { return SETTINGS; } };
 
   // #267 auto-confirm a seeded Add/Edit-release submission. When another site seeds the editor,
   // MusicBrainz shows a `.confirm-seed` interstitial with a single submit button; clicking it
