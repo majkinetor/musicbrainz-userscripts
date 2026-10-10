@@ -7,16 +7,20 @@
 # script — is committed).
 #
 # Intentionally NOT bundled:
-#   falcon          — also runs on Harmony; the bundle's @match is the union of its
-#                     members', so all of it would load there for one script
-#   as_picker       — runs on every site (*://*/*), for the same reason
-#   scribe          — separate workflow
-#   first_contact   — runs on the platforms' album pages (deezer.com, …), for the same reason as falcon
-#   discogs_credits — parallel twin of credit_hoarder; would double-run
+#   scribe                   — niche, a separate workflow; never to be bundled
+#   bandcamp_player_enhanced — niche, Bandcamp only; never to be bundled
+#   as_picker                — runs on every site (*://*/*)
+#   discogs_credits          — frozen twin of credit_hoarder; would double-run
+#
+# Falcon (Harmony) and First Contact (the platforms' album pages) run on other sites too:
+# the bundle's @match is the union of its members', but each member starts only where
+# its own @match does (#710).
 
 apollo_editor
 art_station
 credit_hoarder
+falcon
+first_contact
 fusion
 group_therapy
 isrc_scout

@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         String Theory
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.10.151113
-// @description  Unified bundle of 9 MusicBrainz userscripts (apollo_editor, art_station, credit_hoarder, fusion, group_therapy, isrc_scout, mammoth, mission_control, platform_check). Built by userscripts/string_theory/build.mjs — do not hand-edit.
+// @version      2026.10.10.152158
+// @description  Unified bundle of 11 MusicBrainz userscripts (apollo_editor, art_station, credit_hoarder, falcon, first_contact, fusion, group_therapy, isrc_scout, mammoth, mission_control, platform_check). Built by userscripts/string_theory/build.mjs — do not hand-edit.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5TdHJpbmcgVGhlb3J5PC90aXRsZT4KPGRlZnM+PGZpbHRlciBpZD0ic3RsMDItaCIgeD0iLTEwJSIgeT0iLTEwJSIgd2lkdGg9IjEyMCUiIGhlaWdodD0iMTIwJSI+PGZlTW9ycGhvbG9neSBpbj0iU291cmNlQWxwaGEiIG9wZXJhdG9yPSJkaWxhdGUiIHJhZGl1cz0iMS41IiByZXN1bHQ9ImQiLz48ZmVGbG9vZCBmbG9vZC1jb2xvcj0iI2ZmZiIgZmxvb2Qtb3BhY2l0eT0iLjciLz48ZmVDb21wb3NpdGUgaW4yPSJkIiBvcGVyYXRvcj0iaW4iLz48ZmVNZXJnZT48ZmVNZXJnZU5vZGUvPjxmZU1lcmdlTm9kZSBpbj0iU291cmNlR3JhcGhpYyIvPjwvZmVNZXJnZT48L2ZpbHRlcj48L2RlZnM+PGcgZmlsdGVyPSJ1cmwoI3N0bDAyLWgpIj48cGF0aCBkPSJNNjQgMTAgTDY2LjQgMTAuMiBMNjguNyAxMC42IEw3MC45IDExLjQgTDczLjEgMTIuNCBMNzUuMiAxMy43IEw3Ny4xIDE1LjIgTDc4LjggMTcgTDgwLjQgMTguOSBMODEuOCAyMSBMODMuMSAyMy4xIEw4NC4xIDI1LjQgTDg1IDI3LjYgTDg1LjcgMjkuOSBMODYuMyAzMi4xIEw4Ni44IDM0LjMgTDg3LjEgMzYuNCBMODcuNCAzOC40IEw4Ny43IDQwLjMgTDg3LjkgNDIuMSBMODguMiA0My43IEw4OC41IDQ1LjIgTDg4LjkgNDYuNiBMODkuNCA0Ny44IEw5MCA0OSBMOTAuNyA1MC4xIEw5MS42IDUxLjEgTDkyLjYgNTIuMiBMOTMuNyA1My4yIEw5NSA1NC4yIEw5Ni40IDU1LjMgTDk3LjkgNTYuNSBMOTkuNSA1Ny43IEwxMDEuMSA1OS4xIEwxMDIuNyA2MC42IEwxMDQuNCA2Mi4yIEwxMDYgNjQgTDEwNy41IDY1LjkgTDEwOC45IDY3LjkgTDExMC4yIDcwLjEgTDExMS4zIDcyLjMgTDExMi4xIDc0LjcgTDExMi44IDc3LjEgTDExMy4xIDc5LjUgTDExMy4yIDgxLjkgTDExMyA4NC4zIEwxMTIuNiA4Ni42IEwxMTEuOCA4OC45IEwxMTAuOCA5MSBMMTA5LjUgOTMgTDEwNy45IDk0LjcgTDEwNi4xIDk2LjMgTDEwNC4xIDk3LjcgTDEwMiA5OC44IEw5OS43IDk5LjcgTDk3LjMgMTAwLjQgTDk0LjkgMTAwLjggTDkyLjQgMTAxIEw4OS45IDEwMC45IEw4Ny40IDEwMC43IEw4NSAxMDAuNCBMODIuNyA5OS45IEw4MC40IDk5LjMgTDc4LjMgOTguNiBMNzYuMyA5Ny44IEw3NC40IDk3LjEgTDcyLjcgOTYuNCBMNzEgOTUuNyBMNjkuNSA5NS4xIEw2OCA5NC42IEw2Ni43IDk0LjMgTDY1LjMgOTQuMSBMNjQgOTQgTDYyLjcgOTQuMSBMNjEuMyA5NC4zIEw2MCA5NC42IEw1OC41IDk1LjEgTDU3IDk1LjcgTDU1LjMgOTYuNCBMNTMuNiA5Ny4xIEw1MS43IDk3LjggTDQ5LjcgOTguNiBMNDcuNiA5OS4zIEw0NS4zIDk5LjkgTDQzIDEwMC40IEw0MC42IDEwMC43IEwzOC4xIDEwMC45IEwzNS42IDEwMSBMMzMuMSAxMDAuOCBMMzAuNyAxMDAuNCBMMjguMyA5OS43IEwyNiA5OC44IEwyMy45IDk3LjcgTDIxLjkgOTYuMyBMMjAuMSA5NC43IEwxOC41IDkzIEwxNy4yIDkxIEwxNi4yIDg4LjkgTDE1LjQgODYuNiBMMTUgODQuMyBMMTQuOCA4MS45IEwxNC45IDc5LjUgTDE1LjIgNzcuMSBMMTUuOSA3NC43IEwxNi43IDcyLjMgTDE3LjggNzAuMSBMMTkuMSA2Ny45IEwyMC41IDY1LjkgTDIyIDY0IEwyMy42IDYyLjIgTDI1LjMgNjAuNiBMMjYuOSA1OS4xIEwyOC41IDU3LjcgTDMwLjEgNTYuNSBMMzEuNiA1NS4zIEwzMyA1NC4yIEwzNC4zIDUzLjIgTDM1LjQgNTIuMiBMMzYuNCA1MS4xIEwzNy4zIDUwLjEgTDM4IDQ5IEwzOC42IDQ3LjggTDM5LjEgNDYuNiBMMzkuNSA0NS4yIEwzOS44IDQzLjcgTDQwLjEgNDIuMSBMNDAuMyA0MC4zIEw0MC42IDM4LjQgTDQwLjkgMzYuNCBMNDEuMiAzNC4zIEw0MS43IDMyLjEgTDQyLjMgMjkuOSBMNDMgMjcuNiBMNDMuOSAyNS40IEw0NC45IDIzLjEgTDQ2LjIgMjEgTDQ3LjYgMTguOSBMNDkuMiAxNyBMNTAuOSAxNS4yIEw1Mi44IDEzLjcgTDU0LjkgMTIuNCBMNTcuMSAxMS40IEw1OS4zIDEwLjYgTDYxLjYgMTAuMloiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2I5YThlYyIgc3Ryb2tlLXdpZHRoPSI1IiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PHBhdGggZD0iTTY0IDM0IEw2NS4zIDMzLjkgTDY2LjcgMzMuNyBMNjggMzMuNCBMNjkuNSAzMi45IEw3MSAzMi4zIEw3Mi43IDMxLjYgTDc0LjQgMzAuOSBMNzYuMyAzMC4yIEw3OC4zIDI5LjQgTDgwLjQgMjguNyBMODIuNyAyOC4xIEw4NSAyNy42IEw4Ny40IDI3LjMgTDg5LjkgMjcuMSBMOTIuNCAyNyBMOTQuOSAyNy4yIEw5Ny4zIDI3LjYgTDk5LjcgMjguMyBMMTAyIDI5LjIgTDEwNC4xIDMwLjMgTDEwNi4xIDMxLjcgTDEwNy45IDMzLjMgTDEwOS41IDM1IEwxMTAuOCAzNyBMMTExLjggMzkuMSBMMTEyLjYgNDEuNCBMMTEzIDQzLjcgTDExMy4yIDQ2LjEgTDExMy4xIDQ4LjUgTDExMi44IDUwLjkgTDExMi4xIDUzLjMgTDExMS4zIDU1LjcgTDExMC4yIDU3LjkgTDEwOC45IDYwLjEgTDEwNy41IDYyLjEgTDEwNiA2NCBMMTA0LjQgNjUuOCBMMTAyLjcgNjcuNCBMMTAxLjEgNjguOSBMOTkuNSA3MC4zIEw5Ny45IDcxLjUgTDk2LjQgNzIuNyBMOTUgNzMuOCBMOTMuNyA3NC44IEw5Mi42IDc1LjggTDkxLjYgNzYuOSBMOTAuNyA3Ny45IEw5MCA3OSBMODkuNCA4MC4yIEw4OC45IDgxLjQgTDg4LjUgODIuOCBMODguMiA4NC4zIEw4Ny45IDg1LjkgTDg3LjcgODcuNyBMODcuNCA4OS42IEw4Ny4xIDkxLjYgTDg2LjggOTMuNyBMODYuMyA5NS45IEw4NS43IDk4LjEgTDg1IDEwMC40IEw4NC4xIDEwMi42IEw4My4xIDEwNC45IEw4MS44IDEwNyBMODAuNCAxMDkuMSBMNzguOCAxMTEgTDc3LjEgMTEyLjggTDc1LjIgMTE0LjMgTDczLjEgMTE1LjYgTDcwLjkgMTE2LjYgTDY4LjcgMTE3LjQgTDY2LjQgMTE3LjggTDY0IDExOCBMNjEuNiAxMTcuOCBMNTkuMyAxMTcuNCBMNTcuMSAxMTYuNiBMNTQuOSAxMTUuNiBMNTIuOCAxMTQuMyBMNTAuOSAxMTIuOCBMNDkuMiAxMTEgTDQ3LjYgMTA5LjEgTDQ2LjIgMTA3IEw0NC45IDEwNC45IEw0My45IDEwMi42IEw0MyAxMDAuNCBMNDIuMyA5OC4xIEw0MS43IDk1LjkgTDQxLjIgOTMuNyBMNDAuOSA5MS42IEw0MC42IDg5LjYgTDQwLjMgODcuNyBMNDAuMSA4NS45IEwzOS44IDg0LjMgTDM5LjUgODIuOCBMMzkuMSA4MS40IEwzOC42IDgwLjIgTDM4IDc5IEwzNy4zIDc3LjkgTDM2LjQgNzYuOSBMMzUuNCA3NS44IEwzNC4zIDc0LjggTDMzIDczLjggTDMxLjYgNzIuNyBMMzAuMSA3MS41IEwyOC41IDcwLjMgTDI2LjkgNjguOSBMMjUuMyA2Ny40IEwyMy42IDY1LjggTDIyIDY0IEwyMC41IDYyLjEgTDE5LjEgNjAuMSBMMTcuOCA1Ny45IEwxNi43IDU1LjcgTDE1LjkgNTMuMyBMMTUuMiA1MC45IEwxNC45IDQ4LjUgTDE0LjggNDYuMSBMMTUgNDMuNyBMMTUuNCA0MS40IEwxNi4yIDM5LjEgTDE3LjIgMzcgTDE4LjUgMzUgTDIwLjEgMzMuMyBMMjEuOSAzMS43IEwyMy45IDMwLjMgTDI2IDI5LjIgTDI4LjMgMjguMyBMMzAuNyAyNy42IEwzMy4xIDI3LjIgTDM1LjYgMjcgTDM4LjEgMjcuMSBMNDAuNiAyNy4zIEw0MyAyNy42IEw0NS4zIDI4LjEgTDQ3LjYgMjguNyBMNDkuNyAyOS40IEw1MS43IDMwLjIgTDUzLjYgMzAuOSBMNTUuMyAzMS42IEw1NyAzMi4zIEw1OC41IDMyLjkgTDYwIDMzLjQgTDYxLjMgMzMuNyBMNjIuNyAzMy45WiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMjIyMjNiIiBzdHJva2Utd2lkdGg9IjExIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PHBhdGggZD0iTTY0IDM0IEw2NS4zIDMzLjkgTDY2LjcgMzMuNyBMNjggMzMuNCBMNjkuNSAzMi45IEw3MSAzMi4zIEw3Mi43IDMxLjYgTDc0LjQgMzAuOSBMNzYuMyAzMC4yIEw3OC4zIDI5LjQgTDgwLjQgMjguNyBMODIuNyAyOC4xIEw4NSAyNy42IEw4Ny40IDI3LjMgTDg5LjkgMjcuMSBMOTIuNCAyNyBMOTQuOSAyNy4yIEw5Ny4zIDI3LjYgTDk5LjcgMjguMyBMMTAyIDI5LjIgTDEwNC4xIDMwLjMgTDEwNi4xIDMxLjcgTDEwNy45IDMzLjMgTDEwOS41IDM1IEwxMTAuOCAzNyBMMTExLjggMzkuMSBMMTEyLjYgNDEuNCBMMTEzIDQzLjcgTDExMy4yIDQ2LjEgTDExMy4xIDQ4LjUgTDExMi44IDUwLjkgTDExMi4xIDUzLjMgTDExMS4zIDU1LjcgTDExMC4yIDU3LjkgTDEwOC45IDYwLjEgTDEwNy41IDYyLjEgTDEwNiA2NCBMMTA0LjQgNjUuOCBMMTAyLjcgNjcuNCBMMTAxLjEgNjguOSBMOTkuNSA3MC4zIEw5Ny45IDcxLjUgTDk2LjQgNzIuNyBMOTUgNzMuOCBMOTMuNyA3NC44IEw5Mi42IDc1LjggTDkxLjYgNzYuOSBMOTAuNyA3Ny45IEw5MCA3OSBMODkuNCA4MC4yIEw4OC45IDgxLjQgTDg4LjUgODIuOCBMODguMiA4NC4zIEw4Ny45IDg1LjkgTDg3LjcgODcuNyBMODcuNCA4OS42IEw4Ny4xIDkxLjYgTDg2LjggOTMuNyBMODYuMyA5NS45IEw4NS43IDk4LjEgTDg1IDEwMC40IEw4NC4xIDEwMi42IEw4My4xIDEwNC45IEw4MS44IDEwNyBMODAuNCAxMDkuMSBMNzguOCAxMTEgTDc3LjEgMTEyLjggTDc1LjIgMTE0LjMgTDczLjEgMTE1LjYgTDcwLjkgMTE2LjYgTDY4LjcgMTE3LjQgTDY2LjQgMTE3LjggTDY0IDExOCBMNjEuNiAxMTcuOCBMNTkuMyAxMTcuNCBMNTcuMSAxMTYuNiBMNTQuOSAxMTUuNiBMNTIuOCAxMTQuMyBMNTAuOSAxMTIuOCBMNDkuMiAxMTEgTDQ3LjYgMTA5LjEgTDQ2LjIgMTA3IEw0NC45IDEwNC45IEw0My45IDEwMi42IEw0MyAxMDAuNCBMNDIuMyA5OC4xIEw0MS43IDk1LjkgTDQxLjIgOTMuNyBMNDAuOSA5MS42IEw0MC42IDg5LjYgTDQwLjMgODcuNyBMNDAuMSA4NS45IEwzOS44IDg0LjMgTDM5LjUgODIuOCBMMzkuMSA4MS40IEwzOC42IDgwLjIgTDM4IDc5IEwzNy4zIDc3LjkgTDM2LjQgNzYuOSBMMzUuNCA3NS44IEwzNC4zIDc0LjggTDMzIDczLjggTDMxLjYgNzIuNyBMMzAuMSA3MS41IEwyOC41IDcwLjMgTDI2LjkgNjguOSBMMjUuMyA2Ny40IEwyMy42IDY1LjggTDIyIDY0IEwyMC41IDYyLjEgTDE5LjEgNjAuMSBMMTcuOCA1Ny45IEwxNi43IDU1LjcgTDE1LjkgNTMuMyBMMTUuMiA1MC45IEwxNC45IDQ4LjUgTDE0LjggNDYuMSBMMTUgNDMuNyBMMTUuNCA0MS40IEwxNi4yIDM5LjEgTDE3LjIgMzcgTDE4LjUgMzUgTDIwLjEgMzMuMyBMMjEuOSAzMS43IEwyMy45IDMwLjMgTDI2IDI5LjIgTDI4LjMgMjguMyBMMzAuNyAyNy42IEwzMy4xIDI3LjIgTDM1LjYgMjcgTDM4LjEgMjcuMSBMNDAuNiAyNy4zIEw0MyAyNy42IEw0NS4zIDI4LjEgTDQ3LjYgMjguNyBMNDkuNyAyOS40IEw1MS43IDMwLjIgTDUzLjYgMzAuOSBMNTUuMyAzMS42IEw1NyAzMi4zIEw1OC41IDMyLjkgTDYwIDMzLjQgTDYxLjMgMzMuNyBMNjIuNyAzMy45WiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjN2E1N2U4IiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz48L2c+Cjwvc3ZnPgo=
 // @homepageURL  https://github.com/majkinetor/musicbrainz-userscripts/tree/main/userscripts/string_theory
@@ -41,6 +41,58 @@
 // @grant        GM_deleteValue
 // @grant        GM_addValueChangeListener
 // @grant        GM_removeValueChangeListener
+// @match        https://*.musicbrainz.org/*
+// @match        https://harmony.pulsewidth.org.uk/*
+// @match        https://www.deezer.com/*
+// @match        https://*.bandcamp.com/album/*
+// @match        https://www.discogs.com/*
+// @match        https://music.apple.com/*
+// @match        https://tidal.com/*
+// @match        https://listen.tidal.com/*
+// @match        https://www.qobuz.com/*/album/*
+// @match        https://www.beatport.com/*
+// @match        https://open.spotify.com/*
+// @match        https://music.youtube.com/*
+// @match        https://www.youtube.com/playlist*
+// @match        https://volumo.com/*
+// @match        https://www.hdtracks.com/*
+// @match        https://soundcloud.com/*
+// @match        https://audiomack.com/*
+// @match        https://*.7digital.com/artist/*
+// @match        https://ototoy.jp/_/default/p/*
+// @match        https://music.amazon.com/*
+// @match        https://music.amazon.co.uk/*
+// @match        https://music.amazon.de/*
+// @match        https://music.amazon.fr/*
+// @match        https://music.amazon.it/*
+// @match        https://music.amazon.es/*
+// @match        https://music.amazon.ca/*
+// @match        https://music.amazon.co.jp/*
+// @match        https://music.amazon.com.au/*
+// @match        https://music.amazon.com.br/*
+// @match        https://music.amazon.com.mx/*
+// @match        https://music.amazon.in/*
+// @grant        GM_listValues
+// @grant        window.close
+// @connect      api.deezer.com
+// @connect      api.discogs.com
+// @connect      auth.tidal.com
+// @connect      openapi.tidal.com
+// @connect      api.beatport.com
+// @connect      api-partner.spotify.com
+// @connect      spclient.wg.spotify.com
+// @connect      volumo.com
+// @connect      hdtracks.azurewebsites.net
+// @connect      soundcloud.com
+// @connect      a-v2.sndcdn.com
+// @connect      api-v2.soundcloud.com
+// @connect      api.audiomack.com
+// @connect      api.7digital.com
+// @connect      us.7digital.com
+// @connect      js-cdn.7digital.com
+// @connect      music.amazon.com
+// @connect      na.mesk.skill.music.a2z.com
+// @connect      web.archive.org
 // @match        https://*.musicbrainz.org/release-group/*
 // @match        https://*.musicbrainz.org/recording/*
 // @match        https://*.musicbrainz.org/artist/*/recordings
@@ -55,32 +107,15 @@
 // @match        https://www.beatport.com/release/*
 // @connect      isrc-api.soundexchange.com
 // @connect      isrc.soundexchange.com
-// @connect      api.deezer.com
 // @connect      isrchunt.com
 // @connect      isrc.mollamusicgroup.com
-// @connect      openapi.tidal.com
-// @connect      auth.tidal.com
-// @connect      volumo.com
-// @connect      hdtracks.azurewebsites.net
-// @connect      api.beatport.com
 // @connect      bandcamp.com
-// @connect      soundcloud.com
-// @connect      api-v2.soundcloud.com
-// @connect      api.audiomack.com
-// @connect      api.7digital.com
-// @connect      us.7digital.com
-// @connect      js-cdn.7digital.com
-// @connect      a-v2.sndcdn.com
 // @connect      open.spotify.com
 // @connect      www.youtube.com
-// @connect      music.amazon.com
-// @connect      na.mesk.skill.music.a2z.com
-// @match        https://*.musicbrainz.org/*
 // @connect      query.wikidata.org
 // @connect      search.brave.com
 // @connect      html.duckduckgo.com
 // @connect      duckduckgo.com
-// @connect      api.discogs.com
 // @connect      www.discogs.com
 // @connect      itunes.apple.com
 // @connect      tools.wallstream.com
@@ -89,11 +124,11 @@
 // ==/UserScript==
 
 // Auto-generated by userscripts/string_theory/build.mjs — do NOT edit by hand.
-// Bundles (verbatim, each wrapped in a URL gate and a run-at gate): apollo_editor, art_station, credit_hoarder, fusion, group_therapy, isrc_scout, mammoth, mission_control, platform_check.
+// Bundles (verbatim, each wrapped in a URL gate and a run-at gate): apollo_editor, art_station, credit_hoarder, falcon, first_contact, fusion, group_therapy, isrc_scout, mammoth, mission_control, platform_check.
 
 try {
-  console.log('%c String Theory %c v2026.10.10.151113 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
-  console.log("String Theory bundles:\n  · Apollo Editor v2026.10.10.150000\n  · Art Station v2026.10.10\n  · Credit Hoarder v2026.10.10.124041\n  · Fusion v2026.10.9.174839\n  · Group Therapy v2026.10.9\n  · ISRC Scout v2026.10.9.175454\n  · Mammoth v2026.10.9\n  · Mission Control v2026.10.10\n  · Platform Check v2026.10.10.3");
+  console.log('%c String Theory %c v2026.10.10.152158 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
+  console.log("String Theory bundles:\n  · Apollo Editor v2026.10.10.150000\n  · Art Station v2026.10.10\n  · Credit Hoarder v2026.10.10.124041\n  · Falcon v2026.10.10.124018\n  · First Contact v2026.10.9\n  · Fusion v2026.10.9.174839\n  · Group Therapy v2026.10.9\n  · ISRC Scout v2026.10.9.175454\n  · Mammoth v2026.10.9\n  · Mission Control v2026.10.10\n  · Platform Check v2026.10.10.3");
 } catch (e) {}
 
 function __stReadOff() { try { var v = GM_getValue("string_theory.off", []); return Array.isArray(v) ? v : []; } catch (e) { return []; } }
@@ -101,7 +136,7 @@ var __stOff = __stReadOff();
 (function () {
   if (typeof GM_registerMenuCommand !== 'function') return;
   try { if (window.top !== window.self) return; } catch (e) { return; }
-  var members = [["apollo_editor","Apollo Editor","2026.10.10.150000"],["art_station","Art Station","2026.10.10"],["credit_hoarder","Credit Hoarder","2026.10.10.124041"],["fusion","Fusion","2026.10.9.174839"],["group_therapy","Group Therapy","2026.10.9"],["isrc_scout","ISRC Scout","2026.10.9.175454"],["mammoth","Mammoth","2026.10.9"],["mission_control","Mission Control","2026.10.10"],["platform_check","Platform Check","2026.10.10.3"]];
+  var members = [["apollo_editor","Apollo Editor","2026.10.10.150000"],["art_station","Art Station","2026.10.10"],["credit_hoarder","Credit Hoarder","2026.10.10.124041"],["falcon","Falcon","2026.10.10.124018"],["first_contact","First Contact","2026.10.9"],["fusion","Fusion","2026.10.9.174839"],["group_therapy","Group Therapy","2026.10.9"],["isrc_scout","ISRC Scout","2026.10.9.175454"],["mammoth","Mammoth","2026.10.9"],["mission_control","Mission Control","2026.10.10"],["platform_check","Platform Check","2026.10.10.3"]];
   // Each entry carries a stable id (options.id): Violentmonkey and Tampermonkey then relabel it in
   // place, where it stands. Unregister-and-add left Violentmonkey's open menu with the old entry
   // still there and the new one appended at the end. A manager that ignores options.id hands back
@@ -29201,6 +29236,11823 @@ ${lines}
   }
 })();
 })(); } catch (e) { try { console.error('[String Theory] credit_hoarder failed while starting — the other scripts carry on:', e); } catch (x) {} } });
+})(typeof GM_info !== 'undefined' ? GM_info : undefined);
+
+// ===== falcon (@run-at document-end) ============================================
+if (__stOff.indexOf("falcon") < 0 && __stRuns("falcon", {"inc":["^https:\\/\\/(?:[^/]*\\.)?musicbrainz\\.org(?::\\d+)?/.*$","^https:\\/\\/harmony\\.pulsewidth\\.org\\.uk(?::\\d+)?/.*$"],"exc":[],"noframes":true})) (function(__stGM){
+  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Falcon*","namespace":"https://github.com/majkinetor/musicbrainz-userscripts","version":"2026.10.10.124018","description":"Edit a BATCH of MusicBrainz artists/labels/recordings at once — add external links, ISRCs, names, aliases, disambiguations and cover art — no popup-per-entity, no tab churn. A small pool of persistent worker iframes churns through a queue, each submitting its own edit and moving straight to the next entity. Paste a list, hand it a queue via a `?falcon=` URL param, or click \"Send to Falcon\" on a Harmony actions page to import its suggestions directly.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/falcon/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5GYWxjb248L3RpdGxlPgo8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSI1OCIgZmlsbD0iI2Y2ZWZlMiIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjYiLz48cGF0aCBkPSJNMTA1LjYgNDAuMCBBNDggNDggMCAwIDEgMTA1LjYgODguMCIgc3Ryb2tlPSIjZDYyODI4IiBzdHJva2Utd2lkdGg9IjciIGZpbGw9Im5vbmUiLz4KPGcgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2UtbGluZWNhcD0icm91bmQiPjxwYXRoIGQ9Ik0yMC43IDg5LjAgTDI5LjQgODQuMCIgc3Ryb2tlLXdpZHRoPSIzIi8+PHBhdGggZD0iTTE0LjMgNjkuMiBMMjQuMiA2OC4yIiBzdHJva2Utd2lkdGg9IjMiLz48cGF0aCBkPSJNMTYuNCA0OC41IEwyNi4wIDUxLjYiIHN0cm9rZS13aWR0aD0iMyIvPjxwYXRoIGQ9Ik0yNi44IDMwLjUgTDM0LjMgMzcuMiIgc3Ryb2tlLXdpZHRoPSIzIi8+PHBhdGggZD0iTTQzLjcgMTguMyBMNDcuNyAyNy41IiBzdHJva2Utd2lkdGg9IjMiLz48cGF0aCBkPSJNNjQuMCAxNC4wIEw2NC4wIDI0LjAiIHN0cm9rZS13aWR0aD0iMyIvPjxwYXRoIGQ9Ik04NC4zIDE4LjMgTDgwLjMgMjcuNSIgc3Ryb2tlLXdpZHRoPSIzIi8+PHBhdGggZD0iTTEwMS4yIDMwLjUgTDkzLjcgMzcuMiIgc3Ryb2tlLXdpZHRoPSIzIi8+PHBhdGggZD0iTTExMS42IDQ4LjUgTDEwMi4wIDUxLjYiIHN0cm9rZS13aWR0aD0iMyIvPjxwYXRoIGQ9Ik0xMTMuNyA2OS4yIEwxMDMuOCA2OC4yIiBzdHJva2Utd2lkdGg9IjMiLz48cGF0aCBkPSJNMTA3LjMgODkuMCBMOTguNiA4NC4wIiBzdHJva2Utd2lkdGg9IjMiLz48L2c+PGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoNjQgOTQpIHJvdGF0ZSgwKSBzY2FsZSgwLjE2KSB0cmFuc2xhdGUoLTY0IC02NCkiPjxwYXRoIGQ9Ik02NCAyNiBDNjcgMjYgNzAgMzAgNzAgMzYgQzcyIDQwIDc0IDQyIDc2IDQ0IEM5MiA0MiAxMDggMzYgMTI0IDM0IEMxMTIgNDQgOTYgNTQgNzggNjIgQzc2IDY4IDc0IDc0IDc0IDgwIEw4MCAxMDAgQzc0IDEwNCA2OCAxMDQgNjQgMTA0IFoiIGZpbGw9IiM0YTVhNzgiLz48cGF0aCBkPSJNNjQgMjYgQzY3IDI2IDcwIDMwIDcwIDM2IEM3MiA0MCA3NCA0MiA3NiA0NCBDOTIgNDIgMTA4IDM2IDEyNCAzNCBDMTEyIDQ0IDk2IDU0IDc4IDYyIEM3NiA2OCA3NCA3NCA3NCA4MCBMODAgMTAwIEM3NCAxMDQgNjggMTA0IDY0IDEwNCBaIiBmaWxsPSIjNGE1YTc4IiB0cmFuc2Zvcm09InRyYW5zbGF0ZSgxMjggMCkgc2NhbGUoLTEgMSkiLz48L2c+PGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoNjQgNjQpIHJvdGF0ZSgxMTIpIj48cGF0aCBkPSJNMCAtNDYgTDQgMCBMLTQgMFoiIGZpbGw9IiMxYjJhNGEiLz48L2c+CjxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjciIGZpbGw9IiMxYjJhNGEiLz4KPC9zdmc+Cg=="}) }) : { script: {"name":"Falcon*","namespace":"https://github.com/majkinetor/musicbrainz-userscripts","version":"2026.10.10.124018","description":"Edit a BATCH of MusicBrainz artists/labels/recordings at once — add external links, ISRCs, names, aliases, disambiguations and cover art — no popup-per-entity, no tab churn. A small pool of persistent worker iframes churns through a queue, each submitting its own edit and moving straight to the next entity. Paste a list, hand it a queue via a `?falcon=` URL param, or click \"Send to Falcon\" on a Harmony actions page to import its suggestions directly.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/falcon/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5GYWxjb248L3RpdGxlPgo8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSI1OCIgZmlsbD0iI2Y2ZWZlMiIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjYiLz48cGF0aCBkPSJNMTA1LjYgNDAuMCBBNDggNDggMCAwIDEgMTA1LjYgODguMCIgc3Ryb2tlPSIjZDYyODI4IiBzdHJva2Utd2lkdGg9IjciIGZpbGw9Im5vbmUiLz4KPGcgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2UtbGluZWNhcD0icm91bmQiPjxwYXRoIGQ9Ik0yMC43IDg5LjAgTDI5LjQgODQuMCIgc3Ryb2tlLXdpZHRoPSIzIi8+PHBhdGggZD0iTTE0LjMgNjkuMiBMMjQuMiA2OC4yIiBzdHJva2Utd2lkdGg9IjMiLz48cGF0aCBkPSJNMTYuNCA0OC41IEwyNi4wIDUxLjYiIHN0cm9rZS13aWR0aD0iMyIvPjxwYXRoIGQ9Ik0yNi44IDMwLjUgTDM0LjMgMzcuMiIgc3Ryb2tlLXdpZHRoPSIzIi8+PHBhdGggZD0iTTQzLjcgMTguMyBMNDcuNyAyNy41IiBzdHJva2Utd2lkdGg9IjMiLz48cGF0aCBkPSJNNjQuMCAxNC4wIEw2NC4wIDI0LjAiIHN0cm9rZS13aWR0aD0iMyIvPjxwYXRoIGQ9Ik04NC4zIDE4LjMgTDgwLjMgMjcuNSIgc3Ryb2tlLXdpZHRoPSIzIi8+PHBhdGggZD0iTTEwMS4yIDMwLjUgTDkzLjcgMzcuMiIgc3Ryb2tlLXdpZHRoPSIzIi8+PHBhdGggZD0iTTExMS42IDQ4LjUgTDEwMi4wIDUxLjYiIHN0cm9rZS13aWR0aD0iMyIvPjxwYXRoIGQ9Ik0xMTMuNyA2OS4yIEwxMDMuOCA2OC4yIiBzdHJva2Utd2lkdGg9IjMiLz48cGF0aCBkPSJNMTA3LjMgODkuMCBMOTguNiA4NC4wIiBzdHJva2Utd2lkdGg9IjMiLz48L2c+PGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoNjQgOTQpIHJvdGF0ZSgwKSBzY2FsZSgwLjE2KSB0cmFuc2xhdGUoLTY0IC02NCkiPjxwYXRoIGQ9Ik02NCAyNiBDNjcgMjYgNzAgMzAgNzAgMzYgQzcyIDQwIDc0IDQyIDc2IDQ0IEM5MiA0MiAxMDggMzYgMTI0IDM0IEMxMTIgNDQgOTYgNTQgNzggNjIgQzc2IDY4IDc0IDc0IDc0IDgwIEw4MCAxMDAgQzc0IDEwNCA2OCAxMDQgNjQgMTA0IFoiIGZpbGw9IiM0YTVhNzgiLz48cGF0aCBkPSJNNjQgMjYgQzY3IDI2IDcwIDMwIDcwIDM2IEM3MiA0MCA3NCA0MiA3NiA0NCBDOTIgNDIgMTA4IDM2IDEyNCAzNCBDMTEyIDQ0IDk2IDU0IDc4IDYyIEM3NiA2OCA3NCA3NCA3NCA4MCBMODAgMTAwIEM3NCAxMDQgNjggMTA0IDY0IDEwNCBaIiBmaWxsPSIjNGE1YTc4IiB0cmFuc2Zvcm09InRyYW5zbGF0ZSgxMjggMCkgc2NhbGUoLTEgMSkiLz48L2c+PGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoNjQgNjQpIHJvdGF0ZSgxMTIpIj48cGF0aCBkPSJNMCAtNDYgTDQgMCBMLTQgMFoiIGZpbGw9IiMxYjJhNGEiLz48L2c+CjxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjciIGZpbGw9IiMxYjJhNGEiLz4KPC9zdmc+Cg=="} };
+  (f=>document.readyState!=='loading'?f():document.addEventListener('DOMContentLoaded',f,{once:true}))(function(){ try { (function(){
+(function () {
+  'use strict';
+  // one copy per page: with String Theory and a standalone install both on, the newer one runs (#653)
+  if (!mbuClaim('falcon', 'Falcon')) { falconHandOver(); return; }
+  /* A copy that stands down still owns its GM storage, which no other copy can read: a
+     "Send to Falcon" batch the OTHER copy wrote on Harmony is keyed there. The two copies
+     are picked per site (the claim's note is per-origin localStorage), so Harmony's copy
+     and MusicBrainz's need not be the same one — and the running copy then found no batch
+     ("neither valid base64 JSON nor a known pending token"). That is what the rename to
+     plain "Falcon" did: a manager installs a renamed script as a second script. So the copy
+     that stands down hands the batch over through the page, which every sandbox shares:
+     an attribute for a copy that starts later, an event for one already waiting. */
+  function falconHandOver() {
+    try {
+      const token = new URLSearchParams(location.search).get('falcon');
+      if (!token) return;
+      const json = GM_getValue('falcon:pending:' + token, null);
+      if (json == null) return;
+      const note = GM_getValue('falcon:pendingNote:' + token, null);
+      try { GM_deleteValue('falcon:pending:' + token); GM_deleteValue('falcon:pendingNote:' + token); } catch (e) {}
+      const detail = JSON.stringify({ token, json, note });
+      document.documentElement.setAttribute('data-falcon-handover', detail);
+      document.dispatchEvent(new CustomEvent('falcon:handover', { detail }));
+    } catch (e) { /* nothing to hand over */ }
+  }
+  // the shared MusicBrainz request gate (#633) — first, so nothing can call it before its consts exist
+  // <ST-NET> — generated by dev/net/sync-gate.mjs from dev/net/mb-gate.mjs — DO NOT EDIT
+  const MBN_GAP = 1000;
+  const MBN_BURST = 3;
+  const MBN_KEY = "mbu:mb-gate";
+  const MBN_LOCK = "mbu-mb-gate";
+  const MBN_MAX_HOLD = 60000;
+  function mbnGated(url) {
+      const s = String(url || '');
+      return /^\/ws\/2\//.test(s) || /^https?:\/\/([a-z0-9-]+\.)*musicbrainz\.org\/ws\/2\//i.test(s);
+  }
+  async function mbnState(fn) {
+      const rw = () => {
+          let s = null, stored = true;
+          try { s = JSON.parse(localStorage.getItem(MBN_KEY) || 'null'); } catch (e) { stored = false; }
+          const g = globalThis.__mbnGate || (globalThis.__mbnGate = { tat: 0, cool: 0, hot: 0 });
+          if (!stored) s = g;                                                        // no storage: this page's copy only
+          else if (!s || typeof s !== 'object') s = { tat: 0, cool: 0, hot: 0 };   // none yet (or cleared): a fresh schedule
+          const out = fn(s);
+          Object.assign(g, s);
+          try { localStorage.setItem(MBN_KEY, JSON.stringify({ tat: s.tat || 0, cool: s.cool || 0, hot: s.hot || 0 })); } catch (e) {}
+          return out;
+      };
+      // The lock is held only for rw()'s synchronous moment, so a wait of seconds means it is
+      // stuck (a frozen or sandboxed holder): give up on it and go unlocked rather than hang
+      // every request behind it.
+      let timer = 0;
+      try {
+          if (typeof navigator !== 'undefined' && navigator.locks && navigator.locks.request) {
+              const ctrl = typeof AbortController === 'function' ? new AbortController() : null;
+              if (ctrl) timer = setTimeout(() => ctrl.abort(), 3000);
+              return await navigator.locks.request(MBN_LOCK, ctrl ? { signal: ctrl.signal } : {}, rw);
+          }
+      } catch (e) { /* no Web Locks here (an insecure or sandboxed context), or stuck: unlocked, like a lone script */ } finally { clearTimeout(timer); }
+      return rw();
+  }
+  async function mbnSlot(o) {
+      o = o || {};
+      const t0 = Date.now(), background = o.background !== false;
+      const booked = await mbnState(s => {
+          const now = Date.now(), cool = s.cool || 0, tat = s.tat || 0;
+          let at = background ? Math.max(now, tat - (MBN_BURST - 1) * MBN_GAP) : now;
+          at = Math.max(at, cool);
+          s.tat = Math.max(tat, at) + MBN_GAP;
+          return { at, why: cool > now && cool >= at ? 'MusicBrainz asked everyone to wait' : 'pacing, one request a second' };
+      });
+      let told = false;
+      for (;;) {
+          if (o.cancelled && o.cancelled()) return { ok: false, waited: Date.now() - t0 };
+          let cool = 0;
+          try { cool = (JSON.parse(localStorage.getItem(MBN_KEY) || 'null') || {}).cool || 0; } catch (e) { cool = (globalThis.__mbnGate || {}).cool || 0; }
+          const until = Math.max(booked.at, cool), left = until - Date.now();   // a hold that appeared while we queued
+          if (left <= 0) break;
+          if (!told && until - t0 > 1000 && o.log) { told = true; o.log('info', 'MusicBrainz gate: ' + (o.label || 'request') + ' waits ' + Math.round((until - t0) / 100) / 10 + 's (' + (cool > booked.at ? 'MusicBrainz asked everyone to wait' : booked.why) + ')'); }
+          await new Promise(r => setTimeout(r, Math.min(left, 250)));   // in slices, so a cancel lands promptly
+      }
+      return { ok: true, waited: Date.now() - t0 };
+  }
+  async function mbnAnswer(status, header, o) {
+      o = o || {};
+      if (status === 429 || status === 503) {
+          const raw = header ? header('Retry-After') : null;
+          const secs = Number(raw), date = raw ? Date.parse(raw) : NaN;
+          const ra = Number.isFinite(secs) ? secs * 1000 : Number.isFinite(date) ? Math.max(0, date - Date.now()) : 0;
+          const hold = await mbnState(s => {
+              const now = Date.now();
+              // One throttle, one step: the requests already in flight when it began all answer
+              // 503 too, and each must not stretch the hold again. A throttle long gone doesn't
+              // count at all: `hot` is shared and persists, and would otherwise slow every later
+              // page for good.
+              if (now > (s.cool || 0) + 30000) s.hot = 0;
+              if (now >= (s.cool || 0)) s.hot = Math.min((s.hot || 0) + 1, 6);
+              const ms = Math.min(Math.max(1000, ra) * Math.max(1, s.hot), MBN_MAX_HOLD);
+              s.cool = Math.max(s.cool || 0, Date.now() + ms);
+              return s.cool - Date.now();
+          });
+          if (o.log) o.log('warn', 'MusicBrainz gate: HTTP ' + status + (raw != null ? ' (Retry-After: ' + raw + ')' : '') + ' — every script holds ' + Math.round(hold / 100) / 10 + 's');
+          return { throttled: true, hold };
+      }
+      if (status >= 200 && status < 500) await mbnState(s => { if (s.hot) s.hot = Date.now() > (s.cool || 0) + 30000 ? 0 : s.hot - 1; });
+      return { throttled: false, hold: 0 };
+  }
+  async function mbnFetch(url, init, o) {
+      o = o || {};
+      if (!mbnGated(url)) return fetch(url, init);
+      const tries = o.tries || 4;
+      for (let attempt = 1; ; attempt++) {
+          const slot = await mbnSlot(o);
+          if (!slot.ok) return null;
+          const r = await fetch(url, init);
+          const a = await mbnAnswer(r.status, n => r.headers.get(n), o);
+          if (!a.throttled || attempt >= tries) return r;
+      }
+  }
+  function mbnHot() {
+      let s;
+      try { s = JSON.parse(localStorage.getItem(MBN_KEY) || 'null') || {}; } catch (e) { s = globalThis.__mbnGate || {}; }
+      return Date.now() > (s.cool || 0) + 30000 ? 0 : (s.hot || 0);   // a throttle long gone is over
+  }
+  function mbnRawHeader(raw, name) {
+      const want = String(name).toLowerCase();
+      for (const line of String(raw || '').split(/\r?\n/)) {
+          const i = line.indexOf(':');
+          if (i > 0 && line.slice(0, i).trim().toLowerCase() === want) return line.slice(i + 1).trim();
+      }
+      return null;
+  }
+  // </ST-NET>
+  const VERSION = '?';   // GM_info carries the real one; every script manager provides it (a hard-coded copy only ever went stale)
+  const scriptVersion = () => { try { return GM_info.script.version || VERSION; } catch (e) { return VERSION; } };
+  const NAME = 'Falcon';
+
+  // The shared design tokens (#562). Definitions live in dev/tokens/design-tokens.mjs
+  // and are inlined here by dev/tokens/sync-tokens.mjs — edit them THERE, never here.
+  // <ST-TOKENS> — generated by dev/tokens/sync-tokens.mjs from dev/tokens/design-tokens.mjs — DO NOT EDIT
+  const MBU_TOKENS = ':root{--mbu-bg:var(--background, #fff);--mbu-bg-raised:#faf9fe;--mbu-bg-raised:color-mix(in srgb, var(--mbu-bg) 96%, var(--mbu-accent));--mbu-bg-sunken:#f4f2f9;--mbu-bg-sunken:color-mix(in srgb, var(--mbu-bg) 94%, var(--mbu-text));--mbu-bg-hover:#f3eefe;--mbu-bg-hover:color-mix(in srgb, var(--mbu-bg) 91%, var(--mbu-accent));--mbu-text:var(--text, #222);--mbu-text-dim:#555;--mbu-text-dim:color-mix(in srgb, var(--mbu-text) 78%, var(--mbu-bg));--mbu-text-weak:#999;--mbu-text-weak:color-mix(in srgb, var(--mbu-text) 52%, var(--mbu-bg));--mbu-text-on-accent:#fff;--mbu-border:var(--border, #cfc6e6);--mbu-border-soft:#e2dcef;--mbu-border-strong:#9a8ccb;--mbu-border-strong:color-mix(in srgb, var(--mbu-border) 70%, var(--mbu-text));--mbu-divider:#eee;--mbu-divider:color-mix(in srgb, var(--mbu-bg) 92%, var(--mbu-text));--mbu-accent:#5f3ec0;--mbu-accent-hover:#4e329f;--mbu-accent-deep:#3b2c70;--mbu-accent-soft:#ece4ff;--mbu-accent-soft:color-mix(in srgb, var(--mbu-bg) 86%, var(--mbu-accent));--mbu-accent-fg:#fff;--mbu-accent-text:#5f3ec0;--mbu-accent-deep-text:#3b2c70;--mbu-ok:#1f9d6b;--mbu-ok:color-mix(in srgb, #1f9d6b 78%, var(--mbu-text));--mbu-ok-bg:#eef7f1;--mbu-ok-bg:color-mix(in srgb, var(--mbu-bg) 88%, var(--mbu-ok));--mbu-ok-border:#9bd3b6;--mbu-warn:#a05a00;--mbu-warn:color-mix(in srgb, #b4791f 78%, var(--mbu-text));--mbu-warn-bg:#fff7e6;--mbu-warn-bg:color-mix(in srgb, var(--mbu-bg) 88%, var(--mbu-warn));--mbu-warn-border:#f0c877;--mbu-error:#c0392b;--mbu-error:color-mix(in srgb, #d0473a 78%, var(--mbu-text));--mbu-error-bg:#fdecec;--mbu-error-bg:color-mix(in srgb, var(--mbu-bg) 90%, var(--mbu-error));--mbu-error-border:#e2a1a1;--mbu-info:#2f7fbf;--mbu-info:color-mix(in srgb, #3f8fd0 78%, var(--mbu-text));--mbu-info-bg:#eef4fb;--mbu-info-bg:color-mix(in srgb, var(--mbu-bg) 90%, var(--mbu-info));--mbu-info-border:#a9c8e6;--mbu-font:-apple-system,Segoe UI,Roboto,Arial,sans-serif;--mbu-font-mono:ui-monospace,SFMono-Regular,Consolas,Menlo,monospace;--mbu-fs:14px;--mbu-fs-sm:12px;--mbu-fs-xs:11px;--mbu-radius:6px;--mbu-radius-lg:10px;--mbu-shadow:0 1px 5px rgba(60,40,110,.07);--mbu-shadow-lg:0 8px 30px rgba(40,20,80,.3);--mbu-z-panel:30;--mbu-z-pop:99998;--mbu-z-modal:2147483000;--mbu-z-modal-panel:2147483001}:root[data-mbu-theme="dark"]{--mbu-bg:#1e1b24;--mbu-text:#e9e5f2;--mbu-border:#3b3548;--mbu-accent-text:#b9a7f0;--mbu-accent-deep-text:#a493e0}:root[data-mbu-theme="dark"][data-mbu-seed="theme"]{--mbu-bg:var(--background, #1e1b24);--mbu-text:var(--text, #e9e5f2);--mbu-border:var(--border, #3b3548)}';
+  // </ST-TOKENS>
+
+  // The shared UI components (#563). Definitions live in dev/ui/ui-components.mjs
+  // and are inlined here by dev/ui/sync-ui.mjs — edit them THERE, never here.
+  // <ST-UI> — generated by dev/ui/sync-ui.mjs from dev/ui/ui-components.mjs — DO NOT EDIT
+  const MBU_UI_CSS = '.mbu-help{font-size:12px;color:var(--mbu-accent-text);text-decoration:none;border:1px solid var(--mbu-border);border-radius:var(--mbu-radius);padding:1px 8px;white-space:nowrap;line-height:1.6;background:none}.mbu-help:hover{background:var(--mbu-bg-hover);border-color:var(--mbu-accent);text-decoration:none}h4>.mbu-help,.mbu-cfg-h>.mbu-help{margin-left:8px;flex:0 0 auto;font-weight:normal}#mbu-toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);z-index:var(--mbu-z-pop);background:var(--mbu-accent-deep);color:var(--mbu-text-on-accent);padding:10px 16px;border-radius:9px;font:13px/1.35 var(--mbu-font);box-shadow:var(--mbu-shadow-lg);opacity:0;transition:opacity .2s;pointer-events:none;max-width:80vw;text-align:center;white-space:pre-wrap}#mbu-toast.mbu-toast-on{opacity:1}#mbu-toast.mbu-toast-act{pointer-events:auto}#mbu-toast .mbu-toast-btn{margin-left:10px;padding:2px 9px;border:1px solid currentColor;border-radius:5px;background:transparent;color:inherit;font:inherit;cursor:pointer}#mbu-toast .mbu-toast-btn:hover{background:rgba(255,255,255,.18)}#mbu-toast.mbu-toast-ok{background:var(--mbu-ok)}#mbu-toast.mbu-toast-warn{background:var(--mbu-warn)}#mbu-toast.mbu-toast-error{background:var(--mbu-error)}.mbu-cfg-h{display:flex;align-items:center;gap:8px;margin:0 0 10px;padding:0 0 9px;border-bottom:1px solid var(--mbu-border-soft);font:600 15px/1.3 var(--mbu-font);color:var(--mbu-text)}.mbu-cfg-ic{flex:0 0 auto;display:inline-flex;align-items:center;width:22px;height:22px}.mbu-cfg-ic img,.mbu-cfg-ic svg{width:22px;height:22px;object-fit:contain;display:block}.mbu-cfg-name{flex:0 0 auto;font-weight:700;color:var(--mbu-accent-text)}.mbu-cfg-ver{flex:0 0 auto;font:400 11px var(--mbu-font);color:var(--mbu-text-weak);white-space:nowrap}.mbu-cfg-sp{flex:1 1 auto;min-width:8px}.mbu-cfg-log{flex:0 0 auto;font:400 12px var(--mbu-font);color:var(--mbu-accent-text);cursor:pointer;background:none;border:1px solid transparent;border-radius:var(--mbu-radius);padding:1px 8px;line-height:1.6}.mbu-cfg-log:hover{background:var(--mbu-bg-hover);border-color:var(--mbu-border)}#mbu-logpop{position:fixed;top:74px;left:50%;transform:translateX(-50%);z-index:var(--mbu-z-modal);display:flex;flex-direction:column;width:min(720px,94vw);max-height:72vh;background:var(--mbu-bg);border:1px solid var(--mbu-border);border-radius:11px;box-shadow:var(--mbu-shadow-lg);font:13px var(--mbu-font);color:var(--mbu-text);overflow:hidden}.mbu-logpop-h{display:flex;align-items:center;gap:8px;padding:10px 13px;border-bottom:1px solid var(--mbu-border-soft);color:var(--mbu-accent-text);cursor:move;user-select:none}.mbu-logpop-sp{margin-left:auto}.mbu-logpop-hclear,.mbu-logpop-clear,.mbu-logpop-copy,.mbu-logpop-x,.mbu-logpop-min,.mbu-logpop-full{font-size:12px;color:var(--mbu-accent-text);background:var(--mbu-bg-hover);border:1px solid var(--mbu-border);border-radius:5px;padding:2px 9px;cursor:pointer;font-family:inherit}.mbu-logpop-hclear:hover,.mbu-logpop-clear:hover,.mbu-logpop-copy:hover,.mbu-logpop-x:hover,.mbu-logpop-min:hover,.mbu-logpop-full:hover{background:var(--mbu-accent-soft)}#mbu-logpop.min .mbu-log-list,#mbu-logpop.min .mbu-log-f,#mbu-logpop.min .mbu-logpop-clear,#mbu-logpop.min .mbu-logpop-copy,#mbu-logpop.min .mbu-logpop-x,#mbu-logpop.min .mbu-logpop-full{display:none}#mbu-logpop.min{max-height:none;width:auto!important;height:auto!important}#mbu-logpop.sized{max-height:none}.mbu-logpop-grip{position:absolute;right:0;bottom:0;width:16px;height:16px;cursor:nwse-resize;opacity:.6;background:linear-gradient(135deg,transparent 55%,var(--mbu-border-strong) 55%,var(--mbu-border-strong) 62%,transparent 62%,transparent 75%,var(--mbu-border-strong) 75%,var(--mbu-border-strong) 82%,transparent 82%)}.mbu-logpop-grip:hover{opacity:1}#mbu-logpop.min .mbu-logpop-grip,#mbu-logpop.full .mbu-logpop-grip{display:none}#mbu-logpop.full{top:12px!important;left:12px!important;right:12px!important;bottom:12px!important;width:auto!important;height:auto!important;max-height:none;transform:none!important}#mbu-logpop.full .mbu-logpop-h{cursor:default}#mbu-logpop.min .mbu-logpop-sp{display:none}.mbu-log-badge{color:var(--mbu-border-strong);font-size:11px}.mbu-logemb{display:flex;flex-direction:column;height:100%;min-height:0;background:var(--mbu-bg);font:13px var(--mbu-font);color:var(--mbu-text)}.mbu-logemb .mbu-logpop-h{cursor:default;padding:7px 10px;flex-wrap:nowrap}.mbu-logemb .mbu-logpop-h>*{flex-shrink:0}.mbu-logemb .mbu-logpop-h>.mbu-log-q{flex:0 1 160px;min-width:60px;margin-left:0}.mbu-logemb .mbu-logpop-h>.mbu-log-ses{flex:0 1 240px;min-width:90px}.mbu-logemb .mbu-logpop-h>.mbu-logpop-sp{flex:1 1 0;min-width:0}.mbu-logpop .mbu-log-ses{flex:0 1 260px;min-width:120px;max-width:100%;font:12px var(--mbu-font);padding:2px 4px;border:1px solid var(--mbu-border);border-radius:5px}.mbu-logpop-hclear:disabled{opacity:.5;cursor:default}.mbu-log-dbg{display:inline-flex;align-items:center;gap:4px;font-size:12px;color:var(--mbu-text);cursor:pointer;white-space:nowrap}.mbu-log-dbg input{margin:0}#mbu-logpop.min .mbu-log-dbg{display:none}.mbu-log-past .mbu-logpop-clear{display:none}#mbu-logpop.min .mbu-log-ses,#mbu-logpop.min .mbu-logpop-hclear{display:none}.mbu-logpop .mbu-log-q{flex:0 1 200px;min-width:80px;margin-left:6px;font:12px var(--mbu-font);padding:2px 8px;border:1px solid var(--mbu-border);border-radius:5px;cursor:text}#mbu-logpop.min .mbu-log-q{display:none}.mbu-logpop .mbu-log-li.mbu-log-nq{display:none}.mbu-log-list{flex:1 1 auto;overflow:auto;overscroll-behavior:contain;padding:9px 13px;display:flex;flex-direction:column;gap:3px}.mbu-log-li{display:flex;gap:9px;white-space:pre-wrap;word-break:break-word}.mbu-log-pre .mbu-log-m{white-space:pre;font:12px/1.35 ui-monospace,Consolas,monospace;word-break:normal}.mbu-log-t{color:var(--mbu-text-weak);flex:0 0 auto;font-variant-numeric:tabular-nums}.mbu-log-c{color:var(--mbu-text-weak);flex:0 0 auto}.mbu-log-list:not(.mbu-log-cats) .mbu-log-c{display:none}.mbu-log-list.mbu-log-cats{display:grid;grid-template-columns:auto auto minmax(0,1fr);gap:3px 9px;align-content:start}.mbu-log-cats .mbu-log-li{display:contents}.mbu-log-cats .mbu-log-empty{grid-column:1/-1}.mbu-log-f{display:flex;flex-wrap:wrap;align-items:center;gap:2px 4px;padding:5px 13px;border-bottom:1px solid var(--mbu-border-soft);font-size:11px}.mbu-log-f[hidden]{display:none}.mbu-log-fg{display:contents}.mbu-log-fs{width:1px;height:12px;background:var(--mbu-border);margin:0 6px}.mbu-logpop .mbu-log-fb{font:inherit;color:var(--mbu-text-weak);background:none;border:1px solid transparent;border-radius:5px;padding:0 6px;line-height:1.6;cursor:pointer}.mbu-logpop .mbu-log-fb:hover{color:var(--mbu-text);border-color:var(--mbu-border)}.mbu-logpop .mbu-log-fb.on{color:var(--mbu-accent-text);background:var(--mbu-accent-soft);border-color:var(--mbu-border)}.mbu-logpop .mbu-log-fb[data-sev=error]{color:var(--mbu-error)}.mbu-logpop .mbu-log-fb[data-sev=warn]{color:var(--mbu-warn)}.mbu-logpop .mbu-log-fb[data-sev=info]{color:var(--mbu-text-dim)}.mbu-logpop .mbu-log-fb[data-sev].on{background:var(--mbu-bg-hover);border-color:currentColor;font-weight:600}.mbu-logpop .mbu-log-fb[data-cat]{border-color:var(--mbu-border-soft);background:var(--mbu-bg-raised);border-radius:999px;padding:0 8px}.mbu-logpop .mbu-log-fb[data-cat].on{color:var(--mbu-accent-text);background:var(--mbu-accent-soft);border-color:var(--mbu-accent)}.mbu-log-m{flex:1 1 auto;color:var(--mbu-text-dim)}.mbu-logpop .mbu-log-m a{color:var(--mbu-accent-text)}.mbu-log-ok .mbu-log-m{color:var(--mbu-ok)}.mbu-log-warn .mbu-log-m{color:var(--mbu-warn)}.mbu-log-error .mbu-log-m{color:var(--mbu-error)}.mbu-log-debug>*{opacity:.85}.mbu-log-debug .mbu-log-m{color:var(--mbu-text-weak)}.mbu-log-empty{color:var(--mbu-text-weak)}.mbu-ov{position:fixed;inset:0;z-index:var(--mbu-z-modal);background:rgba(15,12,28,.45);display:flex;align-items:center;justify-content:center;padding:24px}.mbu-ov-panel{background:var(--mbu-bg);color:var(--mbu-text);border-radius:var(--mbu-radius-lg);box-shadow:var(--mbu-shadow-lg);max-width:94vw;max-height:88vh;display:flex;flex-direction:column;overflow:hidden}.mbu-ov-h{display:flex;align-items:center;gap:10px;padding:12px 16px;border-bottom:1px solid var(--mbu-border-soft);font-weight:700}.mbu-ov-h .mbu-ov-title{flex:1 1 auto;min-width:0}.mbu-ov-x{flex:0 0 auto;width:26px;height:26px;display:inline-flex;align-items:center;justify-content:center;font-size:15px;line-height:1;cursor:pointer;color:var(--mbu-text-dim);background:none;border:none;border-radius:var(--mbu-radius)}.mbu-ov-x:hover{background:var(--mbu-bg-hover);color:var(--mbu-text)}.mbu-ov-body{flex:1 1 auto;overflow:auto;padding:14px 16px}:where(.mbu-ov,.mbu-ui,#mbu-logpop,.mbu-logemb,.discogs-bar,.discogs-review-panel-li,#as-root,#as-setup,.as-pop,#as-switch-wrap,#ii-btn,.fs-launch,#tc-bar,#tc-nav-bar,#tc-settings,#tc-anno-wrap,.tc-panel,.tc-toolcfg,.tc-acpop,.tc-recpop,.tc-lppop,.tc-tpppop,.tc-tpp-mpop,.tc-anno-help-pop,.tc-mirror,.tc-addrow,.tc-medopts,.tc-tools,#tc-recwrap,#tc-ri-toolbar,.tc-fmt-flat,.gt-toolbar,.gt-cons,.gt-menu,.gt-pop,.gt-cfg-pop,.gt-wm-pop,#ii-modal,#ii-sxpanel,#mb-pc-panel,#mb-provider-modal-card,.fs-cons,#fs-settings,.fs-overlay,.mmth-pop,.mmth-cfg,.mmth-side,.mmth-pinbar,.mmthf-pop,.mmthf-bar,#falcon-panel,#falcon-launcher,#falcon-item-popup,#falcon-add-page,.falcon-bar,.falcon-addmenu) ::placeholder{color:var(--mbu-text-weak);opacity:1;font-style:italic}:where(.mbu-ov,.mbu-ui,#mbu-logpop,.mbu-logemb,.discogs-bar,.discogs-review-panel-li,#as-root,#as-setup,.as-pop,#as-switch-wrap,#ii-btn,.fs-launch,#tc-bar,#tc-nav-bar,#tc-settings,#tc-anno-wrap,.tc-panel,.tc-toolcfg,.tc-acpop,.tc-recpop,.tc-lppop,.tc-tpppop,.tc-tpp-mpop,.tc-anno-help-pop,.tc-mirror,.tc-addrow,.tc-medopts,.tc-tools,#tc-recwrap,#tc-ri-toolbar,.tc-fmt-flat,.gt-toolbar,.gt-cons,.gt-menu,.gt-pop,.gt-cfg-pop,.gt-wm-pop,#ii-modal,#ii-sxpanel,#mb-pc-panel,#mb-provider-modal-card,.fs-cons,#fs-settings,.fs-overlay,.mmth-pop,.mmth-cfg,.mmth-side,.mmth-pinbar,.mmthf-pop,.mmthf-bar,#falcon-panel,#falcon-launcher,#falcon-item-popup,#falcon-add-page,.falcon-bar,.falcon-addmenu){color:var(--mbu-text)}:where(.mbu-ov,.mbu-ui,#mbu-logpop,.mbu-logemb,.discogs-bar,.discogs-review-panel-li,#as-root,#as-setup,.as-pop,#as-switch-wrap,#ii-btn,.fs-launch,#tc-bar,#tc-nav-bar,#tc-settings,#tc-anno-wrap,.tc-panel,.tc-toolcfg,.tc-acpop,.tc-recpop,.tc-lppop,.tc-tpppop,.tc-tpp-mpop,.tc-anno-help-pop,.tc-mirror,.tc-addrow,.tc-medopts,.tc-tools,#tc-recwrap,#tc-ri-toolbar,.tc-fmt-flat,.gt-toolbar,.gt-cons,.gt-menu,.gt-pop,.gt-cfg-pop,.gt-wm-pop,#ii-modal,#ii-sxpanel,#mb-pc-panel,#mb-provider-modal-card,.fs-cons,#fs-settings,.fs-overlay,.mmth-pop,.mmth-cfg,.mmth-side,.mmth-pinbar,.mmthf-pop,.mmthf-bar,#falcon-panel,#falcon-launcher,#falcon-item-popup,#falcon-add-page,.falcon-bar,.falcon-addmenu) :is(table,td,th,div,span,label)[style*=background]{color:var(--mbu-text)}:where(.mbu-ov,.mbu-ui,#mbu-logpop,.mbu-logemb,.discogs-bar,.discogs-review-panel-li,#as-root,#as-setup,.as-pop,#as-switch-wrap,#ii-btn,.fs-launch,#tc-bar,#tc-nav-bar,#tc-settings,#tc-anno-wrap,.tc-panel,.tc-toolcfg,.tc-acpop,.tc-recpop,.tc-lppop,.tc-tpppop,.tc-tpp-mpop,.tc-anno-help-pop,.tc-mirror,.tc-addrow,.tc-medopts,.tc-tools,#tc-recwrap,#tc-ri-toolbar,.tc-fmt-flat,.gt-toolbar,.gt-cons,.gt-menu,.gt-pop,.gt-cfg-pop,.gt-wm-pop,#ii-modal,#ii-sxpanel,#mb-pc-panel,#mb-provider-modal-card,.fs-cons,#fs-settings,.fs-overlay,.mmth-pop,.mmth-cfg,.mmth-side,.mmth-pinbar,.mmthf-pop,.mmthf-bar,#falcon-panel,#falcon-launcher,#falcon-item-popup,#falcon-add-page,.falcon-bar,.falcon-addmenu) input:not(:where([type=checkbox],[type=radio],[type=range],[type=color],[type=file])),:where(.mbu-ov,.mbu-ui,#mbu-logpop,.mbu-logemb,.discogs-bar,.discogs-review-panel-li,#as-root,#as-setup,.as-pop,#as-switch-wrap,#ii-btn,.fs-launch,#tc-bar,#tc-nav-bar,#tc-settings,#tc-anno-wrap,.tc-panel,.tc-toolcfg,.tc-acpop,.tc-recpop,.tc-lppop,.tc-tpppop,.tc-tpp-mpop,.tc-anno-help-pop,.tc-mirror,.tc-addrow,.tc-medopts,.tc-tools,#tc-recwrap,#tc-ri-toolbar,.tc-fmt-flat,.gt-toolbar,.gt-cons,.gt-menu,.gt-pop,.gt-cfg-pop,.gt-wm-pop,#ii-modal,#ii-sxpanel,#mb-pc-panel,#mb-provider-modal-card,.fs-cons,#fs-settings,.fs-overlay,.mmth-pop,.mmth-cfg,.mmth-side,.mmth-pinbar,.mmthf-pop,.mmthf-bar,#falcon-panel,#falcon-launcher,#falcon-item-popup,#falcon-add-page,.falcon-bar,.falcon-addmenu) textarea,:where(.mbu-ov,.mbu-ui,#mbu-logpop,.mbu-logemb,.discogs-bar,.discogs-review-panel-li,#as-root,#as-setup,.as-pop,#as-switch-wrap,#ii-btn,.fs-launch,#tc-bar,#tc-nav-bar,#tc-settings,#tc-anno-wrap,.tc-panel,.tc-toolcfg,.tc-acpop,.tc-recpop,.tc-lppop,.tc-tpppop,.tc-tpp-mpop,.tc-anno-help-pop,.tc-mirror,.tc-addrow,.tc-medopts,.tc-tools,#tc-recwrap,#tc-ri-toolbar,.tc-fmt-flat,.gt-toolbar,.gt-cons,.gt-menu,.gt-pop,.gt-cfg-pop,.gt-wm-pop,#ii-modal,#ii-sxpanel,#mb-pc-panel,#mb-provider-modal-card,.fs-cons,#fs-settings,.fs-overlay,.mmth-pop,.mmth-cfg,.mmth-side,.mmth-pinbar,.mmthf-pop,.mmthf-bar,#falcon-panel,#falcon-launcher,#falcon-item-popup,#falcon-add-page,.falcon-bar,.falcon-addmenu) select{background:var(--mbu-bg-sunken);color:var(--mbu-text);border-color:var(--mbu-border)}:where(.mbu-ov,.mbu-ui,#mbu-logpop,.mbu-logemb,.discogs-bar,.discogs-review-panel-li,#as-root,#as-setup,.as-pop,#as-switch-wrap,#ii-btn,.fs-launch,#tc-bar,#tc-nav-bar,#tc-settings,#tc-anno-wrap,.tc-panel,.tc-toolcfg,.tc-acpop,.tc-recpop,.tc-lppop,.tc-tpppop,.tc-tpp-mpop,.tc-anno-help-pop,.tc-mirror,.tc-addrow,.tc-medopts,.tc-tools,#tc-recwrap,#tc-ri-toolbar,.tc-fmt-flat,.gt-toolbar,.gt-cons,.gt-menu,.gt-pop,.gt-cfg-pop,.gt-wm-pop,#ii-modal,#ii-sxpanel,#mb-pc-panel,#mb-provider-modal-card,.fs-cons,#fs-settings,.fs-overlay,.mmth-pop,.mmth-cfg,.mmth-side,.mmth-pinbar,.mmthf-pop,.mmthf-bar,#falcon-panel,#falcon-launcher,#falcon-item-popup,#falcon-add-page,.falcon-bar,.falcon-addmenu) input:focus-visible,:where(.mbu-ov,.mbu-ui,#mbu-logpop,.mbu-logemb,.discogs-bar,.discogs-review-panel-li,#as-root,#as-setup,.as-pop,#as-switch-wrap,#ii-btn,.fs-launch,#tc-bar,#tc-nav-bar,#tc-settings,#tc-anno-wrap,.tc-panel,.tc-toolcfg,.tc-acpop,.tc-recpop,.tc-lppop,.tc-tpppop,.tc-tpp-mpop,.tc-anno-help-pop,.tc-mirror,.tc-addrow,.tc-medopts,.tc-tools,#tc-recwrap,#tc-ri-toolbar,.tc-fmt-flat,.gt-toolbar,.gt-cons,.gt-menu,.gt-pop,.gt-cfg-pop,.gt-wm-pop,#ii-modal,#ii-sxpanel,#mb-pc-panel,#mb-provider-modal-card,.fs-cons,#fs-settings,.fs-overlay,.mmth-pop,.mmth-cfg,.mmth-side,.mmth-pinbar,.mmthf-pop,.mmthf-bar,#falcon-panel,#falcon-launcher,#falcon-item-popup,#falcon-add-page,.falcon-bar,.falcon-addmenu) textarea:focus-visible,:where(.mbu-ov,.mbu-ui,#mbu-logpop,.mbu-logemb,.discogs-bar,.discogs-review-panel-li,#as-root,#as-setup,.as-pop,#as-switch-wrap,#ii-btn,.fs-launch,#tc-bar,#tc-nav-bar,#tc-settings,#tc-anno-wrap,.tc-panel,.tc-toolcfg,.tc-acpop,.tc-recpop,.tc-lppop,.tc-tpppop,.tc-tpp-mpop,.tc-anno-help-pop,.tc-mirror,.tc-addrow,.tc-medopts,.tc-tools,#tc-recwrap,#tc-ri-toolbar,.tc-fmt-flat,.gt-toolbar,.gt-cons,.gt-menu,.gt-pop,.gt-cfg-pop,.gt-wm-pop,#ii-modal,#ii-sxpanel,#mb-pc-panel,#mb-provider-modal-card,.fs-cons,#fs-settings,.fs-overlay,.mmth-pop,.mmth-cfg,.mmth-side,.mmth-pinbar,.mmthf-pop,.mmthf-bar,#falcon-panel,#falcon-launcher,#falcon-item-popup,#falcon-add-page,.falcon-bar,.falcon-addmenu) select:focus-visible{outline:2px solid var(--mbu-accent);outline-offset:1px}:where(.mbu-ov,.mbu-ui,#mbu-logpop,.mbu-logemb,.discogs-bar,.discogs-review-panel-li,#as-root,#as-setup,.as-pop,#as-switch-wrap,#ii-btn,.fs-launch,#tc-bar,#tc-nav-bar,#tc-settings,#tc-anno-wrap,.tc-panel,.tc-toolcfg,.tc-acpop,.tc-recpop,.tc-lppop,.tc-tpppop,.tc-tpp-mpop,.tc-anno-help-pop,.tc-mirror,.tc-addrow,.tc-medopts,.tc-tools,#tc-recwrap,#tc-ri-toolbar,.tc-fmt-flat,.gt-toolbar,.gt-cons,.gt-menu,.gt-pop,.gt-cfg-pop,.gt-wm-pop,#ii-modal,#ii-sxpanel,#mb-pc-panel,#mb-provider-modal-card,.fs-cons,#fs-settings,.fs-overlay,.mmth-pop,.mmth-cfg,.mmth-side,.mmth-pinbar,.mmthf-pop,.mmthf-bar,#falcon-panel,#falcon-launcher,#falcon-item-popup,#falcon-add-page,.falcon-bar,.falcon-addmenu) :where(input[type=checkbox],input[type=radio],input[type=range]){accent-color:var(--mbu-accent)}:root[data-mbu-theme=dark] :where(.mbu-ov,.mbu-ui,#mbu-logpop,.mbu-logemb,.discogs-bar,.discogs-review-panel-li,#as-root,#as-setup,.as-pop,#as-switch-wrap,#ii-btn,.fs-launch,#tc-bar,#tc-nav-bar,#tc-settings,#tc-anno-wrap,.tc-panel,.tc-toolcfg,.tc-acpop,.tc-recpop,.tc-lppop,.tc-tpppop,.tc-tpp-mpop,.tc-anno-help-pop,.tc-mirror,.tc-addrow,.tc-medopts,.tc-tools,#tc-recwrap,#tc-ri-toolbar,.tc-fmt-flat,.gt-toolbar,.gt-cons,.gt-menu,.gt-pop,.gt-cfg-pop,.gt-wm-pop,#ii-modal,#ii-sxpanel,#mb-pc-panel,#mb-provider-modal-card,.fs-cons,#fs-settings,.fs-overlay,.mmth-pop,.mmth-cfg,.mmth-side,.mmth-pinbar,.mmthf-pop,.mmthf-bar,#falcon-panel,#falcon-launcher,#falcon-item-popup,#falcon-add-page,.falcon-bar,.falcon-addmenu){color-scheme:dark;--invert-value:none;--invert:none}:where(.mbu-ov,.mbu-ui,#mbu-logpop,.mbu-logemb,.discogs-bar,.discogs-review-panel-li,#as-root,#as-setup,.as-pop,#as-switch-wrap,#ii-btn,.fs-launch,#tc-bar,#tc-nav-bar,#tc-settings,#tc-anno-wrap,.tc-panel,.tc-toolcfg,.tc-acpop,.tc-recpop,.tc-lppop,.tc-tpppop,.tc-tpp-mpop,.tc-anno-help-pop,.tc-mirror,.tc-addrow,.tc-medopts,.tc-tools,#tc-recwrap,#tc-ri-toolbar,.tc-fmt-flat,.gt-toolbar,.gt-cons,.gt-menu,.gt-pop,.gt-cfg-pop,.gt-wm-pop,#ii-modal,#ii-sxpanel,#mb-pc-panel,#mb-provider-modal-card,.fs-cons,#fs-settings,.fs-overlay,.mmth-pop,.mmth-cfg,.mmth-side,.mmth-pinbar,.mmthf-pop,.mmthf-bar,#falcon-panel,#falcon-launcher,#falcon-item-popup,#falcon-add-page,.falcon-bar,.falcon-addmenu) button{background-color:var(--mbu-bg-raised);color:var(--mbu-text);border-color:var(--mbu-border)}.mbu-compact .mbu-bt{display:none}:is(.mbu-video,body.tc-ri-on #external-links-editor tr.relationship-item .attribute-container input){-webkit-appearance:none;-moz-appearance:none;appearance:none;width:18px;height:18px;margin:0;border:none;border-radius:3px;cursor:pointer;background:transparent url("data:image/svg+xml,%3Csvg%20xmlns=%27http://www.w3.org/2000/svg%27%20viewBox=%270%200%2016%2016%27%20fill=%27%23888%27%3E%3Crect%20x=%271%27%20y=%273.5%27%20width=%2710%27%20height=%279%27%20rx=%271.5%27/%3E%3Cpath%20d=%27M11.5%207L15%204.8v6.4L11.5%209z%27/%3E%3C/svg%3E") center/13px no-repeat;opacity:.45;box-shadow:none;flex:0 0 auto;vertical-align:middle}:is(.mbu-video,body.tc-ri-on #external-links-editor tr.relationship-item .attribute-container input):hover{opacity:1}:is(.mbu-video,body.tc-ri-on #external-links-editor tr.relationship-item .attribute-container input):checked{opacity:1;background-color:var(--mbu-accent);background-image:url("data:image/svg+xml,%3Csvg%20xmlns=%27http://www.w3.org/2000/svg%27%20viewBox=%270%200%2016%2016%27%20fill=%27%23fff%27%3E%3Crect%20x=%271%27%20y=%273.5%27%20width=%2710%27%20height=%279%27%20rx=%271.5%27/%3E%3Cpath%20d=%27M11.5%207L15%204.8v6.4L11.5%209z%27/%3E%3C/svg%3E")}:is(.mbu-video,body.tc-ri-on #external-links-editor tr.relationship-item .attribute-container input):focus-visible{outline:1px solid var(--mbu-accent);outline-offset:1px}:is(.mbu-video,body.tc-ri-on #external-links-editor tr.relationship-item .attribute-container input):disabled{cursor:default;opacity:.3}';
+  // Help link markup. Every script's help link is this, pointing at its own README.
+  // `name` is the userscript folder, e.g. mbuHelpHref('art_station').
+  function mbuHelpHref(name) {
+      return 'https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/' + name + '/README.md';
+  }
+  function mbuHelpHtml(name, label) {
+      return '<a class="mbu-help" href="' + mbuHelpHref(name) + '" target="_blank" rel="noopener"'
+          + ' title="open the README in a new tab">' + (label || '? Help') + '</a>';
+  }
+  function mbuHelpEl(name, label) {
+      var a = document.createElement('a');
+      a.className = 'mbu-help';
+      a.href = mbuHelpHref(name);
+      a.target = '_blank';
+      a.rel = 'noopener';
+      a.title = 'open the README in a new tab';
+      a.textContent = label || '? Help';
+      return a;
+  }
+
+  // The config (settings) icon every script's settings button shows: the gear in text
+  // presentation (U+FE0E), so it takes the button's colour instead of an emoji's. #650
+  var MBU_CFG_ICON = '\u2699\uFE0E';
+
+  // HTML for an innerHTML on a page that enforces Trusted Types (YouTube Music, #650): there a
+  // plain string is refused ("This document requires 'TrustedHTML' assignment"). The policy
+  // passes the string through; the markup is the script's own. Elsewhere it is the string.
+  var _mbuTT;
+  function mbuHtml(s) {
+      if (_mbuTT === undefined) {
+          _mbuTT = null;
+          try {
+              var tt = (typeof window !== 'undefined' && window.trustedTypes) || null;
+              if (tt && tt.createPolicy) _mbuTT = tt.createPolicy('mbu-' + Math.random().toString(36).slice(2, 8), { createHTML: function (x) { return x; } });
+          } catch (e) { /* the page allows no new policy: plain strings, as before */ }
+      }
+      return _mbuTT ? _mbuTT.createHTML(String(s)) : String(s);
+  }
+
+  // The first line of every script's log: the script, its version, and what runs it, so a
+  // pasted log says which manager and browser it came from (#282 started it in Art Station):
+  //   Log.info(mbuStartupInfo('Fusion'));
+  //   -> Fusion v2026.10.1 · Violentmonkey 2.31.0 · firefox 143.0 (win)
+  // Inside String Theory GM_info describes the bundle, so the line names it:
+  //   -> Fusion (String Theory v2026.10.1) · Tampermonkey 5.3.3 · chrome 140.0 (win)
+  function mbuStartupInfo(name) {
+      var g = null;
+      try { g = (typeof GM_info !== 'undefined' && GM_info) || null; } catch (e) { /* no GM_info */ }
+      var s = (g && g.script) || {}, p = (g && g.platform) || {};
+      var host = String(s.name || '').replace(/\*$/, ''), ver = s.version || '?';
+      var line = !name ? (host || 'Script') + ' v' + ver
+          : (host && host !== name) ? name + ' (' + host + ' v' + ver + ')'
+          : name + ' v' + ver;
+      if (g) line += ' · ' + (g.scriptHandler || 'unknown manager') + (g.version ? ' ' + g.version : '');
+      if (p.browserName) line += ' · ' + p.browserName + (p.browserVersion ? ' ' + p.browserVersion : '') + (p.os ? ' (' + p.os + ')' : '');
+      else { try { line += ' · ' + navigator.userAgent; } catch (e) { /* no navigator */ } }
+      return line;
+  }
+
+  // One copy per page (#653). With String Theory and a standalone install of the same script
+  // both on, two copies build the same element ids and fight over them: each settings window
+  // fills in the other's checkboxes, rows flip between two rule sets. So one copy runs, the
+  // one with the higher version, and the other stays off without a word; only the running
+  // copy notes it in its log (majkinetor: "disable copy that has lower version without any
+  // info (except in log of active copy)"):
+  //   if (!mbuClaim('platform_check', 'Platform Check')) return;   // first line of the script
+  // The claim is a data- attribute on <html>, which every copy sees whatever its sandbox.
+  // It is decided at once, so no script starts late. The copy that starts first takes the
+  // page. When it is the older one, the newer copy stays off for this page and leaves a note
+  // in localStorage, and from the next page load the older copy finds the note and steps
+  // aside. A note whose copy has gone (uninstalled) is cleared by the older copy after the
+  // page loads, so it runs again from the load after.
+  function mbuClaimVer(v) {
+      return String(v || '').split('.').map(function (n) { return parseInt(n, 10) || 0; });
+  }
+  function mbuClaimCmp(a, b) {
+      var x = mbuClaimVer(a), y = mbuClaimVer(b);
+      for (var i = 0; i < Math.max(x.length, y.length); i++) { var d = (x[i] || 0) - (y[i] || 0); if (d) return d < 0 ? -1 : 1; }
+      return 0;
+  }
+  function mbuClaim(key, label) {
+      var info = (typeof GM_info !== 'undefined' && GM_info && GM_info.script) || {};
+      var name = String(info.name || label || key), ver = String(info.version || '0');
+      var mine = (name.slice(-1) === '*' ? 'String Theory' : 'standalone') + ' v' + ver;
+      var root = document.documentElement, attr = 'data-mbu-run-' + key, ev = 'mbu-claim-' + key, noteKey = 'mbu-newer-' + key;
+      var log = function (msg) { try { if (typeof mbuLog !== 'undefined' && mbuLog.active) mbuLog.active.info(msg); else if (typeof mbuToast !== 'undefined' && typeof mbuToast.log === 'function') mbuToast.log('info', msg); else console.info('[' + (label || key) + '] ' + msg); } catch (e) { /* no log */ } };
+      var note = null;
+      try { note = JSON.parse(localStorage.getItem(noteKey) || 'null'); } catch (e) { /* storage blocked */ }
+      // A note older than this copy is spent. This copy's own note stays: it is what keeps the
+      // older copy aside on every later load, not only the next one (#671).
+      var noteCmp = note ? mbuClaimCmp(note.ver, ver) : 1;
+      if (noteCmp < 0) { try { localStorage.removeItem(noteKey); } catch (e) { /* storage blocked */ } }
+      if (noteCmp <= 0) note = null;
+      var held = root && root.getAttribute(attr);
+      var off = function (why) {
+          // tell the running copy (any sandbox hears a DOM event), or the copy that runs after
+          // this one (it reads the attribute), and stay quiet
+          try { if (root) root.setAttribute(attr + '-off', JSON.stringify({ mine: mine, why: why })); } catch (e) { /* no attribute */ }
+          try { document.dispatchEvent(new CustomEvent(ev, { detail: JSON.stringify({ mine: mine, ver: ver, why: why }) })); } catch (e) { /* no event */ }
+          return false;
+      };
+      if (held) {
+          var heldVer = (root.getAttribute(attr + '-ver') || '0');
+          if (mbuClaimCmp(ver, heldVer) > 0) {
+              try { localStorage.setItem(noteKey, JSON.stringify({ ver: ver, mine: mine, at: Date.now() })); } catch (e) { /* storage blocked */ }
+              return off('newer, from the next page load');
+          }
+          return off('older or the same');
+      }
+      if (note) {
+          // a newer copy said it is installed: leave the page to it, unless it never shows up
+          var watch = function () {
+              setTimeout(function () {
+                  if (root.getAttribute(attr)) return;
+                  try { localStorage.removeItem(noteKey); } catch (e) { /* storage blocked */ }
+                  try { console.info('[' + (label || key) + '] the newer copy (' + note.mine + ') did not start: this copy runs again from the next page load'); } catch (e) { /* no console */ }
+              }, 3000);
+          };
+          if (document.readyState === 'complete') watch(); else window.addEventListener('load', watch, { once: true });
+          return off('older: a newer copy runs');
+      }
+      if (root) { root.setAttribute(attr, mine); root.setAttribute(attr + '-ver', ver); }
+      var told = function (o) {
+          log((label || key) + ' is installed twice: ' + mine + ' runs, ' + (o.mine || 'another copy') + ' is switched off'
+              + (o.why === 'newer, from the next page load' ? ' for this page (it is newer and runs from the next page load)' : '') + '.');
+      };
+      document.addEventListener(ev, function (e) { var o = {}; try { o = JSON.parse(e.detail); } catch (x) { /* not ours */ } told(o); });
+      // a copy that stepped aside before this one started (it found a note): log it once the script's log is up
+      var before = root && root.getAttribute(attr + '-off');
+      if (before) setTimeout(function () { var o = {}; try { o = JSON.parse(before); } catch (x) { /* not ours */ } told(o); }, 0);
+      return true;
+  }
+
+  // Toast. mbuToast(msg) or mbuToast(msg, { ms, kind, at:{x,y}, action:{ label, onClick } }).
+  //
+  // An action adds one button to the toast (e.g. "Copy log"): the toast is then clickable,
+  // stays up longer (12 s unless ms says otherwise), and closes when the button is used.
+  //
+  // Severity is inferred from a leading warning/tick glyph when not given — Art
+  // Station already did that and it is why its toasts reached its log with the
+  // right level. Set mbuToast.log = function (level, message) {...} once at
+  // startup and every toast mirrors into that script's own log; leave it unset
+  // and the toast still shows.
+  var _mbuToastT = null;
+  function mbuToast(msg, opts) {
+      opts = opts || {};
+      var s = String(msg);
+      var kind = opts.kind || (/^\s*[⚠✗×]/.test(s) ? 'warn' : /[✓✅]/.test(s) ? 'ok' : 'info');
+      try {
+          if (typeof mbuToast.log === 'function') mbuToast.log(kind, s.replace(/^\s*[⚠✗×✓✅]\s*/, ''));
+      } catch (e) { /* a broken log sink must never swallow the toast */ }
+      var el = document.getElementById('mbu-toast');
+      if (!el) {
+          el = document.createElement('div');
+          el.id = 'mbu-toast';
+          (document.body || document.documentElement).appendChild(el);
+      }
+      el.className = 'mbu-toast-on' + (kind !== 'info' ? ' mbu-toast-' + kind : '') + (opts.action ? ' mbu-toast-act' : '');
+      el.textContent = s;
+      if (opts.action) {
+          var b = document.createElement('button');
+          b.type = 'button'; b.className = 'mbu-toast-btn'; b.textContent = opts.action.label || 'OK';
+          b.onclick = function () {
+              try { if (opts.action.onClick) opts.action.onClick(b); } catch (e) { /* the toast still closes */ }
+              clearTimeout(_mbuToastT); _mbuToastT = setTimeout(function () { el.className = ''; }, 900);
+          };
+          el.appendChild(b);
+      }
+      // Anchor above a click point when asked, clamped into the viewport; otherwise
+      // fall back to the centred default by clearing the inline placement.
+      if (opts.at) {
+          var w = el.offsetWidth, h = el.offsetHeight;
+          el.style.left = Math.max(6, Math.min(window.innerWidth - w - 6, opts.at.x - w / 2)) + 'px';
+          el.style.top = Math.max(6, Math.min(window.innerHeight - h - 6, opts.at.y - h - 10)) + 'px';
+          el.style.bottom = 'auto';
+          el.style.transform = 'none';
+      } else {
+          el.style.left = ''; el.style.top = ''; el.style.bottom = ''; el.style.transform = '';
+      }
+      clearTimeout(_mbuToastT);
+      _mbuToastT = setTimeout(function () { el.className = ''; }, opts.ms || (opts.action ? 12000 : 2600));
+      return el;
+  }
+
+  // Config-window title bar.
+  //
+  //   mbuCfgHeader({ script:'art_station', name:'Art Station', version:'2026.9.2',
+  //                  icon:'<svg…>' | '<img…>', log:true, logClass:'as-setup-logbtn' })
+  //
+  // Returns the markup for the whole bar. 'log' adds the Log button; a script with
+  // no log window leaves it out rather than shipping a dead control. logClass /
+  // logId are carried through IN ADDITION to the shared class so a script's
+  // existing click handler keeps working — adopting the component must not mean
+  // rewiring every listener at the same time.
+  function mbuCfgHeader(o) {
+      o = o || {};
+      var esc = function (s) {
+          return String(s == null ? '' : s).replace(/[&<>"]/g, function (c) {
+              return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c];
+          });
+      };
+      var html = '<div class="mbu-cfg-h">';
+      if (o.icon) html += '<span class="mbu-cfg-ic">' + o.icon + '</span>';
+      html += '<span class="mbu-cfg-name">' + esc(o.name) + '</span>';
+      if (o.version) html += '<span class="mbu-cfg-ver" title="installed script version">v' + esc(o.version) + '</span>';
+      html += '<span class="mbu-cfg-sp"></span>';
+      if (o.log) {
+          html += '<button type="button" class="mbu-cfg-log' + (o.logClass ? ' ' + esc(o.logClass) : '') + '"'
+              + (o.logId ? ' id="' + esc(o.logId) + '"' : '')
+              + ' title="Open the activity log">Log</button>';
+      }
+      html += mbuHelpHtml(o.script);
+      return html + '</div>';
+  }
+
+  // Test hooks. A script puts its test hook on window only when the test harness has
+  // marked the page (dev/test/harness.mjs sets window.__mbuTest before any script runs):
+  //   if (mbuTestHooks()) window.__fooTest = { … };
+  // On a user's page the hooks are never built. (#623)
+  function mbuTestHooks() {
+      try { return typeof window !== 'undefined' && window.__mbuTest === true; } catch (e) { return false; }
+  }
+
+  // Shared settings: the few that belong to all the scripts at once, not to one (the corner
+  // launchers' layout). GM storage is private to each script, so these live in the page's
+  // localStorage on MusicBrainz's origin, as JSON under 'mbu.<key>'; every script, bundled or
+  // standalone, reads the same value. One argument reads (undefined when unset or blocked), two
+  // write, and null removes. Per-origin: musicbrainz.org, beta and test each keep their own.
+  // Every key is listed in DEVELOP.md → Shared storage.
+  function mbuShared(key, value) {
+      var k = 'mbu.' + key;
+      try {
+          if (arguments.length < 2) { var v = localStorage.getItem(k); return v == null ? undefined : JSON.parse(v); }
+          if (value == null) localStorage.removeItem(k); else localStorage.setItem(k, JSON.stringify(value));
+      } catch (e) { /* storage blocked */ }
+      return value;
+  }
+
+  // Corner slots (#468). Every floating launcher (Apollo Editor, Art Station, Falcon,
+  // Fusion, Scribe) tags its element with data-mb-corner (which screen corner: 'br',
+  // 'bl', 'tr', 'tl') and data-mb-corner-order (lower sits closer to the corner), and
+  // calls mbRestackCorner(corner) right after it shows, hides, creates or removes it.
+  // That recomputes every element in the corner, whichever script owns it and
+  // whatever order they loaded in, so two launchers never land on the same pixel.
+  // Orders in use, all bottom-right: Apollo and Art Station 10 (never on the same page), Scribe 15
+  // (above Apollo on the edit page), Falcon 20, Fusion 30, Mission Control 40. Scribe is not on the shared block and keeps a copy of this.
+  // The stack is a column; the shared setting cornerFlow = 'row' (mbuShared, set from String
+  // Theory's menu) lines it up along the bottom/top edge instead, the lowest order still nearest the corner.
+  function mbRestackCorner(corner) {
+      var bottom = corner[0] === 'b', right = corner[1] === 'r';
+      var row = mbuShared('cornerFlow') === 'row';
+      var els = Array.prototype.slice.call(document.querySelectorAll('[data-mb-corner="' + corner + '"]'))
+          // offsetParent is always null for position:fixed, so it can't tell visibility here
+          .filter(function (el) { return getComputedStyle(el).display !== 'none'; })
+          .sort(function (a, b) { return (Number(a.dataset.mbCornerOrder) || 0) - (Number(b.dataset.mbCornerOrder) || 0); });
+      var pos = 14;
+      els.forEach(function (el) {
+          var r = el.getBoundingClientRect();
+          el.style[bottom ? 'bottom' : 'top'] = (row ? 14 : pos) + 'px';
+          el.style[right ? 'right' : 'left'] = (row ? pos : 14) + 'px';
+          pos += (row ? r.width : r.height) + 8;
+      });
+  }
+
+  // Activity log: the session's log lines plus the viewers that show them
+  // (#283's viewer, shared since X12 of #623). A script makes its log once:
+  //
+  //   var LOG = mbuLog({ name: 'Fusion', version: VERSION, key: 'fusion.logwin' });
+  //   LOG.info('…'); LOG.warn(…); LOG.err(…) (or .error); LOG.ok(…); LOG.debug(…)
+  //   LOG.open(); LOG.close(); LOG.reopen()   // reopen: only if it was left open
+  //   LOG.markdown(); LOG.copy(btn); LOG.clear(); LOG.lines(); LOG.messages(); LOG.counts()
+  //   LOG.cat('Spotify').info(…)        // the same calls, each line tagged with a category
+  //   LOG.pre(text)                     // a block kept as written: line breaks, spacing, monospace (#705)
+  //   LOG.mount(el, { tools })          // the viewer inside the script's own panel (#705)
+  //
+  // Categories (#697) are optional. A tagged line shows its category before the
+  // message and in the Markdown ("WARN [Spotify] …"). The viewer grows a row of
+  // filters only when there is a choice: the levels once two of them have lines
+  // (ok counts as info), the categories once there are two. Click one to see only
+  // those lines, click it again to see all; Copy always takes everything.
+  //
+  // The floating window (open) and a mounted viewer (mount) are the same viewer;
+  // mount draws it into an element of the script's, without the title bar's
+  // window buttons, and o.tools (an element) sits in its toolbar before Clear.
+  // Every viewer has a debug switch: off, LOG.debug() lines are not recorded at all
+  // (remembered per script under o.key; LOG.debugOn(), LOG.setDebug(v)).
+  //
+  // o.name / o.version  the Markdown summary's title (version may be a function)
+  // o.subtitle          optional function; its text follows the title (e.g. the release)
+  // o.header            the window's title (default 'Activity log')
+  // o.key               storage key for the window's open/minimised/position state
+  // o.load / o.save     that storage (default GM_getValue / GM_setValue)
+  // o.before            called before the window opens (e.g. to inject the script's CSS)
+  // o.max               lines kept (default 20000: about 4 MB; 2000 dropped a long session's start)
+  // o.history           opt-in history of past sessions (#705), below
+  //
+  // A long run keeps only the last o.max lines, and the Markdown says how many went
+  // before them; the copies this replaced grew for the whole session. An open
+  // viewer appends each new line and drops the oldest row past the cap; the copies
+  // rebuilt the whole list with innerHTML on every line, which is quadratic over a
+  // long matching run.
+  //
+  // History (#705, Falcon's run logs of #512 made shared). Off unless o.history is given:
+  //
+  //   o.history = { prefix: 'falcon:session:', keep: () => 20, lines: 400, head: 140,
+  //                 parse: s => entry, nameOf: entries => name, store }
+  //
+  // A session starts with the page, or with LOG.session(reason) (Falcon: each run).
+  // Only a session the script marks with LOG.keep() is stored, so a page that did
+  // nothing worth reading back leaves nothing behind; LOG.name(text) names it (the
+  // first name stays). It is stored in the page's localStorage under prefix + id,
+  // within 100 ms of each line and at once on LOG.flush(), so a crashed tab keeps
+  // its log; a session longer than `lines` keeps its first `head` lines and its
+  // end, and says how many went between. The newest `keep` sessions are kept.
+  // prefix + 'current' holds the last kept session's id (LOG.last()), so LOG.resume(id)
+  // can carry on a session across a navigation. The viewer gets a session list and Clear history.
+  //   LOG.sessionId(); LOG.last(); LOG.isKept(); LOG.refresh(); LOG.sessions(); LOG.load(id); LOG.forget(id); LOG.clearHistory(); LOG.flush()
+  // parse reads a stored line that is a string (an older format); nameOf names a
+  // session stored without a name; store ({ get, set, del, keys }) replaces localStorage.
+  function mbuLog(o) {
+      o = o || {};
+      var max = o.max || 20000, buf = [], dropped = 0, warn = 0, error = 0, views = [], bound = {};
+      var LEVELS = ['error', 'warn', 'info', 'debug'];
+      var group = function (sev) { return sev === 'ok' ? 'info' : sev; };
+      var pad = function (n, w) { return String(n).padStart(w || 2, '0'); };
+      var ts = function (d) { return d ? pad(d.getHours()) + ':' + pad(d.getMinutes()) + ':' + pad(d.getSeconds()) + '.' + pad(d.getMilliseconds(), 3) : '--:--:--.---'; };
+      var str = function (v) {
+          if (typeof v === 'string') return v;
+          if (v instanceof Error) return v.message || String(v);
+          if (v && v.nodeType) return '<' + (v.tagName || 'node').toLowerCase() + '>';
+          try { return typeof v === 'object' ? JSON.stringify(v) : String(v); } catch (e) { return String(v); }
+      };
+      var esc = function (s) {
+          return String(s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; });
+      };
+      // escape, then make http(s) URLs clickable, keeping trailing punctuation out of them
+      var linkify = function (s) {
+          return esc(s).replace(/(https?:\/\/[^\s<]+)/g, function (m) {
+              var t = (m.match(/[.,;:!?)\]]+$/) || [''])[0];
+              var url = m.slice(0, m.length - t.length);
+              return '<a href="' + url + '" target="_blank" rel="noopener">' + url + '</a>' + t;
+          });
+      };
+      var load = o.load || function (k) { try { return GM_getValue(k, undefined); } catch (e) { return undefined; } };
+      var save = o.save || function (k, v) { try { GM_setValue(k, v); } catch (e) { /* no storage: the window just forgets */ } };
+      var state = function () { try { return JSON.parse(load(o.key) || '{}') || {}; } catch (e) { return {}; } };
+      var remember = function (patch) { try { save(o.key, JSON.stringify(Object.assign(state(), patch))); } catch (e) { /* see save */ } };
+      // debug lines are recorded only while the viewer's debug switch is on (default off: majkinetor, #705), per script
+      var dbgOn = null;
+      var debugOn = function () { if (dbgOn === null) dbgOn = state().debug === true; return dbgOn; };
+      var setDebug = function (v) { dbgOn = !!v; remember({ debug: dbgOn }); views.forEach(function (w) { if (w.dbg) w.dbg.checked = dbgOn; }); };
+      var tally = function (e, d) { if (e.sev === 'warn') warn += d; else if (e.sev === 'error') error += d; };
+      var PRE = { info: '', ok: 'OK   ', warn: 'WARN ', error: 'ERR  ', debug: 'DBG  ' };
+      var line = function (e) { return ts(e.t) + '  ' + (PRE[e.sev] || '') + (e.cat ? '[' + e.cat + '] ' : '') + (e.pre ? '\n' : '') + e.msg; };
+      var countOf = function (list) {
+          var c = { warn: 0, error: 0 };
+          list.forEach(function (e) { if (e.sev === 'warn') c.warn++; else if (e.sev === 'error') c.error++; });
+          return c;
+      };
+
+      // ── history (#705) ──
+      var H = o.history || null, hp = H && (H.prefix || ((o.key || 'mbu') + ':session:'));
+      var ID_RE = /^\d{14}-\d+$/, sid = '', kept = false, sname = '', savedName = '', seq = 0, pTimer = 0, lastSaved = '';
+      var store = H && (H.store || {
+          get: function (k) { try { return localStorage.getItem(k); } catch (e) { return null; } },
+          set: function (k, v) { try { localStorage.setItem(k, v); } catch (e) { /* full or blocked: the session just isn't kept */ } },
+          del: function (k) { try { localStorage.removeItem(k); } catch (e) { /* nothing to do */ } },
+          // one call for all the keys: a userscript reaches localStorage through Firefox's
+          // Xray wrapper, where each call costs, and the page may hold hundreds of keys
+          keys: function () {
+              try { var all = Object.keys(localStorage); if (all.length === localStorage.length) return all; } catch (e) { /* the loop below */ }
+              var out = []; try { for (var i = 0; i < localStorage.length; i++) out.push(localStorage.key(i)); } catch (e) { /* none */ } return out;
+          },
+      });
+      var keepN = function () { var n = Number(typeof H.keep === 'function' ? H.keep() : H.keep); return n > 0 ? n : 10; };
+      var newId = function () { return new Date().toISOString().replace(/[^0-9]/g, '').slice(0, 14) + '-' + (++seq); };
+      // the id is the session's start in UTC: YYYYMMDDHHMMSS-n
+      var idDate = function (id) {
+          var m = /^(\d{4})(\d\d)(\d\d)(\d\d)(\d\d)(\d\d)/.exec(id || '');
+          return m ? new Date(Date.UTC(+m[1], m[2] - 1, +m[3], +m[4], +m[5], +m[6])) : null;
+      };
+      function ids() {
+          if (!H) return [];
+          return store.keys().filter(function (k) { return k && k.indexOf(hp) === 0 && ID_RE.test(k.slice(hp.length)); })
+              .map(function (k) { return k.slice(hp.length); }).sort();   // the id's own timestamp sorts as a string
+      }
+      // a stored line: [time ms | null, sev, cat | 0, msg, pre 1/0]; a string is an older format, read by H.parse
+      function fromStored(x, id) {
+          if (typeof x === 'string') {
+              var p = null;
+              try { p = H.parse ? H.parse(x, idDate(id)) : null; } catch (e) { /* unreadable: kept as text */ }
+              return p ? { t: p.t || null, sev: p.sev || 'info', cat: p.cat || '', msg: String(p.msg == null ? x : p.msg), pre: !!p.pre } : { t: null, sev: 'info', msg: x };
+          }
+          if (!Array.isArray(x)) return null;
+          var e = { t: x[0] != null ? new Date(x[0]) : null, sev: x[1] || 'info', msg: String(x[3] == null ? '' : x[3]) };
+          if (x[2]) e.cat = String(x[2]);
+          if (x[4]) e.pre = true;
+          return e;
+      }
+      function loadSession(id) {
+          if (!H || !id) return null;
+          var raw = store.get(hp + id);
+          if (raw == null) return null;
+          try { return (JSON.parse(raw) || []).map(function (x) { return fromStored(x, id); }).filter(Boolean); } catch (e) { return null; }
+      }
+      // a past session's name doesn't change, so it is read (or mined from its lines) once
+      var names = {};
+      function nameOf(id, entries) {
+          if (id in names) return names[id];
+          var n = store.get(hp + id + ':name');
+          if (!n) { try { n = H.nameOf ? H.nameOf(entries || loadSession(id) || []) || '' : ''; } catch (e) { n = ''; } }
+          return (names[id] = n || '');
+      }
+      // the first `head` lines and the end, and a line saying how many went between
+      function storedWindow() {
+          var cap = H.lines || 400, head = Math.min(H.head || 140, cap - 2);
+          var pack = function (e) { return [e.t ? e.t.getTime() : null, e.sev, e.cat || 0, e.msg, e.pre ? 1 : 0]; };
+          if (buf.length <= cap) return buf.map(pack);
+          var tail = cap - head - 1, cut = buf.length - head - tail;
+          return buf.slice(0, head).map(pack)
+              .concat([[null, 'info', 0, '——— ' + cut + ' line(s) from the middle of this session were dropped to fit the stored-log budget; its start and end are kept in full ———', 0]])
+              .concat(buf.slice(-tail).map(pack));
+      }
+      function flush() {
+          clearTimeout(pTimer); pTimer = 0;
+          if (!H || !sid || !kept) return;
+          try {
+              var payload = JSON.stringify(storedWindow());
+              if (payload === lastSaved) return;
+              lastSaved = payload;
+              store.set(hp + sid, payload);
+              if (sname && savedName !== sname) { store.set(hp + sid + ':name', sname); savedName = sname; }
+          } catch (e) { /* not stored */ }
+      }
+      var persist = function () { if (H && kept && !pTimer) pTimer = setTimeout(flush, 100); };
+      function forget(id) { if (H && id) { store.del(hp + id); store.del(hp + id + ':name'); delete names[id]; } }
+      function prune() {
+          var all = ids().filter(function (id) { return id !== sid; });
+          var excess = all.length + (kept ? 1 : 0) - keepN();
+          if (excess > 0) all.slice(0, excess).forEach(forget);
+      }
+      // past sessions, newest first, without the current one
+      function sessions() {
+          return ids().filter(function (id) { return id !== sid; }).reverse()
+              .map(function (id) { return { id: id, date: idDate(id), name: nameOf(id) }; });
+      }
+      var sessionLabel = function (s) {
+          var d = s.date, when = d ? d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()) + ' ' + pad(d.getHours()) + ':' + pad(d.getMinutes()) + ':' + pad(d.getSeconds()) : s.id;
+          return when + (s.name ? ' — ' + s.name : '');
+      };
+      function startSession() {
+          flush();
+          sid = newId(); kept = false; sname = ''; savedName = ''; lastSaved = '';
+          reset();
+      }
+      function resume(id) {
+          var entries = loadSession(id);
+          if (!entries) return false;
+          flush();
+          reset();
+          sid = id; kept = true; sname = savedName = store.get(hp + id + ':name') || '';
+          lastSaved = store.get(hp + id) || '';
+          store.set(hp + 'current', sid);
+          entries.forEach(function (e) { push(e); });
+          return true;
+      }
+
+      // ── the live lines ──
+      function reset() {
+          buf = []; dropped = 0; warn = 0; error = 0;
+          views.forEach(function (v) { if (!v.past) v.show(null); v.sessions(); });
+      }
+      function push(e) {
+          buf.push(e); tally(e, 1);
+          // trim in chunks, not one shift per line
+          if (buf.length > max + Math.ceil(max / 10)) {
+              var gone = buf.splice(0, buf.length - max);
+              gone.forEach(function (g) { tally(g, -1); });
+              dropped += gone.length;
+          }
+          views = views.filter(function (v) { return v.el.isConnected; });
+          views.forEach(function (v) { if (!v.past) v.append(e); });
+      }
+      function add(sev, args, cat, pre) {
+          var msg = Array.prototype.map.call(args, str).join(' ');
+          msg = pre ? msg.replace(/\s+$/, '') : msg.replace(/\s+/g, ' ').trim();
+          if (!msg) return;
+          var e = { t: new Date(), sev: sev === 'err' ? 'error' : sev, msg: msg };
+          if (e.sev === 'debug' && !debugOn()) return;
+          if (cat) e.cat = String(cat);
+          if (pre) e.pre = true;
+          push(e);
+          persist();
+      }
+      function title(bare) {
+          var v = typeof o.version === 'function' ? (function () { try { return o.version(); } catch (e) { return ''; } })() : o.version;
+          var t = (o.name || 'Log') + (v ? ' v' + v : '');
+          try { var s = !bare && o.subtitle && o.subtitle(); if (s) t += ' — ' + s; } catch (e) { /* no subtitle */ }
+          return t;
+      }
+      // past: { id, entries } to copy a stored session instead of this one
+      function markdown(past) {
+          var list = past ? past.entries : buf, c = past ? countOf(list) : { warn: warn, error: error };
+          var body = list.length ? list.map(line).join('\n') : '(no activity logged)';
+          if (!past && dropped) body = '(' + dropped + ' earlier line' + (dropped === 1 ? '' : 's') + ' not kept)\n' + body;
+          var n = (c.warn || c.error) ? ' (' + c.warn + ' warning' + (c.warn === 1 ? '' : 's') + ', ' + c.error + ' error' + (c.error === 1 ? '' : 's') + ')' : '';
+          var what = past ? 'log of ' + sessionLabel({ id: past.id, date: idDate(past.id), name: nameOf(past.id, list) }) : 'session log';
+          var fence = String.fromCharCode(96, 96, 96);
+          return '<details><summary>' + title(!!past) + ' — ' + what + n + '</summary>\n\n' + fence + 'log\n' + body + '\n' + fence + '\n\n</details>';
+      }
+      function copy(btn, past) {
+          var md = markdown(past);
+          var done = function (ok) {
+              if (!btn) return;
+              var was = btn.dataset.lbl || btn.textContent; btn.dataset.lbl = was;
+              btn.textContent = ok ? 'Copied ✓' : 'Copy failed';
+              setTimeout(function () { btn.textContent = was; }, 1500);
+          };
+          var fallback = function () {
+              var ok = false;
+              try {
+                  var ta = document.createElement('textarea'); ta.value = md; ta.style.position = 'fixed'; ta.style.opacity = '0';
+                  document.body.appendChild(ta); ta.select(); ok = document.execCommand('copy'); ta.remove();
+              } catch (x) { /* nothing left to try */ }
+              done(ok);
+          };
+          try { navigator.clipboard.writeText(md).then(function () { done(true); }, fallback); } catch (e) { fallback(); }
+      }
+
+      // ── a viewer: the floating window or one mounted in the script's panel ──
+      var vseq = 0;
+      function view(root, floating, tools) {
+          var vid = String(++vseq);
+          root.classList.add('mbu-logpop');
+          root.dataset.mbuLv = vid;
+          root.innerHTML = mbuHtml('<div class="mbu-logpop-h">' + (floating ? '<b>' + esc(o.header || 'Activity log') + '</b> ' : '') + '<span class="mbu-log-badge"></span>'
+              + '<input class="mbu-log-q" type="search" placeholder="Filter" title="Show only the lines with this text" autocomplete="off">'
+              + (H ? '<select class="mbu-log-ses" title="The session shown: this one, or a past one kept in this browser"></select>' : '')
+              + '<span class="mbu-logpop-sp"></span>'
+              + (H ? '<button class="mbu-logpop-hclear" type="button" title="Delete every past session (this one stays)">Clear history</button>' : '')
+              + '<label class="mbu-log-dbg" title="Record each step in detail. Leave it on when reporting a problem"><input type="checkbox"> debug</label>'
+              + '<button class="mbu-logpop-clear" type="button" title="Clear the log (the lines so far are gone)">Clear</button>'
+              + '<button class="mbu-logpop-copy" type="button" title="Copy as Markdown (paste into a GitHub issue)">⧉ Copy</button>'
+              + (floating ? '<button class="mbu-logpop-full" type="button" title="Full screen (or double-click the title bar)">⛶</button>'
+                  + '<button class="mbu-logpop-min" type="button" title="Minimize">–</button>'
+                  + '<button class="mbu-logpop-x" type="button" title="Close">✕</button>' : '') + '</div>'
+              + '<div class="mbu-log-f" hidden></div><style class="mbu-log-fcss"></style>'
+              + '<div class="mbu-log-list"></div>' + (floating ? '<div class="mbu-logpop-grip" title="Resize"></div>' : ''));
+          if (tools) root.querySelector('.mbu-logpop-clear').before(tools);
+          var list = root.querySelector('.mbu-log-list'), badge = root.querySelector('.mbu-log-badge');
+          var qEl = root.querySelector('.mbu-log-q'), q = '', sel = root.querySelector('.mbu-log-ses');
+          var fRow = root.querySelector('.mbu-log-f'), fCss = root.querySelector('.mbu-log-fcss');
+          // what this viewer shows: the live lines, or a past session (read-only)
+          var past = null, src = buf, cats = [], catIx = {}, sevs = {}, fSev = null, fCat = null;
+          var scope = '.mbu-logpop[data-mbu-lv="' + vid + '"] ';
+          var miss = function (e) { return !!q && ((e.cat || '') + ' ' + e.msg).toLowerCase().indexOf(q) < 0; };
+          // note a line's level and category; true when the filter row must change
+          var note = function (e) {
+              var grew = false;
+              if (e.cat && !(e.cat in catIx)) { catIx[e.cat] = cats.length; cats.push(e.cat); grew = true; }
+              if (!sevs[group(e.sev)]) { sevs[group(e.sev)] = true; grew = true; }
+              return grew;
+          };
+          var row = function (e) {
+              var d = document.createElement('div');
+              d._e = e;
+              d.className = 'mbu-log-li mbu-log-' + e.sev + (e.pre ? ' mbu-log-pre' : '');
+              if (miss(e)) d.classList.add('mbu-log-nq');
+              d.dataset.s = group(e.sev);
+              if (e.cat) d.dataset.c = catIx[e.cat];
+              d.innerHTML = mbuHtml('<span class="mbu-log-t">' + ts(e.t) + '</span>'
+                  + '<span class="mbu-log-c">' + esc(e.cat || '') + '</span>'
+                  + '<span class="mbu-log-m">' + linkify(e.msg) + '</span>');
+              return d;
+          };
+          // the filter row, redrawn when a level or category first appears; hiding is one
+          // rule in the viewer's own <style>, not a walk over the rows
+          var filters = function () {
+              var lv = LEVELS.filter(function (l) { return sevs[l]; });
+              var showL = lv.length > 1, showC = cats.length > 1;
+              if (fSev && !sevs[fSev]) fSev = null;
+              if (fCat != null && !(fCat in catIx)) fCat = null;
+              var b = function (kind, v, on) {
+                  return '<button type="button" class="mbu-log-fb' + (on ? ' on' : '') + '" data-' + kind + '="' + esc(v) + '">' + esc(v) + '</button>';
+              };
+              fRow.innerHTML = mbuHtml((showL ? '<span class="mbu-log-fg">' + lv.map(function (l) { return b('sev', l, fSev === l); }).join('') + '</span>' : '')
+                  + (showL && showC ? '<span class="mbu-log-fs"></span>' : '')
+                  + (showC ? '<span class="mbu-log-fg">' + cats.map(function (c) { return b('cat', c, fCat === c); }).join('') + '</span>' : ''));
+              fRow.hidden = !showL && !showC;
+              list.classList.toggle('mbu-log-cats', cats.length > 0);
+              fCss.textContent = (fSev ? scope + '.mbu-log-li:not([data-s="' + fSev + '"]){display:none}' : '')
+                  + (fCat != null ? scope + '.mbu-log-li:not([data-c="' + catIx[fCat] + '"]){display:none}' : '');
+          };
+          var showBadge = function () {
+              var c = past ? countOf(src) : { warn: warn, error: error };
+              badge.textContent = '(' + src.length + ')' + (c.warn || c.error ? ' · ' + c.warn + '⚠ ' + c.error + '✖' : '');
+          };
+          var empty = function () { return '<div class="mbu-log-empty">' + (past ? 'Nothing was kept of this session.' : 'No activity yet.') + '</div>'; };
+          var queued = false, follow = true;
+          var paint = function () { queued = false; showBadge(); if (follow) list.scrollTop = list.scrollHeight; };
+          // all rows at once: on opening, and when the session shown changes
+          var draw = function () {
+              cats = []; catIx = {}; sevs = {};
+              src.forEach(note);
+              var frag = document.createDocumentFragment();
+              src.forEach(function (e) { frag.appendChild(row(e)); });
+              list.innerHTML = mbuHtml(src.length ? '' : empty());
+              if (src.length) list.appendChild(frag);
+              filters(); showBadge();
+              follow = true; list.scrollTop = list.scrollHeight;
+              root.classList.toggle('mbu-log-past', !!past);
+          };
+          list.addEventListener('scroll', function () { follow = list.scrollHeight - list.scrollTop - list.clientHeight < 40; });
+          var qTimer = 0;
+          var refilter = function () {
+              q = qEl.value.trim().toLowerCase();
+              for (var d = list.firstElementChild; d; d = d.nextElementSibling) if (d._e) d.classList.toggle('mbu-log-nq', miss(d._e));
+              follow = true; list.scrollTop = list.scrollHeight;
+          };
+          qEl.addEventListener('input', function () { clearTimeout(qTimer); qTimer = setTimeout(refilter, 120); });
+          fRow.addEventListener('click', function (ev) {
+              var t = ev.target.closest('.mbu-log-fb'); if (!t) return;
+              if (t.dataset.sev) fSev = fSev === t.dataset.sev ? null : t.dataset.sev;
+              else fCat = fCat === t.dataset.cat ? null : t.dataset.cat;
+              filters();
+              follow = true; list.scrollTop = list.scrollHeight;
+          });
+          var v = {
+              el: root, floating: floating, past: null, q: qEl,
+              append: function (e) {
+                  var em = list.querySelector('.mbu-log-empty'); if (em) em.remove();
+                  if (note(e)) filters();
+                  list.appendChild(row(e));
+                  while (list.childElementCount > buf.length) list.firstElementChild.remove();
+                  if (!queued) { queued = true; requestAnimationFrame(paint); }
+              },
+              // null: the live lines; an id: that past session
+              show: function (id) {
+                  var entries = id ? loadSession(id) : null;
+                  if (id && !entries) entries = [{ t: null, sev: 'warn', msg: 'This session could not be read (it may have been deleted in another tab).' }];
+                  past = id && entries ? id : null; v.past = past;
+                  src = past ? entries : buf;
+                  if (sel && sel.value !== (past || '')) sel.value = past || '';
+                  draw();
+              },
+              // the session list, refreshed when it is opened and when a session starts
+              sessions: function () {
+                  if (!sel) return;
+                  var all = sessions(), sig = all.map(function (x) { return x.id + '=' + x.name; }).join('|');
+                  if (sig === v.sig && !(past && !all.some(function (x) { return x.id === past; }))) return;
+                  v.sig = sig;
+                  if (past && !all.some(function (s) { return s.id === past; })) { past = null; v.past = null; src = buf; draw(); }
+                  sel.innerHTML = mbuHtml('<option value="">Current session</option>' + all.map(function (s) {
+                      return '<option value="' + esc(s.id) + '">' + esc(sessionLabel(s)) + '</option>';
+                  }).join(''));
+                  sel.value = past || '';
+                  var hc = root.querySelector('.mbu-logpop-hclear'); if (hc) hc.disabled = !all.length;
+              },
+              filters: filters,
+          };
+          if (sel) {
+              sel.addEventListener('change', function () { v.show(sel.value || null); });
+              root.querySelector('.mbu-logpop-hclear').onclick = function () { clearHistory(); };
+          }
+          root.querySelector('.mbu-logpop-clear').onclick = function () { clear(); };
+          v.dbg = root.querySelector('.mbu-log-dbg input');
+          v.dbg.checked = debugOn();
+          v.dbg.onchange = function () { setDebug(v.dbg.checked); };
+          root.querySelector('.mbu-logpop-copy').onclick = function () {
+              copy(root.querySelector('.mbu-logpop-copy'), past ? { id: past, entries: src } : null);
+          };
+          v.sessions();
+          draw();
+          views.push(v);
+          return v;
+      }
+
+      var win = null;
+      function open() {
+          close(true);
+          if (typeof o.before === 'function') { try { o.before(); } catch (e) { /* the window still opens */ } }
+          remember({ open: true });
+          var st = state();
+          var pop = document.createElement('div'); pop.id = 'mbu-logpop';
+          document.body.appendChild(pop);
+          var v = view(pop, true);
+          if (st.left != null) { pop.style.left = st.left; pop.style.top = st.top; pop.style.right = 'auto'; pop.style.transform = 'none'; }
+          var restore = { left: pop.style.left, top: pop.style.top, right: pop.style.right, bottom: pop.style.bottom, transform: pop.style.transform };
+          // Escape in a filled filter empties it; anywhere else it closes the window
+          var onKey = function (e) {
+              if (e.key !== 'Escape') return;
+              if (e.target === v.q && v.q.value) { v.q.value = ''; v.q.dispatchEvent(new Event('input')); return; }
+              close();
+          };
+          win = { el: pop, v: v, off: function () { document.removeEventListener('keydown', onKey); } };
+          var minBtn = pop.querySelector('.mbu-logpop-min');
+          var setMin = function (m) {
+              minBtn.textContent = m ? '▢' : '–'; minBtn.title = m ? 'Restore' : 'Minimize';
+              if (m) { pop.style.left = '14px'; pop.style.bottom = '14px'; pop.style.top = 'auto'; pop.style.right = 'auto'; pop.style.transform = 'none'; }   // dock to the bottom
+              else Object.assign(pop.style, restore);
+          };
+          var fullBtn = pop.querySelector('.mbu-logpop-full');
+          var setFull = function (f) {
+              pop.classList.toggle('full', f);
+              fullBtn.textContent = f ? '❐' : '⛶'; fullBtn.title = f ? 'Restore the size (or double-click the title bar)' : 'Full screen (or double-click the title bar)';
+          };
+          minBtn.onclick = function () {
+              var m = pop.classList.toggle('min');
+              if (m && pop.classList.contains('full')) { setFull(false); remember({ full: false }); }   // minimising leaves full screen
+              setMin(m); remember({ min: m });
+          };
+          fullBtn.onclick = function () { var f = !pop.classList.contains('full'); setFull(f); remember({ full: f }); };
+          pop.querySelector('.mbu-logpop-h').addEventListener('dblclick', function (e) {
+              if (!e.target.closest('button, input, select') && !pop.classList.contains('min')) fullBtn.click();
+          });
+          // a size the user gave it, from the corner grip
+          if (st.w && st.h) { pop.style.width = st.w; pop.style.height = st.h; pop.classList.add('sized'); }
+          if (st.min) { pop.classList.add('min'); setMin(true); }
+          else if (st.full) setFull(true);
+          pop.querySelector('.mbu-logpop-grip').addEventListener('mousedown', function (e) {
+              e.preventDefault(); e.stopPropagation();
+              var r = pop.getBoundingClientRect();
+              // pin the top-left corner, so only the right and bottom edges move
+              pop.style.left = r.left + 'px'; pop.style.top = r.top + 'px'; pop.style.right = 'auto'; pop.style.bottom = ''; pop.style.transform = 'none';
+              pop.classList.add('sized');
+              var x0 = e.clientX, y0 = e.clientY;
+              var mv = function (ev) {
+                  pop.style.width = Math.max(320, Math.min(window.innerWidth - r.left, r.width + ev.clientX - x0)) + 'px';
+                  pop.style.height = Math.max(120, Math.min(window.innerHeight - r.top, r.height + ev.clientY - y0)) + 'px';
+              };
+              var up = function () {
+                  document.removeEventListener('mousemove', mv); document.removeEventListener('mouseup', up);
+                  restore = { left: pop.style.left, top: pop.style.top, right: 'auto', bottom: '', transform: 'none' };
+                  remember({ left: pop.style.left, top: pop.style.top, w: pop.style.width, h: pop.style.height });
+              };
+              document.addEventListener('mousemove', mv); document.addEventListener('mouseup', up);
+          });
+          pop.querySelector('.mbu-logpop-x').onclick = function () { close(); };
+          // floating and non-modal: dragged by its header
+          pop.querySelector('.mbu-logpop-h').addEventListener('mousedown', function (e) {
+              if (e.target.closest('button, input, select') || pop.classList.contains('full')) return;
+              e.preventDefault();
+              var r = pop.getBoundingClientRect();
+              pop.style.left = r.left + 'px'; pop.style.top = r.top + 'px'; pop.style.right = 'auto'; pop.style.transform = 'none';
+              var ox = e.clientX - r.left, oy = e.clientY - r.top;
+              var mv = function (ev) {
+                  pop.style.left = Math.max(0, Math.min(window.innerWidth - pop.offsetWidth, ev.clientX - ox)) + 'px';
+                  pop.style.top = Math.max(0, Math.min(window.innerHeight - 36, ev.clientY - oy)) + 'px';
+              };
+              var up = function () {
+                  document.removeEventListener('mousemove', mv); document.removeEventListener('mouseup', up);
+                  if (!pop.classList.contains('min')) {
+                      restore = { left: pop.style.left, top: pop.style.top, right: 'auto', bottom: '', transform: 'none' };
+                      remember({ left: pop.style.left, top: pop.style.top });
+                  }
+              };
+              document.addEventListener('mousemove', mv); document.addEventListener('mouseup', up);
+          });
+          document.addEventListener('keydown', onKey);
+          return pop;
+      }
+      // the viewer inside an element of the script's; a second mount there replaces the first
+      function mount(host, opts) {
+          if (!host) return null;
+          views = views.filter(function (v) { if (v.el.parentNode === host) { v.el.remove(); return false; } return true; });
+          var el = document.createElement('div'); el.className = 'mbu-logemb';
+          host.appendChild(el);
+          return view(el, false, opts && opts.tools).el;
+      }
+      // empty the live log: the lines, the counts and the "earlier lines not kept" note
+      function clear() {
+          buf = []; dropped = 0; warn = 0; error = 0;
+          if (H && sid) { store.del(hp + sid); lastSaved = ''; }
+          views.forEach(function (v) { if (!v.past) v.show(null); });
+      }
+      function clearHistory() {
+          if (!H) return;
+          ids().forEach(function (id) { if (id !== sid) forget(id); });
+          views.forEach(function (v) { v.sessions(); });
+      }
+      // quiet: closing to reopen, so the remembered "open" stays as it is
+      function close(quiet) {
+          var stray = document.getElementById('mbu-logpop');
+          if (win) {
+              win.off(); win.el.remove();
+              views = views.filter(function (v) { return v !== win.v; });
+              win = null; if (!quiet) remember({ open: false });
+          }
+          if (stray) stray.remove();   // another script's window: one log window at a time
+      }
+      var api = {
+          info: function () { add('info', arguments); },
+          warn: function () { add('warn', arguments); },
+          err: function () { add('error', arguments); },
+          error: function () { add('error', arguments); },
+          ok: function () { add('ok', arguments); },
+          debug: function () { add('debug', arguments); },
+          add: function (sev) { add(sev, Array.prototype.slice.call(arguments, 1)); },
+          // the debug switch: are debug lines recorded?
+          debugOn: function () { return debugOn(); },
+          setDebug: setDebug,
+          pre: function () { add('info', arguments, null, true); },
+          // a logger whose lines carry this category; the same object for the same name
+          cat: function (name) {
+              if (!name) return api;
+              if (!bound[name]) bound[name] = {
+                  info: function () { add('info', arguments, name); },
+                  warn: function () { add('warn', arguments, name); },
+                  err: function () { add('error', arguments, name); },
+                  error: function () { add('error', arguments, name); },
+                  ok: function () { add('ok', arguments, name); },
+                  debug: function () { add('debug', arguments, name); },
+                  add: function (sev) { add(sev, Array.prototype.slice.call(arguments, 1), name); },
+                  pre: function () { add('info', arguments, name, true); },
+              };
+              return bound[name];
+          },
+          open: open,
+          mount: mount,
+          close: function () { close(); },
+          reopen: function () { if (state().open) open(); },
+          isOpen: function () { return !!win; },
+          markdown: function () { return markdown(); },
+          copy: function (btn) { copy(btn); },
+          clear: clear,
+          lines: function () { return buf.map(line); },
+          entries: function () { return buf.slice(); },
+          messages: function () { return buf.map(function (e) { return e.msg; }); },
+          counts: function () { return { warn: warn, error: error }; },
+          // history (#705); harmless without o.history
+          session: function () { if (H) startSession(); return sid; },
+          resume: function (id) { return H ? resume(id) : false; },
+          keep: function () { if (H && sid && !kept) { kept = true; store.set(hp + 'current', sid); flush(); prune(); views.forEach(function (v) { v.sessions(); }); } },
+          name: function (text) { if (H && text && !sname) { sname = String(text); if (kept) store.set(hp + sid + ':name', sname); } },
+          sessionId: function () { return sid; },
+          last: function () { return H ? store.get(hp + 'current') : null; },
+          isKept: function () { return kept; },
+          sessions: function () { return H ? sessions() : []; },
+          load: function (id) { return loadSession(id); },
+          forget: function (id) { forget(id); views.forEach(function (v) { v.sessions(); }); },
+          clearHistory: clearHistory,
+          // redraw the session lists (a script showing its mounted viewer again); only a changed list is redrawn
+          refresh: function () { views.forEach(function (v) { v.sessions(); }); },
+          flush: flush,
+      };
+      if (H) sid = newId();
+      mbuLog.active = api;   // the script's own log, for helpers that note things in it (mbuClaim)
+      return api;
+  }
+
+  // Dismiss-on-outside-click, with the trailing click SWALLOWED.
+  //
+  //   var off = mbuDismissOn(popoverEl, close);   // off() to detach early
+  //
+  // #305: a popover torn down on mousedown removes what was under the cursor, so
+  // the click that follows lands on whatever the page reflowed into that spot and
+  // activates it. Tearing down on click instead just moves the problem. So: close
+  // on outside mousedown, then eat exactly one click in the capture phase. This is
+  // the single most repeated interaction bug in these scripts and it belongs in
+  // one place — it is why #563 says interaction is part of the contract.
+  //
+  // Esc closes too, innermost first: the handler is registered in capture and stops
+  // propagation, so a popover inside a modal does not close the modal as well.
+  function mbuDismissOn(el, close, opts) {
+      opts = opts || {};
+      var closed = false;
+      var onDown = function (e) {
+          if (closed || !el || el.contains(e.target)) return;
+          if (opts.ignore && e.target.closest && e.target.closest(opts.ignore)) return;
+          finish();
+          // swallow the click this mousedown will produce, once
+          var eat = function (ev) { ev.stopPropagation(); ev.preventDefault(); document.removeEventListener('click', eat, true); };
+          document.addEventListener('click', eat, true);
+          setTimeout(function () { document.removeEventListener('click', eat, true); }, 400);
+      };
+      var onKey = function (e) {
+          if (closed || e.key !== 'Escape') return;
+          e.stopPropagation();
+          finish();
+      };
+      function finish() {
+          if (closed) return;
+          closed = true;
+          document.removeEventListener('mousedown', onDown, true);
+          document.removeEventListener('keydown', onKey, true);
+          try { close(); } catch (err) { /* a throwing closer must not leave listeners behind */ }
+      }
+      document.addEventListener('mousedown', onDown, true);
+      document.addEventListener('keydown', onKey, true);
+      return finish;
+  }
+
+  // Collapse a toolbar to icon-only when its buttons would wrap.
+  //
+  //   mbuFitToolbar(barEl)            // call on build, and on resize
+  //
+  // Measured by SUMMING child widths rather than reading scrollWidth or comparing
+  // offsetTop: a bar with flex:1 spacers never overflows its own scroll box, so
+  // both of those report "fits" right up until it visibly wraps. Art Station
+  // learned that the hard way (#234) and it is the only reason this is a helper
+  // rather than one CSS rule.
+  //
+  // opts.gap    inter-item gap in px (default 11)
+  // opts.pad    horizontal padding to leave (default 24)
+  // opts.spacer selector for flexible spacers, which must not count (default .mbu-sp)
+  function mbuFitToolbar(bar, opts) {
+      if (!bar) return false;
+      opts = opts || {};
+      var gap = opts.gap == null ? 11 : opts.gap;
+      var pad = opts.pad == null ? 24 : opts.pad;
+      var spacer = opts.spacer || '.mbu-sp';
+      bar.classList.remove('mbu-compact');            // measure at full labels
+      var kids = [].slice.call(bar.children);
+      var need = gap * Math.max(0, kids.length - 1);
+      for (var i = 0; i < kids.length; i++) {
+          if (kids[i].matches && kids[i].matches(spacer)) continue;
+          need += kids[i].offsetWidth;
+      }
+      var compact = need > bar.clientWidth - pad;
+      bar.classList.toggle('mbu-compact', compact);
+      return compact;
+  }
+
+  // Publish the components on a shared namespace. Three reasons, in order:
+  //
+  //  1. it is the cross-userscript contract #563 is about — another script (or a
+  //     future one) gets the standard widgets without copying them, the same way
+  //     Mammoth already exposes its field-memory through a documented convention;
+  //  2. it makes the components testable from outside, which is the only way to
+  //     assert the *behaviour* half of the contract rather than just the markup;
+  //  3. it costs nothing when several scripts do it — the definitions are
+  //     byte-identical, so first writer wins and the rest are no-ops.
+  //
+  // Guarded per key, never clobbering: a script that loaded first keeps its copy,
+  // and a page that defines an unrelated window.MBU is left alone.
+  // Theme recognition. #564: "we don't have to conform to Stylus vars, we could
+  // probably use them as a recognition signal to enable our own dark theme."
+  //
+  // That is the right way round. Reading --background/--text and hoping every
+  // derived colour lands somewhere readable is guesswork that fails one token at a
+  // time; knowing WHICH theme we are in lets the token set say so outright, and
+  // lets us hand the browser the one thing CSS variables cannot express —
+  // color-scheme, which is what actually paints a checkbox dark instead of leaving
+  // a white (Firefox: black) box on a dark panel.
+  //
+  // The signal is the rendered page, not a particular userstyle's variable names:
+  // whatever painted the body, we measure its luminance. So this works for Stylus,
+  // for a browser extension, for MusicBrainz shipping its own dark mode one day,
+  // and for a user who just set --background by hand.
+  //
+  //   · an explicit --mbu-theme (light|dark) always wins — the escape hatch;
+  //   · otherwise the page background decides;
+  //   · re-checked when stylesheets arrive, because Stylus often lands after us.
+  function mbuThemeOf(bg) {
+      var m = /rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*([\d.]+))?/.exec(bg || '');
+      if (!m) return null;
+      if (m[4] !== undefined && +m[4] < 0.5) return null;      // transparent tells us nothing
+      var f = function (v) { v /= 255; return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); };
+      var L = 0.2126 * f(+m[1]) + 0.7152 * f(+m[2]) + 0.0722 * f(+m[3]);
+      return L < 0.35 ? 'dark' : 'light';
+  }
+  // #569 (chaban-mb) — write only when the value actually changes.
+  //
+  // The DOM does not do this for you. classList.add of a token already present,
+  // classList.toggle to the state it is already in, setAttribute with the value it
+  // already has: each one re-sets the attribute and dispatches a mutation record.
+  // Harmless once; these run from 2Hz heartbeats and from observers that react to
+  // each other, and the measured idle cost on the release editor was 66 records a
+  // second, of which 93% came from writes that changed nothing (see
+  // dev/ui/measure-569-idle-mutations.mjs).
+  //
+  // Semantically these are exact no-ops: they skip a write ONLY when the value is
+  // already the one being written, so nothing that reads the DOM afterwards can
+  // tell the difference. That is the whole reason they are safe to sprinkle around
+  // a 2Hz loop.
+  function mbuCls(el, token, on) {
+      if (!el || !el.classList) return;
+      if (el.classList.contains(token) !== !!on) el.classList.toggle(token, !!on);
+  }
+  function mbuAttr(el, name, value) {
+      if (!el) return;
+      if (value === null || value === undefined || value === false) {
+          if (el.hasAttribute(name)) el.removeAttribute(name);
+      } else if (el.getAttribute(name) !== String(value)) {
+          el.setAttribute(name, String(value));
+      }
+  }
+  // For IDL properties (disabled, title, textContent, style.display …). Reading
+  // them is cheap; writing them is not, and textContent in particular replaces
+  // every child node.
+  //
+  // ⚠ textContent is the one to think twice about: its getter concatenates the
+  // text of ALL descendants, so on an element with child ELEMENTS the comparison
+  // can match while the DOM shape is wrong, and the guard then skips a write that
+  // would have flattened it. Only use it where the target holds text and nothing
+  // else.
+  function mbuProp(obj, prop, value) {
+      if (!obj) return;
+      if (obj[prop] !== value) obj[prop] = value;
+  }
+
+  // #569: the one element mbuTheme resolves --background through. Looked up by id
+  // rather than kept in a variable, so the seven scripts of a bundle share ONE
+  // probe instead of adding seven, and so it heals itself if anything removes it.
+  // It lives in <body>: a permanent stray node under <html>, outside head and
+  // body, is the sort of thing another script's document scan trips over.
+  function mbuProbe() {
+      var p = document.getElementById('mbu-theme-probe');
+      if (p) return p;
+      if (!document.body) return null;
+      p = document.createElement('span');
+      p.id = 'mbu-theme-probe';
+      p.setAttribute('aria-hidden', 'true');
+      p.style.cssText = 'position:absolute;left:-9999px;top:0;width:1px;height:1px;pointer-events:none;background:var(--background)';
+      document.body.appendChild(p);
+      return p;
+  }
+  function mbuTheme() {
+      var root = document.documentElement;
+      try {
+          var cs = getComputedStyle(root);
+          var forced = (cs.getPropertyValue('--mbu-theme') || '').trim();
+          var t = (forced === 'dark' || forced === 'light') ? forced
+              : (mbuThemeOf(getComputedStyle(document.body).backgroundColor)
+                  || mbuThemeOf(cs.backgroundColor)
+                  || mbuThemeOf(cs.getPropertyValue('--mbu-bg'))
+                  || 'light');
+          if (root.getAttribute('data-mbu-theme') !== t) root.setAttribute('data-mbu-theme', t);
+
+          // Should we adopt the userstyle's OWN shades, or use our own palette?
+          // Only if its --background actually agrees with the theme we detected.
+          // A userstyle can paint the page dark with ordinary rules and still leave
+          // --background at a light value for its own purposes; taking that on
+          // trust hands us a light surface under a correct dark theme, which is
+          // indistinguishable from the bug it looks like. Measured, not assumed.
+          var seed = null;
+          var raw = (cs.getPropertyValue('--background') || '').trim();
+          if (raw) {
+              // Resolved through a real element, because --background may itself be
+              // a var(), a named colour, or anything else CSS accepts.
+              //
+              // #569 (chaban-mb): this used to CREATE and REMOVE that element on
+              // every call, as a direct child of <html>. mbuTheme re-runs whenever
+              // the root or body class changes, Mammoth watches the whole document
+              // for childList changes and reacts by toggling classes on <html>, and
+              // those class changes wake mbuTheme again — a self-feeding loop,
+              // measured at 12 root-node mutations a second on an idle page, which
+              // is what makes DevTools blink.
+              //
+              // One element, created once and left in place, breaks it: the value
+              // is still resolved LIVE on every call (a cached reading would freeze
+              // the theme at whatever it was before Stylus injected, which is the
+              // bug this whole function exists to avoid) but nothing is added to or
+              // removed from the DOM to read it.
+              var probe = mbuProbe();
+              var got = null;
+              if (probe) {
+                  got = mbuThemeOf(getComputedStyle(probe).backgroundColor);
+              } else {
+                  // No <body> yet — document-start. Fall back to the transient
+                  // element for these first one or two calls; the idle loop this
+                  // avoids cannot exist before the page has a body anyway.
+                  var tmp = document.createElement('span');
+                  tmp.style.cssText = 'position:absolute;left:-9999px;width:1px;height:1px;background:var(--background)';
+                  document.documentElement.appendChild(tmp);
+                  got = mbuThemeOf(getComputedStyle(tmp).backgroundColor);
+                  tmp.remove();
+              }
+              if (got === t) seed = 'theme';
+          }
+          // guarded: setAttribute dispatches a mutation record even when the value
+          // is unchanged, and this runs several times a second
+          if (seed) { if (root.getAttribute('data-mbu-seed') !== seed) root.setAttribute('data-mbu-seed', seed); }
+          else if (root.hasAttribute('data-mbu-seed')) root.removeAttribute('data-mbu-seed');
+          return t;
+      } catch (e) { return 'light'; }
+  }
+  // A document-start script runs before the document is parsed: documentElement can
+  // still be null, and <head> and <body> don't exist. Observing a null root threw, the
+  // catch below swallowed it, and nothing (the watches, the re-checks) was ever set up,
+  // so such a script never read the theme at all (#625). It starts on the parsed page.
+  function mbuThemeStart() { try {
+      mbuTheme();
+      // Stylus and friends inject after us often enough that a one-shot read is
+      // wrong about half the time. Watch for stylesheets ARRIVING — head childList
+      // plus the root's own attributes — and never the whole subtree: this runs on
+      // the release editor, where a subtree observer calling getComputedStyle is a
+      // layout thrash on every keystroke.
+      var _mbuThemeT = 0;
+      var _mbuThemeSoon = function () {
+          clearTimeout(_mbuThemeT);
+          _mbuThemeT = setTimeout(mbuTheme, 150);
+      };
+      var _mbuThemeObs = new MutationObserver(_mbuThemeSoon);
+      _mbuThemeObs.observe(document.documentElement, { attributeFilter: ['style', 'class'] });
+      // ⚠ #569: characterData, not just childList. Until the idle thrash was fixed
+      // this function ran several times a second whether or not anything had
+      // changed — Apollo re-added a body class at 2Hz, which woke this observer,
+      // which is how a theme change was ever noticed. That accidental polling was
+      // LOAD-BEARING: with the thrash gone and only head-childList watched, a
+      // userstyle that REWRITES ITSELF (Stylus editing it live, or one switching
+      // palette) adds and removes no nodes, so nothing woke us and the theme went
+      // stale. Caught by verify-569-theme-still-tracks.mjs, which passes on the
+      // pre-fix build and failed on the first version of this one.
+      if (document.head) _mbuThemeObs.observe(document.head, { childList: true, subtree: true, characterData: true });
+      if (document.body) _mbuThemeObs.observe(document.body, { attributeFilter: ['style', 'class'] });
+      // …and the case that produces no DOM mutation at all: the OS flipping to dark
+      // under a userstyle with a prefers-color-scheme query. Nothing above can see
+      // that, and nothing did before either — it was simply never noticed while the
+      // page was re-checking itself several times a second.
+      try {
+          var _mbuMq = matchMedia('(prefers-color-scheme: dark)');
+          if (_mbuMq.addEventListener) _mbuMq.addEventListener('change', _mbuThemeSoon);
+          else if (_mbuMq.addListener) _mbuMq.addListener(_mbuThemeSoon);
+      } catch (e) {}
+      setTimeout(mbuTheme, 400);
+      setTimeout(mbuTheme, 2000);
+  } catch (e) { /* no observer, no theme switching — the light defaults still apply */ } }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', mbuThemeStart, { once: true });
+  else mbuThemeStart();
+
+  try {
+      var _mbuNs = (typeof unsafeWindow !== 'undefined' ? unsafeWindow : window);
+      if (!_mbuNs.MBU) _mbuNs.MBU = {};
+      if (!_mbuNs.MBU.theme) _mbuNs.MBU.theme = mbuTheme;
+      if (!_mbuNs.MBU.helpHref) _mbuNs.MBU.helpHref = mbuHelpHref;
+      if (!_mbuNs.MBU.helpHtml) _mbuNs.MBU.helpHtml = mbuHelpHtml;
+      if (!_mbuNs.MBU.helpEl) _mbuNs.MBU.helpEl = mbuHelpEl;
+      if (!_mbuNs.MBU.toast) _mbuNs.MBU.toast = mbuToast;
+      if (!_mbuNs.MBU.cfgHeader) _mbuNs.MBU.cfgHeader = mbuCfgHeader;
+      if (!_mbuNs.MBU.dismissOn) _mbuNs.MBU.dismissOn = mbuDismissOn;
+      if (!_mbuNs.MBU.fitToolbar) _mbuNs.MBU.fitToolbar = mbuFitToolbar;
+  } catch (e) { /* a locked-down page must not stop the script loading */ }
+  // </ST-UI>
+
+  const MB_ORIGIN = location.origin;
+  // the ACTUAL MusicBrainz origin — used to build the outbound url when this script
+  // is running ON Harmony (there, MB_ORIGIN above is Harmony's own origin, not MB's).
+  //
+  // ⚠ This must follow whichever MusicBrainz server the panel is open on, not be
+  // pinned to production. @match covers *.musicbrainz.org, which includes
+  // test.musicbrainz.org and beta — and a hardcoded production target meant a
+  // batch queued while testing on the SANDBOX would build its edit urls against
+  // the LIVE site and quietly edit real data. Workers are same-origin iframes, so
+  // a cross-origin target could not work anyway. Only fall back to production for
+  // the one case the comment above describes: running on Harmony, where the
+  // current origin genuinely isn't MusicBrainz.
+  const MB_TARGET = /(^|\.)musicbrainz\.org$/i.test(location.hostname) ? location.origin : 'https://musicbrainz.org';
+  const ON_HARMONY = /(^|\.)harmony\.pulsewidth\.org\.uk$/i.test(location.hostname);
+  const HELP_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/falcon/README.md';
+  // the corner launcher, the panel header and the Harmony button all wear
+  // the script's own icon (the same picture as @icon)
+  const ICON_URL = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5GYWxjb248L3RpdGxlPgo8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSI1OCIgZmlsbD0iI2Y2ZWZlMiIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjYiLz48cGF0aCBkPSJNMTA1LjYgNDAuMCBBNDggNDggMCAwIDEgMTA1LjYgODguMCIgc3Ryb2tlPSIjZDYyODI4IiBzdHJva2Utd2lkdGg9IjciIGZpbGw9Im5vbmUiLz4KPGcgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2UtbGluZWNhcD0icm91bmQiPjxwYXRoIGQ9Ik0yMC43IDg5LjAgTDI5LjQgODQuMCIgc3Ryb2tlLXdpZHRoPSIzIi8+PHBhdGggZD0iTTE0LjMgNjkuMiBMMjQuMiA2OC4yIiBzdHJva2Utd2lkdGg9IjMiLz48cGF0aCBkPSJNMTYuNCA0OC41IEwyNi4wIDUxLjYiIHN0cm9rZS13aWR0aD0iMyIvPjxwYXRoIGQ9Ik0yNi44IDMwLjUgTDM0LjMgMzcuMiIgc3Ryb2tlLXdpZHRoPSIzIi8+PHBhdGggZD0iTTQzLjcgMTguMyBMNDcuNyAyNy41IiBzdHJva2Utd2lkdGg9IjMiLz48cGF0aCBkPSJNNjQuMCAxNC4wIEw2NC4wIDI0LjAiIHN0cm9rZS13aWR0aD0iMyIvPjxwYXRoIGQ9Ik04NC4zIDE4LjMgTDgwLjMgMjcuNSIgc3Ryb2tlLXdpZHRoPSIzIi8+PHBhdGggZD0iTTEwMS4yIDMwLjUgTDkzLjcgMzcuMiIgc3Ryb2tlLXdpZHRoPSIzIi8+PHBhdGggZD0iTTExMS42IDQ4LjUgTDEwMi4wIDUxLjYiIHN0cm9rZS13aWR0aD0iMyIvPjxwYXRoIGQ9Ik0xMTMuNyA2OS4yIEwxMDMuOCA2OC4yIiBzdHJva2Utd2lkdGg9IjMiLz48cGF0aCBkPSJNMTA3LjMgODkuMCBMOTguNiA4NC4wIiBzdHJva2Utd2lkdGg9IjMiLz48L2c+PGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoNjQgOTQpIHJvdGF0ZSgwKSBzY2FsZSgwLjE2KSB0cmFuc2xhdGUoLTY0IC02NCkiPjxwYXRoIGQ9Ik02NCAyNiBDNjcgMjYgNzAgMzAgNzAgMzYgQzcyIDQwIDc0IDQyIDc2IDQ0IEM5MiA0MiAxMDggMzYgMTI0IDM0IEMxMTIgNDQgOTYgNTQgNzggNjIgQzc2IDY4IDc0IDc0IDc0IDgwIEw4MCAxMDAgQzc0IDEwNCA2OCAxMDQgNjQgMTA0IFoiIGZpbGw9IiM0YTVhNzgiLz48cGF0aCBkPSJNNjQgMjYgQzY3IDI2IDcwIDMwIDcwIDM2IEM3MiA0MCA3NCA0MiA3NiA0NCBDOTIgNDIgMTA4IDM2IDEyNCAzNCBDMTEyIDQ0IDk2IDU0IDc4IDYyIEM3NiA2OCA3NCA3NCA3NCA4MCBMODAgMTAwIEM3NCAxMDQgNjggMTA0IDY0IDEwNCBaIiBmaWxsPSIjNGE1YTc4IiB0cmFuc2Zvcm09InRyYW5zbGF0ZSgxMjggMCkgc2NhbGUoLTEgMSkiLz48L2c+PGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoNjQgNjQpIHJvdGF0ZSgxMTIpIj48cGF0aCBkPSJNMCAtNDYgTDQgMCBMLTQgMFoiIGZpbGw9IiMxYjJhNGEiLz48L2c+CjxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjciIGZpbGw9IiMxYjJhNGEiLz4KPC9zdmc+Cg==';
+  const ICON = `<img src="${ICON_URL}" alt="" width="20" height="20" style="display:block">`;
+
+  // mbRestackCorner, the #468 corner slots, is in the ST-UI block (dev/ui/ui-components.mjs).
+
+  /* ── settings ────────────────────────────────────────────────────────── */
+  const cfg = {
+    // Default 5, from majkinetor measuring a real batch: 1.8s/item at 5 workers
+    // vs 2.3s at 3. Above that the gain flattens and MB gets a rougher ride, so
+    // the cap stays at 6.
+    get workers() { const n = Number(GM_getValue('falcon:workers', 5)); return Math.max(1, Math.min(6, isFinite(n) ? n : 5)); },
+    set workers(n) { GM_setValue('falcon:workers', Math.max(1, Math.min(6, Number(n) || 5))); },
+    // #467 (majkinetor): "Add worker window size so I can see better what is
+    // wrong [with] multiple windows" — the default thumbnail is too small to
+    // read a validation message, so make it adjustable and remember it. Card
+    // height tracks width at 4:5.
+    get workerSize() { const n = Number(GM_getValue('falcon:workerSize', 260)); return Math.max(200, Math.min(900, isFinite(n) ? n : 260)); },
+    set workerSize(n) { GM_setValue('falcon:workerSize', Math.max(200, Math.min(900, Number(n) || 260))); },
+    // #508 (majkinetor): "Options" screen additions.
+    get hideLauncher() { return GM_getValue('falcon:hideLauncher', false) === true; },
+    // #663: the queue's layout, 'list' (a labelled form per open row) or 'grid' (one line per row)
+    // #663: the locale a typed alias gets when it carries no @locale of its own ('' = none)
+    get aliasLang() { return String(GM_getValue('falcon:aliasLang', '') || ''); },
+    set aliasLang(v) { GM_setValue('falcon:aliasLang', String(v || '').trim()); },
+    get queueView() { return GM_getValue('falcon:queueView', 'list') === 'grid' ? 'grid' : 'list'; },
+    set queueView(v) { GM_setValue('falcon:queueView', v === 'grid' ? 'grid' : 'list'); },
+    set hideLauncher(v) { GM_setValue('falcon:hideLauncher', !!v); },
+    get coverOnlyIfNone() { return GM_getValue('falcon:coverOnlyIfNone', false) === true; },
+    set coverOnlyIfNone(v) { GM_setValue('falcon:coverOnlyIfNone', !!v); },
+    // #537 (majkinetor): "I think this is all very complicated and is not
+    // something Falcon should do. Add an option to not process Harmony covers."
+    // Cover art is the one payload Falcon cannot get exactly right on its own:
+    // Harmony gives the image URL the provider's own API returns, which is
+    // often not the largest that provider will serve, and reaching the bigger
+    // one means owning per-provider URL rules (see the issue). With this on,
+    // Falcon leaves covers alone entirely and you use ECAU or Art Station for
+    // them; everything else in a Harmony batch still goes through as usual.
+    get skipHarmonyCovers() { return GM_getValue('falcon:skipHarmonyCovers', false) === true; },
+    set skipHarmonyCovers(v) { GM_setValue('falcon:skipHarmonyCovers', !!v); },
+    // #508 follow-up (majkinetor): "Auto start Harmony import (off by default)".
+    get autoStartHarmonyImport() { return GM_getValue('falcon:autoStartHarmonyImport', false) === true; },
+    set autoStartHarmonyImport(v) { GM_setValue('falcon:autoStartHarmonyImport', !!v); },
+    // #557 (majkinetor): "Current auto start works on MB side. Let's have another
+    // option 'Auto send' in Harmony category. Having both enabled would
+    // automatically finish everything after successful Harmony import." This is
+    // the HARMONY half — it presses "Send to Falcon" for you; autoStartHarmonyImport
+    // above is the MB half that then starts the queue.
+    get autoSendFromHarmony() { return GM_getValue('falcon:autoSendFromHarmony', false) === true; },
+    set autoSendFromHarmony(v) { GM_setValue('falcon:autoSendFromHarmony', !!v); },
+    // How long the cancel window lasts before an auto-send fires. Not exposed in
+    // the options UI — it exists so the send is interruptible, not to be tuned.
+    get autoSendDelayMs() { const n = Number(GM_getValue('falcon:autoSendDelayMs', 4000)); return Math.max(0, Math.min(30000, isFinite(n) ? n : 4000)); },
+    set autoSendDelayMs(v) { GM_setValue('falcon:autoSendDelayMs', Math.max(0, Math.min(30000, Number(v) || 0))); },
+    // #590: no option. majkinetor, after trying the first cut: "lets just look
+    // for MB errors (without an option) and send at the end whatever is there."
+    // Not in the options UI, same reasoning as autoSendDelayMs: this bounds the
+    // retry so it can't become a loop against MusicBrainz, it is not a knob.
+    get harmonyReloadMax() { const n = Number(GM_getValue('falcon:harmonyReloadMax', 5)); return Math.max(0, Math.min(20, isFinite(n) ? n : 5)); },
+    set harmonyReloadMax(v) { GM_setValue('falcon:harmonyReloadMax', Math.max(0, Math.min(20, Number(v) || 0))); },
+    // #588 (chaban-mb / majkinetor): "add new Harmony option: Reload release page
+    // after import without errors." chaban runs Falcon fully automatic, so all he
+    // ever sees is a drained queue over a stale release view. majkinetor's own
+    // ruling on #588 was that a blanket standard is wrong (PC restarts because
+    // Scout must see it; Falcon doesn't because you want the queue's results) —
+    // hence an option, off by default, and the run log survives the reload
+    // regardless since #512 put sessions in localStorage.
+    get reloadReleaseAfterImport() { return GM_getValue('falcon:reloadReleaseAfterImport', false) === true; },
+    set reloadReleaseAfterImport(v) { GM_setValue('falcon:reloadReleaseAfterImport', !!v); },
+    // #512 (majkinetor): "keep configurable number of last runs in local
+    // storage so those can be selected and loaded by datetime".
+    // #705 (majkinetor): "lets reduce default from 20 to 10"
+    get logHistoryCount() { const n = Number(GM_getValue('falcon:logHistoryCount', 10)); return Math.max(1, Math.min(100, isFinite(n) ? n : 10)); },
+    set logHistoryCount(n) { GM_setValue('falcon:logHistoryCount', Math.max(1, Math.min(100, Number(n) || 10))); },
+    // #508 follow-up (majkinetor): "Open from Harmony in new tab (on by
+    // default)... Implement 'Off' option that doesn't open new tab but
+    // opens MB in existing one" — the existing one being the Harmony tab
+    // itself, navigated away to MB instead of window.open()'d elsewhere.
+    get openHarmonyInNewTab() { return GM_getValue('falcon:openHarmonyInNewTab', true) === true; },
+    set openHarmonyInNewTab(v) { GM_setValue('falcon:openHarmonyInNewTab', !!v); },
+    // #578. This started life as "add ?tport= or not" and is now narrower:
+    // ?tport= is always added (see picardParam), so the tagger button is always
+    // there to click; this governs only whether Falcon ALSO calls Picard by
+    // itself when a run finishes — "[x] Automatically send to Picard using port
+    // [8000]". Off by default, since an unattended hand-over to a program that
+    // may not be running is not a sensible default.
+    //
+    // The storage key still says sendToPicard rather than autoSendToPicard: it
+    // is the same setting doing the same job for the same people, and renaming
+    // it would silently reset it for anyone who has already ticked the box.
+    get sendToPicard() { return GM_getValue('falcon:sendToPicard', false) === true; },
+    set sendToPicard(v) { GM_setValue('falcon:sendToPicard', !!v); },
+    // Clamped on the way in AND on the way out, so a hand-edited stored value
+    // can't put something that isn't a port into a URL.
+    get picardPort() { const n = Math.floor(Number(GM_getValue('falcon:picardPort', 8000))); return (isFinite(n) && n >= 1 && n <= 65535) ? n : 8000; },
+    set picardPort(v) { const n = Math.floor(Number(v)); GM_setValue('falcon:picardPort', (isFinite(n) && n >= 1 && n <= 65535) ? n : 8000); },
+  };
+
+  /* ── the log: the shared activity log (#705), mounted in the panel's Log tab ── */
+  // #467 (majkinetor, emphatically: "I DON'T WANT LOGS FROM OTHER RUNS. I WANT YOU TO
+  // KEEP THE WINDOW OPEN AND HAVE A SINGLE LOG OF THAT SESSION"), #512 ("keep
+  // configurable number of last runs in local storage so those can be selected and
+  // loaded by datetime") and #593 ("it is missing starting lines"): each run has its
+  // own log, written to localStorage within 100 ms of each line (a crashed or
+  // navigated tab keeps it; GM storage wasn't flushed on the way out), the last N runs
+  // kept, and a long run keeps its start and end and drops the middle. #705 moved
+  // those rules into the shared log's history; Falcon decides when a run starts
+  // (newSession), that it is worth keeping (once its workers start: "We should have
+  // only processing logs"), and when a navigation carries one on (the reattach below).
+  const LOG_PERSIST_MAX = 400, LOG_PERSIST_HEAD = 140;
+  const LS = (() => { try { return window.localStorage; } catch (e) { return null; } })();
+  const LS_PREFIX = 'falcon:session:';
+  // a session id is its start, YYYYMMDDHHMMSS-N; falcon:session:current and :midrun
+  // share the prefix, so a key counts only when the rest looks like an id
+  const SESSION_ID_RE = /^\d{14}-\d+$/;
+  function listSessionKeys() {
+    if (!LS) return [];
+    const out = [];
+    try {
+      for (let i = 0; i < LS.length; i++) {
+        const k = LS.key(i);
+        if (!k || !k.startsWith(LS_PREFIX)) continue;
+        const id = k.slice(LS_PREFIX.length);
+        if (SESSION_ID_RE.test(id)) out.push(id);
+      }
+    } catch (e) {}
+    return out.sort();   // the id's own YYYYMMDDHHMMSS-N prefix sorts chronologically as a string
+  }
+  // a run stored before #705 is lines of text: "[hh:mm:ss] LEVEL [w1] message", the time in UTC
+  function parseStoredLine(line, day) {
+    const m = /^\[(\d\d):(\d\d):(\d\d)\] (\w+)\s+(?:\[(w\d+|w\?)\] )?([\s\S]*)$/.exec(line);
+    if (!m) { const d = /^\[--:--:--\] (\w+)\s+([\s\S]*)$/.exec(line); return d ? { sev: d[1].toLowerCase(), msg: d[2] } : null; }
+    const t = day ? new Date(Date.UTC(day.getUTCFullYear(), day.getUTCMonth(), day.getUTCDate(), +m[1], +m[2], +m[3])) : null;
+    return { t, sev: m[4].toLowerCase(), cat: m[5] || '', msg: m[6], pre: m[6].includes('\n') };
+  }
+  const Log = mbuLog({
+    name: NAME, version: scriptVersion, header: 'Falcon — activity log', key: 'falcon:logwin',
+    subtitle: () => { try { return (LS && LS.getItem(sessionNameKey(Log.sessionId()))) || ''; } catch (e) { return ''; } },
+    history: { prefix: LS_PREFIX, keep: () => cfg.logHistoryCount, lines: LOG_PERSIST_MAX, head: LOG_PERSIST_HEAD, parse: parseStoredLine, nameOf: extractReleaseName },
+  });
+  // #512 follow-up (majkinetor): "Logs sometimes do not have a name although in log it
+  // is present" — the release name has its own small key, never trimmed with the log
+  function sessionNameKey(id) { return LS_PREFIX + id + ':name'; }
+  function noteSessionReleaseName(name) { if (name) Log.name(name); }
+  // #671: the name a JSON model gives its batch (its root `name`), for a queue with no release
+  // in it to name the session after — Platform Check's artists and labels, say
+  let _batchName = '';
+  function deleteSessionData(id) { Log.forget(id); }
+  function loadSessionLines(id) { return Log.load(id); }
+  // the name key, else mined from the log of a session stored before that key existed
+  function sessionReleaseName(id) {
+    try { const n = LS && LS.getItem(sessionNameKey(id)); if (n) return n; } catch (e) {}
+    return extractReleaseName(Log.load(id) || []);
+  }
+  function pruneOldSessions() {
+    const ids = listSessionKeys();
+    const excess = ids.length - cfg.logHistoryCount;
+    if (excess > 0) ids.slice(0, excess).forEach(deleteSessionData);
+  }
+  // #512 follow-up (majkinetor: "I got bunch of historic logs without any processing...
+  // We should have only processing logs"). A run is kept once it logs "starting N
+  // worker(s)"; this catches a session stored before #705 that never got that far.
+  function sessionHasRealWork(entries) {
+    return entries.some(e => /^starting \d+ worker/.test(e.msg));
+  }
+  function newSession(reason) {
+    const prevId = Log.last();
+    if (prevId && prevId !== Log.sessionId()) {
+      const prev = Log.load(prevId);
+      if (prev && !sessionHasRealWork(prev)) deleteSessionData(prevId);
+    }
+    Log.session();
+    /* #593 (majkinetor): "It didn't have a name (just date) while release name
+       is resolved." A Harmony seed starts a session at boot, the release name
+       arrives a moment later, and then Start begins the run's own session. The
+       queue survives across the two, so carry the name over. */
+    try {
+      const rel = queue.find(i => i.entityType === 'release' && i.name);
+      if (rel) noteSessionReleaseName(rel.name);
+      else if (_batchName && queue.length) noteSessionReleaseName(_batchName);
+    } catch (e) {}
+    log('info', `=== session ${Log.sessionId()} started (${reason}) ===`);
+    log('info', mbuStartupInfo('Falcon'));
+  }
+  // carry on a run's log after a navigation, but ONLY when a run was still going when
+  // the tab unloaded (#512 follow-up, majkinetor: "I reload the MB page and expect
+  // empty log, but I get this" — a finished run's log)
+  try {
+    const cur = Log.last();
+    if (cur && LS && LS.getItem('falcon:session:midrun') === '1') Log.resume(cur);
+  } catch (e) {}
+  const writeLogNow = () => Log.flush();
+  // Forensics for the panel vanishing mid-run: record every unload synchronously,
+  // with where the tab went, so the next load can say so. #512 follow-up: an unload
+  // after a finished run is expected, so only a mid-run one is an error.
+  function noteUnload(ev) {
+    try {
+      const busy = typeof queue !== 'undefined' && queue.some(i => i.status === 'active' || i.status === 'queued');
+      Log.add(busy ? 'error' : 'info', `*** THIS TAB IS BEING UNLOADED (${busy ? 'MID-RUN' : 'after the run finished'}) *** from ${location.href} via ${(ev && ev.type) || '?'} — the panel and its workers are being destroyed by the page going away, NOT by Falcon closing them.${busy ? ' Report this line.' : ''}`);
+      // `running`, not `busy`: a seeded-but-never-Started item sits in 'queued'
+      // forever, but nothing was in progress, so it must not reattach
+      try { if (LS) LS.setItem('falcon:session:midrun', running ? '1' : '0'); } catch (e) {}
+      Log.flush();
+    } catch (e) {}
+  }
+  try {
+    window.addEventListener('pagehide', noteUnload);
+    window.addEventListener('beforeunload', noteUnload);
+  } catch (e) {}
+
+  // a worker's lines start "[w1] …" and the run summary "[run] …": that becomes the line's
+  // category (#705), a filter chip in the Log tab; a message of several lines (the summary) is kept as written
+  function log(level, msg) {
+    const text = String(msg), m = /^\[(w\d+|w\?|run)\] /.exec(text);
+    const L = m ? Log.cat(m[1]) : Log, body = m ? text.slice(m[0].length) : text;
+    if (level === 'info' && body.includes('\n')) L.pre(body); else L.add(level, body);
+    try { (console[level] || console.log).call(console, '[Falcon]', msg); } catch (e) {}
+  }
+  // #467 (majkinetor: "it was slow and UI was frozen after some time"): every
+  // log line used to re-render the whole log pane synchronously (join of up to
+  // 1500 lines + textContent + scroll), and every queue mutation re-rendered
+  // the entire queue list. Under 3 concurrent workers that's a lot of layout
+  // thrash on the SAME main thread the worker iframes are competing for.
+  // Coalesce instead: mark what's dirty and repaint once per animation frame.
+  let _dirty = {}, _rafPending = false;
+  function scheduleRender(what) {
+    _dirty[what] = true;
+    if (_rafPending) return;
+    _rafPending = true;
+    requestAnimationFrame(() => {
+      _rafPending = false;
+      const d = _dirty; _dirty = {};
+      if (d.queue) renderQueue();
+      if (d.workers) renderWorkerLayout();
+    });
+  }
+  // #467 (majkinetor, discussion #459): "some workers still randomly do not
+  // submit stuff for the unknown reason" — intermittent and not reproducible
+  // locally, so every step of a worker's run is traced at debug level, tagged
+  // with WHICH worker (they run concurrently, so untagged lines interleave into
+  // an unreadable mess). The goal is that a single real run's log says exactly
+  // where a worker stopped short, without needing a live repro.
+  // #705: the switch is the shared log's own (majkinetor: "component should have its own UI
+  // for that"), off by default; a setting made with Falcon's old switch carries over once
+  try { const was = GM_getValue('falcon:debug', null); if (was !== null) { Log.setDebug(was === true); GM_deleteValue('falcon:debug'); } } catch (e) {}
+  const debugOn = () => Log.debugOn();
+  function dbg(tag, msg) { if (debugOn()) log('debug', `${tag} ${msg}`); }
+
+  /* ── queue item shape: {id, entityType, mbid, urls: [{url,linkTypeId}], note,
+     disambiguation, isrcs, video, source, aliases: [{name, locale, type,
+     primary, sortName, begin, end, ended}], cover: [{url, comment, type, candidates:
+     [{provider,url,width?,height?,size?}]}], coverExistingCount, urlResults,
+     status, error} ── entityType is one of artist/label/recording/release/
+     release_group. Field usage by type (#496 — the rest are always present on
+     the item internally for simplicity, but only these are ever read/rendered):
+       - urls[]: all types (release_group and release included, #495)
+       - isrcs[]: recording only
+       - aliases[]: all types (#535) — each entry is one MB edit, submitted
+         through /<entity>/<mbid>/add-alias rather than the entity's own edit
+         form (see submitAlias). `type` is the alias type's NAME as MB spells
+         it for that entity ("Recording name", "Search hint", "Legal name" on
+         artists) and is resolved against the form's own <select>.
+       - video: recording only (#534) — boolean, MB's Video checkbox. Only ever
+         seeded when TRUE: leaving it out preserves an existing flag, so false
+         means "don't touch", not "clear it". Falcon never unsets it on MB.
+       - disambiguation: all five types (#533; MB's own form field for this is
+         internally called `comment`, but Falcon's own field is named for what
+         it actually is — #496: "don't use `comment` for two unrelated things").
+         A release's is typed into MB's Knockout editor rather than seeded.
+       - cover[]: release only — an ARRAY (a release can carry more than one
+         cover image; Falcon today only ever populates one entry from Harmony,
+         but the shape supports more so a future batch/JSON import can add
+         several at once, #496). Each entry's own `comment` is THAT image's
+         upload comment (e.g. "page 1"), unrelated to `disambiguation`. `type`
+         is the MB cover-art type (front/back/booklet/…), default 'front'.
+         `url` is auto-picked by pickBestCover, always user-editable.
+         coverExistingCount (item-level, not per-cover-entry — it's a fact
+         about the RELEASE, not about any one image being added) is set by
+         checkExistingCoverArt. A release item can have urls[] AND cover[] at
+         once (independent MB edits on the same entity — see workerLoop's
+         `needsCover` handling and runCoverItem's `priorLinks` merge) or
+         either alone.
+     A release_group/release/artist/label/recording item with urls[] goes
+     through the normal iframe/form worker path; a release's cover goes
+     through runCoverItem's upload-API path instead — never both through the
+     same mechanism. #467 (majkinetor): the same entity can carry
+     several URLs — group those into ONE item/one edit-page visit rather than
+     revisiting the same mbid N times (both unsafe — two workers must never load
+     the same entity's /edit at once — and wasteful). Grouping happens at add-time
+     (see addToQueue); nextQueued() additionally refuses to hand out a queued item
+     whose entity is already 'active' in another worker, so a later-added item for
+     the same entity can never race the one already in flight.
+     `linkTypeId` is optional — when present (e.g. from Harmony, which already
+     knows exactly which relationship type it wants) it's used to set the type
+     select if MB renders one instead of auto-classifying; when absent MB's own
+     classifier decides, same as before. The SAME url can legitimately appear
+     twice with two different linkTypeId values (Harmony does this for e.g. a
+     Bandcamp track that's both "stream for free" and "purchase for download") —
+     handled by fillAndSubmit via MB's own "Add another relationship" row rather
+     than re-typing the url, so dedup below is keyed on (url, linkTypeId), not url
+     alone. */
+  let queue = [];
+  let _idSeq = 0;
+  let running = false;
+  // review-UX state (#467): which rows are checked (for bulk remove) / expanded
+  // (showing their full url list) — kept outside `queue` itself since it's pure
+  // display state, survives across renderQueue() calls (a full innerHTML replace).
+  let _selectedIds = new Set();
+  let _expandedIds = new Set();
+  // #497 (majkinetor): per-entity-type processing toggle, shown as chips in
+  // the queue toolbar ("artist 5", "release 7", ...). All ON by default —
+  // turning one off excludes every QUEUED item of that type from the run
+  // (nextQueued skips them) without removing them from the queue; an
+  // already-active/done/failed item is untouched by toggling since this only
+  // gates what a worker picks up NEXT, not history.
+  let _disabledTypes = new Set();
+  // #513 (majkinetor): "Its still not easily seeable that there were issues.
+  // Lets add some chip with results in appropriate color if there are
+  // issues... Make the chip clickable to filter in just those results." —
+  // null shows everything; a status string shows only rows in that status.
+  let _statusFilter = null;
+  // #494: 'release' can carry BOTH a urls[] link (via the normal iframe/form
+  // pipeline, like every other type — #495) AND a cover (via the upload API,
+  // never the form; see runCoverItem) — a release item's worker turn runs
+  // whichever of those it actually has. 'release_group' (#495) is a plain
+  // urls[]-only type, same pipeline as artist/label/recording, no special
+  // casing — MB's URL path for it is 'release-group' (hyphen) even though the
+  // internal entityType value and seed-param prefix use 'release_group'
+  // (underscore, matching MB's own `edit-release_group.` seed params); see
+  // entityUrlSegment.
+  const ENTITY_RE = /^(artist|label|recording|release|release_group)$/;
+  const MBID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+  // #496: MB's own cover-art type vocabulary — same list as Art Station's
+  // COVER_TYPES (art_station.user.js), kept identical so a type picked here
+  // maps onto the exact same label MB's own add-cover-art form shows.
+  const COVER_TYPES = ['Front', 'Back', 'Booklet', 'Medium', 'Tray', 'Obi', 'Spine', 'Track', 'Liner', 'Sticker', 'Poster', 'Watermark', 'Raw/Unedited', 'Matrix/Runout', 'Top', 'Bottom', 'Panel', 'Other'];
+  const newCoverEntry = (url, candidates) => ({ url: url || '', comment: '', type: 'Front', candidates: candidates || [] });
+  // #496: accepts the current array shape, the pre-#496 single-object shape
+  // ({url, candidates}), and the even older bare top-level `coverCandidates`
+  // — so a JSON file exported before this change still imports cleanly.
+  function normalizeCoverForImport(r) {
+    if (Array.isArray(r.cover)) return r.cover.filter(c => c && typeof c === 'object').map(c => ({
+      url: String(c.url || ''), comment: String(c.comment || ''), type: String(c.type || 'Front'),
+      candidates: Array.isArray(c.candidates) ? c.candidates : [],
+    }));
+    if (r.cover && typeof r.cover === 'object') return [{
+      url: String(r.cover.url || ''), comment: String(r.comment || ''), type: 'Front',
+      candidates: Array.isArray(r.cover.candidates) ? r.cover.candidates : [],
+    }];
+    if (Array.isArray(r.coverCandidates) && r.coverCandidates.length) return [newCoverEntry('', r.coverCandidates)];
+    return [];
+  }
+
+  function normalizeEntityType(raw) {
+    const t = String(raw || 'artist').trim().toLowerCase().replace(/-/g, '_');
+    return ENTITY_RE.test(t) ? t : 'artist';
+  }
+  // MB's own URL path segment for an entity type — every type matches its
+  // entityType verbatim except release_group, whose real path is
+  // 'release-group' (hyphen) while the internal value/seed-param prefix stays
+  // 'release_group' (underscore, MB's own inconsistency — verified live).
+  function entityUrlSegment(entityType) { return entityType === 'release_group' ? 'release-group' : entityType; }
+  // #533 (majkinetor): "We currently support Disambiguation for recordings.
+  // Lets complete it for other entities." — then: "Release also has
+  // disambiguation attribute. A field in 'Additional Information'. Not sure if
+  // there is an API or form must be driven."
+  //
+  // Every MB entity has one, and Falcon now sets all five. They take two
+  // different routes, because the release editor is not a form like the others:
+  const DISAMBIGUATABLE = new Set(['artist', 'label', 'recording', 'release_group', 'release']);
+  // …four are plain server-rendered forms, seeded straight from the url like
+  // every other field here…
+  const COMMENT_SEEDS = new Set(['artist', 'label', 'recording', 'release_group']);
+  // #571 (majkinetor): "We should be able to change the name of the entity."
+  //
+  // Renaming splits exactly the same way disambiguation does, for exactly the
+  // same reason — four server-rendered forms take `edit-<type>.name=` from the
+  // query string, and the release editor is a Knockout app that ignores it, so
+  // that one gets typed into (setReleaseName).
+  //
+  // The item field is `rename`, NOT `name`: `name` already means the entity's
+  // CURRENT display name throughout the queue, the JSON model and the
+  // `?falcon=` param. Overloading it would make an existing exported file with
+  // names in it silently rename every entity in the queue on re-import.
+  // #663: the names of MB's url link types, so a queued link reads "free streaming"
+  // rather than "type 194". A static copy of /ws/js/type-info/link_type (url types
+  // only); an id missing from it still shows as "type N".
+  const URL_LINK_TYPES = {"72":"production","73":"get the music","74":"purchase for download","75":"download for free","76":"discogs","77":"amazon asin","78":"cover art link","79":"purchase for mail-order","82":"other databases","83":"IMDB samples","85":"free streaming","86":"vgmdb","88":"discography","89":"wikipedia","90":"discogs","93":"lyrics","94":"review","96":"other databases","97":"IMDb","171":"discography","172":"fanpage","173":"image","174":"purevolume","175":"purchase for mail-order","176":"purchase for download","177":"download for free","178":"IMDb","179":"wikipedia","180":"discogs","182":"biography","183":"official homepage","184":"discography page","185":"online community","187":"get the music","188":"other databases","189":"myspace","190":"BBC Music page","191":"vgmdb","192":"social network","193":"youtube","194":"free streaming","197":"lyrics","199":"blog","210":"vgmdb","211":"history site","212":"catalog site","213":"logo","214":"fanpage","215":"myspace","216":"wikipedia","217":"discogs","218":"social network","219":"official site","221":"online data","222":"other databases","224":"blog","225":"youtube","254":"purchase for download","255":"download for free","256":"production","257":"get the music","258":"IMDB samples","268":"free streaming","271":"lyrics","273":"other databases","274":"download for free","279":"wikipedia","280":"secondhandsongs","283":"allmusic","284":"allmusic","285":"allmusic","286":"allmusic","287":"official homepage","288":"discography entry","289":"songfacts","290":"soundcloud","291":"soundcloud","301":"license","302":"license","303":"video channel","304":"video channel","306":"other databases","307":"secondhandsongs","308":"secondhandsongs","310":"VIAF","311":"VIAF","312":"VIAF","313":"IMDb","351":"wikidata","352":"wikidata","353":"wikidata","354":"wikidata","355":"wikipedia","358":"wikidata","363":"official homepage","396":"image","429":"social network","462":"myspace","495":"video channel","528":"youtube","561":"other databases","594":"wikidata","595":"wikipedia","627":"blog","660":"online data","705":"discogs","706":"IMDb","707":"interview","713":"geonames","718":"bandcamp","719":"bandcamp","729":"show notes","730":"other databases","731":"wikipedia","732":"image","733":"wikidata","734":"information page","744":"wikipedia","745":"official homepage","746":"other databases","747":"discogs","749":"wikidata","753":"other databases","754":"IMSLP","755":"allmusic","782":"official homepage","783":"social network","784":"social network","785":"songkick","786":"songkick","787":"songkick","788":"vgmdb","789":"wikipedia","790":"wikidata","791":"youtube","792":"youtube","803":"other databases","804":"video channel","805":"video channel","808":"poster","811":"setlistfm","816":"setlistfm","817":"setlistfm","837":"last.fm","838":"last.fm","839":"last.fm","840":"last.fm","841":"online data","842":"review","843":"IMDb","850":"BookBrainz","851":"BookBrainz","852":"BookBrainz","853":"BookBrainz","854":"BookBrainz","860":"bandsintown","861":"bandsintown","862":"bandsintown","870":"soundcloud","897":"patronage","898":"patronage","899":"patronage","900":"patronage","901":"patronage","902":"crowdfunding","903":"crowdfunding","904":"crowdfunding","905":"crowdfunding","906":"crowdfunding","907":"crowdfunding","908":"crowdfunding","909":"crowdfunding","910":"crowdfunding","911":"get the score","912":"purchase for download","913":"purchase for mail-order","915":"podcast feed","919":"CD Baby","920":"VIAF","921":"work list entry","934":"geonames","938":"setlistfm","939":"license","940":"soundcloud","957":"get the music","958":"download for free","959":"purchase for download","960":"purchase for mail-order","971":"discogs","976":"secondhandsongs","977":"secondhandsongs","978":"streaming","979":"streaming","980":"streaming","981":"CPDL","982":"lyrics","984":"history site","992":"vgmdb","997":"free streaming","1001":"VIAF","1005":"streaming","1013":"vgmdb","1080":"youtube music","1083":"schedule","1086":"other databases","1087":"wikidata","1089":"discogs","1091":"get the music","1092":"bandcamp","1093":"allmusic","1130":"apple music","1131":"apple music","1167":"BookBrainz","1169":"discography entry","1188":"fanpage","1189":"fanpage","1190":"fanpage","1191":"fanpage","1192":"art gallery","1193":"ticketing","1194":"ticketing","1195":"ticketing","1196":"ticketing","1197":"ticketing","1254":"purchase artwork","1275":"discogs","1288":"logo","1289":"IMDb","1301":"fanpage","1302":"schedule"};
+  const linkTypeName = id => URL_LINK_TYPES[id] || `type ${id}`;
+  // #663: the url link types each entity can take (MusicBrainz's, current ones only), for the link editor's type picker
+  const URL_TYPES_BY_ENTITY = {"release":"72,73,74,75,76,77,79,82,85,86,288,301,308,729,755,850,906,980","release_group":"88,89,90,93,94,96,97,284,287,353,853,907","artist":"171,172,173,174,175,176,177,178,179,180,182,183,184,185,187,188,189,191,192,193,194,197,199,283,291,303,307,310,352,707,718,754,785,816,840,841,852,862,897,902,919,978,981,1080,1131","label":"210,211,212,213,214,215,216,217,218,219,221,222,224,225,290,304,311,313,354,719,838,851,899,903,957,958,959,960,977,982,997,1005,1130","recording":"254,255,256,257,258,268,285,302,306,905,976,979","work":"271,273,274,279,280,286,289,312,351,843,854,908,911,912,913,921,939,992","area":"355,358,713,730","place":"363,396,429,462,495,528,561,594,595,627,660,705,706,787,817,861,900,909,920,934,940,984,1013","instrument":"732,733,734,753","series":"744,745,746,747,749,784,792,805,870,901,910,915,938,1001,1083","event":"782,783,786,788,789,790,791,803,804,808,811,839,842,860,898,904","genre":"1086,1087,1089,1091,1092,1093"};
+  const urlTypesFor = entityType => (URL_TYPES_BY_ENTITY[entityType] || '').split(',').filter(Boolean)
+    .sort((a, b) => linkTypeName(a).localeCompare(linkTypeName(b)));
+  // "open.spotify.com" -> "Spotify": the registrable name, for the service tag
+  function linkService(url) {
+    try {
+      const parts = new URL(url).hostname.replace(/^www\./, '').split('.');
+      const n = parts.length > 2 && /^(co|com|org|net)$/.test(parts[parts.length - 2]) ? parts[parts.length - 3] : parts[parts.length - 2] || parts[0];
+      return n.charAt(0).toUpperCase() + n.slice(1);
+    } catch (e) { return ''; }
+  }
+  const RENAMEABLE = new Set(['artist', 'label', 'recording', 'release_group', 'release']);
+  const NAME_SEEDS = new Set(['artist', 'label', 'recording', 'release_group']);
+  // …and `release` is the odd one out. Its editor is a Knockout APP: the server
+  // only hands seeded data to it on /release/add, so on /release/<mbid>/edit
+  // both `edit-release.comment=` and `comment=` are ignored outright (verified
+  // on the sandbox — the box stays empty and no edit is staged). Its state is
+  // reachable though, so the field gets typed into instead; see
+  // setReleaseComment. Note this is specific to the KO-owned fields: the
+  // external-links section on the same page is a separate component that DOES
+  // read `edit-release.url.N.text` from the query string, which is why seeded
+  // release urls have always worked.
+  // accepts: "<mbid>,<url>" · "<mbid> <url>" · "<entityType>:<mbid>,<url>" ·
+  // or a full MB entity URL in place of the bare mbid.
+  function parseLine(line) {
+    const s = line.trim();
+    if (!s || s.startsWith('#')) return null;
+    let entityType = 'artist';
+    let rest = s;
+    const etm = rest.match(/^(artist|label|recording|release|release[_-]group)\s*:\s*(.+)$/i);
+    if (etm) { entityType = normalizeEntityType(etm[1]); rest = etm[2]; }
+    const parts = rest.split(/[,\s]+/).filter(Boolean);
+    if (parts.length < 2) return null;
+    let [entityPart, ...urlParts] = parts;
+    const url = urlParts.join(' ');
+    const um = entityPart.match(/musicbrainz\.org\/(artist|label|recording|release|release-group)\/([0-9a-f-]{36})/i);
+    let mbid = entityPart;
+    if (um) { entityType = normalizeEntityType(um[1]); mbid = um[2]; }
+    if (!MBID_RE.test(mbid) || !/^https?:\/\//i.test(url)) return null;
+    return { entityType, mbid: mbid.toLowerCase(), url, linkTypeId: null };
+  }
+  function parsePaste(text) {
+    return String(text || '').split('\n').map(parseLine).filter(Boolean);
+  }
+  // Shared MB API throttle for name lookups (majkinetor, #467: "fetch them in
+  // paralel with rate limit protection as usual (retry after etc, see how CH
+  // does it") — mirrors Credit Hoarder's api-mb.js pattern: up to MAX_CONCURRENT
+  // requests in flight with NO artificial per-request gap (a strict serial
+  // 1.1s-apart queue was tried first and was simply too slow for a big batch),
+  // and on an actual 429/503 every in-flight request cooperatively backs off
+  // until a shared `pauseUntil` timestamp elapses (from the Retry-After header,
+  // or exponential backoff if MB didn't send one).
+  // #633: the pacing and the hold are now the shared request gate's (the ST-NET block),
+  // one budget for every script and tab on the origin. This keeps its queue, so a run
+  // can still drop the pending name lookups, and a priority entry still goes first.
+  const gateLog = (lv, m) => log(lv === 'warn' ? 'warn' : 'info', m);
+  const mbThrottle = (() => {
+    const MAX_CONCURRENT = 4;
+    let running = 0;
+    const queue = [];
+    function drain() {
+      while (running < MAX_CONCURRENT && queue.length) {
+        running++;
+        const item = queue.shift();
+        run(item).finally(() => { running--; drain(); });
+      }
+    }
+    async function run(item) {
+      for (let attempt = 0; attempt <= item.retries; attempt++) {
+        await mbnSlot({ background: !item.priority, label: item.url.split('/ws/2/').pop(), log: gateLog });
+        try {
+          const res = await fetch(item.url, { headers: { Accept: 'application/json' } });
+          // #546: a backoff must never be silent, or a run patiently waiting out MusicBrainz
+          // looks like one that hung; the gate logs every hold it starts.
+          if ((await mbnAnswer(res.status, n => res.headers.get(n), { log: gateLog })).throttled) {
+            log('warn', `MusicBrainz returned ${res.status} — retrying after the hold (attempt ${attempt + 1} of ${item.retries + 1})`);
+            continue;
+          }
+          if (!res.ok) { item.resolve(null); return; }
+          item.resolve(await res.json());
+          return;
+        } catch (e) {
+          if (attempt === item.retries) { item.resolve(null); return; }
+          await wait(500);
+        }
+      }
+      item.resolve(null);
+    }
+    return {
+      // #494 follow-up (majkinetor, live: a duplicate-cover-art warning took
+      // ~20s to appear on a batch with a full recording list ahead of it —
+      // "It should be prioritized"): `priority` jumps the FRONT of this
+      // FIFO queue rather than the back, for the (rare) callers whose result
+      // is actionable, not cosmetic like a name lookup.
+      fetchJson: (url, retries, priority) => new Promise(resolve => { const entry = { url, retries: retries == null ? 3 : retries, resolve, priority: !!priority }; priority ? queue.unshift(entry) : queue.push(entry); drain(); }),
+      // Drop everything not yet started, resolving each caller with null. Used
+      // when a run begins: a backlog of cosmetic name lookups must not spend the
+      // rate-limit budget the workers need. In-flight requests are left to
+      // finish — there are at most MAX_CONCURRENT of them and aborting mid-flight
+      // buys nothing.
+      cancelPending() { const n = queue.length; queue.splice(0).forEach(item => item.resolve(null)); return n; },
+      pendingCount: () => queue.length,
+    };
+  })();
+  // resolves an entity's real name/title for display, instead of a truncated mbid —
+  // same-origin fetch to MB's own public API (no GM_xmlhttpRequest needed; Falcon's
+  // panel only ever renders on musicbrainz.org itself), through the throttle above.
+  // Cached per entity since the same mbid can appear across several queue items.
+  const _nameCache = new Map();
+  // ⚠ Name lookups YIELD to a run (majkinetor: "any ongoing scanning for names
+  // should probably be stopped on starting the queue so not to slow it down or
+  // induce rate limit that would influence workers").
+  //
+  // They are cosmetic — a row shows `recording/2aa5e6cc` until its title lands —
+  // but they are not free: a big paste queues one /ws/2 call per entity, and
+  // MusicBrainz rate-limits per IP, so a backlog still in flight when Start is
+  // pressed competes with the workers' own edit-page loads for the same budget.
+  // A 503 there is not cosmetic at all; it fails the item.
+  //
+  // So a run suspends them: new lookups return immediately, and the throttle's
+  // whole pending backlog is dropped rather than deferred (those requests would
+  // otherwise still fire, just later, which is the same problem moved). Rows
+  // keep whatever label they already have.
+  let _namesSuspended = false;
+  function suspendNameLookups() {
+    _namesSuspended = true;
+    const dropped = mbThrottle.cancelPending();
+    if (dropped) dbg('[names]', `dropped ${dropped} pending name lookup(s) so they don't compete with the workers`);
+  }
+  function resumeNameLookups() { _namesSuspended = false; }
+  // #509 follow-up (majkinetor): "I don't think its working, although not
+  // sure. Lets add debug log for track fetching - list entity mbid and if
+  // name is fetched or passed." — every entity's name resolution logs which
+  // path it took (Harmony-scraped and passed straight through, vs. an MB API
+  // fetch) so it's actually verifiable from the Log tab instead of assumed.
+  async function fetchEntityName(entityType, mbid) {
+    const key = entityType + ':' + mbid;
+    if (_nameCache.has(key)) { dbg('[names]', `${key} — cached: "${_nameCache.get(key)}"`); return _nameCache.get(key); }
+    if (_namesSuspended) { dbg('[names]', `${key} — fetch skipped, lookups suspended (a run is active)`); return null; }
+    dbg('[names]', `${key} — fetching from MB (no name passed from source)`);
+    const j = await mbThrottle.fetchJson(`${MB_ORIGIN}/ws/2/${entityUrlSegment(entityType)}/${mbid}?fmt=json`);
+    const name = j ? (j.title || j.name || null) : null;   // recordings/releases/RGs: title; artist/label: name
+    if (name) _nameCache.set(key, name);
+    dbg('[names]', `${key} — fetched: ${name ? `"${name}"` : 'null (MB lookup failed or returned no name)'}`);
+    return name;
+  }
+  function entityLabel(item) { return item.name || `${item.entityType}/${item.mbid.slice(0, 8)}`; }
+  // #509 follow-up (majkinetor, live: several items stayed nameless
+  // permanently — "when name is null, it blocks from fetching it"). Root
+  // cause: suspendNameLookups()'s cancelPending() resolves every not-yet-
+  // STARTED cosmetic name lookup with null so it doesn't compete with the
+  // workers' rate-limit budget — correct while a run is active, but nothing
+  // ever gave a cancelled item a second try afterwards, so a lookup that
+  // lost that race stayed null forever even once the budget was free again.
+  // Sweep every still-nameless item once the suspension actually lifts
+  // (run finishes or is stopped) — same shape as importQueueJson's own
+  // post-import sweep, just re-triggerable instead of one-shot.
+  function resolveMissingNames() {
+    queue.filter(i => !i.name && i.status === 'queued').forEach(i => {
+      fetchEntityName(i.entityType, i.mbid).then(n => { if (n) { i.name = n; scheduleRender('queue'); if (i.entityType === 'release') noteSessionReleaseName(n); } });
+    });
+  }
+  // merges each parsed {entityType,mbid,url,linkTypeId,note?} into an existing
+  // STILL-QUEUED item for the same entity (never merges into an active/done/failed
+  // one — that item has already been claimed or finished), else creates a new item.
+  function addToQueue(parsed) {
+    let merged = 0, added = 0;
+    parsed.forEach(p => {
+      // #494/#495: a cover-shaped tuple (coverCandidates, no url — only ever
+      // 'release', from Harmony's cover scraper) merges into/creates a release
+      // item's `cover`, entirely separately from urls[] — a release item can
+      // have BOTH a cover AND urls (added via the generic path just below,
+      // same as any other type), landing in the same item since both paths
+      // dedup on (entityType, mbid) identically.
+      // #537: with "Ignore Harmony cover art" on, a cover payload is dropped
+      // here as well as at send time — an older Harmony tab (or a hand-made
+      // ?falcon= url) can still carry one, and the option should hold.
+      if (p.entityType === 'release' && p.coverCandidates && cfg.skipHarmonyCovers) {
+        log('info', `ignoring cover art for release ${p.mbid} — "Ignore Harmony cover art" is on`);
+        return;   // this is a forEach callback, not a loop
+      }
+      if (p.entityType === 'release' && p.coverCandidates) {
+        const existingRel = queue.find(i => i.status === 'queued' && i.entityType === 'release' && i.mbid === p.mbid);
+        if (existingRel) {
+          if (p.source && !existingRel.source) existingRel.source = p.source;
+          if (!existingRel.cover.length) existingRel.cover.push(newCoverEntry());
+          const entry = existingRel.cover[0];
+          const before = entry.candidates.length;
+          p.coverCandidates.forEach(c => { if (!entry.candidates.some(x => x.url === c.url)) entry.candidates.push(c); });
+          if (entry.candidates.length > before) existingRel._coverPickPromise = trackSettling(pickBestCover(existingRel));
+          if (existingRel.coverExistingCount == null) existingRel._coverCheckPromise = checkExistingCoverArt(existingRel);
+          merged++;
+          return;
+        }
+        const relItem = { id: 'f' + (++_idSeq), entityType: 'release', mbid: p.mbid, urls: [], note: p.note || '', source: p.source || '', disambiguation: '', rename: '', isrcs: [], video: false, aliases: [], cover: [newCoverEntry('', p.coverCandidates)], coverExistingCount: null, name: null, urlResults: null, status: 'queued', error: '' };
+        queue.push(relItem);
+        fetchEntityName('release', p.mbid).then(name => { if (name) { relItem.name = name; renderQueue(); noteSessionReleaseName(name); } });
+        relItem._coverPickPromise = trackSettling(pickBestCover(relItem));
+        relItem._coverCheckPromise = checkExistingCoverArt(relItem);
+        added++;
+        return;
+      }
+      // #500 (majkinetor): a release whose recordings have NO external links
+      // at all (only a cover + ISRCs) left scrapeHarmonyActions with zero
+      // recording tuples to zip isrcs onto — dropped silently, since Falcon
+      // had no independent view of the tracklist to place them on otherwise.
+      // This tuple carries no mbid/url of its own yet — resolveIsrcFallback
+      // fetches the release's actual tracklist and re-enters addToQueue with
+      // real per-recording isrc tuples once it has one, same
+      // queue-first-resolve-after shape as #494's cover candidates.
+      if (p.entityType === 'recording' && p.pendingIsrcs) {
+        trackSettling(resolveIsrcFallback(p.pendingIsrcs.mbid, p.pendingIsrcs.isrcs, p.pendingIsrcs.note));
+        return;
+      }
+      const existing = queue.find(i => i.status === 'queued' && i.entityType === p.entityType && i.mbid === p.mbid);
+      const linkTypeId = p.linkTypeId || null;
+      if (existing) {
+        // #500: a url-less tuple (isrc-only fallback resolution) has nothing
+        // to add to urls[] — only #474's comment/isrc fields.
+        if (p.url && !existing.urls.some(u => u.url === p.url && u.linkTypeId === linkTypeId)) { existing.urls.push({ url: p.url, linkTypeId }); merged++; }
+        if (p.note && !existing.note) existing.note = p.note;
+        // #474: disambiguation + ISRC — recording-only, additive (a later tuple
+        // for the same mbid shouldn't clobber a disambiguation/isrc it already has).
+        if (p.disambiguation && !existing.disambiguation) existing.disambiguation = p.disambiguation;
+        if (p.isrc && !(existing.isrcs || []).includes(p.isrc)) (existing.isrcs = existing.isrcs || []).push(p.isrc);
+        // #509: a name Harmony already resolved beats a later async MB lookup.
+        if (p.name && !existing.name) { existing.name = p.name; if (existing.entityType === 'release') noteSessionReleaseName(p.name); }
+        return;
+      }
+      const item = { id: 'f' + (++_idSeq), entityType: p.entityType, mbid: p.mbid, urls: p.url ? [{ url: p.url, linkTypeId }] : [], note: p.note || '', disambiguation: p.disambiguation || '', rename: p.rename || '', isrcs: p.isrc ? [p.isrc] : [], video: p.video === true, aliases: normalizeAliases(p.aliases), cover: [], coverExistingCount: null, name: p.name || null, urlResults: null, status: 'queued', error: '' };
+      queue.push(item);
+      // #509 (majkinetor): "Since Harmony already resolves names, we could
+      // just fetch and use them instead of bombing MB." scrapeHarmonyActions
+      // already scraped the name straight off Harmony's own page — only
+      // fall back to Falcon's own MB lookup when a tuple didn't carry one
+      // (paste, `?falcon=` URL, JSON import without a name field).
+      if (p.name) { dbg('[names]', `${p.entityType}:${p.mbid} — passed from source: "${p.name}"`); if (p.entityType === 'release') noteSessionReleaseName(p.name); }
+      else fetchEntityName(p.entityType, p.mbid).then(name => { if (name) { item.name = name; renderQueue(); if (p.entityType === 'release') noteSessionReleaseName(name); } });
+      added++;
+    });
+    // #508 follow-up: anything newly queued while a run is already active
+    // (ISRC fallback resolving late, a mid-run import, ...) should get
+    // picked up by a full worker fleet, not whatever's left running.
+    if (added > 0) topUpWorkers();
+    return { merged, added };
+  }
+  /* ── #532: add the current release's entities to the queue ────────────────
+     (majkinetor) "When falcon is started on release page, it is empty. We
+     could have an Add button that can add related entities so we could edit
+     supported fields. I am interested in recordings disambiguation now. It
+     could also serve as a way to produce JSON that person can fill up later."
+
+     So this is deliberately NOT an import of things to submit — it seeds the
+     queue with the release's own entities as EMPTY, editable rows. Fill in a
+     disambiguation (or ISRC, or url) on the ones you care about and press
+     Start; rows still carrying nothing are skipped rather than failed (see
+     the no-work guard in workerLoop), which is what makes "add now, fill in
+     later" and "export as JSON, fill it in, re-import" both work. */
+  const RELEASE_PATH_RE = /\/release\/([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})/i;
+  const RG_PATH_RE = /\/release-group\/([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})/i;
+  const SERIES_PATH_RE = /\/series\/([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})/i;
+  // What can this page offer? release-group pages have no tracklist of their own.
+  function pageEntityContext() {
+    if (ON_HARMONY) return null;
+    const rg = location.pathname.match(RG_PATH_RE);
+    if (rg) return { kind: 'release-group', mbid: rg[1] };
+    const rel = location.pathname.match(RELEASE_PATH_RE);
+    if (rel) return { kind: 'release', mbid: rel[1] };
+    // #572 (majkinetor): "Falcon should be able to seed from RG and release
+    // series." A series page is the natural place to start a bulk rename — the
+    // whole point of the issue is conforming the names of everything in one.
+    const ser = location.pathname.match(SERIES_PATH_RE);
+    if (ser) return { kind: 'series', mbid: ser[1] };
+    return null;
+  }
+  // #572: a series' contents are RELATIONSHIPS, not a browsable collection —
+  // there is no /ws/2/release-group?series=… endpoint — so one lookup with the
+  // relationship includes returns the whole membership in a single request.
+  // `ordering-key` is the series' own ordering, which is the order a human sees
+  // on the page, so rows arrive in that order rather than MB's relation order.
+  async function fetchSeriesMembers(mbid) {
+    const url = `${MB_ORIGIN}/ws/2/series/${mbid}?inc=release-group-rels+release-rels&fmt=json`;
+    const j = await mbThrottle.fetchJson(url, undefined, true);
+    const members = [];
+    for (const rel of (j && j.relations) || []) {
+      const tt = rel['target-type'];
+      if (tt !== 'release_group' && tt !== 'release') continue;
+      const tgt = rel[tt];
+      if (!tgt || !tgt.id) continue;
+      members.push({
+        entityType: tt, mbid: tgt.id, name: tgt.title || tgt.name || null,
+        orderingKey: Number(rel['ordering-key']) || 0,
+      });
+    }
+    members.sort((a, b) => a.orderingKey - b.orderingKey);
+    return { name: (j && j.name) || '', type: (j && j.type) || '', members };
+  }
+  // The release groups behind a list of releases. There is no browse endpoint
+  // for this either, so it is one lookup per release — deliberately opt-in in
+  // the menu, and noisy in the log, because 40 releases is 40 round trips.
+  async function fetchReleaseGroupsOf(releases) {
+    const out = [];
+    const seen = new Set();
+    for (let i = 0; i < releases.length; i++) {
+      const j = await mbThrottle.fetchJson(`${MB_ORIGIN}/ws/2/release/${releases[i].mbid}?inc=release-groups&fmt=json`, undefined, true);
+      const rg = j && j['release-group'];
+      if (rg && rg.id && !seen.has(rg.id)) { seen.add(rg.id); out.push({ entityType: 'release_group', mbid: rg.id, name: rg.title || null, note: '' }); }
+      if ((i + 1) % 10 === 0) log('info', `…read the release group of ${i + 1}/${releases.length} release(s)`);
+    }
+    return out;
+  }
+  // One request covers every type offered below.
+  async function fetchReleaseGraph(mbid) {
+    const url = `${MB_ORIGIN}/ws/2/release/${mbid}?inc=recordings+artist-credits+labels+release-groups+media&fmt=json`;
+    return await mbThrottle.fetchJson(url, undefined, true);
+  }
+  // #533 follow-up (majkinetor): "Add from group should have releases" — on a
+  // release-group page the menu only ever offered the group itself.
+  // ⚠ BROWSE, not search. `/ws/2/release?release-group=<mbid>` pages
+  // deterministically; the indexed-search equivalent (`query=rgid:`) drops and
+  // repeats rows across pages — measured elsewhere in this repo at 310 hits for
+  // 224 distinct releases, with 86 never returned at all. A missing release
+  // here would look like the group simply not having it.
+  async function fetchGroupReleases(rgMbid) {
+    const out = [];
+    const seen = new Set();
+    for (let offset = 0; offset < 5000; offset += 100) {
+      const url = `${MB_ORIGIN}/ws/2/release?release-group=${rgMbid}&limit=100&offset=${offset}&fmt=json`;
+      const j = await mbThrottle.fetchJson(url, undefined, true);
+      const batch = (j && j.releases) || [];
+      // #546: a group with several hundred releases is several requests deep
+      // with nothing said in between.
+      if (offset > 0 || batch.length >= 100) log('info', `…read ${out.length + batch.length} release(s) so far from this group`);
+      for (const r of batch) {
+        if (!r.id || seen.has(r.id)) continue;
+        seen.add(r.id);
+        out.push({ entityType: 'release', mbid: r.id, name: r.title || null, note: '' });
+      }
+      const total = j && j['release-count'];
+      if (!batch.length || (total != null && out.length >= total)) break;
+    }
+    return out;
+  }
+  // Turn that graph into addToQueue tuples for the chosen types. Names come
+  // straight from the response so no row needs a follow-up name lookup (#509).
+  function releaseGraphTuples(j, want, note) {
+    const out = [];
+    const seen = new Set();
+    const push = (entityType, mbid, name) => {
+      if (!mbid) return;
+      const k = entityType + ':' + mbid; if (seen.has(k)) return; seen.add(k);
+      out.push({ entityType, mbid, name: name || null, note });
+    };
+    if (want.recording) for (const m of (j.media || [])) for (const t of (m.tracks || [])) {
+      const r = t.recording; if (r) push('recording', r.id, r.title || t.title);
+    }
+    if (want.release) push('release', j.id, j.title);
+    if (want.release_group && j['release-group']) push('release_group', j['release-group'].id, j['release-group'].title);
+    if (want.artist) {
+      for (const ac of (j['artist-credit'] || [])) if (ac.artist) push('artist', ac.artist.id, ac.artist.name);
+      for (const m of (j.media || [])) for (const t of (m.tracks || [])) {
+        for (const ac of ((t.recording && t.recording['artist-credit']) || t['artist-credit'] || [])) if (ac.artist) push('artist', ac.artist.id, ac.artist.name);
+      }
+    }
+    if (want.label) for (const li of (j['label-info'] || [])) if (li.label) push('label', li.label.id, li.label.name);
+    return out;
+  }
+  // #500: fetches the release's real tracklist (recording mbids in track
+  // order) and places each Nth ISRC onto the Nth recording — the same
+  // positional convention scrapeHarmonyActions already uses when it DOES
+  // have link-tuples to zip onto, just resolved from MB's own API instead of
+  // scraped anchors when there are none.
+  async function resolveIsrcFallback(releaseMbid, isrcs, note) {
+    const j = await mbThrottle.fetchJson(`${MB_ORIGIN}/ws/2/release/${releaseMbid}?inc=recordings&fmt=json`, undefined, true);
+    // ⚠ A failed lookup must not become "no ISRCs" — say so loudly. Silently
+    // dropping them is how a batch looks finished while half its data never
+    // left (#530/#531 are the same bug class).
+    if (!j || !Array.isArray(j.media)) {
+      log('error', `ISRCs: could not read ${releaseMbid}'s tracklist from MusicBrainz — ${isrcs.filter(Boolean).length} ISRC(s) were NOT queued. Reload and send again.`);
+      return;
+    }
+    const recMbids = [];
+    for (const m of j.media) for (const t of (m.tracks || [])) recMbids.push(t.recording && t.recording.id);
+    const tuples = [];
+    const orphans = [];
+    isrcs.forEach((isrc, i) => {
+      if (!isrc) return;
+      if (recMbids[i]) tuples.push({ entityType: 'recording', mbid: recMbids[i], note, isrc });
+      else orphans.push(`isrc${i + 1}=${isrc}`);
+    });
+    // #540: MagicISRC numbers isrcN by track position, so a count mismatch means
+    // the tracklist changed since Harmony read it. Placing "as many as fit"
+    // would be exactly the misalignment this whole change exists to prevent.
+    if (orphans.length) {
+      log('warn', `ISRCs: MusicBrainz shows ${recMbids.length} track(s) but Harmony sent ${isrcs.length} ISRC(s) — ${orphans.length} had no track to sit on and were dropped rather than guessed at (${orphans.join(', ')}). Has the tracklist changed?`);
+    }
+    if (!tuples.length) { log('warn', `ISRCs: none of ${releaseMbid}'s ISRCs could be matched to a track position`); return; }
+    const res = addToQueue(tuples);
+    log('info', `ISRCs: placed ${res.added + res.merged} on ${releaseMbid}'s tracklist by track position (isrc1 → track 1, …)`);
+  }
+  // Reads what the Export button writes, and is deliberately forgiving about the
+  // shape: the wrapper object `{items:[...]}`, or a bare array of items, or a
+  // bare array of the flat `{mbid,url,linkTypeId}` rows that `?falcon=` and
+  // Harmony use — someone hand-writing a queue shouldn't have to guess which.
+  //
+  // An imported item keeps its STATUS. Re-importing a finished run therefore
+  // shows what already happened rather than silently re-queueing committed
+  // edits; only rows that are still `queued` will be picked up by a worker. That
+  // makes "export a failed run, fix the bad urls, import, Start" work without
+  // duplicating everything that already succeeded.
+  // opts.merge (#671): an item for an entity already queued adds its links to that item instead
+  // of queueing it twice — a batch handed over again (another script, ?falcon=) would otherwise
+  // run each entity once per send. A file Import restores a saved queue as it was, so it doesn't.
+  function importQueueJson(text, sourceName, opts) {
+    let data;
+    try { data = JSON.parse(text); } catch (e) { log('error', `${sourceName || 'import'}: not valid JSON — ${e.message}`); return { added: 0, merged: 0 }; }
+    const rows = Array.isArray(data) ? data : (data && Array.isArray(data.items) ? data.items : null);
+    // #573: a root-level `note` is the batch note for the whole file. Per-item
+    // `note` is untouched and still means that one edit's own note.
+    if (data && !Array.isArray(data) && typeof data.note === 'string') {
+      setBatchNote(data.note);
+      syncBatchNoteUi(true);
+      if (batchNote()) log('info', `batch edit note set from ${sourceName || 'import'}: ${JSON.stringify(batchNote())}`);
+    }
+    if (data && !Array.isArray(data) && typeof data.name === 'string' && data.name.trim()) {
+      _batchName = data.name.trim();
+      noteSessionReleaseName(_batchName);
+      log('info', `batch name from ${sourceName || 'import'}: ${JSON.stringify(_batchName)}`);
+    }
+    if (!rows) { log('error', `${sourceName || 'import'}: no items found (expected {"items":[…]} or an array)`); return { added: 0, merged: 0 }; }
+
+    let added = 0, merged = 0, skipped = 0;
+    const flat = [];
+    rows.forEach(r => {
+      if (!r || typeof r !== 'object' || !MBID_RE.test(String(r.mbid || ''))) { skipped++; return; }
+      const type = normalizeEntityType(r.entityType);
+      // #494: a release row has no urls[] at all — its payload is r.cover.
+      const coverArr = type === 'release' ? normalizeCoverForImport(r) : [];
+      const hasCover = coverArr.some(c => c.url || (c.candidates && c.candidates.length));
+      // ⚠ Work out what this row actually CARRIES before deciding how to read
+      // it. This gate used to be `Array.isArray(r.urls) || hasCover`, which
+      // silently rejected any hand-written row that simply had no "urls" key —
+      // including the alias example shipped in examples/aliases.json ("added 0
+      // item(s), skipped 2 unusable row(s)"). urls is optional now; a row is
+      // importable if it carries any payload Falcon knows how to submit.
+      const hasMeta = (DISAMBIGUATABLE.has(type) && !!(r.disambiguation || r.comment))
+        || (RENAMEABLE.has(type) && !!r.rename)
+        || (type === 'recording' && Array.isArray(r.isrcs) && r.isrcs.some(Boolean))
+        || (type === 'recording' && r.video === true)
+        || normalizeAliases(r.aliases).length > 0;
+      if (Array.isArray(r.urls) || hasCover || hasMeta) {
+        // full item: reinstate it whole, status and all
+        const urls = Array.isArray(r.urls) ? r.urls.filter(u => u && u.url).map(u => ({ url: String(u.url), linkTypeId: u.linkTypeId || null })) : [];
+        // #474/#533: a row carrying only a disambiguation/isrc/video/alias (no
+        // urls at all) is a legitimate item — hasMeta above is what decides
+        // that, per type: disambiguation on any of the five, ISRC and video on
+        // recordings, aliases on everything. (r.comment accepted too —
+        // pre-#496 exports used that field name.) A row with none of it is the
+        // only kind that gets rejected.
+        if (!urls.length && !hasMeta && !hasCover) { skipped++; return; }
+        const reItem = {
+          id: 'f' + (++_idSeq), entityType: type, mbid: r.mbid, urls,
+          note: r.note || '', disambiguation: r.disambiguation || r.comment || '',
+          rename: RENAMEABLE.has(type) ? String(r.rename || '') : '',
+          isrcs: Array.isArray(r.isrcs) ? r.isrcs.filter(Boolean).map(String) : [],
+          video: type === 'recording' && r.video === true,
+          aliases: normalizeAliases(r.aliases),
+          source: typeof r.source === 'string' ? r.source : '',
+          cover: coverArr, coverExistingCount: null,
+          name: r.name || null, urlResults: r.urlResults || null,
+          status: ['done', 'failed', 'partial', 'skipped', 'manual'].includes(r.status) ? r.status : 'queued',
+          error: r.error || '',
+        };
+        const same = opts && opts.merge && reItem.status === 'queued' && queue.find(i => i.status === 'queued' && i.entityType === type && i.mbid === r.mbid);
+        if (same) {
+          const before = same.urls.length;
+          urls.forEach(u => { if (!same.urls.some(x => x.url === u.url && x.linkTypeId === u.linkTypeId)) same.urls.push(u); });
+          if (reItem.name && !same.name) same.name = reItem.name;
+          merged += same.urls.length - before;
+          dbg('[import]', `${type}:${r.mbid} is queued already — ${same.urls.length - before} new url(s) merged into it`);
+          return;
+        }
+        queue.push(reItem);
+        if (hasCover && reItem.status === 'queued') reItem._coverCheckPromise = checkExistingCoverArt(reItem);
+        added++;
+      } else if (r.url) {
+        flat.push({ entityType: type, mbid: r.mbid, url: String(r.url), linkTypeId: r.linkTypeId || null, note: r.note || '', disambiguation: r.disambiguation || r.comment || '', rename: r.rename || '', isrc: r.isrc || (Array.isArray(r.isrcs) ? r.isrcs[0] : null) || null, name: r.name || null });
+      } else skipped++;
+    });
+    if (flat.length) { const res = addToQueue(flat); added += res.added; merged += res.merged; }
+
+    renderQueue();
+    // names for anything that arrived without one — unless a run is under way,
+    // in which case these would compete with the workers for MB's rate limit
+    // (fetchEntityName's own _namesSuspended check still applies here).
+    resolveMissingNames();
+    log('info', `${sourceName || 'import'}: added ${added} item(s)`
+      + (merged ? `, merged ${merged} url(s)` : '')
+      + (skipped ? `, skipped ${skipped} unusable row(s)` : ''));
+    return { added, merged, skipped };
+  }
+
+  // `?falcon=` accepts TWO schemes:
+  //   1. base64(JSON) directly in the URL — the documented contract for any external
+  //      script: the JSON model, as Import reads it (#671).
+  //   2. a short random TOKEN keyed into GM storage (`falcon:pending:<token>`) — used
+  //      by the Harmony bridge itself (see ensureHarmonyButton below), since GM
+  //      storage is shared across every tab this SAME script runs in regardless of
+  //      domain. This is what lets a batch include recordings again: no JSON ever
+  //      has to fit in a URL, so there's no length ceiling to hit (#467's
+  //      PR_END_OF_FILE_ERROR was hitting exactly that ceiling on the base64 scheme).
+  //      A different script can't use this scheme — GM storage isn't shared BETWEEN
+  //      different userscripts, only within one script's own tabs — hence keeping
+  //      scheme 1 as the general contract.
+  function tryDecodeBase64Json(raw) {
+    // fatal: bytes that are not UTF-8 throw, as decodeURIComponent(escape(…)) did
+    let text; try { text = new TextDecoder('utf-8', { fatal: true }).decode(Uint8Array.from(atob(raw), c => c.charCodeAt(0))); } catch (e) { return null; }
+    try { JSON.parse(text); return text; } catch (e) { return null; }
+  }
+  function parseUrlParam() {
+    const raw = new URLSearchParams(location.search).get('falcon');
+    if (!raw) return null;
+    let json = tryDecodeBase64Json(raw);
+    // #508 (majkinetor): "Auto start Harmony import" needs to tell a Harmony-
+    // sourced seed (the GM-storage token scheme — see the comment above) apart
+    // from the general `?falcon=` contract any other script/user can construct
+    // (base64 JSON directly in the URL) — auto-starting on an arbitrary
+    // external payload isn't what was asked for.
+    let fromHarmony = false, note = null;
+    if (json == null) {
+      const stored = GM_getValue('falcon:pending:' + raw, null);
+      if (stored != null) {
+        json = stored; fromHarmony = true;
+        // #590: the "this batch may be short, and why" note the Harmony side
+        // left with the payload, applied to every edit of the run (#573).
+        note = GM_getValue('falcon:pendingNote:' + raw, null);
+        try { GM_deleteValue('falcon:pending:' + raw); GM_deleteValue('falcon:pendingNote:' + raw); } catch (e) {}
+      }
+    }
+    if (json == null) {
+      const h = handedOver(raw);
+      if (h) { log('info', 'the batch was written by another installed copy of Falcon, which handed it over'); return decodeSeed(h.json, true, h.note); }
+      // A token another copy may still hand over (it starts after this one): boot waits for it.
+      if (PENDING_TOKEN_RE.test(raw)) return { awaitToken: raw };
+      log('warn', 'falcon= param present but neither valid base64 JSON nor a known pending token');
+      return null;
+    }
+    return decodeSeed(json, fromHarmony, note);
+  }
+  const PENDING_TOKEN_RE = /^h[0-9a-z]{6,}$/;
+  // A batch a copy that stood down handed over (falconHandOver), for this token only.
+  function handedOver(token, detail) {
+    try {
+      const o = JSON.parse(detail || document.documentElement.getAttribute('data-falcon-handover') || 'null');
+      if (!o || o.token !== token || typeof o.json !== 'string') return null;
+      document.documentElement.removeAttribute('data-falcon-handover');
+      return o;
+    } catch (e) { return null; }
+  }
+  // The warning when no copy had the batch, naming the likely reason when there is a second copy.
+  function tokenLost() {
+    const other = document.documentElement.getAttribute('data-mbu-run-falcon-off');
+    log('warn', 'falcon= param present but neither valid base64 JSON nor a known pending token'
+      + (other ? ' — Falcon is installed twice, and the batch was most likely written by the other copy, which is too old to hand it over. Remove the older copy in your userscript manager (it may still be called "Falcon — bulk MusicBrainz link editor") and send from Harmony again.'
+        : ' — the batch was already taken (this tab was reloaded or reopened), or it was written by another installed copy of Falcon.'));
+  }
+  function decodeSeed(json, fromHarmony, note) {
+    if (note) { setBatchNote(note); log('warn', `Harmony note carried over to this batch's edit note: ${note}`); }
+    try {
+      const arr = JSON.parse(json);
+      // #671: a base64 payload is the JSON model, read as Import reads a file: everything a
+      // row can carry, the note too. The flat one-link rows below are Harmony's token only.
+      if (!fromHarmony) return { importText: json };
+      if (!Array.isArray(arr)) return null;
+      const out = arr.map(it => {
+        // #494/#495: a cover-shaped tuple (coverCandidates, no url — only
+        // ever 'release') is kept separate from a normal url tuple, which
+        // works the same for 'release'/'release_group' as every other type.
+        if (normalizeEntityType(it.entityType) === 'release' && Array.isArray(it.coverCandidates)) {
+          return {
+            entityType: 'release', mbid: String(it.mbid || '').toLowerCase(),
+            coverCandidates: it.coverCandidates.filter(c => c && c.url).map(c => ({ provider: String(c.provider || ''), url: String(c.url), width: Number(c.width) || undefined, height: Number(c.height) || undefined, size: Number(c.size) || undefined })),
+          };
+        }
+        // #500: an isrc-only fallback tuple carries no url/mbid of its own —
+        // just the release it needs to resolve a tracklist from.
+        if (it.pendingIsrcs && it.pendingIsrcs.mbid) {
+          return {
+            entityType: 'recording',
+            pendingIsrcs: {
+              mbid: String(it.pendingIsrcs.mbid).toLowerCase(),
+              isrcs: Array.isArray(it.pendingIsrcs.isrcs) ? it.pendingIsrcs.isrcs.map(x => String(x || '')) : [],
+              note: it.pendingIsrcs.note ? String(it.pendingIsrcs.note) : '',
+            },
+          };
+        }
+        // #509 (majkinetor, live): the token round-trip (harmonyBtn.onclick's
+        // GM_setValue -> this parse, on the NEW tab) was dropping `name`
+        // entirely — scrapeHarmonyActions() scraped it correctly, but it
+        // never survived to reach addToQueue(), so EVERY Harmony import fell
+        // back to an MB lookup regardless of whether the scrape succeeded.
+        return { entityType: normalizeEntityType(it.entityType), mbid: String(it.mbid || '').toLowerCase(), url: String(it.url || ''), linkTypeId: it.linkTypeId ? String(it.linkTypeId) : null, note: it.note ? String(it.note) : '', isrc: it.isrc ? String(it.isrc) : null, name: it.name ? String(it.name) : null };
+      }).filter(it => it.coverCandidates ? (MBID_RE.test(it.mbid) && it.coverCandidates.length)
+        : it.pendingIsrcs ? (MBID_RE.test(it.pendingIsrcs.mbid) && it.pendingIsrcs.isrcs.some(Boolean))
+        : (MBID_RE.test(it.mbid) && /^https?:\/\//i.test(it.url)));
+      out.fromHarmony = fromHarmony;
+      return out;
+    } catch (e) { log('warn', 'falcon= payload not valid JSON: ' + e.message); return null; }
+  }
+  // Parses one Harmony "Link external IDs" href — a standard MB seed URL:
+  // https://musicbrainz.org/<artist|label|recording|release|release-group>/<mbid>/edit
+  //   ?edit-<type>.url.0.text=<url>&edit-<type>.url.0.link_type_id=<id>
+  //   &edit-<type>.url.1.text=...&edit-<type>.url.1.link_type_id=...
+  //   &edit-<type>.edit_note=<text>
+  // Returns a FLAT array of {entityType,mbid,url,linkTypeId,note} tuples (one per
+  // url.N) ready for addToQueue, or [] if href isn't a recognized seed URL.
+  // Harmony itself doesn't offer release/release-group "Link external IDs"
+  // actions yet (#495) — this just keeps the parser consistent/ready for when
+  // it does; release/RG links are queued via paste or `?falcon=` JSON for now.
+  function parseHarmonySeedUrl(href) {
+    let u; try { u = new URL(href, MB_ORIGIN); } catch (e) { return []; }
+    const m = u.pathname.match(/^\/(artist|label|recording|release|release-group)\/([0-9a-f-]{36})\/edit\/?$/i);
+    if (!m) return [];
+    const entityType = normalizeEntityType(m[1]);   // 'release-group' -> 'release_group'
+    const mbid = m[2].toLowerCase();
+    const prefix = `edit-${entityType}.`;
+    const note = u.searchParams.get(prefix + 'edit_note') || '';
+    const byIndex = {};
+    for (const [key, val] of u.searchParams) {
+      if (!key.startsWith(prefix + 'url.')) continue;
+      const km = key.slice((prefix + 'url.').length).match(/^(\d+)\.(text|link_type_id)$/);
+      if (!km) continue;
+      (byIndex[km[1]] || (byIndex[km[1]] = {}))[km[2]] = val;
+    }
+    return Object.values(byIndex).filter(e => e.text).map(e => ({ entityType, mbid, url: e.text, linkTypeId: e.link_type_id || null, note }));
+  }
+  function encodeFalconPayload(tuples) {
+    const json = JSON.stringify(tuples.map(t => ({ entityType: t.entityType, mbid: t.mbid, url: t.url, linkTypeId: t.linkTypeId || undefined, note: t.note || undefined, isrc: t.isrc || undefined, name: t.name || undefined })));
+    let bin = ''; for (const b of new TextEncoder().encode(json)) bin += String.fromCharCode(b);   // UTF-8 bytes, one char each, for btoa
+    return btoa(bin);
+  }
+
+  /* ── Harmony bridge (#467, #459) ─────────────────────────────────────────
+     Running ON a Harmony actions page: every "Link external IDs" action IS
+     already a standard MB seed url (parseHarmonySeedUrl handles it) — scrape
+     them all, combine into one queue, and open MB with it in a new tab
+     instead of Harmony's own tab-per-entity popups. Harmony's actions render
+     asynchronously (client-rendered), so the button's count is kept live by
+     a short polling loop that settles once the count stops changing.
+     Recordings ARE included again (majkinetor, #467) — a real release's
+     recording actions vastly outnumber its artist/label ones (86 total, 80
+     recordings, measured live), and packing all of them into a base64
+     query-string payload blew past ~32,000 characters, past what MB's
+     front-end accepts (Firefox surfaced that as a bare PR_END_OF_FILE_ERROR
+     instead of a clean "414 URI Too Long"). The GM-storage-token scheme (see
+     parseUrlParam) sidesteps that entirely — nothing goes in the URL but a
+     short random token. */
+  // #474 (majkinetor): "ISRC should be fetched on Harmony side too when
+  // present." Checked a real Harmony actions page live — ISRCs are NOT in the
+  // recording "Link external IDs" hrefs at all; they live in one separate
+  // "Open with MagicISRC" action per release, handing off to a third-party
+  // tool: `?isrc1=...&isrc2=...&musicbrainzid=<release>`, positional to track
+  // order. Falcon has no independent view of the release's tracklist (it only
+  // knows what scrapeHarmonyActions finds), so the match is positional: the
+  // Nth distinct recording mbid to appear among the "Link external IDs"
+  // anchors gets isrcN. This assumes every track has at least one link action
+  // — true of every real Harmony page seen so far, but a track with zero
+  // links would shift every isrc after it. majkinetor is testing this by hand.
+  function harmonyMagicIsrcHref() {
+    const a = [...document.querySelectorAll('a')].find(x => /open with magicisrc/i.test(x.textContent || ''));
+    return a && a.getAttribute('href');
+  }
+  function scrapeHarmonyIsrcs() {
+    const href = harmonyMagicIsrcHref();
+    if (!href) return [];
+    let u; try { u = new URL(href, location.href); } catch (e) { return []; }
+    const out = [];
+    for (const [k, v] of u.searchParams) {
+      const m = k.match(/^isrc(\d+)$/i);
+      if (m && v) out[+m[1] - 1] = v;
+    }
+    return out;
+  }
+  // #500 (majkinetor): "Harmony ISRC sending does not work when there are no
+  // links" — a release whose recordings have zero "Link external IDs"
+  // actions (only a cover + ISRCs) leaves scrapeHarmonyActions with nothing
+  // to zip isrcs onto at all, so they were dropped entirely rather than
+  // shifted. The SAME MagicISRC href already carries the release's own mbid
+  // (`musicbrainzid`) and a ready-made edit note (`edit-note`) — enough to
+  // resolve the real tracklist later (see resolveIsrcFallback) instead of
+  // relying on scraped anchors that don't exist here.
+  function harmonyIsrcFallback() {
+    const href = harmonyMagicIsrcHref();
+    if (!href) return null;
+    let u; try { u = new URL(href, location.href); } catch (e) { return null; }
+    const mbid = u.searchParams.get('musicbrainzid');
+    if (!mbid || !MBID_RE.test(mbid)) return null;
+    const isrcs = scrapeHarmonyIsrcs();
+    if (!isrcs.some(Boolean)) return null;
+    return { mbid: mbid.toLowerCase(), isrcs, note: u.searchParams.get('edit-note') || '' };
+  }
+  // #509 (majkinetor): "Since Harmony already resolves names, we could just
+  // fetch and use them instead of bombing MB." Each action row already shows
+  // the resolved entity as one more icon+name pill alongside the provider
+  // icons — <a href="https://musicbrainz.org/<type>/<mbid>"><span
+  // class="musicbrainz">…</span>Dusk</a>, the plain entity page (no query
+  // string), distinct from the "Link external IDs" anchor's own seed-edit
+  // href. Scraping that name here means addToQueue can skip its own
+  // fetchEntityName() MB round-trip entirely for Harmony-sourced items.
+  function harmonyRowName(actionAnchor) {
+    const row = actionAnchor.closest('.action') || actionAnchor.parentElement;
+    if (!row) return null;
+    const mbLink = [...row.querySelectorAll('a[href]')].find(a => new RegExp(`^${MB_TARGET.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}/(artist|label|recording|release|release-group)/[0-9a-f-]{36}$`, 'i').test(a.getAttribute('href') || ''));
+    const name = mbLink && (mbLink.textContent || '').trim();
+    return name || null;
+  }
+  function scrapeHarmonyActions() {
+    const anchors = [...document.querySelectorAll('a')].filter(a => /link external ids/i.test(a.textContent || ''));
+    const tuples = [];
+    anchors.forEach(a => {
+      const href = a.getAttribute('href'); if (!href) return;
+      const name = harmonyRowName(a);
+      parseHarmonySeedUrl(href).forEach(t => { if (name) t.name = name; tuples.push(t); });
+    });
+    // ⚠ #540: ISRCs are deliberately NOT attached here any more. They used to be
+    // zipped positionally onto the recordings found among these anchors — the
+    // Nth distinct recording got isrcN — and the comment above harmonyIsrcHref
+    // called out the assumption that every track has at least one link action.
+    // That assumption is false in the single most common re-run case: Harmony
+    // stops offering a "Link external IDs" action once the link exists, so on a
+    // second pass over a partly-finished release the earlier tracks drop out of
+    // this list and EVERY later ISRC shifts up by however many are missing.
+    //
+    // Reported on the MetaBrainz forum ("if it's a big album and some of the
+    // submissions failed halfway through and you restart it, some links and
+    // ISRCs will be attached to the wrong recordings") and confirmed on
+    // majkinetor's release 216a51c7: GBNRN1543507 is isrc7 and landed on track
+    // 10's recording — a 3-position shift, i.e. three earlier tracks no longer
+    // had an action. MagicISRC numbers isrcN by TRACK position, so the only
+    // sound mapping is against the real tracklist: see resolveIsrcFallback,
+    // which is now the single path for ISRCs rather than a fallback.
+    return tuples;
+  }
+  // #494: Harmony sometimes annotates a cover figure's caption with a plain
+  // "WxH, SIZE unit, FORMAT" label (e.g. "1200×1200, 703.99 kB, JPEG" — seen
+  // verbatim in the issue's own example HTML) alongside "Type: front Source:
+  // X". Parsing it lets pickBestCover skip a network fetch entirely for that
+  // candidate. It is NOT reliably present (live testing this session — both a
+  // clean fetch and majkinetor's own logged-out browser — only ever showed
+  // "Type: front Source: X", no size caption), so this is an optimization,
+  // never a requirement: candidates missing it fall back to fetch+measure.
+  function parseCoverCaptionMeta(figure) {
+    const labels = [...figure.querySelectorAll('figcaption .label')].map(el => (el.textContent || '').trim());
+    for (const t of labels) {
+      const m = t.match(/^(\d+)\s*[×x]\s*(\d+)\s*,\s*([\d.]+)\s*(B|kB|MB)\b/i);
+      if (!m) continue;
+      const unit = m[4].toLowerCase();
+      const mult = unit === 'mb' ? 1000 * 1000 : unit === 'kb' ? 1000 : 1;
+      return { width: +m[1], height: +m[2], size: Math.round(parseFloat(m[3]) * mult) };
+    }
+    return null;
+  }
+  // Collects one candidate per non-Discogs cover figure — the direct <a href>
+  // (Harmony's own best copy per provider), not the smaller thumbnail <img
+  // src>. Best-across-providers is picked later by pickBestCover.
+  function scrapeHarmonyCover() {
+    const mbLink = [...document.querySelectorAll('a')].find(a => /^open in musicbrainz$/i.test((a.textContent || '').trim()));
+    const href = mbLink && mbLink.getAttribute('href');
+    const m = href && href.match(/musicbrainz\.org\/release\/([0-9a-f-]{36})/i);
+    if (!m) return null;
+    const mbid = m[1].toLowerCase();
+    const candidates = [...document.querySelectorAll('figure.cover-image[data-provider]')]
+      .filter(f => (f.getAttribute('data-provider') || '').toLowerCase() !== 'discogs')
+      .map(f => {
+        const a = f.querySelector('a[href]');
+        if (!a) return null;
+        return { provider: f.getAttribute('data-provider') || '', url: a.getAttribute('href'), ...(parseCoverCaptionMeta(f) || {}) };
+      })
+      .filter(Boolean);
+    return candidates.length ? { mbid, coverCandidates: candidates } : null;
+  }
+  // Cross-origin image fetch as a Blob. Cover candidates live on arbitrary
+  // provider CDNs (Deezer, Spotify, Qobuz, Apple, Tidal, ...), not
+  // musicbrainz.org/harmony.pulsewidth.org.uk, so a plain fetch() would hit
+  // page CORS — GM_xmlhttpRequest bypasses it. Same helper (and same need) as
+  // Art Station's gmFetch (art_station.user.js).
+  function gmFetch(url) {
+    return new Promise((resolve, reject) => {
+      GM_xmlhttpRequest({
+        method: 'GET', url, responseType: 'blob', timeout: 30000,
+        onload: r => { (r.status >= 200 && r.status < 300 && r.response) ? resolve(r.response) : reject(new Error('fetch ' + r.status)); },
+        onerror: () => reject(new Error('network error')),
+        ontimeout: () => reject(new Error('timed out')),
+      });
+    });
+  }
+  async function measureCandidate(url) {
+    const blob = await gmFetch(url);
+    const bitmap = await createImageBitmap(blob);
+    const { width, height } = bitmap;
+    if (bitmap.close) bitmap.close();
+    return { width, height, size: blob.size, blob };
+  }
+  // #494: picks the release's best cover — highest resolution, then lowest
+  // size. Runs AFTER the item is already queued (fire-and-forget, mirroring
+  // fetchEntityName's post-add enrichment at addToQueue) rather than before
+  // Harmony's window.open(), since an await there risks the popup being
+  // blocked.
+  //
+  // ⚠ EVERY candidate is measured. This used to trust Harmony's caption
+  // metadata whenever it was present and only measure the rest — and the
+  // caption is not describing the linked image. Measured on majkinetor's own
+  // export (release c5e238d3, "CHROME"), three of four were wrong:
+  //
+  //     provider   caption            actual image
+  //     Spotify    2000x2000 790KB    640x640    72KB
+  //     Deezer     1200x1200 727KB    1000x1000 115KB
+  //     iTunes     3000x3000 5.58MB   3000x3000 5.7MB   (the only honest one)
+  //     Tidal      3000x3000 2.56MB   1280x1280 191KB
+  //
+  // Tidal's fake 3000x3000 tied with iTunes on area and won the smaller-size
+  // tie-break, so Falcon uploaded a 1280px image while a real 3000px one was
+  // sitting in the list — the "it added lower res" both majkinetor and chaban
+  // reported. The caption is now only a fallback for a candidate that cannot be
+  // fetched at all, and the measured numbers are written back onto the
+  // candidate so the row's provider chips stop advertising fiction.
+  async function pickBestCover(item) {
+    // #496: cover[] is an array, but Falcon only ever auto-picks for the
+    // first entry — the one entry Harmony's candidates land in today.
+    const entry = item.cover && item.cover[0];
+    const candidates = (entry && entry.candidates) || [];
+    if (!candidates.length) return;
+    let best = null;
+    const consider = (c, width, height, size) => {
+      const area = width * height;
+      if (!best || area > best.area || (area === best.area && size < best.size)) best = { url: c.url, provider: c.provider, area, size, width, height };
+    };
+    for (const c of candidates) {
+      try {
+        const m = await measureCandidate(c.url);
+        if (c.width && c.height && (c.width !== m.width || c.height !== m.height)) {
+          log('warn', `cover: ${c.provider} advertised ${c.width}×${c.height} but the image is ${m.width}×${m.height} — using the real size`);
+        }
+        c.width = m.width; c.height = m.height; c.size = m.size;
+        dbg('[cover]', `${item.mbid}: ${c.provider} measured ${m.width}×${m.height}, ${(m.size / 1024).toFixed(0)}KB`);
+        consider(c, m.width, m.height, m.size);
+      } catch (e) {
+        dbg('[cover]', `${item.mbid}: ${c.provider} candidate failed to measure — ${e.message}`);
+        // Only now is the caption worth anything: it is all we have. Flagged,
+        // because a wrong number here can still win the pick.
+        if (c.width && c.height && c.size) {
+          dbg('[cover]', `${item.mbid}: falling back to ${c.provider}'s advertised ${c.width}×${c.height} (unverified)`);
+          consider(c, c.width, c.height, c.size);
+        }
+      }
+    }
+    if (!best) return;
+    entry.url = best.url;
+    log('info', `cover: picked ${best.provider} — ${best.width}×${best.height}, ${(best.size / 1024).toFixed(0)}KB (best of ${candidates.length} measured candidate(s))`);
+    scheduleRender('queue');
+  }
+  // #494 follow-up (majkinetor): "Harmony always presents cover art even if
+  // it is already present on MB... adding cover is not idempotent. We could
+  // at minimum show if release has any covers as a warning." Originally
+  // called the Cover Art Archive's own API directly, but that's a genuine
+  // cross-origin request and it started failing outright live ("Failed to
+  // fetch" — a real userscript-manager sandbox is more restrictive here than
+  // a plain devtools fetch, unlike Falcon's other cross-origin need which
+  // goes through GM_xmlhttpRequest for exactly this reason). MB's own WS2
+  // release endpoint already reports the same information same-origin —
+  // `cover-art-archive.count` — so use that instead: no cross-origin call at
+  // all, through the same throttle every other MB lookup here uses. Same
+  // fire-and-forget-after-queuing shape as pickBestCover; sets
+  // item.coverExistingCount (null while unknown, 0 once confirmed there's
+  // nothing there) for renderRowDetail to warn on — item-level, not per-cover-
+  // entry, since it's a fact about the RELEASE, not about any one image
+  // being added (#496).
+  async function checkExistingCoverArt(item) {
+    // priority: this is actionable safety info, not cosmetic like a name
+    // lookup — it shouldn't sit behind a whole batch's worth of those.
+    const j = await mbThrottle.fetchJson(`${MB_ORIGIN}/ws/2/release/${item.mbid}?fmt=json`, undefined, true);
+    if (!j) { dbg('[cover]', `${item.mbid}: existing-cover-art check failed (no response)`); return; }   // transient — leave unknown rather than assert "none"
+    item.coverExistingCount = (j['cover-art-archive'] && j['cover-art-archive'].count) || 0;
+    dbg('[cover]', `${item.mbid}: ${item.coverExistingCount} existing cover image(s) per MB's own cover-art-archive field`);
+    scheduleRender('queue');
+  }
+  function makePendingToken() {
+    return 'h' + Date.now().toString(36) + Math.random().toString(36).slice(2, 10);
+  }
+  // #498 (chaban-mb via majkinetor): after a release is added to MB FROM
+  // Harmony, Harmony's own actions page carries that release's mbid right in
+  // its query string (`?...&release_mbid=<mbid>`) — landing Falcon's panel on
+  // that release's own page instead of MB's bare homepage skips a manual
+  // navigation. The target is the plain release page, NOT its relationship
+  // editor (chaban-mb's own correction: provider links Harmony doesn't cover,
+  // tagging, and adding to a collection all happen from there, none of it
+  // from inside the relationship editor — matching what MB's native
+  // post-creation redirect already does without Harmony's "Redirect to
+  // Release Actions" setting turned on).
+  // The MBID Harmony assigns once the release actually exists in MusicBrainz —
+  // i.e. the marker of a COMPLETED import, which is what #557's auto send gates on.
+  //
+  // ⚠ It is not always a bare MBID. On a real actions page the parameter holds the
+  // whole release URL:
+  //   ?release_mbid=https%3A%2F%2Fmusicbrainz.org%2Frelease%2F20b03c7d-…
+  // and MBID_RE is anchored, so that form always failed the test and the send fell
+  // back to seeding musicbrainz.org's HOME page instead of the release (measured on
+  // the shipped build: it opened `https://musicbrainz.org/?falcon=<token>`). Accept
+  // either shape — a bare MBID, or an MBID embedded in a /release/<mbid> URL.
+  // #578: ?tport= is what makes MusicBrainz render the green tagger button, which
+  // hands the release to Picard listening on that port. The whole feature is this
+  // one parameter on the URL "Send to Falcon" already opens. Its own function so
+  // the suffix — including the empty one — can be asserted directly rather than
+  // inferred from a URL built on someone else's site.
+  // #578 (majkinetor, round 3): "Add `tport` regardless of option (possible
+  // since we have default value for port)." So the parameter is always there and
+  // MusicBrainz always offers its tagger button; the option below governs only
+  // whether Falcon ALSO hands the release over by itself when a run finishes.
+  // That is what lets Jormangeud turn the automatic send off and still import by
+  // hand, from the same one control.
+  function picardParam() { return `&tport=${cfg.picardPort}`; }
+  function harmonyReleaseMbid() {
+    const v = new URLSearchParams(location.search).get('release_mbid');
+    if (!v) return null;
+    if (MBID_RE.test(v)) return v.toLowerCase();
+    const m = v.match(/\/release\/([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})/i);
+    return m ? m[1].toLowerCase() : null;
+  }
+  let harmonyBtn = null;
+  // #557: the body of the button's click, lifted out so the auto-send can take
+  // exactly the same path — one implementation, no drift between "you clicked
+  // it" and "Falcon clicked it for you".
+  async function sendToFalcon(auto) {
+    /* #590, second cut. The first one stood down on an errored page; majkinetor
+     * tried it and ruled the other way: "we should certainly submit at the end
+     * with whatever comes through after all repeats are exhausted. Falcon is
+     * idempotent in any case, so half input is still better than no input."
+     *
+     * So nothing here refuses any more. The reload has already had its bounded
+     * go at the MusicBrainz errors by the time this runs; whatever the page has
+     * now is what gets sent, and the reason it may be short travels with the
+     * batch as its edit note rather than being lost in a console line. */
+    const errSt = onHarmonyActionsPage() ? harmonyErrorState() : null;
+    const partialWhy = errSt && errSt.bad ? harmonyErrorSummary(errSt) : '';
+    if (partialWhy) harmonyLog(`${auto ? 'auto ' : ''}send: sending a possibly incomplete batch — ${partialWhy}`);
+    let found = scrapeHarmonyActions();
+    if (found.some(t => !t.name)) {
+      // #509 follow-up (majkinetor, live: a saved copy of the exact page
+      // scraped 75/75 tuples WITH names when replayed offline — proving the
+      // scraper itself is correct — but his real click got 0/12 named).
+      // Harmony renders each row's icon+name pill via its OWN async
+      // per-entity MB-match lookup, separate from (and slower than) the
+      // action list itself — on a small batch it's usually done by the time
+      // anyone clicks; on a 76-item release it visibly wasn't. Rather than
+      // hope the user waits, give Harmony's own resolution a bounded second
+      // chance right at click time if the FIRST scrape came back with any
+      // gaps — cheap compared to the MB fallback lookups it avoids.
+      const lbl = document.getElementById('falcon-harmony-lbl');
+      const prevLbl = lbl ? lbl.textContent : '';
+      if (lbl) lbl.textContent = 'Resolving names…';
+      const deadline = Date.now() + 5000;
+      while (Date.now() < deadline && found.some(t => !t.name)) {
+        await wait(400);
+        found = scrapeHarmonyActions();
+      }
+      if (lbl) lbl.textContent = prevLbl;
+    }
+    // #537: nothing to send, and nothing to count on the button either.
+    const foundCover = cfg.skipHarmonyCovers ? null : scrapeHarmonyCover();
+    const foundIsrcFallback = harmonyIsrcFallback();   // #540: always, see scrapeHarmonyActions
+    if (!found.length && !foundCover && !foundIsrcFallback) {
+      // #557: an auto-send must never raise a modal on a page nobody asked it
+      // to act on — it just stands down. A real click still gets told why.
+      if (auto) { harmonyLog('auto send: nothing to send on this page — standing down'); return false; }
+      alert(`${NAME}: no "Link external IDs" actions, cover art, or ISRCs found on this page.`);
+      return false;
+    }
+    const token = makePendingToken();
+    const payload = found.map(t => ({ entityType: t.entityType, mbid: t.mbid, url: t.url, linkTypeId: t.linkTypeId || undefined, note: t.note || undefined, isrc: t.isrc || undefined, name: t.name || undefined }));
+    // #536 follow-up (majkinetor): "edit note should probably show that it
+    // was from harmony page". Nothing downstream knew where a batch came
+    // from, so the cover note could name the image's provider but not the
+    // page that proposed it. Harmony's Release Actions url IS that page.
+    if (foundCover) payload.push({ entityType: 'release', mbid: foundCover.mbid, coverCandidates: foundCover.coverCandidates, source: location.href });
+    if (foundIsrcFallback) payload.push({ entityType: 'recording', pendingIsrcs: foundIsrcFallback });
+    GM_setValue('falcon:pending:' + token, JSON.stringify(payload));
+    /* #590 (majkinetor): "Falcon could add this partial info in its edit note
+       for the batch." Carried alongside the payload rather than inside it —
+       parseUrlParam requires the payload to be a bare array, and widening that
+       contract for one string would touch every producer of it. */
+    if (partialWhy) {
+      GM_setValue('falcon:pendingNote:' + token, `${partialWhy}. These links may therefore be incomplete; Falcon is idempotent, so re-running over this release later will fill in the rest.`);
+    }
+    const relMbid = harmonyReleaseMbid();
+    const tport = picardParam();   // #578
+    const target = relMbid ? `${MB_TARGET}/release/${relMbid}?falcon=${token}${tport}` : `${MB_TARGET}/?falcon=${token}${tport}`;
+    // #578: name the Picard decision in the log. majkinetor reported it "not
+    // working" and there was no way to tell from the log whether the option had
+    // reached this page at all — which is most of the diagnosis.
+    harmonyLog(`${auto ? 'auto ' : ''}send: ${payload.length} item(s) → ${target}`
+      + ` · Picard: tport=${cfg.picardPort}, auto-send ${cfg.sendToPicard ? 'on' : 'off'}`
+      + (relMbid ? '' : ' (no release mbid on this page, so MusicBrainz has nothing to tag)'));
+    if (cfg.openHarmonyInNewTab) openMbTab(target, auto);
+    else location.href = target;
+    return true;
+  }
+  // #557: an AUTO send happens outside a user gesture, and every browser popup
+  // blocker rejects window.open there — the batch would be written to GM storage
+  // and then silently go nowhere. GM_openInTab is not subject to the blocker, so
+  // prefer it; fall back to window.open (fine for a real click), and if that is
+  // blocked too, navigate this tab rather than lose the send.
+  function openMbTab(target, auto) {
+    if (typeof GM_openInTab === 'function') {
+      try { GM_openInTab(target, { active: true, insert: true, setParent: true }); return; }
+      catch (e) { harmonyLog('GM_openInTab failed (' + e.message + ') — falling back to window.open'); }
+    }
+    let w = null;
+    try { w = window.open(target, '_blank'); } catch (e) { w = null; }
+    if (w) return;
+    harmonyLog(auto
+      ? 'the popup blocker refused a new tab for an automatic send — navigating this tab instead'
+      : 'window.open was blocked — navigating this tab instead');
+    location.href = target;
+  }
+  // Falcon's panel (and its log) live on the MusicBrainz side; on Harmony there
+  // is nothing but this button, so say it where it can actually be seen. #557
+  function harmonyLog(msg) { try { console.info(`[${NAME}] ${msg}`); } catch (e) {} }
+  function ensureHarmonyButton() {
+    const items = scrapeHarmonyActions();
+    const cover = cfg.skipHarmonyCovers ? null : scrapeHarmonyCover();   // #537
+    // #500: the isrc fallback only matters when there are no recording
+    // tuples for scrapeHarmonyActions to have already zipped isrcs onto.
+    // #540: no longer conditional on there being no recording actions — the
+    // tracklist is the only trustworthy source of "which track is isrcN".
+    const isrcFallback = harmonyIsrcFallback();
+    const total = items.length + (cover ? 1 : 0) + (isrcFallback ? isrcFallback.isrcs.filter(Boolean).length : 0);
+    if (!harmonyBtn) {
+      harmonyBtn = document.createElement('button');
+      harmonyBtn.type = 'button'; harmonyBtn.id = 'falcon-harmony-btn';
+      harmonyBtn.style.cssText = 'position:fixed;right:14px;bottom:14px;z-index:2147483646;padding:10px 16px;border-radius:20px;border:none;cursor:pointer;background:#1b2a4a;color:#fff;font:bold 13px Arial;box-shadow:0 3px 12px rgba(0,0,0,.3);display:flex;align-items:center;gap:8px;transition:opacity .15s';
+      harmonyBtn.innerHTML = `<span style="display:flex;color:var(--mbu-warn)">${ICON}</span><span id="falcon-harmony-lbl"></span>`;
+      // While an auto-send is counting down the button is the CANCEL — clicking
+      // it stops the countdown and leaves you exactly where you were, rather
+      // than sending twice. Otherwise it is the ordinary manual send. #557
+      harmonyBtn.onclick = () => {
+        // #590: whichever countdown is running, the click stops it — and stops
+        // there. Only a click on a settled button sends.
+        if (cancelHarmonyReload('cancelled — you clicked the button')) return;
+        if (cancelAutoSend('cancelled — you clicked the button')) return;
+        sendToFalcon(false);
+      };
+      document.body.appendChild(harmonyBtn);
+    }
+    const lbl = document.getElementById('falcon-harmony-lbl');
+    if (_autoSendTimer || _reloadTimer) return;   // a countdown owns the label while it runs
+    /* #590 second cut: the button still SENDS — it just says the batch may be
+       short, so a partial import is a visible choice rather than a surprise.
+       The tooltip carries the detail; the same wording goes on the edit note. */
+    const err = onHarmonyActionsPage() ? harmonyErrorState() : null;
+    if (err && err.bad && total) {
+      lbl.textContent = `Send ${total} to Falcon (partial)`;
+      harmonyBtn.style.opacity = '1';
+      harmonyBtn.title = harmonyErrorSummary(err) + '. Sending anyway — Falcon is idempotent, so a partial import can be topped up later.';
+      return;
+    }
+    lbl.textContent = total ? `Send ${total} to Falcon` : 'No Falcon actions found yet…';
+    harmonyBtn.style.opacity = total ? '1' : '.6';
+    harmonyBtn.title = total ? `Opens MusicBrainz with ${total} item(s) queued in Falcon` : 'Waiting for Harmony to render its actions…';
+  }
+  /* ── #557: auto send ─────────────────────────────────────────────────────
+   * "Let's have another option 'Auto send' in Harmony category. Having both
+   * enabled would automatically finish everything after successful Harmony
+   * import." So: press "Send to Falcon" without being asked, and let the MB
+   * side's existing "Auto start import" carry it the rest of the way.
+   *
+   * Three things it deliberately will NOT do:
+   *   • fire on any Harmony page that isn't a completed import. A release_mbid
+   *     in the query string is exactly that signal — it is the MBID Harmony
+   *     assigns once the release is actually in MusicBrainz, so no MBID means
+   *     no successful import and nothing to send anywhere.
+   *   • fire before the action list has settled. Harmony renders its actions
+   *     client-side, so an early send would ship a partial batch — the boot
+   *     poller already waits for three unchanged reads, and this hangs off it.
+   *   • fire more than once per page load.
+   * And it counts down visibly first, because with "Open in new tab" OFF a
+   * send NAVIGATES this tab away from Harmony — that should never happen
+   * without a beat in which to stop it. Clicking the button cancels.
+   */
+  let _autoSendTimer = null, _autoSendDone = false;
+  function cancelAutoSend(why) {
+    if (!_autoSendTimer) return false;
+    clearInterval(_autoSendTimer); _autoSendTimer = null;
+    harmonyLog('auto send ' + why);
+    ensureHarmonyButton();   // repaint the ordinary label
+    return true;
+  }
+  function maybeAutoSend() {
+    if (_autoSendDone || _autoSendTimer) return;
+    if (!cfg.autoSendFromHarmony) return;
+    if (!harmonyReleaseMbid()) { harmonyLog('auto send: no release_mbid on this page — not a completed import, standing down'); _autoSendDone = true; return; }
+    if (_reloadTimer) return;   // #590: a reload is already armed — let it happen
+    const items = scrapeHarmonyActions();
+    const cover = cfg.skipHarmonyCovers ? null : scrapeHarmonyCover();
+    const isrcFallback = harmonyIsrcFallback();
+    const total = items.length + (cover ? 1 : 0) + (isrcFallback ? isrcFallback.isrcs.filter(Boolean).length : 0);
+    /* #590: "nothing left to send" was being logged for shape A too, where the
+       truth is the opposite — Harmony never managed to load the release, so
+       there is everything left to do and this tab is about to look finished.
+       An errored page with actions on it still sends (see sendToFalcon); only a
+       page with genuinely nothing on it stands down, and it now says which of
+       the two it is. */
+    const errSt = harmonyErrorState();
+    if (!total) {
+      harmonyLog(errSt.bad
+        ? `auto send: nothing on this page to send — ${harmonyErrorSummary(errSt)}`
+        : 'auto send: the import succeeded but there is nothing left to send');
+      _autoSendDone = true; return;
+    }
+    _autoSendDone = true;
+    let left = Math.ceil(cfg.autoSendDelayMs / 1000);
+    const lbl = document.getElementById('falcon-harmony-lbl');
+    const paint = () => {
+      if (lbl) lbl.textContent = `Auto-sending ${total} in ${left}… (click to cancel)`;
+      if (harmonyBtn) { harmonyBtn.style.opacity = '1'; harmonyBtn.title = 'Falcon will send this batch automatically — click to cancel'; }
+    };
+    harmonyLog(`auto send: ${total} item(s) in ${left}s — click the button to cancel`);
+    paint();
+    _autoSendTimer = setInterval(() => {
+      if (--left > 0) return paint();
+      clearInterval(_autoSendTimer); _autoSendTimer = null;
+      sendToFalcon(true);
+    }, 1000);
+    if (left <= 0) { clearInterval(_autoSendTimer); _autoSendTimer = null; sendToFalcon(true); }
+  }
+
+  /* ── #590: a Harmony page that errored ───────────────────────────────────
+   * chaban-mb: "Harmony release actions page is often missing recording, artist,
+   * label links when an error occurs. However Falcon ignores this in 'Auto send'
+   * mode leading to incomplete entries."
+   *
+   * Read off Harmony's own source (routes/release/actions.tsx) rather than off
+   * the rendered page, because this is THREE different failures wearing one
+   * error box — everything the route does sits in a single try, so where the
+   * throw lands decides what survives:
+   *
+   *   A  MB.lookup / getMergedRelease threw → `release` is undefined, so
+   *      allArtists and allRecordings are empty, so LinkWithMusicBrainz returns
+   *      null for every type and ISRCSubmission returns null. An error box over
+   *      the bare MBID form, and not one action. This is the issue's screenshot.
+   *      Falcon's auto-send today sees total === 0 and logs "the import
+   *      succeeded but there is nothing left to send" — wrong, and
+   *      indistinguishable from a release that genuinely had nothing to do.
+   *   B  one of the artist/recording/label browse calls threw → `release` IS
+   *      set, so the sections render, but UNFILTERED: Harmony can no longer tell
+   *      which links MusicBrainz already has, and says so itself, per type
+   *      ("Already existing … could not be checked"). ISRCSubmission with an
+   *      empty recordingsCache calls every ISRC new. Falcon sends duplicates —
+   *      not destructive (MB rejects them) but it buries what was really new.
+   *   C  one provider's lookup failed and the merge succeeded without it. The
+   *      page looks complete and the actions are genuinely incomplete — the
+   *      failed provider's links are simply absent. THIS is the "incomplete
+   *      entries" of the title, and nothing in the action list reveals it.
+   *
+   * So `.message.error` is the right trigger (chaban's recommendation, and the
+   * only thing that covers all three) — but never on its own, because of the
+   * deny-list below.
+   */
+  // Reloading these can never help: the input is wrong, or the thing asked for
+  // is not there. Note the POLARITY — this is not an allow-list of errors worth
+  // retrying (Harmony surfaces far too many strings for that to stay correct);
+  // an error nobody has seen before still gets its bounded retry, and only the
+  // known-hopeless ones are excluded. That degrades safely when Harmony adds one.
+  const HARMONY_PERMANENT_RE = /(is not a valid mbid|does not contain a valid release mbid|invalid mbid|release not found|^\s*not found\s*$|no provider supports|no release lookups have been queued|can only be used once per lookup|could not determine the musicbrainz release mbid)/i;
+  // Errors that mean "the server wants less traffic, not the same traffic
+  // again" — a rate limit, a full queue, or a 503 "currently busy". Not all of
+  // them are rate limits (MusicBrainz's busy message is plain overload), but the
+  // right response to every one of them is the same: start the backoff further
+  // out. Named for what it decides rather than for one of its members, because
+  // calling the set "rate limit" is what made this ambiguous in the first place.
+  const HARMONY_SLOW_DOWN_RE = /(rate limit|too many requests queued|currently busy|429)/i;
+  // Harmony marks the shape-B case itself, in LinkWithMusicBrainz — verbatim.
+  const HARMONY_UNCHECKED_RE = /Already existing (\w+) links on MusicBrainz could not be checked/;
+  // MessageBox renders <span class="provider"> for a ProviderError and nothing
+  // else, so no chip means the error came from the MusicBrainz API calls
+  // themselves. MusicBrainz is also one of Harmony's own providers, so a chip
+  // naming it is still a MusicBrainz error.
+  const isMbErrorBox = b => !b.provider || /^musicbrainz$/i.test(b.provider);
+  function harmonyErrorState() {
+    const main = document.querySelector('main') || document.body;
+    const boxes = [...main.querySelectorAll('.message.error')].map(b => ({
+      text: ((b.querySelector('.markdown') || b.querySelector('p') || b).textContent || '').trim(),
+      // MessageBox only renders <span class="provider"> for a ProviderError —
+      // its presence is the strongest signal available for shape C.
+      provider: ((b.querySelector('.provider') || {}).textContent || '').replace(/:\s*$/, '').trim() || null,
+      // chaban's harmony-beatport-recovery deliberately mimics Harmony's markup,
+      // so its errors match too. Kept, not filtered: a rate-limited recovery is
+      // worth a reload just the same. This only ATTRIBUTES it, so that if a loop
+      // ever does happen the log names which script's box caused it.
+      from: b.id === 'hbr-beatport-message' ? 'beatport-recovery' : 'harmony',
+    }));
+    // ⚠ NOT a trigger, only a classifier. Harmony deliberately SKIPS the label
+    // browse when no label has external IDs ("save pointless API call"), so the
+    // label flavour of this warning appears with nothing whatsoever wrong.
+    const uncheckedTypes = [...new Set([...main.querySelectorAll('.message.warning')]
+      .map(w => (HARMONY_UNCHECKED_RE.exec(w.textContent || '') || [])[1])
+      .filter(Boolean))];
+    /* ⚠ Only a MusicBrainz error is worth reloading for, and this is the line
+       that decides which is which. majkinetor, after running the first cut:
+       "'Beatport: Failed to extract embedded JSON' is a showstopper for me, and
+       it seems to never resolve, so it blocks all other providers that did. It
+       blocked 6 providers that did have data… lets just look for MB errors."
+
+       MessageBox renders <span class="provider"> for a ProviderError and for
+       nothing else, so an error with no provider chip came from the MusicBrainz
+       API calls themselves. The MusicBrainz provider is also a provider in
+       Harmony's own lookup, so a chip reading "MusicBrainz" counts too. */
+    const mbErrors = boxes.filter(isMbErrorBox);
+    const providerErrors = boxes.filter(b => !isMbErrorBox(b));
+    const slowDown = mbErrors.some(b => HARMONY_SLOW_DOWN_RE.test(b.text));
+    return {
+      boxes,
+      mbErrors,
+      providerErrors,
+      uncheckedTypes,
+      slowDown,
+      // <h2 class="release-title"> is only rendered when `release` merged, which
+      // is precisely the A/not-A distinction.
+      hasRelease: !!document.querySelector('h2.release-title'),
+      providers: [...new Set(providerErrors.map(b => b.provider).filter(Boolean))],
+      // "permanent" only ever decides whether to RELOAD, so it is about the
+      // MusicBrainz errors alone.
+      permanent: mbErrors.length > 0 && mbErrors.every(b => HARMONY_PERMANENT_RE.test(b.text)),
+      get bad() { return boxes.length > 0; },
+      get mbBad() { return mbErrors.length > 0; },
+      get shape() { return !boxes.length ? 'clean' : !this.hasRelease ? 'A' : uncheckedTypes.length ? 'B' : 'C'; },
+    };
+  }
+  /* A one-line human summary — used on the button, in the log, and as the batch
+     edit note, so all three say the same thing. majkinetor: "Falcon could add
+     this partial info in its edit note for the batch." */
+  function harmonyErrorSummary(st) {
+    if (!st.bad) return '';
+    const bits = [];
+    if (st.mbErrors.length) {
+      bits.push(st.shape === 'A' ? 'MusicBrainz could not be read at all, so this page has no actions'
+        : st.uncheckedTypes.length ? `existing ${st.uncheckedTypes.join('/')} links could not be checked against MusicBrainz, so these actions are unfiltered`
+          : `MusicBrainz returned an error (${st.mbErrors[0].text.replace(/\s+/g, ' ').slice(0, 80)})`);
+    }
+    if (st.providerErrors.length) {
+      bits.push(`${st.providers.join(', ')} failed, so whatever ${st.providers.length === 1 ? 'it' : 'they'} would have contributed is missing`);
+    }
+    return 'Harmony reported an error — ' + bits.join('; ');
+  }
+  function onHarmonyActionsPage() {
+    return ON_HARMONY && /\/release\/actions\/?$/.test(location.pathname) && !!harmonyReleaseMbid();
+  }
+  // Per-TAB, which is exactly the lifetime wanted: it survives the reloads it is
+  // counting, and a second tab on the same release does not inherit a count.
+  function harmonyReloadKey() { return 'falcon:harmonyReload:' + (harmonyReleaseMbid() || location.search); }
+  function harmonyReloadCount() { try { return Number(sessionStorage.getItem(harmonyReloadKey())) || 0; } catch (e) { return 0; } }
+  function setHarmonyReloadCount(n) {
+    try { if (n) sessionStorage.setItem(harmonyReloadKey(), String(n)); else sessionStorage.removeItem(harmonyReloadKey()); } catch (e) {}
+  }
+  // 5s → 60s (15s → 60s when rate-limited), capped, plus up to a second of
+  // jitter so several tabs erroring on the same MusicBrainz hiccup don't all
+  // come back at the same instant.
+  function harmonyReloadDelayMs(attempt, slowDown) {
+    const base = slowDown ? 15000 : 5000;
+    return Math.min(60000, base * Math.pow(2, Math.max(0, attempt - 1))) + Math.floor(Math.random() * 1000);
+  }
+  let _reloadTimer = null, _reloadCancelled = false;
+  function cancelHarmonyReload(why) {
+    if (!_reloadTimer) return false;
+    clearInterval(_reloadTimer); _reloadTimer = null;
+    _reloadCancelled = true;   // sticky for this page load — one refusal is enough
+    harmonyLog('reload on error ' + why);
+    ensureHarmonyButton();
+    return true;
+  }
+  /* Returns true when a reload is armed (the caller should not bother scraping).
+   * Deliberately called at BOOT, ahead of the settle poller: Harmony renders
+   * these boxes server-side, so they are in the first byte of HTML — waiting for
+   * three unchanged action counts and then a 4s send countdown only delays a
+   * page that was never going to be worth reading. */
+  function maybeReloadOnError() {
+    if (!onHarmonyActionsPage()) return false;
+    const st = harmonyErrorState();
+    st.boxes.forEach(b => harmonyLog(`${isMbErrorBox(b) ? 'MusicBrainz' : 'provider'} error (${b.from}${b.provider ? ', ' + b.provider : ''}): ${b.text.replace(/\s+/g, ' ').slice(0, 300)}`));
+    if (!st.mbBad) {
+      // A clean MusicBrainz load ends the retry series, so a flaky moment can
+      // never accumulate a count across successful imports.
+      if (harmonyReloadCount()) { harmonyLog(`MusicBrainz came back cleanly after ${harmonyReloadCount()} reload(s)`); setHarmonyReloadCount(0); }
+      /* ⚠ A PROVIDER error is deliberately not reloaded for. majkinetor hit
+         exactly this: "'Beatport: Failed to extract embedded JSON'… seems to
+         never resolve, so it blocks all other providers that did. It blocked 6
+         providers that did have data." Reloading cannot fix a provider whose
+         page Harmony can't parse, and the six that worked are worth sending. */
+      if (st.providerErrors.length) harmonyLog(`${st.providers.join(', ')} failed, but MusicBrainz itself is fine — reloading would not bring them back, so this sends as it is`);
+      return false;
+    }
+    const why = harmonyErrorSummary(st);
+    harmonyLog(`${why} [shape ${st.shape}]`);
+    if (st.permanent) { harmonyLog('every MusicBrainz error on this page is permanent — reloading it could never help, so it will not be reloaded'); return false; }
+    const n = harmonyReloadCount() + 1;
+    if (n > cfg.harmonyReloadMax) {
+      /* majkinetor: "we should certainly submit at the end with whatever comes
+         through after all repeats are exhausted. Falcon is idempotent in any
+         case, so half input is still better than no input." So the retries stop
+         and the send goes ahead — carrying the reason in the batch edit note. */
+      harmonyLog(`gave up after ${cfg.harmonyReloadMax} reload(s) — sending whatever this page does have, since a partial import beats none`);
+      return false;
+    }
+    if (_reloadCancelled || _reloadTimer) return true;
+    let left = Math.ceil(harmonyReloadDelayMs(n, st.slowDown) / 1000);
+    harmonyLog(`reloading in ${left}s — attempt ${n}/${cfg.harmonyReloadMax}${st.slowDown ? ' (the server asked for less traffic, so backing off further)' : ''}. Click the button to cancel.`);
+    const paint = () => {
+      const lbl = document.getElementById('falcon-harmony-lbl');
+      if (lbl) lbl.textContent = `Harmony errored — reloading in ${left}… (click to cancel)`;
+      if (harmonyBtn) { harmonyBtn.style.opacity = '1'; harmonyBtn.title = why + '. Falcon will load the page again — click to cancel.'; }
+    };
+    paint();
+    _reloadTimer = setInterval(() => {
+      if (--left > 0) return paint();
+      clearInterval(_reloadTimer); _reloadTimer = null;
+      setHarmonyReloadCount(n);
+      // ⚠ location.reload(), NEVER a rebuilt URL. The query string carries the
+      // whole lookup state Harmony reads back out of it (providers, regions,
+      // gtin, snapshotMaxTimestamp — see extractReleaseLookupState); anything
+      // reconstructed here would quietly perform a DIFFERENT lookup.
+      location.reload();
+    }, 1000);
+    return true;
+  }
+
+  /* ── #591: attach a disc ID from a CD rip log ────────────────────────────
+   * majkinetor: "Picard is used to add disk id - there is no web option… We
+   * should show each media as drop target above current disk ids if they exist
+   * - you click on it to select a file or drop a file to it and you are done."
+   *
+   * The whole thing turns out to be computable in the browser. A MusicBrainz
+   * disc ID is a SHA-1 over the TOC, so nothing here needs libdiscid, Picard, or
+   * a request to anyone — the log file is read locally and the result is a URL.
+   * Verified against the exact log and disc ID in the issue:
+   *
+   *   toc  1+13+279873+150+19836+…+265363
+   *   id   UHvvp8Oyi0D5QEK.qYfeX7GrcLw-
+   *
+   * The parsers below are ports of Picard's (picard/disc/*.py), deliberately
+   * kept structurally identical so the two stay comparable — same regexes, same
+   * pregap constant, same data-track rule. "Check out the Picard code on how it
+   * formats query params and what kind of logs it processes."
+   */
+  const CD_PREGAP = 150;          // picard.disc.utils.PREGAP_LENGTH
+  const CD_DATA_TRACK_GAP = 11400;  // picard.disc.utils.DATA_TRACK_GAP
+  /* EAC / XLD / fre:ac all write the same table. Two regexes, both Picard's: one
+     to find the header (localised EAC output means the column NAMES cannot be
+     matched, only the shape), then rows until the table ends. */
+  const RE_EAC_HEADER = /^\s*.+\s+\|\s+.+\s+\|\s+.+\s+\|\s+.+\s+\|\s+.+\s*$/;
+  const RE_EAC_ROW = /^\s*(\d+)\s*\|\s*[0-9:.]+\s*\|\s*[0-9:.]+\s*\|\s*(\d+)\s*\|\s*(\d+)\s*$/;
+  const RE_DBPA_ROW = /^Track\s+(\d+):\s+Ripped LBA (\d+) to (\d+)/;
+  const RE_CYANRIP_HEADER = /^cyanrip\s+\d+\.\d+/;
+
+  function parseEacLog(lines) {
+    const out = [];
+    let i = 0;
+    for (; i < lines.length; i++) if (RE_EAC_HEADER.test(lines[i])) { i += 2; break; }   // +1 header, +1 separator
+    for (; i < lines.length; i++) {
+      const m = RE_EAC_ROW.exec(lines[i]);
+      if (!m) { if (out.length) break; continue; }
+      out.push({ number: +m[1], start: +m[2], end: +m[3] });
+    }
+    return out;
+  }
+  function parseDbPowerampLog(lines) {
+    const out = [];
+    let last = 0;
+    for (const line of lines) {
+      const m = RE_DBPA_ROW.exec(line);
+      if (!m) continue;
+      const n = +m[1];
+      // Picard raises here rather than guessing, and so should this: a partial
+      // rip produces a disc ID for a disc that does not exist.
+      if (last + 1 !== n) throw new Error(`non-consecutive track numbers (${last} → ${n}) — this looks like a partial rip, so no disc ID can be calculated`);
+      last = n;
+      out.push({ number: n, start: +m[2], end: +m[3] - 1 });   // dBpoweramp's end is exclusive
+    }
+    return out;
+  }
+  function parseCyanripLog(lines) {
+    const out = [];
+    let cur = null, start = null;
+    for (const line of lines) {
+      const th = /^Track (\d+) ripped/.exec(line);
+      if (th) { cur = +th[1]; start = null; continue; }
+      if (cur == null) continue;
+      const s = /^\s*Start LSN:\s+(\d+)\s*$/.exec(line);
+      if (s) { start = +s[1]; continue; }
+      const e = /^\s*End LSN:\s+(\d+)\s*/.exec(line);
+      if (e && start != null) { out.push({ number: cur, start, end: +e[1] }); cur = null; start = null; }
+    }
+    return out;
+  }
+  /* whipper writes YAML. Picard runs it through a real YAML parser; a userscript
+     has none and is not going to grow one for four keys, so this reads the TOC
+     block by indentation. Narrow on purpose: it only looks inside `TOC:`, and
+     only for the two keys it needs. */
+  function parseWhipperLog(lines) {
+    const out = [];
+    let inToc = false, tocIndent = -1, cur = null;
+    const indentOf = l => l.length - l.replace(/^\s*/, '').length;
+    for (const line of lines) {
+      if (!line.trim()) continue;
+      if (/^\s*TOC:\s*$/.test(line)) { inToc = true; tocIndent = indentOf(line); cur = null; continue; }
+      if (!inToc) continue;
+      const ind = indentOf(line);
+      if (ind <= tocIndent) break;                       // out of the TOC block
+      const num = /^\s*(\d+):\s*$/.exec(line);
+      if (num) { cur = { number: +num[1], start: null, end: null }; out.push(cur); continue; }
+      if (!cur) continue;
+      const s = /^\s*Start sector:\s*(\d+)\s*$/.exec(line);
+      if (s) { cur.start = +s[1]; continue; }
+      const e = /^\s*End sector:\s*(\d+)\s*$/.exec(line);
+      if (e) cur.end = +e[1];
+    }
+    return out.filter(t => t.start != null && t.end != null);
+  }
+  // Tried in order; the first one that yields entries wins. cyanrip is checked
+  // by its header first (Picard does the same) because its "Track N ripped"
+  // lines could otherwise be mistaken for something else.
+  function parseRipLog(text) {
+    const lines = text.split(/\r\n|\r|\n/);
+    const tried = [];
+    const attempt = (name, fn) => {
+      let r = [];
+      try { r = fn(lines); } catch (e) { tried.push(`${name}: ${e.message}`); throw e; }
+      tried.push(`${name}: ${r.length} track(s)`);
+      return r;
+    };
+    if (RE_CYANRIP_HEADER.test(lines[0] || '')) {
+      const r = attempt('cyanrip', parseCyanripLog);
+      if (r.length) return { entries: r, format: 'cyanrip', tried };
+    }
+    for (const [name, fn] of [['EAC/XLD/fre:ac', parseEacLog], ['whipper', parseWhipperLog], ['dBpoweramp', parseDbPowerampLog], ['cyanrip', parseCyanripLog]]) {
+      const r = attempt(name, fn);
+      if (r.length) return { entries: r, format: name, tried };
+    }
+    return { entries: [], format: null, tried };
+  }
+  // picard.disc.utils.calculate_mb_toc_numbers, including its two refusals —
+  // an empty list and a non-standard track sequence both mean the disc ID would
+  // be wrong rather than missing, which is the worse failure.
+  function calcMbToc(entries) {
+    let toc = entries.slice();
+    if (toc.length > 1 && toc[toc.length - 1].start - toc[toc.length - 2].end === CD_DATA_TRACK_GAP + 1) {
+      toc = toc.slice(0, -1);   // a trailing data track is not part of the disc ID
+    }
+    if (!toc.length) throw new Error('no tracks were found in this log');
+    toc.forEach((e, i) => {
+      if (e.number !== i + 1) throw new Error(`non-standard track number sequence (${toc.map(t => t.number).join(', ')})`);
+    });
+    const leadout = toc[toc.length - 1].end + CD_PREGAP + 1;
+    const offsets = toc.map(e => e.start + CD_PREGAP);
+    return { first: 1, last: toc.length, leadout, offsets, dataTrackDropped: toc.length !== entries.length };
+  }
+  /* The disc ID itself: SHA-1 over first track, last track and 100 eight-digit
+     offsets (leadout, then tracks 1..99, zero-padded), base64 with +/= swapped
+     for ._- . Not needed to ATTACH — MusicBrainz recomputes it from the toc
+     parameter — but it is what makes the result checkable by eye against what
+     Picard would have produced, and it is what the page shows afterwards. */
+  async function mbDiscId(first, last, leadout, offsets) {
+    const h8 = n => (n >>> 0).toString(16).toUpperCase().padStart(8, '0');
+    let s = first.toString(16).toUpperCase().padStart(2, '0') + last.toString(16).toUpperCase().padStart(2, '0') + h8(leadout);
+    for (let i = 0; i < 99; i++) s += h8(offsets[i] || 0);
+    const bytes = new Uint8Array(s.length);
+    for (let i = 0; i < s.length; i++) bytes[i] = s.charCodeAt(i);
+    const digest = new Uint8Array(await crypto.subtle.digest('SHA-1', bytes));
+    let bin = ''; digest.forEach(b => { bin += String.fromCharCode(b); });
+    return btoa(bin).replace(/\+/g, '.').replace(/\//g, '_').replace(/=/g, '-');
+  }
+  function tocParam(toc) { return [toc.first, toc.last, toc.leadout, ...toc.offsets].join('+'); }
+  /* ⚠ EAC writes UTF-16 by default, and reading one of those as UTF-8 gives a
+     string full of NULs in which none of the regexes above match — the log would
+     look "unrecognised" rather than mis-decoded. Picard sniffs the encoding; this
+     does the same from the BOM, and falls back to counting NULs for the (real)
+     case of a UTF-16 log with no BOM at all. */
+  async function readLogText(file) {
+    const buf = new Uint8Array(await file.arrayBuffer());
+    if (buf[0] === 0xFF && buf[1] === 0xFE) return { text: new TextDecoder('utf-16le').decode(buf.subarray(2)), encoding: 'UTF-16LE (BOM)' };
+    if (buf[0] === 0xFE && buf[1] === 0xFF) return { text: new TextDecoder('utf-16be').decode(buf.subarray(2)), encoding: 'UTF-16BE (BOM)' };
+    const body = (buf[0] === 0xEF && buf[1] === 0xBB && buf[2] === 0xBF) ? buf.subarray(3) : buf;
+    const look = body.subarray(0, 1000);
+    let nulls = 0; look.forEach(b => { if (b === 0) nulls++; });
+    if (nulls > look.length / 4) {
+      const odd = look.filter((b, i) => i % 2 === 1 && b === 0).length;
+      const even = look.filter((b, i) => i % 2 === 0 && b === 0).length;
+      return { text: new TextDecoder(odd >= even ? 'utf-16le' : 'utf-16be').decode(body), encoding: 'UTF-16 (no BOM)' };
+    }
+    return { text: new TextDecoder('utf-8').decode(body), encoding: (body === buf ? 'UTF-8' : 'UTF-8 (BOM)') };
+  }
+  // one place that turns a dropped file into everything downstream needs
+  async function discIdFromLog(file) {
+    const { text, encoding } = await readLogText(file);
+    const { entries, format, tried } = parseRipLog(text);
+    if (!entries.length) {
+      const e = new Error('this file is not a CD rip log Falcon recognises (EAC, XLD, fre:ac, whipper, dBpoweramp or cyanrip)');
+      e.tried = tried; throw e;
+    }
+    const toc = calcMbToc(entries);
+    const id = await mbDiscId(toc.first, toc.last, toc.leadout, toc.offsets);
+    return { id, toc, tocString: tocParam(toc), tracks: toc.last, format, encoding, tried };
+  }
+
+  /* ── the Disc IDs tab ─────────────────────────────────────────────────────
+   * Rendered above whatever MusicBrainz already shows, one zone per medium.
+   * Dropping a log on a zone goes to MusicBrainz's own attach page — Falcon
+   * never submits the edit itself, so the edit note and "Enter edit" stay
+   * exactly where they are.
+   */
+  const DISCIDS_PATH_RE = /^\/release\/([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})\/discids\/?$/i;
+  // MusicBrainz only allows disc IDs on CD-family formats (medium_format
+  // .has_discids). Matched by name rather than by id: the names are stable and
+  // an id list would be one more thing to keep in step with MusicBrainz.
+  const DISCID_FORMAT_RE = /(^|\b)(cd|cd-r|8cm cd|8cm cd\+g|enhanced cd|hdcd|copy control cd|data cd|dts cd|playstation|dualdisc \(cd side\)|shm-cd|hqcd|cd\+g|blu-spec cd|svcd|vcd|cdv)($|\b)/i;
+  function mediumMayHaveDiscIds(format) { return !format || DISCID_FORMAT_RE.test(format); }
+  // The medium row id is MusicBrainz's internal one, and it is only in this
+  // page's own markup for mediums that ALREADY have a disc ID (the Remove/Move
+  // links carry it). When it is known the drop can go straight to the
+  // confirmation page; when it is not, it goes through MusicBrainz's own medium
+  // picker, which is one extra click and no extra request.
+  function scrapeMediumIds() {
+    const byPosition = {};
+    document.querySelectorAll('#content a[href*="medium"]').forEach(a => {
+      const href = a.getAttribute('href') || '';
+      const m = /[?&]medium(?:_id)?=(\d+)/.exec(href);
+      if (!m) return;
+      const head = a.closest('table') && a.closest('table').querySelector('th, .medium');
+      const row = a.closest('tr');
+      let pos = null;
+      // the heading row above this one reads e.g. "CD 1" / "Medium 2"
+      for (let el = row && row.previousElementSibling; el; el = el.previousElementSibling) {
+        const t = (el.textContent || '').trim();
+        const pm = /(?:medium|cd|disc)\s*(\d+)/i.exec(t);
+        if (pm) { pos = +pm[1]; break; }
+      }
+      if (pos == null && head) { const pm = /(?:medium|cd|disc)\s*(\d+)/i.exec(head.textContent || ''); if (pm) pos = +pm[1]; }
+      if (pos == null) pos = 1;
+      byPosition[pos] = +m[1];
+    });
+    return byPosition;
+  }
+  let _discIdUiBuilt = false;
+  async function ensureDiscIdUi() {
+    if (_discIdUiBuilt) return;
+    const m = DISCIDS_PATH_RE.exec(location.pathname);
+    if (!m) return;
+    _discIdUiBuilt = true;
+    const mbid = m[1].toLowerCase();
+    const host = document.getElementById('content');
+    if (!host) return;
+    /* majkinetor: "Dark theme please". The first cut hardcoded light colours,
+       which is doubly wrong here: MBU_TOKENS is injected by ensurePanel(), and
+       this box exists on pages where the panel was never opened — so the tokens
+       have to come with it. mbuTheme() is what stamps data-mbu-theme on <html>;
+       calling it here means the box follows a dark userstyle even when nothing
+       else of Falcon's is on screen. */
+    try { mbuTheme(); } catch (e) {}
+    const box = document.createElement('div');
+    box.id = 'falcon-discid-box';
+    box.className = 'mbu-ui';
+    box.innerHTML = `<style>
+      ${document.getElementById('falcon-panel') ? '' : MBU_TOKENS}
+      #falcon-discid-box{margin:10px 0 16px;font:13px var(--mbu-font);color:var(--mbu-text)}
+      #falcon-discid-box h2{color:var(--mbu-text)}
+      #falcon-discid-box .fd-zones{display:flex;flex-wrap:wrap;gap:10px;margin:8px 0}
+      #falcon-discid-box .fd-zone{flex:1 1 220px;min-height:76px;border:2px dashed var(--mbu-border-strong);border-radius:var(--mbu-radius-lg);padding:10px 12px;
+        display:flex;flex-direction:column;justify-content:center;gap:3px;cursor:pointer;color:var(--mbu-text);
+        background:var(--mbu-bg-raised);transition:background .12s,border-color .12s}
+      #falcon-discid-box .fd-zone:hover,#falcon-discid-box .fd-zone.over{background:var(--mbu-bg-hover);border-color:var(--mbu-accent)}
+      #falcon-discid-box .fd-zone.busy{cursor:progress;opacity:.7}
+      #falcon-discid-box .fd-zone.bad{border-color:var(--mbu-error-border);background:var(--mbu-error-bg)}
+      #falcon-discid-box .fd-zone.off{cursor:not-allowed;opacity:.55;border-style:solid}
+      #falcon-discid-box .fd-t{font-weight:600;color:var(--mbu-text)}
+      #falcon-discid-box .fd-s{font-size:11px;color:var(--mbu-text-dim)}
+      #falcon-discid-box .fd-err{color:var(--mbu-error)}
+      #falcon-discid-box code{font-family:var(--mbu-font-mono);background:var(--mbu-bg-sunken);padding:0 3px;border-radius:3px}
+      #falcon-discid-box a{color:var(--mbu-accent-text)}
+      #falcon-discid-box .fd-foot{font-size:11px;color:var(--mbu-text-dim)}
+    </style>
+    <h2>Disc IDs from a rip log</h2>
+    <div class="fd-zones" id="falcon-discid-zones"><div class="fd-s">Reading this release…</div></div>
+    <p class="fd-foot">Drop an <strong>EAC</strong>, <strong>XLD</strong>, <strong>fre:ac</strong>, <strong>whipper</strong>, <strong>dBpoweramp</strong> or <strong>cyanrip</strong> log on a medium — or click to pick one — and Falcon works out the disc ID and takes you to MusicBrainz's attach page. Nothing is submitted on your behalf. See <a href="/doc/How_to_Add_Disc_IDs">How to Add Disc IDs</a>.</p>`;
+    const heading = [...host.querySelectorAll('h2')].find(h => /disc ids/i.test(h.textContent || ''));
+    host.insertBefore(box, heading || host.firstChild);
+    const zones = box.querySelector('#falcon-discid-zones');
+
+    let mediums = [];
+    try {
+      // the same /ws/2 release lookup Falcon already makes elsewhere, for the
+      // one thing this page does not render: the medium list of a release with
+      // no disc IDs on it yet
+      const j = await mbThrottle.fetchJson(`${MB_ORIGIN}/ws/2/release/${mbid}?inc=media&fmt=json`, undefined, true);
+      mediums = (j && j.media) || [];
+    } catch (e) {
+      zones.innerHTML = `<div class="fd-s fd-err">Could not read this release's media (${esc(e.message)}).</div>`;
+      return;
+    }
+    const ids = scrapeMediumIds();
+    zones.innerHTML = '';
+    if (!mediums.length) { zones.innerHTML = '<div class="fd-s">This release has no media.</div>'; return; }
+    mediums.forEach(med => {
+      const pos = med.position || 1;
+      const fmt = med.format || '';
+      const tracks = med['track-count'] != null ? med['track-count'] : (med.tracks || []).length;
+      const z = document.createElement('div');
+      z.className = 'fd-zone';
+      z.dataset.position = String(pos);
+      z.dataset.tracks = String(tracks);
+      if (ids[pos]) z.dataset.mediumId = String(ids[pos]);
+      const title = `${fmt || 'Medium'} ${pos}${med.title ? ' — ' + med.title : ''}`;
+      const ok = mediumMayHaveDiscIds(fmt);
+      z.innerHTML = `<div class="fd-t">${esc(title)}</div>`
+        + `<div class="fd-s">${ok ? `${tracks} track${tracks === 1 ? '' : 's'} · drop a rip log or click to choose` : `${esc(fmt)} cannot have disc IDs`}</div>`;
+      if (!ok) { z.classList.add('off'); zones.appendChild(z); return; }
+      const pick = () => {
+        const inp = document.createElement('input');
+        inp.type = 'file'; inp.accept = '.log,.txt,text/plain';
+        inp.onchange = () => { if (inp.files && inp.files[0]) handleRipLog(z, inp.files[0], mbid); };
+        inp.click();
+      };
+      z.onclick = pick;
+      z.ondragover = e => { e.preventDefault(); z.classList.add('over'); };
+      z.ondragleave = () => z.classList.remove('over');
+      z.ondrop = e => {
+        e.preventDefault(); z.classList.remove('over');
+        const f = e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0];
+        if (f) handleRipLog(z, f, mbid);
+      };
+      zones.appendChild(z);
+    });
+    log('info', `disc IDs: ${mediums.length} medium(s) on this release, ${Object.keys(ids).length} with a known medium id`);
+  }
+  const zoneSay = (z, cls, html) => {
+    z.classList.remove('bad', 'busy');
+    if (cls) z.classList.add(cls);
+    const s = z.querySelector('.fd-s'); if (s) s.innerHTML = html;
+  };
+  async function handleRipLog(z, file, mbid) {
+    const pos = +z.dataset.position;
+    z.classList.add('busy');
+    zoneSay(z, 'busy', `Reading ${esc(file.name)}…`);
+    let r;
+    try {
+      r = await discIdFromLog(file);
+    } catch (e) {
+      log('warn', `disc IDs: ${file.name} could not be read — ${e.message}${e.tried ? ' [' + e.tried.join('; ') + ']' : ''}`);
+      zoneSay(z, 'bad', `<span class="fd-err">${esc(e.message)}</span>`);
+      return;
+    }
+    log('info', `disc IDs: ${file.name} — ${r.format} log, ${r.encoding}, ${r.tracks} track(s)`
+      + `${r.toc.dataTrackDropped ? ', trailing data track dropped' : ''} → ${r.id} (toc ${r.tocString})`);
+    // A mismatch is worth stopping for: a disc ID on the wrong medium is an
+    // edit someone else has to undo.
+    const want = +z.dataset.tracks;
+    if (want && want !== r.tracks) {
+      zoneSay(z, 'bad', `<span class="fd-err">This log has ${r.tracks} track(s), but this medium has ${want}.</span> <a href="#" data-go="1">Attach anyway</a>`);
+      const a = z.querySelector('a[data-go]');
+      if (a) a.onclick = e => { e.preventDefault(); e.stopPropagation(); goAttach(r, mbid, pos, z.dataset.mediumId); };
+      return;
+    }
+    zoneSay(z, null, `${esc(r.format)} log · ${r.tracks} tracks · <code>${esc(r.id)}</code> — opening MusicBrainz…`);
+    await goAttachResolved(r, mbid, pos, z.dataset.mediumId, z);
+  }
+  // Known medium id → straight there. Otherwise resolve it first, and only fall
+  // back to MusicBrainz's own picker if that cannot be done honestly.
+  async function goAttachResolved(r, mbid, pos, knownId, z) {
+    let id = knownId;
+    if (!id) {
+      if (z) zoneSay(z, 'busy', 'Finding this medium on MusicBrainz…');
+      id = await resolveMediumId(mbid, pos, r.tocString);
+    }
+    goAttach(r, mbid, pos, id);
+  }
+  /* Straight to the confirmation when the medium's internal id is known,
+     otherwise to MusicBrainz's own medium picker filtered to this release. The
+     `falcon-medium` parameter is ignored by MusicBrainz and read back by Falcon
+     on that page (see autoPickAttachMedium) to preselect the right one. */
+  /* majkinetor: "It shows me a page to select MBID, which it shouldn't as Falcon
+   * already knows it… When MBID is added we again have page that can be skipped
+   * - select media - Falcon already knows which media was used."
+   *
+   * Both pages are the same page: /cdtoc/attach?toc=…&filter-release.query=<mbid>
+   * renders the release's mediums as RADIOS named `medium` (measured on the
+   * sandbox: value 1123588, row "CD 3: Know"), and the only thing standing
+   * between that and the confirmation is the internal medium id. So fetch that
+   * page once, read the id off the radio, and go straight to the confirmation.
+   *
+   * ⚠ MusicBrainz lists only the mediums whose track count matches the TOC, so
+   * the one dropped on can legitimately be absent. That returns null and the
+   * caller falls back to showing the page rather than guessing at a medium —
+   * attaching a disc ID to the wrong one is an edit someone else has to undo.
+   */
+  async function resolveMediumId(mbid, position, tocString) {
+    const url = `${MB_ORIGIN}/cdtoc/attach?toc=${tocString}&filter-release.query=${mbid}`;
+    let html;
+    try {
+      const res = await fetch(url, { credentials: 'include' });
+      if (!res.ok) { log('warn', `disc IDs: could not read the medium list (HTTP ${res.status})`); return null; }
+      html = await res.text();
+    } catch (e) { log('warn', `disc IDs: could not read the medium list — ${e.message}`); return null; }
+    const doc = new DOMParser().parseFromString(html, 'text/html');
+    const radios = [...doc.querySelectorAll('input[name="medium"]')];
+    if (!radios.length) { log('warn', 'disc IDs: MusicBrainz offered no medium for this TOC — falling back to its own picker'); return null; }
+    const seen = radios.map(i => {
+      const row = i.closest('tr') || i.closest('li') || i.parentElement;
+      const text = ((row && row.textContent) || '').replace(/\s+/g, ' ').trim();
+      // rows read "CD 3: Know (show tracklist)" — format, then the position
+      const m = /(?:^|\s)(?:CD|Medium|Disc|DVD|Vinyl|Cassette)?\s*(\d+)\s*:/i.exec(text);
+      return { id: i.value, pos: m ? +m[1] : null, text: text.slice(0, 60) };
+    });
+    log('info', `disc IDs: MusicBrainz offers ${seen.length} medium(s) for this TOC — ${seen.map(s => `#${s.pos}=${s.id}`).join(', ')}`);
+    const hit = seen.find(s => s.pos === position)
+      // one candidate and no position to read: unambiguous either way
+      || (seen.length === 1 && seen[0].pos == null ? seen[0] : null);
+    if (!hit) { log('warn', `disc IDs: none of the offered mediums is #${position} — letting MusicBrainz ask`); return null; }
+    return hit.id;
+  }
+  function goAttach(r, mbid, position, mediumId) {
+    /* ⚠ The toc parameter is NOT percent-encoded, and that is the whole trick.
+     * MusicBrainz validates it with /\A\d+(?: \d+)*\z/ — SPACE separated
+     * (Entity/CDTOC.pm, new_from_toc). Picard sends `1+13+279873+150+…` because
+     * a `+` in a query string decodes to a space, so Perl sees the spaces it
+     * wants. Running the same string through encodeURIComponent turns each `+`
+     * into `%2B`, which decodes to a literal plus, and MusicBrainz answers
+     * "The provided CD TOC is not valid" — majkinetor hit exactly that.
+     * tocString is digits and plus signs only, so there is nothing here that
+     * needs escaping anyway. */
+    const base = `${MB_ORIGIN}/cdtoc/attach?toc=${r.tocString}&id=${encodeURIComponent(r.id)}&tracks=${r.tracks}`;
+    const url = mediumId
+      ? `${base}&medium=${mediumId}`
+      : `${base}&filter-release.query=${mbid}&falcon-medium=${position}`;
+    log('info', `disc IDs: opening ${url}`);
+    location.href = url;
+  }
+  /* On the attach page: MusicBrainz lists every medium of the release as its own
+     "attach to this medium" link. Falcon marks the one the drop was aimed at,
+     and follows it when it is unambiguous — the next page is still only a
+     confirmation, so nothing is submitted without the edit being entered by hand. */
+  function autoPickAttachMedium() {
+    if (!/^\/cdtoc\/attach\/?$/.test(location.pathname)) return;
+    const q = new URLSearchParams(location.search);
+    // The confirmation page — the last stop, where the edit note lives.
+    // majkinetor: "That will then leave the user to the final edit note (where
+    // Falcon should add its own signature too)."
+    if (q.get('medium')) return signAttachEditNote();
+    const want = q.get('falcon-medium');
+    if (!want) return;
+    /* ⚠ RADIOS, not links. The first cut looked for a[href*="medium="] and so
+       did nothing at all on this page — which is why majkinetor still had to
+       pick the medium by hand. Measured on the sandbox: the mediums are
+       <input type="radio" name="medium" value="1123588"> in a GET form whose
+       submit button reads "Attach CD TOC". */
+    const radios = [...document.querySelectorAll('input[type="radio"][name="medium"]')];
+    if (!radios.length) { console.info(`[${NAME}] disc IDs: no medium to choose on this page`); return; }
+    const rowOf = i => ((i.closest('tr') || i.closest('li') || i.parentElement || {}).textContent || '').replace(/\s+/g, ' ').trim();
+    const match = radios.find(i => new RegExp(`(?:^|\\s)(?:CD|Medium|Disc|DVD|Vinyl|Cassette)?\\s*${want}\\s*:`, 'i').test(rowOf(i)))
+      || (radios.length === 1 ? radios[0] : null);
+    if (!match) { console.info(`[${NAME}] disc IDs: could not tell which of ${radios.length} mediums is #${want} — pick it yourself`); return; }
+    match.checked = true;
+    match.dispatchEvent(new Event('change', { bubbles: true }));
+    const form = match.closest('form');
+    const submit = form && [...form.querySelectorAll('button[type="submit"], input[type="submit"]')]
+      .find(b => /attach/i.test(b.textContent || b.value || ''));
+    if (!submit) { console.info(`[${NAME}] disc IDs: medium #${want} selected — press "Attach CD TOC" to continue`); return; }
+    console.info(`[${NAME}] disc IDs: medium #${want} selected (${match.value}), attaching`);
+    submit.click();
+  }
+  /* The confirmation page is where MusicBrainz asks for the edit note, and it is
+     the only edit in this flow — Falcon never submits it, so signing the note is
+     the only trace it leaves. Appended, never replacing: anything already typed
+     (or seeded) stays. */
+  function signAttachEditNote() {
+    const ta = document.querySelector('textarea.edit-note, textarea[name="edit-note"], textarea[name*="edit_note"], #id-edit-note, .edit-note textarea');
+    if (!ta) { console.info(`[${NAME}] disc IDs: no edit note box on this page to sign`); return; }
+    const sig = `${FALCON_SIGNATURE()}${String.fromCharCode(10)}Disc ID computed from a CD rip log.`;
+    if ((ta.value || '').includes(FALCON_SIGNATURE())) return;   // a re-render must not stack them
+    try {
+      const set = Object.getOwnPropertyDescriptor(window.HTMLTextAreaElement.prototype, 'value').set;
+      const existing = (ta.value || '').trim();
+      set.call(ta, existing ? existing + String.fromCharCode(10) + sig : sig);
+      ta.dispatchEvent(new Event('input', { bubbles: true }));
+      ta.dispatchEvent(new Event('change', { bubbles: true }));
+      console.info(`[${NAME}] disc IDs: signed the edit note`);
+    } catch (e) { console.info(`[${NAME}] disc IDs: could not sign the edit note — ${e.message}`); }
+  }
+
+  /* ── waiters (mirrors Platform Check's pcWait/pcWaitFor, retargeted at a frame doc) ── */
+  function wait(ms) { return new Promise(r => setTimeout(r, ms)); }
+  function waitFor(predicate, timeoutMs) {
+    timeoutMs = timeoutMs || 10000;
+    return new Promise(resolve => {
+      const start = Date.now();
+      const tick = () => {
+        let v; try { v = predicate(); } catch (e) { v = null; }
+        if (v) return resolve(v);
+        if (Date.now() - start >= timeoutMs) return resolve(null);
+        setTimeout(tick, 150);
+      };
+      tick();
+    });
+  }
+  // accepts EITHER a worker <iframe> element OR a plain window handle (from
+  // window.open — used by the "open in a real tab" manual-review path, #467) —
+  // same-origin either way, so fillAndSubmit's own logic never needs to know which.
+  function frameDoc(target) { try { return ('contentDocument' in target) ? target.contentDocument : (target.document || null); } catch (e) { return null; } }
+  // ⚠ NEVER NAVIGATE THROUGH THE WINDOW THIS RETURNS.
+  // It is deliberately allowed to be the current window — fillAndSubmit is also
+  // driven directly against the page you're on (the "open in a real tab" path,
+  // and several tests). That makes it fine for reading and for filling, and
+  // categorically unsafe for navigating: under a userscript manager's Xray
+  // wrappers these handles are not always what they look like, and a navigation
+  // meant for a worker frame taking the whole tab — panel, workers and queue
+  // with it — is exactly how #467 lost a run. Navigate iframes via `.src`, which
+  // can only ever move the element it belongs to.
+  function frameWin(target) { try { return ('contentWindow' in target) ? target.contentWindow : target; } catch (e) { return null; } }
+
+  // ⚠ #556: identify the field STRUCTURALLY, never by its placeholder text.
+  // Apollo Editor rewrites MusicBrainz's "Add another link" to "Paste one or more
+  // links" (its multi-link paste hint) and re-applies it from a MutationObserver,
+  // and Apollo has no @noframes — so it runs inside Falcon's edit iframes too.
+  // Platform Check carried the identical lookup and that is what #556 turned out
+  // to be: the field was there all along under a different label. Fixed in both.
+  function findAddLinkInput(doc) {
+    const ed = doc.getElementById('external-links-editor');
+    if (ed) {
+      const empty = [...ed.querySelectorAll('input[type="url"]')].filter(i => !i.value);
+      if (empty.length) return empty[empty.length - 1];
+    }
+    const all = [...doc.querySelectorAll('input[type="text"], input[type="url"], input:not([type])')];
+    const RE = /^(?:add (?:another )?link|add another url|paste one or more links)$/i;
+    return all.find(i => RE.test((i.placeholder || '').trim()) && !i.value)
+      || all.find(i => RE.test((i.placeholder || '').trim())) || null;
+  }
+  function findSubmitButton(doc) {
+    return doc.querySelector('button.submit.positive')
+      || [...doc.querySelectorAll('button')].find(b => /enter edit/i.test(b.textContent || ''));
+  }
+  // #467 (majkinetor): when a url is rejected, MB almost always renders the REAL reason
+  // right on the page (e.g. "This URL is not allowed for artists.", "This relationship
+  // already exists.") — scrape it instead of guessing. Falls back to a generic message
+  // only when MB genuinely didn't show one.
+  function findFieldError(doc) {
+    const texts = [...doc.querySelectorAll('.error, .field-error')].map(el => (el.textContent || '').trim()).filter(Boolean);
+    return texts.length ? [...new Set(texts)].join(' / ') : null;
+  }
+  // #514 (majkinetor): a field change (ISRC, disambiguation) Falcon can't
+  // always tell already matches what's stored — unlike a relationship row,
+  // there's no clean "pending" DOM state to diff against beforehand — so
+  // Falcon submits it, and MB's OWN server-side validation catches the
+  // redundant edit and re-renders /edit with this banner instead of
+  // committing. Lives in `.banner.warning-header`, not `.error`/
+  // `.field-error` — findFieldError() doesn't see it at all.
+  function findNoChangesWarning(doc) {
+    const texts = [...doc.querySelectorAll('.banner.warning-header, .banner')].map(el => (el.textContent || '').trim());
+    return texts.some(t => /does not make any changes/i.test(t));
+  }
+  function setEditNote(doc, win, text) {
+    const ta = doc.querySelector('textarea.edit-note, textarea[name="edit-note"], textarea[name="edit_note"], #id-edit-note, .edit-note textarea');
+    if (!ta) return false;
+    try {
+      const setVal = Object.getOwnPropertyDescriptor(win.HTMLTextAreaElement.prototype, 'value').set;
+      const existing = (ta.value || '').trim();
+      setVal.call(ta, existing ? existing + '\n' + text : text);
+      ta.dispatchEvent(new win.Event('input', { bubbles: true }));
+      ta.dispatchEvent(new win.Event('change', { bubbles: true }));
+      return true;
+    } catch (e) { return false; }
+  }
+  // #533 follow-up: the release's disambiguation ("Additional information" →
+  // Disambiguation on the Release information tab). Seeding can't reach it (see
+  // DISAMBIGUATABLE), so type it the way a human would: native value setter +
+  // real input/change events. Deliberately DOM-driven rather than poking
+  // MB.releaseEditor's observable directly — the observable lives in the page's
+  // realm, which a userscript sandbox sees through an Xray wrapper in Firefox,
+  // and the KO `value` binding picks a typed change up anyway.
+  //
+  // The read-back afterwards is the part that matters: if MB ever renames the
+  // field, this returns false and the caller reports the item as failed instead
+  // of quietly submitting a form with nothing in it.
+  // MB.releaseEditor lives in the PAGE's realm. Falcon is a @grant-ed userscript,
+  // so in Firefox the sandbox sees the iframe's window through an Xray wrapper
+  // and `win.MB` reads as undefined — `.wrappedJSObject` is what gets past it.
+  // Only ever used to CHECK the editor's state, never as the write path.
+  function releaseEditorApi(win) {
+    try {
+      const w = (win && win.wrappedJSObject) || win;
+      const re = w && w.MB && w.MB.releaseEditor;
+      return (re && re.rootField && typeof re.rootField.release === 'function') ? re : null;
+    } catch (e) { return null; }
+  }
+  // ⚠ The release editor boots asynchronously: the input exists in the markup
+  // well before Knockout binds to it, and binding OVERWRITES whatever is in the
+  // box with the model's value. Typing too early therefore looks like it worked
+  // (the field reads back correctly) and is then silently wiped a moment later —
+  // which is exactly what happened on the first cut of this: Falcon submitted a
+  // form with no change on it, MB created no edit, and the item still reported
+  // 'done'. So wait for the editor, and re-read after a beat to be sure the
+  // value survived binding.
+  // #571 generalised this from the disambiguation-only version: renaming a
+  // release hits exactly the same wall (KO app, seeds ignored) and needs
+  // exactly the same care, so both go through one implementation rather than
+  // a near-copy that could drift on only one side.
+  //   field = { sel, ko, label }  — DOM selector, observable name, human noun
+  async function setReleaseField(iframe, value, field) {
+    const ready = await waitFor(() => {
+      const d = frameDoc(iframe); if (!d) return null;
+      const el = d.querySelector(field.sel);
+      if (!el) return null;
+      const api = releaseEditorApi(frameWin(iframe));
+      // when the API is reachable, insist the release itself is loaded;
+      // otherwise fall back to MB's own submit button existing, which the
+      // editor only renders once it has built its tabs
+      if (api) { try { return api.rootField.release() ? true : null; } catch (e) { return null; } }
+      return d.querySelector('#enter-edit') ? true : null;
+    }, 20000);
+    const doc = frameDoc(iframe), win = frameWin(iframe);
+    const input = doc && doc.querySelector(field.sel);
+    if (!ready || !input) return { ok: false, why: `the release editor never finished loading its ${field.label} field` };
+    if ((input.value || '').trim() === String(value).trim()) return { ok: true, unchanged: true, before: input.value || '' };
+    const before = input.value || '';
+    const type = () => {
+      const setVal = Object.getOwnPropertyDescriptor(win.HTMLInputElement.prototype, 'value').set;
+      setVal.call(input, value);
+      input.dispatchEvent(new win.Event('input', { bubbles: true }));
+      input.dispatchEvent(new win.Event('change', { bubbles: true }));
+    };
+    try {
+      type();
+      await wait(500);
+      if (input.value !== value) { type(); await wait(700); }   // bound late and wiped it — type again
+    } catch (e) { return { ok: false, why: `could not write the field — ${e.message || e}` }; }
+    if (input.value !== value) return { ok: false, why: `the field did not keep the value (reads ${JSON.stringify(input.value)})`, before };
+    // The field holding the text is not proof the editor noticed. Where the API
+    // is reachable, ask it what it will actually submit.
+    const api = releaseEditorApi(win);
+    if (api) {
+      let staged = null, ko = null;
+      try { ko = api.rootField.release()[field.ko](); } catch (e) {}
+      try { staged = api.allEdits().length; } catch (e) {}
+      if (ko !== null && ko !== value) return { ok: false, why: `the release editor's own state still reads ${JSON.stringify(ko)} — the typed value did not reach it`, before };
+      if (staged === 0) return { ok: false, why: 'MusicBrainz staged no edit for this change', before };
+      return { ok: true, before, after: input.value, staged };
+    }
+    return { ok: true, before, after: input.value, staged: null };
+  }
+  const setReleaseComment = (iframe, value) =>
+    setReleaseField(iframe, value, { sel: '#release-editor #comment, #comment', ko: 'comment', label: 'disambiguation' });
+  // The release editor's title box. Selector is deliberately broader than the
+  // comment one: `#name` is a likelier id for MB to reuse elsewhere on the page,
+  // so scope to the editor first and only then fall back.
+  const setReleaseName = (iframe, value) =>
+    setReleaseField(iframe, value, { sel: '#release-editor #name, #release-editor input[name="name"], #name', ko: 'name', label: 'name' });
+  // #495: the release editor's own "Enter edit" button lives inside its
+  // jQuery-UI-tabs "Edit note" panel (display:none until that tab is
+  // active) — a bare element.click() on the tab link does nothing (jQuery UI
+  // binds its handler expecting a real event), so dispatch a genuine
+  // MouseEvent instead, exactly as a real click would arrive. No-op (returns
+  // false) on any page that isn't actually tabbed this way.
+  function activateReleaseEditNoteTab(doc) {
+    const nav = doc.querySelector('#release-editor .ui-tabs-nav, #release-editor ul.ui-tabs-nav');
+    const a = nav && [...nav.querySelectorAll('a')].find(x => (x.getAttribute('href') || '') === '#edit-note');
+    if (!a) return false;
+    a.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true, view: doc.defaultView }));
+    return true;
+  }
+  // harmonyNote is deliberately NOT re-inserted here: buildSeedEditUrl already
+  // put it in the page's edit_note query param, so MB's own rendering has
+  // already seeded it into the textarea by the time this runs — pushing it
+  // again duplicated the line (#475: "the edit notes repeat the line
+  // 'Matched recording while importing ... with Harmony'").
+  // #573 (majkinetor): "When I rename several entities, I want to put an
+  // additional message on why that is done, visible on all edits."
+  //
+  // One note for the whole batch, appended to every edit the run produces —
+  // form edits, aliases and cover art alike. Deliberately NOT persisted across
+  // reloads: a reason left over from an earlier batch, silently attaching
+  // itself to unrelated edits, is a worse failure than retyping it.
+  let _batchNote = '';
+  const batchNote = () => String(_batchNote || '').trim();
+  const setBatchNote = v => { _batchNote = String(v || ''); };
+  // Appends the batch note to an already-composed note, keeping it as its own
+  // paragraph so it reads as the human message rather than part of Falcon's
+  // own boilerplate.
+  const withBatchNote = text => {
+    const b = batchNote();
+    return b ? [text, b].filter(Boolean).join(String.fromCharCode(10, 10)) : text;
+  };
+  const FALCON_SIGNATURE = () => `${NAME} v${scriptVersion()} by majkinetor - ${HELP_URL}`;
+  const editNoteText = (results) => {
+    const added = results.filter(r => r.ok).map(r => r.url);
+    const lines = [FALCON_SIGNATURE()];
+    // #571/#573: a rename or disambiguation carries no urls, and an empty
+    // "Bulk-added via the Falcon queue:" heading with nothing under it reads
+    // like something went wrong. Only claim to have added links when we did.
+    if (added.length) lines.push('', 'Bulk-added via the Falcon queue:', ...added);
+    // The batch note is added HERE rather than in the seed url: setEditNote
+    // appends to whatever seeding already put in the box, and this runs for
+    // every type including release, whose KO editor ignores seeded fields.
+    // Doing both is how #475 ended up with duplicated lines.
+    return withBatchNote(lines.join(String.fromCharCode(10)));
+  };
+
+  // MB shows the relationship type as a plain read-only label when there's only one
+  // valid type for that url (nothing to set), or a <select class="link-type"> when
+  // ambiguous (e.g. Bandcamp: streaming vs purchase). When Harmony hands us an
+  // explicit linkTypeId, honor it whenever a select is actually present.
+  async function setRowLinkType(iframe, row, linkTypeId) {
+    if (!linkTypeId) return null;
+    const typeRow = row.nextElementSibling;
+    const select = typeRow?.classList?.contains('relationship-item') ? typeRow.querySelector('select.link-type') : null;
+    if (!select) return null;   // unambiguous — MB already resolved it, nothing to override
+    if (![...select.options].some(o => o.value === String(linkTypeId))) return false;
+    const w = frameWin(iframe);
+    const setSel = Object.getOwnPropertyDescriptor(w.HTMLSelectElement.prototype, 'value').set;
+    setSel.call(select, String(linkTypeId));
+    select.dispatchEvent(new w.Event('change', { bubbles: true }));
+    return true;
+  }
+  // Harmony sometimes wants TWO relationship types on the IDENTICAL url (e.g. a
+  // Bandcamp track as both "stream for free" and "purchase for download") — MB
+  // supports this via the row's own "Add another relationship" control, not by
+  // re-typing the url again (that wouldn't create a second row at all).
+  async function addSecondRelationshipType(iframe, row, linkTypeId) {
+    if (!linkTypeId) return false;
+    const typeRow = row.nextElementSibling;
+    if (!typeRow || !typeRow.classList?.contains('relationship-item')) return false;
+    const addRow = typeRow.nextElementSibling;
+    const addBtn = addRow?.classList?.contains('add-relationship') ? addRow.querySelector('button.add-item') : null;
+    if (!addBtn) return false;
+    addBtn.click();
+    const newSelect = await waitFor(() => {
+      const s = typeRow.nextElementSibling;
+      if (!s || !s.classList?.contains('relationship-item')) return null;
+      const sel = s.querySelector('select.link-type');
+      return (sel && !sel.value) ? sel : null;
+    }, 3000);
+    if (!newSelect || ![...newSelect.options].some(o => o.value === String(linkTypeId))) return false;
+    const w = frameWin(iframe);
+    const setSel = Object.getOwnPropertyDescriptor(w.HTMLSelectElement.prototype, 'value').set;
+    setSel.call(newSelect, String(linkTypeId));
+    newSelect.dispatchEvent(new w.Event('change', { bubbles: true }));
+    return true;
+  }
+
+  // fill every URL in item.urls (one "Add another link" round-trip each, or a second
+  // relationship type on an already-present url) then submit ONCE for the whole
+  // group, all directly against the iframe's OWN document/window (same-origin — no
+  // postMessage needed, see #467). A url that MB rejects (e.g. already present)
+  // doesn't abort the rest — it's recorded in the returned per-url results and the
+  // others still go in. Only truly infra-level failures (no submit button, never
+  // redirected) throw; "nothing to submit" is signalled via `committed: false`, not
+  // a throw, since it isn't necessarily an error (every url in the group may simply
+  // already be on the entity).
+  // #467 (majkinetor): after a url row exists (whether just typed, or already
+  // pre-filled by MB's own seed-url params — see buildSeedEditUrl/workerLoop),
+  // this is the shared "is it actually usable" check: a genuinely-duplicate url
+  // MB rejected (real .error/.field-error text) or a REQUIRED relationship-type
+  // <select> still sitting blank because Falcon had no linkTypeId to give it —
+  // either one, left in place, invalidates the WHOLE form's submit button, not
+  // just this row. Removes the row and returns a clear, actionable reason;
+  // returns null when the row is fine as-is.
+  // Finds the row for a url, in EITHER state MB can leave it in:
+  //  - resolved: an <a href> link row (typed-and-classified, or seeded and
+  //    successfully auto-classified)
+  //  - unresolved: still an editable <input> holding the url text, which is
+  //    what a SEEDED url MB couldn't classify looks like (confirmed live: a
+  //    bandcamp track seeded onto a recording renders as an input row with a
+  //    blank required select and NO href). Matching only on `a[href]` missed
+  //    these entirely — the blank select then silently disabled submit for the
+  //    whole group while Falcon re-typed a duplicate of the same url.
+  function findRowForUrl(doc, url) {
+    if (!doc) return null;
+    const rows = [...doc.querySelectorAll('tr.external-link-item')];
+    return rows.find(tr => (tr.querySelector('a[href]')?.getAttribute('href') || '') === url)
+      || rows.find(tr => (tr.querySelector('input')?.value || '') === url)
+      || null;
+  }
+  // Both states at once, for a url that can legitimately have TWO rows: when a
+  // url is ALREADY on the entity and we also seed it, MB keeps the existing
+  // resolved row AND adds our seeded copy as a separate unresolved input row.
+  // That extra row's blank required select disables submit for the whole group,
+  // so it has to be found and dropped even though the "real" row looks fine.
+  function findRowsForUrl(doc, url) {
+    const rows = doc ? [...doc.querySelectorAll('tr.external-link-item')] : [];
+    const match = rows.filter(tr => (tr.querySelector('a[href]')?.getAttribute('href') || '') === url || (tr.querySelector('input')?.value || '') === url);
+    return {
+      resolved: match.find(tr => !!tr.querySelector('a[href]')) || null,
+      unresolved: match.filter(tr => !tr.querySelector('a[href]') && !!tr.querySelector('input')),
+    };
+  }
+  // Every relationship-type row hanging off `url`'s row(s) — MB renders one
+  // `tr.relationship-item` per type directly after the `tr.external-link-item`
+  // it belongs to. Used to tell whether a type Falcon wants is ALREADY on the
+  // page (seeded by MB itself) before reaching for the DOM-poking fallback.
+  function typeRowsForUrl(doc, url) {
+    const rows = doc ? [...doc.querySelectorAll('tr.external-link-item')] : [];
+    const owners = rows.filter(tr => (tr.querySelector('a[href]')?.getAttribute('href') || '') === url || (tr.querySelector('input')?.value || '') === url);
+    const out = [];
+    owners.forEach(owner => {
+      let n = owner.nextElementSibling;
+      while (n && n.classList?.contains('relationship-item')) { out.push(n); n = n.nextElementSibling; }
+    });
+    return out;
+  }
+  const hasTypeForUrl = (doc, url, linkTypeId) => typeRowsForUrl(doc, url)
+    .some(tr => tr.querySelector('select.link-type')?.value === String(linkTypeId));
+  // Final safety net before submit. Seeding a url that's ALREADY on the entity
+  // makes MB attach a SECOND, blank relationship row under that url's existing
+  // row (its own dual-relationship mechanism) rather than adding a new url row
+  // — confirmed live. That blank required select disables submit for the WHOLE
+  // form, and it isn't reachable by url lookup (the row carries no href of its
+  // own), so per-url checks can't see it. Sweeps every still-blank type select,
+  // removes its relationship row, and reports which url it belonged to (found
+  // by walking back to the owning external-link-item).
+  function sweepBlankTypeRows(doc) {
+    if (!doc) return [];
+    const dropped = [];
+    [...doc.querySelectorAll('select.link-type')].filter(s => !s.value).forEach(sel => {
+      const relRow = sel.closest('tr');
+      if (!relRow) return;
+      let owner = relRow.previousElementSibling;
+      while (owner && !owner.classList.contains('external-link-item')) owner = owner.previousElementSibling;
+      const url = owner?.querySelector('a[href]')?.getAttribute('href') || owner?.querySelector('input')?.value || null;
+      const removeBtn = relRow.querySelector('button.remove-item') || relRow.querySelector('button.remove-button');
+      if (removeBtn) { removeBtn.click(); dropped.push(url); }
+    });
+    return dropped;
+  }
+  // ⚠ NEVER remove a row that represents a PRE-EXISTING relationship.
+  // #467: checkRowUsable used to click "remove" on any row MB complained about
+  // — but when the complaint is "This relationship already exists", that row is
+  // REAL EXISTING DATA, and removing it stages a DELETION. Caught live on
+  // majkinetor's failing recording: a re-run over an already-imported entity had
+  // three `.rel-remove` markers staged against its qobuz relationship. It never
+  // reached the server (those runs all timed out), but a submit would have
+  // destroyed existing links. MB marks rows WE added with `rel-add`, so only
+  // those are ours to take back; anything unmarked pre-dates us — report the
+  // url as failed and leave the row strictly alone.
+  function isOurs(row) {
+    if (!row) return false;
+    if (row.querySelector('.rel-add') || /\brel-add\b/.test(row.className)) return true;
+    const next = row.nextElementSibling;
+    return !!(next && next.classList?.contains('relationship-item') && next.querySelector('.rel-add'));
+  }
+  function removeIfOurs(row) {
+    if (!isOurs(row)) return false;
+    row.querySelector('button.remove-item')?.click();
+    return true;
+  }
+  function checkRowUsable(doc, row, linkTypeId) {
+    const typeRow = row.nextElementSibling;
+    // scoped to just THIS row + its own type-row sibling — a real entity can
+    // easily carry OTHER, unrelated .error/.field-error text elsewhere on the
+    // page (e.g. from a genuinely pre-existing relationship that has nothing
+    // to do with what was just seeded); a page-wide findFieldError() scrape
+    // here misattributed those to whichever url happened to be checked next.
+    const scope = [row, typeRow].filter(Boolean);
+    const errAlready = scope.map(el => [...el.querySelectorAll('.error, .field-error')].map(e => (e.textContent || '').trim()).filter(Boolean).join(' / ')).filter(Boolean).join(' / ');
+    // a blank REQUIRED type select is checked FIRST: MB's own text for it
+    // ("Please select a link type...") says what's wrong but not what to do
+    // about it, so this reports the actionable version instead. Any OTHER MB
+    // error (duplicate link, url not allowed for this entity type...) is
+    // reported verbatim below — MB says it better than a guess would.
+    const ambiguousSelect = typeRow?.classList?.contains('relationship-item') ? typeRow.querySelector('select.link-type') : null;
+    if (!linkTypeId && ambiguousSelect && !ambiguousSelect.value) {
+      removeIfOurs(row);
+      return 'ambiguous relationship type — MusicBrainz needs you to pick one; use ⇗ "open in tab" to add this url manually';
+    }
+    if (errAlready) { removeIfOurs(row); return errAlready; }
+    return null;
+  }
+  // Every external link present BEFORE Falcon touches the form. Falcon only
+  // ever adds, so every one of these must still be there at submit time. This
+  // is checked structurally — by url — independently of MB's rel-* classes, so
+  // the protection can't be silently defeated by a markup change on MB's side.
+  function snapshotExistingUrls(doc) {
+    if (!doc) return [];
+    return [...doc.querySelectorAll('tr.external-link-item')]
+      .map(tr => tr.querySelector('a[href]')?.getAttribute('href'))
+      .filter(Boolean);
+  }
+  // #671: one platform page under any of its url forms — MusicBrainz keeps a Qobuz or Apple
+  // Music link with whatever locale it was entered in (gb-en, us-en, /gb/, /us/; open.qobuz.com),
+  // so an exact-url check misses the page already being there. null: no known equivalence.
+  function platformPageKey(url) {
+    let u;
+    try { u = new URL(url); } catch (e) { return null; }
+    const h = u.hostname.replace(/^www\./, ''), p = u.pathname;
+    let m;
+    if (/(^|\.)qobuz\.com$/.test(h) && (m = p.match(/\/(interpreter|artist|label)\/(?:.*\/)?(\d+)\/?$/))) return `qobuz:${m[1] === 'label' ? 'label' : 'artist'}:${m[2]}`;
+    if (/^(music|itunes|geo\.music)\.apple\.com$/.test(h) && (m = p.match(/\/(artist|label)\/(?:[^/]*\/)?(?:id)?(\d+)\/?$/))) return `apple:${m[1]}:${m[2]}`;
+    if (/(^|\.)deezer\.com$/.test(h) && (m = p.match(/\/(artist|label)\/(\d+)\/?$/))) return `deezer:${m[1]}:${m[2]}`;
+    return null;
+  }
+  // A link already on the entity (not one Falcon seeded) that is the same platform page as
+  // `url` in another form; its href, or null
+  function equivalentExistingUrl(doc, url) {
+    const key = platformPageKey(url);
+    if (!key || !doc) return null;
+    for (const tr of doc.querySelectorAll('tr.external-link-item')) {
+      const href = tr.querySelector('a[href]')?.getAttribute('href') || '';
+      if (href && href !== url && !isOurs(tr) && platformPageKey(href) === key) return href;
+    }
+    return null;
+  }
+  async function fillAndSubmit(iframe, item, opts) {
+    const skipSubmit = !!(opts && opts.skipSubmit);
+    const tag = (opts && opts.tag) || '[w?]';
+    const baseline = (opts && opts.baseline) || snapshotExistingUrls(frameDoc(iframe));
+    const results = [];
+    dbg(tag, `fillAndSubmit start — ${item.urls.length} url(s), skipSubmit=${skipSubmit}, ${baseline.length} pre-existing link(s) to preserve`);
+    const tFillStart = Date.now();
+    // workerLoop navigates straight to buildSeedEditUrl(item) — MB's own seed-url
+    // params (the same ones Harmony uses) pre-fill the FIRST occurrence of each
+    // distinct url as the page renders, no typing needed at all (majkinetor,
+    // #467: "why you didn't use URL params... it should basically be instant").
+    // MB collapses a REPEAT occurrence of the identical url text into that same
+    // one row, though, so a dual-relationship-type group (the same url twice
+    // with two different linkTypeIds) still needs its second occurrence added
+    // by hand via "Add another relationship" — occurrence-tracked below.
+    const seen = new Map();
+    for (const { url, linkTypeId } of item.urls) {
+      const occurrence = seen.get(url) || 0;
+      seen.set(url, occurrence + 1);
+      try {
+        const doc0 = frameDoc(iframe);
+        // #671: the same page is already on the entity under another locale or form — adding
+        // this one would only duplicate it, so take back what was seeded for it
+        const same = occurrence === 0 ? equivalentExistingUrl(doc0, url) : null;
+        if (same) {
+          const { resolved: sr, unresolved: su } = findRowsForUrl(doc0, url);
+          [sr, ...su].filter(Boolean).forEach(removeIfOurs);
+          await wait(150);
+          dbg(tag, `url[0] ${url} — the same page is already on the entity as ${same}; not added`);
+          results.push({ url, ok: false, present: true, error: `already on MusicBrainz as ${same}` });
+          continue;
+        }
+        const existingRow = findRowForUrl(doc0, url);
+        dbg(tag, `url[${occurrence}] ${url} (type=${linkTypeId || 'auto'}) — preexisting row: ${existingRow ? (existingRow.querySelector('a[href]') ? 'resolved' : 'unresolved-input') : 'none'}`);
+        if (existingRow && occurrence > 0) {
+          // Normal (seeded) path: buildSeedEditUrl gave this url+type its own
+          // slot, so MB has already rendered the second type and there is
+          // nothing to do. Only a non-seeded caller (fillAndSubmit driven
+          // directly, as the tests do) still needs the click-and-poke fallback.
+          if (linkTypeId && hasTypeForUrl(doc0, url, linkTypeId)) {
+            dbg(tag, `  repeat occurrence -> type ${linkTypeId} already seeded by MB, nothing to do`);
+            results.push({ url, ok: true });
+            continue;
+          }
+          const added = await addSecondRelationshipType(iframe, existingRow, linkTypeId);
+          dbg(tag, `  repeat occurrence -> addSecondRelationshipType = ${added}`);
+          results.push({ url, ok: added, error: added ? undefined : (linkTypeId ? 'could not add a second relationship type — this url is already present' : 'this url is already present') });
+          continue;
+        }
+        if (existingRow) {
+          // First occurrence, row(s) already present — seeded by us, or
+          // genuinely already on the entity before Falcon touched it, or BOTH
+          // (in which case MB keeps the pre-existing resolved row and adds our
+          // seeded copy as a separate unresolved one).
+          const { resolved, unresolved } = findRowsForUrl(doc0, url);
+          dbg(tag, `  rows: resolved=${!!resolved} unresolved=${unresolved.length}`);
+          if (resolved && unresolved.length) {
+            // the url was already on this entity — our seeded duplicate is just
+            // dead weight whose blank select would block the whole submit.
+            unresolved.forEach(removeIfOurs);
+            await wait(150);
+            dbg(tag, `  already on entity -> dropped ${unresolved.length} seeded duplicate row(s)`);
+            results.push({ url, ok: false, present: true, error: 'this url is already present on the entity' });
+            continue;
+          }
+          const target = resolved || unresolved[0] || existingRow;
+          // applying a known linkTypeId also RESOLVES a row MB left unclassified;
+          // without one, checkRowUsable decides whether the row is committable
+          // as-is and removes+reports it when it isn't, so one bad row can't
+          // silently disable submit for the entire group.
+          // Only type a row WE added. Re-typing a PRE-EXISTING relationship
+          // would rewrite curated data — caught live: a re-run was staging a
+          // rel-edit that changed an existing qobuz 'license' relationship to
+          // the type Harmony suggested. Falcon adds links; it doesn't
+          // reinterpret ones an editor already classified.
+          if (linkTypeId && isOurs(target)) {
+            const set = await setRowLinkType(iframe, target, linkTypeId);
+            dbg(tag, `  setRowLinkType(${linkTypeId}) = ${set}`);
+          } else if (linkTypeId) {
+            dbg(tag, `  leaving type alone — this relationship already existed before Falcon touched it`);
+          }
+          const reason = checkRowUsable(doc0, target, linkTypeId);
+          dbg(tag, `  checkRowUsable -> ${reason ? 'REJECT: ' + reason : 'ok'}`);
+          if (reason) { results.push({ url, ok: false, error: reason }); continue; }
+          results.push({ url, ok: true });
+          continue;
+        }
+        // not pre-filled at all — type it, which runs MB's own url classifier.
+        dbg(tag, '  not seeded — falling back to typing it');
+        const input = await waitFor(() => frameDoc(iframe) && findAddLinkInput(frameDoc(iframe)), 12000);
+        if (!input) { dbg(tag, '  no "Add another link" input appeared within 12s'); results.push({ url, ok: false, error: 'no "Add another link" input ever appeared' }); continue; }
+        const w2 = frameWin(iframe);
+        const setVal = Object.getOwnPropertyDescriptor(w2.HTMLInputElement.prototype, 'value').set;
+        input.focus();
+        setVal.call(input, url);
+        input.dispatchEvent(new w2.Event('input', { bubbles: true }));
+        input.dispatchEvent(new w2.Event('change', { bubbles: true }));
+        input.dispatchEvent(new w2.KeyboardEvent('keydown', { key: 'Enter', code: 'Enter', bubbles: true }));
+        input.dispatchEvent(new w2.KeyboardEvent('keyup', { key: 'Enter', code: 'Enter', bubbles: true }));
+        input.blur();
+        const row = await waitFor(() => {
+          const dd = frameDoc(iframe); if (!dd) return null;
+          const r = [...dd.querySelectorAll('tr.external-link-item')].find(tr => (tr.querySelector('a[href]')?.getAttribute('href') || '') === url);
+          return r || null;
+        }, 8000);
+        if (!row) {
+          const mbError = findFieldError(frameDoc(iframe));
+          dbg(tag, `  typed row never appeared within 8s — MB said: ${mbError || '(nothing)'}`);
+          results.push({ url, ok: false, error: mbError || 'URL row never appeared after Enter (MB gave no specific reason)' });
+          continue;
+        }
+        if (linkTypeId) await setRowLinkType(iframe, row, linkTypeId);
+        const reason = checkRowUsable(frameDoc(iframe), row, linkTypeId);
+        dbg(tag, `  typed ok, checkRowUsable -> ${reason ? 'REJECT: ' + reason : 'ok'}`);
+        if (reason) { results.push({ url, ok: false, error: reason }); continue; }
+        results.push({ url, ok: true });
+      } catch (e) { dbg(tag, `  threw: ${e.message || e}`); results.push({ url, ok: false, error: e.message || String(e) }); }
+    }
+    // any type select still blank at this point would silently disable submit
+    // for the whole form — drop those rows and demote the urls they belonged to
+    // (see sweepBlankTypeRows) so the rest of the group can still commit.
+    const swept = sweepBlankTypeRows(frameDoc(iframe));
+    if (swept.length) {
+      await wait(200);
+      dbg(tag, `blank-select sweep removed ${swept.length} row(s): ${JSON.stringify(swept)}`);
+      swept.forEach(sweptUrl => {
+        const hit = results.find(r => r.ok && (sweptUrl === null || r.url === sweptUrl));
+        // #671: MusicBrainz offers a blank second type only on a url the entity already has
+        // (the seed folded into its existing row), so this one is there already: nothing to do
+        if (hit) { hit.ok = false; hit.present = true; hit.error = 'this url is already present on the entity'; }
+      });
+    }
+    dbg(tag, `per-url outcome: ${JSON.stringify(results.map(r => ({ u: r.url.slice(-40), ok: r.ok, e: r.error })))}`);
+    // #474: a recording queued with a comment/isrc (with or without urls) has
+    // something to submit even when no url in this group committed — MB's
+    // comment field and its ISRC list are plain fields with no .rel-add-style
+    // "this changed" marker at all (checked MB's own source: comment is a bare
+    // <input>, ISRC is a React FormRowTextList whose rows look identical
+    // whether seeded or pre-existing), so there's no reliable way to tell
+    // "genuinely new" from "already there" without an extra fetch per item.
+    // Trusting the sender here matches majkinetor's own scoping for this
+    // feature ("sender is responsible for filling it") — Falcon doesn't try
+    // to be clever about it, same as it doesn't verify a url is really new
+    // before offering to add it.
+    // #495 (majkinetor, live: a release item whose url got rejected still
+    // attempted to submit — "worker now has to set links for the submit
+    // button to appear" turned out to be the actual signal: MB's release
+    // editor gets stuck showing fabricated new-release validation errors
+    // specifically when asked to submit a form with NOTHING genuinely
+    // changed on it). `comment`/`isrcs` are only ever seeded into the form
+    // for entityType 'recording' (see buildSeedEditUrl) — a release item's
+    // `comment` means its cover-art image comment (#494), never submitted
+    // here at all, so it must not count as "something to submit" for THIS
+    // form.
+    // A release's disambiguation is the one field that is not already in the
+    // page by the time we get here (it can't be seeded), so type it now —
+    // before the has-anything-changed checks below, which must see it.
+    let releaseCommentSet = false;
+    if (item.entityType === 'release' && (item.disambiguation || '').trim()) {
+      const r = await setReleaseComment(iframe, item.disambiguation.trim());
+      releaseCommentSet = !!r.ok;
+      if (r.ok && r.unchanged) dbg(tag, `disambiguation already reads ${JSON.stringify(r.before)} — nothing to change`);
+      else if (r.ok) dbg(tag, `disambiguation typed into the release editor: ${JSON.stringify(r.before)} → ${JSON.stringify(r.after)}${r.staged != null ? ` (MB staged ${r.staged} edit(s))` : ''}`);
+      else dbg(tag, `DISAMBIGUATION NOT SET — ${r.why}`);
+      if (!r.ok) results.push({ url: '(disambiguation)', ok: false, error: r.why });
+      // "already reads that" is not a change; let the no-op path below catch it
+      // rather than submitting a form MB will reject as changing nothing.
+      if (r.unchanged) releaseCommentSet = false;
+    }
+    // #571: a release rename is in the same boat as its disambiguation — the KO
+    // editor ignores the seed, so it has to be typed in here, before the
+    // has-anything-changed checks below can see it.
+    let releaseNameSet = false;
+    if (item.entityType === 'release' && (item.rename || '').trim()) {
+      const r = await setReleaseName(iframe, item.rename.trim());
+      releaseNameSet = !!r.ok;
+      if (r.ok && r.unchanged) dbg(tag, `name already reads ${JSON.stringify(r.before)} — nothing to change`);
+      else if (r.ok) dbg(tag, `name typed into the release editor: ${JSON.stringify(r.before)} → ${JSON.stringify(r.after)}${r.staged != null ? ` (MB staged ${r.staged} edit(s))` : ''}`);
+      else dbg(tag, `NAME NOT SET — ${r.why}`);
+      if (!r.ok) results.push({ url: '(name)', ok: false, error: r.why });
+      if (r.unchanged) releaseNameSet = false;
+    }
+    const hasFieldChange = !!(
+      (COMMENT_SEEDS.has(item.entityType) && item.disambiguation)
+      || releaseCommentSet
+      || (NAME_SEEDS.has(item.entityType) && item.rename)
+      || releaseNameSet
+      || (item.entityType === 'recording' && item.isrcs && item.isrcs.length)
+      || (item.entityType === 'recording' && item.video)
+    );
+    // #671: every url already on the entity — the state asked for holds, nothing to submit
+    if (!hasFieldChange && results.length && results.every(r => r.present)) { dbg(tag, 'NOT SUBMITTING — every url is already on the entity'); return { committed: false, results, noop: true, fillMs: Date.now() - tFillStart }; }
+    if (!results.some(r => r.ok) && !hasFieldChange) { dbg(tag, 'NOT SUBMITTING — no url in this group ended up committable, and no disambiguation/isrc queued'); return { committed: false, results, fillMs: Date.now() - tFillStart }; }
+    // #467 (majkinetor, "still fails if not shown" — actually nothing to do with
+    // visibility): when every url is ALREADY on the entity with the right type,
+    // nothing changed and MB has no edit to create. It leaves "Enter edit"
+    // enabled regardless, so clicking it silently does nothing and Falcon sat
+    // out the full 50s before reporting "never redirected" — on a batch that was
+    // in fact already up to date. MB marks pending changes on the rows
+    // themselves, so ask it directly rather than submitting into the void.
+    // Verified live on his exact failing recording: 0 markers, submit enabled,
+    // click does nothing.
+    // ⚠ Falcon only ever ADDS links. A staged removal means something went
+    // wrong on our side (see isOurs/removeIfOurs) and submitting would destroy
+    // existing data, so refuse outright rather than risk it — a failed item is
+    // recoverable, a deleted relationship is not.
+    // Two independent checks, because this is the one failure mode that
+    // destroys data rather than merely failing:
+    //   1. MB's own marker for a staged removal.
+    //   2. Structural — did any link that existed before we started disappear?
+    //      Survives MB renaming its CSS classes, which check 1 would not.
+    const doomed = (frameDoc(iframe)?.querySelectorAll('.rel-remove') || []).length;
+    const nowUrls = new Set(snapshotExistingUrls(frameDoc(iframe)));
+    const vanished = baseline.filter(u => !nowUrls.has(u));
+    if (doomed || vanished.length) {
+      const why = doomed
+        ? `${doomed} relationship removal(s) staged`
+        : `${vanished.length} pre-existing link(s) vanished from the form: ${vanished.slice(0, 3).join(', ')}`;
+      dbg(tag, `REFUSING TO SUBMIT — ${why}. Falcon only ever adds links, so this form is not safe to commit.`);
+      return {
+        committed: false,
+        results: results.map(r => r.ok ? { ...r, ok: false, error: `not submitted — ${why}; Falcon never removes links, so it refused to commit this form` } : r),
+        fillMs: Date.now() - tFillStart,
+      };
+    }
+    const pending = (frameDoc(iframe)?.querySelectorAll('.rel-add, .rel-edit') || []).length;
+    if (!pending && !hasFieldChange) {
+      dbg(tag, 'NOT SUBMITTING — MB shows no pending change; every url is already on the entity with this type');
+      return { committed: false, results, noop: true, fillMs: Date.now() - tFillStart };
+    }
+    dbg(tag, `${pending} pending relationship change(s) staged` + (hasFieldChange ? ' + disambiguation/isrc queued' : ''));
+    const d2 = frameDoc(iframe), w2 = frameWin(iframe);
+    const noteSet = setEditNote(d2, w2, editNoteText(results));
+    dbg(tag, `edit note set = ${noteSet}`);
+    // #495: unlike artist/label/recording's single-purpose edit page, the
+    // release editor is tabbed (Release information / Tracklist / Recordings
+    // / Edit note) and keeps its own "Enter edit" button (#enter-edit) inside
+    // the Edit note tab panel, display:none until that tab is genuinely
+    // activated — verified live: a bare .click() doesn't trigger jQuery UI's
+    // tab handler, but dispatching a real MouseEvent on the tab's own <a
+    // href="#edit-note"> does. Filling the External Links section above
+    // happens on the default-active Information tab regardless, so this only
+    // needs to run once, right before we go looking for the submit button.
+    if (item.entityType === 'release') activateReleaseEditNoteTab(d2);
+    await wait(150);
+    // manual-review path (openInTab, #467): fill the form and stop here — a human
+    // reviews and clicks "Enter edit" themselves, exactly like a Harmony tab.
+    if (skipSubmit) return { committed: false, results, manual: true, fillMs: Date.now() - tFillStart };
+    const btn = findSubmitButton(frameDoc(iframe));
+    if (!btn) { dbg(tag, 'NOT SUBMITTING — no submit button found on the page'); throw new Error('no submit button found'); }
+    if (btn.disabled) {
+      const reason = findFieldError(frameDoc(iframe));
+      const blanks = [...(frameDoc(iframe)?.querySelectorAll('select.link-type') || [])].filter(s => !s.value).length;
+      dbg(tag, `NOT SUBMITTING — submit disabled; page errors: ${reason || '(none)'}; still-blank type selects: ${blanks}`);
+      // #495 (majkinetor, live on both test.musicbrainz.org and production): a
+      // known MusicBrainz client bug — the release editor's own validation
+      // can report "a release title is required" etc. on an EXISTING release
+      // that plainly has one (checked live: window.MB.releaseEditor's actual
+      // data model has the real title/tracklist at the same moment the
+      // validator claims none of it exists — a genuine MB-side state
+      // disconnect, not bad data). Not something Falcon can route around
+      // reliably (no interaction reproducibly clears it), so just name it
+      // plainly instead of leaving a wall of "add a medium"/"track titles
+      // required" text that reads like this release is actually broken.
+      const knownBug = item.entityType === 'release' && /a release title is required/i.test(reason || '');
+      const note = knownBug ? ' (this looks like a known MusicBrainz client bug on an otherwise-fine release, not bad data — retry, or use ⇗ to finish it by hand)' : '';
+      throw new Error((reason ? `submit button disabled — ${reason}` : 'submit button disabled (form invalid?)') + note);
+    }
+    // #467 (majkinetor): "One didn't pass, there was nothing in worker that was
+    // regarded as error and Enter button was enabled, with all links and types
+    // set." A valid form with an enabled button that still never submits points
+    // at the CLICK, not validation — and MB's editor is React: setting the edit
+    // note just above re-renders, which can DETACH the button node found
+    // earlier. Clicking a detached node silently does nothing, and the only
+    // symptom is the 25s "never redirected" timeout on a form that looks
+    // perfectly fine. So: re-query the button immediately before every click,
+    // never reuse a stale reference, and if the page hasn't moved shortly after
+    // a click, re-query and try again (falling back to submitting the form
+    // directly) rather than waiting out the whole timeout on one lost click.
+    // ⚠ Retry timing is load-bearing. A real submit on a busy MB routinely takes
+    // 2-7s (measured on majkinetor's own runs: 2366 / 2390 / 3872 / 6392 /
+    // 6557ms). An earlier version gave the FIRST attempt only a 4s window and
+    // then clicked again — which fired a second submit while the first was
+    // still in flight, and double-submitting this form leaves it wedged on
+    // /edit. That made things strictly worse: entire batches of 3 failed
+    // together, every time, until the queue thinned out. So the first click now
+    // gets the FULL patient wait, exactly as it did before retries existed;
+    // re-clicking only happens after the page has demonstrably gone nowhere for
+    // that whole time, when nothing can still be in flight to disturb.
+    const tSubmit = Date.now();
+    const fillMs = tSubmit - tFillStart;
+    const MAX_CLICKS = 2;
+    const pageLeft = () => {
+      const w = frameWin(iframe); if (!w) return null;
+      try { return /\/edit(?:[?#]|$)/.test(w.location.pathname) ? null : true; } catch (e) { return null; }
+    };
+    // #514 (majkinetor): a field-change edit (ISRC/disambiguation) that
+    // exactly matches what's already stored gets rejected server-side with
+    // a "does not make any changes" banner — MB re-renders /edit itself
+    // rather than redirecting away, so plain pageLeft() polling would sit
+    // through the full 25s timeout waiting for a navigation that was never
+    // coming, then get classified as a hard failure. Poll for the banner
+    // too, so this resolves as fast as the redirect case does.
+    const noChangesShown = () => {
+      const d = frameDoc(iframe); if (!d) return null;
+      try { return findNoChangesWarning(d) ? true : null; } catch (e) { return null; }
+    };
+    let left = null, noChanges = false;
+    for (let attempt = 1; attempt <= MAX_CLICKS && !left && !noChanges; attempt++) {
+      const doc = frameDoc(iframe);
+      const fresh = findSubmitButton(doc);
+      if (!fresh) { dbg(tag, `submit attempt ${attempt}: button vanished from the page`); break; }
+      if (fresh.disabled) { dbg(tag, `submit attempt ${attempt}: button went disabled — ${findFieldError(doc) || '(no message)'}`); break; }
+      dbg(tag, `submit attempt ${attempt}: clicking${fresh !== btn ? ' (button node was replaced since it was first found)' : ''}`);
+      fresh.click();
+      await waitFor(() => pageLeft() || noChangesShown(), 25000);
+      left = pageLeft();
+      noChanges = !left && !!noChangesShown();
+      if (!left && !noChanges) dbg(tag, `submit attempt ${attempt}: page still on /edit after 25s`);
+    }
+    if (noChanges) {
+      dbg(tag, `MB says this submit changes nothing — treating as already up to date, not a failure`);
+      return { committed: false, results, noop: true, fillMs, submitMs: Date.now() - tSubmit };
+    }
+    if (!left) {
+      let where = '(unreadable)', pageErrs = '(unreadable)', btnState = '(unreadable)';
+      try {
+        const w = frameWin(iframe), d = frameDoc(iframe);
+        where = w.location.href;
+        pageErrs = findFieldError(d) || '(none)';
+        const b = findSubmitButton(d);
+        btnState = b ? `found, disabled=${b.disabled}` : 'gone';
+      } catch (e) {}
+      dbg(tag, `SUBMIT DID NOT LAND — ${Date.now() - tSubmit}ms, ${MAX_CLICKS} attempt(s); button: ${btnState}; MB errors: ${pageErrs}; frame url: ${where}`);
+      throw new Error(`never redirected off /edit after submit${pageErrs && pageErrs !== '(none)' ? ' — MB says: ' + pageErrs : ''}`);
+    }
+    dbg(tag, `submit landed in ${Date.now() - tSubmit}ms`);
+    return { committed: true, results, fillMs, submitMs: Date.now() - tSubmit };
+  }
+
+  // never hand out a queued item for an entity that's ALREADY being worked on by
+  // another iframe — closes the race a later-added item for the same mbid would
+  // otherwise open (grouping at add-time only covers items still queued at that
+  // moment; this covers the rest).
+  function nextQueued() {
+    const activeKeys = new Set(queue.filter(i => i.status === 'active').map(i => i.entityType + ':' + i.mbid));
+    // #497: a toggled-off type's queued items sit out this run entirely —
+    // still in the queue, just never handed to a worker while off.
+    return queue.find(i => i.status === 'queued' && !_disabledTypes.has(i.entityType) && !activeKeys.has(i.entityType + ':' + i.mbid));
+  }
+  function editUrl(item) { return `${MB_ORIGIN}/${entityUrlSegment(item.entityType)}/${item.mbid}/edit`; }
+  // Same seed-url format Harmony itself uses (parseHarmonySeedUrl above decodes
+  // exactly this) — MB's OWN edit-page JS reads these query params and pre-fills
+  // the form NATIVELY as it renders, including auto-resolving an ambiguous
+  // relationship-type <select> to the seeded linkTypeId. majkinetor, #467: "why
+  // you didn't use URL params as usual so MB will set it immediately... it
+  // should basically be instant, just like when opened from Harmony" — measured
+  // live: ~2-3s (page load only) vs 10+s for typing simulation. One real
+  // limitation, also confirmed live: MB collapses a DUPLICATE url TEXT into a
+  // single row, so the same url seeded twice with two different linkTypeIds
+  // (Harmony's dual-relationship case) only keeps the first — deduped here,
+  // rare enough for a manual-review tab that the human can add the second by
+  // hand if they need it (they're already there reviewing).
+  function buildSeedEditUrl(item) {
+    // ⚠ MB's form prefix uses the URL segment, not Falcon's internal type name:
+    // a release group's fields are `edit-release-group.*` (hyphen), NOT
+    // `edit-release_group.*`. Verified on the sandbox while doing #533 —
+    // seeding the underscore form leaves the field EMPTY, the hyphen form fills
+    // it. This was silently breaking every seeded release-group url too (#495),
+    // not just the disambiguation this comment was added for.
+    const prefix = `edit-${entityUrlSegment(item.entityType)}.`;
+    const params = new URLSearchParams();
+    // ⚠ Dedupe on url + link type, NOT on url alone. The same url under two
+    // different link types is a legitimate pair (a Bandcamp track that is both
+    // "stream for free" and "purchase for download"), and MB seeds it natively:
+    // two indexed slots with the same text and different link_type_id produce
+    // two relationships as the page renders. Collapsing them to one slot here
+    // was what forced the old "click MB's Add-another-relationship button and
+    // poke the new select" path — and THAT is what froze Firefox for 30-46s at
+    // a stretch (#467), because a same-origin iframe shares the parent's main
+    // thread, so MB's re-render storm on an already-rendered row blocked the
+    // whole tab. Seeded up front, the identical batch runs ~4s/item, no stalls.
+    const seen = new Set();
+    let idx = 0;
+    item.urls.forEach(u => {
+      const key = `${u.url} ${u.linkTypeId || ''}`;
+      if (seen.has(key)) return;
+      seen.add(key);
+      params.set(`${prefix}url.${idx}.text`, u.url);
+      if (u.linkTypeId) params.set(`${prefix}url.${idx}.link_type_id`, u.linkTypeId);
+      idx++;
+    });
+    // #474: disambiguation + ISRC — recording-only fields, seeded the exact
+    // same way as everything else here (checked MB's own Form/Recording.pm:
+    // MB's own field is internally called `comment` — Falcon's own field is
+    // named `disambiguation` instead, #496, but the wire param name below is
+    // MB's, not ours — and `isrcs` is a repeatable field keyed by index, same
+    // pattern as url.N above).
+    // release is absent from COMMENT_SEEDS on purpose — its KO editor ignores
+    // the param (see DISAMBIGUATABLE); setReleaseComment types it in instead.
+    if (COMMENT_SEEDS.has(item.entityType) && item.disambiguation) params.set(`${prefix}comment`, item.disambiguation);
+    // #571: same story as `comment` above — MB's own wire param is `name`, and
+    // release is absent from NAME_SEEDS because its KO editor ignores it
+    // (setReleaseName types it in instead).
+    if (NAME_SEEDS.has(item.entityType) && item.rename) params.set(`${prefix}name`, item.rename);
+    if (item.entityType === 'recording') {
+      (item.isrcs || []).forEach((code, i) => params.set(`${prefix}isrcs.${i}.value`, code));
+      // #534: MB's Video checkbox — `edit-recording.video=1` ticks it as the
+      // page renders, same as every other seeded field (verified on the
+      // sandbox). Only ever seeded when asked for: an UNSEEDED video param
+      // leaves an already-video recording ticked (also verified), so Falcon's
+      // other recording edits can never silently clear the flag.
+      if (item.video) params.set(`${prefix}video`, '1');
+    }
+    if (item.note) params.set(`${prefix}edit_note`, item.note);
+    return `${MB_TARGET}/${entityUrlSegment(item.entityType)}/${item.mbid}/edit?${params.toString()}`;
+  }
+
+  // "open in a real tab" (majkinetor, #467): same reason Harmony itself opens a
+  // tab per entity — a human can inspect, fix, and commit by hand. Navigates
+  // straight to the seed url above rather than opening a blank edit page and
+  // simulating typing — MB fills+resolves everything on its own as the page
+  // renders, so there's nothing left for Falcon to do once the tab is open.
+  // window.open must be the very first thing that runs (no preceding await) or
+  // popup blockers treat it as not user-triggered.
+  function openInTab(item) {
+    // #494: release items have no edit-relationships form to seed — the
+    // closest manual fallback is MB's own add-cover-art page (no seeding
+    // possible there either, it's a plain upload form).
+    if (item.entityType === 'release') {
+      const tab = window.open(`${MB_ORIGIN}/release/${item.mbid}/add-cover-art`, '_blank');
+      if (!tab) { log('error', `${item.mbid}: popup blocked — allow popups for this site to use "open in tab"`); return; }
+      item.status = 'manual'; item.error = ''; renderQueue();
+      log('info', `${entityLabel(item)} — opened MusicBrainz's add-cover-art page in a new tab for manual completion`);
+      return;
+    }
+    const seedUrl = buildSeedEditUrl(item);
+    const tab = window.open(seedUrl, '_blank');
+    if (!tab) { log('error', `${item.mbid}: popup blocked — allow popups for this site to use "open in tab"`); return; }
+    item.status = 'manual'; item.error = ''; renderQueue();
+    const uniqueUrls = new Set(item.urls.map(u => u.url)).size;
+    const dropped = item.urls.length - uniqueUrls;
+    const droppedNote = dropped ? ` (${dropped} duplicate-url/second-type entr${dropped === 1 ? 'y' : 'ies'} couldn't be seeded — add by hand if needed)` : '';
+    log('info', `${entityLabel(item)} — opened in a new tab, pre-filled instantly via MB's own seed-url params (${item.urls.length} link(s))${droppedNote}`);
+  }
+
+  // #467 (majkinetor, production hang): a MB edit form with typed-but-unsubmitted
+  // changes registers a STICKY "unsaved changes" flag (addEventListener('beforeunload'))
+  // — even removing the offending row afterward doesn't clear it (verified live).
+  // Reassigning .src on that SAME iframe then triggers a native "leave site?" confirm
+  // dialog, which — being a real modal — freezes the WHOLE TAB until a human dismisses
+  // it. That's why every item now gets a genuinely FRESH iframe (see workerLoop) —
+  // removing the old element outright, rather than reassigning .src, sidesteps the
+  // dialog regardless of whether the previous page was dirty.
+  // #467 follow-up (majkinetor: "the UI was unresponsive... full session"): a run
+  // with NO failures at all still went unresponsive over several minutes — pointing
+  // at leftover background activity (MB's own client JS: polling/retry timers) from
+  // EACH earlier document not being fully torn down by a plain .src reassignment,
+  // compounding across a long session. Always creating a fresh iframe per item (see
+  // workerLoop) is the fix for that — a run no longer reassigns .src on one iframe
+  // across many sequential items, so nothing compounds. A single RETIRED card's one
+  // remaining iframe is bounded (that card processes nothing further), so — per
+  // majkinetor: "I want to have worker visible there, in its active state" — it's
+  // kept alive and inspectable rather than discarded. The error also gets its own
+  // banner right in the card (not just a hover tooltip), so it's visible once zoomed.
+  function retireCard(card, reason) {
+    card.dataset.retired = '1';
+    card.style.opacity = '.55';
+    const lbl = card.querySelector('.falcon-worker-lbl');
+    if (lbl) lbl.textContent = (lbl.textContent || '') + ' — stopped';
+    card.title = 'This worker hit an issue and was retired — kept visible for inspection. ' + (reason || '');
+    const banner = card.querySelector('.falcon-worker-errbanner');
+    if (banner && reason) { banner.textContent = reason; banner.style.display = 'block'; }
+  }
+  function spawnWorkerCard() {
+    const strip = document.getElementById('falcon-workers'); if (!strip) return null;
+    const idx = workerCards.length;
+    const card = document.createElement('div');
+    card.className = 'falcon-worker-card';
+    card.dataset.idle = '1';
+    card.style.cssText = `border:1px solid var(--mbu-border);border-radius:4px;overflow:hidden;display:flex;flex-direction:column;flex:0 0 auto;width:${cfg.workerSize}px;height:${Math.round(cfg.workerSize * 0.8)}px;`;
+    card.innerHTML = `
+      <div style="display:flex;align-items:center;gap:4px;padding:3px 6px;background:var(--mbu-bg-raised);color:var(--mbu-text);border-bottom:1px solid var(--mbu-border);font-size:10px">
+        <span class="falcon-worker-lbl" style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--mbu-text-dim)">idle</span>
+        <button type="button" class="falcon-worker-zoom" title="Maximize this worker" style="border:none;background:none;cursor:pointer;font-size:12px;padding:0 2px">⛶</button>
+      </div>
+      <div class="falcon-worker-errbanner" style="display:none;padding:4px 6px;background:var(--mbu-error-bg);color:var(--mbu-error);font-size:10px;white-space:pre-wrap;border-bottom:1px solid var(--mbu-error)"></div>
+      <div class="falcon-worker-body" style="flex:1;position:relative;"></div>`;
+    card.querySelector('.falcon-worker-zoom').onclick = () => { _zoomedWorker = _zoomedWorker === idx ? null : idx; renderWorkerLayout(); };
+    strip.appendChild(card);
+    workerCards.push(card);
+    renderWorkerLayout();
+    return card;
+  }
+  // MB's own pages aren't responsive down to a worker card's small width — loaded
+  // at 260px wide, real content renders far outside that narrow viewport and
+  // never becomes visible at all, showing as a blank white box (majkinetor,
+  // #467, confirmed live: DOM had real, visible content, it was just laid out
+  // off-screen). Fix: render the iframe at MB's normal desktop width, then
+  // CSS-scale the whole thing down to exactly fill the card — MB always lays
+  // out the page the way it was actually designed to, and the card just shows a
+  // shrunk, still-legible thumbnail of it.
+  const IFRAME_NATIVE_W = 980;
+  // low-level: given a target visible area (w x h), render the iframe at MB's
+  // natural desktop width and CSS-scale it down/up to exactly fill that area.
+  // Shared by worker cards AND the item popup (which reparents a card's LIVE
+  // iframe into itself, majkinetor: "I want to have worker visible there, in
+  // its active state" — a fresh reload would lose the exact failure state).
+  function sizeIframeFor(iframe, w, h) {
+    if (!iframe || !w || h <= 0) return;
+    const scale = w / IFRAME_NATIVE_W;
+    iframe.style.width = IFRAME_NATIVE_W + 'px';
+    iframe.style.height = Math.round(h / scale) + 'px';
+    iframe.style.transform = `scale(${scale})`;
+  }
+  function applyIframeScale(card) {
+    const body = card.querySelector('.falcon-worker-body');
+    const iframe = body?.querySelector('iframe');
+    if (!body || !iframe) return;
+    // body.clientHeight is unreliable here — observed reading 0 even once the
+    // card itself was fully laid out (flex:1 child of a column flex container
+    // whose own height came from a plain inline style; some engines don't
+    // settle its cross-size on the first pass). card's OWN clientWidth/Height
+    // are solid, so derive the body's actual area from those instead of
+    // trusting the (buggy) computed height on the flex child itself.
+    const header = card.children[0];
+    const banner = card.querySelector('.falcon-worker-errbanner');
+    const bannerH = (banner && getComputedStyle(banner).display !== 'none') ? banner.clientHeight : 0;
+    const w = card.clientWidth;
+    const h = card.clientHeight - (header ? header.clientHeight : 0) - bannerH;
+    sizeIframeFor(iframe, w, h);
+  }
+  function newIframeIn(card) {
+    const body = card.querySelector('.falcon-worker-body');
+    const old = body.querySelector('iframe');
+    if (old) old.remove();
+    const f = document.createElement('iframe');
+    f.className = 'falcon-worker'; f.style.cssText = 'position:absolute;top:0;left:0;border:none;background:var(--mbu-bg);transform-origin:0 0;';
+    body.appendChild(f);
+    applyIframeScale(card);
+    return f;
+  }
+
+  // #494: release cover art has no MB edit-relationships form to seed, so it
+  // never goes through the iframe/form pipeline — ported from Art Station's
+  // proven sign -> upload -> register cover-art API flow
+  // (art_station.user.js): GET /ws/js/cover-art-upload/<mbid> reserves an
+  // image_id/nonce + an archive.org presigned upload target, POST the file
+  // bytes there, then POST the release's own add-cover-art form with that
+  // id/nonce (scraped fresh for its CSRF/type_id fields, same as Art
+  // Station's getPostForm/copyHidden/typeMapOf).
+  //
+  // #495: a release item can ALSO carry urls[] now (added through the normal
+  // iframe/form path, same as any other type) — two unrelated MB edits on the
+  // same entity. `priorLinks` ({status,error}) is passed when that path
+  // already ran on this SAME item; omitted entirely for the cover-only case
+  // (#494's original shape), so existing callers/tests are unaffected.
+  // A registered image mime type from its URL extension — used when
+  // blob.type doesn't look trustworthy (see below).
+  function mimeFromUrl(url) {
+    const ext = (String(url).split(/[?#]/)[0].match(/\.([a-z0-9]+)$/i) || [])[1];
+    return { jpg: 'image/jpeg', jpeg: 'image/jpeg', png: 'image/png', gif: 'image/gif', webp: 'image/webp' }[(ext || '').toLowerCase()] || null;
+  }
+  // #496: uploads ONE cover[] entry (sign -> upload -> register). `position`
+  // is this entry's 1-based slot within THIS run (entries submit as separate
+  // add-cover-art POSTs — MB has no batch-upload endpoint — so each needs its
+  // own position; existing gallery art isn't touched either way).
+  async function uploadOneCover(item, entry, tag, position) {
+    if (!entry.url) throw new Error('no cover image URL yet (still resolving, or none found on this release)');
+    // majkinetor (#494 follow-up, live failure — "sign 400", "since we have
+    // candidates, maybe we should go with the next one"): try the picked
+    // candidate first, then fall through the rest (original scrape order)
+    // on any fetch/sign failure, instead of failing the whole item outright
+    // over one bad candidate.
+    const order = [entry.url, ...((entry.candidates || []).map(c => c.url))]
+      .filter((u, i, arr) => u && arr.indexOf(u) === i);
+    let blob, mime, signed, lastErr = null;
+    for (const url of order) {
+      try {
+        log('info', `${tag} release ${item.mbid} — fetching cover image${url === entry.url ? '' : ' (fallback candidate)'}`);
+        blob = await gmFetch(url);
+        // GM_xmlhttpRequest doesn't always populate blob.type reliably from
+        // the response's real Content-Type (seen live: a 400 from the sign
+        // endpoint, which rejects an unrecognized mime_type) — trust it
+        // only when it actually looks like an image mime, else sniff from
+        // the URL's own extension.
+        mime = /^image\//.test(blob.type) ? blob.type : (mimeFromUrl(url) || 'image/jpeg');
+        log('info', `${tag} release ${item.mbid} — signing upload (${mime})`);
+        const signRes = await fetch(`${MB_ORIGIN}/ws/js/cover-art-upload/${item.mbid}?mime_type=${encodeURIComponent(mime)}`, { credentials: 'same-origin' });
+        if (!signRes.ok) throw new Error('sign ' + signRes.status);
+        signed = await signRes.json();   // {action, image_id, formdata, nonce}
+        if (url !== entry.url) { entry.url = url; dbg(tag, `release ${item.mbid}: fell back to a working candidate (${url})`); }
+        break;
+      } catch (e) {
+        lastErr = e;
+        dbg(tag, `release ${item.mbid}: candidate ${url} failed — ${e.message || e}`);
+      }
+    }
+    if (!signed) throw lastErr || new Error('no cover candidate could be fetched/signed');
+
+    // what MusicBrainz is actually about to receive — the edit note quotes this
+    // rather than any provider-supplied number
+    const actual = { size: blob.size, width: 0, height: 0 };
+    try {
+      const bmp = await createImageBitmap(blob);
+      actual.width = bmp.width; actual.height = bmp.height;
+      if (bmp.close) bmp.close();
+    } catch (e) { dbg(tag, `release ${item.mbid}: could not measure the fetched image — ${e.message || e}`); }
+    log('info', `${tag} release ${item.mbid} — uploading (${(blob.size / 1024).toFixed(0)} KB${actual.width ? `, ${actual.width}×${actual.height}` : ''})`);
+    const fd = new FormData();
+    Object.entries(signed.formdata).forEach(([k, v]) => fd.append(k, v));
+    fd.append('file', blob, 'cover.' + (mime.split('/')[1] || 'jpg'));
+    await new Promise((resolve, reject) => {
+      const xhr = new XMLHttpRequest();
+      xhr.open('POST', signed.action);
+      xhr.timeout = 300000;
+      xhr.onload = () => (xhr.status >= 200 && xhr.status < 300) ? resolve() : reject(new Error('upload ' + xhr.status));
+      xhr.onerror = () => reject(new Error('upload network error'));
+      xhr.ontimeout = () => reject(new Error('upload timed out'));
+      xhr.send(fd);
+    });
+
+    log('info', `${tag} release ${item.mbid} — registering (${entry.type})`);
+    const addUrl = `${MB_ORIGIN}/release/${item.mbid}/add-cover-art`;
+    const formHtml = await fetch(addUrl, { credentials: 'same-origin' }).then(r => { if (!r.ok) throw new Error('GET add-cover-art ' + r.status); return r.text(); });
+    const formDoc = new DOMParser().parseFromString(formHtml, 'text/html');
+    const form = [...formDoc.querySelectorAll('form')].find(f => (f.getAttribute('method') || '').toUpperCase() === 'POST');
+    if (!form) throw new Error('add-cover-art form not found');
+    const p = new URLSearchParams();
+    form.querySelectorAll('input[type=hidden]').forEach(h => { if (h.name && !/\.(id|position|nonce|mime_type|comment|type_id)$/.test(h.name)) p.append(h.name, h.value); });
+    // #496: match the entry's own `type` (default 'Front') to MB's own
+    // type_id checkbox by its visible label — was hardcoded to always find
+    // "front" regardless of what the row asked for.
+    let typeId = null;
+    const wantType = (entry.type || 'Front').trim().toLowerCase();
+    form.querySelectorAll('input[name="add-cover-art.type_id"]').forEach(cb => { const l = cb.closest('label'); if (l && (l.textContent || '').trim().toLowerCase() === wantType) typeId = cb.value; });
+    if (!typeId) form.querySelectorAll('input[name="add-cover-art.type_id"]').forEach(cb => { const l = cb.closest('label'); if (!typeId && l && /front/i.test(l.textContent || '')) typeId = cb.value; });   // fall back to Front if the exact label wasn't found on MB's form
+    p.append('add-cover-art.id', signed.image_id);
+    p.append('add-cover-art.position', String(position));
+    p.append('add-cover-art.nonce', signed.nonce);
+    p.append('add-cover-art.mime_type', mime);
+    if (typeId) p.append('add-cover-art.type_id', typeId);
+    p.append('add-cover-art.comment', entry.comment || '');
+    // Every other Falcon edit carries the "Falcon vX.Y.Z by majkinetor - <help
+    // url>" signature (see editNoteText) — cover art gets it too (majkinetor,
+    // #494 follow-up: "add falcon edit message as usual"), appended after
+    // whatever note the item already carries (e.g. from Harmony) rather than
+    // replacing it.
+    p.append('add-cover-art.edit_note', coverEditNote(item, entry, actual));
+    const addRes = await fetch(addUrl, { method: 'POST', body: p, credentials: 'same-origin' });
+    if (!addRes.ok) throw new Error('add-cover-art submit ' + addRes.status);
+    log('info', `${tag} release ${item.mbid} — cover art added (${entry.type})`);
+  }
+  // ── #535 aliases ───────────────────────────────────────────────────────────
+  // majkinetor: "It would be good to support at least recording aliases as
+  // Picard 3 will probably use them for localization … there is an tab aliases
+  // outside of normal edit. Not sure if there is API".
+  //
+  // There is no write API, but /<entity>/<mbid>/add-alias is a PLAIN
+  // server-rendered form (`form.edit-alias`) with no CSRF token — so it can be
+  // fetched, filled and POSTed directly, exactly like the add-cover-art form
+  // already is. No iframe, no page load, one HTTP round trip per alias, which
+  // matters because MB creates ONE EDIT PER ALIAS: "2 translations for all
+  // recordings" of a 20-track release is 40 submissions.
+  //
+  // Field names verified live on the sandbox:
+  //   edit-alias.name / .sort_name / .locale / .primary_for_locale / .type_id
+  //   edit-alias.period.{begin,end}_date.{year,month,day} / .period.ended
+  //   edit-alias.edit_note
+  // Accepts the shorthand a hand-written JSON is likely to use: a bare string
+  // ("Nazwa"), "name@locale" ("Nazwa@pl"), or the full object. Anything without
+  // a name is dropped rather than silently submitted as a blank alias.
+  function normalizeAliases(raw) {
+    if (!Array.isArray(raw)) return [];
+    const out = [];
+    for (const a of raw) {
+      if (typeof a === 'string') {
+        const m = a.match(/^(.*?)@([a-zA-Z]{2,3}(?:[_-][A-Za-z]{2,4})?)$/);
+        const name = (m ? m[1] : a).trim();
+        if (name) out.push({ name, locale: m ? m[2].replace('-', '_') : '', type: '', primary: false, sortName: '', begin: '', end: '', ended: false });
+        continue;
+      }
+      if (!a || typeof a !== 'object') continue;
+      const name = String(a.name || '').trim();
+      if (!name) continue;
+      out.push({
+        name,
+        locale: String(a.locale || '').trim().replace('-', '_'),
+        type: a.type == null ? '' : String(a.type).trim(),
+        primary: a.primary === true || a.primary_for_locale === true,
+        sortName: String(a.sortName || a.sort_name || '').trim(),
+        begin: String(a.begin || '').trim(), end: String(a.end || '').trim(), ended: a.ended === true,
+      });
+    }
+    return out;
+  }
+  const ALIAS_TYPE_IDS = {};   // per entity type, resolved from the form itself
+  // The type_id numbering differs per entity (artist has "Legal name", a
+  // recording doesn't — majkinetor noted this), so never hardcode it: read the
+  // <select> on the form we just fetched and match on the option's TEXT.
+  function resolveAliasTypeId(doc, wanted) {
+    const sel = doc.querySelector('select[name="edit-alias.type_id"]');
+    if (!sel) return { id: null, why: 'this entity has no alias-type list' };
+    const opts = [...sel.querySelectorAll('option')].map(o => ({ v: o.value, t: (o.textContent || '').trim() }));
+    if (/^\d+$/.test(String(wanted))) {
+      return opts.some(o => o.v === String(wanted)) ? { id: String(wanted) } : { id: null, why: `type id ${wanted} is not offered here` };
+    }
+    const want = String(wanted).trim().toLowerCase();
+    const hit = opts.find(o => o.t.toLowerCase() === want) || opts.find(o => o.t.toLowerCase().startsWith(want));
+    if (hit) return { id: hit.v };
+    return { id: null, why: `unknown alias type ${JSON.stringify(wanted)} — this entity offers: ${opts.filter(o => o.v).map(o => o.t).join(', ')}` };
+  }
+  function splitDateParts(s) {
+    const m = String(s || '').trim().match(/^(\d{4})(?:-(\d{1,2}))?(?:-(\d{1,2}))?$/);
+    return m ? { year: m[1], month: m[2] || '', day: m[3] || '' } : { year: '', month: '', day: '' };
+  }
+  // One alias → one MB edit. Returns nothing on success, throws with MB's own
+  // message on failure.
+  async function submitAlias(item, alias, tag) {
+    const seg = entityUrlSegment(item.entityType);
+    const url = `${MB_ORIGIN}/${seg}/${item.mbid}/add-alias`;
+    const html = await fetch(url, { credentials: 'same-origin' }).then(r => { if (!r.ok) throw new Error(`GET add-alias ${r.status}`); return r.text(); });
+    const doc = new DOMParser().parseFromString(html, 'text/html');
+    const form = doc.querySelector('form.edit-alias');
+    if (!form) throw new Error('MusicBrainz did not serve an alias form (are we still logged in?)');
+
+    // start from the form's own defaults so nothing MB expects goes missing
+    const p = new URLSearchParams();
+    form.querySelectorAll('input, select, textarea').forEach(el => {
+      if (!el.name) return;
+      if (el.type === 'checkbox' || el.type === 'radio') { if (el.checked) p.set(el.name, el.value || '1'); return; }
+      p.set(el.name, el.value || '');
+    });
+    p.set('edit-alias.name', alias.name);
+    // MB pre-fills sort_name with the entity's own name; for a localised alias
+    // the sensible default is the alias text itself, not the original title.
+    p.set('edit-alias.sort_name', alias.sortName || alias.name);
+    p.set('edit-alias.locale', alias.locale || '');
+    if (alias.primary && alias.locale) p.set('edit-alias.primary_for_locale', '1'); else p.delete('edit-alias.primary_for_locale');
+    if (alias.type) {
+      const { id, why } = resolveAliasTypeId(doc, alias.type);
+      if (!id) throw new Error(why);
+      p.set('edit-alias.type_id', id);
+      ALIAS_TYPE_IDS[item.entityType] = ALIAS_TYPE_IDS[item.entityType] || {};
+      ALIAS_TYPE_IDS[item.entityType][String(alias.type).toLowerCase()] = id;
+      // ⚠ MusicBrainz SILENTLY DISCARDS locale and primary-for-locale on a
+      // "Search hint" alias — measured on the sandbox: the same POST stores
+      // locale "pl" under type "Artist name" and null under "Search hint".
+      // Nothing in the response says so, so without this the queue would show
+      // a localised alias that MB stored as locale-less. Say it, and stop
+      // sending the fields, so what's submitted matches what gets stored.
+      if (/search hint/i.test(String(alias.type)) && (alias.locale || alias.primary)) {
+        log('warn', `${entityLabel(item)} — alias "${alias.name}": MusicBrainz ignores locale/primary on a Search hint, so ${JSON.stringify(alias.locale || '')} will not be stored (use a "${item.entityType.replace('_', ' ')} name" alias for a localised title)`);
+        p.set('edit-alias.locale', '');
+        p.delete('edit-alias.primary_for_locale');
+      }
+    }
+    const b = splitDateParts(alias.begin), e = splitDateParts(alias.end);
+    p.set('edit-alias.period.begin_date.year', b.year); p.set('edit-alias.period.begin_date.month', b.month); p.set('edit-alias.period.begin_date.day', b.day);
+    p.set('edit-alias.period.end_date.year', e.year); p.set('edit-alias.period.end_date.month', e.month); p.set('edit-alias.period.end_date.day', e.day);
+    if (alias.ended) p.set('edit-alias.period.ended', '1'); else p.delete('edit-alias.period.ended');
+    p.set('edit-alias.edit_note', withBatchNote([item.note, FALCON_SIGNATURE()].filter(Boolean).join(String.fromCharCode(10, 10))));
+
+    dbg(tag, `alias POST ${seg}/${item.mbid}: ${JSON.stringify({ name: alias.name, locale: alias.locale || '(none)', type: alias.type || '(none)', primary: !!alias.primary })}`);
+    const res = await fetch(url, {
+      method: 'POST', credentials: 'same-origin',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: p.toString(),
+    });
+    if (!res.ok) throw new Error(`add-alias submit ${res.status}`);
+    // MB redirects to the entity's alias tab on success and re-renders the form
+    // with errors on failure — so "did we land back on the form" is the signal.
+    const backHtml = await res.text();
+    if (!/\/add-alias\b/.test(res.url)) return;
+    const errDoc = new DOMParser().parseFromString(backHtml, 'text/html');
+    const msg = [...errDoc.querySelectorAll('.error, .errors li, p.error')].map(n => (n.textContent || '').trim()).filter(Boolean)[0];
+    throw new Error(msg || 'MusicBrainz rejected the alias without saying why');
+  }
+  // #535 (majkinetor): "One scary issue is that MB allows total duplicates, so
+  // spamming is possible." Confirmed on the sandbox — submitting the identical
+  // alias twice creates TWO of them, no error, no warning. Re-running a queue,
+  // or importing the same JSON twice, would quietly litter the database.
+  //
+  // So Falcon checks before every item and refuses to add one MusicBrainz
+  // already has. Two aliases are "the same" when the name and locale match and
+  // (where a type was asked for) the type matches — MB's own notion of an
+  // alias's identity.
+  //
+  // ⚠ A FAILED lookup must never read as "no aliases yet". That is the bug
+  // class that has bitten this repo repeatedly (art_station #530, credit
+  // hoarder #531): catch → empty → confident negative. mbThrottle.fetchJson
+  // resolves NULL on failure, which is indistinguishable from an entity with
+  // no aliases unless it is checked explicitly — so it is, and the aliases are
+  // held back rather than risking the duplicates this guard exists to prevent.
+  async function fetchExistingAliases(item) {
+    const seg = entityUrlSegment(item.entityType);
+    const j = await mbThrottle.fetchJson(`${MB_ORIGIN}/ws/2/${seg}/${item.mbid}?inc=aliases&fmt=json`, undefined, true);
+    if (!j || !Array.isArray(j.aliases)) return null;    // could not ask — NOT "none"
+    return j.aliases;
+  }
+  const aliasKey = (name, locale, type) => [String(name || '').trim(), String(locale || '').trim().toLowerCase(), String(type || '').trim().toLowerCase()].join('\x00');
+  function isDuplicateAlias(alias, existing) {
+    const want = String(alias.name || '').trim();
+    const wantLocale = String(alias.locale || '').trim().toLowerCase();
+    const wantType = String(alias.type || '').trim().toLowerCase();
+    return existing.some(e => {
+      if (String(e.name || '').trim() !== want) return false;
+      if (String(e.locale || '').trim().toLowerCase() !== wantLocale) return false;
+      // no type asked for → any type counts as already-there
+      return !wantType || String(e.type || '').trim().toLowerCase() === wantType;
+    });
+  }
+  // All of an item's aliases, in order. One failing doesn't stop the rest —
+  // same contract as cover[] and urls[].
+  async function runAliasItem(item, tag, card) {
+    if (card) updateWorkerLabel(card, item, 'aliases');   // no card when driven directly (tests)
+    let list = (item.aliases || []).filter(a => a && String(a.name || '').trim());
+    const errs = [];
+    let ok = 0, dupes = 0;
+    // the same alias twice in one payload is a duplicate too, and cheaper to
+    // catch here than after MB has created both
+    const seenInBatch = new Set();
+    list = list.filter(a => {
+      const k = aliasKey(a.name, a.locale, a.type);
+      if (seenInBatch.has(k)) { dupes++; dbg(tag, `alias "${a.name}" appears twice in this item — submitting it once`); return false; }
+      seenInBatch.add(k); return true;
+    });
+    const existing = list.length ? await fetchExistingAliases(item) : [];
+    if (existing === null) {
+      const why = 'could not read the existing aliases from MusicBrainz, so these were not submitted (MB allows exact duplicates, and re-running would create them) — Retry failed to try again';
+      log('warn', `${tag} ${entityLabel(item)} — ${why}`);
+      item.aliasResults = { ok: 0, total: list.length, dupes, errors: list.map(a => `alias "${a.name}": ${why}`) };
+      return item.aliasResults;
+    }
+    const before = list.length;
+    list = list.filter(a => {
+      if (!isDuplicateAlias(a, existing)) return true;
+      dupes++;
+      log('info', `${tag} ${entityLabel(item)} — alias "${a.name}"${a.locale ? ` [${a.locale}]` : ''} is already on this entity, skipping (MusicBrainz would happily add a second copy)`);
+      return false;
+    });
+    dbg(tag, `aliases: ${before} requested, ${list.length} new, ${dupes} already present or repeated`);
+    for (let i = 0; i < list.length; i++) {
+      const a = list[i];
+      try {
+        log('info', `${tag} ${entityLabel(item)} — adding alias ${i + 1}/${list.length}: "${a.name}"${a.locale ? ` [${a.locale}]` : ''}`);
+        workerPhase(card, `alias ${i + 1} of ${list.length}`);   // #547
+        await submitAlias(item, a, tag);
+        ok++;
+      } catch (e) {
+        const m = (e && e.message) || String(e);
+        errs.push(`alias "${a.name}"${a.locale ? ` [${a.locale}]` : ''}: ${m}`);
+        log('error', `${tag} ${entityLabel(item)} — alias "${a.name}" failed: ${m}`);
+      }
+    }
+    item.aliasResults = { ok, total: list.length, dupes, errors: errs };
+    dbg(tag, `aliases: ${ok}/${list.length} added` + (dupes ? `, ${dupes} skipped as already present` : '') + (errs.length ? ` — ${errs.join(' | ')}` : ''));
+    return item.aliasResults;
+  }
+  // Aliases are their own MB edits, independent of the entity's form edit and
+  // of the cover upload — so they fold into the row's status the same way the
+  // cover does: all good keeps whatever the rest achieved, some good is
+  // 'partial', none good is 'failed'.
+  function aliasPrior(item) {
+    const r = item.aliasResults;
+    if (!r || !r.total) return undefined;
+    if (!r.errors.length) return { status: 'done', error: '' };
+    return { status: r.ok ? 'partial' : 'failed', error: r.errors.join(' | ') };
+  }
+  function finishAliasOnlyItem(item, tag) {
+    const r = item.aliasResults;
+    // every alias already present: the desired state holds, nothing to do —
+    // 'skipped', the same way an all-links-already-there item is reported.
+    if (r && !r.total && r.dupes) {
+      item.status = 'skipped'; item.error = '';
+      log('info', `${tag} ${entityLabel(item)} — already has all ${r.dupes} alias(es), nothing to add`);
+      return;
+    }
+    if (!r || !r.total) { item.status = 'skipped'; item.error = ''; return; }
+    if (!r.errors.length) { item.status = 'done'; item.error = ''; }
+    else { item.status = r.ok ? 'partial' : 'failed'; item.error = r.errors.join(' | '); }
+    log(r.errors.length ? 'warn' : 'info', `${tag} ${entityLabel(item)} — ${r.ok}/${r.total} alias(es) added`);
+  }
+  function mergeAliasOutcome(item) {
+    const r = item.aliasResults;
+    if (!r || !r.total || !r.errors.length) return;
+    const msg = r.errors.join(' | ');
+    const restOk = item.status === 'done' || item.status === 'skipped';
+    if (restOk) { item.status = r.ok ? 'partial' : 'failed'; item.error = msg; }
+    else { item.status = 'failed'; item.error = [item.error, msg].filter(Boolean).join(' | '); }
+  }
+  // #536 (majkinetor): "Unlike Art Station or native MB cover art uploader with
+  // ECAU Falcon doesn't add detailed edit note indicating source". Falcon was
+  // sending its signature line and nothing else, so a reviewer had no way to
+  // see where the image came from.
+  //
+  // Modelled on ECAU's own note (edit 151499664 on production), which reads:
+  //     <source page>
+  //     * <original image url>
+  //     → Maximised to <url>
+  //     –
+  //     MB: Enhanced Cover Art Uploads … / <repo url>
+  //
+  // Falcon has no "maximised" step, but it does CHOOSE between providers, so
+  // the note says which one won and what it beat — the part a voter cannot
+  // otherwise reconstruct.
+  function coverEditNote(item, entry, actual) {
+    const cands = entry.candidates || [];
+    const chosen = cands.find(c => c.url === entry.url) || null;
+    const dims = c => (c && c.width && c.height) ? `${c.width}×${c.height}` : '';
+    const mb = n => (n && n > 0) ? `${(n / 1048576).toFixed(2)} MB` : '';
+    // Prefer what was actually downloaded and uploaded over anything recorded
+    // earlier — the note should describe the bytes MusicBrainz received, not a
+    // provider's claim about them (see pickBestCover on how wrong those get).
+    const size = mb((actual && actual.size) || (chosen && chosen.size));
+    const wh = (actual && actual.width && actual.height) ? `${actual.width}×${actual.height}` : dims(chosen);
+    const lines = [];
+    if (item.note) lines.push(item.note);
+    // ECAU leads with the page the image came from; Falcon's is Harmony's
+    // Release Actions page (or whatever produced the queue). Named explicitly
+    // rather than left as a bare url — "Harmony" is the useful word for a voter.
+    if (item.source) {
+      let where = 'Imported from';
+      try { if (/(^|\.)harmony\./i.test(new URL(item.source).hostname)) where = 'Imported from Harmony'; } catch (e) {}
+      lines.push(`${where}: ${item.source}`);
+    }
+    lines.push(`Cover art (${entry.type || 'Front'})${chosen && chosen.provider ? ` from ${chosen.provider}` : ''}`);
+    lines.push(`* ${entry.url}${(wh || size) ? ` (${[wh, size].filter(Boolean).join(', ')})` : ''}`);
+    const others = cands.filter(c => c.url !== entry.url).map(c => `${c.provider}${dims(c) ? ` ${dims(c)}` : ''}`);
+    if (others.length) lines.push(`Chosen as the largest of ${cands.length} candidates — also offered: ${others.join(', ')}`);
+    if (entry.comment) lines.push(`Image comment: ${entry.comment}`);
+    lines.push('–');
+    lines.push(FALCON_SIGNATURE());
+    if (batchNote()) lines.push('', batchNote());
+    return lines.join('\n');
+  }
+  async function runCoverItem(item, tag, card, priorLinks) {
+    updateWorkerLabel(card, item, 'cover art');
+    const tStart = Date.now();
+    // #508 (majkinetor): "Add covers only when there aren't any" — an opt-in
+    // safety toggle. checkExistingCoverArt() fires fire-and-forget right
+    // after the item is queued and USUALLY settles well before a worker
+    // reaches it — but live: majkinetor's queue reached this item before
+    // the check resolved (a single-item, auto-started run leaves it no head
+    // start at all), reading coverExistingCount as still null/falsy and
+    // uploading a duplicate anyway. Only when the option is actually on is
+    // it worth waiting on the in-flight promise the item was stamped with.
+    // the pick may still be measuring candidates — never upload the wrong one
+    // (or nothing at all) because we asked too early
+    if (item._coverPickPromise && (item.cover || []).some(c => !c.url && (c.candidates || []).length)) {
+      dbg(tag, `release ${item.mbid}: waiting for the best-cover pick to finish measuring`);
+      await item._coverPickPromise.catch(() => {});
+    }
+    if (cfg.coverOnlyIfNone && item.coverExistingCount == null && item._coverCheckPromise) await item._coverCheckPromise;
+    // Skipped, not failed: the item still counts as handled, just untouched.
+    const skipCover = cfg.coverOnlyIfNone && !!item.coverExistingCount;
+    if (skipCover) log('info', `${tag} release ${item.mbid} — cover art skipped (already has ${item.coverExistingCount}, "add only when there aren't any" is on)`);
+    // #496: cover[] can carry more than one entry — upload each independently;
+    // one failing doesn't stop the rest. Overall coverOk only if ALL succeed.
+    const errs = [];
+    if (!skipCover) for (let i = 0; i < item.cover.length; i++) {
+      try { await uploadOneCover(item, item.cover[i], tag, i + 1); }
+      catch (e) {
+        const msg = e.message || String(e);
+        errs.push(item.cover.length > 1 ? `${item.cover[i].type || 'Front'}: ${msg}` : msg);
+        log('error', `${tag} release ${item.mbid}: cover art (${item.cover[i].type || 'Front'}) — ${msg}`);
+      }
+    }
+    const coverError = errs.join(' | ');
+    const coverOk = !coverError;
+    if (priorLinks) {
+      const linksOk = priorLinks.status === 'done' || priorLinks.status === 'skipped';
+      if (linksOk && coverOk) { item.status = priorLinks.status; item.error = ''; }
+      else if (linksOk && !coverOk) { item.status = 'partial'; item.error = `cover art: ${coverError}`; }
+      else if (!linksOk && coverOk) { item.status = priorLinks.status === 'failed' ? 'partial' : priorLinks.status; item.error = priorLinks.error ? `links: ${priorLinks.error}` : ''; }
+      else { item.status = 'failed'; item.error = [priorLinks.error && `links: ${priorLinks.error}`, `cover art: ${coverError}`].filter(Boolean).join(' | '); }
+      dbg(tag, `release ${item.mbid} — combined outcome: links=${priorLinks.status} cover=${coverOk ? 'ok' : 'failed'} -> ${item.status}`);
+    } else if (skipCover) {
+      item.status = 'skipped';
+      item.error = '';
+    } else {
+      item.status = coverOk ? 'done' : 'failed';
+      item.error = coverOk ? '' : coverError;
+    }
+    item.timing = { worker: tag, totalMs: Date.now() - tStart };
+    updateWorkerLabel(card, null);
+    scheduleRender('queue');
+  }
+  async function workerLoop(card) {
+    const tag = `[w${workerCards.indexOf(card) + 1}]`;
+    while (running) {
+      const item = nextQueued();
+      if (!item) { dbg(tag, 'nothing left queued — going idle'); break; }
+      item.status = 'active'; scheduleRender('queue');
+      // #494/#495: a release item with a cover but NO urls is cover-only —
+      // skip the iframe/form pipeline entirely (nothing to seed a form with).
+      // One WITH urls falls through to the normal pipeline below like any
+      // other type, and picks up the cover step afterward at each exit (see
+      // needsCover below) since the two are independent MB edits.
+      // #532: a row seeded from the release page starts EMPTY on purpose — the
+      // point is to fill in a disambiguation (or ISRC, or url) on the ones you
+      // care about. Pressing Start with the rest still blank must not open an
+      // edit page per untouched row and submit nothing; skip them plainly.
+      // ⚠ Everything that counts as work has to be listed in BOTH places: here,
+      // and in the no-form check just below. #533 was exactly this — a release
+      // whose only work was a disambiguation got routed to the cover path and
+      // reported 'done' having submitted nothing.
+      // ⚠ Candidates count as work even with no url chosen yet: the pick is
+      // asynchronous (it measures every candidate), and reading "no url" as
+      // "no cover" is what made a Harmony release report "nothing filled in".
+      const needsCover = item.entityType === 'release' && (item.cover || []).some(c => c.url || (c.candidates || []).length);
+      const needsAliases = (item.aliases || []).some(a => a && String(a.name || '').trim());
+      const needsForm = !!(item.urls.length
+        || (DISAMBIGUATABLE.has(item.entityType) && (item.disambiguation || '').trim())
+        || (RENAMEABLE.has(item.entityType) && (item.rename || '').trim())
+        || (item.entityType === 'recording' && (item.isrcs || []).some(Boolean))
+        || (item.entityType === 'recording' && item.video));
+      if (!needsForm && !needsCover && !needsAliases) {
+        item.status = 'skipped';
+        item.error = 'nothing to submit yet — add a url, name, disambiguation, ISRC, alias or cover';
+        log('info', `${tag} ${item.entityType} ${item.mbid} — skipped, nothing filled in`);
+        renderQueue();
+        continue;
+      }
+      // Nothing for the edit FORM to do: the remaining work (aliases, cover art)
+      // is submitted straight to MusicBrainz, no iframe needed. #535 aliases go
+      // through their own plain form POST, same as the cover upload API.
+      if (!needsForm) {
+        // #535 follow-up (majkinetor, on an alias-only run: "also missing
+        // worker time?"): this path never touched the iframe pipeline, which is
+        // where item.timing is set — so the summary showed a blank worker
+        // column and dashes for every duration on a run that plainly did work.
+        const tNoForm = Date.now();
+        // #547: this path never touches an iframe, so without a phase its card
+        // sat on whatever the previous item left there.
+        updateWorkerLabel(card, item, needsAliases ? 'aliases' : 'cover art');
+        let aliasMs = 0;
+        if (needsAliases) { const a0 = Date.now(); await runAliasItem(item, tag, card); aliasMs = Date.now() - a0; }
+        if (needsCover) await runCoverItem(item, tag, card, aliasPrior(item));
+        else finishAliasOnlyItem(item, tag);
+        item.timing = { worker: tag, loadMs: 0, settleMs: 0, fillMs: 0, submitMs: 0, aliasMs, totalMs: Date.now() - tNoForm };
+        renderQueue();
+        continue;
+      }
+      log('info', `${tag} ${item.entityType} ${item.mbid} — loading edit page (${item.urls.length} link(s))`);
+      // ⚠ A GENUINELY FRESH IFRAME PER ITEM. Never re-navigate one that has
+      // already been used.
+      //
+      // Reusing it was a speed fix of mine, and it is what has been killing
+      // majkinetor's tab (#467). His logs isolate it precisely: an item that
+      // FAILS retires its card and the next item gets a brand-new iframe —
+      // fine, every time. An item that COMMITS keeps the same card, and the
+      // next navigation of that already-used iframe takes the whole tab down,
+      // panel and remaining queue with it. Reproduced across two builds, once
+      // via contentWindow.location.replace() and again via plain .src, so it is
+      // the reuse itself and not the navigation method.
+      //
+      // The measurement that justified reuse (2 items: 256s -> 4.9s) was taken
+      // while the dual-type SEEDING bug was still present — back then every
+      // later item was also doing post-render DOM poking on MB's React tree,
+      // which is what actually cost the time. With seeding fixed, a fresh iframe
+      // per item measures the same as reuse, so the optimisation buys nothing
+      // and costs him runs.
+      const iframe = newIframeIn(card);
+      card.dataset.itemId = item.id;   // lets showItemPopup find "the worker that ran this item"
+      updateWorkerLabel(card, item, 'loading edit page');
+      // #467 (majkinetor): navigate straight to the seed url — MB pre-fills
+      // every url as the page renders, so fillAndSubmit has little or nothing
+      // left to type. Measured live: ~2-3s vs 10+s for typing simulation.
+      const tNav = Date.now();
+      // ⚠ NAVIGATE THE IFRAME BY ASSIGNING .src, AND BY NOTHING ELSE.
+      //
+      // This briefly used `frameWin(iframe).location.replace(seedUrl)` to keep
+      // the frame's session history at depth 1. It cost majkinetor a run: his
+      // tab went away one second into item 2 — the first navigation of a REUSED
+      // iframe — taking the panel, the workers and the rest of the queue with it
+      // (#467: "the Falcon popup closes abruptly in the middle of the process").
+      //
+      // It never reproduced here, because these tests inject into the page's own
+      // realm while he runs inside a userscript manager's sandbox, where
+      // `contentWindow` comes back as an Xray wrapper and `w.location` cannot be
+      // relied on to still mean the FRAME's location. Assigning `.src` has no
+      // such ambiguity: it is a property of the element, it can only ever
+      // navigate that element, and it cannot reach the top window however the
+      // script is wrapped.
+      //
+      // The history argument was speculative anyway — the measured freeze fix
+      // was seeding both link types up front, and replace() was verified NOT to
+      // fix the 6-item freeze on its own. Reusing the iframe DOES stay: that one
+      // is measured (2 items, 256s -> 4.9s).
+      const seedUrl = buildSeedEditUrl(item);
+      iframe.src = seedUrl;
+      // A FRESH iframe starts on about:blank, whose readyState is already
+      // 'complete' — so a bare "readyState !== 'loading'" check passes
+      // INSTANTLY, against the blank document, before MB's page has loaded at
+      // all. Everything downstream then races a document that's about to be
+      // replaced. Require the frame to actually be ON this entity's edit page
+      // (and to have rendered the links section) before believing it's loaded.
+      // #495 (majkinetor, live on test.musicbrainz.org: "worker goes too fast
+      // over it... didn't add link"): a bare `input` fallback (meant to catch
+      // "no links yet, but the add-link input is ready") is satisfied by ANY
+      // input on the page — fine on artist/recording's small single-purpose
+      // form, but a release edit page has many unrelated inputs (title,
+      // barcode, tracklist...) that render well before the External Links
+      // section itself mounts, so this used to pass instantly and let the
+      // worker start filling before there was anything to fill. Matching
+      // findAddLinkInput's specific placeholder text instead of a bare
+      // `input` fixes it for every type, not just release.
+      // #517 follow-up (majkinetor, live, with an animated gif as proof):
+      // "I clearly see worker finishing seeding in 2-3s and waiting 13s to
+      // incorrectly show 'edit page never loaded'" — a real detection bug,
+      // not a timing/contention issue (staggering was tried and reverted;
+      // it couldn't have fixed this). None of the reasoning further down
+      // (about contention needing a longer timeout) explains a page that's
+      // visibly ready and submittable within seconds. Logging the actual
+      // state of each sub-condition periodically while this polls, so the
+      // NEXT time this happens the log itself says which check kept
+      // failing instead of needing another live repro to find out.
+      let _loadedPollCount = 0;
+      let _sawInterstitial = false;   // #551
+      const loaded = await waitFor(() => {
+        _loadedPollCount++;
+        const w = frameWin(iframe), doc = frameDoc(iframe);
+        const diag = () => {
+          if (_loadedPollCount % 20 !== 0) return;   // ~every 3s (150ms poll interval)
+          let path = '(unreadable)'; try { path = w ? w.location.pathname : '(no window)'; } catch (e) { path = '(threw: ' + e.message + ')'; }
+          dbg(tag, `still waiting for edit page — readyState=${doc ? doc.readyState : '(no doc)'}, path=${path}, hasExternalLinkRow=${doc ? !!doc.querySelector('tr.external-link-item') : '?'}, hasAddLinkInput=${doc ? !!findAddLinkInput(doc) : '?'}`);
+        };
+        if (!w || !doc || doc.readyState === 'loading') { diag(); return null; }
+        // #551: a worker's iframe can be served the same challenge. It solves
+        // itself and navigates on within a moment, so KEEP WAITING — but say so,
+        // because otherwise this is 30 silent seconds that end in a misleading
+        // "edit page never loaded" when the page was never even served.
+        if (isVerifyInterstitial(doc)) { _sawInterstitial = true; if (_loadedPollCount % 20 === 1) dbg(tag, 'MusicBrainz is running its "Verifying your browser" challenge in this worker — waiting for it to clear'); return null; }
+        let path = ''; try { path = w.location.pathname; } catch (e) { diag(); return null; }
+        if (!path.includes(item.mbid)) { diag(); return null; }   // still about:blank / previous doc
+        const ready = doc.querySelector('tr.external-link-item') || findAddLinkInput(doc);
+        if (!ready) diag();
+        return ready ? true : null;
+      }, 30000);
+      if (!loaded) {
+        // #551: naming the cause matters — "never loaded" reads as a Falcon bug
+        // when MusicBrainz simply never served the page in the first place.
+        item.status = 'failed';
+        item.error = _sawInterstitial
+          ? 'MusicBrainz kept serving its "Verifying your browser" challenge instead of the edit page'
+          : 'edit page never loaded';
+        log('error', `${tag} ${item.mbid}: ${item.error} (waited 30s)`);
+        // #495: the cover upload is a plain API call, independent of this
+        // iframe — still worth attempting even though the link form never
+        // loaded.
+        if (needsAliases) { await runAliasItem(item, tag, card); mergeAliasOutcome(item); }
+        if (needsCover) await runCoverItem(item, tag, card, { status: item.status, error: item.error });
+        retireCard(card, item.error); scheduleRender('queue');
+        const replacement = spawnWorkerCard();
+        if (replacement) workerLoop(replacement);
+        return;
+      }
+      const loadMs = Date.now() - tNav;
+      dbg(tag, `edit page loaded in ${loadMs}ms`);
+      workerPhase(card, 'waiting for the seeded rows');
+      // MB's client JS turns the seed params into rows a moment after load.
+      // A seeded url can land in EITHER shape (see findRowsForUrl): a resolved
+      // <a href> row, or — when MB couldn't classify it — an editable input
+      // row holding the url text. Matching only the href shape here meant every
+      // unclassifiable url burned the full 8s timeout for nothing.
+      const settled = await waitFor(() => {
+        const doc = frameDoc(iframe); if (!doc) return null;
+        const uniqueUrls = [...new Set(item.urls.map(u => u.url))];
+        return uniqueUrls.every(u => !!findRowForUrl(doc, u)) ? true : null;
+      }, 8000);
+      const settleMs = Date.now() - tNav - loadMs;
+      // snapshot the entity's links BEFORE we touch anything — the submit gate
+      // compares against this to prove nothing pre-existing was lost (#467).
+      const baseline = snapshotExistingUrls(frameDoc(iframe));
+      dbg(tag, `seeded rows settled=${!!settled} after ${Date.now() - tNav}ms total`);
+      let r = null;
+      try {
+        workerPhase(card, 'filling and submitting the edit');
+        r = await fillAndSubmit(iframe, item, { tag, baseline });
+        item.urlResults = r.results;
+        // per-stage timings, kept on the item so the end-of-run summary table
+        // can show where the time actually went (majkinetor, #467).
+        item.timing = { worker: tag, loadMs, settleMs, fillMs: r.fillMs || 0, submitMs: r.submitMs || 0, totalMs: Date.now() - tNav };
+        // a url already on the entity (#671) is nothing to do, not a failure
+        const failedUrls = r.results.filter(x => !x.ok && !x.present);
+        const presentUrls = r.results.filter(x => x.present);
+        if (r.noop) {
+          // everything was already there — the desired state holds, so this is
+          // a success with nothing to do, NOT a failure.
+          item.status = 'skipped';
+          item.error = '';
+          log('info', `${tag} ${entityLabel(item)} — already up to date, nothing to submit (${r.results.length} link(s) already present)`);
+        } else if (!r.committed) {
+          item.status = 'failed';
+          item.error = failedUrls.map(x => `${x.url}: ${x.error}`).join('; ');
+          log('error', `${tag} ${item.mbid}: nothing added — ${item.error}`);
+        } else if (failedUrls.length) {
+          item.status = 'partial';
+          item.error = failedUrls.map(x => `${x.url}: ${x.error}`).join('; ');
+          log('warn', `${tag} ${item.entityType} ${item.mbid} — committed ${r.results.filter(x => x.ok).length}/${r.results.length} link(s)`);
+        } else {
+          item.status = 'done';
+          log('info', `${tag} ${item.entityType} ${item.mbid} — committed ${r.results.filter(x => x.ok).length} link(s)` + (presentUrls.length ? `, ${presentUrls.length} already there` : ''));
+        }
+        presentUrls.forEach(x => log('info', `${tag} ${entityLabel(item)} — ${x.url}: ${x.error}`));
+      } catch (e) {
+        item.status = 'failed'; item.error = e.message || String(e);
+        item.timing = { worker: tag, loadMs, settleMs, fillMs: 0, submitMs: 0, totalMs: Date.now() - tNav };
+        log('error', `${tag} ${item.mbid}: ${item.error}`);
+      }
+      // #495: the cover upload is independent of how the link submission went
+      // (or whether it ran at all) — run it and fold its outcome into
+      // item.status/error before deciding whether this card can keep going.
+      // #535: aliases are separate edits; run them whatever the form edit did,
+      // then fold their outcome in before the cover step reads item.status.
+      if (needsAliases) {
+        const a0 = Date.now();
+        await runAliasItem(item, tag, card);
+        mergeAliasOutcome(item);
+        if (item.timing) item.timing.aliasMs = Date.now() - a0;
+      }
+      if (needsCover) await runCoverItem(item, tag, card, { status: item.status, error: item.error });
+      renderQueue();
+      if (r && (r.committed || r.noop)) {
+        // a real submit happened — or there was genuinely nothing to submit, in
+        // which case the form was never dirtied either. Both leave this card
+        // safe to keep going (a fresh iframe loads the NEXT item next
+        // iteration, see above) rather than retiring, so you can watch one
+        // worker flow through a whole run instead of every item spawning a card.
+        updateWorkerLabel(card, null);
+        continue;
+      }
+      // anything else: this card's form may still be dirty — retire it in place
+      // (stays visible with its last state, per majkinetor) and hand off to a fresh
+      // replacement card rather than risk the beforeunload freeze.
+      retireCard(card, item.error);
+      const next = spawnWorkerCard();
+      if (next) workerLoop(next);
+      return;
+    }
+    updateWorkerLabel(card, null);   // triggers its own re-render since this flips the card to idle (see above)
+    // last worker out turns the jank heartbeat off — no point measuring thread
+    // blocking once nothing of ours is running.
+    // Last worker out. `running` used to stay true forever here, so once a run
+    // drained: the button still read "■ Stop", and clicking Start again did
+    // nothing at all (start() bails on `if (running) return`) — the only way to
+    // run a second batch was to reload the page. Clear the flag so the panel
+    // returns to a usable idle state instead of looking wedged.
+    if (!queue.some(i => i.status === 'active')) {
+      stopHeartbeat();
+      logRunSummary();
+      // #497: a queued item whose type is toggled off will never be picked up
+      // (see nextQueued) — don't count it as "still to do," or a run whose
+      // only leftovers are excluded types would sit forever looking active
+      // with every worker actually idle.
+      if (!queue.some(i => i.status === 'queued' && !_disabledTypes.has(i.entityType))) {
+        running = false;
+        resumeNameLookups();   // the rate-limit budget is ours again
+        resolveMissingNames();   // give any cancelled-mid-run lookups a second try
+        updateRunBtn();
+        renderProgress();
+        log('info', '=== run finished — the tab and panel stay open; the log above is this session only ===');
+        sendReleaseToPicard();   // #578
+        maybeClosePanelAfterRun();
+        writeLogNow();
+        // #588 — last, and after the log is flushed: this one can navigate.
+        maybeReloadReleasePage();
+      }
+    }
+  }
+
+  // #578 follow-up (majkinetor): "Maybe just invoke in new tab or someting
+  // http://127.0.0.1:<port>/openalbum?id=<mbid>". Appending ?tport= is proven to
+  // work — a clean browser renders the tagger button for exactly the URL Falcon
+  // opens (live-578-picard-harmony-proof) — but it did not appear in HIS browser,
+  // and waiting for a button to be clicked was never the ask anyway: Jormangeud
+  // wanted the release "brought into Picard right away". So Falcon calls Picard's
+  // own endpoint and stops depending on MusicBrainz rendering anything. The
+  // ?tport= parameter stays as the manual fallback; it costs nothing.
+  //
+  // Fired when the RUN finishes rather than when the tab opens, so Picard reads
+  // the release AFTER Falcon has added its links, ISRCs and cover — otherwise it
+  // would tag the version that made Falcon necessary in the first place.
+  const _picardSent = new Set();
+  // #671: Picard and the reload after import are Harmony options (they sit in its settings
+  // group), so they follow only a queue Harmony seeded in this tab — not Import, a ?falcon=
+  // link, or a batch another script (Platform Check) hands over on the page.
+  let _harmonySeeded = false;
+  function sendReleaseToPicard() {
+    if (!cfg.sendToPicard) return;
+    if (!_harmonySeeded) { log('debug', 'Picard: this queue did not come from Harmony, so nothing is sent'); return; }
+    const m = /\/release\/([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})/i.exec(location.pathname);
+    if (!m) { log('debug', 'Picard: this tab is not a release page, so there is nothing to hand over'); return; }
+    const mbid = m[1].toLowerCase();
+    // a tab can finish a run more than once (Start again, a re-seed); Picard
+    // should not be poked repeatedly for the same release
+    if (_picardSent.has(mbid)) { log('debug', `Picard: already sent ${mbid} from this tab`); return; }
+    _picardSent.add(mbid);
+    const url = `http://127.0.0.1:${cfg.picardPort}/openalbum?id=${mbid}`;
+    // GM_xmlhttpRequest rather than fetch: the page is https and this is plain
+    // http, and rather than rely on every browser treating 127.0.0.1 as a
+    // trustworthy origin, go around it. No tab is opened either way — Picard
+    // answers with a stub page nobody wants to look at.
+    if (typeof GM_xmlhttpRequest === 'function') {
+      log('info', `Picard: sending release ${mbid} → ${url}`);
+      try {
+        GM_xmlhttpRequest({
+          method: 'GET', url, timeout: 5000,
+          onload: r => log(r.status >= 200 && r.status < 400 ? 'ok' : 'warn', `Picard: responded ${r.status}`),
+          // by far the most likely cause, and worth saying rather than leaving a
+          // bare "error" for someone to interpret
+          onerror: () => log('warn', `Picard: could not be reached on port ${cfg.picardPort} — is Picard running with "Browser integration" enabled?`),
+          ontimeout: () => log('warn', `Picard: timed out on port ${cfg.picardPort}`),
+        });
+      } catch (e) { log('warn', `Picard: send failed — ${e.message}`); }
+      return;
+    }
+    log('info', `Picard: opening ${url} (no GM_xmlhttpRequest available)`);
+    try { window.open(url, '_blank'); } catch (e) { log('warn', `Picard: send failed — ${e.message}`); }
+  }
+
+  /* ── #588: reload the release page once the run comes out clean ───────────
+   * chaban-mb: "Falcon is set to fully auto for me. So all I see is an already
+   * processed queue and stale release view."
+   *
+   * majkinetor's ruling on the issue was that standardising this across the
+   * scripts is wrong because the context differs — "PC restarts as Scout must
+   * see. Scout doesn't as nobody needs that info. AS does as you want to see the
+   * end result. Falcon doesn't as you want to see a queue results" — and then
+   * asked for it as a Harmony option here. So: opt in, off by default.
+   *
+   * Nothing is lost by reloading. The run's log is a #512 session in
+   * localStorage, so it is still there on the Log tab afterwards; the queue is
+   * in memory and is genuinely gone, which is why this only fires when every
+   * item settled clean and none was left for a human to look at.
+   */
+  const RELOADED_KEY = 'falcon:reloadedAfterImport';
+  function maybeReloadReleasePage() {
+    if (!cfg.reloadReleaseAfterImport) return;
+    if (!_harmonySeeded) { log('debug', 'reload after import: this queue did not come from Harmony, so the page is left as it is'); return; }
+    // the release page itself only: /release/<mbid>/cover-art and the other subpages
+    // matched too, and were reloaded after every clean run (#588)
+    const m = /^\/release\/([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})\/?$/i.exec(location.pathname);
+    if (!m) { log('debug', 'reload after import: this tab is not a release page, so there is nothing to refresh'); return; }
+    // Same definition of "bad" the panel's own summary chip uses — 'skipped' is
+    // a success (already up to date), not a problem.
+    const bad = queue.filter(i => i.status === 'failed' || i.status === 'partial');
+    if (bad.length) {
+      log('info', `reload after import: ${bad.length} item(s) did not go through, so the page is left as it is — the queue is the only place those are still visible`);
+      return;
+    }
+    // 'manual' means a tab was opened for someone to review by hand. Reloading
+    // out from under that is the one way this option could lose real work.
+    const manual = queue.filter(i => i.status === 'manual');
+    if (manual.length) { log('info', `reload after import: ${manual.length} item(s) are waiting on a manual review — not reloading`); return; }
+    if (!queue.some(i => SETTLED_STATUSES.includes(i.status))) { log('debug', 'reload after import: nothing settled in this run'); return; }
+    /* Unlike #590's Harmony reload — which MUST be location.reload() because
+     * Harmony reads its whole lookup state back out of the query string — this
+     * one deliberately REBUILDS the url, to drop the `falcon=` token. The token
+     * was consumed at boot (parseUrlParam deletes the GM value), so reloading it
+     * verbatim would land on a page that logs "neither valid base64 JSON nor a
+     * known pending token" every single time. `tport` is kept: that is what puts
+     * MusicBrainz's own green tagger button on the page. */
+    const q = new URLSearchParams(location.search);
+    q.delete('falcon');
+    const target = location.pathname + (q.toString() ? '?' + q : '') + location.hash;
+    try { sessionStorage.setItem(RELOADED_KEY, m[1].toLowerCase()); } catch (e) {}
+    log('info', `reload after import: the run finished clean — reloading ${target} so it shows what Falcon just added`);
+    writeLogNow();   // the session is what survives the navigation; flush before going
+    location.replace(target);
+  }
+  // majkinetor: "Change the background color of the Falcon icon (or equivalent)
+  // on reloaded page. The point is, with many tabs open, to know which one was
+  // reloaded by Falcon after success." Keyed by MBID and checked against the
+  // page actually being shown, so it marks the release Falcon finished rather
+  // than every page the tab visits afterwards.
+  function reloadedAfterImportHere() {
+    let flag = null;
+    try { flag = sessionStorage.getItem(RELOADED_KEY); } catch (e) {}
+    if (!flag) return false;
+    const m = /\/release\/([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})/i.exec(location.pathname);
+    return !!m && m[1].toLowerCase() === flag;
+  }
+
+  // #467 (majkinetor): each worker gets its own card — a small label (which entity
+  // it's on right now) plus a ⛶ toggle to view just that one large, so a failure can
+  // actually be read instead of squinting at a 220x160 thumbnail. Zooming one worker
+  // hides the others rather than trying to fit everything in a responsive grid.
+  // Cards accumulate as a visible history (retired ones dim + freeze in place, see
+  // above) rather than being torn down — only ever appended, never removed/reused
+  // across a Start click, so old state stays inspectable until the panel closes.
+  let workerCards = [];
+  let _zoomedWorker = null;   // index into workerCards, or null
+  // #547 (majkinetor): "We should also remove '0 links' from workers and write
+  // there whats it doing instead." A link count is the least interesting thing
+  // about a running worker — and on an alias/disambiguation/cover run it was
+  // always "0 link(s)", which reads as "this worker has nothing to do" while it
+  // is in the middle of doing it. The header carries the live phase instead.
+  function updateWorkerLabel(card, item, phase) {
+    if (card.dataset.retired) return;   // don't overwrite a retired card's frozen label
+    card._item = item || null;
+    const lbl = card.querySelector('.falcon-worker-lbl');
+    if (lbl) lbl.textContent = item ? `${entityLabel(item)} — ${phase || 'starting'}` : 'idle';
+    // a freshly-spawned card starts hidden (marked idle at creation, #467's
+    // hide-idle-workers), so it must re-render the moment it actually GETS an
+    // item too, not just when it goes idle again — re-rendering only on the
+    // rare transition (not every label update) keeps this cheap.
+    const wasIdle = card.dataset.idle === '1';
+    const isIdleNow = !item;
+    card.dataset.idle = isIdleNow ? '1' : '';
+    if (wasIdle !== isIdleNow) renderWorkerLayout();
+  }
+  /* #547: update only the phase, keeping whichever item the card is already on.
+     Cheap enough to call from anywhere in an item's lifecycle — it touches one
+     text node and never re-renders the layout. Silently does nothing on a
+     retired or idle card, so a late callback from a finished item cannot
+     resurrect a frozen label. */
+  function workerPhase(card, text) {
+    if (!card || card.dataset.retired || !card._item) return;
+    const lbl = card.querySelector('.falcon-worker-lbl');
+    if (lbl) lbl.textContent = `${entityLabel(card._item)} — ${text}`;
+  }
+  function renderWorkerLayout() {
+    let anyVisible = false;
+    workerCards.forEach((card, i) => {
+      const zoomBtn = card.querySelector('.falcon-worker-zoom');
+      // #467 (majkinetor): "hide idle workers on Workers tab" — an idle card
+      // (nothing currently loaded, or the whole run finished) has nothing worth
+      // looking at in the default thumbnail strip; only applies there — a
+      // specifically zoomed card stays visible even if it happens to go idle.
+      const isIdle = card.dataset.idle === '1';
+      // Hiding a card that's mid-item is the same trap as hiding the whole pane
+      // (see setTab): display:none stops its iframe rendering and its submit
+      // never lands. An idle card is safe to drop out of the DOM flow; a busy
+      // one gets parked off-screen instead so it keeps working while out of view.
+      const hide = () => {
+        if (isIdle) { card.style.display = 'none'; return; }
+        card.style.cssText = card.style.cssText.replace(/position:absolute;left:-100000px;top:0;/, '');
+        card.style.position = 'absolute'; card.style.left = '-100000px'; card.style.top = '0';
+        card.style.display = '';
+      };
+      const show = (w, h) => {
+        card.style.position = ''; card.style.left = ''; card.style.top = '';
+        card.style.display = ''; card.style.width = w; card.style.height = h;
+      };
+      if (_zoomedWorker === null) {
+        if (isIdle) { card.style.display = 'none'; return; }
+        show(cfg.workerSize + 'px', Math.round(cfg.workerSize * 0.8) + 'px');
+        if (zoomBtn) { zoomBtn.textContent = '⛶'; zoomBtn.title = 'Maximize this worker'; }
+      } else if (_zoomedWorker === i) {
+        show('100%', '560px');
+        if (zoomBtn) { zoomBtn.textContent = '❐'; zoomBtn.title = 'Restore'; }
+      } else {
+        hide();
+      }
+      // a retired card normally dims to signal "done, nothing to act on" — but
+      // zooming it in specifically to inspect its failure (from the queue tab's
+      // status-label click, #467) should show it at full readable opacity.
+      card.style.opacity = (card.dataset.retired === '1' && _zoomedWorker !== i) ? '.55' : '1';
+      // only count as "visible" (for the empty-state message) when it's actually
+      // on screen — an off-screen parked card is live but not something you see.
+      const onScreen = card.style.display !== 'none' && card.style.position !== 'absolute';
+      if (card.style.display !== 'none') applyIframeScale(card);   // card size just changed — rescale its iframe to match
+      if (onScreen) anyVisible = true;
+    });
+    const emptyMsg = document.getElementById('falcon-workers-empty');
+    if (emptyMsg) emptyMsg.style.display = anyVisible ? 'none' : 'block';
+  }
+  // #467 (majkinetor: "UI was frozen after some time... Notice the 30s silence
+  // in log at the end"). That silence is itself the evidence: waitFor checks
+  // its predicate BEFORE its deadline, so a 25s timeout that returned at 37s
+  // means the main thread simply wasn't running our timers for most of that
+  // stretch — i.e. a genuine freeze, not a slow server. Whether it's MB's own
+  // page JS in the worker iframes or something Falcon does is the open
+  // question, so measure it: a heartbeat that reports how long the thread was
+  // actually blocked, right in the same log as everything else.
+  let _heartbeat = null;
+  function startHeartbeat() {
+    if (_heartbeat) return;
+    let last = Date.now();
+    _heartbeat = setInterval(() => {
+      const now = Date.now(), late = now - last - 500;
+      last = now;
+      if (late > 1500) log('warn', `UI thread was blocked for ~${(late / 1000).toFixed(1)}s (nothing could render or respond during that time)`);
+    }, 500);
+  }
+  function stopHeartbeat() { if (_heartbeat) { clearInterval(_heartbeat); _heartbeat = null; } }
+
+  // #467 (majkinetor): "add to falcon log table with timing data as a summary".
+  // Printed once when the last worker goes idle. The point is to make WHERE the
+  // time goes obvious at a glance — the run that prompted this had ~30s submits
+  // purely because five workers were submitting at once (MB serialises edit
+  // submissions per user), which is invisible in a stream of interleaved lines
+  // but jumps out of a sorted table. Columns are the real stages: load = MB's
+  // edit page arriving, settle = MB turning seed params into rows, fill = our
+  // own DOM work, submit = click → redirect.
+  const SETTLED_STATUSES = ['done', 'failed', 'partial', 'manual', 'skipped'];
+  let _summaryPending = false, _runStartedAt = 0;
+  function logRunSummary() {
+    // #513 (majkinetor, live: "What about 'edit page was never loaded'"):
+    // that failure sets item.status = 'failed' straight away, WITHOUT ever
+    // setting item.timing (it never gets past the initial iframe-load wait)
+    // — restricting to queue.filter(i => i.timing) silently dropped it (and
+    // any status like it) from the table AND from the totals/byStatus
+    // count. Every settled item now gets a row; ones with no timing data
+    // just show dashes for the timed columns instead of vanishing.
+    const rows = queue.filter(i => SETTLED_STATUSES.includes(i.status));
+    if (!rows.length || _summaryPending) return;
+    _summaryPending = true;
+    // let any last status writes land before snapshotting
+    setTimeout(() => {
+      _summaryPending = false;
+      const pad = (v, n, right) => { const s = String(v); return right ? s.padStart(n) : s.padEnd(n); };
+      const ms = v => (v == null ? '-' : String(Math.round(v)));
+      const nameW = Math.min(28, Math.max(6, ...rows.map(i => entityLabel(i).length)));
+      // #535 follow-up (majkinetor): "Summary should contain alias info on
+      // workers". Only shown when the run involved aliases — an ordinary link
+      // run should not grow a column of dashes.
+      const anyAliases = rows.some(i => (i.aliases || []).length || i.aliasResults);
+      const aliasCell = i => {
+        const r = i.aliasResults;
+        if (!r) return (i.aliases || []).length ? '—' : '';
+        const bits = [`${r.ok}/${r.total + (r.dupes || 0)}`];
+        if (r.dupes) bits.push(`${r.dupes} dup`);
+        if (r.errors && r.errors.length) bits.push(`${r.errors.length} err`);
+        return bits.join(' ');
+      };
+      const head = `${pad('w', 4)} ${pad('entity', nameW)} ${pad('status', 8)} ${pad('load', 7, 1)} ${pad('settle', 7, 1)} ${pad('fill', 7, 1)} ${pad('submit', 8, 1)}`
+        + (anyAliases ? ` ${pad('alias', 9, 1)} ${pad('aliasMs', 8, 1)}` : '') + ` ${pad('total', 8, 1)}`;
+      const lines = [head, '-'.repeat(head.length)];
+      // #512 follow-up (majkinetor, live: "add on each worker what was done
+      // in this log table like I shown on w1 and w2") — same categories the
+      // collapsed queue row and the aggregate "worked on" line already use,
+      // per item this time so a failed batch shows what each one actually had.
+      const rowBreakdown = i => [
+        i.urls && i.urls.length ? `${i.urls.length} link${i.urls.length === 1 ? '' : 's'}` : '',
+        i.rename ? 'rename' : '',
+        i.disambiguation ? 'disambiguation' : '',
+        (i.isrcs || []).length ? 'isrc' : '',
+        i.cover && i.cover.some(c => c.url) ? 'cover' : '',
+        (i.aliases || []).length ? `${i.aliases.length} alias${i.aliases.length === 1 ? '' : 'es'}` : '',
+      ].filter(Boolean).join(', ');
+      rows.forEach(i => {
+        const t = i.timing || {};
+        const what = rowBreakdown(i);
+        lines.push(`${pad(t.worker || '', 4)} ${pad(entityLabel(i).slice(0, nameW), nameW)} ${pad(i.status, 8)} ${pad(ms(t.loadMs), 7, 1)} ${pad(ms(t.settleMs), 7, 1)} ${pad(ms(t.fillMs), 7, 1)} ${pad(ms(t.submitMs), 8, 1)}`
+          + (anyAliases ? ` ${pad(aliasCell(i), 9, 1)} ${pad(ms(t.aliasMs), 8, 1)}` : '')
+          + ` ${pad(ms(t.totalMs), 8, 1)}` + (what ? `  ; ${what}` : ''));
+      });
+      const timed = rows.filter(i => i.timing);
+      const sum = k => timed.reduce((a, i) => a + (i.timing[k] || 0), 0);
+      const avg = k => timed.length ? Math.round(sum(k) / timed.length) : null;
+      const maxSubmit = timed.length ? Math.max(...timed.map(i => i.timing.submitMs || 0)) : 0;
+      lines.push('-'.repeat(head.length));
+      const aliasTotals = rows.reduce((m, i) => {
+        const r = i.aliasResults; if (!r) return m;
+        m.ok += r.ok; m.total += r.total + (r.dupes || 0); m.dupes += (r.dupes || 0); m.errors += (r.errors || []).length; return m;
+      }, { ok: 0, total: 0, dupes: 0, errors: 0 });
+      lines.push(`${pad('', 4)} ${pad(`${rows.length} item(s)`, nameW)} ${pad('avg', 8)} ${pad(ms(avg('loadMs')), 7, 1)} ${pad(ms(avg('settleMs')), 7, 1)} ${pad(ms(avg('fillMs')), 7, 1)} ${pad(ms(avg('submitMs')), 8, 1)}`
+        + (anyAliases ? ` ${pad(`${aliasTotals.ok}/${aliasTotals.total}`, 9, 1)} ${pad(ms(avg('aliasMs')), 8, 1)}` : '')
+        + ` ${pad(ms(avg('totalMs')), 8, 1)}`);
+      const byStatus = rows.reduce((m, i) => { m[i.status] = (m[i.status] || 0) + 1; return m; }, {});
+      // wall clock is NOT the sum of the item totals — workers overlap — so show
+      // both: the sum is how much work happened, the wall clock is how long you
+      // actually waited, and the gap between them is what concurrency bought.
+      const wallMs = _runStartedAt ? Date.now() - _runStartedAt : 0;
+      const fmt = m => (m >= 1000 ? (m / 1000).toFixed(1) + 's' : m + 'ms');
+      // #512 (majkinetor): "in work summary at the end of the log, add what
+      // was done the same as shown in collapsed queue (e.g. 2 link, isrc)" —
+      // same categories the row itself shows (links / ISRC / disambiguation
+      // / cover), aggregated across the whole run instead of per row.
+      const totalLinks = rows.reduce((n, i) => n + (i.urls ? i.urls.length : 0), 0);
+      const withIsrc = rows.filter(i => (i.isrcs || []).length).length;
+      const withRename = rows.filter(i => i.rename).length;
+      const withDisambiguation = rows.filter(i => i.disambiguation).length;
+      const withCover = rows.filter(i => i.cover && i.cover.some(c => c.url)).length;
+      const worked = [
+        totalLinks ? `${totalLinks} link${totalLinks === 1 ? '' : 's'}` : '',
+        withIsrc ? `isrc on ${withIsrc}` : '',
+        withRename ? `rename on ${withRename}` : '',
+        withDisambiguation ? `disambiguation on ${withDisambiguation}` : '',
+        withCover ? `cover on ${withCover}` : '',
+        aliasTotals.total ? `${aliasTotals.ok}/${aliasTotals.total} alias(es) on ${rows.filter(i => i.aliasResults).length}`
+          + (aliasTotals.dupes ? ` (${aliasTotals.dupes} already present)` : '')
+          + (aliasTotals.errors ? ` (${aliasTotals.errors} failed)` : '') : '',
+      ].filter(Boolean).join(', ') || '—';
+      log('info', `[run] run summary (all times ms)\n${lines.join('\n')}\n` +
+        `total run time: ${fmt(wallMs)} wall clock` +
+        (rows.length > 1 ? ` · ${fmt(sum('totalMs'))} of item work · avg ${fmt(Math.round(wallMs / rows.length))} per item` : '') + '\n' +
+        `totals: ${Object.entries(byStatus).map(([k, v]) => `${v} ${k}`).join(', ')}; slowest submit ${maxSubmit}ms; ${cfg.workers} worker(s)\n` +
+        `worked on: ${worked}` +
+        (maxSubmit > 10000 ? `\nnote: submits this slow usually mean several workers submitted at once — MusicBrainz serialises edit submissions per user, so they queue behind each other. Fewer workers is often no slower overall.` : ''));
+    }, 300);
+  }
+  // #476: with no authenticated session, every worker's /edit navigation gets
+  // redirected to MB's login page — which, unlike the edit page itself, DOES
+  // refuse to be framed, so the iframe shows browser chrome ("Firefox Can't
+  // Open This Page") and each item just times out 15s later as "edit page
+  // never loaded". That's true of every item in the queue at once, so check
+  // once, up front, instead of letting the whole batch burn through it.
+  // The panel's own tab is a normal top-level MB page (never framed), so this
+  // reads the SAME login link MB's header always shows when logged out —
+  // confirmed absent once logged in.
+  function isLoggedIn() { return !document.querySelector('a[href^="/login?"], a[href="/login"]'); }
+  /* #551 (chaban-mb): "Sometimes MusicBrainz will present a small proof-of-work
+     challenge instead of the requested page. If that happens the Falcon session
+     from Harmony is briefly run and after being served the requested page the
+     session is 'lost', i.e. the dialog is not shown again."
+
+     The challenge is served AT the requested URL — `?falcon=<token>` and all —
+     solves a SHA-256 puzzle in JavaScript, POSTs to /__meb_verify, and only then
+     hands over the real page. So Falcon booted on that interstitial, read the
+     token, DELETED it (parseUrlParam consumes it deliberately, so a reload
+     cannot queue the same batch twice), mounted a panel nobody ever sees, and
+     was navigated away a moment later. The real page then booted with the token
+     already gone — which is exactly the "session is lost" he describes.
+
+     Recognised by two things that are in the SERVED HTML, and so already parsed
+     by the time a userscript runs at document-idle: the <title>, and the
+     <noscript> sentinel. The <form> and its /__meb_verify action are built by
+     the challenge's own script and are not dependable.
+
+     ⚠ Do NOT test for "/__meb_verify" appearing in an inline script. Ordinary
+     MusicBrainz pages carry a beacon that posts to that same endpoint, so that
+     check matches EVERY page — measured here: it fired on the release page, the
+     edit page and the site root alike, which would have disabled Falcon
+     everywhere. Caught only because the test asserted the absence of false
+     positives as well as the presence of the fix. */
+  const VERIFY_TITLE_RE = /^\s*Verifying your browser\s*$/i;
+  const VERIFY_NOSCRIPT_RE = /JavaScript is required to access this page/i;
+  function isVerifyInterstitial(doc) {
+    const d = doc || document;
+    try {
+      if (VERIFY_TITLE_RE.test(d.title || '')) return true;
+      return [...d.querySelectorAll('noscript')].some(n => VERIFY_NOSCRIPT_RE.test(n.textContent || ''));
+    } catch (e) { return false; }   // cross-origin frame — not our problem to classify
+  }
+  // #517 (majkinetor, live: "Revert stagger too, it worked before without
+  // it, I am not going to wait 1s between starts") — tried staggering
+  // worker starts (350ms, then widened to 1000ms) to reduce main-thread/
+  // network contention, but majkinetor confirmed with an actual recording
+  // — worker's edit page visibly loaded and was submittable in 2-3s, yet
+  // Falcon's own "is it loaded" check still sat waiting the full timeout —
+  // that this is a genuine detection bug, not a timing/contention issue
+  // staggering could ever fix. Reverted to spawning all N workers at once,
+  // same as before any of this.
+  function spawnWorkersStaggered(count) {
+    for (let i = 0; i < count; i++) { const card = spawnWorkerCard(); if (card) workerLoop(card); }
+  }
+  // #508 follow-up (majkinetor, live: auto-started a Harmony import with 6
+  // workers configured, only 1 ever ran): start()'s worker count is
+  // Math.min(cfg.workers, queued-at-that-instant) — correct for a queue
+  // that's fully populated before Start is pressed, but a Harmony release
+  // with ISRC-only recordings (no plain external-link actions to zip them
+  // onto) queues its cover/release item SYNCHRONOUSLY and its recordings
+  // ASYNCHRONOUSLY (resolveIsrcFallback fetches the real tracklist first) —
+  // auto-start fired in between, seeing only 1 queued item, so only 1
+  // worker ever spawned for the other 11 that arrived a moment later.
+  // Called from addToQueue() whenever it adds anything while a run is
+  // already active, this brings the spawned count up to what the CURRENT
+  // queue actually calls for, regardless of what triggered the addition
+  // (ISRC fallback, a mid-run import, anything).
+  // #536 follow-up (majkinetor, live log): a Harmony import auto-started, ran
+  // for 534ms, reported "release … — skipped, nothing filled in", and finished
+  // — while its cover pick was still measuring and its 10 ISRC-only recordings
+  // had not been resolved yet. Both arrived a second later, to a run that was
+  // already over. topUpWorkers only helps a run that is still going.
+  //
+  // So the queue now says when it is still growing/settling, and auto-start
+  // waits for that instead of racing it. Measuring every cover candidate (the
+  // fix for the wrong-resolution pick) made this window seconds wide; before
+  // that it was often zero, which is why it took this long to show up.
+  const _settling = new Set();
+  function trackSettling(promise) {
+    if (!promise || typeof promise.then !== 'function') return promise;
+    _settling.add(promise);
+    promise.catch(() => {}).finally(() => _settling.delete(promise));
+    return promise;
+  }
+  async function whenQueueSettles(timeoutMs) {
+    const deadline = Date.now() + (timeoutMs || 20000);
+    while (_settling.size && Date.now() < deadline) {
+      await Promise.race([
+        Promise.allSettled([..._settling]),
+        wait(500),
+      ]);
+    }
+    if (_settling.size) dbg('[queue]', `${_settling.size} enrichment(s) still in flight after the settle wait — starting anyway`);
+  }
+  function topUpWorkers() {
+    if (!running) return;
+    const remaining = queue.filter(i => i.status === 'queued' && !_disabledTypes.has(i.entityType)).length;
+    const target = Math.min(cfg.workers, remaining);
+    const toSpawn = target - workerCards.length;
+    if (toSpawn <= 0) return;
+    log('info', `queue grew — topping up from ${workerCards.length} to ${target} worker(s)`);
+    spawnWorkersStaggered(toSpawn);
+  }
+  function start() {
+    if (running) return;
+    if (!isLoggedIn()) {
+      alert(`${NAME}: you're not logged into MusicBrainz on this tab. Log in, then reload this page and Start again — an unauthenticated run can't submit any edits.`);
+      log('warn', 'refused to start — not logged into MusicBrainz');
+      return;
+    }
+    if (!queue.some(i => i.status === 'queued')) { log('warn', 'nothing queued'); return; }
+    // #497: everything queued is a toggled-off type — nothing would actually run.
+    if (!queue.some(i => i.status === 'queued' && !_disabledTypes.has(i.entityType))) { log('warn', 'nothing queued that isn\'t excluded by a toggled-off type chip'); return; }
+    running = true;
+    _runStartedAt = Date.now();
+    if (_closedClean) { _closedClean = false; removeLauncher(); ensureLauncher(); }   // back to the usual icon
+    // one log per run — majkinetor: "I DON'T WANT LOGS FROM OTHER RUNS"
+    newSession(`${queue.filter(i => i.status === 'queued').length} queued, ${cfg.workers} worker(s), ${location.href}`);
+    // #508 follow-up (majkinetor, live: "BTW, list options in the log, I had
+    // Add covers only when there aren't any enabled here") — a log dump
+    // alone doesn't say which toggles were active, which matters for
+    // reading a run's behavior back later (this exact bug report needed it).
+    log('info', `options: hide-icon=${cfg.hideLauncher ? 'on' : 'off'}, cover-only-if-none=${cfg.coverOnlyIfNone ? 'on' : 'off'}, skip-harmony-covers=${cfg.skipHarmonyCovers ? 'on' : 'off'}, auto-send-harmony=${cfg.autoSendFromHarmony ? 'on' : 'off'}, auto-start-harmony=${cfg.autoStartHarmonyImport ? 'on' : 'off'}, picard=tport ${cfg.picardPort}, auto-send ${cfg.sendToPicard ? 'on' : 'off'}`);
+    suspendNameLookups();   // cosmetic lookups must not eat the workers' rate-limit budget
+    startHeartbeat();
+    const need = Math.min(cfg.workers, queue.filter(i => i.status === 'queued').length);
+    log('info', `starting ${need} worker(s) for ${queue.filter(i => i.status === 'queued').length} queued item(s)`);
+    Log.keep();   // a run that got this far is worth reading back
+    spawnWorkersStaggered(need);
+    updateRunBtn();
+    renderProgress();
+  }
+  // Asked for by the falcon:run that started this run (closeWhenDone): hide the panel when
+  // every item settled as done or skipped. A failed, partial or manual one keeps it open.
+  let _closeWhenDone = false, _closedClean = false;
+  function maybeClosePanelAfterRun() {
+    if (!_closeWhenDone) return;
+    _closeWhenDone = false;
+    const bad = queue.filter(i => ['failed', 'partial', 'manual'].includes(i.status)).length;
+    if (bad) { log('info', `panel left open: ${bad} item(s) not fully done`); return; }
+    if (panel) panel.style.display = 'none';
+    _closedClean = true;
+    removeLauncher(); ensureLauncher();   // rebuilt green, as after #588's reload
+    log('info', 'panel closed: the run that asked for it finished with every item done');
+  }
+  function stop() { _closeWhenDone = false; running = false; stopHeartbeat(); resumeNameLookups(); resolveMissingNames(); log('info', 'stopping — in-flight items finish, no new ones start'); updateRunBtn(); renderProgress(); }
+
+  /* ════════════════════════ UI ════════════════════════ */
+  let launcher = null;
+  // #508 (majkinetor): "Hide MB icon" — the floating corner launcher is
+  // optional; the panel is still reachable via Ctrl+Alt+F either way (that
+  // shortcut listener is independent of this button existing at all).
+  function removeLauncher() { if (launcher) { launcher.remove(); launcher = null; } }
+  // #675 (majkinetor): the launcher stands down on MusicBrainz's own release
+  // editor — /release/add and /release/<mbid>/edit. That full-screen Knockout
+  // app is Apollo Editor's territory, and Falcon can't act on the edit the human
+  // is making there (it drives release workers inside iframes, where @noframes
+  // keeps this script out), so a second corner icon beside Apollo's is only
+  // clutter. The panel is still one Ctrl+Alt+F away.
+  function onReleaseEditorPage() {
+    return /^\/release\/(add|[0-9a-f-]{36}\/edit)\/?$/i.test(location.pathname);
+  }
+  function ensureLauncher() {
+    if (cfg.hideLauncher || onReleaseEditorPage()) { removeLauncher(); return; }
+    if (launcher) return;
+    launcher = document.createElement('button');
+    launcher.type = 'button'; launcher.id = 'falcon-launcher';
+    launcher.title = `${NAME} — bulk MusicBrainz editor (Ctrl+Alt+F)\nRight-click: settings`;
+    launcher.dataset.mbCorner = 'br'; launcher.dataset.mbCornerOrder = '90';   // lowest priority: furthest from the corner
+    // #588: a page Falcon reloaded after a clean run wears a green icon instead
+    // of the usual translucent one — majkinetor's ask was to be able to pick
+    // that tab out of many. It is also the only visible trace that the reload
+    // happened at all, since the page it lands on looks like any other.
+    // The same green when the panel closed itself after a clean run (closeWhenDone), so
+    // that tab stands out the same way; it lasts until the next run starts.
+    const done = reloadedAfterImportHere() || _closedClean;
+    const rest = done ? '1' : '.55';
+    /* ⚠ Literal colours with the tokens only as an override, NOT var() alone:
+       MBU_TOKENS is injected by ensurePanel(), and the launcher exists long
+       before any panel does — so on a page where the panel was never opened
+       every var() here resolves to nothing and the "green" icon comes out
+       fully transparent. Measured exactly that way before this line said so.
+       A solid fill rather than the pale --mbu-ok-bg tint, because the ask is to
+       spot this tab among many at a glance. */
+    launcher.style.cssText = 'position:fixed;right:14px;bottom:14px;z-index:2147483000;width:40px;height:40px;border-radius:50%;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;'
+      // literal, not var(--mbu-ok): once the panel has injected the tokens, the dark
+      // theme's --mbu-ok is a darker mix, and a self-closed panel's icon came out a
+      // different green from a reloaded page's
+      + (done ? 'background:#1f9d6b;color:#fff;box-shadow:0 0 0 2px #9bd3b6,0 2px 10px rgba(31,157,107,.45);'
+        : 'background:transparent;box-shadow:none;')
+      + `transition:background .15s,transform .1s;opacity:${rest}`;
+    if (done) launcher.title = `${NAME} — ${_closedClean ? 'closed itself' : 'this page was reloaded'} after a clean run (Ctrl+Alt+F for the log)\nRight-click: settings`;
+    const img = document.createElement('img'); img.src = ICON_URL; img.alt = ''; img.style.cssText = 'width:34px;height:34px;display:block;pointer-events:none'; launcher.appendChild(img);
+    launcher.onmouseenter = () => { launcher.style.transform = 'scale(1.08)'; launcher.style.opacity = '1'; };
+    launcher.onmouseleave = () => { launcher.style.transform = 'scale(1)'; launcher.style.opacity = rest; };
+    launcher.onclick = () => togglePanel();
+    launcher.oncontextmenu = e => { e.preventDefault(); showPanel(); setTab('options'); };   // #695: right-click on every corner launcher opens its settings
+    document.body.appendChild(launcher);
+    mbRestackCorner('br');
+  }
+
+  let panel = null, tab = 'queue';
+  // Standing rule across every script here (Art Station is the reference): a
+  // toolbar's labelled buttons collapse to icon-only rather than wrapping, with
+  // the tooltips carrying the meaning. Falcon needs it more than most — the
+  // panel is a 460px box the user can drag-resize and maximize, so its three
+  // bars go from roomy to cramped constantly.
+  //
+  // Widths are summed rather than read off scrollWidth: these bars use flex:1
+  // spacers (the progress bar, `margin-left:auto`), which absorb the overflow
+  // and make scrollWidth/offsetTop-based detection report a comfortable fit
+  // right up until it wraps.
+  function fitBar(bar) {
+    if (!bar) return;
+    bar.classList.remove('falcon-compact');            // measure with full labels
+    const kids = [...bar.children];
+    const gap = parseFloat(getComputedStyle(bar).gap) || 8;
+    let need = gap * Math.max(0, kids.length - 1);
+    kids.forEach(el => { if (!el.id || el.id !== 'falcon-progress-wrap') need += el.id === 'falcon-type-chips-in' ? el.scrollWidth : el.offsetWidth; });   // the chips shrink to fit: count what they hold
+    bar.classList.toggle('falcon-compact', need > bar.clientWidth - 20);   // minus h-padding
+  }
+  function fitBars() {
+    if (!panel) return;
+    panel.querySelectorAll('.falcon-bar').forEach(fitBar);
+  }
+
+  function ensurePanel() {
+    if (panel) return;
+    const style = document.createElement('style');
+    // tokens first, then the shared components, then Falcon's own rules — the
+    // token block has to be in the same sheet or every var() below resolves to
+    // nothing (#562)
+    style.textContent = MBU_TOKENS + MBU_UI_CSS + [
+      // #532 follow-up (majkinetor): "disamb. comment hint looks like its normal
+      // text". Both meta inputs are styled identically — the ISRC one only READ
+      // as a hint because it happens to be monospace, so the disambiguation one
+      // looked like a value already typed in. Placeholders say so explicitly now
+      // (and MusicBrainz's own page CSS was darkening the browser default).
+      '#falcon-panel input::placeholder{color:var(--mbu-text-weak);font-style:italic;opacity:1}',
+      '.falcon-bar.falcon-compact .falcon-bt{display:none}',
+      // #663: the open tab is marked; the select-all box and the selection count head the rows
+      '#falcon-hdr .falcon-tab{border-bottom:2px solid transparent!important;padding:2px 4px}',
+      '#falcon-hdr .falcon-tab.falcon-tab-on{border-bottom-color:var(--mbu-warn)!important;font-weight:700}',
+      // #705: the shared log viewer fills the Log tab
+      '#falcon-body-log>.mbu-logemb{flex:1 1 auto;min-height:0}',
+      '.falcon-selhead{display:inline-flex;align-items:center;gap:6px}',
+      'th.falcon-selhead{display:table-cell}',
+      // the titles start where the values' text does: the cell's 4px plus the input's 7px padding and 1px border
+      '.falcon-grid th:not(.falcon-selhead){padding-left:12px!important}',
+      // the header icon sits over the row icons: centred, no title padding
+      '.falcon-grid th.falcon-videohead{padding:6px 0!important;text-align:center}',
+      '.falcon-grid th.falcon-videohead>input{margin:0!important;width:18px!important;height:18px!important;vertical-align:middle}',
+      '.falcon-selhead .falcon-selcount{color:var(--mbu-warn);font-weight:700;font-size:11px}',
+      '.falcon-xp{border:none;background:none!important;cursor:pointer;color:var(--mbu-text-dim);font-size:13px;line-height:1;width:20px;height:20px;padding:0;display:inline-flex;align-items:center;justify-content:center}',
+      '.falcon-lbl .falcon-lplus{border:none;background:none!important;cursor:pointer;color:var(--mbu-ok);font-size:13px;line-height:1;padding:0 0 0 5px}',
+      '.falcon-grid .falcon-gsum{font-size:10px;color:var(--mbu-text-weak);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}',
+      '.falcon-grid tr.falcon-sub>td{padding:4px 4px 8px 0!important}',
+      '.falcon-grid .falcon-form{grid-template-columns:92px minmax(0,1fr);column-gap:4px;padding:2px 0 0}',
+      '.falcon-grid td,.falcon-grid th{border-bottom-color:var(--mbu-border)!important}',
+      '#falcon-queue-list{scrollbar-width:thin}',
+      '#falcon-queue-list::-webkit-scrollbar{width:8px;height:8px}',
+      '#falcon-queue-list::-webkit-scrollbar-thumb{background:var(--mbu-border);border-radius:4px}',
+      '.falcon-lhead{position:sticky;top:0;z-index:1;background:var(--mbu-bg);padding:4px 0;border-bottom:1px solid var(--mbu-border)}',
+      '.falcon-als{display:flex;flex-direction:column;gap:3px;min-width:0;align-items:stretch}',
+      '.falcon-al{display:grid;grid-template-columns:minmax(0,1fr) 64px 18px;gap:6px;align-items:center}',
+      '.falcon-al input.falcon-alias-loc{font-family:var(--mbu-font-mono);font-size:10.5px!important}',
+      '.falcon-al .falcon-alias-del{border:none;background:none!important;cursor:pointer;color:var(--mbu-text-weak);padding:0}',
+      '.falcon-alias-plus{align-self:flex-start;border:1px solid var(--mbu-border);background:none!important;color:var(--mbu-ok);cursor:pointer;border-radius:9px;font-size:11px;line-height:1;padding:1px 0;width:20px}',
+      '.falcon-ln{grid-template-columns:minmax(0,1fr) auto 20px 18px!important}',
+      '.falcon-ln a.falcon-lst{text-align:center;text-decoration:none;font-size:11px}',
+      '.falcon-ln-new>input.falcon-link-new{grid-column:1 / -1}',
+      '.falcon-ltb{display:inline-flex;align-items:center;padding:0 3px 0 0!important}',
+      '.falcon-lt select{appearance:none;-webkit-appearance:none;border:none!important;background:transparent!important;color:inherit;font:inherit;font-size:9.5px;padding:0 0 0 6px!important;cursor:pointer;max-width:130px;min-width:0}',
+      '.falcon-lt{gap:2px!important}',
+      '.falcon-lt .falcon-ltb{padding:0 2px 0 0!important;flex:0 0 auto}',
+      '.falcon-lt .falcon-ltb button{padding:0 1px 0 2px!important}',
+      '.falcon-ltb-new{outline:1px dashed var(--mbu-ok)}',
+      '.falcon-lauto{background:none!important;color:var(--mbu-text-weak)!important;font-style:italic}',
+      '.falcon-link-type-add{border:1px solid var(--mbu-border);background:none!important;color:var(--mbu-ok);cursor:pointer;border-radius:9px;font-size:11px;line-height:1;padding:1px 0;width:20px}',
+      '.falcon-ln input.falcon-link-url{padding:2px 6px!important;font-size:11px}',
+      '.falcon-lt span button{border:none;background:none!important;color:inherit;cursor:pointer;padding:0 0 0 3px;font-size:9px;line-height:1}',
+      '.falcon-ln .falcon-link-del{border:none;background:none!important;cursor:pointer;color:var(--mbu-text-weak);padding:0}',
+      // #663: the open row is a labelled form (list view), or every row is one grid line
+      '.falcon-form{display:grid;grid-template-columns:max-content minmax(0,1fr);gap:5px 10px;align-items:center;padding:4px 6px 9px 30px;font-size:11px}',
+      '.falcon-form>.falcon-lbl{color:var(--mbu-text-weak);text-align:right;font-size:10.5px;white-space:nowrap}',
+      '.falcon-form input[type=text],.falcon-grid input[type=text]{width:100%;box-sizing:border-box;min-width:0;font-size:11px;padding:3px 7px;border:1px solid var(--mbu-border);border-radius:4px}',
+      '.falcon-form input.falcon-isrc-input,.falcon-grid input.falcon-isrc-input{font-family:var(--mbu-font-mono)}',
+      '.falcon-form input.falcon-renamed{border-color:var(--mbu-accent)}',
+      '.falcon-chips{display:flex;align-items:center;gap:5px;flex-wrap:wrap;min-width:0}',
+      '.falcon-chips>input[type=text]{flex:1 1 140px;width:auto}',
+      '.falcon-chip{display:inline-flex;align-items:center;gap:3px;background:var(--mbu-bg-raised);border:1px solid var(--mbu-border);border-radius:10px;padding:0 3px 0 7px;max-width:100%;white-space:nowrap}',
+      '.falcon-chip .falcon-loc{font-size:9.5px;color:var(--mbu-text-weak)}',
+      '.falcon-chip button{border:none;background:none!important;cursor:pointer;color:var(--mbu-text-weak);font-size:10px;line-height:1;padding:2px 3px}',
+      '.falcon-links{display:flex;flex-direction:column;gap:2px;min-width:0}',
+      '.falcon-ln{display:grid;grid-template-columns:12px 62px minmax(0,1fr) auto;gap:6px;align-items:center}',
+      '.falcon-ln .falcon-svc{font-size:9.5px;font-weight:600;text-transform:uppercase;letter-spacing:.04em;color:var(--mbu-text-weak);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}',
+      '.falcon-ln a{color:var(--mbu-info);text-decoration:none;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}',
+      '.falcon-lt{display:flex;gap:3px;flex-wrap:wrap;justify-content:flex-end}',
+      '.falcon-lt span{font-size:9.5px;padding:0 7px;border-radius:9px;background:var(--mbu-ok-bg);color:var(--mbu-ok);white-space:nowrap}',
+      '.falcon-more{border:none;background:none!important;color:var(--mbu-accent-text);cursor:pointer;font-size:10.5px;padding:0;align-self:flex-start}',
+      '.falcon-video-lbl{display:inline-flex;align-items:center;gap:6px;color:var(--mbu-text-dim);cursor:pointer}',
+      '.falcon-grid{width:100%;border-collapse:collapse;font-size:11px;table-layout:fixed}',
+      '.falcon-grid th{position:sticky;top:0;z-index:1;background:var(--mbu-bg);text-align:left;font-weight:500;font-size:9.5px;text-transform:uppercase;letter-spacing:.05em;color:var(--mbu-text-weak);padding:6px 4px;border-bottom:1px solid var(--mbu-border);white-space:nowrap}',
+      '.falcon-grid td{overflow:hidden;padding:2px 4px;border-bottom:1px solid var(--mbu-border-soft);vertical-align:middle}',
+      '.falcon-grid td:has(>.falcon-video-input){padding:2px 0;text-align:center;overflow:visible}',
+      '.falcon-grid input.falcon-video-input{margin:0!important;flex:none;width:18px!important;height:18px!important}',   // #663: the checked Video box was clipped on its right
+      '.falcon-grid input[type=text]{border-color:transparent;background:transparent!important}',
+      '.falcon-grid input[type=text]:hover{border-color:var(--mbu-border)}',
+      '.falcon-grid input[type=text]:focus{border-color:var(--mbu-accent);background:var(--mbu-bg-sunken)!important}',
+      '.falcon-grid .falcon-chips{flex-wrap:nowrap;overflow:hidden}',
+      '.falcon-grid .falcon-chips>input[type=text]{flex:1 1 70px;min-width:60px}',
+      '.falcon-grid-links{border:none;background:none!important;color:var(--mbu-info);cursor:pointer;font-size:11px;padding:2px 4px;white-space:nowrap}',
+      '.falcon-grid tr.falcon-sub>td{padding:4px 8px 8px 40px;background:var(--mbu-bg-sunken)}',
+      '.falcon-bar button{display:inline-flex;align-items:center;gap:5px;white-space:nowrap}',
+      // Borderless (majkinetor: "its too intrusive"). A row of boxed native
+      // buttons competes with the queue list, which is the actual content. The
+      // affordance moves to hover, so a button still reads as a button when you
+      // go for it without drawing a frame around itself the rest of the time.
+      // #falcon-run keeps its solid fill — it sets background inline, which wins
+      // over this, and the primary action should stay the loud one.
+      // min-height matters: the native border was quietly providing 4px of the
+      // hit area, so dropping it shrank these to 16px tall. Targets stay
+      // generous whether or not there's a box drawn around them (#419).
+      '.falcon-bar button{background:none;border:none;border-radius:4px;color:inherit;padding:3px 8px;min-height:22px}',
+      '.falcon-bar button:hover:not(:disabled){background:rgba(0,0,0,.08)}',
+      '.falcon-bar button:active:not(:disabled){background:rgba(0,0,0,.14)}',
+      // disabled used to read as a greyed box; with no box it has to fade instead
+      '.falcon-bar button:disabled{opacity:.4;cursor:default}',
+      '.falcon-bar .falcon-bi{display:inline-flex;line-height:1}',
+      // with the label gone the button would shrink to a sliver of glyph, so
+      // give the icon-only state a real hit area (no tiny targets — #419).
+      '.falcon-bar.falcon-compact button{min-width:26px;justify-content:center}',
+      // #519 (majkinetor): "Just like with CH and Apollo (#412) lets have
+      // progress bar flashing while operation is in process as a visual
+      // marker that operation is in progress." Same pulsing-background idea
+      // as #412's toolbars.
+      // #519 follow-up (majkinetor, live: "It doesn't work") — the pulse was
+      // on #falcon-progress-bar, the FILL, which sits at 0% width (0px, no
+      // visible box at all) for as long as nothing has finished yet — a
+      // filter on an invisible box is itself invisible. Moved to the TRACK
+      // behind it, which is always full width regardless of progress %.
+      // #546 (majkinetor): "On a release with lots of recordings, it appears
+      // nothing happen when you use 'Add from release' … it takes around 20s
+      // to load all. The only way to tell is that Add from release button is
+      // grayed - nothing else happens, including log." A disabled button reads
+      // as "not available", not as "working" — so a busy toolbar button spins.
+      // The glyph is hidden with font-size:0 rather than replaced, so the
+      // icon-only collapsed state (#419/toolbar rule) keeps its hit area.
+      '@keyframes falcon-spin{to{transform:rotate(360deg)}}',
+      '.falcon-bar button.falcon-busy{opacity:1;cursor:progress}',
+      '.falcon-bar button.falcon-busy .falcon-bi{font-size:0;width:11px;height:11px;box-sizing:border-box;'
+        + 'border:2px solid rgba(27,42,74,.25);border-top-color:#1b2a4a;border-radius:50%;animation:falcon-spin .7s linear infinite}',
+      '@keyframes falcon-progress-pulse{0%,100%{background:var(--mbu-bg-sunken)}50%{background:var(--mbu-ok-bg)}}',
+      '#falcon-progress-track.falcon-running{animation:falcon-progress-pulse 1.1s ease-in-out infinite}',
+    ].join('\n');
+    document.head.appendChild(style);
+    panel = document.createElement('div'); panel.id = 'falcon-panel';
+    // #495 (majkinetor, live: "if I first maximize the page, it doesn't go
+    // empty... in unmaximized state it is simply moved off window" —
+    // reproduced: the panel's own box was rendering as short as ~170px,
+    // squeezing every row onto one sliver instead of showing normally).
+    // Root cause: `max-height` alone doesn't give a `display:flex` column an
+    // actual height to distribute — without a real `height`, #falcon-queue-list's
+    // `flex:1` has no space to grow into and the whole panel just shrinks to
+    // its non-flexible children's content size, which collapses hard on a
+    // smaller viewport/queue. A real `height` alongside the existing
+    // `max-height` cap fixes it (viewport-capped either way, just no longer
+    // degenerate on the way there).
+    // #508 (majkinetor): "make window resizable" — native CSS resize (a drag
+    // grip in the bottom-right corner); needs overflow != visible, which the
+    // panel already has. min-width/min-height keep it from collapsing into
+    // the flex column laid out below.
+    // #513 (majkinetor): "Make window wider if needed to fit the chips" — the
+    // header can now carry up to 4 status chips (failed/partial/manual/
+    // skipped, once #513's own follow-up added skipped to the list) — even
+    // 600px clipped the 4th chip against the tab buttons (measured live).
+    panel.style.cssText = 'display:none;flex-direction:column;position:fixed;z-index:2147483647;left:50%;top:50%;transform:translate(-50%,-50%);width:700px;max-width:90vw;height:70vh;max-height:70vh;min-width:340px;min-height:320px;resize:both;background:var(--mbu-bg);color:var(--mbu-text);border-radius:8px;font:12px -apple-system,Segoe UI,Arial,sans-serif;box-shadow:0 8px 28px rgba(0,0,0,.28);border:1px solid var(--mbu-border);overflow:hidden';
+    panel.innerHTML = `
+      <div id="falcon-hdr" style="display:flex;align-items:center;gap:6px;padding:8px 10px;background:#1b2a4a;color:#fff;cursor:move;user-select:none">
+        <span style="display:flex;color:var(--mbu-warn)">${ICON}</span>
+        <span style="flex:0 0 auto;font-weight:700">${NAME}</span>
+        <div id="falcon-status-chips" style="display:flex;gap:5px;flex:1;overflow-x:auto;overflow-y:hidden;min-width:0"></div>
+        <button type="button" id="falcon-tab-queue" class="falcon-tab" style="background:none;border:none;color:#fff;cursor:pointer;font:inherit">Queue</button>
+        <button type="button" id="falcon-tab-workers" class="falcon-tab" style="background:none;border:none;color:#fff;cursor:pointer;font:inherit">Workers</button>
+        <button type="button" id="falcon-tab-log" class="falcon-tab" style="margin-right:14px;background:none;border:none;color:#fff;cursor:pointer;font:inherit">Log</button>
+        <button type="button" id="falcon-tab-options" class="falcon-tab" title="Options" style="background:none;border:none;color:#fff;cursor:pointer;font:inherit;font-size:14px">${MBU_CFG_ICON}</button>
+        <button type="button" id="falcon-maximize" title="Maximize" style="background:none;border:none;color:#fff;cursor:pointer;font:inherit;font-size:14px">⛶</button>
+        <button type="button" id="falcon-close" style="background:none;border:none;color:#fff;cursor:pointer;font:inherit;font-size:14px">✕</button>
+      </div>
+      <div id="falcon-body-queue" style="padding:0;overflow:hidden;flex:1;display:flex;flex-direction:column">
+        <div id="falcon-queue-toolbar" class="falcon-bar" style="display:flex;align-items:center;gap:10px;padding:6px 10px;border-bottom:1px solid var(--mbu-border);font-size:11px;color:var(--mbu-text);flex:0 0 auto">
+          <button type="button" id="falcon-add-page" title="Add this release's entities to the queue as empty rows to edit" style="padding:2px 8px;cursor:pointer;display:none"><span class="falcon-bi">+</span><span class="falcon-bt">Add from release</span></button>
+          <button type="button" id="falcon-import" title="Load a queue from a JSON file" style="padding:2px 8px;cursor:pointer"><span class="falcon-bi">↓</span><span class="falcon-bt">Import</span></button>
+          <button type="button" id="falcon-export" title="Save the queue — and each item's outcome — to a JSON file" style="margin-left:auto;padding:2px 8px;cursor:pointer"><span class="falcon-bi">↑</span><span class="falcon-bt">Export</span></button>
+          <input type="file" id="falcon-import-file" accept="application/json,.json" style="display:none" />
+        </div>
+        <div id="falcon-type-chips" class="falcon-bar" style="display:flex;align-items:center;gap:6px;padding:6px 10px;border-bottom:1px solid var(--mbu-border);font-size:11px;flex:0 0 auto">
+          <span id="falcon-type-chips-in" style="display:flex;gap:6px;flex-wrap:nowrap;overflow:hidden;min-width:0"></span>
+          <button type="button" id="falcon-remove-selected" disabled title="Remove the selected rows from the queue" style="margin-left:auto;padding:2px 8px;cursor:pointer"><span class="falcon-bi">🗑</span><span class="falcon-bt">Remove selected</span></button>
+          <button type="button" id="falcon-view-toggle" style="padding:2px 8px;cursor:pointer" title="Switch between the list and the grid"><span class="falcon-bi">▦</span><span class="falcon-bt">Grid</span></button>
+        </div>
+        <div id="falcon-queue-list" style="overflow:auto;flex:1;padding:0 10px"></div>
+        <div id="falcon-notepanel" style="display:none;padding:8px 10px;border-top:1px solid var(--mbu-border);background:var(--mbu-bg-sunken);flex:0 0 auto">
+          <div style="display:flex;align-items:baseline;gap:8px;margin-bottom:5px">
+            <span style="font-weight:600;font-size:11px;flex:0 0 auto">Batch edit note</span>
+            <span style="color:var(--mbu-text-weak);font-size:10.5px;flex:1 1 auto;min-width:0">Appended to every edit this run makes &mdash; say why, so a voter can see it.</span>
+          </div>
+          <textarea id="falcon-note-text" rows="3" placeholder="e.g. Conforming release group titles to the series' standard"
+            style="width:100%;box-sizing:border-box;font:12px var(--mbu-font);padding:5px 7px;border:1px solid var(--mbu-border);border-radius:4px;background:var(--mbu-bg);color:var(--mbu-text);resize:vertical"></textarea>
+        </div>
+        <div id="falcon-queue-bottom" class="falcon-bar" style="display:flex;gap:8px;align-items:center;padding:8px 10px;border-top:1px solid var(--mbu-border);flex:0 0 auto">
+          <div id="falcon-progress-wrap" style="flex:1;display:flex;align-items:center;gap:6px;min-width:0">
+            <div id="falcon-progress-track" style="flex:1;height:8px;background:var(--mbu-bg-sunken);border-radius:4px;overflow:hidden;min-width:40px">
+              <div id="falcon-progress-bar" style="height:100%;width:0%;background:#2e9e5b;transition:width .2s"></div>
+            </div>
+            <span id="falcon-progress-text" style="color:var(--mbu-text-dim);font-size:10px;white-space:nowrap;flex:0 0 auto"></span>
+          </div>
+          <button type="button" id="falcon-note-btn" title="Batch edit note &mdash; appended to every edit in this run" style="flex:0 0 auto;padding:4px 10px;cursor:pointer"><span class="falcon-bi">&#9998;</span><span class="falcon-bt">Note</span></button>
+          <div id="falcon-run-split" style="flex:0 0 auto;display:flex;position:relative">
+            <button type="button" id="falcon-run" title="Start processing the queue" style="padding:4px 12px;font-weight:700;cursor:pointer;background:#1b2a4a;color:#fff;border:none;border-radius:4px 0 0 4px;justify-content:center"><span class="falcon-bi">▶</span><span class="falcon-bt">Start</span></button>
+            <button type="button" id="falcon-run-more" title="More: Retry failed" style="padding:4px 8px;cursor:pointer;background:#1b2a4a;color:#fff;border:none;border-left:1px solid rgba(255,255,255,.25);border-radius:0 4px 4px 0;font-size:10px">▾</button>
+            <div id="falcon-run-menu" style="display:none;position:absolute;right:0;bottom:calc(100% + 4px);z-index:5;background:var(--mbu-bg-raised);border:1px solid var(--mbu-border);border-radius:6px;box-shadow:0 4px 14px rgba(0,0,0,.25);padding:4px;min-width:150px">
+              <button type="button" id="falcon-retry-failed" disabled title="Re-queue every failed/partial item for another attempt — useful when MusicBrainz was just slow, not when an item is genuinely broken" style="display:flex;width:100%;gap:6px;padding:4px 8px;cursor:pointer;border:none;background:none;text-align:left;color:var(--mbu-text)"><span>↻</span><span>Retry failed</span></button>
+            </div>
+          </div>
+        </div>
+        <div id="falcon-cover-warning" style="display:none;padding:5px 10px;background:var(--mbu-warn-bg);color:var(--mbu-warn);font-size:10.5px;border-top:1px solid var(--mbu-warn);flex:0 0 auto"></div>
+      </div>
+      <div id="falcon-body-workers" style="position:absolute;left:-100000px;top:0;width:1200px;height:800px;overflow:auto;display:block;padding:8px 10px;">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;color:var(--mbu-text-weak)">
+          <span style="flex:1">Live worker iframes — each one loads an entity's edit page, fills it, submits, then moves to the next queued item.</span>
+          <label style="display:flex;align-items:center;gap:5px;flex:0 0 auto" title="How large each worker card is drawn — bigger cards make it easier to read what a worker is actually showing">
+            <span>size</span>
+            <input type="range" id="falcon-worker-size" min="200" max="900" step="20" style="width:110px" />
+            <span id="falcon-worker-size-val" style="width:34px;text-align:right"></span>
+          </label>
+        </div>
+        <div id="falcon-workers" style="display:flex;gap:8px;flex-wrap:wrap"></div>
+        <div id="falcon-workers-empty" style="display:none;color:var(--mbu-text-weak);padding:8px 0">No active workers right now — idle ones are hidden here. Click ▶ Start to begin.</div>
+      </div>
+      <div id="falcon-body-log" style="display:none;padding:0;overflow:hidden;flex:1;flex-direction:column"></div>
+      <div id="falcon-body-options" style="display:none;overflow:auto;flex:1;padding:10px;flex-direction:column;gap:10px">
+        <div style="display:flex;align-items:baseline;gap:8px;padding-bottom:8px;border-bottom:1px solid var(--mbu-border)">
+          <span style="flex:1;font-weight:700;color:var(--mbu-info)">${NAME} <span style="opacity:.6;font-weight:400">v${scriptVersion()}</span></span>
+          <a href="${HELP_URL}" target="_blank" rel="noopener" style="color:var(--mbu-info);text-decoration:none;font-weight:600">? Help</a>
+        </div>
+        <label style="display:flex;align-items:center;gap:7px;cursor:pointer" title="The floating corner icon is optional — the panel is always reachable via Ctrl+Alt+F either way">
+          <input type="checkbox" id="falcon-opt-hide-launcher" /> <span>Hide ${NAME} icon</span>
+        </label>
+        <label style="display:flex;align-items:center;gap:7px;cursor:pointer" title="If a release already has cover art, skip adding another instead of uploading blind — Harmony offers cover art whether or not the release already has some">
+          <input type="checkbox" id="falcon-opt-cover-only-if-none" /> <span>Add covers only when there aren't any</span>
+        </label>
+        <!-- majkinetor: "Group harmony options under 1 section". Three of these
+             only ever apply to a batch arriving from Harmony, so they read as a
+             set rather than as three unrelated toggles that happen to repeat the
+             word. The heading carries the context, so the labels drop it. -->
+        <fieldset style="border:1px solid var(--mbu-border);border-radius:5px;margin:2px 0 0;padding:6px 10px 8px;display:flex;flex-direction:column;gap:10px">
+          <legend style="padding:0 5px;font-weight:600;color:var(--mbu-info);font-size:11px">
+            <a href="https://harmony.pulsewidth.org.uk/" target="_blank" rel="noopener" style="color:inherit;text-decoration:none" title="Harmony — the importer these options apply to">Harmony</a>
+          </legend>
+          <label style="display:flex;align-items:center;gap:7px;cursor:pointer" title="Ignore the cover art Harmony offers. The URL Harmony gives is whatever the provider's API returns, which is often not the largest that provider will serve, so if you upload covers with ECAU or Art Station instead, this keeps Falcon out of it — links, ISRCs, disambiguations and aliases still come through">
+            <input type="checkbox" id="falcon-opt-skip-harmony-covers" /> <span>Ignore cover art</span>
+          </label>
+          <label style="display:flex;align-items:center;gap:7px;cursor:pointer" title="Press 'Send to Falcon' for you once a Harmony import finishes and its actions have settled, instead of waiting for you to click it. A short countdown shows on the button first — click it to cancel. With 'Auto start import' below also on, a finished Harmony import carries straight through to a finished Falcon run.">
+            <input type="checkbox" id="falcon-opt-auto-send-harmony" /> <span>Auto send</span>
+          </label>
+          <label style="display:flex;align-items:center;gap:7px;cursor:pointer" title="Start processing the queue immediately after 'Send to Falcon' from Harmony, instead of waiting for you to click Start">
+            <input type="checkbox" id="falcon-opt-auto-start-harmony" /> <span>Auto start import</span>
+          </label>
+          <label style="display:flex;align-items:center;gap:7px;cursor:pointer" title="When a Harmony import finishes with nothing failed, reload the MusicBrainz release page so it shows what Falcon just added instead of the state it had before the run. The run's log survives the reload, and Falcon's corner icon turns green on a page it reloaded so you can tell which tab it was among many.">
+            <input type="checkbox" id="falcon-opt-reload-after-import" /> <span>Reload release page after import without errors</span>
+          </label>
+          <label style="display:flex;align-items:center;gap:7px;cursor:pointer" title="On: 'Send to Falcon' opens MusicBrainz in a new tab (today's behavior). Off: navigates this same Harmony tab to MusicBrainz instead">
+            <input type="checkbox" id="falcon-opt-open-new-tab" /> <span>Open in new tab</span>
+          </label>
+          <label style="display:flex;align-items:center;gap:7px;cursor:pointer" title="When a run finishes, hand the release to Picard by itself. The MusicBrainz URL always carries ?tport= with this port, so MusicBrainz's own green tagger button is there to click either way — untick this to import only the releases you choose. Picard must be running with 'Browser integration' enabled, listening on this port (its default is 8000).">
+            <input type="checkbox" id="falcon-opt-picard" /> <span>Automatically send to Picard using port</span>
+            <input type="number" id="falcon-opt-picard-port" min="1" max="65535" style="width:62px" />
+          </label>
+        </fieldset>
+        <label style="display:flex;align-items:center;gap:7px" title="How many entities are processed at once — each worker is its own iframe submitting independently">
+          <span>Workers</span> <input type="number" id="falcon-worker-count" min="1" max="6" style="width:40px" />
+        </label>
+        <label style="display:flex;align-items:center;gap:7px" title="Each run keeps its own log, selectable later from the Log tab's history dropdown — older ones beyond this count are dropped">
+          <span>Keep last</span> <input type="number" id="falcon-opt-log-history-count" min="1" max="100" style="width:48px" /> <span>run logs</span>
+        </label>
+      </div>`;
+    document.body.appendChild(panel);
+    // the panel is drag-resizable as well as maximizable, so the bars have to
+    // re-fit continuously, not just on the events we happen to hook.
+    try { new ResizeObserver(() => fitBars()).observe(panel); } catch (e) {}
+    document.getElementById('falcon-close').onclick = () => { panel.style.display = 'none'; };
+    document.getElementById('falcon-maximize').onclick = toggleMaximize;
+    const wIn = document.getElementById('falcon-worker-count'); wIn.value = cfg.workers;
+    wIn.onchange = () => { cfg.workers = wIn.value; wIn.value = cfg.workers; };
+    // ── JSON import / export ────────────────────────────────────────────────
+    // (majkinetor: "lets remove + and add json import/export instead")
+    //
+    // The paste box this replaces only understood Falcon's own `mbid,url` line
+    // format, which nothing else produces. A queue is far more useful as a file:
+    // it outlives the tab, it can be prepared elsewhere, and — because the
+    // export carries each item's STATUS and per-url outcome — a partly-finished
+    // run can be handed to someone else, kept as a record, or re-imported to
+    // retry just the parts that failed.
+    //
+    // parsePaste stays: the `?falcon=` url and the Harmony button still use it.
+    document.getElementById('falcon-export').onclick = () => {
+      if (!queue.length) { log('warn', 'nothing to export — the queue is empty'); return; }
+      const payload = {
+        falcon: scriptVersion(),
+        exported: new Date().toISOString(),
+        ...(batchNote() ? { note: batchNote() } : {}),
+        items: queue.map(i => {
+          const item = {
+            entityType: i.entityType, mbid: i.mbid, name: i.name || null, note: i.note || '',
+            urls: i.urls.map(u => ({ url: u.url, linkTypeId: u.linkTypeId || null })),
+            status: i.status, error: i.error || '', urlResults: i.urlResults || null,
+          };
+          // #496: disambiguation (recording) and cover[] (release) are
+          // type-specific — only including them where the type actually uses
+          // them, same reasoning as isrcs[] just below.
+          if (DISAMBIGUATABLE.has(i.entityType)) item.disambiguation = i.disambiguation || '';
+          // #571: only written when it actually carries one. Exporting an empty
+          // `rename` on every row would turn the export into a template that
+          // looks like it renames things, and a round-trip through Export →
+          // Import must never acquire an edit nobody asked for.
+          if (RENAMEABLE.has(i.entityType) && (i.rename || '').trim()) item.rename = i.rename.trim();
+          if (i.entityType === 'recording') { item.isrcs = i.isrcs || []; item.video = i.video === true; }
+          // #535: aliases exist on every type, so they are exported whenever
+          // the item has any — and the export doubles as the JSON template.
+          if ((i.aliases || []).length) item.aliases = i.aliases.map(a => ({ name: a.name, locale: a.locale || '', type: a.type || '', primary: !!a.primary, sortName: a.sortName || '', begin: a.begin || '', end: a.end || '', ended: !!a.ended }));
+          if (i.aliasResults) item.aliasResults = i.aliasResults;
+          if (i.source) item.source = i.source;
+          // #494/#496: cover art is a release item's whole payload — an
+          // array of {url, comment, type, candidates}, one entry per image.
+          if (i.entityType === 'release') item.cover = (i.cover || []).map(c => ({ url: c.url || '', comment: c.comment || '', type: c.type || 'Front', candidates: c.candidates || [] }));
+          return item;
+        }),
+      };
+      const name = `falcon-queue-${new Date().toISOString().slice(0, 19).replace(/[:T]/g, '-')}.json`;
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' }));
+      a.download = name;
+      document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(() => { try { URL.revokeObjectURL(a.href); } catch (e) {} }, 10000);
+      log('info', `exported ${queue.length} item(s) to ${name}`);
+    };
+    // #517 (majkinetor, live: "MB Is slowish today... is there anything to
+    // be done here (like providing an option to wait more, retry/continue
+    // from failed step etc.)" — proved by hand that the SAME items commit
+    // fine on a second try, so the failure was transient (MB being slow),
+    // not the item being broken. Re-queuing is the direct fix: reset a
+    // failed/partial item back to 'queued' — same starting state a fresh
+    // import would give it — so the next Start naturally picks it up again.
+    document.getElementById('falcon-retry-failed').onclick = () => {
+      const retryable = queue.filter(i => i.status === 'failed' || i.status === 'partial');
+      if (!retryable.length) return;
+      retryable.forEach(i => { i.status = 'queued'; i.error = ''; i.urlResults = null; i.timing = undefined; });
+      log('info', `re-queued ${retryable.length} failed/partial item(s) for another attempt`);
+      renderQueue();
+    };
+    // #532: only offered where there is actually something to add — a release
+    // page (its tracklist, artists, labels, RG) or a release-group page.
+    (function wireAddFromPage() {
+      const btn = document.getElementById('falcon-add-page'); if (!btn) return;
+      const ctx = pageEntityContext();
+      if (!ctx) return;                       // stays display:none elsewhere
+      btn.style.display = '';
+      const bt = btn.querySelector('.falcon-bt');
+      if (bt) bt.textContent = ctx.kind === 'release-group' ? 'Add from group'
+        : ctx.kind === 'series' ? 'Add from series' : 'Add from release';
+      // #572: a series page cannot label its own menu until we know whether it
+      // holds release groups or releases, so read it once on first open and
+      // cache — the menu then names what is actually in there, with counts.
+      let seriesInfo = null;
+      btn.onclick = async () => {
+        document.querySelectorAll('.falcon-addmenu').forEach(m => m.remove());
+        if (ctx.kind === 'series' && !seriesInfo) {
+          log('info', 'reading this series from MusicBrainz…');
+          setBtnBusy(btn, true, { label: 'Reading…', title: 'Reading this series from MusicBrainz — see the Log tab' });
+          try { seriesInfo = await fetchSeriesMembers(ctx.mbid); }
+          catch (e) { log('error', `could not read this series — ${e.message || e}`); setBtnBusy(btn, false); return; }
+          finally { setBtnBusy(btn, false); }
+          if (!seriesInfo.members.length) {
+            log('warn', 'this series lists no release groups or releases — nothing Falcon can queue from it');
+            return;
+          }
+          log('info', `series "${seriesInfo.name}" (${seriesInfo.type || 'unknown type'}) — ${seriesInfo.members.length} member(s)`);
+        }
+        const menu = document.createElement('div');
+        menu.className = 'falcon-addmenu';
+        const r = btn.getBoundingClientRect();
+        menu.style.cssText = `position:fixed;left:${Math.round(r.left)}px;top:${Math.round(r.bottom + 4)}px;z-index:2147483647;`
+          + 'background:var(--mbu-bg);border:1px solid var(--mbu-border);border-radius:6px;box-shadow:0 8px 24px rgba(0,0,0,.2);padding:8px 10px;font-size:12px;color:var(--mbu-text);min-width:210px';
+        const rgOnly = ctx.kind === 'release-group';
+        const isSeries = ctx.kind === 'series';
+        const seriesRgs = isSeries ? seriesInfo.members.filter(m => m.entityType === 'release_group') : [];
+        const seriesRels = isSeries ? seriesInfo.members.filter(m => m.entityType === 'release') : [];
+        if (isSeries) {
+          menu.innerHTML =
+            `<div style="font-weight:600;margin-bottom:6px">Add from series</div>`
+            + `<div style="color:var(--mbu-text-weak);margin-bottom:6px;max-width:260px">${esc(seriesInfo.name || '')}</div>`
+            + (seriesRgs.length
+              ? `<label style="display:block;margin:3px 0"><input type="checkbox" data-w="series_rg" checked> Release groups <span style="color:var(--mbu-text-weak)">(${seriesRgs.length})</span></label>`
+                + '<label style="display:block;margin:3px 0"><input type="checkbox" data-w="series_rg_releases"> Releases <span style="color:var(--mbu-text-weak)">(all in those groups)</span></label>'
+              : '')
+            + (seriesRels.length
+              ? `<label style="display:block;margin:3px 0"><input type="checkbox" data-w="series_release" checked> Releases <span style="color:var(--mbu-text-weak)">(${seriesRels.length})</span></label>`
+                + '<label style="display:block;margin:3px 0"><input type="checkbox" data-w="series_release_rg"> Release groups <span style="color:var(--mbu-text-weak)">(of those releases, one request each)</span></label>'
+              : '')
+            + '<div style="margin-top:8px;display:flex;gap:6px;justify-content:flex-end">'
+            + '<button type="button" data-a="cancel" style="padding:2px 8px;cursor:pointer">Cancel</button>'
+            + '<button type="button" data-a="ok" style="padding:2px 10px;cursor:pointer;font-weight:600">Add</button></div>';
+        } else menu.innerHTML =
+          '<div style="font-weight:600;margin-bottom:6px">Add to queue</div>'
+          + (rgOnly ? '' : '<label style="display:block;margin:3px 0"><input type="checkbox" data-w="recording" checked> Recordings <span style="color:var(--mbu-text-weak)">(tracklist)</span></label>')
+          + (rgOnly
+            ? '<label style="display:block;margin:3px 0"><input type="checkbox" data-w="release"> Releases <span style="color:var(--mbu-text-weak)">(all in this group)</span></label>'
+            : '<label style="display:block;margin:3px 0"><input type="checkbox" data-w="release"> This release</label>')
+          + '<label style="display:block;margin:3px 0"><input type="checkbox" data-w="release_group"' + (rgOnly ? ' checked' : '') + '> Release group</label>'
+          + (rgOnly ? '' : '<label style="display:block;margin:3px 0"><input type="checkbox" data-w="artist"> Artists</label>')
+          + (rgOnly ? '' : '<label style="display:block;margin:3px 0"><input type="checkbox" data-w="label"> Labels</label>')
+          + '<div style="margin-top:8px;display:flex;gap:6px;justify-content:flex-end">'
+          + '<button type="button" data-a="cancel" style="padding:2px 8px;cursor:pointer">Cancel</button>'
+          + '<button type="button" data-a="ok" style="padding:2px 10px;cursor:pointer;font-weight:600">Add</button></div>';
+        document.body.appendChild(menu);
+        const close = () => { menu.remove(); document.removeEventListener('mousedown', off, true); };
+        const off = e => { if (!menu.contains(e.target) && e.target !== btn) close(); };
+        setTimeout(() => document.addEventListener('mousedown', off, true), 0);
+        menu.querySelector('[data-a="cancel"]').onclick = close;
+        menu.querySelector('[data-a="ok"]').onclick = async () => {
+          const want = {};
+          menu.querySelectorAll('input[data-w]').forEach(cb => { want[cb.dataset.w] = cb.checked; });
+          close();
+          // #546 (majkinetor): "The only way to tell is that Add from release
+          // button is grayed - nothing else happens, including log." Measured
+          // on his own release (e70b4221, 47 tracks): the ONE
+          // /ws/2/release?inc=recordings+artist-credits+labels+release-groups
+          // +media request took 20-45s against production MusicBrainz, while
+          // building the rows from the answer took 4ms and rendering them 15ms.
+          // So the wait is entirely MusicBrainz's, there is no work to split up
+          // or speed up, and the whole fix is to stop being silent about it:
+          // say what is being read BEFORE awaiting it, spin the button while
+          // waiting, keep saying so every 5s, and report how long it took.
+          // #572: the series branch resolves entirely from the membership we
+          // already read, plus (optionally) one browse per group / one lookup
+          // per release for the expansions. It returns early — none of the
+          // release/release-group wording below applies to a series.
+          if (isSeries) {
+            const picks = Object.keys(want).filter(k => want[k]);
+            if (!picks.length) { log('warn', 'nothing selected — tick at least one box'); return; }
+            setBtnBusy(btn, true, { label: 'Reading…', title: 'Building the queue from this series — see the Log tab' });
+            const waiting = beginWait('this series');
+            const tuples = [];
+            try {
+              if (want.series_rg) tuples.push(...seriesRgs.map(m => ({ entityType: 'release_group', mbid: m.mbid, name: m.name, note: '' })));
+              if (want.series_release) tuples.push(...seriesRels.map(m => ({ entityType: 'release', mbid: m.mbid, name: m.name, note: '' })));
+              if (want.series_rg_releases && seriesRgs.length) {
+                log('info', `reading the releases of ${seriesRgs.length} release group(s) — one request each, more for a large group…`);
+                for (let i = 0; i < seriesRgs.length; i++) {
+                  const rels = await fetchGroupReleases(seriesRgs[i].mbid);
+                  tuples.push(...rels);
+                  log('info', `…${i + 1}/${seriesRgs.length} group(s) read, ${tuples.length} row(s) so far`);
+                }
+              }
+              if (want.series_release_rg && seriesRels.length) {
+                log('info', `reading the release group of ${seriesRels.length} release(s) — one request each…`);
+                tuples.push(...await fetchReleaseGroupsOf(seriesRels));
+              }
+            } catch (e) {
+              log('error', `could not build the queue from this series — ${e.message || e}`);
+              waiting.done(); setBtnBusy(btn, false); return;
+            }
+            const ms = waiting.done();
+            setBtnBusy(btn, false);
+            if (!tuples.length) { log('warn', 'nothing to add from this series'); return; }
+            const res = addToQueue(tuples);
+            const by = tuples.reduce((a, t) => { a[t.entityType] = (a[t.entityType] || 0) + 1; return a; }, {});
+            log('info', `added ${res.added} row(s) from series "${seriesInfo.name}" (${Object.entries(by).map(([k, v]) => `${v} ${k}`).join(', ')})`
+              + (res.merged ? ` — ${res.merged} merged into rows already queued` : '')
+              + ` — ${(ms / 1000).toFixed(1)}s`);
+            renderQueue();
+            return;
+          }
+          const WANT_LABEL = { recording: 'recordings', release: rgOnly ? 'releases' : 'the release itself', release_group: 'the release group', artist: 'artists', label: 'labels' };
+          const picked = Object.keys(want).filter(k => want[k]);
+          if (!picked.length) { log('warn', 'nothing selected — tick at least one box'); return; }
+          const label = (rgOnly ? `this release group's ` : `this release's `) + picked.map(k => WANT_LABEL[k] || k).join(' + ');
+          log('info', `reading ${label} from MusicBrainz — one request, and a large release can keep it busy for 20-40s…`);
+          setBtnBusy(btn, true, { label: 'Reading…', title: 'Reading this page’s entities from MusicBrainz — see the Log tab' });
+          const waiting = beginWait(label);
+          let waitMs = 0;
+          try {
+            if (rgOnly) {
+              const tuples = [];
+              if (want.release_group) tuples.push({ entityType: 'release_group', mbid: ctx.mbid, name: null, note: '' });
+              if (want.release) {
+                const rels = await fetchGroupReleases(ctx.mbid);
+                if (!rels.length) log('warn', 'MusicBrainz listed no releases in this group');
+                tuples.push(...rels);
+              }
+              waitMs = waiting.done();
+              if (!tuples.length) { log('warn', 'nothing selected — tick Release group or Releases'); return; }
+              const res = addToQueue(tuples);
+              const by = tuples.reduce((a, t) => { a[t.entityType] = (a[t.entityType] || 0) + 1; return a; }, {});
+              log('info', `added ${res.added} row(s) from this release group (${Object.entries(by).map(([k, v]) => `${v} ${k}`).join(', ')})`
+                + (res.merged ? ` — ${res.merged} merged into rows already queued` : '')
+                + ` — ${(waitMs / 1000).toFixed(1)}s, nearly all of it waiting on MusicBrainz`);
+            } else {
+              const j = await fetchReleaseGraph(ctx.mbid);
+              waitMs = waiting.done();
+              if (!j || !j.id) { log('warn', `could not read release ${ctx.mbid} from MusicBrainz — nothing added`); return; }
+              const tuples = releaseGraphTuples(j, want, '');
+              if (!tuples.length) { log('warn', 'nothing selected, or the release has none of the chosen entities'); return; }
+              const res = addToQueue(tuples);
+              const by = tuples.reduce((a, t) => { a[t.entityType] = (a[t.entityType] || 0) + 1; return a; }, {});
+              log('info', `added ${res.added} row(s) from "${j.title || ctx.mbid}" (${Object.entries(by).map(([k, v]) => `${v} ${k}`).join(', ')})`
+                + (res.merged ? ` — ${res.merged} merged into rows already queued` : '')
+                + ` — ${(waitMs / 1000).toFixed(1)}s, nearly all of it waiting on MusicBrainz`);
+            }
+            renderQueue();
+          } catch (e) {
+            log('error', `add from page failed: ${(e && e.message) || e}`);
+          } finally { waiting.done(); setBtnBusy(btn, false); }
+        };
+      };
+    })();
+    document.getElementById('falcon-import').onclick = () => document.getElementById('falcon-import-file').click();
+    document.getElementById('falcon-import-file').onchange = function () {
+      const file = this.files && this.files[0];
+      this.value = '';                    // so re-picking the same file still fires
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = () => importQueueJson(String(reader.result || ''), file.name);
+      reader.onerror = () => log('error', `could not read ${file.name}`);
+      reader.readAsText(file);
+    };
+    // #467 (majkinetor): "Do not switch to worker tab on start" — the queue list
+    // (with its progress bar) is the more useful view during a run; the Workers
+    // tab is for when you actually want to look inside one.
+    document.getElementById('falcon-run').onclick = () => { if (running) stop(); else start(); };
+    // #573: the batch note. The button only toggles the panel; the value lives
+    // in _batchNote so an import can set it without the panel ever being open.
+    (function wireBatchNote() {
+      const btn = document.getElementById('falcon-note-btn');
+      const panel = document.getElementById('falcon-notepanel');
+      const box = document.getElementById('falcon-note-text');
+      if (!btn || !panel || !box) return;
+      btn.onclick = () => {
+        const show = panel.style.display === 'none';
+        panel.style.display = show ? '' : 'none';
+        if (show) { box.value = batchNote(); box.focus(); }
+      };
+      box.addEventListener('input', () => { setBatchNote(box.value); syncBatchNoteUi(); });
+      syncBatchNoteUi();
+    })();
+    document.getElementById('falcon-queue-list').addEventListener('change', e => {
+      if (e.target.id !== 'falcon-select-all') return;
+      const selectable = queue.filter(i => i.status !== 'active');
+      if (e.target.checked) selectable.forEach(i => _selectedIds.add(i.id));
+      else selectable.forEach(i => _selectedIds.delete(i.id));
+      renderQueue();
+    });
+    // #663 (majkinetor): Retry failed is "not that frequent" — it lives in Start's ▾ menu
+    const runMenu = document.getElementById('falcon-run-menu');
+    document.getElementById('falcon-run-more').onclick = e => { e.stopPropagation(); runMenu.style.display = runMenu.style.display === 'none' ? 'block' : 'none'; };
+    document.addEventListener('click', e => { if (runMenu.style.display !== 'none' && !runMenu.contains(e.target)) runMenu.style.display = 'none'; });
+    document.getElementById('falcon-retry-failed').addEventListener('click', () => { runMenu.style.display = 'none'; });
+    document.getElementById('falcon-remove-selected').onclick = () => {
+      const removable = [..._selectedIds].filter(id => { const it = queue.find(q => q.id === id); return it && it.status !== 'active'; });
+      if (!removable.length) return;
+      queue = queue.filter(i => !removable.includes(i.id));
+      removable.forEach(id => _selectedIds.delete(id));
+      log('info', `removed ${removable.length} item(s) from the queue`);
+      renderQueue();
+    };
+    // #467 (majkinetor): toggles between expanding every row's url detail at
+    // once and collapsing them all — its own label reflects which action is
+    // next, kept in sync from renderQueue() since expanding/collapsing an
+    // individual row can also change whether "all" are currently expanded.
+    document.getElementById('falcon-queue-list').addEventListener('click', e => {
+      if (!e.target.closest('#falcon-expand-all')) return;
+      const allExpanded = queue.length > 0 && queue.every(i => _expandedIds.has(i.id));
+      if (allExpanded) _expandedIds.clear();
+      else queue.forEach(i => _expandedIds.add(i.id));
+      renderQueue();
+    });
+    document.getElementById('falcon-view-toggle').onclick = () => {
+      cfg.queueView = cfg.queueView === 'grid' ? 'list' : 'grid';
+      log('debug', `queue view → ${cfg.queueView}`);
+      renderQueue();
+    };
+    // #497: same delegated-listener reasoning — the chip strip is fully
+    // rebuilt by renderTypeChips() on every renderQueue().
+    document.getElementById('falcon-type-chips').addEventListener('click', e => {
+      const chip = e.target.closest('.falcon-type-chip'); if (!chip) return;
+      const t = chip.dataset.type;
+      _disabledTypes.has(t) ? _disabledTypes.delete(t) : _disabledTypes.add(t);
+      renderQueue();
+    });
+    // #513: same delegated-listener reasoning — rebuilt by renderStatusChips()
+    // on every renderQueue(). Clicking the already-active chip clears the
+    // filter; clicking a different one switches to it (only one at a time —
+    // "just those results" reads as one status, not a multi-select).
+    document.getElementById('falcon-status-chips').addEventListener('click', e => {
+      const chip = e.target.closest('.falcon-status-chip'); if (!chip) return;
+      const s = chip.dataset.status;
+      _statusFilter = _statusFilter === s ? null : s;
+      setTab('queue');
+      renderQueue();
+    });
+    // one delegated listener for every row action — rows are fully re-rendered on
+    // every renderQueue(), so per-element handlers would just leak; look the
+    // clicked/changed item up by its data-id instead.
+    const list = document.getElementById('falcon-queue-list');
+    list.addEventListener('click', e => {
+      if (e.target.closest('#falcon-status-filter-clear')) { _statusFilter = null; renderQueue(); return; }
+      const expandBtn = e.target.closest('.falcon-row-expand');
+      if (expandBtn) { const id = expandBtn.dataset.id; _expandedIds.has(id) ? _expandedIds.delete(id) : _expandedIds.add(id); renderQueue(); return; }
+      const removeBtn = e.target.closest('.falcon-row-remove');
+      if (removeBtn) { const id = removeBtn.dataset.id; queue = queue.filter(i => i.id !== id); _selectedIds.delete(id); _expandedIds.delete(id); renderQueue(); return; }
+      const moreBtn = e.target.closest('.falcon-more');
+      if (moreBtn) { const id = moreBtn.dataset.id; _linksOpen.has(id) ? _linksOpen.delete(id) : _linksOpen.add(id); renderQueue(); return; }
+      const tabBtn = e.target.closest('.falcon-row-opentab');
+      if (tabBtn) { const it = queue.find(i => i.id === tabBtn.dataset.id); if (it) openInTab(it); return; }
+      const statusBtn = e.target.closest('.falcon-row-status');
+      if (statusBtn) {
+        const it = queue.find(i => i.id === statusBtn.dataset.id);
+        if (it && (it.status === 'failed' || it.status === 'partial')) focusItemWorker(it);
+        return;
+      }
+      // #494/#496: swap the picked cover to a different candidate provider,
+      // for the specific cover[] entry the button belongs to.
+      const pickBtn = e.target.closest('.falcon-cover-pick');
+      if (pickBtn) {
+        const it = queue.find(i => i.id === pickBtn.dataset.id);
+        const entry = it && it.cover[+pickBtn.dataset.idx];
+        if (entry && it.status !== 'active') { entry.url = pickBtn.dataset.url; renderQueue(); }
+        return;
+      }
+    });
+    // #467 (majkinetor): right-clicking the entity-type cell selects every
+    // queued/finished item of that SAME type at once — a quick way to bulk-act
+    // on (e.g. remove) just the recordings, or just the artists, in a mixed batch.
+    list.addEventListener('contextmenu', e => {
+      const typeCell = e.target.closest('.falcon-row-type');
+      if (!typeCell) return;
+      e.preventDefault();
+      const type = typeCell.dataset.type;
+      queue.filter(i => i.entityType === type && i.status !== 'active').forEach(i => _selectedIds.add(i.id));
+      renderQueue();
+    });
+    list.addEventListener('click', e => {
+      const lp = e.target.closest('.falcon-link-plus');
+      if (lp) {
+        _newLink = lp.dataset.id; renderQueue();
+        const box = document.querySelector(`#falcon-queue-list .falcon-link-new[data-id="${lp.dataset.id}"]`);
+        if (box) box.focus();
+        return;
+      }
+      const plus = e.target.closest('.falcon-alias-plus');
+      if (plus) { addAliasRow(plus.dataset.id, null); return; }
+      const ta = e.target.closest('.falcon-link-type-add');
+      if (ta) {
+        _pendingType = { id: ta.dataset.id, url: ta.dataset.url };
+        renderQueue();
+        const sel = document.querySelector('#falcon-queue-list .falcon-ltb-new select');
+        if (sel) { sel.focus(); try { sel.showPicker(); } catch (x) {} }
+        return;
+      }
+      const lt = e.target.closest('.falcon-link-type-del');
+      if (lt) { e.preventDefault(); editLink(lt.dataset.id, 'untype', lt.dataset.url, lt.dataset.type); return; }
+      const ld = e.target.closest('.falcon-link-del');
+      if (ld) { e.preventDefault(); editLink(ld.dataset.id, 'remove', ld.dataset.url, ''); return; }
+      const del = e.target.closest('.falcon-alias-del');
+      if (!del) return;
+      e.preventDefault(); e.stopPropagation();
+      const it = queue.find(i => i.id === del.dataset.id);
+      if (it) { it.aliases.splice(+del.dataset.idx, 1); renderQueue(); }
+    });
+    list.addEventListener('focusout', e => {
+      if (e.target.classList && e.target.classList.contains('falcon-link-type') && _pendingType) { setTimeout(() => { if (_pendingType && !document.activeElement?.classList?.contains('falcon-link-type')) { _pendingType = null; renderQueue(); } }, 0); return; }
+      if (e.target.classList && e.target.classList.contains('falcon-link-new')) setTimeout(() => { if (_newLink && !document.activeElement?.classList?.contains('falcon-link-new')) { _newLink = null; renderQueue(); } }, 0);
+      // an alias row left with no name is dropped once focus leaves it
+      const al = e.target.closest && e.target.closest('.falcon-al');
+      if (al) setTimeout(() => { if (!al.isConnected || al.contains(document.activeElement)) return; if (dropEmptyAliases()) renderQueue(); }, 0);
+    });
+    // #663 (majkinetor): Enter on a filled alias opens a new one, focused ("the edit box to enter a new
+    // one isn't selected"); Enter on an empty one goes on to the next row's aliases ("make empty enter
+    // in alias switch to another row"); Esc drops a new, still empty one
+    list.addEventListener('keydown', e => {
+      const box = e.target;
+      if (e.isComposing || !box.classList || !(box.classList.contains('falcon-alias-nm') || box.classList.contains('falcon-alias-loc'))) return;
+      const it = queue.find(q => q.id === box.dataset.id), idx = +box.dataset.idx, a = it && it.aliases[idx];
+      if (!a) return;
+      if (e.key === 'Escape' && !a.name.trim()) { e.preventDefault(); e.stopPropagation(); it.aliases.splice(idx, 1); renderQueue(); return; }
+      if (e.key !== 'Enter') return;
+      e.preventDefault(); e.stopPropagation();
+      readAliasRow(box.closest('.falcon-al'), it, idx);
+      if (it.aliases[idx] && it.aliases[idx].name.trim() && !e.shiftKey) { addAliasRow(it.id, idx + 1); return; }
+      if (it.aliases[idx] && !it.aliases[idx].name.trim()) it.aliases.splice(idx, 1);
+      aliasGoRow(it.id, e.shiftKey ? -1 : 1);
+    }, true);
+    // #663: spreadsheet keys. Enter / Down go to the same field of the next row,
+    // Shift+Enter / Up to the previous one; Tab / Shift+Tab walk the fields, and
+    // so do Right / Left once the caret is at the end / start of the text.
+    list.addEventListener('keydown', e => {
+      const el = e.target.closest && e.target.closest('[data-col]');
+      if (!el || e.isComposing || e.ctrlKey || e.altKey || e.metaKey) return;
+      const text = el.type === 'text', len = text ? el.value.length : 0;
+      const atStart = !text || (el.selectionStart === 0 && el.selectionEnd === 0);
+      const atEnd = !text || (el.selectionStart === len && el.selectionEnd === len);
+      let dRow = 0, dCol = 0;
+      if (e.key === 'Enter') {
+        dRow = e.shiftKey ? -1 : 1;
+      } else if (e.key === 'ArrowDown' && !e.shiftKey) dRow = 1;
+      else if (e.key === 'ArrowUp' && !e.shiftKey) dRow = -1;
+      else if (e.key === 'Tab') dCol = e.shiftKey ? -1 : 1;
+      else if (e.key === 'ArrowRight' && !e.shiftKey && atEnd) dCol = 1;
+      else if (e.key === 'ArrowLeft' && !e.shiftKey && atStart) dCol = -1;
+      else return;
+      const target = walkTarget(el.dataset.id, el.dataset.col, dRow, dCol);
+      dbg('keys', `${e.shiftKey ? 'Shift+' : ''}${e.key} on ${el.dataset.col}@${el.dataset.id} → ${target ? target.col + '@' + target.id : 'nowhere (edge of the queue)'}`);
+      if (!target) { if (e.key === 'Tab') e.preventDefault(); return; }
+      e.preventDefault();
+      moveFocus(el, target);
+    });
+    list.addEventListener('change', e => {
+      const chk = e.target.closest('.falcon-row-check');
+      if (chk) { chk.checked ? _selectedIds.add(chk.dataset.id) : _selectedIds.delete(chk.dataset.id); renderQueue(); return; }
+      // #474: disambiguation + ISRC — plain text fields, no validation here;
+      // MB's own edit form is what actually validates an ISRC on submit.
+      const disambigInp = e.target.closest('.falcon-disambiguation-input');
+      if (disambigInp) { const it = queue.find(i => i.id === disambigInp.dataset.id); if (it) it.disambiguation = disambigInp.value.trim(); return; }
+      // #571: only a value that actually DIFFERS from the current name is a
+      // rename. The box is prefilled with the current name, so without this
+      // every expanded row would queue an edit that changes nothing — MB would
+      // reject them as no-ops and the run would read as a wall of 'skipped'.
+      const renameInp = e.target.closest('.falcon-rename-input');
+      if (renameInp) {
+        const it = queue.find(i => i.id === renameInp.dataset.id);
+        if (it) {
+          const v = renameInp.value.trim();
+          it.rename = (v && v !== String(it.name || '').trim()) ? v : '';
+          renderQueue();
+        }
+        return;
+      }
+      const isrcInp = e.target.closest('.falcon-isrc-input');
+      if (isrcInp) {
+        const it = queue.find(i => i.id === isrcInp.dataset.id);
+        if (it) it.isrcs = isrcInp.value.split(',').map(s => s.trim().toUpperCase().replace(/[\s-]/g, '')).filter(Boolean);
+        return;
+      }
+      // #534 (majkinetor): "Recordings video attribute … its just a checkbox on
+      // recording form". Ticking it on a row that is part of the current
+      // SELECTION applies to every selected recording at once — the point of
+      // the issue is mass-flagging (it cites loujine's set-video-recordings
+      // script), and doing that one expanded row at a time would be no better
+      // than MB's own form.
+      // #535: type a name (optionally "name@pl") and it becomes an alias on
+      // this row. Deliberately minimal — the bulk path is JSON.
+      // #663 (majkinetor): "Added aliases can't be edited after they are in chip" — a
+      // clicked chip turns back into a box; Enter or leaving it puts the chip back
+      const aliasIn = e.target.closest('.falcon-alias-nm, .falcon-alias-loc');
+      if (aliasIn) { const it = queue.find(q => q.id === aliasIn.dataset.id); if (it) readAliasRow(aliasIn.closest('.falcon-al'), it, +aliasIn.dataset.idx); return; }
+      const linkUrl = e.target.closest('.falcon-link-url');
+      if (linkUrl) { editLink(linkUrl.dataset.id, 'url', linkUrl.dataset.url, linkUrl.value); return; }
+      const linkType = e.target.closest('.falcon-link-type');
+      if (linkType) { _pendingType = null; editLink(linkType.dataset.id, 'type', linkType.dataset.url, linkType.value); return; }
+      const linkChg = e.target.closest('.falcon-link-type-chg');
+      if (linkChg) { editLink(linkChg.dataset.id, 'retype', linkChg.dataset.url, linkChg.value, linkChg.dataset.old); return; }
+      const linkNew = e.target.closest('.falcon-link-new');
+      if (linkNew) { editLink(linkNew.dataset.id, 'add', '', linkNew.value); return; }
+      const videoChk = e.target.closest('.falcon-video-input');
+      if (videoChk) {
+        const it = queue.find(i => i.id === videoChk.dataset.id);
+        if (it) {
+          const on = videoChk.checked;
+          const targets = _selectedIds.has(it.id)
+            ? queue.filter(i => _selectedIds.has(i.id) && i.entityType === 'recording' && i.status !== 'active')
+            : [it];
+          targets.forEach(i => { i.video = on; });
+          if (targets.length > 1) log('info', `${on ? 'flagged' : 'un-flagged'} ${targets.length} selected recording(s) as video`);
+          renderQueue();
+        }
+        return;
+      }
+      // #494/#496: "Falcon side — accept URL for the image" — the auto-picked
+      // candidate is always user-editable/overridable, same spirit as the
+      // disambiguation/ISRC fields above. Each targets its own cover[] entry.
+      const coverInp = e.target.closest('.falcon-cover-input');
+      if (coverInp) { const it = queue.find(i => i.id === coverInp.dataset.id); const entry = it && it.cover[+coverInp.dataset.idx]; if (entry) entry.url = coverInp.value.trim(); return; }
+      const coverTypeSel = e.target.closest('.falcon-cover-type');
+      if (coverTypeSel) { const it = queue.find(i => i.id === coverTypeSel.dataset.id); const entry = it && it.cover[+coverTypeSel.dataset.idx]; if (entry) entry.type = coverTypeSel.value; return; }
+      const coverCommentInp = e.target.closest('.falcon-cover-comment-input');
+      if (coverCommentInp) { const it = queue.find(i => i.id === coverCommentInp.dataset.id); const entry = it && it.cover[+coverCommentInp.dataset.idx]; if (entry) entry.comment = coverCommentInp.value.trim(); return; }
+    });
+    document.getElementById('falcon-tab-queue').onclick = () => setTab('queue');
+    document.getElementById('falcon-tab-workers').onclick = () => setTab('workers');
+    document.getElementById('falcon-tab-log').onclick = () => setTab('log');
+    document.getElementById('falcon-tab-options').onclick = () => setTab('options');
+    // #508: options — hiding the launcher takes effect immediately (no need
+    // to close/reopen the panel to see it disappear/reappear).
+    const hideLauncherCb = document.getElementById('falcon-opt-hide-launcher');
+    hideLauncherCb.checked = cfg.hideLauncher;
+    hideLauncherCb.onchange = () => { cfg.hideLauncher = hideLauncherCb.checked; if (cfg.hideLauncher) removeLauncher(); else ensureLauncher(); };
+    const coverOnlyCb = document.getElementById('falcon-opt-cover-only-if-none');
+    coverOnlyCb.checked = cfg.coverOnlyIfNone;
+    coverOnlyCb.onchange = () => { cfg.coverOnlyIfNone = coverOnlyCb.checked; };
+    const skipCoversCb = document.getElementById('falcon-opt-skip-harmony-covers');
+    skipCoversCb.checked = cfg.skipHarmonyCovers;
+    skipCoversCb.onchange = () => { cfg.skipHarmonyCovers = skipCoversCb.checked; };
+    const autoSendCb = document.getElementById('falcon-opt-auto-send-harmony');   // #557
+    autoSendCb.checked = cfg.autoSendFromHarmony;
+    autoSendCb.onchange = () => { cfg.autoSendFromHarmony = autoSendCb.checked; };
+    const autoStartCb = document.getElementById('falcon-opt-auto-start-harmony');
+    autoStartCb.checked = cfg.autoStartHarmonyImport;
+    autoStartCb.onchange = () => { cfg.autoStartHarmonyImport = autoStartCb.checked; };
+    const reloadAfterCb = document.getElementById('falcon-opt-reload-after-import');   // #588
+    reloadAfterCb.checked = cfg.reloadReleaseAfterImport;
+    reloadAfterCb.onchange = () => { cfg.reloadReleaseAfterImport = reloadAfterCb.checked; };
+    const openNewTabCb = document.getElementById('falcon-opt-open-new-tab');
+    openNewTabCb.checked = cfg.openHarmonyInNewTab;
+    openNewTabCb.onchange = () => { cfg.openHarmonyInNewTab = openNewTabCb.checked; };
+    // #578 round 3: the port is used for the ?tport= parameter whether or not the
+    // box is ticked, so it must stay editable — it used to grey out with the
+    // checkbox, which was right when the checkbox meant "use tport at all" and is
+    // wrong now that it only means "and send automatically".
+    const picardCb = document.getElementById('falcon-opt-picard');
+    const picardPortIn = document.getElementById('falcon-opt-picard-port');
+    picardCb.checked = cfg.sendToPicard;
+    picardPortIn.value = cfg.picardPort;
+    picardCb.onchange = () => { cfg.sendToPicard = picardCb.checked; };
+    picardPortIn.onchange = () => { cfg.picardPort = picardPortIn.value; picardPortIn.value = cfg.picardPort; };
+    const logHistoryIn = document.getElementById('falcon-opt-log-history-count');
+    logHistoryIn.value = cfg.logHistoryCount;
+    logHistoryIn.onchange = () => { cfg.logHistoryCount = logHistoryIn.value; logHistoryIn.value = cfg.logHistoryCount; };
+    // #705: the shared log viewer (filters, a chip per worker, the debug switch, past runs,
+    // Copy as Markdown)
+    Log.mount(document.getElementById('falcon-body-log'));
+    const sizeSlider = document.getElementById('falcon-worker-size');
+    const sizeVal = document.getElementById('falcon-worker-size-val');
+    sizeSlider.value = cfg.workerSize;
+    sizeVal.textContent = cfg.workerSize;
+    sizeSlider.oninput = () => {
+      cfg.workerSize = sizeSlider.value;
+      sizeVal.textContent = cfg.workerSize;
+      renderWorkerLayout();   // resizes every visible card AND rescales its iframe
+    };
+    // drag by header
+    const hdr = document.getElementById('falcon-hdr');
+    let dragging = false, dx = 0, dy = 0;
+    hdr.addEventListener('mousedown', e => {
+      if (e.target.closest('button, a')) return;
+      dragging = true;
+      const r = panel.getBoundingClientRect();
+      // detach from the centering transform BEFORE reading dx/dy — otherwise the
+      // first drag move jumps (translate(-50%,-50%) would double-apply against the
+      // new left/top). getBoundingClientRect() already reflects the transformed
+      // (visual) position, so this keeps the panel exactly where it looked like it was.
+      panel.style.transform = 'none'; panel.style.left = r.left + 'px'; panel.style.top = r.top + 'px'; panel.style.right = 'auto'; panel.style.bottom = 'auto';
+      dx = e.clientX - r.left; dy = e.clientY - r.top;
+      e.preventDefault();
+    });
+    window.addEventListener('mousemove', e => { if (!dragging) return; panel.style.right = 'auto'; panel.style.bottom = 'auto'; panel.style.left = Math.max(0, Math.min(window.innerWidth - 60, e.clientX - dx)) + 'px'; panel.style.top = Math.max(0, Math.min(window.innerHeight - 40, e.clientY - dy)) + 'px'; });
+    window.addEventListener('mouseup', () => { dragging = false; });
+    // Normalise tab visibility through the same code path the tab buttons use,
+    // so the panes can never start in a state setTab() wouldn't produce. The
+    // Workers pane in particular must not be display:none (see setTab) — it was
+    // shipped that way in the initial markup, so workers only ran once you'd
+    // clicked the Workers tab at least once (majkinetor: "workers still not
+    // starting without watching them").
+    setTab(tab);
+  }
+  // ⚠ The Workers pane must NEVER be display:none while workers are running.
+  // #467 (majkinetor: "when worker tab is not open, it doesnt work"): a worker
+  // iframe inside a display:none container loads and fills fine, but its submit
+  // click goes nowhere — his log shows the button found and enabled, MB
+  // reporting no error, and the page simply never navigating for the full 50s;
+  // opening the tab made the same 3 items finish in 5s. Browsers don't run a
+  // display:none subtree's rendering, and the form submission dies with it.
+  // So hide it the way that keeps it fully live: parked off-screen, still laid
+  // out, still rendering. (Idle cards can still be display:none — they have no
+  // work in flight to lose. See renderWorkerLayout.)
+  const OFFSCREEN = 'position:absolute;left:-100000px;top:0;width:1200px;height:800px;overflow:auto;';
+  function setTab(t) {
+    tab = t;
+    ['queue', 'workers', 'log', 'options'].forEach(n => { const b = document.getElementById('falcon-tab-' + n); if (b) b.classList.toggle('falcon-tab-on', n === t); });
+    document.getElementById('falcon-body-queue').style.display = t === 'queue' ? 'flex' : 'none';
+    const w = document.getElementById('falcon-body-workers');
+    if (t === 'workers') w.style.cssText = 'display:block;padding:8px 10px;overflow:auto;flex:1';
+    else w.style.cssText = OFFSCREEN + 'display:block;padding:8px 10px;';
+    document.getElementById('falcon-body-log').style.display = t === 'log' ? 'flex' : 'none';
+    document.getElementById('falcon-body-options').style.display = t === 'options' ? 'flex' : 'none';
+    if (t === 'log') {
+      // #705 (majkinetor: "Switching to falcon log is not instant"): a slow listing of the past runs is logged
+      const t0 = performance.now();
+      Log.refresh();
+      const ms = Math.round(performance.now() - t0);
+      if (ms > 50) log('debug', `log tab: listing the past runs took ${ms} ms`);
+      const l = document.querySelector('#falcon-body-log .mbu-log-list'); if (l) l.scrollTop = l.scrollHeight;   // it couldn't scroll while hidden
+    }
+    if (t === 'workers') renderWorkerLayout();   // sizes were computed while off-screen; recompute for the real viewport
+    fitBars();   // a bar that was hidden measured 0-wide; re-fit now it's laid out
+  }
+  function showPanel() {
+    ensurePanel();
+    if (panel.dataset.headless) {   // #680: back from a headless batch's off-screen spot
+      let was = {}; try { was = JSON.parse(panel.dataset.headless); } catch (e) {}
+      delete panel.dataset.headless;
+      panel.style.left = was.left || '50%'; panel.style.top = was.top || '50%';
+      panel.style.removeProperty('opacity'); panel.style.removeProperty('pointer-events');
+    }
+    panel.style.display = 'flex'; renderQueue(); fitBars();
+  }
+  function togglePanel() { ensurePanel(); if (panel.style.display === 'none' || panel.dataset.headless) showPanel(); else panel.style.display = 'none'; }
+
+  // #467 (majkinetor): "maximize" — grows the whole panel (and, on the Workers tab,
+  // gives each worker card more natural room) so log/queue/worker content isn't
+  // squinted at in a 460px-wide box. Detaches from whatever corner it's anchored to
+  // (or wherever it's been dragged) and restores the exact prior box on toggle-back.
+  let _maxed = false, _prevBox = null;
+  function toggleMaximize() {
+    const btn = document.getElementById('falcon-maximize');
+    if (!_maxed) {
+      _prevBox = { left: panel.style.left, top: panel.style.top, right: panel.style.right, bottom: panel.style.bottom, width: panel.style.width, height: panel.style.height, maxWidth: panel.style.maxWidth, maxHeight: panel.style.maxHeight, transform: panel.style.transform };
+      panel.style.left = '3vw'; panel.style.top = '3vh'; panel.style.right = 'auto'; panel.style.bottom = 'auto'; panel.style.transform = 'none';
+      panel.style.width = '94vw'; panel.style.maxWidth = '94vw'; panel.style.height = '94vh'; panel.style.maxHeight = '94vh';
+      _maxed = true; if (btn) { btn.textContent = '❐'; btn.title = 'Restore'; }
+    } else {
+      if (_prevBox) Object.assign(panel.style, _prevBox);
+      _maxed = false; if (btn) { btn.textContent = '⛶'; btn.title = 'Maximize'; }
+    }
+    fitBars();
+  }
+
+  const DOT = { queued: '#999999', active: '#e08a1e', done: '#2e9e5b', partial: '#d68910', failed: '#c0392b', manual: '#6b5bce', skipped: '#5b8fa8' };
+  // #506 (majkinetor): "queue processing status fields should have color which
+  // should be used for row background in unintrusive way" — same palette as the
+  // status dot, just a faint tint (~7% alpha) so it reads at a glance without
+  // fighting the row's text for attention.
+  const ROW_BG = Object.fromEntries(Object.entries(DOT).map(([k, v]) => [k, v + '12']));
+  // #495: a bare slice(0,3) collides — 'release' and 'release_group' both give
+  // 'rel'. Everything else still just takes its natural first 3 letters.
+  const TYPE_BADGE = { release_group: 'rg' };
+  // #663: a url queued under several link types is one line with a chip per type
+  function groupedLinks(it) {
+    const results = it.urlResults || [], byUrl = new Map();
+    for (const u of it.urls) {
+      if (!byUrl.has(u.url)) byUrl.set(u.url, { url: u.url, types: [], results: [] });
+      const g = byUrl.get(u.url);
+      if (u.linkTypeId && !g.types.includes(u.linkTypeId)) g.types.push(u.linkTypeId);
+    }
+    for (const r of results) if (byUrl.has(r.url)) byUrl.get(r.url).results.push(r);
+    return [...byUrl.values()];
+  }
+  const LINKS_SHOWN = 3;
+  let _linksOpen = new Set();   // rows whose link list is shown past the first LINKS_SHOWN
+  function renderLinks(it) {
+    const groups = groupedLinks(it);
+    const dis = it.status === 'active' ? 'disabled' : '';
+    const add = _newLink === it.id ? `<div class="falcon-ln falcon-ln-new"><input type="text" class="falcon-link-new" data-id="${it.id}" placeholder="paste a link" title="Add a link: paste its url" ${dis} /></div>` : '';
+    if (!groups.length) return `<div class="falcon-links">${add}</div>`;
+    const all = _linksOpen.has(it.id) || groups.length <= LINKS_SHOWN + 1;
+    const shown = all ? groups : groups.slice(0, LINKS_SHOWN);
+    const rows = shown.map(g => {
+      const failed = g.results.find(r => !r.ok && !r.present), done = g.results.length && !failed;
+      const present = !failed && g.results.find(r => r.present);   // #671: already on the entity
+      const icon = failed ? '✗' : done ? '✓' : '·';
+      const color = failed ? 'var(--mbu-error)' : done ? 'var(--mbu-ok)' : 'var(--mbu-text-weak)';
+      // #663 (majkinetor): "Find another way for prefix" — the status mark opens the link; the service name is gone
+      const opts = cur => [...new Set([...(cur ? [String(cur)] : []), ...urlTypesFor(it.entityType)])].filter(t => t === String(cur) || !g.types.map(String).includes(t)).map(t => `<option value="${t}"${t === String(cur) ? ' selected' : ''}>${esc(linkTypeName(t))}</option>`).join('');
+      const pending = _pendingType && _pendingType.id === it.id && _pendingType.url === g.url;
+      return `<div class="falcon-ln" title="${failed && failed.error ? esc(failed.error) : ''}">
+        <input type="text" class="falcon-link-url" data-id="${it.id}" data-url="${esc(g.url)}" value="${esc(g.url)}" title="Edit the link; empty it to remove it" ${dis} />
+        <span class="falcon-lt"><a class="falcon-lst" href="${esc(g.url)}" target="_blank" rel="noopener" title="Open ${esc(g.url)}${failed && failed.error ? ' — ' + esc(failed.error) : present ? ' — ' + esc(present.error) : ''}" style="color:${color}">${icon === '·' ? '↗' : icon}</a>${g.types.map(t => `<span class="falcon-ltb" title="link type: pick another to change it"><select style="width:${Math.round(linkTypeName(t).length * 5.4 + 12)}px" class="falcon-link-type-chg" data-id="${it.id}" data-url="${esc(g.url)}" data-old="${esc(t)}" ${dis}>${opts(t) || `<option selected>${esc(linkTypeName(t))}</option>`}</select><button type="button" class="falcon-link-type-del" data-id="${it.id}" data-url="${esc(g.url)}" data-type="${esc(t)}" title="Remove this type" ${dis}>✕</button></span>`).join('')}${pending ? `<span class="falcon-ltb falcon-ltb-new"><select class="falcon-link-type" data-id="${it.id}" data-url="${esc(g.url)}"><option value="">type…</option>${opts(null)}</select></span>` : ''}${!g.types.length && !pending ? '<span class="falcon-lauto" title="No type: MusicBrainz guesses it from the url">auto</span>' : ''}</span>
+        <button type="button" class="falcon-link-type-add" data-id="${it.id}" data-url="${esc(g.url)}" title="Add a type to this link" ${dis}>+</button>
+        <button type="button" class="falcon-link-del" data-id="${it.id}" data-url="${esc(g.url)}" title="Remove this link from the queue row" ${dis}>✕</button>
+      </div>`;
+    }).join('');
+    const rest = groups.slice(LINKS_SHOWN);
+    const more = groups.length > LINKS_SHOWN + 1
+      ? `<button type="button" class="falcon-more" data-id="${it.id}">${all ? 'show fewer' : `+ ${rest.length} more (${esc([...new Set(rest.map(g => linkService(g.url)))].join(', '))})`}</button>` : '';
+    return `<div class="falcon-links">${rows}${more}${add}</div>`;
+  }
+  // #663: alias rows. The row's boxes are read into the alias as they change; the rest of the alias
+  // (type, primary, sort name) is kept. name@locale in the name box sets the language box too.
+  function readAliasRow(row, it, idx) {
+    const a = it && it.aliases[idx]; if (!row || !a) return;
+    const nm = row.querySelector('.falcon-alias-nm'), loc = row.querySelector('.falcon-alias-loc');
+    const before = a.name + '@' + a.locale;
+    const m = nm.value.match(/^(.*\S)\s*@\s*([A-Za-z]{2,3}(?:[-_][A-Za-z0-9]+)*)\s*$/);
+    if (m) { nm.value = m[1]; loc.value = m[2]; }
+    a.name = nm.value.trim();
+    a.locale = loc.value.trim().replace('-', '_');
+    // #663 (majkinetor): "Last input is used for new ones" — the language last typed is the next alias's
+    if (a.locale && a.locale !== cfg.aliasLang) cfg.aliasLang = a.locale;
+    if (before !== a.name + '@' + a.locale) dbg('alias', `${it.id} alias ${idx}: ${before} → ${a.name}@${a.locale}`);
+  }
+  function addAliasRow(id, at) {
+    const it = queue.find(q => q.id === id); if (!it || it.status === 'active') return;
+    it.aliases = it.aliases || [];
+    const idx = at == null ? it.aliases.length : at;
+    it.aliases.splice(idx, 0, { name: '', locale: cfg.aliasLang || '', type: '', primary: false, sortName: '', begin: '', end: '', ended: false });
+    renderQueue();
+    const box = document.querySelector(`#falcon-queue-list .falcon-alias-nm[data-id="${id}"][data-idx="${idx}"]`);
+    if (box) { box.focus({ preventScroll: true }); box.scrollIntoView({ block: 'nearest' }); }
+  }
+  function dropEmptyAliases() {
+    let n = 0;
+    queue.forEach(it => { const k = (it.aliases || []).length; if (k) { it.aliases = it.aliases.filter(a => a && String(a.name || '').trim()); n += k - it.aliases.length; } });
+    return n;
+  }
+  // on to the next (or previous) row's aliases, opening it: a new alias row there, ready to type
+  function aliasGoRow(id, d) {
+    let i = _visibleIds.indexOf(id) + d, next = null;
+    for (; i >= 0 && i < _visibleIds.length; i += d) { const it = queue.find(q => q.id === _visibleIds[i]); if (it && it.status !== 'active') { next = it; break; } }
+    if (!next) { dbg('keys', `alias Enter on ${id}: no ${d > 0 ? 'next' : 'previous'} row`); renderQueue(); return; }
+    if (_navOpened.has(id)) { _expandedIds.delete(id); _navOpened.delete(id); }
+    if (!_expandedIds.has(next.id)) { _expandedIds.add(next.id); _navOpened.add(next.id); }
+    dbg('keys', `alias Enter on ${id} → the aliases of ${next.id}`);
+    addAliasRow(next.id, null);
+  }
+  // #663 (majkinetor): "Add option to edit elements, and remove them. Add/change/remove
+  // type, edit link, remove row." A url with no type is left for MusicBrainz to guess, as
+  // pasted links always were.
+  let _pendingType = null;
+  let _newLink = null;   // the row whose empty link box is open (the + by Links)   // {id, url}: the link whose [+] badge is waiting for a type
+  function editLink(id, op, url, val, old) {
+    const it = queue.find(i => i.id === id);
+    if (!it || it.status === 'active') return;
+    const v = String(val || '').trim(), before = it.urls.length;
+    if (op === 'url') {
+      if (!v) it.urls = it.urls.filter(u => u.url !== url);
+      else it.urls.forEach(u => { if (u.url === url) u.url = v; });
+      log('info', `${entityLabel(it)} — link ${url} → ${v || '(removed)'}`);
+    } else if (op === 'remove') {
+      it.urls = it.urls.filter(u => u.url !== url);
+      log('info', `${entityLabel(it)} — link ${url} removed`);
+    } else if (op === 'add') {
+      if (!v) return;
+      if (!/^https?:\/\//i.test(v)) { log('warn', `${entityLabel(it)} — "${v}" is not a link (it needs http:// or https://)`); renderQueue(); return; }
+      _newLink = null;
+      if (!it.urls.some(u => u.url === v)) it.urls.push({ url: v, linkTypeId: null });
+      log('info', `${entityLabel(it)} — link ${v} added`);
+    } else if (op === 'type') {
+      if (!v) return;
+      const untyped = it.urls.find(u => u.url === url && !u.linkTypeId);
+      if (untyped) untyped.linkTypeId = v;
+      else if (!it.urls.some(u => u.url === url && String(u.linkTypeId) === v)) it.urls.push({ url, linkTypeId: v });
+      log('info', `${entityLabel(it)} — link ${url} gets the type ${linkTypeName(v)}`);
+    } else if (op === 'retype') {
+      if (!v || v === String(old)) return;
+      if (it.urls.some(u => u.url === url && String(u.linkTypeId) === v)) it.urls = it.urls.filter(u => !(u.url === url && String(u.linkTypeId) === String(old)));
+      else it.urls.forEach(u => { if (u.url === url && String(u.linkTypeId) === String(old)) u.linkTypeId = v; });
+      log('info', `${entityLabel(it)} — link ${url}: ${linkTypeName(old)} → ${linkTypeName(v)}`);
+    } else if (op === 'untype') {
+      const rest = it.urls.filter(u => u.url === url && String(u.linkTypeId) !== String(v));
+      it.urls = it.urls.filter(u => u.url !== url).concat(rest.length ? rest : [{ url, linkTypeId: null }]);
+      log('info', `${entityLabel(it)} — link ${url} loses the type ${linkTypeName(v)}`);
+    }
+    dbg('links', `${it.id} ${op} ${url} ${v}: ${before} → ${it.urls.length} url entries ${JSON.stringify(it.urls)}`);
+    renderQueue();
+  }
+  // The editable fields, keyed by the column name the keyboard walk uses (#663).
+  // Both views draw the same fields in this order, so Tab and Enter mean the same
+  // thing in each.
+  function fieldCols(it) {
+    return [
+      RENAMEABLE.has(it.entityType) && 'name',
+      DISAMBIGUATABLE.has(it.entityType) && 'disambig',
+      it.entityType === 'recording' && 'isrc',
+      cfg.queueView !== 'grid' && 'alias',   // the grid edits aliases below the row, off the keyboard walk
+      it.entityType === 'recording' && 'video',
+    ].filter(Boolean);
+  }
+  function fieldHtml(it, col, short) {
+    const dis = it.status === 'active' ? 'disabled' : '';
+    if (col === 'name') return `<input type="text" class="falcon-rename-input${it.rename ? ' falcon-renamed' : ''}" data-id="${it.id}" data-col="name"
+          title="New name for this entity — leave as-is to keep the current one"
+          placeholder="${esc(it.name || 'new name')}" value="${esc(it.rename || it.name || '')}" ${dis} />`;
+    if (col === 'disambig') return `<input type="text" class="falcon-disambiguation-input" data-id="${it.id}" data-col="disambig" placeholder="${short ? 'disambiguation' : 'disambiguation comment'}" value="${esc(it.disambiguation || '')}" ${dis} />`;
+    if (col === 'isrc') return `<input type="text" class="falcon-isrc-input" data-id="${it.id}" data-col="isrc" placeholder="${short ? 'ISRCs' : 'ISRCs, comma-separated'}" value="${esc((it.isrcs || []).join(', '))}" ${dis} />`;
+    if (col === 'video') return `<input type="checkbox" class="falcon-video-input mbu-video" data-id="${it.id}" data-col="video" title="Flag this recording as a video (MusicBrainz's Video checkbox)" ${it.video ? 'checked' : ''} ${dis} />`;
+    if (col === 'alias') {
+      // #535: aliases apply to every entity type. Each alias is one MB edit; the
+      // bulk case ("2 translations for all recordings") is meant to arrive as
+      // JSON, so this stays a light add/remove list rather than a form.
+      // #663 (majkinetor): "each alias on its own row along with the language … so it behaves like
+      // links. Have + to add new". The language box falls back to the toolbar's Alias language.
+      const walk = short === 'sub' ? '' : ' data-col="alias"';
+      const rows = (it.aliases || []).map((a, idx) => `<div class="falcon-al" title="${esc([a.type, a.primary ? 'primary for locale' : '', a.sortName ? 'sort: ' + a.sortName : ''].filter(Boolean).join(' · '))}">
+          <input type="text" class="falcon-alias-nm" data-id="${it.id}" data-idx="${idx}"${idx === 0 ? walk : ''} value="${esc(a.name)}" placeholder="alias${a.primary ? ' ★' : ''}" title="The alias; name@locale sets its language too. Enter adds another" ${dis} />
+          <input type="text" class="falcon-alias-loc" data-id="${it.id}" data-idx="${idx}" value="${esc(a.locale || '')}" placeholder="lang" title="Language (locale) of this alias, e.g. en or sr_Latn; empty for none" spellcheck="false" ${dis} />
+          <button type="button" class="falcon-alias-del" data-id="${it.id}" data-idx="${idx}" title="Remove this alias from the queue row" ${dis}>✕</button></div>`).join('');
+      return `<div class="falcon-als">${rows}</div>`;
+    }
+    return '';
+  }
+  const FIELD_LABEL = { name: 'Name', disambig: 'Disambiguation', isrc: 'ISRCs', alias: 'Aliases', video: 'Video' };
+  // #663 (majkinetor): the + that adds a link or an alias sits by its label
+  const plusLbl = (it, kind, walk) => {
+    const dis = it.status === 'active' ? 'disabled' : '';
+    const has = kind === 'alias' ? (it.aliases || []).length : 0;
+    return `<span class="falcon-lbl">${kind === 'alias' ? 'Aliases' : 'Links'}<button type="button" class="falcon-${kind}-plus falcon-lplus" data-id="${it.id}"${kind === 'alias' && !has && walk ? ' data-col="alias"' : ''} title="Add ${kind === 'alias' ? 'an alias' + (cfg.aliasLang ? ' (language ' + esc(cfg.aliasLang) + ', the last one typed)' : '') : 'a link'}" ${dis}>+</button></span>`;
+  };
+  // `gridSub`: the grid already has the fields on its line, so its sub-row is links + cover only
+  function renderRowDetail(it, gridSub) {
+    // #474/#533/#534/#535/#571: the editable fields; #663 lays them out as one
+    // labelled form. The name box is prefilled with the CURRENT name (#571: the
+    // job is conforming names, not retyping them); its change handler stores
+    // nothing while it still equals that name, so a row you only looked at
+    // never submits an edit.
+    const links = renderLinks(it);
+    const fields = (gridSub ? ['alias'] : fieldCols(it)).map(col => col === 'alias'
+      ? plusLbl(it, 'alias', !gridSub) + fieldHtml(it, col, gridSub ? 'sub' : undefined) : col === 'video'
+      ? `<span class="falcon-lbl">Type</span><label class="falcon-video-lbl">${fieldHtml(it, col)} video</label>`
+      : `<span class="falcon-lbl">${FIELD_LABEL[col]}</span>${fieldHtml(it, col)}`);
+    fields.splice(!gridSub && fieldCols(it).includes('name') ? 1 : 0, 0, plusLbl(it, 'link') + links);
+    // #494/#496: cover art has no urls[] row to show — the image URL IS the
+    // payload, so it gets the same input treatment (auto-picked from Harmony's
+    // candidates but always user-editable/overridable), plus a type picker and
+    // a provider picker when more than one candidate was found. cover[] is an
+    // array — one row per entry (Falcon only ever populates one today, but a
+    // JSON import can carry more).
+    // ⚠ A release needs both its disambiguation box and this (#533 once made
+    // them alternatives and the cover editor became unreachable).
+    const metaCover = it.entityType === 'release' ? `
+      <div style="display:flex;flex-direction:column;gap:6px;font-size:10.5px">
+        ${it.cover.map((c, idx) => `
+        <div style="display:flex;flex-direction:column;gap:4px">
+          <div style="display:flex;align-items:center;gap:6px">
+            <input type="text" class="falcon-cover-input" data-id="${it.id}" data-idx="${idx}" placeholder="${c.candidates.length && !c.url ? 'resolving best cover…' : 'cover image URL'}" value="${esc(c.url || '')}" ${it.status === 'active' ? 'disabled' : ''}
+              style="flex:1 1 auto;min-width:0;font-size:10.5px;padding:2px 6px;border:1px solid var(--mbu-border);border-radius:3px" />
+            <select class="falcon-cover-type" data-id="${it.id}" data-idx="${idx}" ${it.status === 'active' ? 'disabled' : ''} title="Cover art type"
+              style="font-size:10.5px;padding:2px 4px;border:1px solid var(--mbu-border);border-radius:3px">${COVER_TYPES.map(t => `<option value="${esc(t)}"${(c.type || 'Front') === t ? ' selected' : ''}>${esc(t)}</option>`).join('')}</select>
+            <input type="text" class="falcon-cover-comment-input" data-id="${it.id}" data-idx="${idx}" placeholder="image comment (optional)" value="${esc(c.comment || '')}" ${it.status === 'active' ? 'disabled' : ''}
+              style="flex:1 1 auto;min-width:0;font-size:10.5px;padding:2px 6px;border:1px solid var(--mbu-border);border-radius:3px" />
+          </div>
+          ${c.candidates.length > 1 ? `<div style="display:flex;gap:6px;flex-wrap:wrap">${c.candidates.map(cand => `<button type="button" class="falcon-cover-pick" data-id="${it.id}" data-idx="${idx}" data-url="${esc(cand.url)}" title="${esc(cand.url)}" ${it.status === 'active' ? 'disabled' : ''} style="border:1px solid ${cand.url === c.url ? 'var(--mbu-accent)' : 'var(--mbu-border)'};background:${cand.url === c.url ? 'var(--mbu-accent-soft)' : 'var(--mbu-bg-raised)'};border-radius:10px;padding:1px 8px;font-size:9.5px;cursor:pointer;color:${cand.url === c.url ? 'var(--mbu-accent-deep-text)' : 'var(--mbu-text)'}">${esc(cand.provider)}${cand.width ? ` ${cand.width}×${cand.height}` : ''}</button>`).join('')}</div>` : ''}
+        </div>`).join('')}
+        ${it.coverExistingCount ? `<div style="color:var(--mbu-warn);font-size:10px">⚠ this release already has ${it.coverExistingCount} cover image${it.coverExistingCount === 1 ? '' : 's'} — Harmony doesn't check before suggesting one, so adding this may create a duplicate</div>` : ''}
+      </div>` : '';
+    if (metaCover) fields.push(`<span class="falcon-lbl">Cover</span>${metaCover}`);
+    return `<div class="falcon-form">${fields.join('')}</div>`;
+  }
+  // #497: one chip per distinct entity type currently in the queue, showing
+  // its count — click to toggle whether that type's still-queued items get
+  // picked up by the next run. Rebuilt on every renderQueue() so it always
+  // reflects the current queue contents (types can appear/disappear as items
+  // are added/removed).
+  // #663: the keyboard walk. Rows are the visible queue in order; a row whose
+  // item lacks the column (an artist has no ISRCs) or is mid-run is skipped.
+  let _navOpened = new Set();   // list-view rows the walk opened, closed again when it leaves them
+  function walkTarget(id, col, dRow, dCol) {
+    const editable = it => it && it.status !== 'active';
+    const byId = id2 => queue.find(i => i.id === id2);
+    let idx = _visibleIds.indexOf(id);
+    if (idx < 0) return null;
+    if (dRow) {
+      for (let i = idx + dRow; i >= 0 && i < _visibleIds.length; i += dRow) {
+        const it = byId(_visibleIds[i]);
+        if (editable(it) && fieldCols(it).includes(col)) return { id: it.id, col };
+      }
+      return null;
+    }
+    let cols = fieldCols(byId(id)), c = cols.indexOf(col) + dCol;
+    if (c >= 0 && c < cols.length) return { id, col: cols[c] };
+    for (let i = idx + dCol; i >= 0 && i < _visibleIds.length; i += dCol) {
+      const it = byId(_visibleIds[i]);
+      if (!editable(it)) continue;
+      cols = fieldCols(it);
+      if (cols.length) return { id: it.id, col: dCol > 0 ? cols[0] : cols[cols.length - 1] };
+    }
+    return null;
+  }
+  function focusField(id, col, caret) {
+    const el = document.querySelector(`#falcon-queue-list [data-id="${id}"][data-col="${col}"]`);
+    if (!el) { dbg('keys', `no ${col} field on ${id} to focus`); return false; }
+    el.focus({ preventScroll: true });
+    el.scrollIntoView({ block: 'nearest' });
+    if (el.type === 'text') { if (caret == null) el.select(); else el.setSelectionRange(caret, caret); }
+    return true;
+  }
+  function moveFocus(from, target) {
+    const list = view => cfg.queueView === view;
+    let redraw = false;
+    if (list('list') && target.id !== from.dataset.id) {
+      if (_navOpened.has(from.dataset.id)) { _expandedIds.delete(from.dataset.id); _navOpened.delete(from.dataset.id); redraw = true; }
+      if (!_expandedIds.has(target.id)) { _expandedIds.add(target.id); _navOpened.add(target.id); redraw = true; }
+    }
+    _pendingFocus = { id: target.id, col: target.col, caret: null };
+    // committing the field (its change handler) may redraw the queue, which
+    // takes _pendingFocus with it; otherwise focus it ourselves
+    from.blur();
+    if (_pendingFocus && redraw) renderQueue();
+    if (_pendingFocus) { const p = _pendingFocus; _pendingFocus = null; focusField(p.id, p.col, null); }
+  }
+  function renderTypeChips() {
+    const wrap = document.getElementById('falcon-type-chips-in'); if (!wrap) return;
+    const counts = {};
+    queue.forEach(i => { counts[i.entityType] = (counts[i.entityType] || 0) + 1; });
+    const types = Object.keys(counts).sort();
+    if (!types.length) { wrap.innerHTML = ''; return; }
+    wrap.innerHTML = types.map(t => {
+      const on = !_disabledTypes.has(t);
+      const label = TYPE_BADGE[t] || t.slice(0, 3);
+      return `<button type="button" class="falcon-type-chip" data-type="${esc(t)}" title="${on ? `Click to exclude every ${esc(t)} item from the next run` : `Click to include every ${esc(t)} item in the next run`}"
+        style="border:1px solid ${on ? '#1b2a4a' : 'var(--mbu-border)'};background:${on ? '#1b2a4a' : 'var(--mbu-bg-raised)'};color:${on ? '#fff' : 'var(--mbu-text-dim)'};border-radius:12px;padding:2px 10px;font-size:10.5px;cursor:pointer;text-transform:uppercase">${esc(label)} ${counts[t]}</button>`;
+    }).join('');
+  }
+  // #513 (majkinetor): "Its still not easily seeable that there were issues.
+  // Lets add some chip with results in appropriate color if there are
+  // issues." One chip per non-trivial outcome status, colored from the
+  // same DOT palette the row dots already use. Clicking toggles
+  // _statusFilter, so it doubles as "show me just those."
+  // #513 follow-up (majkinetor): "Lets add other statuses that are not
+  // Done/Excluded here (Like skipped, partial etc.)" — every SETTLED
+  // outcome except the plain success ('done') gets a chip now, including
+  // 'skipped' (an intentional no-op, not a failure, but still worth being
+  // able to see/filter at a glance). 'queued'/'active' are work still in
+  // progress, not an outcome — the progress bar already covers those;
+  // 'excluded' isn't a real status at all, just a display label for a
+  // still-queued item whose type is toggled off.
+  const CHIP_STATUSES = ['failed', 'partial', 'manual', 'skipped'];
+  function renderStatusChips() {
+    const wrap = document.getElementById('falcon-status-chips'); if (!wrap) return;
+    const counts = {};
+    queue.forEach(i => { if (CHIP_STATUSES.includes(i.status)) counts[i.status] = (counts[i.status] || 0) + 1; });
+    const present = CHIP_STATUSES.filter(s => counts[s]);
+    if (_statusFilter && !counts[_statusFilter]) _statusFilter = null;   // the last item in that state was removed/re-run
+    // #513 follow-up (majkinetor, live: "I don't like version without
+    // background color as its not greatly visible... Lets make it always
+    // have red background and find other method to show toggle state.") —
+    // always filled now; the active filter is shown with a white ring
+    // instead of losing the fill.
+    wrap.innerHTML = present.map(s => {
+      const on = _statusFilter === s;
+      const color = DOT[s];
+      return `<button type="button" class="falcon-status-chip" data-status="${esc(s)}" title="${on ? 'Click to show every item again' : `Click to show only ${esc(s)} items`}"
+        style="border:1.5px solid ${color};background:${color};color:#fff;border-radius:12px;padding:2px 10px;font-size:11px;font-weight:700;cursor:pointer;text-transform:uppercase;white-space:nowrap;flex:0 0 auto;${on ? 'box-shadow:0 0 0 2px #fff' : ''}">${esc(s)} ${counts[s]}</button>`;
+    }).join('');
+  }
+  // #663: the grid view, one line per row. The links column opens a sub-row with
+  // the link list (and a release's cover editor), sharing the list view's
+  // expanded state.
+  function renderGrid(visible) {
+    const head = `<tr>${selHead(true)}<th>Name</th>`
+      + '<th>Disambiguation</th><th>ISRCs</th><th></th><th class="falcon-videohead" title="Video">'
+      + '<input type="checkbox" class="mbu-video" checked disabled style="opacity:.6" /></th><th></th><th></th></tr>';
+    const rows = visible.map(it => {
+      const cols = fieldCols(it), isActive = it.status === 'active';
+      const excluded = it.status === 'queued' && _disabledTypes.has(it.entityType);
+      const cell = col => cols.includes(col) ? fieldHtml(it, col, true) : '';
+      const expanded = _expandedIds.has(it.id);
+      const nLinks = groupedLinks(it).length;
+      const hasCover = it.entityType === 'release';
+      const sub = expanded
+        ? `<tr class="falcon-sub" data-id="${it.id}"><td colspan="10">${renderRowDetail(it, true)}</td></tr>` : '';
+      const nLinksTxt = nLinks ? nLinks + (nLinks === 1 ? ' link' : ' links') : '', nAl = (it.aliases || []).length;
+      const what = [nLinksTxt, nAl ? nAl + (nAl === 1 ? ' alias' : ' aliases') : '', hasCover ? 'cover art' : ''].filter(Boolean).join(', ');
+      return `<tr class="falcon-row" data-id="${it.id}" style="background:${ROW_BG[it.status] || ''};${excluded ? 'opacity:.45' : ''}" title="${it.error ? esc(it.error) : ''}">
+        <td><input type="checkbox" class="falcon-row-check" data-id="${it.id}" ${_selectedIds.has(it.id) ? 'checked' : ''} ${isActive ? 'disabled' : ''} /></td>
+        <td><button type="button" class="falcon-row-expand falcon-xp" data-id="${it.id}" title="${expanded ? 'Hide' : 'Show and edit'} the links and aliases${what ? ' (' + esc(what) + ')' : ''}">${expanded ? '▾' : '▸'}</button></td>
+        <td style="white-space:nowrap"><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${DOT[it.status] || '#999'}"></span>
+          <a class="falcon-row-type" data-id="${it.id}" data-type="${esc(it.entityType)}" href="${MB_ORIGIN}/${entityUrlSegment(it.entityType)}/${it.mbid}" target="_blank" rel="noopener" title="Open ${esc(entityLabel(it))} — right-click to select every ${esc(it.entityType)}" style="font-size:9px;text-transform:uppercase;color:var(--mbu-text-weak);text-decoration:none;margin-left:3px">${esc(TYPE_BADGE[it.entityType] || it.entityType.slice(0, 3))}</a></td>
+        <td>${cols.includes('name') ? cell('name') : `<span style="padding:0 7px">${esc(entityLabel(it))}</span>`}</td>
+        <td>${cell('disambig')}</td>
+        <td>${cell('isrc')}</td>
+        <td class="falcon-gsum">${esc(what)}</td>
+        <td style="text-align:center">${cell('video')}</td>
+        <td class="falcon-row-status" data-id="${it.id}" style="text-transform:uppercase;font-size:9px;white-space:nowrap;${it.status === 'failed' || it.status === 'partial' ? 'color:var(--mbu-error);cursor:pointer;text-decoration:underline' : 'color:var(--mbu-text-weak)'}">${excluded ? 'excluded' : it.status}</td>
+        <td style="white-space:nowrap"><button type="button" class="falcon-row-opentab" data-id="${it.id}" title="Open this entity's edit page in a real tab, pre-filled" style="border:none;background:none;cursor:pointer;color:var(--mbu-text-dim)">⇗</button><button type="button" class="falcon-row-remove" data-id="${it.id}" ${isActive ? 'disabled' : ''} title="Remove from queue" style="border:none;background:none;cursor:pointer;color:var(--mbu-text-weak)">✕</button></td>
+      </tr>${sub}`;
+    }).join('');
+    const colgroup = '<colgroup><col style="width:24px"><col style="width:22px"><col style="width:46px"><col style="width:26%"><col style="width:19%"><col style="width:15%"><col><col style="width:28px"><col style="width:62px"><col style="width:44px"></colgroup>';
+    return rows ? `<table class="falcon-grid">${colgroup}${head}${rows}</table>` : '';
+  }
+  // #663: which field to focus after the queue is redrawn — a redraw replaces
+  // every input, so focus (and the keyboard walk) would otherwise drop out.
+  let _pendingFocus = null;
+  let _visibleIds = [];
+  // #663: select-all and the selection count head the rows, in both views
+  // `cells`: the grid puts each in its own header cell, over the row's own columns (#663: the ▸ lined up)
+  function selHead(cells) {
+    const selectable = queue.filter(i => i.status !== 'active');
+    const all = selectable.length > 0 && selectable.every(i => _selectedIds.has(i.id));
+    const open = queue.length > 0 && queue.every(i => _expandedIds.has(i.id));
+    const parts = [`<input type="checkbox" id="falcon-select-all" title="Select all" ${all ? 'checked' : ''} />`,
+      `<button type="button" id="falcon-expand-all" class="falcon-xp" title="${open ? 'Collapse' : 'Expand'} every row">${open ? '▾' : '▸'}</button>`,
+      `<span class="falcon-selcount" id="falcon-select-count" title="Selected rows">${_selectedIds.size || ''}</span>`];
+    return cells ? parts.map(x => `<th class="falcon-selhead">${x}</th>`).join('') : `<span class="falcon-selhead">${parts.join('')}</span>`;
+  }
+  // #680: a headless batch (Mission Control's, through falcon:run with `headless` and `tag`)
+  // never opens the panel; each change to its items is reported as falcon:status instead,
+  // { tag, running, items: [{ entityType, mbid, name, status, error, urls }] }, once a tick.
+  const _tagged = new Map();   // item id -> tag
+  let _statusQueued = false;
+  function emitTaggedStatus() {
+    if (!_tagged.size || _statusQueued) return;
+    _statusQueued = true;
+    setTimeout(() => {
+      _statusQueued = false;
+      const byTag = new Map();
+      queue.forEach(i => { const t = _tagged.get(i.id); if (t) (byTag.get(t) || byTag.set(t, []).get(t)).push(i); });
+      byTag.forEach((items, tag) => {
+        const detail = JSON.stringify({ tag, running, items: items.map(i => ({ entityType: i.entityType, mbid: i.mbid, name: i.name || '', status: i.status, error: i.error || '', urls: (i.urls || []).length, cover: (i.cover || []).length })) });
+        document.dispatchEvent(new CustomEvent('falcon:status', { detail }));
+        // forget a tag once every item settled and the run is over
+        if (!running && items.every(i => !['queued', 'active'].includes(i.status))) items.forEach(i => _tagged.delete(i.id));
+      });
+    }, 0);
+  }
+  function renderQueue() {
+    emitTaggedStatus();
+    renderTypeChips();
+    renderStatusChips();
+    const list = document.getElementById('falcon-queue-list'); if (!list) return;
+    const af = document.activeElement;
+    const keep = _pendingFocus || (af && list.contains(af) && af.dataset.col
+      ? { id: af.dataset.id, col: af.dataset.col, caret: af.type === 'text' ? af.selectionStart : null } : null);
+    _pendingFocus = null;
+    const visible = _statusFilter ? queue.filter(i => i.status === _statusFilter) : queue;
+    _visibleIds = visible.map(i => i.id);
+    const grid = cfg.queueView === 'grid';
+    const viewBtn = document.getElementById('falcon-view-toggle');
+    if (viewBtn) {
+      viewBtn.querySelector('.falcon-bi').textContent = grid ? '☰' : '▦';
+      viewBtn.querySelector('.falcon-bt').textContent = grid ? 'List' : 'Grid';
+      viewBtn.title = grid ? 'Show the queue as a list, one form per open row' : 'Show the queue as a grid, one line per row';
+    }
+    const listRows = grid ? '' : visible.map(it => {
+      const expanded = _expandedIds.has(it.id);
+      const checked = _selectedIds.has(it.id);
+      const isActive = it.status === 'active';
+      // #497: still queued, but its type is toggled off — won't be picked up
+      // by the next run. Dimmed + a distinct label, but the underlying
+      // item.status stays 'queued' (this is a queue-level filter, not an
+      // outcome — an already active/done/failed item is never affected).
+      const excluded = it.status === 'queued' && _disabledTypes.has(it.entityType);
+      return `
+      <div class="falcon-row" data-id="${it.id}" style="border-bottom:1px solid var(--mbu-border);color:var(--mbu-text);background:${ROW_BG[it.status] || ''};${excluded ? 'opacity:.45' : ''}">
+        <div style="display:flex;align-items:center;gap:6px;padding:2px 0" title="${it.error ? esc(it.error) : excluded ? 'This type is toggled off above — won\'t be processed until turned back on' : ''}">
+          <input type="checkbox" class="falcon-row-check" data-id="${it.id}" ${checked ? 'checked' : ''} ${isActive ? 'disabled' : ''} style="flex:0 0 auto" />
+          <button type="button" class="falcon-row-expand" data-id="${it.id}" title="${groupedLinks(it).length > 1 ? 'Show/hide urls' : it.entityType === 'recording' ? 'Show detail / edit disambiguation & ISRC' : DISAMBIGUATABLE.has(it.entityType) ? 'Show detail / edit disambiguation' + (it.entityType === 'release' ? ' & cover art image' : '') : 'Show url detail'}" style="border:none;background:none;cursor:pointer;color:var(--mbu-text-dim);flex:0 0 auto;font-size:15px;line-height:1;width:22px;height:22px;padding:0;display:flex;align-items:center;justify-content:center">${expanded ? '▾' : '▸'}</button>
+          <span style="width:8px;height:8px;border-radius:50%;background:${DOT[it.status] || '#999'};flex:0 0 auto"></span>
+          <span class="falcon-row-type" data-id="${it.id}" data-type="${esc(it.entityType)}" title="Right-click to select every ${esc(it.entityType)} in the queue" style="width:32px;flex:0 0 auto;font-size:9px;text-transform:uppercase;color:var(--mbu-text-weak);text-align:center;cursor:context-menu">${esc(TYPE_BADGE[it.entityType] || it.entityType.slice(0, 3))}</span>
+          <a href="${MB_ORIGIN}/${entityUrlSegment(it.entityType)}/${it.mbid}" target="_blank" rel="noopener" title="${esc(it.entityType)}/${esc(it.mbid)}" style="color:var(--mbu-info);text-decoration:none;font-weight:600;max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:0 1 auto">${esc(entityLabel(it))}</a>
+          ${(() => {
+            // #518 (majkinetor): "When there is 1 link, its shown instead of
+            // `1 link, isrc`" — disambiguation/ISRC/cover only ever got
+            // folded into the summary in the zero-links branch below, so a
+            // single-link item silently hid whichever of those it also had.
+            //
+            // #547 (majkinetor): "Here, we show no links, and do not show
+            // aliases. I think we should be consistent and report only what is
+            // present, without those - placeholders as they are just spam."
+            // So: one list built only from fields that actually carry
+            // something, and a genuinely empty row says nothing at all rather
+            // than "no links — —". Aliases and video were missing from this
+            // entirely — a row could show an alias chip in its own detail and
+            // still summarise itself as "no links".
+            const isrcN = (it.isrcs || []).filter(Boolean).length;
+            const aliasN = (it.aliases || []).filter(a => a && String(a.name || '').trim()).length;
+            const hasCover = (it.cover || []).some(c => c.url || (c.candidates || []).length);
+            const extras = [
+              it.rename ? 'rename' : '',
+              it.disambiguation ? 'disambiguation' : '',
+              isrcN ? (isrcN === 1 ? 'ISRC' : `${isrcN} ISRCs`) : '',
+              it.video ? 'video' : '',
+              aliasN ? (aliasN === 1 ? 'alias' : `${aliasN} aliases`) : '',
+              hasCover ? (it.coverExistingCount ? 'cover ⚠' : 'cover') : '',
+            ].filter(Boolean).join(' + ');
+            const coverTitle = hasCover && it.coverExistingCount
+              ? esc(`already has ${it.coverExistingCount} cover image${it.coverExistingCount === 1 ? '' : 's'} — this may duplicate it`) : '';
+            // Count distinct URLs, as the grid does — urls[] holds one entry
+            // per URL × link type, so a URL with two types counted twice.
+            const linkN = groupedLinks(it).length;
+            if (linkN > 1) return `<span style="color:var(--mbu-text-dim);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1" title="${coverTitle}">${linkN} links${extras ? ' + ' + esc(extras) : ''}</span>`;
+            if (linkN === 1) return `<span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1" title="${coverTitle}"><a href="${esc(it.urls[0].url)}" target="_blank" rel="noopener" style="color:var(--mbu-info);text-decoration:none">${esc(it.urls[0].url)}</a>${extras ? ` <span style="color:var(--mbu-text-dim)">+ ${esc(extras)}</span>` : ''}</span>`;
+            // #494/#496: release rows never carry a urls[] entry — cover art
+            // is their whole payload — so they always land here.
+            if (extras) return `<span style="color:var(--mbu-text-dim);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1" title="${coverTitle}">${esc(extras)}</span>`;
+            // Genuinely empty — an "Add from release" row waiting to be filled
+            // in. The spacer holds the status column where it sits on every
+            // other row; it deliberately says nothing.
+            return '<span style="flex:1"></span>';
+          })()}
+          <span class="falcon-row-status" data-id="${it.id}" title="${it.status === 'failed' || it.status === 'partial' ? 'Click to inspect this failure' : ''}" style="text-transform:uppercase;font-size:9px;flex:0 0 auto;${it.status === 'failed' || it.status === 'partial' ? 'color:var(--mbu-error);cursor:pointer;text-decoration:underline' : 'color:var(--mbu-text-weak)'}">${excluded ? 'excluded' : it.status}</span>
+          <button type="button" class="falcon-row-opentab" data-id="${it.id}" title="Open this entity's edit page in a real tab, pre-filled, to inspect/complete manually" style="border:none;background:none;cursor:pointer;color:var(--mbu-text-dim);flex:0 0 auto">⇗</button>
+          <button type="button" class="falcon-row-remove" data-id="${it.id}" ${isActive ? 'disabled' : ''} title="Remove from queue" style="border:none;background:none;cursor:pointer;color:var(--mbu-text-weak);flex:0 0 auto">✕</button>
+        </div>
+        ${expanded ? renderRowDetail(it) : ''}
+      </div>`;
+    }).join('');
+    list.innerHTML = (grid ? renderGrid(visible) : listRows && `<div class="falcon-lhead">${selHead()}</div>${listRows}`) || (_statusFilter
+      ? `<div style="color:var(--mbu-text-weak);padding:8px 0">No ${esc(_statusFilter)} items right now — <button type="button" id="falcon-status-filter-clear" style="border:none;background:none;color:var(--mbu-info);cursor:pointer;padding:0;font:inherit;text-decoration:underline">show everything</button>.</div>`
+      : '<div style="color:var(--mbu-text-weak);padding:8px 0">Queue is empty — click + above to paste some entities.</div>');
+    if (keep) focusField(keep.id, keep.col, keep.caret);
+    const selCount = document.getElementById('falcon-select-count');
+    if (selCount) selCount.textContent = _selectedIds.size || '';
+    const removeBtn = document.getElementById('falcon-remove-selected');
+    if (removeBtn) removeBtn.disabled = _selectedIds.size === 0;
+    const retryBtn = document.getElementById('falcon-retry-failed');
+    if (retryBtn) retryBtn.disabled = !queue.some(i => i.status === 'failed' || i.status === 'partial');
+    const moreBtn = document.getElementById('falcon-run-more');
+    if (moreBtn) moreBtn.textContent = retryBtn && !retryBtn.disabled ? '▾•' : '▾';   // a dot: there is something to retry
+    const selectAll = document.getElementById('falcon-select-all');
+    if (selectAll) { const selectable = queue.filter(i => i.status !== 'active'); selectAll.checked = selectable.length > 0 && selectable.every(i => _selectedIds.has(i.id)); }
+    renderProgress();
+    renderCoverWarning();
+    fitBars();
+  }
+  // #467 (majkinetor): "Lets have a progress bar". Counts anything that has
+  // reached a terminal state as finished — done/partial/failed/manual all mean
+  // "this one is no longer waiting on us" — so the bar tracks the run, not just
+  // the successes. Bar turns amber if anything failed, so a run that completed
+  // but left casualties doesn't read as a clean green sweep.
+  function renderProgress() {
+    emitTaggedStatus();
+    const bar = document.getElementById('falcon-progress-bar');
+    const track = document.getElementById('falcon-progress-track');
+    const txt = document.getElementById('falcon-progress-text');
+    if (!bar || !txt) return;
+    // #497 (majkinetor, live: "progress bar max items remains old"): a
+    // toggled-off type's still-queued items will never settle (nextQueued
+    // skips them), so counting them in the denominator meant the bar could
+    // never reach 100% while any type was excluded. An item that already
+    // reached a terminal state BEFORE being excluded still counts — this
+    // only drops the ones currently sitting out.
+    const total = queue.filter(i => !(i.status === 'queued' && _disabledTypes.has(i.entityType))).length;
+    // #519: a plain static bar looks the same whether a run is grinding
+    // through the queue or just sitting at its last finished percentage —
+    // pulse it for as long as `running` actually is, the same signal
+    // updateRunBtn() already uses for its own Start/Stop label. On the
+    // TRACK, not the fill: the fill sits at 0% width (invisible) for as
+    // long as nothing has finished yet, exactly when the pulse matters most.
+    if (track) track.classList.toggle('falcon-running', running);
+    if (!total) { bar.style.width = '0%'; txt.textContent = ''; return; }
+    const settled = queue.filter(i => i.status !== 'queued' && i.status !== 'active').length;
+    const bad = queue.filter(i => i.status === 'failed' || i.status === 'partial').length;   // 'skipped' is a success (already up to date), not a problem
+    const active = queue.filter(i => i.status === 'active').length;
+    bar.style.width = Math.round((settled / total) * 100) + '%';
+    bar.style.background = bad ? '#d68910' : '#2e9e5b';
+    txt.textContent = `${settled}/${total}` + (active ? ` · ${active} running` : '') + (bad ? ` · ${bad} problem${bad > 1 ? 's' : ''}` : '');
+  }
+  // #494 follow-up (majkinetor: "that requires row to be in view. Lets put the
+  // warning bellow the progress bar so its visible all the time") — a
+  // standing summary of every release in the queue whose existingCount check
+  // (see checkExistingCoverArt) came back positive, always visible instead of
+  // needing that row expanded/scrolled into view.
+  function renderCoverWarning() {
+    const el = document.getElementById('falcon-cover-warning'); if (!el) return;
+    const dupes = queue.filter(i => i.entityType === 'release' && i.coverExistingCount);
+    if (!dupes.length) { el.style.display = 'none'; el.textContent = ''; return; }
+    el.style.display = 'block';
+    const names = dupes.map(i => `${entityLabel(i)} (${i.coverExistingCount})`).join(', ');
+    el.textContent = `⚠ ${dupes.length} release${dupes.length > 1 ? 's' : ''} already ${dupes.length > 1 ? 'have' : 'has'} cover art — ${names}`;
+  }
+
+  // #467 (majkinetor): "click the failed label, open its worker alone in a
+  // popup... show error in header" — then, after seeing a text-only version:
+  // "I didn't envision item details like this. I want to have worker visible
+  // there, in its active state." Tried REPARENTING the real iframe into a
+  // popup next — moving an iframe element to a new parent turned out to reset
+  // it to about:blank in Chromium (confirmed live), destroying the exact state
+  // we were trying to preserve. The iframe must never move, so instead: jump to
+  // the Workers tab and zoom the SAME card the retire/queue mechanism already
+  // keeps alive in place (see retireCard) — the real, untouched iframe, just
+  // shown larger, with its error now in a banner right on the card (not just a
+  // hover tooltip) so it's visible once zoomed. Falls back to a plain text
+  // popup (url list + error) only if the item was never picked up by any
+  // worker at all (so there's no card/iframe to jump to).
+  function focusItemWorker(item) {
+    const idx = workerCards.findIndex(c => c.dataset.itemId === item.id);
+    if (idx === -1) { showItemPopup(item); return; }
+    _zoomedWorker = idx;
+    setTab('workers');
+    renderWorkerLayout();
+  }
+  let _itemPopupId = null;
+  function ensureItemPopup() {
+    if (document.getElementById('falcon-item-popup')) return;
+    const el = document.createElement('div');
+    el.id = 'falcon-item-popup';
+    el.style.cssText = 'display:none;position:fixed;z-index:2147483647;left:50%;top:50%;transform:translate(-50%,-50%);width:520px;max-width:92vw;max-height:70vh;background:var(--mbu-bg);border-radius:8px;box-shadow:0 8px 28px rgba(0,0,0,.3);border:1px solid var(--mbu-border);overflow:hidden;flex-direction:column;font:12px -apple-system,Segoe UI,Arial,sans-serif';
+    el.innerHTML = `
+      <div id="falcon-item-popup-hdr" style="padding:8px 10px;background:#7a2020;color:#fff;display:flex;align-items:center;gap:8px">
+        <span id="falcon-item-popup-title" style="flex:1;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"></span>
+        <button type="button" id="falcon-item-popup-close" style="background:none;border:none;color:#fff;cursor:pointer;font-size:14px">✕</button>
+      </div>
+      <div id="falcon-item-popup-error" style="padding:8px 10px;background:var(--mbu-error-bg);color:var(--mbu-error);font-size:11px;white-space:pre-wrap;border-bottom:1px solid var(--mbu-error)"></div>
+      <div id="falcon-item-popup-body" style="padding:8px 10px;overflow:auto;flex:1"></div>
+      <div style="padding:8px 10px;border-top:1px solid var(--mbu-border);display:flex;justify-content:flex-end">
+        <button type="button" id="falcon-item-popup-opentab" style="padding:4px 10px;cursor:pointer">⇗ Open in tab</button>
+      </div>`;
+    document.body.appendChild(el);
+    document.getElementById('falcon-item-popup-close').onclick = () => { el.style.display = 'none'; _itemPopupId = null; };
+    document.getElementById('falcon-item-popup-opentab').onclick = () => {
+      const it = queue.find(i => i.id === _itemPopupId);
+      if (it) openInTab(it);
+    };
+  }
+  function showItemPopup(item) {
+    ensureItemPopup();
+    _itemPopupId = item.id;
+    const el = document.getElementById('falcon-item-popup');
+    document.getElementById('falcon-item-popup-title').textContent = `${entityLabel(item)} — ${item.status.toUpperCase()}`;
+    document.getElementById('falcon-item-popup-error').textContent = item.error || '(no error message recorded)';
+    document.getElementById('falcon-item-popup-body').innerHTML = renderRowDetail(item) || '<div style="color:var(--mbu-text-weak)">No url detail available — this item was never picked up by a worker.</div>';
+    el.style.display = 'flex';
+  }
+  // #512 follow-up (majkinetor): "add release name in the log name if present" — read
+  // back from the [names] line #509 logs, for a session stored before the name key
+  function extractReleaseName(entries) {
+    for (const e of entries) {
+      const m = /\[names\] release:[0-9a-f-]+ — (?:fetched|passed from source): "([^"]+)"/.exec(e.msg);
+      if (m) return m[1];
+    }
+    return null;
+  }
+  /* #546: mark a toolbar button as working — spinner, a label saying what it
+     is doing, and disabled so the action cannot be stacked on itself. Kept
+     next to updateRunBtn because it shares that function's constraint: write
+     the .falcon-bt / .falcon-bi spans, never the button's textContent, or the
+     collapse markup is wiped and the button sticks at full width. */
+  // #573: reflect whether a batch note is set, so it is obvious from the bar
+  // that every edit in the run will carry one — a reason silently attached to
+  // edits is the thing to avoid.
+  //   force — an IMPORT is an explicit user action and must win over the
+  //   don't-fight-the-cursor guard below; typing must not.
+  function syncBatchNoteUi(force) {
+    const btn = document.getElementById('falcon-note-btn');
+    const box = document.getElementById('falcon-note-text');
+    if (box && (force || document.activeElement !== box)) box.value = batchNote();
+    if (!btn) return;
+    const has = !!batchNote();
+    btn.style.borderColor = has ? 'var(--mbu-accent)' : '';
+    btn.style.color = has ? 'var(--mbu-accent-text)' : '';
+    btn.style.fontWeight = has ? '700' : '';
+    btn.title = has ? `Batch edit note (on every edit this run): ${batchNote()}`
+                    : 'Batch edit note — appended to every edit in this run';
+  }
+  function setBtnBusy(btn, on, opts) {
+    if (!btn) return;
+    const o = opts || {};
+    const bt = btn.querySelector('.falcon-bt'), bi = btn.querySelector('.falcon-bi');
+    if (on) {
+      if (btn.dataset.falconIdle == null) btn.dataset.falconIdle = JSON.stringify({ bt: bt ? bt.textContent : '', bi: bi ? bi.textContent : '', title: btn.title });
+      if (bt && o.label) bt.textContent = o.label;
+      if (o.title) btn.title = o.title;
+    } else if (btn.dataset.falconIdle != null) {
+      let was = {}; try { was = JSON.parse(btn.dataset.falconIdle); } catch (e) { /* fall through to defaults */ }
+      if (bt) bt.textContent = was.bt || '';
+      if (bi) bi.textContent = was.bi || '';
+      btn.title = was.title || '';
+      delete btn.dataset.falconIdle;
+    }
+    btn.classList.toggle('falcon-busy', !!on);
+    btn.disabled = !!on;
+    fitBar(btn.closest('.falcon-bar'));
+  }
+  /* #546: MusicBrainz answering slowly is the normal case here, not the
+     exception — this release's own one-request graph fetch was measured at
+     20-45s against production. Nothing can make that faster (it is already a
+     single request), so say so, repeatedly, instead of going silent. */
+  function beginWait(what) {
+    const t0 = Date.now();
+    const iv = setInterval(() => {
+      const s = Math.round((Date.now() - t0) / 1000);
+      log('info', `still waiting on MusicBrainz for ${what} — ${s}s so far. Large releases can take half a minute; nothing is stuck.`);
+    }, 5000);
+    return { done: () => { clearInterval(iv); return Date.now() - t0; } };
+  }
+  function updateRunBtn() {
+    const b = document.getElementById('falcon-run'); if (!b) return;
+    // label/icon spans only — see the expand-all note; textContent would wipe
+    // out the collapse markup and leave the button stuck at full width.
+    const bt = b.querySelector('.falcon-bt'), bi = b.querySelector('.falcon-bi');
+    if (bt) bt.textContent = running ? 'Stop' : 'Start';
+    if (bi) bi.textContent = running ? '■' : '▶';
+    b.title = running ? 'Stop after the running workers finish their current item' : 'Start processing the queue';
+    fitBar(b.closest('.falcon-bar'));
+  }
+  function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])); }
+
+  /* ── boot ────────────────────────────────────────────────────────────── */
+  // #551: do nothing whatsoever on MusicBrainz's "Verifying your browser"
+  // interstitial. Not merely "don't consume the token" — there is no point
+  // mounting a launcher or opening a session on a page that is about to replace
+  // itself. The real page loads a moment later and everything runs there
+  // untouched, exactly as it does when no challenge is served.
+  if (isVerifyInterstitial()) {
+    try { console.info('[Falcon] MusicBrainz served its "Verifying your browser" challenge instead of the page — standing down. Nothing is consumed; Falcon starts normally on the real page once the challenge clears.'); } catch (e) {}
+  } else if (ON_HARMONY) {
+    ensureHarmonyButton();
+    // #590: FIRST, before any of the scraping below. Harmony renders its error
+    // boxes server-side, so they are in the first byte of HTML — a page that
+    // errored is known to be worthless immediately, and waiting for three
+    // unchanged action counts and then a 4s send countdown only delays it.
+    maybeReloadOnError();
+    // Harmony's actions render client-side after load — rescan until the count
+    // settles (3 unchanged reads), then stop polling.
+    let stableCount = 0, lastN = -1;
+    const iv = setInterval(() => {
+      const n = scrapeHarmonyActions().length;
+      ensureHarmonyButton();
+      if (n === lastN) {
+        // #557: the auto-send hangs off the SAME settle signal the polling
+        // already computes — sending earlier would ship a partial batch.
+        if (++stableCount >= 3) { clearInterval(iv); maybeAutoSend(); }
+      } else { stableCount = 0; lastN = n; }
+    }, 1000);
+  } else {
+    const seeded = parseUrlParam();
+    ensureLauncher();
+    // #671: a script on this same page (Platform Check's Artists & labels) hands over the
+    // JSON model as a DOM event, which every userscript sandbox hears; it is queued as
+    // Import queues a file, and the ack tells the sender not to open a tab instead.
+    // falcon:run also starts the queue (only a script already on this page can ask that;
+    // a ?falcon= link never starts on its own).
+    // A root `closeWhenDone: true` on falcon:run closes the panel once that run finishes
+    // with nothing failed (Platform Check's "Close Falcon after a successful import").
+    // #680: a root `headless: true` keeps the panel shut, and `tag` names the batch in the
+    // falcon:status reports (see emitTaggedStatus). A failed item still shows on the launcher.
+    const fromPage = run => e => {
+      if (typeof e.detail !== 'string') return;
+      document.dispatchEvent(new CustomEvent('falcon:import-ok'));
+      let root = {};
+      try { root = JSON.parse(e.detail) || {}; } catch (x) { /* importQueueJson logs it */ }
+      const before = new Set(queue.map(i => i.id));
+      const r = importQueueJson(e.detail, 'a script on this page', { merge: true });
+      if (root.tag) {
+        const keys = new Set((root.items || []).map(x => normalizeEntityType(x.entityType) + ':' + String(x.mbid || '').toLowerCase()));
+        queue.forEach(i => { if (!before.has(i.id) || (i.status === 'queued' && keys.has(i.entityType + ':' + String(i.mbid).toLowerCase()))) _tagged.set(i.id, String(root.tag)); });
+        log('info', `batch tagged ${JSON.stringify(String(root.tag))}: ${[..._tagged.values()].filter(t => t === String(root.tag)).length} item(s)${root.headless ? ', headless (panel stays shut)' : ''}`);
+        emitTaggedStatus();
+      }
+      if (!root.headless) showPanel();
+      else if (!panel || panel.style.display !== 'flex' || panel.dataset.headless) {
+        // the workers live in the panel's strip, so build it, but off-screen (showPanel brings it back)
+        ensurePanel();
+        if (!panel.dataset.headless) panel.dataset.headless = JSON.stringify({ left: panel.style.left, top: panel.style.top });
+        panel.style.cssText += ';display:flex;left:-20000px;top:0;opacity:0;pointer-events:none';
+      }
+      if (run && r && (r.added || r.merged)) {
+        let close = false;
+        try { close = JSON.parse(e.detail).closeWhenDone === true; } catch (x) { /* importQueueJson logged it */ }
+        whenQueueSettles(20000).then(() => { start(); _closeWhenDone = close && running; });
+      }
+    };
+    document.addEventListener('falcon:import', fromPage(false));
+    document.addEventListener('falcon:run', fromPage(true));
+    document.addEventListener('falcon:show', () => showPanel());   // #680: Mission Control's "Open Falcon"
+    // #591 — both halves of the rip-log flow live on ordinary MusicBrainz pages
+    // and are independent of the queue, so they run whether or not this tab was
+    // seeded with anything.
+    ensureDiscIdUi();
+    autoPickAttachMedium();
+    const applySeed = seeded => {
+      if (seeded && seeded.importText) {
+        // #671: the whole JSON model, read exactly as Import reads a file
+        newSession('seeded from the falcon= URL param (the JSON model)');
+        importQueueJson(seeded.importText, 'the falcon= URL', { merge: true });
+        showPanel();
+      } else if (seeded && seeded.length) {
+        // #512 (majkinetor, live: "See the log before starting queue - it
+        // still contains older logs from 13:54") — falcon:session:current
+        // lives in localStorage, which is shared across EVERY tab on
+        // musicbrainz.org, not scoped to this one. A brand new tab opened by
+        // "Send to Falcon" (or any fresh `?falcon=` seed) was reattaching to
+        // whatever session the LAST tab's LAST run left behind, instead of
+        // starting clean. A genuine new seed always means a new session.
+        newSession(`seeded ${seeded.length} item(s) from the falcon= URL param`);
+        if (seeded.fromHarmony) _harmonySeeded = true;
+        addToQueue(seeded);
+        showPanel();
+        // #508 follow-up (majkinetor): "Auto start Harmony import (off by
+        // default)" — only for a genuine Harmony-sourced seed (the GM-storage
+        // token scheme), not an arbitrary `?falcon=` base64 payload some other
+        // script/user constructed by hand.
+        if (seeded.fromHarmony && cfg.autoStartHarmonyImport) {
+          // …after the queue stops growing. See whenQueueSettles: starting on the
+          // synchronous half of a Harmony payload skipped the cover and left the
+          // recordings behind.
+          whenQueueSettles(20000).then(() => start());
+        }
+      }
+    };
+    if (seeded && seeded.awaitToken) {
+      // Not in this copy's storage: another installed copy, starting after this one, may
+      // hold it and hand it over (falconHandOver). It starts within moments, or not at all.
+      const token = seeded.awaitToken;
+      let done = false;
+      const onHandOver = e => {
+        const h = handedOver(token, e.detail);
+        if (!h || done) return;
+        done = true; document.removeEventListener('falcon:handover', onHandOver);
+        log('info', 'the batch was written by another installed copy of Falcon, which handed it over');
+        applySeed(decodeSeed(h.json, true, h.note));
+      };
+      document.addEventListener('falcon:handover', onHandOver);
+      setTimeout(() => { if (done) return; done = true; document.removeEventListener('falcon:handover', onHandOver); tokenLost(); }, 4000);
+    } else applySeed(seeded);
+    // (An interrupted run used to force the panel open here on the Log tab. It
+    // was scaffolding for chasing the tab-closing bug, and it had a nasty edge:
+    // with the panel already open at boot, the launcher's first click TOGGLED IT
+    // SHUT. The previous session's log is still restored and still one click
+    // away on the Log tab — it just doesn't hijack the panel any more.)
+    window.addEventListener('keydown', e => {
+      if (!e.ctrlKey || !e.altKey || e.shiftKey || e.metaKey) return;
+      if ((e.key || '').toLowerCase() !== 'f') return;
+      e.preventDefault(); e.stopPropagation();
+      togglePanel();
+    });
+    // Esc closes the panel, or first whatever is open over it: an item's popup here, the
+    // add menu and the log window by their own Esc. Listened to on the way down, so it
+    // sees those still open. Typing in the page's own fields is left alone; in the
+    // panel's fields Esc still closes it.
+    document.addEventListener('keydown', e => {
+      if (e.key !== 'Escape' || e.defaultPrevented || e.ctrlKey || e.altKey || e.metaKey || e.shiftKey) return;
+      if (!panel || panel.style.display === 'none') return;
+      const pop = document.getElementById('falcon-item-popup');
+      if (pop && pop.style.display !== 'none') { pop.style.display = 'none'; _itemPopupId = null; e.stopPropagation(); return; }
+      if (document.querySelector('.falcon-addmenu, #mbu-logpop')) return;
+      const t = e.target;
+      if (t && t.closest && !t.closest('#falcon-panel') && (t.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName))) return;
+      panel.style.display = 'none';
+    }, true);
+  }
+
+  // Test hook only (#467) — no behavior change; built only on a test page (#623).
+  if (mbuTestHooks()) window.__falconTest = { DISAMBIGUATABLE, pageEntityContext, fetchReleaseGraph, fetchGroupReleases, releaseGraphTuples, normalizeAliases, isDuplicateAlias, fetchExistingAliases, submitAlias, runAliasItem, resolveAliasTypeId, parseLine, parsePaste, parseUrlParam, parseHarmonySeedUrl, encodeFalconPayload, scrapeHarmonyActions, makePendingToken, addToQueue, getQueue: () => queue, setQueue: q => { queue = q; renderQueue(); }, start, stop, cfg, fillAndSubmit, findAddLinkInput, findSubmitButton, findFieldError, findNoChangesWarning, setRowLinkType, addSecondRelationshipType, editUrl, buildSeedEditUrl, nextQueued, fetchEntityName, entityLabel, openInTab, getSelectedIds: () => _selectedIds, getExpandedIds: () => _expandedIds, mbThrottle, showItemPopup, focusItemWorker, importQueueJson, suspendNameLookups, resumeNameLookups, getLog: () => Log.entries().map(e => `[${e.t ? e.t.toISOString().slice(11, 19) : "--:--:--"}] ${e.sev.toUpperCase().padEnd(5)} ${e.cat ? `[${e.cat}] ` : ""}${e.msg}`), getSessionId: () => Log.sessionId(), noteUnload, editNoteText, setEditNote, isLoggedIn, scrapeHarmonyIsrcs, harmonyIsrcFallback, resolveIsrcFallback,
+    // #494
+    scrapeHarmonyCover, parseCoverCaptionMeta, pickBestCover, coverEditNote, gmFetch, runCoverItem, mimeFromUrl, checkExistingCoverArt,
+    // #495
+    entityUrlSegment, activateReleaseEditNoteTab,
+    // #497
+    getDisabledTypes: () => _disabledTypes, setDisabledTypes: s => { _disabledTypes = s; renderQueue(); },
+    // #671
+    setHarmonySeeded: v => { _harmonySeeded = !!v; },
+    // #500
+    // #509 follow-up
+    resolveMissingNames,
+    // #512
+    listSessionKeys, pruneOldSessions, loadSessionLines, Log,
+    logRunSummary,
+    // #512 follow-up: release name persisted outside the trimmable log
+    sessionNameKey, noteSessionReleaseName, sessionReleaseName, deleteSessionData,
+    // #593
+    newSession, writeLogNow, log, dbg, LOG_PERSIST_MAX: () => LOG_PERSIST_MAX, LOG_PERSIST_HEAD: () => LOG_PERSIST_HEAD,
+    // #513
+    getStatusFilter: () => _statusFilter, setStatusFilter: s => { _statusFilter = s; renderQueue(); },
+    // #508 follow-up
+    topUpWorkers, getWorkerCardCount: () => workerCards.length, isRunning: () => running,
+    // #512 follow-up
+    sessionHasRealWork, extractReleaseName,
+    isVerifyInterstitial,   // #551
+    // #546
+    setBtnBusy, beginWait, renderQueue,
+    // #547
+    updateWorkerLabel, workerPhase, spawnWorkerCard,
+    // #557
+    sendToFalcon, maybeAutoSend, cancelAutoSend, openMbTab, harmonyReleaseMbid, picardParam, sendReleaseToPicard,
+    autoSendPending: () => !!_autoSendTimer, autoSendFired: () => _autoSendDone,
+    // #590
+    harmonyErrorState, harmonyErrorSummary, harmonyReloadDelayMs, maybeReloadOnError, cancelHarmonyReload,
+    onHarmonyActionsPage, harmonyReloadCount, setHarmonyReloadCount,
+    HARMONY_PERMANENT_RE, HARMONY_SLOW_DOWN_RE, HARMONY_UNCHECKED_RE, isMbErrorBox,
+    reloadPending: () => !!_reloadTimer,
+    // #588
+    maybeReloadReleasePage, reloadedAfterImportHere, RELOADED_KEY,
+    maybeClosePanelAfterRun, setCloseWhenDone: v => { _closeWhenDone = v; }, showPanel,
+    // #591
+    parseRipLog, parseEacLog, parseWhipperLog, parseDbPowerampLog, parseCyanripLog,
+    calcMbToc, mbDiscId, tocParam, readLogText, discIdFromLog,
+    ensureDiscIdUi, autoPickAttachMedium, mediumMayHaveDiscIds, scrapeMediumIds, goAttach,
+    resolveMediumId, goAttachResolved, signAttachEditNote, FALCON_SIGNATURE,
+    // #571
+    RENAMEABLE, NAME_SEEDS, setReleaseName, setReleaseField,
+    // #572
+    fetchSeriesMembers, fetchReleaseGroupsOf,
+    // #573
+    batchNote, setBatchNote, withBatchNote, syncBatchNoteUi };   // editNoteText is listed above
+})();
+})(); } catch (e) { try { console.error('[String Theory] falcon failed while starting — the other scripts carry on:', e); } catch (x) {} } });
+})(typeof GM_info !== 'undefined' ? GM_info : undefined);
+
+// ===== first_contact (@run-at document-start) =====================================
+if (__stOff.indexOf("first_contact") < 0 && __stRuns("first_contact", {"inc":["^https:\\/\\/www\\.deezer\\.com(?::\\d+)?/.*$","^https:\\/\\/(?:[^/]*\\.)?bandcamp\\.com(?::\\d+)?/album/.*$","^https:\\/\\/www\\.discogs\\.com(?::\\d+)?/.*$","^https:\\/\\/music\\.apple\\.com(?::\\d+)?/.*$","^https:\\/\\/tidal\\.com(?::\\d+)?/.*$","^https:\\/\\/listen\\.tidal\\.com(?::\\d+)?/.*$","^https:\\/\\/www\\.qobuz\\.com(?::\\d+)?/.*/album/.*$","^https:\\/\\/www\\.beatport\\.com(?::\\d+)?/.*$","^https:\\/\\/open\\.spotify\\.com(?::\\d+)?/.*$","^https:\\/\\/music\\.youtube\\.com(?::\\d+)?/.*$","^https:\\/\\/www\\.youtube\\.com(?::\\d+)?/playlist.*$","^https:\\/\\/volumo\\.com(?::\\d+)?/.*$","^https:\\/\\/www\\.hdtracks\\.com(?::\\d+)?/.*$","^https:\\/\\/soundcloud\\.com(?::\\d+)?/.*$","^https:\\/\\/audiomack\\.com(?::\\d+)?/.*$","^https:\\/\\/(?:[^/]*\\.)?7digital\\.com(?::\\d+)?/artist/.*$","^https:\\/\\/ototoy\\.jp(?::\\d+)?/_/default/p/.*$","^https:\\/\\/music\\.amazon\\.com(?::\\d+)?/.*$","^https:\\/\\/music\\.amazon\\.co\\.uk(?::\\d+)?/.*$","^https:\\/\\/music\\.amazon\\.de(?::\\d+)?/.*$","^https:\\/\\/music\\.amazon\\.fr(?::\\d+)?/.*$","^https:\\/\\/music\\.amazon\\.it(?::\\d+)?/.*$","^https:\\/\\/music\\.amazon\\.es(?::\\d+)?/.*$","^https:\\/\\/music\\.amazon\\.ca(?::\\d+)?/.*$","^https:\\/\\/music\\.amazon\\.co\\.jp(?::\\d+)?/.*$","^https:\\/\\/music\\.amazon\\.com\\.au(?::\\d+)?/.*$","^https:\\/\\/music\\.amazon\\.com\\.br(?::\\d+)?/.*$","^https:\\/\\/music\\.amazon\\.com\\.mx(?::\\d+)?/.*$","^https:\\/\\/music\\.amazon\\.in(?::\\d+)?/.*$","^https:\\/\\/(?:[^/]*\\.)?musicbrainz\\.org(?::\\d+)?/release/add.*$"],"exc":[],"noframes":true})) (function(__stGM){
+  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"First Contact*","namespace":"https://musicbrainz.org/","version":"2026.10.9","description":"Import a release into MusicBrainz from the platform's album page with one click: the release editor opens with the title, tracklist, artists, date, label, barcode and link filled in. Each artist's platform link is handed to Apollo Editor for matching. A second button sends the album to Harmony instead. By default the album page is also saved on the Internet Archive (it sends each imported URL to archive.org; off in the settings), and the edit note links the snapshot. Platforms: Deezer, Bandcamp, Discogs, Apple Music, Tidal, Qobuz, Beatport, Spotify, YouTube Music, Volumo, HDtracks, SoundCloud, Amazon Music, Audiomack, 7digital, Ototoy.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/first_contact/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPkZpcnN0IENvbnRhY3Q8L3RpdGxlPgogIDwhLS0gdHJhY3RvciBiZWFtIC0tPgogIDxwYXRoIGQ9Ik01MCA0NCBMNzggNDQgTDEwNCAxMTIgTDI0IDExMiBaIiBmaWxsPSIjZjZjNDMxIiBvcGFjaXR5PSIwLjkiLz4KICA8cGF0aCBkPSJNNTYgNDQgTDcyIDQ0IEw4OCAxMTIgTDQwIDExMiBaIiBmaWxsPSIjZmRlNjhhIiBvcGFjaXR5PSIwLjciLz4KICA8IS0tIGxhbmRpbmcgcmluZyAtLT4KICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSIxMTQiIHJ4PSI0MiIgcnk9IjgiIGZpbGw9IiMxZTIzNDYiIHN0cm9rZT0iI2M5Y2RmMiIgc3Ryb2tlLXdpZHRoPSIzIi8+CiAgPGVsbGlwc2UgY3g9IjY0IiBjeT0iMTEzIiByeD0iMjYiIHJ5PSI0LjIiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2Y2YzQzMSIgc3Ryb2tlLXdpZHRoPSIyLjQiLz4KICA8IS0tIHNhdWNlcjogYSBwYWxlIHJpbSwgc28gaXQgc2hvd3Mgb24gYSBkYXJrIGJhY2tncm91bmQgdG9vIC0tPgogIDxwYXRoIGQ9Ik00MCAyNiBBMjQgMTggMCAwIDEgODggMjYgWiIgZmlsbD0iIzFlMjM0NiIgc3Ryb2tlPSIjYzljZGYyIiBzdHJva2Utd2lkdGg9IjMiLz4KICA8cGF0aCBkPSJNNTAgMTggQTEwIDYgMCAwIDEgNjAgMTQiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2ZmZiIgc3Ryb2tlLXdpZHRoPSIyLjYiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxlbGxpcHNlIGN4PSI2NCIgY3k9IjMyIiByeD0iNTYiIHJ5PSIxMyIgZmlsbD0iIzFlMjM0NiIgc3Ryb2tlPSIjYzljZGYyIiBzdHJva2Utd2lkdGg9IjMiLz4KICA8Y2lyY2xlIGN4PSIzOCIgY3k9IjMyIiByPSI0LjQiIGZpbGw9IiNmZmYiLz4KICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjM0IiByPSI0LjQiIGZpbGw9IiNmZmYiLz4KICA8Y2lyY2xlIGN4PSI5MCIgY3k9IjMyIiByPSI0LjQiIGZpbGw9IiNmZmYiLz4KICA8IS0tIHRoZSByZWxlYXNlIGJlaW5nIGJlYW1lZCB1cDogYSBwdXJwbGUgaGV4YWdvbiB3aXRoIGEgbm90ZSAtLT4KICA8cGF0aCBkPSJNNjQgNTggTDg0IDY5LjUgTDg0IDkyLjUgTDY0IDEwNCBMNDQgOTIuNSBMNDQgNjkuNSBaIiBmaWxsPSIjN2I0ZmQ2Ii8+CiAgPHBhdGggZD0iTTY0IDU4IEw4NCA2OS41IEw2NCA4MSBMNDQgNjkuNSBaIiBmaWxsPSIjOWI3MmVhIi8+CiAgPHBhdGggZD0iTTYwIDcyIEw3NCA2OSBMNzQgODkiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2ZmZiIgc3Ryb2tlLXdpZHRoPSIzLjQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz4KICA8cGF0aCBkPSJNNjAgNzIgTDYwIDkyIiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iMy40Ii8+CiAgPGVsbGlwc2UgY3g9IjU2IiBjeT0iOTIiIHJ4PSI0LjYiIHJ5PSIzLjYiIGZpbGw9IiNmZmYiLz4KICA8ZWxsaXBzZSBjeD0iNzAiIGN5PSI4OSIgcng9IjQuNiIgcnk9IjMuNiIgZmlsbD0iI2ZmZiIvPgogIDwhLS0gc3BhcmtsZXMgLS0+CiAgPHBhdGggZD0iTTE4IDU0IGwyLjUgNiA2IDIuNSAtNiAyLjUgLTIuNSA2IC0yLjUgLTYgLTYgLTIuNSA2IC0yLjUgWiIgZmlsbD0iI2Y2YzQzMSIvPgogIDxwYXRoIGQ9Ik0xMDggNTIgbDIuNSA2IDYgMi41IC02IDIuNSAtMi41IDYgLTIuNSAtNiAtNiAtMi41IDYgLTIuNSBaIiBmaWxsPSIjMWUyMzQ2Ii8+CiAgPHBhdGggZD0iTTExMiA4MiBsMS44IDQuMiA0LjIgMS44IC00LjIgMS44IC0xLjggNC4yIC0xLjggLTQuMiAtNC4yIC0xLjggNC4yIC0xLjggWiIgZmlsbD0iI2Y2YzQzMSIvPgogIDxwYXRoIGQ9Ik0xNCA4NiBsMS44IDQuMiA0LjIgMS44IC00LjIgMS44IC0xLjggNC4yIC0xLjggLTQuMiAtNC4yIC0xLjggNC4yIC0xLjggWiIgZmlsbD0iIzFlMjM0NiIvPgo8L3N2Zz4K"}) }) : { script: {"name":"First Contact*","namespace":"https://musicbrainz.org/","version":"2026.10.9","description":"Import a release into MusicBrainz from the platform's album page with one click: the release editor opens with the title, tracklist, artists, date, label, barcode and link filled in. Each artist's platform link is handed to Apollo Editor for matching. A second button sends the album to Harmony instead. By default the album page is also saved on the Internet Archive (it sends each imported URL to archive.org; off in the settings), and the edit note links the snapshot. Platforms: Deezer, Bandcamp, Discogs, Apple Music, Tidal, Qobuz, Beatport, Spotify, YouTube Music, Volumo, HDtracks, SoundCloud, Amazon Music, Audiomack, 7digital, Ototoy.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/first_contact/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPkZpcnN0IENvbnRhY3Q8L3RpdGxlPgogIDwhLS0gdHJhY3RvciBiZWFtIC0tPgogIDxwYXRoIGQ9Ik01MCA0NCBMNzggNDQgTDEwNCAxMTIgTDI0IDExMiBaIiBmaWxsPSIjZjZjNDMxIiBvcGFjaXR5PSIwLjkiLz4KICA8cGF0aCBkPSJNNTYgNDQgTDcyIDQ0IEw4OCAxMTIgTDQwIDExMiBaIiBmaWxsPSIjZmRlNjhhIiBvcGFjaXR5PSIwLjciLz4KICA8IS0tIGxhbmRpbmcgcmluZyAtLT4KICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSIxMTQiIHJ4PSI0MiIgcnk9IjgiIGZpbGw9IiMxZTIzNDYiIHN0cm9rZT0iI2M5Y2RmMiIgc3Ryb2tlLXdpZHRoPSIzIi8+CiAgPGVsbGlwc2UgY3g9IjY0IiBjeT0iMTEzIiByeD0iMjYiIHJ5PSI0LjIiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2Y2YzQzMSIgc3Ryb2tlLXdpZHRoPSIyLjQiLz4KICA8IS0tIHNhdWNlcjogYSBwYWxlIHJpbSwgc28gaXQgc2hvd3Mgb24gYSBkYXJrIGJhY2tncm91bmQgdG9vIC0tPgogIDxwYXRoIGQ9Ik00MCAyNiBBMjQgMTggMCAwIDEgODggMjYgWiIgZmlsbD0iIzFlMjM0NiIgc3Ryb2tlPSIjYzljZGYyIiBzdHJva2Utd2lkdGg9IjMiLz4KICA8cGF0aCBkPSJNNTAgMTggQTEwIDYgMCAwIDEgNjAgMTQiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2ZmZiIgc3Ryb2tlLXdpZHRoPSIyLjYiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxlbGxpcHNlIGN4PSI2NCIgY3k9IjMyIiByeD0iNTYiIHJ5PSIxMyIgZmlsbD0iIzFlMjM0NiIgc3Ryb2tlPSIjYzljZGYyIiBzdHJva2Utd2lkdGg9IjMiLz4KICA8Y2lyY2xlIGN4PSIzOCIgY3k9IjMyIiByPSI0LjQiIGZpbGw9IiNmZmYiLz4KICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjM0IiByPSI0LjQiIGZpbGw9IiNmZmYiLz4KICA8Y2lyY2xlIGN4PSI5MCIgY3k9IjMyIiByPSI0LjQiIGZpbGw9IiNmZmYiLz4KICA8IS0tIHRoZSByZWxlYXNlIGJlaW5nIGJlYW1lZCB1cDogYSBwdXJwbGUgaGV4YWdvbiB3aXRoIGEgbm90ZSAtLT4KICA8cGF0aCBkPSJNNjQgNTggTDg0IDY5LjUgTDg0IDkyLjUgTDY0IDEwNCBMNDQgOTIuNSBMNDQgNjkuNSBaIiBmaWxsPSIjN2I0ZmQ2Ii8+CiAgPHBhdGggZD0iTTY0IDU4IEw4NCA2OS41IEw2NCA4MSBMNDQgNjkuNSBaIiBmaWxsPSIjOWI3MmVhIi8+CiAgPHBhdGggZD0iTTYwIDcyIEw3NCA2OSBMNzQgODkiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2ZmZiIgc3Ryb2tlLXdpZHRoPSIzLjQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz4KICA8cGF0aCBkPSJNNjAgNzIgTDYwIDkyIiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iMy40Ii8+CiAgPGVsbGlwc2UgY3g9IjU2IiBjeT0iOTIiIHJ4PSI0LjYiIHJ5PSIzLjYiIGZpbGw9IiNmZmYiLz4KICA8ZWxsaXBzZSBjeD0iNzAiIGN5PSI4OSIgcng9IjQuNiIgcnk9IjMuNiIgZmlsbD0iI2ZmZiIvPgogIDwhLS0gc3BhcmtsZXMgLS0+CiAgPHBhdGggZD0iTTE4IDU0IGwyLjUgNiA2IDIuNSAtNiAyLjUgLTIuNSA2IC0yLjUgLTYgLTYgLTIuNSA2IC0yLjUgWiIgZmlsbD0iI2Y2YzQzMSIvPgogIDxwYXRoIGQ9Ik0xMDggNTIgbDIuNSA2IDYgMi41IC02IDIuNSAtMi41IDYgLTIuNSAtNiAtNiAtMi41IDYgLTIuNSBaIiBmaWxsPSIjMWUyMzQ2Ii8+CiAgPHBhdGggZD0iTTExMiA4MiBsMS44IDQuMiA0LjIgMS44IC00LjIgMS44IC0xLjggNC4yIC0xLjggLTQuMiAtNC4yIC0xLjggNC4yIC0xLjggWiIgZmlsbD0iI2Y2YzQzMSIvPgogIDxwYXRoIGQ9Ik0xNCA4NiBsMS44IDQuMiA0LjIgMS44IC00LjIgMS44IC0xLjggNC4yIC0xLjggLTQuMiAtNC4yIC0xLjggNC4yIC0xLjggWiIgZmlsbD0iIzFlMjM0NiIvPgo8L3N2Zz4K"} };
+  (f=>f())(function(){ try { (function(){
+(function () {
+'use strict';
+// one copy per page: with String Theory and a standalone install both on, the newer one runs (#653)
+if (!mbuClaim('first_contact', 'First Contact')) return;
+
+const VERSION = (typeof GM_info !== 'undefined' && GM_info && GM_info.script && GM_info.script.version) || '?';
+const SCRIPT = 'first_contact';
+const NAME = 'First Contact';
+const HOMEPAGE = 'https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/first_contact/README.md';
+const ON_MB = /(^|\.)musicbrainz\.org$/.test(location.hostname);
+const ICON_SVG = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="18" height="18" aria-hidden="true">'
+    + '<path d="M50 44 L78 44 L104 112 L24 112 Z" fill="#f6c431"/>'
+    + '<ellipse cx="64" cy="114" rx="42" ry="8" fill="#1e2346" stroke="#c9cdf2" stroke-width="3"/>'
+    + '<path d="M40 26 A24 18 0 0 1 88 26 Z" fill="#1e2346" stroke="#c9cdf2" stroke-width="3"/>'
+    + '<ellipse cx="64" cy="32" rx="56" ry="13" fill="#1e2346" stroke="#c9cdf2" stroke-width="3"/>'
+    + '<circle cx="38" cy="32" r="4.4" fill="#fff"/><circle cx="64" cy="34" r="4.4" fill="#fff"/><circle cx="90" cy="32" r="4.4" fill="#fff"/>'
+    + '<path d="M64 58 L84 69.5 L84 92.5 L64 104 L44 92.5 L44 69.5 Z" fill="#7b4fd6"/>'
+    + '<path d="M60 72 L74 69 L74 89 M60 72 L60 92" fill="none" stroke="#fff" stroke-width="3.4"/>'
+    + '<ellipse cx="56" cy="92" rx="4.6" ry="3.6" fill="#fff"/><ellipse cx="70" cy="89" rx="4.6" ry="3.6" fill="#fff"/></svg>';
+
+// MusicBrainz's special-purpose artists that a platform names verbatim.
+const VARIOUS_ARTISTS_MBID = '89ad4ac3-39f7-470e-963a-56509c546377';
+
+// Handoffs (the platform links of every credited artist) wait in GM storage for the release
+// editor tab. They are small; a day is plenty for a tab that was opened and left.
+const HANDOFF_PREFIX = 'fc.handoff.';
+// A seed waiting for the editor's tab (sendSeed), pruned with the handoffs
+const SEED_PREFIX = HANDOFF_PREFIX + 'seed.';
+// majkinetor: "handoff probably shouldn't spam the settings?" — every import left its handoff in
+// the script's storage for a day. Now the release editor takes it out once it has it (keeping a
+// copy for that tab, so a reload still finds it), and one that was never picked up (the editor
+// never opened) goes after an hour.
+const HANDOFF_TTL_MS = 3600 * 1000;
+const SERVERS = ['musicbrainz.org', 'beta.musicbrainz.org', 'test.musicbrainz.org'];
+
+/* ── activity log: the shared window and buffer (mbuLog, in the ST-UI block below) ── */
+const Log = mbuLog({ name: NAME, version: VERSION, header: NAME + ' — activity log', key: 'fc.logwin', before: () => injectStyle() });
+Log.info(mbuStartupInfo(NAME));
+mbuToast.log = (kind, msg) => (kind === 'warn' ? Log.warn(msg) : kind === 'ok' ? Log.ok(msg) : Log.info(msg));
+
+function settings() {
+    const s = Object.assign({ server: 'musicbrainz.org', iconOnly: false, gearOnHover: false, closeAfter: false, harmony: true, archive: true, iaKey: '', iaSecret: '' }, GM_getValue('fc.settings', {}));
+    if (!SERVERS.includes(s.server)) s.server = 'musicbrainz.org';
+    return s;
+}
+function saveSettings(s) { GM_setValue('fc.settings', s); }
+
+/* ── network ─────────────────────────────────────────────────────────────── */
+
+// A GET through the manager (no CORS): the response text, or throws. `headers` add to the request;
+// an error carries the HTTP status (`e.status`) for a caller that retries on one.
+function gmText(url, headers) {
+    const t0 = Date.now();
+    return new Promise((resolve, reject) => {
+        GM_xmlhttpRequest({
+            method: 'GET', url, headers: Object.assign({ Accept: 'application/json' }, headers || {}), timeout: 20000, anonymous: true,
+            onload: r => {
+                Log.debug(`GET ${url} → ${r.status}, ${(r.responseText || '').length} b in ${Date.now() - t0} ms`);
+                if (r.status < 200 || r.status >= 300) return reject(Object.assign(new Error(`HTTP ${r.status} for ${url}`), { status: r.status }));
+                resolve(r.responseText || '');
+            },
+            onerror: () => reject(new Error(`network error for ${url}`)),
+            ontimeout: () => reject(new Error(`timeout for ${url}`)),
+        });
+    });
+}
+async function gmJson(url, headers) {
+    const text = await gmText(url, headers);
+    try { return JSON.parse(text); } catch (e) { throw new Error(`bad JSON from ${url}: ${e.message}`); }
+}
+
+// A form POST through the manager: the parsed JSON answer, or throws.
+function gmPostJson(url, body, headers) {
+    return new Promise((resolve, reject) => {
+        GM_xmlhttpRequest({
+            method: 'POST', url, data: body, timeout: 20000, anonymous: true,
+            headers: Object.assign({ 'Content-Type': 'application/x-www-form-urlencoded', Accept: 'application/json' }, headers || {}),
+            onload: r => {
+                Log.debug(`POST ${url} → ${r.status}`);
+                let j = null; try { j = JSON.parse(r.responseText || 'null'); } catch (e) { /* not JSON */ }
+                if (r.status < 200 || r.status >= 300) return reject(Object.assign(new Error(`HTTP ${r.status} for ${url}${j && j.error ? ': ' + j.error : ''}`), { status: r.status }));
+                resolve(j);
+            },
+            onerror: () => reject(new Error(`network error for ${url}`)),
+            ontimeout: () => reject(new Error(`timeout for ${url}`)),
+        });
+    });
+}
+
+// Run fn over items with at most `limit` in flight; results keep the input order.
+async function mapLimit(items, limit, fn) {
+    const out = new Array(items.length);
+    let next = 0;
+    const worker = async () => { while (next < items.length) { const i = next++; out[i] = await fn(items[i], i); } };
+    await Promise.all(Array.from({ length: Math.min(limit, items.length) }, worker));
+    return out;
+}
+
+/* ── shared parsing helpers (platform-neutral) ───────────────────────────── */
+
+// A "(feat. A and B)" / "[ft. A & B]" / "feat. A, B" clause in a title. Returns the title
+// without it and the featured names, in order.
+function splitFeat(title) {
+    const s = String(title || '');
+    const re = /\s*[([]\s*(?:feat\.?|ft\.?|featuring)\s+([^)\]]+)[)\]]|(?:^|\s+)(?:feat\.?|ft\.?|featuring)\s+(.+)$/i;
+    const m = s.match(re);
+    if (!m) return { title: s.trim(), feat: [] };
+    const names = (m[1] || m[2]).split(/\s*(?:,|&|\band\b)\s*/i).map(n => n.trim()).filter(Boolean);
+    return { title: (s.slice(0, m.index) + s.slice(m.index + m[0].length)).replace(/\s{2,}/g, ' ').trim(), feat: names };
+}
+
+const normName = s => String(s || '').normalize('NFKC').toLowerCase().replace(/[\s.'’]+/g, ' ').trim();
+
+// Artist list → MB artist credit: mains joined "A, B & C", then " feat. " and the featured
+// ones the same way. Each entry keeps the platform link for Apollo.
+function toCredit(mains, feats) {
+    const join = (list, last) => list.map((a, i) => Object.assign({}, a, { join: i === list.length - 1 ? last : i === list.length - 2 ? ' & ' : ', ' }));
+    const m = join(mains, feats.length ? ' feat. ' : '');
+    const f = join(feats, '');
+    return m.concat(f);
+}
+
+// Split a platform's flat contributor list into mains and featured by the title's feat. clause.
+function creditFromTitle(contributors, featNames) {
+    const featSet = new Set(featNames.map(normName));
+    const mains = [], feats = [];
+    for (const c of contributors) (featSet.has(normName(c.name)) ? feats : mains).push(c);
+    // a featured name the platform didn't list as a contributor still belongs in the credit
+    for (const n of featNames) if (!feats.some(c => normName(c.name) === normName(n))) feats.push({ name: n });
+    if (!mains.length && feats.length) mains.push(feats.shift());   // never a credit that starts with " feat."
+    return toCredit(mains, feats);
+}
+
+// The primary type a release looks like, after murdos's fnGuessReleaseType (mbimport.js,
+// github.com/murdos/musicbrainz-userscripts), most confident first:
+//   1. an "EP" / "E.P." token in the title;
+//   2. "Single" ending the title ("Song - Single", "Song (Single)") — or anywhere in it, within
+//      8 tracks and 50 minutes (it's common English, so it needs the guard);
+//   3. every track the same song once versions are taken off ("Song", "Song (Remix)",
+//      "Song (Instrumental)") → Single;
+//   4. by size: 7+ tracks or over 30 minutes → Album; up to 7 minutes → Single; else EP from
+//      2 tracks up. Without every length: 1 track Single, 3–6 EP, 7+ Album, 2 left open.
+// Returns { type: 'Album' | 'EP' | 'Single' | null, why, explicit } — explicit when the title
+// says so, which then outranks a platform that calls everything an album.
+const TYPE_VERSION_MARKER = /\b(?:a ?cap+el+a|acoustic|alt(?:ernate)?|bootleg|clean|club|demo|dirty|dub|edit|explicit|extended|instrumental|karaoke|live|mix|mono|original|radio|remaster(?:ed)?|remix|rework|short|slowed|sped[ -]up|stereo|version|vip|vocal)\b/i;
+// (the brackets are { / } escapes so the test harness's brace matching reads the function whole)
+function normTrackTitle(title) {
+    return String(title || '').normalize('NFKC').toLocaleLowerCase()
+        .replace(/\s*[([\x7B]([^\])\x7D]*?)[\])\x7D]/g, (m, inner) => (TYPE_VERSION_MARKER.test(inner) ? '' : m))
+        .replace(/\s*[-–—:]\s*([^\n]*)$/, (m, tail) => (TYPE_VERSION_MARKER.test(tail) ? '' : m))
+        .replace(/[^\p{L}\p{N}]+/gu, ' ').trim();
+}
+function guessReleaseType(title, tracks) {
+    const n = tracks.length;
+    if (!n) return { type: null, why: 'no tracks' };
+    const t = String(title || '');
+    const lengths = tracks.map(x => x.lengthMs);
+    const ms = lengths.every(l => l > 0) ? lengths.reduce((a, l) => a + l, 0) : NaN;
+    const min = ms / 60000;
+    if (/(?:^|[\s([\-–])E\.?P\b\.?/i.test(t)) return { type: 'EP', why: 'the title says EP', explicit: true };
+    if (/[\s([\-–]single\s*[)\]]?$/i.test(t)) return { type: 'Single', why: 'the title ends in Single', explicit: true };
+    if (/\bsingle\b/i.test(t) && n <= 8 && !(min > 50)) return { type: 'Single', why: 'the title says Single', explicit: true };
+    if (n >= 2) {
+        const norm = tracks.map(x => normTrackTitle(x.title));
+        if (norm[0] && norm.every(x => x === norm[0])) return { type: 'Single', why: `every track is "${norm[0]}" in another version` };
+    }
+    if (!Number.isFinite(ms)) {
+        if (n === 1) return { type: 'Single', why: 'one track' };
+        if (n >= 3 && n <= 6) return { type: 'EP', why: `${n} tracks` };
+        if (n >= 7) return { type: 'Album', why: `${n} tracks` };
+        return { type: null, why: 'two tracks without lengths' };
+    }
+    if (n >= 7) return { type: 'Album', why: `${n} tracks` };
+    if (min > 30) return { type: 'Album', why: `${Math.round(min)} minutes` };
+    if (min < 1) return { type: null, why: 'under a minute' };
+    if (min <= 7) return { type: 'Single', why: `${n} track(s), ${min.toFixed(1)} minutes` };
+    if (n >= 2) return { type: 'EP', why: `${n} tracks, ${Math.round(min)} minutes` };
+    return { type: null, why: `one track of ${Math.round(min)} minutes` };
+}
+
+// Latn when every letter in the titles is Latin; nothing otherwise (left for the editor).
+// #650 (majkinetor): "fail to add multiple labels 'Crystal Method / Geffen'". A platform that has
+// one label field writes two labels in it with " / " between them (Apple, Qobuz). Only a spaced
+// slash splits: "AC/DC Records" is one name. A split label loses the platform's link, which is
+// the combined name's page, not either label's.
+function splitLabels(labels) {
+    const out = [];
+    for (const l of labels || []) {
+        const parts = String(l.name || '').split(/\s+\/\s+/).map(x => x.trim()).filter(Boolean);
+        if (parts.length < 2) { out.push(l); continue; }
+        Log.info(`label "${l.name}" is ${parts.length} labels: ${parts.join(' | ')}`);
+        parts.forEach(name => out.push({ name, catno: l.catno || '' }));
+    }
+    return out;
+}
+
+// A label from a copyright line, for a platform that has no label field (Tidal, #650: "This tidal
+// release didn't add label (Outpost Recordings)"). "℗ 2020 Outpost Recordings" → Outpost Recordings;
+// "℗ 2013 Daft Life Limited under exclusive license to Columbia Records, a Division of Sony Music
+// Entertainment" → Columbia Records, the label the release came out on. Anything that doesn't read
+// as one name (several years and owners, "All rights reserved" alone) gives none.
+function labelFromCopyright(text) {
+    let t = String(text || '').trim();
+    if (!t) return null;
+    t = t.replace(/^(?:\(?[℗©]\)?|\([pc]\))\s*/i, '').replace(/^(?:\d{4}\s*(?:[-–,]\s*\d{4}\s*)?)+/, '').trim();
+    const lic = t.match(/\bunder (?:exclusive )?licen[cs]e to\s+(.+)$/i);
+    if (lic) t = lic[1];
+    t = t.replace(/,\s*(?:a|an)\s+(?:division|label|imprint|company)\b.*$/i, '').replace(/\.?\s*all rights reserved\.?$/i, '').replace(/[.,;\s]+$/, '').trim();
+    if (!t || t.length > 60 || /[℗©]|\b\d{4}\b/.test(t) || /^(?:all rights reserved|under licen[cs]e)/i.test(t)) return null;
+    return t;
+}
+
+// #650 (majkinetor): "lets make FC annotation also per platform (enable by default)". Kept as the
+// platforms it is turned off on ({ platformName: true }), so a new platform starts on. The old
+// one-for-all setting (off by default) is dropped once: every platform starts on.
+const ANNOTATION_OFF_KEY = 'fc.annotation.off';
+function annotationOn(name) {
+    const s = GM_getValue('fc.settings', {}) || {};
+    if (Object.prototype.hasOwnProperty.call(s, 'annotation')) {
+        delete s.annotation;
+        GM_setValue('fc.settings', s);
+        Log.info('Annotation from the platform\'s notes is now per platform, on everywhere to start with');
+    }
+    return !(GM_getValue(ANNOTATION_OFF_KEY, {}) || {})[name];
+}
+function setAnnotationOn(name, on) {
+    const all = Object.assign({}, GM_getValue(ANNOTATION_OFF_KEY, {}) || {});
+    if (on) delete all[name]; else all[name] = true;
+    GM_setValue(ANNOTATION_OFF_KEY, all);
+}
+
+// #650 (majkinetor): "we should add annotations (should be optional) from all providers (Qobuz
+// above has it, BC almost always has it, Discogs has notes etc.)". A platform's notes as plain
+// text: its HTML's breaks and paragraphs become lines, the rest of the markup goes.
+function notesText(...parts) {
+    const one = x => {
+        let t = String(x || '');
+        if (/<[a-z][^>]*>|&[a-z#0-9]+;/i.test(t)) {
+            t = t.replace(/<br\s*\/?>/gi, '\n').replace(/<\/(?:p|div|li|h\d)>/gi, '\n\n');
+            const d = document.createElement('textarea');
+            d.innerHTML = mbuHtml(t.replace(/<[^>]+>/g, ''));
+            t = d.value;
+        }
+        return t.replace(/\r\n?/g, '\n').replace(/[ \t]+\n/g, '\n').replace(/\n{3,}/g, '\n\n').trim();
+    };
+    return parts.map(one).filter(Boolean).join('\n\n') || null;
+}
+
+// A compilation a platform credits to one of its artists (#650: Spotify credits "African Pearls -
+// Guinée - Cultural Revolution" to Bembeya Jazz National, who plays 2 of its 25 tracks). When the
+// release's artists are on fewer than half the tracks and the tracks have five or more artists,
+// it is Various Artists, as MusicBrainz credits a compilation. Returns why, or null.
+function variousArtistsWhy(rel) {
+    if (!rel.credit.length || rel.credit.some(c => c.mbid === VARIOUS_ARTISTS_MBID)) return null;
+    const tracks = [].concat(...rel.mediums.map(m => m.tracks)).filter(t => !t.placeholder);   // an empty track (#684) is no song
+    if (tracks.length < 5) return null;
+    const mains = new Set(rel.credit.map(c => normName(c.artistName || c.name)));
+    const on = tracks.filter(t => (t.credit || []).some(c => mains.has(normName(c.artistName || c.name)))).length;
+    const artists = new Set([].concat(...tracks.map(t => (t.credit || []).slice(0, 1).map(c => normName(c.artistName || c.name)))));
+    if (on * 2 >= tracks.length || artists.size < 5) return null;
+    return `${rel.credit.map(c => c.name).join(', ')} on ${on} of ${tracks.length} tracks, ${artists.size} track artists`;
+}
+
+function guessScript(texts) {
+    const letters = texts.join(' ').replace(/[^\p{L}]/gu, '');
+    if (!letters) return null;
+    return /^[\p{Script=Latin}]+$/u.test(letters) ? 'Latn' : null;
+}
+
+// The storefronts and domains MusicBrainz may store an Apple Music or Amazon Music artist link
+// under (the album page doesn't say which); see the providers' urlForms.
+const APPLE_STOREFRONTS = ['us', 'gb', 'fr', 'de', 'jp', 'ca', 'au', 'nl', 'se', 'it', 'es', 'br', 'mx', 'pl', 'kr', 'be', 'ch', 'at', 'dk', 'no', 'fi', 'nz'];
+const AMAZON_TLDS = ['com', 'co.uk', 'de', 'fr', 'it', 'es', 'ca', 'co.jp', 'com.au', 'com.br', 'com.mx', 'in'];
+
+/* ── providers ───────────────────────────────────────────────────────────────
+   One object per platform. Kept deliberately thin: recognise the album page, fetch the
+   release and return it in First Contact's model. Everything MusicBrainz-specific (the
+   seed, the handoff) is shared code below; matching is Apollo's.
+
+   Model:
+     { source, url, title, credit:[Credit], types:[primary, ...secondary], status, packaging,
+       date:{year,month,day}, country, barcode, labels:[{name, catno}], urls:[{url, linkType}],
+       mediums:[{ format, name, tracks:[{ title, lengthMs, isrc, url, credit:[Credit] }] }],
+       missing?:{ of, count, at:['disc.pos'] } }   (tracks the album has but the platform didn't give)
+     Credit = { name, url?, mbid?, join }
+*/
+
+const DEEZER = {
+    id: 'deezer',
+    name: 'Deezer',
+    abbr: 'dz',
+    host: /^www\.deezer\.com$/,
+    albumId(loc) { const m = loc.pathname.match(/^\/(?:[a-z]{2}(?:-[a-z]{2})?\/)?album\/(\d+)\/?$/i); return m ? m[1] : null; },
+    albumUrl: id => `https://www.deezer.com/album/${id}`,
+    // #659: the page is built in the browser, so its snapshot is near empty; the API answer FC reads is the evidence
+    archiveApi: id => `https://api.deezer.com/album/${id}`,
+    artistUrl: id => `https://www.deezer.com/artist/${id}`,
+    TYPES: { album: ['Album'], ep: ['EP'], single: ['Single'], compile: ['Album', 'Compilation'] },
+    VARIOUS: 5080,
+
+    async fetchRelease(id, progress) {
+        const album = await gmJson(`https://api.deezer.com/album/${id}`);
+        if (album.error) throw new Error(`Deezer: ${album.error.message || album.error.type} (album ${id})`);
+        Log.info(`Deezer album ${id}: "${album.title}" by ${(album.contributors || []).map(c => `${c.name} [${c.role}]`).join(', ') || album.artist?.name} · ${album.nb_tracks} track(s) · ${album.record_type} · ${album.release_date} · UPC ${album.upc || '—'} · label "${album.label || ''}"`);
+
+        // the album's own tracks list is capped; page through the tracks endpoint
+        const tracks = [];
+        let next = `https://api.deezer.com/album/${id}/tracks?limit=100`;
+        while (next) {
+            const page = await gmJson(next);
+            if (page.error) throw new Error(`Deezer: ${page.error.message || page.error.type} (tracks of ${id})`);
+            tracks.push(...(page.data || []));
+            next = page.next || null;
+        }
+        Log.info(`Deezer: ${tracks.length} track(s) listed${tracks.length !== album.nb_tracks ? ` (album says ${album.nb_tracks})` : ''}`);
+
+        // Per-track contributors: the tracks list carries only the main artist. Deezer marks
+        // featured artists "Main" too, so the title's feat. clause decides who is featured.
+        let done = 0;
+        const details = await mapLimit(tracks, 4, async t => {
+            let d = null;
+            for (let attempt = 0; attempt < 3 && !d; attempt++) {
+                try {
+                    const r = await gmJson(`https://api.deezer.com/track/${t.id}`);
+                    if (r.error && r.error.code === 4) { Log.debug(`Deezer quota hit on track ${t.id}, retrying`); await new Promise(res => setTimeout(res, 1200)); continue; }
+                    if (r.error) { Log.warn(`Deezer track ${t.id}: ${r.error.message || r.error.type}`); break; }
+                    d = r;
+                } catch (e) { Log.warn(`Deezer track ${t.id}: ${e.message}`); }
+            }
+            progress && progress(++done, tracks.length);
+            return d;
+        });
+
+        const artistOf = c => ({ name: c.name, url: this.artistUrl(c.id), platformId: c.id });
+        const mediums = [];
+        tracks.forEach((t, i) => {
+            const d = details[i] || {};
+            // title_short has no version; title_version can repeat the feat. clause
+            const short = splitFeat(t.title_short || t.title);
+            const ver = splitFeat(t.title_version || '');
+            const feat = short.feat.length ? short.feat : ver.feat;
+            let title = short.title;
+            if (ver.title && !/^\(?\s*original mix\s*\)?$/i.test(ver.title)) title += ' ' + ver.title;
+            const contributors = (d.contributors && d.contributors.length ? d.contributors : [t.artist]).filter(Boolean).map(artistOf);
+            const credit = creditFromTitle(contributors, feat);
+            const disc = t.disk_number || d.disk_number || 1;
+            while (mediums.length < disc) mediums.push({ format: 'Digital Media', name: '', tracks: [] });
+            mediums[disc - 1].tracks.push({ title, lengthMs: (t.duration || 0) * 1000 || null, isrc: t.isrc || d.isrc || null, url: t.link || null, credit });
+            Log.debug(`track ${disc}.${mediums[disc - 1].tracks.length}: "${title}" — ${credit.map(c => c.name + c.join).join('')} (${t.duration}s, ${t.isrc || 'no ISRC'})${d.contributors ? '' : ' [no track details: main artist only]'}`);
+        });
+
+        const at = splitFeat(album.title);
+        const albumContribs = (album.contributors && album.contributors.length ? album.contributors : [album.artist]).filter(Boolean)
+            .filter(c => c.role !== 'Featured' || at.feat.length).map(artistOf);
+        let credit = creditFromTitle(albumContribs, at.feat);
+        if (album.artist && album.artist.id === this.VARIOUS) credit = [{ name: 'Various Artists', mbid: VARIOUS_ARTISTS_MBID, url: this.artistUrl(this.VARIOUS), join: '' }];
+
+        const [y, m, dd] = String(album.release_date || '').split('-').map(n => parseInt(n, 10));
+        return {
+            source: this.id,
+            url: this.albumUrl(id),
+            title: at.title,
+            credit,
+            types: this.TYPES[album.record_type] || [],
+            status: 'official',
+            packaging: 'None',
+            date: { year: y || null, month: m || null, day: dd || null },
+            country: 'XW',
+            barcode: album.upc || null,
+            labels: album.label ? [{ name: album.label, catno: '' }] : [],
+            urls: [{ url: this.albumUrl(id), linkType: 85 }],   // 85 = stream for free
+            mediums,
+        };
+    },
+};
+
+// Bandcamp: everything is on the album page itself (the tralbum JSON and the ld+json), so
+// nothing is fetched. Only the artist's own page has a link: track artists on a label's
+// compilation are names.
+const BANDCAMP = {
+    id: 'bandcamp',
+    name: 'Bandcamp',
+    abbr: 'bc',
+    host: /(^|\.)bandcamp\.com$/,
+    albumId(loc) { return /^\/album\/[^/]+\/?$/.test(loc.pathname) ? loc.pathname.replace(/\/$/, '') : null; },
+    VARIOUS: /^various( artists)?$/i,
+
+    // a "04 Mar 2011 00:00:00 GMT" date, read in UTC
+    date(s) {
+        const d = s ? new Date(s) : null;
+        return d && !isNaN(d) ? { year: d.getUTCFullYear(), month: d.getUTCMonth() + 1, day: d.getUTCDate() } : { year: null, month: null, day: null };
+    },
+
+    async fetchRelease(path, progress) {
+        const tEl = document.querySelector('script[data-tralbum]');
+        if (!tEl) throw new Error('Bandcamp: no album data on this page (tralbum)');
+        const t = JSON.parse(tEl.dataset.tralbum);
+        let ld = null;
+        try { ld = JSON.parse((document.querySelector('script[type="application/ld+json"]') || {}).textContent || 'null'); } catch (e) { Log.warn(`Bandcamp ld+json: ${e.message}`); }
+        const cur = t.current || {};
+        const url = (t.url || location.origin + path).replace(/^http:/, 'https:');
+        const by = ld && ld.byArtist ? { name: ld.byArtist.name, url: ld.byArtist['@id'] || null } : null;
+        const pub = ld && ld.publisher ? { name: ld.publisher.name, url: ld.publisher['@id'] || null } : null;
+        const albumArtist = t.artist || cur.artist || (by && by.name) || '';
+        Log.info(`Bandcamp album "${cur.title}" by ${albumArtist} · ${(t.trackinfo || []).length} track(s) · released ${t.album_release_date || cur.release_date} · UPC ${cur.upc || '—'} · by ${by ? by.name + ' ' + (by.url || '(no page)') : '—'} · publisher ${pub ? pub.name + ' ' + (pub.url || '') : '—'}${t.album_is_preorder ? ' · PREORDER' : ''}`);
+
+        let band = null;
+        try { band = JSON.parse((document.querySelector('script[data-band]') || {}).dataset?.band || 'null'); } catch (e) { Log.debug(`Bandcamp data-band: ${e.message}`); }
+        // the account this page belongs to: an artist's own, or a label's
+        const account = { name: (band && band.name) || (pub && pub.name) || '', url: (pub && pub.url) || location.origin };
+        Log.debug(`Bandcamp account: ${account.name} ${account.url}`);
+
+        const isVarious = this.VARIOUS.test(albumArtist);
+        // "Future Funk Squad, Omega Sparx, Stu Brootal, The Crystal Method" is four artists;
+        // the account's own name is never split ("Earth, Wind & Fire" on its own page)
+        const splitNames = s => normName(s) === normName(account.name) ? [s] : String(s).split(/\s*,\s*|\s+&\s+/).map(n => n.trim()).filter(Boolean);
+        // a Bandcamp page for an artist: byArtist's own, or the account's when it is that artist's
+        const linkFor = n => (by && by.url && normName(n) === normName(by.name)) ? by.url : normName(n) === normName(account.name) ? account.url : null;
+        const artistsOf = s => splitNames(s).map(n => ({ name: n, url: linkFor(n) }));
+        const albumArtists = isVarious ? [] : artistsOf(albumArtist);
+        const at = splitFeat(cur.title || '');
+        const credit = isVarious
+            ? [{ name: 'Various Artists', mbid: VARIOUS_ARTISTS_MBID, join: '' }]
+            : creditFromTitle(albumArtists, at.feat);
+
+        const tracks = (t.trackinfo || []).map((x, i) => {
+            let title = x.title || '';
+            const trackArtist = x.artist || null;
+            // a compilation's track titles repeat the artist: "Michna - Triple Chrome Dipped"
+            if (trackArtist && title.toLowerCase().startsWith(trackArtist.toLowerCase() + ' - ')) title = title.slice(trackArtist.length + 3);
+            const tf = splitFeat(title);
+            const mains = trackArtist && normName(trackArtist) !== normName(albumArtist)
+                ? artistsOf(trackArtist)
+                : isVarious ? [{ name: trackArtist || 'Various Artists' }] : albumArtists;
+            const tc = creditFromTitle(mains, tf.feat);
+            progress && progress(i + 1, t.trackinfo.length);
+            return {
+                title: tf.title,
+                lengthMs: x.duration ? Math.round(x.duration * 1000) : null,
+                isrc: null,
+                url: x.title_link ? new URL(x.title_link, url).href : null,
+                credit: tc,
+            };
+        });
+        tracks.forEach((x, i) => Log.debug(`track ${i + 1}: "${x.title}" — ${x.credit.map(c => c.name + c.join).join('')} (${x.lengthMs ? x.lengthMs / 1000 + 's' : 'no length'})`));
+
+        // a label account publishing someone else's album: that's the label. An account that
+        // belongs to one of the credited artists is not.
+        const label = pub && pub.name && (!by || !by.url || pub.url !== by.url)
+            && normName(pub.name) !== normName(albumArtist) && !albumArtists.some(a => normName(a.name) === normName(pub.name)) ? pub.name : null;
+        const streamable = t.hasAudio && (t.trackinfo || []).some(x => x.streaming);
+        return {
+            source: this.id,
+            annotation: notesText(cur.about, cur.credits),   // the album's about and credits
+            url,
+            title: at.title,
+            credit,
+            types: [],   // Bandcamp doesn't say; the title's EP / Single, or one track, decide it (importCurrent)
+            status: 'official',
+            packaging: 'None',
+            date: this.date(t.album_release_date || cur.release_date),
+            country: 'XW',
+            barcode: cur.upc || null,
+            labels: label ? [{ name: label, catno: '' }] : [],
+            // 74 = purchase for download, 85 = stream for free: both, on one URL, as MB allows
+            urls: [{ url, linkType: 74 }].concat(streamable ? [{ url, linkType: 85 }] : []),
+            mediums: [{ format: 'Digital Media', name: '', tracks }],
+        };
+    },
+};
+
+// Discogs: the public API (api.discogs.com/releases/<id>), no token. The mappings are those of
+// murdos's Discogs importer (github.com/murdos/musicbrainz-userscripts): its country and media
+// tables, LP = 12" vinyl, sides A/B → medium 1, C/D → 2, sub-tracks folded into their index track.
+const DISCOGS_COUNTRIES = { Worldwide: "XW", Afghanistan: "AF", Albania: "AL", Algeria: "DZ", "American Samoa": "AS", Andorra: "AD", Angola: "AO", Anguilla: "AI", Antarctica: "AQ", "Antigua and Barbuda": "AG", Argentina: "AR", Armenia: "AM", Aruba: "AW", Australia: "AU", Austria: "AT", Azerbaijan: "AZ", Bahamas: "BS", Bahrain: "BH", Bangladesh: "BD", Barbados: "BB", "Barbados, The": "BB", Belarus: "BY", Belgium: "BE", Belize: "BZ", Benin: "BJ", Bermuda: "BM", Bhutan: "BT", Bolivia: "BO", Croatia: "HR", Botswana: "BW", "Bouvet Island": "BV", Brazil: "BR", "British Indian Ocean Territory": "IO", "Brunei Darussalam": "BN", Bulgaria: "BG", "Burkina Faso": "BF", Burundi: "BI", Cambodia: "KH", Cameroon: "CM", Canada: "CA", "Cape Verde": "CV", "Cayman Islands": "KY", "Central African Republic": "CF", Chad: "TD", Chile: "CL", China: "CN", "Christmas Island": "CX", "Cocos (Keeling) Islands": "CC", Colombia: "CO", Comoros: "KM", Congo: "CG", "Cook Islands": "CK", "Costa Rica": "CR", "Virgin Islands, British": "VG", Cuba: "CU", Cyprus: "CY", "Czech Republic": "CZ", Denmark: "DK", Djibouti: "DJ", Dominica: "DM", "Dominican Republic": "DO", Ecuador: "EC", Egypt: "EG", "El Salvador": "SV", "Equatorial Guinea": "GQ", Eritrea: "ER", Estonia: "EE", Ethiopia: "ET", "Falkland Islands (Malvinas)": "FK", "Faroe Islands": "FO", Fiji: "FJ", Finland: "FI", France: "FR", "French Guiana": "GF", "French Polynesia": "PF", "French Southern Territories": "TF", Gabon: "GA", Gambia: "GM", Georgia: "GE", Germany: "DE", Ghana: "GH", Gibraltar: "GI", Greece: "GR", Greenland: "GL", Grenada: "GD", Guadeloupe: "GP", Guam: "GU", Guatemala: "GT", Guinea: "GN", "Guinea-Bissau": "GW", Guyana: "GY", Haiti: "HT", "Virgin Islands, U.S.": "VI", Honduras: "HN", "Hong Kong": "HK", Hungary: "HU", Iceland: "IS", India: "IN", Indonesia: "ID", "Wallis and Futuna": "WF", Iraq: "IQ", Ireland: "IE", Israel: "IL", Italy: "IT", Jamaica: "JM", Japan: "JP", Jordan: "JO", Kazakhstan: "KZ", Kenya: "KE", Kiribati: "KI", Kuwait: "KW", Kyrgyzstan: "KG", "Lao People's Democratic Republic": "LA", Latvia: "LV", Lebanon: "LB", Lesotho: "LS", Liberia: "LR", "Libyan Arab Jamahiriya": "LY", Liechtenstein: "LI", Lithuania: "LT", Luxembourg: "LU", Montserrat: "MS", Macedonia: "MK", Madagascar: "MG", Malawi: "MW", Malaysia: "MY", Maldives: "MV", Mali: "ML", Malta: "MT", "Marshall Islands": "MH", Martinique: "MQ", Mauritania: "MR", Mauritius: "MU", Mayotte: "YT", Mexico: "MX", "Micronesia, Federated States of": "FM", Morocco: "MA", Monaco: "MC", Mongolia: "MN", Mozambique: "MZ", Myanmar: "MM", Namibia: "NA", Nauru: "NR", Nepal: "NP", Netherlands: "NL", "Netherlands Antilles": "AN", "New Caledonia": "NC", "New Zealand": "NZ", Nicaragua: "NI", Niger: "NE", Nigeria: "NG", Niue: "NU", "Norfolk Island": "NF", "Northern Mariana Islands": "MP", Norway: "NO", Oman: "OM", Pakistan: "PK", Palau: "PW", Panama: "PA", "Papua New Guinea": "PG", Paraguay: "PY", Peru: "PE", Philippines: "PH", Pitcairn: "PN", Poland: "PL", Portugal: "PT", "Puerto Rico": "PR", Qatar: "QA", Reunion: "RE", Romania: "RO", "Russian Federation": "RU", Russia: "RU", Rwanda: "RW", "Saint Kitts and Nevis": "KN", "Saint Lucia": "LC", "Saint Vincent and The Grenadines": "VC", Samoa: "WS", "San Marino": "SM", "Sao Tome and Principe": "ST", "Saudi Arabia": "SA", Senegal: "SN", Seychelles: "SC", "Sierra Leone": "SL", Singapore: "SG", Slovenia: "SI", "Solomon Islands": "SB", Somalia: "SO", "South Africa": "ZA", Spain: "ES", "Sri Lanka": "LK", Sudan: "SD", Suriname: "SR", Swaziland: "SZ", Sweden: "SE", Switzerland: "CH", "Syrian Arab Republic": "SY", Tajikistan: "TJ", "Tanzania, United Republic of": "TZ", Thailand: "TH", Togo: "TG", Tokelau: "TK", Tonga: "TO", "Trinidad & Tobago": "TT", Tunisia: "TN", Turkey: "TR", Turkmenistan: "TM", "Turks and Caicos Islands": "TC", Tuvalu: "TV", Uganda: "UG", Ukraine: "UA", "United Arab Emirates": "AE", UK: "GB", US: "US", "United States Minor Outlying Islands": "UM", Uruguay: "UY", Uzbekistan: "UZ", Vanuatu: "VU", "Vatican City State (Holy See)": "VA", Venezuela: "VE", "Viet Nam": "VN", "Western Sahara": "EH", Yemen: "YE", Zambia: "ZM", Zimbabwe: "ZW", Taiwan: "TW", "[Worldwide]": "XW", Europe: "XE", USSR: "SU", "East Germany (historical, 1949-1990)": "XG", Czechoslovakia: "XC", "Congo, Republic of the": "CD", Slovakia: "SK", "Bosnia & Herzegovina": "BA", "Korea (North), Democratic People's Republic of": "KP", "North Korea": "KP", "Korea (South), Republic of": "KR", "South Korea": "KR", Montenegro: "ME", "South Georgia and the South Sandwich Islands": "GS", "Palestinian Territory": "PS", Macao: "MO", "Timor-Leste": "TL", "<85>land Islands": "AX", Guernsey: "GG", "Isle of Man": "IM", Jersey: "JE", Serbia: "RS", "Saint Barthélemy": "BL", "Saint Martin": "MF", Moldova: "MD", Yugoslavia: "YU", "Serbia and Montenegro": "CS", "Côte d'Ivoire": "CI", "Heard Island and McDonald Islands": "HM", "Iran, Islamic Republic of": "IR", "Saint Pierre and Miquelon": "PM", "Saint Helena": "SH", "Svalbard and Jan Mayen": "SJ" };
+const DISCOGS_MEDIA = { "8-Track Cartridge": "Cartridge", Acetate: "Acetate", "Acetate7\"": "7\" Acetate", "Acetate10\"": "10\" Acetate", "Acetate12\"": "12\" Acetate", Betamax: "Betamax", "Blu-ray": "Blu-ray", "Blu-ray-R": "Blu-ray", Cassette: "Cassette", CD: "CD", CDr: "CD-R", CDV: "CDV", "CD+G": "CD+G", Cylinder: "Wax Cylinder", DAT: "DAT", Datassette: "Other", DCC: "DCC", DVD: "DVD", DVDr: "DVD", "DVD-Audio": "DVD-Audio", "DVD-Video": "DVD-Video", "Edison Disc": "Vinyl", File: "Digital Media", "Flexi-disc": "Vinyl", "Floppy Disk": "Other", HDCD: "HDCD", "HD DVD": "HD-DVD", "HD DVD-R": "HD-DVD", Hybrid: "Other", Laserdisc: "LaserDisc", "Memory Stick": "USB Flash Drive", Microcassette: "Other", Minidisc: "MiniDisc", MVD: "Other", "Reel-To-Reel": "Reel-to-reel", SACD: "SACD", SelectaVision: "Other", Shellac: "Shellac", "Shellac7\"": "7\" Shellac", "Shellac10\"": "10\" Shellac", "Shellac12\"": "12\" Shellac", SVCD: "SVCD", UMD: "UMD", VCD: "VCD", VHS: "VHS", "Video 2000": "Other", Vinyl: "Vinyl", "Vinyl7\"": "7\" Vinyl", "Vinyl10\"": "10\" Vinyl", "Vinyl12\"": "12\" Vinyl", "Lathe Cut": "Phonograph record" };
+const DISCOGS_PACKAGING = [[/cardboard|paper/, 'Cardboard/Paper Sleeve'], [/digi[\s\-‐]?pac?k/, 'Digipak'], [/keepcase/, 'Keep Case'], [/slimjewel/, 'Slim Jewel Case'], [/jewel/, 'Jewel Case'], [/gatefold|digisleeve/, 'Gatefold Cover']];
+const DISCOGS = {
+    id: 'discogs',
+    name: 'Discogs',
+    abbr: 'disc',
+    artistLinkType: 180,   // MB's Discogs artist link
+    host: /^(www\.)?discogs\.com$/,
+    albumId(loc) { const m = loc.pathname.match(/^\/(?:[a-z]{2}\/)?release\/(\d+)(?:-[^/]*)?\/?$/i); return m ? m[1] : null; },
+    VARIOUS: 194,
+    NO_LABEL: 750,   // "Not On Label"
+
+    noNum: n => String(n || '').replace(/ \(\d+\)$/, ''),
+    // Discogs joins: "&", ",", "Feat.", "Vs", "And", "With", "x" → MB style
+    join(j) {
+        const t = String(j || '').trim();
+        if (!t) return '';
+        if (t === ',') return ', ';
+        const k = t.toLowerCase().replace(/\.$/, '');
+        const map = { feat: ' feat. ', featuring: ' feat. ', ft: ' feat. ', vs: ' vs. ', and: ' and ', with: ' with ', x: ' x ', '&': ' & ', '+': ' + ', '/': ' / ' };
+        return map[k] || ` ${t} `;
+    },
+    artist(a) {
+        if (a.id === this.VARIOUS) return { name: 'Various Artists', artistName: 'Various Artists', url: null, mbid: VARIOUS_ARTISTS_MBID };
+        return {
+            name: a.anv || this.noNum(a.name),
+            artistName: this.noNum(a.name),
+            url: a.id ? `https://www.discogs.com/artist/${a.id}` : null,
+            mbid: null,
+        };
+    },
+    credit(artists, featuring) {
+        const out = (artists || []).map(a => Object.assign(this.artist(a), { join: this.join(a.join) }));
+        if (out.length) out[out.length - 1].join = '';
+        const feats = (featuring || []).filter(f => !out.some(o => o.url && o.url === this.artist(f).url));
+        if (feats.length) {
+            if (out.length) out[out.length - 1].join = ' feat. ';
+            feats.forEach((a, i) => out.push(Object.assign(this.artist(a), { join: i === feats.length - 1 ? '' : i === feats.length - 2 ? ' & ' : ', ' })));
+        }
+        return out;
+    },
+    ms(d) { const p = String(d || '').split(':').map(Number); return p.length > 1 && p.every(n => Number.isFinite(n)) ? p.reduce((a, n) => a * 60 + n, 0) * 1000 : null; },
+
+    async fetchRelease(id) {
+        const r = await gmJson(`https://api.discogs.com/releases/${id}`);
+        if (!r || !r.title) throw new Error(`Discogs: no release ${id}${r && r.message ? ` (${r.message})` : ''}`);
+        Log.info(`Discogs release ${id}: "${r.title}" by ${(r.artists || []).map(a => a.name + (a.join ? ' ' + a.join : '')).join(' ')} · ${r.country || '—'} · ${r.released || '—'} · formats ${(r.formats || []).map(f => `${f.qty}×${f.name} [${(f.descriptions || []).join(', ')}]${f.text ? ' "' + f.text + '"' : ''}`).join(' + ')} · ${(r.tracklist || []).length} tracklist row(s)`);
+
+        // formats → one MB format per medium, plus type, status, packaging
+        const formats = [];
+        let primary = null, status = 'official', packaging = null;
+        const secondary = [];
+        for (const f of r.formats || []) {
+            let fmt = DISCOGS_MEDIA[f.name];
+            for (const d of f.descriptions || []) {
+                if (/7"|10"|12"/.test(d) && DISCOGS_MEDIA[f.name + d]) fmt = DISCOGS_MEDIA[f.name + d];
+                if (/^(VCD|SVCD|CD\+G|HDCD|DVD-Audio|DVD-Video)$/.test(d) && DISCOGS_MEDIA[d]) fmt = DISCOGS_MEDIA[d];
+                if (f.name === 'Vinyl' && d === 'LP') fmt = '12" Vinyl';
+                if (f.name === 'CD' && d === 'Mini') fmt = '8cm CD';
+                if (/Promo|Smplr/.test(d)) status = 'promotion';
+                if (/Unofficial Release/.test(d)) status = 'bootleg';
+                if (/Compilation/.test(d) && !secondary.includes('Compilation')) secondary.push('Compilation');
+                if (/^Album/.test(d)) primary = primary || 'Album';
+                if (/Single(?! Sided)/.test(d)) primary = 'Single';
+                if (/^(EP|Mini-Album)$/.test(d)) primary = 'EP';
+            }
+            const text = String(f.text || '').toLowerCase().replace(/[\s-]/g, '');
+            for (const [re, p] of DISCOGS_PACKAGING) if (!packaging && re.test(text)) packaging = p;
+            if (fmt) for (let q = 0; q < (parseInt(f.qty, 10) || 1); q++) formats.push(fmt);
+            else if (f.name !== 'Box Set' && f.name !== 'All Media') Log.warn(`Discogs format "${f.name}" has no MusicBrainz format`);
+        }
+        Log.debug(`formats → ${formats.join(', ') || 'none'} · type ${primary || '—'}${secondary.length ? ' + ' + secondary.join(' + ') : ''} · status ${status} · packaging ${packaging || '—'}`);
+
+        // tracklist → mediums by position: "1-3" / "CD2-4" / "2.4" (medium-track), "A1" (sides,
+        // two per medium), "1" (a number that starts over begins the next medium)
+        const mediums = [];
+        let heading = '', med = 1, last = 0, odd = false;
+        const releaseCredit = this.credit(r.artists);
+        for (const t of r.tracklist || []) {
+            // a heading names the medium that follows: "CD 1 Routine" → "Routine"
+            if (t.type_ === 'heading') { heading = String(t.title || '').replace(/^(?:CD|Disc|Disk|DVD|LP|Vinyl|Side)\s*\d+\s*[-:–.]?\s*/i, ''); continue; }
+            if (t.type_ !== 'track' && t.type_ !== 'index') continue;
+            let title = String(t.title || '').replace(/´/g, '’');
+            let pos = t.position || '';
+            let len = this.ms(t.duration);
+            if (t.type_ === 'index' && t.sub_tracks) {
+                const subs = t.sub_tracks.filter(x => x.type_ === 'track');
+                if (!pos && subs[0]) pos = subs[0].position || '';
+                if (subs.length) title += (title ? ': ' : '') + subs.map(x => x.title || '[unknown]').join(' / ');
+                if (!len) { const sum = subs.reduce((a, x) => a + (this.ms(x.duration) || 0), 0); len = sum || null; }
+            }
+            if (!pos || /^(video|mp3)/i.test(pos)) { Log.debug(`skipped tracklist row "${title}" (position "${t.position}")`); continue; }
+            let m;
+            if ((m = pos.match(/^(?:[a-z]+)?(\d+)[.-](\d+)/i))) { med = +m[1]; last = +m[2]; }
+            else if (/^[A-Z]\d*$/i.test(pos)) { med = (((32 | pos.charCodeAt(0)) - 97) >> 1) + 1; last++; }
+            else if ((m = pos.match(/^(\d+)/))) { if (+m[1] <= last) med++; last = +m[1]; }
+            else { odd = true; last++; }
+            while (mediums.length < med) {
+                mediums.push({ format: formats[mediums.length] || formats[formats.length - 1] || null, name: heading, tracks: [] });
+                heading = '';
+            }
+            const feat = (t.extraartists || []).filter(e => /^Featuring\b/.test(e.role || ''));
+            const credit = t.artists && t.artists.length ? this.credit(t.artists, feat) : feat.length ? this.credit(r.artists, feat) : releaseCredit;
+            const medium = mediums[med - 1];
+            const sided = /Vinyl|Cassette|Shellac|Acetate/.test(medium.format || '');
+            medium.tracks.push({ title, lengthMs: len, isrc: null, url: null, credit, number: sided && /^[A-Z]+[.-]?\d*$/i.test(pos) ? pos : null });
+            Log.debug(`track ${pos} → medium ${med}: "${title}" — ${credit.map(c => c.name + c.join).join('')}${len ? '' : ' (no length)'}`);
+        }
+        if (odd) Log.warn('Discogs: some track positions could not be read; check the medium split');
+        const empty = mediums.filter(x => !x.tracks.length).length;
+        if (empty) Log.warn(`Discogs: ${empty} medium(s) without tracks`);
+        if (mediums.length === 1) mediums[0].name = '';
+
+        // labels; the same label listed twice with its catalog number written two ways is kept once
+        const seen = new Set(), labels = [];
+        for (const l of r.labels || []) {
+            const none = l.id === this.NO_LABEL;
+            const name = none ? '[no label]' : this.noNum(l.name);
+            const catno = /^none$/i.test(l.catno || '') ? '[none]' : (l.catno || '');
+            const key = normName(name) + '|' + catno.replace(/[\s.-]/g, '').toLowerCase();
+            if (seen.has(key)) continue;
+            seen.add(key);
+            labels.push({ name, catno, url: none ? null : `https://www.discogs.com/label/${l.id}`, mbid: none ? '157afde4-4bf5-4039-8ad2-5a15acc85176' : null });
+        }
+        const barcode = ((r.identifiers || []).find(i => i.type === 'Barcode' && i.value) || {}).value;
+        const [y, mo, d] = String(r.released || '').split(/\D+/).map(n => parseInt(n, 10));
+        const country = DISCOGS_COUNTRIES[r.country] || null;
+        if (r.country && !country) Log.info(`Discogs country "${r.country}" is no single MusicBrainz country; left for you`);
+        const url = `https://www.discogs.com/release/${id}`;
+        return {
+            source: this.id,
+            annotation: notesText(r.notes),
+            url,
+            title: r.title,
+            credit: releaseCredit,
+            types: primary ? [primary].concat(secondary) : secondary.length ? ['Album'].concat(secondary) : [],
+            status,
+            packaging,
+            date: { year: y || null, month: mo || null, day: d || null },
+            country,
+            barcode: barcode ? barcode.replace(/[^\dX]/gi, '') : null,
+            labels,
+            urls: [{ url, linkType: 76 }],   // 76 = discogs
+            mediums,
+        };
+    },
+};
+
+// Apple Music: its own catalogue API (amp-api.music.apple.com), read with the bearer token the
+// web player's public JS carries — the way Platform Check, ISRC Scout and Credit Hoarder read
+// it (#627). Unlike the iTunes Search API it has the UPC, each track's ISRC, the label and every
+// track artist's Apple id. The storefront is the page's (music.apple.com/<sf>/album/…).
+const APPLE = {
+    id: 'apple',
+    name: 'Apple Music',
+    abbr: 'am',
+    artistLinkType: 978,   // streaming page: MB offers several for Apple Music
+    // MB stores an Apple Music artist under any storefront, without the slug
+    urlForms(url) {
+        const m = url.match(/^https?:\/\/(?:music|itunes)\.apple\.com\/([a-z]{2})\/artist\/(?:[^/?#]+\/)?(?:id)?(\d+)/i);
+        if (!m) return [];
+        const cc = m[1].toLowerCase();
+        return [cc, ...APPLE_STOREFRONTS.filter(c => c !== cc)].map(c => `https://music.apple.com/${c}/artist/${m[2]}`);
+    },
+    host: /^music\.apple\.com$/,
+    albumId(loc) {
+        const m = loc.pathname.match(/^\/([a-z]{2})\/album\/(?:[^/]+\/)?(\d+)\/?$/i);
+        return m ? `${m[1].toLowerCase()}/${m[2]}` : null;
+    },
+    // #659: amp-api needs a token Wayback can't send; the public iTunes lookup has the same album and tracks
+    archiveApi(id) { const [cc, n] = id.split('/'); return `https://itunes.apple.com/lookup?id=${n}&entity=song&country=${cc}`; },
+    TOKEN_KEY: 'fc.apple-token',
+    _tok: null,
+    async token(fresh) {
+        if (this._tok && !fresh) return this._tok;
+        if (!fresh) {
+            const c = GM_getValue(this.TOKEN_KEY, null);
+            if (c && c.t && Date.now() - c.at < 12 * 3600e3) return (this._tok = c.t);
+        }
+        Log.info('Apple Music: fetching the web player\'s token');
+        const home = await gmText('https://music.apple.com/us/browse', { Accept: 'text/html' });
+        const asset = (home.match(/\/assets\/index-legacy~[a-z0-9]+\.js/i) || home.match(/\/assets\/index~[a-z0-9]+\.js/i) || [])[0];
+        if (!asset) throw new Error('Apple Music: the web player\'s JS was not found');
+        const js = await gmText('https://music.apple.com' + asset, { Accept: '*/*' });
+        const tok = (js.match(/eyJ[A-Za-z0-9._-]{80,}/) || [])[0];
+        if (!tok) throw new Error('Apple Music: no token in the web player\'s JS');
+        GM_setValue(this.TOKEN_KEY, { t: tok, at: Date.now() });
+        return (this._tok = tok);
+    },
+    // one amp-api read; a 401 is a rotated token: fetch a new one, once
+    async amp(path) {
+        for (let attempt = 0; ; attempt++) {
+            const tok = await this.token(attempt > 0);
+            try {
+                return await gmJson(`https://amp-api.music.apple.com${path}${path.includes('?') ? '&' : '?'}l=en-US`, { Authorization: 'Bearer ' + tok, Origin: 'https://music.apple.com' });
+            } catch (e) {
+                if (e.status === 401 && attempt === 0) { Log.warn('Apple Music: the token was refused (401), fetching a new one'); continue; }
+                throw e;
+            }
+        }
+    },
+    // "Daft Punk, Pharrell Williams & Nile Rodgers" → its names, each with the Apple artist of that
+    // name when the song lists one
+    artists(text, rel, sf) {
+        const byName = new Map((rel || []).map(a => [normName(a.attributes && a.attributes.name), a]));
+        const url = a => (a.attributes && a.attributes.url) || `https://music.apple.com/${sf}/artist/${a.id}`;
+        const names = String(text || '').split(/\s*,\s*|\s+&\s+/).map(n => n.trim()).filter(Boolean);
+        const out = names.map(n => { const a = byName.get(normName(n)); return { name: n, url: a ? url(a) : null }; });
+        // a listed artist the text leaves out (rare) still belongs in the credit
+        for (const a of rel || []) if (!out.some(o => normName(o.name) === normName(a.attributes && a.attributes.name))) out.push({ name: a.attributes ? a.attributes.name : String(a.id), url: url(a) });
+        return out;
+    },
+
+    async fetchRelease(key, progress) {
+        const [sf, id] = key.split('/');
+        const j = await this.amp(`/v1/catalog/${sf}/albums/${id}?include=tracks,artists&include[songs]=artists`);
+        const a = j && j.data && j.data[0];
+        if (!a) throw new Error(`Apple Music: no album ${id} in the "${sf}" storefront`);
+        const at = a.attributes || {};
+        Log.info(`Apple Music album ${sf}/${id}: "${at.name}" by ${at.artistName} · ${at.trackCount} track(s) · ${at.releaseDate} · UPC ${at.upc || '—'} · label "${at.recordLabel || ''}"${at.isSingle ? ' · single' : ''}${at.isCompilation ? ' · compilation' : ''}`);
+
+        const items = (a.relationships.tracks.data || []).slice();
+        for (let next = a.relationships.tracks.next; next;) {
+            const page = await this.amp(next + (next.includes('include') ? '' : '&include[songs]=artists'));
+            items.push(...(page.data || []));
+            next = page.next || null;
+        }
+        const videos = items.filter(t => t.type !== 'songs');
+        if (videos.length) Log.info(`Apple Music: ${videos.length} music video(s) left out`);
+        const songs = items.filter(t => t.type === 'songs');
+
+        const mediums = [];
+        songs.forEach((t, i) => {
+            const x = t.attributes || {};
+            const tf = splitFeat(x.name || '');
+            const listed = this.artists(x.artistName, t.relationships && t.relationships.artists && t.relationships.artists.data, sf);
+            const credit = creditFromTitle(listed, tf.feat);
+            const disc = x.discNumber || 1;
+            while (mediums.length < disc) mediums.push({ format: 'Digital Media', name: '', tracks: [] });
+            mediums[disc - 1].tracks.push({ title: tf.title, lengthMs: x.durationInMillis || null, isrc: x.isrc || null, url: x.url || null, credit, pos: +x.trackNumber || null });
+            progress && progress(i + 1, songs.length);
+            Log.debug(`track ${disc}.${x.trackNumber}: "${tf.title}" — ${credit.map(c => c.name + c.join).join('')} (${x.isrc || 'no ISRC'})`);
+        });
+
+        // #684: an album can have tracks the storefront doesn't offer (Eddie Harris, "Artist's Choice":
+        // 24 tracks, 1.9, 2.1, 2.4 and 2.6 not offered). The API leaves them out and numbers around
+        // them. An empty track holds each missing position, so every song keeps its number (1.10 stays
+        // 1.10) and the missing ones are filled in where they belong; the import asks first (askMissing).
+        const at0 = new Map();
+        items.forEach(t => { const x = t.attributes || {}, d = x.discNumber || 1; (at0.get(d) || at0.set(d, new Set()).get(d)).add(+x.trackNumber); });
+        const gaps = [];
+        [...at0.keys()].sort((a, b) => a - b).forEach(d => { const s = at0.get(d); for (let n = 1; n < Math.max(...s); n++) if (!s.has(n)) gaps.push(d + '.' + n); });
+        const lack = Math.max((at.trackCount || 0) - items.length, gaps.length);
+        const missing = lack ? { of: items.length + lack, count: lack, at: gaps } : null;
+        if (missing) Log.warn(`Apple Music: the album has ${missing.of} tracks, ${lack} not offered in the "${sf}" storefront${gaps.length ? ` (${gaps.join(', ')}): an empty track at each` : ''}`);
+        for (const g of gaps) {
+            const [d, n] = g.split('.').map(Number);
+            while (mediums.length < d) mediums.push({ format: 'Digital Media', name: '', tracks: [] });
+            mediums[d - 1].tracks.push({ title: '', lengthMs: null, isrc: null, url: null, credit: [], pos: n, placeholder: true });
+        }
+        if (gaps.length) mediums.forEach(m => m.tracks.sort((p, q) => (p.pos || 0) - (q.pos || 0)));
+
+        // " - Single" / " - EP" is Apple's label for the release, not part of its title
+        const suffix = (String(at.name || '').match(/\s+-\s+(Single|EP)$/) || [])[1];
+        const af = splitFeat(String(at.name || '').replace(/\s+-\s+(Single|EP)$/, ''));
+        const relArtists = a.relationships.artists && a.relationships.artists.data;
+        const credit = /^various artists$/i.test(at.artistName || '')
+            ? [{ name: 'Various Artists', mbid: VARIOUS_ARTISTS_MBID, join: '' }]
+            : creditFromTitle(this.artists(at.artistName, relArtists, sf), af.feat);
+        const [y, m, d] = String(at.releaseDate || '').split('-').map(n => parseInt(n, 10));
+        const url = (at.url || `https://music.apple.com/${sf}/album/${id}`).replace(/\?.*$/, '');
+        return {
+            source: this.id,
+            annotation: notesText(at.editorialNotes && (at.editorialNotes.standard || at.editorialNotes.short)),
+            url,
+            title: af.title,
+            credit,
+            types: (suffix ? [suffix] : at.isSingle ? ['Single'] : []).concat(at.isCompilation ? ['Compilation'] : []),
+            status: 'official',
+            packaging: 'None',
+            date: { year: y || null, month: m || null, day: d || null },
+            country: 'XW',
+            barcode: at.upc || null,
+            labels: at.recordLabel ? [{ name: at.recordLabel, catno: '' }] : [],
+            urls: [{ url, linkType: 980 }],   // 980 = streaming page (paid)
+            mediums,
+            missing,
+        };
+    },
+};
+
+// Tidal: the official catalogue API (openapi.tidal.com/v2) with an app token from the
+// client-credentials grant — no login — as ISRC Scout reads it. One request has the album, its
+// tracks and every artist (include=artists,items,items.artists); longer albums page on. Tidal
+// has no label field, only a copyright line, which names the label most of the time: the label is
+// read from it (labelFromCopyright), and left for you when it doesn't read as one name.
+const TIDAL = {
+    id: 'tidal',
+    name: 'Tidal',
+    abbr: 'td',
+    host: /^(listen\.)?tidal\.com$/,
+    albumId(loc) { const m = loc.pathname.match(/^\/(?:browse\/)?album\/(\d+)\/?$/); return m ? m[1] : null; },
+    CLIENT: 'cRhhDJDpYXXBn82U:K7UX40jDOZ5p4y4JMYZgoiwKi7jymTHWcLMb4gkewKs=',
+    COUNTRIES: ['US', 'GB', 'DE'],
+    TOKEN_KEY: 'fc.tidal-token',
+    TYPES: { ALBUM: ['Album'], EP: ['EP'], SINGLE: ['Single'] },
+    artistUrl: id => `https://tidal.com/artist/${id}`,
+    async token() {
+        const c = GM_getValue(this.TOKEN_KEY, null);
+        if (c && c.t && Date.now() < c.exp - 60000) return c.t;
+        Log.info('Tidal: fetching an app token');
+        const j = await gmPostJson('https://auth.tidal.com/v1/oauth2/token', 'grant_type=client_credentials', { Authorization: 'Basic ' + btoa(this.CLIENT) });
+        if (!j || !j.access_token) throw new Error('Tidal: no app token');
+        GM_setValue(this.TOKEN_KEY, { t: j.access_token, exp: Date.now() + (j.expires_in || 14400) * 1000 });
+        return j.access_token;
+    },
+    // one read; a 429 (Tidal throttles hard) waits as long as it says, three times at most
+    async get(path) {
+        for (let attempt = 0; ; attempt++) {
+            try {
+                return await gmJson('https://openapi.tidal.com/v2' + path, { Authorization: 'Bearer ' + await this.token(), Accept: 'application/vnd.api+json' });
+            } catch (e) {
+                if (e.status === 401 && attempt === 0) { GM_deleteValue(this.TOKEN_KEY); continue; }
+                if (e.status !== 429 || attempt >= 3) throw e;
+                const wait = 1000 * 2 ** attempt;
+                Log.warn(`Tidal: throttled (429), retrying in ${wait / 1000} s`);
+                await new Promise(r => setTimeout(r, wait));
+            }
+        }
+    },
+    secs(iso) { const m = String(iso || '').match(/PT(?:(\d+)H)?(?:(\d+)M)?(?:([\d.]+)S)?/); return m ? ((+m[1] || 0) * 3600 + (+m[2] || 0) * 60 + (+m[3] || 0)) : 0; },
+
+    async fetchRelease(id, progress) {
+        let j = null, cc = null;
+        for (const c of this.COUNTRIES) {
+            try { j = await this.get(`/albums/${id}?countryCode=${c}&include=artists,items,items.artists`); cc = c; break; }
+            catch (e) { if (e.status !== 404) throw e; Log.info(`Tidal: album ${id} is not in the ${c} catalogue`); }
+        }
+        if (!j || !j.data) throw new Error(`Tidal: album ${id} is in none of the ${this.COUNTRIES.join(', ')} catalogues`);
+        const a = j.data, at = a.attributes || {};
+        const included = new Map();
+        const keep = list => (list || []).forEach(x => included.set(x.type + ':' + x.id, x));
+        keep(j.included);
+        const refs = ((a.relationships.items || {}).data || []).slice();
+        for (let next = ((a.relationships.items || {}).links || {}).next; next;) {
+            const page = await this.get(next.replace(/^.*\/v2/, '') + (/[?&]include=/.test(next) ? '' : '&include=items,items.artists'));
+            keep(page.included);
+            refs.push(...(page.data || []));
+            next = (page.links || {}).next || null;
+        }
+        Log.info(`Tidal album ${id} (${cc}): "${at.title}" · ${at.albumType} · ${refs.length} item(s) · ${at.releaseDate} · UPC ${at.barcodeId || '—'} · ${(at.copyright || {}).text || 'no copyright line'}`);
+
+        const artist = r => { const x = included.get('artists:' + r.id); return { name: x && x.attributes ? x.attributes.name : String(r.id), url: this.artistUrl(r.id) }; };
+        const mediums = [];
+        let videos = 0;
+        refs.forEach((r, i) => {
+            if (r.type !== 'tracks') { videos++; return; }
+            const t = included.get('tracks:' + r.id) || {};
+            const x = t.attributes || {};
+            const tf = splitFeat(x.title || '');
+            let title = tf.title;
+            const vf = splitFeat(x.version || '');
+            if (vf.title) title += ` (${vf.title.replace(/^\((.*)\)$/, '$1')})`;
+            const listed = ((t.relationships && t.relationships.artists && t.relationships.artists.data) || []).map(artist);
+            const credit = creditFromTitle(listed, tf.feat.length ? tf.feat : vf.feat);
+            const disc = (r.meta && r.meta.volumeNumber) || 1;
+            while (mediums.length < disc) mediums.push({ format: 'Digital Media', name: '', tracks: [] });
+            mediums[disc - 1].tracks.push({ title, lengthMs: this.secs(x.duration) * 1000 || null, isrc: x.isrc || null, url: `https://tidal.com/track/${r.id}`, credit });
+            progress && progress(i + 1, refs.length);
+            Log.debug(`track ${disc}.${r.meta && r.meta.trackNumber}: "${title}" — ${credit.map(c => c.name + c.join).join('')} (${x.isrc || 'no ISRC'})`);
+        });
+        if (videos) Log.info(`Tidal: ${videos} video(s) left out`);
+
+        const af = splitFeat(at.title || '');
+        const listed = ((a.relationships.artists || {}).data || []).map(artist);
+        const credit = listed.length === 1 && /^various artists$/i.test(listed[0].name)
+            ? [{ name: 'Various Artists', mbid: VARIOUS_ARTISTS_MBID, join: '' }]
+            : creditFromTitle(listed, af.feat);
+        const [y, m, d] = String(at.releaseDate || '').split('-').map(n => parseInt(n, 10));
+        const url = `https://tidal.com/album/${id}`;
+        return {
+            source: this.id,
+            url,
+            title: af.title,
+            credit,
+            types: this.TYPES[at.albumType] || [],
+            status: 'official',
+            packaging: 'None',
+            date: { year: y || null, month: m || null, day: d || null },
+            country: 'XW',
+            barcode: at.barcodeId || null,
+            labels: (lbl => (lbl ? [{ name: lbl, catno: '' }] : []))(labelFromCopyright((at.copyright || {}).text)),
+            urls: [{ url, linkType: 980 }],   // 980 = streaming page (paid)
+            mediums,
+        };
+    },
+};
+
+// Qobuz: the store page itself (www.qobuz.com/<cc-ll>/album/<slug>/<id>). Qobuz's API answers
+// only from the countries it serves, but the store page is rendered in full everywhere, so
+// nothing is fetched. The page's per-track artist is unreliable (Qobuz shows a member, like
+// Thomas Bangalter on a Daft Punk track), so an album by one artist credits its main artists on
+// every track, with the title's feat.; only a Various Artists album takes the track's artist.
+const QOBUZ = {
+    id: 'qobuz',
+    name: 'Qobuz',
+    abbr: 'qz',
+    artistLinkType: 176,   // purchase music for download: MB offers several for Qobuz
+    // MB stores a Qobuz artist also as open.qobuz.com
+    urlForms(url) {
+        const m = url.match(/^https?:\/\/(?:www\.)?qobuz\.com\/[a-z]{2}-[a-z]{2}\/interpreter\/[^/]+\/(\d+)/i);
+        return m ? [`https://open.qobuz.com/artist/${m[1]}`] : [];
+    },
+    host: /^www\.qobuz\.com$/,
+    albumId(loc) { return /^\/[a-z]{2}-[a-z]{2}\/album\/[^/]+\/[A-Za-z0-9]+\/?$/.test(loc.pathname) ? loc.pathname.replace(/\/$/, '') : null; },
+    hms(t) { const p = String(t || '').trim().split(':').map(Number); return p.length > 1 && p.every(Number.isFinite) ? p.reduce((a, n) => a * 60 + n, 0) * 1000 : null; },
+    text: el => (el ? el.textContent.replace(/\s+/g, ' ').trim() : ''),
+
+    async fetchRelease(path, progress, doc) {
+        doc = doc || document;
+        let album = null, product = null;
+        for (const sc of doc.querySelectorAll('script[type="application/ld+json"]')) {
+            try { const j = JSON.parse(sc.textContent); if (j['@type'] === 'MusicAlbum') album = j; if (j['@type'] === 'Product') product = j; } catch (e) { Log.debug(`Qobuz ld+json: ${e.message}`); }
+        }
+        const title = this.text(doc.querySelector('.album-meta__title .album-title')) || (album && album.name) || '';
+        if (!title) throw new Error('Qobuz: no album on this page');
+        const root = new URL(path, location.origin);
+        const mains = [...doc.querySelectorAll('.album-meta__item')].filter(li => /^\s*Main artists?\s*:/i.test(li.textContent))
+            .flatMap(li => [...li.querySelectorAll('a[href*="/interpreter/"]')])
+            .map(a => ({ name: (a.getAttribute('title') || this.text(a)).trim(), url: new URL(a.getAttribute('href'), root).href }));
+        const shown = this.text(doc.querySelector('.album-meta__title .artist-name'));
+        const labelA = [...doc.querySelectorAll('.album-meta__item a[href*="/label/"]')][0];
+        const label = this.text(labelA);
+        const upc = String((product && product.sku) || '').replace(/\D/g, '');
+        const box = doc.querySelector('#playerTracks');
+        const nb = box ? parseInt(box.getAttribute('data-nbTracks'), 10) : NaN, shownN = box ? parseInt(box.getAttribute('data-nbTracksDisplayed'), 10) : NaN;
+        Log.info(`Qobuz album ${path}: "${title}" by ${shown} · main artists ${mains.map(m => m.name).join(', ') || '—'} · label "${label}" · ${album && album.datePublished} · UPC ${upc || '—'} · ${nb} track(s)${shownN < nb ? `, ${shownN} on the page` : ''}`);
+        if (shownN < nb) Log.warn(`Qobuz: the page lists only ${shownN} of ${nb} tracks; the rest are left out`);
+
+        const various = /^various artists$/i.test(shown) || (mains.length === 1 && /^various artists$/i.test(mains[0].name));
+        const albumArtists = mains.length ? mains : (shown ? [{ name: shown }] : []);
+        // one row per real track: the page also renders empty copies of each row for its layout
+        const rows = [...doc.querySelectorAll('#playerTracks div.track[data-track]')];
+        const mediums = [];
+        let disc = 1, last = 0;
+        rows.forEach((row, i) => {
+            const name = this.text(row.querySelector('.track__item--name'));
+            const n = parseInt(this.text(row.querySelector('.track__item--number')), 10) || (last + 1);
+            if (n <= last) disc++;   // numbering starts over: the next disc
+            last = n;
+            const tf = splitFeat(name);
+            let credit;
+            if (various) {
+                const raw = this.text(row.querySelector('.track__item--artist'));
+                const af = splitFeat(raw);
+                credit = creditFromTitle(String(af.title).split(/\s*,\s*|\s+&\s+/).filter(Boolean).map(x => ({ name: x })), tf.feat.length ? tf.feat : af.feat);
+            } else credit = creditFromTitle(albumArtists, tf.feat);
+            while (mediums.length < disc) mediums.push({ format: 'Digital Media', name: '', tracks: [] });
+            mediums[disc - 1].tracks.push({ title: tf.title, lengthMs: this.hms(this.text(row.querySelector('.track__item--duration'))), isrc: null, url: null, credit });
+            progress && progress(i + 1, rows.length);
+            Log.debug(`track ${disc}.${n}: "${tf.title}" — ${credit.map(c => c.name + c.join).join('')}`);
+        });
+        const af = splitFeat(title);
+        const credit = various ? [{ name: 'Various Artists', mbid: VARIOUS_ARTISTS_MBID, join: '' }] : creditFromTitle(albumArtists, af.feat);
+        const [y, m, d] = String((album && album.datePublished) || '').split('-').map(x => parseInt(x, 10));
+        const url = location.origin + path;
+        return {
+            source: this.id,
+            annotation: notesText((doc.querySelector('#description .album-block__text') || {}).innerHTML),   // the album review
+            url,
+            title: af.title,
+            credit,
+            types: [],
+            status: 'official',
+            packaging: 'None',
+            date: { year: y || null, month: m || null, day: d || null },
+            country: 'XW',
+            barcode: /^\d{12,14}$/.test(upc) ? upc : null,
+            labels: label ? [{ name: label, catno: '', url: labelA ? new URL(labelA.getAttribute('href'), root).href : null }] : [],
+            urls: [{ url, linkType: 74 }],   // 74 = purchase for download
+            mediums,
+        };
+    },
+};
+
+// Beatport: the release page's Next.js data (__NEXT_DATA__), the way Harmony reads it: the
+// release, and its tracks in a second query. The site is a single-page app, so after an in-app
+// navigation the page's data is stale and the release page is fetched again (same origin, so it
+// passes the site's bot check). More than one page of tracks is read from Beatport's API with
+// the anonymous token the page carries.
+const BEATPORT = {
+    id: 'beatport',
+    name: 'Beatport',
+    abbr: 'bp',
+    host: /^www\.beatport\.com$/,
+    albumId(loc) { const m = loc.pathname.match(/^\/(?:[a-z]{2}\/)?release\/[^/]+\/(\d+)\/?$/i); return m ? m[1] : null; },
+    TYPES: { Album: ['Album'], EP: ['EP'], Single: ['Single'], Compilation: ['Album', 'Compilation'] },
+    url: (kind, x) => `https://www.beatport.com/${kind}/${x.slug || '-'}/${x.id}`,
+
+    // the page's __NEXT_DATA__ when it is this release's, else the release page fetched anew
+    async nextData(id, doc) {
+        const read = d => { const el = d.querySelector('script#__NEXT_DATA__'); return el ? JSON.parse(el.textContent) : null; };
+        const here = read(doc || document);
+        const rel = here && here.props && here.props.pageProps && here.props.pageProps.release;
+        if (rel && String(rel.id) === String(id)) { Log.debug('Beatport: the page\'s own data is this release\'s'); return here; }
+        Log.info(`Beatport: the page's data is ${rel ? 'release ' + rel.id : 'not a release'}; fetching release ${id}`);
+        const r = await fetch(`${location.origin}/release/-/${id}`, { credentials: 'include' });
+        if (!r.ok) throw new Error(`Beatport: HTTP ${r.status} for release ${id}`);
+        const got = read(new DOMParser().parseFromString(await r.text(), 'text/html'));
+        if (!got) throw new Error('Beatport: no __NEXT_DATA__ on the release page (bot check?)');
+        return got;
+    },
+
+    async fetchRelease(id, progress, doc) {
+        const nd = await this.nextData(id, doc);
+        const pp = nd.props.pageProps;
+        const r = pp.release;
+        if (!r) throw new Error(`Beatport: no release ${id} in the page data`);
+        const q = ((pp.dehydratedState || {}).queries || []).map(x => x.state && x.state.data).find(d => d && Array.isArray(d.results) && d.results.some(t => t.release && String(t.release.id) === String(id)));
+        if (!q) throw new Error('Beatport: no tracks in the page data');
+        const results = q.results.slice();
+        for (let next = q.next; next;) {
+            const tok = pp.anonSession && pp.anonSession.access_token;
+            if (!tok) { Log.warn(`Beatport: ${q.count} tracks but no token to read past ${results.length}`); break; }
+            // the page names an internal host; the same path answers on the public one
+            const page = await gmJson(next.replace(/^https?:\/\/[^/]+/, 'https://api.beatport.com'), { Authorization: 'Bearer ' + tok });
+            results.push(...(page.results || []));
+            next = page.next || null;
+        }
+        Log.info(`Beatport release ${id}: "${r.name}" by ${(r.artists || []).map(a => a.name).join(', ')} · type ${(r.type || {}).name} · ${r.track_count} track(s), ${results.length} read · ${r.new_release_date} · UPC ${r.upc || '—'} · label "${(r.label || {}).name}" ${r.catalog_number || ''}`);
+
+        // release.tracks lists the track URLs last to first; a track it misses keeps the API's order
+        const byUrl = new Map(results.map(t => [t.url, t]));
+        const order = (r.tracks || []).slice().reverse().map(u => byUrl.get(u)).filter(Boolean);
+        const tracks = order.length === results.length ? order : results;
+        if (tracks !== order) Log.warn(`Beatport: the release's track list matched ${order.length} of ${results.length} tracks; using the API's order`);
+        const artist = a => ({ name: a.name, url: this.url('artist', a) });
+        const list = tracks.map((t, i) => {
+            const tf = splitFeat(t.name || '');
+            const title = tf.title + (t.mix_name && !/^original mix$/i.test(t.mix_name) ? ` (${t.mix_name})` : '');
+            const credit = creditFromTitle((t.artists || []).map(artist), tf.feat);
+            progress && progress(i + 1, tracks.length);
+            Log.debug(`track ${i + 1}: "${title}" — ${credit.map(c => c.name + c.join).join('')} (${t.isrc || 'no ISRC'})`);
+            return { title, lengthMs: t.length_ms || null, isrc: t.isrc || null, url: this.url('track', t), credit };
+        });
+
+        // Beatport credits every track artist to the release; many of them mean Various Artists
+        const ra = r.artists || [];
+        const af = splitFeat(r.name || '');
+        const credit = ra.length > 4 || (ra.length === 1 && /^various artists$/i.test(ra[0].name))
+            ? [{ name: 'Various Artists', mbid: VARIOUS_ARTISTS_MBID, join: '' }]
+            : creditFromTitle(ra.map(artist), af.feat);
+        const [y, m, d] = String(r.new_release_date || r.publish_date || '').split('-').map(n => parseInt(n, 10));
+        const url = this.url('release', r);
+        return {
+            source: this.id,
+            annotation: notesText(r.desc),
+            url,
+            title: af.title,
+            credit,
+            types: this.TYPES[(r.type || {}).name] || [],
+            status: 'official',
+            packaging: 'None',
+            date: { year: y || null, month: m || null, day: d || null },
+            country: 'XW',
+            barcode: r.upc || null,
+            labels: r.label ? [{ name: r.label.name, catno: r.catalog_number || '', url: this.url('label', r.label) }] : [],
+            // 74 = purchase for download, 980 = streaming page (paid)
+            urls: [{ url, linkType: 74 }].concat(r.is_available_for_streaming ? [{ url, linkType: 980 }] : []),
+            mediums: [{ format: 'Digital Media', name: '', tracks: list }],
+        };
+    },
+};
+
+// Spotify: the web player's own album query (api-partner.spotify.com, "getAlbum"). The player's
+// token is refused by Spotify's public API, and the query needs the player's token, client token
+// and the query's current id, so FC listens to the player's requests from the start (early) and
+// replays the album query with what it heard. The barcode comes from the player's metadata service
+// (spclient, the same token), which the album query doesn't have. No ISRCs.
+const SPOTIFY = {
+    id: 'spotify',
+    name: 'Spotify',
+    abbr: 'sp',
+    host: /^open\.spotify\.com$/,
+    albumId(loc) { const m = loc.pathname.match(/^\/(?:intl-[a-z-]+\/)?album\/([A-Za-z0-9]{22})\/?$/); return m ? m[1] : null; },
+    TYPES: { ALBUM: ['Album'], SINGLE: ['Single'], EP: ['EP'], COMPILATION: ['Album', 'Compilation'] },
+    // #650 (majkinetor: "Spotify fails" — the player's album query was never heard). The hook took
+    // only fetch(url, init) with a string body: a Request object, an XHR, or a userscript manager
+    // that starts the script after the player's first query all slipped past it. Now the token
+    // comes from ANY authorised request of the player (fetch or XHR, Request or init), the query id
+    // from its getAlbum when heard and a known one otherwise, and the log says what was heard.
+    QUERY_URL: 'https://api-partner.spotify.com/pathfinder/v2/query',
+    GETALBUM_HASH: '6a74b456cd1735c9193d9e8ec8cc5184cad7ce13572210315229db3975964361',   // the player's getAlbum id on 2026-10-01
+    KEEP: ['authorization', 'client-token', 'app-platform', 'spotify-app-version', 'accept-language'],
+    auth: null,        // { headers } of the player's last authorised request
+    hash: null,        // getAlbum's query id, when the player's own getAlbum was heard
+    seen: 0,           // requests to Spotify's APIs the hook saw (for the log)
+    note(url, headers, body) {
+        if (!/^https:\/\/[^/]*spotify\.com\//.test(url) || /open\.spotify\.com\//.test(url)) return;
+        this.seen++;
+        const h = {};
+        for (const k of this.KEEP) if (headers[k]) h[k] = headers[k];
+        if (h.authorization) {
+            if (!this.auth) Log.debug(`Spotify: heard the player's token (${url.replace(/\?.*$/, '')}; ${Object.keys(h).join(', ')})`);
+            this.auth = { headers: h };
+        }
+        if (typeof body === 'string' && /"getAlbum"/.test(body)) {
+            try {
+                const hash = JSON.parse(body).extensions.persistedQuery.sha256Hash;
+                if (hash && hash !== this.hash) Log.debug(`Spotify: heard the player's album query (id ${hash.slice(0, 12)}…)`);
+                if (hash) this.hash = hash;
+            } catch (e) { Log.debug(`Spotify: an album query I couldn't read: ${e.message}`); }
+        }
+    },
+    early() {
+        const w = typeof unsafeWindow !== 'undefined' ? unsafeWindow : window;
+        const self = this;
+        const lower = src => {
+            const h = {};
+            try {
+                if (src && typeof src.forEach === 'function') src.forEach((v, k) => { h[String(k).toLowerCase()] = v; });
+                else if (src) Object.keys(src).forEach(k => { h[k.toLowerCase()] = src[k]; });
+            } catch (e) { /* unreadable headers */ }
+            return h;
+        };
+        const origFetch = w.fetch;
+        if (typeof origFetch === 'function') {
+            const hook = function (input, init) {
+                try {
+                    const isReq = input && typeof input === 'object' && 'url' in input;
+                    const url = String(isReq ? input.url : input || '');
+                    const headers = Object.assign(isReq ? lower(input.headers) : {}, lower(init && init.headers));
+                    const body = init && typeof init.body === 'string' ? init.body : null;
+                    if (body !== null || !isReq) self.note(url, headers, body);
+                    else if (/pathfinder/.test(url)) {
+                        // a Request carries its body inside: read a copy, the page reads the original
+                        self.note(url, headers, null);
+                        input.clone().text().then(t => self.note(url, {}, t), () => {});
+                    } else self.note(url, headers, null);
+                } catch (e) { Log.debug(`Spotify hook (fetch): ${e.message}`); }
+                return origFetch.apply(this, arguments);
+            };
+            w.fetch = typeof exportFunction === 'function' ? exportFunction(hook, w) : hook;
+        }
+        const XP = w.XMLHttpRequest && w.XMLHttpRequest.prototype;
+        if (XP) {
+            const oOpen = XP.open, oSet = XP.setRequestHeader, oSend = XP.send;
+            const wrap = fn => (typeof exportFunction === 'function' ? exportFunction(fn, w) : fn);
+            XP.open = wrap(function (method, url) { try { this.__fcUrl = String(url); this.__fcH = {}; } catch (e) { /* ignore */ } return oOpen.apply(this, arguments); });
+            XP.setRequestHeader = wrap(function (k, v) { try { if (this.__fcH) this.__fcH[String(k).toLowerCase()] = v; } catch (e) { /* ignore */ } return oSet.apply(this, arguments); });
+            XP.send = wrap(function (body) { try { if (this.__fcUrl) self.note(this.__fcUrl, this.__fcH || {}, typeof body === 'string' ? body : null); } catch (e) { Log.debug(`Spotify hook (XHR): ${e.message}`); } return oSend.apply(this, arguments); });
+        }
+        Log.debug(`Spotify: listening to the player's requests (fetch${XP ? ' and XHR' : ''}, document ${document.readyState})`);
+        this.inPage();
+    },
+    /* majkinetor's log: "the hook saw 0 request(s) to Spotify's APIs", hooked while the document was
+       still loading. His userscript manager runs the script in its own sandbox, where unsafeWindow's
+       fetch isn't the page's: the hook above wraps a fetch the player never calls. So the same hook
+       also goes into the page itself, as a script — Spotify's policy refuses inline scripts but
+       allows blob: ones — and tells the userscript what it hears with a DOM event, which crosses
+       the sandbox. In a manager that does share the page's window both hooks run; a request heard
+       twice is the same request. */
+    inPage() {
+        const EV = 'first-contact:spotify-heard';
+        document.addEventListener(EV, e => {
+            try { const d = JSON.parse(e.detail); if (!this._fromPage) { this._fromPage = true; Log.debug('Spotify: the in-page hook is hearing the player'); } this.note(d.url, d.headers || {}, d.body); }
+            catch (x) { Log.debug(`Spotify (in-page hook): ${x.message}`); }
+        });
+        const code = '(' + function (EV) {
+            if (window.__fcSpotifyHook) return; window.__fcSpotifyHook = true;
+            const tell = (url, headers, body) => { try { document.dispatchEvent(new CustomEvent(EV, { detail: JSON.stringify({ url: String(url), headers, body: typeof body === 'string' ? body : null }) })); } catch (e) { /* nothing to tell with */ } };
+            const lower = src => { const h = {}; try { if (src && typeof src.forEach === 'function') src.forEach((v, k) => { h[String(k).toLowerCase()] = v; }); else if (src) Object.keys(src).forEach(k => { h[k.toLowerCase()] = src[k]; }); } catch (e) { /* unreadable */ } return h; };
+            const spot = u => /^https:\/\/[^/]*spotify\.com\//.test(u) && !/open\.spotify\.com\//.test(u);
+            const of = window.fetch;
+            window.fetch = function (input, init) {
+                try {
+                    const isReq = input && typeof input === 'object' && 'url' in input;
+                    const url = String(isReq ? input.url : input || '');
+                    if (spot(url)) {
+                        const headers = Object.assign(isReq ? lower(input.headers) : {}, lower(init && init.headers));
+                        if (init && typeof init.body === 'string') tell(url, headers, init.body);
+                        else { tell(url, headers, null); if (isReq && /pathfinder/.test(url)) input.clone().text().then(t => tell(url, {}, t), () => {}); }
+                    }
+                } catch (e) { /* never in the player's way */ }
+                return of.apply(this, arguments);
+            };
+            const XP = XMLHttpRequest.prototype, oo = XP.open, os = XP.setRequestHeader, osd = XP.send;
+            XP.open = function (m, u) { this.__fcU = String(u); this.__fcH = {}; return oo.apply(this, arguments); };
+            XP.setRequestHeader = function (k, v) { if (this.__fcH) this.__fcH[String(k).toLowerCase()] = v; return os.apply(this, arguments); };
+            XP.send = function (b) { try { if (this.__fcU && spot(this.__fcU)) tell(this.__fcU, this.__fcH || {}, typeof b === 'string' ? b : null); } catch (e) { /* never in the way */ } return osd.apply(this, arguments); };
+        } + ')(' + JSON.stringify(EV) + ');';
+        try {
+            const url = URL.createObjectURL(new Blob([code], { type: 'text/javascript' }));
+            const el = document.createElement('script');
+            let src = url;
+            try {   // a page that enforces Trusted Types takes a script URL only from a policy
+                if (window.trustedTypes && window.trustedTypes.createPolicy) src = window.trustedTypes.createPolicy('first-contact-' + Math.random().toString(36).slice(2, 7), { createScriptURL: x => x }).createScriptURL(url);
+            } catch (e) { /* no policy: the plain URL */ }
+            el.src = src;
+            el.onload = () => { Log.debug('Spotify: the in-page hook is in'); el.remove(); URL.revokeObjectURL(url); };
+            el.onerror = () => Log.warn('Spotify: the page refused the in-page hook');
+            // at document-start there may be no <html> yet to put it in: wait for it
+            const put = () => { const at = document.head || document.documentElement; if (at) { at.appendChild(el); return true; } return false; };
+            if (!put()) new MutationObserver((m, o) => { if (put()) o.disconnect(); }).observe(document, { childList: true, subtree: true });
+        } catch (e) { Log.warn(`Spotify: no in-page hook: ${e.message}`); }
+    },
+    post(body) {
+        const url = this.QUERY_URL, headers = this.auth.headers;
+        return new Promise((resolve, reject) => {
+            GM_xmlhttpRequest({
+                method: 'POST', url, data: JSON.stringify(body), timeout: 20000, anonymous: true,
+                headers: Object.assign({}, headers, { 'content-type': 'application/json;charset=UTF-8', accept: 'application/json' }),
+                onload: r => {
+                    Log.debug(`POST ${url} (getAlbum offset ${body.variables.offset}) → ${r.status}, ${(r.responseText || '').length} b`);
+                    if (r.status < 200 || r.status >= 300) return reject(Object.assign(new Error(`Spotify: HTTP ${r.status} for the album query`), { status: r.status }));
+                    try { resolve(JSON.parse(r.responseText)); } catch (e) { reject(new Error(`Spotify: bad JSON: ${e.message}`)); }
+                },
+                onerror: () => reject(new Error('Spotify: network error')),
+                ontimeout: () => reject(new Error('Spotify: timeout')),
+            });
+        });
+    },
+    idOf: uri => String(uri || '').split(':').pop(),
+    // base62 id → the 32-hex gid the metadata service names things by
+    gidOf(id) {
+        const A = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
+        let n = 0n;
+        for (const c of id) n = n * 62n + BigInt(A.indexOf(c));
+        return n.toString(16).padStart(32, '0');
+    },
+    // majkinetor: "FC didn't get barcode" (album 0QPZBEO7W3gho2UiFBPJz2, UPC 881626542866). The
+    // player's album query has none; its metadata service has the album's external ids (upc).
+    // Optional: without it the import goes on, barcode empty.
+    upc(id) {
+        const url = `https://spclient.wg.spotify.com/metadata/4/album/${this.gidOf(id)}?market=from_token`;
+        return new Promise(resolve => {
+            GM_xmlhttpRequest({
+                method: 'GET', url, timeout: 15000, anonymous: true,
+                headers: Object.assign({}, this.auth.headers, { accept: 'application/json' }),
+                onload: r => {
+                    let upc = null;
+                    try { upc = ((JSON.parse(r.responseText).external_id || []).find(x => /^upc$/i.test(x.type) && x.id) || {}).id || null; } catch (e) { /* not JSON: no barcode */ }
+                    Log.debug(`GET ${url} → ${r.status}, ${(r.responseText || '').length} b, UPC ${upc || '—'}`);
+                    resolve(upc && /^\d{8,14}$/.test(upc) ? upc : null);
+                },
+                onerror: () => { Log.warn('Spotify: no barcode (the metadata service could not be reached)'); resolve(null); },
+                ontimeout: () => { Log.warn('Spotify: no barcode (the metadata service timed out)'); resolve(null); },
+            });
+        });
+    },
+
+    async fetchRelease(id, progress) {
+        for (let i = 0; !this.auth && i < 50; i++) await new Promise(r => setTimeout(r, 100));
+        Log.info(`Spotify: the hook saw ${this.seen} request(s) to Spotify's APIs; token ${this.auth ? 'heard' : 'not heard'}; album query id ${this.hash ? 'heard' : 'not heard, using the known one'}`);
+        if (!this.auth) throw new Error(this.seen ? 'Spotify: the player\u2019s requests carried no token; reload the page and try again'
+            : 'Spotify: no request of the player was heard. Your userscript manager may start First Contact too late on Spotify; reload the page, and if it persists, copy the log to #650');
+        const hash = this.hash || this.GETALBUM_HASH;
+        const page = offset => this.post({ variables: { uri: `spotify:album:${id}`, locale: '', offset, limit: 50 }, operationName: 'getAlbum', extensions: { persistedQuery: { version: 1, sha256Hash: hash } } });
+        const upcP = this.upc(id);   // alongside the album query
+        const first = await page(0);
+        const a = first && first.data && first.data.albumUnion;
+        if (!a || !a.name) throw new Error(`Spotify: no album ${id}${first && first.errors ? ': ' + JSON.stringify(first.errors).slice(0, 200) : ''}`);
+        const items = (a.tracksV2.items || []).slice();
+        while (items.length < a.tracksV2.totalCount) {
+            const more = await page(items.length);
+            const got = (((more.data || {}).albumUnion || {}).tracksV2 || {}).items || [];
+            if (!got.length) break;
+            items.push(...got);
+        }
+        Log.info(`Spotify album ${id}: "${a.name}" by ${a.artists.items.map(x => x.profile.name).join(', ')} · ${a.type} · ${items.length} of ${a.tracksV2.totalCount} track(s) · ${a.date && a.date.isoString} (${a.date && a.date.precision}) · label "${a.label || ''}" · UPC ${(await upcP) || '—'}`);
+
+        const artist = x => ({ name: x.profile.name, url: `https://open.spotify.com/artist/${this.idOf(x.uri)}` });
+        const mediums = [];
+        items.forEach((it, i) => {
+            const t = it.track || {};
+            const tf = splitFeat(t.name || '');
+            const credit = creditFromTitle(((t.artists || {}).items || []).map(artist), tf.feat);
+            const disc = t.discNumber || 1;
+            while (mediums.length < disc) mediums.push({ format: 'Digital Media', name: '', tracks: [] });
+            mediums[disc - 1].tracks.push({ title: tf.title, lengthMs: (t.duration && t.duration.totalMilliseconds) || null, isrc: null, url: `https://open.spotify.com/track/${this.idOf(t.uri)}`, credit });
+            progress && progress(i + 1, items.length);
+            Log.debug(`track ${disc}.${t.trackNumber}: "${tf.title}" — ${credit.map(c => c.name + c.join).join('')}`);
+        });
+
+        const ra = a.artists.items || [];
+        const af = splitFeat(a.name);
+        const credit = ra.length === 1 && /^various artists$/i.test(ra[0].profile.name)
+            ? [{ name: 'Various Artists', mbid: VARIOUS_ARTISTS_MBID, join: '' }]
+            : creditFromTitle(ra.map(artist), af.feat);
+        const p = (a.date && a.date.precision) || '';
+        const [y, m, d] = String((a.date && a.date.isoString) || '').slice(0, 10).split('-').map(n => parseInt(n, 10));
+        const url = `https://open.spotify.com/album/${id}`;
+        return {
+            source: this.id,
+            url,
+            title: af.title,
+            credit,
+            types: this.TYPES[a.type] || [],
+            status: 'official',
+            packaging: 'None',
+            date: { year: y || null, month: p === 'YEAR' ? null : m || null, day: p === 'DAY' ? d || null : null },
+            country: 'XW',
+            barcode: await upcP,
+            labels: a.label ? [{ name: a.label, catno: '' }] : [],
+            urls: [{ url, linkType: 85 }],   // 85 = stream for free
+            mediums,
+        };
+    },
+};
+
+// YouTube Music: the API its own web player uses (youtubei/v1), which answers anonymous
+// requests — as Platform Check and Credit Hoarder read it. The album page (browse MPREb_…) has
+// the title, the kind (Album / EP / Single), the year, and each track with its artists' channels
+// and length; an album playlist (OLAK5uy_…) names its album page. No label, barcode, ISRCs or
+// full date: the player doesn't show them. YouTube Music lists a featured artist as a main
+// one, so feat. comes from the title, as on Deezer.
+const YTMUSIC = {
+    id: 'ytmusic',
+    name: 'YouTube Music',
+    abbr: 'ytm',
+    host: /^(?:music|www)\.youtube\.com$/,   // #679: an album playlist (OLAK5uy_) on www.youtube.com is the same album
+    albumId(loc) {
+        const b = loc.pathname.match(/^\/browse\/(MPREb_[\w-]+)\/?$/);
+        if (b) return b[1];
+        const l = loc.pathname === '/playlist' && String(loc.search || '').match(/[?&]list=(OLAK5uy_[\w-]+)/);
+        return l ? 'list:' + l[1] : null;
+    },
+    API: 'https://music.youtube.com/youtubei/v1/',
+    CLIENT: { clientName: 'WEB_REMIX', clientVersion: '1.20250101.01.00', hl: 'en', gl: 'US' },
+    TYPES: { Album: ['Album'], EP: ['EP'], Single: ['Single'] },
+    call(endpoint, body) {
+        const url = `${this.API}${endpoint}?prettyPrint=false`;
+        const t0 = Date.now();
+        return new Promise((resolve, reject) => {
+            GM_xmlhttpRequest({
+                method: 'POST', url, data: JSON.stringify(Object.assign({ context: { client: this.CLIENT } }, body)), timeout: 20000, anonymous: true,
+                headers: { 'Content-Type': 'application/json' },
+                onload: r => {
+                    Log.debug(`POST ${url} ${body.browseId || ''} → ${r.status}, ${(r.responseText || '').length} b in ${Date.now() - t0} ms`);
+                    if (r.status < 200 || r.status >= 300) return reject(new Error(`YouTube Music: HTTP ${r.status} for ${body.browseId}`));
+                    try { resolve(JSON.parse(r.responseText)); } catch (e) { reject(new Error(`YouTube Music: bad JSON for ${body.browseId}`)); }
+                },
+                onerror: () => reject(new Error('YouTube Music: network error')),
+                ontimeout: () => reject(new Error('YouTube Music: timeout')),
+            });
+        });
+    },
+    text: t => (t && t.runs ? t.runs.map(x => x.text).join('') : (t && t.simpleText) || ''),
+    walk(o, fn) { if (!o || typeof o !== 'object') return; fn(o); for (const k in o) this.walk(o[k], fn); },
+    // the artists a run list links: "Daft Punk, Pharrell Williams & Nile Rodgers", each with its channel
+    artists(t) {
+        return ((t && t.runs) || []).filter(r => {
+            const b = r.navigationEndpoint && r.navigationEndpoint.browseEndpoint;
+            return b && /^UC/.test(b.browseId || '');
+        }).map(r => ({ name: r.text.trim(), url: `https://music.youtube.com/channel/${r.navigationEndpoint.browseEndpoint.browseId}` }));
+    },
+    hms(s) { const p = String(s || '').trim().split(':').map(Number); return p.length > 1 && p.every(Number.isFinite) ? p.reduce((a, n) => a * 60 + n, 0) * 1000 : null; },
+
+    async fetchRelease(key, progress) {
+        let id = key;
+        if (/^list:/.test(key)) {
+            const list = key.slice(5);
+            const pl = await this.call('browse', { browseId: 'VL' + list });
+            id = (JSON.stringify(pl).match(/"(MPREb_[\w-]+)"/) || [])[1];
+            Log.info(`YouTube Music: playlist ${list} → album page ${id || 'none'}`);
+            if (!id) throw new Error(`YouTube Music: playlist ${list} names no album`);
+        }
+        const j = await this.call('browse', { browseId: id });
+        let h = null, shelf = null;
+        this.walk(j, o => { if (!h && o.musicResponsiveHeaderRenderer) h = o.musicResponsiveHeaderRenderer; if (!shelf && o.musicShelfRenderer) shelf = o.musicShelfRenderer; });
+        if (!h || !shelf) throw new Error(`YouTube Music: no album on ${id} (the page may have changed)`);
+        const title = this.text(h.title);
+        const sub = this.text(h.subtitle).split(' • ');   // "Album • 2013"
+        const kind = sub[0] || '', year = parseInt(sub.find(s => /^\d{4}$/.test(s)) || '', 10) || null;
+        const albumArtists = this.artists(h.straplineTextOne);
+        const canon = (j.microformat && j.microformat.microformatDataRenderer && j.microformat.microformatDataRenderer.urlCanonical) || '';
+        const list = (canon.match(/[?&]list=(OLAK5uy_[\w-]+)/) || [])[1];
+        const rows = (shelf.contents || []).map(c => c.musicResponsiveListItemRenderer).filter(Boolean);
+        Log.info(`YouTube Music album ${id}: "${title}" by ${this.text(h.straplineTextOne)} · ${kind} · ${year || 'no year'} · ${this.text(h.secondSubtitle)} · ${rows.length} row(s)${list ? ' · playlist ' + list : ''}`);
+
+        const tracks = rows.map((r, i) => {
+            const cols = (r.flexColumns || []).map(c => c.musicResponsiveListItemFlexColumnRenderer && c.musicResponsiveListItemFlexColumnRenderer.text);
+            const name = this.text(cols[0]);
+            const tf = splitFeat(name);
+            const listed = this.artists(cols[1]);
+            const credit = creditFromTitle(listed.length ? listed : albumArtists, tf.feat);
+            const len = this.hms(this.text((((r.fixedColumns || [])[0] || {}).musicResponsiveListItemFixedColumnRenderer || {}).text));
+            const vid = ((((cols[0] || {}).runs || [])[0] || {}).navigationEndpoint || {}).watchEndpoint;
+            progress && progress(i + 1, rows.length);
+            Log.debug(`track ${this.text(r.index) || i + 1}: "${tf.title}" — ${credit.map(c => c.name + c.join).join('')} (${len || '?'} ms)`);
+            return { title: tf.title, lengthMs: len, isrc: null, url: vid && vid.videoId ? `https://music.youtube.com/watch?v=${vid.videoId}` : null, credit };
+        });
+
+        const af = splitFeat(title);
+        const credit = /^various artists$/i.test(this.text(h.straplineTextOne))
+            ? [{ name: 'Various Artists', mbid: VARIOUS_ARTISTS_MBID, join: '' }]
+            : creditFromTitle(albumArtists.length ? albumArtists : [{ name: this.text(h.straplineTextOne) }], af.feat);
+        const url = list ? `https://music.youtube.com/playlist?list=${list}` : `https://music.youtube.com/browse/${id}`;
+        return {
+            source: this.id,
+            annotation: notesText(this.text(h.description && h.description.musicDescriptionShelfRenderer && h.description.musicDescriptionShelfRenderer.description)),
+            url,
+            title: af.title,
+            credit,
+            types: this.TYPES[kind] || [],
+            status: 'official',
+            packaging: 'None',
+            date: { year, month: null, day: null },
+            country: 'XW',
+            barcode: null,
+            labels: [],
+            urls: [{ url, linkType: 85 }],   // 85 = stream for free
+            mediums: [{ format: 'Digital Media', name: '', tracks }],
+        };
+    },
+};
+
+// Volumo: its public API (volumo.com/api/v1), as ISRC Scout and Platform Check read it — no token.
+// The album page is /album/<barcode>-<slug> (or /album/<id>); the barcode form asks
+// /album_by_icpn, the id form /albums. Every track has its ISRC and every artist its Volumo id.
+const VOLUMO = {
+    id: 'volumo',
+    name: 'Volumo',
+    abbr: 'vo',
+    artistLinkType: 176,   // MB doesn't recognise Volumo
+    host: /^(www\.)?volumo\.com$/,
+    albumId(loc) { const m = loc.pathname.match(/^\/album\/(\d+)(?:-[^/]*)?\/?$/); return m ? m[1] : null; },
+    artist: a => ({ name: a.name, url: `https://volumo.com/artist/${a.id}` }),
+
+    async fetchRelease(id, progress) {
+        const j = await gmJson('https://volumo.com/api/v1' + (id.length >= 12 ? '/album_by_icpn/' : '/albums/') + id);
+        const a = Array.isArray(j) ? j[0] : (j && (j.album || j));
+        if (!a || !a.title) throw new Error(`Volumo: no album ${id}`);
+        const list = a.tracks || [];
+        Log.info(`Volumo album ${id}: "${a.title}" by ${(a.artists || []).map(x => x.name).join(', ')} · ${list.length} track(s) · ${a.original_release_date || a.release_start_at || 'no date'} · UPC ${a.icpn || '—'} · label "${(a.recordlabel || {}).name || ''}" ${a.catalog_number || ''}`);
+        const mediums = [];
+        list.forEach((t, i) => {
+            const tf = splitFeat(t.title || '');
+            const title = tf.title + (t.version && !/^original mix$/i.test(t.version) ? ` (${t.version})` : '');
+            const credit = creditFromTitle((t.artists || []).map(this.artist).concat((t.featured_artists || []).map(this.artist)), tf.feat.length ? tf.feat : (t.featured_artists || []).map(x => x.name));
+            const disc = t.disc_number || 1;
+            while (mediums.length < disc) mediums.push({ format: 'Digital Media', name: '', tracks: [] });
+            mediums[disc - 1].tracks.push({ title, lengthMs: Math.round(t.duration) || null, isrc: t.isrc || null, url: t.id ? `https://volumo.com/track/${t.id}` : null, credit });
+            progress && progress(i + 1, list.length);
+            Log.debug(`track ${i + 1}: "${title}" — ${credit.map(c => c.name + c.join).join('')} (${t.isrc || 'no ISRC'})`);
+        });
+        const ra = a.artists || [];
+        const af = splitFeat(a.title);
+        // a label's sampler credits every track artist to the release: many of them mean Various Artists
+        const credit = ra.length > 4 || (ra.length === 1 && /^various artists$/i.test(ra[0].name))
+            ? [{ name: 'Various Artists', mbid: VARIOUS_ARTISTS_MBID, join: '' }]
+            : creditFromTitle(ra.map(this.artist), af.feat);
+        const [y, m, d] = String(a.original_release_date || a.release_start_at || '').slice(0, 10).split('-').map(n => parseInt(n, 10));
+        const url = `https://volumo.com/album/${a.icpn || a.id}`;   // the slug-less form (Platform Check #202)
+        return {
+            source: this.id,
+            annotation: notesText(a.description),
+            url,
+            title: af.title,
+            credit,
+            types: [],
+            status: 'official',
+            packaging: 'None',
+            date: { year: y || null, month: m || null, day: d || null },
+            country: 'XW',
+            barcode: a.icpn || null,
+            labels: a.recordlabel && a.recordlabel.name ? [{ name: a.recordlabel.name, catno: a.catalog_number || '' }] : [],
+            urls: [{ url, linkType: 74 }],   // 74 = purchase for download
+            mediums,
+        };
+    },
+};
+
+// HDtracks: its public API (hdtracks.azurewebsites.net/api/v1), as ISRC Scout reads it — one
+// call has the album and every track with its ISRC. The site routes in the address's hash
+// (www.hdtracks.com/#/album/<id>). HDtracks names artists only, with no artist pages.
+const HDTRACKS = {
+    id: 'hdtracks',
+    name: 'HDtracks',
+    abbr: 'hd',
+    artistLinkType: 176,   // MB doesn't recognise HDtracks
+    host: /^(www\.)?hdtracks\.com$/,
+    albumId(loc) { const m = String(loc.hash || '').match(/^#\/album\/([a-f0-9]{24})\b/i) || loc.pathname.match(/^\/album\/([a-f0-9]{24})\/?$/i); return m ? m[1] : null; },
+    API: 'https://hdtracks.azurewebsites.net/api/v1',
+
+    async fetchRelease(id, progress) {
+        const j = await gmJson(`${this.API}/album/${id}`);
+        if (!j || !j.id) throw new Error(`HDtracks: no album ${id}`);   // an unknown id answers 200 with nothing in it
+        const list = (j.tracks || []).slice().sort((a, b) => (a.discIndex || 1) - (b.discIndex || 1) || (a.index || 0) - (b.index || 0));
+        Log.info(`HDtracks album ${id}: "${j.name}" by ${j.mainArtist} · ${list.length} track(s) · ${j.release || j.originalRelease || 'no date'} · UPC ${j.upc || '—'} · label "${j.label || ''}" · ${j.quality || ''}`);
+        const names = text => String(text || '').split(/\s*,\s*|\s+&\s+/).filter(Boolean).map(name => ({ name }));
+        const mediums = [];
+        list.forEach((t, i) => {
+            const tf = splitFeat(t.name || '');
+            const credit = creditFromTitle(names(t.mainArtist || j.mainArtist), tf.feat);
+            const disc = t.discIndex || 1;
+            while (mediums.length < disc) mediums.push({ format: 'Digital Media', name: '', tracks: [] });
+            mediums[disc - 1].tracks.push({ title: tf.title, lengthMs: t.duration ? Math.round(t.duration * 1000) : null, isrc: t.isrc || null, url: null, credit });
+            progress && progress(i + 1, list.length);
+            Log.debug(`track ${disc}.${t.index}: "${tf.title}" — ${credit.map(c => c.name + c.join).join('')} (${t.isrc || 'no ISRC'})`);
+        });
+        const af = splitFeat(j.name || '');
+        const credit = /^various artists$/i.test(j.mainArtist || '')
+            ? [{ name: 'Various Artists', mbid: VARIOUS_ARTISTS_MBID, join: '' }]
+            : creditFromTitle(names(j.mainArtist), af.feat);
+        const [y, m, d] = String(j.release || j.originalRelease || '').slice(0, 10).split('-').map(n => parseInt(n, 10));
+        const url = `https://www.hdtracks.com/#/album/${id}`;
+        return {
+            source: this.id,
+            annotation: notesText(j.notes),
+            url,
+            title: af.title,
+            credit,
+            types: [],
+            status: 'official',
+            packaging: 'None',
+            date: { year: y || null, month: m || null, day: d || null },
+            country: 'XW',
+            barcode: j.upc || null,
+            labels: j.label ? [{ name: j.label, catno: '' }] : [],
+            urls: [{ url, linkType: 74 }],   // 74 = purchase for download
+            mediums,
+        };
+    },
+};
+
+// SoundCloud: its public API (api-v2.soundcloud.com) with the client id the web player's JS
+// carries, as ISRC Scout reads it. A set (/<user>/sets/<slug>) is the release; a set the label
+// distributed has each track's ISRC, the barcode and the label in the track's publisher data.
+const SOUNDCLOUD = {
+    id: 'soundcloud',
+    name: 'SoundCloud',
+    abbr: 'sc',
+    host: /^soundcloud\.com$/,
+    albumId(loc) { return /^\/[^/]+\/sets\/[^/]+\/?$/.test(loc.pathname) ? loc.pathname.replace(/\/$/, '') : null; },
+    API: 'https://api-v2.soundcloud.com',
+    CID_KEY: 'fc.soundcloud-cid',
+    TYPES: { album: ['Album'], ep: ['EP'], single: ['Single'], compilation: ['Album', 'Compilation'] },
+    async clientId(fresh) {
+        const c = !fresh && GM_getValue(this.CID_KEY, null);
+        if (c && c.id && Date.now() - c.at < 12 * 3600e3) return c.id;
+        Log.info('SoundCloud: reading the web player\'s client id');
+        const home = await gmText('https://soundcloud.com/discover', { Accept: 'text/html' });
+        const assets = [...home.matchAll(/https:\/\/a-v2\.sndcdn\.com\/assets\/[^"']+\.js/g)].map(m => m[0]).reverse();
+        for (const a of assets) {
+            let js; try { js = await gmText(a, { Accept: '*/*' }); } catch (e) { continue; }
+            const m = js.match(/client_id\s*[:=]\s*"([a-zA-Z0-9]{20,40})"/);
+            if (m) { GM_setValue(this.CID_KEY, { id: m[1], at: Date.now() }); return m[1]; }
+        }
+        throw new Error('SoundCloud: no client id in the web player\'s JS');
+    },
+    async api(path) {
+        for (let attempt = 0; ; attempt++) {
+            const cid = await this.clientId(attempt > 0);
+            try { return await gmJson(`${this.API}${path}${path.includes('?') ? '&' : '?'}client_id=${cid}`); }
+            catch (e) { if ((e.status === 401 || e.status === 403) && attempt === 0) { Log.warn('SoundCloud: the client id was refused, reading a new one'); continue; } throw e; }
+        }
+    },
+
+    async fetchRelease(path, progress) {
+        const page = `https://soundcloud.com${path}`;
+        const pl = await this.api('/resolve?url=' + encodeURIComponent(page));
+        if (!pl || pl.kind !== 'playlist') throw new Error('SoundCloud: not a set');
+        // the set names its first tracks in full and the rest by id: read those in batches of 50
+        const byId = new Map((pl.tracks || []).filter(t => t && t.title).map(t => [t.id, t]));
+        const missing = (pl.tracks || []).filter(t => t && !byId.has(t.id)).map(t => t.id);
+        for (let i = 0; i < missing.length; i += 50) (await this.api('/tracks?ids=' + missing.slice(i, i + 50).join(','))).forEach(t => byId.set(t.id, t));
+        const list = (pl.tracks || []).map(t => byId.get(t.id)).filter(Boolean);
+        const pm0 = (list[0] && list[0].publisher_metadata) || {};
+        Log.info(`SoundCloud set ${path}: "${pl.title}" by ${pl.user && pl.user.username} · ${pl.set_type || 'set'} · ${list.length} track(s) · ${pl.release_date || pl.published_at || pl.created_at || 'no date'} · label "${pl.label_name || ''}" · UPC ${pm0.upc_or_ean || '—'}`);
+
+        const uploader = pl.user || {};
+        const linkFor = name => (uploader.username && normName(name) === normName(uploader.username) ? uploader.permalink_url : null);   // only the uploader has a page we know
+        const names = text => String(text || '').split(/\s*,\s*|\s+&\s+/).filter(Boolean).map(name => ({ name, url: linkFor(name) }));
+        const tracks = list.map((t, i) => {
+            const pm = t.publisher_metadata || {};
+            const tf = splitFeat(t.title || '');
+            const credit = creditFromTitle(names(pm.artist || uploader.username), tf.feat);
+            progress && progress(i + 1, list.length);
+            Log.debug(`track ${i + 1}: "${tf.title}" — ${credit.map(c => c.name + c.join).join('')} (${pm.isrc || 'no ISRC'})`);
+            return { title: tf.title, lengthMs: t.full_duration || t.duration || null, isrc: pm.isrc || null, url: t.permalink_url || null, credit };
+        });
+        const artists = [...new Set(list.map(t => (t.publisher_metadata || {}).artist).filter(Boolean))];
+        const af = splitFeat(pl.title || '');
+        const credit = artists.length > 4 ? [{ name: 'Various Artists', mbid: VARIOUS_ARTISTS_MBID, join: '' }]
+            : creditFromTitle(names(artists.length === 1 ? artists[0] : uploader.username), af.feat);
+        const upcs = [...new Set(list.map(t => String((t.publisher_metadata || {}).upc_or_ean || '').trim()).filter(Boolean))];
+        const [y, m, d] = String(pl.release_date || pl.published_at || pl.created_at || '').slice(0, 10).split('-').map(n => parseInt(n, 10));
+        const url = pl.permalink_url || page;
+        return {
+            source: this.id,
+            annotation: notesText(pl.description),
+            url,
+            title: af.title,
+            credit,
+            types: this.TYPES[String(pl.set_type || '').toLowerCase()] || [],
+            status: 'official',
+            packaging: 'None',
+            date: { year: y || null, month: m || null, day: d || null },
+            country: 'XW',
+            barcode: upcs.length === 1 ? upcs[0] : null,
+            labels: pl.label_name ? [{ name: pl.label_name, catno: '' }] : [],
+            urls: [{ url, linkType: 85 }],   // 85 = stream for free
+            mediums: [{ format: 'Digital Media', name: '', tracks }],
+        };
+    },
+};
+
+// Amazon Music (#650, majkinetor: "implement AM"): the API its own web player uses
+// (na.mesk.skill.music.a2z.com), as a guest — music.amazon.com/config.json hands out a session (CSRF
+// token, device and session id, no login), carried as a JSON "headers" string in each request's body.
+// Platform Check (#644) and ISRC Scout read it the same way. The guest session is amazon.com's (US)
+// catalogue: an album from another country's store is looked up by the same id there. The album
+// page is one flat tracklist (no disc numbers), with each track's length, link and, when it isn't
+// the album artist, an artist line like "A, B & C" whose first name alone is linked. No barcode or
+// ISRCs (Amazon Music shows neither); the label is read from the page's ℗ line.
+const AMAZON = {
+    id: 'amazonmusic',
+    name: 'Amazon Music',
+    abbr: 'amz',
+    // MB stores an Amazon Music artist under any of its domains
+    urlForms(url) {
+        const m = url.match(/^https?:\/\/music\.amazon\.[a-z.]+\/artists\/([A-Z0-9]{10})/i);
+        return m ? AMAZON_TLDS.map(t => `https://music.amazon.${t}/artists/${m[1].toUpperCase()}`) : [];
+    },
+    host: /^music\.amazon\.(?:com|co\.uk|de|fr|it|es|ca|co\.jp|com\.au|com\.br|com\.mx|in)$/,
+    albumId(loc) { const m = loc.pathname.match(/^\/albums\/([A-Z0-9]{10})\/?$/i); return m ? m[1].toUpperCase() : null; },
+    API: 'https://na.mesk.skill.music.a2z.com/api/',
+    TYPES: { album: ['Album'], ep: ['EP'], single: ['Single'] },
+    MONTHS: ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec'],
+    session: null,
+    post(url, data, headers) {
+        const t0 = Date.now();
+        return new Promise((resolve, reject) => {
+            GM_xmlhttpRequest({
+                method: 'POST', url, data, timeout: 20000, anonymous: true, headers: headers || {},
+                onload: r => {
+                    Log.debug(`POST ${url} → ${r.status}, ${(r.responseText || '').length} b in ${Date.now() - t0} ms`);
+                    if (r.status < 200 || r.status >= 300) return reject(Object.assign(new Error(`Amazon Music: HTTP ${r.status} for ${url}`), { status: r.status }));
+                    try { resolve(JSON.parse(r.responseText)); } catch (e) { reject(new Error(`Amazon Music: bad JSON from ${url}`)); }
+                },
+                onerror: () => reject(new Error('Amazon Music: network error')),
+                ontimeout: () => reject(new Error('Amazon Music: timeout')),
+            });
+        });
+    },
+    async guest() {
+        if (this.session) return this.session;
+        const j = await this.post('https://music.amazon.com/config.json', '');
+        if (!j || !j.csrf || !j.deviceId) throw new Error('Amazon Music: no guest session; its web player may have changed');
+        Log.info(`Amazon Music: guest session (marketplace ${j.marketplaceId || '?'}, player ${j.version || '?'})`);
+        return (this.session = j);
+    },
+    async call(endpoint, body) {
+        const s = await this.guest();
+        const headers = JSON.stringify({
+            'x-amzn-authentication': JSON.stringify({ interface: 'ClientAuthenticationInterface.v1_0.ClientTokenElement', accessToken: s.accessToken || '' }),
+            'x-amzn-device-model': 'WEBPLAYER', 'x-amzn-device-width': '1920', 'x-amzn-device-family': 'WebPlayer', 'x-amzn-device-id': s.deviceId,
+            'x-amzn-user-agent': navigator.userAgent, 'x-amzn-session-id': s.sessionId, 'x-amzn-device-height': '1080',
+            'x-amzn-request-id': (crypto.randomUUID ? crypto.randomUUID() : String(Math.random()).slice(2)), 'x-amzn-device-language': 'en_US',
+            'x-amzn-currency-of-preference': 'USD', 'x-amzn-os-version': '1.0', 'x-amzn-application-version': s.version,
+            'x-amzn-device-time-zone': 'UTC', 'x-amzn-timestamp': String(Date.now()),
+            'x-amzn-csrf': JSON.stringify({ interface: 'CSRFInterface.v1_0.CSRFHeaderElement', token: s.csrf.token, timestamp: s.csrf.ts, rndNonce: s.csrf.rnd }),
+            'x-amzn-music-domain': 'music.amazon.com', 'x-amzn-referer': '', 'x-amzn-affiliate-tags': '', 'x-amzn-ref-marker': '', 'x-amzn-page-url': 'https://music.amazon.com/',
+            'x-amzn-weblab-id-overrides': '', 'x-amzn-video-player-token': '', 'x-amzn-feature-flags': '', 'x-amzn-has-profile-id': '', 'x-amzn-age-band': '',
+        });
+        let j;
+        try { j = await this.post(this.API + endpoint, JSON.stringify(Object.assign({}, body, { headers })), { 'Content-Type': 'text/plain;charset=UTF-8' }); }
+        catch (e) { if (e.status === 401 || e.status === 403) this.session = null; throw e; }
+        const tpl = j && j.methods && (j.methods.find(m => m.template) || {}).template;
+        if (!tpl) throw new Error(`Amazon Music: ${endpoint} gave no page; its API may have changed`);
+        return tpl;
+    },
+    text: t => String((t && typeof t === 'object' ? t.text : t) || '').trim(),
+    slug: s => String(s || '').normalize('NFKD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/&/g, ' ').replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, ''),
+    // "A, B & C" with a link to one artist's page (/artists/<id>/<slug>) → [{ name, url }]. The link
+    // names who it is: when its slug is the whole line ("Simon & Garfunkel"), the line is one artist;
+    // otherwise it's a list, and the link belongs to the name its slug matches (the first, so far).
+    artists(line, link) {
+        const m = String(link || '').match(/^\/artists\/([A-Z0-9]{10})(?:\/([^/?#]+))?/i);
+        const url = m ? `https://music.amazon.com/artists/${m[1].toUpperCase()}` : null;
+        const slug = m && m[2] ? m[2].toLowerCase() : '';
+        const names = /,\s|\s&\s/.test(line) && !(slug && slug === this.slug(line)) ? line.split(/\s*,\s+|\s+&\s+/).map(x => x.trim()).filter(Boolean) : [line];
+        let at = slug ? names.findIndex(n => this.slug(n) === slug) : -1;
+        if (at < 0 && url) { at = 0; if (slug) Log.debug(`Amazon Music: the link /${slug} is none of ${JSON.stringify(names)}; it goes to the first`); }
+        return names.map((name, i) => (i === at ? { name, url } : { name }));
+    },
+    // "MAY 17 2013" → { year, month, day }
+    date(s) {
+        const m = String(s || '').match(/\b([A-Za-z]{3})[a-z]*\.?\s+(\d{1,2}),?\s+(\d{4})\b/);
+        if (m) return { year: +m[3], month: this.MONTHS.indexOf(m[1].toLowerCase()) + 1 || null, day: +m[2] };
+        const y = String(s || '').match(/\b(\d{4})\b/);
+        return { year: y ? +y[1] : null, month: null, day: null };
+    },
+    secs(x) { const p = String(x || '').split(':').map(Number); return p.length > 1 && p.every(n => !isNaN(n)) ? p.reduce((a, n) => a * 60 + n, 0) : null; },
+
+    async fetchRelease(id, progress) {
+        const tpl = await this.call('showCatalogAlbum', { id, userHash: JSON.stringify({ level: 'LIBRARY_MEMBER' }) });
+        const title = this.text(tpl.headerText);
+        if (!title) throw new Error(`Amazon Music: no album ${id}`);
+        const sub = String(tpl.headerTertiaryText || '').split(/\s*•\s*/);
+        const artistLine = this.text(tpl.headerPrimaryText);
+        const artistLink = (tpl.headerPrimaryTextLink || {}).deeplink;
+        const rows = [];
+        for (const w of tpl.widgets || []) for (const it of w.items || []) {
+            const tid = (String((it.primaryTextLink || {}).deeplink || '').match(/^\/tracks\/([A-Z0-9]{10})/) || String((it.primaryLink || {}).deeplink || '').match(/[?&]trackAsin=([A-Z0-9]{10})/) || [])[1];
+            if (tid && !rows.some(r => r.id === tid)) rows.push({ id: tid, it });
+        }
+        const said = parseInt(((sub[0] || '').match(/^([\d,.]+)\s+(?:song|track)s?\b/i) || [])[1] || '', 10);
+        Log.info(`Amazon Music album ${id}: "${title}" by ${artistLine} (${artistLink || 'no link'}) · ${this.text(tpl.headerLabel) || 'no kind'} · ${rows.length} track(s)${said && said !== rows.length ? ` (the header says ${said})` : ''} · ${sub.slice(1).join(' · ')} · ${tpl.footer || 'no ℗ line'}`);
+        if (!rows.length) throw new Error(`Amazon Music: album ${id} has no tracks in its answer; its page may have changed`);
+
+        const va = /^various artists$/i.test(artistLine);
+        const albumArtists = va ? null : this.artists(artistLine, artistLink);
+        const tracks = rows.map(({ id: tid, it }, i) => {
+            const tf = splitFeat(this.text(it.primaryText));
+            const line = this.text(it.secondaryText2);
+            const listed = line ? this.artists(line, (it.secondaryText2Link || {}).deeplink) : (albumArtists || [{ name: 'Various Artists' }]);
+            const credit = creditFromTitle(listed, tf.feat);
+            const secs = this.secs(it.secondaryText3);
+            progress && progress(i + 1, rows.length);
+            Log.debug(`track ${i + 1}: "${tf.title}" ${it.secondaryText3 || '?'} — ${credit.map(c => c.name + c.join).join('')}${line ? ` (line "${line}")` : ' (album artist)'}`);
+            return { title: tf.title, lengthMs: secs == null ? null : secs * 1000, isrc: null, url: `https://music.amazon.com/tracks/${tid}`, credit };
+        });
+        const af = splitFeat(title);
+        const credit = va ? [{ name: 'Various Artists', mbid: VARIOUS_ARTISTS_MBID, join: '' }] : creditFromTitle(albumArtists, af.feat);
+        const date = this.date(sub.find(x => /\b\d{4}$/.test(x)) || '');
+        const lbl = labelFromCopyright(tpl.footer);
+        const url = `https://music.amazon.com/albums/${id}`;
+        return {
+            source: this.id,
+            url,
+            title: af.title,
+            credit,
+            types: this.TYPES[this.text(tpl.headerLabel).toLowerCase()] || [],
+            status: 'official',
+            packaging: 'None',
+            date,
+            country: 'XW',
+            barcode: null,
+            labels: lbl ? [{ name: lbl, catno: '' }] : [],
+            urls: [{ url, linkType: 980 }],   // 980 = streaming page (paid)
+            // #650 (majkinetor, of "℗© VIDLIK": "this is not label", "could probably be added in
+            // annotation"): the page's ℗ line is its only note; it goes there whole, read as a label or not
+            annotation: notesText(tpl.footer),
+            mediums: [{ format: 'Digital Media', name: '', tracks }],
+        };
+    },
+};
+
+// Audiomack (#664): its API (api.audiomack.com/v1), as ISRC Scout and Platform Check read it. Every
+// call is OAuth 1.0a-signed with the web player's own public key and secret, so no login. An album
+// (/<artist>/album/<slug>) has its tracks in order, each with its ISRC; a song (/<artist>/song/<slug>)
+// is a one-track release. The barcode is the album's `upc`, the label comes from its ℗ line.
+const AUDIOMACK = {
+    id: 'audiomack',
+    name: 'Audiomack',
+    abbr: 'amk',
+    artistLinkType: 194,   // free streaming: MB offers free and paid (#664)
+    host: /^(www\.)?audiomack\.com$/,
+    albumId(loc) { const m = loc.pathname.match(/^\/([^/]+)\/(album|song)\/([^/]+)\/?$/); return m ? `${m[1]}/${m[2]}/${m[3]}` : null; },
+    API: 'https://api.audiomack.com/v1/',
+    KEY: 'audiomack-web',
+    SECRET: 'bd8a07e9f23fbe9d808646b730f89b8e',
+    async api(endpoint) {
+        const enc = s => encodeURIComponent(s).replace(/[!'()*]/g, c => '%' + c.charCodeAt(0).toString(16).toUpperCase());
+        const url = this.API + endpoint;
+        const p = { oauth_consumer_key: this.KEY, oauth_nonce: Math.random().toString(36).slice(2) + Math.random().toString(36).slice(2),
+            oauth_signature_method: 'HMAC-SHA1', oauth_timestamp: String(Math.floor(Date.now() / 1000)), oauth_version: '1.0' };
+        const qs = Object.keys(p).sort().map(k => `${enc(k)}=${enc(p[k])}`).join('&');
+        const te = new TextEncoder();
+        const key = await crypto.subtle.importKey('raw', te.encode(enc(this.SECRET) + '&'), { name: 'HMAC', hash: 'SHA-1' }, false, ['sign']);
+        const sig = btoa(String.fromCharCode(...new Uint8Array(await crypto.subtle.sign('HMAC', key, te.encode(['GET', enc(url), enc(qs)].join('&'))))));
+        const j = await gmJson(`${url}?${qs}&oauth_signature=${enc(sig)}`);
+        if (!j || !j.results) throw new Error(`Audiomack: nothing at ${endpoint}`);
+        return j.results;
+    },
+    // "℗ Spaceship/ Bad Habit/ Atlantic Records,  2025 Spaceship …" → "Spaceship/ Bad Habit/ Atlantic Records"
+    label: pline => String(pline || '').replace(/^[\s©℗]*(?:\(P\)\s*)?(?:\d{4}\s+)?/i, '').split(/,\s+\d{4}\b/)[0].trim(),
+
+    async fetchRelease(id, progress) {
+        const [artistSlug, kind, slug] = id.split('/');
+        const a = await this.api(`music/${kind}/${artistSlug}/${slug}`);
+        const list = kind === 'album' ? (a.tracks || []) : [a];
+        const ts = Number(a.original_release_date || a.released || 0);
+        Log.info(`Audiomack ${kind} ${id}: "${a.title}" by ${a.artist} · ${list.length} track(s) · ${ts ? new Date(ts * 1000).toISOString().slice(0, 10) : 'no date'} · UPC ${a.upc || '—'} · ℗ "${a.pline || ''}"`);
+        const uploader = a.uploader || {};
+        const linkFor = name => (uploader.name && normName(name) === normName(uploader.name) ? `https://audiomack.com/${uploader.url_slug}` : null);   // only the uploader has a page we know
+        const names = text => String(text || '').split(/\s*,\s*|\s+&\s+/).filter(Boolean).map(name => ({ name, url: linkFor(name) }));
+        const tracks = list.map((t, i) => {
+            const tf = splitFeat(t.title || '');
+            const feat = tf.feat.length ? tf.feat : String(t.featuring || '').split(/\s*,\s*|\s+&\s+/).filter(Boolean);
+            const credit = creditFromTitle(names(t.artist || a.artist), feat);
+            progress && progress(i + 1, list.length);
+            Log.debug(`track ${i + 1}: "${tf.title}" — ${credit.map(c => c.name + c.join).join('')} (${t.isrc || 'no ISRC'})`);
+            const songSlug = t.url_slug;
+            return { title: tf.title, lengthMs: Number(t.duration) > 0 ? Number(t.duration) * 1000 : null, isrc: t.isrc || null,
+                url: songSlug ? `https://audiomack.com/${t.uploader_url_slug || uploader.url_slug || artistSlug}/song/${songSlug}` : null, credit };
+        });
+        const af = splitFeat(a.title || '');
+        const credit = /^various artists$/i.test(a.artist || '') ? [{ name: 'Various Artists', mbid: VARIOUS_ARTISTS_MBID, join: '' }]
+            : creditFromTitle(names(a.artist), af.feat.length ? af.feat : String(a.featuring || '').split(/\s*,\s*|\s+&\s+/).filter(Boolean));
+        const d = ts ? new Date(ts * 1000) : null;
+        const url = `https://audiomack.com/${id}`;
+        const lbl = this.label(a.pline);
+        return {
+            source: this.id,
+            annotation: notesText(a.description),
+            url,
+            title: af.title,
+            credit,
+            types: kind === 'song' ? ['Single'] : [],   // an album: its title's EP / Single, or its track count, decide it (importCurrent)
+            status: 'official',
+            packaging: 'None',
+            date: { year: d ? d.getUTCFullYear() : null, month: d ? d.getUTCMonth() + 1 : null, day: d ? d.getUTCDate() : null },
+            country: 'XW',
+            barcode: String(a.upc || '').replace(/\D/g, '') || null,
+            labels: lbl ? [{ name: lbl, catno: '' }] : [],
+            urls: [{ url, linkType: 85 }],   // 85 = stream for free
+            mediums: [{ format: 'Digital Media', name: '', tracks }],
+        };
+    },
+};
+
+// 7digital (#669): the release page has the title, the release artist with their page, the release
+// date, the label, and the tracklist (each track's id, title and length). The barcode, type, discs,
+// track artists and ISRCs come from 7digital's catalogue API, with the key its own store ships in its
+// app.js, as Platform Check and ISRC Scout read it. That key may only search, so the release is found
+// by its title, and each track by its title (with the album's title, or after its artist), by their
+// ids. The catalogue is per country: the store's.
+const SEVENDIGITAL = {
+    id: 'sevendigital',
+    name: '7digital',
+    abbr: '7d',
+    host: /^(?:[a-z]{2}\.|www\.)?7digital\.com$/,
+    albumId(loc) { return /^\/artist\/[^/]+\/release\/(?:[^/]*-)?\d{3,}\/?$/.test(loc.pathname) ? loc.pathname.replace(/\/$/, '') : null; },
+    KEY: '7drfpc993qp5',   // the store's key when this was written; a refused one is replaced by the store's current one
+    TYPES: { Album: ['Album'], EP: ['EP'], Single: ['Single'] },
+    text: el => (el ? el.textContent.replace(/\s+/g, ' ').trim() : ''),
+    // "PT4M9S" → ms
+    iso(d) { const m = String(d || '').match(/^PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?$/); return m ? ((+m[1] || 0) * 3600 + (+m[2] || 0) * 60 + (+m[3] || 0)) * 1000 || null : null; },
+
+    async apiKey(fresh) {
+        if (this.key && !fresh) return this.key;
+        if (!fresh) return (this.key = this.KEY);
+        if (this.keyP) return this.keyP;
+        this.keyP = (async () => {
+            const own = document.querySelector('script[src*="/static/build/javascript/app."]');
+            let src = own && own.getAttribute('src');
+            if (!src) src = ((await gmText('https://us.7digital.com/', { Accept: 'text/html' })).match(/\/\/js-cdn\.7digital\.com\/static\/build\/javascript\/app\.[a-z0-9]+\.js/i) || [])[0];
+            if (!src) throw new Error('7digital: the store\'s JS was not found');
+            const k = ((await gmText(new URL(src, 'https://us.7digital.com/').href, { Accept: '*/*' })).match(/oauth_consumer_key="([A-Za-z0-9]+)"/) || [])[1];
+            if (!k) throw new Error('7digital: no key in the store\'s JS');
+            return (this.key = k);
+        })().finally(() => { this.keyP = null; });
+        return this.keyP;
+    },
+    // One API read: its JSON, or throws. A refused key (HTTP 401) is replaced, once.
+    async api(path, params) {
+        for (let attempt = 0; ; attempt++) {
+            const key = await this.apiKey(attempt > 0);
+            const qs = new URLSearchParams(Object.assign({}, params, { usageTypes: 'download', oauth_consumer_key: key }));
+            try {
+                const j = await gmJson(`https://api.7digital.com/1.2/${path}?${qs}`);
+                if (!j || j.status !== 'ok') throw new Error(`7digital ${path}: ${(j && j.error && j.error.message) || 'no answer'}`);
+                return j;
+            } catch (e) {
+                if (e.status === 401 && attempt === 0) { Log.warn('7digital: the key was refused; fetching the store\'s current one'); continue; }
+                throw e;
+            }
+        }
+    },
+    // "A, B & C" / "A;B;C" / "A x B" → names; the release's own artist ("Simon & Garfunkel") stays one
+    names(line, own) {
+        const s = String(line || '').trim();
+        if (!s) return [];
+        if (own && normName(s) === normName(own)) return [s];
+        return s.split(/\s*;\s*|\s*,\s+|\s+&\s+|\s+x\s+/).map(x => x.trim()).filter(Boolean);
+    },
+
+    async fetchRelease(path, progress, doc) {
+        doc = doc || document;
+        const og = (doc.querySelector('meta[property="og:url"]') || {}).content || '';
+        const url = (/7digital\.com\/artist\//.test(og) ? og : location.origin + path).replace(/[?#].*$/, '').replace(/\/$/, '');
+        const sub = (new URL(url).hostname.match(/^([a-z]{2})\./) || [])[1];
+        const country = sub === 'uk' || !sub ? 'GB' : sub.toUpperCase();
+        const info = doc.querySelector('.release-info');
+        const releaseId = (info && info.dataset.releaseid) || (url.match(/(\d{3,})$/) || [])[1];
+        const title = this.text(doc.querySelector('.release-info-title'));
+        if (!title) throw new Error('7digital: no release on this page (is it asking you to prove you\'re human?)');
+        const artistA = doc.querySelector('.release-info-artist a');
+        const artist = this.text(artistA) || (doc.querySelector('.release-info-artist [itemprop="name"]') || {}).content || '';
+        const artistUrl = artistA ? new URL(artistA.getAttribute('href'), url).href : null;
+        const pageLabel = this.text(doc.querySelector('.release-label-info .release-data-info'));
+        const pageDate = this.text(doc.querySelector('.release-date-info .release-data-info'));
+        // majkinetor: "It doesnt get annotation <dd class="release-data-info">℗ 2014 Asylum Records UK, a Warner
+        // Music UK Company</dd>". Below the tracklist, the ℗ and © lines are the page's only notes: they go
+        // to the annotation whole, as Amazon Music's ℗ line does
+        const plines = [...doc.querySelectorAll('.release-data-info')].map(el => this.text(el)).filter(t => /^(?:[℗©]|\([pc]\))/i.test(t));
+        // majkinetor: "reads PDF as track": a digital booklet is a row of the tracklist too, marked with
+        // its file type (<em class="release-track-file-type is-pdf">); a song's row has none
+        const all = [...doc.querySelectorAll('tr.release-track[data-trackid]')];
+        const extras = all.filter(tr => { const ft = tr.querySelector('.release-track-file-type'); return ft && !/\baudio\b/i.test(ft.className + ' ' + ft.textContent); });
+        if (extras.length) Log.info(`7digital: left out ${extras.map(tr => `"${this.text(tr.querySelector('.release-track-name p'))}" (${this.text(tr.querySelector('.release-track-file-type'))})`).join(', ')}: not a track`);
+        const rows = all.filter(tr => !extras.includes(tr)).map(tr => ({
+            id: tr.dataset.trackid,
+            title: this.text(tr.querySelector('.release-track-name p')) || (tr.querySelector('.release-track-name [itemprop="name"]') || {}).content || '',
+            lengthMs: this.iso((tr.querySelector('[itemprop="duration"]') || {}).content),
+        }));
+        const various = /^various artists$/i.test(artist);
+        Log.info(`7digital release ${releaseId} (${country}): "${title}" by ${artist} · ${rows.length} track(s) · ${pageDate || 'no date'} · label "${pageLabel}" · ${plines.join(' · ') || 'no ℗ line'}`);
+
+        // the release: its barcode, type and date (found by its title, as the store's key can't read it by id).
+        // 7digital's search can take 10 s or more, so it runs alongside the tracks' searches below.
+        const relP = (async () => {
+            for (const c of [...new Set([country, 'GB', 'US'])]) {
+                for (const q of [title, `${artist} ${title}`]) {
+                    try {
+                        const j = await this.api('release/search', { q, country: c, pageSize: '50' });
+                        const r = ((j.searchResults || {}).searchResult || []).map(x => x.release).find(x => x && String(x.id) === String(releaseId));
+                        if (r) return r;
+                    } catch (e) { Log.warn(`7digital: release search "${q}" (${c}) failed: ${e.message}`); }
+                }
+            }
+            return null;
+        })();
+
+        // the tracks: each by its title with the album's (often the whole album comes back for one), after its
+        // artist, or alone; a hit fills every row it is
+        const hits = new Map();
+        const search = async (q, c) => {
+            try {
+                const j = await this.api('track/search', { q, country: c, pageSize: '50' });
+                for (const x of (j.searchResults || {}).searchResult || []) if (x.track && x.track.release && String(x.track.release.id) === String(releaseId)) hits.set(String(x.track.id), x.track);
+            } catch (e) { Log.warn(`7digital: track search "${q}" failed: ${e.message}`); }
+        };
+        // the count is of tracks found: one search often brings up the whole album at once
+        const found = () => rows.filter(r => hits.has(r.id)).length;
+        // the store's country first; a release its catalogue doesn't have (a UK compilation on the US
+        // store) is looked for in the UK's and the US's
+        for (const c of [...new Set([country, 'GB', 'US'])]) {
+            await mapLimit(rows, 6, async row => {
+                for (const q of [`${row.title} ${title}`, various ? null : `${artist} ${row.title}`, row.title]) {
+                    if (hits.has(row.id)) break;
+                    if (q) { await search(q, c); progress && progress(found(), rows.length); }
+                }
+            });
+            if (found()) break;
+            Log.info(`7digital: none of the tracks is in the ${c} catalogue`);
+        }
+        const rel = await relP;
+        if (rel) Log.info(`7digital API: type ${rel.type} · UPC ${rel.barcode || '—'} · ${(rel.download || {}).releaseDate || 'no date'} · label "${(rel.label || {}).name || ''}"`);
+        else Log.warn('7digital: the release wasn\'t found in the API: no barcode, and the type is guessed');
+        Log.info(`7digital API: ${rows.filter(r => hits.has(r.id)).length} of ${rows.length} track(s) found, ${rows.filter(r => (hits.get(r.id) || {}).isrc).length} with an ISRC`);
+
+        const storeArtist = a => (a && a.slug ? `${new URL(url).origin}/artist/${a.slug}` : null);
+        const mediums = [];
+        let disc = 1;
+        rows.forEach((row, i) => {
+            const t = hits.get(row.id);
+            if (t && t.discNumber) disc = t.discNumber;
+            const tf = splitFeat((t && t.title) || row.title);
+            // the track's artist line: "A, B & C", "A x B", "A feat. B" ("The Blessed Madonna feat. Clementine Douglas")
+            const lf = splitFeat(t ? (t.artist || {}).name : (various ? '' : artist));
+            const names = this.names(lf.title, artist);
+            // the release artist links their page; a track's own 7digital artist is one entry for its whole
+            // line, so it links only an artist who is the whole line
+            const contributors = names.map(name => ({ name, url: normName(name) === normName(artist) ? artistUrl : names.length === 1 && !lf.feat.length && t ? storeArtist(t.artist) : null }));
+            const credit = creditFromTitle(contributors.length ? contributors : [{ name: artist, url: artistUrl }], lf.feat.concat(tf.feat.filter(n => !lf.feat.some(f => normName(f) === normName(n)))));
+            while (mediums.length < disc) mediums.push({ format: 'Digital Media', name: '', tracks: [] });
+            mediums[disc - 1].tracks.push({ title: tf.title, lengthMs: row.lengthMs || (t && t.duration ? t.duration * 1000 : null), isrc: (t && t.isrc) || null, url: null, credit });
+            Log.debug(`track ${disc}.${t ? t.number : '?'} (${i + 1}): "${tf.title}" — ${credit.map(c => c.name + c.join).join('')} (${(t && t.isrc) || 'no ISRC'})`);
+        });
+        const empty = mediums.findIndex(m => !m.tracks.length);
+        if (empty >= 0) { Log.warn(`7digital: disc ${empty + 1} has no tracks; the tracklist is one medium`); mediums.splice(0, mediums.length, { format: 'Digital Media', name: '', tracks: [].concat(...mediums.map(m => m.tracks)) }); }
+
+        const af = splitFeat(title);
+        const credit = various ? [{ name: 'Various Artists', mbid: VARIOUS_ARTISTS_MBID, join: '' }] : creditFromTitle(this.names(artist, artist).map(name => ({ name, url: artistUrl })), af.feat);
+        // the release date is the store's local midnight in UTC ("2020-07-22T23:00:00Z" is 23 July in the UK):
+        // the day 12 hours on is the local day, wherever the store is
+        const at = Date.parse(((rel || {}).download || {}).releaseDate || '');
+        let [y, m, d] = Number.isFinite(at) ? new Date(at + 12 * 3600e3).toISOString().slice(0, 10).split('-').map(n => parseInt(n, 10)) : [];
+        if (!y && sub === 'uk') [d, m, y] = pageDate.split('/').map(n => parseInt(n, 10));   // the UK store writes 23/07/2020
+        // 7digital stores some barcodes as 14 digits (00602508436901): one leading zero too many for an EAN
+        const bc = String((rel || {}).barcode || '').replace(/\D/g, '').replace(/^0(?=\d{13}$)/, '');
+        const label = pageLabel || ((rel || {}).label || {}).name || labelFromCopyright(plines[0]) || '';
+        return {
+            source: this.id,
+            annotation: notesText(plines.join('\n')),
+            url,
+            title: af.title,
+            credit,
+            types: (rel && this.TYPES[rel.type]) || [],
+            status: 'official',
+            packaging: 'None',
+            date: { year: y || (rel && rel.year) || null, month: m || null, day: d || null },
+            country: 'XW',
+            barcode: /^\d{12,13}$/.test(bc) ? bc : null,
+            labels: label ? [{ name: label, catno: '' }] : [],
+            urls: [{ url, linkType: 74 }],   // 74 = purchase for download, the only type MusicBrainz allows for 7digital
+            mediums,
+        };
+    },
+};
+
+// Ototoy (#670): a Japanese download store. Everything is on the album page, server-rendered: the title,
+// the album artist with their page, "DISC n" rows, each track's title, length and the artists Ototoy links
+// for it, the release dates, the label with its page, and the album info. No barcode, no ISRCs, no type.
+// A track's linked artists are all of Ototoy's for it: on some compilations that includes the arranger or
+// the label (IMAGINATION vol.1: ときのそら and Yunomi), which can't be told from a co-singer (three on
+// にじさんじ's "3倍！Sun Shine！カーニバル！"), so all are kept, and the title's "(feat. …)" makes the
+// featured ones. Hi-res and CD-quality editions are separate pages; older titles carry their format.
+const OTOTOY = {
+    id: 'ototoy',
+    name: 'Ototoy',
+    abbr: 'oto',
+    host: /^ototoy\.jp$/,
+    albumId(loc) { const m = loc.pathname.match(/^\/_\/default\/p\/(\d+)\/?$/); return m ? m[1] : null; },
+    text: el => (el ? el.textContent.replace(/\s+/g, ' ').trim() : ''),
+    // "04:28" / "1:02:03" → ms
+    hms(t) { const p = String(t || '').trim().split(':').map(Number); return p.length > 1 && p.every(Number.isFinite) ? p.reduce((a, n) => a * 60 + n, 0) * 1000 : null; },
+    // "Live Archives Disc2(24bit/44.1kHz)", "… (dsd+mp3)": the format the page sells, not the title
+    FORMAT: /\s*[(（][^()（）]*(?:\d+\s*bit|khz|\bdsd\b|\bmp3\b|\bflac\b|\bwav\b|\balac\b|\baac\b|hi-?res|ハイレゾ)[^()（）]*[)）]\s*$/i,
+    artist(a) { return { name: this.text(a), url: a.getAttribute('href') ? new URL(a.getAttribute('href'), 'https://ototoy.jp/').href.replace(/[?#].*$/, '') : null }; },
+
+    async fetchRelease(id, progress, doc) {
+        doc = doc || document;
+        const rawTitle = this.text(doc.querySelector('h1.album-title'));
+        if (!rawTitle) throw new Error('Ototoy: no album on this page');
+        const title = rawTitle.replace(this.FORMAT, '');
+        const albumArtists = [...doc.querySelectorAll('p.album-artist a[href*="/_/default/a/"]')].map(a => this.artist(a));
+        const detail = [...doc.querySelectorAll('.album-meta-data .detail p')].map(p => this.text(p));
+        const field = re => { const l = detail.find(x => re.test(x)); return l ? l.replace(re, '').trim() : ''; };
+        const released = field(/^Release date:\s*/i), original = field(/^Original release date:\s*/i), catno = field(/^Catalog number:\s*/i);
+        const labelA = doc.querySelector('.album-meta-data .detail p.label-name a');
+        const label = this.text(labelA);
+        Log.info(`Ototoy album ${id}: "${rawTitle}"${title !== rawTitle ? ` (title "${title}")` : ''} by ${albumArtists.map(a => a.name).join(', ') || '—'} · ${detail.join(' · ')}`);
+        if (catno) Log.info(`Ototoy: catalog number ${catno} left out: Ototoy shows the CD's or a distributor's code as often as the release's`);
+
+        const various = albumArtists.length === 1 && /^(?:various artists|v\.?\s*a\.?)$/i.test(albumArtists[0].name);
+        const mediums = [];
+        let disc = 0;
+        const rows = [...doc.querySelectorAll('#tracklist tr')];
+        const nTracks = rows.filter(tr => tr.querySelector('[id^="title-"]')).length;
+        let n = 0;
+        for (const tr of rows) {
+            if (tr.classList.contains('disc-row')) { disc = mediums.push({ format: 'Digital Media', name: '', tracks: [] }); continue; }
+            const t = tr.querySelector('[id^="title-"]');
+            if (!t) continue;
+            if (!mediums.length) disc = mediums.push({ format: 'Digital Media', name: '', tracks: [] });
+            const tf = splitFeat(this.text(t));
+            const linked = [...tr.querySelectorAll('a.artist[href*="/_/default/a/"]')].map(a => this.artist(a));
+            const credit = creditFromTitle(linked.length ? linked : (various ? [] : albumArtists), tf.feat);
+            const len = [...tr.querySelectorAll('td.item.center')].map(td => this.text(td)).find(x => /^\d+(?::\d\d){1,2}$/.test(x));
+            mediums[disc - 1].tracks.push({ title: tf.title, lengthMs: this.hms(len), isrc: null, url: null, credit });
+            progress && progress(++n, nTracks);
+            Log.debug(`track ${disc}.${mediums[disc - 1].tracks.length}: "${tf.title}" — ${credit.map(c => c.name + c.join).join('') || '(no artist)'}`);
+        }
+        const emptyDisc = mediums.findIndex(m => !m.tracks.length);
+        if (emptyDisc >= 0) mediums.splice(emptyDisc, 1);
+
+        const af = splitFeat(title);
+        const credit = various || !albumArtists.length ? [{ name: 'Various Artists', mbid: VARIOUS_ARTISTS_MBID, join: '' }] : creditFromTitle(albumArtists, af.feat);
+        // the original release date is the release's; "Release date" can be the day Ototoy listed it
+        const [y, m, d] = (original || released).split('-').map(x => parseInt(x, 10));
+        const url = `https://ototoy.jp/_/default/p/${id}`;
+        return {
+            source: this.id,
+            annotation: notesText((doc.querySelector('.album-addendum .album-review') || {}).innerHTML),   // the album info
+            url,
+            title: af.title,
+            credit,
+            types: [],
+            status: 'official',
+            packaging: 'None',
+            date: { year: y || null, month: m || null, day: d || null },
+            country: 'JP',   // Ototoy sells in Japan only
+            barcode: null,
+            labels: label ? [{ name: label, catno: '', url: labelA.getAttribute('href') ? new URL(labelA.getAttribute('href'), 'https://ototoy.jp/').href : null }] : [],
+            urls: [{ url, linkType: 74 }],   // 74 = purchase for download, the only type MusicBrainz allows for Ototoy
+            mediums,
+        };
+    },
+};
+
+const PROVIDERS = [DEEZER, BANDCAMP, DISCOGS, APPLE, TIDAL, QOBUZ, BEATPORT, SPOTIFY, YTMUSIC, VOLUMO, HDTRACKS, SOUNDCLOUD, AMAZON, AUDIOMACK, SEVENDIGITAL, OTOTOY];
+
+/* ── Harmony (#687): the album sent to Harmony's release lookup instead of the editor ── */
+const HARMONY = 'https://harmony.pulsewidth.org.uk/release';
+// The album link in the form Harmony reads, for the platforms Harmony looks up by URL; Harmony then
+// finds the others by the barcode it reads there. Checked against Harmony's lookup (each form is
+// recognised; Beatport's slug can be '-', as Harmony itself writes it).
+const HARMONY_URLS = {
+    deezer: id => `https://www.deezer.com/album/${id}`,
+    bandcamp: id => `https://${location.hostname}${id}`,
+    discogs: id => `https://www.discogs.com/release/${id}`,
+    apple: id => { const [cc, n] = id.split('/'); return `https://music.apple.com/${cc}/album/${n}`; },
+    tidal: id => `https://tidal.com/album/${id}`,
+    qobuz: id => `https://www.qobuz.com${id}`,
+    beatport: id => `https://www.beatport.com/release/-/${id}`,
+    spotify: id => `https://open.spotify.com/album/${id}`,
+    ototoy: id => `https://ototoy.jp/_/default/p/${id}`,
+};
+// Platforms Harmony doesn't know and whose albums never carry a barcode: nothing to send
+const HARMONY_NONE = new Set(['ytmusic', 'amazonmusic']);
+// spoonkuh: "it does not follow my harmony settings". A link names its providers itself, and one that
+// names none looks the album up on its own platform only (a barcode alone, on none). category=preferred
+// is the providers ticked in Harmony's settings (its cookies), and with no region in the link Harmony
+// takes the settings' region too; Apple's link carries its own country store.
+function harmonyLookup({ url, gtin }) {
+    const q = new URLSearchParams();
+    if (url) q.set('url', url);
+    if (gtin) q.set('gtin', gtin);
+    q.set('category', 'preferred');
+    return `${HARMONY}?${q}`;
+}
+// Harmony's own mark, so the button says where it goes
+const HARMONY_SVG = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="18" height="18" aria-hidden="true">'
+    + '<defs><linearGradient id="fc-harmony-g" x1="-7.71" y1="30.11" x2="45.71" y2="-.24" gradientUnits="userSpaceOnUse"><stop offset=".29" stop-color="#ffb92c"/><stop offset="1" stop-color="#c45555"/></linearGradient></defs>'
+    + '<path fill="url(#fc-harmony-g)" d="M17.13,0l-6.27,3.6v6.56c.74-.3,1.53-.45,2.34-.45,3.47,0,6.29,2.82,6.29,6.29s-2.82,6.29-6.29,6.29c-.81,0-1.6-.15-2.34-.45v6.56l6.27,3.6,13.63-7.82V7.82L17.13,0Z"/>'
+    + '<path fill="#c45555" d="M13.2,11.7c-.85,0-1.65.25-2.32.68-.05,0-.1,0-.15,0-.39,0-.78-.08-1.1-.3-.48-.32-.69-1.03-.76-1.76V3.45L1.24,7.82v16.36l7.62,4.37v-6.88c.08-.73.29-1.44.76-1.76.33-.22.72-.3,1.1-.3.05,0,.11,0,.16,0,.67.43,1.46.68,2.31.68,2.37,0,4.29-1.92,4.29-4.29s-1.92-4.29-4.29-4.29Z"/></svg>';
+
+/* ── the seed: model → the release editor's POST parameters ──────────────── */
+// https://musicbrainz.org/doc/Development/Release_Editor_Seeding
+
+function seedParams(rel, editNote) {
+    const p = [];
+    const add = (k, v) => { if (v !== null && v !== undefined && v !== '') p.push([k, String(v)]); };
+    const credit = (prefix, c) => (c || []).forEach((a, i) => {
+        add(`${prefix}artist_credit.names.${i}.name`, a.name);
+        add(`${prefix}artist_credit.names.${i}.artist.name`, a.artistName || a.name);
+        add(`${prefix}artist_credit.names.${i}.mbid`, a.mbid);
+        add(`${prefix}artist_credit.names.${i}.join_phrase`, a.join);
+    });
+    add('name', rel.title);
+    credit('', rel.credit);
+    (rel.types || []).forEach(t => add('type', t));
+    add('status', rel.status);
+    add('packaging', rel.packaging);
+    add('script', rel.script);
+    add('barcode', rel.barcode);
+    if (rel.date && (rel.date.year || rel.country)) {
+        add('events.0.date.year', rel.date.year);
+        add('events.0.date.month', rel.date.month);
+        add('events.0.date.day', rel.date.day);
+        add('events.0.country', rel.country);
+    }
+    (rel.labels || []).forEach((l, i) => { add(`labels.${i}.name`, l.name); add(`labels.${i}.mbid`, l.mbid); add(`labels.${i}.catalog_number`, l.catno); });
+    (rel.urls || []).forEach((u, i) => { add(`urls.${i}.url`, u.url); add(`urls.${i}.link_type`, u.linkType); });
+    rel.mediums.forEach((m, i) => {
+        add(`mediums.${i}.format`, m.format);
+        add(`mediums.${i}.name`, m.name);
+        m.tracks.forEach((t, j) => {
+            const pre = `mediums.${i}.track.${j}.`;
+            add(pre + 'name', t.title);
+            add(pre + 'number', t.number || j + 1);
+            add(pre + 'length', t.lengthMs);
+            credit(pre, t.credit);
+        });
+    });
+    add('annotation', rel.annotation);
+    add('edit_note', editNote);
+    return p;
+}
+
+// #684: the album has tracks the platform didn't give (Apple: not offered in the storefront)
+function missingText(rel, provider) {
+    const m = rel.missing;
+    return `${provider.name} lists ${m.of} tracks but offers ${m.of - m.count}: ${m.count} ${m.count === 1 ? 'is' : 'are'} missing${m.at.length ? ` (${m.at.join(', ')}), left as empty tracks to fill in` : ' from this tracklist'}.`;
+}
+function editNoteFor(rel, provider, archive) {
+    const lines = [`Imported from ${provider.name}: ${rel.url}`];
+    if (rel.missing) lines.push(missingText(rel, provider));
+    if (archive) {
+        // the snapshot is made after the seed, so its exact time isn't known yet: the import's time
+        // is, and Wayback sends /web/<time>/<url> to the snapshot nearest to it
+        const wb = u => `https://web.archive.org/web/${archive.ts}/${u}`;
+        for (const a of archive.urls) lines.push(`${a.what === 'api' ? 'Archived API data' : 'Archived page'}: ${wb(a.url)}`);
+        if (archive.keys) lines.push(`Archived screenshot: ${wb('http://web.archive.org/screenshot/' + archive.urls[0].url)}`);
+    }
+    return lines.join('\n') + `\n\n${NAME} v${VERSION} by majkinetor - ${HOMEPAGE}`;
+}
+
+/* ── #659: Internet Archive ──────────────────────────────────────────────── */
+// The release editor's tab sends the save requests (the platform tab may close right after the
+// import); the edit note links the snapshots by the import's time.
+
+const WAYBACK_TS = d => d.toISOString().replace(/[^0-9]/g, '').slice(0, 14);
+const ARCHIVE_WAIT_MS = 180000;
+
+// The page as the user has it, without the fragment and share/tracking parameters. Not the
+// canonical URL: that one often redirects (Deezer's /album/<id> to a country's /xx/album/<id>), and
+// Wayback then stores the snapshot under the target, so a link to the canonical URL by the
+// import's time finds an older snapshot instead of this one.
+// The query is cut as text: open.spotify.com replaces URLSearchParams with its own, whose keys()
+// can't be iterated ("u.searchParams.keys() is not iterable" stopped the import there).
+function archivePageUrl(href) {
+    const [base, query = ''] = String(href).split('#')[0].split(/\?(.*)/s);
+    const kept = query.split('&').filter(p => p && !/^(si|utm_\w+|fbclid|gclid|ref|from|context|nd|feature)$/i.test(decodeURIComponent(p.split('=')[0].replace(/\+/g, ' '))));
+    return base + (kept.length ? '?' + kept.join('&') : '');
+}
+
+// What to archive for this import, or null when archiving is off.
+function archivePlan(rel, provider, id) {
+    const s = settings();
+    if (!s.archive) { Log.info('archive: off in the settings'); return null; }
+    const urls = [{ url: archivePageUrl(location.href), what: 'page' }];
+    if (provider.archiveApi) urls.push({ url: provider.archiveApi(id), what: 'api' });
+    const keys = !!(s.iaKey && s.iaSecret);
+    Log.info(`archive: ${urls.map(u => u.what + ' ' + u.url).join(', ')} (${keys ? 'Save Page Now 2 with your keys, with a screenshot' : 'anonymous Save Page Now'}); the release editor's tab sends it`);
+    return { ts: WAYBACK_TS(new Date()), keys, urls };
+}
+
+// Anonymous Save Page Now: a GET that answers (in seconds to a minute) with a redirect to the snapshot.
+function spnAnonymous(url) {
+    const t0 = Date.now();
+    return new Promise(resolve => {
+        GM_xmlhttpRequest({
+            method: 'GET', url: 'https://web.archive.org/save/' + url, timeout: ARCHIVE_WAIT_MS, anonymous: true,
+            headers: { Accept: 'text/html' },
+            onload: r => {
+                const snap = /\/web\/\d{14}\//.test(r.finalUrl || '') ? r.finalUrl : null;
+                const ms = Date.now() - t0;
+                if (r.status >= 200 && r.status < 300 && snap) Log.ok(`archive: saved ${url} → ${snap} (${ms} ms)`);
+                else if (r.status === 429) Log.warn(`archive: ${url} not saved: Save Page Now is limiting anonymous saves (HTTP 429). archive.org keys in the settings raise the limit`);
+                else Log.warn(`archive: ${url} → HTTP ${r.status}${snap ? '' : ', no snapshot in the answer'} (${ms} ms)${r.finalUrl ? ', ended at ' + r.finalUrl : ''}`);
+                resolve();
+            },
+            onerror: () => { Log.warn(`archive: network error saving ${url}`); resolve(); },
+            ontimeout: () => { Log.warn(`archive: no answer for ${url} in ${ARCHIVE_WAIT_MS / 60000} minutes (the save may still finish)`); resolve(); },
+        });
+    });
+}
+
+// Save Page Now 2 with the user's archive.org keys: higher limits, a screenshot, and a snapshot from
+// the last 30 days is reused. Starts a job, then follows it for the log only (nothing waits for it).
+function spnRequest(method, url, auth, body) {
+    return new Promise(resolve => {
+        GM_xmlhttpRequest({
+            method, url, data: body, timeout: 30000, anonymous: true,
+            headers: Object.assign({ Accept: 'application/json', Authorization: 'LOW ' + auth }, body ? { 'Content-Type': 'application/x-www-form-urlencoded' } : {}),
+            onload: r => { let j = null; try { j = JSON.parse(r.responseText || 'null'); } catch (e) { /* not JSON */ } resolve({ status: r.status, json: j, text: r.responseText || '' }); },
+            onerror: () => resolve({ status: 0, json: null, text: 'network error' }),
+            ontimeout: () => resolve({ status: 0, json: null, text: 'timeout' }),
+        });
+    });
+}
+async function spnWithKeys(url, s) {
+    const auth = `${s.iaKey}:${s.iaSecret}`;
+    const body = new URLSearchParams({ url, if_not_archived_within: '30d', capture_screenshot: '1' }).toString();
+    const r = await spnRequest('POST', 'https://web.archive.org/save', auth, body);
+    Log.debug(`archive: POST /save ${url} → HTTP ${r.status} ${r.text.slice(0, 300)}`);
+    if (r.status === 401 || r.status === 403) { Log.warn(`archive: archive.org refused your keys (HTTP ${r.status}); check them in the settings`); return; }
+    const job = r.json && r.json.job_id;
+    if (!job) {
+        const msg = (r.json && (r.json.message || r.json.status_ext)) || r.text.slice(0, 200) || 'no answer';
+        if (r.status === 200 && /archived|already/i.test(msg)) Log.ok(`archive: ${url} has a recent snapshot, not saved again (${msg})`);
+        else Log.warn(`archive: ${url} not saved (HTTP ${r.status}: ${msg})`);
+        return;
+    }
+    Log.info(`archive: ${url} queued as job ${job}`);
+    const t0 = Date.now();
+    while (Date.now() - t0 < ARCHIVE_WAIT_MS) {
+        await new Promise(res => setTimeout(res, 6000));
+        const st = await spnRequest('GET', 'https://web.archive.org/save/status/' + encodeURIComponent(job), auth);
+        const j = st.json || {};
+        Log.debug(`archive: job ${job} → HTTP ${st.status}, ${j.status || '?'}`);
+        if (j.status === 'pending') continue;
+        if (j.status === 'success') Log.ok(`archive: saved ${url} → https://web.archive.org/web/${j.timestamp}/${j.original_url || url}${j.screenshot ? ', screenshot ' + j.screenshot : ''} (${Date.now() - t0} ms)`);
+        else Log.warn(`archive: job ${job} for ${url} ended ${j.status || 'HTTP ' + st.status}: ${j.message || j.status_ext || st.text.slice(0, 200)}`);
+        return;
+    }
+    Log.info(`archive: job ${job} for ${url} still running after ${ARCHIVE_WAIT_MS / 60000} minutes; archive.org finishes it on its side`);
+}
+
+// Send this import's URLs, once per import (a reload of the editor tab doesn't send them again).
+async function archiveSources(plan, token) {
+    const done = 'fc.archived.' + token;
+    try {
+        if (sessionStorage.getItem(done)) { Log.debug(`archive: already sent for ${token} (this tab was reloaded)`); return; }
+        sessionStorage.setItem(done, '1');
+    } catch (e) { /* no sessionStorage: send anyway */ }
+    const s = settings();
+    const keys = !!(s.iaKey && s.iaSecret);
+    Log.info(`archive: sending ${plan.urls.length} URL(s) to the Internet Archive (${keys ? 'Save Page Now 2 with your keys' : 'anonymous'})`);
+    for (const a of plan.urls) {   // one at a time: anonymous saves are limited per IP
+        try { await (keys ? spnWithKeys(a.url, s) : spnAnonymous(a.url)); } catch (e) { Log.warn(`archive: ${a.url}: ${e.message}`); }
+    }
+}
+
+// What Apollo needs to match: every credited artist with its platform link, by position, and
+// what it needs to know about the platform (#672), so a new provider needs no change in Apollo:
+//   platform: { abbr, name, artistLinkType? }  the badge, the name in logs and edit notes, and the
+//                                              artist link type where MB can't pick one itself
+//   urlForms: [url, ...]                       on a link MB may store in other forms: all of them
+function handoffFor(rel, provider, token) {
+    const forms = url => {
+        if (!url || !provider.urlForms) return undefined;
+        const f = [...new Set([url, ...provider.urlForms(url)])];
+        return f.length > 1 ? f : undefined;
+    };
+    const ac = c => (c || []).map(a => ({ name: a.name, artistName: a.artistName || a.name, join: a.join, url: a.url || null, urlForms: forms(a.url), mbid: a.mbid || null }));
+    return {
+        v: 2,
+        token,
+        created: Date.now(),
+        source: provider.id,
+        sourceName: provider.name,
+        platform: { abbr: provider.abbr, name: provider.name, artistLinkType: provider.artistLinkType },
+        url: rel.url,
+        title: rel.title,
+        barcode: rel.barcode,
+        credit: ac(rel.credit),
+        labels: (rel.labels || []).map(l => ({ name: l.name, catno: l.catno, url: l.url || null, urlForms: forms(l.url), mbid: l.mbid || null })),
+        mediums: rel.mediums.map(m => ({ tracks: m.tracks.map(t => ({ title: t.title, isrc: t.isrc, url: t.url, credit: ac(t.credit) })) })),
+    };
+}
+
+function pruneHandoffs() {
+    try {
+        for (const k of GM_listValues()) {
+            if (!k.startsWith(HANDOFF_PREFIX)) continue;
+            const h = GM_getValue(k, null);
+            if (!h || !h.created || Date.now() - h.created > HANDOFF_TTL_MS) { GM_deleteValue(k); Log.debug(`pruned old handoff ${k}`); }
+        }
+    } catch (e) { Log.warn(`handoff prune: ${e.message}`); }
+}
+
+/* ── platform side: the button ───────────────────────────────────────────── */
+
+let current = null;   // { provider, id }
+let busy = false;
+
+function injectStyle() {
+    if (document.getElementById('fc-style')) return;
+    const st = document.createElement('style');
+    st.id = 'fc-style';
+    // On a platform's page a userstyle's --background/--text/--border are the platform's own,
+    // not a MusicBrainz theme: take our defaults there.
+    const css = MBU_TOKENS, tokens = ON_MB ? css : css.replace(/var\(--(?:background|text|border), ([^)]+)\)/g, '$1');
+    st.textContent = tokens + MBU_UI_CSS + `
+#fc-root { position: fixed; z-index: 2147483000; display: flex; gap: 0; font: 13px/1.3 system-ui, sans-serif;
+  box-shadow: var(--mbu-shadow, 0 2px 10px rgba(0,0,0,.25)); border-radius: 8px; }
+#fc-root button { all: unset; box-sizing: border-box; cursor: pointer; display: inline-flex; align-items: center; gap: 6px;
+  padding: 8px 12px; background: var(--mbu-bg); color: var(--mbu-text); border: 1px solid var(--mbu-border); }
+#fc-root button:hover { background: var(--mbu-bg-hover); }
+#fc-root button:focus-visible { outline: 2px solid var(--mbu-accent); outline-offset: -2px; }
+#fc-root .fc-go { border-radius: 8px 0 0 8px; font-weight: 600; }
+#fc-root .fc-more { border-radius: 0 8px 8px 0; border-left: none; min-width: 30px; justify-content: center; padding: 8px 10px; }
+#fc-root .fc-go[aria-busy="true"] { cursor: progress; }
+/* #687: Send to Harmony, between Import and ⚙︎ */
+#fc-root .fc-harmony { border-left: none; padding: 8px 9px; justify-content: center; }
+#fc-root .fc-harmony[hidden] { display: none; }
+#fc-root .fc-harmony[aria-disabled="true"] { cursor: default; opacity: .45; }
+#fc-root .fc-harmony[aria-disabled="true"]:hover { background: var(--mbu-bg); }
+#fc-root .fc-harmony[aria-busy="true"] { cursor: progress; }
+#fc-root .fc-harmony svg { display: block; }
+/* majkinetor: "after the click nothing happens … make it obvious it works": a spinner while it reads */
+#fc-root .fc-go[aria-busy="true"]::after { content: ''; width: 14px; height: 14px; flex: 0 0 auto; box-sizing: border-box;
+  border: 2px solid var(--mbu-border); border-top-color: var(--mbu-accent-text); border-right-color: var(--mbu-accent-text); border-radius: 50%; animation: fc-spin .8s linear infinite; }
+@keyframes fc-spin { to { transform: rotate(360deg); } }
+#fc-root .fc-go[aria-busy="true"] span { font-variant-numeric: tabular-nums; }
+#fc-root { touch-action: none; animation: fc-fadein .4s ease; }
+/* fades in when it appears, as Mammoth's pins do */
+@keyframes fc-fadein { from { opacity: 0; } }
+#fc-root.fc-settling { opacity: 0 !important; pointer-events: none !important; }
+#fc-root.fc-fadein { transition: opacity .4s ease; }
+#fc-root.fc-dragging, #fc-root.fc-dragging button { cursor: grabbing; }
+/* the readable accent (as Log's): --mbu-accent alone is a deep purple that vanishes on the dark panel */
+#fc-panel .fc-reset { justify-self: start; color: var(--mbu-text-weak); }
+#fc-panel .fc-reset button { all: unset; cursor: pointer; color: var(--mbu-accent-text); text-decoration: underline; padding: 0 2px; }
+#fc-panel .fc-reset button:hover { color: var(--mbu-text); }
+#fc-panel .fc-reset button:focus-visible { outline: 2px solid var(--mbu-accent); outline-offset: 1px; }
+#fc-root.fc-iconly .fc-go span { display: none; }
+#fc-root.fc-iconly .fc-go[aria-busy="true"] span { display: inline; }   /* the progress still shows while it reads */
+/* ⚙︎ only on hover: a tab on the button's edge, above it (below when the button sits near the
+   top), so showing it never shifts Import out from under the pointer */
+#fc-root.fc-gear-hover .fc-go { border-radius: 8px; }
+#fc-root.fc-gear-hover:has(.fc-harmony:not([hidden])) .fc-go { border-radius: 8px 0 0 8px; }
+#fc-root.fc-gear-hover .fc-harmony { border-radius: 0 8px 8px 0; }
+#fc-root.fc-gear-hover .fc-more { position: absolute; right: 8px; bottom: 100%; min-width: 0; padding: 3px 8px;
+  border: 1px solid var(--mbu-border); border-bottom: none; border-radius: 8px 8px 0 0; visibility: hidden; }
+#fc-root.fc-gear-hover.fc-gear-below .fc-more { bottom: auto; top: 100%; border-bottom: 1px solid var(--mbu-border); border-top: none; border-radius: 0 0 8px 8px; }
+/* majkinetor: "settings on hover should kick in after a sec or so, so that on normal usage it doesn't
+   pop up when you click to import": the tab shows after the pointer has rested on the button for 1 s,
+   and hides at once. The keyboard (focus-visible, not the focus a click leaves) and open settings show it now.
+   Never while the button is being dragged (majkinetor: "do not show settings button while dragging"). */
+#fc-root.fc-gear-hover:not(.fc-dragging):hover .fc-more { visibility: visible; transition: visibility 0s linear 1s; }
+#fc-root.fc-gear-hover:not(.fc-dragging):has(:focus-visible) .fc-more, body:has(#fc-panel) #fc-root.fc-gear-hover:not(.fc-dragging) .fc-more { visibility: visible; transition: none; }
+#fc-panel { position: fixed; z-index: 2147483001; box-sizing: border-box; width: max-content; max-width: calc(100vw - 16px);
+  overflow: auto; overscroll-behavior: contain; background: var(--mbu-bg); color: var(--mbu-text);
+  border: 1px solid var(--mbu-border); border-radius: 8px; box-shadow: var(--mbu-shadow, 0 4px 18px rgba(0,0,0,.3));
+  font: 12px/1.3 system-ui, sans-serif; padding: 10px 12px; }
+#fc-panel .mbu-cfg-h { margin: 0 0 9px; padding: 0 0 8px; font-size: 13px; gap: 6px; }
+#fc-panel .mbu-cfg-ic, #fc-panel .mbu-cfg-ic svg { width: 18px; height: 18px; }
+#fc-panel .fc-body { display: grid; gap: 7px; }
+#fc-panel .fc-reset { margin-top: 2px; }
+/* the sections (Import, Archive, Button), headed as Platform Check's settings are */
+#fc-panel .fc-sec { font-weight: 700; color: var(--mbu-text); font-size: 11px; letter-spacing: .05em; text-transform: uppercase;
+  margin: 8px 0 0; padding-bottom: 3px; border-bottom: 1px solid var(--mbu-divider, var(--mbu-border-soft)); }
+#fc-panel .fc-sec:first-child { margin-top: 0; }
+/* the whole margin, not just the indent: qobuz.com gives every label an 8px bottom margin, which spread the rows apart */
+#fc-panel .fc-body > :not(.fc-sec) { margin: 0 0 0 8px; }
+#fc-panel .fc-pos { color: var(--mbu-text); margin-right: 14px; }
+#fc-panel label { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+#fc-panel label.fc-check { justify-content: flex-start; gap: 6px; cursor: pointer; }
+/* #659: the archive.org keys, under the archive checkbox; dimmed while archiving is off */
+#fc-panel .fc-body > .fc-ia { display: grid; grid-template-columns: 1fr 1fr; gap: 4px 6px; margin: -2px 0 0 27px; }
+#fc-panel .fc-ia.fc-off { opacity: .5; }
+/* no password-manager icon in the key fields: they opt out by attribute (LastPass, 1Password,
+   Bitwarden, Dashlane), and the secret is a text field masked in CSS, since type=password draws every manager in */
+#fc-panel .fc-ia .fc-ia-secret { -webkit-text-security: disc; }
+#fc-panel .fc-ia-h { grid-column: 1 / -1; color: var(--mbu-text-weak); }
+#fc-panel .fc-ia-h a { color: var(--mbu-accent-text); margin-left: 4px; }
+#fc-panel .fc-ia input { all: revert; box-sizing: border-box; width: 100%; min-width: 0; font: 12px var(--mbu-font-mono, monospace);
+  padding: 3px 6px; border: 1px solid var(--mbu-border); border-radius: 4px; background: var(--mbu-bg-sunken); color: var(--mbu-text); }
+/* the browser's own checkbox, whatever the site's sheet says: qobuz.com's sets appearance:none
+   in a rule only Firefox applies, and our checkboxes drew as nothing there (#650) */
+#fc-panel input[type=checkbox] { all: revert; margin: 0; accent-color: var(--mbu-accent); cursor: pointer; }
+/* native controls follow our theme, not the page's: qobuz.com declares color-scheme dark on a light page */
+#fc-root, #fc-panel { color-scheme: light; }
+:root[data-mbu-theme=dark] :is(#fc-root, #fc-panel) { color-scheme: dark; }
+/* appearance: qobuz.com sets none on every select, which dropped the server list's arrow */
+#fc-panel select { appearance: auto; font: inherit; color: inherit; background: var(--mbu-bg); border: 1px solid var(--mbu-border); border-radius: 4px; padding: 2px 4px; }
+/* #684: tracks the platform didn't give: asked before the editor opens */
+#fc-warn { position: fixed; right: 16px; bottom: 16px; z-index: 2147483002; box-sizing: border-box; max-width: min(380px, calc(100vw - 16px));
+  background: var(--mbu-bg); color: var(--mbu-text); border: 1px solid var(--mbu-warn); border-radius: 8px;
+  box-shadow: var(--mbu-shadow, 0 4px 18px rgba(0,0,0,.3)); font: 12.5px/1.4 system-ui, sans-serif; padding: 10px 12px; color-scheme: light; }
+:root[data-mbu-theme=dark] #fc-warn { color-scheme: dark; }
+#fc-warn .fc-warn-h { font-weight: 700; color: var(--mbu-warn); margin: 0 0 6px; }
+#fc-warn p { margin: 0 0 8px; }
+#fc-warn .fc-warn-b { display: flex; justify-content: flex-end; gap: 8px; margin-top: 10px; }
+#fc-warn button { all: revert; font: inherit; cursor: pointer; padding: 4px 12px; border-radius: 5px; border: 1px solid var(--mbu-border); background: var(--mbu-bg); color: var(--mbu-text); }
+#fc-warn button.fc-warn-go { background: var(--mbu-accent); border-color: var(--mbu-accent); color: #fff; }
+/* links (? Help, get them) in the readable accent: --mbu-accent is the deep purple that vanishes on the dark panel */
+#fc-panel a { color: var(--mbu-accent-text); }
+`;
+    (document.head || document.documentElement).appendChild(st);
+}
+
+function mountButton(provider, id) {
+    injectStyle();
+    let root = document.getElementById('fc-root');
+    if (!root) {
+        root = document.createElement('div');
+        root.id = 'fc-root';
+        root.dataset.mbCorner = 'br';
+        root.dataset.mbCornerOrder = '30';
+        const go = document.createElement('button');
+        go.type = 'button';
+        go.className = 'fc-go';
+        go.innerHTML = mbuHtml(ICON_SVG + '<span>Import to MusicBrainz</span>');
+        go.addEventListener('click', () => { importCurrent(); });
+        const more = document.createElement('button');
+        more.type = 'button';
+        more.className = 'fc-more';
+        more.textContent = MBU_CFG_ICON;
+        more.title = 'Settings';
+        more.setAttribute('aria-label', more.title);
+        more.addEventListener('click', e => { e.stopPropagation(); togglePanel(more); });
+        const harmony = document.createElement('button');
+        harmony.type = 'button';
+        harmony.className = 'fc-harmony';
+        harmony.innerHTML = mbuHtml(HARMONY_SVG);
+        harmony.addEventListener('click', () => { sendToHarmony(); });
+        root.append(go, harmony, more);
+        document.body.appendChild(root);
+        makeMovable(root);
+        root.addEventListener('mouseenter', () => root.classList.toggle('fc-gear-below', root.getBoundingClientRect().top < 40));
+        window.addEventListener('resize', () => placeButton(root));
+    }
+    root.dataset.fcProvider = provider.name;
+    root.classList.toggle('fc-iconly', !!settings().iconOnly);   // majkinetor: an option to hide the button's text
+    root.classList.toggle('fc-gear-hover', !!settings().gearOnHover);   // majkinetor: an option to show ⚙︎ only on hover
+    root.querySelector('.fc-go').title = `Import to MusicBrainz: open the release editor with this ${provider.name} release filled in`;
+    showHarmony(root, provider);
+    root.style.display = '';
+    migrateScrollSetting();
+    placeButton(root);
+    const pinned = storedPos(provider.name);
+    if (scrollsWithPage(provider.name) && pinned && pinned.top != null) settleThenShow(root);
+    Log.debug(`button shown for ${provider.name} album ${id}`);
+}
+
+// majkinetor: the button can be dragged anywhere, and each platform remembers where. A moved
+// button leaves the shared corner stack (data-mb-corner) and keeps its distance from the
+// window's right and bottom edges, so it stays put as the window resizes; ⚙︎ → Reset position
+// puts it back in the corner.
+const POS_KEY = 'fc.pos';
+function storedPos(name) { const all = GM_getValue(POS_KEY, {}) || {}; return all[name] || null; }
+function storePos(name, pos) {
+    const all = Object.assign({}, GM_getValue(POS_KEY, {}) || {});
+    if (pos) all[name] = pos; else delete all[name];
+    GM_setValue(POS_KEY, all);
+}
+// majkinetor: "changing the fixed position on page only for some platforms … keeping other
+// platforms independent". Moved button scrolls with the page is each platform's own, kept beside
+// its position: { platformName: true }.
+const SCROLL_KEY = 'fc.scroll';
+function scrollsWithPage(name) { return !!(GM_getValue(SCROLL_KEY, {}) || {})[name]; }
+function setScrollsWithPage(name, on) {
+    const all = Object.assign({}, GM_getValue(SCROLL_KEY, {}) || {});
+    if (on) all[name] = true; else delete all[name];
+    GM_setValue(SCROLL_KEY, all);
+}
+// The setting used to be one for every platform: where it was on, it stays on for each platform
+// the button had been moved on.
+function migrateScrollSetting() {
+    const s = GM_getValue('fc.settings', {}) || {};
+    if (!Object.prototype.hasOwnProperty.call(s, 'scrollWithPage')) return;
+    const on = !!s.scrollWithPage;
+    delete s.scrollWithPage;
+    GM_setValue('fc.settings', s);
+    const moved = Object.keys(GM_getValue(POS_KEY, {}) || {});
+    if (on && moved.length) {
+        const all = Object.assign({}, GM_getValue(SCROLL_KEY, {}) || {});
+        for (const n of moved) all[n] = true;
+        GM_setValue(SCROLL_KEY, all);
+    }
+    Log.info(`Moved button scrolls with the page is now per platform: ${on ? `on for ${moved.join(', ') || 'none (no button moved yet)'}` : 'off everywhere, as it was'}`);
+}
+// What scrolls the page. Usually the window (Bandcamp, Qobuz); the app-like platforms (Spotify,
+// Apple Music) keep the window still and scroll a panel inside it instead, and have more than one
+// (sidebars, queues). The page's panel is the one that scrolls under the middle of the window;
+// while the app is still drawing there is none (null, as for the window: pos.inner says which).
+let scrollerLast = null;
+const scrolls = el => el.scrollHeight > el.clientHeight + 1 && el.clientHeight >= 200 && /^(auto|scroll|overlay)$/.test(getComputedStyle(el).overflowY);
+function pageScroller() {
+    const se = document.scrollingElement || document.documentElement;
+    if (se.scrollHeight > se.clientHeight + 1) return null;
+    let best = null;
+    const hits = document.elementsFromPoint ? document.elementsFromPoint(window.innerWidth / 2, window.innerHeight / 2) : [];
+    const start = hits.find(el => !el.closest('#fc-root, #fc-panel'));
+    for (let el = start; el && el !== document.body && el !== document.documentElement; el = el.parentElement) {
+        if (scrolls(el)) { best = el; break; }
+    }
+    if (best !== scrollerLast) Log.debug(`page scrolls in ${best ? `<${best.tagName.toLowerCase()}${best.className ? ' class="' + String(best.className).slice(0, 60) + '"' : ''}> (${best.clientWidth}×${best.clientHeight})` : 'the window (or nothing yet)'}`);
+    scrollerLast = best;
+    return best;
+}
+// a spot on the page: across from the centre of what scrolls, down from the top of its content
+function pagePosOf(r) {
+    const sc = pageScroller();
+    if (!sc) return { cx: Math.round(r.left + r.width / 2 - document.documentElement.clientWidth / 2), top: Math.round(r.top + window.scrollY) };
+    const sr = sc.getBoundingClientRect();
+    return { cx: Math.round(r.left + r.width / 2 - (sr.left + sr.width / 2)), top: Math.round(r.top - sr.top + sc.scrollTop), inner: true };
+}
+// On the page the button is page content: it goes under the site's fixed bars and the popups
+// that open from them, and over its sticky headers. 50 sits between them on every platform:
+// Tidal's header and search popup are at 90 and its fullscreen player at 80 (the 100 this was
+// went over them), Bandcamp Player Enhanced's player is above 100, while Spotify's, Deezer's and
+// Tidal's sticky section headers are at 1 or 2. Measured 2026-10-02; the page's lowest fixed bar
+// can't be used instead: Tidal's sticky header at 1 would take the button under the page.
+const PAGE_Z = 50;
+// majkinetor: "it goes behind this": Discogs's header is page content too, not a fixed bar
+// (position relative, z-index 1000, in a shadow root), and a button dropped on it went under it.
+// So where the button lands, page content that covers it (not a fixed or sticky bar, nor a popup
+// opening from one) lifts it just above that content, for as long as the page is open.
+let pageLift = 0;
+const pageZ = () => String(Math.max(PAGE_Z, pageLift));
+function liftIfCovered(root) {
+    if (root.classList.contains('fc-settling') || root.classList.contains('fc-dragging') || root.style.visibility === 'hidden') return;
+    const r = root.getBoundingClientRect(), x = r.left + r.width / 2, y = r.top + r.height / 2;
+    if (!r.width || x < 0 || y < 0 || x >= innerWidth || y >= innerHeight) return;
+    let hit = document.elementFromPoint(x, y);
+    while (hit && hit.shadowRoot) { const deeper = hit.shadowRoot.elementFromPoint(x, y); if (!deeper || deeper === hit) break; hit = deeper; }
+    if (!hit || root.contains(hit)) return;
+    let z = 0, by = hit;
+    for (let e = hit; e; e = e.parentElement || (e.getRootNode && e.getRootNode().host)) {
+        const cs = getComputedStyle(e);
+        if (cs.position === 'fixed' || cs.position === 'sticky') { Log.debug(`the button is under a ${cs.position} bar (<${e.tagName.toLowerCase()}>, z-index ${cs.zIndex}): it stays under`); return; }
+        const n = parseInt(cs.zIndex, 10);
+        if (cs.position !== 'static' && n >= z) { z = n; by = e; }
+    }
+    if (z + 1 <= Math.max(PAGE_Z, pageLift)) return;
+    pageLift = z + 1;
+    root.style.zIndex = pageZ();
+    Log.info(`the button sat under the page's <${by.tagName.toLowerCase()} class="${String(by.className).slice(0, 60)}"> (z-index ${z}): lifted to ${pageLift}`);
+}
+// In a scrolling panel the button stays fixed and follows the panel's scroll, cut to the part of
+// the panel that shows, so it slides under the panel's edges (Spotify's top bar and player) as
+// content does.
+function placeInScroller(root, pos, sc, r) {
+    const sr = sc.getBoundingClientRect();
+    const left = Math.round(Math.min(Math.max(sr.left, sr.left + sr.width / 2 + pos.cx - r.width / 2), Math.max(sr.left, sr.right - r.width)));
+    const top = Math.round(sr.top + pos.top - sc.scrollTop);
+    root.style.position = '';
+    root.style.zIndex = pageZ();
+    root.style.right = root.style.bottom = '';
+    root.style.left = left + 'px';
+    root.style.top = top + 'px';
+    const cutTop = Math.max(0, sr.top - top), cutBottom = Math.max(0, top + r.height - sr.bottom);
+    root.style.visibility = cutTop + cutBottom >= r.height ? 'hidden' : '';
+    root.style.clipPath = cutTop || cutBottom ? `inset(${cutTop}px 0 ${cutBottom}px 0)` : '';
+    liftIfCovered(root);
+}
+const waitScroller = { n: 0, t: 0 };
+// majkinetor: "fade in after few like Mammoth". A button pinned to the page would chase the page
+// as it lays out (and on Spotify sit against the window until the panel exists): keep it unseen
+// until the page goes quiet for 300 ms (1.5 s at most) and its panel is there, then fade it in
+// already in place.
+function settleThenShow(root) {
+    if (root.dataset.fcSettling) return;
+    root.dataset.fcSettling = '1';
+    root.classList.add('fc-settling');
+    const t0 = Date.now();
+    let quiet = 0;
+    const done = () => {
+        clearTimeout(quiet); clearTimeout(cap); mo.disconnect();
+        delete root.dataset.fcSettling;
+        placeButton(root);
+        Log.debug(`page settled after ${Date.now() - t0} ms${root.dataset.fcWaiting ? '; still waiting for its panel' : ''}`);
+        if (!root.dataset.fcWaiting) revealButton(root);
+    };
+    const mo = new MutationObserver(() => { clearTimeout(quiet); quiet = setTimeout(done, 300); });
+    mo.observe(document.body, { childList: true, subtree: true });
+    quiet = setTimeout(done, 300);
+    const cap = setTimeout(done, 1500);
+}
+function revealButton(root) {
+    if (!root.classList.contains('fc-settling')) return;
+    root.classList.remove('fc-settling');
+    if (root.style.position === 'absolute' || root.style.top) liftIfCovered(root);   // on the page: now it can be hit-tested
+    root.classList.add('fc-fadein');
+    setTimeout(() => root.classList.remove('fc-fadein'), 450);   // drop the slow transition once faded in
+}
+// the panel moves and resizes as the app lays out (sidebars, the window): follow it
+let watchedScroller = null, scrollerObserver = null;
+function watchScroller(root, sc) {
+    if (sc === watchedScroller || typeof ResizeObserver === 'undefined') return;
+    if (scrollerObserver) scrollerObserver.disconnect();
+    watchedScroller = sc;
+    scrollerObserver = new ResizeObserver(() => { if (root.style.display !== 'none' && !root.classList.contains('fc-dragging') && scrollsWithPage(root.dataset.fcProvider)) placeButton(root); });
+    scrollerObserver.observe(sc);
+    if (sc.firstElementChild) scrollerObserver.observe(sc.firstElementChild);
+}
+let scrollFollow = 0;
+document.addEventListener('scroll', e => {
+    if (e.target === document || scrollFollow) return;
+    scrollFollow = requestAnimationFrame(() => {
+        scrollFollow = 0;
+        const root = document.getElementById('fc-root');
+        if (root && root.style.display !== 'none' && !root.classList.contains('fc-dragging') && root.dataset.fcProvider && scrollsWithPage(root.dataset.fcProvider)) placeButton(root);
+    });
+}, { capture: true, passive: true });
+
+function placeButton(root) {
+    const pos = storedPos(root.dataset.fcProvider);
+    const pageMode = scrollsWithPage(root.dataset.fcProvider) && pos && pos.top != null;
+    if (!pageMode && root.dataset.fcWaiting) { delete root.dataset.fcWaiting; if (!root.dataset.fcSettling) revealButton(root); }
+    if (!pos) {
+        // back from a spot on the page (Reset): drop what placed it there, or it stays put on the page
+        root.style.position = root.style.zIndex = root.style.clipPath = root.style.visibility = root.style.left = root.style.top = '';
+        root.dataset.mbCorner = 'br';
+        mbRestackCorner('br');
+        return;
+    }
+    if (root.dataset.mbCorner) { delete root.dataset.mbCorner; mbRestackCorner('br'); }   // the others close the gap
+    const r = root.getBoundingClientRect();
+    // majkinetor: "keep its position when scrolling" — the button sits on the page (above the
+    // cover, say) and scrolls with it. Stored against the page's horizontal centre, since the
+    // platforms centre their layout: it stays over the same spot when the window is resized.
+    if (pageMode) {
+        const sc = pageScroller();
+        if (sc) {
+            waitScroller.n = 0;
+            watchScroller(root, sc);
+            placeInScroller(root, pos, sc, r);
+            if (root.dataset.fcWaiting) { delete root.dataset.fcWaiting; if (!root.dataset.fcSettling) revealButton(root); }
+            return;
+        }
+        // The spot is on a panel that isn't drawn yet (Spotify builds it well after the page
+        // loads): stay out of sight and look again, rather than show it against the window.
+        if (pos.inner) {
+            root.dataset.fcWaiting = '1';
+            root.classList.add('fc-settling');
+            if (waitScroller.n++ < 80) { clearTimeout(waitScroller.t); waitScroller.t = setTimeout(() => placeButton(root), 250); }
+            else { Log.warn('the panel this button was placed on never showed: the button shows on the screen instead'); delete root.dataset.fcWaiting; storePos(root.dataset.fcProvider, Object.assign({}, pos, { inner: false })); revealButton(root); }
+            if (waitScroller.n === 1) Log.debug('waiting for the scrolling panel before placing the button');
+            return;
+        }
+        root.style.clipPath = root.style.visibility = '';
+        const vw = document.documentElement.clientWidth;
+        const left = Math.round(Math.min(Math.max(0, vw / 2 + pos.cx - r.width / 2), Math.max(0, vw - r.width)));
+        const top = Math.max(0, Math.round(pos.top));
+        root.style.position = 'absolute';
+        // on the page it is page content: a site's fixed bar goes over it as the page scrolls (PAGE_Z)
+        root.style.zIndex = pageZ();
+        root.style.right = root.style.bottom = '';
+        root.style.left = left + 'px';
+        root.style.top = top + 'px';
+        // a positioned <body> (or margin) shifts what left/top mean: measure and correct once
+        const got = root.getBoundingClientRect();
+        root.style.left = Math.round(left + (left - got.left - window.scrollX)) + 'px';
+        root.style.top = Math.round(top + (top - got.top - window.scrollY)) + 'px';
+        liftIfCovered(root);
+        return;
+    }
+    root.style.position = '';
+    root.style.zIndex = root.style.clipPath = root.style.visibility = '';
+    root.style.right = Math.round(Math.min(Math.max(0, pos.right), Math.max(0, window.innerWidth - r.width))) + 'px';
+    root.style.bottom = Math.round(Math.min(Math.max(0, pos.bottom), Math.max(0, window.innerHeight - r.height))) + 'px';
+    root.style.left = root.style.top = '';
+}
+function makeMovable(root) {
+    let drag = null, moved = false;
+    root.addEventListener('pointerdown', e => {
+        if (e.button !== 0) return;
+        const r = root.getBoundingClientRect();
+        drag = { x: e.clientX, y: e.clientY, right: window.innerWidth - r.right, bottom: window.innerHeight - r.bottom, w: r.width, h: r.height, id: e.pointerId };
+        moved = false;
+    });
+    // move and up are watched on the window: the pointer leaves the button as soon as it moves,
+    // and capturing it on pointerdown would retarget the plain click away from Import / ⚙︎
+    window.addEventListener('pointermove', e => {
+        if (!drag || e.pointerId !== drag.id) return;
+        const dx = e.clientX - drag.x, dy = e.clientY - drag.y;
+        if (!moved) {
+            if (Math.abs(dx) < 5 && Math.abs(dy) < 5) return;   // a click, not a drag
+            moved = true;
+            document.documentElement.style.userSelect = 'none';
+            root.classList.add('fc-dragging');
+            pageLift = 0;   // measured again where it is dropped
+            root.style.position = root.style.zIndex = root.style.clipPath = root.style.visibility = '';   // fixed and on top while it moves
+            root.style.left = root.style.top = '';
+            if (root.dataset.mbCorner) { delete root.dataset.mbCorner; mbRestackCorner('br'); }
+            closePanel();
+        }
+        root.style.right = Math.round(Math.min(Math.max(0, drag.right - dx), window.innerWidth - drag.w)) + 'px';
+        root.style.bottom = Math.round(Math.min(Math.max(0, drag.bottom - dy), window.innerHeight - drag.h)) + 'px';
+    });
+    const end = e => {
+        if (!drag || e.pointerId !== drag.id) return;
+        drag = null;
+        if (!moved) return;
+        root.classList.remove('fc-dragging');
+        document.documentElement.style.userSelect = '';
+        // both ways of keeping it: on the screen, and on the page (Scroll with the page)
+        const r = root.getBoundingClientRect();
+        const pos = { right: parseInt(root.style.right, 10) || 0, bottom: parseInt(root.style.bottom, 10) || 0,
+            ...pagePosOf(r) };
+        storePos(root.dataset.fcProvider, pos);
+        placeButton(root);
+        Log.info(`button moved on ${root.dataset.fcProvider}: on the screen ${pos.right}px from the right, ${pos.bottom}px from the bottom; on the page ${pos.cx}px from the centre, ${pos.top}px from the top`);
+    };
+    window.addEventListener('pointerup', end, true);
+    window.addEventListener('pointercancel', end, true);
+    // the click that ends a drag is not an import (or a settings toggle)
+    root.addEventListener('click', e => { if (moved) { moved = false; e.stopPropagation(); e.preventDefault(); } }, true);
+}
+
+function unmountButton() {
+    const root = document.getElementById('fc-root');
+    if (root && root.style.display !== 'none') { root.style.display = 'none'; mbRestackCorner('br'); }
+    closePanel();
+}
+
+// Next to the whole button (not ⚙︎, which may be a tab above it): above it, or below when there's
+// more room there, right edges lined up, and always inside the window — the button can be
+// dragged anywhere, so the panel can't assume the corner. Too tall for either side: it scrolls.
+// #684: an album with tracks the platform didn't give asks before the editor opens: the log line,
+// the edit note and a toast after the import were easy to miss. → true to import anyway.
+function askMissing(rel, provider, anchor) {
+    return new Promise(resolve => {
+        document.getElementById('fc-warn')?.remove();
+        const m = rel.missing, box = document.createElement('div');
+        box.id = 'fc-warn';
+        box.setAttribute('role', 'alertdialog');
+        const p = t => { const e = document.createElement('p'); e.textContent = t; return e; };
+        const h = document.createElement('div'); h.className = 'fc-warn-h'; h.textContent = '⚠ Tracks missing';
+        const b = document.createElement('div'); b.className = 'fc-warn-b';
+        const no = document.createElement('button'); no.type = 'button'; no.className = 'fc-warn-no'; no.textContent = 'Cancel';
+        const go = document.createElement('button'); go.type = 'button'; go.className = 'fc-warn-go'; go.textContent = 'Import anyway';
+        b.append(no, go);
+        box.append(h, p(missingText(rel, provider)), p(m.at.length ? `The editor gets the ${m.of - m.count} tracks ${provider.name} gave, with an empty track at each missing position: give each its title, or remove it. The edit note says which.`
+            : `The editor gets the ${m.of - m.count} tracks ${provider.name} gave; add the missing ones there. The edit note says so.`), b);
+        document.body.appendChild(box);
+        if (anchor && anchor.isConnected) placePanel(box, anchor);
+        const key = e => { if (e.key === 'Escape') { e.stopPropagation(); done(false); } };
+        const done = ok => { box.remove(); document.removeEventListener('keydown', key, true); resolve(ok); };
+        document.addEventListener('keydown', key, true);
+        no.addEventListener('click', () => done(false));
+        go.addEventListener('click', () => done(true));
+        go.focus();
+    });
+}
+function placePanel(panel, anchor) {
+    const r = anchor.getBoundingClientRect();
+    const vw = document.documentElement.clientWidth, vh = window.innerHeight, M = 8;
+    const above = r.top - M * 2, below = vh - r.bottom - M * 2;
+    const up = panel.offsetHeight <= above || above >= below;
+    panel.style.maxHeight = Math.max(120, up ? above : below) + 'px';
+    const w = panel.offsetWidth, h = panel.offsetHeight;
+    panel.style.left = Math.round(Math.min(Math.max(M, r.right - w), Math.max(M, vw - w - M))) + 'px';
+    panel.style.top = Math.round(up ? Math.max(M, r.top - M - h) : Math.min(r.bottom + M, Math.max(M, vh - h - M))) + 'px';
+    panel.style.right = panel.style.bottom = '';
+    Log.debug(`settings panel ${w}×${h} ${up ? 'above' : 'below'} the button at ${Math.round(r.left)},${Math.round(r.top)} (window ${vw}×${vh})`);
+}
+
+// The settings close through their dismiss handler, which then lets go of the page's clicks. A bare
+// remove() left it waiting, and it swallowed the next click anywhere: ⚙︎ after Reset did nothing.
+let panelDismiss = null;
+function closePanel() {
+    const f = panelDismiss;
+    panelDismiss = null;
+    if (f) f();
+    const panel = document.getElementById('fc-panel');
+    if (panel) panel.remove();
+}
+function togglePanel(anchor) {
+    let panel = document.getElementById('fc-panel');
+    if (panel) { closePanel(); return; }
+    const s = settings();
+    const here = (document.getElementById('fc-root') || { dataset: {} }).dataset.fcProvider || '';
+    panel = document.createElement('div');
+    panel.id = 'fc-panel';
+    panel.innerHTML = mbuHtml(mbuCfgHeader({ script: SCRIPT, name: NAME, version: VERSION, icon: ICON_SVG, log: true })
+        // majkinetor: "make clear categories here not wall of options": Import, Archive, Button
+        + '<div class="fc-body">'
+        + '<div class="fc-sec">Import</div>'
+        + '<label>MusicBrainz server <select class="fc-server">'
+        + SERVERS.map(h => `<option value="${h}"${h === s.server ? ' selected' : ''}>${h}</option>`).join('')
+        + '</select></label>'
+        + `<label class="fc-check" title="On ${here} only: the album's notes on the platform (Bandcamp's about and credits, Discogs's notes, Qobuz's and Apple's reviews, Beatport's and YouTube Music's description, Amazon Music's ℗ line), with a line saying where they come from. Reviews are the critic's text: check you may copy it before you submit."><input type="checkbox" class="fc-annotation"${annotationOn(here) ? ' checked' : ''}> Annotation from ${here}'s notes</label>`
+        + `<label class="fc-check" title="Once the release editor has the release, or the album is sent to Harmony, this platform tab closes. It stays open when the import fails, or when the browser blocked the new tab and the editor or Harmony opened here."><input type="checkbox" class="fc-close-after"${s.closeAfter ? ' checked' : ''}> Close this page after the import</label>`
+        + `<label class="fc-check" title="A button between Import and ⚙︎ that looks this album up on Harmony instead, with every platform that has its barcode; Falcon carries on from there"><input type="checkbox" class="fc-harmony-opt"${s.harmony ? ' checked' : ''}> Send to Harmony button</label>`
+        + '<div class="fc-sec">Archive</div>'
+        // #659: majkinetor: "It should be ON by default or many people will not use it"
+        + `<label class="fc-check" title="On every import, ask the Internet Archive's Wayback Machine to save the album page (and, for Deezer and Apple Music, the album data FC read), and link the snapshots in the edit note. This sends each imported URL to archive.org."><input type="checkbox" class="fc-archive"${s.archive ? ' checked' : ''}> Archive the album page on the Internet Archive</label>`
+        + `<div class="fc-ia${s.archive ? '' : ' fc-off'}" title="Optional. With your archive.org keys the save uses Save Page Now 2: higher limits, and a screenshot of the page, which is the evidence for platforms that build their pages in the browser (Spotify, Tidal, YouTube Music). Without keys the save is anonymous.">`
+        + `<div class="fc-ia-h">archive.org keys <a href="https://archive.org/account/s3.php" target="_blank" rel="noopener">get them</a></div>`
+        + `<input type="text" class="fc-ia-key" placeholder="access key" autocomplete="off" data-lpignore="true" data-1p-ignore data-bwignore data-form-type="other" spellcheck="false" value="${(s.iaKey || '').replace(/"/g, '&quot;')}">`
+        + `<input type="text" class="fc-ia-secret" placeholder="secret" autocomplete="off" data-lpignore="true" data-1p-ignore data-bwignore data-form-type="other" spellcheck="false" value="${(s.iaSecret || '').replace(/"/g, '&quot;')}"></div>`
+        + '<div class="fc-sec">Button</div>'
+        + `<label class="fc-check" title="The button shows only its icon; hover it for what it does"><input type="checkbox" class="fc-iconly-opt"${s.iconOnly ? ' checked' : ''}> Icon only</label>`
+        + `<label class="fc-check" title="The ⚙︎ button hides until the pointer has rested on Import to MusicBrainz for a second; it shows as a small tab on the button's edge"><input type="checkbox" class="fc-gear-hover-opt"${s.gearOnHover ? ' checked' : ''}> Settings button only on hover</label>`
+        + `<label class="fc-check" title="On ${here} only: a button you have moved stays on its spot on the page (above the cover, say) and scrolls with it, instead of staying put on the screen. The button in its corner always stays on the screen."><input type="checkbox" class="fc-scroll-opt"${scrollsWithPage(here) ? ' checked' : ''}> Moved button scrolls with the page on ${here}</label>`
+        // majkinetor: "change this to Reset: all | this one"
+        + `<div class="fc-reset" title="Drag the button to move it; each platform remembers its own place. Reset puts it back in the bottom-right corner."><span class="fc-pos">Position</span>Reset: `
+        + `<button type="button" class="fc-reset-all" title="Back in the corner on every platform">all</button> | `
+        + `<button type="button" class="fc-reset-pos" title="Back in the corner on ${document.getElementById('fc-root').dataset.fcProvider}">this one</button></div>`
+        + '</div>');
+    document.body.appendChild(panel);
+    placePanel(panel, anchor.closest('#fc-root') || anchor);
+    panel.querySelector('.fc-reset-pos').addEventListener('click', () => {
+        const root = document.getElementById('fc-root');
+        storePos(root.dataset.fcProvider, null);
+        setScrollsWithPage(root.dataset.fcProvider, false);
+        placeButton(root);
+        closePanel();
+        Log.info(`button back in the corner on ${root.dataset.fcProvider}`);
+    });
+    panel.querySelector('.fc-reset-all').addEventListener('click', () => {
+        const root = document.getElementById('fc-root');
+        const had = Object.keys(GM_getValue(POS_KEY, {}) || {});
+        GM_setValue(POS_KEY, {});
+        GM_setValue(SCROLL_KEY, {});
+        placeButton(root);
+        closePanel();
+        Log.info(`button back in the corner on every platform (it had been moved on ${had.join(', ') || 'none'})`);
+    });
+    panel.querySelector('.mbu-cfg-log').addEventListener('click', () => Log.open());
+    panel.querySelector('.fc-server').addEventListener('change', e => {
+        const next = Object.assign(settings(), { server: e.target.value });
+        saveSettings(next);
+        Log.info(`server set to ${next.server}`);
+    });
+    panel.querySelector('.fc-scroll-opt').addEventListener('change', e => {
+        setScrollsWithPage(here, e.target.checked);
+        const root = document.getElementById('fc-root');
+        if (root) placeButton(root);
+        Log.info(`moved button on ${here}: ${e.target.checked ? 'scrolls with the page' : 'stays on the screen'}`);
+    });
+    panel.querySelector('.fc-harmony-opt').addEventListener('change', e => {
+        const next = Object.assign(settings(), { harmony: e.target.checked });
+        saveSettings(next);
+        const root = document.getElementById('fc-root');
+        if (root && current) showHarmony(root, current.provider);
+        Log.info(`Send to Harmony button: ${next.harmony ? 'shown' : 'hidden'}`);
+    });
+    panel.querySelector('.fc-gear-hover-opt').addEventListener('change', e => {
+        const next = Object.assign(settings(), { gearOnHover: e.target.checked });
+        saveSettings(next);
+        const root = document.getElementById('fc-root');
+        if (root) root.classList.toggle('fc-gear-hover', next.gearOnHover);
+        Log.info(`settings button: ${next.gearOnHover ? 'only on hover' : 'always'}`);
+    });
+    panel.querySelector('.fc-iconly-opt').addEventListener('change', e => {
+        const next = Object.assign(settings(), { iconOnly: e.target.checked });
+        saveSettings(next);
+        const root = document.getElementById('fc-root');
+        if (root) { root.classList.toggle('fc-iconly', next.iconOnly); mbRestackCorner('br'); }
+        Log.info(`button: ${next.iconOnly ? 'icon only' : 'icon and text'}`);
+    });
+    panel.querySelector('.fc-annotation').addEventListener('change', e => {
+        setAnnotationOn(here, e.target.checked);
+        Log.info(`annotation from ${here}'s notes: ${e.target.checked ? 'on' : 'off'}`);
+    });
+    panel.querySelector('.fc-close-after').addEventListener('change', e => {
+        const next = Object.assign(settings(), { closeAfter: e.target.checked });
+        saveSettings(next);
+        Log.info(`close the page after the import: ${next.closeAfter ? 'on' : 'off'}`);
+    });
+    panel.querySelector('.fc-archive').addEventListener('change', e => {
+        const next = Object.assign(settings(), { archive: e.target.checked });
+        saveSettings(next);
+        panel.querySelector('.fc-ia').classList.toggle('fc-off', !next.archive);
+        Log.info(`archive on the Internet Archive: ${next.archive ? 'on' : 'off'}`);
+    });
+    const saveKeys = () => {
+        const next = Object.assign(settings(), { iaKey: panel.querySelector('.fc-ia-key').value.trim(), iaSecret: panel.querySelector('.fc-ia-secret').value.trim() });
+        saveSettings(next);
+        Log.info(`archive.org keys: ${next.iaKey && next.iaSecret ? 'set (Save Page Now 2)' : next.iaKey || next.iaSecret ? 'only one of the two is set, so saves stay anonymous' : 'none (anonymous saves)'}`);
+    };
+    panel.querySelector('.fc-ia-key').addEventListener('change', saveKeys);
+    panel.querySelector('.fc-ia-secret').addEventListener('change', saveKeys);
+    panelDismiss = mbuDismissOn(panel, () => { panelDismiss = null; panel.remove(); });
+}
+
+async function importCurrent() {
+    if (busy || !current) return;
+    const { provider, id } = current;
+    const go = document.querySelector('#fc-root .fc-go');
+    const label = go && go.querySelector('span');
+    const server = settings().server;
+    const token = Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+    Log.info(`import ${location.href}`);
+    Log.info(`import ${provider.name} album ${id} → ${server} (token ${token})`);
+    busy = true;
+    if (go) go.setAttribute('aria-busy', 'true');
+    const t0 = Date.now();
+    // the button says what it does from the click on, with the tracks read so far (when the platform
+    // counts them) and the seconds gone, so a slow platform (7digital's search takes 10 s) visibly works
+    let count = '', phase = `Reading ${provider.name}…`;
+    const show = () => { if (label) label.textContent = `${phase}${count ? ' ' + count : ''} · ${Math.round((Date.now() - t0) / 1000)} s`; };
+    show();
+    const ticker = setInterval(show, 1000);
+    try {
+        const rel = await provider.fetchRelease(id, (n, total) => { count = `${n}/${total}`; show(); });
+        if (rel.missing) {
+            count = ''; phase = 'Tracks missing'; show();
+            if (!(await askMissing(rel, provider, go))) { Log.info('import cancelled: tracks missing'); return; }
+            Log.info('import anyway, with tracks missing');
+        }
+        count = ''; phase = 'Opening MusicBrainz…'; show();
+        {
+            const tracks = [].concat(...rel.mediums.map(m => m.tracks)).filter(t => !t.placeholder);   // an empty track (#684) is no song
+            const g = guessReleaseType(rel.title, tracks);
+            Log.info(`type: ${provider.name} says ${rel.types.join(' + ') || 'nothing'}; the guess is ${g.type || 'none'} (${g.why})`);
+            // the platform's own type stands, unless it's a plain Album and the title says EP / Single
+            if (g.type && (!rel.types.length || (g.explicit && rel.types[0] === 'Album' && g.type !== 'Album'))) {
+                rel.types = [g.type].concat(rel.types.slice(1));
+                Log.info(`type set to ${rel.types.join(' + ')}`);
+            }
+        }
+        rel.labels = splitLabels(rel.labels);
+        const va = variousArtistsWhy(rel);
+        if (va) {
+            Log.info(`release artist: Various Artists, not ${rel.credit.map(c => c.name + c.join).join('')} (${va})`);
+            rel.credit = [{ name: 'Various Artists', mbid: VARIOUS_ARTISTS_MBID, join: '' }];
+            if (!rel.types.includes('Compilation')) rel.types = (rel.types.length ? rel.types : ['Album']).concat('Compilation');
+        }
+        if (rel.annotation && annotationOn(provider.name)) {
+            rel.annotation += `\n\nFrom ${provider.name}: ${rel.url}`;
+            Log.info(`annotation: ${rel.annotation.length} characters of ${provider.name}'s notes`);
+        } else {
+            if (rel.annotation) Log.info(`annotation: ${provider.name} has notes (${rel.annotation.length} characters); off for ${provider.name} in the settings`);
+            rel.annotation = null;
+        }
+        rel.script = guessScript([rel.title].concat(...rel.mediums.map(m => m.tracks.map(t => t.title))));
+        const nTracks = rel.mediums.reduce((n, m) => n + m.tracks.length, 0);
+        Log.info(`release read in ${Date.now() - t0} ms: "${rel.title}" · ${rel.credit.map(c => c.name + c.join).join('')} · ${rel.mediums.length} medium(s), ${nTracks} track(s) · types ${rel.types.join('+') || '—'} · script ${rel.script || '—'}`);
+        if (!nTracks) throw new Error(`${provider.name} returned no tracks`);
+
+        pruneHandoffs();
+        // archiving is extra: whatever goes wrong with it, the import goes on without it
+        let archive = null;
+        try { archive = archivePlan(rel, provider, id); } catch (e) { Log.warn(`archive: skipped, it failed: ${e && e.message || e}`); }
+        GM_setValue(HANDOFF_PREFIX + token, Object.assign(handoffFor(rel, provider, token), { archive }));
+        const params = seedParams(rel, editNoteFor(rel, provider, archive));
+        Log.debug(`seed: ${params.length} parameters`);
+        if (mbuTestHooks()) window.__fcLastSeed = { token, server, params, rel };
+
+        const where = sendSeed(server, token, params);
+        Log.ok(`seeded ${server}/release/add with ${nTracks} track(s) (${where === 'here' ? 'in this tab: the browser blocked a new one' : 'in a new tab'})`);
+        if (settings().closeAfter) {
+            if (where !== 'here') closeSourceTab();
+            else Log.info('close after the import: skipped, the editor opened in this tab');
+        }
+    } catch (e) {
+        Log.err(`import failed: ${e.message}`);
+        mbuToast(`✗ ${NAME}: ${e.message}`, { kind: 'warn', action: { label: 'Copy log', onClick: b => Log.copy(b) } });
+    } finally {
+        clearInterval(ticker);
+        busy = false;
+        if (go) go.removeAttribute('aria-busy');
+        if (label) label.textContent = 'Import to MusicBrainz';
+    }
+}
+
+// #687: Send to Harmony. A platform Harmony knows goes by its album link, at once; Harmony finds the
+// others by the barcode it reads there. Any other platform goes by the barcode, read here first as
+// Import reads the album. YouTube Music and Amazon Music have neither, so the button is greyed out.
+function showHarmony(root, provider) {
+    const b = root.querySelector('.fc-harmony');
+    if (!b) return;
+    b.hidden = !settings().harmony;
+    const none = HARMONY_NONE.has(provider.id);
+    b.setAttribute('aria-disabled', String(none));
+    b.setAttribute('aria-label', 'Send to Harmony');
+    b.title = harmonyWhy(provider);
+}
+function harmonyWhy(provider) {
+    if (HARMONY_NONE.has(provider.id)) return `Send to Harmony: Harmony can't look up ${provider.name}, and ${provider.name} shows no barcode`;
+    if (HARMONY_URLS[provider.id]) return `Send to Harmony: look this ${provider.name} album up on Harmony, with every platform that has its barcode`;
+    return `Send to Harmony: read the barcode here first (Harmony can't look up ${provider.name}), then look it up on Harmony`;
+}
+async function sendToHarmony() {
+    if (busy || !current) return;
+    const { provider, id } = current;
+    if (HARMONY_NONE.has(provider.id)) { mbuToast(harmonyWhy(provider).replace(/^Send to Harmony: /, ''), { kind: 'warn' }); return; }
+    const direct = HARMONY_URLS[provider.id];
+    if (direct) {
+        openHarmony(harmonyLookup({ url: direct(id) }));
+        return;
+    }
+    const root = document.getElementById('fc-root');
+    const go = root && root.querySelector('.fc-go'), hb = root && root.querySelector('.fc-harmony');
+    const label = go && go.querySelector('span');
+    busy = true;
+    for (const b of [go, hb]) if (b) b.setAttribute('aria-busy', 'true');
+    const t0 = Date.now();
+    let count = '';
+    const show = () => { if (label) label.textContent = `Reading ${provider.name} for Harmony…${count ? ' ' + count : ''} · ${Math.round((Date.now() - t0) / 1000)} s`; };
+    show();
+    const ticker = setInterval(show, 1000);
+    try {
+        Log.info(`Harmony: reading the barcode of ${provider.name} album ${id}`);
+        const rel = await provider.fetchRelease(id, (n, total) => { count = `${n}/${total}`; show(); });
+        if (!rel.barcode) throw new Error(`${provider.name} gives no barcode for this album, so Harmony can't look it up`);
+        openHarmony(harmonyLookup({ gtin: rel.barcode }));
+    } catch (e) {
+        Log.err(`Send to Harmony failed: ${e.message}`);
+        mbuToast(`✗ ${NAME}: ${e.message}`, { kind: 'warn', action: { label: 'Copy log', onClick: b => Log.copy(b) } });
+    } finally {
+        clearInterval(ticker);
+        busy = false;
+        for (const b of [go, hb]) if (b) b.removeAttribute('aria-busy');
+        if (label) label.textContent = 'Import to MusicBrainz';
+    }
+}
+// A tab the manager opens isn't a blocked popup, even after the read; without it the page opens one
+// majkinetor: "Option to close page after import should apply to Harmony too". Only when Harmony got a
+// tab of its own: when the browser blocked it, Harmony is in this one.
+function openHarmony(url) {
+    Log.ok(`sent to Harmony: ${url}`);
+    if (mbuTestHooks()) window.__fcLastHarmony = url;
+    let here = false;
+    if (typeof GM_openInTab === 'function') GM_openInTab(url, { active: true, insert: true });
+    else {
+        const w = window.open(url, '_blank');
+        if (w) w.opener = null;
+        else here = true;
+    }
+    if (settings().closeAfter) {
+        if (!here) closeSourceTab();
+        else Log.info('close after sending to Harmony: skipped, the browser blocked a new tab and Harmony opens in this one');
+    }
+    if (here) location.assign(url);
+}
+
+// majkinetor: "why does it open tab while reading?" The editor's tab opens once the release is read,
+// not at the click. A tab a page opens that long after the click is a popup the browser blocks, but
+// one the userscript manager opens (GM_openInTab) isn't: the seed waits in the script's storage, and
+// First Contact on that page posts it there (mbPostSeed). Without GM_openInTab, the page opens the tab
+// itself and posts into it, or posts in this tab when the browser blocks it.
+// → 'tab' (a new tab) or 'here' (this one)
+function sendSeed(server, token, params) {
+    const action = `https://${server}/release/add?first_contact=${token}`;
+    if (typeof GM_openInTab === 'function') {
+        GM_setValue(SEED_PREFIX + token, { created: Date.now(), params });
+        GM_openInTab(`${action}&fc_post=1`, { active: true, insert: true });
+        return 'tab';
+    }
+    const target = 'fc-' + token;
+    const win = window.open('about:blank', target);
+    postForm(action, win ? target : '_self', params);
+    return win ? 'tab' : 'here';
+}
+function postForm(action, target, params) {
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = action;
+    form.target = target;
+    form.acceptCharset = 'UTF-8';
+    form.style.display = 'none';
+    for (const [k, v] of params) {
+        const inp = document.createElement('input');
+        inp.type = 'hidden'; inp.name = k; inp.value = v;
+        form.appendChild(inp);
+    }
+    (document.body || document.documentElement).appendChild(form);
+    form.submit();
+    form.remove();
+}
+// On the tab sendSeed opened: stop the empty release editor loading and post the seed to it, here
+function mbPostSeed(token) {
+    const key = SEED_PREFIX + token;
+    const seed = GM_getValue(key, null);
+    if (!seed || !Array.isArray(seed.params)) { Log.warn(`release editor opened to take the seed ${token}, but it is not stored (expired, or another browser)`); return; }
+    GM_deleteValue(key);
+    try { window.stop(); } catch (e) { /* it posts anyway */ }
+    Log.debug(`seed ${token}: ${seed.params.length} parameters, posting them to the release editor`);
+    const post = () => postForm(`/release/add?first_contact=${token}`, '_self', seed.params);
+    if (document.documentElement) post();   // at document-start the page may have no root yet
+    else new MutationObserver((m, o) => { if (document.documentElement) { o.disconnect(); post(); } }).observe(document, { childList: true });
+}
+
+// majkinetor: an option to close the page once the import is clicked. Only after the POST has
+// gone into the editor's tab (closing sooner could take the submission with it), and only with
+// @grant window.close: a tab the user opened can't close itself otherwise.
+function closeSourceTab() {
+    Log.info('closing this page (Close this page after the import)');
+    if (mbuTestHooks()) { window.__fcClosed = true; return; }
+    setTimeout(() => {
+        try { window.close(); } catch (e) { Log.warn(`could not close this page: ${e.message}`); }
+        setTimeout(() => { Log.warn('this page is still open: the userscript manager did not let it close (it needs @grant window.close)'); }, 1000);
+    }, 500);
+}
+
+function platformMain() {
+    const provider = PROVIDERS.find(p => p.host.test(location.hostname));
+    if (!provider) return;
+    Log.info(`${NAME} ${VERSION} on ${provider.name}`);
+    // The platforms are single-page apps: watch the address, not the load.
+    let last = null;
+    const check = () => {
+        if (location.href === last) return;
+        last = location.href;
+        const id = provider.albumId(location);
+        current = id ? { provider, id } : null;
+        if (id) { if (document.body) mountButton(provider, id); }
+        else unmountButton();
+    };
+    check();
+    setInterval(check, 700);
+}
+
+/* ── MusicBrainz side: publish the handoff for Apollo ────────────────────── */
+// Apollo (or anything else) reads the seed's platform links from
+//   document.documentElement.dataset.firstContact   (a JSON string), or
+//   the 'first-contact:seed' event on document     (detail: the same JSON string),
+// and can ask for it again with a 'first-contact:request' event on document.
+
+function mbMain() {
+    const q = new URLSearchParams(location.search);
+    const token = q.get('first_contact');
+    if (!token) return;
+    if (q.get('fc_post')) { mbPostSeed(token); return; }
+    pruneHandoffs();
+    const key = HANDOFF_PREFIX + token;
+    let h = GM_getValue(key, null), from = 'storage';
+    if (!h) { try { h = JSON.parse(sessionStorage.getItem(key) || 'null'); from = 'this tab'; } catch (e) { h = null; } }
+    if (!h) { Log.warn(`release editor opened with handoff ${token}, but it is not stored (expired, or another browser)`); return; }
+    Log.debug(`handoff ${token} read from ${from}`);
+    // MusicBrainz's "Continue" page (a POST from another site) comes first, at the same address:
+    // the handoff stays stored until the release editor itself is here
+    const consume = () => {
+        if (!document.getElementById('release-editor')) { Log.debug(`handoff ${token} kept: not the release editor yet (the confirmation page)`); return; }
+        try { sessionStorage.setItem(key, JSON.stringify(h)); } catch (e) { Log.debug(`handoff ${token}: no copy for this tab (${e.message})`); }
+        GM_deleteValue(key);
+        Log.debug(`handoff ${token} taken out of the script's storage`);
+        if (h.archive) archiveSources(h.archive, token);
+    };
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', consume, { once: true }); else consume();
+    const json = JSON.stringify(h);
+    const publish = why => {
+        document.documentElement.dataset.firstContact = json;
+        document.dispatchEvent(new CustomEvent('first-contact:seed', { detail: json }));
+        Log.debug(`handoff ${token} published (${why})`);
+    };
+    publish('load');
+    document.addEventListener('first-contact:request', () => publish('request'));
+    const nArtists = [h.credit].concat(...h.mediums.map(m => m.tracks.map(t => t.credit))).reduce((n, c) => n + c.filter(a => a.url).length, 0);
+    Log.info(`release editor seeded from ${h.sourceName} (${h.url}); ${nArtists} artist credit(s) carry a platform link`);
+    if (mbuTestHooks()) window.__fcHandoff = h;
+}
+
+/* ── shared blocks ───────────────────────────────────────────────────────── */
+
+// <ST-TOKENS> — generated by dev/tokens/sync-tokens.mjs from dev/tokens/design-tokens.mjs — DO NOT EDIT
+const MBU_TOKENS = ':root{--mbu-bg:var(--background, #fff);--mbu-bg-raised:#faf9fe;--mbu-bg-raised:color-mix(in srgb, var(--mbu-bg) 96%, var(--mbu-accent));--mbu-bg-sunken:#f4f2f9;--mbu-bg-sunken:color-mix(in srgb, var(--mbu-bg) 94%, var(--mbu-text));--mbu-bg-hover:#f3eefe;--mbu-bg-hover:color-mix(in srgb, var(--mbu-bg) 91%, var(--mbu-accent));--mbu-text:var(--text, #222);--mbu-text-dim:#555;--mbu-text-dim:color-mix(in srgb, var(--mbu-text) 78%, var(--mbu-bg));--mbu-text-weak:#999;--mbu-text-weak:color-mix(in srgb, var(--mbu-text) 52%, var(--mbu-bg));--mbu-text-on-accent:#fff;--mbu-border:var(--border, #cfc6e6);--mbu-border-soft:#e2dcef;--mbu-border-strong:#9a8ccb;--mbu-border-strong:color-mix(in srgb, var(--mbu-border) 70%, var(--mbu-text));--mbu-divider:#eee;--mbu-divider:color-mix(in srgb, var(--mbu-bg) 92%, var(--mbu-text));--mbu-accent:#5f3ec0;--mbu-accent-hover:#4e329f;--mbu-accent-deep:#3b2c70;--mbu-accent-soft:#ece4ff;--mbu-accent-soft:color-mix(in srgb, var(--mbu-bg) 86%, var(--mbu-accent));--mbu-accent-fg:#fff;--mbu-accent-text:#5f3ec0;--mbu-accent-deep-text:#3b2c70;--mbu-ok:#1f9d6b;--mbu-ok:color-mix(in srgb, #1f9d6b 78%, var(--mbu-text));--mbu-ok-bg:#eef7f1;--mbu-ok-bg:color-mix(in srgb, var(--mbu-bg) 88%, var(--mbu-ok));--mbu-ok-border:#9bd3b6;--mbu-warn:#a05a00;--mbu-warn:color-mix(in srgb, #b4791f 78%, var(--mbu-text));--mbu-warn-bg:#fff7e6;--mbu-warn-bg:color-mix(in srgb, var(--mbu-bg) 88%, var(--mbu-warn));--mbu-warn-border:#f0c877;--mbu-error:#c0392b;--mbu-error:color-mix(in srgb, #d0473a 78%, var(--mbu-text));--mbu-error-bg:#fdecec;--mbu-error-bg:color-mix(in srgb, var(--mbu-bg) 90%, var(--mbu-error));--mbu-error-border:#e2a1a1;--mbu-info:#2f7fbf;--mbu-info:color-mix(in srgb, #3f8fd0 78%, var(--mbu-text));--mbu-info-bg:#eef4fb;--mbu-info-bg:color-mix(in srgb, var(--mbu-bg) 90%, var(--mbu-info));--mbu-info-border:#a9c8e6;--mbu-font:-apple-system,Segoe UI,Roboto,Arial,sans-serif;--mbu-font-mono:ui-monospace,SFMono-Regular,Consolas,Menlo,monospace;--mbu-fs:14px;--mbu-fs-sm:12px;--mbu-fs-xs:11px;--mbu-radius:6px;--mbu-radius-lg:10px;--mbu-shadow:0 1px 5px rgba(60,40,110,.07);--mbu-shadow-lg:0 8px 30px rgba(40,20,80,.3);--mbu-z-panel:30;--mbu-z-pop:99998;--mbu-z-modal:2147483000;--mbu-z-modal-panel:2147483001}:root[data-mbu-theme="dark"]{--mbu-bg:#1e1b24;--mbu-text:#e9e5f2;--mbu-border:#3b3548;--mbu-accent-text:#b9a7f0;--mbu-accent-deep-text:#a493e0}:root[data-mbu-theme="dark"][data-mbu-seed="theme"]{--mbu-bg:var(--background, #1e1b24);--mbu-text:var(--text, #e9e5f2);--mbu-border:var(--border, #3b3548)}';
+// </ST-TOKENS>
+
+// <ST-UI> — generated by dev/ui/sync-ui.mjs from dev/ui/ui-components.mjs — DO NOT EDIT
+const MBU_UI_CSS = '.mbu-help{font-size:12px;color:var(--mbu-accent-text);text-decoration:none;border:1px solid var(--mbu-border);border-radius:var(--mbu-radius);padding:1px 8px;white-space:nowrap;line-height:1.6;background:none}.mbu-help:hover{background:var(--mbu-bg-hover);border-color:var(--mbu-accent);text-decoration:none}h4>.mbu-help,.mbu-cfg-h>.mbu-help{margin-left:8px;flex:0 0 auto;font-weight:normal}#mbu-toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);z-index:var(--mbu-z-pop);background:var(--mbu-accent-deep);color:var(--mbu-text-on-accent);padding:10px 16px;border-radius:9px;font:13px/1.35 var(--mbu-font);box-shadow:var(--mbu-shadow-lg);opacity:0;transition:opacity .2s;pointer-events:none;max-width:80vw;text-align:center;white-space:pre-wrap}#mbu-toast.mbu-toast-on{opacity:1}#mbu-toast.mbu-toast-act{pointer-events:auto}#mbu-toast .mbu-toast-btn{margin-left:10px;padding:2px 9px;border:1px solid currentColor;border-radius:5px;background:transparent;color:inherit;font:inherit;cursor:pointer}#mbu-toast .mbu-toast-btn:hover{background:rgba(255,255,255,.18)}#mbu-toast.mbu-toast-ok{background:var(--mbu-ok)}#mbu-toast.mbu-toast-warn{background:var(--mbu-warn)}#mbu-toast.mbu-toast-error{background:var(--mbu-error)}.mbu-cfg-h{display:flex;align-items:center;gap:8px;margin:0 0 10px;padding:0 0 9px;border-bottom:1px solid var(--mbu-border-soft);font:600 15px/1.3 var(--mbu-font);color:var(--mbu-text)}.mbu-cfg-ic{flex:0 0 auto;display:inline-flex;align-items:center;width:22px;height:22px}.mbu-cfg-ic img,.mbu-cfg-ic svg{width:22px;height:22px;object-fit:contain;display:block}.mbu-cfg-name{flex:0 0 auto;font-weight:700;color:var(--mbu-accent-text)}.mbu-cfg-ver{flex:0 0 auto;font:400 11px var(--mbu-font);color:var(--mbu-text-weak);white-space:nowrap}.mbu-cfg-sp{flex:1 1 auto;min-width:8px}.mbu-cfg-log{flex:0 0 auto;font:400 12px var(--mbu-font);color:var(--mbu-accent-text);cursor:pointer;background:none;border:1px solid transparent;border-radius:var(--mbu-radius);padding:1px 8px;line-height:1.6}.mbu-cfg-log:hover{background:var(--mbu-bg-hover);border-color:var(--mbu-border)}#mbu-logpop{position:fixed;top:74px;left:50%;transform:translateX(-50%);z-index:var(--mbu-z-modal);display:flex;flex-direction:column;width:min(720px,94vw);max-height:72vh;background:var(--mbu-bg);border:1px solid var(--mbu-border);border-radius:11px;box-shadow:var(--mbu-shadow-lg);font:13px var(--mbu-font);color:var(--mbu-text);overflow:hidden}.mbu-logpop-h{display:flex;align-items:center;gap:8px;padding:10px 13px;border-bottom:1px solid var(--mbu-border-soft);color:var(--mbu-accent-text);cursor:move;user-select:none}.mbu-logpop-sp{margin-left:auto}.mbu-logpop-hclear,.mbu-logpop-clear,.mbu-logpop-copy,.mbu-logpop-x,.mbu-logpop-min,.mbu-logpop-full{font-size:12px;color:var(--mbu-accent-text);background:var(--mbu-bg-hover);border:1px solid var(--mbu-border);border-radius:5px;padding:2px 9px;cursor:pointer;font-family:inherit}.mbu-logpop-hclear:hover,.mbu-logpop-clear:hover,.mbu-logpop-copy:hover,.mbu-logpop-x:hover,.mbu-logpop-min:hover,.mbu-logpop-full:hover{background:var(--mbu-accent-soft)}#mbu-logpop.min .mbu-log-list,#mbu-logpop.min .mbu-log-f,#mbu-logpop.min .mbu-logpop-clear,#mbu-logpop.min .mbu-logpop-copy,#mbu-logpop.min .mbu-logpop-x,#mbu-logpop.min .mbu-logpop-full{display:none}#mbu-logpop.min{max-height:none;width:auto!important;height:auto!important}#mbu-logpop.sized{max-height:none}.mbu-logpop-grip{position:absolute;right:0;bottom:0;width:16px;height:16px;cursor:nwse-resize;opacity:.6;background:linear-gradient(135deg,transparent 55%,var(--mbu-border-strong) 55%,var(--mbu-border-strong) 62%,transparent 62%,transparent 75%,var(--mbu-border-strong) 75%,var(--mbu-border-strong) 82%,transparent 82%)}.mbu-logpop-grip:hover{opacity:1}#mbu-logpop.min .mbu-logpop-grip,#mbu-logpop.full .mbu-logpop-grip{display:none}#mbu-logpop.full{top:12px!important;left:12px!important;right:12px!important;bottom:12px!important;width:auto!important;height:auto!important;max-height:none;transform:none!important}#mbu-logpop.full .mbu-logpop-h{cursor:default}#mbu-logpop.min .mbu-logpop-sp{display:none}.mbu-log-badge{color:var(--mbu-border-strong);font-size:11px}.mbu-logemb{display:flex;flex-direction:column;height:100%;min-height:0;background:var(--mbu-bg);font:13px var(--mbu-font);color:var(--mbu-text)}.mbu-logemb .mbu-logpop-h{cursor:default;padding:7px 10px;flex-wrap:nowrap}.mbu-logemb .mbu-logpop-h>*{flex-shrink:0}.mbu-logemb .mbu-logpop-h>.mbu-log-q{flex:0 1 160px;min-width:60px;margin-left:0}.mbu-logemb .mbu-logpop-h>.mbu-log-ses{flex:0 1 240px;min-width:90px}.mbu-logemb .mbu-logpop-h>.mbu-logpop-sp{flex:1 1 0;min-width:0}.mbu-logpop .mbu-log-ses{flex:0 1 260px;min-width:120px;max-width:100%;font:12px var(--mbu-font);padding:2px 4px;border:1px solid var(--mbu-border);border-radius:5px}.mbu-logpop-hclear:disabled{opacity:.5;cursor:default}.mbu-log-dbg{display:inline-flex;align-items:center;gap:4px;font-size:12px;color:var(--mbu-text);cursor:pointer;white-space:nowrap}.mbu-log-dbg input{margin:0}#mbu-logpop.min .mbu-log-dbg{display:none}.mbu-log-past .mbu-logpop-clear{display:none}#mbu-logpop.min .mbu-log-ses,#mbu-logpop.min .mbu-logpop-hclear{display:none}.mbu-logpop .mbu-log-q{flex:0 1 200px;min-width:80px;margin-left:6px;font:12px var(--mbu-font);padding:2px 8px;border:1px solid var(--mbu-border);border-radius:5px;cursor:text}#mbu-logpop.min .mbu-log-q{display:none}.mbu-logpop .mbu-log-li.mbu-log-nq{display:none}.mbu-log-list{flex:1 1 auto;overflow:auto;overscroll-behavior:contain;padding:9px 13px;display:flex;flex-direction:column;gap:3px}.mbu-log-li{display:flex;gap:9px;white-space:pre-wrap;word-break:break-word}.mbu-log-pre .mbu-log-m{white-space:pre;font:12px/1.35 ui-monospace,Consolas,monospace;word-break:normal}.mbu-log-t{color:var(--mbu-text-weak);flex:0 0 auto;font-variant-numeric:tabular-nums}.mbu-log-c{color:var(--mbu-text-weak);flex:0 0 auto}.mbu-log-list:not(.mbu-log-cats) .mbu-log-c{display:none}.mbu-log-list.mbu-log-cats{display:grid;grid-template-columns:auto auto minmax(0,1fr);gap:3px 9px;align-content:start}.mbu-log-cats .mbu-log-li{display:contents}.mbu-log-cats .mbu-log-empty{grid-column:1/-1}.mbu-log-f{display:flex;flex-wrap:wrap;align-items:center;gap:2px 4px;padding:5px 13px;border-bottom:1px solid var(--mbu-border-soft);font-size:11px}.mbu-log-f[hidden]{display:none}.mbu-log-fg{display:contents}.mbu-log-fs{width:1px;height:12px;background:var(--mbu-border);margin:0 6px}.mbu-logpop .mbu-log-fb{font:inherit;color:var(--mbu-text-weak);background:none;border:1px solid transparent;border-radius:5px;padding:0 6px;line-height:1.6;cursor:pointer}.mbu-logpop .mbu-log-fb:hover{color:var(--mbu-text);border-color:var(--mbu-border)}.mbu-logpop .mbu-log-fb.on{color:var(--mbu-accent-text);background:var(--mbu-accent-soft);border-color:var(--mbu-border)}.mbu-logpop .mbu-log-fb[data-sev=error]{color:var(--mbu-error)}.mbu-logpop .mbu-log-fb[data-sev=warn]{color:var(--mbu-warn)}.mbu-logpop .mbu-log-fb[data-sev=info]{color:var(--mbu-text-dim)}.mbu-logpop .mbu-log-fb[data-sev].on{background:var(--mbu-bg-hover);border-color:currentColor;font-weight:600}.mbu-logpop .mbu-log-fb[data-cat]{border-color:var(--mbu-border-soft);background:var(--mbu-bg-raised);border-radius:999px;padding:0 8px}.mbu-logpop .mbu-log-fb[data-cat].on{color:var(--mbu-accent-text);background:var(--mbu-accent-soft);border-color:var(--mbu-accent)}.mbu-log-m{flex:1 1 auto;color:var(--mbu-text-dim)}.mbu-logpop .mbu-log-m a{color:var(--mbu-accent-text)}.mbu-log-ok .mbu-log-m{color:var(--mbu-ok)}.mbu-log-warn .mbu-log-m{color:var(--mbu-warn)}.mbu-log-error .mbu-log-m{color:var(--mbu-error)}.mbu-log-debug>*{opacity:.85}.mbu-log-debug .mbu-log-m{color:var(--mbu-text-weak)}.mbu-log-empty{color:var(--mbu-text-weak)}.mbu-ov{position:fixed;inset:0;z-index:var(--mbu-z-modal);background:rgba(15,12,28,.45);display:flex;align-items:center;justify-content:center;padding:24px}.mbu-ov-panel{background:var(--mbu-bg);color:var(--mbu-text);border-radius:var(--mbu-radius-lg);box-shadow:var(--mbu-shadow-lg);max-width:94vw;max-height:88vh;display:flex;flex-direction:column;overflow:hidden}.mbu-ov-h{display:flex;align-items:center;gap:10px;padding:12px 16px;border-bottom:1px solid var(--mbu-border-soft);font-weight:700}.mbu-ov-h .mbu-ov-title{flex:1 1 auto;min-width:0}.mbu-ov-x{flex:0 0 auto;width:26px;height:26px;display:inline-flex;align-items:center;justify-content:center;font-size:15px;line-height:1;cursor:pointer;color:var(--mbu-text-dim);background:none;border:none;border-radius:var(--mbu-radius)}.mbu-ov-x:hover{background:var(--mbu-bg-hover);color:var(--mbu-text)}.mbu-ov-body{flex:1 1 auto;overflow:auto;padding:14px 16px}:where(.mbu-ov,.mbu-ui,#mbu-logpop,.mbu-logemb,.discogs-bar,.discogs-review-panel-li,#as-root,#as-setup,.as-pop,#as-switch-wrap,#ii-btn,.fs-launch,#tc-bar,#tc-nav-bar,#tc-settings,#tc-anno-wrap,.tc-panel,.tc-toolcfg,.tc-acpop,.tc-recpop,.tc-lppop,.tc-tpppop,.tc-tpp-mpop,.tc-anno-help-pop,.tc-mirror,.tc-addrow,.tc-medopts,.tc-tools,#tc-recwrap,#tc-ri-toolbar,.tc-fmt-flat,.gt-toolbar,.gt-cons,.gt-menu,.gt-pop,.gt-cfg-pop,.gt-wm-pop,#ii-modal,#ii-sxpanel,#mb-pc-panel,#mb-provider-modal-card,.fs-cons,#fs-settings,.fs-overlay,.mmth-pop,.mmth-cfg,.mmth-side,.mmth-pinbar,.mmthf-pop,.mmthf-bar,#falcon-panel,#falcon-launcher,#falcon-item-popup,#falcon-add-page,.falcon-bar,.falcon-addmenu) ::placeholder{color:var(--mbu-text-weak);opacity:1;font-style:italic}:where(.mbu-ov,.mbu-ui,#mbu-logpop,.mbu-logemb,.discogs-bar,.discogs-review-panel-li,#as-root,#as-setup,.as-pop,#as-switch-wrap,#ii-btn,.fs-launch,#tc-bar,#tc-nav-bar,#tc-settings,#tc-anno-wrap,.tc-panel,.tc-toolcfg,.tc-acpop,.tc-recpop,.tc-lppop,.tc-tpppop,.tc-tpp-mpop,.tc-anno-help-pop,.tc-mirror,.tc-addrow,.tc-medopts,.tc-tools,#tc-recwrap,#tc-ri-toolbar,.tc-fmt-flat,.gt-toolbar,.gt-cons,.gt-menu,.gt-pop,.gt-cfg-pop,.gt-wm-pop,#ii-modal,#ii-sxpanel,#mb-pc-panel,#mb-provider-modal-card,.fs-cons,#fs-settings,.fs-overlay,.mmth-pop,.mmth-cfg,.mmth-side,.mmth-pinbar,.mmthf-pop,.mmthf-bar,#falcon-panel,#falcon-launcher,#falcon-item-popup,#falcon-add-page,.falcon-bar,.falcon-addmenu){color:var(--mbu-text)}:where(.mbu-ov,.mbu-ui,#mbu-logpop,.mbu-logemb,.discogs-bar,.discogs-review-panel-li,#as-root,#as-setup,.as-pop,#as-switch-wrap,#ii-btn,.fs-launch,#tc-bar,#tc-nav-bar,#tc-settings,#tc-anno-wrap,.tc-panel,.tc-toolcfg,.tc-acpop,.tc-recpop,.tc-lppop,.tc-tpppop,.tc-tpp-mpop,.tc-anno-help-pop,.tc-mirror,.tc-addrow,.tc-medopts,.tc-tools,#tc-recwrap,#tc-ri-toolbar,.tc-fmt-flat,.gt-toolbar,.gt-cons,.gt-menu,.gt-pop,.gt-cfg-pop,.gt-wm-pop,#ii-modal,#ii-sxpanel,#mb-pc-panel,#mb-provider-modal-card,.fs-cons,#fs-settings,.fs-overlay,.mmth-pop,.mmth-cfg,.mmth-side,.mmth-pinbar,.mmthf-pop,.mmthf-bar,#falcon-panel,#falcon-launcher,#falcon-item-popup,#falcon-add-page,.falcon-bar,.falcon-addmenu) :is(table,td,th,div,span,label)[style*=background]{color:var(--mbu-text)}:where(.mbu-ov,.mbu-ui,#mbu-logpop,.mbu-logemb,.discogs-bar,.discogs-review-panel-li,#as-root,#as-setup,.as-pop,#as-switch-wrap,#ii-btn,.fs-launch,#tc-bar,#tc-nav-bar,#tc-settings,#tc-anno-wrap,.tc-panel,.tc-toolcfg,.tc-acpop,.tc-recpop,.tc-lppop,.tc-tpppop,.tc-tpp-mpop,.tc-anno-help-pop,.tc-mirror,.tc-addrow,.tc-medopts,.tc-tools,#tc-recwrap,#tc-ri-toolbar,.tc-fmt-flat,.gt-toolbar,.gt-cons,.gt-menu,.gt-pop,.gt-cfg-pop,.gt-wm-pop,#ii-modal,#ii-sxpanel,#mb-pc-panel,#mb-provider-modal-card,.fs-cons,#fs-settings,.fs-overlay,.mmth-pop,.mmth-cfg,.mmth-side,.mmth-pinbar,.mmthf-pop,.mmthf-bar,#falcon-panel,#falcon-launcher,#falcon-item-popup,#falcon-add-page,.falcon-bar,.falcon-addmenu) input:not(:where([type=checkbox],[type=radio],[type=range],[type=color],[type=file])),:where(.mbu-ov,.mbu-ui,#mbu-logpop,.mbu-logemb,.discogs-bar,.discogs-review-panel-li,#as-root,#as-setup,.as-pop,#as-switch-wrap,#ii-btn,.fs-launch,#tc-bar,#tc-nav-bar,#tc-settings,#tc-anno-wrap,.tc-panel,.tc-toolcfg,.tc-acpop,.tc-recpop,.tc-lppop,.tc-tpppop,.tc-tpp-mpop,.tc-anno-help-pop,.tc-mirror,.tc-addrow,.tc-medopts,.tc-tools,#tc-recwrap,#tc-ri-toolbar,.tc-fmt-flat,.gt-toolbar,.gt-cons,.gt-menu,.gt-pop,.gt-cfg-pop,.gt-wm-pop,#ii-modal,#ii-sxpanel,#mb-pc-panel,#mb-provider-modal-card,.fs-cons,#fs-settings,.fs-overlay,.mmth-pop,.mmth-cfg,.mmth-side,.mmth-pinbar,.mmthf-pop,.mmthf-bar,#falcon-panel,#falcon-launcher,#falcon-item-popup,#falcon-add-page,.falcon-bar,.falcon-addmenu) textarea,:where(.mbu-ov,.mbu-ui,#mbu-logpop,.mbu-logemb,.discogs-bar,.discogs-review-panel-li,#as-root,#as-setup,.as-pop,#as-switch-wrap,#ii-btn,.fs-launch,#tc-bar,#tc-nav-bar,#tc-settings,#tc-anno-wrap,.tc-panel,.tc-toolcfg,.tc-acpop,.tc-recpop,.tc-lppop,.tc-tpppop,.tc-tpp-mpop,.tc-anno-help-pop,.tc-mirror,.tc-addrow,.tc-medopts,.tc-tools,#tc-recwrap,#tc-ri-toolbar,.tc-fmt-flat,.gt-toolbar,.gt-cons,.gt-menu,.gt-pop,.gt-cfg-pop,.gt-wm-pop,#ii-modal,#ii-sxpanel,#mb-pc-panel,#mb-provider-modal-card,.fs-cons,#fs-settings,.fs-overlay,.mmth-pop,.mmth-cfg,.mmth-side,.mmth-pinbar,.mmthf-pop,.mmthf-bar,#falcon-panel,#falcon-launcher,#falcon-item-popup,#falcon-add-page,.falcon-bar,.falcon-addmenu) select{background:var(--mbu-bg-sunken);color:var(--mbu-text);border-color:var(--mbu-border)}:where(.mbu-ov,.mbu-ui,#mbu-logpop,.mbu-logemb,.discogs-bar,.discogs-review-panel-li,#as-root,#as-setup,.as-pop,#as-switch-wrap,#ii-btn,.fs-launch,#tc-bar,#tc-nav-bar,#tc-settings,#tc-anno-wrap,.tc-panel,.tc-toolcfg,.tc-acpop,.tc-recpop,.tc-lppop,.tc-tpppop,.tc-tpp-mpop,.tc-anno-help-pop,.tc-mirror,.tc-addrow,.tc-medopts,.tc-tools,#tc-recwrap,#tc-ri-toolbar,.tc-fmt-flat,.gt-toolbar,.gt-cons,.gt-menu,.gt-pop,.gt-cfg-pop,.gt-wm-pop,#ii-modal,#ii-sxpanel,#mb-pc-panel,#mb-provider-modal-card,.fs-cons,#fs-settings,.fs-overlay,.mmth-pop,.mmth-cfg,.mmth-side,.mmth-pinbar,.mmthf-pop,.mmthf-bar,#falcon-panel,#falcon-launcher,#falcon-item-popup,#falcon-add-page,.falcon-bar,.falcon-addmenu) input:focus-visible,:where(.mbu-ov,.mbu-ui,#mbu-logpop,.mbu-logemb,.discogs-bar,.discogs-review-panel-li,#as-root,#as-setup,.as-pop,#as-switch-wrap,#ii-btn,.fs-launch,#tc-bar,#tc-nav-bar,#tc-settings,#tc-anno-wrap,.tc-panel,.tc-toolcfg,.tc-acpop,.tc-recpop,.tc-lppop,.tc-tpppop,.tc-tpp-mpop,.tc-anno-help-pop,.tc-mirror,.tc-addrow,.tc-medopts,.tc-tools,#tc-recwrap,#tc-ri-toolbar,.tc-fmt-flat,.gt-toolbar,.gt-cons,.gt-menu,.gt-pop,.gt-cfg-pop,.gt-wm-pop,#ii-modal,#ii-sxpanel,#mb-pc-panel,#mb-provider-modal-card,.fs-cons,#fs-settings,.fs-overlay,.mmth-pop,.mmth-cfg,.mmth-side,.mmth-pinbar,.mmthf-pop,.mmthf-bar,#falcon-panel,#falcon-launcher,#falcon-item-popup,#falcon-add-page,.falcon-bar,.falcon-addmenu) textarea:focus-visible,:where(.mbu-ov,.mbu-ui,#mbu-logpop,.mbu-logemb,.discogs-bar,.discogs-review-panel-li,#as-root,#as-setup,.as-pop,#as-switch-wrap,#ii-btn,.fs-launch,#tc-bar,#tc-nav-bar,#tc-settings,#tc-anno-wrap,.tc-panel,.tc-toolcfg,.tc-acpop,.tc-recpop,.tc-lppop,.tc-tpppop,.tc-tpp-mpop,.tc-anno-help-pop,.tc-mirror,.tc-addrow,.tc-medopts,.tc-tools,#tc-recwrap,#tc-ri-toolbar,.tc-fmt-flat,.gt-toolbar,.gt-cons,.gt-menu,.gt-pop,.gt-cfg-pop,.gt-wm-pop,#ii-modal,#ii-sxpanel,#mb-pc-panel,#mb-provider-modal-card,.fs-cons,#fs-settings,.fs-overlay,.mmth-pop,.mmth-cfg,.mmth-side,.mmth-pinbar,.mmthf-pop,.mmthf-bar,#falcon-panel,#falcon-launcher,#falcon-item-popup,#falcon-add-page,.falcon-bar,.falcon-addmenu) select:focus-visible{outline:2px solid var(--mbu-accent);outline-offset:1px}:where(.mbu-ov,.mbu-ui,#mbu-logpop,.mbu-logemb,.discogs-bar,.discogs-review-panel-li,#as-root,#as-setup,.as-pop,#as-switch-wrap,#ii-btn,.fs-launch,#tc-bar,#tc-nav-bar,#tc-settings,#tc-anno-wrap,.tc-panel,.tc-toolcfg,.tc-acpop,.tc-recpop,.tc-lppop,.tc-tpppop,.tc-tpp-mpop,.tc-anno-help-pop,.tc-mirror,.tc-addrow,.tc-medopts,.tc-tools,#tc-recwrap,#tc-ri-toolbar,.tc-fmt-flat,.gt-toolbar,.gt-cons,.gt-menu,.gt-pop,.gt-cfg-pop,.gt-wm-pop,#ii-modal,#ii-sxpanel,#mb-pc-panel,#mb-provider-modal-card,.fs-cons,#fs-settings,.fs-overlay,.mmth-pop,.mmth-cfg,.mmth-side,.mmth-pinbar,.mmthf-pop,.mmthf-bar,#falcon-panel,#falcon-launcher,#falcon-item-popup,#falcon-add-page,.falcon-bar,.falcon-addmenu) :where(input[type=checkbox],input[type=radio],input[type=range]){accent-color:var(--mbu-accent)}:root[data-mbu-theme=dark] :where(.mbu-ov,.mbu-ui,#mbu-logpop,.mbu-logemb,.discogs-bar,.discogs-review-panel-li,#as-root,#as-setup,.as-pop,#as-switch-wrap,#ii-btn,.fs-launch,#tc-bar,#tc-nav-bar,#tc-settings,#tc-anno-wrap,.tc-panel,.tc-toolcfg,.tc-acpop,.tc-recpop,.tc-lppop,.tc-tpppop,.tc-tpp-mpop,.tc-anno-help-pop,.tc-mirror,.tc-addrow,.tc-medopts,.tc-tools,#tc-recwrap,#tc-ri-toolbar,.tc-fmt-flat,.gt-toolbar,.gt-cons,.gt-menu,.gt-pop,.gt-cfg-pop,.gt-wm-pop,#ii-modal,#ii-sxpanel,#mb-pc-panel,#mb-provider-modal-card,.fs-cons,#fs-settings,.fs-overlay,.mmth-pop,.mmth-cfg,.mmth-side,.mmth-pinbar,.mmthf-pop,.mmthf-bar,#falcon-panel,#falcon-launcher,#falcon-item-popup,#falcon-add-page,.falcon-bar,.falcon-addmenu){color-scheme:dark;--invert-value:none;--invert:none}:where(.mbu-ov,.mbu-ui,#mbu-logpop,.mbu-logemb,.discogs-bar,.discogs-review-panel-li,#as-root,#as-setup,.as-pop,#as-switch-wrap,#ii-btn,.fs-launch,#tc-bar,#tc-nav-bar,#tc-settings,#tc-anno-wrap,.tc-panel,.tc-toolcfg,.tc-acpop,.tc-recpop,.tc-lppop,.tc-tpppop,.tc-tpp-mpop,.tc-anno-help-pop,.tc-mirror,.tc-addrow,.tc-medopts,.tc-tools,#tc-recwrap,#tc-ri-toolbar,.tc-fmt-flat,.gt-toolbar,.gt-cons,.gt-menu,.gt-pop,.gt-cfg-pop,.gt-wm-pop,#ii-modal,#ii-sxpanel,#mb-pc-panel,#mb-provider-modal-card,.fs-cons,#fs-settings,.fs-overlay,.mmth-pop,.mmth-cfg,.mmth-side,.mmth-pinbar,.mmthf-pop,.mmthf-bar,#falcon-panel,#falcon-launcher,#falcon-item-popup,#falcon-add-page,.falcon-bar,.falcon-addmenu) button{background-color:var(--mbu-bg-raised);color:var(--mbu-text);border-color:var(--mbu-border)}.mbu-compact .mbu-bt{display:none}:is(.mbu-video,body.tc-ri-on #external-links-editor tr.relationship-item .attribute-container input){-webkit-appearance:none;-moz-appearance:none;appearance:none;width:18px;height:18px;margin:0;border:none;border-radius:3px;cursor:pointer;background:transparent url("data:image/svg+xml,%3Csvg%20xmlns=%27http://www.w3.org/2000/svg%27%20viewBox=%270%200%2016%2016%27%20fill=%27%23888%27%3E%3Crect%20x=%271%27%20y=%273.5%27%20width=%2710%27%20height=%279%27%20rx=%271.5%27/%3E%3Cpath%20d=%27M11.5%207L15%204.8v6.4L11.5%209z%27/%3E%3C/svg%3E") center/13px no-repeat;opacity:.45;box-shadow:none;flex:0 0 auto;vertical-align:middle}:is(.mbu-video,body.tc-ri-on #external-links-editor tr.relationship-item .attribute-container input):hover{opacity:1}:is(.mbu-video,body.tc-ri-on #external-links-editor tr.relationship-item .attribute-container input):checked{opacity:1;background-color:var(--mbu-accent);background-image:url("data:image/svg+xml,%3Csvg%20xmlns=%27http://www.w3.org/2000/svg%27%20viewBox=%270%200%2016%2016%27%20fill=%27%23fff%27%3E%3Crect%20x=%271%27%20y=%273.5%27%20width=%2710%27%20height=%279%27%20rx=%271.5%27/%3E%3Cpath%20d=%27M11.5%207L15%204.8v6.4L11.5%209z%27/%3E%3C/svg%3E")}:is(.mbu-video,body.tc-ri-on #external-links-editor tr.relationship-item .attribute-container input):focus-visible{outline:1px solid var(--mbu-accent);outline-offset:1px}:is(.mbu-video,body.tc-ri-on #external-links-editor tr.relationship-item .attribute-container input):disabled{cursor:default;opacity:.3}';
+// Help link markup. Every script's help link is this, pointing at its own README.
+// `name` is the userscript folder, e.g. mbuHelpHref('art_station').
+function mbuHelpHref(name) {
+    return 'https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/' + name + '/README.md';
+}
+function mbuHelpHtml(name, label) {
+    return '<a class="mbu-help" href="' + mbuHelpHref(name) + '" target="_blank" rel="noopener"'
+        + ' title="open the README in a new tab">' + (label || '? Help') + '</a>';
+}
+function mbuHelpEl(name, label) {
+    var a = document.createElement('a');
+    a.className = 'mbu-help';
+    a.href = mbuHelpHref(name);
+    a.target = '_blank';
+    a.rel = 'noopener';
+    a.title = 'open the README in a new tab';
+    a.textContent = label || '? Help';
+    return a;
+}
+
+// The config (settings) icon every script's settings button shows: the gear in text
+// presentation (U+FE0E), so it takes the button's colour instead of an emoji's. #650
+var MBU_CFG_ICON = '\u2699\uFE0E';
+
+// HTML for an innerHTML on a page that enforces Trusted Types (YouTube Music, #650): there a
+// plain string is refused ("This document requires 'TrustedHTML' assignment"). The policy
+// passes the string through; the markup is the script's own. Elsewhere it is the string.
+var _mbuTT;
+function mbuHtml(s) {
+    if (_mbuTT === undefined) {
+        _mbuTT = null;
+        try {
+            var tt = (typeof window !== 'undefined' && window.trustedTypes) || null;
+            if (tt && tt.createPolicy) _mbuTT = tt.createPolicy('mbu-' + Math.random().toString(36).slice(2, 8), { createHTML: function (x) { return x; } });
+        } catch (e) { /* the page allows no new policy: plain strings, as before */ }
+    }
+    return _mbuTT ? _mbuTT.createHTML(String(s)) : String(s);
+}
+
+// The first line of every script's log: the script, its version, and what runs it, so a
+// pasted log says which manager and browser it came from (#282 started it in Art Station):
+//   Log.info(mbuStartupInfo('Fusion'));
+//   -> Fusion v2026.10.1 · Violentmonkey 2.31.0 · firefox 143.0 (win)
+// Inside String Theory GM_info describes the bundle, so the line names it:
+//   -> Fusion (String Theory v2026.10.1) · Tampermonkey 5.3.3 · chrome 140.0 (win)
+function mbuStartupInfo(name) {
+    var g = null;
+    try { g = (typeof GM_info !== 'undefined' && GM_info) || null; } catch (e) { /* no GM_info */ }
+    var s = (g && g.script) || {}, p = (g && g.platform) || {};
+    var host = String(s.name || '').replace(/\*$/, ''), ver = s.version || '?';
+    var line = !name ? (host || 'Script') + ' v' + ver
+        : (host && host !== name) ? name + ' (' + host + ' v' + ver + ')'
+        : name + ' v' + ver;
+    if (g) line += ' · ' + (g.scriptHandler || 'unknown manager') + (g.version ? ' ' + g.version : '');
+    if (p.browserName) line += ' · ' + p.browserName + (p.browserVersion ? ' ' + p.browserVersion : '') + (p.os ? ' (' + p.os + ')' : '');
+    else { try { line += ' · ' + navigator.userAgent; } catch (e) { /* no navigator */ } }
+    return line;
+}
+
+// One copy per page (#653). With String Theory and a standalone install of the same script
+// both on, two copies build the same element ids and fight over them: each settings window
+// fills in the other's checkboxes, rows flip between two rule sets. So one copy runs, the
+// one with the higher version, and the other stays off without a word; only the running
+// copy notes it in its log (majkinetor: "disable copy that has lower version without any
+// info (except in log of active copy)"):
+//   if (!mbuClaim('platform_check', 'Platform Check')) return;   // first line of the script
+// The claim is a data- attribute on <html>, which every copy sees whatever its sandbox.
+// It is decided at once, so no script starts late. The copy that starts first takes the
+// page. When it is the older one, the newer copy stays off for this page and leaves a note
+// in localStorage, and from the next page load the older copy finds the note and steps
+// aside. A note whose copy has gone (uninstalled) is cleared by the older copy after the
+// page loads, so it runs again from the load after.
+function mbuClaimVer(v) {
+    return String(v || '').split('.').map(function (n) { return parseInt(n, 10) || 0; });
+}
+function mbuClaimCmp(a, b) {
+    var x = mbuClaimVer(a), y = mbuClaimVer(b);
+    for (var i = 0; i < Math.max(x.length, y.length); i++) { var d = (x[i] || 0) - (y[i] || 0); if (d) return d < 0 ? -1 : 1; }
+    return 0;
+}
+function mbuClaim(key, label) {
+    var info = (typeof GM_info !== 'undefined' && GM_info && GM_info.script) || {};
+    var name = String(info.name || label || key), ver = String(info.version || '0');
+    var mine = (name.slice(-1) === '*' ? 'String Theory' : 'standalone') + ' v' + ver;
+    var root = document.documentElement, attr = 'data-mbu-run-' + key, ev = 'mbu-claim-' + key, noteKey = 'mbu-newer-' + key;
+    var log = function (msg) { try { if (typeof mbuLog !== 'undefined' && mbuLog.active) mbuLog.active.info(msg); else if (typeof mbuToast !== 'undefined' && typeof mbuToast.log === 'function') mbuToast.log('info', msg); else console.info('[' + (label || key) + '] ' + msg); } catch (e) { /* no log */ } };
+    var note = null;
+    try { note = JSON.parse(localStorage.getItem(noteKey) || 'null'); } catch (e) { /* storage blocked */ }
+    // A note older than this copy is spent. This copy's own note stays: it is what keeps the
+    // older copy aside on every later load, not only the next one (#671).
+    var noteCmp = note ? mbuClaimCmp(note.ver, ver) : 1;
+    if (noteCmp < 0) { try { localStorage.removeItem(noteKey); } catch (e) { /* storage blocked */ } }
+    if (noteCmp <= 0) note = null;
+    var held = root && root.getAttribute(attr);
+    var off = function (why) {
+        // tell the running copy (any sandbox hears a DOM event), or the copy that runs after
+        // this one (it reads the attribute), and stay quiet
+        try { if (root) root.setAttribute(attr + '-off', JSON.stringify({ mine: mine, why: why })); } catch (e) { /* no attribute */ }
+        try { document.dispatchEvent(new CustomEvent(ev, { detail: JSON.stringify({ mine: mine, ver: ver, why: why }) })); } catch (e) { /* no event */ }
+        return false;
+    };
+    if (held) {
+        var heldVer = (root.getAttribute(attr + '-ver') || '0');
+        if (mbuClaimCmp(ver, heldVer) > 0) {
+            try { localStorage.setItem(noteKey, JSON.stringify({ ver: ver, mine: mine, at: Date.now() })); } catch (e) { /* storage blocked */ }
+            return off('newer, from the next page load');
+        }
+        return off('older or the same');
+    }
+    if (note) {
+        // a newer copy said it is installed: leave the page to it, unless it never shows up
+        var watch = function () {
+            setTimeout(function () {
+                if (root.getAttribute(attr)) return;
+                try { localStorage.removeItem(noteKey); } catch (e) { /* storage blocked */ }
+                try { console.info('[' + (label || key) + '] the newer copy (' + note.mine + ') did not start: this copy runs again from the next page load'); } catch (e) { /* no console */ }
+            }, 3000);
+        };
+        if (document.readyState === 'complete') watch(); else window.addEventListener('load', watch, { once: true });
+        return off('older: a newer copy runs');
+    }
+    if (root) { root.setAttribute(attr, mine); root.setAttribute(attr + '-ver', ver); }
+    var told = function (o) {
+        log((label || key) + ' is installed twice: ' + mine + ' runs, ' + (o.mine || 'another copy') + ' is switched off'
+            + (o.why === 'newer, from the next page load' ? ' for this page (it is newer and runs from the next page load)' : '') + '.');
+    };
+    document.addEventListener(ev, function (e) { var o = {}; try { o = JSON.parse(e.detail); } catch (x) { /* not ours */ } told(o); });
+    // a copy that stepped aside before this one started (it found a note): log it once the script's log is up
+    var before = root && root.getAttribute(attr + '-off');
+    if (before) setTimeout(function () { var o = {}; try { o = JSON.parse(before); } catch (x) { /* not ours */ } told(o); }, 0);
+    return true;
+}
+
+// Toast. mbuToast(msg) or mbuToast(msg, { ms, kind, at:{x,y}, action:{ label, onClick } }).
+//
+// An action adds one button to the toast (e.g. "Copy log"): the toast is then clickable,
+// stays up longer (12 s unless ms says otherwise), and closes when the button is used.
+//
+// Severity is inferred from a leading warning/tick glyph when not given — Art
+// Station already did that and it is why its toasts reached its log with the
+// right level. Set mbuToast.log = function (level, message) {...} once at
+// startup and every toast mirrors into that script's own log; leave it unset
+// and the toast still shows.
+var _mbuToastT = null;
+function mbuToast(msg, opts) {
+    opts = opts || {};
+    var s = String(msg);
+    var kind = opts.kind || (/^\s*[⚠✗×]/.test(s) ? 'warn' : /[✓✅]/.test(s) ? 'ok' : 'info');
+    try {
+        if (typeof mbuToast.log === 'function') mbuToast.log(kind, s.replace(/^\s*[⚠✗×✓✅]\s*/, ''));
+    } catch (e) { /* a broken log sink must never swallow the toast */ }
+    var el = document.getElementById('mbu-toast');
+    if (!el) {
+        el = document.createElement('div');
+        el.id = 'mbu-toast';
+        (document.body || document.documentElement).appendChild(el);
+    }
+    el.className = 'mbu-toast-on' + (kind !== 'info' ? ' mbu-toast-' + kind : '') + (opts.action ? ' mbu-toast-act' : '');
+    el.textContent = s;
+    if (opts.action) {
+        var b = document.createElement('button');
+        b.type = 'button'; b.className = 'mbu-toast-btn'; b.textContent = opts.action.label || 'OK';
+        b.onclick = function () {
+            try { if (opts.action.onClick) opts.action.onClick(b); } catch (e) { /* the toast still closes */ }
+            clearTimeout(_mbuToastT); _mbuToastT = setTimeout(function () { el.className = ''; }, 900);
+        };
+        el.appendChild(b);
+    }
+    // Anchor above a click point when asked, clamped into the viewport; otherwise
+    // fall back to the centred default by clearing the inline placement.
+    if (opts.at) {
+        var w = el.offsetWidth, h = el.offsetHeight;
+        el.style.left = Math.max(6, Math.min(window.innerWidth - w - 6, opts.at.x - w / 2)) + 'px';
+        el.style.top = Math.max(6, Math.min(window.innerHeight - h - 6, opts.at.y - h - 10)) + 'px';
+        el.style.bottom = 'auto';
+        el.style.transform = 'none';
+    } else {
+        el.style.left = ''; el.style.top = ''; el.style.bottom = ''; el.style.transform = '';
+    }
+    clearTimeout(_mbuToastT);
+    _mbuToastT = setTimeout(function () { el.className = ''; }, opts.ms || (opts.action ? 12000 : 2600));
+    return el;
+}
+
+// Config-window title bar.
+//
+//   mbuCfgHeader({ script:'art_station', name:'Art Station', version:'2026.9.2',
+//                  icon:'<svg…>' | '<img…>', log:true, logClass:'as-setup-logbtn' })
+//
+// Returns the markup for the whole bar. 'log' adds the Log button; a script with
+// no log window leaves it out rather than shipping a dead control. logClass /
+// logId are carried through IN ADDITION to the shared class so a script's
+// existing click handler keeps working — adopting the component must not mean
+// rewiring every listener at the same time.
+function mbuCfgHeader(o) {
+    o = o || {};
+    var esc = function (s) {
+        return String(s == null ? '' : s).replace(/[&<>"]/g, function (c) {
+            return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c];
+        });
+    };
+    var html = '<div class="mbu-cfg-h">';
+    if (o.icon) html += '<span class="mbu-cfg-ic">' + o.icon + '</span>';
+    html += '<span class="mbu-cfg-name">' + esc(o.name) + '</span>';
+    if (o.version) html += '<span class="mbu-cfg-ver" title="installed script version">v' + esc(o.version) + '</span>';
+    html += '<span class="mbu-cfg-sp"></span>';
+    if (o.log) {
+        html += '<button type="button" class="mbu-cfg-log' + (o.logClass ? ' ' + esc(o.logClass) : '') + '"'
+            + (o.logId ? ' id="' + esc(o.logId) + '"' : '')
+            + ' title="Open the activity log">Log</button>';
+    }
+    html += mbuHelpHtml(o.script);
+    return html + '</div>';
+}
+
+// Test hooks. A script puts its test hook on window only when the test harness has
+// marked the page (dev/test/harness.mjs sets window.__mbuTest before any script runs):
+//   if (mbuTestHooks()) window.__fooTest = { … };
+// On a user's page the hooks are never built. (#623)
+function mbuTestHooks() {
+    try { return typeof window !== 'undefined' && window.__mbuTest === true; } catch (e) { return false; }
+}
+
+// Shared settings: the few that belong to all the scripts at once, not to one (the corner
+// launchers' layout). GM storage is private to each script, so these live in the page's
+// localStorage on MusicBrainz's origin, as JSON under 'mbu.<key>'; every script, bundled or
+// standalone, reads the same value. One argument reads (undefined when unset or blocked), two
+// write, and null removes. Per-origin: musicbrainz.org, beta and test each keep their own.
+// Every key is listed in DEVELOP.md → Shared storage.
+function mbuShared(key, value) {
+    var k = 'mbu.' + key;
+    try {
+        if (arguments.length < 2) { var v = localStorage.getItem(k); return v == null ? undefined : JSON.parse(v); }
+        if (value == null) localStorage.removeItem(k); else localStorage.setItem(k, JSON.stringify(value));
+    } catch (e) { /* storage blocked */ }
+    return value;
+}
+
+// Corner slots (#468). Every floating launcher (Apollo Editor, Art Station, Falcon,
+// Fusion, Scribe) tags its element with data-mb-corner (which screen corner: 'br',
+// 'bl', 'tr', 'tl') and data-mb-corner-order (lower sits closer to the corner), and
+// calls mbRestackCorner(corner) right after it shows, hides, creates or removes it.
+// That recomputes every element in the corner, whichever script owns it and
+// whatever order they loaded in, so two launchers never land on the same pixel.
+// Orders in use, all bottom-right: Apollo and Art Station 10 (never on the same page), Scribe 15
+// (above Apollo on the edit page), Falcon 20, Fusion 30, Mission Control 40. Scribe is not on the shared block and keeps a copy of this.
+// The stack is a column; the shared setting cornerFlow = 'row' (mbuShared, set from String
+// Theory's menu) lines it up along the bottom/top edge instead, the lowest order still nearest the corner.
+function mbRestackCorner(corner) {
+    var bottom = corner[0] === 'b', right = corner[1] === 'r';
+    var row = mbuShared('cornerFlow') === 'row';
+    var els = Array.prototype.slice.call(document.querySelectorAll('[data-mb-corner="' + corner + '"]'))
+        // offsetParent is always null for position:fixed, so it can't tell visibility here
+        .filter(function (el) { return getComputedStyle(el).display !== 'none'; })
+        .sort(function (a, b) { return (Number(a.dataset.mbCornerOrder) || 0) - (Number(b.dataset.mbCornerOrder) || 0); });
+    var pos = 14;
+    els.forEach(function (el) {
+        var r = el.getBoundingClientRect();
+        el.style[bottom ? 'bottom' : 'top'] = (row ? 14 : pos) + 'px';
+        el.style[right ? 'right' : 'left'] = (row ? pos : 14) + 'px';
+        pos += (row ? r.width : r.height) + 8;
+    });
+}
+
+// Activity log: the session's log lines plus the viewers that show them
+// (#283's viewer, shared since X12 of #623). A script makes its log once:
+//
+//   var LOG = mbuLog({ name: 'Fusion', version: VERSION, key: 'fusion.logwin' });
+//   LOG.info('…'); LOG.warn(…); LOG.err(…) (or .error); LOG.ok(…); LOG.debug(…)
+//   LOG.open(); LOG.close(); LOG.reopen()   // reopen: only if it was left open
+//   LOG.markdown(); LOG.copy(btn); LOG.clear(); LOG.lines(); LOG.messages(); LOG.counts()
+//   LOG.cat('Spotify').info(…)        // the same calls, each line tagged with a category
+//   LOG.pre(text)                     // a block kept as written: line breaks, spacing, monospace (#705)
+//   LOG.mount(el, { tools })          // the viewer inside the script's own panel (#705)
+//
+// Categories (#697) are optional. A tagged line shows its category before the
+// message and in the Markdown ("WARN [Spotify] …"). The viewer grows a row of
+// filters only when there is a choice: the levels once two of them have lines
+// (ok counts as info), the categories once there are two. Click one to see only
+// those lines, click it again to see all; Copy always takes everything.
+//
+// The floating window (open) and a mounted viewer (mount) are the same viewer;
+// mount draws it into an element of the script's, without the title bar's
+// window buttons, and o.tools (an element) sits in its toolbar before Clear.
+// Every viewer has a debug switch: off, LOG.debug() lines are not recorded at all
+// (remembered per script under o.key; LOG.debugOn(), LOG.setDebug(v)).
+//
+// o.name / o.version  the Markdown summary's title (version may be a function)
+// o.subtitle          optional function; its text follows the title (e.g. the release)
+// o.header            the window's title (default 'Activity log')
+// o.key               storage key for the window's open/minimised/position state
+// o.load / o.save     that storage (default GM_getValue / GM_setValue)
+// o.before            called before the window opens (e.g. to inject the script's CSS)
+// o.max               lines kept (default 20000: about 4 MB; 2000 dropped a long session's start)
+// o.history           opt-in history of past sessions (#705), below
+//
+// A long run keeps only the last o.max lines, and the Markdown says how many went
+// before them; the copies this replaced grew for the whole session. An open
+// viewer appends each new line and drops the oldest row past the cap; the copies
+// rebuilt the whole list with innerHTML on every line, which is quadratic over a
+// long matching run.
+//
+// History (#705, Falcon's run logs of #512 made shared). Off unless o.history is given:
+//
+//   o.history = { prefix: 'falcon:session:', keep: () => 20, lines: 400, head: 140,
+//                 parse: s => entry, nameOf: entries => name, store }
+//
+// A session starts with the page, or with LOG.session(reason) (Falcon: each run).
+// Only a session the script marks with LOG.keep() is stored, so a page that did
+// nothing worth reading back leaves nothing behind; LOG.name(text) names it (the
+// first name stays). It is stored in the page's localStorage under prefix + id,
+// within 100 ms of each line and at once on LOG.flush(), so a crashed tab keeps
+// its log; a session longer than `lines` keeps its first `head` lines and its
+// end, and says how many went between. The newest `keep` sessions are kept.
+// prefix + 'current' holds the last kept session's id (LOG.last()), so LOG.resume(id)
+// can carry on a session across a navigation. The viewer gets a session list and Clear history.
+//   LOG.sessionId(); LOG.last(); LOG.isKept(); LOG.refresh(); LOG.sessions(); LOG.load(id); LOG.forget(id); LOG.clearHistory(); LOG.flush()
+// parse reads a stored line that is a string (an older format); nameOf names a
+// session stored without a name; store ({ get, set, del, keys }) replaces localStorage.
+function mbuLog(o) {
+    o = o || {};
+    var max = o.max || 20000, buf = [], dropped = 0, warn = 0, error = 0, views = [], bound = {};
+    var LEVELS = ['error', 'warn', 'info', 'debug'];
+    var group = function (sev) { return sev === 'ok' ? 'info' : sev; };
+    var pad = function (n, w) { return String(n).padStart(w || 2, '0'); };
+    var ts = function (d) { return d ? pad(d.getHours()) + ':' + pad(d.getMinutes()) + ':' + pad(d.getSeconds()) + '.' + pad(d.getMilliseconds(), 3) : '--:--:--.---'; };
+    var str = function (v) {
+        if (typeof v === 'string') return v;
+        if (v instanceof Error) return v.message || String(v);
+        if (v && v.nodeType) return '<' + (v.tagName || 'node').toLowerCase() + '>';
+        try { return typeof v === 'object' ? JSON.stringify(v) : String(v); } catch (e) { return String(v); }
+    };
+    var esc = function (s) {
+        return String(s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; });
+    };
+    // escape, then make http(s) URLs clickable, keeping trailing punctuation out of them
+    var linkify = function (s) {
+        return esc(s).replace(/(https?:\/\/[^\s<]+)/g, function (m) {
+            var t = (m.match(/[.,;:!?)\]]+$/) || [''])[0];
+            var url = m.slice(0, m.length - t.length);
+            return '<a href="' + url + '" target="_blank" rel="noopener">' + url + '</a>' + t;
+        });
+    };
+    var load = o.load || function (k) { try { return GM_getValue(k, undefined); } catch (e) { return undefined; } };
+    var save = o.save || function (k, v) { try { GM_setValue(k, v); } catch (e) { /* no storage: the window just forgets */ } };
+    var state = function () { try { return JSON.parse(load(o.key) || '{}') || {}; } catch (e) { return {}; } };
+    var remember = function (patch) { try { save(o.key, JSON.stringify(Object.assign(state(), patch))); } catch (e) { /* see save */ } };
+    // debug lines are recorded only while the viewer's debug switch is on (default off: majkinetor, #705), per script
+    var dbgOn = null;
+    var debugOn = function () { if (dbgOn === null) dbgOn = state().debug === true; return dbgOn; };
+    var setDebug = function (v) { dbgOn = !!v; remember({ debug: dbgOn }); views.forEach(function (w) { if (w.dbg) w.dbg.checked = dbgOn; }); };
+    var tally = function (e, d) { if (e.sev === 'warn') warn += d; else if (e.sev === 'error') error += d; };
+    var PRE = { info: '', ok: 'OK   ', warn: 'WARN ', error: 'ERR  ', debug: 'DBG  ' };
+    var line = function (e) { return ts(e.t) + '  ' + (PRE[e.sev] || '') + (e.cat ? '[' + e.cat + '] ' : '') + (e.pre ? '\n' : '') + e.msg; };
+    var countOf = function (list) {
+        var c = { warn: 0, error: 0 };
+        list.forEach(function (e) { if (e.sev === 'warn') c.warn++; else if (e.sev === 'error') c.error++; });
+        return c;
+    };
+
+    // ── history (#705) ──
+    var H = o.history || null, hp = H && (H.prefix || ((o.key || 'mbu') + ':session:'));
+    var ID_RE = /^\d{14}-\d+$/, sid = '', kept = false, sname = '', savedName = '', seq = 0, pTimer = 0, lastSaved = '';
+    var store = H && (H.store || {
+        get: function (k) { try { return localStorage.getItem(k); } catch (e) { return null; } },
+        set: function (k, v) { try { localStorage.setItem(k, v); } catch (e) { /* full or blocked: the session just isn't kept */ } },
+        del: function (k) { try { localStorage.removeItem(k); } catch (e) { /* nothing to do */ } },
+        // one call for all the keys: a userscript reaches localStorage through Firefox's
+        // Xray wrapper, where each call costs, and the page may hold hundreds of keys
+        keys: function () {
+            try { var all = Object.keys(localStorage); if (all.length === localStorage.length) return all; } catch (e) { /* the loop below */ }
+            var out = []; try { for (var i = 0; i < localStorage.length; i++) out.push(localStorage.key(i)); } catch (e) { /* none */ } return out;
+        },
+    });
+    var keepN = function () { var n = Number(typeof H.keep === 'function' ? H.keep() : H.keep); return n > 0 ? n : 10; };
+    var newId = function () { return new Date().toISOString().replace(/[^0-9]/g, '').slice(0, 14) + '-' + (++seq); };
+    // the id is the session's start in UTC: YYYYMMDDHHMMSS-n
+    var idDate = function (id) {
+        var m = /^(\d{4})(\d\d)(\d\d)(\d\d)(\d\d)(\d\d)/.exec(id || '');
+        return m ? new Date(Date.UTC(+m[1], m[2] - 1, +m[3], +m[4], +m[5], +m[6])) : null;
+    };
+    function ids() {
+        if (!H) return [];
+        return store.keys().filter(function (k) { return k && k.indexOf(hp) === 0 && ID_RE.test(k.slice(hp.length)); })
+            .map(function (k) { return k.slice(hp.length); }).sort();   // the id's own timestamp sorts as a string
+    }
+    // a stored line: [time ms | null, sev, cat | 0, msg, pre 1/0]; a string is an older format, read by H.parse
+    function fromStored(x, id) {
+        if (typeof x === 'string') {
+            var p = null;
+            try { p = H.parse ? H.parse(x, idDate(id)) : null; } catch (e) { /* unreadable: kept as text */ }
+            return p ? { t: p.t || null, sev: p.sev || 'info', cat: p.cat || '', msg: String(p.msg == null ? x : p.msg), pre: !!p.pre } : { t: null, sev: 'info', msg: x };
+        }
+        if (!Array.isArray(x)) return null;
+        var e = { t: x[0] != null ? new Date(x[0]) : null, sev: x[1] || 'info', msg: String(x[3] == null ? '' : x[3]) };
+        if (x[2]) e.cat = String(x[2]);
+        if (x[4]) e.pre = true;
+        return e;
+    }
+    function loadSession(id) {
+        if (!H || !id) return null;
+        var raw = store.get(hp + id);
+        if (raw == null) return null;
+        try { return (JSON.parse(raw) || []).map(function (x) { return fromStored(x, id); }).filter(Boolean); } catch (e) { return null; }
+    }
+    // a past session's name doesn't change, so it is read (or mined from its lines) once
+    var names = {};
+    function nameOf(id, entries) {
+        if (id in names) return names[id];
+        var n = store.get(hp + id + ':name');
+        if (!n) { try { n = H.nameOf ? H.nameOf(entries || loadSession(id) || []) || '' : ''; } catch (e) { n = ''; } }
+        return (names[id] = n || '');
+    }
+    // the first `head` lines and the end, and a line saying how many went between
+    function storedWindow() {
+        var cap = H.lines || 400, head = Math.min(H.head || 140, cap - 2);
+        var pack = function (e) { return [e.t ? e.t.getTime() : null, e.sev, e.cat || 0, e.msg, e.pre ? 1 : 0]; };
+        if (buf.length <= cap) return buf.map(pack);
+        var tail = cap - head - 1, cut = buf.length - head - tail;
+        return buf.slice(0, head).map(pack)
+            .concat([[null, 'info', 0, '——— ' + cut + ' line(s) from the middle of this session were dropped to fit the stored-log budget; its start and end are kept in full ———', 0]])
+            .concat(buf.slice(-tail).map(pack));
+    }
+    function flush() {
+        clearTimeout(pTimer); pTimer = 0;
+        if (!H || !sid || !kept) return;
+        try {
+            var payload = JSON.stringify(storedWindow());
+            if (payload === lastSaved) return;
+            lastSaved = payload;
+            store.set(hp + sid, payload);
+            if (sname && savedName !== sname) { store.set(hp + sid + ':name', sname); savedName = sname; }
+        } catch (e) { /* not stored */ }
+    }
+    var persist = function () { if (H && kept && !pTimer) pTimer = setTimeout(flush, 100); };
+    function forget(id) { if (H && id) { store.del(hp + id); store.del(hp + id + ':name'); delete names[id]; } }
+    function prune() {
+        var all = ids().filter(function (id) { return id !== sid; });
+        var excess = all.length + (kept ? 1 : 0) - keepN();
+        if (excess > 0) all.slice(0, excess).forEach(forget);
+    }
+    // past sessions, newest first, without the current one
+    function sessions() {
+        return ids().filter(function (id) { return id !== sid; }).reverse()
+            .map(function (id) { return { id: id, date: idDate(id), name: nameOf(id) }; });
+    }
+    var sessionLabel = function (s) {
+        var d = s.date, when = d ? d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()) + ' ' + pad(d.getHours()) + ':' + pad(d.getMinutes()) + ':' + pad(d.getSeconds()) : s.id;
+        return when + (s.name ? ' — ' + s.name : '');
+    };
+    function startSession() {
+        flush();
+        sid = newId(); kept = false; sname = ''; savedName = ''; lastSaved = '';
+        reset();
+    }
+    function resume(id) {
+        var entries = loadSession(id);
+        if (!entries) return false;
+        flush();
+        reset();
+        sid = id; kept = true; sname = savedName = store.get(hp + id + ':name') || '';
+        lastSaved = store.get(hp + id) || '';
+        store.set(hp + 'current', sid);
+        entries.forEach(function (e) { push(e); });
+        return true;
+    }
+
+    // ── the live lines ──
+    function reset() {
+        buf = []; dropped = 0; warn = 0; error = 0;
+        views.forEach(function (v) { if (!v.past) v.show(null); v.sessions(); });
+    }
+    function push(e) {
+        buf.push(e); tally(e, 1);
+        // trim in chunks, not one shift per line
+        if (buf.length > max + Math.ceil(max / 10)) {
+            var gone = buf.splice(0, buf.length - max);
+            gone.forEach(function (g) { tally(g, -1); });
+            dropped += gone.length;
+        }
+        views = views.filter(function (v) { return v.el.isConnected; });
+        views.forEach(function (v) { if (!v.past) v.append(e); });
+    }
+    function add(sev, args, cat, pre) {
+        var msg = Array.prototype.map.call(args, str).join(' ');
+        msg = pre ? msg.replace(/\s+$/, '') : msg.replace(/\s+/g, ' ').trim();
+        if (!msg) return;
+        var e = { t: new Date(), sev: sev === 'err' ? 'error' : sev, msg: msg };
+        if (e.sev === 'debug' && !debugOn()) return;
+        if (cat) e.cat = String(cat);
+        if (pre) e.pre = true;
+        push(e);
+        persist();
+    }
+    function title(bare) {
+        var v = typeof o.version === 'function' ? (function () { try { return o.version(); } catch (e) { return ''; } })() : o.version;
+        var t = (o.name || 'Log') + (v ? ' v' + v : '');
+        try { var s = !bare && o.subtitle && o.subtitle(); if (s) t += ' — ' + s; } catch (e) { /* no subtitle */ }
+        return t;
+    }
+    // past: { id, entries } to copy a stored session instead of this one
+    function markdown(past) {
+        var list = past ? past.entries : buf, c = past ? countOf(list) : { warn: warn, error: error };
+        var body = list.length ? list.map(line).join('\n') : '(no activity logged)';
+        if (!past && dropped) body = '(' + dropped + ' earlier line' + (dropped === 1 ? '' : 's') + ' not kept)\n' + body;
+        var n = (c.warn || c.error) ? ' (' + c.warn + ' warning' + (c.warn === 1 ? '' : 's') + ', ' + c.error + ' error' + (c.error === 1 ? '' : 's') + ')' : '';
+        var what = past ? 'log of ' + sessionLabel({ id: past.id, date: idDate(past.id), name: nameOf(past.id, list) }) : 'session log';
+        var fence = String.fromCharCode(96, 96, 96);
+        return '<details><summary>' + title(!!past) + ' — ' + what + n + '</summary>\n\n' + fence + 'log\n' + body + '\n' + fence + '\n\n</details>';
+    }
+    function copy(btn, past) {
+        var md = markdown(past);
+        var done = function (ok) {
+            if (!btn) return;
+            var was = btn.dataset.lbl || btn.textContent; btn.dataset.lbl = was;
+            btn.textContent = ok ? 'Copied ✓' : 'Copy failed';
+            setTimeout(function () { btn.textContent = was; }, 1500);
+        };
+        var fallback = function () {
+            var ok = false;
+            try {
+                var ta = document.createElement('textarea'); ta.value = md; ta.style.position = 'fixed'; ta.style.opacity = '0';
+                document.body.appendChild(ta); ta.select(); ok = document.execCommand('copy'); ta.remove();
+            } catch (x) { /* nothing left to try */ }
+            done(ok);
+        };
+        try { navigator.clipboard.writeText(md).then(function () { done(true); }, fallback); } catch (e) { fallback(); }
+    }
+
+    // ── a viewer: the floating window or one mounted in the script's panel ──
+    var vseq = 0;
+    function view(root, floating, tools) {
+        var vid = String(++vseq);
+        root.classList.add('mbu-logpop');
+        root.dataset.mbuLv = vid;
+        root.innerHTML = mbuHtml('<div class="mbu-logpop-h">' + (floating ? '<b>' + esc(o.header || 'Activity log') + '</b> ' : '') + '<span class="mbu-log-badge"></span>'
+            + '<input class="mbu-log-q" type="search" placeholder="Filter" title="Show only the lines with this text" autocomplete="off">'
+            + (H ? '<select class="mbu-log-ses" title="The session shown: this one, or a past one kept in this browser"></select>' : '')
+            + '<span class="mbu-logpop-sp"></span>'
+            + (H ? '<button class="mbu-logpop-hclear" type="button" title="Delete every past session (this one stays)">Clear history</button>' : '')
+            + '<label class="mbu-log-dbg" title="Record each step in detail. Leave it on when reporting a problem"><input type="checkbox"> debug</label>'
+            + '<button class="mbu-logpop-clear" type="button" title="Clear the log (the lines so far are gone)">Clear</button>'
+            + '<button class="mbu-logpop-copy" type="button" title="Copy as Markdown (paste into a GitHub issue)">⧉ Copy</button>'
+            + (floating ? '<button class="mbu-logpop-full" type="button" title="Full screen (or double-click the title bar)">⛶</button>'
+                + '<button class="mbu-logpop-min" type="button" title="Minimize">–</button>'
+                + '<button class="mbu-logpop-x" type="button" title="Close">✕</button>' : '') + '</div>'
+            + '<div class="mbu-log-f" hidden></div><style class="mbu-log-fcss"></style>'
+            + '<div class="mbu-log-list"></div>' + (floating ? '<div class="mbu-logpop-grip" title="Resize"></div>' : ''));
+        if (tools) root.querySelector('.mbu-logpop-clear').before(tools);
+        var list = root.querySelector('.mbu-log-list'), badge = root.querySelector('.mbu-log-badge');
+        var qEl = root.querySelector('.mbu-log-q'), q = '', sel = root.querySelector('.mbu-log-ses');
+        var fRow = root.querySelector('.mbu-log-f'), fCss = root.querySelector('.mbu-log-fcss');
+        // what this viewer shows: the live lines, or a past session (read-only)
+        var past = null, src = buf, cats = [], catIx = {}, sevs = {}, fSev = null, fCat = null;
+        var scope = '.mbu-logpop[data-mbu-lv="' + vid + '"] ';
+        var miss = function (e) { return !!q && ((e.cat || '') + ' ' + e.msg).toLowerCase().indexOf(q) < 0; };
+        // note a line's level and category; true when the filter row must change
+        var note = function (e) {
+            var grew = false;
+            if (e.cat && !(e.cat in catIx)) { catIx[e.cat] = cats.length; cats.push(e.cat); grew = true; }
+            if (!sevs[group(e.sev)]) { sevs[group(e.sev)] = true; grew = true; }
+            return grew;
+        };
+        var row = function (e) {
+            var d = document.createElement('div');
+            d._e = e;
+            d.className = 'mbu-log-li mbu-log-' + e.sev + (e.pre ? ' mbu-log-pre' : '');
+            if (miss(e)) d.classList.add('mbu-log-nq');
+            d.dataset.s = group(e.sev);
+            if (e.cat) d.dataset.c = catIx[e.cat];
+            d.innerHTML = mbuHtml('<span class="mbu-log-t">' + ts(e.t) + '</span>'
+                + '<span class="mbu-log-c">' + esc(e.cat || '') + '</span>'
+                + '<span class="mbu-log-m">' + linkify(e.msg) + '</span>');
+            return d;
+        };
+        // the filter row, redrawn when a level or category first appears; hiding is one
+        // rule in the viewer's own <style>, not a walk over the rows
+        var filters = function () {
+            var lv = LEVELS.filter(function (l) { return sevs[l]; });
+            var showL = lv.length > 1, showC = cats.length > 1;
+            if (fSev && !sevs[fSev]) fSev = null;
+            if (fCat != null && !(fCat in catIx)) fCat = null;
+            var b = function (kind, v, on) {
+                return '<button type="button" class="mbu-log-fb' + (on ? ' on' : '') + '" data-' + kind + '="' + esc(v) + '">' + esc(v) + '</button>';
+            };
+            fRow.innerHTML = mbuHtml((showL ? '<span class="mbu-log-fg">' + lv.map(function (l) { return b('sev', l, fSev === l); }).join('') + '</span>' : '')
+                + (showL && showC ? '<span class="mbu-log-fs"></span>' : '')
+                + (showC ? '<span class="mbu-log-fg">' + cats.map(function (c) { return b('cat', c, fCat === c); }).join('') + '</span>' : ''));
+            fRow.hidden = !showL && !showC;
+            list.classList.toggle('mbu-log-cats', cats.length > 0);
+            fCss.textContent = (fSev ? scope + '.mbu-log-li:not([data-s="' + fSev + '"]){display:none}' : '')
+                + (fCat != null ? scope + '.mbu-log-li:not([data-c="' + catIx[fCat] + '"]){display:none}' : '');
+        };
+        var showBadge = function () {
+            var c = past ? countOf(src) : { warn: warn, error: error };
+            badge.textContent = '(' + src.length + ')' + (c.warn || c.error ? ' · ' + c.warn + '⚠ ' + c.error + '✖' : '');
+        };
+        var empty = function () { return '<div class="mbu-log-empty">' + (past ? 'Nothing was kept of this session.' : 'No activity yet.') + '</div>'; };
+        var queued = false, follow = true;
+        var paint = function () { queued = false; showBadge(); if (follow) list.scrollTop = list.scrollHeight; };
+        // all rows at once: on opening, and when the session shown changes
+        var draw = function () {
+            cats = []; catIx = {}; sevs = {};
+            src.forEach(note);
+            var frag = document.createDocumentFragment();
+            src.forEach(function (e) { frag.appendChild(row(e)); });
+            list.innerHTML = mbuHtml(src.length ? '' : empty());
+            if (src.length) list.appendChild(frag);
+            filters(); showBadge();
+            follow = true; list.scrollTop = list.scrollHeight;
+            root.classList.toggle('mbu-log-past', !!past);
+        };
+        list.addEventListener('scroll', function () { follow = list.scrollHeight - list.scrollTop - list.clientHeight < 40; });
+        var qTimer = 0;
+        var refilter = function () {
+            q = qEl.value.trim().toLowerCase();
+            for (var d = list.firstElementChild; d; d = d.nextElementSibling) if (d._e) d.classList.toggle('mbu-log-nq', miss(d._e));
+            follow = true; list.scrollTop = list.scrollHeight;
+        };
+        qEl.addEventListener('input', function () { clearTimeout(qTimer); qTimer = setTimeout(refilter, 120); });
+        fRow.addEventListener('click', function (ev) {
+            var t = ev.target.closest('.mbu-log-fb'); if (!t) return;
+            if (t.dataset.sev) fSev = fSev === t.dataset.sev ? null : t.dataset.sev;
+            else fCat = fCat === t.dataset.cat ? null : t.dataset.cat;
+            filters();
+            follow = true; list.scrollTop = list.scrollHeight;
+        });
+        var v = {
+            el: root, floating: floating, past: null, q: qEl,
+            append: function (e) {
+                var em = list.querySelector('.mbu-log-empty'); if (em) em.remove();
+                if (note(e)) filters();
+                list.appendChild(row(e));
+                while (list.childElementCount > buf.length) list.firstElementChild.remove();
+                if (!queued) { queued = true; requestAnimationFrame(paint); }
+            },
+            // null: the live lines; an id: that past session
+            show: function (id) {
+                var entries = id ? loadSession(id) : null;
+                if (id && !entries) entries = [{ t: null, sev: 'warn', msg: 'This session could not be read (it may have been deleted in another tab).' }];
+                past = id && entries ? id : null; v.past = past;
+                src = past ? entries : buf;
+                if (sel && sel.value !== (past || '')) sel.value = past || '';
+                draw();
+            },
+            // the session list, refreshed when it is opened and when a session starts
+            sessions: function () {
+                if (!sel) return;
+                var all = sessions(), sig = all.map(function (x) { return x.id + '=' + x.name; }).join('|');
+                if (sig === v.sig && !(past && !all.some(function (x) { return x.id === past; }))) return;
+                v.sig = sig;
+                if (past && !all.some(function (s) { return s.id === past; })) { past = null; v.past = null; src = buf; draw(); }
+                sel.innerHTML = mbuHtml('<option value="">Current session</option>' + all.map(function (s) {
+                    return '<option value="' + esc(s.id) + '">' + esc(sessionLabel(s)) + '</option>';
+                }).join(''));
+                sel.value = past || '';
+                var hc = root.querySelector('.mbu-logpop-hclear'); if (hc) hc.disabled = !all.length;
+            },
+            filters: filters,
+        };
+        if (sel) {
+            sel.addEventListener('change', function () { v.show(sel.value || null); });
+            root.querySelector('.mbu-logpop-hclear').onclick = function () { clearHistory(); };
+        }
+        root.querySelector('.mbu-logpop-clear').onclick = function () { clear(); };
+        v.dbg = root.querySelector('.mbu-log-dbg input');
+        v.dbg.checked = debugOn();
+        v.dbg.onchange = function () { setDebug(v.dbg.checked); };
+        root.querySelector('.mbu-logpop-copy').onclick = function () {
+            copy(root.querySelector('.mbu-logpop-copy'), past ? { id: past, entries: src } : null);
+        };
+        v.sessions();
+        draw();
+        views.push(v);
+        return v;
+    }
+
+    var win = null;
+    function open() {
+        close(true);
+        if (typeof o.before === 'function') { try { o.before(); } catch (e) { /* the window still opens */ } }
+        remember({ open: true });
+        var st = state();
+        var pop = document.createElement('div'); pop.id = 'mbu-logpop';
+        document.body.appendChild(pop);
+        var v = view(pop, true);
+        if (st.left != null) { pop.style.left = st.left; pop.style.top = st.top; pop.style.right = 'auto'; pop.style.transform = 'none'; }
+        var restore = { left: pop.style.left, top: pop.style.top, right: pop.style.right, bottom: pop.style.bottom, transform: pop.style.transform };
+        // Escape in a filled filter empties it; anywhere else it closes the window
+        var onKey = function (e) {
+            if (e.key !== 'Escape') return;
+            if (e.target === v.q && v.q.value) { v.q.value = ''; v.q.dispatchEvent(new Event('input')); return; }
+            close();
+        };
+        win = { el: pop, v: v, off: function () { document.removeEventListener('keydown', onKey); } };
+        var minBtn = pop.querySelector('.mbu-logpop-min');
+        var setMin = function (m) {
+            minBtn.textContent = m ? '▢' : '–'; minBtn.title = m ? 'Restore' : 'Minimize';
+            if (m) { pop.style.left = '14px'; pop.style.bottom = '14px'; pop.style.top = 'auto'; pop.style.right = 'auto'; pop.style.transform = 'none'; }   // dock to the bottom
+            else Object.assign(pop.style, restore);
+        };
+        var fullBtn = pop.querySelector('.mbu-logpop-full');
+        var setFull = function (f) {
+            pop.classList.toggle('full', f);
+            fullBtn.textContent = f ? '❐' : '⛶'; fullBtn.title = f ? 'Restore the size (or double-click the title bar)' : 'Full screen (or double-click the title bar)';
+        };
+        minBtn.onclick = function () {
+            var m = pop.classList.toggle('min');
+            if (m && pop.classList.contains('full')) { setFull(false); remember({ full: false }); }   // minimising leaves full screen
+            setMin(m); remember({ min: m });
+        };
+        fullBtn.onclick = function () { var f = !pop.classList.contains('full'); setFull(f); remember({ full: f }); };
+        pop.querySelector('.mbu-logpop-h').addEventListener('dblclick', function (e) {
+            if (!e.target.closest('button, input, select') && !pop.classList.contains('min')) fullBtn.click();
+        });
+        // a size the user gave it, from the corner grip
+        if (st.w && st.h) { pop.style.width = st.w; pop.style.height = st.h; pop.classList.add('sized'); }
+        if (st.min) { pop.classList.add('min'); setMin(true); }
+        else if (st.full) setFull(true);
+        pop.querySelector('.mbu-logpop-grip').addEventListener('mousedown', function (e) {
+            e.preventDefault(); e.stopPropagation();
+            var r = pop.getBoundingClientRect();
+            // pin the top-left corner, so only the right and bottom edges move
+            pop.style.left = r.left + 'px'; pop.style.top = r.top + 'px'; pop.style.right = 'auto'; pop.style.bottom = ''; pop.style.transform = 'none';
+            pop.classList.add('sized');
+            var x0 = e.clientX, y0 = e.clientY;
+            var mv = function (ev) {
+                pop.style.width = Math.max(320, Math.min(window.innerWidth - r.left, r.width + ev.clientX - x0)) + 'px';
+                pop.style.height = Math.max(120, Math.min(window.innerHeight - r.top, r.height + ev.clientY - y0)) + 'px';
+            };
+            var up = function () {
+                document.removeEventListener('mousemove', mv); document.removeEventListener('mouseup', up);
+                restore = { left: pop.style.left, top: pop.style.top, right: 'auto', bottom: '', transform: 'none' };
+                remember({ left: pop.style.left, top: pop.style.top, w: pop.style.width, h: pop.style.height });
+            };
+            document.addEventListener('mousemove', mv); document.addEventListener('mouseup', up);
+        });
+        pop.querySelector('.mbu-logpop-x').onclick = function () { close(); };
+        // floating and non-modal: dragged by its header
+        pop.querySelector('.mbu-logpop-h').addEventListener('mousedown', function (e) {
+            if (e.target.closest('button, input, select') || pop.classList.contains('full')) return;
+            e.preventDefault();
+            var r = pop.getBoundingClientRect();
+            pop.style.left = r.left + 'px'; pop.style.top = r.top + 'px'; pop.style.right = 'auto'; pop.style.transform = 'none';
+            var ox = e.clientX - r.left, oy = e.clientY - r.top;
+            var mv = function (ev) {
+                pop.style.left = Math.max(0, Math.min(window.innerWidth - pop.offsetWidth, ev.clientX - ox)) + 'px';
+                pop.style.top = Math.max(0, Math.min(window.innerHeight - 36, ev.clientY - oy)) + 'px';
+            };
+            var up = function () {
+                document.removeEventListener('mousemove', mv); document.removeEventListener('mouseup', up);
+                if (!pop.classList.contains('min')) {
+                    restore = { left: pop.style.left, top: pop.style.top, right: 'auto', bottom: '', transform: 'none' };
+                    remember({ left: pop.style.left, top: pop.style.top });
+                }
+            };
+            document.addEventListener('mousemove', mv); document.addEventListener('mouseup', up);
+        });
+        document.addEventListener('keydown', onKey);
+        return pop;
+    }
+    // the viewer inside an element of the script's; a second mount there replaces the first
+    function mount(host, opts) {
+        if (!host) return null;
+        views = views.filter(function (v) { if (v.el.parentNode === host) { v.el.remove(); return false; } return true; });
+        var el = document.createElement('div'); el.className = 'mbu-logemb';
+        host.appendChild(el);
+        return view(el, false, opts && opts.tools).el;
+    }
+    // empty the live log: the lines, the counts and the "earlier lines not kept" note
+    function clear() {
+        buf = []; dropped = 0; warn = 0; error = 0;
+        if (H && sid) { store.del(hp + sid); lastSaved = ''; }
+        views.forEach(function (v) { if (!v.past) v.show(null); });
+    }
+    function clearHistory() {
+        if (!H) return;
+        ids().forEach(function (id) { if (id !== sid) forget(id); });
+        views.forEach(function (v) { v.sessions(); });
+    }
+    // quiet: closing to reopen, so the remembered "open" stays as it is
+    function close(quiet) {
+        var stray = document.getElementById('mbu-logpop');
+        if (win) {
+            win.off(); win.el.remove();
+            views = views.filter(function (v) { return v !== win.v; });
+            win = null; if (!quiet) remember({ open: false });
+        }
+        if (stray) stray.remove();   // another script's window: one log window at a time
+    }
+    var api = {
+        info: function () { add('info', arguments); },
+        warn: function () { add('warn', arguments); },
+        err: function () { add('error', arguments); },
+        error: function () { add('error', arguments); },
+        ok: function () { add('ok', arguments); },
+        debug: function () { add('debug', arguments); },
+        add: function (sev) { add(sev, Array.prototype.slice.call(arguments, 1)); },
+        // the debug switch: are debug lines recorded?
+        debugOn: function () { return debugOn(); },
+        setDebug: setDebug,
+        pre: function () { add('info', arguments, null, true); },
+        // a logger whose lines carry this category; the same object for the same name
+        cat: function (name) {
+            if (!name) return api;
+            if (!bound[name]) bound[name] = {
+                info: function () { add('info', arguments, name); },
+                warn: function () { add('warn', arguments, name); },
+                err: function () { add('error', arguments, name); },
+                error: function () { add('error', arguments, name); },
+                ok: function () { add('ok', arguments, name); },
+                debug: function () { add('debug', arguments, name); },
+                add: function (sev) { add(sev, Array.prototype.slice.call(arguments, 1), name); },
+                pre: function () { add('info', arguments, name, true); },
+            };
+            return bound[name];
+        },
+        open: open,
+        mount: mount,
+        close: function () { close(); },
+        reopen: function () { if (state().open) open(); },
+        isOpen: function () { return !!win; },
+        markdown: function () { return markdown(); },
+        copy: function (btn) { copy(btn); },
+        clear: clear,
+        lines: function () { return buf.map(line); },
+        entries: function () { return buf.slice(); },
+        messages: function () { return buf.map(function (e) { return e.msg; }); },
+        counts: function () { return { warn: warn, error: error }; },
+        // history (#705); harmless without o.history
+        session: function () { if (H) startSession(); return sid; },
+        resume: function (id) { return H ? resume(id) : false; },
+        keep: function () { if (H && sid && !kept) { kept = true; store.set(hp + 'current', sid); flush(); prune(); views.forEach(function (v) { v.sessions(); }); } },
+        name: function (text) { if (H && text && !sname) { sname = String(text); if (kept) store.set(hp + sid + ':name', sname); } },
+        sessionId: function () { return sid; },
+        last: function () { return H ? store.get(hp + 'current') : null; },
+        isKept: function () { return kept; },
+        sessions: function () { return H ? sessions() : []; },
+        load: function (id) { return loadSession(id); },
+        forget: function (id) { forget(id); views.forEach(function (v) { v.sessions(); }); },
+        clearHistory: clearHistory,
+        // redraw the session lists (a script showing its mounted viewer again); only a changed list is redrawn
+        refresh: function () { views.forEach(function (v) { v.sessions(); }); },
+        flush: flush,
+    };
+    if (H) sid = newId();
+    mbuLog.active = api;   // the script's own log, for helpers that note things in it (mbuClaim)
+    return api;
+}
+
+// Dismiss-on-outside-click, with the trailing click SWALLOWED.
+//
+//   var off = mbuDismissOn(popoverEl, close);   // off() to detach early
+//
+// #305: a popover torn down on mousedown removes what was under the cursor, so
+// the click that follows lands on whatever the page reflowed into that spot and
+// activates it. Tearing down on click instead just moves the problem. So: close
+// on outside mousedown, then eat exactly one click in the capture phase. This is
+// the single most repeated interaction bug in these scripts and it belongs in
+// one place — it is why #563 says interaction is part of the contract.
+//
+// Esc closes too, innermost first: the handler is registered in capture and stops
+// propagation, so a popover inside a modal does not close the modal as well.
+function mbuDismissOn(el, close, opts) {
+    opts = opts || {};
+    var closed = false;
+    var onDown = function (e) {
+        if (closed || !el || el.contains(e.target)) return;
+        if (opts.ignore && e.target.closest && e.target.closest(opts.ignore)) return;
+        finish();
+        // swallow the click this mousedown will produce, once
+        var eat = function (ev) { ev.stopPropagation(); ev.preventDefault(); document.removeEventListener('click', eat, true); };
+        document.addEventListener('click', eat, true);
+        setTimeout(function () { document.removeEventListener('click', eat, true); }, 400);
+    };
+    var onKey = function (e) {
+        if (closed || e.key !== 'Escape') return;
+        e.stopPropagation();
+        finish();
+    };
+    function finish() {
+        if (closed) return;
+        closed = true;
+        document.removeEventListener('mousedown', onDown, true);
+        document.removeEventListener('keydown', onKey, true);
+        try { close(); } catch (err) { /* a throwing closer must not leave listeners behind */ }
+    }
+    document.addEventListener('mousedown', onDown, true);
+    document.addEventListener('keydown', onKey, true);
+    return finish;
+}
+
+// Collapse a toolbar to icon-only when its buttons would wrap.
+//
+//   mbuFitToolbar(barEl)            // call on build, and on resize
+//
+// Measured by SUMMING child widths rather than reading scrollWidth or comparing
+// offsetTop: a bar with flex:1 spacers never overflows its own scroll box, so
+// both of those report "fits" right up until it visibly wraps. Art Station
+// learned that the hard way (#234) and it is the only reason this is a helper
+// rather than one CSS rule.
+//
+// opts.gap    inter-item gap in px (default 11)
+// opts.pad    horizontal padding to leave (default 24)
+// opts.spacer selector for flexible spacers, which must not count (default .mbu-sp)
+function mbuFitToolbar(bar, opts) {
+    if (!bar) return false;
+    opts = opts || {};
+    var gap = opts.gap == null ? 11 : opts.gap;
+    var pad = opts.pad == null ? 24 : opts.pad;
+    var spacer = opts.spacer || '.mbu-sp';
+    bar.classList.remove('mbu-compact');            // measure at full labels
+    var kids = [].slice.call(bar.children);
+    var need = gap * Math.max(0, kids.length - 1);
+    for (var i = 0; i < kids.length; i++) {
+        if (kids[i].matches && kids[i].matches(spacer)) continue;
+        need += kids[i].offsetWidth;
+    }
+    var compact = need > bar.clientWidth - pad;
+    bar.classList.toggle('mbu-compact', compact);
+    return compact;
+}
+
+// Publish the components on a shared namespace. Three reasons, in order:
+//
+//  1. it is the cross-userscript contract #563 is about — another script (or a
+//     future one) gets the standard widgets without copying them, the same way
+//     Mammoth already exposes its field-memory through a documented convention;
+//  2. it makes the components testable from outside, which is the only way to
+//     assert the *behaviour* half of the contract rather than just the markup;
+//  3. it costs nothing when several scripts do it — the definitions are
+//     byte-identical, so first writer wins and the rest are no-ops.
+//
+// Guarded per key, never clobbering: a script that loaded first keeps its copy,
+// and a page that defines an unrelated window.MBU is left alone.
+// Theme recognition. #564: "we don't have to conform to Stylus vars, we could
+// probably use them as a recognition signal to enable our own dark theme."
+//
+// That is the right way round. Reading --background/--text and hoping every
+// derived colour lands somewhere readable is guesswork that fails one token at a
+// time; knowing WHICH theme we are in lets the token set say so outright, and
+// lets us hand the browser the one thing CSS variables cannot express —
+// color-scheme, which is what actually paints a checkbox dark instead of leaving
+// a white (Firefox: black) box on a dark panel.
+//
+// The signal is the rendered page, not a particular userstyle's variable names:
+// whatever painted the body, we measure its luminance. So this works for Stylus,
+// for a browser extension, for MusicBrainz shipping its own dark mode one day,
+// and for a user who just set --background by hand.
+//
+//   · an explicit --mbu-theme (light|dark) always wins — the escape hatch;
+//   · otherwise the page background decides;
+//   · re-checked when stylesheets arrive, because Stylus often lands after us.
+function mbuThemeOf(bg) {
+    var m = /rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*([\d.]+))?/.exec(bg || '');
+    if (!m) return null;
+    if (m[4] !== undefined && +m[4] < 0.5) return null;      // transparent tells us nothing
+    var f = function (v) { v /= 255; return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); };
+    var L = 0.2126 * f(+m[1]) + 0.7152 * f(+m[2]) + 0.0722 * f(+m[3]);
+    return L < 0.35 ? 'dark' : 'light';
+}
+// #569 (chaban-mb) — write only when the value actually changes.
+//
+// The DOM does not do this for you. classList.add of a token already present,
+// classList.toggle to the state it is already in, setAttribute with the value it
+// already has: each one re-sets the attribute and dispatches a mutation record.
+// Harmless once; these run from 2Hz heartbeats and from observers that react to
+// each other, and the measured idle cost on the release editor was 66 records a
+// second, of which 93% came from writes that changed nothing (see
+// dev/ui/measure-569-idle-mutations.mjs).
+//
+// Semantically these are exact no-ops: they skip a write ONLY when the value is
+// already the one being written, so nothing that reads the DOM afterwards can
+// tell the difference. That is the whole reason they are safe to sprinkle around
+// a 2Hz loop.
+function mbuCls(el, token, on) {
+    if (!el || !el.classList) return;
+    if (el.classList.contains(token) !== !!on) el.classList.toggle(token, !!on);
+}
+function mbuAttr(el, name, value) {
+    if (!el) return;
+    if (value === null || value === undefined || value === false) {
+        if (el.hasAttribute(name)) el.removeAttribute(name);
+    } else if (el.getAttribute(name) !== String(value)) {
+        el.setAttribute(name, String(value));
+    }
+}
+// For IDL properties (disabled, title, textContent, style.display …). Reading
+// them is cheap; writing them is not, and textContent in particular replaces
+// every child node.
+//
+// ⚠ textContent is the one to think twice about: its getter concatenates the
+// text of ALL descendants, so on an element with child ELEMENTS the comparison
+// can match while the DOM shape is wrong, and the guard then skips a write that
+// would have flattened it. Only use it where the target holds text and nothing
+// else.
+function mbuProp(obj, prop, value) {
+    if (!obj) return;
+    if (obj[prop] !== value) obj[prop] = value;
+}
+
+// #569: the one element mbuTheme resolves --background through. Looked up by id
+// rather than kept in a variable, so the seven scripts of a bundle share ONE
+// probe instead of adding seven, and so it heals itself if anything removes it.
+// It lives in <body>: a permanent stray node under <html>, outside head and
+// body, is the sort of thing another script's document scan trips over.
+function mbuProbe() {
+    var p = document.getElementById('mbu-theme-probe');
+    if (p) return p;
+    if (!document.body) return null;
+    p = document.createElement('span');
+    p.id = 'mbu-theme-probe';
+    p.setAttribute('aria-hidden', 'true');
+    p.style.cssText = 'position:absolute;left:-9999px;top:0;width:1px;height:1px;pointer-events:none;background:var(--background)';
+    document.body.appendChild(p);
+    return p;
+}
+function mbuTheme() {
+    var root = document.documentElement;
+    try {
+        var cs = getComputedStyle(root);
+        var forced = (cs.getPropertyValue('--mbu-theme') || '').trim();
+        var t = (forced === 'dark' || forced === 'light') ? forced
+            : (mbuThemeOf(getComputedStyle(document.body).backgroundColor)
+                || mbuThemeOf(cs.backgroundColor)
+                || mbuThemeOf(cs.getPropertyValue('--mbu-bg'))
+                || 'light');
+        if (root.getAttribute('data-mbu-theme') !== t) root.setAttribute('data-mbu-theme', t);
+
+        // Should we adopt the userstyle's OWN shades, or use our own palette?
+        // Only if its --background actually agrees with the theme we detected.
+        // A userstyle can paint the page dark with ordinary rules and still leave
+        // --background at a light value for its own purposes; taking that on
+        // trust hands us a light surface under a correct dark theme, which is
+        // indistinguishable from the bug it looks like. Measured, not assumed.
+        var seed = null;
+        var raw = (cs.getPropertyValue('--background') || '').trim();
+        if (raw) {
+            // Resolved through a real element, because --background may itself be
+            // a var(), a named colour, or anything else CSS accepts.
+            //
+            // #569 (chaban-mb): this used to CREATE and REMOVE that element on
+            // every call, as a direct child of <html>. mbuTheme re-runs whenever
+            // the root or body class changes, Mammoth watches the whole document
+            // for childList changes and reacts by toggling classes on <html>, and
+            // those class changes wake mbuTheme again — a self-feeding loop,
+            // measured at 12 root-node mutations a second on an idle page, which
+            // is what makes DevTools blink.
+            //
+            // One element, created once and left in place, breaks it: the value
+            // is still resolved LIVE on every call (a cached reading would freeze
+            // the theme at whatever it was before Stylus injected, which is the
+            // bug this whole function exists to avoid) but nothing is added to or
+            // removed from the DOM to read it.
+            var probe = mbuProbe();
+            var got = null;
+            if (probe) {
+                got = mbuThemeOf(getComputedStyle(probe).backgroundColor);
+            } else {
+                // No <body> yet — document-start. Fall back to the transient
+                // element for these first one or two calls; the idle loop this
+                // avoids cannot exist before the page has a body anyway.
+                var tmp = document.createElement('span');
+                tmp.style.cssText = 'position:absolute;left:-9999px;width:1px;height:1px;background:var(--background)';
+                document.documentElement.appendChild(tmp);
+                got = mbuThemeOf(getComputedStyle(tmp).backgroundColor);
+                tmp.remove();
+            }
+            if (got === t) seed = 'theme';
+        }
+        // guarded: setAttribute dispatches a mutation record even when the value
+        // is unchanged, and this runs several times a second
+        if (seed) { if (root.getAttribute('data-mbu-seed') !== seed) root.setAttribute('data-mbu-seed', seed); }
+        else if (root.hasAttribute('data-mbu-seed')) root.removeAttribute('data-mbu-seed');
+        return t;
+    } catch (e) { return 'light'; }
+}
+// A document-start script runs before the document is parsed: documentElement can
+// still be null, and <head> and <body> don't exist. Observing a null root threw, the
+// catch below swallowed it, and nothing (the watches, the re-checks) was ever set up,
+// so such a script never read the theme at all (#625). It starts on the parsed page.
+function mbuThemeStart() { try {
+    mbuTheme();
+    // Stylus and friends inject after us often enough that a one-shot read is
+    // wrong about half the time. Watch for stylesheets ARRIVING — head childList
+    // plus the root's own attributes — and never the whole subtree: this runs on
+    // the release editor, where a subtree observer calling getComputedStyle is a
+    // layout thrash on every keystroke.
+    var _mbuThemeT = 0;
+    var _mbuThemeSoon = function () {
+        clearTimeout(_mbuThemeT);
+        _mbuThemeT = setTimeout(mbuTheme, 150);
+    };
+    var _mbuThemeObs = new MutationObserver(_mbuThemeSoon);
+    _mbuThemeObs.observe(document.documentElement, { attributeFilter: ['style', 'class'] });
+    // ⚠ #569: characterData, not just childList. Until the idle thrash was fixed
+    // this function ran several times a second whether or not anything had
+    // changed — Apollo re-added a body class at 2Hz, which woke this observer,
+    // which is how a theme change was ever noticed. That accidental polling was
+    // LOAD-BEARING: with the thrash gone and only head-childList watched, a
+    // userstyle that REWRITES ITSELF (Stylus editing it live, or one switching
+    // palette) adds and removes no nodes, so nothing woke us and the theme went
+    // stale. Caught by verify-569-theme-still-tracks.mjs, which passes on the
+    // pre-fix build and failed on the first version of this one.
+    if (document.head) _mbuThemeObs.observe(document.head, { childList: true, subtree: true, characterData: true });
+    if (document.body) _mbuThemeObs.observe(document.body, { attributeFilter: ['style', 'class'] });
+    // …and the case that produces no DOM mutation at all: the OS flipping to dark
+    // under a userstyle with a prefers-color-scheme query. Nothing above can see
+    // that, and nothing did before either — it was simply never noticed while the
+    // page was re-checking itself several times a second.
+    try {
+        var _mbuMq = matchMedia('(prefers-color-scheme: dark)');
+        if (_mbuMq.addEventListener) _mbuMq.addEventListener('change', _mbuThemeSoon);
+        else if (_mbuMq.addListener) _mbuMq.addListener(_mbuThemeSoon);
+    } catch (e) {}
+    setTimeout(mbuTheme, 400);
+    setTimeout(mbuTheme, 2000);
+} catch (e) { /* no observer, no theme switching — the light defaults still apply */ } }
+if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', mbuThemeStart, { once: true });
+else mbuThemeStart();
+
+try {
+    var _mbuNs = (typeof unsafeWindow !== 'undefined' ? unsafeWindow : window);
+    if (!_mbuNs.MBU) _mbuNs.MBU = {};
+    if (!_mbuNs.MBU.theme) _mbuNs.MBU.theme = mbuTheme;
+    if (!_mbuNs.MBU.helpHref) _mbuNs.MBU.helpHref = mbuHelpHref;
+    if (!_mbuNs.MBU.helpHtml) _mbuNs.MBU.helpHtml = mbuHelpHtml;
+    if (!_mbuNs.MBU.helpEl) _mbuNs.MBU.helpEl = mbuHelpEl;
+    if (!_mbuNs.MBU.toast) _mbuNs.MBU.toast = mbuToast;
+    if (!_mbuNs.MBU.cfgHeader) _mbuNs.MBU.cfgHeader = mbuCfgHeader;
+    if (!_mbuNs.MBU.dismissOn) _mbuNs.MBU.dismissOn = mbuDismissOn;
+    if (!_mbuNs.MBU.fitToolbar) _mbuNs.MBU.fitToolbar = mbuFitToolbar;
+} catch (e) { /* a locked-down page must not stop the script loading */ }
+// </ST-UI>
+
+try {
+    // a provider that must hear the player's own requests hooks them now, before the page's scripts run
+    const early = !ON_MB && PROVIDERS.find(p => p.early && p.host.test(location.hostname));
+    if (early) early.early();
+    if (ON_MB) mbMain();
+    else if (document.body) platformMain();
+    else document.addEventListener('DOMContentLoaded', platformMain, { once: true });
+} catch (e) {
+    try { Log.err(`startup: ${e.stack || e.message}`); } catch (_) { /* nothing left to log with */ }
+}
+if (mbuTestHooks()) window.__fcTest = { splitFeat, creditFromTitle, seedParams, editNoteFor, guessScript, splitLabels, providers: PROVIDERS, importCurrent };
+
+})();
+})(); } catch (e) { try { console.error('[String Theory] first_contact failed while starting — the other scripts carry on:', e); } catch (x) {} } });
 })(typeof GM_info !== 'undefined' ? GM_info : undefined);
 
 // ===== fusion (@run-at document-end) ============================================

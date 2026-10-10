@@ -19,6 +19,8 @@
 | [Apollo Editor](../apollo_editor)     | Per-track artist-credit resolution in the release editor                          |
 | [Art Station](../art_station)         | Cover/event-art gallery editor                                                    |
 | [Credit Hoarder](../credit_hoarder)   | Import credits from multiple sources                                              |
+| [Falcon](../falcon)                   | Batch-edit entity fields, import from Harmony, attach disc IDs                    |
+| [First Contact](../first_contact)     | Import a release from a platform's album page                                     |
 | [Fusion](../fusion)                   | Merge duplicate recordings: review, auto-match, submit                            |
 | [Group Therapy](../group_therapy)     | Relationship-editor batch helpers                                                 |
 | [ISRC Scout](../isrc_scout)           | Fill in missing ISRCs and streaming links                                         |
@@ -27,7 +29,7 @@
 | [Platform Check](../platform_check)   | Find/verify/add a release's URLs on online platforms                              |
 
 - **Turn a script off** in the userscript manager's menu (the Tampermonkey / Violentmonkey popup): each bundled script has an entry with its version, ☑ on or ☐ off. A click flips it in place, and the change applies from the next page load. A script that is off doesn't run at all, so its standalone copy, if you have one installed, can run in its place.
-- **Lay out the corner launchers** from the same menu: the round buttons in the page's corner (Mission Control, Fusion, Falcon, …) stand in a column (**↕ Launchers in a column**, the default) or in a row along the page's bottom edge (**↔ Launchers in a row**). A click switches the layout at once, and it stays that way on every page. All the scripts share it, so a standalone script (Falcon, Scribe, First Contact) follows it too, on any page, String Theory there or not.
+- **Lay out the corner launchers** from the same menu: the round buttons in the page's corner (Mission Control, Fusion, Falcon, …) stand in a column (**↕ Launchers in a column**, the default) or in a row along the page's bottom edge (**↔ Launchers in a row**). A click switches the layout at once, and it stays that way on every page. All the scripts share it, so a standalone script (Scribe, or a script installed on its own) follows it too, on any page, String Theory there or not.
 - The bundled scripts are listed in [`members.txt`](./members.txt)
 - In edit notes, all userscripts are marked with `*` (e.g. `Apollo Editor*`)
 
@@ -48,6 +50,7 @@ String Theory bundles:
 
 ## Other recommended userscripts
 
+- [Scribe](../scribe/README.md) and [Bandcamp Player Enhanced](../bandcamp_player_enhanced/README.md), from this repo, are not in the bundle
 - [Art Station Picker](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/art_station/as_picker/README.md)
 - [Uncheck checkboxes with Esc](https://github.com/chaban-mb/userscripts/blob/main/docs/USERSCRIPTS.md#musicbrainz-uncheck-checkboxes-with-esc)
 - [Enhanced Cover Art Uploads](https://github.com/ROpdebee/mb-userscripts#mb-enhanced-cover-art-uploads)

@@ -21,6 +21,12 @@ Cover/event-art editor: view, reorder, retype, comment, remove, download, add so
 [Credit Hoarder](./userscripts/credit_hoarder/README.md)<img src="./userscripts/credit_hoarder/icon.svg" align="left" width="32"><br>
 Import credits from several providers with a review phase
 
+[Falcon](./userscripts/falcon/README.md) <img src="./userscripts/falcon/icon.svg" align="left" width="32"><br>
+Batch import entity fields from Harmony and standalone; attach disc IDs from CD rip logs
+
+[First Contact](./userscripts/first_contact/README.md) <img src="./userscripts/first_contact/icon.svg" align="left" width="32"><br>
+Import a release from the online platforms
+
 [Fusion](./userscripts/fusion/README.md) <img src="./userscripts/fusion/icon.svg" align="left" width="32"><br>
 Merge duplicate recordings: review UI, auto-match, background submit
 
@@ -43,14 +49,6 @@ Find and verify URLs for a particular MusicBrainz release on online platforms
 
 [Scribe](./userscripts/scribe/README.md) <img src="./userscripts/scribe/scribe.svg" align="left" width="32"><br>
 Edit MusicBrainz in your real editor (VS Code, Vim, …)
-
-[First Contact](./userscripts/first_contact/README.md) <img src="./userscripts/first_contact/icon.svg" align="left" width="32"><br>
-Import a release from the online platforms 
-
-[Falcon](./userscripts/falcon/README.md) <img src="./userscripts/falcon/icon.svg" align="left" width="32"><br>
-Batch import entity fields from Harmony and standalone; attach disc IDs from CD rip logs
-
----
 
 [Bandcamp Player Enhanced](./userscripts/bandcamp_player_enhanced/README.md)<img src="./userscripts/bandcamp_player_enhanced/icon.svg" align="left" width="32"><br>
 Bandcamp album player with keyboard shortcuts

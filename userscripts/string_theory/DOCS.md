@@ -1,18 +1,20 @@
 # String Theory — Unified Documentation
 
-*Built 2026-10-10 15:11 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-10-10 15:21 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
 1. [Apollo Editor](#apollo-editor)
 2. [Art Station](#art-station)
 3. [Credit Hoarder](#credit-hoarder)
-4. [Fusion](#fusion)
-5. [Group Therapy](#group-therapy)
-6. [ISRC Scout](#isrc-scout)
-7. [Mammoth](#mammoth)
-8. [Mission Control](#mission-control)
-9. [Platform Check](#platform-check)
+4. [Falcon](#falcon)
+5. [First Contact](#first-contact)
+6. [Fusion](#fusion)
+7. [Group Therapy](#group-therapy)
+8. [ISRC Scout](#isrc-scout)
+9. [Mammoth](#mammoth)
+10. [Mission Control](#mission-control)
+11. [Platform Check](#platform-check)
 
 ---
 
@@ -584,6 +586,548 @@ The log records every step. Its menu copies the log with or without the raw data
 
 ---
 
+## Falcon
+
+A MusicBrainz batch editor: queue many entities, then let a pool of workers add their links, ISRCs, names, aliases, disambiguations and cover art, through MusicBrainz's own forms or its API.
+
+- Install: [stable](https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/refs/heads/stable/userscripts/falcon/falcon.user.js) or [latest](https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/refs/heads/main/userscripts/falcon/falcon.user.js)
+    - Or via bundle: [String Theory](../string_theory/README.md)
+- [Changelog](../falcon/CHANGELOG.md)
+- [View users](https://musicbrainz.org/search/edits?auto_edit_filter=&order=desc&negation=0&combinator=and&conditions.1.field=edit_note_content&conditions.1.operator=includes&conditions.1.args.0=Falcon)
+
+<img src="../falcon/screenshots/queue.png" width="600">
+
+An importer like [Harmony](https://harmony.pulsewidth.org.uk) hands you 20–50 artists, recordings and labels that each need links, ISRCs and a cover. MusicBrainz has no write API for most of that, so tools open a tab per entity for you to handle one by one. Falcon does them as one batch.
+
+### Features
+
+- **[Queue from anywhere](#filling-the-queue)**: a [Harmony](#from-harmony) import, [the page you're on](#from-the-current-page), [a series](#from-a-series), a [JSON file](#json-model) or [another script](#from-another-script).
+- **[Editing the queue](#editing-the-queue)** as a list of forms or a spreadsheet-like grid.
+- **[Failures you can inspect](#the-run)**: MusicBrainz's own error on the row, the worker left where it stopped, retry in place.
+- **[Attributes](#attributes)**: links, names, disambiguations, aliases, ISRCs, the video flag, cover art.
+- **[Batch edit note](#batch-edit-note)** on every edit of a run.
+- **[Hands-free Harmony import](#hands-free-import)**, including retries when MusicBrainz errors, and a hand-off to Picard once the run finishes.
+- **[Disc IDs from a rip log](#disc-ids-from-a-rip-log)**, computed in the browser.
+- **[Export and import](#json-model)** a run as JSON, with each item's outcome, so a partial batch can be rerun without repeating what went through.
+
+Untouched rows and aliases the entity already has are skipped, not submitted again. So is a link the entity already has, even in another locale: a Qobuz or Apple Music page already linked as `gb-en` or `/gb/` (or open.qobuz.com, itunes.apple.com) isn't added again as `us-en`. The row says which link it already is.
+
+### Filling the queue
+
+Open Falcon on any MusicBrainz page with **Ctrl+Alt+F** (or its corner icon; right-click the icon for **Options**). The icon stays off the release editor (`/release/<mbid>/edit` and `/release/add`), which is [Apollo Editor](../apollo_editor)'s page and nothing Falcon acts on; **Ctrl+Alt+F** still opens it there.
+
+#### From Harmony
+
+On a [Harmony](https://harmony.pulsewidth.org.uk) *Release Actions* page, **Send N to Falcon** (bottom-right) opens MusicBrainz with the batch queued: links for every entity, the recordings' ISRCs, and the front cover.
+
+<img src="../falcon/screenshots/harmony.png" width="400">
+
+- **ISRCs** go by tracklist position: ISRC *N* to track *N* as MusicBrainz has it. If the counts differ, the extras are dropped and logged. (A recording linked to the wrong provider track still gets that track's ISRC; Falcon can't tell.)
+- **Cover art**: Falcon measures every candidate itself (Harmony's sizes are often wrong) and picks the largest, then the smallest file. Expand the row to change the pick, its type or its comment. The edit note names the source, its size, and what it was chosen over.
+
+> [!WARNING]
+> A cover is added even if the release already has one, unless *Add covers only when there aren't any* is on; the row warns when the release has art. If you upload covers with [ECAU](https://github.com/ROpdebee/mb-userscripts#mb-enhanced-cover-art-uploads) or [Art Station](../art_station) instead (they fetch the full-size image), turn on *Ignore Harmony cover art*.
+
+#### From the current page
+
+On a release or release group page, **+ Add from** fills the queue with its entities, with empty fields. Fill in the rows you care about and press Start; untouched rows are skipped. **Export** turns it into a JSON worksheet to fill in later.
+
+<img src="../falcon/screenshots/add-from-release.png" width="520">
+
+Ticking the *Video* camera on a selected recording ticks it on every selected recording.
+
+#### From a series
+
+On a series page, **+ Add from series** queues its release groups (optionally every release in them), or its releases (optionally their release groups), in the series' own order. Together with [renaming](#attributes), this is how a series gets its titles conformed.
+
+### Editing the queue
+
+The **List** / **Grid** button, right of the type chips, switches between two views. Falcon remembers the one you last used.
+
+- **List**: expand a row to edit it as a labelled form. Its links are listed one per URL, each with its link types by name; a URL added under two types shows both. The mark before a URL (✓ done, ✗ failed, ↗ not run yet) opens it. Long link lists fold after three, with *+ N more*.
+- Links are editable: change a URL in its box (empty it to drop it). A type badge is a dropdown: pick another type to change it, or **✕** it off. The **+** after the types adds one from that entity's link types, the row's **✕** removes the link, and the **+** by the *Links* label adds a link. The **↗** mark opens the link (✓ / ✗ once it has run). A link with no type shows *auto* and is left for MusicBrainz to guess.
+- **Grid**: one line per row, with its name, disambiguation and ISRCs editable in place. **▸** opens the row's links and aliases (and a release's cover art) beneath it, lined up under *Name*; aliases are added and edited only there.
+
+The select-all box, **▸** expand-all and the number of rows selected head the rows, in both views. The open tab is underlined.
+
+The [keyboard](#shortcuts-3) moves between fields in both views, like a spreadsheet. In the list, the row you move into opens and the one you leave closes again.
+
+### The run
+
+Review the queue (remove rows, edit fields), then press **Start**. Right-click a row's type to select every item of that type; the header chips (`art`, `lbl`, `rec`, `rel`, `rg`) exclude a type without removing it.
+
+| Status      |                                                      |
+| ----------- | ---------------------------------------------------- |
+| queued      | not processed yet                                    |
+| in progress | being processed                                      |
+| done        | everything went through                              |
+| partial     | some of it failed                                    |
+| failed      | nothing went through                                 |
+| manual      | finished by you in a tab                             |
+| skipped     | nothing to submit, or MusicBrainz reported no change |
+| excluded    | its type's chip is off                               |
+
+- A failed row shows MusicBrainz's own error on hover. **FAILED** / **PARTIAL** / **MANUAL** chips at the top filter the queue to those rows.
+- A worker that can't commit stays where it stopped, dimmed but live, and a fresh one takes over. Click a red status to jump to it in the **Workers** tab; **⛶** enlarges it.
+- **⇗** opens the entity's edit page in a tab, prefilled, for you to finish.
+- **Retry failed**, in Start's **▾** menu, reruns the failed and partial rows in place.
+
+<img src="../falcon/screenshots/workers.png">
+
+A link MusicBrainz can't classify on its own (a Bandcamp track: purchase or streaming?) fails with that reason instead of blocking its row; use **⇗** to pick the type.
+
+> [!NOTE]
+> Workers are MusicBrainz edit pages in same-origin iframes. Each is loaded with MusicBrainz's seed parameters, so the page fills itself. Falcon only touches the form for what seeding can't express (a link that needs two types, a row MusicBrainz couldn't classify), and submits. Where MusicBrainz has an API (cover art, aliases), Falcon uses it instead. The worker count never grows with the queue.
+
+#### The log
+
+The **Log** tab is the activity log every script shares: filter by level or by worker (`w1`, `w2`, …), search the text, and **⧉ Copy** it as Markdown for an issue. **debug** (off by default) also records each worker's every step.
+
+Each run keeps its own log in this browser, so a run whose tab crashed or navigated away can still be read. Pick a past run from the list beside the filter (they go by date and release); **Clear history** deletes them. A long run keeps its start and its end.
+
+### Attributes
+
+|                                      | artist | label | recording | release | release group |
+| ------------------------------------ | :----: | :---: | :-------: | :-----: | :-----------: |
+| links, name, aliases, disambiguation |   ✓    |   ✓   |     ✓     |    ✓    |       ✓       |
+| ISRCs, video                         |        |       |     ✓     |         |               |
+| cover art                            |        |       |           |    ✓    |               |
+
+- **Name**: an expanded row's ✎ box starts with the current name, so a fix is an edit, not a retype. A rename is votable, so it shows once the edit passes.
+- **Aliases**: one row per alias, with its name, its language and **✕**; the **+** by the *Aliases* label adds one, or use [JSON](../falcon/examples/aliases.json) for many. A new alias takes the language last typed; `name@locale` typed in the name box sets the language too. Enter on a filled alias opens the next one, on an empty one moves on to the next row's aliases; Esc drops a new, still empty row.
+- **Video** is only ever set, never cleared.
+
+> [!WARNING]
+> MusicBrainz silently drops the locale of a *Search hint* alias; Falcon warns in the log. Use the `<entity> name` type for a localised title.
+
+### Batch edit note
+
+**✎ Note**, left of Start, adds its text to every edit of the run: forms, aliases and covers. The button is marked while a note is set. The note is not kept across reloads, so an old reason can't slip into a new batch.
+
+### Hands-free import
+
+Two settings carry a finished Harmony import to a finished run:
+
+|                             | Runs on     | Does                     |
+| --------------------------- | ----------- | ------------------------ |
+| *Auto send*                 | Harmony     | presses *Send to Falcon* |
+| *Auto start Harmony import* | MusicBrainz | presses *Start*          |
+
+*Auto send* waits until the import is complete (the page has a `release_mbid`) and Harmony has finished listing its actions. It stands down if there's nothing to send. It counts down on the button first; a click cancels.
+
+**When Harmony errors**, the page still loads, just short of actions. Falcon handles this without a setting:
+
+- **a MusicBrainz error**: Falcon reloads the page, up to 5 times, backing off from 5 s to 60 s;
+- **a provider error**, or retries exhausted: Falcon sends what it has, as *Send 43 to Falcon (partial)*, with the reason as the batch's edit note (reloading can't fix a provider).
+
+Falcon is idempotent, so a partial run can be topped up later. *Reload release page after import without errors* (a Harmony option, like Picard: both follow only a queue Harmony sent) shows the result on the release page and turns the corner icon green. A run with failures isn't reloaded, since the queue wouldn't survive it; the log would.
+
+### Disc IDs from a rip log
+
+On a release's **Disc IDs** tab, each medium gets a drop zone for a rip log. Falcon reads the TOC, computes the disc ID in the browser, and takes you straight to MusicBrainz's attach page with the edit note signed. **Enter edit** is yours.
+
+| Program          | Reads                             |
+| ---------------- | --------------------------------- |
+| EAC, XLD, fre:ac | the TOC table (localised EAC too) |
+| whipper          | the `TOC:` block                  |
+| dBpoweramp       | `Track N: Ripped LBA x to y`      |
+| cyanrip          | `Start LSN` / `End LSN`           |
+
+Like Picard, whose parsers these are, it refuses a partial rip, a non-standard track sequence or an unknown file, and drops a trailing data track. A log whose track count doesn't match the medium asks before continuing.
+
+### JSON model
+
+What **Import** reads, **Export** writes, and Harmony and other scripts produce: a bare array of items, or `{ "items": [...] }` with an optional root `note` (the [batch edit note](#batch-edit-note)) and `name` (the run's name in the log history, for a queue with no release in it to be named after).
+
+```json
+{
+  "note": "Links and covers from the label's site",
+  "items": [
+    { "entityType": "artist", "mbid": "d31f76d2-1d8e-4271-8027-148f375979d7", "urls": [{ "url": "https://myspace.com/x", "linkTypeId": null }], "status": "done" },
+    { "entityType": "recording", "mbid": "e42f8e08-3150-4c6c-be5b-4030c29b1bf7", "disambiguation": "live version", "isrcs": ["NLTH62000001"] },
+    { "entityType": "release", "mbid": "8ad416ad-f3a1-43bb-9e85-786efefd5173",
+      "urls": [{ "url": "https://www.discogs.com/release/1", "linkTypeId": "75" }],
+      "cover": [{ "url": "https://e-cdns-images.dzcdn.net/images/cover/x/1000x1000.jpg", "type": "Booklet", "comment": "page 1" }] }
+  ]
+}
+```
+
+| Key                             |                                                                                                                                                                             |
+| ------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `entityType`                    | `artist`, `label`, `recording`, `release`, `release_group`                                                                                                                  |
+| `mbid`                          | the entity                                                                                                                                                                  |
+| `urls[]`                        | `{ url, linkTypeId }`; without a type, MusicBrainz classifies the link                                                                                                      |
+| `rename`                        | a new name (`name` is the current one, read only)                                                                                                                           |
+| `disambiguation`                | the disambiguation comment                                                                                                                                                  |
+| `aliases[]`                     | `{ name, locale, type, primary, sortName, begin, end, ended }`, or `"name@locale"`; each is its own edit. `type` as MusicBrainz names it (`Recording name`, `Search hint`…) |
+| `isrcs[]`                       | recordings                                                                                                                                                                  |
+| `video`                         | recordings; only `true` does anything                                                                                                                                       |
+| `cover[]`                       | releases: `{ url, type, comment, candidates }`, type defaulting to Front                                                                                                    |
+| `note`                          | that item's own edit note                                                                                                                                                   |
+| `status`, `error`, `urlResults` | written by Export: the outcome of the last run                                                                                                                              |
+
+#### From another script
+
+Append `?falcon=<base64(JSON)>` to any musicbrainz.org URL: Falcon opens with the queue seeded (it doesn't start). The JSON is the [model](#json-model) above, read as **Import** reads a file: the `note` becomes the batch edit note, and an item carries whatever a row can. On a page where Falcon already runs, a script can instead dispatch a `falcon:import` event on `document` with the JSON as a string `detail`: Falcon queues it on that page and answers with `falcon:import-ok`. `falcon:run` does the same and starts the queue; with `"closeWhenDone": true` at the JSON's root, the panel closes when that run finishes with every item done, and the corner icon turns the same green as on a page reloaded after a clean run, until the next run starts. With `"headless": true` the panel stays out of sight while the batch runs, and with a `"tag"` Falcon reports each change to that batch's items as a `falcon:status` event (`{ tag, running, items }`, each item with its type, MBID, name, status and error). A `falcon:show` event opens the panel. [Mission Control](../mission_control/DEVELOP.md#execute) runs its links this way and shows the progress in its own cards. A `?falcon=` link never starts on its own. A batch handed over this way (event or link) adds an entity already queued to its row rather than queueing it twice, so sending the same batch again doesn't run it twice; **Import** restores a file as it is. [Platform Check](../platform_check/README.md#artists-and-labels) sends its artist and label links this way, and falls back to `?falcon=` in a new tab when no Falcon answers.
+
+### Settings
+
+| Setting                                         | Default   |                                                                                                             |
+| ----------------------------------------------- | --------- | ----------------------------------------------------------------------------------------------------------- |
+| Hide Falcon icon                                | off       | Ctrl+Alt+F still opens it                                                                                   |
+| Add covers only when there aren't any           | off       | a release that already has cover art gets none from the queue                                               |
+| Ignore Harmony cover art                        | off       | a Harmony import queues no cover art                                                                        |
+| Auto send                                       | off       | see [Hands-free import](#hands-free-import)                                                                 |
+| Auto start Harmony import                       | off       | see [Hands-free import](#hands-free-import)                                                                 |
+| Reload release page after import without errors | off       | see [Hands-free import](#hands-free-import)                                                                 |
+| Open from Harmony in new tab                    | on        | off navigates the Harmony tab                                                                               |
+| Automatically send to Picard using port         | off, 8000 | hand the release to [Picard](https://picard.musicbrainz.org/) after a run (needs its *Browser integration*) |
+| Workers                                         | 5         | entities processed at once                                                                                  |
+| Keep last N run logs                            | 10        | the past runs the **Log** tab lists                                                                         |
+
+The Picard port also sets MusicBrainz's own tagger button, whether *Automatically send to Picard* is ticked or not.
+
+> [!TIP]
+> To report a problem: turn **debug** on in the **Log** tab, reproduce it, then **⧉ Copy** the log into the issue.
+
+### Shortcuts
+
+| Key              |                                                                              |
+| ---------------- | ---------------------------------------------------------------------------- |
+| Ctrl+Alt+F       | open or close Falcon                                                         |
+| Esc              | hide Falcon (an item popup over it first); a run goes on                     |
+| Enter / Down     | the same field on the next row                                               |
+| Shift+Enter / Up | the same field on the previous row                                           |
+| Tab / Shift+Tab  | the next / previous field, on to the next / previous row                     |
+| Right / Left     | the next / previous field, once the cursor is at the end / start of the text |
+
+In an alias box with text in it, Enter adds the alias first; press it again to move on.
+
+---
+
+## First Contact
+
+Import a release into MusicBrainz from the platform's album page with one click: the release editor opens with everything the platform knows filled in.
+
+- Install: [stable](https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/refs/heads/stable/userscripts/first_contact/first_contact.user.js) or [latest](https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/refs/heads/main/userscripts/first_contact/first_contact.user.js)
+    - Or via bundle: [String Theory](../string_theory/README.md)
+- [Changelog](../first_contact/CHANGELOG.md)
+- [View users](https://musicbrainz.org/search/edits?auto_edit_filter=&order=desc&negation=0&combinator=and&conditions.0.field=edit_note_content&conditions.0.operator=includes&conditions.0.args.0=First+Contact)
+
+> [!NOTE]
+> First Contact doesn't match entities: it hands them to [Apollo Editor](../apollo_editor/README.md#artist-matching), which does. Keep Apollo's *Auto-match on start: Label, Artist* on (the default), or click its **Match** button yourself.
+
+> [!IMPORTANT]
+> By default every album page you import is sent to the Internet Archive to be saved, so the edit note can link a snapshot of it. See [Archive](#archive); turn it off in [Settings](#settings-2).
+
+### Features
+
+- **[Import](#import)** a release from the album page into the MusicBrainz release editor.
+- **[Send to Harmony](#send-to-harmony)**: look the album up on Harmony instead, with every platform that has its barcode.
+- **[Platforms](#platforms)**: what is read from each one.
+- **[Artist matching](#artist-matching-1)** is left to Apollo Editor, which gets every artist's platform link.
+- **[Archive](#archive)**: the album page is saved on the Internet Archive, and the edit note links the snapshot.
+- **[Moving the button](#moving-the-button)**: drag it anywhere; each platform remembers its place.
+
+### Import
+
+On a platform's album page, click **Import to MusicBrainz** in the bottom-right corner. Once the release is read (the button counts the tracks), a new tab opens with MusicBrainz's release editor, filled in:
+
+| Field                | From                                                                                              |
+| -------------------- | ------------------------------------------------------------------------------------------------- |
+| Title, artist credit | the album, with any *feat.* artists split off the title into the credit                           |
+| Type                 | the platform's album / EP / single / compilation, or a [guess](#release-type) when it doesn't say |
+| Status, packaging    | Official, None                                                                                    |
+| Release event        | the platform's release date, Worldwide                                                            |
+| Label                | the platform's label; *A / B* becomes two labels, *AC/DC Records* stays one                       |
+| Barcode              | the platform's UPC                                                                                |
+| Script               | Latin, when every title is in Latin letters; otherwise left for you                               |
+| Tracklist            | one Digital Media medium per disc, with titles, track artists and lengths                         |
+| External link        | the album page                                                                                    |
+| Annotation           | the platform's [notes](#platforms), with their source; off per platform in [Settings](#settings-2)  |
+| Edit note            | the album page, its [Internet Archive snapshots](#archive), the script and its version            |
+
+A compilation the platform credits to one of its artists becomes Various Artists and a Compilation, when the credited artists are on fewer than half the tracks and the tracks have five or more artists.
+
+#### Release type
+
+When the platform gives no type, or only a plain *album* while the title says otherwise, it is guessed, the most certain sign first:
+
+| Sign                                                                          | Type   |
+| ----------------------------------------------------------------------------- | ------ |
+| *EP* or *E.P.* in the title                                                   | EP     |
+| the title ends in *Single*, or says *single* on up to 8 tracks and 50 minutes | Single |
+| every track is one song in other versions (*Remix*, *Instrumental*, *VIP*…)   | Single |
+| 7 tracks or more, or over 30 minutes                                          | Album  |
+| up to 7 minutes                                                               | Single |
+| 2 tracks or more, up to 30 minutes                                            | EP     |
+
+Without every track's length: 1 track is a Single, 3 to 6 an EP, 7 or more an Album, and 2 are left for you. The log says which sign decided.
+
+### Send to Harmony
+
+The button between **Import to MusicBrainz** and **⚙︎**, with [Harmony](https://harmony.pulsewidth.org.uk/)'s icon, opens the album in Harmony's release lookup in a new tab instead. Harmony then finds the album by its barcode on the platforms ticked in [Harmony's settings](https://harmony.pulsewidth.org.uk/settings), in the region set there, and [Falcon](../falcon/README.md) works there as usual. Open those settings once: until then Harmony has none, so it looks an album link up on its own platform only, and a barcode on none.
+
+| Platform                                                                        | Sent                                |
+| ------------------------------------------------------------------------------- | ----------------------------------- |
+| Deezer, Bandcamp, Discogs, Apple Music, Tidal, Qobuz, Beatport, Spotify, Ototoy | the album link, at once             |
+| Volumo, HDtracks, SoundCloud, Audiomack, 7digital                               | the barcode, once the album is read |
+| YouTube Music, Amazon Music                                                     | nothing; the button is greyed out   |
+
+Harmony can't read the platforms in the last two rows. For the middle row, First Contact reads the album first, as for an import, and sends its barcode; an album without one (a SoundCloud set that isn't a label's) sends nothing, and a message says why. YouTube Music and Amazon Music show no barcode either, so there is nothing to send.
+
+Turn the button off in [Settings](#settings-2).
+
+### Platforms
+
+| Platform                        |   ISRCs    |  Barcode   | Label                 | Notes          |
+| ------------------------------- | :--------: | :--------: | --------------------- | -------------- |
+| [Deezer](#deezer)               |     ✓      |     ✓      | ✓                     |                |
+| [Bandcamp](#bandcamp)           |            |     ✓      | on a label's page     | about, credits |
+| [Discogs](#discogs)             |            |     ✓      | ✓ with catalog number | notes          |
+| [Apple Music](#apple-music)     |     ✓      |     ✓      | ✓                     | review         |
+| [Tidal](#tidal)                 |     ✓      |     ✓      | from the ℗ line       |                |
+| [Qobuz](#qobuz)                 |            |     ✓      | ✓                     | review         |
+| [Beatport](#beatport)           |     ✓      |     ✓      | ✓ with catalog number | description    |
+| [Spotify](#spotify)             |            |     ✓      | ✓                     |                |
+| [YouTube Music](#youtube-music) |            |            |                       | description    |
+| [Volumo](#volumo)               |     ✓      |     ✓      | ✓ with catalog number | description    |
+| [HDtracks](#hdtracks)           |     ✓      |     ✓      | ✓                     | description    |
+| [SoundCloud](#soundcloud)       | label sets | label sets | ✓                     | description    |
+| [Amazon Music](#amazon-music)   |            |            | from the ℗ line       | ℗ line         |
+| [Audiomack](#audiomack)         |     ✓      |     ✓      | from the ℗ line       | description    |
+| [7digital](#7digital)           |     ✓      |     ✓      | ✓                     | ℗ and © lines  |
+| [Ototoy](#ototoy)               |            |            | ✓                     | album info     |
+
+#### Deezer
+
+Pages: `deezer.com/…/album/<id>`
+
+Featured artists come from the title's *feat.* clause: Deezer lists them as main artists. A trailing *(Original Mix)* is dropped from track titles.
+
+#### Bandcamp
+
+Pages: `<name>.bandcamp.com/album/<slug>`
+
+- A comma list of artists (*Future Funk Squad, Omega Sparx, Stu Brootal, The Crystal Method*) is split into separate artists, except the account's own name.
+- On a label's page the label is filled in; on an artist's own page it is left empty.
+- A compilation's *Artist - Title* track titles are split into artist and title.
+- The album link gets both *purchase for download* and, when it streams, *stream for free*.
+- Only the artist the page belongs to has a Bandcamp link to hand off.
+
+#### Discogs
+
+Pages: `discogs.com/release/<id>`
+
+- Format per medium (LP is 12" Vinyl), and sides A/B, C/D… become one medium each, numbered A1, B2…; *CD 1 …* style headings become medium titles.
+- Status *Promotion* or *Bootleg* and the *Compilation* type come from the format's descriptions, packaging from its free text.
+- Artists keep their credited name (*DJ Fresh* for *Fresh*) and lose Discogs's *(2)* numbering; *Featuring* track credits go after *feat.*
+- Country when it is one country (not *UK, Europe & US*).
+- A label listed twice with its catalog number written two ways is kept once; *Not On Label* becomes *[no label]*.
+- Every artist and label carries its Discogs link for Apollo.
+
+#### Apple Music
+
+Pages: `music.apple.com/<country>/album/…`
+
+- Read from the page's country store.
+- Every track has its ISRC; every artist its Apple link.
+- *- Single* / *- EP* at the end of the title is the type, not part of the title.
+- Music videos are left out.
+- An album can list tracks Apple doesn't offer. Apple leaves them out of the album data and numbers the others around them, so 1.8 is followed by 1.10. When that happens, First Contact names the missing tracks and asks before it opens the editor. If you choose *Import anyway*, each missing track is an empty track at its own position, so the others keep their numbers. Give each empty track its title, or remove it. The edit note lists them.
+
+#### Tidal
+
+Pages: `tidal.com/album/<id>`, `tidal.com/browse/album/<id>`, `listen.tidal.com/album/<id>`
+
+- Read from the US store, else the British or German one.
+- Every track has its ISRC; every artist its Tidal link.
+- The *feat.* Tidal puts in a track's version goes into the credit, any other version (*Radio Edit*) stays in the title.
+- Tidal has no label field, so the label is read from its copyright line: *℗ 2020 Outpost Recordings* gives Outpost Recordings, *… under exclusive license to Columbia Records, a Division of …* gives Columbia Records. A line that doesn't read as one name leaves the label for you.
+
+#### Qobuz
+
+Pages: `qobuz.com/<country-lang>/album/<slug>/<id>`
+
+- Qobuz's per-track artist is unreliable (it can name a band member), so an album by one artist credits its main artists on every track, with the title's *feat.*; a Various Artists album takes each track's artist.
+- The type isn't given, so it is guessed.
+- A page that lists only part of a long album says so in the log.
+
+#### Beatport
+
+Pages: `beatport.com/release/<slug>/<id>`
+
+- Every track has its ISRC and Beatport link; every artist and the label their Beatport link.
+- A mix name other than *Original Mix* goes into the track title: *Leg Pulling (Dub)*.
+- Beatport credits every track artist to the release, so more than four of them make it Various Artists.
+- Beatport's own type is mostly just *Release*, so the type is usually guessed.
+- The link gets *purchase for download* and, when it streams, *streaming page*.
+
+#### Spotify
+
+Pages: `open.spotify.com/album/<id>`
+
+- If the log says nothing was heard from the player, reload the page.
+- Every artist and every track has its Spotify link.
+- The date is as precise as Spotify has it.
+
+#### YouTube Music
+
+Pages: `music.youtube.com/browse/MPREb_…`, `music.youtube.com/playlist?list=OLAK5uy_…`
+
+- Every artist has its YouTube Music channel.
+- Featured artists come from the title's *feat.*: YouTube Music lists them as main artists.
+- The type (Album, EP, Single) is YouTube Music's; the date is the year only.
+- The link is the album playlist.
+
+#### Volumo
+
+Pages: `volumo.com/album/<barcode>-<slug>`, `volumo.com/album/<id>`
+
+- Every track has its ISRC; every artist its Volumo link.
+- A mix name other than *Original Mix* goes into the track title.
+- More than four release artists make it Various Artists.
+
+#### HDtracks
+
+Pages: `hdtracks.com/#/album/<id>`
+
+- HDtracks has no artist pages, so artists have no link to hand off.
+
+#### SoundCloud
+
+Pages: `soundcloud.com/<user>/sets/<slug>`
+
+- A set the label distributed (a *label set* above) has each track's ISRC and the barcode; the set's type (album, EP, single, compilation) is used.
+- Only the uploading account has a SoundCloud link to hand off.
+
+#### Amazon Music
+
+Pages: `music.amazon.com/albums/<id>`, and the other countries' `music.amazon.*`
+
+- No Amazon account is needed. The catalogue read is amazon.com's (US).
+- The tracklist is one medium: Amazon Music doesn't mark discs, so split them in the editor.
+- A track's artists come from its artist line (*A, B & C*), and only the first has an Amazon Music link; an *&* inside one name (*Simon & Garfunkel*) stays one artist.
+- The date is the one the album page shows, which for a reissue can be the original's.
+- The label is read from the ℗ line, as for [Tidal](#tidal); the whole line also goes to the annotation (see [Settings](#settings-2)), since it may or may not name the label.
+
+#### Audiomack
+
+Pages: `audiomack.com/<artist>/album/<slug>`, `audiomack.com/<artist>/song/<slug>`
+
+- No Audiomack account is needed.
+- A song page is imported as a one-track single.
+- A track's artists come from its artist line (*A, B & C*), and the featured ones from its title or Audiomack's *featuring*. Only the uploading account has an Audiomack link to hand off.
+- The tracklist is one medium.
+
+#### 7digital
+
+Pages: `<store>.7digital.com/artist/<artist>/release/<slug>`
+
+- No 7digital account is needed. If the page asks you to prove you're human, do it first, then import.
+- The barcode, type, date, discs and ISRCs come from 7digital's catalogue, which can't list an album's tracks: each track is searched for, a few at a time.
+- A track's artists come from its artist line (*A, B & C*, *A x B*, *A feat. B*). The release artist has a 7digital link to hand off, and so does a track artist who is the whole line.
+
+#### Ototoy
+
+Pages: `ototoy.jp/_/default/p/<id>`
+
+- No Ototoy account is needed.
+- Ototoy shows no barcode, ISRCs or type, so the type is guessed and the country is Japan.
+- The date is the original release date when the page has one.
+- A track's artists are all the artists Ototoy links for it, and the featured ones come from its title's *(feat. …)*. On some compilations those links include the arranger or the label, so check the track artists there.
+- The hi-res and CD-quality editions are separate pages; the format some titles carry (*Disc2(24bit/44.1kHz)*) is left out of the title.
+- The catalog number isn't filled in: Ototoy often shows the CD's or a distributor's code instead.
+
+### Artist matching
+
+First Contact doesn't pick MusicBrainz artists itself. It hands every credited artist's platform link (the release's and each track's) to [Apollo Editor](../apollo_editor/README.md#artist-matching) on the release editor page, and Apollo matches them. Other scripts can read the same [handoff](#handoff).
+
+Apollo links an artist only when the evidence is strong, trying the most certain source first:
+
+1. **Platform link.** The MusicBrainz artist already links the artist's page on the platform you imported from (or the release's Discogs artist). This is the most reliable match, and why First Contact passes the links on.
+2. **Other releases.** The same track on another release of the release group, or at the same position on its other editions, credits this artist.
+3. **Unique name.** Exactly one MusicBrainz artist has the credited name as its name or alias, or exactly one artist of that name is usually credited next to an artist already on this release.
+
+Anything less certain is left unlinked and offered as a candidate for you to confirm. A badge on each artist shows which stage linked it. When the artist exists but lacks the platform link, Apollo offers to add it, so the next import of that artist matches at once; when it doesn't exist, Apollo offers to create it with the link.
+
+### Archive
+
+On every import, First Contact asks the Internet Archive's Wayback Machine to save the album page, so anyone can later check what the platform showed, even after the page changes or is gone. The edit note links the snapshot:
+
+```text
+Imported from Deezer: https://www.deezer.com/album/6575789
+Archived page: https://web.archive.org/web/20261002121804/https://www.deezer.com/en/album/6575789
+Archived API data: https://web.archive.org/web/20261002121804/https://api.deezer.com/album/6575789
+```
+
+- The save starts once the release editor opens and runs in its tab, so the import never waits for it. It takes from a few seconds to a minute; the [log](#settings-2) says when it's done or why it failed.
+- The link carries the time of the import, and the Wayback Machine opens the snapshot nearest to it, which is the one just made.
+- Deezer and Apple Music build their pages in the browser, so a saved page shows little. For these, the album data First Contact read is saved too, and linked as *Archived API data*.
+- Spotify, Tidal and YouTube Music also build their pages in the browser, and their data can't be saved. For these, add your archive.org keys: the save then also takes a screenshot of the page, and the edit note links it as *Archived screenshot*.
+
+#### archive.org keys
+
+Without keys the save is anonymous. The Internet Archive limits how many anonymous saves one connection may make, so after many imports in a row some are refused (the log says so). With your own keys:
+
+- the limit is much higher;
+- each save also takes a screenshot of the page;
+- a page saved in the last 30 days isn't saved again.
+
+To get them, make a free account on [archive.org](https://archive.org), log in, and open [archive.org/account/s3.php](https://archive.org/account/s3.php). Copy the *access key* and the *secret* into **⚙︎ → archive.org keys**.
+
+> [!NOTE]
+> Archiving sends the address of every album you import to archive.org, and with keys, under your account. Turn **Archive the album page on the Internet Archive** off in [Settings](#settings-2) if you don't want that.
+
+### Moving the button
+
+Drag **Import to MusicBrainz** (or its **⚙︎**) to wherever it is out of the way. Each platform remembers its own place. **⚙︎ → Reset:** **this one** puts it back in the bottom-right corner on that platform and stops it scrolling with the page; **all** does so on every platform.
+
+By default the button stays put on the screen. With **Moved button scrolls with the page on** *platform* on (see [Settings](#settings-2)), a moved button stays on its spot on that platform's page instead, above the cover, say, and scrolls with it. Each platform has its own, so the button can scroll with the page on Bandcamp and stay on the screen on Spotify:
+
+### Settings
+
+The **⚙︎** button next to **Import to MusicBrainz** opens them, in three sections.
+
+#### Import
+
+| Setting                            | Default         |                                                                                                          |
+| ---------------------------------- | --------------- | -------------------------------------------------------------------------------------------------------- |
+| MusicBrainz server                 | musicbrainz.org | where the release editor opens: musicbrainz.org, beta or test                                            |
+| Annotation from *platform*'s notes | on              | the album's [notes](#platforms) go into the annotation, with *From <platform>: <album page>*             |
+| Close this page after the import   | off             | the platform's tab closes once the editor or [Harmony](#send-to-harmony) has the album; not on a failure |
+| Send to Harmony button             | on              | the [Harmony button](#send-to-harmony) between **Import to MusicBrainz** and **⚙︎**                      |
+
+A review in the notes is the critic's text (Qobuz's and Apple's are usually AllMusic's): check you may copy it before you submit.
+
+#### Archive
+
+| Setting                                        | Default |                                                                                            |
+| ---------------------------------------------- | ------- | ------------------------------------------------------------------------------------------ |
+| Archive the album page on the Internet Archive | on      | each import saves the album page and links the snapshot; see [Archive](#archive)           |
+| archive.org keys                               | none    | your access key and secret: higher limits, plus a screenshot; see [keys](#archiveorg-keys) |
+
+#### Button
+
+| Setting                                          | Default |                                                                                                               |
+| ------------------------------------------------ | ------- | ------------------------------------------------------------------------------------------------------------- |
+| Icon only                                        | off     | the button shows only its icon; its tooltip and progress stay                                                 |
+| Settings button only on hover                    | off     | **⚙︎** appears, as a tab on the button's edge, only after a second's hover                                    |
+| Moved button scrolls with the page on *platform* | off     | on this platform only, a [moved](#moving-the-button) button stays on its spot on the page and scrolls with it |
+| Position: Reset                                  |         | **this one**: back to the bottom-right corner on this platform; **all**: on every platform                    |
+
+### Notes
+
+#### Handoff
+
+Other scripts on the release editor page can read what First Contact sent: the release and every track with each artist's name and platform link. [DEVELOP.md](../first_contact/DEVELOP.md#handoff) says how, and how each platform is read.
+
+#### Archiving requests
+
+[DEVELOP.md](../first_contact/DEVELOP.md#archive) lists the requests sent to the Internet Archive, with and without keys.
+
+---
+
 ## Fusion
 
 A merge assistant for MusicBrainz recordings: gather candidates, let Match group the duplicates, adjust by hand, and submit every merge from one window.
@@ -656,7 +1200,7 @@ A group's chips show which signals hold for **every** member; one that holds for
 
 Each merge gets an edit note listing what matched ("Same ISRC …", "Length difference 5s (3:59 – 4:04)"). ✎ in a group's title replaces it with your own text; Fusion's attribution line is always appended.
 
-It is an ordinary edit on your account: unless you're an auto-editor, it goes to a vote (see [Settings](#settings-1) to always ask for one).
+It is an ordinary edit on your account: unless you're an auto-editor, it goes to a vote (see [Settings](#settings-3) to always ask for one).
 
 > [!NOTE]
 > Under the hood, Fusion queues the group with `GET /recording/merge_queue?add-to-merge=…` and posts MusicBrainz's own `/recording/merge` form with the target and the note. If MusicBrainz bounces the form instead of creating the edit, the group is marked failed, not done.
@@ -890,15 +1434,15 @@ Shows a release's ISRCs, fills in the missing ones from several providers, and f
 | Apple Music                     |      ✓      |      ✓      | the album; by position (+ title for links)                                            |
 | SoundCloud                      |      ✓      |      ✓      | the set (a track URL counts as a one-track release); by position (+ title for links)  |
 | Audiomack                       |      ✓      |      ✓      | the album (a song URL counts as a one-track release); by position (+ title for links) |
-| Spotify                         |      ✓      |      ✓      | ISRCs through [a lookup service](#spotify); links from the album, by position + title |
+| Spotify                         |      ✓      |      ✓      | ISRCs through [a lookup service](#spotify-1); links from the album, by position + title |
 | Bandcamp                        |             |      ✓      | the album page, by position + title                                                   |
-| [YouTube Music](#youtube-music) |             |      ✓      | the album, when linked (by position + title); else ISRC, on any release               |
-| [Amazon Music](#amazon-music)   |             |      ✓      | the album, when linked (by position + title)                                          |
+| [YouTube Music](#youtube-music-1) |             |      ✓      | the album, when linked (by position + title); else ISRC, on any release               |
+| [Amazon Music](#amazon-music-1)   |             |      ✓      | the album, when linked (by position + title)                                          |
 | HDtracks                        |      ✓      |             | the album                                                                             |
-| [7digital](#7digital)           |      ✓      |             | the album: each track searched by title                                               |
+| [7digital](#7digital-1)           |      ✓      |             | the album: each track searched by title                                               |
 | SoundExchange                   |      ✓      |             | a title and artist search                                                             |
 
-An album-based provider needs the release's album link: already in MusicBrainz, found by Platform Check, or pasted with **(+)**. No login is needed anywhere except Qobuz outside the countries it serves (see [Qobuz](#qobuz)).
+An album-based provider needs the release's album link: already in MusicBrainz, found by Platform Check, or pasted with **(+)**. No login is needed anywhere except Qobuz outside the countries it serves (see [Qobuz](#qobuz-1)).
 
 > [!WARNING]
 > Album imports map tracks by position and trust the link: provider titles legitimately differ (*feat.*, *remaster*). A fill whose length is more than 10 s off is kept but marked amber, and counted as *⚠ N implausible*. An album with more tracks than the release is flagged as a likely wrong edition. Check the amber rows before submitting.
@@ -1051,8 +1595,8 @@ Reusable edit notes in a panel beside the edit-note field of every edit form, an
 - **[Saved notes](#saved-notes)**: save, pin as buttons, search, sort and reorder edit notes.
 - **[History](#saved-notes)** of the notes you submitted.
 - **[Mammoth babies](#mammoth-babies)**: the same for other fields (catalogue number, label, artist…), and **[any field you choose](#custom-fields)**.
-- **[Import and export](#settings-4)** of notes.
-- **[Other scripts' edit-note fields](#notes-4)** get the same panel.
+- **[Import and export](#settings-6)** of notes.
+- **[Other scripts' edit-note fields](#notes-5)** get the same panel.
 
 ### Saved notes
 
@@ -1281,7 +1825,7 @@ Finds a MusicBrainz release on the streaming and store platforms, checks each ma
 
 ### Features
 
-- **[Dashboard](#dashboard)** on every release page: each [platform](#platforms), with its track count, year, label and format beside MusicBrainz's.
+- **[Dashboard](#dashboard)** on every release page: each [platform](#platforms-1), with its track count, year, label and format beside MusicBrainz's.
 - **[Link confidence](#link-confidence)**: a match with a different barcode or format is a different release, and is not added.
 - **[Adding links](#adding-links)** to the release, one or all, in the foreground or in the background, or opening all the pages found.
 - **[Pasting a barcode](#pasting-a-barcode)** on a release that has none, or picking one the platforms report: the platforms are checked against it, and an added link adds it too.

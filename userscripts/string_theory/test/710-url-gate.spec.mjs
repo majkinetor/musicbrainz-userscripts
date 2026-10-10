@@ -36,6 +36,21 @@ test('patterns read as a manager reads them', { tag: ['@unit', '@critical'] }, a
   check(runsHere(urlRules([]), 'https://anything.example/', false), 'no patterns: runs wherever the bundle does');
 });
 
+// #711: Falcon and First Contact bring the bundle to Harmony and the platforms; nothing else starts there
+test('on the other sites only the member that belongs there starts', { tag: ['@unit', '@critical'] }, async () => {
+  for (const [url, want] of [
+    ['https://harmony.pulsewidth.org.uk/release?url=https%3A%2F%2Fwww.deezer.com%2Falbum%2F1', ['falcon']],
+    ['https://www.deezer.com/en/album/302127', ['first_contact']],
+    ['https://open.spotify.com/album/4aawyAB9vmqN3uQ7FjRGTy', ['first_contact']],
+    ['https://www.beatport.com/release/x/123', ['first_contact', 'isrc_scout']],
+    ['https://tidal.com/album/1', ['credit_hoarder', 'first_contact']],
+    ['https://tidal.com/', ['first_contact']],
+  ]) {
+    const got = expected(url);
+    check(JSON.stringify(got) === JSON.stringify(want), `${url}: ${got.join(', ') || 'none'} — expected ${want.join(', ')}`);
+  }
+});
+
 // every member's first line pushes its name to window.__stRan
 const mark = code => code.replace(/\/\/ ===== (\w+) [^\n]*\n[\s\S]*?try \{ \(function\(\)\{\n/g, (m, n) => `${m}(window.__stRan = window.__stRan || []).push(${JSON.stringify(n)});\n`);
 
