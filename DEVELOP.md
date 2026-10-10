@@ -12,7 +12,7 @@ pnpm lint
 
 - **`main`** is latest; the *latest* install links point at it. It must always be releasable, because a release ships all of it.
 - **`stable`** is the official release; the *stable* install links point at it. Userscript managers update from whichever branch the script was installed from.
-- Substantial work goes on a feature branch named after the issue (`<topic>-<issue>`) and is merged when it's ready to ship. Small fixes go straight to `main`.
+- Which work goes straight to `main` and which on a feature branch: [Standard 13](dev/agents/STANDARDS.general.md#standard-13).
 - Each script has its own `@version`, bumped with every change: the date of the change (`2026.9.28`), with the time appended for a second change the same day (`2026.9.28.214729`), so read the current value before bumping.
 
 ## Checks

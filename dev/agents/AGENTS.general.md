@@ -18,7 +18,7 @@ Each rule lives in one place; everywhere else links to it and never restates it,
 
 Bias to action, but know the edges.
 
-**Just go:** an issue **assigned to the bot** → start; after finishing one task, move to the next obvious one (don't pause to wait); push direct to `main` under your environment's identity ([GitHub work](#github-work)) — small fixes → `main`; substantial work → feature branch `<topic>-<issue>`, merged when ready, then **delete the branch** remote + local after a verified merge; your own research/test **reads** of external services.
+**Just go:** an issue **assigned to the bot** → start; after finishing one task, move to the next obvious one (don't pause to wait); push under your environment's identity ([GitHub work](#github-work)), to `main` or a branch as [Standard 13](STANDARDS.general.md#standard-13) says (read it before picking); your own research/test **reads** of external services.
 
 **Confirm first:** a **new feature or non-trivial follow-on** you weren't asked for — even an "obvious" one, even a third party's suggestion (ask scope, not speed); **new load on a third-party service** from shipped code (a new request per page, per item, per run); anything else hard to reverse or outward-facing beyond the above.
 

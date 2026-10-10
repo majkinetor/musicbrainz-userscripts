@@ -1,12 +1,12 @@
 # Standards
 
-This repo's numbered conventions. The ones that hold on any project are in [`dev/agents/STANDARDS.general.md`](dev/agents/STANDARDS.general.md) and apply here in full; this file holds the standards of this repo alone and the repo's details for the general ones. Numbers are shared between the two files and never reused (the next is 13); every number keeps its anchor here, so an old `STANDARDS.md#standard-N` link still lands on it. New ones arrive when the maintainer starts a chat message with `standard: …`: one that would hold on any project goes in the general file.
+This repo's numbered conventions. The ones that hold on any project are in [`dev/agents/STANDARDS.general.md`](dev/agents/STANDARDS.general.md) and apply here in full; this file holds the standards of this repo alone and the repo's details for the general ones. Numbers are shared between the two files and never reused (the next is 14); every number keeps its anchor here, so an old `STANDARDS.md#standard-N` link still lands on it. New ones arrive when the maintainer starts a chat message with `standard: …`: one that would hold on any project goes in the general file.
 
 | Category | Standards |
 | --- | --- |
 | [Userscripts](#userscripts) | [10](#standard-10) pinned install links |
 | [This repo's details](#this-repos-details) | [labels](#labels) · [links](#links) · [script READMEs](#script-readmes) · [tables](#tables) |
-| [General](#general) | [1](#standard-1) · [2](#standard-2) · [3](#standard-3) · [5](#standard-5) · [6](#standard-6) · [7](#standard-7) · [8](#standard-8) · [9](#standard-9) · [11](#standard-11) · [12](#standard-12) |
+| [General](#general) | [1](#standard-1) · [2](#standard-2) · [3](#standard-3) · [5](#standard-5) · [6](#standard-6) · [7](#standard-7) · [8](#standard-8) · [9](#standard-9) · [11](#standard-11) · [12](#standard-12) · [13](#standard-13) |
 | [Retired](#retired) | [4](#standard-4) per-project decision log |
 
 ---
@@ -122,6 +122,10 @@ These live in [`dev/agents/STANDARDS.general.md`](dev/agents/STANDARDS.general.m
 <a id="standard-12"></a>
 
 - **12.** User docs are compact: one shape, plain words → [Standard 12](dev/agents/STANDARDS.general.md#standard-12)
+
+<a id="standard-13"></a>
+
+- **13.** Small fixes on `main`, substantial work on a branch → [Standard 13](dev/agents/STANDARDS.general.md#standard-13)
 
 ---
 

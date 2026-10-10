@@ -5,7 +5,7 @@ The maintainer's numbered conventions that hold on **any** project. A repo's roo
 | Category                                      | Standards                                                                                                                                                |
 | --------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | [Issues and changelog](#issues-and-changelog) | [1](#standard-1) titles as changelog lines · [2](#standard-2) labels                                                                                     |
-| [Git and GitHub](#git-and-github)             | [7](#standard-7) bot identity · [9](#standard-9) link everything                                                                                         |
+| [Git and GitHub](#git-and-github)             | [7](#standard-7) bot identity · [9](#standard-9) link everything · [13](#standard-13) branches                                                           |
 | [Documentation](#documentation)               | [12](#standard-12) the compact style                                                                                                                     |
 | [Markdown](#markdown)                         | [5](#standard-5) table alignment · [6](#standard-6) hard line breaks · [8](#standard-8) blank lines around headers · [11](#standard-11) no hard wrapping |
 | [Environment](#environment)                   | [3](#standard-3) PowerShell                                                                                                                              |
@@ -98,6 +98,14 @@ to via `…/README.md#auto-match-disagreement`.
 Both header anchors (`## My Section` → `#my-section`) and explicit `<a id="…"></a>` work on GitHub. Prefer headers; use explicit anchors only when no header fits.
 
 The goal is *zero-friction verification*: every claim that names a thing carries its own evidence trail.
+
+<a id="standard-13"></a>
+
+### 13. Small fixes on `main`, substantial work on a branch
+
+- **Small fixes** go straight to `main`.
+- **Substantial work** goes on a feature branch named after its issue, `<topic>-<issue>`, and is merged when it's ready to ship.
+- After a verified merge, **delete the branch**, remote and local.
 
 ---
 
