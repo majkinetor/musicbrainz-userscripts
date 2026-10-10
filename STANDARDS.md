@@ -17,15 +17,19 @@ This repo's numbered conventions. The ones that hold on any project are in [`dev
 
 ### 10. Install links pin to a commit, not a branch
 
-Userscript install / raw URLs shared in chat or on GitHub must reference an **immutable commit SHA**, never a moving branch like `main`. A pinned link always resolves to the exact reviewed code, so a later push can't silently change what a shared link installs.
-
-Format (combines with the `@version` install-link convention — the version is parsed from that pinned file):
+Every userscript install link shared in chat or on GitHub comes with one pinned to an **immutable commit SHA**. A pinned link always resolves to the exact reviewed code, so a later push can't silently change what it installs.
 
 ```markdown
-[Install @<version>](https://github.com/<org>/<repo>/raw/<full-commit-sha>/<path>.user.js)
+[Install @<version> (pinned)](https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/<sha>/userscripts/<dir>/<file>.user.js)
+[Install @<version> (latest, auto-updates)](https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/refs/heads/main/userscripts/<dir>/<file>.user.js)
 ```
 
-Get the SHA from the commit that last touched the file: `git log -1 --format=%H -- <path>`. Tampermonkey/Violentmonkey still auto-detect the `.user.js` and offer install. Note a pinned link installs a **frozen** version — the manager records that same pinned URL for updates, so share a newer commit-pinned link to ship an update (scripts published to Greasy Fork carry their own rolling `@updateURL`).
+- **Pinned**, always: the **full 40-character SHA** of the pushed commit (a short SHA 404s), and the `@version` read from the file at that commit.
+- **Latest**, besides the pinned one, only once the work is on `main` (or `stable`, as `refs/heads/stable`); never for a feature branch.
+- Clickable `[label](url)` links, never bare URLs.
+- **curl-check every link** before posting. The repo slug is `majkinetor/musicbrainz-userscripts`, not the `mb-userscripts` folder name, so folder-name links 404.
+
+Tampermonkey/Violentmonkey auto-detect the `.user.js` and offer install. A pinned link installs a **frozen** version: the manager records that same pinned URL for updates, so share a newer pinned link to ship an update (scripts published to Greasy Fork carry their own rolling `@updateURL`).
 
 ---
 

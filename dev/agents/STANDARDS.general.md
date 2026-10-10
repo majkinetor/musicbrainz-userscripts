@@ -18,7 +18,7 @@ The maintainer's numbered conventions that hold on **any** project. A repo's roo
 
 ### 1. Issue titles read as changelog entries
 
-Issue titles describe the user-visible symptom (for bugs) or the feature name (for enhancements). They become **changelog lines verbatim**: the release script copies the issue title across as the bullet text, untouched. The labels decide where the bullet lands ([Standard 2](#standard-2)).
+Issue titles describe the user-visible symptom (for bugs) or the feature name (for enhancements). They become **changelog lines verbatim**: the release script copies the issue title across as the bullet text, untouched. The labels decide where the bullet lands ([Standard 2](#standard-2)). Only the release run writes a changelog; never hand-edit a `CHANGELOG.md` during feature work.
 
 Format per bullet:
 
@@ -69,6 +69,8 @@ gh pr create --title …      # now authenticated as the bot
 ```
 
 Without `GH_TOKEN`, `gh` silently posts as the maintainer, which only shows afterwards in the author field.
+
+**Commits too**: commit with `git -c user.name=… -c user.email=… commit` (a `git merge` needs the same `-c` flags), then verify the author.
 
 This keeps human and bot activity attributable, makes rotating a token easy, and a bot's mistake easy to revert.
 

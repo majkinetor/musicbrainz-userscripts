@@ -13,7 +13,7 @@ pnpm lint
 - **`main`** is latest; the *latest* install links point at it. It must always be releasable, because a release ships all of it.
 - **`stable`** is the official release; the *stable* install links point at it. Userscript managers update from whichever branch the script was installed from.
 - Substantial work goes on a feature branch named after the issue (`<topic>-<issue>`) and is merged when it's ready to ship. Small fixes go straight to `main`.
-- Each script has its own `@version`: the date of the change (`2026.9.28`), with the time appended for a second change the same day (`2026.9.28.214729`).
+- Each script has its own `@version`, bumped with every change: the date of the change (`2026.9.28`), with the time appended for a second change the same day (`2026.9.28.214729`), so read the current value before bumping.
 
 ## Checks
 
@@ -47,7 +47,7 @@ A run:
 3. lists the scripts whose `.user.js` changed since the last GitHub release, each with a pinned install link and one that follows `stable`;
 4. with `--yes`: commits the changelogs, merges `main` into `stable`, pushes both, creates the release, attaches String Theory's `DOCS.pdf` to it, and labels the issues `released`.
 
-Changelogs are only ever written by this run. A release made by hand on GitHub gets its PDF from `pdf.yml`, which can also be run for any release tag.
+A release made by hand on GitHub gets its PDF from `pdf.yml`, which can also be run for any release tag.
 
 ## What's in `dev/`
 
@@ -136,7 +136,7 @@ A new shared setting gets a row here.
 
 ## Bot identity
 
-Assistant commits, comments and releases use the **`claude-ai-milic`** account, so they're told apart from the maintainer's. Its token is in `dev/.github-credentials.json` (ignored by Git) and is used explicitly, never through the maintainer's `gh` login.
+Assistant commits, comments and releases use the **`claude-ai-milic`** account ([Standard 7](dev/agents/STANDARDS.general.md#standard-7) says how).
 
 One-time setup, by the maintainer:
 
