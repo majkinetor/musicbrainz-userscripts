@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Platform Check
 // @namespace    http://tampermonkey.net/
-// @version      2026.10.9.131324
+// @version      2026.10.10.2
 // @description  Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CjxnIHN0cm9rZT0iIzk0YTNiOCIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2UtbGluZWNhcD0icm91bmQiPjxwYXRoIGQ9Ik02NCA2NCBMODggMjIuNCIvPjxwYXRoIGQ9Ik02NCA2NCBMMTEyIDY0Ii8+PHBhdGggZD0iTTY0IDY0IEw4OCAxMDUuNiIvPjxwYXRoIGQ9Ik02NCA2NCBMNDAgMTA1LjYiLz48cGF0aCBkPSJNNjQgNjQgTDE2IDY0Ii8+PHBhdGggZD0iTTY0IDY0IEw0MCAyMi40Ii8+PC9nPjxjaXJjbGUgY3g9Ijg4IiBjeT0iMjIuNCIgcj0iMTIiIGZpbGw9IiNmNDcyYjYiLz48Y2lyY2xlIGN4PSIxMTIiIGN5PSI2NCIgcj0iMTIiIGZpbGw9IiNmYWNjMTUiLz48Y2lyY2xlIGN4PSI4OCIgY3k9IjEwNS42IiByPSIxMiIgZmlsbD0iIzRhZGU4MCIvPjxjaXJjbGUgY3g9IjQwIiBjeT0iMTA1LjYiIHI9IjEyIiBmaWxsPSIjMzhiZGY4Ii8+PGNpcmNsZSBjeD0iMTYiIGN5PSI2NCIgcj0iMTIiIGZpbGw9IiNhNzhiZmEiLz48Y2lyY2xlIGN4PSI0MCIgY3k9IjIyLjQiIHI9IjEyIiBmaWxsPSIjZmI5MjNjIi8+PGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iMjQiIGZpbGw9IiMwZjE3MmEiLz48cGF0aCBkPSJNNTQuMjIyMjIyMjIyMjIyMjIgNjQgTDYxLjMzMzMzMzMzMzMzMzMzNiA3MS4xMTExMTExMTExMTExMSBMNzQuNjY2NjY2NjY2NjY2NjcgNTYuODg4ODg4ODg4ODg4ODg2IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iNiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+Cjwvc3ZnPgo=
@@ -3868,6 +3868,13 @@ function cacheGetScan(mbid, platform, label) {
         appendLog(label || platform, 'Cached match has no artist and label pages (cached before they were kept) — reading it again', 'info');
         return null;
     }
+    // #704: a Qobuz match cached before its artist and label pages got an ASCII slug is read again
+    const cr = c && c.credits;
+    if (platform === 'qobuz' && cr && [...(cr.artists || []), ...(cr.labels || []), ...(cr.tracks || []).flat()]
+        .some(x => x && /^https:\/\/www\.qobuz\.com\/[a-z]{2}-[a-z]{2}\/(?:interpreter|label)\/[^/]*[^\w/-]/.test(x.url))) {
+        appendLog(label || platform, 'Cached match has a Qobuz page MusicBrainz would refuse — reading it again', 'info');
+        return null;
+    }
     return c;
 }
 function cacheClear(mbid) {
@@ -3970,14 +3977,20 @@ function pcCreditsApple(a, storefront) {
     return pcCredits(ids.map((id, i) => pcCr(names[i], `https://music.apple.com/${storefront || 'us'}/artist/${id}`)), [], null);
 }
 const pcSlug = s => String(s || '').toLowerCase().normalize('NFKD').replace(/\p{M}+/gu, '').replace(/[^\p{L}\p{N}]+/gu, '-').replace(/^-+|-+$/g, '') || '-';
+// MusicBrainz takes a Qobuz URL only with an ASCII slug ([\w-]+, no %): a Cyrillic or other
+// non-Latin one is refused under every link type. Qobuz finds the page by its id, whatever the slug.
+function pcQobuzSlug(slug, name) {
+    const ascii = pcSlug(name).replace(/[^\w-]+/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '');
+    return [slug, ascii].find(x => x && /^[\w-]+$/.test(x)) || '-';
+}
 function pcCreditsQobuzApi(d) {
     if (!d || !d.id) return null;
-    const art = a => (a && a.id && !VA_NAME_RE.test(a.name || '')) ? pcCr(a.name, `https://www.qobuz.com/us-en/interpreter/${a.slug || pcSlug(a.name)}/${a.id}`) : null;
+    const art = a => (a && a.id && !VA_NAME_RE.test(a.name || '')) ? pcCr(a.name, `https://www.qobuz.com/us-en/interpreter/${pcQobuzSlug(a.slug, a.name)}/${a.id}`) : null;
     const main = (d.artists || []).filter(a => !a.roles || a.roles.includes('main-artist'));
     const l = d.label;
     const items = (d.tracks && d.tracks.items) || [];
     return pcCredits((main.length ? main : [d.artist]).map(art),
-        [l && l.id ? pcCr(l.name, `https://www.qobuz.com/us-en/label/${l.slug || pcSlug(l.name)}/download-streaming-albums/${l.id}`) : null],
+        [l && l.id ? pcCr(l.name, `https://www.qobuz.com/us-en/label/${pcQobuzSlug(l.slug, l.name)}/download-streaming-albums/${l.id}`) : null],
         items.length && items.length === d.tracks_count ? items.map(t => [art(t.performer)]) : null);
 }
 // the store page links the album's artists and its label
@@ -3986,7 +3999,11 @@ function pcCreditsQobuzPage(html) {
     for (const m of String(html || '').matchAll(/<a\b[^>]*\bhref="(\/[a-z]{2}-[a-z]{2}\/(interpreter|label)\/[^"]+)"[^>]*>([^<]{1,120})<\/a>/g)) {
         const name = qzDec(m[3]).trim();
         if (!name || (m[2] === 'interpreter' && VA_NAME_RE.test(name))) continue;
-        (m[2] === 'label' ? labels : artists).push(pcCr(name, 'https://www.qobuz.com' + m[1]));
+        const path = m[1].replace(/^(\/[a-z]{2}-[a-z]{2}\/(?:interpreter|label)\/)([^/]+)/, (_, pre, slug) => {
+            try { slug = decodeURIComponent(slug); } catch (e) { /* keep it as it is */ }
+            return pre + pcQobuzSlug(slug, name);
+        });
+        (m[2] === 'label' ? labels : artists).push(pcCr(name, 'https://www.qobuz.com' + path));
     }
     return pcCredits(artists, labels, null);
 }
