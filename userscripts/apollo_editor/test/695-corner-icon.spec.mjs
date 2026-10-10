@@ -33,6 +33,26 @@ test('the corner launcher is an icon: click switches, monochrome while off, righ
   await page.waitForSelector('#tc-settings', { timeout: 5000 });
   check(true, 'right-click opens the settings');
   check((await read()).apollo, 'the right-click did not switch Apollo');
+  for (const tab of ['general', 'matching', 'appearance']) {
+    await page.click(`#tc-settings .tc-tab-btn[data-tab="${tab}"]`);
+    const h = await page.evaluate(() => {
+      const s = document.getElementById('tc-settings'), hd = s.querySelector('.mbu-cfg-h'), help = hd.querySelector('.mbu-help'), img = hd.querySelector('.mbu-cfg-ic img');
+      const sr = s.getBoundingClientRect(), hr = help.getBoundingClientRect();
+      return { img: !!img && img.src === document.querySelector('#tc-launch img').src, scrollX: s.scrollWidth - s.clientWidth, helpIn: hr.right <= sr.right - 1 };
+    });
+    check(h.img, `${tab}: the settings header wears the launcher's icon`);
+    check(h.scrollX <= 0 && h.helpIn, `${tab}: the settings don't overflow sideways (${JSON.stringify(h)})`);
+  }
+  // a real time-stamped version (the harness shows "vtest") in wider fonts (Firefox) pushed Help out of the
+  // header; squeeze the dialog to stand in for the wider fonts
+  const sq = await page.evaluate(() => {
+    const s = document.getElementById('tc-settings'); s.style.width = '300px';
+    s.querySelector('.mbu-cfg-ver').textContent = 'v2026.10.10.100123';
+    const sr = s.getBoundingClientRect(), hr = s.querySelector('.mbu-cfg-h .mbu-help').getBoundingClientRect();
+    const r = { scrollX: s.scrollWidth - s.clientWidth, helpIn: hr.right <= sr.right - 1 }; s.style.width = ''; return r;
+  });
+  check(sq.scrollX <= 0 && sq.helpIn, `a cramped header shrinks the version, not pushes Help out (${JSON.stringify(sq)})`);
+  await attachShot(testInfo, page.locator('#tc-settings'), 'settings');
   await page.click('#tc-launch', { button: 'right' });
   await until(() => page.evaluate(() => !document.getElementById('tc-settings')));
   check(true, 'a second right-click closes them');
