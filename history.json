@@ -1,0 +1,510 @@
+{
+  "2026-10-10 08:06:56": {
+    "passed": 446,
+    "failed": 4,
+    "skipped": 6,
+    "color": "orange",
+    "duration": "1:03:41",
+    "commit": "efb4d2d",
+    "run": "https://github.com/majkinetor/musicbrainz-userscripts/actions/runs/38036709221",
+    "failures": [
+      {
+        "name": "[falcon] userscripts/falcon/test/468-corner-slot.spec.mjs › #468: corner slot",
+        "error": "TimeoutError: page.waitForSelector: Timeout 10000ms exceeded. · Call log: · - waiting for locator('#falcon-launcher') to be visible"
+      },
+      {
+        "name": "[falcon] userscripts/falcon/test/663-editing.spec.mjs › #663: alias language, editable aliases and links, toolbar",
+        "error": "TimeoutError: page.fill: Timeout 30000ms exceeded. · Call log: · - waiting for locator('.falcon-alias-nm[data-id=\"a1\"][data-idx=\"0\"]') · - locator resolved to <input type=\"text\" data-id=\"a1\" data-idx=\"0\" value=\"Bamako\" data-col=\"alias\" placeholder=\"alias ★\" class=\"falcon-alias-nm\" title=\"The alias; name@locale sets its language too. Enter adds another\"/>"
+      },
+      {
+        "name": "[mission_control] userscripts/mission_control/test/680-shell.spec.mjs › #680: MC shell — launcher, track matrix, sidebars, modes",
+        "error": "Error: Execute keeps one width whatever it says (96,96,100,98) · expect(received).toBe(expected) // Object.is equality · Expected: true · Received: false"
+      },
+      {
+        "name": "[platform_check] userscripts/platform_check/test/barcode.spec.mjs › default settings › HDtracks, Tidal and Spotify are found by barcode, and ↻ shows the scan",
+        "error": "Error: #422: while scanning, ↻ spins and can't be clicked ({\"spinning\":true,\"title\":\"Scanning platforms… · click to stop\",\"pe\":\"auto\"}) · expect(received).toBe(expected) // Object.is equality · Expected: true · Received: false"
+      }
+    ]
+  },
+  "2026-10-09 08:29:53": {
+    "passed": 414,
+    "failed": 5,
+    "skipped": 6,
+    "color": "orange",
+    "duration": "0:59:40",
+    "commit": "6838c0f",
+    "run": "https://github.com/majkinetor/musicbrainz-userscripts/actions/runs/37905215854",
+    "failures": [
+      {
+        "name": "[apollo_editor] userscripts/apollo_editor/test/577-stop-matching.spec.mjs › the tracklist pass can be stopped, and keeps what it matched",
+        "error": "Error: it says it stopped · expect(received).toBe(expected) // Object.is equality · Expected: true · Received: false"
+      },
+      {
+        "name": "[falcon] userscripts/falcon/test/468-corner-slot.spec.mjs › #468: corner slot",
+        "error": "TimeoutError: page.waitForSelector: Timeout 10000ms exceeded. · Call log: · - waiting for locator('#falcon-launcher') to be visible"
+      },
+      {
+        "name": "[falcon] userscripts/falcon/test/663-editing.spec.mjs › #663: alias language, editable aliases and links, toolbar",
+        "error": "TimeoutError: page.fill: Timeout 30000ms exceeded. · Call log: · - waiting for locator('.falcon-alias-nm[data-id=\"a1\"][data-idx=\"0\"]') · - locator resolved to <input type=\"text\" data-id=\"a1\" data-idx=\"0\" value=\"Bamako\" data-col=\"alias\" placeholder=\"alias ★\" class=\"falcon-alias-nm\" title=\"The alias; name@locale sets its language too. Enter adds another\"/>"
+      },
+      {
+        "name": "[falcon] userscripts/falcon/test/live-535-aliases-proof.spec.mjs › live 535 aliases proof",
+        "error": "Error: every row reports done · expect(received).toBe(expected) // Object.is equality · Expected: true · Received: false"
+      },
+      {
+        "name": "[platform_check] userscripts/platform_check/test/barcode.spec.mjs › default settings › HDtracks, Tidal and Spotify are found by barcode, and ↻ shows the scan",
+        "error": "Error: #422: while scanning, ↻ spins and can't be clicked ({\"spinning\":true,\"title\":\"Scanning platforms… · click to stop\",\"pe\":\"auto\"}) · expect(received).toBe(expected) // Object.is equality · Expected: true · Received: false"
+      }
+    ]
+  },
+  "2026-10-08 08:25:51": {
+    "passed": 407,
+    "failed": 4,
+    "skipped": 6,
+    "color": "orange",
+    "duration": "1:05:33",
+    "commit": "da1f092",
+    "run": "https://github.com/majkinetor/musicbrainz-userscripts/actions/runs/37749644771",
+    "failures": [
+      {
+        "name": "[falcon] userscripts/falcon/test/467-e2e-testserver.spec.mjs › #467: e2e testserver",
+        "error": "Error: the UI thread was never blocked (stalls over 400ms: [426]) · expect(received).toBe(expected) // Object.is equality · Expected: true · Received: false"
+      },
+      {
+        "name": "[falcon] userscripts/falcon/test/468-corner-slot.spec.mjs › #468: corner slot",
+        "error": "TimeoutError: page.waitForSelector: Timeout 10000ms exceeded. · Call log: · - waiting for locator('#falcon-launcher') to be visible"
+      },
+      {
+        "name": "[falcon] userscripts/falcon/test/663-editing.spec.mjs › #663: alias language, editable aliases and links, toolbar",
+        "error": "TimeoutError: page.fill: Timeout 30000ms exceeded. · Call log: · - waiting for locator('.falcon-alias-nm[data-id=\"a1\"][data-idx=\"0\"]') · - locator resolved to <input type=\"text\" data-id=\"a1\" data-idx=\"0\" value=\"Bamako\" data-col=\"alias\" placeholder=\"alias ★\" class=\"falcon-alias-nm\" title=\"The alias; name@locale sets its language too. Enter adds another\"/>"
+      },
+      {
+        "name": "[platform_check] userscripts/platform_check/test/barcode.spec.mjs › default settings › HDtracks, Tidal and Spotify are found by barcode, and ↻ shows the scan",
+        "error": "Error: #422: while scanning, ↻ spins and can't be clicked ({\"spinning\":true,\"title\":\"Scanning platforms… · click to stop\",\"pe\":\"auto\"}) · expect(received).toBe(expected) // Object.is equality · Expected: true · Received: false"
+      }
+    ]
+  },
+  "2026-10-07 08:10:06": {
+    "passed": 402,
+    "failed": 3,
+    "skipped": 6,
+    "color": "orange",
+    "duration": "1:07:13",
+    "commit": "355a5f3",
+    "run": "https://github.com/majkinetor/musicbrainz-userscripts/actions/runs/37591843615",
+    "failures": [
+      {
+        "name": "[falcon] userscripts/falcon/test/468-corner-slot.spec.mjs › #468: corner slot",
+        "error": "TimeoutError: page.waitForSelector: Timeout 10000ms exceeded. · Call log: · - waiting for locator('#falcon-launcher') to be visible"
+      },
+      {
+        "name": "[falcon] userscripts/falcon/test/663-editing.spec.mjs › #663: alias language, editable aliases and links, toolbar",
+        "error": "TimeoutError: page.fill: Timeout 30000ms exceeded. · Call log: · - waiting for locator('.falcon-alias-nm[data-id=\"a1\"][data-idx=\"0\"]') · - locator resolved to <input type=\"text\" data-id=\"a1\" data-idx=\"0\" value=\"Bamako\" data-col=\"alias\" placeholder=\"alias ★\" class=\"falcon-alias-nm\" title=\"The alias; name@locale sets its language too. Enter adds another\"/>"
+      },
+      {
+        "name": "[platform_check] userscripts/platform_check/test/barcode.spec.mjs › default settings › HDtracks, Tidal and Spotify are found by barcode, and ↻ shows the scan",
+        "error": "Error: #422: while scanning, ↻ spins and can't be clicked ({\"spinning\":true,\"title\":\"Scanning platforms… · click to stop\",\"pe\":\"auto\"}) · expect(received).toBe(expected) // Object.is equality · Expected: true · Received: false"
+      }
+    ]
+  },
+  "2026-10-06 08:34:20": {
+    "passed": 397,
+    "failed": 3,
+    "skipped": 6,
+    "color": "orange",
+    "duration": "1:07:06",
+    "commit": "6c73a7f",
+    "run": "https://github.com/majkinetor/musicbrainz-userscripts/actions/runs/37436868913",
+    "failures": [
+      {
+        "name": "[falcon] userscripts/falcon/test/468-corner-slot.spec.mjs › #468: corner slot",
+        "error": "TimeoutError: page.waitForSelector: Timeout 10000ms exceeded. · Call log: · - waiting for locator('#falcon-launcher') to be visible"
+      },
+      {
+        "name": "[falcon] userscripts/falcon/test/663-editing.spec.mjs › #663: alias language, editable aliases and links, toolbar",
+        "error": "TimeoutError: page.fill: Timeout 30000ms exceeded. · Call log: · - waiting for locator('.falcon-alias-nm[data-id=\"a1\"][data-idx=\"0\"]') · - locator resolved to <input type=\"text\" data-id=\"a1\" data-idx=\"0\" value=\"Bamako\" data-col=\"alias\" placeholder=\"alias ★\" class=\"falcon-alias-nm\" title=\"The alias; name@locale sets its language too. Enter adds another\"/>"
+      },
+      {
+        "name": "[platform_check] userscripts/platform_check/test/barcode.spec.mjs › default settings › HDtracks, Tidal and Spotify are found by barcode, and ↻ shows the scan",
+        "error": "Error: #422: while scanning, ↻ spins and can't be clicked ({\"spinning\":true,\"title\":\"Scanning platforms… · click to stop\",\"pe\":\"auto\"}) · expect(received).toBe(expected) // Object.is equality · Expected: true · Received: false"
+      }
+    ]
+  },
+  "2026-10-05 08:20:45": {
+    "passed": 395,
+    "failed": 3,
+    "skipped": 6,
+    "color": "orange",
+    "duration": "1:04:25",
+    "commit": "1f15b44",
+    "run": "https://github.com/majkinetor/musicbrainz-userscripts/actions/runs/37282943306",
+    "failures": [
+      {
+        "name": "[falcon] userscripts/falcon/test/468-corner-slot.spec.mjs › #468: corner slot",
+        "error": "TimeoutError: page.waitForSelector: Timeout 10000ms exceeded. · Call log: · - waiting for locator('#falcon-launcher') to be visible"
+      },
+      {
+        "name": "[falcon] userscripts/falcon/test/663-editing.spec.mjs › #663: alias language, editable aliases and links, toolbar",
+        "error": "TimeoutError: page.fill: Timeout 30000ms exceeded. · Call log: · - waiting for locator('.falcon-alias-nm[data-id=\"a1\"][data-idx=\"0\"]') · - locator resolved to <input type=\"text\" data-id=\"a1\" data-idx=\"0\" value=\"Bamako\" data-col=\"alias\" placeholder=\"alias ★\" class=\"falcon-alias-nm\" title=\"The alias; name@locale sets its language too. Enter adds another\"/>"
+      },
+      {
+        "name": "[platform_check] userscripts/platform_check/test/barcode.spec.mjs › default settings › HDtracks, Tidal and Spotify are found by barcode, and ↻ shows the scan",
+        "error": "Error: #422: while scanning, ↻ spins and can't be clicked ({\"spinning\":true,\"title\":\"Scanning platforms… · click to stop\",\"pe\":\"auto\"}) · expect(received).toBe(expected) // Object.is equality · Expected: true · Received: false"
+      }
+    ]
+  },
+  "2026-10-05 05:25:28": {
+    "passed": 393,
+    "failed": 5,
+    "skipped": 6,
+    "color": "orange",
+    "duration": "1:00:06",
+    "commit": "1f15b44",
+    "run": "https://github.com/majkinetor/musicbrainz-userscripts/actions/runs/37267648666",
+    "failures": [
+      {
+        "name": "[apollo_editor] userscripts/apollo_editor/test/577-stop-matching.spec.mjs › the tracklist pass can be stopped, and keeps what it matched",
+        "error": "Error: it says it stopped · expect(received).toBe(expected) // Object.is equality · Expected: true · Received: false"
+      },
+      {
+        "name": "[falcon] userscripts/falcon/test/468-corner-slot.spec.mjs › #468: corner slot",
+        "error": "TimeoutError: page.waitForSelector: Timeout 10000ms exceeded. · Call log: · - waiting for locator('#falcon-launcher') to be visible"
+      },
+      {
+        "name": "[falcon] userscripts/falcon/test/663-editing.spec.mjs › #663: alias language, editable aliases and links, toolbar",
+        "error": "TimeoutError: page.fill: Timeout 30000ms exceeded. · Call log: · - waiting for locator('.falcon-alias-nm[data-id=\"a1\"][data-idx=\"0\"]') · - locator resolved to <input type=\"text\" data-id=\"a1\" data-idx=\"0\" value=\"Bamako\" data-col=\"alias\" placeholder=\"alias ★\" class=\"falcon-alias-nm\" title=\"The alias; name@locale sets its language too. Enter adds another\"/>"
+      },
+      {
+        "name": "[group_therapy] userscripts/group_therapy/test/598-two-background-creates.spec.mjs › two background creates at once both submit, post their MBID back, and close",
+        "error": "Error: BOTH creates submitted themselves through to a new artist (1 of 2) · expect(received).toBe(expected) // Object.is equality · Expected: true · Received: false"
+      },
+      {
+        "name": "[platform_check] userscripts/platform_check/test/barcode.spec.mjs › default settings › HDtracks, Tidal and Spotify are found by barcode, and ↻ shows the scan",
+        "error": "Error: #422: while scanning, ↻ spins and can't be clicked ({\"spinning\":true,\"title\":\"Scanning platforms… · click to stop\",\"pe\":\"auto\"}) · expect(received).toBe(expected) // Object.is equality · Expected: true · Received: false"
+      }
+    ]
+  },
+  "2026-10-04 11:59:47": {
+    "passed": 384,
+    "failed": 2,
+    "skipped": 6,
+    "color": "orange",
+    "duration": "0:57:05",
+    "commit": "f5c3fcb",
+    "run": "https://github.com/majkinetor/musicbrainz-userscripts/actions/runs/37200528455",
+    "failures": [
+      {
+        "name": "[apollo_editor] userscripts/apollo_editor/test/662-isrc-match.spec.mjs › recordings are matched by the ISRC First Contact hands over",
+        "error": "Error: Get Lucky is linked to the one recording holding USQX91300108 (got null) · expect(received).toBe(expected) // Object.is equality · Expected: true · Received: false"
+      },
+      {
+        "name": "[falcon] userscripts/falcon/test/live-535-aliases-proof.spec.mjs › live 535 aliases proof",
+        "error": "Error: every row reports done · expect(received).toBe(expected) // Object.is equality · Expected: true · Received: false"
+      }
+    ]
+  },
+  "2026-10-04 07:46:46": {
+    "passed": 352,
+    "failed": 30,
+    "skipped": 6,
+    "color": "red",
+    "duration": "0:58:41",
+    "commit": "e625335",
+    "run": "https://github.com/majkinetor/musicbrainz-userscripts/actions/runs/37186768846",
+    "failures": [
+      {
+        "name": "[apollo_editor] userscripts/apollo_editor/test/143-release-info.spec.mjs › an entity field shows its link when focused",
+        "error": "Error: release group: a popover with its link ({\"on\":false,\"links\":[]}) · expect(received).toBe(expected) // Object.is equality · Expected: true · Received: false"
+      },
+      {
+        "name": "[apollo_editor] userscripts/apollo_editor/test/150-slot-reorder.spec.mjs › dragging a slot handle reorders the credit, in the model and in MusicBrainz",
+        "error": "TimeoutError: page.waitForFunction: Timeout 20000ms exceeded."
+      },
+      {
+        "name": "[apollo_editor] userscripts/apollo_editor/test/564-theming.spec.mjs › tracklist inputs show the row through them (no userstyle)",
+        "error": "TimeoutError: page.waitForSelector: Timeout 60000ms exceeded. · Call log: · - waiting for locator('.tc-mirror') to be visible · 123 × locator resolved to 2 elements. Proceeding with the first one: <table class=\"tc-mirror gridrows normal\">…</table>"
+      },
+      {
+        "name": "[apollo_editor] userscripts/apollo_editor/test/654-match-card.spec.mjs › a pos card names a duplicate-search release as such",
+        "error": "Error: only a duplicate: \"release\", and where it came from (posSame position on other editionsstage 3 · auto-linkedEnsemble Instrumental de GuinéeCredited on this track on 1 of 1 release:Not in this release group: found by Apollo's own duplicate search (the Duplicates tab had none), a release with this title and artist) · expect(received).toBe(expected) // Object.is equality · Expected: true · Rec"
+      },
+      {
+        "name": "[falcon] userscripts/falcon/test/467-e2e-testserver.spec.mjs › #467: e2e testserver",
+        "error": "Error: the UI thread was never blocked (stalls over 400ms: [519]) · expect(received).toBe(expected) // Object.is equality · Expected: true · Received: false"
+      },
+      {
+        "name": "[falcon] userscripts/falcon/test/467-harmony.spec.mjs › #467: harmony",
+        "error": "Error: payload round-trips through encode -> URL -> parseUrlParam (got undefined) · expect(received).toBe(expected) // Object.is equality · Expected: true · Received: false"
+      },
+      {
+        "name": "[falcon] userscripts/falcon/test/467-iframe-lifecycle.spec.mjs › #467: iframe lifecycle",
+        "error": "TimeoutError: page.waitForFunction: Timeout 20000ms exceeded."
+      },
+      {
+        "name": "[falcon] userscripts/falcon/test/467-item-popup.spec.mjs › #467: item popup",
+        "error": "TimeoutError: page.waitForFunction: Timeout 20000ms exceeded."
+      },
+      {
+        "name": "[falcon] userscripts/falcon/test/467-retire.spec.mjs › #467: retire",
+        "error": "Error: item 1 fails cleanly, item 2 completes (statuses: skipped, done) · expect(received).toBe(expected) // Object.is equality · Expected: true · Received: false"
+      },
+      {
+        "name": "[falcon] userscripts/falcon/test/512-followup-fixes.spec.mjs › #512: followup fixes",
+        "error": "Error: a fresh seed starts its own new session, logged as such · expect(received).toBe(expected) // Object.is equality · Expected: true · Received: false"
+      },
+      {
+        "name": "[falcon] userscripts/falcon/test/live-535-aliases-proof.spec.mjs › live 535 aliases proof",
+        "error": "Error: every row reports done · expect(received).toBe(expected) // Object.is equality · Expected: true · Received: false"
+      },
+      {
+        "name": "[platform_check] userscripts/platform_check/test/183-bandcamp-hidden-tracks.spec.mjs › the true track count, with the hidden tracks flagged",
+        "error": "Error: reads the fixture has no answer for (RECORD_WS=1 to add them) · expect(received).toEqual(expected) // deep equality · - Expected  - 1 · + Received  + 5"
+      },
+      {
+        "name": "[platform_check] userscripts/platform_check/test/642-markers.spec.mjs › #642: five in-MB markers to choose from, and a stored glow becomes the ring",
+        "error": "Error: reads the fixture has no answer for (RECORD_WS=1 to add them) · expect(received).toEqual(expected) // deep equality · - Expected  - 1 · + Received  + 5"
+      },
+      {
+        "name": "[platform_check] userscripts/platform_check/test/add-links.spec.mjs › after a scan › #556: + doesn't queue a link the release has, found in another spelling",
+        "error": "Error: reads the fixture has no answer for (RECORD_WS=1 to add them) · expect(received).toEqual(expected) // deep equality · - Expected  - 1 · + Received  + 5"
+      },
+      {
+        "name": "[platform_check] userscripts/platform_check/test/barcode.spec.mjs › default settings › HDtracks, Tidal and Spotify are found by barcode, and ↻ shows the scan",
+        "error": "Error: reads the fixture has no answer for (RECORD_WS=1 to add them) · expect(received).toEqual(expected) // deep equality · - Expected  - 1 · + Received  + 5"
+      },
+      {
+        "name": "[platform_check] userscripts/platform_check/test/barcode.spec.mjs › dark theme › Tidal's icon follows the dark theme",
+        "error": "Error: reads the fixture has no answer for (RECORD_WS=1 to add them) · expect(received).toEqual(expected) // deep equality · - Expected  - 1 · + Received  + 5"
+      },
+      {
+        "name": "[platform_check] userscripts/platform_check/test/barcode.spec.mjs › strict barcode confidence, default compact options › #653: a withheld find keeps its row; only what found nothing is folded",
+        "error": "Error: reads the fixture has no answer for (RECORD_WS=1 to add them) · expect(received).toEqual(expected) // deep equality · - Expected  - 1 · + Received  + 5"
+      },
+      {
+        "name": "[platform_check] userscripts/platform_check/test/barcode.spec.mjs › strict barcode confidence › an unconfirmed link is greyed and inert; an exact-barcode one is not",
+        "error": "Error: reads the fixture has no answer for (RECORD_WS=1 to add them) · expect(received).toEqual(expected) // deep equality · - Expected  - 1 · + Received  + 5"
+      },
+      {
+        "name": "[platform_check] userscripts/platform_check/test/barcode.spec.mjs › strict barcode confidence › #641: middle click adds a withheld link anyway, on the icon and on +",
+        "error": "Error: reads the fixture has no answer for (RECORD_WS=1 to add them) · expect(received).toEqual(expected) // deep equality · - Expected  - 1 · + Received  + 4"
+      },
+      {
+        "name": "[platform_check] userscripts/platform_check/test/fixtures.spec.mjs › Menahan Street Band — The Exciting Sounds of",
+        "error": "Error: reads the fixture has no answer for (RECORD_WS=1 to add them) · expect(received).toEqual(expected) // deep equality · - Expected  - 1 · + Received  + 5"
+      },
+      {
+        "name": "[platform_check] userscripts/platform_check/test/fixtures.spec.mjs › Menahan Street Band — The Exciting Sounds of (vinyl)",
+        "error": "Error: reads the fixture has no answer for (RECORD_WS=1 to add them) · expect(received).toEqual(expected) // deep equality · - Expected  - 1 · + Received  + 4"
+      },
+      {
+        "name": "[platform_check] userscripts/platform_check/test/fixtures.spec.mjs › Various Artists — Space Echo: Cabo Verde",
+        "error": "Error: reads the fixture has no answer for (RECORD_WS=1 to add them) · expect(received).toEqual(expected) // deep equality · - Expected  - 1 · + Received  + 5"
+      },
+      {
+        "name": "[platform_check] userscripts/platform_check/test/fixtures.spec.mjs › Medeski, Martin & Wood — The Stone: Issue Four",
+        "error": "Error: reads the fixture has no answer for (RECORD_WS=1 to add them) · expect(received).toEqual(expected) // deep equality · - Expected  - 1 · + Received  + 5"
+      },
+      {
+        "name": "[platform_check] userscripts/platform_check/test/fixtures.spec.mjs › Om Unit — Threads (CD)",
+        "error": "Error: reads the fixture has no answer for (RECORD_WS=1 to add them) · expect(received).toEqual(expected) // deep equality · - Expected  - 1 · + Received  + 5"
+      },
+      {
+        "name": "[platform_check] userscripts/platform_check/test/fixtures.spec.mjs › Essiebons Special — Ghana Music Power House (digital edition)",
+        "error": "Error: reads the fixture has no answer for (RECORD_WS=1 to add them) · expect(received).toEqual(expected) // deep equality · - Expected  - 1 · + Received  + 5"
+      },
+      {
+        "name": "[platform_check] userscripts/platform_check/test/fixtures.spec.mjs › Essiebons Special — Ghana Music Power House",
+        "error": "Error: reads the fixture has no answer for (RECORD_WS=1 to add them) · expect(received).toEqual(expected) // deep equality · - Expected  - 1 · + Received  + 5"
+      },
+      {
+        "name": "[platform_check] userscripts/platform_check/test/fixtures.spec.mjs › Philip Cohran and the Artistic Heritage Ensemble",
+        "error": "Error: reads the fixture has no answer for (RECORD_WS=1 to add them) · expect(received).toEqual(expected) // deep equality · - Expected  - 1 · + Received  + 5"
+      },
+      {
+        "name": "[platform_check] userscripts/platform_check/test/soundcloud.spec.mjs › #439: a SoundCloud set gives its barcode, track count and label",
+        "error": "Error: reads the fixture has no answer for (RECORD_WS=1 to add them) · expect(received).toEqual(expected) // deep equality · - Expected  - 1 · + Received  + 4"
+      },
+      {
+        "name": "[platform_check] userscripts/platform_check/test/soundcloud.spec.mjs › #439: a single-track release links a bare track",
+        "error": "Error: reads the fixture has no answer for (RECORD_WS=1 to add them) · expect(received).toEqual(expected) // deep equality · - Expected  - 1 · + Received  + 4"
+      },
+      {
+        "name": "[platform_check] userscripts/platform_check/test/soundcloud.spec.mjs › #527: a bare-track URL on a multi-track release is not trusted as its link",
+        "error": "Error: reads the fixture has no answer for (RECORD_WS=1 to add them) · expect(received).toEqual(expected) // deep equality · - Expected  - 1 · + Received  + 4"
+      }
+    ]
+  },
+  "2026-10-03 07:35:59": {
+    "passed": 358,
+    "failed": 5,
+    "skipped": 6,
+    "color": "orange",
+    "duration": "1:05:29",
+    "commit": "9906078",
+    "run": "https://github.com/majkinetor/musicbrainz-userscripts/actions/runs/37106814023",
+    "failures": [
+      {
+        "name": "[apollo_editor] userscripts/apollo_editor/test/143-release-info.spec.mjs › an entity field shows its link when focused",
+        "error": "Error: release group: a popover with its link ({\"on\":false,\"links\":[]}) · expect(received).toBe(expected) // Object.is equality · Expected: true · Received: false"
+      },
+      {
+        "name": "[apollo_editor] userscripts/apollo_editor/test/150-slot-reorder.spec.mjs › dragging a slot handle reorders the credit, in the model and in MusicBrainz",
+        "error": "TimeoutError: page.waitForFunction: Timeout 20000ms exceeded."
+      },
+      {
+        "name": "[apollo_editor] userscripts/apollo_editor/test/564-theming.spec.mjs › tracklist inputs show the row through them (no userstyle)",
+        "error": "TimeoutError: page.waitForSelector: Timeout 60000ms exceeded. · Call log: · - waiting for locator('.tc-mirror') to be visible · 123 × locator resolved to 2 elements. Proceeding with the first one: <table class=\"tc-mirror gridrows normal\">…</table>"
+      },
+      {
+        "name": "[apollo_editor] userscripts/apollo_editor/test/654-match-card.spec.mjs › a pos card names a duplicate-search release as such",
+        "error": "Error: only a duplicate: \"release\", and where it came from (posSame position on other editionsstage 3 · auto-linkedEnsemble Instrumental de GuinéeCredited on this track on 1 of 1 release:Not in this release group: found by Apollo's own duplicate search (the Duplicates tab had none), a release with this title and artist) · expect(received).toBe(expected) // Object.is equality · Expected: true · Rec"
+      },
+      {
+        "name": "[apollo_editor] userscripts/apollo_editor/test/662-isrc-match.spec.mjs › recordings are matched by the ISRC First Contact hands over",
+        "error": "Error: Get Lucky is linked to the one recording holding USQX91300108 (got null) · expect(received).toBe(expected) // Object.is equality · Expected: true · Received: false"
+      }
+    ]
+  },
+  "2026-10-02 07:57:05": {
+    "passed": 346,
+    "failed": 1,
+    "skipped": 6,
+    "color": "orange",
+    "duration": "0:57:58",
+    "commit": "fc53991",
+    "run": "https://github.com/majkinetor/musicbrainz-userscripts/actions/runs/36981203925",
+    "failures": [
+      {
+        "name": "[net] dev/net/mb-gate.spec.mjs › the gate paces starts, a burst first, then one a second",
+        "error": "Error: the first three start at once (493, 493, 493, 1493, 2493, 3493 ms) · expect(received).toBe(expected) // Object.is equality · Expected: true · Received: false"
+      }
+    ]
+  },
+  "2026-10-01 08:19:39": {
+    "passed": 332,
+    "failed": 3,
+    "skipped": 6,
+    "color": "orange",
+    "duration": "0:57:32",
+    "commit": "49ef1bd",
+    "run": "https://github.com/majkinetor/musicbrainz-userscripts/actions/runs/36835493841",
+    "failures": [
+      {
+        "name": "[apollo_editor] userscripts/apollo_editor/test/577-stop-matching.spec.mjs › the tracklist pass can be stopped, and keeps what it matched",
+        "error": "Error: it says it stopped · expect(received).toBe(expected) // Object.is equality · Expected: true · Received: false"
+      },
+      {
+        "name": "[credit_hoarder] userscripts/credit_hoarder/test/613-matching.spec.mjs › artists match by exact name or alias only when unique, by release context, and by co-credit",
+        "error": "TimeoutError: page.waitForFunction: Timeout 60000ms exceeded."
+      },
+      {
+        "name": "[group_therapy] userscripts/group_therapy/test/598-two-background-creates.spec.mjs › two background creates at once both submit, post their MBID back, and close",
+        "error": "Error: BOTH creates submitted themselves through to a new artist (1 of 2) · expect(received).toBe(expected) // Object.is equality · Expected: true · Received: false"
+      }
+    ]
+  },
+  "2026-10-01 04:36:53": {
+    "passed": 335,
+    "failed": 0,
+    "skipped": 6,
+    "color": "brightgreen",
+    "duration": "0:52:49",
+    "commit": "49ef1bd",
+    "run": "https://github.com/majkinetor/musicbrainz-userscripts/actions/runs/36815860622",
+    "failures": []
+  },
+  "2026-10-01 02:33:36": {
+    "passed": 318,
+    "failed": 16,
+    "skipped": 6,
+    "color": "red",
+    "duration": "0:56:42",
+    "commit": "00d245a",
+    "run": "https://github.com/majkinetor/musicbrainz-userscripts/actions/runs/36806334613",
+    "failures": [
+      {
+        "name": "[group_therapy] userscripts/group_therapy/test/598-two-background-creates.spec.mjs › two background creates at once both submit, post their MBID back, and close",
+        "error": "Error: BOTH creates submitted themselves through to a new artist (1 of 2) · expect(received).toBe(expected) // Object.is equality · Expected: true · Received: false"
+      },
+      {
+        "name": "[platform_check] userscripts/platform_check/test/183-bandcamp-hidden-tracks.spec.mjs › the true track count, with the hidden tracks flagged",
+        "error": "Error: reads the fixture has no answer for (RECORD_WS=1 to add them) · expect(received).toEqual(expected) // deep equality · - Expected  - 1 · + Received  + 3"
+      },
+      {
+        "name": "[platform_check] userscripts/platform_check/test/642-markers.spec.mjs › #642: five in-MB markers to choose from, and a stored glow becomes the ring",
+        "error": "Error: reads the fixture has no answer for (RECORD_WS=1 to add them) · expect(received).toEqual(expected) // deep equality · - Expected  - 1 · + Received  + 3"
+      },
+      {
+        "name": "[platform_check] userscripts/platform_check/test/add-links.spec.mjs › after a scan › #556: + doesn't queue a link the release has, found in another spelling",
+        "error": "Error: reads the fixture has no answer for (RECORD_WS=1 to add them) · expect(received).toEqual(expected) // deep equality · - Expected  - 1 · + Received  + 3"
+      },
+      {
+        "name": "[platform_check] userscripts/platform_check/test/barcode.spec.mjs › default settings › HDtracks, Tidal and Spotify are found by barcode, and ↻ shows the scan",
+        "error": "Error: reads the fixture has no answer for (RECORD_WS=1 to add them) · expect(received).toEqual(expected) // deep equality · - Expected  - 1 · + Received  + 3"
+      },
+      {
+        "name": "[platform_check] userscripts/platform_check/test/barcode.spec.mjs › dark theme › Tidal's icon follows the dark theme",
+        "error": "Error: reads the fixture has no answer for (RECORD_WS=1 to add them) · expect(received).toEqual(expected) // deep equality · - Expected  - 1 · + Received  + 3"
+      },
+      {
+        "name": "[platform_check] userscripts/platform_check/test/barcode.spec.mjs › strict barcode confidence › an unconfirmed link is greyed and inert; an exact-barcode one is not",
+        "error": "Error: reads the fixture has no answer for (RECORD_WS=1 to add them) · expect(received).toEqual(expected) // deep equality · - Expected  - 1 · + Received  + 3"
+      },
+      {
+        "name": "[platform_check] userscripts/platform_check/test/barcode.spec.mjs › strict barcode confidence › #641: middle click adds a withheld link anyway, on the icon and on +",
+        "error": "Error: reads the fixture has no answer for (RECORD_WS=1 to add them) · expect(received).toEqual(expected) // deep equality · - Expected  - 1 · + Received  + 3"
+      },
+      {
+        "name": "[platform_check] userscripts/platform_check/test/fixtures.spec.mjs › Menahan Street Band — The Exciting Sounds of",
+        "error": "Error: reads the fixture has no answer for (RECORD_WS=1 to add them) · expect(received).toEqual(expected) // deep equality · - Expected  - 1 · + Received  + 3"
+      },
+      {
+        "name": "[platform_check] userscripts/platform_check/test/fixtures.spec.mjs › Menahan Street Band — The Exciting Sounds of (vinyl)",
+        "error": "Error: reads the fixture has no answer for (RECORD_WS=1 to add them) · expect(received).toEqual(expected) // deep equality · - Expected  - 1 · + Received  + 3"
+      },
+      {
+        "name": "[platform_check] userscripts/platform_check/test/fixtures.spec.mjs › Om Unit — Threads (CD)",
+        "error": "Error: reads the fixture has no answer for (RECORD_WS=1 to add them) · expect(received).toEqual(expected) // deep equality · - Expected  - 1 · + Received  + 3"
+      },
+      {
+        "name": "[platform_check] userscripts/platform_check/test/fixtures.spec.mjs › Essiebons Special — Ghana Music Power House (digital edition)",
+        "error": "Error: reads the fixture has no answer for (RECORD_WS=1 to add them) · expect(received).toEqual(expected) // deep equality · - Expected  - 1 · + Received  + 3"
+      },
+      {
+        "name": "[platform_check] userscripts/platform_check/test/fixtures.spec.mjs › Essiebons Special — Ghana Music Power House",
+        "error": "Error: reads the fixture has no answer for (RECORD_WS=1 to add them) · expect(received).toEqual(expected) // deep equality · - Expected  - 1 · + Received  + 3"
+      },
+      {
+        "name": "[platform_check] userscripts/platform_check/test/fixtures.spec.mjs › Philip Cohran and the Artistic Heritage Ensemble",
+        "error": "Error: reads the fixture has no answer for (RECORD_WS=1 to add them) · expect(received).toEqual(expected) // deep equality · - Expected  - 1 · + Received  + 3"
+      },
+      {
+        "name": "[platform_check] userscripts/platform_check/test/soundcloud.spec.mjs › #439: a SoundCloud set gives its barcode, track count and label",
+        "error": "Error: reads the fixture has no answer for (RECORD_WS=1 to add them) · expect(received).toEqual(expected) // deep equality · - Expected  - 1 · + Received  + 3"
+      },
+      {
+        "name": "[platform_check] userscripts/platform_check/test/soundcloud.spec.mjs › #527: a bare-track URL on a multi-track release is not trusted as its link",
+        "error": "Error: reads the fixture has no answer for (RECORD_WS=1 to add them) · expect(received).toEqual(expected) // deep equality · - Expected  - 1 · + Received  + 3"
+      }
+    ]
+  },
+  "2026-09-30 22:06:03": {
+    "passed": 331,
+    "failed": 2,
+    "skipped": 6,
+    "color": "orange",
+    "duration": "1:00:41",
+    "commit": "9e8db7c",
+    "run": "https://github.com/majkinetor/musicbrainz-userscripts/actions/runs/36783379737",
+    "failures": [
+      {
+        "name": "[apollo_editor] userscripts/apollo_editor/test/626-position-artists.spec.mjs › track artists matched by their position on other editions",
+        "error": "Error: a pos badge says what it rests on: \"\" · expect(received).toBe(expected) // Object.is equality · Expected: true · Received: false"
+      },
+      {
+        "name": "[falcon] userscripts/falcon/test/591-rip-log-discid.spec.mjs › #591: rip log discid",
+        "error": "Error: a zone per medium (0) · expect(received).toBe(expected) // Object.is equality · Expected: true · Received: false"
+      }
+    ]
+  }
+}
