@@ -14,16 +14,17 @@
 
 ## What's included
 
-| Script | What it does |
-| --- | --- |
-| [Apollo Editor](../apollo_editor) | Per-track artist-credit resolution in the release editor |
-| [Art Station](../art_station) | Cover/event-art gallery editor |
-| [Credit Hoarder](../credit_hoarder) | Import credits from multiple sources|
-| [Fusion](../fusion) | Merge duplicate recordings: review, auto-match, submit |
-| [Group Therapy](../group_therapy) | Relationship-editor batch helpers |
-| [ISRC Scout](../isrc_scout) | Fill in missing ISRCs and streaming links |
-| [Mammoth](../mammoth) | Remember & recall edit notes and field values |
-| [Platform Check](../platform_check) | Find/verify/add a release's URLs on online platforms |
+| Script                                | What it does                                                                      |
+| ------------------------------------- | --------------------------------------------------------------------------------- |
+| [Apollo Editor](../apollo_editor)     | Per-track artist-credit resolution in the release editor                          |
+| [Art Station](../art_station)         | Cover/event-art gallery editor                                                    |
+| [Credit Hoarder](../credit_hoarder)   | Import credits from multiple sources                                              |
+| [Fusion](../fusion)                   | Merge duplicate recordings: review, auto-match, submit                            |
+| [Group Therapy](../group_therapy)     | Relationship-editor batch helpers                                                 |
+| [ISRC Scout](../isrc_scout)           | Fill in missing ISRCs and streaming links                                         |
+| [Mammoth](../mammoth)                 | Remember & recall edit notes and field values                                     |
+| [Mission Control](../mission_control) | One window that collects what the other scripts found on a release and applies it |
+| [Platform Check](../platform_check)   | Find/verify/add a release's URLs on online platforms                              |
 
 - **Turn a script off** in the userscript manager's menu (the Tampermonkey / Violentmonkey popup): each bundled script has an entry with its version, ☑ on or ☐ off. A click flips it in place, and the change applies from the next page load. A script that is off doesn't run at all, so its standalone copy, if you have one installed, can run in its place.
 - **Lay out the corner launchers** from the same menu: the round buttons in the page's corner (Mission Control, Fusion, Falcon, …) stand in a column (**↕ Launchers in a column**, the default) or in a row along the page's bottom edge (**↔ Launchers in a row**). A click switches the layout at once, and it stays that way on every page. All the scripts share it, so a standalone script (Falcon, Scribe, First Contact) follows it too, on any page, String Theory there or not.
@@ -53,7 +54,10 @@ String Theory bundles:
 
 ## How it's built
 
-`string_theory.user.js` is **generated**, not hand-written — do not edit it directly. It works because every constituent is a self-contained IIFE that guards its own target URL: the build [unions the metadata block](./build.mjs) (`@match` / `@grant` / `@connect` / … deduped) and concatenates each body wrapped in a `@run-at` gate (`document-start` bodies run immediately; `document-end`/idle bodies wait for `DOMContentLoaded`).
+`string_theory.user.js` is **generated**, not hand-written — do not edit it directly. Every constituent is a self-contained IIFE. The build [unions the metadata block](./build.mjs) (`@match` / `@grant` / `@connect` / … deduped) and concatenates the bodies, each wrapped in two gates:
+
+- **URL gate**: the script's own `@match` / `@include` / `@exclude` / `@noframes`, tested against the page once at load, as a userscript manager does. A script starts only where its standalone copy would, though the bundle's `@match` covers every script's pages.
+- **`@run-at` gate**: `document-start` bodies run immediately; `document-end`/idle bodies wait for `DOMContentLoaded`.
 
 ```
 node userscripts/string_theory/build.mjs
@@ -63,6 +67,7 @@ The repo **pre-commit hook** rebuilds it automatically whenever a constituent (o
 
 ## Notes
 
+- The scripts left out of a page by their own `@match` are named in the console at the *debug* (verbose) level: `String Theory: not for this page (their own @match) — …`.
 - The on/off list is the GM value `string_theory.off` (folder names). The build wraps each body in a check against it and adds the menu, which goes only in the top frame.
 - The launchers' layout is a shared setting, not a GM value: `mbu.cornerFlow` in MusicBrainz's `localStorage`, which every script's `mbRestackCorner` reads ([shared storage](../../DEVELOP.md#shared-storage)). Each MusicBrainz server (musicbrainz.org, beta, test) keeps its own. Without String Theory, set it in the browser console (F12) on a MusicBrainz page: `localStorage.setItem('mbu.cornerFlow', '"row"')` for a row, `localStorage.removeItem('mbu.cornerFlow')` for the column; reload to see it.
 - All constituents share **one** userscript-manager storage namespace here (vs one each when installed separately). In practice this is fine — each script prefixes its keys — but it's a shared surface.
