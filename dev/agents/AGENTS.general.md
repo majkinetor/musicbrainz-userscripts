@@ -6,7 +6,7 @@ Learn something durable → write it down: here if it would hold on any project,
 
 A decision about one feature lives on **its GitHub issue** — including what was declined, so it isn't re-raised — not in these docs.
 
-When a rule here cites a standard, it states all of that standard's rules or only points to it, never a part: a partial summary reads as complete, and the rule it leaves out gets broken.
+Each rule lives in one place; everywhere else links to it and never restates it, in full or in part (a partial copy reads as complete and hides the rest). A link says when to follow it: "before creating an issue, read Standard 1".
 
 ## Authority
 
@@ -32,10 +32,10 @@ Who you post as depends on where you run:
 - **In the cloud** there is no bot token, and that's intended: run as the environment's own GitHub identity (the maintainer's). The activity is already labelled "with Claude", so it stays distinguishable without the extra account — don't try to source a bot token or any secret.
 The rest applies whoever you post as:
 
-- Issue titles become changelog lines verbatim ([Standard 1](STANDARDS.general.md#standard-1)): the user-visible symptom (bug) or the feature name (enhancement); no leading verb (`Fix`, `Add`, …); **Telegraphic English** — no articles, auxiliaries or filler; **no component prefix** (the area label names the component); no implementation details (line numbers, counts, variable names, file paths).
+- Before creating or renaming an issue, read [Standard 1](STANDARDS.general.md#standard-1) (titles) and [Standard 2](STANDARDS.general.md#standard-2) (labels).
 - Post comments via `gh … --body-file <real .md>`, never an inline `--body` built from a JS/template string (it posts literal `` \` `` / `\n`); don't backslash-escape markdown.
 - Don't write `#1` / `#2` for "list point N" — GitHub links `#N` to issue/PR N.
-- Link every named thing to its closest anchor ([Standard 9](STANDARDS.general.md#standard-9)): a repo doc by relative path plus header anchor, an external entity by its own page (not a bare ID), an issue/PR/commit by `#N` in the repo or a full URL elsewhere. A section with no anchor gets one first: a header, or `<a id="…"></a>` where no header fits.
+- Before posting or writing a doc, read [Standard 9](STANDARDS.general.md#standard-9) (links).
 - End every GitHub post with the model + effort footer, per the maintainer's current convention.
 - **Sweep stale agent branches** (`claude/*`, the cloud sessions' prefix) at the end of a task, whoever made them — a session can't know which it made once its context is cleared. Delete one whose work is verified on `main` or on the branch it was merged into (`git cherry`, and by content when it landed under another SHA); report, don't delete, one whose work is nowhere else. Note each deleted branch's last commit. The cloud proxy refuses branch deletes: there, list them in your report so a local session deletes them.
 
