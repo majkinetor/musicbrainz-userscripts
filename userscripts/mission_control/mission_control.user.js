@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Mission Control
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.10.190000
+// @version      2026.10.10.191400
 // @description  One window on the release page that asks the other scripts (Platform Check, ISRC Scout, Art Station, Fusion, Credit Hoarder) what is missing, shows it all in one review, and applies the selected changes in order.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5NaXNzaW9uIENvbnRyb2w8L3RpdGxlPgo8ZGVmcz48ZmlsdGVyIGlkPSJtY28xMy1oIiB4PSItMTAlIiB5PSItMTAlIiB3aWR0aD0iMTIwJSIgaGVpZ2h0PSIxMjAlIj48ZmVNb3JwaG9sb2d5IGluPSJTb3VyY2VBbHBoYSIgb3BlcmF0b3I9ImRpbGF0ZSIgcmFkaXVzPSIxLjUiIHJlc3VsdD0iZCIvPjxmZUZsb29kIGZsb29kLWNvbG9yPSIjZmZmIiBmbG9vZC1vcGFjaXR5PSIuNyIvPjxmZUNvbXBvc2l0ZSBpbjI9ImQiIG9wZXJhdG9yPSJpbiIvPjxmZU1lcmdlPjxmZU1lcmdlTm9kZS8+PGZlTWVyZ2VOb2RlIGluPSJTb3VyY2VHcmFwaGljIi8+PC9mZU1lcmdlPjwvZmlsdGVyPjwvZGVmcz48ZyBmaWx0ZXI9InVybCgjbWNvMTMtaCkiPjxwYXRoIGQ9Ik03NyAzNS41IEw2NCA0MyBMNTEgMzUuNSBMNTEgMjAuNSBMNjQgMTMgTDc3IDIwLjVaIiBmaWxsPSIjN2E1N2U4IiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik01OS43IDc3LjUgTDQ2LjcgODUgTDMzLjcgNzcuNSBMMzMuNyA2Mi41IEw0Ni43IDU1IEw1OS43IDYyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik05NC4zIDc3LjUgTDgxLjMgODUgTDY4LjMgNzcuNSBMNjguMyA2Mi41IEw4MS4zIDU1IEw5NC4zIDYyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik00Mi4zIDEwNy41IEwyOS40IDExNSBMMTYuNCAxMDcuNSBMMTYuNCA5Mi41IEwyOS40IDg1IEw0Mi4zIDkyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik03NyAxMDcuNSBMNjQgMTE1IEw1MSAxMDcuNSBMNTEgOTIuNSBMNjQgODUgTDc3IDkyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik0xMTEuNiAxMDcuNSBMOTguNiAxMTUgTDg1LjcgMTA3LjUgTDg1LjcgOTIuNSBMOTguNiA4NSBMMTExLjYgOTIuNVoiIGZpbGw9IiNmZmM5NGEiIHN0cm9rZT0iIzIyMjIzYiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PC9nPgo8L3N2Zz4K
@@ -889,7 +889,9 @@ function linksCell(t) {
     const neu = add.map(l => {
         const on = picked.is && picked.is.has(l.key);
         // a found link opens on click like a linked one; right-click takes it in or leaves it out
-        return '<a class="mc-pick mc-lnk' + (on ? ' on' : '') + '" data-prov="is" data-key="' + esc(l.key) + '" target="_blank" rel="noopener" href="' + esc(l.url) + '" title="' + esc(l.name + ': ' + l.url + '\nClick to open · right-click to ' + (on ? 'leave out (taken in)' : 'take in')) + '">+' + stIcon(urlIcon(l.url), 14) + '</a>';
+        const ico = urlIcon(l.url);
+        return '<a class="mc-pick mc-lnk' + (on ? ' on' : '') + '" data-prov="is" data-col="links" data-ico="' + ico + '" data-key="' + esc(l.key) + '" target="_blank" rel="noopener" href="' + esc(l.url) + '" title="' + esc(l.name + ': ' + l.url + '\nClick to open · right-click to ' + (on ? 'leave out (taken in)' : 'take in')
+            + '\nCtrl+right-click: the whole track · Alt+right-click: ' + l.name + ' on every track · Ctrl+Alt+right-click: everything') + '">+' + stIcon(ico, 14) + '</a>';
     });
     if (!have.length && !neu.length) return '<span class="pend">none</span>';
     return '<span class="mc-icons">' + have.join('') + (have.length && neu.length ? '<span class="mc-isep"></span>' : '') + neu.join('') + '</span>';
@@ -907,7 +909,8 @@ function cellHtml(c, t) {
     // a pickable cell is its own toggle, no tick box (#680): a click takes it in or leaves it out
     if (!c.pick || !PICKABLE[x.state]) return lead + c.cell(x);
     const on = picked[p.id] && picked[p.id].has(x.key);
-    return lead + '<span class="mc-pick' + (on ? ' on' : '') + '" data-prov="' + p.id + '" data-key="' + esc(x.key) + '" title="' + (on ? 'Taken in: click to leave out' : 'Click to take in') + '">' + c.cell(x) + '</span>';
+    return lead + '<span class="mc-pick' + (on ? ' on' : '') + '" data-prov="' + p.id + '" data-col="' + c.id + '" data-key="' + esc(x.key) + '" title="' + (on ? 'Taken in: click to leave out' : 'Click to take in')
+        + '\nCtrl-click: the whole track · Alt-click: the whole column · Ctrl+Alt-click: everything · drag: down the column">' + c.cell(x) + '</span>';
 }
 
 // Fusion's comparison (#680), the way a Fusion group shows it: the track's recording and each
@@ -1401,6 +1404,9 @@ function open() {
     paintSides(); paintAll(); paintInspector();
     ui.addEventListener('click', onClick);
     ui.addEventListener('contextmenu', onContextMenu);
+    ui.addEventListener('mousedown', onPickDown);
+    ui.addEventListener('mouseover', onPickOver);
+    document.addEventListener('mouseup', onPickUp);
     // a cover thumbnail that fails falls back to its full image once (errors don't bubble: capture)
     ui.addEventListener('error', e => { const i = e.target; if (i.tagName === 'IMG' && i.dataset.alt) { const a = i.dataset.alt; delete i.dataset.alt; i.dataset.from = i.getAttribute('src'); i.src = a; } }, true);
     document.addEventListener('keydown', onKey);
@@ -1434,6 +1440,7 @@ function close() {
     document.documentElement.style.overflow = '';
     document.documentElement.classList.remove('mc-open');
     document.removeEventListener('keydown', onKey);
+    document.removeEventListener('mouseup', onPickUp);
     clearInterval(stepClock);
     Log.info('closed');
 }
@@ -1451,23 +1458,67 @@ function selectTrack(i) {
     paintInspector();
     Log.debug('selected track ' + rel.tracks[selected].pos + ' (' + rel.tracks[selected].rec + ')');
 }
-function togglePick(pk) {
-    const set = picked[pk.dataset.prov] || (picked[pk.dataset.prov] = new Set());
-    const on = !set.has(pk.dataset.key);
-    if (on) set.add(pk.dataset.key); else set.delete(pk.dataset.key);
-    // #709: a release has one barcode, so taking one in leaves the others out
-    if (on && /^barcode:/.test(pk.dataset.key)) [...set].forEach(k => { if (k !== pk.dataset.key && /^barcode:/.test(k)) set.delete(k); });
-    Log.debug((on ? 'taken in ' : 'left out ') + pk.dataset.prov + ' ' + pk.dataset.key);
-    if (pk.closest('.mc-tbl')) paintMatrix(); else paintCards();
+const isPicked = pk => !!(picked[pk.dataset.prov] && picked[pk.dataset.prov].has(pk.dataset.key));
+// takes every pick in `pks` in (on) or leaves it out, then paints once
+function setPicks(pks, on) {
+    if (!pks.length) return;
+    pks.forEach(pk => {
+        const set = picked[pk.dataset.prov] || (picked[pk.dataset.prov] = new Set());
+        if (on) set.add(pk.dataset.key); else set.delete(pk.dataset.key);
+        // #709: a release has one barcode, so taking one in leaves the others out
+        if (on && /^barcode:/.test(pk.dataset.key)) [...set].forEach(k => { if (k !== pk.dataset.key && /^barcode:/.test(k)) set.delete(k); });
+    });
+    Log.debug((on ? 'taken in ' : 'left out ') + pks.map(pk => pk.dataset.prov + ' ' + pk.dataset.key).join(', '));
+    if (pks.some(pk => pk.closest('.mc-tbl'))) paintMatrix();
+    if (pks.some(pk => !pk.closest('.mc-tbl'))) paintCards();
     paintExec();
-    if (pk.dataset.prov === 'pc') syncIsLinks(700);
+    if (pks.some(pk => pk.dataset.prov === 'pc')) syncIsLinks(700);
+}
+function togglePick(pk) { setPicks([pk], !isPicked(pk)); }
+// #714: in the track matrix, as in Apollo and ISRC Scout, Ctrl takes the whole row (the track),
+// Alt the whole column (for a found link, that platform on every track), Ctrl+Alt everything in
+// the table. All follow the clicked one: taken in when it wasn't, left out when it was.
+function bulkPick(pk, e) {
+    const ctrl = e.ctrlKey || e.metaKey, alt = e.altKey;
+    if (!(ctrl || alt) || !pk.closest('.mc-tbl')) return false;
+    const all = [...ui.querySelectorAll('.mc-tbl .mc-pick[data-col]')];
+    const pks = ctrl && alt ? all
+        : ctrl ? [...pk.closest('tr[data-i]').querySelectorAll('.mc-pick[data-col]')]
+        : all.filter(x => x.dataset.col === pk.dataset.col && x.dataset.ico === pk.dataset.ico);
+    setPicks(pks, !isPicked(pk));
+    return true;
+}
+// #714: a press on an ISRC or a merge, dragged up or down its column, takes in (or leaves out)
+// every one it passes, as the press would have; the click that ends a drag toggles nothing more
+let drag = null, dragged = false;
+const DRAG_SEL = '.mc-tbl span.mc-pick[data-col]';
+function onPickDown(e) {
+    dragged = false;
+    if (e.button !== 0 || e.ctrlKey || e.metaKey || e.altKey || e.shiftKey) return;
+    const pk = e.target.closest(DRAG_SEL);
+    if (!pk || e.target.closest('a, button')) return;
+    e.preventDefault();   // no text selection while dragging
+    drag = { col: pk.dataset.col, key: pk.dataset.key, on: !isPicked(pk), moved: false };
+}
+function onPickOver(e) {
+    if (!drag) return;
+    const pk = e.target.closest(DRAG_SEL);
+    if (!pk || pk.dataset.col !== drag.col || (!drag.moved && pk.dataset.key === drag.key)) return;
+    const pks = [pk];
+    // the first move takes the pressed one along (a paint replaces the elements: find it again)
+    if (!drag.moved) { drag.moved = true; pks.push(...[...ui.querySelectorAll(DRAG_SEL)].filter(x => x.dataset.col === drag.col && x.dataset.key === drag.key)); }
+    setPicks(pks.filter(x => isPicked(x) !== drag.on), drag.on);
+}
+function onPickUp() {
+    if (drag && drag.moved) dragged = true;
+    drag = null;
 }
 // a found track link is an <a> (a click opens it): right-click takes it in or leaves it out
 function onContextMenu(e) {
     const pk = e.target.closest('a.mc-lnk.mc-pick');
     if (!pk) return;
     e.preventDefault();
-    togglePick(pk);
+    if (!bulkPick(pk, e)) togglePick(pk);
 }
 function onClick(e) {
     const t = e.target;
@@ -1487,7 +1538,8 @@ function onClick(e) {
     // a pickable row or cell toggles on click (#680); a link inside it still just opens
     const pk = !t.closest('a') && t.closest('.mc-pick');
     if (pk) {
-        togglePick(pk);
+        if (dragged) dragged = false;   // the drag already did it
+        else if (!bulkPick(pk, e)) togglePick(pk);
         if (!pk.closest('.mc-tbl')) return;   // in the matrix the click also selects the track
     }
     const row = t.closest('.mc-tbl tbody tr[data-i]');
