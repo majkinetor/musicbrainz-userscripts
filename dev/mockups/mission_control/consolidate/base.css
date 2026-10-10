@@ -1,0 +1,65 @@
+/* Consolidation mockups (#702): the shipped Mission Control look, light theme. */
+:root{
+  --bg:#f6f5f9;--raised:#fff;--sunken:#f1eff6;--hover:#ece7fb;--soft:#efeafd;
+  --text:#1f1c27;--dim:#575169;--weak:#8a849b;--border:#dcd8e6;--bsoft:#e8e5ef;--bstrong:#bdb5d3;
+  --accent:#6a46d6;--atext:#5634bd;--ok:#1d9a63;--okbg:#e7f6ef;--okb:#a9dcc4;
+  --warn:#a66d06;--warnbg:#fdf4e2;--warnb:#ecd09a;--err:#c43c33;--errbg:#fdecea;
+  --font:-apple-system,Segoe UI,Roboto,Arial,sans-serif;--mono:ui-monospace,SFMono-Regular,Consolas,Menlo,monospace;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--text);font:13px/1.4 var(--font)}
+.mono{font-family:var(--mono)} .dim{color:var(--dim)} .weak{color:var(--weak)}
+.ic{display:inline-block;vertical-align:-2px}
+span.ic{width:13px;height:13px;border-radius:3px;background:var(--bstrong);color:#fff;font-size:9px;text-align:center;line-height:13px}
+.icons{display:inline-flex;gap:3px;align-items:center}
+
+/* header: title · stepper · action */
+.hdr{display:flex;align-items:center;gap:14px;padding:8px 14px;background:var(--raised);border-bottom:1px solid var(--border)}
+.hdr .ttl{font-weight:700;font-size:15px}
+.hdr .sub{font-size:12px;color:var(--dim)}
+.step{display:flex;align-items:center;gap:7px;padding:3px 9px;border-radius:8px;font-size:12px}
+.step b{display:block;font-size:12px}
+.step span{color:var(--atext)}
+.step.busy{border:1px dashed var(--bstrong)}
+.arrow{color:var(--weak)}
+.sp{flex:1}
+.btn{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--border);background:var(--raised);color:var(--text);padding:5px 12px;border-radius:6px;font:inherit;font-size:12.5px;cursor:pointer;white-space:nowrap}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:600}
+.btn.outline{border-color:var(--accent);color:var(--atext);font-weight:600}
+.btn.small{padding:2px 8px;font-size:11.5px}
+
+/* three columns like MC */
+.main{display:grid;grid-template-columns:250px 1fr 300px;align-items:start}
+.side{padding:12px 14px;border-right:1px solid var(--border);min-height:100%}
+.side.r{border-right:0;border-left:1px solid var(--border)}
+h2{font-size:11px;letter-spacing:.6px;text-transform:uppercase;color:var(--dim);margin:4px 0 8px;font-weight:700}
+h3{font-size:10.5px;letter-spacing:.5px;text-transform:uppercase;color:var(--weak);margin:12px 0 5px;font-weight:700}
+.center{padding:12px 14px;display:flex;flex-direction:column;gap:12px;min-width:0}
+
+.card{background:var(--raised);border:1px solid var(--border);border-radius:10px;overflow:hidden}
+.card>.h{display:flex;align-items:center;gap:8px;padding:8px 12px;background:var(--soft);border-bottom:1px solid var(--border);font-weight:700}
+.card>.h small{font-weight:400;color:var(--dim);font-size:11.5px}
+.card>.b{padding:8px 12px}
+
+.tag{font-size:10.5px;font-weight:700;padding:1px 7px;border-radius:20px;white-space:nowrap;border:1px solid}
+.tag.ok{color:var(--ok);background:var(--okbg);border-color:var(--okb)}
+.tag.warn{color:var(--warn);background:var(--warnbg);border-color:var(--warnb)}
+.tag.new{color:var(--atext);background:var(--soft);border-color:var(--bstrong)}
+.tag.off{color:var(--weak);background:var(--sunken);border-color:var(--border)}
+.bc{font-family:var(--mono);font-size:11.5px;padding:1px 7px;border-radius:5px;border:1px solid var(--border);background:var(--sunken)}
+.bc.own{color:var(--ok);background:var(--okbg);border-color:var(--okb)}
+
+table{width:100%;border-collapse:collapse;font-size:12.5px}
+th{font-size:10px;text-transform:uppercase;letter-spacing:.6px;color:var(--weak);text-align:left;padding:6px 8px;border-bottom:1px solid var(--border);font-weight:700}
+td{padding:5px 8px;border-bottom:1px solid var(--bsoft);vertical-align:middle}
+td.n{color:var(--weak);font-family:var(--mono);width:28px}
+.len,.isrc{font-family:var(--mono);font-size:12px}
+.pick{background:var(--hover)}
+.chk{color:var(--atext);font-weight:700}
+.diff{background:#fff1c9;border-radius:3px;padding:0 2px}
+.note{font-size:11.5px;color:var(--dim)}
+.caption{font-size:12px;color:var(--dim);background:var(--raised);border:1px dashed var(--bstrong);border-radius:8px;padding:8px 12px}
+.caption b{color:var(--text)}
+
+.foot{display:flex;align-items:center;gap:12px;padding:10px 14px;background:var(--raised);border-top:1px solid var(--border)}

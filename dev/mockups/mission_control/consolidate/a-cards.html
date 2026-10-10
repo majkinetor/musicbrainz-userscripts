@@ -1,0 +1,128 @@
+<!doctype html><html><head><meta charset="utf-8">
+<title>Consolidate — A: MC cards</title>
+<link rel="stylesheet" href="base.css">
+<script src="icons.js"></script><script src="data.js"></script>
+<style>
+  .fields{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+  .f{border:1px solid var(--bsoft);border-radius:8px;padding:7px 9px;background:var(--raised)}
+  .f.conf{border-color:var(--warnb);background:#fffcf3}
+  .f .k{font-size:10.5px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:var(--weak);display:flex;gap:6px;align-items:center}
+  .f .v{font-weight:600;margin:3px 0 2px;display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+  .alt{display:flex;align-items:center;gap:5px;font-size:11.5px;color:var(--dim);margin-top:3px}
+  .alt .r{width:11px;height:11px;border:1.5px solid var(--bstrong);border-radius:50%;flex:none}
+  .alt.on .r{border-color:var(--accent);background:radial-gradient(var(--accent) 45%,transparent 50%)}
+  .agree{display:inline-flex;gap:2px}
+  .srcs .lane{margin-bottom:10px}
+  .srcs .p{display:flex;align-items:center;gap:7px;padding:3px 4px;border-radius:5px;font-size:12px}
+  .srcs .p .st{margin-left:auto;font-size:11px;color:var(--weak)}
+  .srcs .p.off{opacity:.5}
+  .srcs .p .tk{width:13px;height:13px;border-radius:3px;border:1.5px solid var(--accent);background:var(--accent);color:#fff;font-size:9px;line-height:10px;text-align:center}
+  .srcs .p.off .tk{background:transparent;border-color:var(--bstrong)}
+  tr.grp td{background:#fcfbff;font-size:12px}
+  tr.grp td:first-child{border-left:3px solid var(--accent)}
+  .radio{display:inline-block;width:11px;height:11px;border:1.5px solid var(--bstrong);border-radius:50%;vertical-align:-1px}
+  .radio.on{border-color:var(--accent);background:radial-gradient(var(--accent) 45%,transparent 50%)}
+  .agreec{white-space:nowrap}
+  .chain label{display:flex;gap:6px;align-items:center;font-size:12px;margin:2px 0}
+  .kv{display:grid;grid-template-columns:auto 1fr;gap:3px 10px;font-size:12px}
+</style></head>
+<body>
+<header class="hdr">
+  <span>
+    <div class="ttl">Music Will Explain (Choir Music Vol. 1)</div>
+    <div class="sub">New release · Mocky · from <b>First Contact</b> on Bandcamp</div>
+  </span>
+  <span class="sp"></span>
+  <div class="step"><span id="s-src"></span><div><b>Source</b><span>Bandcamp · 13 tracks</span></div></div><span class="arrow">→</span>
+  <div class="step"><span id="s-pc"></span><div><b>PC</b><span>9 found · 3 barcodes</span></div></div><span class="arrow">→</span>
+  <div class="step busy"><span id="s-fc"></span><div><b>FC</b><span>read 8 of 9…</span></div></div><span class="arrow">→</span>
+  <div class="step"><span id="s-as"></span><div><b>AS</b><span>best cover 3000×3000</span></div></div>
+  <span class="sp"></span>
+  <button class="btn primary">Open in release editor →</button>
+</header>
+
+<div class="main">
+  <aside class="side srcs" id="srcs"></aside>
+
+  <main class="center">
+    <section class="card">
+      <div class="h">Release <small>the value most platforms give is taken; click another to take it instead</small><span class="sp"></span><span class="tag warn">3 differ</span></div>
+      <div class="b fields" id="fields"></div>
+    </section>
+
+    <section class="card">
+      <div class="h">Tracks <small>one row per track, the version most platforms have · a row that differs opens into its versions</small><span class="sp"></span>
+        <span class="tag ok">9 agree</span><span class="tag warn">3 differ</span><span class="tag off">1 only on Bandcamp</span></div>
+      <table><thead><tr><th>#</th><th>Title</th><th>Len</th><th>ISRC</th><th>Agree</th><th></th></tr></thead><tbody id="tracks"></tbody></table>
+    </section>
+
+    <div class="caption"><b>What Open in release editor does:</b> the editor opens seeded with what is taken in here: the fields, the tracklist, every platform link in the release's barcode lane (7), and the First Contact handoff with each artist's links from all platforms, for Apollo to match. ISRCs and the cover can't be seeded; with the boxes on the right ticked, Mission Control opens on the new release once it is saved, with them already taken in.</div>
+  </main>
+
+  <aside class="side r">
+    <h2>Track 4 · Walking</h2>
+    <div class="kv">
+      <span class="weak">Title</span><span>Walking <span class="agree" id="k-t"></span></span>
+      <span class="weak">Length</span><span class="len">2:45 <span class="weak">· 7 platforms</span><br>2:47 <span class="weak">· Bandcamp</span></span>
+      <span class="weak">ISRC</span><span class="isrc">US2572504004 <span class="weak">· 5</span></span>
+    </div>
+    <h3>Why they differ</h3>
+    <div class="note">+2 s: Bandcamp's file has the count-in. A 2 s difference is under MusicBrainz's usual tolerance, so the majority is taken.</div>
+    <h3>Preview</h3>
+    <div class="note"><button class="btn small">▶ Deezer</button> <button class="btn small">▶ Apple Music</button><br>30 s previews, from the data already read (optional, see the plan).</div>
+    <h3>After saving</h3>
+    <div class="chain">
+      <label><input type="checkbox" checked> ISRCs: 11 new, through ISRC Scout</label>
+      <label><input type="checkbox" checked> Cover: Apple Music 3000×3000, through Art Station</label>
+      <label><input type="checkbox" checked> Artist and label links: 9, through Falcon</label>
+    </div>
+  </aside>
+</div>
+
+<div class="foot">
+  <span class="dim">Taken in: 9 fields · 12 tracks (1 left out) · 7 links · 11 ISRCs · 1 cover</span>
+  <span class="sp"></span>
+  <button class="btn">Copy as Markdown</button>
+  <button class="btn primary">Open in release editor →</button>
+</div>
+
+<script>
+const M = MOCK;
+document.getElementById('s-src').innerHTML = I('bandcamp', 22);
+document.getElementById('s-pc').innerHTML = '<b style="font-size:18px">⌕</b>';
+document.getElementById('s-fc').innerHTML = '<b style="font-size:18px">⇣</b>';
+document.getElementById('s-as').innerHTML = '<b style="font-size:18px">▣</b>';
+document.getElementById('k-t').innerHTML = Is(M.all, 11);
+
+// sources sidebar: PC's barcode lanes, each platform with its read state and include tick
+document.getElementById('srcs').innerHTML = '<h2>Sources</h2>' + M.lanes.map(l => `
+  <div class="lane"><div style="margin-bottom:4px">${l.barcode ? `<span class="bc ${l.own ? 'own' : ''}">${l.barcode}</span>` : '<span class="weak" style="font-size:11.5px">no barcode</span>'}</div>
+  ${l.note ? `<div class="note" style="margin:0 0 4px">${l.note}</div>` : ''}
+  ${l.ps.map(p => { const r = M.read[p] || ['done', '']; const off = r[0] === 'off';
+    return `<div class="p ${off ? 'off' : ''}"><span class="tk">${off ? '' : '✓'}</span>${I(p)}${M.names[p]}<span class="st">${r[0] === 'busy' ? '<span class="tag new">reading</span>' : r[1]}</span></div>`; }).join('')}</div>`).join('')
+  + '<div class="note">A platform in another barcode lane is another release: it is not read unless ticked. Untick one to leave its values out.</div>';
+
+// release fields
+document.getElementById('fields').innerHTML = M.fields.map(f => {
+  const pick = f.vals.find(v => v.pick) || f.vals[0], conf = f.vals.length > 1;
+  return `<div class="f ${conf ? 'conf' : ''}"><div class="k">${f.k}${conf ? '<span class="tag warn">' + f.vals.length + '</span>' : ''}${pick.det ? '<span class="tag new">detected</span>' : ''}</div>
+    <div class="v">${pick.v}${pick.links ? ` <span class="tag new">${pick.links} links</span>` : ''}</div>
+    <div class="agree">${pick.det ? '<span class="note">' + pick.det + '</span>' : Is(pick.ps, 12)}</div>
+    ${f.vals.filter(v => v !== pick).map(v => `<div class="alt"><span class="r"></span>${v.v} <span class="agree">${Is(v.ps, 11)}</span>${v.why ? ' <span class="weak">· ' + v.why + '</span>' : ''}</div>`).join('')}
+  </div>`;
+}).join('');
+
+// tracks: the majority version; a row that differs shows its versions under it
+const cell = (g, k, v) => (g.diff || []).includes(k) ? `<span class="diff">${v}</span>` : v;
+document.getElementById('tracks').innerHTML = M.tracks.map(t => {
+  const head = t.g.find(x => x.pick) || t.g[0], n = t.g.length;
+  const agree = t.only ? `<span class="tag off">only ${M.names[head.ps[0]]}</span>`
+    : n === 1 ? `<span class="agreec">${Is(head.ps, 11)}</span>` : `<span class="tag warn">${n} versions</span>`;
+  let h = `<tr class="${t.only ? 'weak' : ''}"><td class="n">${t.n}</td><td>${t.only ? '<s>' + head.t + '</s>' : head.t}${t.only ? ' <span class="weak">· ' + head.why + '</span>' : ''}</td>
+    <td class="len">${head.len}</td><td class="isrc">${head.isrc ? '<span class="chk">+</span> ' + head.isrc : '<span class="weak">—</span>'}</td><td>${agree}</td><td>${n > 1 ? (t.open || t.n === 6 ? '▾' : '▸') : ''}</td></tr>`;
+  if (n > 1 && (t.open || t.n === 6)) h += t.g.map(g => `<tr class="grp"><td></td><td><span class="radio ${g === head ? 'on' : ''}"></span> ${cell(g, 't', g.t)}${g.why ? ' <span class="weak">· ' + g.why + '</span>' : ''}</td>
+    <td class="len">${cell(g, 'len', g.len)}</td><td class="isrc">${g.isrc ? cell(g, 'isrc', g.isrc) : '<span class="weak">none</span>'}</td><td colspan="2"><span class="agreec">${Is(g.ps, 11)}</span></td></tr>`).join('');
+  return h;
+}).join('');
+</script>
+</body></html>

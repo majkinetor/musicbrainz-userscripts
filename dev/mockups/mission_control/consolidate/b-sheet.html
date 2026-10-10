@@ -1,0 +1,73 @@
+<!doctype html><html><head><meta charset="utf-8">
+<title>Consolidate — B: sheet and diff matrix</title>
+<link rel="stylesheet" href="base.css">
+<script src="icons.js"></script><script src="data.js"></script>
+<style>
+  .wrap{max-width:1500px;margin:0 auto;padding:12px 14px;display:flex;flex-direction:column;gap:12px}
+  .sheet td.k{width:120px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--weak)}
+  .chip{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--border);border-radius:16px;padding:2px 10px 2px 6px;margin:2px 6px 2px 0;background:var(--raised);font-size:12.5px}
+  .chip.on{border-color:var(--accent);background:var(--soft);font-weight:600}
+  .chip .r{width:11px;height:11px;border:1.5px solid var(--bstrong);border-radius:50%}
+  .chip.on .r{border-color:var(--accent);background:radial-gradient(var(--accent) 45%,transparent 50%)}
+  .chip .why{font-weight:400;color:var(--weak);font-size:11px}
+  .mx th.p{text-align:center;padding:4px 2px;width:58px}
+  .mx td.c{text-align:center;font-size:11px;padding:4px 3px;white-space:nowrap}
+  .mx td.c.eq{color:var(--okb)}
+  .mx td.c.d{background:#fff1c9;color:var(--warn);font-weight:600}
+  .mx td.c.miss{color:var(--bstrong)}
+  .mx tr.conf td.t{font-weight:600}
+  .legend{display:flex;gap:16px;font-size:11.5px;color:var(--dim);padding:6px 12px;border-top:1px solid var(--bsoft)}
+  .legend span b{display:inline-block;min-width:18px;text-align:center;border-radius:3px}
+</style></head>
+<body>
+<header class="hdr">
+  <span><div class="ttl">Consolidate · Music Will Explain (Choir Music Vol. 1)</div>
+    <div class="sub">8 platforms read, all with barcode <span class="bc own">659457250430</span> or none · Discogs left out: another barcode</div></span>
+  <span class="sp"></span>
+  <span class="icons" id="hp"></span>
+  <span class="sp"></span>
+  <button class="btn">Copy as Markdown</button>
+  <button class="btn primary">Open in release editor →</button>
+</header>
+
+<div class="wrap">
+  <section class="card">
+    <div class="h">Release <small>each value with the platforms that give it · the taken one is filled</small></div>
+    <table class="sheet"><tbody id="sheet"></tbody></table>
+  </section>
+
+  <section class="card">
+    <div class="h">Tracks <small>the taken version on the left; a platform's column shows only where it differs from it</small><span class="sp"></span>
+      <span class="tag warn">4 tracks differ</span></div>
+    <table class="mx"><thead id="mxh"></thead><tbody id="mx"></tbody></table>
+    <div class="legend"><span><b style="color:var(--okb)">·</b> same</span><span><b class="diff" style="color:var(--warn)">T</b> title differs (hover for it)</span>
+      <span><b class="diff" style="color:var(--warn)">+2s</b> length</span><span><b class="diff" style="color:var(--warn)">ISRC</b> another ISRC</span>
+      <span><b style="color:var(--bstrong)">—</b> not on that platform</span><span>Click a differing cell to take that platform's version for the track.</span></div>
+  </section>
+</div>
+
+<script>
+const M = MOCK, P = M.all;
+document.getElementById('hp').innerHTML = P.map(p => I(p, 20)).join(' ');
+document.getElementById('sheet').innerHTML = M.fields.map(f => `<tr><td class="k">${f.k}</td><td>${f.vals.map((v, i) =>
+  `<span class="chip ${v.pick || f.vals.length === 1 ? 'on' : ''}"><span class="r"></span>${v.v}${v.ps.length ? ' <span class="icons">' + Is(v.ps, 12) + '</span>' : ''}${v.det ? ' <span class="why">detected · ' + v.det + '</span>' : ''}${v.why ? ' <span class="why">' + v.why + '</span>' : ''}</span>`).join('')}</td></tr>`).join('');
+
+document.getElementById('mxh').innerHTML = `<tr><th>#</th><th>Title</th><th>Len</th><th>ISRC</th>${P.map(p => `<th class="p" title="${M.names[p]}">${I(p, 14)}</th>`).join('')}</tr>`;
+const sec = s => { const [m, x] = s.split(':'); return +m * 60 + +x; };
+document.getElementById('mx').innerHTML = M.tracks.map(t => {
+  const head = t.g.find(x => x.pick) || t.g[0];
+  const cells = P.map(p => {
+    const g = t.g.find(x => (x.ps === 'all' ? P : x.ps).includes(p));
+    if (!g) return '<td class="c miss">—</td>';
+    if (g === head) return '<td class="c eq">·</td>';
+    const d = [];
+    if (g.t !== head.t) d.push(`<span title="${g.t}">T</span>`);
+    if (g.len !== head.len) d.push((sec(g.len) - sec(head.len) > 0 ? '+' : '') + (sec(g.len) - sec(head.len)) + 's');
+    if (g.isrc !== head.isrc) d.push(g.isrc ? 'ISRC' : 'no ISRC');
+    return `<td class="c d" title="${g.t} · ${g.len} · ${g.isrc || 'no ISRC'}">${d.join(' ')}</td>`;
+  }).join('');
+  return `<tr class="${t.g.length > 1 ? 'conf' : ''} ${t.only ? 'weak' : ''}"><td class="n">${t.n}</td><td class="t">${t.only ? '<s>' + head.t + '</s> <span class="tag off">left out</span>' : head.t}</td>
+    <td class="len">${head.len}</td><td class="isrc">${head.isrc || '<span class="weak">—</span>'}</td>${cells}</tr>`;
+}).join('');
+</script>
+</body></html>

@@ -1,0 +1,85 @@
+<!doctype html><html><head><meta charset="utf-8">
+<title>Consolidate — C: the flow</title>
+<link rel="stylesheet" href="base.css">
+<script src="icons.js"></script><script src="data.js"></script>
+<style>
+  body{padding:16px}
+  .flow{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;align-items:stretch}
+  .stage{background:var(--raised);border:1px solid var(--border);border-radius:10px;display:flex;flex-direction:column;overflow:hidden}
+  .stage .h{padding:8px 12px;background:var(--soft);border-bottom:1px solid var(--border);display:flex;gap:8px;align-items:center}
+  .stage .h .n{width:20px;height:20px;border-radius:50%;background:var(--accent);color:#fff;font-weight:700;font-size:11px;display:grid;place-items:center}
+  .stage .h b{font-size:13px}
+  .stage .h .url{margin-left:auto;font:10.5px var(--mono);color:var(--dim)}
+  .stage .pic{height:190px;margin:10px 12px;border:1px solid var(--bsoft);border-radius:8px;background:var(--sunken);position:relative;overflow:hidden}
+  .stage ul{margin:0 12px 12px 28px;padding:0;font-size:12px;color:var(--dim)}
+  .stage li{margin:3px 0}
+  .stage li b{color:var(--text)}
+  .who{display:flex;gap:6px;flex-wrap:wrap;margin:0 12px 10px}
+  .who .tag{font-size:10.5px}
+  /* stage 1: a platform album page with First Contact's buttons */
+  .bcpage{position:absolute;inset:0;background:linear-gradient(180deg,#fff 0,#fff 30%,#f3f3f3 30%)}
+  .bcpage .art{position:absolute;left:14px;top:14px;width:70px;height:70px;border-radius:4px;background:linear-gradient(135deg,#5b1f3a,#d43aa8)}
+  .bcpage .t{position:absolute;left:96px;top:20px;font-weight:700;font-size:12px}
+  .bcpage .t small{display:block;font-weight:400;color:var(--dim)}
+  .fcbar{position:absolute;right:10px;bottom:10px;display:flex;gap:4px}
+  .fcbar .b{background:#ba478f;color:#fff;font-size:11px;font-weight:600;padding:5px 8px;border-radius:6px}
+  .fcbar .b.new{background:var(--accent);outline:2px solid #fff;box-shadow:0 0 0 4px var(--accent)}
+  .fcbar .b.g{background:#fff;color:var(--dim);border:1px solid var(--border)}
+  /* stage 2: small copy of mock A */
+  .mini{position:absolute;inset:0;background:url(a-cards.png) top left/250% auto no-repeat}
+  /* stage 3: the release editor */
+  .ed{position:absolute;inset:0;background:#fff;padding:10px;font-size:11px}
+  .ed .row{display:flex;gap:6px;align-items:center;margin:4px 0}
+  .ed .lbl{width:58px;color:var(--weak)}
+  .ed .in{flex:1;border:1px solid var(--border);border-radius:3px;padding:2px 5px;background:#fff}
+  .ed .ap{display:inline-flex;gap:2px;align-items:center;font-size:10px;color:var(--ok);font-weight:700}
+  /* stage 4: MC on the new release */
+  .mc{position:absolute;inset:0;background:url(../../../../userscripts/mission_control/screenshots/main.png) top left/180% auto no-repeat}
+  .arrowrow{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin:8px 0 0;font-size:11.5px;color:var(--dim)}
+  .bus{margin-top:14px}
+</style></head>
+<body>
+<div class="flow">
+  <section class="stage">
+    <div class="h"><span class="n">1</span><b>Platform page</b><span class="url">mocky.bandcamp.com/album/…</span></div>
+    <div class="pic"><div class="bcpage"><div class="art"></div><div class="t">Music Will Explain<small>by Mocky</small></div>
+      <div class="fcbar"><span class="b">Import to MusicBrainz</span><span class="b new">⧉ Consolidate</span><span class="b g">H</span><span class="b g">⚙</span></div></div></div>
+    <div class="who"><span class="tag new">First Contact</span></div>
+    <ul><li>A new button beside <b>Import</b>: FC reads the album as for an import and hands it over (the same handoff it gives the editor).</li>
+      <li>A new MB tab opens on the consolidation page; this tab can close.</li></ul>
+  </section>
+  <section class="stage">
+    <div class="h"><span class="n">2</span><b>Consolidate</b><span class="url">musicbrainz.org/release/add#mc=&lt;token&gt;</span></div>
+    <div class="pic"><div class="mini"></div></div>
+    <div class="who"><span class="tag new">Mission Control</span><span class="tag new">Platform Check</span><span class="tag new">First Contact</span><span class="tag new">Art Station</span></div>
+    <ul><li><b>PC</b> searches the platforms with the source's barcode, title and track count: its scan, without a MusicBrainz release.</li>
+      <li><b>FC</b> reads every album found in the barcode lane, out of sight, from its APIs.</li>
+      <li><b>MC</b> lines them up (mock A or B); <b>AS</b> finds the best cover.</li></ul>
+  </section>
+  <section class="stage">
+    <div class="h"><span class="n">3</span><b>Release editor</b><span class="url">/release/add (seeded)</span></div>
+    <div class="pic"><div class="ed">
+      <div class="row"><span class="lbl">Title</span><span class="in">Music Will Explain (Choir Music Vol. 1)</span></div>
+      <div class="row"><span class="lbl">Artist</span><span class="in">Mocky</span><span class="ap">✓ matched by 7 links</span></div>
+      <div class="row"><span class="lbl">Label</span><span class="in">Heavy Sheet Music · HSM012</span><span class="ap">✓</span></div>
+      <div class="row"><span class="lbl">Date</span><span class="in">2024-03-15</span></div>
+      <div class="row"><span class="lbl">Barcode</span><span class="in">659457250430</span></div>
+      <div class="row"><span class="lbl">Links</span><span class="in"><span class="icons" id="l3"></span></span></div>
+      <div class="row"><span class="lbl">Lang</span><span class="in">English · Latin</span></div>
+    </div></div>
+    <div class="who"><span class="tag new">Apollo Editor</span></div>
+    <ul><li>Seeded by the same POST First Contact uses, with the consolidated values and every link in the lane.</li>
+      <li>The handoff gives each artist its links from <b>all</b> platforms, so Apollo matches more of them.</li>
+      <li>You review and save as today.</li></ul>
+  </section>
+  <section class="stage">
+    <div class="h"><span class="n">4</span><b>New release page</b><span class="url">/release/&lt;new mbid&gt;</span></div>
+    <div class="pic"><div class="mc"></div></div>
+    <div class="who"><span class="tag new">Mission Control</span><span class="tag off">today's mode</span></div>
+    <ul><li>MC opens by itself and probes as today, with what was taken in at step 2 already selected: ISRCs (IS), the cover (AS), artist and label links (Falcon).</li>
+      <li><b>Execute</b> sends them.</li></ul>
+  </section>
+</div>
+<div class="caption bus"><b>Step 2's page:</b> every script already runs on MusicBrainz, so the view lives there, not on the platform's page. <code>/release/add</code> is the one MB page First Contact already runs on, and it is where step 3 lands anyway. MC covers it until <b>Open in release editor</b>, which posts the seed to the same URL. The scripts talk over MC's existing <code>mc:*</code> events: PC answers a probe that carries a <code>seed</code> instead of a release, and FC answers a new <code>mc:read</code> with one album URL.</div>
+<script>document.getElementById('l3').innerHTML = Is(['bandcamp', 'apple', 'deezer', 'tidal', 'spotify', 'qobuz', 'audiomack'], 12);</script>
+</body></html>
