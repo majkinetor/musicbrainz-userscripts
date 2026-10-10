@@ -7,6 +7,11 @@
   "scripts": {
     "test": "pnpm -C ../.. test --project=apollo_editor",
     "test:headed": "pnpm -C ../.. test --project=apollo_editor --headed",
-    "login": "node ../../dev/test/login.mjs"
+    "login": "node ../../dev/test/login.mjs",
+    "vendor:lande": "node dev/build-lande.mjs"
+  },
+  "devDependencies": {
+    "esbuild": "^0.28.2",
+    "lande": "1.0.10"
   }
 }

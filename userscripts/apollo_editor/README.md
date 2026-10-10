@@ -148,7 +148,7 @@ All the release group's recordings come in one request and are matched by title,
 When the release has no **Language** or **Script**, Apollo fills them in from the release and track titles, and says so in a toast. Bracketed parts such as *(Live)* or *[Remastered]* and anything after *feat.* are left out.
 
 - **Script**: the one that more than 70% of the letters are written in. Kana makes it *Japanese* and Hangul *Korean*. Titles that mix scripts get none.
-- **Language**: needs three titles or more and 80% confidence from the browser's built-in language detector, which only Chrome has so far. The first time, Chrome downloads the detector after your next click or key press. Without it, a script that implies its language names one: Japanese, Korean, Greek, Hebrew, Thai, Armenian or Georgian.
+- **Language**: needs three titles or more and 80% confidence from [lande](https://github.com/fabiospampinato/lande), the detector Harmony uses, which knows 50 languages and works in every browser. When it isn't sure, a script that implies its language names one: Japanese, Korean, Greek, Hebrew, Thai, Armenian or Georgian.
 
 A field that a seed or you already set is never touched. Apollo keeps updating its guess while you type titles, until you change the field yourself. Hover the field to see how the guess was made.
 
