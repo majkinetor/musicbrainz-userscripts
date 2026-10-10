@@ -282,6 +282,18 @@ test('history: keep, name, head-and-tail window, the newest N, resume, the sessi
   await page.evaluate(() => L.open());
   const opts = await page.evaluate(() => [...document.querySelectorAll('#mbu-logpop .mbu-log-ses option')].map(o => o.textContent));
   check(opts.length === 2 && opts[0] === 'Current session' && /Run A$/.test(opts[1]), `the session list (${JSON.stringify(opts)})`);
+  // #705 (majkinetor: "History doesn't load", "Openin history combo aalso has latency"): opening the
+  // list rebuilt it, which cost a storage scan and lost the pick; a refresh with nothing new leaves it be
+  const same = await page.evaluate(async () => {
+    const sel = document.querySelector('#mbu-logpop .mbu-log-ses');
+    sel.options[1].dataset.mark = '1';
+    let reads = 0; const get = st.get; st.get = k => { reads++; return get(k); };
+    sel.dispatchEvent(new MouseEvent('mousedown', { bubbles: true })); sel.dispatchEvent(new FocusEvent('focus'));
+    L.refresh();
+    st.get = get;
+    return { kept: sel.options[1].dataset.mark === '1', reads };
+  });
+  check(same.kept && same.reads === 0, `opening or refreshing the list neither rebuilds it nor reads stored sessions again (${JSON.stringify(same)})`);
   await page.selectOption('#mbu-logpop .mbu-log-ses', r3.a);
   const past = await page.evaluate(() => ({ n: document.querySelectorAll('#mbu-logpop .mbu-log-li').length, clear: getComputedStyle(document.querySelector('#mbu-logpop .mbu-logpop-clear')).display }));
   check(past.n === 10 && past.clear === 'none', `a past session shows its stored lines, without Clear (${JSON.stringify(past)})`);
@@ -295,4 +307,19 @@ test('history: keep, name, head-and-tail window, the newest N, resume, the sessi
   // a navigation: a new page's log carries on the kept session
   const r4 = await page.evaluate(() => { L.flush(); const M = mkH(2); const ok = M.resume(M.last()); M.info('after'); return { ok, same: M.sessionId() === L.sessionId(), lines: M.messages() }; });
   check(r4.ok && r4.same && r4.lines.join('|') === 'run B|live while looking back|after', `resume carries the session on (${JSON.stringify(r4)})`);
+});
+
+// #705 (majkinetor): "We have debug option but we shouldn't as component should have its own UI for that"
+test('every viewer has a debug switch: off, debug lines are not recorded; it is remembered', { tag: ['@unit'] }, async ({ page }) => {
+  await page.evaluate(() => { window.L = mk(); L.open(); });
+  const box = '#mbu-logpop .mbu-log-dbg input';
+  check(await page.isChecked(box), 'debug is on by default');
+  await page.evaluate(() => L.debug('recorded'));
+  await page.uncheck(box);
+  await page.evaluate(() => { L.debug('dropped'); L.cat('w1').debug('dropped too'); L.info('info still'); });
+  const msgs = await page.evaluate(() => L.messages());
+  check(msgs.join('|') === 'recorded|info still', `off: no debug lines, the rest as before (${msgs.join('|')})`);
+  check(await page.evaluate(() => mk().debugOn()) === false, 'the switch is remembered for the next page');
+  await page.evaluate(() => L.setDebug(true));
+  check(await page.isChecked(box), 'LOG.setDebug moves the switch');
 });

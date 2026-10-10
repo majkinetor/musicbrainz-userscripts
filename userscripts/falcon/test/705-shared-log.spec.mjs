@@ -49,7 +49,7 @@ test('#705: the Log tab is the shared log, with a chip per worker', { tag: ['@sa
     return {
       mounted: !!host.querySelector('.mbu-logemb .mbu-logpop-h'),
       floating: !!document.getElementById('mbu-logpop'),
-      debug: !!host.querySelector('.mbu-logpop-h #falcon-log-debug'),
+      debug: !!host.querySelector('.mbu-logpop-h .mbu-log-dbg input'),
       chips: [...host.querySelectorAll('.mbu-log-fb[data-cat]')].map(b => b.textContent),
       tagged: [...list.querySelectorAll('.mbu-log-li')].filter(d => d.querySelector('.mbu-log-c').textContent === 'w1').length,
       summary: pre ? pre.textContent : null, ws: pre ? getComputedStyle(pre).whiteSpace : null,
@@ -61,7 +61,7 @@ test('#705: the Log tab is the shared log, with a chip per worker', { tag: ['@sa
   });
   console.log(JSON.stringify(r, null, 1));
   check(r.mounted && !r.floating, 'the shared viewer sits in the Log tab, not in a floating window');
-  check(r.debug, 'the debug switch is in its toolbar');
+  check(r.debug, 'the shared log’s own debug switch is in its toolbar');
   check(r.chips.includes('w1') && r.chips.includes('w2'), `each worker is a filter chip (${r.chips.join(', ')})`);
   check(r.tagged > 0, `a worker's lines carry its tag (${r.tagged} w1 lines)`);
   check(!!r.summary && /\n/.test(r.summary) && /entity +status/.test(r.summary) && r.ws === 'pre', `the run summary keeps its table (${JSON.stringify((r.summary || '').slice(0, 80))}, ${r.ws})`);
@@ -77,9 +77,9 @@ test('#705: the Log tab is the shared log, with a chip per worker', { tag: ['@sa
   await attachShot(testInfo, page.locator('#falcon-panel'), 'log tab');
 
   // the debug switch still decides whether debug lines are recorded
-  await page.uncheck('#falcon-log-debug');
+  await page.uncheck('#falcon-body-log .mbu-log-dbg input');
   const dbgOff = await page.evaluate(() => { const n = window.__falconTest.Log.entries().length; window.__falconTest.dbg('[w1]', 'step'); return window.__falconTest.Log.entries().length - n; });
-  await page.check('#falcon-log-debug');
+  await page.check('#falcon-body-log .mbu-log-dbg input');
   const dbgOn = await page.evaluate(() => { const n = window.__falconTest.Log.entries().length; window.__falconTest.dbg('[w1]', 'step'); return window.__falconTest.Log.entries().length - n; });
   check(dbgOff === 0 && dbgOn === 1, `debug off records no debug lines, on records them (${dbgOff}, ${dbgOn})`);
 

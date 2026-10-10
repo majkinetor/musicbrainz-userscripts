@@ -194,7 +194,7 @@ Append `?falcon=<base64(JSON)>` to any musicbrainz.org URL: Falcon opens with th
 | Open from Harmony in new tab                    | on        | off navigates the Harmony tab                                                                               |
 | Automatically send to Picard using port         | off, 8000 | hand the release to [Picard](https://picard.musicbrainz.org/) after a run (needs its *Browser integration*) |
 | Workers                                         | 5         | entities processed at once                                                                                  |
-| Keep last N run logs                            | 20        | the past runs the **Log** tab lists                                                                         |
+| Keep last N run logs                            | 10        | the past runs the **Log** tab lists                                                                         |
 
 The Picard port also sets MusicBrainz's own tagger button, whether *Automatically send to Picard* is ticked or not.
 

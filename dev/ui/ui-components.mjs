@@ -169,6 +169,9 @@ const CSS = [
     // the session list (#705) and the past session it shows: read-only, so no Clear
     '.mbu-logpop .mbu-log-ses{flex:0 1 260px;min-width:120px;max-width:100%;font:12px var(--mbu-font);padding:2px 4px;border:1px solid var(--mbu-border);border-radius:5px}',
     '.mbu-logpop-hclear:disabled{opacity:.5;cursor:default}',
+    '.mbu-log-dbg{display:inline-flex;align-items:center;gap:4px;font-size:12px;color:var(--mbu-text);cursor:pointer;white-space:nowrap}',
+    '.mbu-log-dbg input{margin:0}',
+    '#mbu-logpop.min .mbu-log-dbg{display:none}',
     '.mbu-log-past .mbu-logpop-clear{display:none}',
     '#mbu-logpop.min .mbu-log-ses,#mbu-logpop.min .mbu-logpop-hclear{display:none}',
     // the text filter beside the counts: lines without the text are hidden
@@ -642,6 +645,8 @@ function mbRestackCorner(corner) {
 // The floating window (open) and a mounted viewer (mount) are the same viewer;
 // mount draws it into an element of the script's, without the title bar's
 // window buttons, and o.tools (an element) sits in its toolbar before Clear.
+// Every viewer has a debug switch: off, LOG.debug() lines are not recorded at all
+// (remembered per script under o.key; LOG.debugOn(), LOG.setDebug(v)).
 //
 // o.name / o.version  the Markdown summary's title (version may be a function)
 // o.subtitle          optional function; its text follows the title (e.g. the release)
@@ -703,6 +708,10 @@ function mbuLog(o) {
     var save = o.save || function (k, v) { try { GM_setValue(k, v); } catch (e) { /* no storage: the window just forgets */ } };
     var state = function () { try { return JSON.parse(load(o.key) || '{}') || {}; } catch (e) { return {}; } };
     var remember = function (patch) { try { save(o.key, JSON.stringify(Object.assign(state(), patch))); } catch (e) { /* see save */ } };
+    // debug lines are recorded only while the viewer's debug switch is on (default on), per script
+    var dbgOn = null;
+    var debugOn = function () { if (dbgOn === null) dbgOn = state().debug !== false; return dbgOn; };
+    var setDebug = function (v) { dbgOn = !!v; remember({ debug: dbgOn }); views.forEach(function (w) { if (w.dbg) w.dbg.checked = dbgOn; }); };
     var tally = function (e, d) { if (e.sev === 'warn') warn += d; else if (e.sev === 'error') error += d; };
     var PRE = { info: '', ok: 'OK   ', warn: 'WARN ', error: 'ERR  ', debug: 'DBG  ' };
     var line = function (e) { return ts(e.t) + '  ' + (PRE[e.sev] || '') + (e.cat ? '[' + e.cat + '] ' : '') + (e.pre ? '\\n' : '') + e.msg; };
@@ -714,12 +723,17 @@ function mbuLog(o) {
 
     // ── history (#705) ──
     var H = o.history || null, hp = H && (H.prefix || ((o.key || 'mbu') + ':session:'));
-    var ID_RE = /^\\d{14}-\\d+$/, sid = '', kept = false, sname = '', seq = 0, pTimer = 0, lastSaved = '';
+    var ID_RE = /^\\d{14}-\\d+$/, sid = '', kept = false, sname = '', savedName = '', seq = 0, pTimer = 0, lastSaved = '';
     var store = H && (H.store || {
         get: function (k) { try { return localStorage.getItem(k); } catch (e) { return null; } },
         set: function (k, v) { try { localStorage.setItem(k, v); } catch (e) { /* full or blocked: the session just isn't kept */ } },
         del: function (k) { try { localStorage.removeItem(k); } catch (e) { /* nothing to do */ } },
-        keys: function () { var out = []; try { for (var i = 0; i < localStorage.length; i++) out.push(localStorage.key(i)); } catch (e) { /* none */ } return out; },
+        // one call for all the keys: a userscript reaches localStorage through Firefox's
+        // Xray wrapper, where each call costs, and the page may hold hundreds of keys
+        keys: function () {
+            try { var all = Object.keys(localStorage); if (all.length === localStorage.length) return all; } catch (e) { /* the loop below */ }
+            var out = []; try { for (var i = 0; i < localStorage.length; i++) out.push(localStorage.key(i)); } catch (e) { /* none */ } return out;
+        },
     });
     var keepN = function () { var n = Number(typeof H.keep === 'function' ? H.keep() : H.keep); return n > 0 ? n : 10; };
     var newId = function () { return new Date().toISOString().replace(/[^0-9]/g, '').slice(0, 14) + '-' + (++seq); };
@@ -752,10 +766,13 @@ function mbuLog(o) {
         if (raw == null) return null;
         try { return (JSON.parse(raw) || []).map(function (x) { return fromStored(x, id); }).filter(Boolean); } catch (e) { return null; }
     }
+    // a past session's name doesn't change, so it is read (or mined from its lines) once
+    var names = {};
     function nameOf(id, entries) {
+        if (id in names) return names[id];
         var n = store.get(hp + id + ':name');
-        if (n) return n;
-        try { return H.nameOf ? H.nameOf(entries || loadSession(id) || []) || '' : ''; } catch (e) { return ''; }
+        if (!n) { try { n = H.nameOf ? H.nameOf(entries || loadSession(id) || []) || '' : ''; } catch (e) { n = ''; } }
+        return (names[id] = n || '');
     }
     // the first \`head\` lines and the end, and a line saying how many went between
     function storedWindow() {
@@ -775,11 +792,11 @@ function mbuLog(o) {
             if (payload === lastSaved) return;
             lastSaved = payload;
             store.set(hp + sid, payload);
-            if (sname && store.get(hp + sid + ':name') !== sname) store.set(hp + sid + ':name', sname);
+            if (sname && savedName !== sname) { store.set(hp + sid + ':name', sname); savedName = sname; }
         } catch (e) { /* not stored */ }
     }
     var persist = function () { if (H && kept && !pTimer) pTimer = setTimeout(flush, 100); };
-    function forget(id) { if (H && id) { store.del(hp + id); store.del(hp + id + ':name'); } }
+    function forget(id) { if (H && id) { store.del(hp + id); store.del(hp + id + ':name'); delete names[id]; } }
     function prune() {
         var all = ids().filter(function (id) { return id !== sid; });
         var excess = all.length + (kept ? 1 : 0) - keepN();
@@ -796,7 +813,7 @@ function mbuLog(o) {
     };
     function startSession() {
         flush();
-        sid = newId(); kept = false; sname = ''; lastSaved = '';
+        sid = newId(); kept = false; sname = ''; savedName = ''; lastSaved = '';
         reset();
     }
     function resume(id) {
@@ -804,7 +821,7 @@ function mbuLog(o) {
         if (!entries) return false;
         flush();
         reset();
-        sid = id; kept = true; sname = store.get(hp + id + ':name') || '';
+        sid = id; kept = true; sname = savedName = store.get(hp + id + ':name') || '';
         lastSaved = store.get(hp + id) || '';
         store.set(hp + 'current', sid);
         entries.forEach(function (e) { push(e); });
@@ -832,6 +849,7 @@ function mbuLog(o) {
         msg = pre ? msg.replace(/\\s+$/, '') : msg.replace(/\\s+/g, ' ').trim();
         if (!msg) return;
         var e = { t: new Date(), sev: sev === 'err' ? 'error' : sev, msg: msg };
+        if (e.sev === 'debug' && !debugOn()) return;
         if (cat) e.cat = String(cat);
         if (pre) e.pre = true;
         push(e);
@@ -883,6 +901,7 @@ function mbuLog(o) {
             + (H ? '<select class="mbu-log-ses" title="The session shown: this one, or a past one kept in this browser"></select>' : '')
             + '<span class="mbu-logpop-sp"></span>'
             + (H ? '<button class="mbu-logpop-hclear" type="button" title="Delete every past session (this one stays)">Clear history</button>' : '')
+            + '<label class="mbu-log-dbg" title="Record each step in detail. Leave it on when reporting a problem"><input type="checkbox"> debug</label>'
             + '<button class="mbu-logpop-clear" type="button" title="Clear the log (the lines so far are gone)">Clear</button>'
             + '<button class="mbu-logpop-copy" type="button" title="Copy as Markdown (paste into a GitHub issue)">⧉ Copy</button>'
             + (floating ? '<button class="mbu-logpop-full" type="button" title="Full screen (or double-click the title bar)">⛶</button>'
@@ -981,6 +1000,7 @@ function mbuLog(o) {
             // null: the live lines; an id: that past session
             show: function (id) {
                 var entries = id ? loadSession(id) : null;
+                if (id && !entries) entries = [{ t: null, sev: 'warn', msg: 'This session could not be read (it may have been deleted in another tab).' }];
                 past = id && entries ? id : null; v.past = past;
                 src = past ? entries : buf;
                 if (sel && sel.value !== (past || '')) sel.value = past || '';
@@ -989,7 +1009,9 @@ function mbuLog(o) {
             // the session list, refreshed when it is opened and when a session starts
             sessions: function () {
                 if (!sel) return;
-                var all = sessions();
+                var all = sessions(), sig = all.map(function (x) { return x.id + '=' + x.name; }).join('|');
+                if (sig === v.sig && !(past && !all.some(function (x) { return x.id === past; }))) return;
+                v.sig = sig;
                 if (past && !all.some(function (s) { return s.id === past; })) { past = null; v.past = null; src = buf; draw(); }
                 sel.innerHTML = mbuHtml('<option value="">Current session</option>' + all.map(function (s) {
                     return '<option value="' + esc(s.id) + '">' + esc(sessionLabel(s)) + '</option>';
@@ -1000,12 +1022,13 @@ function mbuLog(o) {
             filters: filters,
         };
         if (sel) {
-            sel.addEventListener('mousedown', function () { v.sessions(); });
-            sel.addEventListener('focus', function () { v.sessions(); });
             sel.addEventListener('change', function () { v.show(sel.value || null); });
             root.querySelector('.mbu-logpop-hclear').onclick = function () { clearHistory(); };
         }
         root.querySelector('.mbu-logpop-clear').onclick = function () { clear(); };
+        v.dbg = root.querySelector('.mbu-log-dbg input');
+        v.dbg.checked = debugOn();
+        v.dbg.onchange = function () { setDebug(v.dbg.checked); };
         root.querySelector('.mbu-logpop-copy').onclick = function () {
             copy(root.querySelector('.mbu-logpop-copy'), past ? { id: past, entries: src } : null);
         };
@@ -1136,6 +1159,9 @@ function mbuLog(o) {
         ok: function () { add('ok', arguments); },
         debug: function () { add('debug', arguments); },
         add: function (sev) { add(sev, Array.prototype.slice.call(arguments, 1)); },
+        // the debug switch: are debug lines recorded?
+        debugOn: function () { return debugOn(); },
+        setDebug: setDebug,
         pre: function () { add('info', arguments, null, true); },
         // a logger whose lines carry this category; the same object for the same name
         cat: function (name) {
@@ -1176,7 +1202,7 @@ function mbuLog(o) {
         load: function (id) { return loadSession(id); },
         forget: function (id) { forget(id); views.forEach(function (v) { v.sessions(); }); },
         clearHistory: clearHistory,
-        // redraw the session lists (a script showing its mounted viewer again)
+        // redraw the session lists (a script showing its mounted viewer again); only a changed list is redrawn
         refresh: function () { views.forEach(function (v) { v.sessions(); }); },
         flush: flush,
     };
