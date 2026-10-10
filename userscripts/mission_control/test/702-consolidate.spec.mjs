@@ -122,8 +122,12 @@ test.describe('the consolidation page', () => {
     const md = await page.evaluate(() => window.__mccTest.markdown());
     check(/^## Discovery: \d+ platforms compared/.test(md) && /\| Title \| Discovery/.test(md), 'Copy as Markdown has the comparison');
 
-    // Open in release editor: First Contact posts the seed to the editor in this tab
+    // Open in release editor: First Contact posts the seed to the editor in this tab, with no
+    // "leave page?" from the empty editor (it asks only after a click on the page, as here)
+    const dialogs = [];
+    page.on('dialog', dl => { dialogs.push(dl.type()); dl.accept(); });
     await Promise.all([page.waitForURL(/\/release\/add\?first_contact=/, { timeout: 60_000 }), page.click('#mcc-root .mcc-foot [data-cc="open"]')]);
+    check(!dialogs.length, `no dialog on the way to the editor (${dialogs.join(', ') || 'none'})`);
     await page.waitForSelector('#release-editor', { timeout: 60_000 });
     const name = await page.locator('#name').inputValue();
     check(name === 'Discovery', `the release editor is seeded: "${name}"`);
