@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         ISRC Scout
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.9.175454
+// @version      2026.10.10
 // @description  Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify / Beatport / Tidal / Volumo / HDtracks / Qobuz, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPklTUkMgU2NvdXQ8L3RpdGxlPgogICAgPHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPgogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjQwIi8+CiAgICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyNiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2U9IiNiOWEzZTgiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPgogIDwvZz4KICA8bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+Cjwvc3ZnPgo=
@@ -7742,6 +7742,16 @@
         if (hit && !RELEASE[hit.k]) { RELEASE[hit.k] = hit.v; lent.push(hit.k); Log.info('Mission Control probe: using the ticked ' + hit.k + ' ' + hit.v); }
       });
       mcFound = {};
+      // #702: the ISRCs taken when Mission Control consolidated this release, by track, stand as
+      // taken: a source is asked only for the tracks still without one
+      let picks = 0;
+      (Array.isArray(d.isrcs) ? d.isrcs : []).forEach((raw, i) => {
+        const t = RELEASE.tracks[i], isrc = normalizeIsrc(raw);
+        if (!t || !isValidIsrc(isrc) || t.existing.includes(isrc)) return;
+        mcFound[t.recId] = { isrc, source: 'Mission Control' };
+        picks++;
+      });
+      if (Array.isArray(d.isrcs)) Log.info('Mission Control probe: ' + picks + ' ISRC(s) taken in the consolidation, of ' + d.isrcs.filter(Boolean).length + ' given for ' + RELEASE.tracks.length + ' track(s)');
       const srcs = mcSources();
       Log.info('Mission Control probe ' + d.run + ': sources ' + (srcs.map(x => x.source).join(', ') || 'none'));
       let used = null, more = false;

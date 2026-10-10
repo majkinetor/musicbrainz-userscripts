@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         First Contact
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.9
+// @version      2026.10.10
 // @description  Import a release into MusicBrainz from the platform's album page with one click: the release editor opens with the title, tracklist, artists, date, label, barcode and link filled in. Each artist's platform link is handed to Apollo Editor for matching. A second button sends the album to Harmony instead. By default the album page is also saved on the Internet Archive (it sends each imported URL to archive.org; off in the settings), and the edit note links the snapshot. Platforms: Deezer, Bandcamp, Discogs, Apple Music, Tidal, Qobuz, Beatport, Spotify, YouTube Music, Volumo, HDtracks, SoundCloud, Amazon Music, Audiomack, 7digital, Ototoy.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPkZpcnN0IENvbnRhY3Q8L3RpdGxlPgogIDwhLS0gdHJhY3RvciBiZWFtIC0tPgogIDxwYXRoIGQ9Ik01MCA0NCBMNzggNDQgTDEwNCAxMTIgTDI0IDExMiBaIiBmaWxsPSIjZjZjNDMxIiBvcGFjaXR5PSIwLjkiLz4KICA8cGF0aCBkPSJNNTYgNDQgTDcyIDQ0IEw4OCAxMTIgTDQwIDExMiBaIiBmaWxsPSIjZmRlNjhhIiBvcGFjaXR5PSIwLjciLz4KICA8IS0tIGxhbmRpbmcgcmluZyAtLT4KICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSIxMTQiIHJ4PSI0MiIgcnk9IjgiIGZpbGw9IiMxZTIzNDYiIHN0cm9rZT0iI2M5Y2RmMiIgc3Ryb2tlLXdpZHRoPSIzIi8+CiAgPGVsbGlwc2UgY3g9IjY0IiBjeT0iMTEzIiByeD0iMjYiIHJ5PSI0LjIiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2Y2YzQzMSIgc3Ryb2tlLXdpZHRoPSIyLjQiLz4KICA8IS0tIHNhdWNlcjogYSBwYWxlIHJpbSwgc28gaXQgc2hvd3Mgb24gYSBkYXJrIGJhY2tncm91bmQgdG9vIC0tPgogIDxwYXRoIGQ9Ik00MCAyNiBBMjQgMTggMCAwIDEgODggMjYgWiIgZmlsbD0iIzFlMjM0NiIgc3Ryb2tlPSIjYzljZGYyIiBzdHJva2Utd2lkdGg9IjMiLz4KICA8cGF0aCBkPSJNNTAgMTggQTEwIDYgMCAwIDEgNjAgMTQiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2ZmZiIgc3Ryb2tlLXdpZHRoPSIyLjYiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxlbGxpcHNlIGN4PSI2NCIgY3k9IjMyIiByeD0iNTYiIHJ5PSIxMyIgZmlsbD0iIzFlMjM0NiIgc3Ryb2tlPSIjYzljZGYyIiBzdHJva2Utd2lkdGg9IjMiLz4KICA8Y2lyY2xlIGN4PSIzOCIgY3k9IjMyIiByPSI0LjQiIGZpbGw9IiNmZmYiLz4KICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjM0IiByPSI0LjQiIGZpbGw9IiNmZmYiLz4KICA8Y2lyY2xlIGN4PSI5MCIgY3k9IjMyIiByPSI0LjQiIGZpbGw9IiNmZmYiLz4KICA8IS0tIHRoZSByZWxlYXNlIGJlaW5nIGJlYW1lZCB1cDogYSBwdXJwbGUgaGV4YWdvbiB3aXRoIGEgbm90ZSAtLT4KICA8cGF0aCBkPSJNNjQgNTggTDg0IDY5LjUgTDg0IDkyLjUgTDY0IDEwNCBMNDQgOTIuNSBMNDQgNjkuNSBaIiBmaWxsPSIjN2I0ZmQ2Ii8+CiAgPHBhdGggZD0iTTY0IDU4IEw4NCA2OS41IEw2NCA4MSBMNDQgNjkuNSBaIiBmaWxsPSIjOWI3MmVhIi8+CiAgPHBhdGggZD0iTTYwIDcyIEw3NCA2OSBMNzQgODkiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2ZmZiIgc3Ryb2tlLXdpZHRoPSIzLjQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz4KICA8cGF0aCBkPSJNNjAgNzIgTDYwIDkyIiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iMy40Ii8+CiAgPGVsbGlwc2UgY3g9IjU2IiBjeT0iOTIiIHJ4PSI0LjYiIHJ5PSIzLjYiIGZpbGw9IiNmZmYiLz4KICA8ZWxsaXBzZSBjeD0iNzAiIGN5PSI4OSIgcng9IjQuNiIgcnk9IjMuNiIgZmlsbD0iI2ZmZiIvPgogIDwhLS0gc3BhcmtsZXMgLS0+CiAgPHBhdGggZD0iTTE4IDU0IGwyLjUgNiA2IDIuNSAtNiAyLjUgLTIuNSA2IC0yLjUgLTYgLTYgLTIuNSA2IC0yLjUgWiIgZmlsbD0iI2Y2YzQzMSIvPgogIDxwYXRoIGQ9Ik0xMDggNTIgbDIuNSA2IDYgMi41IC02IDIuNSAtMi41IDYgLTIuNSAtNiAtNiAtMi41IDYgLTIuNSBaIiBmaWxsPSIjMWUyMzQ2Ii8+CiAgPHBhdGggZD0iTTExMiA4MiBsMS44IDQuMiA0LjIgMS44IC00LjIgMS44IC0xLjggNC4yIC0xLjggLTQuMiAtNC4yIC0xLjggNC4yIC0xLjggWiIgZmlsbD0iI2Y2YzQzMSIvPgogIDxwYXRoIGQ9Ik0xNCA4NiBsMS44IDQuMiA0LjIgMS44IC00LjIgMS44IC0xLjggNC4yIC0xLjggLTQuMiAtNC4yIC0xLjggNC4yIC0xLjggWiIgZmlsbD0iIzFlMjM0NiIvPgo8L3N2Zz4K
@@ -111,7 +111,7 @@ Log.info(mbuStartupInfo(NAME));
 mbuToast.log = (kind, msg) => (kind === 'warn' ? Log.warn(msg) : kind === 'ok' ? Log.ok(msg) : Log.info(msg));
 
 function settings() {
-    const s = Object.assign({ server: 'musicbrainz.org', iconOnly: false, gearOnHover: false, closeAfter: false, harmony: true, archive: true, iaKey: '', iaSecret: '' }, GM_getValue('fc.settings', {}));
+    const s = Object.assign({ server: 'musicbrainz.org', iconOnly: false, gearOnHover: false, closeAfter: false, harmony: true, consolidate: true, archive: true, iaKey: '', iaSecret: '' }, GM_getValue('fc.settings', {}));
     if (!SERVERS.includes(s.server)) s.server = 'musicbrainz.org';
     return s;
 }
@@ -181,6 +181,9 @@ function splitFeat(title) {
     return { title: (s.slice(0, m.index) + s.slice(m.index + m[0].length)).replace(/\s{2,}/g, ' ').trim(), feat: names };
 }
 
+// #702: a page read headless for Mission Control is a fetched document, not this tab's; it carries
+// the origin it was fetched from (fcOrigin), which the page readers use in place of location.origin
+const originOf = doc => (doc && doc.fcOrigin) || location.origin;
 const normName = s => String(s || '').normalize('NFKC').toLowerCase().replace(/[\s.'’]+/g, ' ').trim();
 
 // Artist list → MB artist credit: mains joined "A, B & C", then " feat. " and the featured
@@ -463,23 +466,24 @@ const BANDCAMP = {
         return d && !isNaN(d) ? { year: d.getUTCFullYear(), month: d.getUTCMonth() + 1, day: d.getUTCDate() } : { year: null, month: null, day: null };
     },
 
-    async fetchRelease(path, progress) {
-        const tEl = document.querySelector('script[data-tralbum]');
+    async fetchRelease(path, progress, doc) {
+        doc = doc || document;
+        const tEl = doc.querySelector('script[data-tralbum]');
         if (!tEl) throw new Error('Bandcamp: no album data on this page (tralbum)');
         const t = JSON.parse(tEl.dataset.tralbum);
         let ld = null;
-        try { ld = JSON.parse((document.querySelector('script[type="application/ld+json"]') || {}).textContent || 'null'); } catch (e) { Log.warn(`Bandcamp ld+json: ${e.message}`); }
+        try { ld = JSON.parse((doc.querySelector('script[type="application/ld+json"]') || {}).textContent || 'null'); } catch (e) { Log.warn(`Bandcamp ld+json: ${e.message}`); }
         const cur = t.current || {};
-        const url = (t.url || location.origin + path).replace(/^http:/, 'https:');
+        const url = (t.url || originOf(doc) + path).replace(/^http:/, 'https:');
         const by = ld && ld.byArtist ? { name: ld.byArtist.name, url: ld.byArtist['@id'] || null } : null;
         const pub = ld && ld.publisher ? { name: ld.publisher.name, url: ld.publisher['@id'] || null } : null;
         const albumArtist = t.artist || cur.artist || (by && by.name) || '';
         Log.info(`Bandcamp album "${cur.title}" by ${albumArtist} · ${(t.trackinfo || []).length} track(s) · released ${t.album_release_date || cur.release_date} · UPC ${cur.upc || '—'} · by ${by ? by.name + ' ' + (by.url || '(no page)') : '—'} · publisher ${pub ? pub.name + ' ' + (pub.url || '') : '—'}${t.album_is_preorder ? ' · PREORDER' : ''}`);
 
         let band = null;
-        try { band = JSON.parse((document.querySelector('script[data-band]') || {}).dataset?.band || 'null'); } catch (e) { Log.debug(`Bandcamp data-band: ${e.message}`); }
+        try { band = JSON.parse((doc.querySelector('script[data-band]') || {}).dataset?.band || 'null'); } catch (e) { Log.debug(`Bandcamp data-band: ${e.message}`); }
         // the account this page belongs to: an artist's own, or a label's
-        const account = { name: (band && band.name) || (pub && pub.name) || '', url: (pub && pub.url) || location.origin };
+        const account = { name: (band && band.name) || (pub && pub.name) || '', url: (pub && pub.url) || originOf(doc) };
         Log.debug(`Bandcamp account: ${account.name} ${account.url}`);
 
         const isVarious = this.VARIOUS.test(albumArtist);
@@ -971,7 +975,7 @@ const QOBUZ = {
         }
         const title = this.text(doc.querySelector('.album-meta__title .album-title')) || (album && album.name) || '';
         if (!title) throw new Error('Qobuz: no album on this page');
-        const root = new URL(path, location.origin);
+        const root = new URL(path, originOf(doc));
         const mains = [...doc.querySelectorAll('.album-meta__item')].filter(li => /^\s*Main artists?\s*:/i.test(li.textContent))
             .flatMap(li => [...li.querySelectorAll('a[href*="/interpreter/"]')])
             .map(a => ({ name: (a.getAttribute('title') || this.text(a)).trim(), url: new URL(a.getAttribute('href'), root).href }));
@@ -1010,7 +1014,7 @@ const QOBUZ = {
         const af = splitFeat(title);
         const credit = various ? [{ name: 'Various Artists', mbid: VARIOUS_ARTISTS_MBID, join: '' }] : creditFromTitle(albumArtists, af.feat);
         const [y, m, d] = String((album && album.datePublished) || '').split('-').map(x => parseInt(x, 10));
-        const url = location.origin + path;
+        const url = originOf(doc) + path;
         return {
             source: this.id,
             annotation: notesText((doc.querySelector('#description .album-block__text') || {}).innerHTML),   // the album review
@@ -1051,9 +1055,14 @@ const BEATPORT = {
         const rel = here && here.props && here.props.pageProps && here.props.pageProps.release;
         if (rel && String(rel.id) === String(id)) { Log.debug('Beatport: the page\'s own data is this release\'s'); return here; }
         Log.info(`Beatport: the page's data is ${rel ? 'release ' + rel.id : 'not a release'}; fetching release ${id}`);
-        const r = await fetch(`${location.origin}/release/-/${id}`, { credentials: 'include' });
-        if (!r.ok) throw new Error(`Beatport: HTTP ${r.status} for release ${id}`);
-        const got = read(new DOMParser().parseFromString(await r.text(), 'text/html'));
+        let html;
+        if (doc && doc.fcOrigin) html = await gmText(`https://www.beatport.com/release/-/${id}`, { Accept: 'text/html' });
+        else {
+            const r = await fetch(`${location.origin}/release/-/${id}`, { credentials: 'include' });
+            if (!r.ok) throw new Error(`Beatport: HTTP ${r.status} for release ${id}`);
+            html = await r.text();
+        }
+        const got = read(new DOMParser().parseFromString(html, 'text/html'));
         if (!got) throw new Error('Beatport: no __NEXT_DATA__ on the release page (bot check?)');
         return got;
     },
@@ -1928,7 +1937,7 @@ const SEVENDIGITAL = {
     async fetchRelease(path, progress, doc) {
         doc = doc || document;
         const og = (doc.querySelector('meta[property="og:url"]') || {}).content || '';
-        const url = (/7digital\.com\/artist\//.test(og) ? og : location.origin + path).replace(/[?#].*$/, '').replace(/\/$/, '');
+        const url = (/7digital\.com\/artist\//.test(og) ? og : originOf(doc) + path).replace(/[?#].*$/, '').replace(/\/$/, '');
         const sub = (new URL(url).hostname.match(/^([a-z]{2})\./) || [])[1];
         const country = sub === 'uk' || !sub ? 'GB' : sub.toUpperCase();
         const info = doc.querySelector('.release-info');
@@ -2402,6 +2411,11 @@ function injectStyle() {
 #fc-root .fc-harmony[aria-disabled="true"]:hover { background: var(--mbu-bg); }
 #fc-root .fc-harmony[aria-busy="true"] { cursor: progress; }
 #fc-root .fc-harmony svg { display: block; }
+/* #702: Consolidate, beside Import */
+#fc-root .fc-cons { border-left: none; padding: 8px 9px; justify-content: center; }
+#fc-root .fc-cons[hidden] { display: none; }
+#fc-root .fc-cons[aria-busy="true"] { cursor: progress; }
+#fc-root .fc-cons svg { display: block; }
 /* majkinetor: "after the click nothing happens … make it obvious it works": a spinner while it reads */
 #fc-root .fc-go[aria-busy="true"]::after { content: ''; width: 14px; height: 14px; flex: 0 0 auto; box-sizing: border-box;
   border: 2px solid var(--mbu-border); border-top-color: var(--mbu-accent-text); border-right-color: var(--mbu-accent-text); border-radius: 50%; animation: fc-spin .8s linear infinite; }
@@ -2423,8 +2437,11 @@ function injectStyle() {
 /* ⚙︎ only on hover: a tab on the button's edge, above it (below when the button sits near the
    top), so showing it never shifts Import out from under the pointer */
 #fc-root.fc-gear-hover .fc-go { border-radius: 8px; }
-#fc-root.fc-gear-hover:has(.fc-harmony:not([hidden])) .fc-go { border-radius: 8px 0 0 8px; }
+#fc-root.fc-gear-hover:has(.fc-harmony:not([hidden])) .fc-go,
+#fc-root.fc-gear-hover:has(.fc-cons:not([hidden])) .fc-go { border-radius: 8px 0 0 8px; }
 #fc-root.fc-gear-hover .fc-harmony { border-radius: 0 8px 8px 0; }
+#fc-root.fc-gear-hover .fc-cons { border-radius: 0; }
+#fc-root.fc-gear-hover:has(.fc-harmony[hidden]) .fc-cons { border-radius: 0 8px 8px 0; }
 #fc-root.fc-gear-hover .fc-more { position: absolute; right: 8px; bottom: 100%; min-width: 0; padding: 3px 8px;
   border: 1px solid var(--mbu-border); border-bottom: none; border-radius: 8px 8px 0 0; visibility: hidden; }
 #fc-root.fc-gear-hover.fc-gear-below .fc-more { bottom: auto; top: 100%; border-bottom: 1px solid var(--mbu-border); border-top: none; border-radius: 0 0 8px 8px; }
@@ -2505,12 +2522,17 @@ function mountButton(provider, id) {
         more.title = 'Settings';
         more.setAttribute('aria-label', more.title);
         more.addEventListener('click', e => { e.stopPropagation(); togglePanel(more); });
+        const cons = document.createElement('button');
+        cons.type = 'button';
+        cons.className = 'fc-cons';
+        cons.innerHTML = mbuHtml(MC_SVG);
+        cons.addEventListener('click', () => { consolidateCurrent(); });
         const harmony = document.createElement('button');
         harmony.type = 'button';
         harmony.className = 'fc-harmony';
         harmony.innerHTML = mbuHtml(HARMONY_SVG);
         harmony.addEventListener('click', () => { sendToHarmony(); });
-        root.append(go, harmony, more);
+        root.append(go, cons, harmony, more);
         document.body.appendChild(root);
         makeMovable(root);
         root.addEventListener('mouseenter', () => root.classList.toggle('fc-gear-below', root.getBoundingClientRect().top < 40));
@@ -2521,6 +2543,7 @@ function mountButton(provider, id) {
     root.classList.toggle('fc-gear-hover', !!settings().gearOnHover);   // majkinetor: an option to show ⚙︎ only on hover
     root.querySelector('.fc-go').title = `Import to MusicBrainz: open the release editor with this ${provider.name} release filled in`;
     showHarmony(root, provider);
+    showCons(root, provider);
     root.style.display = '';
     migrateScrollSetting();
     placeButton(root);
@@ -2870,6 +2893,7 @@ function togglePanel(anchor) {
         + '</select></label>'
         + `<label class="fc-check" title="On ${here} only: the album's notes on the platform (Bandcamp's about and credits, Discogs's notes, Qobuz's and Apple's reviews, Beatport's and YouTube Music's description, Amazon Music's ℗ line), with a line saying where they come from. Reviews are the critic's text: check you may copy it before you submit."><input type="checkbox" class="fc-annotation"${annotationOn(here) ? ' checked' : ''}> Annotation from ${here}'s notes</label>`
         + `<label class="fc-check" title="Once the release editor has the release, or the album is sent to Harmony, this platform tab closes. It stays open when the import fails, or when the browser blocked the new tab and the editor or Harmony opened here."><input type="checkbox" class="fc-close-after"${s.closeAfter ? ' checked' : ''}> Close this page after the import</label>`
+        + `<label class="fc-check" title="A button beside Import that reads this album and opens Mission Control on MusicBrainz, which finds it on the other platforms and lets you take the best of each into the release editor"><input type="checkbox" class="fc-cons-opt"${s.consolidate ? ' checked' : ''}> Consolidate button</label>`
         + `<label class="fc-check" title="A button between Import and ⚙︎ that looks this album up on Harmony instead, with every platform that has its barcode; Falcon carries on from there"><input type="checkbox" class="fc-harmony-opt"${s.harmony ? ' checked' : ''}> Send to Harmony button</label>`
         + '<div class="fc-sec">Archive</div>'
         // #659: majkinetor: "It should be ON by default or many people will not use it"
@@ -2918,6 +2942,13 @@ function togglePanel(anchor) {
         if (root) placeButton(root);
         Log.info(`moved button on ${here}: ${e.target.checked ? 'scrolls with the page' : 'stays on the screen'}`);
     });
+    panel.querySelector('.fc-cons-opt').addEventListener('change', e => {
+        const next = Object.assign(settings(), { consolidate: e.target.checked });
+        saveSettings(next);
+        const root = document.getElementById('fc-root');
+        if (root && current) showCons(root, current.provider);
+        Log.info(`Consolidate button: ${next.consolidate ? 'shown' : 'hidden'}`);
+    });
     panel.querySelector('.fc-harmony-opt').addEventListener('change', e => {
         const next = Object.assign(settings(), { harmony: e.target.checked });
         saveSettings(next);
@@ -2964,6 +2995,38 @@ function togglePanel(anchor) {
     panelDismiss = mbuDismissOn(panel, () => { panelDismiss = null; panel.remove(); });
 }
 
+// What an import does to the release a provider read, before it is seeded: the type guessed where
+// the platform gives none, labels split, Various Artists, the annotation, the script. Consolidate and
+// Mission Control's reads (#702) do the same, so every platform's release is finished alike.
+function finishRelease(rel, provider) {
+    const tracks = [].concat(...rel.mediums.map(m => m.tracks)).filter(t => !t.placeholder);   // an empty track (#684) is no song
+    const g = guessReleaseType(rel.title, tracks);
+    Log.info(`type: ${provider.name} says ${rel.types.join(' + ') || 'nothing'}; the guess is ${g.type || 'none'} (${g.why})`);
+    // the platform's own type stands, unless it's a plain Album and the title says EP / Single
+    rel.typeGuessed = false;
+    if (g.type && (!rel.types.length || (g.explicit && rel.types[0] === 'Album' && g.type !== 'Album'))) {
+        rel.typeGuessed = !rel.types.length;
+        rel.types = [g.type].concat(rel.types.slice(1));
+        Log.info(`type set to ${rel.types.join(' + ')}`);
+    }
+    rel.labels = splitLabels(rel.labels);
+    const va = variousArtistsWhy(rel);
+    if (va) {
+        Log.info(`release artist: Various Artists, not ${rel.credit.map(c => c.name + c.join).join('')} (${va})`);
+        rel.credit = [{ name: 'Various Artists', mbid: VARIOUS_ARTISTS_MBID, join: '' }];
+        if (!rel.types.includes('Compilation')) rel.types = (rel.types.length ? rel.types : ['Album']).concat('Compilation');
+    }
+    if (rel.annotation && annotationOn(provider.name)) {
+        rel.annotation += `\n\nFrom ${provider.name}: ${rel.url}`;
+        Log.info(`annotation: ${rel.annotation.length} characters of ${provider.name}'s notes`);
+    } else {
+        if (rel.annotation) Log.info(`annotation: ${provider.name} has notes (${rel.annotation.length} characters); off for ${provider.name} in the settings`);
+        rel.annotation = null;
+    }
+    rel.script = guessScript([rel.title].concat(...rel.mediums.map(m => m.tracks.map(t => t.title))));
+    return rel;
+}
+
 async function importCurrent() {
     if (busy || !current) return;
     const { provider, id } = current;
@@ -2990,31 +3053,7 @@ async function importCurrent() {
             Log.info('import anyway, with tracks missing');
         }
         count = ''; phase = 'Opening MusicBrainz…'; show();
-        {
-            const tracks = [].concat(...rel.mediums.map(m => m.tracks)).filter(t => !t.placeholder);   // an empty track (#684) is no song
-            const g = guessReleaseType(rel.title, tracks);
-            Log.info(`type: ${provider.name} says ${rel.types.join(' + ') || 'nothing'}; the guess is ${g.type || 'none'} (${g.why})`);
-            // the platform's own type stands, unless it's a plain Album and the title says EP / Single
-            if (g.type && (!rel.types.length || (g.explicit && rel.types[0] === 'Album' && g.type !== 'Album'))) {
-                rel.types = [g.type].concat(rel.types.slice(1));
-                Log.info(`type set to ${rel.types.join(' + ')}`);
-            }
-        }
-        rel.labels = splitLabels(rel.labels);
-        const va = variousArtistsWhy(rel);
-        if (va) {
-            Log.info(`release artist: Various Artists, not ${rel.credit.map(c => c.name + c.join).join('')} (${va})`);
-            rel.credit = [{ name: 'Various Artists', mbid: VARIOUS_ARTISTS_MBID, join: '' }];
-            if (!rel.types.includes('Compilation')) rel.types = (rel.types.length ? rel.types : ['Album']).concat('Compilation');
-        }
-        if (rel.annotation && annotationOn(provider.name)) {
-            rel.annotation += `\n\nFrom ${provider.name}: ${rel.url}`;
-            Log.info(`annotation: ${rel.annotation.length} characters of ${provider.name}'s notes`);
-        } else {
-            if (rel.annotation) Log.info(`annotation: ${provider.name} has notes (${rel.annotation.length} characters); off for ${provider.name} in the settings`);
-            rel.annotation = null;
-        }
-        rel.script = guessScript([rel.title].concat(...rel.mediums.map(m => m.tracks.map(t => t.title))));
+        finishRelease(rel, provider);
         const nTracks = rel.mediums.reduce((n, m) => n + m.tracks.length, 0);
         Log.info(`release read in ${Date.now() - t0} ms: "${rel.title}" · ${rel.credit.map(c => c.name + c.join).join('')} · ${rel.mediums.length} medium(s), ${nTracks} track(s) · types ${rel.types.join('+') || '—'} · script ${rel.script || '—'}`);
         if (!nTracks) throw new Error(`${provider.name} returned no tracks`);
@@ -3116,6 +3155,169 @@ function openHarmony(url) {
     if (here) location.assign(url);
 }
 
+/* ── #702: Consolidate in Mission Control ────────────────────────────────── */
+// The album is read as for an import and handed to Mission Control on MusicBrainz's
+// /release/add#mc=<token>, in the script's storage under fc.handoff.cons.<token>. There Platform
+// Check finds the album on the other platforms, this script reads each of them (headless, mc:read),
+// and Mission Control lets you take the best of each into the release editor (fc:seed).
+const CONS_PREFIX = HANDOFF_PREFIX + 'cons.';
+const MC_SVG = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="10 8 108 112" width="18" height="18" aria-hidden="true"><g stroke="#22223b" stroke-width="5" stroke-linejoin="round">'
+    + '<path d="M77 35.5 L64 43 L51 35.5 L51 20.5 L64 13 L77 20.5Z" fill="#7a57e8"/>'
+    + '<path d="M59.7 77.5 L46.7 85 L33.7 77.5 L33.7 62.5 L46.7 55 L59.7 62.5Z" fill="#ffc94a"/><path d="M94.3 77.5 L81.3 85 L68.3 77.5 L68.3 62.5 L81.3 55 L94.3 62.5Z" fill="#ffc94a"/>'
+    + '<path d="M42.3 107.5 L29.4 115 L16.4 107.5 L16.4 92.5 L29.4 85 L42.3 92.5Z" fill="#ffc94a"/><path d="M77 107.5 L64 115 L51 107.5 L51 92.5 L64 85 L77 92.5Z" fill="#ffc94a"/>'
+    + '<path d="M111.6 107.5 L98.6 115 L85.7 107.5 L85.7 92.5 L98.6 85 L111.6 92.5Z" fill="#ffc94a"/></g></svg>';
+const providerMeta = p => ({ id: p.id, name: p.name, abbr: p.abbr, artistLinkType: p.artistLinkType || null });
+// a release with every artist's and label's link carrying the forms MusicBrainz may store it under
+function relWithForms(rel, provider) {
+    const forms = url => {
+        if (!url || !provider.urlForms) return undefined;
+        const f = [...new Set([url, ...provider.urlForms(url)])];
+        return f.length > 1 ? f : undefined;
+    };
+    const ac = c => (c || []).map(a => Object.assign({}, a, { urlForms: forms(a.url) }));
+    return Object.assign({}, rel, {
+        credit: ac(rel.credit),
+        labels: (rel.labels || []).map(l => Object.assign({}, l, { urlForms: forms(l.url) })),
+        mediums: rel.mediums.map(m => Object.assign({}, m, { tracks: m.tracks.map(t => Object.assign({}, t, { credit: ac(t.credit) })) })),
+    });
+}
+function showCons(root, provider) {
+    const b = root.querySelector('.fc-cons');
+    if (!b) return;
+    b.hidden = !settings().consolidate;
+    b.setAttribute('aria-label', 'Consolidate in Mission Control');
+    b.title = `Consolidate in Mission Control: read this ${provider.name} album, find it on the other platforms, and take the best of each into the release editor`;
+}
+async function consolidateCurrent() {
+    if (busy || !current) return;
+    const { provider, id } = current;
+    const root = document.getElementById('fc-root');
+    const go = root && root.querySelector('.fc-go'), cb = root && root.querySelector('.fc-cons');
+    const label = go && go.querySelector('span');
+    const server = settings().server;
+    const token = 'c' + Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+    busy = true;
+    for (const b of [go, cb]) if (b) b.setAttribute('aria-busy', 'true');
+    const t0 = Date.now();
+    let count = '';
+    const show = () => { if (label) label.textContent = `Reading ${provider.name} for Mission Control…${count ? ' ' + count : ''} · ${Math.round((Date.now() - t0) / 1000)} s`; };
+    show();
+    const ticker = setInterval(show, 1000);
+    try {
+        Log.info(`consolidate ${location.href}`);
+        Log.info(`consolidate ${provider.name} album ${id} → ${server} (token ${token})`);
+        const rel = finishRelease(await provider.fetchRelease(id, (n, total) => { count = `${n}/${total}`; show(); }), provider);
+        const nTracks = rel.mediums.reduce((n, m) => n + m.tracks.length, 0);
+        if (!nTracks) throw new Error(`${provider.name} returned no tracks`);
+        Log.info(`release read in ${Date.now() - t0} ms: "${rel.title}" · ${rel.mediums.length} medium(s), ${nTracks} track(s) · barcode ${rel.barcode || '—'}`);
+        pruneHandoffs();
+        GM_setValue(CONS_PREFIX + token, { v: 1, token, created: Date.now(), source: provider.id, sourceName: provider.name, platform: providerMeta(provider), id, page: archivePageUrl(location.href), url: rel.url, rel: relWithForms(rel, provider) });
+        const url = `https://${server}/release/add#mc=${token}`;
+        if (mbuTestHooks()) window.__fcLastCons = { token, url, rel };
+        Log.ok(`handed to Mission Control: ${url}`);
+        let here = false;
+        if (typeof GM_openInTab === 'function' && !mbuTestHooks()) GM_openInTab(url, { active: true, insert: true });
+        else if (!mbuTestHooks()) { const w = window.open(url, '_blank'); if (w) w.opener = null; else here = true; }
+        if (settings().closeAfter) {
+            if (!here) closeSourceTab();
+            else Log.info('close after Consolidate: skipped, the browser blocked a new tab and Mission Control opens in this one');
+        }
+        if (here) location.assign(url);
+    } catch (e) {
+        Log.err(`Consolidate failed: ${e.message}`);
+        mbuToast(`✗ ${NAME}: ${e.message}`, { kind: 'warn', action: { label: 'Copy log', onClick: b => Log.copy(b) } });
+    } finally {
+        clearInterval(ticker);
+        busy = false;
+        for (const b of [go, cb]) if (b) b.removeAttribute('aria-busy');
+        if (label) label.textContent = 'Import to MusicBrainz';
+    }
+}
+
+// On MusicBrainz's /release/add#mc=<token>: hand the album to Mission Control, read the other
+// platforms for it, and seed the release editor with what it took. Every detail is a JSON string.
+//   fc:consolidate          → the album as Consolidate stored it, or { token, error }; again on fc:consolidate-request
+//   mc:read { url, run }    → mc:read-progress { url, run, n, total } while it reads, then
+//                             mc:read-result { url, run, ok, provider, rel, ms } or { url, run, ok: false, error }
+//   fc:seed { rel, platform, editNote, run } → fc:seeded { run, token }, then the release editor in this tab
+const READ_PAGE = new Set(['bandcamp', 'qobuz', 'beatport', 'sevendigital', 'ototoy']);   // the readers that parse the album page
+function mbConsolidate(token) {
+    const key = CONS_PREFIX + token;
+    let h = GM_getValue(key, null), from = 'storage';
+    if (!h) { try { h = JSON.parse(sessionStorage.getItem(key) || 'null'); from = 'this tab'; } catch (e) { h = null; } }
+    if (h) {
+        try { sessionStorage.setItem(key, JSON.stringify(h)); } catch (e) { Log.debug(`consolidation ${token}: no copy for this tab (${e.message})`); }
+        GM_deleteValue(key);
+        Log.info(`Mission Control: consolidation ${token} read from ${from}: ${h.sourceName} "${h.rel && h.rel.title}" (${h.url})`);
+    } else Log.warn(`Mission Control page opened with consolidation ${token}, but it is not stored (expired, or another browser)`);
+    const json = JSON.stringify(h || { token, error: 'First Contact has no album stored for this page: it is kept for an hour, in the browser that read it.' });
+    const publish = why => {
+        document.documentElement.dataset.fcConsolidate = json;
+        document.dispatchEvent(new CustomEvent('fc:consolidate', { detail: json }));
+        Log.debug(`consolidation ${token} published (${why})`);
+    };
+    publish('load');
+    document.addEventListener('fc:consolidate-request', () => publish('request'));
+    document.addEventListener('mc:read', e => { mcRead(e.detail); });
+    document.addEventListener('fc:seed', e => { mcSeed(e.detail); });
+}
+async function mcRead(detail) {
+    let d;
+    try { d = JSON.parse(detail) || {}; } catch (e) { Log.warn(`mc:read with unreadable detail: ${e.message}`); return; }
+    const send = (type, o) => document.dispatchEvent(new CustomEvent(type, { detail: JSON.stringify(Object.assign({ url: d.url, run: d.run }, o)) }));
+    const t0 = Date.now();
+    try {
+        const u = new URL(d.url);
+        const provider = PROVIDERS.find(p => p.host.test(u.hostname));
+        if (!provider) throw new Error(`First Contact can't read ${u.hostname}`);
+        const id = provider.albumId(u);
+        if (!id) throw new Error(`not an album page ${provider.name} has (${d.url})`);
+        if (provider.id === 'spotify') throw new Error('Spotify is read through its web player, on its own page only');
+        let doc = null;
+        if (READ_PAGE.has(provider.id)) {
+            doc = new DOMParser().parseFromString(await gmText(d.url, { Accept: 'text/html' }), 'text/html');
+            doc.fcOrigin = u.origin;
+        }
+        Log.info(`Mission Control: reading ${provider.name} album ${id}${doc ? ' from its page, fetched' : ''}`);
+        const rel = finishRelease(await provider.fetchRelease(id, (n, total) => send('mc:read-progress', { n, total }), doc), provider);
+        const nTracks = rel.mediums.reduce((n, m) => n + m.tracks.length, 0);
+        Log.ok(`Mission Control: ${provider.name} read in ${Date.now() - t0} ms: "${rel.title}" · ${nTracks} track(s) · barcode ${rel.barcode || '—'}`);
+        send('mc:read-result', { ok: true, provider: providerMeta(provider), rel: relWithForms(rel, provider), ms: Date.now() - t0 });
+    } catch (e) {
+        Log.warn(`Mission Control: reading ${d.url} failed: ${e.message}`);
+        send('mc:read-result', { ok: false, error: e.message, ms: Date.now() - t0 });
+    }
+}
+// The handoff for the release Mission Control consolidated: each credit keeps its source link
+// (url) and carries the same artist's links on the other platforms read (alt: [{ url, urlForms,
+// platform }]), which Apollo tries when the source link alone matches no one (#702).
+function handoffFromMc(rel, platform, token) {
+    const ac = c => (c || []).map(a => ({ name: a.name, artistName: a.artistName || a.name, join: a.join, url: a.url || null, urlForms: a.urlForms, mbid: a.mbid || null, alt: Array.isArray(a.alt) && a.alt.length ? a.alt : undefined }));
+    return {
+        v: 2, token, created: Date.now(), mc: true,
+        source: platform.id, sourceName: platform.name,
+        platform: { abbr: platform.abbr, name: platform.name, artistLinkType: platform.artistLinkType || undefined },
+        url: rel.url, title: rel.title, barcode: rel.barcode,
+        credit: ac(rel.credit),
+        labels: (rel.labels || []).map(l => ({ name: l.name, catno: l.catno, url: l.url || null, urlForms: l.urlForms, mbid: l.mbid || null })),
+        mediums: rel.mediums.map(m => ({ tracks: m.tracks.map(t => ({ title: t.title, isrc: t.isrc, url: t.url, credit: ac(t.credit) })) })),
+    };
+}
+function mcSeed(detail) {
+    let d;
+    try { d = JSON.parse(detail) || {}; } catch (e) { Log.warn(`fc:seed with unreadable detail: ${e.message}`); return; }
+    if (!d.rel || !d.platform) { Log.warn('fc:seed without a release'); return; }
+    const token = Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+    GM_setValue(HANDOFF_PREFIX + token, Object.assign(handoffFromMc(d.rel, d.platform, token), { archive: null }));
+    const params = seedParams(d.rel, d.editNote || '');
+    const nTracks = d.rel.mediums.reduce((n, m) => n + m.tracks.length, 0);
+    Log.info(`Mission Control: seeding the release editor with "${d.rel.title}", ${nTracks} track(s), ${(d.rel.urls || []).length} link(s) (${params.length} parameters, token ${token})`);
+    if (mbuTestHooks()) window.__fcLastSeed = { token, params, rel: d.rel, mc: true };
+    document.dispatchEvent(new CustomEvent('fc:seeded', { detail: JSON.stringify({ run: d.run, token }) }));
+    if (d.dry) return;
+    postForm(`/release/add?first_contact=${token}`, '_self', params);
+}
+
 // majkinetor: "why does it open tab while reading?" The editor's tab opens once the release is read,
 // not at the click. A tab a page opens that long after the click is a popup the browser blocks, but
 // one the userscript manager opens (GM_openInTab) isn't: the seed waits in the script's storage, and
@@ -3200,6 +3402,8 @@ function platformMain() {
 // and can ask for it again with a 'first-contact:request' event on document.
 
 function mbMain() {
+    const mc = (location.hash.match(/[#&]mc=([a-z0-9]+)/i) || [])[1];
+    if (mc && /^\/release\/add\/?$/.test(location.pathname)) { mbConsolidate(mc); return; }
     const q = new URLSearchParams(location.search);
     const token = q.get('first_contact');
     if (!token) return;
@@ -4386,6 +4590,6 @@ try {
 } catch (e) {
     try { Log.err(`startup: ${e.stack || e.message}`); } catch (_) { /* nothing left to log with */ }
 }
-if (mbuTestHooks()) window.__fcTest = { splitFeat, creditFromTitle, seedParams, editNoteFor, guessScript, splitLabels, providers: PROVIDERS, importCurrent };
+if (mbuTestHooks()) window.__fcTest = { splitFeat, creditFromTitle, seedParams, editNoteFor, guessScript, splitLabels, providers: PROVIDERS, importCurrent, finishRelease, relWithForms, handoffFromMc, consolidateCurrent };
 
 })();

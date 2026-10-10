@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Platform Check
 // @namespace    http://tampermonkey.net/
-// @version      2026.10.10.5
+// @version      2026.10.10.201952
 // @description  Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CjxnIHN0cm9rZT0iIzk0YTNiOCIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2UtbGluZWNhcD0icm91bmQiPjxwYXRoIGQ9Ik02NCA2NCBMODggMjIuNCIvPjxwYXRoIGQ9Ik02NCA2NCBMMTEyIDY0Ii8+PHBhdGggZD0iTTY0IDY0IEw4OCAxMDUuNiIvPjxwYXRoIGQ9Ik02NCA2NCBMNDAgMTA1LjYiLz48cGF0aCBkPSJNNjQgNjQgTDE2IDY0Ii8+PHBhdGggZD0iTTY0IDY0IEw0MCAyMi40Ii8+PC9nPjxjaXJjbGUgY3g9Ijg4IiBjeT0iMjIuNCIgcj0iMTIiIGZpbGw9IiNmNDcyYjYiLz48Y2lyY2xlIGN4PSIxMTIiIGN5PSI2NCIgcj0iMTIiIGZpbGw9IiNmYWNjMTUiLz48Y2lyY2xlIGN4PSI4OCIgY3k9IjEwNS42IiByPSIxMiIgZmlsbD0iIzRhZGU4MCIvPjxjaXJjbGUgY3g9IjQwIiBjeT0iMTA1LjYiIHI9IjEyIiBmaWxsPSIjMzhiZGY4Ii8+PGNpcmNsZSBjeD0iMTYiIGN5PSI2NCIgcj0iMTIiIGZpbGw9IiNhNzhiZmEiLz48Y2lyY2xlIGN4PSI0MCIgY3k9IjIyLjQiIHI9IjEyIiBmaWxsPSIjZmI5MjNjIi8+PGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iMjQiIGZpbGw9IiMwZjE3MmEiLz48cGF0aCBkPSJNNTQuMjIyMjIyMjIyMjIyMjIgNjQgTDYxLjMzMzMzMzMzMzMzMzMzNiA3MS4xMTExMTExMTExMTExMSBMNzQuNjY2NjY2NjY2NjY2NjcgNTYuODg4ODg4ODg4ODg4ODg2IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iNiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+Cjwvc3ZnPgo=
@@ -233,7 +233,13 @@ if (/^\/release-group\/[0-9a-f-]{36}\/?(?:[?#]|$)/.test(window.location.pathname
 // built at top level, and `mbid` is read positionally from the path, so a
 // release-group MBID would have sailed straight through and mounted a dashboard
 // there. Making the assumption explicit rather than implicit in the @match. #559
-if (!/^\/release\/[0-9a-f-]{36}/.test(window.location.pathname)) return;
+// #702: seed mode. On /release/add#mc=<token>, Mission Control consolidates a release MusicBrainz
+// doesn't have yet: there is no release to read, so the scan waits for MC's probe, which carries
+// what First Contact read (seed: barcode, title, artist, tracks, format, year, label). The panel is
+// built as on a release page but kept out of sight; MC shows what it finds. Nothing is added from here.
+const PC_SEED = /^\/release\/add\/?$/.test(window.location.pathname) && /[#&]mc=[a-z0-9]+/i.test(window.location.hash);
+let PC_SEED_DATA = null;
+if (!PC_SEED && !/^\/release\/[0-9a-f-]{36}/.test(window.location.pathname)) return;
 
 // Safe setTimeout wrapper.  Firefox throws NS_ERROR_NOT_INITIALIZED from
 // setTimeout when the script context is being torn down — the Promise
@@ -1129,8 +1135,8 @@ function showInjectBanner(text, reports = [], opts = {}) {
 // The dashboard is for a /release/<mbid> page ONLY. Standalone the @match scopes it; in the String
 // Theory bundle this script runs on every MB page (Mammoth matches /*), so guard the entity type before
 // building any UI — `\/release\/` won't match `/release-group/`, so the RG overview no longer mounts it. (#343)
-if (!/^\/release\/[0-9a-f-]{36}/i.test(window.location.pathname)) return;
-const sidebar = document.querySelector('#sidebar');
+if (!PC_SEED && !/^\/release\/[0-9a-f-]{36}/i.test(window.location.pathname)) return;
+const sidebar = PC_SEED ? (() => { const d = document.createElement('div'); d.id = 'mb-pc-seed-host'; d.hidden = true; (document.body || document.documentElement).appendChild(d); return d; })() : document.querySelector('#sidebar');
 if (!sidebar) return;
 
 const container = document.createElement('div');
@@ -6744,7 +6750,7 @@ async function scanSevendigital({ artist, album, mbTracks, existingUrl, mbid, is
 }
 
 // ─── Main entry ────────────────────────────────────────────────────────────
-const mbid = window.location.pathname.split('/')[2];
+const mbid = PC_SEED ? 'seed-' + (window.location.hash.match(/[#&]mc=([a-z0-9]+)/i) || [])[1] : window.location.pathname.split('/')[2];
 if (!mbid || mbid.length < 10) {
     appendLog('System', `No valid MBID parsed from URL`, 'error');
     return;
@@ -7133,10 +7139,13 @@ async function runScansInner() {
     // hot) > mbDataCache (transient MB outage). DOM is identical data to API
     // for our purposes — both give artist/album/tracks/rg/url-rels — and we're
     // already running on the page so it's free.
-    let mbData = parseMbFromDom();
-    let dataSource = 'dom';
+    let mbData = PC_SEED ? PC_SEED_DATA : parseMbFromDom();
+    let dataSource = PC_SEED ? 'seed' : 'dom';
 
-    if (mbData) {
+    if (PC_SEED) {
+        if (!mbData) { appendLog('System', 'Mission Control: no release to scan for yet (waiting for its probe)'); return false; }
+        appendLog('MusicBrainz', `Mission Control seed — "${mbData.album}" by ${mbData.artist}, ${mbData.mbTracks} track(s), barcode ${mbData.barcode || '—'}`, 'ok');
+    } else if (mbData) {
         appendLog('MusicBrainz', `Parsed from page DOM — skipping API call`, 'ok');
     } else {
         appendLog('MusicBrainz', `DOM scrape incomplete — falling back to /ws/2 API`);
@@ -7328,7 +7337,7 @@ async function runScansInner() {
     if (spotifyKnown && !tidalWanted && !beatportWanted) {
         appendLog('Wikidata', `skipped — Spotify/Tidal/Beatport already resolved`);
     } else {
-        wdP = lookupWikidata(releaseGroupMbid, mbid).catch(e => { appendLog('Wikidata', `lookup error: ${e.message}`, 'warn'); return null; });
+        wdP = lookupWikidata(releaseGroupMbid, PC_SEED ? null : mbid).catch(e => { appendLog('Wikidata', `lookup error: ${e.message}`, 'warn'); return null; });
     }
     const wdFor = (p, field) => {
         if (existing[p] || (p === 'spotify' && spotifyCache?.url)) return Promise.resolve(null);
@@ -8467,8 +8476,10 @@ document.addEventListener('mc:discover', () => { appendLog('System', 'Mission Co
 document.addEventListener('mc:probe', async e => {
     let d = {};
     try { d = JSON.parse(e.detail) || {}; } catch (x) { appendLog('System', `Mission Control probe with unreadable detail: ${x.message}`, 'warn'); return; }
-    if (d.release && d.release !== mbid) { appendLog('System', `Mission Control probe for ${d.release}, not this release (${mbid}) — ignored`, 'warn'); return; }
+    if (PC_SEED !== !!d.seed) { appendLog('System', `Mission Control probe ${d.seed ? 'with a seed on a release page' : 'for a release on the seed page'} — ignored`, 'warn'); return; }
+    if (!PC_SEED && d.release && d.release !== mbid) { appendLog('System', `Mission Control probe for ${d.release}, not this release (${mbid}) — ignored`, 'warn'); return; }
     if (d.only && !d.only.includes('pc')) return;
+    if (PC_SEED) { await pcMcSeedProbe(d); return; }
     appendLog('System', `Mission Control probe ${d.run || ''}: ${PC_SCAN.busy ? 'waiting for the scan running' : 'reporting the last scan'}`);
     pcMcSend('mc:progress', { id: 'pc', run: d.run, state: 'busy', note: PC_SCAN.busy ? 'scanning platforms' : '' });
     // a rescan (pasted barcode, ↻) replaces the scan we waited for: wait for that one instead
@@ -8479,6 +8490,30 @@ document.addEventListener('mc:probe', async e => {
     // the release's barcode beside each platform's: MC shows them in a column, one colour per barcode
     pcMcSend('mc:findings', { id: 'pc', run: d.run, release: mbid, findings, barcode: MB_BARCODE || null });
 });
+// #702: a seed probe. The seed stands for the release PC reads on a release page; the scan runs on
+// it from scratch (each probe), and the answer is the album links only: no artist or label links,
+// no barcode to add, no master, nothing linked. A link's barcode, track count and format go with it,
+// for MC's barcode lanes.
+async function pcMcSeedProbe(d) {
+    const s = d.seed || {};
+    const tracks = Number(s.tracks) || 0;
+    PC_SEED_DATA = {
+        artist: s.artist || '', album: s.title || '', mbTracks: tracks, releaseGroupMbid: null,
+        isVariousArtists: /^various(\s+artists?)?$/i.test(s.artist || ''), existing: {},
+        format: s.format || 'Digital Media', year: s.year || null, releaseLabel: s.label || null, barcode: s.barcode || null,
+    };
+    appendLog('System', `Mission Control seed probe ${d.run || ''}: "${PC_SEED_DATA.album}" by ${PC_SEED_DATA.artist} · ${tracks} track(s) · ${PC_SEED_DATA.format} · ${PC_SEED_DATA.year || '?'} · barcode ${PC_SEED_DATA.barcode || '—'}`);
+    pcMcSend('mc:progress', { id: 'pc', run: d.run, state: 'busy', note: 'scanning platforms' });
+    if (PC_SCAN.busy) pcCancelScan();
+    cacheClear(mbid);
+    resetRows();
+    try { let p; do { p = pcScan(); await p; } while (p !== PC_SCAN.last); } catch (x) { appendLog('System', `seed scan failed: ${x.message}`, 'error'); }
+    const findings = PROVIDER_ORDER.filter(providerEnabled).map(pcMcFinding);
+    const tally = findings.reduce((t, f) => (t[f.state] = (t[f.state] || 0) + 1, t), {});
+    appendLog('System', `Mission Control seed probe ${d.run || ''} answered: ${JSON.stringify(tally)}`, 'ok');
+    findings.filter(f => f.url).forEach(f => appendLog('System', `  ${f.key}: ${f.url} · barcode ${f.barcode || '—'} · ${f.tracks ?? '?'} track(s) · ${f.format || '?'} · ${f.state}${f.why ? ' (' + f.why + ')' : ''}`));
+    pcMcSend('mc:findings', { id: 'pc', run: d.run, release: mbid, seed: true, findings, barcode: PC_SEED_DATA.barcode });
+}
 // A release link for Falcon with the type PC's own + would pick (pcTypeForce): where MusicBrainz
 // offers several and picks none (Bandcamp, Apple Music, Qobuz, ...), Falcon has no type to give
 // the row and drops the url as ambiguous. A Bandcamp album with a digital release also gets 74
@@ -8535,8 +8570,9 @@ document.addEventListener('mc:apply', e => {
     reply(ok ? { ok: true, sent: n, via: 'falcon', tag: `mc:pc:${d.run}`, note: `${what} ${d.dry ? 'queued in' : 'sent to'} Falcon` } : { ok: false, sent: 0, note: 'Falcon is not running on this page' });
 });
 pcMcHello();   // MC may have asked before PC loaded
+if (mbuTestHooks()) window.__pcTest702 = { seed: () => PC_SEED, seedData: () => PC_SEED_DATA, pcMcSeedProbe };
 if (mbuTestHooks()) window.__pcTest680 = { pcMcFinding, pcMcMasterFinding, pcScan, pcMcReleaseLinkTypes, cacheGet, cacheSet, mbDataGet, mbFormat: () => MB_FORMAT, pcMcBarcodeFindings, pcNoteFoundBarcode, pcSetPastedBarcode, setOwnBarcode: b => { MB_OWN_BARCODE = b; }, clearFound: () => PC_FOUND_BC.clear() };
 
-pcScan();
+if (!PC_SEED) pcScan();
 
 })();

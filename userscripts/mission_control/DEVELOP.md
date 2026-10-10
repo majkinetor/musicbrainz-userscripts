@@ -12,7 +12,7 @@ Every `detail` is a **JSON string**, never an object. Each userscript runs in it
 | --- | --- | --- |
 | `mc:discover` | MC | `{ release, mc }`: the release MBID and MC's version |
 | `mc:provider` | provider | `{ id, name, version, release, capabilities: [...] }` |
-| `mc:probe` | MC | `{ release, run, only, links }`: `only` lists the provider ids asked; `links`, the album links selected in PC's card |
+| `mc:probe` | MC | `{ release, run, only, links, isrcs }`: `only` lists the provider ids asked; `links`, the album links selected in PC's card; `isrcs`, after a [consolidation](#consolidation), the ISRCs taken there, by track. On the consolidation page, `{ run, only: ['pc'], seed }` instead (no `release`) |
 | `mc:progress` | provider | `{ id, run, state: 'busy', note }` |
 | `mc:findings` | provider | `{ id, run, release, findings: [...] }` |
 | `mc:apply` | MC | `{ id, run, release, keys, dry, mc }`: the selected finding keys of one provider, and MC's version. Every edit note a provider writes for it ends with `Via Mission Control v<mc>: <release URL>` |
@@ -91,9 +91,31 @@ A click on a card's icon or title, at the left of its header (one button), switc
 
 - Live status in the sidebar's lanes during Execute (the cards show it already).
 
+## Consolidation
+
+[#702](https://github.com/majkinetor/musicbrainz-userscripts/issues/702). A release MusicBrainz doesn't have yet is compared across the platforms on `/release/add#mc=<token>`, a page every member script already runs on (MC, PC, AS and IS by `/release/*`, FC and Apollo by `/release/add*`). MC runs there in its consolidation mode (the `/* ── consolidation` block, `cc*` functions, the `CC` state) and nothing of its release mode. Every other script stays as it is on `/release/add`, except PC's seed mode, which needs `#mc=`.
+
+| Event | From | `detail` |
+| --- | --- | --- |
+| `fc:consolidate` | FC | the album Consolidate stored: `{ v, token, created, source, sourceName, platform, id, page, url, rel }`, `rel` as an import reads it (finished: type, labels, Various Artists, script) with `urlForms` on each artist and label link; or `{ token, error }`. Also on `<html data-fc-consolidate>`, and sent again on `fc:consolidate-request` |
+| `mc:probe` | MC | `{ run, only: ['pc'], seed }`: `seed` is `{ barcode, title, artist, tracks, format, year, label }` |
+| `mc:findings` | PC | the album links PC found, with `seed: true`: PC's release findings, none `linked` |
+| `mc:read` | MC | `{ url, run }`: read this album page headless |
+| `mc:read-progress` | FC | `{ url, run, n, total }` |
+| `mc:read-result` | FC | `{ url, run, ok, provider: { id, name, abbr, artistLinkType }, rel, ms }`, or `{ url, run, ok: false, error }` |
+| `fc:seed` | MC | `{ rel, platform, editNote, run, dry }`: FC stores the handoff and posts `rel` to `/release/add?first_contact=<token>` in this tab |
+| `fc:seeded` | FC | `{ run, token }`, before it posts |
+
+- **PC's seed mode**: PC passes its page guard on `/release/add#mc=`, builds its panel in a hidden `#mb-pc-seed-host`, and scans nothing until a seed probe. The seed stands for the release record (`mbData`) a release page gives; `mbid` is `seed-<token>`, so its caches are the seed's. Each seed probe clears them and scans anew; it answers the release findings only (no artist or label links, barcodes, master).
+- **Sources**: the source first, then each platform PC found (the source's own platform once: the album read stands). They group by barcode as on a release page (leading zeros aside). Taken in by default: the source's lane, and each platform without a barcode whose track count is the source's (or unknown); a link PC marks `mismatch` never. FC reads the taken ones, three at a time; one silent for 90 s has failed. Spotify isn't read (`CC_UNREAD`): FC reads it through its web player only.
+- **Fields** vote: each value counts the platforms that give it; the most wins, a tie goes to PC's platform order (the source first). A platform that gives none doesn't vote; Discogs's `[none]` and `[no label]` count as none. A type FC guessed (`typeGuessed`) only counts when no platform gives one. A value clicked is `CC.pick[field]`.
+- **Tracks**: the track count most platforms give (a tie: the source's) is the tracklist, in the medium layout of the first platform with that count. Platforms with that count line up by position; others by ISRC, then by a normalised title only one row has. What lines up with nothing is an extra row (`x<n>`), merged by title, left out unless taken (`CC.extraTake`); it goes at the end. In a row, tracks are one **version** when the title is the same (case and punctuation count) and, where both give one, so are the ISRC and the length within 1 s. The version most platforms have wins; a click sets `CC.rowPick[row] = platform`.
+- **Seed**: the winning values; each credit (the release's and each track's) from the winning group, with each artist's links collected across the platforms by a normalised name: the source's own link stays `url`, the others go in `alt` (`{ url, urlForms, platform }`). Every taken platform's link goes in `urls`: a read one with FC's link types, Spotify plain. The edit note lists the platforms read and linked. Status Official, packaging None, country and annotation the source's.
+- **After saving**: Open in release editor writes `mc.after` to the tab's `sessionStorage` (`{ created, title, tracks, isrcs, ticks: { is, as, pc } }`) when the `consAfter` setting is on. The release page the editor's submit lands on reads it once (`afterSave`): younger than 3 hours and its title in the page's h1, or it is dropped. MC then opens and probes; `isrcs` goes with the probe, and ISRC Scout takes each as found (`source: 'Mission Control'`) where the recording hasn't it, asking its sources only for the rest. A provider not ticked starts with nothing taken in.
+
 ## Layout
 
-**Auto** beside Probe (`autoProbe` in the settings, off by default) probes as soon as MC opens, once discover has had its moment. There is no source link in the header any more: consolidating releases MusicBrainz doesn't have yet will be a mode of its own later.
+**Auto** beside Probe (`autoProbe` in the settings, off by default) probes as soon as MC opens, once discover has had its moment. There is no source link in the header: a release MusicBrainz doesn't have yet is consolidated in a mode of its own ([Consolidation](#consolidation)).
 
 The layout follows variant F of the round-2 mockups (`dev/mockups/mission_control/round2/variant-f.html`). The sidebar flags and the Fusion and CH modes live in `GM_setValue('mc.settings')`, but the settings window shows only `autoProbe` and `reloadAfter`: the sidebars toggle in place (click the stepper; a track opens the inspector) and the modes are set on the stepper's segmented switch.
 

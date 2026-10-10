@@ -21,6 +21,7 @@ One window on a release page that asks the other scripts what the release is mis
 - **[Release credits](#release-credits)**: what the credit sources have, with a way into Credit Hoarder.
 - **[Inspector](#inspector)**: everything found for one track.
 - **[Execute](#execute)**: applies what you selected, script by script, in a fixed order.
+- **[Consolidate a new release](#consolidate-a-new-release)**: compare an album MusicBrainz doesn't have yet across the platforms, take the best of each into the release editor.
 
 Open Mission Control with its icon in the bottom-right corner of a release page. Right-click the icon for the settings.
 
@@ -101,12 +102,29 @@ Every edit note ends with *Via Mission Control v&lt;version&gt;* and the release
 
 Click a card's icon or title to switch the card off: it folds to its header, and Execute leaves out what is taken in there. Your selection stays for when you switch it on again.
 
+## Consolidate a new release
+
+For an album MusicBrainz doesn't have yet. On its page on a platform, **Consolidate** in [First Contact](../first_contact/README.md#consolidate) reads it and opens Mission Control over MusicBrainz's empty release editor:
+
+1. [Platform Check](../platform_check/README.md) finds the album on the other platforms. **Sources** on the left groups them by barcode, the album's own first. The platforms in its lane are taken in, and so are those without a barcode that have as many tracks. A platform in another lane is another release, so it is left out until you tick it.
+2. First Contact reads each platform taken in; the header counts them. Spotify can be read on its own page only, so its link is added but its data isn't compared.
+3. **Release** shows each field with the platforms that give each value. The value most of them give is taken, and a tie goes to Platform Check's platform order. Click another value to take it instead.
+4. **Tracks** lines the tracklists up. A track the platforms agree on shows their icons. One where they differ in title, ISRC or length (by more than a second) says how many versions it has: click it to see them, and click a version to take it. A track only one platform has is struck through and left out; click it to take it in, at the end.
+5. **Open in release editor** opens the editor in this tab with what is taken: the fields, the tracklist with its ISRCs, every taken platform's link, and each artist's pages on all the platforms read, which [Apollo Editor](../apollo_editor/README.md#artist-matching) tries when it matches the artists.
+
+<img src="./screenshots/consolidate.png" />
+
+Once you save the release, Mission Control opens on it and probes, for what the editor can't take: the ISRCs taken here (added by ISRC Scout), the best cover (Art Station), and the artist and label links (Platform Check). **After saving**, on the right, chooses which of them start taken in; **Execute** then applies them as on any release.
+
+Click a track to see on the right what each platform gives for it. **Copy as Markdown** copies the whole comparison as tables, for an issue or an edit note. **✕** shows the empty editor under it; the corner icon brings Mission Control back.
+
 ## Settings
 
-| Setting                                                 | Default |                                                                   |
-| ------------------------------------------------------- | ------- | ----------------------------------------------------------------- |
-| Probe as soon as Mission Control opens                  | off     | no need to click ↻                                                |
-| Reload the release page after an Execute without errors | off     | shows the result at once; waits until every added link is through |
+| Setting                                                         | Default |                                                                        |
+| --------------------------------------------------------------- | ------- | ---------------------------------------------------------------------- |
+| Probe as soon as Mission Control opens                          | off     | no need to click ↻                                                     |
+| Reload the release page after an Execute without errors         | off     | shows the result at once; waits until every added link is through      |
+| After saving a consolidated release, open Mission Control on it | on      | [probes the new release](#consolidate-a-new-release) for what it lacks |
 
 ## Shortcuts
 

@@ -1,4 +1,4 @@
-// #680: ⚙ holds only Auto probe and "reload after Execute". With the reload on, an Execute
+// #680: ⚙ holds only Auto probe, "reload after Execute" and (#702) Mission Control after a consolidation's save. With the reload on, an Execute
 // without errors reloads the release page; a failed step leaves the page as it is.
 // A stand-in PC answers the probe with one selected finding and pretends to apply it: nothing is written.
 import { test, check, until } from '../../../dev/test/harness.mjs';
@@ -31,7 +31,7 @@ test('#680: reload the release page after an Execute without errors', { tag: ['@
   check(!(await page.evaluate(() => window.__mcTest.settings())).reloadAfter, 'the reload is off by default');
   await page.click('#mc-root [data-act="cfg"]');
   const keys = await page.locator('.mc-cfg [data-k]').evaluateAll(n => n.map(x => x.type + ':' + x.dataset.k));
-  check(JSON.stringify(keys) === '["checkbox:autoProbe","checkbox:reloadAfter"]', `⚙ holds only Auto probe and the reload (${JSON.stringify(keys)})`);
+  check(JSON.stringify(keys) === '["checkbox:autoProbe","checkbox:reloadAfter","checkbox:consAfter"]', `⚙ holds only Auto probe, the reload and after a consolidation (${JSON.stringify(keys)})`);
   await page.locator('.mc-cfg input[data-k="reloadAfter"]').check();
   check((await page.evaluate(() => window.__mcTest.settings())).reloadAfter === true, 'ticking it stores it');
   await page.screenshot({ path: 'test-results/mc-680-settings.png' });
