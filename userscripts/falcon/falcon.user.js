@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Falcon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.10.140000
+// @version      2026.10.10.150000
 // @description  Edit a BATCH of MusicBrainz artists/labels/recordings at once — add external links, ISRCs, names, aliases, disambiguations and cover art — no popup-per-entity, no tab churn. A small pool of persistent worker iframes churns through a queue, each submitting its own edit and moving straight to the next entity. Paste a list, hand it a queue via a `?falcon=` URL param, or click "Send to Falcon" on a Harmony actions page to import its suggestions directly.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5GYWxjb248L3RpdGxlPgo8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSI1OCIgZmlsbD0iI2Y2ZWZlMiIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjYiLz48cGF0aCBkPSJNMTA1LjYgNDAuMCBBNDggNDggMCAwIDEgMTA1LjYgODguMCIgc3Ryb2tlPSIjZDYyODI4IiBzdHJva2Utd2lkdGg9IjciIGZpbGw9Im5vbmUiLz4KPGcgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2UtbGluZWNhcD0icm91bmQiPjxwYXRoIGQ9Ik0yMC43IDg5LjAgTDI5LjQgODQuMCIgc3Ryb2tlLXdpZHRoPSIzIi8+PHBhdGggZD0iTTE0LjMgNjkuMiBMMjQuMiA2OC4yIiBzdHJva2Utd2lkdGg9IjMiLz48cGF0aCBkPSJNMTYuNCA0OC41IEwyNi4wIDUxLjYiIHN0cm9rZS13aWR0aD0iMyIvPjxwYXRoIGQ9Ik0yNi44IDMwLjUgTDM0LjMgMzcuMiIgc3Ryb2tlLXdpZHRoPSIzIi8+PHBhdGggZD0iTTQzLjcgMTguMyBMNDcuNyAyNy41IiBzdHJva2Utd2lkdGg9IjMiLz48cGF0aCBkPSJNNjQuMCAxNC4wIEw2NC4wIDI0LjAiIHN0cm9rZS13aWR0aD0iMyIvPjxwYXRoIGQ9Ik04NC4zIDE4LjMgTDgwLjMgMjcuNSIgc3Ryb2tlLXdpZHRoPSIzIi8+PHBhdGggZD0iTTEwMS4yIDMwLjUgTDkzLjcgMzcuMiIgc3Ryb2tlLXdpZHRoPSIzIi8+PHBhdGggZD0iTTExMS42IDQ4LjUgTDEwMi4wIDUxLjYiIHN0cm9rZS13aWR0aD0iMyIvPjxwYXRoIGQ9Ik0xMTMuNyA2OS4yIEwxMDMuOCA2OC4yIiBzdHJva2Utd2lkdGg9IjMiLz48cGF0aCBkPSJNMTA3LjMgODkuMCBMOTguNiA4NC4wIiBzdHJva2Utd2lkdGg9IjMiLz48L2c+PGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoNjQgOTQpIHJvdGF0ZSgwKSBzY2FsZSgwLjE2KSB0cmFuc2xhdGUoLTY0IC02NCkiPjxwYXRoIGQ9Ik02NCAyNiBDNjcgMjYgNzAgMzAgNzAgMzYgQzcyIDQwIDc0IDQyIDc2IDQ0IEM5MiA0MiAxMDggMzYgMTI0IDM0IEMxMTIgNDQgOTYgNTQgNzggNjIgQzc2IDY4IDc0IDc0IDc0IDgwIEw4MCAxMDAgQzc0IDEwNCA2OCAxMDQgNjQgMTA0IFoiIGZpbGw9IiM0YTVhNzgiLz48cGF0aCBkPSJNNjQgMjYgQzY3IDI2IDcwIDMwIDcwIDM2IEM3MiA0MCA3NCA0MiA3NiA0NCBDOTIgNDIgMTA4IDM2IDEyNCAzNCBDMTEyIDQ0IDk2IDU0IDc4IDYyIEM3NiA2OCA3NCA3NCA3NCA4MCBMODAgMTAwIEM3NCAxMDQgNjggMTA0IDY0IDEwNCBaIiBmaWxsPSIjNGE1YTc4IiB0cmFuc2Zvcm09InRyYW5zbGF0ZSgxMjggMCkgc2NhbGUoLTEgMSkiLz48L2c+PGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoNjQgNjQpIHJvdGF0ZSgxMTIpIj48cGF0aCBkPSJNMCAtNDYgTDQgMCBMLTQgMFoiIGZpbGw9IiMxYjJhNGEiLz48L2c+CjxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjciIGZpbGw9IiMxYjJhNGEiLz4KPC9zdmc+Cg==
@@ -5873,7 +5873,7 @@
       '.falcon-form{display:grid;grid-template-columns:max-content minmax(0,1fr);gap:5px 10px;align-items:center;padding:4px 6px 9px 30px;font-size:11px}',
       '.falcon-form>.falcon-lbl{color:var(--mbu-text-weak);text-align:right;font-size:10.5px;white-space:nowrap}',
       '.falcon-form input[type=text],.falcon-grid input[type=text]{width:100%;box-sizing:border-box;min-width:0;font-size:11px;padding:3px 7px;border:1px solid var(--mbu-border);border-radius:4px}',
-      '.falcon-form input.falcon-isrc-input,.falcon-grid input.falcon-isrc-input{font-family:var(--mbu-font-mono)}',
+      '.falcon-form input.falcon-isrc-input,.falcon-grid input.falcon-isrc-input,.falcon-form input.falcon-barcode-input{font-family:var(--mbu-font-mono)}',
       '.falcon-form input.falcon-renamed{border-color:var(--mbu-accent)}',
       '.falcon-chips{display:flex;align-items:center;gap:5px;flex-wrap:wrap;min-width:0}',
       '.falcon-chips>input[type=text]{flex:1 1 140px;width:auto}',
@@ -6536,6 +6536,9 @@
         }
         return;
       }
+      // #713: a release's barcode, digits only
+      const bcInp = e.target.closest('.falcon-barcode-input');
+      if (bcInp) { const it = queue.find(i => i.id === bcInp.dataset.id); if (it) { it.barcode = barcodeOf(bcInp.value); bcInp.value = it.barcode; } return; }
       const isrcInp = e.target.closest('.falcon-isrc-input');
       if (isrcInp) {
         const it = queue.find(i => i.id === isrcInp.dataset.id);
@@ -6860,6 +6863,7 @@
     return [
       RENAMEABLE.has(it.entityType) && 'name',
       DISAMBIGUATABLE.has(it.entityType) && 'disambig',
+      cfg.queueView !== 'grid' && it.entityType === 'release' && 'barcode',   // #713; the grid has it below the row
       it.entityType === 'recording' && 'isrc',
       cfg.queueView !== 'grid' && 'alias',   // the grid edits aliases below the row, off the keyboard walk
       it.entityType === 'recording' && 'video',
@@ -6871,6 +6875,7 @@
           title="New name for this entity — leave as-is to keep the current one"
           placeholder="${esc(it.name || 'new name')}" value="${esc(it.rename || it.name || '')}" ${dis} />`;
     if (col === 'disambig') return `<input type="text" class="falcon-disambiguation-input" data-id="${it.id}" data-col="disambig" placeholder="${short ? 'disambiguation' : 'disambiguation comment'}" value="${esc(it.disambiguation || '')}" ${dis} />`;
+    if (col === 'barcode') return `<input type="text" class="falcon-barcode-input" data-id="${it.id}" data-col="barcode" inputmode="numeric" placeholder="barcode, for a release that has none" title="A barcode for a release that has none; a release with another barcode keeps its own" value="${esc(it.barcode || '')}" ${dis} />`;
     if (col === 'isrc') return `<input type="text" class="falcon-isrc-input" data-id="${it.id}" data-col="isrc" placeholder="${short ? 'ISRCs' : 'ISRCs, comma-separated'}" value="${esc((it.isrcs || []).join(', '))}" ${dis} />`;
     if (col === 'video') return `<input type="checkbox" class="falcon-video-input mbu-video" data-id="${it.id}" data-col="video" title="Flag this recording as a video (MusicBrainz's Video checkbox)" ${it.video ? 'checked' : ''} ${dis} />`;
     if (col === 'alias') {
@@ -6888,7 +6893,7 @@
     }
     return '';
   }
-  const FIELD_LABEL = { name: 'Name', disambig: 'Disambiguation', isrc: 'ISRCs', alias: 'Aliases', video: 'Video' };
+  const FIELD_LABEL = { name: 'Name', disambig: 'Disambiguation', barcode: 'Barcode', isrc: 'ISRCs', alias: 'Aliases', video: 'Video' };
   // #663 (majkinetor): the + that adds a link or an alias sits by its label
   const plusLbl = (it, kind, walk) => {
     const dis = it.status === 'active' ? 'disabled' : '';
@@ -6903,7 +6908,7 @@
     // nothing while it still equals that name, so a row you only looked at
     // never submits an edit.
     const links = renderLinks(it);
-    const fields = (gridSub ? ['alias'] : fieldCols(it)).map(col => col === 'alias'
+    const fields = (gridSub ? (it.entityType === 'release' ? ['barcode', 'alias'] : ['alias']) : fieldCols(it)).map(col => col === 'alias'
       ? plusLbl(it, 'alias', !gridSub) + fieldHtml(it, col, gridSub ? 'sub' : undefined) : col === 'video'
       ? `<span class="falcon-lbl">Type</span><label class="falcon-video-lbl">${fieldHtml(it, col)} video</label>`
       : `<span class="falcon-lbl">${FIELD_LABEL[col]}</span>${fieldHtml(it, col)}`);

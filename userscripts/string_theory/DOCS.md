@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-10-10 14:22 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-10-10 15:23 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -696,7 +696,7 @@ Each run keeps its own log in this browser, so a run whose tab crashed or naviga
 - **Name**: an expanded row's ✎ box starts with the current name, so a fix is an edit, not a retype. A rename is votable, so it shows once the edit passes.
 - **Aliases**: one row per alias, with its name, its language and **✕**; the **+** by the *Aliases* label adds one, or use [JSON](../falcon/examples/aliases.json) for many. A new alias takes the language last typed; `name@locale` typed in the name box sets the language too. Enter on a filled alias opens the next one, on an empty one moves on to the next row's aliases; Esc drops a new, still empty row.
 - **Video** is only ever set, never cleared.
-- **Barcode** comes only through [JSON](#json-model) or [another script](#from-another-script). It fills a release that has none, and unticks *This release does not have a barcode* if it is ticked. A release that already has a different barcode keeps it, and the row says so.
+- **Barcode** fills a release that has none, and unticks *This release does not have a barcode* if it is ticked. A release that already has a different barcode keeps it, and the row says so. In the grid it is in the row's opened part, with the links.
 
 > [!WARNING]
 > MusicBrainz silently drops the locale of a *Search hint* alias; Falcon warns in the log. Use the `<entity> name` type for a localised title.
