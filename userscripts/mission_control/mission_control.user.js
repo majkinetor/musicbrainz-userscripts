@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Mission Control
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.10.231303
+// @version      2026.10.10.231918
 // @description  One window on the release page that asks the other scripts (Platform Check, ISRC Scout, Art Station, Fusion, Credit Hoarder) what is missing, shows it all in one review, and applies the selected changes in order.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5NaXNzaW9uIENvbnRyb2w8L3RpdGxlPgo8ZGVmcz48ZmlsdGVyIGlkPSJtY28xMy1oIiB4PSItMTAlIiB5PSItMTAlIiB3aWR0aD0iMTIwJSIgaGVpZ2h0PSIxMjAlIj48ZmVNb3JwaG9sb2d5IGluPSJTb3VyY2VBbHBoYSIgb3BlcmF0b3I9ImRpbGF0ZSIgcmFkaXVzPSIxLjUiIHJlc3VsdD0iZCIvPjxmZUZsb29kIGZsb29kLWNvbG9yPSIjZmZmIiBmbG9vZC1vcGFjaXR5PSIuNyIvPjxmZUNvbXBvc2l0ZSBpbjI9ImQiIG9wZXJhdG9yPSJpbiIvPjxmZU1lcmdlPjxmZU1lcmdlTm9kZS8+PGZlTWVyZ2VOb2RlIGluPSJTb3VyY2VHcmFwaGljIi8+PC9mZU1lcmdlPjwvZmlsdGVyPjwvZGVmcz48ZyBmaWx0ZXI9InVybCgjbWNvMTMtaCkiPjxwYXRoIGQ9Ik03NyAzNS41IEw2NCA0MyBMNTEgMzUuNSBMNTEgMjAuNSBMNjQgMTMgTDc3IDIwLjVaIiBmaWxsPSIjN2E1N2U4IiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik01OS43IDc3LjUgTDQ2LjcgODUgTDMzLjcgNzcuNSBMMzMuNyA2Mi41IEw0Ni43IDU1IEw1OS43IDYyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik05NC4zIDc3LjUgTDgxLjMgODUgTDY4LjMgNzcuNSBMNjguMyA2Mi41IEw4MS4zIDU1IEw5NC4zIDYyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik00Mi4zIDEwNy41IEwyOS40IDExNSBMMTYuNCAxMDcuNSBMMTYuNCA5Mi41IEwyOS40IDg1IEw0Mi4zIDkyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik03NyAxMDcuNSBMNjQgMTE1IEw1MSAxMDcuNSBMNTEgOTIuNSBMNjQgODUgTDc3IDkyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik0xMTEuNiAxMDcuNSBMOTguNiAxMTUgTDg1LjcgMTA3LjUgTDg1LjcgOTIuNSBMOTguNiA4NSBMMTExLjYgOTIuNVoiIGZpbGw9IiNmZmM5NGEiIHN0cm9rZT0iIzIyMjIzYiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PC9nPgo8L3N2Zz4K
@@ -533,7 +533,7 @@ function mcStyle() {
         + '.mc-sect[data-st]{--st:transparent;--st-bg:var(--mbu-bg-raised)}.mc-sect[data-st=add]{--st:var(--mbu-accent);--st-bg:var(--mbu-accent-soft)}.mc-sect[data-st=ok]{--st:var(--mbu-ok);--st-bg:var(--mbu-ok-bg)}'
         + '.mc-sect[data-st=busy]{--st:var(--mbu-info);--st-bg:var(--mbu-info-bg)}.mc-sect[data-st=stalled]{--st:var(--mbu-warn);--st-bg:var(--mbu-warn-bg)}.mc-sect[data-st=err]{--st:var(--mbu-error);--st-bg:var(--mbu-error-bg)}.mc-sect[data-st=off]{--st:var(--mbu-text-weak);--st-bg:var(--mbu-bg-sunken)}'
         + '.mc-sect[data-st]{box-shadow:inset 4px 0 0 var(--st),var(--mbu-shadow)}.mc-sect[data-st]>.mc-sect-h{background:var(--st-bg)}'
-        + '.mc-st{font-size:10.5px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:var(--st)}.mc-st:empty{display:none}'
+        + '.mc-st{font-size:10.5px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:var(--st)}.mc-st:empty{display:none}.mc-sect[data-st=add] .mc-st{color:var(--mbu-accent-text)}' + BC_CSS
         + '.mc-sect-h .ic{width:22px;height:22px;border-radius:6px;background:var(--mbu-accent-soft);display:grid;place-items:center;font-size:12px;flex:none}'
         + '.mc-sect-h .ic img{width:16px;height:16px;object-fit:contain;display:block}.mc-sect-h .ic.img{width:28px;height:28px;background:none}.mc-sect-h .ic.img img{width:28px;height:28px}.mc-sect-h .t{font-weight:700;font-size:12.5px}.mc-sect-h .p{font-size:10.5px;color:var(--mbu-text-weak)}'
         + '.mc-empty{padding:10px;color:var(--mbu-text-weak);font-size:12px}'
@@ -1298,7 +1298,12 @@ function paintCards() {
     });
 }
 const BARCODE_SVG = '<svg width="14" height="14" viewBox="0 0 14 10" fill="currentColor" style="color:var(--mbu-text-dim)"><rect x="0" width="1.4" height="10"/><rect x="2.4" width="0.8" height="10"/><rect x="4.2" width="1.8" height="10"/><rect x="7" width="0.8" height="10"/><rect x="8.8" width="1.4" height="10"/><rect x="11.2" width="0.8" height="10"/><rect x="12.6" width="1.4" height="10"/></svg>';
-const BC_COLORS = ['#2563eb', '#c2410c', '#9333ea', '#0e7490', '#be185d', '#a16207', '#4d7c0f', '#6d28d9'];
+// another barcode lane's colour: a token per lane, lighter on the dark theme (majkinetor: "hardly visible on dark theme")
+const BC_LIGHT = ['#2563eb', '#c2410c', '#9333ea', '#0e7490', '#be185d', '#a16207', '#4d7c0f', '#6d28d9'];
+const BC_DARK = ['#7ab4ff', '#fb923c', '#d0a2ff', '#3dd6f0', '#f78bc4', '#facc15', '#a3e635', '#b9a5ff'];
+const BC_COLORS = BC_LIGHT.map((c, i) => 'var(--mc-bc-' + i + ')');
+const BC_CSS = '#mc-root,#mcc-root{' + BC_LIGHT.map((c, i) => '--mc-bc-' + i + ':' + c).join(';') + '}'
+    + ':root[data-mbu-theme=dark] #mc-root,:root[data-mbu-theme=dark] #mcc-root{' + BC_DARK.map((c, i) => '--mc-bc-' + i + ':' + c).join(';') + '}';
 // AS's selected rows are the pool its one cover comes from, so they count once, not once each
 const isPool = id => ((results[id] || {}).findings || []).some(x => x.role === 'searched' || x.role === 'best');
 function changeCount() { return Object.entries(picked).reduce((n, [id, set]) => n + (providerOff(id) ? 0 : isPool(id) ? Math.min(1, set.size) : set.size), 0); }

@@ -49,4 +49,20 @@ test('#709: barcode rows lead the Release section, one taken in at a time', { ta
   await card.locator('.mc-line:has(.mc-bcn:text("5099902940729"))').click();
   check((await page.locator('#mc-root [data-act="exec"]').textContent()) === 'Execute (1)', 'the barcode counts as one change');
   await page.locator('#mc-root .mc-sect:has([data-card="pc"])').screenshot({ path: 'test-results/mc-709-barcode-rows.png' });
+
+  // majkinetor: "hardly visible on dark theme". Another lane's barcode and a card's ADD read on the dark theme
+  await page.evaluate(() => document.documentElement.setAttribute('data-mbu-theme', 'dark'));
+  const contrast = await page.evaluate(() => {
+    const rgb = c => (c.match(/[\d.]+/g) || []).slice(0, 3).map(Number);
+    const lum = c => { const v = rgb(c).map(x => { x /= 255; return x <= 0.03928 ? x / 12.92 : Math.pow((x + 0.055) / 1.055, 2.4); }); return 0.2126 * v[0] + 0.7152 * v[1] + 0.0722 * v[2]; };
+    const bg = el => { for (let e = el; e; e = e.parentElement) { const b = getComputedStyle(e).backgroundColor; if (b && !/rgba\(0, 0, 0, 0\)|transparent/.test(b)) return b; } return 'rgb(0,0,0)'; };
+    const ratio = el => { const a = lum(getComputedStyle(el).color), b = lum(bg(el)); return +(((Math.max(a, b) + 0.05) / (Math.min(a, b) + 0.05)).toFixed(2)); };
+    const chips = [...document.querySelectorAll('#mc-root .mc-bc[style*="--bc:#"] b, #mc-root .mc-bc[style*="--mc-bc-"] b')];
+    const add = document.querySelector('#mc-root .mc-sect[data-st=add] .mc-st');
+    return { chips: chips.map(ratio), add: add ? ratio(add) : null };
+  });
+  console.log('dark contrast: ' + JSON.stringify(contrast));
+  check(contrast.chips.length && contrast.chips.every(r => r >= 4.5), 'another lane\'s barcode reads on the dark theme (' + contrast.chips + ')');
+  check(contrast.add === null || contrast.add >= 4.5, 'and so does ADD (' + contrast.add + ')');
+  await page.locator('#mc-root .mc-sect:has([data-card="pc"])').screenshot({ path: 'test-results/mc-709-barcode-rows-dark.png' });
 });
