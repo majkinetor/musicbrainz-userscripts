@@ -4,7 +4,7 @@ This repo's numbered conventions. The ones that hold on any project are in [`dev
 
 | Category | Standards |
 | --- | --- |
-| [Userscripts](#userscripts) | [10](#standard-10) pinned install links |
+| [Userscripts](#userscripts) | [10](#standard-10) install links |
 | [This repo's details](#this-repos-details) | [labels](#labels) · [links](#links) · [script READMEs](#script-readmes) · [tables](#tables) |
 | [General](#general) | [1](#standard-1) · [2](#standard-2) · [3](#standard-3) · [5](#standard-5) · [6](#standard-6) · [7](#standard-7) · [8](#standard-8) · [9](#standard-9) · [11](#standard-11) · [12](#standard-12) · [13](#standard-13) |
 | [Retired](#retired) | [4](#standard-4) per-project decision log |
@@ -15,22 +15,21 @@ This repo's numbered conventions. The ones that hold on any project are in [`dev
 
 <a id="standard-10"></a>
 
-### 10. Install links pin to a commit, not a branch
+### 10. Install links follow a branch; only releases pin a commit
 
-Every userscript install link shared in chat or on GitHub comes with one pinned to an **immutable commit SHA**. A pinned link always resolves to the exact reviewed code, so a later push can't silently change what it installs.
+Every userscript install link shared in chat or on GitHub follows the branch the work is on: `main` once it's there, the feature branch before. Pinned links (a commit SHA) are only for releases, and the release script writes those ([DEVELOP → Releasing](DEVELOP.md#releasing)); never post one anywhere else.
 
 ```markdown
-[Install @<version> (pinned)](https://github.com/majkinetor/musicbrainz-userscripts/raw/<sha>/userscripts/<dir>/<file>.user.js)
 [Install @<version> (latest, auto-updates)](https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/refs/heads/main/userscripts/<dir>/<file>.user.js)
+[Install @<version> (branch <name>, auto-updates)](https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/refs/heads/<name>/userscripts/<dir>/<file>.user.js)
 ```
 
-- **Pinned**, always: the **full 40-character SHA** of the pushed commit, and the `@version` read from the file at that commit. It goes through `github.com/<repo>/raw/<sha>/…`, which redirects to the raw file: a `raw.githubusercontent.com` URL holding a full SHA gets wrapped in backticks when a cloud session posts it.
-- **Latest**, besides the pinned one, only once the work is on `main` (or `stable`, as `refs/heads/stable`); never for a feature branch.
+- **Latest** once the work is on `main`; a **branch** link while it's on a feature branch, never both.
 - Clickable `[label](url)` links, never bare URLs, and never with the URL wrapped in backticks, which GitHub shows as plain text.
-- **Make the links with [`dev/install-links`](dev/install-links/README.md), never by hand.** `node dev/install-links/install-links.mjs <script> [...] --sha <sha>` prints them: pinned, latest once the commit is on `main`, and String Theory's for a bundled script. Each link is checked before it's printed (full SHA, HTTP 200, the label's `@version` equal to the file's). Paste its output unchanged, or write the body to a file with a `<!-- install-links -->` line and let `--into <file>` fill that line in.
+- **Make the links with [`dev/install-links`](dev/install-links/README.md), never by hand.** `node dev/install-links/install-links.mjs <script> [...]` prints them for the branch checked out (main when HEAD is on `origin/main`), with String Theory's for a bundled script. Each link is checked before it's printed (HTTP 200, the label's `@version` equal to the file's). Paste its output unchanged, or write the body to a file with a `<!-- install-links -->` line and let `--into <file>` fill that line in.
 - **Check the posted comment**: `node dev/install-links/install-links.mjs --check <comment-url>`. If it fails, edit the comment until the check passes; until then the handoff isn't done.
 
-Tampermonkey/Violentmonkey auto-detect the `.user.js` and offer install. A pinned link installs a **frozen** version: the manager records that same pinned URL for updates, so share a newer pinned link to ship an update (scripts published to Greasy Fork carry their own rolling `@updateURL`).
+Tampermonkey/Violentmonkey auto-detect the `.user.js` and offer install, and the manager checks that same URL for updates: a `main` link follows latest, a branch link follows the branch (and stops updating once the branch is deleted, so reinstall from `main` after the merge).
 
 ---
 

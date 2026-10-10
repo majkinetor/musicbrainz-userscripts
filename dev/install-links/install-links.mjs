@@ -2,7 +2,7 @@
 // Makes and checks userscript install links (Standard 10, STANDARDS.md). How to use it
 // and what it checks: README.md beside this file.
 //
-//   node dev/install-links/install-links.mjs <script> [...] [--sha <sha>]     print the links
+//   node dev/install-links/install-links.mjs <script> [...] [--branch <b>]    print the links
 //   node dev/install-links/install-links.mjs <script> [...] --into <body.md>  put them in a comment body
 //   node dev/install-links/install-links.mjs --check <comment-url | file.md>  check posted links
 
@@ -14,9 +14,10 @@ import { fileURLToPath } from 'node:url';
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..', '..');
 const REPO = 'majkinetor/musicbrainz-userscripts';
 const RAW = `https://raw.githubusercontent.com/${REPO}/`;
-// A pinned link goes through github.com, which redirects to the same raw file: a
-// raw.githubusercontent.com URL holding a full SHA gets wrapped in backticks when a cloud
-// session posts it (the proxy does it, on every post and edit), which breaks the link.
+// Links follow a branch: main once the work is there, else the feature branch it is on.
+// Pinned links (a commit SHA) are only for releases, which dev/publish.mjs writes; --check
+// still accepts them, through github.com (raw.githubusercontent.com with a full SHA gets
+// wrapped in backticks when a cloud session posts it).
 const PIN = `https://github.com/${REPO}/raw/`;
 const HOSTS = /raw\.githubusercontent\.com|github\.com\/[^\s/]+\/[^\s/]+\/raw\//;
 const MARKER = '<!-- install-links -->';
@@ -30,8 +31,8 @@ const die = m => { console.error(`✗ ${m}`); process.exit(1); };
 // A link that renders: [label](url), not inside a code span, the target with no backtick or space.
 const LINK = /\[([^\]\n]+)\]\((https:\/\/(?:raw\.githubusercontent\.com|github\.com)\/[^\s()`<>]+)\)/g;
 const esc = s => s.replace(/[.]/g, '\\.');
-// pinned: github.com/<repo>/raw/<40-char SHA>/…; latest: raw.githubusercontent.com/<repo>/refs/heads/<main|stable>/…
-const URL_SHAPE = new RegExp(`^(?:${esc(PIN)}([0-9a-f]{40})|${esc(RAW)}(refs/heads/(?:main|stable)))/userscripts/[\\w/.-]+\\.user\\.js$`);
+// branch: raw.githubusercontent.com/<repo>/refs/heads/<branch>/…; pinned (releases): github.com/<repo>/raw/<40-char SHA>/…
+const URL_SHAPE = new RegExp(`^(?:${esc(PIN)}([0-9a-f]{40})|${esc(RAW)}refs/heads/([\\w.-]+(?:/[\\w.-]+)*?))/userscripts/[\\w/.-]+\\.user\\.js$`);
 
 function fetchRaw(url) {
   // curl, not fetch: it goes through the proxy in a cloud session and ships with Windows.
@@ -52,7 +53,7 @@ function check(text) {
       links++;
       if ((line.slice(0, m.index).match(/`/g) || []).length % 2) errors.push(`${at}: link is inside a code span: ${m[0]}`);
       const shape = url.match(URL_SHAPE);
-      if (!shape) { errors.push(`${at}: not ${PIN}<40-char SHA>/… (pinned) or ${RAW}refs/heads/<main|stable>/… (latest), …/userscripts/…user.js: ${url}`); continue; }
+      if (!shape) { errors.push(`${at}: not ${RAW}refs/heads/<branch>/… (or ${PIN}<40-char SHA>/…, a release's pinned link), …/userscripts/…user.js: ${url}`); continue; }
       const pinned = !!shape[1];
       const { status, body } = fetchRaw(url);
       if (status !== 200) { errors.push(`${at}: HTTP ${status}: ${url}`); continue; }
@@ -92,15 +93,19 @@ if (checkTarget) {
   process.exit(0);
 }
 
-const shaArg = opt('--sha') ?? 'HEAD';
+const branchArg = opt('--branch');
 const into = opt('--into');
-if (!args.length || args.some(a => a.startsWith('--'))) die('usage: node dev/install-links/install-links.mjs <script> [...] [--sha <sha>] [--into <body.md>] | --check <comment-url | file.md>');
+if (!args.length || args.some(a => a.startsWith('--'))) die('usage: node dev/install-links/install-links.mjs <script> [...] [--branch <branch>] [--into <body.md>] | --check <comment-url | file.md>');
 
 // --- making the links -----------------------------------------------------------------
 
-const sha = gitOk('rev-parse', '--verify', `${shaArg}^{commit}`) ? git('rev-parse', `${shaArg}^{commit}`) : die(`unknown commit: ${shaArg}`);
-if (!git('branch', '-r', '--contains', sha)) die(`${sha.slice(0, 8)} is not pushed (no remote branch contains it), so its links would 404`);
-const onMain = gitOk('rev-parse', '--verify', 'origin/main') && gitOk('merge-base', '--is-ancestor', sha, 'origin/main');
+// The branch to link: --branch, else main when HEAD is on origin/main, else the branch checked out.
+const head = git('rev-parse', 'HEAD');
+const onMain = gitOk('rev-parse', '--verify', 'origin/main') && gitOk('merge-base', '--is-ancestor', head, 'origin/main');
+const branch = branchArg || (onMain ? 'main' : git('rev-parse', '--abbrev-ref', 'HEAD'));
+if (branch === 'HEAD') die('HEAD is detached and not on origin/main: name the branch with --branch');
+const sha = gitOk('rev-parse', '--verify', `origin/${branch}^{commit}`) ? git('rev-parse', `origin/${branch}^{commit}`) : die(`origin/${branch} not found: push the branch (and git fetch) first`);
+if (!branchArg && !onMain && sha !== head) die(`origin/${branch} is not HEAD: push first, so the links install this code`);
 const exists = (rev, path) => gitOk('cat-file', '-e', `${rev}:${path}`);
 
 // The shipped file of a script folder: dist/ when it has one (built scripts), else the folder's own.
@@ -124,8 +129,7 @@ if (!files.includes(ST) && files.some(f => members.includes(folder(f)))) files.p
 const lines = [];
 for (const f of files) {
   const name = header(sha, f, 'name');
-  lines.push(`[Install ${name} @${header(sha, f, 'version')} (pinned)](${PIN}${sha}/${f})`);
-  if (onMain && exists('origin/main', f)) lines.push(`[Install ${name} @${header('origin/main', f, 'version')} (latest, auto-updates)](${RAW}refs/heads/main/${f})`);
+  lines.push(`[Install ${name} @${header(sha, f, 'version')} (${branch === 'main' ? 'latest' : 'branch ' + branch}, auto-updates)](${RAW}refs/heads/${branch}/${f})`);
 }
 const block = lines.join('\n');
 report(check(block));
