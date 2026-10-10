@@ -54,6 +54,14 @@ test('German titles get German and Latin', { tag: ['@sandbox', '@login'] }, asyn
   await openApollo(page, inject, { seed: { name: 'Nur noch ein Tag', 'mediums.0.format': 'CD', 'mediums.0.track.0.name': 'Wenn der Regen fällt', 'mediums.0.track.1.name': 'Ich bin nicht allein', 'mediums.0.track.2.name': 'Die Straße nach Hause' } });
   const v = await until(() => sel(page), v => v.script && v.language);
   check(v.script === '28' && v.language === '145', `script Latin (28), language German (145) (${JSON.stringify(v)})`);
+  // majkinetor: "what is this line in log, offered for nothing" — Apollo switched off took the
+  // Detected lists away, and they never came back once it was on again
+  const groups = () => page.evaluate(() => document.querySelectorAll('optgroup.tc-ls-found').length);
+  check(await groups() === 2, 'both fields offer what was found');
+  await page.evaluate(() => { window.__apolloEditor.settings.apolloEnabled = false; });
+  check(await until(groups, n => n === 0) === 0, 'Apollo off: the Detected lists go');
+  await page.evaluate(() => { window.__apolloEditor.settings.apolloEnabled = true; });
+  check(await until(groups, n => n === 2) === 2, 'Apollo on again: they come back');
 });
 
 // majkinetor's First Contact import of discogs.com/release/34839779: parallel titles, Finnish
