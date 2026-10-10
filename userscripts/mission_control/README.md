@@ -114,7 +114,7 @@ For an album MusicBrainz doesn't have yet. On its page on a platform, **Consolid
 
 <img src="./screenshots/consolidate.png" />
 
-Once you save the release, Mission Control opens on it and probes, for what the editor can't take: the ISRCs taken here (added by ISRC Scout), the best cover (Art Station), and the artist and label links (Platform Check). **After saving**, on the right, chooses which of them start taken in; **Execute** then applies them as on any release.
+Once you save the release, Mission Control opens on it and probes, for what the editor can't take: the ISRCs taken here and the recording links (added by ISRC Scout), the best cover (Art Station), and the artist and label links (Platform Check). **After saving**, on the right, chooses which of them start taken in; **Execute** then applies them as on any release.
 
 Click a track to see its versions on the right, with what sets each apart from the taken one highlighted and the platforms that give it; click a version there to take it. **Copy as Markdown**, in the **▾** menu beside **Add release**, copies the whole comparison as tables, for an issue or an edit note. **✕** shows the empty editor under it; the corner icon brings Mission Control back.
 
