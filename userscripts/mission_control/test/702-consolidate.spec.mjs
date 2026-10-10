@@ -64,6 +64,12 @@ test.describe('the consolidation page', () => {
     await inject('mission_control', { waitFor: '__mccTest' });
     await page.waitForSelector('#mcc-root');
     check(await page.evaluate(() => !!window.__mccTest.state().src), 'Mission Control has the album First Contact stored');
+    // versions: lengths chain within a second, a missing ISRC or length differs from none, case counts
+    const vs = await page.evaluate(() => {
+      const tr = (key, title, lengthMs, isrc) => ({ key, t: { title, lengthMs, isrc } });
+      return window.__mccTest.versions({ tracks: [tr('a', 'Song', 274000, 'X1'), tr('b', 'Song', 275000, null), tr('c', 'Song', 276000, 'X1'), tr('d', 'Song', null, null), tr('e', 'SONG', 275000, 'X1'), tr('f', 'Song', 290000, 'X1')] }).map(v => v.keys.sort().join(''));
+    });
+    check(JSON.stringify(vs.slice().sort()) === JSON.stringify(['abcd', 'e', 'f']), `4:34, 4:35, 4:36 and a track without a length are one version; case and 4:50 are others (${vs})`);
     // Platform Check finds the others, and First Contact reads the taken ones
     const st = await until(() => page.evaluate(() => { const s = window.__mccTest.state(); return { pc: s.pc.state, n: s.sources.length, reads: s.sources.filter(x => x.take).map(x => x.key + ':' + x.read.state) }; }),
       s => s.pc === 'done' && s.reads.every(r => !/:(queued|reading|none)$/.test(r) || /^spotify/.test(r)), { timeout: 180_000 });
