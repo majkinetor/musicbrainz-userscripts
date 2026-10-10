@@ -1,29 +1,17 @@
 #!/usr/bin/env node
-// Makes and checks userscript install links (Standard 10, STANDARDS.md). Agents use it
-// instead of typing links by hand: hand-typed links kept arriving with the URL in
-// backticks, which GitHub shows as plain text.
+// Makes and checks userscript install links (Standard 10, STANDARDS.md). How to use it
+// and what it checks: README.md beside this file.
 //
-//   node dev/install-links.mjs <script> [...] [--sha <sha>]       print the links
-//   node dev/install-links.mjs <script> [...] --into <body.md>    put them in a comment body
-//   node dev/install-links.mjs --check <comment-url | file.md>    check posted links
-//
-// <script> is a folder under userscripts/ (apollo_editor, as_picker) or a .user.js path.
-// --sha defaults to HEAD and must be pushed. Each script gets a pinned link. String Theory
-// is added when a script is one of its members, and a latest link when the commit is on
-// origin/main (fetch first). --into replaces the line <!-- install-links --> in the file,
-// or appends the links when the file has no such line.
-//
-// Every link is checked before it is printed: a clickable [label](url) with no backtick,
-// the full 40-character SHA, HTTP 200, and the label's @version equal to the file's.
-// --check runs the same checks on a posted comment (read with gh) or a file. Exit 1 on
-// any error.
+//   node dev/install-links/install-links.mjs <script> [...] [--sha <sha>]     print the links
+//   node dev/install-links/install-links.mjs <script> [...] --into <body.md>  put them in a comment body
+//   node dev/install-links/install-links.mjs --check <comment-url | file.md>  check posted links
 
 import { execFileSync } from 'node:child_process';
 import { readFileSync, writeFileSync, existsSync } from 'node:fs';
 import { resolve, dirname, basename } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
+const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..', '..');
 const REPO = 'majkinetor/musicbrainz-userscripts';
 const RAW = `https://raw.githubusercontent.com/${REPO}/`;
 const MARKER = '<!-- install-links -->';
@@ -99,7 +87,7 @@ if (checkTarget) {
 
 const shaArg = opt('--sha') ?? 'HEAD';
 const into = opt('--into');
-if (!args.length || args.some(a => a.startsWith('--'))) die('usage: node dev/install-links.mjs <script> [...] [--sha <sha>] [--into <body.md>] | --check <comment-url | file.md>');
+if (!args.length || args.some(a => a.startsWith('--'))) die('usage: node dev/install-links/install-links.mjs <script> [...] [--sha <sha>] [--into <body.md>] | --check <comment-url | file.md>');
 
 // --- making the links -----------------------------------------------------------------
 

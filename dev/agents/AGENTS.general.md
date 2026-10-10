@@ -42,6 +42,7 @@ The rest applies whoever you post as:
 ## Docs and changelog
 
 - Every non-trivial feature gets user docs in the same change. Read [Standard 12](STANDARDS.general.md#standard-12) before writing any user doc.
+- **A new tool gets its own folder with a `README.md`** (maintainer): what it's for, how to run it, its options, what it needs. Don't leave a new script loose in a shared folder; its header comment can point to the README.
 - Raising a persisted setting's default does nothing for existing installs — migrate, and assert the *effective* setting.
 
 ## Testing and live verification
