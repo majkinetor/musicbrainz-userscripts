@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Falcon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.10.124018
+// @version      2026.10.10.140000
 // @description  Edit a BATCH of MusicBrainz artists/labels/recordings at once — add external links, ISRCs, names, aliases, disambiguations and cover art — no popup-per-entity, no tab churn. A small pool of persistent worker iframes churns through a queue, each submitting its own edit and moving straight to the next entity. Paste a list, hand it a queue via a `?falcon=` URL param, or click "Send to Falcon" on a Harmony actions page to import its suggestions directly.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5GYWxjb248L3RpdGxlPgo8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSI1OCIgZmlsbD0iI2Y2ZWZlMiIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjYiLz48cGF0aCBkPSJNMTA1LjYgNDAuMCBBNDggNDggMCAwIDEgMTA1LjYgODguMCIgc3Ryb2tlPSIjZDYyODI4IiBzdHJva2Utd2lkdGg9IjciIGZpbGw9Im5vbmUiLz4KPGcgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2UtbGluZWNhcD0icm91bmQiPjxwYXRoIGQ9Ik0yMC43IDg5LjAgTDI5LjQgODQuMCIgc3Ryb2tlLXdpZHRoPSIzIi8+PHBhdGggZD0iTTE0LjMgNjkuMiBMMjQuMiA2OC4yIiBzdHJva2Utd2lkdGg9IjMiLz48cGF0aCBkPSJNMTYuNCA0OC41IEwyNi4wIDUxLjYiIHN0cm9rZS13aWR0aD0iMyIvPjxwYXRoIGQ9Ik0yNi44IDMwLjUgTDM0LjMgMzcuMiIgc3Ryb2tlLXdpZHRoPSIzIi8+PHBhdGggZD0iTTQzLjcgMTguMyBMNDcuNyAyNy41IiBzdHJva2Utd2lkdGg9IjMiLz48cGF0aCBkPSJNNjQuMCAxNC4wIEw2NC4wIDI0LjAiIHN0cm9rZS13aWR0aD0iMyIvPjxwYXRoIGQ9Ik04NC4zIDE4LjMgTDgwLjMgMjcuNSIgc3Ryb2tlLXdpZHRoPSIzIi8+PHBhdGggZD0iTTEwMS4yIDMwLjUgTDkzLjcgMzcuMiIgc3Ryb2tlLXdpZHRoPSIzIi8+PHBhdGggZD0iTTExMS42IDQ4LjUgTDEwMi4wIDUxLjYiIHN0cm9rZS13aWR0aD0iMyIvPjxwYXRoIGQ9Ik0xMTMuNyA2OS4yIEwxMDMuOCA2OC4yIiBzdHJva2Utd2lkdGg9IjMiLz48cGF0aCBkPSJNMTA3LjMgODkuMCBMOTguNiA4NC4wIiBzdHJva2Utd2lkdGg9IjMiLz48L2c+PGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoNjQgOTQpIHJvdGF0ZSgwKSBzY2FsZSgwLjE2KSB0cmFuc2xhdGUoLTY0IC02NCkiPjxwYXRoIGQ9Ik02NCAyNiBDNjcgMjYgNzAgMzAgNzAgMzYgQzcyIDQwIDc0IDQyIDc2IDQ0IEM5MiA0MiAxMDggMzYgMTI0IDM0IEMxMTIgNDQgOTYgNTQgNzggNjIgQzc2IDY4IDc0IDc0IDc0IDgwIEw4MCAxMDAgQzc0IDEwNCA2OCAxMDQgNjQgMTA0IFoiIGZpbGw9IiM0YTVhNzgiLz48cGF0aCBkPSJNNjQgMjYgQzY3IDI2IDcwIDMwIDcwIDM2IEM3MiA0MCA3NCA0MiA3NiA0NCBDOTIgNDIgMTA4IDM2IDEyNCAzNCBDMTEyIDQ0IDk2IDU0IDc4IDYyIEM3NiA2OCA3NCA3NCA3NCA4MCBMODAgMTAwIEM3NCAxMDQgNjggMTA0IDY0IDEwNCBaIiBmaWxsPSIjNGE1YTc4IiB0cmFuc2Zvcm09InRyYW5zbGF0ZSgxMjggMCkgc2NhbGUoLTEgMSkiLz48L2c+PGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoNjQgNjQpIHJvdGF0ZSgxMTIpIj48cGF0aCBkPSJNMCAtNDYgTDQgMCBMLTQgMFoiIGZpbGw9IiMxYjJhNGEiLz48L2c+CjxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjciIGZpbGw9IiMxYjJhNGEiLz4KPC9zdmc+Cg==
@@ -1647,6 +1647,8 @@
   // entityUrlSegment.
   const ENTITY_RE = /^(artist|label|recording|release|release_group)$/;
   const MBID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+  // #713: a release item's barcode, digits only ('' for none)
+  const barcodeOf = v => String(v == null ? '' : v).replace(/\D/g, '');
   // #496: MB's own cover-art type vocabulary — same list as Art Station's
   // COVER_TYPES (art_station.user.js), kept identical so a type picked here
   // maps onto the exact same label MB's own add-cover-art form shows.
@@ -2152,6 +2154,7 @@
       // importable if it carries any payload Falcon knows how to submit.
       const hasMeta = (DISAMBIGUATABLE.has(type) && !!(r.disambiguation || r.comment))
         || (RENAMEABLE.has(type) && !!r.rename)
+        || (type === 'release' && !!barcodeOf(r.barcode))
         || (type === 'recording' && Array.isArray(r.isrcs) && r.isrcs.some(Boolean))
         || (type === 'recording' && r.video === true)
         || normalizeAliases(r.aliases).length > 0;
@@ -2169,6 +2172,7 @@
           id: 'f' + (++_idSeq), entityType: type, mbid: r.mbid, urls,
           note: r.note || '', disambiguation: r.disambiguation || r.comment || '',
           rename: RENAMEABLE.has(type) ? String(r.rename || '') : '',
+          barcode: type === 'release' ? barcodeOf(r.barcode) : '',
           isrcs: Array.isArray(r.isrcs) ? r.isrcs.filter(Boolean).map(String) : [],
           video: type === 'recording' && r.video === true,
           aliases: normalizeAliases(r.aliases),
@@ -2183,6 +2187,7 @@
           const before = same.urls.length;
           urls.forEach(u => { if (!same.urls.some(x => x.url === u.url && x.linkTypeId === u.linkTypeId)) same.urls.push(u); });
           if (reItem.name && !same.name) same.name = reItem.name;
+          if (reItem.barcode && !same.barcode) same.barcode = reItem.barcode;
           merged += same.urls.length - before;
           dbg('[import]', `${type}:${r.mbid} is queued already — ${same.urls.length - before} new url(s) merged into it`);
           return;
@@ -3666,6 +3671,61 @@
   // so scope to the editor first and only then fall back.
   const setReleaseName = (iframe, value) =>
     setReleaseField(iframe, value, { sel: '#release-editor #name, #release-editor input[name="name"], #name', ko: 'name', label: 'name' });
+  // #713: a release item's barcode, typed into the Barcode field. "This release does not have a
+  // barcode" disables the field, so it is unticked first. Like the fields above, the editor binds
+  // late and resets an early write (the box ticked again, the field emptied), so this waits for
+  // the editor, then keeps the barcode there until it holds. A release that has another barcode
+  // by now is left alone: { ok: false, other }.
+  async function setReleaseBarcode(iframe, value) {
+    const digits = v => String(v || '').replace(/\D/g, '');
+    const bc = digits(value);
+    const ready = await waitFor(() => {
+      const d = frameDoc(iframe); if (!d || !d.getElementById('barcode')) return null;
+      const api = releaseEditorApi(frameWin(iframe));
+      if (api) { try { return api.rootField.release() ? true : null; } catch (e) { return null; } }
+      return d.querySelector('#enter-edit') ? true : null;
+    }, 20000);
+    const doc = frameDoc(iframe), win = frameWin(iframe);
+    if (!ready || !doc) return { ok: false, why: 'the release editor never finished loading its barcode field' };
+    await wait(300);
+    const read = () => ({ input: doc.getElementById('barcode'), none: doc.getElementById('no-barcode') });
+    const first = read(), before = digits(first.input.value);
+    if (before && before !== bc) return { ok: false, other: before, why: `the release has barcode ${before} by now — ${bc} left out` };
+    if (before === bc && !(first.none && first.none.checked)) return { ok: true, unchanged: true, before };
+    const setVal = Object.getOwnPropertyDescriptor(win.HTMLInputElement.prototype, 'value').set;
+    const t0 = Date.now();
+    let since = 0;
+    try {
+      while (Date.now() - t0 < 15000) {
+        const { input, none } = read(), cur = digits(input.value);
+        if (cur && cur !== bc) return { ok: false, other: cur, why: `the release has barcode ${cur} by now — ${bc} left out` };
+        if (cur === bc && !(none && none.checked) && !input.disabled) {
+          if (!since) since = Date.now();
+          else if (Date.now() - since >= 1200) break;
+        } else {
+          since = 0;
+          if (none && none.checked) none.click();
+          input.focus();
+          setVal.call(input, bc);
+          input.dispatchEvent(new win.Event('input', { bubbles: true }));
+          input.dispatchEvent(new win.Event('change', { bubbles: true }));
+          input.blur();
+        }
+        await wait(150);
+      }
+    } catch (e) { return { ok: false, why: `could not write the barcode — ${e.message || e}` }; }
+    if (!since) return { ok: false, why: 'the barcode field kept resetting', before };
+    const api = releaseEditorApi(win);
+    if (api) {
+      let ko = null, staged = null;
+      try { ko = digits(api.rootField.release().barcode.value()); } catch (e) {}
+      try { staged = api.allEdits().length; } catch (e) {}
+      if (ko !== null && ko !== bc) return { ok: false, why: `the release editor's own barcode still reads ${JSON.stringify(ko)}`, before };
+      if (staged === 0) return { ok: false, why: 'MusicBrainz staged no edit for this barcode', before };
+      return { ok: true, before, after: bc, staged };
+    }
+    return { ok: true, before, after: bc, staged: null };
+  }
   // #495: the release editor's own "Enter edit" button lives inside its
   // jQuery-UI-tabs "Edit note" panel (display:none until that tab is
   // active) — a bare element.click() on the tab link does nothing (jQuery UI
@@ -4101,11 +4161,22 @@
       if (!r.ok) results.push({ url: '(name)', ok: false, error: r.why });
       if (r.unchanged) releaseNameSet = false;
     }
+    // #713: the barcode, the same way: typed in here, where the KO editor keeps it
+    let releaseBarcodeSet = false;
+    if (item.entityType === 'release' && item.barcode) {
+      const r = await setReleaseBarcode(iframe, item.barcode);
+      releaseBarcodeSet = !!r.ok && !r.unchanged;
+      if (r.ok && r.unchanged) dbg(tag, `barcode already reads ${r.before} — nothing to change`);
+      else if (r.ok) log('info', `${tag} barcode typed into the release editor: ${r.before || '(none)'} → ${r.after}${r.staged != null ? ` (MB staged ${r.staged} edit(s))` : ''}`);
+      else log('warn', `${tag} BARCODE NOT SET — ${r.why}`);
+      if (!r.ok) results.push({ url: '(barcode)', ok: false, error: r.why });
+    }
     const hasFieldChange = !!(
       (COMMENT_SEEDS.has(item.entityType) && item.disambiguation)
       || releaseCommentSet
       || (NAME_SEEDS.has(item.entityType) && item.rename)
       || releaseNameSet
+      || releaseBarcodeSet
       || (item.entityType === 'recording' && item.isrcs && item.isrcs.length)
       || (item.entityType === 'recording' && item.video)
     );
@@ -4934,11 +5005,12 @@
       const needsForm = !!(item.urls.length
         || (DISAMBIGUATABLE.has(item.entityType) && (item.disambiguation || '').trim())
         || (RENAMEABLE.has(item.entityType) && (item.rename || '').trim())
+        || (item.entityType === 'release' && item.barcode)
         || (item.entityType === 'recording' && (item.isrcs || []).some(Boolean))
         || (item.entityType === 'recording' && item.video));
       if (!needsForm && !needsCover && !needsAliases) {
         item.status = 'skipped';
-        item.error = 'nothing to submit yet — add a url, name, disambiguation, ISRC, alias or cover';
+        item.error = 'nothing to submit yet — add a url, name, disambiguation, barcode, ISRC, alias or cover';
         log('info', `${tag} ${item.entityType} ${item.mbid} — skipped, nothing filled in`);
         renderQueue();
         continue;
@@ -6042,6 +6114,7 @@
           // looks like it renames things, and a round-trip through Export →
           // Import must never acquire an edit nobody asked for.
           if (RENAMEABLE.has(i.entityType) && (i.rename || '').trim()) item.rename = i.rename.trim();
+          if (i.entityType === 'release' && i.barcode) item.barcode = i.barcode;
           if (i.entityType === 'recording') { item.isrcs = i.isrcs || []; item.video = i.video === true; }
           // #535: aliases exist on every type, so they are exported whenever
           // the item has any — and the export doubles as the JSON template.

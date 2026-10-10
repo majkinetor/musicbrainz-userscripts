@@ -90,7 +90,7 @@ test('the release editor fills in the queued barcode', { tag: ['@sandbox', '@log
   await requireLogin(page);
   await page.waitForSelector('#barcode');
   await page.evaluate(([rel, code]) => localStorage.setItem('pc:pending-barcode:' + rel, code), [BARE, CODE]);
-  const src = await functionSource('platform_check', ['pcWaitFor', 'pcMark', 'pcT0', 'pcFillBarcode']);
+  const src = await functionSource('platform_check', ['pcWaitFor', 'pcMark', 'pcT0', 'pcFillBarcode', 'pcFillBarcodeField']);
   const got = await page.evaluate(([src, rel]) => new Function('PC_CHANNEL', src + '; return pcFillBarcode;')(null)(rel), [src, BARE]);
   check(got === CODE, `it reports the barcode (${got})`);
   check(await page.inputValue('#barcode') === CODE, 'the field has it');

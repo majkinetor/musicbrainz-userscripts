@@ -15,23 +15,28 @@ test('#709: the MC finding says the track count and format', { tag: ['@sandbox']
   await page.waitForSelector('#content table.medium');
   await inject('platform_check', { waitFor: '__pcTest680' });
   await page.evaluate(() => window.__pcTest680.pcScan());
-  const r = await page.evaluate(mbid => {
-    const t = window.__pcTest680, n = parseInt(t.mbDataGet(mbid).mbTracks, 10);
-    // a streaming album with fewer tracks and no barcode, one with the same count, and a vinyl and
-    // a digital Bandcamp album, each with the right count
-    t.cacheSet(mbid, 'ytmusic', { url: 'https://music.youtube.com/playlist?list=OLAK5uy_x', tracks: n - 3, source: 'search', barcode: null });
-    t.cacheSet(mbid, 'amazonmusic', { url: 'https://music.amazon.com/albums/B000TETKHQ', tracks: n, source: 'search', barcode: null });
-    t.cacheSet(mbid, 'bandcamp', { url: 'https://x.bandcamp.com/album/y', tracks: n, format: 'Vinyl', source: 'search', barcode: null });
-    const vinyl = t.pcMcFinding('bandcamp');
-    t.cacheSet(mbid, 'bandcamp', { url: 'https://x.bandcamp.com/album/y', tracks: n, format: 'Digital', source: 'search', barcode: null });
-    return { n, fmt: t.mbFormat(), yt: t.pcMcFinding('ytmusic'), am: t.pcMcFinding('amazonmusic'), vinyl, digital: t.pcMcFinding('bandcamp') };
-  }, RELEASE);
-  console.log(JSON.stringify(r, null, 1));
-  check(r.fmt === 'CD', `the sandbox release is a CD (${r.fmt})`);
-  const short = `${r.n - 3} tracks, the release has ${r.n}`, dig = 'Digital, the release is CD', bc = 'barcode not confirmed';
-  check(r.yt.state === 'withheld' && r.yt.tracks === r.n - 3 && r.yt.mbTracks === r.n, 'YouTube Music carries its track count and the release\'s');
-  check(r.yt.why === [short, dig, bc].join(' · ') && r.yt.mismatch.join() === [short, dig].join(), `its why leads with the track count, then the format (${r.yt.why})`);
-  check(r.am.why === [dig, bc].join(' · ') && r.am.mismatch.join() === dig, `a matching track count adds nothing (${r.am.why})`);
-  check(r.vinyl.format === 'Vinyl' && r.vinyl.mismatch.join() === 'Vinyl, the release is CD' && r.vinyl.why === ['Vinyl, the release is CD', bc].join(' · '), `#712: vinyl on a CD is another medium (${r.vinyl.why})`);
-  check(r.digital.mismatch.join() === dig && r.digital.why === [dig, bc].join(' · '), `a digital Bandcamp album on a CD says so once, not again as "format not confirmed" (${r.digital.why})`);
+  // the fakes below go into PC's cache, in the profile every spec shares: put it back afterwards
+  const snap = await page.evaluate(() => Object.fromEntries(Object.keys(localStorage).filter(k => /^pc:/.test(k)).map(k => [k, localStorage.getItem(k)])));
+  const restore = () => page.evaluate(snap => { Object.keys(localStorage).filter(k => /^pc:/.test(k)).forEach(k => localStorage.removeItem(k)); Object.entries(snap).forEach(([k, v]) => localStorage.setItem(k, v)); }, snap);
+  try {
+    const r = await page.evaluate(mbid => {
+      const t = window.__pcTest680, n = parseInt(t.mbDataGet(mbid).mbTracks, 10);
+      // a streaming album with fewer tracks and no barcode, one with the same count, and a vinyl and
+      // a digital Bandcamp album, each with the right count
+      t.cacheSet(mbid, 'ytmusic', { url: 'https://music.youtube.com/playlist?list=OLAK5uy_x', tracks: n - 3, source: 'search', barcode: null });
+      t.cacheSet(mbid, 'amazonmusic', { url: 'https://music.amazon.com/albums/B000TETKHQ', tracks: n, source: 'search', barcode: null });
+      t.cacheSet(mbid, 'bandcamp', { url: 'https://x.bandcamp.com/album/y', tracks: n, format: 'Vinyl', source: 'search', barcode: null });
+      const vinyl = t.pcMcFinding('bandcamp');
+      t.cacheSet(mbid, 'bandcamp', { url: 'https://x.bandcamp.com/album/y', tracks: n, format: 'Digital', source: 'search', barcode: null });
+      return { n, fmt: t.mbFormat(), yt: t.pcMcFinding('ytmusic'), am: t.pcMcFinding('amazonmusic'), vinyl, digital: t.pcMcFinding('bandcamp') };
+    }, RELEASE);
+    console.log(JSON.stringify(r, null, 1));
+    check(r.fmt === 'CD', `the sandbox release is a CD (${r.fmt})`);
+    const short = `${r.n - 3} tracks, the release has ${r.n}`, dig = 'Digital, the release is CD', bc = 'barcode not confirmed';
+    check(r.yt.state === 'withheld' && r.yt.tracks === r.n - 3 && r.yt.mbTracks === r.n, 'YouTube Music carries its track count and the release\'s');
+    check(r.yt.why === [short, dig, bc].join(' · ') && r.yt.mismatch.join() === [short, dig].join(), `its why leads with the track count, then the format (${r.yt.why})`);
+    check(r.am.why === [dig, bc].join(' · ') && r.am.mismatch.join() === dig, `a matching track count adds nothing (${r.am.why})`);
+    check(r.vinyl.format === 'Vinyl' && r.vinyl.mismatch.join() === 'Vinyl, the release is CD' && r.vinyl.why === ['Vinyl, the release is CD', bc].join(' · '), `#712: vinyl on a CD is another medium (${r.vinyl.why})`);
+    check(r.digital.mismatch.join() === dig && r.digital.why === [dig, bc].join(' · '), `a digital Bandcamp album on a CD says so once, not again as "format not confirmed" (${r.digital.why})`);
+  } finally { await restore(); }
 });
