@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Mission Control
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.10.180000
+// @version      2026.10.10.190000
 // @description  One window on the release page that asks the other scripts (Platform Check, ISRC Scout, Art Station, Fusion, Credit Hoarder) what is missing, shows it all in one review, and applies the selected changes in order.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5NaXNzaW9uIENvbnRyb2w8L3RpdGxlPgo8ZGVmcz48ZmlsdGVyIGlkPSJtY28xMy1oIiB4PSItMTAlIiB5PSItMTAlIiB3aWR0aD0iMTIwJSIgaGVpZ2h0PSIxMjAlIj48ZmVNb3JwaG9sb2d5IGluPSJTb3VyY2VBbHBoYSIgb3BlcmF0b3I9ImRpbGF0ZSIgcmFkaXVzPSIxLjUiIHJlc3VsdD0iZCIvPjxmZUZsb29kIGZsb29kLWNvbG9yPSIjZmZmIiBmbG9vZC1vcGFjaXR5PSIuNyIvPjxmZUNvbXBvc2l0ZSBpbjI9ImQiIG9wZXJhdG9yPSJpbiIvPjxmZU1lcmdlPjxmZU1lcmdlTm9kZS8+PGZlTWVyZ2VOb2RlIGluPSJTb3VyY2VHcmFwaGljIi8+PC9mZU1lcmdlPjwvZmlsdGVyPjwvZGVmcz48ZyBmaWx0ZXI9InVybCgjbWNvMTMtaCkiPjxwYXRoIGQ9Ik03NyAzNS41IEw2NCA0MyBMNTEgMzUuNSBMNTEgMjAuNSBMNjQgMTMgTDc3IDIwLjVaIiBmaWxsPSIjN2E1N2U4IiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik01OS43IDc3LjUgTDQ2LjcgODUgTDMzLjcgNzcuNSBMMzMuNyA2Mi41IEw0Ni43IDU1IEw1OS43IDYyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik05NC4zIDc3LjUgTDgxLjMgODUgTDY4LjMgNzcuNSBMNjguMyA2Mi41IEw4MS4zIDU1IEw5NC4zIDYyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik00Mi4zIDEwNy41IEwyOS40IDExNSBMMTYuNCAxMDcuNSBMMTYuNCA5Mi41IEwyOS40IDg1IEw0Mi4zIDkyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik03NyAxMDcuNSBMNjQgMTE1IEw1MSAxMDcuNSBMNTEgOTIuNSBMNjQgODUgTDc3IDkyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik0xMTEuNiAxMDcuNSBMOTguNiAxMTUgTDg1LjcgMTA3LjUgTDg1LjcgOTIuNSBMOTguNiA4NSBMMTExLjYgOTIuNVoiIGZpbGw9IiNmZmM5NGEiIHN0cm9rZT0iIzIyMjIzYiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PC9nPgo8L3N2Zz4K
@@ -602,7 +602,7 @@ function mcStyle() {
         + '.mc-tbl td.n{color:var(--mbu-text-weak);font-family:var(--mbu-font-mono);width:32px}'
         + '.mc-tbl td.ttl{white-space:normal}'
         + '.mc-tbl td.pend{color:var(--mbu-border-strong)}'
-        + '.mc-tbl tbody tr{cursor:pointer}.mc-tbl tbody tr:hover td{background:var(--mbu-bg-hover)}.mc-tbl tbody tr.sel td{background:color-mix(in srgb, var(--mbu-accent) 22%, var(--mbu-bg))}.mc-tbl tbody tr.sel td:first-child{box-shadow:inset 3px 0 0 var(--mbu-accent)}'
+        + '.mc-tbl tbody tr{cursor:pointer}.mc-tbl tbody tr:hover td{background:var(--mbu-bg-hover)}.mc-tbl tbody tr.sel td{background:color-mix(in srgb, var(--mbu-accent) 22%, var(--mbu-bg))}.mc-tbl tbody tr.chg td:first-child{box-shadow:inset 3px 0 0 var(--mbu-accent)}.mc-sect-h .p.mc-tpend.on{color:var(--mbu-accent-text);font-weight:700}'
         + '.mc-tbl tr.med td{background:var(--mbu-bg-raised);font-size:10.5px;font-weight:700;color:var(--mbu-text-weak);cursor:default}'
         + '.mc-mode{font-size:9.5px;font-weight:700;padding:0 6px;border-radius:20px;border:1px dashed var(--mbu-border-strong);color:var(--mbu-text-weak);margin-left:4px;text-transform:none;letter-spacing:0}'
         + '.mc-mini{display:flex;align-items:center;gap:6px;font-size:11.5px;padding:3px 0;border-bottom:1px solid var(--mbu-divider)}.mc-mini:last-child{border-bottom:0}'
@@ -1019,6 +1019,17 @@ function fxAct(b) {
         document.dispatchEvent(new CustomEvent('mc:open', { detail: JSON.stringify({ id: 'fusion', release: RELEASE, key: k }) }));
     }
 }
+// the track changes taken in for Execute, per track: a picked ISRC, Fusion group or found link
+function trackPicks(t) {
+    let n = 0;
+    COLS.forEach(c => {
+        if (providerOff(c.p) || modeOf(PROVIDERS.find(p => p.id === c.p)) === 'off' || !picked[c.p]) return;
+        if (c.id === 'links') { n += trackLinks(t.rec).filter(l => picked.is.has(l.key)).length; return; }
+        const x = c.pick && trackFinding(c.p, t.rec);
+        if (x && PICKABLE[x.state] && picked[c.p].has(x.key)) n++;
+    });
+    return n;
+}
 function paintMatrix() {
     ui.querySelectorAll('.mc-tbl th[data-colh]').forEach(th => { th.innerHTML = mbuHtml(colHead(COLS.find(c => c.id === th.dataset.colh))); });
     // track-level providers have no card: their apply outcome goes in the Tracks header
@@ -1027,10 +1038,18 @@ function paintMatrix() {
     const slot = ui.querySelector('.mc-tapplied');
     if (slot) slot.innerHTML = mbuHtml(COLS.map(c => c.p).filter((p, i, a) => a.indexOf(p) === i).map(p => results[p] && results[p].applied)
         .filter(Boolean).map(a => '<span class="mc-applied ' + (a.ok ? 'ok' : 'err') + '" title="' + esc(a.id) + '">' + (a.ok ? '✓ ' : '✕ ') + esc(PROVIDERS.find(x => x.id === a.id).short + ': ' + (a.note || '')) + '</span>').join(''));
+    let pend = 0, rows = 0;
     ui.querySelectorAll('.mc-tbl tbody tr[data-i]').forEach(tr => {
-        const t = rel.tracks[+tr.dataset.i];
+        const t = rel.tracks[+tr.dataset.i], n = trackPicks(t);
+        pend += n; if (n) rows++;
+        tr.classList.toggle('chg', !!n);
         tr.querySelectorAll('td[data-col]').forEach(td => { td.innerHTML = mbuHtml(cellHtml(COLS.find(c => c.id === td.dataset.col), t)); });
     });
+    const tp = ui.querySelector('.mc-tpend');
+    if (tp) {
+        tp.textContent = pend ? pend + ' pending change' + (pend === 1 ? '' : 's') + ' on ' + rows + ' of ' + rel.tracks.length + ' track' + (rel.tracks.length === 1 ? '' : 's') : 'no pending track changes';
+        tp.classList.toggle('on', !!pend);
+    }
     ui.querySelectorAll('.mc-tbl tr.mc-fxd').forEach(tr => {
         const t = rel.tracks[+tr.dataset.fx], x = S.fusion !== 'off' && t ? trackFinding('fusion', t.rec) : null;
         const show = !!(x && FX_SHOWN[x.state] && fxOpen.has(x.key));
@@ -1042,7 +1061,7 @@ function matrix() {
     const sec = el('section', 'mc-sect');
     sec.dataset.sect = 'tracks';
     const cols = COLS.filter(c => modeOf(PROVIDERS.find(p => p.id === c.p)) !== 'off');
-    let html = '<div class="mc-sect-h">' + cardTitle('tracks', '≡', 'Tracks') + '<span class="p">one row per track · a column per provider</span><span class="end"><span class="mc-tapplied"></span><span class="mc-fxall"></span></span></div>'
+    let html = '<div class="mc-sect-h">' + cardTitle('tracks', '≡', 'Tracks') + '<span class="p mc-tpend"></span><span class="end"><span class="mc-tapplied"></span><span class="mc-fxall"></span></span></div>'
         + '<table class="mc-tbl"><thead><tr><th>#</th><th>Title</th><th>Len</th>'
         + cols.map(c => '<th data-colh="' + c.id + '">' + colHead(c) + '</th>').join('')
         + '</tr></thead><tbody>';

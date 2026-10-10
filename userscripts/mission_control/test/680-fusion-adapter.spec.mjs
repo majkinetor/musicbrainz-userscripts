@@ -52,6 +52,17 @@ test('#680: Fusion runs on Fetch RG and marks the tracks with duplicates', { tag
   check(!/not checked/.test(await page.locator('#mc-root .mc-insp .mc-fxm').first().textContent()), 'and they are checked');
   check(await det.locator('[data-act="fx-fusion"] img').count() === 1 && await det.locator('[data-act="fx-fusion"]').getAttribute('title') !== null, 'Open in Fusion is Fusion\'s icon, with a tooltip');
 
+  // every track with a change taken in has the left bar, and the header counts the changes
+  const pend = async () => +((await page.locator('#mc-root .mc-tpend').textContent()).match(/^(\d+) pending/) || [0, 0])[1];
+  const ons = () => page.locator('#mc-root .mc-tbl .mc-pick.on').count();
+  check(await pend() === await ons(), 'the Tracks header counts the changes taken in');
+  check(await page.locator('#mc-root .mc-tbl tr.chg').count() === await page.locator('#mc-root .mc-tbl tr[data-i]:has(.mc-pick.on)').count(), 'every track with a change taken in has the bar');
+  const fxPick = page.locator('#mc-root .mc-tbl td[data-col="fusion"] .mc-pick.on').first(), before = await pend();
+  await fxPick.click();
+  check(await pend() === before - 1, 'leaving a Fusion group out takes it off the count');
+  await page.locator('#mc-root .mc-tbl td[data-col="fusion"] .mc-pick:not(.on)').first().click();
+  check(await pend() === before, 'and taking it in puts it back');
+
   // Expand all opens every comparison, Collapse all folds them
   const all = page.locator('#mc-root .mc-fxall [data-act="fx-all"]');
   check(await all.textContent() === 'Expand all', 'the Tracks header offers Expand all');
