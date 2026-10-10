@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Mission Control
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.10.225347
+// @version      2026.10.10.225932
 // @description  One window on the release page that asks the other scripts (Platform Check, ISRC Scout, Art Station, Fusion, Credit Hoarder) what is missing, shows it all in one review, and applies the selected changes in order.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5NaXNzaW9uIENvbnRyb2w8L3RpdGxlPgo8ZGVmcz48ZmlsdGVyIGlkPSJtY28xMy1oIiB4PSItMTAlIiB5PSItMTAlIiB3aWR0aD0iMTIwJSIgaGVpZ2h0PSIxMjAlIj48ZmVNb3JwaG9sb2d5IGluPSJTb3VyY2VBbHBoYSIgb3BlcmF0b3I9ImRpbGF0ZSIgcmFkaXVzPSIxLjUiIHJlc3VsdD0iZCIvPjxmZUZsb29kIGZsb29kLWNvbG9yPSIjZmZmIiBmbG9vZC1vcGFjaXR5PSIuNyIvPjxmZUNvbXBvc2l0ZSBpbjI9ImQiIG9wZXJhdG9yPSJpbiIvPjxmZU1lcmdlPjxmZU1lcmdlTm9kZS8+PGZlTWVyZ2VOb2RlIGluPSJTb3VyY2VHcmFwaGljIi8+PC9mZU1lcmdlPjwvZmlsdGVyPjwvZGVmcz48ZyBmaWx0ZXI9InVybCgjbWNvMTMtaCkiPjxwYXRoIGQ9Ik03NyAzNS41IEw2NCA0MyBMNTEgMzUuNSBMNTEgMjAuNSBMNjQgMTMgTDc3IDIwLjVaIiBmaWxsPSIjN2E1N2U4IiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik01OS43IDc3LjUgTDQ2LjcgODUgTDMzLjcgNzcuNSBMMzMuNyA2Mi41IEw0Ni43IDU1IEw1OS43IDYyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik05NC4zIDc3LjUgTDgxLjMgODUgTDY4LjMgNzcuNSBMNjguMyA2Mi41IEw4MS4zIDU1IEw5NC4zIDYyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik00Mi4zIDEwNy41IEwyOS40IDExNSBMMTYuNCAxMDcuNSBMMTYuNCA5Mi41IEwyOS40IDg1IEw0Mi4zIDkyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik03NyAxMDcuNSBMNjQgMTE1IEw1MSAxMDcuNSBMNTEgOTIuNSBMNjQgODUgTDc3IDkyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik0xMTEuNiAxMDcuNSBMOTguNiAxMTUgTDg1LjcgMTA3LjUgTDg1LjcgOTIuNSBMOTguNiA4NSBMMTExLjYgOTIuNVoiIGZpbGw9IiNmZmM5NGEiIHN0cm9rZT0iIzIyMjIzYiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PC9nPgo8L3N2Zz4K
@@ -1681,6 +1681,7 @@ const CC = {
     sel: null,            // the row in the inspector
     ticks: { is: true, as: true, pc: true },
     ui: null, seeded: false,
+    inMb: { state: 'none', urls: '', releases: [] },   // the releases MusicBrainz links any of these albums to
 };
 
 function ccStyle() {
@@ -1706,7 +1707,7 @@ function ccStyle() {
         + '.mcc-lane{margin:0 0 14px}.mcc-bc{display:inline-block;font-family:var(--mbu-font-mono);font-size:12px;padding:1px 7px;border-radius:5px;border:1px solid var(--mbu-border);margin-bottom:4px}'
         + '.mcc-bc.own{border-color:var(--mbu-ok-border);background:var(--mbu-ok-bg);color:var(--mbu-ok)}.mcc-lane-note{font-size:12px;color:var(--mbu-text-dim);margin:2px 0 4px}'
         + '.mcc-src{display:flex;align-items:center;gap:7px;padding:3px 4px;border-radius:5px;cursor:pointer}.mcc-src:hover{background:var(--mbu-bg-hover)}'
-        + '.mcc-src input{margin:0;cursor:pointer}.mcc-src .nm{flex:1 0 auto;max-width:60%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.mcc-src .meta{flex:0 1 auto;min-width:0;margin-left:auto;overflow:hidden;text-overflow:ellipsis;font-size:11px;color:var(--mbu-text-weak);white-space:nowrap}'
+        + '.mcc-src input{margin:0;cursor:pointer;flex:none}.mcc-src>:not(.nm):not(.meta){flex:none}.mcc-src .nm{flex:1 0 auto;max-width:60%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.mcc-src .meta{flex:0 1 auto;min-width:0;margin-left:auto;overflow:hidden;text-overflow:ellipsis;font-size:11px;color:var(--mbu-text-weak);white-space:nowrap}'
         + '.mcc-src.off .nm{color:var(--mbu-text-weak)}.mcc-src .meta.err{color:var(--mbu-error)}.mcc-src .meta.busy{color:var(--mbu-info)}.mcc-src .meta.warn{color:var(--mbu-warn)}'
         + '.mcc-src.source{cursor:default}'
         + '.mcc-icos{display:inline-flex;gap:2px;align-items:center;vertical-align:middle}.mcc-icos svg{display:block}.mcc-abbr{font-size:9px;font-weight:700;border:1px solid var(--mbu-border);border-radius:3px;padding:0 2px;line-height:12px}'
@@ -1729,6 +1730,8 @@ function ccStyle() {
         + '.mcc-tbl tr.ver.on .r{background:var(--mbu-accent);border-color:var(--mbu-accent);box-shadow:inset 0 0 0 2px var(--mbu-bg)}.mcc-tbl tr.ver{cursor:pointer}'
         + '.mcc-tbl .hl{background:var(--mbu-warn-bg);border-radius:3px;padding:0 3px}.mcc-tbl tr.extra td.ttl{text-decoration:line-through;color:var(--mbu-text-weak)}.mcc-tbl tr.extra.on td.ttl{text-decoration:none;color:var(--mbu-text)}'
         + '.mcc-tbl .why{color:var(--mbu-text-weak)}.mcc-tbl td.car{width:20px;color:var(--mbu-text-weak);text-align:right}'
+        + '.mcc-inmb{border:1px solid var(--mbu-warn-border);background:var(--mbu-warn-bg);border-radius:var(--mbu-radius-lg);padding:10px 12px;margin:0 0 14px}.mcc-inmb ul{margin:6px 0 0;padding-left:18px}.mcc-inmb li{margin:2px 0}'
+        + '.mcc-fmt-slot{display:inline-flex;flex:none}'
         + '.mcc-note{border:1px dashed var(--mbu-border-strong);border-radius:var(--mbu-radius-lg);padding:10px 12px;font-size:12px;color:var(--mbu-text-dim);background:var(--mbu-bg)}'
         + '.mcc-insp dl{display:grid;grid-template-columns:auto 1fr;gap:3px 10px;margin:0 0 12px;font-size:12px}.mcc-insp dt{color:var(--mbu-text-weak)}.mcc-insp dd{margin:0;word-break:break-word}'
         + '.mcc-insp p{font-size:12px;color:var(--mbu-text-dim);margin:0 0 12px}.mcc-tick{display:flex;gap:8px;align-items:flex-start;font-size:12px;margin:0 0 6px;cursor:pointer}.mcc-tick input{margin:2px 0 0}'
@@ -2068,6 +2071,11 @@ function ccPaintSteps() {
     const fc = ccStepHtml(busy ? 'busy' : failed ? 'err' : '', 'First Contact', (busy ? '<span class="mcc-spin"></span> ' : '') + 'read ' + done + ' of ' + want.length + (failed ? ' · ' + failed + ' failed' : ''));
     box.innerHTML = mbuHtml(ccStepHtml('', 'Source', src ? esc(ccName(src.key)) + ' · ' + src.tracks + ' tracks' : '—', src ? ccIco(src.key, 16) : '') + '<span class="mcc-arrow">→</span>' + pc + '<span class="mcc-arrow">→</span>' + fc);
 }
+// the format the release would get: the source's media, as the seed gives them
+function ccFormat() {
+    const md = CC.src && CC.src.rel && Array.isArray(CC.src.rel.mediums) ? CC.src.rel.mediums : [];
+    return md.map(m => m.format || 'Digital Media').join(' + ') || 'Digital Media';
+}
 function ccPaintHeader() {
     if (!CC.ui) return;
     const m = ccModel();
@@ -2075,11 +2083,16 @@ function ccPaintHeader() {
     const title = m.fields && m.fields.title.win ? m.fields.title.win.val : CC.src ? CC.src.rel.title : 'Consolidate';
     const artist = m.fields && m.fields.artist.win ? m.fields.artist.win.val : CC.src ? ccCredit(CC.src.rel.credit) : '';
     if (t) { t.textContent = title; t.title = title; }
+    const slot = CC.ui.querySelector('.mcc-fmt-slot'), fmt = ccFormat();
+    if (slot && slot.dataset.fmt !== fmt) { slot.dataset.fmt = fmt; slot.innerHTML = mbuHtml(fmtIcon(fmt) || '<img src="' + ICON_URL + '" alt="" width="28" height="28">'); }
     if (sub) sub.innerHTML = mbuHtml('New release · ' + esc(artist) + (CC.src ? ' · from First Contact on <a href="' + esc(CC.src.page || CC.src.url) + '" target="_blank" rel="noopener">' + esc(CC.src.sourceName) + '</a>' : ''));
     CC.ui.querySelectorAll('[data-cc="open"]').forEach(b => { b.disabled = !m.fields || CC.seeded; b.textContent = CC.seeded ? 'Opening the release editor…' : 'Add release →'; });
     CC.ui.querySelectorAll('[data-cc="more"]').forEach(b => { b.disabled = !m.fields || CC.seeded; });
     ccPaintSteps();
 }
+// PC's reasons, short for a source row: "5 tracks, the release has 6" → "5 tracks, not 6",
+// "Digital, the release is CD" → "Digital, not CD"
+const ccMismatch = list => list.map(x => String(x).replace(/, the release (?:has|is) /, ', not ')).join(' · ');
 function ccSideHtml() {
     if (!CC.src) return '';
     const lanes = ccLanes();
@@ -2092,7 +2105,7 @@ function ccSideHtml() {
         l.list.forEach(s => {
             const r = s.read;
             const meta = s.role === 'source' ? ['', 'source · ' + s.tracks + ' tracks']
-                : !s.take ? ['', (s.tracks != null ? s.tracks + ' tracks' : '') + (s.mismatch ? ' · ' + s.mismatch.join(', ') : '')]
+                : !s.take ? ['', s.mismatch && s.mismatch.length ? ccMismatch(s.mismatch) : s.tracks != null ? s.tracks + ' tracks' : '']
                 : !ccReadable(s.key) ? ['warn', 'link only']
                 : r.state === 'reading' ? ['busy', 'reading' + (r.total ? ' ' + r.n + '/' + r.total : '…')]
                 : r.state === 'queued' ? ['busy', 'waiting']
@@ -2162,7 +2175,7 @@ function ccPaintCenter() {
     if (!CC.src) { c.innerHTML = mbuHtml('<div class="mcc-note"><span class="mcc-spin"></span> Waiting for First Contact to hand over the album…</div>'); return; }
     const m = ccModel();
     if (!m.fields) { c.innerHTML = mbuHtml('<div class="mcc-note">Nothing read yet.</div>'); return; }
-    c.innerHTML = mbuHtml(ccFieldsHtml(m) + ccTracksHtml(m)
+    c.innerHTML = mbuHtml(ccInMbHtml() + ccFieldsHtml(m) + ccTracksHtml(m)
         + '<div class="mcc-note"><b>What Add release does:</b> MusicBrainz\'s release editor opens in this tab, seeded with what is taken here: the fields, the tracklist, every link of the platforms ticked on the left, and, for Apollo to match artists by, each artist\'s links on all the platforms read. '
         + (S.consAfter ? 'Once you save it, Mission Control opens on the new release for what the editor can\'t take: the boxes on the right.' : 'Mission Control doesn\'t open after saving (⚙).') + '</div>');
 }
@@ -2293,7 +2306,7 @@ function ccOpen() {
     if (CC.ui) return;
     mcStyle(); ccStyle();
     const ui = el('div', 'mbu-ui'); ui.id = 'mcc-root';
-    ui.innerHTML = mbuHtml('<header class="mcc-hdr"><img src="' + ICON_URL + '" alt="" width="28" height="28"><div class="mcc-rel"><div class="mcc-ttl"></div><div class="mcc-sub"></div></div><div class="mcc-steps"></div>'
+    ui.innerHTML = mbuHtml('<header class="mcc-hdr"><span class="mcc-fmt-slot"></span><div class="mcc-rel"><div class="mcc-ttl"></div><div class="mcc-sub"></div></div><div class="mcc-steps"></div>'
         + '<div class="mcc-split"><button type="button" class="mcc-btn go" data-cc="open" disabled title="Open MusicBrainz\'s release editor in this tab, seeded with what is taken here">Add release →</button>'
         + '<button type="button" class="mcc-btn go mcc-more" data-cc="more" disabled aria-haspopup="menu" aria-expanded="false" title="More">▾</button>'
         + '<div class="mcc-menu" role="menu" hidden><button type="button" role="menuitem" data-cc="md" title="The whole comparison as Markdown tables, for an issue or an edit note">Copy as Markdown</button></div></div>'
@@ -2343,7 +2356,53 @@ document.addEventListener('mc:findings', e => {
     Log.ok('Platform Check answered in ' + Math.round((Date.now() - CC.pc.at) / 1000) + ' s: ' + CC.pc.findings.filter(f => f.url).length + ' platform(s) found');
     ccBuildSources();
     ccReadTaken();
+    ccCheckInMb();
 });
+// majkinetor approved this request on #702: one /ws/2/url lookup (inc=release-rels) of every album
+// link found, 50 to a request, so a release MusicBrainz already has gets a banner, not a second copy.
+// Several links answer { urls: [...] } and leave out the ones MB doesn't know; one answers the url itself, or 404.
+async function ccCheckInMb() {
+    const urls = [...new Set(CC.sources.map(s => s.url).filter(Boolean))];
+    const key = urls.join(' ');
+    if (!urls.length || CC.inMb.urls === key) return;
+    CC.inMb = { state: 'busy', urls: key, releases: [] };
+    Log.info('MusicBrainz: does it have this album? looking up ' + urls.length + ' link(s)');
+    try {
+        const by = new Map();
+        for (let i = 0; i < urls.length; i += 50) {
+            const part = urls.slice(i, i + 50);
+            const r = await fetch('/ws/2/url?' + part.map(u => 'resource=' + encodeURIComponent(u)).join('&') + '&inc=release-rels&fmt=json', { headers: { Accept: 'application/json' } });
+            if (r.status === 404) continue;
+            if (!r.ok) throw new Error('HTTP ' + r.status);
+            const j = await r.json();
+            (Array.isArray(j.urls) ? j.urls : [j]).forEach(u => (u.relations || []).forEach(rel => {
+                const x = rel.release; if (!x || !x.id) return;
+                const e = by.get(x.id) || { id: x.id, title: x.title || '', disamb: x.disambiguation || '', date: x.date || '', barcode: x.barcode || '', urls: [] };
+                if (!e.urls.includes(u.resource)) e.urls.push(u.resource);
+                by.set(x.id, e);
+            }));
+        }
+        if (CC.inMb.urls !== key) return;
+        CC.inMb = { state: 'done', urls: key, releases: [...by.values()].sort((a, b) => b.urls.length - a.urls.length) };
+        if (CC.inMb.releases.length) Log.warn('MusicBrainz already has ' + CC.inMb.releases.length + ' release(s) these links belong to: ' + CC.inMb.releases.map(e => e.id + ' "' + e.title + '" (' + e.urls.length + ' link(s))').join(', '));
+        else Log.ok('MusicBrainz has none of the ' + urls.length + ' link(s): a new release');
+    } catch (e) {
+        if (CC.inMb.urls !== key) return;
+        CC.inMb = { state: 'failed', urls: key, releases: [], error: e.message };
+        Log.warn('MusicBrainz lookup of the album links failed: ' + e.message);
+    }
+    ccPaintCenter();
+}
+function ccInMbHtml() {
+    const rs = CC.inMb.releases;
+    if (CC.inMb.state !== 'done' || !rs.length) return '';
+    const plat = u => { const s = CC.sources.find(x => x.url === u); return s ? ccName(s.key) : u; };
+    return '<div class="mcc-inmb"><b>MusicBrainz already has ' + (rs.length === 1 ? 'this album' : rs.length + ' releases these links belong to') + '.</b> '
+        + 'Open it and add what it lacks with Mission Control there, rather than adding the album again.<ul>'
+        + rs.map(e => '<li><a href="/release/' + esc(e.id) + '" target="_blank" rel="noopener">' + esc(e.title) + '</a>' + (e.disamb ? ' <span class="weak">(' + esc(e.disamb) + ')</span>' : '')
+            + (e.date ? ' · ' + esc(e.date) : '') + (e.barcode ? ' · <span class="mono">' + esc(e.barcode) + '</span>' : '')
+            + ' <span class="weak">· linked from ' + esc(e.urls.map(plat).join(', ')) + '</span></li>').join('') + '</ul></div>';
+}
 function consolidateMain(token) {
     CC.token = token;
     Log.info('consolidation page, token ' + token);
@@ -2357,11 +2416,11 @@ function consolidateMain(token) {
         // nobody handed anything over: First Contact isn't running here
         setTimeout(() => { if (!CC.src && !CC.error) { CC.error = 'First Contact isn\'t running on this page, or it has no album for it.'; Log.warn(CC.error); ccPaint(); } }, 4000);
         // no Platform Check: compare the source alone
-        setTimeout(() => { if (CC.src && CC.pc.state === 'wait') { CC.pc.state = 'none'; Log.warn('Platform Check isn\'t running on this page: only the source is compared'); ccPaint(); } }, 6000);
+        setTimeout(() => { if (CC.src && CC.pc.state === 'wait') { CC.pc.state = 'none'; Log.warn('Platform Check isn\'t running on this page: only the source is compared'); ccPaint(); ccCheckInMb(); } }, 6000);
     };
     if (document.body) start(); else document.addEventListener('DOMContentLoaded', start, { once: true });
 }
-if (mbuTestHooks()) window.__mccTest = { state: () => CC, model: ccModel, seedRel: () => ccSeedRel(ccModel()), markdown: ccMarkdown, open: ccOpenEditor, setDry: v => { CC.dry = v; }, lanes: ccLanes, versions: ccVersions };
+if (mbuTestHooks()) window.__mccTest = { state: () => CC, model: ccModel, seedRel: () => ccSeedRel(ccModel()), markdown: ccMarkdown, open: ccOpenEditor, setDry: v => { CC.dry = v; }, lanes: ccLanes, versions: ccVersions, inMb: ccCheckInMb, paint: () => ccPaint() };
 
 /* after saving: Mission Control on the new release (#702) */
 

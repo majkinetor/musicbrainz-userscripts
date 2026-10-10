@@ -132,6 +132,30 @@ test.describe('the consolidation page', () => {
     await page.click('#mcc-root [data-cc="more"]');
     await page.mouse.click(5, 300);
     check(await page.locator('#mcc-root .mcc-menu').isHidden(), 'a click outside closes the menu');
+    // the header shows the release's format, as on a release page
+    check(await page.locator('#mcc-root .mcc-hdr .mcc-fmt-slot .mc-fmt').count() === 1, 'the header has the format icon: ' + await page.locator('#mcc-root .mcc-fmt-slot .mc-fmt').getAttribute('title'));
+    // MusicBrainz is asked whether it has the album already: a banner names each release the links belong to
+    const inMb = await until(() => page.evaluate(() => window.__mccTest.state().inMb), v => v && (v.state === 'done' || v.state === 'failed'), { timeout: 30_000 });
+    console.log('in MB: ' + JSON.stringify(inMb && inMb.releases));
+    check(inMb && inMb.state === 'done', 'MusicBrainz answered the link lookup' + (inMb && inMb.error ? ': ' + inMb.error : ''));
+    if (inMb && inMb.releases.length) {
+      const b = page.locator('#mcc-root .mcc-inmb');
+      check(await b.count() === 1 && await b.locator('a[href^="/release/"]').count() === inMb.releases.length, 'the banner links each release MusicBrainz has (' + inMb.releases.length + ')');
+      await info.attach('in-mb', { body: await b.screenshot(), contentType: 'image/png' });
+    }
+    // a platform in another lane, not ticked, with a long note: its icon and name stay, the note is short
+    await page.evaluate(() => {
+      const st = window.__mccTest.state();
+      st.sources.push({ key: 'qobuz', url: 'https://www.qobuz.com/album/x/702', barcode: '0000000000702', tracks: 5, format: 'Digital', mismatch: ['5 tracks, the release has 14', 'Digital, the release is CD'], why: null, state: 'found', role: 'found', take: false, read: { state: 'none' } });
+      window.__mccTest.paint();
+    });
+    const srcRow = page.locator('#mcc-root .mcc-src:has(a[href*="qobuz.com/album/x/702"])');
+    const box = await srcRow.locator('.nm').boundingBox(), ico = await srcRow.locator('.nm').evaluate(n => { const i = n.previousElementSibling; const r = i && i.getBoundingClientRect(); return r ? r.width : 0; });
+    const meta = await srcRow.locator('.meta').innerText();
+    check(box && box.width > 30 && ico > 8, 'an unticked row keeps its icon (' + ico + ' px) and name (' + (box && box.width) + ' px)');
+    check(meta === '5 tracks, not 14 · Digital, not CD', 'its note is short: ' + meta);
+    await info.attach('unticked-row', { body: await page.locator('#mcc-root .mcc-side').screenshot(), contentType: 'image/png' });
+    await page.evaluate(() => { const st = window.__mccTest.state(); st.sources = st.sources.filter(x => x.url !== 'https://www.qobuz.com/album/x/702'); window.__mccTest.paint(); });
 
     // Add release: First Contact posts the seed to the editor in this tab, with no
     // "leave page?" from the empty editor (it asks only after a click on the page, as here)
