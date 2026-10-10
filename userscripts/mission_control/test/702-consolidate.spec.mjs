@@ -121,6 +121,9 @@ test.describe('the consolidation page', () => {
     const dates = await page.locator('#mcc-root .mcc-f[data-field="date"] .mcc-alt').evaluateAll(as => as.map(a => a.dataset.v));
     check(dates.length < 2 || dates.every((d, i) => !i || dates[i - 1].localeCompare(d) <= 0), `the dates are earliest first, down the first column then the second: ${dates.join(' ')}`);
     check(await page.locator('#mcc-root .mcc-f[data-field="date"] .mcc-alts').evaluate(e => getComputedStyle(e).gridTemplateColumns.split(' ').length) === 2, 'in two columns');
+    const iconX = await page.evaluate(() => { const c = document.querySelector('#mcc-root .mcc-f[data-field="date"]'); const x = el => Math.round(el.querySelector('.mcc-icos').getBoundingClientRect().left); const cols = [...c.querySelectorAll('.mcc-alt')].map(x); return { win: x(c.querySelector('.mcc-win')), alts: cols, d: [...c.querySelectorAll('.d')].map(d => Math.round(d.getBoundingClientRect().left)) }; });
+    console.log('date icons x: ' + JSON.stringify(iconX));
+    check(iconX.alts.length < 1 || Math.abs(iconX.win - Math.min(...iconX.alts)) <= 1, 'the taken date\'s icons line up with the first column\'s: ' + JSON.stringify(iconX));
     await info.attach('dates', { body: await page.locator('#mcc-root .mcc-f[data-field="date"]').screenshot(), contentType: 'image/png' });
     // a field's other value, taken by a click
     const alt = page.locator('#mcc-root .mcc-f[data-field="date"] .mcc-alt').first();
