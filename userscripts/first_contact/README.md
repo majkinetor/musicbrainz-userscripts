@@ -16,6 +16,7 @@ Import a release into MusicBrainz from the platform's album page with one click:
 ## Features
 
 - **[Import](#import)** a release from the album page into the MusicBrainz release editor.
+- **[Consolidate](#consolidate)**: compare the album with the other platforms in Mission Control, and take the best of each.
 - **[Send to Harmony](#send-to-harmony)**: look the album up on Harmony instead, with every platform that has its barcode.
 - **[Platforms](#platforms)**: what is read from each one.
 - **[Artist matching](#artist-matching)** is left to Apollo Editor, which gets every artist's platform link.
@@ -57,9 +58,15 @@ When the platform gives no type, or only a plain *album* while the title says ot
 
 Without every track's length: 1 track is a Single, 3 to 6 an EP, 7 or more an Album, and 2 are left for you. The log says which sign decided.
 
+## Consolidate
+
+The button beside **Import to MusicBrainz**, with [Mission Control](../mission_control/README.md)'s icon, reads the album as Import does, then opens MusicBrainz's release editor in a new tab with Mission Control over it. Mission Control finds the album on the other platforms, First Contact reads each of them there, and you take the best title, date, label, tracklist and ISRCs of all of them into the editor. See [Consolidate a new release](../mission_control/README.md#consolidate-a-new-release).
+
+Mission Control has to be installed, and Platform Check too, to find the other platforms; [String Theory](../string_theory/README.md) has them all. Turn the button off in [Settings](#settings).
+
 ## Send to Harmony
 
-The button between **Import to MusicBrainz** and **⚙︎**, with [Harmony](https://harmony.pulsewidth.org.uk/)'s icon, opens the album in Harmony's release lookup in a new tab instead. Harmony then finds the album by its barcode on the platforms ticked in [Harmony's settings](https://harmony.pulsewidth.org.uk/settings), in the region set there, and [Falcon](../falcon/README.md) works there as usual. Open those settings once: until then Harmony has none, so it looks an album link up on its own platform only, and a barcode on none.
+The button before **⚙︎**, with [Harmony](https://harmony.pulsewidth.org.uk/)'s icon, opens the album in Harmony's release lookup in a new tab instead. Harmony then finds the album by its barcode on the platforms ticked in [Harmony's settings](https://harmony.pulsewidth.org.uk/settings), in the region set there, and [Falcon](../falcon/README.md) works there as usual. Open those settings once: until then Harmony has none, so it looks an album link up on its own platform only, and a barcode on none.
 
 | Platform                                                                        | Sent                                |
 | ------------------------------------------------------------------------------- | ----------------------------------- |
@@ -284,12 +291,13 @@ The **⚙︎** button next to **Import to MusicBrainz** opens them, in three sec
 
 ### Import
 
-| Setting                            | Default         |                                                                                                          |
-| ---------------------------------- | --------------- | -------------------------------------------------------------------------------------------------------- |
-| MusicBrainz server                 | musicbrainz.org | where the release editor opens: musicbrainz.org, beta or test                                            |
-| Annotation from *platform*'s notes | on              | the album's [notes](#platforms) go into the annotation, with *From <platform>: <album page>*             |
-| Close this page after the import   | off             | the platform's tab closes once the editor or [Harmony](#send-to-harmony) has the album; not on a failure |
-| Send to Harmony button             | on              | the [Harmony button](#send-to-harmony) between **Import to MusicBrainz** and **⚙︎**                      |
+| Setting                            | Default         |                                                                                              |
+| ---------------------------------- | --------------- | -------------------------------------------------------------------------------------------- |
+| MusicBrainz server                 | musicbrainz.org | where the release editor opens: musicbrainz.org, beta or test                                |
+| Annotation from *platform*'s notes | on              | the album's [notes](#platforms) go into the annotation, with *From <platform>: <album page>* |
+| Close this page after the import   | off             | the tab closes once the album is sent on; not on a failure                                   |
+| Consolidate button                 | on              | the [Consolidate button](#consolidate) beside **Import to MusicBrainz**                      |
+| Send to Harmony button             | on              | the [Harmony button](#send-to-harmony) before **⚙︎**                                         |
 
 A review in the notes is the critic's text (Qobuz's and Apple's are usually AllMusic's): check you may copy it before you submit.
 

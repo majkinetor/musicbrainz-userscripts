@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.10.230425
+// @version      2026.10.10.232617
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5BcG9sbG8gRWRpdG9yPC90aXRsZT4KPG1hc2sgaWQ9ImFwLW0iIG1hc2tVbml0cz0idXNlclNwYWNlT25Vc2UiIHg9IjAiIHk9IjAiIHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4Ij48Zz48ZyBmaWxsPSIjZmZmIj48cGF0aCBkPSJNNDIgNjQgQzI4IDcyIDIyIDkwIDI0IDExMCBMNDIgOTggWiIvPjxwYXRoIGQ9Ik04NiA2NCBDMTAwIDcyIDEwNiA5MCAxMDQgMTEwIEw4NiA5OCBaIi8+PC9nPjxnIGZpbGw9IiNmZmYiPjxwYXRoIGQ9Ik02NCA4IEM4NCAyNCA5MCA1MiA4OCA5MCBMNDAgOTAgQzM4IDUyIDQ0IDI0IDY0IDggWiIvPjxwYXRoIGQ9Ik00OCA5MCBMODAgOTAgTDc2IDEwMCBMNTIgMTAwIFoiLz48L2c+PGcgc3Ryb2tlPSIjMDAwIiBzdHJva2Utd2lkdGg9IjMuNSI+PHBhdGggZD0iTTM2IDkwLjUgTDkyIDkwLjUiLz48L2c+PGNpcmNsZSBjeD0iNjQiIGN5PSI1MCIgcj0iOCIgZmlsbD0iIzAwMCIvPjwvZz48L21hc2s+PGc+PHBhdGggZD0iTTUyIDEwMCBDNTQgMTEyIDYwIDExOCA2NCAxMjYgQzY4IDExOCA3NCAxMTIgNzYgMTAwIFoiIGZpbGw9IiNlYjc0M2IiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDAgMykiLz48L2c+PHJlY3Qgd2lkdGg9IjEyOCIgaGVpZ2h0PSIxMjgiIGZpbGw9IiNiYTQ3OGYiIG1hc2s9InVybCgjYXAtbSkiLz4KPC9zdmc+Cg==
@@ -1385,6 +1385,7 @@ click to open the label`;
   function platformOf(url) {
     try { if (/(^|\.)discogs\.com$/i.test(new URL(url).hostname)) return DISCOGS_PLATFORM; } catch (e) { return null; }
     const h = fcHandoff();
+    if (h && _fcPlat.has(url)) return _fcPlat.get(url);
     return h && h.platform && h.platform.abbr && fcUrlForms(url) ? h.platform : null;
   }
   // The /ws/2/url lookup matches the URL exactly as MusicBrainz stores it: every form the handoff
@@ -1442,9 +1443,21 @@ click to open the label`;
   // First Contact's handoff: on <html data-first-contact>, and again on its 'first-contact:seed'
   // event (asked for with 'first-contact:request', in case it came before us).
   let _fcHandoff = null, _fcUrls = new Map();
+  // #702: a handoff from Mission Control's consolidation gives each artist its links on the other
+  // platforms too (alt: [{ url, urlForms, platform }]): each one's platform, and the artist's other links
+  const _fcPlat = new Map();
+  const _fcSame = new Map();
   // every link in a handoff → the forms it says MB may store it under ([] when only its own)
   function handoffUrlIndex(h) {
-    const idx = new Map(), add = a => { if (a && a.url) idx.set(a.url, Array.isArray(a.urlForms) ? a.urlForms : []); };
+    _fcPlat.clear(); _fcSame.clear();
+    const idx = new Map(), add = a => {
+      if (!a) return;
+      if (a.url) idx.set(a.url, Array.isArray(a.urlForms) ? a.urlForms : []);
+      const alt = Array.isArray(a.alt) ? a.alt.filter(x => x && x.url) : [];
+      alt.forEach(x => { idx.set(x.url, Array.isArray(x.urlForms) ? x.urlForms : []); if (x.platform && x.platform.abbr) _fcPlat.set(x.url, x.platform); });
+      const all = [a.url].concat(alt.map(x => x.url)).filter(Boolean);
+      all.forEach(u => _fcSame.set(u, [...new Set((_fcSame.get(u) || []).concat(all.filter(o => o !== u)))]));
+    };
     (h.credit || []).forEach(add); (h.labels || []).forEach(add);
     (h.mediums || []).forEach(m => (m.tracks || []).forEach(t => (t.credit || []).forEach(add)));
     return idx;
@@ -1454,6 +1467,7 @@ click to open the label`;
       const h = JSON.parse(json || 'null');
       if (!h || !h.mediums || (_fcHandoff && _fcHandoff.token === h.token)) return;
       _fcHandoff = h; _fcUrls = handoffUrlIndex(h);
+      if (_fcPlat.size) Log.cat('Links').info('First Contact handoff from Mission Control:', _fcPlat.size, 'artist link(s) on other platforms (' + [...new Set([..._fcPlat.values()].map(p => p.name))].join(', ') + ') to try when an artist\'s own link matches no one');
       const p = h.platform;
       if (p) Log.cat('Links').debug('First Contact platform:', p.name, '- badge', p.abbr + ', artist link type', (p.artistLinkType || '(MB picks it)') + ',', [..._fcUrls.values()].filter(x => x.length).length, 'link(s) with other forms');
       else Log.cat('Links').debug('First Contact handoff v' + (h.v || '?') + ' says nothing about the platform: generic "link" badge, links looked up as they are, no link type seeded');
@@ -1482,9 +1496,10 @@ click to open the label`;
   // still has as many artists as the handoff's
   function fcCreditUrl(credit, i, creditedAs, nSlots) {
     if (!credit || !credit.length) return null;
-    const byName = credit.find(a => a.url && (sameName(a.name, creditedAs) || sameName(a.artistName, creditedAs)));
-    if (byName) return byName.url;
-    return credit.length === nSlots && credit[i] && credit[i].url ? credit[i].url : null;
+    const urlOf = a => (a && (a.url || (Array.isArray(a.alt) && a.alt[0] && a.alt[0].url))) || null;   // #702: alt when the source has none
+    const byName = credit.find(a => urlOf(a) && (sameName(a.name, creditedAs) || sameName(a.artistName, creditedAs)));
+    if (byName) return urlOf(byName);
+    return credit.length === nSlots && credit[i] && urlOf(credit[i]) ? urlOf(credit[i]) : null;
   }
   const fcPlatformUrl = (t, i, creditedAs) => { const ht = fcTrackFor(t); return ht ? fcCreditUrl(ht.credit, i, creditedAs, t.slots ? t.slots.length : (t.names || []).length) : null; };
   // every platform link the handoff has for the pending slots, resolved in a few batched requests
@@ -1492,7 +1507,7 @@ click to open the label`;
   async function prewarmPlatformLinks(tracks) {
     if (!fcHandoff()) return;
     const urls = [];
-    tracks.forEach(t => t.slots.forEach((s, i) => { const u = fcPlatformUrl(t, i, s.creditedAs); if (u) urls.push(u); }));
+    tracks.forEach(t => t.slots.forEach((s, i) => { const u = fcPlatformUrl(t, i, s.creditedAs); if (u) urls.push(u, ...(_fcSame.get(u) || [])); }));
     if (!urls.length) { Log.cat('Links').debug('the handoff has none for these slots'); return; }
     const t0 = Date.now(), res = await resolvePlatformUrls(urls), uniq = [...res.keys()];
     const owned = uniq.filter(u => res.get(u) && res.get(u).length).length, failed = uniq.filter(u => res.get(u) === null).length;
@@ -2078,10 +2093,12 @@ click to open the label`;
       else if (hits == null) Log.cat('Artist').debug(who, '— Discogs URL lookup unavailable (rate-limited) → name search');
     }
     // #651: the artist's page on the platform First Contact imported from — as certain as Discogs
-    if (platUrl) {
+    // #702: then the same artist's links on the other platforms Mission Control read, while none matched
+    for (const tryUrl of platUrl ? [platUrl, ...(_fcSame.get(platUrl) || [])] : []) {
+      const platUrl = tryUrl;
       const p = platformOf(platUrl) || { abbr: 'link', name: 'platform' };
       const hits = await resolveByPlatformUrl(platUrl);
-      why.plat = { url: platUrl, abbr: p.abbr, name: p.name, n: hits ? hits.length : null };
+      if (!why.plat || (hits && hits.length)) why.plat = { url: platUrl, abbr: p.abbr, name: p.name, n: hits ? hits.length : null };
       if (hits && hits.length === 1) {
         const e = await fetchEntity(hits[0].gid);
         if (e && e.gid) { matchLog(where, who, '→', e.name, '— via', p.name, 'link', platUrl); return { entity: e, source: 'plat', confidence: 'high', candidates: [e] }; }

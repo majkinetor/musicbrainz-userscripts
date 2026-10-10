@@ -34,7 +34,7 @@ const handoff = {
 // #672: Apollo knows no platform: what it is and the forms its links are stored under come from
 // the handoff. Apollo's platformOf/platformUrlForms, over a handoff given here.
 async function platformFns(handoff) {
-  const src = await functionSource('apollo_editor', ['DISCOGS_ARTIST_LINK_TYPE', 'DISCOGS_PLATFORM', 'handoffUrlIndex', 'platformOf', 'platformUrlForms']);
+  const src = await functionSource('apollo_editor', ['DISCOGS_ARTIST_LINK_TYPE', 'DISCOGS_PLATFORM', '_fcPlat', '_fcSame', 'handoffUrlIndex', 'platformOf', 'platformUrlForms']);
   return new Function('fcHandoff', 'fcUrlForms', src + '\nreturn { platformOf, platformUrlForms, handoffUrlIndex };')(
     () => handoff, url => (handoff ? new Function(src + '\nreturn handoffUrlIndex;')()(handoff).get(url) : undefined));
 }

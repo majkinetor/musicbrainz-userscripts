@@ -19,7 +19,15 @@ Apollo knows nothing about any platform: the handoff (`v: 2`) tells it what it n
 
 An older `v: 1` handoff has neither. Apollo still matches by the plain link, but shows a generic **link** badge and seeds no link type.
 
+A handoff from [Mission Control's consolidation](../mission_control/DEVELOP.md#consolidation) (`mc: true`) also gives each artist its links on the other platforms read: `alt: [{ url, urlForms, platform: { abbr, name, artistLinkType } }]`. Its `url` is the source platform's link, or null when the source has none. Apollo tries the `alt` links when `url` matches no one, and badges a match with the alt's platform.
+
 It travels in the script's storage under `fc.handoff.<token>`, the token in the editor URL's `first_contact` parameter. The editor tab copies it to its `sessionStorage` (so a reload still finds it) and deletes it from the storage. MusicBrainz's *Continue* confirmation page loads at the same URL first, so it is taken only once `#release-editor` is there. One that is never picked up is pruned after an hour.
+
+## Consolidate
+
+[#702](https://github.com/majkinetor/musicbrainz-userscripts/issues/702). The album is read and finished (`finishRelease`, the steps Import takes) and stored under `fc.handoff.cons.<token>` (pruned with the handoffs after an hour), then `https://<server>/release/add#mc=<token>` opens. There FC copies it to the tab's `sessionStorage` and publishes it for Mission Control, answers its `mc:read` and `fc:seed`; the events are in [Mission Control's DEVELOP.md](../mission_control/DEVELOP.md#consolidation).
+
+`mc:read` reads an album page headless with the same provider code as an import. The readers that parse the album page (Bandcamp, Qobuz, Beatport, 7digital, Ototoy) get it fetched with `GM_xmlhttpRequest`, parsed, and marked with its origin (`doc.fcOrigin`, which `originOf(doc)` gives them in place of `location.origin`); Beatport fetches a release page it needs the same way. Spotify isn't read: its token comes from its web player.
 
 ## How each platform is read
 

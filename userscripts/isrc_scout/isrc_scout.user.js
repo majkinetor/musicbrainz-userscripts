@@ -7742,6 +7742,16 @@
         if (hit && !RELEASE[hit.k]) { RELEASE[hit.k] = hit.v; lent.push(hit.k); Log.info('Mission Control probe: using the ticked ' + hit.k + ' ' + hit.v); }
       });
       mcFound = {};
+      // #702: the ISRCs taken when Mission Control consolidated this release, by track, stand as
+      // taken: a source is asked only for the tracks still without one
+      let picks = 0;
+      (Array.isArray(d.isrcs) ? d.isrcs : []).forEach((raw, i) => {
+        const t = RELEASE.tracks[i], isrc = normalizeIsrc(raw);
+        if (!t || !isValidIsrc(isrc) || t.existing.includes(isrc)) return;
+        mcFound[t.recId] = { isrc, source: 'Mission Control' };
+        picks++;
+      });
+      if (Array.isArray(d.isrcs)) Log.info('Mission Control probe: ' + picks + ' ISRC(s) taken in the consolidation, of ' + d.isrcs.filter(Boolean).length + ' given for ' + RELEASE.tracks.length + ' track(s)');
       const srcs = mcSources();
       Log.info('Mission Control probe ' + d.run + ': sources ' + (srcs.map(x => x.source).join(', ') || 'none'));
       let used = null, more = false;

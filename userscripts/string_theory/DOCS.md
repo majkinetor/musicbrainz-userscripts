@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-10-10 23:05 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-10-10 23:26 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -106,7 +106,7 @@ On the recording side the copy is applied when you submit, like MusicBrainz's ow
 
 Stages, most confident first:
 
-1. **Discogs or platform link.** When the release links to Discogs, each credited artist (featured ones too) is matched by the Discogs link on the MusicBrainz artist. Badge: **DISC**. When the release was imported with [First Contact](../first_contact/README.md), each credited artist is matched the same way by its page on the platform the release came from (Deezer, Spotify, Tidal, …). Badge: the platform, such as **DZ** for Deezer.
+1. **Discogs or platform link.** When the release links to Discogs, each credited artist (featured ones too) is matched by the Discogs link on the MusicBrainz artist. Badge: **DISC**. When the release was imported with [First Contact](../first_contact/README.md), each credited artist is matched the same way by its page on the platform the release came from (Deezer, Spotify, Tidal, …). Badge: the platform, such as **DZ** for Deezer. A release from [Mission Control's consolidation](../mission_control/README.md#consolidate-a-new-release) also carries each artist's pages on the other platforms it compared: when the source's page matches no one, or the source has none, they are tried in turn, and the badge names the platform whose page matched.
 2. **Release group.** The same track on other releases in the group, with its credited artists. This settles most tracks, compilations included. Badge: **RG**.
 3. **Same position on other editions.** The track at the same position on the release group's other editions and on the [duplicates](#duplicates), when that track passes the [recording](#recording-matching) test (similar title and length within tolerance, or a title in another script on a medium that lines up). Its artist is taken if the name matches loosely (spaces, punctuation, quotes, a leading *The* ignored, or 85% similar): *Juan Formel* → *Juan Formell*, *Cedric Im Brooks* → *Cedric “Im” Brooks*. When the editions agree the artist is linked, keeping the seeded credited name. Badge: **POS**. When they disagree nothing is linked, and they head the picker under **On other editions at this position**.
 4. **Exact name or alias.** Linked only when exactly one artist has the credited name as its name or an alias, among all of MusicBrainz's matches, not only the first page. Badge: **NAME** or **ALIAS**.
@@ -373,7 +373,7 @@ Each cover shows its size and resolution. *Show each cover's file type next to i
 
 An Art Station download, added back as a zip, restores each cover's types and comment.
 
-The **URL (N)** panel has an import for each source the release links, plus any [registered providers](../art_station/DEVELOP.md#plugin-api). Right-click it to import from all of them; middle-click to import from all and keep only the best cover (highest resolution, then smallest file), with the edit note saying Art Station chose it. Imports from a URL need [Enhanced Cover Art Uploads](https://raw.github.com/ROpdebee/mb-userscripts/dist/mb_enhanced_cover_art_uploads.user.js).
+The **URL (N)** panel has an import for each source the release links, plus any [registered providers](../art_station/DEVELOP.md#plugin-api). Right-click it to import from all of them; middle-click to import from all and keep only the best cover: the largest front (each source's first image, as sources give no types), then the smallest file, with the edit note saying Art Station chose it. Imports from a URL need [Enhanced Cover Art Uploads](https://raw.github.com/ROpdebee/mb-userscripts/dist/mb_enhanced_cover_art_uploads.user.js).
 
 With the [Picker](../art_station/as_picker/README.md), clicking a copy in the search results sends it back to the gallery.
 
@@ -825,6 +825,7 @@ Import a release into MusicBrainz from the platform's album page with one click:
 ### Features
 
 - **[Import](#import)** a release from the album page into the MusicBrainz release editor.
+- **[Consolidate](#consolidate)**: compare the album with the other platforms in Mission Control, and take the best of each.
 - **[Send to Harmony](#send-to-harmony)**: look the album up on Harmony instead, with every platform that has its barcode.
 - **[Platforms](#platforms)**: what is read from each one.
 - **[Artist matching](#artist-matching-1)** is left to Apollo Editor, which gets every artist's platform link.
@@ -866,9 +867,15 @@ When the platform gives no type, or only a plain *album* while the title says ot
 
 Without every track's length: 1 track is a Single, 3 to 6 an EP, 7 or more an Album, and 2 are left for you. The log says which sign decided.
 
+### Consolidate
+
+The button beside **Import to MusicBrainz**, with [Mission Control](../mission_control/README.md)'s icon, reads the album as Import does, then opens MusicBrainz's release editor in a new tab with Mission Control over it. Mission Control finds the album on the other platforms, First Contact reads each of them there, and you take the best title, date, label, tracklist and ISRCs of all of them into the editor. See [Consolidate a new release](../mission_control/README.md#consolidate-a-new-release).
+
+Mission Control has to be installed, and Platform Check too, to find the other platforms; [String Theory](../string_theory/README.md) has them all. Turn the button off in [Settings](#settings-2).
+
 ### Send to Harmony
 
-The button between **Import to MusicBrainz** and **⚙︎**, with [Harmony](https://harmony.pulsewidth.org.uk/)'s icon, opens the album in Harmony's release lookup in a new tab instead. Harmony then finds the album by its barcode on the platforms ticked in [Harmony's settings](https://harmony.pulsewidth.org.uk/settings), in the region set there, and [Falcon](../falcon/README.md) works there as usual. Open those settings once: until then Harmony has none, so it looks an album link up on its own platform only, and a barcode on none.
+The button before **⚙︎**, with [Harmony](https://harmony.pulsewidth.org.uk/)'s icon, opens the album in Harmony's release lookup in a new tab instead. Harmony then finds the album by its barcode on the platforms ticked in [Harmony's settings](https://harmony.pulsewidth.org.uk/settings), in the region set there, and [Falcon](../falcon/README.md) works there as usual. Open those settings once: until then Harmony has none, so it looks an album link up on its own platform only, and a barcode on none.
 
 | Platform                                                                        | Sent                                |
 | ------------------------------------------------------------------------------- | ----------------------------------- |
@@ -1093,12 +1100,13 @@ The **⚙︎** button next to **Import to MusicBrainz** opens them, in three sec
 
 #### Import
 
-| Setting                            | Default         |                                                                                                          |
-| ---------------------------------- | --------------- | -------------------------------------------------------------------------------------------------------- |
-| MusicBrainz server                 | musicbrainz.org | where the release editor opens: musicbrainz.org, beta or test                                            |
-| Annotation from *platform*'s notes | on              | the album's [notes](#platforms) go into the annotation, with *From <platform>: <album page>*             |
-| Close this page after the import   | off             | the platform's tab closes once the editor or [Harmony](#send-to-harmony) has the album; not on a failure |
-| Send to Harmony button             | on              | the [Harmony button](#send-to-harmony) between **Import to MusicBrainz** and **⚙︎**                      |
+| Setting                            | Default         |                                                                                              |
+| ---------------------------------- | --------------- | -------------------------------------------------------------------------------------------- |
+| MusicBrainz server                 | musicbrainz.org | where the release editor opens: musicbrainz.org, beta or test                                |
+| Annotation from *platform*'s notes | on              | the album's [notes](#platforms) go into the annotation, with *From <platform>: <album page>* |
+| Close this page after the import   | off             | the tab closes once the album is sent on; not on a failure                                   |
+| Consolidate button                 | on              | the [Consolidate button](#consolidate) beside **Import to MusicBrainz**                      |
+| Send to Harmony button             | on              | the [Harmony button](#send-to-harmony) before **⚙︎**                                         |
 
 A review in the notes is the critic's text (Qobuz's and Apple's are usually AllMusic's): check you may copy it before you submit.
 
@@ -1731,6 +1739,7 @@ One window on a release page that asks the other scripts what the release is mis
 - **[Release credits](#release-credits)**: what the credit sources have, with a way into Credit Hoarder.
 - **[Inspector](#inspector)**: everything found for one track.
 - **[Execute](#execute)**: applies what you selected, script by script, in a fixed order.
+- **[Consolidate a new release](#consolidate-a-new-release)**: compare an album MusicBrainz doesn't have yet across the platforms, take the best of each into the release editor.
 
 Open Mission Control with its icon in the bottom-right corner of a release page. Right-click the icon for the settings.
 
@@ -1811,12 +1820,29 @@ Every edit note ends with *Via Mission Control v&lt;version&gt;* and the release
 
 Click a card's icon or title to switch the card off: it folds to its header, and Execute leaves out what is taken in there. Your selection stays for when you switch it on again.
 
+### Consolidate a new release
+
+For an album MusicBrainz doesn't have yet. On its page on a platform, **Consolidate** in [First Contact](../first_contact/README.md#consolidate) reads it and opens Mission Control over MusicBrainz's empty release editor:
+
+1. [Platform Check](../platform_check/README.md) finds the album on the other platforms. **Sources** on the left groups them by barcode, the album's own first. The platforms in its lane are taken in, and so are those without a barcode that have as many tracks. A platform in another lane is another release, so it is left out until you tick it. If MusicBrainz already has this album (a release one of these links belongs to, with the same barcode, format and track count), a banner at the top names it: add what it lacks there instead of adding the album again. Releases the links belong to that differ in one of those are listed under it as other editions.
+2. First Contact reads each platform taken in; the header counts them. Spotify can be read on its own page only, so its link is added but its data isn't compared.
+3. **Release** shows each field with the platforms that give each value. The value most of them give is taken, and a tie goes to Platform Check's platform order. Click another value to take it instead.
+4. **Tracks** lines the tracklists up. A track the platforms agree on shows their icons. One where they differ in title, ISRC or length (by more than a second) says how many versions it has: click it to see them, and click a version to take it. **N differ** in the header opens or closes them all. A track only one platform has is struck through and left out; click it to take it in, at the end.
+5. **Add release** opens MusicBrainz's release editor in this tab with what is taken: the fields, the tracklist with its ISRCs, every taken platform's link, and each artist's pages on all the platforms read, which [Apollo Editor](../apollo_editor/README.md#artist-matching) tries when it matches the artists.
+
+<img src="../mission_control/screenshots/consolidate.png" />
+
+Once you save the release, Mission Control opens on it and probes, for what the editor can't take: the ISRCs taken here (added by ISRC Scout), the best cover (Art Station), and the artist and label links (Platform Check). **After saving**, on the right, chooses which of them start taken in; **Execute** then applies them as on any release.
+
+Click a track to see on the right what each platform gives for it. **Copy as Markdown**, in the **▾** menu beside **Add release**, copies the whole comparison as tables, for an issue or an edit note. **✕** shows the empty editor under it; the corner icon brings Mission Control back.
+
 ### Settings
 
-| Setting                                                 | Default |                                                                   |
-| ------------------------------------------------------- | ------- | ----------------------------------------------------------------- |
-| Probe as soon as Mission Control opens                  | off     | no need to click ↻                                                |
-| Reload the release page after an Execute without errors | off     | shows the result at once; waits until every added link is through |
+| Setting                                                         | Default |                                                                        |
+| --------------------------------------------------------------- | ------- | ---------------------------------------------------------------------- |
+| Probe as soon as Mission Control opens                          | off     | no need to click ↻                                                     |
+| Reload the release page after an Execute without errors         | off     | shows the result at once; waits until every added link is through      |
+| After saving a consolidated release, open Mission Control on it | on      | [probes the new release](#consolidate-a-new-release) for what it lacks |
 
 ### Shortcuts
 

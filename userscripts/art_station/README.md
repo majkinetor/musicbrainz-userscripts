@@ -53,7 +53,7 @@ Each cover shows its size and resolution. *Show each cover's file type next to i
 
 An Art Station download, added back as a zip, restores each cover's types and comment.
 
-The **URL (N)** panel has an import for each source the release links, plus any [registered providers](DEVELOP.md#plugin-api). Right-click it to import from all of them; middle-click to import from all and keep only the best cover (highest resolution, then smallest file), with the edit note saying Art Station chose it. Imports from a URL need [Enhanced Cover Art Uploads](https://raw.github.com/ROpdebee/mb-userscripts/dist/mb_enhanced_cover_art_uploads.user.js).
+The **URL (N)** panel has an import for each source the release links, plus any [registered providers](DEVELOP.md#plugin-api). Right-click it to import from all of them; middle-click to import from all and keep only the best cover: the largest front (each source's first image, as sources give no types), then the smallest file, with the edit note saying Art Station chose it. Imports from a URL need [Enhanced Cover Art Uploads](https://raw.github.com/ROpdebee/mb-userscripts/dist/mb_enhanced_cover_art_uploads.user.js).
 
 With the [Picker](./as_picker/README.md), clicking a copy in the search results sends it back to the gallery.
 

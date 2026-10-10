@@ -23,7 +23,7 @@ test('Send to Harmony: a platform Harmony knows goes by its album link', { tag: 
   const b = page.locator('#fc-root .fc-harmony');
   await b.waitFor({ state: 'visible' });
   const order = await page.evaluate(() => [...document.querySelectorAll('#fc-root > button')].map(x => x.className));
-  check(order.join() === 'fc-go,fc-harmony,fc-more', `between Import and ⚙︎: ${order}`);
+  check(order.join() === 'fc-go,fc-cons,fc-harmony,fc-more', `between Import (and Consolidate, #702) and ⚙︎: ${order}`);
   check(/^Send to Harmony: look this Deezer album up/.test(await b.getAttribute('title')), `the tooltip says what it does: ${await b.getAttribute('title')}`);
   await b.click();
   const sent = await until(() => page.evaluate(() => window.__fcLastHarmony), v => !!v);
