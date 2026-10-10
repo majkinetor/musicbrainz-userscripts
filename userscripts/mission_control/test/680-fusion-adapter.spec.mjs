@@ -44,13 +44,21 @@ test('#680: Fusion runs on Fetch RG and marks the tracks with duplicates', { tag
   check(await det.locator('.mc-fxc.on').count() > 0, 'and at least one lit');
   check(await page.locator('#mc-root .mc-pick.on').count() === hits, 'opening it leaves the ticks alone');
 
-  // Check looks up this group's AcoustIDs; the chips are known after it
-  const chk = det.locator('[data-act="fx-check"]');
-  if (await chk.count()) {
-    await chk.click();
-    await page.waitForFunction(() => !document.querySelector('#mc-root tr.mc-fxd:not([hidden]) [data-act="fx-check"]'), null, { timeout: 60_000 });
-    check(await det.locator('.mc-fxc.unk').count() === 0, 'after Check no chip is unknown');
-  }
+  // the ISRCs and AcoustIDs are looked up by themselves, group after group: no button, and no chip stays unknown
+  check(await page.locator('#mc-root [data-act="fx-check"]').count() === 0, 'no Check button');
+  await page.waitForFunction(() => window.__mcTest.fxChecking() === 0, null, { timeout: 120_000 });
+  check(await det.locator('.mc-fxc.unk').count() === 0, 'once checked, no chip is unknown');
+
+  // Expand all opens every comparison, Collapse all folds them
+  const all = page.locator('#mc-root .mc-fxall [data-act="fx-all"]');
+  check(await all.textContent() === 'Expand all', 'the Tracks header offers Expand all');
+  await all.click();
+  check(await page.locator('#mc-root .mc-tbl tr.mc-fxd:not([hidden])').count() === hits, `Expand all opens all ${hits} comparisons`);
+  check(await all.textContent() === 'Collapse all', 'and turns into Collapse all');
+  await page.screenshot({ path: 'test-results/mc-680-fusion-all.png' });
+  await all.click();
+  check(await page.locator('#mc-root .mc-tbl tr.mc-fxd:not([hidden])').count() === 0, 'Collapse all folds them');
+  await page.locator('#mc-root .mc-tbl td[data-col="fusion"] .mc-fxo').first().click();
   await page.screenshot({ path: 'test-results/mc-680-fusion-detail.png' });
 
   // Open in Fusion puts the group on Fusion's board
