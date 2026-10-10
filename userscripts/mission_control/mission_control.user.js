@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Mission Control
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.10.225932
+// @version      2026.10.10.231303
 // @description  One window on the release page that asks the other scripts (Platform Check, ISRC Scout, Art Station, Fusion, Credit Hoarder) what is missing, shows it all in one review, and applies the selected changes in order.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5NaXNzaW9uIENvbnRyb2w8L3RpdGxlPgo8ZGVmcz48ZmlsdGVyIGlkPSJtY28xMy1oIiB4PSItMTAlIiB5PSItMTAlIiB3aWR0aD0iMTIwJSIgaGVpZ2h0PSIxMjAlIj48ZmVNb3JwaG9sb2d5IGluPSJTb3VyY2VBbHBoYSIgb3BlcmF0b3I9ImRpbGF0ZSIgcmFkaXVzPSIxLjUiIHJlc3VsdD0iZCIvPjxmZUZsb29kIGZsb29kLWNvbG9yPSIjZmZmIiBmbG9vZC1vcGFjaXR5PSIuNyIvPjxmZUNvbXBvc2l0ZSBpbjI9ImQiIG9wZXJhdG9yPSJpbiIvPjxmZU1lcmdlPjxmZU1lcmdlTm9kZS8+PGZlTWVyZ2VOb2RlIGluPSJTb3VyY2VHcmFwaGljIi8+PC9mZU1lcmdlPjwvZmlsdGVyPjwvZGVmcz48ZyBmaWx0ZXI9InVybCgjbWNvMTMtaCkiPjxwYXRoIGQ9Ik03NyAzNS41IEw2NCA0MyBMNTEgMzUuNSBMNTEgMjAuNSBMNjQgMTMgTDc3IDIwLjVaIiBmaWxsPSIjN2E1N2U4IiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik01OS43IDc3LjUgTDQ2LjcgODUgTDMzLjcgNzcuNSBMMzMuNyA2Mi41IEw0Ni43IDU1IEw1OS43IDYyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik05NC4zIDc3LjUgTDgxLjMgODUgTDY4LjMgNzcuNSBMNjguMyA2Mi41IEw4MS4zIDU1IEw5NC4zIDYyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik00Mi4zIDEwNy41IEwyOS40IDExNSBMMTYuNCAxMDcuNSBMMTYuNCA5Mi41IEwyOS40IDg1IEw0Mi4zIDkyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik03NyAxMDcuNSBMNjQgMTE1IEw1MSAxMDcuNSBMNTEgOTIuNSBMNjQgODUgTDc3IDkyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik0xMTEuNiAxMDcuNSBMOTguNiAxMTUgTDg1LjcgMTA3LjUgTDg1LjcgOTIuNSBMOTguNiA4NSBMMTExLjYgOTIuNVoiIGZpbGw9IiNmZmM5NGEiIHN0cm9rZT0iIzIyMjIzYiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PC9nPgo8L3N2Zz4K
@@ -1730,7 +1730,7 @@ function ccStyle() {
         + '.mcc-tbl tr.ver.on .r{background:var(--mbu-accent);border-color:var(--mbu-accent);box-shadow:inset 0 0 0 2px var(--mbu-bg)}.mcc-tbl tr.ver{cursor:pointer}'
         + '.mcc-tbl .hl{background:var(--mbu-warn-bg);border-radius:3px;padding:0 3px}.mcc-tbl tr.extra td.ttl{text-decoration:line-through;color:var(--mbu-text-weak)}.mcc-tbl tr.extra.on td.ttl{text-decoration:none;color:var(--mbu-text)}'
         + '.mcc-tbl .why{color:var(--mbu-text-weak)}.mcc-tbl td.car{width:20px;color:var(--mbu-text-weak);text-align:right}'
-        + '.mcc-inmb{border:1px solid var(--mbu-warn-border);background:var(--mbu-warn-bg);border-radius:var(--mbu-radius-lg);padding:10px 12px;margin:0 0 14px}.mcc-inmb ul{margin:6px 0 0;padding-left:18px}.mcc-inmb li{margin:2px 0}'
+        + '.mcc-inmb{border:1px solid var(--mbu-warn-border);background:var(--mbu-warn-bg);border-radius:var(--mbu-radius-lg);padding:10px 12px;margin:0 0 14px}.mcc-inmb ul{margin:6px 0 0;padding-left:18px}.mcc-inmb li{margin:2px 0}.mcc-inmb.other{border-color:var(--mbu-border);background:var(--mbu-bg)}'
         + '.mcc-fmt-slot{display:inline-flex;flex:none}'
         + '.mcc-note{border:1px dashed var(--mbu-border-strong);border-radius:var(--mbu-radius-lg);padding:10px 12px;font-size:12px;color:var(--mbu-text-dim);background:var(--mbu-bg)}'
         + '.mcc-insp dl{display:grid;grid-template-columns:auto 1fr;gap:3px 10px;margin:0 0 12px;font-size:12px}.mcc-insp dt{color:var(--mbu-text-weak)}.mcc-insp dd{margin:0;word-break:break-word}'
@@ -2085,7 +2085,7 @@ function ccPaintHeader() {
     if (t) { t.textContent = title; t.title = title; }
     const slot = CC.ui.querySelector('.mcc-fmt-slot'), fmt = ccFormat();
     if (slot && slot.dataset.fmt !== fmt) { slot.dataset.fmt = fmt; slot.innerHTML = mbuHtml(fmtIcon(fmt) || '<img src="' + ICON_URL + '" alt="" width="28" height="28">'); }
-    if (sub) sub.innerHTML = mbuHtml('New release · ' + esc(artist) + (CC.src ? ' · from First Contact on <a href="' + esc(CC.src.page || CC.src.url) + '" target="_blank" rel="noopener">' + esc(CC.src.sourceName) + '</a>' : ''));
+    if (sub) { sub.textContent = artist; sub.title = artist; }   // majkinetor: only the artist; the Source step links the platform
     CC.ui.querySelectorAll('[data-cc="open"]').forEach(b => { b.disabled = !m.fields || CC.seeded; b.textContent = CC.seeded ? 'Opening the release editor…' : 'Add release →'; });
     CC.ui.querySelectorAll('[data-cc="more"]').forEach(b => { b.disabled = !m.fields || CC.seeded; });
     ccPaintSteps();
@@ -2383,8 +2383,19 @@ async function ccCheckInMb() {
             }));
         }
         if (CC.inMb.urls !== key) return;
-        CC.inMb = { state: 'done', urls: key, releases: [...by.values()].sort((a, b) => b.urls.length - a.urls.length) };
-        if (CC.inMb.releases.length) Log.warn('MusicBrainz already has ' + CC.inMb.releases.length + ' release(s) these links belong to: ' + CC.inMb.releases.map(e => e.id + ' "' + e.title + '" (' + e.urls.length + ' link(s))').join(', '));
+        // majkinetor: "MB has it, but check format too". The url lookup gives no media, so each release
+        // found (one or two, as a rule) is looked up for its format and track count.
+        for (const e of by.values()) {
+            const r = await fetch('/ws/2/release/' + e.id + '?inc=media&fmt=json', { headers: { Accept: 'application/json' } });
+            if (!r.ok) { Log.warn('MusicBrainz: release ' + e.id + ' answered HTTP ' + r.status + ': its format is unknown'); continue; }
+            const j = await r.json();
+            e.format = (j.media || []).map(m => m.format || '(unknown format)').join(' + ');
+            e.tracks = (j.media || []).reduce((n, m) => n + (m['track-count'] || 0), 0);
+        }
+        if (CC.inMb.urls !== key) return;
+        by.forEach(e => { e.same = ccSameRelease(e); });
+        CC.inMb = { state: 'done', urls: key, releases: [...by.values()].sort((a, b) => b.same - a.same || b.urls.length - a.urls.length) };
+        if (CC.inMb.releases.length) Log[CC.inMb.releases.some(e => e.same) ? 'warn' : 'info']('MusicBrainz has ' + CC.inMb.releases.length + ' release(s) these links belong to: ' + CC.inMb.releases.map(e => e.id + ' "' + e.title + '" ' + (e.format || '?') + ', ' + (e.tracks == null ? '?' : e.tracks) + ' tracks, barcode ' + (e.barcode || 'none') + ' (' + e.urls.length + ' link(s)) → ' + (e.same ? 'this album' : 'another edition')).join(', '));
         else Log.ok('MusicBrainz has none of the ' + urls.length + ' link(s): a new release');
     } catch (e) {
         if (CC.inMb.urls !== key) return;
@@ -2393,15 +2404,29 @@ async function ccCheckInMb() {
     }
     ccPaintCenter();
 }
+// A release is this album when nothing tells it apart from the source: its barcode (leading zeros
+// aside), its formats (Digital Media, CD, vinyl, … in kind) and its track count, each where both give one.
+const ccFmtKind = f => String(f || '').split('+').map(x => { x = x.trim(); return /digital/i.test(x) ? 'digital' : /\bcd\b|compact disc|hdcd|sacd/i.test(x) ? 'cd' : /vinyl|"|\blp\b/i.test(x) ? 'vinyl' : /cassette/i.test(x) ? 'cassette' : x.toLowerCase(); }).sort().join('+');
+function ccSameRelease(e) {
+    const src = CC.sources[0] || {};
+    const bc = x => String(x || '').replace(/^0+/, '');
+    if (e.barcode && src.barcode && bc(e.barcode) !== bc(src.barcode)) return false;
+    if (e.format && !/unknown/.test(e.format) && ccFmtKind(e.format) !== ccFmtKind(ccFormat())) return false;
+    if (e.tracks && src.tracks && e.tracks !== src.tracks) return false;
+    return true;
+}
 function ccInMbHtml() {
     const rs = CC.inMb.releases;
     if (CC.inMb.state !== 'done' || !rs.length) return '';
     const plat = u => { const s = CC.sources.find(x => x.url === u); return s ? ccName(s.key) : u; };
-    return '<div class="mcc-inmb"><b>MusicBrainz already has ' + (rs.length === 1 ? 'this album' : rs.length + ' releases these links belong to') + '.</b> '
-        + 'Open it and add what it lacks with Mission Control there, rather than adding the album again.<ul>'
-        + rs.map(e => '<li><a href="/release/' + esc(e.id) + '" target="_blank" rel="noopener">' + esc(e.title) + '</a>' + (e.disamb ? ' <span class="weak">(' + esc(e.disamb) + ')</span>' : '')
-            + (e.date ? ' · ' + esc(e.date) : '') + (e.barcode ? ' · <span class="mono">' + esc(e.barcode) + '</span>' : '')
-            + ' <span class="weak">· linked from ' + esc(e.urls.map(plat).join(', ')) + '</span></li>').join('') + '</ul></div>';
+    const li = e => '<li><a href="/release/' + esc(e.id) + '" target="_blank" rel="noopener">' + esc(e.title) + '</a>' + (e.disamb ? ' <span class="weak">(' + esc(e.disamb) + ')</span>' : '')
+        + (e.date ? ' · ' + esc(e.date) : '') + (e.format ? ' · ' + esc(e.format) : '') + (e.tracks ? ' · ' + e.tracks + ' tracks' : '') + (e.barcode ? ' · <span class="mono">' + esc(e.barcode) + '</span>' : '')
+        + ' <span class="weak">· linked from ' + esc(e.urls.map(plat).join(', ')) + '</span></li>';
+    const same = rs.filter(e => e.same), other = rs.filter(e => !e.same);
+    let h = '';
+    if (same.length) h += '<div class="mcc-inmb"><b>MusicBrainz already has this album.</b> Open it and add what it lacks with Mission Control there, rather than adding the album again.<ul>' + same.map(li).join('') + '</ul></div>';
+    if (other.length) h += '<div class="mcc-inmb other"><b>Other editions in MusicBrainz</b> <span class="dim">(another barcode, format or track count than ' + esc(ccFormat()) + (CC.sources[0] && CC.sources[0].barcode ? ' ' + esc(CC.sources[0].barcode) : '') + '):</span><ul>' + other.map(li).join('') + '</ul></div>';
+    return h;
 }
 function consolidateMain(token) {
     CC.token = token;
@@ -2420,7 +2445,7 @@ function consolidateMain(token) {
     };
     if (document.body) start(); else document.addEventListener('DOMContentLoaded', start, { once: true });
 }
-if (mbuTestHooks()) window.__mccTest = { state: () => CC, model: ccModel, seedRel: () => ccSeedRel(ccModel()), markdown: ccMarkdown, open: ccOpenEditor, setDry: v => { CC.dry = v; }, lanes: ccLanes, versions: ccVersions, inMb: ccCheckInMb, paint: () => ccPaint() };
+if (mbuTestHooks()) window.__mccTest = { state: () => CC, model: ccModel, seedRel: () => ccSeedRel(ccModel()), markdown: ccMarkdown, open: ccOpenEditor, setDry: v => { CC.dry = v; }, lanes: ccLanes, versions: ccVersions, inMb: ccCheckInMb, paint: () => ccPaint(), same: ccSameRelease, fmtKind: ccFmtKind };
 
 /* after saving: Mission Control on the new release (#702) */
 

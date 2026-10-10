@@ -138,6 +138,19 @@ test.describe('the consolidation page', () => {
     const inMb = await until(() => page.evaluate(() => window.__mccTest.state().inMb), v => v && (v.state === 'done' || v.state === 'failed'), { timeout: 30_000 });
     console.log('in MB: ' + JSON.stringify(inMb && inMb.releases));
     check(inMb && inMb.state === 'done', 'MusicBrainz answered the link lookup' + (inMb && inMb.error ? ': ' + inMb.error : ''));
+    // a release is this album only when its barcode, format and track count don't tell it apart
+    const same = await page.evaluate(() => {
+      const t = window.__mccTest.same;
+      return [t({ barcode: '0724384960650', format: 'Digital Media', tracks: 14 }), t({ barcode: '081227460266', format: 'Digital Media', tracks: 14 }),
+        t({ barcode: '724384960650', format: 'CD', tracks: 14 }), t({ barcode: null, format: 'Digital Media', tracks: 13 }), t({ barcode: null, format: null, tracks: null })];
+    });
+    check(JSON.stringify(same) === '[true,false,false,false,true]', 'this album vs another edition, by barcode, format and track count: ' + JSON.stringify(same));
+    check(!inMb || inMb.releases.every(e => e.format && e.tracks), 'each release found has its format and track count');
+    check(!inMb || await page.locator('#mcc-root .mcc-inmb:not(.other) li').count() === inMb.releases.filter(e => e.same).length, 'only this album is in the warning; other editions are in the note');
+    await page.evaluate(() => { const st = window.__mccTest.state(); st.inMb.releases.push({ id: '00000000-0000-0000-0000-000000000702', title: 'Discovery', disamb: '', date: '2001', barcode: '0724384960661', format: 'CD', tracks: 14, urls: ['https://www.deezer.com/album/302127'], same: false }); window.__mccTest.paint(); });
+    check(await page.locator('#mcc-root .mcc-inmb.other li').count() === 1, 'another edition goes in the note');
+    await info.attach('in-mb-editions', { body: await page.locator('#mcc-root .mcc-center').screenshot({ clip: undefined }), contentType: 'image/png' });
+    await page.evaluate(() => { const st = window.__mccTest.state(); st.inMb.releases = st.inMb.releases.filter(e => !/702$/.test(e.id)); window.__mccTest.paint(); });
     if (inMb && inMb.releases.length) {
       const b = page.locator('#mcc-root .mcc-inmb');
       check(await b.count() === 1 && await b.locator('a[href^="/release/"]').count() === inMb.releases.length, 'the banner links each release MusicBrainz has (' + inMb.releases.length + ')');
