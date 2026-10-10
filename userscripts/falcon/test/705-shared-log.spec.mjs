@@ -52,6 +52,7 @@ test('#705: the Log tab is the shared log, with a chip per worker', { tag: ['@sa
       debug: !!host.querySelector('.mbu-logpop-h .mbu-log-dbg input'),
       chips: [...host.querySelectorAll('.mbu-log-fb[data-cat]')].map(b => b.textContent),
       tagged: [...list.querySelectorAll('.mbu-log-li')].filter(d => d.querySelector('.mbu-log-c').textContent === 'w1').length,
+      summaryCat: pre ? pre.parentElement.querySelector('.mbu-log-c').textContent : null,
       summary: pre ? pre.textContent : null, ws: pre ? getComputedStyle(pre).whiteSpace : null,
       preH: pre ? Math.round(pre.getBoundingClientRect().height) : 0, preLines: pre ? pre.textContent.split('\n').length : 0,
       bar: (() => { const h = host.querySelector('.mbu-logpop-h'), hr = h.getBoundingClientRect(), kids = [...h.children].filter(c => c.offsetParent); return { h: Math.round(hr.height), out: kids.filter(c => c.getBoundingClientRect().right > hr.right + 1).map(c => c.className) }; })(),
@@ -65,6 +66,7 @@ test('#705: the Log tab is the shared log, with a chip per worker', { tag: ['@sa
   check(r.chips.includes('w1') && r.chips.includes('w2'), `each worker is a filter chip (${r.chips.join(', ')})`);
   check(r.tagged > 0, `a worker's lines carry its tag (${r.tagged} w1 lines)`);
   check(!!r.summary && /\n/.test(r.summary) && /entity +status/.test(r.summary) && r.ws === 'pre', `the run summary keeps its table (${JSON.stringify((r.summary || '').slice(0, 80))}, ${r.ws})`);
+  check(r.summaryCat === 'run' && r.chips.includes('run'), `the run summary is in the run category (${r.summaryCat}; ${r.chips.join(', ')})`);
   check(r.preH >= r.preLines * 12, `every line of the table shows (${r.preH}px for ${r.preLines} lines)`);
   check(r.bar.h < 44 && !r.bar.out.length, `the toolbar is one row, nothing pushed out (${JSON.stringify(r.bar)})`);
   check(r.height > 100,`the log fills the tab (${r.height}px)`);
