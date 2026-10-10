@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Platform Check
 // @namespace    http://tampermonkey.net/
-// @version      2026.10.10.2
+// @version      2026.10.10.3
 // @description  Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CjxnIHN0cm9rZT0iIzk0YTNiOCIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2UtbGluZWNhcD0icm91bmQiPjxwYXRoIGQ9Ik02NCA2NCBMODggMjIuNCIvPjxwYXRoIGQ9Ik02NCA2NCBMMTEyIDY0Ii8+PHBhdGggZD0iTTY0IDY0IEw4OCAxMDUuNiIvPjxwYXRoIGQ9Ik02NCA2NCBMNDAgMTA1LjYiLz48cGF0aCBkPSJNNjQgNjQgTDE2IDY0Ii8+PHBhdGggZD0iTTY0IDY0IEw0MCAyMi40Ii8+PC9nPjxjaXJjbGUgY3g9Ijg4IiBjeT0iMjIuNCIgcj0iMTIiIGZpbGw9IiNmNDcyYjYiLz48Y2lyY2xlIGN4PSIxMTIiIGN5PSI2NCIgcj0iMTIiIGZpbGw9IiNmYWNjMTUiLz48Y2lyY2xlIGN4PSI4OCIgY3k9IjEwNS42IiByPSIxMiIgZmlsbD0iIzRhZGU4MCIvPjxjaXJjbGUgY3g9IjQwIiBjeT0iMTA1LjYiIHI9IjEyIiBmaWxsPSIjMzhiZGY4Ii8+PGNpcmNsZSBjeD0iMTYiIGN5PSI2NCIgcj0iMTIiIGZpbGw9IiNhNzhiZmEiLz48Y2lyY2xlIGN4PSI0MCIgY3k9IjIyLjQiIHI9IjEyIiBmaWxsPSIjZmI5MjNjIi8+PGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iMjQiIGZpbGw9IiMwZjE3MmEiLz48cGF0aCBkPSJNNTQuMjIyMjIyMjIyMjIyMjIgNjQgTDYxLjMzMzMzMzMzMzMzMzMzNiA3MS4xMTExMTExMTExMTExMSBMNzQuNjY2NjY2NjY2NjY2NjcgNTYuODg4ODg4ODg4ODg4ODg2IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iNiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+Cjwvc3ZnPgo=
@@ -8332,16 +8332,27 @@ const PC_MC_VERSION = (typeof GM_info !== 'undefined' && GM_info.script && GM_in
 //   withheld — found, but barcode/format confidence holds it back (why says which)
 //   unsure   — found, but not a confident match
 //   none     — nothing found
+// A found link also carries its track count (tracks, against the release's mbTracks) and format,
+// and why gives every reason against it, the strongest first: a different track count, then a
+// format that isn't the release's, then barcode or format confidence (#709). mismatch lists the
+// reasons that say it is another release, which MC marks and leaves out of "take all in".
 function pcMcFinding(p) {
     const c = cacheGet(mbid, p) || {};
     const existing = mbDataGet(mbid)?.existing?.[p] || null;
     const base = { key: p, name: PROVIDER_NAME[p], url: c.url || existing || null, source: c.source || null, barcode: c.url && c.barcode || null };
     if (existing || c.source === 'MB rels') return { ...base, state: 'linked' };
     if (!c.url) return { ...base, state: 'none' };
-    const why = pcWithheldWhy(p);
-    if (why) return { ...base, state: 'withheld', why };
+    const mbTracks = parseInt(mbDataGet(mbid)?.mbTracks, 10) || null, tracks = c.tracks != null ? parseInt(c.tracks, 10) : null;
+    const mismatch = [], fmtOff = formatMismatch(p, c.format);
+    if (tracks != null && mbTracks && tracks !== mbTracks) mismatch.push(`${tracks} tracks, the release has ${mbTracks}`);
+    if (fmtOff) mismatch.push(`${c.format || 'Digital'}, the release is ${MB_FORMAT}`);
+    const bcHeld = barcodeBlocks(p), fmtHeld = formatBlocks(p);
+    const why = mismatch.concat(bcHeld ? [c.barcode ? `barcode ${c.barcode} differs from the release's` : 'barcode not confirmed'] : [],
+        fmtHeld && !fmtOff ? ['format not confirmed'] : []).join(' · ') || undefined;
+    const facts = { ...base, tracks, mbTracks, format: c.format || null, mismatch: mismatch.length ? mismatch : undefined, why };
+    if (bcHeld || fmtHeld) return { ...facts, state: 'withheld' };
     const sure = document.getElementById(`ico-${p}`)?.textContent?.trim() === '✓';
-    return { ...base, state: sure ? 'new' : 'unsure' };
+    return { ...facts, state: sure ? 'new' : 'unsure' };
 }
 // The Artists & labels links (#671) as MC findings, one per link: key `ent:<type>:<mbid>:<url>`,
 // with `entity` { type, mbid, name } and `icon` the platform. MusicBrainz is asked which links
@@ -8456,7 +8467,7 @@ document.addEventListener('mc:apply', e => {
     reply(ok ? { ok: true, sent: n, via: 'falcon', tag: `mc:pc:${d.run}`, note: `${n} link${n === 1 ? '' : 's'} ${d.dry ? 'queued in' : 'sent to'} Falcon` } : { ok: false, sent: 0, note: 'Falcon is not running on this page' });
 });
 pcMcHello();   // MC may have asked before PC loaded
-if (mbuTestHooks()) window.__pcTest680 = { pcMcFinding, pcMcMasterFinding, pcScan, pcMcReleaseLinkTypes };
+if (mbuTestHooks()) window.__pcTest680 = { pcMcFinding, pcMcMasterFinding, pcScan, pcMcReleaseLinkTypes, cacheGet, cacheSet, mbDataGet, mbFormat: () => MB_FORMAT };
 
 pcScan();
 

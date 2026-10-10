@@ -9,7 +9,7 @@ Mission Control is a planner and a dashboard. What to probe and how to apply it 
 Every `detail` is a **JSON string**, never an object. Each userscript runs in its own sandbox, and Firefox's Xray wrappers hide an object's fields from another realm. Falcon's `falcon:*` events follow the same rule.
 
 | Event | From | `detail` |
-|---|---|---|
+| --- | --- | --- |
 | `mc:discover` | MC | `{ release, mc }`: the release MBID and MC's version |
 | `mc:provider` | provider | `{ id, name, version, release, capabilities: [...] }` |
 | `mc:probe` | MC | `{ release, run, only, links }`: `only` lists the provider ids asked; `links`, the album links selected in PC's card |
@@ -33,18 +33,20 @@ The steps under the header show each provider's last `mc:progress` note and the 
 
 One finding per thing the provider looked at:
 
-| Field | |
-|---|---|
+| Field |  |
+| --- | --- |
 | `key` | unique within the provider (PC: the platform key, which is also its ST-ICONS name) |
 | `name` | the label to show |
 | `url` | what was found, if anything |
 | `state` | `new` · `linked` · `withheld` · `unsure` · `none` |
-| `why` | for `withheld` / `unsure`: what holds it back |
+| `why` | for `withheld` / `unsure`: what holds it back; PC joins several with ` · ` |
 | `icon` | the ST-ICONS key, when it isn't `key` |
 | `track` | the recording MBID, for a per-track finding |
 | `kind` | a second kind of per-track finding beside the main one (IS: `link`) |
 | `barcode` | PC: the barcode the platform gives; `mc:findings` carries the release's own as `barcode` too. MC groups the release's links by barcode, a lane each (leading zeros aside, as PC compares them): each shown in one form (12 digits when it fits, else 13); the release's own first in green, then the others by size, then the platforms that gave none under an empty barcode. What a lane is goes in its barcode's tooltip. A lane is one line of platform icons that toggle one by one, with *take all in*; a click opens it into rows. A linked link with a barcode sits in its lane as a ✓ icon (the release's own Discogs, say) |
 | `entity` | `{ type, mbid, name }`: the artist or label a PC link is for |
+| `tracks`, `mbTracks`, `format` | PC: the platform's track count, the release's, and the platform's format |
+| `mismatch` | PC: the reasons in `why` that say the link is another release (a different track count, a format that isn't the release's). `why` lists them first, then barcode or format confidence; in a lane MC drops the barcode reason, shows these in amber, marks the lane icon, and leaves the link out of *take all in* |
 
 `new` rows start selected. `withheld` and `unsure` rows can be selected by hand, `linked` ones can't, and the `none` rows collapse into one line of icons. There are no tick boxes: a click on a row (or a matrix cell) takes it in or leaves it out, and a taken-in one is tinted with a ✓. A link inside a row only opens.
 

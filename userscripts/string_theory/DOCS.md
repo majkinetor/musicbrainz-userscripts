@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-10-10 12:21 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-10-10 13:05 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -1222,6 +1222,8 @@ The platform pages Platform Check found, grouped by the barcode each platform gi
 | linked   | the release already has it                                                                                     |
 | withheld | held back by [link confidence](../platform_check/README.md#link-confidence); take it in by hand if it is right |
 | unsure   | may be another artist or label; take it in by hand if it is right                                              |
+
+A link whose track count or format is not the release's is most likely another release: its icon gets an amber dot, and its row says what differs in amber (*10 tracks, the release has 13*). **take all in** leaves those links out; click one to take it in anyway.
 
 **Artists** and **Labels** list the pages the matched albums name for them. The platforms that found nothing fold into one line of icons. A heading's ✓ count opens the links it already has into rows.
 
