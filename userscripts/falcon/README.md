@@ -90,6 +90,12 @@ A link MusicBrainz can't classify on its own (a Bandcamp track: purchase or stre
 > [!NOTE]
 > Workers are MusicBrainz edit pages in same-origin iframes. Each is loaded with MusicBrainz's seed parameters, so the page fills itself. Falcon only touches the form for what seeding can't express (a link that needs two types, a row MusicBrainz couldn't classify), and submits. Where MusicBrainz has an API (cover art, aliases), Falcon uses it instead. The worker count never grows with the queue.
 
+### The log
+
+The **Log** tab is the activity log every script shares: filter by level or by worker (`w1`, `w2`, …), search the text, and **⧉ Copy** it as Markdown for an issue. **debug** records each worker's every step.
+
+Each run keeps its own log in this browser, so a run whose tab crashed or navigated away can still be read. Pick a past run from the list beside the filter (they go by date and release); **Clear history** deletes them. A long run keeps its start and its end.
+
 ## Attributes
 
 |                                      | artist | label | recording | release | release group |
@@ -193,7 +199,7 @@ Append `?falcon=<base64(JSON)>` to any musicbrainz.org URL: Falcon opens with th
 The Picard port also sets MusicBrainz's own tagger button, whether *Automatically send to Picard* is ticked or not.
 
 > [!TIP]
-> To report a problem: leave **debug** on in the **Log** tab, reproduce it, then **Copy log** into the issue. Each run's log is kept separately; the dropdown lists past runs.
+> To report a problem: leave **debug** on in the **Log** tab, reproduce it, then **⧉ Copy** the log into the issue.
 
 ## Shortcuts
 

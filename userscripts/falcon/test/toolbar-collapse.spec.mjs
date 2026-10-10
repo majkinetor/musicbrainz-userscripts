@@ -48,7 +48,7 @@ test("toolbar collapse", { tag: ['@cosmetic', '@sandbox', '@login'] }, async ({ 
   await frames(page);
 
   // every labelled button must be built as icon + label, or there is nothing to collapse
-  const markup = await page.evaluate(() => ['falcon-remove-selected', 'falcon-run', 'falcon-log-copy', 'falcon-log-clear'].map(id => {
+  const markup = await page.evaluate(() => ['falcon-remove-selected', 'falcon-run'].map(id => {
     const b = document.getElementById(id);
     return { id, icon: !!b?.querySelector('.falcon-bi'), label: !!b?.querySelector('.falcon-bt'), title: (b?.title || '').length };
   }));

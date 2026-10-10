@@ -203,3 +203,96 @@ test('the text filter shows only the lines with its text, and Escape empties it'
   await until(vis, v => v.length === 5);
   check(await page.evaluate(() => !!document.getElementById('mbu-logpop') && document.querySelector('#mbu-logpop .mbu-log-q').value === ''), 'Escape in the filter empties it and keeps the window open');
 });
+
+// #705: a block kept as written, and the viewer mounted in a script's own panel
+test('pre keeps a table as written; mount draws the viewer into a panel, with its own filters', { tag: ['@unit'] }, async ({ page }) => {
+  await page.evaluate(() => {
+    window.L = mk();
+    L.info('  squeezed   to   one  ');
+    L.pre('w   entity   status\n[w1] SOYUZ   failed');
+    const host = document.createElement('div'); host.id = 'host'; host.style.height = '300px'; document.body.appendChild(host);
+    const t = document.createElement('label'); t.id = 'tool'; t.textContent = 'debug';
+    L.mount(host, { tools: t });
+    L.cat('w1').info('one'); L.cat('w2').warn('two');
+  });
+  await frames(page);
+  const r = await page.evaluate(() => {
+    const rows = [...document.querySelectorAll('#host .mbu-log-li')];
+    const pre = rows.find(d => d.classList.contains('mbu-log-pre'));
+    return { msgs: L.messages(), n: rows.length, ws: pre && getComputedStyle(pre.querySelector('.mbu-log-m')).whiteSpace, preH: pre && pre.querySelector('.mbu-log-m').getBoundingClientRect().height,
+      text: pre && pre.querySelector('.mbu-log-m').textContent, tool: !!document.querySelector('#host .mbu-logpop-h #tool'),
+      win: !!document.getElementById('mbu-logpop'), chips: [...document.querySelectorAll('#host .mbu-log-fb')].map(b => b.textContent).join(' '),
+      md: L.markdown() };
+  });
+  check(r.msgs[0] === 'squeezed to one', `a plain line is still squeezed (${r.msgs[0]})`);
+  check(r.text === 'w   entity   status\n[w1] SOYUZ   failed' && r.ws === 'pre', `a pre line keeps its breaks and spacing (${JSON.stringify(r.text)}, ${r.ws})`);
+  check(r.preH >= 28, `and shows both its lines (${r.preH}px)`);
+  check(r.md.includes('\nw   entity   status\n[w1] SOYUZ   failed'), 'and so does the Markdown');
+  check(r.n === 4 && r.tool && !r.win, `mounted: every line, the script's tool in the toolbar, no floating window (${JSON.stringify(r)})`);
+  check(r.chips === 'warn info w1 w2', `the workers are categories (${r.chips})`);
+  // the floating window too: its filter must not hide the mounted viewer's lines
+  await page.evaluate(() => L.open());
+  await page.click('#mbu-logpop .mbu-log-fb[data-cat="w2"]');
+  const vis = sel => page.evaluate(s => [...document.querySelectorAll(s + ' .mbu-log-li')].filter(d => getComputedStyle(d).display !== 'none').length, sel);
+  check(await vis('#mbu-logpop') === 1 && await vis('#host') === 4, 'each viewer filters on its own');
+  await page.evaluate(() => L.info('both'));
+  await frames(page);
+  check(await vis('#host') === 5, 'a new line reaches every viewer');
+});
+
+// #705: history — only kept sessions are stored, head and tail kept, the newest N, a list to read them back
+test('history: keep, name, head-and-tail window, the newest N, resume, the session list', { tag: ['@unit'] }, async ({ page }) => {
+  await page.evaluate(() => {
+    window.__ls = new Map();
+    window.st = { get: k => (__ls.has(k) ? __ls.get(k) : null), set: (k, v) => __ls.set(k, v), del: k => __ls.delete(k), keys: () => [...__ls.keys()] };
+    window.mkH = keep => mbuLog({ name: 'Test', version: '1', key: 'k', load: k => window.__store.get(k), save: (k, v) => window.__store.set(k, v),
+      history: { prefix: 'h:', keep, lines: 10, head: 3, store: st,
+        parse: s => { const m = /^\[(\d\d):(\d\d):(\d\d)\] (\w+)\s+(?:\[(w\d)\] )?(.*)$/.exec(s); return m && { sev: m[4].toLowerCase(), cat: m[5], msg: m[6] }; } } });
+  });
+  const keys = () => page.evaluate(() => st.keys().filter(k => /^h:\d/.test(k) && !k.endsWith(':name')).sort());
+  const r1 = await page.evaluate(async () => {
+    window.L = mkH(2);
+    L.info('nothing worth keeping');
+    await new Promise(r => setTimeout(r, 150));
+    return { stored: st.keys().length };
+  });
+  check(r1.stored === 0, 'a session never kept leaves nothing behind');
+  const r2 = await page.evaluate(async () => {
+    L.keep(); L.name('Run A'); L.name('ignored');
+    for (let i = 0; i < 20; i++) L.cat('w1').info('line ' + i);
+    await new Promise(r => setTimeout(r, 150));
+    const id = L.sessionId(), raw = JSON.parse(st.get('h:' + id));
+    return { id, n: raw.length, first: raw[1][3], gap: raw[3][3], last: raw.at(-1)[3], cat: raw.at(-1)[2], name: st.get('h:' + id + ':name'), cur: st.get('h:current') };
+  });
+  check(r2.n === 10 && r2.first === 'line 0' && /dropped/.test(r2.gap) && r2.last === 'line 19' && r2.cat === 'w1', `stored: the start, a note, the end (${JSON.stringify(r2)})`);
+  check(r2.name === 'Run A' && r2.cur === r2.id, 'the first name stays, and the pointer names the session');
+  // a stored session in the old string format, read back through parse
+  await page.evaluate(() => st.set('h:20200101100000-1', JSON.stringify(['[10:00:00] DEBUG [w1] old line', '[10:00:01] ERROR boom'])));
+  const r3 = await page.evaluate(() => {
+    const a = L.sessionId(); L.session(); L.keep(); L.info('run B'); L.flush();
+    return { a, b: L.sessionId(), list: L.sessions().map(s => s.id), lines: L.lines() };
+  });
+  check(r3.lines.length === 1 && /run B/.test(r3.lines[0]), 'a new session starts empty');
+  check(r3.list.length === 1 && r3.list[0] === r3.a && (await keys()).length === 2, `only the newest 2 are kept, the oldest pruned (${JSON.stringify(r3.list)} ${JSON.stringify(await keys())})`);
+  await page.evaluate(() => st.set('h:20200101100000-1', JSON.stringify(['[10:00:00] DEBUG [w1] old line', '[10:00:01] ERROR boom'])));
+  const old = await page.evaluate(() => L.load('20200101100000-1'));
+  check(old[0].sev === 'debug' && old[0].cat === 'w1' && old[0].msg === 'old line' && old[1].sev === 'error', `an old string line is parsed (${JSON.stringify(old)})`);
+  await page.evaluate(() => L.forget('20200101100000-1'));
+  // the viewer lists the past session, shows it read-only, and Clear history deletes it
+  await page.evaluate(() => L.open());
+  const opts = await page.evaluate(() => [...document.querySelectorAll('#mbu-logpop .mbu-log-ses option')].map(o => o.textContent));
+  check(opts.length === 2 && opts[0] === 'Current session' && /Run A$/.test(opts[1]), `the session list (${JSON.stringify(opts)})`);
+  await page.selectOption('#mbu-logpop .mbu-log-ses', r3.a);
+  const past = await page.evaluate(() => ({ n: document.querySelectorAll('#mbu-logpop .mbu-log-li').length, clear: getComputedStyle(document.querySelector('#mbu-logpop .mbu-logpop-clear')).display }));
+  check(past.n === 10 && past.clear === 'none', `a past session shows its stored lines, without Clear (${JSON.stringify(past)})`);
+  await page.evaluate(() => L.info('live while looking back'));
+  await frames(page);
+  check(await page.evaluate(() => document.querySelectorAll('#mbu-logpop .mbu-log-li').length) === 10, 'live lines do not land in a past session');
+  await page.selectOption('#mbu-logpop .mbu-log-ses', '');
+  check(await page.evaluate(() => document.querySelectorAll('#mbu-logpop .mbu-log-li').length) === 2, 'back to the current session');
+  await page.click('#mbu-logpop .mbu-logpop-hclear');
+  check(JSON.stringify(await keys()) === JSON.stringify(['h:' + r3.b]), `Clear history leaves only the current session (${JSON.stringify(await keys())})`);
+  // a navigation: a new page's log carries on the kept session
+  const r4 = await page.evaluate(() => { L.flush(); const M = mkH(2); const ok = M.resume(M.last()); M.info('after'); return { ok, same: M.sessionId() === L.sessionId(), lines: M.messages() }; });
+  check(r4.ok && r4.same && r4.lines.join('|') === 'run B|live while looking back|after', `resume carries the session on (${JSON.stringify(r4)})`);
+});

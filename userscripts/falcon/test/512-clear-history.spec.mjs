@@ -37,31 +37,33 @@ test("#512: clear history", { tag: ['@sandbox', '@login'] }, async ({ context, p
     localStorage.setItem('falcon:session:20260102110000-1', JSON.stringify(['[11:00:00] INFO  === session 20260102110000-1 started ===', '[11:00:05] INFO  starting 4 worker(s) for 5 queued item(s)']));
   });
 
-  // open the Log tab so populateLogHistory() runs and the button/select render.
+  // open the Log tab, which refreshes the viewer's session list
   await page.click('#falcon-tab-log');
   await frames(page);
 
-  const before = await page.evaluate(() => ({
-    options: [...document.getElementById('falcon-log-history').options].map(o => o.value),
-    btnDisabled: document.getElementById('falcon-log-clear-history').disabled,
-  }));
+  // #705: the shared log viewer's session list and Clear history
+  const SEL = '#falcon-body-log .mbu-log-ses', HCLEAR = '#falcon-body-log .mbu-logpop-hclear';
+  const before = await page.evaluate(([s, h]) => ({
+    options: [...document.querySelector(s).options].map(o => o.value),
+    btnDisabled: document.querySelector(h).disabled,
+  }), [SEL, HCLEAR]);
   console.log('before clear:', JSON.stringify(before));
   ck(before.options.filter(Boolean).length === 2, `both historic sessions show up in the combo (got ${JSON.stringify(before.options)})`);
   ck(before.btnDisabled === false, 'the clear-history button is enabled when there IS history');
 
   // view one of the historic sessions first, to confirm clearing snaps back to "live".
-  await page.evaluate(() => window.__falconTest.setViewingSession('20260101100000-1'));
-  await page.click('#falcon-log-clear-history');
+  await page.selectOption(SEL, '20260101100000-1');
+  await page.click(HCLEAR);
   await frames(page);
 
-  const after = await page.evaluate((sid) => ({
-    options: [...document.getElementById('falcon-log-history').options].map(o => o.value),
-    btnDisabled: document.getElementById('falcon-log-clear-history').disabled,
-    viewing: window.__falconTest.getViewingSession(),
+  const after = await page.evaluate(([sid, s, h]) => ({
+    options: [...document.querySelector(s).options].map(o => o.value),
+    btnDisabled: document.querySelector(h).disabled,
+    viewing: document.querySelector(s).value || null,
     liveStillThere: localStorage.getItem('falcon:session:' + sid) !== null,
     histA: localStorage.getItem('falcon:session:20260101100000-1'),
     histB: localStorage.getItem('falcon:session:20260102110000-1'),
-  }), await page.evaluate(() => window.__falconTest.getSessionId()));
+  }), [await page.evaluate(() => window.__falconTest.getSessionId()), SEL, HCLEAR]);
   console.log('after clear:', JSON.stringify(after));
   ck(after.options.length === 1 && after.options[0] === '', `only "Current session" remains in the combo (got ${JSON.stringify(after.options)})`);
   ck(after.btnDisabled === true, 'the button disables itself once there is nothing left to clear');

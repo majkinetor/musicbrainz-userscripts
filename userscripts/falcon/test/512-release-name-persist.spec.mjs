@@ -86,7 +86,7 @@ test("#512: release name persist", { tag: ['@sandbox', '@login'] }, async ({ con
   }, '20260101160000-1');
   await page.click('#falcon-tab-log');
   await frames(page);
-  const label = await page.evaluate(() => [...document.getElementById('falcon-log-history').options].map(o => o.textContent).find(t => t.includes('Named Via Dedicated Key')));
+  const label = await page.evaluate(() => [...document.querySelector('#falcon-body-log .mbu-log-ses').options].map(o => o.textContent).find(t => t.includes('Named Via Dedicated Key')));
   console.log('history label:', label);
   ck(!!label, `the history combo shows the dedicated-key name (got ${JSON.stringify(label)})`);
 

@@ -29,10 +29,6 @@ test("#512: historic logs", { tag: ['@sandbox', '@login'] }, async ({ context, p
   await page.addScriptTag({ content: code });
   await page.waitForFunction(() => !!window.__falconTest, { timeout: 5000 });
 
-  // 1. formatSessionLabel / loadSessionLines round-trip.
-  const fmtResult = await page.evaluate(() => window.__falconTest.formatSessionLabel('20260815134523-1'));
-  ck(fmtResult === '2026-08-15 13:45:23', `session id formats as a readable datetime (got "${fmtResult}")`);
-
   // 2. pruneOldSessions caps the count, keeping the NEWEST ones.
   const pruneResult = await page.evaluate(() => {
     const t = window.__falconTest;
@@ -50,22 +46,16 @@ test("#512: historic logs", { tag: ['@sandbox', '@login'] }, async ({ context, p
   ck(pruneResult[pruneResult.length - 1] === '20260815000025-1', `the newest session (i=25) survives (last kept: ${pruneResult[pruneResult.length - 1]})`);
   ck(pruneResult[0] === '20260815000021-1', `the oldest surviving one (i=21) is exactly the cutoff for keeping 5 of 25 (first kept: ${pruneResult[0]})`);
 
-  // 3. selecting a historical session in the dropdown shows ITS content, and
-  // Copy Log copies that content (not the live one), labeled accordingly.
+  // 3. a stored session in the text format before #705 reads back as log lines
   await page.evaluate(() => { localStorage.clear(); });
-  const histResult = await page.evaluate(async () => {
-    const t = window.__falconTest;
-    localStorage.setItem('falcon:session:20260101120000-1', JSON.stringify(['[12:00:00] INFO  historical line one', '[12:00:01] INFO  historical line two']));
-    t.setViewingSession('20260101120000-1');
-    const shown = document.getElementById('falcon-log-text');
-    return { viewing: t.getViewingSession(), currentLines: t.currentLogLines() };
+  const histResult = await page.evaluate(() => {
+    localStorage.setItem('falcon:session:20260101120000-1', JSON.stringify(['[12:00:00] INFO  historical line one', '[12:00:01] WARN  [w2] historical line two']));
+    return window.__falconTest.loadSessionLines('20260101120000-1');
   });
-  console.log('viewing historical session:', JSON.stringify(histResult));
-  ck(histResult.viewing === '20260101120000-1', 'setViewingSession switches the tracked session');
-  ck(histResult.currentLines.length === 2 && histResult.currentLines[0].includes('historical line one'), `currentLogLines() returns the historical content, not live LOG (got ${JSON.stringify(histResult.currentLines)})`);
-
-  // back to live for the rest of the test
-  await page.evaluate(() => window.__falconTest.setViewingSession(null));
+  console.log('historical session:', JSON.stringify(histResult));
+  ck(histResult.length === 2 && histResult[0].msg === 'historical line one' && histResult[1].sev === 'warn' && histResult[1].cat === 'w2',
+    `an old run's lines come back with their level and worker (got ${JSON.stringify(histResult)})`);
+  ck(new Date(histResult[0].t).toISOString() === '2026-01-01T12:00:00.000Z', 'and their time, on the day of the session');
 
   // 4. logRunSummary's "worked on: ..." line reflects link/isrc/disambiguation/cover counts.
   const summaryLog = await page.evaluate(() => {
@@ -82,8 +72,7 @@ test("#512: historic logs", { tag: ['@sandbox', '@login'] }, async ({ context, p
   ck(/worked on:.*isrc on 1/.test(summaryLog), 'run summary counts items with isrc');
   ck(/worked on:.*cover on 1/.test(summaryLog), 'run summary counts items with cover');
 
-  // 5. Copy Log still wraps in <details>, matching the existing single-session
-  // convention, and includes which session is being copied.
+  // 5. picking the old run in the Log tab shows it, and Copy takes that run, labelled with its date
   await page.click('#falcon-launcher');
   await page.waitForSelector('#falcon-panel', { timeout: 5000 });
   await page.click('#falcon-tab-log');
@@ -91,12 +80,15 @@ test("#512: historic logs", { tag: ['@sandbox', '@login'] }, async ({ context, p
   await page.evaluate(() => {
     navigator.clipboard.writeText = (t) => { window.__copiedText = t; return Promise.resolve(); };
   });
-  await page.click('#falcon-log-copy');
+  await page.selectOption('#falcon-body-log .mbu-log-ses', '20260101120000-1');
+  const shown = await page.evaluate(() => document.querySelector('#falcon-body-log .mbu-log-list').textContent);
+  ck(/historical line one/.test(shown) && !/worked on/.test(shown), 'the Log tab shows the old run, not the live one');
+  await page.click('#falcon-body-log .mbu-logpop-copy');
   await frames(page);
   const copied = await page.evaluate(() => window.__copiedText);
-  console.log('copied text starts with:', JSON.stringify((copied || '').slice(0, 80)));
-  ck(/^<details><summary>Falcon log \(v[^,]+, current session, \d+ lines\)<\/summary>/.test(copied || ''), `copy wraps in <details> with a session label (got "${(copied || '').slice(0, 120)}")`);
-  ck((copied || '').includes('```') && (copied || '').trim().endsWith('</details>'), 'copy still fences the log body and closes the <details> block');
+  console.log('copied text starts with:', JSON.stringify((copied || '').slice(0, 120)));
+  ck(/^<details><summary>Falcon v[^ ]+ — log of 2026-01-01 \d\d:\d\d:\d\d/.test(copied || ''), `copy wraps in <details> labelled with the run's date (got "${(copied || '').slice(0, 120)}")`);
+  ck(/WARN \[w2\] historical line two/.test(copied || '') && (copied || '').includes('```') && (copied || '').trim().endsWith('</details>'), 'copy fences that run’s lines and closes the <details> block');
 
   ck(errs.length === 0, 'no page errors: ' + JSON.stringify(errs.slice(0, 3)));
 });
