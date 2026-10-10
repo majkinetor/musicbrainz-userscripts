@@ -46,6 +46,16 @@ One row per track, a column per script: the ISRCs and recording links ISRC Scout
 
 Click a finding to take it in, and again to leave it out; what is taken in is tinted and ticked. New findings start taken in. A link inside a row only opens it. A click anywhere in a track's row also shows it in the [Inspector](#inspector).
 
+To take in or leave out many at once, hold a key while you click: the others follow the one you click.
+
+| Click with | Takes                                                    |
+| ---------- | -------------------------------------------------------- |
+| Ctrl       | the whole track                                          |
+| Alt        | the whole column; on a found link, that platform's links |
+| Ctrl+Alt   | everything in the table                                  |
+
+Found links take the same keys with a right-click. Press on an ISRC or a duplicate and drag up or down the column to do the same to every one you pass.
+
 Fusion's count opens what Fusion compared under the row: each recording's artist, release, length, ISRCs, AcoustIDs and open edits, with what differs marked. **Check ISRC & AcoustID** looks those up for this group only, and **Open in Fusion** shows the group on Fusion's board.
 
 ## Release and entity links
@@ -94,8 +104,10 @@ Click a card's icon or title to switch the card off: it folds to its header, and
 
 ## Shortcuts
 
-| Key         | Where               |                                                   |
-| ----------- | ------------------- | ------------------------------------------------- |
-| right-click | a link in a row     | take it in or leave it out, instead of opening it |
-| ← →         | a cover full screen | the other cover                                   |
-| right-click | the corner icon     | settings                                          |
+| Key         | Where               |                                                        |
+| ----------- | ------------------- | ------------------------------------------------------ |
+| right-click | a link in a row     | take it in or leave it out, instead of opening it      |
+| Ctrl / Alt  | a click in Tracks   | the whole track / the whole column ([Tracks](#tracks)) |
+| drag        | ISRCs or duplicates | take in or leave out every one you pass                |
+| ← →         | a cover full screen | the other cover                                        |
+| right-click | the corner icon     | settings                                               |
