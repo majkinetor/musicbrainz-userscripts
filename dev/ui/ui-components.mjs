@@ -100,7 +100,7 @@ const CSS = [
     'pointer-events:none;max-width:80vw;text-align:center;white-space:pre-wrap}',
     '#mbu-toast.mbu-toast-on{opacity:1}',
     '#mbu-toast.mbu-toast-act{pointer-events:auto}',
-    '#mbu-toast .mbu-toast-btn{margin-left:10px;padding:2px 9px;border:1px solid currentColor;border-radius:5px;background:transparent;color:inherit;font:inherit;cursor:pointer}',
+    '#mbu-toast .mbu-toast-btn{width:auto;margin-left:10px;padding:2px 9px;border:1px solid currentColor;border-radius:5px;background:transparent;color:inherit;font:inherit;cursor:pointer}',
     '#mbu-toast .mbu-toast-btn:hover{background:rgba(255,255,255,.18)}',
     '#mbu-toast.mbu-toast-ok{background:var(--mbu-ok)}',
     '#mbu-toast.mbu-toast-warn{background:var(--mbu-warn)}',
@@ -123,7 +123,7 @@ const CSS = [
     // (background:none, border:1px solid transparent, the border appearing only
     // on hover). I made it a bordered control and majkinetor rightly called it
     // out: the border is a hover affordance here, not chrome.
-    '.mbu-cfg-log{flex:0 0 auto;font:400 12px var(--mbu-font);color:var(--mbu-accent-text);cursor:pointer;',
+    '.mbu-cfg-log{flex:0 0 auto;width:auto;font:400 12px var(--mbu-font);color:var(--mbu-accent-text);cursor:pointer;',
     'background:none;border:1px solid transparent;border-radius:var(--mbu-radius);padding:1px 8px;line-height:1.6}',
     '.mbu-cfg-log:hover{background:var(--mbu-bg-hover);border-color:var(--mbu-border)}',
 
@@ -139,7 +139,7 @@ const CSS = [
     '.mbu-logpop-h{display:flex;align-items:center;gap:8px;padding:10px 13px;',
     'border-bottom:1px solid var(--mbu-border-soft);color:var(--mbu-accent-text);cursor:move;user-select:none}',
     '.mbu-logpop-sp{margin-left:auto}',
-    '.mbu-logpop-hclear,.mbu-logpop-clear,.mbu-logpop-copy,.mbu-logpop-x,.mbu-logpop-min,.mbu-logpop-full{font-size:12px;color:var(--mbu-accent-text);',
+    '.mbu-logpop-hclear,.mbu-logpop-clear,.mbu-logpop-copy,.mbu-logpop-x,.mbu-logpop-min,.mbu-logpop-full{width:auto;font-size:12px;color:var(--mbu-accent-text);',
     'background:var(--mbu-bg-hover);border:1px solid var(--mbu-border);border-radius:5px;',
     'padding:2px 9px;cursor:pointer;font-family:inherit}',
     '.mbu-logpop-hclear:hover,.mbu-logpop-clear:hover,.mbu-logpop-copy:hover,.mbu-logpop-x:hover,.mbu-logpop-min:hover,.mbu-logpop-full:hover{background:var(--mbu-accent-soft)}',
@@ -199,7 +199,7 @@ const CSS = [
     '.mbu-log-f[hidden]{display:none}',
     '.mbu-log-fg{display:contents}',
     '.mbu-log-fs{width:1px;height:12px;background:var(--mbu-border);margin:0 6px}',
-    '.mbu-logpop .mbu-log-fb{font:inherit;color:var(--mbu-text-weak);background:none;border:1px solid transparent;',
+    '.mbu-logpop .mbu-log-fb{width:auto;font:inherit;color:var(--mbu-text-weak);background:none;border:1px solid transparent;',
     'border-radius:5px;padding:0 6px;line-height:1.6;cursor:pointer}',
     '.mbu-logpop .mbu-log-fb:hover{color:var(--mbu-text);border-color:var(--mbu-border)}',
     '.mbu-logpop .mbu-log-fb.on{color:var(--mbu-accent-text);background:var(--mbu-accent-soft);border-color:var(--mbu-border)}',
