@@ -28,44 +28,37 @@ test('Icon only: the button loses its text, keeps its tooltip, and stays that wa
   check(!again.text, 'it holds after a reload');
 });
 
-// majkinetor: "add option to show config button only on hover". ⚙︎ hides; hovering the button
-// shows it as a tab on the edge, without moving Import; it holds across a reload.
-test('Settings button only on hover: ⚙︎ hides until hover, Import stays put', { tag: ['@web'] }, async ({ page, inject }) => {
+// majkinetor: "change FC option to show settings on hover and make it to show settings on right
+// click of any button". A right-click on any button opens the settings; Hide settings button, use
+// right click instead takes ⚙︎ away, and holds across a reload.
+test('right-click any button for the settings; ⚙︎ can be hidden', { tag: ['@web'] }, async ({ page, inject }) => {
   const open = async () => {
     await page.goto('https://bullion.bandcamp.com/album/nearly', { waitUntil: 'domcontentloaded' });
     await inject('first_contact', { waitFor: '__fcTest' });
     await page.locator('#fc-root .fc-go').waitFor({ state: 'visible' });
   };
-  const gear = page.locator('#fc-root .fc-more'), go = page.locator('#fc-root .fc-go');
+  const gear = page.locator('#fc-root .fc-more'), go = page.locator('#fc-root .fc-go'), panel = page.locator('#fc-panel');
   await open();
   check(await gear.isVisible(), 'by default ⚙︎ shows');
-  await gear.click();
-  await page.locator('#fc-panel .fc-gear-hover-opt').check();
-  check(await gear.isVisible(), 'it stays while the settings are open');
-  await page.keyboard.press('Escape');
-  await page.mouse.move(10, 10);
-  check(!(await gear.isVisible()), 'hidden once the pointer leaves');
-  const before = await go.boundingBox();
-  await go.hover();
-  // majkinetor: "settings on hover should kick in after a sec or so so that on normal usage it
-  // doesn't popup when you click to import"
-  await page.waitForTimeout(300);
-  check(!(await gear.isVisible()), 'not yet a moment into the hover (a click to import shows no ⚙︎)');
-  await go.click({ trial: true });
-  await page.waitForTimeout(1000);
-  check(await gear.isVisible(), 'shown once the pointer has rested on the button for a second');
-  const after = await go.boundingBox();
-  check(Math.abs(before.x - after.x) < 1 && Math.abs(before.y - after.y) < 1, 'Import does not move when ⚙︎ shows');
-  if (process.env.FC_SHOT) {
-    const r = await page.locator('#fc-root').boundingBox();
-    await page.screenshot({ path: process.env.FC_SHOT, clip: { x: r.x - 20, y: r.y - 40, width: r.width + 40, height: r.height + 60 } });
-  }
-  const g = await gear.boundingBox();
-  await page.mouse.move(g.x + g.width / 2, g.y + g.height / 2, { steps: 5 });
-  await gear.click();
-  check(await page.locator('#fc-panel').isVisible(), 'the pointer reaches ⚙︎ and it opens the settings');
+  await go.click({ button: 'right' });
+  check(await panel.isVisible(), 'a right-click on Import opens the settings');
+  await go.click({ button: 'right' });
+  check(!(await panel.isVisible()), 'a second right-click closes them');
+  await page.locator('#fc-root .fc-harmony').click({ button: 'right' });
+  check(await panel.isVisible(), 'a right-click on Send to Harmony opens them too');
+  await page.locator('#fc-panel .fc-gear-hidden-opt').check();
+  check(!(await gear.isVisible()), 'Hide settings button: ⚙︎ goes at once');
   await page.keyboard.press('Escape');
   await open();
-  await page.mouse.move(10, 10);
   check(!(await gear.isVisible()), 'it holds after a reload');
+  const r = await page.locator('#fc-root').evaluate(el => [...el.querySelectorAll('button')].filter(b => b.offsetParent).map(b => getComputedStyle(b).borderTopRightRadius));
+  check(r[r.length - 1] === '8px', `the last button left takes the round corner (${r})`);
+  if (process.env.FC_SHOT) {
+    const b = await page.locator('#fc-root').boundingBox();
+    await page.screenshot({ path: process.env.FC_SHOT, clip: { x: b.x - 20, y: b.y - 20, width: b.width + 40, height: b.height + 40 } });
+  }
+  await go.click({ button: 'right' });
+  check(await panel.isVisible(), 'with ⚙︎ hidden a right-click still opens the settings');
+  await page.locator('#fc-panel .fc-gear-hidden-opt').uncheck();
+  check(await gear.isVisible(), 'unticked, ⚙︎ is back');
 });

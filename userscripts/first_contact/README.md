@@ -274,13 +274,13 @@ To get them, make a free account on [archive.org](https://archive.org), log in, 
 
 ## Moving the button
 
-Drag **Import to MusicBrainz** (or its **⚙︎**) to wherever it is out of the way. Each platform remembers its own place. **⚙︎ → Reset:** **this one** puts it back in the bottom-right corner on that platform and stops it scrolling with the page; **all** does so on every platform.
+Drag **Import to MusicBrainz** (or any of its buttons) to wherever it is out of the way. Each platform remembers its own place. **⚙︎ → Reset:** **this one** puts it back in the bottom-right corner on that platform and stops it scrolling with the page; **all** does so on every platform.
 
 By default the button stays put on the screen. With **Moved button scrolls with the page on** *platform* on (see [Settings](#settings)), a moved button stays on its spot on that platform's page instead, above the cover, say, and scrolls with it. Each platform has its own, so the button can scroll with the page on Bandcamp and stay on the screen on Spotify:
 
 ## Settings
 
-The **⚙︎** button next to **Import to MusicBrainz** opens them, in three sections.
+The **⚙︎** button next to **Import to MusicBrainz** opens them, in three sections, as does a right-click on any of the buttons.
 
 ### Import
 
@@ -305,7 +305,7 @@ A review in the notes is the critic's text (Qobuz's and Apple's are usually AllM
 | Setting                                          | Default |                                                                                                               |
 | ------------------------------------------------ | ------- | ------------------------------------------------------------------------------------------------------------- |
 | Icon only                                        | off     | the button shows only its icon; its tooltip and progress stay                                                 |
-| Settings button only on hover                    | off     | **⚙︎** appears, as a tab on the button's edge, only after a second's hover                                    |
+| Hide settings button, use right click instead    | off     | no **⚙︎**; right-click any of the buttons for the settings                                                    |
 | Moved button scrolls with the page on *platform* | off     | on this platform only, a [moved](#moving-the-button) button stays on its spot on the page and scrolls with it |
 | Position: Reset                                  |         | **this one**: back to the bottom-right corner on this platform; **all**: on every platform                    |
 

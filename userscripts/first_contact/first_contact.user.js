@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         First Contact
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.9
+// @version      2026.10.10
 // @description  Import a release into MusicBrainz from the platform's album page with one click: the release editor opens with the title, tracklist, artists, date, label, barcode and link filled in. Each artist's platform link is handed to Apollo Editor for matching. A second button sends the album to Harmony instead. By default the album page is also saved on the Internet Archive (it sends each imported URL to archive.org; off in the settings), and the edit note links the snapshot. Platforms: Deezer, Bandcamp, Discogs, Apple Music, Tidal, Qobuz, Beatport, Spotify, YouTube Music, Volumo, HDtracks, SoundCloud, Amazon Music, Audiomack, 7digital, Ototoy.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPkZpcnN0IENvbnRhY3Q8L3RpdGxlPgogIDwhLS0gdHJhY3RvciBiZWFtIC0tPgogIDxwYXRoIGQ9Ik01MCA0NCBMNzggNDQgTDEwNCAxMTIgTDI0IDExMiBaIiBmaWxsPSIjZjZjNDMxIiBvcGFjaXR5PSIwLjkiLz4KICA8cGF0aCBkPSJNNTYgNDQgTDcyIDQ0IEw4OCAxMTIgTDQwIDExMiBaIiBmaWxsPSIjZmRlNjhhIiBvcGFjaXR5PSIwLjciLz4KICA8IS0tIGxhbmRpbmcgcmluZyAtLT4KICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSIxMTQiIHJ4PSI0MiIgcnk9IjgiIGZpbGw9IiMxZTIzNDYiIHN0cm9rZT0iI2M5Y2RmMiIgc3Ryb2tlLXdpZHRoPSIzIi8+CiAgPGVsbGlwc2UgY3g9IjY0IiBjeT0iMTEzIiByeD0iMjYiIHJ5PSI0LjIiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2Y2YzQzMSIgc3Ryb2tlLXdpZHRoPSIyLjQiLz4KICA8IS0tIHNhdWNlcjogYSBwYWxlIHJpbSwgc28gaXQgc2hvd3Mgb24gYSBkYXJrIGJhY2tncm91bmQgdG9vIC0tPgogIDxwYXRoIGQ9Ik00MCAyNiBBMjQgMTggMCAwIDEgODggMjYgWiIgZmlsbD0iIzFlMjM0NiIgc3Ryb2tlPSIjYzljZGYyIiBzdHJva2Utd2lkdGg9IjMiLz4KICA8cGF0aCBkPSJNNTAgMTggQTEwIDYgMCAwIDEgNjAgMTQiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2ZmZiIgc3Ryb2tlLXdpZHRoPSIyLjYiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxlbGxpcHNlIGN4PSI2NCIgY3k9IjMyIiByeD0iNTYiIHJ5PSIxMyIgZmlsbD0iIzFlMjM0NiIgc3Ryb2tlPSIjYzljZGYyIiBzdHJva2Utd2lkdGg9IjMiLz4KICA8Y2lyY2xlIGN4PSIzOCIgY3k9IjMyIiByPSI0LjQiIGZpbGw9IiNmZmYiLz4KICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjM0IiByPSI0LjQiIGZpbGw9IiNmZmYiLz4KICA8Y2lyY2xlIGN4PSI5MCIgY3k9IjMyIiByPSI0LjQiIGZpbGw9IiNmZmYiLz4KICA8IS0tIHRoZSByZWxlYXNlIGJlaW5nIGJlYW1lZCB1cDogYSBwdXJwbGUgaGV4YWdvbiB3aXRoIGEgbm90ZSAtLT4KICA8cGF0aCBkPSJNNjQgNTggTDg0IDY5LjUgTDg0IDkyLjUgTDY0IDEwNCBMNDQgOTIuNSBMNDQgNjkuNSBaIiBmaWxsPSIjN2I0ZmQ2Ii8+CiAgPHBhdGggZD0iTTY0IDU4IEw4NCA2OS41IEw2NCA4MSBMNDQgNjkuNSBaIiBmaWxsPSIjOWI3MmVhIi8+CiAgPHBhdGggZD0iTTYwIDcyIEw3NCA2OSBMNzQgODkiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2ZmZiIgc3Ryb2tlLXdpZHRoPSIzLjQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz4KICA8cGF0aCBkPSJNNjAgNzIgTDYwIDkyIiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iMy40Ii8+CiAgPGVsbGlwc2UgY3g9IjU2IiBjeT0iOTIiIHJ4PSI0LjYiIHJ5PSIzLjYiIGZpbGw9IiNmZmYiLz4KICA8ZWxsaXBzZSBjeD0iNzAiIGN5PSI4OSIgcng9IjQuNiIgcnk9IjMuNiIgZmlsbD0iI2ZmZiIvPgogIDwhLS0gc3BhcmtsZXMgLS0+CiAgPHBhdGggZD0iTTE4IDU0IGwyLjUgNiA2IDIuNSAtNiAyLjUgLTIuNSA2IC0yLjUgLTYgLTYgLTIuNSA2IC0yLjUgWiIgZmlsbD0iI2Y2YzQzMSIvPgogIDxwYXRoIGQ9Ik0xMDggNTIgbDIuNSA2IDYgMi41IC02IDIuNSAtMi41IDYgLTIuNSAtNiAtNiAtMi41IDYgLTIuNSBaIiBmaWxsPSIjMWUyMzQ2Ii8+CiAgPHBhdGggZD0iTTExMiA4MiBsMS44IDQuMiA0LjIgMS44IC00LjIgMS44IC0xLjggNC4yIC0xLjggLTQuMiAtNC4yIC0xLjggNC4yIC0xLjggWiIgZmlsbD0iI2Y2YzQzMSIvPgogIDxwYXRoIGQ9Ik0xNCA4NiBsMS44IDQuMiA0LjIgMS44IC00LjIgMS44IC0xLjggNC4yIC0xLjggLTQuMiAtNC4yIC0xLjggNC4yIC0xLjggWiIgZmlsbD0iIzFlMjM0NiIvPgo8L3N2Zz4K
@@ -111,8 +111,10 @@ Log.info(mbuStartupInfo(NAME));
 mbuToast.log = (kind, msg) => (kind === 'warn' ? Log.warn(msg) : kind === 'ok' ? Log.ok(msg) : Log.info(msg));
 
 function settings() {
-    const s = Object.assign({ server: 'musicbrainz.org', iconOnly: false, gearOnHover: false, closeAfter: false, harmony: true, archive: true, iaKey: '', iaSecret: '' }, GM_getValue('fc.settings', {}));
+    const s = Object.assign({ server: 'musicbrainz.org', iconOnly: false, gearHidden: false, closeAfter: false, harmony: true, archive: true, iaKey: '', iaSecret: '' }, GM_getValue('fc.settings', {}));
     if (!SERVERS.includes(s.server)) s.server = 'musicbrainz.org';
+    // the option that showed ⚙︎ only on hover became Hide the settings button: who had it on keeps ⚙︎ out of sight
+    if ('gearOnHover' in s) { if (!('gearHidden' in (GM_getValue('fc.settings', {}) || {}))) s.gearHidden = !!s.gearOnHover; delete s.gearOnHover; }
     return s;
 }
 function saveSettings(s) { GM_setValue('fc.settings', s); }
@@ -2420,20 +2422,10 @@ function injectStyle() {
 #fc-panel .fc-reset button:focus-visible { outline: 2px solid var(--mbu-accent); outline-offset: 1px; }
 #fc-root.fc-iconly .fc-go span { display: none; }
 #fc-root.fc-iconly .fc-go[aria-busy="true"] span { display: inline; }   /* the progress still shows while it reads */
-/* ⚙︎ only on hover: a tab on the button's edge, above it (below when the button sits near the
-   top), so showing it never shifts Import out from under the pointer */
-#fc-root.fc-gear-hover .fc-go { border-radius: 8px; }
-#fc-root.fc-gear-hover:has(.fc-harmony:not([hidden])) .fc-go { border-radius: 8px 0 0 8px; }
-#fc-root.fc-gear-hover .fc-harmony { border-radius: 0 8px 8px 0; }
-#fc-root.fc-gear-hover .fc-more { position: absolute; right: 8px; bottom: 100%; min-width: 0; padding: 3px 8px;
-  border: 1px solid var(--mbu-border); border-bottom: none; border-radius: 8px 8px 0 0; visibility: hidden; }
-#fc-root.fc-gear-hover.fc-gear-below .fc-more { bottom: auto; top: 100%; border-bottom: 1px solid var(--mbu-border); border-top: none; border-radius: 0 0 8px 8px; }
-/* majkinetor: "settings on hover should kick in after a sec or so, so that on normal usage it doesn't
-   pop up when you click to import": the tab shows after the pointer has rested on the button for 1 s,
-   and hides at once. The keyboard (focus-visible, not the focus a click leaves) and open settings show it now.
-   Never while the button is being dragged (majkinetor: "do not show settings button while dragging"). */
-#fc-root.fc-gear-hover:not(.fc-dragging):hover .fc-more { visibility: visible; transition: visibility 0s linear 1s; }
-#fc-root.fc-gear-hover:not(.fc-dragging):has(:focus-visible) .fc-more, body:has(#fc-panel) #fc-root.fc-gear-hover:not(.fc-dragging) .fc-more { visibility: visible; transition: none; }
+/* majkinetor: the settings on a right-click of any button; ⚙︎ can then go. The last button left takes the round corner */
+#fc-root.fc-gear-hidden .fc-more { display: none; }
+#fc-root.fc-gear-hidden:has(.fc-harmony[hidden]) .fc-go { border-radius: 8px; }
+#fc-root.fc-gear-hidden .fc-harmony { border-radius: 0 8px 8px 0; }
 #fc-panel { position: fixed; z-index: 2147483001; box-sizing: border-box; width: max-content; max-width: calc(100vw - 16px);
   overflow: auto; overscroll-behavior: contain; background: var(--mbu-bg); color: var(--mbu-text);
   border: 1px solid var(--mbu-border); border-radius: 8px; box-shadow: var(--mbu-shadow, 0 4px 18px rgba(0,0,0,.3));
@@ -2513,12 +2505,25 @@ function mountButton(provider, id) {
         root.append(go, harmony, more);
         document.body.appendChild(root);
         makeMovable(root);
-        root.addEventListener('mouseenter', () => root.classList.toggle('fc-gear-below', root.getBoundingClientRect().top < 40));
+        // majkinetor: right-click any of the buttons for the settings; a right-click while they are open
+        // closes them. That close comes on the press, before the panel's own close-on-a-press-outside,
+        // which would then swallow the next click (a right-click makes none)
+        let wasOpen = false;
+        root.addEventListener('pointerdown', e => {
+            if (e.button !== 2) return;
+            wasOpen = !!document.getElementById('fc-panel');
+            if (wasOpen) closePanel();
+        });
+        root.addEventListener('contextmenu', e => {
+            e.preventDefault();
+            if (wasOpen) { wasOpen = false; return; }
+            if (!document.getElementById('fc-panel')) togglePanel(more);
+        });
         window.addEventListener('resize', () => placeButton(root));
     }
     root.dataset.fcProvider = provider.name;
     root.classList.toggle('fc-iconly', !!settings().iconOnly);   // majkinetor: an option to hide the button's text
-    root.classList.toggle('fc-gear-hover', !!settings().gearOnHover);   // majkinetor: an option to show ⚙︎ only on hover
+    root.classList.toggle('fc-gear-hidden', !!settings().gearHidden);   // majkinetor: ⚙︎ can go, a right-click opens the settings
     root.querySelector('.fc-go').title = `Import to MusicBrainz: open the release editor with this ${provider.name} release filled in`;
     showHarmony(root, provider);
     root.style.display = '';
@@ -2880,7 +2885,7 @@ function togglePanel(anchor) {
         + `<input type="text" class="fc-ia-secret" placeholder="secret" autocomplete="off" data-lpignore="true" data-1p-ignore data-bwignore data-form-type="other" spellcheck="false" value="${(s.iaSecret || '').replace(/"/g, '&quot;')}"></div>`
         + '<div class="fc-sec">Button</div>'
         + `<label class="fc-check" title="The button shows only its icon; hover it for what it does"><input type="checkbox" class="fc-iconly-opt"${s.iconOnly ? ' checked' : ''}> Icon only</label>`
-        + `<label class="fc-check" title="The ⚙︎ button hides until the pointer has rested on Import to MusicBrainz for a second; it shows as a small tab on the button's edge"><input type="checkbox" class="fc-gear-hover-opt"${s.gearOnHover ? ' checked' : ''}> Settings button only on hover</label>`
+        + `<label class="fc-check" title="No ⚙︎ button: right-click any of the buttons for the settings (that works with ⚙︎ shown too)"><input type="checkbox" class="fc-gear-hidden-opt"${s.gearHidden ? ' checked' : ''}> Hide settings button, use right click instead</label>`
         + `<label class="fc-check" title="On ${here} only: a button you have moved stays on its spot on the page (above the cover, say) and scrolls with it, instead of staying put on the screen. The button in its corner always stays on the screen."><input type="checkbox" class="fc-scroll-opt"${scrollsWithPage(here) ? ' checked' : ''}> Moved button scrolls with the page on ${here}</label>`
         // majkinetor: "change this to Reset: all | this one"
         + `<div class="fc-reset" title="Drag the button to move it; each platform remembers its own place. Reset puts it back in the bottom-right corner."><span class="fc-pos">Position</span>Reset: `
@@ -2925,12 +2930,12 @@ function togglePanel(anchor) {
         if (root && current) showHarmony(root, current.provider);
         Log.info(`Send to Harmony button: ${next.harmony ? 'shown' : 'hidden'}`);
     });
-    panel.querySelector('.fc-gear-hover-opt').addEventListener('change', e => {
-        const next = Object.assign(settings(), { gearOnHover: e.target.checked });
+    panel.querySelector('.fc-gear-hidden-opt').addEventListener('change', e => {
+        const next = Object.assign(settings(), { gearHidden: e.target.checked });
         saveSettings(next);
         const root = document.getElementById('fc-root');
-        if (root) root.classList.toggle('fc-gear-hover', next.gearOnHover);
-        Log.info(`settings button: ${next.gearOnHover ? 'only on hover' : 'always'}`);
+        if (root) { root.classList.toggle('fc-gear-hidden', next.gearHidden); mbRestackCorner('br'); }
+        Log.info(`settings button: ${next.gearHidden ? 'hidden (right-click a button for the settings)' : 'shown'}`);
     });
     panel.querySelector('.fc-iconly-opt').addEventListener('change', e => {
         const next = Object.assign(settings(), { iconOnly: e.target.checked });
