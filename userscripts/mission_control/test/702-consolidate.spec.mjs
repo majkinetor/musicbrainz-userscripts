@@ -91,12 +91,21 @@ test.describe('the consolidation page', () => {
       await row.click();
       const vers = page.locator(`#mcc-root tr.ver[data-r="${id}"]`);
       check(await vers.count() >= 2, `the row opens into its ${await vers.count()} versions`);
-      check(await page.locator('#mcc-root .mcc-insp dl').count() === 1, 'and the inspector shows them');
+      // the inspector: a card per version, the taken one first marked, what differs highlighted
+      const cards = page.locator('#mcc-root .mcc-insp .mcc-ver');
+      check(await cards.count() === await vers.count(), `the inspector has a card per version (${await cards.count()})`);
+      check(await page.locator('#mcc-root .mcc-insp .mcc-ver.on').count() === 1 && await page.locator('#mcc-root .mcc-insp .mcc-ver:not(.on) .hl').count() >= 1, 'one is taken; the others show what differs');
+      await info.attach('inspector', { body: await page.locator('#mcc-root .mcc-insp').screenshot(), contentType: 'image/png' });
       await info.attach('versions', { body: await page.screenshot(), contentType: 'image/png' });
       const other = vers.nth(1), k = await other.getAttribute('data-k');
       await other.click();
       const win = await page.evaluate(id => window.__mccTest.model().tracks.rows.find(r => r.id === id).win.keys, id);
       check(win.includes(k), `${k}'s version is taken by hand (${win.join(', ')})`);
+      // and a click on a card in the inspector takes that version back
+      const back = page.locator('#mcc-root .mcc-insp .mcc-ver[data-cc="ver"]').first(), kb = await back.getAttribute('data-k');
+      await back.click();
+      const win2 = await page.evaluate(id => window.__mccTest.model().tracks.rows.find(r => r.id === id).win.keys, id);
+      check(win2.includes(kb), `a card in the inspector takes its version too (${kb})`);
     }
     // "N differ" opens every row that differs, and a second click closes them all
     if (m.differ) {
