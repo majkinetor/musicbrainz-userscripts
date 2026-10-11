@@ -162,6 +162,13 @@
   .usage[hidden]{display:none}
   .usage b{color:var(--ink);font-weight:700;font-size:1.25em}
   .usage a{color:var(--dim);text-decoration:none;white-space:nowrap} .usage a:hover{color:var(--accent)}
+
+  /* The sign-off under Reactions */
+  .made{margin:44px 0 0;display:flex;align-items:center;justify-content:center;gap:8px;font-size:16px;color:var(--dim)}
+  .made .heart{width:18px;height:18px;fill:#e5484d}
+  .made a{display:inline-flex;align-items:center;gap:8px;color:var(--ink);font-weight:600;text-decoration:none}
+  .made a:hover{color:var(--accent)}
+  .made img{width:32px;height:32px;border-radius:50%}
 </style>
 <script>
 // The theme picked with the switch; without one the system's applies.
@@ -214,6 +221,8 @@ try { const t = localStorage.getItem('theme'); if (t === 'light' || t === 'dark'
       <h2>Reactions</h2>
       <div class="wall" id="wall"></div>
     </div>
+    <p class="made">Made with <svg class="heart" viewBox="0 0 24 24" aria-label="love"><path d="M12 21s-7.5-4.6-9.6-9.2C.9 8.4 3 4.5 6.7 4.5c2.2 0 3.6 1.3 4.3 2.4h2c.7-1.1 2.1-2.4 4.3-2.4 3.7 0 5.8 3.9 4.3 7.3C19.5 16.4 12 21 12 21z"/></svg> by
+      <a href="https://github.com/majkinetor"><img alt="" src="./avatars/majkinetor.jpg">majkinetor</a></p>
     <footer>
       <span>MIT</span>
       <a href="https://github.com/kellnerd/userstyles#musicbrainz">Dark theme</a>
