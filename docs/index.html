@@ -136,11 +136,13 @@
   @media(max-width:620px){
     /* one column on phones: the icon and the name on top, the line under them across the tile */
     ul.idx{grid-template-columns:1fr;gap:10px}
-    ul.idx li{display:grid;grid-template-columns:36px 1fr;column-gap:12px;row-gap:8px;align-items:center;
+    ul.idx li{display:grid;grid-template-columns:36px 1fr;column-gap:12px;row-gap:8px;align-items:center;align-content:start;
               text-align:left;padding:12px 14px}
     ul.idx img{width:36px;height:36px}
     ul.idx .n{font-size:16px;padding-right:24px}
     ul.idx .d{grid-column:1 / -1;font-size:13.5px}
+    /* a wide phone or a folded-out one has room for two */
+    @media(min-width:500px){ ul.idx{grid-template-columns:repeat(2,1fr)} }
     h1{font-size:23px}
   }
 
