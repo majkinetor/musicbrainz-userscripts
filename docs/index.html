@@ -353,8 +353,8 @@ const PRAISE=[
  ["majkinetor scripts are awesome! It does everything (except coffee… for now)", "Lotheric", "Discord", "https://discord.com/channels/937555302251905084/1193999163344564385/1558113217689948251"]
 ];
 const said = ([q,w,s,u]) => `<q>${q}</q><span class="by">${w} · <a href="${u}">${s}</a></span>`;
-// Pictures of the people who have one (GitHub, the MB forum), saved under avatars/; the rest get an initial.
-const AVATAR = { NicolasPL64: 'nicolaspl64.jpg', 'chaban-mb': 'chaban-mb.jpg', IvanDobsky: 'ivandobsky.gif', vzell: 'vzell.jpg' };
+// Pictures of the people who have one (GitHub, the MB forum, Discord), saved under avatars/; the rest get an initial.
+const AVATAR = { NicolasPL64: 'nicolaspl64.jpg', 'chaban-mb': 'chaban-mb.jpg', IvanDobsky: 'ivandobsky.gif', vzell: 'vzell.jpg', Lotheric: 'lotheric.webp' };
 const hue = w => ([...w].reduce((h, c) => h * 31 + c.charCodeAt(0) | 0, 0) % 360 + 360) % 360;
 const face = w => AVATAR[w] ? `<img class="av" alt="" loading="lazy" src="./avatars/${AVATAR[w]}">`
                             : `<span class="av" style="background:hsl(${hue(w)} 55% 50%)">${w[0].toUpperCase()}</span>`;
