@@ -196,6 +196,9 @@ test.describe('the consolidation page', () => {
     await page.waitForSelector('#release-editor', { timeout: 60_000 });
     const name = await page.locator('#name').inputValue();
     check(name === 'Discovery', `the release editor is seeded: "${name}"`);
+    const note = await until(() => page.evaluate(() => (document.getElementById('edit-note-text') || {}).value || ''), Boolean, { timeout: 10_000 }).catch(() => '');
+    console.log('edit note: ' + JSON.stringify(note));
+    check(/^Consolidated by Mission Control from \d+ platforms?:/.test(note) && /Mission Control v\S+ by majkinetor/.test(note), 'the edit note says Mission Control consolidated it');
     const after = await page.evaluate(() => JSON.parse(sessionStorage.getItem('mc.after') || 'null'));
     check(after && after.title === 'Discovery' && after.isrcs.filter(Boolean).length >= 10, `after saving, Mission Control is to open (${after && after.isrcs.filter(Boolean).length} ISRCs noted)`);
   });
