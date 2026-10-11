@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         String Theory
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.11.194910
+// @version      2026.10.11.204800
 // @description  Unified bundle of 11 MusicBrainz userscripts (apollo_editor, art_station, credit_hoarder, falcon, first_contact, fusion, group_therapy, isrc_scout, mammoth, mission_control, platform_check). Built by userscripts/string_theory/build.mjs — do not hand-edit.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5TdHJpbmcgVGhlb3J5PC90aXRsZT4KPHBhdGggZD0iTTY0IDEwIEw2Ni40IDEwLjIgTDY4LjcgMTAuNiBMNzAuOSAxMS40IEw3My4xIDEyLjQgTDc1LjIgMTMuNyBMNzcuMSAxNS4yIEw3OC44IDE3IEw4MC40IDE4LjkgTDgxLjggMjEgTDgzLjEgMjMuMSBMODQuMSAyNS40IEw4NSAyNy42IEw4NS43IDI5LjkgTDg2LjMgMzIuMSBMODYuOCAzNC4zIEw4Ny4xIDM2LjQgTDg3LjQgMzguNCBMODcuNyA0MC4zIEw4Ny45IDQyLjEgTDg4LjIgNDMuNyBMODguNSA0NS4yIEw4OC45IDQ2LjYgTDg5LjQgNDcuOCBMOTAgNDkgTDkwLjcgNTAuMSBMOTEuNiA1MS4xIEw5Mi42IDUyLjIgTDkzLjcgNTMuMiBMOTUgNTQuMiBMOTYuNCA1NS4zIEw5Ny45IDU2LjUgTDk5LjUgNTcuNyBMMTAxLjEgNTkuMSBMMTAyLjcgNjAuNiBMMTA0LjQgNjIuMiBMMTA2IDY0IEwxMDcuNSA2NS45IEwxMDguOSA2Ny45IEwxMTAuMiA3MC4xIEwxMTEuMyA3Mi4zIEwxMTIuMSA3NC43IEwxMTIuOCA3Ny4xIEwxMTMuMSA3OS41IEwxMTMuMiA4MS45IEwxMTMgODQuMyBMMTEyLjYgODYuNiBMMTExLjggODguOSBMMTEwLjggOTEgTDEwOS41IDkzIEwxMDcuOSA5NC43IEwxMDYuMSA5Ni4zIEwxMDQuMSA5Ny43IEwxMDIgOTguOCBMOTkuNyA5OS43IEw5Ny4zIDEwMC40IEw5NC45IDEwMC44IEw5Mi40IDEwMSBMODkuOSAxMDAuOSBMODcuNCAxMDAuNyBMODUgMTAwLjQgTDgyLjcgOTkuOSBMODAuNCA5OS4zIEw3OC4zIDk4LjYgTDc2LjMgOTcuOCBMNzQuNCA5Ny4xIEw3Mi43IDk2LjQgTDcxIDk1LjcgTDY5LjUgOTUuMSBMNjggOTQuNiBMNjYuNyA5NC4zIEw2NS4zIDk0LjEgTDY0IDk0IEw2Mi43IDk0LjEgTDYxLjMgOTQuMyBMNjAgOTQuNiBMNTguNSA5NS4xIEw1NyA5NS43IEw1NS4zIDk2LjQgTDUzLjYgOTcuMSBMNTEuNyA5Ny44IEw0OS43IDk4LjYgTDQ3LjYgOTkuMyBMNDUuMyA5OS45IEw0MyAxMDAuNCBMNDAuNiAxMDAuNyBMMzguMSAxMDAuOSBMMzUuNiAxMDEgTDMzLjEgMTAwLjggTDMwLjcgMTAwLjQgTDI4LjMgOTkuNyBMMjYgOTguOCBMMjMuOSA5Ny43IEwyMS45IDk2LjMgTDIwLjEgOTQuNyBMMTguNSA5MyBMMTcuMiA5MSBMMTYuMiA4OC45IEwxNS40IDg2LjYgTDE1IDg0LjMgTDE0LjggODEuOSBMMTQuOSA3OS41IEwxNS4yIDc3LjEgTDE1LjkgNzQuNyBMMTYuNyA3Mi4zIEwxNy44IDcwLjEgTDE5LjEgNjcuOSBMMjAuNSA2NS45IEwyMiA2NCBMMjMuNiA2Mi4yIEwyNS4zIDYwLjYgTDI2LjkgNTkuMSBMMjguNSA1Ny43IEwzMC4xIDU2LjUgTDMxLjYgNTUuMyBMMzMgNTQuMiBMMzQuMyA1My4yIEwzNS40IDUyLjIgTDM2LjQgNTEuMSBMMzcuMyA1MC4xIEwzOCA0OSBMMzguNiA0Ny44IEwzOS4xIDQ2LjYgTDM5LjUgNDUuMiBMMzkuOCA0My43IEw0MC4xIDQyLjEgTDQwLjMgNDAuMyBMNDAuNiAzOC40IEw0MC45IDM2LjQgTDQxLjIgMzQuMyBMNDEuNyAzMi4xIEw0Mi4zIDI5LjkgTDQzIDI3LjYgTDQzLjkgMjUuNCBMNDQuOSAyMy4xIEw0Ni4yIDIxIEw0Ny42IDE4LjkgTDQ5LjIgMTcgTDUwLjkgMTUuMiBMNTIuOCAxMy43IEw1NC45IDEyLjQgTDU3LjEgMTEuNCBMNTkuMyAxMC42IEw2MS42IDEwLjJaIiBmaWxsPSJub25lIiBzdHJva2U9IiM5Yzg2ZWEiIHN0cm9rZS13aWR0aD0iMTAiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz4KPHBhdGggZD0iTTY0IDM0IEw2NS4zIDMzLjkgTDY2LjcgMzMuNyBMNjggMzMuNCBMNjkuNSAzMi45IEw3MSAzMi4zIEw3Mi43IDMxLjYgTDc0LjQgMzAuOSBMNzYuMyAzMC4yIEw3OC4zIDI5LjQgTDgwLjQgMjguNyBMODIuNyAyOC4xIEw4NSAyNy42IEw4Ny40IDI3LjMgTDg5LjkgMjcuMSBMOTIuNCAyNyBMOTQuOSAyNy4yIEw5Ny4zIDI3LjYgTDk5LjcgMjguMyBMMTAyIDI5LjIgTDEwNC4xIDMwLjMgTDEwNi4xIDMxLjcgTDEwNy45IDMzLjMgTDEwOS41IDM1IEwxMTAuOCAzNyBMMTExLjggMzkuMSBMMTEyLjYgNDEuNCBMMTEzIDQzLjcgTDExMy4yIDQ2LjEgTDExMy4xIDQ4LjUgTDExMi44IDUwLjkgTDExMi4xIDUzLjMgTDExMS4zIDU1LjcgTDExMC4yIDU3LjkgTDEwOC45IDYwLjEgTDEwNy41IDYyLjEgTDEwNiA2NCBMMTA0LjQgNjUuOCBMMTAyLjcgNjcuNCBMMTAxLjEgNjguOSBMOTkuNSA3MC4zIEw5Ny45IDcxLjUgTDk2LjQgNzIuNyBMOTUgNzMuOCBMOTMuNyA3NC44IEw5Mi42IDc1LjggTDkxLjYgNzYuOSBMOTAuNyA3Ny45IEw5MCA3OSBMODkuNCA4MC4yIEw4OC45IDgxLjQgTDg4LjUgODIuOCBMODguMiA4NC4zIEw4Ny45IDg1LjkgTDg3LjcgODcuNyBMODcuNCA4OS42IEw4Ny4xIDkxLjYgTDg2LjggOTMuNyBMODYuMyA5NS45IEw4NS43IDk4LjEgTDg1IDEwMC40IEw4NC4xIDEwMi42IEw4My4xIDEwNC45IEw4MS44IDEwNyBMODAuNCAxMDkuMSBMNzguOCAxMTEgTDc3LjEgMTEyLjggTDc1LjIgMTE0LjMgTDczLjEgMTE1LjYgTDcwLjkgMTE2LjYgTDY4LjcgMTE3LjQgTDY2LjQgMTE3LjggTDY0IDExOCBMNjEuNiAxMTcuOCBMNTkuMyAxMTcuNCBMNTcuMSAxMTYuNiBMNTQuOSAxMTUuNiBMNTIuOCAxMTQuMyBMNTAuOSAxMTIuOCBMNDkuMiAxMTEgTDQ3LjYgMTA5LjEgTDQ2LjIgMTA3IEw0NC45IDEwNC45IEw0My45IDEwMi42IEw0MyAxMDAuNCBMNDIuMyA5OC4xIEw0MS43IDk1LjkgTDQxLjIgOTMuNyBMNDAuOSA5MS42IEw0MC42IDg5LjYgTDQwLjMgODcuNyBMNDAuMSA4NS45IEwzOS44IDg0LjMgTDM5LjUgODIuOCBMMzkuMSA4MS40IEwzOC42IDgwLjIgTDM4IDc5IEwzNy4zIDc3LjkgTDM2LjQgNzYuOSBMMzUuNCA3NS44IEwzNC4zIDc0LjggTDMzIDczLjggTDMxLjYgNzIuNyBMMzAuMSA3MS41IEwyOC41IDcwLjMgTDI2LjkgNjguOSBMMjUuMyA2Ny40IEwyMy42IDY1LjggTDIyIDY0IEwyMC41IDYyLjEgTDE5LjEgNjAuMSBMMTcuOCA1Ny45IEwxNi43IDU1LjcgTDE1LjkgNTMuMyBMMTUuMiA1MC45IEwxNC45IDQ4LjUgTDE0LjggNDYuMSBMMTUgNDMuNyBMMTUuNCA0MS40IEwxNi4yIDM5LjEgTDE3LjIgMzcgTDE4LjUgMzUgTDIwLjEgMzMuMyBMMjEuOSAzMS43IEwyMy45IDMwLjMgTDI2IDI5LjIgTDI4LjMgMjguMyBMMzAuNyAyNy42IEwzMy4xIDI3LjIgTDM1LjYgMjcgTDM4LjEgMjcuMSBMNDAuNiAyNy4zIEw0MyAyNy42IEw0NS4zIDI4LjEgTDQ3LjYgMjguNyBMNDkuNyAyOS40IEw1MS43IDMwLjIgTDUzLjYgMzAuOSBMNTUuMyAzMS42IEw1NyAzMi4zIEw1OC41IDMyLjkgTDYwIDMzLjQgTDYxLjMgMzMuNyBMNjIuNyAzMy45WiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZmZmZmZmIiBzdHJva2Utd2lkdGg9IjIwIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+CjxwYXRoIGQ9Ik02NCAzNCBMNjUuMyAzMy45IEw2Ni43IDMzLjcgTDY4IDMzLjQgTDY5LjUgMzIuOSBMNzEgMzIuMyBMNzIuNyAzMS42IEw3NC40IDMwLjkgTDc2LjMgMzAuMiBMNzguMyAyOS40IEw4MC40IDI4LjcgTDgyLjcgMjguMSBMODUgMjcuNiBMODcuNCAyNy4zIEw4OS45IDI3LjEgTDkyLjQgMjcgTDk0LjkgMjcuMiBMOTcuMyAyNy42IEw5OS43IDI4LjMgTDEwMiAyOS4yIEwxMDQuMSAzMC4zIEwxMDYuMSAzMS43IEwxMDcuOSAzMy4zIEwxMDkuNSAzNSBMMTEwLjggMzcgTDExMS44IDM5LjEgTDExMi42IDQxLjQgTDExMyA0My43IEwxMTMuMiA0Ni4xIEwxMTMuMSA0OC41IEwxMTIuOCA1MC45IEwxMTIuMSA1My4zIEwxMTEuMyA1NS43IEwxMTAuMiA1Ny45IEwxMDguOSA2MC4xIEwxMDcuNSA2Mi4xIEwxMDYgNjQgTDEwNC40IDY1LjggTDEwMi43IDY3LjQgTDEwMS4xIDY4LjkgTDk5LjUgNzAuMyBMOTcuOSA3MS41IEw5Ni40IDcyLjcgTDk1IDczLjggTDkzLjcgNzQuOCBMOTIuNiA3NS44IEw5MS42IDc2LjkgTDkwLjcgNzcuOSBMOTAgNzkgTDg5LjQgODAuMiBMODguOSA4MS40IEw4OC41IDgyLjggTDg4LjIgODQuMyBMODcuOSA4NS45IEw4Ny43IDg3LjcgTDg3LjQgODkuNiBMODcuMSA5MS42IEw4Ni44IDkzLjcgTDg2LjMgOTUuOSBMODUuNyA5OC4xIEw4NSAxMDAuNCBMODQuMSAxMDIuNiBMODMuMSAxMDQuOSBMODEuOCAxMDcgTDgwLjQgMTA5LjEgTDc4LjggMTExIEw3Ny4xIDExMi44IEw3NS4yIDExNC4zIEw3My4xIDExNS42IEw3MC45IDExNi42IEw2OC43IDExNy40IEw2Ni40IDExNy44IEw2NCAxMTggTDYxLjYgMTE3LjggTDU5LjMgMTE3LjQgTDU3LjEgMTE2LjYgTDU0LjkgMTE1LjYgTDUyLjggMTE0LjMgTDUwLjkgMTEyLjggTDQ5LjIgMTExIEw0Ny42IDEwOS4xIEw0Ni4yIDEwNyBMNDQuOSAxMDQuOSBMNDMuOSAxMDIuNiBMNDMgMTAwLjQgTDQyLjMgOTguMSBMNDEuNyA5NS45IEw0MS4yIDkzLjcgTDQwLjkgOTEuNiBMNDAuNiA4OS42IEw0MC4zIDg3LjcgTDQwLjEgODUuOSBMMzkuOCA4NC4zIEwzOS41IDgyLjggTDM5LjEgODEuNCBMMzguNiA4MC4yIEwzOCA3OSBMMzcuMyA3Ny45IEwzNi40IDc2LjkgTDM1LjQgNzUuOCBMMzQuMyA3NC44IEwzMyA3My44IEwzMS42IDcyLjcgTDMwLjEgNzEuNSBMMjguNSA3MC4zIEwyNi45IDY4LjkgTDI1LjMgNjcuNCBMMjMuNiA2NS44IEwyMiA2NCBMMjAuNSA2Mi4xIEwxOS4xIDYwLjEgTDE3LjggNTcuOSBMMTYuNyA1NS43IEwxNS45IDUzLjMgTDE1LjIgNTAuOSBMMTQuOSA0OC41IEwxNC44IDQ2LjEgTDE1IDQzLjcgTDE1LjQgNDEuNCBMMTYuMiAzOS4xIEwxNy4yIDM3IEwxOC41IDM1IEwyMC4xIDMzLjMgTDIxLjkgMzEuNyBMMjMuOSAzMC4zIEwyNiAyOS4yIEwyOC4zIDI4LjMgTDMwLjcgMjcuNiBMMzMuMSAyNy4yIEwzNS42IDI3IEwzOC4xIDI3LjEgTDQwLjYgMjcuMyBMNDMgMjcuNiBMNDUuMyAyOC4xIEw0Ny42IDI4LjcgTDQ5LjcgMjkuNCBMNTEuNyAzMC4yIEw1My42IDMwLjkgTDU1LjMgMzEuNiBMNTcgMzIuMyBMNTguNSAzMi45IEw2MCAzMy40IEw2MS4zIDMzLjcgTDYyLjcgMzMuOVoiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZjNDdlMCIgc3Ryb2tlLXdpZHRoPSIxMyIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgo8L3N2Zz4K
@@ -127,8 +127,8 @@
 // Bundles (verbatim, each wrapped in a URL gate and a run-at gate): apollo_editor, art_station, credit_hoarder, falcon, first_contact, fusion, group_therapy, isrc_scout, mammoth, mission_control, platform_check.
 
 try {
-  console.log('%c String Theory %c v2026.10.11.194910 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
-  console.log("String Theory bundles:\n  · Apollo Editor v2026.10.11.194908\n  · Art Station v2026.10.11.161841\n  · Credit Hoarder v2026.10.11\n  · Falcon v2026.10.11\n  · First Contact v2026.10.11\n  · Fusion v2026.10.11\n  · Group Therapy v2026.10.11.182453\n  · ISRC Scout v2026.10.11\n  · Mammoth v2026.10.11\n  · Mission Control v2026.10.11\n  · Platform Check v2026.10.11");
+  console.log('%c String Theory %c v2026.10.11.204800 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
+  console.log("String Theory bundles:\n  · Apollo Editor v2026.10.11.194908\n  · Art Station v2026.10.11.161841\n  · Credit Hoarder v2026.10.11\n  · Falcon v2026.10.11.180000\n  · First Contact v2026.10.11\n  · Fusion v2026.10.11\n  · Group Therapy v2026.10.11.182453\n  · ISRC Scout v2026.10.11\n  · Mammoth v2026.10.11\n  · Mission Control v2026.10.11\n  · Platform Check v2026.10.11");
 } catch (e) {}
 
 function __stReadOff() { try { var v = GM_getValue("string_theory.off", []); return Array.isArray(v) ? v : []; } catch (e) { return []; } }
@@ -136,7 +136,7 @@ var __stOff = __stReadOff();
 (function () {
   if (typeof GM_registerMenuCommand !== 'function') return;
   try { if (window.top !== window.self) return; } catch (e) { return; }
-  var members = [["apollo_editor","Apollo Editor","2026.10.11.194908"],["art_station","Art Station","2026.10.11.161841"],["credit_hoarder","Credit Hoarder","2026.10.11"],["falcon","Falcon","2026.10.11"],["first_contact","First Contact","2026.10.11"],["fusion","Fusion","2026.10.11"],["group_therapy","Group Therapy","2026.10.11.182453"],["isrc_scout","ISRC Scout","2026.10.11"],["mammoth","Mammoth","2026.10.11"],["mission_control","Mission Control","2026.10.11"],["platform_check","Platform Check","2026.10.11"]];
+  var members = [["apollo_editor","Apollo Editor","2026.10.11.194908"],["art_station","Art Station","2026.10.11.161841"],["credit_hoarder","Credit Hoarder","2026.10.11"],["falcon","Falcon","2026.10.11.180000"],["first_contact","First Contact","2026.10.11"],["fusion","Fusion","2026.10.11"],["group_therapy","Group Therapy","2026.10.11.182453"],["isrc_scout","ISRC Scout","2026.10.11"],["mammoth","Mammoth","2026.10.11"],["mission_control","Mission Control","2026.10.11"],["platform_check","Platform Check","2026.10.11"]];
   // Each entry carries a stable id (options.id): Violentmonkey and Tampermonkey then relabel it in
   // place, where it stands. Unregister-and-add left Violentmonkey's open menu with the old entry
   // still there and the new one appended at the end. A manager that ignores options.id hands back
@@ -29645,7 +29645,7 @@ ${lines}
 
 // ===== falcon (@run-at document-end) ============================================
 if (__stOff.indexOf("falcon") < 0 && __stRuns("falcon", {"inc":["^https:\\/\\/(?:[^/]*\\.)?musicbrainz\\.org(?::\\d+)?/.*$","^https:\\/\\/harmony\\.pulsewidth\\.org\\.uk(?::\\d+)?/.*$"],"exc":[],"noframes":true})) (function(__stGM){
-  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Falcon*","namespace":"https://github.com/majkinetor/musicbrainz-userscripts","version":"2026.10.11","description":"Edit a BATCH of MusicBrainz artists/labels/recordings at once — add external links, ISRCs, names, aliases, disambiguations and cover art — no popup-per-entity, no tab churn. A small pool of persistent worker iframes churns through a queue, each submitting its own edit and moving straight to the next entity. Paste a list, hand it a queue via a `?falcon=` URL param, or click \"Send to Falcon\" on a Harmony actions page to import its suggestions directly.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/falcon/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5GYWxjb248L3RpdGxlPgo8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSI1OCIgZmlsbD0iI2Y2ZWZlMiIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjYiLz48cGF0aCBkPSJNMTA1LjYgNDAuMCBBNDggNDggMCAwIDEgMTA1LjYgODguMCIgc3Ryb2tlPSIjZDYyODI4IiBzdHJva2Utd2lkdGg9IjciIGZpbGw9Im5vbmUiLz4KPGcgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2UtbGluZWNhcD0icm91bmQiPjxwYXRoIGQ9Ik0yMC43IDg5LjAgTDI5LjQgODQuMCIgc3Ryb2tlLXdpZHRoPSIzIi8+PHBhdGggZD0iTTE0LjMgNjkuMiBMMjQuMiA2OC4yIiBzdHJva2Utd2lkdGg9IjMiLz48cGF0aCBkPSJNMTYuNCA0OC41IEwyNi4wIDUxLjYiIHN0cm9rZS13aWR0aD0iMyIvPjxwYXRoIGQ9Ik0yNi44IDMwLjUgTDM0LjMgMzcuMiIgc3Ryb2tlLXdpZHRoPSIzIi8+PHBhdGggZD0iTTQzLjcgMTguMyBMNDcuNyAyNy41IiBzdHJva2Utd2lkdGg9IjMiLz48cGF0aCBkPSJNNjQuMCAxNC4wIEw2NC4wIDI0LjAiIHN0cm9rZS13aWR0aD0iMyIvPjxwYXRoIGQ9Ik04NC4zIDE4LjMgTDgwLjMgMjcuNSIgc3Ryb2tlLXdpZHRoPSIzIi8+PHBhdGggZD0iTTEwMS4yIDMwLjUgTDkzLjcgMzcuMiIgc3Ryb2tlLXdpZHRoPSIzIi8+PHBhdGggZD0iTTExMS42IDQ4LjUgTDEwMi4wIDUxLjYiIHN0cm9rZS13aWR0aD0iMyIvPjxwYXRoIGQ9Ik0xMTMuNyA2OS4yIEwxMDMuOCA2OC4yIiBzdHJva2Utd2lkdGg9IjMiLz48cGF0aCBkPSJNMTA3LjMgODkuMCBMOTguNiA4NC4wIiBzdHJva2Utd2lkdGg9IjMiLz48L2c+PGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoNjQgOTQpIHJvdGF0ZSgwKSBzY2FsZSgwLjE2KSB0cmFuc2xhdGUoLTY0IC02NCkiPjxwYXRoIGQ9Ik02NCAyNiBDNjcgMjYgNzAgMzAgNzAgMzYgQzcyIDQwIDc0IDQyIDc2IDQ0IEM5MiA0MiAxMDggMzYgMTI0IDM0IEMxMTIgNDQgOTYgNTQgNzggNjIgQzc2IDY4IDc0IDc0IDc0IDgwIEw4MCAxMDAgQzc0IDEwNCA2OCAxMDQgNjQgMTA0IFoiIGZpbGw9IiM0YTVhNzgiLz48cGF0aCBkPSJNNjQgMjYgQzY3IDI2IDcwIDMwIDcwIDM2IEM3MiA0MCA3NCA0MiA3NiA0NCBDOTIgNDIgMTA4IDM2IDEyNCAzNCBDMTEyIDQ0IDk2IDU0IDc4IDYyIEM3NiA2OCA3NCA3NCA3NCA4MCBMODAgMTAwIEM3NCAxMDQgNjggMTA0IDY0IDEwNCBaIiBmaWxsPSIjNGE1YTc4IiB0cmFuc2Zvcm09InRyYW5zbGF0ZSgxMjggMCkgc2NhbGUoLTEgMSkiLz48L2c+PGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoNjQgNjQpIHJvdGF0ZSgxMTIpIj48cGF0aCBkPSJNMCAtNDYgTDQgMCBMLTQgMFoiIGZpbGw9IiMxYjJhNGEiLz48L2c+CjxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjciIGZpbGw9IiMxYjJhNGEiLz4KPC9zdmc+Cg=="}) }) : { script: {"name":"Falcon*","namespace":"https://github.com/majkinetor/musicbrainz-userscripts","version":"2026.10.11","description":"Edit a BATCH of MusicBrainz artists/labels/recordings at once — add external links, ISRCs, names, aliases, disambiguations and cover art — no popup-per-entity, no tab churn. A small pool of persistent worker iframes churns through a queue, each submitting its own edit and moving straight to the next entity. Paste a list, hand it a queue via a `?falcon=` URL param, or click \"Send to Falcon\" on a Harmony actions page to import its suggestions directly.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/falcon/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5GYWxjb248L3RpdGxlPgo8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSI1OCIgZmlsbD0iI2Y2ZWZlMiIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjYiLz48cGF0aCBkPSJNMTA1LjYgNDAuMCBBNDggNDggMCAwIDEgMTA1LjYgODguMCIgc3Ryb2tlPSIjZDYyODI4IiBzdHJva2Utd2lkdGg9IjciIGZpbGw9Im5vbmUiLz4KPGcgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2UtbGluZWNhcD0icm91bmQiPjxwYXRoIGQ9Ik0yMC43IDg5LjAgTDI5LjQgODQuMCIgc3Ryb2tlLXdpZHRoPSIzIi8+PHBhdGggZD0iTTE0LjMgNjkuMiBMMjQuMiA2OC4yIiBzdHJva2Utd2lkdGg9IjMiLz48cGF0aCBkPSJNMTYuNCA0OC41IEwyNi4wIDUxLjYiIHN0cm9rZS13aWR0aD0iMyIvPjxwYXRoIGQ9Ik0yNi44IDMwLjUgTDM0LjMgMzcuMiIgc3Ryb2tlLXdpZHRoPSIzIi8+PHBhdGggZD0iTTQzLjcgMTguMyBMNDcuNyAyNy41IiBzdHJva2Utd2lkdGg9IjMiLz48cGF0aCBkPSJNNjQuMCAxNC4wIEw2NC4wIDI0LjAiIHN0cm9rZS13aWR0aD0iMyIvPjxwYXRoIGQ9Ik04NC4zIDE4LjMgTDgwLjMgMjcuNSIgc3Ryb2tlLXdpZHRoPSIzIi8+PHBhdGggZD0iTTEwMS4yIDMwLjUgTDkzLjcgMzcuMiIgc3Ryb2tlLXdpZHRoPSIzIi8+PHBhdGggZD0iTTExMS42IDQ4LjUgTDEwMi4wIDUxLjYiIHN0cm9rZS13aWR0aD0iMyIvPjxwYXRoIGQ9Ik0xMTMuNyA2OS4yIEwxMDMuOCA2OC4yIiBzdHJva2Utd2lkdGg9IjMiLz48cGF0aCBkPSJNMTA3LjMgODkuMCBMOTguNiA4NC4wIiBzdHJva2Utd2lkdGg9IjMiLz48L2c+PGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoNjQgOTQpIHJvdGF0ZSgwKSBzY2FsZSgwLjE2KSB0cmFuc2xhdGUoLTY0IC02NCkiPjxwYXRoIGQ9Ik02NCAyNiBDNjcgMjYgNzAgMzAgNzAgMzYgQzcyIDQwIDc0IDQyIDc2IDQ0IEM5MiA0MiAxMDggMzYgMTI0IDM0IEMxMTIgNDQgOTYgNTQgNzggNjIgQzc2IDY4IDc0IDc0IDc0IDgwIEw4MCAxMDAgQzc0IDEwNCA2OCAxMDQgNjQgMTA0IFoiIGZpbGw9IiM0YTVhNzgiLz48cGF0aCBkPSJNNjQgMjYgQzY3IDI2IDcwIDMwIDcwIDM2IEM3MiA0MCA3NCA0MiA3NiA0NCBDOTIgNDIgMTA4IDM2IDEyNCAzNCBDMTEyIDQ0IDk2IDU0IDc4IDYyIEM3NiA2OCA3NCA3NCA3NCA4MCBMODAgMTAwIEM3NCAxMDQgNjggMTA0IDY0IDEwNCBaIiBmaWxsPSIjNGE1YTc4IiB0cmFuc2Zvcm09InRyYW5zbGF0ZSgxMjggMCkgc2NhbGUoLTEgMSkiLz48L2c+PGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoNjQgNjQpIHJvdGF0ZSgxMTIpIj48cGF0aCBkPSJNMCAtNDYgTDQgMCBMLTQgMFoiIGZpbGw9IiMxYjJhNGEiLz48L2c+CjxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjciIGZpbGw9IiMxYjJhNGEiLz4KPC9zdmc+Cg=="} };
+  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Falcon*","namespace":"https://github.com/majkinetor/musicbrainz-userscripts","version":"2026.10.11.180000","description":"Edit a BATCH of MusicBrainz artists/labels/recordings at once — add external links, ISRCs, names, aliases, disambiguations and cover art — no popup-per-entity, no tab churn. A small pool of persistent worker iframes churns through a queue, each submitting its own edit and moving straight to the next entity. Paste a list, hand it a queue via a `?falcon=` URL param, or click \"Send to Falcon\" on a Harmony actions page to import its suggestions directly.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/falcon/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5GYWxjb248L3RpdGxlPgo8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSI1OCIgZmlsbD0iI2Y2ZWZlMiIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjYiLz48cGF0aCBkPSJNMTA1LjYgNDAuMCBBNDggNDggMCAwIDEgMTA1LjYgODguMCIgc3Ryb2tlPSIjZDYyODI4IiBzdHJva2Utd2lkdGg9IjciIGZpbGw9Im5vbmUiLz4KPGcgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2UtbGluZWNhcD0icm91bmQiPjxwYXRoIGQ9Ik0yMC43IDg5LjAgTDI5LjQgODQuMCIgc3Ryb2tlLXdpZHRoPSIzIi8+PHBhdGggZD0iTTE0LjMgNjkuMiBMMjQuMiA2OC4yIiBzdHJva2Utd2lkdGg9IjMiLz48cGF0aCBkPSJNMTYuNCA0OC41IEwyNi4wIDUxLjYiIHN0cm9rZS13aWR0aD0iMyIvPjxwYXRoIGQ9Ik0yNi44IDMwLjUgTDM0LjMgMzcuMiIgc3Ryb2tlLXdpZHRoPSIzIi8+PHBhdGggZD0iTTQzLjcgMTguMyBMNDcuNyAyNy41IiBzdHJva2Utd2lkdGg9IjMiLz48cGF0aCBkPSJNNjQuMCAxNC4wIEw2NC4wIDI0LjAiIHN0cm9rZS13aWR0aD0iMyIvPjxwYXRoIGQ9Ik04NC4zIDE4LjMgTDgwLjMgMjcuNSIgc3Ryb2tlLXdpZHRoPSIzIi8+PHBhdGggZD0iTTEwMS4yIDMwLjUgTDkzLjcgMzcuMiIgc3Ryb2tlLXdpZHRoPSIzIi8+PHBhdGggZD0iTTExMS42IDQ4LjUgTDEwMi4wIDUxLjYiIHN0cm9rZS13aWR0aD0iMyIvPjxwYXRoIGQ9Ik0xMTMuNyA2OS4yIEwxMDMuOCA2OC4yIiBzdHJva2Utd2lkdGg9IjMiLz48cGF0aCBkPSJNMTA3LjMgODkuMCBMOTguNiA4NC4wIiBzdHJva2Utd2lkdGg9IjMiLz48L2c+PGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoNjQgOTQpIHJvdGF0ZSgwKSBzY2FsZSgwLjE2KSB0cmFuc2xhdGUoLTY0IC02NCkiPjxwYXRoIGQ9Ik02NCAyNiBDNjcgMjYgNzAgMzAgNzAgMzYgQzcyIDQwIDc0IDQyIDc2IDQ0IEM5MiA0MiAxMDggMzYgMTI0IDM0IEMxMTIgNDQgOTYgNTQgNzggNjIgQzc2IDY4IDc0IDc0IDc0IDgwIEw4MCAxMDAgQzc0IDEwNCA2OCAxMDQgNjQgMTA0IFoiIGZpbGw9IiM0YTVhNzgiLz48cGF0aCBkPSJNNjQgMjYgQzY3IDI2IDcwIDMwIDcwIDM2IEM3MiA0MCA3NCA0MiA3NiA0NCBDOTIgNDIgMTA4IDM2IDEyNCAzNCBDMTEyIDQ0IDk2IDU0IDc4IDYyIEM3NiA2OCA3NCA3NCA3NCA4MCBMODAgMTAwIEM3NCAxMDQgNjggMTA0IDY0IDEwNCBaIiBmaWxsPSIjNGE1YTc4IiB0cmFuc2Zvcm09InRyYW5zbGF0ZSgxMjggMCkgc2NhbGUoLTEgMSkiLz48L2c+PGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoNjQgNjQpIHJvdGF0ZSgxMTIpIj48cGF0aCBkPSJNMCAtNDYgTDQgMCBMLTQgMFoiIGZpbGw9IiMxYjJhNGEiLz48L2c+CjxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjciIGZpbGw9IiMxYjJhNGEiLz4KPC9zdmc+Cg=="}) }) : { script: {"name":"Falcon*","namespace":"https://github.com/majkinetor/musicbrainz-userscripts","version":"2026.10.11.180000","description":"Edit a BATCH of MusicBrainz artists/labels/recordings at once — add external links, ISRCs, names, aliases, disambiguations and cover art — no popup-per-entity, no tab churn. A small pool of persistent worker iframes churns through a queue, each submitting its own edit and moving straight to the next entity. Paste a list, hand it a queue via a `?falcon=` URL param, or click \"Send to Falcon\" on a Harmony actions page to import its suggestions directly.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/falcon/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5GYWxjb248L3RpdGxlPgo8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSI1OCIgZmlsbD0iI2Y2ZWZlMiIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjYiLz48cGF0aCBkPSJNMTA1LjYgNDAuMCBBNDggNDggMCAwIDEgMTA1LjYgODguMCIgc3Ryb2tlPSIjZDYyODI4IiBzdHJva2Utd2lkdGg9IjciIGZpbGw9Im5vbmUiLz4KPGcgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2UtbGluZWNhcD0icm91bmQiPjxwYXRoIGQ9Ik0yMC43IDg5LjAgTDI5LjQgODQuMCIgc3Ryb2tlLXdpZHRoPSIzIi8+PHBhdGggZD0iTTE0LjMgNjkuMiBMMjQuMiA2OC4yIiBzdHJva2Utd2lkdGg9IjMiLz48cGF0aCBkPSJNMTYuNCA0OC41IEwyNi4wIDUxLjYiIHN0cm9rZS13aWR0aD0iMyIvPjxwYXRoIGQ9Ik0yNi44IDMwLjUgTDM0LjMgMzcuMiIgc3Ryb2tlLXdpZHRoPSIzIi8+PHBhdGggZD0iTTQzLjcgMTguMyBMNDcuNyAyNy41IiBzdHJva2Utd2lkdGg9IjMiLz48cGF0aCBkPSJNNjQuMCAxNC4wIEw2NC4wIDI0LjAiIHN0cm9rZS13aWR0aD0iMyIvPjxwYXRoIGQ9Ik04NC4zIDE4LjMgTDgwLjMgMjcuNSIgc3Ryb2tlLXdpZHRoPSIzIi8+PHBhdGggZD0iTTEwMS4yIDMwLjUgTDkzLjcgMzcuMiIgc3Ryb2tlLXdpZHRoPSIzIi8+PHBhdGggZD0iTTExMS42IDQ4LjUgTDEwMi4wIDUxLjYiIHN0cm9rZS13aWR0aD0iMyIvPjxwYXRoIGQ9Ik0xMTMuNyA2OS4yIEwxMDMuOCA2OC4yIiBzdHJva2Utd2lkdGg9IjMiLz48cGF0aCBkPSJNMTA3LjMgODkuMCBMOTguNiA4NC4wIiBzdHJva2Utd2lkdGg9IjMiLz48L2c+PGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoNjQgOTQpIHJvdGF0ZSgwKSBzY2FsZSgwLjE2KSB0cmFuc2xhdGUoLTY0IC02NCkiPjxwYXRoIGQ9Ik02NCAyNiBDNjcgMjYgNzAgMzAgNzAgMzYgQzcyIDQwIDc0IDQyIDc2IDQ0IEM5MiA0MiAxMDggMzYgMTI0IDM0IEMxMTIgNDQgOTYgNTQgNzggNjIgQzc2IDY4IDc0IDc0IDc0IDgwIEw4MCAxMDAgQzc0IDEwNCA2OCAxMDQgNjQgMTA0IFoiIGZpbGw9IiM0YTVhNzgiLz48cGF0aCBkPSJNNjQgMjYgQzY3IDI2IDcwIDMwIDcwIDM2IEM3MiA0MCA3NCA0MiA3NiA0NCBDOTIgNDIgMTA4IDM2IDEyNCAzNCBDMTEyIDQ0IDk2IDU0IDc4IDYyIEM3NiA2OCA3NCA3NCA3NCA4MCBMODAgMTAwIEM3NCAxMDQgNjggMTA0IDY0IDEwNCBaIiBmaWxsPSIjNGE1YTc4IiB0cmFuc2Zvcm09InRyYW5zbGF0ZSgxMjggMCkgc2NhbGUoLTEgMSkiLz48L2c+PGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoNjQgNjQpIHJvdGF0ZSgxMTIpIj48cGF0aCBkPSJNMCAtNDYgTDQgMCBMLTQgMFoiIGZpbGw9IiMxYjJhNGEiLz48L2c+CjxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjciIGZpbGw9IiMxYjJhNGEiLz4KPC9zdmc+Cg=="} };
   (f=>document.readyState!=='loading'?f():document.addEventListener('DOMContentLoaded',f,{once:true}))(function(){ try { (function(){
 (function () {
   'use strict';
@@ -31525,7 +31525,7 @@ if (__stOff.indexOf("falcon") < 0 && __stRuns("falcon", {"inc":["^https:\\/\\/(?
           if (!existingRel.cover.length) existingRel.cover.push(newCoverEntry());
           const entry = existingRel.cover[0];
           const before = entry.candidates.length;
-          p.coverCandidates.forEach(c => { if (!entry.candidates.some(x => x.url === c.url)) entry.candidates.push(c); });
+          p.coverCandidates.forEach(c => { if (!entry.candidates.some(x => x.url === c.url || x.original === c.url)) entry.candidates.push(c); });
           if (entry.candidates.length > before) existingRel._coverPickPromise = trackSettling(pickBestCover(existingRel));
           if (existingRel.coverExistingCount == null) existingRel._coverCheckPromise = checkExistingCoverArt(existingRel);
           merged++;
@@ -32121,6 +32121,445 @@ if (__stOff.indexOf("falcon") < 0 && __stRuns("falcon", {"inc":["^https:\\/\\/(?
       .filter(Boolean);
     return candidates.length ? { mbid, coverCandidates: candidates } : null;
   }
+  // #719: the shared maximizer (Art Station's, #717) turns each suggested cover into the
+  // store's largest version — a Deezer 1000x1000 into its 4000x0, a Bandcamp _10 into _0.
+  // <ST-IMGMAX> — generated by dev/imgmax/sync-imgmax.mjs from dev/imgmax/image-maximizer.js — DO NOT EDIT
+  class ImageMaximizer {
+      // ── URL rules ────────────────────────────────────────────────────────────────
+      // host → (URL) → bigger URLs, largest first. Measured on the live CDNs (2026-10-11).
+      static RULES = [
+          // Apple: the uploaded original (a1.mzstatic.com/us/r1000/0/<path>), then the largest
+          // rendition the resizer gives. 100000x100000-999 answers 400 now.
+          { host: /(^|\.)mzstatic\.com$/, max: u => {
+              const m = u.pathname.match(/^\/image\/thumb\/(.+)\/[^/]+$/);
+              return m ? [`https://a1.mzstatic.com/us/r1000/0/${m[1]}`, `https://${u.host}/image/thumb/${m[1]}/9999x9999bb.jpg`] : [];
+          } },
+          // Deezer: 4000x0 at quality 100 gives the stored size (1900 too; 0x0 and 3000x3000 are 403)
+          { host: /(^|\.)dzcdn\.net$/, max: u => {
+              const m = u.pathname.match(/^(\/images\/\w+\/[0-9a-f]{32})\/\d+x\d+-[^/]+$/);
+              return m ? [`https://${u.host}${m[1]}/4000x0-000000-100-0-0.jpg`, `https://${u.host}${m[1]}/1200x1200-000000-80-0-0.jpg`] : [];
+          } },
+          // Spotify: the size is a code inside the id; 82c1 is the upload (1500 px and more), b273 640
+          { host: /(^|\.)(scdn\.co|spotifycdn\.com)$/, max: u => {
+              const m = u.pathname.match(/\/image\/ab67616d[0-9a-f]{8}([0-9a-f]+)$/);
+              return m ? ['000082c1', '0000b273'].map(c => `https://i.scdn.co/image/ab67616d${c}${m[1]}`) : [];
+          } },
+          // Bandcamp: _0 is the original upload, _10 the largest rendition
+          { host: /(^|\.)bcbits\.com$/, max: u => {
+              const m = u.pathname.match(/^\/img\/(a?\d+)_\d+\.(jpg|png|gif)$/);
+              return m ? [`https://f4.bcbits.com/img/${m[1]}_0.${m[2]}`, `https://f4.bcbits.com/img/${m[1]}_10.jpg`] : [];
+          } },
+          // Tidal: origin.jpg is the upload; 1280 the largest rendition (3000 is 403)
+          { host: /^resources\.tidal\.com$/, max: u => {
+              const m = u.pathname.match(/^(\/images\/(?:[0-9a-f]+\/){4}[0-9a-f]+)\/[^/]+$/);
+              return m ? [`https://resources.tidal.com${m[1]}/origin.jpg`, `https://resources.tidal.com${m[1]}/1280x1280.jpg`] : [];
+          } },
+          // Qobuz: _org is the upload, _max the largest rendition
+          { host: /^static\.qobuz\.com$/, max: u => {
+              const m = u.pathname.match(/^(\/images\/covers\/.+?)_(?:\d+|max|org)\.jpg$/);
+              return m ? [`https://static.qobuz.com${m[1]}_org.jpg`, `https://static.qobuz.com${m[1]}_max.jpg`] : [];
+          } },
+          // Beatport: any size is rendered on demand (3000 is an upscale); 0x0 is the stored size
+          { host: /(^|\.)beatport\.com$/, max: u => {
+              const m = u.pathname.match(/^\/image_size\/\d+x\d+\/(.+)$/);
+              return m ? [`https://${u.host}/image_size/0x0/${m[1]}`] : [];
+          } },
+          // Amazon: drop the ._SL500_-style modifiers for the stored image
+          { host: /(^|\.)(media-amazon\.com|ssl-images-amazon\.com|images-amazon\.com)$/, max: u => {
+              const m = u.pathname.match(/^\/images\/I\/([^./]+)(?:\.[^/]*)?\.(jpg|png|gif)$/);
+              return m ? [`https://m.media-amazon.com/images/I/${m[1]}.${m[2]}`] : [];
+          } },
+          // 7digital: 800 is the largest rendition
+          { host: /(^|\.)7static\.com$/, max: u => {
+              const m = u.pathname.match(/^(.+)_\d+\.jpg$/);
+              return m ? [`https://${u.host}${m[1]}_800.jpg`] : [];
+          } },
+          // Juno: /full/…-BIG
+          { host: /(^|\.)(juno\.co\.uk|junostatic\.com)$/, max: u => {
+              const m = u.pathname.match(/^\/(?:\d+|full)\/(.+?)(?:-(?:TN|MED|BIG))?\.(jpg|png)$/i);
+              return m ? [`https://${u.host}/full/${m[1]}-BIG.${m[2]}`] : [];
+          } },
+          // VGMdb: thumbnails and medium copies live on their own hosts; the full image on media.vgm.io
+          { host: /(^|\.)vgm\.io$/, max: u => /^(thumb|medium)-media\./.test(u.host) ? [`https://media.vgm.io${u.pathname}`] : [] },
+          // Google (YouTube Music, Play): =s0 is the original
+          { host: /^(lh\d|yt\d)\.(googleusercontent|ggpht)\.com$/, max: u => {
+              const m = u.href.match(/^([^=]+)=[^/]*$/);
+              return m ? [`${m[1]}=s0`] : [];
+          } },
+          // YouTube thumbnails
+          { host: /^i\d?\.ytimg\.com$/, max: u => {
+              const m = u.pathname.match(/^\/vi(?:_webp)?\/([^/]+)\/[a-z]*default\.(?:jpg|webp)$/);
+              return m ? [`https://i.ytimg.com/vi/${m[1]}/maxresdefault.jpg`, `https://i.ytimg.com/vi/${m[1]}/hqdefault.jpg`] : [];
+          } },
+          // SoundCloud: -original, else the 500 px rendition
+          { host: /(^|\.)sndcdn\.com$/, max: u => {
+              const m = u.pathname.match(/^(.+)-(?:t\d+x\d+|large|crop|small|badge|tiny|mini|original)\.(jpg|png)$/);
+              return m ? [`https://${u.host}${m[1]}-original.${m[2]}`, `https://${u.host}${m[1]}-t500x500.${m[2]}`] : [];
+          } },
+          // Cover Art Archive thumbnails → the original (its extension is unknown, so both)
+          { host: /^(coverartarchive\.org|archive\.org|ia\d+\.us\.archive\.org)$/, max: u => {
+              const m = u.href.match(/^(.+\/\d+)-(?:250|500|1200)\.jpg$/);
+              return m ? [`${m[1]}.jpg`, `${m[1]}.png`] : [];
+          } },
+      ];
+
+      // Images a store shows when it has none.
+      static PLACEHOLDERS = [
+          /dzcdn\.net\/images\/cover\/d41d8cd98f00b204e9800998ecf8427e\//,   // Deezer's empty md5
+          /7static\.com\/.*\/0{8}16_\d+\.jpg$/,                              // 7digital
+          /\/images\/I\/(01RmK\+J4pJL|01QFb8SNuTL|01PkLIhTX3L|01MKUOLsA5L|31CTP6oiIBL)\./,   // Amazon
+          /vgmdb\.net\/db\/img\/album-(nocover|nsfw)-medium\.gif$/,
+      ];
+
+      // ── platform resolvers ────────────────────────────────────────────────────────
+      // A resolver turns a store page into its cover image(s): [{ url, types?, comment? }].
+      // `this` is the ImageMaximizer, so a resolver uses this._text / this._json / this._log.
+      static PLATFORMS = [
+          { id: 'apple', name: 'Apple Music', host: /^(music|itunes)\.apple\.com$/, async find(u) {
+              const id = (u.pathname.match(/\/album\/(?:[^/]+\/)?(?:id)?(\d+)/) || [])[1];
+              if (!id) throw new Error('no album id in the URL');
+              const cc = (u.pathname.match(/^\/([a-z]{2})\//) || [])[1] || 'us';
+              const j = await this._json(`https://itunes.apple.com/lookup?id=${id}&country=${cc}&entity=album`);
+              const art = j && j.results && j.results[0] && j.results[0].artworkUrl100;
+              if (art) return [{ url: art, types: ['Front'] }];
+              this._log('debug', `Apple: lookup had no artwork for ${id} in ${cc}, reading the page`);
+              return this._metaImage(u.href, ['Front']);
+          } },
+          { id: 'deezer', name: 'Deezer', host: /(^|\.)deezer\.com$/, async find(u) {
+              const id = (u.pathname.match(/\/album\/(\d+)/) || [])[1];
+              if (!id) throw new Error('no album id in the URL');
+              const j = await this._json(`https://api.deezer.com/album/${id}`);
+              if (j && j.error) throw new Error(j.error.message || 'album not found');
+              return j && j.cover_xl ? [{ url: j.cover_xl, types: ['Front'] }] : [];
+          } },
+          { id: 'spotify', name: 'Spotify', host: /^open\.spotify\.com$/, async find(u) {
+              const id = (u.pathname.match(/\/album\/(\w+)/) || [])[1];
+              if (!id) throw new Error('no album id in the URL');
+              const j = await this._json(`https://open.spotify.com/oembed?url=${encodeURIComponent('https://open.spotify.com/album/' + id)}`);
+              return j && j.thumbnail_url ? [{ url: j.thumbnail_url, types: ['Front'] }] : [];
+          } },
+          { id: 'bandcamp', name: 'Bandcamp', host: /(^|\.)bandcamp\.com$/, async find(u) {
+              const html = await this._text(u.href);
+              // data-tralbum's art_id where the page has it, else the og:image
+              const art = (html.match(/&quot;art_id&quot;:(\d+)/) || html.match(/"art_id":(\d+)/) || [])[1];
+              if (art) return [{ url: `https://f4.bcbits.com/img/a${art}_10.jpg`, types: ['Front'] }];
+              const og = ImageMaximizer.metaImage(html, u.href);
+              return og ? [{ url: og, types: ['Front'] }] : [];
+          } },
+          { id: 'tidal', name: 'Tidal', host: /^(listen\.|store\.|www\.)?tidal\.com$/, async find(u) {
+              const id = (u.pathname.match(/\/album\/(\d+)/) || [])[1];
+              if (!id) throw new Error('no album id in the URL');
+              const headers = { 'x-tidal-token': ImageMaximizer.TIDAL_TOKEN };
+              const countries = [];
+              try { const c = await this._json('https://listen.tidal.com/v1/country/context?countryCode=WW&locale=en_US&deviceType=BROWSER', headers); if (c && c.countryCode) countries.push(c.countryCode); } catch (e) { this._log('debug', 'Tidal: country lookup failed — ' + e.message); }
+              for (const c of ['US', 'GB', 'DE', 'NL', 'CA', 'NZ', 'JP', 'IT']) if (!countries.includes(c)) countries.push(c);
+              let last;
+              for (const cc of countries) {
+                  try {
+                      const j = await this._json(`https://api.tidal.com/v1/albums/${id}?countryCode=${cc}`, headers);
+                      if (j && j.cover) return [{ url: `https://resources.tidal.com/images/${j.cover.replace(/-/g, '/')}/1280x1280.jpg`, types: ['Front'] }];
+                  } catch (e) { last = e; this._log('debug', `Tidal: album ${id} not in ${cc} — ${e.message}`); }
+              }
+              throw last || new Error('album not found');
+          } },
+          { id: 'qobuz', name: 'Qobuz', host: /(^|\.)qobuz\.com$/, async find(u) {
+              const id = (u.pathname.match(/\/album\/(?:[^/]+\/)?([A-Za-z\d]+)\/?$/) || [])[1];
+              if (!id) throw new Error('no album id in the URL');
+              // the store's covers are addressed by the album id (…/covers/<last 2>/<the 2 before>/<id>);
+              // the API, when it answers, adds the booklets
+              const out = [{ url: `https://static.qobuz.com/images/covers/${id.slice(-2)}/${id.slice(-4, -2)}/${id}_600.jpg`, types: ['Front'] }];
+              try {
+                  const j = await this._json(`https://www.qobuz.com/api.json/0.2/album/get?album_id=${id}&offset=0&limit=20`, { 'x-app-id': ImageMaximizer.QOBUZ_APP });
+                  if (j && j.image && j.image.large) out[0].url = j.image.large;
+                  for (const g of (j && j.goodies) || []) {
+                      if (!g.original_url) continue;
+                      const booklet = /livret|booklet/i.test(g.name || '');
+                      out.push({ url: g.original_url, types: booklet ? ['Booklet'] : [], comment: booklet ? '' : (g.name || '') });
+                  }
+              } catch (e) { this._log('debug', `Qobuz: API gave nothing for ${id} (${e.message}); the cover alone, from its URL`); }
+              return out;
+          } },
+          { id: 'beatport', name: 'Beatport', host: /(^|\.)beatport\.com$/, async find(u) {
+              const html = await this._text(u.href);
+              const m = html.match(/<script id="__NEXT_DATA__"[^>]*>([\s\S]*?)<\/script>/);
+              if (m) {
+                  try {
+                      const d = JSON.parse(m[1]), r = d.props && d.props.pageProps && d.props.pageProps.release;
+                      if (r && r.image && r.image.uri) return [{ url: r.image.uri, types: ['Front'] }];
+                  } catch (e) { this._log('debug', 'Beatport: page data unreadable — ' + e.message); }
+              }
+              const og = ImageMaximizer.metaImage(html, u.href);
+              return og ? [{ url: og, types: ['Front'] }] : [];
+          } },
+          { id: 'discogs', name: 'Discogs', host: /(^|\.)discogs\.com$/, async find(u) {
+              const rel = (u.pathname.match(/\/release\/(\d+)/) || [])[1], master = (u.pathname.match(/\/master\/(\d+)/) || [])[1];
+              if (!rel && !master) throw new Error('no release id in the URL');
+              if (rel) {
+                  // the site's own API has the full-size images (Cloudflare may stop it until the
+                  // site has been opened once); the public API caps them at 600 px
+                  try {
+                      const q = new URLSearchParams({ operationName: 'ReleaseAllImages', variables: JSON.stringify({ discogsId: +rel, count: 500 }),
+                          extensions: JSON.stringify({ persistedQuery: { version: 1, sha256Hash: ImageMaximizer.DISCOGS_QUERY } }) });
+                      const j = await this._json('https://www.discogs.com/internal/release-page/api/graphql?' + q);
+                      const edges = j && j.data && j.data.release && j.data.release.images && j.data.release.images.edges;
+                      if (edges && edges.length) return edges.map(e => ({ url: e.node.fullsize.sourceUrl }));
+                  } catch (e) { this._log('debug', 'Discogs: full-size images unavailable (' + e.message + '), using the public API (600 px)'); }
+              }
+              const j = await this._json(`https://api.discogs.com/${rel ? 'releases/' + rel : 'masters/' + master}`);
+              return ((j && j.images) || []).map(i => ({ url: i.uri })).filter(i => i.url);
+          } },
+          { id: 'amazon', name: 'Amazon', host: /(^|\.)amazon\.(com|ca|de|fr|it|es|nl|pl|se|in|sg|ae|sa|eg|cn|jp|co\.jp|co\.uk|com\.au|com\.br|com\.mx|com\.tr|com\.be)$/, async find(u) {
+              const asin = (u.pathname.match(/\/(?:gp\/product|dp|albums|hz\/audible\/mlp\/mfpdp)\/([A-Z\d]{10})(?:[/?]|$)/i) || [])[1];
+              if (!asin) throw new Error('no product id in the URL');
+              const tld = u.host.replace(/^.*?amazon\./, '');
+              const html = await this._text(`https://www.amazon.${tld}/dp/${asin}`);
+              if (/validateCaptcha|\/errors\/validateCaptcha/.test(html)) throw new Error('Amazon answered with a captcha; open the page once, then retry');
+              const m = html.match(/'colorImages':\s*\{\s*'initial':\s*(\[[\s\S]*?\])\s*\},?\s*\n/);
+              if (m) {
+                  try {
+                      const variant = { MAIN: 'Front', FRNT: 'Front', BACK: 'Back', SIDE: 'Spine' };
+                      return JSON.parse(m[1]).map(i => ({ url: i.hiRes || i.large, types: variant[i.variant] ? [variant[i.variant]] : [] })).filter(i => i.url);
+                  } catch (e) { this._log('debug', 'Amazon: image data unreadable — ' + e.message); }
+              }
+              const hi = (html.match(/data-old-hires="([^"]+)"/) || [])[1];
+              if (hi) return [{ url: hi, types: ['Front'] }];
+              const og = ImageMaximizer.metaImage(html, u.href);
+              return og ? [{ url: og }] : [];
+          } },
+          { id: 'vgmdb', name: 'VGMdb', host: /(^|\.)vgmdb\.net$/, async find(u) {
+              const html = await this._text(u.href);
+              const out = [], seen = new Set();
+              const gallery = (html.match(/id="cover_gallery"[\s\S]*?(?=<\/table>|<div id="(?!cover)|$)/) || [''])[0];
+              for (const m of gallery.matchAll(/<a[^>]*id="thumb_\d+"[^>]*href="([^"]+)"[^>]*>[\s\S]*?class="label"[^>]*>([^<]*)</g)) {
+                  const url = ImageMaximizer.decode(m[1]);
+                  if (seen.has(url)) continue; seen.add(url);
+                  out.push(Object.assign({ url }, ImageMaximizer.captionType(ImageMaximizer.decode(m[2]).trim())));
+              }
+              const main = (html.match(/id="coverart"[^>]*background-image:\s*url\(['"]?([^'")]+)/) || [])[1];
+              const base = n => String(n).split('/').pop();
+              if (main && !/album-(nocover|nsfw)-medium\.gif$/.test(main) && !out.some(i => base(i.url) === base(main))) out.unshift({ url: new URL(ImageMaximizer.decode(main), u.origin).href, types: ['Front'] });
+              return out;
+          } },
+          { id: '7digital', name: '7digital', host: /(^|\.)7digital\.com$/, async find(u) { return this._metaImage(u.href, ['Front']); } },
+          { id: 'juno', name: 'Juno', host: /(^|\.)(junodownload\.com|juno\.co\.uk)$/, async find(u) { return this._metaImage(u.href, ['Front']); } },
+      ];
+
+      static TIDAL_TOKEN = 'CzET4vdadNUFQ5JU';   // the web player's public token
+      static QOBUZ_APP = '712109809';
+      static DISCOGS_QUERY = 'c7033a9fd1facb3e69fa50074b47e8aa0076857a968e6ed086153840e02b988a';   // ReleaseAllImages
+
+      // VGMdb-style captions ("Front", "Back", "Disc 2", "Booklet p. 3–4") → a type + the rest as comment
+      static captionType(caption) {
+          const map = { front: 'Front', cover: 'Front', back: 'Back', booklet: 'Booklet', disc: 'Medium', disk: 'Medium', cd: 'Medium', medium: 'Medium', vinyl: 'Medium',
+              obi: 'Obi', spine: 'Spine', tray: 'Tray', inside: 'Tray', sticker: 'Sticker', poster: 'Poster', liner: 'Liner', inlay: 'Liner', insert: 'Liner', jacket: 'Front', matrix: 'Matrix/Runout' };
+          const word = (String(caption).match(/^[A-Za-z]+/) || [''])[0].toLowerCase();
+          const type = map[word];
+          return type ? { types: [type], comment: caption.toLowerCase() === word ? '' : caption } : { types: [], comment: caption };
+      }
+
+      // ── instance ─────────────────────────────────────────────────────────────────
+      // request(url, { headers, type: 'text' | 'blob' }) → { status, url, contentType, text | blob }
+      // log(level, message), level = 'debug' | 'info' | 'warn'
+      constructor(opts) {
+          opts = opts || {};
+          this.request = opts.request || ImageMaximizer.fetchRequest;
+          this.log = opts.log || null;
+      }
+      _log(level, msg) { try { if (this.log) this.log(level, msg); } catch (e) { /* a broken logger must not break a fetch */ }}
+      async _get(url, type, headers) {
+          const r = await this.request(url, { type, headers: headers || {} });
+          if (!r || r.status < 200 || r.status >= 300) {
+              const body = r && typeof r.text === 'string' ? r.text : '';
+              if (r && r.status === 403 && /<title>Just a moment\.\.\.<\/title>/.test(body)) throw new Error('Cloudflare check; open the page once in this browser, then retry');
+              throw new Error('HTTP ' + (r ? r.status : '?'));
+          }
+          return r;
+      }
+      async _text(url, headers) { return (await this._get(url, 'text', headers)).text; }
+      async _json(url, headers) {
+          const t = await this._text(url, headers);
+          try { return JSON.parse(t); } catch (e) { throw new Error('not JSON'); }
+      }
+      async _metaImage(url, types) {
+          const og = ImageMaximizer.metaImage(await this._text(url), url);
+          return og ? [{ url: og, types: types || [] }] : [];
+      }
+
+      /** The platform resolver for a page URL, or null. */
+      platform(url) {
+          let u; try { u = new URL(url); } catch (e) { return null; }
+          const p = ImageMaximizer.PLATFORMS.find(x => x.host.test(u.hostname));
+          return p ? { id: p.id, name: p.name } : null;
+      }
+
+      /** Bigger versions of an image URL, largest first, ending with the URL itself. Synchronous. */
+      candidates(url) {
+          let u; try { u = new URL(url); } catch (e) { return [String(url)]; }
+          const out = [];
+          for (const r of ImageMaximizer.RULES) {
+              if (!r.host.test(u.hostname)) continue;
+              try { out.push(...r.max(u)); } catch (e) { this._log('debug', `rule for ${u.hostname} failed — ${e.message}`); }
+              break;
+          }
+          out.push(u.href);
+          return [...new Set(out)];
+      }
+
+      /** Images behind a URL, unmaximised: [{ url, types, comment, page }]. A store page goes to its
+       *  resolver; any other page to its og:image; an image URL is itself. */
+      async find(url) {
+          const u = new URL(url);
+          const p = ImageMaximizer.PLATFORMS.find(x => x.host.test(u.hostname));
+          // an image URL is an image even on a store's host (Beatport's geo-media, say), not a page
+          if (ImageMaximizer.looksLikeImage(u.href)) {
+              return [{ url: u.href, types: [], comment: '', page: '' }];
+          }
+          let list;
+          if (p) {
+              this._log('debug', `${p.name}: reading ${u.href}`);
+              list = await p.find.call(this, u);
+          } else {
+              // unknown host: an image answers as one, a page by its og:image
+              const r = await this._get(u.href, 'text');
+              if (/^image\//i.test(r.contentType || '')) return [{ url: u.href, types: [], comment: '', page: '' }];
+              const og = ImageMaximizer.metaImage(r.text || '', u.href);
+              list = og ? [{ url: og }] : [];
+          }
+          list = (list || []).filter(i => i && i.url && !ImageMaximizer.PLACEHOLDERS.some(re => re.test(i.url)));
+          this._log('debug', `${p ? p.name : u.hostname}: ${list.length} image(s)${list.length ? ' — ' + list.map(i => i.url).join(', ') : ''}`);
+          return list.map(i => ({ url: i.url, types: i.types || [], comment: i.comment || '', page: u.href }));
+      }
+
+      /** Download the largest version of each image behind a URL.
+       *  → [{ blob, url, original, page, types, comment, width, height }]; throws when there is none.
+       *  opts.minSize drops images whose longer side is smaller (a store's logo). */
+      async fetchImages(url, opts) {
+          opts = opts || {};
+          const found = await this.find(url);
+          if (!found.length) throw new Error('no image found');
+          const got = [];
+          for (const img of found) {
+              const r = await this.fetchLargest(img.url);
+              if (!r) { this._log('warn', `no candidate of ${img.url} answered with an image`); continue; }
+              if (opts.minSize && r.width && Math.max(r.width, r.height) < opts.minSize) { this._log('debug', `skipped ${r.url}: ${r.width}×${r.height} is under ${opts.minSize} px`); continue; }
+              got.push(Object.assign(r, { original: img.url, page: img.page, types: img.types, comment: img.comment }));
+          }
+          if (!got.length) throw new Error('no image could be downloaded');
+          return got;
+      }
+
+      /** The first candidate of one image URL that answers with an image: { blob, url, width, height } or null. */
+      async fetchLargest(url) {
+          for (const c of this.candidates(url)) {
+              try {
+                  const r = await this.request(c, { type: 'blob', headers: {} });
+                  const type = (r && (r.contentType || (r.blob && r.blob.type))) || '';
+                  if (!r || r.status < 200 || r.status >= 300 || !r.blob || !r.blob.size) { this._log('debug', `candidate ${c}: HTTP ${r ? r.status : '?'}`); continue; }
+                  if (!/^image\/|^application\/pdf/i.test(type) && !/^(application\/octet-stream|binary\/octet-stream)?$/i.test(type)) { this._log('debug', `candidate ${c}: not an image (${type})`); continue; }
+                  let d = {};
+                  try { d = ImageMaximizer.dimensions(await r.blob.slice(0, 262144).arrayBuffer()) || {}; } catch (e) { /* size unknown */ }
+                  if (!d.type && !/^image\/|pdf/i.test(type)) { this._log('debug', `candidate ${c}: unrecognised bytes`); continue; }
+                  this._log('debug', `candidate ${c}: ${d.width ? d.width + '×' + d.height : 'size unknown'}, ${r.blob.size} bytes`);
+                  return { blob: r.blob, url: c, width: d.width || 0, height: d.height || 0 };
+              } catch (e) { this._log('debug', `candidate ${c}: ${e.message}`); }
+          }
+          return null;
+      }
+
+      // ── helpers (static, pure) ────────────────────────────────────────────────────
+      /** True when the URL's path ends in an image extension. */
+      static looksLikeImage(url) {
+          try { return /\.(jpe?g|png|gif|webp|avif|bmp|tiff?)$/i.test(new URL(url).pathname); } catch (e) { return false; }
+      }
+      /** og:image / twitter:image / image_src of an HTML page, resolved against its URL. */
+      static metaImage(html, base) {
+          const tags = String(html).match(/<(?:meta|link)\b[^>]*>/gi) || [];
+          const want = [/^og:image(:secure_url|:url)?$/i, /^twitter:image(:src)?$/i, /^image_src$/i];
+          for (const re of want) {
+              for (const t of tags) {
+                  const key = (t.match(/\b(?:property|name|itemprop|rel)\s*=\s*["']([^"']+)["']/i) || [])[1];
+                  const val = (t.match(/\b(?:content|href)\s*=\s*["']([^"']+)["']/i) || [])[1];
+                  if (key && val && re.test(key.trim())) { try { return new URL(ImageMaximizer.decode(val), base).href; } catch (e) { /* bad URL */ } }
+              }
+          }
+          return null;
+      }
+      static decode(s) {
+          return String(s).replace(/&amp;/g, '&').replace(/&quot;/g, '"').replace(/&#39;|&#x27;/g, "'").replace(/&lt;/g, '<').replace(/&gt;/g, '>');
+      }
+      /** { type, width, height } from the first bytes of a JPEG, PNG, GIF or WebP; null otherwise. */
+      static dimensions(buf) {
+          const b = new Uint8Array(buf);
+          if (b.length > 24 && b[0] === 0x89 && b[1] === 0x50 && b[2] === 0x4E && b[3] === 0x47) return { type: 'png', width: (b[16] << 24 | b[17] << 16 | b[18] << 8 | b[19]) >>> 0, height: (b[20] << 24 | b[21] << 16 | b[22] << 8 | b[23]) >>> 0 };
+          if (b.length > 10 && b[0] === 0x47 && b[1] === 0x49 && b[2] === 0x46) return { type: 'gif', width: b[6] | b[7] << 8, height: b[8] | b[9] << 8 };
+          if (b.length > 30 && b[0] === 0x52 && b[1] === 0x49 && b[8] === 0x57 && b[9] === 0x45) {
+              const f = String.fromCharCode(b[12], b[13], b[14], b[15]);
+              if (f === 'VP8X') return { type: 'webp', width: 1 + (b[24] | b[25] << 8 | b[26] << 16), height: 1 + (b[27] | b[28] << 8 | b[29] << 16) };
+              if (f === 'VP8 ') return { type: 'webp', width: (b[26] | b[27] << 8) & 0x3fff, height: (b[28] | b[29] << 8) & 0x3fff };
+              if (f === 'VP8L') return { type: 'webp', width: 1 + ((b[22] << 8 | b[21]) & 0x3fff), height: 1 + ((b[24] << 4 | b[23] >> 4) & 0x3fff) };
+              return { type: 'webp', width: 0, height: 0 };
+          }
+          if (b.length > 4 && b[0] === 0xFF && b[1] === 0xD8) {
+              let i = 2;
+              while (i + 9 < b.length) {
+                  if (b[i] !== 0xFF) { i++; continue; }
+                  const m = b[i + 1];
+                  if (m === 0xD8 || m === 0x01 || (m >= 0xD0 && m <= 0xD7) || m === 0xFF) { i++; continue; }
+                  const len = b[i + 2] << 8 | b[i + 3];
+                  if (m >= 0xC0 && m <= 0xCF && m !== 0xC4 && m !== 0xC8 && m !== 0xCC) return { type: 'jpeg', width: b[i + 7] << 8 | b[i + 8], height: b[i + 5] << 8 | b[i + 6] };
+                  i += 2 + len;
+              }
+              return { type: 'jpeg', width: 0, height: 0 };
+          }
+          if (b.length > 4 && b[0] === 0x25 && b[1] === 0x50 && b[2] === 0x44 && b[3] === 0x46) return { type: 'pdf', width: 0, height: 0 };
+          return null;
+      }
+
+      // ── request adapters ──────────────────────────────────────────────────────────
+      /** The default: global fetch (Node 18+, a page; CORS applies in a page). */
+      static async fetchRequest(url, o) {
+          const r = await fetch(url, { headers: (o && o.headers) || {} });
+          const out = { status: r.status, url: r.url || url, contentType: r.headers.get('content-type') || '' };
+          if (o && o.type === 'blob') out.blob = await r.blob(); else out.text = await r.text();
+          return out;
+      }
+      /** An adapter for a userscript manager's GM_xmlhttpRequest / GM.xmlHttpRequest (no CORS). */
+      static gmRequest(gmXhr, timeout) {
+          return (url, o) => new Promise((resolve, reject) => {
+              gmXhr({ method: 'GET', url, headers: (o && o.headers) || {}, responseType: o && o.type === 'blob' ? 'blob' : 'text', timeout: timeout || 60000,
+                  onload: r => {
+                      const ct = (String(r.responseHeaders || '').match(/^content-type:\s*([^\r\n]+)/im) || [])[1] || '';
+                      const out = { status: r.status, url: r.finalUrl || url, contentType: ct.trim() };
+                      if (o && o.type === 'blob') out.blob = r.response; else out.text = typeof r.responseText === 'string' ? r.responseText : String(r.response || '');
+                      resolve(out);
+                  },
+                  onerror: () => reject(new Error('network error')), ontimeout: () => reject(new Error('timed out')) });
+          });
+      }
+  }
+  // </ST-IMGMAX>
+  const IMGMAX = new ImageMaximizer({
+    request: (url, o) => ImageMaximizer.gmRequest(GM_xmlhttpRequest, 30000)(url, o),   // looked up per call, as gmFetch does
+    log: (level, msg) => dbg('[cover]', 'maximizer: ' + msg),
+  });
+  // The largest version of one cover URL: { blob, url, width, height, size, original }.
+  // `original` is the URL asked for when the maximizer swapped it, else ''. Throws when
+  // nothing answers with an image. Dimensions come from the header; the bitmap is the
+  // fallback for a format the header parser doesn't know, and 0×0 when that fails too
+  // (the upload goes on; MusicBrainz judges the file).
+  async function fetchLargestCover(url) {
+    const r = await IMGMAX.fetchLargest(url);
+    if (!r) throw new Error('no image could be downloaded');
+    let { width, height } = r;
+    if (!width || !height) {
+      try {
+        const bitmap = await createImageBitmap(r.blob);
+        width = bitmap.width; height = bitmap.height;
+        if (bitmap.close) bitmap.close();
+      } catch (e) { width = height = 0; }
+    }
+    return { blob: r.blob, url: r.url, width, height, size: r.blob.size, original: r.url !== url ? url : '' };
+  }
   // Cross-origin image fetch as a Blob. Cover candidates live on arbitrary
   // provider CDNs (Deezer, Spotify, Qobuz, Apple, Tidal, ...), not
   // musicbrainz.org/harmony.pulsewidth.org.uk, so a plain fetch() would hit
@@ -32135,13 +32574,6 @@ if (__stOff.indexOf("falcon") < 0 && __stRuns("falcon", {"inc":["^https:\\/\\/(?
         ontimeout: () => reject(new Error('timed out')),
       });
     });
-  }
-  async function measureCandidate(url) {
-    const blob = await gmFetch(url);
-    const bitmap = await createImageBitmap(blob);
-    const { width, height } = bitmap;
-    if (bitmap.close) bitmap.close();
-    return { width, height, size: blob.size, blob };
   }
   // #494: picks the release's best cover — highest resolution, then lowest
   // size. Runs AFTER the item is already queued (fire-and-forget, mirroring
@@ -32179,7 +32611,15 @@ if (__stOff.indexOf("falcon") < 0 && __stRuns("falcon", {"inc":["^https:\\/\\/(?
     };
     for (const c of candidates) {
       try {
-        const m = await measureCandidate(c.url);
+        const m = await fetchLargestCover(c.url);
+        if (!m.width || !m.height) throw new Error('not a readable image');
+        if (m.original) {
+          // #719: a bigger version answered; it replaces the suggestion, which the
+          // edit note still names ("Maximised from")
+          log('info', `cover: ${c.provider} maximised to ${m.width}×${m.height} — ${m.url}`);
+          c.original = c.original || c.url; c.url = m.url;
+          c.width = c.height = c.size = undefined;   // the caption described the small one
+        }
         if (c.width && c.height && (c.width !== m.width || c.height !== m.height)) {
           log('warn', `cover: ${c.provider} advertised ${c.width}×${c.height} but the image is ${m.width}×${m.height} — using the real size`);
         }
@@ -34198,13 +34638,19 @@ if (__stOff.indexOf("falcon") < 0 && __stRuns("falcon", {"inc":["^https:\\/\\/(?
     // candidate first, then fall through the rest (original scrape order)
     // on any fetch/sign failure, instead of failing the whole item outright
     // over one bad candidate.
-    const order = [entry.url, ...((entry.candidates || []).map(c => c.url))]
+    // #719: each URL goes through the maximizer, so a cover typed in or queued from a
+    // JSON file is uploaded at its largest too; a candidate's own suggestion is the last
+    // resort when its maximised URL stops answering.
+    const order = [entry.url, ...((entry.candidates || []).flatMap(c => [c.url, c.original]))]
       .filter((u, i, arr) => u && arr.indexOf(u) === i);
     let blob, mime, signed, lastErr = null;
-    for (const url of order) {
+    for (const asked of order) {
       try {
-        log('info', `${tag} release ${item.mbid} — fetching cover image${url === entry.url ? '' : ' (fallback candidate)'}`);
-        blob = await gmFetch(url);
+        log('info', `${tag} release ${item.mbid} — fetching cover image${asked === entry.url ? '' : ' (fallback candidate)'}`);
+        const got = await fetchLargestCover(asked);
+        const url = got.url;
+        blob = got.blob;
+        if (got.original) log('info', `${tag} release ${item.mbid} — maximised ${got.original} → ${url}`);
         // GM_xmlhttpRequest doesn't always populate blob.type reliably from
         // the response's real Content-Type (seen live: a 400 from the sign
         // endpoint, which rejects an unrecognized mime_type) — trust it
@@ -34215,11 +34661,14 @@ if (__stOff.indexOf("falcon") < 0 && __stRuns("falcon", {"inc":["^https:\\/\\/(?
         const signRes = await fetch(`${MB_ORIGIN}/ws/js/cover-art-upload/${item.mbid}?mime_type=${encodeURIComponent(mime)}`, { credentials: 'same-origin' });
         if (!signRes.ok) throw new Error('sign ' + signRes.status);
         signed = await signRes.json();   // {action, image_id, formdata, nonce}
-        if (url !== entry.url) { entry.url = url; dbg(tag, `release ${item.mbid}: fell back to a working candidate (${url})`); }
+        if (asked !== entry.url) dbg(tag, `release ${item.mbid}: fell back to a working candidate (${asked})`);
+        const cand = (entry.candidates || []).find(c => c.url === asked || c.original === asked);
+        entry.original = got.original || (cand && cand.original) || '';
+        entry.url = url;
         break;
       } catch (e) {
         lastErr = e;
-        dbg(tag, `release ${item.mbid}: candidate ${url} failed — ${e.message || e}`);
+        dbg(tag, `release ${item.mbid}: candidate ${asked} failed — ${e.message || e}`);
       }
     }
     if (!signed) throw lastErr || new Error('no cover candidate could be fetched/signed');
@@ -34532,7 +34981,7 @@ if (__stOff.indexOf("falcon") < 0 && __stRuns("falcon", {"inc":["^https:\\/\\/(?
   // otherwise reconstruct.
   function coverEditNote(item, entry, actual) {
     const cands = entry.candidates || [];
-    const chosen = cands.find(c => c.url === entry.url) || null;
+    const chosen = cands.find(c => c.url === entry.url || c.original === entry.url) || null;
     const dims = c => (c && c.width && c.height) ? `${c.width}×${c.height}` : '';
     const mb = n => (n && n > 0) ? `${(n / 1048576).toFixed(2)} MB` : '';
     // Prefer what was actually downloaded and uploaded over anything recorded
@@ -34552,6 +35001,8 @@ if (__stOff.indexOf("falcon") < 0 && __stRuns("falcon", {"inc":["^https:\\/\\/(?
     }
     lines.push(`Cover art (${entry.type || 'Front'})${chosen && chosen.provider ? ` from ${chosen.provider}` : ''}`);
     lines.push(`* ${entry.url}${(wh || size) ? ` (${[wh, size].filter(Boolean).join(', ')})` : ''}`);
+    const from = entry.original || (chosen && chosen.original);
+    if (from && from !== entry.url) lines.push(`Maximised from: ${from}`);   // #719 what was suggested
     const others = cands.filter(c => c.url !== entry.url).map(c => `${c.provider}${dims(c) ? ` ${dims(c)}` : ''}`);
     if (others.length) lines.push(`Chosen as the largest of ${cands.length} candidates — also offered: ${others.join(', ')}`);
     if (entry.comment) lines.push(`Image comment: ${entry.comment}`);
@@ -37165,7 +37616,7 @@ if (__stOff.indexOf("falcon") < 0 && __stRuns("falcon", {"inc":["^https:\\/\\/(?
   // Test hook only (#467) — no behavior change; built only on a test page (#623).
   if (mbuTestHooks()) window.__falconTest = { DISAMBIGUATABLE, pageEntityContext, fetchReleaseGraph, fetchGroupReleases, releaseGraphTuples, normalizeAliases, isDuplicateAlias, fetchExistingAliases, submitAlias, runAliasItem, resolveAliasTypeId, parseLine, parsePaste, parseUrlParam, parseHarmonySeedUrl, encodeFalconPayload, scrapeHarmonyActions, makePendingToken, addToQueue, getQueue: () => queue, setQueue: q => { queue = q; renderQueue(); }, start, stop, cfg, fillAndSubmit, findAddLinkInput, findSubmitButton, findFieldError, findNoChangesWarning, setRowLinkType, addSecondRelationshipType, editUrl, buildSeedEditUrl, nextQueued, fetchEntityName, entityLabel, openInTab, getSelectedIds: () => _selectedIds, getExpandedIds: () => _expandedIds, mbThrottle, showItemPopup, focusItemWorker, importQueueJson, suspendNameLookups, resumeNameLookups, getLog: () => Log.entries().map(e => `[${e.t ? e.t.toISOString().slice(11, 19) : "--:--:--"}] ${e.sev.toUpperCase().padEnd(5)} ${e.cat ? `[${e.cat}] ` : ""}${e.msg}`), getSessionId: () => Log.sessionId(), noteUnload, editNoteText, setEditNote, isLoggedIn, scrapeHarmonyIsrcs, harmonyIsrcFallback, resolveIsrcFallback,
     // #494
-    scrapeHarmonyCover, parseCoverCaptionMeta, pickBestCover, coverEditNote, gmFetch, runCoverItem, mimeFromUrl, checkExistingCoverArt,
+    scrapeHarmonyCover, parseCoverCaptionMeta, pickBestCover, coverEditNote, gmFetch, IMGMAX, runCoverItem, mimeFromUrl, checkExistingCoverArt,
     // #495
     entityUrlSegment, activateReleaseEditNoteTab,
     // #497

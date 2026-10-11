@@ -98,7 +98,8 @@ test("live 536 cover edit note", { tag: ['@sandbox', '@login', '@web'] }, async 
   ck(preview.note.startsWith(NOTE), "the item's own note is kept as the first line");
   ck(preview.note.includes(preview.picked), 'the note states the exact image URL being uploaded');
   ck(/from iTunes/.test(preview.note), 'and which provider it came from');
-  ck(/also offered: Deezer 1000×1000/.test(preview.note), 'and what it beat, so a voter can judge the choice');
+  // #719: Deezer's suggestion is maximised (1000×1000 → its stored 1200×1200) before it's compared
+  ck(/also offered: Deezer 1200×1200/.test(preview.note), 'and what it beat, so a voter can judge the choice');
   ck(/Falcon v/.test(preview.note), 'with the script signature still there');
   ck(preview.note.includes(`Imported from Harmony: ${SOURCE}`), 'and the Harmony page the batch came from is named');
 

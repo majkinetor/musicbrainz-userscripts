@@ -122,9 +122,13 @@ test("cover pick and row ui", { tag: ['@sandbox', '@login'] }, async ({ context,
   console.log('after measuring:');
   after.cands.forEach(c => console.log('   ' + c));
   console.log('picked: ' + after.picked);
-  ck(/mzstatic/.test(after.picked), 'the real 3000×3000 iTunes image wins, not Tidal\'s 1280 one claiming to be 3000');
-  ck(after.cands.some(c => /Tidal 1280×1280/.test(c)), 'and the Tidal candidate now advertises its true size in the UI');
-  ck(after.cands.some(c => /Spotify 640×640/.test(c)), 'as does Spotify (caption said 2000×2000)');
+  // #719: the suggestions are maximised before they're measured, so Tidal's 1280x1280 becomes
+  // its genuine 3000x3000 origin.jpg (tying iTunes on area and winning on size) and Spotify's
+  // 640 its 2000x2000 82c1. What still matters: the pick is a real 3000x3000, and each chip
+  // shows the measured size of the image it now points at.
+  ck(/mzstatic|tidal\.com\/.*\/origin\.jpg/.test(after.picked), 'a real 3000×3000 image wins');
+  ck(after.cands.some(c => /Tidal 3000×3000/.test(c)), 'the Tidal candidate shows its maximised, measured size');
+  ck(after.cands.some(c => /Spotify 2000×2000/.test(c)), 'as does Spotify');
 
   ck(mbPosts().length === 0, `nothing was submitted to MusicBrainz (${mbPosts().length} POSTs; ${posts.length - mbPosts().length} unrelated, e.g. Sentry)`);
   ck(errs.length === 0, 'no page errors (' + errs.join(' | ') + ')');

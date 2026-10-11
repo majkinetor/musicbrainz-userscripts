@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-10-11 19:49 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-10-11 20:48 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -638,10 +638,10 @@ On a [Harmony](https://harmony.pulsewidth.org.uk) *Release Actions* page, **Send
 <img src="../falcon/screenshots/harmony.png" width="400">
 
 - **ISRCs** go by tracklist position: ISRC *N* to track *N* as MusicBrainz has it. If the counts differ, the extras are dropped and logged. (A recording linked to the wrong provider track still gets that track's ISRC; Falcon can't tell.)
-- **Cover art**: Falcon measures every candidate itself (Harmony's sizes are often wrong) and picks the largest, then the smallest file. Expand the row to change the pick, its type or its comment. The edit note names the source, its size, and what it was chosen over.
+- **Cover art**: Falcon swaps every candidate for the store's largest version (a Deezer 1000×1000 for its full size, a Bandcamp thumbnail for the original), measures it (Harmony's sizes are often wrong) and picks the largest, then the smallest file. Expand the row to change the pick, its type or its comment. The edit note names the source, its size, the URL it was maximised from, and what it was chosen over.
 
 > [!WARNING]
-> A cover is added even if the release already has one, unless *Add covers only when there aren't any* is on; the row warns when the release has art. If you upload covers with [ECAU](https://github.com/ROpdebee/mb-userscripts#mb-enhanced-cover-art-uploads) or [Art Station](../art_station) instead (they fetch the full-size image), turn on *Ignore Harmony cover art*.
+> A cover is added even if the release already has one, unless *Add covers only when there aren't any* is on; the row warns when the release has art. If you upload covers with [Art Station](../art_station) instead, turn on *Ignore Harmony cover art*.
 
 #### From the current page
 
