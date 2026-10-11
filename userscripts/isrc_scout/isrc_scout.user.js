@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         ISRC Scout
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.10
+// @version      2026.10.11
 // @description  Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify / Beatport / Tidal / Volumo / HDtracks / Qobuz, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPklTUkMgU2NvdXQ8L3RpdGxlPgogICAgPHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPgogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjQwIi8+CiAgICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyNiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2U9IiNiOWEzZTgiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPgogIDwvZz4KICA8bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+Cjwvc3ZnPgo=
@@ -5091,6 +5091,21 @@
         if (r) {
           if (r.videoId && r.isPlayable !== false && !r.unplayableText) out.push({ vid: r.videoId, title: ytText(r.title) || (r.title && r.title.simpleText) || '', type: 'ATV',
             artist: ytText(r.shortBylineText).replace(/ - Topic$/, ''), len: r.lengthSeconds != null ? +r.lengthSeconds : durToSec(r.lengthText && r.lengthText.simpleText) });
+          return;
+        }
+        // the same row as YouTube lists it since 2026-10: a lockup, its length the thumbnail's badge
+        const l = o.lockupViewModel;
+        if (l) {
+          const md = l.metadata && l.metadata.lockupMetadataViewModel;
+          if (l.contentId && l.contentType === 'LOCKUP_CONTENT_TYPE_VIDEO' && md) {
+            const rows = (md.metadata && md.metadata.contentMetadataViewModel && md.metadata.contentMetadataViewModel.metadataRows) || [];
+            const part = rows[0] && rows[0].metadataParts && rows[0].metadataParts[0];
+            let badge = '';
+            const find = x => { if (!x || typeof x !== 'object' || badge) return; const b = x.thumbnailBadgeViewModel; if (b && /^\d+(:\d\d)+$/.test(b.text || '')) { badge = b.text; return; } for (const k in x) find(x[k]); };
+            find(l);
+            out.push({ vid: l.contentId, title: (md.title && md.title.content) || '', type: 'ATV',
+              artist: ((part && part.text && part.text.content) || '').replace(/ - Topic$/, ''), len: badge ? durToSec(badge) : null });
+          }
           return;
         }
         for (const k in o) walk(o[k]);
