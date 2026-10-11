@@ -16,7 +16,7 @@ One-file bundle of the scripts below — install it *instead of* the individual 
 A faster release editor: artists and recordings auto-matched
 
 [Art Station](./userscripts/art_station/README.md) <img src="./userscripts/art_station/icon.png" align="left" width="32"><br>
-Edit cover and event art and find it online with parallel edits, retried on errors
+Edit cover art and find it online with parallel edits, retried on errors
 
 [Credit Hoarder](./userscripts/credit_hoarder/README.md)<img src="./userscripts/credit_hoarder/icon.svg" align="left" width="32"><br>
 Import credits from several providers with a review phase
