@@ -1,5 +1,100 @@
 # String Theory Changelog
 
+## [2026.10.11](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.10.11)
+
+### General
+
+#### Features
+
+1. Falcon and First Contact in String Theory ([#711](https://github.com/majkinetor/musicbrainz-userscripts/issues/711))
+1. Log window with categories, filters, text search, resizing, debug and full screen ([#706](https://github.com/majkinetor/musicbrainz-userscripts/issues/706))
+1. Shared log component instead of custom log ([#705](https://github.com/majkinetor/musicbrainz-userscripts/issues/705))
+1. Icon redesign across scripts ([#700](https://github.com/majkinetor/musicbrainz-userscripts/issues/700))
+1. Shared log component instead of custom log ([#697](https://github.com/majkinetor/musicbrainz-userscripts/issues/697))
+1. Corner launchers: Apollo and Art Station as plain icons, settings on right-click ([#695](https://github.com/majkinetor/musicbrainz-userscripts/issues/695))
+1. Shared storage for settings all scripts use ([#694](https://github.com/majkinetor/musicbrainz-userscripts/issues/694))
+1. String Theory: per-script on/off toggles in manager menu ([#693](https://github.com/majkinetor/musicbrainz-userscripts/issues/693))
+
+#### Fixes
+
+1. String Theory members run outside their own @match ([#710](https://github.com/majkinetor/musicbrainz-userscripts/issues/710))
+
+### [Apollo Editor](../apollo_editor/README.md)
+
+1. Auto select release group ([#716](https://github.com/majkinetor/musicbrainz-userscripts/issues/716))
+1. Log categories ([#708](https://github.com/majkinetor/musicbrainz-userscripts/issues/708))
+1. Language and script detection ([#703](https://github.com/majkinetor/musicbrainz-userscripts/issues/703))
+1. Label field search with Apollo picker ([#691](https://github.com/majkinetor/musicbrainz-userscripts/issues/691))
+1. Artist search dropdown icons open artist in new tab ([#689](https://github.com/majkinetor/musicbrainz-userscripts/issues/689))
+1. Native label picker shows transparent over the Apollo forms ([#707](https://github.com/majkinetor/musicbrainz-userscripts/issues/707))
+1. After droping tracks tracklist scrolls to top ([#685](https://github.com/majkinetor/musicbrainz-userscripts/issues/685))
+1. Album with very long title breaks editor flow ([#676](https://github.com/majkinetor/musicbrainz-userscripts/issues/676))
+
+### [Art Station](../art_station/README.md)
+
+1. Upload rate ([#698](https://github.com/majkinetor/musicbrainz-userscripts/issues/698))
+1. Rotate cover in full-screen viewer ([#678](https://github.com/majkinetor/musicbrainz-userscripts/issues/678))
+
+### [Credit Hoarder](../credit_hoarder/README.md)
+
+1. www.youtube.com album playlist links ([#679](https://github.com/majkinetor/musicbrainz-userscripts/issues/679))
+1. Band members repeated as bare instruments; Soloist, Voice and exact-instrument brackets lost ([#686](https://github.com/majkinetor/musicbrainz-userscripts/issues/686))
+
+### [Falcon](../falcon/README.md)
+
+1. Barcode on release items ([#713](https://github.com/majkinetor/musicbrainz-userscripts/issues/713))
+1. Shared log component instead of custom log ([#705](https://github.com/majkinetor/musicbrainz-userscripts/issues/705))
+1. Artist and label links from platform matches ([#671](https://github.com/majkinetor/musicbrainz-userscripts/issues/671))
+1. Launcher is shown on the release editor ([#675](https://github.com/majkinetor/musicbrainz-userscripts/issues/675))
+
+### [First Contact](../first_contact/README.md)
+
+1. Send to Harmony ([#687](https://github.com/majkinetor/musicbrainz-userscripts/issues/687))
+1. Manage Apple album with tracks not offered in storefront ([#684](https://github.com/majkinetor/musicbrainz-userscripts/issues/684))
+1. www.youtube.com album playlist links ([#679](https://github.com/majkinetor/musicbrainz-userscripts/issues/679))
+
+### [Fusion](../fusion/README.md)
+
+1. Small improvements
+
+### [Group Therapy](../group_therapy/README.md)
+
+1. Small improvements
+
+### [ISRC Scout](../isrc_scout/README.md)
+
+1. Shared log component instad of custom log ([#701](https://github.com/majkinetor/musicbrainz-userscripts/issues/701))
+1. One-click Match: ISRCs from fastest source, then streaming links ([#696](https://github.com/majkinetor/musicbrainz-userscripts/issues/696))
+1. Manage Apple album with tracks not offered in storefront ([#684](https://github.com/majkinetor/musicbrainz-userscripts/issues/684))
+1. Links missed when featured artists are moved from title to recording ([#681](https://github.com/majkinetor/musicbrainz-userscripts/issues/681))
+1. YouTube Music track link to music video instead of album track ([#690](https://github.com/majkinetor/musicbrainz-userscripts/issues/690))
+1. Cant authorize on test.musicbrainz ([#683](https://github.com/majkinetor/musicbrainz-userscripts/issues/683))
+
+### [Mammoth](../mammoth/README.md)
+
+1. Small improvements
+
+### [Mission Control](../mission_control/README.md)
+
+1. Item bulk selection toggle ([#714](https://github.com/majkinetor/musicbrainz-userscripts/issues/714))
+1. New release with platform consolidation ([#702](https://github.com/majkinetor/musicbrainz-userscripts/issues/702))
+1. Mission Control initialization ([#680](https://github.com/majkinetor/musicbrainz-userscripts/issues/680))
+1. Unprocessed cover art seen as smaller ([#715](https://github.com/majkinetor/musicbrainz-userscripts/issues/715))
+1. Format confidence treats vinyl, CD and cassette as the same release ([#712](https://github.com/majkinetor/musicbrainz-userscripts/issues/712))
+1. Confusion about offered links: different track number & format ([#709](https://github.com/majkinetor/musicbrainz-userscripts/issues/709))
+
+### [Platform Check](../platform_check/README.md)
+
+1. Shared log component instead of custom log ([#697](https://github.com/majkinetor/musicbrainz-userscripts/issues/697))
+1. Manage Apple album with tracks not offered in storefront ([#684](https://github.com/majkinetor/musicbrainz-userscripts/issues/684))
+1. www.youtube.com album playlist links ([#679](https://github.com/majkinetor/musicbrainz-userscripts/issues/679))
+1. Show matched barcodes for selection ([#674](https://github.com/majkinetor/musicbrainz-userscripts/issues/674))
+1. Paste barcode on a release ([#673](https://github.com/majkinetor/musicbrainz-userscripts/issues/673))
+1. Artist and label links from platform matches ([#671](https://github.com/majkinetor/musicbrainz-userscripts/issues/671))
+1. Format confidence treats vinyl, CD and cassette as the same release ([#712](https://github.com/majkinetor/musicbrainz-userscripts/issues/712))
+1. Qobuz artist and label links with non-Latin names refused by MusicBrainz ([#704](https://github.com/majkinetor/musicbrainz-userscripts/issues/704))
+1. Discogs master (r)click beahaves wrong way ([#682](https://github.com/majkinetor/musicbrainz-userscripts/issues/682))
+
 ## [2026.10.4](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.10.4)
 
 ### [Apollo Editor](../apollo_editor/README.md)

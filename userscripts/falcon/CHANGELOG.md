@@ -1,5 +1,17 @@
 # Falcon 
 
+## [2026.10.11](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.10.11)
+
+### Features
+
+1. Barcode on release items ([#713](https://github.com/majkinetor/musicbrainz-userscripts/issues/713))
+1. Shared log component instead of custom log ([#705](https://github.com/majkinetor/musicbrainz-userscripts/issues/705))
+1. Artist and label links from platform matches ([#671](https://github.com/majkinetor/musicbrainz-userscripts/issues/671))
+
+### Fixes
+
+1. Launcher is shown on the release editor ([#675](https://github.com/majkinetor/musicbrainz-userscripts/issues/675))
+
 ## [2026.10.4](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.10.4)
 
 ### Features

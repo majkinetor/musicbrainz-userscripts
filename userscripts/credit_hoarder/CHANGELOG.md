@@ -1,5 +1,15 @@
 # Credit Hoarder Changelog
 
+## [2026.10.11](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.10.11)
+
+### Features
+
+1. www.youtube.com album playlist links ([#679](https://github.com/majkinetor/musicbrainz-userscripts/issues/679))
+
+### Fixes
+
+1. Band members repeated as bare instruments; Soloist, Voice and exact-instrument brackets lost ([#686](https://github.com/majkinetor/musicbrainz-userscripts/issues/686))
+
 ## [2026.10.4](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.10.4)
 
 - Small improvements

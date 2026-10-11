@@ -1,5 +1,11 @@
 # Bandcamp Player Enhanced Changelog
 
+## [2026.10.11](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.10.11)
+
+### Features
+
+1. Player bar follows album page theme ([#688](https://github.com/majkinetor/musicbrainz-userscripts/issues/688))
+
 ## [2026.9.30](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.9.30)
 
 ### Features

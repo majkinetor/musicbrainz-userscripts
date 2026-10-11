@@ -1,5 +1,19 @@
 # ISRC Scout Changelog
 
+## [2026.10.11](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.10.11)
+
+### Features
+
+1. Shared log component instad of custom log ([#701](https://github.com/majkinetor/musicbrainz-userscripts/issues/701))
+1. One-click Match: ISRCs from fastest source, then streaming links ([#696](https://github.com/majkinetor/musicbrainz-userscripts/issues/696))
+1. Manage Apple album with tracks not offered in storefront ([#684](https://github.com/majkinetor/musicbrainz-userscripts/issues/684))
+1. Links missed when featured artists are moved from title to recording ([#681](https://github.com/majkinetor/musicbrainz-userscripts/issues/681))
+
+### Fixes
+
+1. YouTube Music track link to music video instead of album track ([#690](https://github.com/majkinetor/musicbrainz-userscripts/issues/690))
+1. Cant authorize on test.musicbrainz ([#683](https://github.com/majkinetor/musicbrainz-userscripts/issues/683))
+
 ## [2026.10.4](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.10.4)
 
 ### Features

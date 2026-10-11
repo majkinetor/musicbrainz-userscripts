@@ -1,5 +1,12 @@
 # Art Station Changelog
 
+## [2026.10.11](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.10.11)
+
+### Features
+
+1. Upload rate ([#698](https://github.com/majkinetor/musicbrainz-userscripts/issues/698))
+1. Rotate cover in full-screen viewer ([#678](https://github.com/majkinetor/musicbrainz-userscripts/issues/678))
+
 ## [2026.10.4](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.10.4)
 
 ### Features

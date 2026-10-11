@@ -1,5 +1,21 @@
 # Apollo Editor Changelog
 
+## [2026.10.11](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.10.11)
+
+### Features
+
+1. Auto select release group ([#716](https://github.com/majkinetor/musicbrainz-userscripts/issues/716))
+1. Log categories ([#708](https://github.com/majkinetor/musicbrainz-userscripts/issues/708))
+1. Language and script detection ([#703](https://github.com/majkinetor/musicbrainz-userscripts/issues/703))
+1. Label field search with Apollo picker ([#691](https://github.com/majkinetor/musicbrainz-userscripts/issues/691))
+1. Artist search dropdown icons open artist in new tab ([#689](https://github.com/majkinetor/musicbrainz-userscripts/issues/689))
+
+### Fixes
+
+1. Native label picker shows transparent over the Apollo forms ([#707](https://github.com/majkinetor/musicbrainz-userscripts/issues/707))
+1. After droping tracks tracklist scrolls to top ([#685](https://github.com/majkinetor/musicbrainz-userscripts/issues/685))
+1. Album with very long title breaks editor flow ([#676](https://github.com/majkinetor/musicbrainz-userscripts/issues/676))
+
 ## [2026.10.4](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.10.4)
 
 ### Features

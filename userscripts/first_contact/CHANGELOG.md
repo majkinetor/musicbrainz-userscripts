@@ -1,5 +1,13 @@
 # First Contact Changelog
 
+## [2026.10.11](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.10.11)
+
+### Features
+
+1. Send to Harmony ([#687](https://github.com/majkinetor/musicbrainz-userscripts/issues/687))
+1. Manage Apple album with tracks not offered in storefront ([#684](https://github.com/majkinetor/musicbrainz-userscripts/issues/684))
+1. www.youtube.com album playlist links ([#679](https://github.com/majkinetor/musicbrainz-userscripts/issues/679))
+
 ## [2026.10.4](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.10.4)
 
 ### Features

@@ -1,5 +1,22 @@
 # Platform Check Changelog
 
+## [2026.10.11](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.10.11)
+
+### Features
+
+1. Shared log component instead of custom log ([#697](https://github.com/majkinetor/musicbrainz-userscripts/issues/697))
+1. Manage Apple album with tracks not offered in storefront ([#684](https://github.com/majkinetor/musicbrainz-userscripts/issues/684))
+1. www.youtube.com album playlist links ([#679](https://github.com/majkinetor/musicbrainz-userscripts/issues/679))
+1. Show matched barcodes for selection ([#674](https://github.com/majkinetor/musicbrainz-userscripts/issues/674))
+1. Paste barcode on a release ([#673](https://github.com/majkinetor/musicbrainz-userscripts/issues/673))
+1. Artist and label links from platform matches ([#671](https://github.com/majkinetor/musicbrainz-userscripts/issues/671))
+
+### Fixes
+
+1. Format confidence treats vinyl, CD and cassette as the same release ([#712](https://github.com/majkinetor/musicbrainz-userscripts/issues/712))
+1. Qobuz artist and label links with non-Latin names refused by MusicBrainz ([#704](https://github.com/majkinetor/musicbrainz-userscripts/issues/704))
+1. Discogs master (r)click beahaves wrong way ([#682](https://github.com/majkinetor/musicbrainz-userscripts/issues/682))
+
 ## [2026.10.4](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.10.4)
 
 ### Features
