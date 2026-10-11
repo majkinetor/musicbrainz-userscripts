@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.11.112735
+// @version      2026.10.11.114507
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5BcG9sbG8gRWRpdG9yPC90aXRsZT4KPG1hc2sgaWQ9ImFwLW0iIG1hc2tVbml0cz0idXNlclNwYWNlT25Vc2UiIHg9IjAiIHk9IjAiIHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4Ij48Zz48ZyBmaWxsPSIjZmZmIj48cGF0aCBkPSJNNDIgNjQgQzI4IDcyIDIyIDkwIDI0IDExMCBMNDIgOTggWiIvPjxwYXRoIGQ9Ik04NiA2NCBDMTAwIDcyIDEwNiA5MCAxMDQgMTEwIEw4NiA5OCBaIi8+PC9nPjxnIGZpbGw9IiNmZmYiPjxwYXRoIGQ9Ik02NCA4IEM4NCAyNCA5MCA1MiA4OCA5MCBMNDAgOTAgQzM4IDUyIDQ0IDI0IDY0IDggWiIvPjxwYXRoIGQ9Ik00OCA5MCBMODAgOTAgTDc2IDEwMCBMNTIgMTAwIFoiLz48L2c+PGcgc3Ryb2tlPSIjMDAwIiBzdHJva2Utd2lkdGg9IjMuNSI+PHBhdGggZD0iTTM2IDkwLjUgTDkyIDkwLjUiLz48L2c+PGNpcmNsZSBjeD0iNjQiIGN5PSI1MCIgcj0iOCIgZmlsbD0iIzAwMCIvPjwvZz48L21hc2s+PGc+PHBhdGggZD0iTTUyIDEwMCBDNTQgMTEyIDYwIDExOCA2NCAxMjYgQzY4IDExOCA3NCAxMTIgNzYgMTAwIFoiIGZpbGw9IiNlYjc0M2IiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDAgMykiLz48L2c+PHJlY3Qgd2lkdGg9IjEyOCIgaGVpZ2h0PSIxMjgiIGZpbGw9IiNiYTQ3OGYiIG1hc2s9InVybCgjYXAtbSkiLz4KPC9zdmc+Cg==
@@ -810,7 +810,9 @@ click to open the label`;
    * (`$root.duplicateReleaseGroups`) but leaves "Add a new release group" checked, even when
    * one of them is plainly this release's. When exactly one has the release's title and its
    * artist credit (the same artists once linked, else the same credited names), Apollo clicks
-   * its radio, as a human would. Once per title and artist: "Add a new release group" picked
+   * its radio, as a human would. The title may differ in punctuation, spaces, case and & / and
+   * ("Tall, Dark & Handsome" / "Tall Dark & Handsome"), never in a letter or digit (Vol. 1 /
+   * Vol. 2); an exact title wins over a loose one. Once per title and artist: "Add a new release group" picked
    * after that stays picked. */
   let _rgAutoKey = null, _rgAuto = null;   // the title|artists last judged; the group Apollo picked ({ gid, title })
   function autoSelectReleaseGroup() {
@@ -827,12 +829,13 @@ click to open the label`;
     const key = fold(title) + '|' + (linked ? gids.join(',') : fold(credit(names))) + '|' + dups.map(d => d.gid).join(',');
     if (key === _rgAutoKey) return;
     _rgAutoKey = key;
-    const same = dups.filter(d => {
-      if (!sameName(d.name, title)) return false;
+    const byArtist = dups.filter(d => {
       const ac = (d.artistCredit && d.artistCredit.names) || [];
       if (linked) return ac.length === gids.length && ac.map(n => n.artist && n.artist.gid).sort().join() === [...gids].sort().join();
       return sameName(credit(ac), credit(names));
     });
+    const exact = byArtist.filter(d => sameName(d.name, title)), tk = posNameKey(title);
+    const same = exact.length ? exact : byArtist.filter(d => tk && posNameKey(d.name) === tk);
     if (same.length !== 1) { Log.cat('Release').info('release group:', JSON.stringify(title), '—', same.length ? same.length + ' suggested groups have this title and artist; left for you' : 'none of the ' + dups.length + ' suggested groups has this title and artist; left as new'); return; }
     const hit = same[0], i = dups.indexOf(hit);
     const radio = document.querySelectorAll('.duplicate-release-groups-list input[data-change="selectReleaseGroup"]')[i];
@@ -840,8 +843,8 @@ click to open the label`;
     radio.click();
     const now = u(rel.releaseGroup);
     if (!now || u(now.gid) !== hit.gid) { Log.cat('Release').warn('release group: selecting', hit.name, 'did not take'); return; }
-    _rgAuto = { gid: hit.gid, title: hit.name };
-    Log.cat('Release').info('release group →', hit.name, '(' + hit.gid + ') — the only suggested group with this title and artist');
+    _rgAuto = { gid: hit.gid, title: hit.name, loose: !exact.length };
+    Log.cat('Release').info('release group →', hit.name, '(' + hit.gid + ') — the only suggested group with this title' + (exact.length ? '' : ' (ignoring punctuation and case)') + ' and artist');
     toast('✓ Release group selected: ' + hit.name);
   }
   // the badge in the Release group field while it holds the group Apollo picked
@@ -853,7 +856,7 @@ click to open the label`;
     if (!riWant() || !_rgAuto || gid !== _rgAuto.gid) { if (b) { b.remove(); inp.style.removeProperty('padding-right'); } return; }
     if (!b) {
       b = document.createElement('span'); b.className = 'tc-ri-lab tc-ri-rgb mbu-ui'; host.appendChild(b);
-      b.innerHTML = `<span class="tc-badge high" title="${esc(_rgAuto.title + ' — picked by Apollo: the only suggested release group with this title and artist\nclick to open the release group')}" style="cursor:pointer">auto</span>`;
+      b.innerHTML = `<span class="tc-badge high" title="${esc(_rgAuto.title + ' — picked by Apollo: the only suggested release group with this title' + (_rgAuto.loose ? ' (ignoring punctuation and case)' : '') + ' and artist\nclick to open the release group')}" style="cursor:pointer">auto</span>`;
       b.addEventListener('mousedown', e => { e.preventDefault(); e.stopPropagation(); });
       b.addEventListener('click', e => { e.preventDefault(); e.stopPropagation(); window.open(`${ORIGIN}/release-group/${_rgAuto.gid}`, '_blank', 'noopener'); });
     }
