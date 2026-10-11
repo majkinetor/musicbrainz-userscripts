@@ -96,6 +96,8 @@ function collectIssues() {
   const general = { features: [], fixes: [], changes: [] };
   const included = [];
   for (const i of all) {
+    // "@match" in a title would mention (and list as a release contributor) the GitHub user "match"
+    i.title = i.title.replace(/(^|[^`\w])@([\w-]+)/g, '$1`@$2`');
     const names = i.labels.map(l => l.name);
     if (i.stateReason === 'NOT_PLANNED') continue;   // "Closed as not planned" → out of the changelog, same as the wontfix label
     if (['skip changelog', 'wontfix'].some(x => names.includes(x))) continue;

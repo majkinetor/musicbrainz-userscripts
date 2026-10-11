@@ -17,7 +17,7 @@
 
 #### Fixes
 
-1. String Theory members run outside their own @match ([#710](https://github.com/majkinetor/musicbrainz-userscripts/issues/710))
+1. String Theory members run outside their own `@match` ([#710](https://github.com/majkinetor/musicbrainz-userscripts/issues/710))
 
 ### [Apollo Editor](../apollo_editor/README.md)
 
