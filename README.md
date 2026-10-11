@@ -40,7 +40,7 @@ Reads the release's existing ISRCs and streaming links and fills in the missing 
 Remembers your edit notes and options and lets you save and recall them
 
 [Mission Control](./userscripts/mission_control/README.md)<img src="./userscripts/mission_control/icon.svg" align="left" width="32"><br>
-Collect information from other scripts, view in dashboard, apply with 1 click
+Find what a release is missing with the other scripts, review it in one window, apply it in one click; consolidate a new release across platforms
 
 [Platform Check](./userscripts/platform_check/README.md)<img src="./userscripts/platform_check/icon.svg" align="left" width="32"><br>
 Find and verify URLs for a particular MusicBrainz release on online platforms
