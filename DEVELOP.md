@@ -45,7 +45,7 @@ A run:
 1. collects the closed issues not yet labelled `released` that have an `area | <script>` label and `bug` or `enhancement`, plus those labelled `general` (not `skip changelog` or `wontfix`); the labels are in [STANDARDS → Labels](STANDARDS.md#labels);
 2. prepends a dated section to each script's `CHANGELOG.md` (*Features* from `enhancement`, *Fixes* from `bug`), with the `general` issues first in String Theory's;
 3. lists the scripts whose `.user.js` changed since the last GitHub release, each with a pinned install link and one that follows `stable`;
-4. with `--yes`: commits the changelogs, merges `main` into `stable`, pushes both, creates the release, attaches String Theory's `DOCS.pdf` to it, and labels the issues `released`.
+4. with `--yes`: commits the changelogs, merges `main` into `stable`, pushes both, creates the release, attaches String Theory's `String_Theory.pdf` to it, and labels the issues `released`.
 
 A release made by hand on GitHub gets its PDF from `pdf.yml`, which can also be run for any release tag.
 

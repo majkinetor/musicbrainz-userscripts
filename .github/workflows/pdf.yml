@@ -36,9 +36,9 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm --dir userscripts/string_theory install --frozen-lockfile
       - run: pnpm exec playwright install --with-deps chromium
-      - name: Build DOCS.pdf from the release's DOCS.md
+      - name: Build String_Theory.pdf from the release's DOCS.md
         run: node userscripts/string_theory/build-pdf.mjs
       - name: Attach it
         env:
           GH_TOKEN: ${{ github.token }}
-        run: gh release upload "$TAG" userscripts/string_theory/DOCS.pdf --clobber --repo "$GITHUB_REPOSITORY"
+        run: gh release upload "$TAG" userscripts/string_theory/String_Theory.pdf --clobber --repo "$GITHUB_REPOSITORY"

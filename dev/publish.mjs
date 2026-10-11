@@ -284,10 +284,10 @@ function main() {
     // It is attached to the GitHub Release below, not committed: twenty committed versions had
     // made up 291 MB of the repository, and PDFs barely compress against each other (#623).
     if (existsSync(resolve(ROOT, `userscripts/${BUNDLE}/build-pdf.mjs`))) {
-      try { run('node', [`userscripts/${BUNDLE}/build-pdf.mjs`]); pdf = resolve(ROOT, `userscripts/${BUNDLE}/DOCS.pdf`); console.log('  ✓ regenerated DOCS.pdf'); }
+      try { run('node', [`userscripts/${BUNDLE}/build-pdf.mjs`]); pdf = resolve(ROOT, `userscripts/${BUNDLE}/String_Theory.pdf`); console.log('  ✓ regenerated String_Theory.pdf'); }
       catch (e) {
-        if (CI) throw new Error(`DOCS.pdf failed to build — nothing was committed or pushed: ${String(e.message).split(/\r?\n/)[0]}`);   // #646: a release without its manual
-        console.warn(`  ⚠ DOCS.pdf skipped (${String(e.message).split('\n')[0]}); run \`pnpm --dir userscripts/${BUNDLE} install\` first to enable it`); }
+        if (CI) throw new Error(`String_Theory.pdf failed to build — nothing was committed or pushed: ${String(e.message).split(/\r?\n/)[0]}`);   // #646: a release without its manual
+        console.warn(`  ⚠ String_Theory.pdf skipped (${String(e.message).split('\n')[0]}); run \`pnpm --dir userscripts/${BUNDLE} install\` first to enable it`); }
     }
     git('add', ...stage.filter(f => existsSync(resolve(ROOT, f))));
   }
@@ -302,8 +302,8 @@ function main() {
   const body = releaseBody(groups, changed, tag, sha, general);
   gh('release', 'create', tag, '--repo', REPO, '--title', tag, '--target', sha, '--notes', body);
   if (pdf && existsSync(pdf)) {
-    try { gh('release', 'upload', tag, pdf, '--repo', REPO); console.log('  ✓ DOCS.pdf attached to the release'); }
-    catch (e) { console.warn(`  ⚠ DOCS.pdf not attached (${String(e.message).split('\n')[0]}); upload it by hand: gh release upload ${tag} ${pdf}`); }
+    try { gh('release', 'upload', tag, pdf, '--repo', REPO); console.log('  ✓ String_Theory.pdf attached to the release'); }
+    catch (e) { console.warn(`  ⚠ String_Theory.pdf not attached (${String(e.message).split('\n')[0]}); upload it by hand: gh release upload ${tag} ${pdf}`); }
   }
   for (const n of included) gh('issue', 'edit', String(n), '--repo', REPO, '--add-label', 'released');
   console.log(`\nPublished ${tag}: ${tagUrl(tag)}`);

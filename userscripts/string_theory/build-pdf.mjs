@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Render the unified documentation (DOCS.md, produced by build.mjs) to DOCS.pdf.
+// Render the unified documentation (DOCS.md, produced by build.mjs) to String_Theory.pdf.
 //
 // Kept SEPARATE from build.mjs (and out of the pre-commit hook) because it needs
 // heavier tooling — `marked` (this folder's devDependency) for Markdown→HTML and
@@ -7,7 +7,7 @@
 // HTML→PDF. The release workflow runs it (#646); by hand:
 //
 //   node userscripts/string_theory/build.mjs      # regenerate DOCS.md first
-//   node userscripts/string_theory/build-pdf.mjs  # then DOCS.md → DOCS.pdf
+//   node userscripts/string_theory/build-pdf.mjs  # then DOCS.md → String_Theory.pdf
 //   (or:  pnpm --dir userscripts/string_theory docs:pdf)
 
 import { readFileSync, writeFileSync, unlinkSync } from 'node:fs';
@@ -19,7 +19,7 @@ import { marked } from 'marked';
 const HERE = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(HERE, '../..');
 const DOCS_MD  = resolve(HERE, 'DOCS.md');
-const DOCS_PDF = resolve(HERE, 'DOCS.pdf');
+const DOCS_PDF = resolve(HERE, 'String_Theory.pdf');
 
 // The repo root's Playwright (the test runner's; `pnpm exec playwright install chromium`
 // provides the browser), so this folder needs no second one. It used to borrow
@@ -102,4 +102,4 @@ try {
 } finally {
   try { unlinkSync(TMP); } catch (e) { /* best effort */ }
 }
-console.log(`✓ DOCS.pdf → ${DOCS_PDF}`);
+console.log(`✓ String_Theory.pdf → ${DOCS_PDF}`);
