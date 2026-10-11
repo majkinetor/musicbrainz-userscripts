@@ -43,7 +43,7 @@ A mammoth never forgets: your edit notes and field values, saved and one click a
 One dashboard to find and fix all a release lacks, and consolidate new ones
 
 [Platform Check](./userscripts/platform_check/README.md)<img src="./userscripts/platform_check/icon.svg" align="left" width="32"><br>
-Find a release on the platforms and link it, but only after the barcode, format and track count agree.
+Find a release online, but only after the barcode, format and track count agree.
 
 ---
 
