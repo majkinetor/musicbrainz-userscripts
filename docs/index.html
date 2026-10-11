@@ -173,11 +173,12 @@
   .usage a{color:var(--dim);text-decoration:none;white-space:nowrap} .usage a:hover{color:var(--accent)}
 
   /* The sign-off under Reactions */
-  .made{margin:44px 0 0;display:flex;align-items:center;justify-content:center;gap:8px;font-size:16px;color:var(--dim)}
-  .made .heart{width:18px;height:18px;fill:#e5484d}
+  .made{margin:44px 0 0;display:flex;align-items:center;justify-content:center;gap:8px;font-size:16px;color:var(--dim);white-space:nowrap}
+  /* flex:none, or on a phone the row shrinks the heart away */
+  .made .heart{width:18px;height:18px;fill:#e5484d;flex:none}
   .made a{display:inline-flex;align-items:center;gap:8px;color:var(--ink);font-weight:600;text-decoration:none}
   .made a:hover{color:var(--accent)}
-  .made img{width:32px;height:32px;border-radius:50%}
+  .made img{width:32px;height:32px;border-radius:50%;flex:none}
 </style>
 <script>
 // The theme picked with the switch; without one the system's applies.
