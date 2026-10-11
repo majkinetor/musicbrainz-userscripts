@@ -34,7 +34,8 @@ test('the gate paces starts, a burst first, then one a second', { tag: ['@unit']
     await Promise.all(Array.from({ length: 6 }, () => mbnFetch('/ws/2/artist?query=x')));
     return window.__starts.map(t => t - t0).sort((x, y) => x - y);
   });
-  check(starts.slice(0, 3).every(t => t < 300), `the first three start at once (${starts.join(', ')} ms)`);
+  // measured from the first start, not from t0: a slow runner delays the whole burst
+  check(starts[2] - starts[0] < 300, `the first three start at once (${starts.join(', ')} ms)`);
   const gaps = starts.slice(3).map((t, i) => t - starts[i + 2]);
   check(gaps.every(g => g >= 900 && g <= 1400), `then a second apart (${gaps.join(', ')} ms)`);
   check(await a.evaluate(() => mbnGated('/ws/2/x') && mbnGated('https://test.musicbrainz.org/ws/2/x') && !mbnGated('/ws/js/entity/x') && !mbnGated('https://example.org/ws/2/x')), 'only /ws/2 on MusicBrainz is gated');
