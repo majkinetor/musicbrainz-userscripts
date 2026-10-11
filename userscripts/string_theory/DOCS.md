@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-10-11 13:21 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-10-11 16:31 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -374,7 +374,19 @@ Each cover shows its size and resolution. *Show each cover's file type next to i
 
 An Art Station download, added back as a zip, restores each cover's types and comment.
 
-The **URL (N)** panel has an import for each source the release links, plus any [registered providers](../art_station/DEVELOP.md#plugin-api). Right-click it to import from all of them; middle-click to import from all and keep only the best cover: the largest front (each source's first image, as sources give no types), then the smallest file, with the edit note saying Art Station chose it. Imports from a URL need [Enhanced Cover Art Uploads](https://raw.github.com/ROpdebee/mb-userscripts/dist/mb_enhanced_cover_art_uploads.user.js).
+The **URL (N)** panel has an import for each source the release links, plus any [registered providers](../art_station/DEVELOP.md#plugin-api). Right-click it to import from all of them; middle-click to import from all and keep only the best cover: the largest front (each source's first image, as sources give no types), then the smallest file, with the edit note saying Art Station chose it.
+
+A URL can be a store's release page or an image. Art Station takes the largest version the store has, and the edit note names the page, the image, and the smaller one the store offered:
+
+| Store pages                                |                                                           |
+| ------------------------------------------ | --------------------------------------------------------- |
+| Apple Music, Deezer, Spotify, Tidal, Qobuz | the cover; Qobuz adds its digital booklet when it has one |
+| Bandcamp, Beatport, 7digital, Juno         | the cover                                                 |
+| Discogs, Amazon                            | every image                                               |
+| VGMdb                                      | every scan, typed by its caption                          |
+| any other page                             | its preview image                                         |
+
+Links that open the add page with images to add, as Harmony's do, are imported the same way, with their types and comment.
 
 With the [Picker](../art_station/as_picker/README.md), clicking a copy in the search results sends it back to the gallery.
 
@@ -444,6 +456,8 @@ Downloads are named `<NN> <types> <comment>.<ext>`, with `none` for no type, e.g
 ### Notes
 
 Another userscript can add its own image source, shown as **Import from &lt;name&gt;** in the URL panel; how is in [DEVELOP.md](../art_station/DEVELOP.md#plugin-api).
+
+Discogs' full-size images, Amazon, VGMdb, Juno and 7digital check for bots: if an import says to open the page first, open the store page once in the same browser and import again. How each store is read is in [DEVELOP.md](../art_station/DEVELOP.md#sourcing-art-from-a-store).
 
 ---
 

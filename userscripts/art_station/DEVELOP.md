@@ -8,9 +8,11 @@ The low-level MusicBrainz / archive.org traffic behind **Enter edit**. Below, `<
 
 Art Station never screen-drives MB's edit UI. For each edit it reads the relevant edit **form once** for its hidden fields (CSRF token, the type-id vocabulary) and POSTs the same fields the form itself would, with `credentials: same-origin`. `getPostForm(url)` GETs the page and returns the parsed `<form>` (action + hidden inputs); `copyHidden()` copies those into the request body.
 
-### Sourcing art from a provider
+### Sourcing art from a store
 
-The **Source** popover doesn't touch MB directly. It seeds ROpdebee's *Enhanced Cover Art Uploads* by setting its `x_seed.image.0.url` params on a **hidden `/release/<mbid>/add-cover-art` iframe**, then polls the ECAU-restructured page for the resulting preview blob (giving up after 45 s) and harvests it into the gallery as a staged new cover. ECAU performs the actual fetch; nothing is submitted at this stage.
+The **URL (N)** imports, Ctrl+V, the picker's `addImageUrl` and Mission Control's apply don't touch MB. They go through the shared [image maximizer](../../dev/imgmax/README.md) (`// <ST-IMGMAX>`, #717): it reads the store's page or API for the cover(s), turns each into its largest version, and downloads it through `GM_xmlhttpRequest`. Art Station keeps JPEG, PNG, GIF and PDF (anything else is skipped with a log line), drops images under 200 px (store logos), and stages the rest as new covers with `_provUrl` (the page), `_provImageUrl` (the image taken) and `_provMaxFrom` (the image the store gave, when a bigger one was taken), which the cover's add edit note lists. Nothing is submitted at this stage.
+
+On the add page, `x_seed.image.<n>.url` / `.types` / `.comment` and `x_seed.origin` (the seeding parameters Enhanced Cover Art Uploads defined, which Harmony and others link with) are read by Art Station and sourced the same way; the type ids map to names through the add form's checkboxes, and the origin goes into the commit note as *Seeded from …*. Rows another script drops into MB's native uploader are still harvested.
 
 ### Uploading a new cover — 3-step pipeline per image
 

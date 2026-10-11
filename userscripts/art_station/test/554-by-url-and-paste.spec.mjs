@@ -46,6 +46,8 @@ test('"By URL" unrolls, Escape rolls it up, a pasted URL imports; Ctrl+V imports
 
   await page.click('.as-src-url-btn');
   await until(() => page.locator('.as-src-url-inp').isVisible());
+  // #717: the import asks the URL's site through the image maximizer; left unanswered, so its slot stays
+  await page.evaluate(() => { window.__asTest.imgmax.request = () => new Promise(() => {}); });
   await page.evaluate(() => {
     const inp = document.querySelector('.as-src-url-inp');
     const dt = new DataTransfer(); dt.setData('text/plain', 'https://example.com/some-cover.jpg');

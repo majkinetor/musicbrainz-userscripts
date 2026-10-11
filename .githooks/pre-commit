@@ -96,6 +96,17 @@ if printf '%s\n' "$STAGED" | grep -qE '^dev/net/(mb-gate|sync-gate)\.mjs$'; then
     STAGED=$(git diff --cached --name-only)
 fi
 
+# shared image maximizer (#717) — dev/imgmax/image-maximizer.js, re-inlined into every
+# script carrying a `// <ST-IMGMAX>` marker.
+if printf '%s
+' "$STAGED" | grep -qE '^dev/imgmax/(image-maximizer\.js|sync-imgmax\.mjs)$'; then
+    echo "[pre-commit] syncing the shared image maximizer…"
+    node dev/imgmax/sync-imgmax.mjs >/dev/null
+    IMGMAX_FILES=$(grep -rl '// <ST-IMGMAX>' userscripts --include='*.js' 2>/dev/null || true)
+    [ -n "$IMGMAX_FILES" ] && git add $IMGMAX_FILES
+    STAGED=$(git diff --cached --name-only)
+fi
+
 # (discogs_credits is frozen — no longer developed — so its bundle is not rebuilt here.)
 
 # credit_hoarder — esbuild bundle. It was

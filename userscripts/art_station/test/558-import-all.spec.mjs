@@ -10,20 +10,18 @@
 // won, leaving white text on a pale lavender background.
 //
 // test.musicbrainz.org, with the "Hazy Dreams" links served as the release's (several
-// platforms). Every POST is aborted; each source's hidden seed page is counted, not
-// loaded.
+// platforms). Every POST is aborted; each platform's first request (#717: the image
+// maximizer's, to the store) is counted and left unanswered, so its slot stays.
 import { test, check, attachShot, until, frames } from '../../../dev/test/harness.mjs';
 import { openArtStation, serveLinks } from './as.mjs';
 
 test.use({ gm: { name: 'Art Station' } });
 
 test('"Import all" counts every source, reads on hover, and right-click runs it', { tag: ['@sandbox', '@login'] }, async ({ page, inject }, testInfo) => {
-  const posts = []; let seeded = 0;
+  const posts = [];
   await page.route(() => true, route => {
     const r = route.request();
     if (r.method() === 'POST' && !/\/__meb_verify$/.test(new URL(r.url()).pathname)) { posts.push(r.url()); return route.abort(); }
-    // a source's hidden seed page: count it, don't load a real uploader
-    if (/\/add-(cover|event)-art\?.*x_seed/.test(r.url())) { seeded++; return route.abort(); }
     return route.fallback();
   });
   await serveLinks(page);
@@ -70,17 +68,18 @@ test('"Import all" counts every source, reads on hover, and right-click runs it'
 
   // right-click: every source at once, no popover
   await page.evaluate(() => document.querySelectorAll('.as-pop').forEach(p => p.remove()));
-  seeded = 0;
+  // the stores are never asked: each platform's first request is recorded and never answered
+  await page.evaluate(() => { window.__seen558 = []; window.__asTest.imgmax.request = url => { window.__seen558.push(url); return new Promise(() => {}); }; });
   const prevented = await page.evaluate(() => { const ev = new MouseEvent('contextmenu', { bubbles: true, cancelable: true }); document.querySelector('.as-src').dispatchEvent(ev); return ev.defaultPrevented; });
   check(prevented, "the browser's context menu is suppressed");
   // sampled promptly: a slot goes as soon as its source resolves empty
   await page.waitForFunction(() => document.querySelectorAll('.as-srcing-lbl').length > 0, null, { timeout: 15000 }).catch(() => {});
-  // until every platform has its slot and seed page, and the provider has run
-  const after = await until(() => page.evaluate(() => ({ popOpen: !!document.querySelector('.as-src-pop'), slots: [...document.querySelectorAll('.as-srcing-lbl')].map(e => e.textContent.trim()), runs: window.__probe558Run })), a => a.slots.length === pop.prov && seeded === pop.prov && a.runs === 1);
+  // until every platform has its slot and its request, and the provider has run
+  const after = await until(() => page.evaluate(() => ({ popOpen: !!document.querySelector('.as-src-pop'), slots: [...document.querySelectorAll('.as-srcing-lbl')].map(e => e.textContent.trim()), runs: window.__probe558Run, asked: window.__seen558.length })), a => a.slots.length === pop.prov && a.asked === pop.prov && a.runs === 1);
   check(!after.popOpen, 'the popover does not open');
-  // platforms seed a hidden uploader page and keep their slot while it loads; the probe
-  // provider returns nothing, so its slot goes at once and its run count is what shows it ran
-  check(after.slots.length === pop.prov && seeded === pop.prov, `a slot and a seed page for every platform (${after.slots.length}, ${seeded} of ${pop.prov})`);
+  // platforms keep their slot while their store answers; the probe provider returns
+  // nothing, so its slot goes at once and its run count is what shows it ran
+  check(after.slots.length === pop.prov && after.asked === pop.prov, `a slot and a store request for every platform (${after.slots.length}, ${after.asked} of ${pop.prov})`);
   check(after.runs === 1, `the registered provider ran too (${after.runs})`);
   check(after.slots.every(s => /sourcing/i.test(s)), `each slot names what it is sourcing (${JSON.stringify(after.slots.slice(0, 3))})`);
 

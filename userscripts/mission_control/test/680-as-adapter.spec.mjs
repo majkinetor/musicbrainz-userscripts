@@ -3,17 +3,19 @@
 // "Music Will Explain" links several platforms Art Station can source from; the card
 // lists them, with the Cover Art Archive's state as its summary.
 // Covers are sourced headless: a hidden frame of the cover-art page, where Art Station
-// runs with mc_frame and posts the best cover back. The import itself runs through
-// ROpdebee's ECAU, which this harness doesn't load, so here the frame finds no cover
-// and the card says so; the plumbing (frame, messages, apply answer) is what's checked.
-import { test, check } from '../../../dev/test/harness.mjs';
+// runs with mc_frame and posts the best cover back. The import itself asks the stores
+// (#717: Art Station's image maximizer, through GM_xmlhttpRequest); here every store
+// answers 404, so the frame finds no cover, quickly, and the card says so; the plumbing
+// (frame, messages, apply answer) is what's checked, and nothing is entered.
+import { test, check, answerGm } from '../../../dev/test/harness.mjs';
 
 // MusicBrainz's own scripts in a frame removed mid-load (Execute sources again) throw this
 test.use({ gm: { name: 'Mission Control' }, pageErrors: ['MB is not defined'] });
 
 const RELEASE = '54b7bca2-7ed6-4484-bdd3-fe35a3f33dda';
 
-test('#680: Probe asks Art Station; covers are sourced in a hidden frame', { tag: ['@sandbox'] }, async ({ page, inject }) => {
+test('#680: Probe asks Art Station; covers are sourced in a hidden frame', { tag: ['@sandbox'] }, async ({ page, context, inject }) => {
+  answerGm(context, ({ url }) => /^https:\/\/([^/]+\.)?musicbrainz\.org\//.test(url) || /coverartarchive\.org/.test(url) ? null : { status: 404, headers: 'content-type: text/plain', body: 'not here' });
   await page.goto(`https://test.musicbrainz.org/release/${RELEASE}`, { waitUntil: 'domcontentloaded' });
   await page.waitForSelector('#content table.medium');
   await inject('mission_control', { waitFor: '__mcTest' });

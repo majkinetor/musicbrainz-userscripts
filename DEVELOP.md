@@ -90,6 +90,7 @@ Code several scripts need is written once and copied into each between marker co
 | `// <ST-UI>` | `dev/ui/ui-components.mjs` | components (`mbu-` classes): help link, toast, log window and its startup line (`mbuStartupInfo`), corner stacking, … |
 | `// <ST-ICONS>` | `dev/ui/platform-icons.mjs` | platform icons and brand colours |
 | `// <ST-MATCH>` | `dev/match/artist-match.mjs` | the artist matcher and sort-name guess |
+| `// <ST-IMGMAX>` | `dev/imgmax/image-maximizer.js` | the largest cover behind a store page or image URL ([API](dev/imgmax/README.md)) |
 
 **Tokens**
 

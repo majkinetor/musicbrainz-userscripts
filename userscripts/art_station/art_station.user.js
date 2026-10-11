@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Art Station
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.11
+// @version      2026.10.11.161841
 // @description  Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5BcnQgU3RhdGlvbjwvdGl0bGU+CjxjaXJjbGUgY3g9Ijg2IiBjeT0iNjQiIHI9IjM4IiBmaWxsPSIjMWIwZjNiIiBzdHJva2U9IiNiOTY3ZmYiIHN0cm9rZS13aWR0aD0iMyIvPgo8Y2lyY2xlIGN4PSI4NiIgY3k9IjY0IiByPSIyOC44OCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjNGEzNDgwIiBzdHJva2Utd2lkdGg9IjEuNSIvPjxjaXJjbGUgY3g9Ijg2IiBjeT0iNjQiIHI9IjIwLjkwMDAwMDAwMDAwMDAwMiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjNGEzNDgwIiBzdHJva2Utd2lkdGg9IjEuNSIvPgo8Y2lyY2xlIGN4PSI4NiIgY3k9IjY0IiByPSIxMS4wMiIgZmlsbD0iI2ZmNzFjZSIvPjxjaXJjbGUgY3g9Ijg2IiBjeT0iNjQiIHI9IjIuNTA4IiBmaWxsPSIjMWIwZjNiIi8+PGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJhcy1za3ljIiB4MT0iMCIgeTE9IjAiIHgyPSIwIiB5Mj0iMSI+PHN0b3Agb2Zmc2V0PSIwLjAwIiBzdG9wLWNvbG9yPSIjN2ZlN2ZmIi8+PHN0b3Agb2Zmc2V0PSIwLjUwIiBzdG9wLWNvbG9yPSIjZDlhNmZmIi8+PHN0b3Agb2Zmc2V0PSIxLjAwIiBzdG9wLWNvbG9yPSIjZmY3MWNlIi8+PC9saW5lYXJHcmFkaWVudD48Y2xpcFBhdGggaWQ9ImFzLWNjIj48cmVjdCB4PSIxMCIgeT0iMjIiIHdpZHRoPSI3OCIgaGVpZ2h0PSI4NCIgcng9IjgiLz48L2NsaXBQYXRoPjwvZGVmcz4KPGcgY2xpcC1wYXRoPSJ1cmwoI2FzLWNjKSI+PHJlY3QgeD0iMTAiIHk9IjIyIiB3aWR0aD0iNzgiIGhlaWdodD0iODQiIGZpbGw9InVybCgjYXMtc2t5YykiLz4KPGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJhcy1nczIiIHgxPSIwIiB5MT0iMCIgeDI9IjAiIHkyPSIxIj48c3RvcCBvZmZzZXQ9IjAiIHN0b3AtY29sb3I9IiNmZmY2YTgiLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiNmZjhhNWMiLz48L2xpbmVhckdyYWRpZW50Pgo8bWFzayBpZD0iYXMtbXMyIj48cmVjdCB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCIgZmlsbD0iI2ZmZiIvPjxyZWN0IHg9IjI1LjYiIHk9IjY3LjIiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjEuMiIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9IjY5LjgiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjEuNSIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9IjczLjAiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjEuOCIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9Ijc3LjAiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjIuMyIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9IjgyLjAiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjIuOSIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9Ijg4LjMiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjMuNiIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9Ijk2LjIiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjQuNSIgZmlsbD0iIzAwMCIvPjwvbWFzaz48L2RlZnM+CjxjaXJjbGUgY3g9IjQ5IiBjeT0iNzYuMDgiIHI9IjIzLjQiIGZpbGw9InVybCgjYXMtZ3MyKSIgbWFzaz0idXJsKCNhcy1tczIpIi8+PHJlY3QgeD0iMTAiIHk9Ijc0LjA4IiB3aWR0aD0iNzgiIGhlaWdodD0iMzEuOTIiIGZpbGw9IiNiOTY3ZmYiLz48cGF0aCBkPSJNMTAgNzQuMDhIODhNMTAgNzcuOUg4OE0xMCA4My4ySDg4TTEwIDkxLjRIODhNMTAgMTA0LjJIODhNMzQuOCA3NC4wOEwtNDguNSAxMDZNMzguNCA3NC4wOEwtMjQuMSAxMDZNNDEuOSA3NC4wOEwwLjMgMTA2TTQ1LjUgNzQuMDhMMjQuNiAxMDZNNDkuMCA3NC4wOEw0OS4wIDEwNk01Mi41IDc0LjA4TDczLjQgMTA2TTU2LjEgNzQuMDhMOTcuOCAxMDZNNTkuNiA3NC4wOEwxMjIuMSAxMDZNNjMuMiA3NC4wOEwxNDYuNSAxMDYiIHN0cm9rZT0iI2ZmZmI5NiIgc3Ryb2tlLXdpZHRoPSIxLjMiIGZpbGw9Im5vbmUiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPjwvZz48cmVjdCB4PSIxMCIgeT0iMjIiIHdpZHRoPSI3OCIgaGVpZ2h0PSI4NCIgcng9IjgiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJhMTQ1OCIgc3Ryb2tlLXdpZHRoPSIzIi8+Cjwvc3ZnPgo=
@@ -358,7 +358,7 @@
   earlyHide.textContent = '.artwork-cont,#content>h2,#content>p{display:none!important}';
   appendEl(earlyHide);
   // Hide the native button row (Add / Reorder / Import…) before paint too — a JS hide
-  // at render time flashes them on entry AND misses ECAU's async-added Import buttons;
+  // at render time flashes them on entry AND misses buttons other scripts add late;
   // a document-start !important style avoids both. Toggled by the setting + Original.
   const footerStyle = document.createElement('style');
   footerStyle.textContent = '#content div.buttons.ui-helper-clearfix{display:none!important}';
@@ -373,8 +373,8 @@
   earlyHide.disabled = !!_savedPrefs.showOrig;
   footerStyle.disabled = !!_savedPrefs.showOrig || _savedPrefs.hideMbFooter === false;
   // #248 the add page: take the whole thing over. Move the native uploader form
-  // OFF-SCREEN (not display:none) so it stays functional — integrations (ECAU /
-  // Harmony) still seed it and we harvest the resulting preview rows — while every
+  // OFF-SCREEN (not display:none) so it stays functional — integrations still
+  // seed it and we harvest the resulting preview rows — while every
   // bit of its UI (and any plugin UI inside it) is invisible. mount() hides the
   // rest of #content. Disabled in "Show original".
   let addHide = null;
@@ -1042,7 +1042,7 @@
     if (!SETTINGS.group) return '';   // Position view shows new uploads inline, positioned among covers
     // group view excludes _new covers from the type groups, so the New uploads section
     // is the ONLY place they show — include in-progress sourcing placeholders too, or
-    // a URL/ECAU/MH import would add nothing visible while it works.
+    // a URL/provider/MH import would add nothing visible while it works.
     const news = MODEL.filter(it => it._new && !it._del).sort((a, b) => a.order - b.order);
     if (!news.length) return '';
     return `<div class="as-sec as-sec-new"><h3>New uploads</h3><span class="as-cnt">${news.length}</span><span class="as-line"></span></div>
@@ -1088,7 +1088,7 @@
     });
   }
   // #249 a small favicon chip in the cover's bottom-left corner naming where a
-  // newly-sourced image came from (ECAU provider / MH Covers), shown until commit.
+  // newly-sourced image came from (a store / MH Covers), shown until commit.
   function provBadge(it) {
     if (!(it._new && it._provIcon)) return '';
     const tip = `Sourced from ${it._provider || 'provider'}` + (it._provUrl ? `\n${it._provUrl}` : '');   // #249 URL on a second line
@@ -1901,7 +1901,7 @@
   }
   // MH reports the cover's underlying source (e.g. "itunes", "bandcamp") — map the
   // known ones to a recognisable name + favicon so the staged cover shows where it
-  // came from, the same as ECAU sources do (#249). Unknown → labelled as MH Covers.
+  // came from, the same as store sources do (#249). Unknown → labelled as MH Covers.
   const MH_SOURCE = {
     itunes: ['Apple Music', 'music.apple.com'], applemusic: ['Apple Music', 'music.apple.com'],
     deezer: ['Deezer', 'deezer.com'], spotify: ['Spotify', 'spotify.com'], tidal: ['Tidal', 'tidal.com'],
@@ -1930,47 +1930,442 @@
     } catch (e) { dropSourcingSlot(slot); render(); toast('Could not fetch the cover — ' + e.message, 5000); }
   }
 
-  // ── #242 Source from any provider via ECAU (ROpdebee's Enhanced Cover Art Uploads). ──
-  // We don't reimplement providers — that scraping/maximization is the high-churn part
-  // ECAU owns. Instead we seed ECAU's public x_seed interface in a HIDDEN add-cover-art
-  // iframe (so no native/ECAU UI is ever shown), let it fetch + maximize, then harvest
-  // the File(s) from MB's native uploader preview rows (the blob: <img> previews + each
-  // image's checked type checkboxes / comment) and stage them as NEW covers — riding the
-  // normal "you get what you see" Enter-edit flow. Requires ECAU installed (it's what the
-  // manager injects into the iframe). #242
-  const ECAU_TIMEOUT = 45000;
-  // Some providers (notably Amazon) hand ECAU their site logo / "smile" favicon
-  // alongside the real covers. Those are tiny; real cover art is never this small.
-  // Drop anything whose longest side is under this so the brand glyph isn't staged. #242
-  const MIN_ART_PX = 200;
-  // ECAU writes progress/errors into #ROpdebee_log_container (an ID, not a class —
-  // the old `.`-selector matched nothing, so failures spun to the timeout). Each
-  // message is a .msg.<level> span; a real failure is .msg.error / .msg.warning.
-  // Return that exact text so we can show ECAU's own message (#286). #242
-  // #478: ECAU kicks off TWO independent async operations on page load —
-  // app.processSeedingParameters() (the x_seed-driven fetch we're actually
-  // waiting on here) and app.addImportButtons() (populates ECAU's OWN
-  // "Import from X" button row from the release's existing external links —
-  // unrelated to our seeded fetch, checked live in ECAU's own source:
-  // ROpdebee/mb-userscripts src/mb_enhanced_cover_art_uploads/index.ts).
-  // Both log into the same #ROpdebee_log_container, so a transient failure
-  // fetching provider metadata for THAT button row ("Failed to add some
-  // provider import buttons…") was being misread as "the seeded fetch
-  // failed" — aborting and discarding an in-progress sourcing slot while the
-  // real fetch was still running and would have succeeded moments later
-  // (the reported bug: images already sourced get discarded because of an
-  // error that had nothing to do with them). Filter that message out before
-  // picking the most recent one.
-  const ECAU_UNRELATED_ERROR = /failed to add (?:some )?provider import buttons?/i;
-  function ecauError(doc) {
-    const cont = doc.querySelector('#ROpdebee_log_container'); if (!cont) return null;
-    const msgs = [...cont.querySelectorAll('.msg.error, .msg.warning')].filter(m => !ECAU_UNRELATED_ERROR.test(m.textContent || ''));
-    if (msgs.length) return (msgs[msgs.length - 1].textContent || '').replace(/\s+/g, ' ').trim() || null;
-    const txt = (cont.textContent || '').replace(/\s+/g, ' ').trim();
-    if (txt && !ECAU_UNRELATED_ERROR.test(txt) && /failed to (fetch|enqueue|load)|invalid url|could ?n.?t|no (valid )?image|not a? ?support|unable to|refusing to/i.test(txt)) return txt.slice(-220);
-    return null;
+  // ── #717 Source from a store page or an image URL. ──
+  // The shared ImageMaximizer (dev/imgmax, its API in dev/imgmax/README.md) reads the
+  // store's page or API for its cover(s), turns each into its largest version and
+  // downloads it; Art Station stages the results as NEW covers, riding the normal
+  // "you get what you see" Enter-edit flow. Its requests go through the manager
+  // (GM xhr: no CORS), to the stores only, never to MusicBrainz. It replaced the
+  // hidden-iframe seeding of Enhanced Cover Art Uploads (#242), so no other script
+  // is needed.
+  // <ST-IMGMAX> — generated by dev/imgmax/sync-imgmax.mjs from dev/imgmax/image-maximizer.js — DO NOT EDIT
+  class ImageMaximizer {
+      // ── URL rules ────────────────────────────────────────────────────────────────
+      // host → (URL) → bigger URLs, largest first. Measured on the live CDNs (2026-10-11).
+      static RULES = [
+          // Apple: the uploaded original (a1.mzstatic.com/us/r1000/0/<path>), then the largest
+          // rendition the resizer gives. 100000x100000-999 answers 400 now.
+          { host: /(^|\.)mzstatic\.com$/, max: u => {
+              const m = u.pathname.match(/^\/image\/thumb\/(.+)\/[^/]+$/);
+              return m ? [`https://a1.mzstatic.com/us/r1000/0/${m[1]}`, `https://${u.host}/image/thumb/${m[1]}/9999x9999bb.jpg`] : [];
+          } },
+          // Deezer: 4000x0 at quality 100 gives the stored size (1900 too; 0x0 and 3000x3000 are 403)
+          { host: /(^|\.)dzcdn\.net$/, max: u => {
+              const m = u.pathname.match(/^(\/images\/\w+\/[0-9a-f]{32})\/\d+x\d+-[^/]+$/);
+              return m ? [`https://${u.host}${m[1]}/4000x0-000000-100-0-0.jpg`, `https://${u.host}${m[1]}/1200x1200-000000-80-0-0.jpg`] : [];
+          } },
+          // Spotify: the size is a code inside the id; 82c1 is the upload (1500 px and more), b273 640
+          { host: /(^|\.)(scdn\.co|spotifycdn\.com)$/, max: u => {
+              const m = u.pathname.match(/\/image\/ab67616d[0-9a-f]{8}([0-9a-f]+)$/);
+              return m ? ['000082c1', '0000b273'].map(c => `https://i.scdn.co/image/ab67616d${c}${m[1]}`) : [];
+          } },
+          // Bandcamp: _0 is the original upload, _10 the largest rendition
+          { host: /(^|\.)bcbits\.com$/, max: u => {
+              const m = u.pathname.match(/^\/img\/(a?\d+)_\d+\.(jpg|png|gif)$/);
+              return m ? [`https://f4.bcbits.com/img/${m[1]}_0.${m[2]}`, `https://f4.bcbits.com/img/${m[1]}_10.jpg`] : [];
+          } },
+          // Tidal: origin.jpg is the upload; 1280 the largest rendition (3000 is 403)
+          { host: /^resources\.tidal\.com$/, max: u => {
+              const m = u.pathname.match(/^(\/images\/(?:[0-9a-f]+\/){4}[0-9a-f]+)\/[^/]+$/);
+              return m ? [`https://resources.tidal.com${m[1]}/origin.jpg`, `https://resources.tidal.com${m[1]}/1280x1280.jpg`] : [];
+          } },
+          // Qobuz: _org is the upload, _max the largest rendition
+          { host: /^static\.qobuz\.com$/, max: u => {
+              const m = u.pathname.match(/^(\/images\/covers\/.+?)_(?:\d+|max|org)\.jpg$/);
+              return m ? [`https://static.qobuz.com${m[1]}_org.jpg`, `https://static.qobuz.com${m[1]}_max.jpg`] : [];
+          } },
+          // Beatport: any size is rendered on demand (3000 is an upscale); 0x0 is the stored size
+          { host: /(^|\.)beatport\.com$/, max: u => {
+              const m = u.pathname.match(/^\/image_size\/\d+x\d+\/(.+)$/);
+              return m ? [`https://${u.host}/image_size/0x0/${m[1]}`] : [];
+          } },
+          // Amazon: drop the ._SL500_-style modifiers for the stored image
+          { host: /(^|\.)(media-amazon\.com|ssl-images-amazon\.com|images-amazon\.com)$/, max: u => {
+              const m = u.pathname.match(/^\/images\/I\/([^./]+)(?:\.[^/]*)?\.(jpg|png|gif)$/);
+              return m ? [`https://m.media-amazon.com/images/I/${m[1]}.${m[2]}`] : [];
+          } },
+          // 7digital: 800 is the largest rendition
+          { host: /(^|\.)7static\.com$/, max: u => {
+              const m = u.pathname.match(/^(.+)_\d+\.jpg$/);
+              return m ? [`https://${u.host}${m[1]}_800.jpg`] : [];
+          } },
+          // Juno: /full/…-BIG
+          { host: /(^|\.)(juno\.co\.uk|junostatic\.com)$/, max: u => {
+              const m = u.pathname.match(/^\/(?:\d+|full)\/(.+?)(?:-(?:TN|MED|BIG))?\.(jpg|png)$/i);
+              return m ? [`https://${u.host}/full/${m[1]}-BIG.${m[2]}`] : [];
+          } },
+          // VGMdb: thumbnails and medium copies live on their own hosts; the full image on media.vgm.io
+          { host: /(^|\.)vgm\.io$/, max: u => /^(thumb|medium)-media\./.test(u.host) ? [`https://media.vgm.io${u.pathname}`] : [] },
+          // Google (YouTube Music, Play): =s0 is the original
+          { host: /^(lh\d|yt\d)\.(googleusercontent|ggpht)\.com$/, max: u => {
+              const m = u.href.match(/^([^=]+)=[^/]*$/);
+              return m ? [`${m[1]}=s0`] : [];
+          } },
+          // YouTube thumbnails
+          { host: /^i\d?\.ytimg\.com$/, max: u => {
+              const m = u.pathname.match(/^\/vi(?:_webp)?\/([^/]+)\/[a-z]*default\.(?:jpg|webp)$/);
+              return m ? [`https://i.ytimg.com/vi/${m[1]}/maxresdefault.jpg`, `https://i.ytimg.com/vi/${m[1]}/hqdefault.jpg`] : [];
+          } },
+          // SoundCloud: -original, else the 500 px rendition
+          { host: /(^|\.)sndcdn\.com$/, max: u => {
+              const m = u.pathname.match(/^(.+)-(?:t\d+x\d+|large|crop|small|badge|tiny|mini|original)\.(jpg|png)$/);
+              return m ? [`https://${u.host}${m[1]}-original.${m[2]}`, `https://${u.host}${m[1]}-t500x500.${m[2]}`] : [];
+          } },
+          // Cover Art Archive thumbnails → the original (its extension is unknown, so both)
+          { host: /^(coverartarchive\.org|archive\.org|ia\d+\.us\.archive\.org)$/, max: u => {
+              const m = u.href.match(/^(.+\/\d+)-(?:250|500|1200)\.jpg$/);
+              return m ? [`${m[1]}.jpg`, `${m[1]}.png`] : [];
+          } },
+      ];
+
+      // Images a store shows when it has none.
+      static PLACEHOLDERS = [
+          /dzcdn\.net\/images\/cover\/d41d8cd98f00b204e9800998ecf8427e\//,   // Deezer's empty md5
+          /7static\.com\/.*\/0{8}16_\d+\.jpg$/,                              // 7digital
+          /\/images\/I\/(01RmK\+J4pJL|01QFb8SNuTL|01PkLIhTX3L|01MKUOLsA5L|31CTP6oiIBL)\./,   // Amazon
+          /vgmdb\.net\/db\/img\/album-(nocover|nsfw)-medium\.gif$/,
+      ];
+
+      // ── platform resolvers ────────────────────────────────────────────────────────
+      // A resolver turns a store page into its cover image(s): [{ url, types?, comment? }].
+      // `this` is the ImageMaximizer, so a resolver uses this._text / this._json / this._log.
+      static PLATFORMS = [
+          { id: 'apple', name: 'Apple Music', host: /^(music|itunes)\.apple\.com$/, async find(u) {
+              const id = (u.pathname.match(/\/album\/(?:[^/]+\/)?(?:id)?(\d+)/) || [])[1];
+              if (!id) throw new Error('no album id in the URL');
+              const cc = (u.pathname.match(/^\/([a-z]{2})\//) || [])[1] || 'us';
+              const j = await this._json(`https://itunes.apple.com/lookup?id=${id}&country=${cc}&entity=album`);
+              const art = j && j.results && j.results[0] && j.results[0].artworkUrl100;
+              if (art) return [{ url: art, types: ['Front'] }];
+              this._log('debug', `Apple: lookup had no artwork for ${id} in ${cc}, reading the page`);
+              return this._metaImage(u.href, ['Front']);
+          } },
+          { id: 'deezer', name: 'Deezer', host: /(^|\.)deezer\.com$/, async find(u) {
+              const id = (u.pathname.match(/\/album\/(\d+)/) || [])[1];
+              if (!id) throw new Error('no album id in the URL');
+              const j = await this._json(`https://api.deezer.com/album/${id}`);
+              if (j && j.error) throw new Error(j.error.message || 'album not found');
+              return j && j.cover_xl ? [{ url: j.cover_xl, types: ['Front'] }] : [];
+          } },
+          { id: 'spotify', name: 'Spotify', host: /^open\.spotify\.com$/, async find(u) {
+              const id = (u.pathname.match(/\/album\/(\w+)/) || [])[1];
+              if (!id) throw new Error('no album id in the URL');
+              const j = await this._json(`https://open.spotify.com/oembed?url=${encodeURIComponent('https://open.spotify.com/album/' + id)}`);
+              return j && j.thumbnail_url ? [{ url: j.thumbnail_url, types: ['Front'] }] : [];
+          } },
+          { id: 'bandcamp', name: 'Bandcamp', host: /(^|\.)bandcamp\.com$/, async find(u) {
+              const html = await this._text(u.href);
+              // data-tralbum's art_id where the page has it, else the og:image
+              const art = (html.match(/&quot;art_id&quot;:(\d+)/) || html.match(/"art_id":(\d+)/) || [])[1];
+              if (art) return [{ url: `https://f4.bcbits.com/img/a${art}_10.jpg`, types: ['Front'] }];
+              const og = ImageMaximizer.metaImage(html, u.href);
+              return og ? [{ url: og, types: ['Front'] }] : [];
+          } },
+          { id: 'tidal', name: 'Tidal', host: /^(listen\.|store\.|www\.)?tidal\.com$/, async find(u) {
+              const id = (u.pathname.match(/\/album\/(\d+)/) || [])[1];
+              if (!id) throw new Error('no album id in the URL');
+              const headers = { 'x-tidal-token': ImageMaximizer.TIDAL_TOKEN };
+              const countries = [];
+              try { const c = await this._json('https://listen.tidal.com/v1/country/context?countryCode=WW&locale=en_US&deviceType=BROWSER', headers); if (c && c.countryCode) countries.push(c.countryCode); } catch (e) { this._log('debug', 'Tidal: country lookup failed — ' + e.message); }
+              for (const c of ['US', 'GB', 'DE', 'NL', 'CA', 'NZ', 'JP', 'IT']) if (!countries.includes(c)) countries.push(c);
+              let last;
+              for (const cc of countries) {
+                  try {
+                      const j = await this._json(`https://api.tidal.com/v1/albums/${id}?countryCode=${cc}`, headers);
+                      if (j && j.cover) return [{ url: `https://resources.tidal.com/images/${j.cover.replace(/-/g, '/')}/1280x1280.jpg`, types: ['Front'] }];
+                  } catch (e) { last = e; this._log('debug', `Tidal: album ${id} not in ${cc} — ${e.message}`); }
+              }
+              throw last || new Error('album not found');
+          } },
+          { id: 'qobuz', name: 'Qobuz', host: /(^|\.)qobuz\.com$/, async find(u) {
+              const id = (u.pathname.match(/\/album\/(?:[^/]+\/)?([A-Za-z\d]+)\/?$/) || [])[1];
+              if (!id) throw new Error('no album id in the URL');
+              // the store's covers are addressed by the album id (…/covers/<last 2>/<the 2 before>/<id>);
+              // the API, when it answers, adds the booklets
+              const out = [{ url: `https://static.qobuz.com/images/covers/${id.slice(-2)}/${id.slice(-4, -2)}/${id}_600.jpg`, types: ['Front'] }];
+              try {
+                  const j = await this._json(`https://www.qobuz.com/api.json/0.2/album/get?album_id=${id}&offset=0&limit=20`, { 'x-app-id': ImageMaximizer.QOBUZ_APP });
+                  if (j && j.image && j.image.large) out[0].url = j.image.large;
+                  for (const g of (j && j.goodies) || []) {
+                      if (!g.original_url) continue;
+                      const booklet = /livret|booklet/i.test(g.name || '');
+                      out.push({ url: g.original_url, types: booklet ? ['Booklet'] : [], comment: booklet ? '' : (g.name || '') });
+                  }
+              } catch (e) { this._log('debug', `Qobuz: API gave nothing for ${id} (${e.message}); the cover alone, from its URL`); }
+              return out;
+          } },
+          { id: 'beatport', name: 'Beatport', host: /(^|\.)beatport\.com$/, async find(u) {
+              const html = await this._text(u.href);
+              const m = html.match(/<script id="__NEXT_DATA__"[^>]*>([\s\S]*?)<\/script>/);
+              if (m) {
+                  try {
+                      const d = JSON.parse(m[1]), r = d.props && d.props.pageProps && d.props.pageProps.release;
+                      if (r && r.image && r.image.uri) return [{ url: r.image.uri, types: ['Front'] }];
+                  } catch (e) { this._log('debug', 'Beatport: page data unreadable — ' + e.message); }
+              }
+              const og = ImageMaximizer.metaImage(html, u.href);
+              return og ? [{ url: og, types: ['Front'] }] : [];
+          } },
+          { id: 'discogs', name: 'Discogs', host: /(^|\.)discogs\.com$/, async find(u) {
+              const rel = (u.pathname.match(/\/release\/(\d+)/) || [])[1], master = (u.pathname.match(/\/master\/(\d+)/) || [])[1];
+              if (!rel && !master) throw new Error('no release id in the URL');
+              if (rel) {
+                  // the site's own API has the full-size images (Cloudflare may stop it until the
+                  // site has been opened once); the public API caps them at 600 px
+                  try {
+                      const q = new URLSearchParams({ operationName: 'ReleaseAllImages', variables: JSON.stringify({ discogsId: +rel, count: 500 }),
+                          extensions: JSON.stringify({ persistedQuery: { version: 1, sha256Hash: ImageMaximizer.DISCOGS_QUERY } }) });
+                      const j = await this._json('https://www.discogs.com/internal/release-page/api/graphql?' + q);
+                      const edges = j && j.data && j.data.release && j.data.release.images && j.data.release.images.edges;
+                      if (edges && edges.length) return edges.map(e => ({ url: e.node.fullsize.sourceUrl }));
+                  } catch (e) { this._log('debug', 'Discogs: full-size images unavailable (' + e.message + '), using the public API (600 px)'); }
+              }
+              const j = await this._json(`https://api.discogs.com/${rel ? 'releases/' + rel : 'masters/' + master}`);
+              return ((j && j.images) || []).map(i => ({ url: i.uri })).filter(i => i.url);
+          } },
+          { id: 'amazon', name: 'Amazon', host: /(^|\.)amazon\.(com|ca|de|fr|it|es|nl|pl|se|in|sg|ae|sa|eg|cn|jp|co\.jp|co\.uk|com\.au|com\.br|com\.mx|com\.tr|com\.be)$/, async find(u) {
+              const asin = (u.pathname.match(/\/(?:gp\/product|dp|albums|hz\/audible\/mlp\/mfpdp)\/([A-Z\d]{10})(?:[/?]|$)/i) || [])[1];
+              if (!asin) throw new Error('no product id in the URL');
+              const tld = u.host.replace(/^.*?amazon\./, '');
+              const html = await this._text(`https://www.amazon.${tld}/dp/${asin}`);
+              if (/validateCaptcha|\/errors\/validateCaptcha/.test(html)) throw new Error('Amazon answered with a captcha; open the page once, then retry');
+              const m = html.match(/'colorImages':\s*\{\s*'initial':\s*(\[[\s\S]*?\])\s*\},?\s*\n/);
+              if (m) {
+                  try {
+                      const variant = { MAIN: 'Front', FRNT: 'Front', BACK: 'Back', SIDE: 'Spine' };
+                      return JSON.parse(m[1]).map(i => ({ url: i.hiRes || i.large, types: variant[i.variant] ? [variant[i.variant]] : [] })).filter(i => i.url);
+                  } catch (e) { this._log('debug', 'Amazon: image data unreadable — ' + e.message); }
+              }
+              const hi = (html.match(/data-old-hires="([^"]+)"/) || [])[1];
+              if (hi) return [{ url: hi, types: ['Front'] }];
+              const og = ImageMaximizer.metaImage(html, u.href);
+              return og ? [{ url: og }] : [];
+          } },
+          { id: 'vgmdb', name: 'VGMdb', host: /(^|\.)vgmdb\.net$/, async find(u) {
+              const html = await this._text(u.href);
+              const out = [], seen = new Set();
+              const gallery = (html.match(/id="cover_gallery"[\s\S]*?(?=<\/table>|<div id="(?!cover)|$)/) || [''])[0];
+              for (const m of gallery.matchAll(/<a[^>]*id="thumb_\d+"[^>]*href="([^"]+)"[^>]*>[\s\S]*?class="label"[^>]*>([^<]*)</g)) {
+                  const url = ImageMaximizer.decode(m[1]);
+                  if (seen.has(url)) continue; seen.add(url);
+                  out.push(Object.assign({ url }, ImageMaximizer.captionType(ImageMaximizer.decode(m[2]).trim())));
+              }
+              const main = (html.match(/id="coverart"[^>]*background-image:\s*url\(['"]?([^'")]+)/) || [])[1];
+              const base = n => String(n).split('/').pop();
+              if (main && !/album-(nocover|nsfw)-medium\.gif$/.test(main) && !out.some(i => base(i.url) === base(main))) out.unshift({ url: new URL(ImageMaximizer.decode(main), u.origin).href, types: ['Front'] });
+              return out;
+          } },
+          { id: '7digital', name: '7digital', host: /(^|\.)7digital\.com$/, async find(u) { return this._metaImage(u.href, ['Front']); } },
+          { id: 'juno', name: 'Juno', host: /(^|\.)(junodownload\.com|juno\.co\.uk)$/, async find(u) { return this._metaImage(u.href, ['Front']); } },
+      ];
+
+      static TIDAL_TOKEN = 'CzET4vdadNUFQ5JU';   // the web player's public token
+      static QOBUZ_APP = '712109809';
+      static DISCOGS_QUERY = 'c7033a9fd1facb3e69fa50074b47e8aa0076857a968e6ed086153840e02b988a';   // ReleaseAllImages
+
+      // VGMdb-style captions ("Front", "Back", "Disc 2", "Booklet p. 3–4") → a type + the rest as comment
+      static captionType(caption) {
+          const map = { front: 'Front', cover: 'Front', back: 'Back', booklet: 'Booklet', disc: 'Medium', disk: 'Medium', cd: 'Medium', medium: 'Medium', vinyl: 'Medium',
+              obi: 'Obi', spine: 'Spine', tray: 'Tray', inside: 'Tray', sticker: 'Sticker', poster: 'Poster', liner: 'Liner', inlay: 'Liner', insert: 'Liner', jacket: 'Front', matrix: 'Matrix/Runout' };
+          const word = (String(caption).match(/^[A-Za-z]+/) || [''])[0].toLowerCase();
+          const type = map[word];
+          return type ? { types: [type], comment: caption.toLowerCase() === word ? '' : caption } : { types: [], comment: caption };
+      }
+
+      // ── instance ─────────────────────────────────────────────────────────────────
+      // request(url, { headers, type: 'text' | 'blob' }) → { status, url, contentType, text | blob }
+      // log(level, message), level = 'debug' | 'info' | 'warn'
+      constructor(opts) {
+          opts = opts || {};
+          this.request = opts.request || ImageMaximizer.fetchRequest;
+          this.log = opts.log || null;
+      }
+      _log(level, msg) { try { if (this.log) this.log(level, msg); } catch (e) { /* a broken logger must not break a fetch */ }}
+      async _get(url, type, headers) {
+          const r = await this.request(url, { type, headers: headers || {} });
+          if (!r || r.status < 200 || r.status >= 300) {
+              const body = r && typeof r.text === 'string' ? r.text : '';
+              if (r && r.status === 403 && /<title>Just a moment\.\.\.<\/title>/.test(body)) throw new Error('Cloudflare check; open the page once in this browser, then retry');
+              throw new Error('HTTP ' + (r ? r.status : '?'));
+          }
+          return r;
+      }
+      async _text(url, headers) { return (await this._get(url, 'text', headers)).text; }
+      async _json(url, headers) {
+          const t = await this._text(url, headers);
+          try { return JSON.parse(t); } catch (e) { throw new Error('not JSON'); }
+      }
+      async _metaImage(url, types) {
+          const og = ImageMaximizer.metaImage(await this._text(url), url);
+          return og ? [{ url: og, types: types || [] }] : [];
+      }
+
+      /** The platform resolver for a page URL, or null. */
+      platform(url) {
+          let u; try { u = new URL(url); } catch (e) { return null; }
+          const p = ImageMaximizer.PLATFORMS.find(x => x.host.test(u.hostname));
+          return p ? { id: p.id, name: p.name } : null;
+      }
+
+      /** Bigger versions of an image URL, largest first, ending with the URL itself. Synchronous. */
+      candidates(url) {
+          let u; try { u = new URL(url); } catch (e) { return [String(url)]; }
+          const out = [];
+          for (const r of ImageMaximizer.RULES) {
+              if (!r.host.test(u.hostname)) continue;
+              try { out.push(...r.max(u)); } catch (e) { this._log('debug', `rule for ${u.hostname} failed — ${e.message}`); }
+              break;
+          }
+          out.push(u.href);
+          return [...new Set(out)];
+      }
+
+      /** Images behind a URL, unmaximised: [{ url, types, comment, page }]. A store page goes to its
+       *  resolver; any other page to its og:image; an image URL is itself. */
+      async find(url) {
+          const u = new URL(url);
+          const p = ImageMaximizer.PLATFORMS.find(x => x.host.test(u.hostname));
+          // an image URL is an image even on a store's host (Beatport's geo-media, say), not a page
+          if (ImageMaximizer.looksLikeImage(u.href)) {
+              return [{ url: u.href, types: [], comment: '', page: '' }];
+          }
+          let list;
+          if (p) {
+              this._log('debug', `${p.name}: reading ${u.href}`);
+              list = await p.find.call(this, u);
+          } else {
+              // unknown host: an image answers as one, a page by its og:image
+              const r = await this._get(u.href, 'text');
+              if (/^image\//i.test(r.contentType || '')) return [{ url: u.href, types: [], comment: '', page: '' }];
+              const og = ImageMaximizer.metaImage(r.text || '', u.href);
+              list = og ? [{ url: og }] : [];
+          }
+          list = (list || []).filter(i => i && i.url && !ImageMaximizer.PLACEHOLDERS.some(re => re.test(i.url)));
+          this._log('debug', `${p ? p.name : u.hostname}: ${list.length} image(s)${list.length ? ' — ' + list.map(i => i.url).join(', ') : ''}`);
+          return list.map(i => ({ url: i.url, types: i.types || [], comment: i.comment || '', page: u.href }));
+      }
+
+      /** Download the largest version of each image behind a URL.
+       *  → [{ blob, url, original, page, types, comment, width, height }]; throws when there is none.
+       *  opts.minSize drops images whose longer side is smaller (a store's logo). */
+      async fetchImages(url, opts) {
+          opts = opts || {};
+          const found = await this.find(url);
+          if (!found.length) throw new Error('no image found');
+          const got = [];
+          for (const img of found) {
+              const r = await this.fetchLargest(img.url);
+              if (!r) { this._log('warn', `no candidate of ${img.url} answered with an image`); continue; }
+              if (opts.minSize && r.width && Math.max(r.width, r.height) < opts.minSize) { this._log('debug', `skipped ${r.url}: ${r.width}×${r.height} is under ${opts.minSize} px`); continue; }
+              got.push(Object.assign(r, { original: img.url, page: img.page, types: img.types, comment: img.comment }));
+          }
+          if (!got.length) throw new Error('no image could be downloaded');
+          return got;
+      }
+
+      /** The first candidate of one image URL that answers with an image: { blob, url, width, height } or null. */
+      async fetchLargest(url) {
+          for (const c of this.candidates(url)) {
+              try {
+                  const r = await this.request(c, { type: 'blob', headers: {} });
+                  const type = (r && (r.contentType || (r.blob && r.blob.type))) || '';
+                  if (!r || r.status < 200 || r.status >= 300 || !r.blob || !r.blob.size) { this._log('debug', `candidate ${c}: HTTP ${r ? r.status : '?'}`); continue; }
+                  if (!/^image\/|^application\/pdf/i.test(type) && !/^(application\/octet-stream|binary\/octet-stream)?$/i.test(type)) { this._log('debug', `candidate ${c}: not an image (${type})`); continue; }
+                  let d = {};
+                  try { d = ImageMaximizer.dimensions(await r.blob.slice(0, 262144).arrayBuffer()) || {}; } catch (e) { /* size unknown */ }
+                  if (!d.type && !/^image\/|pdf/i.test(type)) { this._log('debug', `candidate ${c}: unrecognised bytes`); continue; }
+                  this._log('debug', `candidate ${c}: ${d.width ? d.width + '×' + d.height : 'size unknown'}, ${r.blob.size} bytes`);
+                  return { blob: r.blob, url: c, width: d.width || 0, height: d.height || 0 };
+              } catch (e) { this._log('debug', `candidate ${c}: ${e.message}`); }
+          }
+          return null;
+      }
+
+      // ── helpers (static, pure) ────────────────────────────────────────────────────
+      /** True when the URL's path ends in an image extension. */
+      static looksLikeImage(url) {
+          try { return /\.(jpe?g|png|gif|webp|avif|bmp|tiff?)$/i.test(new URL(url).pathname); } catch (e) { return false; }
+      }
+      /** og:image / twitter:image / image_src of an HTML page, resolved against its URL. */
+      static metaImage(html, base) {
+          const tags = String(html).match(/<(?:meta|link)\b[^>]*>/gi) || [];
+          const want = [/^og:image(:secure_url|:url)?$/i, /^twitter:image(:src)?$/i, /^image_src$/i];
+          for (const re of want) {
+              for (const t of tags) {
+                  const key = (t.match(/\b(?:property|name|itemprop|rel)\s*=\s*["']([^"']+)["']/i) || [])[1];
+                  const val = (t.match(/\b(?:content|href)\s*=\s*["']([^"']+)["']/i) || [])[1];
+                  if (key && val && re.test(key.trim())) { try { return new URL(ImageMaximizer.decode(val), base).href; } catch (e) { /* bad URL */ } }
+              }
+          }
+          return null;
+      }
+      static decode(s) {
+          return String(s).replace(/&amp;/g, '&').replace(/&quot;/g, '"').replace(/&#39;|&#x27;/g, "'").replace(/&lt;/g, '<').replace(/&gt;/g, '>');
+      }
+      /** { type, width, height } from the first bytes of a JPEG, PNG, GIF or WebP; null otherwise. */
+      static dimensions(buf) {
+          const b = new Uint8Array(buf);
+          if (b.length > 24 && b[0] === 0x89 && b[1] === 0x50 && b[2] === 0x4E && b[3] === 0x47) return { type: 'png', width: (b[16] << 24 | b[17] << 16 | b[18] << 8 | b[19]) >>> 0, height: (b[20] << 24 | b[21] << 16 | b[22] << 8 | b[23]) >>> 0 };
+          if (b.length > 10 && b[0] === 0x47 && b[1] === 0x49 && b[2] === 0x46) return { type: 'gif', width: b[6] | b[7] << 8, height: b[8] | b[9] << 8 };
+          if (b.length > 30 && b[0] === 0x52 && b[1] === 0x49 && b[8] === 0x57 && b[9] === 0x45) {
+              const f = String.fromCharCode(b[12], b[13], b[14], b[15]);
+              if (f === 'VP8X') return { type: 'webp', width: 1 + (b[24] | b[25] << 8 | b[26] << 16), height: 1 + (b[27] | b[28] << 8 | b[29] << 16) };
+              if (f === 'VP8 ') return { type: 'webp', width: (b[26] | b[27] << 8) & 0x3fff, height: (b[28] | b[29] << 8) & 0x3fff };
+              if (f === 'VP8L') return { type: 'webp', width: 1 + ((b[22] << 8 | b[21]) & 0x3fff), height: 1 + ((b[24] << 4 | b[23] >> 4) & 0x3fff) };
+              return { type: 'webp', width: 0, height: 0 };
+          }
+          if (b.length > 4 && b[0] === 0xFF && b[1] === 0xD8) {
+              let i = 2;
+              while (i + 9 < b.length) {
+                  if (b[i] !== 0xFF) { i++; continue; }
+                  const m = b[i + 1];
+                  if (m === 0xD8 || m === 0x01 || (m >= 0xD0 && m <= 0xD7) || m === 0xFF) { i++; continue; }
+                  const len = b[i + 2] << 8 | b[i + 3];
+                  if (m >= 0xC0 && m <= 0xCF && m !== 0xC4 && m !== 0xC8 && m !== 0xCC) return { type: 'jpeg', width: b[i + 7] << 8 | b[i + 8], height: b[i + 5] << 8 | b[i + 6] };
+                  i += 2 + len;
+              }
+              return { type: 'jpeg', width: 0, height: 0 };
+          }
+          if (b.length > 4 && b[0] === 0x25 && b[1] === 0x50 && b[2] === 0x44 && b[3] === 0x46) return { type: 'pdf', width: 0, height: 0 };
+          return null;
+      }
+
+      // ── request adapters ──────────────────────────────────────────────────────────
+      /** The default: global fetch (Node 18+, a page; CORS applies in a page). */
+      static async fetchRequest(url, o) {
+          const r = await fetch(url, { headers: (o && o.headers) || {} });
+          const out = { status: r.status, url: r.url || url, contentType: r.headers.get('content-type') || '' };
+          if (o && o.type === 'blob') out.blob = await r.blob(); else out.text = await r.text();
+          return out;
+      }
+      /** An adapter for a userscript manager's GM_xmlhttpRequest / GM.xmlHttpRequest (no CORS). */
+      static gmRequest(gmXhr, timeout) {
+          return (url, o) => new Promise((resolve, reject) => {
+              gmXhr({ method: 'GET', url, headers: (o && o.headers) || {}, responseType: o && o.type === 'blob' ? 'blob' : 'text', timeout: timeout || 60000,
+                  onload: r => {
+                      const ct = (String(r.responseHeaders || '').match(/^content-type:\s*([^\r\n]+)/im) || [])[1] || '';
+                      const out = { status: r.status, url: r.finalUrl || url, contentType: ct.trim() };
+                      if (o && o.type === 'blob') out.blob = r.response; else out.text = typeof r.responseText === 'string' ? r.responseText : String(r.response || '');
+                      resolve(out);
+                  },
+                  onerror: () => reject(new Error('network error')), ontimeout: () => reject(new Error('timed out')) });
+          });
+      }
   }
-  if (mbuTestHooks()) window.__artStationTest = { ecauError };   // test hook only (#478) — no behaviour change
+  // </ST-IMGMAX>
+  // Some stores (notably Amazon) list their site logo alongside the real covers.
+  // Those are tiny; real cover art is never this small. #242
+  const MIN_ART_PX = 200;
+  // the image types the Cover Art Archive takes; anything else (WebP, AVIF) is skipped
+  const CAA_MIME = { jpeg: 'image/jpeg', png: 'image/png', gif: 'image/gif', pdf: 'application/pdf' };
+  const IMGMAX = new ImageMaximizer({
+    request: (url, o) => {
+      const gx = (typeof GM !== 'undefined' && GM.xmlHttpRequest && GM.xmlHttpRequest.bind(GM)) || (typeof GM_xmlhttpRequest !== 'undefined' && GM_xmlhttpRequest) || null;
+      return gx ? ImageMaximizer.gmRequest(gx, 60000)(url, o) : ImageMaximizer.fetchRequest(url, o);
+    },
+    log: (level, msg) => asLog(level === 'warn' ? 'warn' : 'debug', 'Maximizer: ' + msg),
+  });
+  if (mbuTestHooks()) (window.__asTest || (window.__asTest = {})).imgmax = IMGMAX;   // test hook only (#717): specs stub its request
   // #566 test hook — the auto-repeat state machine, so its semantics can be
   // driven without provoking real archive.org failures. No behaviour change.
   if (mbuTestHooks()) window.__asAutoRepeat = {
@@ -1978,27 +2373,8 @@
     get cancelPending() { return arCancelPending; }, get delayMs() { return arDelayMs; },
     state: ov => ov && ov._ar,
   };
-  // ECAU injects its own UI into the add page (the paste-URL box, the "Import from …"
-  // buttons, the supported-providers link). Its presence is how we tell the manager
-  // actually loaded it — used to warn in the source popover and to fail a sourcing
-  // attempt fast (instead of spinning to ECAU_TIMEOUT) when it isn't there. #242
-  const ecauUI = doc => !!(doc && doc.querySelector('#ROpdebee_paste_url, .ROpdebee_import_url_buttons, #ROpdebee_ecau_providers_link'));
-  const NO_ECAU = 'Enhanced Cover Art Uploads isn’t installed or is disabled — it powers provider / URL sourcing.';
-  let _ecauProbe = null;   // cached: load the add page once in a hidden frame and see if ECAU injects its UI
-  function ecauInstalled() {
-    return _ecauProbe || (_ecauProbe = new Promise(resolve => {
-      const ifr = document.createElement('iframe');
-      ifr.style.cssText = 'position:fixed;left:-10000px;top:0;width:900px;height:700px;border:0;opacity:0;pointer-events:none';
-      let done = false;
-      const finish = v => { if (done) return; done = true; clearInterval(poll); clearTimeout(killer); try { ifr.remove(); } catch (e) {} resolve(v); };
-      const poll = setInterval(() => { let d; try { d = ifr.contentDocument; } catch (e) { return; } if (ecauUI(d)) finish(true); }, 300);
-      const killer = setTimeout(() => finish(false), 9000);
-      ifr.src = `${R}/add-${ART}`;
-      document.body.appendChild(ifr);
-    }));
-  }
-  // a placeholder card (spinner + label) shown at the front of the gallery while ECAU
-  // works, so the (sometimes slow) provider fetch has visible in-grid progress. It's
+  // a placeholder card (spinner + label) shown at the front of the gallery while a
+  // source is fetched, so the (sometimes slow) provider fetch has visible in-grid progress. It's
   // replaced by the real cover on success, removed on failure.
   function addSourcingSlot(label) {
     const ph = { id: 'srcing-' + Math.random().toString(36).slice(2, 7), types: [], comment: '', order: -1, w: 0, h: 0, _new: true, _sourcing: true, _srcLabel: label, _origTypes: [], _origComment: '', _origOrder: -1 };
@@ -2121,13 +2497,13 @@
   // prov (optional) = { name, icon } the cover is being sourced from — passed by the
   // "Import from <provider>" buttons, else derived from the URL. Stamped on each new
   // cover so the gallery shows where it came from until commit (#249).
-  function sourceFromUrl(rawUrl, prov) {
+  function sourceFromUrl(rawUrl, prov, seed) {
     const url = (rawUrl || '').trim();
     // test breadcrumb, same idea as window.__asAutoRepeat: an import leaves no
     // other trace a test can read (asLog is in-memory, nothing reaches console),
     // and "did one actually start" is the check #554 turns on.
     if (mbuTestHooks()) try { (window.__asTest || (window.__asTest = {})).lastSource = url; } catch (e) {}
-    if (!/^https?:\/\//i.test(url)) { toast('Enter a provider or image URL (https://…)', 4000); return; }
+    if (!/^https?:\/\//i.test(url)) { toast('Enter a provider or image URL (https://…)', 4000); return Promise.resolve(0); }
     // known provider → its name+icon; otherwise fall back to the URL's host so a
     // pasted link from anywhere (e.g. nugs.net) still gets a favicon badge. #249
     if (!prov) {
@@ -2135,89 +2511,37 @@
       if (pf) prov = { name: pf.name, icon: provIconUrl(pf.domain) };
       else { try { const h = new URL(url).hostname.replace(/^www\./, ''); if (h) prov = { name: h, icon: provIconUrl(h) }; } catch (e) {} }
     }
-    const p = new URLSearchParams();
-    p.set('x_seed.origin', releaseInfo().url);
-    p.set('x_seed.image.0.url', url);
-    const ifr = document.createElement('iframe');
-    ifr.style.cssText = 'position:fixed;left:-10000px;top:0;width:1100px;height:900px;border:0;opacity:0;pointer-events:none';
-    document.body.appendChild(ifr);
-    ifr.src = `${R}/add-${ART}?${p}`;
+    const who = (prov && prov.name) || 'provider';
     asLog.info(`Source: ${(prov && prov.name) || 'URL'} — ${url}`);   // name the source attempted (mirrors tooltip)
     const slot = addSourcingSlot(prov ? `Sourcing ${prov.name}…` : 'Sourcing…');
-    let done = false, lastN = 0, settleAt = 0, noUiSince = 0;
-    const stop = () => { clearInterval(poll); clearTimeout(killer); try { ifr.remove(); } catch (e) {} };
-    // a preview is the uploader's rendered image — usually a blob:, but in some browsers
-    // ECAU leaves it as the remote provider URL (e.g. i.discogs.com). Fetch blobs in-frame;
-    // fetch remote URLs via GM xhr so the page CSP can't block them (the FF-vs-Chromium
-    // difference vzell hit). #242
-    const previewSel = '.uploader-preview-image, img[src^="blob:"]';
-    async function harvest(doc, win) {
+    // #717 the maximizer reads the page, picks each image's largest version and downloads it
+    return IMGMAX.fetchImages(url, { minSize: MIN_ART_PX }).then(async got => {
       const files = [], metas = [];
-      const seen = new Set();
-      for (const img of [...doc.querySelectorAll(previewSel)]) {
-        const src = img.src || img.getAttribute('src'); if (!src || seen.has(src)) continue; seen.add(src);
-        let blob; try { blob = /^blob:/i.test(src) ? await win.fetch(src).then(r => r.blob()) : await gmFetch(src); } catch (e) { continue; }
-        // skip a provider's logo/favicon (e.g. Amazon's smile) — decode the actual blob,
-        // not the preview <img> (MB may downscale that), and drop sub-cover-sized art. #242
-        try { const bmp = await (win.createImageBitmap || createImageBitmap)(blob); const big = Math.max(bmp.width, bmp.height); bmp.close && bmp.close(); if (big && big < MIN_ART_PX) continue; } catch (e) {}
-        const { types, comment } = readArtMeta(img);   // #253 THIS image's own type/comment block (never doc-wide)
-        const mime = (blob.type && blob.type.startsWith('image/')) ? blob.type : 'image/jpeg';
-        const ext = (mime.split('/')[1] || 'jpg').replace('jpeg', 'jpg');
-        files.push(new File([blob], `ecau-${Date.now()}-${files.length}.${ext}`, { type: mime }));
-        // #260 if ECAU left the preview as a remote image URL (it does for some providers,
-        // e.g. Discogs → i.discogs.com), keep that DIRECT image URL alongside the page URL.
-        const directUrl = /^https?:/i.test(src) ? src : '';
-        metas.push({ types, comment, provider: prov && prov.name, provIcon: prov && prov.icon, provUrl: url, provImageUrl: directUrl });
+      for (const g of got) {
+        let kind = '';
+        try { kind = (ImageMaximizer.dimensions(await g.blob.slice(0, 262144).arrayBuffer()) || {}).type || ''; } catch (e) {}
+        const mime = CAA_MIME[kind];
+        if (!mime) { asLog.warn(`Source: ${who} — skipped ${g.url}: ${kind ? kind.toUpperCase() : 'not an image'} isn't a Cover Art Archive type (JPEG/PNG/GIF/PDF)`); continue; }
+        const ext = kind === 'jpeg' ? 'jpg' : kind;
+        files.push(new File([g.blob], `src-${Date.now()}-${files.length}.${ext}`, { type: mime }));
+        const types = ((seed && seed.types) || g.types || []).filter(t => ALL_TYPES.includes(t));
+        const comment = (seed && seed.comment != null) ? seed.comment : (g.comment || '');
+        metas.push({ types, comment, provider: prov && prov.name, provIcon: prov && prov.icon, provUrl: g.page || url, provImageUrl: g.url, provMaxFrom: g.original !== g.url ? g.original : '' });
+        asLog.info(`Source: ${who} — ${g.width ? g.width + '×' + g.height : 'size unknown'} ${fmtBytes(g.blob.size)} from ${g.url}${g.original !== g.url ? ` (maximised from ${g.original})` : ''}`);
       }
-      // #364 ECAU pre-fills the add-page edit note with its source attribution. On the native add page we
-      // harvest that (harvestSeeds → _seedNote); do the same from this hidden sourcing frame so the commit
-      // dialog is pre-filled with the same note on the release page too. Mark these covers so their own
-      // source line isn't stacked on top of it.
-      if (files.length) {
-        try {
-          const en = doc.querySelector('textarea.edit-note, textarea[name*="edit_note"]');
-          const note = en && (en.value || '').trim();
-          if (note) { _seedNote = _seedNote && _seedNote.includes(note) ? _seedNote : (_seedNote ? _seedNote + '\n\n' + note : note); metas.forEach(m => { m.ecauNote = true; }); }
-        } catch (e) {}
-      }
-      return { files, metas };
-    }
-    const poll = setInterval(async () => {
-      if (done) return;
-      let doc, win; try { doc = ifr.contentDocument; win = ifr.contentWindow; } catch (e) { return; }
-      if (!doc || !win) return;
-      const n = doc.querySelectorAll(previewSel).length;
-      if (!n) {   // nothing yet — but if ECAU has reported a failure, stop now (don't spin)
-        const err = ecauError(doc);
-        if (err) { done = true; stop(); dropSourcingSlot(slot); render(); toast('⚠ ' + (prov && prov.name ? prov.name + ': ' : '') + err, 13000); return; }   // #286 surface ECAU's own message (mirrors to the log)
-        // ECAU absent: the add page has fully loaded but ECAU never injected its UI →
-        // fail fast (~6s) with a clear message instead of spinning to the 45s timeout.
-        if (doc.readyState === 'complete' && !ecauUI(doc)) {
-          if (!noUiSince) noUiSince = performance.now();
-          else if (performance.now() - noUiSince > 6000) { done = true; stop(); dropSourcingSlot(slot); render(); toast(NO_ECAU, 9000); }
-        } else noUiSince = 0;
-        return;
-      }
-      if (n !== lastN) { lastN = n; settleAt = performance.now() + 1500; setSourcingLabel(slot, 'Adding…'); return; }  // still arriving → wait
-      if (performance.now() < settleAt) return;
-      done = true;
-      const { files, metas } = await harvest(doc, win);
-      stop(); dropSourcingSlot(slot);
+      dropSourcingSlot(slot);
       const added = files.length ? await addFilesDeduped(files, metas) : 0;   // #253 skip an image already staged
-      if (added) toast(`Added ${added} image${added > 1 ? 's' : ''} from ${(prov && prov.name) || 'provider'} ✓`);   // name the source in the log/toast
-      else { render(); toast(files.length ? 'That image is already added' : `${(prov && prov.name) || 'Provider'} returned no image`, 5000); }
-    }, 400);
-    const killer = setTimeout(() => {
-      if (done) return; done = true; stop();
-      let edoc; try { edoc = ifr.contentDocument; } catch (e) {}
-      const err = edoc && ecauError(edoc);   // #286 even at timeout, prefer ECAU's own failure message
+      if (added) toast(`Added ${added} image${added > 1 ? 's' : ''} from ${who} ✓`);   // name the source in the log/toast
+      else { render(); toast(files.length ? 'That image is already added' : `${who} returned no usable image`, 5000); }
+      return added;
+    }).catch(e => {
       dropSourcingSlot(slot); render();
-      toast(err ? ('⚠ ' + (prov && prov.name ? prov.name + ': ' : '') + err)
-                : 'No image returned — is “Enhanced Cover Art Uploads” installed? It powers provider sourcing.', err ? 13000 : 9000);
-    }, ECAU_TIMEOUT);
+      toast('⚠ ' + (prov && prov.name ? prov.name + ': ' : '') + ((e && e.message) || e), 13000);   // #286 say why (mirrors to the log)
+      return 0;
+    });
   }
-  // ECAU-supported art providers we recognise on a release's external links, so the
-  // popover can offer "Import from <provider>" the way the native add page does.
+  // the art platforms we recognise on a release's external links, so the popover
+  // can offer "Import from <provider>" for each.
   // domain = the provider's CANONICAL site (not the linked subdomain, e.g.
   // analogafrica.bandcamp.com → bandcamp.com) — favicons come from there.
   // ART_PROVIDERS is defined above the page check: the Mission Control adapter on the release page uses it too (#680)
@@ -2570,8 +2894,7 @@
       + `<input class="as-src-url-inp" type="text" placeholder="https://… provider page or image URL" autocomplete="off" spellcheck="false"></span></div>`
       + `<div class="as-src-prov as-pop-note">Looking for linked platforms…</div>`
       + `<div class="as-src-custom"></div>`
-      + `<div class="as-src-allwrap"></div>`   // #558: "Import all" now spans platforms AND registered providers, so it lives below both
-      + `<div class="as-pop-note">Powered by ROpdebee's <a href="https://github.com/ROpdebee/mb-userscripts#mb-enhanced-cover-art-uploads" target="_blank" rel="noopener">Enhanced Cover Art Uploads</a> (must be installed).</div>`;
+      + `<div class="as-src-allwrap"></div>`;   // #558: "Import all" now spans platforms AND registered providers, so it lives below both
     document.body.appendChild(pop); placePop(pop, btn.getBoundingClientRect());
     // #250 custom providers registered by other userscripts — one stacked "Import from …"
     // button each, but only for providers whose declared `match` hits a link on this release.
@@ -2637,16 +2960,6 @@
       allWrap.querySelector('.as-src-all').onclick = () => { pop.remove(); sourceFromAll(all); };
       placePop(pop, btn.getBoundingClientRect());
     });
-    // detect a missing/disabled ECAU and turn the footer note into a clear warning,
-    // so the user knows BEFORE fetching (sourcing also fails fast if they try anyway).
-    ecauInstalled().then(ok => {
-      if (ok || !pop.isConnected) return;
-      const note = pop.querySelector('.as-pop-note:last-child');
-      if (!note) return;
-      note.classList.add('as-src-warn');
-      note.innerHTML = `⚠ ${esc(NO_ECAU)} <a href="https://github.com/ROpdebee/mb-userscripts#mb-enhanced-cover-art-uploads" target="_blank" rel="noopener">Install / enable →</a>`;
-      placePop(pop, btn.getBoundingClientRect());
-    });
     const off = e => { if (!pop.contains(e.target) && e.target !== btn) { pop.remove(); document.removeEventListener('mousedown', off); } };
     setTimeout(() => document.addEventListener('mousedown', off), 0);
   }
@@ -2698,9 +3011,9 @@
       _provider: (meta && meta.provider) || '', _provIcon: (meta && meta.provIcon) || '', _provUrl: (meta && meta.provUrl) || '',   // #249 where this image was sourced (shown until committed)
       _seq: ++_newSeq,   // arrival order: a source's first image is its front (sourceBest)
       _provImageUrl: (meta && meta.provImageUrl) || '',   // #260 direct image URL when the provider exposes one (e.g. Discogs)
-      _ecauNote: !!(meta && meta.ecauNote),   // #364 its source is already in the seeded commit note → don't add a per-cover source line too
+      _provMaxFrom: (meta && meta.provMaxFrom) || '',   // #717 the image URL the store gave, when a bigger version of it was taken
       _seedSrc: (meta && meta.seedSrc) || '', _seedTypes: (meta && meta.seedTypes) ? meta.seedTypes.slice() : null,   // #248 native-uploader row + last types synced from it
-      _seedBlobSrc: (meta && meta.seedBlobSrc) || '',   // #253 the row's current blob URL (changes when ECAU maximises)
+      _seedBlobSrc: (meta && meta.seedBlobSrc) || '',   // #253 the row's current blob URL (changes when an integration swaps in a bigger image)
       _contentKey: (meta && meta.contentKey) || '',     // #253 image-content fingerprint, to drop duplicate sourced/seeded covers
       // #248 (vzell) original file name for a locally-picked/dropped upload — shown in the
       // thumb tooltip. Sourced/seeded covers carry a synthetic File name, so skip those
@@ -2721,7 +3034,7 @@
     first.types = ['Front'];
   }
   // metas (optional) carries per-file { types, comment } — used when sourcing covers
-  // that already know their type/comment (e.g. ECAU provider import, #242)
+  // that already know their type/comment (e.g. a store import, #242)
   function addFiles(files, metas) {
     const news = [...files].map((f, i) => ({ f, meta: metas && metas[i] }))
       .filter(x => x.f.type.startsWith('image/') || x.f.type === 'application/pdf').map(x => newItem(x.f, x.meta));
@@ -2729,7 +3042,7 @@
     maybeAutoFront(news);   // #262 type the first untyped imported cover Front (per setting), before they're inserted
     // New covers go before the existing/published ones (majkinetor: they were landing last). WHERE among
     // the staged-new they land depends on the source (#370):
-    //  • a batch harvested from the native add rows (ECAU/Discogs) can arrive across several passes (an
+    //  • a batch harvested from the native add rows (other integrations) can arrive across several passes (an
     //    image not decodable yet is deferred to a later pass), so it APPENDS after covers already staged —
     //    keeping the import's source order instead of reversing.
     //  • a manually-added cover (drop, URL, MH / other provider) is the NEWEST deliberate add, so it LEADS.
@@ -2742,8 +3055,8 @@
     _dropZone = false; render();
   }
   // #253 a content fingerprint so the same image isn't staged twice. Sourcing
-  // (ECAU/MH/providers) and the add-page harvest can surface the SAME cover more
-  // than once — ECAU re-fires as it maximises, a provider may return dups, etc.
+  // (stores/MH/providers) and the add-page harvest can surface the SAME cover more
+  // than once — an integration re-fires as it maximises, a provider may return dups, etc.
   async function fileKey(file) {
     try {
       const buf = await file.arrayBuffer();
@@ -2983,7 +3296,7 @@
   // note is shared across all ops, so this per-cover provenance is appended only to that
   // upload (sourced covers carry _provider/_provUrl; local uploads have neither → nothing added).
   const sourceLine = it => {
-    if (!it || it._ecauNote) return '';   // #364 attribution already carried in the seeded commit note
+    if (!it) return '';
     const who = (it._provider && String(it._provider).trim()) || '';
     const page = (it._provUrl && String(it._provUrl).trim()) || '';
     const img = (it._provImageUrl && String(it._provImageUrl).trim()) || '';
@@ -2992,6 +3305,8 @@
     let s = `Cover art sourced from ${who || 'an external provider'}`;
     if (main) s += ` — ${main}`;
     if (img && img !== main) s += `\nImage: ${img}`;   // #260 the direct image URL, when distinct from the page
+    const from = (it._provMaxFrom && String(it._provMaxFrom).trim()) || '';
+    if (from && from !== img) s += `\nMaximised from: ${from}`;   // #717 what the store offered
     return s;
   };
   // #667 the best-cover pick says so in its note
@@ -3000,6 +3315,10 @@
   // replaces the original (the angle stays accurate through repeated rotations — see _rotDeg)
   const rotLine = it => (it && it._rotatedFrom) ? `Rotated ${it._rotDeg || 90}° from this release's existing image ${it._rotatedFrom} (which this edit replaces)` : '';
   const editNoteFor = (m, it) => [m.note && m.note.trim(), sourceLine(it), bestLine(it), rotLine(it), ATTRIBUTION].filter(Boolean).join('\n\n');
+  // test hook only (#717): the staged sourced covers, with the source lines their edit notes get
+  if (mbuTestHooks()) (window.__asTest || (window.__asTest = {})).staged = () => MODEL.filter(x => x._new && !x._sourcing).map(x => ({
+    provider: x._provider || '', provUrl: x._provUrl || '', provImageUrl: x._provImageUrl || '', provMaxFrom: x._provMaxFrom || '',
+    types: x.types, comment: x.comment, w: x.w, h: x.h, note: sourceLine(x), seedNote: _seedNote }));
   async function getPostForm(url) {
     const html = await fetch(url, { credentials: 'same-origin' }).then(r => { if (!r.ok) throw new Error('GET ' + r.status); return r.text(); });
     const doc = new DOMParser().parseFromString(html, 'text/html');
@@ -3274,7 +3593,7 @@
       if (alt) img.src = alt; else img.replaceWith(Object.assign(document.createElement('span'), { className: 'as-cm-thi', textContent: '🖼' }));
     }));
     const noteEl = ov.querySelector('.as-cm-note'), nb = ov.querySelector('.as-cm-nb');
-    if (_seedNote) noteEl.value = _seedNote;   // #248/#364 carry over a seeded edit note (native add page, or captured from a hidden ECAU sourcing frame)
+    if (_seedNote) noteEl.value = _seedNote;   // #248/#364 carry over a seeded edit note (the native add page's)
     const paintNote = () => {
       const v = noteEl.value.trim(), lines = v ? v.split('\n').length : 0;
       ov.querySelector('.as-cm-nl').textContent = lines ? `${lines} line${lines === 1 ? '' : 's'}` : 'empty';
@@ -5688,9 +6007,6 @@
   .as-src-hd.open .as-src-url-btn{display:none}
   .as-src-url-inp{display:none}
   .as-src-hd.open .as-src-url-inp{display:inline-block;width:100%;box-sizing:border-box;padding:4px 7px;border:1px solid var(--mbu-border);border-radius:5px;font-size:12px;font-family:inherit}
-  .as-src-pop > .as-pop-note:last-child{padding:6px 4px 2px;line-height:1.4;white-space:nowrap}
-  .as-src-pop > .as-pop-note.as-src-warn{white-space:normal;color:var(--mbu-warn);font-weight:600}
-  .as-src-pop > .as-pop-note.as-src-warn a{color:var(--mbu-warn);text-decoration:underline}
   .as-bulk-cmt{width:100%;box-sizing:border-box;font-size:13px;font-family:inherit;border:1px solid var(--mbu-accent);border-radius:var(--mbu-radius);padding:5px 8px;margin:2px 0 2px;background:var(--mbu-bg-raised);color:var(--mbu-text)}
   /* lightbox */
   #as-lb{display:none;position:fixed;inset:0;z-index:9999;background:rgba(15,12,28,.92);align-items:center;justify-content:center;flex-direction:column;padding:30px}
@@ -5901,56 +6217,19 @@
   const st = document.createElement('style'); st.textContent = css; appendEl(st);
 
   // ── #248 add page: harvest images seeded into the native uploader ───────────────
-  // Integrations (ECAU / Harmony) drop images into MB's add-cover-art uploader. We
-  // read each preview row's blob and stage it as a NEW cover. Runs on load and via an
-  // observer because the seed is async (ECAU fetches + maximises after the page settles).
-  // NOTE: we deliberately do NOT scrape the row's type/comment checkboxes — ECAU sets
-  // them via Knockout and re-renders rows when maximising, so the checked state is only
-  // momentarily readable and racing it was unreliable (#253). Types are set instead from
-  // the file-name option or in AS itself.
-  // #253 read each preview image's OWN type + comment — NEVER doc-wide (that smears
-  // every image's types onto every cover). The native uploader nests an image's
-  // checkbox grid in an ancestor it shares with nothing else (imageScope finds it);
-  // ECAU lays the preview out apart from the grid, so as a fallback the Nth preview
-  // image is matched to the Nth visible type group by render order.
-  function imageScope(img) {
-    let n = img.parentElement, scope = null;
-    while (n) {
-      if (n.querySelectorAll('img.uploader-preview-image, img[src^="blob:"]').length > 1) break;   // climbed past this image
-      if (n.querySelector('.cover-art-types input[type=checkbox], input[name*="type_id"]')) scope = n;   // widest single-image block holding this image's grid
-      if (n.tagName === 'FORM' || !n.parentElement) break;
-      n = n.parentElement;
-    }
-    return scope;
-  }
-  function readTypeGroup(group, block) {
-    const types = [...group.querySelectorAll('input[type=checkbox]:checked, input[name*="type_id"]:checked')]
-      .map(cb => { const l = cb.closest('label'); return l ? l.textContent.trim() : ''; })
-      .filter(t => ALL_TYPES.includes(t));
-    const sel = 'input[name*="comment"], textarea[name*="comment"], input.comment, textarea.comment';
-    let ci = group.querySelector(sel);                                          // the group's own comment, if nested
-    if (!ci && block && block !== group) { const cs = block.querySelectorAll(sel); if (cs.length === 1) ci = cs[0]; }   // else a single-image block's lone comment (never a shared one)
-    return { types, comment: ci ? (ci.value || '') : '' };
-  }
-  const visibleTypeGroups = root => [...root.querySelectorAll('.cover-art-types')]
-    .filter(g => g.querySelector('input[type=checkbox]') && g.offsetParent !== null);   // skip the hidden knockout template
-  function readArtMeta(img) {
-    const scope = imageScope(img);
-    if (scope) return readTypeGroup(scope.querySelector('.cover-art-types') || scope, scope);
-    // ECAU/other restructured uploader → match the Nth image to the Nth type group
-    const root = img.closest('form') || img.getRootNode();
-    const imgs = [...root.querySelectorAll('img.uploader-preview-image, img[src^="blob:"]')];
-    const groups = visibleTypeGroups(root);
-    const i = imgs.indexOf(img);
-    if (i >= 0 && groups.length === imgs.length && groups[i]) return readTypeGroup(groups[i], groups[i].closest('td, li, tr') || groups[i].parentElement);
-    return { types: [], comment: '' };
-  }
+  // Another integration may drop images into MB's add-cover-art uploader. We read each
+  // preview row's blob and stage it as a NEW cover. Runs on load and via an observer
+  // because such a seed is async (the integration fetches after the page settles).
+  // NOTE: we deliberately do NOT scrape the row's type/comment checkboxes — an
+  // integration may set them via Knockout and re-render rows, so the checked state is
+  // only momentarily readable and racing it was unreliable (#253). Types are set
+  // instead from the file-name option or in AS itself.
   // harvest is idempotent + re-runnable: a NEW row is staged; a row we've already
   // staged has its type/comment SYNCED if the integration set them after the image
-  // appeared (common with ECAU) — but only while the user hasn't edited that cover.
+  // appeared — but only while the user hasn't edited that cover.
   let _seedNote = '';   // #248 an edit note an integration pre-filled on the native add page → moved to our commit panel
-  // #253 harvest keys on the uploader ROW (tagged once), NOT the blob URL: ECAU
-  // maximises the preview in place — the blob URL changes — so blob-keying re-staged
+  // #253 harvest keys on the uploader ROW (tagged once), NOT the blob URL: an
+  // integration may maximise the preview in place — the blob URL changes — so blob-keying re-staged
   // the SAME image on every pass (multiple identical covers from one seed). Reentrancy
   // is guarded with a trailing re-run so overlapping passes can't double-add either.
   let _harvesting = false, _harvestPending = false, _rowSeq = 0;
@@ -5971,7 +6250,7 @@
         if (rowId) {   // this row is already staged — swap in a maximised image, never re-add
           const existing = MODEL.find(m => m._seedSrc === rowId);
           if (!existing || existing._del) continue;
-          if (src !== existing._seedBlobSrc) {   // ECAU maximised → replace the staged blob with the bigger one
+          if (src !== existing._seedBlobSrc) {   // maximised in place → replace the staged blob with the bigger one
             let blob; try { blob = await fetch(src).then(r => r.ok ? r.blob() : null); } catch (e) { blob = null; }
             if (blob) {
               try { URL.revokeObjectURL(existing._file); } catch (e) {}
@@ -5991,7 +6270,7 @@
         const mime = (blob.type && blob.type.startsWith('image/')) ? blob.type : 'image/jpeg';
         const ext = (mime.split('/')[1] || 'jpg').replace('jpeg', 'jpg');
         files.push(new File([blob], `seed-${Date.now()}-${files.length}.${ext}`, { type: mime }));
-        metas.push({ seedSrc: id, seedBlobSrc: src });   // #253 image only — types are set via the file-name option or in AS, not scraped from ECAU's transient checkboxes
+        metas.push({ seedSrc: id, seedBlobSrc: src });   // #253 image only — types are set via the file-name option or in AS, not scraped from the rows' transient checkboxes
       }
       const added = files.length ? await addFilesDeduped(files, metas) : 0;
       if (added) toast(`Imported ${added} pre-added ${added > 1 ? ITEMS : ITEM} ✓`);
@@ -6000,6 +6279,33 @@
       _harvesting = false;
       if (_harvestPending) { _harvestPending = false; harvestSeeds(); }
     }
+  }
+  // #717 seeding links: other tools (Harmony, a-tisket, …) open the add page with
+  // x_seed.image.<n>.url / .types / .comment (and x_seed.origin) — the parameters
+  // Enhanced Cover Art Uploads defined. MusicBrainz itself ignores them, so Art Station
+  // reads them and sources each URL like a pasted one. The types are MB type ids,
+  // mapped to names through the add form's own checkboxes.
+  function seedFromParams() {
+    const q = new URLSearchParams(location.search);
+    const byN = new Map();
+    for (const [k, v] of q) {
+      const m = k.match(/^x_seed\.image\.(\d+)\.(url|types|comment)$/); if (!m) continue;
+      const e = byN.get(+m[1]) || { url: '', types: [], comment: null };
+      if (m[2] === 'url') e.url = v.trim(); else if (m[2] === 'types') e.types.push(...v.split(',')); else e.comment = v;
+      byN.set(+m[1], e);
+    }
+    const seeds = [...byN.entries()].sort((x, y) => x[0] - y[0]).map(x => x[1]).filter(e => /^https?:\/\//i.test(e.url));
+    if (!seeds.length) return;
+    const form = document.getElementById('add-' + ART);
+    const idToName = {};
+    if (form) for (const [name, id] of Object.entries(typeMapOf(form, `add-${ART}`))) idToName[id] = name;
+    const origin = q.get('x_seed.origin') || '';
+    asLog.info(`Seeded: ${seeds.length} image URL(s)${origin ? ' from ' + origin : ''}`);
+    if (origin && !_seedNote) _seedNote = 'Seeded from ' + origin;   // where the link came from, in the commit note
+    seeds.forEach(e => {
+      const types = e.types.map(t => String(t).trim()).filter(Boolean).map(t => idToName[t] || (ALL_TYPES.includes(t) ? t : '')).filter(Boolean);
+      sourceFromUrl(e.url, null, { types: e.types.length ? types : null, comment: e.comment });
+    });
   }
   function initAdd() {
     if (!IS_ADD) return;
@@ -6010,6 +6316,7 @@
       return;
     }
     let t; const soon = () => { clearTimeout(t); t = setTimeout(harvestSeeds, 250); };
+    seedFromParams();
     harvestSeeds();
     // a new row, a maximised image (src swap), or a type/comment change all re-harvest.
     new MutationObserver(soon).observe(form, { childList: true, subtree: true, attributes: true, attributeFilter: ['src'] });

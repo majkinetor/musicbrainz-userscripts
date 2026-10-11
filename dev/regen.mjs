@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // Regenerate everything the pre-commit hook builds (#646): the shared blocks inlined into the
-// scripts (icons, design tokens, UI components, artist matching, the request gate), Credit
+// scripts (icons, design tokens, UI components, artist matching, the request gate, the image maximizer), Credit
 // Hoarder's dist/ and the String Theory bundle with its DOCS.md.
 //
 //   node dev/regen.mjs           rebuild; keep what really changed (CI's build job commits it)
@@ -25,7 +25,7 @@ const dirty = () => git('status', '--porcelain', '--untracked-files=no').split('
 const before = new Set(dirty());
 if (before.size) console.log(`regen: already modified, left as they are: ${[...before].join(', ')}`);
 
-const SYNCS = ['dev/ui/sync-icons.mjs', 'dev/tokens/sync-tokens.mjs', 'dev/ui/sync-ui.mjs', 'dev/match/sync-match.mjs', 'dev/net/sync-gate.mjs'];
+const SYNCS = ['dev/ui/sync-icons.mjs', 'dev/tokens/sync-tokens.mjs', 'dev/ui/sync-ui.mjs', 'dev/match/sync-match.mjs', 'dev/net/sync-gate.mjs', 'dev/imgmax/sync-imgmax.mjs'];
 for (const s of SYNCS) run('node', [s]);
 run('pnpm', ['run', 'build'], { cwd: resolve(ROOT, 'userscripts/credit_hoarder') });   // after the syncs: it imports dev/match and dev/net
 run('node', ['userscripts/string_theory/build.mjs']);                                  // last: it bundles the members synced above
