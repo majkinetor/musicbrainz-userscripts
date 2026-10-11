@@ -151,6 +151,17 @@
   .wall .by b{color:var(--ink);font-weight:600;margin-right:6px}
   .wall q{grid-column:2;grid-row:2;font-size:14.5px;line-height:1.45;quotes:none}
   @media (prefers-reduced-motion:reduce){.praise{transition:none}}
+
+  /* Between the scripts and Reactions: the String Theory mark on a fading rule, and a line of
+     usage numbers read from stats.html (hidden when they can't be read). */
+  .sep{display:flex;align-items:center;gap:18px;margin:64px auto 0;max-width:520px}
+  .sep::before,.sep::after{content:"";flex:1;height:1px;background:linear-gradient(90deg,transparent,var(--faint))}
+  .sep::after{background:linear-gradient(90deg,var(--faint),transparent)}
+  .sep img{width:30px;height:30px;opacity:.75}
+  .usage{margin:14px 0 0;text-align:center;font-size:14px;color:var(--dim)}
+  .usage[hidden]{display:none}
+  .usage b{color:var(--ink);font-weight:600}
+  .usage a{color:var(--dim);text-decoration:none;white-space:nowrap} .usage a:hover{color:var(--accent)}
 </style>
 <script>
 // The theme picked with the switch; without one the system's applies.
@@ -196,6 +207,9 @@ try { const t = localStorage.getItem('theme'); if (t === 'light' || t === 'dark'
       <p class="note">Each one also installs on its own</p>
       <ul class="idx" id="bundled"></ul>
     </div>
+    <div class="sep"><img alt="" src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+DQo8dGl0bGU+U3RyaW5nIFRoZW9yeTwvdGl0bGU+DQo8ZGVmcz48ZmlsdGVyIGlkPSJzdGwwMi1oIiB4PSItMTAlIiB5PSItMTAlIiB3aWR0aD0iMTIwJSIgaGVpZ2h0PSIxMjAlIj48ZmVNb3JwaG9sb2d5IGluPSJTb3VyY2VBbHBoYSIgb3BlcmF0b3I9ImRpbGF0ZSIgcmFkaXVzPSIxLjUiIHJlc3VsdD0iZCIvPjxmZUZsb29kIGZsb29kLWNvbG9yPSIjZmZmIiBmbG9vZC1vcGFjaXR5PSIuNyIvPjxmZUNvbXBvc2l0ZSBpbjI9ImQiIG9wZXJhdG9yPSJpbiIvPjxmZU1lcmdlPjxmZU1lcmdlTm9kZS8+PGZlTWVyZ2VOb2RlIGluPSJTb3VyY2VHcmFwaGljIi8+PC9mZU1lcmdlPjwvZmlsdGVyPjwvZGVmcz48ZyBmaWx0ZXI9InVybCgjc3RsMDItaCkiPjxwYXRoIGQ9Ik02NCAxMCBMNjYuNCAxMC4yIEw2OC43IDEwLjYgTDcwLjkgMTEuNCBMNzMuMSAxMi40IEw3NS4yIDEzLjcgTDc3LjEgMTUuMiBMNzguOCAxNyBMODAuNCAxOC45IEw4MS44IDIxIEw4My4xIDIzLjEgTDg0LjEgMjUuNCBMODUgMjcuNiBMODUuNyAyOS45IEw4Ni4zIDMyLjEgTDg2LjggMzQuMyBMODcuMSAzNi40IEw4Ny40IDM4LjQgTDg3LjcgNDAuMyBMODcuOSA0Mi4xIEw4OC4yIDQzLjcgTDg4LjUgNDUuMiBMODguOSA0Ni42IEw4OS40IDQ3LjggTDkwIDQ5IEw5MC43IDUwLjEgTDkxLjYgNTEuMSBMOTIuNiA1Mi4yIEw5My43IDUzLjIgTDk1IDU0LjIgTDk2LjQgNTUuMyBMOTcuOSA1Ni41IEw5OS41IDU3LjcgTDEwMS4xIDU5LjEgTDEwMi43IDYwLjYgTDEwNC40IDYyLjIgTDEwNiA2NCBMMTA3LjUgNjUuOSBMMTA4LjkgNjcuOSBMMTEwLjIgNzAuMSBMMTExLjMgNzIuMyBMMTEyLjEgNzQuNyBMMTEyLjggNzcuMSBMMTEzLjEgNzkuNSBMMTEzLjIgODEuOSBMMTEzIDg0LjMgTDExMi42IDg2LjYgTDExMS44IDg4LjkgTDExMC44IDkxIEwxMDkuNSA5MyBMMTA3LjkgOTQuNyBMMTA2LjEgOTYuMyBMMTA0LjEgOTcuNyBMMTAyIDk4LjggTDk5LjcgOTkuNyBMOTcuMyAxMDAuNCBMOTQuOSAxMDAuOCBMOTIuNCAxMDEgTDg5LjkgMTAwLjkgTDg3LjQgMTAwLjcgTDg1IDEwMC40IEw4Mi43IDk5LjkgTDgwLjQgOTkuMyBMNzguMyA5OC42IEw3Ni4zIDk3LjggTDc0LjQgOTcuMSBMNzIuNyA5Ni40IEw3MSA5NS43IEw2OS41IDk1LjEgTDY4IDk0LjYgTDY2LjcgOTQuMyBMNjUuMyA5NC4xIEw2NCA5NCBMNjIuNyA5NC4xIEw2MS4zIDk0LjMgTDYwIDk0LjYgTDU4LjUgOTUuMSBMNTcgOTUuNyBMNTUuMyA5Ni40IEw1My42IDk3LjEgTDUxLjcgOTcuOCBMNDkuNyA5OC42IEw0Ny42IDk5LjMgTDQ1LjMgOTkuOSBMNDMgMTAwLjQgTDQwLjYgMTAwLjcgTDM4LjEgMTAwLjkgTDM1LjYgMTAxIEwzMy4xIDEwMC44IEwzMC43IDEwMC40IEwyOC4zIDk5LjcgTDI2IDk4LjggTDIzLjkgOTcuNyBMMjEuOSA5Ni4zIEwyMC4xIDk0LjcgTDE4LjUgOTMgTDE3LjIgOTEgTDE2LjIgODguOSBMMTUuNCA4Ni42IEwxNSA4NC4zIEwxNC44IDgxLjkgTDE0LjkgNzkuNSBMMTUuMiA3Ny4xIEwxNS45IDc0LjcgTDE2LjcgNzIuMyBMMTcuOCA3MC4xIEwxOS4xIDY3LjkgTDIwLjUgNjUuOSBMMjIgNjQgTDIzLjYgNjIuMiBMMjUuMyA2MC42IEwyNi45IDU5LjEgTDI4LjUgNTcuNyBMMzAuMSA1Ni41IEwzMS42IDU1LjMgTDMzIDU0LjIgTDM0LjMgNTMuMiBMMzUuNCA1Mi4yIEwzNi40IDUxLjEgTDM3LjMgNTAuMSBMMzggNDkgTDM4LjYgNDcuOCBMMzkuMSA0Ni42IEwzOS41IDQ1LjIgTDM5LjggNDMuNyBMNDAuMSA0Mi4xIEw0MC4zIDQwLjMgTDQwLjYgMzguNCBMNDAuOSAzNi40IEw0MS4yIDM0LjMgTDQxLjcgMzIuMSBMNDIuMyAyOS45IEw0MyAyNy42IEw0My45IDI1LjQgTDQ0LjkgMjMuMSBMNDYuMiAyMSBMNDcuNiAxOC45IEw0OS4yIDE3IEw1MC45IDE1LjIgTDUyLjggMTMuNyBMNTQuOSAxMi40IEw1Ny4xIDExLjQgTDU5LjMgMTAuNiBMNjEuNiAxMC4yWiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjYjlhOGVjIiBzdHJva2Utd2lkdGg9IjUiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz48cGF0aCBkPSJNNjQgMzQgTDY1LjMgMzMuOSBMNjYuNyAzMy43IEw2OCAzMy40IEw2OS41IDMyLjkgTDcxIDMyLjMgTDcyLjcgMzEuNiBMNzQuNCAzMC45IEw3Ni4zIDMwLjIgTDc4LjMgMjkuNCBMODAuNCAyOC43IEw4Mi43IDI4LjEgTDg1IDI3LjYgTDg3LjQgMjcuMyBMODkuOSAyNy4xIEw5Mi40IDI3IEw5NC45IDI3LjIgTDk3LjMgMjcuNiBMOTkuNyAyOC4zIEwxMDIgMjkuMiBMMTA0LjEgMzAuMyBMMTA2LjEgMzEuNyBMMTA3LjkgMzMuMyBMMTA5LjUgMzUgTDExMC44IDM3IEwxMTEuOCAzOS4xIEwxMTIuNiA0MS40IEwxMTMgNDMuNyBMMTEzLjIgNDYuMSBMMTEzLjEgNDguNSBMMTEyLjggNTAuOSBMMTEyLjEgNTMuMyBMMTExLjMgNTUuNyBMMTEwLjIgNTcuOSBMMTA4LjkgNjAuMSBMMTA3LjUgNjIuMSBMMTA2IDY0IEwxMDQuNCA2NS44IEwxMDIuNyA2Ny40IEwxMDEuMSA2OC45IEw5OS41IDcwLjMgTDk3LjkgNzEuNSBMOTYuNCA3Mi43IEw5NSA3My44IEw5My43IDc0LjggTDkyLjYgNzUuOCBMOTEuNiA3Ni45IEw5MC43IDc3LjkgTDkwIDc5IEw4OS40IDgwLjIgTDg4LjkgODEuNCBMODguNSA4Mi44IEw4OC4yIDg0LjMgTDg3LjkgODUuOSBMODcuNyA4Ny43IEw4Ny40IDg5LjYgTDg3LjEgOTEuNiBMODYuOCA5My43IEw4Ni4zIDk1LjkgTDg1LjcgOTguMSBMODUgMTAwLjQgTDg0LjEgMTAyLjYgTDgzLjEgMTA0LjkgTDgxLjggMTA3IEw4MC40IDEwOS4xIEw3OC44IDExMSBMNzcuMSAxMTIuOCBMNzUuMiAxMTQuMyBMNzMuMSAxMTUuNiBMNzAuOSAxMTYuNiBMNjguNyAxMTcuNCBMNjYuNCAxMTcuOCBMNjQgMTE4IEw2MS42IDExNy44IEw1OS4zIDExNy40IEw1Ny4xIDExNi42IEw1NC45IDExNS42IEw1Mi44IDExNC4zIEw1MC45IDExMi44IEw0OS4yIDExMSBMNDcuNiAxMDkuMSBMNDYuMiAxMDcgTDQ0LjkgMTA0LjkgTDQzLjkgMTAyLjYgTDQzIDEwMC40IEw0Mi4zIDk4LjEgTDQxLjcgOTUuOSBMNDEuMiA5My43IEw0MC45IDkxLjYgTDQwLjYgODkuNiBMNDAuMyA4Ny43IEw0MC4xIDg1LjkgTDM5LjggODQuMyBMMzkuNSA4Mi44IEwzOS4xIDgxLjQgTDM4LjYgODAuMiBMMzggNzkgTDM3LjMgNzcuOSBMMzYuNCA3Ni45IEwzNS40IDc1LjggTDM0LjMgNzQuOCBMMzMgNzMuOCBMMzEuNiA3Mi43IEwzMC4xIDcxLjUgTDI4LjUgNzAuMyBMMjYuOSA2OC45IEwyNS4zIDY3LjQgTDIzLjYgNjUuOCBMMjIgNjQgTDIwLjUgNjIuMSBMMTkuMSA2MC4xIEwxNy44IDU3LjkgTDE2LjcgNTUuNyBMMTUuOSA1My4zIEwxNS4yIDUwLjkgTDE0LjkgNDguNSBMMTQuOCA0Ni4xIEwxNSA0My43IEwxNS40IDQxLjQgTDE2LjIgMzkuMSBMMTcuMiAzNyBMMTguNSAzNSBMMjAuMSAzMy4zIEwyMS45IDMxLjcgTDIzLjkgMzAuMyBMMjYgMjkuMiBMMjguMyAyOC4zIEwzMC43IDI3LjYgTDMzLjEgMjcuMiBMMzUuNiAyNyBMMzguMSAyNy4xIEw0MC42IDI3LjMgTDQzIDI3LjYgTDQ1LjMgMjguMSBMNDcuNiAyOC43IEw0OS43IDI5LjQgTDUxLjcgMzAuMiBMNTMuNiAzMC45IEw1NS4zIDMxLjYgTDU3IDMyLjMgTDU4LjUgMzIuOSBMNjAgMzMuNCBMNjEuMyAzMy43IEw2Mi43IDMzLjlaIiBmaWxsPSJub25lIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iMTEiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz48cGF0aCBkPSJNNjQgMzQgTDY1LjMgMzMuOSBMNjYuNyAzMy43IEw2OCAzMy40IEw2OS41IDMyLjkgTDcxIDMyLjMgTDcyLjcgMzEuNiBMNzQuNCAzMC45IEw3Ni4zIDMwLjIgTDc4LjMgMjkuNCBMODAuNCAyOC43IEw4Mi43IDI4LjEgTDg1IDI3LjYgTDg3LjQgMjcuMyBMODkuOSAyNy4xIEw5Mi40IDI3IEw5NC45IDI3LjIgTDk3LjMgMjcuNiBMOTkuNyAyOC4zIEwxMDIgMjkuMiBMMTA0LjEgMzAuMyBMMTA2LjEgMzEuNyBMMTA3LjkgMzMuMyBMMTA5LjUgMzUgTDExMC44IDM3IEwxMTEuOCAzOS4xIEwxMTIuNiA0MS40IEwxMTMgNDMuNyBMMTEzLjIgNDYuMSBMMTEzLjEgNDguNSBMMTEyLjggNTAuOSBMMTEyLjEgNTMuMyBMMTExLjMgNTUuNyBMMTEwLjIgNTcuOSBMMTA4LjkgNjAuMSBMMTA3LjUgNjIuMSBMMTA2IDY0IEwxMDQuNCA2NS44IEwxMDIuNyA2Ny40IEwxMDEuMSA2OC45IEw5OS41IDcwLjMgTDk3LjkgNzEuNSBMOTYuNCA3Mi43IEw5NSA3My44IEw5My43IDc0LjggTDkyLjYgNzUuOCBMOTEuNiA3Ni45IEw5MC43IDc3LjkgTDkwIDc5IEw4OS40IDgwLjIgTDg4LjkgODEuNCBMODguNSA4Mi44IEw4OC4yIDg0LjMgTDg3LjkgODUuOSBMODcuNyA4Ny43IEw4Ny40IDg5LjYgTDg3LjEgOTEuNiBMODYuOCA5My43IEw4Ni4zIDk1LjkgTDg1LjcgOTguMSBMODUgMTAwLjQgTDg0LjEgMTAyLjYgTDgzLjEgMTA0LjkgTDgxLjggMTA3IEw4MC40IDEwOS4xIEw3OC44IDExMSBMNzcuMSAxMTIuOCBMNzUuMiAxMTQuMyBMNzMuMSAxMTUuNiBMNzAuOSAxMTYuNiBMNjguNyAxMTcuNCBMNjYuNCAxMTcuOCBMNjQgMTE4IEw2MS42IDExNy44IEw1OS4zIDExNy40IEw1Ny4xIDExNi42IEw1NC45IDExNS42IEw1Mi44IDExNC4zIEw1MC45IDExMi44IEw0OS4yIDExMSBMNDcuNiAxMDkuMSBMNDYuMiAxMDcgTDQ0LjkgMTA0LjkgTDQzLjkgMTAyLjYgTDQzIDEwMC40IEw0Mi4zIDk4LjEgTDQxLjcgOTUuOSBMNDEuMiA5My43IEw0MC45IDkxLjYgTDQwLjYgODkuNiBMNDAuMyA4Ny43IEw0MC4xIDg1LjkgTDM5LjggODQuMyBMMzkuNSA4Mi44IEwzOS4xIDgxLjQgTDM4LjYgODAuMiBMMzggNzkgTDM3LjMgNzcuOSBMMzYuNCA3Ni45IEwzNS40IDc1LjggTDM0LjMgNzQuOCBMMzMgNzMuOCBMMzEuNiA3Mi43IEwzMC4xIDcxLjUgTDI4LjUgNzAuMyBMMjYuOSA2OC45IEwyNS4zIDY3LjQgTDIzLjYgNjUuOCBMMjIgNjQgTDIwLjUgNjIuMSBMMTkuMSA2MC4xIEwxNy44IDU3LjkgTDE2LjcgNTUuNyBMMTUuOSA1My4zIEwxNS4yIDUwLjkgTDE0LjkgNDguNSBMMTQuOCA0Ni4xIEwxNSA0My43IEwxNS40IDQxLjQgTDE2LjIgMzkuMSBMMTcuMiAzNyBMMTguNSAzNSBMMjAuMSAzMy4zIEwyMS45IDMxLjcgTDIzLjkgMzAuMyBMMjYgMjkuMiBMMjguMyAyOC4zIEwzMC43IDI3LjYgTDMzLjEgMjcuMiBMMzUuNiAyNyBMMzguMSAyNy4xIEw0MC42IDI3LjMgTDQzIDI3LjYgTDQ1LjMgMjguMSBMNDcuNiAyOC43IEw0OS43IDI5LjQgTDUxLjcgMzAuMiBMNTMuNiAzMC45IEw1NS4zIDMxLjYgTDU3IDMyLjMgTDU4LjUgMzIuOSBMNjAgMzMuNCBMNjEuMyAzMy43IEw2Mi43IDMzLjlaIiBmaWxsPSJub25lIiBzdHJva2U9IiM3YTU3ZTgiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjwvZz4NCjwvc3ZnPg0K"></div>
+    <p class="usage" id="usage" hidden></p>
+
     <div class="bundle wide-out">
       <h2>Reactions</h2>
       <div class="wall" id="wall"></div>
@@ -341,11 +355,31 @@ const row = ([s,n,i,d]) =>
  `<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M8 2v8M4.5 6.5 8 10l3.5-3.5M3 13h10"/></svg></a></li>`;
 document.getElementById('bundled').innerHTML = BUNDLED.map(row).join('');
 
+// The usage line: totals for majkinetor's scripts, from the data stats.html carries, counted
+// the way its tiles count them (every edit; editors = tracked people). Counted from June 2026,
+// leaving May out (maintainer).
+const USAGE_FROM = '2026-06';
+fetch('./stats.html').then(r => r.ok ? r.text() : Promise.reject(r.status)).then(html => {
+  const D = JSON.parse(html.match(/const DATA = (\{.*\})/)[1]);
+  let edits = 0, first = Infinity; const people = new Set();
+  for (const [si, mi, ei, oi, n] of D.cubes.main) {
+    if (D.scripts[si].owner !== 'majkinetor' || D.months[mi] < USAGE_FROM) continue;
+    edits += n; first = Math.min(first, mi);
+    if (D.editors[ei].tracked) people.add(ei);
+  }
+  if (!edits) return;
+  const N = new Intl.NumberFormat('en-US');
+  const since = new Date(D.months[first] + '-01T00:00:00').toLocaleString('en-US', { month: 'long', year: 'numeric' });
+  const el = document.getElementById('usage');
+  el.innerHTML = `<b>${N.format(edits)}</b> edits by <b>${people.size}</b> editors since ${since} · <a href="./stats.html">Stats →</a>`;
+  el.hidden = false;
+}).catch(() => {});
+
 // [quote, who, where, link]
 const PRAISE=[
  ["I just tried your UI overhaul userscript and DAMN this should be official!!!", "NicolasPL64", "GitHub", "https://github.com/majkinetor/musicbrainz-userscripts/issues/596#issuecomment-5808195567"],
  ["Superb work. 11/10. Big time saver. Thank you for the hours you will save of my future edits.", "IvanDobsky", "MB forum", "https://community.metabrainz.org/t/credit-hoarder-userscript/815063/8"],
- ["This script is incredible, I have been wanting something like this since, well I guess since I joined MB earlier this year. No more manually adding each and every credit relationship, this does it for me!", "redpixel09", "MB forum", "https://community.metabrainz.org/t/credit-hoarder-userscript/815063/3"],
+ ["This script is incredible, I have been wanting something like this. No more manually adding each and every credit relationship, this does it for me!", "redpixel09", "MB forum", "https://community.metabrainz.org/t/credit-hoarder-userscript/815063/3"],
  ["This is epic. Maybe I’m dreaming but I think MusicBrainz has a very bright future…", "oblaka", "Discord", "https://discord.com/channels/937555302251905084/1193999163344564385/1558115358894854315"],
  ["Art Station is better than native uploader in every regard", "chaban-mb", "GitHub", "https://github.com/majkinetor/musicbrainz-userscripts/issues/630#issuecomment-5876661634"],
  ["The script is very mighty, comfortable and practical.", "Schwarzwalder", "MB forum", "https://community.metabrainz.org/t/credit-hoarder-userscript/815063/32"],
