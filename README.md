@@ -31,7 +31,7 @@ Import a release from a platform's album page. This one alone replaces tens of o
 Cold fusion for duplicate recordings: find them, merge them, all from one window.
 
 [Group Therapy](./userscripts/group_therapy/README.md) <img src="./userscripts/group_therapy/icon.svg" align="left" width="32"><br>
-Batch operations and various helpers for editing relationships
+Therapy for messy relationships: delete, copy, move and re-date credits in bulk, and turn liner notes into relationships.
 
 [ISRC Scout](./userscripts/isrc_scout/README.md)<img src="./userscripts/isrc_scout/icon.svg" align="left" width="32"><br>
 Fill in a release's missing ISRCs and streaming links
