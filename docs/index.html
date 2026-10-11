@@ -141,9 +141,14 @@
   .praise q{font-size:17px;font-style:italic}
   .praise .by,.wall .by{display:block;margin-top:8px;font-size:12.5px;color:var(--faint)}
   .praise .by a,.wall .by a{color:var(--faint)}
-  .wall{columns:3 260px;column-gap:14px;margin-top:14px}
-  .wall figure{break-inside:avoid;margin:0 0 14px;padding:16px 18px 14px;border:1px solid var(--rule);border-radius:12px;text-align:left}
-  .wall q{font-size:14.5px;line-height:1.45;quotes:none}
+  /* Reactions read like a chat: picture (or a coloured initial), name, where, then the words. */
+  .wall{columns:2 340px;column-gap:28px;margin-top:18px}
+  .wall figure{break-inside:avoid;margin:0 0 16px;display:grid;grid-template-columns:36px 1fr;gap:2px 12px;text-align:left}
+  .wall .av{grid-column:1;grid-row:1 / 3;width:36px;height:36px;border-radius:50%;display:flex;align-items:center;
+            justify-content:center;font-weight:600;color:#fff;font-size:15px;object-fit:cover}
+  .wall .by{grid-column:2;grid-row:1;margin:0;font-size:13px}
+  .wall .by b{color:var(--ink);font-weight:600;margin-right:6px}
+  .wall q{grid-column:2;grid-row:2;font-size:14.5px;line-height:1.45;quotes:none}
   @media (prefers-reduced-motion:reduce){.praise{transition:none}}
 </style>
 <script>
@@ -348,7 +353,13 @@ const PRAISE=[
  ["majkinetor scripts are awesome! It does everything (except coffee… for now)", "Lotheric", "Discord", "https://discord.com/channels/937555302251905084/1193999163344564385/1558113217689948251"]
 ];
 const said = ([q,w,s,u]) => `<q>${q}</q><span class="by">${w} · <a href="${u}">${s}</a></span>`;
-document.getElementById('wall').innerHTML = PRAISE.map(p => `<figure>${said(p)}</figure>`).join('');
+// Pictures of the people who have one (GitHub, the MB forum), saved under avatars/; the rest get an initial.
+const AVATAR = { NicolasPL64: 'nicolaspl64.jpg', 'chaban-mb': 'chaban-mb.jpg', IvanDobsky: 'ivandobsky.gif', vzell: 'vzell.jpg' };
+const hue = w => ([...w].reduce((h, c) => h * 31 + c.charCodeAt(0) | 0, 0) % 360 + 360) % 360;
+const face = w => AVATAR[w] ? `<img class="av" alt="" loading="lazy" src="./avatars/${AVATAR[w]}">`
+                            : `<span class="av" style="background:hsl(${hue(w)} 55% 50%)">${w[0].toUpperCase()}</span>`;
+document.getElementById('wall').innerHTML = PRAISE.map(([q,w,s,u]) =>
+  `<figure>${face(w)}<span class="by"><b>${w}</b><a href="${u}">${s}</a></span><q>${q}</q></figure>`).join('');
 (function rotate(){
   const el = document.getElementById('praise');
   let i = Math.floor(Math.random() * PRAISE.length);
