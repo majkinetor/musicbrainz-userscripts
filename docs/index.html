@@ -111,6 +111,7 @@
   ul.idx li{display:flex;flex-direction:column;align-items:center;text-align:center;gap:8px;
             padding:20px 14px 16px;border:1px solid var(--rule);border-radius:12px;position:relative}
   ul.idx img{width:64px;height:64px;display:block;object-fit:contain}
+  ul.idx .ic{display:block;transition:transform .15s} ul.idx .ic:hover{transform:scale(1.06)}
   ul.idx .n{font-weight:500;font-size:16px}
   ul.idx .n a{color:var(--ink);text-decoration:none}
   ul.idx .n a:hover{color:var(--accent)}
@@ -357,7 +358,7 @@ const INST = s => `https://raw.githubusercontent.com/majkinetor/musicbrainz-user
 })();
 
 const row = ([s,n,i,d]) =>
- `<li><img loading="lazy" alt="" src="${RAW}${s}/${i}">` +
+ `<li><a class="ic" href="${GH}${s}/README.md" tabindex="-1" aria-hidden="true"><img loading="lazy" alt="" src="${RAW}${s}/${i}"></a>` +
  `<span class="n"><a href="${GH}${s}/README.md">${n}</a></span>` +
  `<span class="d">${d}</span>` +
  `<a class="ib" href="${INST(s)}" aria-label="Install ${n} alone" title="Install ${n} alone — String Theory already includes it">` +
