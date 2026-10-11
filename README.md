@@ -25,7 +25,7 @@ Import credits from several providers with a review phase
 Batch import entity fields from Harmony or by hand; attach disc IDs from CD rip logs
 
 [First Contact](./userscripts/first_contact/README.md) <img src="./userscripts/first_contact/icon.svg" align="left" width="32"><br>
-Import a release from a platform's album page in one click
+Import a release from a platform's album page
 
 [Fusion](./userscripts/fusion/README.md) <img src="./userscripts/fusion/icon.svg" align="left" width="32"><br>
 Find and merge duplicate recordings from one window
