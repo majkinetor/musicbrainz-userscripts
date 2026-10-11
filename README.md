@@ -28,7 +28,7 @@ Batch import entity fields from Harmony or by hand; attach disc IDs from CD rip 
 Import a release from a platform's album page. This one alone replaces tens of other userscripts.
 
 [Fusion](./userscripts/fusion/README.md) <img src="./userscripts/fusion/icon.svg" align="left" width="32"><br>
-Find and merge duplicate recordings from one window
+Cold fusion for duplicate recordings: find them, merge them, all from one window.
 
 [Group Therapy](./userscripts/group_therapy/README.md) <img src="./userscripts/group_therapy/icon.svg" align="left" width="32"><br>
 Batch operations and various helpers for editing relationships
