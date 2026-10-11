@@ -91,25 +91,33 @@
      font:600 11px/1 var(--f);letter-spacing:.14em;text-transform:uppercase;color:var(--faint)}
   h2 + .note{margin:6px 0 0;text-align:left;font-size:13px;color:var(--faint)}
 
-  /* Compact: icon, name and description on ONE line each. The name column is a
-     fixed measure so every description starts at the same x. */
-  ul.idx{list-style:none;margin:14px 0 0;padding:0;text-align:left}
-  ul.idx li{display:grid;grid-template-columns:20px 9.6em 1fr;gap:11px;align-items:center;
-            padding:7px 2px;border-top:1px solid var(--rule)}
-  ul.idx li:last-child{border-bottom:1px solid var(--rule)}
-  ul.idx img{width:18px;height:18px;display:block;object-fit:contain}
-  ul.idx .n{font-weight:500;font-size:14.5px;white-space:nowrap}
+  /* Tiles: a large icon, the name and its line centred, and a quiet install link
+     pinned to the bottom so the links line up across a row. */
+  /* the tiles break out of the page's 660px text column */
+  .wide-out{width:min(960px,calc(100vw - 32px));position:relative;left:50%;transform:translateX(-50%)}
+  .wide-out h2,.wide-out h2 + .note{text-align:center}
+  ul.idx{list-style:none;margin:14px 0 0;padding:0;display:grid;
+         grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:14px}
+  ul.idx li{display:flex;flex-direction:column;align-items:center;text-align:center;gap:8px;
+            padding:20px 14px 16px;border:1px solid var(--rule);border-radius:12px}
+  ul.idx img{width:64px;height:64px;display:block;object-fit:contain}
+  ul.idx .n{font-weight:500;font-size:16px}
   ul.idx .n a{color:var(--ink);text-decoration:none}
   ul.idx .n a:hover{color:var(--accent)}
-  ul.idx .d{font-size:13.5px;line-height:1.4;color:var(--dim)}
+  ul.idx .d{flex:1;font-size:13.5px;line-height:1.4;color:var(--dim)}
+  ul.idx .ib{font-size:13px;text-decoration:none}
+  ul.idx .ib:hover{text-decoration:underline}
 
   footer{margin:52px 0 0;padding:0 0 110px;font-size:13px;color:var(--faint);
          display:flex;gap:20px;justify-content:center;flex-wrap:wrap}
   footer a{color:var(--faint)}
   @media(max-width:620px){
+    ul.idx{grid-template-columns:repeat(2,1fr);gap:10px}
+    ul.idx li{padding:14px 8px 12px;gap:6px}
+    ul.idx img{width:48px;height:48px}
+    ul.idx .n{font-size:14.5px}
+    ul.idx .d{font-size:12.5px}
     h1{font-size:23px}
-    ul.idx li{grid-template-columns:20px 1fr;row-gap:1px}
-    ul.idx .d{grid-column:2/3}
   }
 </style>
 </head>
@@ -146,16 +154,10 @@
 
     <hr>
 
-    <div class="bundle">
-      <h2>String Theory bundle</h2>
-      <p class="note"><a href="https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/refs/heads/stable/userscripts/string_theory/string_theory.user.js">Install all</a> at once or pick the ones you want</p>
+    <div class="bundle wide-out">
+      <h2>What's inside</h2>
+      <p class="note">Each one also installs on its own</p>
       <ul class="idx" id="bundled"></ul>
-    </div>
-
-    <div class="standalone">
-      <h2>On their own</h2>
-      <p class="note">Not part of String Theory — install these separately.</p>
-      <ul class="idx" id="standalone"></ul>
     </div>
     <footer>
       <span>MIT</span>
@@ -168,23 +170,20 @@
 const RAW='https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/';
 const GH='https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/';
 // [slug, name, icon file, one-liner] — the split matches string_theory/members.txt.
-// Art Station's icon is a PNG and Scribe's is not called icon.svg; both would
-// 404 silently if this assumed one filename for everything.
+// Art Station's icon is a PNG; it would 404 silently if this assumed one
+// filename for everything.
 const BUNDLED=[
- ['apollo_editor','Apollo Editor','icon.svg','Adding and editing a release'],
- ['art_station','Art Station','icon.png','Cover art: view, reorder, retype, add, import/export'],
- ['credit_hoarder','Credit Hoarder','icon.svg','Import credits with a review phase'],
- ['falcon','Falcon','icon.svg','Batch-edit entity fields and import from Harmony'],
+ ['apollo_editor','Apollo Editor','icon.svg','A faster release editor: artists and recordings matched in one pass'],
+ ['art_station','Art Station','icon.png','Edit cover and event art and find it online with parallel edits, retried on errors'],
+ ['credit_hoarder','Credit Hoarder','icon.svg','Import credits from several providers with a review phase'],
+ ['falcon','Falcon','icon.svg','Batch import entity fields from Harmony or by hand; attach disc IDs from CD rip logs'],
  ['first_contact','First Contact','icon.svg','Import a release from a platform’s album page in one click'],
- ['fusion','Fusion','icon.svg','Merge duplicate recordings'],
- ['group_therapy','Group Therapy','icon.svg','Batch operations on relationships'],
- ['isrc_scout','ISRC Scout','icon.svg','ISRCs and streaming links'],
- ['mammoth','Mammoth','icon.svg','Reusable edit notes and configurable form fields'],
- ['mission_control','Mission Control','icon.svg','What the other scripts found, applied in one go'],
- ['platform_check','Platform Check','icon.svg','Find a release across platforms'],
-];
-const STANDALONE=[
- ['scribe','Scribe','scribe.svg','Edit release in your real editor'],
+ ['fusion','Fusion','icon.svg','Find and merge duplicate recordings from one window'],
+ ['group_therapy','Group Therapy','icon.svg','Batch operations and various helpers for editing relationships'],
+ ['isrc_scout','ISRC Scout','icon.svg','Fill in a release’s missing ISRCs and streaming links'],
+ ['mammoth','Mammoth','icon.svg','Reusable edit notes on every edit form, and remembered field values'],
+ ['mission_control','Mission Control','icon.svg','One dashboard to find and fix all a release lacks, and consolidate new ones'],
+ ['platform_check','Platform Check','icon.svg','Find and verify a release’s links on the online platforms'],
 ];
 // Header slides: real screenshots straight out of each script's own folder.
 // The band is roughly 3:1 and the images are drawn with object-fit:cover, so a
@@ -206,7 +205,6 @@ const SHOTS=[
  ['apollo_editor/screenshots/recordings.png','Apollo Editor — track ↔ recording, side by side, differences marked'],
  ['fusion/screenshots/pool-groups.png','Fusion — 297 recordings pooled for merging'],
  ['falcon/screenshots/workers-falcon.png','Falcon — parallel workers chewing through a queue'],
- ['first_contact/screenshots/editor.png','First Contact — a release seeded into the editor from its album page'],
 ];
 (function slideshow() {
   const band = document.getElementById('band'), cap = document.getElementById('cap');
@@ -278,12 +276,13 @@ const SHOTS=[
   });
 })();
 
+const INST = s => `https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/refs/heads/stable/userscripts/${s}/${s}.user.js`;
 const row = ([s,n,i,d]) =>
  `<li><img loading="lazy" alt="" src="${RAW}${s}/${i}">` +
  `<span class="n"><a href="${GH}${s}/README.md">${n}</a></span>` +
- `<span class="d">${d}</span></li>`;
+ `<span class="d">${d}</span>` +
+ `<a class="ib" href="${INST(s)}" title="Install ${n} on its own (stable)">Install ↓</a></li>`;
 document.getElementById('bundled').innerHTML = BUNDLED.map(row).join('');
-document.getElementById('standalone').innerHTML = STANDALONE.map(row).join('');
 </script>
 </body>
 </html>

@@ -13,7 +13,7 @@ One-file bundle of the scripts below — install it *instead of* the individual 
 <br>
 
 [Apollo Editor](./userscripts/apollo_editor/README.md) <img src="./userscripts/apollo_editor/icon.svg" align="left" width="32"><br>
-UI and tools for advanced adding and editing of MusicBrainz release
+A faster release editor: artists and recordings matched in one pass
 
 [Art Station](./userscripts/art_station/README.md) <img src="./userscripts/art_station/icon.png" align="left" width="32"><br>
 Edit cover and event art and find it online with parallel edits, retried on errors
@@ -22,28 +22,28 @@ Edit cover and event art and find it online with parallel edits, retried on erro
 Import credits from several providers with a review phase
 
 [Falcon](./userscripts/falcon/README.md) <img src="./userscripts/falcon/icon.svg" align="left" width="32"><br>
-Batch import entity fields from Harmony and standalone; attach disc IDs from CD rip logs
+Batch import entity fields from Harmony or by hand; attach disc IDs from CD rip logs
 
 [First Contact](./userscripts/first_contact/README.md) <img src="./userscripts/first_contact/icon.svg" align="left" width="32"><br>
-Import a release from the online platforms
+Import a release from a platform's album page in one click
 
 [Fusion](./userscripts/fusion/README.md) <img src="./userscripts/fusion/icon.svg" align="left" width="32"><br>
-Merge duplicate recordings: review UI, auto-match, background submit
+Find and merge duplicate recordings from one window
 
 [Group Therapy](./userscripts/group_therapy/README.md) <img src="./userscripts/group_therapy/icon.svg" align="left" width="32"><br>
 Batch operations and various helpers for editing relationships
 
 [ISRC Scout](./userscripts/isrc_scout/README.md)<img src="./userscripts/isrc_scout/icon.svg" align="left" width="32"><br>
-Reads the release's existing ISRCs and streaming links and fills in the missing ones
+Fill in a release's missing ISRCs and streaming links
 
 [Mammoth](./userscripts/mammoth/README.md)<img src="./userscripts/mammoth/icon.svg" align="left" width="32"><br>
-Remembers your edit notes and options and lets you save and recall them
+Reusable edit notes on every edit form, and remembered field values
 
 [Mission Control](./userscripts/mission_control/README.md)<img src="./userscripts/mission_control/icon.svg" align="left" width="32"><br>
-Find what a release is missing and fix it in one click; consolidate new releases
+One dashboard to find and fix all a release lacks, and consolidate new ones
 
 [Platform Check](./userscripts/platform_check/README.md)<img src="./userscripts/platform_check/icon.svg" align="left" width="32"><br>
-Find and verify URLs for a particular MusicBrainz release on online platforms
+Find and verify a release's links on the online platforms
 
 ---
 
