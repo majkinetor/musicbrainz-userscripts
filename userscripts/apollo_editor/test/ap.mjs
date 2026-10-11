@@ -11,8 +11,11 @@ export const SETTINGS = 'apolloEditor.settings.v1';
 // The GM shim with Apollo's settings: test.use({ gm: apolloGm({ autoMatchRec: true }) }).
 // GM_xmlhttpRequest never answers (the dead-link check and the length parser's page
 // fetch are the only users), unless a spec asks for more.
+// Tracklist and recordings auto-match are off here unless a spec turns them on: the specs
+// were written when that was the default, and the marker keeps the one-time migration
+// that switched existing installs on from overriding what a spec asks for.
 export const apolloGm = (settings = null, extra = {}) =>
-  ({ name: 'Apollo Editor', xhr: 'none', values: settings ? { [SETTINGS]: JSON.stringify(settings) } : {}, ...extra });
+  ({ name: 'Apollo Editor', xhr: 'none', values: { [SETTINGS]: JSON.stringify({ autoMatch: false, autoMatchRec: false, autoMatchOnV: 1, ...settings }) }, ...extra });
 
 // A seed as an importer posts it: { field: value | [values] }, or a saved import's
 // { fields: [[field, value], …] }, from test/fixtures/<name>.json.

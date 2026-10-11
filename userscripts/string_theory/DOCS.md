@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-10-11 18:25 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-10-11 19:49 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -288,7 +288,7 @@ Right-click Apollo's corner icon. Column widths, the toolbar layout, **Change**,
 | Modify header and footer                                      | on      | a compact step switcher instead of the tabs and footer                            |
 | Zen editing                                                   | on      | hide the site header, title and footer; the title moves into Apollo's bar         |
 | Auto confirm release submissions                              | on      | skip the confirmation page when a site seeds a release                            |
-| Auto-match on start: Tracklist, Recordings                    | off     | match on load                                                                     |
+| Auto-match on start: Tracklist, Recordings                    | on      | match on load                                                                     |
 | Auto-match on start: Label, Artist, Release group             | on      | match the release [artist, label and release group](#release-information) on load |
 | Discogs artist link matching                                  | on      | match by [Discogs link](#artist-matching) and offer missing links                 |
 | Detect language and script                                    | on      | fill in a missing [language and script](#language-and-script)                     |
