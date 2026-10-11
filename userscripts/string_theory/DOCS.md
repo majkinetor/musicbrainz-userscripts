@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-10-11 16:31 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-10-11 18:25 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -1263,7 +1263,7 @@ Batch operations and helpers for the MusicBrainz *Edit relationships* page.
 - **[Copy and move](#copy-and-move)** credits between recordings, works, releases, and a release and its recordings.
 - **[Set dates](#set-dates)** on many credits at once.
 - **[Release group consolidation](#release-group-consolidation)**: one matrix of release credits across the whole group.
-- **[Work matching](#work-matching)** links recordings to existing works.
+- **[Work matching](#work-matching)** links recordings to existing works, a medley to each of its works.
 - **[Text parser](#text-parser)** turns liner notes into relationships.
 - **[Replace role](#replace-role)** on many credits at once.
 - **[Highlight](#highlight)** a role or an entity everywhere, with counts.
@@ -1340,6 +1340,8 @@ When the relationship you right-click has a date (a *recorded at* with a date, s
 | 🔴   | ambiguous; check it                                                   |
 
 **⚡ Match** selects the rows at or above the **Cutoff**. ✎ on a row searches, takes a pasted work MBID or URL, or creates a work. **＋ New work for unresolved** creates one for every unmatched recording. **Apply** stages the performance relationships.
+
+**Medleys**: a track titled like `Land of Hope and Dreams / People Get Ready` is a recording of several works. MusicBrainz [separates them with " / "](https://musicbrainz.org/doc/Style/Titles#Extra_title_information_(ETI)), so the track gets a row per work, each matched or picked on its own, and **Apply** links the recording to all of them. Only a slash with spaces around it splits: `AC/DC` stays whole. **Split on /** in the toolbar (on by default, shown when a title has one) turns this off.
 
 ### Text parser
 

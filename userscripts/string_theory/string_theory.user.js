@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         String Theory
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.11.163106
+// @version      2026.10.11.182509
 // @description  Unified bundle of 11 MusicBrainz userscripts (apollo_editor, art_station, credit_hoarder, falcon, first_contact, fusion, group_therapy, isrc_scout, mammoth, mission_control, platform_check). Built by userscripts/string_theory/build.mjs — do not hand-edit.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5TdHJpbmcgVGhlb3J5PC90aXRsZT4KPHBhdGggZD0iTTY0IDEwIEw2Ni40IDEwLjIgTDY4LjcgMTAuNiBMNzAuOSAxMS40IEw3My4xIDEyLjQgTDc1LjIgMTMuNyBMNzcuMSAxNS4yIEw3OC44IDE3IEw4MC40IDE4LjkgTDgxLjggMjEgTDgzLjEgMjMuMSBMODQuMSAyNS40IEw4NSAyNy42IEw4NS43IDI5LjkgTDg2LjMgMzIuMSBMODYuOCAzNC4zIEw4Ny4xIDM2LjQgTDg3LjQgMzguNCBMODcuNyA0MC4zIEw4Ny45IDQyLjEgTDg4LjIgNDMuNyBMODguNSA0NS4yIEw4OC45IDQ2LjYgTDg5LjQgNDcuOCBMOTAgNDkgTDkwLjcgNTAuMSBMOTEuNiA1MS4xIEw5Mi42IDUyLjIgTDkzLjcgNTMuMiBMOTUgNTQuMiBMOTYuNCA1NS4zIEw5Ny45IDU2LjUgTDk5LjUgNTcuNyBMMTAxLjEgNTkuMSBMMTAyLjcgNjAuNiBMMTA0LjQgNjIuMiBMMTA2IDY0IEwxMDcuNSA2NS45IEwxMDguOSA2Ny45IEwxMTAuMiA3MC4xIEwxMTEuMyA3Mi4zIEwxMTIuMSA3NC43IEwxMTIuOCA3Ny4xIEwxMTMuMSA3OS41IEwxMTMuMiA4MS45IEwxMTMgODQuMyBMMTEyLjYgODYuNiBMMTExLjggODguOSBMMTEwLjggOTEgTDEwOS41IDkzIEwxMDcuOSA5NC43IEwxMDYuMSA5Ni4zIEwxMDQuMSA5Ny43IEwxMDIgOTguOCBMOTkuNyA5OS43IEw5Ny4zIDEwMC40IEw5NC45IDEwMC44IEw5Mi40IDEwMSBMODkuOSAxMDAuOSBMODcuNCAxMDAuNyBMODUgMTAwLjQgTDgyLjcgOTkuOSBMODAuNCA5OS4zIEw3OC4zIDk4LjYgTDc2LjMgOTcuOCBMNzQuNCA5Ny4xIEw3Mi43IDk2LjQgTDcxIDk1LjcgTDY5LjUgOTUuMSBMNjggOTQuNiBMNjYuNyA5NC4zIEw2NS4zIDk0LjEgTDY0IDk0IEw2Mi43IDk0LjEgTDYxLjMgOTQuMyBMNjAgOTQuNiBMNTguNSA5NS4xIEw1NyA5NS43IEw1NS4zIDk2LjQgTDUzLjYgOTcuMSBMNTEuNyA5Ny44IEw0OS43IDk4LjYgTDQ3LjYgOTkuMyBMNDUuMyA5OS45IEw0MyAxMDAuNCBMNDAuNiAxMDAuNyBMMzguMSAxMDAuOSBMMzUuNiAxMDEgTDMzLjEgMTAwLjggTDMwLjcgMTAwLjQgTDI4LjMgOTkuNyBMMjYgOTguOCBMMjMuOSA5Ny43IEwyMS45IDk2LjMgTDIwLjEgOTQuNyBMMTguNSA5MyBMMTcuMiA5MSBMMTYuMiA4OC45IEwxNS40IDg2LjYgTDE1IDg0LjMgTDE0LjggODEuOSBMMTQuOSA3OS41IEwxNS4yIDc3LjEgTDE1LjkgNzQuNyBMMTYuNyA3Mi4zIEwxNy44IDcwLjEgTDE5LjEgNjcuOSBMMjAuNSA2NS45IEwyMiA2NCBMMjMuNiA2Mi4yIEwyNS4zIDYwLjYgTDI2LjkgNTkuMSBMMjguNSA1Ny43IEwzMC4xIDU2LjUgTDMxLjYgNTUuMyBMMzMgNTQuMiBMMzQuMyA1My4yIEwzNS40IDUyLjIgTDM2LjQgNTEuMSBMMzcuMyA1MC4xIEwzOCA0OSBMMzguNiA0Ny44IEwzOS4xIDQ2LjYgTDM5LjUgNDUuMiBMMzkuOCA0My43IEw0MC4xIDQyLjEgTDQwLjMgNDAuMyBMNDAuNiAzOC40IEw0MC45IDM2LjQgTDQxLjIgMzQuMyBMNDEuNyAzMi4xIEw0Mi4zIDI5LjkgTDQzIDI3LjYgTDQzLjkgMjUuNCBMNDQuOSAyMy4xIEw0Ni4yIDIxIEw0Ny42IDE4LjkgTDQ5LjIgMTcgTDUwLjkgMTUuMiBMNTIuOCAxMy43IEw1NC45IDEyLjQgTDU3LjEgMTEuNCBMNTkuMyAxMC42IEw2MS42IDEwLjJaIiBmaWxsPSJub25lIiBzdHJva2U9IiM5Yzg2ZWEiIHN0cm9rZS13aWR0aD0iMTAiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz4KPHBhdGggZD0iTTY0IDM0IEw2NS4zIDMzLjkgTDY2LjcgMzMuNyBMNjggMzMuNCBMNjkuNSAzMi45IEw3MSAzMi4zIEw3Mi43IDMxLjYgTDc0LjQgMzAuOSBMNzYuMyAzMC4yIEw3OC4zIDI5LjQgTDgwLjQgMjguNyBMODIuNyAyOC4xIEw4NSAyNy42IEw4Ny40IDI3LjMgTDg5LjkgMjcuMSBMOTIuNCAyNyBMOTQuOSAyNy4yIEw5Ny4zIDI3LjYgTDk5LjcgMjguMyBMMTAyIDI5LjIgTDEwNC4xIDMwLjMgTDEwNi4xIDMxLjcgTDEwNy45IDMzLjMgTDEwOS41IDM1IEwxMTAuOCAzNyBMMTExLjggMzkuMSBMMTEyLjYgNDEuNCBMMTEzIDQzLjcgTDExMy4yIDQ2LjEgTDExMy4xIDQ4LjUgTDExMi44IDUwLjkgTDExMi4xIDUzLjMgTDExMS4zIDU1LjcgTDExMC4yIDU3LjkgTDEwOC45IDYwLjEgTDEwNy41IDYyLjEgTDEwNiA2NCBMMTA0LjQgNjUuOCBMMTAyLjcgNjcuNCBMMTAxLjEgNjguOSBMOTkuNSA3MC4zIEw5Ny45IDcxLjUgTDk2LjQgNzIuNyBMOTUgNzMuOCBMOTMuNyA3NC44IEw5Mi42IDc1LjggTDkxLjYgNzYuOSBMOTAuNyA3Ny45IEw5MCA3OSBMODkuNCA4MC4yIEw4OC45IDgxLjQgTDg4LjUgODIuOCBMODguMiA4NC4zIEw4Ny45IDg1LjkgTDg3LjcgODcuNyBMODcuNCA4OS42IEw4Ny4xIDkxLjYgTDg2LjggOTMuNyBMODYuMyA5NS45IEw4NS43IDk4LjEgTDg1IDEwMC40IEw4NC4xIDEwMi42IEw4My4xIDEwNC45IEw4MS44IDEwNyBMODAuNCAxMDkuMSBMNzguOCAxMTEgTDc3LjEgMTEyLjggTDc1LjIgMTE0LjMgTDczLjEgMTE1LjYgTDcwLjkgMTE2LjYgTDY4LjcgMTE3LjQgTDY2LjQgMTE3LjggTDY0IDExOCBMNjEuNiAxMTcuOCBMNTkuMyAxMTcuNCBMNTcuMSAxMTYuNiBMNTQuOSAxMTUuNiBMNTIuOCAxMTQuMyBMNTAuOSAxMTIuOCBMNDkuMiAxMTEgTDQ3LjYgMTA5LjEgTDQ2LjIgMTA3IEw0NC45IDEwNC45IEw0My45IDEwMi42IEw0MyAxMDAuNCBMNDIuMyA5OC4xIEw0MS43IDk1LjkgTDQxLjIgOTMuNyBMNDAuOSA5MS42IEw0MC42IDg5LjYgTDQwLjMgODcuNyBMNDAuMSA4NS45IEwzOS44IDg0LjMgTDM5LjUgODIuOCBMMzkuMSA4MS40IEwzOC42IDgwLjIgTDM4IDc5IEwzNy4zIDc3LjkgTDM2LjQgNzYuOSBMMzUuNCA3NS44IEwzNC4zIDc0LjggTDMzIDczLjggTDMxLjYgNzIuNyBMMzAuMSA3MS41IEwyOC41IDcwLjMgTDI2LjkgNjguOSBMMjUuMyA2Ny40IEwyMy42IDY1LjggTDIyIDY0IEwyMC41IDYyLjEgTDE5LjEgNjAuMSBMMTcuOCA1Ny45IEwxNi43IDU1LjcgTDE1LjkgNTMuMyBMMTUuMiA1MC45IEwxNC45IDQ4LjUgTDE0LjggNDYuMSBMMTUgNDMuNyBMMTUuNCA0MS40IEwxNi4yIDM5LjEgTDE3LjIgMzcgTDE4LjUgMzUgTDIwLjEgMzMuMyBMMjEuOSAzMS43IEwyMy45IDMwLjMgTDI2IDI5LjIgTDI4LjMgMjguMyBMMzAuNyAyNy42IEwzMy4xIDI3LjIgTDM1LjYgMjcgTDM4LjEgMjcuMSBMNDAuNiAyNy4zIEw0MyAyNy42IEw0NS4zIDI4LjEgTDQ3LjYgMjguNyBMNDkuNyAyOS40IEw1MS43IDMwLjIgTDUzLjYgMzAuOSBMNTUuMyAzMS42IEw1NyAzMi4zIEw1OC41IDMyLjkgTDYwIDMzLjQgTDYxLjMgMzMuNyBMNjIuNyAzMy45WiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZmZmZmZmIiBzdHJva2Utd2lkdGg9IjIwIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+CjxwYXRoIGQ9Ik02NCAzNCBMNjUuMyAzMy45IEw2Ni43IDMzLjcgTDY4IDMzLjQgTDY5LjUgMzIuOSBMNzEgMzIuMyBMNzIuNyAzMS42IEw3NC40IDMwLjkgTDc2LjMgMzAuMiBMNzguMyAyOS40IEw4MC40IDI4LjcgTDgyLjcgMjguMSBMODUgMjcuNiBMODcuNCAyNy4zIEw4OS45IDI3LjEgTDkyLjQgMjcgTDk0LjkgMjcuMiBMOTcuMyAyNy42IEw5OS43IDI4LjMgTDEwMiAyOS4yIEwxMDQuMSAzMC4zIEwxMDYuMSAzMS43IEwxMDcuOSAzMy4zIEwxMDkuNSAzNSBMMTEwLjggMzcgTDExMS44IDM5LjEgTDExMi42IDQxLjQgTDExMyA0My43IEwxMTMuMiA0Ni4xIEwxMTMuMSA0OC41IEwxMTIuOCA1MC45IEwxMTIuMSA1My4zIEwxMTEuMyA1NS43IEwxMTAuMiA1Ny45IEwxMDguOSA2MC4xIEwxMDcuNSA2Mi4xIEwxMDYgNjQgTDEwNC40IDY1LjggTDEwMi43IDY3LjQgTDEwMS4xIDY4LjkgTDk5LjUgNzAuMyBMOTcuOSA3MS41IEw5Ni40IDcyLjcgTDk1IDczLjggTDkzLjcgNzQuOCBMOTIuNiA3NS44IEw5MS42IDc2LjkgTDkwLjcgNzcuOSBMOTAgNzkgTDg5LjQgODAuMiBMODguOSA4MS40IEw4OC41IDgyLjggTDg4LjIgODQuMyBMODcuOSA4NS45IEw4Ny43IDg3LjcgTDg3LjQgODkuNiBMODcuMSA5MS42IEw4Ni44IDkzLjcgTDg2LjMgOTUuOSBMODUuNyA5OC4xIEw4NSAxMDAuNCBMODQuMSAxMDIuNiBMODMuMSAxMDQuOSBMODEuOCAxMDcgTDgwLjQgMTA5LjEgTDc4LjggMTExIEw3Ny4xIDExMi44IEw3NS4yIDExNC4zIEw3My4xIDExNS42IEw3MC45IDExNi42IEw2OC43IDExNy40IEw2Ni40IDExNy44IEw2NCAxMTggTDYxLjYgMTE3LjggTDU5LjMgMTE3LjQgTDU3LjEgMTE2LjYgTDU0LjkgMTE1LjYgTDUyLjggMTE0LjMgTDUwLjkgMTEyLjggTDQ5LjIgMTExIEw0Ny42IDEwOS4xIEw0Ni4yIDEwNyBMNDQuOSAxMDQuOSBMNDMuOSAxMDIuNiBMNDMgMTAwLjQgTDQyLjMgOTguMSBMNDEuNyA5NS45IEw0MS4yIDkzLjcgTDQwLjkgOTEuNiBMNDAuNiA4OS42IEw0MC4zIDg3LjcgTDQwLjEgODUuOSBMMzkuOCA4NC4zIEwzOS41IDgyLjggTDM5LjEgODEuNCBMMzguNiA4MC4yIEwzOCA3OSBMMzcuMyA3Ny45IEwzNi40IDc2LjkgTDM1LjQgNzUuOCBMMzQuMyA3NC44IEwzMyA3My44IEwzMS42IDcyLjcgTDMwLjEgNzEuNSBMMjguNSA3MC4zIEwyNi45IDY4LjkgTDI1LjMgNjcuNCBMMjMuNiA2NS44IEwyMiA2NCBMMjAuNSA2Mi4xIEwxOS4xIDYwLjEgTDE3LjggNTcuOSBMMTYuNyA1NS43IEwxNS45IDUzLjMgTDE1LjIgNTAuOSBMMTQuOSA0OC41IEwxNC44IDQ2LjEgTDE1IDQzLjcgTDE1LjQgNDEuNCBMMTYuMiAzOS4xIEwxNy4yIDM3IEwxOC41IDM1IEwyMC4xIDMzLjMgTDIxLjkgMzEuNyBMMjMuOSAzMC4zIEwyNiAyOS4yIEwyOC4zIDI4LjMgTDMwLjcgMjcuNiBMMzMuMSAyNy4yIEwzNS42IDI3IEwzOC4xIDI3LjEgTDQwLjYgMjcuMyBMNDMgMjcuNiBMNDUuMyAyOC4xIEw0Ny42IDI4LjcgTDQ5LjcgMjkuNCBMNTEuNyAzMC4yIEw1My42IDMwLjkgTDU1LjMgMzEuNiBMNTcgMzIuMyBMNTguNSAzMi45IEw2MCAzMy40IEw2MS4zIDMzLjcgTDYyLjcgMzMuOVoiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZjNDdlMCIgc3Ryb2tlLXdpZHRoPSIxMyIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgo8L3N2Zz4K
@@ -127,8 +127,8 @@
 // Bundles (verbatim, each wrapped in a URL gate and a run-at gate): apollo_editor, art_station, credit_hoarder, falcon, first_contact, fusion, group_therapy, isrc_scout, mammoth, mission_control, platform_check.
 
 try {
-  console.log('%c String Theory %c v2026.10.11.163106 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
-  console.log("String Theory bundles:\n  · Apollo Editor v2026.10.11\n  · Art Station v2026.10.11.161841\n  · Credit Hoarder v2026.10.11\n  · Falcon v2026.10.11\n  · First Contact v2026.10.11\n  · Fusion v2026.10.11\n  · Group Therapy v2026.10.11\n  · ISRC Scout v2026.10.11\n  · Mammoth v2026.10.11\n  · Mission Control v2026.10.11\n  · Platform Check v2026.10.11");
+  console.log('%c String Theory %c v2026.10.11.182509 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
+  console.log("String Theory bundles:\n  · Apollo Editor v2026.10.11\n  · Art Station v2026.10.11.161841\n  · Credit Hoarder v2026.10.11\n  · Falcon v2026.10.11\n  · First Contact v2026.10.11\n  · Fusion v2026.10.11\n  · Group Therapy v2026.10.11.182453\n  · ISRC Scout v2026.10.11\n  · Mammoth v2026.10.11\n  · Mission Control v2026.10.11\n  · Platform Check v2026.10.11");
 } catch (e) {}
 
 function __stReadOff() { try { var v = GM_getValue("string_theory.off", []); return Array.isArray(v) ? v : []; } catch (e) { return []; } }
@@ -136,7 +136,7 @@ var __stOff = __stReadOff();
 (function () {
   if (typeof GM_registerMenuCommand !== 'function') return;
   try { if (window.top !== window.self) return; } catch (e) { return; }
-  var members = [["apollo_editor","Apollo Editor","2026.10.11"],["art_station","Art Station","2026.10.11.161841"],["credit_hoarder","Credit Hoarder","2026.10.11"],["falcon","Falcon","2026.10.11"],["first_contact","First Contact","2026.10.11"],["fusion","Fusion","2026.10.11"],["group_therapy","Group Therapy","2026.10.11"],["isrc_scout","ISRC Scout","2026.10.11"],["mammoth","Mammoth","2026.10.11"],["mission_control","Mission Control","2026.10.11"],["platform_check","Platform Check","2026.10.11"]];
+  var members = [["apollo_editor","Apollo Editor","2026.10.11"],["art_station","Art Station","2026.10.11.161841"],["credit_hoarder","Credit Hoarder","2026.10.11"],["falcon","Falcon","2026.10.11"],["first_contact","First Contact","2026.10.11"],["fusion","Fusion","2026.10.11"],["group_therapy","Group Therapy","2026.10.11.182453"],["isrc_scout","ISRC Scout","2026.10.11"],["mammoth","Mammoth","2026.10.11"],["mission_control","Mission Control","2026.10.11"],["platform_check","Platform Check","2026.10.11"]];
   // Each entry carries a stable id (options.id): Violentmonkey and Tampermonkey then relabel it in
   // place, where it stands. Unregister-and-add left Violentmonkey's open menu with the old entry
   // still there and the new one appended at the end. A manager that ignores options.id hands back
@@ -46174,7 +46174,7 @@ try {
 
 // ===== group_therapy (@run-at document-end) =====================================
 if (__stOff.indexOf("group_therapy") < 0 && __stRuns("group_therapy", {"inc":["^https?:\\/\\/(?:[^/]*\\.)?musicbrainz\\.org(?::\\d+)?/release/.*/edit-relationships$","^https?:\\/\\/(?:[^/]*\\.)?musicbrainz\\.org(?::\\d+)?/artist/.*$","^https?:\\/\\/(?:[^/]*\\.)?musicbrainz\\.org(?::\\d+)?/label/.*$","^https?:\\/\\/(?:[^/]*\\.)?musicbrainz\\.org(?::\\d+)?/place/.*$"],"exc":[],"noframes":true})) (function(__stGM){
-  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Group Therapy*","namespace":"https://github.com/majkinetor/musicbrainz-userscripts","version":"2026.10.11","description":"MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48ZyBmaWxsPSJub25lIiBzdHJva2U9IiM1YjZiN2EiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9Ijk0IiB5Mj0iNDIiLz48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48bGluZSB4MT0iOTQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48L2c+PGcgZmlsbD0iIzJlOWU1YiIgc3Ryb2tlPSIjMjU2ZjQzIiBzdHJva2Utd2lkdGg9IjQiPjxjaXJjbGUgY3g9IjM0IiBjeT0iNDIiIHI9IjE2Ii8+PGNpcmNsZSBjeD0iOTQiIGN5PSI0MiIgcj0iMTYiLz48Y2lyY2xlIGN4PSI2NCIgY3k9Ijk0IiByPSIxNiIvPjwvZz48L3N2Zz4="}) }) : { script: {"name":"Group Therapy*","namespace":"https://github.com/majkinetor/musicbrainz-userscripts","version":"2026.10.11","description":"MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48ZyBmaWxsPSJub25lIiBzdHJva2U9IiM1YjZiN2EiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9Ijk0IiB5Mj0iNDIiLz48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48bGluZSB4MT0iOTQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48L2c+PGcgZmlsbD0iIzJlOWU1YiIgc3Ryb2tlPSIjMjU2ZjQzIiBzdHJva2Utd2lkdGg9IjQiPjxjaXJjbGUgY3g9IjM0IiBjeT0iNDIiIHI9IjE2Ii8+PGNpcmNsZSBjeD0iOTQiIGN5PSI0MiIgcj0iMTYiLz48Y2lyY2xlIGN4PSI2NCIgY3k9Ijk0IiByPSIxNiIvPjwvZz48L3N2Zz4="} };
+  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Group Therapy*","namespace":"https://github.com/majkinetor/musicbrainz-userscripts","version":"2026.10.11.182453","description":"MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48ZyBmaWxsPSJub25lIiBzdHJva2U9IiM1YjZiN2EiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9Ijk0IiB5Mj0iNDIiLz48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48bGluZSB4MT0iOTQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48L2c+PGcgZmlsbD0iIzJlOWU1YiIgc3Ryb2tlPSIjMjU2ZjQzIiBzdHJva2Utd2lkdGg9IjQiPjxjaXJjbGUgY3g9IjM0IiBjeT0iNDIiIHI9IjE2Ii8+PGNpcmNsZSBjeD0iOTQiIGN5PSI0MiIgcj0iMTYiLz48Y2lyY2xlIGN4PSI2NCIgY3k9Ijk0IiByPSIxNiIvPjwvZz48L3N2Zz4="}) }) : { script: {"name":"Group Therapy*","namespace":"https://github.com/majkinetor/musicbrainz-userscripts","version":"2026.10.11.182453","description":"MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48ZyBmaWxsPSJub25lIiBzdHJva2U9IiM1YjZiN2EiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9Ijk0IiB5Mj0iNDIiLz48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48bGluZSB4MT0iOTQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48L2c+PGcgZmlsbD0iIzJlOWU1YiIgc3Ryb2tlPSIjMjU2ZjQzIiBzdHJva2Utd2lkdGg9IjQiPjxjaXJjbGUgY3g9IjM0IiBjeT0iNDIiIHI9IjE2Ii8+PGNpcmNsZSBjeD0iOTQiIGN5PSI0MiIgcj0iMTYiLz48Y2lyY2xlIGN4PSI2NCIgY3k9Ijk0IiByPSIxNiIvPjwvZz48L3N2Zz4="} };
   (f=>document.readyState!=='loading'?f():document.addEventListener('DOMContentLoaded',f,{once:true}))(function(){ try { (function(){
 /* eslint-disable no-undef */
 (function () {
@@ -49236,6 +49236,12 @@ if (__stOff.indexOf("group_therapy") < 0 && __stRuns("group_therapy", {"inc":["^
   let wmCutoff = (() => { try { const v = GM_getValue('gt-wm-cutoff', WM_RANK.near); return typeof v === 'number' ? v : WM_RANK.near; } catch (e) { return WM_RANK.near; } })();
   // #363 whether opening the matcher auto-runs the (API-heavy) match. Default OFF — you click ⚡ Match yourself.
   let wmAutoOnOpen = (() => { try { return !!GM_getValue('gt-wm-auto-open', false); } catch (e) { return false; } })();
+  // #718 a medley track ("Land of Hope and Dreams / People Get Ready") gets a row per work. Only " / " with
+  // spaces splits — MB's title guideline for medleys — so "AC/DC" stays whole. On by default, toggled in
+  // the matcher's toolbar (persisted).
+  let wmSplitMedley = (() => { try { return GM_getValue('gt-wm-split', true) !== false; } catch (e) { return true; } })();
+  const WM_MEDLEY_RE = /\s+\/\s+/;
+  const wmMedleyParts = t => { const p = (t || '').split(WM_MEDLEY_RE).map(x => x.trim()).filter(Boolean); return p.length > 1 ? p : null; };
   // #372 page options (persisted): hide MB's edit-relationships help text (on by default), and auto-open +
   // run the work matcher on page load (off by default).
   let gtHideHelp = (() => { try { return GM_getValue('gt-hide-help', true) !== false; } catch (e) { return true; } })();
@@ -49475,7 +49481,11 @@ if (__stOff.indexOf("group_therapy") < 0 && __stRuns("group_therapy", {"inc":["^
       const rec = recordingEntity(tr); if (!rec) return;
       const key = (rec.gid || '') + '|' + rec.id; if (seen.has(key)) return; seen.add(key);
       const hasWork = recordingRels(tr).some(r => !r.removed && r.other && r.other.entityType === 'work');
-      out.push({ tr, rec, pos: posLabel(tr) || '', title: val(rec.name) || '', hasWorkOnPage: hasWork });
+      const title = val(rec.name) || '', pos = posLabel(tr) || '';
+      const parts = wmSplitMedley ? wmMedleyParts(title) : null;
+      // #718 one row per medley part — same recording, the part as its title; Apply links each part's work
+      if (parts) parts.forEach((t, i) => out.push({ tr, rec, pos, title: t, fullTitle: title, part: i + 1, parts: parts.length, hasWorkOnPage: hasWork }));
+      else out.push({ tr, rec, pos, title, hasWorkOnPage: hasWork });
     });
     return out;
   }
@@ -49552,7 +49562,8 @@ if (__stOff.indexOf("group_therapy") < 0 && __stRuns("group_therapy", {"inc":["^
     // ISRC-sharing recordings (the /isrc lookup returns work-rels, unlike a /recording search)
     for (const code of isrcs.slice(0, 3)) {
       const j = await wmJson('/ws/2/isrc/' + encodeURIComponent(code) + '?inc=work-rels&fmt=json');
-      (j && j.recordings || []).forEach(r => (r.relations || []).forEach(rel => { if (rel.work) add({ gid: rel.work.id, id: null, title: rel.work.title, disambiguation: rel.work.disambiguation || '' }, true); }));
+      // #718 an ISRC sibling of a medley carries every part's work — it confirms only the one titled like this part
+      (j && j.recordings || []).forEach(r => (r.relations || []).forEach(rel => { if (rel.work) add({ gid: rel.work.id, id: null, title: rel.work.title, disambiguation: rel.work.disambiguation || '' }, !row.parts || isExact(rel.work.title)); }));
     }
     // fold in the title search that's been running since the top of this call
     (await searchP).forEach(w => add(w, false));
@@ -49604,6 +49615,10 @@ if (__stOff.indexOf("group_therapy") < 0 && __stRuns("group_therapy", {"inc":["^
       + '.gt-wm-tbl .tc-grp-l{background:var(--mbu-bg-raised);color:var(--mbu-info)}.gt-wm-tbl .tc-grp-r{background:var(--mbu-bg-hover);color:var(--mbu-accent-text)}'
       + '.gt-wm-dot{display:inline-block;width:10px;height:10px;border-radius:50%;border:1px solid rgba(0,0,0,.15)}'
       + '.gt-wm-tkt{font-weight:600}.gt-wm-tka{color:var(--mbu-text-dim)}'
+      // #718 medley: the Split toggle, the track's tag, each part's label
+      + '.gt-wm-split{display:inline-flex;align-items:center;gap:5px;font-size:12px;color:var(--mbu-text);border:1px solid var(--mbu-border);border-radius:14px;padding:2px 9px 2px 6px;background:var(--mbu-bg-hover);cursor:pointer;white-space:nowrap}.gt-wm-split input{margin:0}.gt-wm-split code{font-weight:700;color:var(--mbu-accent-text)}'
+      + '.gt-wm-medtag{display:inline-block;margin-top:3px;font:11px Arial;font-weight:400;color:var(--mbu-text-on-accent);background:var(--mbu-accent);border-radius:8px;padding:0 7px}'
+      + '.gt-wm-pt{display:block;color:var(--mbu-text-dim);font-size:11px;margin-top:1px}'
       + '.gt-wm-wk{position:relative}.gt-wm-wa{color:var(--mbu-info);font-weight:600;text-decoration:none;cursor:pointer}.gt-wm-wa:hover{text-decoration:underline}'
       + '.gt-wm-none{color:var(--mbu-error);cursor:pointer}.gt-wm-none:hover{text-decoration:underline}.gt-wm-newtag{color:var(--mbu-ok);cursor:pointer}'
       + '.gt-wm-disamb{color:var(--mbu-text-weak);font-weight:400}.gt-wm-authors{color:var(--mbu-text-dim);font-size:12px}.gt-wm-dim{color:var(--mbu-text-weak);font-style:italic}.gt-wm-linked{color:var(--mbu-ok)}'
@@ -49708,7 +49723,15 @@ if (__stOff.indexOf("group_therapy") < 0 && __stRuns("group_therapy", {"inc":["^
     const matchCaret = el('button', 'gt-wm-caret', '▾'); matchCaret.type = 'button'; matchCaret.title = 'more actions';
     matchCaret.onclick = () => wmFloatMenu(matchCaret, [{ label: 'Clear all', run: () => { rows.forEach(r => { r.chosen = null; }); draw(); updatePlan(); } }]);
     // #363 new-work options on the left; matched status + cutoff + Match (with a caret menu for Clear) on the right
-    tb.append(wmNewParamsUi(), amstatus, cancelBtn, cutWrap, warn, el('span', 'gt-wm-tbsep'), matchBtn, matchCaret); body.appendChild(tb);
+    tb.append(wmNewParamsUi());
+    // #718 shown only when a track title has " / "; toggling rebuilds the rows (and re-matches if a match ran)
+    if (rows.some(r => r.parts || wmMedleyParts(r.title))) {
+      const split = el('label', 'gt-wm-split'); split.title = 'Split track titles on “ / ” (a medley) and match each part to its own work';
+      const scb = document.createElement('input'); scb.type = 'checkbox'; scb.checked = wmSplitMedley;
+      scb.onchange = () => { wmSplitMedley = scb.checked; try { GM_setValue('gt-wm-split', wmSplitMedley); } catch (e) {} openWorkMatch(rows.some(r => r._matched)); };
+      split.append(scb, document.createTextNode('Split on '), el('code', null, '/')); tb.appendChild(split);
+    }
+    tb.append(amstatus, cancelBtn, cutWrap, warn, el('span', 'gt-wm-tbsep'), matchBtn, matchCaret); body.appendChild(tb);
     const setProgress = (d, n) => { wmRunning = !!n; amstatus.textContent = n ? `matching ${d}/${n}…` : (d ? `matched ${d} track${d > 1 ? 's' : ''}` : ''); matchBtn.disabled = !!n; matchCaret.disabled = !!n; cancelBtn.style.display = n ? '' : 'none'; };   // disable ⚡ Match + offer cancel while matching runs
     // ── table ──
     const tbl = el('table', 'gt-wm-tbl');
@@ -49729,6 +49752,10 @@ if (__stOff.indexOf("group_therapy") < 0 && __stRuns("group_therapy", {"inc":["^
       } : null;
     };
     const draw = () => rows.forEach(row => {
+      drawRow(row);
+      if (row.parts && row._wk && !(row.hasWorkOnPage || row.linked)) row._wk.appendChild(el('span', 'gt-wm-pt', `part ${row.part} · “${row.title}”`));   // #718
+    });
+    const drawRow = row => {
       const wkd = row._wk, dot = row._dot, wad = row._wa; if (!wkd) return;
       wkd.textContent = ''; if (wad) wad.textContent = '';
       if (row._artEl) row._artEl.textContent = row.artist || '';
@@ -49760,12 +49787,18 @@ if (__stOff.indexOf("group_therapy") < 0 && __stRuns("group_therapy", {"inc":["^
       acts.appendChild(mkAct('↺', 'clear this match', () => { row.chosen = null; draw(); updatePlan(); }));
       if (!w._gtNew) acts.appendChild(mkAct('＋', 'set to a new work', () => { row.chosen = wmMakeNewWork(row.title); draw(); updatePlan(); }));
       wkd.appendChild(acts);
-    });
+    };
     rows.forEach((row, i) => {
-      const tr = el('tr', 'gt-wm-row');
-      tr.appendChild(el('td', 'c-n', row.pos ? String(row.pos) : String(i + 1)));
-      tr.appendChild(el('td', 'gt-wm-tkt', row.title || '(untitled)'));
-      const tka = el('td', 'gt-wm-tka'); row._artEl = tka; tr.appendChild(tka);
+      const tr = el('tr', 'gt-wm-row' + (row.parts ? ' gt-wm-med' : ''));
+      // #718 a medley's parts share one track: its #, full title and artist span the part rows
+      if (!row.parts || row.part === 1) {
+        const span = c => { if (row.parts) c.rowSpan = row.parts; return c; };
+        tr.appendChild(span(el('td', 'c-n', row.pos ? String(row.pos) : String(i + 1))));
+        const tkt = span(el('td', 'gt-wm-tkt', row.parts ? row.fullTitle : (row.title || '(untitled)')));
+        if (row.parts) { tkt.appendChild(document.createElement('br')); tkt.appendChild(el('span', 'gt-wm-medtag', `medley · ${row.parts} works`)); }
+        tr.appendChild(tkt);
+        const tka = span(el('td', 'gt-wm-tka')); row._artEl = tka; tr.appendChild(tka);
+      }
       const sepd = el('td', 'c-sep'); const dot = el('span', 'gt-wm-dot'); dot.style.visibility = 'hidden'; sepd.appendChild(dot); row._dot = dot; tr.appendChild(sepd);
       const wkd = el('td', 'gt-wm-wk'); row._wk = wkd; tr.appendChild(wkd);
       const wad = el('td', 'gt-wm-authors'); row._wa = wad; tr.appendChild(wad);
@@ -49826,6 +49859,7 @@ if (__stOff.indexOf("group_therapy") < 0 && __stRuns("group_therapy", {"inc":["^
     closePopover();
     popEl = el('div', 'gt-wm-pop');
     popEl.appendChild(el('div', 'gt-pop-hdr', 'Pick a work for “' + trunc(row.title, 54) + '”'));
+    if (row.parts) popEl.appendChild(el('div', 'gt-wm-sub', `part ${row.part} of “${trunc(row.fullTitle, 60)}”`));   // #718
     if (row.artist) popEl.appendChild(el('div', 'gt-wm-sub', 'by ' + trunc(row.artist, 60)));
     // current match (mirrors Apollo's picker header) — the work as a link you can open in a new tab, its
     // writers, and a clear button
@@ -49881,7 +49915,7 @@ if (__stOff.indexOf("group_therapy") < 0 && __stRuns("group_therapy", {"inc":["^
     const todo = rows.filter(r => r.chosen && !r.hasWorkOnPage && !r.linked);
     if (!todo.length) { toast('Nothing resolved to apply'); return; }
     toast(`Linking ${todo.length} work${todo.length > 1 ? 's' : ''}…`);
-    let ok = 0, fail = 0;
+    let ok = 0, fail = 0; const okRecs = new Set();   // #718 a medley links one recording to several works
     const extras = wmRelExtras();   // #363 recording-of attributes + dates, applied to every staged rel
     for (const row of todo) {
       try {
@@ -49890,10 +49924,11 @@ if (__stOff.indexOf("group_therapy") < 0 && __stRuns("group_therapy", {"inc":["^
         const workEnt = row.chosen._gtNew ? row.chosen : await wmJson('/ws/js/entity/' + row.chosen.gid);
         if (!workEnt || workEnt.id == null) { fail++; continue; }
         dispatchRelationship(re, row.rec, workEnt, ltId, '', extras.attrs, extras.dates);
-        row.linked = true; row.chosen = null; ok++;
+        row.linked = true; row.chosen = null; ok++; okRecs.add(row.rec);
       } catch (e) { fail++; }
     }
-    if (ok) markUsed(`Matched ${ok} recording${ok > 1 ? 's' : ''} to works`);
+    const nRec = okRecs.size;
+    if (ok) markUsed(`Matched ${nRec} recording${nRec > 1 ? 's' : ''} to works`);
     toast(fail ? `Linked ${ok}, ${fail} failed — see console` : `✓ Linked ${ok} work${ok > 1 ? 's' : ''} — review & save`);
     refresh && refresh();
     return ok;
@@ -52550,6 +52585,7 @@ Created this ${kind} while adding credits parsed from text to ${relUrl}`;
       txpSearchArtist, txpResolveByExactAlias, txpFetchEntity, txpFetchAnnotation, txpAnnoHtmlToText,
       txpSearchLabel, txpResolveLabelByExactAlias, txpParseCopyrightLine, txpNoticeDatePeriod, txpNarrowByScore, txpInstrumentCandidates, txpVocalCandidates,
       txpSplitCompoundCopyrightLines,
+      wmMedleyParts, wmRecordings, openWorkMatch,   // #718 medleys
     }; } catch (e) {}
     console.log('[Group Therapy] ' + mbuStartupInfo('Group Therapy'));
     console.log(`[Group Therapy] v${VERSION} ready — right-click a relationship's × for group delete; hover a name/role to highlight.`);
