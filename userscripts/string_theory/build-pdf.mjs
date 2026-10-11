@@ -54,6 +54,31 @@ bodyHtml = bodyHtml.replace(
     return `<blockquote class="adm adm-${t}"><p class="adm-title">${label}</p><p>`;
   });
 
+// A cover page in place of DOCS.md's H1 + "Built …" line: the String Theory mark, the name,
+// the site and the author. The TOC after it gets each member's icon; a member's anchor is its
+// folder name with dashes (apollo-editor → apollo_editor/icon.svg).
+const SITE = 'https://milic.info/musicbrainz-userscripts/';
+const built = (bodyHtml.match(/<em>Built ([^<·]+?)\s*·/) || [])[1] || '';
+const stIcon = readFileSync(resolve(HERE, 'icon.svg'), 'utf8').replace(/<\?xml[^>]*>\s*/, '');
+let count = 0;
+bodyHtml = bodyHtml
+  .replace(/^\s*<h1[^>]*>[\s\S]*?<\/h1>\s*<p><em>Built[\s\S]*?<\/p>/, () => `<section class="cover">
+  <div class="mark">${stIcon}</div>
+  <h1 class="name">String Theory</h1>
+  <p class="tag">Space age tools for MusicBrainz editors</p>
+  <p class="kind">Unified documentation · %COUNT% scripts</p>
+  <div class="meta">
+    <p class="by">by <a href="https://github.com/majkinetor">majkinetor</a></p>
+    <p><a href="${SITE}">${SITE.replace(/^https:\/\//, '').replace(/\/$/, '')}</a></p>
+    <p class="date">${built}</p>
+  </div>
+</section>`)
+  .replace(/(<h2 id="table-of-contents">[\s\S]*?)<ol>([\s\S]*?)<\/ol>/, (_m, head, items) => `${head}<ol class="toc">${
+    items.replace(/<li><a href="#([^"]+)">([^<]+)<\/a><\/li>/g, (_l, id, name) => { count++;
+      return `<li><a href="#${id}"><img class="ti" alt="" src="../${id.replace(/-/g, '_')}/icon.svg"><span>${name}</span></a></li>`; })
+  }</ol>`)
+  .replace('%COUNT%', () => count);
+
 // Minimal GitHub-ish print stylesheet. Images in DOCS.md are `../<member>/…` — a
 // temp HTML written INTO this folder makes those resolve to the real files.
 const html = `<!doctype html><html><head><meta charset="utf-8"><style>
@@ -83,6 +108,19 @@ const html = `<!doctype html><html><head><meta charset="utf-8"><style>
   img { max-width: 100%; height: auto; border: 1px solid #d0d7de; border-radius: 6px; page-break-inside: avoid; }
   hr { border: none; border-top: 1px solid #d0d7de; margin: 1.5em 0; }
   ul, ol { padding-left: 1.6em; } li { margin: .15em 0; }
+  .cover { height: 250mm; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
+  .cover .mark svg { width: 190px; height: 190px; display: block; }
+  .cover .name { font-size: 3.6em; margin: .5em 0 0; letter-spacing: -.01em; }
+  .cover .tag { font-size: 1.35em; color: #57606a; margin: .3em 0 0; }
+  .cover .kind { font-size: .95em; color: #8a8f96; margin: 1.2em 0 0; letter-spacing: .12em; text-transform: uppercase; }
+  .cover .meta { margin-top: 70mm; font-size: 1.05em; color: #57606a; }
+  .cover .meta p { margin: .2em 0; }
+  .cover .by { font-size: 1.2em; color: #1f2328; }
+  .cover .date { font-size: .85em; color: #8a8f96; }
+  ol.toc { list-style: none; padding: 0; margin: 1.2em 0; display: grid; grid-template-columns: 1fr 1fr; gap: 10px 24px; }
+  ol.toc li { margin: 0; }
+  ol.toc a { display: flex; align-items: center; gap: 14px; padding: 8px 12px; border: 1px solid #d0d7de; border-radius: 10px; color: #1f2328; font-size: 1.15em; font-weight: 500; }
+  ol.toc img.ti { width: 40px; height: 40px; border: 0; border-radius: 0; object-fit: contain; }
 </style></head><body>${bodyHtml}</body></html>`;
 
 const TMP = resolve(HERE, '.docs-print.html');

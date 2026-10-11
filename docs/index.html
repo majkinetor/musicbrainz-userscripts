@@ -109,14 +109,18 @@
   ul.idx{list-style:none;margin:14px 0 0;padding:0;display:grid;
          grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:14px}
   ul.idx li{display:flex;flex-direction:column;align-items:center;text-align:center;gap:8px;
-            padding:20px 14px 16px;border:1px solid var(--rule);border-radius:12px}
+            padding:20px 14px 16px;border:1px solid var(--rule);border-radius:12px;position:relative}
   ul.idx img{width:64px;height:64px;display:block;object-fit:contain}
   ul.idx .n{font-weight:500;font-size:16px}
   ul.idx .n a{color:var(--ink);text-decoration:none}
   ul.idx .n a:hover{color:var(--accent)}
   ul.idx .d{flex:1;font-size:13.5px;line-height:1.4;color:var(--dim)}
-  ul.idx .ib{font-size:13px;text-decoration:none}
-  ul.idx .ib:hover{text-decoration:underline}
+  /* The lone install is a faint corner glyph on purpose: String Theory is the install
+     people should take; this is for whoever wants just one script. */
+  ul.idx .ib{position:absolute;top:8px;right:8px;display:flex;padding:4px;border-radius:6px;
+             color:var(--faint);opacity:.35;transition:opacity .15s}
+  ul.idx li:hover .ib{opacity:.8} ul.idx .ib:hover{opacity:1;color:var(--accent)}
+  ul.idx .ib svg{width:14px;height:14px}
 
   footer{margin:52px 0 0;padding:0 0 110px;font-size:13px;color:var(--faint);
          display:flex;gap:20px;justify-content:center;flex-wrap:wrap}
@@ -309,7 +313,8 @@ const row = ([s,n,i,d]) =>
  `<li><img loading="lazy" alt="" src="${RAW}${s}/${i}">` +
  `<span class="n"><a href="${GH}${s}/README.md">${n}</a></span>` +
  `<span class="d">${d}</span>` +
- `<a class="ib" href="${INST(s)}" title="Install ${n} on its own (stable)">Install ↓</a></li>`;
+ `<a class="ib" href="${INST(s)}" aria-label="Install ${n} alone" title="Install ${n} alone — String Theory already includes it">` +
+ `<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M8 2v8M4.5 6.5 8 10l3.5-3.5M3 13h10"/></svg></a></li>`;
 document.getElementById('bundled').innerHTML = BUNDLED.map(row).join('');
 </script>
 </body>
