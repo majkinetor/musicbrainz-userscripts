@@ -19,7 +19,7 @@ A feature-rich release editor that does the matching for you. If it exists, Apol
 Edit cover art, find it online and maximize it, with parallel edits retried on errors
 
 [Credit Hoarder](./userscripts/credit_hoarder/README.md)<img src="./userscripts/credit_hoarder/icon.svg" align="left" width="32"><br>
-Import credits from several providers with a review phase
+Import hundreds of credits from online platforms. What used to take days now takes minutes.
 
 [Falcon](./userscripts/falcon/README.md) <img src="./userscripts/falcon/icon.svg" align="left" width="32"><br>
 Batch import entity fields from Harmony or by hand; attach disc IDs from CD rip logs
