@@ -37,7 +37,7 @@ Therapy for messy relationships: delete, copy, move and re-date credits in bulk,
 Scouts the platforms for a release's missing ISRCs and track links, and brings them home.
 
 [Mammoth](./userscripts/mammoth/README.md)<img src="./userscripts/mammoth/icon.svg" align="left" width="32"><br>
-Reusable edit notes on every edit form, and remembered field values
+A mammoth never forgets: your edit notes and field values, saved and one click away on every edit form.
 
 [Mission Control](./userscripts/mission_control/README.md)<img src="./userscripts/mission_control/icon.svg" align="left" width="32"><br>
 One dashboard to find and fix all a release lacks, and consolidate new ones
