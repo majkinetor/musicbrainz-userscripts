@@ -189,6 +189,13 @@
   .faq details[open] summary::after{content:"−"}
   .faq summary:hover{color:var(--accent)}
   .faq p{margin:0 2px 14px;color:var(--dim);font-size:14.5px}
+  /* each question's link: copies the page's address with the question's anchor, to send to someone */
+  .faq .cp{display:inline-flex;padding:4px;border:0;background:none;color:var(--faint);cursor:pointer;opacity:0;transition:opacity .15s;border-radius:6px}
+  .faq summary:hover .cp,.faq .cp:focus-visible{opacity:.8} .faq .cp:hover{opacity:1;color:var(--accent)}
+  @media (hover:none){ .faq .cp{opacity:.6} }
+  .faq .cp svg{width:15px;height:15px}
+  .faq .cp.ok{opacity:1;color:var(--accent)}
+  .faq .cp.ok::after{content:"Copied";margin-left:6px;font-size:12.5px;font-weight:400}
 </style>
 <script>
 // The theme picked with the switch; without one the system's applies.
@@ -245,27 +252,27 @@ try { const t = localStorage.getItem('theme'); if (t === 'light' || t === 'dark'
     </div>
     <h2>FAQ</h2>
     <div class="faq">
-      <details><summary>Should I use the standalone userscripts or String Theory?</summary>
+      <details id="standalone"><summary>Should I use the standalone userscripts or String Theory?</summary>
         <p>Use String Theory. The bundle is small, you install one userscript instead of a dozen, and you can still turn each script on or off from the userscript manager's menu (see <a href="https://github.com/majkinetor/musicbrainz-userscripts/issues/693">#693</a>).</p>
         <p>The standalone userscripts aren't going away, because development happens in them, so you can rely on them too. They mostly make sense if you only want one or two of them.</p></details>
       <details id="latest"><summary>Can I get new features sooner?</summary>
         <p>Yes, install the <a href="https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/refs/heads/main/userscripts/string_theory/string_theory.user.js">latest String Theory</a>. You get fixes and features as soon as they're done, but they're less tested. Your settings stay. To go back, install the <a href="https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/refs/heads/stable/userscripts/string_theory/string_theory.user.js">stable String Theory</a>.</p></details>
-      <details><summary>What other userscripts do I need alongside String Theory?</summary>
+      <details id="other-userscripts"><summary>What other userscripts do I need alongside String Theory?</summary>
         <p>Generally none. The days of userscript fragmentation are over. If something would be useful to many editors, request it as a String Theory feature rather than installing yet another userscript. There's a good chance I'll add it.</p></details>
-      <details><summary>How do I get a dark theme?</summary>
+      <details id="dark-theme"><summary>How do I get a dark theme?</summary>
         <p>Install the <a href="https://add0n.com/stylus.html">Stylus</a> browser extension, then kellnerd's <a href="https://userstyles.world/api/style/16407.user.css">Dark Side of MusicBrainz</a> theme. MusicBrainz turns dark, and every script follows it.</p></details>
-      <details><summary>How is this made?</summary>
+      <details id="how-made"><summary>How is this made?</summary>
         <p>String Theory is developed in the open on GitHub. I design the features and the architecture, a team of AI agents writes the code, and we write the specifications together. A number of community members help with suggestions and testing.</p>
         <p>The project has hundreds of detailed issues and discussions, a large suite of automated tests and continuous integration. You may even get to chat with my bots on the issues (be nice).</p></details>
-      <details><summary>How does it compare to Harmony?</summary>
+      <details id="harmony"><summary>How does it compare to Harmony?</summary>
         <p>String Theory covers most of what Harmony does, and a lot more. It runs on your own machine, so it isn't affected by Harmony's regional limitations or server outages.</p>
         <p>Harmony's Spotify support is better. Spotify's API needs a developer subscription, which String Theory can't use. That rarely matters: String Theory still covers most Spotify use, and what's missing is release consolidation in Mission Control.</p>
         <p>The two also work together. <a href="https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/falcon/README.md#from-harmony">Falcon complements Harmony</a>, and First Contact can send platform releases to it.</p>
         <p>In String Theory, the same job goes like this: on a supported platform's album page, First Contact sends the release to Mission Control, which consolidates it across every other platform it can find. Adding the consolidated release opens the MusicBrainz release editor, where Apollo Editor matches the artists and recordings automatically. When you save, you're back in Mission Control to finish.</p></details>
-      <details><summary>How do I report an issue?</summary>
+      <details id="report"><summary>How do I report an issue?</summary>
         <p>Open an <a href="https://github.com/majkinetor/musicbrainz-userscripts/issues/new">issue on GitHub</a>. Every script's config window has a <b>Log</b> tab: turn <b>debug</b> on, reproduce the problem, then <b>⧉ Copy</b> the log. It comes out as Markdown, ready to paste into the issue.</p>
         <p>For questions and ideas, use <a href="https://github.com/majkinetor/musicbrainz-userscripts/discussions">GitHub discussions</a> or the <a href="https://community.metabrainz.org/t/string-theory-and-other-majkinetor-scripts/815740/18">String Theory thread</a> on the MusicBrainz forum.</p></details>
-      <details><summary>What else should I know?</summary>
+      <details id="more"><summary>What else should I know?</summary>
         <p>Read the <a href="https://github.com/majkinetor/musicbrainz-userscripts/releases/latest/download/String_Theory.pdf">documentation</a>. String Theory has a huge number of features. Tooltips explain almost everything, and right-click does something in many places. If you think a feature is missing, String Theory probably already has it.</p></details>
     </div>
     <p class="made"><span>Made with <svg class="heart" viewBox="0 0 24 24" aria-label="love"><path d="M12 21s-7.5-4.6-9.6-9.2C.9 8.4 3 4.5 6.7 4.5c2.2 0 3.6 1.3 4.3 2.4h2c.7-1.1 2.1-2.4 4.3-2.4 3.7 0 5.8 3.9 4.3 7.3C19.5 16.4 12 21 12 21z"/></svg></span>
@@ -393,6 +400,23 @@ const openHash = () => { const d = location.hash && document.getElementById(loca
 addEventListener('hashchange', openHash); openHash();
 // clicking the same link again fires no hashchange, but the answer may have been closed since
 document.addEventListener('click', e => { if (e.target.closest('a[href^="#"]')) setTimeout(openHash); });
+
+// Each FAQ question gets a link button: it copies the address of that answer (the page opens
+// it from the hash) without toggling the question.
+for (const d of document.querySelectorAll('.faq details[id]')) {
+  const b = document.createElement('button');
+  b.className = 'cp'; b.type = 'button'; b.title = 'Copy a link to this answer'; b.setAttribute('aria-label', b.title);
+  b.innerHTML = '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M6.5 9.5a3 3 0 0 0 4.2 0l2.3-2.3a3 3 0 0 0-4.2-4.2l-.9.9"/><path d="M9.5 6.5a3 3 0 0 0-4.2 0L3 8.8a3 3 0 0 0 4.2 4.2l.9-.9"/></svg>';
+  b.addEventListener('click', async (e) => {
+    e.preventDefault(); e.stopPropagation();
+    const url = location.origin + location.pathname + '#' + d.id;
+    history.replaceState(null, '', '#' + d.id);
+    d.open = true;
+    try { await navigator.clipboard.writeText(url); b.classList.add('ok'); setTimeout(() => b.classList.remove('ok'), 1500); }
+    catch (err) { /* clipboard blocked: the address bar holds the link now */ }
+  });
+  d.querySelector('summary').appendChild(b);
+}
 
 const INST = s => `https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/refs/heads/stable/userscripts/${s}/${s}.user.js`;
 (function themeSwitch() {
