@@ -34,7 +34,7 @@ Cold fusion for duplicate recordings: find them, merge them, all from one window
 Therapy for messy relationships: delete, copy, move and re-date credits in bulk, and turn liner notes into relationships.
 
 [ISRC Scout](./userscripts/isrc_scout/README.md)<img src="./userscripts/isrc_scout/icon.svg" align="left" width="32"><br>
-Fill in a release's missing ISRCs and streaming links
+Scouts the platforms for a release's missing ISRCs and track links, and brings them home.
 
 [Mammoth](./userscripts/mammoth/README.md)<img src="./userscripts/mammoth/icon.svg" align="left" width="32"><br>
 Reusable edit notes on every edit form, and remembered field values
