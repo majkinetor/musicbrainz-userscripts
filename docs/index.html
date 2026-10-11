@@ -133,6 +133,18 @@
     ul.idx .d{font-size:12.5px}
     h1{font-size:23px}
   }
+
+  /* Praise: one quote rotating under the install, and all of them as cards after the scripts.
+     The quotes are shortened from https://github.com/majkinetor/musicbrainz-userscripts/wiki/Praise */
+  .praise{margin:34px auto 0;max-width:40em;min-height:5.2em;transition:opacity .5s}
+  .praise q,.wall q{display:block;color:var(--ink);quotes:"“" "”"}
+  .praise q{font-size:17px;font-style:italic}
+  .praise .by,.wall .by{display:block;margin-top:8px;font-size:12.5px;color:var(--faint)}
+  .praise .by a,.wall .by a{color:var(--faint)}
+  .wall{columns:3 260px;column-gap:14px;margin-top:14px}
+  .wall figure{break-inside:avoid;margin:0 0 14px;padding:16px 18px 14px;border:1px solid var(--rule);border-radius:12px;text-align:left}
+  .wall q{font-size:14.5px;line-height:1.45}
+  @media (prefers-reduced-motion:reduce){.praise{transition:none}}
 </style>
 <script>
 // The theme picked with the switch; without one the system's applies.
@@ -169,12 +181,19 @@ try { const t = localStorage.getItem('theme'); if (t === 'light' || t === 'dark'
       <small>every script below in one install</small>
       <p class="sub"><a href="https://github.com/majkinetor/musicbrainz-userscripts/releases/latest/download/String_Theory.pdf" title="All the scripts' docs in one PDF, from the latest release">Docs</a><a href="./stats.html">Stats</a></p></div>
 
+    <figure class="praise" id="praise"></figure>
+
     <hr>
 
     <div class="bundle wide-out">
       <h2>What's inside</h2>
       <p class="note">Each one also installs on its own</p>
       <ul class="idx" id="bundled"></ul>
+    </div>
+    <div class="bundle wide-out">
+      <h2>Kind words</h2>
+      <p class="note">From the MusicBrainz forum, Discord and GitHub · <a href="https://github.com/majkinetor/musicbrainz-userscripts/wiki/Praise">more</a></p>
+      <div class="wall" id="wall"></div>
     </div>
     <footer>
       <span>MIT</span>
@@ -316,6 +335,32 @@ const row = ([s,n,i,d]) =>
  `<a class="ib" href="${INST(s)}" aria-label="Install ${n} alone" title="Install ${n} alone — String Theory already includes it">` +
  `<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M8 2v8M4.5 6.5 8 10l3.5-3.5M3 13h10"/></svg></a></li>`;
 document.getElementById('bundled').innerHTML = BUNDLED.map(row).join('');
+
+// [quote, who, where, link]
+const PRAISE=[
+ ["I just tried your UI overhaul userscript and DAMN this should be official!!!", "NicolasPL64", "GitHub", "https://github.com/majkinetor/musicbrainz-userscripts/issues/596#issuecomment-5808195567"],
+ ["Superb work. 11/10. Big time saver. Thank you for the hours you will save of my future edits.", "IvanDobsky", "MB forum", "https://community.metabrainz.org/t/credit-hoarder-userscript/815063/8"],
+ ["No more manually adding each and every credit relationship, this does it for me!", "redpixel09", "MB forum", "https://community.metabrainz.org/t/credit-hoarder-userscript/815063/3"],
+ ["This is epic. Maybe I’m dreaming but I think MusicBrainz has a very bright future…", "oblaka", "Discord", "https://discord.com/channels/937555302251905084/1193999163344564385/1558115358894854315"],
+ ["Art Station is better than native uploader in every regard", "chaban-mb", "GitHub", "https://github.com/majkinetor/musicbrainz-userscripts/issues/630#issuecomment-5876661634"],
+ ["The script is very mighty, comfortable and practical.", "Schwarzwalder", "MB forum", "https://community.metabrainz.org/t/credit-hoarder-userscript/815063/32"],
+ ["This script is freaking awesome with Discogs", "tigerman325", "MB forum", "https://community.metabrainz.org/t/credit-hoarder-userscript/815063/47"],
+ ["If you go on like this you make almost all other userscripts obsolete", "vzell", "MB forum", "https://community.metabrainz.org/t/mammoth-userscript/815076/2"],
+ ["majkinetor scripts are awesome! It does everything (except coffee… for now)", "Lotheric", "Discord", "https://discord.com/channels/937555302251905084/1193999163344564385/1558113217689948251"]
+];
+const said = ([q,w,s,u]) => `<q>${q}</q><span class="by">${w} · <a href="${u}">${s}</a></span>`;
+document.getElementById('wall').innerHTML = PRAISE.map(p => `<figure>${said(p)}</figure>`).join('');
+(function rotate(){
+  const el = document.getElementById('praise');
+  let i = Math.floor(Math.random() * PRAISE.length);
+  el.innerHTML = said(PRAISE[i]);
+  if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  setInterval(() => {
+    if (document.hidden || el.matches(':hover')) return;
+    el.style.opacity = 0;
+    setTimeout(() => { i = (i + 1) % PRAISE.length; el.innerHTML = said(PRAISE[i]); el.style.opacity = 1; }, 500);
+  }, 7000);
+})();
 </script>
 </body>
 </html>
