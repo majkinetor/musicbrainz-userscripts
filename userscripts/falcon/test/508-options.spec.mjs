@@ -74,6 +74,11 @@ test("#508: options", { tag: ['@sandbox', '@login'] }, async ({ context, page })
 
   // 5. "Add covers only when there aren't any" — persists, and runCoverItem
   // actually skips (not fails) when the release already has cover art.
+  // On by default (2026-10-11), so clicking turns it off and a second click back on.
+  ck(await page.isChecked('#falcon-opt-cover-only-if-none'), `"Add covers only when there aren't any" is on by default`);
+  await page.click('#falcon-opt-cover-only-if-none');
+  await frames(page);
+  ck(await page.evaluate(() => window.GM_getValue('falcon:coverOnlyIfNone', true)) === false, `"Add covers only when there aren't any" turns off`);
   await page.click('#falcon-opt-cover-only-if-none');
   await frames(page);
   const coverOnlyPersisted = await page.evaluate(() => window.GM_getValue('falcon:coverOnlyIfNone', false));

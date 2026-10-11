@@ -38,7 +38,7 @@ On a [Harmony] *Release Actions* page, **Send N to Falcon** (bottom-right) opens
 - **Cover art**: Falcon swaps every candidate for the store's largest version (a Deezer 1000×1000 for its full size, a Bandcamp thumbnail for the original), measures it (Harmony's sizes are often wrong) and picks the largest, then the smallest file. Expand the row to change the pick, its type or its comment. The edit note names the source, its size, the URL it was maximised from, and what it was chosen over.
 
 > [!WARNING]
-> A cover is added even if the release already has one, unless *Add covers only when there aren't any* is on; the row warns when the release has art. If you upload covers with [Art Station](../art_station) instead, turn on *Ignore Harmony cover art*.
+> A release that already has cover art gets none. Turn off *Add covers only when there aren't any* to add one anyway; the row then warns when the release has art. If you upload covers with [Art Station](../art_station) instead, turn on *Ignore cover art* under *Harmony*.
 
 ### From the current page
 
@@ -119,12 +119,12 @@ Each run keeps its own log in this browser, so a run whose tab crashed or naviga
 
 ## Hands-free import
 
-Two settings carry a finished Harmony import to a finished run:
+Two settings, both on by default, carry a finished Harmony import to a finished run:
 
-|                             | Runs on     | Does                     |
-| --------------------------- | ----------- | ------------------------ |
-| *Auto send*                 | Harmony     | presses *Send to Falcon* |
-| *Auto start Harmony import* | MusicBrainz | presses *Start*          |
+|                     | Runs on     | Does                     |
+| ------------------- | ----------- | ------------------------ |
+| *Auto send*         | Harmony     | presses *Send to Falcon* |
+| *Auto start import* | MusicBrainz | presses *Start*          |
 
 *Auto send* waits until the import is complete (the page has a `release_mbid`) and Harmony has finished listing its actions. It stands down if there's nothing to send. It counts down on the button first; a click cancels.
 
@@ -186,18 +186,18 @@ Append `?falcon=<base64(JSON)>` to any musicbrainz.org URL: Falcon opens with th
 
 ## Settings
 
-| Setting                                         | Default   |                                                                                                             |
-| ----------------------------------------------- | --------- | ----------------------------------------------------------------------------------------------------------- |
-| Hide Falcon icon                                | off       | Ctrl+Alt+F still opens it                                                                                   |
-| Add covers only when there aren't any           | off       | a release that already has cover art gets none from the queue                                               |
-| Ignore Harmony cover art                        | off       | a Harmony import queues no cover art                                                                        |
-| Auto send                                       | off       | see [Hands-free import](#hands-free-import)                                                                 |
-| Auto start Harmony import                       | off       | see [Hands-free import](#hands-free-import)                                                                 |
-| Reload release page after import without errors | off       | see [Hands-free import](#hands-free-import)                                                                 |
-| Open from Harmony in new tab                    | on        | off navigates the Harmony tab                                                                               |
-| Automatically send to Picard using port         | off, 8000 | hand the release to [Picard](https://picard.musicbrainz.org/) after a run (needs its *Browser integration*) |
-| Workers                                         | 5         | entities processed at once                                                                                  |
-| Keep last N run logs                            | 10        | the past runs the **Log** tab lists                                                                         |
+| Setting                                                  | Default   |                                                                                                             |
+| -------------------------------------------------------- | --------- | ----------------------------------------------------------------------------------------------------------- |
+| Hide Falcon icon                                         | off       | Ctrl+Alt+F still opens it                                                                                   |
+| Add covers only when there aren't any                    | on        | a release that already has cover art gets none from the queue                                               |
+| Harmony: Ignore cover art                                | off       | a Harmony import queues no cover art                                                                        |
+| Harmony: Auto send                                       | on        | see [Hands-free import](#hands-free-import)                                                                 |
+| Harmony: Auto start import                               | on        | see [Hands-free import](#hands-free-import)                                                                 |
+| Harmony: Reload release page after import without errors | on        | see [Hands-free import](#hands-free-import)                                                                 |
+| Harmony: Open in new tab                                 | on        | off navigates the Harmony tab                                                                               |
+| Harmony: Automatically send to Picard using port         | off, 8000 | hand the release to [Picard](https://picard.musicbrainz.org/) after a run (needs its *Browser integration*) |
+| Workers                                                  | 5         | entities processed at once                                                                                  |
+| Keep last N run logs                                     | 10        | the past runs the **Log** tab lists                                                                         |
 
 The Picard port also sets MusicBrainz's own tagger button, whether *Automatically send to Picard* is ticked or not.
 

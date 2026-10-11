@@ -67,11 +67,11 @@ test("#557: auto send", { tag: ['@sandbox', '@login'] }, async ({ context, page 
   };
   const label = p => p.evaluate(() => (document.getElementById('falcon-harmony-lbl') || {}).textContent || '');
 
-  // ── A. option OFF (the default): nothing is sent, ever ──────────────────────
+  // ── A. option OFF (on by default since 2026-10-11): nothing is sent, ever ───
   {
-    const page = await openHarmony(ACTIONS, {}, true);
+    const page = await openHarmony(ACTIONS, { 'falcon:autoSendFromHarmony': false }, true);
     const off = await page.evaluate(() => window.__falconTest.cfg.autoSendFromHarmony);
-    ck(off === false, '#557: "Auto send" is OFF by default');
+    ck(off === false, '#557: "Auto send" reads back off');
     await page.clock.runFor(9000);            // past the settle poll AND any countdown
     const st = await page.evaluate(() => ({ opened: window.__opened.length, pending: window.__falconTest.autoSendPending(), lbl: (document.getElementById('falcon-harmony-lbl') || {}).textContent }));
     console.log('with the option off: ' + JSON.stringify(st));

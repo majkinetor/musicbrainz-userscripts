@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Falcon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.11.180000
+// @version      2026.10.11.224500
 // @description  Edit a BATCH of MusicBrainz artists/labels/recordings at once — add external links, ISRCs, names, aliases, disambiguations and cover art — no popup-per-entity, no tab churn. A small pool of persistent worker iframes churns through a queue, each submitting its own edit and moving straight to the next entity. Paste a list, hand it a queue via a `?falcon=` URL param, or click "Send to Falcon" on a Harmony actions page to import its suggestions directly.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5GYWxjb248L3RpdGxlPgo8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSI1OCIgZmlsbD0iI2Y2ZWZlMiIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjYiLz48cGF0aCBkPSJNMTA1LjYgNDAuMCBBNDggNDggMCAwIDEgMTA1LjYgODguMCIgc3Ryb2tlPSIjZDYyODI4IiBzdHJva2Utd2lkdGg9IjciIGZpbGw9Im5vbmUiLz4KPGcgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2UtbGluZWNhcD0icm91bmQiPjxwYXRoIGQ9Ik0yMC43IDg5LjAgTDI5LjQgODQuMCIgc3Ryb2tlLXdpZHRoPSIzIi8+PHBhdGggZD0iTTE0LjMgNjkuMiBMMjQuMiA2OC4yIiBzdHJva2Utd2lkdGg9IjMiLz48cGF0aCBkPSJNMTYuNCA0OC41IEwyNi4wIDUxLjYiIHN0cm9rZS13aWR0aD0iMyIvPjxwYXRoIGQ9Ik0yNi44IDMwLjUgTDM0LjMgMzcuMiIgc3Ryb2tlLXdpZHRoPSIzIi8+PHBhdGggZD0iTTQzLjcgMTguMyBMNDcuNyAyNy41IiBzdHJva2Utd2lkdGg9IjMiLz48cGF0aCBkPSJNNjQuMCAxNC4wIEw2NC4wIDI0LjAiIHN0cm9rZS13aWR0aD0iMyIvPjxwYXRoIGQ9Ik04NC4zIDE4LjMgTDgwLjMgMjcuNSIgc3Ryb2tlLXdpZHRoPSIzIi8+PHBhdGggZD0iTTEwMS4yIDMwLjUgTDkzLjcgMzcuMiIgc3Ryb2tlLXdpZHRoPSIzIi8+PHBhdGggZD0iTTExMS42IDQ4LjUgTDEwMi4wIDUxLjYiIHN0cm9rZS13aWR0aD0iMyIvPjxwYXRoIGQ9Ik0xMTMuNyA2OS4yIEwxMDMuOCA2OC4yIiBzdHJva2Utd2lkdGg9IjMiLz48cGF0aCBkPSJNMTA3LjMgODkuMCBMOTguNiA4NC4wIiBzdHJva2Utd2lkdGg9IjMiLz48L2c+PGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoNjQgOTQpIHJvdGF0ZSgwKSBzY2FsZSgwLjE2KSB0cmFuc2xhdGUoLTY0IC02NCkiPjxwYXRoIGQ9Ik02NCAyNiBDNjcgMjYgNzAgMzAgNzAgMzYgQzcyIDQwIDc0IDQyIDc2IDQ0IEM5MiA0MiAxMDggMzYgMTI0IDM0IEMxMTIgNDQgOTYgNTQgNzggNjIgQzc2IDY4IDc0IDc0IDc0IDgwIEw4MCAxMDAgQzc0IDEwNCA2OCAxMDQgNjQgMTA0IFoiIGZpbGw9IiM0YTVhNzgiLz48cGF0aCBkPSJNNjQgMjYgQzY3IDI2IDcwIDMwIDcwIDM2IEM3MiA0MCA3NCA0MiA3NiA0NCBDOTIgNDIgMTA4IDM2IDEyNCAzNCBDMTEyIDQ0IDk2IDU0IDc4IDYyIEM3NiA2OCA3NCA3NCA3NCA4MCBMODAgMTAwIEM3NCAxMDQgNjggMTA0IDY0IDEwNCBaIiBmaWxsPSIjNGE1YTc4IiB0cmFuc2Zvcm09InRyYW5zbGF0ZSgxMjggMCkgc2NhbGUoLTEgMSkiLz48L2c+PGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoNjQgNjQpIHJvdGF0ZSgxMTIpIj48cGF0aCBkPSJNMCAtNDYgTDQgMCBMLTQgMFoiIGZpbGw9IiMxYjJhNGEiLz48L2c+CjxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjciIGZpbGw9IiMxYjJhNGEiLz4KPC9zdmc+Cg==
@@ -1343,7 +1343,8 @@
     get queueView() { return GM_getValue('falcon:queueView', 'list') === 'grid' ? 'grid' : 'list'; },
     set queueView(v) { GM_setValue('falcon:queueView', v === 'grid' ? 'grid' : 'list'); },
     set hideLauncher(v) { GM_setValue('falcon:hideLauncher', !!v); },
-    get coverOnlyIfNone() { return GM_getValue('falcon:coverOnlyIfNone', false) === true; },
+    // 2026-10-11 (majkinetor): this and the three Harmony automations below are on by default.
+    get coverOnlyIfNone() { return GM_getValue('falcon:coverOnlyIfNone', true) === true; },
     set coverOnlyIfNone(v) { GM_setValue('falcon:coverOnlyIfNone', !!v); },
     // #537 (majkinetor): "I think this is all very complicated and is not
     // something Falcon should do. Add an option to not process Harmony covers."
@@ -1355,15 +1356,15 @@
     // them; everything else in a Harmony batch still goes through as usual.
     get skipHarmonyCovers() { return GM_getValue('falcon:skipHarmonyCovers', false) === true; },
     set skipHarmonyCovers(v) { GM_setValue('falcon:skipHarmonyCovers', !!v); },
-    // #508 follow-up (majkinetor): "Auto start Harmony import (off by default)".
-    get autoStartHarmonyImport() { return GM_getValue('falcon:autoStartHarmonyImport', false) === true; },
+    // #508 follow-up (majkinetor): "Auto start Harmony import"; on by default since 2026-10-11.
+    get autoStartHarmonyImport() { return GM_getValue('falcon:autoStartHarmonyImport', true) === true; },
     set autoStartHarmonyImport(v) { GM_setValue('falcon:autoStartHarmonyImport', !!v); },
     // #557 (majkinetor): "Current auto start works on MB side. Let's have another
     // option 'Auto send' in Harmony category. Having both enabled would
     // automatically finish everything after successful Harmony import." This is
     // the HARMONY half — it presses "Send to Falcon" for you; autoStartHarmonyImport
     // above is the MB half that then starts the queue.
-    get autoSendFromHarmony() { return GM_getValue('falcon:autoSendFromHarmony', false) === true; },
+    get autoSendFromHarmony() { return GM_getValue('falcon:autoSendFromHarmony', true) === true; },
     set autoSendFromHarmony(v) { GM_setValue('falcon:autoSendFromHarmony', !!v); },
     // How long the cancel window lasts before an auto-send fires. Not exposed in
     // the options UI — it exists so the send is interruptible, not to be tuned.
@@ -1380,9 +1381,9 @@
     // ever sees is a drained queue over a stale release view. majkinetor's own
     // ruling on #588 was that a blanket standard is wrong (PC restarts because
     // Scout must see it; Falcon doesn't because you want the queue's results) —
-    // hence an option, off by default, and the run log survives the reload
+    // hence an option (on by default since 2026-10-11), and the run log survives the reload
     // regardless since #512 put sessions in localStorage.
-    get reloadReleaseAfterImport() { return GM_getValue('falcon:reloadReleaseAfterImport', false) === true; },
+    get reloadReleaseAfterImport() { return GM_getValue('falcon:reloadReleaseAfterImport', true) === true; },
     set reloadReleaseAfterImport(v) { GM_setValue('falcon:reloadReleaseAfterImport', !!v); },
     // #512 (majkinetor): "keep configurable number of last runs in local
     // storage so those can be selected and loaded by datetime".
