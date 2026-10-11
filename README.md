@@ -13,7 +13,7 @@ One-file bundle of the scripts below — install it *instead of* the individual 
 <br>
 
 [Apollo Editor](./userscripts/apollo_editor/README.md) <img src="./userscripts/apollo_editor/icon.svg" align="left" width="32"><br>
-A faster release editor: artists and recordings matched in one pass
+A faster release editor: artists and recordings auto-matched
 
 [Art Station](./userscripts/art_station/README.md) <img src="./userscripts/art_station/icon.png" align="left" width="32"><br>
 Edit cover and event art and find it online with parallel edits, retried on errors
