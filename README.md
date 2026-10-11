@@ -8,7 +8,7 @@ This repository contains tools ([userscripts](https://musicbrainz.org/doc/Guides
 
 > [!IMPORTANT]
 >  [String Theory](./userscripts/string_theory/README.md) <img src="./userscripts/string_theory/icon.svg" align="left" width="32"><br>
-One-file bundle of the scripts below — install it *instead of* the individual userscripts
+One-file bundle of the scripts below — install it *instead of* the individual userscripts.
 
 <br>
 
@@ -16,13 +16,13 @@ One-file bundle of the scripts below — install it *instead of* the individual 
 A feature-rich release editor that does the matching for you. If it exists, Apollo will find it.
 
 [Art Station](./userscripts/art_station/README.md) <img src="./userscripts/art_station/icon.png" align="left" width="32"><br>
-Edit cover art, find it online and maximize it, with parallel edits retried on errors
+Edit cover art, find it online and maximize it, with parallel edits retried on errors.
 
 [Credit Hoarder](./userscripts/credit_hoarder/README.md)<img src="./userscripts/credit_hoarder/icon.svg" align="left" width="32"><br>
 Import hundreds of credits from online platforms. What used to take days now takes minutes.
 
 [Falcon](./userscripts/falcon/README.md) <img src="./userscripts/falcon/icon.svg" align="left" width="32"><br>
-Batch import entity fields from Harmony or by hand; attach disc IDs from CD rip logs
+Batch import entity fields from Harmony or by hand; attach disc IDs from CD rip logs.
 
 [First Contact](./userscripts/first_contact/README.md) <img src="./userscripts/first_contact/icon.svg" align="left" width="32"><br>
 Import a release from a platform's album page. This one alone replaces tens of other userscripts.
@@ -40,7 +40,7 @@ Scouts the platforms for a release's missing ISRCs and track links, and brings t
 A mammoth never forgets: your edit notes and field values, saved and one click away on every edit form.
 
 [Mission Control](./userscripts/mission_control/README.md)<img src="./userscripts/mission_control/icon.svg" align="left" width="32"><br>
-One dashboard to find and fix all a release lacks, and consolidate new ones
+One dashboard to find and fix all a release lacks, and consolidate new ones.
 
 [Platform Check](./userscripts/platform_check/README.md)<img src="./userscripts/platform_check/icon.svg" align="left" width="32"><br>
 Find a release online and link it only when the barcode, format and track count agree.
@@ -48,10 +48,10 @@ Find a release online and link it only when the barcode, format and track count 
 ---
 
 [Scribe](./userscripts/scribe/README.md) <img src="./userscripts/scribe/scribe.svg" align="left" width="32"><br>
-Edit MusicBrainz in your real editor (VS Code, Vim, …)
+Edit MusicBrainz in your real editor (VS Code, Vim, …).
 
 [Bandcamp Player Enhanced](./userscripts/bandcamp_player_enhanced/README.md)<img src="./userscripts/bandcamp_player_enhanced/icon.svg" align="left" width="32"><br>
-Bandcamp album player with keyboard shortcuts
+Bandcamp album player with keyboard shortcuts.
 
 ## Notes
 
