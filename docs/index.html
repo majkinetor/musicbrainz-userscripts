@@ -134,14 +134,13 @@
          display:flex;gap:20px;justify-content:center;flex-wrap:wrap}
   footer a{color:var(--faint)}
   @media(max-width:620px){
-    /* one column on phones: the icon on the left, the name and its line beside it */
+    /* one column on phones: the icon and the name on top, the line under them across the tile */
     ul.idx{grid-template-columns:1fr;gap:10px}
-    ul.idx li{display:grid;grid-template-columns:48px 1fr;column-gap:14px;row-gap:2px;align-items:center;
-              text-align:left;padding:12px 36px 12px 14px}
-    ul.idx .ic{grid-row:1 / span 2}
-    ul.idx img{width:48px;height:48px}
-    ul.idx .n{font-size:15px;align-self:end}
-    ul.idx .d{font-size:13px;align-self:start}
+    ul.idx li{display:grid;grid-template-columns:36px 1fr;column-gap:12px;row-gap:8px;align-items:center;
+              text-align:left;padding:12px 14px}
+    ul.idx img{width:36px;height:36px}
+    ul.idx .n{font-size:16px;padding-right:24px}
+    ul.idx .d{grid-column:1 / -1;font-size:13.5px}
     h1{font-size:23px}
   }
 
