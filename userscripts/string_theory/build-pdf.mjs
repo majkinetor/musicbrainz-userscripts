@@ -78,6 +78,11 @@ bodyHtml = bodyHtml
       return `<li><a href="#${id}"><img class="ti" alt="" src="../${id.replace(/-/g, '_')}/icon.svg"><span>${name}</span></a></li>`; })
   }</ol>`)
   .replace('%COUNT%', () => count);
+// Each member's own section heading gets its icon back too: build.mjs strips the README title's
+// <img> (it would land in the slug), so without this the icons showed only in the TOC.
+const members = new Set([...bodyHtml.matchAll(/<img class="ti" alt="" src="\.\.\/([^/]+)\/icon\.svg">/g)].map(m => m[1]));
+bodyHtml = bodyHtml.replace(/<h2 id="([^"]+)">/g, (m, id) => members.has(id.replace(/-/g, '_'))
+  ? `${m}<img class="hi" alt="" src="../${id.replace(/-/g, '_')}/icon.svg">` : m);
 
 // Minimal GitHub-ish print stylesheet. Images in DOCS.md are `../<member>/…` — a
 // temp HTML written INTO this folder makes those resolve to the real files.
@@ -120,6 +125,7 @@ const html = `<!doctype html><html><head><meta charset="utf-8"><style>
   ol.toc { list-style: none; padding: 0; margin: 1.2em 0; display: grid; grid-template-columns: 1fr 1fr; gap: 10px 24px; }
   ol.toc li { margin: 0; }
   ol.toc a { display: flex; align-items: center; gap: 14px; padding: 8px 12px; border: 1px solid #d0d7de; border-radius: 10px; color: #1f2328; font-size: 1.15em; font-weight: 500; }
+  h2 img.hi { width: 1.4em; height: 1.4em; border: 0; border-radius: 0; vertical-align: -.3em; margin-right: .45em; object-fit: contain; }
   ol.toc img.ti { width: 40px; height: 40px; border: 0; border-radius: 0; object-fit: contain; }
 </style></head><body>${bodyHtml}</body></html>`;
 
