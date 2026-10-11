@@ -1,6 +1,6 @@
 # Apollo Editor <img src="icon.svg" align="left" width="48" height="48">
 
-A faster release editor for MusicBrainz: artists and recordings matched in one pass, clean tables for the tracklist and recordings, and tools for everything MusicBrainz's own editor makes slow.
+A faster release editor for MusicBrainz: artists and recordings auto-matched, clean tables for the tracklist and recordings, and tools for everything MusicBrainz's own editor makes slow.
 
 - Install: [stable](https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/refs/heads/stable/userscripts/apollo_editor/apollo_editor.user.js) or [latest](https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/refs/heads/main/userscripts/apollo_editor/apollo_editor.user.js)
     - Or via bundle: [String Theory](../string_theory/README.md)
