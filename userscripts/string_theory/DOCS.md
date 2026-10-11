@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-10-11 10:48 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-10-11 11:02 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -34,7 +34,7 @@ A faster release editor for MusicBrainz: artists and recordings auto-matched, cl
 - **[Release information](#release-information)**: external links in a right column with a dead-link checker, a cover thumbnail, no help bubbles.
 - **[Tracklist](#tracklist)**: an artist table with confidence colours, splitting, reordering and keyboard navigation.
 - **[Recordings](#recordings)**: track and recording side by side, with the differing characters highlighted.
-- **[Matching](#matching)**: artists, recordings, the release label and the release artist matched automatically, and a missing language and script detected.
+- **[Matching](#matching)**: artists, recordings, the release label, artist and release group matched automatically, and a missing language and script detected.
 - **[Tools](#tools)**: a configurable toolbar with the native tools and Apollo's own.
 - **[Duplicates](#duplicates)**: a similarity score for each existing release, with a track-by-track comparison.
 - **[Annotation editor](#annotation-editor)**: Markdown with a live preview.
@@ -54,6 +54,7 @@ Each part is optional, and Apollo's icon in the bottom-right corner switches bac
 - The release **Artist** field is the Tracklist's artist cell, in place of MusicBrainz's box and its Edit popup. One line per artist: the credited-as name takes the place of the **Artist** label, the artist search lines up with Title, then the join phrase and the line's match badge. **↵** adds an artist, **⋔** splits a combined name, **⠿** reorders, **✕** removes, and **＋** / **🔗** / **⚠** offer to create the artist or add its link. The **Original** view brings back MusicBrainz's editor.
 - The release **Artist** is [matched](#artist-matching) on load like a track artist, through the same stages: the Discogs or platform link, the release artist of other editions, the exact name or alias, and co-credit with the artists on the tracks. A confident match is linked. Each artist's badge sits at the end of its line, its match card on hover; click an uncertain **LOW** badge to link its candidate.
 - The release **Label** is linked on load by its Discogs or platform link when exactly one label has it, else when exactly one label has its name or alias. A badge by the field says which; a label already on the release shows **set**, one you picked shows **user**. Hover the badge for the label and its disambiguation; click it to open the label.
+- The **Release group** of a new release is selected from MusicBrainz's suggestions under the field when exactly one of them has the release's title and artist; **auto** in the field marks it. Click the badge to open the release group. Pick **Add a new release group** to undo it, and Apollo leaves it.
 - The **Label** field searches with Apollo's picker, as the artist does: each label shows its aliases, disambiguation, type, label code and years, and an icon that opens it. **↑↓** + **Enter** pick, **Show more…** fetches more, and a pasted MBID or label URL is set at once. **＋** in place of the search icon creates the typed label, with its Discogs or platform link when no label has it yet, and sets it once saved; right-click to create it silently in a background tab. A linked label shows its disambiguation after its name. The **Original** view brings back MusicBrainz's search.
 
 ### Tracklist
@@ -280,28 +281,28 @@ Apollo follows a dark MusicBrainz theme, such as kellnerd's [userstyle](https://
 
 Right-click Apollo's corner icon. Column widths, the toolbar layout, **Change**, **Cutoff** and the picker's folded sections are remembered as you use them.
 
-| Setting                                                       | Default |                                                                           |
-| ------------------------------------------------------------- | ------- | ------------------------------------------------------------------------- |
-| Modify Release information, Tracklist, Recordings, Duplicates | on      | replace that part of the editor                                           |
-| Modify annotations with Markdown                              | on      | the [annotation editor](#annotation-editor)                               |
-| Modify header and footer                                      | on      | a compact step switcher instead of the tabs and footer                    |
-| Zen editing                                                   | on      | hide the site header, title and footer; the title moves into Apollo's bar |
-| Auto confirm release submissions                              | on      | skip the confirmation page when a site seeds a release                    |
-| Auto-match on start: Tracklist, Recordings                    | off     | match on load                                                             |
-| Auto-match on start: Label, Artist                            | on      | match the release [artist and label](#release-information) on load        |
-| Discogs artist link matching                                  | on      | match by [Discogs link](#artist-matching) and offer missing links         |
-| Detect language and script                                    | on      | fill in a missing [language and script](#language-and-script)             |
-| Length tolerance                                              | 5 s     | `0` for exact                                                             |
-| Title tolerance                                               | 1       | differing characters allowed                                              |
-| Ignore casing                                                 | on      | case, accents and spacing don't count                                     |
-| Ignore punctuation                                            | on      | `&`/*and*, brackets, quotes, dashes and dots don't count                  |
-| Enable detailed highlighting                                  | on      | see [Highlighting](#highlighting)                                         |
-| Row layout                                                    | normal  | compact, normal or cozy                                                   |
-| Alternate row colors                                          | off     | every other track tinted                                                  |
-| Show grid                                                     | rows    | lines between rows and/or columns                                         |
-| Enlarge punctuation by                                        | 3 px    | `0` stops the enlarging; the markers stay                                 |
-| Keep caret position on row navigation                         | on      | off: a cell is selected whole on arrival                                  |
-| Highlight all instances of an artist on hover                 | off     | hovering an artist highlights it on every track                           |
+| Setting                                                       | Default |                                                                                   |
+| ------------------------------------------------------------- | ------- | --------------------------------------------------------------------------------- |
+| Modify Release information, Tracklist, Recordings, Duplicates | on      | replace that part of the editor                                                   |
+| Modify annotations with Markdown                              | on      | the [annotation editor](#annotation-editor)                                       |
+| Modify header and footer                                      | on      | a compact step switcher instead of the tabs and footer                            |
+| Zen editing                                                   | on      | hide the site header, title and footer; the title moves into Apollo's bar         |
+| Auto confirm release submissions                              | on      | skip the confirmation page when a site seeds a release                            |
+| Auto-match on start: Tracklist, Recordings                    | off     | match on load                                                                     |
+| Auto-match on start: Label, Artist, Release group             | on      | match the release [artist, label and release group](#release-information) on load |
+| Discogs artist link matching                                  | on      | match by [Discogs link](#artist-matching) and offer missing links                 |
+| Detect language and script                                    | on      | fill in a missing [language and script](#language-and-script)                     |
+| Length tolerance                                              | 5 s     | `0` for exact                                                                     |
+| Title tolerance                                               | 1       | differing characters allowed                                                      |
+| Ignore casing                                                 | on      | case, accents and spacing don't count                                             |
+| Ignore punctuation                                            | on      | `&`/*and*, brackets, quotes, dashes and dots don't count                          |
+| Enable detailed highlighting                                  | on      | see [Highlighting](#highlighting)                                                 |
+| Row layout                                                    | normal  | compact, normal or cozy                                                           |
+| Alternate row colors                                          | off     | every other track tinted                                                          |
+| Show grid                                                     | rows    | lines between rows and/or columns                                                 |
+| Enlarge punctuation by                                        | 3 px    | `0` stops the enlarging; the markers stay                                         |
+| Keep caret position on row navigation                         | on      | off: a cell is selected whole on arrival                                          |
+| Highlight all instances of an artist on hover                 | off     | hovering an artist highlights it on every track                                   |
 
 ### Shortcuts
 

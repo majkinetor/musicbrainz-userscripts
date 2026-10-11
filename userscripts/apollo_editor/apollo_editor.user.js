@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.10.232617
+// @version      2026.10.11
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5BcG9sbG8gRWRpdG9yPC90aXRsZT4KPG1hc2sgaWQ9ImFwLW0iIG1hc2tVbml0cz0idXNlclNwYWNlT25Vc2UiIHg9IjAiIHk9IjAiIHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4Ij48Zz48ZyBmaWxsPSIjZmZmIj48cGF0aCBkPSJNNDIgNjQgQzI4IDcyIDIyIDkwIDI0IDExMCBMNDIgOTggWiIvPjxwYXRoIGQ9Ik04NiA2NCBDMTAwIDcyIDEwNiA5MCAxMDQgMTEwIEw4NiA5OCBaIi8+PC9nPjxnIGZpbGw9IiNmZmYiPjxwYXRoIGQ9Ik02NCA4IEM4NCAyNCA5MCA1MiA4OCA5MCBMNDAgOTAgQzM4IDUyIDQ0IDI0IDY0IDggWiIvPjxwYXRoIGQ9Ik00OCA5MCBMODAgOTAgTDc2IDEwMCBMNTIgMTAwIFoiLz48L2c+PGcgc3Ryb2tlPSIjMDAwIiBzdHJva2Utd2lkdGg9IjMuNSI+PHBhdGggZD0iTTM2IDkwLjUgTDkyIDkwLjUiLz48L2c+PGNpcmNsZSBjeD0iNjQiIGN5PSI1MCIgcj0iOCIgZmlsbD0iIzAwMCIvPjwvZz48L21hc2s+PGc+PHBhdGggZD0iTTUyIDEwMCBDNTQgMTEyIDYwIDExOCA2NCAxMjYgQzY4IDExOCA3NCAxMTIgNzYgMTAwIFoiIGZpbGw9IiNlYjc0M2IiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDAgMykiLz48L2c+PHJlY3Qgd2lkdGg9IjEyOCIgaGVpZ2h0PSIxMjgiIGZpbGw9IiNiYTQ3OGYiIG1hc2s9InVybCgjYXAtbSkiLz4KPC9zdmc+Cg==
@@ -323,7 +323,7 @@
 
   /* ── settings ── */
   const SKEY = 'apolloEditor.settings.v1';
-  function loadSettings() { const d = { apolloEnabled: true, colWidths: {}, applyMode: 'all', altRows: false, gridCols: false, gridRows: true, replaceReleaseInfo: true, replaceTracklist: true, replaceRecordings: true, modifyAnnotation: true, modifyDuplicates: true, autoMatch: false, autoMatchRec: false, autoMatchLabel: true, autoMatchArtist: true, discogsUrlMatch: true, recLenTol: 5, recIgnoreCase: true, recIgnorePunct: true, recTitleTol: 1, recCutoff: 'near', recDetailedHl: true, recPunctSize: 3, recHlColor: '#e53935', lastTool: '', layout: 'normal', lastView: 'apollo', zenMode: true, autoConfirmSeed: true, keepCaretColumn: true, hoverHighlight: false, srRegex: false, srTemplates: [], srSeedV: 0, srHistory: [], srDefault: '', srHistoryOpen: false }; try { const stored = JSON.parse(gmLoad(SKEY) || '{}'); const s = Object.assign(d, stored); if (stored.gridCols === undefined && stored.grid !== undefined) s.gridCols = stored.grid; return s; } catch (e) { return d; } }
+  function loadSettings() { const d = { apolloEnabled: true, colWidths: {}, applyMode: 'all', altRows: false, gridCols: false, gridRows: true, replaceReleaseInfo: true, replaceTracklist: true, replaceRecordings: true, modifyAnnotation: true, modifyDuplicates: true, autoMatch: false, autoMatchRec: false, autoMatchLabel: true, autoMatchArtist: true, autoMatchRG: true, discogsUrlMatch: true, recLenTol: 5, recIgnoreCase: true, recIgnorePunct: true, recTitleTol: 1, recCutoff: 'near', recDetailedHl: true, recPunctSize: 3, recHlColor: '#e53935', lastTool: '', layout: 'normal', lastView: 'apollo', zenMode: true, autoConfirmSeed: true, keepCaretColumn: true, hoverHighlight: false, srRegex: false, srTemplates: [], srSeedV: 0, srHistory: [], srDefault: '', srHistoryOpen: false }; try { const stored = JSON.parse(gmLoad(SKEY) || '{}'); const s = Object.assign(d, stored); if (stored.gridCols === undefined && stored.grid !== undefined) s.gridCols = stored.grid; return s; } catch (e) { return d; } }
   function saveSettings() { try { gmSave(SKEY, JSON.stringify(SETTINGS)); } catch (e) {} }
   let SETTINGS = loadSettings();
   try { srSeedTemplates(); } catch (e) {}   // #375 seed the default S&R templates once
@@ -804,6 +804,61 @@ click to open the label`;
       if (pr > 4 && inp.style.getPropertyValue('padding-right') !== pr + 'px') { inp.style.setProperty('box-sizing', 'border-box', 'important'); inp.style.setProperty('padding-right', pr + 'px', 'important'); }
       riLabelDisamb(inp, host, cur, b);
     });
+  }
+  /* ── #716: the release group, picked from MusicBrainz's own suggestions ─────────────
+   * A new release lists "Existing release groups with similar names" under the field
+   * (`$root.duplicateReleaseGroups`) but leaves "Add a new release group" checked, even when
+   * one of them is plainly this release's. When exactly one has the release's title and its
+   * artist credit (the same artists once linked, else the same credited names), Apollo clicks
+   * its radio, as a human would. Once per title and artist: "Add a new release group" picked
+   * after that stays picked. */
+  let _rgAutoKey = null, _rgAuto = null;   // the title|artists last judged; the group Apollo picked ({ gid, title })
+  function autoSelectReleaseGroup() {
+    if (SETTINGS.autoMatchRG === false || !apolloEnabled()) return;
+    const re = W.MB && W.MB.releaseEditor, rel = release();
+    if (!re || !rel || typeof re.duplicateReleaseGroups !== 'function') return;
+    const rg = u(rel.releaseGroup); if (rg && u(rg.gid)) return;   // an existing release, or already picked
+    if (!_artistAutoMatchedOnce || _riMatching) return;   // the release artist is still being matched
+    const dups = re.duplicateReleaseGroups() || []; if (!dups.length) return;
+    const title = u(rel.name) || '', names = riNames();
+    const gids = names.map(n => { const a = u(n.artist); return (a && u(a.gid)) || ''; });
+    const linked = gids.length && gids.every(Boolean);
+    const credit = ns => (ns || []).map(n => (u(n.name) || '') + (u(n.joinPhrase) || '')).join('');
+    const key = fold(title) + '|' + (linked ? gids.join(',') : fold(credit(names))) + '|' + dups.map(d => d.gid).join(',');
+    if (key === _rgAutoKey) return;
+    _rgAutoKey = key;
+    const same = dups.filter(d => {
+      if (!sameName(d.name, title)) return false;
+      const ac = (d.artistCredit && d.artistCredit.names) || [];
+      if (linked) return ac.length === gids.length && ac.map(n => n.artist && n.artist.gid).sort().join() === [...gids].sort().join();
+      return sameName(credit(ac), credit(names));
+    });
+    if (same.length !== 1) { Log.cat('Release').info('release group:', JSON.stringify(title), '—', same.length ? same.length + ' suggested groups have this title and artist; left for you' : 'none of the ' + dups.length + ' suggested groups has this title and artist; left as new'); return; }
+    const hit = same[0], i = dups.indexOf(hit);
+    const radio = document.querySelectorAll('.duplicate-release-groups-list input[data-change="selectReleaseGroup"]')[i];
+    if (!radio) { _rgAutoKey = null; return; }   // the list isn't drawn yet: the next tick
+    radio.click();
+    const now = u(rel.releaseGroup);
+    if (!now || u(now.gid) !== hit.gid) { Log.cat('Release').warn('release group: selecting', hit.name, 'did not take'); return; }
+    _rgAuto = { gid: hit.gid, title: hit.name };
+    Log.cat('Release').info('release group →', hit.name, '(' + hit.gid + ') — the only suggested group with this title and artist');
+    toast('✓ Release group selected: ' + hit.name);
+  }
+  // the badge in the Release group field while it holds the group Apollo picked
+  function renderRiReleaseGroup() {
+    const inp = document.getElementById('release-group'); if (!inp) return;
+    const host = inp.closest('span.autocomplete') || inp.parentElement;
+    let b = host.querySelector(':scope > .tc-ri-rgb');
+    const rel = release(), cur = rel && u(rel.releaseGroup), gid = cur && u(cur.gid);
+    if (!riWant() || !_rgAuto || gid !== _rgAuto.gid) { if (b) { b.remove(); inp.style.removeProperty('padding-right'); } return; }
+    if (!b) {
+      b = document.createElement('span'); b.className = 'tc-ri-lab tc-ri-rgb mbu-ui'; host.appendChild(b);
+      b.innerHTML = `<span class="tc-badge high" title="${esc(_rgAuto.title + ' — picked by Apollo: the only suggested release group with this title and artist\nclick to open the release group')}" style="cursor:pointer">auto</span>`;
+      b.addEventListener('mousedown', e => { e.preventDefault(); e.stopPropagation(); });
+      b.addEventListener('click', e => { e.preventDefault(); e.stopPropagation(); window.open(`${ORIGIN}/release-group/${_rgAuto.gid}`, '_blank', 'noopener'); });
+    }
+    const pr = Math.ceil(host.getBoundingClientRect().right - b.getBoundingClientRect().left) + 4;
+    if (pr > 4 && inp.style.getPropertyValue('padding-right') !== pr + 'px') { inp.style.setProperty('box-sizing', 'border-box', 'important'); inp.style.setProperty('padding-right', pr + 'px', 'important'); }
   }
   /* ── the Label field's search: Apollo's picker in place of MusicBrainz's ─────────────────
      majkinetor: "replace native label search with ours, like artist … along with + on the
@@ -4497,7 +4552,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
         <div class="tc-s-group">
           <div class="tc-s-sub">Auto-match on start</div>
           <div class="tc-s-group">
-            <div class="tc-s-row" style="gap:14px"><label class="tc-s-rad" title="Tracklist tab: match track artists to MusicBrainz on load. Off: use the Match button."><input type="checkbox" id="tc-s-automatch"> Tracklist</label><label class="tc-s-rad" title="Recordings tab: auto-match unset recordings on load. Off: use the Match button."><input type="checkbox" id="tc-s-automatchrec"> Recordings</label><label class="tc-s-rad" title="Release-info Label field: when the seeded/typed label name has exactly one exact MusicBrainz match, select it automatically on load. Ambiguous names (e.g. Columbia) are left for you to pick."><input type="checkbox" id="tc-s-automatchlabel"> Label</label><label class="tc-s-rad" title="Release-info Artist field: when the seeded/typed release artist has exactly one exact MusicBrainz match, select it automatically on load. Ambiguous names are left for you to pick."><input type="checkbox" id="tc-s-automatchartist"> Artist</label></div>
+            <div class="tc-s-row" style="gap:14px"><label class="tc-s-rad" title="Tracklist tab: match track artists to MusicBrainz on load. Off: use the Match button."><input type="checkbox" id="tc-s-automatch"> Tracklist</label><label class="tc-s-rad" title="Recordings tab: auto-match unset recordings on load. Off: use the Match button."><input type="checkbox" id="tc-s-automatchrec"> Recordings</label><label class="tc-s-rad" title="Release-info Label field: when the seeded/typed label name has exactly one exact MusicBrainz match, select it automatically on load. Ambiguous names (e.g. Columbia) are left for you to pick."><input type="checkbox" id="tc-s-automatchlabel"> Label</label><label class="tc-s-rad" title="Release-info Artist field: when the seeded/typed release artist has exactly one exact MusicBrainz match, select it automatically on load. Ambiguous names are left for you to pick."><input type="checkbox" id="tc-s-automatchartist"> Artist</label><label class="tc-s-rad" title="Release-info Release group field: when exactly one of the existing release groups MusicBrainz suggests has the release's title and artist, select it instead of adding a new one. Marked with an auto badge."><input type="checkbox" id="tc-s-automatchrg"> Release group</label></div>
             <label title="When the release has a Discogs link, match each track artist by its Discogs URL (a strong, human-verified signal) before the name search. A single linked MusicBrainz artist is used directly; several are offered as candidates."><input type="checkbox" id="tc-s-discogsmatch"> <span>Discogs artist link matching</span></label>
             <label title="When the release has no language or script, fill them in from the release and track titles. A field a seed or you set is never touched, nor one you change after Apollo filled it. Everything found is offered at the top of the field's list. The language needs three titles or more and 80% confidence from lande, Harmony's detector (50 languages); when it isn't sure, a script that implies its language (Japanese, Korean, Greek…) names one."><input type="checkbox" id="tc-s-langscript"> <span>Detect language and script</span></label>
           </div>
@@ -4551,14 +4606,15 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     tabBtns.forEach(b => b.onclick = () => showTab(b.dataset.tab));
     showTab(_cfgTab);
     requestAnimationFrame(pinPaneHeight);
-    const am = s.querySelector('#tc-s-automatch'), amRec = s.querySelector('#tc-s-automatchrec'), amLbl = s.querySelector('#tc-s-automatchlabel'), amArt = s.querySelector('#tc-s-automatchartist'), alt = s.querySelector('#tc-s-alt'), gridcols = s.querySelector('#tc-s-gridcols'), gridrows = s.querySelector('#tc-s-gridrows');
-    am.checked = SETTINGS.autoMatch !== false; amRec.checked = !!SETTINGS.autoMatchRec; amLbl.checked = SETTINGS.autoMatchLabel !== false; amArt.checked = SETTINGS.autoMatchArtist !== false; alt.checked = !!SETTINGS.altRows; gridcols.checked = !!SETTINGS.gridCols; gridrows.checked = SETTINGS.gridRows !== false;
+    const am = s.querySelector('#tc-s-automatch'), amRec = s.querySelector('#tc-s-automatchrec'), amLbl = s.querySelector('#tc-s-automatchlabel'), amArt = s.querySelector('#tc-s-automatchartist'), amRg = s.querySelector('#tc-s-automatchrg'), alt = s.querySelector('#tc-s-alt'), gridcols = s.querySelector('#tc-s-gridcols'), gridrows = s.querySelector('#tc-s-gridrows');
+    am.checked = SETTINGS.autoMatch !== false; amRec.checked = !!SETTINGS.autoMatchRec; amLbl.checked = SETTINGS.autoMatchLabel !== false; amArt.checked = SETTINGS.autoMatchArtist !== false; amRg.checked = SETTINGS.autoMatchRG !== false; alt.checked = !!SETTINGS.altRows; gridcols.checked = !!SETTINGS.gridCols; gridrows.checked = SETTINGS.gridRows !== false;
     const curLayout = SETTINGS.layout || 'normal';
     s.querySelectorAll('input[name="tc-s-layout"]').forEach(rb => { rb.checked = rb.value === curLayout; rb.onchange = () => { if (rb.checked) { SETTINGS.layout = rb.value; saveSettings(); applyViewClasses(); } }; });
     am.onchange = () => { SETTINGS.autoMatch = am.checked; saveSettings(); };
     amRec.onchange = () => { SETTINGS.autoMatchRec = amRec.checked; saveSettings(); };
     amLbl.onchange = () => { SETTINGS.autoMatchLabel = amLbl.checked; saveSettings(); };
     amArt.onchange = () => { SETTINGS.autoMatchArtist = amArt.checked; saveSettings(); };
+    amRg.onchange = () => { SETTINGS.autoMatchRG = amRg.checked; saveSettings(); };
     const lsc = s.querySelector('#tc-s-langscript'); if (lsc) { lsc.checked = SETTINGS.autoLangScript !== false; lsc.onchange = () => { SETTINGS.autoLangScript = lsc.checked; saveSettings(); }; }
     const dmatch = s.querySelector('#tc-s-discogsmatch'); if (dmatch) { dmatch.checked = SETTINGS.discogsUrlMatch !== false; dmatch.onchange = () => { SETTINGS.discogsUrlMatch = dmatch.checked; saveSettings(); }; }
     const lentol = s.querySelector('#tc-s-lentol'), titletol = s.querySelector('#tc-s-titletol'), igc = s.querySelector('#tc-s-ignorecase'), igp = s.querySelector('#tc-s-ignorepunct');
@@ -12041,13 +12097,14 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     riStyle();
     wireLinkClicks();
     wireReleaseInfoBatch();
+    autoSelectReleaseGroup();   // #716
     // #652 (majkinetor): "no bubbles anywhere" — the #143 selection popover is retired; the badges say what was picked
     if (riWant()) {
       _apolloUsed = true;
       mbuCls(document.body, 'tc-ri-on', true);   // #569: guarded — re-added 2x/s otherwise
       relocateLinks(true);
       tidyLinkTypeOptions();
-      renderRiArtist(); renderRiLabels();   // #652: badges and offers by the artist and label fields
+      renderRiArtist(); renderRiLabels(); renderRiReleaseGroup();   // #652: badges and offers by the artist and label fields
       annotateLinkEditHints();
       if (annoWant()) ensureAnnotationToolbar(); else unmountAnnotation();
       // #569: 170 redundant class writes in a 5s idle window — the single
@@ -12056,7 +12113,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
       _riPrevOn = true;
     } else {
       relocateLinks(false);
-      renderRiArtist(); renderRiLabels();   // #652: removed in the Original view
+      renderRiArtist(); renderRiLabels(); renderRiReleaseGroup();   // #652: removed in the Original view
       unmountAnnotation();   // Apollo off → tear the annotation editor down too, so the field reverts to native (the toolbar must not linger)
       mbuCls(document.body, 'tc-ri-on', false);
       document.querySelectorAll('.tc-ri-helphidden').forEach(e => e.classList.remove('tc-ri-helphidden'));
@@ -12090,7 +12147,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     fix();
   }
 
-  W.__apolloEditor = { lsDetectScript, lsByScript, lsCandidates, lsDetectLanguage, LS_LANDE, lsClean, detectLangScript, matchCardHtml, readTracklist, buildModel, commitTrack, resetTrack, revertTrack, trackChanged, removeTrack, moveTrack, addTracks, searchArtist, fetchEntity, createArtist, openPanel, showMirror, hideMirror, revertAll, revertSlot, pickArtist, addSlot, removeSlot, splitSlot, matchSlot, snapshotOriginals, readRecordings, showRecMirror, hideRecMirror, recordingsVisible, recConfidence, applyView, applyNav, applyReleaseInfo, releaseInfoVisible, ensureApolloEditNote, checkAllLinks, checkUrl, linkRows, alExtractUrls, alAddUrls, installMultiLinkPaste, alApplyHint, AL_HINT, discogsReleaseUrlFromPage, loadDiscogsMap, resolveByDiscogsUrl, discogsFeatUrlFor, tagDiscogsAddable, tagDiscogsForAll, addOrCreateDiscogsLink, reTagAfterDiscogsLink, artistDiscogsUrls, platformOf, platformUrlForms, resolvePlatformUrls, resolveByPlatformUrl, fcHandoff, fcPlatformUrl, tagPlatformAddable, tagPlatformForAll, addOrCreatePlatformLink, matchReleaseArtist, matchReleaseLabels, searchLabel, createLabel, riPickLabel, riEditionArtists, riPick, get riArt() { return _riArt; }, dhRun, acLinksDiff, fetchRgPositionIndex, fetchDuplicatePositionIndex, recSimilar, recComboLevel, recPickBest, pickSibArtist, loadSiblingMap, autoMatchRecordings, setDataBoundary, videoBlockedHere, NON_VIDEO_FORMAT_IDS, trackRecIsVideo, newRecordingFor, logMarkdown, openLengthParser, lpParse, lpValid, lpExtractFromHtml, lpNoteSource, openTrackPatternParser, tpCompile, resolveByExactAlias, wsJson, stopMatching, lenShadeAlpha, lenShade, dupLenShade, mergeMediums, splitMedium, pickTool, runAction, slotContextGids, releaseArtistGids, positionArtists, posNameMatch, tallyPosArtists, artistPosRgIndex, artistPosDupIndex, rgReleases, duplicateReleases, enteredTracklist, buildDupDetail, get apolloOn() { return apolloOn(); }, get model() { return MODEL; }, get settings() { return SETTINGS; } };
+  W.__apolloEditor = { lsDetectScript, lsByScript, lsCandidates, lsDetectLanguage, LS_LANDE, lsClean, detectLangScript, matchCardHtml, readTracklist, buildModel, commitTrack, resetTrack, revertTrack, trackChanged, removeTrack, moveTrack, addTracks, searchArtist, fetchEntity, createArtist, openPanel, showMirror, hideMirror, revertAll, revertSlot, pickArtist, addSlot, removeSlot, splitSlot, matchSlot, snapshotOriginals, readRecordings, showRecMirror, hideRecMirror, recordingsVisible, recConfidence, applyView, applyNav, applyReleaseInfo, releaseInfoVisible, ensureApolloEditNote, checkAllLinks, checkUrl, linkRows, alExtractUrls, alAddUrls, installMultiLinkPaste, alApplyHint, AL_HINT, discogsReleaseUrlFromPage, loadDiscogsMap, resolveByDiscogsUrl, discogsFeatUrlFor, tagDiscogsAddable, tagDiscogsForAll, addOrCreateDiscogsLink, reTagAfterDiscogsLink, artistDiscogsUrls, platformOf, platformUrlForms, resolvePlatformUrls, resolveByPlatformUrl, fcHandoff, fcPlatformUrl, tagPlatformAddable, tagPlatformForAll, addOrCreatePlatformLink, matchReleaseArtist, matchReleaseLabels, searchLabel, createLabel, riPickLabel, riEditionArtists, riPick, get riArt() { return _riArt; }, get rgAuto() { return _rgAuto; }, autoSelectReleaseGroup, dhRun, acLinksDiff, fetchRgPositionIndex, fetchDuplicatePositionIndex, recSimilar, recComboLevel, recPickBest, pickSibArtist, loadSiblingMap, autoMatchRecordings, setDataBoundary, videoBlockedHere, NON_VIDEO_FORMAT_IDS, trackRecIsVideo, newRecordingFor, logMarkdown, openLengthParser, lpParse, lpValid, lpExtractFromHtml, lpNoteSource, openTrackPatternParser, tpCompile, resolveByExactAlias, wsJson, stopMatching, lenShadeAlpha, lenShade, dupLenShade, mergeMediums, splitMedium, pickTool, runAction, slotContextGids, releaseArtistGids, positionArtists, posNameMatch, tallyPosArtists, artistPosRgIndex, artistPosDupIndex, rgReleases, duplicateReleases, enteredTracklist, buildDupDetail, get apolloOn() { return apolloOn(); }, get model() { return MODEL; }, get settings() { return SETTINGS; } };
 
   // #267 auto-confirm a seeded Add/Edit-release submission. When another site seeds the editor,
   // MusicBrainz shows a `.confirm-seed` interstitial with a single submit button; clicking it
