@@ -23,8 +23,8 @@ test('started late, on a parsed page, every script comes up: ISRC Scout\'s butto
 test('a member that throws while starting doesn\'t stop the ones after it', { tag: ['@sandbox'] }, async ({ page, inject }) => {
   const logs = []; page.on('console', m => { if (m.type() === 'error') logs.push(m.text()); });
   await page.goto(`${SANDBOX}/release/${RELEASE}`, { waitUntil: 'load', timeout: 60000 });
-  // ISRC Scout's body made to throw at its first line
-  await inject('string_theory', { transform: code => code.replace(/(\/\/ ===== isrc_scout [^\n]*\n[\s\S]*?try \{ \(function\(\)\{\n)/, "$1throw new Error('simulated start-up failure');\n") });
+  // ISRC Scout's body made to throw at its first line (\r?: a Windows checkout has CRLF)
+  await inject('string_theory', { transform: code => code.replace(/(\/\/ ===== isrc_scout [^\n]*\n[\s\S]*?try \{ \(function\(\)\{\r?\n)/, "$1throw new Error('simulated start-up failure');\n") });
   const pc = await until(() => page.evaluate(() => !!document.getElementById('mb-pc-panel')), Boolean, { timeout: 30000 });
   check(pc, 'Platform Check still starts');
   check(logs.some(l => /\[String Theory\] isrc_scout failed while starting — the other scripts carry on/.test(l)), `the failure is named in the console (${logs.find(l => /String Theory/.test(l))})`);

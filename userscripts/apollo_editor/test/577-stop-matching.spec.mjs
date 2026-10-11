@@ -20,7 +20,7 @@ const label = (page, sel) => page.evaluate(sel => { const b = document.querySele
 const click = (page, sel) => page.evaluate(sel => document.querySelector(sel)?.click(), sel);   // not page.click: a disabled button would hang it
 const backToMatch = (page, sel) => page.waitForFunction(sel => /Match/.test(document.querySelector(sel)?.textContent || ''), sel, { timeout: 45000 }).then(() => true).catch(() => false);
 
-test('the tracklist pass can be stopped, and keeps what it matched', { tag: ['@sandbox', '@login'] }, async ({ page, inject }) => {
+test('the tracklist pass can be stopped, and keeps what it matched', { tag: ['@sandbox', '@login', '@flaky'] }, async ({ page, inject }) => {
   const submitted = await openApollo(page, inject, { seed, tab: 'tracklist' });
   const btn = '#tc-bar [data-act="match"], #tc-hdr [data-act="match"]';
   await page.waitForSelector(btn, { timeout: 20000 });

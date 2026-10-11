@@ -64,6 +64,7 @@ test("#588: reload after import", { tag: ['@sandbox', '@login'] }, async ({ cont
     page.on('load', () => { page.addScriptTag({ content: code }).catch(() => {}); });
     await page.goto(url, { waitUntil: 'domcontentloaded' });
     await page.waitForFunction(() => !!window.__falconTest, null, { timeout: 15000 });
+    await page.evaluate(() => window.__falconTest.Log.setDebug(true));   // #705: debug is off by default; the "left alone" reasons are debug
     const n = await page.evaluate(() => document.querySelectorAll('#falcon-launcher').length);
     ck(n === 1, `fixture: exactly one Falcon launcher on the page (${n})`);
     return page;

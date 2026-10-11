@@ -38,7 +38,8 @@ const CASES = [
   { n: 9, artist: 'Coati-Mundi', want: 'not-pos', why: 'the right artist, but a different song at that position', title: 'Totally Different Song' },
 ];
 const esc = t => t.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-const viaPos = (log, name) => new RegExp('\\[Artist\\] ' + esc(name) + ' → .* via the same position').test(log);
+// a match line names its track first (#708): "[Artist] track 3: Kid Creol & the Coconuts → …"
+const viaPos = (log, name) => new RegExp('\\[Artist\\] (?:track [^:\\n]+: )?' + esc(name) + ' → .* via the same position').test(log);
 
 test('track artists matched by their position on other editions', { tag: ['@sandbox', '@login'] }, async ({ page, inject }) => {
   test.setTimeout(10 * 60000);

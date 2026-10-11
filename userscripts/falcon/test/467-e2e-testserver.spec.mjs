@@ -25,7 +25,7 @@ import { installProdGuard } from '../../../dev/test/guard.mjs';
 // Firefox (the harness is Chromium): the script launches it, with its own GM stand-ins
 test.use({ gm: false });
 
-test("#467: e2e testserver", { tag: ['@sandbox', '@login'] }, async ({}) => {
+test("#467: e2e testserver", { tag: ['@sandbox', '@login', '@flaky'] }, async ({}) => {
   const code = await readFile(sourceOf('falcon'), 'utf8');
 
   const TEST_MB = 'https://test.musicbrainz.org';

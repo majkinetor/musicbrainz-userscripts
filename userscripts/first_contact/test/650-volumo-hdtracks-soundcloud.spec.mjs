@@ -1,7 +1,8 @@
 // #650 (majkinetor): "Volumio and HDTracks and Soundcloud left." Their public APIs, as ISRC Scout
 // and Platform Check read them.
 //
-// Fixtures: Volumo 8721554513038 ("Stand Your Ground EP", four artists, label and catalog number);
+// Fixtures: Volumo 8720996857571 ("Groovin' Without Doubt", three artists, label and catalog number;
+// 8721554513038, the first one, was taken off Volumo in 2026-10);
 // HDtracks 5e182300c10cf717bb0315f2 (Daft Punk, "Random Access Memories"); SoundCloud
 // mogwaa-music/sets/hazy-dreams-2 (ISRC Scout's #439 fixture).
 import { test, check, SANDBOX } from '../../../dev/test/harness.mjs';
@@ -16,13 +17,13 @@ async function read(page, inject, id, key) {
 }
 
 test('Volumo: artists with their links, ISRCs, label and catalog number, barcode', { tag: ['@web', '@critical'] }, async ({ page, inject }) => {
-  const rel = await read(page, inject, 'volumo', '8721554513038');
-  check(rel.title === 'Stand Your Ground EP' && rel.barcode === '8721554513038', `title and barcode: ${rel.title} ${rel.barcode}`);
-  check(rel.labels.length === 1 && rel.labels[0].name === 'Outsider Records (UK)' && rel.labels[0].catno === 'OUTSIDER002', `label: ${JSON.stringify(rel.labels)}`);
+  const rel = await read(page, inject, 'volumo', '8720996857571');
+  check(rel.title === "Groovin' Without Doubt" && rel.barcode === '8720996857571', `title and barcode: ${rel.title} ${rel.barcode}`);
+  check(rel.labels.length === 1 && rel.labels[0].name === 'KMS Records (BEAT Music Fund)' && rel.labels[0].catno === 'BTKMS008A', `label: ${JSON.stringify(rel.labels)}`);
   const tracks = rel.mediums.flatMap(m => m.tracks);
-  check(tracks.length === 4 && tracks.every(t => /^[A-Z]{2}[A-Z0-9]{3}\d{7}$/.test(t.isrc || '') && t.lengthMs > 0), `4 tracks with ISRCs and lengths (${tracks.length})`);
+  check(tracks.length === 5 && tracks.every(t => /^[A-Z]{2}[A-Z0-9]{3}\d{7}$/.test(t.isrc || '') && t.lengthMs > 0), `5 tracks with ISRCs and lengths (${tracks.length})`);
   check(tracks.every(t => t.credit.length && t.credit.every(a => /^https:\/\/volumo\.com\/artist\/\d+$/.test(a.url || ''))), 'every track artist has a Volumo link');
-  check(rel.date.year === 2026 && rel.urls[0].url === 'https://volumo.com/album/8721554513038', `date and link: ${JSON.stringify(rel.date)} ${rel.urls[0].url}`);
+  check(rel.date.year === 1987 && rel.urls[0].url === 'https://volumo.com/album/8720996857571', `date and link: ${JSON.stringify(rel.date)} ${rel.urls[0].url}`);
   const ids = await page.evaluate(() => { const v = window.__fcTest.providers.find(p => p.id === 'volumo'); return ['/album/8721554513038-stand-your-ground-ep', '/album/1798896', '/artist/42309-ciuciek'].map(pathname => v.albumId({ pathname })); });
   check(JSON.stringify(ids) === JSON.stringify(['8721554513038', '1798896', null]), `album pages only: ${JSON.stringify(ids)}`);
 });

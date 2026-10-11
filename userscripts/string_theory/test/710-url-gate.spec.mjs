@@ -51,8 +51,8 @@ test('on the other sites only the member that belongs there starts', { tag: ['@u
   }
 });
 
-// every member's first line pushes its name to window.__stRan
-const mark = code => code.replace(/\/\/ ===== (\w+) [^\n]*\n[\s\S]*?try \{ \(function\(\)\{\n/g, (m, n) => `${m}(window.__stRan = window.__stRan || []).push(${JSON.stringify(n)});\n`);
+// every member's first line pushes its name to window.__stRan (\r?: a Windows checkout has CRLF)
+const mark = code => code.replace(/\/\/ ===== (\w+) [^\n]*\n[\s\S]*?try \{ \(function\(\)\{\r?\n/g, (m, n) => `${m}(window.__stRan = window.__stRan || []).push(${JSON.stringify(n)});\n`);
 
 test.use({ gm: { name: 'String Theory' } });
 

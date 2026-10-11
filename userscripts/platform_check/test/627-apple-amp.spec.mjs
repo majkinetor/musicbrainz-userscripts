@@ -1,6 +1,7 @@
 // #627 (chaban-mb): Apple from Apple Music's own catalogue (amp-api) instead of the iTunes
 // Search API. Against the live API, the cases the issue and the verdict named:
-//   808391067776   both APIs list two albums, the wrong one first; only amp-api says which is
+//   808391067776   both APIs listed two albums, the wrong one first (amp-api lists one since 2026-10,
+//                  so a second goes in front of it); only amp-api says which is
 //                  which (its UPC), and the pick is the album whose UPC it is
 //   853435003333   iTunes counted 20 tracks (a digital booklet); amp-api has the 19 songs
 //   3615938016152  11 tracks, one a music video: the count is the 10 songs
@@ -22,7 +23,11 @@ test('Apple: the album whose UPC it is, songs only, and a refused token replaced
     const A = window.__pcTest627, out = {};
     const byUpc = async upc => (await A.appleAmp(`us/albums?filter[upc]=${upc}`)).data || [];
 
-    const coll = await byUpc('808391067776');
+    let coll = await byUpc('808391067776');
+    // Apple listed two albums for it, the other one first; since 2026-10 it lists only the right one,
+    // so another album goes in front of it here, as Apple had it
+    out.live = coll.map(a => a.attributes.upc);
+    if (coll.length === 1) coll = [{ ...coll[0], id: '1', attributes: { ...coll[0].attributes, upc: '808391067783' } }, ...coll];
     out.collision = { listed: coll.map(a => a.attributes.upc), picked: (A.applePickByUpc(coll, '808391067776') || { attributes: {} }).attributes.upc };
 
     const deluxe = A.applePickByUpc(await byUpc('853435003333'), '853435003333');
@@ -60,7 +65,8 @@ test('Apple: the album whose UPC it is, songs only, and a refused token replaced
 
     });
   console.log(JSON.stringify(r, null, 1));
-  check(r.collision.listed.length >= 2 && r.collision.listed[0] !== '808391067776', `808391067776: Apple lists another album first (${r.collision.listed.join(', ')})`);
+  check(r.live.includes('808391067776'), `808391067776: Apple lists the album (${r.live.join(', ')})`);
+  check(r.collision.listed.length >= 2 && r.collision.listed[0] !== '808391067776', `808391067776: another album is listed first (${r.collision.listed.join(', ')})`);
   check(r.collision.picked === '808391067776', `…and the pick is the album with that UPC (${r.collision.picked})`);
   check(r.booklet && r.booklet.tracks === 19 && r.booklet.barcode === '853435003333', `853435003333: 19 tracks, not the 20 iTunes counted, with its UPC (${JSON.stringify(r.booklet)})`);
   check(r.video && r.video.tracks === 10 && /1 video\(s\) left out/.test(r.video.tracksNote), `3615938016152: the 10 songs, the video left out (${JSON.stringify(r.video)})`);

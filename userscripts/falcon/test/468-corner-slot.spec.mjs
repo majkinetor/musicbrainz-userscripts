@@ -1,7 +1,8 @@
 // #468 — shared corner-slot convention so independent scripts' floating launcher
 // buttons never land on the same pixel. Apollo Editor / Art Station's switcher
 // (data-mb-corner="br", order 10) keep their historical closest-to-the-corner
-// spot; Falcon (order 20) stacks above them instead of overlapping.
+// spot; Falcon (order 90) stacks above them instead of overlapping. On the release
+// editor Falcon shows no launcher at all (#675): that page is Apollo's.
 import { readFile } from 'node:fs/promises';
 import { test, check, requireLogin, sourceOf, idle, frames, mbNoise } from '../../../dev/test/harness.mjs';
 import { dirname, resolve } from 'node:path';
@@ -38,7 +39,7 @@ test("#468: corner slot", { tag: ['@cosmetic', '@sandbox', '@login'] }, async ({
     }, { selA, selB });
   }
 
-  // 1. Falcon + Apollo Editor on a real release edit page.
+  // 1. Falcon + Apollo Editor on a real release edit page: only Apollo's icon (#675).
   {
     const page = await context.newPage();
     const errs = []; page.on('pageerror', e => { if (!mbNoise(e.message)) errs.push(e.message); });
@@ -47,13 +48,11 @@ test("#468: corner slot", { tag: ['@cosmetic', '@sandbox', '@login'] }, async ({
     await idle(page);
     await page.addScriptTag({ content: falconCode });
     await page.addScriptTag({ content: apolloCode });
-    await page.waitForSelector('#falcon-launcher', { timeout: 10000 });
     await page.waitForSelector('#tc-launch', { timeout: 10000 });
+    await page.waitForFunction(() => !!window.__falconTest, null, { timeout: 10000 });   // Falcon has started
     await frames(page);
-    const r = await checkNoOverlap(page, '#falcon-launcher', '#tc-launch');
-    console.log('Falcon vs Apollo:', JSON.stringify(r));
-    ck(r.ok, `Falcon launcher and Apollo's #tc-launch do not overlap (${JSON.stringify(r)})`);
-    ck(r.ra && r.rb && r.ra.bottom <= r.rb.top, 'Falcon (order 20) sits ABOVE Apollo (order 10, keeps its old spot)');
+    ck(!(await page.$('#falcon-launcher')), "#675: Falcon's launcher stands down on the release editor");
+    ck(await page.isVisible('#tc-launch'), "Apollo's #tc-launch is there");
     ck(errs.length === 0, 'no page errors: ' + JSON.stringify(errs.slice(0, 3)));
     await page.close();
   }
@@ -73,7 +72,7 @@ test("#468: corner slot", { tag: ['@cosmetic', '@sandbox', '@login'] }, async ({
     const r = await checkNoOverlap(page, '#falcon-launcher', '#as-switch');
     console.log('Falcon vs Art Station:', JSON.stringify(r));
     ck(r.ok, `Falcon launcher and Art Station's #as-switch do not overlap (${JSON.stringify(r)})`);
-    ck(r.ra && r.rb && r.ra.bottom <= r.rb.top, 'Falcon (order 20) sits ABOVE Art Station (order 10, keeps its old spot)');
+    ck(r.ra && r.rb && r.ra.bottom <= r.rb.top, 'Falcon (order 90) sits ABOVE Art Station (order 10, keeps its old spot)');
     ck(errs.length === 0, 'no page errors: ' + JSON.stringify(errs.slice(0, 3)));
     await page.close();
   }

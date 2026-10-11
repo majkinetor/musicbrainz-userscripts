@@ -17,7 +17,7 @@ import { test, check, requireLogin, sourceOf, idle, frames, mbNoise } from '../.
 // the script brings its own GM stand-ins, as it did before the harness
 test.use({ gm: false });
 
-test("live 535 aliases proof", { tag: ['@sandbox', '@login'] }, async ({ context, page }, testInfo) => {
+test("live 535 aliases proof", { tag: ['@sandbox', '@login', '@flaky'] }, async ({ context, page }, testInfo) => {
   const code = await readFile(sourceOf('falcon'), 'utf8');
 
   const HOST = 'https://test.musicbrainz.org';

@@ -3,12 +3,12 @@
 //
 // #176: HDtracks resolves the album from the barcode search (ObjectId 5e182300…, 13 tracks).
 // #182: Tidal resolves the EXACT-barcode album 211822890, not another edition; Spotify is
-//       looked up by barcode too (through Wallstream since #602); a Discogs match carries
-//       the barcode read from the API's identifiers. Under strict barcode confidence, a
+//       looked up by barcode too (through Wallstream since #602); a Discogs match reads
+//       its barcode from the API's identifiers (this one has none). Under strict barcode confidence, a
 //       link that can't be confirmed is shown greyed and can't be clicked, not as a ✓ that
 //       does nothing; an exact-barcode one stays usable.
-// #422: the ↻ button is the progress indicator — it spins and can't be clicked while the
-//       scans run, then shows the scan time in its tooltip.
+// #422: the ↻ button is the progress indicator — it spins while the scans run (a click
+//       then stops them, #674), then shows the scan time in its tooltip.
 //
 // test.musicbrainz.org, with production's data and every provider's answers replayed from
 // fixtures/ws-182*.json.gz (RECORD_WS=1 re-records).
@@ -26,8 +26,8 @@ test.describe('default settings', () => {
     const busy = await btn();
     await scansDone(page);
     const done = await btn();
-    check(busy.spinning && busy.pe === 'none' && /Scanning platforms/.test(busy.title), `#422: while scanning, ↻ spins and can't be clicked (${JSON.stringify(busy)})`);
-    check(!done.spinning && done.pe !== 'none', '#422: …and is clickable again once done');
+    check(busy.spinning && busy.pe !== 'none' && /Scanning platforms… · click to stop/.test(busy.title), `#422, #674: while scanning, ↻ spins and a click stops the scan (${JSON.stringify(busy)})`);
+    check(!done.spinning && done.pe !== 'none', '#422: …and stops spinning once done');
     check(/Refresh — clear cache and re-scan \(last scan: \d+(\.\d+)?s\)/.test(done.title), `#422: the tooltip gives the scan time ("${done.title}")`);
     check(!(await page.evaluate(() => !!document.getElementById('mb-scan-status'))), '#422: no separate status line');
 
@@ -38,7 +38,9 @@ test.describe('default settings', () => {
     const tidal = await row(page, 'tidal');
     check(/Barcode 886443984059 → album 211822890/.test(log) && /album\/211822890/.test(tidal.url || ''), `#182: Tidal resolves the exact-barcode album (${tidal.url})`);
     check(/Wallstream.*Spotify barcode lookup 886443984059/.test(log), '#182, #602: Spotify is looked up by barcode');
-    check(/API detail parsed:.*barcode=\d/.test(log), '#182: the Discogs match carries its barcode');
+    // Discogs lists no barcode for 6410436 (its identifiers are empty), so the line says none. This read
+    // barcode=\d once only because the old log panel's text ran the lines together.
+    check(/\[Discogs\] API detail parsed: tracks=13 .*barcode=- /.test(log), '#182: the Discogs detail is parsed, and reports the barcode it has (none)');
     // #501: the scan's cache is the page's (localStorage), not synced script storage
     const stored = await page.evaluate(() => ({ gm: GM_listValues().filter(k => /^pc:(cache|mbdata|pending)/.test(k)), ls: Object.keys(localStorage).filter(k => k.startsWith('pc:cache:v2:')).length }));
     check(stored.gm.length === 0 && stored.ls > 0, `#501: the cache is in localStorage (${stored.ls} entries), none in GM storage (${stored.gm.join(', ') || 'none'})`);

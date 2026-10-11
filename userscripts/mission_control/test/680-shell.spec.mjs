@@ -8,7 +8,7 @@ test.use({ gm: { name: 'Mission Control' } });
 
 const RELEASE = 'e91b84a9-6b98-4d64-b4fc-753a9c674c4c';   // sandbox copy of "Bad Boys!" (dev/test/sandbox-copies.json)
 
-test('#680: MC shell — launcher, track matrix, sidebars, modes', { tag: ['@sandbox', '@critical'] }, async ({ page, inject }) => {
+test('#680: MC shell — launcher, track matrix, sidebars, modes', { tag: ['@sandbox', '@critical', '@flaky'] }, async ({ page, inject }) => {
   await page.goto(`https://test.musicbrainz.org/release/${RELEASE}`, { waitUntil: 'domcontentloaded' });
   await page.waitForSelector('#content table.medium');
   await inject('mission_control', { waitFor: '__mcTest' });
