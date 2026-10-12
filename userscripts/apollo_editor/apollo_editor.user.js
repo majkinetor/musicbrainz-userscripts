@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.12.181548
+// @version      2026.10.12.210756
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5BcG9sbG8gRWRpdG9yPC90aXRsZT4KPG1hc2sgaWQ9ImFwLW0iIG1hc2tVbml0cz0idXNlclNwYWNlT25Vc2UiIHg9IjAiIHk9IjAiIHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4Ij48Zz48ZyBmaWxsPSIjZmZmIj48cGF0aCBkPSJNNDIgNjQgQzI4IDcyIDIyIDkwIDI0IDExMCBMNDIgOTggWiIvPjxwYXRoIGQ9Ik04NiA2NCBDMTAwIDcyIDEwNiA5MCAxMDQgMTEwIEw4NiA5OCBaIi8+PC9nPjxnIGZpbGw9IiNmZmYiPjxwYXRoIGQ9Ik02NCA4IEM4NCAyNCA5MCA1MiA4OCA5MCBMNDAgOTAgQzM4IDUyIDQ0IDI0IDY0IDggWiIvPjxwYXRoIGQ9Ik00OCA5MCBMODAgOTAgTDc2IDEwMCBMNTIgMTAwIFoiLz48L2c+PGcgc3Ryb2tlPSIjMDAwIiBzdHJva2Utd2lkdGg9IjMuNSI+PHBhdGggZD0iTTM2IDkwLjUgTDkyIDkwLjUiLz48L2c+PGNpcmNsZSBjeD0iNjQiIGN5PSI1MCIgcj0iOCIgZmlsbD0iIzAwMCIvPjwvZz48L21hc2s+PGc+PHBhdGggZD0iTTUyIDEwMCBDNTQgMTEyIDYwIDExOCA2NCAxMjYgQzY4IDExOCA3NCAxMTIgNzYgMTAwIFoiIGZpbGw9IiNlYjc0M2IiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDAgMykiLz48L2c+PHJlY3Qgd2lkdGg9IjEyOCIgaGVpZ2h0PSIxMjgiIGZpbGw9IiNiYTQ3OGYiIG1hc2s9InVybCgjYXAtbSkiLz4KPC9zdmc+Cg==
@@ -312,12 +312,14 @@
     // paste path produce). A plain object renders in the Apollo table but is dropped
     // from the native model on submit. So re-fetch the full entity in THIS tab (the
     // artist is already indexed — the create tab fetched it before posting back). #191
-    fetchEntity(d.gid).then(ent => {
-      if (pend.slot && typeof pend.slot._onPick === 'function') pend.slot._onPick(ent || { gid: d.gid, name: d.name, id: d.id });   // #652: a release artist
+    fetchEntity(d.gid).then(async ent => {
+      let landed = true;
+      if (pend.slot && typeof pend.slot._onPick === 'function') landed = (await pend.slot._onPick(ent || { gid: d.gid, name: d.name, id: d.id })) !== false;   // #652: a release artist
       else pickArtist(pend.slot, ent || { gid: d.gid, name: d.name, id: d.id });
       // #273: close the background create tab via its handle (a GM-opened tab can't always self-close).
       try { if (pend.bgTab && typeof pend.bgTab.close === 'function') pend.bgTab.close(); } catch (x) {}
-      Log.cat('Create').info('inserted newly-created artist', JSON.stringify(d.name), 'into the table' + (ent ? '' : ' (plain fallback — native link may be incomplete)'));
+      if (landed) Log.cat('Create').info('inserted newly-created artist', JSON.stringify(d.name), 'into the table' + (ent ? '' : ' (plain fallback — native link may be incomplete)'));
+      else Log.cat('Create').warn('created artist', JSON.stringify(d.name), '(' + d.gid + ') could not be set: its cell is gone; pick it by hand');
     });
   });
 
@@ -607,10 +609,21 @@
   // the user's pick (a candidate, or an artist just created) into name i
   async function riPick(i, ent, how) {
     if (ent && ent.gid && !ent.id) ent = (await fetchEntity(ent.gid)) || ent;
-    const ps = _riArt[i]; if (!ent || !ent.gid || !ps) return;
+    const ps = _riArt[i]; if (!ent || !ent.gid || !ps) { Log.cat('Artist').warn('Release artist', i + 1, '— no such name in the credit;', ent && ent.name, 'not set'); return false; }
     pickArtist(ps, ent);   // the cell's own pick: writes the whole credit through riCommit
     Log.cat('Artist').info('Release artist', i + 1, '→', ent.name, '(' + ent.gid + ')', how || 'picked');
     await riRetag();
+    return true;
+  }
+  // #725: a create started before a match pass or a re-read finished holds a slot those have
+  // since replaced; find its successor by the credited name, then by its position
+  function riSlotIndex(ps) {
+    const slots = riEntry.slots, i = slots.indexOf(ps);
+    if (i >= 0) return i;
+    const byName = slots.findIndex(p => !p.committed && ps.creditedAs && sameName(p.creditedAs, ps.creditedAs));
+    const j = byName >= 0 ? byName : (ps._ri >= 0 && ps._ri < slots.length ? ps._ri : -1);
+    Log.cat('Artist').debug('release artist cell was rebuilt since the pick started;', JSON.stringify(ps.creditedAs), '→ name', j + 1, byName >= 0 ? '(same credited name)' : '(same position)');
+    return j;
   }
   /* #652: the release Artist field IS the Tracklist's artist cell. MusicBrainz's box, its Edit
    * bubble and three-column popup are hidden; riEntry is a track-like entry whose slots are
@@ -622,7 +635,7 @@
   const riLiveKey = () => JSON.stringify(riNames().map(n => { const a = u(n.artist); return [(a && u(a.gid)) || '', u(n.name) || '', u(n.joinPhrase) || '']; }));
   function riBind() {
     riEntry.slots = _riArt;
-    _riArt.forEach((ps, i) => { ps._entry = riEntry; ps._ri = i; ps._onPick = ent => riPick(riEntry.slots.indexOf(ps), ent, 'created'); });
+    _riArt.forEach((ps, i) => { ps._entry = riEntry; ps._ri = i; ps._onPick = ent => riPick(riSlotIndex(ps), ent, 'created'); });
   }
   // the credit changed under us (seeded late, MusicBrainz's own editor in the Original view, a
   // paste): rebuild the slots from it, keeping what matching found for an artist still there
