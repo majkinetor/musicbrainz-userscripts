@@ -66,14 +66,13 @@ A group's chips show which signals hold for **every** member; one that holds for
 
 ## Merging
 
-**Merge ↗** on a group, or **Merge All** in the footer, submits the merge without opening MusicBrainz's merge page. Merge All prepares several groups in parallel and submits them one at a time, because MusicBrainz keeps one merge queue per session.
+**Merge ↗** on a group, or **Merge All** in the footer, submits the merge without opening MusicBrainz's merge page. Merge All submits the groups one at a time.
 
 Each merge gets an edit note listing what matched ("Same ISRC …", "Length difference 5s (3:59 – 4:04)"). ✎ in a group's title replaces it with your own text; Fusion's attribution line is always appended.
 
 It is an ordinary edit on your account: unless you're an auto-editor, it goes to a vote (see [Settings](#settings) to always ask for one).
 
-> [!NOTE]
-> Under the hood, Fusion queues the group with `GET /recording/merge_queue?add-to-merge=…` and posts MusicBrainz's own `/recording/merge` form with the target and the note. If MusicBrainz bounces the form instead of creating the edit, the group is marked failed, not done.
+A group whose merge MusicBrainz refuses is marked failed, not done.
 
 ## Settings
 

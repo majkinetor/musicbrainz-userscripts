@@ -10,11 +10,8 @@ Reusable edit notes in a panel beside the edit-note field of every edit form, an
 
 ## Features
 
-- **[Saved notes](#saved-notes)**: save, pin as buttons, search, sort and reorder edit notes.
-- **[History](#saved-notes)** of the notes you submitted.
+- **[Saved notes](#saved-notes)**: save, pin as buttons, search, sort and reorder edit notes, with a history of the notes you submitted.
 - **[Mammoth babies](#mammoth-babies)**: the same for other fields (catalogue number, label, artist…), and **[any field you choose](#custom-fields)**.
-- **[Import and export](#settings)** of notes.
-- **[Other scripts' edit-note fields](#notes)** get the same panel.
 
 ## Saved notes
 
@@ -23,7 +20,7 @@ Reusable edit notes in a panel beside the edit-note field of every edit form, an
 - Sort **manually** (drag ⠿), by **most used** or by **recent**. A search box narrows long lists.
 - Click applies a note with your default action (replace or append); right-click does the other. Appending skips a line that's already there.
 
-The field is widened and centred; drag the separator to resize the panel. The panel can be minimized to an icon: hover to peek, click to pin.
+Drag the separator to resize the panel. The panel can be minimized to an icon: hover to peek, click to pin.
 
 > [!TIP]
 > With *Scope per resource* on, each kind of edit note (release, artist, recording…) keeps its own saved notes and history.

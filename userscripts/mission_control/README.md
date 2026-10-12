@@ -27,7 +27,7 @@ Open Mission Control with its icon in the bottom-right corner of a release page.
 
 ## Probe
 
-**↻** in the header asks every script at once. The header and the **Execution order** on the left show each step as it works: what it is doing, and how long since it last reported. A step silent for 20 s turns amber.
+**↻** in the header asks every script at once. The header and the **Execution order** on the left show each step as it works: what it is doing, and how long since it last reported. A step that stays silent turns amber.
 
 | Step                     | Script                                        | Finds                                                  |
 | ------------------------ | --------------------------------------------- | ------------------------------------------------------ |
@@ -47,7 +47,7 @@ One row per track, a column per script: the ISRCs and recording links ISRC Scout
 
 The Tracks header counts the changes taken in and on how many tracks; each track with one has a bar on its left.
 
-Click a finding to take it in, and again to leave it out; what is taken in is tinted and ticked. New findings start taken in. A link inside a row only opens it. A click anywhere in a track's row also shows it in the [Inspector](#inspector).
+Click a finding to take it in, and again to leave it out; what is taken in is tinted and ticked. New findings start taken in. A click anywhere in a track's row also shows it in the [Inspector](#inspector).
 
 To take in or leave out many at once, hold a key while you click: the others follow the one you click.
 
@@ -59,7 +59,7 @@ To take in or leave out many at once, hold a key while you click: the others fol
 
 Found links take the same keys with a right-click. Press on an ISRC or a duplicate and drag up or down the column to do the same to every one you pass.
 
-Fusion's count opens what Fusion compared under the row: each recording's artist, release, length, ISRCs, AcoustIDs and open edits, with what differs marked. Once Fusion answers, it looks up the ISRCs and AcoustIDs of each group by itself, one group at a time, and the comparisons fill in as they come. Fusion's icon beside it (*Open in Fusion*) shows the group on Fusion's board. **Expand all** in the Tracks header opens every track's comparison, and **Collapse all** folds them.
+Fusion's count opens what Fusion compared under the row: each recording's artist, release, length, ISRCs, AcoustIDs and open edits, with what differs marked. The comparisons fill in as their ISRCs and AcoustIDs come. Fusion's icon beside it (*Open in Fusion*) shows the group on Fusion's board. **Expand all** in the Tracks header opens every track's comparison, and **Collapse all** folds them.
 
 ## Release and entity links
 

@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-10-11 23:54 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-10-12 08:43 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -51,11 +51,11 @@ Each part is optional, and Apollo's icon in the bottom-right corner switches bac
 - A **front-cover thumbnail** under the links opens the cover-art page.
 - Right-click a date's or label's ✕ to remove all of them.
 - The help bubbles are gone, including the "You selected …" ones on the artist, label and release group: the badges say what is linked.
-- The release **Artist** field is the Tracklist's artist cell, in place of MusicBrainz's box and its Edit popup. One line per artist: the credited-as name takes the place of the **Artist** label, the artist search lines up with Title, then the join phrase and the line's match badge. **↵** adds an artist, **⋔** splits a combined name, **⠿** reorders, **✕** removes, and **＋** / **🔗** / **⚠** offer to create the artist or add its link. The **Original** view brings back MusicBrainz's editor.
+- The release **Artist** field is the Tracklist's artist cell, in place of MusicBrainz's box and its Edit popup. One line per artist, with its credited-as name, search, join phrase and match badge. **↵** adds an artist, **⋔** splits a combined name, **⠿** reorders, **✕** removes, and **＋** / **🔗** / **⚠** offer to create the artist or add its link.
 - The release **Artist** is [matched](#artist-matching) on load like a track artist, through the same stages: the Discogs or platform link, the release artist of other editions, the exact name or alias, and co-credit with the artists on the tracks. A confident match is linked. Each artist's badge sits at the end of its line, its match card on hover; click an uncertain **LOW** badge to link its candidate.
 - The release **Label** is linked on load by its Discogs or platform link when exactly one label has it, else when exactly one label has its name or alias. A badge by the field says which; a label already on the release shows **set**, one you picked shows **user**. Hover the badge for the label and its disambiguation; click it to open the label.
 - The **Release group** of a new release is selected from MusicBrainz's suggestions under the field when exactly one of them has the release's title and artist. The title may differ in punctuation, spaces and letter case, never in a letter or digit. **auto** in the field marks it. Click the badge to open the release group. Pick **Add a new release group** to undo it, and Apollo leaves it.
-- The **Label** field searches with Apollo's picker, as the artist does: each label shows its aliases, disambiguation, type, label code and years, and an icon that opens it. **↑↓** + **Enter** pick, **Show more…** fetches more, and a pasted MBID or label URL is set at once. **＋** in place of the search icon creates the typed label, with its Discogs or platform link when no label has it yet, and sets it once saved; right-click to create it silently in a background tab. A linked label shows its disambiguation after its name. The **Original** view brings back MusicBrainz's search.
+- The **Label** field searches with Apollo's picker, as the artist does: each label shows its aliases, disambiguation, type, label code and years, and an icon that opens it. A pasted MBID or label URL is set at once. **＋** in place of the search icon creates the typed label, with its Discogs or platform link when no label has it yet, and sets it once saved; right-click to create it silently in a background tab.
 
 ### Tracklist
 
@@ -74,7 +74,7 @@ Each part is optional, and Apollo's icon in the bottom-right corner switches bac
 
 - On hover: **Split** and **Guess case**; left-click for one track, right-click for all.
 - **⠿** drags a track within its medium. **⤓** moves a track and everything below it into the data section; **⤒** moves it back. A medium with a disc ID can't have data tracks.
-- On hover, the last column has the track's **↺** (revert, when it has changed) and **✕** (remove). It sits after **Match**, so it never covers the match badges.
+- On hover, the last column has the track's **↺** (revert, when it has changed) and **✕** (remove).
 - Changed tracks get a coloured left border; pending changes, splittable tracks and tracks Guess case would change are highlighted.
 - Left-click a collapsed medium to expand it, right-click to expand all.
 - Pregap and data tracks and disc IDs are supported.
@@ -115,14 +115,12 @@ Stages, most confident first:
 
 Green means matched confidently; a white search box means unresolved, counted by **N unresolved**.
 
-**Match card.** Hover a badge for half a second and a card opens under it. It shows:
+**Match card.** Hover a badge for a card that shows:
 - the stage, and whether Apollo linked the artist or you picked it;
 - the linked artist, with its disambiguation, type, area and dates;
 - the evidence the stage had: the Discogs artist or the platform page; the release-group release and track; each other edition and whom it credits (✓ / ✗), with a release found by the duplicate search (the same title and artist, outside the release group) marked as such, since it may be this very release already in MusicBrainz; the alias; the co-credit counts;
 - the other candidates;
 - when it matched.
-
-The card stays open while the pointer is on it, so its links can be followed; Esc or moving away closes it. It only shows what the match already read, so it makes no requests.
 
 | Badge                     | Meaning                                                                               |
 | ------------------------- | ------------------------------------------------------------------------------------- |
@@ -146,7 +144,7 @@ The platform badges: **DZ** Deezer, **SP** Spotify, **TD** Tidal, **AM** Apple M
 The release **Artist** and **Label** are matched on load too; see [Release information](#release-information).
 
 > [!NOTE]
-> After a match, Apollo sometimes rebuilds its table, when the page's tracklist changed meanwhile. The badges are kept. If one is ever lost (the artist stays linked, but shows as *set*), a toast says so and offers **Copy log**: please paste it into [#638](https://github.com/majkinetor/musicbrainz-userscripts/issues/638).
+> After a match, Apollo sometimes rebuilds its table, when the page's tracklist changed meanwhile. The badges are kept. If one is ever lost (the artist stays linked, but shows as *set*), a toast says so and offers **Copy log** for a bug report.
 
 #### Recording matching
 
@@ -169,7 +167,7 @@ All the release group's recordings come in one request and are matched by title,
 When the release has no **Language** or **Script**, Apollo fills them in from the release and track titles, and marks the field **auto**. Bracketed parts such as *(Live)* or *[Remastered]* and anything after *feat.* are left out.
 
 - **Script**: the one that more than 70% of the letters are written in. Kana makes it *Japanese* and Hangul *Korean*. When no script reaches 70%, as with parallel titles like *Laula Mulle Laulu = Обійми*, it's *[Multiple scripts]*.
-- **Language**: [lande](https://github.com/fabiospampinato/lande), the detector Harmony uses, reads each script's words on their own and needs three titles or more and 80% confidence. It knows 50 languages and works in every browser. When the titles mix Latin with another script, that script's language is used, since the Latin is usually its translation or transliteration. When lande isn't sure, a script that implies its language names one: Japanese, Korean, Greek, Hebrew, Thai, Armenian or Georgian.
+- **Language**: [lande](https://github.com/fabiospampinato/lande), the detector Harmony uses, reads each script's words on their own and needs three titles or more and 80% confidence. When the titles mix Latin with another script, that script's language is used, since the Latin is usually its translation or transliteration. When lande isn't sure, a script that implies its language names one: Japanese, Korean, Greek, Hebrew, Thai, Armenian or Georgian.
 
 Every language and script found is listed at the top of the field's list under **Detected by Apollo**, most likely first, with *[Multiple languages]* or *[Multiple scripts]* to pick them all.
 
@@ -179,7 +177,7 @@ A field that a seed or you already set is never touched. Apollo keeps updating i
 
 <img width="1200" src="../apollo_editor/screenshots/tools.png" />
 
-The toolbar holds the tools you choose; the rest are in **Tools ▾**, with **Customize…** to pick, reorder and show each tool as icon, text or both. A tool with settings picked from the menu joins the bar until the page closes. Right-click a tool's name to fold its settings into a hover flyout.
+The toolbar holds the tools you choose; the rest are in **Tools ▾**, with **Customize…** to pick, reorder and show each tool as icon, text or both. Right-click a tool's name to fold its settings into a hover flyout.
 
 | Tool                                                    |                                                                                                                                   |
 | ------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
@@ -239,13 +237,7 @@ Titles, lengths, credits and recordings are kept and tracks are renumbered. Noth
 
 #### Other scripts' tools
 
-Apollo lists a button another userscript adds to the page like one of its own. A few are recognised by their text; any element with `class="apollo-tool"` is offered too:
-
-```html
-<button class="apollo-tool" data-apollo-label="My tool" data-apollo-icon="★">…</button>
-```
-
-`data-apollo-icon` is a glyph or an image URL (default 🔧); `data-apollo-id` keeps its place on the bar. Apollo clicks the element and re-reads the tracklist, so this suits tools without inline settings.
+Apollo lists a button another userscript adds to the page like one of its own, on the bar or in **Tools ▾**. How a script offers its button is in [DEVELOP.md](../apollo_editor/DEVELOP.md#other-scripts-tools).
 
 ### Duplicates
 
@@ -270,8 +262,6 @@ With *Enable detailed highlighting* on:
 - the differing characters of a title or artist are marked, and a length gap is shaded by its size. A different artist is boxed whole; a *credited as* difference on the same artist marks only its characters;
 - confusable characters (`'` `’` `"` `-` `–` `—`) are enlarged, and invisible ones (no-break, zero-width, tab) are drawn, with their Unicode name in the tooltip;
 - a join phrase missing a space shows `␣`, and a missing join phrase `␣?␣`.
-
-A tracklist title shows styled until you click it, then becomes the input with the caret where you clicked.
 
 <img src="../apollo_editor/screenshots/tracklist-dark.png" />
 
@@ -390,9 +380,6 @@ Links that open the add page with images to add, as Harmony's do, are imported t
 
 With the [Picker](../art_station/as_picker/README.md), clicking a copy in the search results sends it back to the gallery.
 
-> [!NOTE]
-> Zips may be stored or deflated; encrypted and ZIP64 archives are skipped with a message. Pasting into an input (the URL box, a comment) is left to that input.
-
 ### Full-screen viewer
 
 ← → move between covers, ↑ ↓ zoom (the level is remembered). When zoomed, the image follows the mouse (switch it off in ⚙ to drag instead). **P** runs a slideshow, **Enter** edits the comment, **Delete** marks the cover for removal. See [Shortcuts](#shortcuts-1).
@@ -419,14 +406,12 @@ Downloads are named `<NN> <types> <comment>.<ext>`, with `none` for no type, e.g
 
 **Enter edit** lists the staged operations and submits them as MusicBrainz edits, with one edit note and *make votable* for all.
 
-- Operations are listed in two columns (one in a narrow window). Each shows the cover it acts on and its own progress bar; the bar at the top counts the whole batch.
-- While images upload, the top bar also shows what's been sent and the live upload rate, *↑ 256.0 KB / 1.61 MB · 213.4 KB/s*; once they're done, the total and the average, *↑ 1.61 MB at 254.0 KB/s*.
+- Each operation shows the cover it acts on and its own progress bar; the bar at the top counts the whole batch, and while images upload, what's been sent and the upload rate.
 - The edit note starts folded to one line: its line count and first line. Click it to edit.
 - **Dry run** is in the menu on **Submit edits** (▾): it shows what each edit would send, and submits nothing.
 - Removes, edits and uploads run in parallel; one reorder edit runs last and sets the final order.
 - **Repeat** re-runs only the failed operations, and the reorder after them.
-- With *Automatically repeat failures* on (the default), Art Station retries the failed operations by itself, up to 10 times or 10 minutes. The pause between attempts grows as they pile up. A footer row shows the attempt and the countdown; **Close** stops it.
-- While a run is in progress, leaving the page asks first, and a click outside the dialog doesn't close it.
+- With *Automatically repeat failures* on (the default), Art Station retries the failed operations by itself, up to 10 times or 10 minutes. A footer row shows the attempt and the countdown; **Close** stops it.
 
 > [!NOTE]
 > *Upload timeout* (⚙, default 10 minutes, at most 120) is how long one file may take to reach the Internet Archive. Raise it for large PDF booklets when the Archive is slow; the failure message says when this limit was hit.
@@ -518,12 +503,12 @@ For sources that give an artist URL (Discogs, Tidal, Metal Archives), a chip sho
 
 **Automatic matching**, in this order:
 
-1. **Source URL**: the artist is linked to that URL in MusicBrainz. When it also carries the credited name, as its name or an alias, the row says `name+url` or `alias+url`; otherwise just `url`, and **+ alias** is offered. That is checked on the artist itself, so an alias added a moment ago counts at once.
+1. **Source URL**: the artist is linked to that URL in MusicBrainz. When it also carries the credited name, as its name or an alias, the row says `name+url` or `alias+url`; otherwise just `url`, and **+ alias** is offered.
 2. **Release context**: one of the release artist's related artists (band members, collaborators) carries the name or alias. So *George Harrison* on a Beatles release, although MusicBrainz has several.
 3. **Exact name or alias**, when exactly one MusicBrainz artist carries it (*Don Abi* → *Abiodun*). A common name like *Kim* can't be proven unique and is left for you, with the reason on the row.
 4. **Co-credit**: a recording that credits the name alongside the release artist (*Options › Matching*, on by default).
 
-When name and URL disagree, the row is left for you. Each match is cached with how it was made (`url`, `name+url`, `alias+url`, `context`, `name`, `alias`, `co-credit`, `user`); adding an alias with **+ alias** updates it. **🔄 Refresh from MB** re-matches rows cached before a change. Credits with a URL are cached by that URL; name-only credits are cached per release, so a bare name never carries over to another release. 🔄 clears the cache and matches again.
+When name and URL disagree, the row is left for you. Each match is cached with how it was made (`url`, `name+url`, `alias+url`, `context`, `name`, `alias`, `co-credit`, `user`); adding an alias with **+ alias** updates it. **🔄 Refresh from MB** re-matches rows cached before a change. A bare name's match is kept for this release only. 🔄 clears the cache and matches again.
 
 On a row:
 
@@ -566,8 +551,8 @@ The edit note carries the statistics, one block per source when several ran. Wha
 
 A source with an artist ID resolves to the exact MusicBrainz artist; a name-only credit goes through matching and your review.
 
-- **Tidal** and **Metal Archives** are read in a background tab (Metal Archives is behind Cloudflare), and the credits are sent back. Many Tidal albums list their credits once, on the Info tab; those are read too.
-- **Qobuz**: signed in under [Platform Check](../platform_check/README.md), Credit Hoarder reads Qobuz's API, which is reliable and gives the composer's artist ID. Otherwise it reads the store page, names only.
+- **Tidal** and **Metal Archives** open briefly in a background tab. Many Tidal albums list their credits once, on the Info tab; those are read too.
+- **Qobuz**: signed in under [Platform Check](../platform_check/README.md), the credits are more reliable and carry the composer's artist ID; otherwise they are names only.
 - **YouTube Music** is read anonymously, from each song's *Credits* (⋮ → Credits), for a release linked to a YouTube Music album. It has three groups: *Written by* (a writer, on the work), *Produced by* (producer) and *Performed by*, which is the track's artist credit and isn't imported. *Music metadata provided by* is the label, also not imported. Some labels send no credits at all. YouTube Music numbers a multi-disc album straight through, so its songs are placed on the release's mediums by their track counts; when the counts don't add up, the log says so.
 - **Metal Archives**: guitars and bass default to electric; guests get the *guest* attribute; on a split release, each band's credits stay on its own tracks.
 - **Titles** reads named remixes: *Song (Artist Remix)*, *Track (KiNK Dub)*, *Tune (Tom Moulton Mix)*, *Cut (Remixed by Someone)* each give that recording a remixer. *(Extended Mix)*, *(Radio Edit)*, a bare *(Remix)* and *(Mixed by …)* don't. It's a heuristic over a naming habit, so check what it finds.
@@ -587,17 +572,9 @@ Not imported, but listed as skipped: main and featured artists and the record la
 
 The log records every step. Its menu copies the log with or without the raw data, and each source's raw and parsed data, for an issue. *Preflight diagnostics* under the log trace every request.
 
-### Shortcuts
-
-| Key   |                                          |
-| ----- | ---------------------------------------- |
-| Enter | run the search; confirm the artist popup |
-| Esc   | close the artist popup                   |
-
 ### Notes
 
-- Credit Hoarder succeeds the single-source [Discogs Importer](../discogs_credits/README.md).
-- [Development documentation](../credit_hoarder/DEVELOP.md)
+How each source is read is in [DEVELOP.md](../credit_hoarder/DEVELOP.md).
 
 ---
 
@@ -629,7 +606,7 @@ Untouched rows and aliases the entity already has are skipped, not submitted aga
 
 ### Filling the queue
 
-Open Falcon on any MusicBrainz page with **Ctrl+Alt+F** (or its corner icon; right-click the icon for **Options**). The icon stays off the release editor (`/release/<mbid>/edit` and `/release/add`), which is [Apollo Editor](../apollo_editor)'s page and nothing Falcon acts on; **Ctrl+Alt+F** still opens it there.
+Open Falcon on any MusicBrainz page with **Ctrl+Alt+F** (or its corner icon; right-click the icon for **Options**). The release editor has no icon, since Falcon has nothing to do there; **Ctrl+Alt+F** still opens it.
 
 #### From Harmony
 
@@ -657,15 +634,13 @@ On a series page, **+ Add from series** queues its release groups (optionally ev
 
 ### Editing the queue
 
-The **List** / **Grid** button, right of the type chips, switches between two views. Falcon remembers the one you last used.
+The **List** / **Grid** button, right of the type chips, switches between two views.
 
 - **List**: expand a row to edit it as a labelled form. Its links are listed one per URL, each with its link types by name; a URL added under two types shows both. The mark before a URL (✓ done, ✗ failed, ↗ not run yet) opens it. Long link lists fold after three, with *+ N more*.
-- Links are editable: change a URL in its box (empty it to drop it). A type badge is a dropdown: pick another type to change it, or **✕** it off. The **+** after the types adds one from that entity's link types, the row's **✕** removes the link, and the **+** by the *Links* label adds a link. The **↗** mark opens the link (✓ / ✗ once it has run). A link with no type shows *auto* and is left for MusicBrainz to guess.
+- Links are editable: change a URL in its box (empty it to drop it). A type badge is a dropdown: pick another type to change it, or **✕** it off. The **+** after the types adds one from that entity's link types, the row's **✕** removes the link, and the **+** by the *Links* label adds a link. A link with no type shows *auto* and is left for MusicBrainz to guess.
 - **Grid**: one line per row, with its name, disambiguation and ISRCs editable in place. **▸** opens the row's links and aliases (and a release's cover art) beneath it, lined up under *Name*; aliases are added and edited only there.
 
-The select-all box, **▸** expand-all and the number of rows selected head the rows, in both views. The open tab is underlined.
-
-The [keyboard](#shortcuts-3) moves between fields in both views, like a spreadsheet. In the list, the row you move into opens and the one you leave closes again.
+The [keyboard](#shortcuts-2) moves between fields in both views, like a spreadsheet. In the list, the row you move into opens and the one you leave closes again.
 
 ### The run
 
@@ -692,7 +667,7 @@ Review the queue (remove rows, edit fields), then press **Start**. Right-click a
 A link MusicBrainz can't classify on its own (a Bandcamp track: purchase or streaming?) fails with that reason instead of blocking its row; use **⇗** to pick the type.
 
 > [!NOTE]
-> Workers are MusicBrainz edit pages in same-origin iframes. Each is loaded with MusicBrainz's seed parameters, so the page fills itself. Falcon only touches the form for what seeding can't express (a link that needs two types, a row MusicBrainz couldn't classify), and submits. Where MusicBrainz has an API (cover art, aliases), Falcon uses it instead. The worker count never grows with the queue.
+> Workers are MusicBrainz's own edit pages, filled in and submitted out of sight; how is in [DEVELOP.md](../falcon/DEVELOP.md#workers). *Workers* in [Settings](#settings-1) sets how many run at once.
 
 #### The log
 
@@ -729,11 +704,11 @@ Two settings, both on by default, carry a finished Harmony import to a finished 
 | *Auto send*         | Harmony     | presses *Send to Falcon* |
 | *Auto start import* | MusicBrainz | presses *Start*          |
 
-*Auto send* waits until the import is complete (the page has a `release_mbid`) and Harmony has finished listing its actions. It stands down if there's nothing to send. It counts down on the button first; a click cancels.
+*Auto send* waits until the import is complete and Harmony has finished listing its actions. It stands down if there's nothing to send. It counts down on the button first; a click cancels.
 
 **When Harmony errors**, the page still loads, just short of actions. Falcon handles this without a setting:
 
-- **a MusicBrainz error**: Falcon reloads the page, up to 5 times, backing off from 5 s to 60 s;
+- **a MusicBrainz error**: Falcon reloads the page, a few times, waiting longer each time;
 - **a provider error**, or retries exhausted: Falcon sends what it has, as *Send 43 to Falcon (partial)*, with the reason as the batch's edit note (reloading can't fix a provider).
 
 Falcon is idempotent, so a partial run can be topped up later. *Reload release page after import without errors* (a Harmony option, like Picard: both follow only a queue Harmony sent) shows the result on the release page and turns the corner icon green. A run with failures isn't reloaded, since the queue wouldn't survive it; the log would.
@@ -785,7 +760,7 @@ What **Import** reads, **Export** writes, and Harmony and other scripts produce:
 
 #### From another script
 
-Append `?falcon=<base64(JSON)>` to any musicbrainz.org URL: Falcon opens with the queue seeded (it doesn't start). The JSON is the [model](#json-model) above, read as **Import** reads a file: the `note` becomes the batch edit note, and an item carries whatever a row can. On a page where Falcon already runs, a script can instead dispatch a `falcon:import` event on `document` with the JSON as a string `detail`: Falcon queues it on that page and answers with `falcon:import-ok`. `falcon:run` does the same and starts the queue; with `"closeWhenDone": true` at the JSON's root, the panel closes when that run finishes with every item done, and the corner icon turns the same green as on a page reloaded after a clean run, until the next run starts. With `"headless": true` the panel stays out of sight while the batch runs, and with a `"tag"` Falcon reports each change to that batch's items as a `falcon:status` event (`{ tag, running, items }`, each item with its type, MBID, name, status and error). A `falcon:show` event opens the panel. [Mission Control](../mission_control/DEVELOP.md#execute) runs its links and a barcode this way and shows the progress in its own cards. A `?falcon=` link never starts on its own. A batch handed over this way (event or link) adds an entity already queued to its row rather than queueing it twice, so sending the same batch again doesn't run it twice; **Import** restores a file as it is. [Platform Check](../platform_check/README.md#artists-and-labels) sends its artist and label links this way, and falls back to `?falcon=` in a new tab when no Falcon answers.
+Another script can hand Falcon a queue in the [JSON model](#json-model), by a `?falcon=` link or by an event on the page; a link never starts the queue. Sending the same batch twice doesn't run it twice. [Mission Control](../mission_control/README.md#execute) and [Platform Check](../platform_check/README.md#artists-and-labels) send their links this way. How is in [DEVELOP.md](../falcon/DEVELOP.md#handoff).
 
 ### Settings
 
@@ -830,9 +805,6 @@ Import a release into MusicBrainz from the platform's album page with one click:
     - Or via bundle: [String Theory](../string_theory/README.md)
 - [Changelog](../first_contact/CHANGELOG.md)
 - [View users](https://musicbrainz.org/search/edits?auto_edit_filter=&order=desc&negation=0&combinator=and&conditions.0.field=edit_note_content&conditions.0.operator=includes&conditions.0.args.0=First+Contact)
-
-> [!NOTE]
-> First Contact doesn't match entities: it hands them to [Apollo Editor](../apollo_editor/README.md#artist-matching), which does. Keep Apollo's *Auto-match on start: Label, Artist* on (the default), or click its **Match** button yourself.
 
 > [!IMPORTANT]
 > By default every album page you import is sent to the Internet Archive to be saved, so the edit note can link a snapshot of it. See [Archive](#archive); turn it off in [Settings](#settings-2).
@@ -1065,15 +1037,9 @@ Pages: `ototoy.jp/_/default/p/<id>`
 
 ### Artist matching
 
-First Contact doesn't pick MusicBrainz artists itself. It hands every credited artist's platform link (the release's and each track's) to [Apollo Editor](../apollo_editor/README.md#artist-matching) on the release editor page, and Apollo matches them. Other scripts can read the same [handoff](#handoff).
+First Contact doesn't pick MusicBrainz artists or labels itself. It hands every credited artist's platform link (the release's and each track's) to [Apollo Editor](../apollo_editor/README.md#artist-matching) on the release editor page, and Apollo matches them, the platform link first. Keep Apollo's *Auto-match on start: Label, Artist* on (the default), or click its **Match** button yourself.
 
-Apollo links an artist only when the evidence is strong, trying the most certain source first:
-
-1. **Platform link.** The MusicBrainz artist already links the artist's page on the platform you imported from (or the release's Discogs artist). This is the most reliable match, and why First Contact passes the links on.
-2. **Other releases.** The same track on another release of the release group, or at the same position on its other editions, credits this artist.
-3. **Unique name.** Exactly one MusicBrainz artist has the credited name as its name or alias, or exactly one artist of that name is usually credited next to an artist already on this release.
-
-Anything less certain is left unlinked and offered as a candidate for you to confirm. A badge on each artist shows which stage linked it. When the artist exists but lacks the platform link, Apollo offers to add it, so the next import of that artist matches at once; when it doesn't exist, Apollo offers to create it with the link.
+When the artist exists but lacks the platform link, Apollo offers to add it, so the next import of that artist matches at once; when it doesn't exist, Apollo offers to create it with the link. Other scripts can read the same [handoff](#handoff).
 
 ### Archive
 
@@ -1085,8 +1051,7 @@ Archived page: https://web.archive.org/web/20261002121804/https://www.deezer.com
 Archived API data: https://web.archive.org/web/20261002121804/https://api.deezer.com/album/6575789
 ```
 
-- The save starts once the release editor opens and runs in its tab, so the import never waits for it. It takes from a few seconds to a minute; the [log](#settings-2) says when it's done or why it failed.
-- The link carries the time of the import, and the Wayback Machine opens the snapshot nearest to it, which is the one just made.
+- The import never waits for the save, which takes from a few seconds to a minute; the [log](#settings-2) says when it's done or why it failed.
 - Deezer and Apple Music build their pages in the browser, so a saved page shows little. For these, the album data First Contact read is saved too, and linked as *Archived API data*.
 - Spotify, Tidal and YouTube Music also build their pages in the browser, and their data can't be saved. For these, add your archive.org keys: the save then also takes a screenshot of the page, and the edit note links it as *Archived screenshot*.
 
@@ -1107,7 +1072,7 @@ To get them, make a free account on [archive.org](https://archive.org), log in, 
 
 Drag **Import to MusicBrainz** (or any of its buttons) to wherever it is out of the way. Each platform remembers its own place. **⚙︎ → Reset:** **this one** puts it back in the bottom-right corner on that platform and stops it scrolling with the page; **all** does so on every platform.
 
-By default the button stays put on the screen. With **Moved button scrolls with the page on** *platform* on (see [Settings](#settings-2)), a moved button stays on its spot on that platform's page instead, above the cover, say, and scrolls with it. Each platform has its own, so the button can scroll with the page on Bandcamp and stay on the screen on Spotify:
+By default the button stays put on the screen. With **Moved button scrolls with the page on** *platform* on (see [Settings](#settings-2)), a moved button stays on its spot on that platform's page instead, above the cover, say, and scrolls with it. Each platform has its own, so the button can scroll with the page on Bandcamp and stay on the screen on Spotify.
 
 ### Settings
 
@@ -1221,14 +1186,13 @@ A group's chips show which signals hold for **every** member; one that holds for
 
 ### Merging
 
-**Merge ↗** on a group, or **Merge All** in the footer, submits the merge without opening MusicBrainz's merge page. Merge All prepares several groups in parallel and submits them one at a time, because MusicBrainz keeps one merge queue per session.
+**Merge ↗** on a group, or **Merge All** in the footer, submits the merge without opening MusicBrainz's merge page. Merge All submits the groups one at a time.
 
 Each merge gets an edit note listing what matched ("Same ISRC …", "Length difference 5s (3:59 – 4:04)"). ✎ in a group's title replaces it with your own text; Fusion's attribution line is always appended.
 
 It is an ordinary edit on your account: unless you're an auto-editor, it goes to a vote (see [Settings](#settings-3) to always ask for one).
 
-> [!NOTE]
-> Under the hood, Fusion queues the group with `GET /recording/merge_queue?add-to-merge=…` and posts MusicBrainz's own `/recording/merge` form with the target and the note. If MusicBrainz bounces the form instead of creating the edit, the group is marked failed, not done.
+A group whose merge MusicBrainz refuses is marked failed, not done.
 
 ### Settings
 
@@ -1425,10 +1389,6 @@ Once you use Group Therapy on a page, it adds its signature to the edit note, fo
 | right-click a credit in the copy list        | keep only that role (Shift adds it)       |
 | hover an entity or role                      | highlight it                              |
 
-### Notes
-
-Group Therapy works through MusicBrainz's own relationship editor: it reads the relationships from the page and writes through the editor's state, like [Credit Hoarder](../credit_hoarder/README.md). Consolidation is the exception, submitting with MusicBrainz's edit API.
-
 ---
 
 ## ISRC Scout
@@ -1490,7 +1450,7 @@ The toolbar shows the providers available for this release:
 | plain    | [Platform Check](../platform_check/README.md)                                      |
 | blue dot | another release in the group (option *Use providers from the whole release group*) |
 
-**(+)** imports from any album URL you paste. **⟳ SoundExchange** searches every track by title and artist, fills the confident matches, and shows the other candidates per row; it searches 30 tracks at a time, so click a *Not searched* row to continue. Deezer, which needs a request per track, fetches 50 at a time the same way.
+**(+)** imports from any album URL you paste. **⟳ SoundExchange** searches every track by title and artist, fills the confident matches, and shows the other candidates per row; on a long release, click a *Not searched* row to search the next tracks. Deezer continues the same way.
 
 > [!NOTE]
 > A Platform Check link withheld for a barcode or format mismatch isn't used, because the mismatch may mean it's a different release altogether. *Ignore Platform Check link confidence* uses it anyway; a wrong track count always excludes it.
@@ -1501,11 +1461,7 @@ The toolbar shows the providers available for this release:
 
 - **+1** fills the previous track's ISRC plus one.
 - The **lookup** button looks the row's ISRC up on the selected provider and shows its title, artist and length next to the row, mismatches in red. Guests don't count as a mismatch: a *feat.* clause is left out of both titles, and when the credits differ only the main artist has to match, since databases list guests differently. Nor does a typo: a word one letter off (*Les Ecrocs* for *Les Escrocs*), in words of five letters or more, reads as the same song: the lookup marks it ⚠, and **All** counts it with the note *its title is spelled differently*. Its menu switches every row to another provider; right-click runs it on all tracks.
-- **All** (top of the menu) checks the row's ISRCs on every provider available for the release at once (not SoundExchange, which serves a captcha on nearly every run): the entered one and every ISRC the recording already has. The row shows a verdict: **✓ 4/4** when every provider that knows the ISRC agrees, **⚠ 1/4** when some don't, **– 0/4** when none knows it. Hover the verdict (or the row's **All** button) to see the comparison next to it (right of the verdict, or above the row when there's no room there, so the rows below stay free); move down either column to walk the tracks, click the verdict to pin it so you can select text. Clicking one of its ISRCs pins it too, and the comparison stays where it is. Each line starts with the provider's verdict:
-  - Deezer and Tidal look the ISRC up: ✓ their song for it is this track, ⚠ it is another song.
-  - An album provider (Qobuz, Apple, Beatport…) reads the release's album there: ✓ it has this ISRC at the same position as this track (📍), or at another position (↪ track 3: the album orders its tracks differently). Deezer and Tidal can't say where: they only look the ISRC up. When the album hasn't the ISRC at all, ✗ it has **another** ISRC at this track's position, offered with **use**. An ISRC that belongs to another track of the release, or that the row already has, is never offered.
-  - The header lists the row's ISRCs first, then any other ISRC a provider named, each with how many providers have it for this track. The comparison shows the row's first ISRC; click another of the row's to see what the providers say about that one, or an ISRC a provider named to see only the providers that name it. **copy** puts the comparison on the clipboard as a Markdown table (provider, track, length, note; the ISRC is in its heading, and in the note where an album has another one).
-  - **All** is also the last button in the toolbar, when the release has more than one provider: it checks every track, as a right-click on a row's **All** does.
+- **All** (top of the menu) checks the row's ISRCs on [every provider](#checking-every-provider) at once.
 - **⚙** opens a SoundExchange search you can tune (title, artist, release, exact), with a link to run it on their site.
 
 | Check         | Mismatch when                                                             |
@@ -1515,6 +1471,17 @@ The toolbar shows the providers available for this release:
 | Length        | more than 10 s off; MusicBrainz's length is shown alongside               |
 
 A result passing every check fills an empty field (blue); a length mismatch only warns (yellow). Lookups don't run while you type: only when you leave a field you typed into, press the button, or run the SoundExchange search. A SoundExchange captcha or rate limit shows in the toolbar; solve it there and continue.
+
+#### Checking every provider
+
+**All** checks the row's ISRCs on every provider available for the release (not SoundExchange, which serves a captcha on nearly every run): the entered one and every ISRC the recording already has. **All** at the end of the toolbar, or a right-click on a row's **All**, checks every track.
+
+The row shows a verdict: **✓ 4/4** when every provider that knows the ISRC agrees, **⚠ 1/4** when some don't, **– 0/4** when none knows it. Hover the verdict for the comparison, and click it to pin it. Each line starts with the provider's verdict:
+
+- Deezer and Tidal look the ISRC up: ✓ their song for it is this track, ⚠ it is another song.
+- An album provider (Qobuz, Apple, Beatport…) reads the release's album there: ✓ it has this ISRC at the same position as this track (📍), or at another position (↪ track 3: the album orders its tracks differently). When the album hasn't the ISRC at all, ✗ it has **another** ISRC at this track's position, offered with **use**. An ISRC that belongs to another track of the release, or that the row already has, is never offered.
+
+The header lists the row's ISRCs first, then any other ISRC a provider named, each with how many providers have it for this track. Click one to see what the providers say about it. **copy** puts the comparison on the clipboard as a Markdown table.
 
 #### Paste, export, delete
 
@@ -1536,7 +1503,7 @@ The **Links** tab shows, per track, what each recording already links to (**Link
 
 #### Match
 
-**⚡ Match**, at the right of the toolbar after **Find links**, does both steps in one click. It imports ISRCs from the fastest source the release links: one-request sources (Qobuz, Audiomack, Apple Music, Tidal, …) before per-track ones (Deezer, 7digital) and Spotify. If a source fails or gives nothing, it tries the next. Then it runs **Find links** with the ISRCs it found. A link pulled from the release group is skipped, since whether it fits this release needs you to look. Mission Control's probe uses the same order.
+**⚡ Match**, at the right of the toolbar after **Find links**, does both steps in one click. It imports ISRCs from the fastest source the release links: one-request sources (Qobuz, Audiomack, Apple Music, Tidal, …) before per-track ones (Deezer, 7digital) and Spotify. If a source fails or gives nothing, it tries the next. Then it runs **Find links** with the ISRCs it found. A link pulled from the release group is skipped, since whether it fits this release needs you to look.
 
 | Click               | on an **Add** icon               | on a **Linked** icon                           |
 | ------------------- | -------------------------------- | ---------------------------------------------- |
@@ -1579,31 +1546,30 @@ The mouse gestures on links are in the [Links](#links) table.
 
 YouTube Music shows no ISRCs. When the release links its YouTube Music album (Platform Check finds it), each track is taken from that album's tracklist by position and title, as official audio, never a music video. A song a free listener can't play (YouTube Premium only, or not available at all) is left out, since the links are added as *free streaming*. Without a linked album, the track's ISRC is searched, and a result counts only when it is official audio (not a user upload), has the track's title, is within 3 s of its length, and comes from this release's album. The log names every result it skipped, and why. The edit note names each link's YouTube Music album.
 
-> [!NOTE]
-> A search for an ISRC YouTube Music doesn't know brings up unrelated songs instead of nothing, and labels sometimes reuse an ISRC for another version of a song with the same title and length: [JP92Q2400507](https://musicbrainz.org/isrc/JP92Q2400507) is both *メズマライザー* and its *Critical Damage ver.* Hence the strict search. The album's tracklist is read from its own playlist, because its album page, seen without logging in, shows a track's music video in its place. The edit note names the album because a song's URL stops saying which album it was on once it is delisted.
-
 #### Amazon Music
 
-Amazon Music shows no ISRCs, and has no ISRC search, so its track links come only from the release's Amazon Music album, when the release links it (Platform Check finds it by name). Each track is taken from the album's tracklist by position, or by title when the album orders it differently, and only when the title matches and the length is within 3 seconds. It is read as a guest, with no Amazon account, and the links are added as *streaming page*.
+Amazon Music shows no ISRCs, so its track links come only from the release's Amazon Music album, when the release links it (Platform Check finds it by name). Each track is taken by position, or by title when the album orders it differently, and only when the title matches and the length is within 3 seconds. No Amazon account is needed, and the links are added as *streaming page*.
 
 #### 7digital
 
-7digital is read through the catalogue its web store uses, with no login. It can't list an album's tracks, so each track of the release is searched for by its title (with the album's title, then with its artist), and the results from the linked 7digital album are kept, each with its ISRC, disc and position. One search often brings up the whole album; when it doesn't, there is a search per track, a few at a time, which takes some seconds on a long album. A 7digital track has no page of its own, so there are no track links.
+No login is needed. Each track of the release is searched for by its title, and the results from the linked 7digital album are kept, which takes some seconds on a long album. A 7digital track has no page of its own, so there are no track links.
 
 #### Spotify
 
-Spotify's own ISRC API needs a paid developer account, so ISRCs come through a service that looks them up with its own credentials. Pick it in **⚙ Setup**; switch if one is down or throttled:
+Spotify's ISRCs come through a lookup service. Pick it in **⚙ Setup**; switch if one is down or throttled:
 
-- **[molla](https://isrc.mollamusicgroup.com)** returns the album's ISRCs in album order. When its track count matches the release they're mapped by position, otherwise by title and artist, and unmatched tracks stay empty. Its quota is shared by all its users, so a burst may need a retry a minute later.
-- **[ISRC Hunt](https://isrchunt.com)** returns them by disc and position.
+- **[molla](https://isrc.mollamusicgroup.com)** maps the album's ISRCs by position when its track count matches the release, otherwise by title and artist. Its quota is shared by all its users, so a burst may need a retry a minute later.
+- **[ISRC Hunt](https://isrchunt.com)** gives them by disc and position.
 
 #### Beatport
 
-Beatport is behind Cloudflare, so ISRC Scout can't fetch it from MusicBrainz. It also runs on `beatport.com/release/*`: an import opens the release in a background tab, reads the ISRCs there and closes it. A Beatport release page you open yourself is read too, and results are cached.
+An import opens the Beatport release in a background tab, reads the ISRCs there and closes it. A Beatport release page you open yourself is read too.
 
 #### Qobuz
 
-Qobuz's `album/get`, the only endpoint with per-track ISRCs, answers anonymously only from countries Qobuz serves; from anywhere else it answers *404* for every album. Signing in under [Platform Check](../platform_check/README.md) (*⚙ Setup → Auth → Qobuz account*) works from anywhere: the login lends its account's region. Platform Check keeps the token (the password is never stored), and ISRC Scout and Credit Hoarder read it. Qobuz rate-limits hard, and a barcode search needs the 13-digit, zero-padded EAN.
+Outside the countries Qobuz serves, its ISRCs need a Qobuz login: sign in under [Platform Check](../platform_check/README.md) (*⚙ Setup → Auth → Qobuz account*). The login works from anywhere, and ISRC Scout and Credit Hoarder share it; only its token is kept, never the password.
+
+How each provider is read is in [DEVELOP.md](../isrc_scout/DEVELOP.md).
 
 ---
 
@@ -1619,11 +1585,8 @@ Reusable edit notes in a panel beside the edit-note field of every edit form, an
 
 ### Features
 
-- **[Saved notes](#saved-notes)**: save, pin as buttons, search, sort and reorder edit notes.
-- **[History](#saved-notes)** of the notes you submitted.
+- **[Saved notes](#saved-notes)**: save, pin as buttons, search, sort and reorder edit notes, with a history of the notes you submitted.
 - **[Mammoth babies](#mammoth-babies)**: the same for other fields (catalogue number, label, artist…), and **[any field you choose](#custom-fields)**.
-- **[Import and export](#settings-6)** of notes.
-- **[Other scripts' edit-note fields](#notes-5)** get the same panel.
 
 ### Saved notes
 
@@ -1632,7 +1595,7 @@ Reusable edit notes in a panel beside the edit-note field of every edit form, an
 - Sort **manually** (drag ⠿), by **most used** or by **recent**. A search box narrows long lists.
 - Click applies a note with your default action (replace or append); right-click does the other. Appending skips a line that's already there.
 
-The field is widened and centred; drag the separator to resize the panel. The panel can be minimized to an icon: hover to peek, click to pin.
+Drag the separator to resize the panel. The panel can be minimized to an icon: hover to peek, click to pin.
 
 > [!TIP]
 > With *Scope per resource* on, each kind of edit note (release, artist, recording…) keeps its own saved notes and history.
@@ -1762,7 +1725,7 @@ Open Mission Control with its icon in the bottom-right corner of a release page.
 
 ### Probe
 
-**↻** in the header asks every script at once. The header and the **Execution order** on the left show each step as it works: what it is doing, and how long since it last reported. A step silent for 20 s turns amber.
+**↻** in the header asks every script at once. The header and the **Execution order** on the left show each step as it works: what it is doing, and how long since it last reported. A step that stays silent turns amber.
 
 | Step                     | Script                                        | Finds                                                  |
 | ------------------------ | --------------------------------------------- | ------------------------------------------------------ |
@@ -1782,7 +1745,7 @@ One row per track, a column per script: the ISRCs and recording links ISRC Scout
 
 The Tracks header counts the changes taken in and on how many tracks; each track with one has a bar on its left.
 
-Click a finding to take it in, and again to leave it out; what is taken in is tinted and ticked. New findings start taken in. A link inside a row only opens it. A click anywhere in a track's row also shows it in the [Inspector](#inspector).
+Click a finding to take it in, and again to leave it out; what is taken in is tinted and ticked. New findings start taken in. A click anywhere in a track's row also shows it in the [Inspector](#inspector).
 
 To take in or leave out many at once, hold a key while you click: the others follow the one you click.
 
@@ -1794,7 +1757,7 @@ To take in or leave out many at once, hold a key while you click: the others fol
 
 Found links take the same keys with a right-click. Press on an ISRC or a duplicate and drag up or down the column to do the same to every one you pass.
 
-Fusion's count opens what Fusion compared under the row: each recording's artist, release, length, ISRCs, AcoustIDs and open edits, with what differs marked. Once Fusion answers, it looks up the ISRCs and AcoustIDs of each group by itself, one group at a time, and the comparisons fill in as they come. Fusion's icon beside it (*Open in Fusion*) shows the group on Fusion's board. **Expand all** in the Tracks header opens every track's comparison, and **Collapse all** folds them.
+Fusion's count opens what Fusion compared under the row: each recording's artist, release, length, ISRCs, AcoustIDs and open edits, with what differs marked. The comparisons fill in as their ISRCs and AcoustIDs come. Fusion's icon beside it (*Open in Fusion*) shows the group on Fusion's board. **Expand all** in the Tracks header opens every track's comparison, and **Collapse all** folds them.
 
 ### Release and entity links
 
@@ -1894,7 +1857,7 @@ Finds a MusicBrainz release on the streaming and store platforms, checks each ma
 
 ### Dashboard
 
-A link already in the release's relationships is used as is. Otherwise each platform is searched: by barcode first, then the platform's own search, Wikidata, and a web search. The platform's details are fetched and shown next to MusicBrainz's, and the result is cached until you press ↻. While the platforms are searched, ↻ spins; click it to stop, which leaves the ones not done yet unchecked.
+A link already in the release's relationships is used as is. Otherwise each platform is searched: by barcode first, then the platform's own search, Wikidata, and a web search. The platform's details are fetched and shown next to MusicBrainz's, and the result is cached until you press ↻. Click ↻ during a search to stop it.
 
 | Icon and name |                                                                                     |
 | ------------- | ----------------------------------------------------------------------------------- |
@@ -1913,18 +1876,16 @@ A link already in the release's relationships is used as is. Otherwise each plat
 | ?           | link found, track count unreadable     |
 | red —       | not found                              |
 
-Hover a track count for what its colour means.
-
 A release's format is a four-quadrant circle: vinyl, cassette, CD, digital (DVD, SACD and Blu-ray count as CD).
 
 > [!TIP]
-> *Compact unmatched providers* shrinks a provider that found nothing (or is still searching) to a dimmed icon at the bottom; it rises into a row once it finds something. *Compact low-confidence providers* does the same for a found release that isn't a clean match (different barcode or format, or withheld), shown with an amber ring; with it off, that row stays, with its tracks, year and label. Discogs and Bandcamp always keep their rows.
+> *Compact › Unmatched* shrinks a provider that found nothing (or is still searching) to a dimmed icon at the bottom; it rises into a row once it finds something. *Compact › Low-confidence* does the same for a found release that isn't a clean match (different barcode or format, or withheld), shown with an amber ring; with it off, that row stays, with its tracks, year and label. Discogs and Bandcamp always keep their rows.
 
 ### Link confidence
 
 MusicBrainz treats a different barcode or a different format as a different release, so such a link [belongs elsewhere](https://musicbrainz.org/doc/Style/Relationships/URLs#Which_entity_to_link_to). Both checks can run *if they exist* (withhold a link only when its barcode or format is known and differs) or *strictly* (also withhold a link that can't be checked). A withheld link is greyed out and left out of adding and *Open all*.
 
-- **Barcodes** are looked up with every zero-padding (UPC-A, EAN-13, 14 digits). Deezer's answer is checked against the barcode asked for, since it sometimes returns an unrelated album.
+- **Barcodes** are looked up with every zero-padding (UPC-A, EAN-13, 14 digits).
 - **Formats**: only Bandcamp and Discogs report a format; the other platforms are digital. The medium is compared: CD, vinyl, cassette, MiniDisc or digital (DVD and Blu-ray count as CD), so vinyl on a CD release is withheld. A Bandcamp or Discogs edition that includes this release's medium ("Digital, CD" on a CD release) passes.
 - The **Discogs master** is exempt from both: it goes on the release group, which spans every edition.
 
@@ -1942,7 +1903,7 @@ A middle click (or Alt+click) on a link that passes link confidence is a plain a
 The footer's **+** adds every confirmed link (middle-click or Alt+click: the withheld ones too; with Ctrl, in the background) and **↗** opens them all. A background add opens an inactive tab that submits the edit and closes itself; the Discogs master goes onto the release group the same way. The Discogs master's own ✓ adds just the master: click for the editor, right-click in the background.
 
 > [!NOTE]
-> Firefox throttles background tabs hard, slowing a background add down. *Keep background-add tabs awake* plays an inaudible tone, which exempts the tab. It needs **Allow Audio** for musicbrainz.org (padlock → *Autoplay*); without it, the log reports the tone as blocked.
+> Firefox throttles background tabs hard, slowing a background add down. *Keep background tabs awake* plays an inaudible tone, which exempts the tab. It needs **Allow Audio** for musicbrainz.org (padlock → *Autoplay*); without it, the log reports the tone as blocked.
 
 ### Pasting a barcode
 
@@ -1978,7 +1939,7 @@ Click a mark to open the page (a ⚠ opens the MusicBrainz artist or label that 
 - Every matched platform counts (a ✓), including one that [link confidence](#link-confidence) withholds for its barcode or format: another edition still has the same artists and labels.
 
 > [!NOTE]
-> The pages come from the album answers the scan already read, so they cost no extra platform requests. MusicBrainz is asked once which of the links it already has, and on whom (one request per 100 links): when the scans finish, for the count, and the table reuses that answer. With *Count the links to add* off, it is asked only when you open the table. A match cached before this feature is read again once, on the next scan of the release.
+> The pages come from the albums the scan already read, so they cost no extra platform requests. With *Count the links to add* off, MusicBrainz is asked which links it already has only when you open the table.
 
 ### Platforms
 
@@ -2005,27 +1966,35 @@ Click a mark to open the page (a ⚠ opens the MusicBrainz artist or label that 
 - **Qobuz**: signed in, matches are verified through its API (track count and barcode); otherwise its store page is scraped, which is slower and throttled. The login is shared with ISRC Scout and Credit Hoarder. Only the token is stored, never the password.
 - **Beatport** is behind Cloudflare: without a login, a match found by web search can't be verified, shows `?`, and isn't added. Signed in, it is verified, and ISRC Scout can import its ISRCs.
 - **Bandcamp**: bonus tracks that are download-only are counted and marked ⁿ. A Bandcamp barcode that is really a physical package's is ignored.
-- **Apple Music** is read from the catalogue its web player uses, anonymously. Of the albums a barcode brings up, only the one with that barcode counts, and the track count is songs only, without music videos. Apple's catalogue differs by country, so a release is looked for in several storefronts at once (the release's own link's, the US, UK, Germany, France, Japan, Brazil and Australia), and when none has it, in all of Apple's storefronts at once, about a second. The log says which storefront a match came from, and the link keeps it. If that catalogue can't be reached, the older iTunes search is used, which gives no barcode.
+- **Apple Music** needs no login. Of the albums a barcode brings up, only the one with that barcode counts, and the track count is songs only, without music videos. Apple's catalogue differs by country, so a release is looked for in several countries' stores; the log says which one a match came from, and the link keeps it.
 - **Discogs**: on a CD release, a CD edition is searched first. The release group's Discogs master is checked too.
-- **YouTube Music** is read anonymously, through the catalogue its web player uses. Its search finds most albums by their barcode, and the rest by artist and title. It shows no barcode and can return another edition of the album, so every hit must also match on track count and title. A barcode search can also bring up another edition from the same group of versions, with a different barcode. So a match is never taken as barcode-confirmed, and strict barcode mode withholds it. When YouTube Music lists *other versions* of the album, the link's tooltip and the log name them, for you to check. The album page names no label, so the label comes from a song's credits (*Music metadata provided by*, usually the label, sometimes a distributor). Some labels send no credits, and those rows have no label. Links are added as *stream for free*.
-- **Amazon Music** is read as a guest (no Amazon account), through the catalogue its web player uses. It has no barcode search and shows no barcode, so an album is found by artist and title only, and taken only when its title and track count both match; when two editions match, the one from the release's year wins. A match is never barcode-confirmed, so strict barcode mode withholds it. The guest catalogue is amazon.com's (US), so an album sold only elsewhere may not be found. The year comes from the album page's date, and the label from its ℗ line. MusicBrainz makes the link a *streaming page* by itself.
+- **YouTube Music** needs no login. Its search finds most albums by their barcode, and the rest by artist and title. It shows no barcode and can return another edition of the album, so every hit must also match on track count and title. A barcode search can also bring up another edition from the same group of versions, with a different barcode. So a match is never taken as barcode-confirmed, and strict barcode mode withholds it. When YouTube Music lists *other versions* of the album, the link's tooltip and the log name them, for you to check. The album page names no label, so the label comes from a song's credits (*Music metadata provided by*, usually the label, sometimes a distributor). Some labels send no credits, and those rows have no label. Links are added as *stream for free*.
+- **Amazon Music** needs no Amazon account. It has no barcode search and shows no barcode, so an album is found by artist and title only, and taken only when its title and track count both match; when two editions match, the one from the release's year wins. A match is never barcode-confirmed, so strict barcode mode withholds it. The catalogue is amazon.com's (US), so an album sold only elsewhere may not be found. The year comes from the album page's date, and the label from its ℗ line. MusicBrainz makes the link a *streaming page* by itself.
 - **SoundCloud** can't be searched by barcode; it's read from the linked set, and trusted only when the whole set agrees on it.
-- **Audiomack** is read through the API its web player uses, with no login. Its search finds albums by artist and title only, never by barcode, and fans re-upload albums there, so every hit is opened and its barcode read: the one with the release's barcode wins; otherwise one whose track count matches and that has a barcode at all. A song link counts as a one-track release. The label comes from the ℗ line. Links are added as *stream for free*.
-- **7digital** is read through the catalogue its web store uses, with no login. It finds an album by its barcode, in the UK store and then the US one, and has the track count, year and label. Without a barcode match, artist and title are searched. The link is to the store the album was found in; MusicBrainz makes it *purchase for download* by itself.
+- **Audiomack** needs no login. Its search finds albums by artist and title only, never by barcode, and fans re-upload albums there, so every hit is opened and its barcode read: the one with the release's barcode wins; otherwise one whose track count matches and that has a barcode at all. A song link counts as a one-track release. The label comes from the ℗ line. Links are added as *stream for free*.
+- **7digital** needs no login. It finds an album by its barcode, in the UK store and then the US one, and has the track count, year and label. Without a barcode match, artist and title are searched. The link is to the store the album was found in; MusicBrainz makes it *purchase for download* by itself.
 - **Volumo** and **HDtracks** are added as *purchase for download*, since MusicBrainz has no type of their own.
 
 ### Settings
 
 <img width="400" src="../platform_check/screenshots/config.png" />
 
-| Section          |                                                                                            |
-| ---------------- | ------------------------------------------------------------------------------------------ |
-| Platforms        | order them, or leave some out; the button shows how many are on                            |
-| Logins           | Beatport and Qobuz; the button shows how many you are signed in to                         |
-| Link confidence  | *Use barcodes* and *Use formats* (off, if they exist, strictly)                            |
-| Adding links     | *Open the editor in a new tab* (on; off navigates this tab); *Keep background tabs awake*  |
-| Artists & labels | *Count the links to add* (on); *Close Falcon after a successful import* (off)              |
-| Appearance       | icon and name, their sizes, compact rows, the *In MusicBrainz* and *Format* marks, spacing |
+| Setting                                | Default           |                                                                                      |
+| -------------------------------------- | ----------------- | ------------------------------------------------------------------------------------ |
+| Platforms                              | all               | order them, or leave some out                                                        |
+| Logins                                 | none              | Beatport and Qobuz; see [Platforms](#platforms-1)                                      |
+| Use barcodes                           | on, if they exist | [link confidence](#link-confidence); *strictly* also withholds what can't be checked |
+| Use formats                            | on, if they exist | the same, for the format                                                             |
+| Open the editor in a new tab           | on                | off navigates this tab                                                               |
+| Keep background tabs awake             | off               | see [Adding links](#adding-links)                                                    |
+| Count the links to add                 | on                | the badge on [Artists & labels](#artists-and-labels)                                 |
+| Close Falcon after a successful import | off               | see [Artists and labels](#artists-and-labels)                                        |
+| Icon, Name                             | icon only         | what each row shows, and its size                                                    |
+| Compact: Unmatched, Low-confidence     | on, off           | see [Dashboard](#dashboard)                                                          |
+| In MusicBrainz                         | Ring              | how a platform already linked is marked                                              |
+| Format                                 | Circle            | the release's format as a circle or as text                                          |
+| Layout                                 | 1 row             | or 2 rows per platform                                                               |
+| Spacing                                | 5 px              | between rows, and between columns in the 1-row layout                                |
 
 ### Shortcuts
 
@@ -2038,7 +2007,7 @@ Click a mark to open the page (a ⚠ opens the MusicBrainz artist or label that 
 
 ### Notes
 
-The **Log** keeps every lookup, with a filter per platform.
+The **Log** keeps every lookup, with a filter per platform. How each platform is read is in [DEVELOP.md](../platform_check/DEVELOP.md).
 
 
 ---

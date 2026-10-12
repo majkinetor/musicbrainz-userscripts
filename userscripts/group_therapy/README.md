@@ -177,7 +177,3 @@ Once you use Group Therapy on a page, it adds its signature to the edit note, fo
 | right-click a credit's pencil                | replace role, or set dates                |
 | right-click a credit in the copy list        | keep only that role (Shift adds it)       |
 | hover an entity or role                      | highlight it                              |
-
-## Notes
-
-Group Therapy works through MusicBrainz's own relationship editor: it reads the relationships from the page and writes through the editor's state, like [Credit Hoarder](../credit_hoarder/README.md). Consolidation is the exception, submitting with MusicBrainz's edit API.

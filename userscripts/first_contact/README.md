@@ -7,9 +7,6 @@ Import a release into MusicBrainz from the platform's album page with one click:
 - [Changelog](./CHANGELOG.md)
 - [View users](https://musicbrainz.org/search/edits?auto_edit_filter=&order=desc&negation=0&combinator=and&conditions.0.field=edit_note_content&conditions.0.operator=includes&conditions.0.args.0=First+Contact)
 
-> [!NOTE]
-> First Contact doesn't match entities: it hands them to [Apollo Editor](../apollo_editor/README.md#artist-matching), which does. Keep Apollo's *Auto-match on start: Label, Artist* on (the default), or click its **Match** button yourself.
-
 > [!IMPORTANT]
 > By default every album page you import is sent to the Internet Archive to be saved, so the edit note can link a snapshot of it. See [Archive](#archive); turn it off in [Settings](#settings).
 
@@ -241,15 +238,9 @@ Pages: `ototoy.jp/_/default/p/<id>`
 
 ## Artist matching
 
-First Contact doesn't pick MusicBrainz artists itself. It hands every credited artist's platform link (the release's and each track's) to [Apollo Editor](../apollo_editor/README.md#artist-matching) on the release editor page, and Apollo matches them. Other scripts can read the same [handoff](#handoff).
+First Contact doesn't pick MusicBrainz artists or labels itself. It hands every credited artist's platform link (the release's and each track's) to [Apollo Editor](../apollo_editor/README.md#artist-matching) on the release editor page, and Apollo matches them, the platform link first. Keep Apollo's *Auto-match on start: Label, Artist* on (the default), or click its **Match** button yourself.
 
-Apollo links an artist only when the evidence is strong, trying the most certain source first:
-
-1. **Platform link.** The MusicBrainz artist already links the artist's page on the platform you imported from (or the release's Discogs artist). This is the most reliable match, and why First Contact passes the links on.
-2. **Other releases.** The same track on another release of the release group, or at the same position on its other editions, credits this artist.
-3. **Unique name.** Exactly one MusicBrainz artist has the credited name as its name or alias, or exactly one artist of that name is usually credited next to an artist already on this release.
-
-Anything less certain is left unlinked and offered as a candidate for you to confirm. A badge on each artist shows which stage linked it. When the artist exists but lacks the platform link, Apollo offers to add it, so the next import of that artist matches at once; when it doesn't exist, Apollo offers to create it with the link.
+When the artist exists but lacks the platform link, Apollo offers to add it, so the next import of that artist matches at once; when it doesn't exist, Apollo offers to create it with the link. Other scripts can read the same [handoff](#handoff).
 
 ## Archive
 
@@ -261,8 +252,7 @@ Archived page: https://web.archive.org/web/20261002121804/https://www.deezer.com
 Archived API data: https://web.archive.org/web/20261002121804/https://api.deezer.com/album/6575789
 ```
 
-- The save starts once the release editor opens and runs in its tab, so the import never waits for it. It takes from a few seconds to a minute; the [log](#settings) says when it's done or why it failed.
-- The link carries the time of the import, and the Wayback Machine opens the snapshot nearest to it, which is the one just made.
+- The import never waits for the save, which takes from a few seconds to a minute; the [log](#settings) says when it's done or why it failed.
 - Deezer and Apple Music build their pages in the browser, so a saved page shows little. For these, the album data First Contact read is saved too, and linked as *Archived API data*.
 - Spotify, Tidal and YouTube Music also build their pages in the browser, and their data can't be saved. For these, add your archive.org keys: the save then also takes a screenshot of the page, and the edit note links it as *Archived screenshot*.
 
@@ -283,7 +273,7 @@ To get them, make a free account on [archive.org](https://archive.org), log in, 
 
 Drag **Import to MusicBrainz** (or any of its buttons) to wherever it is out of the way. Each platform remembers its own place. **⚙︎ → Reset:** **this one** puts it back in the bottom-right corner on that platform and stops it scrolling with the page; **all** does so on every platform.
 
-By default the button stays put on the screen. With **Moved button scrolls with the page on** *platform* on (see [Settings](#settings)), a moved button stays on its spot on that platform's page instead, above the cover, say, and scrolls with it. Each platform has its own, so the button can scroll with the page on Bandcamp and stay on the screen on Spotify:
+By default the button stays put on the screen. With **Moved button scrolls with the page on** *platform* on (see [Settings](#settings)), a moved button stays on its spot on that platform's page instead, above the cover, say, and scrolls with it. Each platform has its own, so the button can scroll with the page on Bandcamp and stay on the screen on Spotify.
 
 ## Settings
 

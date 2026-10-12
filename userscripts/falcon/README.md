@@ -26,7 +26,7 @@ Untouched rows and aliases the entity already has are skipped, not submitted aga
 
 ## Filling the queue
 
-Open Falcon on any MusicBrainz page with **Ctrl+Alt+F** (or its corner icon; right-click the icon for **Options**). The icon stays off the release editor (`/release/<mbid>/edit` and `/release/add`), which is [Apollo Editor](../apollo_editor)'s page and nothing Falcon acts on; **Ctrl+Alt+F** still opens it there.
+Open Falcon on any MusicBrainz page with **Ctrl+Alt+F** (or its corner icon; right-click the icon for **Options**). The release editor has no icon, since Falcon has nothing to do there; **Ctrl+Alt+F** still opens it.
 
 ### From Harmony
 
@@ -54,13 +54,11 @@ On a series page, **+ Add from series** queues its release groups (optionally ev
 
 ## Editing the queue
 
-The **List** / **Grid** button, right of the type chips, switches between two views. Falcon remembers the one you last used.
+The **List** / **Grid** button, right of the type chips, switches between two views.
 
 - **List**: expand a row to edit it as a labelled form. Its links are listed one per URL, each with its link types by name; a URL added under two types shows both. The mark before a URL (✓ done, ✗ failed, ↗ not run yet) opens it. Long link lists fold after three, with *+ N more*.
-- Links are editable: change a URL in its box (empty it to drop it). A type badge is a dropdown: pick another type to change it, or **✕** it off. The **+** after the types adds one from that entity's link types, the row's **✕** removes the link, and the **+** by the *Links* label adds a link. The **↗** mark opens the link (✓ / ✗ once it has run). A link with no type shows *auto* and is left for MusicBrainz to guess.
+- Links are editable: change a URL in its box (empty it to drop it). A type badge is a dropdown: pick another type to change it, or **✕** it off. The **+** after the types adds one from that entity's link types, the row's **✕** removes the link, and the **+** by the *Links* label adds a link. A link with no type shows *auto* and is left for MusicBrainz to guess.
 - **Grid**: one line per row, with its name, disambiguation and ISRCs editable in place. **▸** opens the row's links and aliases (and a release's cover art) beneath it, lined up under *Name*; aliases are added and edited only there.
-
-The select-all box, **▸** expand-all and the number of rows selected head the rows, in both views. The open tab is underlined.
 
 The [keyboard](#shortcuts) moves between fields in both views, like a spreadsheet. In the list, the row you move into opens and the one you leave closes again.
 
@@ -89,7 +87,7 @@ Review the queue (remove rows, edit fields), then press **Start**. Right-click a
 A link MusicBrainz can't classify on its own (a Bandcamp track: purchase or streaming?) fails with that reason instead of blocking its row; use **⇗** to pick the type.
 
 > [!NOTE]
-> Workers are MusicBrainz edit pages in same-origin iframes. Each is loaded with MusicBrainz's seed parameters, so the page fills itself. Falcon only touches the form for what seeding can't express (a link that needs two types, a row MusicBrainz couldn't classify), and submits. Where MusicBrainz has an API (cover art, aliases), Falcon uses it instead. The worker count never grows with the queue.
+> Workers are MusicBrainz's own edit pages, filled in and submitted out of sight; how is in [DEVELOP.md](DEVELOP.md#workers). *Workers* in [Settings](#settings) sets how many run at once.
 
 ### The log
 
@@ -126,11 +124,11 @@ Two settings, both on by default, carry a finished Harmony import to a finished 
 | *Auto send*         | Harmony     | presses *Send to Falcon* |
 | *Auto start import* | MusicBrainz | presses *Start*          |
 
-*Auto send* waits until the import is complete (the page has a `release_mbid`) and Harmony has finished listing its actions. It stands down if there's nothing to send. It counts down on the button first; a click cancels.
+*Auto send* waits until the import is complete and Harmony has finished listing its actions. It stands down if there's nothing to send. It counts down on the button first; a click cancels.
 
 **When Harmony errors**, the page still loads, just short of actions. Falcon handles this without a setting:
 
-- **a MusicBrainz error**: Falcon reloads the page, up to 5 times, backing off from 5 s to 60 s;
+- **a MusicBrainz error**: Falcon reloads the page, a few times, waiting longer each time;
 - **a provider error**, or retries exhausted: Falcon sends what it has, as *Send 43 to Falcon (partial)*, with the reason as the batch's edit note (reloading can't fix a provider).
 
 Falcon is idempotent, so a partial run can be topped up later. *Reload release page after import without errors* (a Harmony option, like Picard: both follow only a queue Harmony sent) shows the result on the release page and turns the corner icon green. A run with failures isn't reloaded, since the queue wouldn't survive it; the log would.
@@ -182,7 +180,7 @@ What **Import** reads, **Export** writes, and Harmony and other scripts produce:
 
 ### From another script
 
-Append `?falcon=<base64(JSON)>` to any musicbrainz.org URL: Falcon opens with the queue seeded (it doesn't start). The JSON is the [model](#json-model) above, read as **Import** reads a file: the `note` becomes the batch edit note, and an item carries whatever a row can. On a page where Falcon already runs, a script can instead dispatch a `falcon:import` event on `document` with the JSON as a string `detail`: Falcon queues it on that page and answers with `falcon:import-ok`. `falcon:run` does the same and starts the queue; with `"closeWhenDone": true` at the JSON's root, the panel closes when that run finishes with every item done, and the corner icon turns the same green as on a page reloaded after a clean run, until the next run starts. With `"headless": true` the panel stays out of sight while the batch runs, and with a `"tag"` Falcon reports each change to that batch's items as a `falcon:status` event (`{ tag, running, items }`, each item with its type, MBID, name, status and error). A `falcon:show` event opens the panel. [Mission Control](../mission_control/DEVELOP.md#execute) runs its links and a barcode this way and shows the progress in its own cards. A `?falcon=` link never starts on its own. A batch handed over this way (event or link) adds an entity already queued to its row rather than queueing it twice, so sending the same batch again doesn't run it twice; **Import** restores a file as it is. [Platform Check](../platform_check/README.md#artists-and-labels) sends its artist and label links this way, and falls back to `?falcon=` in a new tab when no Falcon answers.
+Another script can hand Falcon a queue in the [JSON model](#json-model), by a `?falcon=` link or by an event on the page; a link never starts the queue. Sending the same batch twice doesn't run it twice. [Mission Control](../mission_control/README.md#execute) and [Platform Check](../platform_check/README.md#artists-and-labels) send their links this way. How is in [DEVELOP.md](DEVELOP.md#handoff).
 
 ## Settings
 

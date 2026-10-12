@@ -69,9 +69,6 @@ Links that open the add page with images to add, as Harmony's do, are imported t
 
 With the [Picker](./as_picker/README.md), clicking a copy in the search results sends it back to the gallery.
 
-> [!NOTE]
-> Zips may be stored or deflated; encrypted and ZIP64 archives are skipped with a message. Pasting into an input (the URL box, a comment) is left to that input.
-
 ## Full-screen viewer
 
 ← → move between covers, ↑ ↓ zoom (the level is remembered). When zoomed, the image follows the mouse (switch it off in ⚙ to drag instead). **P** runs a slideshow, **Enter** edits the comment, **Delete** marks the cover for removal. See [Shortcuts](#shortcuts).
@@ -98,14 +95,12 @@ Downloads are named `<NN> <types> <comment>.<ext>`, with `none` for no type, e.g
 
 **Enter edit** lists the staged operations and submits them as MusicBrainz edits, with one edit note and *make votable* for all.
 
-- Operations are listed in two columns (one in a narrow window). Each shows the cover it acts on and its own progress bar; the bar at the top counts the whole batch.
-- While images upload, the top bar also shows what's been sent and the live upload rate, *↑ 256.0 KB / 1.61 MB · 213.4 KB/s*; once they're done, the total and the average, *↑ 1.61 MB at 254.0 KB/s*.
+- Each operation shows the cover it acts on and its own progress bar; the bar at the top counts the whole batch, and while images upload, what's been sent and the upload rate.
 - The edit note starts folded to one line: its line count and first line. Click it to edit.
 - **Dry run** is in the menu on **Submit edits** (▾): it shows what each edit would send, and submits nothing.
 - Removes, edits and uploads run in parallel; one reorder edit runs last and sets the final order.
 - **Repeat** re-runs only the failed operations, and the reorder after them.
-- With *Automatically repeat failures* on (the default), Art Station retries the failed operations by itself, up to 10 times or 10 minutes. The pause between attempts grows as they pile up. A footer row shows the attempt and the countdown; **Close** stops it.
-- While a run is in progress, leaving the page asks first, and a click outside the dialog doesn't close it.
+- With *Automatically repeat failures* on (the default), Art Station retries the failed operations by itself, up to 10 times or 10 minutes. A footer row shows the attempt and the countdown; **Close** stops it.
 
 > [!NOTE]
 > *Upload timeout* (⚙, default 10 minutes, at most 120) is how long one file may take to reach the Internet Archive. Raise it for large PDF booklets when the Archive is slow; the failure message says when this limit was hit.

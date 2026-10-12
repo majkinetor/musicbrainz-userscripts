@@ -56,3 +56,7 @@ window.ArtStation?.registerProvider({
 - **`match`** shows the button only when the release or event links a matching URL; those are passed as `ctx.link` and `ctx.links`.
 - Each returned item is `{ types?, comment? }` plus one image: **`url`** or **`dataUrl`** (preferred: Art Station fetches it itself), or **`blob`** with its **`source`** URL.
 - If your manager isolates `window` between scripts, dispatch `artstation:register-provider` with the provider as `detail` instead.
+
+## Zips
+
+A zip is unpacked in the browser. Stored and deflated entries are read; an encrypted or ZIP64 archive is skipped with a message.

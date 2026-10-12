@@ -19,7 +19,7 @@ Finds a MusicBrainz release on the streaming and store platforms, checks each ma
 
 ## Dashboard
 
-A link already in the release's relationships is used as is. Otherwise each platform is searched: by barcode first, then the platform's own search, Wikidata, and a web search. The platform's details are fetched and shown next to MusicBrainz's, and the result is cached until you press ↻. While the platforms are searched, ↻ spins; click it to stop, which leaves the ones not done yet unchecked.
+A link already in the release's relationships is used as is. Otherwise each platform is searched: by barcode first, then the platform's own search, Wikidata, and a web search. The platform's details are fetched and shown next to MusicBrainz's, and the result is cached until you press ↻. Click ↻ during a search to stop it.
 
 | Icon and name |                                                                                     |
 | ------------- | ----------------------------------------------------------------------------------- |
@@ -38,18 +38,16 @@ A link already in the release's relationships is used as is. Otherwise each plat
 | ?           | link found, track count unreadable     |
 | red —       | not found                              |
 
-Hover a track count for what its colour means.
-
 A release's format is a four-quadrant circle: vinyl, cassette, CD, digital (DVD, SACD and Blu-ray count as CD).
 
 > [!TIP]
-> *Compact unmatched providers* shrinks a provider that found nothing (or is still searching) to a dimmed icon at the bottom; it rises into a row once it finds something. *Compact low-confidence providers* does the same for a found release that isn't a clean match (different barcode or format, or withheld), shown with an amber ring; with it off, that row stays, with its tracks, year and label. Discogs and Bandcamp always keep their rows.
+> *Compact › Unmatched* shrinks a provider that found nothing (or is still searching) to a dimmed icon at the bottom; it rises into a row once it finds something. *Compact › Low-confidence* does the same for a found release that isn't a clean match (different barcode or format, or withheld), shown with an amber ring; with it off, that row stays, with its tracks, year and label. Discogs and Bandcamp always keep their rows.
 
 ## Link confidence
 
 MusicBrainz treats a different barcode or a different format as a different release, so such a link [belongs elsewhere](https://musicbrainz.org/doc/Style/Relationships/URLs#Which_entity_to_link_to). Both checks can run *if they exist* (withhold a link only when its barcode or format is known and differs) or *strictly* (also withhold a link that can't be checked). A withheld link is greyed out and left out of adding and *Open all*.
 
-- **Barcodes** are looked up with every zero-padding (UPC-A, EAN-13, 14 digits). Deezer's answer is checked against the barcode asked for, since it sometimes returns an unrelated album.
+- **Barcodes** are looked up with every zero-padding (UPC-A, EAN-13, 14 digits).
 - **Formats**: only Bandcamp and Discogs report a format; the other platforms are digital. The medium is compared: CD, vinyl, cassette, MiniDisc or digital (DVD and Blu-ray count as CD), so vinyl on a CD release is withheld. A Bandcamp or Discogs edition that includes this release's medium ("Digital, CD" on a CD release) passes.
 - The **Discogs master** is exempt from both: it goes on the release group, which spans every edition.
 
@@ -67,7 +65,7 @@ A middle click (or Alt+click) on a link that passes link confidence is a plain a
 The footer's **+** adds every confirmed link (middle-click or Alt+click: the withheld ones too; with Ctrl, in the background) and **↗** opens them all. A background add opens an inactive tab that submits the edit and closes itself; the Discogs master goes onto the release group the same way. The Discogs master's own ✓ adds just the master: click for the editor, right-click in the background.
 
 > [!NOTE]
-> Firefox throttles background tabs hard, slowing a background add down. *Keep background-add tabs awake* plays an inaudible tone, which exempts the tab. It needs **Allow Audio** for musicbrainz.org (padlock → *Autoplay*); without it, the log reports the tone as blocked.
+> Firefox throttles background tabs hard, slowing a background add down. *Keep background tabs awake* plays an inaudible tone, which exempts the tab. It needs **Allow Audio** for musicbrainz.org (padlock → *Autoplay*); without it, the log reports the tone as blocked.
 
 ## Pasting a barcode
 
@@ -103,7 +101,7 @@ Click a mark to open the page (a ⚠ opens the MusicBrainz artist or label that 
 - Every matched platform counts (a ✓), including one that [link confidence](#link-confidence) withholds for its barcode or format: another edition still has the same artists and labels.
 
 > [!NOTE]
-> The pages come from the album answers the scan already read, so they cost no extra platform requests. MusicBrainz is asked once which of the links it already has, and on whom (one request per 100 links): when the scans finish, for the count, and the table reuses that answer. With *Count the links to add* off, it is asked only when you open the table. A match cached before this feature is read again once, on the next scan of the release.
+> The pages come from the albums the scan already read, so they cost no extra platform requests. With *Count the links to add* off, MusicBrainz is asked which links it already has only when you open the table.
 
 ## Platforms
 
@@ -130,27 +128,35 @@ Click a mark to open the page (a ⚠ opens the MusicBrainz artist or label that 
 - **Qobuz**: signed in, matches are verified through its API (track count and barcode); otherwise its store page is scraped, which is slower and throttled. The login is shared with ISRC Scout and Credit Hoarder. Only the token is stored, never the password.
 - **Beatport** is behind Cloudflare: without a login, a match found by web search can't be verified, shows `?`, and isn't added. Signed in, it is verified, and ISRC Scout can import its ISRCs.
 - **Bandcamp**: bonus tracks that are download-only are counted and marked ⁿ. A Bandcamp barcode that is really a physical package's is ignored.
-- **Apple Music** is read from the catalogue its web player uses, anonymously. Of the albums a barcode brings up, only the one with that barcode counts, and the track count is songs only, without music videos. Apple's catalogue differs by country, so a release is looked for in several storefronts at once (the release's own link's, the US, UK, Germany, France, Japan, Brazil and Australia), and when none has it, in all of Apple's storefronts at once, about a second. The log says which storefront a match came from, and the link keeps it. If that catalogue can't be reached, the older iTunes search is used, which gives no barcode.
+- **Apple Music** needs no login. Of the albums a barcode brings up, only the one with that barcode counts, and the track count is songs only, without music videos. Apple's catalogue differs by country, so a release is looked for in several countries' stores; the log says which one a match came from, and the link keeps it.
 - **Discogs**: on a CD release, a CD edition is searched first. The release group's Discogs master is checked too.
-- **YouTube Music** is read anonymously, through the catalogue its web player uses. Its search finds most albums by their barcode, and the rest by artist and title. It shows no barcode and can return another edition of the album, so every hit must also match on track count and title. A barcode search can also bring up another edition from the same group of versions, with a different barcode. So a match is never taken as barcode-confirmed, and strict barcode mode withholds it. When YouTube Music lists *other versions* of the album, the link's tooltip and the log name them, for you to check. The album page names no label, so the label comes from a song's credits (*Music metadata provided by*, usually the label, sometimes a distributor). Some labels send no credits, and those rows have no label. Links are added as *stream for free*.
-- **Amazon Music** is read as a guest (no Amazon account), through the catalogue its web player uses. It has no barcode search and shows no barcode, so an album is found by artist and title only, and taken only when its title and track count both match; when two editions match, the one from the release's year wins. A match is never barcode-confirmed, so strict barcode mode withholds it. The guest catalogue is amazon.com's (US), so an album sold only elsewhere may not be found. The year comes from the album page's date, and the label from its ℗ line. MusicBrainz makes the link a *streaming page* by itself.
+- **YouTube Music** needs no login. Its search finds most albums by their barcode, and the rest by artist and title. It shows no barcode and can return another edition of the album, so every hit must also match on track count and title. A barcode search can also bring up another edition from the same group of versions, with a different barcode. So a match is never taken as barcode-confirmed, and strict barcode mode withholds it. When YouTube Music lists *other versions* of the album, the link's tooltip and the log name them, for you to check. The album page names no label, so the label comes from a song's credits (*Music metadata provided by*, usually the label, sometimes a distributor). Some labels send no credits, and those rows have no label. Links are added as *stream for free*.
+- **Amazon Music** needs no Amazon account. It has no barcode search and shows no barcode, so an album is found by artist and title only, and taken only when its title and track count both match; when two editions match, the one from the release's year wins. A match is never barcode-confirmed, so strict barcode mode withholds it. The catalogue is amazon.com's (US), so an album sold only elsewhere may not be found. The year comes from the album page's date, and the label from its ℗ line. MusicBrainz makes the link a *streaming page* by itself.
 - **SoundCloud** can't be searched by barcode; it's read from the linked set, and trusted only when the whole set agrees on it.
-- **Audiomack** is read through the API its web player uses, with no login. Its search finds albums by artist and title only, never by barcode, and fans re-upload albums there, so every hit is opened and its barcode read: the one with the release's barcode wins; otherwise one whose track count matches and that has a barcode at all. A song link counts as a one-track release. The label comes from the ℗ line. Links are added as *stream for free*.
-- **7digital** is read through the catalogue its web store uses, with no login. It finds an album by its barcode, in the UK store and then the US one, and has the track count, year and label. Without a barcode match, artist and title are searched. The link is to the store the album was found in; MusicBrainz makes it *purchase for download* by itself.
+- **Audiomack** needs no login. Its search finds albums by artist and title only, never by barcode, and fans re-upload albums there, so every hit is opened and its barcode read: the one with the release's barcode wins; otherwise one whose track count matches and that has a barcode at all. A song link counts as a one-track release. The label comes from the ℗ line. Links are added as *stream for free*.
+- **7digital** needs no login. It finds an album by its barcode, in the UK store and then the US one, and has the track count, year and label. Without a barcode match, artist and title are searched. The link is to the store the album was found in; MusicBrainz makes it *purchase for download* by itself.
 - **Volumo** and **HDtracks** are added as *purchase for download*, since MusicBrainz has no type of their own.
 
 ## Settings
 
 <img width="400" src="./screenshots/config.png" />
 
-| Section          |                                                                                            |
-| ---------------- | ------------------------------------------------------------------------------------------ |
-| Platforms        | order them, or leave some out; the button shows how many are on                            |
-| Logins           | Beatport and Qobuz; the button shows how many you are signed in to                         |
-| Link confidence  | *Use barcodes* and *Use formats* (off, if they exist, strictly)                            |
-| Adding links     | *Open the editor in a new tab* (on; off navigates this tab); *Keep background tabs awake*  |
-| Artists & labels | *Count the links to add* (on); *Close Falcon after a successful import* (off)              |
-| Appearance       | icon and name, their sizes, compact rows, the *In MusicBrainz* and *Format* marks, spacing |
+| Setting                                | Default           |                                                                                      |
+| -------------------------------------- | ----------------- | ------------------------------------------------------------------------------------ |
+| Platforms                              | all               | order them, or leave some out                                                        |
+| Logins                                 | none              | Beatport and Qobuz; see [Platforms](#platforms)                                      |
+| Use barcodes                           | on, if they exist | [link confidence](#link-confidence); *strictly* also withholds what can't be checked |
+| Use formats                            | on, if they exist | the same, for the format                                                             |
+| Open the editor in a new tab           | on                | off navigates this tab                                                               |
+| Keep background tabs awake             | off               | see [Adding links](#adding-links)                                                    |
+| Count the links to add                 | on                | the badge on [Artists & labels](#artists-and-labels)                                 |
+| Close Falcon after a successful import | off               | see [Artists and labels](#artists-and-labels)                                        |
+| Icon, Name                             | icon only         | what each row shows, and its size                                                    |
+| Compact: Unmatched, Low-confidence     | on, off           | see [Dashboard](#dashboard)                                                          |
+| In MusicBrainz                         | Ring              | how a platform already linked is marked                                              |
+| Format                                 | Circle            | the release's format as a circle or as text                                          |
+| Layout                                 | 1 row             | or 2 rows per platform                                                               |
+| Spacing                                | 5 px              | between rows, and between columns in the 1-row layout                                |
 
 ## Shortcuts
 
@@ -163,4 +169,4 @@ Click a mark to open the page (a ⚠ opens the MusicBrainz artist or label that 
 
 ## Notes
 
-The **Log** keeps every lookup, with a filter per platform.
+The **Log** keeps every lookup, with a filter per platform. How each platform is read is in [DEVELOP.md](DEVELOP.md).
