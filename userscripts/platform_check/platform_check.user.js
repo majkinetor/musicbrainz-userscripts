@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Platform Check
 // @namespace    http://tampermonkey.net/
-// @version      2026.10.11
+// @version      2026.10.12
 // @description  Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CjxnIHN0cm9rZT0iIzk0YTNiOCIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2UtbGluZWNhcD0icm91bmQiPjxwYXRoIGQ9Ik02NCA2NCBMODggMjIuNCIvPjxwYXRoIGQ9Ik02NCA2NCBMMTEyIDY0Ii8+PHBhdGggZD0iTTY0IDY0IEw4OCAxMDUuNiIvPjxwYXRoIGQ9Ik02NCA2NCBMNDAgMTA1LjYiLz48cGF0aCBkPSJNNjQgNjQgTDE2IDY0Ii8+PHBhdGggZD0iTTY0IDY0IEw0MCAyMi40Ii8+PC9nPjxjaXJjbGUgY3g9Ijg4IiBjeT0iMjIuNCIgcj0iMTIiIGZpbGw9IiNmNDcyYjYiLz48Y2lyY2xlIGN4PSIxMTIiIGN5PSI2NCIgcj0iMTIiIGZpbGw9IiNmYWNjMTUiLz48Y2lyY2xlIGN4PSI4OCIgY3k9IjEwNS42IiByPSIxMiIgZmlsbD0iIzRhZGU4MCIvPjxjaXJjbGUgY3g9IjQwIiBjeT0iMTA1LjYiIHI9IjEyIiBmaWxsPSIjMzhiZGY4Ii8+PGNpcmNsZSBjeD0iMTYiIGN5PSI2NCIgcj0iMTIiIGZpbGw9IiNhNzhiZmEiLz48Y2lyY2xlIGN4PSI0MCIgY3k9IjIyLjQiIHI9IjEyIiBmaWxsPSIjZmI5MjNjIi8+PGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iMjQiIGZpbGw9IiMwZjE3MmEiLz48cGF0aCBkPSJNNTQuMjIyMjIyMjIyMjIyMjIgNjQgTDYxLjMzMzMzMzMzMzMzMzMzNiA3MS4xMTExMTExMTExMTExMSBMNzQuNjY2NjY2NjY2NjY2NjcgNTYuODg4ODg4ODg4ODg4ODg2IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iNiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+Cjwvc3ZnPgo=
@@ -630,8 +630,10 @@ async function runInjectHelper(entityType) {
 // once it exists (so it can be awaited with pcWaitFor), null while it does not.
 // Clicking an already-active step is a no-op, so this is safe to call repeatedly.
 function pcOpenExternalLinks() {
-    const tab = [...document.querySelectorAll('a, button, li')]
-        .find(el => /^external\s+links$/i.test(el.textContent?.trim() || ''));
+    // #722 the release editor's links sit on its first step, the tab whose anchor is
+    // #information; a text match ("External links") only where there is no such tab
+    const tab = document.querySelector('#release-editor a.ui-tabs-anchor[href="#information"]')
+        || [...document.querySelectorAll('a, button, li')].find(el => /^external\s+links$/i.test(el.textContent?.trim() || ''));
     if (!tab) return null;
     try { tab.click(); } catch (e) { /* not clickable yet — the caller keeps polling */ }
     return tab;
@@ -1081,7 +1083,9 @@ function showInlineSummary(reports) {
     el.title = reports.map(r => ((r.url || '').replace(/^https?:\/\//, '')) + ' — ' + (r.ok ? 'OK' + (r.type ? ' · ' + r.type : '') : 'FAIL · ' + r.miss)).join('\n');
     el.textContent = '✓ Platform Check added ' + ok + (fail ? ', ' + fail + ' failed' : '') + ' — edit note set, review & Enter edit';
     const re = /^\s*external links\s*$/i;
-    const heading = [...document.querySelectorAll('h2, h3, legend, label')].find(h => re.test(h.textContent || ''));
+    // #722 the links editor's own legend, by structure; the English text elsewhere
+    const heading = document.getElementById('external-links-editor')?.closest('fieldset')?.querySelector(':scope > legend')
+        || [...document.querySelectorAll('h2, h3, legend, label')].find(h => re.test(h.textContent || ''));
     if (heading) { heading.appendChild(el); return; }
     const tab = [...document.querySelectorAll('a, button, li')].find(h => re.test(h.textContent || ''));
     if (tab) tab.after(el); else document.body.appendChild(el);
@@ -6897,8 +6901,18 @@ function parseMbFromDom() {
         // Release format. MB renders it in several places: a sidebar
         // dl/dt/dd "Format:" row, a table th/td variant, or a medium-table
         // header above each tracklist. Try them all.
+        // #722 First from MB's own tracklist data (a <script type="application/json">):
+        // the medium's format by its database name, which is English in every
+        // interface language, where the page's labels and names are translated.
         let format = null;
-        for (const dt of document.querySelectorAll('dl.properties dt, dl dt')) {
+        for (const s of document.querySelectorAll('script[type="application/json"]')) {
+            const fm = /"format":\x7b[^\x7b\x7d]*?"name":"([^"\\]*)"/.exec(s.textContent || '');   // \x7b \x7d: { }, unbalanced braces confuse brace-counting readers of this file
+            if (!fm) continue;
+            const m = fm[1].match(FORMAT_RE);
+            if (m) format = m[1];
+            break;
+        }
+        for (const dt of format ? [] : document.querySelectorAll('dl.properties dt, dl dt')) {
             const dd = dt.nextElementSibling;
             if (!dd || dd.tagName !== 'DD') continue;
             if (matchKey(dt, 'format', 'formats')) {
@@ -6936,6 +6950,17 @@ function parseMbFromDom() {
 
         // Year + label for the header subtitle. Same multi-pattern approach.
         let year = null, releaseLabel = null;
+        // #722 First by structure, in any interface language: the release events'
+        // own data (the JSON beside h2.release-events) and the labels list.
+        try {
+            const evJson = document.querySelector('#sidebar h2.release-events + * script[type="application/json"], #sidebar h2.release-events + script[type="application/json"]');
+            const years = evJson ? (JSON.parse(evJson.textContent).events || []).map(e => e && e.date && e.date.year).filter(Boolean) : [];
+            if (years.length) year = String(Math.min(...years));
+        } catch (e) { /* unexpected data: the patterns below */ }
+        {
+            const aLabels = [...document.querySelectorAll('#sidebar h2.labels + ul.links a[href*="/label/"]')].map(a => a.textContent.trim()).filter(Boolean);
+            if (aLabels.length) releaseLabel = [...new Set(aLabels)].join(', ');
+        }
         // Pattern A: dl/dt/dd.
         for (const dt of document.querySelectorAll('dl.properties dt, dl dt')) {
             const dd = dt.nextElementSibling;
@@ -7008,7 +7033,7 @@ function parseMbFromDom() {
                 //     word boundary between the country name and the year.
                 //     A trailing \b still rejects the `last_updated`
                 //     "2013-05-27T…" case (T is word-class, no boundary).
-                const reHeader = [...sb.querySelectorAll('h2, h3')].find(h => /release events?/i.test(h.textContent));
+                const reHeader = sb.querySelector('h2.release-events') || [...sb.querySelectorAll('h2, h3')].find(h => /release events?/i.test(h.textContent));
                 if (reHeader) {
                     let dateYear = null, anyYear = null;
                     for (let n = reHeader.nextElementSibling; n && !/^h[1-6]$/i.test(n.tagName); n = n.nextElementSibling) {
@@ -7040,7 +7065,8 @@ function parseMbFromDom() {
         // exact match, Deezer/Apple) by UPC. Scraped from the page here; the WS2
         // `data.barcode` is only a fallback (parseMbData).
         let barcode = null;
-        for (const dt of document.querySelectorAll('dl.properties dt, dl dt, table th')) {
+        { const dd = document.querySelector('#sidebar dd.barcode'); const m = dd && (dd.textContent || '').replace(/\s+/g, '').match(/\d{8,14}/); if (m) barcode = m[0]; }   // #722 by its class
+        for (const dt of barcode ? [] : document.querySelectorAll('dl.properties dt, dl dt, table th')) {
             const dd = dt.nextElementSibling;
             if (!dd) continue;
             if (matchKey(dt, 'barcode')) { const m = (dd.textContent || '').replace(/\s+/g, '').match(/\d{8,14}/); if (m) { barcode = m[0]; break; } }

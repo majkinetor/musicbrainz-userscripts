@@ -107,12 +107,23 @@ if printf '%s
     STAGED=$(git diff --cached --name-only)
 fi
 
+# shared MusicBrainz page helpers (#722, #723) — dev/mbpage/mb-page.mjs, re-inlined into every
+# script carrying a `// <ST-MBPAGE>` marker (Credit Hoarder imports it via esbuild — its
+# rebuild below watches dev/mbpage too).
+if printf '%s\n' "$STAGED" | grep -qE '^dev/mbpage/(mb-page|sync-mbpage)\.mjs$'; then
+    echo "[pre-commit] syncing the shared MusicBrainz page helpers…"
+    node dev/mbpage/sync-mbpage.mjs >/dev/null
+    MBPAGE_FILES=$(grep -rl '// <ST-MBPAGE>' userscripts --include='*.js' 2>/dev/null || true)
+    [ -n "$MBPAGE_FILES" ] && git add $MBPAGE_FILES
+    STAGED=$(git diff --cached --name-only)
+fi
+
 # (discogs_credits is frozen — no longer developed — so its bundle is not rebuilt here.)
 
 # credit_hoarder — esbuild bundle. It was
 # missing here, so a shared-component sync (which rewrites src/ui-bar.js) left
 # the committed dist/ — the file people actually install — one build behind.
-if printf '%s\n' "$STAGED" | grep -qE '^(userscripts/credit_hoarder/(src/|build\.mjs)|dev/match/artist-match\.mjs$|dev/net/mb-gate\.mjs$)'; then
+if printf '%s\n' "$STAGED" | grep -qE '^(userscripts/credit_hoarder/(src/|build\.mjs)|dev/match/artist-match\.mjs$|dev/net/mb-gate\.mjs$|dev/mbpage/mb-page\.mjs$)'; then
     echo "[pre-commit] rebuilding userscripts/credit_hoarder/dist/…"
     (cd userscripts/credit_hoarder && pnpm run build >/dev/null)
     git add userscripts/credit_hoarder/dist/credit_hoarder.user.js

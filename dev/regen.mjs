@@ -25,9 +25,9 @@ const dirty = () => git('status', '--porcelain', '--untracked-files=no').split('
 const before = new Set(dirty());
 if (before.size) console.log(`regen: already modified, left as they are: ${[...before].join(', ')}`);
 
-const SYNCS = ['dev/ui/sync-icons.mjs', 'dev/tokens/sync-tokens.mjs', 'dev/ui/sync-ui.mjs', 'dev/match/sync-match.mjs', 'dev/net/sync-gate.mjs', 'dev/imgmax/sync-imgmax.mjs'];
+const SYNCS = ['dev/ui/sync-icons.mjs', 'dev/tokens/sync-tokens.mjs', 'dev/ui/sync-ui.mjs', 'dev/match/sync-match.mjs', 'dev/net/sync-gate.mjs', 'dev/imgmax/sync-imgmax.mjs', 'dev/mbpage/sync-mbpage.mjs'];
 for (const s of SYNCS) run('node', [s]);
-run('pnpm', ['run', 'build'], { cwd: resolve(ROOT, 'userscripts/credit_hoarder') });   // after the syncs: it imports dev/match and dev/net
+run('pnpm', ['run', 'build'], { cwd: resolve(ROOT, 'userscripts/credit_hoarder') });   // after the syncs: it imports dev/match, dev/net and dev/mbpage
 run('node', ['userscripts/string_theory/build.mjs']);                                  // last: it bundles the members synced above
 
 // the build stamps: a version (2026.9.30, 2026.9.30.224334, "v2026.9.30.224334") and DOCS.md's "Built 2026-09-30 22:43"

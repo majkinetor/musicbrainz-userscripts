@@ -6,8 +6,8 @@
 // userscripts/mission_control/DEVELOP.md).
 //
 // Info only: CH never writes from Mission Control. A probe takes the release's
-// own external links from the page (the sidebar block headed "External links",
-// not the release group's — no MusicBrainz request), reads the credits of every
+// own external links from the page (the release's sidebar block, not the release
+// group's — no MusicBrainz request), reads the credits of every
 // linked source (Discogs, Qobuz, Deezer, Apple), and reports per track the credits
 // merged across them (one per name and role, with the sources that give it), mapped
 // by each source's order of tracks per medium. Nothing is cached for CH's own page
@@ -19,18 +19,13 @@ import { getDiscogsReleaseData } from './api-discogs.js';
 import { parseDeezerAlbumUrl, fetchDeezerAlbumPage, extractDeezerCredits } from './sources/deezer.js';
 import { parseQobuzAlbumUrl, fetchQobuzAlbumPage, extractQobuzCredits } from './sources/qobuz.js';
 import { parseAppleAlbumUrl, fetchAppleCredits } from './sources/apple.js';
+import { mbpReleaseLinks } from '../../../dev/mbpage/mb-page.mjs';
 
 const send = (type, detail) => document.dispatchEvent(new CustomEvent(type, { detail: JSON.stringify(detail) }));
 const version = () => (typeof GM_info !== 'undefined' && GM_info.script && GM_info.script.version) || '?';
 
-function releaseLinks() {
-    for (const ul of document.querySelectorAll('ul.external_links')) {
-        let h = ul.previousElementSibling;
-        while (h && !/^H\d$/.test(h.tagName)) h = h.previousElementSibling;
-        if (h && /^external links$/i.test(h.textContent.trim())) return [...ul.querySelectorAll('a[href]')].map(a => a.href).filter(u => /^https?:/.test(u));   // MB writes some hrefs protocol-relative (//x.bandcamp.com): a.href resolves them
-    }
-    return [];
-}
+// #722 the release's own list, told apart from the release group's by structure, in any language
+const releaseLinks = () => mbpReleaseLinks();
 // this release's tracks in page order, with their medium and recording MBID
 function pageTracks() {
     const out = [];

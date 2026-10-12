@@ -32,6 +32,7 @@ export default defineConfig({
     { name: 'ui', testDir: 'dev/ui' },          // the shared UI components (ST-UI)
     { name: 'net', testDir: 'dev/net' },        // the shared MusicBrainz request gate (ST-NET)
     { name: 'imgmax', testDir: 'dev/imgmax' },  // the shared image maximizer (ST-IMGMAX)
+    { name: 'mbpage', testDir: 'dev/mbpage' },  // the shared MusicBrainz page helpers (ST-MBPAGE)
     ...scripts.map(name => ({ name, testDir: `userscripts/${name}/test` })),
   ],
 });

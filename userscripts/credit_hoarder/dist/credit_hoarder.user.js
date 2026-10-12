@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Credit Hoarder
 // @namespace    majkinetor
-// @version      2026.10.11
+// @version      2026.10.12.155211
 // @description  Import per-track release credits from streaming/database providers (Discogs, Tidal, Qobuz, Deezer) into MusicBrainz relationships, with a review phase
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9Ii0xNS41IC0xLjUgMTM2LjUgMTM2LjUiIHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4Ij4KPHRpdGxlPkNyZWRpdCBIb2FyZGVyPC90aXRsZT4KPGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJjaGMwNC1nIiB4MT0iMCIgeTE9IjAiIHgyPSIxIiB5Mj0iMSI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjZjlhODI2Ii8+PHN0b3Agb2Zmc2V0PSIuNSIgc3RvcC1jb2xvcj0iI2YzNzIyYyIvPjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iI2QwMDA3MCIvPjwvbGluZWFyR3JhZGllbnQ+PC9kZWZzPjxnIG9wYWNpdHk9Ii43Ij48ZyB0cmFuc2Zvcm09InRyYW5zbGF0ZSg2NiA3MCkgcm90YXRlKDApIHNjYWxlKDEuNTUpIHRyYW5zbGF0ZSgtNjYgLTcwKSI+PGcgZmlsbD0iI2ZmZiIgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjEuOTM1NDgzODcwOTY3NzQxOCI+PGVsbGlwc2UgY3g9IjMwIiBjeT0iODAiIHJ4PSIxNCIgcnk9IjEwIi8+PGNpcmNsZSBjeD0iNTAiIGN5PSI3NiIgcj0iOCIvPjxjaXJjbGUgY3g9IjY2IiBjeT0iNzAiIHI9IjEwIi8+PC9nPjxnIHN0cm9rZT0iI2ZmZiIgc3Ryb2tlLXdpZHRoPSI1LjE2MTI5MDMyMjU4MDY0NSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBmaWxsPSJub25lIj48cGF0aCBkPSJNMjYgODYgbC02IDEyIE0zNCA4OCBsMiAxMiBNNDYgODIgbC00IDE2IE01MiA4NCBsOCAxNCIvPjwvZz48L2c+PGcgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjYuNSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBmaWxsPSJub25lIj48cGF0aCBkPSJNNzIgNjIgQzc4IDUyIDg2IDQ4IDkyIDQ4IE03MCA2MiBDNzIgNTIgNzAgNDQgNjQgNDAiLz48L2c+PHBhdGggZD0iTTExMy42IDQ1LjAgTDk4LjAgNTQuMCBMODIuNCA0NS4wIEw4Mi40IDI3LjAgTDk4LjAgMTguMCBMMTEzLjYgMjcuMFoiIGZpbGw9IiNmZmYiIHN0cm9rZT0iI2ZmZiIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWpvaW49InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTAgOTggMzYpIi8+PC9nPjxnIHRyYW5zZm9ybT0idHJhbnNsYXRlKDY2IDcwKSByb3RhdGUoMCkgc2NhbGUoMS41NSkgdHJhbnNsYXRlKC02NiAtNzApIj48ZyBmaWxsPSIjMjIyMjNiIiBzdHJva2U9Im5vbmUiIHN0cm9rZS13aWR0aD0iMCI+PGVsbGlwc2UgY3g9IjMwIiBjeT0iODAiIHJ4PSIxNCIgcnk9IjEwIi8+PGNpcmNsZSBjeD0iNTAiIGN5PSI3NiIgcj0iOCIvPjxjaXJjbGUgY3g9IjY2IiBjeT0iNzAiIHI9IjEwIi8+PC9nPjxnIHN0cm9rZT0iIzIyMjIzYiIgc3Ryb2tlLXdpZHRoPSIzLjIyNTgwNjQ1MTYxMjkwMyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBmaWxsPSJub25lIj48cGF0aCBkPSJNMjYgODYgbC02IDEyIE0zNCA4OCBsMiAxMiBNNDYgODIgbC00IDE2IE01MiA4NCBsOCAxNCIvPjwvZz48L2c+PGcgc3Ryb2tlPSIjMjIyMjNiIiBzdHJva2Utd2lkdGg9IjMuNSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBmaWxsPSJub25lIj48cGF0aCBkPSJNNzIgNjIgQzc4IDUyIDg2IDQ4IDkyIDQ4IE03MCA2MiBDNzIgNTIgNzAgNDQgNjQgNDAiLz48L2c+PHBhdGggZD0iTTExMy42IDQ1LjAgTDk4LjAgNTQuMCBMODIuNCA0NS4wIEw4Mi40IDI3LjAgTDk4LjAgMTguMCBMMTEzLjYgMjcuMFoiIGZpbGw9InVybCgjY2hjMDQtZykiIHN0cm9rZT0iIzIyMjIzYiIgc3Ryb2tlLXdpZHRoPSIzIiBzdHJva2UtbGluZWpvaW49InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTAgOTggMzYpIi8+PGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoOTggMzcpIHNjYWxlKDAuOSkiIGZpbGw9IiNmZmYiPjxjaXJjbGUgY3g9IjAiIGN5PSItNSIgcj0iNSIvPjxwYXRoIGQ9Ik0tOSA5IEMtOSAwIDkgMCA5IDlaIi8+PC9nPgo8L3N2Zz4K
@@ -10625,17 +10625,61 @@ ${lines}
     });
   }
 
+  // ../../dev/mbpage/mb-page.mjs
+  function mbpReleaseLinkList(doc) {
+    doc = doc || document;
+    const lists = [...doc.querySelectorAll("ul.external_links")].map((ul) => {
+      let h = ul.previousElementSibling;
+      while (h && !/^H\d$/.test(h.tagName)) h = h.previousElementSibling;
+      return { ul, head: h && h.classList.contains("external-links") ? (h.textContent || "").trim() : null };
+    }).filter((l) => l.head !== null);
+    const lang = doc.documentElement && doc.documentElement.lang || "en";
+    const key = "mbu.extLinksHeading." + lang;
+    if (lists.length >= 2) {
+      try {
+        localStorage.setItem(key, JSON.stringify(lists[0].head));
+      } catch (e) {
+      }
+      return lists[0].ul;
+    }
+    if (lists.length !== 1) return null;
+    if (/^external links$/i.test(lists[0].head)) return lists[0].ul;
+    let learnt = null;
+    try {
+      learnt = JSON.parse(localStorage.getItem(key));
+    } catch (e) {
+    }
+    return learnt && learnt === lists[0].head ? lists[0].ul : null;
+  }
+  function mbpReleaseJsonLinks(doc) {
+    doc = doc || document;
+    const mbid = (doc.location && doc.location.pathname || "").match(/\/release\/([0-9a-f-]{36})/i);
+    for (const s of doc.querySelectorAll('script[type="application/json"]')) {
+      const t = s.textContent || "";
+      if (t.indexOf('"relationships"') < 0) continue;
+      let rel = null;
+      try {
+        rel = JSON.parse(t).release;
+      } catch (e) {
+        continue;
+      }
+      if (!rel || rel.entityType !== "release" || !Array.isArray(rel.relationships)) continue;
+      if (mbid && rel.gid && rel.gid.toLowerCase() !== mbid[1].toLowerCase()) continue;
+      return rel.relationships.map((r) => r && r.target).filter((u) => u && u.entityType === "url" && /^https?:/.test(u.href_url || "")).map((u) => u.href_url);
+    }
+    return null;
+  }
+  function mbpReleaseLinks(doc) {
+    const data = mbpReleaseJsonLinks(doc);
+    if (data) return [...new Set(data)];
+    const ul = mbpReleaseLinkList(doc);
+    return ul ? [...ul.querySelectorAll("a[href]")].map((a) => a.href).filter((u) => /^https?:/.test(u)) : [];
+  }
+
   // src/mc-adapter.js
   var send = (type, detail) => document.dispatchEvent(new CustomEvent(type, { detail: JSON.stringify(detail) }));
   var version = () => typeof GM_info !== "undefined" && GM_info.script && GM_info.script.version || "?";
-  function releaseLinks() {
-    for (const ul of document.querySelectorAll("ul.external_links")) {
-      let h = ul.previousElementSibling;
-      while (h && !/^H\d$/.test(h.tagName)) h = h.previousElementSibling;
-      if (h && /^external links$/i.test(h.textContent.trim())) return [...ul.querySelectorAll("a[href]")].map((a) => a.href).filter((u) => /^https?:/.test(u));
-    }
-    return [];
-  }
+  var releaseLinks = () => mbpReleaseLinks();
   function pageTracks() {
     const out = [];
     let medium = 0;
