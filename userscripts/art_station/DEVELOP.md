@@ -60,3 +60,13 @@ window.ArtStation?.registerProvider({
 ## Zips
 
 A zip is unpacked in the browser. Stored and deflated entries are read; an encrypted or ZIP64 archive is skipped with a message.
+
+## Repeating failures
+
+*Automatically repeat failures* (#566) re-runs only the failed operations until they succeed or the allowance runs out (10 minutes or 10 attempts by default), since Internet Archive uploads are unreliable and a failed booklet is expensive to redo by hand. The gap starts as the window spread over the allowance (10 min / 10 tries = a minute) and backs off: doubled from the 10th attempt, tripled from the 100th, the shape of Anakunda's [MB Auto-retry on upload to CAA error](https://greasyfork.org/en/scripts/475225-mb-auto-retry-on-upload-to-caa-error). Backing off never makes a run outlast its window.
+
+*Upload timeout* (#560) replaced a fixed 5 minutes, which a 50–100 MB PDF booklet could outlast when the Archive was slow, while MusicBrainz's own uploader, which sets no timeout, got through.
+
+## Mammoth
+
+The detailed view's comment field carries `class="mmth-pin"` and `data-mmth-key="art-station-comment"`, so [Mammoth](../mammoth/DEVELOP.md)'s baby attaches to it, with its own list of saved comments.
