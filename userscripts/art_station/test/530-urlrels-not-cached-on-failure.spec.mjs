@@ -16,9 +16,9 @@ test.use({ gm: { name: 'Art Station' } });
 
 const isUrlRels = u => u.hostname === 'test.musicbrainz.org' && u.pathname === `/ws/2/release/${RELEASE}` && /url-rels/.test(u.search);
 const json = body => ({ status: 200, contentType: 'application/json', body: JSON.stringify(body) });
-// the sidebar's link lists, as MusicBrainz renders them: a heading, then the list
-const linkBlocks = (own, rg) => `<h2>External links</h2><ul class="external_links">${own.map(u => `<li><a href="${u}">${u}</a></li>`).join('')}</ul>`
-  + (rg ? `<h2>Release group external links</h2><ul class="external_links">${rg.map(u => `<li><a href="${u}">${u}</a></li>`).join('')}</ul>` : '');
+// the sidebar's link lists, as MusicBrainz renders them: an h2.external-links heading, then the list
+const linkBlocks = (own, rg) => `<h2 class="external-links">External links</h2><ul class="external_links">${own.map(u => `<li><a href="${u}">${u}</a></li>`).join('')}</ul>`
+  + (rg ? `<h2 class="external-links">Release group external links</h2><ul class="external_links">${rg.map(u => `<li><a href="${u}">${u}</a></li>`).join('')}</ul>` : '');
 const addBlocks = (page, html) => page.evaluate(h => { const d = document.createElement('div'); d.id = 'test-links'; d.innerHTML = h; (document.getElementById('sidebar') || document.body).appendChild(d); }, html);
 const popoverText = async page => {
   await page.click('.as-src');

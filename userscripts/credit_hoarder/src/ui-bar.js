@@ -154,6 +154,8 @@ export function insertDiscogsBar(discogsUrl, sources = {}, meta = {}) {
     //   -> Fusion v2026.10.1 · Violentmonkey 2.31.0 · firefox 143.0 (win)
     // Inside String Theory GM_info describes the bundle, so the line names it:
     //   -> Fusion (String Theory v2026.10.1) · Tampermonkey 5.3.3 · chrome 140.0 (win)
+    // On MusicBrainz it ends with the interface language, which changes what a script reads
+    // off the page: "· MusicBrainz in de".
     function mbuStartupInfo(name) {
         var g = null;
         try { g = (typeof GM_info !== 'undefined' && GM_info) || null; } catch (e) { /* no GM_info */ }
@@ -165,6 +167,13 @@ export function insertDiscogsBar(discogsUrl, sources = {}, meta = {}) {
         if (g) line += ' · ' + (g.scriptHandler || 'unknown manager') + (g.version ? ' ' + g.version : '');
         if (p.browserName) line += ' · ' + p.browserName + (p.browserVersion ? ' ' + p.browserVersion : '') + (p.os ? ' (' + p.os + ')' : '');
         else { try { line += ' · ' + navigator.userAgent; } catch (e) { /* no navigator */ } }
+        try {
+            if (/(^|\.)musicbrainz\.(org|eu)$/i.test(location.hostname)) {
+                // <html lang>, or MB's lang cookie when the page isn't parsed yet (document-start)
+                var lang = (document.documentElement && document.documentElement.lang) || ((document.cookie.match(/(?:^|;\s*)lang=([^;]+)/) || [])[1]) || 'en';
+                line += ' · MusicBrainz in ' + lang;
+            }
+        } catch (e) { /* no document */ }
         return line;
     }
 

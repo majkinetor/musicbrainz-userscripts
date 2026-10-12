@@ -53,23 +53,24 @@ A release made by hand on GitHub gets its PDF from `pdf.yml`, which can also be 
 
 Nothing here ships. A script belongs in its subsystem's folder, next to that folder's README; only repo-wide operations sit at the root.
 
-| | |
-|---|---|
-| [`tokens/`](dev/tokens/README.md) | design tokens and themes, the one place the look is set |
-| [`ui/`](dev/ui/README.md) | the shared components and platform icons, with their live checks |
-| `match/` | the shared artist matcher (Apollo, Group Therapy, Credit Hoarder) |
-| [`test/`](dev/test/README.md) | the test runner and harness |
-| [`all-icons-generator/`](dev/all-icons-generator/README.md) | every script's icon side by side, fitted to one box |
-| `screens/ui/` | generated screenshots; numbers are stable, so never renumber, only append |
-| `github-notifications/`, `notif-channel/` | GitHub notifications into the assistant's channel |
-| [`script-metrics/`](dev/script-metrics/README.md) | edits made with these scripts, counted from the MusicBrainz database dump, in Docker |
-| `site-proposals/`, `reports/` | design proposals and measurement reports kept for reference |
-| `templates/` | starting points: a script's README in the [compact style](STANDARDS.md#script-readmes) |
-| `publish.mjs` | the release (run by `release.yml`) |
-| `regen.mjs` | rebuilds everything the pre-commit hook builds; `--check` fails if that changes anything |
-| `gh-inbox.mjs` | every issue comment newer than the bot's last reply |
-| `align-md-tables.mjs` | pads Markdown tables so their columns line up |
-| `install-hook.mjs` | points `core.hooksPath` at `.githooks/` |
+|                                                             |                                                                                                          |
+| ----------------------------------------------------------- | -------------------------------------------------------------------------------------------------------- |
+| [`tokens/`](dev/tokens/README.md)                           | design tokens and themes, the one place the look is set                                                  |
+| [`ui/`](dev/ui/README.md)                                   | the shared components and platform icons, with their live checks                                         |
+| `match/`                                                    | the shared artist matcher (Apollo, Group Therapy, Credit Hoarder)                                        |
+| `mbpage/`                                                   | the shared helpers for reading MusicBrainz's pages in any language (Art Station, Falcon, Credit Hoarder) |
+| [`test/`](dev/test/README.md)                               | the test runner and harness                                                                              |
+| [`all-icons-generator/`](dev/all-icons-generator/README.md) | every script's icon side by side, fitted to one box                                                      |
+| `screens/ui/`                                               | generated screenshots; numbers are stable, so never renumber, only append                                |
+| `github-notifications/`, `notif-channel/`                   | GitHub notifications into the assistant's channel                                                        |
+| [`script-metrics/`](dev/script-metrics/README.md)           | edits made with these scripts, counted from the MusicBrainz database dump, in Docker                     |
+| `site-proposals/`, `reports/`                               | design proposals and measurement reports kept for reference                                              |
+| `templates/`                                                | starting points: a script's README in the [compact style](STANDARDS.md#script-readmes)                   |
+| `publish.mjs`                                               | the release (run by `release.yml`)                                                                       |
+| `regen.mjs`                                                 | rebuilds everything the pre-commit hook builds; `--check` fails if that changes anything                 |
+| `gh-inbox.mjs`                                              | every issue comment newer than the bot's last reply                                                      |
+| `align-md-tables.mjs`                                       | pads Markdown tables so their columns line up                                                            |
+| `install-hook.mjs`                                          | points `core.hooksPath` at `.githooks/`                                                                  |
 
 Screenshots taken while working on an issue go to `dev/_*.png`, which is ignored; they are never committed.
 
@@ -80,17 +81,29 @@ Two rules the checkers are built on:
 
 ## Conventions
 
+### Finding things on MusicBrainz's pages
+
+MusicBrainz translates every label, heading and name into the user's interface language, and changes its layout without notice. A script that finds an element by its English text breaks for every non-English user; one that finds it by its place breaks on the next layout change. In this order of preference:
+
+1. **MusicBrainz's data, not the page**: the JSON a page embeds (`script[type="application/json"]`), `/ws/js`, ws/2, the Cover Art Archive, a form's own fields. A new request in a shipped script needs the maintainer's OK first.
+2. **A structural hook**: an id (`#release-rels`), a class (`h2.external-links`, `dd.barcode`), a form field's `name` (`period.ended`), a Knockout `data-click` (`submitEdits`, `nextTab`), a link's address (`/annotation/<id>`).
+3. **A name MusicBrainz shows translated** goes through its stable id: a select's option `value`, a checkbox's `value` (cover-art types in [`<ST-MBPAGE>`](#shared-blocks)).
+4. **Text or position only as a fallback, and checked**: kept after a hook for older markup, or accepted only if the result passes a check; otherwise the next source, never a guess.
+
+A translation of MusicBrainz's text is the last resort. If one is ever needed, it goes in `dev/mbpage/mb-page.mjs`, keyed by language, not in a script. To see a page in another language, set the `lang` cookie (`de`, `fr`, …), as `art_station/test/721-non-english-types.spec.mjs` does.
+
 ### Shared blocks
 
 Code several scripts need is written once and copied into each between marker comments, which a sync script fills in. The pre-commit hook re-syncs them; never edit inside the markers.
 
-| Marker | Source | |
-|---|---|---|
-| `// <ST-TOKENS>` | `dev/tokens/design-tokens.mjs` | colours, fonts, radii, shadows, z-indexes as `var(--mbu-…)` |
-| `// <ST-UI>` | `dev/ui/ui-components.mjs` | components (`mbu-` classes): help link, toast, log window and its startup line (`mbuStartupInfo`), corner stacking, … |
-| `// <ST-ICONS>` | `dev/ui/platform-icons.mjs` | platform icons and brand colours |
-| `// <ST-MATCH>` | `dev/match/artist-match.mjs` | the artist matcher and sort-name guess |
-| `// <ST-IMGMAX>` | `dev/imgmax/image-maximizer.js` | the largest cover behind a store page or image URL ([API](dev/imgmax/README.md)) |
+| Marker           | Source                          |                                                                                                                       |
+| ---------------- | ------------------------------- | --------------------------------------------------------------------------------------------------------------------- |
+| `// <ST-TOKENS>` | `dev/tokens/design-tokens.mjs`  | colours, fonts, radii, shadows, z-indexes as `var(--mbu-…)`                                                           |
+| `// <ST-UI>`     | `dev/ui/ui-components.mjs`      | components (`mbu-` classes): help link, toast, log window and its startup line (`mbuStartupInfo`), corner stacking, … |
+| `// <ST-ICONS>`  | `dev/ui/platform-icons.mjs`     | platform icons and brand colours                                                                                      |
+| `// <ST-MATCH>`  | `dev/match/artist-match.mjs`    | the artist matcher and sort-name guess                                                                                |
+| `// <ST-IMGMAX>` | `dev/imgmax/image-maximizer.js` | the largest cover behind a store page or image URL ([API](dev/imgmax/README.md))                                      |
+| `// <ST-MBPAGE>` | `dev/mbpage/mb-page.mjs`        | MusicBrainz's page read in any language: cover-art type ids, the release's own external links                         |
 
 **Tokens**
 
@@ -132,6 +145,7 @@ Most settings belong to one script and live in its GM storage, which no other sc
 | Key | Values | What reads it | Set by |
 | --- | --- | --- | --- |
 | `cornerFlow` | `"row"`; unset is a column | `mbRestackCorner`: the corner launchers' layout | String Theory's menu |
+| `extLinksHeading.<lang>` | the release's "External links" heading in that language | `mbpReleaseLinkList`: tells the release's links from the release group's when the page shows one list | learnt by `mbpReleaseLinkList` on a release page that shows both |
 
 A new shared setting gets a row here.
 

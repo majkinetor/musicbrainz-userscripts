@@ -29,6 +29,8 @@ test('the zip reader unpacks Art Station and OS archives, and refuses a non-zip'
     "const DIR_MAX_DEPTH = 1, DIR_MAX_FILES = 100;",
     "const DIR_ACCEPT_RE = /\\.(jpe?g|png|gif|pdf)$/i;",
     'const IS_EVENT = false, COVER_ORDER = [];',   // the sliced type tables define ITEM/ITEMS themselves
+    // the cover-type ids the type tables use, from the shared // <ST-MBPAGE> block
+    (src.match(/^ *const MBP_COVER_TYPES = .*$/m) || ['const MBP_COVER_TYPES = {};'])[0].trim(),
   ];
   const logs = [], toasts = [];
   const pieces = [

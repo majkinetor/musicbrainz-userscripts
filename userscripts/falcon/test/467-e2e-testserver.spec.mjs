@@ -117,11 +117,18 @@ test("#467: e2e testserver", { tag: ['@sandbox', '@login', '@flaky'] }, async ({
     await settled(page);
     const shortfalls = [];
     for (let i = 0; i < RECS.length; i++) {
+      // one read a second, and a throttled one (503) asked again: eight back to back were
+      // throttled, and a refused read showed as a missing relationship (got null)
       const types = await page.evaluate(async ({ mbid, want, base }) => {
-        const r = await fetch(`${base}/ws/2/recording/${mbid}?inc=url-rels&fmt=json`, { headers: { Accept: 'application/json' } });
-        if (!r.ok) return null;
-        const j = await r.json();
-        return (j.relations || []).filter(x => x.url && x.url.resource === want).map(x => x.type).sort();
+        for (let attempt = 1; attempt <= 5; attempt++) {
+          await new Promise(z => setTimeout(z, 1100 * attempt));
+          const r = await fetch(`${base}/ws/2/recording/${mbid}?inc=url-rels&fmt=json`, { headers: { Accept: 'application/json' } });
+          if (r.status === 503 || r.status === 429) continue;
+          if (!r.ok) return null;
+          const j = await r.json();
+          return (j.relations || []).filter(x => x.url && x.url.resource === want).map(x => x.type).sort();
+        }
+        return null;
       }, { mbid: RECS[i], want: urlFor(i), base: TEST_MB });
       if (!types || types.length !== 2) shortfalls.push({ mbid: RECS[i], got: types });
     }

@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.12
+// @version      2026.10.12.181548
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5BcG9sbG8gRWRpdG9yPC90aXRsZT4KPG1hc2sgaWQ9ImFwLW0iIG1hc2tVbml0cz0idXNlclNwYWNlT25Vc2UiIHg9IjAiIHk9IjAiIHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4Ij48Zz48ZyBmaWxsPSIjZmZmIj48cGF0aCBkPSJNNDIgNjQgQzI4IDcyIDIyIDkwIDI0IDExMCBMNDIgOTggWiIvPjxwYXRoIGQ9Ik04NiA2NCBDMTAwIDcyIDEwNiA5MCAxMDQgMTEwIEw4NiA5OCBaIi8+PC9nPjxnIGZpbGw9IiNmZmYiPjxwYXRoIGQ9Ik02NCA4IEM4NCAyNCA5MCA1MiA4OCA5MCBMNDAgOTAgQzM4IDUyIDQ0IDI0IDY0IDggWiIvPjxwYXRoIGQ9Ik00OCA5MCBMODAgOTAgTDc2IDEwMCBMNTIgMTAwIFoiLz48L2c+PGcgc3Ryb2tlPSIjMDAwIiBzdHJva2Utd2lkdGg9IjMuNSI+PHBhdGggZD0iTTM2IDkwLjUgTDkyIDkwLjUiLz48L2c+PGNpcmNsZSBjeD0iNjQiIGN5PSI1MCIgcj0iOCIgZmlsbD0iIzAwMCIvPjwvZz48L21hc2s+PGc+PHBhdGggZD0iTTUyIDEwMCBDNTQgMTEyIDYwIDExOCA2NCAxMjYgQzY4IDExOCA3NCAxMTIgNzYgMTAwIFoiIGZpbGw9IiNlYjc0M2IiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDAgMykiLz48L2c+PHJlY3Qgd2lkdGg9IjEyOCIgaGVpZ2h0PSIxMjgiIGZpbGw9IiNiYTQ3OGYiIG1hc2s9InVybCgjYXAtbSkiLz4KPC9zdmc+Cg==
@@ -1362,7 +1362,11 @@ click to open the label`;
       let j; try { j = await r.json(); }
       catch (e) { Log.cat('MusicBrainz').warn(label + ': unparsable JSON —', e.message, url); return { failed: true }; }
       // some edges answer 200 with an error envelope — treat it as a failure, never as 0 hits
-      if (j && typeof j.error === 'string') { Log.cat('MusicBrainz').warn(label + ': web service error —', j.error); return { failed: true }; }
+      if (j && typeof j.error === 'string') {
+        // "The MusicBrainz web server is currently busy. Please try again later." is a throttle, retried
+        if (/busy|try again later|rate limit/i.test(j.error)) { Log.cat('MusicBrainz').warn(label + ': web service busy — retrying (attempt ' + attempt + '/' + WS_TRIES + ')', url); await _sleep(1000 * attempt); continue; }
+        Log.cat('MusicBrainz').warn(label + ': web service error —', j.error); return { failed: true };
+      }
       return { json: j };
     }
     Log.cat('MusicBrainz').err(label + ': gave up after ' + WS_TRIES + ' attempts —', url);
@@ -2791,6 +2795,8 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
   //   -> Fusion v2026.10.1 · Violentmonkey 2.31.0 · firefox 143.0 (win)
   // Inside String Theory GM_info describes the bundle, so the line names it:
   //   -> Fusion (String Theory v2026.10.1) · Tampermonkey 5.3.3 · chrome 140.0 (win)
+  // On MusicBrainz it ends with the interface language, which changes what a script reads
+  // off the page: "· MusicBrainz in de".
   function mbuStartupInfo(name) {
       var g = null;
       try { g = (typeof GM_info !== 'undefined' && GM_info) || null; } catch (e) { /* no GM_info */ }
@@ -2802,6 +2808,13 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
       if (g) line += ' · ' + (g.scriptHandler || 'unknown manager') + (g.version ? ' ' + g.version : '');
       if (p.browserName) line += ' · ' + p.browserName + (p.browserVersion ? ' ' + p.browserVersion : '') + (p.os ? ' (' + p.os + ')' : '');
       else { try { line += ' · ' + navigator.userAgent; } catch (e) { /* no navigator */ } }
+      try {
+          if (/(^|\.)musicbrainz\.(org|eu)$/i.test(location.hostname)) {
+              // <html lang>, or MB's lang cookie when the page isn't parsed yet (document-start)
+              var lang = (document.documentElement && document.documentElement.lang) || ((document.cookie.match(/(?:^|;\s*)lang=([^;]+)/) || [])[1]) || 'en';
+              line += ' · MusicBrainz in ' + lang;
+          }
+      } catch (e) { /* no document */ }
       return line;
   }
 
@@ -7841,8 +7854,18 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
       b.style.right = Math.max(0, host.clientWidth - (sel.offsetLeft + sel.offsetWidth)) + pin + 'px';
     }
   }
-  // the option of a select whose text is the name (MB lists frequent ones twice: the first will do)
-  const lsOption = (sel, name) => name ? [...sel.options].find(o => o.value && o.textContent.trim() === name) : null;
+  // #722 MB's ids for the names above (its language and script tables), so the option is found
+  // whatever language MB shows its names in ("Deutsch" is still 145 = German)
+  const LS_MB_IDS = {
+    language: { Afrikaans: 9, Arabic: 18, Armenian: 21, Azerbaijani: 34, Basque: 41, Belarusian: 45, Bengali: 47, Bulgarian: 62, Catalan: 68, Chinese: 76, Croatian: 366, Czech: 98, Danish: 100, Dutch: 113, English: 120, Estonian: 123, Finnish: 131, French: 134, Georgian: 144, German: 145, Greek: 159, Hausa: 165, Hebrew: 167, Hindi: 171, Hungarian: 176, Icelandic: 180, Indonesian: 189, Italian: 195, Japanese: 198, Kazakh: 211, Korean: 224, Kurdish: 232, Lithuanian: 243, Macedonian: 254, Marathi: 264, 'Norwegian Bokmål': 306, Persian: 334, Polish: 338, Portuguese: 340, Romanian: 351, Rundi: 352, Russian: 353, Serbian: 363, Slovak: 377, Spanish: 393, Swedish: 403, Tagalog: 414, Thai: 415, Turkish: 433, Ukrainian: 441, Vietnamese: 448 },
+    script: { Hebrew: 11, Arabic: 18, Greek: 22, Latin: 28, Cyrillic: 31, Armenian: 35, Georgian: 36, Korean: 43, Gurmukhi: 49, Devanagari: 50, Gujarati: 52, Bengali: 53, Tibetan: 55, Telugu: 59, Kannada: 60, Tamil: 61, Malayalam: 62, Sinhala: 63, Myanmar: 64, Thai: 65, Khmer: 68, Lao: 69, Japanese: 85, Ethiopic: 86, 'Han (Hanzi, Kanji, Hanja)': 92, '[Multiple scripts]': 160 }
+  };
+  // the option for a name, by its MB id, else by its English text (MB lists frequent ones twice: the first will do)
+  const lsOption = (sel, name) => {
+    if (!name) return null;
+    const id = (LS_MB_IDS[sel.id] || {})[name];
+    return (id && [...sel.options].find(o => o.value === String(id))) || [...sel.options].find(o => o.value && o.textContent.trim() === name) || null;
+  };
   const _ls = { language: { state: 'idle', value: '' }, script: { state: 'idle', value: '' } };   // idle → auto (we filled it) → off (given, or changed)
   let _lsSig = '', _lsSigAt = 0, _lsDone = '', _lsBusy = false;
   // which fields Apollo may still fill; marks the given ones off for good
@@ -7928,7 +7951,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
         const og = document.createElement('optgroup'); og.className = 'tc-ls-found'; og.label = 'Detected by Apollo';
         for (const c of list) {
           const src = lsOption(sel, c.name); if (!src) { Log.cat('Language').debug('MusicBrainz has no', k, JSON.stringify(c.name)); continue; }
-          const o = document.createElement('option'); o.value = src.value; o.textContent = c.name; o.title = c.why; og.appendChild(o);
+          const o = document.createElement('option'); o.value = src.value; o.textContent = src.textContent.trim(); o.title = c.why; og.appendChild(o);   // MB's own name for it, in its language
         }
         if (og.children.length) sel.insertBefore(og, sel.options[0] && !sel.options[0].value ? sel.options[0].nextSibling : sel.firstChild);
       }
@@ -8074,6 +8097,13 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     const c = stops[seg].map((v, i) => Math.round(v + (stops[seg + 1][i] - v) * t));
     return `rgb(${c[0]},${c[1]},${c[2]})`;
   }
+  // #723 the Similarity column goes right after the Release column: the cell that links the
+  // release, not a fixed index, so a column MB adds or drops doesn't move it (2: the old place)
+  function dupSimIndex(tr) {
+    const cells = tr ? [...tr.children].filter(c => !c.classList.contains('tc-dup-sim')) : [];
+    const i = cells.findIndex(c => c.querySelector('a[href*="/release/"]'));
+    return i >= 0 ? i + 1 : 2;
+  }
   function augmentDupRows(tbody) {
     tbody.querySelectorAll(':scope > tr').forEach(tr => {
       if (tr.classList.contains('tc-dup-detail')) return;   // our own expanded-detail rows
@@ -8081,7 +8111,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
       const gid = (tr.querySelector('input[name="base-release"]') || {}).value || null;
       const td = document.createElement('td'); td.className = 'tc-dup-sim';
       td.textContent = '…'; td.style.cssText = 'text-align:center;color:var(--mbu-text-weak)'; td.title = 'computing track-by-track similarity…';
-      tr.insertBefore(td, tr.children[2] || null);   // place right after the Release column
+      tr.insertBefore(td, tr.children[dupSimIndex(tr)] || null);   // right after the Release column
       if (gid) enqueueDupScore(gid, td, tr); else td.textContent = '—';   // neutral until the tracklist is fetched (never a metadata-only guess)
     });
   }
@@ -8290,7 +8320,8 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     if (thead && !thead.querySelector('.tc-dup-th')) {
       const th = document.createElement('th'); th.className = 'tc-dup-th'; th.textContent = 'Similarity';
       th.title = 'How closely each existing release matches the one you are entering — click a score for a track-by-track comparison.';
-      thead.insertBefore(th, thead.children[2] || null);
+      const row0 = tbody && [...tbody.querySelectorAll(':scope > tr')].find(tr => !tr.classList.contains('tc-dup-detail'));
+      thead.insertBefore(th, thead.children[dupSimIndex(row0)] || null);
     }
     if (!tbody) return;
     augmentDupRows(tbody);
@@ -10522,15 +10553,17 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
   // it shows ONLY when there are pending changes. Both forms are mirrored — whichever MB renders.
   const WIZ_DEFS = [
     { id: 'enter', label: '✓ Enter edit', cls: 'tc-wiz-enter', find: f => f.querySelector('#enter-edit') || [...f.querySelectorAll('button')].find(b => /enter edit/i.test(b.textContent)) },
-    { id: 'finish', label: '✓ Finish', cls: 'tc-wiz-finish', find: f => [...f.querySelectorAll('button')].find(b => /^\s*finish\s*$/i.test(b.textContent)) }
+    { id: 'finish', label: '✓ Finish', cls: 'tc-wiz-finish', find: f => f.querySelector('button[data-click="lastTab"]') || [...f.querySelectorAll('button')].find(b => /^\s*finish\s*$/i.test(b.textContent)) }
   ];
   // Right-side paginators (#140) — proxy MB's native footer Cancel / Previous / Next.
   // MB data-binds their visibility (Prev hidden on the first step, Next on the last),
   // mirrored in syncNav via `vis(nat)`. Cancel carries the native `.negative` class.
+  // #722 each by its data-click handler first (MB translates the labels); the text only for
+  // a form without one.
   const PAGE_DEFS = [
-    { id: 'cancel', label: '✕ Cancel', cls: 'tc-wiz-cancel', find: f => f.querySelector('button.negative') || [...f.querySelectorAll('button')].find(b => /^\s*cancel\s*$/i.test(b.textContent)) },
-    { id: 'prev',   label: '‹ Prev',   cls: 'tc-wiz-prev',   find: f => [...f.querySelectorAll('button')].find(b => /previous/i.test(b.textContent)) },
-    { id: 'next',   label: 'Next ›',   cls: 'tc-wiz-next',   find: f => [...f.querySelectorAll('button')].find(b => /^\s*next\s*»?\s*$/i.test(b.textContent)) }
+    { id: 'cancel', label: '✕ Cancel', cls: 'tc-wiz-cancel', find: f => f.querySelector('button[data-click="cancelPage"]') || f.querySelector('button.negative') || [...f.querySelectorAll('button')].find(b => /^\s*cancel\s*$/i.test(b.textContent)) },
+    { id: 'prev',   label: '‹ Prev',   cls: 'tc-wiz-prev',   find: f => f.querySelector('button[data-click="previousTab"]') || [...f.querySelectorAll('button')].find(b => /previous/i.test(b.textContent)) },
+    { id: 'next',   label: 'Next ›',   cls: 'tc-wiz-next',   find: f => f.querySelector('button[data-click="nextTab"]') || [...f.querySelectorAll('button')].find(b => /^\s*next\s*»?\s*$/i.test(b.textContent)) }
   ];
   function hasChanges() { try { const re = W.MB && W.MB.releaseEditor; return !!(re && typeof re.allowsSubmission === 'function' && re.allowsSubmission()); } catch (e) { return false; } }
   function editorEl() { return document.getElementById('release-editor'); }
@@ -10676,7 +10709,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     // version count — reuse the native release header's "see all versions" link
     let ver = '';
     const rh = document.querySelector('.releaseheader');
-    const va = rh && [...rh.querySelectorAll('a')].find(a => /version/i.test(a.textContent || ''));
+    const va = rh && (rh.querySelector('.subheader .small a[href*="/release-group/"]') || [...rh.querySelectorAll('a')].find(a => /version/i.test(a.textContent || '')));   // #722 by its address
     if (va) { const m = (va.textContent.match(/(\d+)/) || [])[1]; ver = ' <a href="' + esc(va.href) + '" target="_blank" rel="noopener" class="tc-nav-title-ver">(' + (m ? m + ' versions' : 'all versions') + ')</a>'; }
     el.innerHTML = '<div class="tc-nav-title-album"><span class="tc-nav-title-name">' + album + '</span></div>'
                  + '<div class="tc-nav-title-artist">' + artist + ver + '</div>';
@@ -10724,7 +10757,8 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
   // opens MB's add-medium parser dialog. (NB: the button inside #add-medium-dialog is the dialog's commit
   // button, disabled until tracks are parsed — proxying that one does nothing.)
   function nativeAddMediumBtn() {
-    const f = navFooterEl(); let b = f && [...f.querySelectorAll('button')].find(x => /add medium/i.test(x.textContent));
+    // #722 by its data-click (MB translates "Add medium"), the text for older markup
+    const f = navFooterEl(); let b = f && (f.querySelector('button[data-click="open"]') || [...f.querySelectorAll('button')].find(x => /add medium/i.test(x.textContent)));
     if (b) return b;
     const tl = document.getElementById('tracklist'); return tl ? [...tl.querySelectorAll('button')].find(x => /add medium/i.test(x.textContent) && !x.closest('#add-medium-dialog')) : null;
   }
@@ -10779,7 +10813,8 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
   function watchSubmit() {
     document.addEventListener('click', e => {
       const b = e.target && e.target.closest && e.target.closest('button'); if (!b) return;
-      const f = navFooterEl(); if (f && f.contains(b) && /^\s*(finish|enter edit)\s*$/i.test(b.textContent || '')) ensureApolloEditNote();
+      // #722 Finish / Enter edit by their data-click, as MB translates the labels
+      const f = navFooterEl(); if (f && f.contains(b) && (b.matches('[data-click="lastTab"], [data-click="submitEdits"]') || /^\s*(finish|enter edit)\s*$/i.test(b.textContent || ''))) ensureApolloEditNote();
     }, true);   // capture phase: runs before MB reads the textarea for submission
   }
 
@@ -11249,11 +11284,14 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
       const edit = relRow.querySelector('button.edit-item'); if (!edit) { resolve(false); return; }
       edit.click();
       setTimeout(() => {
-        const dlg = [...document.querySelectorAll('.dialog.popover,[role="dialog"],.bubble')].find(d => d.offsetParent !== null && /relationship has ended|has ended/i.test(d.textContent));
+        // #722 the dialog, its ended box and Done by class and field name (MB translates their text)
+        const dlg = [...document.querySelectorAll('form.external-link-relationship-dialog')].find(d => d.offsetParent !== null)
+          || [...document.querySelectorAll('.dialog.popover,[role="dialog"],.bubble')].find(d => d.offsetParent !== null && /relationship has ended|has ended/i.test(d.textContent));
         if (!dlg) { resolve(false); return; }
-        const cb = [...dlg.querySelectorAll('input[type=checkbox]')].find(c => /ended/i.test((c.closest('label') || c.parentElement || {}).textContent || ''));
+        const cb = dlg.querySelector('input[type=checkbox][name="period.ended"]')
+          || [...dlg.querySelectorAll('input[type=checkbox]')].find(c => /ended/i.test((c.closest('label') || c.parentElement || {}).textContent || ''));
         if (cb && !cb.checked) cb.click();
-        const done = [...dlg.querySelectorAll('button')].find(b => /^\s*done\s*$/i.test(b.textContent));
+        const done = dlg.querySelector('button.positive[type=submit]') || [...dlg.querySelectorAll('button')].find(b => /^\s*done\s*$/i.test(b.textContent));
         setTimeout(() => { if (done) done.click(); resolve(!!cb); }, 70);
       }, 240);
     });
@@ -11597,14 +11635,17 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     const doc = new DOMParser().parseFromString(await r.text(), 'text/html');
     const out = [];
     doc.querySelectorAll('table tr').forEach(tr => {
-      const view = [...tr.querySelectorAll('a')].find(a => /this version/i.test(a.textContent || ''));
+      // #722 the "View this version" link by its address (MB translates the text)
+      const view = tr.querySelector('a[href*="/annotation/"]') || [...tr.querySelectorAll('a')].find(a => /this version/i.test(a.textContent || ''));
       if (!view) return;
       const ua = tr.querySelector('a[href^="/user/"]');
       const editor = ua?.textContent.trim() || '';
       const avatar = ua?.querySelector('img')?.getAttribute('src') || '';
       const date = [...tr.querySelectorAll('td')].map(c => c.textContent.trim()).find(t => /\d{4}-\d{2}-\d{2}/.test(t)) || '';
       const cl = (view.parentElement.textContent.match(/\(([^)]*)\)/) || ['', ''])[1];
-      out.push({ editor, avatar, date, changelog: /no changelog/i.test(cl) ? '' : cl, url: view.getAttribute('href') });
+      // MB puts its "no changelog specified" in <em> (in any language); a real changelog is plain text
+      const none = !!view.parentElement.querySelector('em') || /no changelog/i.test(cl);
+      out.push({ editor, avatar, date, changelog: none ? '' : cl, url: view.getAttribute('href') });
     });
     return out;
   }
@@ -11974,7 +12015,9 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     // hide everything below the editor — the Edit note (the Change note already serves that role), the "Make all
     // edits votable" row, the native Preview button, and MB's formatting guide — keeping only "Enter edit".
     const annoRowEl = (ta._tcAnnoMounted || ta).closest('.row'), els = new Set();
-    const fh = [...document.querySelectorAll('#content h3')].find(h => /annotation formatting/i.test(h.textContent || ''));
+    // #722 #723 the guide is the first h3 after the form (MB translates its "Annotation formatting")
+    const fh = (form && [...document.querySelectorAll('#content > h3')].find(h => form.compareDocumentPosition(h) & Node.DOCUMENT_POSITION_FOLLOWING))
+      || [...document.querySelectorAll('#content h3')].find(h => /annotation formatting/i.test(h.textContent || ''));
     if (fh) { els.add(fh); for (let n = fh.nextElementSibling; n; n = n.nextElementSibling) els.add(n); }   // the guide is the h3 + everything after it (NOT its parent, which is #content!)
     [...document.querySelectorAll('#content h2')].forEach(h => { if (/^\s*edit note\s*$/i.test((h.textContent || '').trim())) { els.add(h); let n = h.nextElementSibling; while (n && n.tagName === 'P') { els.add(n); n = n.nextElementSibling; } } });
     if (form && annoRowEl) { const kids = [...form.children], ai = kids.indexOf(annoRowEl); kids.forEach((ch, i) => { if (i > ai) els.add(ch); }); }   // everything below the editor, incl. the native buttons
@@ -11985,7 +12028,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     let sub = document.getElementById('tc-anno-submit');
     if (hide && !sub && clInput) {
       sub = document.createElement('button'); sub.id = 'tc-anno-submit'; sub.type = 'button'; sub.textContent = '✓ Enter edit';
-      sub.onclick = () => { const b = form && [...form.querySelectorAll('button, input[type=submit]')].find(x => x.id !== 'tc-anno-submit' && /enter edit/i.test((x.textContent || x.value || '').trim())); if (b) b.click(); };   // the NATIVE submit (not ourselves)
+      sub.onclick = () => { const b = form && (form.querySelector('button.submit.positive') || [...form.querySelectorAll('button, input[type=submit]')].find(x => x.id !== 'tc-anno-submit' && /enter edit/i.test((x.textContent || x.value || '').trim()))); if (b) b.click(); };   // #722 by its class, as MB translates "Enter edit"   // the NATIVE submit (not ourselves)
       clInput.after(sub);
     }
     if (clRow) clRow.classList.toggle('tc-cl-row', hide);

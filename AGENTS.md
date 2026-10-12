@@ -48,6 +48,7 @@ Entry point for any AI assistant (Claude Code, a cloud agent, a subagent). It's 
 
 Per-script low-level detail → that script's `DEVELOP.md`. Cross-cutting:
 
+- **MB translates every label and heading, and moves things**: before finding an element on an MB page, read [DEVELOP → Finding things on MusicBrainz's pages](DEVELOP.md#finding-things-on-musicbrainzs-pages).
 - **`/release/<mbid>/edit` is a Knockout app**: it ignores seeded params (except URLs), binds late and wipes early DOM writes, and submits via `/ws/js/edit/create`.
 - **In-session new entities have a negative `id`, no `gid`, a null fiber** — read selection from `state.selectedWorks` / `selectedRecordings`, dedup by id-or-gid.
 - **A track `artistCredit` needs the full fetched artist** (`/ws/js/entity/<gid>`, which has `id`); lean/stub artists and `MB.entity(gid, name)` get dropped on re-derive.
