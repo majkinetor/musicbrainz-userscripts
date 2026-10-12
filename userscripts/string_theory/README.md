@@ -14,39 +14,24 @@
 
 ## What's included
 
-| Script                                | What it does                                                                      |
-| ------------------------------------- | --------------------------------------------------------------------------------- |
-| [Apollo Editor](../apollo_editor)     | Per-track artist-credit resolution in the release editor                          |
-| [Art Station](../art_station)         | Cover/event-art gallery editor                                                    |
-| [Credit Hoarder](../credit_hoarder)   | Import credits from multiple sources                                              |
-| [Falcon](../falcon)                   | Batch-edit entity fields, import from Harmony, attach disc IDs                    |
-| [First Contact](../first_contact)     | Import a release from a platform's album page                                     |
-| [Fusion](../fusion)                   | Merge duplicate recordings: review, auto-match, submit                            |
-| [Group Therapy](../group_therapy)     | Relationship-editor batch helpers                                                 |
-| [ISRC Scout](../isrc_scout)           | Fill in missing ISRCs and streaming links                                         |
-| [Mammoth](../mammoth)                 | Remember & recall edit notes and field values                                     |
-| [Mission Control](../mission_control) | One window that collects what the other scripts found on a release and applies it |
-| [Platform Check](../platform_check)   | Find/verify/add a release's URLs on online platforms                              |
+| Script                                | What it does                                                                         |
+| ------------------------------------- | ------------------------------------------------------------------------------------ |
+| [Apollo Editor](../apollo_editor)     | A faster release editor: artists and recordings auto-matched                         |
+| [Art Station](../art_station)         | Edit cover art and find it online with parallel edits, retried on errors             |
+| [Credit Hoarder](../credit_hoarder)   | Import credits from several providers with a review phase                            |
+| [Falcon](../falcon)                   | Batch import entity fields from Harmony or by hand; attach disc IDs from CD rip logs |
+| [First Contact](../first_contact)     | Import a release from a platform's album page                                        |
+| [Fusion](../fusion)                   | Find and merge duplicate recordings from one window                                  |
+| [Group Therapy](../group_therapy)     | Batch operations and various helpers for editing relationships                       |
+| [ISRC Scout](../isrc_scout)           | Fill in a release's missing ISRCs and streaming links                                |
+| [Mammoth](../mammoth)                 | Reusable edit notes on every edit form, and remembered field values                  |
+| [Mission Control](../mission_control) | One dashboard to find and fix all a release lacks, and consolidate new ones          |
+| [Platform Check](../platform_check)   | Find and verify a release's links on the online platforms                            |
 
 - **Turn a script off** in the userscript manager's menu (the Tampermonkey / Violentmonkey popup): each bundled script has an entry with its version, ☑ on or ☐ off. A click flips it in place, and the change applies from the next page load. A script that is off doesn't run at all, so its standalone copy, if you have one installed, can run in its place.
-- **Lay out the corner launchers** from the same menu: the round buttons in the page's corner (Mission Control, Fusion, Falcon, …) stand in a column (**↕ Launchers in a column**, the default) or in a row along the page's bottom edge (**↔ Launchers in a row**). A click switches the layout at once, and it stays that way on every page. All the scripts share it, so a standalone script (Scribe, or a script installed on its own) follows it too, on any page, String Theory there or not.
-- The bundled scripts are listed in [`members.txt`](./members.txt)
-- In edit notes, all userscripts are marked with `*` (e.g. `Apollo Editor*`)
-
-Version details are printed in Console:
-
-```
-String Theory  v2026.7.3.140303
-String Theory bundles:
-  · Apollo Editor v2026.7.2.2
-  · Art Station v2026.7.2.1
-  · Credit Hoarder v2026.7.2
-  · Fusion v2026.7.2
-  · Group Therapy v2026.7.2.1
-  · ISRC Scout v2026.7.2
-  · Mammoth v2026.7.2.6
-  · Platform Check v2026.7.1.2
-```
+- **Lay out the corner launchers** from the same menu: the round buttons in the page's corner (Mission Control, Fusion, Falcon, …) stand in a column (**↕ Launchers in a column**, the default) or in a row along the page's bottom edge (**↔ Launchers in a row**). A click switches the layout at once, and it stays that way on every page. All the scripts share it, so a standalone script (Scribe, or a script installed on its own) follows it too.
+- In edit notes, all userscripts are marked with `*` (e.g. `Apollo Editor*`).
+- The browser console (F12) lists String Theory's version and each bundled script's.
 
 ## Other recommended userscripts
 
@@ -55,23 +40,7 @@ String Theory bundles:
 - [Uncheck checkboxes with Esc](https://github.com/chaban-mb/userscripts/blob/main/docs/USERSCRIPTS.md#musicbrainz-uncheck-checkboxes-with-esc)
 - [Enhanced Cover Art Uploads](https://github.com/ROpdebee/mb-userscripts#mb-enhanced-cover-art-uploads)
 
-## How it's built
-
-`string_theory.user.js` is **generated**, not hand-written — do not edit it directly. Every constituent is a self-contained IIFE. The build [unions the metadata block](./build.mjs) (`@match` / `@grant` / `@connect` / … deduped) and concatenates the bodies, each wrapped in two gates:
-
-- **URL gate**: the script's own `@match` / `@include` / `@exclude` / `@noframes`, tested against the page once at load, as a userscript manager does. A script starts only where its standalone copy would, though the bundle's `@match` covers every script's pages.
-- **`@run-at` gate**: `document-start` bodies run immediately; `document-end`/idle bodies wait for `DOMContentLoaded`.
-
-```
-node userscripts/string_theory/build.mjs
-```
-
-The repo **pre-commit hook** rebuilds it automatically whenever a constituent (or this folder's `build.mjs` / `icon.svg`) is committed, so the bundle never ships stale — the same guarantee as the other built scripts. Its `@version` is a build stamp (`YYYY.M.D.HHMMSS`), so every rebuild ships as a newer version.
-
 ## Notes
 
-- The scripts left out of a page by their own `@match` are named in the console at the *debug* (verbose) level: `String Theory: not for this page (their own @match) — …`.
-- The on/off list is the GM value `string_theory.off` (folder names). The build wraps each body in a check against it and adds the menu, which goes only in the top frame.
-- The launchers' layout is a shared setting, not a GM value: `mbu.cornerFlow` in MusicBrainz's `localStorage`, which every script's `mbRestackCorner` reads ([shared storage](../../DEVELOP.md#shared-storage)). Each MusicBrainz server (musicbrainz.org, beta, test) keeps its own. Without String Theory, set it in the browser console (F12) on a MusicBrainz page: `localStorage.setItem('mbu.cornerFlow', '"row"')` for a row, `localStorage.removeItem('mbu.cornerFlow')` for the column; reload to see it.
-- All constituents share **one** userscript-manager storage namespace here (vs one each when installed separately). In practice this is fine — each script prefixes its keys — but it's a shared surface.
-- `@icon`, `@run-at` and single-valued metadata are the bundle's own; multi-valued ones (`@match`, `@grant`, `@connect`, `@require`, `@resource`) are the union of all members.
+- **Launchers without String Theory**: each MusicBrainz server (musicbrainz.org, beta, test) keeps its own layout. To set it there, run this in the browser console (F12) on a MusicBrainz page, then reload: `localStorage.setItem('mbu.cornerFlow', '"row"')` for a row, `localStorage.removeItem('mbu.cornerFlow')` for the column.
+- How the bundle is built is in [DEVELOP.md](DEVELOP.md).

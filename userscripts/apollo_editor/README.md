@@ -31,11 +31,11 @@ Each part is optional, and Apollo's icon in the bottom-right corner switches bac
 - A **front-cover thumbnail** under the links opens the cover-art page.
 - Right-click a date's or label's ✕ to remove all of them.
 - The help bubbles are gone, including the "You selected …" ones on the artist, label and release group: the badges say what is linked.
-- The release **Artist** field is the Tracklist's artist cell, in place of MusicBrainz's box and its Edit popup. One line per artist: the credited-as name takes the place of the **Artist** label, the artist search lines up with Title, then the join phrase and the line's match badge. **↵** adds an artist, **⋔** splits a combined name, **⠿** reorders, **✕** removes, and **＋** / **🔗** / **⚠** offer to create the artist or add its link. The **Original** view brings back MusicBrainz's editor.
+- The release **Artist** field is the Tracklist's artist cell, in place of MusicBrainz's box and its Edit popup. One line per artist, with its credited-as name, search, join phrase and match badge. **↵** adds an artist, **⋔** splits a combined name, **⠿** reorders, **✕** removes, and **＋** / **🔗** / **⚠** offer to create the artist or add its link.
 - The release **Artist** is [matched](#artist-matching) on load like a track artist, through the same stages: the Discogs or platform link, the release artist of other editions, the exact name or alias, and co-credit with the artists on the tracks. A confident match is linked. Each artist's badge sits at the end of its line, its match card on hover; click an uncertain **LOW** badge to link its candidate.
 - The release **Label** is linked on load by its Discogs or platform link when exactly one label has it, else when exactly one label has its name or alias. A badge by the field says which; a label already on the release shows **set**, one you picked shows **user**. Hover the badge for the label and its disambiguation; click it to open the label.
 - The **Release group** of a new release is selected from MusicBrainz's suggestions under the field when exactly one of them has the release's title and artist. The title may differ in punctuation, spaces and letter case, never in a letter or digit. **auto** in the field marks it. Click the badge to open the release group. Pick **Add a new release group** to undo it, and Apollo leaves it.
-- The **Label** field searches with Apollo's picker, as the artist does: each label shows its aliases, disambiguation, type, label code and years, and an icon that opens it. **↑↓** + **Enter** pick, **Show more…** fetches more, and a pasted MBID or label URL is set at once. **＋** in place of the search icon creates the typed label, with its Discogs or platform link when no label has it yet, and sets it once saved; right-click to create it silently in a background tab. A linked label shows its disambiguation after its name. The **Original** view brings back MusicBrainz's search.
+- The **Label** field searches with Apollo's picker, as the artist does: each label shows its aliases, disambiguation, type, label code and years, and an icon that opens it. A pasted MBID or label URL is set at once. **＋** in place of the search icon creates the typed label, with its Discogs or platform link when no label has it yet, and sets it once saved; right-click to create it silently in a background tab.
 
 ## Tracklist
 
@@ -54,7 +54,7 @@ Each part is optional, and Apollo's icon in the bottom-right corner switches bac
 
 - On hover: **Split** and **Guess case**; left-click for one track, right-click for all.
 - **⠿** drags a track within its medium. **⤓** moves a track and everything below it into the data section; **⤒** moves it back. A medium with a disc ID can't have data tracks.
-- On hover, the last column has the track's **↺** (revert, when it has changed) and **✕** (remove). It sits after **Match**, so it never covers the match badges.
+- On hover, the last column has the track's **↺** (revert, when it has changed) and **✕** (remove).
 - Changed tracks get a coloured left border; pending changes, splittable tracks and tracks Guess case would change are highlighted.
 - Left-click a collapsed medium to expand it, right-click to expand all.
 - Pregap and data tracks and disc IDs are supported.
@@ -95,14 +95,12 @@ Stages, most confident first:
 
 Green means matched confidently; a white search box means unresolved, counted by **N unresolved**.
 
-**Match card.** Hover a badge for half a second and a card opens under it. It shows:
+**Match card.** Hover a badge for a card that shows:
 - the stage, and whether Apollo linked the artist or you picked it;
 - the linked artist, with its disambiguation, type, area and dates;
 - the evidence the stage had: the Discogs artist or the platform page; the release-group release and track; each other edition and whom it credits (✓ / ✗), with a release found by the duplicate search (the same title and artist, outside the release group) marked as such, since it may be this very release already in MusicBrainz; the alias; the co-credit counts;
 - the other candidates;
 - when it matched.
-
-The card stays open while the pointer is on it, so its links can be followed; Esc or moving away closes it. It only shows what the match already read, so it makes no requests.
 
 | Badge                     | Meaning                                                                               |
 | ------------------------- | ------------------------------------------------------------------------------------- |
@@ -126,7 +124,7 @@ The platform badges: **DZ** Deezer, **SP** Spotify, **TD** Tidal, **AM** Apple M
 The release **Artist** and **Label** are matched on load too; see [Release information](#release-information).
 
 > [!NOTE]
-> After a match, Apollo sometimes rebuilds its table, when the page's tracklist changed meanwhile. The badges are kept. If one is ever lost (the artist stays linked, but shows as *set*), a toast says so and offers **Copy log**: please paste it into [#638](https://github.com/majkinetor/musicbrainz-userscripts/issues/638).
+> After a match, Apollo sometimes rebuilds its table, when the page's tracklist changed meanwhile. The badges are kept. If one is ever lost (the artist stays linked, but shows as *set*), a toast says so and offers **Copy log** for a bug report.
 
 ### Recording matching
 
@@ -149,7 +147,7 @@ All the release group's recordings come in one request and are matched by title,
 When the release has no **Language** or **Script**, Apollo fills them in from the release and track titles, and marks the field **auto**. Bracketed parts such as *(Live)* or *[Remastered]* and anything after *feat.* are left out.
 
 - **Script**: the one that more than 70% of the letters are written in. Kana makes it *Japanese* and Hangul *Korean*. When no script reaches 70%, as with parallel titles like *Laula Mulle Laulu = Обійми*, it's *[Multiple scripts]*.
-- **Language**: [lande](https://github.com/fabiospampinato/lande), the detector Harmony uses, reads each script's words on their own and needs three titles or more and 80% confidence. It knows 50 languages and works in every browser. When the titles mix Latin with another script, that script's language is used, since the Latin is usually its translation or transliteration. When lande isn't sure, a script that implies its language names one: Japanese, Korean, Greek, Hebrew, Thai, Armenian or Georgian.
+- **Language**: [lande](https://github.com/fabiospampinato/lande), the detector Harmony uses, reads each script's words on their own and needs three titles or more and 80% confidence. When the titles mix Latin with another script, that script's language is used, since the Latin is usually its translation or transliteration. When lande isn't sure, a script that implies its language names one: Japanese, Korean, Greek, Hebrew, Thai, Armenian or Georgian.
 
 Every language and script found is listed at the top of the field's list under **Detected by Apollo**, most likely first, with *[Multiple languages]* or *[Multiple scripts]* to pick them all.
 
@@ -159,7 +157,7 @@ A field that a seed or you already set is never touched. Apollo keeps updating i
 
 <img width="1200" src="./screenshots/tools.png" />
 
-The toolbar holds the tools you choose; the rest are in **Tools ▾**, with **Customize…** to pick, reorder and show each tool as icon, text or both. A tool with settings picked from the menu joins the bar until the page closes. Right-click a tool's name to fold its settings into a hover flyout.
+The toolbar holds the tools you choose; the rest are in **Tools ▾**, with **Customize…** to pick, reorder and show each tool as icon, text or both. Right-click a tool's name to fold its settings into a hover flyout.
 
 | Tool                                                    |                                                                                                                                   |
 | ------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
@@ -219,13 +217,7 @@ Titles, lengths, credits and recordings are kept and tracks are renumbered. Noth
 
 ### Other scripts' tools
 
-Apollo lists a button another userscript adds to the page like one of its own. A few are recognised by their text; any element with `class="apollo-tool"` is offered too:
-
-```html
-<button class="apollo-tool" data-apollo-label="My tool" data-apollo-icon="★">…</button>
-```
-
-`data-apollo-icon` is a glyph or an image URL (default 🔧); `data-apollo-id` keeps its place on the bar. Apollo clicks the element and re-reads the tracklist, so this suits tools without inline settings.
+Apollo lists a button another userscript adds to the page like one of its own, on the bar or in **Tools ▾**. How a script offers its button is in [DEVELOP.md](DEVELOP.md#other-scripts-tools).
 
 ## Duplicates
 
@@ -250,8 +242,6 @@ With *Enable detailed highlighting* on:
 - the differing characters of a title or artist are marked, and a length gap is shaded by its size. A different artist is boxed whole; a *credited as* difference on the same artist marks only its characters;
 - confusable characters (`'` `’` `"` `-` `–` `—`) are enlarged, and invisible ones (no-break, zero-width, tab) are drawn, with their Unicode name in the tooltip;
 - a join phrase missing a space shows `␣`, and a missing join phrase `␣?␣`.
-
-A tracklist title shows styled until you click it, then becomes the input with the caret where you clicked.
 
 <img src="./screenshots/tracklist-dark.png" />
 
