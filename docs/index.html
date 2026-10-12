@@ -472,7 +472,6 @@ fetch('./stats.html').then(r => r.ok ? r.text() : Promise.reject(r.status)).then
 // [quote, who, where, link]
 const PRAISE=[
  ["I just tried your UI overhaul userscript and DAMN this should be official!!!", "NicolasPL64", "GitHub", "https://github.com/majkinetor/musicbrainz-userscripts/issues/596#issuecomment-5808195567"],
- ["Superb work. 11/10. Big time saver. Thank you for the hours you will save of my future edits.", "IvanDobsky", "MB forum", "https://community.metabrainz.org/t/credit-hoarder-userscript/815063/8"],
  ["This script is incredible, I have been wanting something like this. No more manually adding each and every credit relationship, this does it for me!", "redpixel09", "MB forum", "https://community.metabrainz.org/t/credit-hoarder-userscript/815063/3"],
  ["This is epic. Maybe I’m dreaming but I think MusicBrainz has a very bright future…", "oblaka", "Discord", "https://discord.com/channels/937555302251905084/1193999163344564385/1558115358894854315"],
  ["Art Station is better than native uploader in every regard", "chaban-mb", "GitHub", "https://github.com/majkinetor/musicbrainz-userscripts/issues/630#issuecomment-5876661634"],
@@ -483,7 +482,7 @@ const PRAISE=[
 ];
 const said = ([q,w,s,u]) => `<q>${q}</q><span class="by">${w} · <a href="${u}">${s}</a></span>`;
 // Pictures of the people who have one (GitHub, the MB forum, Discord), saved under avatars/; the rest get an initial.
-const AVATAR = { NicolasPL64: 'nicolaspl64.jpg', 'chaban-mb': 'chaban-mb.jpg', IvanDobsky: 'ivandobsky.gif', vzell: 'vzell.jpg', Lotheric: 'lotheric.webp' };
+const AVATAR = { NicolasPL64: 'nicolaspl64.jpg', 'chaban-mb': 'chaban-mb.jpg', vzell: 'vzell.jpg', Lotheric: 'lotheric.webp' };
 const hue = w => ([...w].reduce((h, c) => h * 31 + c.charCodeAt(0) | 0, 0) % 360 + 360) % 360;
 const face = w => AVATAR[w] ? `<img class="av" alt="" loading="lazy" src="./avatars/${AVATAR[w]}">`
                             : `<span class="av" style="background:hsl(${hue(w)} 55% 50%)">${w[0].toUpperCase()}</span>`;
