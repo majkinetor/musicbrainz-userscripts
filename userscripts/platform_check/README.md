@@ -123,7 +123,7 @@ Click a mark to open the page (a ⚠ opens the MusicBrainz artist or label that 
 | SoundCloud    | read from the linked set                                                   |          |
 | Audiomack     | read                                                                       |          |
 
-*Looked up*: the barcode finds the album. *Read*: the found album's barcode is checked against the release's.
+*Looked up*: the barcode finds the album. *Read*: the found album's barcode is checked against the release's. Each platform's API, credentials and search order are in [Provider details](DEVELOP.md#provider-details).
 
 - **Qobuz**: signed in, matches are verified through its API (track count and barcode); otherwise its store page is scraped, which is slower and throttled. The login is shared with ISRC Scout and Credit Hoarder. Only the token is stored, never the password.
 - **Beatport** is behind Cloudflare: without a login, a match found by web search can't be verified, shows `?`, and isn't added. Signed in, it is verified, and ISRC Scout can import its ISRCs.
@@ -169,4 +169,4 @@ Click a mark to open the page (a ⚠ opens the MusicBrainz artist or label that 
 
 ## Notes
 
-The **Log** keeps every lookup, with a filter per platform. How each platform is read is in [DEVELOP.md](DEVELOP.md).
+The **Log** keeps every lookup, with a filter per platform.
