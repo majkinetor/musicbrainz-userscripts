@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Art Station
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.11.161841
+// @version      2026.10.12
 // @description  Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5BcnQgU3RhdGlvbjwvdGl0bGU+CjxjaXJjbGUgY3g9Ijg2IiBjeT0iNjQiIHI9IjM4IiBmaWxsPSIjMWIwZjNiIiBzdHJva2U9IiNiOTY3ZmYiIHN0cm9rZS13aWR0aD0iMyIvPgo8Y2lyY2xlIGN4PSI4NiIgY3k9IjY0IiByPSIyOC44OCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjNGEzNDgwIiBzdHJva2Utd2lkdGg9IjEuNSIvPjxjaXJjbGUgY3g9Ijg2IiBjeT0iNjQiIHI9IjIwLjkwMDAwMDAwMDAwMDAwMiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjNGEzNDgwIiBzdHJva2Utd2lkdGg9IjEuNSIvPgo8Y2lyY2xlIGN4PSI4NiIgY3k9IjY0IiByPSIxMS4wMiIgZmlsbD0iI2ZmNzFjZSIvPjxjaXJjbGUgY3g9Ijg2IiBjeT0iNjQiIHI9IjIuNTA4IiBmaWxsPSIjMWIwZjNiIi8+PGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJhcy1za3ljIiB4MT0iMCIgeTE9IjAiIHgyPSIwIiB5Mj0iMSI+PHN0b3Agb2Zmc2V0PSIwLjAwIiBzdG9wLWNvbG9yPSIjN2ZlN2ZmIi8+PHN0b3Agb2Zmc2V0PSIwLjUwIiBzdG9wLWNvbG9yPSIjZDlhNmZmIi8+PHN0b3Agb2Zmc2V0PSIxLjAwIiBzdG9wLWNvbG9yPSIjZmY3MWNlIi8+PC9saW5lYXJHcmFkaWVudD48Y2xpcFBhdGggaWQ9ImFzLWNjIj48cmVjdCB4PSIxMCIgeT0iMjIiIHdpZHRoPSI3OCIgaGVpZ2h0PSI4NCIgcng9IjgiLz48L2NsaXBQYXRoPjwvZGVmcz4KPGcgY2xpcC1wYXRoPSJ1cmwoI2FzLWNjKSI+PHJlY3QgeD0iMTAiIHk9IjIyIiB3aWR0aD0iNzgiIGhlaWdodD0iODQiIGZpbGw9InVybCgjYXMtc2t5YykiLz4KPGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJhcy1nczIiIHgxPSIwIiB5MT0iMCIgeDI9IjAiIHkyPSIxIj48c3RvcCBvZmZzZXQ9IjAiIHN0b3AtY29sb3I9IiNmZmY2YTgiLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiNmZjhhNWMiLz48L2xpbmVhckdyYWRpZW50Pgo8bWFzayBpZD0iYXMtbXMyIj48cmVjdCB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCIgZmlsbD0iI2ZmZiIvPjxyZWN0IHg9IjI1LjYiIHk9IjY3LjIiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjEuMiIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9IjY5LjgiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjEuNSIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9IjczLjAiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjEuOCIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9Ijc3LjAiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjIuMyIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9IjgyLjAiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjIuOSIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9Ijg4LjMiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjMuNiIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9Ijk2LjIiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjQuNSIgZmlsbD0iIzAwMCIvPjwvbWFzaz48L2RlZnM+CjxjaXJjbGUgY3g9IjQ5IiBjeT0iNzYuMDgiIHI9IjIzLjQiIGZpbGw9InVybCgjYXMtZ3MyKSIgbWFzaz0idXJsKCNhcy1tczIpIi8+PHJlY3QgeD0iMTAiIHk9Ijc0LjA4IiB3aWR0aD0iNzgiIGhlaWdodD0iMzEuOTIiIGZpbGw9IiNiOTY3ZmYiLz48cGF0aCBkPSJNMTAgNzQuMDhIODhNMTAgNzcuOUg4OE0xMCA4My4ySDg4TTEwIDkxLjRIODhNMTAgMTA0LjJIODhNMzQuOCA3NC4wOEwtNDguNSAxMDZNMzguNCA3NC4wOEwtMjQuMSAxMDZNNDEuOSA3NC4wOEwwLjMgMTA2TTQ1LjUgNzQuMDhMMjQuNiAxMDZNNDkuMCA3NC4wOEw0OS4wIDEwNk01Mi41IDc0LjA4TDczLjQgMTA2TTU2LjEgNzQuMDhMOTcuOCAxMDZNNTkuNiA3NC4wOEwxMjIuMSAxMDZNNjMuMiA3NC4wOEwxNDYuNSAxMDYiIHN0cm9rZT0iI2ZmZmI5NiIgc3Ryb2tlLXdpZHRoPSIxLjMiIGZpbGw9Im5vbmUiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPjwvZz48cmVjdCB4PSIxMCIgeT0iMjIiIHdpZHRoPSI3OCIgaGVpZ2h0PSI4NCIgcng9IjgiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJhMTQ1OCIgc3Ryb2tlLXdpZHRoPSIzIi8+Cjwvc3ZnPgo=
@@ -424,6 +424,11 @@
   const EVENT_TYPES = ['Poster', 'Flyer', 'Banner', 'Program', 'Setlist', 'Schedule', 'Ticket', 'Map', 'Logo', 'Merchandise', 'Raw/Unedited', 'Watermark'];
   const TYPE_ORDER = IS_EVENT ? EVENT_TYPES : COVER_ORDER;
   const ALL_TYPES  = IS_EVENT ? EVENT_TYPES : COVER_TYPES;
+  // #721 MB's type ids (its art_type tables), so a form's checkbox maps to the English name
+  // whatever language MB shows its labels in ("Vorderseite" is still 1 = Front). Event art
+  // ids other than Poster aren't known; those still match by an English label only.
+  const TYPE_BY_ID = IS_EVENT ? { 1: 'Poster' }
+    : { 1: 'Front', 2: 'Back', 3: 'Booklet', 4: 'Medium', 5: 'Obi', 6: 'Spine', 7: 'Track', 8: 'Other', 9: 'Tray', 10: 'Sticker', 11: 'Poster', 12: 'Liner', 13: 'Watermark', 14: 'Raw/Unedited', 15: 'Matrix/Runout', 48: 'Top', 49: 'Bottom' };
   const NO_TYPE = '(no type)';
   // neutral noun for a single artwork piece in UI labels: "cover" for releases,
   // "image" for events (an untyped event piece isn't a "cover").
@@ -610,18 +615,32 @@
       const m = ed && ed.getAttribute('href').match(new RegExp(`/edit-${ART}/(\\d+)`));
       if (!m) return null;
       // each piece is its own <p> — parse types from the "Types:" <p> ONLY (the comment
-      // is a separate <p>, so reading the whole block grabbed it, e.g. "Types: -test")
+      // is a separate <p>, so reading the whole block grabbed it, e.g. "Types: -test").
+      // #721 MB translates "Types:" ("Typen:", "Types :", "类型：") and the sizes line, so
+      // go by place instead: the types <p> comes first, the sizes one is p.small.
       const ps = [...b.querySelectorAll('p')];
-      const typeP = ps.find(p => /^\s*Types:/.test(p.textContent));
-      const raw = typeP ? typeP.textContent.replace(/^\s*Types:\s*/, '').trim() : '';
-      const types = (raw && raw !== '-') ? raw.split(',').map(s => s.trim()).filter(s => s && s !== '-') : [];
-      const cmtP = ps.find(p => p !== typeP && p.textContent.trim() && !/All sizes:/i.test(p.textContent) && !/Dimensions:/i.test(p.textContent));
+      const typeP = ps.find(p => /^\s*Types:/.test(p.textContent)) || ps.find(p => !p.classList.contains('small') && /^[^:：]+[:：]/.test(p.textContent.trim()) && p === ps[0]);
+      const raw = typeP ? typeP.textContent.trim().replace(/^[^:：]*[:：]\s*/, '').trim() : '';
+      const types = (raw && raw !== '-') ? raw.split(/\s*[,，、]\s*/).map(s => s.trim()).filter(s => s && s !== '-') : [];
+      const cmtP = ps.find(p => p !== typeP && !p.classList.contains('small') && p.textContent.trim() && !/All sizes:/i.test(p.textContent) && !/Dimensions:/i.test(p.textContent));
       const comment = cmtP ? cmtP.textContent.trim() : '';
-      const orig = [...b.querySelectorAll('a')].find(a => a.textContent.trim().toLowerCase() === 'original');
+      // the sizes line's unsized link; #721 by its URL (/<id>.jpg, not -250.jpg), as MB translates "original"
+      const orig = [...b.querySelectorAll('a')].find(a => a.textContent.trim().toLowerCase() === 'original')
+        || [...b.querySelectorAll('p.small a')].find(a => new RegExp(`/${m[1]}\\.\\w+$`).test(a.getAttribute('href') || ''));
       const img = orig ? new URL(orig.getAttribute('href'), location.href).href : '';
       const pdf = /\.pdf(\?|$)/i.test(img);
       return { id: m[1], types, comment, pending: b.classList.contains('mp'), pdf, img, order: i };
     }).filter(Boolean);
+  }
+  // #721 the page names types in MB's language ("Vorderseite"). The English names come from
+  // what MB's own forms taught us in this language (typeMapOf learns them), else from the Cover
+  // Art Archive (always English, but it lags behind a new cover). A name neither knows stays
+  // as the page shows it; the edit form still maps it by its label (typeMapOf / buildEdit).
+  function englishTypes(types, caaImage) {
+    const known = loadTypeNames();
+    const en = types.map(t => known[t] || t);
+    if (en.every(t => ALL_TYPES.includes(t)) || !caaImage || !Array.isArray(caaImage.types)) return en;
+    return caaImage.types.slice();
   }
   async function loadArt() {
     if (!_booted) {   // first two log lines: the script + version, then the MB entity
@@ -636,7 +655,7 @@
     catch (e) { asLog.debug('CAA: cover-art metadata fetch failed — ' + ((e && e.message) || e)); }   // not propagated / none yet
     const byId = new Map(caa.map(im => [String(im.id), im]));
     const source = (pageArt && pageArt.length)
-      ? pageArt.map(p => ({ id: p.id, types: p.types, comment: p.comment || (byId.get(String(p.id)) || {}).comment || '', pending: p.pending, img: p.img || (byId.get(String(p.id)) || {}).image || imgUrl(p.id), pdf: p.pdf }))
+      ? pageArt.map(p => ({ id: p.id, types: englishTypes(p.types, byId.get(String(p.id))), comment: p.comment || (byId.get(String(p.id)) || {}).comment || '', pending: p.pending, img: p.img || (byId.get(String(p.id)) || {}).image || imgUrl(p.id), pdf: p.pdf }))
       : caa.map(im => ({ id: im.id, types: (im.types || []).slice(), comment: im.comment || '', pending: false, img: im.image || imgUrl(im.id), pdf: /\.pdf(\?|$)/i.test(im.image || '') }));
     // a partial page parse (e.g. a block without an edit link) must not DROP a cover the
     // CAA knows about — append a CAA image missing from the parsed list. BUT only if the
@@ -3333,14 +3352,38 @@
   }
   function typeMapOf(form, prefix) {
     const m = {};
-    form.querySelectorAll(`input[name="${prefix}.type_id"]`).forEach(cb => { const l = cb.closest('label'); const n = (l ? l.textContent : '').trim(); if (n) m[n] = cb.value; });
+    // the label as MB shows it, then (#721) the English name by type id, so a translated
+    // label ("Vorderseite") still maps, and an id → name lookup ends on the English one
+    const learnt = {};
+    form.querySelectorAll(`input[name="${prefix}.type_id"]`).forEach(cb => {
+      const l = cb.closest('label'); const n = (l ? l.textContent : '').trim(); if (n) m[n] = cb.value;
+      const en = TYPE_BY_ID[cb.value];
+      if (en) { m[en] = cb.value; if (n && n !== en) learnt[n] = en; }
+    });
+    learnTypeNames(learnt);
     return m;
+  }
+  // #721 translated type name → English, per MB interface language, as MB's forms show them
+  // (the add page's uploader, the edit forms a commit reads); no request of its own.
+  const typeNamesKey = () => 'artstation:typeNames:' + (document.documentElement.lang || 'en');
+  let _typeNames = null;
+  function loadTypeNames() {
+    if (!_typeNames) { try { _typeNames = JSON.parse(gmLoad(typeNamesKey()) || '{}'); } catch (e) { _typeNames = {}; } }
+    return _typeNames;
+  }
+  function learnTypeNames(learnt) {
+    const known = loadTypeNames();
+    if (!Object.keys(learnt).some(k => known[k] !== learnt[k])) return;
+    Object.assign(known, learnt); gmSave(typeNamesKey(), JSON.stringify(known));
   }
   async function buildEdit(it, meta) {   // retype / comment on an existing cover
     const form = await getPostForm(`${R}/edit-${ART}/${it.id}`);
     const p = new URLSearchParams(); copyHidden(form, p);
     const tm = typeMapOf(form, `edit-${ART}`);
-    it.types.forEach(t => { if (tm[t]) p.append(`edit-${ART}.type_id`, tm[t]); });
+    // #721 types untouched (only the comment changed): send the ones the form has checked,
+    // so a type Art Station couldn't name is never dropped by a comment edit
+    if (it.types.join('|') === it._origTypes.join('|')) form.querySelectorAll(`input[name="edit-${ART}.type_id"]:checked`).forEach(cb => p.append(`edit-${ART}.type_id`, cb.value));
+    else it.types.forEach(t => { if (tm[t]) p.append(`edit-${ART}.type_id`, tm[t]); });
     p.append(`edit-${ART}.comment`, it.comment);
     p.append(`edit-${ART}.edit_note`, editNote(meta));
     if (meta.votable) p.append(`edit-${ART}.make_votable`, '1');
@@ -6316,6 +6359,7 @@
       return;
     }
     let t; const soon = () => { clearTimeout(t); t = setTimeout(harvestSeeds, 250); };
+    typeMapOf(form, `add-${ART}`);   // #721 learn this language's type names for the gallery
     seedFromParams();
     harvestSeeds();
     // a new row, a maximised image (src swap), or a type/comment change all re-harvest.
