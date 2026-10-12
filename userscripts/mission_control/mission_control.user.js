@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Mission Control
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.12.162836
+// @version      2026.10.12.190000
 // @description  One window on the release page that asks the other scripts (Platform Check, ISRC Scout, Art Station, Fusion, Credit Hoarder) what is missing, shows it all in one review, and applies the selected changes in order.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5NaXNzaW9uIENvbnRyb2w8L3RpdGxlPgo8ZGVmcz48ZmlsdGVyIGlkPSJtY28xMy1oIiB4PSItMTAlIiB5PSItMTAlIiB3aWR0aD0iMTIwJSIgaGVpZ2h0PSIxMjAlIj48ZmVNb3JwaG9sb2d5IGluPSJTb3VyY2VBbHBoYSIgb3BlcmF0b3I9ImRpbGF0ZSIgcmFkaXVzPSIxLjUiIHJlc3VsdD0iZCIvPjxmZUZsb29kIGZsb29kLWNvbG9yPSIjZmZmIiBmbG9vZC1vcGFjaXR5PSIuNyIvPjxmZUNvbXBvc2l0ZSBpbjI9ImQiIG9wZXJhdG9yPSJpbiIvPjxmZU1lcmdlPjxmZU1lcmdlTm9kZS8+PGZlTWVyZ2VOb2RlIGluPSJTb3VyY2VHcmFwaGljIi8+PC9mZU1lcmdlPjwvZmlsdGVyPjwvZGVmcz48ZyBmaWx0ZXI9InVybCgjbWNvMTMtaCkiPjxwYXRoIGQ9Ik03NyAzNS41IEw2NCA0MyBMNTEgMzUuNSBMNTEgMjAuNSBMNjQgMTMgTDc3IDIwLjVaIiBmaWxsPSIjN2E1N2U4IiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik01OS43IDc3LjUgTDQ2LjcgODUgTDMzLjcgNzcuNSBMMzMuNyA2Mi41IEw0Ni43IDU1IEw1OS43IDYyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik05NC4zIDc3LjUgTDgxLjMgODUgTDY4LjMgNzcuNSBMNjguMyA2Mi41IEw4MS4zIDU1IEw5NC4zIDYyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik00Mi4zIDEwNy41IEwyOS40IDExNSBMMTYuNCAxMDcuNSBMMTYuNCA5Mi41IEwyOS40IDg1IEw0Mi4zIDkyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik03NyAxMDcuNSBMNjQgMTE1IEw1MSAxMDcuNSBMNTEgOTIuNSBMNjQgODUgTDc3IDkyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik0xMTEuNiAxMDcuNSBMOTguNiAxMTUgTDg1LjcgMTA3LjUgTDg1LjcgOTIuNSBMOTguNiA4NSBMMTExLjYgOTIuNVoiIGZpbGw9IiNmZmM5NGEiIHN0cm9rZT0iIzIyMjIzYiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PC9nPgo8L3N2Zz4K
@@ -137,7 +137,7 @@ document.addEventListener('mc:findings', e => {
     if (d.id === 'fusion') fxAutoCheck();
     findings.forEach(x => Log.debug('  ' + d.id + ' ' + x.key + ' ' + x.state + (x.why ? ' (' + x.why + ')' : '') + (x.url ? ' ' + x.url : '')));
     paintAll();
-    syncIsLinks();
+    syncLinks();
 });
 // a provider sends some findings again (Fusion, after checking one group's ISRCs and AcoustIDs):
 // each replaces the one with its key and keeps its selection, unless it can't be selected any more
@@ -158,25 +158,30 @@ document.addEventListener('mc:update', e => {
     paintAll();
 });
 // ISRC Scout reads the release's album links (Bandcamp, Spotify, Apple…) for its ISRCs and
-// recording links. The album links selected in Platform Check's card are not on the release yet
-// (Execute adds them first), so IS is probed with them too: again whenever the selected set
-// changes, once the probe out is answered. Nothing is asked of IS before the first Probe.
+// recording links, Art Station for its cover (#724). The album links selected in Platform Check's
+// card are not on the release yet (Execute adds them first), so both are probed with them too:
+// again whenever the selected set changes, once the probe out is answered. Nothing is asked of
+// either before the first Probe.
 const laneOpen = new Set();   // PC barcode lanes opened into rows (#680), by barcode digits
-let isLinksAsked = null;   // the album links IS's current findings were probed with (JSON)
+const LINK_READERS = ['is', 'as'];
+const linksAsked = {};   // provider id → the album links its current findings were probed with (JSON)
 function pcAlbumLinks() {
     const r = results.pc, set = picked.pc;
     if (!r || r.state !== 'done' || !set) return [];
     return (r.findings || []).filter(x => !x.entity && x.url && x.state !== 'linked' && x.state !== 'none' && set.has(x.key)).map(x => x.url).sort();
 }
-let _isLinksTimer = 0;
-function syncIsLinks(delay) {
-    clearTimeout(_isLinksTimer);
-    if (delay) { _isLinksTimer = setTimeout(syncIsLinks, delay); return; }
-    const r = results.is;
-    if (!found.is || !r || r.state === 'busy' || executing) return;
-    if (JSON.stringify(pcAlbumLinks()) === isLinksAsked) return;
-    Log.info('the selected album links changed: asking ISRC Scout again');
-    probeOne('is');
+let _linksTimer = 0;
+function syncLinks(delay) {
+    clearTimeout(_linksTimer);
+    if (delay) { _linksTimer = setTimeout(syncLinks, delay); return; }
+    if (executing) return;
+    const now = JSON.stringify(pcAlbumLinks());
+    for (const id of LINK_READERS) {
+        const r = results[id];
+        if (!found[id] || !r || r.state === 'busy' || now === linksAsked[id]) continue;
+        Log.info('the selected album links changed: asking ' + ((PROVIDERS.find(p => p.id === id) || {}).provider || id) + ' again (was ' + (linksAsked[id] || 'none') + ', now ' + now + ')');
+        probeOne(id);
+    }
 }
 function probe() {
     run = Date.now().toString(36);
@@ -186,7 +191,7 @@ function probe() {
     const ask = PROVIDERS.filter(p => found[p.id] && modeOf(p) === 'auto').map(p => p.id);
     ask.forEach(id => { results[id] = { state: 'busy', note: '', at: Date.now() }; });
     probeAt = Date.now(); probeTook = 0;
-    isLinksAsked = '[]';   // nothing is selected yet
+    LINK_READERS.forEach(id => { linksAsked[id] = '[]'; });   // nothing is selected yet
     Log.info('probe run ' + run + ' · asking ' + (ask.join(', ') || 'nobody') + '');
     document.dispatchEvent(new CustomEvent('mc:probe', { detail: JSON.stringify({ release: RELEASE, run, only: ask, links: [], isrcs: afterIsrcs() }) }));
     paintAll();
@@ -202,7 +207,7 @@ function probeOne(id) {
     results[id] = { state: 'busy', note: '', at: Date.now() };
     probeAt = Date.now(); probeTook = 0;
     const links = pcAlbumLinks();
-    if (id === 'is') isLinksAsked = JSON.stringify(links);
+    if (LINK_READERS.includes(id)) linksAsked[id] = JSON.stringify(links);
     Log.info('probe ' + id + ' on request · run ' + run + (links.length ? ' · selected album links ' + links.join(' ') : ''));
     document.dispatchEvent(new CustomEvent('mc:probe', { detail: JSON.stringify({ release: RELEASE, run, only: [id], links, isrcs: afterIsrcs() }) }));
     paintAll();
@@ -1484,7 +1489,7 @@ function setPicks(pks, on) {
     if (pks.some(pk => pk.closest('.mc-tbl'))) paintMatrix();
     if (pks.some(pk => !pk.closest('.mc-tbl'))) paintCards();
     paintExec();
-    if (pks.some(pk => pk.dataset.prov === 'pc')) syncIsLinks(700);
+    if (pks.some(pk => pk.dataset.prov === 'pc')) syncLinks(700);
 }
 function togglePick(pk) { setPicks([pk], !isPicked(pk)); }
 // #714: in the track matrix, as in Apollo and ISRC Scout, Ctrl takes the whole row (the track),
@@ -1586,7 +1591,7 @@ function onClick(e) {
             const set = picked.pc || (picked.pc = new Set()), all = keys.every(x => set.has(x));
             keys.forEach(x => all ? set.delete(x) : set.add(x));
             Log.debug((all ? 'left out ' : 'taken in ') + 'pc lane ' + (k || '(no barcode)') + ': ' + keys.join(', '));
-            paintCards(); paintExec(); syncIsLinks(700);
+            paintCards(); paintExec(); syncLinks(700);
             break;
         }
         case 'falcon-open': document.dispatchEvent(new CustomEvent('falcon:show')); break;
