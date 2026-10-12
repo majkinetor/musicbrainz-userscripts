@@ -29,8 +29,9 @@ function mbpCoverTypeId(name) {
  *
  *  MB renders up to two lists, each after an `h2.external-links`: the release's (heading
  *  "External links") and then the release group's ("Release group external links"), and
- *  a list is left out when it has no links. Two lists: the first is the release's. One
- *  list: it is the release's when its heading is the plain one, in English or as learnt
+ *  a list is left out when it has no links. Two lists: the release group's is the last,
+ *  and the release's is the one headed differently from it. One list: it is the
+ *  release's when its heading is the plain one, in English or as learnt
  *  in this language from a page that showed both. */
 function mbpReleaseLinkList(doc) {
     doc = doc || document;
@@ -42,11 +43,16 @@ function mbpReleaseLinkList(doc) {
     const lang = (doc.documentElement && doc.documentElement.lang) || 'en';
     const key = 'mbu.extLinksHeading.' + lang;   // shared storage: every script learns it once
     if (lists.length >= 2) {
-        try { localStorage.setItem(key, JSON.stringify(lists[0].head)); } catch (e) { /* storage blocked: nothing learnt */ }
-        return lists[0].ul;
+        // the release group's is the last; the release's is the one headed differently from it
+        const rgHead = lists[lists.length - 1].head;
+        const own = lists.find(l => l.head !== rgHead);
+        if (!own) return null;
+        if (!/^en\b/i.test(lang)) { try { localStorage.setItem(key, JSON.stringify(own.head)); } catch (e) { /* storage blocked: nothing learnt */ } }
+        return own.ul;
     }
     if (lists.length !== 1) return null;
     if (/^external links$/i.test(lists[0].head)) return lists[0].ul;
+    if (/^en\b/i.test(lang)) return null;   // English needs nothing learnt: any other heading is the release group's
     let learnt = null;
     try { learnt = JSON.parse(localStorage.getItem(key)); } catch (e) { /* storage blocked */ }
     return learnt && learnt === lists[0].head ? lists[0].ul : null;
@@ -65,7 +71,9 @@ function mbpReleaseJsonLinks(doc) {
         try { rel = JSON.parse(t).release; } catch (e) { continue; }
         if (!rel || rel.entityType !== 'release' || !Array.isArray(rel.relationships)) continue;
         if (mbid && rel.gid && rel.gid.toLowerCase() !== mbid[1].toLowerCase()) continue;
-        return rel.relationships.map(r => r && r.target).filter(u => u && u.entityType === 'url' && /^https?:/.test(u.href_url || '')).map(u => u.href_url);
+        // MB writes some protocol-relative (//x.bandcamp.com), as in its sidebar: resolve them
+        const abs = h => { try { return new URL(h, (doc.location && doc.location.href) || 'https://musicbrainz.org/').href; } catch (e) { return ''; } };
+        return rel.relationships.map(r => r && r.target).filter(u => u && u.entityType === 'url' && u.href_url).map(u => abs(u.href_url)).filter(u => /^https?:/.test(u));
     }
     return null;
 }

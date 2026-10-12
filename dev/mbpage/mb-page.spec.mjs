@@ -45,6 +45,11 @@ test("the release's own links, in any language", { tag: '@unit' }, async ({ page
   // one English list: the plain heading is the release's, the prefixed one the release group's
   const en = await one('en', 'External links', REL), enRg = await one('en', 'Release group external links', RG);
   check(JSON.stringify(en) === JSON.stringify([REL]) && enRg.length === 0, `English: by the plain heading (${JSON.stringify([en, enRg])})`);
+  // English learns nothing, so a release-group list is never taken for the release's
+  const three = await read(page_('en', list('Release group external links', [RG]) + list('External links', [REL]) + list('Release group external links', [RG])));
+  check(JSON.stringify(three) === JSON.stringify([REL]), `several lists: the one headed unlike the last (${JSON.stringify(three)})`);
+  const learntEn = await page.evaluate(() => localStorage.getItem('mbu.extLinksHeading.en'));
+  check(learntEn === null, `nothing learnt for English (${learntEn})`);
 });
 
 test("the release's own links from MB's data, when the page has it", { tag: '@unit' }, async ({ page }) => {
@@ -53,13 +58,13 @@ test("the release's own links from MB's data, when the page has it", { tag: '@un
   const MBID = 'e91b84a9-6b98-4d64-b4fc-753a9c674c4c';
   const url = h => ({ target: { entityType: 'url', href_url: h } });
   // as MB embeds it: the release's relationships, and its release group's apart
-  const data = { release: { entityType: 'release', gid: MBID, relationships: [url(REL), { target: { entityType: 'artist' } }], releaseGroup: { entityType: 'release_group', relationships: [url(RG)] } } };
+  const data = { release: { entityType: 'release', gid: MBID, relationships: [url(REL), url('//x.bandcamp.com/album/y'), { target: { entityType: 'artist' } }], releaseGroup: { entityType: 'release_group', relationships: [url(RG)] } } };
   // the sidebar shows only the release group's list, under a heading nothing has taught
   html = page_('de', '<script type="application/json">' + JSON.stringify(data) + '</script>' + list('Externe Links der Veröffentlichungsgruppe', [RG]));
   await page.goto('https://mbpage.invalid/release/' + MBID);
   await page.addScriptTag({ content: SRC });
   const r = await page.evaluate(() => window.__mbp.mbpReleaseLinks());
-  check(JSON.stringify(r) === JSON.stringify([REL]), `the release's URL relationships, not the release group's (${JSON.stringify(r)})`);
+  check(JSON.stringify(r) === JSON.stringify([REL, 'https://x.bandcamp.com/album/y']), `the release's URL relationships (a protocol-relative one resolved), not the release group's (${JSON.stringify(r)})`);
   // another release's data (a different page's MBID) is not this one's
   await page.goto('https://mbpage.invalid/release/00000000-0000-0000-0000-000000000000');
   await page.addScriptTag({ content: SRC });

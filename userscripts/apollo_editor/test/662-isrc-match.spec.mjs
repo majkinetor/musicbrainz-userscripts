@@ -45,7 +45,9 @@ test('recordings are matched by the ISRC First Contact hands over', { tag: ['@sa
   });
   // the shared-ISRC case is added to the real search's answer; this is a read, nothing is written
   await page.route(/\/ws\/2\/recording\?query=[^&]*isrc%3A/, async r => {
-    const res = await r.fetch(), j = await res.json();
+    const res = await r.fetch();
+    if (!res.ok) return r.fulfill({ response: res });   // a throttled answer (503) stays one, so Apollo retries it
+    const j = await res.json();
     j.recordings = (j.recordings || []).concat([fakeRec('00000000-0000-4000-8000-000000000661', 'Shared Code 662'), fakeRec('00000000-0000-4000-8000-000000000662', 'Shared Code 662')]);
     j.count = (j.count || 0) + 2;
     await r.fulfill({ contentType: 'application/json', body: JSON.stringify(j) });
@@ -64,7 +66,7 @@ test('recordings are matched by the ISRC First Contact hands over', { tag: ['@sa
   check(/ISRC USQX91300108 → 1 recording/.test(log) && /only recording with USQX91300108 and agrees on title and artist, ranked first/.test(log), 'the log says how it was found and why it ranked first');
   check(!recs[1] || !recs[1].startsWith('00000000-0000-4000-8000-00000000066'), `two recordings sharing an ISRC: neither is linked on the ISRC alone (got ${recs[1]})`);
   check(/2 recordings share ZZ6620000001, not linked on the ISRC alone/.test(log), 'the log says why the shared ISRC was not used');
-  check(isrcSearches.length === 1 && ['GBZZZ6620099', 'USQX91300108', 'ZZ6620000001'].every(i => isrcSearches[0].includes('isrc:' + i)), `the three ISRCs, the dashed one normalised, go out in one search (${JSON.stringify(isrcSearches)})`);
+  check(new Set(isrcSearches).size === 1 && ['GBZZZ6620099', 'USQX91300108', 'ZZ6620000001'].every(i => isrcSearches[0].includes('isrc:' + i)), `the three ISRCs, the dashed one normalised, go out in one search (a throttled one retried) (${JSON.stringify(isrcSearches)})`);
   check(isrcLookups.length === 0, `no per-ISRC lookups (${isrcLookups.length})`);
 
   // the picker: the ISRC holder on top, badged; the cached lookup is reused
@@ -76,6 +78,24 @@ test('recordings are matched by the ISRC First Contact hands over', { tag: ['@sa
   const top = await page.evaluate(() => [...document.querySelectorAll('.tc-recpop .tc-rpk-sugg .tc-rpk-row')].slice(0, 3).map(r => ({ gid: r.dataset.gid, isrc: !!r.querySelector('.tc-rpk-isrcm') })));
   console.log('picker top:', JSON.stringify(top));
   check(top.length >= 2 && top[0].isrc && top[1].isrc, `both ISRC holders head the picker's suggestions, badged (${JSON.stringify(top)})`);
-  check(isrcSearches.length === 1 && isrcLookups.length === 0, 'the picker reused the search the matcher made');
+  check(new Set(isrcSearches).size === 1 && isrcLookups.length === 0, 'the picker reused the search the matcher made');
   await page.screenshot({ path: 'test-results/662-picker.png', clip: await page.locator('.tc-recpop').boundingBox() });
+});
+
+// #722 full run: MusicBrainz answered the batch search "The MusicBrainz web server is currently
+// busy" (in a 200's error envelope too), and Apollo took that as final, so Get Lucky went unmatched.
+test('a busy answer to the ISRC search is retried', { tag: ['@sandbox', '@login'] }, async ({ page, inject }) => {
+  let busy = 0;
+  await page.route(/\/ws\/2\/recording\?query=[^&]*isrc%3A/, async r => {
+    if (!busy++) return r.fulfill({ contentType: 'application/json', body: JSON.stringify({ error: 'The MusicBrainz web server is currently busy. Please try again later.', help: '' }) });
+    return r.fallback();
+  });
+  await openApollo(page, inject, {
+    seed, tab: 'recordings',
+    before: () => page.evaluate(h => { document.documentElement.dataset.firstContact = JSON.stringify(h); }, handoff),
+  });
+  await page.waitForFunction(() => { const e = document.querySelector('#tc-recwrap .tc-rec-amstatus'); return e && /linked \d+ of/.test(e.textContent); }, null, { timeout: 90000 });
+  const recs = await page.evaluate(() => window.MB.releaseEditor.rootField.release().mediums()[0].tracks().map(t => { const r = t.recording(); return r && r.gid ? r.gid : null; }));
+  check(busy >= 2, `the search was asked again (${busy} answers)`);
+  check(recs[0] === LUCKY, `Get Lucky is still linked by its ISRC (got ${recs[0]})`);
 });
