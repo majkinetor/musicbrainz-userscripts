@@ -52,3 +52,7 @@ A site that refuses archive.org (Save Page Now answers `error:no-request`, "The 
 The note uses the full 14-digit timestamp: Wayback reads a date-only one as the end of that day, so it can land on a later snapshot. The URL in a link drops `https://` and `www.`, which Wayback doesn't need.
 
 The keys are the GM value `mbu.archive`, shared with First Contact ([its notes](../first_contact/DEVELOP.md#archive)); the switch is `archive` in Apollo's own settings. Specs: `test/736-archive.spec.mjs` (`ARCHIVE_LIVE=1` lets one save through to archive.org and looks for its snapshot).
+
+### Archive menu
+
+On a page that isn't the release editor, `main()` ends in `mountArchiveMenus()`: it adds a `.tc-wb` button to each `#sidebar ul.external_links > li` whose link isn't on MusicBrainz, MetaBrainz or archive.org. Apollo matches `/release/*` and `/release-group/*` for it, besides the artist and label pages it already ran on. The menu's links are plain `web.archive.org` addresses, so a page view sends nothing: `/web/<url>` (latest snapshot), `/web/http://web.archive.org/screenshot/<url>` (latest screenshot), `/web/*/<url>` (calendar), `/save/<url>`. A link `mbaSavable()` maps (Discogs) gets the same for its API address. Setting: `archiveMenu`. Spec: `test/736-archive-menu.spec.mjs`.

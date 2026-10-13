@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-10-13 18:57 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-10-13 19:21 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -39,7 +39,7 @@ A faster release editor for MusicBrainz: artists and recordings auto-matched, cl
 - **[Duplicates](#duplicates)**: a similarity score for each existing release, with a track-by-track comparison.
 - **[Annotation editor](#annotation-editor)**: Markdown with a live preview.
 - **[Highlighting](#highlighting)**: confusable punctuation, invisible characters and missing spaces made visible.
-- **[Archive](#archive)**: the release's links and the edit note's links saved on the Internet Archive.
+- **[Archive](#archive)**: the release's links and the edit note's links saved on the Internet Archive, and a menu by each external link to its copies there.
 
 Each part is optional, and Apollo's icon in the bottom-right corner switches back to MusicBrainz's own editor at any time; it's in colour while Apollo is on and grey while off.
 
@@ -286,6 +286,19 @@ Archived link: https://web.archive.org/web/20261013160122/example.com/press/rele
 - Links on MusicBrainz and the Internet Archive aren't saved, nor the album page [First Contact](../first_contact/README.md#archive) already archives for its import.
 - Without keys the saves are anonymous, and the Internet Archive refuses some when a release has many links. With your archive.org keys the limit is much higher, and each save also takes a screenshot, linked by the *Archived screenshots* line. They are the same keys First Contact uses: in [String Theory](../string_theory/README.md) keys set in one show in the other. To get them, see [First Contact → archive.org keys](../first_contact/README.md#archiveorg-keys).
 
+#### Archive menu
+
+On release, release group, artist and label pages, a faint clock sits at the end of each external link in the sidebar. Click it for the link's copies on the Wayback Machine, each in a new tab:
+
+| Menu item                  |                                                |
+| -------------------------- | ---------------------------------------------- |
+| Open the latest snapshot   | the page as last saved                         |
+| Open the latest screenshot | its screenshot, when one was taken             |
+| All snapshots (calendar)   | every saved copy, by date                      |
+| Save it now                | saves the page now, in Save Page Now's own tab |
+
+A Discogs link offers the same for Discogs' API data, since Discogs' pages can't be saved. Nothing is sent to archive.org until you pick an item.
+
 > [!NOTE]
 > Archiving sends the address of every link on the releases you edit to archive.org, and with keys, under your account. Turn **Archive links on the Internet Archive** off in [Settings](#settings) if you don't want that.
 
@@ -301,6 +314,7 @@ Right-click Apollo's corner icon. Column widths, the toolbar layout, **Change**,
 | Zen editing                                                   | on      | hide the site header, title and footer; the title moves into Apollo's bar               |
 | Auto confirm release submissions                              | on      | skip the confirmation page when a site seeds a release                                  |
 | Archive links on the Internet Archive                         | on      | save the release's and the edit note's links at **Enter edit**; see [Archive](#archive) |
+| Archive menu on external links                                | on      | the [archive menu](#archive-menu) by each link on entity pages                          |
 | archive.org keys                                              | none    | your access key and secret, shared with First Contact: higher limits, plus a screenshot |
 | Auto-match on start: Tracklist, Recordings                    | on      | match on load                                                                           |
 | Auto-match on start: Label, Artist, Release group             | on      | match the release [artist, label and release group](#release-information) on load       |

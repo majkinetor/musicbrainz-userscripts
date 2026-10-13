@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.13.185714
+// @version      2026.10.13.192032
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5BcG9sbG8gRWRpdG9yPC90aXRsZT4KPG1hc2sgaWQ9ImFwLW0iIG1hc2tVbml0cz0idXNlclNwYWNlT25Vc2UiIHg9IjAiIHk9IjAiIHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4Ij48Zz48ZyBmaWxsPSIjZmZmIj48cGF0aCBkPSJNNDIgNjQgQzI4IDcyIDIyIDkwIDI0IDExMCBMNDIgOTggWiIvPjxwYXRoIGQ9Ik04NiA2NCBDMTAwIDcyIDEwNiA5MCAxMDQgMTEwIEw4NiA5OCBaIi8+PC9nPjxnIGZpbGw9IiNmZmYiPjxwYXRoIGQ9Ik02NCA4IEM4NCAyNCA5MCA1MiA4OCA5MCBMNDAgOTAgQzM4IDUyIDQ0IDI0IDY0IDggWiIvPjxwYXRoIGQ9Ik00OCA5MCBMODAgOTAgTDc2IDEwMCBMNTIgMTAwIFoiLz48L2c+PGcgc3Ryb2tlPSIjMDAwIiBzdHJva2Utd2lkdGg9IjMuNSI+PHBhdGggZD0iTTM2IDkwLjUgTDkyIDkwLjUiLz48L2c+PGNpcmNsZSBjeD0iNjQiIGN5PSI1MCIgcj0iOCIgZmlsbD0iIzAwMCIvPjwvZz48L21hc2s+PGc+PHBhdGggZD0iTTUyIDEwMCBDNTQgMTEyIDYwIDExOCA2NCAxMjYgQzY4IDExOCA3NCAxMTIgNzYgMTAwIFoiIGZpbGw9IiNlYjc0M2IiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDAgMykiLz48L2c+PHJlY3Qgd2lkdGg9IjEyOCIgaGVpZ2h0PSIxMjgiIGZpbGw9IiNiYTQ3OGYiIG1hc2s9InVybCgjYXAtbSkiLz4KPC9zdmc+Cg==
@@ -11,6 +11,8 @@
 // @match        https://*.musicbrainz.org/*/edit_annotation
 // @match        https://*.musicbrainz.org/artist/*
 // @match        https://*.musicbrainz.org/label/*
+// @match        https://*.musicbrainz.org/release/*
+// @match        https://*.musicbrainz.org/release-group/*
 // @grant        GM_xmlhttpRequest
 // @grant        GM_openInTab
 // @grant        GM_getValue
@@ -388,7 +390,7 @@
 
   /* ── settings ── */
   const SKEY = 'apolloEditor.settings.v1';
-  function loadSettings() { const d = { apolloEnabled: true, colWidths: {}, applyMode: 'all', altRows: false, gridCols: false, gridRows: true, replaceReleaseInfo: true, replaceTracklist: true, replaceRecordings: true, modifyAnnotation: true, modifyDuplicates: true, autoMatch: true, autoMatchRec: true, autoMatchOnV: 1, autoMatchLabel: true, autoMatchArtist: true, autoMatchRG: true, discogsUrlMatch: true, recLenTol: 5, recIgnoreCase: true, recIgnorePunct: true, recTitleTol: 1, recCutoff: 'near', recDetailedHl: true, recPunctSize: 3, recHlColor: '#e53935', lastTool: '', layout: 'normal', lastView: 'apollo', zenMode: true, autoConfirmSeed: true, keepCaretColumn: true, hoverHighlight: false, srRegex: false, srTemplates: [], srSeedV: 0, srHistory: [], srDefault: '', srHistoryOpen: false, archive: true }; try { const stored = JSON.parse(gmLoad(SKEY) || '{}'); const s = Object.assign(d, stored); if (stored.gridCols === undefined && stored.grid !== undefined) s.gridCols = stored.grid; if (stored.autoMatchOnV === undefined) { s.autoMatch = true; s.autoMatchRec = true; }   /* tracklist + recordings auto-match became on by default; the whole object is saved, so an existing install has the old false stored and needs flipping once (autoMatchOnV, from the defaults, marks it done on the next save) */ return s; } catch (e) { return d; } }
+  function loadSettings() { const d = { apolloEnabled: true, colWidths: {}, applyMode: 'all', altRows: false, gridCols: false, gridRows: true, replaceReleaseInfo: true, replaceTracklist: true, replaceRecordings: true, modifyAnnotation: true, modifyDuplicates: true, autoMatch: true, autoMatchRec: true, autoMatchOnV: 1, autoMatchLabel: true, autoMatchArtist: true, autoMatchRG: true, discogsUrlMatch: true, recLenTol: 5, recIgnoreCase: true, recIgnorePunct: true, recTitleTol: 1, recCutoff: 'near', recDetailedHl: true, recPunctSize: 3, recHlColor: '#e53935', lastTool: '', layout: 'normal', lastView: 'apollo', zenMode: true, autoConfirmSeed: true, keepCaretColumn: true, hoverHighlight: false, srRegex: false, srTemplates: [], srSeedV: 0, srHistory: [], srDefault: '', srHistoryOpen: false, archive: true, archiveMenu: true }; try { const stored = JSON.parse(gmLoad(SKEY) || '{}'); const s = Object.assign(d, stored); if (stored.gridCols === undefined && stored.grid !== undefined) s.gridCols = stored.grid; if (stored.autoMatchOnV === undefined) { s.autoMatch = true; s.autoMatchRec = true; }   /* tracklist + recordings auto-match became on by default; the whole object is saved, so an existing install has the old false stored and needs flipping once (autoMatchOnV, from the defaults, marks it done on the next save) */ return s; } catch (e) { return d; } }
   function saveSettings() { try { gmSave(SKEY, JSON.stringify(SETTINGS)); } catch (e) {} }
   let SETTINGS = loadSettings();
   try { srSeedTemplates(); } catch (e) {}   // #375 seed the default S&R templates once
@@ -4688,7 +4690,16 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     #tc-settings .tc-s-sec{font-weight:bold;color:var(--mbu-text);margin:12px 0 5px}
     #tc-settings .tc-s-group{padding-left:8px}
     #tc-settings .tc-s-top{padding-left:0;margin-top:2px}
-    #tc-settings .mbu-ia{margin:-2px 0 7px 22px}   /* #736 the archive.org keys, under Archive links */
+    #tc-settings .mbu-ia{margin:-2px 0 7px 22px}
+    /* #736 the archive menu by each sidebar link: a faint clock at the row's end, its menu in full words */
+    #sidebar ul.external_links > li > .tc-wb{float:right;width:18px;height:18px;margin:0 0 0 4px;padding:0;border:0;border-radius:4px;background:none;color:var(--mbu-text-weak);opacity:.5;cursor:pointer;display:inline-flex;align-items:center;justify-content:center}
+    #sidebar ul.external_links > li > .tc-wb svg{width:13px;height:13px;display:block}
+    #sidebar ul.external_links > li > .tc-wb:hover,#sidebar ul.external_links > li > .tc-wb.on{opacity:1;color:var(--mbu-accent-text);background:var(--mbu-accent-soft)}
+    .tc-wbmenu{position:fixed;z-index:var(--mbu-z-pop);background:var(--mbu-bg);border:1px solid var(--mbu-border);border-radius:7px;box-shadow:var(--mbu-shadow-lg);padding:4px;min-width:220px;font:13px var(--mbu-font)}
+    .tc-wbmenu a{display:block;padding:5px 10px;border-radius:5px;color:var(--mbu-text);text-decoration:none;white-space:nowrap}
+    .tc-wbmenu a:hover{background:var(--mbu-accent-soft);color:var(--mbu-accent-text)}
+    .tc-wbmenu-h{font-size:11px;color:var(--mbu-text-weak);padding:3px 10px 2px}
+    .tc-wbmenu-sep{height:1px;background:var(--mbu-border-soft);margin:4px 2px}   /* #736 the archive.org keys, under Archive links */
     #tc-settings .tc-s-sub{font-weight:bold;color:var(--mbu-text);margin:0}
     #tc-settings div.tc-s-sub{margin:8px 0 3px}
     #tc-settings div.tc-s-sub.tc-s-gap{margin-top:16px}   /* #736 a section after the plain list */
@@ -4799,6 +4810,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
           <div class="tc-s-sub tc-s-gap">Archive</div>
           <label title="At Enter edit, ask the Internet Archive's Wayback Machine to save the release's external links and the links in the edit note, and say so in the edit note. This sends those URLs to archive.org. First Contact archives the album page of its own import itself."><input type="checkbox" id="tc-s-archive"> <span>Archive links on the Internet Archive</span></label>
           ${mbaKeysHtml(SETTINGS.archive === false)}
+          <label title="On release, release group, artist and label pages: a faint clock by each external link opens a menu with its snapshots on the Wayback Machine, its screenshot, all its snapshots, and Save it now. Nothing is sent to archive.org until you pick one."><input type="checkbox" id="tc-s-archivemenu"> <span>Archive menu on external links</span></label>
         </div>
       </div>
       <div class="tc-tab-pane" data-pane="matching" hidden>
@@ -4897,6 +4909,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     const aconf = s.querySelector('#tc-s-autoconfirm'); if (aconf) { aconf.checked = SETTINGS.autoConfirmSeed !== false; aconf.onchange = () => { SETTINGS.autoConfirmSeed = aconf.checked; saveSettings(); }; }
     const arch = s.querySelector('#tc-s-archive'); if (arch) { arch.checked = SETTINGS.archive !== false; arch.onchange = () => { SETTINGS.archive = arch.checked; saveSettings(); const ia = s.querySelector('.mbu-ia'); if (ia) ia.classList.toggle('mbu-ia-off', !arch.checked); Log.cat('Archive').info('archive links on the Internet Archive:', arch.checked ? 'on' : 'off'); }; }   // #736
     mbaKeysWire(s, Log.cat('Archive'));
+    const amenu = s.querySelector('#tc-s-archivemenu'); if (amenu) { amenu.checked = SETTINGS.archiveMenu !== false; amenu.onchange = () => { SETTINGS.archiveMenu = amenu.checked; saveSettings(); }; }
     const kcaret = s.querySelector('#tc-s-keepcaret'); if (kcaret) { kcaret.checked = SETTINGS.keepCaretColumn !== false; kcaret.onchange = () => { SETTINGS.keepCaretColumn = kcaret.checked; saveSettings(); }; }   // #279
     const off = e => { if (!s.contains(e.target) && !(anchor && anchor.contains(e.target))) { s.remove(); document.removeEventListener('mousedown', off); } };
     const lbtn = s.querySelector('.tc-logbtn'); if (lbtn) lbtn.onclick = () => { s.remove(); document.removeEventListener('mousedown', off); openLog(); };
@@ -11163,6 +11176,49 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     for (const u of send) { _arSent.add(u); mbaSave(u, log, false); }
   }
 
+  /* ── #736: the Internet Archive menu by each external link in an entity page's sidebar ── */
+  // One faint history clock per link (majkinetor: "one icon that shows menu on click with full words").
+  // Plain links to the Wayback Machine: nothing is sent to archive.org until the user picks one.
+  const WB_CLOCK = '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M2.6 8a5.4 5.4 0 1 0 1.6-3.8"/><path d="M2.4 1.9v2.6H5"/><path d="M8 4.8V8l2.2 1.4"/></svg>';
+  function archiveMenuItems(url) {
+    const save = mbaSavable(url), wb = 'https://web.archive.org/';
+    if (save !== url) return { head: 'Internet Archive · this site refuses archiving', items: [['Open the latest API data snapshot', wb + 'web/' + save], ['All API data snapshots (calendar)', wb + 'web/*/' + save], null, ['Save the API data now', wb + 'save/' + save]] };
+    return { head: 'Internet Archive', items: [['Open the latest snapshot', wb + 'web/' + url], ['Open the latest screenshot', wb + 'web/http://web.archive.org/screenshot/' + url], ['All snapshots (calendar)', wb + 'web/*/' + url], null, ['Save it now', wb + 'save/' + url]] };
+  }
+  let _wbMenu = null;
+  function openArchiveMenu(btn, url) {
+    if (_wbMenu) { const same = _wbMenu.btn === btn; _wbMenu.close(); if (same) return; }
+    const { head, items } = archiveMenuItems(url);
+    const m = document.createElement('div'); m.className = 'tc-wbmenu mbu-ui';
+    m.innerHTML = `<div class="tc-wbmenu-h">${esc(head)}</div>` + items.map(i => i ? `<a href="${esc(i[1])}" target="_blank" rel="noopener">${esc(i[0])}</a>` : '<div class="tc-wbmenu-sep"></div>').join('');
+    document.body.appendChild(m);
+    const r = btn.getBoundingClientRect();
+    m.style.top = (r.bottom + 4) + 'px';
+    m.style.left = Math.max(8, Math.min(r.right - m.offsetWidth, window.innerWidth - m.offsetWidth - 8)) + 'px';
+    btn.classList.add('on');
+    const close = () => { m.remove(); btn.classList.remove('on'); _wbMenu = null; off(); };
+    const off = mbuDismissOn(m, close, { ignore: '.tc-wb' });
+    m.addEventListener('click', e => { if (e.target.closest('a')) close(); });
+    _wbMenu = { btn, close };
+  }
+  function mountArchiveMenus() {
+    if (SETTINGS.archiveMenu === false) return;
+    const mark = () => {
+      const lis = document.querySelectorAll('#sidebar ul.external_links > li');
+      if (!lis.length) return;
+      style();
+      lis.forEach(li => {
+        if (li.querySelector('.tc-wb')) return;
+        const a = li.querySelector('a[href^="http"]');
+        if (!a || /(^|\.)(musicbrainz|metabrainz|archive)\.org$/i.test(a.hostname)) return;
+        const b = document.createElement('button'); b.type = 'button'; b.className = 'tc-wb'; b.title = 'Internet Archive'; b.innerHTML = WB_CLOCK;
+        b.addEventListener('click', e => { e.preventDefault(); e.stopPropagation(); openArchiveMenu(b, a.href); });
+        li.appendChild(b);
+      });
+    };
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', mark, { once: true }); else mark();
+  }
+
   // #412: pulse the pinned compact-nav bar while MB is submitting the edit — a big edit can take a
   // while. Drive it purely off MB's OWN indicator: the release editor inserts a
   // `Submitting edits…` node (a Knockout `if`-bound `.loading-message`) the moment submission
@@ -12570,7 +12626,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
       if (!tryMount()) { const t = setInterval(() => { if (tryMount()) clearInterval(t); }, 200); setTimeout(() => clearInterval(t), 8000); }
       return;
     }
-    if (!/^\/release\/(add|.+\/edit)/.test(location.pathname)) return;   // /artist/* and /label/* (non-callback) just load the channel listener
+    if (!/^\/release\/(add|.+\/edit)/.test(location.pathname)) { mountArchiveMenus(); return; }   // /artist/* and /label/* (non-callback) just load the channel listener; entity pages get the archive menu (#736)
     const ed = await waitFor(() => { const e = getEditor(); try { return e && u(e.rootField.release) && u(u(e.rootField.release).mediums) ? e : null; } catch (x) { return null; } });
     if (!ed) { Log.cat('System').err('MB.releaseEditor never became ready'); return; }
     try {   // line 2: the MB release, as a full link (real title now the editor is up)
