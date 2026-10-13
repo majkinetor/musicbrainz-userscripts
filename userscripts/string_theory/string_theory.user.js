@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         String Theory
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.13.094024
+// @version      2026.10.13.181240
 // @description  Unified bundle of 11 MusicBrainz userscripts (apollo_editor, art_station, credit_hoarder, falcon, first_contact, fusion, group_therapy, isrc_scout, mammoth, mission_control, platform_check). Built by userscripts/string_theory/build.mjs — do not hand-edit.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5TdHJpbmcgVGhlb3J5PC90aXRsZT4KPHBhdGggZD0iTTY0IDEwIEw2Ni40IDEwLjIgTDY4LjcgMTAuNiBMNzAuOSAxMS40IEw3My4xIDEyLjQgTDc1LjIgMTMuNyBMNzcuMSAxNS4yIEw3OC44IDE3IEw4MC40IDE4LjkgTDgxLjggMjEgTDgzLjEgMjMuMSBMODQuMSAyNS40IEw4NSAyNy42IEw4NS43IDI5LjkgTDg2LjMgMzIuMSBMODYuOCAzNC4zIEw4Ny4xIDM2LjQgTDg3LjQgMzguNCBMODcuNyA0MC4zIEw4Ny45IDQyLjEgTDg4LjIgNDMuNyBMODguNSA0NS4yIEw4OC45IDQ2LjYgTDg5LjQgNDcuOCBMOTAgNDkgTDkwLjcgNTAuMSBMOTEuNiA1MS4xIEw5Mi42IDUyLjIgTDkzLjcgNTMuMiBMOTUgNTQuMiBMOTYuNCA1NS4zIEw5Ny45IDU2LjUgTDk5LjUgNTcuNyBMMTAxLjEgNTkuMSBMMTAyLjcgNjAuNiBMMTA0LjQgNjIuMiBMMTA2IDY0IEwxMDcuNSA2NS45IEwxMDguOSA2Ny45IEwxMTAuMiA3MC4xIEwxMTEuMyA3Mi4zIEwxMTIuMSA3NC43IEwxMTIuOCA3Ny4xIEwxMTMuMSA3OS41IEwxMTMuMiA4MS45IEwxMTMgODQuMyBMMTEyLjYgODYuNiBMMTExLjggODguOSBMMTEwLjggOTEgTDEwOS41IDkzIEwxMDcuOSA5NC43IEwxMDYuMSA5Ni4zIEwxMDQuMSA5Ny43IEwxMDIgOTguOCBMOTkuNyA5OS43IEw5Ny4zIDEwMC40IEw5NC45IDEwMC44IEw5Mi40IDEwMSBMODkuOSAxMDAuOSBMODcuNCAxMDAuNyBMODUgMTAwLjQgTDgyLjcgOTkuOSBMODAuNCA5OS4zIEw3OC4zIDk4LjYgTDc2LjMgOTcuOCBMNzQuNCA5Ny4xIEw3Mi43IDk2LjQgTDcxIDk1LjcgTDY5LjUgOTUuMSBMNjggOTQuNiBMNjYuNyA5NC4zIEw2NS4zIDk0LjEgTDY0IDk0IEw2Mi43IDk0LjEgTDYxLjMgOTQuMyBMNjAgOTQuNiBMNTguNSA5NS4xIEw1NyA5NS43IEw1NS4zIDk2LjQgTDUzLjYgOTcuMSBMNTEuNyA5Ny44IEw0OS43IDk4LjYgTDQ3LjYgOTkuMyBMNDUuMyA5OS45IEw0MyAxMDAuNCBMNDAuNiAxMDAuNyBMMzguMSAxMDAuOSBMMzUuNiAxMDEgTDMzLjEgMTAwLjggTDMwLjcgMTAwLjQgTDI4LjMgOTkuNyBMMjYgOTguOCBMMjMuOSA5Ny43IEwyMS45IDk2LjMgTDIwLjEgOTQuNyBMMTguNSA5MyBMMTcuMiA5MSBMMTYuMiA4OC45IEwxNS40IDg2LjYgTDE1IDg0LjMgTDE0LjggODEuOSBMMTQuOSA3OS41IEwxNS4yIDc3LjEgTDE1LjkgNzQuNyBMMTYuNyA3Mi4zIEwxNy44IDcwLjEgTDE5LjEgNjcuOSBMMjAuNSA2NS45IEwyMiA2NCBMMjMuNiA2Mi4yIEwyNS4zIDYwLjYgTDI2LjkgNTkuMSBMMjguNSA1Ny43IEwzMC4xIDU2LjUgTDMxLjYgNTUuMyBMMzMgNTQuMiBMMzQuMyA1My4yIEwzNS40IDUyLjIgTDM2LjQgNTEuMSBMMzcuMyA1MC4xIEwzOCA0OSBMMzguNiA0Ny44IEwzOS4xIDQ2LjYgTDM5LjUgNDUuMiBMMzkuOCA0My43IEw0MC4xIDQyLjEgTDQwLjMgNDAuMyBMNDAuNiAzOC40IEw0MC45IDM2LjQgTDQxLjIgMzQuMyBMNDEuNyAzMi4xIEw0Mi4zIDI5LjkgTDQzIDI3LjYgTDQzLjkgMjUuNCBMNDQuOSAyMy4xIEw0Ni4yIDIxIEw0Ny42IDE4LjkgTDQ5LjIgMTcgTDUwLjkgMTUuMiBMNTIuOCAxMy43IEw1NC45IDEyLjQgTDU3LjEgMTEuNCBMNTkuMyAxMC42IEw2MS42IDEwLjJaIiBmaWxsPSJub25lIiBzdHJva2U9IiM5Yzg2ZWEiIHN0cm9rZS13aWR0aD0iMTAiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz4KPHBhdGggZD0iTTY0IDM0IEw2NS4zIDMzLjkgTDY2LjcgMzMuNyBMNjggMzMuNCBMNjkuNSAzMi45IEw3MSAzMi4zIEw3Mi43IDMxLjYgTDc0LjQgMzAuOSBMNzYuMyAzMC4yIEw3OC4zIDI5LjQgTDgwLjQgMjguNyBMODIuNyAyOC4xIEw4NSAyNy42IEw4Ny40IDI3LjMgTDg5LjkgMjcuMSBMOTIuNCAyNyBMOTQuOSAyNy4yIEw5Ny4zIDI3LjYgTDk5LjcgMjguMyBMMTAyIDI5LjIgTDEwNC4xIDMwLjMgTDEwNi4xIDMxLjcgTDEwNy45IDMzLjMgTDEwOS41IDM1IEwxMTAuOCAzNyBMMTExLjggMzkuMSBMMTEyLjYgNDEuNCBMMTEzIDQzLjcgTDExMy4yIDQ2LjEgTDExMy4xIDQ4LjUgTDExMi44IDUwLjkgTDExMi4xIDUzLjMgTDExMS4zIDU1LjcgTDExMC4yIDU3LjkgTDEwOC45IDYwLjEgTDEwNy41IDYyLjEgTDEwNiA2NCBMMTA0LjQgNjUuOCBMMTAyLjcgNjcuNCBMMTAxLjEgNjguOSBMOTkuNSA3MC4zIEw5Ny45IDcxLjUgTDk2LjQgNzIuNyBMOTUgNzMuOCBMOTMuNyA3NC44IEw5Mi42IDc1LjggTDkxLjYgNzYuOSBMOTAuNyA3Ny45IEw5MCA3OSBMODkuNCA4MC4yIEw4OC45IDgxLjQgTDg4LjUgODIuOCBMODguMiA4NC4zIEw4Ny45IDg1LjkgTDg3LjcgODcuNyBMODcuNCA4OS42IEw4Ny4xIDkxLjYgTDg2LjggOTMuNyBMODYuMyA5NS45IEw4NS43IDk4LjEgTDg1IDEwMC40IEw4NC4xIDEwMi42IEw4My4xIDEwNC45IEw4MS44IDEwNyBMODAuNCAxMDkuMSBMNzguOCAxMTEgTDc3LjEgMTEyLjggTDc1LjIgMTE0LjMgTDczLjEgMTE1LjYgTDcwLjkgMTE2LjYgTDY4LjcgMTE3LjQgTDY2LjQgMTE3LjggTDY0IDExOCBMNjEuNiAxMTcuOCBMNTkuMyAxMTcuNCBMNTcuMSAxMTYuNiBMNTQuOSAxMTUuNiBMNTIuOCAxMTQuMyBMNTAuOSAxMTIuOCBMNDkuMiAxMTEgTDQ3LjYgMTA5LjEgTDQ2LjIgMTA3IEw0NC45IDEwNC45IEw0My45IDEwMi42IEw0MyAxMDAuNCBMNDIuMyA5OC4xIEw0MS43IDk1LjkgTDQxLjIgOTMuNyBMNDAuOSA5MS42IEw0MC42IDg5LjYgTDQwLjMgODcuNyBMNDAuMSA4NS45IEwzOS44IDg0LjMgTDM5LjUgODIuOCBMMzkuMSA4MS40IEwzOC42IDgwLjIgTDM4IDc5IEwzNy4zIDc3LjkgTDM2LjQgNzYuOSBMMzUuNCA3NS44IEwzNC4zIDc0LjggTDMzIDczLjggTDMxLjYgNzIuNyBMMzAuMSA3MS41IEwyOC41IDcwLjMgTDI2LjkgNjguOSBMMjUuMyA2Ny40IEwyMy42IDY1LjggTDIyIDY0IEwyMC41IDYyLjEgTDE5LjEgNjAuMSBMMTcuOCA1Ny45IEwxNi43IDU1LjcgTDE1LjkgNTMuMyBMMTUuMiA1MC45IEwxNC45IDQ4LjUgTDE0LjggNDYuMSBMMTUgNDMuNyBMMTUuNCA0MS40IEwxNi4yIDM5LjEgTDE3LjIgMzcgTDE4LjUgMzUgTDIwLjEgMzMuMyBMMjEuOSAzMS43IEwyMy45IDMwLjMgTDI2IDI5LjIgTDI4LjMgMjguMyBMMzAuNyAyNy42IEwzMy4xIDI3LjIgTDM1LjYgMjcgTDM4LjEgMjcuMSBMNDAuNiAyNy4zIEw0MyAyNy42IEw0NS4zIDI4LjEgTDQ3LjYgMjguNyBMNDkuNyAyOS40IEw1MS43IDMwLjIgTDUzLjYgMzAuOSBMNTUuMyAzMS42IEw1NyAzMi4zIEw1OC41IDMyLjkgTDYwIDMzLjQgTDYxLjMgMzMuNyBMNjIuNyAzMy45WiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZmZmZmZmIiBzdHJva2Utd2lkdGg9IjIwIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+CjxwYXRoIGQ9Ik02NCAzNCBMNjUuMyAzMy45IEw2Ni43IDMzLjcgTDY4IDMzLjQgTDY5LjUgMzIuOSBMNzEgMzIuMyBMNzIuNyAzMS42IEw3NC40IDMwLjkgTDc2LjMgMzAuMiBMNzguMyAyOS40IEw4MC40IDI4LjcgTDgyLjcgMjguMSBMODUgMjcuNiBMODcuNCAyNy4zIEw4OS45IDI3LjEgTDkyLjQgMjcgTDk0LjkgMjcuMiBMOTcuMyAyNy42IEw5OS43IDI4LjMgTDEwMiAyOS4yIEwxMDQuMSAzMC4zIEwxMDYuMSAzMS43IEwxMDcuOSAzMy4zIEwxMDkuNSAzNSBMMTEwLjggMzcgTDExMS44IDM5LjEgTDExMi42IDQxLjQgTDExMyA0My43IEwxMTMuMiA0Ni4xIEwxMTMuMSA0OC41IEwxMTIuOCA1MC45IEwxMTIuMSA1My4zIEwxMTEuMyA1NS43IEwxMTAuMiA1Ny45IEwxMDguOSA2MC4xIEwxMDcuNSA2Mi4xIEwxMDYgNjQgTDEwNC40IDY1LjggTDEwMi43IDY3LjQgTDEwMS4xIDY4LjkgTDk5LjUgNzAuMyBMOTcuOSA3MS41IEw5Ni40IDcyLjcgTDk1IDczLjggTDkzLjcgNzQuOCBMOTIuNiA3NS44IEw5MS42IDc2LjkgTDkwLjcgNzcuOSBMOTAgNzkgTDg5LjQgODAuMiBMODguOSA4MS40IEw4OC41IDgyLjggTDg4LjIgODQuMyBMODcuOSA4NS45IEw4Ny43IDg3LjcgTDg3LjQgODkuNiBMODcuMSA5MS42IEw4Ni44IDkzLjcgTDg2LjMgOTUuOSBMODUuNyA5OC4xIEw4NSAxMDAuNCBMODQuMSAxMDIuNiBMODMuMSAxMDQuOSBMODEuOCAxMDcgTDgwLjQgMTA5LjEgTDc4LjggMTExIEw3Ny4xIDExMi44IEw3NS4yIDExNC4zIEw3My4xIDExNS42IEw3MC45IDExNi42IEw2OC43IDExNy40IEw2Ni40IDExNy44IEw2NCAxMTggTDYxLjYgMTE3LjggTDU5LjMgMTE3LjQgTDU3LjEgMTE2LjYgTDU0LjkgMTE1LjYgTDUyLjggMTE0LjMgTDUwLjkgMTEyLjggTDQ5LjIgMTExIEw0Ny42IDEwOS4xIEw0Ni4yIDEwNyBMNDQuOSAxMDQuOSBMNDMuOSAxMDIuNiBMNDMgMTAwLjQgTDQyLjMgOTguMSBMNDEuNyA5NS45IEw0MS4yIDkzLjcgTDQwLjkgOTEuNiBMNDAuNiA4OS42IEw0MC4zIDg3LjcgTDQwLjEgODUuOSBMMzkuOCA4NC4zIEwzOS41IDgyLjggTDM5LjEgODEuNCBMMzguNiA4MC4yIEwzOCA3OSBMMzcuMyA3Ny45IEwzNi40IDc2LjkgTDM1LjQgNzUuOCBMMzQuMyA3NC44IEwzMyA3My44IEwzMS42IDcyLjcgTDMwLjEgNzEuNSBMMjguNSA3MC4zIEwyNi45IDY4LjkgTDI1LjMgNjcuNCBMMjMuNiA2NS44IEwyMiA2NCBMMjAuNSA2Mi4xIEwxOS4xIDYwLjEgTDE3LjggNTcuOSBMMTYuNyA1NS43IEwxNS45IDUzLjMgTDE1LjIgNTAuOSBMMTQuOSA0OC41IEwxNC44IDQ2LjEgTDE1IDQzLjcgTDE1LjQgNDEuNCBMMTYuMiAzOS4xIEwxNy4yIDM3IEwxOC41IDM1IEwyMC4xIDMzLjMgTDIxLjkgMzEuNyBMMjMuOSAzMC4zIEwyNiAyOS4yIEwyOC4zIDI4LjMgTDMwLjcgMjcuNiBMMzMuMSAyNy4yIEwzNS42IDI3IEwzOC4xIDI3LjEgTDQwLjYgMjcuMyBMNDMgMjcuNiBMNDUuMyAyOC4xIEw0Ny42IDI4LjcgTDQ5LjcgMjkuNCBMNTEuNyAzMC4yIEw1My42IDMwLjkgTDU1LjMgMzEuNiBMNTcgMzIuMyBMNTguNSAzMi45IEw2MCAzMy40IEw2MS4zIDMzLjcgTDYyLjcgMzMuOVoiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZjNDdlMCIgc3Ryb2tlLXdpZHRoPSIxMyIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgo8L3N2Zz4K
@@ -127,8 +127,8 @@
 // Bundles (verbatim, each wrapped in a URL gate and a run-at gate): apollo_editor, art_station, credit_hoarder, falcon, first_contact, fusion, group_therapy, isrc_scout, mammoth, mission_control, platform_check.
 
 try {
-  console.log('%c String Theory %c v2026.10.13.094024 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
-  console.log("String Theory bundles:\n  · Apollo Editor v2026.10.13.094500\n  · Art Station v2026.10.12.190000\n  · Credit Hoarder v2026.10.12.181607\n  · Falcon v2026.10.12.181548\n  · First Contact v2026.10.12.162836\n  · Fusion v2026.10.12.162836\n  · Group Therapy v2026.10.12.162836\n  · ISRC Scout v2026.10.12.162836\n  · Mammoth v2026.10.12.162836\n  · Mission Control v2026.10.12.190000\n  · Platform Check v2026.10.12.162836");
+  console.log('%c String Theory %c v2026.10.13.181240 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
+  console.log("String Theory bundles:\n  · Apollo Editor v2026.10.13.175828\n  · Art Station v2026.10.12.190000\n  · Credit Hoarder v2026.10.12.181607\n  · Falcon v2026.10.12.181548\n  · First Contact v2026.10.13\n  · Fusion v2026.10.12.162836\n  · Group Therapy v2026.10.12.162836\n  · ISRC Scout v2026.10.12.162836\n  · Mammoth v2026.10.12.162836\n  · Mission Control v2026.10.12.190000\n  · Platform Check v2026.10.12.162836");
 } catch (e) {}
 
 function __stReadOff() { try { var v = GM_getValue("string_theory.off", []); return Array.isArray(v) ? v : []; } catch (e) { return []; } }
@@ -136,7 +136,7 @@ var __stOff = __stReadOff();
 (function () {
   if (typeof GM_registerMenuCommand !== 'function') return;
   try { if (window.top !== window.self) return; } catch (e) { return; }
-  var members = [["apollo_editor","Apollo Editor","2026.10.13.094500"],["art_station","Art Station","2026.10.12.190000"],["credit_hoarder","Credit Hoarder","2026.10.12.181607"],["falcon","Falcon","2026.10.12.181548"],["first_contact","First Contact","2026.10.12.162836"],["fusion","Fusion","2026.10.12.162836"],["group_therapy","Group Therapy","2026.10.12.162836"],["isrc_scout","ISRC Scout","2026.10.12.162836"],["mammoth","Mammoth","2026.10.12.162836"],["mission_control","Mission Control","2026.10.12.190000"],["platform_check","Platform Check","2026.10.12.162836"]];
+  var members = [["apollo_editor","Apollo Editor","2026.10.13.175828"],["art_station","Art Station","2026.10.12.190000"],["credit_hoarder","Credit Hoarder","2026.10.12.181607"],["falcon","Falcon","2026.10.12.181548"],["first_contact","First Contact","2026.10.13"],["fusion","Fusion","2026.10.12.162836"],["group_therapy","Group Therapy","2026.10.12.162836"],["isrc_scout","ISRC Scout","2026.10.12.162836"],["mammoth","Mammoth","2026.10.12.162836"],["mission_control","Mission Control","2026.10.12.190000"],["platform_check","Platform Check","2026.10.12.162836"]];
   // Each entry carries a stable id (options.id): Violentmonkey and Tampermonkey then relabel it in
   // place, where it stands. Unregister-and-add left Violentmonkey's open menu with the old entry
   // still there and the new one appended at the end. A manager that ignores options.id hands back
@@ -213,7 +213,7 @@ function __stRuns(name, rules) {
 
 // ===== apollo_editor (@run-at document-start) =====================================
 if (__stOff.indexOf("apollo_editor") < 0 && __stRuns("apollo_editor", {"inc":["^https:\\/\\/(?:[^/]*\\.)?musicbrainz\\.org(?::\\d+)?/release/add.*$","^https:\\/\\/(?:[^/]*\\.)?musicbrainz\\.org(?::\\d+)?/release/.*/edit$","^https:\\/\\/(?:[^/]*\\.)?musicbrainz\\.org(?::\\d+)?/.*/edit_annotation$","^https:\\/\\/(?:[^/]*\\.)?musicbrainz\\.org(?::\\d+)?/artist/.*$","^https:\\/\\/(?:[^/]*\\.)?musicbrainz\\.org(?::\\d+)?/label/.*$"],"exc":[],"noframes":false})) (function(__stGM){
-  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Apollo Editor*","namespace":"https://musicbrainz.org/","version":"2026.10.13.094500","description":"Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5BcG9sbG8gRWRpdG9yPC90aXRsZT4KPG1hc2sgaWQ9ImFwLW0iIG1hc2tVbml0cz0idXNlclNwYWNlT25Vc2UiIHg9IjAiIHk9IjAiIHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4Ij48Zz48ZyBmaWxsPSIjZmZmIj48cGF0aCBkPSJNNDIgNjQgQzI4IDcyIDIyIDkwIDI0IDExMCBMNDIgOTggWiIvPjxwYXRoIGQ9Ik04NiA2NCBDMTAwIDcyIDEwNiA5MCAxMDQgMTEwIEw4NiA5OCBaIi8+PC9nPjxnIGZpbGw9IiNmZmYiPjxwYXRoIGQ9Ik02NCA4IEM4NCAyNCA5MCA1MiA4OCA5MCBMNDAgOTAgQzM4IDUyIDQ0IDI0IDY0IDggWiIvPjxwYXRoIGQ9Ik00OCA5MCBMODAgOTAgTDc2IDEwMCBMNTIgMTAwIFoiLz48L2c+PGcgc3Ryb2tlPSIjMDAwIiBzdHJva2Utd2lkdGg9IjMuNSI+PHBhdGggZD0iTTM2IDkwLjUgTDkyIDkwLjUiLz48L2c+PGNpcmNsZSBjeD0iNjQiIGN5PSI1MCIgcj0iOCIgZmlsbD0iIzAwMCIvPjwvZz48L21hc2s+PGc+PHBhdGggZD0iTTUyIDEwMCBDNTQgMTEyIDYwIDExOCA2NCAxMjYgQzY4IDExOCA3NCAxMTIgNzYgMTAwIFoiIGZpbGw9IiNlYjc0M2IiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDAgMykiLz48L2c+PHJlY3Qgd2lkdGg9IjEyOCIgaGVpZ2h0PSIxMjgiIGZpbGw9IiNiYTQ3OGYiIG1hc2s9InVybCgjYXAtbSkiLz4KPC9zdmc+Cg=="}) }) : { script: {"name":"Apollo Editor*","namespace":"https://musicbrainz.org/","version":"2026.10.13.094500","description":"Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5BcG9sbG8gRWRpdG9yPC90aXRsZT4KPG1hc2sgaWQ9ImFwLW0iIG1hc2tVbml0cz0idXNlclNwYWNlT25Vc2UiIHg9IjAiIHk9IjAiIHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4Ij48Zz48ZyBmaWxsPSIjZmZmIj48cGF0aCBkPSJNNDIgNjQgQzI4IDcyIDIyIDkwIDI0IDExMCBMNDIgOTggWiIvPjxwYXRoIGQ9Ik04NiA2NCBDMTAwIDcyIDEwNiA5MCAxMDQgMTEwIEw4NiA5OCBaIi8+PC9nPjxnIGZpbGw9IiNmZmYiPjxwYXRoIGQ9Ik02NCA4IEM4NCAyNCA5MCA1MiA4OCA5MCBMNDAgOTAgQzM4IDUyIDQ0IDI0IDY0IDggWiIvPjxwYXRoIGQ9Ik00OCA5MCBMODAgOTAgTDc2IDEwMCBMNTIgMTAwIFoiLz48L2c+PGcgc3Ryb2tlPSIjMDAwIiBzdHJva2Utd2lkdGg9IjMuNSI+PHBhdGggZD0iTTM2IDkwLjUgTDkyIDkwLjUiLz48L2c+PGNpcmNsZSBjeD0iNjQiIGN5PSI1MCIgcj0iOCIgZmlsbD0iIzAwMCIvPjwvZz48L21hc2s+PGc+PHBhdGggZD0iTTUyIDEwMCBDNTQgMTEyIDYwIDExOCA2NCAxMjYgQzY4IDExOCA3NCAxMTIgNzYgMTAwIFoiIGZpbGw9IiNlYjc0M2IiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDAgMykiLz48L2c+PHJlY3Qgd2lkdGg9IjEyOCIgaGVpZ2h0PSIxMjgiIGZpbGw9IiNiYTQ3OGYiIG1hc2s9InVybCgjYXAtbSkiLz4KPC9zdmc+Cg=="} };
+  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Apollo Editor*","namespace":"https://musicbrainz.org/","version":"2026.10.13.175828","description":"Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5BcG9sbG8gRWRpdG9yPC90aXRsZT4KPG1hc2sgaWQ9ImFwLW0iIG1hc2tVbml0cz0idXNlclNwYWNlT25Vc2UiIHg9IjAiIHk9IjAiIHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4Ij48Zz48ZyBmaWxsPSIjZmZmIj48cGF0aCBkPSJNNDIgNjQgQzI4IDcyIDIyIDkwIDI0IDExMCBMNDIgOTggWiIvPjxwYXRoIGQ9Ik04NiA2NCBDMTAwIDcyIDEwNiA5MCAxMDQgMTEwIEw4NiA5OCBaIi8+PC9nPjxnIGZpbGw9IiNmZmYiPjxwYXRoIGQ9Ik02NCA4IEM4NCAyNCA5MCA1MiA4OCA5MCBMNDAgOTAgQzM4IDUyIDQ0IDI0IDY0IDggWiIvPjxwYXRoIGQ9Ik00OCA5MCBMODAgOTAgTDc2IDEwMCBMNTIgMTAwIFoiLz48L2c+PGcgc3Ryb2tlPSIjMDAwIiBzdHJva2Utd2lkdGg9IjMuNSI+PHBhdGggZD0iTTM2IDkwLjUgTDkyIDkwLjUiLz48L2c+PGNpcmNsZSBjeD0iNjQiIGN5PSI1MCIgcj0iOCIgZmlsbD0iIzAwMCIvPjwvZz48L21hc2s+PGc+PHBhdGggZD0iTTUyIDEwMCBDNTQgMTEyIDYwIDExOCA2NCAxMjYgQzY4IDExOCA3NCAxMTIgNzYgMTAwIFoiIGZpbGw9IiNlYjc0M2IiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDAgMykiLz48L2c+PHJlY3Qgd2lkdGg9IjEyOCIgaGVpZ2h0PSIxMjgiIGZpbGw9IiNiYTQ3OGYiIG1hc2s9InVybCgjYXAtbSkiLz4KPC9zdmc+Cg=="}) }) : { script: {"name":"Apollo Editor*","namespace":"https://musicbrainz.org/","version":"2026.10.13.175828","description":"Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5BcG9sbG8gRWRpdG9yPC90aXRsZT4KPG1hc2sgaWQ9ImFwLW0iIG1hc2tVbml0cz0idXNlclNwYWNlT25Vc2UiIHg9IjAiIHk9IjAiIHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4Ij48Zz48ZyBmaWxsPSIjZmZmIj48cGF0aCBkPSJNNDIgNjQgQzI4IDcyIDIyIDkwIDI0IDExMCBMNDIgOTggWiIvPjxwYXRoIGQ9Ik04NiA2NCBDMTAwIDcyIDEwNiA5MCAxMDQgMTEwIEw4NiA5OCBaIi8+PC9nPjxnIGZpbGw9IiNmZmYiPjxwYXRoIGQ9Ik02NCA4IEM4NCAyNCA5MCA1MiA4OCA5MCBMNDAgOTAgQzM4IDUyIDQ0IDI0IDY0IDggWiIvPjxwYXRoIGQ9Ik00OCA5MCBMODAgOTAgTDc2IDEwMCBMNTIgMTAwIFoiLz48L2c+PGcgc3Ryb2tlPSIjMDAwIiBzdHJva2Utd2lkdGg9IjMuNSI+PHBhdGggZD0iTTM2IDkwLjUgTDkyIDkwLjUiLz48L2c+PGNpcmNsZSBjeD0iNjQiIGN5PSI1MCIgcj0iOCIgZmlsbD0iIzAwMCIvPjwvZz48L21hc2s+PGc+PHBhdGggZD0iTTUyIDEwMCBDNTQgMTEyIDYwIDExOCA2NCAxMjYgQzY4IDExOCA3NCAxMTIgNzYgMTAwIFoiIGZpbGw9IiNlYjc0M2IiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDAgMykiLz48L2c+PHJlY3Qgd2lkdGg9IjEyOCIgaGVpZ2h0PSIxMjgiIGZpbGw9IiNiYTQ3OGYiIG1hc2s9InVybCgjYXAtbSkiLz4KPC9zdmc+Cg=="} };
   (f=>f())(function(){ try { (function(){
 /*
  * Editor model (discovered via test/ spikes):
@@ -520,7 +520,7 @@ if (__stOff.indexOf("apollo_editor") < 0 && __stRuns("apollo_editor", {"inc":["^
 
   /* ── settings ── */
   const SKEY = 'apolloEditor.settings.v1';
-  function loadSettings() { const d = { apolloEnabled: true, colWidths: {}, applyMode: 'all', altRows: false, gridCols: false, gridRows: true, replaceReleaseInfo: true, replaceTracklist: true, replaceRecordings: true, modifyAnnotation: true, modifyDuplicates: true, autoMatch: true, autoMatchRec: true, autoMatchOnV: 1, autoMatchLabel: true, autoMatchArtist: true, autoMatchRG: true, discogsUrlMatch: true, recLenTol: 5, recIgnoreCase: true, recIgnorePunct: true, recTitleTol: 1, recCutoff: 'near', recDetailedHl: true, recPunctSize: 3, recHlColor: '#e53935', lastTool: '', layout: 'normal', lastView: 'apollo', zenMode: true, autoConfirmSeed: true, keepCaretColumn: true, hoverHighlight: false, srRegex: false, srTemplates: [], srSeedV: 0, srHistory: [], srDefault: '', srHistoryOpen: false }; try { const stored = JSON.parse(gmLoad(SKEY) || '{}'); const s = Object.assign(d, stored); if (stored.gridCols === undefined && stored.grid !== undefined) s.gridCols = stored.grid; if (stored.autoMatchOnV === undefined) { s.autoMatch = true; s.autoMatchRec = true; }   /* tracklist + recordings auto-match became on by default; the whole object is saved, so an existing install has the old false stored and needs flipping once (autoMatchOnV, from the defaults, marks it done on the next save) */ return s; } catch (e) { return d; } }
+  function loadSettings() { const d = { apolloEnabled: true, colWidths: {}, applyMode: 'all', altRows: false, gridCols: false, gridRows: true, replaceReleaseInfo: true, replaceTracklist: true, replaceRecordings: true, modifyAnnotation: true, modifyDuplicates: true, autoMatch: true, autoMatchRec: true, autoMatchOnV: 1, autoMatchLabel: true, autoMatchArtist: true, autoMatchRG: true, discogsUrlMatch: true, recLenTol: 5, recIgnoreCase: true, recIgnorePunct: true, recTitleTol: 1, recCutoff: 'near', recDetailedHl: true, recPunctSize: 3, recHlColor: '#e53935', lastTool: '', layout: 'normal', lastView: 'apollo', zenMode: true, autoConfirmSeed: true, keepCaretColumn: true, hoverHighlight: false, srRegex: false, srTemplates: [], srSeedV: 0, srHistory: [], srDefault: '', srHistoryOpen: false, archive: true }; try { const stored = JSON.parse(gmLoad(SKEY) || '{}'); const s = Object.assign(d, stored); if (stored.gridCols === undefined && stored.grid !== undefined) s.gridCols = stored.grid; if (stored.autoMatchOnV === undefined) { s.autoMatch = true; s.autoMatchRec = true; }   /* tracklist + recordings auto-match became on by default; the whole object is saved, so an existing install has the old false stored and needs flipping once (autoMatchOnV, from the defaults, marks it done on the next save) */ return s; } catch (e) { return d; } }
   function saveSettings() { try { gmSave(SKEY, JSON.stringify(SETTINGS)); } catch (e) {} }
   let SETTINGS = loadSettings();
   try { srSeedTemplates(); } catch (e) {}   // #375 seed the default S&R templates once
@@ -4102,6 +4102,126 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
   } catch (e) { /* a locked-down page must not stop the script loading */ }
   // </ST-UI>
 
+  // <ST-ARCHIVE> — generated by dev/archive/sync-archive.mjs from dev/archive/wayback.mjs — DO NOT EDIT
+  const MBA_KEY = "mbu.archive";
+  function mbaTs(d) { return (d || new Date()).toISOString().replace(/[^0-9]/g, '').slice(0, 14); }
+  function mbaShort(url) { return String(url).replace(/^https?:\/\//i, '').replace(/^www\./i, ''); }
+  function mbaSnapshot(ts, url) { return 'https://web.archive.org/web/' + ts + '/' + mbaShort(url); }
+  function mbaCleanUrl(href) {
+      const [base, query = ''] = String(href).split('#')[0].split(/\?(.*)/s);
+      const kept = query.split('&').filter(p => p && !/^(si|utm_\w+|fbclid|gclid|ref|from|context|nd|feature)$/i.test(decodeURIComponent(p.split('=')[0].replace(/\+/g, ' '))));
+      return base + (kept.length ? '?' + kept.join('&') : '');
+  }
+  function mbaKeys() {
+      let v = null;
+      try { v = GM_getValue(MBA_KEY, null); } catch (e) { /* no storage: anonymous */ }
+      return v && v.iaKey && v.iaSecret ? { key: v.iaKey, secret: v.iaSecret } : null;
+  }
+  function mbaKeysStored() {
+      let v = null;
+      try { v = GM_getValue(MBA_KEY, null); } catch (e) { /* no storage */ }
+      return { iaKey: (v && v.iaKey) || '', iaSecret: (v && v.iaSecret) || '' };
+  }
+  function mbaSetKeys(iaKey, iaSecret) {
+      const prev = (() => { try { return GM_getValue(MBA_KEY, null) || {}; } catch (e) { return {}; } })();
+      GM_setValue(MBA_KEY, Object.assign({}, prev, { iaKey: String(iaKey || '').trim(), iaSecret: String(iaSecret || '').trim() }));
+  }
+  function mbaSaveAnon(url, log) {
+      const t0 = Date.now(), wait = 180000;
+      return new Promise(resolve => {
+          GM_xmlhttpRequest({
+              method: 'GET', url: 'https://web.archive.org/save/' + url, timeout: wait, anonymous: true,
+              headers: { Accept: 'text/html' },
+              onload: r => {
+                  const snap = /\/web\/\d{14}\//.test(r.finalUrl || '') ? r.finalUrl : null;
+                  const ms = Date.now() - t0;
+                  if (r.status >= 200 && r.status < 300 && snap) log.ok(`archive: saved ${url} → ${snap} (${ms} ms)`);
+                  else if (r.status === 429) log.warn(`archive: ${url} not saved: Save Page Now is limiting anonymous saves (HTTP 429). archive.org keys in the settings raise the limit`);
+                  else log.warn(`archive: ${url} → HTTP ${r.status}${snap ? '' : ', no snapshot in the answer'} (${ms} ms)${r.finalUrl ? ', ended at ' + r.finalUrl : ''}`);
+                  resolve();
+              },
+              onerror: () => { log.warn(`archive: network error saving ${url}`); resolve(); },
+              ontimeout: () => { log.warn(`archive: no answer for ${url} in ${wait / 60000} minutes (the save may still finish)`); resolve(); },
+          });
+      });
+  }
+  function mbaRequest(method, url, auth, body) {
+      return new Promise(resolve => {
+          GM_xmlhttpRequest({
+              method, url, data: body, timeout: 30000, anonymous: true,
+              headers: Object.assign({ Accept: 'application/json', Authorization: 'LOW ' + auth }, body ? { 'Content-Type': 'application/x-www-form-urlencoded' } : {}),
+              onload: r => { let j = null; try { j = JSON.parse(r.responseText || 'null'); } catch (e) { /* not JSON */ } resolve({ status: r.status, json: j, text: r.responseText || '' }); },
+              onerror: () => resolve({ status: 0, json: null, text: 'network error' }),
+              ontimeout: () => resolve({ status: 0, json: null, text: 'timeout' }),
+          });
+      });
+  }
+  async function mbaSaveWithKeys(url, keys, log, follow) {
+      const auth = keys.key + ':' + keys.secret, wait = 180000;
+      const body = new URLSearchParams({ url, if_not_archived_within: '30d', capture_screenshot: '1' }).toString();
+      const r = await mbaRequest('POST', 'https://web.archive.org/save', auth, body);
+      log.debug(`archive: POST /save ${url} → HTTP ${r.status} ${r.text.slice(0, 300)}`);
+      if (r.status === 401 || r.status === 403) { log.warn(`archive: archive.org refused your keys (HTTP ${r.status}); check them in the settings`); return; }
+      const job = r.json && r.json.job_id;
+      if (!job) {
+          const msg = (r.json && (r.json.message || r.json.status_ext)) || r.text.slice(0, 200) || 'no answer';
+          if (r.status === 200 && /archived|already/i.test(msg)) log.ok(`archive: ${url} has a recent snapshot, not saved again (${msg})`);
+          else log.warn(`archive: ${url} not saved (HTTP ${r.status}: ${msg})`);
+          return;
+      }
+      log.info(`archive: ${url} queued as job ${job}`);
+      if (!follow) return;
+      const t0 = Date.now();
+      while (Date.now() - t0 < wait) {
+          await new Promise(res => setTimeout(res, 6000));
+          const st = await mbaRequest('GET', 'https://web.archive.org/save/status/' + encodeURIComponent(job), auth);
+          const j = st.json || {};
+          log.debug(`archive: job ${job} → HTTP ${st.status}, ${j.status || '?'}`);
+          if (j.status === 'pending') continue;
+          if (j.status === 'success') log.ok(`archive: saved ${url} → https://web.archive.org/web/${j.timestamp}/${j.original_url || url}${j.screenshot ? ', screenshot ' + j.screenshot : ''} (${Date.now() - t0} ms)`);
+          else log.warn(`archive: job ${job} for ${url} ended ${j.status || 'HTTP ' + st.status}: ${j.message || j.status_ext || st.text.slice(0, 200)}`);
+          return;
+      }
+      log.info(`archive: job ${job} for ${url} still running after ${wait / 60000} minutes; archive.org finishes it on its side`);
+  }
+  async function mbaSave(url, log, follow) {
+      const keys = mbaKeys();
+      try { await (keys ? mbaSaveWithKeys(url, keys, log, follow) : mbaSaveAnon(url, log)); } catch (e) { log.warn(`archive: ${url}: ${e && e.message || e}`); }
+  }
+  function mbaKeysHtml(off) {
+      const k = mbaKeysStored(), q = v => String(v).replace(/&/g, '&amp;').replace(/"/g, '&quot;');
+      // no password-manager icon in the fields: they opt out by attribute (LastPass, 1Password,
+      // Bitwarden, Dashlane), and the secret is a text field masked in CSS, since type=password draws every manager in
+      const opt = 'autocomplete="off" data-lpignore="true" data-1p-ignore data-bwignore data-form-type="other" spellcheck="false"';
+      return `<div class="mbu-ia${off ? ' mbu-ia-off' : ''}" title="Optional, and shared by First Contact and Apollo Editor. With your archive.org keys the save uses Save Page Now 2: higher limits, and a screenshot of the page, which is the evidence for platforms that build their pages in the browser (Spotify, Tidal, YouTube Music). Without keys the save is anonymous.">`
+          + '<div class="mbu-ia-h">archive.org keys <a href="https://archive.org/account/s3.php" target="_blank" rel="noopener">get them</a></div>'
+          + `<input type="text" class="mbu-ia-key" placeholder="access key" ${opt} value="${q(k.iaKey)}">`
+          + `<input type="text" class="mbu-ia-secret" placeholder="secret" ${opt} value="${q(k.iaSecret)}"></div>`;
+  }
+  function mbaKeysWire(root, log) {
+      const key = root.querySelector('.mbu-ia-key'), secret = root.querySelector('.mbu-ia-secret');
+      if (!key || !secret) return;
+      const save = () => {
+          mbaSetKeys(key.value, secret.value);
+          const k = key.value.trim(), s = secret.value.trim();
+          log.info(`archive.org keys: ${k && s ? 'set (Save Page Now 2)' : k || s ? 'only one of the two is set, so saves stay anonymous' : 'none (anonymous saves)'}`);
+      };
+      key.addEventListener('change', save);
+      secret.addEventListener('change', save);
+  }
+  function mbaKeysCss(scope) {
+      const s = scope + ' .mbu-ia';
+      return `${s} { display: grid; grid-template-columns: 1fr 1fr; gap: 4px 6px; }
+  ${s}.mbu-ia-off { opacity: .5; }
+  ${s} .mbu-ia-secret { -webkit-text-security: disc; }
+  ${s} .mbu-ia-h { grid-column: 1 / -1; color: var(--mbu-text-weak); }
+  ${s} .mbu-ia-h a { color: var(--mbu-accent-text); margin-left: 4px; }
+  ${s} input { all: revert; box-sizing: border-box; width: 100%; min-width: 0; font: 12px var(--mbu-font-mono, monospace);
+    padding: 3px 6px; border: 1px solid var(--mbu-border); border-radius: 4px; background: var(--mbu-bg-sunken); color: var(--mbu-text); }
+  `;
+  }
+  // </ST-ARCHIVE>
+
   const css = MBU_TOKENS + MBU_UI_CSS + `
     .tc-badge{font-size:10px;font-weight:bold;border-radius:9px;padding:1px 7px;color:var(--mbu-text-on-accent);white-space:nowrap}
     .tc-badge.rg{background:#1f8a4c}.tc-badge.set{background:#6c757d}.tc-badge.high{background:#2f6fd6}.tc-badge.disc{background:#0a7a8c}
@@ -4664,6 +4784,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     #tc-settings .tc-s-sec{font-weight:bold;color:var(--mbu-text);margin:12px 0 5px}
     #tc-settings .tc-s-group{padding-left:8px}
     #tc-settings .tc-s-top{padding-left:0;margin-top:2px}
+    #tc-settings .mbu-ia{margin:-2px 0 7px 22px}   /* #736 the archive.org keys, under Archive links */
     #tc-settings .tc-s-sub{font-weight:bold;color:var(--mbu-text);margin:0}
     #tc-settings div.tc-s-sub{margin:8px 0 3px}
     #tc-settings .tc-s-row{display:flex;align-items:center;gap:12px;margin:7px 0;color:var(--mbu-text)}
@@ -4737,7 +4858,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
       .tc-enter,.tc-splitb,.tc-slotgrab,.tc-slotx,.tc-trackacts{visibility:visible}
       .tc-aslot:not(.tc-can-split) .tc-splitb{display:none}
     }
-  `;
+  ` + mbaKeysCss('#tc-settings');
   function style() {
     if (document.getElementById('tc-css')) return;
     const s = document.createElement('style'); s.id = 'tc-css'; s.textContent = css; document.head.appendChild(s);
@@ -4770,6 +4891,8 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
           <label title="Hide the native step-tab row and footer; show a compact step switcher, wizard buttons by the title, and Add medium at the table's right."><input type="checkbox" id="tc-s-compactnav"> <span>Modify header and footer</span></label>
           <label title="Zen editing: hide everything above the Apollo nav bar (the site header, release title and entity tabs) and the page footer — leaving just the editor. The release title / artist (with version count) move into the nav bar. Needs the compact nav."><input type="checkbox" id="tc-s-zen"> <span>Zen editing</span></label>
           <label title="When another site seeds the Add/Edit-release form, MusicBrainz shows a confirmation page before the editor — automatically click its submit button to skip that step (integrates chaban's auto-confirm script). Add ?skip_confirmation to a seed URL to bypass it once."><input type="checkbox" id="tc-s-autoconfirm"> <span>Auto confirm release submissions</span></label>
+          <label title="At Enter edit, ask the Internet Archive's Wayback Machine to save the release's external links and the links in the edit note, and say so in the edit note. This sends those URLs to archive.org. First Contact archives the album page of its own import itself."><input type="checkbox" id="tc-s-archive"> <span>Archive links on the Internet Archive</span></label>
+          ${mbaKeysHtml(SETTINGS.archive === false)}
         </div>
       </div>
       <div class="tc-tab-pane" data-pane="matching" hidden>
@@ -4866,6 +4989,8 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     cnav.onchange = () => { SETTINGS.compactNav = cnav.checked; saveSettings(); applyNav(); applyZen(); };
     zen.onchange = () => { SETTINGS.zenMode = zen.checked; saveSettings(); applyZen(); };
     const aconf = s.querySelector('#tc-s-autoconfirm'); if (aconf) { aconf.checked = SETTINGS.autoConfirmSeed !== false; aconf.onchange = () => { SETTINGS.autoConfirmSeed = aconf.checked; saveSettings(); }; }
+    const arch = s.querySelector('#tc-s-archive'); if (arch) { arch.checked = SETTINGS.archive !== false; arch.onchange = () => { SETTINGS.archive = arch.checked; saveSettings(); const ia = s.querySelector('.mbu-ia'); if (ia) ia.classList.toggle('mbu-ia-off', !arch.checked); Log.cat('Archive').info('archive links on the Internet Archive:', arch.checked ? 'on' : 'off'); }; }   // #736
+    mbaKeysWire(s, Log.cat('Archive'));
     const kcaret = s.querySelector('#tc-s-keepcaret'); if (kcaret) { kcaret.checked = SETTINGS.keepCaretColumn !== false; kcaret.onchange = () => { SETTINGS.keepCaretColumn = kcaret.checked; saveSettings(); }; }   // #279
     const off = e => { if (!s.contains(e.target) && !(anchor && anchor.contains(e.target))) { s.remove(); document.removeEventListener('mousedown', off); } };
     const lbtn = s.querySelector('.tc-logbtn'); if (lbtn) lbtn.onclick = () => { s.remove(); document.removeEventListener('mousedown', off); openLog(); };
@@ -11012,6 +11137,9 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     const note = (s.name || 'Apollo Editor') + ' v' + scriptVersion() + ' by ' + (s.author || 'majkinetor') + ' - ' + (s.homepageURL || s.homepage || HELP_URL);
     const kept = cur.replace(/\s+$/, '');     // keep any existing note (import scripts etc.), append below
     const val = kept ? kept + '\n\n' + note : note;
+    setEditNote(ta, val);
+  }
+  function setEditNote(ta, val) {
     // use the native setter so a React-controlled textarea actually picks up the change (plain .value can be ignored — #130)
     try { const set = Object.getOwnPropertyDescriptor(window.HTMLTextAreaElement.prototype, 'value').set; set.call(ta, val); } catch (e) { ta.value = val; }
     ta.dispatchEvent(new Event('input', { bubbles: true }));
@@ -11022,8 +11150,52 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     document.addEventListener('click', e => {
       const b = e.target && e.target.closest && e.target.closest('button'); if (!b) return;
       // #722 Finish / Enter edit by their data-click, as MB translates the labels
-      const f = navFooterEl(); if (f && f.contains(b) && (b.matches('[data-click="lastTab"], [data-click="submitEdits"]') || /^\s*(finish|enter edit)\s*$/i.test(b.textContent || ''))) ensureApolloEditNote();
+      const f = navFooterEl(); if (f && f.contains(b) && (b.matches('[data-click="lastTab"], [data-click="submitEdits"]') || /^\s*(finish|enter edit)\s*$/i.test(b.textContent || ''))) {
+        if (b.matches('[data-click="submitEdits"]')) { try { archiveOnSubmit(); } catch (x) { Log.cat('Archive').warn('archive: skipped, it failed:', x && x.message || x); } }   // #736
+        ensureApolloEditNote();
+      }
     }, true);   // capture phase: runs before MB reads the textarea for submission
+  }
+
+  /* ── #736: archive the release's links and the edit note's links on the Wayback Machine ── */
+  // At Enter edit the archive lines go into the edit note, then every save is fired at once and
+  // nothing waits for it: the page leaves seconds later, and Save Page Now finishes on archive.org's
+  // side. The release's links get one line between them (the release lists them); a link found only
+  // in the note gets its own. What First Contact archives for its import is left to it.
+  const AR_LINE = /^Archived (on the Wayback Machine,|link:)/;
+  const _arSent = new Set();   // a second Enter edit (MB refused the first) doesn't save again
+  const arNorm = u => mbaShort(u).replace(/\/+$/, '').toLowerCase();
+  // the links to save and the lines saying so, from the release's links and the edit note
+  function archiveNote(note, releaseLinks, skip, ts) {
+    const ok = u => /^https?:\/\//i.test(u) && !/^https?:\/\/([^/]*\.)?(archive\.org|musicbrainz\.org|metabrainz\.org)(\/|$)/i.test(u) && !skip.has(arNorm(u));
+    const links = [...new Map(releaseLinks.filter(ok).map(u => [arNorm(u), u])).values()];
+    const known = new Set(links.map(arNorm));
+    const credit = l => / v\d[\w.]* by \S+ - https?:\/\//.test(l);   // "<script> v<version> by <author> - <url>"
+    const lines = String(note || '').replace(/\s+$/, '').split('\n').filter(l => !AR_LINE.test(l) && !/^Apollo Editor v/.test(l));
+    const inNote = [];
+    for (const u of lines.filter(l => !credit(l)).flatMap(l => alExtractUrls(l))) if (ok(u) && !known.has(arNorm(u))) { known.add(arNorm(u)); inNote.push(u); }
+    if (!links.length && !inNote.length) return null;
+    const day = `${ts.slice(0, 4)}-${ts.slice(4, 6)}-${ts.slice(6, 8)}`;
+    const add = links.length === 1 ? ['Archived link: ' + mbaSnapshot(ts, links[0])]
+      : links.length ? [`Archived on the Wayback Machine, ${day}: ${links.length} external links (web.archive.org/web/${ts}/ + link)`] : [];
+    for (const u of inNote) add.push('Archived link: ' + mbaSnapshot(ts, u));
+    const kept = lines.join('\n').replace(/\s+$/, '');
+    return { urls: [...links, ...inNote], note: (kept ? kept + '\n\n' : '') + add.join('\n') };
+  }
+  function archiveOnSubmit() {
+    if (SETTINGS.archive === false) return;
+    const ta = document.getElementById('edit-note-text'); if (!ta) return;
+    const log = Log.cat('Archive');
+    const h = fcHandoff();
+    const fc = new Set([h && h.url, ...((h && h.archive && h.archive.urls) || []).map(a => a.url)].filter(Boolean).map(arNorm));
+    const plan = archiveNote(ta.value, linkRows().map(r => r.url), fc, mbaTs(new Date()));
+    if (!plan) { log.debug('archive: no links to save'); return; }
+    setEditNote(ta, plan.note);
+    _apolloUsed = true;   // the archive lines are Apollo's: credit it
+    const send = plan.urls.filter(u => !_arSent.has(u)), keys = !!mbaKeys();
+    log.info(`archive: sending ${send.length} URL(s) to the Internet Archive (${keys ? 'Save Page Now 2 with your keys' : 'anonymous'}): ${send.join(', ')}`);
+    if (!keys && send.length > 3) log.info('archive: anonymous saves are limited per connection, so some of these may be refused; archive.org keys in the settings raise the limit');
+    for (const u of send) { _arSent.add(u); mbaSave(u, log, false); }
   }
 
   // #412: pulse the pinned compact-nav bar while MB is submitting the edit — a big edit can take a
@@ -37960,7 +38132,7 @@ if (__stOff.indexOf("falcon") < 0 && __stRuns("falcon", {"inc":["^https:\\/\\/(?
 
 // ===== first_contact (@run-at document-start) =====================================
 if (__stOff.indexOf("first_contact") < 0 && __stRuns("first_contact", {"inc":["^https:\\/\\/www\\.deezer\\.com(?::\\d+)?/.*$","^https:\\/\\/(?:[^/]*\\.)?bandcamp\\.com(?::\\d+)?/album/.*$","^https:\\/\\/www\\.discogs\\.com(?::\\d+)?/.*$","^https:\\/\\/music\\.apple\\.com(?::\\d+)?/.*$","^https:\\/\\/tidal\\.com(?::\\d+)?/.*$","^https:\\/\\/listen\\.tidal\\.com(?::\\d+)?/.*$","^https:\\/\\/www\\.qobuz\\.com(?::\\d+)?/.*/album/.*$","^https:\\/\\/www\\.beatport\\.com(?::\\d+)?/.*$","^https:\\/\\/open\\.spotify\\.com(?::\\d+)?/.*$","^https:\\/\\/music\\.youtube\\.com(?::\\d+)?/.*$","^https:\\/\\/www\\.youtube\\.com(?::\\d+)?/playlist.*$","^https:\\/\\/volumo\\.com(?::\\d+)?/.*$","^https:\\/\\/www\\.hdtracks\\.com(?::\\d+)?/.*$","^https:\\/\\/soundcloud\\.com(?::\\d+)?/.*$","^https:\\/\\/audiomack\\.com(?::\\d+)?/.*$","^https:\\/\\/(?:[^/]*\\.)?7digital\\.com(?::\\d+)?/artist/.*$","^https:\\/\\/ototoy\\.jp(?::\\d+)?/_/default/p/.*$","^https:\\/\\/music\\.amazon\\.com(?::\\d+)?/.*$","^https:\\/\\/music\\.amazon\\.co\\.uk(?::\\d+)?/.*$","^https:\\/\\/music\\.amazon\\.de(?::\\d+)?/.*$","^https:\\/\\/music\\.amazon\\.fr(?::\\d+)?/.*$","^https:\\/\\/music\\.amazon\\.it(?::\\d+)?/.*$","^https:\\/\\/music\\.amazon\\.es(?::\\d+)?/.*$","^https:\\/\\/music\\.amazon\\.ca(?::\\d+)?/.*$","^https:\\/\\/music\\.amazon\\.co\\.jp(?::\\d+)?/.*$","^https:\\/\\/music\\.amazon\\.com\\.au(?::\\d+)?/.*$","^https:\\/\\/music\\.amazon\\.com\\.br(?::\\d+)?/.*$","^https:\\/\\/music\\.amazon\\.com\\.mx(?::\\d+)?/.*$","^https:\\/\\/music\\.amazon\\.in(?::\\d+)?/.*$","^https:\\/\\/(?:[^/]*\\.)?musicbrainz\\.org(?::\\d+)?/release/add.*$"],"exc":[],"noframes":true})) (function(__stGM){
-  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"First Contact*","namespace":"https://musicbrainz.org/","version":"2026.10.12.162836","description":"Import a release into MusicBrainz from the platform's album page with one click: the release editor opens with the title, tracklist, artists, date, label, barcode and link filled in. Each artist's platform link is handed to Apollo Editor for matching. A second button sends the album to Harmony instead. By default the album page is also saved on the Internet Archive (it sends each imported URL to archive.org; off in the settings), and the edit note links the snapshot. Platforms: Deezer, Bandcamp, Discogs, Apple Music, Tidal, Qobuz, Beatport, Spotify, YouTube Music, Volumo, HDtracks, SoundCloud, Amazon Music, Audiomack, 7digital, Ototoy.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/first_contact/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5GaXJzdCBDb250YWN0PC90aXRsZT4KPGxpbmVhckdyYWRpZW50IGlkPSJmYy1kIiB4MT0iMCIgeTE9IjAiIHgyPSIwIiB5Mj0iMSI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjYmFlNmZkIi8+PHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjMzhiZGY4Ii8+PC9saW5lYXJHcmFkaWVudD48cmFkaWFsR3JhZGllbnQgaWQ9ImZjLWIiIGN4PSIuMzUiIGN5PSIuMyIgcj0iLjgiPjxzdG9wIG9mZnNldD0iMCIgc3RvcC1jb2xvcj0iI2ZmZjdjYyIvPjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iI2Y2YzQzMSIvPjwvcmFkaWFsR3JhZGllbnQ+PHBhdGggZD0iTTUwIDQyIEw3OCA0MiBMMTA0IDExMiBMMjQgMTEyIFoiIGZpbGw9IiNmNmM0MzEiIG9wYWNpdHk9Ii45Ii8+PHBhdGggZD0iTTU2IDQyIEw3MiA0MiBMODggMTEyIEw0MCAxMTIgWiIgZmlsbD0iI2ZkZTY4YSIgb3BhY2l0eT0iLjciLz48ZWxsaXBzZSBjeD0iNjQiIGN5PSIxMTQiIHJ4PSI0MiIgcnk9IjgiIGZpbGw9IiMxZTIzNDYiIHN0cm9rZT0iI2M5Y2RmMiIgc3Ryb2tlLXdpZHRoPSIzIi8+PGVsbGlwc2UgY3g9IjY0IiBjeT0iMTEzIiByeD0iMjYiIHJ5PSI0LjIiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2Y2YzQzMSIgc3Ryb2tlLXdpZHRoPSIyLjQiLz48cGF0aCBkPSJNNDIgMjggQTIyIDE4IDAgMCAxIDg2IDI4IFoiIGZpbGw9InVybCgjZmMtZCkiIHN0cm9rZT0iI2M5Y2RmMiIgc3Ryb2tlLXdpZHRoPSIzIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PHBhdGggZD0iTTUwLjM2IDE5LjkgQTE1LjM5OTk5OTk5OTk5OTk5OSAxMy41IDAgMCAxIDYxLjggMTEuOCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjIuNiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBvcGFjaXR5PSIuOSIvPjxlbGxpcHNlIGN4PSI2NCIgY3k9IjMyIiByeD0iNTYiIHJ5PSIxMiIgZmlsbD0iIzFlMjM0NiIgc3Ryb2tlPSIjYzljZGYyIiBzdHJva2Utd2lkdGg9IjMiLz48ZWxsaXBzZSBjeD0iNjQiIGN5PSI0MCIgcng9IjIyIiByeT0iNiIgZmlsbD0idXJsKCNmYy1iKSIgc3Ryb2tlPSIjYzljZGYyIiBzdHJva2Utd2lkdGg9IjIuNCIvPjxjaXJjbGUgY3g9IjIyIiBjeT0iMzEiIHI9IjQiIGZpbGw9IiNmNmM0MzEiLz48Y2lyY2xlIGN4PSI0MCIgY3k9IjMxIiByPSI0IiBmaWxsPSIjZjZjNDMxIi8+PGNpcmNsZSBjeD0iODgiIGN5PSIzMSIgcj0iNCIgZmlsbD0iI2Y2YzQzMSIvPjxjaXJjbGUgY3g9IjEwNiIgY3k9IjMxIiByPSI0IiBmaWxsPSIjZjZjNDMxIi8+PHBhdGggZD0iTTY0IDU4IEw4NCA2OS41IEw4NCA5Mi41IEw2NCAxMDQgTDQ0IDkyLjUgTDQ0IDY5LjUgWiIgZmlsbD0iIzdiNGZkNiIvPjxwYXRoIGQ9Ik02NCA1OCBMODQgNjkuNSBMNjQgODEgTDQ0IDY5LjUgWiIgZmlsbD0iIzliNzJlYSIvPjxwYXRoIGQ9Ik02MCA3MiBMNzQgNjkgTDc0IDg5IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iMy40IiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PHBhdGggZD0iTTYwIDcyIEw2MCA5MiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjMuNCIvPjxlbGxpcHNlIGN4PSI1NiIgY3k9IjkyIiByeD0iNC42IiByeT0iMy42IiBmaWxsPSIjZmZmIi8+PGVsbGlwc2UgY3g9IjcwIiBjeT0iODkiIHJ4PSI0LjYiIHJ5PSIzLjYiIGZpbGw9IiNmZmYiLz4KPC9zdmc+Cg=="}) }) : { script: {"name":"First Contact*","namespace":"https://musicbrainz.org/","version":"2026.10.12.162836","description":"Import a release into MusicBrainz from the platform's album page with one click: the release editor opens with the title, tracklist, artists, date, label, barcode and link filled in. Each artist's platform link is handed to Apollo Editor for matching. A second button sends the album to Harmony instead. By default the album page is also saved on the Internet Archive (it sends each imported URL to archive.org; off in the settings), and the edit note links the snapshot. Platforms: Deezer, Bandcamp, Discogs, Apple Music, Tidal, Qobuz, Beatport, Spotify, YouTube Music, Volumo, HDtracks, SoundCloud, Amazon Music, Audiomack, 7digital, Ototoy.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/first_contact/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5GaXJzdCBDb250YWN0PC90aXRsZT4KPGxpbmVhckdyYWRpZW50IGlkPSJmYy1kIiB4MT0iMCIgeTE9IjAiIHgyPSIwIiB5Mj0iMSI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjYmFlNmZkIi8+PHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjMzhiZGY4Ii8+PC9saW5lYXJHcmFkaWVudD48cmFkaWFsR3JhZGllbnQgaWQ9ImZjLWIiIGN4PSIuMzUiIGN5PSIuMyIgcj0iLjgiPjxzdG9wIG9mZnNldD0iMCIgc3RvcC1jb2xvcj0iI2ZmZjdjYyIvPjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iI2Y2YzQzMSIvPjwvcmFkaWFsR3JhZGllbnQ+PHBhdGggZD0iTTUwIDQyIEw3OCA0MiBMMTA0IDExMiBMMjQgMTEyIFoiIGZpbGw9IiNmNmM0MzEiIG9wYWNpdHk9Ii45Ii8+PHBhdGggZD0iTTU2IDQyIEw3MiA0MiBMODggMTEyIEw0MCAxMTIgWiIgZmlsbD0iI2ZkZTY4YSIgb3BhY2l0eT0iLjciLz48ZWxsaXBzZSBjeD0iNjQiIGN5PSIxMTQiIHJ4PSI0MiIgcnk9IjgiIGZpbGw9IiMxZTIzNDYiIHN0cm9rZT0iI2M5Y2RmMiIgc3Ryb2tlLXdpZHRoPSIzIi8+PGVsbGlwc2UgY3g9IjY0IiBjeT0iMTEzIiByeD0iMjYiIHJ5PSI0LjIiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2Y2YzQzMSIgc3Ryb2tlLXdpZHRoPSIyLjQiLz48cGF0aCBkPSJNNDIgMjggQTIyIDE4IDAgMCAxIDg2IDI4IFoiIGZpbGw9InVybCgjZmMtZCkiIHN0cm9rZT0iI2M5Y2RmMiIgc3Ryb2tlLXdpZHRoPSIzIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PHBhdGggZD0iTTUwLjM2IDE5LjkgQTE1LjM5OTk5OTk5OTk5OTk5OSAxMy41IDAgMCAxIDYxLjggMTEuOCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjIuNiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBvcGFjaXR5PSIuOSIvPjxlbGxpcHNlIGN4PSI2NCIgY3k9IjMyIiByeD0iNTYiIHJ5PSIxMiIgZmlsbD0iIzFlMjM0NiIgc3Ryb2tlPSIjYzljZGYyIiBzdHJva2Utd2lkdGg9IjMiLz48ZWxsaXBzZSBjeD0iNjQiIGN5PSI0MCIgcng9IjIyIiByeT0iNiIgZmlsbD0idXJsKCNmYy1iKSIgc3Ryb2tlPSIjYzljZGYyIiBzdHJva2Utd2lkdGg9IjIuNCIvPjxjaXJjbGUgY3g9IjIyIiBjeT0iMzEiIHI9IjQiIGZpbGw9IiNmNmM0MzEiLz48Y2lyY2xlIGN4PSI0MCIgY3k9IjMxIiByPSI0IiBmaWxsPSIjZjZjNDMxIi8+PGNpcmNsZSBjeD0iODgiIGN5PSIzMSIgcj0iNCIgZmlsbD0iI2Y2YzQzMSIvPjxjaXJjbGUgY3g9IjEwNiIgY3k9IjMxIiByPSI0IiBmaWxsPSIjZjZjNDMxIi8+PHBhdGggZD0iTTY0IDU4IEw4NCA2OS41IEw4NCA5Mi41IEw2NCAxMDQgTDQ0IDkyLjUgTDQ0IDY5LjUgWiIgZmlsbD0iIzdiNGZkNiIvPjxwYXRoIGQ9Ik02NCA1OCBMODQgNjkuNSBMNjQgODEgTDQ0IDY5LjUgWiIgZmlsbD0iIzliNzJlYSIvPjxwYXRoIGQ9Ik02MCA3MiBMNzQgNjkgTDc0IDg5IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iMy40IiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PHBhdGggZD0iTTYwIDcyIEw2MCA5MiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjMuNCIvPjxlbGxpcHNlIGN4PSI1NiIgY3k9IjkyIiByeD0iNC42IiByeT0iMy42IiBmaWxsPSIjZmZmIi8+PGVsbGlwc2UgY3g9IjcwIiBjeT0iODkiIHJ4PSI0LjYiIHJ5PSIzLjYiIGZpbGw9IiNmZmYiLz4KPC9zdmc+Cg=="} };
+  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"First Contact*","namespace":"https://musicbrainz.org/","version":"2026.10.13","description":"Import a release into MusicBrainz from the platform's album page with one click: the release editor opens with the title, tracklist, artists, date, label, barcode and link filled in. Each artist's platform link is handed to Apollo Editor for matching. A second button sends the album to Harmony instead. By default the album page is also saved on the Internet Archive (it sends each imported URL to archive.org; off in the settings), and the edit note links the snapshot. Platforms: Deezer, Bandcamp, Discogs, Apple Music, Tidal, Qobuz, Beatport, Spotify, YouTube Music, Volumo, HDtracks, SoundCloud, Amazon Music, Audiomack, 7digital, Ototoy.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/first_contact/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5GaXJzdCBDb250YWN0PC90aXRsZT4KPGxpbmVhckdyYWRpZW50IGlkPSJmYy1kIiB4MT0iMCIgeTE9IjAiIHgyPSIwIiB5Mj0iMSI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjYmFlNmZkIi8+PHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjMzhiZGY4Ii8+PC9saW5lYXJHcmFkaWVudD48cmFkaWFsR3JhZGllbnQgaWQ9ImZjLWIiIGN4PSIuMzUiIGN5PSIuMyIgcj0iLjgiPjxzdG9wIG9mZnNldD0iMCIgc3RvcC1jb2xvcj0iI2ZmZjdjYyIvPjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iI2Y2YzQzMSIvPjwvcmFkaWFsR3JhZGllbnQ+PHBhdGggZD0iTTUwIDQyIEw3OCA0MiBMMTA0IDExMiBMMjQgMTEyIFoiIGZpbGw9IiNmNmM0MzEiIG9wYWNpdHk9Ii45Ii8+PHBhdGggZD0iTTU2IDQyIEw3MiA0MiBMODggMTEyIEw0MCAxMTIgWiIgZmlsbD0iI2ZkZTY4YSIgb3BhY2l0eT0iLjciLz48ZWxsaXBzZSBjeD0iNjQiIGN5PSIxMTQiIHJ4PSI0MiIgcnk9IjgiIGZpbGw9IiMxZTIzNDYiIHN0cm9rZT0iI2M5Y2RmMiIgc3Ryb2tlLXdpZHRoPSIzIi8+PGVsbGlwc2UgY3g9IjY0IiBjeT0iMTEzIiByeD0iMjYiIHJ5PSI0LjIiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2Y2YzQzMSIgc3Ryb2tlLXdpZHRoPSIyLjQiLz48cGF0aCBkPSJNNDIgMjggQTIyIDE4IDAgMCAxIDg2IDI4IFoiIGZpbGw9InVybCgjZmMtZCkiIHN0cm9rZT0iI2M5Y2RmMiIgc3Ryb2tlLXdpZHRoPSIzIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PHBhdGggZD0iTTUwLjM2IDE5LjkgQTE1LjM5OTk5OTk5OTk5OTk5OSAxMy41IDAgMCAxIDYxLjggMTEuOCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjIuNiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBvcGFjaXR5PSIuOSIvPjxlbGxpcHNlIGN4PSI2NCIgY3k9IjMyIiByeD0iNTYiIHJ5PSIxMiIgZmlsbD0iIzFlMjM0NiIgc3Ryb2tlPSIjYzljZGYyIiBzdHJva2Utd2lkdGg9IjMiLz48ZWxsaXBzZSBjeD0iNjQiIGN5PSI0MCIgcng9IjIyIiByeT0iNiIgZmlsbD0idXJsKCNmYy1iKSIgc3Ryb2tlPSIjYzljZGYyIiBzdHJva2Utd2lkdGg9IjIuNCIvPjxjaXJjbGUgY3g9IjIyIiBjeT0iMzEiIHI9IjQiIGZpbGw9IiNmNmM0MzEiLz48Y2lyY2xlIGN4PSI0MCIgY3k9IjMxIiByPSI0IiBmaWxsPSIjZjZjNDMxIi8+PGNpcmNsZSBjeD0iODgiIGN5PSIzMSIgcj0iNCIgZmlsbD0iI2Y2YzQzMSIvPjxjaXJjbGUgY3g9IjEwNiIgY3k9IjMxIiByPSI0IiBmaWxsPSIjZjZjNDMxIi8+PHBhdGggZD0iTTY0IDU4IEw4NCA2OS41IEw4NCA5Mi41IEw2NCAxMDQgTDQ0IDkyLjUgTDQ0IDY5LjUgWiIgZmlsbD0iIzdiNGZkNiIvPjxwYXRoIGQ9Ik02NCA1OCBMODQgNjkuNSBMNjQgODEgTDQ0IDY5LjUgWiIgZmlsbD0iIzliNzJlYSIvPjxwYXRoIGQ9Ik02MCA3MiBMNzQgNjkgTDc0IDg5IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iMy40IiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PHBhdGggZD0iTTYwIDcyIEw2MCA5MiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjMuNCIvPjxlbGxpcHNlIGN4PSI1NiIgY3k9IjkyIiByeD0iNC42IiByeT0iMy42IiBmaWxsPSIjZmZmIi8+PGVsbGlwc2UgY3g9IjcwIiBjeT0iODkiIHJ4PSI0LjYiIHJ5PSIzLjYiIGZpbGw9IiNmZmYiLz4KPC9zdmc+Cg=="}) }) : { script: {"name":"First Contact*","namespace":"https://musicbrainz.org/","version":"2026.10.13","description":"Import a release into MusicBrainz from the platform's album page with one click: the release editor opens with the title, tracklist, artists, date, label, barcode and link filled in. Each artist's platform link is handed to Apollo Editor for matching. A second button sends the album to Harmony instead. By default the album page is also saved on the Internet Archive (it sends each imported URL to archive.org; off in the settings), and the edit note links the snapshot. Platforms: Deezer, Bandcamp, Discogs, Apple Music, Tidal, Qobuz, Beatport, Spotify, YouTube Music, Volumo, HDtracks, SoundCloud, Amazon Music, Audiomack, 7digital, Ototoy.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/first_contact/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5GaXJzdCBDb250YWN0PC90aXRsZT4KPGxpbmVhckdyYWRpZW50IGlkPSJmYy1kIiB4MT0iMCIgeTE9IjAiIHgyPSIwIiB5Mj0iMSI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjYmFlNmZkIi8+PHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjMzhiZGY4Ii8+PC9saW5lYXJHcmFkaWVudD48cmFkaWFsR3JhZGllbnQgaWQ9ImZjLWIiIGN4PSIuMzUiIGN5PSIuMyIgcj0iLjgiPjxzdG9wIG9mZnNldD0iMCIgc3RvcC1jb2xvcj0iI2ZmZjdjYyIvPjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iI2Y2YzQzMSIvPjwvcmFkaWFsR3JhZGllbnQ+PHBhdGggZD0iTTUwIDQyIEw3OCA0MiBMMTA0IDExMiBMMjQgMTEyIFoiIGZpbGw9IiNmNmM0MzEiIG9wYWNpdHk9Ii45Ii8+PHBhdGggZD0iTTU2IDQyIEw3MiA0MiBMODggMTEyIEw0MCAxMTIgWiIgZmlsbD0iI2ZkZTY4YSIgb3BhY2l0eT0iLjciLz48ZWxsaXBzZSBjeD0iNjQiIGN5PSIxMTQiIHJ4PSI0MiIgcnk9IjgiIGZpbGw9IiMxZTIzNDYiIHN0cm9rZT0iI2M5Y2RmMiIgc3Ryb2tlLXdpZHRoPSIzIi8+PGVsbGlwc2UgY3g9IjY0IiBjeT0iMTEzIiByeD0iMjYiIHJ5PSI0LjIiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2Y2YzQzMSIgc3Ryb2tlLXdpZHRoPSIyLjQiLz48cGF0aCBkPSJNNDIgMjggQTIyIDE4IDAgMCAxIDg2IDI4IFoiIGZpbGw9InVybCgjZmMtZCkiIHN0cm9rZT0iI2M5Y2RmMiIgc3Ryb2tlLXdpZHRoPSIzIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PHBhdGggZD0iTTUwLjM2IDE5LjkgQTE1LjM5OTk5OTk5OTk5OTk5OSAxMy41IDAgMCAxIDYxLjggMTEuOCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjIuNiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBvcGFjaXR5PSIuOSIvPjxlbGxpcHNlIGN4PSI2NCIgY3k9IjMyIiByeD0iNTYiIHJ5PSIxMiIgZmlsbD0iIzFlMjM0NiIgc3Ryb2tlPSIjYzljZGYyIiBzdHJva2Utd2lkdGg9IjMiLz48ZWxsaXBzZSBjeD0iNjQiIGN5PSI0MCIgcng9IjIyIiByeT0iNiIgZmlsbD0idXJsKCNmYy1iKSIgc3Ryb2tlPSIjYzljZGYyIiBzdHJva2Utd2lkdGg9IjIuNCIvPjxjaXJjbGUgY3g9IjIyIiBjeT0iMzEiIHI9IjQiIGZpbGw9IiNmNmM0MzEiLz48Y2lyY2xlIGN4PSI0MCIgY3k9IjMxIiByPSI0IiBmaWxsPSIjZjZjNDMxIi8+PGNpcmNsZSBjeD0iODgiIGN5PSIzMSIgcj0iNCIgZmlsbD0iI2Y2YzQzMSIvPjxjaXJjbGUgY3g9IjEwNiIgY3k9IjMxIiByPSI0IiBmaWxsPSIjZjZjNDMxIi8+PHBhdGggZD0iTTY0IDU4IEw4NCA2OS41IEw4NCA5Mi41IEw2NCAxMDQgTDQ0IDkyLjUgTDQ0IDY5LjUgWiIgZmlsbD0iIzdiNGZkNiIvPjxwYXRoIGQ9Ik02NCA1OCBMODQgNjkuNSBMNjQgODEgTDQ0IDY5LjUgWiIgZmlsbD0iIzliNzJlYSIvPjxwYXRoIGQ9Ik02MCA3MiBMNzQgNjkgTDc0IDg5IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iMy40IiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PHBhdGggZD0iTTYwIDcyIEw2MCA5MiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjMuNCIvPjxlbGxpcHNlIGN4PSI1NiIgY3k9IjkyIiByeD0iNC42IiByeT0iMy42IiBmaWxsPSIjZmZmIi8+PGVsbGlwc2UgY3g9IjcwIiBjeT0iODkiIHJ4PSI0LjYiIHJ5PSIzLjYiIGZpbGw9IiNmZmYiLz4KPC9zdmc+Cg=="} };
   (f=>f())(function(){ try { (function(){
 (function () {
 'use strict';
@@ -38003,7 +38175,15 @@ Log.info(mbuStartupInfo(NAME));
 mbuToast.log = (kind, msg) => (kind === 'warn' ? Log.warn(msg) : kind === 'ok' ? Log.ok(msg) : Log.info(msg));
 
 function settings() {
-    const s = Object.assign({ server: 'musicbrainz.org', iconOnly: false, gearHidden: false, closeAfter: false, harmony: true, consolidate: true, archive: true, iaKey: '', iaSecret: '' }, GM_getValue('fc.settings', {}));
+    const stored = GM_getValue('fc.settings', {}) || {};
+    // #736: the archive.org keys moved to mbu.archive, shared with Apollo Editor; keys already set there win
+    if ('iaKey' in stored || 'iaSecret' in stored) {
+        const k = mbaKeysStored();
+        if (!k.iaKey && !k.iaSecret && (stored.iaKey || stored.iaSecret)) mbaSetKeys(stored.iaKey, stored.iaSecret);
+        delete stored.iaKey; delete stored.iaSecret;
+        GM_setValue('fc.settings', stored);
+    }
+    const s = Object.assign({ server: 'musicbrainz.org', iconOnly: false, gearHidden: false, closeAfter: false, harmony: true, consolidate: true, archive: true }, stored);
     if (!SERVERS.includes(s.server)) s.server = 'musicbrainz.org';
     // the option that showed ⚙︎ only on hover became Hide the settings button: who had it on keeps ⚙︎ out of sight
     if ('gearOnHover' in s) { if (!('gearHidden' in (GM_getValue('fc.settings', {}) || {}))) s.gearHidden = !!s.gearOnHover; delete s.gearOnHover; }
@@ -40133,94 +40313,21 @@ function editNoteFor(rel, provider, archive) {
 
 /* ── #659: Internet Archive ──────────────────────────────────────────────── */
 // The release editor's tab sends the save requests (the platform tab may close right after the
-// import); the edit note links the snapshots by the import's time.
+// import); the edit note links the snapshots by the import's time. Saving and the archive.org keys
+// are the shared <ST-ARCHIVE> block, with Apollo Editor (#736); whether FC archives is its own setting.
 
-const WAYBACK_TS = d => d.toISOString().replace(/[^0-9]/g, '').slice(0, 14);
-const ARCHIVE_WAIT_MS = 180000;
-
-// The page as the user has it, without the fragment and share/tracking parameters. Not the
-// canonical URL: that one often redirects (Deezer's /album/<id> to a country's /xx/album/<id>), and
-// Wayback then stores the snapshot under the target, so a link to the canonical URL by the
-// import's time finds an older snapshot instead of this one.
-// The query is cut as text: open.spotify.com replaces URLSearchParams with its own, whose keys()
-// can't be iterated ("u.searchParams.keys() is not iterable" stopped the import there).
-function archivePageUrl(href) {
-    const [base, query = ''] = String(href).split('#')[0].split(/\?(.*)/s);
-    const kept = query.split('&').filter(p => p && !/^(si|utm_\w+|fbclid|gclid|ref|from|context|nd|feature)$/i.test(decodeURIComponent(p.split('=')[0].replace(/\+/g, ' '))));
-    return base + (kept.length ? '?' + kept.join('&') : '');
-}
-
-// What to archive for this import, or null when archiving is off.
+// What to archive for this import, or null when archiving is off. The page as the user has it,
+// not the canonical URL: that one often redirects (Deezer's /album/<id> to a country's
+// /xx/album/<id>), and Wayback then stores the snapshot under the target, so a link to the
+// canonical URL by the import's time finds an older snapshot instead of this one.
 function archivePlan(rel, provider, id) {
     const s = settings();
     if (!s.archive) { Log.info('archive: off in the settings'); return null; }
-    const urls = [{ url: archivePageUrl(location.href), what: 'page' }];
+    const urls = [{ url: mbaCleanUrl(location.href), what: 'page' }];
     if (provider.archiveApi) urls.push({ url: provider.archiveApi(id), what: 'api' });
-    const keys = !!(s.iaKey && s.iaSecret);
+    const keys = !!mbaKeys();
     Log.info(`archive: ${urls.map(u => u.what + ' ' + u.url).join(', ')} (${keys ? 'Save Page Now 2 with your keys, with a screenshot' : 'anonymous Save Page Now'}); the release editor's tab sends it`);
-    return { ts: WAYBACK_TS(new Date()), keys, urls };
-}
-
-// Anonymous Save Page Now: a GET that answers (in seconds to a minute) with a redirect to the snapshot.
-function spnAnonymous(url) {
-    const t0 = Date.now();
-    return new Promise(resolve => {
-        GM_xmlhttpRequest({
-            method: 'GET', url: 'https://web.archive.org/save/' + url, timeout: ARCHIVE_WAIT_MS, anonymous: true,
-            headers: { Accept: 'text/html' },
-            onload: r => {
-                const snap = /\/web\/\d{14}\//.test(r.finalUrl || '') ? r.finalUrl : null;
-                const ms = Date.now() - t0;
-                if (r.status >= 200 && r.status < 300 && snap) Log.ok(`archive: saved ${url} → ${snap} (${ms} ms)`);
-                else if (r.status === 429) Log.warn(`archive: ${url} not saved: Save Page Now is limiting anonymous saves (HTTP 429). archive.org keys in the settings raise the limit`);
-                else Log.warn(`archive: ${url} → HTTP ${r.status}${snap ? '' : ', no snapshot in the answer'} (${ms} ms)${r.finalUrl ? ', ended at ' + r.finalUrl : ''}`);
-                resolve();
-            },
-            onerror: () => { Log.warn(`archive: network error saving ${url}`); resolve(); },
-            ontimeout: () => { Log.warn(`archive: no answer for ${url} in ${ARCHIVE_WAIT_MS / 60000} minutes (the save may still finish)`); resolve(); },
-        });
-    });
-}
-
-// Save Page Now 2 with the user's archive.org keys: higher limits, a screenshot, and a snapshot from
-// the last 30 days is reused. Starts a job, then follows it for the log only (nothing waits for it).
-function spnRequest(method, url, auth, body) {
-    return new Promise(resolve => {
-        GM_xmlhttpRequest({
-            method, url, data: body, timeout: 30000, anonymous: true,
-            headers: Object.assign({ Accept: 'application/json', Authorization: 'LOW ' + auth }, body ? { 'Content-Type': 'application/x-www-form-urlencoded' } : {}),
-            onload: r => { let j = null; try { j = JSON.parse(r.responseText || 'null'); } catch (e) { /* not JSON */ } resolve({ status: r.status, json: j, text: r.responseText || '' }); },
-            onerror: () => resolve({ status: 0, json: null, text: 'network error' }),
-            ontimeout: () => resolve({ status: 0, json: null, text: 'timeout' }),
-        });
-    });
-}
-async function spnWithKeys(url, s) {
-    const auth = `${s.iaKey}:${s.iaSecret}`;
-    const body = new URLSearchParams({ url, if_not_archived_within: '30d', capture_screenshot: '1' }).toString();
-    const r = await spnRequest('POST', 'https://web.archive.org/save', auth, body);
-    Log.debug(`archive: POST /save ${url} → HTTP ${r.status} ${r.text.slice(0, 300)}`);
-    if (r.status === 401 || r.status === 403) { Log.warn(`archive: archive.org refused your keys (HTTP ${r.status}); check them in the settings`); return; }
-    const job = r.json && r.json.job_id;
-    if (!job) {
-        const msg = (r.json && (r.json.message || r.json.status_ext)) || r.text.slice(0, 200) || 'no answer';
-        if (r.status === 200 && /archived|already/i.test(msg)) Log.ok(`archive: ${url} has a recent snapshot, not saved again (${msg})`);
-        else Log.warn(`archive: ${url} not saved (HTTP ${r.status}: ${msg})`);
-        return;
-    }
-    Log.info(`archive: ${url} queued as job ${job}`);
-    const t0 = Date.now();
-    while (Date.now() - t0 < ARCHIVE_WAIT_MS) {
-        await new Promise(res => setTimeout(res, 6000));
-        const st = await spnRequest('GET', 'https://web.archive.org/save/status/' + encodeURIComponent(job), auth);
-        const j = st.json || {};
-        Log.debug(`archive: job ${job} → HTTP ${st.status}, ${j.status || '?'}`);
-        if (j.status === 'pending') continue;
-        if (j.status === 'success') Log.ok(`archive: saved ${url} → https://web.archive.org/web/${j.timestamp}/${j.original_url || url}${j.screenshot ? ', screenshot ' + j.screenshot : ''} (${Date.now() - t0} ms)`);
-        else Log.warn(`archive: job ${job} for ${url} ended ${j.status || 'HTTP ' + st.status}: ${j.message || j.status_ext || st.text.slice(0, 200)}`);
-        return;
-    }
-    Log.info(`archive: job ${job} for ${url} still running after ${ARCHIVE_WAIT_MS / 60000} minutes; archive.org finishes it on its side`);
+    return { ts: mbaTs(new Date()), keys, urls };
 }
 
 // Send this import's URLs, once per import (a reload of the editor tab doesn't send them again).
@@ -40230,12 +40337,8 @@ async function archiveSources(plan, token) {
         if (sessionStorage.getItem(done)) { Log.debug(`archive: already sent for ${token} (this tab was reloaded)`); return; }
         sessionStorage.setItem(done, '1');
     } catch (e) { /* no sessionStorage: send anyway */ }
-    const s = settings();
-    const keys = !!(s.iaKey && s.iaSecret);
-    Log.info(`archive: sending ${plan.urls.length} URL(s) to the Internet Archive (${keys ? 'Save Page Now 2 with your keys' : 'anonymous'})`);
-    for (const a of plan.urls) {   // one at a time: anonymous saves are limited per IP
-        try { await (keys ? spnWithKeys(a.url, s) : spnAnonymous(a.url)); } catch (e) { Log.warn(`archive: ${a.url}: ${e.message}`); }
-    }
+    Log.info(`archive: sending ${plan.urls.length} URL(s) to the Internet Archive (${mbaKeys() ? 'Save Page Now 2 with your keys' : 'anonymous'})`);
+    for (const a of plan.urls) await mbaSave(a.url, Log, true);   // one at a time: anonymous saves are limited per IP
 }
 
 // What Apollo needs to match: every credited artist with its platform link, by position, and
@@ -40350,16 +40453,8 @@ function injectStyle() {
 #fc-panel .fc-pos { color: var(--mbu-text); margin-right: 14px; }
 #fc-panel label { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
 #fc-panel label.fc-check { justify-content: flex-start; gap: 6px; cursor: pointer; }
-/* #659: the archive.org keys, under the archive checkbox; dimmed while archiving is off */
-#fc-panel .fc-body > .fc-ia { display: grid; grid-template-columns: 1fr 1fr; gap: 4px 6px; margin: -2px 0 0 27px; }
-#fc-panel .fc-ia.fc-off { opacity: .5; }
-/* no password-manager icon in the key fields: they opt out by attribute (LastPass, 1Password,
-   Bitwarden, Dashlane), and the secret is a text field masked in CSS, since type=password draws every manager in */
-#fc-panel .fc-ia .fc-ia-secret { -webkit-text-security: disc; }
-#fc-panel .fc-ia-h { grid-column: 1 / -1; color: var(--mbu-text-weak); }
-#fc-panel .fc-ia-h a { color: var(--mbu-accent-text); margin-left: 4px; }
-#fc-panel .fc-ia input { all: revert; box-sizing: border-box; width: 100%; min-width: 0; font: 12px var(--mbu-font-mono, monospace);
-  padding: 3px 6px; border: 1px solid var(--mbu-border); border-radius: 4px; background: var(--mbu-bg-sunken); color: var(--mbu-text); }
+/* #659: the archive.org keys (the shared block's mbaKeysCss), under the archive checkbox */
+#fc-panel .fc-body > .mbu-ia { margin: -2px 0 0 27px; }
 /* the browser's own checkbox, whatever the site's sheet says: qobuz.com's sets appearance:none
    in a rule only Firefox applies, and our checkboxes drew as nothing there (#650) */
 #fc-panel input[type=checkbox] { all: revert; margin: 0; accent-color: var(--mbu-accent); cursor: pointer; }
@@ -40380,7 +40475,7 @@ function injectStyle() {
 #fc-warn button.fc-warn-go { background: var(--mbu-accent); border-color: var(--mbu-accent); color: #fff; }
 /* links (? Help, get them) in the readable accent: --mbu-accent is the deep purple that vanishes on the dark panel */
 #fc-panel a { color: var(--mbu-accent-text); }
-`;
+` + mbaKeysCss('#fc-panel');
     (document.head || document.documentElement).appendChild(st);
 }
 
@@ -40793,10 +40888,7 @@ function togglePanel(anchor) {
         + '<div class="fc-sec">Archive</div>'
         // #659: majkinetor: "It should be ON by default or many people will not use it"
         + `<label class="fc-check" title="On every import, ask the Internet Archive's Wayback Machine to save the album page (and, for Deezer and Apple Music, the album data FC read), and link the snapshots in the edit note. This sends each imported URL to archive.org."><input type="checkbox" class="fc-archive"${s.archive ? ' checked' : ''}> Archive the album page on the Internet Archive</label>`
-        + `<div class="fc-ia${s.archive ? '' : ' fc-off'}" title="Optional. With your archive.org keys the save uses Save Page Now 2: higher limits, and a screenshot of the page, which is the evidence for platforms that build their pages in the browser (Spotify, Tidal, YouTube Music). Without keys the save is anonymous.">`
-        + `<div class="fc-ia-h">archive.org keys <a href="https://archive.org/account/s3.php" target="_blank" rel="noopener">get them</a></div>`
-        + `<input type="text" class="fc-ia-key" placeholder="access key" autocomplete="off" data-lpignore="true" data-1p-ignore data-bwignore data-form-type="other" spellcheck="false" value="${(s.iaKey || '').replace(/"/g, '&quot;')}">`
-        + `<input type="text" class="fc-ia-secret" placeholder="secret" autocomplete="off" data-lpignore="true" data-1p-ignore data-bwignore data-form-type="other" spellcheck="false" value="${(s.iaSecret || '').replace(/"/g, '&quot;')}"></div>`
+        + mbaKeysHtml(!s.archive)
         + '<div class="fc-sec">Button</div>'
         + `<label class="fc-check" title="The button shows only its icon; hover it for what it does"><input type="checkbox" class="fc-iconly-opt"${s.iconOnly ? ' checked' : ''}> Icon only</label>`
         + `<label class="fc-check" title="No ⚙︎ button: right-click any of the buttons for the settings (that works with ⚙︎ shown too)"><input type="checkbox" class="fc-gear-hidden-opt"${s.gearHidden ? ' checked' : ''}> Hide settings button, use right click instead</label>`
@@ -40877,16 +40969,10 @@ function togglePanel(anchor) {
     panel.querySelector('.fc-archive').addEventListener('change', e => {
         const next = Object.assign(settings(), { archive: e.target.checked });
         saveSettings(next);
-        panel.querySelector('.fc-ia').classList.toggle('fc-off', !next.archive);
+        panel.querySelector('.mbu-ia').classList.toggle('mbu-ia-off', !next.archive);
         Log.info(`archive on the Internet Archive: ${next.archive ? 'on' : 'off'}`);
     });
-    const saveKeys = () => {
-        const next = Object.assign(settings(), { iaKey: panel.querySelector('.fc-ia-key').value.trim(), iaSecret: panel.querySelector('.fc-ia-secret').value.trim() });
-        saveSettings(next);
-        Log.info(`archive.org keys: ${next.iaKey && next.iaSecret ? 'set (Save Page Now 2)' : next.iaKey || next.iaSecret ? 'only one of the two is set, so saves stay anonymous' : 'none (anonymous saves)'}`);
-    };
-    panel.querySelector('.fc-ia-key').addEventListener('change', saveKeys);
-    panel.querySelector('.fc-ia-secret').addEventListener('change', saveKeys);
+    mbaKeysWire(panel, Log);
     panelDismiss = mbuDismissOn(panel, () => { panelDismiss = null; panel.remove(); });
 }
 
@@ -41106,7 +41192,7 @@ async function consolidateCurrent() {
         if (!nTracks) throw new Error(`${provider.name} returned no tracks`);
         Log.info(`release read in ${Date.now() - t0} ms: "${rel.title}" · ${rel.mediums.length} medium(s), ${nTracks} track(s) · barcode ${rel.barcode || '—'}`);
         pruneHandoffs();
-        GM_setValue(CONS_PREFIX + token, { v: 1, token, created: Date.now(), source: provider.id, sourceName: provider.name, platform: providerMeta(provider), id, page: archivePageUrl(location.href), url: rel.url, rel: relWithForms(rel, provider) });
+        GM_setValue(CONS_PREFIX + token, { v: 1, token, created: Date.now(), source: provider.id, sourceName: provider.name, platform: providerMeta(provider), id, page: mbaCleanUrl(location.href), url: rel.url, rel: relWithForms(rel, provider) });
         const url = `https://${server}/release/add#mc=${token}`;
         if (mbuTestHooks()) window.__fcLastCons = { token, url, rel };
         Log.ok(`handed to Mission Control: ${url}`);
@@ -42493,6 +42579,126 @@ try {
     if (!_mbuNs.MBU.fitToolbar) _mbuNs.MBU.fitToolbar = mbuFitToolbar;
 } catch (e) { /* a locked-down page must not stop the script loading */ }
 // </ST-UI>
+
+// <ST-ARCHIVE> — generated by dev/archive/sync-archive.mjs from dev/archive/wayback.mjs — DO NOT EDIT
+const MBA_KEY = "mbu.archive";
+function mbaTs(d) { return (d || new Date()).toISOString().replace(/[^0-9]/g, '').slice(0, 14); }
+function mbaShort(url) { return String(url).replace(/^https?:\/\//i, '').replace(/^www\./i, ''); }
+function mbaSnapshot(ts, url) { return 'https://web.archive.org/web/' + ts + '/' + mbaShort(url); }
+function mbaCleanUrl(href) {
+    const [base, query = ''] = String(href).split('#')[0].split(/\?(.*)/s);
+    const kept = query.split('&').filter(p => p && !/^(si|utm_\w+|fbclid|gclid|ref|from|context|nd|feature)$/i.test(decodeURIComponent(p.split('=')[0].replace(/\+/g, ' '))));
+    return base + (kept.length ? '?' + kept.join('&') : '');
+}
+function mbaKeys() {
+    let v = null;
+    try { v = GM_getValue(MBA_KEY, null); } catch (e) { /* no storage: anonymous */ }
+    return v && v.iaKey && v.iaSecret ? { key: v.iaKey, secret: v.iaSecret } : null;
+}
+function mbaKeysStored() {
+    let v = null;
+    try { v = GM_getValue(MBA_KEY, null); } catch (e) { /* no storage */ }
+    return { iaKey: (v && v.iaKey) || '', iaSecret: (v && v.iaSecret) || '' };
+}
+function mbaSetKeys(iaKey, iaSecret) {
+    const prev = (() => { try { return GM_getValue(MBA_KEY, null) || {}; } catch (e) { return {}; } })();
+    GM_setValue(MBA_KEY, Object.assign({}, prev, { iaKey: String(iaKey || '').trim(), iaSecret: String(iaSecret || '').trim() }));
+}
+function mbaSaveAnon(url, log) {
+    const t0 = Date.now(), wait = 180000;
+    return new Promise(resolve => {
+        GM_xmlhttpRequest({
+            method: 'GET', url: 'https://web.archive.org/save/' + url, timeout: wait, anonymous: true,
+            headers: { Accept: 'text/html' },
+            onload: r => {
+                const snap = /\/web\/\d{14}\//.test(r.finalUrl || '') ? r.finalUrl : null;
+                const ms = Date.now() - t0;
+                if (r.status >= 200 && r.status < 300 && snap) log.ok(`archive: saved ${url} → ${snap} (${ms} ms)`);
+                else if (r.status === 429) log.warn(`archive: ${url} not saved: Save Page Now is limiting anonymous saves (HTTP 429). archive.org keys in the settings raise the limit`);
+                else log.warn(`archive: ${url} → HTTP ${r.status}${snap ? '' : ', no snapshot in the answer'} (${ms} ms)${r.finalUrl ? ', ended at ' + r.finalUrl : ''}`);
+                resolve();
+            },
+            onerror: () => { log.warn(`archive: network error saving ${url}`); resolve(); },
+            ontimeout: () => { log.warn(`archive: no answer for ${url} in ${wait / 60000} minutes (the save may still finish)`); resolve(); },
+        });
+    });
+}
+function mbaRequest(method, url, auth, body) {
+    return new Promise(resolve => {
+        GM_xmlhttpRequest({
+            method, url, data: body, timeout: 30000, anonymous: true,
+            headers: Object.assign({ Accept: 'application/json', Authorization: 'LOW ' + auth }, body ? { 'Content-Type': 'application/x-www-form-urlencoded' } : {}),
+            onload: r => { let j = null; try { j = JSON.parse(r.responseText || 'null'); } catch (e) { /* not JSON */ } resolve({ status: r.status, json: j, text: r.responseText || '' }); },
+            onerror: () => resolve({ status: 0, json: null, text: 'network error' }),
+            ontimeout: () => resolve({ status: 0, json: null, text: 'timeout' }),
+        });
+    });
+}
+async function mbaSaveWithKeys(url, keys, log, follow) {
+    const auth = keys.key + ':' + keys.secret, wait = 180000;
+    const body = new URLSearchParams({ url, if_not_archived_within: '30d', capture_screenshot: '1' }).toString();
+    const r = await mbaRequest('POST', 'https://web.archive.org/save', auth, body);
+    log.debug(`archive: POST /save ${url} → HTTP ${r.status} ${r.text.slice(0, 300)}`);
+    if (r.status === 401 || r.status === 403) { log.warn(`archive: archive.org refused your keys (HTTP ${r.status}); check them in the settings`); return; }
+    const job = r.json && r.json.job_id;
+    if (!job) {
+        const msg = (r.json && (r.json.message || r.json.status_ext)) || r.text.slice(0, 200) || 'no answer';
+        if (r.status === 200 && /archived|already/i.test(msg)) log.ok(`archive: ${url} has a recent snapshot, not saved again (${msg})`);
+        else log.warn(`archive: ${url} not saved (HTTP ${r.status}: ${msg})`);
+        return;
+    }
+    log.info(`archive: ${url} queued as job ${job}`);
+    if (!follow) return;
+    const t0 = Date.now();
+    while (Date.now() - t0 < wait) {
+        await new Promise(res => setTimeout(res, 6000));
+        const st = await mbaRequest('GET', 'https://web.archive.org/save/status/' + encodeURIComponent(job), auth);
+        const j = st.json || {};
+        log.debug(`archive: job ${job} → HTTP ${st.status}, ${j.status || '?'}`);
+        if (j.status === 'pending') continue;
+        if (j.status === 'success') log.ok(`archive: saved ${url} → https://web.archive.org/web/${j.timestamp}/${j.original_url || url}${j.screenshot ? ', screenshot ' + j.screenshot : ''} (${Date.now() - t0} ms)`);
+        else log.warn(`archive: job ${job} for ${url} ended ${j.status || 'HTTP ' + st.status}: ${j.message || j.status_ext || st.text.slice(0, 200)}`);
+        return;
+    }
+    log.info(`archive: job ${job} for ${url} still running after ${wait / 60000} minutes; archive.org finishes it on its side`);
+}
+async function mbaSave(url, log, follow) {
+    const keys = mbaKeys();
+    try { await (keys ? mbaSaveWithKeys(url, keys, log, follow) : mbaSaveAnon(url, log)); } catch (e) { log.warn(`archive: ${url}: ${e && e.message || e}`); }
+}
+function mbaKeysHtml(off) {
+    const k = mbaKeysStored(), q = v => String(v).replace(/&/g, '&amp;').replace(/"/g, '&quot;');
+    // no password-manager icon in the fields: they opt out by attribute (LastPass, 1Password,
+    // Bitwarden, Dashlane), and the secret is a text field masked in CSS, since type=password draws every manager in
+    const opt = 'autocomplete="off" data-lpignore="true" data-1p-ignore data-bwignore data-form-type="other" spellcheck="false"';
+    return `<div class="mbu-ia${off ? ' mbu-ia-off' : ''}" title="Optional, and shared by First Contact and Apollo Editor. With your archive.org keys the save uses Save Page Now 2: higher limits, and a screenshot of the page, which is the evidence for platforms that build their pages in the browser (Spotify, Tidal, YouTube Music). Without keys the save is anonymous.">`
+        + '<div class="mbu-ia-h">archive.org keys <a href="https://archive.org/account/s3.php" target="_blank" rel="noopener">get them</a></div>'
+        + `<input type="text" class="mbu-ia-key" placeholder="access key" ${opt} value="${q(k.iaKey)}">`
+        + `<input type="text" class="mbu-ia-secret" placeholder="secret" ${opt} value="${q(k.iaSecret)}"></div>`;
+}
+function mbaKeysWire(root, log) {
+    const key = root.querySelector('.mbu-ia-key'), secret = root.querySelector('.mbu-ia-secret');
+    if (!key || !secret) return;
+    const save = () => {
+        mbaSetKeys(key.value, secret.value);
+        const k = key.value.trim(), s = secret.value.trim();
+        log.info(`archive.org keys: ${k && s ? 'set (Save Page Now 2)' : k || s ? 'only one of the two is set, so saves stay anonymous' : 'none (anonymous saves)'}`);
+    };
+    key.addEventListener('change', save);
+    secret.addEventListener('change', save);
+}
+function mbaKeysCss(scope) {
+    const s = scope + ' .mbu-ia';
+    return `${s} { display: grid; grid-template-columns: 1fr 1fr; gap: 4px 6px; }
+${s}.mbu-ia-off { opacity: .5; }
+${s} .mbu-ia-secret { -webkit-text-security: disc; }
+${s} .mbu-ia-h { grid-column: 1 / -1; color: var(--mbu-text-weak); }
+${s} .mbu-ia-h a { color: var(--mbu-accent-text); margin-left: 4px; }
+${s} input { all: revert; box-sizing: border-box; width: 100%; min-width: 0; font: 12px var(--mbu-font-mono, monospace);
+  padding: 3px 6px; border: 1px solid var(--mbu-border); border-radius: 4px; background: var(--mbu-bg-sunken); color: var(--mbu-text); }
+`;
+}
+// </ST-ARCHIVE>
 
 try {
     // a provider that must hear the player's own requests hooks them now, before the page's scripts run

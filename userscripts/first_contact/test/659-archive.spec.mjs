@@ -26,7 +26,7 @@ test('the edit note links the page, the API data and, with keys, the screenshot'
 });
 
 test('the archived page is the one the user has, without the fragment and share parameters', { tag: ['@unit', '@critical'] }, async () => {
-  const { archivePageUrl } = await loadFunctions('first_contact', ['archivePageUrl']);
+  const { mbaCleanUrl: archivePageUrl } = await loadFunctions('first_contact', ['mbaCleanUrl']);
   const cases = [
     ['https://www.deezer.com/en/album/6575789#tracks', 'https://www.deezer.com/en/album/6575789'],
     ['https://open.spotify.com/album/4m2880jivSbbyEGAKfITCa?si=abc&nd=1', 'https://open.spotify.com/album/4m2880jivSbbyEGAKfITCa'],
@@ -58,7 +58,7 @@ async function importToEditor({ page, context, inject }) {
   await requireLogin(editor);
   await settled(editor);
   // the harness's GM storage is per origin: carry the handoff over as one manager store would
-  const stored = await page.evaluate(() => GM_listValues().filter(k => k.startsWith('fc.handoff.')).map(k => [k, GM_getValue(k)]));
+  const stored = await page.evaluate(() => GM_listValues().filter(k => k.startsWith('fc.handoff.') || k === 'mbu.archive').map(k => [k, GM_getValue(k)]));
   await editor.evaluate(kv => kv.forEach(([k, v]) => GM_setValue(k, v)), stored);
   await inject('first_contact', { target: editor, waitFor: '__fcHandoff' });
   const seed = await page.evaluate(() => ({ token: window.__fcLastSeed.token, note: (window.__fcLastSeed.params.find(([k]) => k === 'edit_note') || [])[1] || '' }));
@@ -107,6 +107,7 @@ test.describe('anonymous', () => {
   });
 });
 
+// the keys as FC kept them before #736, in fc.settings: moved to the shared mbu.archive on start
 test.describe('with archive.org keys', () => {
   test.use({
     gm: { name: 'First Contact', persist: 'tabs', values: { 'fc.settings': { server: 'test.musicbrainz.org', iaKey: 'AKEY', iaSecret: 'ASECRET' } } },
@@ -128,6 +129,8 @@ test.describe('with archive.org keys', () => {
       return { status: 200, body: JSON.stringify(polls % 2 ? { status: 'pending', job_id: job } : { status: 'success', job_id: job, timestamp: '20261002120917', original_url: PAGE, screenshot: 'http://web.archive.org/screenshot/' + PAGE }) };
     });
     const { seed } = await importToEditor({ page, context, inject });
+    const moved = await page.evaluate(() => ({ shared: GM_getValue('mbu.archive'), fc: GM_getValue('fc.settings') }));
+    check(moved.shared && moved.shared.iaKey === 'AKEY' && moved.shared.iaSecret === 'ASECRET' && !('iaKey' in moved.fc) && !('iaSecret' in moved.fc), `the keys moved to mbu.archive (${JSON.stringify(moved)})`);
     check(seed.note.includes(`Archived screenshot: https://web.archive.org/web/`) && seed.note.includes(`/http://web.archive.org/screenshot/${ALBUM}\n`), `the edit note links the screenshot\n${seed.note}`);
 
     const posts = () => calls.filter(c => c.method === 'POST');
@@ -158,17 +161,17 @@ test.describe('settings', () => {
     const box = page.locator('#fc-panel .fc-archive');
     check(await box.isChecked(), 'archiving is on by default');
     check(await page.locator('#fc-panel a[href="https://archive.org/account/s3.php"]').count() === 1, 'the panel links where to get the keys');
-    await page.locator('#fc-panel .fc-ia-key').fill('K1');
-    await page.locator('#fc-panel .fc-ia-secret').fill('S1');
-    await page.locator('#fc-panel .fc-ia-secret').press('Tab');
-    const s1 = await page.evaluate(() => GM_getValue('fc.settings'));
-    check(s1.iaKey === 'K1' && s1.iaSecret === 'S1', `keys saved (${s1.iaKey}/${s1.iaSecret})`);
+    await page.locator('#fc-panel .mbu-ia-key').fill('K1');
+    await page.locator('#fc-panel .mbu-ia-secret').fill('S1');
+    await page.locator('#fc-panel .mbu-ia-secret').press('Tab');
+    const s1 = await page.evaluate(() => GM_getValue('mbu.archive'));
+    check(s1 && s1.iaKey === 'K1' && s1.iaSecret === 'S1', `keys saved to the shared mbu.archive (${JSON.stringify(s1)})`);
     // masked, but not a password field: that draws a password manager's icon into it (majkinetor: "Make fields not have password manager icons")
-    const secret = await page.locator('#fc-panel .fc-ia-secret').evaluate(e => ({ type: e.type, mask: getComputedStyle(e).webkitTextSecurity, opt: e.hasAttribute('data-1p-ignore') && e.dataset.lpignore === 'true' }));
+    const secret = await page.locator('#fc-panel .mbu-ia-secret').evaluate(e => ({ type: e.type, mask: getComputedStyle(e).webkitTextSecurity, opt: e.hasAttribute('data-1p-ignore') && e.dataset.lpignore === 'true' }));
     check(secret.type === 'text' && secret.mask === 'disc' && secret.opt, `the secret is masked, not a password field, and opts out of password managers (${JSON.stringify(secret)})`);
     await box.uncheck();
     const s2 = await page.evaluate(() => GM_getValue('fc.settings'));
     check(s2.archive === false, 'unchecking turns archiving off');
-    check(await page.locator('#fc-panel .fc-ia.fc-off').count() === 1, 'the keys dim while archiving is off');
+    check(await page.locator('#fc-panel .mbu-ia.mbu-ia-off').count() === 1, 'the keys dim while archiving is off');
   });
 });
