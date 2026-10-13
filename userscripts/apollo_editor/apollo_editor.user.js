@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.13.103426
+// @version      2026.10.13.110838
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5BcG9sbG8gRWRpdG9yPC90aXRsZT4KPG1hc2sgaWQ9ImFwLW0iIG1hc2tVbml0cz0idXNlclNwYWNlT25Vc2UiIHg9IjAiIHk9IjAiIHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4Ij48Zz48ZyBmaWxsPSIjZmZmIj48cGF0aCBkPSJNNDIgNjQgQzI4IDcyIDIyIDkwIDI0IDExMCBMNDIgOTggWiIvPjxwYXRoIGQ9Ik04NiA2NCBDMTAwIDcyIDEwNiA5MCAxMDQgMTEwIEw4NiA5OCBaIi8+PC9nPjxnIGZpbGw9IiNmZmYiPjxwYXRoIGQ9Ik02NCA4IEM4NCAyNCA5MCA1MiA4OCA5MCBMNDAgOTAgQzM4IDUyIDQ0IDI0IDY0IDggWiIvPjxwYXRoIGQ9Ik00OCA5MCBMODAgOTAgTDc2IDEwMCBMNTIgMTAwIFoiLz48L2c+PGcgc3Ryb2tlPSIjMDAwIiBzdHJva2Utd2lkdGg9IjMuNSI+PHBhdGggZD0iTTM2IDkwLjUgTDkyIDkwLjUiLz48L2c+PGNpcmNsZSBjeD0iNjQiIGN5PSI1MCIgcj0iOCIgZmlsbD0iIzAwMCIvPjwvZz48L21hc2s+PGc+PHBhdGggZD0iTTUyIDEwMCBDNTQgMTEyIDYwIDExOCA2NCAxMjYgQzY4IDExOCA3NCAxMTIgNzYgMTAwIFoiIGZpbGw9IiNlYjc0M2IiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDAgMykiLz48L2c+PHJlY3Qgd2lkdGg9IjEyOCIgaGVpZ2h0PSIxMjgiIGZpbGw9IiNiYTQ3OGYiIG1hc2s9InVybCgjYXAtbSkiLz4KPC9zdmc+Cg==
@@ -429,11 +429,76 @@
     return out;
   }
 
+  /* ── MusicBrainz's browser check (#733) ──
+   * Since 2026-09 musicbrainz.org's website side — /ws/js/* included, ws/2 not — answers with a
+   * "Verifying your browser" page (HTTP 200, HTML) until the browser has solved its proof-of-work,
+   * which sets a __meb_verified cookie (24 h, bound to the IP). The release editor never reloads,
+   * so once that cookie lapses (or the IP changes) every /ws/js read gets the check instead of
+   * JSON, and searches, matching and the artist picker all fail with "JSON.parse: unexpected
+   * character". Fix: on that page, load one fresh hidden iframe at the same URL — MusicBrainz's
+   * own script solves the check there and renews the cookie for the whole browser — then retry.
+   * Recognised by the <title> and the <noscript> sentinel, never by "/__meb_verify" (ordinary MB
+   * pages carry a beacon posting there — see Falcon #551). */
+  const MB_CHECK_RE = /<title>\s*Verifying your browser\s*<\/title>|JavaScript is required to access this page/i;
+  let _mbCheck = null, _mbCheckFailedAt = 0;
+  function mbReverify(url) {
+    if (_mbCheck) return _mbCheck;   // one iframe for every request that hit the check at once
+    if (Date.now() - _mbCheckFailedAt < 60000) return Promise.resolve(false);   // just failed: don't loop
+    const t0 = Date.now();
+    Log.cat('MusicBrainz').warn('MusicBrainz asked to verify the browser again (its "Verifying your browser" check) — running it in a hidden frame');
+    _mbCheck = new Promise(resolve => {
+      const fr = document.createElement('iframe');   // fresh each time; never re-navigated
+      fr.setAttribute('aria-hidden', 'true'); fr.tabIndex = -1;
+      fr.style.cssText = 'position:fixed;width:1px;height:1px;left:-9999px;top:0;border:0;opacity:0;pointer-events:none';
+      let loads = 0, done = false;
+      const finish = ok => {
+        if (done) return; done = true; clearTimeout(timer); fr.remove(); _mbCheck = null;
+        if (!ok) _mbCheckFailedAt = Date.now();
+        Log.cat('MusicBrainz')[ok ? 'info' : 'warn'](ok ? `browser check passed in ${Date.now() - t0} ms — retrying` : 'browser check did not clear in 20 s — open any MusicBrainz page in another tab, then retry');
+        if (!ok) toast('MusicBrainz wants to verify your browser — open any MusicBrainz page in another tab, then retry', 'warn');
+        resolve(ok);
+      };
+      // the first load is the check itself; it posts its answer and is redirected to the real URL
+      fr.onload = () => {
+        loads++;
+        let still = true;
+        try { const d = fr.contentDocument; still = !d || MB_CHECK_RE.test(d.documentElement ? d.documentElement.outerHTML.slice(0, 3000) : ''); } catch (e) { still = loads < 2; }
+        Log.cat('MusicBrainz').debug('browser check frame load', loads, still ? '(still the check)' : '(cleared)');
+        if (!still) finish(true);
+      };
+      const timer = setTimeout(() => finish(false), 20000);
+      fr.src = url;
+      (document.body || document.documentElement).appendChild(fr);
+    });
+    return _mbCheck;
+  }
+  // fetch() for MusicBrainz's website-side JSON (/ws/js/*): if the browser check answers instead,
+  // pass it once in a hidden frame and retry. A JSON answer is returned untouched.
+  // → { r, check }: the response (body still readable) and whether it was the browser check
+  async function mbCheckAnswer(r) {
+    if (!/text\/html/i.test(r.headers.get('content-type') || '')) return { r, check: false };
+    const text = await r.text();
+    return { r: new Response(text, { status: r.status, statusText: r.statusText, headers: r.headers }), check: MB_CHECK_RE.test(text.slice(0, 3000)) };
+  }
+  async function mbWebFetch(url, init) {
+    const first = await mbCheckAnswer(await fetch(url, init));
+    if (!first.check) return first.r;
+    Log.cat('MusicBrainz').debug('browser check served for', url);
+    if (!(await mbReverify(url))) return first.r;
+    const retry = await mbCheckAnswer(await fetch(url, init));
+    if (retry.check && Date.now() - _mbCheckFailedAt > 60000) {   // the frame "cleared" but the check stays: say so once
+      _mbCheckFailedAt = Date.now();
+      Log.cat('MusicBrainz').warn('MusicBrainz still serves its browser check after the frame passed it — open any MusicBrainz page in another tab, then retry');
+      toast('MusicBrainz wants to verify your browser — open any MusicBrainz page in another tab, then retry', 'warn');
+    }
+    return retry.r;
+  }
+
   /* ── search + siblings ── */
   const _cache = new Map();
   // resolve an MBID to a full entity (incl. the numeric id needed for the credit write-back)
   async function fetchEntity(gid, kind) {
-    try { const j = await fetch(`${ORIGIN}/ws/js/entity/${gid}`, { headers: { Accept: 'application/json' } }).then(r => r.json());
+    try { const j = await mbWebFetch(`${ORIGIN}/ws/js/entity/${gid}`, { headers: { Accept: 'application/json' } }).then(r => r.json());
       // return the WHOLE entity (like a search hit) so the credit write-back has every field it needs
       if (j && j.gid) { if (!j.entityType) j.entityType = kind || 'artist'; return j; } }
     catch (e) { Log.cat(kind === 'label' ? 'Label' : 'Artist').warn('fetch entity failed', gid, e.message); }
@@ -444,7 +509,7 @@
     const k = fold(name) + '|' + limit; if (!fold(name)) return [];
     if (_cache.has(k)) return _cache.get(k);
     let list = [];
-    try { const j = await fetch(`${ORIGIN}/ws/js/artist?q=${encodeURIComponent(name)}&limit=${limit}&direct=false`, { headers: { Accept: 'application/json' } }).then(r => r.json()); list = Array.isArray(j) ? j : (j.results || []); }
+    try { const j = await mbWebFetch(`${ORIGIN}/ws/js/artist?q=${encodeURIComponent(name)}&limit=${limit}&direct=false`, { headers: { Accept: 'application/json' } }).then(r => r.json()); list = Array.isArray(j) ? j : (j.results || []); }
     catch (e) { Log.cat('Artist').warn('search failed:', name, e.message); }
     list = list.filter(c => c && (c.name || '').trim());   // drop the trailing empty placeholder entry
     list.forEach(c => noteDisamb(c.gid || c.id, c.comment));   // cache disambiguations for the table after a pick (#195)
@@ -895,7 +960,7 @@ click to open the label`;
     const k = fold(name) + '|' + limit; if (!fold(name)) return [];
     if (_labCache.has(k)) return _labCache.get(k);
     let list = [];
-    try { const j = await fetch(`${ORIGIN}/ws/js/label?q=${encodeURIComponent(name)}&limit=${limit}&direct=false`, { headers: { Accept: 'application/json' } }).then(r => r.json()); list = Array.isArray(j) ? j : (j.results || []); }
+    try { const j = await mbWebFetch(`${ORIGIN}/ws/js/label?q=${encodeURIComponent(name)}&limit=${limit}&direct=false`, { headers: { Accept: 'application/json' } }).then(r => r.json()); list = Array.isArray(j) ? j : (j.results || []); }
     catch (e) { Log.cat('Label').warn('label search failed:', name, e.message); return []; }
     list = list.filter(c => c && c.gid && (c.name || '').trim());   // drop the trailing paging entry
     _labCache.set(k, list); return list;
@@ -1685,7 +1750,7 @@ click to open the label`;
     let out = null;
     for (let attempt = 0; attempt < 4; attempt++) {
       try {
-        const r = await fetch(`${ORIGIN}/ws/js/entity/${gid}?inc=rels`, { headers: { Accept: 'application/json' } });
+        const r = await mbWebFetch(`${ORIGIN}/ws/js/entity/${gid}?inc=rels`, { headers: { Accept: 'application/json' } });
         if (r.status === 429 || r.status === 503) { await _sleep(800); continue; }   // rate limited → back off, don't cache a miss
         if (!r.ok) { await _sleep(500); continue; }
         const j = await r.json();

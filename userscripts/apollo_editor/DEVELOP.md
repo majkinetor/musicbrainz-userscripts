@@ -32,3 +32,9 @@ Already-linked artists are verified through MusicBrainz's internal entity endpoi
 ## Auto confirm
 
 When another site seeds the add or edit release form, MusicBrainz shows a confirmation page before the editor; *Auto confirm release submissions* clicks its submit button. It folds in chaban's [Auto click confirm form submission](https://greasyfork.org/en/scripts/536999), acts only on that page (`.confirm-seed`), and `?skip_confirmation` on a seed URL bypasses it once.
+
+## MusicBrainz's browser check
+
+Since 2026-09 musicbrainz.org's website side, `/ws/js/*` included, answers with a *Verifying your browser* page until the browser has solved its proof-of-work; ws/2 isn't checked. A pass sets the `__meb_verified` cookie for 24 hours, bound to the IP. The release editor never reloads, so once the cookie lapses or the IP changes, every `/ws/js` read gets that page (HTTP 200, HTML) instead of JSON ([#733](https://github.com/majkinetor/musicbrainz-userscripts/issues/733)).
+
+Apollo's `/ws/js` reads go through `mbWebFetch`: on that page it loads the same URL in one fresh hidden iframe, where MusicBrainz's own script passes the check and renews the cookie for the whole browser, then retries. A frame that doesn't clear within 20 seconds gives a toast to open any MusicBrainz page in another tab, which does the same. The page is recognised by its title and its `<noscript>` text, never by `/__meb_verify`, which ordinary pages also post to.
