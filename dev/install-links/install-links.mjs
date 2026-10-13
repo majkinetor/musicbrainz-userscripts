@@ -2,7 +2,7 @@
 // Makes and checks userscript install links (Standard 10, STANDARDS.md). How to use it
 // and what it checks: README.md beside this file.
 //
-//   node dev/install-links/install-links.mjs <script> [...] [--branch <b>]    print the links
+//   node dev/install-links/install-links.mjs <script> [...] [--branch <b>] [--full]  print the links
 //   node dev/install-links/install-links.mjs <script> [...] --into <body.md>  put them in a comment body
 //   node dev/install-links/install-links.mjs --check <comment-url | file.md>  check posted links
 
@@ -97,7 +97,9 @@ if (checkTarget) {
 
 const branchArg = opt('--branch');
 const into = opt('--into');
-if (!args.length || args.some(a => a.startsWith('--'))) die('usage: node dev/install-links/install-links.mjs <script> [...] [--branch <branch>] [--into <body.md>] | --check <comment-url | file.md>');
+// --full: a String Theory member's own link too, before String Theory's (default: String Theory's only)
+const full = args.includes('--full'); if (full) args.splice(args.indexOf('--full'), 1);
+if (!args.length || args.some(a => a.startsWith('--'))) die('usage: node dev/install-links/install-links.mjs <script> [...] [--branch <branch>] [--into <body.md>] [--full] | --check <comment-url | file.md>');
 
 // --- making the links -----------------------------------------------------------------
 
@@ -128,7 +130,7 @@ const folder = f => f.split('/').slice(0, -1).filter((d, i, a) => !(d === 'dist'
 // A String Theory member is linked through String Theory only (maintainer, 2026-10-13: "only ST
 // links on issues"); a script outside the bundle (Scribe, …) keeps its own link.
 const asked = [...new Set(args.map(scriptFile))];
-const files = asked.filter(f => !members.includes(folder(f)));
+const files = full ? asked.filter(f => f !== ST) : asked.filter(f => !members.includes(folder(f)));
 if (asked.some(f => members.includes(folder(f))) && !files.includes(ST)) files.push(ST);
 
 const lines = [];

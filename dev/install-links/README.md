@@ -12,11 +12,11 @@ It needs Node, `git`, `curl`, and `gh` for `--check` on a comment URL. It runs t
 
 ## Making links
 
-`node dev/install-links/install-links.mjs <script> [...] [--branch <branch>] [--into <file>]`
+`node dev/install-links/install-links.mjs <script> [...] [--branch <branch>] [--into <file>] [--full]`
 
 - **`<script>`** is a folder under `userscripts/` (`apollo_editor`, `as_picker`) or a path to a `.user.js`. For a built script it links the file in `dist/`.
 - **`--branch`** is the branch to link. By default it's `main` when HEAD is on `origin/main` (run `git fetch` first, so `origin/main` is current), else the branch checked out, which must be pushed up to HEAD.
-- **Which links:** one per script that follows the branch, its label's `@version` read from the branch's head: *latest* on `main`, *branch <name>* otherwise. A String Theory [member](../../userscripts/string_theory/members.txt) gets no link of its own: it is linked through **String Theory's** only, once however many members changed. Pinned (commit) links are only for releases, which [`dev/publish.mjs`](../publish.mjs) writes.
+- **Which links:** one per script that follows the branch, its label's `@version` read from the branch's head: *latest* on `main`, *branch <name>* otherwise. A String Theory [member](../../userscripts/string_theory/members.txt) gets no link of its own: it is linked through **String Theory's** only, once however many members changed. **`--full`** adds each member's own link before String Theory's. Pinned (commit) links are only for releases, which [`dev/publish.mjs`](../publish.mjs) writes.
 - **Output:** the links go to stdout, one per line, ready to paste unchanged. With `--into <file>`, they replace the line `<!-- install-links -->` in that file, or are appended when the file has none. Write the comment body with that line where the links belong, and post the file.
 
 Every link is checked before it's printed. When a check fails, nothing is printed and the exit code is 1.
