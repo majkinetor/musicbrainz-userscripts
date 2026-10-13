@@ -254,6 +254,7 @@ Archived API data: https://web.archive.org/web/20261002121804/https://api.deezer
 
 - The import never waits for the save, which takes from a few seconds to a minute; the [log](#settings) says when it's done or why it failed.
 - Deezer and Apple Music build their pages in the browser, so a saved page shows little. For these, the album data First Contact read is saved too, and linked as *Archived API data*.
+- Discogs refuses the Internet Archive, so its page can't be saved, nor a screenshot of it. For Discogs, the release's data from Discogs' API is saved instead, and linked as *Archived API data*.
 - Spotify, Tidal and YouTube Music also build their pages in the browser, and their data can't be saved. For these, add your archive.org keys: the save then also takes a screenshot of the page, and the edit note links it as *Archived screenshot*.
 
 ### archive.org keys

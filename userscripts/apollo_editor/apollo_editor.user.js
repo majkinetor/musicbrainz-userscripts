@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.13.183225
+// @version      2026.10.13.185714
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5BcG9sbG8gRWRpdG9yPC90aXRsZT4KPG1hc2sgaWQ9ImFwLW0iIG1hc2tVbml0cz0idXNlclNwYWNlT25Vc2UiIHg9IjAiIHk9IjAiIHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4Ij48Zz48ZyBmaWxsPSIjZmZmIj48cGF0aCBkPSJNNDIgNjQgQzI4IDcyIDIyIDkwIDI0IDExMCBMNDIgOTggWiIvPjxwYXRoIGQ9Ik04NiA2NCBDMTAwIDcyIDEwNiA5MCAxMDQgMTEwIEw4NiA5OCBaIi8+PC9nPjxnIGZpbGw9IiNmZmYiPjxwYXRoIGQ9Ik02NCA4IEM4NCAyNCA5MCA1MiA4OCA5MCBMNDAgOTAgQzM4IDUyIDQ0IDI0IDY0IDggWiIvPjxwYXRoIGQ9Ik00OCA5MCBMODAgOTAgTDc2IDEwMCBMNTIgMTAwIFoiLz48L2c+PGcgc3Ryb2tlPSIjMDAwIiBzdHJva2Utd2lkdGg9IjMuNSI+PHBhdGggZD0iTTM2IDkwLjUgTDkyIDkwLjUiLz48L2c+PGNpcmNsZSBjeD0iNjQiIGN5PSI1MCIgcj0iOCIgZmlsbD0iIzAwMCIvPjwvZz48L21hc2s+PGc+PHBhdGggZD0iTTUyIDEwMCBDNTQgMTEyIDYwIDExOCA2NCAxMjYgQzY4IDExOCA3NCAxMTIgNzYgMTAwIFoiIGZpbGw9IiNlYjc0M2IiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDAgMykiLz48L2c+PHJlY3Qgd2lkdGg9IjEyOCIgaGVpZ2h0PSIxMjgiIGZpbGw9IiNiYTQ3OGYiIG1hc2s9InVybCgjYXAtbSkiLz4KPC9zdmc+Cg==
@@ -3999,8 +3999,12 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
   function mbaSnapshot(ts, url) { return 'https://web.archive.org/web/' + ts + '/' + mbaShort(url); }
   function mbaCleanUrl(href) {
       const [base, query = ''] = String(href).split('#')[0].split(/\?(.*)/s);
-      const kept = query.split('&').filter(p => p && !/^(si|utm_\w+|fbclid|gclid|ref|from|context|nd|feature)$/i.test(decodeURIComponent(p.split('=')[0].replace(/\+/g, ' '))));
+      const kept = query.split('&').filter(p => p && !/^(si|utm_\w+|fbclid|gclid|ref|from|context|nd|feature|redirected)$/i.test(decodeURIComponent(p.split('=')[0].replace(/\+/g, ' '))));
       return base + (kept.length ? '?' + kept.join('&') : '');
+  }
+  function mbaSavable(url) {
+      const d = String(url).match(/^https?:\/\/(?:www\.)?discogs\.com\/(?:[a-z]{2}\/)?(release|master|artist|label)\/(\d+)(?:[-/?#]|$)/i);
+      return d ? `https://api.discogs.com/${d[1].toLowerCase()}s/${d[2]}` : url;
   }
   function mbaKeys() {
       let v = null;
@@ -11117,25 +11121,31 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
   // nothing waits for it: the page leaves seconds later, and Save Page Now finishes on archive.org's
   // side. The release's links get one line between them (the release lists them); a link found only
   // in the note gets its own. What First Contact archives for its import is left to it.
-  const AR_LINE = /^Archived (on the Wayback Machine,|link:)/;
+  const AR_LINE = /^Archived (on the Wayback Machine,|link:|screenshots:|screenshot of the link:)/;
   const _arSent = new Set();   // a second Enter edit (MB refused the first) doesn't save again
   const arNorm = u => mbaShort(u).replace(/\/+$/, '').toLowerCase();
   // the links to save and the lines saying so, from the release's links and the edit note
-  function archiveNote(note, releaseLinks, skip, ts) {
-    const ok = u => /^https?:\/\//i.test(u) && !/^https?:\/\/([^/]*\.)?(archive\.org|musicbrainz\.org|metabrainz\.org)(\/|$)/i.test(u) && !skip.has(arNorm(u));
+  function archiveNote(note, releaseLinks, skip, ts, name = 'Apollo Editor', keys = false) {
+    const ok = u => /^https?:\/\//i.test(u) && !/^https?:\/\/([^/]*\.)?(archive\.org|musicbrainz\.org|metabrainz\.org)(\/|$)/i.test(u) && !skip.has(arNorm(u)) && !skip.has(arNorm(mbaSavable(u)));
     const links = [...new Map(releaseLinks.filter(ok).map(u => [arNorm(u), u])).values()];
     const known = new Set(links.map(arNorm));
     const credit = l => / v\d[\w.]* by \S+ - https?:\/\//.test(l);   // "<script> v<version> by <author> - <url>"
-    const lines = String(note || '').replace(/\s+$/, '').split('\n').filter(l => !AR_LINE.test(l) && !/^Apollo Editor v/.test(l));
+    const lines = String(note || '').replace(/\s+$/, '').split('\n').filter(l => !AR_LINE.test(l) && !l.startsWith(name + ' v'));   // Apollo's credit goes back after the archive lines
     const inNote = [];
     for (const u of lines.filter(l => !credit(l)).flatMap(l => alExtractUrls(l))) if (ok(u) && !known.has(arNorm(u))) { known.add(arNorm(u)); inNote.push(u); }
     if (!links.length && !inNote.length) return null;
+    // a link saved as itself is found by the "+ link" rule; one saved elsewhere (Discogs's API, as its
+    // site refuses archive.org) needs its own line, as does a link only in the note
+    const plain = links.filter(u => mbaSavable(u) === u), own = links.filter(u => mbaSavable(u) !== u).concat(inNote);
     const day = `${ts.slice(0, 4)}-${ts.slice(4, 6)}-${ts.slice(6, 8)}`;
-    const add = links.length === 1 ? ['Archived link: ' + mbaSnapshot(ts, links[0])]
-      : links.length ? [`Archived on the Wayback Machine, ${day}: ${links.length} external links (web.archive.org/web/${ts}/ + link)`] : [];
-    for (const u of inNote) add.push('Archived link: ' + mbaSnapshot(ts, u));
+    const add = plain.length === 1 ? ['Archived link: ' + mbaSnapshot(ts, plain[0])]
+      : plain.length ? [`Archived on the Wayback Machine, ${day}: ${plain.length} external links (web.archive.org/web/${ts}/ + link)`] : [];
+    // with keys each save also takes a screenshot (majkinetor: "Lets add that type of link too")
+    if (keys && plain.length === 1) add.push(`Archived screenshot of the link: https://web.archive.org/web/${ts}/http://web.archive.org/screenshot/${plain[0]}`);
+    else if (keys && plain.length) add.push(`Archived screenshots: web.archive.org/web/${ts}/http://web.archive.org/screenshot/ + link`);
+    for (const u of own) add.push('Archived link: ' + mbaSnapshot(ts, mbaSavable(u)));
     const kept = lines.join('\n').replace(/\s+$/, '');
-    return { urls: [...links, ...inNote], note: (kept ? kept + '\n\n' : '') + add.join('\n') };
+    return { urls: [...links, ...inNote].map(mbaSavable), note: (kept ? kept + '\n\n' : '') + add.join('\n') };
   }
   function archiveOnSubmit() {
     if (SETTINGS.archive === false) return;
@@ -11143,7 +11153,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     const log = Log.cat('Archive');
     const h = fcHandoff();
     const fc = new Set([h && h.url, ...((h && h.archive && h.archive.urls) || []).map(a => a.url)].filter(Boolean).map(arNorm));
-    const plan = archiveNote(ta.value, linkRows().map(r => r.url), fc, mbaTs(new Date()));
+    const plan = archiveNote(ta.value, linkRows().map(r => r.url), fc, mbaTs(new Date()), ((typeof GM_info !== 'undefined' && GM_info.script) || {}).name || 'Apollo Editor', !!mbaKeys());   // the name the credit is written with (a local build may be "Apollo Editor*")
     if (!plan) { log.debug('archive: no links to save'); return; }
     setEditNote(ta, plan.note);
     _apolloUsed = true;   // the archive lines are Apollo's: credit it

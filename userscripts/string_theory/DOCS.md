@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-10-13 18:33 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-10-13 18:57 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -275,14 +275,16 @@ When you click **Enter edit**, Apollo asks the Internet Archive's Wayback Machin
 
 ```text
 Archived on the Wayback Machine, 2026-10-13: 4 external links (web.archive.org/web/20261013160122/ + link)
+Archived screenshots: web.archive.org/web/20261013160122/http://web.archive.org/screenshot/ + link
 Archived link: https://web.archive.org/web/20261013160122/example.com/press/release
 ```
 
 - The release's links get one line between them, since the release lists them: put the link after the address shown to open its snapshot. A link that is only in the edit note gets its own line.
+- Some sites refuse the Internet Archive, and their pages can't be saved. Discogs is one: for a Discogs link Apollo saves the same data from Discogs' API, and links it on its own line.
 - Every edit saves them again. A page the Internet Archive saved a moment ago isn't saved twice.
 - The edit doesn't wait for the saves, which take from a few seconds to a minute.
 - Links on MusicBrainz and the Internet Archive aren't saved, nor the album page [First Contact](../first_contact/README.md#archive) already archives for its import.
-- Without keys the saves are anonymous, and the Internet Archive refuses some when a release has many links. With your archive.org keys the limit is much higher, and each save also takes a screenshot. They are the same keys First Contact uses: in [String Theory](../string_theory/README.md) keys set in one show in the other. To get them, see [First Contact → archive.org keys](../first_contact/README.md#archiveorg-keys).
+- Without keys the saves are anonymous, and the Internet Archive refuses some when a release has many links. With your archive.org keys the limit is much higher, and each save also takes a screenshot, linked by the *Archived screenshots* line. They are the same keys First Contact uses: in [String Theory](../string_theory/README.md) keys set in one show in the other. To get them, see [First Contact → archive.org keys](../first_contact/README.md#archiveorg-keys).
 
 > [!NOTE]
 > Archiving sends the address of every link on the releases you edit to archive.org, and with keys, under your account. Turn **Archive links on the Internet Archive** off in [Settings](#settings) if you don't want that.
@@ -1082,6 +1084,7 @@ Archived API data: https://web.archive.org/web/20261002121804/https://api.deezer
 
 - The import never waits for the save, which takes from a few seconds to a minute; the [log](#settings-2) says when it's done or why it failed.
 - Deezer and Apple Music build their pages in the browser, so a saved page shows little. For these, the album data First Contact read is saved too, and linked as *Archived API data*.
+- Discogs refuses the Internet Archive, so its page can't be saved, nor a screenshot of it. For Discogs, the release's data from Discogs' API is saved instead, and linked as *Archived API data*.
 - Spotify, Tidal and YouTube Music also build their pages in the browser, and their data can't be saved. For these, add your archive.org keys: the save then also takes a screenshot of the page, and the edit note links it as *Archived screenshot*.
 
 #### archive.org keys

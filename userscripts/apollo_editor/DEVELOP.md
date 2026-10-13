@@ -47,6 +47,8 @@ At **Enter edit** (a click on the footer's `[data-click="submitEdits"]`, in the 
 2. rewrites the note (`archiveNote()`): its earlier archive lines and Apollo's credit line are taken out, the new lines appended, and the credit added back after them;
 3. fires one save per URL through the shared [`<ST-ARCHIVE>`](../../DEVELOP.md#shared-blocks) block (`mbaSave`), without waiting: the page leaves seconds later. Anonymous: `GET https://web.archive.org/save/<url>`. With keys: `POST /save` (Save Page Now 2, screenshot, `if_not_archived_within=30d`), not followed. A second Enter edit on the same page (MB refused the first) doesn't send a URL again.
 
+A site that refuses archive.org (Save Page Now answers `error:no-request`, "The target server blocks access … HTTP status=403") is saved where its data can be read: `mbaSavable()` maps Discogs' `/release|master|artist|label/<id>` to `api.discogs.com/<type>s/<id>`, and such a link gets its own note line, since the "+ link" rule would point at a page with no snapshot. With keys a `Archived screenshots: …/http://web.archive.org/screenshot/ + link` line follows (one link: its full screenshot address); links saved elsewhere and the note's own links get none.
+
 The note uses the full 14-digit timestamp: Wayback reads a date-only one as the end of that day, so it can land on a later snapshot. The URL in a link drops `https://` and `www.`, which Wayback doesn't need.
 
 The keys are the GM value `mbu.archive`, shared with First Contact ([its notes](../first_contact/DEVELOP.md#archive)); the switch is `archive` in Apollo's own settings. Specs: `test/736-archive.spec.mjs` (`ARCHIVE_LIVE=1` lets one save through to archive.org and looks for its snapshot).

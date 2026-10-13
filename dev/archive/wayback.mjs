@@ -30,8 +30,16 @@ function mbaSnapshot(ts, url) { return 'https://web.archive.org/web/' + ts + '/'
  *  iterated ("u.searchParams.keys() is not iterable" stopped First Contact's import there). */
 function mbaCleanUrl(href) {
     const [base, query = ''] = String(href).split('#')[0].split(/\?(.*)/s);
-    const kept = query.split('&').filter(p => p && !/^(si|utm_\w+|fbclid|gclid|ref|from|context|nd|feature)$/i.test(decodeURIComponent(p.split('=')[0].replace(/\+/g, ' '))));
+    const kept = query.split('&').filter(p => p && !/^(si|utm_\w+|fbclid|gclid|ref|from|context|nd|feature|redirected)$/i.test(decodeURIComponent(p.split('=')[0].replace(/\+/g, ' '))));
     return base + (kept.length ? '?' + kept.join('&') : '');
+}
+
+/** The address to save for a link: the link itself, or, for a site that refuses archive.org
+ *  (HTTP 403 to Save Page Now), the same data where archive.org can read it. Discogs refuses its
+ *  pages but not its API: /release/<id>, /master/<id>, /artist/<id>, /label/<id> → api.discogs.com. */
+function mbaSavable(url) {
+    const d = String(url).match(/^https?:\/\/(?:www\.)?discogs\.com\/(?:[a-z]{2}\/)?(release|master|artist|label)\/(\d+)(?:[-/?#]|$)/i);
+    return d ? `https://api.discogs.com/${d[1].toLowerCase()}s/${d[2]}` : url;
 }
 
 /** The archive.org keys, or null when either is missing (saves are then anonymous). */
@@ -171,6 +179,6 @@ ${s} input::placeholder { color: var(--mbu-text-weak); opacity: 1; font-style: n
 // What the sync inlines, in order. Node specs import the functions from here.
 export const MBA_INLINE = {
     consts: { MBA_KEY },
-    fns: [mbaTs, mbaShort, mbaSnapshot, mbaCleanUrl, mbaKeys, mbaKeysStored, mbaSetKeys, mbaSaveAnon, mbaRequest, mbaSaveWithKeys, mbaSave, mbaKeysState, mbaKeysHtml, mbaKeysWire, mbaKeysCss],
+    fns: [mbaTs, mbaShort, mbaSnapshot, mbaCleanUrl, mbaSavable, mbaKeys, mbaKeysStored, mbaSetKeys, mbaSaveAnon, mbaRequest, mbaSaveWithKeys, mbaSave, mbaKeysState, mbaKeysHtml, mbaKeysWire, mbaKeysCss],
 };
-export { mbaTs, mbaShort, mbaSnapshot, mbaCleanUrl };
+export { mbaTs, mbaShort, mbaSnapshot, mbaCleanUrl, mbaSavable };

@@ -25,6 +25,17 @@ test('the edit note links the page, the API data and, with keys, the screenshot'
   check(keys.includes(`\nArchived screenshot: https://web.archive.org/web/20261002120000/http://web.archive.org/screenshot/${PAGE}\n`), `the screenshot line with keys\n${keys}`);
 });
 
+// #736 (majkinetor, a Discogs import): discogs.com refuses archive.org, so only its API data is saved
+test('Discogs: the API data, no page and no screenshot', { tag: ['@unit', '@critical'] }, async () => {
+  const { editNoteFor, mbaSavable, mbaCleanUrl } = await loadFunctions('first_contact', ['NAME', 'VERSION', 'HOMEPAGE', 'editNoteFor', 'mbaSavable', 'mbaCleanUrl']);
+  const api = mbaSavable('https://www.discogs.com/release/34839779');
+  check(api === 'https://api.discogs.com/releases/34839779', `the release's API address (${api})`);
+  const note = editNoteFor({ url: 'https://www.discogs.com/release/34839779' }, { name: 'Discogs' }, { ts: '20261013164724', keys: true, urls: [{ url: api, what: 'api' }] });
+  check(note.includes(`\nArchived API data: https://web.archive.org/web/20261013164724/${api}\n`) && !/Archived (page|screenshot)/.test(note), `only the API line\n${note}`);
+  const page = mbaCleanUrl('https://www.discogs.com/release/34839779-Saimaa-Ja-Yona-Solovey-Lauluja-Ukrainasta?redirected=true');
+  check(page === 'https://www.discogs.com/release/34839779-Saimaa-Ja-Yona-Solovey-Lauluja-Ukrainasta', `?redirected=true is dropped (${page})`);
+});
+
 test('the archived page is the one the user has, without the fragment and share parameters', { tag: ['@unit', '@critical'] }, async () => {
   const { mbaCleanUrl: archivePageUrl } = await loadFunctions('first_contact', ['mbaCleanUrl']);
   const cases = [

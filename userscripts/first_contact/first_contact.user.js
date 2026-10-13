@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         First Contact
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.13.183225
+// @version      2026.10.13.185714
 // @description  Import a release into MusicBrainz from the platform's album page with one click: the release editor opens with the title, tracklist, artists, date, label, barcode and link filled in. Each artist's platform link is handed to Apollo Editor for matching. A second button sends the album to Harmony instead. By default the album page is also saved on the Internet Archive (it sends each imported URL to archive.org; off in the settings), and the edit note links the snapshot. Platforms: Deezer, Bandcamp, Discogs, Apple Music, Tidal, Qobuz, Beatport, Spotify, YouTube Music, Volumo, HDtracks, SoundCloud, Amazon Music, Audiomack, 7digital, Ototoy.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5GaXJzdCBDb250YWN0PC90aXRsZT4KPGxpbmVhckdyYWRpZW50IGlkPSJmYy1kIiB4MT0iMCIgeTE9IjAiIHgyPSIwIiB5Mj0iMSI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjYmFlNmZkIi8+PHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjMzhiZGY4Ii8+PC9saW5lYXJHcmFkaWVudD48cmFkaWFsR3JhZGllbnQgaWQ9ImZjLWIiIGN4PSIuMzUiIGN5PSIuMyIgcj0iLjgiPjxzdG9wIG9mZnNldD0iMCIgc3RvcC1jb2xvcj0iI2ZmZjdjYyIvPjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iI2Y2YzQzMSIvPjwvcmFkaWFsR3JhZGllbnQ+PHBhdGggZD0iTTUwIDQyIEw3OCA0MiBMMTA0IDExMiBMMjQgMTEyIFoiIGZpbGw9IiNmNmM0MzEiIG9wYWNpdHk9Ii45Ii8+PHBhdGggZD0iTTU2IDQyIEw3MiA0MiBMODggMTEyIEw0MCAxMTIgWiIgZmlsbD0iI2ZkZTY4YSIgb3BhY2l0eT0iLjciLz48ZWxsaXBzZSBjeD0iNjQiIGN5PSIxMTQiIHJ4PSI0MiIgcnk9IjgiIGZpbGw9IiMxZTIzNDYiIHN0cm9rZT0iI2M5Y2RmMiIgc3Ryb2tlLXdpZHRoPSIzIi8+PGVsbGlwc2UgY3g9IjY0IiBjeT0iMTEzIiByeD0iMjYiIHJ5PSI0LjIiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2Y2YzQzMSIgc3Ryb2tlLXdpZHRoPSIyLjQiLz48cGF0aCBkPSJNNDIgMjggQTIyIDE4IDAgMCAxIDg2IDI4IFoiIGZpbGw9InVybCgjZmMtZCkiIHN0cm9rZT0iI2M5Y2RmMiIgc3Ryb2tlLXdpZHRoPSIzIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PHBhdGggZD0iTTUwLjM2IDE5LjkgQTE1LjM5OTk5OTk5OTk5OTk5OSAxMy41IDAgMCAxIDYxLjggMTEuOCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjIuNiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBvcGFjaXR5PSIuOSIvPjxlbGxpcHNlIGN4PSI2NCIgY3k9IjMyIiByeD0iNTYiIHJ5PSIxMiIgZmlsbD0iIzFlMjM0NiIgc3Ryb2tlPSIjYzljZGYyIiBzdHJva2Utd2lkdGg9IjMiLz48ZWxsaXBzZSBjeD0iNjQiIGN5PSI0MCIgcng9IjIyIiByeT0iNiIgZmlsbD0idXJsKCNmYy1iKSIgc3Ryb2tlPSIjYzljZGYyIiBzdHJva2Utd2lkdGg9IjIuNCIvPjxjaXJjbGUgY3g9IjIyIiBjeT0iMzEiIHI9IjQiIGZpbGw9IiNmNmM0MzEiLz48Y2lyY2xlIGN4PSI0MCIgY3k9IjMxIiByPSI0IiBmaWxsPSIjZjZjNDMxIi8+PGNpcmNsZSBjeD0iODgiIGN5PSIzMSIgcj0iNCIgZmlsbD0iI2Y2YzQzMSIvPjxjaXJjbGUgY3g9IjEwNiIgY3k9IjMxIiByPSI0IiBmaWxsPSIjZjZjNDMxIi8+PHBhdGggZD0iTTY0IDU4IEw4NCA2OS41IEw4NCA5Mi41IEw2NCAxMDQgTDQ0IDkyLjUgTDQ0IDY5LjUgWiIgZmlsbD0iIzdiNGZkNiIvPjxwYXRoIGQ9Ik02NCA1OCBMODQgNjkuNSBMNjQgODEgTDQ0IDY5LjUgWiIgZmlsbD0iIzliNzJlYSIvPjxwYXRoIGQ9Ik02MCA3MiBMNzQgNjkgTDc0IDg5IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iMy40IiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PHBhdGggZD0iTTYwIDcyIEw2MCA5MiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjMuNCIvPjxlbGxpcHNlIGN4PSI1NiIgY3k9IjkyIiByeD0iNC42IiByeT0iMy42IiBmaWxsPSIjZmZmIi8+PGVsbGlwc2UgY3g9IjcwIiBjeT0iODkiIHJ4PSI0LjYiIHJ5PSIzLjYiIGZpbGw9IiNmZmYiLz4KPC9zdmc+Cg==
@@ -568,6 +568,9 @@ const DISCOGS = {
     artistLinkType: 180,   // MB's Discogs artist link
     host: /^(www\.)?discogs\.com$/,
     albumId(loc) { const m = loc.pathname.match(/^\/(?:[a-z]{2}\/)?release\/(\d+)(?:-[^/]*)?\/?$/i); return m ? m[1] : null; },
+    // #736: discogs.com refuses archive.org (HTTP 403 to every save); its API doesn't
+    archivePage: false,
+    archiveApi: id => mbaSavable(`https://www.discogs.com/release/${id}`),
     VARIOUS: 194,
     NO_LABEL: 750,   // "Not On Label"
 
@@ -2242,7 +2245,8 @@ function editNoteFor(rel, provider, archive) {
         // is, and Wayback sends /web/<time>/<url> to the snapshot nearest to it
         const wb = u => `https://web.archive.org/web/${archive.ts}/${u}`;
         for (const a of archive.urls) lines.push(`${a.what === 'api' ? 'Archived API data' : 'Archived page'}: ${wb(a.url)}`);
-        if (archive.keys) lines.push(`Archived screenshot: ${wb('http://web.archive.org/screenshot/' + archive.urls[0].url)}`);
+        const page = archive.urls.find(a => a.what === 'page');
+        if (archive.keys && page) lines.push(`Archived screenshot: ${wb('http://web.archive.org/screenshot/' + page.url)}`);
     }
     return lines.join('\n') + `\n\n${NAME} v${VERSION} by majkinetor - ${HOMEPAGE}`;
 }
@@ -2259,7 +2263,7 @@ function editNoteFor(rel, provider, archive) {
 function archivePlan(rel, provider, id) {
     const s = settings();
     if (!s.archive) { Log.info('archive: off in the settings'); return null; }
-    const urls = [{ url: mbaCleanUrl(location.href), what: 'page' }];
+    const urls = provider.archivePage === false ? [] : [{ url: mbaCleanUrl(location.href), what: 'page' }];
     if (provider.archiveApi) urls.push({ url: provider.archiveApi(id), what: 'api' });
     const keys = !!mbaKeys();
     Log.info(`archive: ${urls.map(u => u.what + ' ' + u.url).join(', ')} (${keys ? 'Save Page Now 2 with your keys, with a screenshot' : 'anonymous Save Page Now'}); the release editor's tab sends it`);
@@ -4523,8 +4527,12 @@ function mbaShort(url) { return String(url).replace(/^https?:\/\//i, '').replace
 function mbaSnapshot(ts, url) { return 'https://web.archive.org/web/' + ts + '/' + mbaShort(url); }
 function mbaCleanUrl(href) {
     const [base, query = ''] = String(href).split('#')[0].split(/\?(.*)/s);
-    const kept = query.split('&').filter(p => p && !/^(si|utm_\w+|fbclid|gclid|ref|from|context|nd|feature)$/i.test(decodeURIComponent(p.split('=')[0].replace(/\+/g, ' '))));
+    const kept = query.split('&').filter(p => p && !/^(si|utm_\w+|fbclid|gclid|ref|from|context|nd|feature|redirected)$/i.test(decodeURIComponent(p.split('=')[0].replace(/\+/g, ' '))));
     return base + (kept.length ? '?' + kept.join('&') : '');
+}
+function mbaSavable(url) {
+    const d = String(url).match(/^https?:\/\/(?:www\.)?discogs\.com\/(?:[a-z]{2}\/)?(release|master|artist|label)\/(\d+)(?:[-/?#]|$)/i);
+    return d ? `https://api.discogs.com/${d[1].toLowerCase()}s/${d[2]}` : url;
 }
 function mbaKeys() {
     let v = null;
