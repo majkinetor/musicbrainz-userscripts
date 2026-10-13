@@ -122,11 +122,14 @@ function scriptFile(arg) {
 const header = (rev, path, key) => git('show', `${rev}:${path}`).match(new RegExp(`^//\\s*@${key}\\s+(.+?)\\s*$`, 'm'))?.[1];
 const members = git('show', `${sha}:userscripts/string_theory/members.txt`).split('\n').map(l => l.replace(/#.*/, '').trim()).filter(Boolean);
 
-const files = [...new Set(args.map(scriptFile))];
 const ST = 'userscripts/string_theory/string_theory.user.js';
 // A script's folder is the one holding its file, or holding its dist/.
 const folder = f => f.split('/').slice(0, -1).filter((d, i, a) => !(d === 'dist' && i === a.length - 1)).at(-1);
-if (!files.includes(ST) && files.some(f => members.includes(folder(f)))) files.push(ST);
+// A String Theory member is linked through String Theory only (maintainer, 2026-10-13: "only ST
+// links on issues"); a script outside the bundle (Scribe, …) keeps its own link.
+const asked = [...new Set(args.map(scriptFile))];
+const files = asked.filter(f => !members.includes(folder(f)));
+if (asked.some(f => members.includes(folder(f))) && !files.includes(ST)) files.push(ST);
 
 const lines = [];
 for (const f of files) {
