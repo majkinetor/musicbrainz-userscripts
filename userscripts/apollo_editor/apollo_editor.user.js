@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.13.094500
+// @version      2026.10.13.102534
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5BcG9sbG8gRWRpdG9yPC90aXRsZT4KPG1hc2sgaWQ9ImFwLW0iIG1hc2tVbml0cz0idXNlclNwYWNlT25Vc2UiIHg9IjAiIHk9IjAiIHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4Ij48Zz48ZyBmaWxsPSIjZmZmIj48cGF0aCBkPSJNNDIgNjQgQzI4IDcyIDIyIDkwIDI0IDExMCBMNDIgOTggWiIvPjxwYXRoIGQ9Ik04NiA2NCBDMTAwIDcyIDEwNiA5MCAxMDQgMTEwIEw4NiA5OCBaIi8+PC9nPjxnIGZpbGw9IiNmZmYiPjxwYXRoIGQ9Ik02NCA4IEM4NCAyNCA5MCA1MiA4OCA5MCBMNDAgOTAgQzM4IDUyIDQ0IDI0IDY0IDggWiIvPjxwYXRoIGQ9Ik00OCA5MCBMODAgOTAgTDc2IDEwMCBMNTIgMTAwIFoiLz48L2c+PGcgc3Ryb2tlPSIjMDAwIiBzdHJva2Utd2lkdGg9IjMuNSI+PHBhdGggZD0iTTM2IDkwLjUgTDkyIDkwLjUiLz48L2c+PGNpcmNsZSBjeD0iNjQiIGN5PSI1MCIgcj0iOCIgZmlsbD0iIzAwMCIvPjwvZz48L21hc2s+PGc+PHBhdGggZD0iTTUyIDEwMCBDNTQgMTEyIDYwIDExOCA2NCAxMjYgQzY4IDExOCA3NCAxMTIgNzYgMTAwIFoiIGZpbGw9IiNlYjc0M2IiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDAgMykiLz48L2c+PHJlY3Qgd2lkdGg9IjEyOCIgaGVpZ2h0PSIxMjgiIGZpbGw9IiNiYTQ3OGYiIG1hc2s9InVybCgjYXAtbSkiLz4KPC9zdmc+Cg==
@@ -4328,8 +4328,11 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     .tc-tpp-ovwrap.has .tc-tpp-ovclr{display:block}
     /* #456: raw stays fully visible/selectable — no ellipsis clipping (you select spans here to bind fields).
        The td.tc-tpp-raw specificity beats the generic .tc-tpp-tbl td ellipsis rule above. */
-    .tc-tpp-tbl td.tc-tpp-raw{color:var(--mbu-text-dim);font:11px ui-monospace,Consolas,monospace;max-width:320px;cursor:text;user-select:text;white-space:normal;overflow:visible;text-overflow:clip;overflow-wrap:anywhere}
-    .tc-tpp-empty{color:var(--mbu-text-weak);font-style:italic}
+    .tc-tpp-tbl td.tc-tpp-raw{color:var(--mbu-text-dim);font:11px ui-monospace,Consolas,monospace;max-width:320px;cursor:text;user-select:text;white-space:normal;overflow:visible;text-overflow:clip;overflow-wrap:anywhere;outline:none}
+    /* #732: the raw cell is editable in place — an edit goes back to that line of the paste box */
+    .tc-tpp-tbl td.tc-tpp-raw:hover{background:var(--mbu-bg-hover)}
+    .tc-tpp-tbl td.tc-tpp-raw:focus{color:var(--mbu-text);background:var(--mbu-bg-sunken);box-shadow:inset 0 0 0 1px var(--mbu-accent)}
+    .tc-tpp-tbl td.tc-tpp-raw:empty::before{content:'(empty)';color:var(--mbu-text-weak);font-style:italic}
     .tc-tpp-c{color:var(--mbu-text)}
     .tc-tpp-ft{display:flex;align-items:center;gap:10px;padding:7px 12px;border-top:1px solid var(--mbu-accent)}
     .tc-tpp-cnt{flex:1;font:11px Arial;color:var(--mbu-text-dim)}.tc-tpp-cnt.ok{color:var(--mbu-ok)}.tc-tpp-cnt.warn{color:var(--mbu-warn)}
@@ -6282,10 +6285,30 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
         const cell = v => `<td class="tc-tpp-c" title="${esc(v || '')}">${esc(v || '')}</td>`;
         tr.innerHTML = `<td class="tc-tpp-dot"><span style="background:${DOT[state]}" title="${state === 'none' ? 'no match — adjust the pattern' : state === 'over' ? 'matched via a per-row pattern' : 'matched'}"></span></td>`
           + `<td class="tc-tpp-pcell"><span class="tc-tpp-ovwrap${r.override ? ' has' : ''}"><input class="tc-tpp-ov" ${NOPW_ATTRS} spellcheck="false" placeholder="«default»" value="${esc(r.override || '')}"><button type="button" class="tc-tpp-ovclr" title="Clear this row’s pattern" tabindex="-1">✕</button></span></td>`
-          + `<td class="tc-tpp-raw" title="${esc(r.raw)}">${esc(r.raw) || '<span class="tc-tpp-empty">(empty)</span>'}</td>`
+          + `<td class="tc-tpp-raw" contenteditable="plaintext-only" spellcheck="false" title="Click to edit this line — the change goes back to the pasted text">${esc(r.raw)}</td>`
           + cell(parsed && parsed.pos) + cell(parsed && parsed.artist) + cell(parsed && parsed.title) + cell(parsed && parsed.length);
         const ov = tr.querySelector('.tc-tpp-ov'), ovwrap = tr.querySelector('.tc-tpp-ovwrap');
-        ov.oninput = () => { r.override = ov.value; ovwrap.classList.toggle('has', !!ov.value); const pr = parseRow(r); const st = !pr ? 'none' : (r.override.trim() ? 'over' : 'exact'); tr.querySelector('.tc-tpp-dot span').style.background = DOT[st]; const cells = tr.querySelectorAll('.tc-tpp-c'); [pr && pr.pos, pr && pr.artist, pr && pr.title, pr && pr.length].forEach((v, k) => { cells[k].textContent = v || ''; cells[k].title = v || ''; }); refreshFoot(); };
+        // re-parse just this row in place (a full render() would steal the focus from the cell being typed in)
+        const refreshRow = () => { const pr = parseRow(r); const st = !pr ? 'none' : (r.override && r.override.trim() ? 'over' : 'exact'); tr.querySelector('.tc-tpp-dot span').style.background = DOT[st]; const cells = tr.querySelectorAll('.tc-tpp-c'); [pr && pr.pos, pr && pr.artist, pr && pr.title, pr && pr.length].forEach((v, k) => { cells[k].textContent = v || ''; cells[k].title = v || ''; }); refreshFoot(); };
+        ov.oninput = () => { r.override = ov.value; ovwrap.classList.toggle('has', !!ov.value); refreshRow(); };
+        // #732: edit the raw line in place; it's written back to the same line of the paste box
+        const rawTd = tr.querySelector('.tc-tpp-raw');
+        rawTd.oninput = () => {
+          let v = rawTd.textContent;
+          if (/[\r\n]/.test(v)) { v = v.replace(/[\r\n]+/g, ' '); rawTd.textContent = v; }   // one row = one line
+          r.raw = v;
+          const lines = ta.value.split('\n'); while (lines.length <= i) lines.push('');
+          lines[i] = v; ta.value = lines.join('\n');
+          refreshRow();
+        };
+        rawTd.onkeydown = e => {
+          if ((e.key === 'Enter' && !e.ctrlKey && !e.metaKey) || e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); rawTd.blur(); }   // Enter/Esc end the edit; Ctrl+Enter still applies
+        };
+        let rawWas = r.raw;
+        rawTd.onblur = () => {
+          if (rawTd.textContent === '' && rawTd.firstChild) rawTd.textContent = '';   // drop a leftover <br> so :empty shows the placeholder
+          if (r.raw !== rawWas) { Log.cat('Tool').debug('pattern parser: raw row', i + 1, 'edited', JSON.stringify(rawWas), '→', JSON.stringify(r.raw)); rawWas = r.raw; }
+        };
         tr.querySelector('.tc-tpp-ovclr').onclick = () => { r.override = ''; render(); };
         tbody.appendChild(tr);
       });

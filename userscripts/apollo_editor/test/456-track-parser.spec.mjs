@@ -8,6 +8,8 @@
 //   transform doesn't misplace it) that binds the span to a field as a slice.
 // Freeze matched: rows the pattern already matches keep it, so a new pattern only
 //   solves what is left.
+// #732: a raw cell is editable in place; the edit re-parses its row and goes back to the
+//   same line of the paste box.
 import { test, check, until } from '../../../dev/test/harness.mjs';
 import { openApollo, apolloGm } from './ap.mjs';
 
@@ -43,7 +45,7 @@ test('it opens on the tracklist; clear buttons, resizing, whole raw text', { tag
 
   await source(page, '#. T', '01 A very very very very very very very very long garbage raw line that would otherwise be truncated');
   const rs = await page.evaluate(() => { const c = document.querySelector('#tc-tpppop tbody tr .tc-tpp-raw'), s = getComputedStyle(c); return { ws: s.whiteSpace, to: s.textOverflow, whole: c.scrollWidth <= c.clientWidth + 1 }; });
-  check(rs.ws === 'normal' && rs.to !== 'ellipsis' && rs.whole, `a raw cell shows all of its text (${JSON.stringify(rs)})`);
+  check(['normal', 'pre-wrap'].includes(rs.ws) && rs.to !== 'ellipsis' && rs.whole, `a raw cell shows all of its text (${JSON.stringify(rs)})`);
 });
 
 test('split on the first or the last separator', { tag: ['@sandbox', '@login'] }, async ({ page, inject }) => {
@@ -83,3 +85,33 @@ test('Freeze matched keeps solved rows while the pattern changes', { tag: ['@san
   const titles = await until(() => page.evaluate(() => [...document.querySelectorAll('#tc-tpppop tbody tr')].map(tr => tr.querySelectorAll('.tc-tpp-c')[2].textContent)), t => t[2] === 'Gamma');
   check(JSON.stringify(titles) === '["Alpha","Beta","Gamma"]', `the new pattern solves the third, the frozen two keep theirs (${JSON.stringify(titles)})`);
 });
+
+test('a raw row edits in place and syncs to the paste box', { tag: ['@sandbox', '@login'] }, async ({ page, inject }) => {
+  await openParser(page, inject);
+  const src = ['06 calypso rose - have mercy', '07 colleen grant - latin parang (12inch - barbados)', '08 ed watson - stopping'];
+  await source(page, '# A - T', src.join('\n'));
+  check((await cells(page, 1))[2] === 'latin parang (12inch - barbados)', 'before: the dash is in the title');
+  const raw = '#tc-tpppop tbody tr:nth-child(2) .tc-tpp-raw';
+  check(await page.getAttribute(raw, 'contenteditable') === 'plaintext-only', 'the raw cell is editable');
+  await page.click(raw);
+  // select the "- " inside the parentheses and delete it with a real keypress
+  await page.evaluate(sel => {
+    const tn = document.querySelector(sel).firstChild, i = tn.textContent.indexOf('- barbados');
+    const r = document.createRange(); r.setStart(tn, i); r.setEnd(tn, i + 2);
+    const s = window.getSelection(); s.removeAllRanges(); s.addRange(r);
+  }, raw);
+  await page.keyboard.press('Delete');
+  const t = await until(() => cells(page, 1), c => c[2] === 'latin parang (12inch barbados)');
+  check(t[2] === 'latin parang (12inch barbados)', `the row re-parses (${t[2]})`);
+  check(await page.evaluate(sel => document.activeElement === document.querySelector(sel), raw), 'the cell keeps the focus while typing');
+  const lines = await page.evaluate(() => document.querySelector('#tc-tpppop .tc-tpp-ta').value.split('\n'));
+  const want = [src[0], '07 colleen grant - latin parang (12inch barbados)', src[2]];
+  check(JSON.stringify(lines) === JSON.stringify(want), `only that line of the paste box changes (${JSON.stringify(lines)})`);
+  await page.keyboard.press('Enter');
+  check(await page.evaluate(() => document.querySelector('#tc-tpppop .tc-tpp-ta').value.split('\n').length === 3), 'Enter adds no line');
+  check(await page.evaluate(sel => document.activeElement !== document.querySelector(sel), raw), '…it ends the edit');
+  await page.click(raw);
+  await page.keyboard.press('Escape');
+  check(await page.evaluate(() => !!document.querySelector('#tc-tpppop')), 'Esc in a raw cell ends the edit, not the window');
+});
+
