@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.13
+// @version      2026.10.13.094500
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5BcG9sbG8gRWRpdG9yPC90aXRsZT4KPG1hc2sgaWQ9ImFwLW0iIG1hc2tVbml0cz0idXNlclNwYWNlT25Vc2UiIHg9IjAiIHk9IjAiIHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4Ij48Zz48ZyBmaWxsPSIjZmZmIj48cGF0aCBkPSJNNDIgNjQgQzI4IDcyIDIyIDkwIDI0IDExMCBMNDIgOTggWiIvPjxwYXRoIGQ9Ik04NiA2NCBDMTAwIDcyIDEwNiA5MCAxMDQgMTEwIEw4NiA5OCBaIi8+PC9nPjxnIGZpbGw9IiNmZmYiPjxwYXRoIGQ9Ik02NCA4IEM4NCAyNCA5MCA1MiA4OCA5MCBMNDAgOTAgQzM4IDUyIDQ0IDI0IDY0IDggWiIvPjxwYXRoIGQ9Ik00OCA5MCBMODAgOTAgTDc2IDEwMCBMNTIgMTAwIFoiLz48L2c+PGcgc3Ryb2tlPSIjMDAwIiBzdHJva2Utd2lkdGg9IjMuNSI+PHBhdGggZD0iTTM2IDkwLjUgTDkyIDkwLjUiLz48L2c+PGNpcmNsZSBjeD0iNjQiIGN5PSI1MCIgcj0iOCIgZmlsbD0iIzAwMCIvPjwvZz48L21hc2s+PGc+PHBhdGggZD0iTTUyIDEwMCBDNTQgMTEyIDYwIDExOCA2NCAxMjYgQzY4IDExOCA3NCAxMTIgNzYgMTAwIFoiIGZpbGw9IiNlYjc0M2IiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDAgMykiLz48L2c+PHJlY3Qgd2lkdGg9IjEyOCIgaGVpZ2h0PSIxMjgiIGZpbGw9IiNiYTQ3OGYiIG1hc2s9InVybCgjYXAtbSkiLz4KPC9zdmc+Cg==
@@ -10887,8 +10887,11 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     #information span.autocomplete:has(> .tc-ri-lab),#information .tc-ri-labhost{position:relative}
     /* the Label field's search is Apollo's: ＋ takes the search icon's place */
     #information .tc-ri-labhost > img.search{display:none!important}
-    .tc-ri-labmk{all:unset;position:absolute;right:3px;top:50%;transform:translateY(-50%);width:18px;height:18px;border-radius:4px;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;background:var(--mbu-ok);color:var(--mbu-text-on-accent);font:bold 13px/1 var(--mbu-font)}
-    .tc-ri-labmk:hover{background:var(--mbu-accent)}   /* solid, so it reads over the field's text (#729) */
+    .tc-ri-labmk{all:unset;position:absolute;right:4px;top:50%;transform:translateY(-50%);width:18px;height:18px;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;color:var(--mbu-ok);font:bold 15px/1 var(--mbu-font)}
+    .tc-ri-labmk:hover{color:var(--mbu-accent-text)}
+    /* #729 the name stops short of ＋ (and of Mammoth's pin beside it), as on the artist field */
+    #information .tc-ri-labhost > input{padding-right:24px!important;box-sizing:border-box}
+    html:has(.mmthf-pin) #information .tc-ri-labhost > input{padding-right:44px!important}
     .tc-ri-labhost.tc-lab-matched:not(.tc-lab-focus) > .tc-ri-labmk,.tc-ri-labhost.tc-lab-empty > .tc-ri-labmk{display:none}
     .tc-ri-labdis{position:absolute;top:50%;transform:translateY(-50%);color:var(--mbu-text-weak);font:italic 11px var(--mbu-font);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;pointer-events:none}
     .tc-ri-labhost.tc-lab-focus > .tc-ri-labdis{display:none}
