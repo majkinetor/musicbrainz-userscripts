@@ -185,8 +185,8 @@ test('#641: the edit note marks a link added over link confidence, and only that
   await finished(run, page);
   const note = await until(() => page.evaluate(() => (document.querySelector('textarea.edit-note, textarea[name="edit-note"], #id-edit-note, .edit-note textarea') || {}).value || ''), n => /Added 2 external links/.test(n));
   console.log(note);
-  check(note.includes(DEEZER + '  (added by hand over link confidence: barcode not confirmed)'), 'the forced link is marked, with why');
-  check(/\nhttps:\/\/tidal\.com\/album\/522735526$/m.test(note), 'the other link is listed plain');
+  check(/added by hand over link confidence:\n/.test(note) && note.includes(DEEZER + '  (barcode not confirmed)'), 'the forced link is marked, with why');
+  check(!note.includes('tidal.com/album/522735526'), 'the other link is not listed (#737)');
   check(await page.evaluate(rel => localStorage.getItem('pc:forced:' + rel), REL) === null, 'the record is dropped once used');
 });
 

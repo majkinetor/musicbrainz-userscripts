@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         ISRC Scout
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.13
+// @version      2026.10.13.173549
 // @description  Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify / Beatport / Tidal / Volumo / HDtracks / Qobuz, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPklTUkMgU2NvdXQ8L3RpdGxlPgogICAgPHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPgogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjQwIi8+CiAgICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyNiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2U9IiNiOWEzZTgiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPgogIDwvZz4KICA8bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+Cjwvc3ZnPgo=
@@ -4233,12 +4233,12 @@
   }
   // a "Remove ISRC" edit must NOT say "Added 0 ISRCs" — build a deletion-appropriate note
   function defaultRemovalNote(recs, total) {
-    const isrcs = recs.flatMap(([, v]) => v.isrcs);
+    // no ISRC list (#737): each recording's edit carries this note and shows its own ISRCs
     return [
       noteHeader(),
       '',
       'Release: ' + MB_ROOT + '/release/' + mbid,
-      'Removed ' + total + ' ISRC' + (total === 1 ? '' : 's') + ' from ' + recs.length + ' recording' + (recs.length === 1 ? '' : 's') + (isrcs.length ? ': ' + isrcs.join(', ') : ''),
+      'Removed ' + total + ' ISRC' + (total === 1 ? '' : 's') + ' from ' + recs.length + ' recording' + (recs.length === 1 ? '' : 's'),
     ].join('\n');
   }
   function getRemovalNote(recs, total) {
@@ -5628,8 +5628,10 @@
         'Release: ' + MB_ROOT + '/release/' + mbid,
         'Added ' + provs.length + ' streaming link' + (provs.length === 1 ? '' : 's') + (breakdown ? ': ' + breakdown : ''),
         // #640 (rinsuki): once a song is delisted or geo-blocked, its URL no longer says which
-        // album it was — so each YouTube Music link names it, and how it was found
-        ...(urls || []).filter(u => ytSource.has(u)).map(u => {
+        // album it was — so a YouTube Music link names it, and how it was found. Only for a
+        // single link (#737): MB copies a batch's note onto each of its edits, so a list of
+        // every link repeated itself on every edit.
+        ...((urls || []).length === 1 ? urls : []).filter(u => ytSource.has(u)).map(u => {
           const y = ytSource.get(u);
           return 'YouTube Music ' + u + ' ← album "' + (y.album || '?') + '"' + (y.albumUrl ? ' ' + y.albumUrl : '') + ' (' + y.how + ')';
         }),

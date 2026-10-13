@@ -116,6 +116,6 @@ test('a pasted barcode is read and noted', { tag: '@unit' }, async () => {
   // its GM storage and URL identity stubbed: the settings at their defaults, URLs compared as given
   const pcEditNote = new Function('GM_getValue', 'pcSameUrl', await functionSource('platform_check', ['pcEditNote']) + '\nreturn pcEditNote;')((k, d) => d, (a, b) => a === b);
   const note = pcEditNote(['https://www.deezer.com/album/1'], {}, '886443984059');
-  check(/Added barcode 886443984059/.test(note) && /Added 1 external link:\nhttps:\/\/www\.deezer\.com\/album\/1/.test(note), `the note names the barcode and the links:\n${note}`);
+  check(/Added barcode 886443984059/.test(note) && /Added 1 external link$/m.test(note) && !/deezer\.com\/album\/1/.test(note), `the note names the barcode and counts the links, without listing them (#737):\n${note}`);
   check(!/barcode \d/.test(pcEditNote(['https://www.deezer.com/album/1'], {})), 'no barcode, no barcode line');
 });

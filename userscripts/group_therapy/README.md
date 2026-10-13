@@ -73,7 +73,7 @@ When the relationship you right-click has a date (a *recorded at* with a date, s
 **▦ Consolidate RG…** shows every release credit across the group as a role × release matrix: one row per credit, one column per release (A, B, C…, with a format badge), green where the credit exists.
 
 - Click a cell to add that credit to that release, a column letter to add everything addable to it, or **Auto select** for all. A credit that doesn't suit a release's format shows `·`; click to force it.
-- **Apply** submits the additions directly, one batch per release, each with an edit note listing what it added.
+- **Apply** submits the additions directly, one batch per release, each with an edit note saying how many credits it added.
 - A release whose credits couldn't be read (MusicBrainz throttling) shows `?` and gets nothing until **Retry** reads it.
 - With more than 10 releases, you pick which ones to consolidate.
 

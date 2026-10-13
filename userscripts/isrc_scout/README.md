@@ -151,7 +151,7 @@ The mouse gestures on links are in the [Links](#links) table.
 
 ### YouTube Music
 
-YouTube Music shows no ISRCs. When the release links its YouTube Music album (Platform Check finds it), each track is taken from that album's tracklist by position and title, as official audio, never a music video. A song a free listener can't play (YouTube Premium only, or not available at all) is left out, since the links are added as *free streaming*. Without a linked album, the track's ISRC is searched, and a result counts only when it is official audio (not a user upload), has the track's title, is within 3 s of its length, and comes from this release's album. The log names every result it skipped, and why. The edit note names each link's YouTube Music album.
+YouTube Music shows no ISRCs. When the release links its YouTube Music album (Platform Check finds it), each track is taken from that album's tracklist by position and title, as official audio, never a music video. A song a free listener can't play (YouTube Premium only, or not available at all) is left out, since the links are added as *free streaming*. Without a linked album, the track's ISRC is searched, and a result counts only when it is official audio (not a user upload), has the track's title, is within 3 s of its length, and comes from this release's album. The log names every result it skipped, and why. A link added on its own names its YouTube Music album in the edit note.
 
 ### Amazon Music
 

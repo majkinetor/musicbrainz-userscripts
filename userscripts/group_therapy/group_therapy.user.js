@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Group Therapy
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.13
+// @version      2026.10.13.173651
 // @description  MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48ZyBmaWxsPSJub25lIiBzdHJva2U9IiM1YjZiN2EiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9Ijk0IiB5Mj0iNDIiLz48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48bGluZSB4MT0iOTQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48L2c+PGcgZmlsbD0iIzJlOWU1YiIgc3Ryb2tlPSIjMjU2ZjQzIiBzdHJva2Utd2lkdGg9IjQiPjxjaXJjbGUgY3g9IjM0IiBjeT0iNDIiIHI9IjE2Ii8+PGNpcmNsZSBjeD0iOTQiIGN5PSI0MiIgcj0iMTYiLz48Y2lyY2xlIGN4PSI2NCIgY3k9Ijk0IiByPSIxNiIvPjwvZz48L3N2Zz4=
@@ -2950,8 +2950,8 @@
     for (const [gid, rowsFor] of byRel) {
       const rel = releases.find(r => r.gid === gid);
       const edits = rowsFor.map(row => consEdit(row.sample, gid));
-      const lines = rowsFor.map(row => `• ${row.label.role} — ${row.label.ent}${row.label.credit ? ` (${row.label.credit})` : ''}`);
-      const note = `Consolidated ${edits.length} release-level credit${edits.length > 1 ? 's' : ''} across the release group onto this release:\n${lines.join('\n')}\n\n${sig}`;
+      // #737: no list of the credits: MB copies the note onto each relationship's edit, which shows its own
+      const note = `Consolidated ${edits.length} release-level credit${edits.length > 1 ? 's' : ''} across the release group onto this release\n\n${sig}`;
       try {
         const res = await mbnFetch('/ws/js/edit/create', { method: 'POST', credentials: 'include', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ edits, editNote: note, makeVotable: 0 }) });
         const txt = await res.text().catch(() => ''); let j = null; try { j = JSON.parse(txt); } catch (e) {}

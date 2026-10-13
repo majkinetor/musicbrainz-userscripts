@@ -93,27 +93,12 @@ test("#573: batch note", { tag: ['@sandbox', '@login'] }, async ({ context, page
   }));
   console.log('--- form note, no urls ---'); console.log(notes.formNoUrls);
   ck(notes.formNoUrls.includes(REASON), 'a form edit carries it');
-  ck(!notes.formNoUrls.includes('Bulk-added via the Falcon queue:'),
+  ck(!notes.formNoUrls.includes('Bulk-added'),
      'and a rename-only edit no longer claims to have added links it did not add');
-  ck(notes.formWithUrls.includes(REASON) && notes.formWithUrls.includes('Bulk-added via the Falcon queue:'),
-     'a link edit still lists its links, and carries the note too');
+  ck(notes.formWithUrls.includes(REASON) && notes.formWithUrls.includes('Bulk-added 1 link via the Falcon queue') && !notes.formWithUrls.includes('https://example.com/x'),
+     'a link edit counts its links without listing them (#737), and carries the note too');
   ck(notes.wrapped.includes('some other note') && notes.wrapped.includes(REASON), 'the alias path wraps its own note the same way');
   ck(notes.cover.includes(REASON), 'a cover-art upload carries it');
-
-  // ── a batch note that lists the links is not repeated by Falcon's own list ──
-  const listed = await page.evaluate(reason => {
-    const t = window.__falconTest;
-    t.setBatchNote('Added 1 external link:\nhttps://example.com/x');
-    const res = [{ ok: true, url: 'https://example.com/x' }, { ok: true, url: 'https://example.com/xy' }];
-    const some = t.editNoteText(res);
-    const all = t.editNoteText(res.slice(0, 1));
-    t.setBatchNote(reason);
-    return { some, all };
-  }, REASON);
-  console.log('--- form note, batch note lists a link ---'); console.log(listed.some);
-  ck(listed.some.split(/\s+/).filter(w => w === 'https://example.com/x').length === 1 &&listed.some.includes('Bulk-added via the Falcon queue:\nhttps://example.com/xy'),
-     "a link the batch note lists isn't listed again; one it doesn't list still is");
-  ck(!listed.all.includes('Bulk-added via the Falcon queue:'), 'and with every link listed there, Falcon drops its heading');
 
   // ── settable from JSON, and written back out ────────────────────────────────
   await page.evaluate(() => window.__falconTest.setBatchNote(''));

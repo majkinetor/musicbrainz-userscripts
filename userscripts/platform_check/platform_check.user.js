@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Platform Check
 // @namespace    http://tampermonkey.net/
-// @version      2026.10.13
+// @version      2026.10.13.173651
 // @description  Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CjxnIHN0cm9rZT0iIzk0YTNiOCIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2UtbGluZWNhcD0icm91bmQiPjxwYXRoIGQ9Ik02NCA2NCBMODggMjIuNCIvPjxwYXRoIGQ9Ik02NCA2NCBMMTEyIDY0Ii8+PHBhdGggZD0iTTY0IDY0IEw4OCAxMDUuNiIvPjxwYXRoIGQ9Ik02NCA2NCBMNDAgMTA1LjYiLz48cGF0aCBkPSJNNjQgNjQgTDE2IDY0Ii8+PHBhdGggZD0iTTY0IDY0IEw0MCAyMi40Ii8+PC9nPjxjaXJjbGUgY3g9Ijg4IiBjeT0iMjIuNCIgcj0iMTIiIGZpbGw9IiNmNDcyYjYiLz48Y2lyY2xlIGN4PSIxMTIiIGN5PSI2NCIgcj0iMTIiIGZpbGw9IiNmYWNjMTUiLz48Y2lyY2xlIGN4PSI4OCIgY3k9IjEwNS42IiByPSIxMiIgZmlsbD0iIzRhZGU4MCIvPjxjaXJjbGUgY3g9IjQwIiBjeT0iMTA1LjYiIHI9IjEyIiBmaWxsPSIjMzhiZGY4Ii8+PGNpcmNsZSBjeD0iMTYiIGN5PSI2NCIgcj0iMTIiIGZpbGw9IiNhNzhiZmEiLz48Y2lyY2xlIGN4PSI0MCIgY3k9IjIyLjQiIHI9IjEyIiBmaWxsPSIjZmI5MjNjIi8+PGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iMjQiIGZpbGw9IiMwZjE3MmEiLz48cGF0aCBkPSJNNTQuMjIyMjIyMjIyMjIyMjIgNjQgTDYxLjMzMzMzMzMzMzMzMzMzNiA3MS4xMTExMTExMTExMTExMSBMNzQuNjY2NjY2NjY2NjY2NjcgNTYuODg4ODg4ODg4ODg4ODg2IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iNiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+Cjwvc3ZnPgo=
@@ -1105,10 +1105,13 @@ function pcEditNote(urls, forced, barcode, barcodeFrom) {
     const lines = [header, confLine];
     // #673: the platform links were matched on this barcode
     // #709: or, through Mission Control, found on the platforms (barcodeFrom says where)
-    if (barcode) lines.push('', 'Added barcode ' + barcode + (barcodeFrom && barcodeFrom !== 'pasted by hand' ? ', ' + barcodeFrom : ' (the links below were matched on it)'));
-    if (urls.length) lines.push('', 'Added ' + urls.length + ' external link' + (urls.length === 1 ? '' : 's') + ':');
+    if (barcode) lines.push('', 'Added barcode ' + barcode + (barcodeFrom && barcodeFrom !== 'pasted by hand' ? ', ' + barcodeFrom : ' (the links were matched on it)'));
+    // #737: no list of every url: MB copies the note onto each link's edit, which shows its own url.
+    // Only the links added by hand over link confidence are named, with the reason.
     const why = u => { const k = Object.keys(forced || {}).find(x => pcSameUrl(x, u) || x === u); return k ? forced[k] : null; };
-    urls.forEach(u => { const w = why(u); lines.push(w ? u + '  (added by hand over link confidence: ' + w + ')' : u); });
+    const overridden = urls.filter(why);
+    if (urls.length) lines.push('', 'Added ' + urls.length + ' external link' + (urls.length === 1 ? '' : 's') + (overridden.length ? '; added by hand over link confidence:' : ''));
+    overridden.forEach(u => lines.push(u + '  (' + why(u) + ')'));
     return lines.join('\n');
 }
 

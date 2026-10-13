@@ -65,7 +65,7 @@ test("#475: no duplicate note", { tag: ['@sandbox', '@login'] }, async ({ contex
   ck(result.noteSet, 'setEditNote reports success');
   const occurrences = result.finalValue.split(HARMONY_NOTE).length - 1;
   ck(occurrences === 1, `the Harmony line appears exactly once in the final note (got ${occurrences})`);
-  ck(/Bulk-added via the Falcon queue:/.test(result.finalValue), "Falcon's own bulk-added summary is still present");
+  ck(/Bulk-added 1 link via the Falcon queue/.test(result.finalValue), "Falcon's own bulk-added summary is still present");
   ck(/Falcon v.*by majkinetor/.test(result.finalValue), "Falcon's own attribution header is still present");
 
   ck(errs.length === 0, 'no page errors: ' + JSON.stringify(errs.slice(0, 3)));

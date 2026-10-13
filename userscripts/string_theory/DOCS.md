@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-10-13 14:19 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-10-13 17:39 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -1286,7 +1286,7 @@ When the relationship you right-click has a date (a *recorded at* with a date, s
 **▦ Consolidate RG…** shows every release credit across the group as a role × release matrix: one row per credit, one column per release (A, B, C…, with a format badge), green where the credit exists.
 
 - Click a cell to add that credit to that release, a column letter to add everything addable to it, or **Auto select** for all. A credit that doesn't suit a release's format shows `·`; click to force it.
-- **Apply** submits the additions directly, one batch per release, each with an edit note listing what it added.
+- **Apply** submits the additions directly, one batch per release, each with an edit note saying how many credits it added.
 - A release whose credits couldn't be read (MusicBrainz throttling) shows `?` and gets nothing until **Retry** reads it.
 - With more than 10 releases, you pick which ones to consolidate.
 
@@ -1546,7 +1546,7 @@ The mouse gestures on links are in the [Links](#links) table.
 
 #### YouTube Music
 
-YouTube Music shows no ISRCs. When the release links its YouTube Music album (Platform Check finds it), each track is taken from that album's tracklist by position and title, as official audio, never a music video. A song a free listener can't play (YouTube Premium only, or not available at all) is left out, since the links are added as *free streaming*. Without a linked album, the track's ISRC is searched, and a result counts only when it is official audio (not a user upload), has the track's title, is within 3 s of its length, and comes from this release's album. The log names every result it skipped, and why. The edit note names each link's YouTube Music album.
+YouTube Music shows no ISRCs. When the release links its YouTube Music album (Platform Check finds it), each track is taken from that album's tracklist by position and title, as official audio, never a music video. A song a free listener can't play (YouTube Premium only, or not available at all) is left out, since the links are added as *free streaming*. Without a linked album, the track's ISRC is searched, and a result counts only when it is official audio (not a user upload), has the track's title, is within 3 s of its length, and comes from this release's album. The log names every result it skipped, and why. A link added on its own names its YouTube Music album in the edit note.
 
 #### Amazon Music
 
