@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.13.112835
+// @version      2026.10.13.135041
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5BcG9sbG8gRWRpdG9yPC90aXRsZT4KPG1hc2sgaWQ9ImFwLW0iIG1hc2tVbml0cz0idXNlclNwYWNlT25Vc2UiIHg9IjAiIHk9IjAiIHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4Ij48Zz48ZyBmaWxsPSIjZmZmIj48cGF0aCBkPSJNNDIgNjQgQzI4IDcyIDIyIDkwIDI0IDExMCBMNDIgOTggWiIvPjxwYXRoIGQ9Ik04NiA2NCBDMTAwIDcyIDEwNiA5MCAxMDQgMTEwIEw4NiA5OCBaIi8+PC9nPjxnIGZpbGw9IiNmZmYiPjxwYXRoIGQ9Ik02NCA4IEM4NCAyNCA5MCA1MiA4OCA5MCBMNDAgOTAgQzM4IDUyIDQ0IDI0IDY0IDggWiIvPjxwYXRoIGQ9Ik00OCA5MCBMODAgOTAgTDc2IDEwMCBMNTIgMTAwIFoiLz48L2c+PGcgc3Ryb2tlPSIjMDAwIiBzdHJva2Utd2lkdGg9IjMuNSI+PHBhdGggZD0iTTM2IDkwLjUgTDkyIDkwLjUiLz48L2c+PGNpcmNsZSBjeD0iNjQiIGN5PSI1MCIgcj0iOCIgZmlsbD0iIzAwMCIvPjwvZz48L21hc2s+PGc+PHBhdGggZD0iTTUyIDEwMCBDNTQgMTEyIDYwIDExOCA2NCAxMjYgQzY4IDExOCA3NCAxMTIgNzYgMTAwIFoiIGZpbGw9IiNlYjc0M2IiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDAgMykiLz48L2c+PHJlY3Qgd2lkdGg9IjEyOCIgaGVpZ2h0PSIxMjgiIGZpbGw9IiNiYTQ3OGYiIG1hc2s9InVybCgjYXAtbSkiLz4KPC9zdmc+Cg==
@@ -495,6 +495,21 @@
   // MusicBrainz's website-side JSON (/ws/js/*) through the shared gate, which passes MusicBrainz's
   // "Verifying your browser" check again when it answers mid-session (#733; dev/net/mb-gate.mjs)
   const mbWebFetch = (url, init) => mbnFetch(url, init, { log: (lvl, m) => Log.cat('MusicBrainz')[lvl](m), notify: m => toast(m, 'warn') });
+
+  // #735: place a dropdown under its input, or above it when the window has more room there
+  // (an artist picker on the last tracks ran off the bottom); its height is capped to the room.
+  //   o.right  align its left edge this many px left of the input's right edge (the join list)
+  function acPlace(pop, inp, o) {
+    o = o || {};
+    const r = inp.getBoundingClientRect(), gap = o.gap || 2, margin = 8, cap = 300;
+    pop.style.left = (o.right ? Math.max(4, r.right - o.right) : r.left) + 'px';
+    pop.style.minWidth = (o.minWidth || Math.max(210, r.width)) + 'px';
+    pop.style.maxHeight = cap + 'px';
+    const want = Math.min(pop.scrollHeight, cap);
+    const below = innerHeight - r.bottom - gap - margin, above = r.top - gap - margin;
+    if (want <= below || below >= above) { pop.style.bottom = ''; pop.style.top = (r.bottom + gap) + 'px'; pop.style.maxHeight = Math.max(60, Math.min(cap, below)) + 'px'; }
+    else { pop.style.top = 'auto'; pop.style.bottom = (innerHeight - r.top + gap) + 'px'; pop.style.maxHeight = Math.min(cap, above) + 'px'; }
+  }
 
   /* ── search + siblings ── */
   const _cache = new Map();
@@ -1029,7 +1044,7 @@ click to open the label`;
   function wireLabelPicker(inp, host) {
     let pop = null, list = [], hi = -1, seq = 0, tmr = 0, onScroll = null, curQuery = '', curLimit = 8;
     const live = () => inp._tcLabOn && inp.isConnected;
-    const position = () => { if (!pop) return; const r = inp.getBoundingClientRect(); pop.style.left = r.left + 'px'; pop.style.top = (r.bottom + 2) + 'px'; pop.style.minWidth = Math.max(210, r.width) + 'px'; };
+    const position = () => { if (pop) acPlace(pop, inp); };   // #735: stays on screen (flips above near the bottom)
     const close = () => { if (pop) pop.remove(); pop = null; hi = -1; list = []; if (onScroll) { window.removeEventListener('scroll', onScroll, true); window.removeEventListener('resize', onScroll); onScroll = null; } };
     const ensure = () => { if (pop) return; pop = document.createElement('div'); pop.className = 'tc-acpop tc-labpop'; document.body.appendChild(pop); onScroll = () => { if (!pop || !pop.isConnected) close(); else position(); }; window.addEventListener('scroll', onScroll, true); window.addEventListener('resize', onScroll); position(); };
     const say = msg => { ensure(); list = []; pop.innerHTML = `<div class="tc-acrow none">${esc(msg)}</div>`; position(); };
@@ -5548,12 +5563,13 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
       if (!pop) {
         pop = document.createElement('div'); pop.className = 'tc-acpop tc-joinpop';
         document.body.appendChild(pop);
-        const r = inp.getBoundingClientRect(); pop.style.left = Math.max(4, r.right - 150) + 'px'; pop.style.top = (r.bottom + 4) + 'px'; pop.style.minWidth = '150px';
+        pop.style.minWidth = '150px';
         const off = e => { if (!pop) { document.removeEventListener('mousedown', off); return; } if (!pop.contains(e.target) && e.target !== arrow && e.target !== inp) { close(); document.removeEventListener('mousedown', off); } };
         setTimeout(() => document.addEventListener('mousedown', off), 0);
       }
       hi = needle ? 0 : -1;   // typing pre-highlights the top hit so Enter picks it straight away
       paint();
+      acPlace(pop, inp, { right: 150, gap: 4, minWidth: 150 });   // #735: on screen, after the list is filled
     };
     const keys = e => {
       if (e.key === 'ArrowDown') { e.preventDefault(); e.stopPropagation(); if (!pop) open(inp.value); else { hi = (hi + 1) % items.length; paint(); } }
@@ -5577,7 +5593,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
   function wireAutocomplete(inp, slot, refresh) {
     let pop = null, list = [], hi = -1, seq = 0, onScroll = null;
     let curQuery = '', curLimit = 8;   // "Show more…" pagination: bump the limit and re-search
-    const position = () => { if (!pop) return; const r = inp.getBoundingClientRect(); pop.style.left = r.left + 'px'; pop.style.top = (r.bottom + 2) + 'px'; pop.style.minWidth = Math.max(210, r.width) + 'px'; };
+    const position = () => { if (pop) acPlace(pop, inp); };   // #735: stays on screen (flips above near the bottom)
     const ensure = () => { if (pop) return; pop = document.createElement('div'); pop.className = 'tc-acpop'; document.body.appendChild(pop); onScroll = () => { if (!pop || !pop.isConnected) { window.removeEventListener('scroll', onScroll, true); window.removeEventListener('resize', onScroll); pop = null; } else position(); }; window.addEventListener('scroll', onScroll, true); window.addEventListener('resize', onScroll); position(); };
     const close = () => { if (pop) pop.remove(); pop = null; hi = -1; if (onScroll) { window.removeEventListener('scroll', onScroll, true); window.removeEventListener('resize', onScroll); onScroll = null; } };
     const choose = c => { close(); pickArtist(slot, c); };
@@ -5685,10 +5701,11 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     const same = s.name && s.creditedAs === s.name;
     const cred = noPw(document.createElement('input')); cred.className = 'tc-cred'; cred.value = (s.creditedAs && !same) ? s.creditedAs : ''; cred.placeholder = s.name || 'credit…'; cred.title = 'credited-as override (blank = same as the artist name)';
     // #228: a hover × on the left of the field clears the credited-as override
-    const credClr = document.createElement('button'); credClr.type = 'button'; credClr.className = 'tc-cred-clr'; credClr.textContent = '×'; credClr.title = 'clear the credited-as override';
+    const credClr = document.createElement('button'); credClr.type = 'button'; credClr.className = 'tc-cred-clr'; credClr.textContent = '×'; credClr.title = 'clear the credited-as override  ·  right-click: clear every credited-as on the tracklist';
     const updCredClr = () => line.classList.toggle('tc-has-cred', !!cred.value.trim());
     credClr.onmousedown = e => e.preventDefault();
     credClr.onclick = () => { if (!cred.value) return; cred.value = ''; cred.onchange(); updCredClr(); };
+    credClr.oncontextmenu = e => { e.preventDefault(); clearAllCredits(); };   // #735
     cred.oninput = () => { line.classList.toggle('tc-can-split', splitArtistText(cred.value || s.name || '').length > 1); updCredClr(); };   // re-evaluate the highlight / ⋔ + clear button as you type
     cred.onchange = () => {
       const v = cred.value.trim(); const newCred = v || (s.name || '');
@@ -6822,6 +6839,22 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     m.querySelectorAll('.tc-mi').forEach(el => el.onclick = () => { const it = items[+el.dataset.i]; m.remove(); it.onClick(); });
     const off = e => { if (!m.contains(e.target) && e.target !== anchor) { m.remove(); document.removeEventListener('mousedown', off, true); } };
     setTimeout(() => document.addEventListener('mousedown', off, true), 0);
+  }
+  // #735: right-click on a credited-as × — drop the credited-as override on EVERY track (an import's
+  // lowercase "kassav" left beside the matched artist "Kassav'"), so each credit reads as the artist's
+  // own name. Only slots with an artist: an unresolved slot's credited-as is all the text it has.
+  function clearAllCredits() {
+    if (!MODEL) return;
+    let slots = 0, tracks = 0;
+    MODEL.tracks.forEach(t => {
+      let n = 0;
+      (t.slots || []).forEach(s => { if (s.name && s.creditedAs && s.creditedAs !== s.name) { s.creditedAs = s.name; n++; } });
+      if (!n) return;
+      try { commitTrack(t); slots += n; tracks++; } catch (e) { Log.cat('Artist').warn('clear credited-as failed on track', t.number, e.message); }
+    });
+    Log.cat('Artist').info('cleared every credited-as override:', slots, 'on', tracks, 'track(s)');
+    if (slots) rerender();
+    toast(slots ? `Cleared ${slots} credited-as override${slots !== 1 ? 's' : ''} on ${tracks} track${tracks !== 1 ? 's' : ''}` : 'No credited-as overrides to clear');
   }
   // Tracklist "Clear all": empty the title, artist credit and length of every track (with confirm)
   function clearAllTracks() {

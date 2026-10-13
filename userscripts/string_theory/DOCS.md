@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-10-13 12:18 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-10-13 13:51 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -68,6 +68,7 @@ Each part is optional, and Apollo's icon in the bottom-right corner switches bac
 - Ctrl-click a search result to set it on every unresolved track. Paste an MBID or artist URL to resolve it directly.
 - **＋** creates an unresolved artist in the background, with sort name, type and its Discogs or platform link filled in.
 - On hover: **split** an artist (with a join-phrase picker), remove a split artist, or reorder artists within a credit.
+- A credited-as name's hover **×** clears it; right-click to clear every credited-as on the tracklist.
 - The **N unresolved** badge jumps to the first unresolved artist.
 
 **Tracks**
