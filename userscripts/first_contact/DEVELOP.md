@@ -74,3 +74,5 @@ The handoff carries the archive plan (`archive: { ts, keys, urls: [{ url, what: 
 - **With keys** (Save Page Now 2): `POST https://web.archive.org/save` with `Authorization: LOW <key>:<secret>`, `Accept: application/json`, form body `url`, `capture_screenshot=1`, `if_not_archived_within=30d`. It answers `{ url, job_id }`; `GET /save/status/<job_id>` (same header) is polled every 6 s for up to 3 minutes, for the log only.
 
 URLs are sent one at a time. Every step is logged: the plan on the platform side, then each request, its status, the job and its result on the editor side.
+
+The requests and the keys are the shared [`<ST-ARCHIVE>`](../../DEVELOP.md#shared-blocks) block, with Apollo Editor ([its use](../apollo_editor/DEVELOP.md#archive)). The keys are the GM value `mbu.archive` = `{ iaKey, iaSecret }`, not in `fc.settings`, where versions before #736 kept them: `settings()` moves them over once, and keys already in `mbu.archive` win. Inside String Theory the members share one GM store, so keys set in either script show in the other; standalone, each script keeps its own copy. Whether FC archives (`fc.settings.archive`) stays its own.

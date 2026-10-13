@@ -38,3 +38,15 @@ When another site seeds the add or edit release form, MusicBrainz shows a confir
 Since 2026-09 musicbrainz.org's website side, `/ws/js/*` included, answers with a *Verifying your browser* page until the browser has solved its proof-of-work; ws/2 isn't checked. A pass sets the `__meb_verified` cookie for 24 hours, bound to the IP. The release editor never reloads, so once the cookie lapses or the IP changes, every `/ws/js` read gets that page (HTTP 200, HTML) instead of JSON ([#733](https://github.com/majkinetor/musicbrainz-userscripts/issues/733)).
 
 The shared request gate handles it, for every script that sends its `/ws/js` reads through `mbnFetch` ([`dev/net/mb-gate.mjs`](../../dev/net/mb-gate.mjs)): on that page it loads the same URL in one fresh hidden iframe, where MusicBrainz's own script passes the check and renews the cookie for the whole browser, then retries. A frame that doesn't clear within 20 seconds gives a toast to open any MusicBrainz page in another tab, which does the same. The page is recognised by its title and its `<noscript>` text, never by `/__meb_verify`, which ordinary pages also post to.
+
+## Archive
+
+At **Enter edit** (a click on the footer's `[data-click="submitEdits"]`, in the capture phase, so before MB reads the note) `archiveOnSubmit()`:
+
+1. collects the release's external links (`linkRows()`) and the http(s) URLs in the edit note, skipping MusicBrainz, MetaBrainz and archive.org URLs, the scripts' signature lines (`<name> v<version> by <author> - <url>`), and what First Contact's handoff archives (its `url` and `archive.urls`);
+2. rewrites the note (`archiveNote()`): its earlier archive lines and Apollo's credit line are taken out, the new lines appended, and the credit added back after them;
+3. fires one save per URL through the shared [`<ST-ARCHIVE>`](../../DEVELOP.md#shared-blocks) block (`mbaSave`), without waiting: the page leaves seconds later. Anonymous: `GET https://web.archive.org/save/<url>`. With keys: `POST /save` (Save Page Now 2, screenshot, `if_not_archived_within=30d`), not followed. A second Enter edit on the same page (MB refused the first) doesn't send a URL again.
+
+The note uses the full 14-digit timestamp: Wayback reads a date-only one as the end of that day, so it can land on a later snapshot. The URL in a link drops `https://` and `www.`, which Wayback doesn't need.
+
+The keys are the GM value `mbu.archive`, shared with First Contact ([its notes](../first_contact/DEVELOP.md#archive)); the switch is `archive` in Apollo's own settings. Specs: `test/736-archive.spec.mjs` (`ARCHIVE_LIVE=1` lets one save through to archive.org and looks for its snapshot).

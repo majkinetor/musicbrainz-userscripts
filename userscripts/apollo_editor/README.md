@@ -19,6 +19,7 @@ A faster release editor for MusicBrainz: artists and recordings auto-matched, cl
 - **[Duplicates](#duplicates)**: a similarity score for each existing release, with a track-by-track comparison.
 - **[Annotation editor](#annotation-editor)**: Markdown with a live preview.
 - **[Highlighting](#highlighting)**: confusable punctuation, invisible characters and missing spaces made visible.
+- **[Archive](#archive)**: the release's links and the edit note's links saved on the Internet Archive.
 
 Each part is optional, and Apollo's icon in the bottom-right corner switches back to MusicBrainz's own editor at any time; it's in colour while Apollo is on and grey while off.
 
@@ -248,32 +249,52 @@ With *Enable detailed highlighting* on:
 
 Apollo follows a dark MusicBrainz theme, such as kellnerd's [userstyle](https://github.com/kellnerd/userstyles#musicbrainz).
 
+## Archive
+
+When you click **Enter edit**, Apollo asks the Internet Archive's Wayback Machine to save every external link of the release and every link in the edit note, so anyone can later check what the pages showed. The edit note says so:
+
+```text
+Archived on the Wayback Machine, 2026-10-13: 4 external links (web.archive.org/web/20261013160122/ + link)
+Archived link: https://web.archive.org/web/20261013160122/example.com/press/release
+```
+
+- The release's links get one line between them, since the release lists them: put the link after the address shown to open its snapshot. A link that is only in the edit note gets its own line.
+- Every edit saves them again. A page the Internet Archive saved a moment ago isn't saved twice.
+- The edit doesn't wait for the saves, which take from a few seconds to a minute.
+- Links on MusicBrainz and the Internet Archive aren't saved, nor the album page [First Contact](../first_contact/README.md#archive) already archives for its import.
+- Without keys the saves are anonymous, and the Internet Archive refuses some when a release has many links. With your archive.org keys the limit is much higher, and each save also takes a screenshot. They are the same keys First Contact uses: in [String Theory](../string_theory/README.md) keys set in one show in the other. To get them, see [First Contact → archive.org keys](../first_contact/README.md#archiveorg-keys).
+
+> [!NOTE]
+> Archiving sends the address of every link on the releases you edit to archive.org, and with keys, under your account. Turn **Archive links on the Internet Archive** off in [Settings](#settings) if you don't want that.
+
 ## Settings
 
 Right-click Apollo's corner icon. Column widths, the toolbar layout, **Change**, **Cutoff** and the picker's folded sections are remembered as you use them.
 
-| Setting                                                       | Default |                                                                                   |
-| ------------------------------------------------------------- | ------- | --------------------------------------------------------------------------------- |
-| Modify Release information, Tracklist, Recordings, Duplicates | on      | replace that part of the editor                                                   |
-| Modify annotations with Markdown                              | on      | the [annotation editor](#annotation-editor)                                       |
-| Modify header and footer                                      | on      | a compact step switcher instead of the tabs and footer                            |
-| Zen editing                                                   | on      | hide the site header, title and footer; the title moves into Apollo's bar         |
-| Auto confirm release submissions                              | on      | skip the confirmation page when a site seeds a release                            |
-| Auto-match on start: Tracklist, Recordings                    | on      | match on load                                                                     |
-| Auto-match on start: Label, Artist, Release group             | on      | match the release [artist, label and release group](#release-information) on load |
-| Discogs artist link matching                                  | on      | match by [Discogs link](#artist-matching) and offer missing links                 |
-| Detect language and script                                    | on      | fill in a missing [language and script](#language-and-script)                     |
-| Length tolerance                                              | 5 s     | `0` for exact                                                                     |
-| Title tolerance                                               | 1       | differing characters allowed                                                      |
-| Ignore casing                                                 | on      | case, accents and spacing don't count                                             |
-| Ignore punctuation                                            | on      | `&`/*and*, brackets, quotes, dashes and dots don't count                          |
-| Enable detailed highlighting                                  | on      | see [Highlighting](#highlighting)                                                 |
-| Row layout                                                    | normal  | compact, normal or cozy                                                           |
-| Alternate row colors                                          | off     | every other track tinted                                                          |
-| Show grid                                                     | rows    | lines between rows and/or columns                                                 |
-| Enlarge punctuation by                                        | 3 px    | `0` stops the enlarging; the markers stay                                         |
-| Keep caret position on row navigation                         | on      | off: a cell is selected whole on arrival                                          |
-| Highlight all instances of an artist on hover                 | off     | hovering an artist highlights it on every track                                   |
+| Setting                                                       | Default |                                                                                         |
+| ------------------------------------------------------------- | ------- | --------------------------------------------------------------------------------------- |
+| Modify Release information, Tracklist, Recordings, Duplicates | on      | replace that part of the editor                                                         |
+| Modify annotations with Markdown                              | on      | the [annotation editor](#annotation-editor)                                             |
+| Modify header and footer                                      | on      | a compact step switcher instead of the tabs and footer                                  |
+| Zen editing                                                   | on      | hide the site header, title and footer; the title moves into Apollo's bar               |
+| Auto confirm release submissions                              | on      | skip the confirmation page when a site seeds a release                                  |
+| Archive links on the Internet Archive                         | on      | save the release's and the edit note's links at **Enter edit**; see [Archive](#archive) |
+| archive.org keys                                              | none    | your access key and secret, shared with First Contact: higher limits, plus a screenshot |
+| Auto-match on start: Tracklist, Recordings                    | on      | match on load                                                                           |
+| Auto-match on start: Label, Artist, Release group             | on      | match the release [artist, label and release group](#release-information) on load       |
+| Discogs artist link matching                                  | on      | match by [Discogs link](#artist-matching) and offer missing links                       |
+| Detect language and script                                    | on      | fill in a missing [language and script](#language-and-script)                           |
+| Length tolerance                                              | 5 s     | `0` for exact                                                                           |
+| Title tolerance                                               | 1       | differing characters allowed                                                            |
+| Ignore casing                                                 | on      | case, accents and spacing don't count                                                   |
+| Ignore punctuation                                            | on      | `&`/*and*, brackets, quotes, dashes and dots don't count                                |
+| Enable detailed highlighting                                  | on      | see [Highlighting](#highlighting)                                                       |
+| Row layout                                                    | normal  | compact, normal or cozy                                                                 |
+| Alternate row colors                                          | off     | every other track tinted                                                                |
+| Show grid                                                     | rows    | lines between rows and/or columns                                                       |
+| Enlarge punctuation by                                        | 3 px    | `0` stops the enlarging; the markers stay                                               |
+| Keep caret position on row navigation                         | on      | off: a cell is selected whole on arrival                                                |
+| Highlight all instances of an artist on hover                 | off     | hovering an artist highlights it on every track                                         |
 
 ## Shortcuts
 
@@ -287,3 +308,9 @@ Right-click Apollo's corner icon. Column widths, the toolbar layout, **Change**,
 | Length parser | Ctrl+Enter         | apply                                           |
 | Annotation    | Ctrl+B, Ctrl+I     | bold, italic                                    |
 | Annotation    | Tab, Shift+Tab     | make or change a list, remove it                |
+
+## Notes
+
+### Archiving requests
+
+[DEVELOP.md](DEVELOP.md#archive) lists the requests sent to the Internet Archive, and which links are left out.

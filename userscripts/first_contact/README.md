@@ -266,6 +266,8 @@ Without keys the save is anonymous. The Internet Archive limits how many anonymo
 
 To get them, make a free account on [archive.org](https://archive.org), log in, and open [archive.org/account/s3.php](https://archive.org/account/s3.php). Copy the *access key* and the *secret* into **⚙︎ → archive.org keys**.
 
+[Apollo Editor](../apollo_editor/README.md#archive) uses the same keys to archive a release's links. In [String Theory](../string_theory/README.md), keys set in one show in the other.
+
 > [!NOTE]
 > Archiving sends the address of every album you import to archive.org, and with keys, under your account. Turn **Archive the album page on the Internet Archive** off in [Settings](#settings) if you don't want that.
 
@@ -293,10 +295,10 @@ A review in the notes is the critic's text (Qobuz's and Apple's are usually AllM
 
 ### Archive
 
-| Setting                                        | Default |                                                                                            |
-| ---------------------------------------------- | ------- | ------------------------------------------------------------------------------------------ |
-| Archive the album page on the Internet Archive | on      | each import saves the album page and links the snapshot; see [Archive](#archive)           |
-| archive.org keys                               | none    | your access key and secret: higher limits, plus a screenshot; see [keys](#archiveorg-keys) |
+| Setting                                        | Default |                                                                                  |
+| ---------------------------------------------- | ------- | -------------------------------------------------------------------------------- |
+| Archive the album page on the Internet Archive | on      | each import saves the album page and links the snapshot; see [Archive](#archive) |
+| archive.org keys                               | none    | higher limits and a screenshot; shared with Apollo; see [keys](#archiveorg-keys) |
 
 ### Button
 

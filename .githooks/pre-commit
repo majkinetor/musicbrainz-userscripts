@@ -118,6 +118,16 @@ if printf '%s\n' "$STAGED" | grep -qE '^dev/mbpage/(mb-page|sync-mbpage)\.mjs$';
     STAGED=$(git diff --cached --name-only)
 fi
 
+# shared Wayback Machine helpers (#736) — dev/archive/wayback.mjs, re-inlined into every
+# script carrying a `// <ST-ARCHIVE>` marker.
+if printf '%s\n' "$STAGED" | grep -qE '^dev/archive/(wayback|sync-archive)\.mjs$'; then
+    echo "[pre-commit] syncing the shared Wayback Machine helpers…"
+    node dev/archive/sync-archive.mjs >/dev/null
+    ARCHIVE_FILES=$(grep -rl '// <ST-ARCHIVE>' userscripts --include='*.js' 2>/dev/null || true)
+    [ -n "$ARCHIVE_FILES" ] && git add $ARCHIVE_FILES
+    STAGED=$(git diff --cached --name-only)
+fi
+
 # (discogs_credits is frozen — no longer developed — so its bundle is not rebuilt here.)
 
 # credit_hoarder — esbuild bundle. It was
