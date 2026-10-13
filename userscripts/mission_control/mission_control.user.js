@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Mission Control
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.13
+// @version      2026.10.13.140636
 // @description  One window on the release page that asks the other scripts (Platform Check, ISRC Scout, Art Station, Fusion, Credit Hoarder) what is missing, shows it all in one review, and applies the selected changes in order.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5NaXNzaW9uIENvbnRyb2w8L3RpdGxlPgo8ZGVmcz48ZmlsdGVyIGlkPSJtY28xMy1oIiB4PSItMTAlIiB5PSItMTAlIiB3aWR0aD0iMTIwJSIgaGVpZ2h0PSIxMjAlIj48ZmVNb3JwaG9sb2d5IGluPSJTb3VyY2VBbHBoYSIgb3BlcmF0b3I9ImRpbGF0ZSIgcmFkaXVzPSIxLjUiIHJlc3VsdD0iZCIvPjxmZUZsb29kIGZsb29kLWNvbG9yPSIjZmZmIiBmbG9vZC1vcGFjaXR5PSIuNyIvPjxmZUNvbXBvc2l0ZSBpbjI9ImQiIG9wZXJhdG9yPSJpbiIvPjxmZU1lcmdlPjxmZU1lcmdlTm9kZS8+PGZlTWVyZ2VOb2RlIGluPSJTb3VyY2VHcmFwaGljIi8+PC9mZU1lcmdlPjwvZmlsdGVyPjwvZGVmcz48ZyBmaWx0ZXI9InVybCgjbWNvMTMtaCkiPjxwYXRoIGQ9Ik03NyAzNS41IEw2NCA0MyBMNTEgMzUuNSBMNTEgMjAuNSBMNjQgMTMgTDc3IDIwLjVaIiBmaWxsPSIjN2E1N2U4IiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik01OS43IDc3LjUgTDQ2LjcgODUgTDMzLjcgNzcuNSBMMzMuNyA2Mi41IEw0Ni43IDU1IEw1OS43IDYyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik05NC4zIDc3LjUgTDgxLjMgODUgTDY4LjMgNzcuNSBMNjguMyA2Mi41IEw4MS4zIDU1IEw5NC4zIDYyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik00Mi4zIDEwNy41IEwyOS40IDExNSBMMTYuNCAxMDcuNSBMMTYuNCA5Mi41IEwyOS40IDg1IEw0Mi4zIDkyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik03NyAxMDcuNSBMNjQgMTE1IEw1MSAxMDcuNSBMNTEgOTIuNSBMNjQgODUgTDc3IDkyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik0xMTEuNiAxMDcuNSBMOTguNiAxMTUgTDg1LjcgMTA3LjUgTDg1LjcgOTIuNSBMOTguNiA4NSBMMTExLjYgOTIuNVoiIGZpbGw9IiNmZmM5NGEiIHN0cm9rZT0iIzIyMjIzYiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PC9nPgo8L3N2Zz4K
@@ -124,9 +124,27 @@ document.addEventListener('mc:progress', e => {
     Log.debug('progress ' + d.id + ': ' + (d.note || d.state));
     paintAll();
 });
+// #730: MusicBrainz's special-purpose entities — Various Artists, [anonymous], [data], [dialogue],
+// [no artist], [traditional], [unknown] and the label [no label]. Since MBS-14146 (musicbrainz-server
+// #3626) a regular editor can't edit any of them: the edit page never loads. The list is MusicBrainz's
+// own, root/static/scripts/common/constants.js (SPECIAL_ARTIST_GIDS, NOLABEL_GID).
+const SPECIAL_PURPOSE = new Set([
+  '89ad4ac3-39f7-470e-963a-56509c546377', 'f731ccc4-e22a-43af-a747-64213329e088', '33cf029c-63b0-41a0-9855-be2a3665fb3b',
+  '314e1c25-dde7-4e4d-b2f4-0a7b9f7c56dc', 'eec63d3c-3b81-4ad4-b1e4-7c147d4d2b61', '9be7f096-97ec-4615-8957-8d40b5dcbc41',
+  '125ec42a-7229-4250-afc5-e057484327fe', '157afde4-4bf5-4039-8ad2-5a15acc85176',
+]);
+const isSpecialPurpose = (type, mbid) => (type === 'artist' || type === 'label') && SPECIAL_PURPOSE.has(String(mbid || '').toLowerCase());
+// a finding on one is left out (state 'none'), whichever provider sent it: Falcon couldn't apply it
+function dropSpecialPurpose(x) {
+    if (x && x.entity && isSpecialPurpose(x.entity.type, x.entity.mbid) && x.state !== 'none') {
+        Log.info('left out: ' + x.entity.type + ' ' + (x.entity.name || x.entity.mbid) + ' is special-purpose, not editable (#730)');
+        x.state = 'none'; x.why = 'special-purpose ' + x.entity.type + ': MusicBrainz lets only a few editors change it';
+    }
+    return x;
+}
 document.addEventListener('mc:findings', e => {
     const d = busEvent(e, 'mc:findings'); if (!d) return;
-    const findings = Array.isArray(d.findings) ? d.findings : [];
+    const findings = (Array.isArray(d.findings) ? d.findings : []).map(dropSpecialPurpose);
     results[d.id] = { state: 'done', findings, summary: d.summary || '', best: d.best || null, open: Array.isArray(d.open) ? d.open : null, barcode: d.barcode || null };
     // selected by default: only what the provider is sure of
     picked[d.id] = new Set(findings.filter(x => x.state === 'new').map(x => x.key));
@@ -147,7 +165,7 @@ document.addEventListener('mc:update', e => {
     if (d.error) mbuToast(((PROVIDERS.find(p => p.id === d.id) || {}).provider || d.id) + ': ' + d.error);
     const r = results[d.id];
     if (r && r.state === 'done' && r.findings) {
-        for (const x of Array.isArray(d.findings) ? d.findings : []) {
+        for (const x of (Array.isArray(d.findings) ? d.findings : []).map(dropSpecialPurpose)) {
             const i = r.findings.findIndex(y => y.key === x.key);
             if (i === -1) r.findings.push(x); else r.findings[i] = x;
             if (!PICKABLE[x.state] && picked[d.id]) picked[d.id].delete(x.key);

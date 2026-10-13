@@ -66,17 +66,18 @@ The [keyboard](#shortcuts) moves between fields in both views, like a spreadshee
 
 Review the queue (remove rows, edit fields), then press **Start**. Right-click a row's type to select every item of that type; the header chips (`art`, `lbl`, `rec`, `rel`, `rg`) exclude a type without removing it.
 
-| Status      |                                                      |
-| ----------- | ---------------------------------------------------- |
-| queued      | not processed yet                                    |
-| in progress | being processed                                      |
-| done        | everything went through                              |
-| partial     | some of it failed                                    |
-| failed      | nothing went through                                 |
-| manual      | finished by you in a tab                             |
-| skipped     | nothing to submit, or MusicBrainz reported no change |
-| excluded    | its type's chip is off                               |
+| Status      |                                                                                |
+| ----------- | ------------------------------------------------------------------------------ |
+| queued      | not processed yet                                                              |
+| in progress | being processed                                                                |
+| done        | everything went through                                                        |
+| partial     | some of it failed                                                              |
+| failed      | nothing went through                                                           |
+| manual      | finished by you in a tab                                                       |
+| skipped     | nothing to submit, MusicBrainz reported no change, or a special-purpose entity |
+| excluded    | its type's chip is off                                                         |
 
+- A special-purpose artist or label, such as *Various Artists*, *[unknown]* or *[no label]*, is skipped without opening its edit page: MusicBrainz lets only a few editors change those.
 - A failed row shows MusicBrainz's own error on hover. **FAILED** / **PARTIAL** / **MANUAL** chips at the top filter the queue to those rows.
 - A worker that can't commit stays where it stopped, dimmed but live, and a fresh one takes over. Click a red status to jump to it in the **Workers** tab; **⛶** enlarges it.
 - **⇗** opens the entity's edit page in a tab, prefilled, for you to finish.
