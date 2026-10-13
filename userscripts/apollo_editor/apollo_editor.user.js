@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.13.181315
+// @version      2026.10.13.183225
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5BcG9sbG8gRWRpdG9yPC90aXRsZT4KPG1hc2sgaWQ9ImFwLW0iIG1hc2tVbml0cz0idXNlclNwYWNlT25Vc2UiIHg9IjAiIHk9IjAiIHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4Ij48Zz48ZyBmaWxsPSIjZmZmIj48cGF0aCBkPSJNNDIgNjQgQzI4IDcyIDIyIDkwIDI0IDExMCBMNDIgOTggWiIvPjxwYXRoIGQ9Ik04NiA2NCBDMTAwIDcyIDEwNiA5MCAxMDQgMTEwIEw4NiA5OCBaIi8+PC9nPjxnIGZpbGw9IiNmZmYiPjxwYXRoIGQ9Ik02NCA4IEM4NCAyNCA5MCA1MiA4OCA5MCBMNDAgOTAgQzM4IDUyIDQ0IDI0IDY0IDggWiIvPjxwYXRoIGQ9Ik00OCA5MCBMODAgOTAgTDc2IDEwMCBMNTIgMTAwIFoiLz48L2c+PGcgc3Ryb2tlPSIjMDAwIiBzdHJva2Utd2lkdGg9IjMuNSI+PHBhdGggZD0iTTM2IDkwLjUgTDkyIDkwLjUiLz48L2c+PGNpcmNsZSBjeD0iNjQiIGN5PSI1MCIgcj0iOCIgZmlsbD0iIzAwMCIvPjwvZz48L21hc2s+PGc+PHBhdGggZD0iTTUyIDEwMCBDNTQgMTEyIDYwIDExOCA2NCAxMjYgQzY4IDExOCA3NCAxMTIgNzYgMTAwIFoiIGZpbGw9IiNlYjc0M2IiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDAgMykiLz48L2c+PHJlY3Qgd2lkdGg9IjEyOCIgaGVpZ2h0PSIxMjgiIGZpbGw9IiNiYTQ3OGYiIG1hc2s9InVybCgjYXAtbSkiLz4KPC9zdmc+Cg==
@@ -4078,26 +4078,30 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
       const keys = mbaKeys();
       try { await (keys ? mbaSaveWithKeys(url, keys, log, follow) : mbaSaveAnon(url, log)); } catch (e) { log.warn(`archive: ${url}: ${e && e.message || e}`); }
   }
+  function mbaKeysState(k, s) {
+      k = String(k || '').trim(); s = String(s || '').trim();
+      return k && s ? '✓ set' : k ? 'secret missing' : s ? 'access key missing' : 'not set';
+  }
   function mbaKeysHtml(off) {
       const k = mbaKeysStored(), q = v => String(v).replace(/&/g, '&amp;').replace(/"/g, '&quot;');
       // no password-manager icon in the fields: they opt out by attribute (LastPass, 1Password,
       // Bitwarden, Dashlane), and the secret is a text field masked in CSS, since type=password draws every manager in
       const opt = 'autocomplete="off" data-lpignore="true" data-1p-ignore data-bwignore data-form-type="other" spellcheck="false"';
       return `<div class="mbu-ia${off ? ' mbu-ia-off' : ''}" title="Optional, and shared by First Contact and Apollo Editor. With your archive.org keys the save uses Save Page Now 2: higher limits, and a screenshot of the page, which is the evidence for platforms that build their pages in the browser (Spotify, Tidal, YouTube Music). Without keys the save is anonymous.">`
-          + '<div class="mbu-ia-h">archive.org keys <a href="https://archive.org/account/s3.php" target="_blank" rel="noopener">get them</a></div>'
+          + `<div class="mbu-ia-h">archive.org keys <span class="mbu-ia-st">${mbaKeysState(k.iaKey, k.iaSecret)}</span> <a href="https://archive.org/account/s3.php" target="_blank" rel="noopener">get them</a></div>`
           + `<input type="text" class="mbu-ia-key" placeholder="access key" ${opt} value="${q(k.iaKey)}">`
           + `<input type="text" class="mbu-ia-secret" placeholder="secret" ${opt} value="${q(k.iaSecret)}"></div>`;
   }
   function mbaKeysWire(root, log) {
-      const key = root.querySelector('.mbu-ia-key'), secret = root.querySelector('.mbu-ia-secret');
+      const key = root.querySelector('.mbu-ia-key'), secret = root.querySelector('.mbu-ia-secret'), st = root.querySelector('.mbu-ia-st');
       if (!key || !secret) return;
       const save = () => {
           mbaSetKeys(key.value, secret.value);
-          const k = key.value.trim(), s = secret.value.trim();
-          log.info(`archive.org keys: ${k && s ? 'set (Save Page Now 2)' : k || s ? 'only one of the two is set, so saves stay anonymous' : 'none (anonymous saves)'}`);
+          if (st) { st.textContent = mbaKeysState(key.value, secret.value); st.classList.toggle('mbu-ia-ok', !!(key.value.trim() && secret.value.trim())); }
       };
-      key.addEventListener('change', save);
-      secret.addEventListener('change', save);
+      const logged = () => log.info(`archive.org keys: ${mbaKeysState(key.value, secret.value)}`);
+      for (const f of [key, secret]) { f.addEventListener('input', save); f.addEventListener('change', logged); }
+      if (st) st.classList.toggle('mbu-ia-ok', !!(key.value.trim() && secret.value.trim()));
   }
   function mbaKeysCss(scope) {
       const s = scope + ' .mbu-ia';
@@ -4106,8 +4110,11 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
   ${s} .mbu-ia-secret { -webkit-text-security: disc; }
   ${s} .mbu-ia-h { grid-column: 1 / -1; color: var(--mbu-text-weak); }
   ${s} .mbu-ia-h a { color: var(--mbu-accent-text); margin-left: 4px; }
+  ${s} .mbu-ia-st { margin-left: 4px; }
+  ${s} .mbu-ia-st.mbu-ia-ok { color: var(--mbu-ok); }
   ${s} input { all: revert; box-sizing: border-box; width: 100%; min-width: 0; font: 12px var(--mbu-font-mono, monospace);
     padding: 3px 6px; border: 1px solid var(--mbu-border); border-radius: 4px; background: var(--mbu-bg-sunken); color: var(--mbu-text); }
+  ${s} input::placeholder { color: var(--mbu-text-weak); opacity: 1; font-style: normal; }
   `;
   }
   // </ST-ARCHIVE>
@@ -4680,6 +4687,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     #tc-settings .mbu-ia{margin:-2px 0 7px 22px}   /* #736 the archive.org keys, under Archive links */
     #tc-settings .tc-s-sub{font-weight:bold;color:var(--mbu-text);margin:0}
     #tc-settings div.tc-s-sub{margin:8px 0 3px}
+    #tc-settings div.tc-s-sub.tc-s-gap{margin-top:16px}   /* #736 a section after the plain list */
     #tc-settings .tc-s-row{display:flex;align-items:center;gap:12px;margin:7px 0;color:var(--mbu-text)}
     #tc-settings .tc-s-rad{display:inline-flex;align-items:center;gap:4px;margin:0;font-weight:normal;cursor:pointer;white-space:nowrap}
     #tc-settings .tc-s-row input[type=radio]{margin:0}
@@ -4784,6 +4792,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
           <label title="Hide the native step-tab row and footer; show a compact step switcher, wizard buttons by the title, and Add medium at the table's right."><input type="checkbox" id="tc-s-compactnav"> <span>Modify header and footer</span></label>
           <label title="Zen editing: hide everything above the Apollo nav bar (the site header, release title and entity tabs) and the page footer — leaving just the editor. The release title / artist (with version count) move into the nav bar. Needs the compact nav."><input type="checkbox" id="tc-s-zen"> <span>Zen editing</span></label>
           <label title="When another site seeds the Add/Edit-release form, MusicBrainz shows a confirmation page before the editor — automatically click its submit button to skip that step (integrates chaban's auto-confirm script). Add ?skip_confirmation to a seed URL to bypass it once."><input type="checkbox" id="tc-s-autoconfirm"> <span>Auto confirm release submissions</span></label>
+          <div class="tc-s-sub tc-s-gap">Archive</div>
           <label title="At Enter edit, ask the Internet Archive's Wayback Machine to save the release's external links and the links in the edit note, and say so in the edit note. This sends those URLs to archive.org. First Contact archives the album page of its own import itself."><input type="checkbox" id="tc-s-archive"> <span>Archive links on the Internet Archive</span></label>
           ${mbaKeysHtml(SETTINGS.archive === false)}
         </div>

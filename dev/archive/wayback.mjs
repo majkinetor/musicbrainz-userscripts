@@ -129,21 +129,27 @@ function mbaKeysHtml(off) {
     // Bitwarden, Dashlane), and the secret is a text field masked in CSS, since type=password draws every manager in
     const opt = 'autocomplete="off" data-lpignore="true" data-1p-ignore data-bwignore data-form-type="other" spellcheck="false"';
     return `<div class="mbu-ia${off ? ' mbu-ia-off' : ''}" title="Optional, and shared by First Contact and Apollo Editor. With your archive.org keys the save uses Save Page Now 2: higher limits, and a screenshot of the page, which is the evidence for platforms that build their pages in the browser (Spotify, Tidal, YouTube Music). Without keys the save is anonymous.">`
-        + '<div class="mbu-ia-h">archive.org keys <a href="https://archive.org/account/s3.php" target="_blank" rel="noopener">get them</a></div>'
+        + `<div class="mbu-ia-h">archive.org keys <span class="mbu-ia-st">${mbaKeysState(k.iaKey, k.iaSecret)}</span> <a href="https://archive.org/account/s3.php" target="_blank" rel="noopener">get them</a></div>`
         + `<input type="text" class="mbu-ia-key" placeholder="access key" ${opt} value="${q(k.iaKey)}">`
         + `<input type="text" class="mbu-ia-secret" placeholder="secret" ${opt} value="${q(k.iaSecret)}"></div>`;
 }
-/** Save the keys from the fields mbaKeysHtml made, inside `root`, as they change. */
+/** What the heading says about the keys: the secret is masked, so this is how to tell it's there. */
+function mbaKeysState(k, s) {
+    k = String(k || '').trim(); s = String(s || '').trim();
+    return k && s ? '✓ set' : k ? 'secret missing' : s ? 'access key missing' : 'not set';
+}
+/** Save the keys from the fields mbaKeysHtml made, inside `root`, as they're typed or pasted:
+ *  `change` alone missed a paste when the panel was closed with the field still focused. */
 function mbaKeysWire(root, log) {
-    const key = root.querySelector('.mbu-ia-key'), secret = root.querySelector('.mbu-ia-secret');
+    const key = root.querySelector('.mbu-ia-key'), secret = root.querySelector('.mbu-ia-secret'), st = root.querySelector('.mbu-ia-st');
     if (!key || !secret) return;
     const save = () => {
         mbaSetKeys(key.value, secret.value);
-        const k = key.value.trim(), s = secret.value.trim();
-        log.info(`archive.org keys: ${k && s ? 'set (Save Page Now 2)' : k || s ? 'only one of the two is set, so saves stay anonymous' : 'none (anonymous saves)'}`);
+        if (st) { st.textContent = mbaKeysState(key.value, secret.value); st.classList.toggle('mbu-ia-ok', !!(key.value.trim() && secret.value.trim())); }
     };
-    key.addEventListener('change', save);
-    secret.addEventListener('change', save);
+    const logged = () => log.info(`archive.org keys: ${mbaKeysState(key.value, secret.value)}`);
+    for (const f of [key, secret]) { f.addEventListener('input', save); f.addEventListener('change', logged); }
+    if (st) st.classList.toggle('mbu-ia-ok', !!(key.value.trim() && secret.value.trim()));
 }
 /** The fields' look, under `scope` (the panel's selector). Starts from `all: revert`: on a
  *  platform's page the site's own input styles would win. */
@@ -154,14 +160,17 @@ ${s}.mbu-ia-off { opacity: .5; }
 ${s} .mbu-ia-secret { -webkit-text-security: disc; }
 ${s} .mbu-ia-h { grid-column: 1 / -1; color: var(--mbu-text-weak); }
 ${s} .mbu-ia-h a { color: var(--mbu-accent-text); margin-left: 4px; }
+${s} .mbu-ia-st { margin-left: 4px; }
+${s} .mbu-ia-st.mbu-ia-ok { color: var(--mbu-ok); }
 ${s} input { all: revert; box-sizing: border-box; width: 100%; min-width: 0; font: 12px var(--mbu-font-mono, monospace);
   padding: 3px 6px; border: 1px solid var(--mbu-border); border-radius: 4px; background: var(--mbu-bg-sunken); color: var(--mbu-text); }
+${s} input::placeholder { color: var(--mbu-text-weak); opacity: 1; font-style: normal; }
 `;
 }
 
 // What the sync inlines, in order. Node specs import the functions from here.
 export const MBA_INLINE = {
     consts: { MBA_KEY },
-    fns: [mbaTs, mbaShort, mbaSnapshot, mbaCleanUrl, mbaKeys, mbaKeysStored, mbaSetKeys, mbaSaveAnon, mbaRequest, mbaSaveWithKeys, mbaSave, mbaKeysHtml, mbaKeysWire, mbaKeysCss],
+    fns: [mbaTs, mbaShort, mbaSnapshot, mbaCleanUrl, mbaKeys, mbaKeysStored, mbaSetKeys, mbaSaveAnon, mbaRequest, mbaSaveWithKeys, mbaSave, mbaKeysState, mbaKeysHtml, mbaKeysWire, mbaKeysCss],
 };
 export { mbaTs, mbaShort, mbaSnapshot, mbaCleanUrl };
