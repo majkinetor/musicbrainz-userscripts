@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-10-13 10:29 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-10-13 10:34 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -213,7 +213,7 @@ Anything else is literal and whitespace is elastic. A capital is a token only st
 
 For fixed-width text a token takes a range: `T[6-]`, `T[6-20]`, `T[-5]`, `T[~3-]` (last 3), or `[from:to]` up to a character, such as `#[1:.]` or `L[(:)]`. `~` before a character means its last occurrence: `L[~(:)]`.
 
-Each line's dot shows whether it matched (amber: by its own pattern). Click a row's raw text to edit it; the change goes back to the pasted text. A row can get its own pattern, or you select part of its raw text and bind it to a field. **🔒 Freeze matched** keeps the current pattern on every row it matches, so you can change the pattern for the rest. **Apply** writes only the fields the pattern has; its ▾ applies one field, or adds missing tracks first.
+Each line's dot shows whether it matched (amber: by its own pattern). Click a row's raw text to edit it; the change goes back to the pasted text. A row can get its own pattern, or you select part of its raw text and bind it to a field. **🔒 Freeze matched** keeps the current pattern on every row it matches, so you can change the pattern for the rest. **Apply** writes only the fields the pattern has, and makes the medium as long as the non-empty lines, like the native parser: tracks are added, or removed from the end. Its ▾ applies one field and keeps the track count.
 
 #### Length parser
 

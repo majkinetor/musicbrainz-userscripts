@@ -115,3 +115,25 @@ test('a raw row edits in place and syncs to the paste box', { tag: ['@sandbox', 
   check(await page.evaluate(() => !!document.querySelector('#tc-tpppop')), 'Esc in a raw cell ends the edit, not the window');
 });
 
+test('Apply makes the medium as long as the lines, adding or removing tracks', { tag: ['@sandbox', '@login'] }, async ({ page, inject }) => {
+  await openParser(page, inject);
+  const titles = () => page.evaluate(() => window.MB.releaseEditor.rootField.release().mediums()[0].tracks().map(t => t.name()));
+  const before = (await titles()).length;
+  check(before > 2, `the seed has more than 2 tracks (${before})`);
+  // a blank line takes no track
+  await source(page, '#. T', '1. Alpha\n\n2. Beta');
+  const foot = await page.textContent('#tc-tpppop .tc-tpp-cnt');
+  check(foot.includes(`removed from the end`) && foot.includes('2 tracks'), `the footer says tracks go (${foot})`);
+  await page.click('#tc-tpppop .tc-tpp-ok');
+  const shrunk = await until(titles, t => t.length === 2);
+  check(JSON.stringify(shrunk) === '["Alpha","Beta"]', `fewer lines remove tracks from the end (${JSON.stringify(shrunk)})`);
+
+  await page.evaluate(() => window.__apolloEditor.openTrackPatternParser(0));
+  await page.waitForSelector('#tc-tpppop');
+  await source(page, '#. T', '1. Alpha\n2. Beta\n3. Gamma\n4. Delta');
+  check((await page.textContent('#tc-tpppop .tc-tpp-cnt')).includes('+2 new'), 'the footer says tracks are added');
+  await page.click('#tc-tpppop .tc-tpp-ok');
+  const grown = await until(titles, t => t.length === 4 && t[3] === 'Delta');
+  check(JSON.stringify(grown) === '["Alpha","Beta","Gamma","Delta"]', `more lines add tracks (${JSON.stringify(grown)})`);
+});
+
