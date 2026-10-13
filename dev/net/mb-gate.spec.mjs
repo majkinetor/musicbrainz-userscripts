@@ -136,3 +136,76 @@ test('a tab working through a long queue (4 at a time) doesn\'t starve another t
   console.log('other tab waited', waited, 'ms');
   check(waited < 6000, `the other tab's request waits for the few slots already booked, not for the whole queue (${waited} ms; the queue takes ~20 s)`);
 });
+
+// #733: MusicBrainz's "Verifying your browser" check answering a website request mid-session.
+// A routed stand-in for a MusicBrainz host (it never resolves; the route answers everything):
+// fetch() is stubbed to answer the check until the hidden frame has "passed" it, and the
+// frame's page passes it the way the real one does, by moving on to the real URL.
+const MBHOST = 'https://gate.musicbrainz.org';
+const CHECK = '<!DOCTYPE html><html><head><title>Verifying your browser</title></head><body><noscript><p>JavaScript is required to access this page.</p></noscript>';
+async function mbTab(context, { clears = true } = {}) {
+  await context.route(MBHOST + '/**', r => {
+    const u = new URL(r.request().url());
+    if (u.pathname === '/') return r.fulfill({ status: 200, contentType: 'text/html', body: '<!doctype html><title>mb</title>' });
+    if (u.searchParams.has('passed')) return r.fulfill({ status: 200, contentType: 'application/json', body: '[]' });
+    // the frame's first load: the check, which (when it can) passes and moves on
+    const pass = clears ? `<script>parent.__cleared = true; location.replace(location.href + (location.search ? '&' : '?') + 'passed=1');</script>` : '';
+    return r.fulfill({ status: 200, contentType: 'text/html; charset=utf-8', body: CHECK + pass + '</body></html>' });
+  });
+  const p = await context.newPage();
+  await p.goto(MBHOST + '/');
+  await p.addScriptTag({ content: Object.entries(MBN_INLINE.consts).map(([k, v]) => `const ${k} = ${JSON.stringify(v)};`).join('\n') + '\n'
+    + MBN_INLINE.fns.map(f => f.toString()).join('\n')
+    + `\nwindow.__calls = []; window.__cleared = false;
+       window.fetch = async (url, init) => { window.__calls.push(((init && init.method) || 'GET') + ' ' + url);
+         return window.__cleared ? new Response('{"ok":1}', { status: 200, headers: { 'Content-Type': 'application/json' } })
+                                 : new Response(${JSON.stringify(CHECK)}, { status: 200, headers: { 'Content-Type': 'text/html; charset=utf-8' } }); };
+       Object.assign(window, { mbnFetch, mbnWebsite, mbnIsCheck });` });
+  return p;
+}
+
+test('the browser check is passed in a hidden frame and the request retried', { tag: ['@unit'] }, async ({ context }) => {
+  const p = await mbTab(context);
+  const r = await p.evaluate(async () => {
+    const logs = [];
+    const o = { log: (lv, m) => logs.push(lv + ' ' + m) };
+    // three at once share one frame
+    const rs = await Promise.all(['/ws/js/artist?q=a', '/ws/js/entity/x', '/ws/js/label?q=b'].map(u => mbnFetch(u, { headers: { Accept: 'application/json' } }, o)));
+    const bodies = await Promise.all(rs.map(x => x.json()));
+    const post = await mbnFetch('/ws/js/edit/create', { method: 'POST', body: '{}' }, o).then(x => x.json());
+    return { bodies, post, calls: window.__calls, logs, frames: document.querySelectorAll('iframe').length };
+  });
+  check(r.bodies.every(b => b.ok === 1), `every request gets its JSON (${JSON.stringify(r.bodies)})`);
+  check(r.calls.length === 7, `each asked twice: before and after the pass, the POST once more after (${r.calls.join(' · ')})`);
+  check(r.logs.filter(l => /hidden frame/.test(l)).length === 1, `one frame for the three (${JSON.stringify(r.logs)})`);
+  check(r.frames === 0, 'and the frame is gone');
+  check(r.post.ok === 1, 'a POST answered by the check is sent again once it is passed');
+});
+
+test('a check that doesn\'t clear gives up, says so once, and leaves the answer readable', { tag: ['@unit'] }, async ({ context }) => {
+  test.setTimeout(60000);
+  const p = await mbTab(context, { clears: false });
+  const r = await p.evaluate(async () => {
+    const logs = [], notes = [];
+    const o = { log: (lv, m) => logs.push(lv + ' ' + m), notify: m => notes.push(m) };
+    const a = await mbnFetch('/ws/js/artist?q=a', {}, o);
+    const text = await a.text();
+    const b = await mbnFetch('/ws/js/artist?q=b', {}, o);   // right after: no second frame
+    return { text: text.slice(0, 60), logs, notes, calls: window.__calls.length, bStatus: b.status };
+  });
+  check(/Verifying your browser/.test(r.text), 'the caller still gets the answer, body readable');
+  check(r.notes.length === 1 && /another tab/.test(r.notes[0]), `one notice, pointing to another tab (${JSON.stringify(r.notes)})`);
+  check(r.calls === 2, `no retry, and no new frame for a minute (${r.calls} calls)`);
+});
+
+test('only MusicBrainz\'s website side is checked, and a JSON answer passes untouched', { tag: ['@unit'] }, async ({ context }) => {
+  const p = await mbTab(context);
+  const r = await p.evaluate(async () => {
+    window.__cleared = true;
+    const res = await mbnFetch('/ws/js/entity/x');
+    return { website: [mbnWebsite('/ws/js/x'), mbnWebsite('https://musicbrainz.org/release/x'), mbnWebsite('/ws/2/x'), mbnWebsite('https://example.org/ws/js/x'), mbnWebsite('//example.org/x')],
+      untouched: res.headers.get('content-type'), calls: window.__calls.length, frames: document.querySelectorAll('iframe').length };
+  });
+  check(JSON.stringify(r.website) === '[true,true,false,false,false]', `website side: relative on MusicBrainz and any musicbrainz.org page; not ws/2, not other sites (${JSON.stringify(r.website)})`);
+  check(r.calls === 1 && r.frames === 0 && /json/.test(r.untouched), 'a JSON answer is returned as it came, one request, no frame');
+});

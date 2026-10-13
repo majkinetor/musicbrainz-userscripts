@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Credit Hoarder
 // @namespace    majkinetor
-// @version      2026.10.12.181607
+// @version      2026.10.13.121842
 // @description  Import per-track release credits from streaming/database providers (Discogs, Tidal, Qobuz, Deezer) into MusicBrainz relationships, with a review phase
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9Ii0xNS41IC0xLjUgMTM2LjUgMTM2LjUiIHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4Ij4KPHRpdGxlPkNyZWRpdCBIb2FyZGVyPC90aXRsZT4KPGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJjaGMwNC1nIiB4MT0iMCIgeTE9IjAiIHgyPSIxIiB5Mj0iMSI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjZjlhODI2Ii8+PHN0b3Agb2Zmc2V0PSIuNSIgc3RvcC1jb2xvcj0iI2YzNzIyYyIvPjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iI2QwMDA3MCIvPjwvbGluZWFyR3JhZGllbnQ+PC9kZWZzPjxnIG9wYWNpdHk9Ii43Ij48ZyB0cmFuc2Zvcm09InRyYW5zbGF0ZSg2NiA3MCkgcm90YXRlKDApIHNjYWxlKDEuNTUpIHRyYW5zbGF0ZSgtNjYgLTcwKSI+PGcgZmlsbD0iI2ZmZiIgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjEuOTM1NDgzODcwOTY3NzQxOCI+PGVsbGlwc2UgY3g9IjMwIiBjeT0iODAiIHJ4PSIxNCIgcnk9IjEwIi8+PGNpcmNsZSBjeD0iNTAiIGN5PSI3NiIgcj0iOCIvPjxjaXJjbGUgY3g9IjY2IiBjeT0iNzAiIHI9IjEwIi8+PC9nPjxnIHN0cm9rZT0iI2ZmZiIgc3Ryb2tlLXdpZHRoPSI1LjE2MTI5MDMyMjU4MDY0NSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBmaWxsPSJub25lIj48cGF0aCBkPSJNMjYgODYgbC02IDEyIE0zNCA4OCBsMiAxMiBNNDYgODIgbC00IDE2IE01MiA4NCBsOCAxNCIvPjwvZz48L2c+PGcgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjYuNSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBmaWxsPSJub25lIj48cGF0aCBkPSJNNzIgNjIgQzc4IDUyIDg2IDQ4IDkyIDQ4IE03MCA2MiBDNzIgNTIgNzAgNDQgNjQgNDAiLz48L2c+PHBhdGggZD0iTTExMy42IDQ1LjAgTDk4LjAgNTQuMCBMODIuNCA0NS4wIEw4Mi40IDI3LjAgTDk4LjAgMTguMCBMMTEzLjYgMjcuMFoiIGZpbGw9IiNmZmYiIHN0cm9rZT0iI2ZmZiIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWpvaW49InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTAgOTggMzYpIi8+PC9nPjxnIHRyYW5zZm9ybT0idHJhbnNsYXRlKDY2IDcwKSByb3RhdGUoMCkgc2NhbGUoMS41NSkgdHJhbnNsYXRlKC02NiAtNzApIj48ZyBmaWxsPSIjMjIyMjNiIiBzdHJva2U9Im5vbmUiIHN0cm9rZS13aWR0aD0iMCI+PGVsbGlwc2UgY3g9IjMwIiBjeT0iODAiIHJ4PSIxNCIgcnk9IjEwIi8+PGNpcmNsZSBjeD0iNTAiIGN5PSI3NiIgcj0iOCIvPjxjaXJjbGUgY3g9IjY2IiBjeT0iNzAiIHI9IjEwIi8+PC9nPjxnIHN0cm9rZT0iIzIyMjIzYiIgc3Ryb2tlLXdpZHRoPSIzLjIyNTgwNjQ1MTYxMjkwMyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBmaWxsPSJub25lIj48cGF0aCBkPSJNMjYgODYgbC02IDEyIE0zNCA4OCBsMiAxMiBNNDYgODIgbC00IDE2IE01MiA4NCBsOCAxNCIvPjwvZz48L2c+PGcgc3Ryb2tlPSIjMjIyMjNiIiBzdHJva2Utd2lkdGg9IjMuNSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBmaWxsPSJub25lIj48cGF0aCBkPSJNNzIgNjIgQzc4IDUyIDg2IDQ4IDkyIDQ4IE03MCA2MiBDNzIgNTIgNzAgNDQgNjQgNDAiLz48L2c+PHBhdGggZD0iTTExMy42IDQ1LjAgTDk4LjAgNTQuMCBMODIuNCA0NS4wIEw4Mi40IDI3LjAgTDk4LjAgMTguMCBMMTEzLjYgMjcuMFoiIGZpbGw9InVybCgjY2hjMDQtZykiIHN0cm9rZT0iIzIyMjIzYiIgc3Ryb2tlLXdpZHRoPSIzIiBzdHJva2UtbGluZWpvaW49InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTAgOTggMzYpIi8+PGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoOTggMzcpIHNjYWxlKDAuOSkiIGZpbGw9IiNmZmYiPjxjaXJjbGUgY3g9IjAiIGN5PSItNSIgcj0iNSIvPjxwYXRoIGQ9Ik0tOSA5IEMtOSAwIDkgMCA5IDlaIi8+PC9nPgo8L3N2Zz4K
@@ -345,7 +345,11 @@ if (!mbuClaim('credit_hoarder', 'Credit Hoarder')) return;
   }
   async function mbnFetch(url, init, o) {
     o = o || {};
-    if (!mbnGated(url)) return fetch(url, init);
+    if (!mbnGated(url)) {
+      const r = await fetch(url, init);
+      if (!mbnWebsite(url) || !await mbnIsCheck(r)) return r;
+      return await mbnReverify(url, init, o) ? fetch(url, init) : r;
+    }
     const tries = o.tries || 4;
     for (let attempt = 1; ; attempt++) {
       const slot = await mbnSlot(o);
@@ -355,10 +359,93 @@ if (!mbuClaim('credit_hoarder', 'Credit Hoarder')) return;
       if (!a.throttled || attempt >= tries) return r;
     }
   }
+  function mbnWebsite(url) {
+    const s = String(url || "");
+    if (mbnGated(s)) return false;
+    if (/^https?:\/\/([a-z0-9-]+\.)*musicbrainz\.org(\/|$)/i.test(s)) return true;
+    return /^\/(?!\/)/.test(s) && typeof location !== "undefined" && /(^|\.)musicbrainz\.org$/i.test(location.hostname);
+  }
+  async function mbnIsCheck(r) {
+    try {
+      if (!r || !/text\/html/i.test(r.headers && r.headers.get("content-type") || "")) return false;
+      const head = (await r.clone().text()).slice(0, 3e3);
+      return /<title>\s*Verifying your browser\s*<\/title>|JavaScript is required to access this page/i.test(head);
+    } catch (e) {
+      return false;
+    }
+  }
+  function mbnReverify(url, init, o) {
+    o = o || {};
+    const log2 = (lvl, m) => {
+      try {
+        if (o.log) o.log(lvl, m);
+        else (lvl === "warn" ? console.warn : console.info)("[MusicBrainz gate] " + m);
+      } catch (e) {
+      }
+    };
+    const g = globalThis.__mbnCheck || (globalThis.__mbnCheck = { busy: null, failedAt: 0 });
+    if (g.busy) return g.busy;
+    let target;
+    try {
+      target = new URL(String(url), location.href);
+    } catch (e) {
+      return Promise.resolve(false);
+    }
+    if (target.host !== location.host || typeof document === "undefined") {
+      log2("warn", "MusicBrainz asked to verify the browser \u2014 open any MusicBrainz page, then retry");
+      return Promise.resolve(false);
+    }
+    if (Date.now() - g.failedAt < 6e4) return Promise.resolve(false);
+    const method = String(init && init.method || "GET").toUpperCase();
+    const src = method === "GET" ? target.href : location.origin + "/ws/js/entity/89ad4ac3-39f7-470e-963a-56509c546377";
+    const t0 = Date.now();
+    log2("warn", 'MusicBrainz asked to verify the browser again ("Verifying your browser") \u2014 passing it in a hidden frame');
+    g.busy = new Promise((resolve) => {
+      const fr = document.createElement("iframe");
+      fr.setAttribute("aria-hidden", "true");
+      fr.setAttribute("data-mbn-check", "");
+      fr.tabIndex = -1;
+      fr.style.cssText = "position:fixed;width:1px;height:1px;left:-9999px;top:0;border:0;opacity:0;pointer-events:none";
+      let loads = 0, done = false, timer = 0;
+      const finish = (ok) => {
+        if (done) return;
+        done = true;
+        clearTimeout(timer);
+        fr.remove();
+        g.busy = null;
+        if (ok) log2("info", "browser check passed in " + (Date.now() - t0) + " ms \u2014 retrying");
+        else {
+          g.failedAt = Date.now();
+          const m = "MusicBrainz wants to verify your browser \u2014 open any MusicBrainz page in another tab, then retry";
+          log2("warn", m + " (the hidden frame did not clear it in 20 s)");
+          try {
+            if (o.notify) o.notify(m);
+          } catch (e) {
+          }
+        }
+        resolve(ok);
+      };
+      fr.onload = () => {
+        loads++;
+        let still;
+        try {
+          const d = fr.contentDocument;
+          still = !d || /<title>\s*Verifying your browser\s*<\/title>|JavaScript is required to access this page/i.test(d.documentElement ? d.documentElement.outerHTML.slice(0, 3e3) : "");
+        } catch (e) {
+          still = loads < 2;
+        }
+        if (!still) finish(true);
+      };
+      timer = setTimeout(() => finish(false), 2e4);
+      fr.src = src;
+      (document.body || document.documentElement).appendChild(fr);
+    });
+    return g.busy;
+  }
 
   // src/api-mb.js
   async function fetchMBEntity(mbid) {
-    const res = await fetch(`/ws/js/entity/${mbid}`);
+    const res = await mbnFetch(`/ws/js/entity/${mbid}`);
     if (!res.ok) throw new Error(`/ws/js/entity/${mbid} \u2192 ${res.status}`);
     return res.json();
   }
@@ -404,7 +491,7 @@ if (!mbuClaim('credit_hoarder', 'Credit Hoarder')) return;
         const ctrl = new AbortController();
         const timer = setTimeout(() => ctrl.abort(), REQUEST_TIMEOUT_MS);
         try {
-          const res = await fetch(item.url, { signal: ctrl.signal });
+          const res = gated ? await fetch(item.url, { signal: ctrl.signal }) : await mbnFetch(item.url, { signal: ctrl.signal }, { log: gateLog });
           const elapsed = Date.now() - t0;
           if (gated) {
             const a = await mbnAnswer(res.status, (n) => res.headers.get(n), { log: gateLog });
@@ -509,7 +596,7 @@ if (!mbuClaim('credit_hoarder', 'Credit Hoarder')) return;
     for (let attempt = 1; ; attempt++) {
       let res = null;
       try {
-        res = await fetch(url, { headers: { Accept: "application/json" } });
+        res = await mbnFetch(url, { headers: { Accept: "application/json" } });
       } catch (e) {
         if (attempt >= 4) throw e;
       }

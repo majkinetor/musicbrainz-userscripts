@@ -5,7 +5,7 @@
 
 import { MB, pageWindow }    from './constants.js';
 import { log, logDebug } from './log.js';
-import { mbnGated, mbnSlot, mbnAnswer } from '../../../dev/net/mb-gate.mjs';
+import { mbnGated, mbnSlot, mbnAnswer, mbnFetch } from '../../../dev/net/mb-gate.mjs';
 
 /**
  * Fetch a full MB entity from the internal `/ws/js/entity/{mbid}` endpoint.
@@ -14,7 +14,7 @@ import { mbnGated, mbnSlot, mbnAnswer } from '../../../dev/net/mb-gate.mjs';
  * the caller can decide).
  */
 export async function fetchMBEntity(mbid) {
-    const res = await fetch(`/ws/js/entity/${mbid}`);
+    const res = await mbnFetch(`/ws/js/entity/${mbid}`);   // #733: passes MusicBrainz's browser check if it answers
     if (!res.ok) throw new Error(`/ws/js/entity/${mbid} → ${res.status}`);
     return res.json();
 }
@@ -103,7 +103,8 @@ export const mbThrottle = (() => {
             const ctrl = new AbortController();
             const timer = setTimeout(() => ctrl.abort(), REQUEST_TIMEOUT_MS);
             try {
-                const res = await fetch(item.url, { signal: ctrl.signal });
+                // a /ws/js item goes through mbnFetch, which passes MusicBrainz's browser check if it answers (#733)
+                const res = gated ? await fetch(item.url, { signal: ctrl.signal }) : await mbnFetch(item.url, { signal: ctrl.signal }, { log: gateLog });
                 const elapsed = Date.now() - t0;
                 if (gated) {
                     const a = await mbnAnswer(res.status, n => res.headers.get(n), { log: gateLog });
@@ -264,7 +265,7 @@ export async function getSourceUrlsForRelease(mbid) {
     let json = null;
     for (let attempt = 1; ; attempt++) {
         let res = null;
-        try { res = await fetch(url, { headers: { Accept: 'application/json' } }); } catch (e) { if (attempt >= 4) throw e; }
+        try { res = await mbnFetch(url, { headers: { Accept: 'application/json' } }); } catch (e) { if (attempt >= 4) throw e; }
         if (res && res.ok) { json = await res.json(); if (attempt > 1) log.info(`Sources: MusicBrainz answered on attempt ${attempt}`); break; }
         if (res && res.status === 404) { log.warn(`Sources: MusicBrainz says this release does not exist (404)`); return {}; }
         if (attempt >= 4) throw new Error(`MB /ws/js/release returned ${res ? res.status : 'no response'} after ${attempt} attempts`);

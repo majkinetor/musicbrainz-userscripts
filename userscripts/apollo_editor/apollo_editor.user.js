@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.13.110838
+// @version      2026.10.13.112835
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5BcG9sbG8gRWRpdG9yPC90aXRsZT4KPG1hc2sgaWQ9ImFwLW0iIG1hc2tVbml0cz0idXNlclNwYWNlT25Vc2UiIHg9IjAiIHk9IjAiIHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4Ij48Zz48ZyBmaWxsPSIjZmZmIj48cGF0aCBkPSJNNDIgNjQgQzI4IDcyIDIyIDkwIDI0IDExMCBMNDIgOTggWiIvPjxwYXRoIGQ9Ik04NiA2NCBDMTAwIDcyIDEwNiA5MCAxMDQgMTEwIEw4NiA5OCBaIi8+PC9nPjxnIGZpbGw9IiNmZmYiPjxwYXRoIGQ9Ik02NCA4IEM4NCAyNCA5MCA1MiA4OCA5MCBMNDAgOTAgQzM4IDUyIDQ0IDI0IDY0IDggWiIvPjxwYXRoIGQ9Ik00OCA5MCBMODAgOTAgTDc2IDEwMCBMNTIgMTAwIFoiLz48L2c+PGcgc3Ryb2tlPSIjMDAwIiBzdHJva2Utd2lkdGg9IjMuNSI+PHBhdGggZD0iTTM2IDkwLjUgTDkyIDkwLjUiLz48L2c+PGNpcmNsZSBjeD0iNjQiIGN5PSI1MCIgcj0iOCIgZmlsbD0iIzAwMCIvPjwvZz48L21hc2s+PGc+PHBhdGggZD0iTTUyIDEwMCBDNTQgMTEyIDYwIDExOCA2NCAxMjYgQzY4IDExOCA3NCAxMTIgNzYgMTAwIFoiIGZpbGw9IiNlYjc0M2IiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDAgMykiLz48L2c+PHJlY3Qgd2lkdGg9IjEyOCIgaGVpZ2h0PSIxMjgiIGZpbGw9IiNiYTQ3OGYiIG1hc2s9InVybCgjYXAtbSkiLz4KPC9zdmc+Cg==
@@ -119,7 +119,13 @@
   }
   async function mbnFetch(url, init, o) {
       o = o || {};
-      if (!mbnGated(url)) return fetch(url, init);
+      if (!mbnGated(url)) {
+          const r = await fetch(url, init);
+          if (!mbnWebsite(url) || !(await mbnIsCheck(r))) return r;
+          // #733: MusicBrainz's browser check answered instead: nothing was done (a POST is safe
+          // to repeat), so pass the check and ask again
+          return (await mbnReverify(url, init, o)) ? fetch(url, init) : r;
+      }
       const tries = o.tries || 4;
       for (let attempt = 1; ; attempt++) {
           const slot = await mbnSlot(o);
@@ -141,6 +147,63 @@
           if (i > 0 && line.slice(0, i).trim().toLowerCase() === want) return line.slice(i + 1).trim();
       }
       return null;
+  }
+  function mbnWebsite(url) {
+      const s = String(url || '');
+      if (mbnGated(s)) return false;
+      if (/^https?:\/\/([a-z0-9-]+\.)*musicbrainz\.org(\/|$)/i.test(s)) return true;
+      return /^\/(?!\/)/.test(s) && typeof location !== 'undefined' && /(^|\.)musicbrainz\.org$/i.test(location.hostname);
+  }
+  async function mbnIsCheck(r) {
+      try {
+          if (!r || !/text\/html/i.test((r.headers && r.headers.get('content-type')) || '')) return false;
+          const head = (await r.clone().text()).slice(0, 3000);
+          return /<title>\s*Verifying your browser\s*<\/title>|JavaScript is required to access this page/i.test(head);
+      } catch (e) { return false; }
+  }
+  function mbnReverify(url, init, o) {
+      o = o || {};
+      const log = (lvl, m) => { try { if (o.log) o.log(lvl, m); else (lvl === 'warn' ? console.warn : console.info)('[MusicBrainz gate] ' + m); } catch (e) {} };
+      const g = globalThis.__mbnCheck || (globalThis.__mbnCheck = { busy: null, failedAt: 0 });
+      if (g.busy) return g.busy;
+      let target;
+      try { target = new URL(String(url), location.href); } catch (e) { return Promise.resolve(false); }
+      if (target.host !== location.host || typeof document === 'undefined') { log('warn', 'MusicBrainz asked to verify the browser — open any MusicBrainz page, then retry'); return Promise.resolve(false); }
+      if (Date.now() - g.failedAt < 60000) return Promise.resolve(false);   // just failed: don't loop
+      // a POST's URL can't be loaded: the check is per browser, so any light GET passes it
+      const method = String((init && init.method) || 'GET').toUpperCase();
+      const src = method === 'GET' ? target.href : location.origin + '/ws/js/entity/89ad4ac3-39f7-470e-963a-56509c546377';
+      const t0 = Date.now();
+      log('warn', 'MusicBrainz asked to verify the browser again ("Verifying your browser") — passing it in a hidden frame');
+      g.busy = new Promise(resolve => {
+          const fr = document.createElement('iframe');   // fresh each time, never re-navigated
+          fr.setAttribute('aria-hidden', 'true'); fr.setAttribute('data-mbn-check', ''); fr.tabIndex = -1;
+          fr.style.cssText = 'position:fixed;width:1px;height:1px;left:-9999px;top:0;border:0;opacity:0;pointer-events:none';
+          let loads = 0, done = false, timer = 0;
+          const finish = ok => {
+              if (done) return; done = true; clearTimeout(timer); fr.remove(); g.busy = null;
+              if (ok) log('info', 'browser check passed in ' + (Date.now() - t0) + ' ms — retrying');
+              else {
+                  g.failedAt = Date.now();
+                  const m = 'MusicBrainz wants to verify your browser — open any MusicBrainz page in another tab, then retry';
+                  log('warn', m + ' (the hidden frame did not clear it in 20 s)');
+                  try { if (o.notify) o.notify(m); } catch (e) {}
+              }
+              resolve(ok);
+          };
+          // the first load is the check; it posts its answer and is redirected to the real URL
+          fr.onload = () => {
+              loads++;
+              let still;
+              try { const d = fr.contentDocument; still = !d || /<title>\s*Verifying your browser\s*<\/title>|JavaScript is required to access this page/i.test(d.documentElement ? d.documentElement.outerHTML.slice(0, 3000) : ''); }
+              catch (e) { still = loads < 2; }
+              if (!still) finish(true);
+          };
+          timer = setTimeout(() => finish(false), 20000);
+          fr.src = src;
+          (document.body || document.documentElement).appendChild(fr);
+      });
+      return g.busy;
   }
   // </ST-NET>
 
@@ -429,70 +492,9 @@
     return out;
   }
 
-  /* ── MusicBrainz's browser check (#733) ──
-   * Since 2026-09 musicbrainz.org's website side — /ws/js/* included, ws/2 not — answers with a
-   * "Verifying your browser" page (HTTP 200, HTML) until the browser has solved its proof-of-work,
-   * which sets a __meb_verified cookie (24 h, bound to the IP). The release editor never reloads,
-   * so once that cookie lapses (or the IP changes) every /ws/js read gets the check instead of
-   * JSON, and searches, matching and the artist picker all fail with "JSON.parse: unexpected
-   * character". Fix: on that page, load one fresh hidden iframe at the same URL — MusicBrainz's
-   * own script solves the check there and renews the cookie for the whole browser — then retry.
-   * Recognised by the <title> and the <noscript> sentinel, never by "/__meb_verify" (ordinary MB
-   * pages carry a beacon posting there — see Falcon #551). */
-  const MB_CHECK_RE = /<title>\s*Verifying your browser\s*<\/title>|JavaScript is required to access this page/i;
-  let _mbCheck = null, _mbCheckFailedAt = 0;
-  function mbReverify(url) {
-    if (_mbCheck) return _mbCheck;   // one iframe for every request that hit the check at once
-    if (Date.now() - _mbCheckFailedAt < 60000) return Promise.resolve(false);   // just failed: don't loop
-    const t0 = Date.now();
-    Log.cat('MusicBrainz').warn('MusicBrainz asked to verify the browser again (its "Verifying your browser" check) — running it in a hidden frame');
-    _mbCheck = new Promise(resolve => {
-      const fr = document.createElement('iframe');   // fresh each time; never re-navigated
-      fr.setAttribute('aria-hidden', 'true'); fr.tabIndex = -1;
-      fr.style.cssText = 'position:fixed;width:1px;height:1px;left:-9999px;top:0;border:0;opacity:0;pointer-events:none';
-      let loads = 0, done = false;
-      const finish = ok => {
-        if (done) return; done = true; clearTimeout(timer); fr.remove(); _mbCheck = null;
-        if (!ok) _mbCheckFailedAt = Date.now();
-        Log.cat('MusicBrainz')[ok ? 'info' : 'warn'](ok ? `browser check passed in ${Date.now() - t0} ms — retrying` : 'browser check did not clear in 20 s — open any MusicBrainz page in another tab, then retry');
-        if (!ok) toast('MusicBrainz wants to verify your browser — open any MusicBrainz page in another tab, then retry', 'warn');
-        resolve(ok);
-      };
-      // the first load is the check itself; it posts its answer and is redirected to the real URL
-      fr.onload = () => {
-        loads++;
-        let still = true;
-        try { const d = fr.contentDocument; still = !d || MB_CHECK_RE.test(d.documentElement ? d.documentElement.outerHTML.slice(0, 3000) : ''); } catch (e) { still = loads < 2; }
-        Log.cat('MusicBrainz').debug('browser check frame load', loads, still ? '(still the check)' : '(cleared)');
-        if (!still) finish(true);
-      };
-      const timer = setTimeout(() => finish(false), 20000);
-      fr.src = url;
-      (document.body || document.documentElement).appendChild(fr);
-    });
-    return _mbCheck;
-  }
-  // fetch() for MusicBrainz's website-side JSON (/ws/js/*): if the browser check answers instead,
-  // pass it once in a hidden frame and retry. A JSON answer is returned untouched.
-  // → { r, check }: the response (body still readable) and whether it was the browser check
-  async function mbCheckAnswer(r) {
-    if (!/text\/html/i.test(r.headers.get('content-type') || '')) return { r, check: false };
-    const text = await r.text();
-    return { r: new Response(text, { status: r.status, statusText: r.statusText, headers: r.headers }), check: MB_CHECK_RE.test(text.slice(0, 3000)) };
-  }
-  async function mbWebFetch(url, init) {
-    const first = await mbCheckAnswer(await fetch(url, init));
-    if (!first.check) return first.r;
-    Log.cat('MusicBrainz').debug('browser check served for', url);
-    if (!(await mbReverify(url))) return first.r;
-    const retry = await mbCheckAnswer(await fetch(url, init));
-    if (retry.check && Date.now() - _mbCheckFailedAt > 60000) {   // the frame "cleared" but the check stays: say so once
-      _mbCheckFailedAt = Date.now();
-      Log.cat('MusicBrainz').warn('MusicBrainz still serves its browser check after the frame passed it — open any MusicBrainz page in another tab, then retry');
-      toast('MusicBrainz wants to verify your browser — open any MusicBrainz page in another tab, then retry', 'warn');
-    }
-    return retry.r;
-  }
+  // MusicBrainz's website-side JSON (/ws/js/*) through the shared gate, which passes MusicBrainz's
+  // "Verifying your browser" check again when it answers mid-session (#733; dev/net/mb-gate.mjs)
+  const mbWebFetch = (url, init) => mbnFetch(url, init, { log: (lvl, m) => Log.cat('MusicBrainz')[lvl](m), notify: m => toast(m, 'warn') });
 
   /* ── search + siblings ── */
   const _cache = new Map();

@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Art Station
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.12.190000
+// @version      2026.10.13
 // @description  Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5BcnQgU3RhdGlvbjwvdGl0bGU+CjxjaXJjbGUgY3g9Ijg2IiBjeT0iNjQiIHI9IjM4IiBmaWxsPSIjMWIwZjNiIiBzdHJva2U9IiNiOTY3ZmYiIHN0cm9rZS13aWR0aD0iMyIvPgo8Y2lyY2xlIGN4PSI4NiIgY3k9IjY0IiByPSIyOC44OCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjNGEzNDgwIiBzdHJva2Utd2lkdGg9IjEuNSIvPjxjaXJjbGUgY3g9Ijg2IiBjeT0iNjQiIHI9IjIwLjkwMDAwMDAwMDAwMDAwMiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjNGEzNDgwIiBzdHJva2Utd2lkdGg9IjEuNSIvPgo8Y2lyY2xlIGN4PSI4NiIgY3k9IjY0IiByPSIxMS4wMiIgZmlsbD0iI2ZmNzFjZSIvPjxjaXJjbGUgY3g9Ijg2IiBjeT0iNjQiIHI9IjIuNTA4IiBmaWxsPSIjMWIwZjNiIi8+PGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJhcy1za3ljIiB4MT0iMCIgeTE9IjAiIHgyPSIwIiB5Mj0iMSI+PHN0b3Agb2Zmc2V0PSIwLjAwIiBzdG9wLWNvbG9yPSIjN2ZlN2ZmIi8+PHN0b3Agb2Zmc2V0PSIwLjUwIiBzdG9wLWNvbG9yPSIjZDlhNmZmIi8+PHN0b3Agb2Zmc2V0PSIxLjAwIiBzdG9wLWNvbG9yPSIjZmY3MWNlIi8+PC9saW5lYXJHcmFkaWVudD48Y2xpcFBhdGggaWQ9ImFzLWNjIj48cmVjdCB4PSIxMCIgeT0iMjIiIHdpZHRoPSI3OCIgaGVpZ2h0PSI4NCIgcng9IjgiLz48L2NsaXBQYXRoPjwvZGVmcz4KPGcgY2xpcC1wYXRoPSJ1cmwoI2FzLWNjKSI+PHJlY3QgeD0iMTAiIHk9IjIyIiB3aWR0aD0iNzgiIGhlaWdodD0iODQiIGZpbGw9InVybCgjYXMtc2t5YykiLz4KPGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJhcy1nczIiIHgxPSIwIiB5MT0iMCIgeDI9IjAiIHkyPSIxIj48c3RvcCBvZmZzZXQ9IjAiIHN0b3AtY29sb3I9IiNmZmY2YTgiLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiNmZjhhNWMiLz48L2xpbmVhckdyYWRpZW50Pgo8bWFzayBpZD0iYXMtbXMyIj48cmVjdCB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCIgZmlsbD0iI2ZmZiIvPjxyZWN0IHg9IjI1LjYiIHk9IjY3LjIiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjEuMiIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9IjY5LjgiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjEuNSIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9IjczLjAiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjEuOCIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9Ijc3LjAiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjIuMyIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9IjgyLjAiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjIuOSIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9Ijg4LjMiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjMuNiIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9Ijk2LjIiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjQuNSIgZmlsbD0iIzAwMCIvPjwvbWFzaz48L2RlZnM+CjxjaXJjbGUgY3g9IjQ5IiBjeT0iNzYuMDgiIHI9IjIzLjQiIGZpbGw9InVybCgjYXMtZ3MyKSIgbWFzaz0idXJsKCNhcy1tczIpIi8+PHJlY3QgeD0iMTAiIHk9Ijc0LjA4IiB3aWR0aD0iNzgiIGhlaWdodD0iMzEuOTIiIGZpbGw9IiNiOTY3ZmYiLz48cGF0aCBkPSJNMTAgNzQuMDhIODhNMTAgNzcuOUg4OE0xMCA4My4ySDg4TTEwIDkxLjRIODhNMTAgMTA0LjJIODhNMzQuOCA3NC4wOEwtNDguNSAxMDZNMzguNCA3NC4wOEwtMjQuMSAxMDZNNDEuOSA3NC4wOEwwLjMgMTA2TTQ1LjUgNzQuMDhMMjQuNiAxMDZNNDkuMCA3NC4wOEw0OS4wIDEwNk01Mi41IDc0LjA4TDczLjQgMTA2TTU2LjEgNzQuMDhMOTcuOCAxMDZNNTkuNiA3NC4wOEwxMjIuMSAxMDZNNjMuMiA3NC4wOEwxNDYuNSAxMDYiIHN0cm9rZT0iI2ZmZmI5NiIgc3Ryb2tlLXdpZHRoPSIxLjMiIGZpbGw9Im5vbmUiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPjwvZz48cmVjdCB4PSIxMCIgeT0iMjIiIHdpZHRoPSI3OCIgaGVpZ2h0PSI4NCIgcng9IjgiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJhMTQ1OCIgc3Ryb2tlLXdpZHRoPSIzIi8+Cjwvc3ZnPgo=
@@ -110,7 +110,13 @@
   }
   async function mbnFetch(url, init, o) {
       o = o || {};
-      if (!mbnGated(url)) return fetch(url, init);
+      if (!mbnGated(url)) {
+          const r = await fetch(url, init);
+          if (!mbnWebsite(url) || !(await mbnIsCheck(r))) return r;
+          // #733: MusicBrainz's browser check answered instead: nothing was done (a POST is safe
+          // to repeat), so pass the check and ask again
+          return (await mbnReverify(url, init, o)) ? fetch(url, init) : r;
+      }
       const tries = o.tries || 4;
       for (let attempt = 1; ; attempt++) {
           const slot = await mbnSlot(o);
@@ -132,6 +138,63 @@
           if (i > 0 && line.slice(0, i).trim().toLowerCase() === want) return line.slice(i + 1).trim();
       }
       return null;
+  }
+  function mbnWebsite(url) {
+      const s = String(url || '');
+      if (mbnGated(s)) return false;
+      if (/^https?:\/\/([a-z0-9-]+\.)*musicbrainz\.org(\/|$)/i.test(s)) return true;
+      return /^\/(?!\/)/.test(s) && typeof location !== 'undefined' && /(^|\.)musicbrainz\.org$/i.test(location.hostname);
+  }
+  async function mbnIsCheck(r) {
+      try {
+          if (!r || !/text\/html/i.test((r.headers && r.headers.get('content-type')) || '')) return false;
+          const head = (await r.clone().text()).slice(0, 3000);
+          return /<title>\s*Verifying your browser\s*<\/title>|JavaScript is required to access this page/i.test(head);
+      } catch (e) { return false; }
+  }
+  function mbnReverify(url, init, o) {
+      o = o || {};
+      const log = (lvl, m) => { try { if (o.log) o.log(lvl, m); else (lvl === 'warn' ? console.warn : console.info)('[MusicBrainz gate] ' + m); } catch (e) {} };
+      const g = globalThis.__mbnCheck || (globalThis.__mbnCheck = { busy: null, failedAt: 0 });
+      if (g.busy) return g.busy;
+      let target;
+      try { target = new URL(String(url), location.href); } catch (e) { return Promise.resolve(false); }
+      if (target.host !== location.host || typeof document === 'undefined') { log('warn', 'MusicBrainz asked to verify the browser — open any MusicBrainz page, then retry'); return Promise.resolve(false); }
+      if (Date.now() - g.failedAt < 60000) return Promise.resolve(false);   // just failed: don't loop
+      // a POST's URL can't be loaded: the check is per browser, so any light GET passes it
+      const method = String((init && init.method) || 'GET').toUpperCase();
+      const src = method === 'GET' ? target.href : location.origin + '/ws/js/entity/89ad4ac3-39f7-470e-963a-56509c546377';
+      const t0 = Date.now();
+      log('warn', 'MusicBrainz asked to verify the browser again ("Verifying your browser") — passing it in a hidden frame');
+      g.busy = new Promise(resolve => {
+          const fr = document.createElement('iframe');   // fresh each time, never re-navigated
+          fr.setAttribute('aria-hidden', 'true'); fr.setAttribute('data-mbn-check', ''); fr.tabIndex = -1;
+          fr.style.cssText = 'position:fixed;width:1px;height:1px;left:-9999px;top:0;border:0;opacity:0;pointer-events:none';
+          let loads = 0, done = false, timer = 0;
+          const finish = ok => {
+              if (done) return; done = true; clearTimeout(timer); fr.remove(); g.busy = null;
+              if (ok) log('info', 'browser check passed in ' + (Date.now() - t0) + ' ms — retrying');
+              else {
+                  g.failedAt = Date.now();
+                  const m = 'MusicBrainz wants to verify your browser — open any MusicBrainz page in another tab, then retry';
+                  log('warn', m + ' (the hidden frame did not clear it in 20 s)');
+                  try { if (o.notify) o.notify(m); } catch (e) {}
+              }
+              resolve(ok);
+          };
+          // the first load is the check; it posts its answer and is redirected to the real URL
+          fr.onload = () => {
+              loads++;
+              let still;
+              try { const d = fr.contentDocument; still = !d || /<title>\s*Verifying your browser\s*<\/title>|JavaScript is required to access this page/i.test(d.documentElement ? d.documentElement.outerHTML.slice(0, 3000) : ''); }
+              catch (e) { still = loads < 2; }
+              if (!still) finish(true);
+          };
+          timer = setTimeout(() => finish(false), 20000);
+          fr.src = src;
+          (document.body || document.documentElement).appendChild(fr);
+      });
+      return g.busy;
   }
   // </ST-NET>
   // <ST-MBPAGE> — generated by dev/mbpage/sync-mbpage.mjs from dev/mbpage/mb-page.mjs — DO NOT EDIT
@@ -3443,7 +3506,7 @@
   async function signUploadRaw(mime, ctl) {
     for (let attempt = 1; ; attempt++) {
       if (ctl && ctl.aborted) throw new Error('cancelled');
-      const r = await fetch(`/ws/js/${ART}-upload/${MBID}?mime_type=${encodeURIComponent(mime || 'image/jpeg')}`, { credentials: 'same-origin', signal: ctl && ctl.ac.signal });
+      const r = await mbnFetch(`/ws/js/${ART}-upload/${MBID}?mime_type=${encodeURIComponent(mime || 'image/jpeg')}`, { credentials: 'same-origin', signal: ctl && ctl.ac.signal });
       if (r.ok) return r.json();   // { action, image_id, formdata, nonce }
       if (attempt >= 4 || ![429, 500, 502, 503, 504].includes(r.status)) throw new Error('sign ' + r.status);
       asLog.debug(`Upload: sign got ${r.status}, retrying (${attempt}/3)`);

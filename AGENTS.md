@@ -49,7 +49,7 @@ Entry point for any AI assistant (Claude Code, a cloud agent, a subagent). It's 
 Per-script low-level detail → that script's `DEVELOP.md`. Cross-cutting:
 
 - **MB translates every label and heading, and moves things**: before finding an element on an MB page, read [DEVELOP → Finding things on MusicBrainz's pages](DEVELOP.md#finding-things-on-musicbrainzs-pages).
-- **MB's website side, `/ws/js/*` included, is behind a "Verifying your browser" check** (ws/2 isn't): HTTP 200 HTML instead of JSON until a page solves it; the pass is a 24 h, IP-bound cookie, so a long-lived page (the release editor) can lose it mid-session. See [Apollo's DEVELOP → MusicBrainz's browser check](userscripts/apollo_editor/DEVELOP.md#musicbrainzs-browser-check).
+- **MB's website side, `/ws/js/*` included, is behind a "Verifying your browser" check** (ws/2 isn't): HTTP 200 HTML instead of JSON until a page solves it; the pass is a 24 h, IP-bound cookie, so a long-lived page (the release editor) can lose it mid-session. Send every `/ws/js` call through the gate's `mbnFetch`, which passes the check again ([Apollo's DEVELOP → MusicBrainz's browser check](userscripts/apollo_editor/DEVELOP.md#musicbrainzs-browser-check)).
 - **`/release/<mbid>/edit` is a Knockout app**: it ignores seeded params (except URLs), binds late and wipes early DOM writes, and submits via `/ws/js/edit/create`.
 - **In-session new entities have a negative `id`, no `gid`, a null fiber** — read selection from `state.selectedWorks` / `selectedRecordings`, dedup by id-or-gid.
 - **A track `artistCredit` needs the full fetched artist** (`/ws/js/entity/<gid>`, which has `id`); lean/stub artists and `MB.entity(gid, name)` get dropped on re-derive.

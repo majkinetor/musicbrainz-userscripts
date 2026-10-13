@@ -20,6 +20,9 @@
 // the same way. The X-RateLimit-* headers MusicBrainz sends are server-wide budgets
 // (X-RateLimit-Who: search-shed), not this client's, so the gate doesn't steer by them.
 //
+// The website side has its own guard instead, the "Verifying your browser" check: mbnFetch
+// passes it again when it answers a request (#733), so route every /ws/js call through it.
+//
 // Every function here is self-contained (it may call the others and use the MBN_ consts,
 // nothing else): dev/net/sync-gate.mjs inlines them into the single-file scripts between
 // `// <ST-NET>` markers; Credit Hoarder's esbuild build imports this module directly.
@@ -133,12 +136,21 @@ export async function mbnAnswer(status, header, o) {
 /**
  * fetch() through the gate: waits for a slot, reports the answer, retries a 429/503
  * (the retry waits out the shared hold, so it needs no sleep of its own).
- * Other requests pass straight through. Resolves the Response, or null when cancelled.
- *   o.tries  attempts on 429/503 (default 4); the last answer is returned as it is
+ * Other requests aren't paced; one to MusicBrainz's website side (/ws/js, pages, forms) that
+ * gets the browser check instead passes it once and is retried (#733, mbnReverify below).
+ * Resolves the Response, or null when cancelled.
+ *   o.tries   attempts on 429/503 (default 4); the last answer is returned as it is
+ *   o.log, o.notify  see mbnReverify
  */
 export async function mbnFetch(url, init, o) {
     o = o || {};
-    if (!mbnGated(url)) return fetch(url, init);
+    if (!mbnGated(url)) {
+        const r = await fetch(url, init);
+        if (!mbnWebsite(url) || !(await mbnIsCheck(r))) return r;
+        // #733: MusicBrainz's browser check answered instead: nothing was done (a POST is safe
+        // to repeat), so pass the check and ask again
+        return (await mbnReverify(url, init, o)) ? fetch(url, init) : r;
+    }
     const tries = o.tries || 4;
     for (let attempt = 1; ; attempt++) {
         const slot = await mbnSlot(o);
@@ -167,8 +179,87 @@ export function mbnRawHeader(raw, name) {
     return null;
 }
 
+/* ── MusicBrainz's browser check (#733) ──
+ * Since 2026-09 musicbrainz.org's website side, /ws/js included (ws/2 not), answers with a
+ * "Verifying your browser" page (HTTP 200, HTML) until the browser has solved its
+ * proof-of-work, which sets a __meb_verified cookie: 24 h, bound to the IP. A page that stays
+ * open (the release editor) outlives it, or the IP changes, and every request from then on
+ * gets the check instead of its answer. mbnFetch passes it again in one hidden frame, where
+ * MusicBrainz's own script solves it and renews the cookie for the whole browser, then retries.
+ * The page is recognised by its <title> and <noscript> text, never by "/__meb_verify": ordinary
+ * pages carry a beacon posting there too (Falcon #551). */
+
+/** True for a request to MusicBrainz's website side (not ws/2), which the browser check guards. */
+export function mbnWebsite(url) {
+    const s = String(url || '');
+    if (mbnGated(s)) return false;
+    if (/^https?:\/\/([a-z0-9-]+\.)*musicbrainz\.org(\/|$)/i.test(s)) return true;
+    return /^\/(?!\/)/.test(s) && typeof location !== 'undefined' && /(^|\.)musicbrainz\.org$/i.test(location.hostname);
+}
+
+/** Whether a Response is the browser check. Reads a clone, so `r` stays whole (body, url). */
+export async function mbnIsCheck(r) {
+    try {
+        if (!r || !/text\/html/i.test((r.headers && r.headers.get('content-type')) || '')) return false;
+        const head = (await r.clone().text()).slice(0, 3000);
+        return /<title>\s*Verifying your browser\s*<\/title>|JavaScript is required to access this page/i.test(head);
+    } catch (e) { return false; }
+}
+
+/**
+ * Pass the browser check again: one fresh hidden frame at a MusicBrainz URL on this page's own
+ * host (the cookie is per host; a frame from another site wouldn't get it). Requests that hit the
+ * check together share the frame. Resolves true once the frame has left the check.
+ *   o.log     (level, message)
+ *   o.notify  (message) when it fails, for a toast: the user can pass it in another tab
+ */
+export function mbnReverify(url, init, o) {
+    o = o || {};
+    const log = (lvl, m) => { try { if (o.log) o.log(lvl, m); else (lvl === 'warn' ? console.warn : console.info)('[MusicBrainz gate] ' + m); } catch (e) {} };
+    const g = globalThis.__mbnCheck || (globalThis.__mbnCheck = { busy: null, failedAt: 0 });
+    if (g.busy) return g.busy;
+    let target;
+    try { target = new URL(String(url), location.href); } catch (e) { return Promise.resolve(false); }
+    if (target.host !== location.host || typeof document === 'undefined') { log('warn', 'MusicBrainz asked to verify the browser — open any MusicBrainz page, then retry'); return Promise.resolve(false); }
+    if (Date.now() - g.failedAt < 60000) return Promise.resolve(false);   // just failed: don't loop
+    // a POST's URL can't be loaded: the check is per browser, so any light GET passes it
+    const method = String((init && init.method) || 'GET').toUpperCase();
+    const src = method === 'GET' ? target.href : location.origin + '/ws/js/entity/89ad4ac3-39f7-470e-963a-56509c546377';
+    const t0 = Date.now();
+    log('warn', 'MusicBrainz asked to verify the browser again ("Verifying your browser") — passing it in a hidden frame');
+    g.busy = new Promise(resolve => {
+        const fr = document.createElement('iframe');   // fresh each time, never re-navigated
+        fr.setAttribute('aria-hidden', 'true'); fr.setAttribute('data-mbn-check', ''); fr.tabIndex = -1;
+        fr.style.cssText = 'position:fixed;width:1px;height:1px;left:-9999px;top:0;border:0;opacity:0;pointer-events:none';
+        let loads = 0, done = false, timer = 0;
+        const finish = ok => {
+            if (done) return; done = true; clearTimeout(timer); fr.remove(); g.busy = null;
+            if (ok) log('info', 'browser check passed in ' + (Date.now() - t0) + ' ms — retrying');
+            else {
+                g.failedAt = Date.now();
+                const m = 'MusicBrainz wants to verify your browser — open any MusicBrainz page in another tab, then retry';
+                log('warn', m + ' (the hidden frame did not clear it in 20 s)');
+                try { if (o.notify) o.notify(m); } catch (e) {}
+            }
+            resolve(ok);
+        };
+        // the first load is the check; it posts its answer and is redirected to the real URL
+        fr.onload = () => {
+            loads++;
+            let still;
+            try { const d = fr.contentDocument; still = !d || /<title>\s*Verifying your browser\s*<\/title>|JavaScript is required to access this page/i.test(d.documentElement ? d.documentElement.outerHTML.slice(0, 3000) : ''); }
+            catch (e) { still = loads < 2; }
+            if (!still) finish(true);
+        };
+        timer = setTimeout(() => finish(false), 20000);
+        fr.src = src;
+        (document.body || document.documentElement).appendChild(fr);
+    });
+    return g.busy;
+}
+
 /** What sync-gate.mjs inlines, in order. */
 export const MBN_INLINE = {
     consts: { MBN_GAP, MBN_BURST, MBN_KEY, MBN_LOCK, MBN_MAX_HOLD },
-    fns: [mbnGated, mbnState, mbnSlot, mbnAnswer, mbnFetch, mbnHot, mbnRawHeader],
+    fns: [mbnGated, mbnState, mbnSlot, mbnAnswer, mbnFetch, mbnHot, mbnRawHeader, mbnWebsite, mbnIsCheck, mbnReverify],
 };

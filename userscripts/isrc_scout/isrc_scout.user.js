@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         ISRC Scout
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.12.162836
+// @version      2026.10.13
 // @description  Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify / Beatport / Tidal / Volumo / HDtracks / Qobuz, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPklTUkMgU2NvdXQ8L3RpdGxlPgogICAgPHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPgogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjQwIi8+CiAgICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyNiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2U9IiNiOWEzZTgiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPgogIDwvZz4KICA8bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+Cjwvc3ZnPgo=
@@ -153,7 +153,13 @@
   }
   async function mbnFetch(url, init, o) {
       o = o || {};
-      if (!mbnGated(url)) return fetch(url, init);
+      if (!mbnGated(url)) {
+          const r = await fetch(url, init);
+          if (!mbnWebsite(url) || !(await mbnIsCheck(r))) return r;
+          // #733: MusicBrainz's browser check answered instead: nothing was done (a POST is safe
+          // to repeat), so pass the check and ask again
+          return (await mbnReverify(url, init, o)) ? fetch(url, init) : r;
+      }
       const tries = o.tries || 4;
       for (let attempt = 1; ; attempt++) {
           const slot = await mbnSlot(o);
@@ -175,6 +181,63 @@
           if (i > 0 && line.slice(0, i).trim().toLowerCase() === want) return line.slice(i + 1).trim();
       }
       return null;
+  }
+  function mbnWebsite(url) {
+      const s = String(url || '');
+      if (mbnGated(s)) return false;
+      if (/^https?:\/\/([a-z0-9-]+\.)*musicbrainz\.org(\/|$)/i.test(s)) return true;
+      return /^\/(?!\/)/.test(s) && typeof location !== 'undefined' && /(^|\.)musicbrainz\.org$/i.test(location.hostname);
+  }
+  async function mbnIsCheck(r) {
+      try {
+          if (!r || !/text\/html/i.test((r.headers && r.headers.get('content-type')) || '')) return false;
+          const head = (await r.clone().text()).slice(0, 3000);
+          return /<title>\s*Verifying your browser\s*<\/title>|JavaScript is required to access this page/i.test(head);
+      } catch (e) { return false; }
+  }
+  function mbnReverify(url, init, o) {
+      o = o || {};
+      const log = (lvl, m) => { try { if (o.log) o.log(lvl, m); else (lvl === 'warn' ? console.warn : console.info)('[MusicBrainz gate] ' + m); } catch (e) {} };
+      const g = globalThis.__mbnCheck || (globalThis.__mbnCheck = { busy: null, failedAt: 0 });
+      if (g.busy) return g.busy;
+      let target;
+      try { target = new URL(String(url), location.href); } catch (e) { return Promise.resolve(false); }
+      if (target.host !== location.host || typeof document === 'undefined') { log('warn', 'MusicBrainz asked to verify the browser — open any MusicBrainz page, then retry'); return Promise.resolve(false); }
+      if (Date.now() - g.failedAt < 60000) return Promise.resolve(false);   // just failed: don't loop
+      // a POST's URL can't be loaded: the check is per browser, so any light GET passes it
+      const method = String((init && init.method) || 'GET').toUpperCase();
+      const src = method === 'GET' ? target.href : location.origin + '/ws/js/entity/89ad4ac3-39f7-470e-963a-56509c546377';
+      const t0 = Date.now();
+      log('warn', 'MusicBrainz asked to verify the browser again ("Verifying your browser") — passing it in a hidden frame');
+      g.busy = new Promise(resolve => {
+          const fr = document.createElement('iframe');   // fresh each time, never re-navigated
+          fr.setAttribute('aria-hidden', 'true'); fr.setAttribute('data-mbn-check', ''); fr.tabIndex = -1;
+          fr.style.cssText = 'position:fixed;width:1px;height:1px;left:-9999px;top:0;border:0;opacity:0;pointer-events:none';
+          let loads = 0, done = false, timer = 0;
+          const finish = ok => {
+              if (done) return; done = true; clearTimeout(timer); fr.remove(); g.busy = null;
+              if (ok) log('info', 'browser check passed in ' + (Date.now() - t0) + ' ms — retrying');
+              else {
+                  g.failedAt = Date.now();
+                  const m = 'MusicBrainz wants to verify your browser — open any MusicBrainz page in another tab, then retry';
+                  log('warn', m + ' (the hidden frame did not clear it in 20 s)');
+                  try { if (o.notify) o.notify(m); } catch (e) {}
+              }
+              resolve(ok);
+          };
+          // the first load is the check; it posts its answer and is redirected to the real URL
+          fr.onload = () => {
+              loads++;
+              let still;
+              try { const d = fr.contentDocument; still = !d || /<title>\s*Verifying your browser\s*<\/title>|JavaScript is required to access this page/i.test(d.documentElement ? d.documentElement.outerHTML.slice(0, 3000) : ''); }
+              catch (e) { still = loads < 2; }
+              if (!still) finish(true);
+          };
+          timer = setTimeout(() => finish(false), 20000);
+          fr.src = src;
+          (document.body || document.documentElement).appendChild(fr);
+      });
+      return g.busy;
   }
   // </ST-NET>
 
@@ -5586,7 +5649,7 @@
         })),
         editNote: note || '', makeVotable: 0,
       };
-      const r = await fetch(MB_ROOT + '/ws/js/edit/create', {
+      const r = await mbnFetch(MB_ROOT + '/ws/js/edit/create', {
         method: 'POST', credentials: 'include',
         headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body),
       });
@@ -5667,7 +5730,7 @@
     const urlEq = (a, b) => a === b || String(a).replace(/^https?:/i, '').replace(/\/+$/, '') === String(b).replace(/^https?:/i, '').replace(/\/+$/, '');
     async function recUrlRels(recGid) {
       if (_relCache[recGid]) return _relCache[recGid];
-      const r = await fetch(MB_ROOT + '/ws/js/entity/' + recGid + '?inc=rels', { credentials: 'include', headers: { Accept: 'application/json' } });
+      const r = await mbnFetch(MB_ROOT + '/ws/js/entity/' + recGid + '?inc=rels', { credentials: 'include', headers: { Accept: 'application/json' } });
       if (!r.ok) throw new Error('rels ' + r.status);
       const j = await r.json();
       return (_relCache[recGid] = (j.relationships || []).filter(x => x.target_type === 'url'));
@@ -5679,7 +5742,7 @@
         'Removed ' + provs.length + ' streaming link' + (provs.length === 1 ? '' : 's') + (breakdown ? ': ' + breakdown : '')].join('\n');
     }
     async function postEdits(edits, note) {
-      const r = await fetch(MB_ROOT + '/ws/js/edit/create', { method: 'POST', credentials: 'include', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ edits, editNote: note || '', makeVotable: 0 }) });
+      const r = await mbnFetch(MB_ROOT + '/ws/js/edit/create', { method: 'POST', credentials: 'include', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ edits, editNote: note || '', makeVotable: 0 }) });
       const text = await r.text().catch(() => ''); let j = null; try { j = JSON.parse(text); } catch (e) {}
       if (!r.ok || (j && j.error)) { const m = (j && (j.error.message || j.error)) || ('HTTP ' + r.status); throw new Error((typeof m === 'string' ? m : JSON.stringify(m)).replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 200)); }
       return j;

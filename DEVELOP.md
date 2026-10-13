@@ -96,14 +96,15 @@ A translation of MusicBrainz's text is the last resort. If one is ever needed, i
 
 Code several scripts need is written once and copied into each between marker comments, which a sync script fills in. The pre-commit hook re-syncs them; never edit inside the markers.
 
-| Marker           | Source                          |                                                                                                                       |
-| ---------------- | ------------------------------- | --------------------------------------------------------------------------------------------------------------------- |
-| `// <ST-TOKENS>` | `dev/tokens/design-tokens.mjs`  | colours, fonts, radii, shadows, z-indexes as `var(--mbu-…)`                                                           |
-| `// <ST-UI>`     | `dev/ui/ui-components.mjs`      | components (`mbu-` classes): help link, toast, log window and its startup line (`mbuStartupInfo`), corner stacking, … |
-| `// <ST-ICONS>`  | `dev/ui/platform-icons.mjs`     | platform icons and brand colours                                                                                      |
-| `// <ST-MATCH>`  | `dev/match/artist-match.mjs`    | the artist matcher and sort-name guess                                                                                |
-| `// <ST-IMGMAX>` | `dev/imgmax/image-maximizer.js` | the largest cover behind a store page or image URL ([API](dev/imgmax/README.md))                                      |
-| `// <ST-MBPAGE>` | `dev/mbpage/mb-page.mjs`        | MusicBrainz's page read in any language: cover-art type ids, the release's own external links                         |
+| Marker           | Source                          |                                                                                                                                                                |
+| ---------------- | ------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `// <ST-TOKENS>` | `dev/tokens/design-tokens.mjs`  | colours, fonts, radii, shadows, z-indexes as `var(--mbu-…)`                                                                                                    |
+| `// <ST-UI>`     | `dev/ui/ui-components.mjs`      | components (`mbu-` classes): help link, toast, log window and its startup line (`mbuStartupInfo`), corner stacking, …                                          |
+| `// <ST-ICONS>`  | `dev/ui/platform-icons.mjs`     | platform icons and brand colours                                                                                                                               |
+| `// <ST-MATCH>`  | `dev/match/artist-match.mjs`    | the artist matcher and sort-name guess                                                                                                                         |
+| `// <ST-IMGMAX>` | `dev/imgmax/image-maximizer.js` | the largest cover behind a store page or image URL ([API](dev/imgmax/README.md))                                                                               |
+| `// <ST-NET>`    | `dev/net/mb-gate.mjs`           | the MusicBrainz request gate (`mbnFetch`): ws/2 paced for every script and tab, and MusicBrainz's browser check passed again when it answers a website request |
+| `// <ST-MBPAGE>` | `dev/mbpage/mb-page.mjs`        | MusicBrainz's page read in any language: cover-art type ids, the release's own external links                                                                  |
 
 **Tokens**
 
