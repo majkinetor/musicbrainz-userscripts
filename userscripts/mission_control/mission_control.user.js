@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Mission Control
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.13.140636
+// @version      2026.10.14.184933
 // @description  One window on the release page that asks the other scripts (Platform Check, ISRC Scout, Art Station, Fusion, Credit Hoarder) what is missing, shows it all in one review, and applies the selected changes in order.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5NaXNzaW9uIENvbnRyb2w8L3RpdGxlPgo8ZGVmcz48ZmlsdGVyIGlkPSJtY28xMy1oIiB4PSItMTAlIiB5PSItMTAlIiB3aWR0aD0iMTIwJSIgaGVpZ2h0PSIxMjAlIj48ZmVNb3JwaG9sb2d5IGluPSJTb3VyY2VBbHBoYSIgb3BlcmF0b3I9ImRpbGF0ZSIgcmFkaXVzPSIxLjUiIHJlc3VsdD0iZCIvPjxmZUZsb29kIGZsb29kLWNvbG9yPSIjZmZmIiBmbG9vZC1vcGFjaXR5PSIuNyIvPjxmZUNvbXBvc2l0ZSBpbjI9ImQiIG9wZXJhdG9yPSJpbiIvPjxmZU1lcmdlPjxmZU1lcmdlTm9kZS8+PGZlTWVyZ2VOb2RlIGluPSJTb3VyY2VHcmFwaGljIi8+PC9mZU1lcmdlPjwvZmlsdGVyPjwvZGVmcz48ZyBmaWx0ZXI9InVybCgjbWNvMTMtaCkiPjxwYXRoIGQ9Ik03NyAzNS41IEw2NCA0MyBMNTEgMzUuNSBMNTEgMjAuNSBMNjQgMTMgTDc3IDIwLjVaIiBmaWxsPSIjN2E1N2U4IiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik01OS43IDc3LjUgTDQ2LjcgODUgTDMzLjcgNzcuNSBMMzMuNyA2Mi41IEw0Ni43IDU1IEw1OS43IDYyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik05NC4zIDc3LjUgTDgxLjMgODUgTDY4LjMgNzcuNSBMNjguMyA2Mi41IEw4MS4zIDU1IEw5NC4zIDYyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik00Mi4zIDEwNy41IEwyOS40IDExNSBMMTYuNCAxMDcuNSBMMTYuNCA5Mi41IEwyOS40IDg1IEw0Mi4zIDkyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik03NyAxMDcuNSBMNjQgMTE1IEw1MSAxMDcuNSBMNTEgOTIuNSBMNjQgODUgTDc3IDkyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik0xMTEuNiAxMDcuNSBMOTguNiAxMTUgTDg1LjcgMTA3LjUgTDg1LjcgOTIuNSBMOTguNiA4NSBMMTExLjYgOTIuNVoiIGZpbGw9IiNmZmM5NGEiIHN0cm9rZT0iIzIyMjIzYiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PC9nPgo8L3N2Zz4K
@@ -408,6 +408,19 @@ async function execute(dry) {
     mbuToast(failed ? failed + ' step' + (failed === 1 ? '' : 's') + ' failed: see the cards and the log' : (dry ? 'Dry run done: nothing was written' : 'Done: ' + sent + ' change' + (sent === 1 ? '' : 's') + ' applied or handed over'), { kind: failed ? 'error' : 'ok' });
     if (S.reloadAfter && !dry && !failed && sent) { reloadPending = true; reloadWhenClean(); }
 }
+// #741: one provider applied again (its card's Retry), as Execute applies it
+async function retryOne(id) {
+    if (executing || !picked[id] || !picked[id].size) return;
+    executing = true; paintExec(); paintCards();
+    Log.info('retry ' + id + ': ' + picked[id].size + ' item(s)');
+    try {
+        const o = await applyOne(id, false);
+        results[id] = Object.assign(results[id] || {}, { applied: o });
+        if (o.ok && o.sent && o.via !== 'falcon') markApplied(id, o.keys || []);
+        if (o.ok) Log.ok(id + ': ' + (o.note || 'done')); else Log.err(id + ': ' + (o.note || 'failed'));
+        mbuToast(o.ok ? 'Done: ' + (o.note || id) : 'Failed again: ' + (o.note || id), { kind: o.ok ? 'ok' : 'error' });
+    } finally { executing = false; paintAll(); }
+}
 function discover() {
     Log.info('discover: asking providers for release ' + RELEASE);
     document.dispatchEvent(new CustomEvent('mc:discover', { detail: JSON.stringify({ release: RELEASE, mc: VERSION }) }));
@@ -574,6 +587,7 @@ function mcStyle() {
         + '#mc-root .mc-sect-h .mc-icsw{all:unset;box-sizing:border-box;display:inline-flex;align-items:center;gap:8px;min-width:0;cursor:pointer;padding:3px 8px 3px 3px;margin:-3px -8px -3px -3px;border-radius:8px;transition:background .12s}#mc-root .mc-icsw .ic{position:relative}'
         + '#mc-root .mc-sect-h .mc-icsw:hover{background:var(--mbu-bg-hover)}#mc-root .mc-sect-h .mc-icsw:focus-visible{outline:2px solid var(--mbu-accent);outline-offset:1px}'
         + '.mc-sect.mc-off .mc-icsw .ic{background:var(--mbu-bg-sunken)}.mc-sect.mc-off .mc-icsw .ic.img{background:none}.mc-sect.mc-off .mc-icsw .ic>*{filter:grayscale(1);opacity:.55}.mc-sect.mc-off .mc-icsw .t{opacity:.45}'
+        + '.mc-retry{margin-left:8px;font:600 11px var(--mbu-font);padding:1px 10px;border-radius:999px;border:1px solid var(--mbu-error);background:var(--mbu-bg);color:var(--mbu-error);cursor:pointer}.mc-retry:hover{background:var(--mbu-error-bg)}'
         + '.mc-sect.mc-off>:not(.mc-sect-h){display:none}.mc-sect.mc-off .mc-sect-h{border-bottom:0}.mc-sect.mc-off .mc-sect-h>:not(.mc-icsw){opacity:.45}.mc-bc.none{--bc:var(--mbu-text-weak);border-style:dashed;background:none}.mc-bcl .mc-bc{display:inline-grid;justify-items:center}.mc-bcl .mc-bc>*{grid-area:1/1;font:inherit}.mc-bcl .mc-bc>i{visibility:hidden}.mc-line:last-child{border-bottom:0}'
         + '.mc-sect-h .end{margin-left:auto;display:flex;align-items:center;gap:6px}.mc-tapplied{display:flex;align-items:center;gap:6px}.mc-chlbl{font-size:13px;font-weight:700;color:var(--mbu-text)}'
         // CH's own toolbar look: an icon per source, its box only on hover, then an orange ⚛ All (#680)
@@ -1230,7 +1244,9 @@ function paintCards() {
         if (!r || r.state !== 'done') { setCard(box, mbuHtml('<div class="mc-empty">' + esc(p.provider) + ': ' + esc(stateText(p)) + (r ? '' : '. Probe fills this in.') + '</div>')); return; }
         if (!r.findings.length) { setCard(box, mbuHtml((r.summary ? '<div class="mc-summary">' + esc(r.summary) + '</div>' : '') + '<div class="mc-empty">Nothing to report.</div>')); return; }
         const sum = r.summary ? '<div class="mc-summary">' + esc(r.summary) + '</div>' : '';
-        const ap = (r.applied ? '<div class="mc-applied ' + (r.applied.ok ? 'ok' : 'err') + '">' + (r.applied.ok ? '✓ ' : '✕ ') + esc(r.applied.note || (r.applied.ok ? 'done' : 'failed')) + '</div>' : '')
+        const ap = (r.applied ? '<div class="mc-applied ' + (r.applied.ok ? 'ok' : 'err') + '">' + (r.applied.ok ? '✓ ' : '✕ ') + esc(r.applied.note || (r.applied.ok ? 'done' : 'failed'))
+            // #741: a provider that says it can try again (retry) gets a button that applies it alone, with what is still taken in
+            + (!r.applied.ok && r.applied.retry ? ' <button type="button" class="mc-retry" data-act="retry-apply" data-prov="' + esc(id) + '" title="Apply ' + esc(p.provider) + ' again, with what is taken in">Retry</button>' : '') + '</div>' : '')
             + (r.working ? '<div class="mc-working"><span class="mc-spin"></span>' + esc(r.working) + '</div>' : '') + falconHtml(r.falcon) + bestHtml(r.best);
         // 'not found' is one line of icons, not a row each: it's most of the list and needs no action.
         // 'linked' needs none either: icons on their section's sub-heading (Release, Artists, Labels),
@@ -1616,6 +1632,7 @@ function onClick(e) {
         case 'card-onoff': setCardOff(act.dataset.sect, !cardOff(act.dataset.sect)); break;
         case 'cover': coverViewer(coverList(results.as && results.as.best), Number(act.dataset.i) || 0); break;
         case 'exec': execute(false); break;
+        case 'retry-apply': retryOne(act.dataset.prov); break;
         case 'log': Log.open(); break;
         case 'cfg': settingsWindow(); break;
         case 'close': close(); break;
