@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Mission Control
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.13.140636
+// @version      2026.10.14
 // @description  One window on the release page that asks the other scripts (Platform Check, ISRC Scout, Art Station, Fusion, Credit Hoarder) what is missing, shows it all in one review, and applies the selected changes in order.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5NaXNzaW9uIENvbnRyb2w8L3RpdGxlPgo8ZGVmcz48ZmlsdGVyIGlkPSJtY28xMy1oIiB4PSItMTAlIiB5PSItMTAlIiB3aWR0aD0iMTIwJSIgaGVpZ2h0PSIxMjAlIj48ZmVNb3JwaG9sb2d5IGluPSJTb3VyY2VBbHBoYSIgb3BlcmF0b3I9ImRpbGF0ZSIgcmFkaXVzPSIxLjUiIHJlc3VsdD0iZCIvPjxmZUZsb29kIGZsb29kLWNvbG9yPSIjZmZmIiBmbG9vZC1vcGFjaXR5PSIuNyIvPjxmZUNvbXBvc2l0ZSBpbjI9ImQiIG9wZXJhdG9yPSJpbiIvPjxmZU1lcmdlPjxmZU1lcmdlTm9kZS8+PGZlTWVyZ2VOb2RlIGluPSJTb3VyY2VHcmFwaGljIi8+PC9mZU1lcmdlPjwvZmlsdGVyPjwvZGVmcz48ZyBmaWx0ZXI9InVybCgjbWNvMTMtaCkiPjxwYXRoIGQ9Ik03NyAzNS41IEw2NCA0MyBMNTEgMzUuNSBMNTEgMjAuNSBMNjQgMTMgTDc3IDIwLjVaIiBmaWxsPSIjN2E1N2U4IiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik01OS43IDc3LjUgTDQ2LjcgODUgTDMzLjcgNzcuNSBMMzMuNyA2Mi41IEw0Ni43IDU1IEw1OS43IDYyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik05NC4zIDc3LjUgTDgxLjMgODUgTDY4LjMgNzcuNSBMNjguMyA2Mi41IEw4MS4zIDU1IEw5NC4zIDYyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik00Mi4zIDEwNy41IEwyOS40IDExNSBMMTYuNCAxMDcuNSBMMTYuNCA5Mi41IEwyOS40IDg1IEw0Mi4zIDkyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik03NyAxMDcuNSBMNjQgMTE1IEw1MSAxMDcuNSBMNTEgOTIuNSBMNjQgODUgTDc3IDkyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik0xMTEuNiAxMDcuNSBMOTguNiAxMTUgTDg1LjcgMTA3LjUgTDg1LjcgOTIuNSBMOTguNiA4NSBMMTExLjYgOTIuNVoiIGZpbGw9IiNmZmM5NGEiIHN0cm9rZT0iIzIyMjIzYiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PC9nPgo8L3N2Zz4K
@@ -211,7 +211,7 @@ function probe() {
     probeAt = Date.now(); probeTook = 0;
     LINK_READERS.forEach(id => { linksAsked[id] = '[]'; });   // nothing is selected yet
     Log.info('probe run ' + run + ' · asking ' + (ask.join(', ') || 'nobody') + '');
-    document.dispatchEvent(new CustomEvent('mc:probe', { detail: JSON.stringify({ release: RELEASE, run, only: ask, links: [], isrcs: afterIsrcs() }) }));
+    document.dispatchEvent(new CustomEvent('mc:probe', { detail: JSON.stringify({ release: RELEASE, run, only: ask, links: [], isrcs: afterIsrcs(), cons: afterCons() }) }));
     paintAll();
     return ask.length;
 }
@@ -227,7 +227,7 @@ function probeOne(id) {
     const links = pcAlbumLinks();
     if (LINK_READERS.includes(id)) linksAsked[id] = JSON.stringify(links);
     Log.info('probe ' + id + ' on request · run ' + run + (links.length ? ' · selected album links ' + links.join(' ') : ''));
-    document.dispatchEvent(new CustomEvent('mc:probe', { detail: JSON.stringify({ release: RELEASE, run, only: [id], links, isrcs: afterIsrcs() }) }));
+    document.dispatchEvent(new CustomEvent('mc:probe', { detail: JSON.stringify({ release: RELEASE, run, only: [id], links, isrcs: afterIsrcs(), cons: afterCons() }) }));
     paintAll();
 }
 // Execute: the steps in order, the lanes of a parallel step together. Each
@@ -1235,8 +1235,9 @@ function paintCards() {
         // 'not found' is one line of icons, not a row each: it's most of the list and needs no action.
         // 'linked' needs none either: icons on their section's sub-heading (Release, Artists, Labels),
         // so the rows that need a decision lead; clicking them lists them as rows instead, each section on its own (S.linkedOpen).
-        // #709: PC's barcodes (kind 'barcode') are rows of their own at the top of Release, linked ones too ('added')
-        const isBc = x => x.kind === 'barcode';
+        // #709: PC's barcodes (kind 'barcode') are rows of their own at the top of Release, linked ones too ('added');
+        // so are the catalog numbers a consolidation brings (kind 'catno', #727)
+        const isBc = x => x.kind === 'barcode' || x.kind === 'catno';
         const linked = r.findings.filter(x => x.state === 'linked' && !isBc(x));
         // PC's card is in sections, each with its own linked icons; another card's are in its header
         const pc = id === 'pc';
@@ -1266,8 +1267,8 @@ function paintCards() {
             return '<div class="mc-line ' + esc(x.state) + (x.entity ? ' mc-ent' : '') + (lane ? ' mc-in' : '') + (pick ? ' mc-pick' : '') + (on ? ' on' : '') + '"'
                 + (pick ? ' data-prov="' + id + '" data-key="' + esc(x.key) + '" title="' + (on ? 'Taken in: click to leave out' : 'Click to take in') + '"' : '') + '>'
                 + '<span class="mc-tick">' + (on ? '✓' : '') + '</span>'
-                + '<span class="mc-pico">' + (isBc(x) ? BARCODE_SVG : stIcon(x.icon || x.key, 14)) + '</span>'
-                + '<div class="mc-lt"><div class="t">' + (isBc(x) ? 'Barcode <b class="mc-bcn">' + esc(x.code) + '</b>' : esc(x.name || x.key)) + '</div>'
+                + '<span class="mc-pico">' + (x.kind === 'catno' ? CATNO_SVG : isBc(x) ? BARCODE_SVG : stIcon(x.icon || x.key, 14)) + '</span>'
+                + '<div class="mc-lt"><div class="t">' + (x.kind === 'catno' ? 'Cat. no. <b class="mc-bcn">' + esc(x.code) + '</b> · ' + esc(x.label && x.label.name || '') : isBc(x) ? 'Barcode <b class="mc-bcn">' + esc(x.code) + '</b>' : esc(x.name || x.key)) + '</div>'
                 + (x.url ? '<a class="s" target="_blank" rel="noopener" href="' + esc(x.url) + '" title="' + esc(x.url) + '">' + esc(shortUrl(x.url)) + '</a>' : '')
                 + whyHtml(x, lane) + '</div>'
                 + (lane && x.state !== 'linked' ? '<span></span>' : '<span class="mc-pill ' + pill[0] + '">' + pill[1] + '</span>') + '</div>';
@@ -1323,6 +1324,8 @@ function paintCards() {
             + none.map(x => '<span class="mc-pico" title="' + esc(x.name || x.key) + '">' + stIcon(x.icon || x.key, 14) + '</span>').join('') + '</div>' : '')));
     });
 }
+// #727: a catalog number's icon, a tag
+const CATNO_SVG = '<svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.4" style="color:var(--mbu-text-dim)"><path d="M1.5 7.6V1.5h6.1l5 5-6.1 6.1z"/><circle cx="4.6" cy="4.6" r="1.1"/></svg>';
 const BARCODE_SVG = '<svg width="14" height="14" viewBox="0 0 14 10" fill="currentColor" style="color:var(--mbu-text-dim)"><rect x="0" width="1.4" height="10"/><rect x="2.4" width="0.8" height="10"/><rect x="4.2" width="1.8" height="10"/><rect x="7" width="0.8" height="10"/><rect x="8.8" width="1.4" height="10"/><rect x="11.2" width="0.8" height="10"/><rect x="12.6" width="1.4" height="10"/></svg>';
 // another barcode lane's colour: a token per lane, lighter on the dark theme (majkinetor: "hardly visible on dark theme")
 const BC_LIGHT = ['#2563eb', '#c2410c', '#9333ea', '#0e7490', '#be185d', '#a16207', '#4d7c0f', '#6d28d9'];
@@ -1932,7 +1935,7 @@ function ccStyle() {
         + '.mcc-tbl tr.ver.on .r{background:var(--mbu-accent);border-color:var(--mbu-accent);box-shadow:inset 0 0 0 2px var(--mbu-bg)}.mcc-tbl tr.ver{cursor:pointer}'
         + '.mcc-tbl .hl{background:var(--mbu-warn-bg);border-radius:3px;padding:0 3px}.mcc-tbl tr.extra td.ttl{text-decoration:line-through;color:var(--mbu-text-weak)}.mcc-tbl tr.extra.on td.ttl{text-decoration:none;color:var(--mbu-text)}'
         + '.mcc-tbl .why{color:var(--mbu-text-weak)}.mcc-tbl td.car{width:20px;color:var(--mbu-text-weak);text-align:right}'
-        + '.mcc-inmb{border:1px solid var(--mbu-warn-border);background:var(--mbu-warn-bg);border-radius:var(--mbu-radius-lg);padding:10px 12px;margin:0 0 14px}.mcc-inmb ul{margin:6px 0 0;padding-left:18px}.mcc-inmb li{margin:2px 0}.mcc-inmb.other{border-color:var(--mbu-border);background:var(--mbu-bg)}'
+        + '.mcc-inmb{border:1px solid var(--mbu-warn-border);background:var(--mbu-warn-bg);border-radius:var(--mbu-radius-lg);padding:10px 12px;margin:0 0 14px}.mcc-inmb ul{margin:6px 0 0;padding-left:18px}.mcc-inmb li{margin:2px 0}.mcc-inmb.other{border-color:var(--mbu-border);background:var(--mbu-bg)}.mcc-inmb .mcc-upd{padding:2px 10px;margin-left:6px;font-size:12px}'
         + '.mcc-fmt-slot{display:inline-flex;flex:none}'
         + '.mcc-note{border:1px dashed var(--mbu-border-strong);border-radius:var(--mbu-radius-lg);padding:10px 12px;font-size:12px;color:var(--mbu-text-dim);background:var(--mbu-bg)}'
         + '.mcc-insp dl{display:grid;grid-template-columns:auto 1fr;gap:3px 10px;margin:0 0 12px;font-size:12px}.mcc-insp dt{color:var(--mbu-text-weak)}.mcc-insp dd{margin:0;word-break:break-word}'
@@ -2496,6 +2499,7 @@ function ccOnClick(e) {
         case 'extra': CC.extraTake[a.dataset.x] = !CC.extraTake[a.dataset.x]; CC.sel = a.dataset.x; ccPaint(); return;
         case 'tick': CC.ticks[a.dataset.t] = a.checked; Log.info('after saving: ' + a.dataset.t + ' ' + (a.checked ? 'on' : 'off')); ccPaintInspector(); return;
         case 'open': ccOpenEditor(); return;
+        case 'update': ccUpdateRelease(a.dataset.id); return;
         case 'more': ccMenu(); return;
         case 'md': {
             ccMenu(false);
@@ -2653,6 +2657,30 @@ function ccSameRelease(e) {
     if (e.tracks && src.tracks && e.tracks !== src.tracks) return false;
     return true;
 }
+// #727: the consolidation goes to a release MusicBrainz already has. Noted in this tab's sessionStorage
+// as for Add release, with the release's MBID: its page opens Mission Control and probes, ISRC Scout
+// gets the ISRCs, and Platform Check the barcode, the catalog numbers and the platforms' links (cons),
+// each offered only where the release lacks it.
+function ccUpdateRelease(mbid) {
+    const m = ccModel();
+    if (!m.fields) { mbuToast('Nothing read yet', { kind: 'warn' }); return; }
+    const e = CC.inMb.releases.find(x => x.id === mbid);
+    const rel = ccSeedRel(m), n = ccCount(rel);
+    const isrcs = rel.mediums.flatMap(md => md.tracks.map(t => t.isrc || null));
+    const cons = {
+        barcode: rel.barcode ? String(rel.barcode).replace(/\D/g, '') : null,
+        labels: rel.labels.filter(l => l.catno).map(l => ({ name: l.name || '', mbid: l.mbid || null, catno: l.catno })),
+        urls: CC.sources.filter(s => s.take && s.url).map(s => ({ key: s.key, url: s.url })),
+        from: m.reads.map(s => ccName(s.key)),
+    };
+    const note = { created: Date.now(), mbid, title: (e && e.title) || rel.title, tracks: n, isrcs, ticks: CC.ticks, cons };
+    Log.info('update release ' + mbid + ': barcode ' + (cons.barcode || '—') + ' · cat. no. ' + (cons.labels.map(l => l.catno + (l.name ? ' (' + l.name + ')' : '')).join(', ') || '—')
+        + ' · ' + isrcs.filter(Boolean).length + ' ISRC(s) · ' + cons.urls.length + ' link(s) · taken in: ' + (Object.keys(CC.ticks).filter(k => CC.ticks[k]).join(', ') || 'none'));
+    if (mbuTestHooks()) window.__mccLastUpdate = note;
+    try { sessionStorage.setItem(CC_AFTER_KEY, JSON.stringify(note)); } catch (x) { Log.err('the update is not noted (' + x.message + ')'); mbuToast('Could not note the update: ' + x.message, { kind: 'error' }); return; }
+    if (CC.dry) { Log.info('dry run: the release is not opened'); return; }
+    location.assign('/release/' + mbid);
+}
 function ccInMbHtml() {
     const rs = CC.inMb.releases;
     if (CC.inMb.state !== 'done' || !rs.length) return '';
@@ -2662,7 +2690,9 @@ function ccInMbHtml() {
         + ' <span class="weak">· linked from ' + esc(e.urls.map(plat).join(', ')) + '</span></li>';
     const same = rs.filter(e => e.same), other = rs.filter(e => !e.same);
     let h = '';
-    if (same.length) h += '<div class="mcc-inmb"><b>MusicBrainz already has this album.</b> Open it and add what it lacks with Mission Control there, rather than adding the album again.<ul>' + same.map(li).join('') + '</ul></div>';
+    // #727: Update this release takes what is consolidated here to it, for what it lacks
+    const upd = e => ' <button type="button" class="mcc-btn mcc-upd" data-cc="update" data-id="' + esc(e.id) + '" title="Open this release in this tab with what is taken here: Mission Control probes it and offers what it lacks (the barcode, catalog numbers, ISRCs, links)">Update this release →</button>';
+    if (same.length) h += '<div class="mcc-inmb"><b>MusicBrainz already has this album.</b> Update it with what it lacks, rather than adding the album again.<ul>' + same.map(e => li(e).replace(/<\/li>$/, upd(e) + '</li>')).join('') + '</ul></div>';
     if (other.length) h += '<div class="mcc-inmb other"><b>Other editions in MusicBrainz</b> <span class="dim">(another barcode, format or track count than ' + esc(ccFormat()) + (CC.sources[0] && CC.sources[0].barcode ? ' ' + esc(CC.sources[0].barcode) : '') + '):</span><ul>' + other.map(li).join('') + '</ul></div>';
     return h;
 }
@@ -2697,10 +2727,14 @@ function afterSave() {
     if (!a) return;
     try { sessionStorage.removeItem(CC_AFTER_KEY); } catch (e) { /* storage blocked */ }
     if (Date.now() - a.created > CC_AFTER_TTL) { Log.info('a consolidation\'s note for after saving is older than 3 hours: dropped'); return; }
-    const title = (document.querySelector('.releaseheader h1') || {}).textContent || '';
-    if (ccNorm(title).indexOf(ccNorm(a.title)) === -1) { Log.info('a consolidation\'s note for after saving is for "' + a.title + '", not this release: dropped'); return; }
+    // #727: an update of a release MusicBrainz already had names it; a new release is known by its title
+    if (a.mbid) { if (a.mbid !== RELEASE) { Log.info('a consolidation\'s update is for release ' + a.mbid + ', not this one: dropped'); return; } }
+    else {
+        const title = (document.querySelector('.releaseheader h1') || {}).textContent || '';
+        if (ccNorm(title).indexOf(ccNorm(a.title)) === -1) { Log.info('a consolidation\'s note for after saving is for "' + a.title + '", not this release: dropped'); return; }
+    }
     AFTER = a;
-    Log.info('the consolidated release is saved: Mission Control opens and probes · ' + Object.keys(a.ticks).filter(k => a.ticks[k]).join(', ') + ' · ' + (a.isrcs || []).filter(Boolean).length + ' ISRC(s) from the consolidation');
+    Log.info((a.mbid ? 'a consolidation updates this release' : 'the consolidated release is saved') + ': Mission Control opens and probes · ' +Object.keys(a.ticks).filter(k => a.ticks[k]).join(', ') + ' · ' + (a.isrcs || []).filter(Boolean).length + ' ISRC(s) from the consolidation');
     open();
     setTimeout(() => { if (ui && !run) probe(); }, 700);
 }
@@ -2713,6 +2747,8 @@ function afterPicks(id) {
 
 // the ISRCs taken in the consolidation, by track, for ISRC Scout (#702)
 function afterIsrcs() { return AFTER && AFTER.ticks.is && Array.isArray(AFTER.isrcs) ? AFTER.isrcs : undefined; }
+// #727: what a consolidation brings to a release MusicBrainz already had, for Platform Check
+function afterCons() { return AFTER && AFTER.cons ? AFTER.cons : undefined; }
 
 /* ── launcher ──────────────────────────────────────────────────────────────── */
 

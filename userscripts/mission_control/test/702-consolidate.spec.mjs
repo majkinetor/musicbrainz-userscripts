@@ -168,6 +168,20 @@ test.describe('the consolidation page', () => {
     check(await page.locator('#mcc-root .mcc-inmb.other li').count() === 1, 'another edition goes in the note');
     await info.attach('in-mb-editions', { body: await page.locator('#mcc-root .mcc-center').screenshot({ clip: undefined }), contentType: 'image/png' });
     await page.evaluate(() => { const st = window.__mccTest.state(); st.inMb.releases = st.inMb.releases.filter(e => !/702$/.test(e.id)); window.__mccTest.paint(); });
+    // #727: this album, in MusicBrainz: Update this release notes the consolidation for that release's page
+    // (a dry run stays here) with its MBID, the barcode, the ISRCs and the platforms' links taken in
+    const FAKE = '00000000-0000-0000-0000-000000000727';
+    await page.evaluate(id => { const st = window.__mccTest.state(); st.inMb.releases.unshift({ id, title: 'Discovery', disamb: '', date: '2001', barcode: '', format: 'Digital Media', tracks: 14, urls: ['https://www.deezer.com/album/302127'], same: true }); window.__mccTest.setDry(true); window.__mccTest.paint(); }, FAKE);
+    const upBtn = page.locator(`#mcc-root .mcc-inmb:not(.other) [data-cc="update"][data-id="${FAKE}"]`);
+    check(await upBtn.count() === 1 && await page.locator('#mcc-root .mcc-inmb.other [data-cc="update"]').count() === 0, 'this album has Update this release; other editions have none');
+    await info.attach('update-button', { body: await page.locator('#mcc-root .mcc-inmb:not(.other)').screenshot(), contentType: 'image/png' });
+    await upBtn.click();
+    const upd = await page.evaluate(() => ({ last: window.__mccLastUpdate, stored: JSON.parse(sessionStorage.getItem('mc.after') || 'null') }));
+    console.log('update: ' + JSON.stringify(upd.last && { mbid: upd.last.mbid, cons: upd.last.cons, isrcs: upd.last.isrcs.filter(Boolean).length }));
+    check(upd.stored && upd.stored.mbid === FAKE && upd.last.cons.urls.length >= 2 && upd.last.isrcs.filter(Boolean).length >= 10 && /^\d{12,14}$/.test(upd.last.cons.barcode || ''),
+      'the note names the release and carries the barcode, the ISRCs and the links taken in');
+    check(page.url().includes('/release/add'), 'a dry run stays on the consolidation');
+    await page.evaluate(() => { const st = window.__mccTest.state(); st.inMb.releases = st.inMb.releases.filter(e => !/727$/.test(e.id)); window.__mccTest.setDry(false); sessionStorage.removeItem('mc.after'); window.__mccTest.paint(); });
     if (inMb && inMb.releases.length) {
       const b = page.locator('#mcc-root .mcc-inmb');
       check(await b.count() === 1 && await b.locator('a[href^="/release/"]').count() === inMb.releases.length, 'the banner links each release MusicBrainz has (' + inMb.releases.length + ')');

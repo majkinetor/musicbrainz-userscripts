@@ -176,12 +176,13 @@ What **Import** reads, **Export** writes, and Harmony and other scripts produce:
 | `video`                         | recordings; only `true` does anything                                                                                                                                       |
 | `cover[]`                       | releases: `{ url, type, comment, candidates }`, type defaulting to Front                                                                                                    |
 | `barcode`                       | releases: a barcode for a release that has none                                                                                                                             |
+| `labels[]`                      | releases: `{ mbid, name, catno }`, an empty catalog number to fill                                                                                                          |
 | `note`                          | that item's own edit note                                                                                                                                                   |
 | `status`, `error`, `urlResults` | written by Export: the outcome of the last run                                                                                                                              |
 
 ### From another script
 
-Another script can hand Falcon a queue in the [JSON model](#json-model), by a `?falcon=` link or by an event on the page; a link never starts the queue. Sending the same batch twice doesn't run it twice. [Mission Control](../mission_control/README.md#execute) and [Platform Check](../platform_check/README.md#artists-and-labels) send their links this way. How is in [DEVELOP.md](DEVELOP.md#handoff).
+Another script can hand Falcon a queue in the [JSON model](#json-model), by a `?falcon=` link or by an event on the page; a link never starts the queue. Sending the same batch twice doesn't run it twice. [Mission Control](../mission_control/README.md#execute) and [Platform Check](../platform_check/README.md#artists-and-labels) send their links, barcodes and catalog numbers this way. How is in [DEVELOP.md](DEVELOP.md#handoff).
 
 ## Settings
 
