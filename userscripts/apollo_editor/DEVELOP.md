@@ -43,7 +43,7 @@ The shared request gate handles it, for every script that sends its `/ws/js` rea
 
 At **Enter edit** (a click on the footer's `[data-click="submitEdits"]`) `archiveOnSubmit()`:
 
-1. collects the release's external links (`linkRows()`, through `archiveUrls()`), skipping MusicBrainz, MetaBrainz and archive.org URLs and what First Contact's handoff archives (its `url` and `archive.urls`). Links the edit note mentions aren't saved, and the note isn't touched (#739): the [archive menu](#archive-menu) finds the snapshots;
+1. collects the release's external links (`linkRows()`, through `archiveUrls()`), skipping MusicBrainz, MetaBrainz and archive.org URLs and what First Contact's handoff archives (its `archive.urls`). The imported link itself (the handoff's `url`) is saved: First Contact saves the page as the user had it (`/en/album/…`), and the archive menu looks the link up by its own address. Links the edit note mentions aren't saved, and the note isn't touched (#739): the [archive menu](#archive-menu) finds the snapshots;
 2. fires one save per URL through the shared [`<ST-ARCHIVE>`](../../DEVELOP.md#shared-blocks) block (`mbaSave`), without waiting: the page leaves seconds later. Anonymous: `GET https://web.archive.org/save/<url>`. With keys: `POST /save` (Save Page Now 2, screenshot, `if_not_archived_within=30d`), not followed. A second Enter edit on the same page (MB refused the first) doesn't send a URL again.
 
 A site that refuses archive.org (Save Page Now answers `error:no-request`, "The target server blocks access … HTTP status=403") is saved where its data can be read: `mbaSavable()` maps Discogs' `/release|master|artist|label/<id>` to `api.discogs.com/<type>s/<id>`.

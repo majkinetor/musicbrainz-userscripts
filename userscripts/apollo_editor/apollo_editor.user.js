@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.14
+// @version      2026.10.14.091343
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5BcG9sbG8gRWRpdG9yPC90aXRsZT4KPG1hc2sgaWQ9ImFwLW0iIG1hc2tVbml0cz0idXNlclNwYWNlT25Vc2UiIHg9IjAiIHk9IjAiIHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4Ij48Zz48ZyBmaWxsPSIjZmZmIj48cGF0aCBkPSJNNDIgNjQgQzI4IDcyIDIyIDkwIDI0IDExMCBMNDIgOTggWiIvPjxwYXRoIGQ9Ik04NiA2NCBDMTAwIDcyIDEwNiA5MCAxMDQgMTEwIEw4NiA5OCBaIi8+PC9nPjxnIGZpbGw9IiNmZmYiPjxwYXRoIGQ9Ik02NCA4IEM4NCAyNCA5MCA1MiA4OCA5MCBMNDAgOTAgQzM4IDUyIDQ0IDI0IDY0IDggWiIvPjxwYXRoIGQ9Ik00OCA5MCBMODAgOTAgTDc2IDEwMCBMNTIgMTAwIFoiLz48L2c+PGcgc3Ryb2tlPSIjMDAwIiBzdHJva2Utd2lkdGg9IjMuNSI+PHBhdGggZD0iTTM2IDkwLjUgTDkyIDkwLjUiLz48L2c+PGNpcmNsZSBjeD0iNjQiIGN5PSI1MCIgcj0iOCIgZmlsbD0iIzAwMCIvPjwvZz48L21hc2s+PGc+PHBhdGggZD0iTTUyIDEwMCBDNTQgMTEyIDYwIDExOCA2NCAxMjYgQzY4IDExOCA3NCAxMTIgNzYgMTAwIFoiIGZpbGw9IiNlYjc0M2IiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDAgMykiLz48L2c+PHJlY3Qgd2lkdGg9IjEyOCIgaGVpZ2h0PSIxMjgiIGZpbGw9IiNiYTQ3OGYiIG1hc2s9InVybCgjYXAtbSkiLz4KPC9zdmc+Cg==
@@ -11134,7 +11134,8 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
   // and Save Page Now finishes on archive.org's side. #739 (majkinetor): only the release's own links,
   // not the links an edit note mentions (script repos, Harmony…), and nothing is written in the edit
   // note: the archive menu by each link on the entity pages finds the snapshots. What First Contact
-  // archives for its import is left to it.
+  // archives for its import (the page as the user had it, its API data) is left to it; the imported
+  // link itself is saved here, as the menu looks it up by that address (#739).
   const _arSent = new Set();   // a second Enter edit (MB refused the first) doesn't save again
   const arNorm = u => mbaShort(u).replace(/\/+$/, '').toLowerCase();
   // the addresses to save for the release's links (Discogs's as its API: its site refuses archive.org)
@@ -11146,7 +11147,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     if (SETTINGS.archive === false) return;
     const log = Log.cat('Archive');
     const h = fcHandoff();
-    const fc = new Set([h && h.url, ...((h && h.archive && h.archive.urls) || []).map(a => a.url)].filter(Boolean).map(arNorm));
+    const fc = new Set(((h && h.archive && h.archive.urls) || []).map(a => a.url).filter(Boolean).map(arNorm));
     const send = archiveUrls(linkRows().map(r => r.url), fc).filter(u => !_arSent.has(u)), keys = !!mbaKeys();
     if (!send.length) { log.debug('archive: no links to save'); return; }
     log.info(`archive: sending ${send.length} URL(s) to the Internet Archive (${keys ? 'Save Page Now 2 with your keys' : 'anonymous'}): ${send.join(', ')}`);

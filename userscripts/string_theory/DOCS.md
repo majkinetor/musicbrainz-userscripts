@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-10-14 08:03 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-10-14 09:14 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -277,7 +277,7 @@ When you click **Enter edit**, Apollo asks the Internet Archive's Wayback Machin
 - Some sites refuse the Internet Archive, and their pages can't be saved. Discogs is one: for a Discogs link Apollo saves the same data from Discogs' API.
 - Every edit saves them again. A page the Internet Archive saved a moment ago isn't saved twice.
 - The edit doesn't wait for the saves, which take from a few seconds to a minute.
-- Links on MusicBrainz and the Internet Archive aren't saved, nor the album page [First Contact](../first_contact/README.md#archive) already archives for its import.
+- Links on MusicBrainz and the Internet Archive aren't saved, nor what [First Contact](../first_contact/README.md#archive) already archives for its import.
 - Without keys the saves are anonymous, and the Internet Archive refuses some when a release has many links. With your archive.org keys the limit is much higher, and each save also takes a screenshot, which the menu's *Open the latest screenshot* opens. They are the same keys First Contact uses: in [String Theory](../string_theory/README.md) keys set in one show in the other. To get them, see [First Contact → archive.org keys](../first_contact/README.md#archiveorg-keys).
 
 #### Archive menu

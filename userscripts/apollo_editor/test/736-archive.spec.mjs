@@ -18,8 +18,10 @@ test('the release links to save', { tag: ['@unit', '@critical'] }, async () => {
   const rel = ['https://artist.bandcamp.com/album/x', 'https://open.spotify.com/album/abc', 'https://open.spotify.com/album/abc/', 'https://musicbrainz.org/x', 'https://web.archive.org/web/1/x'];
   const r = archiveUrls(rel, new Set());
   check(r.length === 2 && r[0] === 'https://artist.bandcamp.com/album/x' && /^https:\/\/open\.spotify\.com\/album\/abc\/?$/.test(r[1]), `each link once; no MusicBrainz or archive.org (${JSON.stringify(r)})`);
-  const fc = archiveUrls(['https://www.deezer.com/album/6575789', 'https://www.discogs.com/release/1'], new Set(['deezer.com/album/6575789']));
-  check(JSON.stringify(fc) === JSON.stringify(['https://api.discogs.com/releases/1']), `what First Contact archives is left to it (${JSON.stringify(fc)})`);
+  // what First Contact archives (the page as the user had it, the API data) is left to it; the imported link
+  // itself is saved, as the archive menu looks it up by that address (#739)
+  const fc = archiveUrls(['https://www.deezer.com/album/6575789', 'https://www.discogs.com/release/1'], new Set(['deezer.com/en/album/6575789', 'api.discogs.com/releases/1']));
+  check(JSON.stringify(fc) === JSON.stringify(['https://www.deezer.com/album/6575789']), `the canonical link is saved, what First Contact saved isn't (${JSON.stringify(fc)})`);
   // majkinetor's release 57daa732: discogs.com refuses archive.org (HTTP 403), so its API is saved
   const dg = archiveUrls(['https://www.discogs.com/release/34839779-Saimaa-Ja-Yona', 'https://www.discogs.com/master/12'], new Set());
   check(JSON.stringify(dg) === JSON.stringify(['https://api.discogs.com/releases/34839779', 'https://api.discogs.com/masters/12']), `Discogs as its API (${JSON.stringify(dg)})`);
