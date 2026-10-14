@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-10-14 19:11 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-10-14 19:16 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -1824,6 +1824,8 @@ Art Station looks for the largest cover on the platforms the release links, and 
 
 A release without a front cover starts with the cover taken in. Click either image to see both full screen, with **←** **→** between them.
 
+An upload that fails is repeated as Art Station's [auto-repeat](../art_station/README.md#applying-changes) setting says, and the card shows each attempt.
+
 ### Release credits
 
 Credit Hoarder's count of credits for each track, from every credit source the release links (Discogs, Qobuz, Deezer, Apple Music). Mission Control only shows them: **Import credits** opens Credit Hoarder on the release's relationship editor with that source, or with all of them, to review and add them there.
@@ -1837,6 +1839,8 @@ Click a track to see, on the right, everything found for it: its ISRCs and where
 **Execute** in the header applies what is taken in, step by step in the Execution order; the steps on one line run together. The count on the button is what will be sent. Each card shows its progress, and a step that fails doesn't stop the next one.
 
 Every edit note ends with *Via Mission Control v&lt;version&gt;* and the release.
+
+A step that failed and can be tried again (a cover upload that kept failing, say) shows **Retry** beside its error: it applies that card alone again, with what is still taken in.
 
 Click a card's icon or title to switch the card off: it folds to its header, and Execute leaves out what is taken in there. Your selection stays for when you switch it on again.
 
