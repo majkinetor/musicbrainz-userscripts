@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Platform Check
 // @namespace    http://tampermonkey.net/
-// @version      2026.10.14.185927
+// @version      2026.10.14.192350
 // @description  Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CjxnIHN0cm9rZT0iIzk0YTNiOCIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2UtbGluZWNhcD0icm91bmQiPjxwYXRoIGQ9Ik02NCA2NCBMODggMjIuNCIvPjxwYXRoIGQ9Ik02NCA2NCBMMTEyIDY0Ii8+PHBhdGggZD0iTTY0IDY0IEw4OCAxMDUuNiIvPjxwYXRoIGQ9Ik02NCA2NCBMNDAgMTA1LjYiLz48cGF0aCBkPSJNNjQgNjQgTDE2IDY0Ii8+PHBhdGggZD0iTTY0IDY0IEw0MCAyMi40Ii8+PC9nPjxjaXJjbGUgY3g9Ijg4IiBjeT0iMjIuNCIgcj0iMTIiIGZpbGw9IiNmNDcyYjYiLz48Y2lyY2xlIGN4PSIxMTIiIGN5PSI2NCIgcj0iMTIiIGZpbGw9IiNmYWNjMTUiLz48Y2lyY2xlIGN4PSI4OCIgY3k9IjEwNS42IiByPSIxMiIgZmlsbD0iIzRhZGU4MCIvPjxjaXJjbGUgY3g9IjQwIiBjeT0iMTA1LjYiIHI9IjEyIiBmaWxsPSIjMzhiZGY4Ii8+PGNpcmNsZSBjeD0iMTYiIGN5PSI2NCIgcj0iMTIiIGZpbGw9IiNhNzhiZmEiLz48Y2lyY2xlIGN4PSI0MCIgY3k9IjIyLjQiIHI9IjEyIiBmaWxsPSIjZmI5MjNjIi8+PGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iMjQiIGZpbGw9IiMwZjE3MmEiLz48cGF0aCBkPSJNNTQuMjIyMjIyMjIyMjIyMjIgNjQgTDYxLjMzMzMzMzMzMzMzMzMzNiA3MS4xMTExMTExMTExMTExMSBMNzQuNjY2NjY2NjY2NjY2NjcgNTYuODg4ODg4ODg4ODg4ODg2IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iNiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+Cjwvc3ZnPgo=
@@ -8885,6 +8885,26 @@ function pcMcMasterFinding() {
     const rel = pcMcFinding('discogs').state;
     return { ...base, state: rel === 'new' || rel === 'linked' ? 'new' : 'unsure', why: rel === 'new' || rel === 'linked' ? 'for the release group' : 'from a Discogs release that is not a sure match' };
 }
+// #745: First Contact reads a Beatport release headless (Mission Control's consolidation), and Beatport's page refuses it
+// (Cloudflare). It asks here instead: the release and its tracks through the API, with the login. { req, release, tracks }
+// or { req, error }.
+document.addEventListener('pc:beatport-release', async e => {
+    let d = {}; try { d = JSON.parse(e.detail) || {}; } catch (x) { return; }
+    const reply = o => document.dispatchEvent(new CustomEvent('pc:beatport-release-result', { detail: JSON.stringify(Object.assign({ req: d.req }, o)) }));
+    if (!/^\d+$/.test(String(d.id || ''))) { reply({ error: 'no release id' }); return; }
+    if (!(await beatportToken())) { appendLog('Beatport', `First Contact asked for release ${d.id}: not logged in`, 'warn'); reply({ error: 'Platform Check isn\'t logged in to Beatport' }); return; }
+    const release = await beatportApi(`/catalog/releases/${d.id}/`);
+    if (!release) { reply({ error: `Beatport's API has no release ${d.id}` }); return; }
+    const tracks = [];
+    for (let page = 1; page <= 10; page++) {
+        const j = await beatportApi(`/catalog/releases/${d.id}/tracks/?per_page=100&page=${page}`);
+        if (!j) break;
+        tracks.push(...(j.results || []));
+        if (!j.next) break;
+    }
+    appendLog('Beatport', `First Contact asked for release ${d.id}: "${release.name}", ${tracks.length} track(s)`, 'ok');
+    reply({ release, tracks });
+});
 function pcMcSend(type, detail) {
     document.dispatchEvent(new CustomEvent(type, { detail: JSON.stringify(detail) }));
 }

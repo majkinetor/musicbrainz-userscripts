@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-10-14 19:16 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-10-14 19:23 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -999,6 +999,7 @@ Pages: `beatport.com/release/<slug>/<id>`
 - Beatport credits every track artist to the release, so more than four of them make it Various Artists.
 - Beatport's own type is mostly just *Release*, so the type is usually guessed.
 - The link gets *purchase for download* and, when it streams, *streaming page*.
+- When [Mission Control](../mission_control/README.md#consolidate-a-new-release) compares a Beatport album it isn't open on, Beatport's bot check can refuse the page. It is then read through [Platform Check](../platform_check/README.md)'s Beatport login; without one, open any Beatport page in this browser first.
 
 #### Spotify
 

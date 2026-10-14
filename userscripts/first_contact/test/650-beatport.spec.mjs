@@ -44,3 +44,29 @@ test('a Beatport release: tracks in order with mix names and ISRCs, label, UPC, 
   check(text(va.credit) === 'Various Artists' && va.credit[0].mbid === '89ad4ac3-39f7-470e-963a-56509c546377', `many release artists → Various Artists: ${text(va.credit)}`);
   check(va.mediums[0].tracks.every(t => t.credit.length && t.credit[0].url), 'every compilation track has its own artist with a link');
 });
+
+// #745: a headless read (Mission Control's consolidation) of a Beatport release whose page Cloudflare refuses: it is
+// read through Platform Check (pc:beatport-release), which answers with Beatport's API data, the page's own shape.
+// A stand-in Platform Check answers here, with a release in the API's shape.
+test('a Beatport page that is refused is read through Platform Check', { tag: ['@sandbox'] }, async ({ page }) => {
+  await page.goto('https://test.musicbrainz.org/', { waitUntil: 'domcontentloaded' });
+  await page.evaluate(c => (0, eval)(c), await readFile(sourceOf('first_contact'), 'utf8'));
+  const out = await page.evaluate(async () => {
+    const asked = [];
+    document.addEventListener('pc:beatport-release', e => {
+      const d = JSON.parse(e.detail); asked.push(d.id);
+      const tr = (id, n, name, mix, len, isrc) => ({ id, number: n, name, mix_name: mix, length_ms: len, isrc, slug: name.toLowerCase().replace(/\W+/g, '-'), url: `https://api.beatport.com/v4/catalog/tracks/${id}/`, release: { id: 7172118 }, artists: [{ id: 7, name: 'Ayria', slug: 'ayria' }] });
+      const release = { id: 7172118, name: '13 Stitches', slug: '13-stitches', artists: [{ id: 7, name: 'Ayria', slug: 'ayria' }], label: { id: 9, name: 'Artoffact', slug: 'artoffact' }, catalog_number: 'AOF 300', upc: '628070649594', new_release_date: '2026-10-02', type: { name: 'Album' }, is_available_for_streaming: true,
+        tracks: ['https://api.beatport.com/v4/catalog/tracks/2/', 'https://api.beatport.com/v4/catalog/tracks/1/'] };
+      document.dispatchEvent(new CustomEvent('pc:beatport-release-result', { detail: JSON.stringify({ req: d.req, release, tracks: [tr(2, 2, 'Turn of the Tide', 'Original Mix', 241000, 'CA5KR2600002'), tr(1, 1, 'Feeding Your Monsters', 'Extended Mix', 260000, 'CA5KR2600001')] }) }));
+    });
+    const bp = window.__fcTest.providers.find(p => p.id === 'beatport');
+    const doc = new DOMParser().parseFromString('<html><body></body></html>', 'text/html'); doc.fcOrigin = 'https://www.beatport.com';
+    const rel = await bp.fetchRelease('7172118', null, doc);
+    return { asked, title: rel.title, label: rel.labels[0], barcode: rel.barcode, tracks: rel.mediums[0].tracks.map(t => [t.title, t.lengthMs, t.isrc]) };
+  });
+  console.log(JSON.stringify(out));
+  check(out.asked.join() === '7172118', 'Platform Check was asked for the release');
+  check(out.title === '13 Stitches' && out.barcode === '628070649594' && out.label.catno === 'AOF 300', `the release: ${JSON.stringify(out)}`);
+  check(JSON.stringify(out.tracks) === JSON.stringify([['Feeding Your Monsters (Extended Mix)', 260000, 'CA5KR2600001'], ['Turn of the Tide', 241000, 'CA5KR2600002']]), `the tracks, in the release's order, with lengths and ISRCs: ${JSON.stringify(out.tracks)}`);
+});

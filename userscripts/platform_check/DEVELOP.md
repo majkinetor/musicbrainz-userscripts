@@ -124,6 +124,7 @@ Each provider is resolved by a **method** chain, tried in order: the existing **
     - Album: — (unverifiable without login)
     - Barcode: –
     - Catalog number: `catalog_number` of the release detail, for its `label` (logged in)
+    - For First Contact (#745): `pc:beatport-release` `{ id, req }` reads a release and its tracks through the API with the login and answers `pc:beatport-release-result`, when Beatport's page refuses First Contact's headless read (see [First Contact's DEVELOP](../first_contact/DEVELOP.md))
 - **Local search:** —
 - **Global search:** DuckDuckGo / Brave (`site:beatport.com/release/`, best slug-vs-title match)
 - **Track verify:** **unverifiable** (Cloudflare-walled) — a search-found link is surfaced as an **unverified** match (`?`) and excluded from the `+` insert and `↗` open-all.
