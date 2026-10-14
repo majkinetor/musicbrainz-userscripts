@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-10-14 16:24 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-10-14 16:58 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -1811,6 +1811,8 @@ A link whose track count or format is not the release's is most likely another r
 
 A release without a barcode gets a **Barcode** row at the top of *Release* for each barcode the platforms report, each saying where it came from. The one Platform Check is sure of starts taken in: a barcode you pasted, the one a consolidation brings ([Update this release](#update-this-release)), or one reported by a link the release already has, whose track count and medium match the release. A release has one barcode, so taking another in leaves the first out. Execute adds it with the links, in the same edit.
 
+The catalog numbers the platforms give, for a label the release has without one, sit beside the barcode of their group. A group with a barcode is one release, so it shows one per label; a platform in it that gives none just didn't say. The group without a barcode can show several, since its platforms may be different releases. Click one to take it in or leave it out; **take all in** never takes a catalog number. Only the one in the release's own group starts taken in, and a label takes one, so taking another in leaves the first out.
+
 **Artists** and **Labels** list the pages the matched albums name for them. The platforms that found nothing fold into one line of icons. A heading's ✓ count opens the links it already has into rows.
 
 The links are added through [Falcon](../falcon/README.md), out of sight. The card lists each one with its status as it goes; when one fails, **Open Falcon** shows why and lets you retry.
@@ -1905,6 +1907,7 @@ Finds a MusicBrainz release on the streaming and store platforms, checks each ma
 - **[Link confidence](#link-confidence)**: a match with a different barcode or format is a different release, and is not added.
 - **[Adding links](#adding-links)** to the release, one or all, in the foreground or in the background, or opening all the pages found.
 - **[Pasting a barcode](#pasting-a-barcode)** on a release that has none, or picking one the platforms report: the platforms are checked against it, and an added link adds it too.
+- **[Catalog numbers](#catalog-numbers)** the platforms give, for a label the release has without one: an added link adds it too.
 - **[Artists and labels](#artists-and-labels)**: the artist and label pages the matched albums name, added to the release's MusicBrainz artists and labels through [Falcon](../falcon/README.md).
 
 ### Dashboard
@@ -1968,6 +1971,17 @@ A release without a barcode can borrow one: copy it (from the cover, a store pag
 
 The matched platforms often show a barcode the release lacks. On a release without one, a dashed barcode button next to ↻ counts the barcodes they report. Click it for the list: each barcode with the platforms that report it, the ones in this release's medium first. A barcode from another format, with a wrong check digit, or already on another MusicBrainz release (most likely that edition's) is marked ⚠, the last with a link to that release. Click one to use it as if you pasted it; right-click to copy it. [Mission Control](../mission_control/README.md#release-and-entity-links) offers the same barcodes, to add one to the release. A barcode picked or pasted while the platforms are still being searched stops that search and starts over with it.
 - Accepted: 8, 12, 13 or 14 digits, spaces and dashes allowed. A wrong check digit is used anyway, with a warning; MusicBrainz then asks you to confirm it in the editor.
+
+### Catalog numbers
+
+Beatport and Discogs give the album's catalog number, which the dashboard shows after the platform's label (*Artoffact · AOF 146*). When a label the release has has no catalog number, a dashed tag button next to the barcode's counts the ones the platforms give for it.
+
+- Click it for the list: each catalog number with its label and the platforms that give it. ✓ marks one from a link like this release (the release's barcode, or a link it already has with the same track count and medium); ⚠ one from another barcode, another format, or platforms that give no barcode.
+- The platform's label name is matched to the release's loosely (*Artoffact* is *Artoffact Records*), and the same number written differently (*AOF146*) is one.
+- Click one to use it: a chip shows it beside the barcode's, and a link added from the panel fills it in the label's row in the release editor, in the same edit. Click the chip to remove it. Right-click one in the list to copy it.
+- A label with a catalog number of its own keeps it.
+
+[Mission Control](../mission_control/README.md#release-and-entity-links) offers the same catalog numbers.
 
 ### Artists and labels
 

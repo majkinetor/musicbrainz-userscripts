@@ -35,7 +35,7 @@ test('#727: a consolidation brings its barcode, catalog number and links to a re
   const fs = await until(() => page.evaluate(() => { const r = window.__mcTest.results().pc; return r && r.state === 'done' ? r.findings : null; }), Boolean, { timeout: 200_000 });
   check(!!fs, 'Platform Check answered the probe');
   if (!fs) return;
-  const catnos = fs.filter(f => f.kind === 'catno'), bc = fs.filter(f => f.kind === 'barcode'), dz = fs.find(f => f.key === 'deezer');
+  const catnos = fs.filter(f => f.kind === 'catno' && f.cons), bc = fs.filter(f => f.kind === 'barcode'), dz = fs.find(f => f.key === 'deezer');
   console.log(JSON.stringify({ catnos, bc, dz }));
   check(catnos.length === 1 && catnos[0].key === `catno:${ARTOFFACT}:AOF 727` && catnos[0].state === 'new' && catnos[0].label.name === 'Artoffact Records',
     `the catalog number goes to the release's own Artoffact Records (${JSON.stringify(catnos)})`);

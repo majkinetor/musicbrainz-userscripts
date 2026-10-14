@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Mission Control
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.14.162408
+// @version      2026.10.14.165550
 // @description  One window on the release page that asks the other scripts (Platform Check, ISRC Scout, Art Station, Fusion, Credit Hoarder) what is missing, shows it all in one review, and applies the selected changes in order.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5NaXNzaW9uIENvbnRyb2w8L3RpdGxlPgo8ZGVmcz48ZmlsdGVyIGlkPSJtY28xMy1oIiB4PSItMTAlIiB5PSItMTAlIiB3aWR0aD0iMTIwJSIgaGVpZ2h0PSIxMjAlIj48ZmVNb3JwaG9sb2d5IGluPSJTb3VyY2VBbHBoYSIgb3BlcmF0b3I9ImRpbGF0ZSIgcmFkaXVzPSIxLjUiIHJlc3VsdD0iZCIvPjxmZUZsb29kIGZsb29kLWNvbG9yPSIjZmZmIiBmbG9vZC1vcGFjaXR5PSIuNyIvPjxmZUNvbXBvc2l0ZSBpbjI9ImQiIG9wZXJhdG9yPSJpbiIvPjxmZU1lcmdlPjxmZU1lcmdlTm9kZS8+PGZlTWVyZ2VOb2RlIGluPSJTb3VyY2VHcmFwaGljIi8+PC9mZU1lcmdlPjwvZmlsdGVyPjwvZGVmcz48ZyBmaWx0ZXI9InVybCgjbWNvMTMtaCkiPjxwYXRoIGQ9Ik03NyAzNS41IEw2NCA0MyBMNTEgMzUuNSBMNTEgMjAuNSBMNjQgMTMgTDc3IDIwLjVaIiBmaWxsPSIjN2E1N2U4IiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik01OS43IDc3LjUgTDQ2LjcgODUgTDMzLjcgNzcuNSBMMzMuNyA2Mi41IEw0Ni43IDU1IEw1OS43IDYyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik05NC4zIDc3LjUgTDgxLjMgODUgTDY4LjMgNzcuNSBMNjguMyA2Mi41IEw4MS4zIDU1IEw5NC4zIDYyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik00Mi4zIDEwNy41IEwyOS40IDExNSBMMTYuNCAxMDcuNSBMMTYuNCA5Mi41IEwyOS40IDg1IEw0Mi4zIDkyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik03NyAxMDcuNSBMNjQgMTE1IEw1MSAxMDcuNSBMNTEgOTIuNSBMNjQgODUgTDc3IDkyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik0xMTEuNiAxMDcuNSBMOTguNiAxMTUgTDg1LjcgMTA3LjUgTDg1LjcgOTIuNSBMOTguNiA4NSBMMTExLjYgOTIuNVoiIGZpbGw9IiNmZmM5NGEiIHN0cm9rZT0iIzIyMjIzYiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PC9nPgo8L3N2Zz4K
@@ -565,6 +565,9 @@ function mcStyle() {
         + '.mc-empty{padding:10px;color:var(--mbu-text-weak);font-size:12px}'
         + '.mc-line{display:grid;grid-template-columns:16px 16px 1fr auto;gap:8px;align-items:center;padding:4px 10px;border-bottom:1px solid var(--mbu-divider)}'
         + '.mc-bc{display:inline-block;font:600 12px/1.5 ui-monospace,Consolas,monospace;color:var(--bc);background:color-mix(in srgb,var(--bc) 12%,transparent);border:1px solid color-mix(in srgb,var(--bc) 45%,transparent);border-radius:5px;padding:1px 6px;white-space:nowrap}'
+        // #740: a lane's catalog number, a toggle of its own
+        + '.mc-bcl.mc-hascat{grid-template-columns:10px max-content max-content minmax(0,1fr) auto auto}.mc-cats{display:flex;gap:4px;font:600 12px/1.5 ui-monospace,Consolas,monospace}.mc-cat{display:inline-block;font:inherit;color:var(--mbu-text);border:1px dotted var(--mbu-border-strong);border-radius:5px;padding:1px 6px;white-space:nowrap;cursor:pointer}'
+        + '.mc-cat:hover{background:var(--mbu-bg-hover)}.mc-cat.on{border-style:solid;border-color:var(--mbu-accent);color:var(--mbu-accent-text);background:var(--mbu-accent-bg)}'
         + '.mc-bcl{display:grid;grid-template-columns:10px max-content minmax(0,1fr) auto auto;gap:8px;align-items:center;padding:4px 10px;border-bottom:1px solid var(--mbu-divider);cursor:pointer}.mc-bcl:hover{background:var(--mbu-bg-hover)}.mc-bcl.empty{cursor:default;opacity:.75}.mc-bcl.empty:hover{background:none}'
         + '.mc-tri{font-size:9px;color:var(--mbu-text-weak)}.mc-bcl-ic{display:flex;flex-wrap:wrap;gap:3px;min-width:0}.mc-bcl-no{font-size:11px;color:var(--mbu-text-weak)}'
         + '.mc-ti{display:inline-grid;place-items:center;width:24px;height:24px;border-radius:6px;border:1px solid transparent;opacity:.55}.mc-ti.mc-pick{cursor:pointer}.mc-ti.mc-pick:hover{opacity:1;border-color:var(--mbu-border-strong)}.mc-ti.on{opacity:1;border-color:var(--mbu-accent);background:var(--mbu-accent-soft)}.mc-ti.linked{opacity:1;position:relative}.mc-ti.linked::after{content:"✓";position:absolute;right:-1px;bottom:-4px;font-size:10px;font-weight:700;color:var(--mbu-ok)}'
@@ -928,7 +931,7 @@ function linksCell(t) {
 }
 const PICKABLE = { new: 1, withheld: 1, unsure: 1 };
 // what a lane's "take all in" takes: not a link whose track count or format says it is another release (#709)
-const laneTakes = x => PICKABLE[x.state] && !x.mismatch && x.kind !== 'barcode';
+const laneTakes = x => PICKABLE[x.state] && !x.mismatch && !['barcode', 'catno', 'label'].includes(x.kind);   // #740: never a catalog number or a label
 function cellHtml(c, t) {
     const p = PROVIDERS.find(x => x.id === c.p), r = results[c.p];
     if (r && r.state === 'busy') return '<span class="pend">…</span>';
@@ -1243,7 +1246,11 @@ function paintCards() {
         const pc = id === 'pc';
         const lkKey = x => pc ? 'pc:' + (isEnt(x) ? x.entity.type : 'release') : id;
         const rows = r.findings.filter(x => !isBc(x) && x.state !== 'none' && (x.state !== 'linked' || linkedOpen(lkKey(x)))).sort((a, b) => ORDER[a.state] - ORDER[b.state]);
-        const bcRows = r.findings.filter(isBc);
+        // #740: a catalog number a platform gives (not a consolidation's) sits beside the barcode of each lane it is
+        // in, as a chip of its own; one whose lane isn't shown (no lanes) stays a row
+        const isLaneCat = x => x.kind === 'catno' && !x.cons && Array.isArray(x.barcodes);
+        const placedCats = new Set();
+        const bcRowsOf = () => r.findings.filter(x => isBc(x) && !placedCats.has(x.key));
         const none = r.findings.filter(x => x.state === 'none');
         const slot = box.parentNode.querySelector('.mc-sect-h .end');
         if (slot) slot.innerHTML = mbuHtml(pc ? '' : linkedBtn(linked, id));
@@ -1295,6 +1302,17 @@ function paintCards() {
             const others = [...lanes.values()].filter(l => l.k && l.k !== relK).sort((a, b) => b.rows.length - a.rows.length);
             others.forEach((l, i) => { l.color = BC_COLORS[i % BC_COLORS.length]; });
             const order = [relK && lanes.get(relK), ...others, lanes.get('')].filter(Boolean);   // a release without a barcode has no lane of its own: '' is the empty-barcode lane
+            // the catalog numbers are a cell of their own after the barcode, as wide on every lane as the widest, so
+            // the platform icons still line up
+            const catsOf = l => r.findings.filter(x => isLaneCat(x) && x.barcodes.includes(l.k));
+            const catW = Math.max(0, ...order.map(l => catsOf(l).reduce((n, x) => n + String(x.code).length + 4, 0)));
+            const catCell = l => catW ? '<span class="mc-cats" style="width:' + catW + 'ch">' + catChips(l) + '</span>' : '';
+            const catChips = l => catsOf(l).map(x => {
+                placedCats.add(x.key);
+                const on = picked[id] && picked[id].has(x.key);
+                return '<span class="mc-cat mc-pick ' + esc(x.state) + (on ? ' on' : '') + '" data-prov="' + id + '" data-key="' + esc(x.key) + '" title="'
+                    + esc('Catalog number ' + x.code + ' for ' + x.label.name + ' · ' + (x.why || '') + (on ? '. Taken in: click to leave out' : '. Click to take in')) + '">' + (on ? '✓ ' : '') + esc(x.code) + '</span>';
+            }).join('');
             relHtml = order.map(l => {
                 const open = laneOpen.has(l.k), picks = l.rows.filter(laneTakes), n = picks.filter(x => picked[id] && picked[id].has(x.key)).length;
                 const states = [...new Set(l.rows.filter(x => x.state !== 'linked').map(x => x.state))].concat(l.rows.every(x => x.state === 'linked') ? ['linked'] : []), pill = states.length === 1 ? PILL[states[0]] || ['idle', states[0]] : null;
@@ -1307,8 +1325,8 @@ function paintCards() {
                 }).join('') : '<span class="mc-bcl-no">no platform found it</span>';
                 const all = picks.length ? '<button type="button" class="mc-all" data-act="lane-all" data-lane="' + esc(l.k) + '" title="' + esc('Take every link in this group in, or leave them all out' + (l.rows.some(x => PICKABLE[x.state] && x.mismatch) ? '. Not the ones marked amber: their track count or format is not the release\'s' : '')) + '">'
                     + (n === picks.length ? '✓ all taken in' : n ? n + ' of ' + picks.length + ' · take all' : 'take all in') + '</button>' : '<span></span>';
-                return '<div class="mc-bcl' + (open ? ' open' : '') + (l.rows.length ? '' : ' empty') + '" data-act="lane" data-lane="' + esc(l.k) + '"' + (l.rows.length ? ' title="' + (open ? 'Fold into one line' : 'Open into rows') + '"' : '') + '>'
-                    + '<span class="mc-tri">' + (l.rows.length ? (open ? '▾' : '▸') : '') + '</span>' + chip
+                return '<div class="mc-bcl' + (open ? ' open' : '') + (catW ? ' mc-hascat' : '') + (l.rows.length ? '' : ' empty') + '" data-act="lane" data-lane="' + esc(l.k) + '"' + (l.rows.length ? ' title="' + (open ? 'Fold into one line' : 'Open into rows') + '"' : '') + '>'
+                    + '<span class="mc-tri">' + (l.rows.length ? (open ? '▾' : '▸') : '') + '</span>' + chip + catCell(l)
                     + '<span class="mc-bcl-ic">' + icons + '</span>' + all + (pill ? '<span class="mc-pill ' + pill[0] + '">' + pill[1] + '</span>' : '<span></span>') + '</div>'
                     + (open ? l.rows.map(x => line(x, l)).join('') : '');
             }).join('');
@@ -1319,7 +1337,7 @@ function paintCards() {
         }
         const sect = (sub, title, body, lk) => !pc ? body : body || lk.length ? '<div class="mc-sub" data-sub="' + sub + '"><span>' + title + '</span>' + linkedBtn(lk, 'pc:' + sub) + '</div>' + body : '';
         const entSect = (type, title) => sect(type, title, entRows.filter(x => x.entity.type === type).map(x => line(x)).join(''), linked.filter(x => isEnt(x) && x.entity.type === type));
-        setCard(box, mbuHtml(sum + ap + sect('release', 'Release', bcRows.map(x => line(x)).join('') + rgRows.map(x => line(x)).join('') + relHtml + hint, linked.filter(x => !isEnt(x)))
+        setCard(box, mbuHtml(sum + ap + sect('release', 'Release', bcRowsOf().map(x => line(x)).join('') + rgRows.map(x => line(x)).join('') + relHtml + hint, linked.filter(x => !isEnt(x)))
             + entSect('artist', 'Artists') + entSect('label', 'Labels') + (none.length ? '<div class="mc-none" title="' + esc('Not found: ' + none.map(x => x.name || x.key).join(', ')) + '"><span>Not found</span>'
             + none.map(x => '<span class="mc-pico" title="' + esc(x.name || x.key) + '">' + stIcon(x.icon || x.key, 14) + '</span>').join('') + '</div>' : '')));
     });
@@ -1505,6 +1523,9 @@ function setPicks(pks, on) {
         if (on) set.add(pk.dataset.key); else set.delete(pk.dataset.key);
         // #709: a release has one barcode, so taking one in leaves the others out
         if (on && /^barcode:/.test(pk.dataset.key)) [...set].forEach(k => { if (k !== pk.dataset.key && /^barcode:/.test(k)) set.delete(k); });
+        // #740: a label has one catalog number, so taking one in leaves the label's others out
+        const cat = on && (pk.dataset.key.match(/^catno:([0-9a-f-]{36}):/) || [])[0];
+        if (cat) [...set].forEach(k => { if (k !== pk.dataset.key && k.startsWith(cat)) set.delete(k); });
     });
     Log.debug((on ? 'taken in ' : 'left out ') + pks.map(pk => pk.dataset.prov + ' ' + pk.dataset.key).join(', '));
     if (pks.some(pk => pk.closest('.mc-tbl'))) paintMatrix();

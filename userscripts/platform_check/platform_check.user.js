@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Platform Check
 // @namespace    http://tampermonkey.net/
-// @version      2026.10.14.162408
+// @version      2026.10.14.165550
 // @description  Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CjxnIHN0cm9rZT0iIzk0YTNiOCIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2UtbGluZWNhcD0icm91bmQiPjxwYXRoIGQ9Ik02NCA2NCBMODggMjIuNCIvPjxwYXRoIGQ9Ik02NCA2NCBMMTEyIDY0Ii8+PHBhdGggZD0iTTY0IDY0IEw4OCAxMDUuNiIvPjxwYXRoIGQ9Ik02NCA2NCBMNDAgMTA1LjYiLz48cGF0aCBkPSJNNjQgNjQgTDE2IDY0Ii8+PHBhdGggZD0iTTY0IDY0IEw0MCAyMi40Ii8+PC9nPjxjaXJjbGUgY3g9Ijg4IiBjeT0iMjIuNCIgcj0iMTIiIGZpbGw9IiNmNDcyYjYiLz48Y2lyY2xlIGN4PSIxMTIiIGN5PSI2NCIgcj0iMTIiIGZpbGw9IiNmYWNjMTUiLz48Y2lyY2xlIGN4PSI4OCIgY3k9IjEwNS42IiByPSIxMiIgZmlsbD0iIzRhZGU4MCIvPjxjaXJjbGUgY3g9IjQwIiBjeT0iMTA1LjYiIHI9IjEyIiBmaWxsPSIjMzhiZGY4Ii8+PGNpcmNsZSBjeD0iMTYiIGN5PSI2NCIgcj0iMTIiIGZpbGw9IiNhNzhiZmEiLz48Y2lyY2xlIGN4PSI0MCIgY3k9IjIyLjQiIHI9IjEyIiBmaWxsPSIjZmI5MjNjIi8+PGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iMjQiIGZpbGw9IiMwZjE3MmEiLz48cGF0aCBkPSJNNTQuMjIyMjIyMjIyMjIyMjIgNjQgTDYxLjMzMzMzMzMzMzMzMzMzNiA3MS4xMTExMTExMTExMTExMSBMNzQuNjY2NjY2NjY2NjY2NjcgNTYuODg4ODg4ODg4ODg4ODg2IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iNiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+Cjwvc3ZnPgo=
@@ -977,7 +977,9 @@ async function injectInto(urls, storageKey) {
     // #673: a barcode pasted on the release page goes in with the links
     const relMbid = (storageKey.match(/^pc:pending:([0-9a-f-]{36})$/) || [])[1];
     const barcode = relMbid && okUrls.length ? await pcFillBarcode(relMbid) : null;
-    if (addedUrls.length || barcode) setEditNote(pcEditNote(addedUrls, forced, barcode));
+    // #740: so do the catalog numbers used there
+    const catnos = relMbid && okUrls.length ? await pcFillCatnos(relMbid) : [];
+    if (addedUrls.length || barcode || catnos.length) setEditNote(pcEditNote(addedUrls, forced, barcode, null, { catnos: catnos.map(c => ({ catno: c.catno, label: c.name })) }));
     // nothing actually attempted (every queued link was already there): stay silent — no banner on a plain edit
     if (reports.some(r => !r.present)) showInlineSummary(reports.filter(r => !r.present));
     return { injected, reports, okUrls };
@@ -1041,6 +1043,38 @@ async function pcFillBarcode(relMbid) {
     try { localStorage.removeItem(key); } catch (e) {}
     pcMark('barcode filled', bc);
     return bc;
+}
+// #740: the catalog numbers used on the release page (pc:pending-catno:<mbid>, [{ mbid, name, catno }]), each
+// typed into the empty Cat. No. field of its label's row in the release editor (the row whose Label field reads
+// the label's name). Returns those that took. Self-contained: it runs on the editor page, before any module const.
+async function pcFillCatnos(relMbid) {
+    const key = `pc:pending-catno:${relMbid}`;
+    let want = [];
+    try { want = JSON.parse(localStorage.getItem(key) || '[]') || []; } catch (e) {}
+    if (!want.length) return [];
+    const sleep = ms => new Promise(r => setTimeout(r, ms));
+    const t0 = Date.now();
+    while (!(document.getElementById('catno-0') && document.getElementById('external-links-editor'))) { if (Date.now() - t0 > 15000) return []; await sleep(100); }
+    await sleep(300);
+    const low = v => String(v || '').trim().toLowerCase();
+    const setVal = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value').set;
+    const done = [];
+    for (const c of want) {
+        let i = 0, cat = null;
+        for (; document.getElementById(`label-${i}`); i++) if (low(document.getElementById(`label-${i}`).value) === low(c.name)) { cat = document.getElementById(`catno-${i}`); break; }
+        if (!cat) { try { console.warn(`[Platform Check] inject: no label row for ${c.name} — catalog number ${c.catno} not added`); } catch (e) {} continue; }
+        if (cat.value.trim()) { try { console.warn(`[Platform Check] inject: ${c.name} has catalog number ${cat.value} by now — ${c.catno} left out`); } catch (e) {} continue; }
+        for (let a = 0; a < 20 && cat.value !== c.catno; a++) {
+            cat.focus(); setVal.call(cat, c.catno);
+            cat.dispatchEvent(new Event('input', { bubbles: true })); cat.dispatchEvent(new Event('change', { bubbles: true })); cat.blur();
+            await sleep(150);
+        }
+        await sleep(1200);
+        if (cat.value === c.catno) done.push(c);
+    }
+    try { localStorage.removeItem(key); localStorage.removeItem(`pc:picked-catno:${relMbid}`); } catch (e) {}
+    if (done.length) pcMark('catalog numbers filled', done.map(c => c.catno).join(', '));
+    return done;
 }
 // Types a barcode into the release editor's Barcode field, unticking "This release does not have
 // a barcode" first (#713). The editor binds late and resets an early write (the box ticked again,
@@ -2432,18 +2466,20 @@ ${MBU_TOKENS}${MBU_UI_CSS}
   #mb-links-btn.pc-links-on { color: var(--mbu-text); }
   /* #674: the barcodes the platforms report, on a release that has none */
   #mb-found-bc { border: 1px dashed currentColor; color: var(--mbu-accent-text); padding: 1px 5px; }
-  #pc-bc-pop { position: fixed; overflow-y: auto; box-sizing: border-box; z-index: var(--mbu-z-pop); width: 250px; padding: 6px; background: var(--mbu-bg); color: var(--mbu-text); border: 1px solid var(--mbu-border); border-radius: var(--mbu-radius); box-shadow: var(--mbu-shadow-lg); font: 12px var(--mbu-font); }
-  #pc-bc-pop .pc-bc-h { margin: 0 4px 4px; font-size: 10px; font-weight: 700; letter-spacing: .4px; text-transform: uppercase; color: var(--mbu-text-dim); }
-  #pc-bc-pop .pc-bc-opt { display: grid; grid-template-columns: 1fr auto; gap: 2px 8px; padding: 5px 6px; border-radius: var(--mbu-radius); cursor: pointer; }
-  #pc-bc-pop .pc-bc-opt:hover { background: var(--mbu-bg-hover); }
-  #pc-bc-pop .pc-bc-code { font: 12px var(--mbu-font-mono); }
-  #pc-bc-pop .pc-bc-use { font-size: 11px; color: var(--mbu-accent-text); }
-  #pc-bc-pop .pc-bc-who, #pc-bc-pop .pc-bc-fmt { grid-column: 1 / -1; font-size: 11px; color: var(--mbu-text-weak); }
-  #pc-bc-pop .pc-bc-plat svg { vertical-align: -2px; margin-right: 2px; }
-  #pc-bc-pop .pc-bc-same { color: var(--mbu-ok); }
-  #pc-bc-pop .pc-bc-other { color: var(--mbu-warn); }
-  #pc-bc-pop .pc-bc-mb a { color: inherit; text-decoration: underline; }
-  #pc-bc-pop .pc-bc-hint { margin: 4px 4px 0; padding-top: 5px; border-top: 1px solid var(--mbu-divider); font-size: 11px; color: var(--mbu-text-weak); }
+  #mb-found-cat { border: 1px dashed currentColor; color: var(--mbu-accent-text); padding: 1px 5px; }
+  #mb-picked-cat { font-family: var(--mbu-font-mono); }
+  :is(#pc-bc-pop, #pc-cat-pop) { position: fixed; overflow-y: auto; box-sizing: border-box; z-index: var(--mbu-z-pop); width: 250px; padding: 6px; background: var(--mbu-bg); color: var(--mbu-text); border: 1px solid var(--mbu-border); border-radius: var(--mbu-radius); box-shadow: var(--mbu-shadow-lg); font: 12px var(--mbu-font); }
+  :is(#pc-bc-pop, #pc-cat-pop) .pc-bc-h { margin: 0 4px 4px; font-size: 10px; font-weight: 700; letter-spacing: .4px; text-transform: uppercase; color: var(--mbu-text-dim); }
+  :is(#pc-bc-pop, #pc-cat-pop) .pc-bc-opt { display: grid; grid-template-columns: 1fr auto; gap: 2px 8px; padding: 5px 6px; border-radius: var(--mbu-radius); cursor: pointer; }
+  :is(#pc-bc-pop, #pc-cat-pop) .pc-bc-opt:hover { background: var(--mbu-bg-hover); }
+  :is(#pc-bc-pop, #pc-cat-pop) .pc-bc-code { font: 12px var(--mbu-font-mono); }
+  :is(#pc-bc-pop, #pc-cat-pop) .pc-bc-use { font-size: 11px; color: var(--mbu-accent-text); }
+  :is(#pc-bc-pop, #pc-cat-pop) .pc-bc-who, #pc-bc-pop .pc-bc-fmt { grid-column: 1 / -1; font-size: 11px; color: var(--mbu-text-weak); }
+  :is(#pc-bc-pop, #pc-cat-pop) .pc-bc-plat svg { vertical-align: -2px; margin-right: 2px; }
+  :is(#pc-bc-pop, #pc-cat-pop) .pc-bc-same { color: var(--mbu-ok); }
+  :is(#pc-bc-pop, #pc-cat-pop) .pc-bc-other { color: var(--mbu-warn); }
+  :is(#pc-bc-pop, #pc-cat-pop) .pc-bc-mb a { color: inherit; text-decoration: underline; }
+  :is(#pc-bc-pop, #pc-cat-pop) .pc-bc-hint { margin: 4px 4px 0; padding-top: 5px; border-top: 1px solid var(--mbu-divider); font-size: 11px; color: var(--mbu-text-weak); }
   #mb-links-btn .pc-links-n { display: inline-block; min-width: 16px; margin-left: 4px; padding: 1px 5px; border-radius: 8px; background: var(--mbu-accent); color: var(--mbu-accent-fg); font-size: 10px; font-weight: 700; line-height: 1.3; text-align: center; vertical-align: 1px; }
   /* icons mode (toggle "Show platform icons"): the brand glyph REPLACES the ✓/×/~ text and carries the
    * state via a per-row class (pc-st-*): RING = already in MB (the only thing a ring means) · full colour =
@@ -2565,6 +2601,7 @@ ${MBU_TOKENS}${MBU_UI_CSS}
   .pc-cell-year, .pc-cell-format, .pc-cell-label {
                   font-size: 10px; color: var(--mbu-text-weak); font-family: sans-serif; white-space: nowrap; overflow: hidden; }
   .pc-cell-label { text-overflow: ellipsis; min-width: 0; }
+  .pc-cell-cat { font-family: var(--mbu-font-mono); color: var(--mbu-text); }
   /* format-family quadrant marker (#350) — vertically centered against the meta text */
   /* #564 (majkinetor): "PC vinyl is black in format circle and hardly visible".
      Vinyl is black because vinyl IS black — which works on a white page and
@@ -2634,10 +2671,12 @@ ${MBU_TOKENS}${MBU_UI_CSS}
 <div style="margin-bottom: 6px;">
   <div style="display: flex; align-items: center; justify-content: space-between;">
     <div style="display: flex; align-items: center; gap: 4px;">
-      <h3 style="margin: 0; font-size: 12px; font-weight: bold; text-transform: uppercase; letter-spacing: 0.5px; color: var(--mbu-text-dim);">Platform Check</h3>
+      <h3 style="margin: 0; font-size: 12px; font-weight: bold; text-transform: uppercase; letter-spacing: 0.5px; color: var(--mbu-text-dim); white-space: nowrap;">Platform Check</h3>
       <span id="mb-refresh-btn" class="pc-icon-btn" title="Refresh — clear cache and re-scan" style="${iconBtn}">↻</span>
       <span id="mb-pasted-bc" class="pc-icon-btn" title="" style="${iconBtn} display: none; font-size: 10px; white-space: nowrap;"></span>
       <span id="mb-found-bc" class="pc-icon-btn" title="" style="${iconBtn} display: none; font-size: 10px; white-space: nowrap;"></span>
+      <span id="mb-picked-cat" class="pc-icon-btn" title="" style="${iconBtn} display: none; font-size: 10px; white-space: nowrap;"></span>
+      <span id="mb-found-cat" class="pc-icon-btn" title="" style="${iconBtn} display: none; font-size: 10px; white-space: nowrap;"></span>
     </div>
   </div>
 </div>
@@ -3458,6 +3497,7 @@ let MB_BARCODE = null;
 let MB_OWN_BARCODE = null;
 // #674: platform → { code, format } for each match that reports a barcode
 const PC_FOUND_BC = new Map();
+const PC_FOUND_CAT = new Map();   // #740: platform → [{ label, catno }]
 // Normalise a barcode for comparison: digits only, leading zeros stripped (a
 // 12-digit UPC-A and its 13-digit EAN form "0…" are the same barcode).
 function normBarcode(b) { return String(b || '').replace(/\D/g, '').replace(/^0+/, ''); }
@@ -3718,6 +3758,14 @@ function updateRow(p, { url, mbTracks, remoteTracks, year, label, source, fromCa
     // align across providers (1-row layout) — see setMetaCells.
     // re-stripped here too, so a label cached before a stripCopyright fix shows clean (#644)
     setMetaCells(`year-${p}`, `format-${p}`, `label-${p}`, year, format, label ? stripCopyright(label) : label);
+    // #740: the catalog number after the label, as the platform gives it
+    const catnos = url ? (cacheGet(mbid, p)?.catnos || []) : [];
+    const lEl = document.getElementById(`label-${p}`);
+    if (lEl && catnos.length) {
+        const c = document.createElement('span'); c.className = 'pc-cell-cat'; c.textContent = ` · ${catnos.map(x => x.catno).join(', ')}`;
+        lEl.appendChild(c); lEl.title = `${lEl.title || ''}${lEl.title ? ' · ' : ''}catalog number ${catnos.map(x => `${x.catno} (${x.label})`).join(', ')}`;
+    }
+    pcNoteFoundCatnos(p, catnos);
     refreshCompactStrip();   // #355
 }
 
@@ -5036,7 +5084,7 @@ async function scanDiscogs({ artist, album, mbTracks, existingUrl, mbid, isVario
         return;
     }
 
-    let tracks = null, year = null, lbl = null, fmt = null, masterUrl = null, foundBarcode = null, credits = null;
+    let tracks = null, year = null, lbl = null, fmt = null, masterUrl = null, foundBarcode = null, credits = null, catnos = null;
     if (releaseId) {
         const detailUrl = `https://api.discogs.com/releases/${releaseId}`;
         appendLog(label, `API detail: ${detailUrl}`);
@@ -5073,12 +5121,15 @@ async function scanDiscogs({ artist, album, mbTracks, existingUrl, mbid, isVario
                 foundBarcode = ((data.identifiers || []).find(i => /^barcode$/i.test(i.type || '')) || {}).value || null;
                 if (foundBarcode) foundBarcode = String(foundBarcode).replace(/\s+/g, '');
                 credits = pcKeep(label, pcCreditsDiscogs(data));   // #671
+                // #740: each label's catalog number; Discogs writes "none" for a release without one
+                catnos = (data.labels || []).filter(l => l.name && l.catno && !/^\[?none\]?$/i.test(l.catno.trim())).map(l => ({ label: l.name.replace(/\s*\(\d+\)$/, ''), catno: l.catno.trim() }));
+                if (catnos.length) appendLog(label, `API detail: catalog number ${catnos.map(c => `${c.catno} (${c.label})`).join(', ')}`);
                 appendLog(label, `API detail parsed: tracks=${tracks} year=${year || '?'} label=${lbl || '?'} format=${fmt || '?'} barcode=${foundBarcode || '-'} master=${masterUrl || '-'}`, 'ok');
             } catch (e) { appendLog(label, `API detail parse error: ${e.message}`, 'error'); }
         } else { appendLog(label, `API detail failed`, 'error'); }
     }
 
-    cacheSet(mbid, 'discogs', { url: releaseUrl, tracks, year, label: lbl, format: fmt, masterUrl, source, barcode: foundBarcode, credits });
+    cacheSet(mbid, 'discogs', { url: releaseUrl, tracks, year, label: lbl, format: fmt, masterUrl, source, barcode: foundBarcode, catnos, credits });
     updateRow('discogs', {
         url: releaseUrl, mbTracks, remoteTracks: tracks, year, label: lbl, format: fmt, source, barcode: foundBarcode,
         masterState: discogsMasterState(masterUrl, existingDiscogsMaster),
@@ -6427,6 +6478,11 @@ async function scanTidal({ artist, album, mbTracks, existingUrl, mbid, isVarious
 // search, and an existing MB-rel/Wikidata id is verified too. Not logged in: Beatport's
 // pages are Cloudflare-walled (unfetchable), so we fall back to MB rel → Wikidata (P11312)
 // → web search, surfaced UNVERIFIED (no track count).
+// #740: Beatport's release detail names its catalog number, for its one label
+function pcCatnosBeatport(d) {
+    const c = String(d?.catalog_number || '').trim();
+    return c && d.label?.name ? [{ label: d.label.name, catno: c }] : null;
+}
 async function scanBeatport({ artist, album, existingUrl, mbTracks, mbid, isVariousArtists, wikidataBeatportId, barcode }) {
     const label = 'Beatport';
     const cached = cacheGetScan(mbid, 'beatport', label);
@@ -6483,7 +6539,7 @@ async function scanBeatport({ artist, album, existingUrl, mbTracks, mbid, isVari
             const lbl = detail.label?.name || null;
             const bc = detail.upc || (source === 'barcode' ? barcode : null);   // (#182) Beatport exposes the UPC
             appendLog(label, `Verified: tracks=${tracks} year=${year || '?'} label=${lbl || '?'}${bc ? ` upc=${bc}` : ''}`, tracks ? 'ok' : 'warn');
-            cacheSet(mbid, 'beatport', { url, tracks, year, label: lbl, source, barcode: bc, credits: pcKeep(label, pcCreditsBeatport(detail)) });
+            cacheSet(mbid, 'beatport', { url, tracks, year, label: lbl, source, barcode: bc, catnos: pcCatnosBeatport(detail), credits: pcKeep(label, pcCreditsBeatport(detail)) });
             updateRow('beatport', { url, mbTracks, remoteTracks: tracks, year, label: lbl, source, barcode: bc });
             return;
         }
@@ -6532,7 +6588,7 @@ async function scanBeatport({ artist, album, existingUrl, mbTracks, mbid, isVari
                 const year = String(detail.new_release_date || detail.publish_date || '').slice(0, 4) || null;
                 const lbl = detail.label?.name || null, bc = detail.upc || null;
                 appendLog(label, `Search hit verified via API (score=${sc}): tracks=${tracks} year=${year || '?'}`, 'ok');
-                cacheSet(mbid, 'beatport', { url, tracks, year, label: lbl, source: 'search+api', barcode: bc, credits: pcKeep(label, pcCreditsBeatport(detail)) });
+                cacheSet(mbid, 'beatport', { url, tracks, year, label: lbl, source: 'search+api', barcode: bc, catnos: pcCatnosBeatport(detail), credits: pcKeep(label, pcCreditsBeatport(detail)) });
                 updateRow('beatport', { url, mbTracks, remoteTracks: tracks, year, label: lbl, source: 'search+api', barcode: bc });
                 return;
             }
@@ -6869,6 +6925,8 @@ function resetRows() {
     refreshCompactStrip();   // #355: clear the strip while re-scanning
     PC_FOUND_BC.clear();     // #674
     pcShowFoundBarcodes();
+    PC_FOUND_CAT.clear();    // #740
+    pcShowFoundCatnos();
 }
 
 // VA detection used by both the DOM and API parse paths. Hoisted so both
@@ -8064,6 +8122,123 @@ function pcOpenFoundBarcodes(btn) {
             .then(() => mbuToast(`Copied ${opt.dataset.code}`), () => mbuToast(`✗ Couldn't copy ${opt.dataset.code}`, { kind: 'error' }));
     });
 }
+// ─── Found catalog numbers (#740) ───────────────────────────────────────────
+// The catalog numbers the matched platforms give (Beatport, Discogs), each for a label the release has
+// without one, matched by the platform's label name, loosely ("Artoffact" is "Artoffact Records"). A button
+// next to the barcode's opens their list; "use" queues one for its label, and a link added with + fills it in
+// the release editor, as a used barcode is. updateRow records each platform's (PC_FOUND_CAT).
+function pcNoteFoundCatnos(p, catnos) {
+    if (catnos && catnos.length) PC_FOUND_CAT.set(p, catnos); else PC_FOUND_CAT.delete(p);
+    pcShowFoundCatnos();
+}
+// One entry per label and catalog number (written with or without spaces, one): the platforms that give
+// it, the barcodes they give (normalised, '' for none), and whether it is sure: given by a platform with the
+// release's own barcode, or by a link the release already has whose track count and medium match.
+function pcFoundCatnos() {
+    const rows = pcPageLabels().filter(r => r.mbid && !r.catno);
+    if (!rows.length) return [];
+    const by = new Map(), own = normBarcode(MB_BARCODE || '');
+    for (const p of PROVIDER_ORDER) for (const c of PC_FOUND_CAT.get(p) || []) {
+        const r = rows.find(x => pcLabelNorm(x.name) && pcLabelNorm(x.name) === pcLabelNorm(c.label));
+        if (!r) continue;
+        const k = r.mbid + '|' + pcCatnoNorm(c.catno);
+        if (!by.has(k)) by.set(k, { catno: c.catno, forms: new Map(), label: { mbid: r.mbid, name: r.name }, platforms: [], barcodes: new Set(), sure: false, kinds: new Set(), fits: [] });
+        const e = by.get(k), cached = cacheGet(mbid, p) || {}, bc = normBarcode(cached.barcode || '');
+        if (e.platforms.includes(p)) continue;
+        e.platforms.push(p); e.barcodes.add(bc); e.forms.set(c.catno, (e.forms.get(c.catno) || 0) + 1);
+        if ((own && bc === own) || (pcIsLinked(p) && !pcMcMismatch(p, cached).mismatch.length)) e.sure = true;
+        const mbCats = formatCategories(MB_FORMAT), remote = remoteFormatCategories(p, cached.format);
+        remote.forEach(x => e.kinds.add(x));
+        e.fits.push(!mbCats.size || !remote.size ? null : [...remote].some(x => mbCats.has(x)));
+    }
+    // written as most of its platforms write it; a tie, the longer ("AOF 146" over "AOF146")
+    const form = e => [...e.forms].sort((a, b) => b[1] - a[1] || b[0].length - a[0].length)[0][0];
+    return [...by.values()].map(({ forms, ...e }) => ({ ...e, catno: form({ forms }), barcodes: [...e.barcodes], kinds: [...e.kinds],
+        format: e.fits.includes(true) ? 'same' : e.fits.length && e.fits.every(x => x === false) ? 'other' : 'unknown' }))
+        .sort((a, b) => b.sure - a.sure || b.platforms.length - a.platforms.length);
+}
+// The catalog numbers used ("use"), one per label: { <label mbid>: { name, catno } }. Kept per release in
+// localStorage until removed (× on the header chip) or the label has one of its own.
+function pcPickedCatnos() {
+    let o = {};
+    try { o = JSON.parse(localStorage.getItem(`pc:picked-catno:${mbid}`) || '{}') || {}; } catch (e) {}
+    const rows = pcPageLabels();
+    for (const k of Object.keys(o)) { const r = rows.find(x => x.mbid === k); if (!r || r.catno) delete o[k]; }
+    return o;
+}
+function pcSetPickedCatnos(o) {
+    try {
+        if (Object.keys(o).length) localStorage.setItem(`pc:picked-catno:${mbid}`, JSON.stringify(o));
+        else { localStorage.removeItem(`pc:picked-catno:${mbid}`); localStorage.removeItem(`pc:pending-catno:${mbid}`); }
+    } catch (e) {}
+    pcShowFoundCatnos();
+}
+const PC_CATNO_SVG = '<svg width="11" height="11" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.6" style="vertical-align: -1px;"><path d="M1.5 7.6V1.5h6.1l5 5-6.1 6.1z"/><circle cx="4.6" cy="4.6" r="1.1"/></svg>';
+function pcShowFoundCatnos() {
+    const picked = pcPickedCatnos(), chip = document.getElementById('mb-picked-cat'), btn = document.getElementById('mb-found-cat');
+    if (chip) {
+        const v = Object.values(picked);
+        chip.style.display = v.length ? '' : 'none';
+        chip.textContent = v.length ? `${v.map(x => x.catno).join(', ')} ×` : '';
+        chip.title = v.length ? `Catalog number ${v.map(x => `${x.catno} for ${x.name}`).join(', ')}: a link you add adds it to the release too · click to remove it` : '';
+    }
+    if (!btn) return;
+    const list = pcFoundCatnos().filter(e => !picked[e.label.mbid]);
+    btn.style.display = list.length ? '' : 'none';
+    btn.innerHTML = mbuHtml(list.length ? `${PC_CATNO_SVG} ${list.length}` : '');
+    btn.title = list.length === 1
+        ? `${list[0].label.name} has no catalog number; ${list[0].platforms.map(x => PROVIDER_NAME[x]).join(', ')} give${list[0].platforms.length === 1 ? 's' : ''} ${list[0].catno} · click to choose`
+        : list.length ? `The release's labels have no catalog number; the platforms give ${list.length} · click to choose` : '';
+    if (!list.length) document.getElementById('pc-cat-pop')?._pcClose?.();
+}
+// Queued with the links for the release editor; a stale one from an earlier add is cleared.
+function pcQueuePickedCatnos() {
+    const v = Object.entries(pcPickedCatnos()).map(([k, x]) => ({ mbid: k, name: x.name, catno: x.catno }));
+    try {
+        if (v.length) localStorage.setItem(`pc:pending-catno:${mbid}`, JSON.stringify(v));
+        else localStorage.removeItem(`pc:pending-catno:${mbid}`);
+    } catch (e) {}
+    if (v.length) appendLog('System', `Inject: catalog number ${v.map(x => `${x.catno} (${x.name})`).join(', ')} goes in with the links`, 'ok');
+}
+function pcOpenFoundCatnos(btn) {
+    const old = document.getElementById('pc-cat-pop');
+    if (old) { old._pcClose(); return; }
+    const list = pcFoundCatnos().filter(e => !pcPickedCatnos()[e.label.mbid]);
+    if (!list.length) return;
+    const mbKind = [...formatCategories(MB_FORMAT)].join(' and ');
+    const pop = document.createElement('div');
+    pop.id = 'pc-cat-pop'; pop.className = 'pc-bc-pop';
+    pop.innerHTML = mbuHtml(`<div class="pc-bc-h">Catalog numbers on the platforms</div>` + list.map((c, i) => `
+      <div class="pc-bc-opt" data-i="${i}" title="Add ${pcEsc(c.catno)} to ${pcEsc(c.label.name)} with the links you add · right-click: copy it">
+        <span class="pc-bc-code">${pcEsc(c.catno)}</span><span class="pc-bc-use">use</span>
+        <span class="pc-bc-who">for ${pcEsc(c.label.name)} · ${c.platforms.map(p => `<span class="pc-bc-plat" title="${PROVIDER_NAME[p]}">${stIcon(p, 12)}</span>`).join('')} ${c.platforms.map(p => PROVIDER_NAME[p]).join(', ')}</span>
+        ${c.sure ? '<span class="pc-bc-fmt pc-bc-same">✓ from links like this release</span>'
+          : c.format === 'other' ? `<span class="pc-bc-fmt pc-bc-other">⚠ ${c.kinds.join(' and ')}: this release is ${mbKind}</span>`
+          : c.barcodes.every(b => !b) ? '<span class="pc-bc-fmt pc-bc-other">⚠ from platforms that give no barcode</span>'
+          : '<span class="pc-bc-fmt pc-bc-other">⚠ from another barcode than this release\'s</span>'}
+      </div>`).join('') + `<div class="pc-bc-hint">Right-click to copy</div>`);
+    document.body.appendChild(pop);
+    const r = btn.getBoundingClientRect();
+    pop.style.top = `${r.bottom + 4}px`;
+    pop.style.left = `${Math.max(8, Math.min(r.left, document.documentElement.clientWidth - pop.offsetWidth - 8))}px`;
+    pop.style.maxHeight = `${Math.max(120, document.documentElement.clientHeight - r.bottom - 12)}px`;
+    const off = mbuDismissOn(pop, () => pop.remove(), { ignore: '#mb-found-cat' });
+    pop._pcClose = off;
+    pop.addEventListener('click', e => {
+        const opt = e.target.closest('.pc-bc-opt'); if (!opt) return;
+        off();
+        const c = list[+opt.dataset.i];
+        pcSetPickedCatnos({ ...pcPickedCatnos(), [c.label.mbid]: { name: c.label.name, catno: c.catno } });
+        appendLog('System', `Catalog number ${c.catno} used for ${c.label.name} (from ${c.platforms.map(p => PROVIDER_NAME[p]).join(', ')})`, 'ok');
+        mbuToast(`✓ Catalog number ${c.catno}: added to ${c.label.name} with the links you add`, { kind: 'ok' });
+    });
+    pop.addEventListener('contextmenu', e => {
+        const opt = e.target.closest('.pc-bc-opt'); if (!opt) return;
+        e.preventDefault();
+        const c = list[+opt.dataset.i];
+        navigator.clipboard.writeText(c.catno).then(() => mbuToast(`Copied ${c.catno}`), () => mbuToast(`✗ Couldn't copy ${c.catno}`, { kind: 'error' }));
+    });
+}
 // A pasted text that is a barcode: EAN-8, UPC-A, EAN-13 or GTIN-14, spaces and dashes allowed
 function pcBarcodeOf(text) {
     const t = String(text || '').trim();
@@ -8110,6 +8285,8 @@ document.addEventListener('paste', e => {
     } catch (err) { appendLog('System', `Paste: ${err && err.message}`, 'warn'); }
 });
 document.getElementById('mb-found-bc').addEventListener('click', e => pcOpenFoundBarcodes(e.currentTarget));
+document.getElementById('mb-found-cat').addEventListener('click', e => pcOpenFoundCatnos(e.currentTarget));
+document.getElementById('mb-picked-cat').addEventListener('click', () => { pcSetPickedCatnos({}); mbuToast('Catalog number removed'); });
 document.getElementById('mb-pasted-bc').addEventListener('click', () => {
     const code = pcPastedBarcode();
     pcSetPastedBarcode(null);
@@ -8298,6 +8475,7 @@ function addSingleUrl(platform, background, force) {
     }
     localStorage.setItem(`pc:pending:${mbid}`, JSON.stringify({ [platform]: cached.url }));
     pcQueuePastedBarcode();   // #673
+    pcQueuePickedCatnos();    // #740
     // #641: a forced add is recorded for the edit note; any other add clears an old record
     const forcedWhy = force ? pcWithheldWhy(platform) : null;
     if (forcedWhy) localStorage.setItem(`pc:forced:${mbid}`, JSON.stringify({ [cached.url]: forcedWhy })); else localStorage.removeItem(`pc:forced:${mbid}`);
@@ -8418,6 +8596,7 @@ async function runInjectBtn(e, background, force) {
     if (releaseCount > 0) {
         localStorage.setItem(`pc:pending:${mbid}`, JSON.stringify(pendingRelease));
         pcQueuePastedBarcode();   // #673
+    pcQueuePickedCatnos();    // #740
         if (Object.keys(forcedUrls).length) localStorage.setItem(`pc:forced:${mbid}`, JSON.stringify(forcedUrls)); else localStorage.removeItem(`pc:forced:${mbid}`);
         appendLog('System', `Inject (${background ? 'background' : 'click'}): queued ${releaseCount} release URL(s) — opening release editor`, 'ok');
         openReleaseEditTab(mbid, { background });
@@ -8608,6 +8787,17 @@ async function pcResolveLabel(l) {
 // key label:<mbid>:<catno>) once it is a MusicBrainz label: new when found by its MBID or link, unsure by its name;
 // one MusicBrainz hasn't is left out. Apply only fills an empty catalog number and adds a label.
 let _pcMcLab = [];
+// #740: the catalog numbers the platforms give, as MC findings (kind 'catno', key catno:<label mbid>:<catno>) with
+// `barcodes`, the lanes they are in (normalised, '' for none). New when sure (pcFoundCatnos), unsure otherwise; one
+// a consolidation brings too is left to that one. Kept from the last probe, for Apply.
+let _pcMcCat = [];
+function pcMcCatnoFindings(cons) {
+    const taken = new Set((cons || []).map(f => f.key));
+    return (_pcMcCat = pcFoundCatnos().map(e => ({ key: `catno:${e.label.mbid}:${e.catno}`, kind: 'catno', name: 'Cat. no.', code: e.catno, label: e.label,
+        barcodes: e.barcodes, platforms: e.platforms, state: e.sure ? 'new' : 'unsure',
+        why: `from ${e.platforms.map(p => PROVIDER_NAME[p] + (pcIsLinked(p) ? ' (linked)' : '')).join(', ')}${e.format === 'other' ? ` · ${e.kinds.join(' and ')}, the release is ${MB_FORMAT}` : ''}` }))
+        .filter(f => !taken.has(f.key)));
+}
 async function pcMcLabelFindings() {
     const want = (_pcMcCons?.labels || []).filter(l => l && (l.name || l.mbid));
     if (!want.length) return (_pcMcLab = []);
@@ -8692,7 +8882,8 @@ document.addEventListener('mc:probe', async e => {
     pcMcSend('mc:progress', { id: 'pc', run: d.run, state: 'busy', note: PC_SCAN.busy ? 'scanning platforms' : '' });
     // a rescan (pasted barcode, ↻) replaces the scan we waited for: wait for that one instead
     try { let p; do { p = PC_SCAN.last || pcScan(); await p; } while (p !== PC_SCAN.last); } catch (x) { appendLog('System', `scan failed for Mission Control: ${x.message}`, 'error'); }
-    const findings = pcMcBarcodeFindings().concat(await pcMcLabelFindings(), PROVIDER_ORDER.filter(providerEnabled).map(pcMcFinding), providerEnabled('discogs') ? [pcMcMasterFinding()].filter(Boolean) : [], await pcMcEntityFindings());
+    const labs = await pcMcLabelFindings();
+    const findings = pcMcBarcodeFindings().concat(labs, pcMcCatnoFindings(labs), PROVIDER_ORDER.filter(providerEnabled).map(pcMcFinding), providerEnabled('discogs') ? [pcMcMasterFinding()].filter(Boolean) : [], await pcMcEntityFindings());
     const tally = findings.reduce((t, f) => (t[f.state] = (t[f.state] || 0) + 1, t), {});
     appendLog('System', `Mission Control probe ${d.run || ''} answered: ${JSON.stringify(tally)}`, 'ok');
     // the release's barcode beside each platform's: MC shows them in a column, one colour per barcode
@@ -8747,7 +8938,8 @@ document.addEventListener('mc:apply', e => {
     const barcode = bcFinding ? String(bcFinding.code).replace(/\D/g, '') : null;
     // #727: the catalog numbers and labels taken in, from the last probe; Falcon fills an empty catalog number of a
     // label the release has, and adds a label it hasn't
-    const labels = _pcMcLab.filter(f => keys.includes(f.key) && f.state !== 'linked').map(f => ({ mbid: f.label.mbid, name: f.label.name, catno: f.code, ...(f.kind === 'label' ? { add: true } : {}) }));
+    const labels = _pcMcLab.concat(_pcMcCat).filter(f => keys.includes(f.key) && f.state !== 'linked').map(f => ({ mbid: f.label.mbid, name: f.label.name, catno: f.code, ...(f.kind === 'label' ? { add: true } : {}) }))
+        .filter((l, i, a) => l.add || a.findIndex(x => !x.add && x.mbid === l.mbid) === i);   // one catalog number per label
     // artist and label links: from the last probe, grouped per entity (a link on someone else only when ticked by hand)
     const ents = new Map();
     for (const f of _pcMcEnt) {
@@ -8785,7 +8977,7 @@ document.addEventListener('mc:apply', e => {
 });
 pcMcHello();   // MC may have asked before PC loaded
 if (mbuTestHooks()) window.__pcTest702 = { seed: () => PC_SEED, seedData: () => PC_SEED_DATA, pcMcSeedProbe };
-if (mbuTestHooks()) window.__pcTest680 = { pcMcFinding, pcMcMasterFinding, pcScan, pcMcReleaseLinkTypes, cacheGet, cacheSet, mbDataGet, mbFormat: () => MB_FORMAT, pcMcBarcodeFindings, pcMcLabelFindings, pcResolveLabel, pcPageLabels, pcLabelNorm, setCons: c => { _pcMcCons = c; }, pcNoteFoundBarcode, pcSetPastedBarcode, setOwnBarcode: b => { MB_OWN_BARCODE = b; }, clearFound: () => PC_FOUND_BC.clear() };
+if (mbuTestHooks()) window.__pcTest680 = { pcMcFinding, pcMcMasterFinding, pcScan, pcMcReleaseLinkTypes, cacheGet, cacheSet, mbDataGet, mbFormat: () => MB_FORMAT, pcMcBarcodeFindings, pcMcLabelFindings, pcResolveLabel, pcPageLabels, pcMcCatnoFindings, pcFoundCatnos, pcNoteFoundCatnos, pcCatnosBeatport, pcPickedCatnos, pcQueuePickedCatnos, updateRow, scanDone: () => PC_SCAN.last, pcLabelNorm, setCons: c => { _pcMcCons = c; }, pcNoteFoundBarcode, pcSetPastedBarcode, setOwnBarcode: b => { MB_OWN_BARCODE = b; }, clearFound: () => PC_FOUND_BC.clear() };
 
 if (!PC_SEED) pcScan();
 

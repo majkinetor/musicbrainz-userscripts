@@ -76,6 +76,8 @@ A link whose track count or format is not the release's is most likely another r
 
 A release without a barcode gets a **Barcode** row at the top of *Release* for each barcode the platforms report, each saying where it came from. The one Platform Check is sure of starts taken in: a barcode you pasted, the one a consolidation brings ([Update this release](#update-this-release)), or one reported by a link the release already has, whose track count and medium match the release. A release has one barcode, so taking another in leaves the first out. Execute adds it with the links, in the same edit.
 
+The catalog numbers the platforms give, for a label the release has without one, sit beside the barcode of their group. A group with a barcode is one release, so it shows one per label; a platform in it that gives none just didn't say. The group without a barcode can show several, since its platforms may be different releases. Click one to take it in or leave it out; **take all in** never takes a catalog number. Only the one in the release's own group starts taken in, and a label takes one, so taking another in leaves the first out.
+
 **Artists** and **Labels** list the pages the matched albums name for them. The platforms that found nothing fold into one line of icons. A heading's ✓ count opens the links it already has into rows.
 
 The links are added through [Falcon](../falcon/README.md), out of sight. The card lists each one with its status as it goes; when one fails, **Open Falcon** shows why and lets you retry.
