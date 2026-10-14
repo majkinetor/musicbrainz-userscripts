@@ -70,3 +70,25 @@ test('a Beatport page that is refused is read through Platform Check', { tag: ['
   check(out.title === '13 Stitches' && out.barcode === '628070649594' && out.label.catno === 'AOF 300', `the release: ${JSON.stringify(out)}`);
   check(JSON.stringify(out.tracks) === JSON.stringify([['Feeding Your Monsters (Extended Mix)', 260000, 'CA5KR2600001'], ['Turn of the Tide', 241000, 'CA5KR2600002']]), `the tracks, in the release's order, with lengths and ISRCs: ${JSON.stringify(out.tracks)}`);
 });
+
+// #745: Mission Control's headless read (mc:read) of a Beatport album whose page Cloudflare refuses: First Contact
+// doesn't give up on the album page, it reads the release through Platform Check (a stand-in here).
+test('mc:read of a refused Beatport page comes through Platform Check', { tag: ['@sandbox', '@web'] }, async ({ page }) => {
+  await page.goto('https://test.musicbrainz.org/', { waitUntil: 'domcontentloaded' });
+  await page.evaluate(c => (0, eval)(c), await readFile(sourceOf('first_contact'), 'utf8'));
+  const out = await page.evaluate(async () => {
+    const asked = [];
+    document.addEventListener('pc:beatport-release', e => {
+      const d = JSON.parse(e.detail); asked.push(d.id);
+      const release = { id: 7555377, name: 'Systems for Disassembly', slug: 'systems-for-disassembly', artists: [{ id: 1, name: 'CTRL CLICK', slug: 'ctrl-click' }], label: { id: 2, name: 'Ctrl Click', slug: 'ctrl-click' }, upc: '787416492147', new_release_date: '2026-11-06', type: { name: 'Album' }, tracks: ['https://api.beatport.com/v4/catalog/tracks/11/'] };
+      const tracks = [{ id: 11, name: 'Angel of Death', mix_name: 'Original Mix', length_ms: 260025, isrc: 'QZ0000000001', slug: 'angel-of-death', url: 'https://api.beatport.com/v4/catalog/tracks/11/', release: { id: 7555377 }, artists: release.artists }];
+      document.dispatchEvent(new CustomEvent('pc:beatport-release-result', { detail: JSON.stringify({ req: d.req, release, tracks }) }));
+    });
+    const res = new Promise(r => document.addEventListener('mc:read-result', e => r(JSON.parse(e.detail))));
+    window.__fcTest.mcRead(JSON.stringify({ url: 'https://www.beatport.com/release/systems-for-disassembly/7555377', run: 'r745' }));
+    const d = await res;
+    return { asked, ok: d.ok, error: d.error, title: d.rel && d.rel.title, len: d.rel && d.rel.mediums[0].tracks[0].lengthMs };
+  });
+  console.log(JSON.stringify(out));
+  check(out.ok && out.asked.join() === '7555377' && out.title === 'Systems for Disassembly' && out.len === 260025, `the read comes through Platform Check (${JSON.stringify(out)})`);
+});
