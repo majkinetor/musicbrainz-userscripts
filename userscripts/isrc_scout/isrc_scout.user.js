@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         ISRC Scout
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.14
+// @version      2026.10.14.210440
 // @description  Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify / Beatport / Tidal / Volumo / HDtracks / Qobuz, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPklTUkMgU2NvdXQ8L3RpdGxlPgogICAgPHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPgogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjQwIi8+CiAgICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyNiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2U9IiNiOWEzZTgiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPgogIDwvZz4KICA8bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+Cjwvc3ZnPgo=
@@ -1810,9 +1810,13 @@
       background: var(--mbu-accent); border: none; border-radius: 4px; cursor: pointer;
       vertical-align: middle; white-space: nowrap; transition: background .15s; }
     #ii-btn:hover { background: var(--mbu-accent-hover); }
-    /* #749: ISRCs and links on the release page's tracklist */
-    .ii-trk { display: inline-flex; flex-wrap: wrap; align-items: center; gap: 4px 9px; margin-left: 14px; vertical-align: middle; }
-    .ii-trk-isrc { font: 12px ui-monospace, Consolas, monospace; }
+    /* #749: ISRC and Links columns on the release page's tracklist */
+    th.ii-col, td.ii-col { width: 1%; }                                              /* as wide as their content; Title takes the rest */
+    td.ii-col-isrc, td.ii-col-links { white-space: nowrap; vertical-align: top; }
+    td.ii-col-isrc { padding-right: 14px; }
+    .ii-trk-isrc { display: block; font: 12px/1.6 ui-monospace, Consolas, monospace; }
+    td.ii-col-links { white-space: normal; }
+    .ii-trk-lns { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 8px; width: max-content; max-width: 230px; padding-top: 2px; }
     .ii-trk-ln { display: inline-flex; line-height: 0; text-decoration: none !important; border: none !important; }
     .ii-trk-ln svg, .ii-trk-ln img { width: 15px; height: 15px; display: block; }
     .ii-trk-ln.ended { opacity: .4; }
@@ -4322,7 +4326,7 @@
           <label style="display:inline-flex; align-items:flex-start; gap:6px; font-size:12px; cursor:pointer">
             <input type="checkbox" id="ii-track-data" style="margin-top:2px">
             <span>Show ISRCs and links on the tracklist<br>
-              <span style="color:var(--mbu-text-weak); font-size:11px">Each track on the release page shows its ISRCs and its links, after the title.</span></span>
+              <span style="color:var(--mbu-text-weak); font-size:11px">The release page's tracklist gets an ISRC and a Links column.</span></span>
           </label>
         </div>
         <div style="margin-top:12px">
@@ -7794,35 +7798,54 @@
     }
   }
 
-  /* #749: each track's ISRCs and links on the release page's own tracklist, from the release
-     ISRC Scout loads anyway (no extra request). A setting, off by default. A row is found by its
-     track MBID (the row's id); rows MusicBrainz adds later (a medium expanded) are filled as they come. */
+  /* #749: each track's ISRCs and links as two columns of the release page's own tracklist, from
+     the release ISRC Scout loads anyway (no extra request). A setting, on by default. A row is found
+     by its track MBID (the row's id); the columns go before Rating (else Length), found by class.
+     A medium MusicBrainz loads later (expanded) gets them as it comes. */
   // declarations and var, hoisted: updateBtnStatus can run before this point (see btnStatus)
-  function trackDataEnabled() { return !!store.get('track_data', false); }
+  function trackDataEnabled() { return !!store.get('track_data', true); }
   var _tdObs = null, _tdQueued = false;
-  function trackDataHtml(t) {
-    const isrcs = t.existing.map(c => '<a class="ii-trk-isrc" href="/isrc/' + esc(c) + '" title="ISRC">' + esc(c) + '</a>').join('');
-    const links = TrackLinks.pageLinks(t).map(l => '<a class="ii-trk-ln' + (l.ended ? ' ended' : '') + '" href="' + esc(l.url) + '" target="_blank" rel="noopener" style="color:' + l.color + '" title="' +
-      esc(l.name + (l.ended ? ' (ended)' : '') + ' · ' + l.url) + '">' + l.icon + '</a>').join('');
-    return isrcs + links;
+  function trackDataCells(t) {
+    const isrcs = t ? t.existing.map(c => '<a class="ii-trk-isrc" href="/isrc/' + esc(c) + '">' + esc(c) + '</a>').join('') : '';
+    const links = t ? TrackLinks.pageLinks(t).map(l => '<a class="ii-trk-ln' + (l.ended ? ' ended' : '') + '" href="' + esc(l.url) + '" target="_blank" rel="noopener" style="color:' + l.color + '" title="' +
+      esc(l.name + (l.ended ? ' (ended)' : '') + ' · ' + l.url) + '">' + l.icon + '</a>').join('') : '';
+    return [isrcs, links && '<div class="ii-trk-lns">' + links + '</div>'];
+  }
+  // the cell the columns go before: Rating, else Length, else none (appended)
+  function trackDataAt(cells) {
+    const list = [...cells];
+    let i = list.findIndex(c => c.classList.contains('rating'));
+    if (i < 0) i = list.findIndex(c => c.classList.contains('treleases'));
+    return i;
+  }
+  function addCols(tr, tag, html, cls) {
+    const at = trackDataAt([...tr.children].filter(c => !c.classList.contains('ii-col')));
+    const ref = at >= 0 ? [...tr.children].filter(c => !c.classList.contains('ii-col'))[at] : null;
+    html.forEach((h, i) => {
+      const c = document.createElement(tag);
+      c.className = 'ii-col ' + cls[i];
+      c.innerHTML = h;
+      tr.insertBefore(c, ref);
+    });
   }
   function fillTrackData() {
     _tdQueued = false;
     if (!RELEASE) return;
-    RELEASE.tracks.forEach(t => {
-      const tr = t.trackId && document.getElementById(t.trackId);
-      if (!tr || tr.querySelector('.ii-trk')) return;
-      const a = tr.querySelector('td a[href*="/recording/"]');
-      const html = trackDataHtml(t);
-      if (!a || !html) return;
-      const span = document.createElement('span');
-      span.className = 'ii-trk';
-      span.innerHTML = html;
-      a.after(span);
+    const byId = new Map(RELEASE.tracks.filter(t => t.trackId).map(t => [t.trackId, t]));
+    const tables = new Set();
+    byId.forEach((t, id) => { const tr = document.getElementById(id); const tb = tr && tr.closest('table'); if (tb) tables.add(tb); });
+    tables.forEach(tb => {
+      tb.querySelectorAll('tr.subh').forEach(tr => { if (!tr.querySelector(':scope > .ii-col')) addCols(tr, 'th', ['ISRC', 'Links'], ['ii-col-isrc', 'ii-col-links']); });
+      tb.querySelectorAll('thead th[colspan]').forEach(th => { if (!th.dataset.iiColspan) { th.dataset.iiColspan = th.colSpan; th.colSpan = th.colSpan + 2; } });
+      tb.querySelectorAll('tbody > tr:not(.subh)').forEach(tr => {
+        if (tr.querySelector(':scope > .ii-col')) return;
+        addCols(tr, 'td', trackDataCells(byId.get(tr.id)), ['ii-col-isrc', 'ii-col-links']);
+      });
     });
   }
   function showTrackData() {
-    document.querySelectorAll('.ii-trk').forEach(el => el.remove());
+    document.querySelectorAll('.ii-col').forEach(el => el.remove());
+    document.querySelectorAll('th[data-ii-colspan]').forEach(th => { th.colSpan = +th.dataset.iiColspan; delete th.dataset.iiColspan; });
     if (!IS_OVERVIEW || !RELEASE || !trackDataEnabled()) { if (_tdObs) { _tdObs.disconnect(); _tdObs = null; } return; }
     fillTrackData();
     if (!_tdObs) {
