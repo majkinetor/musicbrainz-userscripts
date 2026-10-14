@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.14.184111
+// @version      2026.10.14.215000
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5BcG9sbG8gRWRpdG9yPC90aXRsZT4KPG1hc2sgaWQ9ImFwLW0iIG1hc2tVbml0cz0idXNlclNwYWNlT25Vc2UiIHg9IjAiIHk9IjAiIHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4Ij48Zz48ZyBmaWxsPSIjZmZmIj48cGF0aCBkPSJNNDIgNjQgQzI4IDcyIDIyIDkwIDI0IDExMCBMNDIgOTggWiIvPjxwYXRoIGQ9Ik04NiA2NCBDMTAwIDcyIDEwNiA5MCAxMDQgMTEwIEw4NiA5OCBaIi8+PC9nPjxnIGZpbGw9IiNmZmYiPjxwYXRoIGQ9Ik02NCA4IEM4NCAyNCA5MCA1MiA4OCA5MCBMNDAgOTAgQzM4IDUyIDQ0IDI0IDY0IDggWiIvPjxwYXRoIGQ9Ik00OCA5MCBMODAgOTAgTDc2IDEwMCBMNTIgMTAwIFoiLz48L2c+PGcgc3Ryb2tlPSIjMDAwIiBzdHJva2Utd2lkdGg9IjMuNSI+PHBhdGggZD0iTTM2IDkwLjUgTDkyIDkwLjUiLz48L2c+PGNpcmNsZSBjeD0iNjQiIGN5PSI1MCIgcj0iOCIgZmlsbD0iIzAwMCIvPjwvZz48L21hc2s+PGc+PHBhdGggZD0iTTUyIDEwMCBDNTQgMTEyIDYwIDExOCA2NCAxMjYgQzY4IDExOCA3NCAxMTIgNzYgMTAwIFoiIGZpbGw9IiNlYjc0M2IiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDAgMykiLz48L2c+PHJlY3Qgd2lkdGg9IjEyOCIgaGVpZ2h0PSIxMjgiIGZpbGw9IiNiYTQ3OGYiIG1hc2s9InVybCgjYXAtbSkiLz4KPC9zdmc+Cg==
@@ -587,6 +587,14 @@
    * observable holding the label entity, so we set it directly (verified: this also
    * fills the #label-N input and is picked up on submit). */
   let _labelsAutoMatchedOnce = false;
+  function riSetLabel(lf, ent, st) {
+    let e = ent;
+    // #623 (sweep, A1): the page's MB (unsafeWindow), as everywhere else — the sandbox
+    // `window.MB` is absent in managers that isolate it, and the bare entity got written
+    try { if (W.MB && typeof W.MB.entity === 'function') e = W.MB.entity(ent, 'label'); } catch (x) {}
+    lf.label(e);
+    _riLab.set(lf, Object.assign({ gid: ent.gid }, st));
+  }
   // Resolve every still-unset release label whose name has a unique exact MB hit.
   async function matchReleaseLabels() {
     if (SETTINGS.autoMatchLabel === false) return;
@@ -604,15 +612,7 @@
       const cur = lf.label();
       const name = cur && cur.name;
       if (!name || (cur && cur.gid)) continue;   // empty slot, or already resolved → leave it
-      const set = (ent, st) => {
-        let e = ent;
-        // #623 (sweep, A1): the page's MB (unsafeWindow), as everywhere else — the sandbox
-        // `window.MB` is absent in managers that isolate it, and the bare entity got written
-        try { if (W.MB && typeof W.MB.entity === 'function') e = W.MB.entity(ent, 'label'); } catch (x) {}
-        lf.label(e);
-        _riLab.set(lf, Object.assign({ gid: ent.gid }, st));
-        linked++; lastName = ent.name;
-      };
+      const set = (ent, st) => { riSetLabel(lf, ent, st); linked++; lastName = ent.name; };
       const url = riLabelUrl(name, i, labels.length, dmap, h);
       if (url) {
         const p = platformOf(url) || { abbr: 'link', name: 'platform' };
@@ -631,12 +631,62 @@
       // invisible. The same rule as track artists now: unique by name or alias among ALL
       // matches (#613), else left for a human.
       const idHit = await resolveByExactAlias(name, 'label');
-      if (!idHit) { Log.cat('Label').info(name, '— no unique exact MB label (name or alias) — left unset'); continue; }
+      if (!idHit) {
+        if (await riLabelFromDups(lf, name, set)) continue;
+        Log.cat('Label').info(name, '— no unique exact MB label (name or alias), none settled by the duplicates — left unset'); continue;
+      }
       try { set(idHit.entity, { status: idHit.via === 'alias' ? 'alias' : 'high', title: idHit.via === 'alias' ? 'the only MusicBrainz label with this name as an alias' : 'the only MusicBrainz label with this name' }); Log.cat('Label').info(name, '→', idHit.entity.name, '(' + idHit.entity.gid + ')'); }
       catch (e) { Log.cat('Label').warn('label set failed', name, e.message); }
     }
     renderRiLabels();
     if (linked) toast(linked === 1 ? ('✓ Label matched: ' + lastName) : ('✓ Auto-matched ' + linked + ' labels'));
+    riWatchDupLabels();
+  }
+  /* #750: a name more than one MB label carries ("Mole Listening Pearls": the label and its
+   * bootleg page) is settled by the Duplicates tab: when the similar releases MusicBrainz lists
+   * credit exactly one label of that name, that's the one. Free: the tab's own search already
+   * carries each release's labels (`releaseEditor.similarReleases`, gid + name). The tab fills
+   * after load, so a label still unset is tried again each time it does. */
+  function riDupLabels(name) {
+    const re = W.MB && W.MB.releaseEditor;
+    const sims = (re && typeof re.similarReleases === 'function' && re.similarReleases()) || [];
+    const by = new Map();
+    sims.forEach(r => (u(r && r.labels) || []).forEach(l => {
+      const g = u(l && l.gid), n = u(l && l.name) || '';
+      if (!g || fold(n) !== fold(name)) return;
+      const v = by.get(g) || { gid: g, name: n, rels: 0 }; v.rels++; by.set(g, v);
+    }));
+    return { of: sims.length, labels: [...by.values()] };
+  }
+  async function riLabelFromDups(lf, name, set) {
+    const d = riDupLabels(name);
+    if (d.labels.length !== 1) { Log.cat('Label').debug(name, '— duplicates:', d.of, 'similar release(s),', d.labels.length ? d.labels.length + ' different labels of this name' : 'none credits it'); return false; }
+    const hit = d.labels[0], ent = await fetchEntity(hit.gid, 'label');
+    if (!ent || !ent.gid) { Log.cat('Label').warn(name, '— duplicates name', hit.gid, 'but its lookup failed'); return false; }
+    const cur = lf.label(); if (!cur || cur.gid || fold(cur.name) !== fold(name)) return false;   // picked or retyped meanwhile
+    try { set(ent, { status: 'pos', abbr: 'dup', title: `the label of ${hit.rels === 1 ? 'a similar release' : hit.rels + ' similar releases'} on the Duplicates tab` }); Log.cat('Label').info(name, '→', ent.name, '(' + ent.gid + ') — via', hit.rels, 'of', d.of, 'similar release(s)'); return true; }
+    catch (e) { Log.cat('Label').warn('label set failed', name, e.message); return false; }
+  }
+  let _riDupLabSub = null;
+  function riWatchDupLabels() {
+    const re = W.MB && W.MB.releaseEditor, obs = re && re.similarReleases;
+    if (_riDupLabSub || SETTINGS.autoMatchLabel === false || !obs || typeof obs.subscribe !== 'function') return;
+    let busy = false;
+    _riDupLabSub = obs.subscribe(async () => {
+      const rel = release(); if (busy || !rel) return;
+      busy = true;
+      try {
+        let linked = 0, lastName = '';
+        for (const lf of u(rel.labels) || []) {
+          const cur = lf && typeof lf.label === 'function' ? lf.label() : null;
+          if (!cur || !cur.name || cur.gid) continue;
+          const set = (ent, st) => { riSetLabel(lf, ent, st); linked++; lastName = ent.name; };
+          await riLabelFromDups(lf, cur.name, set);
+        }
+        if (linked) { renderRiLabels(); toast(linked === 1 ? ('✓ Label matched: ' + lastName) : ('✓ Auto-matched ' + linked + ' labels')); }
+      } catch (e) { Log.cat('Label').warn('duplicates label match failed', e.message); }
+      finally { busy = false; }
+    });
   }
   /* ── #652: the release artist, matched like a track artist ─────────────────────────
    * The release artist credit runs through the Tracklist's stages, most confident first:
@@ -4817,7 +4867,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
         <div class="tc-s-group">
           <div class="tc-s-sub">Auto-match on start</div>
           <div class="tc-s-group">
-            <div class="tc-s-row" style="gap:6px 14px;flex-wrap:wrap"><label class="tc-s-rad" title="Tracklist tab: match track artists to MusicBrainz on load. Off: use the Match button."><input type="checkbox" id="tc-s-automatch"> Tracklist</label><label class="tc-s-rad" title="Recordings tab: auto-match unset recordings on load. Off: use the Match button."><input type="checkbox" id="tc-s-automatchrec"> Recordings</label><label class="tc-s-rad" title="Release-info Label field: when the seeded/typed label name has exactly one exact MusicBrainz match, select it automatically on load. Ambiguous names (e.g. Columbia) are left for you to pick."><input type="checkbox" id="tc-s-automatchlabel"> Label</label><label class="tc-s-rad" title="Release-info Artist field: when the seeded/typed release artist has exactly one exact MusicBrainz match, select it automatically on load. Ambiguous names are left for you to pick."><input type="checkbox" id="tc-s-automatchartist"> Artist</label><label class="tc-s-rad" title="Release-info Release group field: when exactly one of the existing release groups MusicBrainz suggests has the release's title and artist, select it instead of adding a new one. Marked with an auto badge."><input type="checkbox" id="tc-s-automatchrg"> Release group</label></div>
+            <div class="tc-s-row" style="gap:6px 14px;flex-wrap:wrap"><label class="tc-s-rad" title="Tracklist tab: match track artists to MusicBrainz on load. Off: use the Match button."><input type="checkbox" id="tc-s-automatch"> Tracklist</label><label class="tc-s-rad" title="Recordings tab: auto-match unset recordings on load. Off: use the Match button."><input type="checkbox" id="tc-s-automatchrec"> Recordings</label><label class="tc-s-rad" title="Release-info Label field: when the seeded/typed label name has exactly one exact MusicBrainz match, select it automatically on load. An ambiguous name (e.g. Columbia) is linked when the similar releases on the Duplicates tab credit exactly one label of that name, else left for you to pick."><input type="checkbox" id="tc-s-automatchlabel"> Label</label><label class="tc-s-rad" title="Release-info Artist field: when the seeded/typed release artist has exactly one exact MusicBrainz match, select it automatically on load. Ambiguous names are left for you to pick."><input type="checkbox" id="tc-s-automatchartist"> Artist</label><label class="tc-s-rad" title="Release-info Release group field: when exactly one of the existing release groups MusicBrainz suggests has the release's title and artist, select it instead of adding a new one. Marked with an auto badge."><input type="checkbox" id="tc-s-automatchrg"> Release group</label></div>
             <label title="When the release has a Discogs link, match each track artist by its Discogs URL (a strong, human-verified signal) before the name search. A single linked MusicBrainz artist is used directly; several are offered as candidates."><input type="checkbox" id="tc-s-discogsmatch"> <span>Discogs artist link matching</span></label>
             <label title="When the release has no language or script, fill them in from the release and track titles. A field a seed or you set is never touched, nor one you change after Apollo filled it. Everything found is offered at the top of the field's list. The language needs three titles or more and 80% confidence from lande, Harmony's detector (50 languages); when it isn't sure, a script that implies its language (Japanese, Korean, Greek…) names one."><input type="checkbox" id="tc-s-langscript"> <span>Detect language and script</span></label>
           </div>
