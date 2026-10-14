@@ -130,13 +130,14 @@ End a link when the release is taken down and it no longer resolves ([MusicBrain
 
 <img width="1000" src="./screenshots/options.png" />
 
-| Setting                                    | Default |                                                                    |
-| ------------------------------------------ | ------- | ------------------------------------------------------------------ |
-| Authorize                                  |         | OAuth for submitting ISRCs                                         |
-| Import buttons                             | icons   | icons, text, or both                                               |
-| Use providers from the whole release group | off     | take missing providers from sibling releases (one more lookup)     |
-| Ignore Platform Check link confidence      | off     | use links Platform Check withheld for a barcode or format mismatch |
-| Spotify ISRC source                        | molla   | or ISRC Hunt                                                       |
+| Setting                                    | Default                    |                                                                           |
+| ------------------------------------------ | -------------------------- | ------------------------------------------------------------------------- |
+| Authorize                                  |                            | OAuth for submitting ISRCs                                                |
+| Import buttons                             | icons                      | icons, text, or both                                                      |
+| Use providers from the whole release group | off                        | take missing providers from sibling releases (one more lookup)            |
+| Ignore Platform Check link confidence      | off                        | use links Platform Check withheld for a barcode or format mismatch        |
+| Repeat failed submits                      | on, 10 minutes or 10 times | try a submit again when MusicBrainz is busy (503) or the connection drops |
+| Spotify ISRC source                        | molla                      | or ISRC Hunt                                                              |
 
 ## Shortcuts
 

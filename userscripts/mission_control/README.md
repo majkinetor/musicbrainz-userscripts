@@ -104,7 +104,7 @@ Click a track to see, on the right, everything found for it: its ISRCs and where
 
 Every edit note ends with *Via Mission Control v&lt;version&gt;* and the release.
 
-A step that failed and can be tried again (a cover upload that kept failing, say) shows **Retry** beside its error: it applies that card alone again, with what is still taken in.
+A step that failed and can be tried again (a cover upload or ISRC submit that kept failing, say) shows **Retry** beside its error: it applies that step alone again, with what is still taken in. What a step got through before it failed shows as done, and leaves the count.
 
 Click a card's icon or title to switch the card off: it folds to its header, and Execute leaves out what is taken in there. Your selection stays for when you switch it on again.
 

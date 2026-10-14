@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-10-14 20:46 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-10-14 20:52 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -1563,13 +1563,14 @@ End a link when the release is taken down and it no longer resolves ([MusicBrain
 
 <img width="1000" src="../isrc_scout/screenshots/options.png" />
 
-| Setting                                    | Default |                                                                    |
-| ------------------------------------------ | ------- | ------------------------------------------------------------------ |
-| Authorize                                  |         | OAuth for submitting ISRCs                                         |
-| Import buttons                             | icons   | icons, text, or both                                               |
-| Use providers from the whole release group | off     | take missing providers from sibling releases (one more lookup)     |
-| Ignore Platform Check link confidence      | off     | use links Platform Check withheld for a barcode or format mismatch |
-| Spotify ISRC source                        | molla   | or ISRC Hunt                                                       |
+| Setting                                    | Default                    |                                                                           |
+| ------------------------------------------ | -------------------------- | ------------------------------------------------------------------------- |
+| Authorize                                  |                            | OAuth for submitting ISRCs                                                |
+| Import buttons                             | icons                      | icons, text, or both                                                      |
+| Use providers from the whole release group | off                        | take missing providers from sibling releases (one more lookup)            |
+| Ignore Platform Check link confidence      | off                        | use links Platform Check withheld for a barcode or format mismatch        |
+| Repeat failed submits                      | on, 10 minutes or 10 times | try a submit again when MusicBrainz is busy (503) or the connection drops |
+| Spotify ISRC source                        | molla                      | or ISRC Hunt                                                              |
 
 ### Shortcuts
 
@@ -1842,7 +1843,7 @@ Click a track to see, on the right, everything found for it: its ISRCs and where
 
 Every edit note ends with *Via Mission Control v&lt;version&gt;* and the release.
 
-A step that failed and can be tried again (a cover upload that kept failing, say) shows **Retry** beside its error: it applies that card alone again, with what is still taken in.
+A step that failed and can be tried again (a cover upload or ISRC submit that kept failing, say) shows **Retry** beside its error: it applies that step alone again, with what is still taken in. What a step got through before it failed shows as done, and leaves the count.
 
 Click a card's icon or title to switch the card off: it folds to its header, and Execute leaves out what is taken in there. Your selection stays for when you switch it on again.
 
