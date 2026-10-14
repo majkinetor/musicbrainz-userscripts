@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Falcon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.13.173631
+// @version      2026.10.14.162408
 // @description  Edit a BATCH of MusicBrainz artists/labels/recordings at once — add external links, ISRCs, names, aliases, disambiguations and cover art — no popup-per-entity, no tab churn. A small pool of persistent worker iframes churns through a queue, each submitting its own edit and moving straight to the next entity. Paste a list, hand it a queue via a `?falcon=` URL param, or click "Send to Falcon" on a Harmony actions page to import its suggestions directly.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5GYWxjb248L3RpdGxlPgo8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSI1OCIgZmlsbD0iI2Y2ZWZlMiIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjYiLz48cGF0aCBkPSJNMTA1LjYgNDAuMCBBNDggNDggMCAwIDEgMTA1LjYgODguMCIgc3Ryb2tlPSIjZDYyODI4IiBzdHJva2Utd2lkdGg9IjciIGZpbGw9Im5vbmUiLz4KPGcgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2UtbGluZWNhcD0icm91bmQiPjxwYXRoIGQ9Ik0yMC43IDg5LjAgTDI5LjQgODQuMCIgc3Ryb2tlLXdpZHRoPSIzIi8+PHBhdGggZD0iTTE0LjMgNjkuMiBMMjQuMiA2OC4yIiBzdHJva2Utd2lkdGg9IjMiLz48cGF0aCBkPSJNMTYuNCA0OC41IEwyNi4wIDUxLjYiIHN0cm9rZS13aWR0aD0iMyIvPjxwYXRoIGQ9Ik0yNi44IDMwLjUgTDM0LjMgMzcuMiIgc3Ryb2tlLXdpZHRoPSIzIi8+PHBhdGggZD0iTTQzLjcgMTguMyBMNDcuNyAyNy41IiBzdHJva2Utd2lkdGg9IjMiLz48cGF0aCBkPSJNNjQuMCAxNC4wIEw2NC4wIDI0LjAiIHN0cm9rZS13aWR0aD0iMyIvPjxwYXRoIGQ9Ik04NC4zIDE4LjMgTDgwLjMgMjcuNSIgc3Ryb2tlLXdpZHRoPSIzIi8+PHBhdGggZD0iTTEwMS4yIDMwLjUgTDkzLjcgMzcuMiIgc3Ryb2tlLXdpZHRoPSIzIi8+PHBhdGggZD0iTTExMS42IDQ4LjUgTDEwMi4wIDUxLjYiIHN0cm9rZS13aWR0aD0iMyIvPjxwYXRoIGQ9Ik0xMTMuNyA2OS4yIEwxMDMuOCA2OC4yIiBzdHJva2Utd2lkdGg9IjMiLz48cGF0aCBkPSJNMTA3LjMgODkuMCBMOTguNiA4NC4wIiBzdHJva2Utd2lkdGg9IjMiLz48L2c+PGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoNjQgOTQpIHJvdGF0ZSgwKSBzY2FsZSgwLjE2KSB0cmFuc2xhdGUoLTY0IC02NCkiPjxwYXRoIGQ9Ik02NCAyNiBDNjcgMjYgNzAgMzAgNzAgMzYgQzcyIDQwIDc0IDQyIDc2IDQ0IEM5MiA0MiAxMDggMzYgMTI0IDM0IEMxMTIgNDQgOTYgNTQgNzggNjIgQzc2IDY4IDc0IDc0IDc0IDgwIEw4MCAxMDAgQzc0IDEwNCA2OCAxMDQgNjQgMTA0IFoiIGZpbGw9IiM0YTVhNzgiLz48cGF0aCBkPSJNNjQgMjYgQzY3IDI2IDcwIDMwIDcwIDM2IEM3MiA0MCA3NCA0MiA3NiA0NCBDOTIgNDIgMTA4IDM2IDEyNCAzNCBDMTEyIDQ0IDk2IDU0IDc4IDYyIEM3NiA2OCA3NCA3NCA3NCA4MCBMODAgMTAwIEM3NCAxMDQgNjggMTA0IDY0IDEwNCBaIiBmaWxsPSIjNGE1YTc4IiB0cmFuc2Zvcm09InRyYW5zbGF0ZSgxMjggMCkgc2NhbGUoLTEgMSkiLz48L2c+PGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoNjQgNjQpIHJvdGF0ZSgxMTIpIj48cGF0aCBkPSJNMCAtNDYgTDQgMCBMLTQgMFoiIGZpbGw9IiMxYjJhNGEiLz48L2c+CjxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjciIGZpbGw9IiMxYjJhNGEiLz4KPC9zdmc+Cg==
@@ -1777,6 +1777,10 @@
   const MBID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
   // #713: a release item's barcode, digits only ('' for none)
   const barcodeOf = v => String(v == null ? '' : v).replace(/\D/g, '');
+  // #727: a release item's labels: [{ mbid, name, catno, add }], a catalog number for a label the release has, or
+  // (add) a label to add, with its catalog number if any
+  const catnosOf = v => (Array.isArray(v) ? v : []).filter(l => l && MBID_RE.test(String(l.mbid || '')) && (String(l.catno || '').trim() || l.add === true))
+    .map(l => ({ mbid: String(l.mbid), name: String(l.name || ''), catno: String(l.catno || '').trim(), ...(l.add === true ? { add: true } : {}) }));
   // #496: MB's own cover-art type vocabulary — same list as Art Station's
   // COVER_TYPES (art_station.user.js), kept identical so a type picked here
   // maps onto the exact same label MB's own add-cover-art form shows.
@@ -2283,6 +2287,7 @@
       const hasMeta = (DISAMBIGUATABLE.has(type) && !!(r.disambiguation || r.comment))
         || (RENAMEABLE.has(type) && !!r.rename)
         || (type === 'release' && !!barcodeOf(r.barcode))
+        || (type === 'release' && catnosOf(r.labels).length > 0)
         || (type === 'recording' && Array.isArray(r.isrcs) && r.isrcs.some(Boolean))
         || (type === 'recording' && r.video === true)
         || normalizeAliases(r.aliases).length > 0;
@@ -2301,6 +2306,7 @@
           note: r.note || '', disambiguation: r.disambiguation || r.comment || '',
           rename: RENAMEABLE.has(type) ? String(r.rename || '') : '',
           barcode: type === 'release' ? barcodeOf(r.barcode) : '',
+          labels: type === 'release' ? catnosOf(r.labels) : [],
           isrcs: Array.isArray(r.isrcs) ? r.isrcs.filter(Boolean).map(String) : [],
           video: type === 'recording' && r.video === true,
           aliases: normalizeAliases(r.aliases),
@@ -2316,6 +2322,7 @@
           urls.forEach(u => { if (!same.urls.some(x => x.url === u.url && x.linkTypeId === u.linkTypeId)) same.urls.push(u); });
           if (reItem.name && !same.name) same.name = reItem.name;
           if (reItem.barcode && !same.barcode) same.barcode = reItem.barcode;
+          reItem.labels.forEach(l => { same.labels = same.labels || []; if (!same.labels.some(x => x.mbid === l.mbid)) same.labels.push(l); });
           merged += same.urls.length - before;
           dbg('[import]', `${type}:${r.mbid} is queued already — ${same.urls.length - before} new url(s) merged into it`);
           return;
@@ -4302,6 +4309,60 @@
     }
     return { ok: true, before, after: bc, staged: null };
   }
+  // #727: catalog numbers, each into the release label row of its label (by MBID) in the KO model, where
+  // the editor keeps it (release().labels()[i].catalogNumber). Only an empty one is filled: a row that has
+  // this catalog number already is unchanged, one with another is left alone. A label the release hasn't
+  // is added only when asked (add): into the empty row the editor shows, else a new one (addReleaseLabel),
+  // as the label's full entity (/ws/js/entity), which the editor needs to save it. { ok, set, unchanged, failed: [why], staged }
+  async function setReleaseCatnos(iframe, labels) {
+    const ready = await waitFor(() => {
+      const api = releaseEditorApi(frameWin(iframe));
+      try { return api && api.rootField.release() && frameDoc(iframe).getElementById('catno-0') ? api : null; } catch (e) { return null; }
+    }, 20000);
+    if (!ready) return { ok: false, set: 0, unchanged: 0, failed: ['the release editor never finished loading its labels'] };
+    await wait(300);
+    const norm = c => String(c || '').trim().toLowerCase();
+    let set = 0, unchanged = 0; const failed = [];
+    const rows = () => { try { return ready.rootField.release().labels() || []; } catch (e) { return []; } };
+    const rowOf = mbid => rows().find(r => { try { const l = r.label(); return l && l.gid === mbid; } catch (e) { return false; } });
+    for (const l of labels) {
+      let row = rowOf(l.mbid);
+      if (!row && l.add) {
+        try {
+          const r = await mbnFetch(`${MB_ORIGIN}/ws/js/entity/${l.mbid}`, { credentials: 'same-origin' });
+          const text = r && r.ok ? await r.text() : null;
+          if (!text || !/"gid"/.test(text)) throw new Error(`MusicBrainz answered ${r ? r.status : 'nothing'} for the label`);
+          const w = (frameWin(iframe).wrappedJSObject) || frameWin(iframe), rel = ready.rootField.release();
+          row = rows().find(x => { try { const e = x.label(); return !(e && (e.gid || e.name)) && !String(x.catalogNumber() || '').trim(); } catch (e) { return false; } });
+          if (!row) { ready.addReleaseLabel(rel); row = rows()[rows().length - 1]; }
+          row.label(w.MB.entity(w.JSON.parse(text), 'label'));
+          if (!rowOf(l.mbid)) throw new Error('the editor did not take the label');
+          if (!l.catno) set++;   // with a catalog number, it counts once, below
+          if (!l.catno) continue;
+        } catch (e) { failed.push(`could not add the label ${l.name || l.mbid} — ${e.message || e}`); continue; }
+      }
+      if (!row) { failed.push(`the release has no label ${l.name || l.mbid} by now — cat. no. ${l.catno} left out`); continue; }
+      if (!l.catno) { unchanged++; continue; }
+      const cur = String(row.catalogNumber() || '').trim();
+      if (norm(cur) === norm(l.catno)) { unchanged++; continue; }
+      if (cur) { failed.push(`${l.name || l.mbid} has cat. no. ${cur} by now — ${l.catno} left out`); continue; }
+      try { row.catalogNumber(l.catno); set++; } catch (e) { failed.push(`could not write cat. no. ${l.catno} — ${e.message || e}`); }
+    }
+    // the editor binds late: read it back after a beat, as the fields above do
+    if (set) {
+      await wait(1200);
+      for (const l of labels) {
+        const row = rowOf(l.mbid);
+        if (!l.catno || failed.some(f => f.includes(l.mbid) || f.includes(l.name || '\0'))) continue;
+        if (!row) { set--; failed.push(`the label ${l.name || l.mbid} didn't hold in the release editor`); }
+        else if (norm(row.catalogNumber()) !== norm(l.catno) && !failed.some(f => f.includes(l.catno))) { set--; failed.push(`cat. no. ${l.catno} didn't hold in the release editor`); }
+      }
+    }
+    let staged = null;
+    try { staged = ready.allEdits().length; } catch (e) {}
+    if (set && staged === 0) return { ok: false, set: 0, unchanged, failed: failed.concat('MusicBrainz staged no edit for the catalog numbers'), staged };
+    return { ok: !failed.length, set, unchanged, failed, staged };
+  }
   // #495: the release editor's own "Enter edit" button lives inside its
   // jQuery-UI-tabs "Edit note" panel (display:none until that tab is
   // active) — a bare element.click() on the tab link does nothing (jQuery UI
@@ -4748,12 +4809,22 @@
       else log('warn', `${tag} BARCODE NOT SET — ${r.why}`);
       if (!r.ok) results.push({ url: '(barcode)', ok: false, error: r.why });
     }
+    // #727: catalog numbers, into the release's own label rows
+    let releaseCatnosSet = false;
+    if (item.entityType === 'release' && (item.labels || []).length) {
+      const r = await setReleaseCatnos(iframe, item.labels);
+      releaseCatnosSet = r.set > 0;
+      if (r.set) log('info', `${tag} ${r.set} label(s) or catalog number(s) filled in the release editor: ${item.labels.map(l => `${l.add ? '+' : ''}${l.name || l.mbid} ${l.catno}`).join(', ')}${r.staged != null ? ` (MB staged ${r.staged} edit(s))` : ''}`);
+      if (r.unchanged) dbg(tag, `${r.unchanged} catalog number(s) already there — nothing to change`);
+      r.failed.forEach(why => { log('warn', `${tag} CATALOG NUMBER NOT SET — ${why}`); results.push({ url: '(catalog number)', ok: false, error: why }); });
+    }
     const hasFieldChange = !!(
       (COMMENT_SEEDS.has(item.entityType) && item.disambiguation)
       || releaseCommentSet
       || (NAME_SEEDS.has(item.entityType) && item.rename)
       || releaseNameSet
       || releaseBarcodeSet
+      || releaseCatnosSet
       || (item.entityType === 'recording' && item.isrcs && item.isrcs.length)
       || (item.entityType === 'recording' && item.video)
     );
@@ -5618,11 +5689,12 @@
         || (DISAMBIGUATABLE.has(item.entityType) && (item.disambiguation || '').trim())
         || (RENAMEABLE.has(item.entityType) && (item.rename || '').trim())
         || (item.entityType === 'release' && item.barcode)
+        || (item.entityType === 'release' && (item.labels || []).length)
         || (item.entityType === 'recording' && (item.isrcs || []).some(Boolean))
         || (item.entityType === 'recording' && item.video));
       if (!needsForm && !needsCover && !needsAliases) {
         item.status = 'skipped';
-        item.error = 'nothing to submit yet — add a url, name, disambiguation, barcode, ISRC, alias or cover';
+        item.error = 'nothing to submit yet — add a url, name, disambiguation, barcode, catalog number, ISRC, alias or cover';
         log('info', `${tag} ${item.entityType} ${item.mbid} — skipped, nothing filled in`);
         renderQueue();
         continue;
@@ -6727,6 +6799,7 @@
           // Import must never acquire an edit nobody asked for.
           if (RENAMEABLE.has(i.entityType) && (i.rename || '').trim()) item.rename = i.rename.trim();
           if (i.entityType === 'release' && i.barcode) item.barcode = i.barcode;
+          if (i.entityType === 'release' && (i.labels || []).length) item.labels = i.labels.map(l => ({ mbid: l.mbid, name: l.name, catno: l.catno, ...(l.add ? { add: true } : {}) }));
           if (i.entityType === 'recording') { item.isrcs = i.isrcs || []; item.video = i.video === true; }
           // #535: aliases exist on every type, so they are exported whenever
           // the item has any — and the export doubles as the JSON template.

@@ -76,4 +76,4 @@ Keys at the JSON's root for `falcon:run`:
 
 A batch handed over this way (event or link) adds an entity already queued to its row rather than queueing it twice, so sending the same batch again doesn't run it twice; **Import** restores a file as it is.
 
-[Mission Control](../mission_control/DEVELOP.md#execute) runs its links and a barcode this way and shows the progress in its own cards. [Platform Check](../platform_check/README.md#artists-and-labels) sends its artist and label links by event, and falls back to `?falcon=` in a new tab when no Falcon answers.
+[Mission Control](../mission_control/DEVELOP.md#execute) runs its links, a barcode and catalog numbers this way and shows the progress in its own cards. [Platform Check](../platform_check/README.md#artists-and-labels) sends its artist and label links by event, and falls back to `?falcon=` in a new tab when no Falcon answers.

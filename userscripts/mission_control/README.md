@@ -21,7 +21,7 @@ One window on a release page that asks the other scripts what the release is mis
 - **[Release credits](#release-credits)**: what the credit sources have, with a way into Credit Hoarder.
 - **[Inspector](#inspector)**: everything found for one track.
 - **[Execute](#execute)**: applies what you selected, script by script, in a fixed order.
-- **[Consolidate a new release](#consolidate-a-new-release)**: compare an album MusicBrainz doesn't have yet across the platforms, take the best of each into the release editor.
+- **[Consolidate a new release](#consolidate-a-new-release)**: compare an album across the platforms and take the best of each into the release editor, or into the release MusicBrainz already has.
 
 Open Mission Control with its icon in the bottom-right corner of a release page. Right-click the icon for the settings.
 
@@ -74,7 +74,9 @@ The platform pages Platform Check found, grouped by the barcode each platform gi
 
 A link whose track count or format is not the release's is most likely another release: its icon gets an amber dot, and its row says what differs in amber (*10 tracks, the release has 13*). **take all in** leaves those links out; click one to take it in anyway.
 
-A release without a barcode gets a **Barcode** row at the top of *Release* for each barcode the platforms report, each saying where it came from. The one Platform Check is sure of starts taken in: a barcode you pasted, or one reported by a link the release already has, whose track count and medium match the release. A release has one barcode, so taking another in leaves the first out. Execute adds it with the links, in the same edit.
+A release without a barcode gets a **Barcode** row at the top of *Release* for each barcode the platforms report, each saying where it came from. The one Platform Check is sure of starts taken in: a barcode you pasted, the one a consolidation brings ([Update this release](#update-this-release)), or one reported by a link the release already has, whose track count and medium match the release. A release has one barcode, so taking another in leaves the first out. Execute adds it with the links, in the same edit.
+
+The catalog numbers the platforms give, for a label the release has without one, sit beside the barcode of their group. A group with a barcode is one release, so it shows one per label; a platform in it that gives none just didn't say. The group without a barcode can show several, since its platforms may be different releases. Click one to take it in or leave it out; **take all in** never takes a catalog number. Only the one in the release's own group starts taken in, and a label takes one, so taking another in leaves the first out.
 
 **Artists** and **Labels** list the pages the matched albums name for them. The platforms that found nothing fold into one line of icons. A heading's ✓ count opens the links it already has into rows.
 
@@ -106,7 +108,7 @@ Click a card's icon or title to switch the card off: it folds to its header, and
 
 For an album MusicBrainz doesn't have yet. On its page on a platform, **Consolidate** in [First Contact](../first_contact/README.md#consolidate) reads it and opens Mission Control over MusicBrainz's empty release editor:
 
-1. [Platform Check](../platform_check/README.md) finds the album on the other platforms. **Sources** on the left groups them by barcode, the album's own first. The platforms in its lane are taken in, and so are those without a barcode that have as many tracks. A platform in another lane is another release, so it is left out until you tick it. If MusicBrainz already has this album (a release one of these links belongs to, with the same barcode, format and track count), a banner at the top names it: add what it lacks there instead of adding the album again. Releases the links belong to that differ in one of those are listed under it as other editions.
+1. [Platform Check](../platform_check/README.md) finds the album on the other platforms. **Sources** on the left groups them by barcode, the album's own first. The platforms in its lane are taken in, and so are those without a barcode that have as many tracks. A platform in another lane is another release, so it is left out until you tick it. If MusicBrainz already has this album (a release one of these links belongs to, with the same barcode, format and track count), a banner at the top names it, with [Update this release](#update-this-release), so you add what it lacks instead of adding the album again. Releases the links belong to that differ in one of those are listed under it as other editions.
 2. First Contact reads each platform taken in; the header counts them. Spotify can be read on its own page only, so its link is added but its data isn't compared.
 3. **Release** shows each field with the platforms that give each value. The value most of them give is taken, and a tie goes to Platform Check's platform order. Click another value to take it instead; the other dates are listed earliest first, in two columns.
 4. **Tracks** lines the tracklists up. A track the platforms agree on shows their icons. One where they differ in title, ISRC or length (by more than a second) says how many versions it has: click it to see them, and click a version to take it. **N differ** in the header opens or closes them all. A track only one platform has is struck through and left out; click it to take it in, at the end.
@@ -117,6 +119,21 @@ For an album MusicBrainz doesn't have yet. On its page on a platform, **Consolid
 Once you save the release, Mission Control opens on it and probes, for what the editor can't take: the ISRCs taken here and the recording links (added by ISRC Scout), the best cover (Art Station), and the artist and label links (Platform Check). **After saving**, on the right, chooses which of them start taken in; **Execute** then applies them as on any release.
 
 Click a track to see its versions on the right, with what sets each apart from the taken one highlighted and the platforms that give it; click a version there to take it. **Copy as Markdown**, in the **▾** menu beside **Add release**, copies the whole comparison as tables, for an issue or an edit note. **✕** shows the empty editor under it; the corner icon brings Mission Control back.
+
+### Update this release
+
+**Update this release**, beside a release in the banner, opens that release in this tab. Mission Control opens on it and probes, and offers what the release lacks from what is taken here:
+
+| What                | Offered when                                                 | Added by                    |
+| ------------------- | ------------------------------------------------------------ | --------------------------- |
+| Barcode             | the release has none                                         | Platform Check              |
+| Cat. no.            | a label the release has, matched by name, has none           | Platform Check              |
+| Label               | the release hasn't it, and it is one MusicBrainz label       | Platform Check              |
+| Platform links      | the release hasn't them, even ones Platform Check holds back | Platform Check              |
+| ISRCs               | a track has none                                             | ISRC Scout                  |
+| Cover, artist links | as after saving a new release                                | Art Station, Platform Check |
+
+Nothing the release has is changed: a label with another catalog number keeps it. A label the release hasn't is added with its catalog number once Mission Control knows which MusicBrainz label it is: by the label's page on the platform, or, marked unsure, by a name only one MusicBrainz label has. A label it can't tell is left out. **After saving** chooses which scripts' findings start taken in, as for a new release. The edit note names the platforms the consolidation read.
 
 ## Settings
 

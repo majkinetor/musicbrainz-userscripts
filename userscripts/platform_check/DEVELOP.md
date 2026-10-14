@@ -12,6 +12,7 @@ Each provider is resolved by a **method** chain, tried in order: the existing **
     - Search: `/database/search?q=`
     - Album: `/releases/<id>` (track count)
     - Barcode: `/database/search?barcode=<UPC>` (barcode-first); found barcode captured from the release's `identifiers`
+    - Catalog numbers: each label's `catno` from the release detail (`labels[]`); Discogs's `none` and a label's `(2)` suffix dropped
 - **Local search:** Discogs API search
 - **Global search:** —
 - **Track verify:** Discogs API release detail
@@ -122,6 +123,7 @@ Each provider is resolved by a **method** chain, tried in order: the existing **
     - Search: — (site is **Cloudflare-walled**, so pages can't be fetched to verify)
     - Album: — (unverifiable without login)
     - Barcode: –
+    - Catalog number: `catalog_number` of the release detail, for its `label` (logged in)
 - **Local search:** —
 - **Global search:** DuckDuckGo / Brave (`site:beatport.com/release/`, best slug-vs-title match)
 - **Track verify:** **unverifiable** (Cloudflare-walled) — a search-found link is surfaced as an **unverified** match (`?`) and excluded from the `+` insert and `↗` open-all.

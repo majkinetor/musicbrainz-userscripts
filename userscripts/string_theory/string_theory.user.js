@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         String Theory
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.14.184113
+// @version      2026.10.14.190816
 // @description  Unified bundle of 11 MusicBrainz userscripts (apollo_editor, art_station, credit_hoarder, falcon, first_contact, fusion, group_therapy, isrc_scout, mammoth, mission_control, platform_check). Built by userscripts/string_theory/build.mjs — do not hand-edit.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5TdHJpbmcgVGhlb3J5PC90aXRsZT4KPHBhdGggZD0iTTY0IDEwIEw2Ni40IDEwLjIgTDY4LjcgMTAuNiBMNzAuOSAxMS40IEw3My4xIDEyLjQgTDc1LjIgMTMuNyBMNzcuMSAxNS4yIEw3OC44IDE3IEw4MC40IDE4LjkgTDgxLjggMjEgTDgzLjEgMjMuMSBMODQuMSAyNS40IEw4NSAyNy42IEw4NS43IDI5LjkgTDg2LjMgMzIuMSBMODYuOCAzNC4zIEw4Ny4xIDM2LjQgTDg3LjQgMzguNCBMODcuNyA0MC4zIEw4Ny45IDQyLjEgTDg4LjIgNDMuNyBMODguNSA0NS4yIEw4OC45IDQ2LjYgTDg5LjQgNDcuOCBMOTAgNDkgTDkwLjcgNTAuMSBMOTEuNiA1MS4xIEw5Mi42IDUyLjIgTDkzLjcgNTMuMiBMOTUgNTQuMiBMOTYuNCA1NS4zIEw5Ny45IDU2LjUgTDk5LjUgNTcuNyBMMTAxLjEgNTkuMSBMMTAyLjcgNjAuNiBMMTA0LjQgNjIuMiBMMTA2IDY0IEwxMDcuNSA2NS45IEwxMDguOSA2Ny45IEwxMTAuMiA3MC4xIEwxMTEuMyA3Mi4zIEwxMTIuMSA3NC43IEwxMTIuOCA3Ny4xIEwxMTMuMSA3OS41IEwxMTMuMiA4MS45IEwxMTMgODQuMyBMMTEyLjYgODYuNiBMMTExLjggODguOSBMMTEwLjggOTEgTDEwOS41IDkzIEwxMDcuOSA5NC43IEwxMDYuMSA5Ni4zIEwxMDQuMSA5Ny43IEwxMDIgOTguOCBMOTkuNyA5OS43IEw5Ny4zIDEwMC40IEw5NC45IDEwMC44IEw5Mi40IDEwMSBMODkuOSAxMDAuOSBMODcuNCAxMDAuNyBMODUgMTAwLjQgTDgyLjcgOTkuOSBMODAuNCA5OS4zIEw3OC4zIDk4LjYgTDc2LjMgOTcuOCBMNzQuNCA5Ny4xIEw3Mi43IDk2LjQgTDcxIDk1LjcgTDY5LjUgOTUuMSBMNjggOTQuNiBMNjYuNyA5NC4zIEw2NS4zIDk0LjEgTDY0IDk0IEw2Mi43IDk0LjEgTDYxLjMgOTQuMyBMNjAgOTQuNiBMNTguNSA5NS4xIEw1NyA5NS43IEw1NS4zIDk2LjQgTDUzLjYgOTcuMSBMNTEuNyA5Ny44IEw0OS43IDk4LjYgTDQ3LjYgOTkuMyBMNDUuMyA5OS45IEw0MyAxMDAuNCBMNDAuNiAxMDAuNyBMMzguMSAxMDAuOSBMMzUuNiAxMDEgTDMzLjEgMTAwLjggTDMwLjcgMTAwLjQgTDI4LjMgOTkuNyBMMjYgOTguOCBMMjMuOSA5Ny43IEwyMS45IDk2LjMgTDIwLjEgOTQuNyBMMTguNSA5MyBMMTcuMiA5MSBMMTYuMiA4OC45IEwxNS40IDg2LjYgTDE1IDg0LjMgTDE0LjggODEuOSBMMTQuOSA3OS41IEwxNS4yIDc3LjEgTDE1LjkgNzQuNyBMMTYuNyA3Mi4zIEwxNy44IDcwLjEgTDE5LjEgNjcuOSBMMjAuNSA2NS45IEwyMiA2NCBMMjMuNiA2Mi4yIEwyNS4zIDYwLjYgTDI2LjkgNTkuMSBMMjguNSA1Ny43IEwzMC4xIDU2LjUgTDMxLjYgNTUuMyBMMzMgNTQuMiBMMzQuMyA1My4yIEwzNS40IDUyLjIgTDM2LjQgNTEuMSBMMzcuMyA1MC4xIEwzOCA0OSBMMzguNiA0Ny44IEwzOS4xIDQ2LjYgTDM5LjUgNDUuMiBMMzkuOCA0My43IEw0MC4xIDQyLjEgTDQwLjMgNDAuMyBMNDAuNiAzOC40IEw0MC45IDM2LjQgTDQxLjIgMzQuMyBMNDEuNyAzMi4xIEw0Mi4zIDI5LjkgTDQzIDI3LjYgTDQzLjkgMjUuNCBMNDQuOSAyMy4xIEw0Ni4yIDIxIEw0Ny42IDE4LjkgTDQ5LjIgMTcgTDUwLjkgMTUuMiBMNTIuOCAxMy43IEw1NC45IDEyLjQgTDU3LjEgMTEuNCBMNTkuMyAxMC42IEw2MS42IDEwLjJaIiBmaWxsPSJub25lIiBzdHJva2U9IiM5Yzg2ZWEiIHN0cm9rZS13aWR0aD0iMTAiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz4KPHBhdGggZD0iTTY0IDM0IEw2NS4zIDMzLjkgTDY2LjcgMzMuNyBMNjggMzMuNCBMNjkuNSAzMi45IEw3MSAzMi4zIEw3Mi43IDMxLjYgTDc0LjQgMzAuOSBMNzYuMyAzMC4yIEw3OC4zIDI5LjQgTDgwLjQgMjguNyBMODIuNyAyOC4xIEw4NSAyNy42IEw4Ny40IDI3LjMgTDg5LjkgMjcuMSBMOTIuNCAyNyBMOTQuOSAyNy4yIEw5Ny4zIDI3LjYgTDk5LjcgMjguMyBMMTAyIDI5LjIgTDEwNC4xIDMwLjMgTDEwNi4xIDMxLjcgTDEwNy45IDMzLjMgTDEwOS41IDM1IEwxMTAuOCAzNyBMMTExLjggMzkuMSBMMTEyLjYgNDEuNCBMMTEzIDQzLjcgTDExMy4yIDQ2LjEgTDExMy4xIDQ4LjUgTDExMi44IDUwLjkgTDExMi4xIDUzLjMgTDExMS4zIDU1LjcgTDExMC4yIDU3LjkgTDEwOC45IDYwLjEgTDEwNy41IDYyLjEgTDEwNiA2NCBMMTA0LjQgNjUuOCBMMTAyLjcgNjcuNCBMMTAxLjEgNjguOSBMOTkuNSA3MC4zIEw5Ny45IDcxLjUgTDk2LjQgNzIuNyBMOTUgNzMuOCBMOTMuNyA3NC44IEw5Mi42IDc1LjggTDkxLjYgNzYuOSBMOTAuNyA3Ny45IEw5MCA3OSBMODkuNCA4MC4yIEw4OC45IDgxLjQgTDg4LjUgODIuOCBMODguMiA4NC4zIEw4Ny45IDg1LjkgTDg3LjcgODcuNyBMODcuNCA4OS42IEw4Ny4xIDkxLjYgTDg2LjggOTMuNyBMODYuMyA5NS45IEw4NS43IDk4LjEgTDg1IDEwMC40IEw4NC4xIDEwMi42IEw4My4xIDEwNC45IEw4MS44IDEwNyBMODAuNCAxMDkuMSBMNzguOCAxMTEgTDc3LjEgMTEyLjggTDc1LjIgMTE0LjMgTDczLjEgMTE1LjYgTDcwLjkgMTE2LjYgTDY4LjcgMTE3LjQgTDY2LjQgMTE3LjggTDY0IDExOCBMNjEuNiAxMTcuOCBMNTkuMyAxMTcuNCBMNTcuMSAxMTYuNiBMNTQuOSAxMTUuNiBMNTIuOCAxMTQuMyBMNTAuOSAxMTIuOCBMNDkuMiAxMTEgTDQ3LjYgMTA5LjEgTDQ2LjIgMTA3IEw0NC45IDEwNC45IEw0My45IDEwMi42IEw0MyAxMDAuNCBMNDIuMyA5OC4xIEw0MS43IDk1LjkgTDQxLjIgOTMuNyBMNDAuOSA5MS42IEw0MC42IDg5LjYgTDQwLjMgODcuNyBMNDAuMSA4NS45IEwzOS44IDg0LjMgTDM5LjUgODIuOCBMMzkuMSA4MS40IEwzOC42IDgwLjIgTDM4IDc5IEwzNy4zIDc3LjkgTDM2LjQgNzYuOSBMMzUuNCA3NS44IEwzNC4zIDc0LjggTDMzIDczLjggTDMxLjYgNzIuNyBMMzAuMSA3MS41IEwyOC41IDcwLjMgTDI2LjkgNjguOSBMMjUuMyA2Ny40IEwyMy42IDY1LjggTDIyIDY0IEwyMC41IDYyLjEgTDE5LjEgNjAuMSBMMTcuOCA1Ny45IEwxNi43IDU1LjcgTDE1LjkgNTMuMyBMMTUuMiA1MC45IEwxNC45IDQ4LjUgTDE0LjggNDYuMSBMMTUgNDMuNyBMMTUuNCA0MS40IEwxNi4yIDM5LjEgTDE3LjIgMzcgTDE4LjUgMzUgTDIwLjEgMzMuMyBMMjEuOSAzMS43IEwyMy45IDMwLjMgTDI2IDI5LjIgTDI4LjMgMjguMyBMMzAuNyAyNy42IEwzMy4xIDI3LjIgTDM1LjYgMjcgTDM4LjEgMjcuMSBMNDAuNiAyNy4zIEw0MyAyNy42IEw0NS4zIDI4LjEgTDQ3LjYgMjguNyBMNDkuNyAyOS40IEw1MS43IDMwLjIgTDUzLjYgMzAuOSBMNTUuMyAzMS42IEw1NyAzMi4zIEw1OC41IDMyLjkgTDYwIDMzLjQgTDYxLjMgMzMuNyBMNjIuNyAzMy45WiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZmZmZmZmIiBzdHJva2Utd2lkdGg9IjIwIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+CjxwYXRoIGQ9Ik02NCAzNCBMNjUuMyAzMy45IEw2Ni43IDMzLjcgTDY4IDMzLjQgTDY5LjUgMzIuOSBMNzEgMzIuMyBMNzIuNyAzMS42IEw3NC40IDMwLjkgTDc2LjMgMzAuMiBMNzguMyAyOS40IEw4MC40IDI4LjcgTDgyLjcgMjguMSBMODUgMjcuNiBMODcuNCAyNy4zIEw4OS45IDI3LjEgTDkyLjQgMjcgTDk0LjkgMjcuMiBMOTcuMyAyNy42IEw5OS43IDI4LjMgTDEwMiAyOS4yIEwxMDQuMSAzMC4zIEwxMDYuMSAzMS43IEwxMDcuOSAzMy4zIEwxMDkuNSAzNSBMMTEwLjggMzcgTDExMS44IDM5LjEgTDExMi42IDQxLjQgTDExMyA0My43IEwxMTMuMiA0Ni4xIEwxMTMuMSA0OC41IEwxMTIuOCA1MC45IEwxMTIuMSA1My4zIEwxMTEuMyA1NS43IEwxMTAuMiA1Ny45IEwxMDguOSA2MC4xIEwxMDcuNSA2Mi4xIEwxMDYgNjQgTDEwNC40IDY1LjggTDEwMi43IDY3LjQgTDEwMS4xIDY4LjkgTDk5LjUgNzAuMyBMOTcuOSA3MS41IEw5Ni40IDcyLjcgTDk1IDczLjggTDkzLjcgNzQuOCBMOTIuNiA3NS44IEw5MS42IDc2LjkgTDkwLjcgNzcuOSBMOTAgNzkgTDg5LjQgODAuMiBMODguOSA4MS40IEw4OC41IDgyLjggTDg4LjIgODQuMyBMODcuOSA4NS45IEw4Ny43IDg3LjcgTDg3LjQgODkuNiBMODcuMSA5MS42IEw4Ni44IDkzLjcgTDg2LjMgOTUuOSBMODUuNyA5OC4xIEw4NSAxMDAuNCBMODQuMSAxMDIuNiBMODMuMSAxMDQuOSBMODEuOCAxMDcgTDgwLjQgMTA5LjEgTDc4LjggMTExIEw3Ny4xIDExMi44IEw3NS4yIDExNC4zIEw3My4xIDExNS42IEw3MC45IDExNi42IEw2OC43IDExNy40IEw2Ni40IDExNy44IEw2NCAxMTggTDYxLjYgMTE3LjggTDU5LjMgMTE3LjQgTDU3LjEgMTE2LjYgTDU0LjkgMTE1LjYgTDUyLjggMTE0LjMgTDUwLjkgMTEyLjggTDQ5LjIgMTExIEw0Ny42IDEwOS4xIEw0Ni4yIDEwNyBMNDQuOSAxMDQuOSBMNDMuOSAxMDIuNiBMNDMgMTAwLjQgTDQyLjMgOTguMSBMNDEuNyA5NS45IEw0MS4yIDkzLjcgTDQwLjkgOTEuNiBMNDAuNiA4OS42IEw0MC4zIDg3LjcgTDQwLjEgODUuOSBMMzkuOCA4NC4zIEwzOS41IDgyLjggTDM5LjEgODEuNCBMMzguNiA4MC4yIEwzOCA3OSBMMzcuMyA3Ny45IEwzNi40IDc2LjkgTDM1LjQgNzUuOCBMMzQuMyA3NC44IEwzMyA3My44IEwzMS42IDcyLjcgTDMwLjEgNzEuNSBMMjguNSA3MC4zIEwyNi45IDY4LjkgTDI1LjMgNjcuNCBMMjMuNiA2NS44IEwyMiA2NCBMMjAuNSA2Mi4xIEwxOS4xIDYwLjEgTDE3LjggNTcuOSBMMTYuNyA1NS43IEwxNS45IDUzLjMgTDE1LjIgNTAuOSBMMTQuOSA0OC41IEwxNC44IDQ2LjEgTDE1IDQzLjcgTDE1LjQgNDEuNCBMMTYuMiAzOS4xIEwxNy4yIDM3IEwxOC41IDM1IEwyMC4xIDMzLjMgTDIxLjkgMzEuNyBMMjMuOSAzMC4zIEwyNiAyOS4yIEwyOC4zIDI4LjMgTDMwLjcgMjcuNiBMMzMuMSAyNy4yIEwzNS42IDI3IEwzOC4xIDI3LjEgTDQwLjYgMjcuMyBMNDMgMjcuNiBMNDUuMyAyOC4xIEw0Ny42IDI4LjcgTDQ5LjcgMjkuNCBMNTEuNyAzMC4yIEw1My42IDMwLjkgTDU1LjMgMzEuNiBMNTcgMzIuMyBMNTguNSAzMi45IEw2MCAzMy40IEw2MS4zIDMzLjcgTDYyLjcgMzMuOVoiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZjNDdlMCIgc3Ryb2tlLXdpZHRoPSIxMyIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgo8L3N2Zz4K
@@ -127,8 +127,8 @@
 // Bundles (verbatim, each wrapped in a URL gate and a run-at gate): apollo_editor, art_station, credit_hoarder, falcon, first_contact, fusion, group_therapy, isrc_scout, mammoth, mission_control, platform_check.
 
 try {
-  console.log('%c String Theory %c v2026.10.14.184113 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
-  console.log("String Theory bundles:\n  · Apollo Editor v2026.10.14.184111\n  · Art Station v2026.10.13\n  · Credit Hoarder v2026.10.13.121842\n  · Falcon v2026.10.13.173631\n  · First Contact v2026.10.14.183425\n  · Fusion v2026.10.13\n  · Group Therapy v2026.10.13.173651\n  · ISRC Scout v2026.10.13.173549\n  · Mammoth v2026.10.12.162836\n  · Mission Control v2026.10.13.140636\n  · Platform Check v2026.10.13.173651");
+  console.log('%c String Theory %c v2026.10.14.190816 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
+  console.log("String Theory bundles:\n  · Apollo Editor v2026.10.14.184111\n  · Art Station v2026.10.13\n  · Credit Hoarder v2026.10.13.121842\n  · Falcon v2026.10.14.162408\n  · First Contact v2026.10.14.183425\n  · Fusion v2026.10.13\n  · Group Therapy v2026.10.13.173651\n  · ISRC Scout v2026.10.13.173549\n  · Mammoth v2026.10.12.162836\n  · Mission Control v2026.10.14.165550\n  · Platform Check v2026.10.14.185927");
 } catch (e) {}
 
 function __stReadOff() { try { var v = GM_getValue("string_theory.off", []); return Array.isArray(v) ? v : []; } catch (e) { return []; } }
@@ -136,7 +136,7 @@ var __stOff = __stReadOff();
 (function () {
   if (typeof GM_registerMenuCommand !== 'function') return;
   try { if (window.top !== window.self) return; } catch (e) { return; }
-  var members = [["apollo_editor","Apollo Editor","2026.10.14.184111"],["art_station","Art Station","2026.10.13"],["credit_hoarder","Credit Hoarder","2026.10.13.121842"],["falcon","Falcon","2026.10.13.173631"],["first_contact","First Contact","2026.10.14.183425"],["fusion","Fusion","2026.10.13"],["group_therapy","Group Therapy","2026.10.13.173651"],["isrc_scout","ISRC Scout","2026.10.13.173549"],["mammoth","Mammoth","2026.10.12.162836"],["mission_control","Mission Control","2026.10.13.140636"],["platform_check","Platform Check","2026.10.13.173651"]];
+  var members = [["apollo_editor","Apollo Editor","2026.10.14.184111"],["art_station","Art Station","2026.10.13"],["credit_hoarder","Credit Hoarder","2026.10.13.121842"],["falcon","Falcon","2026.10.14.162408"],["first_contact","First Contact","2026.10.14.183425"],["fusion","Fusion","2026.10.13"],["group_therapy","Group Therapy","2026.10.13.173651"],["isrc_scout","ISRC Scout","2026.10.13.173549"],["mammoth","Mammoth","2026.10.12.162836"],["mission_control","Mission Control","2026.10.14.165550"],["platform_check","Platform Check","2026.10.14.185927"]];
   // Each entry carries a stable id (options.id): Violentmonkey and Tampermonkey then relabel it in
   // place, where it stands. Unregister-and-add left Violentmonkey's open menu with the old entry
   // still there and the new one appended at the end. A manager that ignores options.id hands back
@@ -30371,7 +30371,7 @@ ${lines}
 
 // ===== falcon (@run-at document-end) ============================================
 if (__stOff.indexOf("falcon") < 0 && __stRuns("falcon", {"inc":["^https:\\/\\/(?:[^/]*\\.)?musicbrainz\\.org(?::\\d+)?/.*$","^https:\\/\\/harmony\\.pulsewidth\\.org\\.uk(?::\\d+)?/.*$"],"exc":[],"noframes":true})) (function(__stGM){
-  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Falcon*","namespace":"https://github.com/majkinetor/musicbrainz-userscripts","version":"2026.10.13.173631","description":"Edit a BATCH of MusicBrainz artists/labels/recordings at once — add external links, ISRCs, names, aliases, disambiguations and cover art — no popup-per-entity, no tab churn. A small pool of persistent worker iframes churns through a queue, each submitting its own edit and moving straight to the next entity. Paste a list, hand it a queue via a `?falcon=` URL param, or click \"Send to Falcon\" on a Harmony actions page to import its suggestions directly.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/falcon/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5GYWxjb248L3RpdGxlPgo8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSI1OCIgZmlsbD0iI2Y2ZWZlMiIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjYiLz48cGF0aCBkPSJNMTA1LjYgNDAuMCBBNDggNDggMCAwIDEgMTA1LjYgODguMCIgc3Ryb2tlPSIjZDYyODI4IiBzdHJva2Utd2lkdGg9IjciIGZpbGw9Im5vbmUiLz4KPGcgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2UtbGluZWNhcD0icm91bmQiPjxwYXRoIGQ9Ik0yMC43IDg5LjAgTDI5LjQgODQuMCIgc3Ryb2tlLXdpZHRoPSIzIi8+PHBhdGggZD0iTTE0LjMgNjkuMiBMMjQuMiA2OC4yIiBzdHJva2Utd2lkdGg9IjMiLz48cGF0aCBkPSJNMTYuNCA0OC41IEwyNi4wIDUxLjYiIHN0cm9rZS13aWR0aD0iMyIvPjxwYXRoIGQ9Ik0yNi44IDMwLjUgTDM0LjMgMzcuMiIgc3Ryb2tlLXdpZHRoPSIzIi8+PHBhdGggZD0iTTQzLjcgMTguMyBMNDcuNyAyNy41IiBzdHJva2Utd2lkdGg9IjMiLz48cGF0aCBkPSJNNjQuMCAxNC4wIEw2NC4wIDI0LjAiIHN0cm9rZS13aWR0aD0iMyIvPjxwYXRoIGQ9Ik04NC4zIDE4LjMgTDgwLjMgMjcuNSIgc3Ryb2tlLXdpZHRoPSIzIi8+PHBhdGggZD0iTTEwMS4yIDMwLjUgTDkzLjcgMzcuMiIgc3Ryb2tlLXdpZHRoPSIzIi8+PHBhdGggZD0iTTExMS42IDQ4LjUgTDEwMi4wIDUxLjYiIHN0cm9rZS13aWR0aD0iMyIvPjxwYXRoIGQ9Ik0xMTMuNyA2OS4yIEwxMDMuOCA2OC4yIiBzdHJva2Utd2lkdGg9IjMiLz48cGF0aCBkPSJNMTA3LjMgODkuMCBMOTguNiA4NC4wIiBzdHJva2Utd2lkdGg9IjMiLz48L2c+PGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoNjQgOTQpIHJvdGF0ZSgwKSBzY2FsZSgwLjE2KSB0cmFuc2xhdGUoLTY0IC02NCkiPjxwYXRoIGQ9Ik02NCAyNiBDNjcgMjYgNzAgMzAgNzAgMzYgQzcyIDQwIDc0IDQyIDc2IDQ0IEM5MiA0MiAxMDggMzYgMTI0IDM0IEMxMTIgNDQgOTYgNTQgNzggNjIgQzc2IDY4IDc0IDc0IDc0IDgwIEw4MCAxMDAgQzc0IDEwNCA2OCAxMDQgNjQgMTA0IFoiIGZpbGw9IiM0YTVhNzgiLz48cGF0aCBkPSJNNjQgMjYgQzY3IDI2IDcwIDMwIDcwIDM2IEM3MiA0MCA3NCA0MiA3NiA0NCBDOTIgNDIgMTA4IDM2IDEyNCAzNCBDMTEyIDQ0IDk2IDU0IDc4IDYyIEM3NiA2OCA3NCA3NCA3NCA4MCBMODAgMTAwIEM3NCAxMDQgNjggMTA0IDY0IDEwNCBaIiBmaWxsPSIjNGE1YTc4IiB0cmFuc2Zvcm09InRyYW5zbGF0ZSgxMjggMCkgc2NhbGUoLTEgMSkiLz48L2c+PGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoNjQgNjQpIHJvdGF0ZSgxMTIpIj48cGF0aCBkPSJNMCAtNDYgTDQgMCBMLTQgMFoiIGZpbGw9IiMxYjJhNGEiLz48L2c+CjxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjciIGZpbGw9IiMxYjJhNGEiLz4KPC9zdmc+Cg=="}) }) : { script: {"name":"Falcon*","namespace":"https://github.com/majkinetor/musicbrainz-userscripts","version":"2026.10.13.173631","description":"Edit a BATCH of MusicBrainz artists/labels/recordings at once — add external links, ISRCs, names, aliases, disambiguations and cover art — no popup-per-entity, no tab churn. A small pool of persistent worker iframes churns through a queue, each submitting its own edit and moving straight to the next entity. Paste a list, hand it a queue via a `?falcon=` URL param, or click \"Send to Falcon\" on a Harmony actions page to import its suggestions directly.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/falcon/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5GYWxjb248L3RpdGxlPgo8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSI1OCIgZmlsbD0iI2Y2ZWZlMiIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjYiLz48cGF0aCBkPSJNMTA1LjYgNDAuMCBBNDggNDggMCAwIDEgMTA1LjYgODguMCIgc3Ryb2tlPSIjZDYyODI4IiBzdHJva2Utd2lkdGg9IjciIGZpbGw9Im5vbmUiLz4KPGcgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2UtbGluZWNhcD0icm91bmQiPjxwYXRoIGQ9Ik0yMC43IDg5LjAgTDI5LjQgODQuMCIgc3Ryb2tlLXdpZHRoPSIzIi8+PHBhdGggZD0iTTE0LjMgNjkuMiBMMjQuMiA2OC4yIiBzdHJva2Utd2lkdGg9IjMiLz48cGF0aCBkPSJNMTYuNCA0OC41IEwyNi4wIDUxLjYiIHN0cm9rZS13aWR0aD0iMyIvPjxwYXRoIGQ9Ik0yNi44IDMwLjUgTDM0LjMgMzcuMiIgc3Ryb2tlLXdpZHRoPSIzIi8+PHBhdGggZD0iTTQzLjcgMTguMyBMNDcuNyAyNy41IiBzdHJva2Utd2lkdGg9IjMiLz48cGF0aCBkPSJNNjQuMCAxNC4wIEw2NC4wIDI0LjAiIHN0cm9rZS13aWR0aD0iMyIvPjxwYXRoIGQ9Ik04NC4zIDE4LjMgTDgwLjMgMjcuNSIgc3Ryb2tlLXdpZHRoPSIzIi8+PHBhdGggZD0iTTEwMS4yIDMwLjUgTDkzLjcgMzcuMiIgc3Ryb2tlLXdpZHRoPSIzIi8+PHBhdGggZD0iTTExMS42IDQ4LjUgTDEwMi4wIDUxLjYiIHN0cm9rZS13aWR0aD0iMyIvPjxwYXRoIGQ9Ik0xMTMuNyA2OS4yIEwxMDMuOCA2OC4yIiBzdHJva2Utd2lkdGg9IjMiLz48cGF0aCBkPSJNMTA3LjMgODkuMCBMOTguNiA4NC4wIiBzdHJva2Utd2lkdGg9IjMiLz48L2c+PGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoNjQgOTQpIHJvdGF0ZSgwKSBzY2FsZSgwLjE2KSB0cmFuc2xhdGUoLTY0IC02NCkiPjxwYXRoIGQ9Ik02NCAyNiBDNjcgMjYgNzAgMzAgNzAgMzYgQzcyIDQwIDc0IDQyIDc2IDQ0IEM5MiA0MiAxMDggMzYgMTI0IDM0IEMxMTIgNDQgOTYgNTQgNzggNjIgQzc2IDY4IDc0IDc0IDc0IDgwIEw4MCAxMDAgQzc0IDEwNCA2OCAxMDQgNjQgMTA0IFoiIGZpbGw9IiM0YTVhNzgiLz48cGF0aCBkPSJNNjQgMjYgQzY3IDI2IDcwIDMwIDcwIDM2IEM3MiA0MCA3NCA0MiA3NiA0NCBDOTIgNDIgMTA4IDM2IDEyNCAzNCBDMTEyIDQ0IDk2IDU0IDc4IDYyIEM3NiA2OCA3NCA3NCA3NCA4MCBMODAgMTAwIEM3NCAxMDQgNjggMTA0IDY0IDEwNCBaIiBmaWxsPSIjNGE1YTc4IiB0cmFuc2Zvcm09InRyYW5zbGF0ZSgxMjggMCkgc2NhbGUoLTEgMSkiLz48L2c+PGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoNjQgNjQpIHJvdGF0ZSgxMTIpIj48cGF0aCBkPSJNMCAtNDYgTDQgMCBMLTQgMFoiIGZpbGw9IiMxYjJhNGEiLz48L2c+CjxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjciIGZpbGw9IiMxYjJhNGEiLz4KPC9zdmc+Cg=="} };
+  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Falcon*","namespace":"https://github.com/majkinetor/musicbrainz-userscripts","version":"2026.10.14.162408","description":"Edit a BATCH of MusicBrainz artists/labels/recordings at once — add external links, ISRCs, names, aliases, disambiguations and cover art — no popup-per-entity, no tab churn. A small pool of persistent worker iframes churns through a queue, each submitting its own edit and moving straight to the next entity. Paste a list, hand it a queue via a `?falcon=` URL param, or click \"Send to Falcon\" on a Harmony actions page to import its suggestions directly.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/falcon/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5GYWxjb248L3RpdGxlPgo8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSI1OCIgZmlsbD0iI2Y2ZWZlMiIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjYiLz48cGF0aCBkPSJNMTA1LjYgNDAuMCBBNDggNDggMCAwIDEgMTA1LjYgODguMCIgc3Ryb2tlPSIjZDYyODI4IiBzdHJva2Utd2lkdGg9IjciIGZpbGw9Im5vbmUiLz4KPGcgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2UtbGluZWNhcD0icm91bmQiPjxwYXRoIGQ9Ik0yMC43IDg5LjAgTDI5LjQgODQuMCIgc3Ryb2tlLXdpZHRoPSIzIi8+PHBhdGggZD0iTTE0LjMgNjkuMiBMMjQuMiA2OC4yIiBzdHJva2Utd2lkdGg9IjMiLz48cGF0aCBkPSJNMTYuNCA0OC41IEwyNi4wIDUxLjYiIHN0cm9rZS13aWR0aD0iMyIvPjxwYXRoIGQ9Ik0yNi44IDMwLjUgTDM0LjMgMzcuMiIgc3Ryb2tlLXdpZHRoPSIzIi8+PHBhdGggZD0iTTQzLjcgMTguMyBMNDcuNyAyNy41IiBzdHJva2Utd2lkdGg9IjMiLz48cGF0aCBkPSJNNjQuMCAxNC4wIEw2NC4wIDI0LjAiIHN0cm9rZS13aWR0aD0iMyIvPjxwYXRoIGQ9Ik04NC4zIDE4LjMgTDgwLjMgMjcuNSIgc3Ryb2tlLXdpZHRoPSIzIi8+PHBhdGggZD0iTTEwMS4yIDMwLjUgTDkzLjcgMzcuMiIgc3Ryb2tlLXdpZHRoPSIzIi8+PHBhdGggZD0iTTExMS42IDQ4LjUgTDEwMi4wIDUxLjYiIHN0cm9rZS13aWR0aD0iMyIvPjxwYXRoIGQ9Ik0xMTMuNyA2OS4yIEwxMDMuOCA2OC4yIiBzdHJva2Utd2lkdGg9IjMiLz48cGF0aCBkPSJNMTA3LjMgODkuMCBMOTguNiA4NC4wIiBzdHJva2Utd2lkdGg9IjMiLz48L2c+PGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoNjQgOTQpIHJvdGF0ZSgwKSBzY2FsZSgwLjE2KSB0cmFuc2xhdGUoLTY0IC02NCkiPjxwYXRoIGQ9Ik02NCAyNiBDNjcgMjYgNzAgMzAgNzAgMzYgQzcyIDQwIDc0IDQyIDc2IDQ0IEM5MiA0MiAxMDggMzYgMTI0IDM0IEMxMTIgNDQgOTYgNTQgNzggNjIgQzc2IDY4IDc0IDc0IDc0IDgwIEw4MCAxMDAgQzc0IDEwNCA2OCAxMDQgNjQgMTA0IFoiIGZpbGw9IiM0YTVhNzgiLz48cGF0aCBkPSJNNjQgMjYgQzY3IDI2IDcwIDMwIDcwIDM2IEM3MiA0MCA3NCA0MiA3NiA0NCBDOTIgNDIgMTA4IDM2IDEyNCAzNCBDMTEyIDQ0IDk2IDU0IDc4IDYyIEM3NiA2OCA3NCA3NCA3NCA4MCBMODAgMTAwIEM3NCAxMDQgNjggMTA0IDY0IDEwNCBaIiBmaWxsPSIjNGE1YTc4IiB0cmFuc2Zvcm09InRyYW5zbGF0ZSgxMjggMCkgc2NhbGUoLTEgMSkiLz48L2c+PGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoNjQgNjQpIHJvdGF0ZSgxMTIpIj48cGF0aCBkPSJNMCAtNDYgTDQgMCBMLTQgMFoiIGZpbGw9IiMxYjJhNGEiLz48L2c+CjxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjciIGZpbGw9IiMxYjJhNGEiLz4KPC9zdmc+Cg=="}) }) : { script: {"name":"Falcon*","namespace":"https://github.com/majkinetor/musicbrainz-userscripts","version":"2026.10.14.162408","description":"Edit a BATCH of MusicBrainz artists/labels/recordings at once — add external links, ISRCs, names, aliases, disambiguations and cover art — no popup-per-entity, no tab churn. A small pool of persistent worker iframes churns through a queue, each submitting its own edit and moving straight to the next entity. Paste a list, hand it a queue via a `?falcon=` URL param, or click \"Send to Falcon\" on a Harmony actions page to import its suggestions directly.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/falcon/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5GYWxjb248L3RpdGxlPgo8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSI1OCIgZmlsbD0iI2Y2ZWZlMiIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjYiLz48cGF0aCBkPSJNMTA1LjYgNDAuMCBBNDggNDggMCAwIDEgMTA1LjYgODguMCIgc3Ryb2tlPSIjZDYyODI4IiBzdHJva2Utd2lkdGg9IjciIGZpbGw9Im5vbmUiLz4KPGcgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2UtbGluZWNhcD0icm91bmQiPjxwYXRoIGQ9Ik0yMC43IDg5LjAgTDI5LjQgODQuMCIgc3Ryb2tlLXdpZHRoPSIzIi8+PHBhdGggZD0iTTE0LjMgNjkuMiBMMjQuMiA2OC4yIiBzdHJva2Utd2lkdGg9IjMiLz48cGF0aCBkPSJNMTYuNCA0OC41IEwyNi4wIDUxLjYiIHN0cm9rZS13aWR0aD0iMyIvPjxwYXRoIGQ9Ik0yNi44IDMwLjUgTDM0LjMgMzcuMiIgc3Ryb2tlLXdpZHRoPSIzIi8+PHBhdGggZD0iTTQzLjcgMTguMyBMNDcuNyAyNy41IiBzdHJva2Utd2lkdGg9IjMiLz48cGF0aCBkPSJNNjQuMCAxNC4wIEw2NC4wIDI0LjAiIHN0cm9rZS13aWR0aD0iMyIvPjxwYXRoIGQ9Ik04NC4zIDE4LjMgTDgwLjMgMjcuNSIgc3Ryb2tlLXdpZHRoPSIzIi8+PHBhdGggZD0iTTEwMS4yIDMwLjUgTDkzLjcgMzcuMiIgc3Ryb2tlLXdpZHRoPSIzIi8+PHBhdGggZD0iTTExMS42IDQ4LjUgTDEwMi4wIDUxLjYiIHN0cm9rZS13aWR0aD0iMyIvPjxwYXRoIGQ9Ik0xMTMuNyA2OS4yIEwxMDMuOCA2OC4yIiBzdHJva2Utd2lkdGg9IjMiLz48cGF0aCBkPSJNMTA3LjMgODkuMCBMOTguNiA4NC4wIiBzdHJva2Utd2lkdGg9IjMiLz48L2c+PGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoNjQgOTQpIHJvdGF0ZSgwKSBzY2FsZSgwLjE2KSB0cmFuc2xhdGUoLTY0IC02NCkiPjxwYXRoIGQ9Ik02NCAyNiBDNjcgMjYgNzAgMzAgNzAgMzYgQzcyIDQwIDc0IDQyIDc2IDQ0IEM5MiA0MiAxMDggMzYgMTI0IDM0IEMxMTIgNDQgOTYgNTQgNzggNjIgQzc2IDY4IDc0IDc0IDc0IDgwIEw4MCAxMDAgQzc0IDEwNCA2OCAxMDQgNjQgMTA0IFoiIGZpbGw9IiM0YTVhNzgiLz48cGF0aCBkPSJNNjQgMjYgQzY3IDI2IDcwIDMwIDcwIDM2IEM3MiA0MCA3NCA0MiA3NiA0NCBDOTIgNDIgMTA4IDM2IDEyNCAzNCBDMTEyIDQ0IDk2IDU0IDc4IDYyIEM3NiA2OCA3NCA3NCA3NCA4MCBMODAgMTAwIEM3NCAxMDQgNjggMTA0IDY0IDEwNCBaIiBmaWxsPSIjNGE1YTc4IiB0cmFuc2Zvcm09InRyYW5zbGF0ZSgxMjggMCkgc2NhbGUoLTEgMSkiLz48L2c+PGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoNjQgNjQpIHJvdGF0ZSgxMTIpIj48cGF0aCBkPSJNMCAtNDYgTDQgMCBMLTQgMFoiIGZpbGw9IiMxYjJhNGEiLz48L2c+CjxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjciIGZpbGw9IiMxYjJhNGEiLz4KPC9zdmc+Cg=="} };
   (f=>document.readyState!=='loading'?f():document.addEventListener('DOMContentLoaded',f,{once:true}))(function(){ try { (function(){
 (function () {
   'use strict';
@@ -32133,6 +32133,10 @@ if (__stOff.indexOf("falcon") < 0 && __stRuns("falcon", {"inc":["^https:\\/\\/(?
   const MBID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
   // #713: a release item's barcode, digits only ('' for none)
   const barcodeOf = v => String(v == null ? '' : v).replace(/\D/g, '');
+  // #727: a release item's labels: [{ mbid, name, catno, add }], a catalog number for a label the release has, or
+  // (add) a label to add, with its catalog number if any
+  const catnosOf = v => (Array.isArray(v) ? v : []).filter(l => l && MBID_RE.test(String(l.mbid || '')) && (String(l.catno || '').trim() || l.add === true))
+    .map(l => ({ mbid: String(l.mbid), name: String(l.name || ''), catno: String(l.catno || '').trim(), ...(l.add === true ? { add: true } : {}) }));
   // #496: MB's own cover-art type vocabulary — same list as Art Station's
   // COVER_TYPES (art_station.user.js), kept identical so a type picked here
   // maps onto the exact same label MB's own add-cover-art form shows.
@@ -32639,6 +32643,7 @@ if (__stOff.indexOf("falcon") < 0 && __stRuns("falcon", {"inc":["^https:\\/\\/(?
       const hasMeta = (DISAMBIGUATABLE.has(type) && !!(r.disambiguation || r.comment))
         || (RENAMEABLE.has(type) && !!r.rename)
         || (type === 'release' && !!barcodeOf(r.barcode))
+        || (type === 'release' && catnosOf(r.labels).length > 0)
         || (type === 'recording' && Array.isArray(r.isrcs) && r.isrcs.some(Boolean))
         || (type === 'recording' && r.video === true)
         || normalizeAliases(r.aliases).length > 0;
@@ -32657,6 +32662,7 @@ if (__stOff.indexOf("falcon") < 0 && __stRuns("falcon", {"inc":["^https:\\/\\/(?
           note: r.note || '', disambiguation: r.disambiguation || r.comment || '',
           rename: RENAMEABLE.has(type) ? String(r.rename || '') : '',
           barcode: type === 'release' ? barcodeOf(r.barcode) : '',
+          labels: type === 'release' ? catnosOf(r.labels) : [],
           isrcs: Array.isArray(r.isrcs) ? r.isrcs.filter(Boolean).map(String) : [],
           video: type === 'recording' && r.video === true,
           aliases: normalizeAliases(r.aliases),
@@ -32672,6 +32678,7 @@ if (__stOff.indexOf("falcon") < 0 && __stRuns("falcon", {"inc":["^https:\\/\\/(?
           urls.forEach(u => { if (!same.urls.some(x => x.url === u.url && x.linkTypeId === u.linkTypeId)) same.urls.push(u); });
           if (reItem.name && !same.name) same.name = reItem.name;
           if (reItem.barcode && !same.barcode) same.barcode = reItem.barcode;
+          reItem.labels.forEach(l => { same.labels = same.labels || []; if (!same.labels.some(x => x.mbid === l.mbid)) same.labels.push(l); });
           merged += same.urls.length - before;
           dbg('[import]', `${type}:${r.mbid} is queued already — ${same.urls.length - before} new url(s) merged into it`);
           return;
@@ -34658,6 +34665,60 @@ if (__stOff.indexOf("falcon") < 0 && __stRuns("falcon", {"inc":["^https:\\/\\/(?
     }
     return { ok: true, before, after: bc, staged: null };
   }
+  // #727: catalog numbers, each into the release label row of its label (by MBID) in the KO model, where
+  // the editor keeps it (release().labels()[i].catalogNumber). Only an empty one is filled: a row that has
+  // this catalog number already is unchanged, one with another is left alone. A label the release hasn't
+  // is added only when asked (add): into the empty row the editor shows, else a new one (addReleaseLabel),
+  // as the label's full entity (/ws/js/entity), which the editor needs to save it. { ok, set, unchanged, failed: [why], staged }
+  async function setReleaseCatnos(iframe, labels) {
+    const ready = await waitFor(() => {
+      const api = releaseEditorApi(frameWin(iframe));
+      try { return api && api.rootField.release() && frameDoc(iframe).getElementById('catno-0') ? api : null; } catch (e) { return null; }
+    }, 20000);
+    if (!ready) return { ok: false, set: 0, unchanged: 0, failed: ['the release editor never finished loading its labels'] };
+    await wait(300);
+    const norm = c => String(c || '').trim().toLowerCase();
+    let set = 0, unchanged = 0; const failed = [];
+    const rows = () => { try { return ready.rootField.release().labels() || []; } catch (e) { return []; } };
+    const rowOf = mbid => rows().find(r => { try { const l = r.label(); return l && l.gid === mbid; } catch (e) { return false; } });
+    for (const l of labels) {
+      let row = rowOf(l.mbid);
+      if (!row && l.add) {
+        try {
+          const r = await mbnFetch(`${MB_ORIGIN}/ws/js/entity/${l.mbid}`, { credentials: 'same-origin' });
+          const text = r && r.ok ? await r.text() : null;
+          if (!text || !/"gid"/.test(text)) throw new Error(`MusicBrainz answered ${r ? r.status : 'nothing'} for the label`);
+          const w = (frameWin(iframe).wrappedJSObject) || frameWin(iframe), rel = ready.rootField.release();
+          row = rows().find(x => { try { const e = x.label(); return !(e && (e.gid || e.name)) && !String(x.catalogNumber() || '').trim(); } catch (e) { return false; } });
+          if (!row) { ready.addReleaseLabel(rel); row = rows()[rows().length - 1]; }
+          row.label(w.MB.entity(w.JSON.parse(text), 'label'));
+          if (!rowOf(l.mbid)) throw new Error('the editor did not take the label');
+          if (!l.catno) set++;   // with a catalog number, it counts once, below
+          if (!l.catno) continue;
+        } catch (e) { failed.push(`could not add the label ${l.name || l.mbid} — ${e.message || e}`); continue; }
+      }
+      if (!row) { failed.push(`the release has no label ${l.name || l.mbid} by now — cat. no. ${l.catno} left out`); continue; }
+      if (!l.catno) { unchanged++; continue; }
+      const cur = String(row.catalogNumber() || '').trim();
+      if (norm(cur) === norm(l.catno)) { unchanged++; continue; }
+      if (cur) { failed.push(`${l.name || l.mbid} has cat. no. ${cur} by now — ${l.catno} left out`); continue; }
+      try { row.catalogNumber(l.catno); set++; } catch (e) { failed.push(`could not write cat. no. ${l.catno} — ${e.message || e}`); }
+    }
+    // the editor binds late: read it back after a beat, as the fields above do
+    if (set) {
+      await wait(1200);
+      for (const l of labels) {
+        const row = rowOf(l.mbid);
+        if (!l.catno || failed.some(f => f.includes(l.mbid) || f.includes(l.name || '\0'))) continue;
+        if (!row) { set--; failed.push(`the label ${l.name || l.mbid} didn't hold in the release editor`); }
+        else if (norm(row.catalogNumber()) !== norm(l.catno) && !failed.some(f => f.includes(l.catno))) { set--; failed.push(`cat. no. ${l.catno} didn't hold in the release editor`); }
+      }
+    }
+    let staged = null;
+    try { staged = ready.allEdits().length; } catch (e) {}
+    if (set && staged === 0) return { ok: false, set: 0, unchanged, failed: failed.concat('MusicBrainz staged no edit for the catalog numbers'), staged };
+    return { ok: !failed.length, set, unchanged, failed, staged };
+  }
   // #495: the release editor's own "Enter edit" button lives inside its
   // jQuery-UI-tabs "Edit note" panel (display:none until that tab is
   // active) — a bare element.click() on the tab link does nothing (jQuery UI
@@ -35104,12 +35165,22 @@ if (__stOff.indexOf("falcon") < 0 && __stRuns("falcon", {"inc":["^https:\\/\\/(?
       else log('warn', `${tag} BARCODE NOT SET — ${r.why}`);
       if (!r.ok) results.push({ url: '(barcode)', ok: false, error: r.why });
     }
+    // #727: catalog numbers, into the release's own label rows
+    let releaseCatnosSet = false;
+    if (item.entityType === 'release' && (item.labels || []).length) {
+      const r = await setReleaseCatnos(iframe, item.labels);
+      releaseCatnosSet = r.set > 0;
+      if (r.set) log('info', `${tag} ${r.set} label(s) or catalog number(s) filled in the release editor: ${item.labels.map(l => `${l.add ? '+' : ''}${l.name || l.mbid} ${l.catno}`).join(', ')}${r.staged != null ? ` (MB staged ${r.staged} edit(s))` : ''}`);
+      if (r.unchanged) dbg(tag, `${r.unchanged} catalog number(s) already there — nothing to change`);
+      r.failed.forEach(why => { log('warn', `${tag} CATALOG NUMBER NOT SET — ${why}`); results.push({ url: '(catalog number)', ok: false, error: why }); });
+    }
     const hasFieldChange = !!(
       (COMMENT_SEEDS.has(item.entityType) && item.disambiguation)
       || releaseCommentSet
       || (NAME_SEEDS.has(item.entityType) && item.rename)
       || releaseNameSet
       || releaseBarcodeSet
+      || releaseCatnosSet
       || (item.entityType === 'recording' && item.isrcs && item.isrcs.length)
       || (item.entityType === 'recording' && item.video)
     );
@@ -35974,11 +36045,12 @@ if (__stOff.indexOf("falcon") < 0 && __stRuns("falcon", {"inc":["^https:\\/\\/(?
         || (DISAMBIGUATABLE.has(item.entityType) && (item.disambiguation || '').trim())
         || (RENAMEABLE.has(item.entityType) && (item.rename || '').trim())
         || (item.entityType === 'release' && item.barcode)
+        || (item.entityType === 'release' && (item.labels || []).length)
         || (item.entityType === 'recording' && (item.isrcs || []).some(Boolean))
         || (item.entityType === 'recording' && item.video));
       if (!needsForm && !needsCover && !needsAliases) {
         item.status = 'skipped';
-        item.error = 'nothing to submit yet — add a url, name, disambiguation, barcode, ISRC, alias or cover';
+        item.error = 'nothing to submit yet — add a url, name, disambiguation, barcode, catalog number, ISRC, alias or cover';
         log('info', `${tag} ${item.entityType} ${item.mbid} — skipped, nothing filled in`);
         renderQueue();
         continue;
@@ -37083,6 +37155,7 @@ if (__stOff.indexOf("falcon") < 0 && __stRuns("falcon", {"inc":["^https:\\/\\/(?
           // Import must never acquire an edit nobody asked for.
           if (RENAMEABLE.has(i.entityType) && (i.rename || '').trim()) item.rename = i.rename.trim();
           if (i.entityType === 'release' && i.barcode) item.barcode = i.barcode;
+          if (i.entityType === 'release' && (i.labels || []).length) item.labels = i.labels.map(l => ({ mbid: l.mbid, name: l.name, catno: l.catno, ...(l.add ? { add: true } : {}) }));
           if (i.entityType === 'recording') { item.isrcs = i.isrcs || []; item.video = i.video === true; }
           // #535: aliases exist on every type, so they are exported whenever
           // the item has any — and the export doubles as the JSON template.
@@ -64991,7 +65064,7 @@ if (__stOff.indexOf("mammoth") < 0 && __stRuns("mammoth", {"inc":["^https:\\/\\/
 
 // ===== mission_control (@run-at document-end) ===================================
 if (__stOff.indexOf("mission_control") < 0 && __stRuns("mission_control", {"inc":["^https:\\/\\/(?:[^/]*\\.)?musicbrainz\\.org(?::\\d+)?/release/.*$"],"exc":[],"noframes":false})) (function(__stGM){
-  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Mission Control*","namespace":"https://musicbrainz.org/","version":"2026.10.13.140636","description":"One window on the release page that asks the other scripts (Platform Check, ISRC Scout, Art Station, Fusion, Credit Hoarder) what is missing, shows it all in one review, and applies the selected changes in order.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/mission_control/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5NaXNzaW9uIENvbnRyb2w8L3RpdGxlPgo8ZGVmcz48ZmlsdGVyIGlkPSJtY28xMy1oIiB4PSItMTAlIiB5PSItMTAlIiB3aWR0aD0iMTIwJSIgaGVpZ2h0PSIxMjAlIj48ZmVNb3JwaG9sb2d5IGluPSJTb3VyY2VBbHBoYSIgb3BlcmF0b3I9ImRpbGF0ZSIgcmFkaXVzPSIxLjUiIHJlc3VsdD0iZCIvPjxmZUZsb29kIGZsb29kLWNvbG9yPSIjZmZmIiBmbG9vZC1vcGFjaXR5PSIuNyIvPjxmZUNvbXBvc2l0ZSBpbjI9ImQiIG9wZXJhdG9yPSJpbiIvPjxmZU1lcmdlPjxmZU1lcmdlTm9kZS8+PGZlTWVyZ2VOb2RlIGluPSJTb3VyY2VHcmFwaGljIi8+PC9mZU1lcmdlPjwvZmlsdGVyPjwvZGVmcz48ZyBmaWx0ZXI9InVybCgjbWNvMTMtaCkiPjxwYXRoIGQ9Ik03NyAzNS41IEw2NCA0MyBMNTEgMzUuNSBMNTEgMjAuNSBMNjQgMTMgTDc3IDIwLjVaIiBmaWxsPSIjN2E1N2U4IiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik01OS43IDc3LjUgTDQ2LjcgODUgTDMzLjcgNzcuNSBMMzMuNyA2Mi41IEw0Ni43IDU1IEw1OS43IDYyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik05NC4zIDc3LjUgTDgxLjMgODUgTDY4LjMgNzcuNSBMNjguMyA2Mi41IEw4MS4zIDU1IEw5NC4zIDYyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik00Mi4zIDEwNy41IEwyOS40IDExNSBMMTYuNCAxMDcuNSBMMTYuNCA5Mi41IEwyOS40IDg1IEw0Mi4zIDkyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik03NyAxMDcuNSBMNjQgMTE1IEw1MSAxMDcuNSBMNTEgOTIuNSBMNjQgODUgTDc3IDkyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik0xMTEuNiAxMDcuNSBMOTguNiAxMTUgTDg1LjcgMTA3LjUgTDg1LjcgOTIuNSBMOTguNiA4NSBMMTExLjYgOTIuNVoiIGZpbGw9IiNmZmM5NGEiIHN0cm9rZT0iIzIyMjIzYiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PC9nPgo8L3N2Zz4K"}) }) : { script: {"name":"Mission Control*","namespace":"https://musicbrainz.org/","version":"2026.10.13.140636","description":"One window on the release page that asks the other scripts (Platform Check, ISRC Scout, Art Station, Fusion, Credit Hoarder) what is missing, shows it all in one review, and applies the selected changes in order.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/mission_control/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5NaXNzaW9uIENvbnRyb2w8L3RpdGxlPgo8ZGVmcz48ZmlsdGVyIGlkPSJtY28xMy1oIiB4PSItMTAlIiB5PSItMTAlIiB3aWR0aD0iMTIwJSIgaGVpZ2h0PSIxMjAlIj48ZmVNb3JwaG9sb2d5IGluPSJTb3VyY2VBbHBoYSIgb3BlcmF0b3I9ImRpbGF0ZSIgcmFkaXVzPSIxLjUiIHJlc3VsdD0iZCIvPjxmZUZsb29kIGZsb29kLWNvbG9yPSIjZmZmIiBmbG9vZC1vcGFjaXR5PSIuNyIvPjxmZUNvbXBvc2l0ZSBpbjI9ImQiIG9wZXJhdG9yPSJpbiIvPjxmZU1lcmdlPjxmZU1lcmdlTm9kZS8+PGZlTWVyZ2VOb2RlIGluPSJTb3VyY2VHcmFwaGljIi8+PC9mZU1lcmdlPjwvZmlsdGVyPjwvZGVmcz48ZyBmaWx0ZXI9InVybCgjbWNvMTMtaCkiPjxwYXRoIGQ9Ik03NyAzNS41IEw2NCA0MyBMNTEgMzUuNSBMNTEgMjAuNSBMNjQgMTMgTDc3IDIwLjVaIiBmaWxsPSIjN2E1N2U4IiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik01OS43IDc3LjUgTDQ2LjcgODUgTDMzLjcgNzcuNSBMMzMuNyA2Mi41IEw0Ni43IDU1IEw1OS43IDYyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik05NC4zIDc3LjUgTDgxLjMgODUgTDY4LjMgNzcuNSBMNjguMyA2Mi41IEw4MS4zIDU1IEw5NC4zIDYyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik00Mi4zIDEwNy41IEwyOS40IDExNSBMMTYuNCAxMDcuNSBMMTYuNCA5Mi41IEwyOS40IDg1IEw0Mi4zIDkyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik03NyAxMDcuNSBMNjQgMTE1IEw1MSAxMDcuNSBMNTEgOTIuNSBMNjQgODUgTDc3IDkyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik0xMTEuNiAxMDcuNSBMOTguNiAxMTUgTDg1LjcgMTA3LjUgTDg1LjcgOTIuNSBMOTguNiA4NSBMMTExLjYgOTIuNVoiIGZpbGw9IiNmZmM5NGEiIHN0cm9rZT0iIzIyMjIzYiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PC9nPgo8L3N2Zz4K"} };
+  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Mission Control*","namespace":"https://musicbrainz.org/","version":"2026.10.14.165550","description":"One window on the release page that asks the other scripts (Platform Check, ISRC Scout, Art Station, Fusion, Credit Hoarder) what is missing, shows it all in one review, and applies the selected changes in order.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/mission_control/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5NaXNzaW9uIENvbnRyb2w8L3RpdGxlPgo8ZGVmcz48ZmlsdGVyIGlkPSJtY28xMy1oIiB4PSItMTAlIiB5PSItMTAlIiB3aWR0aD0iMTIwJSIgaGVpZ2h0PSIxMjAlIj48ZmVNb3JwaG9sb2d5IGluPSJTb3VyY2VBbHBoYSIgb3BlcmF0b3I9ImRpbGF0ZSIgcmFkaXVzPSIxLjUiIHJlc3VsdD0iZCIvPjxmZUZsb29kIGZsb29kLWNvbG9yPSIjZmZmIiBmbG9vZC1vcGFjaXR5PSIuNyIvPjxmZUNvbXBvc2l0ZSBpbjI9ImQiIG9wZXJhdG9yPSJpbiIvPjxmZU1lcmdlPjxmZU1lcmdlTm9kZS8+PGZlTWVyZ2VOb2RlIGluPSJTb3VyY2VHcmFwaGljIi8+PC9mZU1lcmdlPjwvZmlsdGVyPjwvZGVmcz48ZyBmaWx0ZXI9InVybCgjbWNvMTMtaCkiPjxwYXRoIGQ9Ik03NyAzNS41IEw2NCA0MyBMNTEgMzUuNSBMNTEgMjAuNSBMNjQgMTMgTDc3IDIwLjVaIiBmaWxsPSIjN2E1N2U4IiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik01OS43IDc3LjUgTDQ2LjcgODUgTDMzLjcgNzcuNSBMMzMuNyA2Mi41IEw0Ni43IDU1IEw1OS43IDYyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik05NC4zIDc3LjUgTDgxLjMgODUgTDY4LjMgNzcuNSBMNjguMyA2Mi41IEw4MS4zIDU1IEw5NC4zIDYyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik00Mi4zIDEwNy41IEwyOS40IDExNSBMMTYuNCAxMDcuNSBMMTYuNCA5Mi41IEwyOS40IDg1IEw0Mi4zIDkyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik03NyAxMDcuNSBMNjQgMTE1IEw1MSAxMDcuNSBMNTEgOTIuNSBMNjQgODUgTDc3IDkyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik0xMTEuNiAxMDcuNSBMOTguNiAxMTUgTDg1LjcgMTA3LjUgTDg1LjcgOTIuNSBMOTguNiA4NSBMMTExLjYgOTIuNVoiIGZpbGw9IiNmZmM5NGEiIHN0cm9rZT0iIzIyMjIzYiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PC9nPgo8L3N2Zz4K"}) }) : { script: {"name":"Mission Control*","namespace":"https://musicbrainz.org/","version":"2026.10.14.165550","description":"One window on the release page that asks the other scripts (Platform Check, ISRC Scout, Art Station, Fusion, Credit Hoarder) what is missing, shows it all in one review, and applies the selected changes in order.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/mission_control/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5NaXNzaW9uIENvbnRyb2w8L3RpdGxlPgo8ZGVmcz48ZmlsdGVyIGlkPSJtY28xMy1oIiB4PSItMTAlIiB5PSItMTAlIiB3aWR0aD0iMTIwJSIgaGVpZ2h0PSIxMjAlIj48ZmVNb3JwaG9sb2d5IGluPSJTb3VyY2VBbHBoYSIgb3BlcmF0b3I9ImRpbGF0ZSIgcmFkaXVzPSIxLjUiIHJlc3VsdD0iZCIvPjxmZUZsb29kIGZsb29kLWNvbG9yPSIjZmZmIiBmbG9vZC1vcGFjaXR5PSIuNyIvPjxmZUNvbXBvc2l0ZSBpbjI9ImQiIG9wZXJhdG9yPSJpbiIvPjxmZU1lcmdlPjxmZU1lcmdlTm9kZS8+PGZlTWVyZ2VOb2RlIGluPSJTb3VyY2VHcmFwaGljIi8+PC9mZU1lcmdlPjwvZmlsdGVyPjwvZGVmcz48ZyBmaWx0ZXI9InVybCgjbWNvMTMtaCkiPjxwYXRoIGQ9Ik03NyAzNS41IEw2NCA0MyBMNTEgMzUuNSBMNTEgMjAuNSBMNjQgMTMgTDc3IDIwLjVaIiBmaWxsPSIjN2E1N2U4IiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik01OS43IDc3LjUgTDQ2LjcgODUgTDMzLjcgNzcuNSBMMzMuNyA2Mi41IEw0Ni43IDU1IEw1OS43IDYyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik05NC4zIDc3LjUgTDgxLjMgODUgTDY4LjMgNzcuNSBMNjguMyA2Mi41IEw4MS4zIDU1IEw5NC4zIDYyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik00Mi4zIDEwNy41IEwyOS40IDExNSBMMTYuNCAxMDcuNSBMMTYuNCA5Mi41IEwyOS40IDg1IEw0Mi4zIDkyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik03NyAxMDcuNSBMNjQgMTE1IEw1MSAxMDcuNSBMNTEgOTIuNSBMNjQgODUgTDc3IDkyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik0xMTEuNiAxMDcuNSBMOTguNiAxMTUgTDg1LjcgMTA3LjUgTDg1LjcgOTIuNSBMOTguNiA4NSBMMTExLjYgOTIuNVoiIGZpbGw9IiNmZmM5NGEiIHN0cm9rZT0iIzIyMjIzYiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PC9nPgo8L3N2Zz4K"} };
   (f=>document.readyState!=='loading'?f():document.addEventListener('DOMContentLoaded',f,{once:true}))(function(){ try { (function(){
 (function () {
 'use strict';
@@ -65193,7 +65266,7 @@ function probe() {
     probeAt = Date.now(); probeTook = 0;
     LINK_READERS.forEach(id => { linksAsked[id] = '[]'; });   // nothing is selected yet
     Log.info('probe run ' + run + ' · asking ' + (ask.join(', ') || 'nobody') + '');
-    document.dispatchEvent(new CustomEvent('mc:probe', { detail: JSON.stringify({ release: RELEASE, run, only: ask, links: [], isrcs: afterIsrcs() }) }));
+    document.dispatchEvent(new CustomEvent('mc:probe', { detail: JSON.stringify({ release: RELEASE, run, only: ask, links: [], isrcs: afterIsrcs(), cons: afterCons() }) }));
     paintAll();
     return ask.length;
 }
@@ -65209,7 +65282,7 @@ function probeOne(id) {
     const links = pcAlbumLinks();
     if (LINK_READERS.includes(id)) linksAsked[id] = JSON.stringify(links);
     Log.info('probe ' + id + ' on request · run ' + run + (links.length ? ' · selected album links ' + links.join(' ') : ''));
-    document.dispatchEvent(new CustomEvent('mc:probe', { detail: JSON.stringify({ release: RELEASE, run, only: [id], links, isrcs: afterIsrcs() }) }));
+    document.dispatchEvent(new CustomEvent('mc:probe', { detail: JSON.stringify({ release: RELEASE, run, only: [id], links, isrcs: afterIsrcs(), cons: afterCons() }) }));
     paintAll();
 }
 // Execute: the steps in order, the lanes of a parallel step together. Each
@@ -65547,6 +65620,9 @@ function mcStyle() {
         + '.mc-empty{padding:10px;color:var(--mbu-text-weak);font-size:12px}'
         + '.mc-line{display:grid;grid-template-columns:16px 16px 1fr auto;gap:8px;align-items:center;padding:4px 10px;border-bottom:1px solid var(--mbu-divider)}'
         + '.mc-bc{display:inline-block;font:600 12px/1.5 ui-monospace,Consolas,monospace;color:var(--bc);background:color-mix(in srgb,var(--bc) 12%,transparent);border:1px solid color-mix(in srgb,var(--bc) 45%,transparent);border-radius:5px;padding:1px 6px;white-space:nowrap}'
+        // #740: a lane's catalog number, a toggle of its own
+        + '.mc-bcl.mc-hascat{grid-template-columns:10px max-content max-content minmax(0,1fr) auto auto}.mc-cats{display:flex;gap:4px;font:600 12px/1.5 ui-monospace,Consolas,monospace}.mc-cat{display:inline-block;font:inherit;color:var(--mbu-text);border:1px dotted var(--mbu-border-strong);border-radius:5px;padding:1px 6px;white-space:nowrap;cursor:pointer}'
+        + '.mc-cat:hover{background:var(--mbu-bg-hover)}.mc-cat.on{border-style:solid;border-color:var(--mbu-accent);color:var(--mbu-accent-text);background:var(--mbu-accent-bg)}'
         + '.mc-bcl{display:grid;grid-template-columns:10px max-content minmax(0,1fr) auto auto;gap:8px;align-items:center;padding:4px 10px;border-bottom:1px solid var(--mbu-divider);cursor:pointer}.mc-bcl:hover{background:var(--mbu-bg-hover)}.mc-bcl.empty{cursor:default;opacity:.75}.mc-bcl.empty:hover{background:none}'
         + '.mc-tri{font-size:9px;color:var(--mbu-text-weak)}.mc-bcl-ic{display:flex;flex-wrap:wrap;gap:3px;min-width:0}.mc-bcl-no{font-size:11px;color:var(--mbu-text-weak)}'
         + '.mc-ti{display:inline-grid;place-items:center;width:24px;height:24px;border-radius:6px;border:1px solid transparent;opacity:.55}.mc-ti.mc-pick{cursor:pointer}.mc-ti.mc-pick:hover{opacity:1;border-color:var(--mbu-border-strong)}.mc-ti.on{opacity:1;border-color:var(--mbu-accent);background:var(--mbu-accent-soft)}.mc-ti.linked{opacity:1;position:relative}.mc-ti.linked::after{content:"✓";position:absolute;right:-1px;bottom:-4px;font-size:10px;font-weight:700;color:var(--mbu-ok)}'
@@ -65910,7 +65986,7 @@ function linksCell(t) {
 }
 const PICKABLE = { new: 1, withheld: 1, unsure: 1 };
 // what a lane's "take all in" takes: not a link whose track count or format says it is another release (#709)
-const laneTakes = x => PICKABLE[x.state] && !x.mismatch && x.kind !== 'barcode';
+const laneTakes = x => PICKABLE[x.state] && !x.mismatch && !['barcode', 'catno', 'label'].includes(x.kind);   // #740: never a catalog number or a label
 function cellHtml(c, t) {
     const p = PROVIDERS.find(x => x.id === c.p), r = results[c.p];
     if (r && r.state === 'busy') return '<span class="pend">…</span>';
@@ -66217,14 +66293,19 @@ function paintCards() {
         // 'not found' is one line of icons, not a row each: it's most of the list and needs no action.
         // 'linked' needs none either: icons on their section's sub-heading (Release, Artists, Labels),
         // so the rows that need a decision lead; clicking them lists them as rows instead, each section on its own (S.linkedOpen).
-        // #709: PC's barcodes (kind 'barcode') are rows of their own at the top of Release, linked ones too ('added')
-        const isBc = x => x.kind === 'barcode';
+        // #709: PC's barcodes (kind 'barcode') are rows of their own at the top of Release, linked ones too ('added');
+        // so are the catalog numbers and labels a consolidation brings (kinds 'catno' and 'label', #727)
+        const isBc = x => x.kind === 'barcode' || x.kind === 'catno' || x.kind === 'label';
         const linked = r.findings.filter(x => x.state === 'linked' && !isBc(x));
         // PC's card is in sections, each with its own linked icons; another card's are in its header
         const pc = id === 'pc';
         const lkKey = x => pc ? 'pc:' + (isEnt(x) ? x.entity.type : 'release') : id;
         const rows = r.findings.filter(x => !isBc(x) && x.state !== 'none' && (x.state !== 'linked' || linkedOpen(lkKey(x)))).sort((a, b) => ORDER[a.state] - ORDER[b.state]);
-        const bcRows = r.findings.filter(isBc);
+        // #740: a catalog number a platform gives (not a consolidation's) sits beside the barcode of each lane it is
+        // in, as a chip of its own; one whose lane isn't shown (no lanes) stays a row
+        const isLaneCat = x => x.kind === 'catno' && !x.cons && Array.isArray(x.barcodes);
+        const placedCats = new Set();
+        const bcRowsOf = () => r.findings.filter(x => isBc(x) && !placedCats.has(x.key));
         const none = r.findings.filter(x => x.state === 'none');
         const slot = box.parentNode.querySelector('.mc-sect-h .end');
         if (slot) slot.innerHTML = mbuHtml(pc ? '' : linkedBtn(linked, id));
@@ -66248,8 +66329,8 @@ function paintCards() {
             return '<div class="mc-line ' + esc(x.state) + (x.entity ? ' mc-ent' : '') + (lane ? ' mc-in' : '') + (pick ? ' mc-pick' : '') + (on ? ' on' : '') + '"'
                 + (pick ? ' data-prov="' + id + '" data-key="' + esc(x.key) + '" title="' + (on ? 'Taken in: click to leave out' : 'Click to take in') + '"' : '') + '>'
                 + '<span class="mc-tick">' + (on ? '✓' : '') + '</span>'
-                + '<span class="mc-pico">' + (isBc(x) ? BARCODE_SVG : stIcon(x.icon || x.key, 14)) + '</span>'
-                + '<div class="mc-lt"><div class="t">' + (isBc(x) ? 'Barcode <b class="mc-bcn">' + esc(x.code) + '</b>' : esc(x.name || x.key)) + '</div>'
+                + '<span class="mc-pico">' + (x.kind === 'catno' || x.kind === 'label' ? CATNO_SVG : isBc(x) ? BARCODE_SVG : stIcon(x.icon || x.key, 14)) + '</span>'
+                + '<div class="mc-lt"><div class="t">' + (x.kind === 'label' ? 'Label <b>' + esc(x.label && x.label.name || '') + '</b>' + (x.code ? ' · cat. no. <b class="mc-bcn">' + esc(x.code) + '</b>' : '') : x.kind === 'catno' ? 'Cat. no. <b class="mc-bcn">' + esc(x.code) + '</b> · ' + esc(x.label && x.label.name || '') : isBc(x) ? 'Barcode <b class="mc-bcn">' + esc(x.code) + '</b>' : esc(x.name || x.key)) + '</div>'
                 + (x.url ? '<a class="s" target="_blank" rel="noopener" href="' + esc(x.url) + '" title="' + esc(x.url) + '">' + esc(shortUrl(x.url)) + '</a>' : '')
                 + whyHtml(x, lane) + '</div>'
                 + (lane && x.state !== 'linked' ? '<span></span>' : '<span class="mc-pill ' + pill[0] + '">' + pill[1] + '</span>') + '</div>';
@@ -66276,6 +66357,17 @@ function paintCards() {
             const others = [...lanes.values()].filter(l => l.k && l.k !== relK).sort((a, b) => b.rows.length - a.rows.length);
             others.forEach((l, i) => { l.color = BC_COLORS[i % BC_COLORS.length]; });
             const order = [relK && lanes.get(relK), ...others, lanes.get('')].filter(Boolean);   // a release without a barcode has no lane of its own: '' is the empty-barcode lane
+            // the catalog numbers are a cell of their own after the barcode, as wide on every lane as the widest, so
+            // the platform icons still line up
+            const catsOf = l => r.findings.filter(x => isLaneCat(x) && x.barcodes.includes(l.k));
+            const catW = Math.max(0, ...order.map(l => catsOf(l).reduce((n, x) => n + String(x.code).length + 4, 0)));
+            const catCell = l => catW ? '<span class="mc-cats" style="width:' + catW + 'ch">' + catChips(l) + '</span>' : '';
+            const catChips = l => catsOf(l).map(x => {
+                placedCats.add(x.key);
+                const on = picked[id] && picked[id].has(x.key);
+                return '<span class="mc-cat mc-pick ' + esc(x.state) + (on ? ' on' : '') + '" data-prov="' + id + '" data-key="' + esc(x.key) + '" title="'
+                    + esc('Catalog number ' + x.code + ' for ' + x.label.name + ' · ' + (x.why || '') + (on ? '. Taken in: click to leave out' : '. Click to take in')) + '">' + (on ? '✓ ' : '') + esc(x.code) + '</span>';
+            }).join('');
             relHtml = order.map(l => {
                 const open = laneOpen.has(l.k), picks = l.rows.filter(laneTakes), n = picks.filter(x => picked[id] && picked[id].has(x.key)).length;
                 const states = [...new Set(l.rows.filter(x => x.state !== 'linked').map(x => x.state))].concat(l.rows.every(x => x.state === 'linked') ? ['linked'] : []), pill = states.length === 1 ? PILL[states[0]] || ['idle', states[0]] : null;
@@ -66288,8 +66380,8 @@ function paintCards() {
                 }).join('') : '<span class="mc-bcl-no">no platform found it</span>';
                 const all = picks.length ? '<button type="button" class="mc-all" data-act="lane-all" data-lane="' + esc(l.k) + '" title="' + esc('Take every link in this group in, or leave them all out' + (l.rows.some(x => PICKABLE[x.state] && x.mismatch) ? '. Not the ones marked amber: their track count or format is not the release\'s' : '')) + '">'
                     + (n === picks.length ? '✓ all taken in' : n ? n + ' of ' + picks.length + ' · take all' : 'take all in') + '</button>' : '<span></span>';
-                return '<div class="mc-bcl' + (open ? ' open' : '') + (l.rows.length ? '' : ' empty') + '" data-act="lane" data-lane="' + esc(l.k) + '"' + (l.rows.length ? ' title="' + (open ? 'Fold into one line' : 'Open into rows') + '"' : '') + '>'
-                    + '<span class="mc-tri">' + (l.rows.length ? (open ? '▾' : '▸') : '') + '</span>' + chip
+                return '<div class="mc-bcl' + (open ? ' open' : '') + (catW ? ' mc-hascat' : '') + (l.rows.length ? '' : ' empty') + '" data-act="lane" data-lane="' + esc(l.k) + '"' + (l.rows.length ? ' title="' + (open ? 'Fold into one line' : 'Open into rows') + '"' : '') + '>'
+                    + '<span class="mc-tri">' + (l.rows.length ? (open ? '▾' : '▸') : '') + '</span>' + chip + catCell(l)
                     + '<span class="mc-bcl-ic">' + icons + '</span>' + all + (pill ? '<span class="mc-pill ' + pill[0] + '">' + pill[1] + '</span>' : '<span></span>') + '</div>'
                     + (open ? l.rows.map(x => line(x, l)).join('') : '');
             }).join('');
@@ -66300,11 +66392,13 @@ function paintCards() {
         }
         const sect = (sub, title, body, lk) => !pc ? body : body || lk.length ? '<div class="mc-sub" data-sub="' + sub + '"><span>' + title + '</span>' + linkedBtn(lk, 'pc:' + sub) + '</div>' + body : '';
         const entSect = (type, title) => sect(type, title, entRows.filter(x => x.entity.type === type).map(x => line(x)).join(''), linked.filter(x => isEnt(x) && x.entity.type === type));
-        setCard(box, mbuHtml(sum + ap + sect('release', 'Release', bcRows.map(x => line(x)).join('') + rgRows.map(x => line(x)).join('') + relHtml + hint, linked.filter(x => !isEnt(x)))
+        setCard(box, mbuHtml(sum + ap + sect('release', 'Release', bcRowsOf().map(x => line(x)).join('') + rgRows.map(x => line(x)).join('') + relHtml + hint, linked.filter(x => !isEnt(x)))
             + entSect('artist', 'Artists') + entSect('label', 'Labels') + (none.length ? '<div class="mc-none" title="' + esc('Not found: ' + none.map(x => x.name || x.key).join(', ')) + '"><span>Not found</span>'
             + none.map(x => '<span class="mc-pico" title="' + esc(x.name || x.key) + '">' + stIcon(x.icon || x.key, 14) + '</span>').join('') + '</div>' : '')));
     });
 }
+// #727: a catalog number's icon, a tag
+const CATNO_SVG = '<svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.4" style="color:var(--mbu-text-dim)"><path d="M1.5 7.6V1.5h6.1l5 5-6.1 6.1z"/><circle cx="4.6" cy="4.6" r="1.1"/></svg>';
 const BARCODE_SVG = '<svg width="14" height="14" viewBox="0 0 14 10" fill="currentColor" style="color:var(--mbu-text-dim)"><rect x="0" width="1.4" height="10"/><rect x="2.4" width="0.8" height="10"/><rect x="4.2" width="1.8" height="10"/><rect x="7" width="0.8" height="10"/><rect x="8.8" width="1.4" height="10"/><rect x="11.2" width="0.8" height="10"/><rect x="12.6" width="1.4" height="10"/></svg>';
 // another barcode lane's colour: a token per lane, lighter on the dark theme (majkinetor: "hardly visible on dark theme")
 const BC_LIGHT = ['#2563eb', '#c2410c', '#9333ea', '#0e7490', '#be185d', '#a16207', '#4d7c0f', '#6d28d9'];
@@ -66484,6 +66578,9 @@ function setPicks(pks, on) {
         if (on) set.add(pk.dataset.key); else set.delete(pk.dataset.key);
         // #709: a release has one barcode, so taking one in leaves the others out
         if (on && /^barcode:/.test(pk.dataset.key)) [...set].forEach(k => { if (k !== pk.dataset.key && /^barcode:/.test(k)) set.delete(k); });
+        // #740: a label has one catalog number, so taking one in leaves the label's others out
+        const cat = on && (pk.dataset.key.match(/^catno:([0-9a-f-]{36}):/) || [])[0];
+        if (cat) [...set].forEach(k => { if (k !== pk.dataset.key && k.startsWith(cat)) set.delete(k); });
     });
     Log.debug((on ? 'taken in ' : 'left out ') + pks.map(pk => pk.dataset.prov + ' ' + pk.dataset.key).join(', '));
     if (pks.some(pk => pk.closest('.mc-tbl'))) paintMatrix();
@@ -66914,7 +67011,7 @@ function ccStyle() {
         + '.mcc-tbl tr.ver.on .r{background:var(--mbu-accent);border-color:var(--mbu-accent);box-shadow:inset 0 0 0 2px var(--mbu-bg)}.mcc-tbl tr.ver{cursor:pointer}'
         + '.mcc-tbl .hl{background:var(--mbu-warn-bg);border-radius:3px;padding:0 3px}.mcc-tbl tr.extra td.ttl{text-decoration:line-through;color:var(--mbu-text-weak)}.mcc-tbl tr.extra.on td.ttl{text-decoration:none;color:var(--mbu-text)}'
         + '.mcc-tbl .why{color:var(--mbu-text-weak)}.mcc-tbl td.car{width:20px;color:var(--mbu-text-weak);text-align:right}'
-        + '.mcc-inmb{border:1px solid var(--mbu-warn-border);background:var(--mbu-warn-bg);border-radius:var(--mbu-radius-lg);padding:10px 12px;margin:0 0 14px}.mcc-inmb ul{margin:6px 0 0;padding-left:18px}.mcc-inmb li{margin:2px 0}.mcc-inmb.other{border-color:var(--mbu-border);background:var(--mbu-bg)}'
+        + '.mcc-inmb{border:1px solid var(--mbu-warn-border);background:var(--mbu-warn-bg);border-radius:var(--mbu-radius-lg);padding:10px 12px;margin:0 0 14px}.mcc-inmb ul{margin:6px 0 0;padding-left:18px}.mcc-inmb li{margin:2px 0}.mcc-inmb.other{border-color:var(--mbu-border);background:var(--mbu-bg)}.mcc-inmb .mcc-upd{padding:2px 10px;margin-left:6px;font-size:12px}'
         + '.mcc-fmt-slot{display:inline-flex;flex:none}'
         + '.mcc-note{border:1px dashed var(--mbu-border-strong);border-radius:var(--mbu-radius-lg);padding:10px 12px;font-size:12px;color:var(--mbu-text-dim);background:var(--mbu-bg)}'
         + '.mcc-insp dl{display:grid;grid-template-columns:auto 1fr;gap:3px 10px;margin:0 0 12px;font-size:12px}.mcc-insp dt{color:var(--mbu-text-weak)}.mcc-insp dd{margin:0;word-break:break-word}'
@@ -67478,6 +67575,7 @@ function ccOnClick(e) {
         case 'extra': CC.extraTake[a.dataset.x] = !CC.extraTake[a.dataset.x]; CC.sel = a.dataset.x; ccPaint(); return;
         case 'tick': CC.ticks[a.dataset.t] = a.checked; Log.info('after saving: ' + a.dataset.t + ' ' + (a.checked ? 'on' : 'off')); ccPaintInspector(); return;
         case 'open': ccOpenEditor(); return;
+        case 'update': ccUpdateRelease(a.dataset.id); return;
         case 'more': ccMenu(); return;
         case 'md': {
             ccMenu(false);
@@ -67635,6 +67733,30 @@ function ccSameRelease(e) {
     if (e.tracks && src.tracks && e.tracks !== src.tracks) return false;
     return true;
 }
+// #727: the consolidation goes to a release MusicBrainz already has. Noted in this tab's sessionStorage
+// as for Add release, with the release's MBID: its page opens Mission Control and probes, ISRC Scout
+// gets the ISRCs, and Platform Check the barcode, the catalog numbers and the platforms' links (cons),
+// each offered only where the release lacks it.
+function ccUpdateRelease(mbid) {
+    const m = ccModel();
+    if (!m.fields) { mbuToast('Nothing read yet', { kind: 'warn' }); return; }
+    const e = CC.inMb.releases.find(x => x.id === mbid);
+    const rel = ccSeedRel(m), n = ccCount(rel);
+    const isrcs = rel.mediums.flatMap(md => md.tracks.map(t => t.isrc || null));
+    const cons = {
+        barcode: rel.barcode ? String(rel.barcode).replace(/\D/g, '') : null,
+        labels: rel.labels.filter(l => l.name || l.mbid).map(l => ({ name: l.name || '', mbid: l.mbid || null, catno: l.catno || '', url: l.url || null })),
+        urls: CC.sources.filter(s => s.take && s.url).map(s => ({ key: s.key, url: s.url })),
+        from: m.reads.map(s => ccName(s.key)),
+    };
+    const note = { created: Date.now(), mbid, title: (e && e.title) || rel.title, tracks: n, isrcs, ticks: CC.ticks, cons };
+    Log.info('update release ' + mbid + ': barcode ' + (cons.barcode || '—') + ' · labels ' + (cons.labels.map(l => (l.name || l.mbid) + (l.catno ? ' ' + l.catno : '')).join(', ') || '—')
+        + ' · ' + isrcs.filter(Boolean).length + ' ISRC(s) · ' + cons.urls.length + ' link(s) · taken in: ' + (Object.keys(CC.ticks).filter(k => CC.ticks[k]).join(', ') || 'none'));
+    if (mbuTestHooks()) window.__mccLastUpdate = note;
+    try { sessionStorage.setItem(CC_AFTER_KEY, JSON.stringify(note)); } catch (x) { Log.err('the update is not noted (' + x.message + ')'); mbuToast('Could not note the update: ' + x.message, { kind: 'error' }); return; }
+    if (CC.dry) { Log.info('dry run: the release is not opened'); return; }
+    location.assign('/release/' + mbid);
+}
 function ccInMbHtml() {
     const rs = CC.inMb.releases;
     if (CC.inMb.state !== 'done' || !rs.length) return '';
@@ -67644,7 +67766,9 @@ function ccInMbHtml() {
         + ' <span class="weak">· linked from ' + esc(e.urls.map(plat).join(', ')) + '</span></li>';
     const same = rs.filter(e => e.same), other = rs.filter(e => !e.same);
     let h = '';
-    if (same.length) h += '<div class="mcc-inmb"><b>MusicBrainz already has this album.</b> Open it and add what it lacks with Mission Control there, rather than adding the album again.<ul>' + same.map(li).join('') + '</ul></div>';
+    // #727: Update this release takes what is consolidated here to it, for what it lacks
+    const upd = e => ' <button type="button" class="mcc-btn mcc-upd" data-cc="update" data-id="' + esc(e.id) + '" title="Open this release in this tab with what is taken here: Mission Control probes it and offers what it lacks (the barcode, catalog numbers, ISRCs, links)">Update this release →</button>';
+    if (same.length) h += '<div class="mcc-inmb"><b>MusicBrainz already has this album.</b> Update it with what it lacks, rather than adding the album again.<ul>' + same.map(e => li(e).replace(/<\/li>$/, upd(e) + '</li>')).join('') + '</ul></div>';
     if (other.length) h += '<div class="mcc-inmb other"><b>Other editions in MusicBrainz</b> <span class="dim">(another barcode, format or track count than ' + esc(ccFormat()) + (CC.sources[0] && CC.sources[0].barcode ? ' ' + esc(CC.sources[0].barcode) : '') + '):</span><ul>' + other.map(li).join('') + '</ul></div>';
     return h;
 }
@@ -67679,10 +67803,14 @@ function afterSave() {
     if (!a) return;
     try { sessionStorage.removeItem(CC_AFTER_KEY); } catch (e) { /* storage blocked */ }
     if (Date.now() - a.created > CC_AFTER_TTL) { Log.info('a consolidation\'s note for after saving is older than 3 hours: dropped'); return; }
-    const title = (document.querySelector('.releaseheader h1') || {}).textContent || '';
-    if (ccNorm(title).indexOf(ccNorm(a.title)) === -1) { Log.info('a consolidation\'s note for after saving is for "' + a.title + '", not this release: dropped'); return; }
+    // #727: an update of a release MusicBrainz already had names it; a new release is known by its title
+    if (a.mbid) { if (a.mbid !== RELEASE) { Log.info('a consolidation\'s update is for release ' + a.mbid + ', not this one: dropped'); return; } }
+    else {
+        const title = (document.querySelector('.releaseheader h1') || {}).textContent || '';
+        if (ccNorm(title).indexOf(ccNorm(a.title)) === -1) { Log.info('a consolidation\'s note for after saving is for "' + a.title + '", not this release: dropped'); return; }
+    }
     AFTER = a;
-    Log.info('the consolidated release is saved: Mission Control opens and probes · ' + Object.keys(a.ticks).filter(k => a.ticks[k]).join(', ') + ' · ' + (a.isrcs || []).filter(Boolean).length + ' ISRC(s) from the consolidation');
+    Log.info((a.mbid ? 'a consolidation updates this release' : 'the consolidated release is saved') + ': Mission Control opens and probes · ' +Object.keys(a.ticks).filter(k => a.ticks[k]).join(', ') + ' · ' + (a.isrcs || []).filter(Boolean).length + ' ISRC(s) from the consolidation');
     open();
     setTimeout(() => { if (ui && !run) probe(); }, 700);
 }
@@ -67695,6 +67823,8 @@ function afterPicks(id) {
 
 // the ISRCs taken in the consolidation, by track, for ISRC Scout (#702)
 function afterIsrcs() { return AFTER && AFTER.ticks.is && Array.isArray(AFTER.isrcs) ? AFTER.isrcs : undefined; }
+// #727: what a consolidation brings to a release MusicBrainz already had, for Platform Check
+function afterCons() { return AFTER && AFTER.cons ? AFTER.cons : undefined; }
 
 /* ── launcher ──────────────────────────────────────────────────────────────── */
 
@@ -68876,7 +69006,7 @@ else { launcher(); afterSave(); }
 
 // ===== platform_check (@run-at document-end) ====================================
 if (__stOff.indexOf("platform_check") < 0 && __stRuns("platform_check", {"inc":["^https:\\/\\/(?:[^/]*\\.)?musicbrainz\\.org(?::\\d+)?/release/.*$","^https:\\/\\/(?:[^/]*\\.)?musicbrainz\\.org(?::\\d+)?/release-group/.*$"],"exc":[],"noframes":false})) (function(__stGM){
-  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Platform Check*","namespace":"http://tampermonkey.net/","version":"2026.10.13.173651","description":"Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/platform_check/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CjxnIHN0cm9rZT0iIzk0YTNiOCIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2UtbGluZWNhcD0icm91bmQiPjxwYXRoIGQ9Ik02NCA2NCBMODggMjIuNCIvPjxwYXRoIGQ9Ik02NCA2NCBMMTEyIDY0Ii8+PHBhdGggZD0iTTY0IDY0IEw4OCAxMDUuNiIvPjxwYXRoIGQ9Ik02NCA2NCBMNDAgMTA1LjYiLz48cGF0aCBkPSJNNjQgNjQgTDE2IDY0Ii8+PHBhdGggZD0iTTY0IDY0IEw0MCAyMi40Ii8+PC9nPjxjaXJjbGUgY3g9Ijg4IiBjeT0iMjIuNCIgcj0iMTIiIGZpbGw9IiNmNDcyYjYiLz48Y2lyY2xlIGN4PSIxMTIiIGN5PSI2NCIgcj0iMTIiIGZpbGw9IiNmYWNjMTUiLz48Y2lyY2xlIGN4PSI4OCIgY3k9IjEwNS42IiByPSIxMiIgZmlsbD0iIzRhZGU4MCIvPjxjaXJjbGUgY3g9IjQwIiBjeT0iMTA1LjYiIHI9IjEyIiBmaWxsPSIjMzhiZGY4Ii8+PGNpcmNsZSBjeD0iMTYiIGN5PSI2NCIgcj0iMTIiIGZpbGw9IiNhNzhiZmEiLz48Y2lyY2xlIGN4PSI0MCIgY3k9IjIyLjQiIHI9IjEyIiBmaWxsPSIjZmI5MjNjIi8+PGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iMjQiIGZpbGw9IiMwZjE3MmEiLz48cGF0aCBkPSJNNTQuMjIyMjIyMjIyMjIyMjIgNjQgTDYxLjMzMzMzMzMzMzMzMzMzNiA3MS4xMTExMTExMTExMTExMSBMNzQuNjY2NjY2NjY2NjY2NjcgNTYuODg4ODg4ODg4ODg4ODg2IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iNiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+Cjwvc3ZnPgo="}) }) : { script: {"name":"Platform Check*","namespace":"http://tampermonkey.net/","version":"2026.10.13.173651","description":"Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/platform_check/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CjxnIHN0cm9rZT0iIzk0YTNiOCIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2UtbGluZWNhcD0icm91bmQiPjxwYXRoIGQ9Ik02NCA2NCBMODggMjIuNCIvPjxwYXRoIGQ9Ik02NCA2NCBMMTEyIDY0Ii8+PHBhdGggZD0iTTY0IDY0IEw4OCAxMDUuNiIvPjxwYXRoIGQ9Ik02NCA2NCBMNDAgMTA1LjYiLz48cGF0aCBkPSJNNjQgNjQgTDE2IDY0Ii8+PHBhdGggZD0iTTY0IDY0IEw0MCAyMi40Ii8+PC9nPjxjaXJjbGUgY3g9Ijg4IiBjeT0iMjIuNCIgcj0iMTIiIGZpbGw9IiNmNDcyYjYiLz48Y2lyY2xlIGN4PSIxMTIiIGN5PSI2NCIgcj0iMTIiIGZpbGw9IiNmYWNjMTUiLz48Y2lyY2xlIGN4PSI4OCIgY3k9IjEwNS42IiByPSIxMiIgZmlsbD0iIzRhZGU4MCIvPjxjaXJjbGUgY3g9IjQwIiBjeT0iMTA1LjYiIHI9IjEyIiBmaWxsPSIjMzhiZGY4Ii8+PGNpcmNsZSBjeD0iMTYiIGN5PSI2NCIgcj0iMTIiIGZpbGw9IiNhNzhiZmEiLz48Y2lyY2xlIGN4PSI0MCIgY3k9IjIyLjQiIHI9IjEyIiBmaWxsPSIjZmI5MjNjIi8+PGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iMjQiIGZpbGw9IiMwZjE3MmEiLz48cGF0aCBkPSJNNTQuMjIyMjIyMjIyMjIyMjIgNjQgTDYxLjMzMzMzMzMzMzMzMzMzNiA3MS4xMTExMTExMTExMTExMSBMNzQuNjY2NjY2NjY2NjY2NjcgNTYuODg4ODg4ODg4ODg4ODg2IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iNiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+Cjwvc3ZnPgo="} };
+  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Platform Check*","namespace":"http://tampermonkey.net/","version":"2026.10.14.185927","description":"Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/platform_check/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CjxnIHN0cm9rZT0iIzk0YTNiOCIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2UtbGluZWNhcD0icm91bmQiPjxwYXRoIGQ9Ik02NCA2NCBMODggMjIuNCIvPjxwYXRoIGQ9Ik02NCA2NCBMMTEyIDY0Ii8+PHBhdGggZD0iTTY0IDY0IEw4OCAxMDUuNiIvPjxwYXRoIGQ9Ik02NCA2NCBMNDAgMTA1LjYiLz48cGF0aCBkPSJNNjQgNjQgTDE2IDY0Ii8+PHBhdGggZD0iTTY0IDY0IEw0MCAyMi40Ii8+PC9nPjxjaXJjbGUgY3g9Ijg4IiBjeT0iMjIuNCIgcj0iMTIiIGZpbGw9IiNmNDcyYjYiLz48Y2lyY2xlIGN4PSIxMTIiIGN5PSI2NCIgcj0iMTIiIGZpbGw9IiNmYWNjMTUiLz48Y2lyY2xlIGN4PSI4OCIgY3k9IjEwNS42IiByPSIxMiIgZmlsbD0iIzRhZGU4MCIvPjxjaXJjbGUgY3g9IjQwIiBjeT0iMTA1LjYiIHI9IjEyIiBmaWxsPSIjMzhiZGY4Ii8+PGNpcmNsZSBjeD0iMTYiIGN5PSI2NCIgcj0iMTIiIGZpbGw9IiNhNzhiZmEiLz48Y2lyY2xlIGN4PSI0MCIgY3k9IjIyLjQiIHI9IjEyIiBmaWxsPSIjZmI5MjNjIi8+PGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iMjQiIGZpbGw9IiMwZjE3MmEiLz48cGF0aCBkPSJNNTQuMjIyMjIyMjIyMjIyMjIgNjQgTDYxLjMzMzMzMzMzMzMzMzMzNiA3MS4xMTExMTExMTExMTExMSBMNzQuNjY2NjY2NjY2NjY2NjcgNTYuODg4ODg4ODg4ODg4ODg2IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iNiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+Cjwvc3ZnPgo="}) }) : { script: {"name":"Platform Check*","namespace":"http://tampermonkey.net/","version":"2026.10.14.185927","description":"Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/platform_check/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CjxnIHN0cm9rZT0iIzk0YTNiOCIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2UtbGluZWNhcD0icm91bmQiPjxwYXRoIGQ9Ik02NCA2NCBMODggMjIuNCIvPjxwYXRoIGQ9Ik02NCA2NCBMMTEyIDY0Ii8+PHBhdGggZD0iTTY0IDY0IEw4OCAxMDUuNiIvPjxwYXRoIGQ9Ik02NCA2NCBMNDAgMTA1LjYiLz48cGF0aCBkPSJNNjQgNjQgTDE2IDY0Ii8+PHBhdGggZD0iTTY0IDY0IEw0MCAyMi40Ii8+PC9nPjxjaXJjbGUgY3g9Ijg4IiBjeT0iMjIuNCIgcj0iMTIiIGZpbGw9IiNmNDcyYjYiLz48Y2lyY2xlIGN4PSIxMTIiIGN5PSI2NCIgcj0iMTIiIGZpbGw9IiNmYWNjMTUiLz48Y2lyY2xlIGN4PSI4OCIgY3k9IjEwNS42IiByPSIxMiIgZmlsbD0iIzRhZGU4MCIvPjxjaXJjbGUgY3g9IjQwIiBjeT0iMTA1LjYiIHI9IjEyIiBmaWxsPSIjMzhiZGY4Ii8+PGNpcmNsZSBjeD0iMTYiIGN5PSI2NCIgcj0iMTIiIGZpbGw9IiNhNzhiZmEiLz48Y2lyY2xlIGN4PSI0MCIgY3k9IjIyLjQiIHI9IjEyIiBmaWxsPSIjZmI5MjNjIi8+PGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iMjQiIGZpbGw9IiMwZjE3MmEiLz48cGF0aCBkPSJNNTQuMjIyMjIyMjIyMjIyMjIgNjQgTDYxLjMzMzMzMzMzMzMzMzMzNiA3MS4xMTExMTExMTExMTExMSBMNzQuNjY2NjY2NjY2NjY2NjcgNTYuODg4ODg4ODg4ODg4ODg2IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iNiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+Cjwvc3ZnPgo="} };
   (f=>document.readyState!=='loading'?f():document.addEventListener('DOMContentLoaded',f,{once:true}))(function(){ try { (function(){
 (function () {
 'use strict';
@@ -69807,7 +69937,9 @@ async function injectInto(urls, storageKey) {
     // #673: a barcode pasted on the release page goes in with the links
     const relMbid = (storageKey.match(/^pc:pending:([0-9a-f-]{36})$/) || [])[1];
     const barcode = relMbid && okUrls.length ? await pcFillBarcode(relMbid) : null;
-    if (addedUrls.length || barcode) setEditNote(pcEditNote(addedUrls, forced, barcode));
+    // #740: so do the catalog numbers used there
+    const catnos = relMbid && okUrls.length ? await pcFillCatnos(relMbid) : [];
+    if (addedUrls.length || barcode || catnos.length) setEditNote(pcEditNote(addedUrls, forced, barcode, null, { catnos: catnos.map(c => ({ catno: c.catno, label: c.name })) }));
     // nothing actually attempted (every queued link was already there): stay silent — no banner on a plain edit
     if (reports.some(r => !r.present)) showInlineSummary(reports.filter(r => !r.present));
     return { injected, reports, okUrls };
@@ -69872,6 +70004,38 @@ async function pcFillBarcode(relMbid) {
     pcMark('barcode filled', bc);
     return bc;
 }
+// #740: the catalog numbers used on the release page (pc:pending-catno:<mbid>, [{ mbid, name, catno }]), each
+// typed into the empty Cat. No. field of its label's row in the release editor (the row whose Label field reads
+// the label's name). Returns those that took. Self-contained: it runs on the editor page, before any module const.
+async function pcFillCatnos(relMbid) {
+    const key = `pc:pending-catno:${relMbid}`;
+    let want = [];
+    try { want = JSON.parse(localStorage.getItem(key) || '[]') || []; } catch (e) {}
+    if (!want.length) return [];
+    const sleep = ms => new Promise(r => setTimeout(r, ms));
+    const t0 = Date.now();
+    while (!(document.getElementById('catno-0') && document.getElementById('external-links-editor'))) { if (Date.now() - t0 > 15000) return []; await sleep(100); }
+    await sleep(300);
+    const low = v => String(v || '').trim().toLowerCase();
+    const setVal = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value').set;
+    const done = [];
+    for (const c of want) {
+        let i = 0, cat = null;
+        for (; document.getElementById(`label-${i}`); i++) if (low(document.getElementById(`label-${i}`).value) === low(c.name)) { cat = document.getElementById(`catno-${i}`); break; }
+        if (!cat) { try { console.warn(`[Platform Check] inject: no label row for ${c.name} — catalog number ${c.catno} not added`); } catch (e) {} continue; }
+        if (cat.value.trim()) { try { console.warn(`[Platform Check] inject: ${c.name} has catalog number ${cat.value} by now — ${c.catno} left out`); } catch (e) {} continue; }
+        for (let a = 0; a < 20 && cat.value !== c.catno; a++) {
+            cat.focus(); setVal.call(cat, c.catno);
+            cat.dispatchEvent(new Event('input', { bubbles: true })); cat.dispatchEvent(new Event('change', { bubbles: true })); cat.blur();
+            await sleep(150);
+        }
+        await sleep(1200);
+        if (cat.value === c.catno) done.push(c);
+    }
+    try { localStorage.removeItem(key); localStorage.removeItem(`pc:picked-catno:${relMbid}`); } catch (e) {}
+    if (done.length) pcMark('catalog numbers filled', done.map(c => c.catno).join(', '));
+    return done;
+}
 // Types a barcode into the release editor's Barcode field, unticking "This release does not have
 // a barcode" first (#713). The editor binds late and resets an early write (the box ticked again,
 // the field emptied), so this waits for the bound editor, then keeps the barcode there until it
@@ -69919,7 +70083,7 @@ async function pcFillBarcodeField(doc, bc, { timeout = 15000, hold = 1200 } = {}
 // with fallbacks) + the links that were added — same shape as the other scripts.
 // forced (#641): { url: reason } for links added by a middle click over link confidence — each is
 // marked in the list, so the note never claims they passed it. A link that passed is listed plain.
-function pcEditNote(urls, forced, barcode, barcodeFrom) {
+function pcEditNote(urls, forced, barcode, barcodeFrom, extra) {
     const s = (typeof GM_info !== 'undefined' && GM_info.script) || {};
     const homepage = s.homepageURL || s.homepage ||
         'https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/platform_check/README.md';
@@ -69942,6 +70106,12 @@ function pcEditNote(urls, forced, barcode, barcodeFrom) {
     const overridden = urls.filter(why);
     if (urls.length) lines.push('', 'Added ' + urls.length + ' external link' + (urls.length === 1 ? '' : 's') + (overridden.length ? '; added by hand over link confidence:' : ''));
     overridden.forEach(u => lines.push(u + '  (' + why(u) + ')'));
+    // #727: catalog numbers, and where a Mission Control consolidation found what is added
+    const catnos = (extra && extra.catnos) || [];
+    if (catnos.length) lines.push('', ...catnos.map(c => 'Added catalog number ' + c.catno + ' for ' + c.label));
+    const added = (extra && extra.added) || [];
+    if (added.length) lines.push('', ...added.map(l => 'Added label ' + l.name + (l.catno ? ', catalog number ' + l.catno : '')));
+    if (extra && extra.consFrom && extra.consFrom.length) lines.push('', 'Consolidated by Mission Control from ' + extra.consFrom.join(', '));
     return lines.join('\n');
 }
 
@@ -71256,18 +71426,20 @@ ${MBU_TOKENS}${MBU_UI_CSS}
   #mb-links-btn.pc-links-on { color: var(--mbu-text); }
   /* #674: the barcodes the platforms report, on a release that has none */
   #mb-found-bc { border: 1px dashed currentColor; color: var(--mbu-accent-text); padding: 1px 5px; }
-  #pc-bc-pop { position: fixed; overflow-y: auto; box-sizing: border-box; z-index: var(--mbu-z-pop); width: 250px; padding: 6px; background: var(--mbu-bg); color: var(--mbu-text); border: 1px solid var(--mbu-border); border-radius: var(--mbu-radius); box-shadow: var(--mbu-shadow-lg); font: 12px var(--mbu-font); }
-  #pc-bc-pop .pc-bc-h { margin: 0 4px 4px; font-size: 10px; font-weight: 700; letter-spacing: .4px; text-transform: uppercase; color: var(--mbu-text-dim); }
-  #pc-bc-pop .pc-bc-opt { display: grid; grid-template-columns: 1fr auto; gap: 2px 8px; padding: 5px 6px; border-radius: var(--mbu-radius); cursor: pointer; }
-  #pc-bc-pop .pc-bc-opt:hover { background: var(--mbu-bg-hover); }
-  #pc-bc-pop .pc-bc-code { font: 12px var(--mbu-font-mono); }
-  #pc-bc-pop .pc-bc-use { font-size: 11px; color: var(--mbu-accent-text); }
-  #pc-bc-pop .pc-bc-who, #pc-bc-pop .pc-bc-fmt { grid-column: 1 / -1; font-size: 11px; color: var(--mbu-text-weak); }
-  #pc-bc-pop .pc-bc-plat svg { vertical-align: -2px; margin-right: 2px; }
-  #pc-bc-pop .pc-bc-same { color: var(--mbu-ok); }
-  #pc-bc-pop .pc-bc-other { color: var(--mbu-warn); }
-  #pc-bc-pop .pc-bc-mb a { color: inherit; text-decoration: underline; }
-  #pc-bc-pop .pc-bc-hint { margin: 4px 4px 0; padding-top: 5px; border-top: 1px solid var(--mbu-divider); font-size: 11px; color: var(--mbu-text-weak); }
+  #mb-found-cat { border: 1px dashed currentColor; color: var(--mbu-accent-text); padding: 1px 5px; }
+  #mb-picked-cat { font-family: var(--mbu-font-mono); }
+  :is(#pc-bc-pop, #pc-cat-pop) { position: fixed; overflow-y: auto; box-sizing: border-box; z-index: var(--mbu-z-pop); width: 250px; padding: 6px; background: var(--mbu-bg); color: var(--mbu-text); border: 1px solid var(--mbu-border); border-radius: var(--mbu-radius); box-shadow: var(--mbu-shadow-lg); font: 12px var(--mbu-font); }
+  :is(#pc-bc-pop, #pc-cat-pop) .pc-bc-h { margin: 0 4px 4px; font-size: 10px; font-weight: 700; letter-spacing: .4px; text-transform: uppercase; color: var(--mbu-text-dim); }
+  :is(#pc-bc-pop, #pc-cat-pop) .pc-bc-opt { display: grid; grid-template-columns: 1fr auto; gap: 2px 8px; padding: 5px 6px; border-radius: var(--mbu-radius); cursor: pointer; }
+  :is(#pc-bc-pop, #pc-cat-pop) .pc-bc-opt:hover { background: var(--mbu-bg-hover); }
+  :is(#pc-bc-pop, #pc-cat-pop) .pc-bc-code { font: 12px var(--mbu-font-mono); }
+  :is(#pc-bc-pop, #pc-cat-pop) .pc-bc-use { font-size: 11px; color: var(--mbu-accent-text); }
+  :is(#pc-bc-pop, #pc-cat-pop) .pc-bc-who, #pc-bc-pop .pc-bc-fmt { grid-column: 1 / -1; font-size: 11px; color: var(--mbu-text-weak); }
+  :is(#pc-bc-pop, #pc-cat-pop) .pc-bc-plat svg { vertical-align: -2px; margin-right: 2px; }
+  :is(#pc-bc-pop, #pc-cat-pop) .pc-bc-same { color: var(--mbu-ok); }
+  :is(#pc-bc-pop, #pc-cat-pop) .pc-bc-other { color: var(--mbu-warn); }
+  :is(#pc-bc-pop, #pc-cat-pop) .pc-bc-mb a { color: inherit; text-decoration: underline; }
+  :is(#pc-bc-pop, #pc-cat-pop) .pc-bc-hint { margin: 4px 4px 0; padding-top: 5px; border-top: 1px solid var(--mbu-divider); font-size: 11px; color: var(--mbu-text-weak); }
   #mb-links-btn .pc-links-n { display: inline-block; min-width: 16px; margin-left: 4px; padding: 1px 5px; border-radius: 8px; background: var(--mbu-accent); color: var(--mbu-accent-fg); font-size: 10px; font-weight: 700; line-height: 1.3; text-align: center; vertical-align: 1px; }
   /* icons mode (toggle "Show platform icons"): the brand glyph REPLACES the ✓/×/~ text and carries the
    * state via a per-row class (pc-st-*): RING = already in MB (the only thing a ring means) · full colour =
@@ -71389,6 +71561,10 @@ ${MBU_TOKENS}${MBU_UI_CSS}
   .pc-cell-year, .pc-cell-format, .pc-cell-label {
                   font-size: 10px; color: var(--mbu-text-weak); font-family: sans-serif; white-space: nowrap; overflow: hidden; }
   .pc-cell-label { text-overflow: ellipsis; min-width: 0; }
+  .pc-cell-cat { font-family: var(--mbu-font-mono); color: var(--mbu-text); flex: none; white-space: nowrap; }
+  /* #740: a label cell with a catalog number: the label text is cut, the number stays whole */
+  #mb-pc-panel .pc-cell-label.pc-has-cat { display: flex; gap: 4px; align-items: baseline; }
+  #mb-pc-panel .pc-cell-label.pc-has-cat .pc-lbl-t { overflow: hidden; text-overflow: ellipsis; min-width: 0; }
   /* format-family quadrant marker (#350) — vertically centered against the meta text */
   /* #564 (majkinetor): "PC vinyl is black in format circle and hardly visible".
      Vinyl is black because vinyl IS black — which works on a white page and
@@ -71447,6 +71623,10 @@ ${MBU_TOKENS}${MBU_UI_CSS}
   #mb-pc-panel.pc-layout-2row .pc-meta .pc-cell-year,
   #mb-pc-panel.pc-layout-2row .pc-meta .pc-cell-format,
   #mb-pc-panel.pc-layout-2row .pc-meta .pc-cell-label { display: inline; }
+  /* #740: the two-row meta line, when its label has a catalog number: a flex line, so the label is cut, not the number */
+  #mb-pc-panel.pc-layout-2row .pc-meta:has(.pc-has-cat) { display: flex; align-items: baseline; }
+  #mb-pc-panel.pc-layout-2row .pc-meta:has(.pc-has-cat) > :not(.pc-cell-label) { flex: none; }
+  #mb-pc-panel.pc-layout-2row .pc-meta .pc-cell-label.pc-has-cat { display: inline-flex; min-width: 0; }
   #mb-pc-panel.pc-layout-2row .pc-meta .pc-cell-year:not(:empty),
   #mb-pc-panel.pc-layout-2row .pc-meta .pc-cell-format:not(:empty) { margin-right: 4px; }
 
@@ -71458,11 +71638,17 @@ ${MBU_TOKENS}${MBU_UI_CSS}
 <div style="margin-bottom: 6px;">
   <div style="display: flex; align-items: center; justify-content: space-between;">
     <div style="display: flex; align-items: center; gap: 4px;">
-      <h3 style="margin: 0; font-size: 12px; font-weight: bold; text-transform: uppercase; letter-spacing: 0.5px; color: var(--mbu-text-dim);">Platform Check</h3>
+      <h3 style="margin: 0; font-size: 12px; font-weight: bold; text-transform: uppercase; letter-spacing: 0.5px; color: var(--mbu-text-dim); white-space: nowrap;">Platform Check</h3>
       <span id="mb-refresh-btn" class="pc-icon-btn" title="Refresh — clear cache and re-scan" style="${iconBtn}">↻</span>
+    </div>
+  </div>
+  <!-- #740: what the platforms offer (barcodes, catalog numbers) on a line of their own, so the title line never moves;
+       shown only while one of them is (pcSyncOffers) -->
+  <div id="pc-offers" style="display: none; flex-wrap: wrap; align-items: center; gap: 4px; margin-top: 4px;">
       <span id="mb-pasted-bc" class="pc-icon-btn" title="" style="${iconBtn} display: none; font-size: 10px; white-space: nowrap;"></span>
       <span id="mb-found-bc" class="pc-icon-btn" title="" style="${iconBtn} display: none; font-size: 10px; white-space: nowrap;"></span>
-    </div>
+      <span id="mb-picked-cat" class="pc-icon-btn" title="" style="${iconBtn} display: none; font-size: 10px; white-space: nowrap;"></span>
+      <span id="mb-found-cat" class="pc-icon-btn" title="" style="${iconBtn} display: none; font-size: 10px; white-space: nowrap;"></span>
   </div>
 </div>
 <div class="pc-rows" style="margin-bottom: 6px;">
@@ -72282,6 +72468,7 @@ let MB_BARCODE = null;
 let MB_OWN_BARCODE = null;
 // #674: platform → { code, format } for each match that reports a barcode
 const PC_FOUND_BC = new Map();
+const PC_FOUND_CAT = new Map();   // #740: platform → [{ label, catno }]
 // Normalise a barcode for comparison: digits only, leading zeros stripped (a
 // 12-digit UPC-A and its 13-digit EAN form "0…" are the same barcode).
 function normBarcode(b) { return String(b || '').replace(/\D/g, '').replace(/^0+/, ''); }
@@ -72542,6 +72729,18 @@ function updateRow(p, { url, mbTracks, remoteTracks, year, label, source, fromCa
     // align across providers (1-row layout) — see setMetaCells.
     // re-stripped here too, so a label cached before a stripCopyright fix shows clean (#644)
     setMetaCells(`year-${p}`, `format-${p}`, `label-${p}`, year, format, label ? stripCopyright(label) : label);
+    // #740: the catalog number after the label, as the platform gives it
+    const catnos = url ? (cacheGet(mbid, p)?.catnos || []) : [];
+    const lEl = document.getElementById(`label-${p}`);
+    if (lEl) lEl.classList.toggle('pc-has-cat', !!catnos.length);
+    if (lEl && catnos.length) {
+        // the label shrinks with "…", the catalog number never does
+        const t = document.createElement('span'); t.className = 'pc-lbl-t'; t.textContent = lEl.textContent;
+        const c = document.createElement('span'); c.className = 'pc-cell-cat'; c.textContent = catnos[0].catno + (catnos.length > 1 ? ` +${catnos.length - 1}` : '');   // the rest in the tooltip
+        lEl.textContent = ''; lEl.append(t, c);
+        lEl.title = `${lEl.title || ''}${lEl.title ? ' · ' : ''}catalog number ${catnos.map(x => `${x.catno} (${x.label})`).join(', ')}`;
+    }
+    pcNoteFoundCatnos(p, catnos);
     refreshCompactStrip();   // #355
 }
 
@@ -73860,7 +74059,7 @@ async function scanDiscogs({ artist, album, mbTracks, existingUrl, mbid, isVario
         return;
     }
 
-    let tracks = null, year = null, lbl = null, fmt = null, masterUrl = null, foundBarcode = null, credits = null;
+    let tracks = null, year = null, lbl = null, fmt = null, masterUrl = null, foundBarcode = null, credits = null, catnos = null;
     if (releaseId) {
         const detailUrl = `https://api.discogs.com/releases/${releaseId}`;
         appendLog(label, `API detail: ${detailUrl}`);
@@ -73897,12 +74096,15 @@ async function scanDiscogs({ artist, album, mbTracks, existingUrl, mbid, isVario
                 foundBarcode = ((data.identifiers || []).find(i => /^barcode$/i.test(i.type || '')) || {}).value || null;
                 if (foundBarcode) foundBarcode = String(foundBarcode).replace(/\s+/g, '');
                 credits = pcKeep(label, pcCreditsDiscogs(data));   // #671
+                // #740: each label's catalog number; Discogs writes "none" for a release without one
+                catnos = (data.labels || []).filter(l => l.name && l.catno && !/^\[?none\]?$/i.test(l.catno.trim())).map(l => ({ label: l.name.replace(/\s*\(\d+\)$/, ''), catno: l.catno.trim() }));
+                if (catnos.length) appendLog(label, `API detail: catalog number ${catnos.map(c => `${c.catno} (${c.label})`).join(', ')}`);
                 appendLog(label, `API detail parsed: tracks=${tracks} year=${year || '?'} label=${lbl || '?'} format=${fmt || '?'} barcode=${foundBarcode || '-'} master=${masterUrl || '-'}`, 'ok');
             } catch (e) { appendLog(label, `API detail parse error: ${e.message}`, 'error'); }
         } else { appendLog(label, `API detail failed`, 'error'); }
     }
 
-    cacheSet(mbid, 'discogs', { url: releaseUrl, tracks, year, label: lbl, format: fmt, masterUrl, source, barcode: foundBarcode, credits });
+    cacheSet(mbid, 'discogs', { url: releaseUrl, tracks, year, label: lbl, format: fmt, masterUrl, source, barcode: foundBarcode, catnos, credits });
     updateRow('discogs', {
         url: releaseUrl, mbTracks, remoteTracks: tracks, year, label: lbl, format: fmt, source, barcode: foundBarcode,
         masterState: discogsMasterState(masterUrl, existingDiscogsMaster),
@@ -75251,6 +75453,11 @@ async function scanTidal({ artist, album, mbTracks, existingUrl, mbid, isVarious
 // search, and an existing MB-rel/Wikidata id is verified too. Not logged in: Beatport's
 // pages are Cloudflare-walled (unfetchable), so we fall back to MB rel → Wikidata (P11312)
 // → web search, surfaced UNVERIFIED (no track count).
+// #740: Beatport's release detail names its catalog number, for its one label
+function pcCatnosBeatport(d) {
+    const c = String(d?.catalog_number || '').trim();
+    return c && d.label?.name ? [{ label: d.label.name, catno: c }] : null;
+}
 async function scanBeatport({ artist, album, existingUrl, mbTracks, mbid, isVariousArtists, wikidataBeatportId, barcode }) {
     const label = 'Beatport';
     const cached = cacheGetScan(mbid, 'beatport', label);
@@ -75307,7 +75514,7 @@ async function scanBeatport({ artist, album, existingUrl, mbTracks, mbid, isVari
             const lbl = detail.label?.name || null;
             const bc = detail.upc || (source === 'barcode' ? barcode : null);   // (#182) Beatport exposes the UPC
             appendLog(label, `Verified: tracks=${tracks} year=${year || '?'} label=${lbl || '?'}${bc ? ` upc=${bc}` : ''}`, tracks ? 'ok' : 'warn');
-            cacheSet(mbid, 'beatport', { url, tracks, year, label: lbl, source, barcode: bc, credits: pcKeep(label, pcCreditsBeatport(detail)) });
+            cacheSet(mbid, 'beatport', { url, tracks, year, label: lbl, source, barcode: bc, catnos: pcCatnosBeatport(detail), credits: pcKeep(label, pcCreditsBeatport(detail)) });
             updateRow('beatport', { url, mbTracks, remoteTracks: tracks, year, label: lbl, source, barcode: bc });
             return;
         }
@@ -75356,7 +75563,7 @@ async function scanBeatport({ artist, album, existingUrl, mbTracks, mbid, isVari
                 const year = String(detail.new_release_date || detail.publish_date || '').slice(0, 4) || null;
                 const lbl = detail.label?.name || null, bc = detail.upc || null;
                 appendLog(label, `Search hit verified via API (score=${sc}): tracks=${tracks} year=${year || '?'}`, 'ok');
-                cacheSet(mbid, 'beatport', { url, tracks, year, label: lbl, source: 'search+api', barcode: bc, credits: pcKeep(label, pcCreditsBeatport(detail)) });
+                cacheSet(mbid, 'beatport', { url, tracks, year, label: lbl, source: 'search+api', barcode: bc, catnos: pcCatnosBeatport(detail), credits: pcKeep(label, pcCreditsBeatport(detail)) });
                 updateRow('beatport', { url, mbTracks, remoteTracks: tracks, year, label: lbl, source: 'search+api', barcode: bc });
                 return;
             }
@@ -75693,6 +75900,8 @@ function resetRows() {
     refreshCompactStrip();   // #355: clear the strip while re-scanning
     PC_FOUND_BC.clear();     // #674
     pcShowFoundBarcodes();
+    PC_FOUND_CAT.clear();    // #740
+    pcShowFoundCatnos();
 }
 
 // VA detection used by both the DOM and API parse paths. Hoisted so both
@@ -76888,6 +77097,123 @@ function pcOpenFoundBarcodes(btn) {
             .then(() => mbuToast(`Copied ${opt.dataset.code}`), () => mbuToast(`✗ Couldn't copy ${opt.dataset.code}`, { kind: 'error' }));
     });
 }
+// ─── Found catalog numbers (#740) ───────────────────────────────────────────
+// The catalog numbers the matched platforms give (Beatport, Discogs), each for a label the release has
+// without one, matched by the platform's label name, loosely ("Artoffact" is "Artoffact Records"). A button
+// next to the barcode's opens their list; "use" queues one for its label, and a link added with + fills it in
+// the release editor, as a used barcode is. updateRow records each platform's (PC_FOUND_CAT).
+function pcNoteFoundCatnos(p, catnos) {
+    if (catnos && catnos.length) PC_FOUND_CAT.set(p, catnos); else PC_FOUND_CAT.delete(p);
+    pcShowFoundCatnos();
+}
+// One entry per label and catalog number (written with or without spaces, one): the platforms that give
+// it, the barcodes they give (normalised, '' for none), and whether it is sure: given by a platform with the
+// release's own barcode, or by a link the release already has whose track count and medium match.
+function pcFoundCatnos() {
+    const rows = pcPageLabels().filter(r => r.mbid && !r.catno);
+    if (!rows.length) return [];
+    const by = new Map(), own = normBarcode(MB_BARCODE || '');
+    for (const p of PROVIDER_ORDER) for (const c of PC_FOUND_CAT.get(p) || []) {
+        const r = rows.find(x => pcLabelNorm(x.name) && pcLabelNorm(x.name) === pcLabelNorm(c.label));
+        if (!r) continue;
+        const k = r.mbid + '|' + pcCatnoNorm(c.catno);
+        if (!by.has(k)) by.set(k, { catno: c.catno, forms: new Map(), label: { mbid: r.mbid, name: r.name }, platforms: [], barcodes: new Set(), sure: false, kinds: new Set(), fits: [] });
+        const e = by.get(k), cached = cacheGet(mbid, p) || {}, bc = normBarcode(cached.barcode || '');
+        if (e.platforms.includes(p)) continue;
+        e.platforms.push(p); e.barcodes.add(bc); e.forms.set(c.catno, (e.forms.get(c.catno) || 0) + 1);
+        if ((own && bc === own) || (pcIsLinked(p) && !pcMcMismatch(p, cached).mismatch.length)) e.sure = true;
+        const mbCats = formatCategories(MB_FORMAT), remote = remoteFormatCategories(p, cached.format);
+        remote.forEach(x => e.kinds.add(x));
+        e.fits.push(!mbCats.size || !remote.size ? null : [...remote].some(x => mbCats.has(x)));
+    }
+    // written as most of its platforms write it; a tie, the longer ("AOF 146" over "AOF146")
+    const form = e => [...e.forms].sort((a, b) => b[1] - a[1] || b[0].length - a[0].length)[0][0];
+    return [...by.values()].map(({ forms, ...e }) => ({ ...e, catno: form({ forms }), barcodes: [...e.barcodes], kinds: [...e.kinds],
+        format: e.fits.includes(true) ? 'same' : e.fits.length && e.fits.every(x => x === false) ? 'other' : 'unknown' }))
+        .sort((a, b) => b.sure - a.sure || b.platforms.length - a.platforms.length);
+}
+// The catalog numbers used ("use"), one per label: { <label mbid>: { name, catno } }. Kept per release in
+// localStorage until removed (× on the header chip) or the label has one of its own.
+function pcPickedCatnos() {
+    let o = {};
+    try { o = JSON.parse(localStorage.getItem(`pc:picked-catno:${mbid}`) || '{}') || {}; } catch (e) {}
+    const rows = pcPageLabels();
+    for (const k of Object.keys(o)) { const r = rows.find(x => x.mbid === k); if (!r || r.catno) delete o[k]; }
+    return o;
+}
+function pcSetPickedCatnos(o) {
+    try {
+        if (Object.keys(o).length) localStorage.setItem(`pc:picked-catno:${mbid}`, JSON.stringify(o));
+        else { localStorage.removeItem(`pc:picked-catno:${mbid}`); localStorage.removeItem(`pc:pending-catno:${mbid}`); }
+    } catch (e) {}
+    pcShowFoundCatnos();
+}
+const PC_CATNO_SVG = '<svg width="11" height="11" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.6" style="vertical-align: -1px;"><path d="M1.5 7.6V1.5h6.1l5 5-6.1 6.1z"/><circle cx="4.6" cy="4.6" r="1.1"/></svg>';
+function pcShowFoundCatnos() {
+    const picked = pcPickedCatnos(), chip = document.getElementById('mb-picked-cat'), btn = document.getElementById('mb-found-cat');
+    if (chip) {
+        const v = Object.values(picked);
+        chip.style.display = v.length ? '' : 'none';
+        chip.textContent = v.length ? `${v.map(x => x.catno).join(', ')} ×` : '';
+        chip.title = v.length ? `Catalog number ${v.map(x => `${x.catno} for ${x.name}`).join(', ')}: a link you add adds it to the release too · click to remove it` : '';
+    }
+    if (!btn) return;
+    const list = pcFoundCatnos().filter(e => !picked[e.label.mbid]);
+    btn.style.display = list.length ? '' : 'none';
+    btn.innerHTML = mbuHtml(list.length ? `${PC_CATNO_SVG} ${list.length}` : '');
+    btn.title = list.length === 1
+        ? `${list[0].label.name} has no catalog number; ${list[0].platforms.map(x => PROVIDER_NAME[x]).join(', ')} give${list[0].platforms.length === 1 ? 's' : ''} ${list[0].catno} · click to choose`
+        : list.length ? `The release's labels have no catalog number; the platforms give ${list.length} · click to choose` : '';
+    if (!list.length) document.getElementById('pc-cat-pop')?._pcClose?.();
+}
+// Queued with the links for the release editor; a stale one from an earlier add is cleared.
+function pcQueuePickedCatnos() {
+    const v = Object.entries(pcPickedCatnos()).map(([k, x]) => ({ mbid: k, name: x.name, catno: x.catno }));
+    try {
+        if (v.length) localStorage.setItem(`pc:pending-catno:${mbid}`, JSON.stringify(v));
+        else localStorage.removeItem(`pc:pending-catno:${mbid}`);
+    } catch (e) {}
+    if (v.length) appendLog('System', `Inject: catalog number ${v.map(x => `${x.catno} (${x.name})`).join(', ')} goes in with the links`, 'ok');
+}
+function pcOpenFoundCatnos(btn) {
+    const old = document.getElementById('pc-cat-pop');
+    if (old) { old._pcClose(); return; }
+    const list = pcFoundCatnos().filter(e => !pcPickedCatnos()[e.label.mbid]);
+    if (!list.length) return;
+    const mbKind = [...formatCategories(MB_FORMAT)].join(' and ');
+    const pop = document.createElement('div');
+    pop.id = 'pc-cat-pop'; pop.className = 'pc-bc-pop';
+    pop.innerHTML = mbuHtml(`<div class="pc-bc-h">Catalog numbers on the platforms</div>` + list.map((c, i) => `
+      <div class="pc-bc-opt" data-i="${i}" title="Add ${pcEsc(c.catno)} to ${pcEsc(c.label.name)} with the links you add · right-click: copy it">
+        <span class="pc-bc-code">${pcEsc(c.catno)}</span><span class="pc-bc-use">use</span>
+        <span class="pc-bc-who">for ${pcEsc(c.label.name)} · ${c.platforms.map(p => `<span class="pc-bc-plat" title="${PROVIDER_NAME[p]}">${stIcon(p, 12)}</span>`).join('')} ${c.platforms.map(p => PROVIDER_NAME[p]).join(', ')}</span>
+        ${c.sure ? '<span class="pc-bc-fmt pc-bc-same">✓ from links like this release</span>'
+          : c.format === 'other' ? `<span class="pc-bc-fmt pc-bc-other">⚠ ${c.kinds.join(' and ')}: this release is ${mbKind}</span>`
+          : c.barcodes.every(b => !b) ? '<span class="pc-bc-fmt pc-bc-other">⚠ from platforms that give no barcode</span>'
+          : '<span class="pc-bc-fmt pc-bc-other">⚠ from another barcode than this release\'s</span>'}
+      </div>`).join('') + `<div class="pc-bc-hint">Right-click to copy</div>`);
+    document.body.appendChild(pop);
+    const r = btn.getBoundingClientRect();
+    pop.style.top = `${r.bottom + 4}px`;
+    pop.style.left = `${Math.max(8, Math.min(r.left, document.documentElement.clientWidth - pop.offsetWidth - 8))}px`;
+    pop.style.maxHeight = `${Math.max(120, document.documentElement.clientHeight - r.bottom - 12)}px`;
+    const off = mbuDismissOn(pop, () => pop.remove(), { ignore: '#mb-found-cat' });
+    pop._pcClose = off;
+    pop.addEventListener('click', e => {
+        const opt = e.target.closest('.pc-bc-opt'); if (!opt) return;
+        off();
+        const c = list[+opt.dataset.i];
+        pcSetPickedCatnos({ ...pcPickedCatnos(), [c.label.mbid]: { name: c.label.name, catno: c.catno } });
+        appendLog('System', `Catalog number ${c.catno} used for ${c.label.name} (from ${c.platforms.map(p => PROVIDER_NAME[p]).join(', ')})`, 'ok');
+        mbuToast(`✓ Catalog number ${c.catno}: added to ${c.label.name} with the links you add`, { kind: 'ok' });
+    });
+    pop.addEventListener('contextmenu', e => {
+        const opt = e.target.closest('.pc-bc-opt'); if (!opt) return;
+        e.preventDefault();
+        const c = list[+opt.dataset.i];
+        navigator.clipboard.writeText(c.catno).then(() => mbuToast(`Copied ${c.catno}`), () => mbuToast(`✗ Couldn't copy ${c.catno}`, { kind: 'error' }));
+    });
+}
 // A pasted text that is a barcode: EAN-8, UPC-A, EAN-13 or GTIN-14, spaces and dashes allowed
 function pcBarcodeOf(text) {
     const t = String(text || '').trim();
@@ -76934,6 +77260,16 @@ document.addEventListener('paste', e => {
     } catch (err) { appendLog('System', `Paste: ${err && err.message}`, 'warn'); }
 });
 document.getElementById('mb-found-bc').addEventListener('click', e => pcOpenFoundBarcodes(e.currentTarget));
+document.getElementById('mb-found-cat').addEventListener('click', e => pcOpenFoundCatnos(e.currentTarget));
+// #740: the offers' line shows while any of them does
+function pcSyncOffers() {
+    const box = document.getElementById('pc-offers'); if (!box) return;
+    const any = [...box.children].some(c => c.style.display !== 'none');
+    if ((box.style.display !== 'none') !== any) box.style.display = any ? 'flex' : 'none';
+}
+new MutationObserver(pcSyncOffers).observe(document.getElementById('pc-offers'), { subtree: true, attributes: true, attributeFilter: ['style'] });
+pcSyncOffers();
+document.getElementById('mb-picked-cat').addEventListener('click', () => { pcSetPickedCatnos({}); mbuToast('Catalog number removed'); });
 document.getElementById('mb-pasted-bc').addEventListener('click', () => {
     const code = pcPastedBarcode();
     pcSetPastedBarcode(null);
@@ -77122,6 +77458,7 @@ function addSingleUrl(platform, background, force) {
     }
     localStorage.setItem(`pc:pending:${mbid}`, JSON.stringify({ [platform]: cached.url }));
     pcQueuePastedBarcode();   // #673
+    pcQueuePickedCatnos();    // #740
     // #641: a forced add is recorded for the edit note; any other add clears an old record
     const forcedWhy = force ? pcWithheldWhy(platform) : null;
     if (forcedWhy) localStorage.setItem(`pc:forced:${mbid}`, JSON.stringify({ [cached.url]: forcedWhy })); else localStorage.removeItem(`pc:forced:${mbid}`);
@@ -77242,6 +77579,7 @@ async function runInjectBtn(e, background, force) {
     if (releaseCount > 0) {
         localStorage.setItem(`pc:pending:${mbid}`, JSON.stringify(pendingRelease));
         pcQueuePastedBarcode();   // #673
+    pcQueuePickedCatnos();    // #740
         if (Object.keys(forcedUrls).length) localStorage.setItem(`pc:forced:${mbid}`, JSON.stringify(forcedUrls)); else localStorage.removeItem(`pc:forced:${mbid}`);
         appendLog('System', `Inject (${background ? 'background' : 'click'}): queued ${releaseCount} release URL(s) — opening release editor`, 'ok');
         openReleaseEditTab(mbid, { background });
@@ -77321,7 +77659,21 @@ function pcMcMismatch(p, c) {
     return { mismatch, fmtOff, tracks, mbTracks };
 }
 const pcIsLinked = p => !!(mbDataGet(mbid)?.existing?.[p] || cacheGet(mbid, p)?.source === 'MB rels');
+// #727: what a Mission Control consolidation brings to this release (mc:probe's cons): its barcode,
+// catalog numbers and the platforms' links it took in. Kept from the last probe, for Apply.
+let _pcMcCons = null;
+const pcConsUrl = p => (_pcMcCons?.urls || []).find(u => u.key === p)?.url || null;
+// A platform's finding, with the consolidation's word on it: the link it took in is new, though PC holds it
+// back or found none; a link of PC's own that isn't the consolidation's stays as PC sees it.
 function pcMcFinding(p) {
+    const f = pcMcFindingOwn(p), cu = pcConsUrl(p);
+    if (!cu || f.state === 'linked') return f;
+    if (f.state === 'none') return { ...f, url: cu, source: 'consolidation', state: 'new', why: 'taken in the consolidation', cons: true };
+    if (!pcSameUrl(f.url, cu) && f.url !== cu) return f;
+    if (f.state === 'new') return { ...f, cons: true };
+    return { ...f, state: 'new', why: ['taken in the consolidation', f.why].filter(Boolean).join(' · '), cons: true };
+}
+function pcMcFindingOwn(p) {
     const c = cacheGet(mbid, p) || {};
     const existing = mbDataGet(mbid)?.existing?.[p] || null;
     const base = { key: p, name: PROVIDER_NAME[p], url: c.url || existing || null, source: c.source || null, barcode: c.url && c.barcode || null };
@@ -77354,9 +77706,105 @@ function pcMcBarcodeFindings() {
         if (!pcGtinValid(e.code)) out.push({ ...f, state: 'withheld', why: [from, 'wrong check digit'].join(' · ') });
         else out.push({ ...f, state: !pasted && sure.length && !other ? 'new' : 'unsure', why: [from, other].filter(Boolean).join(' · '), mismatch: other ? [other] : undefined });
     }
+    // #727: a consolidation's barcode is taken in (a pasted one still wins); the others are unsure beside it
+    const cb = String(_pcMcCons?.barcode || '').replace(/\D/g, '');
+    if (cb && pcGtinValid(cb) && !pasted) {
+        const why = 'consolidated by Mission Control from ' + ((_pcMcCons.from || []).join(', ') || 'the platforms');
+        let f = out.find(x => normBarcode(x.code) === normBarcode(cb));
+        if (f) { f.state = 'new'; f.why = [why, f.why].filter(Boolean).join(' · '); f.mismatch = undefined; }
+        else out.unshift(f = { key: `barcode:${cb}`, kind: 'barcode', name: 'Barcode', code: cb, state: 'new', why, platforms: [] });
+        f.cons = true;
+        out.forEach(x => { if (x !== f && x.state === 'new') { x.state = 'unsure'; x.why += ' · not the consolidation\'s'; } });
+        return out;
+    }
     const sure = out.filter(f => f.state === 'new');
     if (sure.length > 1) sure.forEach(f => { f.state = 'unsure'; f.why += ' · the linked platforms report more than one barcode'; });
     return out;
+}
+// #727: the release's labels as its page lists them, each with its catalog number
+function pcPageLabels() {
+    return [...document.querySelectorAll('#sidebar h2.labels + ul.links > li')].map(li => {
+        const a = li.querySelector('a[href*="/label/"]');
+        return { mbid: (a?.getAttribute('href').match(/\/label\/([0-9a-f-]{36})/i) || [])[1] || null, name: a ? a.textContent.trim() : '',
+            catno: (li.querySelector('.catalog-number')?.textContent || '').trim() };
+    });
+}
+// a label's name compared loosely: "Artoffact" is "Artoffact Records"
+const pcLabelNorm = n => String(n || '').toLowerCase().normalize('NFKD').replace(/[\u0300-\u036f]/g, '')
+    .replace(/\b(records?|recordings?|music|label|ltd|inc|llc|gmbh|entertainment)\b/g, '').replace(/[^\p{L}\p{N}]+/gu, '');
+const pcCatnoNorm = c => String(c || '').toLowerCase().replace(/[\s.\-_/]+/g, '');
+// #727: a consolidation's label the release hasn't, as a MusicBrainz label: its MBID when the consolidation
+// knows it, else the label's platform page MusicBrainz has on one label, else the one label whose name or alias is
+// the name (exactly, ignoring case), when the search shows every match. { mbid, name, via } or null.
+async function pcResolveLabel(l) {
+    if (l.mbid) return { mbid: l.mbid, name: l.name, via: 'mbid' };
+    if (l.url) {
+        try {
+            const hits = ((await pcLinkedTo([l.url])).get(pcUrlKey(l.url)) || []).filter(w => w.type === 'label');
+            if (hits.length === 1) return { mbid: hits[0].mbid, name: hits[0].name, via: 'link' };
+            appendLog('System', `Mission Control: ${hits.length} MusicBrainz label(s) have ${l.url}`);
+        } catch (x) { appendLog('System', `Mission Control: couldn't look up the label's link ${l.url} (${x.message})`, 'warn'); }
+    }
+    if (!l.name) return null;
+    try {
+        const q = `label:"${l.name.replace(/["\\]/g, ' ')}" OR alias:"${l.name.replace(/["\\]/g, ' ')}"`;
+        // asked right after the scan's burst, it can meet MusicBrainz's throttling: a few more tries, spaced out
+        let r;
+        for (let a = 0; a < 4; a++) {
+            if (a) await new Promise(res => setTimeout(res, 2000 * a));
+            r = await gmGet(`${MB_ORIGIN}/ws/2/label?query=${encodeURIComponent(q)}&limit=50&fmt=json`, { headers: { Accept: 'application/json' }, scan: null });
+            if (r.status !== 503) break;
+        }
+        if (!r.ok) throw new Error(`MusicBrainz answered ${r.status || r.error || '?'}`);
+        const j = JSON.parse(r.responseText), all = j.labels || [];
+        const low = x => String(x || '').toLowerCase().trim(), want = low(l.name);
+        const exact = all.filter(x => low(x.name) === want || (x.aliases || []).some(al => low(al.name) === want));
+        if (exact.length === 1 && (j.count || 0) <= all.length) return { mbid: exact[0].id, name: exact[0].name, via: 'name' };
+        appendLog('System', `Mission Control: ${exact.length} MusicBrainz label(s) named "${l.name}" among ${all.length} of ${j.count} found`);
+    } catch (x) { appendLog('System', `Mission Control: couldn't search MusicBrainz for the label "${l.name}" (${x.message})`, 'warn'); }
+    return null;
+}
+// #727: the labels a consolidation brings, as MC findings, from the last probe. A label the release has (by MBID, else
+// by name, loosely) gets the catalog number when it has none (kind 'catno', key catno:<label mbid>:<catno>): linked
+// when it has this one, left out (logged) when it has another. A label the release hasn't is added (kind 'label',
+// key label:<mbid>:<catno>) once it is a MusicBrainz label: new when found by its MBID or link, unsure by its name;
+// one MusicBrainz hasn't is left out. Apply only fills an empty catalog number and adds a label.
+let _pcMcLab = [];
+// #740: the catalog numbers the platforms give, as MC findings (kind 'catno', key catno:<label mbid>:<catno>) with
+// `barcodes`, the lanes they are in (normalised, '' for none). New when sure (pcFoundCatnos), unsure otherwise; one
+// a consolidation brings too is left to that one. Kept from the last probe, for Apply.
+let _pcMcCat = [];
+function pcMcCatnoFindings(cons) {
+    const taken = new Set((cons || []).map(f => f.key));
+    return (_pcMcCat = pcFoundCatnos().map(e => ({ key: `catno:${e.label.mbid}:${e.catno}`, kind: 'catno', name: 'Cat. no.', code: e.catno, label: e.label,
+        barcodes: e.barcodes, platforms: e.platforms, state: e.sure ? 'new' : 'unsure',
+        why: `from ${e.platforms.map(p => PROVIDER_NAME[p] + (pcIsLinked(p) ? ' (linked)' : '')).join(', ')}${e.format === 'other' ? ` · ${e.kinds.join(' and ')}, the release is ${MB_FORMAT}` : ''}` }))
+        .filter(f => !taken.has(f.key)));
+}
+async function pcMcLabelFindings() {
+    const want = (_pcMcCons?.labels || []).filter(l => l && (l.name || l.mbid));
+    if (!want.length) return (_pcMcLab = []);
+    const rows = pcPageLabels().filter(r => r.mbid), out = [];
+    const from = 'consolidated by Mission Control from ' + ((_pcMcCons.from || []).join(', ') || 'the platforms');
+    const catnoOn = (r, l) => {
+        const f = { key: `catno:${r.mbid}:${l.catno}`, kind: 'catno', name: 'Cat. no.', code: l.catno, label: { mbid: r.mbid, name: r.name }, cons: true };
+        if (r.catno && pcCatnoNorm(r.catno) === pcCatnoNorm(l.catno)) return out.push({ ...f, state: 'linked' });
+        if (r.catno) return appendLog('System', `Mission Control: ${r.name} has catalog number ${r.catno} here, the consolidation ${l.catno} — left as it is`, 'warn');
+        out.push({ ...f, state: 'new', why: [from, l.name && l.name !== r.name ? `as "${l.name}"` : ''].filter(Boolean).join(' · ') });
+    };
+    for (const l of want) {
+        let r = rows.find(x => l.mbid && x.mbid === l.mbid) || rows.find(x => pcLabelNorm(l.name) && pcLabelNorm(x.name) === pcLabelNorm(l.name));
+        if (r) { if (l.catno) catnoOn(r, l); continue; }
+        const m = await pcResolveLabel(l);
+        if (!m) { appendLog('System', `Mission Control: the label "${l.name}" isn't one MusicBrainz label — left out`, 'warn'); continue; }
+        r = rows.find(x => x.mbid === m.mbid);
+        if (r) { if (l.catno) catnoOn(r, l); continue; }
+        if (out.some(f => f.kind === 'label' && f.label.mbid === m.mbid)) continue;
+        const via = m.via === 'link' ? `found by its link ${l.url}` : m.via === 'name' ? 'found by its name only' : '';
+        out.push({ key: `label:${m.mbid}:${l.catno || ''}`, kind: 'label', name: 'Label', code: l.catno || '', label: { mbid: m.mbid, name: m.name || l.name }, cons: true,
+            state: m.via === 'name' ? 'unsure' : 'new', why: [from, via, l.name && m.name && l.name !== m.name ? `as "${l.name}"` : ''].filter(Boolean).join(' · ') });
+    }
+    return (_pcMcLab = out);
 }
 // The Artists & labels links (#671) as MC findings, one per link: key `ent:<type>:<mbid>:<url>`,
 // with `entity` { type, mbid, name } and `icon` the platform. MusicBrainz is asked which links
@@ -77411,11 +77859,14 @@ document.addEventListener('mc:probe', async e => {
     if (!PC_SEED && d.release && d.release !== mbid) { appendLog('System', `Mission Control probe for ${d.release}, not this release (${mbid}) — ignored`, 'warn'); return; }
     if (d.only && !d.only.includes('pc')) return;
     if (PC_SEED) { await pcMcSeedProbe(d); return; }
+    _pcMcCons = d.cons && typeof d.cons === 'object' ? d.cons : null;
+    if (_pcMcCons) appendLog('System', `Mission Control brings a consolidation: barcode ${_pcMcCons.barcode || '—'} · ${(_pcMcCons.labels || []).length} catalog number(s) · ${(_pcMcCons.urls || []).length} link(s)`);
     appendLog('System', `Mission Control probe ${d.run || ''}: ${PC_SCAN.busy ? 'waiting for the scan running' : 'reporting the last scan'}`);
     pcMcSend('mc:progress', { id: 'pc', run: d.run, state: 'busy', note: PC_SCAN.busy ? 'scanning platforms' : '' });
     // a rescan (pasted barcode, ↻) replaces the scan we waited for: wait for that one instead
     try { let p; do { p = PC_SCAN.last || pcScan(); await p; } while (p !== PC_SCAN.last); } catch (x) { appendLog('System', `scan failed for Mission Control: ${x.message}`, 'error'); }
-    const findings = pcMcBarcodeFindings().concat(PROVIDER_ORDER.filter(providerEnabled).map(pcMcFinding), providerEnabled('discogs') ? [pcMcMasterFinding()].filter(Boolean) : [], await pcMcEntityFindings());
+    const labs = await pcMcLabelFindings();
+    const findings = pcMcBarcodeFindings().concat(labs, pcMcCatnoFindings(labs), PROVIDER_ORDER.filter(providerEnabled).map(pcMcFinding), providerEnabled('discogs') ? [pcMcMasterFinding()].filter(Boolean) : [], await pcMcEntityFindings());
     const tally = findings.reduce((t, f) => (t[f.state] = (t[f.state] || 0) + 1, t), {});
     appendLog('System', `Mission Control probe ${d.run || ''} answered: ${JSON.stringify(tally)}`, 'ok');
     // the release's barcode beside each platform's: MC shows them in a column, one colour per barcode
@@ -77464,10 +77915,14 @@ document.addEventListener('mc:apply', e => {
     try { d = JSON.parse(e.detail) || {}; } catch (x) { appendLog('System', `Mission Control apply with unreadable detail: ${x.message}`, 'warn'); return; }
     if (d.id !== 'pc' || (d.release && d.release !== mbid)) return;
     const keys = d.keys || [];
-    const picked = keys.filter(k => !k.startsWith('ent:') && !k.startsWith('barcode:')).map(pcMcFinding).filter(f => f.url && f.state !== 'linked' && f.state !== 'none');
+    const picked = keys.filter(k => !k.startsWith('ent:') && !k.startsWith('barcode:') && !k.startsWith('catno:') && !k.startsWith('label:')).map(pcMcFinding).filter(f => f.url && f.state !== 'linked' && f.state !== 'none');
     // #709: the barcode taken in, if any (only while the release has none); Falcon types it into the release editor
     const bcFinding = MB_OWN_BARCODE ? null : pcMcBarcodeFindings().find(f => keys.includes(f.key)) || null;
     const barcode = bcFinding ? String(bcFinding.code).replace(/\D/g, '') : null;
+    // #727: the catalog numbers and labels taken in, from the last probe; Falcon fills an empty catalog number of a
+    // label the release has, and adds a label it hasn't
+    const labels = _pcMcLab.concat(_pcMcCat).filter(f => keys.includes(f.key) && f.state !== 'linked').map(f => ({ mbid: f.label.mbid, name: f.label.name, catno: f.code, ...(f.kind === 'label' ? { add: true } : {}) }))
+        .filter((l, i, a) => l.add || a.findIndex(x => !x.add && x.mbid === l.mbid) === i);   // one catalog number per label
     // artist and label links: from the last probe, grouped per entity (a link on someone else only when ticked by hand)
     const ents = new Map();
     for (const f of _pcMcEnt) {
@@ -77482,27 +77937,30 @@ document.addEventListener('mc:apply', e => {
         ents.set('release_group', { type: 'release_group', mbid: master.entity.mbid, name: master.entity.name, urls: [master.url] });
     const reply = o => pcMcSend('mc:applied', Object.assign({ id: 'pc', run: d.run, release: mbid }, o));
     const entN = [...ents.values()].reduce((n, r) => n + r.urls.length, 0);
-    if (!picked.length && !entN && !barcode) { appendLog('System', 'Mission Control apply: nothing left to add', 'warn'); reply({ ok: true, sent: 0, note: 'nothing left to add' }); return; }
+    if (!picked.length && !entN && !barcode && !labels.length) { appendLog('System', 'Mission Control apply: nothing left to add', 'warn'); reply({ ok: true, sent: 0, note: 'nothing left to add' }); return; }
     const urls = picked.map(f => f.url);
     const forced = Object.fromEntries(picked.filter(f => f.state === 'withheld').map(f => [f.url, f.why]));
     const album = mbDataGet(mbid)?.album || mbid;
-    const items = (urls.length || barcode ? [{ entityType: 'release', mbid, name: album, urls: urls.flatMap(pcMcReleaseLinkTypes), ...(barcode ? { barcode } : {}) }] : [])
+    const relItem = !!(urls.length || barcode || labels.length);
+    const items = (relItem ? [{ entityType: 'release', mbid, name: album, urls: urls.flatMap(pcMcReleaseLinkTypes), ...(barcode ? { barcode } : {}), ...(labels.length ? { labels } : {}) }] : [])
         .concat([...ents.values()].map(r => ({ entityType: r.type, mbid: r.mbid, name: r.name, urls: r.urls.map(url => ({ url, linkTypeId: r.type === 'release_group' ? 90 : pcLinkTypeFor(r.type, url) })) })));
     // one edit note for the batch: the release's links note, or the artist/label one when there are none
-    const note = (urls.length || barcode ? pcEditNote(urls, forced, barcode, bcFinding && bcFinding.why) + (entN ? `\n\n${pcLinksNote()}` : '') : pcLinksNote())
+    const consFrom = _pcMcCons && (labels.length || bcFinding?.cons || picked.some(f => f.cons)) ? _pcMcCons.from || [] : null;
+    const note = (relItem ? pcEditNote(urls, forced, barcode, bcFinding && (bcFinding.cons ? 'from the consolidation' : bcFinding.why), { catnos: labels.filter(l => l.catno && !l.add).map(l => ({ catno: l.catno, label: l.name })), added: labels.filter(l => l.add), consFrom }) + (entN ? `\n\n${pcLinksNote()}` : '') : pcLinksNote())
         + '\n' + 'Via Mission Control' + (d.mc ? ' v' + d.mc : '') + ': ' + location.origin + '/release/' + mbid;
     // headless: Falcon keeps its panel shut and reports the batch as falcon:status, tagged, for MC's card
     const json = JSON.stringify({ name: `${album} — platform links`, note, items, headless: !d.dry, tag: `mc:pc:${d.run}` });
     const ok = pcSendToFalconHere(json, !d.dry);
-    const n = urls.length + entN + (barcode ? 1 : 0);
+    const n = urls.length + entN + (barcode ? 1 : 0) + labels.length;
     if (ok && entN) { _pcLinked = null; pcShowLinksCount(null); }
     appendLog('System', `Mission Control apply${d.dry ? ' (dry run: queued, not run)' : ''}: ${barcode ? `barcode ${barcode}, ` : ''}${urls.length} release link(s), ${entN} artist/label link(s) ${ok ? 'handed to Falcon' : 'NOT taken — no Falcon on this page'}: ${urls.concat([...ents.values()].flatMap(r => r.urls)).join(' ')}`, ok ? 'ok' : 'error');
-    const what = (barcode ? ['the barcode'] : []).concat(urls.length + entN ? [`${urls.length + entN} link${urls.length + entN === 1 ? '' : 's'}`] : []).join(' and ');
+    const nAdd = labels.filter(l => l.add).length, nCat = labels.length - nAdd;
+    const what = (barcode ? ['the barcode'] : []).concat(nCat ? [nCat === 1 ? 'the catalog number' : nCat + ' catalog numbers'] : [], nAdd ? [nAdd === 1 ? 'a label' : nAdd + ' labels'] : [], urls.length + entN ? [`${urls.length + entN} link${urls.length + entN === 1 ? '' : 's'}`] : []).join(' and ');
     reply(ok ? { ok: true, sent: n, via: 'falcon', tag: `mc:pc:${d.run}`, note: `${what} ${d.dry ? 'queued in' : 'sent to'} Falcon` } : { ok: false, sent: 0, note: 'Falcon is not running on this page' });
 });
 pcMcHello();   // MC may have asked before PC loaded
 if (mbuTestHooks()) window.__pcTest702 = { seed: () => PC_SEED, seedData: () => PC_SEED_DATA, pcMcSeedProbe };
-if (mbuTestHooks()) window.__pcTest680 = { pcMcFinding, pcMcMasterFinding, pcScan, pcMcReleaseLinkTypes, cacheGet, cacheSet, mbDataGet, mbFormat: () => MB_FORMAT, pcMcBarcodeFindings, pcNoteFoundBarcode, pcSetPastedBarcode, setOwnBarcode: b => { MB_OWN_BARCODE = b; }, clearFound: () => PC_FOUND_BC.clear() };
+if (mbuTestHooks()) window.__pcTest680 = { pcMcFinding, pcMcMasterFinding, pcScan, pcMcReleaseLinkTypes, cacheGet, cacheSet, mbDataGet, mbFormat: () => MB_FORMAT, pcMcBarcodeFindings, pcMcLabelFindings, pcResolveLabel, pcPageLabels, pcMcCatnoFindings, pcFoundCatnos, pcNoteFoundCatnos, pcCatnosBeatport, pcPickedCatnos, pcQueuePickedCatnos, updateRow, scanDone: () => PC_SCAN.last, pcLabelNorm, setCons: c => { _pcMcCons = c; }, pcNoteFoundBarcode, pcSetPastedBarcode, setOwnBarcode: b => { MB_OWN_BARCODE = b; }, clearFound: () => PC_FOUND_BC.clear() };
 
 if (!PC_SEED) pcScan();
 
