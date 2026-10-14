@@ -86,7 +86,7 @@ The links are added through [Falcon](../falcon/README.md), out of sight. The car
 
 Art Station looks for the largest cover on the platforms the release links, and on the album links taken in under *Release and entity links*, which Execute adds first: take one in or leave it out and it looks again. It shows the best cover beside the current front, with each one's size. What Execute will do is written under it: enter it as the front and remove the current one, add it beside the current fronts, or nothing when the front already is that cover.
 
-A release without a front cover starts with the cover taken in. Click either image to see both full screen, with **←** **→** between them.
+Each platform searched says how large its own cover is, with a **cover ↗** link to it when the platform gives its address. A release without a front cover starts with the cover taken in. Click either image to see both full screen, with **←** **→** between them.
 
 An upload that fails is repeated as Art Station's [auto-repeat](../art_station/README.md#applying-changes) setting says, and the card shows each attempt.
 
