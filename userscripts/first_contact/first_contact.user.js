@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         First Contact
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.14.194217
+// @version      2026.10.14.204617
 // @description  Import a release into MusicBrainz from the platform's album page with one click: the release editor opens with the title, tracklist, artists, date, label, barcode and link filled in. Each artist's platform link is handed to Apollo Editor for matching. A second button sends the album to Harmony instead. By default the album page is also saved on the Internet Archive (it sends each imported URL to archive.org; off in the settings), and the edit note links the snapshot. Platforms: Deezer, Bandcamp, Discogs, Apple Music, Tidal, Qobuz, Beatport, Spotify, YouTube Music, Volumo, HDtracks, SoundCloud, Amazon Music, Audiomack, 7digital, Ototoy.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5GaXJzdCBDb250YWN0PC90aXRsZT4KPGxpbmVhckdyYWRpZW50IGlkPSJmYy1kIiB4MT0iMCIgeTE9IjAiIHgyPSIwIiB5Mj0iMSI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjYmFlNmZkIi8+PHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjMzhiZGY4Ii8+PC9saW5lYXJHcmFkaWVudD48cmFkaWFsR3JhZGllbnQgaWQ9ImZjLWIiIGN4PSIuMzUiIGN5PSIuMyIgcj0iLjgiPjxzdG9wIG9mZnNldD0iMCIgc3RvcC1jb2xvcj0iI2ZmZjdjYyIvPjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iI2Y2YzQzMSIvPjwvcmFkaWFsR3JhZGllbnQ+PHBhdGggZD0iTTUwIDQyIEw3OCA0MiBMMTA0IDExMiBMMjQgMTEyIFoiIGZpbGw9IiNmNmM0MzEiIG9wYWNpdHk9Ii45Ii8+PHBhdGggZD0iTTU2IDQyIEw3MiA0MiBMODggMTEyIEw0MCAxMTIgWiIgZmlsbD0iI2ZkZTY4YSIgb3BhY2l0eT0iLjciLz48ZWxsaXBzZSBjeD0iNjQiIGN5PSIxMTQiIHJ4PSI0MiIgcnk9IjgiIGZpbGw9IiMxZTIzNDYiIHN0cm9rZT0iI2M5Y2RmMiIgc3Ryb2tlLXdpZHRoPSIzIi8+PGVsbGlwc2UgY3g9IjY0IiBjeT0iMTEzIiByeD0iMjYiIHJ5PSI0LjIiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2Y2YzQzMSIgc3Ryb2tlLXdpZHRoPSIyLjQiLz48cGF0aCBkPSJNNDIgMjggQTIyIDE4IDAgMCAxIDg2IDI4IFoiIGZpbGw9InVybCgjZmMtZCkiIHN0cm9rZT0iI2M5Y2RmMiIgc3Ryb2tlLXdpZHRoPSIzIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PHBhdGggZD0iTTUwLjM2IDE5LjkgQTE1LjM5OTk5OTk5OTk5OTk5OSAxMy41IDAgMCAxIDYxLjggMTEuOCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjIuNiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBvcGFjaXR5PSIuOSIvPjxlbGxpcHNlIGN4PSI2NCIgY3k9IjMyIiByeD0iNTYiIHJ5PSIxMiIgZmlsbD0iIzFlMjM0NiIgc3Ryb2tlPSIjYzljZGYyIiBzdHJva2Utd2lkdGg9IjMiLz48ZWxsaXBzZSBjeD0iNjQiIGN5PSI0MCIgcng9IjIyIiByeT0iNiIgZmlsbD0idXJsKCNmYy1iKSIgc3Ryb2tlPSIjYzljZGYyIiBzdHJva2Utd2lkdGg9IjIuNCIvPjxjaXJjbGUgY3g9IjIyIiBjeT0iMzEiIHI9IjQiIGZpbGw9IiNmNmM0MzEiLz48Y2lyY2xlIGN4PSI0MCIgY3k9IjMxIiByPSI0IiBmaWxsPSIjZjZjNDMxIi8+PGNpcmNsZSBjeD0iODgiIGN5PSIzMSIgcj0iNCIgZmlsbD0iI2Y2YzQzMSIvPjxjaXJjbGUgY3g9IjEwNiIgY3k9IjMxIiByPSI0IiBmaWxsPSIjZjZjNDMxIi8+PHBhdGggZD0iTTY0IDU4IEw4NCA2OS41IEw4NCA5Mi41IEw2NCAxMDQgTDQ0IDkyLjUgTDQ0IDY5LjUgWiIgZmlsbD0iIzdiNGZkNiIvPjxwYXRoIGQ9Ik02NCA1OCBMODQgNjkuNSBMNjQgODEgTDQ0IDY5LjUgWiIgZmlsbD0iIzliNzJlYSIvPjxwYXRoIGQ9Ik02MCA3MiBMNzQgNjkgTDc0IDg5IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iMy40IiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PHBhdGggZD0iTTYwIDcyIEw2MCA5MiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjMuNCIvPjxlbGxpcHNlIGN4PSI1NiIgY3k9IjkyIiByeD0iNC42IiByeT0iMy42IiBmaWxsPSIjZmZmIi8+PGVsbGlwc2UgY3g9IjcwIiBjeT0iODkiIHJ4PSI0LjYiIHJ5PSIzLjYiIGZpbGw9IiNmZmYiLz4KPC9zdmc+Cg==
@@ -1961,7 +1961,8 @@ const SEVENDIGITAL = {
     abbr: '7d',
     host: /^(?:[a-z]{2}\.|www\.)?7digital\.com$/,
     albumId(loc) { return /^\/artist\/[^/]+\/release\/(?:[^/]*-)?\d{3,}\/?$/.test(loc.pathname) ? loc.pathname.replace(/\/$/, '') : null; },
-    KEY: '7drfpc993qp5',   // the store's key when this was written; a refused one is replaced by the store's current one
+    KEY: '7drfpc993qp5',
+    withoutPage: true,   // #747: a headless read refused by the captcha is read from the API (fromApi)   // the store's key when this was written; a refused one is replaced by the store's current one
     TYPES: { Album: ['Album'], EP: ['EP'], Single: ['Single'] },
     text: el => (el ? el.textContent.replace(/\s+/g, ' ').trim() : ''),
     // "PT4M9S" → ms
@@ -2005,6 +2006,44 @@ const SEVENDIGITAL = {
         return s.split(/\s*;\s*|\s*,\s+|\s+&\s+|\s+x\s+/).map(x => x.trim()).filter(Boolean);
     },
 
+    // #747: a release without its page (7digital's captcha refused Mission Control's read): found by the words of its
+    // address (artist and title) in the API's release search, by its id; its tracks from the track search on the same
+    // words, by the release's id. What the page would give: { title, artist, artistUrl, pageLabel, rows, apiRel, apiTracks }.
+    async fromApi(url, country, releaseId, progress) {
+        const m = new URL(url).pathname.match(/^\/artist\/([^/]+)\/release\/(.*?)-?\d{3,}\/?$/) || [];
+        const words = x => decodeURIComponent(x || '').replace(/-/g, ' ').trim();
+        const a = words(m[1]), t = words(m[2]);
+        let r = null, at = country;
+        for (const c of [...new Set([country, 'GB', 'US'])]) {
+            for (const q of [`${a} ${t}`, t].filter(x => x.trim())) {
+                try {
+                    const j = await this.api('release/search', { q, country: c, pageSize: '50' });
+                    r = ((j.searchResults || {}).searchResult || []).map(x => x.release).find(x => x && String(x.id) === String(releaseId)) || null;
+                } catch (e) { Log.warn(`7digital: release search "${q}" (${c}) failed: ${e.message}`); }
+                if (r) { at = c; break; }
+            }
+            if (r) break;
+        }
+        if (!r) throw new Error(`7digital asked to verify you're human, and release ${releaseId} wasn't found in its catalogue search: open the page once in this browser`);
+        const want = Number(r.trackCount) || 0, tracks = new Map();
+        for (const q of [`${(r.artist || {}).name || a} ${r.title}`, r.title, `${a} ${t}`]) {
+            if (want && tracks.size >= want) break;
+            try {
+                const j = await this.api('track/search', { q, country: at, pageSize: '100' });
+                for (const x of (j.searchResults || {}).searchResult || []) if (x.track && x.track.release && String(x.track.release.id) === String(releaseId)) tracks.set(String(x.track.id), x.track);
+            } catch (e) { Log.warn(`7digital: track search "${q}" failed: ${e.message}`); }
+            progress && progress(tracks.size, want || tracks.size);
+        }
+        const list = [...tracks.values()].sort((x, y) => (x.discNumber || 1) - (y.discNumber || 1) || (x.trackNumber || x.number || 0) - (y.trackNumber || y.number || 0));
+        Log.warn(`7digital: the page asked to verify you're human; read from the API's search instead: "${r.title}" by ${(r.artist || {}).name} · ${list.length} of ${want || '?'} track(s)`);
+        return {
+            title: r.title || t, artist: (r.artist || {}).name || a,
+            artistUrl: r.artist && r.artist.slug ? `${new URL(url).origin}/artist/${r.artist.slug}` : null,
+            pageLabel: (r.label || {}).name || '',
+            rows: list.map(x => ({ id: String(x.id), title: x.title || '', lengthMs: x.duration ? x.duration * 1000 : null })),
+            apiRel: r, apiTracks: list,
+        };
+    },
     async fetchRelease(path, progress, doc) {
         doc = doc || document;
         const og = (doc.querySelector('meta[property="og:url"]') || {}).content || '';
@@ -2013,33 +2052,40 @@ const SEVENDIGITAL = {
         const country = sub === 'uk' || !sub ? 'GB' : sub.toUpperCase();
         const info = doc.querySelector('.release-info');
         const releaseId = (info && info.dataset.releaseid) || (url.match(/(\d{3,})$/) || [])[1];
-        const title = this.text(doc.querySelector('.release-info-title'));
-        if (!title) throw new Error('7digital: no release on this page (is it asking you to prove you\'re human?)');
-        const artistA = doc.querySelector('.release-info-artist a');
-        const artist = this.text(artistA) || (doc.querySelector('.release-info-artist [itemprop="name"]') || {}).content || '';
-        const artistUrl = artistA ? new URL(artistA.getAttribute('href'), url).href : null;
-        const pageLabel = this.text(doc.querySelector('.release-label-info .release-data-info'));
-        const pageDate = this.text(doc.querySelector('.release-date-info .release-data-info'));
-        // majkinetor: "It doesnt get annotation <dd class="release-data-info">℗ 2014 Asylum Records UK, a Warner
-        // Music UK Company</dd>". Below the tracklist, the ℗ and © lines are the page's only notes: they go
-        // to the annotation whole, as Amazon Music's ℗ line does
-        const plines = [...doc.querySelectorAll('.release-data-info')].map(el => this.text(el)).filter(t => /^(?:[℗©]|\([pc]\))/i.test(t));
-        // majkinetor: "reads PDF as track": a digital booklet is a row of the tracklist too, marked with
-        // its file type (<em class="release-track-file-type is-pdf">); a song's row has none
-        const all = [...doc.querySelectorAll('tr.release-track[data-trackid]')];
-        const extras = all.filter(tr => { const ft = tr.querySelector('.release-track-file-type'); return ft && !/\baudio\b/i.test(ft.className + ' ' + ft.textContent); });
-        if (extras.length) Log.info(`7digital: left out ${extras.map(tr => `"${this.text(tr.querySelector('.release-track-name p'))}" (${this.text(tr.querySelector('.release-track-file-type'))})`).join(', ')}: not a track`);
-        const rows = all.filter(tr => !extras.includes(tr)).map(tr => ({
-            id: tr.dataset.trackid,
-            title: this.text(tr.querySelector('.release-track-name p')) || (tr.querySelector('.release-track-name [itemprop="name"]') || {}).content || '',
-            lengthMs: this.iso((tr.querySelector('[itemprop="duration"]') || {}).content),
-        }));
+        let title, artistA, artist, artistUrl, pageLabel, pageDate, plines, all, extras, rows, apiRel = null, apiTracks = [];
+        if (doc.fcRefused) {
+            // #747: Mission Control's read, refused by 7digital's captcha: the release and its tracks from the API's search
+            ({ title, artist, artistUrl, pageLabel, rows, apiRel, apiTracks } = await this.fromApi(url, country, releaseId, progress));
+            pageDate = ''; plines = [];
+        } else {
+            title = this.text(doc.querySelector('.release-info-title'));
+            if (!title) throw new Error('7digital: no release on this page (is it asking you to prove you\'re human?)');
+            artistA = doc.querySelector('.release-info-artist a');
+            artist = this.text(artistA) || (doc.querySelector('.release-info-artist [itemprop="name"]') || {}).content || '';
+            artistUrl = artistA ? new URL(artistA.getAttribute('href'), url).href : null;
+            pageLabel = this.text(doc.querySelector('.release-label-info .release-data-info'));
+            pageDate = this.text(doc.querySelector('.release-date-info .release-data-info'));
+            // majkinetor: "It doesnt get annotation <dd class="release-data-info">℗ 2014 Asylum Records UK, a Warner
+            // Music UK Company</dd>". Below the tracklist, the ℗ and © lines are the page's only notes: they go
+            // to the annotation whole, as Amazon Music's ℗ line does
+            plines = [...doc.querySelectorAll('.release-data-info')].map(el => this.text(el)).filter(t => /^(?:[℗©]|\([pc]\))/i.test(t));
+            // majkinetor: "reads PDF as track": a digital booklet is a row of the tracklist too, marked with
+            // its file type (<em class="release-track-file-type is-pdf">); a song's row has none
+            all = [...doc.querySelectorAll('tr.release-track[data-trackid]')];
+            extras = all.filter(tr => { const ft = tr.querySelector('.release-track-file-type'); return ft && !/\baudio\b/i.test(ft.className + ' ' + ft.textContent); });
+            if (extras.length) Log.info(`7digital: left out ${extras.map(tr => `"${this.text(tr.querySelector('.release-track-name p'))}" (${this.text(tr.querySelector('.release-track-file-type'))})`).join(', ')}: not a track`);
+            rows = all.filter(tr => !extras.includes(tr)).map(tr => ({
+                id: tr.dataset.trackid,
+                title: this.text(tr.querySelector('.release-track-name p')) || (tr.querySelector('.release-track-name [itemprop="name"]') || {}).content || '',
+                lengthMs: this.iso((tr.querySelector('[itemprop="duration"]') || {}).content),
+            }));
+        }
         const various = /^various artists$/i.test(artist);
         Log.info(`7digital release ${releaseId} (${country}): "${title}" by ${artist} · ${rows.length} track(s) · ${pageDate || 'no date'} · label "${pageLabel}" · ${plines.join(' · ') || 'no ℗ line'}`);
 
         // the release: its barcode, type and date (found by its title, as the store's key can't read it by id).
         // 7digital's search can take 10 s or more, so it runs alongside the tracks' searches below.
-        const relP = (async () => {
+        const relP = apiRel ? Promise.resolve(apiRel) : (async () => {
             for (const c of [...new Set([country, 'GB', 'US'])]) {
                 for (const q of [title, `${artist} ${title}`]) {
                     try {
@@ -2054,7 +2100,7 @@ const SEVENDIGITAL = {
 
         // the tracks: each by its title with the album's (often the whole album comes back for one), after its
         // artist, or alone; a hit fills every row it is
-        const hits = new Map();
+        const hits = new Map(apiTracks.map(t => [String(t.id), t]));
         const search = async (q, c) => {
             try {
                 const j = await this.api('track/search', { q, country: c, pageSize: '50' });

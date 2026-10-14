@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-10-14 20:41 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-10-14 20:46 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -1065,6 +1065,7 @@ Pages: `<store>.7digital.com/artist/<artist>/release/<slug>`
 - No 7digital account is needed. If the page asks you to prove you're human, do it first, then import.
 - The barcode, type, date, discs and ISRCs come from 7digital's catalogue, which can't list an album's tracks: each track is searched for, a few at a time.
 - A track's artists come from its artist line (*A, B & C*, *A x B*, *A feat. B*). The release artist has a 7digital link to hand off, and so does a track artist who is the whole line.
+- When [Mission Control](../mission_control/README.md#consolidate-a-new-release) compares a 7digital album and the page asks to verify you're human, the album is read from 7digital's catalogue search instead: the same data, without the page's ℗ and © lines.
 
 #### Ototoy
 
