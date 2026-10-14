@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Mission Control
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.14.213252
+// @version      2026.10.14.213359
 // @description  One window on the release page that asks the other scripts (Platform Check, ISRC Scout, Art Station, Fusion, Credit Hoarder) what is missing, shows it all in one review, and applies the selected changes in order.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5NaXNzaW9uIENvbnRyb2w8L3RpdGxlPgo8ZGVmcz48ZmlsdGVyIGlkPSJtY28xMy1oIiB4PSItMTAlIiB5PSItMTAlIiB3aWR0aD0iMTIwJSIgaGVpZ2h0PSIxMjAlIj48ZmVNb3JwaG9sb2d5IGluPSJTb3VyY2VBbHBoYSIgb3BlcmF0b3I9ImRpbGF0ZSIgcmFkaXVzPSIxLjUiIHJlc3VsdD0iZCIvPjxmZUZsb29kIGZsb29kLWNvbG9yPSIjZmZmIiBmbG9vZC1vcGFjaXR5PSIuNyIvPjxmZUNvbXBvc2l0ZSBpbjI9ImQiIG9wZXJhdG9yPSJpbiIvPjxmZU1lcmdlPjxmZU1lcmdlTm9kZS8+PGZlTWVyZ2VOb2RlIGluPSJTb3VyY2VHcmFwaGljIi8+PC9mZU1lcmdlPjwvZmlsdGVyPjwvZGVmcz48ZyBmaWx0ZXI9InVybCgjbWNvMTMtaCkiPjxwYXRoIGQ9Ik03NyAzNS41IEw2NCA0MyBMNTEgMzUuNSBMNTEgMjAuNSBMNjQgMTMgTDc3IDIwLjVaIiBmaWxsPSIjN2E1N2U4IiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik01OS43IDc3LjUgTDQ2LjcgODUgTDMzLjcgNzcuNSBMMzMuNyA2Mi41IEw0Ni43IDU1IEw1OS43IDYyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik05NC4zIDc3LjUgTDgxLjMgODUgTDY4LjMgNzcuNSBMNjguMyA2Mi41IEw4MS4zIDU1IEw5NC4zIDYyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik00Mi4zIDEwNy41IEwyOS40IDExNSBMMTYuNCAxMDcuNSBMMTYuNCA5Mi41IEwyOS40IDg1IEw0Mi4zIDkyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik03NyAxMDcuNSBMNjQgMTE1IEw1MSAxMDcuNSBMNTEgOTIuNSBMNjQgODUgTDc3IDkyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik0xMTEuNiAxMDcuNSBMOTguNiAxMTUgTDg1LjcgMTA3LjUgTDg1LjcgOTIuNSBMOTguNiA4NSBMMTExLjYgOTIuNVoiIGZpbGw9IiNmZmM5NGEiIHN0cm9rZT0iIzIyMjIzYiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PC9nPgo8L3N2Zz4K
@@ -399,6 +399,8 @@ async function execute(dry) {
                 results[o.id] = Object.assign(results[o.id] || {}, { applied: o });
                 // a batch handed to Falcon turns linked item by item, as Falcon reports it done (falcon:status)
                 if (o.ok && !dry && o.sent && o.via !== 'falcon') markApplied(o.id, o.keys || []);
+                // #748: a step that failed in part says what went through (doneKeys): that is done, and leaves Execute's count
+                else if (!o.ok && !dry && Array.isArray(o.doneKeys) && o.doneKeys.length) markApplied(o.id, o.doneKeys);
                 if (o.via === 'falcon') results[o.id].falconKeys = o.keys || [];
                 if (o.ok) { sent += o.sent || 0; Log.ok(o.id + ': ' + (o.note || 'done')); } else { failed++; Log.err(o.id + ': ' + (o.note || 'failed')); }
             });
@@ -417,6 +419,7 @@ async function retryOne(id) {
         const o = await applyOne(id, false);
         results[id] = Object.assign(results[id] || {}, { applied: o });
         if (o.ok && o.sent && o.via !== 'falcon') markApplied(id, o.keys || []);
+        else if (!o.ok && Array.isArray(o.doneKeys) && o.doneKeys.length) markApplied(id, o.doneKeys);   // #748
         if (o.ok) Log.ok(id + ': ' + (o.note || 'done')); else Log.err(id + ': ' + (o.note || 'failed'));
         mbuToast(o.ok ? 'Done: ' + (o.note || id) : 'Failed again: ' + (o.note || id), { kind: o.ok ? 'ok' : 'error' });
     } finally { executing = false; paintAll(); }
@@ -1091,7 +1094,9 @@ function paintMatrix() {
     if (fa) fa.innerHTML = mbuHtml(fxAllBtn());
     const slot = ui.querySelector('.mc-tapplied');
     if (slot) slot.innerHTML = mbuHtml(COLS.map(c => c.p).filter((p, i, a) => a.indexOf(p) === i).map(p => results[p] && results[p].applied)
-        .filter(Boolean).map(a => '<span class="mc-applied ' + (a.ok ? 'ok' : 'err') + '" title="' + esc(a.id) + '">' + (a.ok ? '✓ ' : '✕ ') + esc(PROVIDERS.find(x => x.id === a.id).provider + ': ' + (a.note || '')) + '</span>').join(''));
+        .filter(Boolean).map(a => '<span class="mc-applied ' + (a.ok ? 'ok' : 'err') + '" title="' + esc(a.id) + '">' + (a.ok ? '✓ ' : '✕ ') + esc(PROVIDERS.find(x => x.id === a.id).provider + ': ' + (a.note || '')) + '</span>'
+            // #748: a per-track provider's failure that can be tried again offers Retry here, as a card's does (#741)
+            + (!a.ok && a.retry ? '<button type="button" class="mc-retry" data-act="retry-apply" data-prov="' + esc(a.id) + '" title="Apply ' + esc(PROVIDERS.find(x => x.id === a.id).provider) + ' again, with what is still taken in">Retry</button>' : '')).join(''));
     let pend = 0, rows = 0;
     ui.querySelectorAll('.mc-tbl tbody tr[data-i]').forEach(tr => {
         const t = rel.tracks[+tr.dataset.i], n = trackPicks(t);

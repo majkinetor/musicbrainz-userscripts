@@ -135,14 +135,15 @@ The release page's tracklist gets two columns before *Rating*: **ISRC**, each tr
 
 <img width="1000" src="./screenshots/options.png" />
 
-| Setting                                    | Default |                                                                          |
-| ------------------------------------------ | ------- | ------------------------------------------------------------------------ |
-| Authorize                                  |         | OAuth for submitting ISRCs                                               |
-| Import buttons                             | icons   | icons, text, or both                                                     |
-| Show ISRCs and links on the tracklist      | on      | the ISRC and Links columns on the release page ([Tracklist](#tracklist)) |
-| Use providers from the whole release group | off     | take missing providers from sibling releases (one more lookup)           |
-| Ignore Platform Check link confidence      | off     | use links Platform Check withheld for a barcode or format mismatch       |
-| Spotify ISRC source                        | molla   | or ISRC Hunt                                                             |
+| Setting                                    | Default                    |                                                                           |
+| ------------------------------------------ | -------------------------- | ------------------------------------------------------------------------- |
+| Authorize                                  |                            | OAuth for submitting ISRCs                                                |
+| Import buttons                             | icons                      | icons, text, or both                                                      |
+| Show ISRCs and links on the tracklist      | on                         | the ISRC and Links columns on the release page ([Tracklist](#tracklist))  |
+| Use providers from the whole release group | off                        | take missing providers from sibling releases (one more lookup)            |
+| Ignore Platform Check link confidence      | off                        | use links Platform Check withheld for a barcode or format mismatch        |
+| Repeat failed submits                      | on, 10 minutes or 10 times | try a submit again when MusicBrainz is busy (503) or the connection drops |
+| Spotify ISRC source                        | molla                      | or ISRC Hunt                                                              |
 
 ## Shortcuts
 

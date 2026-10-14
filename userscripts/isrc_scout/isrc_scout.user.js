@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         ISRC Scout
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.14.212433
+// @version      2026.10.14.213359
 // @description  Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify / Beatport / Tidal / Volumo / HDtracks / Qobuz, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPklTUkMgU2NvdXQ8L3RpdGxlPgogICAgPHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPgogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjQwIi8+CiAgICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyNiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2U9IiNiOWEzZTgiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPgogIDwvZz4KICA8bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+Cjwvc3ZnPgo=
@@ -2634,7 +2634,37 @@
     return x;
   }
 
-  async function submitIsrcs(map, editNote) {
+  // #748: a submit that fails on a busy or unreachable server (429, 5xx, a dropped connection) is repeated by itself, as
+  // Art Station repeats a failed upload: up to the settings' minutes or attempts, whichever comes first, the attempts
+  // spread over the minutes (10 s apart at least). Each wait is logged, shown, and told to whoever listens (repeatWatch:
+  // Mission Control's apply), every 5 s while it lasts. A refused submit (400, 401) is not repeated.
+  const repeatOn = () => store.get('auto_repeat', true) !== false;
+  const repeatNum = (k, d, max) => { const n = parseInt(store.get(k, d), 10); return n >= 1 ? Math.min(n, max) : d; };
+  const repeatMinutes = () => repeatNum('auto_repeat_min', 10, 240);
+  const repeatTimes = () => repeatNum('auto_repeat_times', 10, 100);
+  const isTransient = e => /\((?:429|50[0234])\)|\bHTTP (?:429|50[0234])\b|network|timed? ?out|busy/i.test((e && e.message) || String(e));
+  let repeatWatch = null;
+  async function withRepeat(fn, what) {
+    const t0 = Date.now();
+    for (let n = 0; ; ) {
+      try { return await fn(); } catch (e) {
+        const budget = repeatMinutes() * 60000, max = repeatTimes(), used = Date.now() - t0;
+        e.transient = isTransient(e);
+        if (!repeatOn() || !e.transient || n >= max || used >= budget) { e.repeated = n; throw e; }
+        n++;
+        const delay = Math.max(1000, Math.min(Math.max(budget / max, 10000), budget - used));
+        Log.warn(what + ' failed (' + e.message + '): repeating in ' + Math.round(delay / 1000) + ' s, attempt ' + n + ' of ' + max);
+        try { toast(what + ' failed: repeating in ' + Math.round(delay / 1000) + ' s (attempt ' + n + ' of ' + max + ')', 'warn'); } catch (x) { /* no page UI */ }
+        const until = Date.now() + delay;
+        while (Date.now() < until) {
+          if (repeatWatch) repeatWatch(what + ' failed: repeating in ' + Math.ceil((until - Date.now()) / 1000) + ' s (attempt ' + n + ' of ' + max + ')');
+          await new Promise(r => setTimeout(r, Math.min(5000, until - Date.now())));
+        }
+      }
+    }
+  }
+  function submitIsrcs(map, editNote) { return withRepeat(() => submitIsrcsOnce(map, editNote), 'The ISRC submit'); }
+  async function submitIsrcsOnce(map, editNote) {
     const token = await Auth.accessToken();
     const xml = buildIsrcXml(map, editNote);
     const url = MB_WS2 + 'recording/?client=' + CLIENT;
@@ -4343,6 +4373,13 @@
               <span style="color:var(--mbu-text-weak); font-size:11px">Import from a Platform-Check link even when PC withheld it for a barcode/format mismatch. Off by default — a mismatch can mean PC matched the wrong release, so its ISRCs would be wrong (#314).</span></span>
           </label>
         </div>
+        <div style="margin-top:12px">
+          <label style="display:inline-flex; align-items:flex-start; gap:6px; font-size:12px; cursor:pointer">
+            <input type="checkbox" id="ii-auto-repeat" style="margin-top:2px">
+            <span>Repeat failed submits up to <input type="number" id="ii-ar-min" min="1" max="240" style="width:46px"> minutes or <input type="number" id="ii-ar-times" min="1" max="100" style="width:46px"> times<br>
+              <span style="color:var(--mbu-text-weak); font-size:11px">When MusicBrainz is busy (503) or the connection drops, the ISRC and link submits are tried again by themselves, the attempts spread over the minutes.</span></span>
+          </label>
+        </div>
         <div style="margin-top:12px; font-size:12px">
           <label style="display:inline-flex; align-items:center; gap:6px; cursor:pointer">Spotify ISRC source
             <select id="ii-sp-source" style="font-size:12px">
@@ -4638,6 +4675,15 @@
         store.set('ignore_pc_confidence', cbPc.checked);
         Log.info('Ignore Platform Check link confidence: ' + (cbPc.checked ? 'on — barcode/format-mismatched PC links will be used' : 'off — PC-withheld links are skipped'));
       });
+    }
+
+    // #748: repeat failed submits
+    const cbAr = modal.querySelector('#ii-auto-repeat'), arMin = modal.querySelector('#ii-ar-min'), arTimes = modal.querySelector('#ii-ar-times');
+    if (cbAr) {
+      cbAr.checked = repeatOn(); arMin.value = repeatMinutes(); arTimes.value = repeatTimes();
+      cbAr.addEventListener('change', () => { store.set('auto_repeat', cbAr.checked); Log.info('Repeat failed submits: ' + (cbAr.checked ? 'on' : 'off')); });
+      const num = (el, k, d, max) => el.addEventListener('change', () => { const v = parseInt(el.value, 10); const n = v >= 1 ? Math.min(v, max) : d; el.value = n; store.set(k, n); Log.info('Repeat failed submits: up to ' + repeatMinutes() + ' min or ' + repeatTimes() + ' times'); });
+      num(arMin, 'auto_repeat_min', 10, 240); num(arTimes, 'auto_repeat_times', 10, 100);
     }
 
     // #603: which service resolves Spotify ISRCs
@@ -5673,7 +5719,8 @@
     // logged-in session cookie (same-origin) — no OAuth, no CSRF. One POST carries
     // the whole batch (auto-applied for auto-editors, else queued). items:
     // [{ recGid, url, linkTypeID }].
-    async function submitRels(items, note) {
+    function submitRels(items, note) { return withRepeat(() => submitRelsOnce(items, note), 'The links submit'); }   // #748
+    async function submitRelsOnce(items, note) {
       const body = {
         edits: items.map(it => ({
           edit_type: 90, linkTypeID: it.linkTypeID, attributes: [],
@@ -8009,26 +8056,30 @@
         reply({ ok: true, sent: 0, note: 'dry run: ' + [n && plural(n, 'ISRC'), nl && plural(nl, 'link')].filter(Boolean).join(' and ') + ' would be submitted' });
         return;
       }
-      const done = [], errs = [];
-      let sentN = 0;
+      const done = [], errs = [], doneKeys = [];
+      let sentN = 0, again = false;
+      repeatWatch = note => mcSend('mc:progress', { id: 'is', run: d.run, state: 'busy', note });   // #748
       if (n) {
         try {
           await submitIsrcs(map, note);
           Object.entries(map).forEach(([rid, isrcs]) => { const t = RELEASE.tracks.find(x => x.recId === rid); if (t) t.existing.push(...isrcs); });
           try { updateBtnStatus(); } catch (x) { /* the page button only */ }
           Log.info('Mission Control apply: submitted ' + n + ' ISRC(s) ' + JSON.stringify(map));
-          done.push(plural(n, 'ISRC')); sentN += n;
-        } catch (x) { Log.err('Mission Control apply (ISRCs) failed: ' + errText(x)); errs.push('ISRCs: ' + errText(x)); }
+          done.push(plural(n, 'ISRC')); sentN += n; doneKeys.push(...Object.keys(map));
+        } catch (x) { Log.err('Mission Control apply (ISRCs) failed: ' + errText(x)); errs.push('ISRCs: ' + errText(x) + (x.repeated ? ' (repeated ' + x.repeated + ' times)' : '')); if (x.transient) again = true; }
       }
       if (nl) {
         try {
           await TrackLinks.submitRels(links.map(l => ({ recGid: l.rec, url: l.url, linkTypeID: l.linkTypeID })), TrackLinks.noteFor(links.map(l => ({ name: l.name })), links.map(l => l.url)) + '\n' + via);
           links.forEach(l => { const t = RELEASE.tracks.find(x => x.recId === l.rec); if (t) (t.recUrls = t.recUrls || []).push(l.url); });
           Log.info('Mission Control apply: linked ' + nl + ' recording link(s) ' + JSON.stringify(links.map(l => l.url)));
-          done.push(plural(nl, 'link')); sentN += nl;
-        } catch (x) { Log.err('Mission Control apply (links) failed: ' + errText(x)); errs.push('links: ' + errText(x)); }
+          done.push(plural(nl, 'link')); sentN += nl; doneKeys.push(...keys.filter(k => k.startsWith('link:') && links.includes(mcLinks[k])));
+        } catch (x) { Log.err('Mission Control apply (links) failed: ' + errText(x)); errs.push('links: ' + errText(x) + (x.repeated ? ' (repeated ' + x.repeated + ' times)' : '')); if (x.transient) again = true; }
       }
-      reply({ ok: !errs.length, sent: sentN, note: [done.length && done.join(' and ') + ' submitted', errs.join('; ')].filter(Boolean).join(' · ') });
+      repeatWatch = null;
+      // #748: doneKeys, what went through though another part failed (MC shows it as done); retry, when what failed may
+      // go through later (a busy server), for MC's Retry
+      reply({ ok: !errs.length, sent: sentN, doneKeys, retry: !!errs.length && again, note: [done.length && done.join(' and ') + ' submitted', errs.join('; ')].filter(Boolean).join(' · ') });
     });
     mcHello();
     if (mbuTestHooks()) window.__isTest680 = { mcFinding, mcDups, mcTrackOf, trackForSource, mcSources, fastest: isrcSourcesFastest, found: () => mcFound, release: () => RELEASE, log: () => Log.lines().join('\n') };
