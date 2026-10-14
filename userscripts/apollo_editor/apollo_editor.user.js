@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.13.192032
+// @version      2026.10.14
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5BcG9sbG8gRWRpdG9yPC90aXRsZT4KPG1hc2sgaWQ9ImFwLW0iIG1hc2tVbml0cz0idXNlclNwYWNlT25Vc2UiIHg9IjAiIHk9IjAiIHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4Ij48Zz48ZyBmaWxsPSIjZmZmIj48cGF0aCBkPSJNNDIgNjQgQzI4IDcyIDIyIDkwIDI0IDExMCBMNDIgOTggWiIvPjxwYXRoIGQ9Ik04NiA2NCBDMTAwIDcyIDEwNiA5MCAxMDQgMTEwIEw4NiA5OCBaIi8+PC9nPjxnIGZpbGw9IiNmZmYiPjxwYXRoIGQ9Ik02NCA4IEM4NCAyNCA5MCA1MiA4OCA5MCBMNDAgOTAgQzM4IDUyIDQ0IDI0IDY0IDggWiIvPjxwYXRoIGQ9Ik00OCA5MCBMODAgOTAgTDc2IDEwMCBMNTIgMTAwIFoiLz48L2c+PGcgc3Ryb2tlPSIjMDAwIiBzdHJva2Utd2lkdGg9IjMuNSI+PHBhdGggZD0iTTM2IDkwLjUgTDkyIDkwLjUiLz48L2c+PGNpcmNsZSBjeD0iNjQiIGN5PSI1MCIgcj0iOCIgZmlsbD0iIzAwMCIvPjwvZz48L21hc2s+PGc+PHBhdGggZD0iTTUyIDEwMCBDNTQgMTEyIDYwIDExOCA2NCAxMjYgQzY4IDExOCA3NCAxMTIgNzYgMTAwIFoiIGZpbGw9IiNlYjc0M2IiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDAgMykiLz48L2c+PHJlY3Qgd2lkdGg9IjEyOCIgaGVpZ2h0PSIxMjgiIGZpbGw9IiNiYTQ3OGYiIG1hc2s9InVybCgjYXAtbSkiLz4KPC9zdmc+Cg==
@@ -4808,7 +4808,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
           <label title="Zen editing: hide everything above the Apollo nav bar (the site header, release title and entity tabs) and the page footer — leaving just the editor. The release title / artist (with version count) move into the nav bar. Needs the compact nav."><input type="checkbox" id="tc-s-zen"> <span>Zen editing</span></label>
           <label title="When another site seeds the Add/Edit-release form, MusicBrainz shows a confirmation page before the editor — automatically click its submit button to skip that step (integrates chaban's auto-confirm script). Add ?skip_confirmation to a seed URL to bypass it once."><input type="checkbox" id="tc-s-autoconfirm"> <span>Auto confirm release submissions</span></label>
           <div class="tc-s-sub tc-s-gap">Archive</div>
-          <label title="At Enter edit, ask the Internet Archive's Wayback Machine to save the release's external links and the links in the edit note, and say so in the edit note. This sends those URLs to archive.org. First Contact archives the album page of its own import itself."><input type="checkbox" id="tc-s-archive"> <span>Archive links on the Internet Archive</span></label>
+          <label title="At Enter edit, ask the Internet Archive's Wayback Machine to save the release's external links. This sends those URLs to archive.org. The archive menu by each link on the release's page finds the snapshots. First Contact archives the album page of its own import itself."><input type="checkbox" id="tc-s-archive"> <span>Archive links on the Internet Archive</span></label>
           ${mbaKeysHtml(SETTINGS.archive === false)}
           <label title="On release, release group, artist and label pages: a faint clock by each external link opens a menu with its snapshots on the Wayback Machine, its screenshot, all its snapshots, and Save it now. Nothing is sent to archive.org until you pick one."><input type="checkbox" id="tc-s-archivemenu"> <span>Archive menu on external links</span></label>
         </div>
@@ -11129,48 +11129,26 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     }, true);   // capture phase: runs before MB reads the textarea for submission
   }
 
-  /* ── #736: archive the release's links and the edit note's links on the Wayback Machine ── */
-  // At Enter edit the archive lines go into the edit note, then every save is fired at once and
-  // nothing waits for it: the page leaves seconds later, and Save Page Now finishes on archive.org's
-  // side. The release's links get one line between them (the release lists them); a link found only
-  // in the note gets its own. What First Contact archives for its import is left to it.
-  const AR_LINE = /^Archived (on the Wayback Machine,|link:|screenshots:|screenshot of the link:)/;
+  /* ── #736: archive the release's links on the Wayback Machine ── */
+  // At Enter edit every save is fired at once and nothing waits for it: the page leaves seconds later,
+  // and Save Page Now finishes on archive.org's side. #739 (majkinetor): only the release's own links,
+  // not the links an edit note mentions (script repos, Harmony…), and nothing is written in the edit
+  // note: the archive menu by each link on the entity pages finds the snapshots. What First Contact
+  // archives for its import is left to it.
   const _arSent = new Set();   // a second Enter edit (MB refused the first) doesn't save again
   const arNorm = u => mbaShort(u).replace(/\/+$/, '').toLowerCase();
-  // the links to save and the lines saying so, from the release's links and the edit note
-  function archiveNote(note, releaseLinks, skip, ts, name = 'Apollo Editor', keys = false) {
+  // the addresses to save for the release's links (Discogs's as its API: its site refuses archive.org)
+  function archiveUrls(releaseLinks, skip) {
     const ok = u => /^https?:\/\//i.test(u) && !/^https?:\/\/([^/]*\.)?(archive\.org|musicbrainz\.org|metabrainz\.org)(\/|$)/i.test(u) && !skip.has(arNorm(u)) && !skip.has(arNorm(mbaSavable(u)));
-    const links = [...new Map(releaseLinks.filter(ok).map(u => [arNorm(u), u])).values()];
-    const known = new Set(links.map(arNorm));
-    const credit = l => / v\d[\w.]* by \S+ - https?:\/\//.test(l);   // "<script> v<version> by <author> - <url>"
-    const lines = String(note || '').replace(/\s+$/, '').split('\n').filter(l => !AR_LINE.test(l) && !l.startsWith(name + ' v'));   // Apollo's credit goes back after the archive lines
-    const inNote = [];
-    for (const u of lines.filter(l => !credit(l)).flatMap(l => alExtractUrls(l))) if (ok(u) && !known.has(arNorm(u))) { known.add(arNorm(u)); inNote.push(u); }
-    if (!links.length && !inNote.length) return null;
-    // a link saved as itself is found by the "+ link" rule; one saved elsewhere (Discogs's API, as its
-    // site refuses archive.org) needs its own line, as does a link only in the note
-    const plain = links.filter(u => mbaSavable(u) === u), own = links.filter(u => mbaSavable(u) !== u).concat(inNote);
-    const day = `${ts.slice(0, 4)}-${ts.slice(4, 6)}-${ts.slice(6, 8)}`;
-    const add = plain.length === 1 ? ['Archived link: ' + mbaSnapshot(ts, plain[0])]
-      : plain.length ? [`Archived on the Wayback Machine, ${day}: ${plain.length} external links (web.archive.org/web/${ts}/ + link)`] : [];
-    // with keys each save also takes a screenshot (majkinetor: "Lets add that type of link too")
-    if (keys && plain.length === 1) add.push(`Archived screenshot of the link: https://web.archive.org/web/${ts}/http://web.archive.org/screenshot/${plain[0]}`);
-    else if (keys && plain.length) add.push(`Archived screenshots: web.archive.org/web/${ts}/http://web.archive.org/screenshot/ + link`);
-    for (const u of own) add.push('Archived link: ' + mbaSnapshot(ts, mbaSavable(u)));
-    const kept = lines.join('\n').replace(/\s+$/, '');
-    return { urls: [...links, ...inNote].map(mbaSavable), note: (kept ? kept + '\n\n' : '') + add.join('\n') };
+    return [...new Map(releaseLinks.filter(ok).map(u => [arNorm(u), u])).values()].map(mbaSavable);
   }
   function archiveOnSubmit() {
     if (SETTINGS.archive === false) return;
-    const ta = document.getElementById('edit-note-text'); if (!ta) return;
     const log = Log.cat('Archive');
     const h = fcHandoff();
     const fc = new Set([h && h.url, ...((h && h.archive && h.archive.urls) || []).map(a => a.url)].filter(Boolean).map(arNorm));
-    const plan = archiveNote(ta.value, linkRows().map(r => r.url), fc, mbaTs(new Date()), ((typeof GM_info !== 'undefined' && GM_info.script) || {}).name || 'Apollo Editor', !!mbaKeys());   // the name the credit is written with (a local build may be "Apollo Editor*")
-    if (!plan) { log.debug('archive: no links to save'); return; }
-    setEditNote(ta, plan.note);
-    _apolloUsed = true;   // the archive lines are Apollo's: credit it
-    const send = plan.urls.filter(u => !_arSent.has(u)), keys = !!mbaKeys();
+    const send = archiveUrls(linkRows().map(r => r.url), fc).filter(u => !_arSent.has(u)), keys = !!mbaKeys();
+    if (!send.length) { log.debug('archive: no links to save'); return; }
     log.info(`archive: sending ${send.length} URL(s) to the Internet Archive (${keys ? 'Save Page Now 2 with your keys' : 'anonymous'}): ${send.join(', ')}`);
     if (!keys && send.length > 3) log.info('archive: anonymous saves are limited per connection, so some of these may be refused; archive.org keys in the settings raise the limit');
     for (const u of send) { _arSent.add(u); mbaSave(u, log, false); }

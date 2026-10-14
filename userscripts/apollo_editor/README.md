@@ -19,7 +19,7 @@ A faster release editor for MusicBrainz: artists and recordings auto-matched, cl
 - **[Duplicates](#duplicates)**: a similarity score for each existing release, with a track-by-track comparison.
 - **[Annotation editor](#annotation-editor)**: Markdown with a live preview.
 - **[Highlighting](#highlighting)**: confusable punctuation, invisible characters and missing spaces made visible.
-- **[Archive](#archive)**: the release's links and the edit note's links saved on the Internet Archive, and a menu by each external link to its copies there.
+- **[Archive](#archive)**: the release's links saved on the Internet Archive, and a menu by each external link to its copies there.
 
 Each part is optional, and Apollo's icon in the bottom-right corner switches back to MusicBrainz's own editor at any time; it's in colour while Apollo is on and grey while off.
 
@@ -251,20 +251,14 @@ Apollo follows a dark MusicBrainz theme, such as kellnerd's [userstyle](https://
 
 ## Archive
 
-When you click **Enter edit**, Apollo asks the Internet Archive's Wayback Machine to save every external link of the release and every link in the edit note, so anyone can later check what the pages showed. The edit note says so:
+When you click **Enter edit**, Apollo asks the Internet Archive's Wayback Machine to save every external link of the release, so anyone can later check what the pages showed. The edit note doesn't mention it: the [archive menu](#archive-menu) by each link opens its copies.
 
-```text
-Archived on the Wayback Machine, 2026-10-13: 4 external links (web.archive.org/web/20261013160122/ + link)
-Archived screenshots: web.archive.org/web/20261013160122/http://web.archive.org/screenshot/ + link
-Archived link: https://web.archive.org/web/20261013160122/example.com/press/release
-```
-
-- The release's links get one line between them, since the release lists them: put the link after the address shown to open its snapshot. A link that is only in the edit note gets its own line.
-- Some sites refuse the Internet Archive, and their pages can't be saved. Discogs is one: for a Discogs link Apollo saves the same data from Discogs' API, and links it on its own line.
+- Only the release's own links are saved, not the links an edit note mentions.
+- Some sites refuse the Internet Archive, and their pages can't be saved. Discogs is one: for a Discogs link Apollo saves the same data from Discogs' API.
 - Every edit saves them again. A page the Internet Archive saved a moment ago isn't saved twice.
 - The edit doesn't wait for the saves, which take from a few seconds to a minute.
 - Links on MusicBrainz and the Internet Archive aren't saved, nor the album page [First Contact](../first_contact/README.md#archive) already archives for its import.
-- Without keys the saves are anonymous, and the Internet Archive refuses some when a release has many links. With your archive.org keys the limit is much higher, and each save also takes a screenshot, linked by the *Archived screenshots* line. They are the same keys First Contact uses: in [String Theory](../string_theory/README.md) keys set in one show in the other. To get them, see [First Contact → archive.org keys](../first_contact/README.md#archiveorg-keys).
+- Without keys the saves are anonymous, and the Internet Archive refuses some when a release has many links. With your archive.org keys the limit is much higher, and each save also takes a screenshot, which the menu's *Open the latest screenshot* opens. They are the same keys First Contact uses: in [String Theory](../string_theory/README.md) keys set in one show in the other. To get them, see [First Contact → archive.org keys](../first_contact/README.md#archiveorg-keys).
 
 ### Archive menu
 
@@ -293,7 +287,7 @@ Right-click Apollo's corner icon. Column widths, the toolbar layout, **Change**,
 | Modify header and footer                                      | on      | a compact step switcher instead of the tabs and footer                                  |
 | Zen editing                                                   | on      | hide the site header, title and footer; the title moves into Apollo's bar               |
 | Auto confirm release submissions                              | on      | skip the confirmation page when a site seeds a release                                  |
-| Archive links on the Internet Archive                         | on      | save the release's and the edit note's links at **Enter edit**; see [Archive](#archive) |
+| Archive links on the Internet Archive                         | on      | save the release's links at **Enter edit**; see [Archive](#archive)                     |
 | Archive menu on external links                                | on      | the [archive menu](#archive-menu) by each link on entity pages                          |
 | archive.org keys                                              | none    | your access key and secret, shared with First Contact: higher limits, plus a screenshot |
 | Auto-match on start: Tracklist, Recordings                    | on      | match on load                                                                           |

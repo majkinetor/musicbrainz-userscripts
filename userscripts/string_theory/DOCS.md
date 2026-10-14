@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-10-13 19:21 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-10-14 08:03 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -39,7 +39,7 @@ A faster release editor for MusicBrainz: artists and recordings auto-matched, cl
 - **[Duplicates](#duplicates)**: a similarity score for each existing release, with a track-by-track comparison.
 - **[Annotation editor](#annotation-editor)**: Markdown with a live preview.
 - **[Highlighting](#highlighting)**: confusable punctuation, invisible characters and missing spaces made visible.
-- **[Archive](#archive)**: the release's links and the edit note's links saved on the Internet Archive, and a menu by each external link to its copies there.
+- **[Archive](#archive)**: the release's links saved on the Internet Archive, and a menu by each external link to its copies there.
 
 Each part is optional, and Apollo's icon in the bottom-right corner switches back to MusicBrainz's own editor at any time; it's in colour while Apollo is on and grey while off.
 
@@ -271,20 +271,14 @@ Apollo follows a dark MusicBrainz theme, such as kellnerd's [userstyle](https://
 
 ### Archive
 
-When you click **Enter edit**, Apollo asks the Internet Archive's Wayback Machine to save every external link of the release and every link in the edit note, so anyone can later check what the pages showed. The edit note says so:
+When you click **Enter edit**, Apollo asks the Internet Archive's Wayback Machine to save every external link of the release, so anyone can later check what the pages showed. The edit note doesn't mention it: the [archive menu](#archive-menu) by each link opens its copies.
 
-```text
-Archived on the Wayback Machine, 2026-10-13: 4 external links (web.archive.org/web/20261013160122/ + link)
-Archived screenshots: web.archive.org/web/20261013160122/http://web.archive.org/screenshot/ + link
-Archived link: https://web.archive.org/web/20261013160122/example.com/press/release
-```
-
-- The release's links get one line between them, since the release lists them: put the link after the address shown to open its snapshot. A link that is only in the edit note gets its own line.
-- Some sites refuse the Internet Archive, and their pages can't be saved. Discogs is one: for a Discogs link Apollo saves the same data from Discogs' API, and links it on its own line.
+- Only the release's own links are saved, not the links an edit note mentions.
+- Some sites refuse the Internet Archive, and their pages can't be saved. Discogs is one: for a Discogs link Apollo saves the same data from Discogs' API.
 - Every edit saves them again. A page the Internet Archive saved a moment ago isn't saved twice.
 - The edit doesn't wait for the saves, which take from a few seconds to a minute.
 - Links on MusicBrainz and the Internet Archive aren't saved, nor the album page [First Contact](../first_contact/README.md#archive) already archives for its import.
-- Without keys the saves are anonymous, and the Internet Archive refuses some when a release has many links. With your archive.org keys the limit is much higher, and each save also takes a screenshot, linked by the *Archived screenshots* line. They are the same keys First Contact uses: in [String Theory](../string_theory/README.md) keys set in one show in the other. To get them, see [First Contact → archive.org keys](../first_contact/README.md#archiveorg-keys).
+- Without keys the saves are anonymous, and the Internet Archive refuses some when a release has many links. With your archive.org keys the limit is much higher, and each save also takes a screenshot, which the menu's *Open the latest screenshot* opens. They are the same keys First Contact uses: in [String Theory](../string_theory/README.md) keys set in one show in the other. To get them, see [First Contact → archive.org keys](../first_contact/README.md#archiveorg-keys).
 
 #### Archive menu
 
@@ -313,7 +307,7 @@ Right-click Apollo's corner icon. Column widths, the toolbar layout, **Change**,
 | Modify header and footer                                      | on      | a compact step switcher instead of the tabs and footer                                  |
 | Zen editing                                                   | on      | hide the site header, title and footer; the title moves into Apollo's bar               |
 | Auto confirm release submissions                              | on      | skip the confirmation page when a site seeds a release                                  |
-| Archive links on the Internet Archive                         | on      | save the release's and the edit note's links at **Enter edit**; see [Archive](#archive) |
+| Archive links on the Internet Archive                         | on      | save the release's links at **Enter edit**; see [Archive](#archive)                     |
 | Archive menu on external links                                | on      | the [archive menu](#archive-menu) by each link on entity pages                          |
 | archive.org keys                                              | none    | your access key and secret, shared with First Contact: higher limits, plus a screenshot |
 | Auto-match on start: Tracklist, Recordings                    | on      | match on load                                                                           |
@@ -852,7 +846,7 @@ Import a release into MusicBrainz from the platform's album page with one click:
 - [View users](https://musicbrainz.org/search/edits?auto_edit_filter=&order=desc&negation=0&combinator=and&conditions.0.field=edit_note_content&conditions.0.operator=includes&conditions.0.args.0=First+Contact)
 
 > [!IMPORTANT]
-> By default every album page you import is sent to the Internet Archive to be saved, so the edit note can link a snapshot of it. See [Archive](#archive-1); turn it off in [Settings](#settings-2).
+> By default every album page you import is sent to the Internet Archive to be saved, so anyone can later check what it showed. See [Archive](#archive-1); turn it off in [Settings](#settings-2).
 
 ### Features
 
@@ -861,7 +855,7 @@ Import a release into MusicBrainz from the platform's album page with one click:
 - **[Send to Harmony](#send-to-harmony)**: look the album up on Harmony instead, with every platform that has its barcode.
 - **[Platforms](#platforms)**: what is read from each one.
 - **[Artist matching](#artist-matching-1)** is left to Apollo Editor, which gets every artist's platform link.
-- **[Archive](#archive-1)**: the album page is saved on the Internet Archive, and the edit note links the snapshot.
+- **[Archive](#archive-1)**: the album page is saved on the Internet Archive.
 - **[Moving the button](#moving-the-button)**: drag it anywhere; each platform remembers its place.
 
 ### Import
@@ -880,7 +874,7 @@ On a platform's album page, click **Import to MusicBrainz** in the bottom-right 
 | Tracklist            | one Digital Media medium per disc, with titles, track artists and lengths                         |
 | External link        | the album page                                                                                    |
 | Annotation           | the platform's [notes](#platforms), with their source; off per platform in [Settings](#settings-2)  |
-| Edit note            | the album page, its [Internet Archive snapshots](#archive-1), the script and its version            |
+| Edit note            | the album page, the script and its version                                                        |
 
 A compilation the platform credits to one of its artists becomes Various Artists and a Compilation, when the credited artists are on fewer than half the tracks and the tracks have five or more artists.
 
@@ -1088,18 +1082,12 @@ When the artist exists but lacks the platform link, Apollo offers to add it, so 
 
 ### Archive
 
-On every import, First Contact asks the Internet Archive's Wayback Machine to save the album page, so anyone can later check what the platform showed, even after the page changes or is gone. The edit note links the snapshot:
-
-```text
-Imported from Deezer: https://www.deezer.com/album/6575789
-Archived page: https://web.archive.org/web/20261002121804/https://www.deezer.com/en/album/6575789
-Archived API data: https://web.archive.org/web/20261002121804/https://api.deezer.com/album/6575789
-```
+On every import, First Contact asks the Internet Archive's Wayback Machine to save the album page, so anyone can later check what the platform showed, even after the page changes or is gone. The edit note doesn't mention it; the [Wayback Machine](https://web.archive.org/) finds the snapshot by the page's address.
 
 - The import never waits for the save, which takes from a few seconds to a minute; the [log](#settings-2) says when it's done or why it failed.
-- Deezer and Apple Music build their pages in the browser, so a saved page shows little. For these, the album data First Contact read is saved too, and linked as *Archived API data*.
-- Discogs refuses the Internet Archive, so its page can't be saved, nor a screenshot of it. For Discogs, the release's data from Discogs' API is saved instead, and linked as *Archived API data*.
-- Spotify, Tidal and YouTube Music also build their pages in the browser, and their data can't be saved. For these, add your archive.org keys: the save then also takes a screenshot of the page, and the edit note links it as *Archived screenshot*.
+- Deezer and Apple Music build their pages in the browser, so a saved page shows little. For these, the album data First Contact read is saved too.
+- Discogs refuses the Internet Archive, so its page can't be saved, nor a screenshot of it. For Discogs, the release's data from Discogs' API is saved instead.
+- Spotify, Tidal and YouTube Music also build their pages in the browser, and their data can't be saved. For these, add your archive.org keys: the save then also takes a screenshot of the page.
 
 #### archive.org keys
 
@@ -1142,7 +1130,7 @@ A review in the notes is the critic's text (Qobuz's and Apple's are usually AllM
 
 | Setting                                        | Default |                                                                                  |
 | ---------------------------------------------- | ------- | -------------------------------------------------------------------------------- |
-| Archive the album page on the Internet Archive | on      | each import saves the album page and links the snapshot; see [Archive](#archive-1) |
+| Archive the album page on the Internet Archive | on      | each import saves the album page; see [Archive](#archive-1)                        |
 | archive.org keys                               | none    | higher limits and a screenshot; shared with Apollo; see [keys](#archiveorg-keys) |
 
 #### Button

@@ -69,7 +69,7 @@ The handoff carries the archive plan (`archive: { ts, keys, urls: [{ url, what: 
 
 - **Page URL**: `location.href` without the fragment and share/tracking parameters (`si`, `utm_*`, `fbclid`, `feature`, …), not the canonical `rel.url`. The canonical URL often redirects (Deezer's `/album/<id>` → `/<country>/album/<id>`), Wayback stores the snapshot under the target, and `/web/<ts>/<canonical>` then finds an older snapshot.
 - **API URL**: a provider's `archiveApi(id)`. Deezer: `api.deezer.com/album/<id>`. Apple Music: `itunes.apple.com/lookup?id=<id>&entity=song&country=<cc>` (amp-api needs a bearer token Wayback can't send). Spotify, Tidal and YouTube Music have none: their APIs need a token, or POST.
-- **Edit note**: `https://web.archive.org/web/<ts>/<url>`, with `<ts>` the import's UTC time (`YYYYMMDDhhmmss`). Wayback redirects to the nearest snapshot. With keys, the screenshot is `/web/<ts>/http://web.archive.org/screenshot/<page url>`.
+- **Edit note**: no archive lines (#739).
 - **Anonymous**: `GET https://web.archive.org/save/<url>`. It answers with a 302 to `/web/<ts>/<url>` once the capture is done (about 5–20 s); the manager follows it, and `finalUrl` is the snapshot. 429 is the per-IP rate limit.
 - **With keys** (Save Page Now 2): `POST https://web.archive.org/save` with `Authorization: LOW <key>:<secret>`, `Accept: application/json`, form body `url`, `capture_screenshot=1`, `if_not_archived_within=30d`. It answers `{ url, job_id }`; `GET /save/status/<job_id>` (same header) is polled every 6 s for up to 3 minutes, for the log only.
 

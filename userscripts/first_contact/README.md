@@ -8,7 +8,7 @@ Import a release into MusicBrainz from the platform's album page with one click:
 - [View users](https://musicbrainz.org/search/edits?auto_edit_filter=&order=desc&negation=0&combinator=and&conditions.0.field=edit_note_content&conditions.0.operator=includes&conditions.0.args.0=First+Contact)
 
 > [!IMPORTANT]
-> By default every album page you import is sent to the Internet Archive to be saved, so the edit note can link a snapshot of it. See [Archive](#archive); turn it off in [Settings](#settings).
+> By default every album page you import is sent to the Internet Archive to be saved, so anyone can later check what it showed. See [Archive](#archive); turn it off in [Settings](#settings).
 
 ## Features
 
@@ -17,7 +17,7 @@ Import a release into MusicBrainz from the platform's album page with one click:
 - **[Send to Harmony](#send-to-harmony)**: look the album up on Harmony instead, with every platform that has its barcode.
 - **[Platforms](#platforms)**: what is read from each one.
 - **[Artist matching](#artist-matching)** is left to Apollo Editor, which gets every artist's platform link.
-- **[Archive](#archive)**: the album page is saved on the Internet Archive, and the edit note links the snapshot.
+- **[Archive](#archive)**: the album page is saved on the Internet Archive.
 - **[Moving the button](#moving-the-button)**: drag it anywhere; each platform remembers its place.
 
 ## Import
@@ -36,7 +36,7 @@ On a platform's album page, click **Import to MusicBrainz** in the bottom-right 
 | Tracklist            | one Digital Media medium per disc, with titles, track artists and lengths                         |
 | External link        | the album page                                                                                    |
 | Annotation           | the platform's [notes](#platforms), with their source; off per platform in [Settings](#settings)  |
-| Edit note            | the album page, its [Internet Archive snapshots](#archive), the script and its version            |
+| Edit note            | the album page, the script and its version                                                        |
 
 A compilation the platform credits to one of its artists becomes Various Artists and a Compilation, when the credited artists are on fewer than half the tracks and the tracks have five or more artists.
 
@@ -244,18 +244,12 @@ When the artist exists but lacks the platform link, Apollo offers to add it, so 
 
 ## Archive
 
-On every import, First Contact asks the Internet Archive's Wayback Machine to save the album page, so anyone can later check what the platform showed, even after the page changes or is gone. The edit note links the snapshot:
-
-```text
-Imported from Deezer: https://www.deezer.com/album/6575789
-Archived page: https://web.archive.org/web/20261002121804/https://www.deezer.com/en/album/6575789
-Archived API data: https://web.archive.org/web/20261002121804/https://api.deezer.com/album/6575789
-```
+On every import, First Contact asks the Internet Archive's Wayback Machine to save the album page, so anyone can later check what the platform showed, even after the page changes or is gone. The edit note doesn't mention it; the [Wayback Machine](https://web.archive.org/) finds the snapshot by the page's address.
 
 - The import never waits for the save, which takes from a few seconds to a minute; the [log](#settings) says when it's done or why it failed.
-- Deezer and Apple Music build their pages in the browser, so a saved page shows little. For these, the album data First Contact read is saved too, and linked as *Archived API data*.
-- Discogs refuses the Internet Archive, so its page can't be saved, nor a screenshot of it. For Discogs, the release's data from Discogs' API is saved instead, and linked as *Archived API data*.
-- Spotify, Tidal and YouTube Music also build their pages in the browser, and their data can't be saved. For these, add your archive.org keys: the save then also takes a screenshot of the page, and the edit note links it as *Archived screenshot*.
+- Deezer and Apple Music build their pages in the browser, so a saved page shows little. For these, the album data First Contact read is saved too.
+- Discogs refuses the Internet Archive, so its page can't be saved, nor a screenshot of it. For Discogs, the release's data from Discogs' API is saved instead.
+- Spotify, Tidal and YouTube Music also build their pages in the browser, and their data can't be saved. For these, add your archive.org keys: the save then also takes a screenshot of the page.
 
 ### archive.org keys
 
@@ -298,7 +292,7 @@ A review in the notes is the critic's text (Qobuz's and Apple's are usually AllM
 
 | Setting                                        | Default |                                                                                  |
 | ---------------------------------------------- | ------- | -------------------------------------------------------------------------------- |
-| Archive the album page on the Internet Archive | on      | each import saves the album page and links the snapshot; see [Archive](#archive) |
+| Archive the album page on the Internet Archive | on      | each import saves the album page; see [Archive](#archive)                        |
 | archive.org keys                               | none    | higher limits and a screenshot; shared with Apollo; see [keys](#archiveorg-keys) |
 
 ### Button

@@ -1,6 +1,6 @@
 // #659: archive the imported album on the Internet Archive. The release editor's tab sends the
-// save requests (anonymous Save Page Now, or Save Page Now 2 with the user's archive.org keys);
-// the edit note links the snapshots by the import's time.
+// save requests (anonymous Save Page Now, or Save Page Now 2 with the user's archive.org keys).
+// The edit note doesn't mention them (#739).
 //
 // Fixture: Daft Punk, "Random Access Memories" (Deezer album 6575789), as in 650-deezer-seed.
 // web.archive.org is answered by answerGm, so a run saves nothing on archive.org.
@@ -10,28 +10,18 @@ const ALBUM = 'https://www.deezer.com/en/album/6575789';
 const PAGE = 'https://www.deezer.com/album/6575789';
 const API = 'https://api.deezer.com/album/6575789';
 
-test('the edit note links the page, the API data and, with keys, the screenshot', { tag: ['@unit', '@critical'] }, async () => {
+// #739 (majkinetor): the edit note carries no archive lines; Apollo's archive menu by each link finds the snapshots
+test('the edit note has no archive lines', { tag: ['@unit', '@critical'] }, async () => {
   const { editNoteFor } = await loadFunctions('first_contact', ['NAME', 'VERSION', 'HOMEPAGE', 'editNoteFor']);
-  const rel = { url: PAGE };
-  const provider = { name: 'Deezer' };
-  const off = editNoteFor(rel, provider, null);
-  check(off.startsWith(`Imported from Deezer: ${PAGE}\n\nFirst Contact v`) && !/archive\.org/.test(off), `archive off: no archive lines\n${off}`);
-  const urls = [{ url: PAGE, what: 'page' }, { url: API, what: 'api' }];
-  const anon = editNoteFor(rel, provider, { ts: '20261002120000', keys: false, urls });
-  check(anon.includes(`\nArchived page: https://web.archive.org/web/20261002120000/${PAGE}\n`), `the page line\n${anon}`);
-  check(anon.includes(`\nArchived API data: https://web.archive.org/web/20261002120000/${API}\n`), `the API line\n${anon}`);
-  check(!/screenshot/i.test(anon), 'no screenshot line without keys');
-  const keys = editNoteFor(rel, provider, { ts: '20261002120000', keys: true, urls });
-  check(keys.includes(`\nArchived screenshot: https://web.archive.org/web/20261002120000/http://web.archive.org/screenshot/${PAGE}\n`), `the screenshot line with keys\n${keys}`);
+  const note = editNoteFor({ url: PAGE }, { name: 'Deezer' });
+  check(note.startsWith(`Imported from Deezer: ${PAGE}\n\nFirst Contact v`) && !/archive\.org|Archived/.test(note), `no archive lines\n${note}`);
 });
 
 // #736 (majkinetor, a Discogs import): discogs.com refuses archive.org, so only its API data is saved
-test('Discogs: the API data, no page and no screenshot', { tag: ['@unit', '@critical'] }, async () => {
-  const { editNoteFor, mbaSavable, mbaCleanUrl } = await loadFunctions('first_contact', ['NAME', 'VERSION', 'HOMEPAGE', 'editNoteFor', 'mbaSavable', 'mbaCleanUrl']);
+test('Discogs: the API data is saved, not the page', { tag: ['@unit', '@critical'] }, async () => {
+  const { mbaSavable, mbaCleanUrl } = await loadFunctions('first_contact', ['mbaSavable', 'mbaCleanUrl']);
   const api = mbaSavable('https://www.discogs.com/release/34839779');
   check(api === 'https://api.discogs.com/releases/34839779', `the release's API address (${api})`);
-  const note = editNoteFor({ url: 'https://www.discogs.com/release/34839779' }, { name: 'Discogs' }, { ts: '20261013164724', keys: true, urls: [{ url: api, what: 'api' }] });
-  check(note.includes(`\nArchived API data: https://web.archive.org/web/20261013164724/${api}\n`) && !/Archived (page|screenshot)/.test(note), `only the API line\n${note}`);
   const page = mbaCleanUrl('https://www.discogs.com/release/34839779-Saimaa-Ja-Yona-Solovey-Lauluja-Ukrainasta?redirected=true');
   check(page === 'https://www.discogs.com/release/34839779-Saimaa-Ja-Yona-Solovey-Lauluja-Ukrainasta', `?redirected=true is dropped (${page})`);
 });
@@ -92,13 +82,7 @@ test.describe('anonymous', () => {
     });
     const { editor, seed } = await importToEditor({ page, context, inject });
     console.log('edit note:\n' + seed.note);
-    check(new RegExp(`\\nArchived page: https://web\\.archive\\.org/web/\\d{14}/${ALBUM.replace(/[./]/g, '\\$&')}\\n`).test(seed.note), 'the edit note links the page snapshot');
-    check(seed.note.includes(`/${API}\n`), 'the edit note links the API snapshot');
-    check(!/screenshot/i.test(seed.note), 'no screenshot line without keys');
-    const ts = (seed.note.match(/web\.archive\.org\/web\/(\d{14})\//) || [])[1];
-    check(ts && Math.abs(Date.UTC(+ts.slice(0, 4), +ts.slice(4, 6) - 1, +ts.slice(6, 8), +ts.slice(8, 10), +ts.slice(10, 12)) - Date.now()) < 15 * 60e3, `the link's time is the import's (${ts})`);
-    const note = await editor.locator('#edit-note-text').inputValue().catch(() => '');
-    check(note.includes('Archived page: https://web.archive.org/web/'), 'the release editor has the archive lines in its edit note');
+    check(!/Archived|web\.archive\.org/.test(seed.note), 'no archive lines in the edit note (#739)');
 
     const got = await until(() => saves.length, n => n >= 2, { timeout: 20_000 });
     check(got === 2, `two saves sent (${got})`);
@@ -142,7 +126,7 @@ test.describe('with archive.org keys', () => {
     const { seed } = await importToEditor({ page, context, inject });
     const moved = await page.evaluate(() => ({ shared: GM_getValue('mbu.archive'), fc: GM_getValue('fc.settings') }));
     check(moved.shared && moved.shared.iaKey === 'AKEY' && moved.shared.iaSecret === 'ASECRET' && !('iaKey' in moved.fc) && !('iaSecret' in moved.fc), `the keys moved to mbu.archive (${JSON.stringify(moved)})`);
-    check(seed.note.includes(`Archived screenshot: https://web.archive.org/web/`) && seed.note.includes(`/http://web.archive.org/screenshot/${ALBUM}\n`), `the edit note links the screenshot\n${seed.note}`);
+    check(!/Archived|web\.archive\.org/.test(seed.note), 'no archive lines in the edit note, with keys either (#739)');
 
     const posts = () => calls.filter(c => c.method === 'POST');
     await until(() => posts().length, n => n >= 2, { timeout: 60_000 });
