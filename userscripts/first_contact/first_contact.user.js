@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         First Contact
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.14
+// @version      2026.10.14.183425
 // @description  Import a release into MusicBrainz from the platform's album page with one click: the release editor opens with the title, tracklist, artists, date, label, barcode and link filled in. Each artist's platform link is handed to Apollo Editor for matching. A second button sends the album to Harmony instead. By default the album page is also saved on the Internet Archive (it sends each imported URL to archive.org; off in the settings), and the edit note links the snapshot. Platforms: Deezer, Bandcamp, Discogs, Apple Music, Tidal, Qobuz, Beatport, Spotify, YouTube Music, Volumo, HDtracks, SoundCloud, Amazon Music, Audiomack, 7digital, Ototoy.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5GaXJzdCBDb250YWN0PC90aXRsZT4KPGxpbmVhckdyYWRpZW50IGlkPSJmYy1kIiB4MT0iMCIgeTE9IjAiIHgyPSIwIiB5Mj0iMSI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjYmFlNmZkIi8+PHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjMzhiZGY4Ii8+PC9saW5lYXJHcmFkaWVudD48cmFkaWFsR3JhZGllbnQgaWQ9ImZjLWIiIGN4PSIuMzUiIGN5PSIuMyIgcj0iLjgiPjxzdG9wIG9mZnNldD0iMCIgc3RvcC1jb2xvcj0iI2ZmZjdjYyIvPjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iI2Y2YzQzMSIvPjwvcmFkaWFsR3JhZGllbnQ+PHBhdGggZD0iTTUwIDQyIEw3OCA0MiBMMTA0IDExMiBMMjQgMTEyIFoiIGZpbGw9IiNmNmM0MzEiIG9wYWNpdHk9Ii45Ii8+PHBhdGggZD0iTTU2IDQyIEw3MiA0MiBMODggMTEyIEw0MCAxMTIgWiIgZmlsbD0iI2ZkZTY4YSIgb3BhY2l0eT0iLjciLz48ZWxsaXBzZSBjeD0iNjQiIGN5PSIxMTQiIHJ4PSI0MiIgcnk9IjgiIGZpbGw9IiMxZTIzNDYiIHN0cm9rZT0iI2M5Y2RmMiIgc3Ryb2tlLXdpZHRoPSIzIi8+PGVsbGlwc2UgY3g9IjY0IiBjeT0iMTEzIiByeD0iMjYiIHJ5PSI0LjIiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2Y2YzQzMSIgc3Ryb2tlLXdpZHRoPSIyLjQiLz48cGF0aCBkPSJNNDIgMjggQTIyIDE4IDAgMCAxIDg2IDI4IFoiIGZpbGw9InVybCgjZmMtZCkiIHN0cm9rZT0iI2M5Y2RmMiIgc3Ryb2tlLXdpZHRoPSIzIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PHBhdGggZD0iTTUwLjM2IDE5LjkgQTE1LjM5OTk5OTk5OTk5OTk5OSAxMy41IDAgMCAxIDYxLjggMTEuOCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjIuNiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBvcGFjaXR5PSIuOSIvPjxlbGxpcHNlIGN4PSI2NCIgY3k9IjMyIiByeD0iNTYiIHJ5PSIxMiIgZmlsbD0iIzFlMjM0NiIgc3Ryb2tlPSIjYzljZGYyIiBzdHJva2Utd2lkdGg9IjMiLz48ZWxsaXBzZSBjeD0iNjQiIGN5PSI0MCIgcng9IjIyIiByeT0iNiIgZmlsbD0idXJsKCNmYy1iKSIgc3Ryb2tlPSIjYzljZGYyIiBzdHJva2Utd2lkdGg9IjIuNCIvPjxjaXJjbGUgY3g9IjIyIiBjeT0iMzEiIHI9IjQiIGZpbGw9IiNmNmM0MzEiLz48Y2lyY2xlIGN4PSI0MCIgY3k9IjMxIiByPSI0IiBmaWxsPSIjZjZjNDMxIi8+PGNpcmNsZSBjeD0iODgiIGN5PSIzMSIgcj0iNCIgZmlsbD0iI2Y2YzQzMSIvPjxjaXJjbGUgY3g9IjEwNiIgY3k9IjMxIiByPSI0IiBmaWxsPSIjZjZjNDMxIi8+PHBhdGggZD0iTTY0IDU4IEw4NCA2OS41IEw4NCA5Mi41IEw2NCAxMDQgTDQ0IDkyLjUgTDQ0IDY5LjUgWiIgZmlsbD0iIzdiNGZkNiIvPjxwYXRoIGQ9Ik02NCA1OCBMODQgNjkuNSBMNjQgODEgTDQ0IDY5LjUgWiIgZmlsbD0iIzliNzJlYSIvPjxwYXRoIGQ9Ik02MCA3MiBMNzQgNjkgTDc0IDg5IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iMy40IiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PHBhdGggZD0iTTYwIDcyIEw2MCA5MiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjMuNCIvPjxlbGxpcHNlIGN4PSI1NiIgY3k9IjkyIiByeD0iNC42IiByeT0iMy42IiBmaWxsPSIjZmZmIi8+PGVsbGlwc2UgY3g9IjcwIiBjeT0iODkiIHJ4PSI0LjYiIHJ5PSIzLjYiIGZpbGw9IiNmZmYiLz4KPC9zdmc+Cg==
@@ -68,6 +68,7 @@
 // @connect      music.amazon.com
 // @connect      na.mesk.skill.music.a2z.com
 // @connect      web.archive.org
+// @connect      bandcamp.com
 // ==/UserScript==
 
 (function () {
@@ -528,6 +529,22 @@ const BANDCAMP = {
                 credit: tc,
             };
         });
+        // #743: an album not out yet hides the lengths of its unreleased tracks (duration 0) on the page; Bandcamp's app
+        // API (mobile/24/tralbum_details) still has them. They can change before the release: the edit note says so.
+        let hiddenLengths = 0;
+        const hidden = (t.trackinfo || []).map((x, i) => (!x.duration && x.unreleased_track) ? i : -1).filter(i => i >= 0);
+        const bandId = (band && band.id) || cur.band_id;
+        if (hidden.length && bandId && t.id) {
+            try {
+                const app = await gmJson(`https://bandcamp.com/api/mobile/24/tralbum_details?band_id=${bandId}&tralbum_id=${t.id}&tralbum_type=a`);
+                const byNum = new Map((app.tracks || []).map(x => [x.track_num, x]));
+                hidden.forEach(i => {
+                    const d = byNum.get(t.trackinfo[i].track_num);
+                    if (d && d.duration > 0) { tracks[i].lengthMs = Math.round(d.duration * 1000); hiddenLengths++; }
+                });
+                Log.warn(`Bandcamp hides ${hidden.length} track length(s) until the album is out (${t.album_release_date || 'no date'}): ${hiddenLengths} taken from Bandcamp's app data, which can change before the release`);
+            } catch (e) { Log.warn(`Bandcamp hides ${hidden.length} track length(s) until the album is out; its app data didn't answer (${e.message}): they stay empty`); }
+        }
         tracks.forEach((x, i) => Log.debug(`track ${i + 1}: "${x.title}" — ${x.credit.map(c => c.name + c.join).join('')} (${x.lengthMs ? x.lengthMs / 1000 + 's' : 'no length'})`));
 
         // a label account publishing someone else's album: that's the label. An account that
@@ -551,6 +568,7 @@ const BANDCAMP = {
             // 74 = purchase for download, 85 = stream for free: both, on one URL, as MB allows
             urls: [{ url, linkType: 74 }].concat(streamable ? [{ url, linkType: 85 }] : []),
             mediums: [{ format: 'Digital Media', name: '', tracks }],
+            hiddenLengths,
         };
     },
 };
@@ -2241,6 +2259,8 @@ function missingText(rel, provider) {
 function editNoteFor(rel, provider) {
     const lines = [`Imported from ${provider.name}: ${rel.url}`];
     if (rel.missing) lines.push(missingText(rel, provider));
+    // #743: lengths Bandcamp hides until the release, from its app data
+    if (rel.hiddenLengths) lines.push(`${rel.hiddenLengths} track length(s) are from ${provider.name}'s app data: its page hides them until the album is out, and they can still change.`);
     return lines.join('\n') + `\n\n${NAME} v${VERSION} by majkinetor - ${HOMEPAGE}`;
 }
 
@@ -2981,6 +3001,7 @@ async function importCurrent() {
         if (mbuTestHooks()) window.__fcLastSeed = { token, server, params, rel };
 
         const where = sendSeed(server, token, params);
+        if (rel.hiddenLengths) mbuToast(`⚠ ${rel.hiddenLengths} track length(s) are from ${provider.name}'s app data: the album isn't out yet, so they can still change`, { kind: 'warn' });
         Log.ok(`seeded ${server}/release/add with ${nTracks} track(s) (${where === 'here' ? 'in this tab: the browser blocked a new one' : 'in a new tab'})`);
         if (settings().closeAfter) {
             if (where !== 'here') closeSourceTab();

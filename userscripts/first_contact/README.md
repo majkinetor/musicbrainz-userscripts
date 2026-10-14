@@ -111,6 +111,7 @@ Pages: `<name>.bandcamp.com/album/<slug>`
 - A compilation's *Artist - Title* track titles are split into artist and title.
 - The album link gets both *purchase for download* and, when it streams, *stream for free*.
 - Only the artist the page belongs to has a Bandcamp link to hand off.
+- An album that isn't out yet hides the lengths of its unreleased tracks. First Contact takes them from Bandcamp's app data, with a warning and a line in the edit note: they can still change before the release.
 
 ### Discogs
 

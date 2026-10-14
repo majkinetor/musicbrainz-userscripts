@@ -6,7 +6,7 @@
 //   account; "EP" in the title.
 //   Ghostly International, "Ghostly Swim": a label's Various Artists compilation, track titles
 //   prefixed with "Artist - ".
-import { test, check } from '../../../dev/test/harness.mjs';
+import { test, check, answerGm } from '../../../dev/test/harness.mjs';
 
 test.use({ gm: { name: 'First Contact' }, pageErrors: 'ignore' });   // bandcamp.com's own scripts are not ours
 
@@ -51,4 +51,25 @@ test('a comma list of artists is split; the account artist keeps the link and is
   check(rel.credit[0].url === 'https://futurefunksquad.bandcamp.com' && rel.credit.slice(1).every(a => !a.url), `only the account's artist has a link: ${rel.credit.map(a => a.url).join(', ')}`);
   check(rel.labels.length === 0, `the artist's own account is not the label: ${JSON.stringify(rel.labels)}`);
   check(text(rel.mediums[0].tracks[0].credit) === text(rel.credit), 'the tracks carry the same credit');
+});
+
+// #743: an album not out yet hides its unreleased tracks' lengths on the page (duration 0); Bandcamp's app data
+// has them, and the edit note says where they came from. Out on 2026-11-06: from then on, the page has them all.
+// Bandcamp answers the harness's requests with its "Client Challenge" page (dev/test/README.md), so the app data's
+// answer is fetched here from Node and handed over.
+test('an album not out yet: the hidden track lengths come from Bandcamp\'s app data', { tag: ['@web'] }, async ({ page, context, inject }) => {
+  answerGm(context, async ({ url }) => {
+    if (!/bandcamp\.com\/api\/mobile\/24\/tralbum_details/.test(url)) return null;
+    const r = await fetch(url, { headers: { Accept: 'application/json' } });
+    return { status: r.status, body: await r.text() };
+  });
+  const rel = await read(page, inject, 'https://ctrlclick.bandcamp.com/album/systems-for-disassembly');
+  const tracks = rel.mediums[0].tracks;
+  const hidden = await page.evaluate(() => JSON.parse(document.querySelector('script[data-tralbum]').dataset.tralbum).trackinfo.filter(x => !x.duration && x.unreleased_track).length);
+  console.log(`hidden on the page: ${hidden}; lengths: ${tracks.map(t => t.lengthMs).join(', ')}`);
+  check(tracks.length === 14 && tracks.every(t => t.lengthMs > 0), `every track has a length (${tracks.filter(t => !t.lengthMs).length} without)`);
+  check(rel.hiddenLengths === hidden, `the ones the page hides are counted (${rel.hiddenLengths} of ${hidden})`);
+  if (hidden) check(tracks[1].lengthMs === 238050, `"Insolent" is 3:58 (${tracks[1].lengthMs})`);
+  const note = await page.evaluate(r => window.__fcTest.editNoteFor ? window.__fcTest.editNoteFor(r, window.__fcTest.providers.find(p => p.id === 'bandcamp')) : null, rel);
+  if (note !== null && hidden) check(/track length\(s\) are from Bandcamp's app data/.test(note), `the edit note says so (${note})`);
 });

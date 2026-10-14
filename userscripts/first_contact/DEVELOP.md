@@ -31,21 +31,21 @@ It travels in the script's storage under `fc.handoff.<token>`, the token in the 
 
 ## How each platform is read
 
-| Platform      | Source                                                                                                                              |
-| ------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
-| Deezer        | Deezer's public API                                                                                                                 |
-| Bandcamp      | the album page's own data (`data-tralbum` and the ld+json); nothing is fetched                                                      |
-| Discogs       | Discogs's public API                                                                                                                |
-| Apple Music   | Apple's catalogue API (`amp-api.music.apple.com`), with the bearer token in the web player's public JS, in the page's country store |
-| Tidal         | the official catalogue API (`openapi.tidal.com/v2`) with an app token from the client-credentials grant; US store, then GB, DE      |
-| Qobuz         | the store page's HTML (its API needs a login)                                                                                       |
-| Beatport      | the release page's `__NEXT_DATA__`, as Harmony does                                                                                 |
-| Spotify       | the web player's album query, plus `spclient`'s album metadata for the barcode                                                      |
-| YouTube Music | the web player's API (`youtubei/v1`), anonymously                                                                                   |
-| Volumo        | Volumo's API                                                                                                                        |
-| HDtracks      | HDtracks's API                                                                                                                      |
-| SoundCloud    | `api-v2.soundcloud.com`, with the web player's public client id                                                                     |
-| Amazon Music  | the web player's API (`na.mesk.skill.music.a2z.com`), as a guest                                                                    |
+| Platform | Source |
+| --- | --- |
+| Deezer | Deezer's public API |
+| Bandcamp | the album page's own data (`data-tralbum` and the ld+json); the lengths an album not out yet hides (`duration` 0 on an `unreleased_track`) from the app API, `bandcamp.com/api/mobile/24/tralbum_details?band_id&tralbum_id&tralbum_type=a` |
+| Discogs | Discogs's public API |
+| Apple Music | Apple's catalogue API (`amp-api.music.apple.com`), with the bearer token in the web player's public JS, in the page's country store |
+| Tidal | the official catalogue API (`openapi.tidal.com/v2`) with an app token from the client-credentials grant; US store, then GB, DE |
+| Qobuz | the store page's HTML (its API needs a login) |
+| Beatport | the release page's `__NEXT_DATA__`, as Harmony does |
+| Spotify | the web player's album query, plus `spclient`'s album metadata for the barcode |
+| YouTube Music | the web player's API (`youtubei/v1`), anonymously |
+| Volumo | Volumo's API |
+| HDtracks | HDtracks's API |
+| SoundCloud | `api-v2.soundcloud.com`, with the web player's public client id |
+| Amazon Music | the web player's API (`na.mesk.skill.music.a2z.com`), as a guest |
 
 ### Spotify
 
