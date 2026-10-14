@@ -39,6 +39,8 @@ Open Mission Control with its icon in the bottom-right corner of a release page.
 
 Fusion and Credit Hoarder are slow, so each has a switch under its step: **Auto** fetches during the probe, **Ask** (the default) waits for its **Fetch** button in the Tracks header, **Off** leaves it out.
 
+Click a step in the header to switch its script off: it isn't asked, its card and column go, and Execute leaves it out. Click it again to switch it back on; Fusion and Credit Hoarder get back the switch they had. This is remembered for the next release. The format icon left of the release title shows or hides the Execution order.
+
 The album links you select in the Release and entity links card are passed on to ISRC Scout before they are added, so the tracks get their links from those albums too.
 
 ## Tracks
