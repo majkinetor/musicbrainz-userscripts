@@ -95,3 +95,23 @@ test('#740: a link added with + fills the catalog number in the release editor',
   check(out.field === 'AOF 146' && out.ko === 'AOF 146' && out.staged >= 1, 'the editor holds it, as an edit to make');
   check(out.left === null, 'the queue is used once');
 });
+
+// majkinetor on #740: a Discogs CD with the digital release's barcode sits in the release's own lane, and its catalog
+// number was taken in though its link wasn't (another medium). A platform that is another release never makes it sure.
+test('#740: a catalog number from another medium in the release\'s own lane is not taken in', { tag: ['@sandbox'] }, async ({ page, context, inject }) => {
+  answerGm(context, ({ url }) => /musicbrainz\.org|wikidata/.test(url) ? null : { status: 404, body: '' });
+  await page.goto(`${SANDBOX}/release/${RELEASE}`, { waitUntil: 'domcontentloaded' });
+  await page.waitForSelector('#content table.medium');
+  await inject('platform_check', { waitFor: '__pcTest680' });
+  await page.evaluate(() => window.__pcTest680.scanDone());
+  const out = await page.evaluate(r => {
+    const t = window.__pcTest680;
+    t.setMbBarcode('881390165827');
+    t.cacheSet(r, 'discogs', { url: 'https://www.discogs.com/release/446805', tracks: 5, year: '2005', label: 'Artoffact Records', format: 'CD', source: 'search', barcode: '881390165827', catnos: [{ label: 'Artoffact Records', catno: 'STRIKE58CD/2005' }] });
+    t.updateRow('discogs', { url: 'https://www.discogs.com/release/446805', mbTracks: 5, remoteTracks: 5, year: '2005', label: 'Artoffact Records', format: 'CD', source: 'search', barcode: '881390165827' });
+    return { found: t.pcFoundCatnos(), mc: t.pcMcCatnoFindings([]) };
+  }, RELEASE);
+  console.log(JSON.stringify(out));
+  check(out.found.length === 1 && !out.found[0].sure, 'its catalog number is not sure');
+  check(out.mc[0] && out.mc[0].state === 'unsure' && /CD/.test(out.mc[0].why) && out.mc[0].mismatch, `Mission Control gets it unsure, saying why (${JSON.stringify(out.mc[0])})`);
+});

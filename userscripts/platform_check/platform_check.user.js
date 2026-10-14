@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Platform Check
 // @namespace    http://tampermonkey.net/
-// @version      2026.10.14.192350
+// @version      2026.10.14.204152
 // @description  Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CjxnIHN0cm9rZT0iIzk0YTNiOCIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2UtbGluZWNhcD0icm91bmQiPjxwYXRoIGQ9Ik02NCA2NCBMODggMjIuNCIvPjxwYXRoIGQ9Ik02NCA2NCBMMTEyIDY0Ii8+PHBhdGggZD0iTTY0IDY0IEw4OCAxMDUuNiIvPjxwYXRoIGQ9Ik02NCA2NCBMNDAgMTA1LjYiLz48cGF0aCBkPSJNNjQgNjQgTDE2IDY0Ii8+PHBhdGggZD0iTTY0IDY0IEw0MCAyMi40Ii8+PC9nPjxjaXJjbGUgY3g9Ijg4IiBjeT0iMjIuNCIgcj0iMTIiIGZpbGw9IiNmNDcyYjYiLz48Y2lyY2xlIGN4PSIxMTIiIGN5PSI2NCIgcj0iMTIiIGZpbGw9IiNmYWNjMTUiLz48Y2lyY2xlIGN4PSI4OCIgY3k9IjEwNS42IiByPSIxMiIgZmlsbD0iIzRhZGU4MCIvPjxjaXJjbGUgY3g9IjQwIiBjeT0iMTA1LjYiIHI9IjEyIiBmaWxsPSIjMzhiZGY4Ii8+PGNpcmNsZSBjeD0iMTYiIGN5PSI2NCIgcj0iMTIiIGZpbGw9IiNhNzhiZmEiLz48Y2lyY2xlIGN4PSI0MCIgY3k9IjIyLjQiIHI9IjEyIiBmaWxsPSIjZmI5MjNjIi8+PGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iMjQiIGZpbGw9IiMwZjE3MmEiLz48cGF0aCBkPSJNNTQuMjIyMjIyMjIyMjIyMjIgNjQgTDYxLjMzMzMzMzMzMzMzMzMzNiA3MS4xMTExMTExMTExMTExMSBMNzQuNjY2NjY2NjY2NjY2NjcgNTYuODg4ODg4ODg4ODg4ODg2IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iNiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+Cjwvc3ZnPgo=
@@ -8161,7 +8161,11 @@ function pcFoundCatnos() {
         const e = by.get(k), cached = cacheGet(mbid, p) || {}, bc = normBarcode(cached.barcode || '');
         if (e.platforms.includes(p)) continue;
         e.platforms.push(p); e.barcodes.add(bc); e.forms.set(c.catno, (e.forms.get(c.catno) || 0) + 1);
-        if ((own && bc === own) || (pcIsLinked(p) && !pcMcMismatch(p, cached).mismatch.length)) e.sure = true;
+        // #740: a platform whose track count or medium says it is another release (a Discogs CD with the digital
+        // release's barcode) never makes it sure, though it is in the release's own lane
+        const off = pcMcMismatch(p, cached).mismatch;
+        if (off.length) { e.off = e.off || []; e.off.push(`${PROVIDER_NAME[p]}: ${off.join(', ')}`); }
+        else if ((own && bc === own) || pcIsLinked(p)) e.sure = true;
         const mbCats = formatCategories(MB_FORMAT), remote = remoteFormatCategories(p, cached.format);
         remote.forEach(x => e.kinds.add(x));
         e.fits.push(!mbCats.size || !remote.size ? null : [...remote].some(x => mbCats.has(x)));
@@ -8228,6 +8232,7 @@ function pcOpenFoundCatnos(btn) {
         <span class="pc-bc-code">${pcEsc(c.catno)}</span><span class="pc-bc-use">use</span>
         <span class="pc-bc-who">for ${pcEsc(c.label.name)} · ${c.platforms.map(p => `<span class="pc-bc-plat" title="${PROVIDER_NAME[p]}">${stIcon(p, 12)}</span>`).join('')} ${c.platforms.map(p => PROVIDER_NAME[p]).join(', ')}</span>
         ${c.sure ? '<span class="pc-bc-fmt pc-bc-same">✓ from links like this release</span>'
+          : c.off ? `<span class="pc-bc-fmt pc-bc-other">⚠ ${pcEsc(c.off.join(' · '))}</span>`
           : c.format === 'other' ? `<span class="pc-bc-fmt pc-bc-other">⚠ ${c.kinds.join(' and ')}: this release is ${mbKind}</span>`
           : c.barcodes.every(b => !b) ? '<span class="pc-bc-fmt pc-bc-other">⚠ from platforms that give no barcode</span>'
           : '<span class="pc-bc-fmt pc-bc-other">⚠ from another barcode than this release\'s</span>'}
@@ -8818,7 +8823,7 @@ function pcMcCatnoFindings(cons) {
     const taken = new Set((cons || []).map(f => f.key));
     return (_pcMcCat = pcFoundCatnos().map(e => ({ key: `catno:${e.label.mbid}:${e.catno}`, kind: 'catno', name: 'Cat. no.', code: e.catno, label: e.label,
         barcodes: e.barcodes, platforms: e.platforms, state: e.sure ? 'new' : 'unsure',
-        why: `from ${e.platforms.map(p => PROVIDER_NAME[p] + (pcIsLinked(p) ? ' (linked)' : '')).join(', ')}${e.format === 'other' ? ` · ${e.kinds.join(' and ')}, the release is ${MB_FORMAT}` : ''}` }))
+        why: `from ${e.platforms.map(p => PROVIDER_NAME[p] + (pcIsLinked(p) ? ' (linked)' : '')).join(', ')}${e.off && !e.sure ? ` · ${e.off.join(' · ')}` : e.format === 'other' ? ` · ${e.kinds.join(' and ')}, the release is ${MB_FORMAT}` : ''}`, mismatch: e.off && !e.sure ? e.off : undefined }))
         .filter(f => !taken.has(f.key)));
 }
 async function pcMcLabelFindings() {
@@ -9020,7 +9025,7 @@ document.addEventListener('mc:apply', e => {
 });
 pcMcHello();   // MC may have asked before PC loaded
 if (mbuTestHooks()) window.__pcTest702 = { seed: () => PC_SEED, seedData: () => PC_SEED_DATA, pcMcSeedProbe };
-if (mbuTestHooks()) window.__pcTest680 = { pcMcFinding, pcMcMasterFinding, pcScan, pcMcReleaseLinkTypes, cacheGet, cacheSet, mbDataGet, mbFormat: () => MB_FORMAT, pcMcBarcodeFindings, pcMcLabelFindings, pcResolveLabel, pcPageLabels, pcMcCatnoFindings, pcFoundCatnos, pcNoteFoundCatnos, pcCatnosBeatport, pcPickedCatnos, pcQueuePickedCatnos, updateRow, scanDone: () => PC_SCAN.last, pcLabelNorm, setCons: c => { _pcMcCons = c; }, pcNoteFoundBarcode, pcSetPastedBarcode, setOwnBarcode: b => { MB_OWN_BARCODE = b; }, clearFound: () => PC_FOUND_BC.clear() };
+if (mbuTestHooks()) window.__pcTest680 = { pcMcFinding, pcMcMasterFinding, pcScan, pcMcReleaseLinkTypes, cacheGet, cacheSet, mbDataGet, mbFormat: () => MB_FORMAT, pcMcBarcodeFindings, pcMcLabelFindings, pcResolveLabel, pcPageLabels, pcMcCatnoFindings, pcFoundCatnos, pcNoteFoundCatnos, pcCatnosBeatport, pcPickedCatnos, pcQueuePickedCatnos, updateRow, scanDone: () => PC_SCAN.last, pcLabelNorm, setCons: c => { _pcMcCons = c; }, pcNoteFoundBarcode, pcSetPastedBarcode, setOwnBarcode: b => { MB_OWN_BARCODE = b; }, setMbBarcode: b => { MB_BARCODE = b; }, clearFound: () => PC_FOUND_BC.clear() };
 
 if (!PC_SEED) pcScan();
 

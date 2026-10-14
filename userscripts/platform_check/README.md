@@ -84,7 +84,7 @@ The matched platforms often show a barcode the release lacks. On a release witho
 
 Beatport and Discogs give the album's catalog number, which the dashboard shows after the platform's label (*Artoffact AOF 146*). A long label is cut short, the catalog number never; a platform that gives more than one shows the first and *+1*, all of them in its tooltip. When a label the release has has no catalog number, a dashed tag button beside the barcode's counts the ones the platforms give for it.
 
-- Click it for the list: each catalog number with its label and the platforms that give it. ✓ marks one from a link like this release (the release's barcode, or a link it already has with the same track count and medium); ⚠ one from another barcode, another format, or platforms that give no barcode.
+- Click it for the list: each catalog number with its label and the platforms that give it. ✓ marks one from a link like this release (with the release's barcode, or one it already has, and the same track count and medium); ⚠ one from another barcode, another format, or platforms that give no barcode.
 - The platform's label name is matched to the release's loosely (*Artoffact* is *Artoffact Records*), and the same number written differently (*AOF146*) is one.
 - Click one to use it: a chip shows it beside the barcode's, and a link added from the panel fills it in the label's row in the release editor, in the same edit. Click the chip to remove it. Right-click one in the list to copy it.
 - A label with a catalog number of its own keeps it.
