@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Platform Check
 // @namespace    http://tampermonkey.net/
-// @version      2026.10.14.165550
+// @version      2026.10.14.185927
 // @description  Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CjxnIHN0cm9rZT0iIzk0YTNiOCIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2UtbGluZWNhcD0icm91bmQiPjxwYXRoIGQ9Ik02NCA2NCBMODggMjIuNCIvPjxwYXRoIGQ9Ik02NCA2NCBMMTEyIDY0Ii8+PHBhdGggZD0iTTY0IDY0IEw4OCAxMDUuNiIvPjxwYXRoIGQ9Ik02NCA2NCBMNDAgMTA1LjYiLz48cGF0aCBkPSJNNjQgNjQgTDE2IDY0Ii8+PHBhdGggZD0iTTY0IDY0IEw0MCAyMi40Ii8+PC9nPjxjaXJjbGUgY3g9Ijg4IiBjeT0iMjIuNCIgcj0iMTIiIGZpbGw9IiNmNDcyYjYiLz48Y2lyY2xlIGN4PSIxMTIiIGN5PSI2NCIgcj0iMTIiIGZpbGw9IiNmYWNjMTUiLz48Y2lyY2xlIGN4PSI4OCIgY3k9IjEwNS42IiByPSIxMiIgZmlsbD0iIzRhZGU4MCIvPjxjaXJjbGUgY3g9IjQwIiBjeT0iMTA1LjYiIHI9IjEyIiBmaWxsPSIjMzhiZGY4Ii8+PGNpcmNsZSBjeD0iMTYiIGN5PSI2NCIgcj0iMTIiIGZpbGw9IiNhNzhiZmEiLz48Y2lyY2xlIGN4PSI0MCIgY3k9IjIyLjQiIHI9IjEyIiBmaWxsPSIjZmI5MjNjIi8+PGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iMjQiIGZpbGw9IiMwZjE3MmEiLz48cGF0aCBkPSJNNTQuMjIyMjIyMjIyMjIyMjIgNjQgTDYxLjMzMzMzMzMzMzMzMzMzNiA3MS4xMTExMTExMTExMTExMSBMNzQuNjY2NjY2NjY2NjY2NjcgNTYuODg4ODg4ODg4ODg4ODg2IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iNiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+Cjwvc3ZnPgo=
@@ -2601,7 +2601,10 @@ ${MBU_TOKENS}${MBU_UI_CSS}
   .pc-cell-year, .pc-cell-format, .pc-cell-label {
                   font-size: 10px; color: var(--mbu-text-weak); font-family: sans-serif; white-space: nowrap; overflow: hidden; }
   .pc-cell-label { text-overflow: ellipsis; min-width: 0; }
-  .pc-cell-cat { font-family: var(--mbu-font-mono); color: var(--mbu-text); }
+  .pc-cell-cat { font-family: var(--mbu-font-mono); color: var(--mbu-text); flex: none; white-space: nowrap; }
+  /* #740: a label cell with a catalog number: the label text is cut, the number stays whole */
+  #mb-pc-panel .pc-cell-label.pc-has-cat { display: flex; gap: 4px; align-items: baseline; }
+  #mb-pc-panel .pc-cell-label.pc-has-cat .pc-lbl-t { overflow: hidden; text-overflow: ellipsis; min-width: 0; }
   /* format-family quadrant marker (#350) — vertically centered against the meta text */
   /* #564 (majkinetor): "PC vinyl is black in format circle and hardly visible".
      Vinyl is black because vinyl IS black — which works on a white page and
@@ -2660,6 +2663,10 @@ ${MBU_TOKENS}${MBU_UI_CSS}
   #mb-pc-panel.pc-layout-2row .pc-meta .pc-cell-year,
   #mb-pc-panel.pc-layout-2row .pc-meta .pc-cell-format,
   #mb-pc-panel.pc-layout-2row .pc-meta .pc-cell-label { display: inline; }
+  /* #740: the two-row meta line, when its label has a catalog number: a flex line, so the label is cut, not the number */
+  #mb-pc-panel.pc-layout-2row .pc-meta:has(.pc-has-cat) { display: flex; align-items: baseline; }
+  #mb-pc-panel.pc-layout-2row .pc-meta:has(.pc-has-cat) > :not(.pc-cell-label) { flex: none; }
+  #mb-pc-panel.pc-layout-2row .pc-meta .pc-cell-label.pc-has-cat { display: inline-flex; min-width: 0; }
   #mb-pc-panel.pc-layout-2row .pc-meta .pc-cell-year:not(:empty),
   #mb-pc-panel.pc-layout-2row .pc-meta .pc-cell-format:not(:empty) { margin-right: 4px; }
 
@@ -2673,11 +2680,15 @@ ${MBU_TOKENS}${MBU_UI_CSS}
     <div style="display: flex; align-items: center; gap: 4px;">
       <h3 style="margin: 0; font-size: 12px; font-weight: bold; text-transform: uppercase; letter-spacing: 0.5px; color: var(--mbu-text-dim); white-space: nowrap;">Platform Check</h3>
       <span id="mb-refresh-btn" class="pc-icon-btn" title="Refresh — clear cache and re-scan" style="${iconBtn}">↻</span>
+    </div>
+  </div>
+  <!-- #740: what the platforms offer (barcodes, catalog numbers) on a line of their own, so the title line never moves;
+       shown only while one of them is (pcSyncOffers) -->
+  <div id="pc-offers" style="display: none; flex-wrap: wrap; align-items: center; gap: 4px; margin-top: 4px;">
       <span id="mb-pasted-bc" class="pc-icon-btn" title="" style="${iconBtn} display: none; font-size: 10px; white-space: nowrap;"></span>
       <span id="mb-found-bc" class="pc-icon-btn" title="" style="${iconBtn} display: none; font-size: 10px; white-space: nowrap;"></span>
       <span id="mb-picked-cat" class="pc-icon-btn" title="" style="${iconBtn} display: none; font-size: 10px; white-space: nowrap;"></span>
       <span id="mb-found-cat" class="pc-icon-btn" title="" style="${iconBtn} display: none; font-size: 10px; white-space: nowrap;"></span>
-    </div>
   </div>
 </div>
 <div class="pc-rows" style="margin-bottom: 6px;">
@@ -3761,9 +3772,13 @@ function updateRow(p, { url, mbTracks, remoteTracks, year, label, source, fromCa
     // #740: the catalog number after the label, as the platform gives it
     const catnos = url ? (cacheGet(mbid, p)?.catnos || []) : [];
     const lEl = document.getElementById(`label-${p}`);
+    if (lEl) lEl.classList.toggle('pc-has-cat', !!catnos.length);
     if (lEl && catnos.length) {
-        const c = document.createElement('span'); c.className = 'pc-cell-cat'; c.textContent = ` · ${catnos.map(x => x.catno).join(', ')}`;
-        lEl.appendChild(c); lEl.title = `${lEl.title || ''}${lEl.title ? ' · ' : ''}catalog number ${catnos.map(x => `${x.catno} (${x.label})`).join(', ')}`;
+        // the label shrinks with "…", the catalog number never does
+        const t = document.createElement('span'); t.className = 'pc-lbl-t'; t.textContent = lEl.textContent;
+        const c = document.createElement('span'); c.className = 'pc-cell-cat'; c.textContent = catnos[0].catno + (catnos.length > 1 ? ` +${catnos.length - 1}` : '');   // the rest in the tooltip
+        lEl.textContent = ''; lEl.append(t, c);
+        lEl.title = `${lEl.title || ''}${lEl.title ? ' · ' : ''}catalog number ${catnos.map(x => `${x.catno} (${x.label})`).join(', ')}`;
     }
     pcNoteFoundCatnos(p, catnos);
     refreshCompactStrip();   // #355
@@ -8286,6 +8301,14 @@ document.addEventListener('paste', e => {
 });
 document.getElementById('mb-found-bc').addEventListener('click', e => pcOpenFoundBarcodes(e.currentTarget));
 document.getElementById('mb-found-cat').addEventListener('click', e => pcOpenFoundCatnos(e.currentTarget));
+// #740: the offers' line shows while any of them does
+function pcSyncOffers() {
+    const box = document.getElementById('pc-offers'); if (!box) return;
+    const any = [...box.children].some(c => c.style.display !== 'none');
+    if ((box.style.display !== 'none') !== any) box.style.display = any ? 'flex' : 'none';
+}
+new MutationObserver(pcSyncOffers).observe(document.getElementById('pc-offers'), { subtree: true, attributes: true, attributeFilter: ['style'] });
+pcSyncOffers();
 document.getElementById('mb-picked-cat').addEventListener('click', () => { pcSetPickedCatnos({}); mbuToast('Catalog number removed'); });
 document.getElementById('mb-pasted-bc').addEventListener('click', () => {
     const code = pcPastedBarcode();

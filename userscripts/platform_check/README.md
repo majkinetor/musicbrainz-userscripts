@@ -72,17 +72,17 @@ The footer's **+** adds every confirmed link (middle-click or Alt+click: the wit
 
 A release without a barcode can borrow one: copy it (from the cover, a store page, Harmony) and press Ctrl+V anywhere on the release page, outside a text field. The platforms are scanned again as if the release had it, so a barcode lookup finds what a text search misses, and [link confidence](#link-confidence) checks the matches against it.
 
-- The barcode shows next to ↻ in the header; click it to remove it and scan without it.
+- The barcode shows on the line under the title; click it to remove it and scan without it.
 - A link added from the panel (icon or **+**, in the foreground or the background) puts the barcode on the release too, in the same edit, and the edit note says so.
 - It stays with the release, across reloads, until it's removed or the release has a barcode of its own.
 - A release that already has a barcode refuses the paste, with an error.
 
-The matched platforms often show a barcode the release lacks. On a release without one, a dashed barcode button next to ↻ counts the barcodes they report. Click it for the list: each barcode with the platforms that report it, the ones in this release's medium first. A barcode from another format, with a wrong check digit, or already on another MusicBrainz release (most likely that edition's) is marked ⚠, the last with a link to that release. Click one to use it as if you pasted it; right-click to copy it. [Mission Control](../mission_control/README.md#release-and-entity-links) offers the same barcodes, to add one to the release. A barcode picked or pasted while the platforms are still being searched stops that search and starts over with it.
+The matched platforms often show a barcode the release lacks. On a release without one, a dashed barcode button on the line under the title counts the barcodes they report. Click it for the list: each barcode with the platforms that report it, the ones in this release's medium first. A barcode from another format, with a wrong check digit, or already on another MusicBrainz release (most likely that edition's) is marked ⚠, the last with a link to that release. Click one to use it as if you pasted it; right-click to copy it. [Mission Control](../mission_control/README.md#release-and-entity-links) offers the same barcodes, to add one to the release. A barcode picked or pasted while the platforms are still being searched stops that search and starts over with it.
 - Accepted: 8, 12, 13 or 14 digits, spaces and dashes allowed. A wrong check digit is used anyway, with a warning; MusicBrainz then asks you to confirm it in the editor.
 
 ## Catalog numbers
 
-Beatport and Discogs give the album's catalog number, which the dashboard shows after the platform's label (*Artoffact · AOF 146*). When a label the release has has no catalog number, a dashed tag button next to the barcode's counts the ones the platforms give for it.
+Beatport and Discogs give the album's catalog number, which the dashboard shows after the platform's label (*Artoffact AOF 146*). A long label is cut short, the catalog number never; a platform that gives more than one shows the first and *+1*, all of them in its tooltip. When a label the release has has no catalog number, a dashed tag button beside the barcode's counts the ones the platforms give for it.
 
 - Click it for the list: each catalog number with its label and the platforms that give it. ✓ marks one from a link like this release (the release's barcode, or a link it already has with the same track count and medium); ⚠ one from another barcode, another format, or platforms that give no barcode.
 - The platform's label name is matched to the release's loosely (*Artoffact* is *Artoffact Records*), and the same number written differently (*AOF146*) is one.
