@@ -176,7 +176,7 @@ What **Import** reads, **Export** writes, and Harmony and other scripts produce:
 | `video`                         | recordings; only `true` does anything                                                                                                                                       |
 | `cover[]`                       | releases: `{ url, type, comment, candidates }`, type defaulting to Front                                                                                                    |
 | `barcode`                       | releases: a barcode for a release that has none                                                                                                                             |
-| `labels[]`                      | releases: `{ mbid, name, catno }`, an empty catalog number to fill                                                                                                          |
+| `labels[]`                      | releases: `{ mbid, name, catno, add }`: an empty catalog number to fill, or a label to add                                                                                  |
 | `note`                          | that item's own edit note                                                                                                                                                   |
 | `status`, `error`, `urlResults` | written by Export: the outcome of the last run                                                                                                                              |
 

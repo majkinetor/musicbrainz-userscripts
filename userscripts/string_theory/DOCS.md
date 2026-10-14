@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-10-14 16:05 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-10-14 16:24 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -794,7 +794,7 @@ What **Import** reads, **Export** writes, and Harmony and other scripts produce:
 | `video`                         | recordings; only `true` does anything                                                                                                                                       |
 | `cover[]`                       | releases: `{ url, type, comment, candidates }`, type defaulting to Front                                                                                                    |
 | `barcode`                       | releases: a barcode for a release that has none                                                                                                                             |
-| `labels[]`                      | releases: `{ mbid, name, catno }`, an empty catalog number to fill                                                                                                          |
+| `labels[]`                      | releases: `{ mbid, name, catno, add }`: an empty catalog number to fill, or a label to add                                                                                  |
 | `note`                          | that item's own edit note                                                                                                                                                   |
 | `status`, `error`, `urlResults` | written by Export: the outcome of the last run                                                                                                                              |
 
@@ -1861,11 +1861,12 @@ Click a track to see its versions on the right, with what sets each apart from t
 | ------------------- | ------------------------------------------------------------ | --------------------------- |
 | Barcode             | the release has none                                         | Platform Check              |
 | Cat. no.            | a label the release has, matched by name, has none           | Platform Check              |
+| Label               | the release hasn't it, and it is one MusicBrainz label       | Platform Check              |
 | Platform links      | the release hasn't them, even ones Platform Check holds back | Platform Check              |
 | ISRCs               | a track has none                                             | ISRC Scout                  |
 | Cover, artist links | as after saving a new release                                | Art Station, Platform Check |
 
-Nothing the release has is changed: a label with another catalog number keeps it, and a catalog number for a label the release hasn't is left out. **After saving** chooses which scripts' findings start taken in, as for a new release. The edit note names the platforms the consolidation read.
+Nothing the release has is changed: a label with another catalog number keeps it. A label the release hasn't is added with its catalog number once Mission Control knows which MusicBrainz label it is: by the label's page on the platform, or, marked unsure, by a name only one MusicBrainz label has. A label it can't tell is left out. **After saving** chooses which scripts' findings start taken in, as for a new release. The edit note names the platforms the consolidation read.
 
 ### Settings
 

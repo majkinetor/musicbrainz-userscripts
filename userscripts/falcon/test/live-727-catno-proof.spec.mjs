@@ -1,8 +1,9 @@
-// #727: a release item can carry catalog numbers (labels: [{ mbid, name, catno }]), each for a label the
+// #727: a release item can carry catalog numbers (labels: [{ mbid, name, catno, add }]), each for a label the
 // release has, which Falcon fills in the release editor's label row. A REAL run on test.musicbrainz: the
 // release's label starts without a catalog number, Falcon adds one, the edit is accepted, and the release
-// is read back. A second item with another catalog number is left alone, with no edit. It ends with the
-// label's catalog number cleared again, as it started.
+// is read back. A second item with another catalog number is left alone, with no edit. A label the release
+// hasn't is added (add: true), with its catalog number. It ends as it started: the label without a catalog
+// number, the added one removed.
 // Sandbox only: it refuses to run against any host but test.musicbrainz.org.
 import { readFile } from 'node:fs/promises';
 import { test, check, requireLogin, sourceOf, idle, frames, mbNoise } from '../../../dev/test/harness.mjs';
@@ -13,6 +14,7 @@ const HOST = 'https://test.musicbrainz.org';
 const RELEASE = '45ddda7c-74c7-46cd-8d83-f5b644820b00';   // "Fjara / Runaway Train": label Artoffact Records; no other spec uses it
 const LABEL = '25364892-b3e9-4692-bcbe-018fc26b9256';     // Artoffact Records
 const CATNO = 'AOF 727';
+const OTHER = '55305fee-ba51-4dd5-afee-73c242b8046b';    // Metropolis Records, a label the release hasn't
 
 test('#727: Falcon fills a release label\'s empty catalog number', { tag: ['@sandbox', '@login'] }, async ({ context, page }) => {
   test.setTimeout(600_000);
@@ -106,7 +108,35 @@ test('#727: Falcon fills a release label\'s empty catalog number', { tag: ['@san
   check(!(await page.locator('a[href*="/accept-edit/"]').count()), 'and no edit was made');
   check(await catno() === CATNO, 'the label keeps its catalog number');
 
-  // ── 4. as it started ───────────────────────────────────────────────────────
-  await setByHand('', 'Falcon #727 proof: clean up');
-  check(await catno() === '', 'the label is without a catalog number again');
+  // ── 4. a label the release hasn't is added, with its catalog number ────────
+  const labelOf = l => page.evaluate(async ({ r, l }) => {
+    const j = await (await fetch(`/ws/2/release/${r}?inc=labels&fmt=json`, { cache: 'no-store' })).json();
+    const li = (j['label-info'] || []).find(x => x.label && x.label.id === l);
+    return li ? li['catalog-number'] || '' : null;
+  }, { r: RELEASE, l });
+  check(await labelOf(OTHER) === null, 'the release starts without the other label');
+  const third = await run([{ mbid: RELEASE, labels: [{ mbid: OTHER, name: 'Metropolis Records', catno: 'MET 727', add: true }], note: 'Falcon #727 proof: add a label' }]);
+  console.log(JSON.stringify(third.queued), JSON.stringify(third.out)); third.log.slice(-6).forEach(l => console.log('  ' + l));
+  check(third.out[0].s === 'done', `Falcon reports the label added (${JSON.stringify(third.out[0])})`);
+  await acceptOpen(true);
+  const added = await labelOf(OTHER);
+  check(added === 'MET 727', `the label reached MusicBrainz with its catalog number (${JSON.stringify(added)})`);
+  check(await catno() === CATNO, 'and the label the release had keeps its catalog number');
+  check(third.errs.length === 0, 'no page errors (' + third.errs.join(' | ') + ')');
+
+  // ── 5. as it started ───────────────────────────────────────────────────────
+  await goto(page, `${HOST}/release/${RELEASE}/edit`);
+  await page.waitForFunction(l => { try { return MB.releaseEditor.rootField.release().labels().some(x => x.label() && x.label().gid === l); } catch (e) { return false; } }, OTHER, { timeout: 60000 });
+  await page.waitForTimeout(1500);
+  await page.evaluate(({ l, o }) => {
+    const re = MB.releaseEditor, rl = re.rootField.release().labels();
+    rl.find(x => x.label() && x.label().gid === l).catalogNumber('');
+    re.removeReleaseLabel(rl.find(x => x.label() && x.label().gid === o));
+  }, { l: LABEL, o: OTHER });
+  await page.locator('a[href="#edit-note"]').first().click();
+  await page.locator('#edit-note-text, textarea.edit-note').first().fill('Falcon #727 proof: clean up');
+  await page.locator('#enter-edit').click();
+  await page.waitForURL(u => !/\/edit$/.test(u.pathname), { timeout: 60000 });
+  await acceptOpen(true);
+  check(await catno() === '' && await labelOf(OTHER) === null, 'the release is as it started: its label without a catalog number, the other label gone');
 });
