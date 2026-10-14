@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-10-14 21:02 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-10-14 21:17 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -1448,6 +1448,7 @@ Shows a release's ISRCs, fills in the missing ones from several providers, and f
 - **[ISRC badge](#isrc-editor)** by the release title, showing how many tracks lack an ISRC.
 - **[ISRC editor](#isrc-editor)**: every track's ISRCs, with validation, provider [imports](#importing-isrcs), [per-track lookups](#per-track-lookup), bulk paste, export and deletion.
 - **[Links](#links)**: find and add the recordings' streaming and store links, and end or remove existing ones.
+- **[Tracklist](#tracklist-1)**: ISRC and Links columns on the release page's own tracklist.
 
 ### Providers
 
@@ -1559,17 +1560,22 @@ End a link when the release is taken down and it no longer resolves ([MusicBrain
 > [!TIP]
 > Editions are often split by platform: one carries Deezer, another Spotify. With *Use providers from the whole release group* on, a provider missing here is taken from a sibling release (it shares the recordings) and marked with a purple dot.
 
+### Tracklist
+
+The release page's tracklist gets two columns before *Rating*: **ISRC**, each track's ISRCs, and **Links**, its recording's links. An ISRC opens its MusicBrainz page, an icon the provider's track; an ended link is faded. They follow what you submit and change in the editor. *Show ISRCs and links on the tracklist* turns them off.
+
 ### Settings
 
 <img width="1000" src="../isrc_scout/screenshots/options.png" />
 
-| Setting                                    | Default |                                                                    |
-| ------------------------------------------ | ------- | ------------------------------------------------------------------ |
-| Authorize                                  |         | OAuth for submitting ISRCs                                         |
-| Import buttons                             | icons   | icons, text, or both                                               |
-| Use providers from the whole release group | off     | take missing providers from sibling releases (one more lookup)     |
-| Ignore Platform Check link confidence      | off     | use links Platform Check withheld for a barcode or format mismatch |
-| Spotify ISRC source                        | molla   | or ISRC Hunt                                                       |
+| Setting                                    | Default |                                                                          |
+| ------------------------------------------ | ------- | ------------------------------------------------------------------------ |
+| Authorize                                  |         | OAuth for submitting ISRCs                                               |
+| Import buttons                             | icons   | icons, text, or both                                                     |
+| Show ISRCs and links on the tracklist      | on      | the ISRC and Links columns on the release page ([Tracklist](#tracklist-1)) |
+| Use providers from the whole release group | off     | take missing providers from sibling releases (one more lookup)           |
+| Ignore Platform Check link confidence      | off     | use links Platform Check withheld for a barcode or format mismatch       |
+| Spotify ISRC source                        | molla   | or ISRC Hunt                                                             |
 
 ### Shortcuts
 
