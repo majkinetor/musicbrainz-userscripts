@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         ISRC Scout
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.14.210440
+// @version      2026.10.14.212433
 // @description  Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify / Beatport / Tidal / Volumo / HDtracks / Qobuz, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPklTUkMgU2NvdXQ8L3RpdGxlPgogICAgPHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPgogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjQwIi8+CiAgICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyNiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2U9IiNiOWEzZTgiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPgogIDwvZz4KICA8bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+Cjwvc3ZnPgo=
@@ -1815,8 +1815,8 @@
     td.ii-col-isrc, td.ii-col-links { white-space: nowrap; vertical-align: top; }
     td.ii-col-isrc { padding-right: 14px; }
     .ii-trk-isrc { display: block; font: 12px/1.6 ui-monospace, Consolas, monospace; }
-    td.ii-col-links { white-space: normal; }
-    .ii-trk-lns { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 8px; width: max-content; max-width: 230px; padding-top: 2px; }
+    .ii-trk-lns { display: flex; align-items: center; gap: 3px; padding-top: 2px; }        /* one row, so a row without credits stays one line high */
+    @media (max-width: 1000px) { .ii-trk-lns { flex-wrap: wrap; width: 72px; } }         /* a narrow window: four to a row */
     .ii-trk-ln { display: inline-flex; line-height: 0; text-decoration: none !important; border: none !important; }
     .ii-trk-ln svg, .ii-trk-ln img { width: 15px; height: 15px; display: block; }
     .ii-trk-ln.ended { opacity: .4; }
