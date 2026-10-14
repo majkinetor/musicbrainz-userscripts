@@ -21,7 +21,9 @@ const shown = page => page.evaluate(() => [...document.querySelectorAll('td.ii-c
   return {
     id: tr.id,
     isrcs: [...td.querySelectorAll('.ii-trk-isrc')].map(a => a.textContent),
-    links: tr.querySelectorAll('td.ii-col-links .ii-trk-ln').length,
+    // one icon per platform, its count when the recording has several links there
+    links: [...tr.querySelectorAll('td.ii-col-links .ii-trk-ln')].reduce((n, a) => n + (+a.querySelector('.ii-trk-n')?.textContent || 1), 0),
+    perPlatform: (n => n.length === new Set(n).size)([...tr.querySelectorAll('td.ii-col-links .ii-trk-ln')].map(a => a.title.split(' · ')[0])),
     beforeRating: td.nextElementSibling?.classList.contains('ii-col-links') && !!td.nextElementSibling.nextElementSibling?.matches('td.rating, td.treleases'),
   };
 }));
@@ -45,6 +47,7 @@ test('on by default: an ISRC and a Links column before Rating, and the setting t
     const g = got.find(x => x.id === w.id);
     check(g && g.isrcs.join() === w.isrcs.join(), `track ${w.id}: ISRCs ${w.isrcs.join() || 'none'} (shown ${g ? g.isrcs.join() : 'nothing'})`);
     check(!g || g.links === w.links, `track ${w.id}: ${w.links} link(s) (shown ${g && g.links})`);
+    check(!g || g.perPlatform, `track ${w.id}: one icon per platform`);
     check(!g || g.beforeRating, `track ${w.id}: the columns sit before Rating`);
   }
   for (const t of await aligned(page)) {

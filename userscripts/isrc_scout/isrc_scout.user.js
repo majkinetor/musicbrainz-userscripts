@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         ISRC Scout
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.14.213359
+// @version      2026.10.14.223002
 // @description  Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify / Beatport / Tidal / Volumo / HDtracks / Qobuz, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPklTUkMgU2NvdXQ8L3RpdGxlPgogICAgPHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPgogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjQwIi8+CiAgICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyNiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2U9IiNiOWEzZTgiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPgogIDwvZz4KICA8bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+Cjwvc3ZnPgo=
@@ -1815,9 +1815,10 @@
     td.ii-col-isrc, td.ii-col-links { white-space: nowrap; vertical-align: top; }
     td.ii-col-isrc { padding-right: 14px; }
     .ii-trk-isrc { display: block; font: 12px/1.6 ui-monospace, Consolas, monospace; }
-    .ii-trk-lns { display: flex; align-items: center; gap: 3px; padding-top: 2px; }        /* one row, so a row without credits stays one line high */
-    @media (max-width: 1000px) { .ii-trk-lns { flex-wrap: wrap; width: 72px; } }         /* a narrow window: four to a row */
-    .ii-trk-ln { display: inline-flex; line-height: 0; text-decoration: none !important; border: none !important; }
+    .ii-trk-lns { display: flex; flex-wrap: wrap; align-items: center; gap: 3px 4px; padding-top: 2px; width: max-content; max-width: 224px; }  /* one icon per platform, wrapping past ~11 so the column never crowds Title */
+    @media (max-width: 1000px) { .ii-trk-lns { max-width: 80px; } }                     /* a narrow window: four to a row */
+    .ii-trk-ln { display: inline-flex; align-items: flex-start; line-height: 0; text-decoration: none !important; border: none !important; }
+    .ii-trk-n { font: 600 9px/1 system-ui; color: var(--mbu-text-dim); margin-left: 1px; vertical-align: top; }
     .ii-trk-ln svg, .ii-trk-ln img { width: 15px; height: 15px; display: block; }
     .ii-trk-ln.ended { opacity: .4; }
     #ii-btn.has-missing { background: #a0225e; animation: ii-pulse 1.6s ease-in-out infinite; }
@@ -7854,8 +7855,17 @@
   var _tdObs = null, _tdQueued = false;
   function trackDataCells(t) {
     const isrcs = t ? t.existing.map(c => '<a class="ii-trk-isrc" href="/isrc/' + esc(c) + '">' + esc(c) + '</a>').join('') : '';
-    const links = t ? TrackLinks.pageLinks(t).map(l => '<a class="ii-trk-ln' + (l.ended ? ' ended' : '') + '" href="' + esc(l.url) + '" target="_blank" rel="noopener" style="color:' + l.color + '" title="' +
-      esc(l.name + (l.ended ? ' (ended)' : '') + ' · ' + l.url) + '">' + l.icon + '</a>').join('') : '';
+    // one icon per platform: a recording with several links on one platform (versions, regions)
+    // gets a count beside it, its tooltip lists them all, and a click opens the first live one
+    const groups = new Map();
+    if (t) TrackLinks.pageLinks(t).forEach(l => { const g = groups.get(l.name); if (g) g.push(l); else groups.set(l.name, [l]); });
+    const links = [...groups.values()].map(g => {
+      const l = g.find(x => !x.ended) || g[0], ended = g.every(x => x.ended);
+      const tip = g.length === 1 ? l.name + (l.ended ? ' (ended)' : '') + ' · ' + l.url
+        : l.name + ' · ' + g.length + ' links\n' + g.map(x => x.url + (x.ended ? ' (ended)' : '')).join('\n');
+      return '<a class="ii-trk-ln' + (ended ? ' ended' : '') + '" href="' + esc(l.url) + '" target="_blank" rel="noopener" style="color:' + l.color + '" title="' +
+        esc(tip) + '">' + l.icon + (g.length > 1 ? '<sup class="ii-trk-n">' + g.length + '</sup>' : '') + '</a>';
+    }).join('');
     return [isrcs, links && '<div class="ii-trk-lns">' + links + '</div>'];
   }
   // the cell the columns go before: Rating, else Length, else none (appended)

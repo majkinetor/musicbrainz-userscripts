@@ -129,7 +129,7 @@ End a link when the release is taken down and it no longer resolves ([MusicBrain
 
 ## Tracklist
 
-The release page's tracklist gets two columns before *Rating*: **ISRC**, each track's ISRCs, and **Links**, its recording's links. An ISRC opens its MusicBrainz page, an icon the provider's track; an ended link is faded. They follow what you submit and change in the editor. *Show ISRCs and links on the tracklist* turns them off.
+The release page's tracklist gets two columns before *Rating*: **ISRC**, each track's ISRCs, and **Links**, its recording's links. An ISRC opens its MusicBrainz page, an icon the provider's track. Each platform shows one icon; when the recording has several links there, a number beside it says how many, its tooltip lists them, and it opens the first one that hasn't ended. An ended link is faded. They follow what you submit and change in the editor. *Show ISRCs and links on the tracklist* turns them off.
 
 ## Settings
 
