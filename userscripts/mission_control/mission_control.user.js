@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Mission Control
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.14.221500
+// @version      2026.10.14.231500
 // @description  One window on the release page that asks the other scripts (Platform Check, ISRC Scout, Art Station, Fusion, Credit Hoarder) what is missing, shows it all in one review, and applies the selected changes in order.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5NaXNzaW9uIENvbnRyb2w8L3RpdGxlPgo8ZGVmcz48ZmlsdGVyIGlkPSJtY28xMy1oIiB4PSItMTAlIiB5PSItMTAlIiB3aWR0aD0iMTIwJSIgaGVpZ2h0PSIxMjAlIj48ZmVNb3JwaG9sb2d5IGluPSJTb3VyY2VBbHBoYSIgb3BlcmF0b3I9ImRpbGF0ZSIgcmFkaXVzPSIxLjUiIHJlc3VsdD0iZCIvPjxmZUZsb29kIGZsb29kLWNvbG9yPSIjZmZmIiBmbG9vZC1vcGFjaXR5PSIuNyIvPjxmZUNvbXBvc2l0ZSBpbjI9ImQiIG9wZXJhdG9yPSJpbiIvPjxmZU1lcmdlPjxmZU1lcmdlTm9kZS8+PGZlTWVyZ2VOb2RlIGluPSJTb3VyY2VHcmFwaGljIi8+PC9mZU1lcmdlPjwvZmlsdGVyPjwvZGVmcz48ZyBmaWx0ZXI9InVybCgjbWNvMTMtaCkiPjxwYXRoIGQ9Ik03NyAzNS41IEw2NCA0MyBMNTEgMzUuNSBMNTEgMjAuNSBMNjQgMTMgTDc3IDIwLjVaIiBmaWxsPSIjN2E1N2U4IiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik01OS43IDc3LjUgTDQ2LjcgODUgTDMzLjcgNzcuNSBMMzMuNyA2Mi41IEw0Ni43IDU1IEw1OS43IDYyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik05NC4zIDc3LjUgTDgxLjMgODUgTDY4LjMgNzcuNSBMNjguMyA2Mi41IEw4MS4zIDU1IEw5NC4zIDYyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik00Mi4zIDEwNy41IEwyOS40IDExNSBMMTYuNCAxMDcuNSBMMTYuNCA5Mi41IEwyOS40IDg1IEw0Mi4zIDkyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik03NyAxMDcuNSBMNjQgMTE1IEw1MSAxMDcuNSBMNTEgOTIuNSBMNjQgODUgTDc3IDkyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik0xMTEuNiAxMDcuNSBMOTguNiAxMTUgTDg1LjcgMTA3LjUgTDg1LjcgOTIuNSBMOTguNiA4NSBMMTExLjYgOTIuNVoiIGZpbGw9IiNmZmM5NGEiIHN0cm9rZT0iIzIyMjIzYiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PC9nPgo8L3N2Zz4K
@@ -38,14 +38,16 @@ Log.info(mbuStartupInfo('Mission Control'));
 // key each: a card's id, or PC's 'pc:release' / 'pc:artist' / 'pc:label'
 // reloadAfter: reload the release page after an Execute without errors
 // consAfter: after saving a consolidated release (#702), open Mission Control on it and probe
-const DEFAULTS = { fusion: 'ask', ch: 'ask', left: true, right: true, linkedOpen: [], autoProbe: false, reloadAfter: false, consAfter: true };
+// disabled: the providers without a mode (PC, IS, AS) switched off with their step in the header (#753)
+const DEFAULTS = { fusion: 'ask', ch: 'ask', disabled: [], left: true, right: true, linkedOpen: [], autoProbe: false, reloadAfter: false, consAfter: true };
 // a card and the providers whose selections it holds (Tracks: the per-track ones without a card of their own)
 const CARDS = [['tracks', ['is', 'fusion']], ['pc', ['pc']], ['as', ['as']], ['ch', ['ch']]];
 // The cards switched off with the switch in their header: folded, and Execute leaves out what is selected
 // in them. For this page only, never saved: the next release starts with every card on.
 const OFF = new Set();
 const cardOff = id => OFF.has(id);
-const providerOff = id => CARDS.some(([c, ps]) => cardOff(c) && ps.includes(id));
+// and a provider switched off in the header (#753)
+const providerOff = id => CARDS.some(([c, ps]) => cardOff(c) && ps.includes(id)) || modeOf(PROVIDERS.find(p => p.id === id)) === 'off';
 function loadSettings() {
     let s = {};
     try { s = JSON.parse(GM_getValue('mc.settings', '{}')) || {}; } catch (e) { Log.warn('settings unreadable, using defaults: ' + e.message); }
@@ -508,10 +510,10 @@ function mcStyle() {
         + '.mc-fmt{flex:none;display:grid;place-items:center;width:30px;height:30px;color:var(--mbu-text-dim)}.mc-fmt svg{width:28px;height:28px;display:block}'
         + '.mc-rel{display:flex;flex-direction:column;min-width:0;flex:0 1 auto;max-width:40%;padding-right:20px;line-height:1.2}.mc-ttl{font-weight:700;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.mc-art{font-size:12px;color:var(--mbu-text-dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}#mc-root .mc-art .mc-ver{color:var(--mbu-text-weak);text-decoration:none}#mc-root .mc-art .mc-ver:hover{color:var(--mbu-accent-text);text-decoration:underline}'
         + '.mc-hdr .mc-act{display:flex;align-items:center;gap:4px;flex:none}#mc-root .mc-act .mc-exec{justify-content:center;min-width:96px;height:28px;padding:0 12px;font-size:12.5px;font-weight:600;font-variant-numeric:tabular-nums;background:var(--mbu-accent-soft);border-color:var(--mbu-border-strong);color:var(--mbu-accent-text)}#mc-root .mc-act .mc-exec:hover:not(:disabled){background:var(--mbu-accent);border-color:var(--mbu-accent);color:var(--mbu-accent-fg)}#mc-root .mc-act .mc-exec:disabled{background:var(--mbu-bg);border-color:var(--mbu-border);color:var(--mbu-text-weak);cursor:default}'
-        // the steps: a ring, then the name and the state beside it, all on one centre line; a click shows or hides the order sidebar
-        + '.mc-steps{display:flex;align-items:center;justify-content:center;gap:6px;flex:1 1 auto;min-width:0;height:100%;cursor:pointer}'
+        // the steps: a ring, then the name and the state beside it, all on one centre line; a click switches the step off or on (#753)
+        + '.mc-steps{display:flex;align-items:center;justify-content:center;gap:6px;flex:1 1 auto;min-width:0;height:100%}'
         + '#mc-root .mc-re{flex:none;width:26px;height:26px;margin-right:4px;padding:0;border-radius:50%;border:1px solid transparent;background:none;color:var(--mbu-text-dim);font-size:14px;line-height:1;cursor:pointer}#mc-root .mc-re:hover{border-color:var(--mbu-border);background:var(--mbu-bg-hover);color:var(--mbu-accent-text)}'
-        + '.mc-step{display:inline-flex;align-items:center;gap:7px;min-width:0;flex:0 1 auto;padding:0 4px}'
+        + '.mc-step{display:inline-flex;align-items:center;gap:7px;min-width:0;flex:0 1 auto;padding:4px 6px;border-radius:var(--mbu-radius);cursor:pointer}.mc-step:hover{background:var(--mbu-bg-hover)}.mc-hdr .mc-fmt{cursor:pointer;border-radius:var(--mbu-radius)}.mc-hdr .mc-fmt:hover{background:var(--mbu-bg-hover)}'
         // a step's words take a fixed width (cut with …, the whole of it in the tooltip): changing words and
         // ticking seconds must not move the steps; only the window's width does
         + '.mc-step .tx{display:flex;flex-direction:column;flex:0 1 130px;width:130px;min-width:0;line-height:1.2}.mc-step b{font-size:12.5px;color:var(--mbu-text)}.mc-step i{font-style:normal;font-size:11.5px;color:var(--mbu-text-dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-variant-numeric:tabular-nums}'
@@ -685,7 +687,22 @@ function mcStyle() {
     document.head.appendChild(s);
 }
 
-function modeOf(p) { return p.mode ? S[p.mode] : 'auto'; }
+function modeOf(p) { return p.mode ? S[p.mode] : (S.disabled || []).includes(p.id) ? 'off' : 'auto'; }
+// #753: a step in the header switches its provider off (not probed, its column, card and Execute
+// left out) and on again: Fusion and CH back to the mode they had, the others to Auto
+const onMode = {};
+function toggleProvider(id) {
+    const p = PROVIDERS.find(x => x.id === id); if (!p) return;
+    const on = modeOf(p) === 'off';
+    if (p.mode) {
+        if (!on) onMode[id] = S[p.mode];
+        setMode(p.mode, on ? onMode[id] || DEFAULTS[p.mode] : 'off');
+        return;
+    }
+    Log.info(id + ' ' + (on ? 'on' : 'off'));
+    S.disabled = (S.disabled || []).filter(x => x !== id).concat(on ? [] : [id]); saveSettings();
+    if (ui) rebuildBody();
+}
 function stateOf(p) {
     if (modeOf(p) === 'off') return 'off';
     if (!found[p.id]) return 'idle';
@@ -751,11 +768,11 @@ const FORMAT_KINDS = [
     ['floppy', /floppy|zip disk/i],
     ['other', /^\s*other\s*$/i],
 ];
+// #753: a click on it shows or hides the execution order, so it is there with no format too
 function fmtIcon(format) {
-    if (!format) return '';
-    const first = format.split('+')[0];
-    const k = (FORMAT_KINDS.find(([, re]) => re.test(first)) || ['disc'])[0];
-    return '<span class="mc-fmt" title="' + esc(format) + '"><svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round">' + FORMAT_ICONS[k] + '</svg></span>';
+    const first = (format || '').split('+')[0];
+    const k = (format && FORMAT_KINDS.find(([, re]) => re.test(first)) || ['disc'])[0];
+    return '<span class="mc-fmt" title="' + esc((format || 'Format unknown') + ' · click: show or hide the execution order') + '"><svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round">' + FORMAT_ICONS[k] + '</svg></span>';
 }
 
 function seg(p) {
@@ -772,7 +789,7 @@ function orderSidebar() {
         const last = k === STEPS.length - 1 ? ' last' : '';
         if (s.lanes) {
             html += '<div class="mc-stage head">' + node + '<div><div class="nm">' + esc(s.name) + ' <span class="tag">parallel</span></div></div></div>'
-                + s.lanes.map((l, n) => '<div class="mc-stage sub' + (n === s.lanes.length - 1 ? last : '') + '" data-p="' + l.id + '"><span class="mc-node">' + sIcon(l.id) + '</span>'
+                + s.lanes.map((l, n) => '<div class="mc-stage sub' + (n === s.lanes.length - 1 ? last : '') + (modeOf(l) === 'off' ? ' off' : '') + '" data-p="' + l.id + '"><span class="mc-node">' + sIcon(l.id) + '</span>'
                     + '<div><div class="nm">' + esc(l.name) + '<span class="mc-chip"></span></div>' + pv(l) + '<div class="meta st"></div></div></div>').join('');
         } else {
             html += '<div class="mc-stage' + last + (modeOf(s) === 'off' ? ' off' : '') + '" data-p="' + s.id + '">' + node
@@ -838,12 +855,10 @@ function paintFoot() {
 function sIcon(id) { return PROVIDER_ICONS[id] ? '<img class="mc-sic" alt="" src="' + PROVIDER_ICONS[id] + '">' : ''; }
 // C (#680): the execution order as a stepper under the header, a ring per provider and what it
 // is doing in words: the step it is on and for how long, amber when no word came for STALL_MS
-// (what is stuck), or what it found. ↻ probes again; a click elsewhere on them shows or hides the
-// order sidebar.
+// (what is stuck), or what it found. ↻ probes again; a click on a step switches it off or on (#753).
 let STALL_MS = 20000;
 function steps() {
     const d = el('div', 'mc-steps');
-    d.title = 'Click to show or hide the execution order and its switches';
     const node = p => '<span class="mc-step" data-step="' + p.id + '"><span class="mc-ring">' + sIcon(p.id) + '<sup hidden></sup></span><span class="tx"><b>' + esc(p.provider) + '</b><i></i></span></span>';
     d.innerHTML = mbuHtml('<button type="button" class="mc-re" data-act="probe" title="Probe: ask every provider what is missing (⚙: probe on open)">↻</button>'
         + STEPS.map(s => s.lanes ? '<span class="mc-par" title="run in parallel">' + s.lanes.map(node).join('') + '</span>' : node(s)).join('<span class="mc-arrow">→</span>'));
@@ -880,7 +895,7 @@ function paintSteps() {
         const n = ui.querySelector('.mc-step[data-step="' + p.id + '"]'); if (!n) return;
         const [cls, words, mark] = stepState(p);
         n.className = 'mc-step ' + cls;
-        n.title = p.provider + ' — ' + (cls === 'busy' || cls === 'stalled' ? words : stateText(p));
+        n.title = p.provider + ' — ' + (cls === 'busy' || cls === 'stalled' ? words : stateText(p)) + (cls === 'off' ? '. Click to switch it on' : '. Click to switch it off');
         n.querySelector('i').textContent = words;
         const sup = n.querySelector('sup'); sup.hidden = !mark; sup.textContent = mark;
         // the provider's card shows the same state: a stripe on its edge, a tint and a word in its header (#680)
@@ -1158,7 +1173,7 @@ function fitCards() {
     const row = ui && ui.querySelector('.mc-row2'); if (!row) return;
     row._cards.forEach(s => {
         const id = s.querySelector('[data-card]') ? s.querySelector('[data-card]').dataset.card : 'ch';
-        s.hidden = stateOf(PROVIDERS.find(x => x.id === id)) === 'idle';
+        s.hidden = ['idle', 'off'].includes(stateOf(PROVIDERS.find(x => x.id === id)));
     });
     paintOnOff();
     row.hidden = row._cards.every(s => s.hidden);
@@ -1638,7 +1653,10 @@ function onClick(e) {
     const fetchBtn = t.closest('[data-fetch]');
     if (fetchBtn) { probeOne(fetchBtn.dataset.fetch); return; }
     const act = t.closest('[data-act]');
-    if (!act && t.closest('.mc-steps')) { S.left = !S.left; saveSettings(); paintSides(); return; }
+    // #753: a step switches its provider off and on; the format icon shows or hides the execution order
+    const stp = !act && t.closest('.mc-step');
+    if (stp) { toggleProvider(stp.dataset.step); return; }
+    if (t.closest('.mc-hdr .mc-fmt')) { S.left = !S.left; saveSettings(); paintSides(); return; }
     if (!act) return;
     switch (act.dataset.act) {
         case 'probe': {

@@ -77,7 +77,7 @@ test('#680: MC shell — launcher, track matrix, sidebars, modes', { tag: ['@san
     const fmt = h.querySelector('.mc-fmt'); return { fmt: fmt ? fmt.title : null, ring: getComputedStyle(h.querySelector('.mc-ring')).borderTopWidth, kids, rings, off, cover: !!h.querySelector('.mc-cover'), foot: !!document.querySelector('#mc-root .mc-foot'), dry: !!document.querySelector('#mc-root [data-act="dry"]'), auto: !!document.querySelector('#mc-root [data-act="auto"]'), probe: document.querySelectorAll('#mc-root .mc-steps .mc-re[data-act="probe"]').length };
   });
   check(JSON.stringify(row.kids) === '["mc-fmt","mc-rel","mc-steps","mc-act"]', `header: format, release, steps, actions (${JSON.stringify(row.kids)})`);
-  check(row.fmt === await page.evaluate(() => document.querySelector('#sidebar dd.format').textContent.trim()), `the format icon carries the release's format in its tooltip (${row.fmt})`);
+  check(row.fmt.startsWith(await page.evaluate(() => document.querySelector('#sidebar dd.format').textContent.trim()) + ' · '), `the format icon carries the release's format in its tooltip (${row.fmt})`);
   check(row.ring === '0px', `no ring around a provider's icon (${row.ring})`);
   check(!row.cover && !row.foot && !row.dry && !row.auto && row.probe === 1, `no cover, footer, Dry run or Auto; ↻ probes (${JSON.stringify(row)})`);
   check(Math.max(...row.rings) - Math.min(...row.rings) <= 1, `the rings sit on one line, the parallel ones too (${row.rings})`);
@@ -97,7 +97,7 @@ test('#680: MC shell — launcher, track matrix, sidebars, modes', { tag: ['@san
   await page.locator('#mc-root .mc-tbl tbody tr[data-i]').first().locator('td.ttl').click();
   check(/^Track /.test(await page.locator('#mc-root .mc-insp-t').textContent()), 'inspector shows the selected track');
 
-  // the order sidebar hides with its ×, and a click on the steps brings it back (and hides it again)
+  // the order sidebar hides with its ×, and a click on the format icon brings it back (and hides it again, #753)
   await page.click('#mc-root [data-close="left"]');
   check(await page.locator('#mc-root .mc-side.left').isHidden(), 'order sidebar hidden');
   check((await page.evaluate(() => window.__mcTest.settings())).left === false, 'left=false stored');
@@ -105,12 +105,29 @@ test('#680: MC shell — launcher, track matrix, sidebars, modes', { tag: ['@san
   // CH off drops its column and its step
   const heads = () => page.locator('#mc-root .mc-tbl th').allTextContents();
   check((await heads()).some(h => h.includes('Credits')), 'credits column present');
-  await page.click('#mc-root .mc-step[data-step="fusion"]');
-  check(await page.locator('#mc-root .mc-side.left').isVisible(), 'a click on the steps shows the sidebar');
-  await page.click('#mc-root .mc-step[data-step="pc"]');
-  check(await page.locator('#mc-root .mc-side.left').isHidden(), 'and another hides it');
+  await page.click('#mc-root .mc-hdr .mc-fmt');
+  check(await page.locator('#mc-root .mc-side.left').isVisible(), 'a click on the format icon shows the sidebar');
   await page.click('#mc-root .mc-steps .mc-arrow >> nth=0');
-  check(await page.locator('#mc-root .mc-side.left').isVisible(), 'anywhere on the steps');
+  check(await page.locator('#mc-root .mc-side.left').isVisible(), 'a click elsewhere on the steps leaves it');
+  await page.click('#mc-root .mc-hdr .mc-fmt');
+  check(await page.locator('#mc-root .mc-side.left').isHidden(), 'and another click on the icon hides it');
+  await page.click('#mc-root .mc-hdr .mc-fmt');
+  // #753: a step switches its provider off and on; one without a mode (PC) is stored in `disabled`
+  const pcOff = () => page.evaluate(() => ({ step: document.querySelector('#mc-root .mc-step[data-step="pc"]').classList.contains('off'), stage: !!document.querySelector('#mc-root .mc-stage.off[data-p="pc"]'), off: window.__mcTest.settings().disabled }));
+  await page.click('#mc-root .mc-step[data-step="pc"]');
+  let pcs = await pcOff();
+  check(pcs.step && pcs.stage && JSON.stringify(pcs.off) === '["pc"]', `a click on PC's step switches it off (${JSON.stringify(pcs)})`);
+  check(await page.locator('#mc-root .mc-side.left').isVisible(), 'and leaves the sidebar alone');
+  await page.click('#mc-root .mc-step[data-step="pc"]');
+  pcs = await pcOff();
+  check(!pcs.step && !pcs.stage && JSON.stringify(pcs.off) === '[]', `another switches it on (${JSON.stringify(pcs)})`);
+  // one with a mode (Fusion) goes to Off, and back to the mode it had
+  const fxMode = () => page.evaluate(() => window.__mcTest.settings().fusion);
+  const fxWas = await fxMode();
+  await page.click('#mc-root .mc-step[data-step="fusion"]');
+  check(await fxMode() === 'off', "a click on Fusion's step sets it Off");
+  await page.click('#mc-root .mc-step[data-step="fusion"]');
+  check(await fxMode() === fxWas, `another gives it back its mode (${fxWas})`);
   await page.click('#mc-root .mc-seg[data-mode="ch"] button[data-v="off"]');
   check(!(await heads()).some(h => h.includes('Credits')), 'credits column gone with CH off');
   check(await page.locator('#mc-root .mc-stage.off[data-p="ch"]').count() === 1, 'CH step marked off');
