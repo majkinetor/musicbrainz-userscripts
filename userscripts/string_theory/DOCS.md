@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-10-15 20:23 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-10-15 20:48 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -1208,8 +1208,8 @@ Match groups the recordings still in the pool, so a group you built by hand is n
 
 | Cutoff             | Groups two recordings when they share…                                     |
 | ------------------ | -------------------------------------------------------------------------- |
-| strict             | an ISRC or an AcoustID                                                     |
-| normal *(default)* | …or a similar title and artist, with lengths within tolerance (or unknown) |
+| strict *(default)* | an ISRC or an AcoustID                                                     |
+| normal             | …or a similar title and artist, with lengths within tolerance (or unknown) |
 | loose              | …or a similar title with either the length or the artist                   |
 
 Titles tolerate small typos. Artists are compared by MBID when both recordings have them, so *Radium* and *DJ Radium* credited to the same artist match.
