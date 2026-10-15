@@ -6,7 +6,7 @@ import { test, check, loadFunctions, functionSource } from '../../../dev/test/ha
 
 const NAMES = ['VA_MBID', 'VA_NAME_RE', 'qzDec', 'ytmWalk', 'pcUrlKey', 'pcSameUrl', 'pcCr', 'pcCredits', 'pcCreditsSummary', 'pcDiscogsName',
   'pcCreditsDiscogs', 'pcCreditsDeezer', 'pcCreditsApple', 'pcSlug', 'pcQobuzSlug', 'pcCreditsQobuzApi', 'pcCreditsQobuzPage', 'pcCreditsBandcamp', 'pcCreditsBeatport',
-  'pcCreditsYtm', 'pcCreditsSoundcloud', 'pcCreditsAudiomack', 'pcNameKey', 'PC_MULTI_NAME_RE', 'pcPairCredits', 'pcLinkRows', 'pcMarkCell', 'PC_ENTITY_LINK_TYPE', 'pcLinkTypeFor', 'pcFalconJson', 'pcFalconPayload'];
+  'pcCreditsYtm', 'pcCreditsSoundcloud', 'pcCreditsAudiomack', 'pcNameKey', 'PC_MULTI_NAME_RE', 'PC_LABEL_SUFFIX_RE', 'pcLabelKey', 'pcPairCredits', 'pcLinkRows', 'pcMarkCell', 'pcCellWhy', 'PC_ENTITY_LINK_TYPE', 'pcLinkTypeFor', 'pcFalconJson', 'pcFalconPayload'];
 // every reply the fixtures recorded, keyed by URL
 const dir = new URL('./fixtures/', import.meta.url);
 const replies = {};
@@ -81,6 +81,25 @@ test('platform artists pair with MusicBrainz artists by name, then by position',
   check(!r.pairs.length && r.left.length === 1 && /differ in length/.test(r.left[0].why), `otherwise left out, saying why (${JSON.stringify(r.left)})`);
   r = f.pcPairCredits([{ mbid: 'a', name: 'Alpha' }], [{ name: 'A Label', url: 'b', uncertain: true }]);
   check(!r.pairs.length && /name only/.test(r.left[0].why), 'an account that may be the label is never paired by position');
+});
+
+// #756: a label of another name was paired by position and offered as + (MusicBrainz's
+// "Universal Music", Qobuz's and Beatport's "Arts & Crafts Productions Inc.")
+test('a label pairs by name without its company form; another name is only +?', { tag: '@unit' }, async () => {
+  const f = await loadFunctions('platform_check', NAMES);
+  check(f.pcLabelKey('Arts & Crafts Productions Inc.') === f.pcLabelKey('Arts & Crafts') && f.pcLabelKey('Sub Pop Records') === f.pcLabelKey('Sub Pop') && f.pcLabelKey('The Leaf Label Ltd') === f.pcLabelKey('Leaf'),
+    'company forms, "Records" and a leading "The" don\'t count');
+  check(f.pcLabelKey('Records') === f.pcNameKey('Records') && f.pcLabelKey('Universal Music') !== f.pcLabelKey('Arts & Crafts'), 'a name that is all form stays; other labels stay apart');
+  const lab = (mbName, platName) => f.pcLinkRows({ artists: [], labels: [{ mbid: 'L', name: mbName }], tracks: null, va: false },
+    { qobuz: { artists: [], labels: [{ name: platName, url: 'https://www.qobuz.com/us-en/label/x/download-streaming-albums/1' }], tracks: null } }).rows;
+  const same = lab('Arts & Crafts', 'Arts & Crafts Productions Inc.')[0].cells.qobuz[0];
+  check(same.by === 'name' && f.pcMarkCell({ type: 'label', mbid: 'L' }, [same], new Map())[0].state === 'new', `paired by name, and added (${JSON.stringify(same)})`);
+  const other = lab('Universal Music', 'Arts & Crafts Productions Inc.')[0].cells.qobuz[0];
+  const marked = f.pcMarkCell({ type: 'label', mbid: 'L' }, [other], new Map())[0];
+  check(other.by === 'position' && marked.state === 'unsure', `another name: unsure, added only once taken in (${JSON.stringify(marked)})`);
+  check(/Arts & Crafts Productions Inc\./.test(f.pcCellWhy(other)), `…and why names the platform's label (${f.pcCellWhy(other)})`);
+  const art = { url: 'u', name: 'Βήτα', by: 'position' };
+  check(/Βήτα/.test(f.pcCellWhy(art)) && /matched by position/.test(f.pcCellWhy(art)), `an artist by position stays + and names the platform's (${f.pcCellWhy(art)})`);
 });
 
 test('the table: one row per MusicBrainz artist or label, links merged across tracks', { tag: '@unit' }, async () => {

@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Platform Check
 // @namespace    http://tampermonkey.net/
-// @version      2026.10.15
+// @version      2026.10.15.162000
 // @description  Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CjxnIHN0cm9rZT0iIzk0YTNiOCIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2UtbGluZWNhcD0icm91bmQiPjxwYXRoIGQ9Ik02NCA2NCBMODggMjIuNCIvPjxwYXRoIGQ9Ik02NCA2NCBMMTEyIDY0Ii8+PHBhdGggZD0iTTY0IDY0IEw4OCAxMDUuNiIvPjxwYXRoIGQ9Ik02NCA2NCBMNDAgMTA1LjYiLz48cGF0aCBkPSJNNjQgNjQgTDE2IDY0Ii8+PHBhdGggZD0iTTY0IDY0IEw0MCAyMi40Ii8+PC9nPjxjaXJjbGUgY3g9Ijg4IiBjeT0iMjIuNCIgcj0iMTIiIGZpbGw9IiNmNDcyYjYiLz48Y2lyY2xlIGN4PSIxMTIiIGN5PSI2NCIgcj0iMTIiIGZpbGw9IiNmYWNjMTUiLz48Y2lyY2xlIGN4PSI4OCIgY3k9IjEwNS42IiByPSIxMiIgZmlsbD0iIzRhZGU4MCIvPjxjaXJjbGUgY3g9IjQwIiBjeT0iMTA1LjYiIHI9IjEyIiBmaWxsPSIjMzhiZGY4Ii8+PGNpcmNsZSBjeD0iMTYiIGN5PSI2NCIgcj0iMTIiIGZpbGw9IiNhNzhiZmEiLz48Y2lyY2xlIGN4PSI0MCIgY3k9IjIyLjQiIHI9IjEyIiBmaWxsPSIjZmI5MjNjIi8+PGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iMjQiIGZpbGw9IiMwZjE3MmEiLz48cGF0aCBkPSJNNTQuMjIyMjIyMjIyMjIyMjIgNjQgTDYxLjMzMzMzMzMzMzMzMzMzNiA3MS4xMTExMTExMTExMTExMSBMNzQuNjY2NjY2NjY2NjY2NjcgNTYuODg4ODg4ODg4ODg4ODg2IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iNiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+Cjwvc3ZnPgo=
@@ -7593,8 +7593,17 @@ function pcNameKey(s) {
 // track's whole credit, which MusicBrainz credits to Samrai alone). The rest is left out,
 // with why.
 const PC_MULTI_NAME_RE = /\s(?:&|\+|x|×|and|feat\.?|ft\.?|featuring|with|vs\.?)\s|,\s/i;
-function pcPairCredits(mb, plat) {
-    const keys = e => [e.name, e.alt].map(pcNameKey).filter(Boolean);
+// A label's name without its company form (#756): "Arts & Crafts Productions Inc." is
+// MusicBrainz's "Arts & Crafts", "Sub Pop Records" its "Sub Pop"
+const PC_LABEL_SUFFIX_RE = /\s+(?:inc|incorporated|ltd|limited|llc|llp|gmbh|ag|co|corp|corporation|company|plc|pty|bv|nv|sa|sas|srl|sl|ab|as|oy|kg|ltda|records|recordings|record|productions|production|music|musique|musik|entertainment|group|label|labels|media|publishing)$/;
+function pcLabelKey(s) {
+    let k = pcNameKey(s).replace(/^the\s+/, '');
+    while (PC_LABEL_SUFFIX_RE.test(k)) k = k.replace(PC_LABEL_SUFFIX_RE, '');
+    return k || pcNameKey(s);
+}
+function pcPairCredits(mb, plat, type) {
+    const key = type === 'label' ? pcLabelKey : pcNameKey;
+    const keys = e => [e.name, e.alt].map(key).filter(Boolean);
     const pairs = [], left = [], named = new Set(), rest = [];
     plat.forEach((p, i) => {
         const pk = keys(p);
@@ -7604,7 +7613,7 @@ function pcPairCredits(mb, plat) {
     });
     for (const i of rest) {
         const p = plat[i];
-        const multi = PC_MULTI_NAME_RE.test(p.name || '');
+        const multi = type !== 'label' && PC_MULTI_NAME_RE.test(p.name || '');   // a label named "A & B" is one label
         if (mb.length === plat.length && !p.uncertain && !multi && !named.has(i)) pairs.push({ mb: mb[i], plat: p, by: 'position' });
         else left.push({ plat: p, why: p.uncertain ? 'no MusicBrainz name matches it (an account that may be the artist or the label is paired by name only)'
             : multi ? 'no MusicBrainz name matches it, and its name lists several artists (a page for the whole credit)'
@@ -7630,7 +7639,7 @@ function pcLinkRows(mb, byProvider) {
         if (!cr) continue;
         const said = new Set();
         const pair = (type, mbList, platList, where) => {
-            const { pairs, left } = pcPairCredits(mbList, platList);
+            const { pairs, left } = pcPairCredits(mbList, platList, type);
             pairs.forEach(x => add(type, p, x));
             for (const l of left) {
                 const line = `${p}: ${type} "${l.plat.name || l.plat.url}" (${where}) left out: ${l.why}`;
@@ -7650,9 +7659,12 @@ function pcLinkRows(mb, byProvider) {
         }
         if (cr.labels.length && (mb.labels || []).length) pair('label', mb.labels, cr.labels, 'label');
     }
-    // an account that may be either is only offered where its name matched
+    // an account that may be either is only offered where its name matched; a label paired by
+    // position has another name, so is likely another label (#756: MusicBrainz's "Universal Music",
+    // the platform's "Arts & Crafts Productions Inc."): offered, but added only once taken in
     for (const r of rows.values()) for (const p of Object.keys(r.cells)) {
         r.cells[p] = r.cells[p].filter(c => !c.uncertain || c.by === 'name');
+        if (r.type === 'label') r.cells[p].forEach(c => { if (c.by === 'position') c.differs = true; });
         if (!r.cells[p].length) delete r.cells[p];
     }
     const out = [...rows.values()].filter(r => Object.keys(r.cells).length);
@@ -7734,14 +7746,22 @@ async function pcLinkedTo(urls) {
     return out;
 }
 // A cell's links, each marked: 'linked' (already on this entity), 'other' (MusicBrainz has
-// it on someone else: not added), 'new', or 'unsure' (new, but may be the label's)
+// it on someone else: not added), 'new', or 'unsure' (new, but may be the label's, or a label
+// of another name)
 function pcMarkCell(row, cell, linked) {
     return cell.map(c => {
         const who = linked.get(pcUrlKey(c.url)) || [];
         if (who.some(w => w.type === row.type && w.mbid === row.mbid)) return { ...c, state: 'linked', who };
         if (who.length) return { ...c, state: 'other', who };
-        return { ...c, state: c.uncertain ? 'unsure' : 'new', who };
+        return { ...c, state: c.uncertain || c.differs ? 'unsure' : 'new', who };
     });
+}
+// why a found link is unsure, or paired only by position, naming the platform's own name
+function pcCellWhy(c) {
+    const as = c.name ? ` ("${c.name}" on the platform)` : '';
+    return c.uncertain ? 'an account that may be the artist or the label'
+        : c.differs ? `another name${as}, paired only by position: maybe another label`
+        : c.by === 'position' ? `matched by position, not name${as}` : '';
 }
 
 // The link type for an artist's or label's page where MusicBrainz offers several and picks none
@@ -7931,7 +7951,7 @@ async function pcOpenLinksTable(btn) {
     const otherOf = cs => { const c = cellMark(cs).text === MARK.other && cs.find(x => x.state === 'other'); return c && c.who[0] ? c.who[0] : null; };
     const cellTitle = (cs, row) => cs.map(c => `${c.url}\n  ${c.state === 'linked' ? 'already linked in MusicBrainz'
         : c.state === 'other' ? `linked to ${c.who.map(w => `${w.type} ${w.name || w.mbid}${w.disambiguation ? ` (${w.disambiguation})` : ''}`).join(', ')} in MusicBrainz — not added${c.who.some(w => pcNameKey(w.name) === pcNameKey(row.name)) ? '; same name: a duplicate to merge, or the wrong one credited' : ''}`
-        : `${c.on ? 'will be added' : 'not added'}${c.state === 'unsure' ? ' (an account that may be the artist or the label)' : ''}${c.by === 'position' ? ' (matched by position, not name)' : ''}`}`).join('\n') + (otherOf(cs)
+        : `${c.on ? 'will be added' : 'not added'}${pcCellWhy(c) ? `: ${pcCellWhy(c)}` : ''}`}`).join('\n') + (otherOf(cs)
         ? `\nclick: open ${otherOf(cs).type} ${otherOf(cs).name || ''} in MusicBrainz · middle-click: the platform page`
         : '\nclick: open · right-click: include or leave out');
 
@@ -8890,7 +8910,7 @@ async function pcMcEntityFindings() {
         const who = (c.who || []).map(w => `${w.type} ${w.name || w.mbid}`).join(', ');
         const state = c.state === 'linked' ? 'linked' : c.state === 'other' ? 'withheld' : !asked ? 'unsure' : c.state === 'unsure' ? 'unsure' : 'new';
         const why = c.state === 'other' ? `already linked to ${who}` : !asked ? 'MusicBrainz couldn\'t be asked whether it has this link'
-            : c.state === 'unsure' ? 'an account that may be the artist or the label' : c.by === 'position' ? 'matched by position, not name' : '';
+            : pcCellWhy(c);
         out.push({ key: `ent:${r.type}:${r.mbid}:${c.url}`, name: `${r.name} · ${PROVIDER_NAME[p]}`, icon: p, url: c.url, state, why: why || undefined, entity: { type: r.type, mbid: r.mbid, name: r.name } });
     }
     _pcMcEnt = out;
