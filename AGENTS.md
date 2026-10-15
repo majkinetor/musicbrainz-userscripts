@@ -33,6 +33,7 @@ Entry point for any AI assistant (Claude Code, a cloud agent, a subagent). It's 
 
 ## Userscripts
 
+- **No script name in an issue title** (maintainer, 2026-10-15), anywhere in it, short names included: "Log categories", not "ISRC Scout log categories". The `area | …` label carries the script, and the changelog groups by it ([Standard 1](dev/agents/STANDARDS.general.md#standard-1)).
 - **Before sharing an install link**, read [Standard 10](STANDARDS.md#standard-10).
 - **Report finished work on its issue, not only in chat** (cloud agents included): when work on an issue is pushed, comment on that issue with a few lines on what changed and the install links, made with [`dev/install-links`](dev/install-links/README.md) and checked after posting with its `--check` ([Standard 10](STANDARDS.md#standard-10)). That comment is the handoff: open no PR, and don't wait for the maintainer to test; move on to the next task. He confirms on the issue, and then the work is merged.
   - **No pinned (commit) links** (maintainer): only releases pin, and the release script does it. A cloud session's proxy wraps some links to the session's own commits and branch in backticks when it posts them (Mission Control's most, on 2026-10-10; never a `main` link seen so far), which breaks them; `--check` catches it. When it does, say so in the comment: the maintainer installs from the branch himself.

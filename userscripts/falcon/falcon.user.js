@@ -979,13 +979,16 @@
           var v = view(pop, true);
           if (st.left != null) { pop.style.left = st.left; pop.style.top = st.top; pop.style.right = 'auto'; pop.style.transform = 'none'; }
           var restore = { left: pop.style.left, top: pop.style.top, right: pop.style.right, bottom: pop.style.bottom, transform: pop.style.transform };
-          // Escape in a filled filter empties it; anywhere else it closes the window
+          // Escape in a filled filter empties it; anywhere else it closes the window. Only the log:
+          // it listens first (capture, on window) and keeps the key, so the script's own window under
+          // it (ISRC Scout's closes on Escape too) stays open
           var onKey = function (e) {
               if (e.key !== 'Escape') return;
+              e.stopPropagation();
               if (e.target === v.q && v.q.value) { v.q.value = ''; v.q.dispatchEvent(new Event('input')); return; }
               close();
           };
-          win = { el: pop, v: v, off: function () { document.removeEventListener('keydown', onKey); } };
+          win = { el: pop, v: v, off: function () { window.removeEventListener('keydown', onKey, true); } };
           var minBtn = pop.querySelector('.mbu-logpop-min');
           var setMin = function (m) {
               minBtn.textContent = m ? '▢' : '–'; minBtn.title = m ? 'Restore' : 'Minimize';
@@ -1049,7 +1052,7 @@
               };
               document.addEventListener('mousemove', mv); document.addEventListener('mouseup', up);
           });
-          document.addEventListener('keydown', onKey);
+          window.addEventListener('keydown', onKey, true);
           return pop;
       }
       // the viewer inside an element of the script's; a second mount there replaces the first

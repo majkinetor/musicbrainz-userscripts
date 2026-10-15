@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         ISRC Scout
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.15.172938
+// @version      2026.10.15.173155
 // @description  Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify / Beatport / Tidal / Volumo / HDtracks / Qobuz, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPklTUkMgU2NvdXQ8L3RpdGxlPgogICAgPHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPgogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjQwIi8+CiAgICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyNiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2U9IiNiOWEzZTgiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPgogIDwvZz4KICA8bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+Cjwvc3ZnPgo=
@@ -1359,13 +1359,16 @@
           var v = view(pop, true);
           if (st.left != null) { pop.style.left = st.left; pop.style.top = st.top; pop.style.right = 'auto'; pop.style.transform = 'none'; }
           var restore = { left: pop.style.left, top: pop.style.top, right: pop.style.right, bottom: pop.style.bottom, transform: pop.style.transform };
-          // Escape in a filled filter empties it; anywhere else it closes the window
+          // Escape in a filled filter empties it; anywhere else it closes the window. Only the log:
+          // it listens first (capture, on window) and keeps the key, so the script's own window under
+          // it (ISRC Scout's closes on Escape too) stays open
           var onKey = function (e) {
               if (e.key !== 'Escape') return;
+              e.stopPropagation();
               if (e.target === v.q && v.q.value) { v.q.value = ''; v.q.dispatchEvent(new Event('input')); return; }
               close();
           };
-          win = { el: pop, v: v, off: function () { document.removeEventListener('keydown', onKey); } };
+          win = { el: pop, v: v, off: function () { window.removeEventListener('keydown', onKey, true); } };
           var minBtn = pop.querySelector('.mbu-logpop-min');
           var setMin = function (m) {
               minBtn.textContent = m ? '▢' : '–'; minBtn.title = m ? 'Restore' : 'Minimize';
@@ -1429,7 +1432,7 @@
               };
               document.addEventListener('mousemove', mv); document.addEventListener('mouseup', up);
           });
-          document.addEventListener('keydown', onKey);
+          window.addEventListener('keydown', onKey, true);
           return pop;
       }
       // the viewer inside an element of the script's; a second mount there replaces the first
@@ -5629,23 +5632,37 @@
     // #301: two columns. LINKED = monochrome icons for providers already linked on
     // MB; ADD = a hidden candidate slot per not-yet-linked provider (Find links fills
     // them, and an added one moves over to the LINKED column).
-    function linkedIcon(p, url, ended) {
-      const verb = ended ? 'un-ends' : 'marks ended';
-      return '<a class="ii-tl linked' + (ended ? ' ended' : '') + '" data-code="' + p.code + '" style="color:' + p.color + '" href="' + esc(url) + '" target="_blank" rel="noopener" ' +
-        'title="' + esc(p.name) + ' — linked' + (ended ? ' · ENDED' : '') + ' · left-click opens · right-click ' + verb + ' (Ctrl: whole track · Alt: ' + esc(p.name) + ' everywhere) · middle-click removes (same modifiers)">' + p.icon + '</a>';
+    // One icon per platform, as on the page's tracklist: a recording with several links on one
+    // platform (versions, regions) gets a count beside it, its tooltip lists them all, a click
+    // opens the first live one, and end/remove act on all of them. urls: one URL or several.
+    function linkedIcon(p, urls, endedSet, other) {
+      urls = [].concat(urls);
+      const isEnded = u => !!(endedSet && endedSet.has(u));
+      const ended = urls.every(isEnded), first = urls.find(u => !isEnded(u)) || urls[0], n = urls.length;
+      const verb = ended ? 'un-ends' : 'marks ended', all = n > 1 ? ' all ' + n : '';
+      const what = n === 1 ? esc(p.name) + ' — linked' + (ended ? ' · ENDED' : '')
+        : esc(p.name) + ' — ' + n + ' links&#10;' + urls.map(u => esc(u) + (isEnded(u) ? ' (ended)' : '')).join('&#10;') + '&#10;';
+      return '<a class="ii-tl linked' + (other ? ' ii-tl-other' : '') + (ended ? ' ended' : '') + '" data-code="' + esc(p.code) + '"' +
+        (other ? ' data-other="1" data-name="' + esc(p.name) + '"' : '') + ' data-urls="' + esc(JSON.stringify(urls)) + '" style="color:' + p.color + '" href="' + esc(first) + '" target="_blank" rel="noopener" ' +
+        'title="' + what + (other ? ' (ISRC Scout can’t add this one back)' : '') + ' · left-click opens · right-click ' + verb + all + ' (Ctrl: whole track · Alt: ' + esc(p.name) + ' everywhere) · middle-click removes' + all + ' (same modifiers)">' +
+        p.icon + (n > 1 ? '<sup class="ii-trk-n">' + n + '</sup>' : '') + '</a>';
     }
     function linkedHtml(t) {
-      const cells = providersFor(t).map(p => { const ex = t.recId ? linkedUrl(t, p) : null; return ex ? linkedIcon(p, ex, !!(t.endedUrls && t.endedUrls.has(ex))) : ''; }).filter(Boolean).join('');
+      const ended = t.endedUrls;
+      const cells = t.recId ? providersFor(t).map(p => {
+        const urls = [...new Set((t.recUrls || []).filter(u => p.test(u)))];
+        return urls.length ? linkedIcon(p, urls, ended) : '';
+      }).join('') : '';
       // #389 append every OTHER linked provider, so the column shows all links, not just addable ones.
       // ISRC Scout can't *add* these, but ending/removing acts on the existing relationship by URL — no
       // resolve/add path needed — so they get the same right-click (end) / middle-click (remove) actions.
-      const others = t.recId ? otherLinked(t).map(o => {
+      const groups = new Map();
+      if (t.recId) otherLinked(t).forEach(o => {
         let host = ''; try { host = new URL(o.url).hostname.replace(/^www\./, ''); } catch (e) {}
         const code = 'x:' + (host || o.name);                        // synthetic per-host code, so Alt = "that provider everywhere" still works
-        const ended = !!(t.endedUrls && t.endedUrls.has(o.url));
-        return '<a class="ii-tl linked ii-tl-other' + (ended ? ' ended' : '') + '" data-code="' + esc(code) + '" data-other="1" data-name="' + esc(o.name) + '" style="color:' + o.color + '" href="' + esc(o.url) + '" target="_blank" rel="noopener" ' +
-          'title="' + esc(o.name) + ' — linked' + (ended ? ' · ENDED' : '') + ' (ISRC Scout can’t add this one back) · left-click opens · right-click ' + (ended ? 'un-ends' : 'marks ended') + ' (Ctrl: whole track · Alt: ' + esc(o.name) + ' everywhere) · middle-click removes (same modifiers)">' + o.icon + '</a>';
-      }).join('') : '';
+        const g = groups.get(code); if (g) g.urls.push(o.url); else groups.set(code, { p: { code, name: o.name, color: o.color, icon: o.icon }, urls: [o.url] });
+      });
+      const others = [...groups.values()].map(g => linkedIcon(g.p, g.urls, ended, true)).join('');
       return '<div class="ii-tl-linked" data-rec="' + esc(t.recId || '') + '">' + cells + others + '</div>';
     }
     function addHtml(t) {
@@ -5694,10 +5711,7 @@
       if (t && !(t.recUrls || []).includes(url)) (t.recUrls = t.recUrls || []).push(url);
       const el = cell(idx, p.code); if (el) el.remove();
       const lb = linkedBox(idx);
-      if (lb && !lb.querySelector('.ii-tl[data-code="' + p.code + '"]')) {
-        const tmp = document.createElement('div'); tmp.innerHTML = linkedIcon(p, url);
-        lb.appendChild(tmp.firstChild);
-      }
+      if (lb && t) lb.outerHTML = linkedHtml(t);   // re-drawn whole: the new link may join a platform's group
     }
 
     // Same shape as ISRC Scout's standard edit note (noteHeader + Release line +
@@ -5841,9 +5855,11 @@
         let p = PROV.find(x => x.code === a.dataset.code);
         if (!p && a.dataset.other) {   // #389 a read-only "other" linked provider — synthesize a URL-matched descriptor so end/remove work
           const url = a.getAttribute('href');
-          p = { code: a.dataset.code, name: a.dataset.name || 'link', icon: a.innerHTML, color: a.style.color, linkTypeID: null, test: u => u === url, other: true };
+          let urls = [url]; try { urls = JSON.parse(a.dataset.urls || 'null') || urls; } catch (e) {}
+          p = { code: a.dataset.code, name: a.dataset.name || 'link', icon: a.innerHTML, color: a.style.color, linkTypeID: null, test: u => urls.includes(u), other: true };
         }
-        if (p) out.push({ idx: +tr.dataset.idx, p, url: a.getAttribute('href'), el: a });
+        let urls = [a.getAttribute('href')]; try { urls = JSON.parse(a.dataset.urls || 'null') || urls; } catch (e) {}
+        if (p) urls.forEach(url => out.push({ idx: +tr.dataset.idx, p, url, el: a }));
       });
       return out;
     }
@@ -5864,7 +5880,7 @@
         await postEdits(edits, delNote(used.map(ic => ic.p)));
         used.forEach(ic => {
           const t = RELEASE.tracks[ic.idx]; if (t) { t.recUrls = (t.recUrls || []).filter(u => u !== ic.url); delete _relCache[t.recId]; }
-          ic.el.remove();
+          const lb = t && linkedBox(ic.idx); if (lb) lb.outerHTML = linkedHtml(t);   // a group's other links stay, with their count
           const ab = !ic.p.other && addBox(ic.idx);   // re-offer as a hidden Add candidate so Find links can resolve it again — but never for the read-only "other" providers ISRC Scout can't add
           if (ab && !ab.querySelector('.ii-tl[data-code="' + ic.p.code + '"]')) { const s = document.createElement('span'); s.className = 'ii-tl cand'; s.dataset.code = ic.p.code; s.title = ic.p.name; s.innerHTML = ic.p.icon; ab.appendChild(s); }
         });
@@ -5926,7 +5942,8 @@
     function updateAddBtn() {
       const m = missingCount();
       const n = modal.querySelectorAll('.ii-tl-add .ii-tl.new').length;   // resolved + addable now
-      const linked = modal.querySelectorAll('.ii-tl-linked .ii-tl.linked').length;
+      let linked = 0;   // links, not icons: a grouped icon stands for several
+      modal.querySelectorAll('.ii-tl-linked .ii-tl.linked').forEach(a => { let n = 1; try { n = JSON.parse(a.dataset.urls || '[1]').length; } catch (e) {} linked += n; });
       const total = RELEASE ? RELEASE.tracks.length : 0;
       const sum = modal.querySelector('#ii-summary-links');   // #301: links status bar (footer)
       if (sum) sum.innerHTML = '<b>' + total + '</b> tracks · <b>' + linked + '</b> link' + (linked === 1 ? '' : 's') +
