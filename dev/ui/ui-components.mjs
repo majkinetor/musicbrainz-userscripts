@@ -133,7 +133,7 @@ const CSS = [
     // identical structure under their own prefixes (tc-, as-, fs-), which is the
     // clearest possible argument for naming it once.
     '#mbu-logpop{position:fixed;top:74px;left:50%;transform:translateX(-50%);z-index:var(--mbu-z-modal);',
-    'display:flex;flex-direction:column;width:min(720px,94vw);max-height:72vh;background:var(--mbu-bg);',
+    'display:flex;flex-direction:column;width:min(860px,94vw);max-height:72vh;background:var(--mbu-bg);',
     'border:1px solid var(--mbu-border);border-radius:11px;box-shadow:var(--mbu-shadow-lg);',
     'font:13px var(--mbu-font);color:var(--mbu-text);overflow:hidden}',
     '.mbu-logpop-h{display:flex;align-items:center;gap:8px;padding:10px 13px;',
@@ -160,12 +160,16 @@ const CSS = [
     '.mbu-log-badge{color:var(--mbu-border-strong);font-size:11px}',
     // the viewer mounted in a script's own panel (#705): no window, it fills its host
     '.mbu-logemb{display:flex;flex-direction:column;height:100%;min-height:0;background:var(--mbu-bg);font:13px var(--mbu-font);color:var(--mbu-text)}',
-    // one row: the filter and the session list give way before anything wraps
-    '.mbu-logemb .mbu-logpop-h{cursor:default;padding:7px 10px;flex-wrap:nowrap}',
-    '.mbu-logemb .mbu-logpop-h>*{flex-shrink:0}',
-    '.mbu-logemb .mbu-logpop-h>.mbu-log-q{flex:0 1 160px;min-width:60px;margin-left:0}',
-    '.mbu-logemb .mbu-logpop-h>.mbu-log-ses{flex:0 1 240px;min-width:90px}',
-    '.mbu-logemb .mbu-logpop-h>.mbu-logpop-sp{flex:1 1 0;min-width:0}',
+    '.mbu-logemb .mbu-logpop-h{cursor:default;padding:7px 10px}',
+    '.mbu-logemb .mbu-logpop-h>.mbu-log-q{flex-basis:160px;margin-left:0}',
+    '.mbu-logemb .mbu-logpop-h>.mbu-log-ses{flex-basis:240px}',
+    // one row in either viewer: the title, counts and buttons never wrap inside
+    // themselves; the filter and the session list give way first
+    '.mbu-logpop-h{flex-wrap:nowrap}',
+    '.mbu-logpop-h>*{flex-shrink:0;white-space:nowrap}',
+    '.mbu-logpop-h>.mbu-log-q{flex-shrink:1;min-width:60px}',
+    '.mbu-logpop-h>.mbu-log-ses{flex-shrink:1;min-width:90px}',
+    '.mbu-logpop-h>.mbu-logpop-sp{flex:1 1 0;min-width:0}',
     // the session list (#705) and the past session it shows: read-only, so no Clear
     '.mbu-logpop .mbu-log-ses{flex:0 1 260px;min-width:120px;max-width:100%;font:12px var(--mbu-font);padding:2px 4px;border:1px solid var(--mbu-border);border-radius:5px}',
     '.mbu-logpop-hclear:disabled{opacity:.5;cursor:default}',
