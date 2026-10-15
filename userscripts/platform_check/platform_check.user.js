@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Platform Check
 // @namespace    http://tampermonkey.net/
-// @version      2026.10.15.163454
+// @version      2026.10.15.210115
 // @description  Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CjxnIHN0cm9rZT0iIzk0YTNiOCIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2UtbGluZWNhcD0icm91bmQiPjxwYXRoIGQ9Ik02NCA2NCBMODggMjIuNCIvPjxwYXRoIGQ9Ik02NCA2NCBMMTEyIDY0Ii8+PHBhdGggZD0iTTY0IDY0IEw4OCAxMDUuNiIvPjxwYXRoIGQ9Ik02NCA2NCBMNDAgMTA1LjYiLz48cGF0aCBkPSJNNjQgNjQgTDE2IDY0Ii8+PHBhdGggZD0iTTY0IDY0IEw0MCAyMi40Ii8+PC9nPjxjaXJjbGUgY3g9Ijg4IiBjeT0iMjIuNCIgcj0iMTIiIGZpbGw9IiNmNDcyYjYiLz48Y2lyY2xlIGN4PSIxMTIiIGN5PSI2NCIgcj0iMTIiIGZpbGw9IiNmYWNjMTUiLz48Y2lyY2xlIGN4PSI4OCIgY3k9IjEwNS42IiByPSIxMiIgZmlsbD0iIzRhZGU4MCIvPjxjaXJjbGUgY3g9IjQwIiBjeT0iMTA1LjYiIHI9IjEyIiBmaWxsPSIjMzhiZGY4Ii8+PGNpcmNsZSBjeD0iMTYiIGN5PSI2NCIgcj0iMTIiIGZpbGw9IiNhNzhiZmEiLz48Y2lyY2xlIGN4PSI0MCIgY3k9IjIyLjQiIHI9IjEyIiBmaWxsPSIjZmI5MjNjIi8+PGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iMjQiIGZpbGw9IiMwZjE3MmEiLz48cGF0aCBkPSJNNTQuMjIyMjIyMjIyMjIyMjIgNjQgTDYxLjMzMzMzMzMzMzMzMzMzNiA3MS4xMTExMTExMTExMTExMSBMNzQuNjY2NjY2NjY2NjY2NjcgNTYuODg4ODg4ODg4ODg4ODg2IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iNiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+Cjwvc3ZnPgo=
@@ -1131,7 +1131,7 @@ function pcEditNote(urls, forced, barcode, barcodeFrom, extra) {
         ' by ' + (s.author || 'majkinetor') + ' - ' + homepage;
     // Record the link-confidence settings that gated which links were added, so a reviewer can see why
     // (e.g. strict barcode/format withholding). Lists each enabled check with its mode; 'off' when none.
-    const modeWord = k => GM_getValue(k, 'exists') === 'strict' ? 'strictly' : 'if they exist';
+    const modeWord = k => GM_getValue(k, 'strict') === 'strict' ? 'strictly' : 'if they exist';
     const conf = [];
     if (GM_getValue('pc:respect-format', true))  conf.push('formats ' + modeWord('pc:format-mode'));
     if (GM_getValue('pc:respect-barcode', true)) conf.push('barcodes ' + modeWord('pc:barcode-mode'));
@@ -3067,10 +3067,10 @@ document.getElementById('mb-token-setup-btn').addEventListener('click', () => {
     document.getElementById('mb-show-icons').checked = GM_getValue('pc:show-icons', true);
     document.getElementById('mb-show-names').checked = GM_getValue('pc:show-names', false);
     document.getElementById('mb-respect-barcode').checked = GM_getValue('pc:respect-barcode', true);
-    document.getElementById('mb-barcode-mode').value = GM_getValue('pc:barcode-mode', 'exists');
+    document.getElementById('mb-barcode-mode').value = GM_getValue('pc:barcode-mode', 'strict');
     document.getElementById('mb-barcode-mode').disabled = !GM_getValue('pc:respect-barcode', true);
     document.getElementById('mb-respect-format').checked = GM_getValue('pc:respect-format', true);
-    document.getElementById('mb-format-mode').value = GM_getValue('pc:format-mode', 'exists');
+    document.getElementById('mb-format-mode').value = GM_getValue('pc:format-mode', 'strict');
     document.getElementById('mb-format-mode').disabled = !GM_getValue('pc:respect-format', true);
     document.getElementById('mb-open-new-tab').checked = GM_getValue('pc:open-new-tab', true);
     document.getElementById('mb-bg-audio').checked = GM_getValue('pc:bg-audio', false);
@@ -8411,7 +8411,7 @@ function barcodeBlocks(platform) {
     if (!GM_getValue('pc:respect-barcode', true)) return false;
     const c = cacheGet(mbid, platform);
     if (!c || !c.url) return false;                // no found URL → nothing to withhold
-    const strict = GM_getValue('pc:barcode-mode', 'exists') === 'strict';
+    const strict = GM_getValue('pc:barcode-mode', 'strict') === 'strict';
     // MB has no barcode (missing OR [none]) → nothing here can be barcode-confirmed.
     // strict: withhold (only confirmed links pass); if-they-exist: allow. (#206 chaban-mb —
     // previously returned false unconditionally, so strict mode silently ignored the absence.)
@@ -8434,7 +8434,7 @@ function formatBlocks(platform) {
     const c = cacheGet(mbid, platform);
     if (!c || !c.url) return false;
     const remote = remoteFormatCategories(platform, c.format);
-    if (remote.size === 0) return GM_getValue('pc:format-mode', 'exists') === 'strict';  // unknown → block only in strict
+    if (remote.size === 0) return GM_getValue('pc:format-mode', 'strict') === 'strict';  // unknown → block only in strict
     return ![...remote].some(x => mbCats.has(x));              // known → block iff no shared category
 }
 // #464: how the release editor opens for a queued add.

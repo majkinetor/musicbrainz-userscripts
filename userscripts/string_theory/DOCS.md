@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-10-15 20:48 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-10-15 21:02 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -2067,8 +2067,8 @@ Click a mark to open the page (a ⚠ opens the MusicBrainz artist or label that 
 | -------------------------------------- | ----------------- | ------------------------------------------------------------------------------------ |
 | Platforms                              | all               | order them, or leave some out                                                        |
 | Logins                                 | none              | Beatport and Qobuz; see [Platforms](#platforms-1)                                      |
-| Use barcodes                           | on, if they exist | [link confidence](#link-confidence); *strictly* also withholds what can't be checked |
-| Use formats                            | on, if they exist | the same, for the format                                                             |
+| Use barcodes                           | on, strictly      | [link confidence](#link-confidence); *if they exist* withholds only a known mismatch |
+| Use formats                            | on, strictly      | the same, for the format                                                             |
 | Open the editor in a new tab           | on                | off navigates this tab                                                               |
 | Keep background tabs awake             | off               | see [Adding links](#adding-links)                                                    |
 | Count the links to add                 | on                | the badge on [Artists & labels](#artists-and-labels)                                 |
