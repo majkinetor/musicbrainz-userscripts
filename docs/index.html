@@ -123,12 +123,6 @@
   ul.idx .n a{color:var(--ink);text-decoration:none}
   ul.idx .n a:hover{color:var(--accent)}
   ul.idx .d{flex:1;font-size:13.5px;line-height:1.4;color:var(--dim)}
-  /* The lone install is a faint corner glyph on purpose: String Theory is the install
-     people should take; this is for whoever wants just one script. */
-  ul.idx .ib{position:absolute;top:8px;right:8px;display:flex;padding:4px;border-radius:6px;
-             color:var(--faint);opacity:.35;transition:opacity .15s}
-  ul.idx li:hover .ib{opacity:.8} ul.idx .ib:hover{opacity:1;color:var(--accent)}
-  ul.idx .ib svg{width:14px;height:14px}
 
   footer{margin:52px 0 0;padding:0 0 110px;font-size:13px;color:var(--faint);
          display:flex;gap:20px;justify-content:center;flex-wrap:wrap}
@@ -431,7 +425,6 @@ for (const d of document.querySelectorAll('.faq details[id]')) {
   d.querySelector('summary').appendChild(b);
 }
 
-const INST = s => `https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/refs/heads/stable/userscripts/${s}/${s}.user.js`;
 (function themeSwitch() {
   const root = document.documentElement, btn = document.getElementById('tt');
   const sys = matchMedia('(prefers-color-scheme: dark)');
@@ -450,9 +443,7 @@ const INST = s => `https://raw.githubusercontent.com/majkinetor/musicbrainz-user
 const row = ([s,n,i,d]) =>
  `<li><a class="ic" href="${GH}${s}/README.md" tabindex="-1" aria-hidden="true"><img loading="lazy" alt="" src="${RAW}${s}/${i}"></a>` +
  `<span class="n"><a href="${GH}${s}/README.md">${n}</a></span>` +
- `<span class="d">${d}</span>` +
- `<a class="ib" href="${INST(s)}" aria-label="Install ${n} alone" title="Install ${n} alone — String Theory already includes it">` +
- `<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M8 2v8M4.5 6.5 8 10l3.5-3.5M3 13h10"/></svg></a></li>`;
+ `<span class="d">${d}</span></li>`;
 document.getElementById('bundled').innerHTML = BUNDLED.map(row).join('');
 
 // The usage line: totals for majkinetor's scripts, from the data stats.html carries, counted
