@@ -374,10 +374,21 @@ function slice() {
     if (!scriptOk(si) || !monthOk(mi)) continue;
     autoedits += count;
   }
+  /* `total` counts an edit once per script it carries; this counts it once.
+     A combination is in when any of its scripts passes the filter. Null when
+     the data predates the cube, so the tile can say so rather than show 0. */
+  let distinct = null;
+  if (DATA.cubes.distinct) {
+    distinct = 0;
+    for (const [ci, mi, count] of DATA.cubes.distinct) {
+      if (!monthOk(mi) || !DATA.combos[ci].some(scriptOk)) continue;
+      distinct += count;
+    }
+  }
 
   const months = [...perMonth.keys()].sort((a, b) => a - b);
   return { perScript, perEditor, perMonth, months, perType, perVersion, perEntity,
-           perShared, outcomeTotals, total, autoedits };
+           perShared, outcomeTotals, total, distinct, autoedits };
 }
 
 /* ---------------------------------------------------------------- tooltip */
@@ -400,7 +411,9 @@ function renderTiles(view) {
   const users = new Set();
   for (const s of view.perScript.values()) for (const u of s.users) users.add(u);
   const tiles = [
-    ['Edits', fmt(view.total), `${fmt(view.autoedits)} auto-applied`],
+    ['Edits', fmt(view.total), `${fmt(view.autoedits)} auto-applied · per script, summed`],
+    ['Distinct edits', view.distinct === null ? '—' : fmt(view.distinct),
+      view.distinct === null ? 'not in this data' : `each edit once · ${fmt(view.total - view.distinct)} fewer than Edits`],
     ['Editors', fmt(users.size), 'distinct people who ran a script'],
     ['Months covered', fmt(view.months.length), view.months.length
       ? `${DATA.months[view.months[0]]} → ${DATA.months[view.months[view.months.length - 1]]}` : '—'],

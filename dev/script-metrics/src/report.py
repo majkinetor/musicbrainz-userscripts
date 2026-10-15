@@ -211,6 +211,26 @@ def build_payload(connection: sqlite3.Connection, config: dict) -> dict:
         key = (script_index[script_id], months.index(month), mine, shared)
         shared_counts[key] = shared_counts.get(key, 0) + count
 
+    # Every cube above counts an edit once per script, so their totals sum
+    # script-edit pairs. This one counts each edit once, keyed by the set of
+    # scripts it carries: the dashboard keeps a combination when any of its
+    # scripts passes the filter, which gives distinct edits for any selection.
+    # There are only a handful of combinations, so it stays tiny.
+    print('  distinct edits', file=sys.stderr, flush=True)
+    combos = Encoder()
+    by_combo: dict[tuple, int] = {}
+    for script_ids, month, count in connection.execute(
+        "SELECT ids, month, COUNT(*) FROM ("
+        "  SELECT group_concat(script_id, char(31)) AS ids, MIN(month) AS month "
+        "  FROM fact WHERE month IS NOT NULL GROUP BY edit_id"
+        ") GROUP BY 1, 2"
+    ):
+        # group_concat has no defined order, so the same set can arrive as
+        # several strings; sorting folds them into one combination.
+        combo = tuple(sorted(script_index[s] for s in script_ids.split('\x1f')))
+        key = (combos.index(combo), months.index(month))
+        by_combo[key] = by_combo.get(key, 0) + count
+
     # Which entity types the edits actually touch. This is the only consumer of
     # edit_entity, which is otherwise ~37M rows of dead weight. An edit can touch
     # several entities (a merge, a relationship), so these count touches, not
@@ -228,6 +248,7 @@ def build_payload(connection: sqlite3.Connection, config: dict) -> dict:
         by_entity[key] = by_entity.get(key, 0) + count
 
     total_edits = _one(connection, 'SELECT COUNT(*) FROM fact') or 0
+    distinct_edits = _one(connection, 'SELECT COUNT(DISTINCT edit_id) FROM fact') or 0
 
     type_labels = {
         r[0]: r[1] for r in connection.execute('SELECT id, label FROM edit_type')
@@ -302,9 +323,14 @@ def build_payload(connection: sqlite3.Connection, config: dict) -> dict:
             # [script, month, mine, shared, count] - shared=1 means the edit is
             # also attributed to another script
             'shared': remapped(shared_counts, 1),
+            # [combo, month, count] - each edit once; `combos` lists the
+            # script indices of each combination
+            'distinct': remapped(by_combo, 1),
         },
+        'combos': [list(c) for c in combos.values],
         'quality': {
             'total_attributed_edits': total_edits,
+            'distinct_attributed_edits': distinct_edits,
             'notes_without_edit_row': orphan_notes,
         },
         'runs': runs,
@@ -364,13 +390,15 @@ def _markdown(payload: dict, connection: sqlite3.Connection) -> str:
     add('')
     add(f'- **Window:** {cutoff} onwards')
     add(f'- **Generated:** {payload["generated_at"]}')
-    add(f'- **Attributed edits (all time):** {payload["quality"]["total_attributed_edits"]:,}')
+    quality = payload['quality']
+    add(f'- **Attributed edits (all time):** {quality["total_attributed_edits"]:,} '
+        f'per script, {quality.get("distinct_attributed_edits", 0):,} distinct')
     add('')
     add('Attribution is by edit-note text — see `config/sources.json`. Counts are '
         'per *script*, and one edit can count for two scripts when a note carries '
         'both signatures. **Shared** counts exactly those, so a per-script total '
         'reads for what it is: Scribe\'s edits are all shared, while ISRC Scout\'s '
-        'are almost entirely its own.')
+        'are almost entirely its own. **Distinct edits** counts each edit once.')
     add('')
 
     total_edits = sum(b['edits'] for b in per_script.values())
@@ -381,7 +409,10 @@ def _markdown(payload: dict, connection: sqlite3.Connection) -> str:
     add('')
     add('| Metric | Value |')
     add('|---|---:|')
-    add(f'| Edits | {total_edits:,} |')
+    distinct_edits = sum(count for _ci, mi, count in payload['cubes']['distinct']
+                         if months[mi] >= cutoff_month)
+    add(f'| Edits (per script, summed) | {total_edits:,} |')
+    add(f'| Distinct edits | {distinct_edits:,} |')
     add(f'| Distinct editors | {len(all_users):,} |')
     add(f'| Scripts with at least one edit | {len(per_script):,} |')
     add('')

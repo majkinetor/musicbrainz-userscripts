@@ -91,7 +91,9 @@ Two consequences worth knowing:
   is the one who ran the script, and that is who "distinct editors" counts.
 - **One edit can count for two scripts.** Our scripts deliberately preserve a
   previous script's note when they append to theirs, so a note can legitimately
-  carry both a Harmony signature and a Credit Hoarder one. Both are recorded.
+  carry both a Harmony signature and a Credit Hoarder one. Both are recorded,
+  so **Edits** sums the per-script counts and counts such an edit twice;
+  **Distinct edits** counts it once.
 
 Adding a script — including third-party ones like Harmony or ECAU, which are
 configured here for comparison — is a config entry, not code.
