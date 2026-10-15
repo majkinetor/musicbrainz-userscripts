@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-10-15 21:13 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-10-15 22:33 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -972,6 +972,7 @@ Pages: `music.apple.com/<country>/album/…`
 - Every track has its ISRC; every artist its Apple link.
 - *- Single* / *- EP* at the end of the title is the type, not part of the title.
 - Music videos are left out.
+- The link gets *streaming page* and, when the iTunes Store sells the album, *purchase for download*.
 - An album can list tracks Apple doesn't offer. Apple leaves them out of the album data and numbers the others around them, so 1.8 is followed by 1.10. When that happens, First Contact names the missing tracks and asks before it opens the editor. If you choose *Import anyway*, each missing track is an empty track at its own position, so the others keep their numbers. Give each empty track its title, or remove it. The edit note lists them.
 
 #### Tidal
@@ -1862,7 +1863,7 @@ For an album MusicBrainz doesn't have yet. On its page on a platform, **Consolid
 
 1. [Platform Check](../platform_check/README.md) finds the album on the other platforms. **Sources** on the left groups them by barcode, the album's own first. The platforms in its lane are taken in, and so are those without a barcode that have as many tracks. A platform in another lane is another release, so it is left out until you tick it. If MusicBrainz already has this album (a release one of these links belongs to, with the same barcode, format and track count), a banner at the top names it, with [Update this release](#update-this-release), so you add what it lacks instead of adding the album again. Releases the links belong to that differ in one of those are listed under it as other editions.
 2. First Contact reads each platform taken in; the header counts them. Spotify can be read on its own page only, so its link is added but its data isn't compared.
-3. **Release** shows each field with the platforms that give each value. The value most of them give is taken, and a tie goes to Platform Check's platform order. Click another value to take it instead; the other dates are listed earliest first, in two columns.
+3. **Release** shows each field with the platforms that give each value; those that give none follow on the value's line, greyed. The value most of them give is taken, and a tie goes to Platform Check's platform order. Click another value to take it instead; the other dates are listed earliest first, in two columns.
 4. **Tracks** lines the tracklists up. A track the platforms agree on shows their icons. One where they differ in title, ISRC or length (by more than a second) says how many versions it has: click it to see them, and click a version to take it. **N differ** in the header opens or closes them all. A track only one platform has is struck through and left out; click it to take it in, at the end.
 5. **Add release** opens MusicBrainz's release editor in this tab with what is taken: the fields, the tracklist with its ISRCs, every taken platform's link, and each artist's pages on all the platforms read, which [Apollo Editor](../apollo_editor/README.md#artist-matching) tries when it matches the artists. A link of a platform that wasn't read (Spotify, or one whose read failed) gets the type Platform Check adds it with.
 
@@ -2018,7 +2019,7 @@ Click a mark to open the page (a ⚠ opens the MusicBrainz artist or label that 
 - **Matching**: by name, ignoring case, accents and *&* / *and*. When no name matches, by position, but only when both credits have as many artists and the platform's name isn't several artists in one (Deezer and Qobuz keep pages like *Samrai & SCAPA & Vindya* for a whole track credit); otherwise the artist is left out, and the log says why. Hovering a mark paired by position shows the platform's name.
 - **Labels**: by name, also ignoring company forms such as *Inc.*, *Ltd*, *Records* or *Productions* (*Arts & Crafts Productions Inc.* is *Arts & Crafts*). A label of another name is paired by position only when each side has as many labels, and shows **+?**: it is often another label (the platform's imprint, where MusicBrainz has the distributor), so it is added only once you take it in.
 - **Which platforms**: Discogs, Deezer, Apple Music, Qobuz, Beatport (signed in), YouTube Music, Bandcamp, SoundCloud and Audiomack. Track artists come from Discogs, Deezer, Apple Music, Qobuz and YouTube Music; Beatport and the accounts give only the release's. Label pages come from Discogs, Qobuz, Beatport and the accounts.
-- **Link types**: MusicBrainz types most links itself. Where it offers several and picks none, the link is sent typed: Qobuz as *purchase for download*, Apple Music as *streaming*, Audiomack as *stream for free*.
+- **Link types**: MusicBrainz types most links itself. Where it offers several and picks none, the link is sent typed: Qobuz as *purchase for download*, Apple Music as *streaming page* (and *purchase for download* when the iTunes Store sells it), Audiomack as *stream for free*.
 - **Other locales**: MusicBrainz keeps a Qobuz or Apple Music link in whatever locale it was entered. A page already linked as `gb-en`, `fr-fr`, `de-de` or `/gb/` (or open.qobuz.com, itunes.apple.com) shows ✓, not +. Falcon catches any other locale when it runs and doesn't add the page again.
 - Every matched platform counts (a ✓), including one that [link confidence](#link-confidence) withholds for its barcode or format: another edition still has the same artists and labels.
 

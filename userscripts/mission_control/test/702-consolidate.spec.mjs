@@ -28,6 +28,12 @@ test('First Contact reads a platform headless, and Platform Check scans from a s
     document.dispatchEvent(new CustomEvent('mc:read', { detail: JSON.stringify({ url, run: 'r1' }) }));
   }), 'https://open.spotify.com/album/2noRn2Aes5aoNVsU6iWThc');
   check(!spot.ok && /web player/.test(spot.error), `Spotify says why it isn't read: ${spot.error}`);
+  // an Apple Music album the iTunes Store sells is also a download
+  const apple = await page.evaluate(url => new Promise(res => {
+    document.addEventListener('mc:read-result', e => { const d = JSON.parse(e.detail); if (d.url === url) res(d); });
+    document.dispatchEvent(new CustomEvent('mc:read', { detail: JSON.stringify({ url, run: 'r1' }) }));
+  }), 'https://music.apple.com/us/album/discovery/697194953');
+  check(apple.ok && apple.rel.urls.map(u => u.linkType).sort().join() === '74,980', `Apple Music's link is a streaming page and a download: ${apple.ok ? apple.rel.urls.map(u => u.linkType).join('+') : apple.error}`);
 
   await inject('platform_check', { waitFor: '__pcTest702' });
   check(await page.evaluate(() => window.__pcTest702.seed()), 'Platform Check is in seed mode on this page');
@@ -38,6 +44,8 @@ test('First Contact reads a platform headless, and Platform Check scans from a s
   }), { barcode: rel.barcode, title: rel.title, artist: rel.credit.map(c => c.name + c.join).join(''), tracks: 14, format: 'Digital Media', year: rel.date.year, label: rel.labels[0] && rel.labels[0].name });
   const withUrl = found.findings.filter(f => f.url);
   console.log(JSON.stringify(withUrl.map(f => [f.key, f.url, f.barcode, f.tracks, f.state])));
+  const am = withUrl.find(f => f.key === 'apple');
+  check(!am || (am.links || []).map(l => l.linkTypeId).join() === '980,74', `Platform Check sends Apple Music as both types: ${am ? (am.links || []).map(l => l.linkTypeId).join('+') : 'not found'}`);
   check(withUrl.length >= 3, `Platform Check found the album on ${withUrl.length} platform(s): ${withUrl.map(f => f.key).join(', ')}`);
   check(found.findings.every(f => f.state !== 'linked'), 'nothing is linked: there is no release yet');
 });
@@ -77,6 +85,12 @@ test.describe('the consolidation page', () => {
     const done = st.reads.filter(r => /:done$/.test(r)).length;
     check(st.pc === 'done' && st.n >= 4, `Platform Check found ${st.n - 1} other platform(s)`);
     check(done >= 3, `at least 3 platforms read and compared (${st.reads.join(', ')})`);
+    // a field's platforms that give none follow its value, greyed, instead of a "none from" line
+    const none = await page.evaluate(() => { const m = window.__mccTest.model(); const k = Object.keys(m.fields).find(f => m.fields[f].win && m.fields[f].none.length); if (!k) return null;
+      const el = document.querySelector('#mcc-root .mcc-f[data-field="' + k + '"]'); const ic = el.querySelector('.mcc-win .mcc-none-icos > span');
+      return { k, want: m.fields[k].none.length, got: el.querySelectorAll('.mcc-win .mcc-none-icos > span').length, text: /none from/.test(el.textContent), grey: ic && getComputedStyle(ic).filter };
+    });
+    check(!none || (none.got === none.want && !none.text && /grayscale/.test(none.grey)), `the platforms giving no ${none ? none.k : '(every field complete)'} are greyed icons on its line: ${JSON.stringify(none)}`);
     await page.waitForTimeout(500);
     await info.attach('consolidation', { body: await page.screenshot(), contentType: 'image/png' });
 

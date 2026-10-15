@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Platform Check
 // @namespace    http://tampermonkey.net/
-// @version      2026.10.15.213000
+// @version      2026.10.15.223112
 // @description  Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CjxnIHN0cm9rZT0iIzk0YTNiOCIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2UtbGluZWNhcD0icm91bmQiPjxwYXRoIGQ9Ik02NCA2NCBMODggMjIuNCIvPjxwYXRoIGQ9Ik02NCA2NCBMMTEyIDY0Ii8+PHBhdGggZD0iTTY0IDY0IEw4OCAxMDUuNiIvPjxwYXRoIGQ9Ik02NCA2NCBMNDAgMTA1LjYiLz48cGF0aCBkPSJNNjQgNjQgTDE2IDY0Ii8+PHBhdGggZD0iTTY0IDY0IEw0MCAyMi40Ii8+PC9nPjxjaXJjbGUgY3g9Ijg4IiBjeT0iMjIuNCIgcj0iMTIiIGZpbGw9IiNmNDcyYjYiLz48Y2lyY2xlIGN4PSIxMTIiIGN5PSI2NCIgcj0iMTIiIGZpbGw9IiNmYWNjMTUiLz48Y2lyY2xlIGN4PSI4OCIgY3k9IjEwNS42IiByPSIxMiIgZmlsbD0iIzRhZGU4MCIvPjxjaXJjbGUgY3g9IjQwIiBjeT0iMTA1LjYiIHI9IjEyIiBmaWxsPSIjMzhiZGY4Ii8+PGNpcmNsZSBjeD0iMTYiIGN5PSI2NCIgcj0iMTIiIGZpbGw9IiNhNzhiZmEiLz48Y2lyY2xlIGN4PSI0MCIgY3k9IjIyLjQiIHI9IjEyIiBmaWxsPSIjZmI5MjNjIi8+PGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iMjQiIGZpbGw9IiMwZjE3MmEiLz48cGF0aCBkPSJNNTQuMjIyMjIyMjIyMjIyMjIgNjQgTDYxLjMzMzMzMzMzMzMzMzMzNiA3MS4xMTExMTExMTExMTExMSBMNzQuNjY2NjY2NjY2NjY2NjcgNTYuODg4ODg4ODg4ODg4ODg2IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iNiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+Cjwvc3ZnPgo=
@@ -901,33 +901,30 @@ async function injectInto(urls, storageKey) {
         // JSON-LD musicReleaseFormat ("Digital", "Digital, CD", …), so a physical-only
         // page doesn't get a bogus download rel. cacheGet/cacheKey are hoisted function
         // declarations, safe to call from this pre-return path.
-        if (opt.value === '85' && /[a-z0-9-]+\.bandcamp\.com\/album\//i.test(url)) {
-            const relMbid = (storageKey.match(/^pc:pending:([0-9a-f-]{36})$/) || [])[1];
-            const bc = relMbid ? cacheGet(relMbid, 'bandcamp') : null;
-            if (bc && /\b(digital|file)\b/i.test(bc.format || '')) {
-                const addBtn = await pcWaitFor(() => {
+        // An Apple Music album the iTunes Store sells gets the same second rel, next to 980 'streaming page'.
+        if (pcExtraType(url, opt.value, (storageKey.match(/^pc:pending:([0-9a-f-]{36})$/) || [])[1])) {
+            const addBtn = await pcWaitFor(() => {
+                const s = typeRow.nextElementSibling;
+                return (s && s.classList?.contains('add-relationship')) ? s.querySelector('button.add-item') : null;
+            }, 3000);
+            let ok2 = false;
+            if (addBtn) {
+                addBtn.click();
+                // the fresh relationship row lands right after the first one
+                const sel2 = await pcWaitFor(() => {
                     const s = typeRow.nextElementSibling;
-                    return (s && s.classList?.contains('add-relationship')) ? s.querySelector('button.add-item') : null;
+                    if (!s || !s.classList?.contains('relationship-item')) return null;
+                    const el = s.querySelector('select.link-type');
+                    return (el && el !== select && !el.value) ? el : null;
                 }, 3000);
-                let ok2 = false;
-                if (addBtn) {
-                    addBtn.click();
-                    // the fresh relationship row lands right after the first one
-                    const sel2 = await pcWaitFor(() => {
-                        const s = typeRow.nextElementSibling;
-                        if (!s || !s.classList?.contains('relationship-item')) return null;
-                        const el = s.querySelector('select.link-type');
-                        return (el && el !== select && !el.value) ? el : null;
-                    }, 3000);
-                    if (sel2 && [...sel2.options].some(o => o.value === '74')) {
-                        setSel.call(sel2, '74');
-                        sel2.dispatchEvent(new Event('change', { bubbles: true }));
-                        report.type += ' + purchase for download';
-                        ok2 = true;
-                    }
+                if (sel2 && [...sel2.options].some(o => o.value === '74')) {
+                    setSel.call(sel2, '74');
+                    sel2.dispatchEvent(new Event('change', { bubbles: true }));
+                    report.type += ' + purchase for download';
+                    ok2 = true;
                 }
-                if (!ok2) report.note = 'digital release detected but the second rel (purchase for download) could not be added';
             }
+            if (!ok2) report.note = 'sold as a download, but the second rel (purchase for download) could not be added';
         }
       } catch (e) {
         reports.push({ url, ok: false, miss: `threw — ${e && e.name || 'Error'}: ${e && e.message || e}` });
@@ -6182,6 +6179,24 @@ function appleAlbumMeta(a) {
     };
 }
 async function scanApple(args) {
+    await scanAppleFind(args);
+    await pcAppleSale(args.mbid);
+}
+// The iTunes Store sells the album when its lookup gives a price (a streaming-only one has none):
+// its link then also gets 'purchase for download' (pcExtraType). Asked once per match, kept in the cache.
+async function pcAppleSale(mbid) {
+    const c = cacheGet(mbid, 'apple');
+    if (!c?.url || 'forSale' in c) return;
+    const m = c.url.match(/\/([a-z]{2})\/album\/(?:[^/]+\/)?(\d+)/i);
+    if (!m) return;
+    const r = await gmGet(`https://itunes.apple.com/lookup?id=${m[2]}&country=${m[1]}`).catch(() => null);
+    if (!r?.ok) { appendLog('Apple', 'iTunes Store lookup failed — the link stays a streaming page only', 'warn'); return; }
+    let a = null; try { a = (JSON.parse(r.responseText).results || []).find(x => x.wrapperType === 'collection'); } catch {}
+    const forSale = !!(a && a.collectionPrice > 0);
+    appendLog('Apple', `iTunes Store: ${forSale ? `for sale (${a.collectionPrice} ${a.currency || ''}) — also purchase for download` : 'not for sale — streaming page only'}`);
+    cacheSet(mbid, 'apple', { ...cacheGet(mbid, 'apple'), forSale });
+}
+async function scanAppleFind(args) {
     const { mbTracks, existingUrl, mbid, barcode } = args;
     const label = 'Apple';
     const cached = cacheGetScan(mbid, 'apple', label);
@@ -9013,9 +9028,17 @@ async function pcMcSeedProbe(d) {
 function pcMcReleaseLinkTypes(url) {
     const force = pcTypeForce().find(t => t.test(url));
     const out = [{ url, linkTypeId: force ? Number(force.ids[0]) : null }];
-    const bc = /[a-z0-9-]+\.bandcamp\.com\/album\//i.test(url) ? cacheGet(mbid, 'bandcamp') : null;
-    if (force?.ids[0] === '85' && bc && /\b(digital|file)\b/i.test(bc.format || '')) out.push({ url, linkTypeId: 74 });
+    if (pcExtraType(url, force?.ids[0], mbid)) out.push({ url, linkTypeId: 74 });
     return out;
+}
+// '74' (purchase for download) when a link's first type is streaming and the album is also sold:
+// a Bandcamp album with a digital release (#423), an Apple Music album the iTunes Store sells.
+// A hoisted declaration: injectInto's early path calls it.
+function pcExtraType(url, firstId, relMbid) {
+    if (!relMbid) return null;
+    if (firstId === '85' && /[a-z0-9-]+\.bandcamp\.com\/album\//i.test(url)) return /\b(digital|file)\b/i.test(cacheGet(relMbid, 'bandcamp')?.format || '') ? '74' : null;
+    if (firstId === '980' && /music\.apple\.com\/.*\/album\//i.test(url)) return cacheGet(relMbid, 'apple')?.forSale ? '74' : null;
+    return null;
 }
 // Apply: the ticked platforms' links go to Falcon as one release item, with PC's
 // own edit note; Falcon runs it. A withheld link ticked by hand is noted as forced,

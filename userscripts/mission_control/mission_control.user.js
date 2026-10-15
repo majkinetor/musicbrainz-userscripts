@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Mission Control
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.15.213000
+// @version      2026.10.15.223112
 // @description  One window on the release page that asks the other scripts (Platform Check, ISRC Scout, Art Station, Fusion, Credit Hoarder) what is missing, shows it all in one review, and applies the selected changes in order.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5NaXNzaW9uIENvbnRyb2w8L3RpdGxlPgo8ZGVmcz48ZmlsdGVyIGlkPSJtY28xMy1oIiB4PSItMTAlIiB5PSItMTAlIiB3aWR0aD0iMTIwJSIgaGVpZ2h0PSIxMjAlIj48ZmVNb3JwaG9sb2d5IGluPSJTb3VyY2VBbHBoYSIgb3BlcmF0b3I9ImRpbGF0ZSIgcmFkaXVzPSIxLjUiIHJlc3VsdD0iZCIvPjxmZUZsb29kIGZsb29kLWNvbG9yPSIjZmZmIiBmbG9vZC1vcGFjaXR5PSIuNyIvPjxmZUNvbXBvc2l0ZSBpbjI9ImQiIG9wZXJhdG9yPSJpbiIvPjxmZU1lcmdlPjxmZU1lcmdlTm9kZS8+PGZlTWVyZ2VOb2RlIGluPSJTb3VyY2VHcmFwaGljIi8+PC9mZU1lcmdlPjwvZmlsdGVyPjwvZGVmcz48ZyBmaWx0ZXI9InVybCgjbWNvMTMtaCkiPjxwYXRoIGQ9Ik03NyAzNS41IEw2NCA0MyBMNTEgMzUuNSBMNTEgMjAuNSBMNjQgMTMgTDc3IDIwLjVaIiBmaWxsPSIjN2E1N2U4IiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik01OS43IDc3LjUgTDQ2LjcgODUgTDMzLjcgNzcuNSBMMzMuNyA2Mi41IEw0Ni43IDU1IEw1OS43IDYyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik05NC4zIDc3LjUgTDgxLjMgODUgTDY4LjMgNzcuNSBMNjguMyA2Mi41IEw4MS4zIDU1IEw5NC4zIDYyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik00Mi4zIDEwNy41IEwyOS40IDExNSBMMTYuNCAxMDcuNSBMMTYuNCA5Mi41IEwyOS40IDg1IEw0Mi4zIDkyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik03NyAxMDcuNSBMNjQgMTE1IEw1MSAxMDcuNSBMNTEgOTIuNSBMNjQgODUgTDc3IDkyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik0xMTEuNiAxMDcuNSBMOTguNiAxMTUgTDg1LjcgMTA3LjUgTDg1LjcgOTIuNSBMOTguNiA4NSBMMTExLjYgOTIuNVoiIGZpbGw9IiNmZmM5NGEiIHN0cm9rZT0iIzIyMjIzYiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PC9nPgo8L3N2Zz4K
@@ -2008,7 +2008,7 @@ function ccStyle() {
         + '.mcc-n{font-size:11px;min-width:18px;text-align:center;padding:0 5px;border-radius:999px;border:1px solid var(--mbu-warn-border);color:var(--mbu-warn);background:var(--mbu-bg)}'
         + '.mcc-win{font-weight:600;margin:3px 0 2px;word-break:break-word}.mcc-alt{display:flex;gap:6px;align-items:flex-start;font-size:12px;color:var(--mbu-text-dim);cursor:pointer;padding:2px 0}.mcc-alt:hover{color:var(--mbu-text)}'
         + '.mcc-alt .r{flex:0 0 auto;width:11px;height:11px;border:1px solid var(--mbu-border-strong);border-radius:50%;margin-top:3px}.mcc-alt .v{word-break:break-word}.mcc-f .d{display:inline-block;margin-right:4px}.mcc-alts.two .d,.mcc-win.lined .d{font-variant-numeric:tabular-nums;font-size:13px;font-weight:600}.mcc-alts.two .d>span{font-size:12px;font-weight:400}.mcc-win.lined{padding-left:17px}.mcc-alts.two{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));grid-auto-flow:column;column-gap:10px}'
-        + '.mcc-f .none{font-size:12px;color:var(--mbu-text-weak)}'
+        + '.mcc-f .none{font-size:12px;color:var(--mbu-text-weak)}.mcc-none-sep{display:inline-block;width:1px;height:12px;background:var(--mbu-border);margin:0 5px;vertical-align:middle}.mcc-none-icos>span{filter:grayscale(1);opacity:.38;transition:filter .15s,opacity .15s}.mcc-none-icos>span:hover{filter:none;opacity:1}'
         + '.mcc-tbl{width:100%;border-collapse:collapse}.mcc-tbl th{font-size:11px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--mbu-text-dim);text-align:left;padding:6px 8px;border-bottom:1px solid var(--mbu-border)}'
         + '.mcc-tbl td{padding:5px 8px;border-bottom:1px solid var(--mbu-divider);vertical-align:middle}.mcc-tbl tr.row{cursor:pointer}.mcc-tbl tr.row:hover td{background:var(--mbu-bg-hover)}'
         + '.mcc-tbl tr.sel td{background:var(--mbu-accent-soft)}.mcc-tbl td.pos{color:var(--mbu-text-weak);width:34px}.mcc-tbl td.len,.mcc-tbl td.isrc{font-family:var(--mbu-font-mono);font-size:12px;white-space:nowrap}'
@@ -2448,14 +2448,15 @@ function ccFieldsHtml(m) {
             const alts = v.groups.filter(g => g !== v.win);
             const w = k === 'date' ? ' style="min-width:' + (Math.max(...v.groups.map(g => String(g.show).length)) + 1) + 'ch"' : '';
             const val = g => '<span class="d"' + w + '><span>' + esc(g.show) + '</span></span>' + ccIcons(g.keys);   // the slot in one font for all, so the taken (larger) date lines up too
-            h += '<div class="mcc-win' + (k === 'date' ? ' lined' : '') + '">' + val(v.win) + '</div>';
+            // majkinetor: the platforms that give none follow on the value's line, greyed like Platform Check's strip
+            const none = v.none.length ? '<span class="mcc-none-sep"></span><span class="mcc-icos mcc-none-icos">' + v.none.map(k2 => '<span title="none from ' + esc(ccName(k2)) + '">' + ccIco(k2, 13) + '</span>').join('') + '</span>' : '';
+            h += '<div class="mcc-win' + (k === 'date' ? ' lined' : '') + '">' + val(v.win) + none + '</div>';
             if (k === 'date') alts.sort((a, b) => String(a.val).localeCompare(String(b.val)));
             h += '<div class="mcc-alts' + (k === 'date' ? ' two" style="grid-template-rows:repeat(' + Math.ceil(alts.length / 2) + ',auto)' : '') + '">';   // down the first column, then the second
             alts.forEach(g => {
                 h += '<div class="mcc-alt" data-cc="field" data-f="' + k + '" data-v="' + esc(g.val) + '" title="Take this instead"><span class="r"></span><span class="v">' + val(g) + '</span></div>';
             });
             h += '</div>';
-            if (v.none.length && v.win) h += '<div class="none">none from ' + esc(v.none.map(ccName).join(', ')) + '</div>';
         }
         h += '</div>';
     });
