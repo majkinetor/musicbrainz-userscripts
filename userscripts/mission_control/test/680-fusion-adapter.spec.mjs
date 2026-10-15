@@ -7,7 +7,8 @@
 // the fixture up.
 import { test, check } from '../../../dev/test/harness.mjs';
 
-test.use({ gm: { name: 'Mission Control' } });
+// a successful Execute would reload the page under the test (on by default since settings v2)
+test.use({ gm: { name: 'Mission Control', values: { 'mc.settings': JSON.stringify({ v: 2, reloadAfter: false }) } } });
 
 const RELEASE = '3d1e3d44-84c8-4746-a99c-be4486e866e7';
 

@@ -3,7 +3,8 @@
 // saved. Stand-in PC and AS answer the probe with one selected finding each and record what is applied.
 import { test, check } from '../../../dev/test/harness.mjs';
 
-test.use({ gm: { name: 'Mission Control' } });
+// a successful Execute would reload the page under the test (on by default since settings v2)
+test.use({ gm: { name: 'Mission Control', values: { 'mc.settings': JSON.stringify({ v: 2, reloadAfter: false }) } } });
 
 const RELEASE = 'e91b84a9-6b98-4d64-b4fc-753a9c674c4c';   // any sandbox release: the findings are the stand-ins'
 

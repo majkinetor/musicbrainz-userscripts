@@ -28,7 +28,7 @@ test('#680: reload the release page after an Execute without errors', { tag: ['@
   await page.click('#mc-launch');
   await page.waitForSelector('#mc-root');
 
-  check(!(await page.evaluate(() => window.__mcTest.settings())).reloadAfter, 'the reload is off by default');
+  check((await page.evaluate(() => window.__mcTest.settings())).reloadAfter === true, 'the reload is on by default');
   await page.click('#mc-root [data-act="cfg"]');
   const keys = await page.locator('.mc-cfg [data-k]').evaluateAll(n => n.map(x => x.type + ':' + x.dataset.k));
   check(JSON.stringify(keys) === '["checkbox:autoProbe","checkbox:reloadAfter","checkbox:consAfter"]', `⚙ holds only Auto probe, the reload and after a consolidation (${JSON.stringify(keys)})`);

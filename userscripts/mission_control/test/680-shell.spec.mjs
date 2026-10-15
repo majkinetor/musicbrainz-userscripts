@@ -84,12 +84,12 @@ test('#680: MC shell — launcher, track matrix, sidebars, modes', { tag: ['@san
   check(Math.max(...row.off) <= 1, `each icon is centred in its ring (${row.off})`);
   check(await page.locator('#mc-root [data-act="exec"]').textContent() === 'Execute' && await page.locator('#mc-root [data-act="exec"]').isDisabled(), 'Execute, off with nothing selected');
   // Auto probe is in ⚙
-  check(!(await page.evaluate(() => window.__mcTest.settings())).autoProbe, 'Auto probe is off by default');
+  check((await page.evaluate(() => window.__mcTest.settings())).autoProbe === true, 'Auto probe is on by default');
   await page.click('#mc-root [data-act="cfg"]');
-  await page.locator('.mc-cfg input[data-k="autoProbe"]').check();
-  check((await page.evaluate(() => window.__mcTest.settings())).autoProbe === true, 'ticking it in ⚙ stores it');
   await page.locator('.mc-cfg input[data-k="autoProbe"]').uncheck();
-  check((await page.evaluate(() => window.__mcTest.settings())).autoProbe === false, 'and unticking');
+  check((await page.evaluate(() => window.__mcTest.settings())).autoProbe === false, 'unticking it in ⚙ stores it');
+  await page.locator('.mc-cfg input[data-k="autoProbe"]').check();
+  check((await page.evaluate(() => window.__mcTest.settings())).autoProbe === true, 'and ticking');
   await page.keyboard.press('Escape');
   await page.locator('.mc-cfg').waitFor({ state: 'detached' });
 

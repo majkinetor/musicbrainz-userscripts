@@ -5,7 +5,8 @@
 // OAuth, which this harness doesn't hold for the sandbox).
 import { test, check } from '../../../dev/test/harness.mjs';
 
-test.use({ gm: { name: 'Mission Control' } });
+// a successful Execute would reload the page under the test (on by default since settings v2)
+test.use({ gm: { name: 'Mission Control', values: { 'mc.settings': JSON.stringify({ v: 2, reloadAfter: false }) } } });
 
 const RELEASE = '54b7bca2-7ed6-4484-bdd3-fe35a3f33dda';
 

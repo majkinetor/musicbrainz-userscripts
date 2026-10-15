@@ -10,7 +10,8 @@
 import { test, check, answerGm } from '../../../dev/test/harness.mjs';
 
 // MusicBrainz's own scripts in a frame removed mid-load (Execute sources again) throw this
-test.use({ gm: { name: 'Mission Control' }, pageErrors: ['MB is not defined'] });
+// a successful Execute would reload the page under the test (on by default since settings v2)
+test.use({ gm: { name: 'Mission Control', values: { 'mc.settings': JSON.stringify({ v: 2, reloadAfter: false }) } }, pageErrors: ['MB is not defined'] });
 
 const RELEASE = '54b7bca2-7ed6-4484-bdd3-fe35a3f33dda';
 

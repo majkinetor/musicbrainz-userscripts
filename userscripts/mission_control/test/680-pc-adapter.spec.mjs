@@ -5,7 +5,8 @@
 // Nothing is submitted: Execute goes to a stand-in Falcon.
 import { test, check, until } from '../../../dev/test/harness.mjs';
 
-test.use({ gm: { name: 'Mission Control' } });
+// a successful Execute would reload the page under the test (on by default since settings v2)
+test.use({ gm: { name: 'Mission Control', values: { 'mc.settings': JSON.stringify({ v: 2, reloadAfter: false }) } } });
 
 const RELEASE = 'e91b84a9-6b98-4d64-b4fc-753a9c674c4c';   // sandbox copy of "Bad Boys!" (dev/test/sandbox-copies.json)
 

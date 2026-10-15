@@ -145,8 +145,8 @@ Nothing the release has is changed: a label with another catalog number keeps it
 
 | Setting                                                         | Default |                                                                        |
 | --------------------------------------------------------------- | ------- | ---------------------------------------------------------------------- |
-| Probe as soon as Mission Control opens                          | off     | no need to click ↻                                                     |
-| Reload the release page after an Execute without errors         | off     | shows the result at once; waits until every added link is through      |
+| Probe as soon as Mission Control opens                          | on      | no need to click ↻                                                     |
+| Reload the release page after an Execute without errors         | on      | shows the result at once; waits until every added link is through      |
 | After saving a consolidated release, open Mission Control on it | on      | [probes the new release](#consolidate-a-new-release) for what it lacks |
 
 ## Shortcuts
