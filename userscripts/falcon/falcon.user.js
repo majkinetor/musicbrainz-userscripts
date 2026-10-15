@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Falcon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.15
+// @version      2026.10.15.202116
 // @description  Edit a BATCH of MusicBrainz artists/labels/recordings at once — add external links, ISRCs, names, aliases, disambiguations and cover art — no popup-per-entity, no tab churn. A small pool of persistent worker iframes churns through a queue, each submitting its own edit and moving straight to the next entity. Paste a list, hand it a queue via a `?falcon=` URL param, or click "Send to Falcon" on a Harmony actions page to import its suggestions directly.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5GYWxjb248L3RpdGxlPgo8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSI1OCIgZmlsbD0iI2Y2ZWZlMiIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjYiLz48cGF0aCBkPSJNMTA1LjYgNDAuMCBBNDggNDggMCAwIDEgMTA1LjYgODguMCIgc3Ryb2tlPSIjZDYyODI4IiBzdHJva2Utd2lkdGg9IjciIGZpbGw9Im5vbmUiLz4KPGcgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2UtbGluZWNhcD0icm91bmQiPjxwYXRoIGQ9Ik0yMC43IDg5LjAgTDI5LjQgODQuMCIgc3Ryb2tlLXdpZHRoPSIzIi8+PHBhdGggZD0iTTE0LjMgNjkuMiBMMjQuMiA2OC4yIiBzdHJva2Utd2lkdGg9IjMiLz48cGF0aCBkPSJNMTYuNCA0OC41IEwyNi4wIDUxLjYiIHN0cm9rZS13aWR0aD0iMyIvPjxwYXRoIGQ9Ik0yNi44IDMwLjUgTDM0LjMgMzcuMiIgc3Ryb2tlLXdpZHRoPSIzIi8+PHBhdGggZD0iTTQzLjcgMTguMyBMNDcuNyAyNy41IiBzdHJva2Utd2lkdGg9IjMiLz48cGF0aCBkPSJNNjQuMCAxNC4wIEw2NC4wIDI0LjAiIHN0cm9rZS13aWR0aD0iMyIvPjxwYXRoIGQ9Ik04NC4zIDE4LjMgTDgwLjMgMjcuNSIgc3Ryb2tlLXdpZHRoPSIzIi8+PHBhdGggZD0iTTEwMS4yIDMwLjUgTDkzLjcgMzcuMiIgc3Ryb2tlLXdpZHRoPSIzIi8+PHBhdGggZD0iTTExMS42IDQ4LjUgTDEwMi4wIDUxLjYiIHN0cm9rZS13aWR0aD0iMyIvPjxwYXRoIGQ9Ik0xMTMuNyA2OS4yIEwxMDMuOCA2OC4yIiBzdHJva2Utd2lkdGg9IjMiLz48cGF0aCBkPSJNMTA3LjMgODkuMCBMOTguNiA4NC4wIiBzdHJva2Utd2lkdGg9IjMiLz48L2c+PGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoNjQgOTQpIHJvdGF0ZSgwKSBzY2FsZSgwLjE2KSB0cmFuc2xhdGUoLTY0IC02NCkiPjxwYXRoIGQ9Ik02NCAyNiBDNjcgMjYgNzAgMzAgNzAgMzYgQzcyIDQwIDc0IDQyIDc2IDQ0IEM5MiA0MiAxMDggMzYgMTI0IDM0IEMxMTIgNDQgOTYgNTQgNzggNjIgQzc2IDY4IDc0IDc0IDc0IDgwIEw4MCAxMDAgQzc0IDEwNCA2OCAxMDQgNjQgMTA0IFoiIGZpbGw9IiM0YTVhNzgiLz48cGF0aCBkPSJNNjQgMjYgQzY3IDI2IDcwIDMwIDcwIDM2IEM3MiA0MCA3NCA0MiA3NiA0NCBDOTIgNDIgMTA4IDM2IDEyNCAzNCBDMTEyIDQ0IDk2IDU0IDc4IDYyIEM3NiA2OCA3NCA3NCA3NCA4MCBMODAgMTAwIEM3NCAxMDQgNjggMTA0IDY0IDEwNCBaIiBmaWxsPSIjNGE1YTc4IiB0cmFuc2Zvcm09InRyYW5zbGF0ZSgxMjggMCkgc2NhbGUoLTEgMSkiLz48L2c+PGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoNjQgNjQpIHJvdGF0ZSgxMTIpIj48cGF0aCBkPSJNMCAtNDYgTDQgMCBMLTQgMFoiIGZpbGw9IiMxYjJhNGEiLz48L2c+CjxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjciIGZpbGw9IiMxYjJhNGEiLz4KPC9zdmc+Cg==
@@ -4146,8 +4146,22 @@
   // right on the page (e.g. "This URL is not allowed for artists.", "This relationship
   // already exists.") — scrape it instead of guessing. Falls back to a generic message
   // only when MB genuinely didn't show one.
+  // #759: only what MB actually shows. The release editor keeps every validation message
+  // it has in the page, hidden until it applies, so a scrape of all of them read as a wall of
+  // "A release title is required. / You must select an artist… / Tracks are required…" on a
+  // release that was fine. A message on another of its tabs still counts: it is real, only
+  // out of view.
+  function shownOnPage(el) {
+    const win = el.ownerDocument?.defaultView;
+    for (let n = el; n && n.nodeType === 1; n = n.parentElement) {
+      if (n.classList.contains('ui-tabs-panel')) return true;
+      const st = win?.getComputedStyle(n);
+      if (st && (st.display === 'none' || st.visibility === 'hidden')) return false;
+    }
+    return true;
+  }
   function findFieldError(doc) {
-    const texts = [...doc.querySelectorAll('.error, .field-error')].map(el => (el.textContent || '').trim()).filter(Boolean);
+    const texts = [...doc.querySelectorAll('.error, .field-error')].filter(shownOnPage).map(el => (el.textContent || '').trim()).filter(Boolean);
     return texts.length ? [...new Set(texts)].join(' / ') : null;
   }
   // #514 (majkinetor): a field change (ISRC, disambiguation) Falcon can't
@@ -4485,11 +4499,36 @@
   //    blank required select and NO href). Matching only on `a[href]` missed
   //    these entirely — the blank select then silently disabled submit for the
   //    whole group while Falcon re-typed a duplicate of the same url.
+  // #759: MB cleans a url as it seeds or takes it, so its row can show a shorter form than
+  // the one Falcon asked for: Apple Music drops the name (…/us/album/demonic-single/6821820610
+  // shows as …/us/album/6821820610), and tracking parameters, www and a trailing slash go.
+  // `shown` is the same link when it is `asked` with only parts left out: the same host, the
+  // same last path segment (the id), its path segments in the asked one's in order, and its
+  // query a subset of the asked one's.
+  function sameLink(shown, asked) {
+    if (!shown || !asked) return false;
+    if (shown === asked) return true;
+    let a, b;
+    try { a = new URL(shown); b = new URL(asked); } catch (e) { return false; }
+    const host = u => u.hostname.toLowerCase().replace(/^www\./, '');
+    if (host(a) !== host(b)) return false;
+    const segs = u => u.pathname.split('/').filter(Boolean);
+    const sa = segs(a), sb = segs(b);
+    if (sa[sa.length - 1] !== sb[sb.length - 1]) return false;
+    let i = 0;
+    for (const x of sb) if (i < sa.length && sa[i] === x) i++;
+    if (i < sa.length) return false;
+    for (const [k, v] of a.searchParams) if (b.searchParams.get(k) !== v) return false;
+    return true;
+  }
+  const rowHref = tr => tr.querySelector('a[href]')?.getAttribute('href') || '';
+  const rowInput = tr => tr.querySelector('input')?.value || '';
+  const rowIsUrl = (tr, url) => sameLink(rowHref(tr), url) || sameLink(rowInput(tr), url);
   function findRowForUrl(doc, url) {
     if (!doc) return null;
     const rows = [...doc.querySelectorAll('tr.external-link-item')];
-    return rows.find(tr => (tr.querySelector('a[href]')?.getAttribute('href') || '') === url)
-      || rows.find(tr => (tr.querySelector('input')?.value || '') === url)
+    return rows.find(tr => sameLink(rowHref(tr), url))
+      || rows.find(tr => sameLink(rowInput(tr), url))
       || null;
   }
   // Both states at once, for a url that can legitimately have TWO rows: when a
@@ -4499,7 +4538,7 @@
   // so it has to be found and dropped even though the "real" row looks fine.
   function findRowsForUrl(doc, url) {
     const rows = doc ? [...doc.querySelectorAll('tr.external-link-item')] : [];
-    const match = rows.filter(tr => (tr.querySelector('a[href]')?.getAttribute('href') || '') === url || (tr.querySelector('input')?.value || '') === url);
+    const match = rows.filter(tr => rowIsUrl(tr, url));
     return {
       resolved: match.find(tr => !!tr.querySelector('a[href]')) || null,
       unresolved: match.filter(tr => !tr.querySelector('a[href]') && !!tr.querySelector('input')),
@@ -4511,7 +4550,7 @@
   // page (seeded by MB itself) before reaching for the DOM-poking fallback.
   function typeRowsForUrl(doc, url) {
     const rows = doc ? [...doc.querySelectorAll('tr.external-link-item')] : [];
-    const owners = rows.filter(tr => (tr.querySelector('a[href]')?.getAttribute('href') || '') === url || (tr.querySelector('input')?.value || '') === url);
+    const owners = rows.filter(tr => rowIsUrl(tr, url));
     const out = [];
     owners.forEach(owner => {
       let n = owner.nextElementSibling;
@@ -4722,7 +4761,7 @@
         input.blur();
         const row = await waitFor(() => {
           const dd = frameDoc(iframe); if (!dd) return null;
-          const r = [...dd.querySelectorAll('tr.external-link-item')].find(tr => (tr.querySelector('a[href]')?.getAttribute('href') || '') === url);
+          const r = [...dd.querySelectorAll('tr.external-link-item')].find(tr => sameLink(rowHref(tr), url));
           return r || null;
         }, 8000);
         if (!row) {
@@ -4746,7 +4785,7 @@
       await wait(200);
       dbg(tag, `blank-select sweep removed ${swept.length} row(s): ${JSON.stringify(swept)}`);
       swept.forEach(sweptUrl => {
-        const hit = results.find(r => r.ok && (sweptUrl === null || r.url === sweptUrl));
+        const hit = results.find(r => r.ok && (sweptUrl === null || sameLink(sweptUrl, r.url)));
         // #671: MusicBrainz offers a blank second type only on a url the entity already has
         // (the seed folded into its existing row), so this one is there already: nothing to do
         if (hit) { hit.ok = false; hit.present = true; hit.error = 'this url is already present on the entity'; }
