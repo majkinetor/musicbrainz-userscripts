@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-10-15 16:08 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-10-15 16:30 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -2072,7 +2072,7 @@ Click a mark to open the page (a ⚠ opens the MusicBrainz artist or label that 
 | Open the editor in a new tab           | on                | off navigates this tab                                                               |
 | Keep background tabs awake             | off               | see [Adding links](#adding-links)                                                    |
 | Count the links to add                 | on                | the badge on [Artists & labels](#artists-and-labels)                                 |
-| Close Falcon after a successful import | off               | see [Artists and labels](#artists-and-labels)                                        |
+| Close Falcon after a successful import | on                | see [Artists and labels](#artists-and-labels)                                        |
 | Icon, Name                             | icon only         | what each row shows, and its size                                                    |
 | Compact: Unmatched, Low-confidence     | on, off           | see [Dashboard](#dashboard)                                                          |
 | In MusicBrainz                         | Ring              | how a platform already linked is marked                                              |

@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Platform Check
 // @namespace    http://tampermonkey.net/
-// @version      2026.10.15.162000
+// @version      2026.10.15.163000
 // @description  Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CjxnIHN0cm9rZT0iIzk0YTNiOCIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2UtbGluZWNhcD0icm91bmQiPjxwYXRoIGQ9Ik02NCA2NCBMODggMjIuNCIvPjxwYXRoIGQ9Ik02NCA2NCBMMTEyIDY0Ii8+PHBhdGggZD0iTTY0IDY0IEw4OCAxMDUuNiIvPjxwYXRoIGQ9Ik02NCA2NCBMNDAgMTA1LjYiLz48cGF0aCBkPSJNNjQgNjQgTDE2IDY0Ii8+PHBhdGggZD0iTTY0IDY0IEw0MCAyMi40Ii8+PC9nPjxjaXJjbGUgY3g9Ijg4IiBjeT0iMjIuNCIgcj0iMTIiIGZpbGw9IiNmNDcyYjYiLz48Y2lyY2xlIGN4PSIxMTIiIGN5PSI2NCIgcj0iMTIiIGZpbGw9IiNmYWNjMTUiLz48Y2lyY2xlIGN4PSI4OCIgY3k9IjEwNS42IiByPSIxMiIgZmlsbD0iIzRhZGU4MCIvPjxjaXJjbGUgY3g9IjQwIiBjeT0iMTA1LjYiIHI9IjEyIiBmaWxsPSIjMzhiZGY4Ii8+PGNpcmNsZSBjeD0iMTYiIGN5PSI2NCIgcj0iMTIiIGZpbGw9IiNhNzhiZmEiLz48Y2lyY2xlIGN4PSI0MCIgY3k9IjIyLjQiIHI9IjEyIiBmaWxsPSIjZmI5MjNjIi8+PGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iMjQiIGZpbGw9IiMwZjE3MmEiLz48cGF0aCBkPSJNNTQuMjIyMjIyMjIyMjIyMjIgNjQgTDYxLjMzMzMzMzMzMzMzMzMzNiA3MS4xMTExMTExMTExMTExMSBMNzQuNjY2NjY2NjY2NjY2NjcgNTYuODg4ODg4ODg4ODg4ODg2IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iNiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+Cjwvc3ZnPgo=
@@ -2767,18 +2767,18 @@ providerModal.innerHTML = `
     </div>
 
     <div class="pc-setup-sec">Link confidence</div>
-    <div class="pc-set-row"><label title="When on, found links whose barcode doesn't match MB's are withheld from + / ↗ (MB treats a different barcode as a different release). A subtle amber left bar marks known mismatches regardless of this setting."><input type="checkbox" id="mb-respect-barcode"> Use <b>barcodes</b></label>
+    <div class="pc-set-row"><label title="When on, found links whose barcode doesn't match MB's are withheld from + / ↗ (MB treats a different barcode as a different release). A subtle amber left bar marks known mismatches regardless of this setting."><input type="checkbox" id="mb-respect-barcode"> <span>Use <b>barcodes</b></span></label>
       <select id="mb-barcode-mode" title="strictly: only add barcode-confirmed links (also withholds links whose barcode can't be checked, e.g. Apple/Spotify). · if they exist: only withhold links whose barcode is known and differs."><option value="exists">if they exist</option><option value="strict">strictly</option></select></div>
-    <div class="pc-set-row"><label title="When on, found links whose format is incompatible with MB's (e.g. a Digital-only platform on a CD release) are withheld from + / ↗. Digital-only platforms (Spotify, Apple, Tidal…) count as Digital; Bandcamp/Discogs use their actual format. A subtle violet left bar marks mismatches."><input type="checkbox" id="mb-respect-format"> Use <b>formats</b></label>
+    <div class="pc-set-row"><label title="When on, found links whose format is incompatible with MB's (e.g. a Digital-only platform on a CD release) are withheld from + / ↗. Digital-only platforms (Spotify, Apple, Tidal…) count as Digital; Bandcamp/Discogs use their actual format. A subtle violet left bar marks mismatches."><input type="checkbox" id="mb-respect-format"> <span>Use <b>formats</b></span></label>
       <select id="mb-format-mode" title="strictly: also withhold links whose format can't be determined. · if they exist: only withhold links whose format is known and incompatible."><option value="exists">if they exist</option><option value="strict">strictly</option></select></div>
 
     <div class="pc-setup-sec">Adding links</div>
-    <div class="pc-set-row"><label title="On: + opens the release editor in a new tab, leaving this one on the panel. Off: it navigates this tab instead. Either way, right-click on + (or a platform icon) always adds silently in a background tab that submits and closes itself."><input type="checkbox" id="mb-open-new-tab"> Open the editor in a <b>new tab</b></label></div>
-    <div class="pc-set-row"><label title="#556. Firefox throttles timers in a background tab - to one step per second, and worse once the tab has spent its execution budget - and MusicBrainz's submit is a chain of them. A tab that is playing audio is exempt, so this plays an inaudible tone (30Hz, gain 0.0008) for the few seconds the background-add tab is alive. Measured on the same 2-link add: 20.2s without it, 3.7s with. REQUIRES allowing audio for musicbrainz.org (padlock menu > Autoplay > Allow Audio) - without it Firefox blocks the tone and the setting does nothing, which the Log says - and it lights the speaker icon while it runs. A WebRTC loopback was tried instead and does NOT work: it connects, and changes nothing."><input type="checkbox" id="mb-bg-audio"> Keep background tabs <b>awake</b></label></div>
+    <div class="pc-set-row"><label title="On: + opens the release editor in a new tab, leaving this one on the panel. Off: it navigates this tab instead. Either way, right-click on + (or a platform icon) always adds silently in a background tab that submits and closes itself."><input type="checkbox" id="mb-open-new-tab"> <span>Open the editor in a <b>new tab</b></span></label></div>
+    <div class="pc-set-row"><label title="#556. Firefox throttles timers in a background tab - to one step per second, and worse once the tab has spent its execution budget - and MusicBrainz's submit is a chain of them. A tab that is playing audio is exempt, so this plays an inaudible tone (30Hz, gain 0.0008) for the few seconds the background-add tab is alive. Measured on the same 2-link add: 20.2s without it, 3.7s with. REQUIRES allowing audio for musicbrainz.org (padlock menu > Autoplay > Allow Audio) - without it Firefox blocks the tone and the setting does nothing, which the Log says - and it lights the speaker icon while it runs. A WebRTC loopback was tried instead and does NOT work: it connects, and changes nothing."><input type="checkbox" id="mb-bg-audio"> <span>Keep background tabs <b>awake</b></span></label></div>
 
     <div class="pc-setup-sec">Artists &amp; labels</div>
-    <div class="pc-set-row"><label title="On: once the scans finish, MusicBrainz is asked which of the artist and label pages it already has (one request per 100 links), and Artists &amp; labels shows how many would be added. Off: it is asked only when you open the table."><input type="checkbox" id="mb-links-count"> <b>Count</b> the links to add</label></div>
-    <div class="pc-set-row"><label title="On: after Run in Falcon from Artists &amp; labels, Falcon closes its panel once the run finishes with every link added. A run with a failed or partial edit leaves it open, to read why. Send only, and a Falcon opened in a new tab, are not affected."><input type="checkbox" id="mb-links-close-falcon"> <b>Close Falcon</b> after a successful import</label></div>
+    <div class="pc-set-row"><label title="On: once the scans finish, MusicBrainz is asked which of the artist and label pages it already has (one request per 100 links), and Artists &amp; labels shows how many would be added. Off: it is asked only when you open the table."><input type="checkbox" id="mb-links-count"> <span><b>Count</b> the links to add</span></label></div>
+    <div class="pc-set-row"><label title="On: after Run in Falcon from Artists &amp; labels, Falcon closes its panel once the run finishes with every link added. A run with a failed or partial edit leaves it open, to read why. Send only, and a Falcon opened in a new tab, are not affected."><input type="checkbox" id="mb-links-close-falcon"> <span><b>Close Falcon</b> after a successful import</span></label></div>
 
     <div class="pc-setup-sec">Appearance</div>
     <div class="pc-set-grid">
@@ -3072,7 +3072,7 @@ document.getElementById('mb-token-setup-btn').addEventListener('click', () => {
     document.getElementById('mb-open-new-tab').checked = GM_getValue('pc:open-new-tab', true);
     document.getElementById('mb-bg-audio').checked = GM_getValue('pc:bg-audio', false);
     document.getElementById('mb-links-count').checked = GM_getValue('pc:links-count', true);
-    document.getElementById('mb-links-close-falcon').checked = GM_getValue('pc:links-close-falcon', false);
+    document.getElementById('mb-links-close-falcon').checked = GM_getValue('pc:links-close-falcon', true);
     const layout = GM_getValue('pc:layout', '1row');
     providerModal.querySelectorAll('input[name="mb-layout"]').forEach(r => { r.checked = r.value === layout; });
     document.getElementById('mb-compact-unmatched').checked = GM_getValue('pc:compact-unmatched', true);
@@ -8008,7 +8008,7 @@ async function pcOpenLinksTable(btn) {
     const toFalcon = run => {
         const b = batch();
         if (!b.length) return;
-        const here = pcSendToFalconHere(pcFalconJson(b, pcLinksNote(), pcLinksName(), run && GM_getValue('pc:links-close-falcon', false)), run);
+        const here = pcSendToFalconHere(pcFalconJson(b, pcLinksNote(), pcLinksName(), run && GM_getValue('pc:links-close-falcon', true)), run);
         appendLog('System', `Artists & labels: ${run && here ? 'running' : 'sent'} ${b.reduce((s, r) => s + r.urls.length, 0)} link(s) on ${b.length} artist(s)/label(s) ${run && here ? 'in' : 'to'} Falcon${here ? '' : ` (in a new tab: no Falcon on this page${run ? '; press Start there' : ''})`}`, 'ok');
         if (!here) window.open(`${MB_ORIGIN}/?falcon=${encodeURIComponent(pcFalconPayload(b, pcLinksNote(), pcLinksName()))}`, '_blank');
         // the links are on their way: the count and the lookup behind it no longer hold
