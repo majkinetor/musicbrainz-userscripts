@@ -58,7 +58,17 @@
     "0c5e5be7-2a88-4e42-afee-b2ab0d1cef7a": "8173a190-2750-4368-886f-fa514254c2b8",
     "981b0a2f-55dc-43fc-8283-b37817df7860": "5cea91da-c570-4552-93da-53410fb4c6c6",
     "8748f5aa-d5a4-4d3f-9c49-f6b1d57b0f7d": "6b813454-6f39-4a5f-ae76-078c8e19cc9d",
-    "b40ba74c-0f92-4075-be55-168ebce62da6": "80dd5664-1687-4ed6-ae35-5b9e3cfaa0f7"
+    "b40ba74c-0f92-4075-be55-168ebce62da6": "80dd5664-1687-4ed6-ae35-5b9e3cfaa0f7",
+    "e1aed6e0-a0bd-4857-ae72-6ba7f292fbfc": "ad9ded94-b0bc-4851-9198-62d8d46a0b38",
+    "e54ea4cd-3205-43df-aeb8-adbe0ecad294": "9ca574ff-2d16-49aa-a746-572799d02d38",
+    "70108444-282b-45ad-b50d-a6ef43b7435f": "e2f501c9-33ec-4795-ac62-80a01a34bcb5",
+    "e0837c45-e682-4787-95c0-dedc85c7c8d0": "b5b951e4-079f-46b2-9136-eee3b8ddda4f",
+    "50e92693-8645-4d7a-9138-4a9a62322a74": "d49f6b8c-e45d-4571-b8d8-287fa2843293",
+    "6680a823-620b-4130-ac5c-18832325923c": "d5f8021a-2cb3-4330-97a9-ef9368e372c7",
+    "5a7acee8-8a07-4eb6-b7f3-62229562e331": "84018aca-13b6-4d1a-93fe-9f892963d0b4",
+    "35693e06-40bc-440a-bd96-91a8913d8910": "8d2d0731-e5d8-4b3e-aeb8-9044d51018ff",
+    "c0095a62-6e6e-4455-b369-57284971c395": "987630cb-769a-4483-ad1b-d926f5bcd84c",
+    "7359286a-893f-4020-8c9e-a150889502e6": "03658191-4e88-4356-ae6c-b28db0bf6f0b"
   },
   "e78fb896-05d9-403d-aca1-6e79ab6c4219": {
     "sandbox": "97c9a05d-d391-4391-8e35-109c519b76a6",
@@ -206,5 +216,12 @@
     "copied": "2026-10-11",
     "rg": "9fa5778d-a2cb-4c90-8d2a-8c71a6eb533d",
     "prodRg": "c2c793b0-2fbb-49a7-b651-74d58baea896"
+  },
+  "51ee65f6-5c5b-4121-86d3-2ddd6fa62f52": {
+    "sandbox": "3762be20-afe5-4039-92dc-b7a92c7187f2",
+    "title": "Antiyano Progresivo: Musical Experiments from the Former Dutch Caribbean, 1968-1986",
+    "copied": "2026-10-15",
+    "rg": "2f84747b-ee81-4a1f-a360-02d1587fa0d6",
+    "prodRg": "dd9ffe05-66b4-42b1-954a-8514ab2e21fa"
   }
 }

@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Platform Check
 // @namespace    http://tampermonkey.net/
-// @version      2026.10.14.221500
+// @version      2026.10.15
 // @description  Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CjxnIHN0cm9rZT0iIzk0YTNiOCIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2UtbGluZWNhcD0icm91bmQiPjxwYXRoIGQ9Ik02NCA2NCBMODggMjIuNCIvPjxwYXRoIGQ9Ik02NCA2NCBMMTEyIDY0Ii8+PHBhdGggZD0iTTY0IDY0IEw4OCAxMDUuNiIvPjxwYXRoIGQ9Ik02NCA2NCBMNDAgMTA1LjYiLz48cGF0aCBkPSJNNjQgNjQgTDE2IDY0Ii8+PHBhdGggZD0iTTY0IDY0IEw0MCAyMi40Ii8+PC9nPjxjaXJjbGUgY3g9Ijg4IiBjeT0iMjIuNCIgcj0iMTIiIGZpbGw9IiNmNDcyYjYiLz48Y2lyY2xlIGN4PSIxMTIiIGN5PSI2NCIgcj0iMTIiIGZpbGw9IiNmYWNjMTUiLz48Y2lyY2xlIGN4PSI4OCIgY3k9IjEwNS42IiByPSIxMiIgZmlsbD0iIzRhZGU4MCIvPjxjaXJjbGUgY3g9IjQwIiBjeT0iMTA1LjYiIHI9IjEyIiBmaWxsPSIjMzhiZGY4Ii8+PGNpcmNsZSBjeD0iMTYiIGN5PSI2NCIgcj0iMTIiIGZpbGw9IiNhNzhiZmEiLz48Y2lyY2xlIGN4PSI0MCIgY3k9IjIyLjQiIHI9IjEyIiBmaWxsPSIjZmI5MjNjIi8+PGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iMjQiIGZpbGw9IiMwZjE3MmEiLz48cGF0aCBkPSJNNTQuMjIyMjIyMjIyMjIyMjIgNjQgTDYxLjMzMzMzMzMzMzMzMzMzNiA3MS4xMTExMTExMTExMTExMSBMNzQuNjY2NjY2NjY2NjY2NjcgNTYuODg4ODg4ODg4ODg4ODg2IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iNiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+Cjwvc3ZnPgo=
@@ -4317,6 +4317,11 @@ function cacheGetScan(mbid, platform, label) {
         appendLog(label || platform, 'Cached match has no artist and label pages (cached before they were kept) — reading it again', 'info');
         return null;
     }
+    // #757: an Apple match cached before its songs' artists were read is read again
+    if (platform === 'apple' && c && c.url && !c.songArtists) {
+        appendLog(label || platform, 'Cached match has no track artists (cached before they were read) — reading it again', 'info');
+        return null;
+    }
     // #704: a Qobuz match cached before its artist and label pages got an ASCII slug is read again
     const cr = c && c.credits;
     if (platform === 'qobuz' && cr && [...(cr.artists || []), ...(cr.labels || []), ...(cr.tracks || []).flat()]
@@ -4416,14 +4421,22 @@ function pcCreditsDeezer(d) {
 }
 // Apple names the album's artists by id only; their names come from the credit's text,
 // split into as many parts as there are ids (otherwise they're matched by position).
+// Each song names its own artists, with their names, when the album is read with
+// APPLE_ALBUM_INC (#757: a compilation's are all there is). Songs only, as the row counts
+// them; a track list cut short (paged) can't be paired by position.
 function pcCreditsApple(a, storefront) {
+    const sf = storefront || 'us';
     const ids = ((a && a.relationships && a.relationships.artists && a.relationships.artists.data) || []).map(x => x.id).filter(Boolean);
-    if (!ids.length) return null;
-    const credit = String((a.attributes && a.attributes.artistName) || '');
+    const credit = String((a && a.attributes && a.attributes.artistName) || '');
     const parts = credit.split(/\s*(?:,|&|\band\b)\s*/i).filter(Boolean);
     const names = ids.length === 1 ? [credit] : parts.length === ids.length ? parts : ids.map(() => '');
-    if (ids.length === 1 && VA_NAME_RE.test(credit)) return null;
-    return pcCredits(ids.map((id, i) => pcCr(names[i], `https://music.apple.com/${storefront || 'us'}/artist/${id}`)), [], null);
+    const album = ids.length === 1 && VA_NAME_RE.test(credit) ? [] : ids.map((id, i) => pcCr(names[i], `https://music.apple.com/${sf}/artist/${id}`));
+    const rel = a && a.relationships && a.relationships.tracks;
+    const songs = rel && !rel.next && Array.isArray(rel.data) ? rel.data.filter(t => t.type === 'songs') : null;
+    const art = x => (x && x.id && !VA_NAME_RE.test((x.attributes && x.attributes.name) || '')) ? pcCr(x.attributes && x.attributes.name, `https://music.apple.com/${sf}/artist/${x.id}`) : null;
+    const tracks = songs && songs.some(t => t.relationships && t.relationships.artists)
+        ? songs.map(t => ((t.relationships && t.relationships.artists && t.relationships.artists.data) || []).map(art)) : null;
+    return pcCredits(album, [], tracks);
 }
 const pcSlug = s => String(s || '').toLowerCase().normalize('NFKD').replace(/\p{M}+/gu, '').replace(/[^\p{L}\p{N}]+/gu, '-').replace(/^-+|-+$/g, '') || '-';
 // MusicBrainz takes a Qobuz URL only with an ASCII slug ([\w-]+, no %): a Cyrillic or other
@@ -6118,6 +6131,8 @@ async function appleAmpV1(path) {
 }
 // the album whose UPC it is — amp-api lists others first too (808391067776: the single 808391068360 comes first)
 const applePickByUpc = (items, upc) => (items || []).find(a => normBarcode(a.attributes?.upc) === normBarcode(upc)) || null;
+// what every album read asks for besides the album: each song's artists, for Artists & labels (#757)
+const APPLE_ALBUM_INC = 'include[songs]=artists';
 const appleStorefront = url => ((String(url || '').match(/music\.apple\.com\/([a-z]{2})\//i) || [])[1] || 'us').toLowerCase();
 // Apple's catalogue is per storefront: an album is only in the ones it is licensed to (majkinetor,
 // #627: "better to find any release in any store than no release in particular store"). The short
@@ -6185,7 +6200,7 @@ async function scanAppleAmp({ artist, album, mbTracks, existingUrl, mbid, isVari
     const label = 'Apple', sf = appleStorefront(existingUrl);
     const done = (meta, source) => {
         appendLog(label, `Album: "${meta.title}" — ${meta.tracks ?? '?'} track(s) (${meta.tracksNote}), ${meta.year || '?'}, ${meta.label || '?'}, UPC ${meta.barcode || '?'}`, meta.tracks ? 'ok' : 'warn');
-        cacheSet(mbid, 'apple', { url: meta.url, tracks: meta.tracks, unoffered: meta.unoffered, year: meta.year, label: meta.label, source, barcode: meta.barcode, credits: pcKeep(label, meta.credits) });
+        cacheSet(mbid, 'apple', { url: meta.url, tracks: meta.tracks, unoffered: meta.unoffered, year: meta.year, label: meta.label, source, barcode: meta.barcode, credits: pcKeep(label, meta.credits), songArtists: true });
         updateRow('apple', { url: meta.url, mbTracks, remoteTracks: meta.tracks, unoffered: meta.unoffered, year: meta.year, label: meta.label, source, barcode: meta.barcode });
         return true;
     };
@@ -6204,7 +6219,7 @@ async function scanAppleAmp({ artist, album, mbTracks, existingUrl, mbid, isVari
     if (!existingUrl && !wikidataAppleId && barcode) {
         const forms = gtinVariants(barcode);
         const upcIn = async sfs => {
-            const got = await appleEach(sfs, `albums?filter[upc]=${forms.map(encodeURIComponent).join(',')}`);
+            const got = await appleEach(sfs, `albums?filter[upc]=${forms.map(encodeURIComponent).join(',')}&${APPLE_ALBUM_INC}`);
             const seen = new Set();
             for (const { sf: s, j } of got) for (const a of (j.data || [])) {
                 if (seen.has(a.id)) continue;
@@ -6233,11 +6248,11 @@ async function scanAppleAmp({ artist, album, mbTracks, existingUrl, mbid, isVari
     if (existingUrl) { id = (existingUrl.match(/\/album\/(?:[^/?#]+\/)?(?:id)?(\d+)/) || [])[1] || null; source = 'MB rels'; appendLog(label, `Using existing MB URL: ${existingUrl}`, 'ok'); }
     else if (wikidataAppleId) { id = String(wikidataAppleId); source = 'Wikidata'; appendLog(label, `Wikidata answer: album ${id}`, 'ok'); }
     if (id) {
-        const a = ((await appleAmp(`${sf}/albums/${id}`)).data || [])[0];
+        const a = ((await appleAmp(`${sf}/albums/${id}?${APPLE_ALBUM_INC}`)).data || [])[0];
         const url = existingUrl ? existingUrl.split('?')[0] : `https://music.apple.com/${sf}/album/${id}`;
         if (!a) {
             appendLog(label, `amp-api: album ${id} is not in the "${sf}" storefront — keeping the link, details unknown`, 'warn');
-            cacheSet(mbid, 'apple', { url, tracks: null, year: null, label: null, source, credits: null });
+            cacheSet(mbid, 'apple', { url, tracks: null, year: null, label: null, source, credits: null, songArtists: true });
             updateRow('apple', { url, mbTracks, remoteTracks: null, source });
             return true;
         }
@@ -6279,7 +6294,7 @@ async function scanAppleAmp({ artist, album, mbTracks, existingUrl, mbid, isVari
         return none('API search');
     }
     // the album itself, for the songs-only count (a search result has no track list)
-    const full = ((await appleAmp(`${best.a._sf || sf}/albums/${best.a.id}`)).data || [])[0] || best.a;
+    const full = ((await appleAmp(`${best.a._sf || sf}/albums/${best.a.id}?${APPLE_ALBUM_INC}`)).data || [])[0] || best.a;
     const meta = appleAlbumMeta(full);
     appendLog(label, `Picked best (${best.score >= 1000 ? 'UPC match' : 'score=' + best.score}): ${meta.url}`, best.score >= 150 ? 'ok' : 'warn');
     return done(meta, 'API search');
@@ -8474,7 +8489,7 @@ if (mbuTestHooks()) window.__pcTest464 = { openReleaseEditTab, openRgEditTab, PC
 // #556 test hook — URL identity + the inject helper, so the cache-staleness and
 // payload-preservation paths can be driven without a live ✓ match render.
 // #627 test hook — the amp-api pieces, driven against the live API without a row render
-if (mbuTestHooks()) window.__pcTest627 = { appleAmp, appleToken, appleAlbumMeta, updateRow, applePickByUpc, appleStorefront, appleEach, appleAllStorefronts, APPLE_SHORTLIST, setAppleToken: t => { _appleTok = t; } };
+if (mbuTestHooks()) window.__pcTest627 = { appleAmp, appleToken, appleAlbumMeta, APPLE_ALBUM_INC, updateRow, applePickByUpc, appleStorefront, appleEach, appleAllStorefronts, APPLE_SHORTLIST, setAppleToken: t => { _appleTok = t; } };
 if (mbuTestHooks()) window.__pcTest639 = { ytmCall, ytmAlbumResults, fetchYtmAlbum, ytmAlbumIdOf, ytmAlbumLabel, ytmCreditSections, YTM_ALBUMS_FILTER };
 if (mbuTestHooks()) window.__pcTest644 = { amzCall, amzAlbumResults, fetchAmzAlbum };
 if (mbuTestHooks()) window.__pcTest664 = { audiomackGet, fetchAudiomack, audiomackRef, scanAudiomack, cacheGet };

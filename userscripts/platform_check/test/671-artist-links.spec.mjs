@@ -6,7 +6,7 @@ import { test, check, loadFunctions, functionSource } from '../../../dev/test/ha
 
 const NAMES = ['VA_MBID', 'VA_NAME_RE', 'qzDec', 'ytmWalk', 'pcUrlKey', 'pcSameUrl', 'pcCr', 'pcCredits', 'pcCreditsSummary', 'pcDiscogsName',
   'pcCreditsDiscogs', 'pcCreditsDeezer', 'pcCreditsApple', 'pcSlug', 'pcQobuzSlug', 'pcCreditsQobuzApi', 'pcCreditsQobuzPage', 'pcCreditsBandcamp', 'pcCreditsBeatport',
-  'pcCreditsYtm', 'pcCreditsSoundcloud', 'pcCreditsAudiomack', 'pcNameKey', 'pcPairCredits', 'pcLinkRows', 'pcMarkCell', 'PC_ENTITY_LINK_TYPE', 'pcLinkTypeFor', 'pcFalconJson', 'pcFalconPayload'];
+  'pcCreditsYtm', 'pcCreditsSoundcloud', 'pcCreditsAudiomack', 'pcNameKey', 'PC_MULTI_NAME_RE', 'pcPairCredits', 'pcLinkRows', 'pcMarkCell', 'PC_ENTITY_LINK_TYPE', 'pcLinkTypeFor', 'pcFalconJson', 'pcFalconPayload'];
 // every reply the fixtures recorded, keyed by URL
 const dir = new URL('./fixtures/', import.meta.url);
 const replies = {};
@@ -35,6 +35,14 @@ test('each platform\'s album names its artist and label pages', { tag: '@unit' }
   check(ap.artists.length === 1 && ap.artists[0].url === 'https://music.apple.com/us/artist/347126170' && ap.artists[0].name === 'Om Unit', `Apple: the album's artist, by id (${JSON.stringify(ap.artists)})`);
   const two = f.pcCreditsApple({ attributes: { artistName: 'A & B' }, relationships: { artists: { data: [{ id: '1' }, { id: '2' }] } } }, 'gb');
   check(two.artists.map(a => a.name).join('|') === 'A|B' && two.artists[1].url === 'https://music.apple.com/gb/artist/2', `two artists: the credit split by them (${JSON.stringify(two.artists)})`);
+  // #757: a compilation's songs each name their artists (read with include[songs]=artists); a video isn't a track
+  const song = (...ids) => ({ type: 'songs', relationships: { artists: { data: ids.map(i => ({ id: String(i), attributes: { name: 'N' + i } })) } } });
+  const vaAlbum = { attributes: { artistName: 'Various Artists' }, relationships: { artists: { data: [] }, tracks: { data: [song(1), { type: 'music-videos' }, song(2, 3)] } } };
+  const vaCr = f.pcCreditsApple(vaAlbum, 'us');
+  check(vaCr && vaCr.artists.length === 0 && vaCr.tracks.length === 2 && vaCr.tracks[0][0].url === 'https://music.apple.com/us/artist/1' && vaCr.tracks[0][0].name === 'N1' && vaCr.tracks[1].map(a => a.name).join() === 'N2,N3',
+    `Apple: a compilation's track artists, songs only, by name (${JSON.stringify(vaCr)})`);
+  check(f.pcCreditsApple({ ...vaAlbum, relationships: { ...vaAlbum.relationships, tracks: { ...vaAlbum.relationships.tracks, next: '/v1/x' } } }, 'us') === null, '…none from a track list cut short');
+  check(ap.tracks === null, "an album read without its songs' artists gives no track artists");
 
   const qPage = Object.keys(replies).find(k => /qobuz\.com\/us-en\/album\/philip-cohran/.test(k));
   const qb = f.pcCreditsQobuzPage(reply(qPage));
