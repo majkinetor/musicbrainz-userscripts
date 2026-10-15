@@ -4,7 +4,7 @@
 import { test, check, loadFunctions } from '../../../dev/test/harness.mjs';
 
 test('#681: a "feat." moved out of the title, and apostrophes, still match', { tag: '@unit' }, async () => {
-  const F = await loadFunctions('isrc_scout', ['norm', 'unfeat', 'wordTypo', 'titleClose', '_nrm', '_sameTitle']);
+  const F = await loadFunctions('isrc_scout', ['sameWriting', 'norm', 'unfeat', 'wordTypo', 'titleClose', '_nrm', '_sameTitle']);
   check(F.unfeat('Letter From The Space Feat. Tinavie (Long Arm Remix)') === 'Letter From The Space (Long Arm Remix)', `a bare feat. ends at the bracket (${F.unfeat('Letter From The Space Feat. Tinavie (Long Arm Remix)')})`);
   check(F.unfeat('Instant Crush (feat. Julian Casablancas)') === 'Instant Crush' && F.unfeat('Song ft. X') === 'Song', 'the bracketed and the trailing forms still go');
   check(F._sameTitle('Letter From The Space Feat. Tinavie (Long Arm Remix)', 'Letter From The Space (Long Arm Remix)'), "Find links' position guard: the same song");
