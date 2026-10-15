@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.14.215000
+// @version      2026.10.15
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5BcG9sbG8gRWRpdG9yPC90aXRsZT4KPG1hc2sgaWQ9ImFwLW0iIG1hc2tVbml0cz0idXNlclNwYWNlT25Vc2UiIHg9IjAiIHk9IjAiIHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4Ij48Zz48ZyBmaWxsPSIjZmZmIj48cGF0aCBkPSJNNDIgNjQgQzI4IDcyIDIyIDkwIDI0IDExMCBMNDIgOTggWiIvPjxwYXRoIGQ9Ik04NiA2NCBDMTAwIDcyIDEwNiA5MCAxMDQgMTEwIEw4NiA5OCBaIi8+PC9nPjxnIGZpbGw9IiNmZmYiPjxwYXRoIGQ9Ik02NCA4IEM4NCAyNCA5MCA1MiA4OCA5MCBMNDAgOTAgQzM4IDUyIDQ0IDI0IDY0IDggWiIvPjxwYXRoIGQ9Ik00OCA5MCBMODAgOTAgTDc2IDEwMCBMNTIgMTAwIFoiLz48L2c+PGcgc3Ryb2tlPSIjMDAwIiBzdHJva2Utd2lkdGg9IjMuNSI+PHBhdGggZD0iTTM2IDkwLjUgTDkyIDkwLjUiLz48L2c+PGNpcmNsZSBjeD0iNjQiIGN5PSI1MCIgcj0iOCIgZmlsbD0iIzAwMCIvPjwvZz48L21hc2s+PGc+PHBhdGggZD0iTTUyIDEwMCBDNTQgMTEyIDYwIDExOCA2NCAxMjYgQzY4IDExOCA3NCAxMTIgNzYgMTAwIFoiIGZpbGw9IiNlYjc0M2IiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDAgMykiLz48L2c+PHJlY3Qgd2lkdGg9IjEyOCIgaGVpZ2h0PSIxMjgiIGZpbGw9IiNiYTQ3OGYiIG1hc2s9InVybCgjYXAtbSkiLz4KPC9zdmc+Cg==
@@ -5143,7 +5143,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     b.title = on ? 'Stop matching — what has already been matched is kept' : 'search MusicBrainz for the unmatched artists';
   }
   // re-fill every active tbody (per-medium sections in mirror mode, or the single panel table)
-  const rerender = () => { _hlCur = null; renderRiArtist(true); if (ACTIVE.sections) ACTIVE.sections.forEach(s => fillRows(s.tbody, s.mi)); else if (ACTIVE.tbody) fillRows(ACTIVE.tbody); refreshStatus(); };
+  const rerender = () => { const restore = keepScroll(); _hlCur = null; renderRiArtist(true); if (ACTIVE.sections) ACTIVE.sections.forEach(s => fillRows(s.tbody, s.mi)); else if (ACTIVE.tbody) fillRows(ACTIVE.tbody); refreshStatus(); restore(); };   // #685: re-filling the rows mustn't scroll the view
   // our rendered row for a track, wherever it lives (a per-medium section or the floating panel)
   const rowEl = (mi, ti) => document.querySelector(`.tc-medsec tr[data-tk="${mi}:${ti}"], #tc-panel tr[data-tk="${mi}:${ti}"]`);
   // ↑/↓ : move to the same field in the prev/next ROW — but for the per-artist fields (search box,
@@ -6183,16 +6183,20 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     });
   }
   async function loadAndRender(onProgress) {
+    // #685: a resync (a tracklist change the table didn't make itself: MB's guess case
+    // behind [Aa], a bookmarklet, MB's own inputs) re-mounts it too — keep the scroll
+    const restore = keepScroll();
     MODEL = buildShell();
     if (ACTIVE.mode === 'mirror') { mountMediums(); syncNative(); }   // (re)build per-medium tables + hide/tidy native
     rerender();   // show the tables instantly
+    restore();
     /* #575: no idle message at all. It wrote into the same spans that carry each
        medium's "N unresolved" badge, so every reload wiped the badge to say
        something the toolbar's own Match button already says — and with reloads
        landing mid-pass it also took turns with "matching N/M". majkinetor: "lets
        remove the auto-match off - click Match". refreshStatus then owns the line
        and the badges survive. */
-    if (SETTINGS.autoMatch !== false) await matchModel(onProgress); else { tagDiscogsForAll(); tagPlatformForAll(); refreshStatus(); }   // #227: tag 'set' artists even when not matching
+    if (SETTINGS.autoMatch !== false) { await matchModel(onProgress); restore(true); } else { tagDiscogsForAll(); tagPlatformForAll(); refreshStatus(); }   // #227: tag 'set' artists even when not matching
     enrichResolvedAliasesSoon();   // batch-fetch aliases for resolved artists (existing releases too) — coalesced, see #575
     // #407: resolve an unset release label to its unique exact MB hit — once, independent of the
     // tracklist auto-match toggle (the label lives in the release-info model, not the tracklist).
@@ -6203,17 +6207,23 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
   /* #685: a rebuild removes and re-adds every row (mirror mode the whole section),
      so the page and any scrolling panel briefly lose their height and the browser
      clamps the scroll to the top: a dropped track sent the view back to track 1.
-     Note every scroll position first and put it back after the rows are there. */
+     Note every scroll position first and put it back after the rows are there.
+     The same happened on every other re-fill (majkinetor: a background-created
+     artist landing, [Aa], "the problem appears on various places"), so every
+     render entry point keeps it: rerender, loadAndRender, rebuild, renderRecBody. */
   function keepScroll() {
     const at = [[document.scrollingElement || document.documentElement, 0]];
     const seen = new Set();
-    [ACTIVE.tbody, ...(ACTIVE.sections || []).map(s => s.tbody)].forEach(tb => {
+    [ACTIVE.tbody, ...(ACTIVE.sections || []).map(s => s.tbody), document.querySelector('#tc-recwrap tbody')].forEach(tb => {
       for (let n = tb && tb.parentElement; n && n !== document.body; n = n.parentElement) if (n.scrollHeight > n.clientHeight && !seen.has(n)) { seen.add(n); at.push([n, 0]); }
     });
     at.forEach(p => { p[1] = p[0].scrollTop; });
-    Log.cat('System').debug('keep scroll', at.map(p => p[1]));
     // clamped = only where the view sits at the top now: a later call (after matching) mustn't undo the user's own scrolling
-    return clamped => at.forEach(([n, top]) => { if (n.isConnected && n.scrollTop !== top && (!clamped || n.scrollTop === 0)) n.scrollTop = top; });
+    return clamped => at.forEach(([n, top]) => {
+      if (!n.isConnected || n.scrollTop === top || (clamped && n.scrollTop !== 0)) return;
+      Log.cat('System').debug('scroll kept:', (n.id || n.className || n.tagName) + ' ' + n.scrollTop + ' → ' + top);
+      n.scrollTop = top;
+    });
   }
   async function rebuild(noMatch) {
     const restore = keepScroll();
@@ -9612,7 +9622,9 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
      spacing (.lead flips the margin), used everywhere the marker appears. */
   const VIDEO_MARK_PRE = VIDEO_MARK.replace('class="tc-rec-video"', 'class="tc-rec-video lead"');
   // (re)render just the rows + the unset-count — leaves the toolbar (status/inputs) untouched
-  function renderRecBody(wrap) {
+  // #685: and the scroll, which the emptied body would otherwise send to the top
+  function renderRecBody(wrap) { const restore = keepScroll(); try { renderRecRows(wrap); } finally { restore(); } }
+  function renderRecRows(wrap) {
     wrap = wrap || document.getElementById('tc-recwrap'); if (!wrap) return;
     const tb = wrap.querySelector('tbody'); if (!tb) return;
     const rows = readRecordings();
