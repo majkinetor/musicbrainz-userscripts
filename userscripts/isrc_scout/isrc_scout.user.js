@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         ISRC Scout
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.15.171711
+// @version      2026.10.15.172938
 // @description  Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify / Beatport / Tidal / Volumo / HDtracks / Qobuz, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPklTUkMgU2NvdXQ8L3RpdGxlPgogICAgPHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPgogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjQwIi8+CiAgICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyNiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2U9IiNiOWEzZTgiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPgogIDwvZz4KICA8bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+Cjwvc3ZnPgo=
@@ -1860,6 +1860,9 @@
     .ii-hico { width: 28px; height: 26px; display: inline-flex; align-items: center; justify-content: center;
       border: 1px solid var(--mbu-border); border-radius: var(--mbu-radius); background: var(--mbu-bg); color: var(--mbu-text-dim); font-size: 14px; cursor: pointer; }
     .ii-hico:hover { background: var(--mbu-bg-raised); color: var(--mbu-accent-text); border-color: var(--mbu-accent); }
+    /* the Log toggle reads as a plain word, as on Platform Check, not one more boxed icon */
+    .ii-hlog { height: 26px; padding: 0 6px; border: 0; border-radius: var(--mbu-radius); background: none; color: var(--mbu-text-dim); font-size: 13px; cursor: pointer; }
+    .ii-hlog:hover { background: var(--mbu-bg-raised); color: var(--mbu-text); }
     .ii-hico.on { background: var(--mbu-bg-hover); color: var(--mbu-accent-text); border-color: var(--mbu-accent); }
     /* #471: plain status text where the ISRCs/Links tabs used to be — no columns
        to gate anymore, so nothing is hidden by it; just counts. */
@@ -4323,22 +4326,23 @@
         <div class="ii-hicons">
           <!-- #471 review: Find links / Clear / the progress readout all moved
                back down into the toolbar (#ii-tools) — majkinetor wanted them
-               where they used to live, not up here. Only Bulk/Export + config +
-               maximize stay in the header; name/version/Log/Help live in the
+               where they used to live, not up here. Only Log + Bulk/Export + config +
+               maximize stay in the header; name/version/Help live in the
                config window. -->
+          <button class="ii-hlog" id="ii-log-link" type="button" title="Diagnostic log">log</button>
           <button class="ii-hico" id="ii-bulk-toggle" type="button" title="Bulk / Export">▤</button>
-          <button class="ii-hico" id="ii-setup-toggle" type="button" title="Settings, log &amp; help">${MBU_CFG_ICON}</button>
+          <button class="ii-hico" id="ii-setup-toggle" type="button" title="Settings &amp; help">${MBU_CFG_ICON}</button>
           <button class="ii-hico" id="ii-maximize-toggle" type="button" title="Maximize">⛶</button>
         </div>
       </div>
 
       <div class="ii-pane" id="ii-setup-pane">
-        <!-- #301: standard config-window header — icon · name · version · Log · ? Help (no ✕) -->
+        <!-- #301: standard config-window header — icon · name · version · ? Help (no ✕); Log is in the main header, as on Platform Check -->
         ${mbuCfgHeader({ script: 'isrc_scout', name: 'ISRC Scout', version: SCRIPT_VERSION,
           icon: '<svg viewBox="0 0 128 128" aria-hidden="true"><path d="M64 64 L64 24 A40 40 0 0 1 99 84 Z" fill="#d8c8f2"/>'
             + '<g fill="none" stroke="currentColor" stroke-width="9"><circle cx="64" cy="64" r="40"/>'
             + '<circle cx="64" cy="64" r="9" fill="currentColor" stroke="none"/></g></svg>',
-          log: true, logId: 'ii-log-link' })}
+        })}
         <div class="ii-cfg-grp">MusicBrainz</div>
         <div class="ii-authstate" id="ii-auth-state"></div>
         <div class="row" style="margin-top:8px; flex-wrap:nowrap">
@@ -4598,7 +4602,7 @@
     });
 
     // the shared log window — opened from the config window's "Log" link (#301, #701)
-    modal.querySelector('#ii-log-link').addEventListener('click', () => Log.open());
+    modal.querySelector('#ii-log-link').addEventListener('click', () => { if (Log.isOpen()) Log.close(); else Log.open(); });
 
     // SX exact toggles + their collapsible container (collapsed state persisted)
     const sxGroup = modal.querySelector('#ii-sx-group');
