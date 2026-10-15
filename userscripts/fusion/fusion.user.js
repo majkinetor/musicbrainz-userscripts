@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Fusion
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.15.204754
+// @version      2026.10.16
 // @description  Merge-recordings assistant for MusicBrainz: gather a pool of candidate recordings from a release / release group / recording page (or paste any MBID/URL), auto-match them into merge groups by ISRC / AcoustID / length / title+artist, review and adjust the groups, then submit the merges directly in the background — no MB merge page involved.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPkZ1c2lvbjwvdGl0bGU+CiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjYTE4NGY4IiBzdHJva2Utd2lkdGg9IjUuNSI+CiAgICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSI2NCIgcng9IjUyIiByeT0iMjIiLz4KICAgIDxlbGxpcHNlIGN4PSI2NCIgY3k9IjY0IiByeD0iNTIiIHJ5PSIyMiIgdHJhbnNmb3JtPSJyb3RhdGUoNjAgNjQgNjQpIi8+CiAgICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSI2NCIgcng9IjUyIiByeT0iMjIiIHRyYW5zZm9ybT0icm90YXRlKDEyMCA2NCA2NCkiLz4KICA8L2c+CiAgPGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iMTEiIGZpbGw9IiM3YzRkZmYiLz4KPC9zdmc+Cg==
@@ -372,7 +372,41 @@ function fuzzyRatio(a, b) {
     const maxLen = Math.max(na.length, nb.length);
     return 1 - levenshtein(na, nb) / maxLen;
 }
-const titleSimilar = (a, b) => tokenMatch(a, b, 'max', 0.6) || fuzzyRatio(a, b) >= 0.85;
+const titleAlike = (a, b) => tokenMatch(a, b, 'max', 0.6) || fuzzyRatio(a, b) >= 0.85;
+/* #760 (ernstlx, forum): "In Volo - Drift" / "In Volo - Trace" share 2 of 3
+   words and "Dwell I" / "Dwell IV" are 92% alike by characters, so both passed
+   as similar and, with the artist and lengths agreeing, were merged at normal.
+   Parts and series name their tracks by the one word that differs. So when EACH
+   title has a word the other lacks, they are different titles, unless those
+   words only spell a mix or edit (majkinetor: "various ways to denote mixes and
+   edits, but are the same"), a year, or a typo of each other ("Oburumankoma").
+   Words on one side only still match. Returns the two sides' distinct words,
+   or null when there is no such difference. */
+const TITLE_QUALIFIERS = new Set(['mix', 'mixed', 'edit', 'edited', 'version', 'ver', 'radio', 'album', 'single', 'lp', 'ep', 'extended',
+    'original', 'remaster', 'remastered', 'mastered', 'mono', 'stereo', 'explicit', 'clean', 'dirty', 'censored', 'uncensored',
+    'feat', 'ft', 'featuring', 'with', 'and', 'n', 'the', 'part', 'pt']);
+const isNumberWord = t => /^\d+$/.test(t) || /^[ivxlcdm]{1,4}$/.test(t);
+function titleDistinctWords(a, b) {
+    const wa = new Set(normName(a).split(' ').filter(Boolean)), wb = new Set(normName(b).split(' ').filter(Boolean));
+    const own = (w, other) => [...w].filter(t => !other.has(t) && !TITLE_QUALIFIERS.has(t) && !/^(19|20)\d\d$/.test(t));
+    const da = own(wa, wb), db = own(wb, wa);
+    // pair off a typo on one side with its spelling on the other; never numbers (I / IV)
+    const typo = (t, u) => t.length >= 4 && u.length >= 4 && !isNumberWord(t) && !isNumberWord(u) && fuzzyRatio(t, u) >= 0.75;
+    const left = da.filter(t => { const k = db.findIndex(u => typo(t, u)); if (k < 0) return true; db.splice(k, 1); return false; });
+    return left.length && db.length ? { a: left, b: db } : null;
+}
+const titleSimilar = (a, b) => titleAlike(a, b) && !titleDistinctWords(a, b);
+/* #760: two recordings whose ISRCs share none, but where one from each comes
+   from the same registrant and year (the first 7 characters), are different
+   tracks of one batch: QZTRX2699407 / QZTRX2699409. A reissue usually gets its
+   ISRCs under another registrant or year, so it is not caught. */
+const isrcStem = x => String(x).toUpperCase().slice(0, 7);
+function isrcConflict(a, b) {
+    const ia = a.isrcs || [], ib = b.isrcs || [];
+    if (!ia.length || !ib.length || ia.some(x => ib.includes(x))) return null;
+    for (const x of ia) for (const y of ib) if (isrcStem(x) === isrcStem(y)) return x + ' / ' + y;
+    return null;
+}
 const artistTokenCount = s => normName(s).split(' ').filter(t => t.length >= 2).length;
 const artistSimilar = (a, b) => tokenMatch(a, b, artistTokenCount(b) <= artistTokenCount(a) ? 'min' : 'max', 0.8);
 function lengthClose(a, b, tolMs) { if (a == null || b == null) return false; return Math.abs(a - b) <= tolMs; }
@@ -395,6 +429,9 @@ function shouldUnion(sig, cutoff) {
     // take, and four minutes apart is never the same recording. Manual grouping
     // is still allowed — that's a deliberate human decision, not a guess.
     if (sig.lengthConflict) return false;
+    // #760: different tracks of one ISRC batch. Ahead of AcoustID, which can
+    // collide on short or quiet tracks; a shared ISRC never sets this.
+    if (sig.isrcConflict) return false;
     if (sig.isrc || sig.acoustid) return true;
     if (cutoff === 'strict') return false;
     if (cutoff === 'loose') return (sig.title && sig.length) || (sig.title && sig.artist);
@@ -922,13 +959,16 @@ function gatedUnionFind(recs) {
     for (const r of recs) {
         parent.set(r.gid, r.gid);
         const known = r.length != null;
-        info.set(r.gid, { video: r.video === true, audio: r.video === false, min: known ? r.length : Infinity, max: known ? r.length : -Infinity });
+        info.set(r.gid, { video: r.video === true, audio: r.video === false, min: known ? r.length : Infinity, max: known ? r.length : -Infinity, withIsrcs: r.isrcs && r.isrcs.length ? [r] : [] });
     }
+    // #760: an ISRC-less recording must not bridge two tracks of one ISRC batch
+    const isrcClash = (a, b) => { for (const x of a.withIsrcs) for (const y of b.withIsrcs) { const c = isrcConflict(x, y); if (c) return c; } return null; };
     const find = x => { while (parent.get(x) !== x) { parent.set(x, parent.get(parent.get(x))); x = parent.get(x); } return x; };
     const gross = SETTINGS.grossLengthMs || 30000;
     // why sets A and B may not join ('' when they may)
     const conflict = (a, b) => ((a.video && b.audio) || (a.audio && b.video)) ? 'video and audio'
-        : (Math.max(a.max, b.max) - Math.min(a.min, b.min) > gross) ? 'lengths ' + Math.round((Math.max(a.max, b.max) - Math.min(a.min, b.min)) / 1000) + 's apart' : '';
+        : (Math.max(a.max, b.max) - Math.min(a.min, b.min) > gross) ? 'lengths ' + Math.round((Math.max(a.max, b.max) - Math.min(a.min, b.min)) / 1000) + 's apart'
+        : (() => { const c = isrcClash(a, b); return c ? 'ISRCs ' + c + ' from one batch' : ''; })();
     // true when joined (or already one set); a string saying why when refused
     const union = (x, y) => {
         const ra = find(x), rb = find(y);
@@ -936,7 +976,7 @@ function gatedUnionFind(recs) {
         const a = info.get(ra), b = info.get(rb), why = conflict(a, b);
         if (why) return why;
         parent.set(ra, rb);
-        info.set(rb, { video: a.video || b.video, audio: a.audio || b.audio, min: Math.min(a.min, b.min), max: Math.max(a.max, b.max) });
+        info.set(rb, { video: a.video || b.video, audio: a.audio || b.audio, min: Math.min(a.min, b.min), max: Math.max(a.max, b.max), withIsrcs: a.withIsrcs.concat(b.withIsrcs) });
         return true;
     };
     return { find, union };
@@ -1092,7 +1132,7 @@ function clearBoard() {
 }
 
 function pairSignals(a, b, tolMs) {
-    const sig = { isrc: false, acoustid: false, length: false, title: false, artist: false, artistByMbid: false, videoMismatch: false, pendingEdit: false, lengthConflict: false, lengthUnknown: false };
+    const sig = { isrc: false, acoustid: false, length: false, title: false, artist: false, artistByMbid: false, videoMismatch: false, pendingEdit: false, lengthConflict: false, lengthUnknown: false, isrcConflict: null, titleDistinct: null };
     // #565: three states, not two. `length` false meant BOTH "the lengths differ"
     // and "we have no length to compare", and the normal cutoff required it — so a
     // release whose recordings carry no length at all could never form a group,
@@ -1107,7 +1147,12 @@ function pairSignals(a, b, tolMs) {
     if (a.isrcs.length && b.isrcs.length && a.isrcs.some(x => b.isrcs.includes(x))) sig.isrc = true;
     if (a.acoustids && b.acoustids && a.acoustids.length && b.acoustids.length && a.acoustids.some(x => b.acoustids.includes(x))) sig.acoustid = true;
     if (lengthClose(a.length, b.length, tolMs)) sig.length = true;
-    if (a.title && b.title && titleSimilar(a.title, b.title)) sig.title = true;
+    sig.isrcConflict = isrcConflict(a, b);
+    // #760: keep the words that refused an otherwise alike title, for the log
+    if (a.title && b.title && titleAlike(a.title, b.title)) {
+        const d = titleDistinctWords(a.title, b.title);
+        if (d) sig.titleDistinct = d; else sig.title = true;
+    }
     /* #594 (chaban-mb): "auto-matching with normal cutoff fails due to differing
        artists credits even though the artist themselves are identical."
        Measured on his release group: both releases credit artist
@@ -1133,7 +1178,7 @@ function autoMatch(pool, tolMs, cutoff) {
     cutoff = cutoff || 'normal';
     if (pool.length < 2) return [];
     const uf = gatedUnionFind(pool), find = uf.find;   // #623 U3: the gates hold for the whole group
-    let lengthBlocked = 0, bridgeBlocked = 0;
+    let lengthBlocked = 0, bridgeBlocked = 0, guardBlocked = 0;
     for (let i = 0; i < pool.length; i++) {
         for (let j = i + 1; j < pool.length; j++) {
             const sig = pairSignals(pool[i], pool[j], tolMs);
@@ -1152,6 +1197,14 @@ function autoMatch(pool, tolMs, cutoff) {
                 Log.info('  not grouped (length differs by ' + Math.round(Math.abs(pool[i].length - pool[j].length) / 1000) + 's): "'
                     + pool[i].title + '" ' + dur(pool[i].length) + ' vs "' + pool[j].title + '" ' + dur(pool[j].length));
             }
+            // #760: a pair that would have grouped but for the title or ISRC-batch guard
+            if ((sig.titleDistinct || sig.isrcConflict) && !shouldUnion(sig, cutoff)
+                && shouldUnion(Object.assign({}, sig, { title: sig.title || !!sig.titleDistinct, isrcConflict: null }), cutoff)) {
+                guardBlocked++;
+                Log.info('  not grouped (' + (sig.isrcConflict ? 'ISRCs ' + sig.isrcConflict + ' from one batch'
+                    : 'titles differ in "' + sig.titleDistinct.a.join(' ') + '" / "' + sig.titleDistinct.b.join(' ') + '"')
+                    + '): "' + pool[i].title + '" ' + dur(pool[i].length) + ' vs "' + pool[j].title + '" ' + dur(pool[j].length));
+            }
             if (shouldUnion(sig, cutoff)) {
                 const joined = uf.union(pool[i].gid, pool[j].gid);
                 // the pair matches, but joining would put a conflicting pair into one group
@@ -1163,7 +1216,8 @@ function autoMatch(pool, tolMs, cutoff) {
             }
         }
     }
-    if (bridgeBlocked) Log.warn(bridgeBlocked + ' matching pair(s) kept apart: joining them would have grouped a video with an audio recording, or lengths more than ' + Math.round((SETTINGS.grossLengthMs || 30000) / 1000) + 's apart, through a recording whose value is unknown');
+    if (bridgeBlocked) Log.warn(bridgeBlocked + ' matching pair(s) kept apart: joining them would have grouped a video with an audio recording, lengths more than ' + Math.round((SETTINGS.grossLengthMs || 30000) / 1000) + 's apart, or two ISRCs of one batch, through a recording whose value is unknown');
+    if (guardBlocked) Log.warn(guardBlocked + ' pair(s) held back as different tracks (titles that differ in a word on each side, or ISRCs of one batch) — group them by hand if they really are the same');
     if (lengthBlocked) Log.warn(lengthBlocked + ' pair(s) held back by the gross-length guard (>' + Math.round((SETTINGS.grossLengthMs || 30000) / 1000) + 's apart) — group them by hand if they really are the same take');
     const byRoot = new Map();
     for (const r of pool) { const root = find(r.gid); if (!byRoot.has(root)) byRoot.set(root, []); byRoot.get(root).push(r); }
@@ -4479,7 +4533,7 @@ try {
     W.__fusion = {
         VERSION, SCOPE, STATE, SETTINGS_DEFAULTS, MATCH_CUTOFFS,
         get SETTINGS() { return SETTINGS; },
-        normName, tokenMatch, titleSimilar, artistSimilar, lengthClose, fuzzyRatio, levenshtein, acName, acPrimaryGid, acGids, dur, parseMbidFromInput, parseAddInput,
+        normName, tokenMatch, titleSimilar, titleAlike, titleDistinctWords, isrcConflict, artistSimilar, lengthClose, fuzzyRatio, levenshtein, acName, acPrimaryGid, acGids, dur, parseMbidFromInput, parseAddInput,
         mkRecording, fetchRecordingsByBrowse, enrichReleasesFromSearch, fetchReleaseRecordings, fetchRGRecordings, fetchRecordingByGid, fetchAllReleases, resolveInternalId, fetchAcoustIds, fetchAcoustIdsBatch, enrichIsrcs, fetchRecordingDetail, fetchEntityMeta, enrichPendingEdits, fetchRecordingsBySearch, fetchArtistRecordings, harvestInternalIdsFromPage,
         pairSignals, poolMatches, computeGroupConfidence, groupTier, gatedUnionFind, TIER_COLORS, SIGNAL_KEYS, ACOUSTID_BATCH, shouldUnion, autoMatch, enrichAcoustIds, enrichAllReleases,
         presenceDots,   // SETTINGS_DEFAULTS is listed above
