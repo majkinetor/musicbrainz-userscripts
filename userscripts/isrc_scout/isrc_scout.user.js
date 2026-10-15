@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         ISRC Scout
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.15.173155
+// @version      2026.10.15.180123
 // @description  Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify / Beatport / Tidal / Volumo / HDtracks / Qobuz, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPklTUkMgU2NvdXQ8L3RpdGxlPgogICAgPHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPgogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjQwIi8+CiAgICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyNiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2U9IiNiOWEzZTgiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPgogIDwvZz4KICA8bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+Cjwvc3ZnPgo=
@@ -635,12 +635,32 @@
   /* ═══════════════════════════════════════════════════════════════════════
      LOG — the shared activity log (mbuLog, ST-UI block), for troubleshooting (#701)
   ═══════════════════════════════════════════════════════════════════════ */
-  const Log = mbuLog({ name: 'ISRC Scout', version: () => SCRIPT_VERSION, key: 'isrcScout.logwin' });
+  const LogAll = mbuLog({ name: 'ISRC Scout', version: () => SCRIPT_VERSION, key: 'isrcScout.logwin' });
+  // #758: a category per source, a filter chip each in the Log window. A line names its source
+  // first ("Spotify: importing album …", "SX lookup …", "Tidal 429 …"), so the category is read
+  // from that; molla and ISRC Hunt are where Spotify's ISRCs come from. The edits on MusicBrainz
+  // are "MusicBrainz"; a line naming no source (the startup line, the release, settings) has none.
+  const LOG_SOURCES = [
+    [/^(?:SoundExchange|SX)\b/, 'SoundExchange'], [/^(?:Spotify|molla|ISRC Hunt)\b/, 'Spotify'],
+    [/^Deezer\b/, 'Deezer'], [/^Apple\b/, 'Apple Music'], [/^Tidal\b/, 'Tidal'], [/^Beatport\b/, 'Beatport'],
+    [/^Volumo\b/, 'Volumo'], [/^HDtracks\b/, 'HDtracks'], [/^Qobuz\b/, 'Qobuz'], [/^YouTube\b/, 'YouTube Music'],
+    [/^SoundCloud\b/, 'SoundCloud'], [/^Audiomack\b/, 'Audiomack'], [/^7digital\b/, '7digital'],
+    [/^Amazon\b/, 'Amazon Music'], [/^Bandcamp\b/, 'Bandcamp'], [/^Mission Control\b/, 'Mission Control'],
+    [/^(?:Submitting|Submitted|ISRC submit|Linked|Removed|Marked|Un-ended|Add links|Remove links|End toggle|Edit note|Repeat failed submits|No .+ relationship)\b/, 'MusicBrainz'],
+  ];
+  const logCat = m => { const t = String(m == null ? '' : m); const hit = LOG_SOURCES.find(([re]) => re.test(t)); return LogAll.cat(hit ? hit[1] : null); };
+  const Log = Object.assign({}, LogAll, {
+    info: (m, ...a) => logCat(m).info(m, ...a), warn: (m, ...a) => logCat(m).warn(m, ...a),
+    err: (m, ...a) => logCat(m).err(m, ...a), error: (m, ...a) => logCat(m).error(m, ...a),
+    ok: (m, ...a) => logCat(m).ok(m, ...a), debug: (m, ...a) => logCat(m).debug(m, ...a),
+    add: (sev, m, ...a) => logCat(m).add(sev, m, ...a), pre: (m, ...a) => logCat(m).pre(m, ...a),
+  });
   // every request and its answer, tagged so the window can show them alone
-  const NetLog = Log.cat('Net');
+  const NetLog = LogAll.cat('Net');
   Log.net = (m, d) => NetLog.debug(m, d);
   // test hook only: the log as text, for specs that wait on a line
   if (mbuTestHooks()) window.__isrcScoutLog = () => Log.lines().join('\n');
+  if (mbuTestHooks()) window.__isrcScoutLogger = Log;   // #758: specs log through it and read the categories back
   // Keep the FULL url — scheme + query — in the NET log so an API call's real
   // arguments (album_id, app_id, …) are visible for debugging; only redact
   // token/secret/signature values, and cap length. (#201: the query was being
