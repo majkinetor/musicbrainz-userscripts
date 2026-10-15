@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.15
+// @version      2026.10.15.105027
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5BcG9sbG8gRWRpdG9yPC90aXRsZT4KPG1hc2sgaWQ9ImFwLW0iIG1hc2tVbml0cz0idXNlclNwYWNlT25Vc2UiIHg9IjAiIHk9IjAiIHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4Ij48Zz48ZyBmaWxsPSIjZmZmIj48cGF0aCBkPSJNNDIgNjQgQzI4IDcyIDIyIDkwIDI0IDExMCBMNDIgOTggWiIvPjxwYXRoIGQ9Ik04NiA2NCBDMTAwIDcyIDEwNiA5MCAxMDQgMTEwIEw4NiA5OCBaIi8+PC9nPjxnIGZpbGw9IiNmZmYiPjxwYXRoIGQ9Ik02NCA4IEM4NCAyNCA5MCA1MiA4OCA5MCBMNDAgOTAgQzM4IDUyIDQ0IDI0IDY0IDggWiIvPjxwYXRoIGQ9Ik00OCA5MCBMODAgOTAgTDc2IDEwMCBMNTIgMTAwIFoiLz48L2c+PGcgc3Ryb2tlPSIjMDAwIiBzdHJva2Utd2lkdGg9IjMuNSI+PHBhdGggZD0iTTM2IDkwLjUgTDkyIDkwLjUiLz48L2c+PGNpcmNsZSBjeD0iNjQiIGN5PSI1MCIgcj0iOCIgZmlsbD0iIzAwMCIvPjwvZz48L21hc2s+PGc+PHBhdGggZD0iTTUyIDEwMCBDNTQgMTEyIDYwIDExOCA2NCAxMjYgQzY4IDExOCA3NCAxMTIgNzYgMTAwIFoiIGZpbGw9IiNlYjc0M2IiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDAgMykiLz48L2c+PHJlY3Qgd2lkdGg9IjEyOCIgaGVpZ2h0PSIxMjgiIGZpbGw9IiNiYTQ3OGYiIG1hc2s9InVybCgjYXAtbSkiLz4KPC9zdmc+Cg==
@@ -586,7 +586,6 @@
    * Labels live in the KO release model — `release().labels()[i].label` is an
    * observable holding the label entity, so we set it directly (verified: this also
    * fills the #label-N input and is picked up on submit). */
-  let _labelsAutoMatchedOnce = false;
   function riSetLabel(lf, ent, st) {
     let e = ent;
     // #623 (sweep, A1): the page's MB (unsafeWindow), as everywhere else — the sandbox
@@ -601,6 +600,13 @@
     const rel = release(); if (!rel) return;
     const labels = u(rel.labels) || [];
     if (!labels.length) return;
+    const todo = labels.filter(lf => { const c = lf && typeof lf.label === 'function' ? lf.label() : null; return c && c.name && !c.gid; });
+    todo.forEach(lf => _riLabBusy.add(lf)); renderRiLabels();   // the spinner shows it's under way
+    try { await riMatchLabels(labels); }
+    finally { todo.forEach(lf => _riLabBusy.delete(lf)); renderRiLabels(); }
+    riWatchDupLabels();
+  }
+  async function riMatchLabels(labels) {
     // #652: a label credited by the release's Discogs page, or by First Contact's platform, is
     // linked by that link when exactly one MB label has it
     const dmap = SETTINGS.discogsUrlMatch === false ? null : await loadDiscogsMap().catch(() => null);
@@ -609,38 +615,38 @@
     for (let i = 0; i < labels.length; i++) {
       const lf = labels[i];
       if (!lf || typeof lf.label !== 'function') continue;
-      const cur = lf.label();
-      const name = cur && cur.name;
-      if (!name || (cur && cur.gid)) continue;   // empty slot, or already resolved → leave it
-      const set = (ent, st) => { riSetLabel(lf, ent, st); linked++; lastName = ent.name; };
-      const url = riLabelUrl(name, i, labels.length, dmap, h);
-      if (url) {
-        const p = platformOf(url) || { abbr: 'link', name: 'platform' };
-        const hits = (await resolvePlatformUrls([url], 'label')).get(url);
-        if (hits && !hits.length) _riLabUrl.set(lf, { name, url });   // no label has it yet: ＋ creates the label with it
-        if (hits && hits.length === 1) {
-          const ent = await fetchEntity(hits[0].gid, 'label');
-          if (ent && ent.gid) {
-            try { set(ent, { status: p.abbr === 'disc' ? 'disc' : 'plat', abbr: p.abbr, title: `matched by its ${p.name} link: ${url}` }); Log.cat('Label').info(name, '→', ent.name, '(' + ent.gid + ') — via', p.name, 'link', url); continue; }
-            catch (e) { Log.cat('Label').warn('label set failed', name, e.message); }
-          }
-        } else Log.cat('Label').debug(name, '—', p.name, 'link', url, hits == null ? 'lookup unavailable' : hits.length ? hits.length + ' labels have it' : 'not in MusicBrainz', '→ the name');
-      }
-      // #623 (sweep, A5): "exactly one exact hit" was judged on the first 8 search results,
-      // which don't rank exact matches first — a second label of that name further down was
-      // invisible. The same rule as track artists now: unique by name or alias among ALL
-      // matches (#613), else left for a human.
-      const idHit = await resolveByExactAlias(name, 'label');
-      if (!idHit) {
-        if (await riLabelFromDups(lf, name, set)) continue;
-        Log.cat('Label').info(name, '— no unique exact MB label (name or alias), none settled by the duplicates — left unset'); continue;
-      }
-      try { set(idHit.entity, { status: idHit.via === 'alias' ? 'alias' : 'high', title: idHit.via === 'alias' ? 'the only MusicBrainz label with this name as an alias' : 'the only MusicBrainz label with this name' }); Log.cat('Label').info(name, '→', idHit.entity.name, '(' + idHit.entity.gid + ')'); }
-      catch (e) { Log.cat('Label').warn('label set failed', name, e.message); }
+      try {
+        const cur = lf.label();
+        const name = cur && cur.name;
+        if (!name || (cur && cur.gid)) continue;   // empty slot, or already resolved → leave it
+        const set = (ent, st) => { riSetLabel(lf, ent, st); linked++; lastName = ent.name; };
+        const url = riLabelUrl(name, i, labels.length, dmap, h);
+        if (url) {
+          const p = platformOf(url) || { abbr: 'link', name: 'platform' };
+          const hits = (await resolvePlatformUrls([url], 'label')).get(url);
+          if (hits && !hits.length) _riLabUrl.set(lf, { name, url });   // no label has it yet: ＋ creates the label with it
+          if (hits && hits.length === 1) {
+            const ent = await fetchEntity(hits[0].gid, 'label');
+            if (ent && ent.gid) {
+              try { set(ent, { status: p.abbr === 'disc' ? 'disc' : 'plat', abbr: p.abbr, title: `matched by its ${p.name} link: ${url}` }); Log.cat('Label').info(name, '→', ent.name, '(' + ent.gid + ') — via', p.name, 'link', url); continue; }
+              catch (e) { Log.cat('Label').warn('label set failed', name, e.message); }
+            }
+          } else Log.cat('Label').debug(name, '—', p.name, 'link', url, hits == null ? 'lookup unavailable' : hits.length ? hits.length + ' labels have it' : 'not in MusicBrainz', '→ the name');
+        }
+        // #623 (sweep, A5): "exactly one exact hit" was judged on the first 8 search results,
+        // which don't rank exact matches first — a second label of that name further down was
+        // invisible. The same rule as track artists now: unique by name or alias among ALL
+        // matches (#613), else left for a human.
+        const idHit = await resolveByExactAlias(name, 'label');
+        if (!idHit) {
+          if (await riLabelFromDups(lf, name, set)) continue;
+          Log.cat('Label').info(name, '— no unique exact MB label (name or alias), none settled by the duplicates — left unset'); continue;
+        }
+        try { set(idHit.entity, { status: idHit.via === 'alias' ? 'alias' : 'high', title: idHit.via === 'alias' ? 'the only MusicBrainz label with this name as an alias' : 'the only MusicBrainz label with this name' }); Log.cat('Label').info(name, '→', idHit.entity.name, '(' + idHit.entity.gid + ')'); }
+        catch (e) { Log.cat('Label').warn('label set failed', name, e.message); }
+      } finally { if (_riLabBusy.delete(lf)) renderRiLabels(); }   // this one is settled: its badge (or nothing) in place of the spinner
     }
-    renderRiLabels();
     if (linked) toast(linked === 1 ? ('✓ Label matched: ' + lastName) : ('✓ Auto-matched ' + linked + ' labels'));
-    riWatchDupLabels();
   }
   /* #750: a name more than one MB label carries ("Mole Listening Pearls": the label and its
    * bootleg page) is settled by the Duplicates tab: when the similar releases MusicBrainz lists
@@ -688,6 +694,35 @@
       finally { busy = false; }
     });
   }
+  /* Release information's matching, once per page, ahead of the Tracklist's (loadAndRender awaits it):
+   * its requests are booked in the MusicBrainz gate before the Tracklist's dozens, so they're answered
+   * first. #407: the label is matched whatever the Tracklist auto-match toggle says (it lives in the
+   * release-info model, not the tracklist). */
+  let _riMatchRun = null, _riArtistDone = false;   // _riArtistDone: the release group waits for the artist (#716)
+  function matchReleaseInfo() {
+    if (_riMatchRun) return _riMatchRun;
+    const t0 = Date.now();
+    Log.cat('Release').debug('Release information: matching the artist and labels before the Tracklist');
+    _riMatchRun = Promise.all([
+      matchReleaseLabels().catch(e => Log.cat('Label').warn('label auto-match failed', e.message)),
+      matchReleaseArtist().catch(e => Log.cat('Artist').warn('artist auto-match failed', e.message)).then(() => { _riArtistDone = true; }),
+    ]).then(() => Log.cat('Release').info('Release information matched in', ((Date.now() - t0) / 1000).toFixed(1) + 's; the Tracklist goes next'));
+    return _riMatchRun;
+  }
+  /* The release artist's co-credit stage reads the artists on the tracks, which a new release only
+   * has once the Tracklist is matched: now that Release information goes first, a name it left
+   * unlinked gets one more try with them, once (the other stages' lookups are cached). */
+  let _riRematched = false;
+  function riRematchWithTracks() {
+    if (_riRematched || _riMatching || _matchStop || SETTINGS.autoMatchArtist === false) return;   // not after a Stop
+    const open = _riArt.filter(p => !p.committed && p.creditedAs);
+    if (!open.length || !riContextGids().length) return;
+    const cell = document.querySelector('#information .tc-ri-art');
+    if (cell && cell.contains(document.activeElement)) { Log.cat('Artist').debug('release artist: not re-matched with the track artists, you are editing it'); return; }
+    _riRematched = true;
+    Log.cat('Artist').debug('release artist: re-matching', open.length, 'unlinked name(s) with the track artists as co-credit context');
+    matchReleaseArtist().catch(e => Log.cat('Artist').warn('artist re-match failed', e.message));
+  }
   /* ── #652: the release artist, matched like a track artist ─────────────────────────
    * The release artist credit runs through the Tracklist's stages, most confident first:
    * the release's Discogs artists, First Contact's platform links, the release artist of the
@@ -695,7 +730,6 @@
    * already makes), the exact name or alias, and co-credit with the artists on the tracks.
    * A confident match is written into the credit (the full entity, #348); each name gets the
    * Tracklist's badge, match card and offers (＋ / 🔗 / ⚠) next to the field. */
-  let _artistAutoMatchedOnce = false;
   let _riArt = [];   // one slot-like record per release artist name: what matching found
   const riNames = () => { try { const ac = u(release().artistCredit); return (ac && u(ac.names)) || []; } catch (e) { return []; } };
   // the artists already on the tracks, most credited first: the co-credit stage's context
@@ -808,15 +842,23 @@
     if (SETTINGS.autoMatchArtist === false && !manual) return;
     const rel = release(); if (!rel || typeof rel.artistCredit !== 'function') return;
     const names = riNames(); if (!names.length) return;
+    // the pass writes as it goes: the cell waits for the whole result, and shows a spinner for each name meanwhile
+    _riMatching = true;
+    const td = document.querySelector('#information td.release-artist'); if (td) riBadges(td);
+    try { await riMatchArtist(names); }
+    finally { _riMatching = false; renderRiArtist(true); }
+  }
+  async function riMatchArtist(names) {
     const dmap = SETTINGS.discogsUrlMatch === false ? null : await loadDiscogsMap().catch(() => null);
     const relDisc = dmap && dmap.releaseArtists && dmap.releaseArtists.length === names.length ? dmap.releaseArtists : null;
     const h = fcHandoff();
-    if (h && h.credit) await resolvePlatformUrls(h.credit.map(a => a.url).filter(Boolean));   // one batched lookup
+    // one batched lookup for every artist link in the handoff, the tracks' too: Release information goes
+    // first now (#754), and the Tracklist's pass then finds its links answered instead of a second batch
+    if (h) await resolvePlatformUrls(fcArtistUrls(h));
     const ctx = riContextGids();
     Log.cat('Artist').debug('release artist: matching', names.length, 'name(s);', relDisc ? 'Discogs artists known;' : '', h ? 'First Contact links known;' : '', ctx.length, 'track artist(s) as co-credit context');
     let linked = 0, lastName = '';
     const state = [];
-    _riMatching = true;   // the pass writes as it goes: the cell waits for the whole result
     const prevBy = new Map(_riArt.filter(p => p.gid && p.committed && p.status !== 'set').map(p => [p.gid, p]));   // a re-match (after a split) keeps the badges it had
     for (let i = 0; i < names.length; i++) {
       const n = names[i], cur = u(n.artist), creditedAs = u(n.name) || '', joinPhrase = u(n.joinPhrase) || '';
@@ -838,8 +880,7 @@
       await tagPlatformAddable(ps, purl);
       state.push(ps);
     }
-    _riArt = state; riBind(); _riCommittedKey = riLiveKey(); _riMatching = false;
-    renderRiArtist(true);
+    _riArt = state; riBind(); _riCommittedKey = riLiveKey();
     if (linked) toast(linked === 1 ? ('✓ Artist matched: ' + lastName) : ('✓ Auto-matched ' + linked + ' artists'));
   }
   // after a link was added or an artist picked: the offers again
@@ -864,7 +905,7 @@
       cell = document.createElement('div'); cell.className = 'tc-ri-art mbu-ui'; td.prepend(cell); td.classList.add('tc-ri-artcell');
       Log.cat('Artist').debug('release artist: the Tracklist cell replaces MusicBrainz\'s artist field');
     }
-    if (_riMatching || (!force && cell.contains(document.activeElement))) return;   // never rebuild under the user's caret; the next tick catches up
+    if ((_riMatching && cell.dataset.sig) || (!force && cell.contains(document.activeElement))) return;   // never rebuild under the user's caret, nor mid-pass (once drawn); the next tick catches up
     riSyncSlots();
     // a release artist already "set" carries no entity of ours: feed the disambiguation cache from MB's own
     // credit (the KO artist has its comment) so the bar shows it, as the Tracklist does (#195)
@@ -895,6 +936,7 @@
   function riBadges(td) {
     td.querySelectorAll('.tc-ri-art .tc-ri-rb').forEach(rb => {
       const i = +rb.dataset.ri, p = _riArt[i]; rb.textContent = '';
+      if (_riMatching && p && !p.committed && p.creditedAs) { rb.innerHTML = `<span class="tc-ri-spin" title="${esc(RI_BUSY_TIP)}"></span>`; return; }
       const txt = p && badgeText(p); if (!txt) return;
       const chip = rb;
       const b = document.createElement('span'); b.className = 'tc-badge ' + p.status; b.dataset.ri = i; b.textContent = txt;
@@ -909,6 +951,8 @@
   const _riLabInit = new WeakMap();   // the label field → the label gid it had when Apollo first saw it ('' = empty)
   const _riLab = new WeakMap();   // the label field → { status, abbr } for its badge
   const _riLabUrl = new WeakMap();   // the label field → { name, url }: its Discogs or platform link no MB label has yet
+  const _riLabBusy = new WeakSet();   // the label fields matchReleaseLabels is still looking up: a spinner in place of the badge
+  const RI_BUSY_TIP = 'Apollo is still matching this on MusicBrainz…';
   function riLabelUrl(name, i, n, dmap, h) {
     const pick = (list, prefer) => {
       if (!list || !list.length) return null;
@@ -933,6 +977,11 @@
       if (!_riLabInit.has(lf) && lf) _riLabInit.set(lf, cur && cur.gid || '');
       if (riWant()) mbuCls(host, 'tc-lab-matched', !!(cur && cur.gid));
       const show = riWant() && cur && cur.gid;
+      if (!show && riWant() && _riLabBusy.has(lf)) {
+        if (!b) { b = document.createElement('span'); b.className = 'tc-ri-lab mbu-ui'; host.appendChild(b); }
+        if (b.dataset.t !== 'busy') { b.dataset.t = 'busy'; b.dataset.gid = ''; b.innerHTML = `<span class="tc-ri-spin" title="${esc(RI_BUSY_TIP)}"></span>`; }
+        return;
+      }
       if (!show) { if (b) b.remove(); inp.style.removeProperty('padding-right'); riLabelDisamb(inp, host, null, null); return; }
       // a label picked by hand (differs from what the release had and from Apollo's match) shows "user", as the artist does
       if (!mine) st = cur.gid !== _riLabInit.get(lf) ? { status: 'user', title: 'chosen by you' } : { status: 'set', title: 'already set on the release' };
@@ -970,7 +1019,7 @@ click to open the label`;
     const re = W.MB && W.MB.releaseEditor, rel = release();
     if (!re || !rel || typeof re.duplicateReleaseGroups !== 'function') return;
     const rg = u(rel.releaseGroup); if (rg && u(rg.gid)) return;   // an existing release, or already picked
-    if (!_artistAutoMatchedOnce || _riMatching) return;   // the release artist is still being matched
+    if (!_riArtistDone || _riMatching) return;   // the release artist is still being matched
     const dups = re.duplicateReleaseGroups() || []; if (!dups.length) return;
     const title = u(rel.name) || '', names = riNames();
     const gids = names.map(n => { const a = u(n.artist); return (a && u(a.gid)) || ''; });
@@ -1101,7 +1150,7 @@ click to open the label`;
     const live = () => inp._tcLabOn && inp.isConnected;
     const position = () => { if (pop) acPlace(pop, inp); };   // #735: stays on screen (flips above near the bottom)
     const close = () => { if (pop) pop.remove(); pop = null; hi = -1; list = []; if (onScroll) { window.removeEventListener('scroll', onScroll, true); window.removeEventListener('resize', onScroll); onScroll = null; } };
-    const ensure = () => { if (pop) return; pop = document.createElement('div'); pop.className = 'tc-acpop tc-labpop'; document.body.appendChild(pop); onScroll = () => { if (!pop || !pop.isConnected) close(); else position(); }; window.addEventListener('scroll', onScroll, true); window.addEventListener('resize', onScroll); position(); };
+    const ensure = () => { if (pop) return; pop = document.createElement('div'); pop.className = 'tc-acpop tc-labpop'; pop._tcOwner = inp; document.body.appendChild(pop); onScroll = () => { if (!pop || !pop.isConnected) close(); else position(); }; window.addEventListener('scroll', onScroll, true); window.addEventListener('resize', onScroll); position(); };
     const say = msg => { ensure(); list = []; pop.innerHTML = `<div class="tc-acrow none">${esc(msg)}</div>`; position(); };
     const choose = c => { close(); riPickLabel(inp._tcLabLf, c); };
     const hiliteRow = () => { const rows = [...pop.querySelectorAll('[data-i]')]; rows.forEach((r, i) => r.classList.toggle('hi', i === hi)); if (rows[hi]) rows[hi].scrollIntoView({ block: 'nearest' }); };
@@ -1295,7 +1344,14 @@ click to open the label`;
   // track artist, in order). Keyed by title like the sibling map, so it's robust
   // to medium/ordering differences. Cached per release link.
   let _discogsMap = { url: undefined, map: null };
-  async function loadDiscogsMap(force) {
+  // Release information's label and artist passes start together: share one fetch in flight
+  let _discogsMapFlight = null;
+  function loadDiscogsMap(force) {
+    if (force) return loadDiscogsMapOnce(true);
+    if (!_discogsMapFlight) _discogsMapFlight = loadDiscogsMapOnce().finally(() => { _discogsMapFlight = null; });
+    return _discogsMapFlight;
+  }
+  async function loadDiscogsMapOnce(force) {
     if (SETTINGS.discogsUrlMatch === false) return null;
     const url = discogsReleaseUrlFromPage();
     if (!url) { _discogsMap = { url: null, map: null }; return null; }
@@ -1529,6 +1585,7 @@ click to open the label`;
       let r;
       try { r = await wsGet(`${ORIGIN}/ws/2/url?resource=${encodeURIComponent(discogsUrl)}&inc=artist-rels&fmt=json`); }
       catch (e) { await _sleep(1200); continue; }                 // network error → retry, don't cache
+      if (!r) return null;                                        // stopped while it queued → unknown, not cached
       if (r.status === 404) { _discogsResolveCache.set(discogsUrl, []); _dput('resolve', discogsUrl, []); return []; }   // URL not in MB → 0 owners (cacheable)
       if ((await wsAnswer(r)).throttled) continue;                // rate limited → the shared hold, don't cache (#575, #633)
       if (!r.ok) { await _sleep(1200); continue; }                // other transient error → retry, don't cache
@@ -1716,6 +1773,11 @@ click to open the label`;
   const fcPlatformUrl = (t, i, creditedAs) => { const ht = fcTrackFor(t); return ht ? fcCreditUrl(ht.credit, i, creditedAs, t.slots ? t.slots.length : (t.names || []).length) : null; };
   // every platform link the handoff has for the pending slots, resolved in a few batched requests
   // before the match pass, so each slot's own lookup is answered from the cache
+  const fcArtistUrls = h => {
+    const out = [], add = a => { if (a && a.url) out.push(a.url, ...(_fcSame.get(a.url) || [])); };
+    (h.credit || []).forEach(add); (h.mediums || []).forEach(m => (m.tracks || []).forEach(t => (t.credit || []).forEach(add)));
+    return [...new Set(out)];
+  };
   async function prewarmPlatformLinks(tracks) {
     if (!fcHandoff()) return;
     const urls = [];
@@ -5765,7 +5827,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
       items = needle ? JOIN_OPTIONS.filter(o => o.label.toLowerCase().includes(needle) || o.value.trim().toLowerCase().includes(needle)) : JOIN_OPTIONS.slice();
       if (!items.length) { close(); return; }
       if (!pop) {
-        pop = document.createElement('div'); pop.className = 'tc-acpop tc-joinpop';
+        pop = document.createElement('div'); pop.className = 'tc-acpop tc-joinpop'; pop._tcOwner = inp;
         document.body.appendChild(pop);
         pop.style.minWidth = '150px';
         const off = e => { if (!pop) { document.removeEventListener('mousedown', off); return; } if (!pop.contains(e.target) && e.target !== arrow && e.target !== inp) { close(); document.removeEventListener('mousedown', off); } };
@@ -5798,7 +5860,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     let pop = null, list = [], hi = -1, seq = 0, onScroll = null;
     let curQuery = '', curLimit = 8;   // "Show more…" pagination: bump the limit and re-search
     const position = () => { if (pop) acPlace(pop, inp); };   // #735: stays on screen (flips above near the bottom)
-    const ensure = () => { if (pop) return; pop = document.createElement('div'); pop.className = 'tc-acpop'; document.body.appendChild(pop); onScroll = () => { if (!pop || !pop.isConnected) { window.removeEventListener('scroll', onScroll, true); window.removeEventListener('resize', onScroll); pop = null; } else position(); }; window.addEventListener('scroll', onScroll, true); window.addEventListener('resize', onScroll); position(); };
+    const ensure = () => { if (pop) return; pop = document.createElement('div'); pop.className = 'tc-acpop'; pop._tcOwner = inp; document.body.appendChild(pop); onScroll = () => { if (!pop || !pop.isConnected) { window.removeEventListener('scroll', onScroll, true); window.removeEventListener('resize', onScroll); pop = null; } else position(); }; window.addEventListener('scroll', onScroll, true); window.addEventListener('resize', onScroll); position(); };
     const close = () => { if (pop) pop.remove(); pop = null; hi = -1; if (onScroll) { window.removeEventListener('scroll', onScroll, true); window.removeEventListener('resize', onScroll); onScroll = null; } };
     const choose = c => { close(); pickArtist(slot, c); };
     const searching = () => { ensure(); list = []; pop.innerHTML = `<div class="tc-acrow none">Searching…</div>`; position(); };
@@ -6058,7 +6120,10 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     });
   }
   function fillRows(tbody, mi) {
-    document.querySelectorAll('.tc-acpop').forEach(p => p.remove());   // rebuilding rows detaches inputs — drop any open search/join popups so they can't orphan
+    // rebuilding rows detaches inputs — drop any open search/join popups so they can't orphan. Only
+    // the Tracklist's: a matching pass rebuilds the rows again and again, and this also shut the
+    // Label and release artist pickers on Release information the moment they opened
+    document.querySelectorAll('.tc-acpop').forEach(p => { if (!(p._tcOwner && p._tcOwner.closest('#information'))) p.remove(); });
     tbody.innerHTML = ''; let lastMi = -1, lastDataMi = -1; const multi = mediums().length > 1 && mi == null;
     const tracks = (mi == null) ? MODEL.tracks : MODEL.tracks.filter(t => t.mi === mi);
     tracks.forEach(t => {
@@ -6196,12 +6261,12 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
        landing mid-pass it also took turns with "matching N/M". majkinetor: "lets
        remove the auto-match off - click Match". refreshStatus then owns the line
        and the badges survive. */
-    if (SETTINGS.autoMatch !== false) { await matchModel(onProgress); restore(true); } else { tagDiscogsForAll(); tagPlatformForAll(); refreshStatus(); }   // #227: tag 'set' artists even when not matching
+    // Release information first: it's the page one lands on, and the Tracklist's matching leans on
+    // the release artist picked there. It used to start only once this whole pass had ended, so on
+    // a slow MusicBrainz its badges dropped in up to half a minute later, out of nowhere
+    await matchReleaseInfo();
+    if (SETTINGS.autoMatch !== false) { await matchModel(onProgress); restore(true); riRematchWithTracks(); } else { tagDiscogsForAll(); tagPlatformForAll(); refreshStatus(); }   // #227: tag 'set' artists even when not matching
     enrichResolvedAliasesSoon();   // batch-fetch aliases for resolved artists (existing releases too) — coalesced, see #575
-    // #407: resolve an unset release label to its unique exact MB hit — once, independent of the
-    // tracklist auto-match toggle (the label lives in the release-info model, not the tracklist).
-    if (!_labelsAutoMatchedOnce) { _labelsAutoMatchedOnce = true; matchReleaseLabels().catch(e => Log.cat('Label').warn('label auto-match failed', e.message)); }
-    if (!_artistAutoMatchedOnce) { _artistAutoMatchedOnce = true; matchReleaseArtist().catch(e => Log.cat('Artist').warn('artist auto-match failed', e.message)); }
     srApplyDefaultOnStart();   // #410: run the marked default S&R once, now the tracklist is rendered
   }
   /* #685: a rebuild removes and re-adds every row (mirror mode the whole section),
@@ -11327,6 +11392,9 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     .tc-ri-labhost.tc-lab-focus > .tc-ri-labdis{display:none}
     .tc-labpop .tc-acmeta{margin-left:auto;padding-left:10px;font-size:10px;color:var(--mbu-text-weak);white-space:nowrap}
     .tc-ri-lab{position:absolute;right:28px;top:50%;transform:translateY(-50%);line-height:1;pointer-events:auto}
+    /* still being matched: a spinner where the match badge will land */
+    .tc-ri-spin{display:inline-block;width:9px;height:9px;margin:0 4px;border:2px solid var(--mbu-accent-soft);border-top-color:var(--mbu-accent);border-radius:50%;animation:tc-ri-spin .7s linear infinite;vertical-align:middle;cursor:progress}
+    @keyframes tc-ri-spin{to{transform:rotate(360deg)}}
     html:has(.mmthf-pin) .tc-ri-lab{right:48px}   /* Mammoth pins its icon inside the field, just left of the search icon: sit clear of it */
     :is(.tc-ri-am,.tc-ri-lab,.tc-ri-rb) .tc-badge{font-size:10px;font-weight:bold;border-radius:9px;padding:1px 7px;color:var(--mbu-text-on-accent);white-space:nowrap;cursor:help;text-transform:none}
     :is(.tc-ri-am,.tc-ri-lab,.tc-ri-rb) .tc-badge.rg{background:#1f8a4c}:is(.tc-ri-am,.tc-ri-lab,.tc-ri-rb) .tc-badge.set{background:#6c757d}:is(.tc-ri-am,.tc-ri-lab,.tc-ri-rb) .tc-badge.high{background:#2f6fd6}:is(.tc-ri-am,.tc-ri-lab,.tc-ri-rb) .tc-badge.disc{background:#0a7a8c}
@@ -12688,6 +12756,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     snapshotOriginals();
     const tl = readTracklist();
     Log.cat('System').info('tracklist:', tl.length, 'tracks ·', tl.reduce((n, t) => n + t.names.filter(x => !x.artistGid).length, 0), 'unresolved slots');
+    if (apolloEnabled()) matchReleaseInfo();   // the first page's matching first, whether or not the Tracklist is taken over
     if (tlWant()) showMirror();   // pre-build the tracklist takeover inside the (possibly hidden) #tracklist panel
     // pre-hide the native recordings table right after edit is entered (recStyle's `body.tc-rec-on` rule
     // applies even before MB lazily builds the table), and pre-mount the Apollo table if it already exists —

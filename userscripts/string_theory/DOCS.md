@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-10-15 10:15 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-10-15 11:07 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -55,6 +55,7 @@ Each part is optional, and Apollo's icon in the bottom-right corner switches bac
 - The release **Artist** field is the Tracklist's artist cell, in place of MusicBrainz's box and its Edit popup. One line per artist, with its credited-as name, search, join phrase and match badge. **↵** adds an artist, **⋔** splits a combined name, **⠿** reorders, **✕** removes, and **＋** / **🔗** / **⚠** offer to create the artist or add its link.
 - The release **Artist** is [matched](#artist-matching) on load like a track artist, through the same stages: the Discogs or platform link, the release artist of other editions, the exact name or alias, and co-credit with the artists on the tracks. A confident match is linked. Each artist's badge sits at the end of its line, its match card on hover; click an uncertain **LOW** badge to link its candidate.
 - The release **Label** is linked on load by its Discogs or platform link when exactly one label has it, else when exactly one label has its name or alias, else when the similar releases on the **Duplicates** tab credit exactly one label of that name. A badge by the field says which; a label already on the release shows **set**, one you picked shows **user**. Hover the badge for the label and its disambiguation; click it to open the label.
+- This matching runs first on load, before the Tracklist's, which leans on the release artist. A spinner sits where a badge will land while Apollo is still matching that artist or label.
 - The **Release group** of a new release is selected from MusicBrainz's suggestions under the field when exactly one of them has the release's title and artist. The title may differ in punctuation, spaces and letter case, never in a letter or digit. **auto** in the field marks it. Click the badge to open the release group. Pick **Add a new release group** to undo it, and Apollo leaves it.
 - The **Label** field searches with Apollo's picker, as the artist does: each label shows its aliases, disambiguation, type, label code and years, and an icon that opens it. A pasted MBID or label URL is set at once. **＋** in place of the search icon creates the typed label, with its Discogs or platform link when no label has it yet, and sets it once saved; right-click to create it silently in a background tab.
 
