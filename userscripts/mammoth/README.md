@@ -20,7 +20,7 @@ Reusable edit notes in a panel beside the edit-note field of every edit form, an
 - Sort **manually** (drag ⠿), by **most used** or by **recent**. A search box narrows long lists.
 - Click applies a note with your default action (replace or append); right-click does the other. Appending skips a line that's already there.
 
-Drag the separator to resize the panel. The panel can be minimized to an icon: hover to peek, click to pin.
+Drag the separator to resize the panel. The panel starts minimized to an icon: hover to peek, click to pin, and its ⤢ button restores it (– minimizes it again).
 
 > [!TIP]
 > With *Scope per resource* on, each kind of edit note (release, artist, recording…) keeps its own saved notes and history.

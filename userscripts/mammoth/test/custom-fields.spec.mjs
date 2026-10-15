@@ -8,7 +8,8 @@ import { test, check, until, idle, requireLogin, SANDBOX } from '../../../dev/te
 
 const ARTIST = '8f6bd1e4-fbe1-4f50-aa9b-94c450ec0f11';   // Portishead, on the sandbox
 const TARGET = 'input[id="id-edit-artist.comment"]';
-test.use({ gm: { name: 'Mammoth' } });
+// the panel starts minimized; the spec needs its Settings button on screen
+test.use({ gm: { name: 'Mammoth', values: { 'mammoth:settings': JSON.stringify({ minimized: false, v: 2 }) } } });
 
 test('a custom field pins field memory to the input its selector matches', { tag: ['@sandbox', '@login', '@critical', '@flaky'] }, async ({ page, inject }) => {
   await page.goto(`${SANDBOX}/artist/${ARTIST}/edit`, { waitUntil: 'domcontentloaded' });
