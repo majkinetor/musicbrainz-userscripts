@@ -40,13 +40,14 @@ OWNED = 'majkinetor'
 # How many distinct scripts each edit is attributed to. An edit counted for two
 # scripts is not double-counting: our scripts preserve a previous script's note
 # when they append to it, so both signatures really are on that edit. But it does
-# change how a per-script total should be read — Scribe's edits are *all* shared,
-# while ISRC Scout's are almost all its own — so the reports say so explicitly.
+# change how a per-script total should be read — Mission Control's edits are
+# nearly all shared, while ISRC Scout's are mostly its own — so the reports say so.
 EDIT_SCRIPTS_SQL = """
 CREATE TEMP TABLE edit_scripts AS
 SELECT n.edit AS edit, COUNT(DISTINCT COALESCE(sm.into_id, ns.script)) AS nscripts
 FROM note n
 JOIN note_script ns ON ns.note = n.id
+JOIN script s ON s.id = ns.script
 LEFT JOIN script_merge sm ON sm.from_id = ns.script
 GROUP BY n.edit
 """
@@ -397,8 +398,8 @@ def _markdown(payload: dict, connection: sqlite3.Connection) -> str:
     add('Attribution is by edit-note text — see `config/sources.json`. Counts are '
         'per *script*, and one edit can count for two scripts when a note carries '
         'both signatures. **Shared** counts exactly those, so a per-script total '
-        'reads for what it is: Scribe\'s edits are all shared, while ISRC Scout\'s '
-        'are almost entirely its own. **Distinct edits** counts each edit once.')
+        'reads for what it is: Mission Control\'s edits are nearly all shared, while '
+        'ISRC Scout\'s are mostly its own. **Distinct edits** counts each edit once.')
     add('')
 
     total_edits = sum(b['edits'] for b in per_script.values())

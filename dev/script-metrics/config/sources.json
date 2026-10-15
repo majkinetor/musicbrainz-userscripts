@@ -65,9 +65,6 @@
       "patterns": ["userscripts/mammoth"],
       "note": "mostly annotates edit notes; may submit few edits of its own" },
 
-    { "id": "scribe", "name": "Scribe", "owner": "majkinetor",
-      "patterns": ["userscripts/scribe"] },
-
     { "id": "string_theory", "name": "String Theory", "owner": "majkinetor",
       "patterns": ["userscripts/string_theory"],
       "note": "bundle loader; edits are normally attributed to the member script that made them" },

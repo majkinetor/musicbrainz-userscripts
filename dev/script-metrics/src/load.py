@@ -47,6 +47,11 @@ def sync_scripts(connection: sqlite3.Connection, scripts: list[dict]) -> None:
         'INSERT OR REPLACE INTO script (id, name, owner, note) VALUES (?, ?, ?, ?)',
         [(s['id'], s['name'], s.get('owner', 'external'), s.get('note')) for s in scripts],
     )
+    # A script dropped from the config leaves the reports too: its notes stay in
+    # note_script, but every report query joins through this table.
+    ids = [s['id'] for s in scripts]
+    connection.execute(
+        f'DELETE FROM script WHERE id NOT IN ({",".join("?" * len(ids))})', ids)
     connection.commit()
 
 
