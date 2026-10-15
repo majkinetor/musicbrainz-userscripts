@@ -134,6 +134,18 @@ test.describe('the consolidation page', () => {
     }
     const rel = await page.evaluate(() => window.__mccTest.seedRel());
     check(rel.urls.length >= done, `every platform taken is linked: ${rel.urls.map(u => u.url).join(' ')}`);
+    // a platform whose read failed keeps the type Platform Check gives its link (Qobuz, Apple Music: MB picks none)
+    const unread = await page.evaluate(() => {
+      const s = window.__mccTest.state().sources.find(x => x.take && x.role === 'found' && (x.links || []).some(l => l.linkTypeId));
+      if (!s) return null;
+      const was = s.read; s.read = { state: 'failed', error: 'test' };
+      const got = window.__mccTest.seedRel().urls.filter(u => u.url === s.url);
+      s.read = was;
+      return { key: s.key, links: s.links, got };
+    });
+    console.log('unread link: ' + JSON.stringify(unread));
+    check(unread && unread.got.length && unread.got.every(u => u.linkType) && unread.got.map(u => u.linkType).join() === unread.links.map(l => l.linkTypeId).join(),
+      `a failed read's link keeps Platform Check's type: ${unread ? unread.key + ' ' + unread.got.map(u => u.linkType).join('+') : 'no typed platform taken'}`);
     const dp = rel.credit[0];
     check(dp.url === 'https://www.deezer.com/artist/27' && (dp.alt || []).length >= 1, `Daft Punk keeps its Deezer link and carries ${(dp.alt || []).length} more: ${(dp.alt || []).map(a => a.platform.abbr + ' ' + a.url).join(' ')}`);
     const md = await page.evaluate(() => window.__mccTest.markdown());
