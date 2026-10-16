@@ -212,6 +212,9 @@ test('a link MusicBrainz holds under another locale is already linked', { tag: '
   const forms = f.pcUrlForms('https://www.qobuz.com/us-en/interpreter/pink-floyd/38324');
   check(forms.includes('https://www.qobuz.com/gb-en/interpreter/pink-floyd/38324') && forms.includes('https://open.qobuz.com/artist/38324') && !forms.includes('https://www.qobuz.com/us-en/interpreter/pink-floyd/38324'), `Qobuz: the other locales and open.qobuz.com (${forms})`);
   check(f.pcUrlForms('https://music.apple.com/us/artist/487143').includes('https://itunes.apple.com/gb/artist/id487143') && !f.pcUrlForms('https://www.deezer.com/artist/1').length, 'Apple Music: other storefronts and itunes.apple.com; others none');
+  // #770 (Wendo Kolosoy): MusicBrainz had the page as itunes.apple.com/artist/id172811767, with no storefront
+  const ap = f.pcUrlForms('https://music.apple.com/gb/artist/172811767');
+  check(ap.includes('https://itunes.apple.com/artist/id172811767') && ap.includes('https://music.apple.com/artist/172811767'), `Apple Music: the forms without a storefront too (${ap})`);
   const linked = await f.pcLinkedTo(['https://www.qobuz.com/us-en/interpreter/pink-floyd/38324', 'https://www.deezer.com/artist/1']);
   const who = linked.get(f.pcUrlKey('https://www.qobuz.com/us-en/interpreter/pink-floyd/38324')) || [];
   check(asked.length === 1, `one request (${asked.length})`);
