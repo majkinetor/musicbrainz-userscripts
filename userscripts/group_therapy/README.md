@@ -164,8 +164,8 @@ Once you use Group Therapy on a page, it adds its signature to the edit note, fo
 | Hide help text            | on      | hide MusicBrainz's help above the relationships |
 | Hide native batch tools   | off     | hide MusicBrainz's own batch-tools table        |
 | Auto-match on start       | off     | open the work matcher and match on page load    |
-| Auto-match on open        | off     | match when the work matcher opens               |
-| Uncollapse media on start | off     | expand every medium on load                     |
+| Auto-match on open        | on      | match when the work matcher opens               |
+| Uncollapse media on start | on      | expand every medium on load                     |
 
 ## Shortcuts
 

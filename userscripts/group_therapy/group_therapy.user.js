@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Group Therapy
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.16
+// @version      2026.10.16.195121
 // @description  MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48ZyBmaWxsPSJub25lIiBzdHJva2U9IiM1YjZiN2EiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9Ijk0IiB5Mj0iNDIiLz48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48bGluZSB4MT0iOTQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48L2c+PGcgZmlsbD0iIzJlOWU1YiIgc3Ryb2tlPSIjMjU2ZjQzIiBzdHJva2Utd2lkdGg9IjQiPjxjaXJjbGUgY3g9IjM0IiBjeT0iNDIiIHI9IjE2Ii8+PGNpcmNsZSBjeD0iOTQiIGN5PSI0MiIgcj0iMTYiLz48Y2lyY2xlIGN4PSI2NCIgY3k9Ijk0IiByPSIxNiIvPjwvZz48L3N2Zz4=
@@ -2566,8 +2566,8 @@
     body.appendChild(opt('Hide help text', 'Hide the two MusicBrainz help paragraphs at the top of the edit-relationships page', () => gtHideHelp, v => { gtHideHelp = v; try { GM_setValue('gt-hide-help', v); } catch (e) {} gtApplyHelp(); }));
     body.appendChild(opt('Hide native batch tools', "Hide MusicBrainz's own batch-tools table (#batch-tools) on the edit-relationships page", () => gtHideBatch, v => { gtHideBatch = v; try { GM_setValue('gt-hide-batch', v); } catch (e) {} gtApplyBatch(); }));
     body.appendChild(opt('Auto-match on start', 'Open the work matcher and run matching automatically when the page loads', () => gtAutoMatch, v => { gtAutoMatch = v; try { GM_setValue('gt-auto-match', v); } catch (e) {} }));
-    body.appendChild(opt('Auto-match on open', 'When you open the work matcher, run matching automatically — off (default): the popup opens with everything unresolved and you click ⚡ Match yourself', () => wmAutoOnOpen, v => { wmAutoOnOpen = v; try { GM_setValue('gt-wm-auto-open', v); } catch (e) {} }));
-    body.appendChild(opt('Uncollapse media on start', 'On load, click MusicBrainz’s “Expand all mediums” so every medium’s tracks are reachable during the fill phase (MB collapses mediums past the first few). Off by default — expanding a large release takes a moment.', () => gtUncollapse, v => { gtUncollapse = v; try { GM_setValue('gt-uncollapse', v); } catch (e) {} if (v) gtApplyUncollapse(); }));
+    body.appendChild(opt('Auto-match on open', 'When you open the work matcher, run matching automatically (on by default). Off: the popup opens with everything unresolved and you click ⚡ Match yourself', () => wmAutoOnOpen, v => { wmAutoOnOpen = v; try { GM_setValue('gt-wm-auto-open', v); } catch (e) {} }));
+    body.appendChild(opt('Uncollapse media on start', 'On load, click MusicBrainz’s “Expand all mediums” so every medium’s tracks are reachable during the fill phase (MB collapses mediums past the first few). On by default; expanding a large release takes a moment.', () => gtUncollapse, v => { gtUncollapse = v; try { GM_setValue('gt-uncollapse', v); } catch (e) {} if (v) gtApplyUncollapse(); }));
     popEl.appendChild(body);
     document.body.appendChild(popEl);
     const a = anchor.getBoundingClientRect(), r = popEl.getBoundingClientRect();
@@ -3152,7 +3152,7 @@
   // how far ⚡ Match / the initial pre-tick reaches down the confidence ladder (persisted)
   let wmCutoff = (() => { try { const v = GM_getValue('gt-wm-cutoff', WM_RANK.near); return typeof v === 'number' ? v : WM_RANK.near; } catch (e) { return WM_RANK.near; } })();
   // #363 whether opening the matcher auto-runs the (API-heavy) match. Default OFF — you click ⚡ Match yourself.
-  let wmAutoOnOpen = (() => { try { return !!GM_getValue('gt-wm-auto-open', false); } catch (e) { return false; } })();
+  let wmAutoOnOpen = (() => { try { return GM_getValue('gt-wm-auto-open', true) !== false; } catch (e) { return true; } })();   // on by default
   // #718 a medley track ("Land of Hope and Dreams / People Get Ready") gets a row per work. Only " / " with
   // spaces splits — MB's title guideline for medleys — so "AC/DC" stays whole. On by default, toggled in
   // the matcher's toolbar (persisted).
@@ -3164,7 +3164,7 @@
   let gtHideHelp = (() => { try { return GM_getValue('gt-hide-help', true) !== false; } catch (e) { return true; } })();
   let gtAutoMatch = (() => { try { return GM_getValue('gt-auto-match', false) === true; } catch (e) { return false; } })();
   let gtHideBatch = (() => { try { return GM_getValue('gt-hide-batch', false) === true; } catch (e) { return false; } })();   // hide MB's own batch-tools table (off by default)
-  let gtUncollapse = (() => { try { return GM_getValue('gt-uncollapse', false) === true; } catch (e) { return false; } })();   // #390 auto-expand all mediums on load (off by default)
+  let gtUncollapse = (() => { try { return GM_getValue('gt-uncollapse', true) !== false; } catch (e) { return true; } })();   // #390 auto-expand all mediums on load (on by default)
   // the two help paragraphs are the only direct-child <p> of #content (the batch-tools hint + the guidelines
   // link) — a stable selector even after we insert our toolbar, since that's a <div>.
   const gtApplyHelp = () => { document.querySelectorAll('#content > p').forEach(p => { p.style.display = gtHideHelp ? 'none' : ''; }); };

@@ -9,6 +9,8 @@ import { test, check, until, loadFunctions, frames } from '../../../dev/test/har
 import { blockEdits, openRelEditor } from './gt.mjs';
 
 const MEDLEYS = '647c0fd7-b4cf-47c1-bb2f-d841f4daae1a';
+// The spec clicks ⚡ Match itself, so the matcher must not match on open (on by default).
+test.use({ gm: { values: { 'gt-wm-auto-open': false } } });
 
 test('only a slash with spaces around it splits a title', { tag: ['@unit'] }, async () => {
   const { wmMedleyParts } = await loadFunctions('group_therapy', ['WM_MEDLEY_RE', 'wmMedleyParts']);

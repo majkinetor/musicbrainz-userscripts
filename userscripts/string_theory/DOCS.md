@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-10-16 21:16 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-10-16 19:52 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -1434,8 +1434,8 @@ Once you use Group Therapy on a page, it adds its signature to the edit note, fo
 | Hide help text            | on      | hide MusicBrainz's help above the relationships |
 | Hide native batch tools   | off     | hide MusicBrainz's own batch-tools table        |
 | Auto-match on start       | off     | open the work matcher and match on page load    |
-| Auto-match on open        | off     | match when the work matcher opens               |
-| Uncollapse media on start | off     | expand every medium on load                     |
+| Auto-match on open        | on      | match when the work matcher opens               |
+| Uncollapse media on start | on      | expand every medium on load                     |
 
 ### Shortcuts
 
