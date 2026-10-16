@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Art Station
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.16.205125
+// @version      2026.10.16.214706
 // @description  Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5BcnQgU3RhdGlvbjwvdGl0bGU+CjxjaXJjbGUgY3g9Ijg2IiBjeT0iNjQiIHI9IjM4IiBmaWxsPSIjMWIwZjNiIiBzdHJva2U9IiNiOTY3ZmYiIHN0cm9rZS13aWR0aD0iMyIvPgo8Y2lyY2xlIGN4PSI4NiIgY3k9IjY0IiByPSIyOC44OCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjNGEzNDgwIiBzdHJva2Utd2lkdGg9IjEuNSIvPjxjaXJjbGUgY3g9Ijg2IiBjeT0iNjQiIHI9IjIwLjkwMDAwMDAwMDAwMDAwMiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjNGEzNDgwIiBzdHJva2Utd2lkdGg9IjEuNSIvPgo8Y2lyY2xlIGN4PSI4NiIgY3k9IjY0IiByPSIxMS4wMiIgZmlsbD0iI2ZmNzFjZSIvPjxjaXJjbGUgY3g9Ijg2IiBjeT0iNjQiIHI9IjIuNTA4IiBmaWxsPSIjMWIwZjNiIi8+PGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJhcy1za3ljIiB4MT0iMCIgeTE9IjAiIHgyPSIwIiB5Mj0iMSI+PHN0b3Agb2Zmc2V0PSIwLjAwIiBzdG9wLWNvbG9yPSIjN2ZlN2ZmIi8+PHN0b3Agb2Zmc2V0PSIwLjUwIiBzdG9wLWNvbG9yPSIjZDlhNmZmIi8+PHN0b3Agb2Zmc2V0PSIxLjAwIiBzdG9wLWNvbG9yPSIjZmY3MWNlIi8+PC9saW5lYXJHcmFkaWVudD48Y2xpcFBhdGggaWQ9ImFzLWNjIj48cmVjdCB4PSIxMCIgeT0iMjIiIHdpZHRoPSI3OCIgaGVpZ2h0PSI4NCIgcng9IjgiLz48L2NsaXBQYXRoPjwvZGVmcz4KPGcgY2xpcC1wYXRoPSJ1cmwoI2FzLWNjKSI+PHJlY3QgeD0iMTAiIHk9IjIyIiB3aWR0aD0iNzgiIGhlaWdodD0iODQiIGZpbGw9InVybCgjYXMtc2t5YykiLz4KPGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJhcy1nczIiIHgxPSIwIiB5MT0iMCIgeDI9IjAiIHkyPSIxIj48c3RvcCBvZmZzZXQ9IjAiIHN0b3AtY29sb3I9IiNmZmY2YTgiLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiNmZjhhNWMiLz48L2xpbmVhckdyYWRpZW50Pgo8bWFzayBpZD0iYXMtbXMyIj48cmVjdCB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCIgZmlsbD0iI2ZmZiIvPjxyZWN0IHg9IjI1LjYiIHk9IjY3LjIiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjEuMiIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9IjY5LjgiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjEuNSIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9IjczLjAiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjEuOCIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9Ijc3LjAiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjIuMyIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9IjgyLjAiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjIuOSIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9Ijg4LjMiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjMuNiIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9Ijk2LjIiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjQuNSIgZmlsbD0iIzAwMCIvPjwvbWFzaz48L2RlZnM+CjxjaXJjbGUgY3g9IjQ5IiBjeT0iNzYuMDgiIHI9IjIzLjQiIGZpbGw9InVybCgjYXMtZ3MyKSIgbWFzaz0idXJsKCNhcy1tczIpIi8+PHJlY3QgeD0iMTAiIHk9Ijc0LjA4IiB3aWR0aD0iNzgiIGhlaWdodD0iMzEuOTIiIGZpbGw9IiNiOTY3ZmYiLz48cGF0aCBkPSJNMTAgNzQuMDhIODhNMTAgNzcuOUg4OE0xMCA4My4ySDg4TTEwIDkxLjRIODhNMTAgMTA0LjJIODhNMzQuOCA3NC4wOEwtNDguNSAxMDZNMzguNCA3NC4wOEwtMjQuMSAxMDZNNDEuOSA3NC4wOEwwLjMgMTA2TTQ1LjUgNzQuMDhMMjQuNiAxMDZNNDkuMCA3NC4wOEw0OS4wIDEwNk01Mi41IDc0LjA4TDczLjQgMTA2TTU2LjEgNzQuMDhMOTcuOCAxMDZNNTkuNiA3NC4wOEwxMjIuMSAxMDZNNjMuMiA3NC4wOEwxNDYuNSAxMDYiIHN0cm9rZT0iI2ZmZmI5NiIgc3Ryb2tlLXdpZHRoPSIxLjMiIGZpbGw9Im5vbmUiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPjwvZz48cmVjdCB4PSIxMCIgeT0iMjIiIHdpZHRoPSI3OCIgaGVpZ2h0PSI4NCIgcng9IjgiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJhMTQ1OCIgc3Ryb2tlLXdpZHRoPSIzIi8+Cjwvc3ZnPgo=
@@ -453,7 +453,13 @@
       log.info('Mission Control apply: ' + JSON.stringify(m));
       const b = frame.best;
       if (!m) reply({ ok: false, sent: 0, note: 'Art Station did not finish within 10 minutes' });
-      else if (m.ok) reply({ ok: true, sent: (front ? 1 : 0) + extras.length, note: [front && 'entered ' + b.provider + ' ' + b.w + '×' + b.h + ' as the front cover' + (mcPlan.replace ? ', and removed the smaller one' : ''), more && (front ? 'and ' : 'entered ') + more].filter(Boolean).join(' ') });
+      else if (m.ok) {
+        // #772: the count is the frame's, which knows which images it found again
+        const nx = typeof m.extrasIn === 'number' ? m.extrasIn : extras.length, lost = Array.isArray(m.missing) ? m.missing : [];
+        const moreIn = nx ? nx + ' more image' + (nx === 1 ? '' : 's') : '';
+        reply({ ok: true, sent: (front ? 1 : 0) + nx, extras: extras.filter(x => !lost.includes(x.key)), note: [front && 'entered ' + b.provider + ' ' + b.w + '×' + b.h + ' as the front cover' + (mcPlan.replace ? ', and removed the smaller one' : ''), moreIn && (front ? 'and ' : 'entered ') + moreIn,
+          lost.length && '(' + lost.join(', ') + ' not found this time)'].filter(Boolean).join(' ') });
+      }
       else reply({ ok: false, sent: 0, retry: !m.cancelled && !!m.retry, note: m.cancelled ? 'cancelled' : 'the edit failed' + (m.error ? ': ' + m.error : '') + (m.gaveUp ? ' (repeated for ' + m.gaveUp + ')' : '') });
     });
     hello();
@@ -3104,16 +3110,18 @@
       asLog.info('Mission Control: the best front is not taken in, so it is left out');
     }
     // #772: the stores' other images taken in on MC's card, with the types and comment set there, after the front
+    const missing = [];
     const add = (Array.isArray(d.extras) ? d.extras : []).map(e => {
       const x = _mcExtras.get(e.key);
-      if (!x) { asLog.warn(`Mission Control: ${e.key} is not among the images found this time`); return null; }
+      if (!x) { missing.push(e.key); asLog.warn(`Mission Control: ${e.key} is not among the images found this time`); return null; }
       x.types = (Array.isArray(e.types) ? e.types : []).filter(t => ALL_TYPES.includes(t));
       x.comment = String(e.comment || '').trim();
       return x;
     }).filter(x => x && !MODEL.includes(x));
     if (add.length) {
       const seq = MODEL.slice().sort((a, b) => a.order - b.order);
-      const at = _mcBest && seq.includes(_mcBest) ? seq.indexOf(_mcBest) + 1 : 0;
+      // after the front entered with them; without it, after the covers already there
+      const at = _mcBest && seq.includes(_mcBest) ? seq.indexOf(_mcBest) + 1 : seq.length;
       seq.splice(at, 0, ...add);
       MODEL = seq; MODEL.forEach((x, i) => x.order = i);
       asLog.info(`Mission Control: entering ${add.length} more image(s): ${add.map(x => `${x._provider || '?'} ${x.w}×${x.h} [${x.types.join(', ') || 'no type'}]${x.comment ? ' "' + x.comment + '"' : ''}`).join(', ')}`);
@@ -3123,7 +3131,17 @@
       if (old.length === 1) { old[0]._del = true; old[0]._sel = false; asLog.info(`Mission Control: removing the smaller front #${old[0].id} ${old[0].w}×${old[0].h}`); }
       if (!(_mcBest.types || []).includes('Front')) _mcBest.types = ['Front'].concat(_mcBest.types || []);
     }
-    _mcCommitDone = r => mcFramePost(Object.assign({ type: 'entered' }, r));
+    // #772: what was taken, so Mission Control isn't told an image went in when the frame had nothing to enter
+    const front = !!(_mcBest && MODEL.includes(_mcBest)), extrasIn = add.length;
+    _mcCommitDone = r => mcFramePost(Object.assign({ type: 'entered', front, extrasIn, missing }, r));
+    const plan = buildPlan();
+    asLog.info(`Mission Control: ${plan.length} operation(s): ${plan.map(o => o.label).join(' · ') || 'none'}`);
+    if (!plan.some(o => o.kind === 'add')) {
+      asLog.warn('Mission Control: nothing to upload' + (missing.length ? ` (${missing.join(', ')} not found this time)` : ''));
+      _mcCommitDone({ ok: false, errs: 0, total: 0, error: 'nothing to enter' + (missing.length ? ': ' + missing.join(', ') + ' not found this time' : '') });
+      _mcCommitDone = null;
+      return;
+    }
     enterEdit(true);
   });
   let _mcCommitDone = null, _mcBest = null, _mcNoteBase = null, _mcPool = [], _mcExtras = new Map();   // #772 _mcPool: the stores' other images, kept off the gallery; _mcExtras: key -> one of them
@@ -3696,8 +3714,24 @@
     p.append(`add-${ART}.comment`, it.comment);
     p.append(`add-${ART}.edit_note`, editNoteFor(meta, it));   // #260 include this cover's source, if any
     if (meta.votable) p.append(`add-${ART}.make_votable`, '1');
-    const add = await fetch(`${R}/add-${ART}`, { method: 'POST', body: p, credentials: 'same-origin', signal: ctl && ctl.ac.signal });
-    if (!add.ok) throw new Error('add ' + add.status);
+    // #772: through the gate, which passes MusicBrainz's browser check and asks again
+    const add = await mbnFetch(`${R}/add-${ART}`, { method: 'POST', body: p, credentials: 'same-origin', signal: ctl && ctl.ac.signal }, { log: (l, m) => asLog[l === 'warn' ? 'warn' : 'info'](m) });
+    if (!add || !add.ok) throw new Error('add ' + (add ? add.status : 'failed'));
+    // #772: a saved edit redirects to the cover-art page; the form again (an error) or the browser check
+    // is a 200 too, which counted as entered while nothing was
+    if (!add.redirected || /\/add-[a-z-]+$/.test(new URL(add.url).pathname)) {
+      let why = '';
+      try {
+        const html = await add.text();
+        if (/<title>\s*Verifying your browser\s*<\/title>/i.test(html)) why = 'MusicBrainz asked to verify the browser';
+        else {
+          const doc = new DOMParser().parseFromString(html, 'text/html');
+          why = [...doc.querySelectorAll('#page .error, #page ul.errors li')].map(e => e.textContent.trim()).filter(Boolean).join(' · ').slice(0, 300);
+        }
+      } catch (e) {}
+      asLog.warn(`Upload: MusicBrainz didn't save the edit (HTTP ${add.status}, ${add.url})${why ? ': ' + why : ''}`);
+      throw new Error("MusicBrainz didn't save the edit" + (why ? ': ' + why : ''));
+    }
   }
   async function runAdd(it, meta, dry, report) {   // dry-run summary only (live uses runAdds)
     const mime = (it._fileObj && it._fileObj.type) || 'image/jpeg';

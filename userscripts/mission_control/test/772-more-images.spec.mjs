@@ -1,7 +1,8 @@
 // #772: Art Station's card offers the stores' other images (best.extras), taken in, typed and commented as in
-// Art Station: a click on the image takes it in, the type pill opens the picker (right-click a type: only that
-// one), ✎ the comment (Enter: the next one; Esc saves, and doesn't close MC), right-drag selects. Nothing starts
-// taken in. Execute sends the taken in to AS as mc:apply's extras, and they show as entered after.
+// Art Station: a right-click or right-drag takes in or leaves out, a click shows the image full screen, the type
+// pill opens the picker (right-click a type: only that one), ✎ the comment (Enter: the next one; Esc saves, and
+// doesn't close MC). Nothing starts taken in. Execute sends the taken in to AS as mc:apply's extras, and they
+// show as entered after.
 // A stand-in AS answers the probe and the apply.
 import { test, check, until } from '../../../dev/test/harness.mjs';
 
@@ -47,10 +48,14 @@ test('#772: more images, taken in, typed and commented, sent with Execute', { ta
   check(await card('Discogs#1').locator('.mc-ax-dup').textContent() === '= Amazon 1', 'the same picture as the best front says so');
   check(await exec() === 'Execute (1)', `only the front counts (${await exec()})`);
 
-  // a click on the image takes it in
-  await card('Amazon#2').locator('.mc-ax-img').click();
-  check((await st())[0].on, 'a click takes the image in');
+  // a right-click takes the image in; a click shows it full screen, and leaves it as it was
+  await card('Amazon#2').locator('.mc-ax-img').click({ button: 'right' });
+  check((await st())[0].on, 'a right-click takes the image in');
   check(await exec() === 'Execute (2)', `and it counts (${await exec()})`);
+  await card('Amazon#2').locator('.mc-ax-img').click();
+  check(await page.locator('#mc-cover').count() === 1 && /Amazon 2/.test(await page.locator('#mc-cover .mc-cov-t').textContent()), 'a click shows it full screen');
+  await page.keyboard.press('Escape');
+  check(await page.locator('#mc-cover').count() === 0 && (await st())[0].on && await page.locator('#mc-root').count() === 1, 'Esc closes the full screen; the image stays taken in');
 
   // the type picker: a tick types it and takes it in; right-click sets only that type and closes
   await card('Discogs#2').locator('.mc-ax-pill').click();
@@ -66,9 +71,9 @@ test('#772: more images, taken in, typed and commented, sent with Execute', { ta
 
   // the comment: ✎, Enter moves to the next image, Esc saves and keeps Mission Control open
   await card('Amazon#2').hover();
-  // the ✎ and ⤢ show on hover (the #mc-root rule that hid them outranked the :hover one)
-  const shown = await until(() => card('Amazon#2').evaluate(c => ['.mc-ax-pen', '.mc-ax-zoom'].map(q => getComputedStyle(c.querySelector(q)).opacity).join()), v => v === '1,1');
-  check(shown === '1,1', `the card's ✎ and ⤢ show on hover (opacity ${shown})`);
+  // the ✎ shows on hover (the #mc-root rule that hid it outranked the :hover one)
+  const shown = await until(() => card('Amazon#2').evaluate(c => getComputedStyle(c.querySelector('.mc-ax-pen')).opacity), v => v === '1');
+  check(shown === '1', `the card's ✎ shows on hover (opacity ${shown})`);
   await card('Amazon#2').locator('.mc-ax-pen').click();
   await page.keyboard.type('Disc 1');
   await page.keyboard.press('Enter');
@@ -79,7 +84,7 @@ test('#772: more images, taken in, typed and commented, sent with Execute', { ta
   check(s[0].cmt === 'Disc 1' && s[1].cmt === 'x' && s[1].on, `both comments kept; a comment takes its image in (${JSON.stringify(s.slice(0, 2))})`);
   check(await page.locator('#mc-root').count() === 1, 'Esc in a comment doesn\'t close Mission Control');
 
-  // right-drag selects; the selection's Leave out, Type
+  // right-drag from a taken-in image leaves out every one it passes; a right-click takes one back in
   const box = async k => { const b = await card(k).locator('.mc-ax-img').boundingBox(); return [b.x + b.width / 2, b.y + b.height / 2]; };
   const [x1, y1] = await box('Discogs#1'), [x3, y3] = await box('Discogs#3');
   await page.mouse.move(x1, y1);
@@ -88,18 +93,22 @@ test('#772: more images, taken in, typed and commented, sent with Execute', { ta
   await page.mouse.move(x3, y3, { steps: 4 });
   await page.mouse.up({ button: 'right' });
   s = await st();
-  check(s.filter(x => x.sel).map(x => x.k).join() === 'Discogs#1,Discogs#2,Discogs#3', `right-drag selects the three Discogs images (${s.filter(x => x.sel).map(x => x.k)})`);
-  check(/3 selected/.test(await page.locator('#mc-root .mc-ax-h').textContent()), 'the selection bar says how many');
-  await page.click('#mc-root [data-act="ax-sel-leave"]');
+  check(s.filter(x => x.k.startsWith('Discogs')).every(x => !x.on) && s[0].on, `right-drag leaves the three Discogs images out (${JSON.stringify(s)})`);
+  check(await page.locator('#mc-root .mc-ax-b[data-act^="ax-sel"]').count() === 0, 'no selection bar');
+  // a store's take all in, and then leave all out
+  const gb = page.locator('#mc-root .mc-ax-gb[data-p="Discogs"]');
+  check(await gb.textContent() === 'take all in', `Discogs' row offers take all in (${await gb.textContent()})`);
+  await gb.click();
   s = await st();
-  check(s.filter(x => x.k.startsWith('Discogs')).every(x => !x.on), 'Leave out leaves the selection out');
-  await page.click('#mc-root [data-act="ax-sel-type"]');
+  check(s.filter(x => x.k.startsWith('Discogs')).every(x => x.on) && await gb.textContent() === 'leave all out', `take all in takes the three in (${JSON.stringify(s)})`);
+  await gb.click();
+  s = await st();
+  check(s.filter(x => x.k.startsWith('Discogs')).every(x => !x.on) && s[0].on, `leave all out leaves them out, Amazon's stays (${JSON.stringify(s)})`);
+  await card('Discogs#2').locator('.mc-ax-img').click({ button: 'right' });
+  await card('Discogs#2').locator('.mc-ax-pill').click();
   await pop.locator('label', { hasText: 'Booklet' }).click({ button: 'right' });
   s = await st();
-  check(s.filter(x => x.k.startsWith('Discogs')).every(x => x.on && x.pill === 'Booklet'), `Type on the selection types and takes in each (${JSON.stringify(s)})`);
-  await page.click('#mc-root [data-act="ax-sel-none"]');
-  await card('Discogs#1').locator('.mc-ax-img').click();
-  await card('Discogs#3').locator('.mc-ax-img').click();
+  check(s[2].on && s[2].pill === 'Booklet', `Discogs 2 taken back in, typed Booklet (${JSON.stringify(s[2])})`);
   await page.screenshot({ path: 'test-results/mc-772-more-images.png' });
 
   // Execute sends the taken in, with their types and comments

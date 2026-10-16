@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         String Theory
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.16.212214
+// @version      2026.10.16.214945
 // @description  Unified bundle of 11 MusicBrainz userscripts (apollo_editor, art_station, credit_hoarder, falcon, first_contact, fusion, group_therapy, isrc_scout, mammoth, mission_control, platform_check). Built by userscripts/string_theory/build.mjs — do not hand-edit.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5TdHJpbmcgVGhlb3J5PC90aXRsZT4KPHBhdGggZD0iTTY0IDEwIEw2Ni40IDEwLjIgTDY4LjcgMTAuNiBMNzAuOSAxMS40IEw3My4xIDEyLjQgTDc1LjIgMTMuNyBMNzcuMSAxNS4yIEw3OC44IDE3IEw4MC40IDE4LjkgTDgxLjggMjEgTDgzLjEgMjMuMSBMODQuMSAyNS40IEw4NSAyNy42IEw4NS43IDI5LjkgTDg2LjMgMzIuMSBMODYuOCAzNC4zIEw4Ny4xIDM2LjQgTDg3LjQgMzguNCBMODcuNyA0MC4zIEw4Ny45IDQyLjEgTDg4LjIgNDMuNyBMODguNSA0NS4yIEw4OC45IDQ2LjYgTDg5LjQgNDcuOCBMOTAgNDkgTDkwLjcgNTAuMSBMOTEuNiA1MS4xIEw5Mi42IDUyLjIgTDkzLjcgNTMuMiBMOTUgNTQuMiBMOTYuNCA1NS4zIEw5Ny45IDU2LjUgTDk5LjUgNTcuNyBMMTAxLjEgNTkuMSBMMTAyLjcgNjAuNiBMMTA0LjQgNjIuMiBMMTA2IDY0IEwxMDcuNSA2NS45IEwxMDguOSA2Ny45IEwxMTAuMiA3MC4xIEwxMTEuMyA3Mi4zIEwxMTIuMSA3NC43IEwxMTIuOCA3Ny4xIEwxMTMuMSA3OS41IEwxMTMuMiA4MS45IEwxMTMgODQuMyBMMTEyLjYgODYuNiBMMTExLjggODguOSBMMTEwLjggOTEgTDEwOS41IDkzIEwxMDcuOSA5NC43IEwxMDYuMSA5Ni4zIEwxMDQuMSA5Ny43IEwxMDIgOTguOCBMOTkuNyA5OS43IEw5Ny4zIDEwMC40IEw5NC45IDEwMC44IEw5Mi40IDEwMSBMODkuOSAxMDAuOSBMODcuNCAxMDAuNyBMODUgMTAwLjQgTDgyLjcgOTkuOSBMODAuNCA5OS4zIEw3OC4zIDk4LjYgTDc2LjMgOTcuOCBMNzQuNCA5Ny4xIEw3Mi43IDk2LjQgTDcxIDk1LjcgTDY5LjUgOTUuMSBMNjggOTQuNiBMNjYuNyA5NC4zIEw2NS4zIDk0LjEgTDY0IDk0IEw2Mi43IDk0LjEgTDYxLjMgOTQuMyBMNjAgOTQuNiBMNTguNSA5NS4xIEw1NyA5NS43IEw1NS4zIDk2LjQgTDUzLjYgOTcuMSBMNTEuNyA5Ny44IEw0OS43IDk4LjYgTDQ3LjYgOTkuMyBMNDUuMyA5OS45IEw0MyAxMDAuNCBMNDAuNiAxMDAuNyBMMzguMSAxMDAuOSBMMzUuNiAxMDEgTDMzLjEgMTAwLjggTDMwLjcgMTAwLjQgTDI4LjMgOTkuNyBMMjYgOTguOCBMMjMuOSA5Ny43IEwyMS45IDk2LjMgTDIwLjEgOTQuNyBMMTguNSA5MyBMMTcuMiA5MSBMMTYuMiA4OC45IEwxNS40IDg2LjYgTDE1IDg0LjMgTDE0LjggODEuOSBMMTQuOSA3OS41IEwxNS4yIDc3LjEgTDE1LjkgNzQuNyBMMTYuNyA3Mi4zIEwxNy44IDcwLjEgTDE5LjEgNjcuOSBMMjAuNSA2NS45IEwyMiA2NCBMMjMuNiA2Mi4yIEwyNS4zIDYwLjYgTDI2LjkgNTkuMSBMMjguNSA1Ny43IEwzMC4xIDU2LjUgTDMxLjYgNTUuMyBMMzMgNTQuMiBMMzQuMyA1My4yIEwzNS40IDUyLjIgTDM2LjQgNTEuMSBMMzcuMyA1MC4xIEwzOCA0OSBMMzguNiA0Ny44IEwzOS4xIDQ2LjYgTDM5LjUgNDUuMiBMMzkuOCA0My43IEw0MC4xIDQyLjEgTDQwLjMgNDAuMyBMNDAuNiAzOC40IEw0MC45IDM2LjQgTDQxLjIgMzQuMyBMNDEuNyAzMi4xIEw0Mi4zIDI5LjkgTDQzIDI3LjYgTDQzLjkgMjUuNCBMNDQuOSAyMy4xIEw0Ni4yIDIxIEw0Ny42IDE4LjkgTDQ5LjIgMTcgTDUwLjkgMTUuMiBMNTIuOCAxMy43IEw1NC45IDEyLjQgTDU3LjEgMTEuNCBMNTkuMyAxMC42IEw2MS42IDEwLjJaIiBmaWxsPSJub25lIiBzdHJva2U9IiM5Yzg2ZWEiIHN0cm9rZS13aWR0aD0iMTAiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz4KPHBhdGggZD0iTTY0IDM0IEw2NS4zIDMzLjkgTDY2LjcgMzMuNyBMNjggMzMuNCBMNjkuNSAzMi45IEw3MSAzMi4zIEw3Mi43IDMxLjYgTDc0LjQgMzAuOSBMNzYuMyAzMC4yIEw3OC4zIDI5LjQgTDgwLjQgMjguNyBMODIuNyAyOC4xIEw4NSAyNy42IEw4Ny40IDI3LjMgTDg5LjkgMjcuMSBMOTIuNCAyNyBMOTQuOSAyNy4yIEw5Ny4zIDI3LjYgTDk5LjcgMjguMyBMMTAyIDI5LjIgTDEwNC4xIDMwLjMgTDEwNi4xIDMxLjcgTDEwNy45IDMzLjMgTDEwOS41IDM1IEwxMTAuOCAzNyBMMTExLjggMzkuMSBMMTEyLjYgNDEuNCBMMTEzIDQzLjcgTDExMy4yIDQ2LjEgTDExMy4xIDQ4LjUgTDExMi44IDUwLjkgTDExMi4xIDUzLjMgTDExMS4zIDU1LjcgTDExMC4yIDU3LjkgTDEwOC45IDYwLjEgTDEwNy41IDYyLjEgTDEwNiA2NCBMMTA0LjQgNjUuOCBMMTAyLjcgNjcuNCBMMTAxLjEgNjguOSBMOTkuNSA3MC4zIEw5Ny45IDcxLjUgTDk2LjQgNzIuNyBMOTUgNzMuOCBMOTMuNyA3NC44IEw5Mi42IDc1LjggTDkxLjYgNzYuOSBMOTAuNyA3Ny45IEw5MCA3OSBMODkuNCA4MC4yIEw4OC45IDgxLjQgTDg4LjUgODIuOCBMODguMiA4NC4zIEw4Ny45IDg1LjkgTDg3LjcgODcuNyBMODcuNCA4OS42IEw4Ny4xIDkxLjYgTDg2LjggOTMuNyBMODYuMyA5NS45IEw4NS43IDk4LjEgTDg1IDEwMC40IEw4NC4xIDEwMi42IEw4My4xIDEwNC45IEw4MS44IDEwNyBMODAuNCAxMDkuMSBMNzguOCAxMTEgTDc3LjEgMTEyLjggTDc1LjIgMTE0LjMgTDczLjEgMTE1LjYgTDcwLjkgMTE2LjYgTDY4LjcgMTE3LjQgTDY2LjQgMTE3LjggTDY0IDExOCBMNjEuNiAxMTcuOCBMNTkuMyAxMTcuNCBMNTcuMSAxMTYuNiBMNTQuOSAxMTUuNiBMNTIuOCAxMTQuMyBMNTAuOSAxMTIuOCBMNDkuMiAxMTEgTDQ3LjYgMTA5LjEgTDQ2LjIgMTA3IEw0NC45IDEwNC45IEw0My45IDEwMi42IEw0MyAxMDAuNCBMNDIuMyA5OC4xIEw0MS43IDk1LjkgTDQxLjIgOTMuNyBMNDAuOSA5MS42IEw0MC42IDg5LjYgTDQwLjMgODcuNyBMNDAuMSA4NS45IEwzOS44IDg0LjMgTDM5LjUgODIuOCBMMzkuMSA4MS40IEwzOC42IDgwLjIgTDM4IDc5IEwzNy4zIDc3LjkgTDM2LjQgNzYuOSBMMzUuNCA3NS44IEwzNC4zIDc0LjggTDMzIDczLjggTDMxLjYgNzIuNyBMMzAuMSA3MS41IEwyOC41IDcwLjMgTDI2LjkgNjguOSBMMjUuMyA2Ny40IEwyMy42IDY1LjggTDIyIDY0IEwyMC41IDYyLjEgTDE5LjEgNjAuMSBMMTcuOCA1Ny45IEwxNi43IDU1LjcgTDE1LjkgNTMuMyBMMTUuMiA1MC45IEwxNC45IDQ4LjUgTDE0LjggNDYuMSBMMTUgNDMuNyBMMTUuNCA0MS40IEwxNi4yIDM5LjEgTDE3LjIgMzcgTDE4LjUgMzUgTDIwLjEgMzMuMyBMMjEuOSAzMS43IEwyMy45IDMwLjMgTDI2IDI5LjIgTDI4LjMgMjguMyBMMzAuNyAyNy42IEwzMy4xIDI3LjIgTDM1LjYgMjcgTDM4LjEgMjcuMSBMNDAuNiAyNy4zIEw0MyAyNy42IEw0NS4zIDI4LjEgTDQ3LjYgMjguNyBMNDkuNyAyOS40IEw1MS43IDMwLjIgTDUzLjYgMzAuOSBMNTUuMyAzMS42IEw1NyAzMi4zIEw1OC41IDMyLjkgTDYwIDMzLjQgTDYxLjMgMzMuNyBMNjIuNyAzMy45WiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZmZmZmZmIiBzdHJva2Utd2lkdGg9IjIwIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+CjxwYXRoIGQ9Ik02NCAzNCBMNjUuMyAzMy45IEw2Ni43IDMzLjcgTDY4IDMzLjQgTDY5LjUgMzIuOSBMNzEgMzIuMyBMNzIuNyAzMS42IEw3NC40IDMwLjkgTDc2LjMgMzAuMiBMNzguMyAyOS40IEw4MC40IDI4LjcgTDgyLjcgMjguMSBMODUgMjcuNiBMODcuNCAyNy4zIEw4OS45IDI3LjEgTDkyLjQgMjcgTDk0LjkgMjcuMiBMOTcuMyAyNy42IEw5OS43IDI4LjMgTDEwMiAyOS4yIEwxMDQuMSAzMC4zIEwxMDYuMSAzMS43IEwxMDcuOSAzMy4zIEwxMDkuNSAzNSBMMTEwLjggMzcgTDExMS44IDM5LjEgTDExMi42IDQxLjQgTDExMyA0My43IEwxMTMuMiA0Ni4xIEwxMTMuMSA0OC41IEwxMTIuOCA1MC45IEwxMTIuMSA1My4zIEwxMTEuMyA1NS43IEwxMTAuMiA1Ny45IEwxMDguOSA2MC4xIEwxMDcuNSA2Mi4xIEwxMDYgNjQgTDEwNC40IDY1LjggTDEwMi43IDY3LjQgTDEwMS4xIDY4LjkgTDk5LjUgNzAuMyBMOTcuOSA3MS41IEw5Ni40IDcyLjcgTDk1IDczLjggTDkzLjcgNzQuOCBMOTIuNiA3NS44IEw5MS42IDc2LjkgTDkwLjcgNzcuOSBMOTAgNzkgTDg5LjQgODAuMiBMODguOSA4MS40IEw4OC41IDgyLjggTDg4LjIgODQuMyBMODcuOSA4NS45IEw4Ny43IDg3LjcgTDg3LjQgODkuNiBMODcuMSA5MS42IEw4Ni44IDkzLjcgTDg2LjMgOTUuOSBMODUuNyA5OC4xIEw4NSAxMDAuNCBMODQuMSAxMDIuNiBMODMuMSAxMDQuOSBMODEuOCAxMDcgTDgwLjQgMTA5LjEgTDc4LjggMTExIEw3Ny4xIDExMi44IEw3NS4yIDExNC4zIEw3My4xIDExNS42IEw3MC45IDExNi42IEw2OC43IDExNy40IEw2Ni40IDExNy44IEw2NCAxMTggTDYxLjYgMTE3LjggTDU5LjMgMTE3LjQgTDU3LjEgMTE2LjYgTDU0LjkgMTE1LjYgTDUyLjggMTE0LjMgTDUwLjkgMTEyLjggTDQ5LjIgMTExIEw0Ny42IDEwOS4xIEw0Ni4yIDEwNyBMNDQuOSAxMDQuOSBMNDMuOSAxMDIuNiBMNDMgMTAwLjQgTDQyLjMgOTguMSBMNDEuNyA5NS45IEw0MS4yIDkzLjcgTDQwLjkgOTEuNiBMNDAuNiA4OS42IEw0MC4zIDg3LjcgTDQwLjEgODUuOSBMMzkuOCA4NC4zIEwzOS41IDgyLjggTDM5LjEgODEuNCBMMzguNiA4MC4yIEwzOCA3OSBMMzcuMyA3Ny45IEwzNi40IDc2LjkgTDM1LjQgNzUuOCBMMzQuMyA3NC44IEwzMyA3My44IEwzMS42IDcyLjcgTDMwLjEgNzEuNSBMMjguNSA3MC4zIEwyNi45IDY4LjkgTDI1LjMgNjcuNCBMMjMuNiA2NS44IEwyMiA2NCBMMjAuNSA2Mi4xIEwxOS4xIDYwLjEgTDE3LjggNTcuOSBMMTYuNyA1NS43IEwxNS45IDUzLjMgTDE1LjIgNTAuOSBMMTQuOSA0OC41IEwxNC44IDQ2LjEgTDE1IDQzLjcgTDE1LjQgNDEuNCBMMTYuMiAzOS4xIEwxNy4yIDM3IEwxOC41IDM1IEwyMC4xIDMzLjMgTDIxLjkgMzEuNyBMMjMuOSAzMC4zIEwyNiAyOS4yIEwyOC4zIDI4LjMgTDMwLjcgMjcuNiBMMzMuMSAyNy4yIEwzNS42IDI3IEwzOC4xIDI3LjEgTDQwLjYgMjcuMyBMNDMgMjcuNiBMNDUuMyAyOC4xIEw0Ny42IDI4LjcgTDQ5LjcgMjkuNCBMNTEuNyAzMC4yIEw1My42IDMwLjkgTDU1LjMgMzEuNiBMNTcgMzIuMyBMNTguNSAzMi45IEw2MCAzMy40IEw2MS4zIDMzLjcgTDYyLjcgMzMuOVoiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZjNDdlMCIgc3Ryb2tlLXdpZHRoPSIxMyIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgo8L3N2Zz4K
@@ -127,8 +127,8 @@
 // Bundles (verbatim, each wrapped in a URL gate and a run-at gate): apollo_editor, art_station, credit_hoarder, falcon, first_contact, fusion, group_therapy, isrc_scout, mammoth, mission_control, platform_check.
 
 try {
-  console.log('%c String Theory %c v2026.10.16.212214 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
-  console.log("String Theory bundles:\n  · Apollo Editor v2026.10.16.195747\n  · Art Station v2026.10.16.205125\n  · Credit Hoarder v2026.10.16.202240\n  · Falcon v2026.10.16.203716\n  · First Contact v2026.10.16\n  · Fusion v2026.10.16.185136\n  · Group Therapy v2026.10.16\n  · ISRC Scout v2026.10.16.182954\n  · Mammoth v2026.10.16\n  · Mission Control v2026.10.16.212213\n  · Platform Check v2026.10.16.184027");
+  console.log('%c String Theory %c v2026.10.16.214945 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
+  console.log("String Theory bundles:\n  · Apollo Editor v2026.10.16.195747\n  · Art Station v2026.10.16.214706\n  · Credit Hoarder v2026.10.16.202240\n  · Falcon v2026.10.16.203716\n  · First Contact v2026.10.16\n  · Fusion v2026.10.16.185136\n  · Group Therapy v2026.10.16\n  · ISRC Scout v2026.10.16.182954\n  · Mammoth v2026.10.16\n  · Mission Control v2026.10.16.214706\n  · Platform Check v2026.10.16.184027");
 } catch (e) {}
 
 function __stReadOff() { try { var v = GM_getValue("string_theory.off", []); return Array.isArray(v) ? v : []; } catch (e) { return []; } }
@@ -136,7 +136,7 @@ var __stOff = __stReadOff();
 (function () {
   if (typeof GM_registerMenuCommand !== 'function') return;
   try { if (window.top !== window.self) return; } catch (e) { return; }
-  var members = [["apollo_editor","Apollo Editor","2026.10.16.195747"],["art_station","Art Station","2026.10.16.205125"],["credit_hoarder","Credit Hoarder","2026.10.16.202240"],["falcon","Falcon","2026.10.16.203716"],["first_contact","First Contact","2026.10.16"],["fusion","Fusion","2026.10.16.185136"],["group_therapy","Group Therapy","2026.10.16"],["isrc_scout","ISRC Scout","2026.10.16.182954"],["mammoth","Mammoth","2026.10.16"],["mission_control","Mission Control","2026.10.16.212213"],["platform_check","Platform Check","2026.10.16.184027"]];
+  var members = [["apollo_editor","Apollo Editor","2026.10.16.195747"],["art_station","Art Station","2026.10.16.214706"],["credit_hoarder","Credit Hoarder","2026.10.16.202240"],["falcon","Falcon","2026.10.16.203716"],["first_contact","First Contact","2026.10.16"],["fusion","Fusion","2026.10.16.185136"],["group_therapy","Group Therapy","2026.10.16"],["isrc_scout","ISRC Scout","2026.10.16.182954"],["mammoth","Mammoth","2026.10.16"],["mission_control","Mission Control","2026.10.16.214706"],["platform_check","Platform Check","2026.10.16.184027"]];
   // Each entry carries a stable id (options.id): Violentmonkey and Tampermonkey then relabel it in
   // place, where it stands. Unregister-and-add left Violentmonkey's open menu with the old entry
   // still there and the new one appended at the end. A manager that ignores options.id hands back
@@ -12989,7 +12989,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
 
 // ===== art_station (@run-at document-start) =======================================
 if (__stOff.indexOf("art_station") < 0 && __stRuns("art_station", {"inc":["^https?:\\/\\/(?:[^/]*\\.)?musicbrainz\\.org(?::\\d+)?/release/.*$","^https?:\\/\\/(?:[^/]*\\.)?musicbrainz\\.org(?::\\d+)?/release/.*/cover-art.*$","^https?:\\/\\/(?:[^/]*\\.)?musicbrainz\\.org(?::\\d+)?/release/.*/add-cover-art.*$","^https?:\\/\\/(?:[^/]*\\.)?musicbrainz\\.org(?::\\d+)?/event/.*/event-art.*$","^https?:\\/\\/(?:[^/]*\\.)?musicbrainz\\.org(?::\\d+)?/event/.*/add-event-art.*$"],"exc":[],"noframes":false})) (function(__stGM){
-  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Art Station*","namespace":"https://musicbrainz.org/","version":"2026.10.16.205125","description":"Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5BcnQgU3RhdGlvbjwvdGl0bGU+CjxjaXJjbGUgY3g9Ijg2IiBjeT0iNjQiIHI9IjM4IiBmaWxsPSIjMWIwZjNiIiBzdHJva2U9IiNiOTY3ZmYiIHN0cm9rZS13aWR0aD0iMyIvPgo8Y2lyY2xlIGN4PSI4NiIgY3k9IjY0IiByPSIyOC44OCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjNGEzNDgwIiBzdHJva2Utd2lkdGg9IjEuNSIvPjxjaXJjbGUgY3g9Ijg2IiBjeT0iNjQiIHI9IjIwLjkwMDAwMDAwMDAwMDAwMiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjNGEzNDgwIiBzdHJva2Utd2lkdGg9IjEuNSIvPgo8Y2lyY2xlIGN4PSI4NiIgY3k9IjY0IiByPSIxMS4wMiIgZmlsbD0iI2ZmNzFjZSIvPjxjaXJjbGUgY3g9Ijg2IiBjeT0iNjQiIHI9IjIuNTA4IiBmaWxsPSIjMWIwZjNiIi8+PGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJhcy1za3ljIiB4MT0iMCIgeTE9IjAiIHgyPSIwIiB5Mj0iMSI+PHN0b3Agb2Zmc2V0PSIwLjAwIiBzdG9wLWNvbG9yPSIjN2ZlN2ZmIi8+PHN0b3Agb2Zmc2V0PSIwLjUwIiBzdG9wLWNvbG9yPSIjZDlhNmZmIi8+PHN0b3Agb2Zmc2V0PSIxLjAwIiBzdG9wLWNvbG9yPSIjZmY3MWNlIi8+PC9saW5lYXJHcmFkaWVudD48Y2xpcFBhdGggaWQ9ImFzLWNjIj48cmVjdCB4PSIxMCIgeT0iMjIiIHdpZHRoPSI3OCIgaGVpZ2h0PSI4NCIgcng9IjgiLz48L2NsaXBQYXRoPjwvZGVmcz4KPGcgY2xpcC1wYXRoPSJ1cmwoI2FzLWNjKSI+PHJlY3QgeD0iMTAiIHk9IjIyIiB3aWR0aD0iNzgiIGhlaWdodD0iODQiIGZpbGw9InVybCgjYXMtc2t5YykiLz4KPGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJhcy1nczIiIHgxPSIwIiB5MT0iMCIgeDI9IjAiIHkyPSIxIj48c3RvcCBvZmZzZXQ9IjAiIHN0b3AtY29sb3I9IiNmZmY2YTgiLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiNmZjhhNWMiLz48L2xpbmVhckdyYWRpZW50Pgo8bWFzayBpZD0iYXMtbXMyIj48cmVjdCB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCIgZmlsbD0iI2ZmZiIvPjxyZWN0IHg9IjI1LjYiIHk9IjY3LjIiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjEuMiIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9IjY5LjgiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjEuNSIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9IjczLjAiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjEuOCIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9Ijc3LjAiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjIuMyIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9IjgyLjAiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjIuOSIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9Ijg4LjMiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjMuNiIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9Ijk2LjIiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjQuNSIgZmlsbD0iIzAwMCIvPjwvbWFzaz48L2RlZnM+CjxjaXJjbGUgY3g9IjQ5IiBjeT0iNzYuMDgiIHI9IjIzLjQiIGZpbGw9InVybCgjYXMtZ3MyKSIgbWFzaz0idXJsKCNhcy1tczIpIi8+PHJlY3QgeD0iMTAiIHk9Ijc0LjA4IiB3aWR0aD0iNzgiIGhlaWdodD0iMzEuOTIiIGZpbGw9IiNiOTY3ZmYiLz48cGF0aCBkPSJNMTAgNzQuMDhIODhNMTAgNzcuOUg4OE0xMCA4My4ySDg4TTEwIDkxLjRIODhNMTAgMTA0LjJIODhNMzQuOCA3NC4wOEwtNDguNSAxMDZNMzguNCA3NC4wOEwtMjQuMSAxMDZNNDEuOSA3NC4wOEwwLjMgMTA2TTQ1LjUgNzQuMDhMMjQuNiAxMDZNNDkuMCA3NC4wOEw0OS4wIDEwNk01Mi41IDc0LjA4TDczLjQgMTA2TTU2LjEgNzQuMDhMOTcuOCAxMDZNNTkuNiA3NC4wOEwxMjIuMSAxMDZNNjMuMiA3NC4wOEwxNDYuNSAxMDYiIHN0cm9rZT0iI2ZmZmI5NiIgc3Ryb2tlLXdpZHRoPSIxLjMiIGZpbGw9Im5vbmUiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPjwvZz48cmVjdCB4PSIxMCIgeT0iMjIiIHdpZHRoPSI3OCIgaGVpZ2h0PSI4NCIgcng9IjgiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJhMTQ1OCIgc3Ryb2tlLXdpZHRoPSIzIi8+Cjwvc3ZnPgo="}) }) : { script: {"name":"Art Station*","namespace":"https://musicbrainz.org/","version":"2026.10.16.205125","description":"Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5BcnQgU3RhdGlvbjwvdGl0bGU+CjxjaXJjbGUgY3g9Ijg2IiBjeT0iNjQiIHI9IjM4IiBmaWxsPSIjMWIwZjNiIiBzdHJva2U9IiNiOTY3ZmYiIHN0cm9rZS13aWR0aD0iMyIvPgo8Y2lyY2xlIGN4PSI4NiIgY3k9IjY0IiByPSIyOC44OCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjNGEzNDgwIiBzdHJva2Utd2lkdGg9IjEuNSIvPjxjaXJjbGUgY3g9Ijg2IiBjeT0iNjQiIHI9IjIwLjkwMDAwMDAwMDAwMDAwMiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjNGEzNDgwIiBzdHJva2Utd2lkdGg9IjEuNSIvPgo8Y2lyY2xlIGN4PSI4NiIgY3k9IjY0IiByPSIxMS4wMiIgZmlsbD0iI2ZmNzFjZSIvPjxjaXJjbGUgY3g9Ijg2IiBjeT0iNjQiIHI9IjIuNTA4IiBmaWxsPSIjMWIwZjNiIi8+PGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJhcy1za3ljIiB4MT0iMCIgeTE9IjAiIHgyPSIwIiB5Mj0iMSI+PHN0b3Agb2Zmc2V0PSIwLjAwIiBzdG9wLWNvbG9yPSIjN2ZlN2ZmIi8+PHN0b3Agb2Zmc2V0PSIwLjUwIiBzdG9wLWNvbG9yPSIjZDlhNmZmIi8+PHN0b3Agb2Zmc2V0PSIxLjAwIiBzdG9wLWNvbG9yPSIjZmY3MWNlIi8+PC9saW5lYXJHcmFkaWVudD48Y2xpcFBhdGggaWQ9ImFzLWNjIj48cmVjdCB4PSIxMCIgeT0iMjIiIHdpZHRoPSI3OCIgaGVpZ2h0PSI4NCIgcng9IjgiLz48L2NsaXBQYXRoPjwvZGVmcz4KPGcgY2xpcC1wYXRoPSJ1cmwoI2FzLWNjKSI+PHJlY3QgeD0iMTAiIHk9IjIyIiB3aWR0aD0iNzgiIGhlaWdodD0iODQiIGZpbGw9InVybCgjYXMtc2t5YykiLz4KPGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJhcy1nczIiIHgxPSIwIiB5MT0iMCIgeDI9IjAiIHkyPSIxIj48c3RvcCBvZmZzZXQ9IjAiIHN0b3AtY29sb3I9IiNmZmY2YTgiLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiNmZjhhNWMiLz48L2xpbmVhckdyYWRpZW50Pgo8bWFzayBpZD0iYXMtbXMyIj48cmVjdCB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCIgZmlsbD0iI2ZmZiIvPjxyZWN0IHg9IjI1LjYiIHk9IjY3LjIiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjEuMiIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9IjY5LjgiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjEuNSIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9IjczLjAiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjEuOCIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9Ijc3LjAiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjIuMyIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9IjgyLjAiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjIuOSIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9Ijg4LjMiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjMuNiIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9Ijk2LjIiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjQuNSIgZmlsbD0iIzAwMCIvPjwvbWFzaz48L2RlZnM+CjxjaXJjbGUgY3g9IjQ5IiBjeT0iNzYuMDgiIHI9IjIzLjQiIGZpbGw9InVybCgjYXMtZ3MyKSIgbWFzaz0idXJsKCNhcy1tczIpIi8+PHJlY3QgeD0iMTAiIHk9Ijc0LjA4IiB3aWR0aD0iNzgiIGhlaWdodD0iMzEuOTIiIGZpbGw9IiNiOTY3ZmYiLz48cGF0aCBkPSJNMTAgNzQuMDhIODhNMTAgNzcuOUg4OE0xMCA4My4ySDg4TTEwIDkxLjRIODhNMTAgMTA0LjJIODhNMzQuOCA3NC4wOEwtNDguNSAxMDZNMzguNCA3NC4wOEwtMjQuMSAxMDZNNDEuOSA3NC4wOEwwLjMgMTA2TTQ1LjUgNzQuMDhMMjQuNiAxMDZNNDkuMCA3NC4wOEw0OS4wIDEwNk01Mi41IDc0LjA4TDczLjQgMTA2TTU2LjEgNzQuMDhMOTcuOCAxMDZNNTkuNiA3NC4wOEwxMjIuMSAxMDZNNjMuMiA3NC4wOEwxNDYuNSAxMDYiIHN0cm9rZT0iI2ZmZmI5NiIgc3Ryb2tlLXdpZHRoPSIxLjMiIGZpbGw9Im5vbmUiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPjwvZz48cmVjdCB4PSIxMCIgeT0iMjIiIHdpZHRoPSI3OCIgaGVpZ2h0PSI4NCIgcng9IjgiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJhMTQ1OCIgc3Ryb2tlLXdpZHRoPSIzIi8+Cjwvc3ZnPgo="} };
+  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Art Station*","namespace":"https://musicbrainz.org/","version":"2026.10.16.214706","description":"Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5BcnQgU3RhdGlvbjwvdGl0bGU+CjxjaXJjbGUgY3g9Ijg2IiBjeT0iNjQiIHI9IjM4IiBmaWxsPSIjMWIwZjNiIiBzdHJva2U9IiNiOTY3ZmYiIHN0cm9rZS13aWR0aD0iMyIvPgo8Y2lyY2xlIGN4PSI4NiIgY3k9IjY0IiByPSIyOC44OCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjNGEzNDgwIiBzdHJva2Utd2lkdGg9IjEuNSIvPjxjaXJjbGUgY3g9Ijg2IiBjeT0iNjQiIHI9IjIwLjkwMDAwMDAwMDAwMDAwMiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjNGEzNDgwIiBzdHJva2Utd2lkdGg9IjEuNSIvPgo8Y2lyY2xlIGN4PSI4NiIgY3k9IjY0IiByPSIxMS4wMiIgZmlsbD0iI2ZmNzFjZSIvPjxjaXJjbGUgY3g9Ijg2IiBjeT0iNjQiIHI9IjIuNTA4IiBmaWxsPSIjMWIwZjNiIi8+PGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJhcy1za3ljIiB4MT0iMCIgeTE9IjAiIHgyPSIwIiB5Mj0iMSI+PHN0b3Agb2Zmc2V0PSIwLjAwIiBzdG9wLWNvbG9yPSIjN2ZlN2ZmIi8+PHN0b3Agb2Zmc2V0PSIwLjUwIiBzdG9wLWNvbG9yPSIjZDlhNmZmIi8+PHN0b3Agb2Zmc2V0PSIxLjAwIiBzdG9wLWNvbG9yPSIjZmY3MWNlIi8+PC9saW5lYXJHcmFkaWVudD48Y2xpcFBhdGggaWQ9ImFzLWNjIj48cmVjdCB4PSIxMCIgeT0iMjIiIHdpZHRoPSI3OCIgaGVpZ2h0PSI4NCIgcng9IjgiLz48L2NsaXBQYXRoPjwvZGVmcz4KPGcgY2xpcC1wYXRoPSJ1cmwoI2FzLWNjKSI+PHJlY3QgeD0iMTAiIHk9IjIyIiB3aWR0aD0iNzgiIGhlaWdodD0iODQiIGZpbGw9InVybCgjYXMtc2t5YykiLz4KPGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJhcy1nczIiIHgxPSIwIiB5MT0iMCIgeDI9IjAiIHkyPSIxIj48c3RvcCBvZmZzZXQ9IjAiIHN0b3AtY29sb3I9IiNmZmY2YTgiLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiNmZjhhNWMiLz48L2xpbmVhckdyYWRpZW50Pgo8bWFzayBpZD0iYXMtbXMyIj48cmVjdCB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCIgZmlsbD0iI2ZmZiIvPjxyZWN0IHg9IjI1LjYiIHk9IjY3LjIiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjEuMiIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9IjY5LjgiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjEuNSIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9IjczLjAiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjEuOCIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9Ijc3LjAiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjIuMyIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9IjgyLjAiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjIuOSIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9Ijg4LjMiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjMuNiIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9Ijk2LjIiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjQuNSIgZmlsbD0iIzAwMCIvPjwvbWFzaz48L2RlZnM+CjxjaXJjbGUgY3g9IjQ5IiBjeT0iNzYuMDgiIHI9IjIzLjQiIGZpbGw9InVybCgjYXMtZ3MyKSIgbWFzaz0idXJsKCNhcy1tczIpIi8+PHJlY3QgeD0iMTAiIHk9Ijc0LjA4IiB3aWR0aD0iNzgiIGhlaWdodD0iMzEuOTIiIGZpbGw9IiNiOTY3ZmYiLz48cGF0aCBkPSJNMTAgNzQuMDhIODhNMTAgNzcuOUg4OE0xMCA4My4ySDg4TTEwIDkxLjRIODhNMTAgMTA0LjJIODhNMzQuOCA3NC4wOEwtNDguNSAxMDZNMzguNCA3NC4wOEwtMjQuMSAxMDZNNDEuOSA3NC4wOEwwLjMgMTA2TTQ1LjUgNzQuMDhMMjQuNiAxMDZNNDkuMCA3NC4wOEw0OS4wIDEwNk01Mi41IDc0LjA4TDczLjQgMTA2TTU2LjEgNzQuMDhMOTcuOCAxMDZNNTkuNiA3NC4wOEwxMjIuMSAxMDZNNjMuMiA3NC4wOEwxNDYuNSAxMDYiIHN0cm9rZT0iI2ZmZmI5NiIgc3Ryb2tlLXdpZHRoPSIxLjMiIGZpbGw9Im5vbmUiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPjwvZz48cmVjdCB4PSIxMCIgeT0iMjIiIHdpZHRoPSI3OCIgaGVpZ2h0PSI4NCIgcng9IjgiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJhMTQ1OCIgc3Ryb2tlLXdpZHRoPSIzIi8+Cjwvc3ZnPgo="}) }) : { script: {"name":"Art Station*","namespace":"https://musicbrainz.org/","version":"2026.10.16.214706","description":"Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5BcnQgU3RhdGlvbjwvdGl0bGU+CjxjaXJjbGUgY3g9Ijg2IiBjeT0iNjQiIHI9IjM4IiBmaWxsPSIjMWIwZjNiIiBzdHJva2U9IiNiOTY3ZmYiIHN0cm9rZS13aWR0aD0iMyIvPgo8Y2lyY2xlIGN4PSI4NiIgY3k9IjY0IiByPSIyOC44OCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjNGEzNDgwIiBzdHJva2Utd2lkdGg9IjEuNSIvPjxjaXJjbGUgY3g9Ijg2IiBjeT0iNjQiIHI9IjIwLjkwMDAwMDAwMDAwMDAwMiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjNGEzNDgwIiBzdHJva2Utd2lkdGg9IjEuNSIvPgo8Y2lyY2xlIGN4PSI4NiIgY3k9IjY0IiByPSIxMS4wMiIgZmlsbD0iI2ZmNzFjZSIvPjxjaXJjbGUgY3g9Ijg2IiBjeT0iNjQiIHI9IjIuNTA4IiBmaWxsPSIjMWIwZjNiIi8+PGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJhcy1za3ljIiB4MT0iMCIgeTE9IjAiIHgyPSIwIiB5Mj0iMSI+PHN0b3Agb2Zmc2V0PSIwLjAwIiBzdG9wLWNvbG9yPSIjN2ZlN2ZmIi8+PHN0b3Agb2Zmc2V0PSIwLjUwIiBzdG9wLWNvbG9yPSIjZDlhNmZmIi8+PHN0b3Agb2Zmc2V0PSIxLjAwIiBzdG9wLWNvbG9yPSIjZmY3MWNlIi8+PC9saW5lYXJHcmFkaWVudD48Y2xpcFBhdGggaWQ9ImFzLWNjIj48cmVjdCB4PSIxMCIgeT0iMjIiIHdpZHRoPSI3OCIgaGVpZ2h0PSI4NCIgcng9IjgiLz48L2NsaXBQYXRoPjwvZGVmcz4KPGcgY2xpcC1wYXRoPSJ1cmwoI2FzLWNjKSI+PHJlY3QgeD0iMTAiIHk9IjIyIiB3aWR0aD0iNzgiIGhlaWdodD0iODQiIGZpbGw9InVybCgjYXMtc2t5YykiLz4KPGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJhcy1nczIiIHgxPSIwIiB5MT0iMCIgeDI9IjAiIHkyPSIxIj48c3RvcCBvZmZzZXQ9IjAiIHN0b3AtY29sb3I9IiNmZmY2YTgiLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiNmZjhhNWMiLz48L2xpbmVhckdyYWRpZW50Pgo8bWFzayBpZD0iYXMtbXMyIj48cmVjdCB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCIgZmlsbD0iI2ZmZiIvPjxyZWN0IHg9IjI1LjYiIHk9IjY3LjIiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjEuMiIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9IjY5LjgiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjEuNSIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9IjczLjAiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjEuOCIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9Ijc3LjAiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjIuMyIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9IjgyLjAiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjIuOSIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9Ijg4LjMiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjMuNiIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9Ijk2LjIiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjQuNSIgZmlsbD0iIzAwMCIvPjwvbWFzaz48L2RlZnM+CjxjaXJjbGUgY3g9IjQ5IiBjeT0iNzYuMDgiIHI9IjIzLjQiIGZpbGw9InVybCgjYXMtZ3MyKSIgbWFzaz0idXJsKCNhcy1tczIpIi8+PHJlY3QgeD0iMTAiIHk9Ijc0LjA4IiB3aWR0aD0iNzgiIGhlaWdodD0iMzEuOTIiIGZpbGw9IiNiOTY3ZmYiLz48cGF0aCBkPSJNMTAgNzQuMDhIODhNMTAgNzcuOUg4OE0xMCA4My4ySDg4TTEwIDkxLjRIODhNMTAgMTA0LjJIODhNMzQuOCA3NC4wOEwtNDguNSAxMDZNMzguNCA3NC4wOEwtMjQuMSAxMDZNNDEuOSA3NC4wOEwwLjMgMTA2TTQ1LjUgNzQuMDhMMjQuNiAxMDZNNDkuMCA3NC4wOEw0OS4wIDEwNk01Mi41IDc0LjA4TDczLjQgMTA2TTU2LjEgNzQuMDhMOTcuOCAxMDZNNTkuNiA3NC4wOEwxMjIuMSAxMDZNNjMuMiA3NC4wOEwxNDYuNSAxMDYiIHN0cm9rZT0iI2ZmZmI5NiIgc3Ryb2tlLXdpZHRoPSIxLjMiIGZpbGw9Im5vbmUiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPjwvZz48cmVjdCB4PSIxMCIgeT0iMjIiIHdpZHRoPSI3OCIgaGVpZ2h0PSI4NCIgcng9IjgiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJhMTQ1OCIgc3Ryb2tlLXdpZHRoPSIzIi8+Cjwvc3ZnPgo="} };
   (f=>f())(function(){ try { (function(){
 //
 // Phase-1 PoC. Principle: "you get what you see" — the gallery is the staged
@@ -13426,7 +13426,13 @@ if (__stOff.indexOf("art_station") < 0 && __stRuns("art_station", {"inc":["^http
       log.info('Mission Control apply: ' + JSON.stringify(m));
       const b = frame.best;
       if (!m) reply({ ok: false, sent: 0, note: 'Art Station did not finish within 10 minutes' });
-      else if (m.ok) reply({ ok: true, sent: (front ? 1 : 0) + extras.length, note: [front && 'entered ' + b.provider + ' ' + b.w + '×' + b.h + ' as the front cover' + (mcPlan.replace ? ', and removed the smaller one' : ''), more && (front ? 'and ' : 'entered ') + more].filter(Boolean).join(' ') });
+      else if (m.ok) {
+        // #772: the count is the frame's, which knows which images it found again
+        const nx = typeof m.extrasIn === 'number' ? m.extrasIn : extras.length, lost = Array.isArray(m.missing) ? m.missing : [];
+        const moreIn = nx ? nx + ' more image' + (nx === 1 ? '' : 's') : '';
+        reply({ ok: true, sent: (front ? 1 : 0) + nx, extras: extras.filter(x => !lost.includes(x.key)), note: [front && 'entered ' + b.provider + ' ' + b.w + '×' + b.h + ' as the front cover' + (mcPlan.replace ? ', and removed the smaller one' : ''), moreIn && (front ? 'and ' : 'entered ') + moreIn,
+          lost.length && '(' + lost.join(', ') + ' not found this time)'].filter(Boolean).join(' ') });
+      }
       else reply({ ok: false, sent: 0, retry: !m.cancelled && !!m.retry, note: m.cancelled ? 'cancelled' : 'the edit failed' + (m.error ? ': ' + m.error : '') + (m.gaveUp ? ' (repeated for ' + m.gaveUp + ')' : '') });
     });
     hello();
@@ -16077,16 +16083,18 @@ if (__stOff.indexOf("art_station") < 0 && __stRuns("art_station", {"inc":["^http
       asLog.info('Mission Control: the best front is not taken in, so it is left out');
     }
     // #772: the stores' other images taken in on MC's card, with the types and comment set there, after the front
+    const missing = [];
     const add = (Array.isArray(d.extras) ? d.extras : []).map(e => {
       const x = _mcExtras.get(e.key);
-      if (!x) { asLog.warn(`Mission Control: ${e.key} is not among the images found this time`); return null; }
+      if (!x) { missing.push(e.key); asLog.warn(`Mission Control: ${e.key} is not among the images found this time`); return null; }
       x.types = (Array.isArray(e.types) ? e.types : []).filter(t => ALL_TYPES.includes(t));
       x.comment = String(e.comment || '').trim();
       return x;
     }).filter(x => x && !MODEL.includes(x));
     if (add.length) {
       const seq = MODEL.slice().sort((a, b) => a.order - b.order);
-      const at = _mcBest && seq.includes(_mcBest) ? seq.indexOf(_mcBest) + 1 : 0;
+      // after the front entered with them; without it, after the covers already there
+      const at = _mcBest && seq.includes(_mcBest) ? seq.indexOf(_mcBest) + 1 : seq.length;
       seq.splice(at, 0, ...add);
       MODEL = seq; MODEL.forEach((x, i) => x.order = i);
       asLog.info(`Mission Control: entering ${add.length} more image(s): ${add.map(x => `${x._provider || '?'} ${x.w}×${x.h} [${x.types.join(', ') || 'no type'}]${x.comment ? ' "' + x.comment + '"' : ''}`).join(', ')}`);
@@ -16096,7 +16104,17 @@ if (__stOff.indexOf("art_station") < 0 && __stRuns("art_station", {"inc":["^http
       if (old.length === 1) { old[0]._del = true; old[0]._sel = false; asLog.info(`Mission Control: removing the smaller front #${old[0].id} ${old[0].w}×${old[0].h}`); }
       if (!(_mcBest.types || []).includes('Front')) _mcBest.types = ['Front'].concat(_mcBest.types || []);
     }
-    _mcCommitDone = r => mcFramePost(Object.assign({ type: 'entered' }, r));
+    // #772: what was taken, so Mission Control isn't told an image went in when the frame had nothing to enter
+    const front = !!(_mcBest && MODEL.includes(_mcBest)), extrasIn = add.length;
+    _mcCommitDone = r => mcFramePost(Object.assign({ type: 'entered', front, extrasIn, missing }, r));
+    const plan = buildPlan();
+    asLog.info(`Mission Control: ${plan.length} operation(s): ${plan.map(o => o.label).join(' · ') || 'none'}`);
+    if (!plan.some(o => o.kind === 'add')) {
+      asLog.warn('Mission Control: nothing to upload' + (missing.length ? ` (${missing.join(', ')} not found this time)` : ''));
+      _mcCommitDone({ ok: false, errs: 0, total: 0, error: 'nothing to enter' + (missing.length ? ': ' + missing.join(', ') + ' not found this time' : '') });
+      _mcCommitDone = null;
+      return;
+    }
     enterEdit(true);
   });
   let _mcCommitDone = null, _mcBest = null, _mcNoteBase = null, _mcPool = [], _mcExtras = new Map();   // #772 _mcPool: the stores' other images, kept off the gallery; _mcExtras: key -> one of them
@@ -16669,8 +16687,24 @@ if (__stOff.indexOf("art_station") < 0 && __stRuns("art_station", {"inc":["^http
     p.append(`add-${ART}.comment`, it.comment);
     p.append(`add-${ART}.edit_note`, editNoteFor(meta, it));   // #260 include this cover's source, if any
     if (meta.votable) p.append(`add-${ART}.make_votable`, '1');
-    const add = await fetch(`${R}/add-${ART}`, { method: 'POST', body: p, credentials: 'same-origin', signal: ctl && ctl.ac.signal });
-    if (!add.ok) throw new Error('add ' + add.status);
+    // #772: through the gate, which passes MusicBrainz's browser check and asks again
+    const add = await mbnFetch(`${R}/add-${ART}`, { method: 'POST', body: p, credentials: 'same-origin', signal: ctl && ctl.ac.signal }, { log: (l, m) => asLog[l === 'warn' ? 'warn' : 'info'](m) });
+    if (!add || !add.ok) throw new Error('add ' + (add ? add.status : 'failed'));
+    // #772: a saved edit redirects to the cover-art page; the form again (an error) or the browser check
+    // is a 200 too, which counted as entered while nothing was
+    if (!add.redirected || /\/add-[a-z-]+$/.test(new URL(add.url).pathname)) {
+      let why = '';
+      try {
+        const html = await add.text();
+        if (/<title>\s*Verifying your browser\s*<\/title>/i.test(html)) why = 'MusicBrainz asked to verify the browser';
+        else {
+          const doc = new DOMParser().parseFromString(html, 'text/html');
+          why = [...doc.querySelectorAll('#page .error, #page ul.errors li')].map(e => e.textContent.trim()).filter(Boolean).join(' · ').slice(0, 300);
+        }
+      } catch (e) {}
+      asLog.warn(`Upload: MusicBrainz didn't save the edit (HTTP ${add.status}, ${add.url})${why ? ': ' + why : ''}`);
+      throw new Error("MusicBrainz didn't save the edit" + (why ? ': ' + why : ''));
+    }
   }
   async function runAdd(it, meta, dry, report) {   // dry-run summary only (live uses runAdds)
     const mime = (it._fileObj && it._fileObj.type) || 'image/jpeg';
@@ -66269,7 +66303,7 @@ if (__stOff.indexOf("mammoth") < 0 && __stRuns("mammoth", {"inc":["^https:\\/\\/
 
 // ===== mission_control (@run-at document-end) ===================================
 if (__stOff.indexOf("mission_control") < 0 && __stRuns("mission_control", {"inc":["^https:\\/\\/(?:[^/]*\\.)?musicbrainz\\.org(?::\\d+)?/release/.*$"],"exc":[],"noframes":false})) (function(__stGM){
-  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Mission Control*","namespace":"https://musicbrainz.org/","version":"2026.10.16.212213","description":"One window on the release page that asks the other scripts (Platform Check, ISRC Scout, Art Station, Fusion, Credit Hoarder) what is missing, shows it all in one review, and applies the selected changes in order.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/mission_control/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5NaXNzaW9uIENvbnRyb2w8L3RpdGxlPgo8ZGVmcz48ZmlsdGVyIGlkPSJtY28xMy1oIiB4PSItMTAlIiB5PSItMTAlIiB3aWR0aD0iMTIwJSIgaGVpZ2h0PSIxMjAlIj48ZmVNb3JwaG9sb2d5IGluPSJTb3VyY2VBbHBoYSIgb3BlcmF0b3I9ImRpbGF0ZSIgcmFkaXVzPSIxLjUiIHJlc3VsdD0iZCIvPjxmZUZsb29kIGZsb29kLWNvbG9yPSIjZmZmIiBmbG9vZC1vcGFjaXR5PSIuNyIvPjxmZUNvbXBvc2l0ZSBpbjI9ImQiIG9wZXJhdG9yPSJpbiIvPjxmZU1lcmdlPjxmZU1lcmdlTm9kZS8+PGZlTWVyZ2VOb2RlIGluPSJTb3VyY2VHcmFwaGljIi8+PC9mZU1lcmdlPjwvZmlsdGVyPjwvZGVmcz48ZyBmaWx0ZXI9InVybCgjbWNvMTMtaCkiPjxwYXRoIGQ9Ik03NyAzNS41IEw2NCA0MyBMNTEgMzUuNSBMNTEgMjAuNSBMNjQgMTMgTDc3IDIwLjVaIiBmaWxsPSIjN2E1N2U4IiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik01OS43IDc3LjUgTDQ2LjcgODUgTDMzLjcgNzcuNSBMMzMuNyA2Mi41IEw0Ni43IDU1IEw1OS43IDYyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik05NC4zIDc3LjUgTDgxLjMgODUgTDY4LjMgNzcuNSBMNjguMyA2Mi41IEw4MS4zIDU1IEw5NC4zIDYyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik00Mi4zIDEwNy41IEwyOS40IDExNSBMMTYuNCAxMDcuNSBMMTYuNCA5Mi41IEwyOS40IDg1IEw0Mi4zIDkyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik03NyAxMDcuNSBMNjQgMTE1IEw1MSAxMDcuNSBMNTEgOTIuNSBMNjQgODUgTDc3IDkyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik0xMTEuNiAxMDcuNSBMOTguNiAxMTUgTDg1LjcgMTA3LjUgTDg1LjcgOTIuNSBMOTguNiA4NSBMMTExLjYgOTIuNVoiIGZpbGw9IiNmZmM5NGEiIHN0cm9rZT0iIzIyMjIzYiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PC9nPgo8L3N2Zz4K"}) }) : { script: {"name":"Mission Control*","namespace":"https://musicbrainz.org/","version":"2026.10.16.212213","description":"One window on the release page that asks the other scripts (Platform Check, ISRC Scout, Art Station, Fusion, Credit Hoarder) what is missing, shows it all in one review, and applies the selected changes in order.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/mission_control/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5NaXNzaW9uIENvbnRyb2w8L3RpdGxlPgo8ZGVmcz48ZmlsdGVyIGlkPSJtY28xMy1oIiB4PSItMTAlIiB5PSItMTAlIiB3aWR0aD0iMTIwJSIgaGVpZ2h0PSIxMjAlIj48ZmVNb3JwaG9sb2d5IGluPSJTb3VyY2VBbHBoYSIgb3BlcmF0b3I9ImRpbGF0ZSIgcmFkaXVzPSIxLjUiIHJlc3VsdD0iZCIvPjxmZUZsb29kIGZsb29kLWNvbG9yPSIjZmZmIiBmbG9vZC1vcGFjaXR5PSIuNyIvPjxmZUNvbXBvc2l0ZSBpbjI9ImQiIG9wZXJhdG9yPSJpbiIvPjxmZU1lcmdlPjxmZU1lcmdlTm9kZS8+PGZlTWVyZ2VOb2RlIGluPSJTb3VyY2VHcmFwaGljIi8+PC9mZU1lcmdlPjwvZmlsdGVyPjwvZGVmcz48ZyBmaWx0ZXI9InVybCgjbWNvMTMtaCkiPjxwYXRoIGQ9Ik03NyAzNS41IEw2NCA0MyBMNTEgMzUuNSBMNTEgMjAuNSBMNjQgMTMgTDc3IDIwLjVaIiBmaWxsPSIjN2E1N2U4IiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik01OS43IDc3LjUgTDQ2LjcgODUgTDMzLjcgNzcuNSBMMzMuNyA2Mi41IEw0Ni43IDU1IEw1OS43IDYyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik05NC4zIDc3LjUgTDgxLjMgODUgTDY4LjMgNzcuNSBMNjguMyA2Mi41IEw4MS4zIDU1IEw5NC4zIDYyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik00Mi4zIDEwNy41IEwyOS40IDExNSBMMTYuNCAxMDcuNSBMMTYuNCA5Mi41IEwyOS40IDg1IEw0Mi4zIDkyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik03NyAxMDcuNSBMNjQgMTE1IEw1MSAxMDcuNSBMNTEgOTIuNSBMNjQgODUgTDc3IDkyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik0xMTEuNiAxMDcuNSBMOTguNiAxMTUgTDg1LjcgMTA3LjUgTDg1LjcgOTIuNSBMOTguNiA4NSBMMTExLjYgOTIuNVoiIGZpbGw9IiNmZmM5NGEiIHN0cm9rZT0iIzIyMjIzYiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PC9nPgo8L3N2Zz4K"} };
+  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Mission Control*","namespace":"https://musicbrainz.org/","version":"2026.10.16.214706","description":"One window on the release page that asks the other scripts (Platform Check, ISRC Scout, Art Station, Fusion, Credit Hoarder) what is missing, shows it all in one review, and applies the selected changes in order.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/mission_control/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5NaXNzaW9uIENvbnRyb2w8L3RpdGxlPgo8ZGVmcz48ZmlsdGVyIGlkPSJtY28xMy1oIiB4PSItMTAlIiB5PSItMTAlIiB3aWR0aD0iMTIwJSIgaGVpZ2h0PSIxMjAlIj48ZmVNb3JwaG9sb2d5IGluPSJTb3VyY2VBbHBoYSIgb3BlcmF0b3I9ImRpbGF0ZSIgcmFkaXVzPSIxLjUiIHJlc3VsdD0iZCIvPjxmZUZsb29kIGZsb29kLWNvbG9yPSIjZmZmIiBmbG9vZC1vcGFjaXR5PSIuNyIvPjxmZUNvbXBvc2l0ZSBpbjI9ImQiIG9wZXJhdG9yPSJpbiIvPjxmZU1lcmdlPjxmZU1lcmdlTm9kZS8+PGZlTWVyZ2VOb2RlIGluPSJTb3VyY2VHcmFwaGljIi8+PC9mZU1lcmdlPjwvZmlsdGVyPjwvZGVmcz48ZyBmaWx0ZXI9InVybCgjbWNvMTMtaCkiPjxwYXRoIGQ9Ik03NyAzNS41IEw2NCA0MyBMNTEgMzUuNSBMNTEgMjAuNSBMNjQgMTMgTDc3IDIwLjVaIiBmaWxsPSIjN2E1N2U4IiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik01OS43IDc3LjUgTDQ2LjcgODUgTDMzLjcgNzcuNSBMMzMuNyA2Mi41IEw0Ni43IDU1IEw1OS43IDYyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik05NC4zIDc3LjUgTDgxLjMgODUgTDY4LjMgNzcuNSBMNjguMyA2Mi41IEw4MS4zIDU1IEw5NC4zIDYyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik00Mi4zIDEwNy41IEwyOS40IDExNSBMMTYuNCAxMDcuNSBMMTYuNCA5Mi41IEwyOS40IDg1IEw0Mi4zIDkyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik03NyAxMDcuNSBMNjQgMTE1IEw1MSAxMDcuNSBMNTEgOTIuNSBMNjQgODUgTDc3IDkyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik0xMTEuNiAxMDcuNSBMOTguNiAxMTUgTDg1LjcgMTA3LjUgTDg1LjcgOTIuNSBMOTguNiA4NSBMMTExLjYgOTIuNVoiIGZpbGw9IiNmZmM5NGEiIHN0cm9rZT0iIzIyMjIzYiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PC9nPgo8L3N2Zz4K"}) }) : { script: {"name":"Mission Control*","namespace":"https://musicbrainz.org/","version":"2026.10.16.214706","description":"One window on the release page that asks the other scripts (Platform Check, ISRC Scout, Art Station, Fusion, Credit Hoarder) what is missing, shows it all in one review, and applies the selected changes in order.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/mission_control/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5NaXNzaW9uIENvbnRyb2w8L3RpdGxlPgo8ZGVmcz48ZmlsdGVyIGlkPSJtY28xMy1oIiB4PSItMTAlIiB5PSItMTAlIiB3aWR0aD0iMTIwJSIgaGVpZ2h0PSIxMjAlIj48ZmVNb3JwaG9sb2d5IGluPSJTb3VyY2VBbHBoYSIgb3BlcmF0b3I9ImRpbGF0ZSIgcmFkaXVzPSIxLjUiIHJlc3VsdD0iZCIvPjxmZUZsb29kIGZsb29kLWNvbG9yPSIjZmZmIiBmbG9vZC1vcGFjaXR5PSIuNyIvPjxmZUNvbXBvc2l0ZSBpbjI9ImQiIG9wZXJhdG9yPSJpbiIvPjxmZU1lcmdlPjxmZU1lcmdlTm9kZS8+PGZlTWVyZ2VOb2RlIGluPSJTb3VyY2VHcmFwaGljIi8+PC9mZU1lcmdlPjwvZmlsdGVyPjwvZGVmcz48ZyBmaWx0ZXI9InVybCgjbWNvMTMtaCkiPjxwYXRoIGQ9Ik03NyAzNS41IEw2NCA0MyBMNTEgMzUuNSBMNTEgMjAuNSBMNjQgMTMgTDc3IDIwLjVaIiBmaWxsPSIjN2E1N2U4IiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik01OS43IDc3LjUgTDQ2LjcgODUgTDMzLjcgNzcuNSBMMzMuNyA2Mi41IEw0Ni43IDU1IEw1OS43IDYyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik05NC4zIDc3LjUgTDgxLjMgODUgTDY4LjMgNzcuNSBMNjguMyA2Mi41IEw4MS4zIDU1IEw5NC4zIDYyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik00Mi4zIDEwNy41IEwyOS40IDExNSBMMTYuNCAxMDcuNSBMMTYuNCA5Mi41IEwyOS40IDg1IEw0Mi4zIDkyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik03NyAxMDcuNSBMNjQgMTE1IEw1MSAxMDcuNSBMNTEgOTIuNSBMNjQgODUgTDc3IDkyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik0xMTEuNiAxMDcuNSBMOTguNiAxMTUgTDg1LjcgMTA3LjUgTDg1LjcgOTIuNSBMOTguNiA4NSBMMTExLjYgOTIuNVoiIGZpbGw9IiNmZmM5NGEiIHN0cm9rZT0iIzIyMjIzYiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PC9nPgo8L3N2Zz4K"} };
   (f=>document.readyState!=='loading'?f():document.addEventListener('DOMContentLoaded',f,{once:true}))(function(){ try { (function(){
 (function () {
 'use strict';
@@ -66627,12 +66661,11 @@ function coverViewer(list, at) {
     show();
 }
 // #772: the stores' other images (AS's best.extras: Discogs and Amazon give every image of a release), each
-// taken in, typed and commented on the card as in Art Station: a click on the image takes it in, the type pill
-// opens Art Station's picker (right-click a type for only that one), ✎ the comment (Enter: the next one), and
-// right-click or right-drag selects for Take in, Leave out, Type and Comment. Nothing starts taken in or typed:
+// taken in, typed and commented on the card as in Art Station: a right-click takes it in or leaves it out (a
+// right-drag every one it passes), a click shows it full screen, the type pill opens Art Station's picker
+// (right-click a type for only that one), ✎ the comment (Enter: the next one). Nothing starts taken in or typed:
 // the stores don't say what an image is. Execute sends the taken in as mc:apply's extras.
 const axState = new Map();   // key -> { taken, types, comment, entered }
-const axSel = new Set();
 let axCmt = null, axDrag = null, axPopUntil = 0;
 function axList() { const b = results.as && results.as.best; return b && Array.isArray(b.extras) ? b.extras : []; }
 function axOf(e) {
@@ -66649,12 +66682,9 @@ const axName = e => e.provider + ' ' + e.n;
 function axHtml() {
     const xs = axList();
     if (!xs.length) return '';
-    const sel = xs.filter(e => axSel.has(e.key));
     const btn = (act, label, tip) => '<button type="button" class="mc-ax-b" data-act="' + act + '" title="' + esc(tip) + '">' + label + '</button>';
     const head = '<div class="mc-ax-h"><span class="mc-ax-t">More images</span>'
-        + (sel.length ? '<span class="mc-ax-n">' + sel.length + ' selected</span>' + btn('ax-sel-take', 'Take in', 'Take the selected images in') + btn('ax-sel-leave', 'Leave out', 'Leave the selected images out')
-            + btn('ax-sel-type', 'Type ▾', 'Set the type of the selected images') + btn('ax-sel-cmt', '✎ Comment ▾', 'Set the comment of the selected images') + btn('ax-sel-none', '×', 'Clear the selection')
-            : '<span class="mc-ax-hint">click to take in · ✎ comment · type pill · right-click or right-drag to select</span>')
+        + '<span class="mc-ax-hint">right-click to take in or leave out · click for full screen · ✎ comment · type pill</span>'
         + '<span class="mc-ax-sp"></span>' + (xs.some(e => axOf(e).taken && !axOf(e).entered) ? btn('ax-none', 'leave all out', 'Leave every image out') : '') + '</div>';
     const groups = [];
     xs.forEach(e => { let g = groups.find(x => x.p === e.provider); if (!g) groups.push(g = { p: e.provider, xs: [] }); g.xs.push(e); });
@@ -66665,17 +66695,16 @@ function axHtml() {
             : '<button type="button" class="mc-ax-pen" data-act="ax-cmt" title="add a comment">✎</button>';
         const pill = s.entered ? '<span class="mc-ax-note ok">entered</span>'
             : '<button type="button" class="mc-ax-pill' + (typed ? '' : ' add') + '" data-act="ax-type" title="' + esc(typed ? s.types.join(', ') : 'set type') + '">' + (typed ? esc(s.types.join(', ')) : '＋ type') + '</button>';
-        const tip = axName(e) + ' of ' + e.of + ' · ' + e.w + ' × ' + e.h + (e.dup ? ' · ' + e.dup : '') + (s.entered ? '' : on ? '. Taken in: click to leave out' : '. Click to take in');
-        return '<div class="mc-ax-c' + (on ? ' on' : '') + (axSel.has(e.key) ? ' sel' : '') + (e.dup ? ' dup' : '') + (s.entered ? ' done' : '') + '" data-ax="' + esc(e.key) + '">'
-            + '<button type="button" class="mc-ax-img" data-act="ax-take" title="' + esc(tip) + '">' + (e.thumb ? '<img alt="" src="' + esc(e.thumb) + '">' : '<span class="mc-best-no">🖼</span>') + '</button>'
-            + '<button type="button" class="mc-ax-zoom" data-act="ax-view" title="Show full screen (← → for the others)">⤢</button>'
+        const tip = axName(e) + ' of ' + e.of + ' · ' + e.w + ' × ' + e.h + (e.dup ? ' · ' + e.dup : '') + (s.entered ? '' : on ? '. Taken in: right-click to leave out' : '. Right-click to take in') + '. Click: full screen (← → for the others)';
+        return '<div class="mc-ax-c' + (on ? ' on' : '') + (e.dup ? ' dup' : '') + (s.entered ? ' done' : '') + '" data-ax="' + esc(e.key) + '">'
+            + '<button type="button" class="mc-ax-img" data-act="ax-view" title="' + esc(tip) + '">' + (e.thumb ? '<img alt="" src="' + esc(e.thumb) + '">' : '<span class="mc-best-no">🖼</span>') + '</button>'
             + (e.dup && !on ? '<span class="mc-ax-dup">' + esc(e.dup) + '</span>' : '')
             + '<div class="mc-ax-f"><span class="mc-ax-cm">' + cmt + '</span><span class="mc-ax-d">' + e.w + ' × ' + e.h + '</span></div>'
             + '<div class="mc-ax-ty">' + pill + '</div>'
-            + (axSel.has(e.key) ? '<span class="mc-ax-ck">✓</span>' : '') + '</div>';
+            + '</div>';
     };
-    return '<div class="mc-ax">' + head + groups.map(g => '<div class="mc-ax-g"><div class="mc-ax-gh"><span class="mc-pico">' + stIcon(/amazon/i.test(g.p) ? 'amazonmusic' : g.p.toLowerCase(), 14) + '</span><b>' + esc(g.p) + '</b><span>'
-        + g.xs[0].of + ' images' + (g.xs.some(e => e.n === 1) ? '' : ', the first is the best front above') + '</span></div><div class="mc-ax-cs">' + g.xs.map(card).join('') + '</div></div>').join('') + '</div>';
+    return '<div class="mc-ax">' + head + groups.map(g => '<div class="mc-ax-g"><div class="mc-ax-gh"><span class="mc-pico">' + stIcon(/amazon/i.test(g.p) ? 'amazonmusic' : g.p.toLowerCase(), 14) + '</span><b>' + esc(g.p) + '</b><span class="mc-ax-gn">'
+        + g.xs[0].of + ' images' + (g.xs.some(e => e.n === 1) ? '' : ', the first is the best front above') + '</span>' + axGroupBtn(g) + '</div><div class="mc-ax-cs">' + g.xs.map(card).join('') + '</div></div>').join('') + '</div>';
 }
 // #772: the images Execute entered show as entered, and leave Execute's count
 function axEntered(o) { if (o.id === 'as') (o.extras || []).forEach(x => { const st = axState.get(x.key); if (st) st.entered = true; }); }
@@ -66731,28 +66760,6 @@ function axTypePop(anchor, keys) {
     pop.style.left = Math.max(M, Math.min(r.left, innerWidth - pop.offsetWidth - M)) + 'px';
     setTimeout(() => document.addEventListener('mousedown', axPopOutside, true), 0);
 }
-// the comment of the selection, in a small box under its button
-function axCmtPop(anchor, keys) {
-    axPopClose();
-    const pop = el('div', 'mc-ax-pop'); pop.id = 'mc-ax-pop';
-    const common = [...new Set(axList().filter(e => keys.includes(e.key)).map(e => axOf(e).comment))];
-    pop.innerHTML = mbuHtml('<input class="mc-ax-bin" placeholder="comment…" spellcheck="false" aria-label="Comment for the selection" value="' + esc(common.length === 1 ? common[0] : '') + '">');
-    const inp = pop.querySelector('input');
-    inp.addEventListener('keydown', ev => {
-        ev.stopPropagation();
-        if (ev.key === 'Escape') { axPopClose(); return; }
-        if (ev.key !== 'Enter') return;
-        const v = inp.value.trim();
-        axSet(keys, s => { s.comment = v; if (v) s.taken = true; });
-        Log.debug('#772 comment ' + JSON.stringify(v) + ' on ' + keys.join(', '));
-        axPopClose(); axPaint();
-    });
-    ui.appendChild(pop);
-    const r = anchor.getBoundingClientRect();
-    pop.style.top = (r.bottom + 3) + 'px'; pop.style.left = Math.max(8, Math.min(r.left, innerWidth - pop.offsetWidth - 8)) + 'px';
-    setTimeout(() => document.addEventListener('mousedown', axPopOutside, true), 0);
-    inp.focus();
-}
 function axPopOutside(ev) {
     const pop = document.getElementById('mc-ax-pop');
     if (pop && pop.contains(ev.target)) return;
@@ -66765,42 +66772,49 @@ function axView(key) {
     const list = xs.map(e => ({ src: e.url || e.thumb, alt: e.thumb, title: axName(e), info: [e.w + ' × ' + e.h, e.bytes ? Math.round(e.bytes / 1024) + ' KB' : '', e.dup || '', axOf(e).types.join(', ')].filter(Boolean).join(' · ') }));
     coverViewer(list, Math.max(0, xs.findIndex(e => e.key === key)));
 }
-// right-click selects (or unselects) an image, right-drag every one it passes, as in Art Station
+// each store's row: take all its images in, or leave them all out once they are
+function axGroupBtn(g) {
+    const open = g.xs.filter(e => !axOf(e).entered);
+    if (!open.length) return '';
+    const all = open.every(e => axOf(e).taken);
+    return '<button type="button" class="mc-ax-b mc-ax-gb" data-act="ax-group" data-p="' + esc(g.p) + '" title="' + esc((all ? 'Leave out every ' : 'Take in every ') + g.p + ' image') + '">' + (all ? 'leave all out' : 'take all in') + '</button>';
+}
+// right-click takes an image in or leaves it out, right-drag every one it passes the same way
+function axTake(k, on) {
+    const e = axList().find(x => x.key === k); if (!e || axOf(e).entered || axOf(e).taken === on) return false;
+    axOf(e).taken = on;
+    Log.debug('#772 ' + (on ? 'taken in ' : 'left out ') + k);
+    return true;
+}
 function axDown(e) {
     const c = e.button === 2 && e.target.closest('.mc-ax-c');
     if (!c || c.classList.contains('done')) return false;
+    if (e.target.closest('.mc-ax-cin')) return false;   // the comment being written keeps its own right-click
     e.preventDefault();
-    const k = c.dataset.ax, on = !axSel.has(k);
-    if (on) axSel.add(k); else axSel.delete(k);
+    const k = c.dataset.ax, s = axState.get(k), on = !(s && s.taken);
+    axTake(k, on);
     axDrag = { on };
-    paintCards();
+    axPaint();
     return true;
 }
 function axOver(e) {
     if (!axDrag) return;
     const c = e.target.closest('.mc-ax-c');
-    if (!c || c.classList.contains('done') || axSel.has(c.dataset.ax) === axDrag.on) return;
-    if (axDrag.on) axSel.add(c.dataset.ax); else axSel.delete(c.dataset.ax);
-    paintCards();
+    if (c && !c.classList.contains('done') && axTake(c.dataset.ax, axDrag.on)) axPaint();
 }
 function axAct(act, t) {
-    const c = t.closest('.mc-ax-c'), k = c && c.dataset.ax, sel = [...axSel];
+    const c = t.closest('.mc-ax-c'), k = c && c.dataset.ax;
     switch (act) {
-        case 'ax-take': {
-            const e = axList().find(x => x.key === k); if (!e || axOf(e).entered) break;
-            const s = axOf(e); s.taken = !s.taken;
-            Log.debug('#772 ' + (s.taken ? 'taken in ' : 'left out ') + k);
-            axPaint(); break;
-        }
         case 'ax-type': axTypePop(t, [k]); break;
         case 'ax-cmt': if (axCmt) axCmtDone(false); axCmt = k; axPaint(); break;
         case 'ax-view': axView(k); break;
+        case 'ax-group': {
+            const xs = axList().filter(e => e.provider === t.dataset.p && !axOf(e).entered), on = !xs.every(e => axOf(e).taken);
+            xs.forEach(e => { axOf(e).taken = on; });
+            Log.debug('#772 every ' + t.dataset.p + ' image ' + (on ? 'taken in' : 'left out'));
+            axPaint(); break;
+        }
         case 'ax-none': axList().forEach(e => { axOf(e).taken = false; }); Log.debug('#772 every image left out'); axPaint(); break;
-        case 'ax-sel-take': axSet(sel, s => { s.taken = true; }); axPaint(); break;
-        case 'ax-sel-leave': axSet(sel, s => { s.taken = false; }); axPaint(); break;
-        case 'ax-sel-type': axTypePop(t, sel); break;
-        case 'ax-sel-cmt': axCmtPop(t, sel); break;
-        case 'ax-sel-none': axSel.clear(); paintCards(); break;
     }
 }
 function falconHtml(f) {
@@ -67093,14 +67107,13 @@ function mcStyle() {
         + '.mc-best img{width:72px;height:72px;object-fit:contain;border-radius:var(--mbu-radius);background:var(--mbu-bg-sunken);border:1px solid var(--mbu-border-soft);flex:0 0 auto}'
         // #772: the stores' other images, cards as in Art Station's gallery
         + '.mc-ax{padding:8px 10px 12px;border-top:1px solid var(--mbu-divider)}.mc-ax-h{display:flex;align-items:center;gap:6px;flex-wrap:wrap;min-height:26px;margin-bottom:4px}.mc-ax-t{font-size:10.5px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:var(--mbu-text-dim)}'
-        + '.mc-ax-hint{font-size:11px;color:var(--mbu-text-weak)}.mc-ax-n{font-weight:700;color:var(--mbu-accent-text);margin-right:2px}.mc-ax-sp{flex:1 1 auto}'
+        + '.mc-ax-hint{font-size:11px;color:var(--mbu-text-weak)}.mc-ax-sp{flex:1 1 auto}'
         + '#mc-root .mc-ax-b{font:12px var(--mbu-font);padding:2px 9px;border-radius:var(--mbu-radius);border:1px solid var(--mbu-border-strong);background:var(--mbu-bg);color:var(--mbu-accent-text);cursor:pointer}#mc-root .mc-ax-b:hover{background:var(--mbu-bg-hover);border-color:var(--mbu-accent)}'
-        + '.mc-ax-g{margin-top:6px}.mc-ax-gh{display:flex;align-items:center;gap:6px;font-size:12px;margin-bottom:6px}.mc-ax-gh span:last-child{color:var(--mbu-text-weak);font-size:11px}.mc-ax-cs{display:flex;flex-wrap:wrap;gap:20px 10px;padding-bottom:10px}'
+        + '.mc-ax-g{margin-top:6px}.mc-ax-gh{display:flex;align-items:center;gap:6px;font-size:12px;margin-bottom:6px}.mc-ax-gh .mc-ax-gn{color:var(--mbu-text-weak);font-size:11px}.mc-ax-cs{display:flex;flex-wrap:wrap;gap:20px 10px;padding-bottom:10px}'
         + '.mc-ax-c{position:relative;width:132px;box-sizing:border-box;background:var(--mbu-bg);border:1px solid var(--mbu-border-soft);border-radius:9px;display:flex;flex-direction:column;user-select:none}'
-        + '.mc-ax-c.on{border-color:var(--mbu-accent);background:var(--mbu-accent-soft)}.mc-ax-c.sel{box-shadow:0 0 0 2px var(--mbu-accent),0 3px 14px rgba(95,62,192,.3);border-color:var(--mbu-accent)}.mc-ax-c.done{opacity:.7}'
-        + '#mc-root .mc-ax-img{all:unset;cursor:pointer;height:104px;display:flex;align-items:center;justify-content:center;padding:6px 6px 4px}.mc-ax-img img{max-width:118px;max-height:100px;object-fit:contain;border-radius:3px;display:block}'
+        + '.mc-ax-c.on{border-color:var(--mbu-accent);background:var(--mbu-accent-soft)}.mc-ax-c.done{opacity:.7}'
+        + '#mc-root .mc-ax-img{all:unset;cursor:zoom-in;height:104px;display:flex;align-items:center;justify-content:center;padding:6px 6px 4px}.mc-ax-img img{max-width:118px;max-height:100px;object-fit:contain;border-radius:3px;display:block}'
         + '.mc-ax-c:not(.on):not(.done) .mc-ax-img img{opacity:.55}.mc-ax-c:not(.on):not(.done):hover .mc-ax-img img{opacity:.85}#mc-root .mc-ax-img:focus-visible{outline:2px solid var(--mbu-accent);outline-offset:-2px;border-radius:9px}'
-        + '#mc-root .mc-ax-zoom{all:unset;position:absolute;top:4px;right:4px;width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;background:var(--mbu-bg);color:var(--mbu-accent-text);border:1px solid var(--mbu-border);cursor:zoom-in;opacity:0;transition:.1s}#mc-root .mc-ax-c:hover .mc-ax-zoom,#mc-root .mc-ax-zoom:focus-visible{opacity:1}'
         + '.mc-ax-dup{position:absolute;top:4px;left:4px;max-width:96px;font-size:10px;font-weight:600;color:var(--mbu-warn);background:var(--mbu-bg);border:1px solid var(--mbu-warn-border);border-radius:4px;padding:0 4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}'
         + '.mc-ax-f{display:flex;align-items:center;gap:6px;min-height:17px;padding:4px 8px 0;border-top:1px solid var(--mbu-divider)}.mc-ax-cm{flex:0 1 auto;min-width:0;display:flex;overflow:hidden}.mc-ax-d{margin-left:auto;font:10.5px var(--mbu-font-mono);color:var(--mbu-text-weak);white-space:nowrap}'
         + '#mc-root .mc-ax-pen{font:11px var(--mbu-font);border:1px dashed var(--mbu-accent);background:var(--mbu-bg);color:var(--mbu-accent-text);border-radius:var(--mbu-radius);padding:0 7px;cursor:pointer;opacity:0;transition:.1s}#mc-root .mc-ax-c:hover .mc-ax-pen,#mc-root .mc-ax-pen:focus-visible{opacity:1}'
@@ -67110,10 +67123,8 @@ function mcStyle() {
         + '#mc-root .mc-ax-pill{font:700 11px var(--mbu-font);color:var(--mbu-accent-text);background:var(--mbu-bg-sunken);border:1px solid var(--mbu-accent);border-radius:20px;padding:2px 13px;cursor:pointer;max-width:118px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}#mc-root .mc-ax-pill:hover{background:var(--mbu-bg-hover)}'
         + '#mc-root .mc-ax-pill.add{background:var(--mbu-bg);border-style:dashed;font-weight:600;opacity:.5}#mc-root .mc-ax-c:hover .mc-ax-pill.add,#mc-root .mc-ax-pill.add:focus-visible{opacity:1}'
         + '.mc-ax-note{font-size:11px;font-weight:700;background:var(--mbu-bg);border:1px solid var(--mbu-border);border-radius:20px;padding:2px 11px}.mc-ax-note.ok{color:var(--mbu-ok);border-color:var(--mbu-ok-border)}'
-        + '.mc-ax-ck{position:absolute;right:6px;bottom:16px;width:20px;height:20px;border-radius:50%;background:var(--mbu-accent);color:var(--mbu-accent-fg);font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;z-index:2}'
         + '.mc-ax-pop{position:fixed;z-index:var(--mbu-z-pop);background:var(--mbu-bg);border:1px solid var(--mbu-accent);border-radius:8px;box-shadow:var(--mbu-shadow-lg);padding:6px;font-size:13px;color:var(--mbu-text)}'
         + '.mc-ax-tg{display:grid;grid-template-columns:1fr 1fr;gap:0 14px}.mc-ax-tg label{display:flex;align-items:center;gap:7px;padding:3px 6px;border-radius:5px;cursor:pointer;white-space:nowrap}.mc-ax-tg label:hover{background:var(--mbu-bg-hover)}.mc-ax-tg input{accent-color:var(--mbu-accent);margin:0}'
-        + '#mc-root .mc-ax-bin{width:220px;box-sizing:border-box;font:12.5px var(--mbu-font);padding:5px 8px;border:1px solid var(--mbu-border-strong);border-radius:6px;background:var(--mbu-bg);color:var(--mbu-text)}'
         + '.mc-best-no{width:72px;height:72px;display:flex;align-items:center;justify-content:center;font-size:32px;background:var(--mbu-bg-sunken);border-radius:var(--mbu-radius);flex:0 0 auto}.mc-best-t{display:flex;flex-direction:column;gap:2px;font-size:12px;min-width:0}.mc-best-t .dim{color:var(--mbu-text-weak);font-size:11px}'
         + '.mc-working{display:flex;align-items:center;gap:7px;padding:5px 10px;font-size:11.5px;color:var(--mbu-accent-text);border-bottom:1px solid var(--mbu-divider)}'
         + '.mc-spin{width:10px;height:10px;border:2px solid var(--mbu-accent-soft);border-top-color:var(--mbu-accent);border-radius:50%;animation:mc-spin .8s linear infinite;flex:0 0 auto}@keyframes mc-spin{to{transform:rotate(360deg)}}'
@@ -68116,7 +68127,7 @@ function onPickUp() {
 }
 // a found track link is an <a> (a click opens it): right-click takes it in or leaves it out
 function onContextMenu(e) {
-    if (e.target.closest('.mc-ax-c')) { e.preventDefault(); return; }   // #772: right-click selects
+    if (e.target.closest('.mc-ax-c')) { e.preventDefault(); return; }   // #772: right-click takes in
     const pk = e.target.closest('a.mc-lnk.mc-pick');
     if (!pk) return;
     e.preventDefault();

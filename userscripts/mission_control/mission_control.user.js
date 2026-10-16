@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Mission Control
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.16.212213
+// @version      2026.10.16.214706
 // @description  One window on the release page that asks the other scripts (Platform Check, ISRC Scout, Art Station, Fusion, Credit Hoarder) what is missing, shows it all in one review, and applies the selected changes in order.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5NaXNzaW9uIENvbnRyb2w8L3RpdGxlPgo8ZGVmcz48ZmlsdGVyIGlkPSJtY28xMy1oIiB4PSItMTAlIiB5PSItMTAlIiB3aWR0aD0iMTIwJSIgaGVpZ2h0PSIxMjAlIj48ZmVNb3JwaG9sb2d5IGluPSJTb3VyY2VBbHBoYSIgb3BlcmF0b3I9ImRpbGF0ZSIgcmFkaXVzPSIxLjUiIHJlc3VsdD0iZCIvPjxmZUZsb29kIGZsb29kLWNvbG9yPSIjZmZmIiBmbG9vZC1vcGFjaXR5PSIuNyIvPjxmZUNvbXBvc2l0ZSBpbjI9ImQiIG9wZXJhdG9yPSJpbiIvPjxmZU1lcmdlPjxmZU1lcmdlTm9kZS8+PGZlTWVyZ2VOb2RlIGluPSJTb3VyY2VHcmFwaGljIi8+PC9mZU1lcmdlPjwvZmlsdGVyPjwvZGVmcz48ZyBmaWx0ZXI9InVybCgjbWNvMTMtaCkiPjxwYXRoIGQ9Ik03NyAzNS41IEw2NCA0MyBMNTEgMzUuNSBMNTEgMjAuNSBMNjQgMTMgTDc3IDIwLjVaIiBmaWxsPSIjN2E1N2U4IiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik01OS43IDc3LjUgTDQ2LjcgODUgTDMzLjcgNzcuNSBMMzMuNyA2Mi41IEw0Ni43IDU1IEw1OS43IDYyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik05NC4zIDc3LjUgTDgxLjMgODUgTDY4LjMgNzcuNSBMNjguMyA2Mi41IEw4MS4zIDU1IEw5NC4zIDYyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik00Mi4zIDEwNy41IEwyOS40IDExNSBMMTYuNCAxMDcuNSBMMTYuNCA5Mi41IEwyOS40IDg1IEw0Mi4zIDkyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik03NyAxMDcuNSBMNjQgMTE1IEw1MSAxMDcuNSBMNTEgOTIuNSBMNjQgODUgTDc3IDkyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik0xMTEuNiAxMDcuNSBMOTguNiAxMTUgTDg1LjcgMTA3LjUgTDg1LjcgOTIuNSBMOTguNiA4NSBMMTExLjYgOTIuNVoiIGZpbGw9IiNmZmM5NGEiIHN0cm9rZT0iIzIyMjIzYiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PC9nPgo8L3N2Zz4K
@@ -367,12 +367,11 @@ function coverViewer(list, at) {
     show();
 }
 // #772: the stores' other images (AS's best.extras: Discogs and Amazon give every image of a release), each
-// taken in, typed and commented on the card as in Art Station: a click on the image takes it in, the type pill
-// opens Art Station's picker (right-click a type for only that one), ✎ the comment (Enter: the next one), and
-// right-click or right-drag selects for Take in, Leave out, Type and Comment. Nothing starts taken in or typed:
+// taken in, typed and commented on the card as in Art Station: a right-click takes it in or leaves it out (a
+// right-drag every one it passes), a click shows it full screen, the type pill opens Art Station's picker
+// (right-click a type for only that one), ✎ the comment (Enter: the next one). Nothing starts taken in or typed:
 // the stores don't say what an image is. Execute sends the taken in as mc:apply's extras.
 const axState = new Map();   // key -> { taken, types, comment, entered }
-const axSel = new Set();
 let axCmt = null, axDrag = null, axPopUntil = 0;
 function axList() { const b = results.as && results.as.best; return b && Array.isArray(b.extras) ? b.extras : []; }
 function axOf(e) {
@@ -389,12 +388,9 @@ const axName = e => e.provider + ' ' + e.n;
 function axHtml() {
     const xs = axList();
     if (!xs.length) return '';
-    const sel = xs.filter(e => axSel.has(e.key));
     const btn = (act, label, tip) => '<button type="button" class="mc-ax-b" data-act="' + act + '" title="' + esc(tip) + '">' + label + '</button>';
     const head = '<div class="mc-ax-h"><span class="mc-ax-t">More images</span>'
-        + (sel.length ? '<span class="mc-ax-n">' + sel.length + ' selected</span>' + btn('ax-sel-take', 'Take in', 'Take the selected images in') + btn('ax-sel-leave', 'Leave out', 'Leave the selected images out')
-            + btn('ax-sel-type', 'Type ▾', 'Set the type of the selected images') + btn('ax-sel-cmt', '✎ Comment ▾', 'Set the comment of the selected images') + btn('ax-sel-none', '×', 'Clear the selection')
-            : '<span class="mc-ax-hint">click to take in · ✎ comment · type pill · right-click or right-drag to select</span>')
+        + '<span class="mc-ax-hint">right-click to take in or leave out · click for full screen · ✎ comment · type pill</span>'
         + '<span class="mc-ax-sp"></span>' + (xs.some(e => axOf(e).taken && !axOf(e).entered) ? btn('ax-none', 'leave all out', 'Leave every image out') : '') + '</div>';
     const groups = [];
     xs.forEach(e => { let g = groups.find(x => x.p === e.provider); if (!g) groups.push(g = { p: e.provider, xs: [] }); g.xs.push(e); });
@@ -405,17 +401,16 @@ function axHtml() {
             : '<button type="button" class="mc-ax-pen" data-act="ax-cmt" title="add a comment">✎</button>';
         const pill = s.entered ? '<span class="mc-ax-note ok">entered</span>'
             : '<button type="button" class="mc-ax-pill' + (typed ? '' : ' add') + '" data-act="ax-type" title="' + esc(typed ? s.types.join(', ') : 'set type') + '">' + (typed ? esc(s.types.join(', ')) : '＋ type') + '</button>';
-        const tip = axName(e) + ' of ' + e.of + ' · ' + e.w + ' × ' + e.h + (e.dup ? ' · ' + e.dup : '') + (s.entered ? '' : on ? '. Taken in: click to leave out' : '. Click to take in');
-        return '<div class="mc-ax-c' + (on ? ' on' : '') + (axSel.has(e.key) ? ' sel' : '') + (e.dup ? ' dup' : '') + (s.entered ? ' done' : '') + '" data-ax="' + esc(e.key) + '">'
-            + '<button type="button" class="mc-ax-img" data-act="ax-take" title="' + esc(tip) + '">' + (e.thumb ? '<img alt="" src="' + esc(e.thumb) + '">' : '<span class="mc-best-no">🖼</span>') + '</button>'
-            + '<button type="button" class="mc-ax-zoom" data-act="ax-view" title="Show full screen (← → for the others)">⤢</button>'
+        const tip = axName(e) + ' of ' + e.of + ' · ' + e.w + ' × ' + e.h + (e.dup ? ' · ' + e.dup : '') + (s.entered ? '' : on ? '. Taken in: right-click to leave out' : '. Right-click to take in') + '. Click: full screen (← → for the others)';
+        return '<div class="mc-ax-c' + (on ? ' on' : '') + (e.dup ? ' dup' : '') + (s.entered ? ' done' : '') + '" data-ax="' + esc(e.key) + '">'
+            + '<button type="button" class="mc-ax-img" data-act="ax-view" title="' + esc(tip) + '">' + (e.thumb ? '<img alt="" src="' + esc(e.thumb) + '">' : '<span class="mc-best-no">🖼</span>') + '</button>'
             + (e.dup && !on ? '<span class="mc-ax-dup">' + esc(e.dup) + '</span>' : '')
             + '<div class="mc-ax-f"><span class="mc-ax-cm">' + cmt + '</span><span class="mc-ax-d">' + e.w + ' × ' + e.h + '</span></div>'
             + '<div class="mc-ax-ty">' + pill + '</div>'
-            + (axSel.has(e.key) ? '<span class="mc-ax-ck">✓</span>' : '') + '</div>';
+            + '</div>';
     };
-    return '<div class="mc-ax">' + head + groups.map(g => '<div class="mc-ax-g"><div class="mc-ax-gh"><span class="mc-pico">' + stIcon(/amazon/i.test(g.p) ? 'amazonmusic' : g.p.toLowerCase(), 14) + '</span><b>' + esc(g.p) + '</b><span>'
-        + g.xs[0].of + ' images' + (g.xs.some(e => e.n === 1) ? '' : ', the first is the best front above') + '</span></div><div class="mc-ax-cs">' + g.xs.map(card).join('') + '</div></div>').join('') + '</div>';
+    return '<div class="mc-ax">' + head + groups.map(g => '<div class="mc-ax-g"><div class="mc-ax-gh"><span class="mc-pico">' + stIcon(/amazon/i.test(g.p) ? 'amazonmusic' : g.p.toLowerCase(), 14) + '</span><b>' + esc(g.p) + '</b><span class="mc-ax-gn">'
+        + g.xs[0].of + ' images' + (g.xs.some(e => e.n === 1) ? '' : ', the first is the best front above') + '</span>' + axGroupBtn(g) + '</div><div class="mc-ax-cs">' + g.xs.map(card).join('') + '</div></div>').join('') + '</div>';
 }
 // #772: the images Execute entered show as entered, and leave Execute's count
 function axEntered(o) { if (o.id === 'as') (o.extras || []).forEach(x => { const st = axState.get(x.key); if (st) st.entered = true; }); }
@@ -471,28 +466,6 @@ function axTypePop(anchor, keys) {
     pop.style.left = Math.max(M, Math.min(r.left, innerWidth - pop.offsetWidth - M)) + 'px';
     setTimeout(() => document.addEventListener('mousedown', axPopOutside, true), 0);
 }
-// the comment of the selection, in a small box under its button
-function axCmtPop(anchor, keys) {
-    axPopClose();
-    const pop = el('div', 'mc-ax-pop'); pop.id = 'mc-ax-pop';
-    const common = [...new Set(axList().filter(e => keys.includes(e.key)).map(e => axOf(e).comment))];
-    pop.innerHTML = mbuHtml('<input class="mc-ax-bin" placeholder="comment…" spellcheck="false" aria-label="Comment for the selection" value="' + esc(common.length === 1 ? common[0] : '') + '">');
-    const inp = pop.querySelector('input');
-    inp.addEventListener('keydown', ev => {
-        ev.stopPropagation();
-        if (ev.key === 'Escape') { axPopClose(); return; }
-        if (ev.key !== 'Enter') return;
-        const v = inp.value.trim();
-        axSet(keys, s => { s.comment = v; if (v) s.taken = true; });
-        Log.debug('#772 comment ' + JSON.stringify(v) + ' on ' + keys.join(', '));
-        axPopClose(); axPaint();
-    });
-    ui.appendChild(pop);
-    const r = anchor.getBoundingClientRect();
-    pop.style.top = (r.bottom + 3) + 'px'; pop.style.left = Math.max(8, Math.min(r.left, innerWidth - pop.offsetWidth - 8)) + 'px';
-    setTimeout(() => document.addEventListener('mousedown', axPopOutside, true), 0);
-    inp.focus();
-}
 function axPopOutside(ev) {
     const pop = document.getElementById('mc-ax-pop');
     if (pop && pop.contains(ev.target)) return;
@@ -505,42 +478,49 @@ function axView(key) {
     const list = xs.map(e => ({ src: e.url || e.thumb, alt: e.thumb, title: axName(e), info: [e.w + ' × ' + e.h, e.bytes ? Math.round(e.bytes / 1024) + ' KB' : '', e.dup || '', axOf(e).types.join(', ')].filter(Boolean).join(' · ') }));
     coverViewer(list, Math.max(0, xs.findIndex(e => e.key === key)));
 }
-// right-click selects (or unselects) an image, right-drag every one it passes, as in Art Station
+// each store's row: take all its images in, or leave them all out once they are
+function axGroupBtn(g) {
+    const open = g.xs.filter(e => !axOf(e).entered);
+    if (!open.length) return '';
+    const all = open.every(e => axOf(e).taken);
+    return '<button type="button" class="mc-ax-b mc-ax-gb" data-act="ax-group" data-p="' + esc(g.p) + '" title="' + esc((all ? 'Leave out every ' : 'Take in every ') + g.p + ' image') + '">' + (all ? 'leave all out' : 'take all in') + '</button>';
+}
+// right-click takes an image in or leaves it out, right-drag every one it passes the same way
+function axTake(k, on) {
+    const e = axList().find(x => x.key === k); if (!e || axOf(e).entered || axOf(e).taken === on) return false;
+    axOf(e).taken = on;
+    Log.debug('#772 ' + (on ? 'taken in ' : 'left out ') + k);
+    return true;
+}
 function axDown(e) {
     const c = e.button === 2 && e.target.closest('.mc-ax-c');
     if (!c || c.classList.contains('done')) return false;
+    if (e.target.closest('.mc-ax-cin')) return false;   // the comment being written keeps its own right-click
     e.preventDefault();
-    const k = c.dataset.ax, on = !axSel.has(k);
-    if (on) axSel.add(k); else axSel.delete(k);
+    const k = c.dataset.ax, s = axState.get(k), on = !(s && s.taken);
+    axTake(k, on);
     axDrag = { on };
-    paintCards();
+    axPaint();
     return true;
 }
 function axOver(e) {
     if (!axDrag) return;
     const c = e.target.closest('.mc-ax-c');
-    if (!c || c.classList.contains('done') || axSel.has(c.dataset.ax) === axDrag.on) return;
-    if (axDrag.on) axSel.add(c.dataset.ax); else axSel.delete(c.dataset.ax);
-    paintCards();
+    if (c && !c.classList.contains('done') && axTake(c.dataset.ax, axDrag.on)) axPaint();
 }
 function axAct(act, t) {
-    const c = t.closest('.mc-ax-c'), k = c && c.dataset.ax, sel = [...axSel];
+    const c = t.closest('.mc-ax-c'), k = c && c.dataset.ax;
     switch (act) {
-        case 'ax-take': {
-            const e = axList().find(x => x.key === k); if (!e || axOf(e).entered) break;
-            const s = axOf(e); s.taken = !s.taken;
-            Log.debug('#772 ' + (s.taken ? 'taken in ' : 'left out ') + k);
-            axPaint(); break;
-        }
         case 'ax-type': axTypePop(t, [k]); break;
         case 'ax-cmt': if (axCmt) axCmtDone(false); axCmt = k; axPaint(); break;
         case 'ax-view': axView(k); break;
+        case 'ax-group': {
+            const xs = axList().filter(e => e.provider === t.dataset.p && !axOf(e).entered), on = !xs.every(e => axOf(e).taken);
+            xs.forEach(e => { axOf(e).taken = on; });
+            Log.debug('#772 every ' + t.dataset.p + ' image ' + (on ? 'taken in' : 'left out'));
+            axPaint(); break;
+        }
         case 'ax-none': axList().forEach(e => { axOf(e).taken = false; }); Log.debug('#772 every image left out'); axPaint(); break;
-        case 'ax-sel-take': axSet(sel, s => { s.taken = true; }); axPaint(); break;
-        case 'ax-sel-leave': axSet(sel, s => { s.taken = false; }); axPaint(); break;
-        case 'ax-sel-type': axTypePop(t, sel); break;
-        case 'ax-sel-cmt': axCmtPop(t, sel); break;
-        case 'ax-sel-none': axSel.clear(); paintCards(); break;
     }
 }
 function falconHtml(f) {
@@ -833,14 +813,13 @@ function mcStyle() {
         + '.mc-best img{width:72px;height:72px;object-fit:contain;border-radius:var(--mbu-radius);background:var(--mbu-bg-sunken);border:1px solid var(--mbu-border-soft);flex:0 0 auto}'
         // #772: the stores' other images, cards as in Art Station's gallery
         + '.mc-ax{padding:8px 10px 12px;border-top:1px solid var(--mbu-divider)}.mc-ax-h{display:flex;align-items:center;gap:6px;flex-wrap:wrap;min-height:26px;margin-bottom:4px}.mc-ax-t{font-size:10.5px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:var(--mbu-text-dim)}'
-        + '.mc-ax-hint{font-size:11px;color:var(--mbu-text-weak)}.mc-ax-n{font-weight:700;color:var(--mbu-accent-text);margin-right:2px}.mc-ax-sp{flex:1 1 auto}'
+        + '.mc-ax-hint{font-size:11px;color:var(--mbu-text-weak)}.mc-ax-sp{flex:1 1 auto}'
         + '#mc-root .mc-ax-b{font:12px var(--mbu-font);padding:2px 9px;border-radius:var(--mbu-radius);border:1px solid var(--mbu-border-strong);background:var(--mbu-bg);color:var(--mbu-accent-text);cursor:pointer}#mc-root .mc-ax-b:hover{background:var(--mbu-bg-hover);border-color:var(--mbu-accent)}'
-        + '.mc-ax-g{margin-top:6px}.mc-ax-gh{display:flex;align-items:center;gap:6px;font-size:12px;margin-bottom:6px}.mc-ax-gh span:last-child{color:var(--mbu-text-weak);font-size:11px}.mc-ax-cs{display:flex;flex-wrap:wrap;gap:20px 10px;padding-bottom:10px}'
+        + '.mc-ax-g{margin-top:6px}.mc-ax-gh{display:flex;align-items:center;gap:6px;font-size:12px;margin-bottom:6px}.mc-ax-gh .mc-ax-gn{color:var(--mbu-text-weak);font-size:11px}.mc-ax-cs{display:flex;flex-wrap:wrap;gap:20px 10px;padding-bottom:10px}'
         + '.mc-ax-c{position:relative;width:132px;box-sizing:border-box;background:var(--mbu-bg);border:1px solid var(--mbu-border-soft);border-radius:9px;display:flex;flex-direction:column;user-select:none}'
-        + '.mc-ax-c.on{border-color:var(--mbu-accent);background:var(--mbu-accent-soft)}.mc-ax-c.sel{box-shadow:0 0 0 2px var(--mbu-accent),0 3px 14px rgba(95,62,192,.3);border-color:var(--mbu-accent)}.mc-ax-c.done{opacity:.7}'
-        + '#mc-root .mc-ax-img{all:unset;cursor:pointer;height:104px;display:flex;align-items:center;justify-content:center;padding:6px 6px 4px}.mc-ax-img img{max-width:118px;max-height:100px;object-fit:contain;border-radius:3px;display:block}'
+        + '.mc-ax-c.on{border-color:var(--mbu-accent);background:var(--mbu-accent-soft)}.mc-ax-c.done{opacity:.7}'
+        + '#mc-root .mc-ax-img{all:unset;cursor:zoom-in;height:104px;display:flex;align-items:center;justify-content:center;padding:6px 6px 4px}.mc-ax-img img{max-width:118px;max-height:100px;object-fit:contain;border-radius:3px;display:block}'
         + '.mc-ax-c:not(.on):not(.done) .mc-ax-img img{opacity:.55}.mc-ax-c:not(.on):not(.done):hover .mc-ax-img img{opacity:.85}#mc-root .mc-ax-img:focus-visible{outline:2px solid var(--mbu-accent);outline-offset:-2px;border-radius:9px}'
-        + '#mc-root .mc-ax-zoom{all:unset;position:absolute;top:4px;right:4px;width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;background:var(--mbu-bg);color:var(--mbu-accent-text);border:1px solid var(--mbu-border);cursor:zoom-in;opacity:0;transition:.1s}#mc-root .mc-ax-c:hover .mc-ax-zoom,#mc-root .mc-ax-zoom:focus-visible{opacity:1}'
         + '.mc-ax-dup{position:absolute;top:4px;left:4px;max-width:96px;font-size:10px;font-weight:600;color:var(--mbu-warn);background:var(--mbu-bg);border:1px solid var(--mbu-warn-border);border-radius:4px;padding:0 4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}'
         + '.mc-ax-f{display:flex;align-items:center;gap:6px;min-height:17px;padding:4px 8px 0;border-top:1px solid var(--mbu-divider)}.mc-ax-cm{flex:0 1 auto;min-width:0;display:flex;overflow:hidden}.mc-ax-d{margin-left:auto;font:10.5px var(--mbu-font-mono);color:var(--mbu-text-weak);white-space:nowrap}'
         + '#mc-root .mc-ax-pen{font:11px var(--mbu-font);border:1px dashed var(--mbu-accent);background:var(--mbu-bg);color:var(--mbu-accent-text);border-radius:var(--mbu-radius);padding:0 7px;cursor:pointer;opacity:0;transition:.1s}#mc-root .mc-ax-c:hover .mc-ax-pen,#mc-root .mc-ax-pen:focus-visible{opacity:1}'
@@ -850,10 +829,8 @@ function mcStyle() {
         + '#mc-root .mc-ax-pill{font:700 11px var(--mbu-font);color:var(--mbu-accent-text);background:var(--mbu-bg-sunken);border:1px solid var(--mbu-accent);border-radius:20px;padding:2px 13px;cursor:pointer;max-width:118px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}#mc-root .mc-ax-pill:hover{background:var(--mbu-bg-hover)}'
         + '#mc-root .mc-ax-pill.add{background:var(--mbu-bg);border-style:dashed;font-weight:600;opacity:.5}#mc-root .mc-ax-c:hover .mc-ax-pill.add,#mc-root .mc-ax-pill.add:focus-visible{opacity:1}'
         + '.mc-ax-note{font-size:11px;font-weight:700;background:var(--mbu-bg);border:1px solid var(--mbu-border);border-radius:20px;padding:2px 11px}.mc-ax-note.ok{color:var(--mbu-ok);border-color:var(--mbu-ok-border)}'
-        + '.mc-ax-ck{position:absolute;right:6px;bottom:16px;width:20px;height:20px;border-radius:50%;background:var(--mbu-accent);color:var(--mbu-accent-fg);font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;z-index:2}'
         + '.mc-ax-pop{position:fixed;z-index:var(--mbu-z-pop);background:var(--mbu-bg);border:1px solid var(--mbu-accent);border-radius:8px;box-shadow:var(--mbu-shadow-lg);padding:6px;font-size:13px;color:var(--mbu-text)}'
         + '.mc-ax-tg{display:grid;grid-template-columns:1fr 1fr;gap:0 14px}.mc-ax-tg label{display:flex;align-items:center;gap:7px;padding:3px 6px;border-radius:5px;cursor:pointer;white-space:nowrap}.mc-ax-tg label:hover{background:var(--mbu-bg-hover)}.mc-ax-tg input{accent-color:var(--mbu-accent);margin:0}'
-        + '#mc-root .mc-ax-bin{width:220px;box-sizing:border-box;font:12.5px var(--mbu-font);padding:5px 8px;border:1px solid var(--mbu-border-strong);border-radius:6px;background:var(--mbu-bg);color:var(--mbu-text)}'
         + '.mc-best-no{width:72px;height:72px;display:flex;align-items:center;justify-content:center;font-size:32px;background:var(--mbu-bg-sunken);border-radius:var(--mbu-radius);flex:0 0 auto}.mc-best-t{display:flex;flex-direction:column;gap:2px;font-size:12px;min-width:0}.mc-best-t .dim{color:var(--mbu-text-weak);font-size:11px}'
         + '.mc-working{display:flex;align-items:center;gap:7px;padding:5px 10px;font-size:11.5px;color:var(--mbu-accent-text);border-bottom:1px solid var(--mbu-divider)}'
         + '.mc-spin{width:10px;height:10px;border:2px solid var(--mbu-accent-soft);border-top-color:var(--mbu-accent);border-radius:50%;animation:mc-spin .8s linear infinite;flex:0 0 auto}@keyframes mc-spin{to{transform:rotate(360deg)}}'
@@ -1856,7 +1833,7 @@ function onPickUp() {
 }
 // a found track link is an <a> (a click opens it): right-click takes it in or leaves it out
 function onContextMenu(e) {
-    if (e.target.closest('.mc-ax-c')) { e.preventDefault(); return; }   // #772: right-click selects
+    if (e.target.closest('.mc-ax-c')) { e.preventDefault(); return; }   // #772: right-click takes in
     const pk = e.target.closest('a.mc-lnk.mc-pick');
     if (!pk) return;
     e.preventDefault();
