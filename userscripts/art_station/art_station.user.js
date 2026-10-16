@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Art Station
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.16.203716
+// @version      2026.10.16.205125
 // @description  Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5BcnQgU3RhdGlvbjwvdGl0bGU+CjxjaXJjbGUgY3g9Ijg2IiBjeT0iNjQiIHI9IjM4IiBmaWxsPSIjMWIwZjNiIiBzdHJva2U9IiNiOTY3ZmYiIHN0cm9rZS13aWR0aD0iMyIvPgo8Y2lyY2xlIGN4PSI4NiIgY3k9IjY0IiByPSIyOC44OCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjNGEzNDgwIiBzdHJva2Utd2lkdGg9IjEuNSIvPjxjaXJjbGUgY3g9Ijg2IiBjeT0iNjQiIHI9IjIwLjkwMDAwMDAwMDAwMDAwMiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjNGEzNDgwIiBzdHJva2Utd2lkdGg9IjEuNSIvPgo8Y2lyY2xlIGN4PSI4NiIgY3k9IjY0IiByPSIxMS4wMiIgZmlsbD0iI2ZmNzFjZSIvPjxjaXJjbGUgY3g9Ijg2IiBjeT0iNjQiIHI9IjIuNTA4IiBmaWxsPSIjMWIwZjNiIi8+PGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJhcy1za3ljIiB4MT0iMCIgeTE9IjAiIHgyPSIwIiB5Mj0iMSI+PHN0b3Agb2Zmc2V0PSIwLjAwIiBzdG9wLWNvbG9yPSIjN2ZlN2ZmIi8+PHN0b3Agb2Zmc2V0PSIwLjUwIiBzdG9wLWNvbG9yPSIjZDlhNmZmIi8+PHN0b3Agb2Zmc2V0PSIxLjAwIiBzdG9wLWNvbG9yPSIjZmY3MWNlIi8+PC9saW5lYXJHcmFkaWVudD48Y2xpcFBhdGggaWQ9ImFzLWNjIj48cmVjdCB4PSIxMCIgeT0iMjIiIHdpZHRoPSI3OCIgaGVpZ2h0PSI4NCIgcng9IjgiLz48L2NsaXBQYXRoPjwvZGVmcz4KPGcgY2xpcC1wYXRoPSJ1cmwoI2FzLWNjKSI+PHJlY3QgeD0iMTAiIHk9IjIyIiB3aWR0aD0iNzgiIGhlaWdodD0iODQiIGZpbGw9InVybCgjYXMtc2t5YykiLz4KPGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJhcy1nczIiIHgxPSIwIiB5MT0iMCIgeDI9IjAiIHkyPSIxIj48c3RvcCBvZmZzZXQ9IjAiIHN0b3AtY29sb3I9IiNmZmY2YTgiLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiNmZjhhNWMiLz48L2xpbmVhckdyYWRpZW50Pgo8bWFzayBpZD0iYXMtbXMyIj48cmVjdCB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCIgZmlsbD0iI2ZmZiIvPjxyZWN0IHg9IjI1LjYiIHk9IjY3LjIiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjEuMiIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9IjY5LjgiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjEuNSIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9IjczLjAiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjEuOCIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9Ijc3LjAiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjIuMyIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9IjgyLjAiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjIuOSIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9Ijg4LjMiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjMuNiIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9Ijk2LjIiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjQuNSIgZmlsbD0iIzAwMCIvPjwvbWFzaz48L2RlZnM+CjxjaXJjbGUgY3g9IjQ5IiBjeT0iNzYuMDgiIHI9IjIzLjQiIGZpbGw9InVybCgjYXMtZ3MyKSIgbWFzaz0idXJsKCNhcy1tczIpIi8+PHJlY3QgeD0iMTAiIHk9Ijc0LjA4IiB3aWR0aD0iNzgiIGhlaWdodD0iMzEuOTIiIGZpbGw9IiNiOTY3ZmYiLz48cGF0aCBkPSJNMTAgNzQuMDhIODhNMTAgNzcuOUg4OE0xMCA4My4ySDg4TTEwIDkxLjRIODhNMTAgMTA0LjJIODhNMzQuOCA3NC4wOEwtNDguNSAxMDZNMzguNCA3NC4wOEwtMjQuMSAxMDZNNDEuOSA3NC4wOEwwLjMgMTA2TTQ1LjUgNzQuMDhMMjQuNiAxMDZNNDkuMCA3NC4wOEw0OS4wIDEwNk01Mi41IDc0LjA4TDczLjQgMTA2TTU2LjEgNzQuMDhMOTcuOCAxMDZNNTkuNiA3NC4wOEwxMjIuMSAxMDZNNjMuMiA3NC4wOEwxNDYuNSAxMDYiIHN0cm9rZT0iI2ZmZmI5NiIgc3Ryb2tlLXdpZHRoPSIxLjMiIGZpbGw9Im5vbmUiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPjwvZz48cmVjdCB4PSIxMCIgeT0iMjIiIHdpZHRoPSI3OCIgaGVpZ2h0PSI4NCIgcng9IjgiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJhMTQ1OCIgc3Ryb2tlLXdpZHRoPSIzIi8+Cjwvc3ZnPgo=
@@ -409,11 +409,20 @@
       let d = {};
       try { d = JSON.parse(e.detail) || {}; } catch (x) { return; }
       if (d.id !== 'as' || (d.release && d.release !== rel)) return;
-      const urls = last.filter(x => (d.keys || []).includes(x.p.name)).map(x => x.u);
+      // #772: extras, the stores' other images taken in on MC's card ({ key, types, comment }); front: whether a
+      // source row is taken in, so the best front is entered too. Extras alone come from the probe's sources.
+      const extras = Array.isArray(d.extras) ? d.extras : [];
+      let urls = last.filter(x => (d.keys || []).includes(x.p.name)).map(x => x.u);
+      const front = urls.length > 0;
+      if (!front && extras.length && frame) urls = frame.urls.split(' ').filter(Boolean);
+      // the stores the extras come from are sourced too, should the probe's frame not serve
+      const provUrl = name => { const n = String(name || '').toLowerCase(); return (last.find(x => n === x.p.name.toLowerCase() || n.includes(x.p.name.toLowerCase())) || {}).u; };
+      extras.forEach(x => { const u = provUrl(x.key.split('#')[0]); if (u && !urls.includes(u)) urls.push(u); });
       const reply = o => send('mc:applied', Object.assign({ id: 'as', run: d.run, release: rel }, o));
       const busy = note => send('mc:progress', { id: 'as', run: d.run, state: 'busy', note });
+      const more = extras.length ? extras.length + ' more image' + (extras.length === 1 ? '' : 's') : '';
       if (!urls.length) { reply({ ok: true, sent: 0, note: 'nothing to source' }); return; }
-      if (d.dry) { reply({ ok: true, sent: 0, note: 'dry run: would enter the best cover of ' + urls.length + ' source' + (urls.length === 1 ? '' : 's') + (frame && frame.best ? ' (' + frame.best.provider + ' ' + frame.best.w + '×' + frame.best.h + ')' : '') }); return; }
+      if (d.dry) { reply({ ok: true, sent: 0, note: 'dry run: would enter ' + [front && 'the best cover of ' + urls.length + ' source' + (urls.length === 1 ? '' : 's') + (frame && frame.best ? ' (' + frame.best.provider + ' ' + frame.best.w + '×' + frame.best.h + ')' : ''), more].filter(Boolean).join(' and ') }); return; }
       // the probe's best is reused when it came from a ticked source and every ticked source was in
       // that probe: the best of more sources is also the best of the ticked ones. Otherwise source again.
       const probed = frame ? frame.urls.split(' ') : [];
@@ -431,20 +440,20 @@
         mcPlan = { replace };
         send('mc:progress', { id: 'as', run: d.run, state: 'busy', note: 'entering the cover', best: Object.assign({ larger, replace, unknown, current: top || null }, r.best) });
       }
-      busy('entering the cover');
+      busy(front ? 'entering the cover' : 'entering ' + more);
       // #741: the frame repeats a failed upload (auto-repeat), which can take longer than ten minutes: it is
       // waited for while it says what it does, and its word is the note
       let word = 'entering the cover', heard = Date.now();
       const onWord = m => { if (m.type === 'progress') { word = m.note || word; heard = Date.now(); busy(word); } };
       frameMsgs.add(onWord);
       const got = waitFrame('entered', 6 * 3600000, s => { if (Date.now() - heard > 600000) frameMsgs.forEach(f => f({ type: 'entered', ok: false, error: 'no word from the cover-art frame for 10 minutes' })); else busy(word + ' (' + s + ' s)'); });
-      frame.el.contentWindow.postMessage({ mcAs: 1, token: frame.token, type: 'enter', replace: mcPlan.replace, note: 'Via Mission Control' + (d.mc ? ' v' + d.mc : '') + ': ' + location.origin + '/release/' + rel }, location.origin);
+      frame.el.contentWindow.postMessage({ mcAs: 1, token: frame.token, type: 'enter', replace: front && mcPlan.replace, front, extras, note: 'Via Mission Control' + (d.mc ? ' v' + d.mc : '') + ': ' + location.origin + '/release/' + rel }, location.origin);
       const m = await got;
       frameMsgs.delete(onWord);
       log.info('Mission Control apply: ' + JSON.stringify(m));
       const b = frame.best;
       if (!m) reply({ ok: false, sent: 0, note: 'Art Station did not finish within 10 minutes' });
-      else if (m.ok) reply({ ok: true, sent: 1, note: 'entered ' + b.provider + ' ' + b.w + '×' + b.h + ' as the front cover' + (mcPlan.replace ? ', and removed the smaller one' : '') });
+      else if (m.ok) reply({ ok: true, sent: (front ? 1 : 0) + extras.length, note: [front && 'entered ' + b.provider + ' ' + b.w + '×' + b.h + ' as the front cover' + (mcPlan.replace ? ', and removed the smaller one' : ''), more && (front ? 'and ' : 'entered ') + more].filter(Boolean).join(' ') });
       else reply({ ok: false, sent: 0, retry: !m.cancelled && !!m.retry, note: m.cancelled ? 'cancelled' : 'the edit failed' + (m.error ? ': ' + m.error : '') + (m.gaveUp ? ' (repeated for ' + m.gaveUp + ')' : '') });
     });
     hello();
@@ -2946,7 +2955,9 @@
         asLog.info(`Best cover: ${best._provider || best.id} ${best.w}×${best.h} (${best.bytes ? fmtBytes(best.bytes) : '?'}) of ${cands.length}`);
         // the losers are removed outright, not marked for removal — they never show up at all
         const drop = MODEL.filter(x => !before.has(x.id) && x !== best && !x._sourcing);
-        drop.forEach(x => { try { if (x._file) URL.revokeObjectURL(x._file); } catch (e) {} });
+        // #772: in Mission Control's frame they are the store's other images, offered on MC's card: kept aside, off the gallery
+        if (MC_FRAME) _mcPool = drop.filter(x => x._new && !x._del && !x._pdf && x.w > 0);
+        drop.forEach(x => { try { if (x._file && !_mcPool.includes(x)) URL.revokeObjectURL(x._file); } catch (e) {} });
         MODEL = MODEL.filter(x => !drop.includes(x)); MODEL.forEach((x, i) => x.order = i);
         asLog.info(`Best cover: removed the other ${drop.length} imported ${drop.length === 1 ? ITEM : ITEMS}${drop.length ? ` (${drop.map(x => `${x._provider || x.id} ${x.w}×${x.h}`).join(', ')})` : ''}`);
         toast(cands.length > 1 ? `Kept the best of ${cands.length}: ${best._provider || ''} ${best.w}×${best.h}` : `Only one cover found — ${best._provider || 'kept'}`);
@@ -2955,6 +2966,90 @@
       }, 500);
     }
   }
+  // the preview (500 px) and the full image for Mission Control's full-screen view: the file
+  // itself up to 12 MB, or 2400 px across above that
+  function scaled(bmp, n, q) {
+    const k = Math.min(1, n / Math.max(bmp.width, bmp.height)), c = document.createElement('canvas');
+    c.width = Math.max(1, Math.round(bmp.width * k)); c.height = Math.max(1, Math.round(bmp.height * k));
+    c.getContext('2d').drawImage(bmp, 0, 0, c.width, c.height);
+    return c.toDataURL('image/jpeg', q);
+  }
+  const asData = b => new Promise((res, rej) => { const fr = new FileReader(); fr.onload = () => res(fr.result); fr.onerror = () => rej(fr.error); fr.readAsDataURL(b); });
+  // #772: a picture's fingerprint, a 64-bit difference hash of its 9×8 grey thumbnail: two files of the
+  // same picture (another size, another scan's compression) differ in a few bits, different pictures in many
+  function dHash(bmp) {
+    const c = document.createElement('canvas'); c.width = 9; c.height = 8;
+    const g = c.getContext('2d', { willReadFrequently: true });
+    g.drawImage(bmp, 0, 0, 9, 8);
+    const d = g.getImageData(0, 0, 9, 8).data, lum = i => d[i * 4] * 0.299 + d[i * 4 + 1] * 0.587 + d[i * 4 + 2] * 0.114;
+    let bits = '';
+    for (let y = 0; y < 8; y++) for (let x = 0; x < 8; x++) bits += lum(y * 9 + x) > lum(y * 9 + x + 1) ? '1' : '0';
+    return bits;
+  }
+  const hamming = (a, b) => { let n = 0; for (let i = 0; i < 64; i++) if (a[i] !== b[i]) n++; return n; };
+  const SAME_PICTURE = 6;   // at most this many bits apart: the same picture
+  // a nearly flat picture (a black back, a blank page) has a hash of nearly all one bit: it would match every other
+  // flat one, so it is compared with nothing
+  const flatHash = h => { const ones = h.split('1').length - 1; return ones < 4 || ones > 60; };
+  // a store's images in the order it gave them, keyed by the store (the link it came from)
+  const provKey = x => x._provUrl || x._provider || '';
+  // #772: the other images of the stores that gave several (Discogs, Amazon): Mission Control offers them beside the
+  // best front, each with a preview, its place in the store's list (`key`, which a new sourcing gives again) and
+  // `dup` when it is the same picture as a cover already in the archive, the best front, or a larger one of them
+  async function mcExtras(best) {
+    _mcExtras = new Map();
+    if (!best || !_mcPool.length) return [];
+    const all = [best, ..._mcPool].sort((a, b) => (a._seq || 0) - (b._seq || 0));
+    const groups = new Map();
+    all.forEach(x => { const k = provKey(x); if (!groups.has(k)) groups.set(k, []); groups.get(k).push(x); });
+    const label = new Map();
+    groups.forEach(xs => xs.forEach((x, i) => label.set(x, { name: x._provider || 'Image', n: i + 1, of: xs.length })));
+    const many = [...groups.values()].filter(xs => xs.length > 1);
+    if (!many.length) { asLog.info('Mission Control: no store gave more than one image'); return []; }
+    const hashOf = async src => {
+      try {
+        const b = typeof src === 'string' && /^https?:/.test(src) ? await gmFetch(src) : await (await fetch(src)).blob();
+        const bmp = await createImageBitmap(b), h = dHash(bmp);
+        return { bmp, h: flatHash(h) ? null : h };
+      } catch (e) { asLog.debug('Mission Control: fingerprint failed: ' + (e && e.message)); return null; }
+    };
+    // the covers already in the archive, by their small thumbnail
+    const arch = [];
+    for (const x of MODEL.filter(x => !x._new && !x._del && x.id && !x._pdf)) {
+      const r = await hashOf(thumb(x.id, 250));
+      if (r && r.h) arch.push({ x, h: r.h }); else asLog.debug(`Mission Control: no fingerprint for archive cover #${x.id} (not processed yet?)`);
+    }
+    const bestH = await hashOf(best._file);
+    const extras = [];
+    for (const xs of many) for (const x of xs) {
+      if (x === best) continue;
+      const r = await hashOf(x._file);
+      const l = label.get(x), key = l.name + '#' + l.n;
+      const e = { key, provider: l.name, n: l.n, of: l.of, w: x.w || 0, h: x.h || 0, bytes: x.bytes || 0, url: x._provImageUrl || '', thumb: '', types: (x.types || []).filter(t => t !== 'Front'), _h: r && r.h, _x: x };
+      if (r) e.thumb = scaled(r.bmp, 240, 0.8);
+      extras.push(e);
+    }
+    const lb = x => { const l = label.get(x); return l ? l.name + ' ' + l.n : 'the best front'; };
+    extras.forEach(e => {
+      if (!e._h) return;
+      const a = arch.find(c => hamming(c.h, e._h) <= SAME_PICTURE);
+      if (a) { e.dup = 'in archive' + ((a.x.types || []).length ? ' (' + a.x.types.join(', ') + ')' : ''); return; }
+      if (bestH && bestH.h && hamming(bestH.h, e._h) <= SAME_PICTURE) { e.dup = '= ' + lb(best); return; }
+      const big = extras.find(o => o !== e && o._h && hamming(o._h, e._h) <= SAME_PICTURE && (o.w * o.h > e.w * e.h || (o.w * o.h === e.w * e.h && extras.indexOf(o) < extras.indexOf(e))));
+      if (big) e.dup = '= ' + big.provider + ' ' + big.n;
+    });
+    extras.forEach(e => { _mcExtras.set(e.key, e._x); delete e._h; delete e._x; });
+    // the store that gives the larger images leads (Amazon's are usually larger than Discogs')
+    const area = p => Math.max(0, ...extras.filter(e => e.provider === p).map(e => e.w * e.h));
+    extras.sort((a, b) => (a.provider === b.provider ? a.n - b.n : area(b.provider) - area(a.provider)));
+    asLog.info(`Mission Control: ${extras.length} more image(s) to offer: ${extras.map(e => `${e.key} ${e.w}×${e.h}${e.dup ? ' (' + e.dup + ')' : ''}`).join(', ')}`);
+    return extras;
+  }
+  // test hook only (#772): the frame's pool and best set by a spec, as sourceBest leaves them
+  if (mbuTestHooks()) (window.__asTest || (window.__asTest = {})).mc = {
+    model: () => MODEL,
+    offer: (best, pool) => { _mcBest = best; _mcPool = pool; MODEL = MODEL.filter(x => !pool.includes(x)); MODEL.forEach((x, i) => x.order = i); render(); return mcExtras(best); },
+  };
   // #680: Mission Control opened this page with ?mc_source=[links] — import from those
   // links and keep the best cover, as a middle-click on the URL button does
   function mcSeeded() {
@@ -2974,20 +3069,14 @@
       // the covers already there and typed Front, measured (the card compares the best one with them)
       const fronts = () => MODEL.filter(x => !x._new && !x._del && (x.types || []).includes('Front'));
       const measured = new Promise(res => { const t0 = Date.now(); const iv = setInterval(() => { if (fronts().every(x => x.w > 0 || x._noDim || x._pdf) || Date.now() - t0 > 15000) { clearInterval(iv); res(); } }, 300); });
-      const post = () => measured.then(() => {
+      const post = () => measured.then(() => mcExtras(best)).then(extras => {
         // full: the archive's own image, for Mission Control's full-screen view
         const existing = fronts().map(x => ({ id: x.id, w: x.w || 0, h: x.h || 0, bytes: x.bytes || 0, thumb: x.id ? thumb(x.id, 250) : '', full: x._img || (x.id ? thumb(x.id, 1200) : '') }));
         asLog.info(`Mission Control: existing front cover(s): ${existing.map(x => `#${x.id} ${x.w ? x.w + '×' + x.h : 'size unknown (not processed yet?)'}`).join(', ') || 'none'}`);
+        if (out) { out.extras = extras; out.types = COVER_TYPES.slice(); }
         mcFramePost({ type: 'best', best: out, existing });
       });
       if (!best || !best._file) { post(); return; }
-      // the preview (500 px) and the full image for Mission Control's full-screen view: the file
-      // itself up to 12 MB, or 2400 px across above that
-      const scaled = (bmp, n, q) => { const k = Math.min(1, n / Math.max(bmp.width, bmp.height)), c = document.createElement('canvas');
-        c.width = Math.round(bmp.width * k); c.height = Math.round(bmp.height * k);
-        c.getContext('2d').drawImage(bmp, 0, 0, c.width, c.height);
-        return c.toDataURL('image/jpeg', q); };
-      const asData = b => new Promise((res, rej) => { const fr = new FileReader(); fr.onload = () => res(fr.result); fr.onerror = () => rej(fr.error); fr.readAsDataURL(b); });
       fetch(best._file).then(r => r.blob()).then(async b => {
         const bmp = await createImageBitmap(b);
         out.thumb = scaled(bmp, 500, 0.85);
@@ -3009,7 +3098,27 @@
     if (_mcNoteBase === null) _mcNoteBase = _seedNote;
     _seedNote = [_mcNoteBase, d.note].filter(Boolean).join('\n\n');
     // replace: the one existing front is smaller, so it goes and the best becomes the front
-    if (d.replace && _mcBest) {
+    // #772: front false: only the other images taken in on MC's card, not the best front
+    if (d.front === false && _mcBest) {
+      MODEL = MODEL.filter(x => x !== _mcBest); MODEL.forEach((x, i) => x.order = i);
+      asLog.info('Mission Control: the best front is not taken in, so it is left out');
+    }
+    // #772: the stores' other images taken in on MC's card, with the types and comment set there, after the front
+    const add = (Array.isArray(d.extras) ? d.extras : []).map(e => {
+      const x = _mcExtras.get(e.key);
+      if (!x) { asLog.warn(`Mission Control: ${e.key} is not among the images found this time`); return null; }
+      x.types = (Array.isArray(e.types) ? e.types : []).filter(t => ALL_TYPES.includes(t));
+      x.comment = String(e.comment || '').trim();
+      return x;
+    }).filter(x => x && !MODEL.includes(x));
+    if (add.length) {
+      const seq = MODEL.slice().sort((a, b) => a.order - b.order);
+      const at = _mcBest && seq.includes(_mcBest) ? seq.indexOf(_mcBest) + 1 : 0;
+      seq.splice(at, 0, ...add);
+      MODEL = seq; MODEL.forEach((x, i) => x.order = i);
+      asLog.info(`Mission Control: entering ${add.length} more image(s): ${add.map(x => `${x._provider || '?'} ${x.w}×${x.h} [${x.types.join(', ') || 'no type'}]${x.comment ? ' "' + x.comment + '"' : ''}`).join(', ')}`);
+    }
+    if (d.replace && _mcBest && d.front !== false) {
       const old = MODEL.filter(x => !x._new && !x._del && (x.types || []).includes('Front'));
       if (old.length === 1) { old[0]._del = true; old[0]._sel = false; asLog.info(`Mission Control: removing the smaller front #${old[0].id} ${old[0].w}×${old[0].h}`); }
       if (!(_mcBest.types || []).includes('Front')) _mcBest.types = ['Front'].concat(_mcBest.types || []);
@@ -3017,7 +3126,7 @@
     _mcCommitDone = r => mcFramePost(Object.assign({ type: 'entered' }, r));
     enterEdit(true);
   });
-  let _mcCommitDone = null, _mcBest = null, _mcNoteBase = null;
+  let _mcCommitDone = null, _mcBest = null, _mcNoteBase = null, _mcPool = [], _mcExtras = new Map();   // #772 _mcPool: the stores' other images, kept off the gallery; _mcExtras: key -> one of them
   function openSourcePop(btn) {
     _srcBtn = btn;   // #250 remembered so a late provider registration can re-open this popover
     document.querySelectorAll('.as-pop').forEach(p => p.remove());
