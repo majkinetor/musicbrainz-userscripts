@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Fusion
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.16.185136
+// @version      2026.10.16.211641
 // @description  Merge-recordings assistant for MusicBrainz: gather a pool of candidate recordings from a release / release group / recording page (or paste any MBID/URL), auto-match them into merge groups by ISRC / AcoustID / length / title+artist, review and adjust the groups, then submit the merges directly in the background — no MB merge page involved.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPkZ1c2lvbjwvdGl0bGU+CiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjYTE4NGY4IiBzdHJva2Utd2lkdGg9IjUuNSI+CiAgICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSI2NCIgcng9IjUyIiByeT0iMjIiLz4KICAgIDxlbGxpcHNlIGN4PSI2NCIgY3k9IjY0IiByeD0iNTIiIHJ5PSIyMiIgdHJhbnNmb3JtPSJyb3RhdGUoNjAgNjQgNjQpIi8+CiAgICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSI2NCIgcng9IjUyIiByeT0iMjIiIHRyYW5zZm9ybT0icm90YXRlKDEyMCA2NCA2NCkiLz4KICA8L2c+CiAgPGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iMTEiIGZpbGw9IiM3YzRkZmYiLz4KPC9zdmc+Cg==
@@ -432,7 +432,12 @@ function shouldUnion(sig, cutoff) {
     // #760: different tracks of one ISRC batch. Ahead of AcoustID, which can
     // collide on short or quiet tracks; a shared ISRC never sets this.
     if (sig.isrcConflict) return false;
-    if (sig.isrc || sig.acoustid) return true;
+    if (sig.isrc) return true;
+    // #760 follow-up (majkinetor): "Feel What You Feel" and "Suspended Space"
+    // share AcoustIDs, which are user-submitted and land on the wrong recording,
+    // so an AcoustID alone grouped two different tracks. It no longer carries a
+    // pair whose titles each have a word the other lacks; a shared ISRC does.
+    if (sig.acoustid && !sig.titleDiffers) return true;
     if (cutoff === 'strict') return false;
     if (cutoff === 'loose') return (sig.title && sig.length) || (sig.title && sig.artist);
     // 'normal' — identifiers, or title AND artist corroborated by length.
@@ -1136,7 +1141,7 @@ function clearBoard() {
 }
 
 function pairSignals(a, b, tolMs) {
-    const sig = { isrc: false, acoustid: false, length: false, title: false, artist: false, artistByMbid: false, videoMismatch: false, pendingEdit: false, lengthConflict: false, lengthUnknown: false, isrcConflict: null, titleDistinct: null };
+    const sig = { isrc: false, acoustid: false, length: false, title: false, artist: false, artistByMbid: false, videoMismatch: false, pendingEdit: false, lengthConflict: false, lengthUnknown: false, isrcConflict: null, titleDistinct: null, titleDiffers: null };
     // #565: three states, not two. `length` false meant BOTH "the lengths differ"
     // and "we have no length to compare", and the normal cutoff required it — so a
     // release whose recordings carry no length at all could never form a group,
@@ -1152,10 +1157,12 @@ function pairSignals(a, b, tolMs) {
     if (a.acoustids && b.acoustids && a.acoustids.length && b.acoustids.length && a.acoustids.some(x => b.acoustids.includes(x))) sig.acoustid = true;
     if (lengthClose(a.length, b.length, tolMs)) sig.length = true;
     sig.isrcConflict = isrcConflict(a, b);
-    // #760: keep the words that refused an otherwise alike title, for the log
-    if (a.title && b.title && titleAlike(a.title, b.title)) {
+    // #760: keep the words that refused an otherwise alike title, for the log;
+    // titleDiffers holds them for any two titles, and refuses an AcoustID match
+    if (a.title && b.title) {
         const d = titleDistinctWords(a.title, b.title);
-        if (d) sig.titleDistinct = d; else sig.title = true;
+        sig.titleDiffers = d;
+        if (titleAlike(a.title, b.title)) { if (d) sig.titleDistinct = d; else sig.title = true; }
     }
     /* #594 (chaban-mb): "auto-matching with normal cutoff fails due to differing
        artists credits even though the artist themselves are identical."
@@ -1202,11 +1209,11 @@ function autoMatch(pool, tolMs, cutoff) {
                     + pool[i].title + '" ' + dur(pool[i].length) + ' vs "' + pool[j].title + '" ' + dur(pool[j].length));
             }
             // #760: a pair that would have grouped but for the title or ISRC-batch guard
-            if ((sig.titleDistinct || sig.isrcConflict) && !shouldUnion(sig, cutoff)
-                && shouldUnion(Object.assign({}, sig, { title: sig.title || !!sig.titleDistinct, isrcConflict: null }), cutoff)) {
+            if ((sig.titleDiffers || sig.isrcConflict) && !shouldUnion(sig, cutoff)
+                && shouldUnion(Object.assign({}, sig, { title: sig.title || !!sig.titleDistinct, isrcConflict: null, titleDiffers: null }), cutoff)) {
                 guardBlocked++;
                 Log.info('  not grouped (' + (sig.isrcConflict ? 'ISRCs ' + sig.isrcConflict + ' from one batch'
-                    : 'titles differ in "' + sig.titleDistinct.a.join(' ') + '" / "' + sig.titleDistinct.b.join(' ') + '"')
+                    : (sig.acoustid ? 'shared AcoustID, but ' : '') + 'titles differ in "' + sig.titleDiffers.a.join(' ') + '" / "' + sig.titleDiffers.b.join(' ') + '"')
                     + '): "' + pool[i].title + '" ' + dur(pool[i].length) + ' vs "' + pool[j].title + '" ' + dur(pool[j].length));
             }
             if (shouldUnion(sig, cutoff)) {
@@ -1221,7 +1228,7 @@ function autoMatch(pool, tolMs, cutoff) {
         }
     }
     if (bridgeBlocked) Log.warn(bridgeBlocked + ' matching pair(s) kept apart: joining them would have grouped a video with an audio recording, lengths more than ' + Math.round((SETTINGS.grossLengthMs || 30000) / 1000) + 's apart, or two ISRCs of one batch, through a recording whose value is unknown');
-    if (guardBlocked) Log.warn(guardBlocked + ' pair(s) held back as different tracks (titles that differ in a word on each side, or ISRCs of one batch) — group them by hand if they really are the same');
+    if (guardBlocked) Log.warn(guardBlocked + ' pair(s) held back as different tracks (titles that differ in a word on each side, even with a shared AcoustID, or ISRCs of one batch) — group them by hand if they really are the same');
     if (lengthBlocked) Log.warn(lengthBlocked + ' pair(s) held back by the gross-length guard (>' + Math.round((SETTINGS.grossLengthMs || 30000) / 1000) + 's apart) — group them by hand if they really are the same take');
     const byRoot = new Map();
     for (const r of pool) { const root = find(r.gid); if (!byRoot.has(root)) byRoot.set(root, []); byRoot.get(root).push(r); }

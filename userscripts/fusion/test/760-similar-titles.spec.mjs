@@ -30,11 +30,11 @@ test('near-identical titles of different tracks do not group', { tag: '@unit' },
   await page.goto('https://musicbrainz.org/release-group/0ece1e80-fa3e-4fc8-8aec-c54003084bb3', { waitUntil: 'domcontentloaded' });
   await inject('fusion', { waitFor: '__fusion' });
 
-  // recs: [title, length ms, isrcs]; returns the groups as sorted title lists
+  // recs: [title, length ms, isrcs, acoustids?]; returns the groups as sorted title lists
   const groups = (recs, cutoff) => page.evaluate(([recs, cutoff, artist]) => {
     const F = window.__fusion;
-    const pool = recs.map(([title, length, isrcs], i) => F.mkRecording('aaaaaaaa-0000-4000-8000-' + String(i).padStart(12, '0'), {
-      title, length, isrcs, artistCredit: 'Aiuole', artistGid: artist, artistGids: [artist],
+    const pool = recs.map(([title, length, isrcs, acoustids], i) => F.mkRecording('aaaaaaaa-0000-4000-8000-' + String(i).padStart(12, '0'), {
+      title, length, isrcs, acoustids: acoustids || null, artistCredit: 'Aiuole', artistGid: artist, artistGids: [artist],
       video: false, releases: [{ title: 'R' }], isrcsKnown: true,
     }));
     const byGid = new Map(pool.map(r => [r.gid, r.title]));
@@ -69,6 +69,24 @@ test('near-identical titles of different tracks do not group', { tag: '@unit' },
     // a recording with no ISRC must not bridge the two into one group
     const b = await groups([['Interlude', 60000, ['QZTRX2699407']], ['Interlude', 60000, []], ['Interlude', 60000, ['QZTRX2699409']]], 'normal');
     check(!b.some(x => x.length === 3), `a recording without an ISRC does not bridge them (got ${JSON.stringify(b)})`);
+  });
+
+  // majkinetor, on the issue: release group 8c8ee935 (LTJ Bukem, Journey Inwards)
+  // grouped "Feel What You Feel" 8:25 with "Suspended Space" 8:24 at every cutoff,
+  // on AcoustIDs e8aa6bc2… and f6d77593… that both recordings carry
+  await test.step('a shared AcoustID does not group different titles', async () => {
+    const ids = ['e8aa6bc2-0000-4000-8000-000000000001', 'f6d77593-0000-4000-8000-000000000002'];
+    const recs = [['Feel What You Feel', 505000, [], ids], ['Suspended Space', 504000, ['GBCCH9900253'], ids]];
+    for (const cutoff of ['strict', 'normal', 'loose']) {
+      const g = await groups(recs, cutoff);
+      check(g.length === 0, `not grouped at ${cutoff} (got ${JSON.stringify(g)})`);
+    }
+    const same = await groups([['Feel What You Feel', 505000, [], ids], ['Feel What You Feel (Original Mix)', 504000, [], ids]], 'strict');
+    check(same.length === 1, `a shared AcoustID still groups a title and its mix spelling (got ${JSON.stringify(same)})`);
+    const typo = await groups([['Oburumankoma', 505000, [], ids], ['Oburumakoma', 504000, [], ids]], 'strict');
+    check(typo.length === 1, `a shared AcoustID still groups a typo (got ${JSON.stringify(typo)})`);
+    const isrc = await groups([['Feel What You Feel', 505000, ['GBCCH9900253'], ids], ['Suspended Space', 504000, ['GBCCH9900253'], ids]], 'strict');
+    check(isrc.length === 1, `a shared ISRC still groups, whatever the titles (got ${JSON.stringify(isrc)})`);
   });
 
   await test.step('what must still match', async () => {
