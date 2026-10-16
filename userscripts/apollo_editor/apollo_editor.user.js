@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.16
+// @version      2026.10.16.195747
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5BcG9sbG8gRWRpdG9yPC90aXRsZT4KPG1hc2sgaWQ9ImFwLW0iIG1hc2tVbml0cz0idXNlclNwYWNlT25Vc2UiIHg9IjAiIHk9IjAiIHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4Ij48Zz48ZyBmaWxsPSIjZmZmIj48cGF0aCBkPSJNNDIgNjQgQzI4IDcyIDIyIDkwIDI0IDExMCBMNDIgOTggWiIvPjxwYXRoIGQ9Ik04NiA2NCBDMTAwIDcyIDEwNiA5MCAxMDQgMTEwIEw4NiA5OCBaIi8+PC9nPjxnIGZpbGw9IiNmZmYiPjxwYXRoIGQ9Ik02NCA4IEM4NCAyNCA5MCA1MiA4OCA5MCBMNDAgOTAgQzM4IDUyIDQ0IDI0IDY0IDggWiIvPjxwYXRoIGQ9Ik00OCA5MCBMODAgOTAgTDc2IDEwMCBMNTIgMTAwIFoiLz48L2c+PGcgc3Ryb2tlPSIjMDAwIiBzdHJva2Utd2lkdGg9IjMuNSI+PHBhdGggZD0iTTM2IDkwLjUgTDkyIDkwLjUiLz48L2c+PGNpcmNsZSBjeD0iNjQiIGN5PSI1MCIgcj0iOCIgZmlsbD0iIzAwMCIvPjwvZz48L21hc2s+PGc+PHBhdGggZD0iTTUyIDEwMCBDNTQgMTEyIDYwIDExOCA2NCAxMjYgQzY4IDExOCA3NCAxMTIgNzYgMTAwIFoiIGZpbGw9IiNlYjc0M2IiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDAgMykiLz48L2c+PHJlY3Qgd2lkdGg9IjEyOCIgaGVpZ2h0PSIxMjgiIGZpbGw9IiNiYTQ3OGYiIG1hc2s9InVybCgjYXAtbSkiLz4KPC9zdmc+Cg==
@@ -2640,7 +2640,7 @@ click to open the label`;
       endMatchLog();   // a no-op once the pass summed up; covers a pass that threw
       setMatching(false);
       refreshStatus();   // set the final per-medium badges once the pass is done
-      if (stopped) updateStatus('matching stopped — ' + done + '/' + planned + ' done, the rest are still unmatched');
+      if (stopped) { _stopNote = { msg: 'matching stopped — ' + done + '/' + planned + ' done, the rest are still unmatched', n: unresolvedIn(null) }; updateStatus(_stopNote.msg); }
       if (!_autoMatching) _matchStop = false;   // #575: leave it set while the recordings pass is still winding down
     }
     // #227: tag/resolve Discogs links AFTER the match finally (so its summary
@@ -5203,6 +5203,10 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     ack(document.querySelector('#tc-recwrap .tc-rec-am'), _autoMatching);
   };
   let _matching = false;
+  // #577: the "matching stopped" line, kept while nothing has changed since the stop.
+  // The re-render that follows a pass (platform and Discogs tagging) used to replace
+  // it with the unresolved count within a few dozen ms, so the stop was never seen.
+  let _stopNote = null;
   // The Match button BECOMES the Stop button for the duration. It used to just
   // go disabled, which is what made an eight-minute pass feel unstoppable, and
   // reusing it costs no room in a toolbar that already collapses to icons.
@@ -5212,7 +5216,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     // write only lands when track one finishes, which on a slow day is several
     // seconds — until then the idle "auto-match off — click Match" was still
     // sitting there, reading as if the press had done nothing.
-    if (on) updateStatus('matching…');
+    if (on) { _stopNote = null; updateStatus('matching…'); }
     const b = document.querySelector('#tc-bar [data-act="match"], #tc-hdr [data-act="match"]');
     if (!b) return;
     b.disabled = false;
@@ -5273,6 +5277,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     else document.querySelectorAll('#tc-panel .tc-hstatus').forEach(span => setStatusSpan(span, unresolvedIn(null)));
     setGlobalStat(unresolvedIn(null));   // release-wide total in the toolbar
     if (!_tagDiscogsRunning) setDiscStat();   // #227: keep the missing-links badge in sync (the check owns it while running)
+    if (_stopNote) { if (unresolvedIn(null) === _stopNote.n) updateStatus(_stopNote.msg); else _stopNote = null; }   // #577: until a match changes the count
   }
 
   function buildTable() {

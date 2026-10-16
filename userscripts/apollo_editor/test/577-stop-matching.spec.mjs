@@ -20,7 +20,7 @@ const label = (page, sel) => page.evaluate(sel => { const b = document.querySele
 const click = (page, sel) => page.evaluate(sel => document.querySelector(sel)?.click(), sel);   // not page.click: a disabled button would hang it
 const backToMatch = (page, sel) => page.waitForFunction(sel => /Match/.test(document.querySelector(sel)?.textContent || ''), sel, { timeout: 45000 }).then(() => true).catch(() => false);
 
-test('the tracklist pass can be stopped, and keeps what it matched', { tag: ['@sandbox', '@login', '@flaky'] }, async ({ page, inject }) => {
+test('the tracklist pass can be stopped, and keeps what it matched', { tag: ['@sandbox', '@login'] }, async ({ page, inject }) => {
   const submitted = await openApollo(page, inject, { seed, tab: 'tracklist' });
   const btn = '#tc-bar [data-act="match"], #tc-hdr [data-act="match"]';
   await page.waitForSelector(btn, { timeout: 20000 });
@@ -30,11 +30,15 @@ test('the tracklist pass can be stopped, and keeps what it matched', { tag: ['@s
   const running = await until(() => label(page, btn), l => /Stop/.test(l.text));
   check(/Stop/.test(running.text) && !running.disabled && running.stopping, `running: Stop, clickable (${JSON.stringify(running)})`);
   const before = await matched(page);
+  // every write to the status line from here on, so the check below reads it after the
+  // re-render that follows a pass, which used to replace the stop message at once
+  await page.evaluate(() => { const g = document.querySelector('.tc-globalstat'); window.__stopWrites = []; new MutationObserver(() => window.__stopWrites.push(g.textContent)).observe(g, { childList: true, characterData: true, subtree: true }); });
   await click(page, btn);
   const t0 = Date.now(), ended = await backToMatch(page, btn), took = Date.now() - t0;
   check(ended && took < 40000, `stopped: back to Match ${took} ms later (the request in flight finishes first)`);
   check(await matched(page) >= before, `nothing matched before the stop is lost (${before} → ${await matched(page)})`);
-  check(/stopped/i.test(await page.textContent('#tc-bar')), 'it says it stopped');
+  const writes = await until(() => page.evaluate(() => window.__stopWrites.slice()), w => { const i = w.findIndex(t => /stopped/i.test(t)); return i >= 0 && w.length > i + 1; });
+  check(/stopped/i.test(writes[writes.length - 1] || ''), `it says it stopped, and still does after the next re-render (${JSON.stringify(writes.slice(-3))})`);
   await click(page, btn);
   check(/Stop/.test((await until(() => label(page, btn), l => /Stop/.test(l.text))).text), 'and a new pass starts: the stop is not latched');
   await click(page, btn);
