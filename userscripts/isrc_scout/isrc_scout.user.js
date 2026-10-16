@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         ISRC Scout
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.16.182954
+// @version      2026.10.16.211120
 // @description  Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify / Beatport / Tidal / Volumo / HDtracks / Qobuz, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPklTUkMgU2NvdXQ8L3RpdGxlPgogICAgPHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPgogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjQwIi8+CiAgICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyNiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2U9IiNiOWEzZTgiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPgogIDwvZz4KICA8bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+Cjwvc3ZnPgo=
@@ -2299,6 +2299,15 @@
     #ii-suspect-badge { color: var(--mbu-warn); background: var(--mbu-warn-bg); border: 1px solid var(--mbu-warn); border-radius: 5px;
       padding: 2px 8px; font-weight: 700; font-size: 11.5px; cursor: pointer; flex-shrink: 0; white-space: nowrap; }
     #ii-suspect-badge:hover { background: var(--mbu-warn-bg); }
+    /* #773: the pill's two parts: jump to the first one · ✕ Remove (or: N removed · Undo) */
+    #ii-suspect-badge { display: inline-flex; padding: 0; overflow: hidden; cursor: default; }
+    #ii-suspect-badge > span { padding: 2px 8px; cursor: pointer; }
+    #ii-suspect-badge > button { padding: 2px 8px; font: inherit; color: inherit; background: none; border: 0; border-left: 1px solid var(--mbu-warn); cursor: pointer; }
+    #ii-suspect-badge > button:hover, #ii-suspect-badge > button:focus-visible { background: var(--mbu-warn); color: var(--mbu-bg); outline: none; }
+    #ii-suspect-badge.ii-sb-undo { color: var(--mbu-text); background: var(--mbu-bg-raised); border-color: var(--mbu-border); font-weight: 400; }
+    #ii-suspect-badge.ii-sb-undo > span { cursor: default; }
+    #ii-suspect-badge.ii-sb-undo > button { border-left-color: var(--mbu-border); color: var(--mbu-accent-text); font-weight: 700; }
+    #ii-suspect-badge.ii-sb-undo > button:hover { background: var(--mbu-border); color: var(--mbu-text); }
     .ii-lookup.pending:hover { color: var(--mbu-text); }
     .ii-cand-refine { font-size: 10.5px; color: var(--mbu-accent-text); cursor: pointer; padding: 2px 7px;
       border: 1px dashed var(--mbu-accent); border-radius: 4px; background: var(--mbu-bg-raised); width: max-content; }
@@ -6396,6 +6405,7 @@
           input.value = t.pending; input.setSelectionRange(p, p);
         }
         input.dataset.autofill = '';
+        endSuspectUndo();   // #773
         if (input.classList.contains('ii-in-suspect')) { input.classList.remove('ii-in-suspect'); input.title = ''; updateSuspectBadge(); }   // #431: a manual edit is the user taking over
         validateInput(input, t);
         updateSummary();
@@ -6590,6 +6600,7 @@
     const t = RELEASE.tracks[idx];
     const input = rowInput(idx);
     if (!t || !input) return;
+    endSuspectUndo();   // #773
     t.pending = normalizeIsrc(isrc);
     t.source = source || 'manual';
     input.value = t.pending;
@@ -6617,6 +6628,7 @@
   function clearPending() {
     abortSxWork('clear entered');            // cancel queued verifications + the bulk SX search (#127)
     RELEASE.tracks.forEach((t, i) => { t.pending = ''; t.source = ''; const inp = rowInput(i); if (inp) { inp.value = ''; inp.classList.remove('ii-in-suspect'); inp.title = ''; validateInput(inp, t); } });
+    _suspectUndo = null;   // #773
     updateSuspectBadge();   // #431
     tbody.querySelectorAll('.ii-cands').forEach(c => c.innerHTML = '');
     tbody.querySelectorAll('.ii-lookup').forEach(l => { l.className = 'ii-lookup'; l.textContent = ''; l.title = ''; l.onclick = null; });
@@ -6629,6 +6641,7 @@
     const t = RELEASE.tracks[idx], input = rowInput(idx);
     if (!t || !input) return;
     _vq.items = _vq.items.filter(it => it.idx !== idx);   // drop any queued verify for this row
+    endSuspectUndo();   // #773
     t.pending = ''; t.source = '';
     input.value = ''; input.dataset.autofill = '';
     if (input.classList.contains('ii-in-suspect')) { input.classList.remove('ii-in-suspect'); input.title = ''; updateSuspectBadge(); }   // #431
@@ -7319,6 +7332,8 @@
   // #431 follow-up (maintainer): the summary-line "⚠ N implausible" was too easy to
   // overlook — a persistent amber pill in the footer (next to the Submit button's row)
   // tracks the live count; clicking it jumps to the first flagged row.
+  // #773: its ✕ Remove empties every amber box at once; then it offers Undo until the next change
+  let _suspectUndo = null;   // [{ idx, isrc, source, title }] of the last Remove
   function updateSuspectBadge() {
     if (!modal) return 0;
     let el = modal.querySelector('#ii-suspect-badge');
@@ -7326,8 +7341,11 @@
       el = document.createElement('span');
       el.id = 'ii-suspect-badge';
       el.className = 'ii-only-isrc';
-      el.title = 'These fills differ from the MB track in length or title — click to jump to the first one';
-      el.addEventListener('click', () => {
+      el.addEventListener('click', e => {
+        const a = e.target.closest('[data-a]')?.dataset.a;
+        if (a === 'rm') return removeSuspects();
+        if (a === 'undo') return undoRemoveSuspects();
+        if (a !== 'jump') return;
         const s = modal.querySelector('input.ii-in-suspect');
         if (!s) return;
         s.scrollIntoView({ block: 'center', behavior: 'smooth' });
@@ -7336,10 +7354,61 @@
       });
       if (summaryEl) summaryEl.after(el);
     }
-    const n = modal.querySelectorAll('input.ii-in-suspect').length;
-    el.textContent = n ? ('⚠ ' + n + ' implausible fill' + (n === 1 ? '' : 's') + ' — verify') : '';
-    el.style.display = n ? '' : 'none';
+    const n = suspectRows().length;
+    const s = k => k === 1 ? '' : 's';
+    if (n) _suspectUndo = null;   // new amber fills: the last Remove is over
+    const u = _suspectUndo && _suspectUndo.length;
+    el.innerHTML = n
+      ? '<span data-a="jump" title="These fills differ from the MB track in length or title: click to jump to the first one">⚠ ' + n + ' implausible fill' + s(n) + ' — verify</span>' +
+        '<button type="button" data-a="rm" title="Empty the ' + n + ' amber box' + (n === 1 ? '' : 'es') + '">✕ Remove</button>'
+      : u ? '<span>' + u + ' implausible fill' + s(u) + ' removed</span><button type="button" data-a="undo" title="Put them back">Undo</button>' : '';
+    el.classList.toggle('ii-sb-undo', !n && !!u);
+    el.style.display = n || u ? '' : 'none';
     return n;
+  }
+  // the amber boxes that still hold a fill
+  function suspectRows() {
+    const out = [];
+    RELEASE.tracks.forEach((t, i) => { const inp = rowInput(i); if (inp && t.pending && inp.classList.contains('ii-in-suspect')) out.push(i); });
+    return out;
+  }
+  function removeSuspects() {
+    const rows = suspectRows();
+    if (!rows.length) return 0;
+    const undo = rows.map(i => { const t = RELEASE.tracks[i], inp = rowInput(i); return { idx: i, isrc: t.pending, source: t.source, title: inp.title }; });
+    undo.forEach(u => {
+      const t = RELEASE.tracks[u.idx], inp = rowInput(u.idx);
+      Log.info('Removed the implausible ' + u.isrc + ' (' + u.source + ') from #' + (t.number || t.trackPos) + ' "' + t.title + '"');
+      _vq.items = _vq.items.filter(it => it.idx !== u.idx);
+      t.pending = ''; t.source = '';
+      inp.value = ''; inp.dataset.autofill = '';
+      inp.classList.remove('ii-in-suspect'); inp.title = '';
+      validateInput(inp, t);
+      const lk = rowLookup(u.idx); if (lk) { lk.className = 'ii-lookup'; lk.textContent = ''; lk.title = ''; lk.onclick = null; }
+    });
+    _suspectUndo = undo;
+    updateSuspectBadge();
+    updateSummary();
+    return undo.length;
+  }
+  function undoRemoveSuspects() {
+    const undo = _suspectUndo;
+    if (!undo) return;
+    undo.forEach(u => {
+      setPending(u.idx, u.isrc, true, u.source);
+      const inp = rowInput(u.idx);
+      if (inp) { inp.classList.add('ii-in-suspect'); inp.title = u.title; }
+    });
+    Log.info('Put back ' + undo.length + ' implausible fill(s)');
+    _suspectUndo = null;
+    updateSuspectBadge();
+    updateSummary();
+  }
+  // #773: any other change in the table ends the Undo
+  function endSuspectUndo() {
+    if (!_suspectUndo) return;
+    _suspectUndo = null;
+    updateSuspectBadge();
   }
   // Map ONE fetched ISRC to a track and fill it immediately (live, as it arrives).
   // Returns 'filled' | 'already' | 'skipped' | 'unmatched'.
@@ -7756,8 +7825,8 @@
      BOTH — every entered ISRC and every resolved streaming link — in one action,
      then closes. Either half can be empty; it does whatever's actually changed. */
   // #431: confirmation popup shown when implausible (amber) fills are about to be
-  // submitted. Resolves true only on an explicit "Submit anyway"; "Review first"
-  // closes and jumps to the first flagged row.
+  // submitted. Resolves 'go' only on an explicit "Submit anyway", 'remove' on "Remove them,
+  // submit the rest" (#773); "Review first" resolves false, closes and jumps to the first flagged row.
   function confirmSuspectSubmit(n) {
     return new Promise(resolve => {
       const ov = document.createElement('div');
@@ -7767,8 +7836,9 @@
       box.innerHTML =
         '<div style="font-weight:800;color:var(--mbu-warn);font-size:15px;margin-bottom:8px;">⚠ ' + n + ' implausible ISRC fill' + (n === 1 ? '' : 's') + '</div>' +
         '<p style="margin:0 0 12px;">The amber-flagged entries differ from the MB track in <strong>length or title</strong> — they may belong to a <strong>different recording</strong> (wrong provider link or edition). Submitted ISRCs are rarely re-checked, so verify those rows first.</p>' +
-        '<div style="display:flex;justify-content:flex-end;gap:8px;">' +
+        '<div style="display:flex;flex-wrap:wrap;justify-content:flex-end;gap:8px;">' +
         '<button type="button" data-a="review" style="padding:5px 14px;font-size:13px;font-weight:600;color:var(--mbu-text);background:var(--mbu-bg-raised);border:1px solid var(--mbu-border);border-radius:5px;cursor:pointer;">Review first</button>' +
+        '<button type="button" data-a="remove" style="padding:5px 14px;font-size:13px;font-weight:600;color:var(--mbu-warn);background:var(--mbu-warn-bg);border:1px solid var(--mbu-warn);border-radius:5px;cursor:pointer;">Remove them, submit the rest</button>' +
         '<button type="button" data-a="go" style="padding:5px 14px;font-size:13px;font-weight:600;color:#fff;background:#e0892a;border:none;border-radius:5px;cursor:pointer;">Submit anyway</button>' +
         '</div>';
       const done = ok => {
@@ -7777,7 +7847,8 @@
         resolve(ok);
       };
       box.querySelector('[data-a="review"]').addEventListener('click', () => done(false));
-      box.querySelector('[data-a="go"]').addEventListener('click', () => done(true));
+      box.querySelector('[data-a="remove"]').addEventListener('click', () => done('remove'));
+      box.querySelector('[data-a="go"]').addEventListener('click', () => done('go'));
       ov.addEventListener('mousedown', e => { if (e.target === ov) done(false); });
       ov.appendChild(box);
       document.body.appendChild(ov);
@@ -7804,7 +7875,12 @@
     // #431 follow-up (maintainer): flagged fills about to be submitted need explicit
     // confirmation — the amber inputs + summary count alone were too easy to miss.
     const suspectN = isrcCount ? [...modal.querySelectorAll('input.ii-in-suspect')].filter(i => i.value.trim()).length : 0;
-    if (suspectN && !(await confirmSuspectSubmit(suspectN))) return;
+    if (suspectN) {
+      const ok = await confirmSuspectSubmit(suspectN);
+      if (!ok) return;
+      // #773: without them; the rest goes through as usual (or "Nothing to submit" if nothing is left)
+      if (ok === 'remove') { removeSuspects(); return doSubmitAll(); }
+    }
     // ISRC additions need OAuth; link edits ride the logged-in MB session. Only block
     // on authorization when there are ISRCs — links alone can still go through.
     if (isrcCount && !Auth.isAuthorized()) {
