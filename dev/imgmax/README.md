@@ -46,7 +46,7 @@ A store page goes to its resolver; any other page to its `og:image`; an image UR
 
 | Store          | Read from                                                         | Largest version                            |
 | -------------- | ----------------------------------------------------------------- | ------------------------------------------ |
-| Apple Music    | iTunes lookup API                                                 | the uploaded original on `a1.mzstatic.com` |
+| Apple Music    | iTunes lookup API                                                 | the stored size (`9999x9999bb` request)    |
 | Deezer         | public album API                                                  | the stored size (`4000x0` request)         |
 | Spotify        | oEmbed                                                            | the `82c1` size code                       |
 | Bandcamp       | the page                                                          | `_0`, the original                         |

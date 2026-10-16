@@ -30,7 +30,7 @@ test('URL rules: each CDN gives its bigger versions, largest first, the URL itse
   const m = new ImageMaximizer();
   const cases = [
     ['https://is1-ssl.mzstatic.com/image/thumb/Music115/v4/e8/43/5f/e8435ffa-b6b9-b171-40ab-4ff3959ab661/886443919266.jpg/100x100bb.jpg',
-      'https://a1.mzstatic.com/us/r1000/0/Music115/v4/e8/43/5f/e8435ffa-b6b9-b171-40ab-4ff3959ab661/886443919266.jpg'],
+      'https://is1-ssl.mzstatic.com/image/thumb/Music115/v4/e8/43/5f/e8435ffa-b6b9-b171-40ab-4ff3959ab661/886443919266.jpg/9999x9999bb.jpg'],
     ['https://cdn-images.dzcdn.net/images/cover/311bba0fc112d15f72c8b5a65f0456c1/1000x1000-000000-80-0-0.jpg',
       'https://cdn-images.dzcdn.net/images/cover/311bba0fc112d15f72c8b5a65f0456c1/4000x0-000000-100-0-0.jpg'],
     ['https://image-cdn-ak.spotifycdn.com/image/ab67616d00001e029b9b36b0e22870b9f542d937', 'https://i.scdn.co/image/ab67616d000082c19b9b36b0e22870b9f542d937'],
@@ -61,7 +61,7 @@ test('resolvers: each store page gives its cover, maximised and downloaded', { t
   const answers = {
     // Apple: the lookup API
     'https://itunes.apple.com/lookup?id=617154241&country=gb&entity=album': { json: { results: [{ artworkUrl100: A }] } },
-    'https://a1.mzstatic.com/us/r1000/0/Music/v4/aa/bb/cc/aabbccdd-0000-0000-0000-000000000000/cover.jpg': { image: [3000, 3000] },
+    'https://is1-ssl.mzstatic.com/image/thumb/Music/v4/aa/bb/cc/aabbccdd-0000-0000-0000-000000000000/cover.jpg/9999x9999bb.jpg': { image: [3000, 3000] },
     // Deezer: the public API
     'https://api.deezer.com/album/6575789': { json: { cover_xl: 'https://cdn-images.dzcdn.net/images/cover/311bba0fc112d15f72c8b5a65f0456c1/1000x1000-000000-80-0-0.jpg' } },
     'https://cdn-images.dzcdn.net/images/cover/311bba0fc112d15f72c8b5a65f0456c1/4000x0-000000-100-0-0.jpg': { image: [1200, 1200] },
@@ -104,7 +104,7 @@ test('resolvers: each store page gives its cover, maximised and downloaded', { t
     if (wantTypes) check(JSON.stringify(r[0].types) === JSON.stringify(wantTypes), `${url}: types ${wantTypes} (got ${r[0].types})`);
     return r;
   };
-  await one('https://music.apple.com/gb/album/random-access-memories/617154241', 'https://a1.mzstatic.com/us/r1000/0/Music/v4/aa/bb/cc/aabbccdd-0000-0000-0000-000000000000/cover.jpg', 3000, ['Front']);
+  await one('https://music.apple.com/gb/album/random-access-memories/617154241', 'https://is1-ssl.mzstatic.com/image/thumb/Music/v4/aa/bb/cc/aabbccdd-0000-0000-0000-000000000000/cover.jpg/9999x9999bb.jpg', 3000, ['Front']);
   await one('https://www.deezer.com/en/album/6575789', 'https://cdn-images.dzcdn.net/images/cover/311bba0fc112d15f72c8b5a65f0456c1/4000x0-000000-100-0-0.jpg', 1200);
   await one('https://open.spotify.com/album/4m2880jivSbbyEGAKfITCa', 'https://i.scdn.co/image/ab67616d000082c19b9b36b0e22870b9f542d937', 1500);
   await one('https://radiohead.bandcamp.com/album/kid-a-mnesia', 'https://f4.bcbits.com/img/a3185643660_0.jpg', 1400);

@@ -84,7 +84,7 @@ test("cover pick race", { tag: ['@sandbox', '@login'] }, async ({ context, page 
   // candidates present, no url chosen yet.
   const CANDIDATES = [
     { provider: 'Deezer', url: 'https://cdn-images.dzcdn.net/images/cover/4d82f8fedcd72ac3b3bdd5699778ee6f/1000x1000-000000-80-0-0.jpg' },
-    { provider: 'iTunes', url: 'https://a1.mzstatic.com/us/r1000/063/Music211/v4/12/44/32/12443250-8925-e891-808d-4df4fef10759/cover.jpg' },
+    { provider: 'iTunes', url: 'https://is1-ssl.mzstatic.com/image/thumb/Music211/v4/12/44/32/12443250-8925-e891-808d-4df4fef10759/cover.jpg/3000x3000bb.jpg' },
   ];
   await page.evaluate(({ mbid, cands }) => {
     window.__falconTest.setQueue([{

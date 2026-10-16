@@ -21,11 +21,12 @@ class ImageMaximizer {
     // ── URL rules ────────────────────────────────────────────────────────────────
     // host → (URL) → bigger URLs, largest first. Measured on the live CDNs (2026-10-11).
     static RULES = [
-        // Apple: the uploaded original (a1.mzstatic.com/us/r1000/0/<path>), then the largest
-        // rendition the resizer gives. 100000x100000-999 answers 400 now.
+        // Apple: the largest rendition the resizer gives, which is the stored size. The
+        // uploaded original (a1.mzstatic.com/us/r1000/0/<path>) answers 403 for every path
+        // since 2026-10-16; 100000x100000-999 answers 400.
         { host: /(^|\.)mzstatic\.com$/, max: u => {
             const m = u.pathname.match(/^\/image\/thumb\/(.+)\/[^/]+$/);
-            return m ? [`https://a1.mzstatic.com/us/r1000/0/${m[1]}`, `https://${u.host}/image/thumb/${m[1]}/9999x9999bb.jpg`] : [];
+            return m ? [`https://${u.host}/image/thumb/${m[1]}/9999x9999bb.jpg`] : [];
         } },
         // Deezer: 4000x0 at quality 100 gives the stored size (1900 too; 0x0 and 3000x3000 are 403)
         { host: /(^|\.)dzcdn\.net$/, max: u => {

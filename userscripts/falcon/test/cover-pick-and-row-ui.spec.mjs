@@ -78,7 +78,7 @@ test("cover pick and row ui", { tag: ['@sandbox', '@login'] }, async ({ context,
   const CANDIDATES = [
     { provider: 'Spotify', url: 'https://i.scdn.co/image/ab67616d0000b2739a5e2d43d34866b89dd11922', width: 2000, height: 2000, size: 790390 },
     { provider: 'Deezer', url: 'https://cdn-images.dzcdn.net/images/cover/4d82f8fedcd72ac3b3bdd5699778ee6f/1000x1000-000000-80-0-0.jpg', width: 1200, height: 1200, size: 726550 },
-    { provider: 'iTunes', url: 'https://a1.mzstatic.com/us/r1000/063/Music211/v4/12/44/32/12443250-8925-e891-808d-4df4fef10759/cover.jpg', width: 3000, height: 3000, size: 5580000 },
+    { provider: 'iTunes', url: 'https://is1-ssl.mzstatic.com/image/thumb/Music211/v4/12/44/32/12443250-8925-e891-808d-4df4fef10759/cover.jpg/3000x3000bb.jpg', width: 3000, height: 3000, size: 5580000 },
     { provider: 'Tidal', url: 'https://resources.tidal.com/images/27083100/2879/4034/8084/2e353af1934a/1280x1280.jpg', width: 3000, height: 3000, size: 2560000 },
   ];
   await page.evaluate(({ mbid, cands }) => {

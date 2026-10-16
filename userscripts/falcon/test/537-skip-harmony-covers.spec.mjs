@@ -51,7 +51,7 @@ test("#537: skip harmony covers", { tag: ['@sandbox', '@login'] }, async ({ cont
     { entityType: 'recording', mbid: '2bea9225-3cee-4a23-b8f3-cd705bed3d06', url: 'https://tidal.com/browse/track/1234', note: 'from Harmony' },
     { entityType: 'artist', mbid: '82ca9599-5a15-4ff5-90d5-59ac8afaf5c7', url: 'https://open.spotify.com/artist/abc', note: 'from Harmony' },
     { entityType: 'release', mbid: RELEASE, coverCandidates: [
-      { provider: 'iTunes', url: 'https://a1.mzstatic.com/us/r1000/063/Music211/v4/12/44/32/12443250-8925-e891-808d-4df4fef10759/cover.jpg', width: 3000, height: 3000, size: 5580000 },
+      { provider: 'iTunes', url: 'https://is1-ssl.mzstatic.com/image/thumb/Music211/v4/12/44/32/12443250-8925-e891-808d-4df4fef10759/cover.jpg/3000x3000bb.jpg', width: 3000, height: 3000, size: 5580000 },
       { provider: 'Tidal', url: 'https://resources.tidal.com/images/27083100/2879/4034/8084/2e353af1934a/1280x1280.jpg' },
     ] },
   ];
