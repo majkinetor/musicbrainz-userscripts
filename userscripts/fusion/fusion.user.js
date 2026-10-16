@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Fusion
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.16.165050
+// @version      2026.10.16.165733
 // @description  Merge-recordings assistant for MusicBrainz: gather a pool of candidate recordings from a release / release group / recording page (or paste any MBID/URL), auto-match them into merge groups by ISRC / AcoustID / length / title+artist, review and adjust the groups, then submit the merges directly in the background — no MB merge page involved.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPkZ1c2lvbjwvdGl0bGU+CiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjYTE4NGY4IiBzdHJva2Utd2lkdGg9IjUuNSI+CiAgICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSI2NCIgcng9IjUyIiByeT0iMjIiLz4KICAgIDxlbGxpcHNlIGN4PSI2NCIgY3k9IjY0IiByeD0iNTIiIHJ5PSIyMiIgdHJhbnNmb3JtPSJyb3RhdGUoNjAgNjQgNjQpIi8+CiAgICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSI2NCIgcng9IjUyIiByeT0iMjIiIHRyYW5zZm9ybT0icm90YXRlKDEyMCA2NCA2NCkiLz4KICA8L2c+CiAgPGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iMTEiIGZpbGw9IiM3YzRkZmYiLz4KPC9zdmc+Cg==
@@ -477,7 +477,7 @@ function mkRecording(gid, opts) {
     // enrichAllReleases); true/false once known. #529: "Video recordings should
     // never be added to groups with audio recordings" — null is deliberately
     // treated as "don't block" everywhere, only a known true/false mismatch does.
-    return Object.assign({ gid, title: '', length: null, isrcs: [], artistCredit: '', artistGid: null, artistGids: [], releases: [], allReleases: null, acoustids: null, video: null, editsPending: null, isrcsKnown: false, isrcSource: null }, opts || {});
+    return Object.assign({ gid, title: '', disambiguation: '', length: null, isrcs: [], artistCredit: '', artistGid: null, artistGids: [], releases: [], allReleases: null, acoustids: null, video: null, editsPending: null, isrcsKnown: false, isrcSource: null }, opts || {});
 }
 
 async function fetchReleaseRecordings(releaseMbid) {
@@ -489,7 +489,7 @@ async function fetchReleaseRecordings(releaseMbid) {
             const r = t.recording || {};
             const ac = r['artist-credit'] || j['artist-credit'];
             recs.push(mkRecording(r.id, {
-                title: r.title || t.title,
+                title: r.title || t.title, disambiguation: r.disambiguation || '',
                 length: r.length != null ? r.length : t.length,
                 isrcs: r.isrcs || [],
                 artistCredit: acName(ac), artistGid: acPrimaryGid(ac), artistGids: acGids(ac), video: !!r.video, isrcsKnown: true, isrcSource: 'index',
@@ -529,7 +529,7 @@ async function fetchRecordingsByBrowse(browseQuery, label, onPage) {
             // not a valid inc parameter"). They are filled in afterwards, best
             // effort, and stay unknown rather than empty when they cannot be.
             recordings.push(mkRecording(r.id, {
-                title: r.title, length: r.length, isrcs: r.isrcs || [], isrcsKnown: true, isrcSource: 'entity',
+                title: r.title, disambiguation: r.disambiguation || '', length: r.length, isrcs: r.isrcs || [], isrcsKnown: true, isrcSource: 'entity',
                 artistCredit: acName(ac), artistGid: acPrimaryGid(ac), artistGids: acGids(ac), video: !!r.video,
                 releases: [], allReleases: null,
             }));
@@ -618,7 +618,7 @@ async function fetchRecordingsBySearch(luceneQuery, label, onPage) {
             // the search already returns every release a recording appears on,
             // across every release group — so it doubles as the deduped
             // "all releases" list, with no extra per-recording fetch.
-            recordings.push(mkRecording(r.id, { title: r.title, length: r.length, isrcs: r.isrcs || [], artistCredit: acName(ac), artistGid: acPrimaryGid(ac), artistGids: acGids(ac), video: !!r.video, isrcsKnown: true, isrcSource: 'index', releases, allReleases: releases }));
+            recordings.push(mkRecording(r.id, { title: r.title, disambiguation: r.disambiguation || '', length: r.length, isrcs: r.isrcs || [], artistCredit: acName(ac), artistGid: acPrimaryGid(ac), artistGids: acGids(ac), video: !!r.video, isrcsKnown: true, isrcSource: 'index', releases, allReleases: releases }));
         }
         offset += SEARCH_PAGE_LIMIT; pages++;
         if (pages >= SEARCH_MAX_PAGES && offset < total) truncatedBy = 'the ' + SEARCH_MAX_PAGES + '-page cap';
@@ -663,7 +663,7 @@ async function fetchRGRecordings(rgMbid, onPage) {
                     }
                     const ac = r['artist-credit'] || t['artist-credit'];
                     byGid.set(r.id, mkRecording(r.id, {
-                        title: r.title, length: r.length != null ? r.length : t.length,
+                        title: r.title, disambiguation: r.disambiguation || '', length: r.length != null ? r.length : t.length,
                         isrcs: r.isrcs || [], isrcsKnown: true, isrcSource: 'entity',
                         artistCredit: acName(ac), artistGid: acPrimaryGid(ac), artistGids: acGids(ac), video: !!r.video,
                         releases: [relRef], allReleases: null,
@@ -713,7 +713,7 @@ async function fetchRecordingByGid(gid) {
     if (!j) return null;
     const releases = (j.releases || []).map(rel => ({ gid: rel.id, title: rel.title, trackNumber: null, trackCount: null, date: rel.date || null }));
     const ac = j['artist-credit'];
-    return mkRecording(j.id, { title: j.title, length: j.length, isrcs: j.isrcs || [], artistCredit: acName(ac), artistGid: acPrimaryGid(ac), artistGids: acGids(ac), video: !!j.video, isrcsKnown: true, isrcSource: 'entity', releases, allReleases: releases });
+    return mkRecording(j.id, { title: j.title, disambiguation: j.disambiguation || '', length: j.length, isrcs: j.isrcs || [], artistCredit: acName(ac), artistGid: acPrimaryGid(ac), artistGids: acGids(ac), video: !!j.video, isrcsKnown: true, isrcSource: 'entity', releases, allReleases: releases });
 }
 // #529 follow-up (majkinetor, with a screenshot of jesus2099's reference
 // script): "We should have a list of recording releases too (deduped)" — the
@@ -2852,7 +2852,7 @@ function fsStyle() {
         // to plain text at rest, so it genuinely read as "no link" on sight.
         + '.fs-t a{color:var(--mbu-accent-text);text-decoration:underline;text-decoration-color:rgba(109,63,240,.4)}'
         + '.fs-t a:hover{color:var(--mbu-accent-text);text-decoration-color:var(--fs-purple)}'
-        + '.fs-artist{font-weight:400;color:var(--fs-muted);font-size:11.5px}'
+        + '.fs-artist{font-weight:400;color:var(--fs-muted);font-size:11.5px}.fs-dis{font-weight:400;color:var(--fs-muted)}'
         + '.fs-artist a{color:var(--fs-muted);text-decoration:underline;text-decoration-color:rgba(154,155,176,.35)}'
         + '.fs-artist a:hover{text-decoration-color:var(--fs-text);color:var(--fs-text)}'
         + '.fs-m{color:var(--fs-muted);font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:1px}'
@@ -3064,6 +3064,12 @@ function fsStyle() {
 function recLink(gid, text) {
     return '<a href="' + location.origin + '/recording/' + gid + '" target="_blank" rel="noopener">' + escapeHtml(text) + '</a>';
 }
+// #764 (chaban-mb): "These recordings are not the same but this is not very obvious due to
+// disambiguations not being shown": a recording's disambiguation after its title, as MB shows it
+function recDis(rec) {
+    return rec.disambiguation ? ' <span class="fs-dis">(' + escapeHtml(rec.disambiguation) + ')</span>' : '';
+}
+const recTip = rec => escapeHtml(rec.title + (rec.disambiguation ? ' (' + rec.disambiguation + ')' : ''));
 function artistLink(rec) {
     if (!rec.artistCredit) return '';
     return rec.artistGid ? '<a href="' + location.origin + '/artist/' + rec.artistGid + '" target="_blank" rel="noopener">' + escapeHtml(rec.artistCredit) + '</a>' : escapeHtml(rec.artistCredit);
@@ -3138,7 +3144,7 @@ function poolCardHtml(rec) {
     const rs = releasesSummary(rec);
     return '<div class="fs-pcard" draggable="true" data-gid="' + rec.gid + '">'
         + '<span class="fs-grip">⠿</span>'
-        + '<div class="fs-info"><div class="fs-t" title="' + escapeHtml(rec.title) + '">' + pendingBadge(rec) + videoBadge(rec) + recLink(rec.gid, rec.title) + (rec.artistCredit ? ' <span class="fs-artist">— ' + artistLink(rec) + '</span>' : '') + '</div>'
+        + '<div class="fs-info"><div class="fs-t" title="' + recTip(rec) + '">' + pendingBadge(rec) + videoBadge(rec) + recLink(rec.gid, rec.title) + recDis(rec) + (rec.artistCredit ? ' <span class="fs-artist">— ' + artistLink(rec) + '</span>' : '') + '</div>'
         + '<div class="fs-m" title="' + escapeHtml(rs.tooltip) + '">' + escapeHtml(rs.text) + ' · ' + dur(rec.length) + '</div>' + idsLine(rec) + '</div>'
         + presenceDots(rec)
         + '<span class="fs-rm" data-act="pool-remove" title="remove from pool">✕</span></div>';
@@ -3486,7 +3492,7 @@ function groupCardHtml(group) {
             + '<div class="fs-grow' + (isTarget ? ' fs-target-row' : '') + '" draggable="true" data-gid="' + m.gid + '">'
             + '<span class="fs-exp' + (expanded ? ' fs-exp-on' : '') + '" data-act="toggle-releases" title="' + (expanded ? 'hide' : 'show') + ' every release this recording appears on">' + (expanded ? '▼' : '▶') + '</span>'
             + star
-            + '<span class="fs-t" title="' + escapeHtml(m.title) + '">' + pendingBadge(m) + videoBadge(m) + recLink(m.gid, m.title) + '</span>'
+            + '<span class="fs-t" title="' + recTip(m) + '">' + pendingBadge(m) + videoBadge(m) + recLink(m.gid, m.title) + recDis(m) + '</span>'
             + '<span class="fs-artistcol" title="' + escapeHtml(m.artistCredit || '') + '">' + artistLink(m) + '</span>'
             + '<span class="fs-rel" title="' + escapeHtml(rs.tooltip) + '">' + escapeHtml(rs.text) + '</span>'
             + (() => { const d = lenOffBy(m); return d == null ? '<span class="fs-len">' + dur(m.length) + '</span>'
