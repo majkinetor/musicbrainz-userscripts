@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-10-16 23:31 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-10-16 23:46 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -1492,7 +1492,7 @@ Shows a release's ISRCs, fills in the missing ones from several providers, and f
 An album-based provider needs the release's album link: already in MusicBrainz, found by Platform Check, or pasted with **(+)**. No login is needed anywhere except Qobuz outside the countries it serves (see [Qobuz](#qobuz-1)).
 
 > [!WARNING]
-> Album imports map tracks by position and trust the link: provider titles legitimately differ (*feat.*, *remaster*). A fill whose length is more than 10 s off is kept but marked amber, and counted as *⚠ N implausible*. An album with more tracks than the release is flagged as a likely wrong edition. Check the amber rows before submitting.
+> Album imports map tracks by position and trust the link: provider titles legitimately differ (*feat.*, *remaster*). A fill whose length is more than 10 s off is kept but marked amber, and counted as *⚠ N implausible*. An album with more tracks than the release is flagged as a likely wrong edition. Check the amber rows before submitting, or [remove them all](#submitting).
 
 ### ISRC editor
 
@@ -1554,6 +1554,8 @@ The header lists the row's ISRCs first, then any other ISRC a provider named, ea
 #### Submitting
 
 Submitting ISRCs needs OAuth once: **⚙ Setup → Authorize**, approve in the tab that opens. Then **Submit to MusicBrainz**. *Sign out* forgets the token. test.musicbrainz.org has its own accounts, so it is authorized separately; musicbrainz.org and beta share one authorization. A token MusicBrainz no longer accepts is forgotten, and Setup asks you to authorize again.
+
+Amber fills (see the warning under [Providers](#providers-1)) are counted in the footer's *⚠ N implausible fills — verify*: click it to go to the first one, or **✕ Remove** to empty them all (**Undo** puts them back until the next change). Submitting with amber fills asks first: *Review first*, *Remove them, submit the rest*, or *Submit anyway*.
 
 ### Links
 

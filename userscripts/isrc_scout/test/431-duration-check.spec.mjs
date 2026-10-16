@@ -60,6 +60,31 @@ test('position-matched fills from a different edition are flagged, kept, and con
   check(fu.badge && fu.badge.visible && /implausible/.test(fu.badge.text), `the footer badge shows ("${fu.badge && fu.badge.text}")`);
   check(fu.popup, 'Submit asks for confirmation first');
   check(fu.closed && fu.submitEnabled, '"Review first" cancels without submitting');
+
+  // #773: ✕ Remove empties every amber box, Undo puts them back, and the warning at Submit can remove them
+  const rm = await page.evaluate(async () => {
+    const eventually = async f => { for (let i = 0; i < 400 && !f(); i++) await new Promise(res => setTimeout(res, 25)); return f(); };
+    const amber = () => [...document.querySelectorAll('input.ii-in-suspect')].filter(i => i.value).length;
+    const badge = () => document.getElementById('ii-suspect-badge');
+    const values = () => [...document.querySelectorAll('.ii-input')].map(i => i.value).join();
+    const out = { before: amber(), filled: values() };
+    badge().querySelector('[data-a="rm"]').click();
+    out.removed = { amber: amber(), empty: document.querySelectorAll('input.ii-in-suspect').length, text: badge().textContent, values: values() };
+    badge().querySelector('[data-a="undo"]').click();
+    out.undone = { amber: amber(), values: values(), text: badge().textContent };
+    document.getElementById('ii-submit').click();
+    const pop = await eventually(() => document.querySelector('[data-a="remove"]'));
+    out.popup = !!pop;
+    pop?.click();
+    out.after = await eventually(() => !document.querySelector('[data-a="remove"]') && amber() === 0) && { amber: amber(), text: badge().textContent };
+    return out;
+  });
+  console.log(JSON.stringify(rm));
+  check(rm.removed.amber === 0 && rm.removed.empty === 0, `✕ Remove empties the ${rm.before} amber boxes (${JSON.stringify(rm.removed)})`);
+  check(new RegExp(rm.before + ' implausible fills? removed\\s*Undo').test(rm.removed.text), `the pill offers Undo ("${rm.removed.text}")`);
+  check(rm.undone.amber === rm.before && rm.undone.values === rm.filled && /verify/.test(rm.undone.text), `Undo puts them back, amber (${JSON.stringify(rm.undone)})`);
+  check(rm.popup && rm.after && rm.after.amber === 0, `"Remove them, submit the rest" removes them first (${JSON.stringify(rm.after)})`);
+  check(!(await logText(page)).includes('ISRC submit OK'), 'nothing was submitted (not authorised)');
   await ws.done();
 });
 

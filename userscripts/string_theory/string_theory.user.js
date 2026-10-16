@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         String Theory
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.16.233113
+// @version      2026.10.16.234617
 // @description  Unified bundle of 11 MusicBrainz userscripts (apollo_editor, art_station, credit_hoarder, falcon, first_contact, fusion, group_therapy, isrc_scout, mammoth, mission_control, platform_check). Built by userscripts/string_theory/build.mjs — do not hand-edit.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5TdHJpbmcgVGhlb3J5PC90aXRsZT4KPHBhdGggZD0iTTY0IDEwIEw2Ni40IDEwLjIgTDY4LjcgMTAuNiBMNzAuOSAxMS40IEw3My4xIDEyLjQgTDc1LjIgMTMuNyBMNzcuMSAxNS4yIEw3OC44IDE3IEw4MC40IDE4LjkgTDgxLjggMjEgTDgzLjEgMjMuMSBMODQuMSAyNS40IEw4NSAyNy42IEw4NS43IDI5LjkgTDg2LjMgMzIuMSBMODYuOCAzNC4zIEw4Ny4xIDM2LjQgTDg3LjQgMzguNCBMODcuNyA0MC4zIEw4Ny45IDQyLjEgTDg4LjIgNDMuNyBMODguNSA0NS4yIEw4OC45IDQ2LjYgTDg5LjQgNDcuOCBMOTAgNDkgTDkwLjcgNTAuMSBMOTEuNiA1MS4xIEw5Mi42IDUyLjIgTDkzLjcgNTMuMiBMOTUgNTQuMiBMOTYuNCA1NS4zIEw5Ny45IDU2LjUgTDk5LjUgNTcuNyBMMTAxLjEgNTkuMSBMMTAyLjcgNjAuNiBMMTA0LjQgNjIuMiBMMTA2IDY0IEwxMDcuNSA2NS45IEwxMDguOSA2Ny45IEwxMTAuMiA3MC4xIEwxMTEuMyA3Mi4zIEwxMTIuMSA3NC43IEwxMTIuOCA3Ny4xIEwxMTMuMSA3OS41IEwxMTMuMiA4MS45IEwxMTMgODQuMyBMMTEyLjYgODYuNiBMMTExLjggODguOSBMMTEwLjggOTEgTDEwOS41IDkzIEwxMDcuOSA5NC43IEwxMDYuMSA5Ni4zIEwxMDQuMSA5Ny43IEwxMDIgOTguOCBMOTkuNyA5OS43IEw5Ny4zIDEwMC40IEw5NC45IDEwMC44IEw5Mi40IDEwMSBMODkuOSAxMDAuOSBMODcuNCAxMDAuNyBMODUgMTAwLjQgTDgyLjcgOTkuOSBMODAuNCA5OS4zIEw3OC4zIDk4LjYgTDc2LjMgOTcuOCBMNzQuNCA5Ny4xIEw3Mi43IDk2LjQgTDcxIDk1LjcgTDY5LjUgOTUuMSBMNjggOTQuNiBMNjYuNyA5NC4zIEw2NS4zIDk0LjEgTDY0IDk0IEw2Mi43IDk0LjEgTDYxLjMgOTQuMyBMNjAgOTQuNiBMNTguNSA5NS4xIEw1NyA5NS43IEw1NS4zIDk2LjQgTDUzLjYgOTcuMSBMNTEuNyA5Ny44IEw0OS43IDk4LjYgTDQ3LjYgOTkuMyBMNDUuMyA5OS45IEw0MyAxMDAuNCBMNDAuNiAxMDAuNyBMMzguMSAxMDAuOSBMMzUuNiAxMDEgTDMzLjEgMTAwLjggTDMwLjcgMTAwLjQgTDI4LjMgOTkuNyBMMjYgOTguOCBMMjMuOSA5Ny43IEwyMS45IDk2LjMgTDIwLjEgOTQuNyBMMTguNSA5MyBMMTcuMiA5MSBMMTYuMiA4OC45IEwxNS40IDg2LjYgTDE1IDg0LjMgTDE0LjggODEuOSBMMTQuOSA3OS41IEwxNS4yIDc3LjEgTDE1LjkgNzQuNyBMMTYuNyA3Mi4zIEwxNy44IDcwLjEgTDE5LjEgNjcuOSBMMjAuNSA2NS45IEwyMiA2NCBMMjMuNiA2Mi4yIEwyNS4zIDYwLjYgTDI2LjkgNTkuMSBMMjguNSA1Ny43IEwzMC4xIDU2LjUgTDMxLjYgNTUuMyBMMzMgNTQuMiBMMzQuMyA1My4yIEwzNS40IDUyLjIgTDM2LjQgNTEuMSBMMzcuMyA1MC4xIEwzOCA0OSBMMzguNiA0Ny44IEwzOS4xIDQ2LjYgTDM5LjUgNDUuMiBMMzkuOCA0My43IEw0MC4xIDQyLjEgTDQwLjMgNDAuMyBMNDAuNiAzOC40IEw0MC45IDM2LjQgTDQxLjIgMzQuMyBMNDEuNyAzMi4xIEw0Mi4zIDI5LjkgTDQzIDI3LjYgTDQzLjkgMjUuNCBMNDQuOSAyMy4xIEw0Ni4yIDIxIEw0Ny42IDE4LjkgTDQ5LjIgMTcgTDUwLjkgMTUuMiBMNTIuOCAxMy43IEw1NC45IDEyLjQgTDU3LjEgMTEuNCBMNTkuMyAxMC42IEw2MS42IDEwLjJaIiBmaWxsPSJub25lIiBzdHJva2U9IiM5Yzg2ZWEiIHN0cm9rZS13aWR0aD0iMTAiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz4KPHBhdGggZD0iTTY0IDM0IEw2NS4zIDMzLjkgTDY2LjcgMzMuNyBMNjggMzMuNCBMNjkuNSAzMi45IEw3MSAzMi4zIEw3Mi43IDMxLjYgTDc0LjQgMzAuOSBMNzYuMyAzMC4yIEw3OC4zIDI5LjQgTDgwLjQgMjguNyBMODIuNyAyOC4xIEw4NSAyNy42IEw4Ny40IDI3LjMgTDg5LjkgMjcuMSBMOTIuNCAyNyBMOTQuOSAyNy4yIEw5Ny4zIDI3LjYgTDk5LjcgMjguMyBMMTAyIDI5LjIgTDEwNC4xIDMwLjMgTDEwNi4xIDMxLjcgTDEwNy45IDMzLjMgTDEwOS41IDM1IEwxMTAuOCAzNyBMMTExLjggMzkuMSBMMTEyLjYgNDEuNCBMMTEzIDQzLjcgTDExMy4yIDQ2LjEgTDExMy4xIDQ4LjUgTDExMi44IDUwLjkgTDExMi4xIDUzLjMgTDExMS4zIDU1LjcgTDExMC4yIDU3LjkgTDEwOC45IDYwLjEgTDEwNy41IDYyLjEgTDEwNiA2NCBMMTA0LjQgNjUuOCBMMTAyLjcgNjcuNCBMMTAxLjEgNjguOSBMOTkuNSA3MC4zIEw5Ny45IDcxLjUgTDk2LjQgNzIuNyBMOTUgNzMuOCBMOTMuNyA3NC44IEw5Mi42IDc1LjggTDkxLjYgNzYuOSBMOTAuNyA3Ny45IEw5MCA3OSBMODkuNCA4MC4yIEw4OC45IDgxLjQgTDg4LjUgODIuOCBMODguMiA4NC4zIEw4Ny45IDg1LjkgTDg3LjcgODcuNyBMODcuNCA4OS42IEw4Ny4xIDkxLjYgTDg2LjggOTMuNyBMODYuMyA5NS45IEw4NS43IDk4LjEgTDg1IDEwMC40IEw4NC4xIDEwMi42IEw4My4xIDEwNC45IEw4MS44IDEwNyBMODAuNCAxMDkuMSBMNzguOCAxMTEgTDc3LjEgMTEyLjggTDc1LjIgMTE0LjMgTDczLjEgMTE1LjYgTDcwLjkgMTE2LjYgTDY4LjcgMTE3LjQgTDY2LjQgMTE3LjggTDY0IDExOCBMNjEuNiAxMTcuOCBMNTkuMyAxMTcuNCBMNTcuMSAxMTYuNiBMNTQuOSAxMTUuNiBMNTIuOCAxMTQuMyBMNTAuOSAxMTIuOCBMNDkuMiAxMTEgTDQ3LjYgMTA5LjEgTDQ2LjIgMTA3IEw0NC45IDEwNC45IEw0My45IDEwMi42IEw0MyAxMDAuNCBMNDIuMyA5OC4xIEw0MS43IDk1LjkgTDQxLjIgOTMuNyBMNDAuOSA5MS42IEw0MC42IDg5LjYgTDQwLjMgODcuNyBMNDAuMSA4NS45IEwzOS44IDg0LjMgTDM5LjUgODIuOCBMMzkuMSA4MS40IEwzOC42IDgwLjIgTDM4IDc5IEwzNy4zIDc3LjkgTDM2LjQgNzYuOSBMMzUuNCA3NS44IEwzNC4zIDc0LjggTDMzIDczLjggTDMxLjYgNzIuNyBMMzAuMSA3MS41IEwyOC41IDcwLjMgTDI2LjkgNjguOSBMMjUuMyA2Ny40IEwyMy42IDY1LjggTDIyIDY0IEwyMC41IDYyLjEgTDE5LjEgNjAuMSBMMTcuOCA1Ny45IEwxNi43IDU1LjcgTDE1LjkgNTMuMyBMMTUuMiA1MC45IEwxNC45IDQ4LjUgTDE0LjggNDYuMSBMMTUgNDMuNyBMMTUuNCA0MS40IEwxNi4yIDM5LjEgTDE3LjIgMzcgTDE4LjUgMzUgTDIwLjEgMzMuMyBMMjEuOSAzMS43IEwyMy45IDMwLjMgTDI2IDI5LjIgTDI4LjMgMjguMyBMMzAuNyAyNy42IEwzMy4xIDI3LjIgTDM1LjYgMjcgTDM4LjEgMjcuMSBMNDAuNiAyNy4zIEw0MyAyNy42IEw0NS4zIDI4LjEgTDQ3LjYgMjguNyBMNDkuNyAyOS40IEw1MS43IDMwLjIgTDUzLjYgMzAuOSBMNTUuMyAzMS42IEw1NyAzMi4zIEw1OC41IDMyLjkgTDYwIDMzLjQgTDYxLjMgMzMuNyBMNjIuNyAzMy45WiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZmZmZmZmIiBzdHJva2Utd2lkdGg9IjIwIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+CjxwYXRoIGQ9Ik02NCAzNCBMNjUuMyAzMy45IEw2Ni43IDMzLjcgTDY4IDMzLjQgTDY5LjUgMzIuOSBMNzEgMzIuMyBMNzIuNyAzMS42IEw3NC40IDMwLjkgTDc2LjMgMzAuMiBMNzguMyAyOS40IEw4MC40IDI4LjcgTDgyLjcgMjguMSBMODUgMjcuNiBMODcuNCAyNy4zIEw4OS45IDI3LjEgTDkyLjQgMjcgTDk0LjkgMjcuMiBMOTcuMyAyNy42IEw5OS43IDI4LjMgTDEwMiAyOS4yIEwxMDQuMSAzMC4zIEwxMDYuMSAzMS43IEwxMDcuOSAzMy4zIEwxMDkuNSAzNSBMMTEwLjggMzcgTDExMS44IDM5LjEgTDExMi42IDQxLjQgTDExMyA0My43IEwxMTMuMiA0Ni4xIEwxMTMuMSA0OC41IEwxMTIuOCA1MC45IEwxMTIuMSA1My4zIEwxMTEuMyA1NS43IEwxMTAuMiA1Ny45IEwxMDguOSA2MC4xIEwxMDcuNSA2Mi4xIEwxMDYgNjQgTDEwNC40IDY1LjggTDEwMi43IDY3LjQgTDEwMS4xIDY4LjkgTDk5LjUgNzAuMyBMOTcuOSA3MS41IEw5Ni40IDcyLjcgTDk1IDczLjggTDkzLjcgNzQuOCBMOTIuNiA3NS44IEw5MS42IDc2LjkgTDkwLjcgNzcuOSBMOTAgNzkgTDg5LjQgODAuMiBMODguOSA4MS40IEw4OC41IDgyLjggTDg4LjIgODQuMyBMODcuOSA4NS45IEw4Ny43IDg3LjcgTDg3LjQgODkuNiBMODcuMSA5MS42IEw4Ni44IDkzLjcgTDg2LjMgOTUuOSBMODUuNyA5OC4xIEw4NSAxMDAuNCBMODQuMSAxMDIuNiBMODMuMSAxMDQuOSBMODEuOCAxMDcgTDgwLjQgMTA5LjEgTDc4LjggMTExIEw3Ny4xIDExMi44IEw3NS4yIDExNC4zIEw3My4xIDExNS42IEw3MC45IDExNi42IEw2OC43IDExNy40IEw2Ni40IDExNy44IEw2NCAxMTggTDYxLjYgMTE3LjggTDU5LjMgMTE3LjQgTDU3LjEgMTE2LjYgTDU0LjkgMTE1LjYgTDUyLjggMTE0LjMgTDUwLjkgMTEyLjggTDQ5LjIgMTExIEw0Ny42IDEwOS4xIEw0Ni4yIDEwNyBMNDQuOSAxMDQuOSBMNDMuOSAxMDIuNiBMNDMgMTAwLjQgTDQyLjMgOTguMSBMNDEuNyA5NS45IEw0MS4yIDkzLjcgTDQwLjkgOTEuNiBMNDAuNiA4OS42IEw0MC4zIDg3LjcgTDQwLjEgODUuOSBMMzkuOCA4NC4zIEwzOS41IDgyLjggTDM5LjEgODEuNCBMMzguNiA4MC4yIEwzOCA3OSBMMzcuMyA3Ny45IEwzNi40IDc2LjkgTDM1LjQgNzUuOCBMMzQuMyA3NC44IEwzMyA3My44IEwzMS42IDcyLjcgTDMwLjEgNzEuNSBMMjguNSA3MC4zIEwyNi45IDY4LjkgTDI1LjMgNjcuNCBMMjMuNiA2NS44IEwyMiA2NCBMMjAuNSA2Mi4xIEwxOS4xIDYwLjEgTDE3LjggNTcuOSBMMTYuNyA1NS43IEwxNS45IDUzLjMgTDE1LjIgNTAuOSBMMTQuOSA0OC41IEwxNC44IDQ2LjEgTDE1IDQzLjcgTDE1LjQgNDEuNCBMMTYuMiAzOS4xIEwxNy4yIDM3IEwxOC41IDM1IEwyMC4xIDMzLjMgTDIxLjkgMzEuNyBMMjMuOSAzMC4zIEwyNiAyOS4yIEwyOC4zIDI4LjMgTDMwLjcgMjcuNiBMMzMuMSAyNy4yIEwzNS42IDI3IEwzOC4xIDI3LjEgTDQwLjYgMjcuMyBMNDMgMjcuNiBMNDUuMyAyOC4xIEw0Ny42IDI4LjcgTDQ5LjcgMjkuNCBMNTEuNyAzMC4yIEw1My42IDMwLjkgTDU1LjMgMzEuNiBMNTcgMzIuMyBMNTguNSAzMi45IEw2MCAzMy40IEw2MS4zIDMzLjcgTDYyLjcgMzMuOVoiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZjNDdlMCIgc3Ryb2tlLXdpZHRoPSIxMyIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgo8L3N2Zz4K
@@ -127,8 +127,8 @@
 // Bundles (verbatim, each wrapped in a URL gate and a run-at gate): apollo_editor, art_station, credit_hoarder, falcon, first_contact, fusion, group_therapy, isrc_scout, mammoth, mission_control, platform_check.
 
 try {
-  console.log('%c String Theory %c v2026.10.16.233113 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
-  console.log("String Theory bundles:\n  · Apollo Editor v2026.10.16.195747\n  · Art Station v2026.10.16.233500\n  · Credit Hoarder v2026.10.16.195644\n  · Falcon v2026.10.16.203716\n  · First Contact v2026.10.16\n  · Fusion v2026.10.16.211641\n  · Group Therapy v2026.10.16.195121\n  · ISRC Scout v2026.10.16.182954\n  · Mammoth v2026.10.16\n  · Mission Control v2026.10.16.233000\n  · Platform Check v2026.10.16.184027");
+  console.log('%c String Theory %c v2026.10.16.234617 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
+  console.log("String Theory bundles:\n  · Apollo Editor v2026.10.16.195747\n  · Art Station v2026.10.16.233500\n  · Credit Hoarder v2026.10.16.195644\n  · Falcon v2026.10.16.203716\n  · First Contact v2026.10.16\n  · Fusion v2026.10.16.211641\n  · Group Therapy v2026.10.16.195121\n  · ISRC Scout v2026.10.16.211120\n  · Mammoth v2026.10.16\n  · Mission Control v2026.10.16.233000\n  · Platform Check v2026.10.16.184027");
 } catch (e) {}
 
 function __stReadOff() { try { var v = GM_getValue("string_theory.off", []); return Array.isArray(v) ? v : []; } catch (e) { return []; } }
@@ -136,7 +136,7 @@ var __stOff = __stReadOff();
 (function () {
   if (typeof GM_registerMenuCommand !== 'function') return;
   try { if (window.top !== window.self) return; } catch (e) { return; }
-  var members = [["apollo_editor","Apollo Editor","2026.10.16.195747"],["art_station","Art Station","2026.10.16.233500"],["credit_hoarder","Credit Hoarder","2026.10.16.195644"],["falcon","Falcon","2026.10.16.203716"],["first_contact","First Contact","2026.10.16"],["fusion","Fusion","2026.10.16.211641"],["group_therapy","Group Therapy","2026.10.16.195121"],["isrc_scout","ISRC Scout","2026.10.16.182954"],["mammoth","Mammoth","2026.10.16"],["mission_control","Mission Control","2026.10.16.233000"],["platform_check","Platform Check","2026.10.16.184027"]];
+  var members = [["apollo_editor","Apollo Editor","2026.10.16.195747"],["art_station","Art Station","2026.10.16.233500"],["credit_hoarder","Credit Hoarder","2026.10.16.195644"],["falcon","Falcon","2026.10.16.203716"],["first_contact","First Contact","2026.10.16"],["fusion","Fusion","2026.10.16.211641"],["group_therapy","Group Therapy","2026.10.16.195121"],["isrc_scout","ISRC Scout","2026.10.16.211120"],["mammoth","Mammoth","2026.10.16"],["mission_control","Mission Control","2026.10.16.233000"],["platform_check","Platform Check","2026.10.16.184027"]];
   // Each entry carries a stable id (options.id): Violentmonkey and Tampermonkey then relabel it in
   // place, where it stands. Unregister-and-add left Violentmonkey's open menu with the old entry
   // still there and the new one appended at the end. A manager that ignores options.id hands back
@@ -55189,7 +55189,7 @@ Created this ${kind} while adding credits parsed from text to ${relUrl}`;
 
 // ===== isrc_scout (@run-at document-start) ========================================
 if (__stOff.indexOf("isrc_scout") < 0 && __stRuns("isrc_scout", {"inc":["^https:\\/\\/(?:[^/]*\\.)?musicbrainz\\.org(?::\\d+)?/release/.*$","^https:\\/\\/(?:[^/]*\\.)?musicbrainz\\.org(?::\\d+)?/oauth2/oob.*$","^https:\\/\\/www\\.beatport\\.com(?::\\d+)?/release/.*$"],"exc":[],"noframes":false})) (function(__stGM){
-  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"ISRC Scout*","namespace":"https://musicbrainz.org/","version":"2026.10.16.182954","description":"Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify / Beatport / Tidal / Volumo / HDtracks / Qobuz, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/isrc_scout/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPklTUkMgU2NvdXQ8L3RpdGxlPgogICAgPHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPgogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjQwIi8+CiAgICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyNiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2U9IiNiOWEzZTgiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPgogIDwvZz4KICA8bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+Cjwvc3ZnPgo="}) }) : { script: {"name":"ISRC Scout*","namespace":"https://musicbrainz.org/","version":"2026.10.16.182954","description":"Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify / Beatport / Tidal / Volumo / HDtracks / Qobuz, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/isrc_scout/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPklTUkMgU2NvdXQ8L3RpdGxlPgogICAgPHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPgogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjQwIi8+CiAgICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyNiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2U9IiNiOWEzZTgiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPgogIDwvZz4KICA8bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+Cjwvc3ZnPgo="} };
+  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"ISRC Scout*","namespace":"https://musicbrainz.org/","version":"2026.10.16.211120","description":"Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify / Beatport / Tidal / Volumo / HDtracks / Qobuz, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/isrc_scout/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPklTUkMgU2NvdXQ8L3RpdGxlPgogICAgPHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPgogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjQwIi8+CiAgICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyNiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2U9IiNiOWEzZTgiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPgogIDwvZz4KICA8bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+Cjwvc3ZnPgo="}) }) : { script: {"name":"ISRC Scout*","namespace":"https://musicbrainz.org/","version":"2026.10.16.211120","description":"Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify / Beatport / Tidal / Volumo / HDtracks / Qobuz, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/isrc_scout/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPklTUkMgU2NvdXQ8L3RpdGxlPgogICAgPHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPgogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjQwIi8+CiAgICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyNiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2U9IiNiOWEzZTgiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPgogIDwvZz4KICA8bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+Cjwvc3ZnPgo="} };
   (f=>f())(function(){ try { (function(){
 /*
  * ─────────────────────────────────────────────────────────────────────────
@@ -57443,6 +57443,15 @@ if (__stOff.indexOf("isrc_scout") < 0 && __stRuns("isrc_scout", {"inc":["^https:
     #ii-suspect-badge { color: var(--mbu-warn); background: var(--mbu-warn-bg); border: 1px solid var(--mbu-warn); border-radius: 5px;
       padding: 2px 8px; font-weight: 700; font-size: 11.5px; cursor: pointer; flex-shrink: 0; white-space: nowrap; }
     #ii-suspect-badge:hover { background: var(--mbu-warn-bg); }
+    /* #773: the pill's two parts: jump to the first one · ✕ Remove (or: N removed · Undo) */
+    #ii-suspect-badge { display: inline-flex; padding: 0; overflow: hidden; cursor: default; }
+    #ii-suspect-badge > span { padding: 2px 8px; cursor: pointer; }
+    #ii-suspect-badge > button { padding: 2px 8px; font: inherit; color: inherit; background: none; border: 0; border-left: 1px solid var(--mbu-warn); cursor: pointer; }
+    #ii-suspect-badge > button:hover, #ii-suspect-badge > button:focus-visible { background: var(--mbu-warn); color: var(--mbu-bg); outline: none; }
+    #ii-suspect-badge.ii-sb-undo { color: var(--mbu-text); background: var(--mbu-bg-raised); border-color: var(--mbu-border); font-weight: 400; }
+    #ii-suspect-badge.ii-sb-undo > span { cursor: default; }
+    #ii-suspect-badge.ii-sb-undo > button { border-left-color: var(--mbu-border); color: var(--mbu-accent-text); font-weight: 700; }
+    #ii-suspect-badge.ii-sb-undo > button:hover { background: var(--mbu-border); color: var(--mbu-text); }
     .ii-lookup.pending:hover { color: var(--mbu-text); }
     .ii-cand-refine { font-size: 10.5px; color: var(--mbu-accent-text); cursor: pointer; padding: 2px 7px;
       border: 1px dashed var(--mbu-accent); border-radius: 4px; background: var(--mbu-bg-raised); width: max-content; }
@@ -61540,6 +61549,7 @@ if (__stOff.indexOf("isrc_scout") < 0 && __stRuns("isrc_scout", {"inc":["^https:
           input.value = t.pending; input.setSelectionRange(p, p);
         }
         input.dataset.autofill = '';
+        endSuspectUndo();   // #773
         if (input.classList.contains('ii-in-suspect')) { input.classList.remove('ii-in-suspect'); input.title = ''; updateSuspectBadge(); }   // #431: a manual edit is the user taking over
         validateInput(input, t);
         updateSummary();
@@ -61734,6 +61744,7 @@ if (__stOff.indexOf("isrc_scout") < 0 && __stRuns("isrc_scout", {"inc":["^https:
     const t = RELEASE.tracks[idx];
     const input = rowInput(idx);
     if (!t || !input) return;
+    endSuspectUndo();   // #773
     t.pending = normalizeIsrc(isrc);
     t.source = source || 'manual';
     input.value = t.pending;
@@ -61761,6 +61772,7 @@ if (__stOff.indexOf("isrc_scout") < 0 && __stRuns("isrc_scout", {"inc":["^https:
   function clearPending() {
     abortSxWork('clear entered');            // cancel queued verifications + the bulk SX search (#127)
     RELEASE.tracks.forEach((t, i) => { t.pending = ''; t.source = ''; const inp = rowInput(i); if (inp) { inp.value = ''; inp.classList.remove('ii-in-suspect'); inp.title = ''; validateInput(inp, t); } });
+    _suspectUndo = null;   // #773
     updateSuspectBadge();   // #431
     tbody.querySelectorAll('.ii-cands').forEach(c => c.innerHTML = '');
     tbody.querySelectorAll('.ii-lookup').forEach(l => { l.className = 'ii-lookup'; l.textContent = ''; l.title = ''; l.onclick = null; });
@@ -61773,6 +61785,7 @@ if (__stOff.indexOf("isrc_scout") < 0 && __stRuns("isrc_scout", {"inc":["^https:
     const t = RELEASE.tracks[idx], input = rowInput(idx);
     if (!t || !input) return;
     _vq.items = _vq.items.filter(it => it.idx !== idx);   // drop any queued verify for this row
+    endSuspectUndo();   // #773
     t.pending = ''; t.source = '';
     input.value = ''; input.dataset.autofill = '';
     if (input.classList.contains('ii-in-suspect')) { input.classList.remove('ii-in-suspect'); input.title = ''; updateSuspectBadge(); }   // #431
@@ -62463,6 +62476,8 @@ if (__stOff.indexOf("isrc_scout") < 0 && __stRuns("isrc_scout", {"inc":["^https:
   // #431 follow-up (maintainer): the summary-line "⚠ N implausible" was too easy to
   // overlook — a persistent amber pill in the footer (next to the Submit button's row)
   // tracks the live count; clicking it jumps to the first flagged row.
+  // #773: its ✕ Remove empties every amber box at once; then it offers Undo until the next change
+  let _suspectUndo = null;   // [{ idx, isrc, source, title }] of the last Remove
   function updateSuspectBadge() {
     if (!modal) return 0;
     let el = modal.querySelector('#ii-suspect-badge');
@@ -62470,8 +62485,11 @@ if (__stOff.indexOf("isrc_scout") < 0 && __stRuns("isrc_scout", {"inc":["^https:
       el = document.createElement('span');
       el.id = 'ii-suspect-badge';
       el.className = 'ii-only-isrc';
-      el.title = 'These fills differ from the MB track in length or title — click to jump to the first one';
-      el.addEventListener('click', () => {
+      el.addEventListener('click', e => {
+        const a = e.target.closest('[data-a]')?.dataset.a;
+        if (a === 'rm') return removeSuspects();
+        if (a === 'undo') return undoRemoveSuspects();
+        if (a !== 'jump') return;
         const s = modal.querySelector('input.ii-in-suspect');
         if (!s) return;
         s.scrollIntoView({ block: 'center', behavior: 'smooth' });
@@ -62480,10 +62498,61 @@ if (__stOff.indexOf("isrc_scout") < 0 && __stRuns("isrc_scout", {"inc":["^https:
       });
       if (summaryEl) summaryEl.after(el);
     }
-    const n = modal.querySelectorAll('input.ii-in-suspect').length;
-    el.textContent = n ? ('⚠ ' + n + ' implausible fill' + (n === 1 ? '' : 's') + ' — verify') : '';
-    el.style.display = n ? '' : 'none';
+    const n = suspectRows().length;
+    const s = k => k === 1 ? '' : 's';
+    if (n) _suspectUndo = null;   // new amber fills: the last Remove is over
+    const u = _suspectUndo && _suspectUndo.length;
+    el.innerHTML = n
+      ? '<span data-a="jump" title="These fills differ from the MB track in length or title: click to jump to the first one">⚠ ' + n + ' implausible fill' + s(n) + ' — verify</span>' +
+        '<button type="button" data-a="rm" title="Empty the ' + n + ' amber box' + (n === 1 ? '' : 'es') + '">✕ Remove</button>'
+      : u ? '<span>' + u + ' implausible fill' + s(u) + ' removed</span><button type="button" data-a="undo" title="Put them back">Undo</button>' : '';
+    el.classList.toggle('ii-sb-undo', !n && !!u);
+    el.style.display = n || u ? '' : 'none';
     return n;
+  }
+  // the amber boxes that still hold a fill
+  function suspectRows() {
+    const out = [];
+    RELEASE.tracks.forEach((t, i) => { const inp = rowInput(i); if (inp && t.pending && inp.classList.contains('ii-in-suspect')) out.push(i); });
+    return out;
+  }
+  function removeSuspects() {
+    const rows = suspectRows();
+    if (!rows.length) return 0;
+    const undo = rows.map(i => { const t = RELEASE.tracks[i], inp = rowInput(i); return { idx: i, isrc: t.pending, source: t.source, title: inp.title }; });
+    undo.forEach(u => {
+      const t = RELEASE.tracks[u.idx], inp = rowInput(u.idx);
+      Log.info('Removed the implausible ' + u.isrc + ' (' + u.source + ') from #' + (t.number || t.trackPos) + ' "' + t.title + '"');
+      _vq.items = _vq.items.filter(it => it.idx !== u.idx);
+      t.pending = ''; t.source = '';
+      inp.value = ''; inp.dataset.autofill = '';
+      inp.classList.remove('ii-in-suspect'); inp.title = '';
+      validateInput(inp, t);
+      const lk = rowLookup(u.idx); if (lk) { lk.className = 'ii-lookup'; lk.textContent = ''; lk.title = ''; lk.onclick = null; }
+    });
+    _suspectUndo = undo;
+    updateSuspectBadge();
+    updateSummary();
+    return undo.length;
+  }
+  function undoRemoveSuspects() {
+    const undo = _suspectUndo;
+    if (!undo) return;
+    undo.forEach(u => {
+      setPending(u.idx, u.isrc, true, u.source);
+      const inp = rowInput(u.idx);
+      if (inp) { inp.classList.add('ii-in-suspect'); inp.title = u.title; }
+    });
+    Log.info('Put back ' + undo.length + ' implausible fill(s)');
+    _suspectUndo = null;
+    updateSuspectBadge();
+    updateSummary();
+  }
+  // #773: any other change in the table ends the Undo
+  function endSuspectUndo() {
+    if (!_suspectUndo) return;
+    _suspectUndo = null;
+    updateSuspectBadge();
   }
   // Map ONE fetched ISRC to a track and fill it immediately (live, as it arrives).
   // Returns 'filled' | 'already' | 'skipped' | 'unmatched'.
@@ -62900,8 +62969,8 @@ if (__stOff.indexOf("isrc_scout") < 0 && __stRuns("isrc_scout", {"inc":["^https:
      BOTH — every entered ISRC and every resolved streaming link — in one action,
      then closes. Either half can be empty; it does whatever's actually changed. */
   // #431: confirmation popup shown when implausible (amber) fills are about to be
-  // submitted. Resolves true only on an explicit "Submit anyway"; "Review first"
-  // closes and jumps to the first flagged row.
+  // submitted. Resolves 'go' only on an explicit "Submit anyway", 'remove' on "Remove them,
+  // submit the rest" (#773); "Review first" resolves false, closes and jumps to the first flagged row.
   function confirmSuspectSubmit(n) {
     return new Promise(resolve => {
       const ov = document.createElement('div');
@@ -62911,8 +62980,9 @@ if (__stOff.indexOf("isrc_scout") < 0 && __stRuns("isrc_scout", {"inc":["^https:
       box.innerHTML =
         '<div style="font-weight:800;color:var(--mbu-warn);font-size:15px;margin-bottom:8px;">⚠ ' + n + ' implausible ISRC fill' + (n === 1 ? '' : 's') + '</div>' +
         '<p style="margin:0 0 12px;">The amber-flagged entries differ from the MB track in <strong>length or title</strong> — they may belong to a <strong>different recording</strong> (wrong provider link or edition). Submitted ISRCs are rarely re-checked, so verify those rows first.</p>' +
-        '<div style="display:flex;justify-content:flex-end;gap:8px;">' +
+        '<div style="display:flex;flex-wrap:wrap;justify-content:flex-end;gap:8px;">' +
         '<button type="button" data-a="review" style="padding:5px 14px;font-size:13px;font-weight:600;color:var(--mbu-text);background:var(--mbu-bg-raised);border:1px solid var(--mbu-border);border-radius:5px;cursor:pointer;">Review first</button>' +
+        '<button type="button" data-a="remove" style="padding:5px 14px;font-size:13px;font-weight:600;color:var(--mbu-warn);background:var(--mbu-warn-bg);border:1px solid var(--mbu-warn);border-radius:5px;cursor:pointer;">Remove them, submit the rest</button>' +
         '<button type="button" data-a="go" style="padding:5px 14px;font-size:13px;font-weight:600;color:#fff;background:#e0892a;border:none;border-radius:5px;cursor:pointer;">Submit anyway</button>' +
         '</div>';
       const done = ok => {
@@ -62921,7 +62991,8 @@ if (__stOff.indexOf("isrc_scout") < 0 && __stRuns("isrc_scout", {"inc":["^https:
         resolve(ok);
       };
       box.querySelector('[data-a="review"]').addEventListener('click', () => done(false));
-      box.querySelector('[data-a="go"]').addEventListener('click', () => done(true));
+      box.querySelector('[data-a="remove"]').addEventListener('click', () => done('remove'));
+      box.querySelector('[data-a="go"]').addEventListener('click', () => done('go'));
       ov.addEventListener('mousedown', e => { if (e.target === ov) done(false); });
       ov.appendChild(box);
       document.body.appendChild(ov);
@@ -62948,7 +63019,12 @@ if (__stOff.indexOf("isrc_scout") < 0 && __stRuns("isrc_scout", {"inc":["^https:
     // #431 follow-up (maintainer): flagged fills about to be submitted need explicit
     // confirmation — the amber inputs + summary count alone were too easy to miss.
     const suspectN = isrcCount ? [...modal.querySelectorAll('input.ii-in-suspect')].filter(i => i.value.trim()).length : 0;
-    if (suspectN && !(await confirmSuspectSubmit(suspectN))) return;
+    if (suspectN) {
+      const ok = await confirmSuspectSubmit(suspectN);
+      if (!ok) return;
+      // #773: without them; the rest goes through as usual (or "Nothing to submit" if nothing is left)
+      if (ok === 'remove') { removeSuspects(); return doSubmitAll(); }
+    }
     // ISRC additions need OAuth; link edits ride the logged-in MB session. Only block
     // on authorization when there are ISRCs — links alone can still go through.
     if (isrcCount && !Auth.isAuthorized()) {
