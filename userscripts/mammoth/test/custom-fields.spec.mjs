@@ -11,7 +11,7 @@ const TARGET = 'input[id="id-edit-artist.comment"]';
 // the panel starts minimized; the spec needs its Settings button on screen
 test.use({ gm: { name: 'Mammoth', values: { 'mammoth:settings': JSON.stringify({ minimized: false, v: 2 }) } } });
 
-test('a custom field pins field memory to the input its selector matches', { tag: ['@sandbox', '@login', '@critical', '@flaky'] }, async ({ page, inject }) => {
+test('a custom field pins field memory to the input its selector matches', { tag: ['@sandbox', '@login', '@critical'] }, async ({ page, inject }) => {
   await page.goto(`${SANDBOX}/artist/${ARTIST}/edit`, { waitUntil: 'domcontentloaded' });
   await requireLogin(page);
   await idle(page);

@@ -15,7 +15,7 @@ import { openApollo, apolloGm } from './ap.mjs';
 
 test.use({ gm: apolloGm() });
 
-test('a matched slot being edited is left alone until it loses focus', { tag: ['@sandbox', '@login', '@critical', '@flaky'] }, async ({ page, inject }) => {
+test('a matched slot being edited is left alone until it loses focus', { tag: ['@sandbox', '@login', '@critical'] }, async ({ page, inject }) => {
   const ws = await replayWs(page, new URL('./fixtures/ws-580.json.gz', import.meta.url));
   // #652: the release artist goes through every stage now, and the batched alias read for the
   // candidates holds a different set of artists from run to run; aliases only label the picker
