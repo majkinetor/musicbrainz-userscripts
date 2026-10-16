@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-10-16 04:27 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-10-16 08:51 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -1213,13 +1213,14 @@ Match groups the recordings still in the pool, so a group you built by hand is n
 | normal             | …or a similar title and artist, with lengths within tolerance (or unknown) |
 | loose              | …or a similar title with either the length or the artist                   |
 
-Titles tolerate small typos. Artists are compared by MBID when both recordings have them, so *Radium* and *DJ Radium* credited to the same artist match.
+Titles tolerate small typos, and a mix or edit written another way (*Song (Radio Edit)* and *Song - Radio Edit*), but not a word on each side that the other lacks: *Dwell I* and *Dwell IV*, or *In Volo - Drift* and *In Volo - Trace*, are different titles. Artists are compared by MBID when both recordings have them, so *Radium* and *DJ Radium* credited to the same artist match.
 
 Match never groups:
 
 - a video with an audio recording (not even with a shared ISRC; manual grouping refuses it too);
 - a recording that has an open edit;
-- lengths more than 30 s apart.
+- lengths more than 30 s apart;
+- two recordings with ISRCs from one batch (the same registrant and year) but none in common, such as *QZTRX2699407* and *QZTRX2699409*: those are different tracks.
 
 A group's chips show which signals hold for **every** member; one that holds for only some of them is shown as partial.
 
