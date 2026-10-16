@@ -1,5 +1,11 @@
 # Fusion Changelog
 
+## [2026.10.16](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.10.16)
+
+### Fixes
+
+1. Different tracks with near-identical titles grouped for merge ([#760](https://github.com/majkinetor/musicbrainz-userscripts/issues/760))
+
 ## [2026.10.11](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.10.11)
 
 - Small improvements

@@ -1,5 +1,26 @@
 # Apollo Editor Changelog
 
+## [2026.10.16](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.10.16)
+
+### Features
+
+1. Match label based on duplicates ([#750](https://github.com/majkinetor/musicbrainz-userscripts/issues/750))
+1. Skip archiving edit note URLs; removal all archive related edit notes ([#739](https://github.com/majkinetor/musicbrainz-userscripts/issues/739))
+1. Archive external links option ([#736](https://github.com/majkinetor/musicbrainz-userscripts/issues/736))
+1. Remove all credited as fields ([#735](https://github.com/majkinetor/musicbrainz-userscripts/issues/735))
+1. Pattern parser doesn't add/remove tracks on media as needed ([#733](https://github.com/majkinetor/musicbrainz-userscripts/issues/733))
+1. Change source row in the table of Pattern Parser ([#732](https://github.com/majkinetor/musicbrainz-userscripts/issues/732))
+
+### Fixes
+
+1. Background add of an Apple Music link never submits ([#755](https://github.com/majkinetor/musicbrainz-userscripts/issues/755))
+1. Release information matched first, with a spinner while it runs ([#754](https://github.com/majkinetor/musicbrainz-userscripts/issues/754))
+1. Inconsistent artist picker placement on Release Info ([#742](https://github.com/majkinetor/musicbrainz-userscripts/issues/742))
+1. Picker for last artist changes size on unfocus ([#731](https://github.com/majkinetor/musicbrainz-userscripts/issues/731))
+1. Label buttons are hard to see ([#729](https://github.com/majkinetor/musicbrainz-userscripts/issues/729))
+1. Release artist created with right click not set ([#725](https://github.com/majkinetor/musicbrainz-userscripts/issues/725))
+1. After droping tracks tracklist scrolls to top ([#685](https://github.com/majkinetor/musicbrainz-userscripts/issues/685))
+
 ## [2026.10.11](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.10.11)
 
 ### Features

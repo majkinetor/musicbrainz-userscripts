@@ -1,5 +1,91 @@
 # String Theory Changelog
 
+## [2026.10.16](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.10.16)
+
+### General
+
+#### Features
+
+1. Batch edit notes verbosity reduction ([#737](https://github.com/majkinetor/musicbrainz-userscripts/issues/737))
+1. Identfication of MB page elements by structure instead of position ([#723](https://github.com/majkinetor/musicbrainz-userscripts/issues/723))
+1. Support for different MB site languages ([#722](https://github.com/majkinetor/musicbrainz-userscripts/issues/722))
+1. Documentation cleanup: trivia, internals and stale claims ([#720](https://github.com/majkinetor/musicbrainz-userscripts/issues/720))
+
+#### Changes
+
+1. Copy log button proportions are off ([#734](https://github.com/majkinetor/musicbrainz-userscripts/issues/734))
+
+### [Apollo Editor](../apollo_editor/README.md)
+
+1. Match label based on duplicates ([#750](https://github.com/majkinetor/musicbrainz-userscripts/issues/750))
+1. Skip archiving edit note URLs; removal all archive related edit notes ([#739](https://github.com/majkinetor/musicbrainz-userscripts/issues/739))
+1. Archive external links option ([#736](https://github.com/majkinetor/musicbrainz-userscripts/issues/736))
+1. Remove all credited as fields ([#735](https://github.com/majkinetor/musicbrainz-userscripts/issues/735))
+1. Pattern parser doesn't add/remove tracks on media as needed ([#733](https://github.com/majkinetor/musicbrainz-userscripts/issues/733))
+1. Change source row in the table of Pattern Parser ([#732](https://github.com/majkinetor/musicbrainz-userscripts/issues/732))
+1. Background add of an Apple Music link never submits ([#755](https://github.com/majkinetor/musicbrainz-userscripts/issues/755))
+1. Release information matched first, with a spinner while it runs ([#754](https://github.com/majkinetor/musicbrainz-userscripts/issues/754))
+1. Inconsistent artist picker placement on Release Info ([#742](https://github.com/majkinetor/musicbrainz-userscripts/issues/742))
+1. Picker for last artist changes size on unfocus ([#731](https://github.com/majkinetor/musicbrainz-userscripts/issues/731))
+1. Label buttons are hard to see ([#729](https://github.com/majkinetor/musicbrainz-userscripts/issues/729))
+1. Release artist created with right click not set ([#725](https://github.com/majkinetor/musicbrainz-userscripts/issues/725))
+1. After droping tracks tracklist scrolls to top ([#685](https://github.com/majkinetor/musicbrainz-userscripts/issues/685))
+
+### [Art Station](../art_station/README.md)
+
+1. Cover sourcing without Enhanced Cover Art Uploads ([#717](https://github.com/majkinetor/musicbrainz-userscripts/issues/717))
+1. Cover types dropped and shown as comment on non-English MB ([#721](https://github.com/majkinetor/musicbrainz-userscripts/issues/721))
+
+### [Credit Hoarder](../credit_hoarder/README.md)
+
+1. Small improvements
+
+### [Falcon](../falcon/README.md)
+
+1. Cover art maximization ([#719](https://github.com/majkinetor/musicbrainz-userscripts/issues/719))
+1. Apple Music release links added without link type ([#759](https://github.com/majkinetor/musicbrainz-userscripts/issues/759))
+
+### [First Contact](../first_contact/README.md)
+
+1. Hidden Bandcamp track lengths ([#743](https://github.com/majkinetor/musicbrainz-userscripts/issues/743))
+1. 7digital read stopped by its captcha ([#747](https://github.com/majkinetor/musicbrainz-userscripts/issues/747))
+
+### [Fusion](../fusion/README.md)
+
+1. Different tracks with near-identical titles grouped for merge ([#760](https://github.com/majkinetor/musicbrainz-userscripts/issues/760))
+
+### [Group Therapy](../group_therapy/README.md)
+
+1. Support for recording based on two or more works ([#718](https://github.com/majkinetor/musicbrainz-userscripts/issues/718))
+
+### [ISRC Scout](../isrc_scout/README.md)
+
+1. Log categories ([#758](https://github.com/majkinetor/musicbrainz-userscripts/issues/758))
+1. Option to show ISRCs and links on release ([#749](https://github.com/majkinetor/musicbrainz-userscripts/issues/749))
+1. Retry on errors ([#748](https://github.com/majkinetor/musicbrainz-userscripts/issues/748))
+
+### [Mammoth](../mammoth/README.md)
+
+1. Small improvements
+
+### [Mission Control](../mission_control/README.md)
+
+1. Cover dimensions and link for each searched platform ([#751](https://github.com/majkinetor/musicbrainz-userscripts/issues/751))
+1. Retry on errors ([#748](https://github.com/majkinetor/musicbrainz-userscripts/issues/748))
+1. Retry cover upload automatically ([#741](https://github.com/majkinetor/musicbrainz-userscripts/issues/741))
+1. Seed data to existing release ([#727](https://github.com/majkinetor/musicbrainz-userscripts/issues/727))
+1. Qobuz barcode reported as none ([#746](https://github.com/majkinetor/musicbrainz-userscripts/issues/746))
+1. Beatport data not fetched, HTTP 403 ([#745](https://github.com/majkinetor/musicbrainz-userscripts/issues/745))
+1. Activity log not closed on first click ([#744](https://github.com/majkinetor/musicbrainz-userscripts/issues/744))
+1. Art station doesnt take into account added provider ([#724](https://github.com/majkinetor/musicbrainz-userscripts/issues/724))
+
+### [Platform Check](../platform_check/README.md)
+
+1. Catalog numbers from the matched platforms ([#740](https://github.com/majkinetor/musicbrainz-userscripts/issues/740))
+1. Apple Music track artists in Artists & labels ([#757](https://github.com/majkinetor/musicbrainz-userscripts/issues/757))
+1. Link offered for different label ([#756](https://github.com/majkinetor/musicbrainz-userscripts/issues/756))
+1. Wrong artist link position pairing ([#752](https://github.com/majkinetor/musicbrainz-userscripts/issues/752))
+
 ## [2026.10.11](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.10.11)
 
 ### General

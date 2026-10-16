@@ -1,5 +1,13 @@
 # ISRC Scout Changelog
 
+## [2026.10.16](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.10.16)
+
+### Features
+
+1. Log categories ([#758](https://github.com/majkinetor/musicbrainz-userscripts/issues/758))
+1. Option to show ISRCs and links on release ([#749](https://github.com/majkinetor/musicbrainz-userscripts/issues/749))
+1. Retry on errors ([#748](https://github.com/majkinetor/musicbrainz-userscripts/issues/748))
+
 ## [2026.10.11](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.10.11)
 
 ### Features

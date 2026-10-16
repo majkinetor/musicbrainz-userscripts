@@ -1,5 +1,11 @@
 # Group Therapy
 
+## [2026.10.16](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.10.16)
+
+### Features
+
+1. Support for recording based on two or more works ([#718](https://github.com/majkinetor/musicbrainz-userscripts/issues/718))
+
 ## [2026.10.11](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.10.11)
 
 - Small improvements

@@ -1,5 +1,17 @@
 # Platform Check Changelog
 
+## [2026.10.16](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.10.16)
+
+### Features
+
+1. Catalog numbers from the matched platforms ([#740](https://github.com/majkinetor/musicbrainz-userscripts/issues/740))
+
+### Fixes
+
+1. Apple Music track artists in Artists & labels ([#757](https://github.com/majkinetor/musicbrainz-userscripts/issues/757))
+1. Link offered for different label ([#756](https://github.com/majkinetor/musicbrainz-userscripts/issues/756))
+1. Wrong artist link position pairing ([#752](https://github.com/majkinetor/musicbrainz-userscripts/issues/752))
+
 ## [2026.10.11](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.10.11)
 
 ### Features

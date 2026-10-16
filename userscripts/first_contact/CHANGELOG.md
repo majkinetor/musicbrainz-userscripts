@@ -1,5 +1,15 @@
 # First Contact Changelog
 
+## [2026.10.16](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.10.16)
+
+### Features
+
+1. Hidden Bandcamp track lengths ([#743](https://github.com/majkinetor/musicbrainz-userscripts/issues/743))
+
+### Fixes
+
+1. 7digital read stopped by its captcha ([#747](https://github.com/majkinetor/musicbrainz-userscripts/issues/747))
+
 ## [2026.10.11](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.10.11)
 
 ### Features

@@ -1,5 +1,15 @@
 # Falcon 
 
+## [2026.10.16](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.10.16)
+
+### Features
+
+1. Cover art maximization ([#719](https://github.com/majkinetor/musicbrainz-userscripts/issues/719))
+
+### Fixes
+
+1. Apple Music release links added without link type ([#759](https://github.com/majkinetor/musicbrainz-userscripts/issues/759))
+
 ## [2026.10.11](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.10.11)
 
 ### Features

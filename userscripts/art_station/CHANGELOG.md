@@ -1,5 +1,15 @@
 # Art Station Changelog
 
+## [2026.10.16](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.10.16)
+
+### Features
+
+1. Cover sourcing without Enhanced Cover Art Uploads ([#717](https://github.com/majkinetor/musicbrainz-userscripts/issues/717))
+
+### Fixes
+
+1. Cover types dropped and shown as comment on non-English MB ([#721](https://github.com/majkinetor/musicbrainz-userscripts/issues/721))
+
 ## [2026.10.11](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.10.11)
 
 ### Features
