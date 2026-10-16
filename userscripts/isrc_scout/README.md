@@ -46,6 +46,8 @@ An album-based provider needs the release's album link: already in MusicBrainz, 
 
 Click the **ISRC** badge (`✓ 12/12`, or `⚠ 9/12` pulsing when some are missing). Each track shows its ISRCs and an input for a new one: red is invalid, orange a duplicate, green good.
 
+ISRCs are shown in their parts, `US-AM1-85-74817`: country, registrant, year and number. A copy is still the plain code, and what you type stays plain. *Show ISRCs in parts* turns it off.
+
 ### Importing ISRCs
 
 The toolbar shows the providers available for this release:
@@ -135,15 +137,16 @@ The release page's tracklist gets two columns before *Rating*: **ISRC**, each tr
 
 <img width="1000" src="./screenshots/options.png" />
 
-| Setting                                    | Default                    |                                                                           |
-| ------------------------------------------ | -------------------------- | ------------------------------------------------------------------------- |
-| Authorize                                  |                            | OAuth for submitting ISRCs                                                |
-| Import buttons                             | icons                      | icons, text, or both                                                      |
-| Show ISRCs and links on the tracklist      | on                         | the ISRC and Links columns on the release page ([Tracklist](#tracklist))  |
-| Use providers from the whole release group | off                        | take missing providers from sibling releases (one more lookup)            |
-| Ignore Platform Check link confidence      | off                        | use links Platform Check withheld for a barcode or format mismatch        |
-| Repeat failed submits                      | on, 10 minutes or 10 times | try a submit again when MusicBrainz is busy (503) or the connection drops |
-| Spotify ISRC source                        | molla                      | or ISRC Hunt                                                              |
+| Setting                                    | Default                    |                                                                                |
+| ------------------------------------------ | -------------------------- | ------------------------------------------------------------------------------ |
+| Authorize                                  |                            | OAuth for submitting ISRCs                                                     |
+| Import buttons                             | icons                      | icons, text, or both                                                           |
+| Show ISRCs and links on the tracklist      | on                         | the ISRC and Links columns on the release page ([Tracklist](#tracklist))       |
+| Show ISRCs in parts                        | on                         | `CC-XXX-YY-NNNNN`, here and in [Mission Control](../mission_control/README.md) |
+| Use providers from the whole release group | off                        | take missing providers from sibling releases (one more lookup)                 |
+| Ignore Platform Check link confidence      | off                        | use links Platform Check withheld for a barcode or format mismatch             |
+| Repeat failed submits                      | on, 10 minutes or 10 times | try a submit again when MusicBrainz is busy (503) or the connection drops      |
+| Spotify ISRC source                        | molla                      | or ISRC Hunt                                                                   |
 
 ## Shortcuts
 

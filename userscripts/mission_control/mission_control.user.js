@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Mission Control
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.16.163621
+// @version      2026.10.16.164606
 // @description  One window on the release page that asks the other scripts (Platform Check, ISRC Scout, Art Station, Fusion, Credit Hoarder) what is missing, shows it all in one review, and applies the selected changes in order.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5NaXNzaW9uIENvbnRyb2w8L3RpdGxlPgo8ZGVmcz48ZmlsdGVyIGlkPSJtY28xMy1oIiB4PSItMTAlIiB5PSItMTAlIiB3aWR0aD0iMTIwJSIgaGVpZ2h0PSIxMjAlIj48ZmVNb3JwaG9sb2d5IGluPSJTb3VyY2VBbHBoYSIgb3BlcmF0b3I9ImRpbGF0ZSIgcmFkaXVzPSIxLjUiIHJlc3VsdD0iZCIvPjxmZUZsb29kIGZsb29kLWNvbG9yPSIjZmZmIiBmbG9vZC1vcGFjaXR5PSIuNyIvPjxmZUNvbXBvc2l0ZSBpbjI9ImQiIG9wZXJhdG9yPSJpbiIvPjxmZU1lcmdlPjxmZU1lcmdlTm9kZS8+PGZlTWVyZ2VOb2RlIGluPSJTb3VyY2VHcmFwaGljIi8+PC9mZU1lcmdlPjwvZmlsdGVyPjwvZGVmcz48ZyBmaWx0ZXI9InVybCgjbWNvMTMtaCkiPjxwYXRoIGQ9Ik03NyAzNS41IEw2NCA0MyBMNTEgMzUuNSBMNTEgMjAuNSBMNjQgMTMgTDc3IDIwLjVaIiBmaWxsPSIjN2E1N2U4IiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik01OS43IDc3LjUgTDQ2LjcgODUgTDMzLjcgNzcuNSBMMzMuNyA2Mi41IEw0Ni43IDU1IEw1OS43IDYyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik05NC4zIDc3LjUgTDgxLjMgODUgTDY4LjMgNzcuNSBMNjguMyA2Mi41IEw4MS4zIDU1IEw5NC4zIDYyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik00Mi4zIDEwNy41IEwyOS40IDExNSBMMTYuNCAxMDcuNSBMMTYuNCA5Mi41IEwyOS40IDg1IEw0Mi4zIDkyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik03NyAxMDcuNSBMNjQgMTE1IEw1MSAxMDcuNSBMNTEgOTIuNSBMNjQgODUgTDc3IDkyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik0xMTEuNiAxMDcuNSBMOTguNiAxMTUgTDg1LjcgMTA3LjUgTDg1LjcgOTIuNSBMOTguNiA4NSBMMTExLjYgOTIuNVoiIGZpbGw9IiNmZmM5NGEiIHN0cm9rZT0iIzIyMjIzYiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PC9nPgo8L3N2Zz4K
@@ -485,6 +485,13 @@ function readRelease() {
 
 const el = (tag, cls, html) => { const e = document.createElement(tag); if (cls) e.className = cls; if (html != null) e.innerHTML = mbuHtml(html); return e; };
 const esc = s => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+// #766: an ISRC as CC-XXX-YY-NNNNN, as ISRC Scout shows it: its shared setting isrcFormat (on unless
+// turned off there); the dashes are CSS, so a copy is the plain code
+const isrcHtml = code => {
+    const c = String(code || '').toUpperCase().replace(/[\s-]/g, '');
+    if (mbuShared('isrcFormat') === false || !/^[A-Z]{2}[A-Z0-9]{3}[0-9]{7}$/.test(c)) return esc(code);
+    return '<span class="mc-isrcf"><span>' + c.slice(0, 2) + '</span><span>' + c.slice(2, 5) + '</span><span>' + c.slice(5, 7) + '</span><span>' + c.slice(7) + '</span></span>';
+};
 
 let ui = null, rel = null, selected = null;
 
@@ -687,7 +694,7 @@ function mcStyle() {
         + '.mc-tbl .mc-fxtbl td{padding:5px 8px;vertical-align:top;background:var(--mbu-bg)}.mc-tbl .mc-fxtbl tr:last-child td{border-bottom:0}'
         + '.mc-fxtbl .who{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--mbu-text-weak)}'
         + '.mc-fxdiff{background:var(--mbu-warn-bg);color:var(--mbu-warn);border-radius:4px;padding:0 4px}.mc-fxs::after{content:" ✓";color:var(--mbu-ok)}'
-        + '.mc-fxn{margin-top:6px;font-size:11.5px;color:var(--mbu-text-weak)}'
+        + '.mc-fxn{margin-top:6px;font-size:11.5px;color:var(--mbu-text-weak)}.mc-isrcf>span:not(:last-child)::after{content:"-";opacity:.45}'
         + '.mc-fxm{border:1px solid var(--mbu-border);border-radius:var(--mbu-radius);padding:2px 8px 6px;margin:6px 0;background:var(--mbu-bg-raised)}'
         + '.mc-kv{display:grid;grid-template-columns:auto minmax(0,1fr);gap:1px 10px;font-size:11.5px}.mc-kv>span:nth-child(odd){color:var(--mbu-text-weak)}'
         + '@media (prefers-reduced-motion:reduce){.mc-fxo .car{transition:none}}'
@@ -924,11 +931,11 @@ let stepClock = 0;
 // renders it. `pick`: the column holds the tick box for that provider's finding.
 const COLS = [
     { id: 'isrc', p: 'is', head: 'ISRC · IS', pick: true, cell: x =>
-        x.state === 'new' ? '<span class="mc-add mono">+ ' + esc(x.isrc) + '</span>'
-        : x.state === 'unsure' ? '<span class="mc-warn mono" title="' + esc(x.why || '') + '">+ ' + esc(x.isrc) + ' ⚠</span>'
+        x.state === 'new' ? '<span class="mc-add mono">+ ' + isrcHtml(x.isrc) + '</span>'
+        : x.state === 'unsure' ? '<span class="mc-warn mono" title="' + esc(x.why || '') + '">+ ' + isrcHtml(x.isrc) + ' ⚠</span>'
         // a provider's hard stop (#680: an ISRC on two recordings): shown, never tickable
-        : x.state === 'blocked' ? '<span class="mc-err mono" title="' + esc('Blocked: ' + (x.why || '')) + '">⊘ ' + esc(x.isrc) + '</span>'
-        : x.state === 'linked' ? '<span class="weak mono" title="' + esc((x.existing || []).join(', ')) + '">' + esc((x.existing || [])[0] || x.isrc || '') + ((x.existing || []).length > 1 ? ' +' + (x.existing.length - 1) : '') + '</span>'
+        : x.state === 'blocked' ? '<span class="mc-err mono" title="' + esc('Blocked: ' + (x.why || '')) + '">⊘ ' + isrcHtml(x.isrc) + '</span>'
+        : x.state === 'linked' ? '<span class="weak mono" title="' + esc((x.existing || []).join(', ')) + '">' + isrcHtml((x.existing || [])[0] || x.isrc || '') + ((x.existing || []).length > 1 ? ' +' + (x.existing.length - 1) : '') + '</span>'
         : '<span class="pend">none found</span>' },
     // rendered by linksCell: IS's linked icons plus the links Find links found (#680)
     { id: 'links', p: 'is', head: 'Rec links · IS', cell: () => '' },
@@ -1022,7 +1029,7 @@ function fxDetail(x) {
         return '<span class="mc-fxc' + (lit ? ' on' : some ? ' some' : unk ? ' unk' : '') + '" title="' + tip + '">' + label + (unk ? ' ?' : '') + '</span>';
     }).join('');
     const ids = (list, mine, known, short) => list == null || (!known && !list.length) ? '<span class="weak">not checked</span>'
-        : list.map(v => '<span' + (mine && mine.includes(v) ? ' class="mc-fxs"' : '') + ' title="' + esc(v) + '">' + esc(short ? v.slice(0, 8) + '…' : v) + '</span>').join('<br>') || '<span class="weak">none</span>';
+        : list.map(v => '<span' + (mine && mine.includes(v) ? ' class="mc-fxs"' : '') + ' title="' + esc(v) + '">' + (short ? esc(v.slice(0, 8) + '…') : isrcHtml(v)) + '</span>').join('<br>') || '<span class="weak">none</span>';
     const row = (who, m, other) => {
         const diff = (a, b, v) => other && a !== b ? '<span class="mc-fxdiff">' + v + '</span>' : v;
         return '<tr><td class="who">' + who + '</td>'
@@ -1441,8 +1448,8 @@ function paintInspector() {
         return '<div class="mc-insp-block"><h2 class="mc-sec">' + h + '</h2>' + inner + '</div>';
     };
     const mini = (a, b) => '<div class="mc-mini">' + a + '<span class="n">' + (b || '') + '</span></div>';
-    const isrcBody = x => (x.existing || []).map(i => mini('<span class="mono">' + esc(i) + '</span>', 'on MB')).join('')
-        + (x.isrc && !(x.existing || []).includes(x.isrc) ? mini('<span class="mono mc-add">+ ' + esc(x.isrc) + '</span>', esc(x.source || '')) : '')
+    const isrcBody = x => (x.existing || []).map(i => mini('<span class="mono">' + isrcHtml(i) + '</span>', 'on MB')).join('')
+        + (x.isrc && !(x.existing || []).includes(x.isrc) ? mini('<span class="mono mc-add">+ ' + isrcHtml(x.isrc) + '</span>', esc(x.source || '')) : '')
         + (x.why ? '<div class="mc-why">' + esc(x.why) + '</div>' : '')
         + (!x.isrc && !(x.existing || []).length ? '<div class="weak" style="font-size:11.5px">none found</div>' : '');
     const linksBody = x => (x.linkUrls || []).map(u => mini('<span class="mc-pico">' + stIcon(urlIcon(u), 14) + '</span> <a target="_blank" rel="noopener" href="' + esc(u) + '">' + esc(shortUrl(u)) + '</a>', 'on MB')).join('')
@@ -1454,7 +1461,7 @@ function paintInspector() {
             + '<div class="mc-kv"><span>release</span><span>' + esc(fxRel(m)) + '</span>'
             + '<span>length</span><span>' + esc(m.len || '?') + fxLenDiff(x.self, m) + '</span>'
             + (m.artist ? '<span>artist</span><span>' + esc(m.artist) + '</span>' : '')
-            + (m.isrcs ? '<span>ISRCs</span><span class="mono">' + (esc(m.isrcs.join(', ')) || 'none') + '</span>' : '')
+            + (m.isrcs ? '<span>ISRCs</span><span class="mono">' + (m.isrcs.map(isrcHtml).join(', ') || 'none') + '</span>' : '')
             + '<span>AcoustIDs</span><span class="mono">' + (m.acoustids == null ? '<span class="weak">' + (fxBusy.has(x.key) ? 'checking…' : 'not checked') + '</span>'
                 : m.acoustids.map(v => '<span title="' + esc(v) + '"' + (x.self && (x.self.acoustids || []).includes(v) ? ' class="mc-fxs"' : '') + '>' + esc(v.slice(0, 8)) + '…</span>').join(', ') || 'none') + '</span>'
             + '<span>edits</span><span>' + (m.pending ? '<span class="mc-err">open edit</span>' : 'none') + '</span></div></div>').join('')
@@ -2471,17 +2478,17 @@ function ccTracksHtml(m) {
     const nM = new Set(t.rows.map(r => r.mi)).size;
     t.rows.forEach((r, i) => {
         const w = r.win, many = r.versions.length > 1, op = CC.open.has(r.id);
-        h += '<tr class="row' + (CC.sel === r.id ? ' sel' : '') + '" data-cc="row" data-r="' + r.id + '"><td class="pos">' + (nM > 1 ? (r.mi + 1) + '.' + (r.ti + 1) : i + 1) + '</td><td class="ttl">' + esc(w.title) + '</td><td class="len">' + ccLen(w.len) + '</td><td class="isrc">' + esc(w.isrc || '—') + '</td>'
+        h += '<tr class="row' + (CC.sel === r.id ? ' sel' : '') + '" data-cc="row" data-r="' + r.id + '"><td class="pos">' + (nM > 1 ? (r.mi + 1) + '.' + (r.ti + 1) : i + 1) + '</td><td class="ttl">' + esc(w.title) + '</td><td class="len">' + ccLen(w.len) + '</td><td class="isrc">' + (w.isrc ? isrcHtml(w.isrc) : '—') + '</td>'
             + '<td>' + (many ? '<span class="mcc-chip warn">' + r.versions.length + ' versions</span>' : ccIcons(w.keys)) + '</td><td class="car">' + (many ? (op ? '▾' : '▸') : '') + '</td></tr>';
         if (many && op) r.versions.forEach(v => {
             const d = v === w ? [] : ccDiff(v, w);
             h += '<tr class="ver' + (v === w ? ' on' : '') + '" data-cc="ver" data-r="' + r.id + '" data-k="' + esc(v.keys[0]) + '"><td></td><td><span class="r"></span>' + ccTitleDiff(v.title, w.title) + (d.length ? ' <span class="why">· ' + esc(d.join(', ')) + '</span>' : '') + '</td>'
-                + '<td class="len">' + (v.len && w.len && Math.abs(v.len - w.len) > 1000 ? '<span class="hl">' + ccLen(v.len) + '</span>' : ccLen(v.len)) + '</td><td class="isrc">' + (v.isrc && w.isrc && v.isrc !== w.isrc ? '<span class="hl">' + esc(v.isrc) + '</span>' : esc(v.isrc || 'none')) + '</td><td>' + ccIcons(v.keys) + '</td><td></td></tr>';
+                + '<td class="len">' + (v.len && w.len && Math.abs(v.len - w.len) > 1000 ? '<span class="hl">' + ccLen(v.len) + '</span>' : ccLen(v.len)) + '</td><td class="isrc">' + (v.isrc && w.isrc && v.isrc !== w.isrc ? '<span class="hl">' + isrcHtml(v.isrc) + '</span>' : v.isrc ? isrcHtml(v.isrc) : 'none') + '</td><td>' + ccIcons(v.keys) + '</td><td></td></tr>';
         });
     });
     t.extras.forEach(x => {
         const v = x.versions[0], on = !!CC.extraTake[x.id];
-        h += '<tr class="row extra' + (on ? ' on' : '') + '" data-cc="extra" data-x="' + x.id + '" title="' + (on ? 'Taken in, at the end: click to leave it out' : 'Only ' + v.keys.map(ccName).join(', ') + ' has it: click to take it in') + '"><td class="pos">+</td><td class="ttl">' + esc(v.title) + '</td><td class="len">' + ccLen(v.len) + '</td><td class="isrc">' + esc(v.isrc || '—') + '</td><td><span class="mcc-chip">only ' + esc(v.keys.map(ccName).join(', ')) + '</span></td><td></td></tr>';
+        h += '<tr class="row extra' + (on ? ' on' : '') + '" data-cc="extra" data-x="' + x.id + '" title="' + (on ? 'Taken in, at the end: click to leave it out' : 'Only ' + v.keys.map(ccName).join(', ') + ' has it: click to take it in') + '"><td class="pos">+</td><td class="ttl">' + esc(v.title) + '</td><td class="len">' + ccLen(v.len) + '</td><td class="isrc">' + (v.isrc ? isrcHtml(v.isrc) : '—') + '</td><td><span class="mcc-chip">only ' + esc(v.keys.map(ccName).join(', ')) + '</span></td><td></td></tr>';
     });
     return h + '</tbody></table></section>';
 }
@@ -2510,7 +2517,7 @@ function ccPaintInspector() {
         r.versions.forEach(v => {
             const on = v === w, title = on ? esc(v.title) : ccTitleDiff(v.title, w.title);
             const len = !on && v.len && w.len && Math.abs(v.len - w.len) > 1000 ? hl(ccLen(v.len)) : esc(ccLen(v.len) || '?:??');
-            const isrc = !v.isrc ? (on || !w.isrc ? 'no ISRC' : hl('no ISRC')) : !on && w.isrc && v.isrc !== w.isrc ? hl(v.isrc) : esc(v.isrc);
+            const isrc = !v.isrc ? (on || !w.isrc ? 'no ISRC' : hl('no ISRC')) : !on && w.isrc && v.isrc !== w.isrc ? '<span class="hl">' + isrcHtml(v.isrc) + '</span>' : isrcHtml(v.isrc);
             h += '<div class="mcc-ver' + (on ? ' on' : '') + '"' + (on || r.versions.length < 2 ? '' : ' data-cc="ver" data-r="' + esc(r.id) + '" data-k="' + esc(v.keys[0]) + '" title="Take this version"') + '>'
                 + '<span class="r"></span><div class="t">' + title + '</div><span class="n">' + (on ? 'taken · ' : '') + v.keys.length + '</span>'
                 + '<div class="m"><span class="mono">' + len + ' · ' + isrc + '</span><span class="i" title="' + esc(v.keys.map(ccName).join(', ')) + '">' + ccIcons(v.keys) + '</span></div></div>';
