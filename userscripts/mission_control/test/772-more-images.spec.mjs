@@ -66,6 +66,9 @@ test('#772: more images, taken in, typed and commented, sent with Execute', { ta
 
   // the comment: ✎, Enter moves to the next image, Esc saves and keeps Mission Control open
   await card('Amazon#2').hover();
+  // the ✎ and ⤢ show on hover (the #mc-root rule that hid them outranked the :hover one)
+  const shown = await until(() => card('Amazon#2').evaluate(c => ['.mc-ax-pen', '.mc-ax-zoom'].map(q => getComputedStyle(c.querySelector(q)).opacity).join()), v => v === '1,1');
+  check(shown === '1,1', `the card's ✎ and ⤢ show on hover (opacity ${shown})`);
   await card('Amazon#2').locator('.mc-ax-pen').click();
   await page.keyboard.type('Disc 1');
   await page.keyboard.press('Enter');
