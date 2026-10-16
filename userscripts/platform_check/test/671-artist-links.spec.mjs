@@ -6,7 +6,7 @@ import { test, check, loadFunctions, functionSource } from '../../../dev/test/ha
 
 const NAMES = ['VA_MBID', 'VA_NAME_RE', 'qzDec', 'ytmWalk', 'pcUrlKey', 'pcSameUrl', 'pcCr', 'pcCredits', 'pcCreditsSummary', 'pcDiscogsName',
   'pcCreditsDiscogs', 'pcCreditsDeezer', 'pcCreditsApple', 'pcSlug', 'pcQobuzSlug', 'pcCreditsQobuzApi', 'pcCreditsQobuzPage', 'pcCreditsBandcamp', 'pcCreditsBeatport',
-  'pcCreditsYtm', 'pcCreditsSoundcloud', 'pcCreditsAudiomack', 'pcNameKey', 'PC_MULTI_NAME_RE', 'PC_LABEL_SUFFIX_RE', 'pcLabelKey', 'pcPairCredits', 'pcLinkRows', 'pcMarkCell', 'pcCellWhy', 'PC_ENTITY_LINK_TYPE', 'pcLinkTypeFor', 'pcFalconJson', 'pcFalconPayload'];
+  'pcCreditsYtm', 'pcCreditsSoundcloud', 'pcCreditsAudiomack', 'pcNameKey', 'PC_MULTI_NAME_RE', 'PC_LABEL_SUFFIX_RE', 'pcLabelKey', 'pcPairCredits', 'pcLinkRows', 'pcMarkCell', 'pcCellWhy', 'pcCellStressed', 'PC_ENTITY_LINK_TYPE', 'pcLinkTypeFor', 'pcFalconJson', 'pcFalconPayload'];
 // every reply the fixtures recorded, keyed by URL
 const dir = new URL('./fixtures/', import.meta.url);
 const replies = {};
@@ -100,6 +100,14 @@ test('a label pairs by name without its company form; another name is only +?', 
   check(/Arts & Crafts Productions Inc\./.test(f.pcCellWhy(other)), `…and why names the platform's label (${f.pcCellWhy(other)})`);
   const art = { url: 'u', name: 'Βήτα', by: 'position' };
   check(/Βήτα/.test(f.pcCellWhy(art)) && /matched by position/.test(f.pcCellWhy(art)), `an artist by position stays + and names the platform's (${f.pcCellWhy(art)})`);
+});
+
+// majkinetor: "Matched by position not name should be more prominent as it is easy to miss": its
+// reason goes to Mission Control as a mismatch, which it draws in amber, bold
+test('a pairing by position alone is stressed, one by name is not', { tag: '@unit' }, async () => {
+  const f = await loadFunctions('platform_check', NAMES);
+  check(f.pcCellStressed({ by: 'position' }) && f.pcCellStressed({ by: 'position', differs: true }), 'by position: stressed');
+  check(!f.pcCellStressed({ by: 'name' }) && !f.pcCellStressed({ by: 'name', uncertain: true }), 'by name, or an account that may be the label: not');
 });
 
 test('the table: one row per MusicBrainz artist or label, links merged across tracks', { tag: '@unit' }, async () => {

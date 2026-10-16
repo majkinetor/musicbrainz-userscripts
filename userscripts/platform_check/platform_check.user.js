@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Platform Check
 // @namespace    http://tampermonkey.net/
-// @version      2026.10.16
+// @version      2026.10.16.183334
 // @description  Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CjxnIHN0cm9rZT0iIzk0YTNiOCIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2UtbGluZWNhcD0icm91bmQiPjxwYXRoIGQ9Ik02NCA2NCBMODggMjIuNCIvPjxwYXRoIGQ9Ik02NCA2NCBMMTEyIDY0Ii8+PHBhdGggZD0iTTY0IDY0IEw4OCAxMDUuNiIvPjxwYXRoIGQ9Ik02NCA2NCBMNDAgMTA1LjYiLz48cGF0aCBkPSJNNjQgNjQgTDE2IDY0Ii8+PHBhdGggZD0iTTY0IDY0IEw0MCAyMi40Ii8+PC9nPjxjaXJjbGUgY3g9Ijg4IiBjeT0iMjIuNCIgcj0iMTIiIGZpbGw9IiNmNDcyYjYiLz48Y2lyY2xlIGN4PSIxMTIiIGN5PSI2NCIgcj0iMTIiIGZpbGw9IiNmYWNjMTUiLz48Y2lyY2xlIGN4PSI4OCIgY3k9IjEwNS42IiByPSIxMiIgZmlsbD0iIzRhZGU4MCIvPjxjaXJjbGUgY3g9IjQwIiBjeT0iMTA1LjYiIHI9IjEyIiBmaWxsPSIjMzhiZGY4Ii8+PGNpcmNsZSBjeD0iMTYiIGN5PSI2NCIgcj0iMTIiIGZpbGw9IiNhNzhiZmEiLz48Y2lyY2xlIGN4PSI0MCIgY3k9IjIyLjQiIHI9IjEyIiBmaWxsPSIjZmI5MjNjIi8+PGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iMjQiIGZpbGw9IiMwZjE3MmEiLz48cGF0aCBkPSJNNTQuMjIyMjIyMjIyMjIyMjIgNjQgTDYxLjMzMzMzMzMzMzMzMzMzNiA3MS4xMTExMTExMTExMTExMSBMNzQuNjY2NjY2NjY2NjY2NjcgNTYuODg4ODg4ODg4ODg4ODg2IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iNiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+Cjwvc3ZnPgo=
@@ -7781,6 +7781,10 @@ function pcCellWhy(c) {
         : c.differs ? `another name${as}, paired only by position: maybe another label`
         : c.by === 'position' ? `matched by position, not name${as}` : '';
 }
+// a pairing by position alone, which is easy to miss in a list of sure ones (majkinetor): its reason stands out
+function pcCellStressed(c) {
+    return !c.uncertain && (c.by === 'position' || !!c.differs);
+}
 
 // The link type for an artist's or label's page where MusicBrainz offers several and picks none
 // (Qobuz: download or streaming; Apple Music; Audiomack: free or paid streaming), the same picks
@@ -8929,7 +8933,10 @@ async function pcMcEntityFindings() {
         const state = c.state === 'linked' ? 'linked' : c.state === 'other' ? 'withheld' : !asked ? 'unsure' : c.state === 'unsure' ? 'unsure' : 'new';
         const why = c.state === 'other' ? `already linked to ${who}` : !asked ? 'MusicBrainz couldn\'t be asked whether it has this link'
             : pcCellWhy(c);
-        out.push({ key: `ent:${r.type}:${r.mbid}:${c.url}`, name: `${r.name} · ${PROVIDER_NAME[p]}`, icon: p, url: c.url, state, why: why || undefined, entity: { type: r.type, mbid: r.mbid, name: r.name } });
+        // majkinetor: 'Matched by position not name should be more prominent as it is easy to miss': Mission
+        // Control draws a reason listed in mismatch in amber, bold
+        const stress = why && asked && c.state !== 'other' && pcCellStressed(c) ? [why] : undefined;
+        out.push({ key: `ent:${r.type}:${r.mbid}:${c.url}`, name: `${r.name} · ${PROVIDER_NAME[p]}`, icon: p, url: c.url, state, why: why || undefined, mismatch: stress, entity: { type: r.type, mbid: r.mbid, name: r.name } });
     }
     _pcMcEnt = out;
     appendLog('System', `Mission Control: ${out.length} artist/label link(s) from ${rows.length} artist(s)/label(s)`);
