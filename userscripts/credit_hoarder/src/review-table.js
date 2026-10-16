@@ -15,12 +15,31 @@ import { wantsAliasButton, openAddAliasForm, submitAliasBackground, aliasNowHeld
 import { getLogContainer, getReviewContainer } from './log.js';
 import { noPasswordManagers, hashKey }      from './util.js';
 import { _hideBar }                        from './progress-bar.js';
-import { MB, DISCOGS_CHANNEL, pageWindow }     from './constants.js';
+import { MB, DISCOGS_CHANNEL, pageWindow, MATCH_LEVELS } from './constants.js';
 import { log, logDebug }                   from './log.js';
 import { splitCreditName, splitKey }       from './split-credit.js';
 
 // Session-level URL check cache (avoids localStorage key mismatches across sessions)
 const _urlCheckSessionCache = new Map();
+
+// A match method's level. `cache` is a legacy record whose method is unknown; it was trusted
+// before the cutoff existed, so it stays Strong. `user` (your own pick) has no level.
+const VIA_LEVEL = { both: 0, 'both-alias': 0, url: 1, ctx: 1, cache: 1, name: 2, alias: 2, cred: 3, typo: 3 };
+export const matchLevelOf = via => (via in VIA_LEVEL ? VIA_LEVEL[via] : null);
+const CUTOFF_KEY = 'ch-match-cutoff';
+const CUTOFF_DEFAULT = 1;   // Strong (majkinetor, #771)
+function loadCutoff() {
+    try { const v = GM_getValue(CUTOFF_KEY, CUTOFF_DEFAULT); return Number.isInteger(v) && v >= 0 && v < MATCH_LEVELS.length ? v : CUTOFF_DEFAULT; }
+    catch (e) { return CUTOFF_DEFAULT; }
+}
+function makeLevelDot(level, title) {
+    const dot = document.createElement('span');
+    dot.className = 'ch-level-dot';
+    dot.style.cssText = 'width:11px;height:11px;border-radius:50%;display:inline-block;flex:0 0 auto;border:1px solid rgba(0,0,0,.2);' +
+        `background:${level == null ? 'var(--mbu-border-strong)' : MATCH_LEVELS[level].color};`;
+    dot.title = title || (level == null ? 'Picked by you' : `${MATCH_LEVELS[level].label}: ${MATCH_LEVELS[level].hint}`);
+    return dot;
+}
 
 // #273: one-time spinner keyframes for the background-create placeholder.
 function ensureCreatingStyle() {
@@ -113,6 +132,32 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
         // into the IDB `entity_cache` via `writeIdbRecord`. No separate
         // localStorage layer.
         const rowState = new Map();
+        // #771: the match cutoff. An automatic match below it is shown as the row's first
+        // candidate, not selected. `r._auto` keeps the match as preflight made it, so the row
+        // can switch back and forth when the cutoff changes; `r._below` marks the demoted form.
+        let cutoff = loadCutoff();
+        function applyCutoff(r) {
+            if (!r._auto) {
+                if (r.type !== 'resolved' || !r.mbUrl) return;
+                r._auto = { type: r.type, mbUrl: r.mbUrl, mbName: r.mbName, mbDisambig: r.mbDisambig, logEntry: r.logEntry, nameMatches: r.nameMatches, ambiguityReason: r.ambiguityReason };
+            }
+            const a = r._auto;
+            const via = a.logEntry?.via;
+            const level = matchLevelOf(via);
+            if (level == null || level <= cutoff) {
+                Object.assign(r, { type: a.type, mbUrl: a.mbUrl, mbName: a.mbName, mbDisambig: a.mbDisambig, logEntry: a.logEntry, nameMatches: a.nameMatches, ambiguityReason: a.ambiguityReason });
+                delete r._below;
+                return;
+            }
+            const mbid = (a.mbUrl || '').replace(/.*\//, '').replace(/[^a-f0-9-]/gi, '').substring(0, 36);
+            const name = a.mbName || a.logEntry?.mbName || mbid;
+            const cand = { id: mbid, name, disambiguation: a.mbDisambig || a.logEntry?.mbDisambig || '' };
+            r.type = 'attention'; r.mbUrl = null; r.mbName = null; r.mbDisambig = '';
+            r.nameMatches = [cand, ...(a.nameMatches || []).filter(c => c && c.id !== mbid)];
+            r.ambiguityReason = `below the cutoff: ${VIA_STYLES[via]?.text || via}`;
+            r._below = { via, level, mbid };
+            logDebug(`cutoff: "${r.displayName || r.entity?.name}" → ${name} (${via}, ${MATCH_LEVELS[level].label}) is below ${MATCH_LEVELS[cutoff].label}; offered, not selected`);
+        }
         // Per-entity search input, so the header's "N unresolved" message can
         // focus the first still-unresolved row (#139). Keyed like `rowState`.
         const rowSearchInputs = new Map();
@@ -220,7 +265,8 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
             name:  { text: 'name',     color: 'var(--mbu-accent-text)' },
             alias: { text: 'alias',    color: 'var(--mbu-accent-text)' },   // #613 exact alias of the MB artist (provably unique)
             ctx:   { text: 'context',  color: 'var(--mbu-ok)' },            // #612 a related artist of the release artist
-            cred:  { text: 'co-credit', color: 'var(--mbu-accent-text)' },  // #613 co-credit search (option)
+            cred:  { text: 'co-credit', color: 'var(--mbu-accent-text)' },  // #613 co-credit search
+            typo:  { text: 'similar name', color: 'var(--mbu-accent-text)' },   // #771 ⚛ All: a typo / middle-initial twin of a matched name
             user:  { text: 'user',     color: 'var(--mbu-text-dim)' },
             cache: { text: 'cache',    color: 'var(--mbu-text-dim)' },    // legacy: original mechanism unknown
         };
@@ -404,7 +450,96 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
         headingText.style.cssText = 'font-weight:bold;font-size:1rem;color:var(--mbu-warn);flex:1;';
         headingText.textContent = `Review — ${allResults.length} entit${allResults.length === 1 ? 'y' : 'ies'}`;
         heading.appendChild(headingText);
+        heading.appendChild(buildCutoffChip());   // #771
         panel.appendChild(heading);
+
+        // #771: the Cutoff chip and its menu (Apollo's recordings cutoff, same look).
+        function buildCutoffChip() {
+            const wrap = document.createElement('span');
+            wrap.className = 'ch-cutoff';
+            wrap.title = 'Lowest match confidence still selected automatically; a match below it is offered first on its row';
+            wrap.style.cssText = 'display:inline-flex;align-items:center;gap:0.4rem;font-size:0.8rem;color:var(--mbu-text);flex-shrink:0;';
+            const lbl = document.createElement('b');
+            lbl.textContent = 'Cutoff';
+            const chip = document.createElement('button');
+            chip.type = 'button';
+            chip.className = 'ch-cutoff-chip';
+            chip.style.cssText = 'display:inline-flex;align-items:center;gap:0.35rem;border:1px solid var(--mbu-border);border-radius:14px;padding:2px 10px;background:var(--mbu-bg);color:var(--mbu-text);cursor:pointer;font:inherit;';
+            const paint = () => {
+                chip.replaceChildren(makeLevelDot(cutoff), document.createTextNode(MATCH_LEVELS[cutoff].label));
+                const caret = document.createElement('span');
+                caret.textContent = '▾';
+                caret.style.cssText = 'color:var(--mbu-text-weak);font-size:0.7rem;padding-left:0.2rem;';
+                chip.appendChild(caret);
+            };
+            paint();
+            let menu = null;
+            const close = () => { menu?.remove(); menu = null; document.removeEventListener('mousedown', onDown, true); };
+            // Dismissing on an outside mousedown also swallows the click that follows, so it
+            // doesn't land on whatever was under the pointer.
+            const onDown = ev => {
+                if (menu?.contains(ev.target) || chip.contains(ev.target)) return;
+                close();
+                document.addEventListener('click', e => { e.stopPropagation(); e.preventDefault(); }, { capture: true, once: true });
+            };
+            chip.addEventListener('click', () => {
+                if (menu) { close(); return; }
+                menu = document.createElement('div');
+                menu.className = 'ch-cutoff-menu';
+                const rc = chip.getBoundingClientRect();
+                menu.style.cssText = `position:fixed;z-index:var(--mbu-z-pop);top:${rc.bottom + 4}px;left:${Math.max(8, rc.right - 360)}px;width:360px;max-width:calc(100vw - 16px);box-sizing:border-box;` +
+                    'background:var(--mbu-bg);color:var(--mbu-text);border:1px solid var(--mbu-border);border-radius:7px;box-shadow:var(--mbu-shadow-lg);padding:4px;font-size:0.82rem;';
+                MATCH_LEVELS.forEach((lv, i) => {
+                    const mi = document.createElement('div');
+                    mi.className = 'ch-cutoff-mi';
+                    mi.dataset.level = lv.key;
+                    mi.style.cssText = 'display:flex;align-items:center;gap:0.55rem;padding:5px 10px 5px 8px;border-radius:5px;cursor:pointer;white-space:nowrap;' + (i === cutoff ? 'background:var(--mbu-bg-hover);font-weight:bold;' : '');
+                    const hint = document.createElement('small');
+                    hint.textContent = lv.hint;
+                    hint.style.cssText = 'margin-left:auto;padding-left:1rem;color:var(--mbu-text-weak);font-weight:normal;';
+                    mi.append(makeLevelDot(i), document.createTextNode(lv.label), hint);
+                    mi.addEventListener('mouseenter', () => { if (i !== cutoff) mi.style.background = 'var(--mbu-bg-hover)'; });
+                    mi.addEventListener('mouseleave', () => { if (i !== cutoff) mi.style.background = ''; });
+                    mi.addEventListener('click', () => { close(); setCutoff(i); paint(); });
+                    menu.appendChild(mi);
+                });
+                document.body.appendChild(menu);
+                setTimeout(() => { if (menu) document.addEventListener('mousedown', onDown, true); }, 0);
+            });
+            wrap.append(lbl, chip);
+            return wrap;
+        }
+        // Re-apply the cutoff to every row you haven't touched: a match that falls below it is
+        // unselected and offered first, one that rises above it is selected again.
+        function setCutoff(i) {
+            if (i === cutoff) return;
+            const from = cutoff;
+            cutoff = i;
+            try { GM_setValue(CUTOFF_KEY, i); } catch (e) { /* no storage: this page only */ }
+            let changed = 0, kept = 0;
+            for (const r of [...allResults]) {
+                if (!r._auto) continue;
+                const key = keyOf(r);
+                const st = rowState.get(key);
+                const untouched = r._below ? (!st?.confirmed && !st?.mbUrl) : (!!st?.mbUrl && st.via !== 'user');
+                const wasBelow = !!r._below;
+                if (!untouched) {
+                    if ((matchLevelOf(r._auto.logEntry?.via) > cutoff) !== wasBelow) kept++;
+                    continue;
+                }
+                applyCutoff(r);
+                if (wasBelow === !!r._below) continue;
+                const tr = tbody.querySelector(`tr[data-entity-key="${CSS.escape(key)}"]`);
+                if (!tr) continue;
+                if (r._credInput?._activeMbUrl) creditOverrides.delete(r._credInput._activeMbUrl);
+                buildRow(r, tr);
+                tr.remove();
+                changed++;
+            }
+            log.info(`Match cutoff: ${MATCH_LEVELS[from].label} → ${MATCH_LEVELS[cutoff].label}; ${changed} row${changed === 1 ? '' : 's'} changed` + (kept ? `, ${kept} you already set left as they are` : ''));
+            updateLinksBadge();
+            updateImportBtn();
+        }
 
         const intro = document.createElement('p');
         intro.style.cssText = 'margin:0 0 0.75rem;font-size:0.85rem;color:var(--mbu-text-dim);';
@@ -418,7 +553,8 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
             // can never win against a rule aimed at the element itself.
             '<span style="background:var(--mbu-error-bg);color:var(--mbu-text);padding:0 0.3rem;border-radius:2px;">Red rows</span> need attention. ' +
             '<span style="background:var(--mbu-warn-bg);color:var(--mbu-text);padding:0 0.3rem;border-radius:2px;">Yellow rows</span> have a name mismatch — verify. ' +
-            'Green rows are confirmed. Use the search or create buttons to resolve outstanding issues.';
+            'Green rows are confirmed. Use the search or create buttons to resolve outstanding issues. ' +
+            'A dot shows how sure an automatic match is; <b>Cutoff</b> sets the lowest one selected for you.';   // #771
         panel.appendChild(intro);
 
         // ── Table ──────────────────────────────────────────────────────────────
@@ -485,6 +621,7 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
             rowState.delete(origKey); rowSearchInputs.delete(origKey); linkState.delete(origKey);
             if (entitySources?.has(origKey)) subs.forEach(s => entitySources.set(keyOf(s), entitySources.get(origKey)));
             allResults.splice(idx, 1, ...subs);
+            subs.forEach(applyCutoff);   // #771
             subs.forEach(s => buildRow(s, tr));
             tr.remove();
             splits.set(origKey, subs.map(s => ({ key: keyOf(s), name: s.displayName })));
@@ -493,6 +630,11 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
             updateImportBtn();
         }
 
+        allResults.forEach(applyCutoff);   // #771
+        {
+            const n = allResults.filter(r => r._below).length;
+            log.info(`Match cutoff: ${MATCH_LEVELS[cutoff].label}${n ? ` — ${n} automatic match${n === 1 ? '' : 'es'} below it left for you` : ''}`);
+        }
         allResults.forEach(r => buildRow(r));
 
         function buildRow(r, beforeEl) {
@@ -1168,6 +1310,7 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
                 undoBtn.title = 'Clear selection';
                 undoBtn.style.cssText = 'font-size:0.75rem;cursor:pointer;padding:0 0.3rem;margin-left:auto;';
                 undoBtn.addEventListener('click', () => setRowUnresolved());
+                selRow.appendChild(makeLevelDot(null));   // #771: your pick
                 selRow.appendChild(selA);
                 // User picked via the dropdown \u2014 always badge as `user`,
                 // never `(cache)` (this is a fresh pick).
@@ -1763,6 +1906,8 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
                 selBtn.style.cssText = 'font-size:0.95rem;line-height:1;cursor:pointer;padding:0.1rem 0.45rem;white-space:nowrap;border:1px solid var(--mbu-border);border-radius:0.25rem;background:var(--mbu-ok-bg);color:var(--mbu-ok);font-weight:600;flex-shrink:0;';
                 selBtn.addEventListener('click', () => setRowResolved(a));
                 row.appendChild(selBtn);
+                const below = r._below && r._below.mbid === a.id ? r._below : null;   // #771
+                if (below) row.appendChild(makeLevelDot(below.level));
 
                 const info = document.createElement('span');
                 info.style.flex = '1';
@@ -1777,6 +1922,13 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
                     d.style.cssText = 'color:var(--mbu-text-dim);margin-left:0.25rem;';
                     d.textContent = `(${a.disambiguation})`;
                     info.appendChild(d);
+                }
+                if (below) {
+                    const pill = document.createElement('span');
+                    pill.textContent = `below cutoff: ${VIA_STYLES[below.via]?.text || below.via}`;
+                    pill.title = `Matched automatically (${MATCH_LEVELS[below.level].label}: ${MATCH_LEVELS[below.level].hint}), below the cutoff (${MATCH_LEVELS[cutoff].label}), so not selected. ✓ selects it.`;
+                    pill.style.cssText = 'font-size:0.68rem;color:var(--mbu-warn);background:var(--mbu-warn-bg);border:1px solid var(--mbu-warn);border-radius:8px;padding:0 0.35rem;margin-left:0.35rem;white-space:nowrap;';
+                    info.appendChild(pill);
                 }
                 row.appendChild(info);
                 // Preview THIS candidate's existing MB roles before picking it.
@@ -1886,6 +2038,7 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
                 undoBtn.title = 'Clear selection';
                 undoBtn.style.cssText = 'font-size:0.75rem;cursor:pointer;padding:0 0.3rem;margin-left:auto;';
                 undoBtn.addEventListener('click', () => setRowUnresolved());
+                selRow.appendChild(makeLevelDot(matchLevelOf(r.logEntry?.via)));   // #771
                 selRow.appendChild(selA);
                 // `via` badge — `name`, `url`, `both`, or `cache`, with a
                 // `(cache)` suffix when the resolution came from IDB.
@@ -2107,6 +2260,14 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
             // overrides each rel's `entity1_credit` when present.
             confirmedMap.creditOverrides = creditOverrides;
             confirmedMap.splits = splits;   // #605
+            // #771: the matches used, by level, for the edit note
+            const matchCounts = { levels: MATCH_LEVELS.map(() => 0), user: 0, cutoff: MATCH_LEVELS[cutoff].label };
+            rowState.forEach(st => {
+                if (!st.mbUrl) return;
+                const lv = st.via === 'user' ? null : matchLevelOf(st.via);
+                if (lv == null) matchCounts.user++; else matchCounts.levels[lv]++;
+            });
+            confirmedMap.matchCounts = matchCounts;
             (panelLi || panel).remove();
             if (headerSlot) headerSlot.replaceChildren();   // #139: clear the header action slot once dispatch starts
             resolve(confirmedMap);

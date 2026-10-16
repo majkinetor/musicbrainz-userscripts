@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-10-16 20:02 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-10-16 20:22 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -503,7 +503,7 @@ It appears on a release's **Edit relationships** page when there's something to 
 ### Features
 
 - **[Import bar](#import-bar)**: pick a [source](#providers) and the import options.
-- **[Review table](#review-table)**: confirm each credited name's MusicBrainz match, with automatic matching, search and entity creation.
+- **[Review table](#review-table)**: confirm each credited name's MusicBrainz match, with automatic matching, a [confidence cutoff](#match-cutoff), search and entity creation.
 - **[Consolidated import](#consolidated-import)** of every source at once, de-duplicated.
 - **[Instant Fill](#instant-fill)** writes the confirmed relationships into the editor in one pass.
 - **[Diagnostics](#diagnostics)**: a log of every step, to copy into an issue.
@@ -536,7 +536,7 @@ One row per credited entity:
 | ⚪   | matched automatically                              |
 | 🟢   | picked by you                                      |
 | 🟡   | matched by URL, but the names differ; worth a look |
-| 🔴   | unresolved                                         |
+| 🔴   | unresolved, or matched below the cutoff            |
 
 For sources that give an artist URL (Discogs, Tidal, Metal Archives), a chip shows it: ✓ already linked in MusicBrainz, 🔗 add it (opens the edit page prefilled), ⚠ linked to a different entity.
 
@@ -545,9 +545,22 @@ For sources that give an artist URL (Discogs, Tidal, Metal Archives), a chip sho
 1. **Source URL**: the artist is linked to that URL in MusicBrainz. When it also carries the credited name, as its name or an alias, the row says `name+url` or `alias+url`; otherwise just `url`, and **+ alias** is offered.
 2. **Release context**: one of the release artist's related artists (band members, collaborators) carries the name or alias. So *George Harrison* on a Beatles release, although MusicBrainz has several.
 3. **Exact name or alias**, when exactly one MusicBrainz artist carries it (*Don Abi* → *Abiodun*). A common name like *Kim* can't be proven unique and is left for you, with the reason on the row.
-4. **Co-credit**: a recording that credits the name alongside the release artist (*Options › Matching*, on by default).
+4. **Co-credit**: a recording that credits the name alongside the release artist.
 
 When name and URL disagree, the row is left for you. Each match is cached with how it was made (`url`, `name+url`, `alias+url`, `context`, `name`, `alias`, `co-credit`, `user`); adding an alias with **+ alias** updates it. **🔄 Refresh from MB** re-matches rows cached before a change. A bare name's match is kept for this release only. 🔄 clears the cache and matches again.
+
+#### Match cutoff
+
+Each automatic match has a dot saying how sure it is:
+
+| Dot | Confidence  | Match                                                       |
+| :-: | ----------- | ----------------------------------------------------------- |
+|  🔵  | Exact       | `name+url`, `alias+url`                                     |
+|  🟢  | Strong      | `url`, `context`                                            |
+|  🟡  | Unique name | `name`, `alias`; a label or place by its exact name         |
+|  🟠  | Weak        | `co-credit`, `similar name` ([⚛ All](#consolidated-import)) |
+
+**Cutoff** in the table's header sets the lowest confidence selected for you; it starts at *Strong*. A match below it stays on its row as the first candidate, marked *below cutoff*, and ✓ takes it. Changing the cutoff applies at once to every row you haven't changed yourself. Your own picks have a grey dot.
 
 On a row:
 
@@ -564,7 +577,8 @@ On a row:
 
 <img width="1000" src="../credit_hoarder/screenshots/multi.png" />
 
-- Identical credits merge before matching; rows that resolve to the same entity merge after. An unresolved name that is a close typo of a uniquely resolved one joins it (*Mark Barott* → *Mark Barrott*); short names and ambiguous typos don't.
+- Identical credits merge before matching; rows that resolve to the same entity merge after.
+- An unresolved name that is a close typo of a uniquely resolved one (*Mark Barott* → *Mark Barrott*), or differs from it only by a middle initial, is matched to it on its own row as a `similar name` match, which is [Weak](#match-cutoff). Short names and ambiguous typos aren't.
 - The **source** column shows each provider that credited the row: coloured when it gave an artist URL (click to open it), grey when only a name.
 - 🔗 adds every provider's URL at once, and a new artist is created with all of them.
 - The edit note names the sources: `Source: Import all (Tidal, Qobuz, Deezer)`.
@@ -573,7 +587,7 @@ On a row:
 
 Adds the confirmed relationships to the editor without dialogs: release-level (labels, places, companies, artists), per track (instruments, vocals, engineers…) and per work (composer, lyricist, writer). A relationship that already exists, or was added earlier in the session, is skipped.
 
-The edit note carries the statistics, one block per source when several ran. What an earlier source already added is reported as *already added this session*, not as *already in MB*.
+The edit note carries the statistics, one block per source when several ran, including how the entities used were matched: *Matched: 9 exact, 4 strong, 1 by you (cutoff: strong)*. What an earlier source already added is reported as *already added this session*, not as *already in MB*.
 
 ### Providers
 

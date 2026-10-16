@@ -172,12 +172,16 @@ export function mergeResolvedResults(allResults, entitySources) {
         if (!fn) return null;                                     // no name → never group
         const set = nameMbids.get(kn);
         if (set && set.size === 1) return 'mb:' + [...set][0];   // unresolved → its unique resolved twin
+        // #771: a near twin (middle initials, a typo) is a guess, so the row is no longer folded
+        // into the twin: it keeps its own row, matched to the twin as `typo`, a Weak match the
+        // review table's cutoff can leave unselected.
+        let near = null;
         if (!set) {                                               // #415: twin differs only by middle initials
             const stripped = nameMbidsStripped.get(_resultKind(r) + '|' + stripInitials(fn));
-            if (stripped && stripped.size === 1) return 'mb:' + [...stripped][0];
+            if (stripped && stripped.size === 1) near = [...stripped][0];
         }
-        const fuzzy = fuzzyResolvedMatch(kn);                    // unresolved → typo of a unique resolved twin
-        if (fuzzy) return 'mb:' + fuzzy;
+        if (!near) near = fuzzyResolvedMatch(kn);                // unresolved → typo of a unique resolved twin
+        if (near) r._nearTwin = near;
         return 'nm:' + kn;                                        // same-kind same-name, none resolved → group
     };
     const byKey = new Map(), mergeMap = new Map(), out = [];
@@ -198,6 +202,17 @@ export function mergeResolvedResults(allResults, entitySources) {
         rep._roles = (rep._roles || []).concat((r._roles || []).filter(ro => { const k = _roleKey(ro); if (seen.has(k)) return false; seen.add(k); return true; }));
         if (entitySources) { const u = new Set(entitySources.get(repKey) || []); (entitySources.get(rk) || []).forEach(s => u.add(s)); entitySources.set(repKey, [...u]); }
         mergeMap.get(repKey).push(rk);
+    }
+    // #771: an unresolved row with a near twin takes the twin's match, marked `typo`.
+    const resolvedByUrl = new Map(rows.filter(r => r.type === 'resolved' && r.mbUrl).map(r => [r.mbUrl, r]));
+    for (const rep of out) {
+        const twin = rep._nearTwin && rep.type !== 'resolved' && resolvedByUrl.get(rep._nearTwin);
+        delete rep._nearTwin;
+        if (!twin) continue;
+        const name = _resultName(rep);
+        rep.type = 'resolved'; rep.mbUrl = twin.mbUrl; rep.mbName = twin.mbName; rep.mbDisambig = twin.mbDisambig;
+        rep.entityType = twin.entityType || rep.entityType;
+        rep.logEntry = { displayName: rep.displayName || name, discogsHref: rep.discogsHref || '', mbUrl: twin.mbUrl, mbName: twin.mbName, mbDisambig: twin.mbDisambig || '', via: 'typo', fromCache: false };
     }
     // #415: finalize the conflict rows — one ATTENTION row per disagreeing name, its candidate
     // list = the distinct MB artists the sources resolved to (any original search candidates
