@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         ISRC Scout
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.16
+// @version      2026.10.16.164606
 // @description  Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify / Beatport / Tidal / Volumo / HDtracks / Qobuz, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPklTUkMgU2NvdXQ8L3RpdGxlPgogICAgPHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPgogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjQwIi8+CiAgICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyNiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2U9IiNiOWEzZTgiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPgogIDwvZz4KICA8bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+Cjwvc3ZnPgo=
@@ -621,6 +621,15 @@
     return String(raw || '').toUpperCase().replace(/[\s\-]/g, '');
   }
   function isValidIsrc(s) { return ISRC_RE.test(normalizeIsrc(s)); }
+  // #766: an ISRC shown as CC-XXX-YY-NNNNN (country, registrant, year, designation), the dashes
+  // drawn by CSS so a copy, and textContent, stay the plain code. A shared setting (on unless
+  // turned off here): Mission Control shows its ISRCs the same way.
+  function isrcFormatOn() { return mbuShared('isrcFormat') !== false; }
+  function isrcHtml(code) {
+    const c = normalizeIsrc(code);
+    if (!isrcFormatOn() || !ISRC_RE.test(c)) return esc(code);
+    return '<span class="ii-isrcf"><span>' + c.slice(0, 2) + '</span><span>' + c.slice(2, 5) + '</span><span>' + c.slice(5, 7) + '</span><span>' + c.slice(7) + '</span></span>';
+  }
   function sleep(ms) {
     return new Promise(resolve => {
       try { _setTimeout(resolve, ms); }
@@ -2079,6 +2088,7 @@
     .ii-sx-hover:hover { opacity: 1 !important; color: var(--mbu-text); }
     /* the × lives INSIDE the input box (part of the edit), so it doesn't shift the
        row layout / SX text alignment */
+    .ii-isrcf > span:not(:last-child)::after { content: '-'; opacity: .45; }
     .ii-input-box { position: relative; flex-shrink: 0; width: 150px; }
     .ii-input { width: 100%; box-sizing: border-box; padding: 4px 22px 4px 7px; border: 1px solid var(--mbu-border); border-radius: 4px;
       font-family: 'Courier New', monospace; font-size: 12.5px; font-weight: 700; letter-spacing: .5px; text-transform: uppercase; }
@@ -3080,7 +3090,7 @@
     const p = [];
     if (l.at === 'here') p.push('<span class="ii-all-at" title="' + esc(allAtText(l)) + '">📍</span>');
     else if (l.at) p.push('<span class="ii-all-at" title="' + esc(allAtText(l)) + '">↪ ' + esc(l.at) + '</span>');
-    if (l.isrc && l.isrc !== isrc) p.push('<span class="ii-all-isrc">' + esc(l.isrc) + '</span>');
+    if (l.isrc && l.isrc !== isrc) p.push('<span class="ii-all-isrc">' + isrcHtml(l.isrc) + '</span>');
     if (l.song && l.song.title) p.push(esc('"' + l.song.title + '"' + (l.song.artist ? ' — ' + l.song.artist : '')));   // the length has its own column
     if (l.note) p.push('<span class="ii-all-sub">' + esc(l.note) + '</span>');
     return p.join(' ');
@@ -3212,7 +3222,7 @@
         esc((i === res.isrc ? 'the row’s ISRC' : asked.includes(i) ? 'another ISRC the recording has' : 'another ISRC a provider has for this track') +
           ' — ' + count(i) + ' provider(s) have it for this track; click to show ' + (asked.includes(i) ? 'what each provider says about it' : 'only those providers') +
           (i === pop._sel && !asked.includes(i) ? ' (click again for all)' : '')) + '">' +
-        esc(i) + ' <span class="ii-all-n">' + count(i) + '</span></button>').join('') +
+        isrcHtml(i) + ' <span class="ii-all-n">' + count(i) + '</span></button>').join('') +
       '<span class="ii-all-sp"></span><button type="button" class="ii-all-copy" title="Copy this comparison as Markdown">copy</button></div>' +
       res.lines.map((l, i) => !allLineShown(l, pop, res) ? '' :
         '<div class="ii-all-line ii-all-' + l.state + '"><span class="ii-all-mark">' + ALL_MARK[l.state] + '</span><span class="ii-all-ico">' + icon(l.key) + '</span>' +
@@ -4392,6 +4402,13 @@
         </div>
         <div style="margin-top:12px">
           <label style="display:inline-flex; align-items:flex-start; gap:6px; font-size:12px; cursor:pointer">
+            <input type="checkbox" id="ii-isrc-format" style="margin-top:2px">
+            <span>Show ISRCs in parts<br>
+              <span style="color:var(--mbu-text-weak); font-size:11px">CC-XXX-YY-NNNNN: country, registrant, year, number. A copy is still the plain code, and Mission Control shows its ISRCs the same way. The ISRC you type stays plain.</span></span>
+          </label>
+        </div>
+        <div style="margin-top:12px">
+          <label style="display:inline-flex; align-items:flex-start; gap:6px; font-size:12px; cursor:pointer">
             <input type="checkbox" id="ii-rg-providers" style="margin-top:2px">
             <span>Use providers from the whole release group<br>
               <span style="color:var(--mbu-text-weak); font-size:11px">Fill missing Deezer / Tidal / Bandcamp / … album links from sibling releases in the release group — recordings are shared, so a link on any edition resolves here. Costs one extra lookup.</span></span>
@@ -4695,6 +4712,16 @@
         store.set('track_data', cbTd.checked);
         showTrackData();
         Log.info('ISRCs and links on the tracklist: ' + (cbTd.checked ? 'on' : 'off'));
+      });
+    }
+    // #766: ISRCs in parts, a shared setting Mission Control reads too
+    const cbFmt = modal.querySelector('#ii-isrc-format');
+    if (cbFmt) {
+      cbFmt.checked = isrcFormatOn();
+      cbFmt.addEventListener('change', () => {
+        mbuShared('isrcFormat', cbFmt.checked);
+        Log.info('ISRCs in parts: ' + (cbFmt.checked ? 'on' : 'off') + ' (shown so from the next repaint)');
+        showTrackData();
       });
     }
 
@@ -6271,7 +6298,7 @@
            it is still open, applied, cancelled or voted down is MusicBrainz's to
            say, and we don't ask (his call — no extra requests). The link is where
            to go and look; it costs us nothing. */
-        const inner = '⏳ <samp>' + esc(i) + '</samp>';
+        const inner = '⏳ <samp>' + isrcHtml(i) + '</samp>';
         const tip = 'Remove-ISRC edit submitted in this session — MusicBrainz decides what happens to it. Click to see this recording’s open edits.';
         return recId
           ? '<a class="ii-ex-item ii-ex-pending" href="' + MB_ROOT + '/recording/' + esc(recId) + '/open_edits" target="_blank" rel="noopener" title="' + tip + '">' + inner + '</a>'
@@ -6281,7 +6308,7 @@
       return '<label class="ii-ex-item' + (isBad ? ' ii-ex-failed' : '') + '" title="'
         + (isBad ? 'Remove-ISRC edit failed to submit — see the Log, then check it again to retry' : 'Check to delete this ISRC from the recording') + '">' +
         '<input type="checkbox" class="ii-ex-del" data-isrc="' + esc(i) + '">' +
-        '<samp>' + esc(i) + '</samp></label>';
+        '<samp>' + isrcHtml(i) + '</samp></label>';
     }).join('');
   }
   function rowInput(idx) {
@@ -6731,7 +6758,7 @@
       c.dataset.isrc = normalizeIsrc(f.isrc);
       c.title = relInfo ? 'Appears on: ' + relInfo : '';
       c.innerHTML =
-        '<span class="ii-cand-isrc">' + esc(f.isrc) + '</span>' +
+        '<span class="ii-cand-isrc">' + isrcHtml(f.isrc) + '</span>' +
         '<span class="ii-cand-meta">' + sxMetaHtml(f, t) +
           (relInfo ? '  ·  ' + esc(relInfo) : '') + '</span>' +
         (inMb ? '<span class="ii-cand-inmb">✓ IN MB</span>' : '<span class="ii-cand-src">SX</span>');
@@ -6918,7 +6945,7 @@
       const row = document.createElement('div');
       row.className = 'ii-sxp-row' + (cur ? ' cur' : cls === 'best' ? ' best' : cls === 'warn' ? ' warn' : ' bad');
       row.innerHTML =
-        '<span class="ii-sxp-isrc">' + esc(f.isrc) + '</span>' +
+        '<span class="ii-sxp-isrc">' + isrcHtml(f.isrc) + '</span>' +
         '<span class="ii-sxp-meta"><span class="a">' + sxMetaHtml(f, t) + '</span>' +
           (rel ? '<span class="b">' + esc(rel) + '</span>' : '') + '</span>' +
         (inMb ? '<span class="ii-sxp-inmb">✓ IN MB</span>' : '');
@@ -7898,7 +7925,7 @@
   function trackDataEnabled() { return !!store.get('track_data', true); }
   var _tdObs = null, _tdQueued = false;
   function trackDataCells(t) {
-    const isrcs = t ? t.existing.map(c => '<a class="ii-trk-isrc" href="/isrc/' + esc(c) + '">' + esc(c) + '</a>').join('') : '';
+    const isrcs = t ? t.existing.map(c => '<a class="ii-trk-isrc" href="/isrc/' + esc(c) + '">' + isrcHtml(c) + '</a>').join('') : '';
     // one icon per platform: a recording with several links on one platform (versions, regions)
     // gets a count beside it, its tooltip lists them all, and a click opens the first live one
     const groups = new Map();

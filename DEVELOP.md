@@ -148,6 +148,7 @@ Most settings belong to one script and live in its GM storage, which no other sc
 | Key | Values | What reads it | Set by |
 | --- | --- | --- | --- |
 | `cornerFlow` | `"row"`; unset is a column | `mbRestackCorner`: the corner launchers' layout | String Theory's menu |
+| `isrcFormat` | `false`; unset is on | ISRC Scout and Mission Control: ISRCs shown as `CC-XXX-YY-NNNNN` | ISRC Scout's *Show ISRCs in parts* |
 | `extLinksHeading.<lang>` | the release's "External links" heading in that language | `mbpReleaseLinkList`: tells the release's links from the release group's when the page shows one list | learnt by `mbpReleaseLinkList` on a release page that shows both |
 
 A new shared setting gets a row here.

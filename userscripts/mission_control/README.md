@@ -45,7 +45,7 @@ The album links you select in the Release and entity links card are passed on to
 
 ## Tracks
 
-One row per track, a column per script: the ISRCs and recording links ISRC Scout found, the duplicates Fusion grouped with the recording, and how many credits Credit Hoarder has.
+One row per track, a column per script: the ISRCs and recording links ISRC Scout found, the duplicates Fusion grouped with the recording, and how many credits Credit Hoarder has. ISRCs are shown in parts, `US-AM1-85-74817`, unless ISRC Scout's *Show ISRCs in parts* is off.
 
 The Tracks header counts the changes taken in and on how many tracks; each track with one has a bar on its left.
 

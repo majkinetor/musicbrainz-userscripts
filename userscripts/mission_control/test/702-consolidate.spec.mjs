@@ -98,6 +98,9 @@ test.describe('the consolidation page', () => {
     const m = await page.evaluate(() => { const m = window.__mccTest.model(); return { title: m.fields.title.win.val, rows: m.tracks.rows.length, differ: m.tracks.rows.filter(r => r.versions.length > 1).length, barcode: m.fields.barcode.win && m.fields.barcode.win.show }; });
     check(m.title === 'Discovery' && m.rows === 14, `title and tracklist: "${m.title}", ${m.rows} rows (${m.differ} differ)`);
     check(/724384960650$/.test(m.barcode || ''), `barcode: ${m.barcode}`);
+    // #766: ISRCs as ISRC Scout shows them, CC-XXX-YY-NNNNN, the dashes CSS (a copy is the plain code)
+    const isrc = await page.evaluate(() => { const td = [...document.querySelectorAll('#mcc-root tr.row td.isrc')].find(x => x.querySelector('.mc-isrcf')); return td && { text: td.textContent, shown: [...td.querySelectorAll('.mc-isrcf > span')].map(p => p.textContent + getComputedStyle(p, '::after').content.replace(/^none$/, '').replace(/"/g, '')).join('') }; });
+    check(isrc && /^[A-Z]{2}[A-Z0-9]{3}\d{7}$/.test(isrc.text) && /^[A-Z]{2}-[A-Z0-9]{3}-\d{2}-\d{5}$/.test(isrc.shown), `the Tracks table shows ISRCs in parts (${JSON.stringify(isrc)})`);
     // a row that differs opens into its versions; a click on another takes it
     const row = page.locator('#mcc-root tr.row:has(.mcc-chip.warn)').first();
     if (await row.count()) {
