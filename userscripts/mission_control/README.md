@@ -17,7 +17,7 @@ One window on a release page that asks the other scripts what the release is mis
 - **[Probe](#probe)**: one click asks every script what is missing, and each card fills in as its answer comes.
 - **[Tracks](#tracks)**: a row per track with its ISRCs, recording links, duplicate recordings and credits.
 - **[Release and entity links](#release-and-entity-links)**: the platform pages found for the release, its artists and its labels.
-- **[Cover art](#cover-art)**: the best cover found, beside the current front.
+- **[Cover art](#cover-art)**: the best cover found, beside the current front, and the other images Discogs and Amazon have, to type and add.
 - **[Release credits](#release-credits)**: what the credit sources have, with a way into Credit Hoarder.
 - **[Inspector](#inspector)**: everything found for one track.
 - **[Execute](#execute)**: applies what you selected, script by script, in a fixed order.
@@ -33,7 +33,7 @@ Open Mission Control with its icon in the bottom-right corner of a release page.
 | ------------------------ | --------------------------------------------- | ------------------------------------------------------ |
 | Release and entity links | [Platform Check](../platform_check/README.md) | platform pages for the release, its artists and labels |
 | ISRCs & recording links  | [ISRC Scout](../isrc_scout/README.md)         | ISRCs and track links                                  |
-| Cover art                | [Art Station](../art_station/README.md)       | a better front cover                                   |
+| Cover art                | [Art Station](../art_station/README.md)       | a better front cover, and the stores' other images     |
 | Merge suggestions        | [Fusion](../fusion/README.md)                 | duplicate recordings in the release group              |
 | Credits                  | [Credit Hoarder](../credit_hoarder/README.md) | per-track credits                                      |
 
@@ -89,6 +89,19 @@ The links are added through [Falcon](../falcon/README.md), out of sight. The car
 Art Station looks for the largest cover on the platforms the release links, and on the album links taken in under *Release and entity links*, which Execute adds first: take one in or leave it out and it looks again. It shows the best cover beside the current front, with each one's size. What Execute will do is written under it: enter it as the front and remove the current one, add it beside the current fronts, or nothing when the front already is that cover.
 
 Each platform searched shows how large its own cover is on the right, or *no cover*; click the size to open that cover. A release without a front cover starts with the cover taken in. Click either image to see both full screen, with **←** **→** between them.
+
+### More images
+
+Discogs and Amazon have every image of a release: the back, the medium, the booklet. Under the front, **More images** shows the others, a row for each store (the one with the larger images first):
+
+- Right-click an image to take it in, and again to leave it out; right-drag across several to do the same to each. **take all in** beside a store takes in all its images, then says **leave all out**. Nothing starts taken in.
+- Click an image to see it full screen, with **←** **→** to the others. **Enter** there writes its comment, and **Enter** again goes to the next image's; **Esc** stops writing.
+- Click its type pill (*＋ type*) to tick its types; right-click a type to set only that one. The stores don't say what an image is, so nothing starts typed. Setting a type takes the image in.
+- ✎, on the left when you point at an image, adds a comment. **Enter** moves to the next image's comment.
+
+An image that is the same picture as a cover the release already has says *in archive*, even one just entered; one that is the same as the best front or as a larger image says which (*= Amazon 1*). They can still be taken in.
+
+Execute enters the images taken in after the front, with their types and comments, in the same edit. Those it entered show *entered*. With only these taken in, the front is left out. An image MusicBrainz didn't take shows its error on the card, with **Retry**.
 
 An upload that fails is repeated as Art Station's [auto-repeat](../art_station/README.md#applying-changes) setting says, and the card shows each attempt.
 
@@ -151,10 +164,14 @@ Nothing the release has is changed: a label with another catalog number keeps it
 
 ## Shortcuts
 
-| Key         | Where               |                                                        |
-| ----------- | ------------------- | ------------------------------------------------------ |
-| right-click | a link in a row     | take it in or leave it out, instead of opening it      |
-| Ctrl / Alt  | a click in Tracks   | the whole track / the whole column ([Tracks](#tracks)) |
-| drag        | ISRCs or duplicates | take in or leave out every one you pass                |
-| ← →         | a cover full screen | the other cover                                        |
-| right-click | the corner icon     | settings                                               |
+| Key         | Where                |                                                        |
+| ----------- | -------------------- | ------------------------------------------------------ |
+| right-click | a link in a row      | take it in or leave it out, instead of opening it      |
+| Ctrl / Alt  | a click in Tracks    | the whole track / the whole column ([Tracks](#tracks)) |
+| drag        | ISRCs or duplicates  | take in or leave out every one you pass                |
+| ← →         | a cover full screen  | the other cover                                        |
+| right-click | one of More images   | take it in or leave it out; right-drag: each you pass  |
+| right-click | a type in the list   | that type only                                         |
+| Enter       | an image's comment   | the next image's comment                               |
+| Enter       | an image full screen | write its comment                                      |
+| right-click | the corner icon      | settings                                               |
