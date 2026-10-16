@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Fusion
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.16
+// @version      2026.10.16.170419
 // @description  Merge-recordings assistant for MusicBrainz: gather a pool of candidate recordings from a release / release group / recording page (or paste any MBID/URL), auto-match them into merge groups by ISRC / AcoustID / length / title+artist, review and adjust the groups, then submit the merges directly in the background — no MB merge page involved.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPkZ1c2lvbjwvdGl0bGU+CiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjYTE4NGY4IiBzdHJva2Utd2lkdGg9IjUuNSI+CiAgICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSI2NCIgcng9IjUyIiByeT0iMjIiLz4KICAgIDxlbGxpcHNlIGN4PSI2NCIgY3k9IjY0IiByeD0iNTIiIHJ5PSIyMiIgdHJhbnNmb3JtPSJyb3RhdGUoNjAgNjQgNjQpIi8+CiAgICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSI2NCIgcng9IjUyIiByeT0iMjIiIHRyYW5zZm9ybT0icm90YXRlKDEyMCA2NCA2NCkiLz4KICA8L2c+CiAgPGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iMTEiIGZpbGw9IiM3YzRkZmYiLz4KPC9zdmc+Cg==
@@ -1006,9 +1006,13 @@ function computeGroupConfidence(members) {
         if (sig.title) signals.add('title');
         if (sig.artist) signals.add('artist');
         SIGNAL_KEYS.forEach(k => { if (!sig[k]) all.delete(k); });   // drop any pair disagrees on
-        if (!confidence && shouldUnion(sig, SETTINGS.matchCutoff)) confidence = 'medium';
     }
-    return { confidence: confidence || 'manual', tier: groupTier(members), signals: [...signals], signalsAll: [...all] };
+    // Without a shared identifier, a group is medium when some cutoff would form it, whatever the
+    // cutoff picked now: judged by SETTINGS.matchCutoff, a group Match formed at "normal" read as
+    // manual once the default became "strict", and changed label with the setting.
+    const tier = groupTier(members);
+    if (!confidence && tier !== 'manual') confidence = 'medium';
+    return { confidence: confidence || 'manual', tier, signals: [...signals], signalsAll: [...all] };
 }
 function refreshGroupMeta(g) {
     const members = g.memberGids.map(x => STATE.recordings.get(x)).filter(Boolean);
