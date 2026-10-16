@@ -55,9 +55,11 @@ test('in German, uploads keep Front and Back and the gallery reads types, not co
     check(cards.some(c => /^Front\b/.test(c.type)) && !cards.some(c => /Vorderseite|Rückseite/.test(c.type)), 'Vorderseite reads as Front');
     check(!cards.some(c => /Typen/.test(c.cmt)), 'no comment holds the types line');
 
-    // a comment edit keeps the cover's types
-    await page.locator('#as-root .as-card').first().hover();
-    await page.locator('#as-root .as-card .as-pencil, #as-root .as-card .as-cmt-text').first().click();
+    // a comment edit keeps the cover's types: on a Front cover, wherever it is (the gallery lists the
+    // newest first, and other specs upload to this release)
+    const front = page.locator('#as-root .as-card').filter({ has: page.locator('.as-type:not(.as-type-add)', { hasText: /^Front\b/ }) }).first();
+    await front.hover();
+    await front.locator('.as-pencil, .as-cmt-text').first().click();
     await page.keyboard.type(' 721');
     await page.keyboard.press('Escape');
     await until(() => page.evaluate(() => !document.querySelector('.as-commit')?.disabled), Boolean);
