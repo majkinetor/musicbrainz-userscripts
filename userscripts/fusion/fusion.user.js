@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Fusion
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.16.170419
+// @version      2026.10.16.185136
 // @description  Merge-recordings assistant for MusicBrainz: gather a pool of candidate recordings from a release / release group / recording page (or paste any MBID/URL), auto-match them into merge groups by ISRC / AcoustID / length / title+artist, review and adjust the groups, then submit the merges directly in the background — no MB merge page involved.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPkZ1c2lvbjwvdGl0bGU+CiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjYTE4NGY4IiBzdHJva2Utd2lkdGg9IjUuNSI+CiAgICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSI2NCIgcng9IjUyIiByeT0iMjIiLz4KICAgIDxlbGxpcHNlIGN4PSI2NCIgY3k9IjY0IiByeD0iNTIiIHJ5PSIyMiIgdHJhbnNmb3JtPSJyb3RhdGUoNjAgNjQgNjQpIi8+CiAgICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSI2NCIgcng9IjUyIiByeT0iMjIiIHRyYW5zZm9ybT0icm90YXRlKDEyMCA2NCA2NCkiLz4KICA8L2c+CiAgPGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iMTEiIGZpbGw9IiM3YzRkZmYiLz4KPC9zdmc+Cg==
@@ -1291,6 +1291,45 @@ async function enrichAcoustIdsNow(recs, concurrency, onProgress) {
     const checked = pending.length - failed.reduce((a, s) => a + s.length, 0);
     Log.info('AcoustID lookup: ' + found + ' of ' + checked + ' checked recording(s) have an AcoustID'
         + (checked < pending.length ? ' (' + (pending.length - checked) + ' could not be checked)' : ''));
+}
+// #762 (chaban-mb): "once I got to AcoustID page and remove bad links there I'd like to get
+// fresh AcoustID data in current Fusion session without having to reload whole page. Then it
+// can reevaluate matches." Asks acoustid.org again for one group's members and recomputes the
+// group's signals. A member's AcoustIDs are replaced only when its answer arrives: a failed
+// lookup keeps what was known rather than claiming "none". Membership is left alone; the
+// chips and tints show what no longer holds, and the user decides.
+async function refreshGroupAcoustIds(g) {
+    if (!g || g.acRefreshing) return;
+    const members = g.memberGids.map(x => STATE.recordings.get(x)).filter(Boolean);
+    if (!members.length) return;
+    g.acRefreshing = true; renderGroups();
+    const before = members.map(m => m.acoustids == null ? null : m.acoustids.slice());
+    const sigBefore = (g.signalsAll || []).join(',') || 'none';
+    Log.info('AcoustID refresh: checking ' + members.length + ' recording(s) of group "' + (members[0].title || g.id) + '" again');
+    let failed = 0;
+    try {
+        for (let i = 0; i < members.length; i += ACOUSTID_BATCH) {
+            const slice = members.slice(i, i + ACOUSTID_BATCH);
+            const map = await fetchAcoustIdsBatch(slice.map(r => r.gid));
+            if (!map) { failed += slice.length; continue; }
+            slice.forEach(rec => { rec.acoustids = map.get(rec.gid) || []; });
+        }
+    } finally { g.acRefreshing = false; }
+    let changed = 0;
+    members.forEach((m, i) => {
+        const was = before[i] == null ? 'not checked' : (before[i].join(',') || 'none');
+        const now = m.acoustids == null ? 'not checked' : (m.acoustids.join(',') || 'none');
+        if (was !== now) { changed++; Log.info('  ' + (m.title || m.gid) + ' (' + m.gid + '): AcoustID ' + was + ' → ' + now); }
+        else Log.debug('  ' + (m.title || m.gid) + ' (' + m.gid + '): AcoustID unchanged (' + now + ')');
+    });
+    refreshGroupMeta(g);
+    const sigAfter = (g.signalsAll || []).join(',') || 'none';
+    Log.info('AcoustID refresh: ' + changed + ' of ' + members.length + ' recording(s) changed'
+        + (failed ? ', ' + failed + ' could not be checked (kept as before)' : '')
+        + '; signals every member shares: ' + sigBefore + (sigAfter !== sigBefore ? ' → ' + sigAfter : ' (unchanged)')
+        + '; ' + g.confidence + ' confidence, ' + g.tier + ' tier');
+    if (failed) setNetTrouble('offline', failed + ' recording(s) could not be checked against AcoustID');
+    renderAll();
 }
 // ISRC/video reconciliation against MB's authoritative per-recording lookup —
 // the rgid:/arid: search index can lag and report none where MB actually has
@@ -2980,6 +3019,9 @@ function fsStyle() {
         + '.fs-pending{background:rgba(168,112,42,.15);color:var(--mbu-warn);border:1px solid rgba(168,112,42,.4);border-radius:3px;padding:0 4px;font-size:9.5px;font-weight:700;white-space:nowrap}'
         + '.fs-gcard.fs-has-pending{border-left-color:var(--fs-amber) !important;border-left-style:dashed !important}'
         + '.fs-note-btn{cursor:pointer;font-size:12px;padding:1px 6px;border-radius:4px;border:1px solid var(--fs-border);color:var(--fs-muted);background:var(--fs-panel2);flex-shrink:0}'
+        + '.fs-acref{cursor:pointer;font-size:13px;line-height:1;padding:2px 7px;border-radius:4px;border:1px solid var(--fs-border);color:var(--fs-muted);background:var(--fs-panel2);flex-shrink:0}'
+        + '.fs-acref:hover{color:var(--fs-text);border-color:var(--fs-muted)}'
+        + '.fs-acref-busy{cursor:progress;opacity:.55}'
         + '.fs-note-btn:hover{color:var(--fs-text);border-color:var(--fs-muted)}'
         + '.fs-note-btn.fs-has-note{background:rgba(109,63,240,.12);border-color:var(--fs-purple);color:var(--mbu-accent-deep-text);font-weight:700}'
         + '.fs-note-wrap{padding:8px 10px 10px}'
@@ -3568,6 +3610,9 @@ function groupCardHtml(group) {
         + (collapsed ? '' : '<span class="fs-detbtn' + (groupAllExpanded(group) ? ' fs-detbtn-on' : '') + '" data-act="toggle-all-details" title="'
             + (groupAllExpanded(group) ? 'hide the release tables for every recording in this group' : 'show the release tables for every recording in this group') + '">'
             + '▤' + '</span>')
+        // #762: ask acoustid.org again, after fixing a wrong link there
+        + '<span class="fs-acref' + (group.acRefreshing ? ' fs-acref-busy' : '') + '" data-act="refresh-acoustid" title="'
+            + (group.acRefreshing ? 'checking AcoustIDs…' : 'check the AcoustIDs of this group again on acoustid.org, after fixing a wrong link there') + '">↻</span>'
         + noteBtn
         + '<button class="fs-mbtn ' + stateCls + '" type="button" data-act="merge-group" ' + (busy || done || tooFew ? 'disabled' : '') + '>' + stateLabel + '</button>'
         + '<span class="fs-kill" data-act="delete-group" title="delete this group — members return to the pool" ' + (busy ? 'style="display:none"' : '') + '>🗑</span>'
@@ -4093,6 +4138,7 @@ function wireDelegatedEvents() {
         if (act === 'return' && row) { returnToPool(row.dataset.gid, card.dataset.gid); renderAll(); return; }
         if (act === 'remove-both' && row) { removeFromGroupAndPool(row.dataset.gid, card.dataset.gid); renderAll(); return; }
         if (act === 'merge-group') { mergeGroup(findGroup(card.dataset.gid)); return; }
+        if (act === 'refresh-acoustid') { refreshGroupAcoustIds(findGroup(card.dataset.gid)); return; }
         if (act === 'delete-group') { deleteGroup(card.dataset.gid); renderAll(); return; }
         if (act === 'edit-note') { const g = findGroup(card.dataset.gid); if (g) { g.editing = true; renderGroups(); const ta = groupsBody.querySelector('.fs-gcard[data-gid="' + g.id + '"] .fs-note-ta'); if (ta) { ta.focus(); ta.setSelectionRange(ta.value.length, ta.value.length); } } return; }
         if (act === 'note-save') {
@@ -4546,7 +4592,7 @@ try {
         VERSION, SCOPE, STATE, SETTINGS_DEFAULTS, MATCH_CUTOFFS,
         get SETTINGS() { return SETTINGS; },
         normName, tokenMatch, titleSimilar, titleAlike, titleDistinctWords, isrcConflict, artistSimilar, lengthClose, fuzzyRatio, levenshtein, acName, acPrimaryGid, acGids, dur, parseMbidFromInput, parseAddInput,
-        mkRecording, fetchRecordingsByBrowse, enrichReleasesFromSearch, fetchReleaseRecordings, fetchRGRecordings, fetchRecordingByGid, fetchAllReleases, resolveInternalId, fetchAcoustIds, fetchAcoustIdsBatch, enrichIsrcs, fetchRecordingDetail, fetchEntityMeta, enrichPendingEdits, fetchRecordingsBySearch, fetchArtistRecordings, harvestInternalIdsFromPage,
+        mkRecording, fetchRecordingsByBrowse, enrichReleasesFromSearch, fetchReleaseRecordings, fetchRGRecordings, fetchRecordingByGid, fetchAllReleases, resolveInternalId, fetchAcoustIds, fetchAcoustIdsBatch, refreshGroupAcoustIds, enrichIsrcs, fetchRecordingDetail, fetchEntityMeta, enrichPendingEdits, fetchRecordingsBySearch, fetchArtistRecordings, harvestInternalIdsFromPage,
         pairSignals, poolMatches, computeGroupConfidence, groupTier, gatedUnionFind, TIER_COLORS, SIGNAL_KEYS, ACOUSTID_BATCH, shouldUnion, autoMatch, enrichAcoustIds, enrichAllReleases,
         presenceDots,   // SETTINGS_DEFAULTS is listed above
         fetchReleaseDetails, releaseTableHtml, toggleReleaseDetails, storeReleaseDetails, releasesSummary, renderFooter, seedPageProgress, lengthSpread,

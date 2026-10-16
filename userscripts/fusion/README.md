@@ -27,6 +27,7 @@ In a group:
 - 🗑 deletes the group and returns its members to the pool; **Clear board** does it for every group;
 - an ISRC or AcoustID that two or more members share is tinted, one colour per shared value, so you can see which rows agree;
 - an AcoustID opens its page on acoustid.org, where a wrongly linked recording can be fixed;
+- ↻ asks acoustid.org again for the group's AcoustIDs, once you've fixed a link there, and updates its chips and tints; the members stay where they are;
 - a length outside the tolerance is flagged amber, with the spread next to the title.
 
 ## Seeding
