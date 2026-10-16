@@ -22,7 +22,7 @@ test('#657: right-click on the popup\'s Create creates in the background, with i
   await inject('credit_hoarder', { transform: withShim });
   await page.waitForSelector('.discogs-bar', { timeout: 30000 });
   await page.click('.discogs-src-ico[data-src="Discogs"]').catch(() => page.click('.discogs-src-ico'));
-  await page.waitForFunction(() => /Preflight done/.test(document.body.innerText), null, { timeout: 180000 });
+  await page.waitForFunction(() => /Preflight done/.test(document.body.textContent), null, { timeout: 180000 });   // the log's line, open or closed (its state is saved)
 
   const adv = page.locator('tbody button', { hasText: /^▾$/ }).first();
   check(await adv.count() === 1, 'a row offers ▾ (create with options)');

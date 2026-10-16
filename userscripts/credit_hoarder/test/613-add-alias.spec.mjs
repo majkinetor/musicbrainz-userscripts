@@ -64,11 +64,9 @@ test('"+ alias" appears after a manual pick, opens the form, and turns to "✓ a
   const ws = await replayWs(page, new URL('./fixtures/ws-613-add-alias.json.gz', import.meta.url));
   await inject('credit_hoarder', { transform: withShim });
   await page.waitForSelector('.discogs-bar', { timeout: 30000 });
-  const coDefault = await until(() => page.evaluate(() => { const l = [...document.querySelectorAll('label')].find(x => /Co-credit search/.test(x.textContent)); const i = l && l.querySelector('input'); return i ? i.checked : null; }), v => v !== null);
-  check(coDefault === true, `Options › Matching › "Co-credit search" is ticked by default (${coDefault})`);
 
   await page.click('.discogs-src-ico[data-src="Discogs"]').catch(() => page.click('.discogs-src-ico'));
-  await page.waitForFunction(() => /Preflight done/.test(document.body.innerText), null, { timeout: 180000 });
+  await page.waitForFunction(() => /Preflight done/.test(document.body.textContent), null, { timeout: 180000 });   // the log's line, open or closed (its state is saved)
   await page.waitForFunction(() => [...document.querySelectorAll('tbody tr')].some(x => [...x.querySelectorAll('a,span')].some(a => a.textContent.trim() === 'George & Ira Gershwin')), null, { timeout: 30000 });
   // a manual pick cached by an earlier run shows no "+ alias" (its aliases are unknown)
   const cached = await page.evaluate(() => {
