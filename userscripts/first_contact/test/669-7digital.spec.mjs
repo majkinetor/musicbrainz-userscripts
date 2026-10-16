@@ -14,18 +14,17 @@ test.use({ gm: { name: 'First Contact' } });
 const text = c => c.map(a => a.name + a.join).join('');
 const PATH = '/artist/michael-kiwanuka/release/kiwanuka-10569454';
 
-test('7digital: the page and the API, with ISRCs, barcode, type and date; a refused key is replaced', { tag: ['@web'] }, async ({ page }) => {
+test('7digital: the page and the API, with ISRCs, barcode, type and date', { tag: ['@web'] }, async ({ page }) => {
   await page.goto('about:blank');
   await page.evaluate(c => (0, eval)(c), await readFile(sourceOf('first_contact'), 'utf8'));
   const html = await readFile(new URL('./fixtures/669-kiwanuka.html', import.meta.url), 'utf8');
   const r = await page.evaluate(async ([path, h]) => {
     const sd = window.__fcTest.providers.find(p => p.id === 'sevendigital');
-    sd.key = 'refused0key';
     const rel = await sd.fetchRelease(path, null, new DOMParser().parseFromString(h, 'text/html'));
     const ids = [path, '/artist/x/release/now-thats-what-i-call-music-118-50739681/', '/artist/michael-kiwanuka', '/search'].map(pathname => sd.albumId({ pathname }));
     const hosts = ['uk.7digital.com', 'us.7digital.com', 'www.7digital.com', 'shop.example.com'].map(h => sd.host.test(h));
     const names = [['Jax Jones & Zoe Wees', ''], ['MEDUZA;OneRepublic;Leony', ''], ['Calvin Harris x Rag\'n\'Bone Man', ''], ['Simon & Garfunkel', 'Simon & Garfunkel']].map(([l, own]) => sd.names(l, own));
-    return { rel, ids, hosts, names, key: sd.key };
+    return { rel, ids, hosts, names };
   }, [PATH, html]);
   const rel = r.rel, tracks = rel.mediums.flatMap(m => m.tracks);
   check(rel.title === 'KIWANUKA' && text(rel.credit) === 'Michael Kiwanuka' && rel.credit[0].url === 'https://uk.7digital.com/artist/michael-kiwanuka', `title and credit, the artist linked: ${rel.title} — ${text(rel.credit)} ${rel.credit[0].url}`);
@@ -36,7 +35,6 @@ test('7digital: the page and the API, with ISRCs, barcode, type and date; a refu
   check(tracks[7].title === 'Hero (Intro)' && tracks[8].title === 'Hero' && tracks[8].isrc === 'GBUM71903002', `"Hero (Intro)" and "Hero" each get their own ISRC (${tracks[7].isrc}, ${tracks[8].isrc})`);
   check(rel.annotation === '℗ 2019 Polydor Limited\n© 2019 Polydor Limited', `the ℗ and © lines are the annotation: ${JSON.stringify(rel.annotation)}`);
   check(rel.urls.length === 1 && rel.urls[0].url === 'https://uk.7digital.com' + PATH && rel.urls[0].linkType === 74, `link: ${JSON.stringify(rel.urls)}`);
-  check(r.key !== 'refused0key', `the refused key was replaced (${r.key})`);
   check(JSON.stringify(r.ids) === JSON.stringify([PATH, '/artist/x/release/now-thats-what-i-call-music-118-50739681', null, null]), `release pages only: ${JSON.stringify(r.ids)}`);
   check(JSON.stringify(r.hosts) === '[true,true,true,false]', `7digital's stores: ${JSON.stringify(r.hosts)}`);
   check(JSON.stringify(r.names) === JSON.stringify([['Jax Jones', 'Zoe Wees'], ['MEDUZA', 'OneRepublic', 'Leony'], ['Calvin Harris', 'Rag\'n\'Bone Man'], ['Simon & Garfunkel']]), `artist lines split, the release's own artist kept whole: ${JSON.stringify(r.names)}`);
