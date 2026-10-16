@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         ISRC Scout
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.16.181657
+// @version      2026.10.16.182954
 // @description  Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify / Beatport / Tidal / Volumo / HDtracks / Qobuz, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPklTUkMgU2NvdXQ8L3RpdGxlPgogICAgPHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPgogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjQwIi8+CiAgICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyNiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2U9IiNiOWEzZTgiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPgogIDwvZz4KICA8bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+Cjwvc3ZnPgo=
@@ -1858,6 +1858,7 @@
     .ii-trk-ln { display: inline-flex; align-items: flex-start; line-height: 0; text-decoration: none !important; border: none !important; }
     .ii-trk-n { font: 600 9px/1 system-ui; color: var(--mbu-text-dim); margin-left: 1px; vertical-align: top; }
     .ii-trk-ln svg, .ii-trk-ln img { width: 15px; height: 15px; display: block; }
+    .ii-trk-ln .ii-mbfav { width: 15px; height: 15px; display: block; background-size: 15px; background-repeat: no-repeat; }   /* #765 MB's own site icon */
     .ii-trk-ln.ended { opacity: .4; }
     #ii-btn.has-missing { background: #a0225e; animation: ii-pulse 1.6s ease-in-out infinite; }
     #ii-btn.has-missing:hover { background: #7d1a4a; }
@@ -2040,6 +2041,7 @@
     .ii-tl-add:empty::before, .ii-tl-linked:empty::before { content: '—'; color: var(--mbu-text-weak); }
     .ii-tl { display: inline-flex; align-items: center; line-height: 0; text-decoration: none; }
     .ii-tl svg { width: 16px; height: 16px; display: block; }
+    .ii-tl .ii-mbfav { width: 16px; height: 16px; display: block; background-size: 16px; background-repeat: no-repeat; }   /* #765 MB's own site icon (its sheet sets the image) */
     .ii-tl.linked  { color: var(--mbu-text-weak); }                                               /* already on MB → quiet monochrome */
     .ii-tl.linked:hover { color: var(--mbu-text-dim); }
     .ii-tl.linked.ended { opacity: .4; }                                             /* #341: relationship marked ended → faded */
@@ -5753,6 +5755,67 @@
     const _GLOBE = stIcon('globe', 16);
     // #389 Qobuz uses the same brand-blue roundel as Platform Check (self-coloured, so the chip colour is moot)
     const _QOBUZ = stIcon('qobuz', 16);
+    // #765 A link ISRC Scout has no icon for gets the site icon MB's own sidebar shows. MB's icon sheet
+    // (icons-*.css, on every MB page) styles bare .<site>-favicon classes, so a span with the class draws it;
+    // the host → class table and the match rule are MB's (FAVICON_CLASSES in constants.js, faviconClass() in
+    // layout/components/ExternalLinks.js): the first key in the host wins, a key with a / is matched in the
+    // whole URL. A class the page's sheet doesn't draw (sheet missing, site renamed) keeps the globe.
+    const MB_FAVICON = (
+      '7digital.com=sevendigital 45cat.com=fortyfivecat abc.net.au/triplejunearthed=triplejunearthed acum.org.il=acum adp.library.ucsb.edu=dahr ' +
+      'allmusic.com=allmusic anghami.com=anghami anidb.net=anidb anilist.co=anilist animenewsnetwork.com=animenewsnetwork anison.info=anisongeneration ' +
+      'archive.org=archive audiomack.com=audiomack awa.fm=awa baidu.com=baidu bandcamp.com=bandcamp bandsintown.com=bandsintown bbc.co.uk=bbc ' +
+      'beatport.com=beatport bibliotekapiosenki.pl=piosenki bigcartel.com=bigcartel bookbrainz.org=bookbrainz books.apple.com=applebooks boomkat.com=boomkat ' +
+      'boomplay.com=boomplay bsky.app=bluesky cancioneros.si=cancioneros castalbums.org=castalbums catalogue.bnf.fr=bnfcatalogue cbfiddle.com/rx/=cbfiddlerx ' +
+      'ccmixter.org=ccmixter cdjapan.co.jp=cdjapan changetip.com=changetip ci.nii.ac.jp=cinii classicalarchives.com=classicalarchives ' +
+      'concerts.livenation.com=livenation cpdl.org=cpdl d-nb.info=dnb dailymotion.com=dailymotion deezer.com=deezer deviantart.com=deviantart dhhu.dk=dhhu ' +
+      'discogs.com=discogs dogmazic.net=dogmazic dramonline.org=dram e-onkyo.com=eonkyo encyclopedisque.fr=encyclopedisque ester.ee=ester ' +
+      'facebook.com=facebook finna.fi=finna finnmusic.net=finnmusic fono.fi=fonofi generasia.com/wiki=generasia genie.co.kr=genie genius.com=genius ' +
+      'geonames.org=geonames goodreads.com=goodreads gutenberg.org=gutenberg hmv.co.jp=hmvbooks hoerspielforscher.de=hoerspielforscher hoick.jp=hoick ' +
+      'ibdb.com=ibdb idref.fr=idref imdb.com=imdb imslp.org=imslp imvdb.com=imvdb indiegogo.com=indiegogo instagram.com=instagram ircam.fr=ircam ' +
+      'irishtune.info=irishtune iss.ndl.go.jp=ndl itunes.apple.com=itunes j-lyric.net=jlyric jazzmusicarchives.com=jazzmusicarchives joysound.com=joysound ' +
+      'kashinavi.com=kashinavi kickstarter.com=kickstarter kkbox.com=kkbox ko-fi.com=kofi lantis.jp=lantis last.fm=lastfm ' +
+      'lesarchivesduspectacle.net=archivesduspectacle librarything.com=librarything librivox.org=librivox lieder.net=lieder linkedin.com=linkedin ' +
+      'livefans.jp=livefans loc.gov=loc loudr.fm=loudr mainlynorfolk.info=mainlynorfolk melon.com=melon metacritic.com=metacritic ' +
+      'metal-archives.com=metalarchives metalmusicarchives.com=metalmusicarchives mixcloud.com=mixcloud mixesdb.com=mixesdb mobygames.com=mobygames ' +
+      'mora.jp=mora music.amazon=amazonmusic classical.music.apple.com=appleclassical music.apple.com=applemusic music.bugs.co.kr=bugs ' +
+      'music.line.me=linemusic music.migu.cn=migumusic music.yandex=yandex music.youtube.com=youtubemusic musicapopular.cl=musicapopularcl ' +
+      'musicinafrica.net=musicinafrica musik-sammler.de=musiksammler musixmatch.com=musixmatch musopen.org=musopen muziekweb.nl=muziekweb muzikum.eu=muzikum ' +
+      'myanimelist.net=myanimelist myspace.com=myspace nicovideo.jp=niconicovideo nla.gov.au=trove oclc.org=oclc ocremix.org=ocremix ' +
+      'offiziellecharts.de=offiziellecharts online-bijbel.nl=onlinebijbel opac.kbr.be=kbr openlibrary.org=openlibrary operabase.com=operabase ' +
+      'ototoy.jp=ototoy overture.doremus.org=overture patreon.com=patreon paypal.me=paypal petitlyrics.com=petitlyrics pinterest.com=pinterest ' +
+      'pixiv.net=pixiv progarchives.com=progarchives psydb.net=psydb qobuz.com=qobuz quebecinfomusique.com=quebecinfomusique ra.co=residentadvisor ' +
+      'rateyourmusic.com=rateyourmusic recochoku.jp=recochoku reverbnation.com=reverbnation rism.online=rism rock.com.ar=rockcomar ' +
+      'rockensdanmarkskort.dk=rockensdanmarkskort rockinchina.com=ric rockipedia.no=rockipedia rockit.it=rockit rolldabeats.com=rolldabeats ' +
+      'runeberg.org=runeberg saisaibatake.ame-zaiku.com/gakki=gakki saisaibatake.ame-zaiku.com/musical=gakki ' +
+      'saisaibatake.ame-zaiku.com/musical_instrument=gakki secondhandsongs.com=secondhandsongs setlist.fm=setlistfm shop.tsutaya.co.jp=tsutaya ' +
+      'smdb.kb.se=smdb snaccooperative.org=snac songfacts.com=songfacts songkick.com=songkick soundcloud.com=soundcloud spirit-of-metal.com=spiritofmetal ' +
+      'spirit-of-rock.com=spiritofrock spotify.com=spotify stage48.net=stage48 steamdb.info=steamdb stereo-ve-mono.com=stereo-ve-mono target.com=target ' +
+      'tedcrane.com/DanceDB=dancedb theatricalia.com=theatricalia thedancegypsy.com=thedancegypsy themoviedb.org=tmdb thesession.org=thesession ' +
+      'threads.com=threads thwiki.cc=thbwiki tidal.com=tidal tiktok.com=tiktok tipeee.com=tipeee tobarandualchais.co.uk=tobar touhoudb.com=touhoudb ' +
+      'tower.jp=tower traxsource.com=traxsource triplejunearthed.com=triplejunearthed tunearch.org=tunearch twitch.tv=twitch twitter.com=twitter ' +
+      'uta-net.com=utanet utaitedb.net=utaitedb utaten.com=utaten vgmdb.net=vgmdb viaf.org=viaf vibe.naver.com=navervibe vimeo.com/ondemand=vimeoondemand ' +
+      'vimeo.com=vimeo vk.com=vk vk.gy=vkgy vk.ru=vk vkdb.jp=vkdb vndb.org=vndb vocadb.net=vocadb weibo.com=weibo whosampled.com=whosampled ' +
+      'wikidata.org=wikidata wikipedia.org=wikipedia wikisource.org=wikisource worldcat.org=worldcat www.amazon=amazon www.livenation.=livenation ' +
+      'www.ticketmaster.=ticketmaster www.youtube.com=youtube www5.atwiki.jp/hmiku/=hmikuwiki yesasia.com=yesasia zamp.hr=zamp zemereshet.co.il=zemereshet'
+    ).split(' ').map(s => s.split('='));
+    const _favDrawn = new Map();
+    function mbFaviconDrawn(cls) {
+      if (_favDrawn.has(cls)) return _favDrawn.get(cls);
+      let ok = false;
+      try {
+        const s = document.createElement('span'); s.className = cls; s.style.cssText = 'position:absolute;visibility:hidden';
+        document.body.appendChild(s); ok = getComputedStyle(s).backgroundImage !== 'none'; s.remove();
+      } catch (e) {}
+      _favDrawn.set(cls, ok);
+      Log.debug('MB favicon ' + cls + (ok ? ' drawn by the page’s icon sheet' : ' not drawn by the page’s icon sheet → globe'));
+      return ok;
+    }
+    function mbFavicon(u) {
+      let host = ''; try { host = new URL(u).host; } catch (e) { return _GLOBE; }
+      const hit = MB_FAVICON.find(([k]) => k.includes('/') ? u.includes(k) : host.includes(k));
+      const cls = hit && hit[1] + '-favicon';
+      return cls && mbFaviconDrawn(cls) ? '<span class="ii-mbfav ' + cls + '"></span>' : _GLOBE;
+    }
     const KNOWN_LINK = [
       { test: u => /open\.spotify\.com\//i.test(u),                                       name: 'Spotify',      color: _PROV_COLOR.spotify, icon: SRC_ICON.sp },
       { test: u => /(?:^|[./])qobuz\.com\//i.test(u),                                      name: 'Qobuz',        color: '#0070ef', icon: _QOBUZ },
@@ -5770,9 +5833,9 @@
         if (!u || seen.has(u) || PROV.some(p => p.test(u))) return;   // PROV ones are shown already
         seen.add(u);
         const k = KNOWN_LINK.find(x => x.test(u));
-        if (k) { out.push({ url: u, name: k.name, color: k.color, icon: k.icon }); return; }
+        if (k) { out.push({ url: u, name: k.name, color: k.color, icon: k.icon === _GLOBE ? mbFavicon(u) : k.icon }); return; }
         let host = ''; try { host = new URL(u).hostname.replace(/^www\./, ''); } catch (e) {}
-        if (host) out.push({ url: u, name: host, color: '#8a8f98', icon: _GLOBE });
+        if (host) out.push({ url: u, name: host, color: '#8a8f98', icon: mbFavicon(u) });
       });
       return out;
     }

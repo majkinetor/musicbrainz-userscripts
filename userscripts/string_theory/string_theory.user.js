@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         String Theory
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.16.181659
+// @version      2026.10.16.183204
 // @description  Unified bundle of 11 MusicBrainz userscripts (apollo_editor, art_station, credit_hoarder, falcon, first_contact, fusion, group_therapy, isrc_scout, mammoth, mission_control, platform_check). Built by userscripts/string_theory/build.mjs — do not hand-edit.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5TdHJpbmcgVGhlb3J5PC90aXRsZT4KPHBhdGggZD0iTTY0IDEwIEw2Ni40IDEwLjIgTDY4LjcgMTAuNiBMNzAuOSAxMS40IEw3My4xIDEyLjQgTDc1LjIgMTMuNyBMNzcuMSAxNS4yIEw3OC44IDE3IEw4MC40IDE4LjkgTDgxLjggMjEgTDgzLjEgMjMuMSBMODQuMSAyNS40IEw4NSAyNy42IEw4NS43IDI5LjkgTDg2LjMgMzIuMSBMODYuOCAzNC4zIEw4Ny4xIDM2LjQgTDg3LjQgMzguNCBMODcuNyA0MC4zIEw4Ny45IDQyLjEgTDg4LjIgNDMuNyBMODguNSA0NS4yIEw4OC45IDQ2LjYgTDg5LjQgNDcuOCBMOTAgNDkgTDkwLjcgNTAuMSBMOTEuNiA1MS4xIEw5Mi42IDUyLjIgTDkzLjcgNTMuMiBMOTUgNTQuMiBMOTYuNCA1NS4zIEw5Ny45IDU2LjUgTDk5LjUgNTcuNyBMMTAxLjEgNTkuMSBMMTAyLjcgNjAuNiBMMTA0LjQgNjIuMiBMMTA2IDY0IEwxMDcuNSA2NS45IEwxMDguOSA2Ny45IEwxMTAuMiA3MC4xIEwxMTEuMyA3Mi4zIEwxMTIuMSA3NC43IEwxMTIuOCA3Ny4xIEwxMTMuMSA3OS41IEwxMTMuMiA4MS45IEwxMTMgODQuMyBMMTEyLjYgODYuNiBMMTExLjggODguOSBMMTEwLjggOTEgTDEwOS41IDkzIEwxMDcuOSA5NC43IEwxMDYuMSA5Ni4zIEwxMDQuMSA5Ny43IEwxMDIgOTguOCBMOTkuNyA5OS43IEw5Ny4zIDEwMC40IEw5NC45IDEwMC44IEw5Mi40IDEwMSBMODkuOSAxMDAuOSBMODcuNCAxMDAuNyBMODUgMTAwLjQgTDgyLjcgOTkuOSBMODAuNCA5OS4zIEw3OC4zIDk4LjYgTDc2LjMgOTcuOCBMNzQuNCA5Ny4xIEw3Mi43IDk2LjQgTDcxIDk1LjcgTDY5LjUgOTUuMSBMNjggOTQuNiBMNjYuNyA5NC4zIEw2NS4zIDk0LjEgTDY0IDk0IEw2Mi43IDk0LjEgTDYxLjMgOTQuMyBMNjAgOTQuNiBMNTguNSA5NS4xIEw1NyA5NS43IEw1NS4zIDk2LjQgTDUzLjYgOTcuMSBMNTEuNyA5Ny44IEw0OS43IDk4LjYgTDQ3LjYgOTkuMyBMNDUuMyA5OS45IEw0MyAxMDAuNCBMNDAuNiAxMDAuNyBMMzguMSAxMDAuOSBMMzUuNiAxMDEgTDMzLjEgMTAwLjggTDMwLjcgMTAwLjQgTDI4LjMgOTkuNyBMMjYgOTguOCBMMjMuOSA5Ny43IEwyMS45IDk2LjMgTDIwLjEgOTQuNyBMMTguNSA5MyBMMTcuMiA5MSBMMTYuMiA4OC45IEwxNS40IDg2LjYgTDE1IDg0LjMgTDE0LjggODEuOSBMMTQuOSA3OS41IEwxNS4yIDc3LjEgTDE1LjkgNzQuNyBMMTYuNyA3Mi4zIEwxNy44IDcwLjEgTDE5LjEgNjcuOSBMMjAuNSA2NS45IEwyMiA2NCBMMjMuNiA2Mi4yIEwyNS4zIDYwLjYgTDI2LjkgNTkuMSBMMjguNSA1Ny43IEwzMC4xIDU2LjUgTDMxLjYgNTUuMyBMMzMgNTQuMiBMMzQuMyA1My4yIEwzNS40IDUyLjIgTDM2LjQgNTEuMSBMMzcuMyA1MC4xIEwzOCA0OSBMMzguNiA0Ny44IEwzOS4xIDQ2LjYgTDM5LjUgNDUuMiBMMzkuOCA0My43IEw0MC4xIDQyLjEgTDQwLjMgNDAuMyBMNDAuNiAzOC40IEw0MC45IDM2LjQgTDQxLjIgMzQuMyBMNDEuNyAzMi4xIEw0Mi4zIDI5LjkgTDQzIDI3LjYgTDQzLjkgMjUuNCBMNDQuOSAyMy4xIEw0Ni4yIDIxIEw0Ny42IDE4LjkgTDQ5LjIgMTcgTDUwLjkgMTUuMiBMNTIuOCAxMy43IEw1NC45IDEyLjQgTDU3LjEgMTEuNCBMNTkuMyAxMC42IEw2MS42IDEwLjJaIiBmaWxsPSJub25lIiBzdHJva2U9IiM5Yzg2ZWEiIHN0cm9rZS13aWR0aD0iMTAiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz4KPHBhdGggZD0iTTY0IDM0IEw2NS4zIDMzLjkgTDY2LjcgMzMuNyBMNjggMzMuNCBMNjkuNSAzMi45IEw3MSAzMi4zIEw3Mi43IDMxLjYgTDc0LjQgMzAuOSBMNzYuMyAzMC4yIEw3OC4zIDI5LjQgTDgwLjQgMjguNyBMODIuNyAyOC4xIEw4NSAyNy42IEw4Ny40IDI3LjMgTDg5LjkgMjcuMSBMOTIuNCAyNyBMOTQuOSAyNy4yIEw5Ny4zIDI3LjYgTDk5LjcgMjguMyBMMTAyIDI5LjIgTDEwNC4xIDMwLjMgTDEwNi4xIDMxLjcgTDEwNy45IDMzLjMgTDEwOS41IDM1IEwxMTAuOCAzNyBMMTExLjggMzkuMSBMMTEyLjYgNDEuNCBMMTEzIDQzLjcgTDExMy4yIDQ2LjEgTDExMy4xIDQ4LjUgTDExMi44IDUwLjkgTDExMi4xIDUzLjMgTDExMS4zIDU1LjcgTDExMC4yIDU3LjkgTDEwOC45IDYwLjEgTDEwNy41IDYyLjEgTDEwNiA2NCBMMTA0LjQgNjUuOCBMMTAyLjcgNjcuNCBMMTAxLjEgNjguOSBMOTkuNSA3MC4zIEw5Ny45IDcxLjUgTDk2LjQgNzIuNyBMOTUgNzMuOCBMOTMuNyA3NC44IEw5Mi42IDc1LjggTDkxLjYgNzYuOSBMOTAuNyA3Ny45IEw5MCA3OSBMODkuNCA4MC4yIEw4OC45IDgxLjQgTDg4LjUgODIuOCBMODguMiA4NC4zIEw4Ny45IDg1LjkgTDg3LjcgODcuNyBMODcuNCA4OS42IEw4Ny4xIDkxLjYgTDg2LjggOTMuNyBMODYuMyA5NS45IEw4NS43IDk4LjEgTDg1IDEwMC40IEw4NC4xIDEwMi42IEw4My4xIDEwNC45IEw4MS44IDEwNyBMODAuNCAxMDkuMSBMNzguOCAxMTEgTDc3LjEgMTEyLjggTDc1LjIgMTE0LjMgTDczLjEgMTE1LjYgTDcwLjkgMTE2LjYgTDY4LjcgMTE3LjQgTDY2LjQgMTE3LjggTDY0IDExOCBMNjEuNiAxMTcuOCBMNTkuMyAxMTcuNCBMNTcuMSAxMTYuNiBMNTQuOSAxMTUuNiBMNTIuOCAxMTQuMyBMNTAuOSAxMTIuOCBMNDkuMiAxMTEgTDQ3LjYgMTA5LjEgTDQ2LjIgMTA3IEw0NC45IDEwNC45IEw0My45IDEwMi42IEw0MyAxMDAuNCBMNDIuMyA5OC4xIEw0MS43IDk1LjkgTDQxLjIgOTMuNyBMNDAuOSA5MS42IEw0MC42IDg5LjYgTDQwLjMgODcuNyBMNDAuMSA4NS45IEwzOS44IDg0LjMgTDM5LjUgODIuOCBMMzkuMSA4MS40IEwzOC42IDgwLjIgTDM4IDc5IEwzNy4zIDc3LjkgTDM2LjQgNzYuOSBMMzUuNCA3NS44IEwzNC4zIDc0LjggTDMzIDczLjggTDMxLjYgNzIuNyBMMzAuMSA3MS41IEwyOC41IDcwLjMgTDI2LjkgNjguOSBMMjUuMyA2Ny40IEwyMy42IDY1LjggTDIyIDY0IEwyMC41IDYyLjEgTDE5LjEgNjAuMSBMMTcuOCA1Ny45IEwxNi43IDU1LjcgTDE1LjkgNTMuMyBMMTUuMiA1MC45IEwxNC45IDQ4LjUgTDE0LjggNDYuMSBMMTUgNDMuNyBMMTUuNCA0MS40IEwxNi4yIDM5LjEgTDE3LjIgMzcgTDE4LjUgMzUgTDIwLjEgMzMuMyBMMjEuOSAzMS43IEwyMy45IDMwLjMgTDI2IDI5LjIgTDI4LjMgMjguMyBMMzAuNyAyNy42IEwzMy4xIDI3LjIgTDM1LjYgMjcgTDM4LjEgMjcuMSBMNDAuNiAyNy4zIEw0MyAyNy42IEw0NS4zIDI4LjEgTDQ3LjYgMjguNyBMNDkuNyAyOS40IEw1MS43IDMwLjIgTDUzLjYgMzAuOSBMNTUuMyAzMS42IEw1NyAzMi4zIEw1OC41IDMyLjkgTDYwIDMzLjQgTDYxLjMgMzMuNyBMNjIuNyAzMy45WiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZmZmZmZmIiBzdHJva2Utd2lkdGg9IjIwIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+CjxwYXRoIGQ9Ik02NCAzNCBMNjUuMyAzMy45IEw2Ni43IDMzLjcgTDY4IDMzLjQgTDY5LjUgMzIuOSBMNzEgMzIuMyBMNzIuNyAzMS42IEw3NC40IDMwLjkgTDc2LjMgMzAuMiBMNzguMyAyOS40IEw4MC40IDI4LjcgTDgyLjcgMjguMSBMODUgMjcuNiBMODcuNCAyNy4zIEw4OS45IDI3LjEgTDkyLjQgMjcgTDk0LjkgMjcuMiBMOTcuMyAyNy42IEw5OS43IDI4LjMgTDEwMiAyOS4yIEwxMDQuMSAzMC4zIEwxMDYuMSAzMS43IEwxMDcuOSAzMy4zIEwxMDkuNSAzNSBMMTEwLjggMzcgTDExMS44IDM5LjEgTDExMi42IDQxLjQgTDExMyA0My43IEwxMTMuMiA0Ni4xIEwxMTMuMSA0OC41IEwxMTIuOCA1MC45IEwxMTIuMSA1My4zIEwxMTEuMyA1NS43IEwxMTAuMiA1Ny45IEwxMDguOSA2MC4xIEwxMDcuNSA2Mi4xIEwxMDYgNjQgTDEwNC40IDY1LjggTDEwMi43IDY3LjQgTDEwMS4xIDY4LjkgTDk5LjUgNzAuMyBMOTcuOSA3MS41IEw5Ni40IDcyLjcgTDk1IDczLjggTDkzLjcgNzQuOCBMOTIuNiA3NS44IEw5MS42IDc2LjkgTDkwLjcgNzcuOSBMOTAgNzkgTDg5LjQgODAuMiBMODguOSA4MS40IEw4OC41IDgyLjggTDg4LjIgODQuMyBMODcuOSA4NS45IEw4Ny43IDg3LjcgTDg3LjQgODkuNiBMODcuMSA5MS42IEw4Ni44IDkzLjcgTDg2LjMgOTUuOSBMODUuNyA5OC4xIEw4NSAxMDAuNCBMODQuMSAxMDIuNiBMODMuMSAxMDQuOSBMODEuOCAxMDcgTDgwLjQgMTA5LjEgTDc4LjggMTExIEw3Ny4xIDExMi44IEw3NS4yIDExNC4zIEw3My4xIDExNS42IEw3MC45IDExNi42IEw2OC43IDExNy40IEw2Ni40IDExNy44IEw2NCAxMTggTDYxLjYgMTE3LjggTDU5LjMgMTE3LjQgTDU3LjEgMTE2LjYgTDU0LjkgMTE1LjYgTDUyLjggMTE0LjMgTDUwLjkgMTEyLjggTDQ5LjIgMTExIEw0Ny42IDEwOS4xIEw0Ni4yIDEwNyBMNDQuOSAxMDQuOSBMNDMuOSAxMDIuNiBMNDMgMTAwLjQgTDQyLjMgOTguMSBMNDEuNyA5NS45IEw0MS4yIDkzLjcgTDQwLjkgOTEuNiBMNDAuNiA4OS42IEw0MC4zIDg3LjcgTDQwLjEgODUuOSBMMzkuOCA4NC4zIEwzOS41IDgyLjggTDM5LjEgODEuNCBMMzguNiA4MC4yIEwzOCA3OSBMMzcuMyA3Ny45IEwzNi40IDc2LjkgTDM1LjQgNzUuOCBMMzQuMyA3NC44IEwzMyA3My44IEwzMS42IDcyLjcgTDMwLjEgNzEuNSBMMjguNSA3MC4zIEwyNi45IDY4LjkgTDI1LjMgNjcuNCBMMjMuNiA2NS44IEwyMiA2NCBMMjAuNSA2Mi4xIEwxOS4xIDYwLjEgTDE3LjggNTcuOSBMMTYuNyA1NS43IEwxNS45IDUzLjMgTDE1LjIgNTAuOSBMMTQuOSA0OC41IEwxNC44IDQ2LjEgTDE1IDQzLjcgTDE1LjQgNDEuNCBMMTYuMiAzOS4xIEwxNy4yIDM3IEwxOC41IDM1IEwyMC4xIDMzLjMgTDIxLjkgMzEuNyBMMjMuOSAzMC4zIEwyNiAyOS4yIEwyOC4zIDI4LjMgTDMwLjcgMjcuNiBMMzMuMSAyNy4yIEwzNS42IDI3IEwzOC4xIDI3LjEgTDQwLjYgMjcuMyBMNDMgMjcuNiBMNDUuMyAyOC4xIEw0Ny42IDI4LjcgTDQ5LjcgMjkuNCBMNTEuNyAzMC4yIEw1My42IDMwLjkgTDU1LjMgMzEuNiBMNTcgMzIuMyBMNTguNSAzMi45IEw2MCAzMy40IEw2MS4zIDMzLjcgTDYyLjcgMzMuOVoiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZjNDdlMCIgc3Ryb2tlLXdpZHRoPSIxMyIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgo8L3N2Zz4K
@@ -127,8 +127,8 @@
 // Bundles (verbatim, each wrapped in a URL gate and a run-at gate): apollo_editor, art_station, credit_hoarder, falcon, first_contact, fusion, group_therapy, isrc_scout, mammoth, mission_control, platform_check.
 
 try {
-  console.log('%c String Theory %c v2026.10.16.181659 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
-  console.log("String Theory bundles:\n  · Apollo Editor v2026.10.16\n  · Art Station v2026.10.16\n  · Credit Hoarder v2026.10.16\n  · Falcon v2026.10.16\n  · First Contact v2026.10.16\n  · Fusion v2026.10.16.170419\n  · Group Therapy v2026.10.16\n  · ISRC Scout v2026.10.16.181657\n  · Mammoth v2026.10.16\n  · Mission Control v2026.10.16.164606\n  · Platform Check v2026.10.16");
+  console.log('%c String Theory %c v2026.10.16.183204 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
+  console.log("String Theory bundles:\n  · Apollo Editor v2026.10.16\n  · Art Station v2026.10.16\n  · Credit Hoarder v2026.10.16\n  · Falcon v2026.10.16\n  · First Contact v2026.10.16\n  · Fusion v2026.10.16.170419\n  · Group Therapy v2026.10.16\n  · ISRC Scout v2026.10.16.182954\n  · Mammoth v2026.10.16\n  · Mission Control v2026.10.16.164606\n  · Platform Check v2026.10.16");
 } catch (e) {}
 
 function __stReadOff() { try { var v = GM_getValue("string_theory.off", []); return Array.isArray(v) ? v : []; } catch (e) { return []; } }
@@ -136,7 +136,7 @@ var __stOff = __stReadOff();
 (function () {
   if (typeof GM_registerMenuCommand !== 'function') return;
   try { if (window.top !== window.self) return; } catch (e) { return; }
-  var members = [["apollo_editor","Apollo Editor","2026.10.16"],["art_station","Art Station","2026.10.16"],["credit_hoarder","Credit Hoarder","2026.10.16"],["falcon","Falcon","2026.10.16"],["first_contact","First Contact","2026.10.16"],["fusion","Fusion","2026.10.16.170419"],["group_therapy","Group Therapy","2026.10.16"],["isrc_scout","ISRC Scout","2026.10.16.181657"],["mammoth","Mammoth","2026.10.16"],["mission_control","Mission Control","2026.10.16.164606"],["platform_check","Platform Check","2026.10.16"]];
+  var members = [["apollo_editor","Apollo Editor","2026.10.16"],["art_station","Art Station","2026.10.16"],["credit_hoarder","Credit Hoarder","2026.10.16"],["falcon","Falcon","2026.10.16"],["first_contact","First Contact","2026.10.16"],["fusion","Fusion","2026.10.16.170419"],["group_therapy","Group Therapy","2026.10.16"],["isrc_scout","ISRC Scout","2026.10.16.182954"],["mammoth","Mammoth","2026.10.16"],["mission_control","Mission Control","2026.10.16.164606"],["platform_check","Platform Check","2026.10.16"]];
   // Each entry carries a stable id (options.id): Violentmonkey and Tampermonkey then relabel it in
   // place, where it stands. Unregister-and-add left Violentmonkey's open menu with the old entry
   // still there and the new one appended at the end. A manager that ignores options.id hands back
@@ -54789,7 +54789,7 @@ Created this ${kind} while adding credits parsed from text to ${relUrl}`;
 
 // ===== isrc_scout (@run-at document-start) ========================================
 if (__stOff.indexOf("isrc_scout") < 0 && __stRuns("isrc_scout", {"inc":["^https:\\/\\/(?:[^/]*\\.)?musicbrainz\\.org(?::\\d+)?/release/.*$","^https:\\/\\/(?:[^/]*\\.)?musicbrainz\\.org(?::\\d+)?/oauth2/oob.*$","^https:\\/\\/www\\.beatport\\.com(?::\\d+)?/release/.*$"],"exc":[],"noframes":false})) (function(__stGM){
-  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"ISRC Scout*","namespace":"https://musicbrainz.org/","version":"2026.10.16.181657","description":"Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify / Beatport / Tidal / Volumo / HDtracks / Qobuz, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/isrc_scout/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPklTUkMgU2NvdXQ8L3RpdGxlPgogICAgPHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPgogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjQwIi8+CiAgICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyNiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2U9IiNiOWEzZTgiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPgogIDwvZz4KICA8bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+Cjwvc3ZnPgo="}) }) : { script: {"name":"ISRC Scout*","namespace":"https://musicbrainz.org/","version":"2026.10.16.181657","description":"Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify / Beatport / Tidal / Volumo / HDtracks / Qobuz, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/isrc_scout/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPklTUkMgU2NvdXQ8L3RpdGxlPgogICAgPHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPgogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjQwIi8+CiAgICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyNiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2U9IiNiOWEzZTgiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPgogIDwvZz4KICA8bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+Cjwvc3ZnPgo="} };
+  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"ISRC Scout*","namespace":"https://musicbrainz.org/","version":"2026.10.16.182954","description":"Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify / Beatport / Tidal / Volumo / HDtracks / Qobuz, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/isrc_scout/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPklTUkMgU2NvdXQ8L3RpdGxlPgogICAgPHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPgogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjQwIi8+CiAgICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyNiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2U9IiNiOWEzZTgiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPgogIDwvZz4KICA8bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+Cjwvc3ZnPgo="}) }) : { script: {"name":"ISRC Scout*","namespace":"https://musicbrainz.org/","version":"2026.10.16.182954","description":"Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify / Beatport / Tidal / Volumo / HDtracks / Qobuz, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/isrc_scout/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPklTUkMgU2NvdXQ8L3RpdGxlPgogICAgPHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPgogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjQwIi8+CiAgICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyNiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2U9IiNiOWEzZTgiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPgogIDwvZz4KICA8bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+Cjwvc3ZnPgo="} };
   (f=>f())(function(){ try { (function(){
 /*
  * ─────────────────────────────────────────────────────────────────────────
@@ -56602,6 +56602,7 @@ if (__stOff.indexOf("isrc_scout") < 0 && __stRuns("isrc_scout", {"inc":["^https:
     .ii-trk-ln { display: inline-flex; align-items: flex-start; line-height: 0; text-decoration: none !important; border: none !important; }
     .ii-trk-n { font: 600 9px/1 system-ui; color: var(--mbu-text-dim); margin-left: 1px; vertical-align: top; }
     .ii-trk-ln svg, .ii-trk-ln img { width: 15px; height: 15px; display: block; }
+    .ii-trk-ln .ii-mbfav { width: 15px; height: 15px; display: block; background-size: 15px; background-repeat: no-repeat; }   /* #765 MB's own site icon */
     .ii-trk-ln.ended { opacity: .4; }
     #ii-btn.has-missing { background: #a0225e; animation: ii-pulse 1.6s ease-in-out infinite; }
     #ii-btn.has-missing:hover { background: #7d1a4a; }
@@ -56784,6 +56785,7 @@ if (__stOff.indexOf("isrc_scout") < 0 && __stRuns("isrc_scout", {"inc":["^https:
     .ii-tl-add:empty::before, .ii-tl-linked:empty::before { content: '—'; color: var(--mbu-text-weak); }
     .ii-tl { display: inline-flex; align-items: center; line-height: 0; text-decoration: none; }
     .ii-tl svg { width: 16px; height: 16px; display: block; }
+    .ii-tl .ii-mbfav { width: 16px; height: 16px; display: block; background-size: 16px; background-repeat: no-repeat; }   /* #765 MB's own site icon (its sheet sets the image) */
     .ii-tl.linked  { color: var(--mbu-text-weak); }                                               /* already on MB → quiet monochrome */
     .ii-tl.linked:hover { color: var(--mbu-text-dim); }
     .ii-tl.linked.ended { opacity: .4; }                                             /* #341: relationship marked ended → faded */
@@ -60497,6 +60499,67 @@ if (__stOff.indexOf("isrc_scout") < 0 && __stRuns("isrc_scout", {"inc":["^https:
     const _GLOBE = stIcon('globe', 16);
     // #389 Qobuz uses the same brand-blue roundel as Platform Check (self-coloured, so the chip colour is moot)
     const _QOBUZ = stIcon('qobuz', 16);
+    // #765 A link ISRC Scout has no icon for gets the site icon MB's own sidebar shows. MB's icon sheet
+    // (icons-*.css, on every MB page) styles bare .<site>-favicon classes, so a span with the class draws it;
+    // the host → class table and the match rule are MB's (FAVICON_CLASSES in constants.js, faviconClass() in
+    // layout/components/ExternalLinks.js): the first key in the host wins, a key with a / is matched in the
+    // whole URL. A class the page's sheet doesn't draw (sheet missing, site renamed) keeps the globe.
+    const MB_FAVICON = (
+      '7digital.com=sevendigital 45cat.com=fortyfivecat abc.net.au/triplejunearthed=triplejunearthed acum.org.il=acum adp.library.ucsb.edu=dahr ' +
+      'allmusic.com=allmusic anghami.com=anghami anidb.net=anidb anilist.co=anilist animenewsnetwork.com=animenewsnetwork anison.info=anisongeneration ' +
+      'archive.org=archive audiomack.com=audiomack awa.fm=awa baidu.com=baidu bandcamp.com=bandcamp bandsintown.com=bandsintown bbc.co.uk=bbc ' +
+      'beatport.com=beatport bibliotekapiosenki.pl=piosenki bigcartel.com=bigcartel bookbrainz.org=bookbrainz books.apple.com=applebooks boomkat.com=boomkat ' +
+      'boomplay.com=boomplay bsky.app=bluesky cancioneros.si=cancioneros castalbums.org=castalbums catalogue.bnf.fr=bnfcatalogue cbfiddle.com/rx/=cbfiddlerx ' +
+      'ccmixter.org=ccmixter cdjapan.co.jp=cdjapan changetip.com=changetip ci.nii.ac.jp=cinii classicalarchives.com=classicalarchives ' +
+      'concerts.livenation.com=livenation cpdl.org=cpdl d-nb.info=dnb dailymotion.com=dailymotion deezer.com=deezer deviantart.com=deviantart dhhu.dk=dhhu ' +
+      'discogs.com=discogs dogmazic.net=dogmazic dramonline.org=dram e-onkyo.com=eonkyo encyclopedisque.fr=encyclopedisque ester.ee=ester ' +
+      'facebook.com=facebook finna.fi=finna finnmusic.net=finnmusic fono.fi=fonofi generasia.com/wiki=generasia genie.co.kr=genie genius.com=genius ' +
+      'geonames.org=geonames goodreads.com=goodreads gutenberg.org=gutenberg hmv.co.jp=hmvbooks hoerspielforscher.de=hoerspielforscher hoick.jp=hoick ' +
+      'ibdb.com=ibdb idref.fr=idref imdb.com=imdb imslp.org=imslp imvdb.com=imvdb indiegogo.com=indiegogo instagram.com=instagram ircam.fr=ircam ' +
+      'irishtune.info=irishtune iss.ndl.go.jp=ndl itunes.apple.com=itunes j-lyric.net=jlyric jazzmusicarchives.com=jazzmusicarchives joysound.com=joysound ' +
+      'kashinavi.com=kashinavi kickstarter.com=kickstarter kkbox.com=kkbox ko-fi.com=kofi lantis.jp=lantis last.fm=lastfm ' +
+      'lesarchivesduspectacle.net=archivesduspectacle librarything.com=librarything librivox.org=librivox lieder.net=lieder linkedin.com=linkedin ' +
+      'livefans.jp=livefans loc.gov=loc loudr.fm=loudr mainlynorfolk.info=mainlynorfolk melon.com=melon metacritic.com=metacritic ' +
+      'metal-archives.com=metalarchives metalmusicarchives.com=metalmusicarchives mixcloud.com=mixcloud mixesdb.com=mixesdb mobygames.com=mobygames ' +
+      'mora.jp=mora music.amazon=amazonmusic classical.music.apple.com=appleclassical music.apple.com=applemusic music.bugs.co.kr=bugs ' +
+      'music.line.me=linemusic music.migu.cn=migumusic music.yandex=yandex music.youtube.com=youtubemusic musicapopular.cl=musicapopularcl ' +
+      'musicinafrica.net=musicinafrica musik-sammler.de=musiksammler musixmatch.com=musixmatch musopen.org=musopen muziekweb.nl=muziekweb muzikum.eu=muzikum ' +
+      'myanimelist.net=myanimelist myspace.com=myspace nicovideo.jp=niconicovideo nla.gov.au=trove oclc.org=oclc ocremix.org=ocremix ' +
+      'offiziellecharts.de=offiziellecharts online-bijbel.nl=onlinebijbel opac.kbr.be=kbr openlibrary.org=openlibrary operabase.com=operabase ' +
+      'ototoy.jp=ototoy overture.doremus.org=overture patreon.com=patreon paypal.me=paypal petitlyrics.com=petitlyrics pinterest.com=pinterest ' +
+      'pixiv.net=pixiv progarchives.com=progarchives psydb.net=psydb qobuz.com=qobuz quebecinfomusique.com=quebecinfomusique ra.co=residentadvisor ' +
+      'rateyourmusic.com=rateyourmusic recochoku.jp=recochoku reverbnation.com=reverbnation rism.online=rism rock.com.ar=rockcomar ' +
+      'rockensdanmarkskort.dk=rockensdanmarkskort rockinchina.com=ric rockipedia.no=rockipedia rockit.it=rockit rolldabeats.com=rolldabeats ' +
+      'runeberg.org=runeberg saisaibatake.ame-zaiku.com/gakki=gakki saisaibatake.ame-zaiku.com/musical=gakki ' +
+      'saisaibatake.ame-zaiku.com/musical_instrument=gakki secondhandsongs.com=secondhandsongs setlist.fm=setlistfm shop.tsutaya.co.jp=tsutaya ' +
+      'smdb.kb.se=smdb snaccooperative.org=snac songfacts.com=songfacts songkick.com=songkick soundcloud.com=soundcloud spirit-of-metal.com=spiritofmetal ' +
+      'spirit-of-rock.com=spiritofrock spotify.com=spotify stage48.net=stage48 steamdb.info=steamdb stereo-ve-mono.com=stereo-ve-mono target.com=target ' +
+      'tedcrane.com/DanceDB=dancedb theatricalia.com=theatricalia thedancegypsy.com=thedancegypsy themoviedb.org=tmdb thesession.org=thesession ' +
+      'threads.com=threads thwiki.cc=thbwiki tidal.com=tidal tiktok.com=tiktok tipeee.com=tipeee tobarandualchais.co.uk=tobar touhoudb.com=touhoudb ' +
+      'tower.jp=tower traxsource.com=traxsource triplejunearthed.com=triplejunearthed tunearch.org=tunearch twitch.tv=twitch twitter.com=twitter ' +
+      'uta-net.com=utanet utaitedb.net=utaitedb utaten.com=utaten vgmdb.net=vgmdb viaf.org=viaf vibe.naver.com=navervibe vimeo.com/ondemand=vimeoondemand ' +
+      'vimeo.com=vimeo vk.com=vk vk.gy=vkgy vk.ru=vk vkdb.jp=vkdb vndb.org=vndb vocadb.net=vocadb weibo.com=weibo whosampled.com=whosampled ' +
+      'wikidata.org=wikidata wikipedia.org=wikipedia wikisource.org=wikisource worldcat.org=worldcat www.amazon=amazon www.livenation.=livenation ' +
+      'www.ticketmaster.=ticketmaster www.youtube.com=youtube www5.atwiki.jp/hmiku/=hmikuwiki yesasia.com=yesasia zamp.hr=zamp zemereshet.co.il=zemereshet'
+    ).split(' ').map(s => s.split('='));
+    const _favDrawn = new Map();
+    function mbFaviconDrawn(cls) {
+      if (_favDrawn.has(cls)) return _favDrawn.get(cls);
+      let ok = false;
+      try {
+        const s = document.createElement('span'); s.className = cls; s.style.cssText = 'position:absolute;visibility:hidden';
+        document.body.appendChild(s); ok = getComputedStyle(s).backgroundImage !== 'none'; s.remove();
+      } catch (e) {}
+      _favDrawn.set(cls, ok);
+      Log.debug('MB favicon ' + cls + (ok ? ' drawn by the page’s icon sheet' : ' not drawn by the page’s icon sheet → globe'));
+      return ok;
+    }
+    function mbFavicon(u) {
+      let host = ''; try { host = new URL(u).host; } catch (e) { return _GLOBE; }
+      const hit = MB_FAVICON.find(([k]) => k.includes('/') ? u.includes(k) : host.includes(k));
+      const cls = hit && hit[1] + '-favicon';
+      return cls && mbFaviconDrawn(cls) ? '<span class="ii-mbfav ' + cls + '"></span>' : _GLOBE;
+    }
     const KNOWN_LINK = [
       { test: u => /open\.spotify\.com\//i.test(u),                                       name: 'Spotify',      color: _PROV_COLOR.spotify, icon: SRC_ICON.sp },
       { test: u => /(?:^|[./])qobuz\.com\//i.test(u),                                      name: 'Qobuz',        color: '#0070ef', icon: _QOBUZ },
@@ -60514,9 +60577,9 @@ if (__stOff.indexOf("isrc_scout") < 0 && __stRuns("isrc_scout", {"inc":["^https:
         if (!u || seen.has(u) || PROV.some(p => p.test(u))) return;   // PROV ones are shown already
         seen.add(u);
         const k = KNOWN_LINK.find(x => x.test(u));
-        if (k) { out.push({ url: u, name: k.name, color: k.color, icon: k.icon }); return; }
+        if (k) { out.push({ url: u, name: k.name, color: k.color, icon: k.icon === _GLOBE ? mbFavicon(u) : k.icon }); return; }
         let host = ''; try { host = new URL(u).hostname.replace(/^www\./, ''); } catch (e) {}
-        if (host) out.push({ url: u, name: host, color: '#8a8f98', icon: _GLOBE });
+        if (host) out.push({ url: u, name: host, color: '#8a8f98', icon: mbFavicon(u) });
       });
       return out;
     }

@@ -105,7 +105,7 @@ Submitting ISRCs needs OAuth once: **⚙ Setup → Authorize**, approve in the t
 
 ## Links
 
-The **Links** tab shows, per track, what each recording already links to (**Linked**) and what was found but isn't linked yet (**Add**). Linked shows every provider, including ones ISRC Scout can't add (YouTube, Amazon Music, any host).
+The **Links** tab shows, per track, what each recording already links to (**Linked**) and what was found but isn't linked yet (**Add**). Linked shows every provider, including ones ISRC Scout can't add (YouTube, Amazon Music, any host). A site ISRC Scout has no icon of its own for gets the one MusicBrainz shows beside the link on the recording's page, and a globe when MusicBrainz has none.
 
 <img width="1000" src="./screenshots/links.png" />
 
@@ -131,7 +131,7 @@ End a link when the release is taken down and it no longer resolves ([MusicBrain
 
 ## Tracklist
 
-The release page's tracklist gets two columns before *Rating*: **ISRC**, each track's ISRCs, and **Links**, its recording's links. An ISRC opens its MusicBrainz page, an icon the provider's track. Each platform shows one icon; when the recording has several links there, a number beside it says how many, its tooltip lists them, and it opens the first one that hasn't ended. An ended link is faded. They follow what you submit and change in the editor. **ISRC** and **Links** above the tracklist, beside MusicBrainz's own *Display credits at bottom*, show or hide each column (struck through when hidden). In the settings, *ISRC column on the tracklist* and *Links column on the tracklist* do the same, and *Column toggles above the tracklist* hides the toggles.
+The release page's tracklist gets two columns before *Rating*: **ISRC**, each track's ISRCs, and **Links**, its recording's links. An ISRC opens its MusicBrainz page, an icon the provider's track. Each platform shows one icon; when the recording has several links there, a number beside it says how many, its tooltip lists them, and it opens the first one that hasn't ended. An ended link is faded, and a site's icon is the one the **Links** tab shows. They follow what you submit and change in the editor. **ISRC** and **Links** above the tracklist, beside MusicBrainz's own *Display credits at bottom*, show or hide each column (struck through when hidden). In the settings, *ISRC column on the tracklist* and *Links column on the tracklist* do the same, and *Column toggles above the tracklist* hides the toggles.
 
 ## Settings
 
