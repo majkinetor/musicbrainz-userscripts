@@ -18,7 +18,7 @@ A merge assistant for MusicBrainz recordings: gather candidates, let Match group
 
 ## Pool and groups
 
-Every candidate starts in the **Pool**. Put it in a group by dragging it, by double-clicking it (it joins the *current* group, the one whose header you clicked last), or by selecting it and clicking a group.
+Every candidate starts in the **Pool**. A recording's disambiguation follows its title in brackets, as on MusicBrainz, here and in the groups. Put it in a group by dragging it, by double-clicking it (it joins the *current* group, the one whose header you clicked last), or by selecting it and clicking a group.
 
 In a group:
 

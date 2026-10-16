@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-10-16 16:36 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-10-16 16:57 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -1180,7 +1180,7 @@ A merge assistant for MusicBrainz recordings: gather candidates, let Match group
 
 ### Pool and groups
 
-Every candidate starts in the **Pool**. Put it in a group by dragging it, by double-clicking it (it joins the *current* group, the one whose header you clicked last), or by selecting it and clicking a group.
+Every candidate starts in the **Pool**. A recording's disambiguation follows its title in brackets, as on MusicBrainz, here and in the groups. Put it in a group by dragging it, by double-clicking it (it joins the *current* group, the one whose header you clicked last), or by selecting it and clicking a group.
 
 In a group:
 
