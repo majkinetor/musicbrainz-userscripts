@@ -2049,14 +2049,6 @@ export function insertDiscogsBar(discogsUrl, sources = {}, meta = {}) {
         delete savedOpts.createWorks;   // pre-#94 legacy key, superseded by the reset
         try { gmSave(OPTS_KEY, JSON.stringify(savedOpts)); } catch(e) {}
     }
-    // #613 one-time: co-credit search is now ON by default (majkinetor). Anyone who clicked an
-    // option while it defaulted to off has coCredit:false SAVED, which would shadow the new
-    // default forever — so this version starts everyone at on, once.
-    if (!savedOpts.coCreditDefaultOn613) {
-        savedOpts.coCredit = true;
-        savedOpts.coCreditDefaultOn613 = true;
-        try { gmSave(OPTS_KEY, JSON.stringify(savedOpts)); } catch(e) {}
-    }
     const bv = (k, d) => k in savedOpts ? savedOpts[k] : d;
 
     const tracklistCb    = makeCheckbox('Per-track credits',              bv('tracklist', true),
@@ -2140,13 +2132,6 @@ export function insertDiscogsBar(discogsUrl, sources = {}, meta = {}) {
         'Skip a role when an equivalent role already exists on the target (writer ≡ composer).');
     const dedupeDupCb = makeCheckbox('Duplicate roles',   bv('dedupeDuplicateRoles', true),
         'Skip adding a role when the target already has the same role (regardless of task / dates / attributes).');
-    // #613: matching options
-    const matchHd = document.createElement('div');
-    matchHd.className = 'discogs-opts-panel-hd';
-    matchHd.textContent = 'Matching';
-    optsPanel.appendChild(matchHd);
-    const coCreditCb = makeCheckbox('Co-credit search', bv('coCredit', true),
-        'For a name still ambiguous after name, alias and release-context matching, search MusicBrainz for a recording that credits it ALONGSIDE the release artist (one extra request per ambiguous name and release artist; none on Various Artists releases). On by default.');
     _optsHost = optsWrap;    // back to the inline strip
     optsWrap.appendChild(optsBtn);
     document.body.appendChild(optsPanel);   // floating; positioned when opened
@@ -2169,11 +2154,9 @@ export function insertDiscogsBar(discogsUrl, sources = {}, meta = {}) {
             createWorksReset421: true,   // #421 one-time reset already applied — must survive every save
             dedupeEquivalenceSets: dedupeEqCb.checked,
             dedupeDuplicateRoles:  dedupeDupCb.checked,
-            coCredit:              coCreditCb.checked,   // #613
-            coCreditDefaultOn613:  true,                 // #613 one-time default-on already applied — must survive every save
         })); } catch(e) {}
     };
-    [tracklistCb, applyTracksCb, useWorksCb, dedupeEqCb, dedupeDupCb, coCreditCb].forEach(cb =>
+    [tracklistCb, applyTracksCb, useWorksCb, dedupeEqCb, dedupeDupCb].forEach(cb =>
         cb.closest('label').addEventListener('click', () => setTimeout(saveOpts, 0)));
     createWorksMode.addEventListener('change', saveOpts);
 
@@ -2580,7 +2563,6 @@ export function insertDiscogsBar(discogsUrl, sources = {}, meta = {}) {
             createWorksMode:         useWorksCb.checked ? createWorksMode.value : 'off',
             dedupeEquivalenceSets:   dedupeEqCb.checked,
             dedupeDuplicateRoles:    dedupeDupCb.checked,
-            coCredit:                coCreditCb.checked,   // #613 co-credit search (on by default)
         });
         const _click = getOpts();
         const opts = `per-track:${_click.processTracklist?'on':'off'}, move-to-tracks:${_click.applyToTracks?'on':'off'}, create-works:${_click.createWorksMode}`;
@@ -3245,9 +3227,10 @@ function runSourcePipeline({ companies, artistRoles, tracklistRels, tracklist, s
                 const t0 = performance.now();
                 return (async () => {
                     // #612/#613: the release artist's related artists (one request per real
-                    // release artist, none on a Various Artists release) + the co-credit option
+                    // release artist, none on a Various Artists release) + the co-credit search, always
+                    // on since #771: the review table's cutoff decides whether its matches are taken
                     let context = null;
-                    try { context = await buildReleaseContext({ coCredit: !!(getOpts && getOpts().coCredit) }); }
+                    try { context = await buildReleaseContext({ coCredit: true }); }
                     catch (e) { log.warn(`Matching context unavailable: ${e.message}`); }
                     const artistResults  = await resolveAll(uniqueArtists, {
                         progressLi:    artistProgressLi,

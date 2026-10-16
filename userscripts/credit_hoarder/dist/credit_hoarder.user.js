@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Credit Hoarder
 // @namespace    majkinetor
-// @version      2026.10.16
+// @version      2026.10.16.200603
 // @description  Import per-track release credits from streaming/database providers (Discogs, Tidal, Qobuz, Deezer) into MusicBrainz relationships, with a review phase
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9Ii0xNS41IC0xLjUgMTM2LjUgMTM2LjUiIHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4Ij4KPHRpdGxlPkNyZWRpdCBIb2FyZGVyPC90aXRsZT4KPGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJjaGMwNC1nIiB4MT0iMCIgeTE9IjAiIHgyPSIxIiB5Mj0iMSI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjZjlhODI2Ii8+PHN0b3Agb2Zmc2V0PSIuNSIgc3RvcC1jb2xvcj0iI2YzNzIyYyIvPjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iI2QwMDA3MCIvPjwvbGluZWFyR3JhZGllbnQ+PC9kZWZzPjxnIG9wYWNpdHk9Ii43Ij48ZyB0cmFuc2Zvcm09InRyYW5zbGF0ZSg2NiA3MCkgcm90YXRlKDApIHNjYWxlKDEuNTUpIHRyYW5zbGF0ZSgtNjYgLTcwKSI+PGcgZmlsbD0iI2ZmZiIgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjEuOTM1NDgzODcwOTY3NzQxOCI+PGVsbGlwc2UgY3g9IjMwIiBjeT0iODAiIHJ4PSIxNCIgcnk9IjEwIi8+PGNpcmNsZSBjeD0iNTAiIGN5PSI3NiIgcj0iOCIvPjxjaXJjbGUgY3g9IjY2IiBjeT0iNzAiIHI9IjEwIi8+PC9nPjxnIHN0cm9rZT0iI2ZmZiIgc3Ryb2tlLXdpZHRoPSI1LjE2MTI5MDMyMjU4MDY0NSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBmaWxsPSJub25lIj48cGF0aCBkPSJNMjYgODYgbC02IDEyIE0zNCA4OCBsMiAxMiBNNDYgODIgbC00IDE2IE01MiA4NCBsOCAxNCIvPjwvZz48L2c+PGcgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjYuNSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBmaWxsPSJub25lIj48cGF0aCBkPSJNNzIgNjIgQzc4IDUyIDg2IDQ4IDkyIDQ4IE03MCA2MiBDNzIgNTIgNzAgNDQgNjQgNDAiLz48L2c+PHBhdGggZD0iTTExMy42IDQ1LjAgTDk4LjAgNTQuMCBMODIuNCA0NS4wIEw4Mi40IDI3LjAgTDk4LjAgMTguMCBMMTEzLjYgMjcuMFoiIGZpbGw9IiNmZmYiIHN0cm9rZT0iI2ZmZiIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWpvaW49InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTAgOTggMzYpIi8+PC9nPjxnIHRyYW5zZm9ybT0idHJhbnNsYXRlKDY2IDcwKSByb3RhdGUoMCkgc2NhbGUoMS41NSkgdHJhbnNsYXRlKC02NiAtNzApIj48ZyBmaWxsPSIjMjIyMjNiIiBzdHJva2U9Im5vbmUiIHN0cm9rZS13aWR0aD0iMCI+PGVsbGlwc2UgY3g9IjMwIiBjeT0iODAiIHJ4PSIxNCIgcnk9IjEwIi8+PGNpcmNsZSBjeD0iNTAiIGN5PSI3NiIgcj0iOCIvPjxjaXJjbGUgY3g9IjY2IiBjeT0iNzAiIHI9IjEwIi8+PC9nPjxnIHN0cm9rZT0iIzIyMjIzYiIgc3Ryb2tlLXdpZHRoPSIzLjIyNTgwNjQ1MTYxMjkwMyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBmaWxsPSJub25lIj48cGF0aCBkPSJNMjYgODYgbC02IDEyIE0zNCA4OCBsMiAxMiBNNDYgODIgbC00IDE2IE01MiA4NCBsOCAxNCIvPjwvZz48L2c+PGcgc3Ryb2tlPSIjMjIyMjNiIiBzdHJva2Utd2lkdGg9IjMuNSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBmaWxsPSJub25lIj48cGF0aCBkPSJNNzIgNjIgQzc4IDUyIDg2IDQ4IDkyIDQ4IE03MCA2MiBDNzIgNTIgNzAgNDQgNjQgNDAiLz48L2c+PHBhdGggZD0iTTExMy42IDQ1LjAgTDk4LjAgNTQuMCBMODIuNCA0NS4wIEw4Mi40IDI3LjAgTDk4LjAgMTguMCBMMTEzLjYgMjcuMFoiIGZpbGw9InVybCgjY2hjMDQtZykiIHN0cm9rZT0iIzIyMjIzYiIgc3Ryb2tlLXdpZHRoPSIzIiBzdHJva2UtbGluZWpvaW49InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTAgOTggMzYpIi8+PGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoOTggMzcpIHNjYWxlKDAuOSkiIGZpbGw9IiNmZmYiPjxjaXJjbGUgY3g9IjAiIGN5PSItNSIgcj0iNSIvPjxwYXRoIGQ9Ik0tOSA5IEMtOSAwIDkgMCA5IDlaIi8+PC9nPgo8L3N2Zz4K
@@ -136,6 +136,12 @@ if (!mbuClaim('credit_hoarder', 'Credit Hoarder')) return;
   var DISCOGS_CHANNEL = new BroadcastChannel("discogs-importer-artist");
   DISCOGS_CHANNEL.unref?.();
   var pageWindow = typeof unsafeWindow !== "undefined" ? unsafeWindow : typeof window !== "undefined" ? window : globalThis;
+  var MATCH_LEVELS = [
+    { key: "exact", label: "Exact", color: "#2f6fd6", hint: "name and URL agree" },
+    { key: "strong", label: "Strong", color: "#86c686", hint: "URL, or release context" },
+    { key: "unique", label: "Unique name", color: "#fff176", hint: "the only MusicBrainz artist with the name" },
+    { key: "weak", label: "Weak", color: "#ffb74d", hint: "co-credit, similar name" }
+  ];
 
   // src/log.js
   var _logs = null;
@@ -4340,6 +4346,25 @@ ${ourBlock}` : ourBlock;
 
   // src/review-table.js
   var _urlCheckSessionCache = /* @__PURE__ */ new Map();
+  var VIA_LEVEL = { both: 0, "both-alias": 0, url: 1, ctx: 1, cache: 1, name: 2, alias: 2, cred: 3, typo: 3 };
+  var matchLevelOf = (via) => via in VIA_LEVEL ? VIA_LEVEL[via] : null;
+  var CUTOFF_KEY = "ch-match-cutoff";
+  var CUTOFF_DEFAULT = 1;
+  function loadCutoff() {
+    try {
+      const v = GM_getValue(CUTOFF_KEY, CUTOFF_DEFAULT);
+      return Number.isInteger(v) && v >= 0 && v < MATCH_LEVELS.length ? v : CUTOFF_DEFAULT;
+    } catch (e) {
+      return CUTOFF_DEFAULT;
+    }
+  }
+  function makeLevelDot(level, title) {
+    const dot = document.createElement("span");
+    dot.className = "ch-level-dot";
+    dot.style.cssText = `width:11px;height:11px;border-radius:50%;display:inline-block;flex:0 0 auto;border:1px solid rgba(0,0,0,.2);background:${level == null ? "var(--mbu-border-strong)" : MATCH_LEVELS[level].color};`;
+    dot.title = title || (level == null ? "Picked by you" : `${MATCH_LEVELS[level].label}: ${MATCH_LEVELS[level].hint}`);
+    return dot;
+  }
   function ensureCreatingStyle() {
     if (document.getElementById("ch-creating-style")) return;
     const st = document.createElement("style");
@@ -4391,6 +4416,32 @@ ${ourBlock}` : ourBlock;
     return new Promise((resolve) => {
       opts?.registerAbort?.(() => resolve(null));
       const rowState = /* @__PURE__ */ new Map();
+      let cutoff = loadCutoff();
+      function applyCutoff(r) {
+        if (!r._auto) {
+          if (r.type !== "resolved" || !r.mbUrl) return;
+          r._auto = { type: r.type, mbUrl: r.mbUrl, mbName: r.mbName, mbDisambig: r.mbDisambig, logEntry: r.logEntry, nameMatches: r.nameMatches, ambiguityReason: r.ambiguityReason };
+        }
+        const a = r._auto;
+        const via = a.logEntry?.via;
+        const level = matchLevelOf(via);
+        if (level == null || level <= cutoff) {
+          Object.assign(r, { type: a.type, mbUrl: a.mbUrl, mbName: a.mbName, mbDisambig: a.mbDisambig, logEntry: a.logEntry, nameMatches: a.nameMatches, ambiguityReason: a.ambiguityReason });
+          delete r._below;
+          return;
+        }
+        const mbid = (a.mbUrl || "").replace(/.*\//, "").replace(/[^a-f0-9-]/gi, "").substring(0, 36);
+        const name = a.mbName || a.logEntry?.mbName || mbid;
+        const cand = { id: mbid, name, disambiguation: a.mbDisambig || a.logEntry?.mbDisambig || "" };
+        r.type = "attention";
+        r.mbUrl = null;
+        r.mbName = null;
+        r.mbDisambig = "";
+        r.nameMatches = [cand, ...(a.nameMatches || []).filter((c) => c && c.id !== mbid)];
+        r.ambiguityReason = `below the cutoff: ${VIA_STYLES[via]?.text || via}`;
+        r._below = { via, level, mbid };
+        logDebug(`cutoff: "${r.displayName || r.entity?.name}" \u2192 ${name} (${via}, ${MATCH_LEVELS[level].label}) is below ${MATCH_LEVELS[cutoff].label}; offered, not selected`);
+      }
       const rowSearchInputs = /* @__PURE__ */ new Map();
       const linkState = /* @__PURE__ */ new Map();
       const rowLinkChips = /* @__PURE__ */ new Map();
@@ -4472,7 +4523,9 @@ ${ourBlock}` : ourBlock;
         ctx: { text: "context", color: "var(--mbu-ok)" },
         // #612 a related artist of the release artist
         cred: { text: "co-credit", color: "var(--mbu-accent-text)" },
-        // #613 co-credit search (option)
+        // #613 co-credit search
+        typo: { text: "similar name", color: "var(--mbu-accent-text)" },
+        // #771 ⚛ All: a typo / middle-initial twin of a matched name
         user: { text: "user", color: "var(--mbu-text-dim)" },
         cache: { text: "cache", color: "var(--mbu-text-dim)" }
         // legacy: original mechanism unknown
@@ -4601,10 +4654,115 @@ ${ourBlock}` : ourBlock;
       headingText.style.cssText = "font-weight:bold;font-size:1rem;color:var(--mbu-warn);flex:1;";
       headingText.textContent = `Review \u2014 ${allResults.length} entit${allResults.length === 1 ? "y" : "ies"}`;
       heading.appendChild(headingText);
+      heading.appendChild(buildCutoffChip());
       panel.appendChild(heading);
+      function buildCutoffChip() {
+        const wrap = document.createElement("span");
+        wrap.className = "ch-cutoff";
+        wrap.title = "Lowest match confidence still selected automatically; a match below it is offered first on its row";
+        wrap.style.cssText = "display:inline-flex;align-items:center;gap:0.4rem;font-size:0.8rem;color:var(--mbu-text);flex-shrink:0;";
+        const lbl = document.createElement("b");
+        lbl.textContent = "Cutoff";
+        const chip = document.createElement("button");
+        chip.type = "button";
+        chip.className = "ch-cutoff-chip";
+        chip.style.cssText = "display:inline-flex;align-items:center;gap:0.35rem;border:1px solid var(--mbu-border);border-radius:14px;padding:2px 10px;background:var(--mbu-bg);color:var(--mbu-text);cursor:pointer;font:inherit;";
+        const paint = () => {
+          chip.replaceChildren(makeLevelDot(cutoff), document.createTextNode(MATCH_LEVELS[cutoff].label));
+          const caret = document.createElement("span");
+          caret.textContent = "\u25BE";
+          caret.style.cssText = "color:var(--mbu-text-weak);font-size:0.7rem;padding-left:0.2rem;";
+          chip.appendChild(caret);
+        };
+        paint();
+        let menu = null;
+        const close = () => {
+          menu?.remove();
+          menu = null;
+          document.removeEventListener("mousedown", onDown, true);
+        };
+        const onDown = (ev) => {
+          if (menu?.contains(ev.target) || chip.contains(ev.target)) return;
+          close();
+          document.addEventListener("click", (e) => {
+            e.stopPropagation();
+            e.preventDefault();
+          }, { capture: true, once: true });
+        };
+        chip.addEventListener("click", () => {
+          if (menu) {
+            close();
+            return;
+          }
+          menu = document.createElement("div");
+          menu.className = "ch-cutoff-menu";
+          const rc = chip.getBoundingClientRect();
+          menu.style.cssText = `position:fixed;z-index:var(--mbu-z-pop);top:${rc.bottom + 4}px;left:${Math.max(8, rc.right - 360)}px;width:360px;max-width:calc(100vw - 16px);box-sizing:border-box;background:var(--mbu-bg);color:var(--mbu-text);border:1px solid var(--mbu-border);border-radius:7px;box-shadow:var(--mbu-shadow-lg);padding:4px;font-size:0.82rem;`;
+          MATCH_LEVELS.forEach((lv, i) => {
+            const mi = document.createElement("div");
+            mi.className = "ch-cutoff-mi";
+            mi.dataset.level = lv.key;
+            mi.style.cssText = "display:flex;align-items:center;gap:0.55rem;padding:5px 10px 5px 8px;border-radius:5px;cursor:pointer;white-space:nowrap;" + (i === cutoff ? "background:var(--mbu-bg-hover);font-weight:bold;" : "");
+            const hint = document.createElement("small");
+            hint.textContent = lv.hint;
+            hint.style.cssText = "margin-left:auto;padding-left:1rem;color:var(--mbu-text-weak);font-weight:normal;";
+            mi.append(makeLevelDot(i), document.createTextNode(lv.label), hint);
+            mi.addEventListener("mouseenter", () => {
+              if (i !== cutoff) mi.style.background = "var(--mbu-bg-hover)";
+            });
+            mi.addEventListener("mouseleave", () => {
+              if (i !== cutoff) mi.style.background = "";
+            });
+            mi.addEventListener("click", () => {
+              close();
+              setCutoff(i);
+              paint();
+            });
+            menu.appendChild(mi);
+          });
+          document.body.appendChild(menu);
+          setTimeout(() => {
+            if (menu) document.addEventListener("mousedown", onDown, true);
+          }, 0);
+        });
+        wrap.append(lbl, chip);
+        return wrap;
+      }
+      function setCutoff(i) {
+        if (i === cutoff) return;
+        const from = cutoff;
+        cutoff = i;
+        try {
+          GM_setValue(CUTOFF_KEY, i);
+        } catch (e) {
+        }
+        let changed = 0, kept = 0;
+        for (const r of [...allResults]) {
+          if (!r._auto) continue;
+          const key = keyOf(r);
+          const st = rowState.get(key);
+          const untouched = r._below ? !st?.confirmed && !st?.mbUrl : !!st?.mbUrl && st.via !== "user";
+          const wasBelow = !!r._below;
+          if (!untouched) {
+            if (matchLevelOf(r._auto.logEntry?.via) > cutoff !== wasBelow) kept++;
+            continue;
+          }
+          applyCutoff(r);
+          if (wasBelow === !!r._below) continue;
+          const tr = tbody.querySelector(`tr[data-entity-key="${CSS.escape(key)}"]`);
+          if (!tr) continue;
+          if (r._credInput?._activeMbUrl) creditOverrides.delete(r._credInput._activeMbUrl);
+          buildRow(r, tr);
+          tr.remove();
+          changed++;
+        }
+        log.info(`Match cutoff: ${MATCH_LEVELS[from].label} \u2192 ${MATCH_LEVELS[cutoff].label}; ${changed} row${changed === 1 ? "" : "s"} changed` + (kept ? `, ${kept} you already set left as they are` : ""));
+        updateLinksBadge();
+        updateImportBtn();
+      }
       const intro = document.createElement("p");
       intro.style.cssText = "margin:0 0 0.75rem;font-size:0.85rem;color:var(--mbu-text-dim);";
-      intro.innerHTML = 'Review all artist matches before importing. <span style="background:var(--mbu-error-bg);color:var(--mbu-text);padding:0 0.3rem;border-radius:2px;">Red rows</span> need attention. <span style="background:var(--mbu-warn-bg);color:var(--mbu-text);padding:0 0.3rem;border-radius:2px;">Yellow rows</span> have a name mismatch \u2014 verify. Green rows are confirmed. Use the search or create buttons to resolve outstanding issues.';
+      intro.innerHTML = 'Review all artist matches before importing. <span style="background:var(--mbu-error-bg);color:var(--mbu-text);padding:0 0.3rem;border-radius:2px;">Red rows</span> need attention. <span style="background:var(--mbu-warn-bg);color:var(--mbu-text);padding:0 0.3rem;border-radius:2px;">Yellow rows</span> have a name mismatch \u2014 verify. Green rows are confirmed. Use the search or create buttons to resolve outstanding issues. A dot shows how sure an automatic match is; <b>Cutoff</b> sets the lowest one selected for you.';
       panel.appendChild(intro);
       const table = document.createElement("table");
       table.style.cssText = "border-collapse:collapse;width:100%;font-size:0.85rem;";
@@ -4670,12 +4828,18 @@ ${ourBlock}` : ourBlock;
         linkState.delete(origKey);
         if (entitySources?.has(origKey)) subs.forEach((s) => entitySources.set(keyOf(s), entitySources.get(origKey)));
         allResults.splice(idx, 1, ...subs);
+        subs.forEach(applyCutoff);
         subs.forEach((s) => buildRow(s, tr));
         tr.remove();
         splits.set(origKey, subs.map((s) => ({ key: keyOf(s), name: s.displayName })));
         headingText.textContent = `Review \u2014 ${allResults.length} entit${allResults.length === 1 ? "y" : "ies"}`;
         updateLinksBadge();
         updateImportBtn();
+      }
+      allResults.forEach(applyCutoff);
+      {
+        const n = allResults.filter((r) => r._below).length;
+        log.info(`Match cutoff: ${MATCH_LEVELS[cutoff].label}${n ? ` \u2014 ${n} automatic match${n === 1 ? "" : "es"} below it left for you` : ""}`);
       }
       allResults.forEach((r) => buildRow(r));
       function buildRow(r, beforeEl) {
@@ -5215,6 +5379,7 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
           undoBtn.title = "Clear selection";
           undoBtn.style.cssText = "font-size:0.75rem;cursor:pointer;padding:0 0.3rem;margin-left:auto;";
           undoBtn.addEventListener("click", () => setRowUnresolved());
+          selRow.appendChild(makeLevelDot(null));
           selRow.appendChild(selA);
           const viaBadge = makeViaBadge("user", false);
           if (viaBadge) selRow.appendChild(viaBadge);
@@ -5665,6 +5830,8 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
           selBtn.style.cssText = "font-size:0.95rem;line-height:1;cursor:pointer;padding:0.1rem 0.45rem;white-space:nowrap;border:1px solid var(--mbu-border);border-radius:0.25rem;background:var(--mbu-ok-bg);color:var(--mbu-ok);font-weight:600;flex-shrink:0;";
           selBtn.addEventListener("click", () => setRowResolved(a));
           row.appendChild(selBtn);
+          const below = r._below && r._below.mbid === a.id ? r._below : null;
+          if (below) row.appendChild(makeLevelDot(below.level));
           const info = document.createElement("span");
           info.style.flex = "1";
           const nameA = document.createElement("a");
@@ -5679,6 +5846,13 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
             d.style.cssText = "color:var(--mbu-text-dim);margin-left:0.25rem;";
             d.textContent = `(${a.disambiguation})`;
             info.appendChild(d);
+          }
+          if (below) {
+            const pill = document.createElement("span");
+            pill.textContent = `below cutoff: ${VIA_STYLES[below.via]?.text || below.via}`;
+            pill.title = `Matched automatically (${MATCH_LEVELS[below.level].label}: ${MATCH_LEVELS[below.level].hint}), below the cutoff (${MATCH_LEVELS[cutoff].label}), so not selected. \u2713 selects it.`;
+            pill.style.cssText = "font-size:0.68rem;color:var(--mbu-warn);background:var(--mbu-warn-bg);border:1px solid var(--mbu-warn);border-radius:8px;padding:0 0.35rem;margin-left:0.35rem;white-space:nowrap;";
+            info.appendChild(pill);
           }
           row.appendChild(info);
           const rolesEl = buildMbRolesEl(a.id);
@@ -5777,6 +5951,7 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
           undoBtn.title = "Clear selection";
           undoBtn.style.cssText = "font-size:0.75rem;cursor:pointer;padding:0 0.3rem;margin-left:auto;";
           undoBtn.addEventListener("click", () => setRowUnresolved());
+          selRow.appendChild(makeLevelDot(matchLevelOf(r.logEntry?.via)));
           selRow.appendChild(selA);
           const viaBadge = makeViaBadge(r.logEntry?.via, r.logEntry?.fromCache);
           if (viaBadge) selRow.appendChild(viaBadge);
@@ -5958,6 +6133,14 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
         confirmedMap.totalEntities = allResults.length;
         confirmedMap.creditOverrides = creditOverrides;
         confirmedMap.splits = splits;
+        const matchCounts = { levels: MATCH_LEVELS.map(() => 0), user: 0, cutoff: MATCH_LEVELS[cutoff].label };
+        rowState.forEach((st) => {
+          if (!st.mbUrl) return;
+          const lv = st.via === "user" ? null : matchLevelOf(st.via);
+          if (lv == null) matchCounts.user++;
+          else matchCounts.levels[lv]++;
+        });
+        confirmedMap.matchCounts = matchCounts;
         (panelLi || panel).remove();
         if (headerSlot) headerSlot.replaceChildren();
         resolve(confirmedMap);
@@ -6829,10 +7012,13 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
       const unresolvedCount = confirmedMap?.unresolvedCount || 0;
       const totalEntities = confirmedMap?.totalEntities || 0;
       const unresolvedLine = unresolvedCount > 0 ? `Unresolved: ${unresolvedCount} of ${totalEntities} entit${totalEntities === 1 ? "y" : "ies"} skipped in review` : null;
+      const mc = confirmedMap?.matchCounts;
+      const matchedParts = mc ? [...MATCH_LEVELS.map((lv, i) => mc.levels[i] ? `${mc.levels[i]} ${lv.label.toLowerCase()}` : null), mc.user ? `${mc.user} by you` : null].filter(Boolean) : [];
+      const matchedLine = matchedParts.length ? `Matched: ${matchedParts.join(", ")} (cutoff: ${mc.cutoff.toLowerCase()})` : null;
       const editNoteDedupPart = dedupedThisSession > 0 ? `, ${dedupedThisSession} dispatch duplicate${dedupedThisSession === 1 ? "" : "s"}` : "";
       const editNoteStagedPart = existedStaged > 0 ? `, ${existedStaged} already added this session` : "";
       const resultStats = `Result: ${added} added, ${existedInMb} already in MB${editNoteStagedPart}${editNoteDedupPart}, ${skipped} skipped, ${failed} failed${recSelectionActive ? ` (applied to ${checkedRecGids.size} of ${recordingByGid.size} selected recordings)` : ""}`;
-      const ourNote = buildEditNote(discogsUrl, opts, [inputStats, unresolvedLine, resultStats].filter(Boolean), dedupOpts.sourceLabel);
+      const ourNote = buildEditNote(discogsUrl, opts, [inputStats, matchedLine, unresolvedLine, resultStats].filter(Boolean), dedupOpts.sourceLabel);
       const existingNote = document.querySelector(SELECTORS.EditNote)?.value || "";
       const note = combineEditNote(existingNote, ourNote);
       re.dispatch({ type: "update-edit-note", editNote: note });
@@ -7432,12 +7618,13 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
       if (!fn) return null;
       const set = nameMbids.get(kn);
       if (set && set.size === 1) return "mb:" + [...set][0];
+      let near = null;
       if (!set) {
         const stripped = nameMbidsStripped.get(_resultKind(r) + "|" + stripInitials(fn));
-        if (stripped && stripped.size === 1) return "mb:" + [...stripped][0];
+        if (stripped && stripped.size === 1) near = [...stripped][0];
       }
-      const fuzzy = fuzzyResolvedMatch(kn);
-      if (fuzzy) return "mb:" + fuzzy;
+      if (!near) near = fuzzyResolvedMatch(kn);
+      if (near) r._nearTwin = near;
       return "nm:" + kn;
     };
     const byKey = /* @__PURE__ */ new Map(), mergeMap = /* @__PURE__ */ new Map(), out = [];
@@ -7476,6 +7663,19 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
         entitySources.set(repKey, [...u]);
       }
       mergeMap.get(repKey).push(rk);
+    }
+    const resolvedByUrl = new Map(rows.filter((r) => r.type === "resolved" && r.mbUrl).map((r) => [r.mbUrl, r]));
+    for (const rep of out) {
+      const twin = rep._nearTwin && rep.type !== "resolved" && resolvedByUrl.get(rep._nearTwin);
+      delete rep._nearTwin;
+      if (!twin) continue;
+      const name = _resultName(rep);
+      rep.type = "resolved";
+      rep.mbUrl = twin.mbUrl;
+      rep.mbName = twin.mbName;
+      rep.mbDisambig = twin.mbDisambig;
+      rep.entityType = twin.entityType || rep.entityType;
+      rep.logEntry = { displayName: rep.displayName || name, discogsHref: rep.discogsHref || "", mbUrl: twin.mbUrl, mbName: twin.mbName, mbDisambig: twin.mbDisambig || "", via: "typo", fromCache: false };
     }
     byKey.forEach((rep, gk) => {
       if (!gk.startsWith("cf:")) return;
@@ -9542,14 +9742,6 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
       } catch (e) {
       }
     }
-    if (!savedOpts.coCreditDefaultOn613) {
-      savedOpts.coCredit = true;
-      savedOpts.coCreditDefaultOn613 = true;
-      try {
-        gmSave(OPTS_KEY, JSON.stringify(savedOpts));
-      } catch (e) {
-      }
-    }
     const bv = (k, d) => k in savedOpts ? savedOpts[k] : d;
     const tracklistCb = makeCheckbox(
       "Per-track credits",
@@ -9630,15 +9822,6 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
       bv("dedupeDuplicateRoles", true),
       "Skip adding a role when the target already has the same role (regardless of task / dates / attributes)."
     );
-    const matchHd = document.createElement("div");
-    matchHd.className = "discogs-opts-panel-hd";
-    matchHd.textContent = "Matching";
-    optsPanel.appendChild(matchHd);
-    const coCreditCb = makeCheckbox(
-      "Co-credit search",
-      bv("coCredit", true),
-      "For a name still ambiguous after name, alias and release-context matching, search MusicBrainz for a recording that credits it ALONGSIDE the release artist (one extra request per ambiguous name and release artist; none on Various Artists releases). On by default."
-    );
     _optsHost = optsWrap;
     optsWrap.appendChild(optsBtn);
     document.body.appendChild(optsPanel);
@@ -9668,16 +9851,12 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
           createWorksReset421: true,
           // #421 one-time reset already applied — must survive every save
           dedupeEquivalenceSets: dedupeEqCb.checked,
-          dedupeDuplicateRoles: dedupeDupCb.checked,
-          coCredit: coCreditCb.checked,
-          // #613
-          coCreditDefaultOn613: true
-          // #613 one-time default-on already applied — must survive every save
+          dedupeDuplicateRoles: dedupeDupCb.checked
         }));
       } catch (e) {
       }
     };
-    [tracklistCb, applyTracksCb, useWorksCb, dedupeEqCb, dedupeDupCb, coCreditCb].forEach((cb) => cb.closest("label").addEventListener("click", () => setTimeout(saveOpts, 0)));
+    [tracklistCb, applyTracksCb, useWorksCb, dedupeEqCb, dedupeDupCb].forEach((cb) => cb.closest("label").addEventListener("click", () => setTimeout(saveOpts, 0)));
     createWorksMode.addEventListener("change", saveOpts);
     const outputDiv = document.createElement("div");
     outputDiv.className = "discogs-output empty";
@@ -10002,9 +10181,7 @@ ${lines}
         // #424: "Use works" off → dispatch sees mode 'off' and touches no work rels
         createWorksMode: useWorksCb.checked ? createWorksMode.value : "off",
         dedupeEquivalenceSets: dedupeEqCb.checked,
-        dedupeDuplicateRoles: dedupeDupCb.checked,
-        coCredit: coCreditCb.checked
-        // #613 co-credit search (on by default)
+        dedupeDuplicateRoles: dedupeDupCb.checked
       });
       const _click = getOpts();
       const opts = `per-track:${_click.processTracklist ? "on" : "off"}, move-to-tracks:${_click.applyToTracks ? "on" : "off"}, create-works:${_click.createWorksMode}`;
@@ -10582,7 +10759,7 @@ ${lines}
       return (async () => {
         let context = null;
         try {
-          context = await buildReleaseContext({ coCredit: !!(getOpts && getOpts().coCredit) });
+          context = await buildReleaseContext({ coCredit: true });
         } catch (e) {
           log.warn(`Matching context unavailable: ${e.message}`);
         }
@@ -10917,7 +11094,7 @@ ${lines}
 
   // src/credit_hoarder.user.js
   try {
-    pageWindow.__creditHoarder = { resolveAll, ARTIST_KIND, buildReleaseContext, releaseArtistMbids, wantsAliasButton, submitAliasBackground, openAddAliasForm };
+    pageWindow.__creditHoarder = { resolveAll, ARTIST_KIND, buildReleaseContext, releaseArtistMbids, wantsAliasButton, submitAliasBackground, openAddAliasForm, showReviewTable, setReviewContainer };
   } catch (e) {
   }
   if (/(^|\.)tidal\.com$/i.test(location.hostname)) {

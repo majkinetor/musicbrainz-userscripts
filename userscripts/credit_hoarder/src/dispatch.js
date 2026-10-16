@@ -5,7 +5,7 @@
 // deduplication against this session and against MB's existing rels.
 
 import { log }                  from './log.js';
-import { pageWindow, EQUIVALENCE_SETS, SELECTORS } from './constants.js';
+import { pageWindow, EQUIVALENCE_SETS, SELECTORS, MATCH_LEVELS } from './constants.js';
 import {
     mbThrottle,
     fetchMBEntity,
@@ -952,6 +952,10 @@ export async function dispatchAllRelationships(companies, artistRoles, tracklist
         const unresolvedLine  = unresolvedCount > 0
             ? `Unresolved: ${unresolvedCount} of ${totalEntities} entit${totalEntities === 1 ? 'y' : 'ies'} skipped in review`
             : null;
+        // #771: how the entities used were matched, e.g. "Matched: 9 exact, 4 strong, 1 by you (cutoff: strong)"
+        const mc = confirmedMap?.matchCounts;
+        const matchedParts = mc ? [...MATCH_LEVELS.map((lv, i) => mc.levels[i] ? `${mc.levels[i]} ${lv.label.toLowerCase()}` : null), mc.user ? `${mc.user} by you` : null].filter(Boolean) : [];
+        const matchedLine = matchedParts.length ? `Matched: ${matchedParts.join(', ')} (cutoff: ${mc.cutoff.toLowerCase()})` : null;
         const editNoteDedupPart = dedupedThisSession > 0
             ? `, ${dedupedThisSession} dispatch duplicate${dedupedThisSession === 1 ? '' : 's'}`
             : '';
@@ -959,7 +963,7 @@ export async function dispatchAllRelationships(companies, artistRoles, tracklist
             ? `, ${existedStaged} already added this session`
             : '';
         const resultStats = `Result: ${added} added, ${existedInMb} already in MB${editNoteStagedPart}${editNoteDedupPart}, ${skipped} skipped, ${failed} failed${recSelectionActive ? ` (applied to ${checkedRecGids.size} of ${recordingByGid.size} selected recordings)` : ''}`;
-        const ourNote = buildEditNote(discogsUrl, opts, [inputStats, unresolvedLine, resultStats].filter(Boolean), dedupOpts.sourceLabel);   // #408: consolidated runs label the source
+        const ourNote = buildEditNote(discogsUrl, opts, [inputStats, matchedLine, unresolvedLine, resultStats].filter(Boolean), dedupOpts.sourceLabel);   // #408: consolidated runs label the source
         // Preserve any note another script already wrote — append ours instead
         // of overwriting (issue #174). Read the live textarea value as the base.
         const existingNote = document.querySelector(SELECTORS.EditNote)?.value || '';

@@ -134,8 +134,9 @@ test("credits from several sources merge into one row each, keeping every source
       assert.deepEqual(mergeMap.get('a').sort(), ['a', 'b', 'c'], 'mergeMap covers every member for post-pick expansion');
   }
 
-  // #415 (middle initial): an unresolved "Vasilis Korres" merges into the uniquely-resolved
+  // #415 (middle initial): an unresolved "Vasilis Korres" is matched to the uniquely-resolved
   // "Vasilis N. Korres" (single-letter tokens ignored when looking for the resolved twin).
+  // #771: on its own row, as a `typo` match the review table's cutoff can leave unselected.
   {
       const tidal = 'https://tidal.com/artist/1', discogs = 'https://www.discogs.com/artist/2';
       const results = [
@@ -143,11 +144,12 @@ test("credits from several sources merge into one row each, keeping every source
           { type: 'attention', entity: { resource_url: discogs, name: 'Vasilis Korres' }, _roles: [{ linkType: 'engineer', displayLabel: 'engineer', trackPos: '', trackTitle: '' }] },
       ];
       const es = new Map([[tidal, ['Tidal']], [discogs, ['Discogs']]]);
-      const { results: out, mergeMap } = mergeResolvedResults(results, es);
-      assert.equal(out.length, 1, 'middle-initial variant merges into its resolved twin (#415)');
-      assert.equal(out[0].mbUrl, '//musicbrainz.org/artist/vasilis', 'adopts the resolved MBID');
-      assert.deepEqual(out[0]._roles.map(r => r.linkType).sort(), ['engineer', 'recording'], 'roles merged');
-      assert.deepEqual(mergeMap.get(tidal).sort(), [discogs, tidal].sort(), 'both urls in mergeMap');
+      const { results: out } = mergeResolvedResults(results, es);
+      assert.equal(out.length, 2, 'middle-initial variant keeps its own row (#771)');
+      assert.equal(out[1].type, 'resolved', 'the variant is matched');
+      assert.equal(out[1].mbUrl, '//musicbrainz.org/artist/vasilis', 'to its resolved twin');
+      assert.equal(out[1].logEntry.via, 'typo', 'as a typo match');
+      assert.deepEqual(out[1]._roles.map(r => r.linkType), ['engineer'], 'roles stay on their own row');
   }
 
   // #415 (initial guard): stripping initials must not merge across DIFFERENT initials that
@@ -163,8 +165,8 @@ test("credits from several sources merge into one row each, keeping every source
       assert.equal(out.length, 3, 'stripped-name ambiguity (2 MBIDs) → nothing force-merged');
   }
 
-  // #408 (typo merge): an unresolved credit that is a single-char typo of a uniquely-resolved name
-  // ("Mark Barott" vs "Mark Barrott") routes to that MBID and merges.
+  // #408 (typo match): an unresolved credit that is a single-char typo of a uniquely-resolved name
+  // ("Mark Barott" vs "Mark Barrott") routes to that MBID; #771: on its own row, marked `typo`.
   {
       const tidal = 'https://tidal.com/artist/1', qobuz = 'https://open.qobuz.com/artist/2';
       const results = [
@@ -172,11 +174,11 @@ test("credits from several sources merge into one row each, keeping every source
           { type: 'attention', entity: { resource_url: qobuz, name: 'Mark Barott' }, _roles: [{ linkType: 'remixer', displayLabel: 'remixer', trackPos: '3', trackTitle: '' }] },
       ];
       const es = new Map([[tidal, ['Tidal']], [qobuz, ['Qobuz']]]);
-      const { results: out, mergeMap } = mergeResolvedResults(results, es);
-      assert.equal(out.length, 1, 'typo name merges into its uniquely-resolved twin');
-      assert.equal(out[0].mbUrl, '//musicbrainz.org/artist/mark', 'typo row adopts the resolved MBID');
-      assert.deepEqual(out[0]._roles.map(r => r.linkType).sort(), ['producer', 'remixer'], 'roles merged across typo pair');
-      assert.deepEqual(mergeMap.get(tidal).sort(), [qobuz, tidal].sort(), 'both urls in mergeMap');
+      const { results: out } = mergeResolvedResults(results, es);
+      assert.equal(out.length, 2, 'typo name keeps its own row (#771)');
+      assert.equal(out[1].mbUrl, '//musicbrainz.org/artist/mark', 'typo row adopts the resolved MBID');
+      assert.equal(out[1].logEntry.via, 'typo', 'marked as a typo match');
+      assert.equal(out[1].logEntry.mbName, out[0].mbName, "with the twin's name");
   }
 
   // #408 (typo guard): short names must NOT fuzzy-merge (too collision-prone) — "Joan" vs "John".

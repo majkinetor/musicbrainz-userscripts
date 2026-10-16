@@ -14,7 +14,7 @@
 // load time — opening IndexedDB and running the localStorage-cleanup IIFE.
 
 import { getSourceUrlsForRelease, logSourceProbe } from './api-mb.js';
-import { log } from './log.js';
+import { log, setReviewContainer } from './log.js';
 import { insertDiscogsBar, probeTitleRemixes } from './ui-bar.js';
 import { MB, DISCOGS_CHANNEL }       from './constants.js';
 import { mbnFetch }                  from '../../../dev/net/mb-gate.mjs';
@@ -26,10 +26,11 @@ import { buildReleaseContext, releaseArtistMbids } from './match-context.js';
 import { wantsAliasButton, submitAliasBackground, openAddAliasForm } from './alias-add.js';
 import { pageWindow }                from './constants.js';
 import { startMcAdapter }            from './mc-adapter.js';
+import { showReviewTable }           from './review-table.js';
 
 // Test hook (like Apollo's __apolloEditor): lets the verify scripts drive the matching
 // pipeline on a real MB page without walking the whole import UI. Read-only by itself.
-try { pageWindow.__creditHoarder = { resolveAll, ARTIST_KIND, buildReleaseContext, releaseArtistMbids, wantsAliasButton, submitAliasBackground, openAddAliasForm }; } catch (e) {}
+try { pageWindow.__creditHoarder = { resolveAll, ARTIST_KIND, buildReleaseContext, releaseArtistMbids, wantsAliasButton, submitAliasBackground, openAddAliasForm, showReviewTable, setReviewContainer }; } catch (e) {}
 
 // ── tidal.com: credits-harvest companion (#193) ──────────────────────────────
 // The script also @matches tidal.com album pages. When the MB side opened

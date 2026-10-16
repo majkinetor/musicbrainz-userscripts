@@ -100,3 +100,12 @@ DISCOGS_CHANNEL.unref?.();
  */
 export const pageWindow = (typeof unsafeWindow !== 'undefined') ? unsafeWindow
     : (typeof window !== 'undefined') ? window : globalThis;
+
+// #771: how sure an automatic match is, strongest first. The colours are Apollo's and Group
+// Therapy's confidence colours, so a dot reads the same in every script.
+export const MATCH_LEVELS = [
+    { key: 'exact',  label: 'Exact',       color: '#2f6fd6', hint: 'name and URL agree' },
+    { key: 'strong', label: 'Strong',      color: '#86c686', hint: 'URL, or release context' },
+    { key: 'unique', label: 'Unique name', color: '#fff176', hint: 'the only MusicBrainz artist with the name' },
+    { key: 'weak',   label: 'Weak',        color: '#ffb74d', hint: 'co-credit, similar name' },
+];
