@@ -1910,7 +1910,7 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
                 if (below) row.appendChild(makeLevelDot(below.level));
 
                 const info = document.createElement('span');
-                info.style.flex = '1';
+                info.style.flex = '0 1 auto';   // MB roles follow the name, as on the selected row
                 const nameA = document.createElement('a');
                 nameA.href = `https:${MB}/${entityType}/${a.id}`;
                 nameA.target = '_blank'; nameA.rel = 'noopener noreferrer nofollow';
@@ -1933,7 +1933,7 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
                 row.appendChild(info);
                 // Preview THIS candidate's existing MB roles before picking it.
                 const rolesEl = buildMbRolesEl(a.id);
-                if (rolesEl) { rolesEl.style.marginLeft = 'auto'; row.appendChild(rolesEl); }
+                if (rolesEl) row.appendChild(rolesEl);
                 return row;
             }
 
