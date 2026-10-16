@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         String Theory
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.16.171144
+// @version      2026.10.16.181659
 // @description  Unified bundle of 11 MusicBrainz userscripts (apollo_editor, art_station, credit_hoarder, falcon, first_contact, fusion, group_therapy, isrc_scout, mammoth, mission_control, platform_check). Built by userscripts/string_theory/build.mjs — do not hand-edit.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5TdHJpbmcgVGhlb3J5PC90aXRsZT4KPHBhdGggZD0iTTY0IDEwIEw2Ni40IDEwLjIgTDY4LjcgMTAuNiBMNzAuOSAxMS40IEw3My4xIDEyLjQgTDc1LjIgMTMuNyBMNzcuMSAxNS4yIEw3OC44IDE3IEw4MC40IDE4LjkgTDgxLjggMjEgTDgzLjEgMjMuMSBMODQuMSAyNS40IEw4NSAyNy42IEw4NS43IDI5LjkgTDg2LjMgMzIuMSBMODYuOCAzNC4zIEw4Ny4xIDM2LjQgTDg3LjQgMzguNCBMODcuNyA0MC4zIEw4Ny45IDQyLjEgTDg4LjIgNDMuNyBMODguNSA0NS4yIEw4OC45IDQ2LjYgTDg5LjQgNDcuOCBMOTAgNDkgTDkwLjcgNTAuMSBMOTEuNiA1MS4xIEw5Mi42IDUyLjIgTDkzLjcgNTMuMiBMOTUgNTQuMiBMOTYuNCA1NS4zIEw5Ny45IDU2LjUgTDk5LjUgNTcuNyBMMTAxLjEgNTkuMSBMMTAyLjcgNjAuNiBMMTA0LjQgNjIuMiBMMTA2IDY0IEwxMDcuNSA2NS45IEwxMDguOSA2Ny45IEwxMTAuMiA3MC4xIEwxMTEuMyA3Mi4zIEwxMTIuMSA3NC43IEwxMTIuOCA3Ny4xIEwxMTMuMSA3OS41IEwxMTMuMiA4MS45IEwxMTMgODQuMyBMMTEyLjYgODYuNiBMMTExLjggODguOSBMMTEwLjggOTEgTDEwOS41IDkzIEwxMDcuOSA5NC43IEwxMDYuMSA5Ni4zIEwxMDQuMSA5Ny43IEwxMDIgOTguOCBMOTkuNyA5OS43IEw5Ny4zIDEwMC40IEw5NC45IDEwMC44IEw5Mi40IDEwMSBMODkuOSAxMDAuOSBMODcuNCAxMDAuNyBMODUgMTAwLjQgTDgyLjcgOTkuOSBMODAuNCA5OS4zIEw3OC4zIDk4LjYgTDc2LjMgOTcuOCBMNzQuNCA5Ny4xIEw3Mi43IDk2LjQgTDcxIDk1LjcgTDY5LjUgOTUuMSBMNjggOTQuNiBMNjYuNyA5NC4zIEw2NS4zIDk0LjEgTDY0IDk0IEw2Mi43IDk0LjEgTDYxLjMgOTQuMyBMNjAgOTQuNiBMNTguNSA5NS4xIEw1NyA5NS43IEw1NS4zIDk2LjQgTDUzLjYgOTcuMSBMNTEuNyA5Ny44IEw0OS43IDk4LjYgTDQ3LjYgOTkuMyBMNDUuMyA5OS45IEw0MyAxMDAuNCBMNDAuNiAxMDAuNyBMMzguMSAxMDAuOSBMMzUuNiAxMDEgTDMzLjEgMTAwLjggTDMwLjcgMTAwLjQgTDI4LjMgOTkuNyBMMjYgOTguOCBMMjMuOSA5Ny43IEwyMS45IDk2LjMgTDIwLjEgOTQuNyBMMTguNSA5MyBMMTcuMiA5MSBMMTYuMiA4OC45IEwxNS40IDg2LjYgTDE1IDg0LjMgTDE0LjggODEuOSBMMTQuOSA3OS41IEwxNS4yIDc3LjEgTDE1LjkgNzQuNyBMMTYuNyA3Mi4zIEwxNy44IDcwLjEgTDE5LjEgNjcuOSBMMjAuNSA2NS45IEwyMiA2NCBMMjMuNiA2Mi4yIEwyNS4zIDYwLjYgTDI2LjkgNTkuMSBMMjguNSA1Ny43IEwzMC4xIDU2LjUgTDMxLjYgNTUuMyBMMzMgNTQuMiBMMzQuMyA1My4yIEwzNS40IDUyLjIgTDM2LjQgNTEuMSBMMzcuMyA1MC4xIEwzOCA0OSBMMzguNiA0Ny44IEwzOS4xIDQ2LjYgTDM5LjUgNDUuMiBMMzkuOCA0My43IEw0MC4xIDQyLjEgTDQwLjMgNDAuMyBMNDAuNiAzOC40IEw0MC45IDM2LjQgTDQxLjIgMzQuMyBMNDEuNyAzMi4xIEw0Mi4zIDI5LjkgTDQzIDI3LjYgTDQzLjkgMjUuNCBMNDQuOSAyMy4xIEw0Ni4yIDIxIEw0Ny42IDE4LjkgTDQ5LjIgMTcgTDUwLjkgMTUuMiBMNTIuOCAxMy43IEw1NC45IDEyLjQgTDU3LjEgMTEuNCBMNTkuMyAxMC42IEw2MS42IDEwLjJaIiBmaWxsPSJub25lIiBzdHJva2U9IiM5Yzg2ZWEiIHN0cm9rZS13aWR0aD0iMTAiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz4KPHBhdGggZD0iTTY0IDM0IEw2NS4zIDMzLjkgTDY2LjcgMzMuNyBMNjggMzMuNCBMNjkuNSAzMi45IEw3MSAzMi4zIEw3Mi43IDMxLjYgTDc0LjQgMzAuOSBMNzYuMyAzMC4yIEw3OC4zIDI5LjQgTDgwLjQgMjguNyBMODIuNyAyOC4xIEw4NSAyNy42IEw4Ny40IDI3LjMgTDg5LjkgMjcuMSBMOTIuNCAyNyBMOTQuOSAyNy4yIEw5Ny4zIDI3LjYgTDk5LjcgMjguMyBMMTAyIDI5LjIgTDEwNC4xIDMwLjMgTDEwNi4xIDMxLjcgTDEwNy45IDMzLjMgTDEwOS41IDM1IEwxMTAuOCAzNyBMMTExLjggMzkuMSBMMTEyLjYgNDEuNCBMMTEzIDQzLjcgTDExMy4yIDQ2LjEgTDExMy4xIDQ4LjUgTDExMi44IDUwLjkgTDExMi4xIDUzLjMgTDExMS4zIDU1LjcgTDExMC4yIDU3LjkgTDEwOC45IDYwLjEgTDEwNy41IDYyLjEgTDEwNiA2NCBMMTA0LjQgNjUuOCBMMTAyLjcgNjcuNCBMMTAxLjEgNjguOSBMOTkuNSA3MC4zIEw5Ny45IDcxLjUgTDk2LjQgNzIuNyBMOTUgNzMuOCBMOTMuNyA3NC44IEw5Mi42IDc1LjggTDkxLjYgNzYuOSBMOTAuNyA3Ny45IEw5MCA3OSBMODkuNCA4MC4yIEw4OC45IDgxLjQgTDg4LjUgODIuOCBMODguMiA4NC4zIEw4Ny45IDg1LjkgTDg3LjcgODcuNyBMODcuNCA4OS42IEw4Ny4xIDkxLjYgTDg2LjggOTMuNyBMODYuMyA5NS45IEw4NS43IDk4LjEgTDg1IDEwMC40IEw4NC4xIDEwMi42IEw4My4xIDEwNC45IEw4MS44IDEwNyBMODAuNCAxMDkuMSBMNzguOCAxMTEgTDc3LjEgMTEyLjggTDc1LjIgMTE0LjMgTDczLjEgMTE1LjYgTDcwLjkgMTE2LjYgTDY4LjcgMTE3LjQgTDY2LjQgMTE3LjggTDY0IDExOCBMNjEuNiAxMTcuOCBMNTkuMyAxMTcuNCBMNTcuMSAxMTYuNiBMNTQuOSAxMTUuNiBMNTIuOCAxMTQuMyBMNTAuOSAxMTIuOCBMNDkuMiAxMTEgTDQ3LjYgMTA5LjEgTDQ2LjIgMTA3IEw0NC45IDEwNC45IEw0My45IDEwMi42IEw0MyAxMDAuNCBMNDIuMyA5OC4xIEw0MS43IDk1LjkgTDQxLjIgOTMuNyBMNDAuOSA5MS42IEw0MC42IDg5LjYgTDQwLjMgODcuNyBMNDAuMSA4NS45IEwzOS44IDg0LjMgTDM5LjUgODIuOCBMMzkuMSA4MS40IEwzOC42IDgwLjIgTDM4IDc5IEwzNy4zIDc3LjkgTDM2LjQgNzYuOSBMMzUuNCA3NS44IEwzNC4zIDc0LjggTDMzIDczLjggTDMxLjYgNzIuNyBMMzAuMSA3MS41IEwyOC41IDcwLjMgTDI2LjkgNjguOSBMMjUuMyA2Ny40IEwyMy42IDY1LjggTDIyIDY0IEwyMC41IDYyLjEgTDE5LjEgNjAuMSBMMTcuOCA1Ny45IEwxNi43IDU1LjcgTDE1LjkgNTMuMyBMMTUuMiA1MC45IEwxNC45IDQ4LjUgTDE0LjggNDYuMSBMMTUgNDMuNyBMMTUuNCA0MS40IEwxNi4yIDM5LjEgTDE3LjIgMzcgTDE4LjUgMzUgTDIwLjEgMzMuMyBMMjEuOSAzMS43IEwyMy45IDMwLjMgTDI2IDI5LjIgTDI4LjMgMjguMyBMMzAuNyAyNy42IEwzMy4xIDI3LjIgTDM1LjYgMjcgTDM4LjEgMjcuMSBMNDAuNiAyNy4zIEw0MyAyNy42IEw0NS4zIDI4LjEgTDQ3LjYgMjguNyBMNDkuNyAyOS40IEw1MS43IDMwLjIgTDUzLjYgMzAuOSBMNTUuMyAzMS42IEw1NyAzMi4zIEw1OC41IDMyLjkgTDYwIDMzLjQgTDYxLjMgMzMuNyBMNjIuNyAzMy45WiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZmZmZmZmIiBzdHJva2Utd2lkdGg9IjIwIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+CjxwYXRoIGQ9Ik02NCAzNCBMNjUuMyAzMy45IEw2Ni43IDMzLjcgTDY4IDMzLjQgTDY5LjUgMzIuOSBMNzEgMzIuMyBMNzIuNyAzMS42IEw3NC40IDMwLjkgTDc2LjMgMzAuMiBMNzguMyAyOS40IEw4MC40IDI4LjcgTDgyLjcgMjguMSBMODUgMjcuNiBMODcuNCAyNy4zIEw4OS45IDI3LjEgTDkyLjQgMjcgTDk0LjkgMjcuMiBMOTcuMyAyNy42IEw5OS43IDI4LjMgTDEwMiAyOS4yIEwxMDQuMSAzMC4zIEwxMDYuMSAzMS43IEwxMDcuOSAzMy4zIEwxMDkuNSAzNSBMMTEwLjggMzcgTDExMS44IDM5LjEgTDExMi42IDQxLjQgTDExMyA0My43IEwxMTMuMiA0Ni4xIEwxMTMuMSA0OC41IEwxMTIuOCA1MC45IEwxMTIuMSA1My4zIEwxMTEuMyA1NS43IEwxMTAuMiA1Ny45IEwxMDguOSA2MC4xIEwxMDcuNSA2Mi4xIEwxMDYgNjQgTDEwNC40IDY1LjggTDEwMi43IDY3LjQgTDEwMS4xIDY4LjkgTDk5LjUgNzAuMyBMOTcuOSA3MS41IEw5Ni40IDcyLjcgTDk1IDczLjggTDkzLjcgNzQuOCBMOTIuNiA3NS44IEw5MS42IDc2LjkgTDkwLjcgNzcuOSBMOTAgNzkgTDg5LjQgODAuMiBMODguOSA4MS40IEw4OC41IDgyLjggTDg4LjIgODQuMyBMODcuOSA4NS45IEw4Ny43IDg3LjcgTDg3LjQgODkuNiBMODcuMSA5MS42IEw4Ni44IDkzLjcgTDg2LjMgOTUuOSBMODUuNyA5OC4xIEw4NSAxMDAuNCBMODQuMSAxMDIuNiBMODMuMSAxMDQuOSBMODEuOCAxMDcgTDgwLjQgMTA5LjEgTDc4LjggMTExIEw3Ny4xIDExMi44IEw3NS4yIDExNC4zIEw3My4xIDExNS42IEw3MC45IDExNi42IEw2OC43IDExNy40IEw2Ni40IDExNy44IEw2NCAxMTggTDYxLjYgMTE3LjggTDU5LjMgMTE3LjQgTDU3LjEgMTE2LjYgTDU0LjkgMTE1LjYgTDUyLjggMTE0LjMgTDUwLjkgMTEyLjggTDQ5LjIgMTExIEw0Ny42IDEwOS4xIEw0Ni4yIDEwNyBMNDQuOSAxMDQuOSBMNDMuOSAxMDIuNiBMNDMgMTAwLjQgTDQyLjMgOTguMSBMNDEuNyA5NS45IEw0MS4yIDkzLjcgTDQwLjkgOTEuNiBMNDAuNiA4OS42IEw0MC4zIDg3LjcgTDQwLjEgODUuOSBMMzkuOCA4NC4zIEwzOS41IDgyLjggTDM5LjEgODEuNCBMMzguNiA4MC4yIEwzOCA3OSBMMzcuMyA3Ny45IEwzNi40IDc2LjkgTDM1LjQgNzUuOCBMMzQuMyA3NC44IEwzMyA3My44IEwzMS42IDcyLjcgTDMwLjEgNzEuNSBMMjguNSA3MC4zIEwyNi45IDY4LjkgTDI1LjMgNjcuNCBMMjMuNiA2NS44IEwyMiA2NCBMMjAuNSA2Mi4xIEwxOS4xIDYwLjEgTDE3LjggNTcuOSBMMTYuNyA1NS43IEwxNS45IDUzLjMgTDE1LjIgNTAuOSBMMTQuOSA0OC41IEwxNC44IDQ2LjEgTDE1IDQzLjcgTDE1LjQgNDEuNCBMMTYuMiAzOS4xIEwxNy4yIDM3IEwxOC41IDM1IEwyMC4xIDMzLjMgTDIxLjkgMzEuNyBMMjMuOSAzMC4zIEwyNiAyOS4yIEwyOC4zIDI4LjMgTDMwLjcgMjcuNiBMMzMuMSAyNy4yIEwzNS42IDI3IEwzOC4xIDI3LjEgTDQwLjYgMjcuMyBMNDMgMjcuNiBMNDUuMyAyOC4xIEw0Ny42IDI4LjcgTDQ5LjcgMjkuNCBMNTEuNyAzMC4yIEw1My42IDMwLjkgTDU1LjMgMzEuNiBMNTcgMzIuMyBMNTguNSAzMi45IEw2MCAzMy40IEw2MS4zIDMzLjcgTDYyLjcgMzMuOVoiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZjNDdlMCIgc3Ryb2tlLXdpZHRoPSIxMyIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgo8L3N2Zz4K
@@ -127,8 +127,8 @@
 // Bundles (verbatim, each wrapped in a URL gate and a run-at gate): apollo_editor, art_station, credit_hoarder, falcon, first_contact, fusion, group_therapy, isrc_scout, mammoth, mission_control, platform_check.
 
 try {
-  console.log('%c String Theory %c v2026.10.16.171144 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
-  console.log("String Theory bundles:\n  · Apollo Editor v2026.10.16\n  · Art Station v2026.10.16\n  · Credit Hoarder v2026.10.16\n  · Falcon v2026.10.16\n  · First Contact v2026.10.16\n  · Fusion v2026.10.16.170419\n  · Group Therapy v2026.10.16\n  · ISRC Scout v2026.10.16.164606\n  · Mammoth v2026.10.16\n  · Mission Control v2026.10.16.164606\n  · Platform Check v2026.10.16");
+  console.log('%c String Theory %c v2026.10.16.181659 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
+  console.log("String Theory bundles:\n  · Apollo Editor v2026.10.16\n  · Art Station v2026.10.16\n  · Credit Hoarder v2026.10.16\n  · Falcon v2026.10.16\n  · First Contact v2026.10.16\n  · Fusion v2026.10.16.170419\n  · Group Therapy v2026.10.16\n  · ISRC Scout v2026.10.16.181657\n  · Mammoth v2026.10.16\n  · Mission Control v2026.10.16.164606\n  · Platform Check v2026.10.16");
 } catch (e) {}
 
 function __stReadOff() { try { var v = GM_getValue("string_theory.off", []); return Array.isArray(v) ? v : []; } catch (e) { return []; } }
@@ -136,7 +136,7 @@ var __stOff = __stReadOff();
 (function () {
   if (typeof GM_registerMenuCommand !== 'function') return;
   try { if (window.top !== window.self) return; } catch (e) { return; }
-  var members = [["apollo_editor","Apollo Editor","2026.10.16"],["art_station","Art Station","2026.10.16"],["credit_hoarder","Credit Hoarder","2026.10.16"],["falcon","Falcon","2026.10.16"],["first_contact","First Contact","2026.10.16"],["fusion","Fusion","2026.10.16.170419"],["group_therapy","Group Therapy","2026.10.16"],["isrc_scout","ISRC Scout","2026.10.16.164606"],["mammoth","Mammoth","2026.10.16"],["mission_control","Mission Control","2026.10.16.164606"],["platform_check","Platform Check","2026.10.16"]];
+  var members = [["apollo_editor","Apollo Editor","2026.10.16"],["art_station","Art Station","2026.10.16"],["credit_hoarder","Credit Hoarder","2026.10.16"],["falcon","Falcon","2026.10.16"],["first_contact","First Contact","2026.10.16"],["fusion","Fusion","2026.10.16.170419"],["group_therapy","Group Therapy","2026.10.16"],["isrc_scout","ISRC Scout","2026.10.16.181657"],["mammoth","Mammoth","2026.10.16"],["mission_control","Mission Control","2026.10.16.164606"],["platform_check","Platform Check","2026.10.16"]];
   // Each entry carries a stable id (options.id): Violentmonkey and Tampermonkey then relabel it in
   // place, where it stands. Unregister-and-add left Violentmonkey's open menu with the old entry
   // still there and the new one appended at the end. A manager that ignores options.id hands back
@@ -54789,7 +54789,7 @@ Created this ${kind} while adding credits parsed from text to ${relUrl}`;
 
 // ===== isrc_scout (@run-at document-start) ========================================
 if (__stOff.indexOf("isrc_scout") < 0 && __stRuns("isrc_scout", {"inc":["^https:\\/\\/(?:[^/]*\\.)?musicbrainz\\.org(?::\\d+)?/release/.*$","^https:\\/\\/(?:[^/]*\\.)?musicbrainz\\.org(?::\\d+)?/oauth2/oob.*$","^https:\\/\\/www\\.beatport\\.com(?::\\d+)?/release/.*$"],"exc":[],"noframes":false})) (function(__stGM){
-  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"ISRC Scout*","namespace":"https://musicbrainz.org/","version":"2026.10.16.164606","description":"Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify / Beatport / Tidal / Volumo / HDtracks / Qobuz, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/isrc_scout/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPklTUkMgU2NvdXQ8L3RpdGxlPgogICAgPHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPgogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjQwIi8+CiAgICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyNiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2U9IiNiOWEzZTgiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPgogIDwvZz4KICA8bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+Cjwvc3ZnPgo="}) }) : { script: {"name":"ISRC Scout*","namespace":"https://musicbrainz.org/","version":"2026.10.16.164606","description":"Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify / Beatport / Tidal / Volumo / HDtracks / Qobuz, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/isrc_scout/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPklTUkMgU2NvdXQ8L3RpdGxlPgogICAgPHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPgogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjQwIi8+CiAgICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyNiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2U9IiNiOWEzZTgiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPgogIDwvZz4KICA8bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+Cjwvc3ZnPgo="} };
+  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"ISRC Scout*","namespace":"https://musicbrainz.org/","version":"2026.10.16.181657","description":"Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify / Beatport / Tidal / Volumo / HDtracks / Qobuz, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/isrc_scout/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPklTUkMgU2NvdXQ8L3RpdGxlPgogICAgPHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPgogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjQwIi8+CiAgICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyNiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2U9IiNiOWEzZTgiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPgogIDwvZz4KICA8bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+Cjwvc3ZnPgo="}) }) : { script: {"name":"ISRC Scout*","namespace":"https://musicbrainz.org/","version":"2026.10.16.181657","description":"Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify / Beatport / Tidal / Volumo / HDtracks / Qobuz, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/isrc_scout/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPklTUkMgU2NvdXQ8L3RpdGxlPgogICAgPHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPgogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjQwIi8+CiAgICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyNiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2U9IiNiOWEzZTgiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPgogIDwvZz4KICA8bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+Cjwvc3ZnPgo="} };
   (f=>f())(function(){ try { (function(){
 /*
  * ─────────────────────────────────────────────────────────────────────────
@@ -56593,6 +56593,9 @@ if (__stOff.indexOf("isrc_scout") < 0 && __stRuns("isrc_scout", {"inc":["^https:
     th.ii-col, td.ii-col { width: 1%; }                                              /* as wide as their content; Title takes the rest */
     td.ii-col-isrc, td.ii-col-links { white-space: nowrap; vertical-align: top; }
     td.ii-col-isrc { padding-right: 14px; }
+    #ii-setup-toggle.ii-needauth { position: relative; }
+    #ii-setup-toggle.ii-needauth::after { content: ''; position: absolute; top: 2px; right: 2px; width: 7px; height: 7px; border-radius: 50%; background: var(--mbu-warn); }
+    #ii-col-toggles .ii-coloff { text-decoration: line-through; opacity: .55; }
     .ii-trk-isrc { display: block; font: 12px/1.6 ui-monospace, Consolas, monospace; }
     .ii-trk-lns { display: flex; flex-wrap: wrap; align-items: center; gap: 3px 4px; padding-top: 2px; width: max-content; max-width: 224px; }  /* one icon per platform, wrapping past ~11 so the column never crowds Title */
     @media (max-width: 1000px) { .ii-trk-lns { max-width: 80px; } }                     /* a narrow window: four to a row */
@@ -56830,6 +56833,8 @@ if (__stOff.indexOf("isrc_scout") < 0 && __stRuns("isrc_scout", {"inc":["^https:
     .ii-sx-hover svg { display: block; }
     tr:hover .ii-sx-hover { opacity: .55; pointer-events: auto; }
     .ii-sx-hover:hover { opacity: 1 !important; color: var(--mbu-text); }
+    #ii-modal.ii-nosx #ii-sx-group { display: none; }
+    #ii-modal.ii-nosx .ii-sx-hover { visibility: hidden; }
     /* the × lives INSIDE the input box (part of the edit), so it doesn't shift the
        row layout / SX text alignment */
     .ii-isrcf > span:not(:last-child)::after { content: '-'; opacity: .45; }
@@ -56902,6 +56907,38 @@ if (__stOff.indexOf("isrc_scout") < 0 && __stRuns("isrc_scout", {"inc":["^https:
     .ii-cfg-lnk { font: 600 12px system-ui; color: var(--mbu-accent-text); text-decoration: none; cursor: pointer;
       background: none; border: none; padding: 2px 4px; }
     .ii-cfg-lnk:hover { text-decoration: underline; }
+    /* #768: the settings window, over the editor under its ⚙, built like Platform Check's */
+    .ii-pane.ii-cfgwin.open { position: absolute; top: 52px; right: 12px; z-index: 6; width: 470px; max-width: calc(100% - 24px);
+      max-height: calc(100% - 64px); box-sizing: border-box; padding: 14px 16px 16px; border: 1px solid var(--mbu-border);
+      border-radius: var(--mbu-radius-lg); box-shadow: var(--mbu-shadow-lg); background: var(--mbu-bg); }
+    .ii-cfgwin .ii-cfg-sec { font-weight: 700; color: var(--mbu-text); font-size: 11px; letter-spacing: .05em; text-transform: uppercase;
+      margin: 16px 0 6px; padding-bottom: 3px; border-bottom: 1px solid var(--mbu-divider); }
+    .ii-cfgwin .ii-cfg-sech { display: flex; align-items: center; margin-top: 4px; }
+    .ii-cfgwin .ii-cfg-back { margin-left: auto; font: 600 12px system-ui; color: var(--mbu-accent-text); background: none; border: 0; cursor: pointer; padding: 0; text-transform: none; letter-spacing: 0; }
+    .ii-cfgwin .ii-cfg-back:hover { text-decoration: underline; }
+    .ii-cfgwin .ii-cfg-nav { display: flex; align-items: center; gap: 8px; width: 100%; margin: 4px 0 0; padding: 8px 10px; text-align: left;
+      font: 600 13px system-ui; color: var(--mbu-text); background: var(--mbu-bg-raised); border: 1px solid var(--mbu-border); border-radius: var(--mbu-radius); cursor: pointer; }
+    .ii-cfgwin .ii-cfg-nav:hover { background: var(--mbu-bg-hover); }
+    .ii-cfgwin .ii-cfg-navn { margin-left: auto; font-weight: 400; font-size: 12px; color: var(--mbu-text-weak); }
+    .ii-cfgwin .ii-set-row { margin: 7px 2px; font-size: 12.5px; color: var(--mbu-text); }
+    .ii-cfgwin .ii-set-row label { display: inline-flex; align-items: flex-start; gap: 8px; margin: 0; font-size: 12.5px; color: var(--mbu-text); cursor: pointer; }
+    .ii-cfgwin .ii-set-row input[type=checkbox] { margin: 2px 0 0; width: 15px; height: 15px; flex: 0 0 auto; }
+    .ii-cfgwin .ii-set-row input[type=number] { width: 46px; }
+    .ii-cfgwin .ii-set-inline { display: flex; align-items: center; gap: 14px; }
+    .ii-cfgwin .ii-set-inline label { align-items: center; gap: 5px; }
+    .ii-cfgwin .ii-set-inline input[type=checkbox] { margin: 0; }
+    .ii-cfgwin .ii-set-k { min-width: 120px; color: var(--mbu-text-dim); }
+    .ii-cfgwin .ii-set-inline select { font-size: 12px; }
+    .ii-cfgwin .ii-set-help { display: block; margin-top: 2px; font-size: 11px; line-height: 1.4; color: var(--mbu-text-weak); }
+    .ii-cfgwin .ii-set-under { margin: -2px 2px 6px; }
+    .ii-cfgwin .ii-plat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 2px 6px; margin-top: 6px; }
+    .ii-cfgwin .ii-plat { display: flex; align-items: center; gap: 7px; margin: 0; padding: 4px 6px; font-size: 13px; color: var(--mbu-text);
+      border-radius: var(--mbu-radius); cursor: pointer; min-width: 0; }
+    .ii-cfgwin .ii-plat:hover { background: var(--mbu-bg-hover); }
+    .ii-cfgwin .ii-plat input { margin: 0; width: 14px; height: 14px; flex: 0 0 auto; }
+    .ii-cfgwin .ii-plat-ic { display: inline-flex; flex: 0 0 auto; }
+    .ii-cfgwin .ii-plat-n { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .ii-cfgwin .ii-plat:has(input:not(:checked)) .ii-plat-ic, .ii-cfgwin .ii-plat:has(input:not(:checked)) .ii-plat-n { opacity: .45; }
     .ii-cfg-grp { font: 700 10.5px system-ui; text-transform: uppercase; letter-spacing: .3px; color: var(--mbu-text-weak); margin: 4px 0 6px; }
     .ii-pane label { display: block; font-size: 11.5px; color: var(--mbu-text-dim); margin: 6px 0 2px; }
     .ii-pane input[type=text], .ii-pane textarea {
@@ -57621,6 +57658,31 @@ if (__stOff.indexOf("isrc_scout") < 0 && __stRuns("isrc_scout", {"inc":["^https:
        • Beatport / Volumo / HDtracks: read the release's album ONCE (cached) and
          match by ISRC, so they need the album's link (MB rel or Platform Check).
   ═══════════════════════════════════════════════════════════════════════ */
+  // #768 (chaban-mb): "PC has configuration to choose used Providers but ISRC Scout doesn't. It
+  // always tries all supported providers." Scout's own switches, apart from Platform Check's
+  // (majkinetor: someone may want every platform in PC and only some here), all on by default.
+  // A platform that's off loses its import button and per-track lookup, and Match, Find links
+  // and All skip it. Keys as Platform Check names them (and the shared icons).
+  const PLATFORMS = [
+    ['deezer', 'Deezer'], ['tidal', 'Tidal'], ['spotify', 'Spotify'], ['apple', 'Apple Music'], ['qobuz', 'Qobuz'],
+    ['beatport', 'Beatport'], ['volumo', 'Volumo'], ['hdtracks', 'HDtracks'], ['sevendigital', '7digital'], ['bandcamp', 'Bandcamp'],
+    ['soundcloud', 'SoundCloud'], ['audiomack', 'Audiomack'], ['ytmusic', 'YouTube Music'], ['amazonmusic', 'Amazon Music'], ['soundexchange', 'SoundExchange'],
+  ];
+  const platformOn = key => store.get('platform_' + key, true) !== false;
+  // the two-letter codes the buttons and Find links use, and the import buttons' source names
+  const CODE_PLATFORM = { dz: 'deezer', td: 'tidal', sp: 'spotify', am: 'apple', qz: 'qobuz', bp: 'beatport', vo: 'volumo', hd: 'hdtracks',
+    sd: 'sevendigital', bc: 'bandcamp', sc: 'soundcloud', ak: 'audiomack', yt: 'ytmusic', az: 'amazonmusic', sx: 'soundexchange' };
+  const codeOn = code => !CODE_PLATFORM[code] || platformOn(CODE_PLATFORM[code]);
+  const SOURCE_CODE = { Deezer: 'dz', Tidal: 'td', Spotify: 'sp', Apple: 'am', Qobuz: 'qz', Beatport: 'bp', Volumo: 'vo', HDtracks: 'hd',
+    '7digital': 'sd', SoundCloud: 'sc', Audiomack: 'ak' };
+  const sourceOn = source => codeOn(SOURCE_CODE[source]);
+  // the Add column of a platform switched off is hidden (rows built before the switch included)
+  function paintPlatformsOff() {
+    let st = document.getElementById('ii-plat-off');
+    if (!st) { st = document.createElement('style'); st.id = 'ii-plat-off'; document.head.appendChild(st); }
+    st.textContent = Object.keys(CODE_PLATFORM).filter(c => !codeOn(c)).map(c => '#ii-modal .ii-tl-add .ii-tl[data-code="' + c + '"]{display:none}').join('');
+  }
+
   // Album-based providers — same fetchers the import buttons use. `idField` is the
   // RELEASE property holding the in-MB album id; availability also honours a
   // Platform-Check-found URL (via providerAlbumId).
@@ -57657,7 +57719,9 @@ if (__stOff.indexOf("isrc_scout") < 0 && __stRuns("isrc_scout", {"inc":["^https:
   // a provider is offered only when it can resolve a source for THIS release
   // (SoundExchange always; an album provider needs an MB link or a PC-found URL).
   function trackProvAvailable(key) {
-    if (key === 'sx' || key === 'all') return true;
+    if (key === 'all') return true;
+    if (!codeOn(TRACK_PROV[key] ? TRACK_PROV[key].code : key)) return false;   // #768: switched off
+    if (key === 'sx') return true;
     if (TRACK_PROV[key] && TRACK_PROV[key].global) return true;   // global by-ISRC — no link needed
     const p = ALBUM_PROVIDERS[key];
     return !!(p && RELEASE && providerAlbumId(p.source, RELEASE[p.idField]));
@@ -59113,78 +59177,64 @@ if (__stOff.indexOf("isrc_scout") < 0 && __stRuns("isrc_scout", {"inc":["^https:
         </div>
       </div>
 
-      <div class="ii-pane" id="ii-setup-pane">
+      <!-- #768 (majkinetor: "redoing entire scout config which is now inline with window … the same as
+           with other scripts"): a settings window of its own over the editor, built like Platform
+           Check's: sections, and a Platforms view of switches. The ids are the inline pane's. -->
+      <div class="ii-pane ii-cfgwin" id="ii-setup-pane">
         <!-- #301: standard config-window header — icon · name · version · ? Help (no ✕); Log is in the main header, as on Platform Check -->
         ${mbuCfgHeader({ script: 'isrc_scout', name: 'ISRC Scout', version: SCRIPT_VERSION,
           icon: '<svg viewBox="0 0 128 128" aria-hidden="true"><path d="M64 64 L64 24 A40 40 0 0 1 99 84 Z" fill="#d8c8f2"/>'
             + '<g fill="none" stroke="currentColor" stroke-width="9"><circle cx="64" cy="64" r="40"/>'
             + '<circle cx="64" cy="64" r="9" fill="currentColor" stroke="none"/></g></svg>',
         })}
-        <div class="ii-cfg-grp">MusicBrainz</div>
-        <div class="ii-authstate" id="ii-auth-state"></div>
-        <div class="row" style="margin-top:8px; flex-wrap:nowrap">
-          <button class="ii-tbtn primary" id="ii-authorize" style="flex-shrink:0">Authorize</button>
-          <input type="text" id="ii-oauth-code" placeholder="Auto-fills on success — paste the code here only if the tab fails to close" autocomplete="off" style="flex:1; min-width:180px">
-          <button class="ii-tbtn ghost" id="ii-signout" style="flex-shrink:0; display:none">Sign out</button>
-        </div>
-        <div class="ii-help">
-          Click <b>Authorize</b> → approve in the MusicBrainz tab → it captures the code and closes itself.
-          If the tab can't close on its own, paste the code it shows into the box above (Enter to submit).
-        </div>
-        <div class="ii-cfg-grp" style="margin-top:16px">Settings</div>
-        <div>
-          <label style="display:block; font-size:11.5px; color:var(--mbu-text-dim); margin-bottom:5px; font-weight:600">Import-source buttons</label>
-          <label style="display:inline-flex; align-items:center; gap:5px; font-size:12px; margin-right:16px; cursor:pointer"><input type="checkbox" id="ii-show-icons">Show icons</label>
-          <label style="display:inline-flex; align-items:center; gap:5px; font-size:12px; cursor:pointer"><input type="checkbox" id="ii-show-text">Show text</label>
-        </div>
-        <div style="margin-top:12px">
-          <label style="display:inline-flex; align-items:flex-start; gap:6px; font-size:12px; cursor:pointer">
-            <input type="checkbox" id="ii-track-data" style="margin-top:2px">
-            <span>Show ISRCs and links on the tracklist<br>
-              <span style="color:var(--mbu-text-weak); font-size:11px">The release page's tracklist gets an ISRC and a Links column.</span></span>
-          </label>
-        </div>
-        <div style="margin-top:12px">
-          <label style="display:inline-flex; align-items:flex-start; gap:6px; font-size:12px; cursor:pointer">
-            <input type="checkbox" id="ii-isrc-format" style="margin-top:2px">
-            <span>Show ISRCs in parts<br>
-              <span style="color:var(--mbu-text-weak); font-size:11px">CC-XXX-YY-NNNNN: country, registrant, year, number. A copy is still the plain code, and Mission Control shows its ISRCs the same way. The ISRC you type stays plain.</span></span>
-          </label>
-        </div>
-        <div style="margin-top:12px">
-          <label style="display:inline-flex; align-items:flex-start; gap:6px; font-size:12px; cursor:pointer">
-            <input type="checkbox" id="ii-rg-providers" style="margin-top:2px">
-            <span>Use providers from the whole release group<br>
-              <span style="color:var(--mbu-text-weak); font-size:11px">Fill missing Deezer / Tidal / Bandcamp / … album links from sibling releases in the release group — recordings are shared, so a link on any edition resolves here. Costs one extra lookup.</span></span>
-          </label>
-        </div>
-        <div style="margin-top:12px">
-          <label style="display:inline-flex; align-items:flex-start; gap:6px; font-size:12px; cursor:pointer">
-            <input type="checkbox" id="ii-ignore-pc" style="margin-top:2px">
-            <span>Ignore Platform Check link confidence<br>
-              <span style="color:var(--mbu-text-weak); font-size:11px">Import from a Platform-Check link even when PC withheld it for a barcode/format mismatch. Off by default — a mismatch can mean PC matched the wrong release, so its ISRCs would be wrong (#314).</span></span>
-          </label>
-        </div>
-        <div style="margin-top:12px">
-          <label style="display:inline-flex; align-items:flex-start; gap:6px; font-size:12px; cursor:pointer">
-            <input type="checkbox" id="ii-auto-repeat" style="margin-top:2px">
-            <span>Repeat failed submits up to <input type="number" id="ii-ar-min" min="1" max="240" style="width:46px"> minutes or <input type="number" id="ii-ar-times" min="1" max="100" style="width:46px"> times<br>
-              <span style="color:var(--mbu-text-weak); font-size:11px">When MusicBrainz is busy (503) or the connection drops, the ISRC and link submits are tried again by themselves, the attempts spread over the minutes.</span></span>
-          </label>
-        </div>
-        <div style="margin-top:12px; font-size:12px">
-          <label style="display:inline-flex; align-items:center; gap:6px; cursor:pointer">Spotify ISRC source
-            <select id="ii-sp-source" style="font-size:12px">
+        <div id="ii-cfg-main">
+          <button class="ii-cfg-nav" id="ii-cfg-to-platforms" type="button"><span>Platforms</span><span class="ii-cfg-navn" id="ii-cfg-platforms-n"></span><span aria-hidden="true">›</span></button>
+
+          <div class="ii-cfg-sec">MusicBrainz</div>
+          <div class="ii-authstate" id="ii-auth-state"></div>
+          <div class="row" style="margin-top:8px; flex-wrap:nowrap">
+            <button class="ii-tbtn primary" id="ii-authorize" style="flex-shrink:0">Authorize</button>
+            <input type="text" id="ii-oauth-code" placeholder="Paste the code here only if the tab fails to close" autocomplete="off" style="flex:1; min-width:140px">
+            <button class="ii-tbtn ghost" id="ii-signout" style="flex-shrink:0; display:none">Sign out</button>
+          </div>
+          <div class="ii-help">
+            Click <b>Authorize</b> → approve in the MusicBrainz tab → it captures the code and closes itself.
+            If the tab can't close on its own, paste the code it shows into the box above (Enter to submit).
+          </div>
+
+          <div class="ii-cfg-sec">Imports</div>
+          <div class="ii-set-row ii-set-inline"><span class="ii-set-k">Import buttons</span>
+            <label><input type="checkbox" id="ii-show-icons">icons</label>
+            <label><input type="checkbox" id="ii-show-text">text</label></div>
+        <div class="ii-set-row"><label><input type="checkbox" id="ii-rg-providers"><span>Use providers from the whole release group<span class="ii-set-help">Fill missing Deezer / Tidal / Bandcamp / … album links from sibling releases in the release group: recordings are shared, so a link on any edition resolves here. Costs one extra lookup.</span></span></label></div>
+        <div class="ii-set-row"><label><input type="checkbox" id="ii-ignore-pc"><span>Ignore Platform Check link confidence<span class="ii-set-help">Import from a Platform Check link even when it withheld it for a barcode or format mismatch. Off by default: a mismatch can mean it matched the wrong release, so its ISRCs would be wrong (#314).</span></span></label></div>
+          <div class="ii-set-row ii-set-inline"><span class="ii-set-k">Spotify ISRC source</span>
+            <select id="ii-sp-source">
               <option value="molla">molla</option>
               <option value="isrchunt">ISRC Hunt</option>
-            </select>
-          </label>
-          <div style="color:var(--mbu-text-weak); font-size:11px; margin-top:2px">Spotify's own ISRC API needs a paid developer account, so the lookup goes through one of these services. If one is down or rate-limited, switch to the other (#603).</div>
-        </div>
-        <div class="ii-cfg-grp" style="margin-top:16px">More</div>
-        <a class="ii-cfg-lnk" id="ii-history" target="_blank" rel="noopener"
+            </select></div>
+          <div class="ii-set-help ii-set-under">Spotify's own ISRC API needs a paid developer account, so the lookup goes through one of these services. If one is down or rate-limited, switch to the other (#603).</div>
+
+          <div class="ii-cfg-sec">Submitting</div>
+          <div class="ii-set-row"><label><input type="checkbox" id="ii-auto-repeat"><span>Repeat failed submits up to <input type="number" id="ii-ar-min" min="1" max="240"> minutes or <input type="number" id="ii-ar-times" min="1" max="100"> times<span class="ii-set-help">When MusicBrainz is busy (503) or the connection drops, the ISRC and link submits are tried again by themselves, the attempts spread over the minutes.</span></span></label></div>
+
+          <div class="ii-cfg-sec">Release page</div>
+        <div class="ii-set-row"><label><input type="checkbox" id="ii-track-isrc"><span>ISRC column on the tracklist<span class="ii-set-help">The release page's tracklist gets each track's ISRCs.</span></span></label></div>
+        <div class="ii-set-row"><label><input type="checkbox" id="ii-track-links"><span>Links column on the tracklist<span class="ii-set-help">The release page's tracklist gets each recording's links, an icon per platform.</span></span></label></div>
+        <div class="ii-set-row"><label><input type="checkbox" id="ii-track-toggles"><span>Column toggles above the tracklist<span class="ii-set-help">ISRC and Links beside MusicBrainz's own "Display credits at bottom", to show or hide each column there.</span></span></label></div>
+        <div class="ii-set-row"><label><input type="checkbox" id="ii-isrc-format"><span>Show ISRCs in parts<span class="ii-set-help">CC-XXX-YY-NNNNN: country, registrant, year, number. A copy is still the plain code, and Mission Control shows its ISRCs the same way. The ISRC you type stays plain.</span></span></label></div>
+
+          <div class="ii-cfg-sec">More</div>
+          <a class="ii-cfg-lnk" id="ii-history" target="_blank" rel="noopener"
            href="${MB_ROOT}/search/edits?auto_edit_filter=&order=desc&negation=0&combinator=and&conditions.0.field=type&conditions.0.operator=%3D&conditions.0.args=76&conditions.0.args=78&conditions.1.field=editor&conditions.1.operator=me&conditions.1.name=&conditions.1.args.0="
            title="Your Add/Remove ISRC edits on MusicBrainz">🕓 My ISRC edits on MusicBrainz</a>
+        </div>
+
+        <div id="ii-cfg-platforms" hidden>
+          <div class="ii-cfg-sec ii-cfg-sech">Platforms<button class="ii-cfg-back" id="ii-cfg-back" type="button">‹ Back</button></div>
+          <div class="ii-set-help ii-set-under">Untick a platform to leave it out: its import button and per-track lookup go, and Match, Find links and All skip it. Platform Check keeps its own list.</div>
+          <div class="ii-plat-grid" id="ii-plat-grid">${PLATFORMS.map(([k, name]) => '<label class="ii-plat"><input type="checkbox" data-platform="' + k + '"><span class="ii-plat-ic">' + stIcon(k, 15) + '</span><span class="ii-plat-n">' + name + '</span></label>').join('')}</div>
+        </div>
       </div>
 
       <div class="ii-pane" id="ii-bulk-pane">
@@ -59344,7 +59394,21 @@ if (__stOff.indexOf("isrc_scout") < 0 && __stRuns("isrc_scout", {"inc":["^https:
       if (a && /^(INPUT|TEXTAREA)$/.test(a.tagName)) return;
       closeModal();
     });
-    modal.querySelector('#ii-setup-toggle').addEventListener('click', () => togglePane('ii-setup-pane'));
+    modal.querySelector('#ii-setup-toggle').addEventListener('click', () => {
+      const pane = modal.querySelector('#ii-setup-pane');
+      if (!pane.classList.contains('open')) { modal.querySelector('#ii-cfg-main').hidden = false; modal.querySelector('#ii-cfg-platforms').hidden = true; }
+      togglePane('ii-setup-pane');
+    });
+    // #768: the settings window floats over the editor, so a click outside closes it; that click
+    // is swallowed, or it would also press whatever it landed on
+    modal.addEventListener('mousedown', e => {
+      const pane = modal.querySelector('#ii-setup-pane');
+      if (!pane.classList.contains('open') || pane.contains(e.target) || e.target.closest('#ii-setup-toggle')) return;
+      pane.classList.remove('open');
+      const eat = ev => { ev.stopPropagation(); ev.preventDefault(); };
+      modal.addEventListener('click', eat, { capture: true, once: true });
+      setTimeout(() => modal.removeEventListener('click', eat, { capture: true }), 400);
+    }, true);
     modal.querySelector('#ii-bulk-toggle').addEventListener('click', () => togglePane('ii-bulk-pane'));
     modal.querySelector('#ii-maximize-toggle').addEventListener('click', toggleMaximize);
     modal.querySelector('#ii-links-btn').addEventListener('click', () => TrackLinks.resolve());        // #219: resolve candidates
@@ -59449,15 +59513,18 @@ if (__stOff.indexOf("isrc_scout") < 0 && __stRuns("isrc_scout", {"inc":["^https:
     }
 
     // #749: ISRCs and links on the release page's tracklist
-    const cbTd = modal.querySelector('#ii-track-data');
-    if (cbTd) {
-      cbTd.checked = trackDataEnabled();
-      cbTd.addEventListener('change', () => {
-        store.set('track_data', cbTd.checked);
+    // (a setting each since vzell's request on #749)
+    [['isrc', '#ii-track-isrc', 'ISRC'], ['links', '#ii-track-links', 'Links']].forEach(([k, sel, name]) => {
+      const cb = modal.querySelector(sel); if (!cb) return;
+      cb.checked = trackCols()[k];
+      cb.addEventListener('change', () => {
+        store.set('track_' + k, cb.checked);
         showTrackData();
-        Log.info('ISRCs and links on the tracklist: ' + (cbTd.checked ? 'on' : 'off'));
+        Log.info(name + ' column on the tracklist: ' + (cb.checked ? 'on' : 'off'));
       });
-    }
+    });
+    { const cb = modal.querySelector('#ii-track-toggles');
+      if (cb) { cb.checked = colTogglesOn(); cb.addEventListener('change', () => { store.set('track_toggles', cb.checked); showTrackData(); Log.info('Column toggles above the tracklist: ' + (cb.checked ? 'on' : 'off')); }); } }
     // #766: ISRCs in parts, a shared setting Mission Control reads too
     const cbFmt = modal.querySelector('#ii-isrc-format');
     if (cbFmt) {
@@ -59468,6 +59535,37 @@ if (__stOff.indexOf("isrc_scout") < 0 && __stRuns("isrc_scout", {"inc":["^https:
         showTrackData();
       });
     }
+
+    // #768: the Platforms view of the settings window, a switch per platform
+    const cfgMain = modal.querySelector('#ii-cfg-main'), cfgPlat = modal.querySelector('#ii-cfg-platforms');
+    const platCount = () => {
+      const on = PLATFORMS.filter(([k]) => platformOn(k)).length;
+      modal.querySelector('#ii-cfg-platforms-n').textContent = on === PLATFORMS.length ? 'all on' : on + ' of ' + PLATFORMS.length + ' on';
+    };
+    const cfgView = plat => { cfgMain.hidden = plat; cfgPlat.hidden = !plat; };
+    modal.querySelector('#ii-cfg-to-platforms').addEventListener('click', () => cfgView(true));
+    modal.querySelector('#ii-cfg-back').addEventListener('click', () => cfgView(false));
+    modal.querySelectorAll('#ii-plat-grid input[data-platform]').forEach(cb => {
+      cb.checked = platformOn(cb.dataset.platform);
+      cb.addEventListener('change', () => {
+        store.set('platform_' + cb.dataset.platform, cb.checked);
+        Log.info('Platform ' + cb.dataset.platform + ': ' + (cb.checked ? 'on' : 'off'));
+        platCount();
+        paintPlatformsOff();
+        if (!cb.checked) {
+          // links found on it, not added yet, are dropped: hidden, they'd still go out with Add links
+          const code = Object.keys(CODE_PLATFORM).find(c => CODE_PLATFORM[c] === cb.dataset.platform);
+          modal.querySelectorAll('.ii-tl-add .ii-tl.new[data-code="' + code + '"]').forEach(a => { a.className = 'ii-tl absent'; a.removeAttribute('href'); });
+          TrackLinks.refresh();
+        }
+        if (RELEASE) {
+          paintSourceButtons();
+          if (!trackProvAvailable(trackProv)) setTrackProvider(TRACK_PROV_ORDER.find(k => k !== 'all' && trackProvAvailable(k)) || 'sx', { quiet: true });
+        }
+      });
+    });
+    platCount();
+    paintPlatformsOff();
 
     // #314: respect / ignore Platform Check's barcode-mismatch link confidence
     const cbPc = modal.querySelector('#ii-ignore-pc');
@@ -59755,8 +59853,9 @@ if (__stOff.indexOf("isrc_scout") < 0 && __stRuns("isrc_scout", {"inc":["^https:
 
   function refreshAuthState() {
     const el = modal.querySelector('#ii-auth-state');
-    const pane = modal.querySelector('#ii-setup-pane');
     const authed = Auth.isAuthorized();
+    const tog = modal.querySelector('#ii-setup-toggle');
+    if (tog) { tog.classList.toggle('ii-needauth', !authed); tog.title = authed ? 'Settings & help' : 'Settings & help: not authorized to submit ISRCs yet'; }
     // when authorized show Sign out; when not, show the code field in its place
     const code = modal.querySelector('#ii-oauth-code'), out = modal.querySelector('#ii-signout');
     if (code) code.style.display = authed ? 'none' : '';
@@ -59770,7 +59869,8 @@ if (__stOff.indexOf("isrc_scout") < 0 && __stRuns("isrc_scout", {"inc":["^https:
     } else {
       el.className = 'ii-authstate no';
       el.textContent = '• Not authorized' + on + ' yet. Click Authorize (one time).';
-      pane.classList.add('open'); // nudge first-time users
+      // nudge first-time users: a dot on ⚙, not the window itself, which (#768) floats over the
+      // editor's toolbar; submitting ISRCs unauthorized still opens it
     }
   }
 
@@ -60388,7 +60488,7 @@ if (__stOff.indexOf("isrc_scout") < 0 && __stRuns("isrc_scout", {"inc":["^https:
     // only when the release has that album link (resolvable) or the recording is
     // already linked to it.
     function providersFor(t) {
-      return PROV.filter(p => !p.album || linkedUrl(t, p) || (RELEASE && RELEASE[p.urlKey]));
+      return PROV.filter(p => codeOn(p.code) && (!p.album || linkedUrl(t, p) || (RELEASE && RELEASE[p.urlKey])));   // #768: not one switched off
     }
 
     // #389 Show EVERY linked provider, even ones ISRC Scout can't add per-track. Recognise the common
@@ -60799,7 +60899,7 @@ if (__stOff.indexOf("isrc_scout") < 0 && __stRuns("isrc_scout", {"inc":["^https:
       const btn = modal.querySelector('#ii-links-btn');
       if (btn) { btn.disabled = true; btn.dataset.busy = '1'; }
       try {
-        await Promise.all(PROV.map(resolveProvider));   // #307: providers run in parallel
+        await Promise.all(PROV.filter(p => codeOn(p.code)).map(resolveProvider));   // #307: providers run in parallel; #768: not one switched off
       } finally {
         resolving = false;
         endCollect();
@@ -60815,6 +60915,7 @@ if (__stOff.indexOf("isrc_scout") < 0 && __stRuns("isrc_scout", {"inc":["^https:
     async function findHeadless(isrcOf, onProvider) {
       const out = {};
       await Promise.all(PROV.map(async p => {
+        if (!codeOn(p.code)) return;   // #768: switched off
         if (p.album && !(RELEASE && RELEASE[p.urlKey])) return;
         const jobs = [];
         RELEASE.tracks.forEach((t, idx) => {
@@ -60877,10 +60978,9 @@ if (__stOff.indexOf("isrc_scout") < 0 && __stRuns("isrc_scout", {"inc":["^https:
   })();
 
   /* ── render the track table ── */
-  function renderTracks() {
-    // #301: release title centered (Zen), artist + year on the line below
-    modal.querySelector('#ii-rel-title').textContent = RELEASE.title || '';
-    modal.querySelector('#ii-rel-sub').textContent = [RELEASE.artist, RELEASE.releaseYear].filter(Boolean).join(' · ');
+  // the import buttons, SoundExchange's search and All, for this release and the platforms switched on
+  // (#768: out of renderTracks, so a switch repaints them without rebuilding the rows)
+  function paintSourceButtons() {
     // Provider buttons (#180): show a provider only when the release has its
     // link in MB OR Platform Check found one. MB-linked buttons are marked
     // (ring + brand tint via .ii-mb); an unmarked button = a PC-found link.
@@ -60901,7 +61001,7 @@ if (__stOff.indexOf("isrc_scout") < 0 && __stRuns("isrc_scout", {"inc":["^https:
       // release FROM the URL), so a PC-only Spotify link is not usable (#180).
       const hasPc = source !== 'Spotify' && !!platformCheckUrl(source);
       const rg = RELEASE.rgFrom && RELEASE.rgFrom[field];   // #302: pulled from a sibling release in the RG
-      btn.style.display = (mbId || hasPc) ? '' : 'none';
+      btn.style.display = (mbId || hasPc) && sourceOn(source) ? '' : 'none';   // #768: or switched off
       btn.classList.toggle('ii-mb', !!mbId);
       btn.classList.toggle('ii-rg', !!rg);
       btn.disabled = false;
@@ -60911,10 +61011,19 @@ if (__stOff.indexOf("isrc_scout") < 0 && __stRuns("isrc_scout", {"inc":["^https:
         : ('No ' + source + ' link');
     });
 
+    // #768: SoundExchange switched off takes its search away (the toolbar's and each row's ⚙)
+    modal.classList.toggle('ii-nosx', !platformOn('soundexchange'));
+
     // #643: All, last in the toolbar, when there is more than one provider to compare
     { const allBtn = modal.querySelector('#ii-all-all'), n = allProviders().length;
       allBtn.style.display = n > 1 ? '' : 'none';
       allBtn.title = 'Check every track’s ISRC on ' + allProviders().map(k => TRACK_PROV[k].name).join(', ') + ' at once — a verdict per row, the comparison on its chip'; }
+  }
+  function renderTracks() {
+    // #301: release title centered (Zen), artist + year on the line below
+    modal.querySelector('#ii-rel-title').textContent = RELEASE.title || '';
+    modal.querySelector('#ii-rel-sub').textContent = [RELEASE.artist, RELEASE.releaseYear].filter(Boolean).join(' · ');
+    paintSourceButtons();
 
     tbody.innerHTML = '';
     let lastMedium = null;
@@ -61025,7 +61134,7 @@ if (__stOff.indexOf("isrc_scout") < 0 && __stRuns("isrc_scout", {"inc":["^https:
     });
     // #643: the rows are built with SoundExchange's label; the picked provider (kept while the
     // page is open) re-skins them, or SoundExchange when this release doesn't offer it
-    setTrackProvider(trackProvAvailable(trackProv) ? trackProv : 'sx', { quiet: true });
+    setTrackProvider(trackProvAvailable(trackProv) ? trackProv : TRACK_PROV_ORDER.find(k => k !== 'all' && trackProvAvailable(k)) || 'sx', { quiet: true });
     updateSummary();
     TrackLinks.refresh();   // #301: set the Links tab "N missing" badge
   }
@@ -62150,7 +62259,7 @@ if (__stOff.indexOf("isrc_scout") < 0 && __stRuns("isrc_scout", {"inc":["^https:
     return ISRC_SPEED_ORDER.map(k => ALBUM_PROVIDERS[k]).filter(Boolean)
       .map(p => ({ source: p.source, fetcher: p.fetcher, id: rg[p.idField] ? null : idOf(p.source, RELEASE[p.idField]) }))
       .concat([{ source: 'Spotify', fetcher: fetchSpotify, id: rg.spotifyId ? null : idOf('Spotify', RELEASE.spotifyId) }])
-      .filter(x => x.id);
+      .filter(x => x.id && sourceOn(x.source));   // #768: a platform switched off is skipped
   }
   // the dialog's Match: ISRCs from the fastest source that gives any (the next one
   // when a source fails or gives none), then Find links with them
@@ -62666,7 +62775,43 @@ if (__stOff.indexOf("isrc_scout") < 0 && __stRuns("isrc_scout", {"inc":["^https:
      by its track MBID (the row's id); the columns go before Rating (else Length), found by class.
      A medium MusicBrainz loads later (expanded) gets them as it comes. */
   // declarations and var, hoisted: updateBtnStatus can run before this point (see btnStatus)
-  function trackDataEnabled() { return !!store.get('track_data', true); }
+  // #749 (vzell): "Could we have two separate options for displaying ISRC and Links … it broke my
+  // userscript": a setting each, both from the one they replace (track_data)
+  function trackCols() {
+    const both = store.get('track_data', true) !== false;
+    return { isrc: store.get('track_isrc', both) !== false, links: store.get('track_links', both) !== false };
+  }
+  function trackDataEnabled() { const c = trackCols(); return c.isrc || c.links; }
+  // majkinetor: a toggle for each column above the tracklist, beside MusicBrainz's own "Display
+  // credits at bottom" (#medium-toolbox, the same in every language); a setting, on by default
+  const colTogglesOn = () => store.get('track_toggles', true) !== false;
+  function paintColToggles() {
+    const box = document.getElementById('medium-toolbox');
+    let el = document.getElementById('ii-col-toggles');
+    if (!IS_OVERVIEW || !RELEASE || !box || !colTogglesOn()) { if (el) el.remove(); return; }
+    // MusicBrainz floats its toolbox right: a float after it lines up on its left, beside it
+    const fl = getComputedStyle(box).float, after = fl === 'left' || fl === 'right';
+    if (!el || (after ? box.nextElementSibling !== el : el.nextElementSibling !== box)) {
+      if (el) el.remove();
+      el = document.createElement('span'); el.id = 'ii-col-toggles';
+      el.innerHTML = '<button type="button" class="btn-link" data-col="isrc">ISRC</button> | <button type="button" class="btn-link" data-col="links">Links</button> | ';
+      el.addEventListener('click', e => {
+        const b = e.target.closest('button[data-col]'); if (!b) return;
+        const k = b.dataset.col, on = !trackCols()[k];
+        store.set('track_' + k, on);
+        Log.info((k === 'isrc' ? 'ISRC' : 'Links') + ' column on the tracklist: ' + (on ? 'on' : 'off') + ' (toggle above the tracklist)');
+        showTrackData();
+        const cb = document.getElementById('ii-track-' + k); if (cb) cb.checked = on;
+      });
+      if (after) { el.style.cssFloat = fl; el.style.marginRight = '0.3em'; box.after(el); } else box.parentNode.insertBefore(el, box);
+    }
+    const c = trackCols();
+    el.querySelectorAll('button[data-col]').forEach(b => {
+      const on = c[b.dataset.col];
+      b.classList.toggle('ii-coloff', !on);
+      b.title = (on ? 'Hide' : 'Show') + ' the ' + (b.dataset.col === 'isrc' ? 'ISRC' : 'Links') + ' column (ISRC Scout)';
+    });
+  }
   var _tdObs = null, _tdQueued = false;
   function trackDataCells(t) {
     const isrcs = t ? t.existing.map(c => '<a class="ii-trk-isrc" href="/isrc/' + esc(c) + '">' + isrcHtml(c) + '</a>').join('') : '';
@@ -62703,23 +62848,28 @@ if (__stOff.indexOf("isrc_scout") < 0 && __stRuns("isrc_scout", {"inc":["^https:
   function fillTrackData() {
     _tdQueued = false;
     if (!RELEASE) return;
+    paintColToggles();   // React may have drawn the toolbox again
+    if (!trackDataEnabled()) return;
     const byId = new Map(RELEASE.tracks.filter(t => t.trackId).map(t => [t.trackId, t]));
+    const on = trackCols(), keep = [on.isrc, on.links];
+    const pick = a => a.filter((x, i) => keep[i]);
     const tables = new Set();
     byId.forEach((t, id) => { const tr = document.getElementById(id); const tb = tr && tr.closest('table'); if (tb) tables.add(tb); });
     tables.forEach(tb => {
-      tb.querySelectorAll('tr.subh').forEach(tr => { if (!tr.querySelector(':scope > .ii-col')) addCols(tr, 'th', ['ISRC', 'Links'], ['ii-col-isrc', 'ii-col-links']); });
-      tb.querySelectorAll('thead th[colspan]').forEach(th => { if (!th.dataset.iiColspan) { th.dataset.iiColspan = th.colSpan; th.colSpan = th.colSpan + 2; } });
+      tb.querySelectorAll('tr.subh').forEach(tr => { if (!tr.querySelector(':scope > .ii-col')) addCols(tr, 'th', pick(['ISRC', 'Links']), pick(['ii-col-isrc', 'ii-col-links'])); });
+      tb.querySelectorAll('thead th[colspan]').forEach(th => { if (!th.dataset.iiColspan) { th.dataset.iiColspan = th.colSpan; th.colSpan = th.colSpan + pick([1, 1]).length; } });
       tb.querySelectorAll('tbody > tr:not(.subh)').forEach(tr => {
         if (tr.querySelector(':scope > .ii-col')) return;
-        addCols(tr, 'td', trackDataCells(byId.get(tr.id)), ['ii-col-isrc', 'ii-col-links']);
+        addCols(tr, 'td', pick(trackDataCells(byId.get(tr.id))), pick(['ii-col-isrc', 'ii-col-links']));
       });
     });
   }
   function showTrackData() {
+    paintColToggles();
     document.querySelectorAll('.ii-col').forEach(el => el.remove());
     document.querySelectorAll('th[data-ii-colspan]').forEach(th => { th.colSpan = +th.dataset.iiColspan; delete th.dataset.iiColspan; });
-    if (!IS_OVERVIEW || !RELEASE || !trackDataEnabled()) { if (_tdObs) { _tdObs.disconnect(); _tdObs = null; } return; }
-    fillTrackData();
+    if (!IS_OVERVIEW || !RELEASE || !(trackDataEnabled() || colTogglesOn())) { if (_tdObs) { _tdObs.disconnect(); _tdObs = null; } return; }
+    if (trackDataEnabled()) fillTrackData();
     if (!_tdObs) {
       _tdObs = new MutationObserver(() => { if (!_tdQueued) { _tdQueued = true; requestAnimationFrame(fillTrackData); } });
       _tdObs.observe(document.documentElement, { childList: true, subtree: true });
