@@ -21,11 +21,18 @@ test('#727: Falcon fills a release label\'s empty catalog number', { tag: ['@san
   if (!/test\.musicbrainz\.org$/.test(new URL(HOST).hostname)) throw new Error('sandbox only');
   const code = await readFile(sourceOf('falcon'), 'utf8');
   const goto = async (p, url) => { for (let a = 1; ; a++) { try { await p.goto(url, { waitUntil: 'domcontentloaded', timeout: 60000 }); return; } catch (e) { if (a >= 3) throw e; await p.waitForTimeout(5000); } } };
-  const catno = () => page.evaluate(async ({ r, l }) => {
-    const j = await (await fetch(`/ws/2/release/${r}?inc=labels&fmt=json`, { cache: 'no-store' })).json();
-    const li = (j['label-info'] || []).find(x => x.label && x.label.id === l);
-    return li ? li['catalog-number'] || '' : null;
-  }, { r: RELEASE, l: LABEL });
+  // a label's catalog number on the release ('' none, null the release hasn't the label). A throttled
+  // reply ({ error }) is read again: taken as "no such label", it sent the setup into setting an
+  // already empty number, where the editor has nothing to submit and Enter edit stays disabled.
+  const labelOf = l => page.evaluate(async ({ r, l }) => {
+    for (let a = 0; ; a++) {
+      const j = await fetch(`/ws/2/release/${r}?inc=labels&fmt=json`, { cache: 'no-store' }).then(x => x.json()).catch(() => ({}));
+      if (j.id === r) { const li = (j['label-info'] || []).find(x => x.label && x.label.id === l); return li ? li['catalog-number'] || '' : null; }
+      if (a >= 10) throw new Error('the web service gave no release: ' + JSON.stringify(j).slice(0, 200));
+      await new Promise(res => setTimeout(res, 2000));
+    }
+  }, { r: RELEASE, l });
+  const catno = () => labelOf(LABEL);
   // the sandbox may queue a label edit for a vote; accept it so the release changes at once
   const acceptOpen = async (expect = false) => {
     let hrefs = [];
@@ -109,11 +116,6 @@ test('#727: Falcon fills a release label\'s empty catalog number', { tag: ['@san
   check(await catno() === CATNO, 'the label keeps its catalog number');
 
   // ── 4. a label the release hasn't is added, with its catalog number ────────
-  const labelOf = l => page.evaluate(async ({ r, l }) => {
-    const j = await (await fetch(`/ws/2/release/${r}?inc=labels&fmt=json`, { cache: 'no-store' })).json();
-    const li = (j['label-info'] || []).find(x => x.label && x.label.id === l);
-    return li ? li['catalog-number'] || '' : null;
-  }, { r: RELEASE, l });
   check(await labelOf(OTHER) === null, 'the release starts without the other label');
   const third = await run([{ mbid: RELEASE, labels: [{ mbid: OTHER, name: 'Metropolis Records', catno: 'MET 727', add: true }], note: 'Falcon #727 proof: add a label' }]);
   console.log(JSON.stringify(third.queued), JSON.stringify(third.out)); third.log.slice(-6).forEach(l => console.log('  ' + l));
