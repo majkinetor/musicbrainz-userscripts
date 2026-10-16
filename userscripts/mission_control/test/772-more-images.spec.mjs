@@ -120,4 +120,21 @@ test('#772: more images, taken in, typed and commented, sent with Execute', { ta
   check(sent && JSON.stringify(sent.keys) === '["Amazon"]', 'with the front\'s source');
   await until(() => page.locator('#mc-root .mc-ax-c.done').count(), n => n === 2);
   check(await page.locator('#mc-root .mc-ax-c.done').count() === 2 && await exec() === 'Execute', 'the entered show as entered and leave the count');
+
+  // full screen, Enter writes the comment; Enter again keeps it and goes to the next image that takes one (the entered
+  // Discogs 2 is passed); Esc stops writing, then closes
+  await card('Discogs#1').locator('.mc-ax-img').click();
+  await page.locator('#mc-cover').waitFor();
+  await page.keyboard.press('Enter');
+  check(await page.evaluate(() => document.activeElement && document.activeElement.classList.contains('mc-cov-cin')), 'Enter in full screen opens the comment');
+  await page.keyboard.press('Control+A');
+  await page.keyboard.type('Label A');
+  await page.keyboard.press('Enter');
+  check(/Discogs 3/.test(await page.locator('#mc-cover .mc-cov-t').textContent()) && await page.evaluate(() => document.activeElement && document.activeElement.classList.contains('mc-cov-cin')), 'Enter goes to the comment of the next image, past the entered one');
+  await page.keyboard.type('Label B');
+  await page.keyboard.press('Escape');
+  check(await page.locator('#mc-cover').count() === 1 && await page.locator('#mc-cover .mc-cov-ctx').textContent() === 'Label B', 'Esc stops writing and keeps the full screen');
+  await page.keyboard.press('Escape');
+  s = await st();
+  check(await page.locator('#mc-cover').count() === 0 && s[1].cmt === 'Label A' && s[3].cmt === 'Label B' && s[3].on, `the comments are on the cards, and take the image in (${JSON.stringify(s)})`);
 });

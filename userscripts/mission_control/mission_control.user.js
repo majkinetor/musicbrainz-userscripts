@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Mission Control
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.16.214706
+// @version      2026.10.16.233000
 // @description  One window on the release page that asks the other scripts (Platform Check, ISRC Scout, Art Station, Fusion, Credit Hoarder) what is missing, shows it all in one review, and applies the selected changes in order.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5NaXNzaW9uIENvbnRyb2w8L3RpdGxlPgo8ZGVmcz48ZmlsdGVyIGlkPSJtY28xMy1oIiB4PSItMTAlIiB5PSItMTAlIiB3aWR0aD0iMTIwJSIgaGVpZ2h0PSIxMjAlIj48ZmVNb3JwaG9sb2d5IGluPSJTb3VyY2VBbHBoYSIgb3BlcmF0b3I9ImRpbGF0ZSIgcmFkaXVzPSIxLjUiIHJlc3VsdD0iZCIvPjxmZUZsb29kIGZsb29kLWNvbG9yPSIjZmZmIiBmbG9vZC1vcGFjaXR5PSIuNyIvPjxmZUNvbXBvc2l0ZSBpbjI9ImQiIG9wZXJhdG9yPSJpbiIvPjxmZU1lcmdlPjxmZU1lcmdlTm9kZS8+PGZlTWVyZ2VOb2RlIGluPSJTb3VyY2VHcmFwaGljIi8+PC9mZU1lcmdlPjwvZmlsdGVyPjwvZGVmcz48ZyBmaWx0ZXI9InVybCgjbWNvMTMtaCkiPjxwYXRoIGQ9Ik03NyAzNS41IEw2NCA0MyBMNTEgMzUuNSBMNTEgMjAuNSBMNjQgMTMgTDc3IDIwLjVaIiBmaWxsPSIjN2E1N2U4IiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik01OS43IDc3LjUgTDQ2LjcgODUgTDMzLjcgNzcuNSBMMzMuNyA2Mi41IEw0Ni43IDU1IEw1OS43IDYyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik05NC4zIDc3LjUgTDgxLjMgODUgTDY4LjMgNzcuNSBMNjguMyA2Mi41IEw4MS4zIDU1IEw5NC4zIDYyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik00Mi4zIDEwNy41IEwyOS40IDExNSBMMTYuNCAxMDcuNSBMMTYuNCA5Mi41IEwyOS40IDg1IEw0Mi4zIDkyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik03NyAxMDcuNSBMNjQgMTE1IEw1MSAxMDcuNSBMNTEgOTIuNSBMNjQgODUgTDc3IDkyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik0xMTEuNiAxMDcuNSBMOTguNiAxMTUgTDg1LjcgMTA3LjUgTDg1LjcgOTIuNSBMOTguNiA4NSBMMTExLjYgOTIuNVoiIGZpbGw9IiNmZmM5NGEiIHN0cm9rZT0iIzIyMjIzYiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PC9nPgo8L3N2Zz4K
@@ -331,15 +331,35 @@ function coverList(b) {
     if (same) return [one(c.full || b.full || c.thumb || b.thumb, 'Front cover', c.w, c.h, c.bytes, b.provider)].filter(Boolean);
     return [one(b.full || b.thumb, 'Best cover', b.w, b.h, b.bytes, b.provider || ''), c ? one(c.full || c.thumb, 'Current front', c.w, c.h, c.bytes, 'Cover Art Archive') : null].filter(Boolean);
 }
-function coverViewer(list, at) {
+function coverViewer(list, at, onClose) {
     if (!list.length) return;
     document.getElementById('mc-cover')?.remove();
     let i = Math.min(at || 0, list.length - 1);
     const v = el('div', ''); v.id = 'mc-cover';
     v.setAttribute('role', 'dialog'); v.setAttribute('aria-label', 'Cover, full screen');
     v.innerHTML = mbuHtml('<div class="mc-cov-top"><span class="mc-cov-t"></span><span class="mc-cov-i"></span><span class="mc-cov-n"></span><button type="button" class="mc-cov-x" title="Close (Esc)">✕</button></div>'
-        + '<div class="mc-cov-stage"><img alt=""></div>'
+        + '<div class="mc-cov-stage"><img alt=""></div><div class="mc-cov-cmt"></div>'
         + (list.length > 1 ? '<button type="button" class="mc-cov-go prev" title="Previous (←)">‹</button><button type="button" class="mc-cov-go next" title="Next (→)">›</button>' : ''));
+    // #772: an image with `cmt` ({ get, set }) takes a comment: Enter writes it, Enter again keeps it and goes to the
+    // next image's, Esc stops, as in Art Station's full screen
+    let editing = false, dirty = false;
+    const cmtArea = () => {
+        const x = list[i], a = v.querySelector('.mc-cov-cmt');
+        if (!x.cmt) { a.innerHTML = ''; return; }
+        if (editing) {
+            a.innerHTML = mbuHtml('<input class="mc-cov-cin" placeholder="comment…" spellcheck="false">');
+            const inp = a.querySelector('input'); inp.value = x.cmt.get();
+            inp.setAttribute('aria-label', 'Comment for ' + x.title);
+            inp.oninput = () => { x.cmt.set(inp.value); dirty = true; };
+            inp.onblur = () => { editing = false; cmtArea(); };
+            inp.focus();
+            return;
+        }
+        const c = x.cmt.get();
+        a.innerHTML = mbuHtml(c ? '<span class="mc-cov-ctx" title="Edit the comment (Enter)"></span>' : '<button type="button" class="mc-cov-cadd" title="Add a comment (Enter)">✎ comment</button>');
+        if (c) a.firstChild.textContent = c;
+        a.firstChild.onclick = () => { editing = true; cmtArea(); };
+    };
     const show = () => {
         const x = list[i];
         const img = v.querySelector('img');
@@ -348,11 +368,22 @@ function coverViewer(list, at) {
         v.querySelector('.mc-cov-t').textContent = x.title;
         v.querySelector('.mc-cov-i').textContent = x.info;
         v.querySelector('.mc-cov-n').textContent = list.length > 1 ? (i + 1) + ' / ' + list.length : '';
+        cmtArea();
     };
     const go = d => { i = (i + d + list.length) % list.length; show(); };
-    const done = () => { v.remove(); document.removeEventListener('keydown', key, true); };
+    const done = () => { v.remove(); document.removeEventListener('keydown', key, true); if (dirty && onClose) onClose(); };
     const key = e => {
-        if (e.key === 'Escape') done();
+        if (e.target && e.target.classList && e.target.classList.contains('mc-cov-cin')) {
+            if (e.key === 'Escape') { e.target.blur(); v.focus && v.focus(); }
+            else if (e.key === 'Enter') {
+                const inp = e.target; inp.onblur = null; list[i].cmt.set(inp.value); dirty = true;
+                const at = list.findIndex((x, j) => j > i && x.cmt);   // the next image that takes a comment
+                if (at >= 0) { i = at; show(); } else { editing = false; cmtArea(); }
+            } else return;
+            e.preventDefault(); e.stopPropagation(); return;
+        }
+        if (e.key === 'Enter' && list[i].cmt) { editing = true; cmtArea(); }
+        else if (e.key === 'Escape') done();
         else if (e.key === 'ArrowLeft') go(-1);
         else if (e.key === 'ArrowRight') go(1);
         else return;
@@ -360,7 +391,7 @@ function coverViewer(list, at) {
     };
     v.addEventListener('click', e => {
         if (e.target.closest('.mc-cov-go')) go(e.target.closest('.prev') ? -1 : 1);
-        else if (e.target.closest('.mc-cov-x') || !e.target.closest('img, .mc-cov-top')) done();
+        else if (e.target.closest('.mc-cov-x') || !e.target.closest('img, .mc-cov-top, .mc-cov-cmt')) done();
     });
     document.addEventListener('keydown', key, true);
     (ui || document.body).appendChild(v);
@@ -475,8 +506,11 @@ function axPopOutside(ev) {
 function axPopClose() { document.getElementById('mc-ax-pop')?.remove(); document.removeEventListener('mousedown', axPopOutside, true); }
 function axView(key) {
     const xs = axList();
-    const list = xs.map(e => ({ src: e.url || e.thumb, alt: e.thumb, title: axName(e), info: [e.w + ' × ' + e.h, e.bytes ? Math.round(e.bytes / 1024) + ' KB' : '', e.dup || '', axOf(e).types.join(', ')].filter(Boolean).join(' · ') }));
-    coverViewer(list, Math.max(0, xs.findIndex(e => e.key === key)));
+    const list = xs.map(e => ({ src: e.url || e.thumb, alt: e.thumb, title: axName(e), info: [e.w + ' × ' + e.h, e.bytes ? Math.round(e.bytes / 1024) + ' KB' : '', e.dup || '', axOf(e).types.join(', ')].filter(Boolean).join(' · '),
+        // a comment written here takes the image in, as on its card
+        cmt: axOf(e).entered ? null : { get: () => axOf(e).comment, set: c => { const s = axOf(e); s.comment = c.trim(); if (s.comment && !s.taken) s.taken = true; } } }));
+    if (axCmt) axCmtDone(false);
+    coverViewer(list, Math.max(0, xs.findIndex(e => e.key === key)), () => { Log.debug('#772 comments written full screen'); axPaint(); });
 }
 // each store's row: take all its images in, or leave them all out once they are
 function axGroupBtn(g) {
@@ -809,6 +843,8 @@ function mcStyle() {
         + '#mc-cover button{all:unset;cursor:pointer;color:#fff;display:flex;align-items:center;justify-content:center;border-radius:50%;background:rgba(255,255,255,.12)}#mc-cover button:hover{background:rgba(255,255,255,.26)}'
         + '.mc-cov-x{width:36px;height:36px;font-size:18px}.mc-cov-stage{flex:1 1 auto;min-height:0;display:flex;align-items:center;justify-content:center;padding:0 72px 16px}'
         + '.mc-cov-stage img{max-width:100%;max-height:100%;object-fit:contain;box-shadow:0 6px 40px rgba(0,0,0,.6);cursor:default}'
+        + '.mc-cov-cmt{display:flex;justify-content:center;min-height:30px;padding:0 16px 14px}.mc-cov-cmt:empty{display:none}#mc-cover .mc-cov-cadd{border-radius:var(--mbu-radius);padding:4px 12px;font-size:13px}'
+        + '.mc-cov-ctx{cursor:text;font-size:14px;color:#fff;padding:4px 8px;max-width:80%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.mc-cov-cin{width:min(480px,80%);font:inherit;font-size:14px;padding:5px 10px;border-radius:var(--mbu-radius);border:1px solid rgba(255,255,255,.4);background:rgba(0,0,0,.5);color:#fff;outline:none}'
         + '#mc-cover .mc-cov-go{position:absolute;top:50%;transform:translateY(-50%);width:52px;height:52px;font-size:34px;line-height:1}#mc-cover .mc-cov-go.prev{left:12px}#mc-cover .mc-cov-go.next{right:12px}'
         + '.mc-best img{width:72px;height:72px;object-fit:contain;border-radius:var(--mbu-radius);background:var(--mbu-bg-sunken);border:1px solid var(--mbu-border-soft);flex:0 0 auto}'
         // #772: the stores' other images, cards as in Art Station's gallery
