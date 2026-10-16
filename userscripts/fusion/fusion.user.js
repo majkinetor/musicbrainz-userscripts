@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Fusion
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.16.165733
+// @version      2026.10.16.165931
 // @description  Merge-recordings assistant for MusicBrainz: gather a pool of candidate recordings from a release / release group / recording page (or paste any MBID/URL), auto-match them into merge groups by ISRC / AcoustID / length / title+artist, review and adjust the groups, then submit the merges directly in the background — no MB merge page involved.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPkZ1c2lvbjwvdGl0bGU+CiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjYTE4NGY4IiBzdHJva2Utd2lkdGg9IjUuNSI+CiAgICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSI2NCIgcng9IjUyIiByeT0iMjIiLz4KICAgIDxlbGxpcHNlIGN4PSI2NCIgY3k9IjY0IiByeD0iNTIiIHJ5PSIyMiIgdHJhbnNmb3JtPSJyb3RhdGUoNjAgNjQgNjQpIi8+CiAgICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSI2NCIgcng9IjUyIiByeT0iMjIiIHRyYW5zZm9ybT0icm90YXRlKDEyMCA2NCA2NCkiLz4KICA8L2c+CiAgPGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iMTEiIGZpbGw9IiM3YzRkZmYiLz4KPC9zdmc+Cg==
@@ -3008,6 +3008,7 @@ function fsStyle() {
         + '.fs-grow .fs-len{box-sizing:border-box;color:var(--fs-muted);font-size:11px;width:44px;flex-shrink:0}'
         + '.fs-grow .fs-isrc{box-sizing:border-box;color:var(--fs-muted);font-size:10px;width:96px;flex-shrink:0;font-family:ui-monospace,Consolas,monospace;display:flex;flex-direction:column;gap:2px;align-items:flex-start}'
         + '.fs-idv{border-radius:3px;padding:1px 4px;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;line-height:1.45}'
+        + 'a.fs-idv,a.fs-idtag{color:inherit;text-decoration:none}a.fs-idv:hover,a.fs-idtag:hover{text-decoration:underline}'
         + '.fs-idnone{padding:1px 0;line-height:1.45}'
         + '.fs-idunk{color:var(--mbu-info);cursor:help;font-weight:700}'
         + '.fs-grow .fs-t,.fs-grow .fs-artistcol,.fs-grow .fs-rel,.fs-grow .fs-len,.fs-grow .fs-star,.fs-grow .fs-acts,.fs-grow .fs-exp{line-height:1.45;padding-top:1px}'
@@ -3103,6 +3104,9 @@ function releasesSummary(rec) {
 // apollo_editor's #303 VIDEO_MARK, which itself mirrors MB's native recordings-table marker.
 const MERGE_MARK = '<svg class="fs-mergeicon" viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 3v6a5 5 0 0 0 5 5h7"/><path d="M18 3v6a5 5 0 0 1-5 5h-2"/><polyline points="15 11 19 14 15 17"/></svg>';
 const VIDEO_MARK = '<span class="fs-rec-video" title="This recording is a video"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg></span>';
+// #761 (chaban-mb): "It would be useful to have the AcoustIDs linked to more easily fix the
+// linked recordings when erroneous": an AcoustID opens its page on acoustid.org
+const acidUrl = id => 'https://acoustid.org/track/' + encodeURIComponent(id);
 function videoBadge(rec) { return rec.video === true ? VIDEO_MARK + ' ' : ''; }
 function pendingBadge(rec) { return rec.editsPending ? '<span class="fs-pending" title="This recording has pending edits in MusicBrainz — excluded from matching and blocked from merging until they are applied">⏳ pending</span> ' : ''; }
 // #529 follow-up: "we should see isrc and accousticid in the card too" — the
@@ -3114,7 +3118,7 @@ function idsLine(rec) {
     if (!isrc && !acid) return '';
     let out = '<div class="fs-ids">';
     if (isrc) out += '<span class="fs-idtag" title="' + escapeHtml((rec.isrcs || []).join(', ')) + '">' + escapeHtml(isrc) + '</span>';
-    if (acid) out += '<span class="fs-idtag" title="AcoustID ' + escapeHtml(acid) + '">' + escapeHtml(acid.slice(0, 8)) + '…</span>';
+    if (acid) out += '<a class="fs-idtag" href="' + acidUrl(acid) + '" target="_blank" rel="noopener" title="AcoustID ' + escapeHtml(acid) + ' — open on acoustid.org">' + escapeHtml(acid.slice(0, 8)) + '…</a>';
     return out + '</div>';
 }
 // A dot per identifier. "not looked up yet" is deliberately a THIRD state, not
@@ -3475,8 +3479,9 @@ function groupCardHtml(group) {
         const tags = vals.map(v => {
             const cls = idColor.get(v) || '';
             const shown = isAcoustid ? escapeHtml(v.slice(0, 8)) + '…' : escapeHtml(v);
-            const title = label + ' ' + escapeHtml(v) + (cls ? ' — shared with another recording in this group' : ' — only on this recording');
-            return '<span class="fs-idv ' + cls + '" title="' + title + '">' + shown + '</span>';
+            const title = label + ' ' + escapeHtml(v) + (cls ? ' — shared with another recording in this group' : ' — only on this recording') + (isAcoustid ? ' · open on acoustid.org' : '');
+            return isAcoustid ? '<a class="fs-idv fs-idlink ' + cls + '" href="' + acidUrl(v) + '" target="_blank" rel="noopener" title="' + title + '">' + shown + '</a>'
+                : '<span class="fs-idv ' + cls + '" title="' + title + '">' + shown + '</span>';
         }).join('');
         return '<span class="fs-isrc">' + tags + '</span>';
     };

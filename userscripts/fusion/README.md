@@ -26,6 +26,7 @@ In a group:
 - ↩ returns a recording to the pool, ✕ drops it altogether;
 - 🗑 deletes the group and returns its members to the pool; **Clear board** does it for every group;
 - an ISRC or AcoustID that two or more members share is tinted, one colour per shared value, so you can see which rows agree;
+- an AcoustID opens its page on acoustid.org, where a wrongly linked recording can be fixed;
 - a length outside the tolerance is flagged amber, with the spread next to the title.
 
 ## Seeding
