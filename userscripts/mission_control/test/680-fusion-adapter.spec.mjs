@@ -7,8 +7,10 @@
 // the fixture up.
 import { test, check } from '../../../dev/test/harness.mjs';
 
-// a successful Execute would reload the page under the test (on by default since settings v2)
-test.use({ gm: { name: 'Mission Control', values: { 'mc.settings': JSON.stringify({ v: 2, reloadAfter: false }) } } });
+// a successful Execute would reload the page under the test (on by default since settings v2).
+// The fixture's duplicates share title, artist and length, no ISRC or AcoustID: Fusion groups
+// them at the normal cutoff, and its default is strict (identifiers only) since e4af01ff.
+test.use({ gm: { name: 'Mission Control', values: { 'mc.settings': JSON.stringify({ v: 2, reloadAfter: false }), 'fusion.settings': JSON.stringify({ matchCutoff: 'normal' }) } } });
 
 const RELEASE = '3d1e3d44-84c8-4746-a99c-be4486e866e7';
 
