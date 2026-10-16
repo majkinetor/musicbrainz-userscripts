@@ -71,7 +71,7 @@ A group's chips show which signals hold for **every** member; one that holds for
 
 Each merge gets an edit note listing what matched ("Same ISRC …", "Length difference 5s (3:59 – 4:04)"). ✎ in a group's title replaces it with your own text; Fusion's attribution line is always appended.
 
-It is an ordinary edit on your account: unless you're an auto-editor, it goes to a vote (see [Settings](#settings) to always ask for one).
+It is an ordinary edit on your account, and it always goes to a vote, even an auto-editor's: MusicBrainz never applies a [destructive edit](https://musicbrainz.org/doc/Destructive_Edit) right away.
 
 A group whose merge MusicBrainz refuses is marked failed, not done.
 
@@ -81,7 +81,6 @@ The ⚙ window (or right-click Fusion's corner icon), which also holds the activ
 
 | Setting                                           | Default |                                                            |
 | ------------------------------------------------- | ------- | ---------------------------------------------------------- |
-| Always require a vote                             | off     | send even your auto-edits to a vote                        |
 | Look up AcoustIDs                                 | on      | fetch the pool's AcoustIDs from acoustid.org               |
 | Match on open                                     | off     | run Match once the pool has loaded                         |
 | Preload group release details                     | off     | fetch every grouped recording's releases in the background |
