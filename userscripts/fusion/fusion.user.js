@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Fusion
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.16
+// @version      2026.10.16.165050
 // @description  Merge-recordings assistant for MusicBrainz: gather a pool of candidate recordings from a release / release group / recording page (or paste any MBID/URL), auto-match them into merge groups by ISRC / AcoustID / length / title+artist, review and adjust the groups, then submit the merges directly in the background — no MB merge page involved.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPkZ1c2lvbjwvdGl0bGU+CiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjYTE4NGY4IiBzdHJva2Utd2lkdGg9IjUuNSI+CiAgICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSI2NCIgcng9IjUyIiByeT0iMjIiLz4KICAgIDxlbGxpcHNlIGN4PSI2NCIgY3k9IjY0IiByeD0iNTIiIHJ5PSIyMiIgdHJhbnNmb3JtPSJyb3RhdGUoNjAgNjQgNjQpIi8+CiAgICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSI2NCIgcng9IjUyIiByeT0iMjIiIHRyYW5zZm9ybT0icm90YXRlKDEyMCA2NCA2NCkiLz4KICA8L2c+CiAgPGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iMTEiIGZpbGw9IiM3YzRkZmYiLz4KPC9zdmc+Cg==
@@ -317,7 +317,7 @@ async function wsGet(path, retries) {
 
 // ── settings (GM-persisted) ──────────────────────────────────────────────
 const SETTINGS_KEY = 'fusion.settings';
-const SETTINGS_DEFAULTS = { lengthToleranceMs: 5000, grossLengthMs: 30000, acoustidEnrich: true, acoustidPoolCap: 2000, autoMatchOnOpen: false, prefetchGroupReleases: false, releasePrefetchCap: 200, poolCollapsed: false, makeVotable: false, matchCutoff: 'strict' };
+const SETTINGS_DEFAULTS = { lengthToleranceMs: 5000, grossLengthMs: 30000, acoustidEnrich: true, acoustidPoolCap: 2000, autoMatchOnOpen: false, prefetchGroupReleases: false, releasePrefetchCap: 200, poolCollapsed: false, matchCutoff: 'strict' };
 function loadSettings() {
     // (#623: the one-time #529 migrations of the old AcoustID cap and prefetch default are retired)
     try { return Object.assign({}, SETTINGS_DEFAULTS, JSON.parse(GM_getValue(SETTINGS_KEY, '{}'))); }
@@ -1327,7 +1327,8 @@ async function enrichIsrcs(recs, concurrency, onProgress) {
 // ── merge submission (verified live against test.musicbrainz.org — GET
 // /recording/merge_queue?add-to-merge=<id>×N redirects to /recording/merge, whose
 // self-posting form has merge.merging.N / merge.target / merge.edit_note /
-// merge.make_votable and no CSRF token, session cookie authorises) ──────────
+// merge.make_votable and no CSRF token, session cookie authorises; a merge always goes to a
+// vote, being destructive, so make_votable is never sent: #763) ──────────
 // #529 (majkinetor): "we should also have more precise log message … says
 // similar title while title is the same. Check also how other userscript does
 // it." Modelled on jesus2099's MASS MERGE RECORDINGS note: itemised evidence
@@ -1499,7 +1500,6 @@ async function mergeGroup(group) {
             body.append('merge.target', String(targetId));
             const note = buildEditNote(group);
             body.append('merge.edit_note', note);
-            if (SETTINGS.makeVotable) body.append('merge.make_votable', '1');
             Log.info('  edit note: ' + note.replace(/\n/g, ' ¶ '));
             const pr = await gmPost(mergeUrl, body.toString(), { 'Content-Type': 'application/x-www-form-urlencoded', Accept: 'text/html', Referer: mergeUrl, Origin: location.origin });
             if (pr.status >= 400) throw new Error('merge POST failed: HTTP ' + pr.status);
@@ -4122,7 +4122,6 @@ function openSettings(anchor) {
     document.getElementById('fs-settings')?.remove();
     const s = el('div', 'fs-settings'); s.id = 'fs-settings';
     s.innerHTML = mbuCfgHeader({ script: 'fusion', name: 'Fusion', version: VERSION, icon: ICON, log: true })
-        + '<label class="fs-opt"><input type="checkbox" id="fs-opt-votable"> Always require a vote (make_votable)</label>'
         + '<label class="fs-opt"><input type="checkbox" id="fs-opt-acoustid"> Look up AcoustIDs (acoustid.org, batched)</label>'
         + '<label class="fs-opt" title="Run Match by itself as soon as the pool has finished loading, instead of waiting for you to press the button."><input type="checkbox" id="fs-opt-automatch"> Match on open</label>'
         + '<label class="fs-opt" title="As soon as a group is formed, fetch the full release list for every recording in it, so expanding a row is instant. Costs one request per grouped recording; off by default because seeding already makes a lot of them. Runs in the background, never blocks the UI, and the header stop button halts it."><input type="checkbox" id="fs-opt-prefetch"> Preload group release details in the background</label>'
@@ -4132,13 +4131,11 @@ function openSettings(anchor) {
     const r = anchor.getBoundingClientRect();
     s.style.top = (r.bottom + 6) + 'px'; s.style.right = '14px';
     if (r.bottom + 6 + s.offsetHeight > window.innerHeight - 8) { s.style.top = 'auto'; s.style.bottom = (window.innerHeight - r.top + 6) + 'px'; }   // #695: from the corner launcher, open upward
-    s.querySelector('#fs-opt-votable').checked = !!SETTINGS.makeVotable;
     s.querySelector('#fs-opt-acoustid').checked = SETTINGS.acoustidEnrich !== false;
     s.querySelector('#fs-opt-automatch').checked = !!SETTINGS.autoMatchOnOpen;
     s.querySelector('#fs-opt-tol').value = Math.round(SETTINGS.lengthToleranceMs / 1000);
     s.querySelector('#fs-opt-gross').value = Math.round((SETTINGS.grossLengthMs != null ? SETTINGS.grossLengthMs : 30000) / 1000);
     s.querySelector('#fs-opt-prefetch').checked = !!SETTINGS.prefetchGroupReleases;
-    s.querySelector('#fs-opt-votable').onchange = e => { SETTINGS.makeVotable = e.target.checked; saveSettings(); };
     s.querySelector('#fs-opt-acoustid').onchange = e => { SETTINGS.acoustidEnrich = e.target.checked; saveSettings(); };
     s.querySelector('#fs-opt-automatch').onchange = e => { SETTINGS.autoMatchOnOpen = e.target.checked; saveSettings(); Log.info('Match on open: ' + (SETTINGS.autoMatchOnOpen ? 'on' : 'off')); };
     s.querySelector('#fs-opt-prefetch').onchange = e => { SETTINGS.prefetchGroupReleases = e.target.checked; saveSettings(); Log.info('Background release prefetch: ' + (SETTINGS.prefetchGroupReleases ? 'on' : 'off')); if (SETTINGS.prefetchGroupReleases) prefetchGroupReleases(); };
