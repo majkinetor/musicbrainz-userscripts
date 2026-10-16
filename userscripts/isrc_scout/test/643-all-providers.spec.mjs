@@ -155,7 +155,11 @@ test('#643: All — agreement, a disputed ISRC with [use], the tooltip, no Sound
   const apple4 = p4.lines.find(l => l.name === 'Apple');
   console.log('apple4', JSON.stringify(apple4));
   check(!apple4.use && apple4.state !== 'differs', `the album's ISRC at track 4's place is track 3's (entered): no [use] (${apple4.mark} ${apple4.text})`);
-  await page.keyboard.press('Escape');
+  // the hover comparison goes when the mouse does (Escape closes the editor once nothing in it is
+  // open: it only closed the settings the unauthorized editor used to open itself, #768)
+  await page.mouse.move(5, 5);
+  await until(() => readPop(page), p => !p || p.pinned);
+  if (await readPop(page)) await page.keyboard.press('Escape');
   await page.fill(row(2) + ' .ii-input', '');
   await page.fill(row(3) + ' .ii-input', 'USQX91300104');
 

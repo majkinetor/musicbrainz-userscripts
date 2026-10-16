@@ -39,7 +39,10 @@ test('#490: SoundExchange search is a row-hover icon that survives "Clear ISRCs"
   check(await until(opacity, o => o !== '0') !== '0', 'hovering the row shows it');
   await page.click('tr[data-idx="0"] .ii-sx-hover');
   check(await until(() => page.evaluate(() => !!document.getElementById('ii-sxp-track')?.textContent)), 'clicking it opens the SoundExchange search for that track');
-  await page.evaluate(() => document.body.click());
+  // closed with Escape, which the panel takes first (a click on the body never closed it: the
+  // panel only stayed clear of the toolbar while the unauthorized editor opened its settings, #768)
+  await page.keyboard.press('Escape');
+  await until(() => page.evaluate(() => !document.getElementById('ii-sxpanel')?.classList.contains('open')));
   await page.click('#ii-clear-toggle');
   await page.click('#ii-clear-isrcs');
   // "Clear ISRCs" has run once the row's field is empty; the icon is looked for then

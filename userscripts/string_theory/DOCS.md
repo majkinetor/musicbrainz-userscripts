@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-10-16 17:11 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-10-16 18:16 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -1567,22 +1567,31 @@ End a link when the release is taken down and it no longer resolves ([MusicBrain
 
 ### Tracklist
 
-The release page's tracklist gets two columns before *Rating*: **ISRC**, each track's ISRCs, and **Links**, its recording's links. An ISRC opens its MusicBrainz page, an icon the provider's track. Each platform shows one icon; when the recording has several links there, a number beside it says how many, its tooltip lists them, and it opens the first one that hasn't ended. An ended link is faded. They follow what you submit and change in the editor. *Show ISRCs and links on the tracklist* turns them off.
+The release page's tracklist gets two columns before *Rating*: **ISRC**, each track's ISRCs, and **Links**, its recording's links. An ISRC opens its MusicBrainz page, an icon the provider's track. Each platform shows one icon; when the recording has several links there, a number beside it says how many, its tooltip lists them, and it opens the first one that hasn't ended. An ended link is faded. They follow what you submit and change in the editor. **ISRC** and **Links** above the tracklist, beside MusicBrainz's own *Display credits at bottom*, show or hide each column (struck through when hidden). In the settings, *ISRC column on the tracklist* and *Links column on the tracklist* do the same, and *Column toggles above the tracklist* hides the toggles.
 
 ### Settings
 
-<img width="1000" src="../isrc_scout/screenshots/options.png" />
+**⚙** in the editor's header opens the settings window; a click outside it, or Esc, closes it.
+
+<img width="420" src="../isrc_scout/screenshots/options.png" />
 
 | Setting                                    | Default                    |                                                                                |
 | ------------------------------------------ | -------------------------- | ------------------------------------------------------------------------------ |
+| Platforms                                  | all on                     | the platforms ISRC Scout uses ([Platforms](#platforms-1))                        |
 | Authorize                                  |                            | OAuth for submitting ISRCs                                                     |
 | Import buttons                             | icons                      | icons, text, or both                                                           |
-| Show ISRCs and links on the tracklist      | on                         | the ISRC and Links columns on the release page ([Tracklist](#tracklist-1))       |
+| ISRC column on the tracklist               | on                         | the ISRC column on the release page ([Tracklist](#tracklist-1))                  |
+| Links column on the tracklist              | on                         | the Links column on the release page                                           |
+| Column toggles above the tracklist         | on                         | **ISRC** · **Links** above the tracklist                                       |
 | Show ISRCs in parts                        | on                         | `CC-XXX-YY-NNNNN`, here and in [Mission Control](../mission_control/README.md) |
 | Use providers from the whole release group | off                        | take missing providers from sibling releases (one more lookup)                 |
 | Ignore Platform Check link confidence      | off                        | use links Platform Check withheld for a barcode or format mismatch             |
 | Repeat failed submits                      | on, 10 minutes or 10 times | try a submit again when MusicBrainz is busy (503) or the connection drops      |
 | Spotify ISRC source                        | molla                      | or ISRC Hunt                                                                   |
+
+#### Platforms
+
+**Platforms**, at the top of the settings window, has a switch for each platform ISRC Scout uses, SoundExchange included. A platform switched off loses its import button and its per-track lookup, and Match, Find links and All skip it; links already found on it are dropped. Platform Check keeps its own list, so a platform can be on in one and off in the other.
 
 ### Shortcuts
 
@@ -1925,7 +1934,7 @@ Finds a MusicBrainz release on the streaming and store platforms, checks each ma
 
 ### Features
 
-- **[Dashboard](#dashboard)** on every release page: each [platform](#platforms-1), with its track count, year, label and format beside MusicBrainz's.
+- **[Dashboard](#dashboard)** on every release page: each [platform](#platforms-2), with its track count, year, label and format beside MusicBrainz's.
 - **[Link confidence](#link-confidence)**: a match with a different barcode or format is a different release, and is not added.
 - **[Adding links](#adding-links)** to the release, one or all, in the foreground or in the background, or opening all the pages found.
 - **[Pasting a barcode](#pasting-a-barcode)** on a release that has none, or picking one the platforms report: the platforms are checked against it, and an added link adds it too.
@@ -2071,7 +2080,7 @@ Click a mark to open the page (a ⚠ opens the MusicBrainz artist or label that 
 | Setting                                | Default           |                                                                                      |
 | -------------------------------------- | ----------------- | ------------------------------------------------------------------------------------ |
 | Platforms                              | all               | order them, or leave some out                                                        |
-| Logins                                 | none              | Beatport and Qobuz; see [Platforms](#platforms-1)                                      |
+| Logins                                 | none              | Beatport and Qobuz; see [Platforms](#platforms-2)                                      |
 | Use barcodes                           | on, strictly      | [link confidence](#link-confidence); *if they exist* withholds only a known mismatch |
 | Use formats                            | on, strictly      | the same, for the format                                                             |
 | Open the editor in a new tab           | on                | off navigates this tab                                                               |

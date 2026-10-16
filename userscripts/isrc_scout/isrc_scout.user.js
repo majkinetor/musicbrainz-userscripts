@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         ISRC Scout
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.16.164606
+// @version      2026.10.16.181657
 // @description  Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify / Beatport / Tidal / Volumo / HDtracks / Qobuz, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPklTUkMgU2NvdXQ8L3RpdGxlPgogICAgPHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPgogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjQwIi8+CiAgICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyNiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2U9IiNiOWEzZTgiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPgogIDwvZz4KICA8bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+Cjwvc3ZnPgo=
@@ -1849,6 +1849,9 @@
     th.ii-col, td.ii-col { width: 1%; }                                              /* as wide as their content; Title takes the rest */
     td.ii-col-isrc, td.ii-col-links { white-space: nowrap; vertical-align: top; }
     td.ii-col-isrc { padding-right: 14px; }
+    #ii-setup-toggle.ii-needauth { position: relative; }
+    #ii-setup-toggle.ii-needauth::after { content: ''; position: absolute; top: 2px; right: 2px; width: 7px; height: 7px; border-radius: 50%; background: var(--mbu-warn); }
+    #ii-col-toggles .ii-coloff { text-decoration: line-through; opacity: .55; }
     .ii-trk-isrc { display: block; font: 12px/1.6 ui-monospace, Consolas, monospace; }
     .ii-trk-lns { display: flex; flex-wrap: wrap; align-items: center; gap: 3px 4px; padding-top: 2px; width: max-content; max-width: 224px; }  /* one icon per platform, wrapping past ~11 so the column never crowds Title */
     @media (max-width: 1000px) { .ii-trk-lns { max-width: 80px; } }                     /* a narrow window: four to a row */
@@ -2086,6 +2089,8 @@
     .ii-sx-hover svg { display: block; }
     tr:hover .ii-sx-hover { opacity: .55; pointer-events: auto; }
     .ii-sx-hover:hover { opacity: 1 !important; color: var(--mbu-text); }
+    #ii-modal.ii-nosx #ii-sx-group { display: none; }
+    #ii-modal.ii-nosx .ii-sx-hover { visibility: hidden; }
     /* the × lives INSIDE the input box (part of the edit), so it doesn't shift the
        row layout / SX text alignment */
     .ii-isrcf > span:not(:last-child)::after { content: '-'; opacity: .45; }
@@ -2158,6 +2163,38 @@
     .ii-cfg-lnk { font: 600 12px system-ui; color: var(--mbu-accent-text); text-decoration: none; cursor: pointer;
       background: none; border: none; padding: 2px 4px; }
     .ii-cfg-lnk:hover { text-decoration: underline; }
+    /* #768: the settings window, over the editor under its ⚙, built like Platform Check's */
+    .ii-pane.ii-cfgwin.open { position: absolute; top: 52px; right: 12px; z-index: 6; width: 470px; max-width: calc(100% - 24px);
+      max-height: calc(100% - 64px); box-sizing: border-box; padding: 14px 16px 16px; border: 1px solid var(--mbu-border);
+      border-radius: var(--mbu-radius-lg); box-shadow: var(--mbu-shadow-lg); background: var(--mbu-bg); }
+    .ii-cfgwin .ii-cfg-sec { font-weight: 700; color: var(--mbu-text); font-size: 11px; letter-spacing: .05em; text-transform: uppercase;
+      margin: 16px 0 6px; padding-bottom: 3px; border-bottom: 1px solid var(--mbu-divider); }
+    .ii-cfgwin .ii-cfg-sech { display: flex; align-items: center; margin-top: 4px; }
+    .ii-cfgwin .ii-cfg-back { margin-left: auto; font: 600 12px system-ui; color: var(--mbu-accent-text); background: none; border: 0; cursor: pointer; padding: 0; text-transform: none; letter-spacing: 0; }
+    .ii-cfgwin .ii-cfg-back:hover { text-decoration: underline; }
+    .ii-cfgwin .ii-cfg-nav { display: flex; align-items: center; gap: 8px; width: 100%; margin: 4px 0 0; padding: 8px 10px; text-align: left;
+      font: 600 13px system-ui; color: var(--mbu-text); background: var(--mbu-bg-raised); border: 1px solid var(--mbu-border); border-radius: var(--mbu-radius); cursor: pointer; }
+    .ii-cfgwin .ii-cfg-nav:hover { background: var(--mbu-bg-hover); }
+    .ii-cfgwin .ii-cfg-navn { margin-left: auto; font-weight: 400; font-size: 12px; color: var(--mbu-text-weak); }
+    .ii-cfgwin .ii-set-row { margin: 7px 2px; font-size: 12.5px; color: var(--mbu-text); }
+    .ii-cfgwin .ii-set-row label { display: inline-flex; align-items: flex-start; gap: 8px; margin: 0; font-size: 12.5px; color: var(--mbu-text); cursor: pointer; }
+    .ii-cfgwin .ii-set-row input[type=checkbox] { margin: 2px 0 0; width: 15px; height: 15px; flex: 0 0 auto; }
+    .ii-cfgwin .ii-set-row input[type=number] { width: 46px; }
+    .ii-cfgwin .ii-set-inline { display: flex; align-items: center; gap: 14px; }
+    .ii-cfgwin .ii-set-inline label { align-items: center; gap: 5px; }
+    .ii-cfgwin .ii-set-inline input[type=checkbox] { margin: 0; }
+    .ii-cfgwin .ii-set-k { min-width: 120px; color: var(--mbu-text-dim); }
+    .ii-cfgwin .ii-set-inline select { font-size: 12px; }
+    .ii-cfgwin .ii-set-help { display: block; margin-top: 2px; font-size: 11px; line-height: 1.4; color: var(--mbu-text-weak); }
+    .ii-cfgwin .ii-set-under { margin: -2px 2px 6px; }
+    .ii-cfgwin .ii-plat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 2px 6px; margin-top: 6px; }
+    .ii-cfgwin .ii-plat { display: flex; align-items: center; gap: 7px; margin: 0; padding: 4px 6px; font-size: 13px; color: var(--mbu-text);
+      border-radius: var(--mbu-radius); cursor: pointer; min-width: 0; }
+    .ii-cfgwin .ii-plat:hover { background: var(--mbu-bg-hover); }
+    .ii-cfgwin .ii-plat input { margin: 0; width: 14px; height: 14px; flex: 0 0 auto; }
+    .ii-cfgwin .ii-plat-ic { display: inline-flex; flex: 0 0 auto; }
+    .ii-cfgwin .ii-plat-n { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .ii-cfgwin .ii-plat:has(input:not(:checked)) .ii-plat-ic, .ii-cfgwin .ii-plat:has(input:not(:checked)) .ii-plat-n { opacity: .45; }
     .ii-cfg-grp { font: 700 10.5px system-ui; text-transform: uppercase; letter-spacing: .3px; color: var(--mbu-text-weak); margin: 4px 0 6px; }
     .ii-pane label { display: block; font-size: 11.5px; color: var(--mbu-text-dim); margin: 6px 0 2px; }
     .ii-pane input[type=text], .ii-pane textarea {
@@ -2877,6 +2914,31 @@
        • Beatport / Volumo / HDtracks: read the release's album ONCE (cached) and
          match by ISRC, so they need the album's link (MB rel or Platform Check).
   ═══════════════════════════════════════════════════════════════════════ */
+  // #768 (chaban-mb): "PC has configuration to choose used Providers but ISRC Scout doesn't. It
+  // always tries all supported providers." Scout's own switches, apart from Platform Check's
+  // (majkinetor: someone may want every platform in PC and only some here), all on by default.
+  // A platform that's off loses its import button and per-track lookup, and Match, Find links
+  // and All skip it. Keys as Platform Check names them (and the shared icons).
+  const PLATFORMS = [
+    ['deezer', 'Deezer'], ['tidal', 'Tidal'], ['spotify', 'Spotify'], ['apple', 'Apple Music'], ['qobuz', 'Qobuz'],
+    ['beatport', 'Beatport'], ['volumo', 'Volumo'], ['hdtracks', 'HDtracks'], ['sevendigital', '7digital'], ['bandcamp', 'Bandcamp'],
+    ['soundcloud', 'SoundCloud'], ['audiomack', 'Audiomack'], ['ytmusic', 'YouTube Music'], ['amazonmusic', 'Amazon Music'], ['soundexchange', 'SoundExchange'],
+  ];
+  const platformOn = key => store.get('platform_' + key, true) !== false;
+  // the two-letter codes the buttons and Find links use, and the import buttons' source names
+  const CODE_PLATFORM = { dz: 'deezer', td: 'tidal', sp: 'spotify', am: 'apple', qz: 'qobuz', bp: 'beatport', vo: 'volumo', hd: 'hdtracks',
+    sd: 'sevendigital', bc: 'bandcamp', sc: 'soundcloud', ak: 'audiomack', yt: 'ytmusic', az: 'amazonmusic', sx: 'soundexchange' };
+  const codeOn = code => !CODE_PLATFORM[code] || platformOn(CODE_PLATFORM[code]);
+  const SOURCE_CODE = { Deezer: 'dz', Tidal: 'td', Spotify: 'sp', Apple: 'am', Qobuz: 'qz', Beatport: 'bp', Volumo: 'vo', HDtracks: 'hd',
+    '7digital': 'sd', SoundCloud: 'sc', Audiomack: 'ak' };
+  const sourceOn = source => codeOn(SOURCE_CODE[source]);
+  // the Add column of a platform switched off is hidden (rows built before the switch included)
+  function paintPlatformsOff() {
+    let st = document.getElementById('ii-plat-off');
+    if (!st) { st = document.createElement('style'); st.id = 'ii-plat-off'; document.head.appendChild(st); }
+    st.textContent = Object.keys(CODE_PLATFORM).filter(c => !codeOn(c)).map(c => '#ii-modal .ii-tl-add .ii-tl[data-code="' + c + '"]{display:none}').join('');
+  }
+
   // Album-based providers — same fetchers the import buttons use. `idField` is the
   // RELEASE property holding the in-MB album id; availability also honours a
   // Platform-Check-found URL (via providerAlbumId).
@@ -2913,7 +2975,9 @@
   // a provider is offered only when it can resolve a source for THIS release
   // (SoundExchange always; an album provider needs an MB link or a PC-found URL).
   function trackProvAvailable(key) {
-    if (key === 'sx' || key === 'all') return true;
+    if (key === 'all') return true;
+    if (!codeOn(TRACK_PROV[key] ? TRACK_PROV[key].code : key)) return false;   // #768: switched off
+    if (key === 'sx') return true;
     if (TRACK_PROV[key] && TRACK_PROV[key].global) return true;   // global by-ISRC — no link needed
     const p = ALBUM_PROVIDERS[key];
     return !!(p && RELEASE && providerAlbumId(p.source, RELEASE[p.idField]));
@@ -4369,78 +4433,64 @@
         </div>
       </div>
 
-      <div class="ii-pane" id="ii-setup-pane">
+      <!-- #768 (majkinetor: "redoing entire scout config which is now inline with window … the same as
+           with other scripts"): a settings window of its own over the editor, built like Platform
+           Check's: sections, and a Platforms view of switches. The ids are the inline pane's. -->
+      <div class="ii-pane ii-cfgwin" id="ii-setup-pane">
         <!-- #301: standard config-window header — icon · name · version · ? Help (no ✕); Log is in the main header, as on Platform Check -->
         ${mbuCfgHeader({ script: 'isrc_scout', name: 'ISRC Scout', version: SCRIPT_VERSION,
           icon: '<svg viewBox="0 0 128 128" aria-hidden="true"><path d="M64 64 L64 24 A40 40 0 0 1 99 84 Z" fill="#d8c8f2"/>'
             + '<g fill="none" stroke="currentColor" stroke-width="9"><circle cx="64" cy="64" r="40"/>'
             + '<circle cx="64" cy="64" r="9" fill="currentColor" stroke="none"/></g></svg>',
         })}
-        <div class="ii-cfg-grp">MusicBrainz</div>
-        <div class="ii-authstate" id="ii-auth-state"></div>
-        <div class="row" style="margin-top:8px; flex-wrap:nowrap">
-          <button class="ii-tbtn primary" id="ii-authorize" style="flex-shrink:0">Authorize</button>
-          <input type="text" id="ii-oauth-code" placeholder="Auto-fills on success — paste the code here only if the tab fails to close" autocomplete="off" style="flex:1; min-width:180px">
-          <button class="ii-tbtn ghost" id="ii-signout" style="flex-shrink:0; display:none">Sign out</button>
-        </div>
-        <div class="ii-help">
-          Click <b>Authorize</b> → approve in the MusicBrainz tab → it captures the code and closes itself.
-          If the tab can't close on its own, paste the code it shows into the box above (Enter to submit).
-        </div>
-        <div class="ii-cfg-grp" style="margin-top:16px">Settings</div>
-        <div>
-          <label style="display:block; font-size:11.5px; color:var(--mbu-text-dim); margin-bottom:5px; font-weight:600">Import-source buttons</label>
-          <label style="display:inline-flex; align-items:center; gap:5px; font-size:12px; margin-right:16px; cursor:pointer"><input type="checkbox" id="ii-show-icons">Show icons</label>
-          <label style="display:inline-flex; align-items:center; gap:5px; font-size:12px; cursor:pointer"><input type="checkbox" id="ii-show-text">Show text</label>
-        </div>
-        <div style="margin-top:12px">
-          <label style="display:inline-flex; align-items:flex-start; gap:6px; font-size:12px; cursor:pointer">
-            <input type="checkbox" id="ii-track-data" style="margin-top:2px">
-            <span>Show ISRCs and links on the tracklist<br>
-              <span style="color:var(--mbu-text-weak); font-size:11px">The release page's tracklist gets an ISRC and a Links column.</span></span>
-          </label>
-        </div>
-        <div style="margin-top:12px">
-          <label style="display:inline-flex; align-items:flex-start; gap:6px; font-size:12px; cursor:pointer">
-            <input type="checkbox" id="ii-isrc-format" style="margin-top:2px">
-            <span>Show ISRCs in parts<br>
-              <span style="color:var(--mbu-text-weak); font-size:11px">CC-XXX-YY-NNNNN: country, registrant, year, number. A copy is still the plain code, and Mission Control shows its ISRCs the same way. The ISRC you type stays plain.</span></span>
-          </label>
-        </div>
-        <div style="margin-top:12px">
-          <label style="display:inline-flex; align-items:flex-start; gap:6px; font-size:12px; cursor:pointer">
-            <input type="checkbox" id="ii-rg-providers" style="margin-top:2px">
-            <span>Use providers from the whole release group<br>
-              <span style="color:var(--mbu-text-weak); font-size:11px">Fill missing Deezer / Tidal / Bandcamp / … album links from sibling releases in the release group — recordings are shared, so a link on any edition resolves here. Costs one extra lookup.</span></span>
-          </label>
-        </div>
-        <div style="margin-top:12px">
-          <label style="display:inline-flex; align-items:flex-start; gap:6px; font-size:12px; cursor:pointer">
-            <input type="checkbox" id="ii-ignore-pc" style="margin-top:2px">
-            <span>Ignore Platform Check link confidence<br>
-              <span style="color:var(--mbu-text-weak); font-size:11px">Import from a Platform-Check link even when PC withheld it for a barcode/format mismatch. Off by default — a mismatch can mean PC matched the wrong release, so its ISRCs would be wrong (#314).</span></span>
-          </label>
-        </div>
-        <div style="margin-top:12px">
-          <label style="display:inline-flex; align-items:flex-start; gap:6px; font-size:12px; cursor:pointer">
-            <input type="checkbox" id="ii-auto-repeat" style="margin-top:2px">
-            <span>Repeat failed submits up to <input type="number" id="ii-ar-min" min="1" max="240" style="width:46px"> minutes or <input type="number" id="ii-ar-times" min="1" max="100" style="width:46px"> times<br>
-              <span style="color:var(--mbu-text-weak); font-size:11px">When MusicBrainz is busy (503) or the connection drops, the ISRC and link submits are tried again by themselves, the attempts spread over the minutes.</span></span>
-          </label>
-        </div>
-        <div style="margin-top:12px; font-size:12px">
-          <label style="display:inline-flex; align-items:center; gap:6px; cursor:pointer">Spotify ISRC source
-            <select id="ii-sp-source" style="font-size:12px">
+        <div id="ii-cfg-main">
+          <button class="ii-cfg-nav" id="ii-cfg-to-platforms" type="button"><span>Platforms</span><span class="ii-cfg-navn" id="ii-cfg-platforms-n"></span><span aria-hidden="true">›</span></button>
+
+          <div class="ii-cfg-sec">MusicBrainz</div>
+          <div class="ii-authstate" id="ii-auth-state"></div>
+          <div class="row" style="margin-top:8px; flex-wrap:nowrap">
+            <button class="ii-tbtn primary" id="ii-authorize" style="flex-shrink:0">Authorize</button>
+            <input type="text" id="ii-oauth-code" placeholder="Paste the code here only if the tab fails to close" autocomplete="off" style="flex:1; min-width:140px">
+            <button class="ii-tbtn ghost" id="ii-signout" style="flex-shrink:0; display:none">Sign out</button>
+          </div>
+          <div class="ii-help">
+            Click <b>Authorize</b> → approve in the MusicBrainz tab → it captures the code and closes itself.
+            If the tab can't close on its own, paste the code it shows into the box above (Enter to submit).
+          </div>
+
+          <div class="ii-cfg-sec">Imports</div>
+          <div class="ii-set-row ii-set-inline"><span class="ii-set-k">Import buttons</span>
+            <label><input type="checkbox" id="ii-show-icons">icons</label>
+            <label><input type="checkbox" id="ii-show-text">text</label></div>
+        <div class="ii-set-row"><label><input type="checkbox" id="ii-rg-providers"><span>Use providers from the whole release group<span class="ii-set-help">Fill missing Deezer / Tidal / Bandcamp / … album links from sibling releases in the release group: recordings are shared, so a link on any edition resolves here. Costs one extra lookup.</span></span></label></div>
+        <div class="ii-set-row"><label><input type="checkbox" id="ii-ignore-pc"><span>Ignore Platform Check link confidence<span class="ii-set-help">Import from a Platform Check link even when it withheld it for a barcode or format mismatch. Off by default: a mismatch can mean it matched the wrong release, so its ISRCs would be wrong (#314).</span></span></label></div>
+          <div class="ii-set-row ii-set-inline"><span class="ii-set-k">Spotify ISRC source</span>
+            <select id="ii-sp-source">
               <option value="molla">molla</option>
               <option value="isrchunt">ISRC Hunt</option>
-            </select>
-          </label>
-          <div style="color:var(--mbu-text-weak); font-size:11px; margin-top:2px">Spotify's own ISRC API needs a paid developer account, so the lookup goes through one of these services. If one is down or rate-limited, switch to the other (#603).</div>
-        </div>
-        <div class="ii-cfg-grp" style="margin-top:16px">More</div>
-        <a class="ii-cfg-lnk" id="ii-history" target="_blank" rel="noopener"
+            </select></div>
+          <div class="ii-set-help ii-set-under">Spotify's own ISRC API needs a paid developer account, so the lookup goes through one of these services. If one is down or rate-limited, switch to the other (#603).</div>
+
+          <div class="ii-cfg-sec">Submitting</div>
+          <div class="ii-set-row"><label><input type="checkbox" id="ii-auto-repeat"><span>Repeat failed submits up to <input type="number" id="ii-ar-min" min="1" max="240"> minutes or <input type="number" id="ii-ar-times" min="1" max="100"> times<span class="ii-set-help">When MusicBrainz is busy (503) or the connection drops, the ISRC and link submits are tried again by themselves, the attempts spread over the minutes.</span></span></label></div>
+
+          <div class="ii-cfg-sec">Release page</div>
+        <div class="ii-set-row"><label><input type="checkbox" id="ii-track-isrc"><span>ISRC column on the tracklist<span class="ii-set-help">The release page's tracklist gets each track's ISRCs.</span></span></label></div>
+        <div class="ii-set-row"><label><input type="checkbox" id="ii-track-links"><span>Links column on the tracklist<span class="ii-set-help">The release page's tracklist gets each recording's links, an icon per platform.</span></span></label></div>
+        <div class="ii-set-row"><label><input type="checkbox" id="ii-track-toggles"><span>Column toggles above the tracklist<span class="ii-set-help">ISRC and Links beside MusicBrainz's own "Display credits at bottom", to show or hide each column there.</span></span></label></div>
+        <div class="ii-set-row"><label><input type="checkbox" id="ii-isrc-format"><span>Show ISRCs in parts<span class="ii-set-help">CC-XXX-YY-NNNNN: country, registrant, year, number. A copy is still the plain code, and Mission Control shows its ISRCs the same way. The ISRC you type stays plain.</span></span></label></div>
+
+          <div class="ii-cfg-sec">More</div>
+          <a class="ii-cfg-lnk" id="ii-history" target="_blank" rel="noopener"
            href="${MB_ROOT}/search/edits?auto_edit_filter=&order=desc&negation=0&combinator=and&conditions.0.field=type&conditions.0.operator=%3D&conditions.0.args=76&conditions.0.args=78&conditions.1.field=editor&conditions.1.operator=me&conditions.1.name=&conditions.1.args.0="
            title="Your Add/Remove ISRC edits on MusicBrainz">🕓 My ISRC edits on MusicBrainz</a>
+        </div>
+
+        <div id="ii-cfg-platforms" hidden>
+          <div class="ii-cfg-sec ii-cfg-sech">Platforms<button class="ii-cfg-back" id="ii-cfg-back" type="button">‹ Back</button></div>
+          <div class="ii-set-help ii-set-under">Untick a platform to leave it out: its import button and per-track lookup go, and Match, Find links and All skip it. Platform Check keeps its own list.</div>
+          <div class="ii-plat-grid" id="ii-plat-grid">${PLATFORMS.map(([k, name]) => '<label class="ii-plat"><input type="checkbox" data-platform="' + k + '"><span class="ii-plat-ic">' + stIcon(k, 15) + '</span><span class="ii-plat-n">' + name + '</span></label>').join('')}</div>
+        </div>
       </div>
 
       <div class="ii-pane" id="ii-bulk-pane">
@@ -4600,7 +4650,21 @@
       if (a && /^(INPUT|TEXTAREA)$/.test(a.tagName)) return;
       closeModal();
     });
-    modal.querySelector('#ii-setup-toggle').addEventListener('click', () => togglePane('ii-setup-pane'));
+    modal.querySelector('#ii-setup-toggle').addEventListener('click', () => {
+      const pane = modal.querySelector('#ii-setup-pane');
+      if (!pane.classList.contains('open')) { modal.querySelector('#ii-cfg-main').hidden = false; modal.querySelector('#ii-cfg-platforms').hidden = true; }
+      togglePane('ii-setup-pane');
+    });
+    // #768: the settings window floats over the editor, so a click outside closes it; that click
+    // is swallowed, or it would also press whatever it landed on
+    modal.addEventListener('mousedown', e => {
+      const pane = modal.querySelector('#ii-setup-pane');
+      if (!pane.classList.contains('open') || pane.contains(e.target) || e.target.closest('#ii-setup-toggle')) return;
+      pane.classList.remove('open');
+      const eat = ev => { ev.stopPropagation(); ev.preventDefault(); };
+      modal.addEventListener('click', eat, { capture: true, once: true });
+      setTimeout(() => modal.removeEventListener('click', eat, { capture: true }), 400);
+    }, true);
     modal.querySelector('#ii-bulk-toggle').addEventListener('click', () => togglePane('ii-bulk-pane'));
     modal.querySelector('#ii-maximize-toggle').addEventListener('click', toggleMaximize);
     modal.querySelector('#ii-links-btn').addEventListener('click', () => TrackLinks.resolve());        // #219: resolve candidates
@@ -4705,15 +4769,18 @@
     }
 
     // #749: ISRCs and links on the release page's tracklist
-    const cbTd = modal.querySelector('#ii-track-data');
-    if (cbTd) {
-      cbTd.checked = trackDataEnabled();
-      cbTd.addEventListener('change', () => {
-        store.set('track_data', cbTd.checked);
+    // (a setting each since vzell's request on #749)
+    [['isrc', '#ii-track-isrc', 'ISRC'], ['links', '#ii-track-links', 'Links']].forEach(([k, sel, name]) => {
+      const cb = modal.querySelector(sel); if (!cb) return;
+      cb.checked = trackCols()[k];
+      cb.addEventListener('change', () => {
+        store.set('track_' + k, cb.checked);
         showTrackData();
-        Log.info('ISRCs and links on the tracklist: ' + (cbTd.checked ? 'on' : 'off'));
+        Log.info(name + ' column on the tracklist: ' + (cb.checked ? 'on' : 'off'));
       });
-    }
+    });
+    { const cb = modal.querySelector('#ii-track-toggles');
+      if (cb) { cb.checked = colTogglesOn(); cb.addEventListener('change', () => { store.set('track_toggles', cb.checked); showTrackData(); Log.info('Column toggles above the tracklist: ' + (cb.checked ? 'on' : 'off')); }); } }
     // #766: ISRCs in parts, a shared setting Mission Control reads too
     const cbFmt = modal.querySelector('#ii-isrc-format');
     if (cbFmt) {
@@ -4724,6 +4791,37 @@
         showTrackData();
       });
     }
+
+    // #768: the Platforms view of the settings window, a switch per platform
+    const cfgMain = modal.querySelector('#ii-cfg-main'), cfgPlat = modal.querySelector('#ii-cfg-platforms');
+    const platCount = () => {
+      const on = PLATFORMS.filter(([k]) => platformOn(k)).length;
+      modal.querySelector('#ii-cfg-platforms-n').textContent = on === PLATFORMS.length ? 'all on' : on + ' of ' + PLATFORMS.length + ' on';
+    };
+    const cfgView = plat => { cfgMain.hidden = plat; cfgPlat.hidden = !plat; };
+    modal.querySelector('#ii-cfg-to-platforms').addEventListener('click', () => cfgView(true));
+    modal.querySelector('#ii-cfg-back').addEventListener('click', () => cfgView(false));
+    modal.querySelectorAll('#ii-plat-grid input[data-platform]').forEach(cb => {
+      cb.checked = platformOn(cb.dataset.platform);
+      cb.addEventListener('change', () => {
+        store.set('platform_' + cb.dataset.platform, cb.checked);
+        Log.info('Platform ' + cb.dataset.platform + ': ' + (cb.checked ? 'on' : 'off'));
+        platCount();
+        paintPlatformsOff();
+        if (!cb.checked) {
+          // links found on it, not added yet, are dropped: hidden, they'd still go out with Add links
+          const code = Object.keys(CODE_PLATFORM).find(c => CODE_PLATFORM[c] === cb.dataset.platform);
+          modal.querySelectorAll('.ii-tl-add .ii-tl.new[data-code="' + code + '"]').forEach(a => { a.className = 'ii-tl absent'; a.removeAttribute('href'); });
+          TrackLinks.refresh();
+        }
+        if (RELEASE) {
+          paintSourceButtons();
+          if (!trackProvAvailable(trackProv)) setTrackProvider(TRACK_PROV_ORDER.find(k => k !== 'all' && trackProvAvailable(k)) || 'sx', { quiet: true });
+        }
+      });
+    });
+    platCount();
+    paintPlatformsOff();
 
     // #314: respect / ignore Platform Check's barcode-mismatch link confidence
     const cbPc = modal.querySelector('#ii-ignore-pc');
@@ -5011,8 +5109,9 @@
 
   function refreshAuthState() {
     const el = modal.querySelector('#ii-auth-state');
-    const pane = modal.querySelector('#ii-setup-pane');
     const authed = Auth.isAuthorized();
+    const tog = modal.querySelector('#ii-setup-toggle');
+    if (tog) { tog.classList.toggle('ii-needauth', !authed); tog.title = authed ? 'Settings & help' : 'Settings & help: not authorized to submit ISRCs yet'; }
     // when authorized show Sign out; when not, show the code field in its place
     const code = modal.querySelector('#ii-oauth-code'), out = modal.querySelector('#ii-signout');
     if (code) code.style.display = authed ? 'none' : '';
@@ -5026,7 +5125,8 @@
     } else {
       el.className = 'ii-authstate no';
       el.textContent = '• Not authorized' + on + ' yet. Click Authorize (one time).';
-      pane.classList.add('open'); // nudge first-time users
+      // nudge first-time users: a dot on ⚙, not the window itself, which (#768) floats over the
+      // editor's toolbar; submitting ISRCs unauthorized still opens it
     }
   }
 
@@ -5644,7 +5744,7 @@
     // only when the release has that album link (resolvable) or the recording is
     // already linked to it.
     function providersFor(t) {
-      return PROV.filter(p => !p.album || linkedUrl(t, p) || (RELEASE && RELEASE[p.urlKey]));
+      return PROV.filter(p => codeOn(p.code) && (!p.album || linkedUrl(t, p) || (RELEASE && RELEASE[p.urlKey])));   // #768: not one switched off
     }
 
     // #389 Show EVERY linked provider, even ones ISRC Scout can't add per-track. Recognise the common
@@ -6055,7 +6155,7 @@
       const btn = modal.querySelector('#ii-links-btn');
       if (btn) { btn.disabled = true; btn.dataset.busy = '1'; }
       try {
-        await Promise.all(PROV.map(resolveProvider));   // #307: providers run in parallel
+        await Promise.all(PROV.filter(p => codeOn(p.code)).map(resolveProvider));   // #307: providers run in parallel; #768: not one switched off
       } finally {
         resolving = false;
         endCollect();
@@ -6071,6 +6171,7 @@
     async function findHeadless(isrcOf, onProvider) {
       const out = {};
       await Promise.all(PROV.map(async p => {
+        if (!codeOn(p.code)) return;   // #768: switched off
         if (p.album && !(RELEASE && RELEASE[p.urlKey])) return;
         const jobs = [];
         RELEASE.tracks.forEach((t, idx) => {
@@ -6133,10 +6234,9 @@
   })();
 
   /* ── render the track table ── */
-  function renderTracks() {
-    // #301: release title centered (Zen), artist + year on the line below
-    modal.querySelector('#ii-rel-title').textContent = RELEASE.title || '';
-    modal.querySelector('#ii-rel-sub').textContent = [RELEASE.artist, RELEASE.releaseYear].filter(Boolean).join(' · ');
+  // the import buttons, SoundExchange's search and All, for this release and the platforms switched on
+  // (#768: out of renderTracks, so a switch repaints them without rebuilding the rows)
+  function paintSourceButtons() {
     // Provider buttons (#180): show a provider only when the release has its
     // link in MB OR Platform Check found one. MB-linked buttons are marked
     // (ring + brand tint via .ii-mb); an unmarked button = a PC-found link.
@@ -6157,7 +6257,7 @@
       // release FROM the URL), so a PC-only Spotify link is not usable (#180).
       const hasPc = source !== 'Spotify' && !!platformCheckUrl(source);
       const rg = RELEASE.rgFrom && RELEASE.rgFrom[field];   // #302: pulled from a sibling release in the RG
-      btn.style.display = (mbId || hasPc) ? '' : 'none';
+      btn.style.display = (mbId || hasPc) && sourceOn(source) ? '' : 'none';   // #768: or switched off
       btn.classList.toggle('ii-mb', !!mbId);
       btn.classList.toggle('ii-rg', !!rg);
       btn.disabled = false;
@@ -6167,10 +6267,19 @@
         : ('No ' + source + ' link');
     });
 
+    // #768: SoundExchange switched off takes its search away (the toolbar's and each row's ⚙)
+    modal.classList.toggle('ii-nosx', !platformOn('soundexchange'));
+
     // #643: All, last in the toolbar, when there is more than one provider to compare
     { const allBtn = modal.querySelector('#ii-all-all'), n = allProviders().length;
       allBtn.style.display = n > 1 ? '' : 'none';
       allBtn.title = 'Check every track’s ISRC on ' + allProviders().map(k => TRACK_PROV[k].name).join(', ') + ' at once — a verdict per row, the comparison on its chip'; }
+  }
+  function renderTracks() {
+    // #301: release title centered (Zen), artist + year on the line below
+    modal.querySelector('#ii-rel-title').textContent = RELEASE.title || '';
+    modal.querySelector('#ii-rel-sub').textContent = [RELEASE.artist, RELEASE.releaseYear].filter(Boolean).join(' · ');
+    paintSourceButtons();
 
     tbody.innerHTML = '';
     let lastMedium = null;
@@ -6281,7 +6390,7 @@
     });
     // #643: the rows are built with SoundExchange's label; the picked provider (kept while the
     // page is open) re-skins them, or SoundExchange when this release doesn't offer it
-    setTrackProvider(trackProvAvailable(trackProv) ? trackProv : 'sx', { quiet: true });
+    setTrackProvider(trackProvAvailable(trackProv) ? trackProv : TRACK_PROV_ORDER.find(k => k !== 'all' && trackProvAvailable(k)) || 'sx', { quiet: true });
     updateSummary();
     TrackLinks.refresh();   // #301: set the Links tab "N missing" badge
   }
@@ -7406,7 +7515,7 @@
     return ISRC_SPEED_ORDER.map(k => ALBUM_PROVIDERS[k]).filter(Boolean)
       .map(p => ({ source: p.source, fetcher: p.fetcher, id: rg[p.idField] ? null : idOf(p.source, RELEASE[p.idField]) }))
       .concat([{ source: 'Spotify', fetcher: fetchSpotify, id: rg.spotifyId ? null : idOf('Spotify', RELEASE.spotifyId) }])
-      .filter(x => x.id);
+      .filter(x => x.id && sourceOn(x.source));   // #768: a platform switched off is skipped
   }
   // the dialog's Match: ISRCs from the fastest source that gives any (the next one
   // when a source fails or gives none), then Find links with them
@@ -7922,7 +8031,43 @@
      by its track MBID (the row's id); the columns go before Rating (else Length), found by class.
      A medium MusicBrainz loads later (expanded) gets them as it comes. */
   // declarations and var, hoisted: updateBtnStatus can run before this point (see btnStatus)
-  function trackDataEnabled() { return !!store.get('track_data', true); }
+  // #749 (vzell): "Could we have two separate options for displaying ISRC and Links … it broke my
+  // userscript": a setting each, both from the one they replace (track_data)
+  function trackCols() {
+    const both = store.get('track_data', true) !== false;
+    return { isrc: store.get('track_isrc', both) !== false, links: store.get('track_links', both) !== false };
+  }
+  function trackDataEnabled() { const c = trackCols(); return c.isrc || c.links; }
+  // majkinetor: a toggle for each column above the tracklist, beside MusicBrainz's own "Display
+  // credits at bottom" (#medium-toolbox, the same in every language); a setting, on by default
+  const colTogglesOn = () => store.get('track_toggles', true) !== false;
+  function paintColToggles() {
+    const box = document.getElementById('medium-toolbox');
+    let el = document.getElementById('ii-col-toggles');
+    if (!IS_OVERVIEW || !RELEASE || !box || !colTogglesOn()) { if (el) el.remove(); return; }
+    // MusicBrainz floats its toolbox right: a float after it lines up on its left, beside it
+    const fl = getComputedStyle(box).float, after = fl === 'left' || fl === 'right';
+    if (!el || (after ? box.nextElementSibling !== el : el.nextElementSibling !== box)) {
+      if (el) el.remove();
+      el = document.createElement('span'); el.id = 'ii-col-toggles';
+      el.innerHTML = '<button type="button" class="btn-link" data-col="isrc">ISRC</button> | <button type="button" class="btn-link" data-col="links">Links</button> | ';
+      el.addEventListener('click', e => {
+        const b = e.target.closest('button[data-col]'); if (!b) return;
+        const k = b.dataset.col, on = !trackCols()[k];
+        store.set('track_' + k, on);
+        Log.info((k === 'isrc' ? 'ISRC' : 'Links') + ' column on the tracklist: ' + (on ? 'on' : 'off') + ' (toggle above the tracklist)');
+        showTrackData();
+        const cb = document.getElementById('ii-track-' + k); if (cb) cb.checked = on;
+      });
+      if (after) { el.style.cssFloat = fl; el.style.marginRight = '0.3em'; box.after(el); } else box.parentNode.insertBefore(el, box);
+    }
+    const c = trackCols();
+    el.querySelectorAll('button[data-col]').forEach(b => {
+      const on = c[b.dataset.col];
+      b.classList.toggle('ii-coloff', !on);
+      b.title = (on ? 'Hide' : 'Show') + ' the ' + (b.dataset.col === 'isrc' ? 'ISRC' : 'Links') + ' column (ISRC Scout)';
+    });
+  }
   var _tdObs = null, _tdQueued = false;
   function trackDataCells(t) {
     const isrcs = t ? t.existing.map(c => '<a class="ii-trk-isrc" href="/isrc/' + esc(c) + '">' + isrcHtml(c) + '</a>').join('') : '';
@@ -7959,23 +8104,28 @@
   function fillTrackData() {
     _tdQueued = false;
     if (!RELEASE) return;
+    paintColToggles();   // React may have drawn the toolbox again
+    if (!trackDataEnabled()) return;
     const byId = new Map(RELEASE.tracks.filter(t => t.trackId).map(t => [t.trackId, t]));
+    const on = trackCols(), keep = [on.isrc, on.links];
+    const pick = a => a.filter((x, i) => keep[i]);
     const tables = new Set();
     byId.forEach((t, id) => { const tr = document.getElementById(id); const tb = tr && tr.closest('table'); if (tb) tables.add(tb); });
     tables.forEach(tb => {
-      tb.querySelectorAll('tr.subh').forEach(tr => { if (!tr.querySelector(':scope > .ii-col')) addCols(tr, 'th', ['ISRC', 'Links'], ['ii-col-isrc', 'ii-col-links']); });
-      tb.querySelectorAll('thead th[colspan]').forEach(th => { if (!th.dataset.iiColspan) { th.dataset.iiColspan = th.colSpan; th.colSpan = th.colSpan + 2; } });
+      tb.querySelectorAll('tr.subh').forEach(tr => { if (!tr.querySelector(':scope > .ii-col')) addCols(tr, 'th', pick(['ISRC', 'Links']), pick(['ii-col-isrc', 'ii-col-links'])); });
+      tb.querySelectorAll('thead th[colspan]').forEach(th => { if (!th.dataset.iiColspan) { th.dataset.iiColspan = th.colSpan; th.colSpan = th.colSpan + pick([1, 1]).length; } });
       tb.querySelectorAll('tbody > tr:not(.subh)').forEach(tr => {
         if (tr.querySelector(':scope > .ii-col')) return;
-        addCols(tr, 'td', trackDataCells(byId.get(tr.id)), ['ii-col-isrc', 'ii-col-links']);
+        addCols(tr, 'td', pick(trackDataCells(byId.get(tr.id))), pick(['ii-col-isrc', 'ii-col-links']));
       });
     });
   }
   function showTrackData() {
+    paintColToggles();
     document.querySelectorAll('.ii-col').forEach(el => el.remove());
     document.querySelectorAll('th[data-ii-colspan]').forEach(th => { th.colSpan = +th.dataset.iiColspan; delete th.dataset.iiColspan; });
-    if (!IS_OVERVIEW || !RELEASE || !trackDataEnabled()) { if (_tdObs) { _tdObs.disconnect(); _tdObs = null; } return; }
-    fillTrackData();
+    if (!IS_OVERVIEW || !RELEASE || !(trackDataEnabled() || colTogglesOn())) { if (_tdObs) { _tdObs.disconnect(); _tdObs = null; } return; }
+    if (trackDataEnabled()) fillTrackData();
     if (!_tdObs) {
       _tdObs = new MutationObserver(() => { if (!_tdQueued) { _tdQueued = true; requestAnimationFrame(fillTrackData); } });
       _tdObs.observe(document.documentElement, { childList: true, subtree: true });
