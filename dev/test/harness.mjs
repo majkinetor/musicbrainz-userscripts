@@ -34,7 +34,8 @@ import { installProdGuard, hostOf, withUa } from './guard.mjs';
 
 export { expect };
 export const REPO = resolve(dirname(fileURLToPath(import.meta.url)), '..', '..');
-export const PROFILE = resolve(REPO, '.pw-profile');
+// PW_PROFILE=<dir> runs on a copy of the profile, beside a run on the real one (the suite skill's rechecks)
+export const PROFILE = process.env.PW_PROFILE ? resolve(process.env.PW_PROFILE) : resolve(REPO, '.pw-profile');
 export const PROD = 'https://musicbrainz.org';
 export const SANDBOX = 'https://test.musicbrainz.org';
 

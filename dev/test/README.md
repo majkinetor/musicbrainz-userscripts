@@ -19,6 +19,8 @@ TEST_LOG=1 pnpm test              # also print what specs log
 pnpm test:report                  # open the last HTML report
 ```
 
+`node dev/test/suite-by-script.mjs` runs the same suite one script (project) at a time, each with its own JSON report and artifacts in `test-results/suite/`; the [`suite` skill](../../.claude/skills/suite/SKILL.md) uses it to recheck one script's failures while the next one runs. Such a recheck runs on a copy of the profile, `PW_PROFILE=.pw-profile-recheck`, since Chromium lets one browser at a time open a profile.
+
 One test runs at a time: all of them share the logged-in profile, and MusicBrainz rate-limits per IP.
 
 ## CI

@@ -56,3 +56,4 @@ dev/script-metrics/_backfill.log
 /dist/
 *.pw-profile/
 /.pw-profile-ff/
+/.pw-profile-recheck/
