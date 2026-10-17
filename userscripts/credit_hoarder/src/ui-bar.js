@@ -1277,6 +1277,9 @@ export function insertDiscogsBar(discogsUrl, sources = {}, meta = {}) {
             background: var(--mbu-bg-raised);
             border-bottom: 1px solid var(--mbu-warn);
         }
+        /* review table: flat ✕ that clears a row's MB pick */
+        .discogs-clear-btn { margin-left: auto; flex: 0 0 auto; font-size: 0.85rem; line-height: 1; padding: 0.15rem 0.35rem; cursor: pointer; color: var(--mbu-text-weak); background: none !important; border: none; border-radius: var(--mbu-radius); }
+        .discogs-clear-btn:hover { color: var(--mbu-error); background: var(--mbu-bg-hover) !important; }
         /* inline options strip in the single bar (#139) */
         .discogs-bar-opts { display: flex; align-items: center; gap: 0.4rem; flex-wrap: wrap; margin-left: 0.9rem; }
         .discogs-bar-opts .discogs-opts-label { font-size: 0.75rem; color: var(--mbu-text-weak); text-transform: uppercase; letter-spacing: 0.05em; flex-shrink: 0; }

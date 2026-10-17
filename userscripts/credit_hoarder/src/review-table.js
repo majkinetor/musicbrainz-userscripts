@@ -1308,7 +1308,7 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
                 const undoBtn = document.createElement('button');
                 undoBtn.textContent = '\u2715';
                 undoBtn.title = 'Clear selection';
-                undoBtn.style.cssText = 'font-size:0.75rem;cursor:pointer;padding:0 0.3rem;margin-left:auto;';
+                undoBtn.className = 'discogs-clear-btn';
                 undoBtn.addEventListener('click', () => setRowUnresolved());
                 selRow.appendChild(makeLevelDot(null));   // #771: your pick
                 selRow.appendChild(selA);
@@ -2036,7 +2036,7 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
                 const undoBtn = document.createElement('button');
                 undoBtn.textContent = '\u2715';
                 undoBtn.title = 'Clear selection';
-                undoBtn.style.cssText = 'font-size:0.75rem;cursor:pointer;padding:0 0.3rem;margin-left:auto;';
+                undoBtn.className = 'discogs-clear-btn';
                 undoBtn.addEventListener('click', () => setRowUnresolved());
                 selRow.appendChild(makeLevelDot(matchLevelOf(r.logEntry?.via)));   // #771
                 selRow.appendChild(selA);
