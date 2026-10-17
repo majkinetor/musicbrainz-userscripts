@@ -3,7 +3,7 @@
 // the header readable, the track table scrolls inside its card.
 import { test, check, until, attachShot } from '../../../dev/test/harness.mjs';
 
-test.use({ gm: { name: 'Mission Control' }, viewport: { width: 393, height: 851 }, deviceScaleFactor: 2.75, isMobile: true, hasTouch: true });
+test.use({ gm: { name: 'Mission Control' }, viewport: { width: 360, height: 760 }, deviceScaleFactor: 4, isMobile: true, hasTouch: true });
 
 const RELEASE = 'e91b84a9-6b98-4d64-b4fc-753a9c674c4c';
 
@@ -48,6 +48,11 @@ test('MC fits a phone screen', { tag: ['@sandbox', '@cosmetic'] }, async ({ page
   check(r.root[1] <= r.vv[1] + 1 && r.root[2] <= r.vv[2] + 1, `MC is the screen's size (${r.root} on ${r.vv})`);
   check(r.steps[1] > 200 && (r.steps[0] <= r.steps[1] || r.steps[2] === "auto"), `the steps have a row of their own and scroll sideways (${r.steps})`);
   await page.evaluate(() => document.querySelector('#mc-root [data-act=cfg]').click());
-  await page.waitForSelector('.mbu-ov, .mc-cfg');
+  await page.waitForSelector('.mc-cfg');
+  const cfg = await page.evaluate(() => {
+    const p = document.querySelector('.mc-cfg').getBoundingClientRect();
+    return { panel: [Math.round(p.left), Math.round(p.right)], out: [...document.querySelectorAll('.mc-cfg *')].filter(e => { const b = e.getBoundingClientRect(); return b.width && (b.left < p.left - 1 || b.right > p.right + 1); }).map(e => e.className || e.tagName) };
+  });
+  check(cfg.panel[0] >= 0 && cfg.panel[1] <= 360 && !cfg.out.length, `the settings fit the screen, Log included (${JSON.stringify(cfg)})`);
   await attachShot(testInfo, page, 'settings');
 });
