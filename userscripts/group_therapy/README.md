@@ -118,6 +118,7 @@ When the relationship you right-click has a date (a *recorded at* with a date, s
 - **search** on a row opens a picker: search, paste an MBID or URL, or **+** to create the artist or label (right-click **+** to create it in a background tab). Picking a result resolves every row with the same name; right-click resolves only that row. A role picked for a row applies to every row with the same role text and the same kind of entity, so *produced at* picked for a studio leaves its line's producer an artist's *producer*.
 - Each line can have its own **pattern**, its text can be edited in place, and **✕** removes it. **🔒 Freeze matched** pins the current pattern on the lines it already matches, like in Apollo.
 - **Scope** sends the credits to the release (default) or to recordings chosen with a [track selector](#track-selector); the roles offered follow the scope.
+- **Works**: a role recordings don't have but works do (lyricist, composer, librettist, translator), going to tracks, goes on those tracks' works. *create none* (the default) uses only the works already linked and skips a track without one; *create needed* also creates the missing work, named after the recording. Match existing works first with **◎ Match works…**, or *create needed* makes duplicates.
 - **Apply** stages the rows. After **Load annotation**, **Apply & clear annotation** also opens the annotation editor, emptied.
 
 The text and the resolutions last until the page reloads.

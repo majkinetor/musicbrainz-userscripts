@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Group Therapy
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.17.130743
+// @version      2026.10.17.132223
 // @description  MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48ZyBmaWxsPSJub25lIiBzdHJva2U9IiM1YjZiN2EiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9Ijk0IiB5Mj0iNDIiLz48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48bGluZSB4MT0iOTQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48L2c+PGcgZmlsbD0iIzJlOWU1YiIgc3Ryb2tlPSIjMjU2ZjQzIiBzdHJva2Utd2lkdGg9IjQiPjxjaXJjbGUgY3g9IjM0IiBjeT0iNDIiIHI9IjE2Ii8+PGNpcmNsZSBjeD0iOTQiIGN5PSI0MiIgcj0iMTYiLz48Y2lyY2xlIGN4PSI2NCIgY3k9Ijk0IiByPSIxNiIvPjwvZz48L3N2Zz4=
@@ -2413,6 +2413,26 @@
   }
 
   function toast(msg) { return mbuToast(msg); }   // #563: the shared toast
+  // #777: the same duplicate-works warning Credit Hoarder shows for "create needed"
+  function txpWorksWarning() {
+    const ov = document.createElement('div');
+    ov.className = 'mbu-ui';
+    ov.style.cssText = 'position:fixed;inset:0;z-index:2147483000;background:rgba(20,10,10,.45);display:flex;align-items:center;justify-content:center;';
+    const box = document.createElement('div');
+    box.style.cssText = 'max-width:460px;margin:16px;background:var(--mbu-bg);border-radius:8px;border-top:4px solid var(--mbu-error);padding:16px 20px 14px;box-shadow:0 14px 44px rgba(0,0,0,.4);font-size:13px;line-height:1.55;color:var(--mbu-text);';
+    const h = document.createElement('div'); h.style.cssText = 'font-weight:800;color:var(--mbu-error);font-size:15px;margin-bottom:8px;'; h.textContent = '⚠️ WARNING: Avoid creating work duplicates!';
+    const p = document.createElement('p'); p.style.margin = '0 0 12px';
+    p.textContent = 'Make sure that you matched works before using this option: a track with no work gets a new one. Use ◎ Match works… first, to link the recordings to existing works.';
+    const foot = document.createElement('div'); foot.style.textAlign = 'right';
+    const ok = document.createElement('button'); ok.type = 'button'; ok.textContent = 'I understand';
+    ok.style.cssText = 'padding:5px 18px;font-size:13px;font-weight:600;color:#fff;background:var(--mbu-error);border:none;border-radius:5px;cursor:pointer;';
+    foot.appendChild(ok); box.append(h, p, foot); ov.appendChild(box);
+    const close = () => ov.remove();
+    ok.addEventListener('click', close);
+    ov.addEventListener('mousedown', e => { if (e.target === ov) close(); });
+    document.body.appendChild(ov);
+    ok.focus();
+  }
 
   // build an MB attribute ImmutableTree from a /ws/js rel's attribute array (they carry typeIDs directly)
   function buildAttrTree(wsAttrs) {
@@ -4569,7 +4589,7 @@
       + '.gt-tp-chip{font:11px monospace;background:var(--mbu-bg-raised);border:1px solid var(--mbu-border);border-radius:11px;padding:2px 9px;cursor:pointer;color:var(--mbu-text)}.gt-tp-chip:hover{background:var(--mbu-bg-raised);border-color:var(--mbu-info)}'
       + '.gt-tp-scope{display:flex;align-items:center;gap:6px;font-size:11.5px;color:var(--mbu-text-dim);background:var(--mbu-bg-raised);border-radius:11px;padding:3px 10px;min-width:0}'
       + '.gt-tp-scope-lbl{color:var(--mbu-text-weak)}'
-      + '.gt-tp-scope-sel,.gt-tp-det-sel{font:inherit;font-size:11px;border:1px solid var(--mbu-border);border-radius:5px;background:var(--mbu-bg);padding:1px 3px}'
+      + '.gt-tp-scope-sel,.gt-tp-det-sel,.gt-tp-works-sel{font:inherit;font-size:11px;border:1px solid var(--mbu-border);border-radius:5px;background:var(--mbu-bg);padding:1px 3px}'
       + '.gt-tp-tracks{font:inherit;font-size:11px;width:130px;border:1px solid var(--mbu-border);border-radius:5px;padding:1px 6px}'
       + '.gt-tp-tracks-info{font-size:10.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:0 1 auto;min-width:0}'
       + '.gt-cons-hdr .gt-tp-anno{margin-left:auto;padding:4px 10px;border:1px solid var(--mbu-border);border-radius:5px;background:var(--mbu-bg);cursor:pointer;font-size:12px;font-family:inherit;color:var(--mbu-text)}.gt-cons-hdr .gt-tp-anno:hover{background:var(--mbu-bg-raised)}'
@@ -4745,7 +4765,8 @@
     // Scope control says. On by default: the clause is there to be obeyed, and
     // a run that silently ignores it is the bug this fixes.
     let scope = { kind: (saved && saved.scopeKind) || 'release', spec: (saved && saved.scopeSpec) || '',
-      tracks: (saved && saved.scopeTracks) || 'auto' };
+      tracks: (saved && saved.scopeTracks) || 'auto',
+      works: (saved && saved.scopeWorks) === 'needed' ? 'needed' : 'none' };   // #777
     let lines = [];                  // [{ raw, override }]
     // #522 follow-up (majkinetor): drives whether "Apply & clear annotation"
     // is even offered — only true right after "Load annotation" succeeds,
@@ -5042,6 +5063,37 @@
         : (cls.instrumentMatch || cls.artistMatch)) : null;
       return row;
     }
+    /* #777: where one credit goes on one target. Returns [{ entity, lt }] — the
+       target itself with the role mapped to its pair, or for a work role the
+       recording's works — or { skip: 'role' | 'work' }. A work is created for a
+       recording only with Works: create needed, once per recording per run, the
+       way Credit Hoarder does it: a batch-created work named after the recording,
+       linked by a performance relationship. */
+    function txpPlaceOn(re, target, ltId, workMade) {
+      if (target.entityType !== 'recording') return [{ entity: target, lt: ltId }];
+      const toRec = ltEquiv(ltId, 'recording');
+      if (toRec != null) return [{ entity: target, lt: toRec }];
+      const toWork = ltEquiv(ltId, 'work');
+      if (toWork == null) return { skip: 'role' };
+      const row = txpTrackRows().find(x => x.rec && x.rec.id === target.id);
+      let works = row ? recordingRels(row.tr).filter(x => !x.removed && x.other && x.other.entityType === 'work' && x.other.id != null).map(x => x.other) : [];
+      if (!works.length && workMade.has(target.id)) works = [workMade.get(target.id)];
+      if (!works.length && scope.works === 'needed') {
+        const w = txpCreateWork(re, target);
+        if (w) { workMade.set(target.id, w); works = [w]; }
+      }
+      return works.length ? works.map(w => ({ entity: w, lt: toWork })) : { skip: 'work' };
+    }
+    function txpCreateWork(re, rec) {
+      const perf = performanceLtId(), MB = W.MB;
+      if (perf == null || !MB) return null;
+      const id = re.getRelationshipStateId();
+      const work = { _fromBatchCreateWorksDialog: true, attributes: [], comment: '', editsPending: false, entityType: 'work',
+        gid: null, id, iswcs: [], languages: [], name: val(rec.name) || '', typeID: null };
+      if (MB.mergeLinkedEntities) MB.mergeLinkedEntities({ work: { [id]: work } });
+      dispatchRelationship(re, rec, work, perf, '', null, null);
+      return work;
+    }
     function txpCopyrightLinkType(kind, entityType) {
       const roles = linkTypesForPair(entityType, 'release');
       return roles.find(r => r.name.toLowerCase() === TXP_CR_TYPE_NAME[kind]) || null;
@@ -5105,7 +5157,15 @@
     detSel.title = 'auto: a credit that names its own tracks — "Lead vocals (tracks 2,6,9)", "Djembe (track 4)" — goes on those recordings, '
       + 'whatever Scope says; everything else follows Scope. A clause only counts when every number in it is a real track on this release, '
       + 'so "(2003)" is left alone.\noff: the pre-#597 behaviour — Scope decides for every row.';
-    scopeWrap.append(el('span', 'gt-tp-scope-lbl', 'Scope'), scopeSel, tracksIn, tracksInfo, detSel);
+    // #777: where a work role goes when a credit lands on recordings — "create
+    // needed", as in Credit Hoarder, makes the work a track lacks.
+    const worksSel = el('select', 'gt-tp-works-sel');
+    [['none', 'Works: create none'], ['needed', 'Works: create needed']].forEach(([v, t]) => { const o = el('option', '', t); o.value = v; worksSel.appendChild(o); });
+    worksSel.value = scope.works;
+    worksSel.title = 'A role recordings don\'t have but works do (lyricist, composer, librettist, translator) goes on the works of the tracks it is applied to.\n'
+      + 'create none: only works already linked; a track with no work is skipped and counted.\n'
+      + 'create needed: a track with no work also gets a new work, named after the recording. Match existing works first (◎ Match works…), or this creates duplicates.';
+    scopeWrap.append(el('span', 'gt-tp-scope-lbl', 'Scope'), scopeSel, tracksIn, tracksInfo, detSel, worksSel);
     // What did that selector actually match? Shown before anything is applied,
     // because "1-3" meaning something other than you thought is a silent way to
     // credit the wrong recordings.
@@ -5137,6 +5197,7 @@
     scopeSel.onchange = () => { scope.kind = scopeSel.value; roleCache.clear(); refreshScopeUi(); render(); saveState(); };
     tracksIn.oninput = () => { scope.spec = tracksIn.value; refreshScopeUi(); saveState(); };
     detSel.onchange = () => { scope.tracks = detSel.value; render(); saveState(); };   // #597
+    worksSel.onchange = () => { scope.works = worksSel.value; if (scope.works === 'needed') txpWorksWarning(); saveState(); };   // #777
     // #539 follow-up (majkinetor): "We again have new row, this time for out of
     // the box patterns … Move scope to the bottom, opposite of Apply." So the
     // top bar is back to what it was — pattern · presets · ⚡ Match — and the
@@ -5865,6 +5926,8 @@
         && targetsFor(r).length && targetsFor(r).some(t => !appliedKeys.has(keyFor(r, t))));
       if (!rows.length) { toast('Nothing resolved to apply'); return null; }
       let ok = 0, fail = 0, dated = 0;
+      const skipped = { role: 0, work: 0 };   // #777: no role for that target · a track without a work
+      const workMade = new Map();             // #777: recording id → the work created for it this run
       let okOwn = 0;                      // #597: credits that went to tracks the ROW named
       const ownNums = new Set();
       for (const r of rows) {
@@ -5882,7 +5945,13 @@
           const k = keyFor(r, target);
           if (appliedKeys.has(k)) continue;
           try {
-            dispatchRelationship(re, target, r.entityMatch, r.roleMatch.id, credit, attrs, dates);
+            // #777: the role was matched against one entity pair (the release's,
+            // unless Scope is Recordings) and the target can be another — a row
+            // naming its own tracks goes on recordings. Map it by name: the
+            // recording's role, else the work's on that recording's works.
+            const dests = txpPlaceOn(re, target, r.roleMatch.id, workMade);
+            if (dests.skip) { skipped[dests.skip]++; continue; }
+            dests.forEach(d => dispatchRelationship(re, d.entity, r.entityMatch, d.lt, credit, attrs, dates));
             appliedKeys.add(k); ok++; if (own) okOwn++;
           } catch (e) { fail++; try { console.warn('[Group Therapy] text-parser apply failed:', e); } catch (_) {} }
         }
@@ -5921,7 +5990,9 @@
       if (ok) markUsed(`Parsed ${ok} credit${ok > 1 ? 's' : ''} from text${where}`);
       const shortWhere = okOwn && !okFallback ? ` to ${ownNums.size} track${ownNums.size > 1 ? 's' : ''}`
         : scope.kind === 'recording' ? ` to ${fallback.length} recording${fallback.length > 1 ? 's' : ''}` : '';
-      toast(fail ? `Applied ${ok}, ${fail} failed — see console` : `✓ Applied ${ok} credit${ok > 1 ? 's' : ''}${shortWhere} — review & save`);
+      const skipNote = (skipped.work ? ` · ${skipped.work} skipped: track has no work (Works: create needed makes one)` : '')
+        + (skipped.role ? ` · ${skipped.role} skipped: no such role for a recording or work` : '');
+      toast(fail ? `Applied ${ok}, ${fail} failed — see console${skipNote}` : `✓ Applied ${ok} credit${ok > 1 ? 's' : ''}${shortWhere}${skipNote} — review & save`);
       saveState();
       // #550: `where` is handed back so the annotation edit's note can name the
       // same scope as the relationship edit's, rather than recomputing it.
@@ -6000,7 +6071,7 @@
       // was restored right beside it.
       loadedFromAnnotation,
       text: ta.value, pattern,
-      scopeKind: scope.kind, scopeSpec: scope.spec, scopeTracks: scope.tracks,
+      scopeKind: scope.kind, scopeSpec: scope.spec, scopeTracks: scope.tracks, scopeWorks: scope.works,
       roleCache: [...roleCache.entries()],
       entityCache: [...entityCache.entries()],
       entityOverride: [...entityOverride.entries()],
