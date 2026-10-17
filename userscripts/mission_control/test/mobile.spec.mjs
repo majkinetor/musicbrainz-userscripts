@@ -26,6 +26,14 @@ test('MC fits a phone screen', { tag: ['@sandbox', '@cosmetic'] }, async ({ page
     });
     send('mc:provider', { id: 'pc', name: 'Platform Check', version: 1, capabilities: ['probe', 'apply'] });
   });
+  // the corner launcher is on the screen, not at the corner of the wider page (a scroll right and down away)
+  const launch = await page.evaluate(() => { const b = document.querySelector('#mc-launch').getBoundingClientRect(), vv = visualViewport; return { b: [Math.round(b.left), Math.round(b.top), Math.round(b.right), Math.round(b.bottom)], vv: [vv.offsetLeft, vv.offsetTop, vv.offsetLeft + vv.width, vv.offsetTop + vv.height] }; });
+  check(launch.b[0] >= launch.vv[0] && launch.b[1] >= launch.vv[1] && launch.b[2] <= launch.vv[2] && launch.b[3] <= launch.vv[3], `the launcher is on the screen (${JSON.stringify(launch)})`);
+  // …and stays there when the page is scrolled sideways and down
+  await page.evaluate(() => scrollTo(200, 600));
+  const moved = await until(() => page.evaluate(() => { const b = document.querySelector('#mc-launch').getBoundingClientRect(), vv = visualViewport; return { ok: b.left >= vv.offsetLeft && b.right <= vv.offsetLeft + vv.width && b.top >= vv.offsetTop && b.bottom <= vv.offsetTop + vv.height, b: [b.left, b.top], vv: [vv.offsetLeft, vv.offsetTop, vv.width, vv.height] }; }), v => v.ok);
+  check(moved.ok, `the launcher follows the screen when the page scrolls (${JSON.stringify(moved)})`);
+  await page.evaluate(() => scrollTo(0, 0));
   await page.evaluate(() => document.querySelector('#mc-launch').click());
   await page.waitForSelector('#mc-root .mc-tbl');
   await page.evaluate(() => document.querySelector('#mc-root [data-act="probe"]').click());

@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Mammoth
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.16
+// @version      2026.10.17.222431
 // @description  Edit-note memory for MusicBrainz: auto-remembers your last edit notes and lets you save reusable ones, recalling them from a compact panel beside the edit-note field on every edit form. A nicer replacement for Elephant Editor.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB2aWV3Qm94PSIwIDAgMjQgMjQiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGcgZmlsbD0iIzdhNGExZiI+PHBhdGggZD0iTTIxIDE5QzIxIDEyLjUgMTcuNSA4LjUgMTEuNSA4LjVDNyA4LjUgNC4yIDExLjIgNC4yIDE1TDQuMiAxOVoiLz48Y2lyY2xlIGN4PSI3LjYiIGN5PSIxMC42IiByPSI1Ii8+PHJlY3QgeD0iNyIgeT0iMTYuNSIgd2lkdGg9IjIuOCIgaGVpZ2h0PSI1LjIiIHJ4PSIxLjMiLz48cmVjdCB4PSIxNSIgeT0iMTYuNSIgd2lkdGg9IjIuOCIgaGVpZ2h0PSI1LjIiIHJ4PSIxLjMiLz48L2c+PHBhdGggZD0iTTMuMSAxMS4yQzEuNiAxMy42IDIgMTYuNiAzLjcgMTguMUM0LjYgMTguOSA1LjkgMTguNiA2LjEgMTcuNUM2LjMgMTYuNSA1LjcgMTUuOCA1LjMgMTUuMyIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjN2E0YTFmIiBzdHJva2Utd2lkdGg9IjIuNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8+PHBhdGggZD0iTTUuMiAxNS4yQzQuMSAxNi42IDQuMyAxOC4yIDUuNiAxOC45IiBmaWxsPSJub25lIiBzdHJva2U9IiNlZmU3ZDIiIHN0cm9rZS13aWR0aD0iMS40IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz48L3N2Zz4NCg==
@@ -516,9 +516,30 @@
   // (above Apollo on the edit page), Falcon 20, Fusion 30, Mission Control 40. Scribe is not on the shared block and keeps a copy of this.
   // The stack is a column; the shared setting cornerFlow = 'row' (mbuShared, set from String
   // Theory's menu) lines it up along the bottom/top edge instead, the lowest order still nearest the corner.
+  // On a phone MusicBrainz's page is wider than the screen, so the browser widens the layout
+  // viewport, which position:fixed measures from, to the page: the corner was off screen, a scroll
+  // right and down away. Each edge is offset by the gap between it and the visual viewport (what is
+  // on screen), kept up as that scrolls and resizes; on a desktop the gap is 0.
   function mbRestackCorner(corner) {
       var bottom = corner[0] === 'b', right = corner[1] === 'r';
       var row = mbuShared('cornerFlow') === 'row';
+      var vv = window.visualViewport, gapX = 0, gapY = 0;
+      if (vv) {
+          gapX = Math.max(0, right ? window.innerWidth - vv.offsetLeft - vv.width : vv.offsetLeft);
+          gapY = Math.max(0, bottom ? window.innerHeight - vv.offsetTop - vv.height : vv.offsetTop);
+          var root = document.documentElement;
+          if (!root.hasAttribute('data-mb-corner-vv')) {   // one listener for every script's copy
+              root.setAttribute('data-mb-corner-vv', '');
+              var queued = false;
+              var again = function () {
+                  if (queued) return;
+                  queued = true;
+                  requestAnimationFrame(function () { queued = false; ['br', 'bl', 'tr', 'tl'].forEach(function (c) { if (document.querySelector('[data-mb-corner="' + c + '"]')) mbRestackCorner(c); }); });
+              };
+              vv.addEventListener('resize', again);
+              vv.addEventListener('scroll', again);
+          }
+      }
       var els = Array.prototype.slice.call(document.querySelectorAll('[data-mb-corner="' + corner + '"]'))
           // offsetParent is always null for position:fixed, so it can't tell visibility here
           .filter(function (el) { return getComputedStyle(el).display !== 'none'; })
@@ -526,8 +547,8 @@
       var pos = 14;
       els.forEach(function (el) {
           var r = el.getBoundingClientRect();
-          el.style[bottom ? 'bottom' : 'top'] = (row ? 14 : pos) + 'px';
-          el.style[right ? 'right' : 'left'] = (row ? pos : 14) + 'px';
+          el.style[bottom ? 'bottom' : 'top'] = (gapY + (row ? 14 : pos)) + 'px';
+          el.style[right ? 'right' : 'left'] = (gapX + (row ? pos : 14)) + 'px';
           pos += (row ? r.width : r.height) + 8;
       });
   }

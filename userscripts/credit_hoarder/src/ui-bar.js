@@ -366,9 +366,30 @@ export function insertDiscogsBar(discogsUrl, sources = {}, meta = {}) {
     // (above Apollo on the edit page), Falcon 20, Fusion 30, Mission Control 40. Scribe is not on the shared block and keeps a copy of this.
     // The stack is a column; the shared setting cornerFlow = 'row' (mbuShared, set from String
     // Theory's menu) lines it up along the bottom/top edge instead, the lowest order still nearest the corner.
+    // On a phone MusicBrainz's page is wider than the screen, so the browser widens the layout
+    // viewport, which position:fixed measures from, to the page: the corner was off screen, a scroll
+    // right and down away. Each edge is offset by the gap between it and the visual viewport (what is
+    // on screen), kept up as that scrolls and resizes; on a desktop the gap is 0.
     function mbRestackCorner(corner) {
         var bottom = corner[0] === 'b', right = corner[1] === 'r';
         var row = mbuShared('cornerFlow') === 'row';
+        var vv = window.visualViewport, gapX = 0, gapY = 0;
+        if (vv) {
+            gapX = Math.max(0, right ? window.innerWidth - vv.offsetLeft - vv.width : vv.offsetLeft);
+            gapY = Math.max(0, bottom ? window.innerHeight - vv.offsetTop - vv.height : vv.offsetTop);
+            var root = document.documentElement;
+            if (!root.hasAttribute('data-mb-corner-vv')) {   // one listener for every script's copy
+                root.setAttribute('data-mb-corner-vv', '');
+                var queued = false;
+                var again = function () {
+                    if (queued) return;
+                    queued = true;
+                    requestAnimationFrame(function () { queued = false; ['br', 'bl', 'tr', 'tl'].forEach(function (c) { if (document.querySelector('[data-mb-corner="' + c + '"]')) mbRestackCorner(c); }); });
+                };
+                vv.addEventListener('resize', again);
+                vv.addEventListener('scroll', again);
+            }
+        }
         var els = Array.prototype.slice.call(document.querySelectorAll('[data-mb-corner="' + corner + '"]'))
             // offsetParent is always null for position:fixed, so it can't tell visibility here
             .filter(function (el) { return getComputedStyle(el).display !== 'none'; })
@@ -376,8 +397,8 @@ export function insertDiscogsBar(discogsUrl, sources = {}, meta = {}) {
         var pos = 14;
         els.forEach(function (el) {
             var r = el.getBoundingClientRect();
-            el.style[bottom ? 'bottom' : 'top'] = (row ? 14 : pos) + 'px';
-            el.style[right ? 'right' : 'left'] = (row ? pos : 14) + 'px';
+            el.style[bottom ? 'bottom' : 'top'] = (gapY + (row ? 14 : pos)) + 'px';
+            el.style[right ? 'right' : 'left'] = (gapX + (row ? pos : 14)) + 'px';
             pos += (row ? r.width : r.height) + 8;
         });
     }
