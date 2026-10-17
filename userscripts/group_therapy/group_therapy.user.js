@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Group Therapy
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.17.130518
+// @version      2026.10.17.130743
 // @description  MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48ZyBmaWxsPSJub25lIiBzdHJva2U9IiM1YjZiN2EiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9Ijk0IiB5Mj0iNDIiLz48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48bGluZSB4MT0iOTQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48L2c+PGcgZmlsbD0iIzJlOWU1YiIgc3Ryb2tlPSIjMjU2ZjQzIiBzdHJva2Utd2lkdGg9IjQiPjxjaXJjbGUgY3g9IjM0IiBjeT0iNDIiIHI9IjE2Ii8+PGNpcmNsZSBjeD0iOTQiIGN5PSI0MiIgcj0iMTYiLz48Y2lyY2xlIGN4PSI2NCIgY3k9Ijk0IiByPSIxNiIvPjwvZz48L3N2Zz4=
@@ -2163,23 +2163,30 @@
     const trackRows = txpTrackRows();
     const recs = rows.map(x => x.rec).filter(Boolean);
     const works = [], seenWork = new Set();
-    rows.forEach(x => recordingRels(x.tr).forEach(r => {
-      if (r.removed || !r.other || r.other.entityType !== 'work' || r.other.id == null) return;
-      if (!seenWork.has(r.other.id)) { seenWork.add(r.other.id); works.push(r.other); }
-    }));
+    let workless = 0;   // chosen tracks with no work: a work role can't reach them
+    rows.forEach(x => {
+      const ws = recordingRels(x.tr).filter(r => !r.removed && r.other && r.other.entityType === 'work' && r.other.id != null).map(r => r.other);
+      if (!ws.length) workless++;
+      ws.forEach(w => { if (!seenWork.has(w.id)) { seenWork.add(w.id); works.push(w); } });
+    });
     for (const src of srcRels) {
       const det = src.credit ? txpDetectTracks(src.credit, trackRows, true) : null;
       const s = det && det.clean ? { ...src, credit: det.clean } : src;
       const toRec = ltEquiv(s.linkTypeID, 'recording'), toWork = toRec == null ? ltEquiv(s.linkTypeID, 'work') : null;
       const lt = toRec != null ? toRec : toWork;
-      const dests = toRec != null ? recs : toWork != null ? works : [];
+      // A work role goes on works only when EVERY chosen track has one: placed
+      // on some, Move would still take it off the release, and the tracks
+      // without a work would lose it. It never creates works (◎ Match works does).
+      const dests = toRec != null ? recs : toWork != null && !workless ? works : [];
       let k = 0;
       for (const dest of dests) { try { dispatchRelationship(re, dest, s.other, lt, s.credit, s.attributes, s); k++; } catch (e) { try { console.warn('[Group Therapy] could not place a credit:', e); } catch (_) {} } }
       n += k;
       (k && k === dests.length ? placed : unplaced).push(src);
     }
-    return { n, placed, unplaced };
+    return { n, placed, unplaced, workless };
   }
+  const unplacedNote = (unplaced, workless, kept = ' not placed') => !unplaced.length ? ''
+    : ` · ${unplaced.length}${kept}` + (workless ? ` (${workless} track${workless > 1 ? 's have' : ' has'} no work: add works first with ◎ Match works…)` : ' (no recording or work role)');
   function openRelToRec(anchor) {
     const srcRels = releaseCreditRels().filter(r => !r.removed);
     const sel = gtTrackSpecState();
@@ -2201,8 +2208,8 @@
       const d = dests(); if (!d.length) { toast('No track matched that selection'); return; }
       run(c, d, where());
     };
-    const copyItem = { label: 'Copy', sub: String(chosen().length), run: guard((c, d, w) => { const { n, unplaced } = placeReleaseCredits(c, sel.rowsFor()); if (n) markUsed(`Copied ${n} release credit${n > 1 ? 's' : ''} to ${w}`); toast(`Copied ${n} to ${w}${unplaced.length ? ` · ${unplaced.length} had no recording or work role, or no work on those tracks` : ''} — review & save`); }) };
-    const moveItem = { label: 'Move (remove from release)', danger: true, run: guard((c, d, w) => { const { n, placed, unplaced } = placeReleaseCredits(c, sel.rowsFor()); placed.forEach(s => { try { const rm = s.item.querySelector('button.remove-item, button.icon.remove-item'); rm && rm.click(); } catch (e) {} }); if (n) markUsed(`Moved ${n} release credit${n > 1 ? 's' : ''} to ${w}`); toast(`Moved ${n} to ${w}${unplaced.length ? ` · ${unplaced.length} kept on the release: no recording or work role, or no work on those tracks` : ''} — review & save`); }) };
+    const copyItem = { label: 'Copy', sub: String(chosen().length), run: guard((c, d, w) => { const { n, unplaced, workless } = placeReleaseCredits(c, sel.rowsFor()); if (n) markUsed(`Copied ${n} release credit${n > 1 ? 's' : ''} to ${w}`); toast(`Copied ${n} to ${w}${unplacedNote(unplaced, workless)} — review & save`); }) };
+    const moveItem = { label: 'Move (remove from release)', danger: true, run: guard((c, d, w) => { const { n, placed, unplaced, workless } = placeReleaseCredits(c, sel.rowsFor()); placed.forEach(s => { try { const rm = s.item.querySelector('button.remove-item, button.icon.remove-item'); rm && rm.click(); } catch (e) {} }); if (n) markUsed(`Moved ${n} release credit${n > 1 ? 's' : ''} to ${w}`); toast(`Moved ${n} to ${w}${unplacedNote(unplaced, workless, ' kept on the release')} — review & save`); }) };
     const hdr = { header: `Copy release credits → ${where()}` };
     openMenu(r.left, r.bottom + 4, [hdr,
       sel.item('ticked tracks, or all', () => hdr._set && hdr._set(`Copy release credits → ${where()}`)),

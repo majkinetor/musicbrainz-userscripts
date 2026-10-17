@@ -52,7 +52,7 @@ The destinations are the ticked recordings, or every other track when none are t
 
 **Between the release and its recordings** (the toolbar's *Vertical* section):
 
-- **⬆ Release → recordings** copies or moves the release credits to the recordings. A role recordings don't have but works do (lyricist, composer, librettist, translator) goes on the tracks' works, so add the works first. **Move** removes from the release only what it placed; the rest stays, and the message says how many. Release-only roles (liner notes, mastering, artwork, ℗, ©…) start unticked.
+- **⬆ Release → recordings** copies or moves the release credits to the recordings. A role recordings don't have but works do (lyricist, composer, librettist, translator) goes on the tracks' works, only when every chosen track has one: it never creates works, so add them first with **◎ Match works…**. **Move** removes from the release only what it placed; the rest stays, and the message says how many. Release-only roles (liner notes, mastering, artwork, ℗, ©…) start unticked.
 - **⬇ Recordings → release** collects the recordings' credits onto the release, with the track range each covers.
 
 Both take a [track selector](#track-selector) and map each role to the destination's link type by name; a role with no equivalent is skipped and counted.
