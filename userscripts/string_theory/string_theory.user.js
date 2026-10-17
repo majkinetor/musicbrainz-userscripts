@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         String Theory
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.16.234617
+// @version      2026.10.17.111006
 // @description  Unified bundle of 11 MusicBrainz userscripts (apollo_editor, art_station, credit_hoarder, falcon, first_contact, fusion, group_therapy, isrc_scout, mammoth, mission_control, platform_check). Built by userscripts/string_theory/build.mjs — do not hand-edit.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5TdHJpbmcgVGhlb3J5PC90aXRsZT4KPHBhdGggZD0iTTY0IDEwIEw2Ni40IDEwLjIgTDY4LjcgMTAuNiBMNzAuOSAxMS40IEw3My4xIDEyLjQgTDc1LjIgMTMuNyBMNzcuMSAxNS4yIEw3OC44IDE3IEw4MC40IDE4LjkgTDgxLjggMjEgTDgzLjEgMjMuMSBMODQuMSAyNS40IEw4NSAyNy42IEw4NS43IDI5LjkgTDg2LjMgMzIuMSBMODYuOCAzNC4zIEw4Ny4xIDM2LjQgTDg3LjQgMzguNCBMODcuNyA0MC4zIEw4Ny45IDQyLjEgTDg4LjIgNDMuNyBMODguNSA0NS4yIEw4OC45IDQ2LjYgTDg5LjQgNDcuOCBMOTAgNDkgTDkwLjcgNTAuMSBMOTEuNiA1MS4xIEw5Mi42IDUyLjIgTDkzLjcgNTMuMiBMOTUgNTQuMiBMOTYuNCA1NS4zIEw5Ny45IDU2LjUgTDk5LjUgNTcuNyBMMTAxLjEgNTkuMSBMMTAyLjcgNjAuNiBMMTA0LjQgNjIuMiBMMTA2IDY0IEwxMDcuNSA2NS45IEwxMDguOSA2Ny45IEwxMTAuMiA3MC4xIEwxMTEuMyA3Mi4zIEwxMTIuMSA3NC43IEwxMTIuOCA3Ny4xIEwxMTMuMSA3OS41IEwxMTMuMiA4MS45IEwxMTMgODQuMyBMMTEyLjYgODYuNiBMMTExLjggODguOSBMMTEwLjggOTEgTDEwOS41IDkzIEwxMDcuOSA5NC43IEwxMDYuMSA5Ni4zIEwxMDQuMSA5Ny43IEwxMDIgOTguOCBMOTkuNyA5OS43IEw5Ny4zIDEwMC40IEw5NC45IDEwMC44IEw5Mi40IDEwMSBMODkuOSAxMDAuOSBMODcuNCAxMDAuNyBMODUgMTAwLjQgTDgyLjcgOTkuOSBMODAuNCA5OS4zIEw3OC4zIDk4LjYgTDc2LjMgOTcuOCBMNzQuNCA5Ny4xIEw3Mi43IDk2LjQgTDcxIDk1LjcgTDY5LjUgOTUuMSBMNjggOTQuNiBMNjYuNyA5NC4zIEw2NS4zIDk0LjEgTDY0IDk0IEw2Mi43IDk0LjEgTDYxLjMgOTQuMyBMNjAgOTQuNiBMNTguNSA5NS4xIEw1NyA5NS43IEw1NS4zIDk2LjQgTDUzLjYgOTcuMSBMNTEuNyA5Ny44IEw0OS43IDk4LjYgTDQ3LjYgOTkuMyBMNDUuMyA5OS45IEw0MyAxMDAuNCBMNDAuNiAxMDAuNyBMMzguMSAxMDAuOSBMMzUuNiAxMDEgTDMzLjEgMTAwLjggTDMwLjcgMTAwLjQgTDI4LjMgOTkuNyBMMjYgOTguOCBMMjMuOSA5Ny43IEwyMS45IDk2LjMgTDIwLjEgOTQuNyBMMTguNSA5MyBMMTcuMiA5MSBMMTYuMiA4OC45IEwxNS40IDg2LjYgTDE1IDg0LjMgTDE0LjggODEuOSBMMTQuOSA3OS41IEwxNS4yIDc3LjEgTDE1LjkgNzQuNyBMMTYuNyA3Mi4zIEwxNy44IDcwLjEgTDE5LjEgNjcuOSBMMjAuNSA2NS45IEwyMiA2NCBMMjMuNiA2Mi4yIEwyNS4zIDYwLjYgTDI2LjkgNTkuMSBMMjguNSA1Ny43IEwzMC4xIDU2LjUgTDMxLjYgNTUuMyBMMzMgNTQuMiBMMzQuMyA1My4yIEwzNS40IDUyLjIgTDM2LjQgNTEuMSBMMzcuMyA1MC4xIEwzOCA0OSBMMzguNiA0Ny44IEwzOS4xIDQ2LjYgTDM5LjUgNDUuMiBMMzkuOCA0My43IEw0MC4xIDQyLjEgTDQwLjMgNDAuMyBMNDAuNiAzOC40IEw0MC45IDM2LjQgTDQxLjIgMzQuMyBMNDEuNyAzMi4xIEw0Mi4zIDI5LjkgTDQzIDI3LjYgTDQzLjkgMjUuNCBMNDQuOSAyMy4xIEw0Ni4yIDIxIEw0Ny42IDE4LjkgTDQ5LjIgMTcgTDUwLjkgMTUuMiBMNTIuOCAxMy43IEw1NC45IDEyLjQgTDU3LjEgMTEuNCBMNTkuMyAxMC42IEw2MS42IDEwLjJaIiBmaWxsPSJub25lIiBzdHJva2U9IiM5Yzg2ZWEiIHN0cm9rZS13aWR0aD0iMTAiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz4KPHBhdGggZD0iTTY0IDM0IEw2NS4zIDMzLjkgTDY2LjcgMzMuNyBMNjggMzMuNCBMNjkuNSAzMi45IEw3MSAzMi4zIEw3Mi43IDMxLjYgTDc0LjQgMzAuOSBMNzYuMyAzMC4yIEw3OC4zIDI5LjQgTDgwLjQgMjguNyBMODIuNyAyOC4xIEw4NSAyNy42IEw4Ny40IDI3LjMgTDg5LjkgMjcuMSBMOTIuNCAyNyBMOTQuOSAyNy4yIEw5Ny4zIDI3LjYgTDk5LjcgMjguMyBMMTAyIDI5LjIgTDEwNC4xIDMwLjMgTDEwNi4xIDMxLjcgTDEwNy45IDMzLjMgTDEwOS41IDM1IEwxMTAuOCAzNyBMMTExLjggMzkuMSBMMTEyLjYgNDEuNCBMMTEzIDQzLjcgTDExMy4yIDQ2LjEgTDExMy4xIDQ4LjUgTDExMi44IDUwLjkgTDExMi4xIDUzLjMgTDExMS4zIDU1LjcgTDExMC4yIDU3LjkgTDEwOC45IDYwLjEgTDEwNy41IDYyLjEgTDEwNiA2NCBMMTA0LjQgNjUuOCBMMTAyLjcgNjcuNCBMMTAxLjEgNjguOSBMOTkuNSA3MC4zIEw5Ny45IDcxLjUgTDk2LjQgNzIuNyBMOTUgNzMuOCBMOTMuNyA3NC44IEw5Mi42IDc1LjggTDkxLjYgNzYuOSBMOTAuNyA3Ny45IEw5MCA3OSBMODkuNCA4MC4yIEw4OC45IDgxLjQgTDg4LjUgODIuOCBMODguMiA4NC4zIEw4Ny45IDg1LjkgTDg3LjcgODcuNyBMODcuNCA4OS42IEw4Ny4xIDkxLjYgTDg2LjggOTMuNyBMODYuMyA5NS45IEw4NS43IDk4LjEgTDg1IDEwMC40IEw4NC4xIDEwMi42IEw4My4xIDEwNC45IEw4MS44IDEwNyBMODAuNCAxMDkuMSBMNzguOCAxMTEgTDc3LjEgMTEyLjggTDc1LjIgMTE0LjMgTDczLjEgMTE1LjYgTDcwLjkgMTE2LjYgTDY4LjcgMTE3LjQgTDY2LjQgMTE3LjggTDY0IDExOCBMNjEuNiAxMTcuOCBMNTkuMyAxMTcuNCBMNTcuMSAxMTYuNiBMNTQuOSAxMTUuNiBMNTIuOCAxMTQuMyBMNTAuOSAxMTIuOCBMNDkuMiAxMTEgTDQ3LjYgMTA5LjEgTDQ2LjIgMTA3IEw0NC45IDEwNC45IEw0My45IDEwMi42IEw0MyAxMDAuNCBMNDIuMyA5OC4xIEw0MS43IDk1LjkgTDQxLjIgOTMuNyBMNDAuOSA5MS42IEw0MC42IDg5LjYgTDQwLjMgODcuNyBMNDAuMSA4NS45IEwzOS44IDg0LjMgTDM5LjUgODIuOCBMMzkuMSA4MS40IEwzOC42IDgwLjIgTDM4IDc5IEwzNy4zIDc3LjkgTDM2LjQgNzYuOSBMMzUuNCA3NS44IEwzNC4zIDc0LjggTDMzIDczLjggTDMxLjYgNzIuNyBMMzAuMSA3MS41IEwyOC41IDcwLjMgTDI2LjkgNjguOSBMMjUuMyA2Ny40IEwyMy42IDY1LjggTDIyIDY0IEwyMC41IDYyLjEgTDE5LjEgNjAuMSBMMTcuOCA1Ny45IEwxNi43IDU1LjcgTDE1LjkgNTMuMyBMMTUuMiA1MC45IEwxNC45IDQ4LjUgTDE0LjggNDYuMSBMMTUgNDMuNyBMMTUuNCA0MS40IEwxNi4yIDM5LjEgTDE3LjIgMzcgTDE4LjUgMzUgTDIwLjEgMzMuMyBMMjEuOSAzMS43IEwyMy45IDMwLjMgTDI2IDI5LjIgTDI4LjMgMjguMyBMMzAuNyAyNy42IEwzMy4xIDI3LjIgTDM1LjYgMjcgTDM4LjEgMjcuMSBMNDAuNiAyNy4zIEw0MyAyNy42IEw0NS4zIDI4LjEgTDQ3LjYgMjguNyBMNDkuNyAyOS40IEw1MS43IDMwLjIgTDUzLjYgMzAuOSBMNTUuMyAzMS42IEw1NyAzMi4zIEw1OC41IDMyLjkgTDYwIDMzLjQgTDYxLjMgMzMuNyBMNjIuNyAzMy45WiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZmZmZmZmIiBzdHJva2Utd2lkdGg9IjIwIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+CjxwYXRoIGQ9Ik02NCAzNCBMNjUuMyAzMy45IEw2Ni43IDMzLjcgTDY4IDMzLjQgTDY5LjUgMzIuOSBMNzEgMzIuMyBMNzIuNyAzMS42IEw3NC40IDMwLjkgTDc2LjMgMzAuMiBMNzguMyAyOS40IEw4MC40IDI4LjcgTDgyLjcgMjguMSBMODUgMjcuNiBMODcuNCAyNy4zIEw4OS45IDI3LjEgTDkyLjQgMjcgTDk0LjkgMjcuMiBMOTcuMyAyNy42IEw5OS43IDI4LjMgTDEwMiAyOS4yIEwxMDQuMSAzMC4zIEwxMDYuMSAzMS43IEwxMDcuOSAzMy4zIEwxMDkuNSAzNSBMMTEwLjggMzcgTDExMS44IDM5LjEgTDExMi42IDQxLjQgTDExMyA0My43IEwxMTMuMiA0Ni4xIEwxMTMuMSA0OC41IEwxMTIuOCA1MC45IEwxMTIuMSA1My4zIEwxMTEuMyA1NS43IEwxMTAuMiA1Ny45IEwxMDguOSA2MC4xIEwxMDcuNSA2Mi4xIEwxMDYgNjQgTDEwNC40IDY1LjggTDEwMi43IDY3LjQgTDEwMS4xIDY4LjkgTDk5LjUgNzAuMyBMOTcuOSA3MS41IEw5Ni40IDcyLjcgTDk1IDczLjggTDkzLjcgNzQuOCBMOTIuNiA3NS44IEw5MS42IDc2LjkgTDkwLjcgNzcuOSBMOTAgNzkgTDg5LjQgODAuMiBMODguOSA4MS40IEw4OC41IDgyLjggTDg4LjIgODQuMyBMODcuOSA4NS45IEw4Ny43IDg3LjcgTDg3LjQgODkuNiBMODcuMSA5MS42IEw4Ni44IDkzLjcgTDg2LjMgOTUuOSBMODUuNyA5OC4xIEw4NSAxMDAuNCBMODQuMSAxMDIuNiBMODMuMSAxMDQuOSBMODEuOCAxMDcgTDgwLjQgMTA5LjEgTDc4LjggMTExIEw3Ny4xIDExMi44IEw3NS4yIDExNC4zIEw3My4xIDExNS42IEw3MC45IDExNi42IEw2OC43IDExNy40IEw2Ni40IDExNy44IEw2NCAxMTggTDYxLjYgMTE3LjggTDU5LjMgMTE3LjQgTDU3LjEgMTE2LjYgTDU0LjkgMTE1LjYgTDUyLjggMTE0LjMgTDUwLjkgMTEyLjggTDQ5LjIgMTExIEw0Ny42IDEwOS4xIEw0Ni4yIDEwNyBMNDQuOSAxMDQuOSBMNDMuOSAxMDIuNiBMNDMgMTAwLjQgTDQyLjMgOTguMSBMNDEuNyA5NS45IEw0MS4yIDkzLjcgTDQwLjkgOTEuNiBMNDAuNiA4OS42IEw0MC4zIDg3LjcgTDQwLjEgODUuOSBMMzkuOCA4NC4zIEwzOS41IDgyLjggTDM5LjEgODEuNCBMMzguNiA4MC4yIEwzOCA3OSBMMzcuMyA3Ny45IEwzNi40IDc2LjkgTDM1LjQgNzUuOCBMMzQuMyA3NC44IEwzMyA3My44IEwzMS42IDcyLjcgTDMwLjEgNzEuNSBMMjguNSA3MC4zIEwyNi45IDY4LjkgTDI1LjMgNjcuNCBMMjMuNiA2NS44IEwyMiA2NCBMMjAuNSA2Mi4xIEwxOS4xIDYwLjEgTDE3LjggNTcuOSBMMTYuNyA1NS43IEwxNS45IDUzLjMgTDE1LjIgNTAuOSBMMTQuOSA0OC41IEwxNC44IDQ2LjEgTDE1IDQzLjcgTDE1LjQgNDEuNCBMMTYuMiAzOS4xIEwxNy4yIDM3IEwxOC41IDM1IEwyMC4xIDMzLjMgTDIxLjkgMzEuNyBMMjMuOSAzMC4zIEwyNiAyOS4yIEwyOC4zIDI4LjMgTDMwLjcgMjcuNiBMMzMuMSAyNy4yIEwzNS42IDI3IEwzOC4xIDI3LjEgTDQwLjYgMjcuMyBMNDMgMjcuNiBMNDUuMyAyOC4xIEw0Ny42IDI4LjcgTDQ5LjcgMjkuNCBMNTEuNyAzMC4yIEw1My42IDMwLjkgTDU1LjMgMzEuNiBMNTcgMzIuMyBMNTguNSAzMi45IEw2MCAzMy40IEw2MS4zIDMzLjcgTDYyLjcgMzMuOVoiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZjNDdlMCIgc3Ryb2tlLXdpZHRoPSIxMyIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgo8L3N2Zz4K
@@ -109,6 +109,7 @@
 // @match        https://www.beatport.com/release/*
 // @connect      isrc-api.soundexchange.com
 // @connect      isrc.soundexchange.com
+// @connect      harmony.pulsewidth.org.uk
 // @connect      isrchunt.com
 // @connect      isrc.mollamusicgroup.com
 // @connect      open.spotify.com
@@ -127,8 +128,8 @@
 // Bundles (verbatim, each wrapped in a URL gate and a run-at gate): apollo_editor, art_station, credit_hoarder, falcon, first_contact, fusion, group_therapy, isrc_scout, mammoth, mission_control, platform_check.
 
 try {
-  console.log('%c String Theory %c v2026.10.16.234617 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
-  console.log("String Theory bundles:\n  · Apollo Editor v2026.10.16.195747\n  · Art Station v2026.10.16.233500\n  · Credit Hoarder v2026.10.16.195644\n  · Falcon v2026.10.16.203716\n  · First Contact v2026.10.16\n  · Fusion v2026.10.16.211641\n  · Group Therapy v2026.10.16.195121\n  · ISRC Scout v2026.10.16.211120\n  · Mammoth v2026.10.16\n  · Mission Control v2026.10.16.233000\n  · Platform Check v2026.10.16.184027");
+  console.log('%c String Theory %c v2026.10.17.111006 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
+  console.log("String Theory bundles:\n  · Apollo Editor v2026.10.16.195747\n  · Art Station v2026.10.16.233500\n  · Credit Hoarder v2026.10.16.195644\n  · Falcon v2026.10.16.203716\n  · First Contact v2026.10.16\n  · Fusion v2026.10.16.211641\n  · Group Therapy v2026.10.16.195121\n  · ISRC Scout v2026.10.17\n  · Mammoth v2026.10.16\n  · Mission Control v2026.10.16.233000\n  · Platform Check v2026.10.16.184027");
 } catch (e) {}
 
 function __stReadOff() { try { var v = GM_getValue("string_theory.off", []); return Array.isArray(v) ? v : []; } catch (e) { return []; } }
@@ -136,7 +137,7 @@ var __stOff = __stReadOff();
 (function () {
   if (typeof GM_registerMenuCommand !== 'function') return;
   try { if (window.top !== window.self) return; } catch (e) { return; }
-  var members = [["apollo_editor","Apollo Editor","2026.10.16.195747"],["art_station","Art Station","2026.10.16.233500"],["credit_hoarder","Credit Hoarder","2026.10.16.195644"],["falcon","Falcon","2026.10.16.203716"],["first_contact","First Contact","2026.10.16"],["fusion","Fusion","2026.10.16.211641"],["group_therapy","Group Therapy","2026.10.16.195121"],["isrc_scout","ISRC Scout","2026.10.16.211120"],["mammoth","Mammoth","2026.10.16"],["mission_control","Mission Control","2026.10.16.233000"],["platform_check","Platform Check","2026.10.16.184027"]];
+  var members = [["apollo_editor","Apollo Editor","2026.10.16.195747"],["art_station","Art Station","2026.10.16.233500"],["credit_hoarder","Credit Hoarder","2026.10.16.195644"],["falcon","Falcon","2026.10.16.203716"],["first_contact","First Contact","2026.10.16"],["fusion","Fusion","2026.10.16.211641"],["group_therapy","Group Therapy","2026.10.16.195121"],["isrc_scout","ISRC Scout","2026.10.17"],["mammoth","Mammoth","2026.10.16"],["mission_control","Mission Control","2026.10.16.233000"],["platform_check","Platform Check","2026.10.16.184027"]];
   // Each entry carries a stable id (options.id): Violentmonkey and Tampermonkey then relabel it in
   // place, where it stands. Unregister-and-add left Violentmonkey's open menu with the old entry
   // still there and the new one appended at the end. A manager that ignores options.id hands back
@@ -55189,7 +55190,7 @@ Created this ${kind} while adding credits parsed from text to ${relUrl}`;
 
 // ===== isrc_scout (@run-at document-start) ========================================
 if (__stOff.indexOf("isrc_scout") < 0 && __stRuns("isrc_scout", {"inc":["^https:\\/\\/(?:[^/]*\\.)?musicbrainz\\.org(?::\\d+)?/release/.*$","^https:\\/\\/(?:[^/]*\\.)?musicbrainz\\.org(?::\\d+)?/oauth2/oob.*$","^https:\\/\\/www\\.beatport\\.com(?::\\d+)?/release/.*$"],"exc":[],"noframes":false})) (function(__stGM){
-  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"ISRC Scout*","namespace":"https://musicbrainz.org/","version":"2026.10.16.211120","description":"Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify / Beatport / Tidal / Volumo / HDtracks / Qobuz, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/isrc_scout/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPklTUkMgU2NvdXQ8L3RpdGxlPgogICAgPHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPgogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjQwIi8+CiAgICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyNiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2U9IiNiOWEzZTgiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPgogIDwvZz4KICA8bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+Cjwvc3ZnPgo="}) }) : { script: {"name":"ISRC Scout*","namespace":"https://musicbrainz.org/","version":"2026.10.16.211120","description":"Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify / Beatport / Tidal / Volumo / HDtracks / Qobuz, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/isrc_scout/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPklTUkMgU2NvdXQ8L3RpdGxlPgogICAgPHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPgogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjQwIi8+CiAgICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyNiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2U9IiNiOWEzZTgiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPgogIDwvZz4KICA8bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+Cjwvc3ZnPgo="} };
+  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"ISRC Scout*","namespace":"https://musicbrainz.org/","version":"2026.10.17","description":"Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify / Beatport / Tidal / Volumo / HDtracks / Qobuz, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/isrc_scout/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPklTUkMgU2NvdXQ8L3RpdGxlPgogICAgPHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPgogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjQwIi8+CiAgICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyNiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2U9IiNiOWEzZTgiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPgogIDwvZz4KICA8bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+Cjwvc3ZnPgo="}) }) : { script: {"name":"ISRC Scout*","namespace":"https://musicbrainz.org/","version":"2026.10.17","description":"Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify / Beatport / Tidal / Volumo / HDtracks / Qobuz, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/isrc_scout/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPklTUkMgU2NvdXQ8L3RpdGxlPgogICAgPHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPgogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjQwIi8+CiAgICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyNiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2U9IiNiOWEzZTgiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPgogIDwvZz4KICA8bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+Cjwvc3ZnPgo="} };
   (f=>f())(function(){ try { (function(){
 /*
  * ─────────────────────────────────────────────────────────────────────────
@@ -55791,10 +55792,10 @@ if (__stOff.indexOf("isrc_scout") < 0 && __stRuns("isrc_scout", {"inc":["^https:
   const LogAll = mbuLog({ name: 'ISRC Scout', version: () => SCRIPT_VERSION, key: 'isrcScout.logwin' });
   // #758: a category per source, a filter chip each in the Log window. A line names its source
   // first ("Spotify: importing album …", "SX lookup …", "Tidal 429 …"), so the category is read
-  // from that; molla and ISRC Hunt are where Spotify's ISRCs come from. The edits on MusicBrainz
+  // from that; Harmony, molla and ISRC Hunt are where Spotify's ISRCs come from. The edits on MusicBrainz
   // are "MusicBrainz"; a line naming no source (the startup line, the release, settings) has none.
   const LOG_SOURCES = [
-    [/^(?:SoundExchange|SX)\b/, 'SoundExchange'], [/^(?:Spotify|molla|ISRC Hunt)\b/, 'Spotify'],
+    [/^(?:SoundExchange|SX)\b/, 'SoundExchange'], [/^(?:Spotify|Harmony|molla|ISRC Hunt)\b/, 'Spotify'],
     [/^Deezer\b/, 'Deezer'], [/^Apple\b/, 'Apple Music'], [/^Tidal\b/, 'Tidal'], [/^Beatport\b/, 'Beatport'],
     [/^Volumo\b/, 'Volumo'], [/^HDtracks\b/, 'HDtracks'], [/^Qobuz\b/, 'Qobuz'], [/^YouTube\b/, 'YouTube Music'],
     [/^SoundCloud\b/, 'SoundCloud'], [/^Audiomack\b/, 'Audiomack'], [/^7digital\b/, '7digital'],
@@ -57642,9 +57643,15 @@ if (__stOff.indexOf("isrc_scout") < 0 && __stRuns("isrc_scout", {"inc":["^https:
   // PC link it withheld by a barcode/format mismatch (it can be a wrong release).
   // Opt in to the old #211 behaviour (use it anyway) with this toggle.
   const ignorePcConfidence = () => !!store.get('ignore_pc_confidence', false);
-  // #603: which service turns a Spotify album link into ISRCs — molla (default,
-  // JSON) or ISRC Hunt (the original, HTML scrape; down since #596).
-  const spotifyIsrcSource = () => store.get('spotify_isrc_source', 'molla') === 'isrchunt' ? 'isrchunt' : 'molla';
+  // #603: which service turns a Spotify album link into ISRCs — Harmony (default since #775), molla (JSON; its
+  // Spotify quota ran out, 2026-10) or ISRC Hunt (the original, HTML scrape; down since #596).
+  const SPOTIFY_SOURCES = { harmony: 'Harmony', molla: 'molla', isrchunt: 'ISRC Hunt' };
+  const spotifyIsrcSource = () => { const v = store.get('spotify_isrc_source', 'harmony'); return SPOTIFY_SOURCES[v] ? v : 'harmony'; };
+  // #775: molla was the default and stopped working, so an install left on it moves to Harmony, once
+  if (!store.get('spotify_source_775', false)) {
+    if (store.get('spotify_isrc_source', '') === 'molla') { store.set('spotify_isrc_source', 'harmony'); console.info('[ISRC Scout] Spotify ISRC source: molla → Harmony (#775)'); }
+    store.set('spotify_source_775', true);
+  }
 
   // #302: releases in a release group are often split by platform (one has Deezer,
   // another Spotify, …). ISRC and track-link edits target recordings, which are
@@ -58099,7 +58106,7 @@ if (__stOff.indexOf("isrc_scout") < 0 && __stRuns("isrc_scout", {"inc":["^https:
   // Platform-Check-found URL (via providerAlbumId).
   // Spotify is intentionally absent: its only by-ISRC route is the Web API
   // `isrc:` search, which needs an app token (no free anonymous one), so it can't
-  // be a per-track ISRC provider. (Spotify stays a bulk import button via molla / ISRC Hunt.)
+  // be a per-track ISRC provider. (Spotify stays a bulk import button via Harmony / molla / ISRC Hunt.)
   const ALBUM_PROVIDERS = {
     deezer:   { source: 'Deezer',   idField: 'deezerId',   fetcher: fetchDeezer,   code: 'dz' },
     beatport: { source: 'Beatport', idField: 'beatportId', fetcher: fetchBeatport, code: 'bp' },
@@ -58688,11 +58695,11 @@ if (__stOff.indexOf("isrc_scout") < 0 && __stRuns("isrc_scout", {"inc":["^https:
   }
 
   /* ═══════════════════════════════════════════════════════════════════════
-     SPOTIFY  (via molla or ISRC Hunt — chosen in ⚙, #603)
+     SPOTIFY  (via Harmony, molla or ISRC Hunt — chosen in ⚙, #603, #775)
      Spotify's anti-bot makes a direct userscript token-harvest unreliable, and
-     its ISRC API needs a paid developer app. Both services do the Spotify lookup
-     server-side with their own credentials: molla returns JSON, ISRC Hunt renders
-     the ISRCs into a plain HTML table that we scrape (no token, no login).
+     its ISRC API needs a paid developer app. These services do the Spotify lookup
+     server-side with their own credentials: Harmony and ISRC Hunt render the ISRCs
+     into an HTML table that we scrape (no token, no login), molla returns JSON.
   ═══════════════════════════════════════════════════════════════════════ */
   function parseIsrchunt(html) {
     const doc = new DOMParser().parseFromString(html, 'text/html');
@@ -58720,10 +58727,61 @@ if (__stOff.indexOf("isrc_scout") < 0 && __stRuns("isrc_scout", {"inc":["^https:
     });
     return out;
   }
+  // Spotify puts featured artists in the title ("Get Lucky (feat. Pharrell Williams and Nile Rodgers)"); MB keeps
+  // them in the artist credit, so the title is matched without them
+  const spotifyMatchTitle = title => title.replace(/\s*[([](?:feat\.?|ft\.?|featuring|with)\s[^)\]]*[)\]]/gi, '').trim() || title;
+  // #775: Harmony's release page has a tracklist table per medium (caption "Digital Media 1", …) with the columns
+  // Track · Title · Artists · Length · ISRC · Availability; the columns are found by their headings. A failed lookup
+  // is still HTTP 200, with the reason in a `.message.error` box.
+  function parseHarmony(html) {
+    const doc = new DOMParser().parseFromString(html, 'text/html');
+    const out = [];
+    const tables = [...doc.querySelectorAll('table.tracklist')];
+    tables.forEach((table, mi) => {
+      const heads = [...table.querySelectorAll('th')].map(th => th.textContent.trim().toLowerCase());
+      const col = n => heads.indexOf(n);
+      const cPos = col('track'), cTitle = col('title'), cArtist = col('artists'), cLen = col('length'), cIsrc = col('isrc');
+      if (cIsrc < 0) { Log.warn('Harmony: medium ' + (mi + 1) + ' has no ISRC column (' + heads.join(', ') + ')'); return; }
+      [...table.querySelectorAll('tr')].forEach(tr => {
+        const td = [...tr.querySelectorAll(':scope > td')];
+        if (td.length <= cIsrc) return;
+        const isrc = normalizeIsrc(td[cIsrc].textContent.trim());
+        const title = cTitle >= 0 ? td[cTitle].textContent.trim() : '';
+        if (!isValidIsrc(isrc)) { Log.warn('Harmony: medium ' + (mi + 1) + ' "' + title + '": no valid ISRC'); return; }
+        // the main (first) artist only: Spotify lists every featured artist, MB's credit often names another set
+        const a = cArtist >= 0 ? td[cArtist].querySelector('.entity-links') || td[cArtist] : null;
+        const len = cLen >= 0 ? /^(?:(\d+):)?(\d+):(\d+(?:\.\d+)?)$/.exec(td[cLen].textContent.trim()) : null;
+        const ms = len ? Math.round(((+(len[1] || 0) * 60 + +len[2]) * 60 + +len[3]) * 1000) : 0;
+        const pos = cPos >= 0 ? parseInt(td[cPos].textContent.trim(), 10) : NaN;
+        out.push({ isrc, title: spotifyMatchTitle(title), artist: a ? a.textContent.trim() : '', pos: pos || -1, disc: mi + 1, dur: ms ? msToMmSs(ms) : '' });
+      });
+    });
+    const err = doc.querySelector('.message.error');
+    return { rows: out, media: tables.length, error: err ? err.textContent.replace(/\s+/g, ' ').trim() : '' };
+  }
   async function fetchSpotify(albumId, onProgress, onIsrc) {
     const src = spotifyIsrcSource();
-    Log.info('Spotify ISRC source: ' + (src === 'isrchunt' ? 'ISRC Hunt' : 'molla') + ' (change in ⚙)');
-    return src === 'isrchunt' ? fetchSpotifyIsrchunt(albumId, onProgress, onIsrc) : fetchSpotifyMolla(albumId, onProgress, onIsrc);
+    Log.info('Spotify ISRC source: ' + SPOTIFY_SOURCES[src] + ' (change in ⚙)');
+    if (src === 'isrchunt') return fetchSpotifyIsrchunt(albumId, onProgress, onIsrc);
+    if (src === 'molla') return fetchSpotifyMolla(albumId, onProgress, onIsrc);
+    return fetchSpotifyHarmony(albumId, onProgress, onIsrc);
+  }
+  // #775: one request per album, as molla's; Harmony asks Spotify with its own access and keeps the answer cached
+  async function fetchSpotifyHarmony(albumId, onProgress, onIsrc) {
+    if (onProgress) onProgress(0, 0);
+    const url = 'https://harmony.pulsewidth.org.uk/release?url=' + encodeURIComponent('https://open.spotify.com/album/' + albumId) + '&gtin=&region=&spotify=';
+    Log.info('Spotify via Harmony: ' + shortUrl(url));
+    const r = await gmGet(url, { 'Accept': 'text/html' });
+    if (r.status !== 200) throw new Error('Harmony returned ' + r.status);
+    const { rows, media, error } = parseHarmony(r.responseText || '');
+    Log.info('Harmony: ' + media + ' medium(s), ' + rows.length + ' track(s) with an ISRC' + (error ? ' — ' + error : ''));
+    if (!rows.length) throw new Error(error ? 'Harmony: ' + error : 'Harmony found no ISRCs for this album');
+    rows.forEach((e, i) => {
+      Log.info('Harmony ' + e.disc + '.' + e.pos + ' ' + e.isrc + ' "' + e.title + '"' + (e.dur ? ' ' + e.dur : ''));
+      try { if (onIsrc) onIsrc(e); } catch (err) { Log.warn('Spotify map hiccup for ' + e.isrc + ': ' + errText(err)); }
+      try { if (onProgress) onProgress(i + 1, rows.length); } catch (err) {}
+    });
+    return { total: rows.length, next: null };   // Harmony returns everything in one request — never batched
   }
   // #603: molla (isrc.mollamusicgroup.com) takes the album link and returns every
   // track's ISRC in one JSON request. It gives album order only — no track or disc
@@ -58741,7 +58799,7 @@ if (__stOff.indexOf("isrc_scout") < 0 && __stRuns("isrc_scout", {"inc":["^https:
     let j = null; try { j = JSON.parse(r.responseText || 'null'); } catch (e) { Log.warn('molla: response is not JSON (' + String(r.responseText || '').slice(0, 80) + ')'); }
     if (r.status !== 200) {
       const msg = (j && j.error) || ('HTTP ' + r.status);
-      if (/\b429\b|too many requests/i.test(msg)) throw new Error('molla is rate-limited by Spotify (its quota is shared by all molla users) — try again in a minute, or switch to ISRC Hunt in ⚙');
+      if (/\b429\b|too many requests/i.test(msg)) throw new Error('molla is rate-limited by Spotify (its quota is shared by all molla users) — try again later, or switch to Harmony in ⚙');
       throw new Error('molla returned ' + r.status + ': ' + msg);
     }
     const tracks = (j && Array.isArray(j.tracks)) ? j.tracks : [];
@@ -58755,11 +58813,9 @@ if (__stOff.indexOf("isrc_scout") < 0 && __stRuns("isrc_scout", {"inc":["^https:
     tracks.forEach((t, i) => {
       const isrc = normalizeIsrc(t.isrc || '');
       const title = t.track_name || '';
-      // Spotify puts featured artists in the title ("Get Lucky (feat. Pharrell Williams
-      // and Nile Rodgers)"); MB keeps them in the artist credit. molla has no durations,
-      // so the title is the only plausibility check — without this every feat. track
-      // on a correct import was flagged implausible.
-      const matchTitle = title.replace(/\s*[([](?:feat\.?|ft\.?|featuring|with)\s[^)\]]*[)\]]/gi, '').trim() || title;
+      // molla has no durations, so the title is the only plausibility check — without dropping the feat. part
+      // every feat. track on a correct import was flagged implausible.
+      const matchTitle = spotifyMatchTitle(title);
       // Match on the main (first) artist only: Spotify lists every featured artist, and
       // MB's credit often names a different set ("Get Lucky": Spotify adds Nile Rodgers,
       // MB has "Daft Punk feat. Pharrell Williams"), so neither list contains the other.
@@ -59621,10 +59677,11 @@ if (__stOff.indexOf("isrc_scout") < 0 && __stRuns("isrc_scout", {"inc":["^https:
         <div class="ii-set-row"><label><input type="checkbox" id="ii-ignore-pc"><span>Ignore Platform Check link confidence<span class="ii-set-help">Import from a Platform Check link even when it withheld it for a barcode or format mismatch. Off by default: a mismatch can mean it matched the wrong release, so its ISRCs would be wrong (#314).</span></span></label></div>
           <div class="ii-set-row ii-set-inline"><span class="ii-set-k">Spotify ISRC source</span>
             <select id="ii-sp-source">
+              <option value="harmony">Harmony</option>
               <option value="molla">molla</option>
               <option value="isrchunt">ISRC Hunt</option>
             </select></div>
-          <div class="ii-set-help ii-set-under">Spotify's own ISRC API needs a paid developer account, so the lookup goes through one of these services. If one is down or rate-limited, switch to the other (#603).</div>
+          <div class="ii-set-help ii-set-under">Spotify's own ISRC API needs a paid developer account, so the lookup goes through one of these services. If one is down or rate-limited, switch to another (#603).</div>
 
           <div class="ii-cfg-sec">Submitting</div>
           <div class="ii-set-row"><label><input type="checkbox" id="ii-auto-repeat"><span>Repeat failed submits up to <input type="number" id="ii-ar-min" min="1" max="240"> minutes or <input type="number" id="ii-ar-times" min="1" max="100"> times<span class="ii-set-help">When MusicBrainz is busy (503) or the connection drops, the ISRC and link submits are tried again by themselves, the attempts spread over the minutes.</span></span></label></div>
@@ -60003,7 +60060,7 @@ if (__stOff.indexOf("isrc_scout") < 0 && __stRuns("isrc_scout", {"inc":["^https:
       selSp.value = spotifyIsrcSource();
       selSp.addEventListener('change', () => {
         store.set('spotify_isrc_source', selSp.value);
-        Log.info('Spotify ISRC source: ' + (selSp.value === 'isrchunt' ? 'ISRC Hunt' : 'molla'));
+        Log.info('Spotify ISRC source: ' + SPOTIFY_SOURCES[selSp.value]);
       });
     }
 
