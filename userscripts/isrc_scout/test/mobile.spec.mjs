@@ -16,9 +16,12 @@ test('the window fits a phone screen', { tag: ['@sandbox', '@cosmetic'] }, async
     const out = [...document.querySelectorAll('#ii-modal *')].filter(e => e.getClientRects().length && !e.closest('.ii-cands, [style*="overflow"]'))
       .map(e => [e.id || e.className, e.getBoundingClientRect()]).filter(([, b]) => b.width && (b.left < L - 1 || b.right > R + 1))
       .map(([c, b]) => c + ' ' + Math.round(b.left) + '..' + Math.round(b.right));
-    return { modal: [Math.round(m.left), Math.round(m.right)], vv: [L, R], iw: innerWidth, out };
+    const z = document.querySelector('#ii-hdr .ii-zen').getBoundingClientRect(), ic = document.querySelector('#ii-hdr .ii-hicons').getBoundingClientRect();
+    const zen = { below: z.top >= ic.bottom - 1, w: Math.round(z.width), lines: Math.round(document.querySelector('#ii-rel-title').getBoundingClientRect().height) };
+    return { zen, modal: [Math.round(m.left), Math.round(m.right)], vv: [L, R], iw: innerWidth, out };
   });
   console.log(JSON.stringify(r));
+  check(r.zen.below && r.zen.w > 250, `the release has a row of its own under the buttons (${JSON.stringify(r.zen)})`);
   check(r.modal[0] >= r.vv[0] - 1 && r.modal[1] <= r.vv[1] + 1, `the window is on the screen (${r.modal} on ${r.vv})`);
   check(r.out.length === 0, `nothing in it sticks out of the screen (${r.out.slice(0, 8).join(' · ')})`);
 });
