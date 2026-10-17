@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-10-19 10:10 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-10-19 10:12 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -1982,7 +1982,7 @@ For an album MusicBrainz doesn't have yet. On its page on a platform, **Consolid
 
 <img src="../mission_control/screenshots/consolidate.png" />
 
-Once you save the release, Mission Control opens on it and probes, for what the editor can't take: the ISRCs taken here and the recording links (added by ISRC Scout), the best cover (Art Station), and the artist and label links (Platform Check). **After saving**, on the right, chooses which of them start taken in; **Execute** then applies them as on any release.
+Once you save the release, Mission Control opens on it and probes, for what the editor can't take: the ISRCs taken here and the recording links (added by ISRC Scout), the best cover (Art Station), and the artist and label links (Platform Check). **After saving**, on the right, chooses which of them start taken in; **Execute** then applies them as on any release. With *…and Execute once the probe has finished* on in the settings, Mission Control presses Execute itself once every script has answered, after a 5-second countdown on the button: click the button to stop it. With nothing taken in there is no countdown.
 
 Click a track to see its versions on the right, with what sets each apart from the taken one highlighted and the platforms that give it; click a version there to take it. **Copy as Markdown**, in the **▾** menu beside **Add release**, copies the whole comparison as tables, for an issue or an edit note. **✕** shows the empty editor under it; the corner icon brings Mission Control back.
 
@@ -1999,6 +1999,7 @@ A label with another catalog number keeps it. A label the release hasn't is adde
 | Probe as soon as Mission Control opens                          | on      | no need to click ↻                                                     |
 | Reload the release page after an Execute without errors         | on      | shows the result at once; waits until every added link is through      |
 | After saving a consolidated release, open Mission Control on it | on      | [probes the new release](#consolidate-a-new-release) for what it lacks |
+| …and Execute once the probe has finished                        | off     | then applies what is taken in, after a countdown you can stop          |
 
 ### Shortcuts
 
