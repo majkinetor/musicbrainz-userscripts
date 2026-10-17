@@ -153,7 +153,7 @@ The release page's tracklist gets two columns before *Rating*: **ISRC**, each tr
 | Use providers from the whole release group | off                        | take missing providers from sibling releases (one more lookup)                 |
 | Ignore Platform Check link confidence      | off                        | use links Platform Check withheld for a barcode or format mismatch             |
 | Repeat failed submits                      | on, 10 minutes or 10 times | try a submit again when MusicBrainz is busy (503) or the connection drops      |
-| Spotify ISRC source                        | molla                      | or ISRC Hunt                                                                   |
+| Spotify ISRC source                        | Harmony                    | or molla, or ISRC Hunt                                                         |
 
 ### Platforms
 
@@ -186,7 +186,8 @@ No login is needed. Each track of the release is searched for by its title, and 
 
 Spotify's ISRCs come through a lookup service. Pick it in **⚙ Setup**; switch if one is down or throttled:
 
-- **[molla](https://isrc.mollamusicgroup.com)** maps the album's ISRCs by position when its track count matches the release, otherwise by title and artist. Its quota is shared by all its users, so a burst may need a retry a minute later.
+- **[Harmony](https://harmony.pulsewidth.org.uk)**, the default, gives them by disc and position, with each track's length.
+- **[molla](https://isrc.mollamusicgroup.com)** maps the album's ISRCs by position when its track count matches the release, otherwise by title and artist. Its quota is shared by all its users, so it is often out of it.
 - **[ISRC Hunt](https://isrchunt.com)** gives them by disc and position.
 
 ### Beatport

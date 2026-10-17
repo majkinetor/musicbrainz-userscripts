@@ -17,7 +17,8 @@ import { openScout, logText, ended } from './is.mjs';
 
 const RAM = '5000a285-b67e-4cfc-b54b-2b98f1810d2e';
 const REPLAY = new URL('./fixtures/ws-603.json.gz', import.meta.url);
-test.use({ gm: { name: 'ISRC Scout' } });
+// molla chosen in ⚙ (Harmony is the default since #775), after the one-time move to Harmony
+test.use({ gm: { name: 'ISRC Scout', values: { 'ii:spotify_isrc_source': 'molla', 'ii:spotify_source_775': true } } });
 
 async function run(page, context, inject, scenario) {
   const truth = [];

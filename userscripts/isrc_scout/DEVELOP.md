@@ -12,7 +12,7 @@ ISRC Scout has two independent provider systems, and a provider can support one 
 | --- | --- | --- | --- |
 | SoundExchange | `isrc.soundexchange.com` | none | each track searched by title and artist; candidates per row, confident ones filled; 30 searches at a time, so it doesn't block us |
 | Deezer | `api.deezer.com` | none | a request per track, so 50 tracks per batch; mapped by disc and position, title as the fallback |
-| Spotify | `isrc.mollamusicgroup.com` or `isrchunt.com` | none | a service does the lookup server-side; see [Spotify](#spotify) |
+| Spotify | `harmony.pulsewidth.org.uk`, `isrc.mollamusicgroup.com` or `isrchunt.com` | none | a service does the lookup server-side; see [Spotify](#spotify) |
 | Beatport | `beatport.com` release page | none | behind Cloudflare, read in a background tab; see [Beatport](#beatport) |
 | Tidal | `openapi.tidal.com` | app token, baked in | a client-credentials catalogue token, no user login; see [Tidal](#tidal) |
 | Volumo | `volumo.com/api/v1` | none | one call returns every track's ISRC |
@@ -45,7 +45,9 @@ Providers resolve in parallel, each with its own light rate limit, and an album 
 
 Spotify's own ISRC API needs a paid developer account, so the lookup goes through a service that does it server-side with its own credentials (#603):
 
-- **molla**: one `POST /api/spotify` with the album link returns every track's ISRC as JSON, in album order, with no track or disc numbers. When its track count matches the release, the ISRCs are mapped by position across all media; otherwise by title and artist, and unmatched tracks stay empty. Its Spotify quota is shared by every molla user, so a burst can hit a rate limit; a retry a minute later works.
+- **Harmony** (default, #775): its release page `harmony.pulsewidth.org.uk/release?url=<album url>&spotify=` has a `table.tracklist` per medium, columns found by their headings (Track, Title, Artists, Length, ISRC). Mapped by disc and position; a track whose position holds another song goes by title. A failed lookup is HTTP 200 with the reason in `.message.error`. Harmony caches what it looked up, so a repeat is fast. An install left on molla, the old default, moves to Harmony once (`spotify_source_775`).
+
+- **molla**: one `POST /api/spotify` with the album link returns every track's ISRC as JSON, in album order, with no track or disc numbers. When its track count matches the release, the ISRCs are mapped by position across all media; otherwise by title and artist, and unmatched tracks stay empty. Its Spotify quota is shared by every molla user, so a burst can hit a rate limit; since 2026-10 it is out of quota most of the time.
 - **ISRC Hunt**: `isrchunt.com/spotify/importisrc?releaseId=<album url>` returns an HTML table of ISRCs, scraped and mapped by disc and position.
 
 Track links come from the token-free `open.spotify.com/embed/album/<id>` page, which ships the ordered tracklist in `__NEXT_DATA__`, matched by position and title.
