@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-10-17 15:53 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-10-17 21:12 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -1804,6 +1804,8 @@ One window on a release page that asks the other scripts what the release is mis
 - **[Consolidate a new release](#consolidate-a-new-release)**: compare an album across the platforms and take the best of each into the release editor, or into the release MusicBrainz already has.
 
 Open Mission Control with its icon in the bottom-right corner of a release page. Right-click the icon for the settings.
+
+On a phone it fills the screen in one column: the steps scroll sideways under the release, the execution order and the inspector come after the cards, and a wide table scrolls inside its card.
 
 ### Probe
 

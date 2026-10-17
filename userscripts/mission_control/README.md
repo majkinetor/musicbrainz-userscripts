@@ -25,6 +25,8 @@ One window on a release page that asks the other scripts what the release is mis
 
 Open Mission Control with its icon in the bottom-right corner of a release page. Right-click the icon for the settings.
 
+On a phone it fills the screen in one column: the steps scroll sideways under the release, the execution order and the inspector come after the cards, and a wide table scrolls inside its card.
+
 ## Probe
 
 **↻** in the header asks every script at once. The header and the **Execution order** on the left show each step as it works: what it is doing, and how long since it last reported. A step that stays silent turns amber.

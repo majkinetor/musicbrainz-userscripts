@@ -72,6 +72,7 @@ test('what the spec proves', { tag: '@sandbox' }, async ({ page, inject }) => {
 | `prodWrites` | `'fail'` | `'block'`: refused writes don't fail the test; read them from `blockedWrites` |
 | `prodPostAllow` | `[]` | extra production paths (regex sources) a POST may reach |
 | `pageErrors` | `'fail'` | `'ignore'` to tolerate page errors, or a list of regex sources to let only those through |
+| `isMobile`, `hasTouch` | `false` | a phone (with `viewport` and `deviceScaleFactor`): the page's viewport meta tag counts, as it does on a phone |
 
 ## Sandbox fixtures
 

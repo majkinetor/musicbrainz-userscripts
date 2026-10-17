@@ -127,8 +127,8 @@ export const test = base.extend({
   // every production write the guard refused (layer 1 or 2); a spec using 'block' reads it
   blockedWrites: async ({}, use) => { await use([]); },
 
-  context: async ({ headless, viewport, deviceScaleFactor, profile, gm, prodWrites, prodPostAllow, pageErrors, blockedWrites: refused }, use, testInfo) => {
-    const ctx = await chromium.launchPersistentContext(profile === 'fresh' ? '' : PROFILE, { headless, viewport, deviceScaleFactor });
+  context: async ({ headless, viewport, deviceScaleFactor, isMobile, hasTouch, profile, gm, prodWrites, prodPostAllow, pageErrors, blockedWrites: refused }, use, testInfo) => {
+    const ctx = await chromium.launchPersistentContext(profile === 'fresh' ? '' : PROFILE, { headless, viewport, deviceScaleFactor, isMobile, hasTouch });
     const errors = [];
     const guard = await installProdGuard(ctx, { allow: prodPostAllow, gm: gm === false ? null : gm, onRefused: w => refused.push(w) });
     // the scripts build their test hooks (window.__falconTest, …) only on a page marked so (#623)
