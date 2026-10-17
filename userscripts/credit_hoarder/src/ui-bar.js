@@ -388,6 +388,10 @@ export function insertDiscogsBar(discogsUrl, sources = {}, meta = {}) {
                 };
                 vv.addEventListener('resize', again);
                 vv.addEventListener('scroll', again);
+                // the layout viewport can change alone, with no event: a full-screen view pins the page's body
+                // (780px → the screen's width); the body's size is what moves then
+                window.addEventListener('resize', again);
+                if (window.ResizeObserver && document.body) new window.ResizeObserver(again).observe(document.body);
             }
         }
         var els = Array.prototype.slice.call(document.querySelectorAll('[data-mb-corner="' + corner + '"]'))

@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.17.223929
+// @version      2026.10.17.231850
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5BcG9sbG8gRWRpdG9yPC90aXRsZT4KPG1hc2sgaWQ9ImFwLW0iIG1hc2tVbml0cz0idXNlclNwYWNlT25Vc2UiIHg9IjAiIHk9IjAiIHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4Ij48Zz48ZyBmaWxsPSIjZmZmIj48cGF0aCBkPSJNNDIgNjQgQzI4IDcyIDIyIDkwIDI0IDExMCBMNDIgOTggWiIvPjxwYXRoIGQ9Ik04NiA2NCBDMTAwIDcyIDEwNiA5MCAxMDQgMTEwIEw4NiA5OCBaIi8+PC9nPjxnIGZpbGw9IiNmZmYiPjxwYXRoIGQ9Ik02NCA4IEM4NCAyNCA5MCA1MiA4OCA5MCBMNDAgOTAgQzM4IDUyIDQ0IDI0IDY0IDggWiIvPjxwYXRoIGQ9Ik00OCA5MCBMODAgOTAgTDc2IDEwMCBMNTIgMTAwIFoiLz48L2c+PGcgc3Ryb2tlPSIjMDAwIiBzdHJva2Utd2lkdGg9IjMuNSI+PHBhdGggZD0iTTM2IDkwLjUgTDkyIDkwLjUiLz48L2c+PGNpcmNsZSBjeD0iNjQiIGN5PSI1MCIgcj0iOCIgZmlsbD0iIzAwMCIvPjwvZz48L21hc2s+PGc+PHBhdGggZD0iTTUyIDEwMCBDNTQgMTEyIDYwIDExOCA2NCAxMjYgQzY4IDExOCA3NCAxMTIgNzYgMTAwIFoiIGZpbGw9IiNlYjc0M2IiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDAgMykiLz48L2c+PHJlY3Qgd2lkdGg9IjEyOCIgaGVpZ2h0PSIxMjgiIGZpbGw9IiNiYTQ3OGYiIG1hc2s9InVybCgjYXAtbSkiLz4KPC9zdmc+Cg==
@@ -3254,6 +3254,10 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
               };
               vv.addEventListener('resize', again);
               vv.addEventListener('scroll', again);
+              // the layout viewport can change alone, with no event: a full-screen view pins the page's body
+              // (780px → the screen's width); the body's size is what moves then
+              window.addEventListener('resize', again);
+              if (window.ResizeObserver && document.body) new window.ResizeObserver(again).observe(document.body);
           }
       }
       var els = Array.prototype.slice.call(document.querySelectorAll('[data-mb-corner="' + corner + '"]'))
@@ -4900,11 +4904,18 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
       #release-editor #information tr{margin-bottom:6px}
       #release-editor #information :is(input[type=text],select,textarea,.ui-autocomplete-input){max-width:100%;box-sizing:border-box}
       #release-editor .documentation{display:none}
+      /* search & replace: the fields share the row and wrap rather than run off it under large text */
+      .tc-opt{flex:0 1 auto;min-width:0;max-width:100%;flex-wrap:wrap}
+      .tc-sro{flex-wrap:wrap;max-width:100%;min-width:0;row-gap:4px}
+      .tc-sro :is(.tc-sr-find,.tc-sr-rep){flex:1 1 7em;min-width:0;width:auto!important}
       .tc-addmed{white-space:nowrap}.tc-medsec .tc-addrow{flex-wrap:wrap;row-gap:6px}
       #release-editor fieldset.advanced-medium{min-width:0}
       #release-editor table.advanced-format{width:100%;table-layout:fixed}
       #release-editor table.advanced-format select{max-width:100%}
-      .tc-mirror td.c-title{min-width:0;overflow-wrap:anywhere}
+      .tc-mirror td.c-title{min-width:0;overflow-wrap:break-word}
+      /* a long title wraps (spaces still kept as typed) rather than being cut; a block, not a flex row,
+         so the text and its marks (a highlighted apostrophe) wrap as one run, not as separate pieces */
+      .tc-mirror .t-title-disp{white-space:pre-wrap;display:block}
       /* tools bar: wrap so "⚡ Match" never gets pushed off the edge */
       #tc-bar{flex-wrap:wrap;gap:6px 8px}
       #tc-bar > .sp{flex-basis:100%;height:0}   /* the spacer forces the Match cluster onto its own line */
@@ -4914,7 +4925,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
       .tc-mirror{display:block}
       .tc-mirror > colgroup,.tc-mirror > thead{display:none}
       .tc-mirror > tbody{display:block}
-      .tc-mirror > tbody > tr{display:grid;grid-template-columns:20px 34px minmax(0,1fr) 46px 30px 44px;
+      .tc-mirror > tbody > tr{display:grid;grid-template-columns:1.6em 2.8em minmax(0,1fr) 3.8em max-content 3.6em;
         align-items:center;column-gap:6px;row-gap:3px;padding:7px 8px;background:transparent}
       .tc-mirror.gridrows > tbody > tr{border-bottom:1px solid var(--mbu-border)}
       .tc-mirror > tbody > tr > td{display:block;padding:0;border:none!important;background:transparent;overflow:visible}
