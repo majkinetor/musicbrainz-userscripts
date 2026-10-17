@@ -69,5 +69,5 @@ test('the match cutoff selects only matches at or above it', { tag: ['@sandbox',
 
   await page.locator('#ch-771 button', { hasText: 'Start import' }).click();
   const counts = await page.evaluate(async () => (await window.__ch771).matchCounts);
-  check(JSON.stringify(counts) === JSON.stringify({ levels: [1, 0, 0, 0], user: 2, cutoff: 'Strong' }), `the edit note counts 1 exact and 2 by you (${JSON.stringify(counts)})`);
+  check(JSON.stringify(counts) === JSON.stringify({ levels: [1, 0, 0, 0], user: 2, cutoff: 'Strong' }), `the edit note counts 1 exact and 2 user (${JSON.stringify(counts)})`);
 });

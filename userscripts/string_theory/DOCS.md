@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-10-17 14:26 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-10-17 14:30 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -587,7 +587,7 @@ On a row:
 
 Adds the confirmed relationships to the editor without dialogs: release-level (labels, places, companies, artists), per track (instruments, vocals, engineers…) and per work (composer, lyricist, writer). A relationship that already exists, or was added earlier in the session, is skipped.
 
-The edit note carries the statistics, one block per source when several ran, including how the entities used were matched: *Matched: 9 exact, 4 strong, 1 by you (cutoff: strong)*. What an earlier source already added is reported as *already added this session*, not as *already in MB*.
+The edit note carries the statistics, one block per source when several ran, including how the entities used were matched: *Matched: 9 exact, 4 strong, 1 user (cutoff: strong)*. What an earlier source already added is reported as *already added this session*, not as *already in MB*.
 
 ### Providers
 

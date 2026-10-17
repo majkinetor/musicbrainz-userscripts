@@ -952,9 +952,9 @@ export async function dispatchAllRelationships(companies, artistRoles, tracklist
         const unresolvedLine  = unresolvedCount > 0
             ? `Unresolved: ${unresolvedCount} of ${totalEntities} entit${totalEntities === 1 ? 'y' : 'ies'} skipped in review`
             : null;
-        // #771: how the entities used were matched, e.g. "Matched: 9 exact, 4 strong, 1 by you (cutoff: strong)"
+        // #771: how the entities used were matched, e.g. "Matched: 9 exact, 4 strong, 1 user (cutoff: strong)"
         const mc = confirmedMap?.matchCounts;
-        const matchedParts = mc ? [...MATCH_LEVELS.map((lv, i) => mc.levels[i] ? `${mc.levels[i]} ${lv.label.toLowerCase()}` : null), mc.user ? `${mc.user} by you` : null].filter(Boolean) : [];
+        const matchedParts = mc ? [...MATCH_LEVELS.map((lv, i) => mc.levels[i] ? `${mc.levels[i]} ${lv.label.toLowerCase()}` : null), mc.user ? `${mc.user} user` : null].filter(Boolean) : [];
         const matchedLine = matchedParts.length ? `Matched: ${matchedParts.join(', ')} (cutoff: ${mc.cutoff.toLowerCase()})` : null;
         const editNoteDedupPart = dedupedThisSession > 0
             ? `, ${dedupedThisSession} dispatch duplicate${dedupedThisSession === 1 ? '' : 's'}`
