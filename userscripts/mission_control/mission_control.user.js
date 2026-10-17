@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Mission Control
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.17.211205
+// @version      2026.10.17.214738
 // @description  One window on the release page that asks the other scripts (Platform Check, ISRC Scout, Art Station, Fusion, Credit Hoarder) what is missing, shows it all in one review, and applies the selected changes in order.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5NaXNzaW9uIENvbnRyb2w8L3RpdGxlPgo8ZGVmcz48ZmlsdGVyIGlkPSJtY28xMy1oIiB4PSItMTAlIiB5PSItMTAlIiB3aWR0aD0iMTIwJSIgaGVpZ2h0PSIxMjAlIj48ZmVNb3JwaG9sb2d5IGluPSJTb3VyY2VBbHBoYSIgb3BlcmF0b3I9ImRpbGF0ZSIgcmFkaXVzPSIxLjUiIHJlc3VsdD0iZCIvPjxmZUZsb29kIGZsb29kLWNvbG9yPSIjZmZmIiBmbG9vZC1vcGFjaXR5PSIuNyIvPjxmZUNvbXBvc2l0ZSBpbjI9ImQiIG9wZXJhdG9yPSJpbiIvPjxmZU1lcmdlPjxmZU1lcmdlTm9kZS8+PGZlTWVyZ2VOb2RlIGluPSJTb3VyY2VHcmFwaGljIi8+PC9mZU1lcmdlPjwvZmlsdGVyPjwvZGVmcz48ZyBmaWx0ZXI9InVybCgjbWNvMTMtaCkiPjxwYXRoIGQ9Ik03NyAzNS41IEw2NCA0MyBMNTEgMzUuNSBMNTEgMjAuNSBMNjQgMTMgTDc3IDIwLjVaIiBmaWxsPSIjN2E1N2U4IiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik01OS43IDc3LjUgTDQ2LjcgODUgTDMzLjcgNzcuNSBMMzMuNyA2Mi41IEw0Ni43IDU1IEw1OS43IDYyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik05NC4zIDc3LjUgTDgxLjMgODUgTDY4LjMgNzcuNSBMNjguMyA2Mi41IEw4MS4zIDU1IEw5NC4zIDYyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik00Mi4zIDEwNy41IEwyOS40IDExNSBMMTYuNCAxMDcuNSBMMTYuNCA5Mi41IEwyOS40IDg1IEw0Mi4zIDkyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik03NyAxMDcuNSBMNjQgMTE1IEw1MSAxMDcuNSBMNTEgOTIuNSBMNjQgODUgTDc3IDkyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik0xMTEuNiAxMDcuNSBMOTguNiAxMTUgTDg1LjcgMTA3LjUgTDg1LjcgOTIuNSBMOTguNiA4NSBMMTExLjYgOTIuNVoiIGZpbGw9IiNmZmM5NGEiIHN0cm9rZT0iIzIyMjIzYiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PC9nPgo8L3N2Zz4K
@@ -925,9 +925,14 @@ function mcStyle() {
         + 'html.mc-open body{position:fixed;inset:0;overflow:hidden}'
         + '.mc-hdr{flex-wrap:wrap;height:auto;gap:6px 8px;padding:6px 8px}'
         + '.mc-rel{flex:1 1 0;max-width:none;padding-right:0}'
-        + '.mc-steps{order:3;flex:1 0 100%;height:46px;justify-content:flex-start;overflow-x:auto;overflow-y:hidden;scrollbar-width:none}'
+        // the release, ⚙ and ✕ on the first row; the steps, then Execute, on the second
+        + '.mc-hdr .mc-act{display:contents}.mc-rel{order:1;flex-basis:calc(100% - 130px)}.mc-act [data-act=cfg]{order:2}.mc-act [data-act=close]{order:3}'
+        + '.mc-steps{order:4;flex:1 1 60%;height:46px;justify-content:flex-start;overflow-x:auto;overflow-y:hidden;scrollbar-width:none}'
         + '.mc-steps>*{flex-shrink:0}.mc-step .tx{flex:0 0 auto;width:auto;max-width:110px}'
-        + '#mc-root .mc-act .mc-exec{min-width:0}'
+        + '#mc-root .mc-act .mc-exec{order:5;min-width:0;flex:none}'
+        // a barcode's lane: the barcode and its state on the first line, the platforms and "take all" under it
+        + '.mc-bcl,.mc-bcl.mc-hascat{grid-template-columns:10px max-content minmax(0,1fr) auto;grid-template-areas:"t c k p" ". i i a";row-gap:4px}'
+        + '.mc-bcl>.mc-tri{grid-area:t}.mc-bcl>.mc-bc{grid-area:c}.mc-bcl>.mc-cats{grid-area:k;width:auto!important}.mc-bcl>.mc-bcl-ic{grid-area:i}.mc-bcl>.mc-all{grid-area:a;justify-self:end}.mc-bcl>:last-child{grid-area:p;justify-self:end}.mc-bcl>span:empty:not(.mc-tri):not(:last-child){display:none}'
         + '.mc-main,#mc-root.no-left .mc-main,#mc-root.no-right .mc-main{display:flex;flex-direction:column;overflow:auto}'
         + '.mc-center{order:-1;flex:none;overflow:visible;padding:8px}'
         + '.mc-side{flex:none;overflow:visible;border:0;border-top:1px solid var(--mbu-border)}.mc-side.right{border-left:0}'
