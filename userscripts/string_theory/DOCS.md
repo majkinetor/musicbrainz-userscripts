@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-10-18 14:00 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-10-18 14:18 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -1102,8 +1102,8 @@ Pages: `prestomusic.com/classical/products/<id>`, `prestomusic.com/jazz/products
 - No Presto account is needed.
 - Presto sells CDs, SACDs, vinyl and downloads, so the medium's format is the one on the page: *CD*, *Hybrid SACD*, *Vinyl*, or *Digital Media* for a download. A physical one gets the *purchase for mail-order* link and no packaging; the country is left for you.
 - A set of several discs (*5 CDs*) comes as one medium: Presto doesn't say where each disc starts, so split it in the editor. A message says so.
-- A classical work's movements are its tracks, titled *Work: Movement*, without the composer Presto puts first; a work without movements is one track.
-- Track artists are the performers Presto lists for each work, without their role (*Kristoffer Jessen (leadvocalist)* is Kristoffer Jessen). Artists have no Presto link to hand off.
+- A classical work's movements are its tracks, titled *Work: Movement*; a work without movements is one track. The composer Presto puts before a title (*Beethoven: …*, *Ida Sand: Salt & Sugar*) is left out.
+- Track artists are the names Presto lists for each work without an instrument or role. The musicians listed with one (*Ida Sand (piano)*, *Ola Gustafsson (guitar)*) are left out; when every name has one, as on most classical pages (*Chiaroscuro Quartet (stringquartet)*), all of them are the artists. Artists have no Presto link to hand off.
 - Some lengths are missing; those tracks get none.
 - When the page lists no tracks (a new vinyl, say), the tracklist is taken from another format of the same album, the CD first. A message and the edit note say where it came from: check it, as the vinyl can differ. When no format lists tracks, nothing is imported.
 

@@ -11,7 +11,11 @@
 //   779-beethoven-symphonies.html  Ádám Fischer, Naxos 8505251 (classical/8619572): 5 CDs or download
 //   779-ida-sand-vinyl.html        Ida Sand, ACT8802-1 (jazz/9885069): a Vinyl Record with no tracklist,
 //                                  only the album title; links the CD
-//   779-ida-sand-cd.html           its CD, ACT8802-2 (jazz/9885070), with the tracklist but no lengths
+//   779-ida-sand-cd.html           its CD, ACT8802-2 (jazz/9885070): each track "Ida Sand: <title>", every
+//                                  musician listed with an instrument
+//   779-lester-young.html          Lester Young with the Oscar Peterson Trio (jazz/8621347): a download;
+//                                  composers some linked, some not ("Ira Gershwin, Vernon Duke: …"), and
+//                                  "Recorded:" / "Recording Venue:" among the performers
 import { test, check, sourceOf, until, requireLogin, settled } from '../../../dev/test/harness.mjs';
 import { readFile } from 'node:fs/promises';
 
@@ -39,14 +43,14 @@ test('Presto Music: works and movements, format, barcode, and a tracklist from a
   check(text(qt[0].credit) === 'Chiaroscuro Quartet' && qt[0].credit[0].url === null, `the performer without the role, no Presto link handed off: ${text(qt[0].credit)} ${qt[0].credit[0].url}`);
   check(q.barcode === '7318599927282' && q.date.year === 2026 && q.date.month === 10 && q.date.day === 16, `barcode and date: ${q.barcode} ${JSON.stringify(q.date)}`);
   check(q.labels.length === 1 && q.labels[0].name === 'BIS' && q.labels[0].catno === 'BIS2728', `label and catalogue number: ${JSON.stringify(q.labels)}`);
-  check(q.packaging === null && q.country === null && q.urls[0].url === 'https://www.prestomusic.com/classical/products/9959653' && q.urls[0].linkType === 79, `a physical product: no packaging, no country, a mail-order link: ${q.packaging} ${q.country} ${JSON.stringify(q.urls)}`);
+  check(q.packaging === null && q.country === null && q.urls[0].url === 'https://www.prestomusic.com/classical/products/9959653--beethoven-string-quartets-op-59-no-3-op-95-op-133' && q.urls[0].linkType === 79, `a physical product: no packaging, no country, a mail-order link with its slug (Presto answers 404 without): ${q.packaging} ${q.country} ${JSON.stringify(q.urls)}`);
   check(/^The Chiaroscuro Quartet continues/.test(q.annotation || ''), `About is the annotation: ${(q.annotation || '').slice(0, 40)}`);
 
   const o = await read('jazz/9851908', await fixture('779-organisme.html'));
   const ot = o.mediums[0].tracks;
-  check(text(o.credit) === 'Antonio Dayyani & Kristoffer Jessen' && !o.credit[1].url, `two album artists, the role gone: ${text(o.credit)}`);
+  check(text(o.credit) === 'Antonio Dayyani', `the album artist; Kristoffer Jessen (leadvocalist) is a musician's credit, not the artist: ${text(o.credit)}`);
   check(o.mediums[0].format === 'CD' && ot.length === 7 && ot[0].title === 'En lykkelig organisme' && ot[0].lengthMs === 206000, `a CD of 7 tracks: ${o.mediums[0].format} ${ot.length} ${ot[0].title} ${ot[0].lengthMs}`);
-  check(text(ot[3].credit) === 'Antonio Dayyani & Kristoffer Jessen' && text(ot[0].credit) === 'Antonio Dayyani', `each track's own performers: ${text(ot[0].credit)} / ${text(ot[3].credit)}`);
+  check(text(ot[3].credit) === 'Antonio Dayyani' && text(ot[0].credit) === 'Antonio Dayyani', `a track's artists are its names without a role: ${text(ot[0].credit)} / ${text(ot[3].credit)}`);
   check(o.barcode === '5709498116228' && !o.tracksFrom && o.discs === 1, `barcode, its own tracklist: ${o.barcode} ${JSON.stringify(o.tracksFrom)}`);
 
   const b = await read('classical/8619572', await fixture('779-beethoven-symphonies.html'));
@@ -59,6 +63,18 @@ test('Presto Music: works and movements, format, barcode, and a tracklist from a
   check(v.mediums[0].format === 'Vinyl' && v.barcode === '0614427880215' && v.labels[0].catno === 'ACT8802-1', `the vinyl's own format, barcode and catalogue number: ${v.mediums[0].format} ${v.barcode} ${v.labels[0].catno}`);
   check(vt.length > 1 && v.tracksFrom && v.tracksFrom.url === 'https://www.prestomusic.com/jazz/products/9885070--i-will-be-right-there' && v.tracksFrom.name === 'CD', `the tracks are the CD's: ${vt.length} from ${JSON.stringify(v.tracksFrom)}`);
   check(!vt.some(t => t.title === 'I Will Be Right There' && vt.length === 1), 'the album title alone is not taken as a track');
+  // majkinetor: the CD's tracks start with the artist ("Ida Sand: Salt & Sugar") and list every musician
+  // with an instrument ("Ida Sand (piano), Ida Sand, Ida Sand (wurlitzer), Ola Gustafsson (guitar), …")
+  check(vt[0].title === 'Salt & Sugar' && vt[0].lengthMs === 240000, `the artist leaves the title: ${vt[0].title} ${vt[0].lengthMs}`);
+  check(vt.every(t => text(t.credit) === 'Ida Sand') && text(v.credit) === 'Ida Sand', `the musicians with an instrument are no track artists: ${[...new Set(vt.map(t => text(t.credit)))].join(' / ')}`);
+
+  const l = await read('jazz/8621347', await fixture('779-lester-young.html'));
+  const lt = l.mediums[0].tracks;
+  check(l.mediums[0].format === 'Digital Media' && l.packaging === 'None' && l.urls[0].linkType === 74, `a download: ${l.mediums[0].format} ${l.packaging} ${l.urls[0].linkType}`);
+  check(lt.every(t => !/:/.test(t.title)), `no composer left in a title, linked or not: ${lt.filter(t => /:/.test(t.title)).map(t => t.title).join(' / ') || 'none'}`);
+  check(lt.some(t => t.title === "I Can't Get Started"), `"Ira Gershwin, Vernon Duke: I Can't Get Started" is "I Can't Get Started": ${lt.map(t => t.title).slice(0, 4).join(' / ')}`);
+  check(lt.every(t => t.credit.every(a => !/recorded|venue|kessel|heard|brown/i.test(a.name))), `no "Recorded:", no musician with an instrument among the track artists: ${[...new Set(lt.map(t => text(t.credit)))].join(' / ')}`);
+  check(text(l.credit) === 'The Oscar Peterson Trio & Lester Young', `the album: the trio, and Lester Young, whom the tracks name without an instrument: ${text(l.credit)}`);
 
   const none = await page.evaluate(async h => {
     const p = window.__fcTest.providers.find(x => x.id === 'presto');

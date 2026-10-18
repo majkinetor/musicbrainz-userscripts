@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         First Contact
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.18
+// @version      2026.10.18.141854
 // @description  Import a release into MusicBrainz from the platform's album page with one click: the release editor opens with the title, tracklist, artists, date, label, barcode and link filled in. Each artist's platform link is handed to Apollo Editor for matching. A second button sends the album to Harmony instead. By default the album page is also saved on the Internet Archive (it sends each imported URL to archive.org; off in the settings), and the edit note links the snapshot. Platforms: Deezer, Bandcamp, Discogs, Apple Music, Tidal, Qobuz, Beatport, Spotify, YouTube Music, Volumo, HDtracks, SoundCloud, Amazon Music, Audiomack, 7digital, Ototoy, Presto Music.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5GaXJzdCBDb250YWN0PC90aXRsZT4KPGxpbmVhckdyYWRpZW50IGlkPSJmYy1kIiB4MT0iMCIgeTE9IjAiIHgyPSIwIiB5Mj0iMSI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjYmFlNmZkIi8+PHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjMzhiZGY4Ii8+PC9saW5lYXJHcmFkaWVudD48cmFkaWFsR3JhZGllbnQgaWQ9ImZjLWIiIGN4PSIuMzUiIGN5PSIuMyIgcj0iLjgiPjxzdG9wIG9mZnNldD0iMCIgc3RvcC1jb2xvcj0iI2ZmZjdjYyIvPjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iI2Y2YzQzMSIvPjwvcmFkaWFsR3JhZGllbnQ+PHBhdGggZD0iTTUwIDQyIEw3OCA0MiBMMTA0IDExMiBMMjQgMTEyIFoiIGZpbGw9IiNmNmM0MzEiIG9wYWNpdHk9Ii45Ii8+PHBhdGggZD0iTTU2IDQyIEw3MiA0MiBMODggMTEyIEw0MCAxMTIgWiIgZmlsbD0iI2ZkZTY4YSIgb3BhY2l0eT0iLjciLz48ZWxsaXBzZSBjeD0iNjQiIGN5PSIxMTQiIHJ4PSI0MiIgcnk9IjgiIGZpbGw9IiMxZTIzNDYiIHN0cm9rZT0iI2M5Y2RmMiIgc3Ryb2tlLXdpZHRoPSIzIi8+PGVsbGlwc2UgY3g9IjY0IiBjeT0iMTEzIiByeD0iMjYiIHJ5PSI0LjIiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2Y2YzQzMSIgc3Ryb2tlLXdpZHRoPSIyLjQiLz48cGF0aCBkPSJNNDIgMjggQTIyIDE4IDAgMCAxIDg2IDI4IFoiIGZpbGw9InVybCgjZmMtZCkiIHN0cm9rZT0iI2M5Y2RmMiIgc3Ryb2tlLXdpZHRoPSIzIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PHBhdGggZD0iTTUwLjM2IDE5LjkgQTE1LjM5OTk5OTk5OTk5OTk5OSAxMy41IDAgMCAxIDYxLjggMTEuOCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjIuNiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBvcGFjaXR5PSIuOSIvPjxlbGxpcHNlIGN4PSI2NCIgY3k9IjMyIiByeD0iNTYiIHJ5PSIxMiIgZmlsbD0iIzFlMjM0NiIgc3Ryb2tlPSIjYzljZGYyIiBzdHJva2Utd2lkdGg9IjMiLz48ZWxsaXBzZSBjeD0iNjQiIGN5PSI0MCIgcng9IjIyIiByeT0iNiIgZmlsbD0idXJsKCNmYy1iKSIgc3Ryb2tlPSIjYzljZGYyIiBzdHJva2Utd2lkdGg9IjIuNCIvPjxjaXJjbGUgY3g9IjIyIiBjeT0iMzEiIHI9IjQiIGZpbGw9IiNmNmM0MzEiLz48Y2lyY2xlIGN4PSI0MCIgY3k9IjMxIiByPSI0IiBmaWxsPSIjZjZjNDMxIi8+PGNpcmNsZSBjeD0iODgiIGN5PSIzMSIgcj0iNCIgZmlsbD0iI2Y2YzQzMSIvPjxjaXJjbGUgY3g9IjEwNiIgY3k9IjMxIiByPSI0IiBmaWxsPSIjZjZjNDMxIi8+PHBhdGggZD0iTTY0IDU4IEw4NCA2OS41IEw4NCA5Mi41IEw2NCAxMDQgTDQ0IDkyLjUgTDQ0IDY5LjUgWiIgZmlsbD0iIzdiNGZkNiIvPjxwYXRoIGQ9Ik02NCA1OCBMODQgNjkuNSBMNjQgODEgTDQ0IDY5LjUgWiIgZmlsbD0iIzliNzJlYSIvPjxwYXRoIGQ9Ik02MCA3MiBMNzQgNjkgTDc0IDg5IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iMy40IiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PHBhdGggZD0iTTYwIDcyIEw2MCA5MiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjMuNCIvPjxlbGxpcHNlIGN4PSI1NiIgY3k9IjkyIiByeD0iNC42IiByeT0iMy42IiBmaWxsPSIjZmZmIi8+PGVsbGlwc2UgY3g9IjcwIiBjeT0iODkiIHJ4PSI0LjYiIHJ5PSIzLjYiIGZpbGw9IiNmZmYiLz4KPC9zdmc+Cg==
@@ -2290,6 +2290,16 @@ const PRESTO = {
     hms(t) { const p = String(t || '').trim().split(':').map(Number); return p.length > 1 && p.every(Number.isFinite) ? p.reduce((a, n) => a * 60 + n, 0) * 1000 : null; },
     // "Ida Sand", "Antonio Dayyani, Kristoffer Jessen (leadvocalist)": the role isn't the name
     unrole: s => String(s || '').replace(/\s*\([^()]*\)\s*$/, '').trim(),
+    // An artist list → the credit: each name once, and only the names Presto gives without a role.
+    // The roles are the musicians' credits (majkinetor, Ida Sand: "Ida Sand (piano), Ida Sand, Ida Sand
+    // (wurlitzer), Ola Gustafsson (guitar), …"); a list where every name has one (classical: "Chiaroscuro
+    // Quartet (stringquartet)") is the performers, and all of them are the credit.
+    credit(names) {
+        const all = names.map(n => ({ name: this.unrole(n), plain: !/\([^()]*\)\s*$/.test(n) })).filter(x => x.name);
+        const pick = all.some(x => x.plain) ? all.filter(x => x.plain) : all;
+        const seen = new Set();
+        return pick.filter(x => !seen.has(normName(x.name)) && seen.add(normName(x.name))).map(x => ({ name: x.name, url: null }));
+    },
     // the format bought on this page → the medium's format and how many there are ("5 CDs")
     format(doc) {
         const phys = doc.querySelector('.c-product__purchase--physical .c-purchase__format__name');
@@ -2307,26 +2317,34 @@ const PRESTO = {
     },
     // the tracklist: a work with movements gives "Work: Movement" for each (as 140 of 141 sampled
     // releases with a Presto link have it), one without is a track itself. The composer Presto puts
-    // before the work ("Beethoven: String Quartet No. 9…") is not part of the title.
-    tracks(doc, album) {
+    // before the work ("Beethoven: String Quartet No. 9…"), linked, is not part of the title. Jazz puts
+    // the composer there too, unlinked ("Ida Sand: Salt & Sugar", "trad.: Jesus, gjør meg stille", "Ira
+    // Gershwin, Vernon Duke: I Can't Get Started"): it goes when every work has one, or it names an artist.
+    tracks(doc, album, artists) {
         const works = [...doc.querySelectorAll('.c-tracklist .c-tracklist__work')];
         const out = [];
+        const titleOf = w => w.querySelector('.c-track:not(.c-track--track) .c-track__title');
+        const linked = w => !!(titleOf(w) && titleOf(w).querySelector('a[href*="/composers/"]'));
+        const bare = w => { const t = titleOf(w); if (!t) return ''; const c = t.cloneNode(true); c.querySelectorAll('a[href*="/composers/"]').forEach(a => a.remove()); return this.text(c).replace(/^[\s:,;/&]+/, '').replace(/\s{2,}/g, ' '); };
+        // every work names its composer, linked or not; an unlinked one is then taken off. A linked one's
+        // rest stays whole: a classical page of excerpts is "Puccini: Gianni Schicchi: O mio babbino caro"
+        const allBy = works.length > 0 && works.every(w => linked(w) || /^[^:]+:\s+\S/.test(bare(w)));
         for (const w of works) {
             const head = w.querySelector('.c-track:not(.c-track--track)');
             const t = head && head.querySelector('.c-track__title');
             if (!t) continue;
-            const c = t.cloneNode(true);
-            c.querySelectorAll('a[href*="/composers/"]').forEach(a => a.remove());
-            const work = this.text(c).replace(/^[\s:,;/&]+/, '').replace(/\s{2,}/g, ' ');
-            // classical: one linked performer per item; jazz: one unlinked item, "A, B (leadvocalist)".
             // No artist link is handed off: MusicBrainz keeps no Presto artist pages, and Apollo would offer to add them
-            const performers = [...w.querySelectorAll('.c-track__details li')].flatMap(li => {
-                const a = li.querySelector('a[href*="/artists/"]');
-                return a ? [{ name: this.unrole(this.text(a)), url: null }] : this.text(li).split(/\s*,\s*/).map(n => ({ name: this.unrole(n), url: null }));
-            }).filter(p => p.name);
+            // "Recorded: 2023-10-12", "Recording Venue: …" are no names
+            // an item can hold several names, some of them linked ("Tord Gustavsen Trio, Tord Gustavsen (piano), …")
+            const names = [...w.querySelectorAll('.c-track__details li')].flatMap(li => (/^[A-Z][A-Za-z ]{2,30}:\s/.test(this.text(li)) ? [] : this.text(li).split(/\s*,\s*/)));
+            const performers = this.credit(names);
+            const plain = names.filter(n => !/\([^()]*\)\s*$/.test(n)).map(n => normName(n));
+            let work = bare(w);
+            const by = work.match(/^([^:]+):\s+(.+)$/);
+            if (by && ((allBy && !linked(w)) || artists.concat(names.map(n => this.unrole(n))).some(n => normName(n) === normName(by[1])))) work = by[2];
             const moves = [...w.querySelectorAll('.c-track--track')];
-            if (!moves.length) { out.push({ title: work, len: this.text(head.querySelector('.c-track__duration')), performers }); continue; }
-            for (const m of moves) out.push({ title: `${work}: ${this.text(m.querySelector('.c-track__title'))}`, len: this.text(m.querySelector('.c-track__duration')), performers });
+            if (!moves.length) { out.push({ title: work, len: this.text(head.querySelector('.c-track__duration')), performers, plain }); continue; }
+            for (const m of moves) out.push({ title: `${work}: ${this.text(m.querySelector('.c-track__title'))}`, len: this.text(m.querySelector('.c-track__duration')), performers, plain });
         }
         if (!out.length) {
             // no works: a bulleted list of titles, or the album title alone, which is no tracklist
@@ -2362,16 +2380,18 @@ const PRESTO = {
             const k = this.text(li.querySelector('strong')).replace(/:$/, '');
             if (k) meta[k] = { text: this.text(li).slice(this.text(li.querySelector('strong')).length).trim(), a: li.querySelector('a') };
         });
-        let barcode = null;
+        let barcode = null, offerUrl = null;
         for (const s of doc.querySelectorAll('script[type="application/ld+json"]')) {
-            try { const j = [].concat(JSON.parse(s.textContent)); const p = j.find(x => x && x['@type'] === 'Product'); if (p && p.gtin13) barcode = String(p.gtin13); } catch (e) { /* not ours */ }
+            try { const j = [].concat(JSON.parse(s.textContent)); const p = j.find(x => x && x['@type'] === 'Product'); if (p && p.gtin13) barcode = String(p.gtin13); if (p && p.offers && p.offers.url) offerUrl = String(p.offers.url); } catch (e) { /* not ours */ }
         }
         const fmt = this.format(doc);
         Log.info(`Presto Music product ${pid}: "${rawTitle}" by ${artistLine || '—'} · ${fmt ? fmt.name : 'no format'} · ${Object.entries(meta).map(([k, v]) => `${k}: ${v.text}`).join(' · ')} · barcode ${barcode || '—'}`);
         if (fmt && !fmt.format) Log.warn(`Presto Music: format "${fmt.name}" has no MusicBrainz format here; left for you`);
 
         // the album's artists: the line under the title
-        let rows = this.tracks(doc, rawTitle), from = null;
+        const lineNames = artistLine ? artistLine.split(/\s*,\s*/) : [];
+        const artistNames = lineNames.map(n => this.unrole(n)).filter(Boolean);
+        let rows = this.tracks(doc, rawTitle, artistNames), from = null;
         if (!rows.length) {
             const others = [...doc.querySelectorAll('a.c-product__variant[href*="/products/"]')].map(a => ({ url: new URL(a.getAttribute('href'), 'https://www.prestomusic.com/').href, name: this.text(a.querySelector('.c-product__variant__title')) }));
             others.sort((a, b) => (/\bcd\b/i.test(b.name) ? 1 : 0) - (/\bcd\b/i.test(a.name) ? 1 : 0));   // a CD's tracklist usually has the lengths
@@ -2379,14 +2399,19 @@ const PRESTO = {
             for (const o of others) {
                 try {
                     const d = await this.page(o.url);
-                    const r = this.tracks(d, rawTitle);
+                    const r = this.tracks(d, rawTitle, artistNames);
                     Log.info(`Presto Music: ${o.name} ${o.url} has ${r.length} track(s)`);
                     if (r.length) { rows = r; from = o; break; }
                 } catch (e) { Log.warn(`Presto Music: ${o.url}: ${e.message}`); }
             }
             if (!rows.length) throw new Error('Presto Music lists no tracks for this release, in any format');
         }
-        const albumArtists = artistLine.split(/\s*,\s*/).map(this.unrole).filter(Boolean).map(n => ({ name: n, url: null }));
+        // a name the line gives with a role is still an artist when a track names it without one
+        // (Trio Grande: "Antonio Sánchez, Gilad Hekselman (guitar), Will Vinson", each track all three plain)
+        const plainSomewhere = new Set([].concat(...rows.map(r => r.plain || [])));
+        // a line where every name has a role is the performers (Debussy: "Emmanuel Pahud (flute), Renaud Capuçon (violin), …"): all of them
+        const roled = n => /\([^()]*\)\s*$/.test(n);
+        const albumArtists = this.credit(lineNames.every(roled) ? lineNames : lineNames.map(n => (plainSomewhere.has(normName(this.unrole(n))) ? this.unrole(n) : n)));
 
         const tracks = rows.map((r, i) => {
             const tf = splitFeat(r.title);
@@ -2406,7 +2431,10 @@ const PRESTO = {
         const month = dm ? 'janfebmaraprmayjunjulaugsepoctnovdec'.indexOf(dm[2].toLowerCase()) / 3 + 1 : null;
         const label = meta.Label ? (meta.Label.a ? this.text(meta.Label.a) : meta.Label.text) : '';
         const catno = (meta['Catalogue number'] || {}).text || '';
-        const url = `https://www.prestomusic.com/${id.split('/')[0]}/products/${pid}`;
+        // the product's address with its slug: without it Presto answers 404 (majkinetor). The ld+json's,
+        // which names the product, else this page's
+        const slugged = u => { const m = String(u || '').match(/^https?:\/\/(?:www\.)?prestomusic\.com(\/(?:classical|jazz)\/products\/(\d+)--[^/?#]+)/); return m && m[2] === pid ? `https://www.prestomusic.com${m[1]}` : null; };
+        const url = slugged(offerUrl) || (doc === document ? slugged(location.href) : null) || `https://www.prestomusic.com/${id.split('/')[0]}/products/${pid}`;
         const digital = !fmt || fmt.digital;
         return {
             source: this.id,
