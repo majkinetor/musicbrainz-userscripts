@@ -3250,8 +3250,10 @@
       const f = !!((shown('#as-lb, #as-report, #as-setup, .mbu-ov, #mbu-logpop')) || (!_mcCommitDone && shown('#as-commit')));
       if (f !== full) { full = f; mcFramePost({ type: 'full', on: f }); }
       if (!full) {
-        // a popover below the gallery makes the frame taller while it is open
-        const nh = Math.ceil(Math.max(root.getBoundingClientRect().bottom, ...[...document.querySelectorAll('.as-pop')].map(p => p.getBoundingClientRect().bottom)) + window.scrollY) + 4;
+        // the gallery's lowest part: the type pills hang below the last row of cards, and a popover below the
+        // gallery makes the frame taller while it is open
+        const low = [root, ...root.querySelectorAll('.as-card, .as-drow, .as-foot-type, .as-type, .as-type-add'), ...document.querySelectorAll('.as-pop')];
+        const nh = Math.ceil(Math.max(...low.map(x => x.getBoundingClientRect().bottom)) + window.scrollY) + 10;
         if (nh !== h) { h = nh; mcFramePost({ type: 'size', h }); }
       }
       const p = mcPlanNow(), s = JSON.stringify(p);

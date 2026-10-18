@@ -36,6 +36,14 @@ test('#784: the gallery shows in the card, scrolls with it and goes full screen'
   check(g.op === '1' && g.frame.join() === g.slot.join() && g.slot[3] > 150, `the frame lies over the slot, the slot as tall as the gallery (${JSON.stringify(g)})`);
   const inFrame = await fr.evaluate(() => ({ embed: document.documentElement.classList.contains('as-embed'), header: !!(document.querySelector('.header, #header') || {}).offsetParent, more: document.querySelectorAll('.as-sec-more + .as-grid .as-card').length }));
   check(inFrame.embed && !inFrame.header && inFrame.more > 0, `the gallery alone, the store's other images left out in it (${JSON.stringify(inFrame)})`);
+  // the whole gallery fits the frame: the last cards and the type pills hanging below them; the take-in button clear of NEW
+  const fit = await until(() => fr.evaluate(() => {
+    const low = Math.max(...[...document.querySelectorAll('.as-card, .as-foot-type, .as-type, .as-type-add')].map(x => x.getBoundingClientRect().bottom));
+    const b = document.querySelector('.as-card.new .as-undo'), n = b && b.closest('.as-card').querySelector('.as-newban');
+    return { low: Math.ceil(low), h: innerHeight, clear: !!(b && n && b.getBoundingClientRect().right <= n.getBoundingClientRect().left + 8) };
+  }), v => v.low <= v.h);
+  check(fit.low <= fit.h, `the gallery's lowest part is inside the frame (${JSON.stringify(fit)})`);
+  check(fit.clear, `take in sits left of the NEW ribbon (${JSON.stringify(fit)})`);
   await page.screenshot({ path: 'test-results/mc-784-embedded.png' });
 
   // the wheel over the gallery scrolls Mission Control, and the frame follows the slot
