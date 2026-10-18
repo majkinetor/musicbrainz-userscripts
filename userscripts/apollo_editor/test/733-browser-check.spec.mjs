@@ -5,7 +5,9 @@
 // matching and the artist picker all failed with "JSON.parse: unexpected character".
 // Apollo now passes the check once in a hidden frame and retries.
 //
-// Real end to end: dropping the cookie brings the real check back on the sandbox.
+// Real end to end: dropping the cookie brings the real check back on the sandbox. MusicBrainz
+// switches the check off at times (on test and production alike); then there is nothing to
+// pass, and the spec is skipped rather than failed.
 import { test, check } from '../../../dev/test/harness.mjs';
 import { openApollo, apolloGm } from './ap.mjs';
 
@@ -16,11 +18,13 @@ const COOKIE = '__meb_verified';
 test('an expired browser check is passed again and the search returns', { tag: ['@sandbox', '@login'] }, async ({ page, inject }) => {
   await openApollo(page, inject, { seed: 'seed-saigon', tab: 'tracklist' });
   const ctx = page.context();
-  check((await ctx.cookies()).some(c => c.name === COOKIE), 'the page passed the check once (otherwise nothing below is a test)');
+  const passed = (await ctx.cookies()).some(c => c.name === COOKIE);
 
   await ctx.clearCookies({ name: COOKIE });
   const raw = await page.evaluate(() => fetch('/ws/js/artist?q=kassav&limit=3', { headers: { Accept: 'application/json' } }).then(r => r.text()));
-  check(/Verifying your browser/.test(raw), 'without the cookie, /ws/js answers with the check');
+  const checking = /Verifying your browser/.test(raw);
+  test.skip(!checking, 'MusicBrainz has its browser check off: /ws/js answers without the cookie');
+  check(passed, 'the page passed the check once (otherwise nothing below is a test)');
 
   const frames = [];
   page.on('frameattached', f => frames.push(f));
