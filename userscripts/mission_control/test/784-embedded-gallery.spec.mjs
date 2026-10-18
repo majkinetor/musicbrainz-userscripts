@@ -66,13 +66,14 @@ test('#784: the gallery shows in the card, scrolls with it and goes full screen'
   check(g2.frame[1] === g2.slot[1], `the frame follows the slot (${JSON.stringify(g2)})`);
 
   // a cover full screen: the frame takes the window; Esc gives the card back
-  await fr.evaluate(() => document.querySelector('.as-card:not(.del) .as-thumb img').click());
+  await fr.evaluate(() => document.querySelector('.as-card.new:not(.del) .as-thumb img').click()   // a store image: the sandbox archive's own often don't load);
   const full = await until(geo, v => v.frame[2] === 1400 && v.frame[3] === 900);
   check(full.frame.join() === '0,0,1400,900', `full screen takes the window (${JSON.stringify(full)})`);
   await page.screenshot({ path: 'test-results/mc-784-full.png' });
   // setting a type there leaves the cover where it is (the bar took padding while focused, and moved it)
   const top = () => fr.evaluate(() => Math.round(document.querySelector('.as-lb-img').getBoundingClientRect().top));
   await until(() => fr.evaluate(() => { const i = document.querySelector('.as-lb-img'); return !!(i && i.complete && i.naturalWidth); }), Boolean);
+  check(await fr.evaluate(() => document.querySelector('.as-lb-img').naturalWidth > 0), 'the store image shows full screen');
   const t0 = await top();
   await fr.locator('#as-lb .as-lb-type').click();
   await fr.locator('.as-pop input[type=checkbox]').first().waitFor();
@@ -80,7 +81,8 @@ test('#784: the gallery shows in the card, scrolls with it and goes full screen'
   await fr.locator('.as-pop input[type=checkbox]').first().check();
   const t2 = await top();
   check(t1 === t0 && t2 === t0, `the cover stays put while its type is set (${t0} → ${t1} → ${t2})`);
-  await fr.locator('body').press('Escape');
+  await fr.locator('body').press('Escape');   // the type picker
+  await fr.locator('body').press('Escape');   // the full screen
   const back = await until(geo, v => v.frame.join() === v.slot.join());
   check(back.frame.join() === back.slot.join(), `Esc gives the card back (${JSON.stringify(back)})`);
 });
