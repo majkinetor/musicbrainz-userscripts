@@ -36,7 +36,7 @@ test('#713: a release row has a Barcode field', { tag: ['@sandbox'] }, async ({ 
   const labels = id => page.evaluate(id => [...document.querySelectorAll(`.falcon-form`)].filter(f => f.querySelector(`[data-id="${id}"]`)).flatMap(f => [...f.querySelectorAll('.falcon-lbl')].map(l => l.textContent.replace('+', '').trim())), id);
   const rel = await labels('l1');
   console.log('release fields: ' + rel.join(', '));
-  check(rel.join() === 'Name,Links,Disambiguation,Barcode,Event,Lengths,Aliases,Cover', `a release has Barcode after Disambiguation, then Event and Lengths (#783) (${rel})`);
+  check(rel.join() === 'Name,Links,Disambiguation,Barcode,Event,Tracks,Aliases,Cover', `a release has Barcode after Disambiguation, then Event and Tracks (#783) (${rel})`);
   check(!(await labels('r1')).includes('Barcode'), 'a recording has none');
 
   const inp = page.locator('.falcon-barcode-input[data-id="l1"]');

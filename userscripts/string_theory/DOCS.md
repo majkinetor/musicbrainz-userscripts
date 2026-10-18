@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-10-18 19:08 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-10-18 20:19 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -735,14 +735,14 @@ Each run keeps its own log in this browser, so a run whose tab crashed or naviga
 | ------------------------------------ | :----: | :---: | :-------: | :-----: | :-----------: |
 | links, name, aliases, disambiguation |   ✓    |   ✓   |     ✓     |    ✓    |       ✓       |
 | ISRCs, video, length                 |        |       |     ✓     |         |               |
-| cover art, barcode, event, lengths   |        |       |           |    ✓    |               |
+| cover art, barcode, event, tracks    |        |       |           |    ✓    |               |
 
 - **Name**: an expanded row's ✎ box starts with the current name, so a fix is an edit, not a retype. A rename is votable, so it shows once the edit passes.
 - **Aliases**: one row per alias, with its name, its language and **✕**; the **+** by the *Aliases* label adds one, or use [JSON](../falcon/examples/aliases.json) for many. A new alias takes the language last typed; `name@locale` typed in the name box sets the language too. Enter on a filled alias opens the next one, on an empty one moves on to the next row's aliases; Esc drops a new, still empty row.
 - **Video** is only ever set, never cleared.
 - **Barcode** fills a release that has none, and unticks *This release does not have a barcode* if it is ticked. A release that already has a different barcode keeps it, and the row says so. In the grid it is in the row's opened part, with the links.
 - **Event** gives a release that has no release event one: the date (`2014`, `2014-02` or `2014-02-20`), then the country's code, `2014-02-20 XW`. Only [Worldwide] (`XW`) is known as a country so far; another code leaves the country empty. A release that has an event keeps it, and the row says so.
-- **Lengths** fills the length of tracks that have none, each as medium.track and length: `1.3 6:58, 1.4 7:08`. A track that has a length keeps it, and so does a medium with a disc ID, whose lengths MusicBrainz locks. In the grid, Event and Lengths are in the row's opened part, with the barcode.
+- **Tracks** changes a release's track titles and lengths, each as medium.track, a quoted title, a length, separated by `;`: `1.2 "New title" 5:02; 1.3 6:58`. `+rec` after the title gives the recording that title too. A track that changed since the change was made (another script hands Falcon what the track had) keeps what it has, and the row says so; so does a medium with a disc ID, whose lengths MusicBrainz locks. In the grid, Event and Tracks are in the row's opened part, with the barcode.
 - **Length** sets a recording's own length (`m:ss`). MusicBrainz takes it only for a recording without tracks; any other's comes from its tracks, and the row says so.
 
 > [!WARNING]
@@ -815,13 +815,17 @@ What **Import** reads, **Export** writes, and Harmony and other scripts produce:
 | `barcode`                       | releases: a barcode for a release that has none                                                                                                                             |
 | `labels[]`                      | releases: `{ mbid, name, catno, add }`: an empty catalog number to fill, or a label to add                                                                                  |
 | `event`                         | releases: `{ date: { year, month, day }, country }` for a release without an event                                                                                          |
-| `lengths[]`                     | releases: `{ medium, position, ms }` for a track without a length, from 1                                                                                                   |
+| `tracks[]`                      | releases: track titles and lengths, `{ medium, position, title, recording, ms, was }` ([below](#track-changes))                                                             |
 | `note`                          | that item's own edit note                                                                                                                                                   |
 | `status`, `error`, `urlResults` | written by Export: the outcome of the last run                                                                                                                              |
 
+#### Track changes
+
+A release's `tracks[]` changes its tracks, each by `medium` and `position` (from 1): `title` gives the track a new title, and the recording too with `recording: true`; `ms` a new length. `was: { title, ms }` is what the track had when the change was made: a track that holds something else by now is left alone (`ms: null` means a track without a length). Without `was` the change is made whatever the track holds. The older `lengths[]` (`{ medium, position, ms }`) fills tracks without a length.
+
 #### From another script
 
-Another script can hand Falcon a queue in the [JSON model](#json-model), by a `?falcon=` link or by an event on the page; a link never starts the queue. Sending the same batch twice doesn't run it twice. [Mission Control](../mission_control/README.md#execute) and [Platform Check](../platform_check/README.md#artists-and-labels) send their links, barcodes, catalog numbers, release events and track lengths this way. How is in [DEVELOP.md](../falcon/DEVELOP.md#handoff).
+Another script can hand Falcon a queue in the [JSON model](#json-model), by a `?falcon=` link or by an event on the page; a link never starts the queue. Sending the same batch twice doesn't run it twice. [Mission Control](../mission_control/README.md#execute) and [Platform Check](../platform_check/README.md#artists-and-labels) send their links, barcodes, catalog numbers, release events and track titles and lengths this way. How is in [DEVELOP.md](../falcon/DEVELOP.md#handoff).
 
 ### Settings
 
@@ -1899,19 +1903,20 @@ The links are added through [Falcon](../falcon/README.md), out of sight. The car
 2. For each field, the value most platforms give wins, as in a consolidation.
 3. What the release lacks is offered where it is added, taken in:
 
-| What                 | Offered when                                                 | Shown in                                    |
-| -------------------- | ------------------------------------------------------------ | ------------------------------------------- |
-| Barcode              | the release has none                                         | Release and entity links                    |
-| Label, cat. no.      | as in [Update this release](#update-this-release)            | Release and entity links                    |
-| Platform links       | the release hasn't them, even ones Platform Check holds back | Release and entity links                    |
-| Release event        | the release has none: the date and country most give         | Release and entity links                    |
-| Track lengths        | a track has none                                             | Release and entity links, and the track row |
-| ISRCs                | a track has none                                             | ISRCs                                       |
-| Title, a track title | the platforms give another                                   | shown only, never changed                   |
+| What                | Offered when                                                 | Shown in                                    |
+| ------------------- | ------------------------------------------------------------ | ------------------------------------------- |
+| Barcode             | the release has none                                         | Release and entity links                    |
+| Label, cat. no.     | as in [Update this release](#update-this-release)            | Release and entity links                    |
+| Platform links      | the release hasn't them, even ones Platform Check holds back | Release and entity links                    |
+| Release event       | the release has none: the date and country most give         | Release and entity links                    |
+| Track lengths       | a track has none                                             | Release and entity links, and the track row |
+| ISRCs               | a track has none                                             | ISRCs                                       |
+| Track title, length | you take a platform's, or type your own                      | the row under the track                     |
+| Title               | the platforms give another                                   | shown only, never changed                   |
 
-Nothing the release has is changed. The tracks are compared one by one only when the platforms have as many as the release. The Platforms column shows each track's length to add (*+ 4:01*), and *≠ title* when the platforms call it something else. *≠ title* opens, under the row, what each platform gives for the track: its title, with the part that differs marked, length and ISRC; **Expand all** opens these with Fusion's comparisons. The [Inspector](#inspector) shows the track's versions too. Platform Check's card names the platforms read, and the release's title if the platforms give another.
+Nothing the release has is changed unless you take it. The tracks are compared one by one only when the platforms have as many as the release. The Platforms column shows each track's length to add (*+ 4:01*), and *≠ title* when the platforms call it something else (*✓* when they agree). Either opens, under the row, what the platforms give for the track: a line per version (title, with the part that differs marked, length and ISRC), the platforms that give it on the right. A click on a title or length there takes it in, and the track's own line above them holds what the track gets: type there for a title or length of your own (Enter keeps it, Escape puts it back). *the recording too* gives the recording the new title as well; **Keep as is** drops what was taken. The column then shows what the track gets (*→ Title · → 5:02*), and Execute counts it. **Expand all** opens these rows, where a title or a length differs, with Fusion's comparisons. The [Inspector](#inspector) shows the track's versions too. Platform Check's card names the platforms read, and the release's title if the platforms give another.
 
-Execute adds the release event and the track lengths with the barcode, labels and links, in one edit of the release, through [Falcon](../falcon/README.md).
+Execute adds the release event, the track lengths and the titles and lengths you took with the barcode, labels and links, in one edit of the release, through [Falcon](../falcon/README.md). A track that changed on MusicBrainz since you compared keeps what it has.
 
 ### Cover art
 

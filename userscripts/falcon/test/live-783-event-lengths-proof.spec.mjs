@@ -86,7 +86,7 @@ test('#783: Falcon enters a release event and track lengths where the release ha
     // as Platform Check hands it over
     await p.evaluate(it => document.dispatchEvent(new CustomEvent('falcon:import', { detail: JSON.stringify({ name: 'Falcon #783 proof', note: it.note, items: [Object.assign({ entityType: 'release', mbid: it.mbid, urls: [] }, it.payload)] }) })), item);
     await p.waitForFunction(() => window.__falconTest.getQueue().length > 0, null, { timeout: 10000 });
-    const queued = await p.evaluate(() => window.__falconTest.getQueue().map(i => ({ event: i.event, lengths: i.lengths })));
+    const queued = await p.evaluate(() => window.__falconTest.getQueue().map(i => ({ event: i.event, tracks: i.tracks })));
     await p.evaluate(() => window.__falconTest.start());
     await p.waitForFunction(() => window.__falconTest.getQueue().every(i => i.status !== 'queued' && i.status !== 'active'), null, { timeout: 240000 }).catch(() => {});
     const out = await p.evaluate(() => window.__falconTest.getQueue().map(i => ({ s: i.status, e: i.error })));
@@ -94,9 +94,9 @@ test('#783: Falcon enters a release event and track lengths where the release ha
     await p.close();
     return { queued, out, log, errs };
   };
-  const first = await run({ mbid: RELEASE, payload: { event: EVENT, lengths: LENGTHS }, note: 'Falcon #783 proof: a release event and track lengths on a release item' });
+  const first = await run({ mbid: RELEASE, payload: { event: EVENT, tracks: LENGTHS.map(l => ({ ...l, was: { ms: null } })) }, note: 'Falcon #783 proof: a release event and track lengths on a release item' });
   console.log(JSON.stringify(first.queued), JSON.stringify(first.out)); first.log.slice(-8).forEach(l => console.log('  ' + l));
-  check(JSON.stringify(first.queued) === JSON.stringify([{ event: EVENT, lengths: LENGTHS }]), 'the handoff queues the item with its event and lengths');
+  check(JSON.stringify(first.queued) === JSON.stringify([{ event: EVENT, tracks: LENGTHS.map(l => ({ ...l, was: { ms: null } })) }]), 'the handoff queues the item with its event and lengths');
   check(first.out[0].s === 'done', `Falcon reports the item done (${JSON.stringify(first.out[0])})`);
   await acceptOpen(true);
   const after = await state();
