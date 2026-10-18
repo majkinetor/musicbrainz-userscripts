@@ -55,10 +55,17 @@ test('#784: the gallery shows in the card, scrolls with it and goes full screen'
     b.click();
     await new Promise(r => setTimeout(r, 300));
     const dups = more().filter(c => c.querySelector('.as-mcdup'));
-    return { p, n, left: more().filter(c => !c.querySelector('.as-mcdup')).length, dups: dups.length, bare: dups.every(c => !c.querySelector('.as-undo, .as-foot-type')), last: !!document.querySelector('.as-grid .as-card.new:not(.del)') };
+    return { p, n, sy: window.scrollY, left: more().filter(c => !c.querySelector('.as-mcdup')).length, dups: dups.length, bare: dups.every(c => !c.querySelector('.as-undo, .as-foot-type')), last: !!document.querySelector('.as-grid .as-card.new:not(.del)') };
   });
   check(all.p && all.n > 0 && all.left < all.n && all.last, `take all in takes in the ${all.p} images that aren't duplicates (${JSON.stringify(all)})`);
   check(all.bare, `a duplicate has no take in and no type (${JSON.stringify(all)})`);
+  // the frame never scrolls, or the gallery's bottom is cut off in the card
+  const pinned = await fr.evaluate(async () => {
+    window.scrollTo(0, 40);
+    await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
+    return window.scrollY;
+  });
+  check(pinned === 0, `the frame stays scrolled to its top (${pinned})`);
 
   // the wheel over the gallery scrolls Mission Control, and the frame follows the slot
   const scroller = () => page.evaluate(() => { let n = document.getElementById('mc-as-slot').parentElement; while (n && n.scrollHeight <= n.clientHeight) n = n.parentElement; return n ? n.scrollTop : -1; });
