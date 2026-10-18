@@ -1,5 +1,5 @@
-// #787: a cover marked for removal stays in its place in the gallery, on red with a REMOVE ribbon, and a cover whose
-// remove edit is open for votes shows a chip linking to that edit (read from the release's open-edits page, by its
+// #787: a cover marked for removal waits under the gallery, in Marked for removal, on red with a REMOVE ribbon, and
+// can be selected there to be kept; a cover whose remove edit is open for votes shows a chip linking to that edit (read from the release's open-edits page, by its
 // structure). The open-edits page is a stand-in naming the gallery's first cover; nothing is entered.
 import { test, check, until, requireLogin, SANDBOX, idle } from '../../../dev/test/harness.mjs';
 import { RELEASE, blockPosts } from './as.mjs';
@@ -13,7 +13,7 @@ const openEdits = (rel, id, edit) => `<!doctype html><html><body><div id="page">
 <div class="edit-details"><table class="details remove-cover-art"><tbody><tr><th>Cover-Art:</th><td class="edit-cover-art">
 <a class="artwork-image" href="//coverartarchive.org/release/${rel}/${id}.jpg"></a></td></tr></tbody></table></div></div></div></body></html>`;
 
-test('#787: a removal stays in place, and an open removal links to its edit', { tag: ['@sandbox', '@login'] }, async ({ page, inject }) => {
+test('#787: a removal waits on red under the gallery, a selection of them is kept, and an open removal links to its edit', { tag: ['@sandbox', '@login'] }, async ({ page, inject }) => {
   await blockPosts(page);
   let first = null;
   await page.route(u => u.pathname === `/release/${RELEASE}/open_edits`, r => r.fulfill({ status: 200, contentType: 'text/html', body: openEdits(RELEASE, first, 787000001) }));
@@ -36,35 +36,33 @@ test('#787: a removal stays in place, and an open removal links to its edit', { 
   }, first);
   check(col !== 'rgb(1, 2, 3)', `a page's link colour doesn't reach the chip (${col})`);
 
-  // another cover marked for removal: in its place, on red with the REMOVE ribbon, no section of its own
-  const before = await page.evaluate(() => [...document.querySelectorAll('#as-root .as-card')].map(c => c.dataset.id));
-  const other = before.find(id => id !== first);
-  await page.evaluate(id => { const c = document.querySelector(`.as-card[data-id="${id}"]`); c.dispatchEvent(new MouseEvent('mousedown', { bubbles: true, button: 2 })); document.dispatchEvent(new MouseEvent('mouseup', { bubbles: true, button: 2 })); }, other);
+  // two covers marked for removal: under the gallery, in Marked for removal, on red with the REMOVE ribbon
+  const before = await page.evaluate(() => [...document.querySelectorAll('#as-root .as-grid .as-card')].map(c => c.dataset.id));
+  const marked = before.filter(id => id !== first).slice(0, 2), other = marked[0];
+  const paint = ids => page.evaluate(ids => {
+    const cs = ids.map(id => document.querySelector(`#as-root .as-card[data-id="${id}"]`));
+    cs[0].dispatchEvent(new MouseEvent('mousedown', { bubbles: true, button: 2, buttons: 2 }));
+    cs.slice(1).forEach(c => c.dispatchEvent(new MouseEvent('mousemove', { bubbles: true, buttons: 2 })));
+    document.dispatchEvent(new MouseEvent('mouseup', { bubbles: true, button: 2 }));
+  }, ids);
+  await paint(marked);
   await until(() => page.evaluate(() => !!document.querySelector('.as-bk-rm')), Boolean);
   await page.evaluate(() => document.querySelector('.as-bk-rm').click());
-  const after = await until(() => page.evaluate(id => ({
-    ids: [...document.querySelectorAll('#as-root .as-card')].map(c => c.dataset.id),
-    rm: !!document.querySelector(`.as-card.rm[data-id="${id}"] .as-rmban`),
-    keep: !!document.querySelector(`.as-card.rm[data-id="${id}"] .as-undo`),
-    sec: !!document.querySelector('.as-sec-del:not(.as-sec-more)'),
-  }), other), v => v.rm);
+  const after = await until(() => page.evaluate(ids => ({
+    under: ids.every(id => document.querySelector(`.as-sec-del:not(.as-sec-more) + .as-grid .as-card.rm[data-id="${id}"] .as-rmban`)),
+    keep: ids.every(id => document.querySelector(`.as-card.rm[data-id="${id}"] .as-undo`)),
+    inGrid: ids.filter(id => [...document.querySelectorAll('#as-root .as-grid')][0].querySelector(`.as-card[data-id="${id}"]`)).length,
+  }), marked), v => v.under);
   console.log(JSON.stringify(after));
-  check(after.rm && after.keep, `the marked cover has the REMOVE ribbon and keep (${JSON.stringify(after)})`);
-  check(JSON.stringify(after.ids) === JSON.stringify(before), 'it stays in its place');
-  check(!after.sec, 'no Marked for removal section');
+  check(after.under && after.keep && !after.inGrid, `the marked covers wait under the gallery with the REMOVE ribbon and keep (${JSON.stringify(after)})`);
   const two = page.locator(`#as-root .as-card[data-id="${first}"]`), mark = page.locator(`#as-root .as-card[data-id="${other}"]`);
   await two.screenshot({ path: 'test-results/as-787-open.png' }); await mark.screenshot({ path: 'test-results/as-787-rm.png' });
-  await page.evaluate(() => document.documentElement.setAttribute('data-mbu-theme', 'dark'));
-  await two.screenshot({ path: 'test-results/as-787-open-dark.png' }); await mark.screenshot({ path: 'test-results/as-787-rm-dark.png' });
-  await page.evaluate(() => document.documentElement.removeAttribute('data-mbu-theme'));
 
-  // View's Hide removals hides both, and showing them again puts them back
-  const hidden = async on => {
-    await page.evaluate(() => document.querySelector('#as-root .as-view').click());
-    await until(() => page.evaluate(() => !!document.querySelector('.as-vhide-rm')), Boolean);
-    await page.evaluate(v => { const b = document.querySelector('.as-vhide-rm'); if (b.checked !== v) b.click(); }, on);
-    return until(() => page.evaluate(ids => ids.filter(id => document.querySelector(`#as-root .as-card[data-id="${id}"]`)).length, [first, other]), n => n === (on ? 0 : 2));
-  };
-  check(await hidden(true) === 0, 'Hide removals hides the marked one and the open one');
-  check(await hidden(false) === 2, 'and they show again when it is off');
+  // they are selected by dragging, as any cover, and Keep keeps the selection
+  await paint(marked);
+  const sel = await until(() => page.evaluate(() => ({ n: document.querySelector('.as-selcnt')?.textContent || '', keep: !!document.querySelector('.as-bk-keep') })), v => v.keep);
+  check(sel.keep && /^2 selected/.test(sel.n), `the two marked covers are selected, with Keep (${JSON.stringify(sel)})`);
+  await page.evaluate(() => document.querySelector('.as-bk-keep').click());
+  const back = await until(() => page.evaluate(ids => ({ rm: ids.filter(id => document.querySelector(`.as-card.rm[data-id="${id}"]`)).length, sec: !!document.querySelector('.as-sec-del:not(.as-sec-more)') }), marked), v => !v.rm);
+  check(!back.rm && !back.sec, `Keep brings both back, and the section goes (${JSON.stringify(back)})`);
 });
