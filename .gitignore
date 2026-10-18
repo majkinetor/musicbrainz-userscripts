@@ -26,9 +26,11 @@ dev/notif-channel/node_modules/
 /.mcp.json
 
 # Claude Code per-user state: permission allowlist, etc. Machine-specific.
-# Project skills are shared, so they are tracked.
+# Project skills and the shared settings (the cloud session-start hook) are tracked.
 /.claude/*
 !/.claude/skills/
+!/.claude/settings.json
+!/.claude/hooks/
 
 # Shared Playwright profile (logged-in MB session + IDB cache) reused by every
 # userscript test. Populate once with `node dev/test/login.mjs` (production and
