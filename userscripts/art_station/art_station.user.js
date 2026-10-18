@@ -6531,7 +6531,9 @@
   .as-card.rmopen{border:1.5px dashed var(--mbu-error);background:color-mix(in srgb,var(--mbu-bg) 75%,var(--mbu-error))}
   .as-card.rm .as-foot,.as-card.rmopen .as-foot{background:transparent}
   .as-rmopen{position:absolute;left:6px;bottom:6px;z-index:5;background:var(--mbu-error);color:var(--mbu-text-on-accent);font:600 11px var(--mbu-font);border-radius:4px;padding:1px 6px;text-decoration:none;white-space:nowrap}
-  .as-rmopen:hover{text-decoration:underline;color:var(--mbu-text-on-accent)}
+  /* MusicBrainz's a:visited (0,1,1) outranked the chip's colour once its edit was opened */
+  a.as-rmopen:link,a.as-rmopen:visited,a.as-rmopen:hover,a.as-rmopen:active{color:var(--mbu-text-on-accent)}
+  a.as-rmopen:hover{text-decoration:underline}
   .as-only{position:absolute;top:6px;left:6px;z-index:6;border:1px solid var(--mbu-border);border-radius:var(--mbu-radius);background:var(--mbu-bg);color:var(--mbu-accent-text);cursor:pointer;font:600 12px/1 var(--mbu-font);padding:5px 8px;box-shadow:0 1px 3px rgba(0,0,0,.25);opacity:0;transition:opacity .1s}
   .as-card:hover .as-only,.as-only:focus-visible{opacity:1}
   .as-only:hover{background:var(--mbu-bg-hover);border-color:var(--mbu-accent)}

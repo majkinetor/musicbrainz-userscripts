@@ -28,6 +28,13 @@ test('#787: a removal stays in place, and an open removal links to its edit', { 
   console.log(JSON.stringify({ first, chip }));
   check(chip && chip.href === '/edit/787000001', `the open removal links to its edit (${JSON.stringify(chip)})`);
   check(chip && /removal open · \d+ days/.test(chip.text), `and says how long it's open (${chip && chip.text})`);
+  // its text stays white once the edit was opened (MusicBrainz colours visited links)
+  const col = await page.evaluate(id => {
+    const a = document.querySelector(`.as-card[data-id="${id}"] .as-rmopen`), s = document.createElement('style');
+    s.textContent = 'a:visited,a:link{color:rgb(1,2,3)}'; document.head.appendChild(s);
+    const c = getComputedStyle(a).color; s.remove(); return c;
+  }, first);
+  check(col !== 'rgb(1, 2, 3)', `a page's link colour doesn't reach the chip (${col})`);
 
   // another cover marked for removal: in its place, on red with the REMOVE ribbon, no section of its own
   const before = await page.evaluate(() => [...document.querySelectorAll('#as-root .as-card')].map(c => c.dataset.id));
