@@ -107,6 +107,16 @@ if printf '%s
     STAGED=$(git diff --cached --name-only)
 fi
 
+# shared guess case (#785) — dev/guesscase/guess-case.mjs, re-inlined into every script
+# carrying a `// <ST-GUESSCASE>` marker.
+if printf '%s\n' "$STAGED" | grep -qE '^dev/guesscase/(guess-case|sync-guesscase)\.mjs$'; then
+    echo "[pre-commit] syncing the shared guess case…"
+    node dev/guesscase/sync-guesscase.mjs >/dev/null
+    GUESSCASE_FILES=$(grep -rl '// <ST-GUESSCASE>' userscripts --include='*.js' 2>/dev/null || true)
+    [ -n "$GUESSCASE_FILES" ] && git add $GUESSCASE_FILES
+    STAGED=$(git diff --cached --name-only)
+fi
+
 # shared MusicBrainz page helpers (#722, #723) — dev/mbpage/mb-page.mjs, re-inlined into every
 # script carrying a `// <ST-MBPAGE>` marker (Credit Hoarder imports it via esbuild — its
 # rebuild below watches dev/mbpage too).

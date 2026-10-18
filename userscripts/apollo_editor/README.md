@@ -164,7 +164,8 @@ The toolbar holds the tools you choose; the rest are in **Tools ▾**, with **Cu
 
 | Tool                                                    |                                                                                                                                   |
 | ------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
-| Track parser, Swap, Reset #, Guess feat., Guess case    | MusicBrainz's own                                                                                                                 |
+| Track parser, Swap, Reset #, Guess feat.                | MusicBrainz's own                                                                                                                 |
+| [Guess case](#guess-case)                               | MusicBrainz's capitalisation, with more languages                                                                                 |
 | [Search and Replace](#search-and-replace)               | replace text in titles, with saved patterns                                                                                       |
 | [Pattern parser](#pattern-parser)                       | a tracklist from text, by a pattern                                                                                               |
 | [Length parser](#length-parser)                         | track lengths from any text or page                                                                                               |
@@ -172,6 +173,16 @@ The toolbar holds the tools you choose; the rest are in **Tools ▾**, with **Cu
 | Resize columns                                          | Fit, Centered or Default widths                                                                                                   |
 | Guess punctuation                                       | kellnerd's [guess-unicode-punctuation](https://github.com/kellnerd/musicbrainz-scripts#guess-unicode-punctuation), when installed |
 | **↺ Revert all**, **✕ Clear all** (under ▾)             | back to the loaded page, or empty                                                                                                 |
+
+### Guess case
+
+Capitalises the track titles the way MusicBrainz's own Guess case does, with more languages and a few more rules. Click **Guess case** for every track; a track's **Aa** on hover does one track and shows the guess before you click.
+
+- **Mode**: **Auto** follows the release's language. English, French, Turkish, Spanish, Italian, Portuguese and Dutch have their own mode; any other language gets Sentence (a capital only at the start of a sentence). Pick a mode to use it whatever the language.
+- **Keep uppercased**: a word in capitals stays in capitals, and a word with a capital inside it (*KoRn*, *JoJo*, *OutKast*) keeps it.
+- **Roman numerals**: *part ii* becomes *Part II*.
+
+On top of MusicBrainz's rules, version words in brackets are lowercased (*official music video*, *slowed + reverb*, *sped up*, *bootleg*, *mashup*), and Dutch writes *IJ* as one capital (*IJsland*).
 
 ### Search and Replace
 

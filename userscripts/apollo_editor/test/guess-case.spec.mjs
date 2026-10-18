@@ -1,7 +1,8 @@
 // The Guess case tool, in the tracklist.
 //
-// #156: its "Keep uppercased" checkbox proxies MusicBrainz's own (a cookie), and flipping
-//   it really changes the guess.
+// #785: the guess is the shared guess case's (dev/guesscase), not MusicBrainz's editor-only one:
+//   its mode (Auto from the release's language, or picked) and its options are Apollo's own
+//   settings, each changes the guess, and Aa applies it to the track.
 // #153: a title's Aa / feat in-cell buttons overlay the input instead of taking width
 //   from it (they clipped long titles after "Fit").
 import { test, check, until, frames } from '../../../dev/test/harness.mjs';
@@ -9,30 +10,34 @@ import { openApollo, apolloGm } from './ap.mjs';
 
 test.use({ gm: apolloGm() });
 
-test('#156: "Keep uppercased" changes the guess', { tag: ['@sandbox', '@login'] }, async ({ page, inject }) => {
+test('#785: the mode and options change the guess, and Aa applies it', { tag: ['@sandbox', '@login', '@critical'] }, async ({ page, inject }) => {
   await openApollo(page, inject, { seed: 'seed-saigon', tab: 'tracklist' });
-  await page.evaluate(() => window.MB.releaseEditor.rootField.release().mediums()[0].tracks()[0].name('the QUICK BROWN fox ABC'));
-  await page.waitForFunction(() => window.__apolloEditor.model.tracks.some(x => /QUICK BROWN/i.test(x.title || '') && x.guessTitle), null, { timeout: 10000 });
-  await page.waitForSelector('.tc-gco label input[type=checkbox]', { state: 'attached', timeout: 10000 });   // on the tools bar (#280)
-  const read = () => page.evaluate(() => {
-    const t = window.__apolloEditor.model.tracks.find(x => /QUICK BROWN/i.test(x.title || ''));
-    const chk = document.querySelector('.tc-gco label input[type=checkbox]');   // the first: Keep uppercased
-    const m = document.cookie.match(/guesscase_keepuppercase=([^;]*)/);
-    return { guess: t ? t.guessTitle : null, checked: chk ? chk.checked : null, cookie: m ? m[1] : null };
-  });
-  // the box flips as it is clicked; the toggle has been handled once MusicBrainz's cookie
-  // and the guess follow it
-  const settled = r => r.cookie === String(r.checked) && (r.checked ? /QUICK BROWN/ : /Quick Brown/).test(r.guess || '');
-  const toggle = async () => { await page.evaluate(() => document.querySelector('.tc-gco label input[type=checkbox]').click()); await until(read, settled); };
-  const before = await read();
-  if (before.checked === false) { await toggle(); Object.assign(before, await read()); }   // start from ON
-  await toggle();
-  const off = await read();
-  await toggle();
-  const on = await read();
-  check(before.checked === true && before.cookie === 'true' && /QUICK BROWN/.test(before.guess), `on: uppercase words kept (${JSON.stringify(before)})`);
-  check(off.checked === false && off.cookie === 'false' && /Quick Brown/.test(off.guess), `off: MusicBrainz's cookie follows, and the guess changes (${JSON.stringify(off)})`);
-  check(on.checked === true && on.cookie === 'true' && on.guess === before.guess, `on again: back to the first guess (${JSON.stringify(on)})`);
+  await page.evaluate(() => window.MB.releaseEditor.rootField.release().mediums()[0].tracks()[0].name('the QUICK BROWN fox by KoRn (Official Music Video)'));
+  const guess = () => page.evaluate(() => { const t = window.__apolloEditor.model.tracks.find(x => /QUICK BROWN/i.test(x.title || '')); return t ? t.guessTitle : null; });
+  await until(guess, g => !!g);
+  await page.waitForSelector('.tc-gco select.tc-gc-lang', { state: 'attached', timeout: 10000 });
+  const pick = (sel, v) => page.evaluate(([sel, v]) => { const el = document.querySelector(sel); el.value = v; el.dispatchEvent(new Event('change', { bubbles: true })); }, [sel, v]);
+  const tick = (i, on) => page.evaluate(([i, on]) => { const c = document.querySelectorAll('.tc-gco label input[type=checkbox]')[i]; if (c.checked !== on) c.click(); }, [i, on]);
+
+  const opts = await page.evaluate(() => [...document.querySelectorAll('.tc-gco select.tc-gc-lang option')].map(o => o.value));
+  check(opts[0] === 'auto' && ['English', 'French', 'Sentence', 'Spanish', 'Dutch', 'Turkish'].every(m => opts.includes(m)), `the mode list: Auto, then the modes (${opts})`);
+
+  await pick('.tc-gco select.tc-gc-lang', 'English'); await tick(0, true);
+  const english = await until(guess, g => g === 'The QUICK BROWN Fox by KoRn (official music video)');
+  check(english === 'The QUICK BROWN Fox by KoRn (official music video)', `English, keep uppercased: capitals and KoRn kept, the version words lowercased (${english})`);
+  await tick(0, false);
+  const lower = await until(guess, g => g === 'The Quick Brown Fox by Korn (official music video)');
+  check(lower === 'The Quick Brown Fox by Korn (official music video)', `keep uppercased off: capitalised as words (${lower})`);
+  await pick('.tc-gco select.tc-gc-lang', 'Sentence');
+  const sentence = await until(guess, g => g === 'The quick brown fox by korn (official music video)');
+  check(sentence === 'The quick brown fox by korn (official music video)', `Sentence: a capital only at the start (${sentence})`);
+  const saved = await page.evaluate(() => window.__apolloEditor && window.__apolloEditor.settings ? { gcMode: window.__apolloEditor.settings.gcMode, gcKeepUC: window.__apolloEditor.settings.gcKeepUC } : null);
+  check(saved && (saved.gcMode === 'Sentence' && saved.gcKeepUC === false), `kept in Apollo's settings (${JSON.stringify(saved)})`);
+
+  // Aa applies the guess to the track
+  await page.evaluate(() => { const row = [...document.querySelectorAll('.tc-mirror tbody tr')].find(r => /QUICK BROWN/i.test((r.querySelector('input.t-title') || {}).value || '')); row.querySelector('.t-gc').click(); });
+  const name = await until(() => page.evaluate(() => window.MB.releaseEditor.rootField.release().mediums()[0].tracks()[0].name()), n => n === sentence);
+  check(name === sentence, `Aa sets the track's title to the guess (${name})`);
 });
 
 test('#153: the in-cell title buttons take no width from the title', { tag: ['@cosmetic', '@sandbox', '@login'] }, async ({ page, inject }) => {

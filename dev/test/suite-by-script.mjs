@@ -24,7 +24,7 @@ const scripts = readdirSync(resolve(REPO, 'userscripts'), { withFileTypes: true 
   .filter(d => d.isDirectory() && existsSync(resolve(REPO, 'userscripts', d.name, 'test'))
     && readdirSync(resolve(REPO, 'userscripts', d.name, 'test')).some(f => f.endsWith('.spec.mjs')))
   .map(d => d.name);
-let projects = ['harness', 'ui', 'net', 'imgmax', 'mbpage', ...scripts];
+let projects = ['harness', 'ui', 'net', 'imgmax', 'mbpage', 'guesscase', ...scripts];
 if (opt('--only')) projects = opt('--only').split(',');
 if (opt('--from')) projects = projects.slice(Math.max(0, projects.indexOf(opt('--from'))));
 
