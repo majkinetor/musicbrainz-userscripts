@@ -19,8 +19,8 @@ test('#784: the gallery\'s slot, stage and plan; Execute runs what the gallery h
     window.__applied = []; window.__stage = [];
     document.addEventListener('mc:probe', e => {
       const d = JSON.parse(e.detail);
-      // a second card beside Art Station's: Platform Check, with one link to add
-      setTimeout(() => send('mc:findings', { id: 'pc', run: d.run, findings: [{ key: 'x', name: 'Deezer', url: 'https://www.deezer.com/album/1', state: 'new' }] }), 40);
+      // a second card beside Art Station's: Platform Check, with one link it isn't sure of
+      setTimeout(() => send('mc:findings', { id: 'pc', run: d.run, findings: [{ key: 'x', name: 'Deezer', url: 'https://www.deezer.com/album/1', state: 'unsure' }] }), 40);   // unsure: not selected, so Execute's count is Art Station's
       setTimeout(() => send('mc:findings', { id: 'as', run: d.run, findings: [{ key: 'Amazon', name: 'Amazon', url: 'https://www.amazon.com/dp/B000', state: 'new', role: 'best' }],
         best: { provider: 'Amazon', w: 1500, h: 1500, bytes: 300000, of: 2, larger: true, replace: false, current: null } }), 50);
     });
