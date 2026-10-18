@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Falcon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.17.231850
+// @version      2026.10.18.173327
 // @description  Edit a BATCH of MusicBrainz artists/labels/recordings at once — add external links, ISRCs, names, aliases, disambiguations and cover art — no popup-per-entity, no tab churn. A small pool of persistent worker iframes churns through a queue, each submitting its own edit and moving straight to the next entity. Paste a list, hand it a queue via a `?falcon=` URL param, or click "Send to Falcon" on a Harmony actions page to import its suggestions directly.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5GYWxjb248L3RpdGxlPgo8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSI1OCIgZmlsbD0iI2Y2ZWZlMiIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjYiLz48cGF0aCBkPSJNMTA1LjYgNDAuMCBBNDggNDggMCAwIDEgMTA1LjYgODguMCIgc3Ryb2tlPSIjZDYyODI4IiBzdHJva2Utd2lkdGg9IjciIGZpbGw9Im5vbmUiLz4KPGcgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2UtbGluZWNhcD0icm91bmQiPjxwYXRoIGQ9Ik0yMC43IDg5LjAgTDI5LjQgODQuMCIgc3Ryb2tlLXdpZHRoPSIzIi8+PHBhdGggZD0iTTE0LjMgNjkuMiBMMjQuMiA2OC4yIiBzdHJva2Utd2lkdGg9IjMiLz48cGF0aCBkPSJNMTYuNCA0OC41IEwyNi4wIDUxLjYiIHN0cm9rZS13aWR0aD0iMyIvPjxwYXRoIGQ9Ik0yNi44IDMwLjUgTDM0LjMgMzcuMiIgc3Ryb2tlLXdpZHRoPSIzIi8+PHBhdGggZD0iTTQzLjcgMTguMyBMNDcuNyAyNy41IiBzdHJva2Utd2lkdGg9IjMiLz48cGF0aCBkPSJNNjQuMCAxNC4wIEw2NC4wIDI0LjAiIHN0cm9rZS13aWR0aD0iMyIvPjxwYXRoIGQ9Ik04NC4zIDE4LjMgTDgwLjMgMjcuNSIgc3Ryb2tlLXdpZHRoPSIzIi8+PHBhdGggZD0iTTEwMS4yIDMwLjUgTDkzLjcgMzcuMiIgc3Ryb2tlLXdpZHRoPSIzIi8+PHBhdGggZD0iTTExMS42IDQ4LjUgTDEwMi4wIDUxLjYiIHN0cm9rZS13aWR0aD0iMyIvPjxwYXRoIGQ9Ik0xMTMuNyA2OS4yIEwxMDMuOCA2OC4yIiBzdHJva2Utd2lkdGg9IjMiLz48cGF0aCBkPSJNMTA3LjMgODkuMCBMOTguNiA4NC4wIiBzdHJva2Utd2lkdGg9IjMiLz48L2c+PGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoNjQgOTQpIHJvdGF0ZSgwKSBzY2FsZSgwLjE2KSB0cmFuc2xhdGUoLTY0IC02NCkiPjxwYXRoIGQ9Ik02NCAyNiBDNjcgMjYgNzAgMzAgNzAgMzYgQzcyIDQwIDc0IDQyIDc2IDQ0IEM5MiA0MiAxMDggMzYgMTI0IDM0IEMxMTIgNDQgOTYgNTQgNzggNjIgQzc2IDY4IDc0IDc0IDc0IDgwIEw4MCAxMDAgQzc0IDEwNCA2OCAxMDQgNjQgMTA0IFoiIGZpbGw9IiM0YTVhNzgiLz48cGF0aCBkPSJNNjQgMjYgQzY3IDI2IDcwIDMwIDcwIDM2IEM3MiA0MCA3NCA0MiA3NiA0NCBDOTIgNDIgMTA4IDM2IDEyNCAzNCBDMTEyIDQ0IDk2IDU0IDc4IDYyIEM3NiA2OCA3NCA3NCA3NCA4MCBMODAgMTAwIEM3NCAxMDQgNjggMTA0IDY0IDEwNCBaIiBmaWxsPSIjNGE1YTc4IiB0cmFuc2Zvcm09InRyYW5zbGF0ZSgxMjggMCkgc2NhbGUoLTEgMSkiLz48L2c+PGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoNjQgNjQpIHJvdGF0ZSgxMTIpIj48cGF0aCBkPSJNMCAtNDYgTDQgMCBMLTQgMFoiIGZpbGw9IiMxYjJhNGEiLz48L2c+CjxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjciIGZpbGw9IiMxYjJhNGEiLz4KPC9zdmc+Cg==
@@ -1809,6 +1809,28 @@
   // (add) a label to add, with its catalog number if any
   const catnosOf = v => (Array.isArray(v) ? v : []).filter(l => l && MBID_RE.test(String(l.mbid || '')) && (String(l.catno || '').trim() || l.add === true))
     .map(l => ({ mbid: String(l.mbid), name: String(l.name || ''), catno: String(l.catno || '').trim(), ...(l.add === true ? { add: true } : {}) }));
+  // #783: a release item's release event, for a release that has none: { date: { year, month, day }, country } (an ISO
+  // code; the editor knows a country by its area id, and only [Worldwide]'s is known here), or null
+  const AREA_IDS = { XW: '240' };
+  const eventOf = v => {
+    const d = v && typeof v === 'object' && v.date || {}, year = parseInt(d.year, 10);
+    if (!year) return null;
+    const country = String(v.country || '').toUpperCase();
+    return { date: { year, month: parseInt(d.month, 10) || null, day: parseInt(d.day, 10) || null }, country: /^[A-Z]{2}$/.test(country) ? country : null };
+  };
+  // #783: a release item's track lengths, for tracks that have none: [{ medium, position, ms }], medium and position from 1
+  const lengthsOf = v => (Array.isArray(v) ? v : []).filter(l => l && +l.medium > 0 && +l.position > 0 && +l.ms > 0)
+    .map(l => ({ medium: +l.medium, position: +l.position, ms: Math.round(+l.ms) }));
+  const eventText = e => [e.date.year, e.date.month, e.date.day].filter(Boolean).map((x, i) => i ? String(x).padStart(2, '0') : x).join('-') + (e.country ? ' ' + e.country : '');
+  // a length as MusicBrainz writes it (m:ss, h:mm:ss) and back to ms; null when it isn't one
+  const lenText = ms => { const t = Math.round(ms / 1000), h = Math.floor(t / 3600), m = Math.floor((t % 3600) / 60), x = String(t % 60).padStart(2, '0'); return h ? `${h}:${String(m).padStart(2, '0')}:${x}` : `${m}:${x}`; };
+  const lenMs = v => { const m = String(v || '').trim().match(/^(?:(\d+):)?(\d{1,2}):(\d{2})$/); return m ? ((+(m[1] || 0) * 60 + +m[2]) * 60 + +m[3]) * 1000 || null : null; };
+  // #783: a recording item's length, in ms, or null
+  const lengthOf = v => (+v > 0 ? Math.round(+v) : null);
+  // #783: the panel's fields: the event as "2014-02-20 XW", the lengths as "1.3 6:58, 1.4 7:08" (medium.position length)
+  const parseEvent = v => { const m = String(v || '').trim().match(/^(\d{4})(?:-(\d{1,2}))?(?:-(\d{1,2}))?(?:\s+([A-Za-z]{2}))?$/); return m ? eventOf({ date: { year: m[1], month: m[2], day: m[3] }, country: m[4] }) : null; };
+  const lengthsText = ls => (ls || []).map(l => `${l.medium}.${l.position} ${lenText(l.ms)}`).join(', ');
+  const parseLengths = v => { const out = []; for (const part of String(v || '').split(',').map(x => x.trim()).filter(Boolean)) { const m = part.match(/^(\d+)\.(\d+)\s+(\S+)$/), ms = m && lenMs(m[3]); if (!ms) return null; out.push({ medium: +m[1], position: +m[2], ms }); } return out; };
   // #496: MB's own cover-art type vocabulary — same list as Art Station's
   // COVER_TYPES (art_station.user.js), kept identical so a type picked here
   // maps onto the exact same label MB's own add-cover-art form shows.
@@ -2316,8 +2338,11 @@
         || (RENAMEABLE.has(type) && !!r.rename)
         || (type === 'release' && !!barcodeOf(r.barcode))
         || (type === 'release' && catnosOf(r.labels).length > 0)
+        || (type === 'release' && !!eventOf(r.event))
+        || (type === 'release' && lengthsOf(r.lengths).length > 0)
         || (type === 'recording' && Array.isArray(r.isrcs) && r.isrcs.some(Boolean))
         || (type === 'recording' && r.video === true)
+        || (type === 'recording' && !!lengthOf(r.length))
         || normalizeAliases(r.aliases).length > 0;
       if (Array.isArray(r.urls) || hasCover || hasMeta) {
         // full item: reinstate it whole, status and all
@@ -2335,8 +2360,11 @@
           rename: RENAMEABLE.has(type) ? String(r.rename || '') : '',
           barcode: type === 'release' ? barcodeOf(r.barcode) : '',
           labels: type === 'release' ? catnosOf(r.labels) : [],
+          event: type === 'release' ? eventOf(r.event) : null,
+          lengths: type === 'release' ? lengthsOf(r.lengths) : [],
           isrcs: Array.isArray(r.isrcs) ? r.isrcs.filter(Boolean).map(String) : [],
           video: type === 'recording' && r.video === true,
+          length: type === 'recording' ? lengthOf(r.length) : null,
           aliases: normalizeAliases(r.aliases),
           source: typeof r.source === 'string' ? r.source : '',
           cover: coverArr, coverExistingCount: null,
@@ -2351,6 +2379,8 @@
           if (reItem.name && !same.name) same.name = reItem.name;
           if (reItem.barcode && !same.barcode) same.barcode = reItem.barcode;
           reItem.labels.forEach(l => { same.labels = same.labels || []; if (!same.labels.some(x => x.mbid === l.mbid)) same.labels.push(l); });
+          if (reItem.event && !same.event) same.event = reItem.event;
+          reItem.lengths.forEach(l => { same.lengths = same.lengths || []; if (!same.lengths.some(x => x.medium === l.medium && x.position === l.position)) same.lengths.push(l); });
           merged += same.urls.length - before;
           dbg('[import]', `${type}:${r.mbid} is queued already — ${same.urls.length - before} new url(s) merged into it`);
           return;
@@ -4406,6 +4436,74 @@
     if (set && staged === 0) return { ok: false, set: 0, unchanged, failed: failed.concat('MusicBrainz staged no edit for the catalog numbers'), staged };
     return { ok: !failed.length, set, unchanged, failed, staged };
   }
+  // #783: a release event for a release that has none, in the KO model (release().events()): into the empty event the
+  // editor shows, else a new one (addReleaseEvent). The date as strings (a number trips MB's "four digits" check); the
+  // country by its area id, when known (AREA_IDS), else left empty. A release with an event by now is left alone.
+  // { ok, why, staged, country }
+  async function setReleaseEvent(iframe, ev) {
+    const ready = await waitFor(() => {
+      const api = releaseEditorApi(frameWin(iframe));
+      try { return api && api.rootField.release() ? api : null; } catch (e) { return null; }
+    }, 20000);
+    if (!ready) return { ok: false, why: 'the release editor never finished loading its release events' };
+    await wait(300);
+    const u = o => (typeof o === 'function' ? o() : o);
+    const rel = ready.rootField.release();
+    const evs = () => { try { return rel.events() || []; } catch (e) { return []; } };
+    const empty = e => { try { return !u(e.date.year) && !u(e.date.month) && !u(e.date.day) && !u(e.countryID); } catch (x) { return false; } };
+    const has = evs().filter(e => !empty(e)).length;
+    if (has) return { ok: false, why: `the release has ${has} release event(s) by now — ${eventText(ev)} left out` };
+    const country = ev.country ? AREA_IDS[ev.country] || null : null;
+    let row = evs().find(empty);
+    try {
+      if (!row) { ready.addReleaseEvent(rel); row = evs()[evs().length - 1]; }
+      row.date.year(String(ev.date.year));
+      row.date.month(ev.date.month ? String(ev.date.month) : '');
+      row.date.day(ev.date.day ? String(ev.date.day) : '');
+      if (country) row.countryID(country);
+    } catch (e) { return { ok: false, why: `could not write the release event — ${e.message || e}` }; }
+    await wait(1200);
+    if (!evs().some(e => String(u(e.date.year)) === String(ev.date.year))) return { ok: false, why: 'the release event didn\'t hold in the release editor' };
+    let staged = null;
+    try { staged = ready.allEdits().length; } catch (e) {}
+    if (staged === 0) return { ok: false, why: 'MusicBrainz staged no edit for the release event', staged };
+    return { ok: true, staged, country: country ? ev.country : null };
+  }
+  // #783: track lengths, each into its track (mediums()[m].tracks()[t].formattedLength) when it has none. A collapsed
+  // medium is loaded first (MB loads its tracks on demand); a medium with a disc ID has its lengths locked and is
+  // left alone, as is a track that has a length by now. { ok, set, unchanged, failed: [why], staged }
+  async function setTrackLengths(iframe, lengths) {
+    const ready = await waitFor(() => {
+      const api = releaseEditorApi(frameWin(iframe));
+      try { return api && api.rootField.release() && api.rootField.release().mediums().length ? api : null; } catch (e) { return null; }
+    }, 20000);
+    if (!ready) return { ok: false, set: 0, unchanged: 0, failed: ['the release editor never finished loading its tracklist'] };
+    await wait(300);
+    const meds = ready.rootField.release().mediums();
+    const loaded = m => { try { return typeof m.loaded === 'function' ? !!m.loaded() : true; } catch (e) { return true; } };
+    const need = [...new Set(lengths.map(l => l.medium))].map(i => meds[i - 1]).filter(m => m && !loaded(m));
+    need.forEach(m => { try { m.loadTracks(); } catch (e) {} });
+    if (need.length) await waitFor(() => (need.every(loaded) ? true : null), 30000);
+    const fmt = ms => { const s = Math.round(ms / 1000), h = Math.floor(s / 3600), m = Math.floor((s % 3600) / 60), x = String(s % 60).padStart(2, '0'); return h ? `${h}:${String(m).padStart(2, '0')}:${x}` : `${m}:${x}`; };
+    const trackOf = l => { const m = meds[l.medium - 1]; try { return m && loaded(m) ? (m.tracks() || [])[l.position - 1] || null : null; } catch (e) { return null; } };
+    let set = 0, unchanged = 0; const failed = [], wrote = [];
+    for (const l of lengths) {
+      const m = meds[l.medium - 1], t = trackOf(l), at = `track ${l.medium}.${l.position}`;
+      if (!t) { failed.push(`${at} isn't in the release editor`); continue; }
+      try { if (m.hasToc && m.hasToc()) { failed.push(`medium ${l.medium} has a disc ID: its lengths are locked — ${at} left out`); continue; } } catch (e) {}
+      const cur = t.length();
+      if (cur) { if (Math.abs(cur - l.ms) < 1000) unchanged++; else failed.push(`${at} has length ${fmt(cur)} by now — ${fmt(l.ms)} left out`); continue; }
+      try { t.formattedLength(fmt(l.ms)); if (!t.length()) t.length(l.ms); set++; wrote.push(l); } catch (e) { failed.push(`could not write the length of ${at} — ${e.message || e}`); }
+    }
+    if (set) {
+      await wait(1200);
+      for (const l of wrote) { const t = trackOf(l); if (!t || !t.length()) { set--; failed.push(`the length of track ${l.medium}.${l.position} didn't hold in the release editor`); } }
+    }
+    let staged = null;
+    try { staged = ready.allEdits().length; } catch (e) {}
+    if (set && staged === 0) return { ok: false, set: 0, unchanged, failed: failed.concat('MusicBrainz staged no edit for the track lengths'), staged };
+    return { ok: !failed.length, set, unchanged, failed, staged };
+  }
   // #495: the release editor's own "Enter edit" button lives inside its
   // jQuery-UI-tabs "Edit note" panel (display:none until that tab is
   // active) — a bare element.click() on the tab link does nothing (jQuery UI
@@ -4897,6 +4995,32 @@
       if (r.unchanged) dbg(tag, `${r.unchanged} catalog number(s) already there — nothing to change`);
       r.failed.forEach(why => { log('warn', `${tag} CATALOG NUMBER NOT SET — ${why}`); results.push({ url: '(catalog number)', ok: false, error: why }); });
     }
+    // #783: a recording's length: seeded, but MusicBrainz takes it only for a recording without tracks (otherwise its
+    // form has no length field, and the seed is dropped)
+    let recordingLengthSet = false;
+    if (item.entityType === 'recording' && item.length) {
+      const inp = frameDoc(iframe)?.querySelector('input[name="edit-recording.length"]');
+      const why = !inp || inp.disabled ? 'MusicBrainz takes this recording\'s length from its tracks: its form has no length to set' :lenMs(inp.value) == null || Math.abs(lenMs(inp.value) - item.length) >= 1000 ? `the length field reads ${JSON.stringify(inp.value)}, not ${lenText(item.length)}` : '';
+      recordingLengthSet = !why;
+      if (why) { log('warn', `${tag} LENGTH NOT SET — ${why}`); results.push({ url: '(length)', ok: false, error: why }); }
+      else dbg(tag, `length seeded: ${inp.value}`);
+    }
+    // #783: a release event, for a release that has none, and the lengths of tracks that have none
+    let releaseEventSet = false;
+    if (item.entityType === 'release' && item.event) {
+      const r = await setReleaseEvent(iframe, item.event);
+      releaseEventSet = !!r.ok;
+      if (r.ok) log('info', `${tag} release event entered in the release editor: ${eventText(item.event)}${item.event.country && !r.country ? ` (country ${item.event.country} left empty: Falcon knows no area for it)` : ''}${r.staged != null ? ` (MB staged ${r.staged} edit(s))` : ''}`);
+      else { log('warn', `${tag} RELEASE EVENT NOT SET — ${r.why}`); results.push({ url: '(release event)', ok: false, error: r.why }); }
+    }
+    let trackLengthsSet = false;
+    if (item.entityType === 'release' && (item.lengths || []).length) {
+      const r = await setTrackLengths(iframe, item.lengths);
+      trackLengthsSet = r.set > 0;
+      if (r.set) log('info', `${tag} ${r.set} track length(s) entered in the release editor${r.staged != null ? ` (MB staged ${r.staged} edit(s))` : ''}`);
+      if (r.unchanged) dbg(tag, `${r.unchanged} track length(s) already there — nothing to change`);
+      r.failed.forEach(why => { log('warn', `${tag} TRACK LENGTH NOT SET — ${why}`); results.push({ url: '(track length)', ok: false, error: why }); });
+    }
     const hasFieldChange = !!(
       (COMMENT_SEEDS.has(item.entityType) && item.disambiguation)
       || releaseCommentSet
@@ -4904,8 +5028,11 @@
       || releaseNameSet
       || releaseBarcodeSet
       || releaseCatnosSet
+      || releaseEventSet
+      || trackLengthsSet
       || (item.entityType === 'recording' && item.isrcs && item.isrcs.length)
       || (item.entityType === 'recording' && item.video)
+      || recordingLengthSet
     );
     // #671: every url already on the entity — the state asked for holds, nothing to submit
     if (!hasFieldChange && results.length && results.every(r => r.present)) { dbg(tag, 'NOT SUBMITTING — every url is already on the entity'); return { committed: false, results, noop: true, fillMs: Date.now() - tFillStart }; }
@@ -5140,6 +5267,8 @@
       // leaves an already-video recording ticked (also verified), so Falcon's
       // other recording edits can never silently clear the flag.
       if (item.video) params.set(`${prefix}video`, '1');
+      // #783: a length, in ms (the form takes m:ss too); MusicBrainz locks it when the recording's tracks give one
+      if (item.length) params.set(`${prefix}length`, String(item.length));
     }
     if (item.note) params.set(`${prefix}edit_note`, item.note);
     return `${MB_TARGET}/${entityUrlSegment(item.entityType)}/${item.mbid}/edit?${params.toString()}`;
@@ -5769,11 +5898,14 @@
         || (RENAMEABLE.has(item.entityType) && (item.rename || '').trim())
         || (item.entityType === 'release' && item.barcode)
         || (item.entityType === 'release' && (item.labels || []).length)
+        || (item.entityType === 'release' && item.event)
+        || (item.entityType === 'release' && (item.lengths || []).length)
         || (item.entityType === 'recording' && (item.isrcs || []).some(Boolean))
-        || (item.entityType === 'recording' && item.video));
+        || (item.entityType === 'recording' && item.video)
+        || (item.entityType === 'recording' && item.length));
       if (!needsForm && !needsCover && !needsAliases) {
         item.status = 'skipped';
-        item.error = 'nothing to submit yet — add a url, name, disambiguation, barcode, catalog number, ISRC, alias or cover';
+        item.error = 'nothing to submit yet — add a url, name, disambiguation, barcode, catalog number, release event, track length, ISRC, alias or cover';
         log('info', `${tag} ${item.entityType} ${item.mbid} — skipped, nothing filled in`);
         renderQueue();
         continue;
@@ -6636,7 +6768,7 @@
       '.falcon-form{display:grid;grid-template-columns:max-content minmax(0,1fr);gap:5px 10px;align-items:center;padding:4px 6px 9px 30px;font-size:11px}',
       '.falcon-form>.falcon-lbl{color:var(--mbu-text-weak);text-align:right;font-size:10.5px;white-space:nowrap}',
       '.falcon-form input[type=text],.falcon-grid input[type=text]{width:100%;box-sizing:border-box;min-width:0;font-size:11px;padding:3px 7px;border:1px solid var(--mbu-border);border-radius:4px}',
-      '.falcon-form input.falcon-isrc-input,.falcon-grid input.falcon-isrc-input,.falcon-form input.falcon-barcode-input{font-family:var(--mbu-font-mono)}',
+      '.falcon-form input.falcon-isrc-input,.falcon-grid input.falcon-isrc-input,.falcon-form input.falcon-barcode-input,.falcon-form input.falcon-event-input,.falcon-form input.falcon-lengths-input,.falcon-form input.falcon-length-input,.falcon-grid input.falcon-length-input{font-family:var(--mbu-font-mono)}',
       '.falcon-form input.falcon-renamed{border-color:var(--mbu-accent)}',
       '.falcon-chips{display:flex;align-items:center;gap:5px;flex-wrap:wrap;min-width:0}',
       '.falcon-chips>input[type=text]{flex:1 1 140px;width:auto}',
@@ -6879,7 +7011,9 @@
           if (RENAMEABLE.has(i.entityType) && (i.rename || '').trim()) item.rename = i.rename.trim();
           if (i.entityType === 'release' && i.barcode) item.barcode = i.barcode;
           if (i.entityType === 'release' && (i.labels || []).length) item.labels = i.labels.map(l => ({ mbid: l.mbid, name: l.name, catno: l.catno, ...(l.add ? { add: true } : {}) }));
-          if (i.entityType === 'recording') { item.isrcs = i.isrcs || []; item.video = i.video === true; }
+          if (i.entityType === 'release' && i.event) item.event = i.event;
+          if (i.entityType === 'release' && (i.lengths || []).length) item.lengths = i.lengths;
+          if (i.entityType === 'recording') { item.isrcs = i.isrcs || []; item.video = i.video === true; if (i.length) item.length = i.length; }
           // #535: aliases exist on every type, so they are exported whenever
           // the item has any — and the export doubles as the JSON template.
           if ((i.aliases || []).length) item.aliases = i.aliases.map(a => ({ name: a.name, locale: a.locale || '', type: a.type || '', primary: !!a.primary, sortName: a.sortName || '', begin: a.begin || '', end: a.end || '', ended: !!a.ended }));
@@ -7303,6 +7437,18 @@
       // #713: a release's barcode, digits only
       const bcInp = e.target.closest('.falcon-barcode-input');
       if (bcInp) { const it = queue.find(i => i.id === bcInp.dataset.id); if (it) { it.barcode = barcodeOf(bcInp.value); bcInp.value = it.barcode; } return; }
+      // #783: a release event, track lengths, a recording's length; what doesn't read as one is put back as it was
+      const fldInp = e.target.closest('.falcon-event-input, .falcon-lengths-input, .falcon-length-input');
+      if (fldInp) {
+        const it = queue.find(i => i.id === fldInp.dataset.id);
+        if (!it) return;
+        const v = fldInp.value.trim(), kind = fldInp.classList.contains('falcon-event-input') ? 'event' : fldInp.classList.contains('falcon-lengths-input') ? 'lengths' : 'length';
+        const val = !v ? (kind === 'lengths' ? [] : null) : kind === 'event' ? parseEvent(v) : kind === 'lengths' ? parseLengths(v) : lenMs(v);
+        if (v && val == null) log('warn', `${entityLabel(it)} — "${v}" isn't a ${kind === 'event' ? 'release event (2014-02-20 XW)' : kind === 'lengths' ? 'list of track lengths (1.3 6:58, 1.4 7:08)' : 'length (m:ss)'}: left as it was`);
+        else it[kind] = val;
+        fldInp.value = kind === 'event' ? (it.event ? eventText(it.event) : '') : kind === 'lengths' ? lengthsText(it.lengths) : it.length ? lenText(it.length) : '';
+        return;
+      }
       const isrcInp = e.target.closest('.falcon-isrc-input');
       if (isrcInp) {
         const it = queue.find(i => i.id === isrcInp.dataset.id);
@@ -7628,6 +7774,9 @@
       RENAMEABLE.has(it.entityType) && 'name',
       DISAMBIGUATABLE.has(it.entityType) && 'disambig',
       cfg.queueView !== 'grid' && it.entityType === 'release' && 'barcode',   // #713; the grid has it below the row
+      cfg.queueView !== 'grid' && it.entityType === 'release' && 'event',     // #783; so are these two
+      cfg.queueView !== 'grid' && it.entityType === 'release' && 'lengths',
+      it.entityType === 'recording' && 'length',
       it.entityType === 'recording' && 'isrc',
       cfg.queueView !== 'grid' && 'alias',   // the grid edits aliases below the row, off the keyboard walk
       it.entityType === 'recording' && 'video',
@@ -7640,6 +7789,10 @@
           placeholder="${esc(it.name || 'new name')}" value="${esc(it.rename || it.name || '')}" ${dis} />`;
     if (col === 'disambig') return `<input type="text" class="falcon-disambiguation-input" data-id="${it.id}" data-col="disambig" placeholder="${short ? 'disambiguation' : 'disambiguation comment'}" value="${esc(it.disambiguation || '')}" ${dis} />`;
     if (col === 'barcode') return `<input type="text" class="falcon-barcode-input" data-id="${it.id}" data-col="barcode" inputmode="numeric" placeholder="barcode, for a release that has none" title="A barcode for a release that has none; a release with another barcode keeps its own" value="${esc(it.barcode || '')}" ${dis} />`;
+    // #783: a release event and track lengths, for a release that has none; a recording's own length
+    if (col === 'event') return `<input type="text" class="falcon-event-input" data-id="${it.id}" data-col="event" placeholder="${short ? 'date country' : 'date and country, for a release that has none: 2014-02-20 XW'}" title="A release event for a release that has none: the date (YYYY, YYYY-MM or YYYY-MM-DD), then the country's code (XW for [Worldwide]); a release with an event keeps its own" value="${esc(it.event ? eventText(it.event) : '')}" spellcheck="false" ${dis} />`;
+    if (col === 'lengths') return `<input type="text" class="falcon-lengths-input" data-id="${it.id}" data-col="lengths" placeholder="${short ? 'medium.track length' : 'lengths, for tracks that have none: 1.3 6:58, 1.4 7:08'}" title="Lengths for tracks that have none, each as medium.track length, comma-separated; a track with a length keeps its own" value="${esc(lengthsText(it.lengths))}" spellcheck="false" ${dis} />`;
+    if (col === 'length') return `<input type="text" class="falcon-length-input" data-id="${it.id}" data-col="length" inputmode="numeric" placeholder="m:ss" title="The recording's length (m:ss), for a recording without tracks: MusicBrainz takes any other's from its tracks" value="${esc(it.length ? lenText(it.length) : '')}" spellcheck="false" ${dis} />`;
     if (col === 'isrc') return `<input type="text" class="falcon-isrc-input" data-id="${it.id}" data-col="isrc" placeholder="${short ? 'ISRCs' : 'ISRCs, comma-separated'}" value="${esc((it.isrcs || []).join(', '))}" ${dis} />`;
     if (col === 'video') return `<input type="checkbox" class="falcon-video-input mbu-video" data-id="${it.id}" data-col="video" title="Flag this recording as a video (MusicBrainz's Video checkbox)" ${it.video ? 'checked' : ''} ${dis} />`;
     if (col === 'alias') {
@@ -7657,7 +7810,7 @@
     }
     return '';
   }
-  const FIELD_LABEL = { name: 'Name', disambig: 'Disambiguation', barcode: 'Barcode', isrc: 'ISRCs', alias: 'Aliases', video: 'Video' };
+  const FIELD_LABEL = { name: 'Name', disambig: 'Disambiguation', barcode: 'Barcode', event: 'Event', lengths: 'Lengths', length: 'Length', isrc: 'ISRCs', alias: 'Aliases', video: 'Video' };
   // #663 (majkinetor): the + that adds a link or an alias sits by its label
   const plusLbl = (it, kind, walk) => {
     const dis = it.status === 'active' ? 'disabled' : '';
@@ -7672,7 +7825,7 @@
     // nothing while it still equals that name, so a row you only looked at
     // never submits an edit.
     const links = renderLinks(it);
-    const fields = (gridSub ? (it.entityType === 'release' ? ['barcode', 'alias'] : ['alias']) : fieldCols(it)).map(col => col === 'alias'
+    const fields = (gridSub ? (it.entityType === 'release' ? ['barcode', 'event', 'lengths', 'alias'] : ['alias']) : fieldCols(it)).map(col => col === 'alias'
       ? plusLbl(it, 'alias', !gridSub) + fieldHtml(it, col, gridSub ? 'sub' : undefined) : col === 'video'
       ? `<span class="falcon-lbl">Type</span><label class="falcon-video-lbl">${fieldHtml(it, col)} video</label>`
       : `<span class="falcon-lbl">${FIELD_LABEL[col]}</span>${fieldHtml(it, col)}`);

@@ -12,6 +12,17 @@ Where MusicBrainz has an API, Falcon uses it instead of a form: cover art (sign 
 
 The release editor (`/release/<mbid>/edit`, `/release/add`) is [Apollo Editor](../apollo_editor/README.md)'s page, so Falcon's corner icon stays off it.
 
+## Release editor fields
+
+The release editor is a Knockout app that ignores seeded params on `/release/<mbid>/edit` (except URLs), so a release item's other fields are written into its model (`releaseEditorApi(win).rootField.release()`) once it has bound, then read back after a beat, and an edit MusicBrainz didn't stage (`allEdits()` empty) fails the item. Each fills only what the release lacks:
+
+- **Barcode** ([#713](https://github.com/majkinetor/musicbrainz-userscripts/issues/713)), typed into `#barcode` until it holds (`setReleaseBarcode`).
+- **Catalog numbers and labels** ([#727](https://github.com/majkinetor/musicbrainz-userscripts/issues/727)): `labels()[i].catalogNumber` of the row with that label's MBID; a label to add (`add`) as its full entity from `/ws/js/entity/<mbid>`, in the empty row or a new one (`addReleaseLabel`) (`setReleaseCatnos`).
+- **Release event** ([#783](https://github.com/majkinetor/musicbrainz-userscripts/issues/783)): only when every event is empty; into the empty one the editor shows, else a new one (`addReleaseEvent`). The date goes in as strings (a number trips MusicBrainz's "four digits" check). The country is `countryID`, an area id, which the editor's list gives only by name; `AREA_IDS` knows `XW` ([Worldwide], 240), and another code leaves the country empty (`setReleaseEvent`).
+- **Track lengths** ([#783](https://github.com/majkinetor/musicbrainz-userscripts/issues/783)): `mediums()[m].tracks()[t].formattedLength`, only for a track whose `length()` is empty; a collapsed medium is loaded first (`loadTracks`), and a medium with a disc ID (`hasToc`) is left alone (`setTrackLengths`).
+
+A recording's length is seeded (`edit-recording.length`, in ms or `m:ss`). MusicBrainz takes it only for a recording without tracks: for any other the form has no length field, and Falcon fails the item with the reason rather than submit nothing.
+
 ## Name lookups
 
 Entity names resolve through the shared MusicBrainz request gate: a few at a time, backing off together on a 429 or 503 by its `Retry-After`. They **yield to a run**: Start drops the lookups still pending, since names are cosmetic and the workers' page loads draw on the same per-IP rate limit. Rows keep the label they have until the run finishes, then resolution resumes.
@@ -76,4 +87,4 @@ Keys at the JSON's root for `falcon:run`:
 
 A batch handed over this way (event or link) adds an entity already queued to its row rather than queueing it twice, so sending the same batch again doesn't run it twice; **Import** restores a file as it is.
 
-[Mission Control](../mission_control/DEVELOP.md#execute) runs its links, a barcode and catalog numbers this way and shows the progress in its own cards. [Platform Check](../platform_check/README.md#artists-and-labels) sends its artist and label links by event, and falls back to `?falcon=` in a new tab when no Falcon answers.
+[Mission Control](../mission_control/DEVELOP.md#execute) runs its links, a barcode, catalog numbers, a release event and track lengths this way and shows the progress in its own cards. [Platform Check](../platform_check/README.md#artists-and-labels) sends its artist and label links by event, and falls back to `?falcon=` in a new tab when no Falcon answers.

@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-10-18 14:39 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-10-18 18:09 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -734,13 +734,16 @@ Each run keeps its own log in this browser, so a run whose tab crashed or naviga
 |                                      | artist | label | recording | release | release group |
 | ------------------------------------ | :----: | :---: | :-------: | :-----: | :-----------: |
 | links, name, aliases, disambiguation |   ✓    |   ✓   |     ✓     |    ✓    |       ✓       |
-| ISRCs, video                         |        |       |     ✓     |         |               |
-| cover art, barcode                   |        |       |           |    ✓    |               |
+| ISRCs, video, length                 |        |       |     ✓     |         |               |
+| cover art, barcode, event, lengths   |        |       |           |    ✓    |               |
 
 - **Name**: an expanded row's ✎ box starts with the current name, so a fix is an edit, not a retype. A rename is votable, so it shows once the edit passes.
 - **Aliases**: one row per alias, with its name, its language and **✕**; the **+** by the *Aliases* label adds one, or use [JSON](../falcon/examples/aliases.json) for many. A new alias takes the language last typed; `name@locale` typed in the name box sets the language too. Enter on a filled alias opens the next one, on an empty one moves on to the next row's aliases; Esc drops a new, still empty row.
 - **Video** is only ever set, never cleared.
 - **Barcode** fills a release that has none, and unticks *This release does not have a barcode* if it is ticked. A release that already has a different barcode keeps it, and the row says so. In the grid it is in the row's opened part, with the links.
+- **Event** gives a release that has no release event one: the date (`2014`, `2014-02` or `2014-02-20`), then the country's code, `2014-02-20 XW`. Only [Worldwide] (`XW`) is known as a country so far; another code leaves the country empty. A release that has an event keeps it, and the row says so.
+- **Lengths** fills the length of tracks that have none, each as medium.track and length: `1.3 6:58, 1.4 7:08`. A track that has a length keeps it, and so does a medium with a disc ID, whose lengths MusicBrainz locks. In the grid, Event and Lengths are in the row's opened part, with the barcode.
+- **Length** sets a recording's own length (`m:ss`). MusicBrainz takes it only for a recording without tracks; any other's comes from its tracks, and the row says so.
 
 > [!WARNING]
 > MusicBrainz silently drops the locale of a *Search hint* alias; Falcon warns in the log. Use the `<entity> name` type for a localised title.
@@ -807,15 +810,18 @@ What **Import** reads, **Export** writes, and Harmony and other scripts produce:
 | `aliases[]`                     | `{ name, locale, type, primary, sortName, begin, end, ended }`, or `"name@locale"`; each is its own edit. `type` as MusicBrainz names it (`Recording name`, `Search hint`…) |
 | `isrcs[]`                       | recordings                                                                                                                                                                  |
 | `video`                         | recordings; only `true` does anything                                                                                                                                       |
+| `length`                        | recordings: the length in ms, for a recording without tracks                                                                                                                |
 | `cover[]`                       | releases: `{ url, type, comment, candidates }`, type defaulting to Front                                                                                                    |
 | `barcode`                       | releases: a barcode for a release that has none                                                                                                                             |
 | `labels[]`                      | releases: `{ mbid, name, catno, add }`: an empty catalog number to fill, or a label to add                                                                                  |
+| `event`                         | releases: `{ date: { year, month, day }, country }` for a release without an event                                                                                          |
+| `lengths[]`                     | releases: `{ medium, position, ms }` for a track without a length, from 1                                                                                                   |
 | `note`                          | that item's own edit note                                                                                                                                                   |
 | `status`, `error`, `urlResults` | written by Export: the outcome of the last run                                                                                                                              |
 
 #### From another script
 
-Another script can hand Falcon a queue in the [JSON model](#json-model), by a `?falcon=` link or by an event on the page; a link never starts the queue. Sending the same batch twice doesn't run it twice. [Mission Control](../mission_control/README.md#execute) and [Platform Check](../platform_check/README.md#artists-and-labels) send their links, barcodes and catalog numbers this way. How is in [DEVELOP.md](../falcon/DEVELOP.md#handoff).
+Another script can hand Falcon a queue in the [JSON model](#json-model), by a `?falcon=` link or by an event on the page; a link never starts the queue. Sending the same batch twice doesn't run it twice. [Mission Control](../mission_control/README.md#execute) and [Platform Check](../platform_check/README.md#artists-and-labels) send their links, barcodes, catalog numbers, release events and track lengths this way. How is in [DEVELOP.md](../falcon/DEVELOP.md#handoff).
 
 ### Settings
 
@@ -914,6 +920,8 @@ Without every track's length: 1 track is a Single, 3 to 6 an EP, 7 or more an Al
 The button beside **Import to MusicBrainz**, with [Mission Control](../mission_control/README.md)'s icon, reads the album as Import does, then opens MusicBrainz's release editor in a new tab with Mission Control over it. Mission Control finds the album on the other platforms, First Contact reads each of them there, and you take the best title, date, label, tracklist and ISRCs of all of them into the editor. See [Consolidate a new release](../mission_control/README.md#consolidate-a-new-release).
 
 Mission Control has to be installed, and Platform Check too, to find the other platforms; [String Theory](../string_theory/README.md) has them all. Turn the button off in [Settings](#settings-2). Presto Music has no Consolidate button: Mission Control doesn't compare it.
+
+First Contact reads the platforms for Mission Control on a release MusicBrainz already has too, when Mission Control [compares it with the platforms](../mission_control/README.md#compare-with-the-platforms).
 
 ### Send to Harmony
 
@@ -1810,6 +1818,7 @@ One window on a release page that asks the other scripts what the release is mis
 - **[Probe](#probe)**: one click asks every script what is missing, and each card fills in as its answer comes.
 - **[Tracks](#tracks)**: a row per track with its ISRCs, recording links, duplicate recordings and credits.
 - **[Release and entity links](#release-and-entity-links)**: the platform pages found for the release, its artists and its labels.
+- **[Compare with the platforms](#compare-with-the-platforms)**: read the release on its platforms and add what it lacks: a barcode, labels and catalog numbers, a release event, track lengths.
 - **[Cover art](#cover-art)**: the best cover found, beside the current front, and the other images Discogs and Amazon have, to type and add.
 - **[Release credits](#release-credits)**: what the credit sources have, with a way into Credit Hoarder.
 - **[Inspector](#inspector)**: everything found for one track.
@@ -1827,12 +1836,13 @@ On a phone it fills the screen in one column: the steps scroll sideways under th
 | Step                     | Script                                        | Finds                                                  |
 | ------------------------ | --------------------------------------------- | ------------------------------------------------------ |
 | Release and entity links | [Platform Check](../platform_check/README.md) | platform pages for the release, its artists and labels |
+| Platforms                | [First Contact](../first_contact/README.md)   | what the release lacks, from the platforms' own pages  |
 | ISRCs & recording links  | [ISRC Scout](../isrc_scout/README.md)         | ISRCs and track links                                  |
 | Cover art                | [Art Station](../art_station/README.md)       | a better front cover, and the stores' other images     |
 | Merge suggestions        | [Fusion](../fusion/README.md)                 | duplicate recordings in the release group              |
 | Credits                  | [Credit Hoarder](../credit_hoarder/README.md) | per-track credits                                      |
 
-Fusion and Credit Hoarder are slow, so each has a switch under its step: **Auto** fetches during the probe, **Ask** (the default) waits for its **Fetch** button in the Tracks header, **Off** leaves it out.
+Platforms, Fusion and Credit Hoarder are slow, so each has a switch under its step: **Auto** fetches during the probe, **Ask** (the default) waits for its button in the Tracks header (**Compare**, **Fetch RG**, **Fetch credits**), **Off** leaves it out.
 
 Click a step in the header to switch its script off: it isn't asked, its card and column go, and Execute leaves it out. Click it again to switch it back on; Fusion and Credit Hoarder get back the switch they had. This is remembered for the next release. The format icon left of the release title shows or hides the Execution order.
 
@@ -1840,7 +1850,7 @@ The album links you select in the Release and entity links card are passed on to
 
 ### Tracks
 
-One row per track, a column per script: the ISRCs and recording links ISRC Scout found, the duplicates Fusion grouped with the recording, and how many credits Credit Hoarder has. ISRCs are shown in parts, `US-AM1-85-74817`, unless ISRC Scout's *Show ISRCs in parts* is off.
+One row per track, a column per script: the ISRCs and recording links ISRC Scout found, what the platforms give for the track ([Compare with the platforms](#compare-with-the-platforms)), the duplicates Fusion grouped with the recording, and how many credits Credit Hoarder has. ISRCs are shown in parts, `US-AM1-85-74817`, unless ISRC Scout's *Show ISRCs in parts* is off.
 
 The Tracks header counts the changes taken in and on how many tracks; each track with one has a bar on its left.
 
@@ -1877,7 +1887,31 @@ The catalog numbers the platforms give, for a label the release has without one,
 
 **Artists** and **Labels** list the pages the matched albums name for them. The platforms that found nothing fold into one line of icons. A heading's ✓ count opens the links it already has into rows.
 
+After [Compare with the platforms](#compare-with-the-platforms), *Release* also has a row for the **Release event** and one for the **Track lengths**, when the release lacks them.
+
 The links are added through [Falcon](../falcon/README.md), out of sight. The card lists each one with its status as it goes; when one fails, **Open Falcon** shows why and lets you retry.
+
+### Compare with the platforms
+
+**Compare**, in the Platforms column of Tracks, reads the release on its platforms with [First Contact](../first_contact/README.md#consolidate), as [Consolidate](#consolidate-a-new-release) does for an album MusicBrainz doesn't have yet. Set its step to **Auto** to compare on every probe.
+
+1. It reads the platforms Platform Check has for the release: the links it already has and the ones found with its barcode, and those without a barcode that have as many tracks. A link with another barcode, track count or format is another release, and is left out. Spotify can be read on its own page only, so its link counts but its data isn't compared.
+2. For each field, the value most platforms give wins, as in a consolidation.
+3. What the release lacks is offered where it is added, taken in:
+
+| What                 | Offered when                                                 | Shown in                                    |
+| -------------------- | ------------------------------------------------------------ | ------------------------------------------- |
+| Barcode              | the release has none                                         | Release and entity links                    |
+| Label, cat. no.      | as in [Update this release](#update-this-release)            | Release and entity links                    |
+| Platform links       | the release hasn't them, even ones Platform Check holds back | Release and entity links                    |
+| Release event        | the release has none: the date and country most give         | Release and entity links                    |
+| Track lengths        | a track has none                                             | Release and entity links, and the track row |
+| ISRCs                | a track has none                                             | ISRCs                                       |
+| Title, a track title | the platforms give another                                   | shown only, never changed                   |
+
+Nothing the release has is changed. The tracks are compared one by one only when the platforms have as many as the release. The Platforms column shows each track's length to add (*+ 4:01*), and *≠ title* when the platforms call it something else; click the track to see its versions in the [Inspector](#inspector). Platform Check's card names the platforms read, and the release's title if the platforms give another.
+
+Execute adds the release event and the track lengths with the barcode, labels and links, in one edit of the release, through [Falcon](../falcon/README.md).
 
 ### Cover art
 
@@ -1906,7 +1940,7 @@ Credit Hoarder's count of credits for each track, from every credit source the r
 
 ### Inspector
 
-Click a track to see, on the right, everything found for it: its ISRCs and where they came from, its recording links (and which are already in MusicBrainz), Fusion's matches and its credits.
+Click a track to see, on the right, everything found for it: its ISRCs and where they came from, its recording links (and which are already in MusicBrainz), Fusion's matches, its credits, and its versions on the platforms, with what differs from its title highlighted.
 
 ### Execute
 
@@ -1936,18 +1970,9 @@ Click a track to see its versions on the right, with what sets each apart from t
 
 #### Update this release
 
-**Update this release**, beside a release in the banner, opens that release in this tab. Mission Control opens on it and probes, and offers what the release lacks from what is taken here:
+**Update this release**, beside a release in the banner, opens that release in this tab. Mission Control opens on it, probes, and [compares it with the platforms](#compare-with-the-platforms) at once, whatever its step's switch says. The release reads the platforms itself, so what was picked by hand here isn't carried over. It offers what the release lacks, and the cover and artist links as after saving a new release; **After saving** chooses which scripts' findings start taken in.
 
-| What                | Offered when                                                 | Added by                    |
-| ------------------- | ------------------------------------------------------------ | --------------------------- |
-| Barcode             | the release has none                                         | Platform Check              |
-| Cat. no.            | a label the release has, matched by name, has none           | Platform Check              |
-| Label               | the release hasn't it, and it is one MusicBrainz label       | Platform Check              |
-| Platform links      | the release hasn't them, even ones Platform Check holds back | Platform Check              |
-| ISRCs               | a track has none                                             | ISRC Scout                  |
-| Cover, artist links | as after saving a new release                                | Art Station, Platform Check |
-
-Nothing the release has is changed: a label with another catalog number keeps it. A label the release hasn't is added with its catalog number once Mission Control knows which MusicBrainz label it is: by the label's page on the platform, or, marked unsure, by a name only one MusicBrainz label has. A label it can't tell is left out. **After saving** chooses which scripts' findings start taken in, as for a new release. The edit note names the platforms the consolidation read.
+A label with another catalog number keeps it. A label the release hasn't is added with its catalog number once Mission Control knows which MusicBrainz label it is: by the label's page on the platform, or, marked unsure, by a name only one MusicBrainz label has. A label it can't tell is left out. The edit note names the platforms read.
 
 ### Settings
 
