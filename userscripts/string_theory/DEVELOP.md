@@ -9,11 +9,19 @@
 - **URL gate**: the script's own `@match` / `@include` / `@exclude` / `@noframes`, tested against the page once at load, as a userscript manager does. A script starts only where its standalone copy would, though the bundle's `@match` covers every script's pages.
 - **`@run-at` gate**: `document-start` bodies run immediately; `document-end`/idle bodies wait for `DOMContentLoaded`.
 
+**Shared blocks are written once** ([#786](https://github.com/majkinetor/musicbrainz-userscripts/issues/786)). Every member carries its own copy of the [shared blocks](../../DEVELOP.md#shared-blocks) (`// <ST-UI>` …), which was about 1 MB of repeats. [`share.mjs`](./share.mjs) puts each block once at the top of the bundle, as a function that takes `GM_info` and returns the block's names, and gives each member one line in its place, at the start of the function the block was in:
+
+```js
+var { mbuToast, mbuLog, … } = __st_UI(GM_info);
+```
+
+Each member still gets its own instance: ST-UI reads the member's `GM_info` (help links, log title, edit-note signature) and keeps per-member state, such as the active log window. The build stops when a block isn't self-contained: when it uses one of the member's own names, when the member assigns one of the block's names, or when a name is declared both in the block and around it. A block that uses another block's names gets them as parameters. The standalone scripts keep their inline copies.
+
 ```sh
 node userscripts/string_theory/build.mjs
 ```
 
-The pre-commit hook rebuilds it whenever a member (or this folder's `build.mjs` / `icon.svg`) is committed, so the bundle never ships stale. Its `@version` is a build stamp (`YYYY.M.D.HHMMSS`), so every rebuild ships as a newer version. The build also writes [`DOCS.md`](./DOCS.md) from the members' READMEs.
+The pre-commit hook rebuilds it whenever a member (or this folder's `build.mjs` / `share.mjs` / `icon.svg`) is committed, so the bundle never ships stale. Its `@version` is a build stamp (`YYYY.M.D.HHMMSS`), so every rebuild ships as a newer version. The build also writes [`DOCS.md`](./DOCS.md) from the members' READMEs.
 
 ## Metadata
 
