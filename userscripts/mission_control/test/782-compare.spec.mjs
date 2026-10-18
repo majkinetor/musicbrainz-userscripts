@@ -42,6 +42,14 @@ test('#782: Compare reads the release\'s platforms and offers what it lacks', { 
       if (d.cons && d.cons.lengths) fs.unshift({ key: 'lengths:' + d.cons.lengths.length, kind: 'lengths', name: 'Track lengths', code: d.cons.lengths.length + ' tracks', state: 'new', why: 'consolidated by Mission Control from Deezer, Qobuz' });
       setTimeout(() => send('mc:findings', { id: 'pc', run: d.run, release, findings: fs, barcode: null }), 50);
     });
+    // what Execute hands Platform Check, answered at once
+    window.__applies = [];
+    document.addEventListener('mc:apply', e => {
+      const d = JSON.parse(e.detail);
+      if (d.id !== 'pc') return;
+      window.__applies.push(d);
+      setTimeout(() => send('mc:applied', { id: 'pc', run: d.run, release, ok: true, sent: 1, note: 'stand-in' }), 20);
+    });
     send('mc:provider', { id: 'pc', name: 'Platform Check', version: 1, release, capabilities: ['probe', 'apply'] });
     // First Contact's reader: the same album on Deezer and Qobuz, the second track's title as both give it
     const relOf = k => ({ title: 'Rushing Pictures', credit: [{ name: 'Mind.In.A.Box', join: '' }], types: ['EP'], date: { year: 2008, month: 8, day: 29 }, country: 'XW', barcode: bc,
@@ -90,10 +98,11 @@ test('#782: Compare reads the release\'s platforms and offers what it lacks', { 
   // ≠ title opens, under the track, what each platform gives; Expand all opens them as it does Fusion's
   const sub = page.locator('#mc-root .mc-tbl tr.mc-fxd[data-pf="1"]');
   check(await sub.isHidden(), 'the platforms\' titles are folded at first');
-  await page.locator('#mc-root .mc-tbl td[data-col="plat"] [data-act="fx-pf"]').click();
+  await page.locator('#mc-root .mc-tbl tr[data-i="1"] td[data-col="plat"] [data-act="fx-pf"]').click();
   const lines = await sub.locator('tbody tr').allTextContents();
-  check(lines.length === 3 && /Deezer/.test(lines[1]) && /Qobuz/.test(lines[2]) && lines.slice(1).every(l => /Homes & Gardens \(Remix\)/.test(l)), `one line per platform under the track (${JSON.stringify(lines)})`);
-  await page.locator('#mc-root .mc-tbl td[data-col="plat"] [data-act="fx-pf"]').click();
+  const icons = await sub.locator('tbody tr').nth(1).locator('td.plats .mcc-icos > span').evaluateAll(s => s.map(x => x.title));
+  check(lines.length === 2 && /Homes & Gardens \(Remix\)/.test(lines[1]) && icons.join() === 'Deezer,Qobuz', `under the track, one line for what Deezer and Qobuz both give, their icons on the right (${JSON.stringify(lines)} ${icons})`);
+  await page.locator('#mc-root .mc-tbl tr[data-i="1"] td[data-col="plat"] [data-act="fx-pf"]').click();
   check(await sub.isHidden(), 'a second click folds it');
   const all = page.locator('#mc-root .mc-fxall [data-act="fx-all"]');
   check(/Expand all/.test(await all.textContent()), 'the Tracks header offers Expand all');
@@ -102,6 +111,36 @@ test('#782: Compare reads the release\'s platforms and offers what it lacks', { 
   await page.locator('#mc-root').screenshot({ path: 'dev/_782-expanded.png' });
   await all.click();
   check(await sub.isHidden(), 'Collapse all folds it');
+
+  // a title and a length taken in: a click on a platform's, or typed on the track's own line
+  await page.locator('#mc-root .mc-tbl tr[data-i="1"] td[data-col="plat"] [data-act="fx-pf"]').click();
+  const before = await page.evaluate(() => document.querySelector('#mc-root [data-act="exec"]').textContent);
+  await sub.locator('[data-act="fx-take"][data-what="title"][data-k="deezer"]').click();
+  let st = await page.evaluate(() => window.__mcTest.cmp());
+  check(st.picks[1] && st.picks[1].title === 'Homes & Gardens (Remix)' && st.picks[1].from.title === 'Deezer, Qobuz', `a click takes Deezer's title, naming every platform that gives it (${JSON.stringify(st.picks)})`);
+  check(await sub.locator('[data-act="fx-take"][data-what="title"].on').count() === 1 && await sub.locator('tbody tr').count() === 2, 'the platforms giving the same are one line, shown taken');
+  check(await sub.locator('[data-pf-title="1"]').inputValue() === 'Homes & Gardens (Remix)', 'the track\'s own line holds it');
+  check(/→ Homes & Gardens \(Remix\)/.test(await page.locator('#mc-root .mc-tbl tr[data-i="1"] td[data-col="plat"]').textContent()), 'the column shows what the track gets');
+  check(await page.locator('#mc-root .mc-tbl tr[data-i="1"]').evaluate(r => r.classList.contains('chg')), 'the track counts as changed');
+  const after = await page.evaluate(() => document.querySelector('#mc-root [data-act="exec"]').textContent);
+  check(+after.replace(/\D/g, '') === +before.replace(/\D/g, '') + 1, `Execute counts it (${before} → ${after})`);
+  await sub.locator('[data-pf-len="1"]').fill('5:10');
+  await sub.locator('[data-pf-len="1"]').press('Enter');
+  await sub.locator('[data-pf-rec="1"]').check();
+  st = await page.evaluate(() => window.__mcTest.cmp());
+  check(st.picks[1].ms === 310000 && st.picks[1].recording === true, `a typed length, and the recording's title too (${JSON.stringify(st.picks[1])})`);
+  await sub.locator('[data-pf-len="1"]').fill('soon');
+  await sub.locator('[data-pf-len="1"]').press('Enter');
+  check((await page.evaluate(() => window.__mcTest.cmp())).picks[1].ms === 310000 && await sub.locator('[data-pf-len="1"]').inputValue() === '5:10', 'what isn\'t a length is put back');
+  await page.locator('#mc-root').screenshot({ path: 'dev/_782-picked.png' });
+  await page.click('#mc-root [data-act="exec"]');
+  const applied = await until(() => page.evaluate(() => window.__applies[0] || null), Boolean);
+  const tr = applied && applied.tracks;
+  console.log(JSON.stringify(tr));
+  check(tr && tr.length === 1 && tr[0].medium === 1 && tr[0].position === 2 && tr[0].title === 'Homes & Gardens (Remix)' && tr[0].recording === true && tr[0].ms === 310000, 'Execute hands Platform Check the track\'s title, the recording\'s and its length');
+  check(tr && tr[0].was.title === 'Homes & Gardens (remix)' && tr[0].was.ms === null && /Deezer, Qobuz/.test(tr[0].from), `with what the track had, and where it came from (${JSON.stringify(tr && tr[0])})`);
+  await until(() => page.evaluate(() => !Object.keys(window.__mcTest.cmp().picks).length), Boolean);
+  check(!Object.keys((await page.evaluate(() => window.__mcTest.cmp())).picks).length, 'once sent, the track is as it was again');
   const card = page.locator('#mc-root [data-card="pc"]');
   check(/Compared with/.test(await card.textContent()), 'Platform Check\'s card says the release was compared');
   check(await card.locator('.mc-line:has-text("Release event")').count() === 1 && await card.locator('.mc-line:has-text("Track lengths for")').count() === 1, 'the release event and the track lengths are rows of the Release section');

@@ -76,7 +76,7 @@ test('#727: a consolidation brings its barcode, catalog number and links to a re
     'the release item carries the catalog number for its label, and the label to add');
   check(/Added label Metropolis Records, catalog number MET 727/.test(run.note), 'the edit note names the label added');
   check(item && item.barcode === cons.barcode, 'and the barcode');
-  check(item && JSON.stringify(item.event) === JSON.stringify({ date: cons.event.date, country: 'XW' }) && JSON.stringify(item.lengths) === JSON.stringify(cons.lengths), `and the release event and the track lengths (${JSON.stringify(item && [item.event, item.lengths])})`);
+  check(item && JSON.stringify(item.event) === JSON.stringify({ date: cons.event.date, country: 'XW' }) && JSON.stringify(item.tracks) === JSON.stringify(cons.lengths.map(l => ({ ...l, was: { ms: null } }))), `and the release event and the track lengths, as track changes for tracks without one (${JSON.stringify(item && [item.event, item.tracks])})`);
   check(/Added release event 2008-08-29 \[Worldwide\]/.test(run.note) && /Added the lengths of 2 tracks that had none/.test(run.note), 'the edit note names them');
   check(dz.state === 'linked' || (item && item.urls.some(u => u.url === DEEZER)), 'and the link');
   check(/Added catalog number AOF 727 for Artoffact Records/.test(run.note) && /Consolidated by Mission Control from Beatport, Deezer/.test(run.note), 'the edit note names the catalog number and the consolidation');

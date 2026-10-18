@@ -98,19 +98,20 @@ The links are added through [Falcon](../falcon/README.md), out of sight. The car
 2. For each field, the value most platforms give wins, as in a consolidation.
 3. What the release lacks is offered where it is added, taken in:
 
-| What                 | Offered when                                                 | Shown in                                    |
-| -------------------- | ------------------------------------------------------------ | ------------------------------------------- |
-| Barcode              | the release has none                                         | Release and entity links                    |
-| Label, cat. no.      | as in [Update this release](#update-this-release)            | Release and entity links                    |
-| Platform links       | the release hasn't them, even ones Platform Check holds back | Release and entity links                    |
-| Release event        | the release has none: the date and country most give         | Release and entity links                    |
-| Track lengths        | a track has none                                             | Release and entity links, and the track row |
-| ISRCs                | a track has none                                             | ISRCs                                       |
-| Title, a track title | the platforms give another                                   | shown only, never changed                   |
+| What                | Offered when                                                 | Shown in                                    |
+| ------------------- | ------------------------------------------------------------ | ------------------------------------------- |
+| Barcode             | the release has none                                         | Release and entity links                    |
+| Label, cat. no.     | as in [Update this release](#update-this-release)            | Release and entity links                    |
+| Platform links      | the release hasn't them, even ones Platform Check holds back | Release and entity links                    |
+| Release event       | the release has none: the date and country most give         | Release and entity links                    |
+| Track lengths       | a track has none                                             | Release and entity links, and the track row |
+| ISRCs               | a track has none                                             | ISRCs                                       |
+| Track title, length | you take a platform's, or type your own                      | the row under the track                     |
+| Title               | the platforms give another                                   | shown only, never changed                   |
 
-Nothing the release has is changed. The tracks are compared one by one only when the platforms have as many as the release. The Platforms column shows each track's length to add (*+ 4:01*), and *≠ title* when the platforms call it something else. *≠ title* opens, under the row, what each platform gives for the track: its title, with the part that differs marked, length and ISRC; **Expand all** opens these with Fusion's comparisons. The [Inspector](#inspector) shows the track's versions too. Platform Check's card names the platforms read, and the release's title if the platforms give another.
+Nothing the release has is changed unless you take it. The tracks are compared one by one only when the platforms have as many as the release. The Platforms column shows each track's length to add (*+ 4:01*), and *≠ title* when the platforms call it something else (*✓* when they agree). Either opens, under the row, what the platforms give for the track: a line per version (title, with the part that differs marked, length and ISRC), the platforms that give it on the right. A click on a title or length there takes it in, and the track's own line above them holds what the track gets: type there for a title or length of your own (Enter keeps it, Escape puts it back). *the recording too* gives the recording the new title as well; **Keep as is** drops what was taken. The column then shows what the track gets (*→ Title · → 5:02*), and Execute counts it. **Expand all** opens these rows, where a title or a length differs, with Fusion's comparisons. The [Inspector](#inspector) shows the track's versions too. Platform Check's card names the platforms read, and the release's title if the platforms give another.
 
-Execute adds the release event and the track lengths with the barcode, labels and links, in one edit of the release, through [Falcon](../falcon/README.md).
+Execute adds the release event, the track lengths and the titles and lengths you took with the barcode, labels and links, in one edit of the release, through [Falcon](../falcon/README.md). A track that changed on MusicBrainz since you compared keeps what it has.
 
 ## Cover art
 

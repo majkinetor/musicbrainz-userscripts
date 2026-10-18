@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Mission Control
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.18.190543
+// @version      2026.10.18.195122
 // @description  One window on the release page that asks the other scripts (Platform Check, ISRC Scout, Art Station, Fusion, Credit Hoarder) what is missing, shows it all in one review, and applies the selected changes in order.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5NaXNzaW9uIENvbnRyb2w8L3RpdGxlPgo8ZGVmcz48ZmlsdGVyIGlkPSJtY28xMy1oIiB4PSItMTAlIiB5PSItMTAlIiB3aWR0aD0iMTIwJSIgaGVpZ2h0PSIxMjAlIj48ZmVNb3JwaG9sb2d5IGluPSJTb3VyY2VBbHBoYSIgb3BlcmF0b3I9ImRpbGF0ZSIgcmFkaXVzPSIxLjUiIHJlc3VsdD0iZCIvPjxmZUZsb29kIGZsb29kLWNvbG9yPSIjZmZmIiBmbG9vZC1vcGFjaXR5PSIuNyIvPjxmZUNvbXBvc2l0ZSBpbjI9ImQiIG9wZXJhdG9yPSJpbiIvPjxmZU1lcmdlPjxmZU1lcmdlTm9kZS8+PGZlTWVyZ2VOb2RlIGluPSJTb3VyY2VHcmFwaGljIi8+PC9mZU1lcmdlPjwvZmlsdGVyPjwvZGVmcz48ZyBmaWx0ZXI9InVybCgjbWNvMTMtaCkiPjxwYXRoIGQ9Ik03NyAzNS41IEw2NCA0MyBMNTEgMzUuNSBMNTEgMjAuNSBMNjQgMTMgTDc3IDIwLjVaIiBmaWxsPSIjN2E1N2U4IiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik01OS43IDc3LjUgTDQ2LjcgODUgTDMzLjcgNzcuNSBMMzMuNyA2Mi41IEw0Ni43IDU1IEw1OS43IDYyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik05NC4zIDc3LjUgTDgxLjMgODUgTDY4LjMgNzcuNSBMNjguMyA2Mi41IEw4MS4zIDU1IEw5NC4zIDYyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik00Mi4zIDEwNy41IEwyOS40IDExNSBMMTYuNCAxMDcuNSBMMTYuNCA5Mi41IEwyOS40IDg1IEw0Mi4zIDkyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik03NyAxMDcuNSBMNjQgMTE1IEw1MSAxMDcuNSBMNTEgOTIuNSBMNjQgODUgTDc3IDkyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik0xMTEuNiAxMDcuNSBMOTguNiAxMTUgTDg1LjcgMTA3LjUgTDg1LjcgOTIuNSBMOTguNiA4NSBMMTExLjYgOTIuNVoiIGZpbGw9IiNmZmM5NGEiIHN0cm9rZT0iIzIyMjIzYiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PC9nPgo8L3N2Zz4K
@@ -123,7 +123,7 @@ let fxCheckGen = 0;   // a newer Fusion answer stops the check queue of the one 
 let run = null;
 // #782: the comparison with the platforms (the Platforms step): waiting for Platform Check's platforms, what it
 // brings for Platform Check (cons) and ISRC Scout (isrcs, by track), the release's title on the platforms when it differs
-const CMP = { waiting: false, cons: null, isrcs: null, title: null, timer: 0 };
+const CMP = { waiting: false, cons: null, isrcs: null, title: null, timer: 0, picks: {} };   // picks: track index → { title?, ms?, recording?, from }
 function busEvent(e, kind) {
     let d;
     try { d = JSON.parse(e.detail); } catch (x) { Log.warn(kind + ' with unreadable detail: ' + x.message); return null; }
@@ -261,6 +261,7 @@ let executing = false;
 function applyOne(id, dry) {
     const keys = Array.from(picked[id] || []);
     const extras = id === 'as' ? axChosen() : [];   // #772: the stores' other images taken in, with their types and comments
+    const tracks = id === 'pc' ? pfChanges() : [];   // #782: the track titles and lengths taken in on the tracks
     return new Promise(resolve => {
         // a provider still working says so with mc:progress, and each one restarts the wait (#680: a cover upload takes minutes)
         const done = o => { document.removeEventListener('mc:applied', on); document.removeEventListener('mc:progress', alive); clearTimeout(t); if (results[id]) delete results[id].working; resolve(o); };
@@ -271,8 +272,8 @@ function applyOne(id, dry) {
         document.addEventListener('mc:applied', on);
         document.addEventListener('mc:progress', alive);
         if (results[id]) Object.assign(results[id], { working: dry ? 'queueing' : 'applying', at: Date.now() });
-        Log.info((dry ? 'dry run' : 'apply') + ' ' + id + ': ' + keys.length + ' item(s) ' + JSON.stringify(keys) + (extras.length ? ' + extras ' + JSON.stringify(extras) : ''));
-        document.dispatchEvent(new CustomEvent('mc:apply', { detail: JSON.stringify(Object.assign({ id, run, release: RELEASE, keys, dry: !!dry, mc: VERSION }, extras.length ? { extras } : {})) }));
+        Log.info((dry ? 'dry run' : 'apply') + ' ' + id + ': ' + keys.length + ' item(s) ' + JSON.stringify(keys) + (extras.length ? ' + extras ' + JSON.stringify(extras) : '') + (tracks.length ? ' + tracks ' + JSON.stringify(tracks) : ''));
+        document.dispatchEvent(new CustomEvent('mc:apply', { detail: JSON.stringify(Object.assign({ id, run, release: RELEASE, keys, dry: !!dry, mc: VERSION }, extras.length ? { extras } : {}, tracks.length ? { tracks } : {})) }));
     });
 }
 // #680: a provider that hands its edits to Falcon tags the batch 'mc:<id>:<run>'. Falcon runs
@@ -607,7 +608,7 @@ async function execute(dry) {
     try {
         for (const step of STEPS) {
             const ids = (step.lanes || [step]).map(p => p.id)
-                .filter(id => ((picked[id] && picked[id].size) || (id === 'as' && axChosen().length)) && !providerOff(id) && found[id] && (found[id].capabilities || []).includes('apply'));
+                .filter(id => ((picked[id] && picked[id].size) || (id === 'as' && axChosen().length) || (id === 'pc' && pfChanges().length)) && !providerOff(id) && found[id] && (found[id].capabilities || []).includes('apply'));
             if (!ids.length) continue;
             Log.info('step ' + step.id + ': ' + ids.join(' ∥ '));
             const outs = await Promise.all(ids.map(id => applyOne(id, dry)));
@@ -619,6 +620,7 @@ async function execute(dry) {
                 else if (!o.ok && !dry && Array.isArray(o.doneKeys) && o.doneKeys.length) markApplied(o.id, o.doneKeys);
                 if (o.via === 'falcon') results[o.id].falconKeys = o.keys || [];
                 if (o.ok && !dry) axEntered(o);
+                if (o.ok && !dry && o.id === 'pc') CMP.picks = {};   // #782: the track changes went with it
                 if (o.ok) { sent += o.sent || 0; Log.ok(o.id + ': ' + (o.note || 'done')); } else { failed++; Log.err(o.id + ': ' + (o.note || 'failed')); }
             });
             paintAll();
@@ -629,7 +631,7 @@ async function execute(dry) {
 }
 // #741: one provider applied again (its card's Retry), as Execute applies it
 async function retryOne(id) {
-    if (executing || !((picked[id] && picked[id].size) || (id === 'as' && axChosen().length))) return;
+    if (executing || !((picked[id] && picked[id].size) || (id === 'as' && axChosen().length) || (id === 'pc' && pfChanges().length))) return;
     executing = true; paintExec(); paintCards();
     Log.info('retry ' + id + ': ' + (picked[id] ? picked[id].size : 0) + ' item(s)' + (id === 'as' ? ' + ' + axChosen().length + ' more image(s)' : ''));
     try {
@@ -915,6 +917,11 @@ function mcStyle() {
         + '.mc-insp-block{margin-bottom:12px}'
         + '.mc-fxo{display:inline-flex;align-items:center;gap:4px;font:inherit;font-size:11px;font-weight:700;padding:1px 8px;border-radius:20px;cursor:pointer;color:var(--mbu-warn);background:var(--mbu-warn-bg);border:1px solid var(--mbu-warn-border)}'
         + '.mc-fxgo{display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;padding:0;border-radius:8px;cursor:pointer;background:transparent;border:1px solid transparent}.mc-fxgo:hover,.mc-fxgo:focus-visible{background:var(--mbu-bg);border-color:var(--mbu-accent)}.mc-fxgo img{width:20px;height:20px;display:block}'
+        + '.mc-fxo.same{color:var(--mbu-text-weak);background:transparent;border-color:var(--mbu-border)}'
+        + '.mc-pft{font:inherit;color:inherit;background:transparent;border:1px solid transparent;border-radius:6px;padding:2px 6px;margin:-3px -7px;cursor:pointer;text-align:left}.mc-pft:hover{border-color:var(--mbu-accent);background:var(--mbu-bg)}'
+        + '.mc-pft.on{border-color:var(--mbu-ok);background:var(--mbu-ok-bg,var(--mbu-bg));box-shadow:inset 3px 0 0 var(--mbu-ok)}.mc-pft.on::after{content:" ✓";color:var(--mbu-ok)}'
+        + '.mc-pftbl .plats{text-align:right;white-space:nowrap}.mc-pftbl td.plats .mcc-icos{gap:4px}.mc-pftbl tr.own td{background:var(--mbu-bg-raised)}.mc-pf-in{font:inherit;width:100%;min-width:220px;box-sizing:border-box;padding:3px 6px;border:1px solid var(--mbu-border);border-radius:6px;background:var(--mbu-bg);color:var(--mbu-text)}'
+        + '.mc-pf-in.mono{min-width:70px;width:80px;font-family:var(--mbu-font-mono)}.mc-pf-in:focus{outline:none;border-color:var(--mbu-accent)}.mc-pfrec{white-space:nowrap;font-size:11.5px}'
         + '.mc-pfw{display:inline-flex;align-items:center;gap:6px;white-space:nowrap}.mc-fxtbl .hl,.mc-fxm .hl{background:var(--mbu-warn-bg);color:var(--mbu-warn);border-radius:3px;padding:0 2px}.mc-fxtbl .hl.gap,.mc-fxm .hl.gap{display:inline-block;width:6px;height:1em;vertical-align:-2px;padding:0;border:1px dashed var(--mbu-warn-border)}'
         + '.mc-fxo:hover{border-color:var(--mbu-warn)}.mc-fxp{font-size:11px;font-weight:700;color:var(--mbu-warn);text-decoration:none}.mc-fxp:hover{text-decoration:underline}'
         + '.mc-fxo .car{display:inline-block;transition:transform .15s}.mc-fxo[aria-expanded="true"] .car{transform:rotate(90deg)}'
@@ -1206,10 +1213,12 @@ const COLS = [
         : x.pending ? '<a class="mc-fxp" target="_blank" href="/recording/' + esc(x.key) + '/open_edits" title="This recording has an open edit: Fusion leaves it out of auto-match until the edit closes">⏳ pending</a>'
         : '<span class="pend">—</span>' },
     // #782: what the platforms give for the track: a length the track hasn't, a title that differs (shown, never applied)
-    { id: 'plat', p: 'fc', head: 'Platforms · FC', cell: x =>
-        (x.lenNew ? '<span class="mc-add mono" title="' + esc('The track has no length; ' + ccLen(x.len) + ' from ' + x.lenFrom + '. Platform Check adds it with the release (Track lengths)') + '">+ ' + ccLen(x.len) + '</span>' : '')
-        + (x.differs ? (x.lenNew ? ' ' : '') + pfPill(x) : '')
-        || '<span class="weak" title="' + esc('The platforms agree with the track (' + x.titleFrom + ')') + '">✓</span>' },
+    // a title or length taken in on the row under the track replaces them
+    { id: 'plat', p: 'fc', head: 'Platforms · FC', cell: x => {
+        const p = CMP.picks[pfIndex(x)];
+        if (p) return pfPill(x) + ' <span class="mc-add" title="Taken in: Platform Check sends it with the release">' + [p.title != null ? '→ ' + esc(p.title) : '', p.ms ? '→ <span class="mono">' + ccLen(p.ms) + '</span>' : ''].filter(Boolean).join(' · ') + '</span>';
+        return (x.lenNew ? '<span class="mc-add mono" title="' + esc('The track has no length; ' + ccLen(x.len) + ' from ' + x.lenFrom + '. Platform Check adds it with the release (Track lengths)') + '">+ ' + ccLen(x.len) + '</span> ' : '') + pfPill(x);
+    } },
     { id: 'ch', p: 'ch', head: 'Credits · CH', cell: x =>
         x.credits ? '<span title="' + esc((x.list || []).map(c => c.name + ' — ' + c.role).join('\n')) + '">' + x.credits + '</span>' : '<span class="pend">—</span>' },
 ];
@@ -1286,21 +1295,77 @@ function fxPill(x) {
         + '<span class="car">▸</span>' + n + ' match' + (n === 1 ? '' : 'es') + '</button> ';
 }
 // #782: a track whose title differs opens, under its row, what each platform gives for it
+// the track index of a comparison finding (key fc:<i>), its medium and position, its length in ms
+const pfIndex = x => +String(x.key).slice(3);
+const pfPos = i => { const t = rel.tracks[i]; return t ? rel.tracks.slice(0, i + 1).filter(x => x.medium === t.medium).length : 0; };
+const pfMs = v => { const m = String(v || '').trim().match(/^(?:(\d+):)?(\d{1,2}):(\d{2})$/); return m ? ((+(m[1] || 0) * 60 + +m[2]) * 60 + +m[3]) * 1000 || null : null; };
+const pfSameLen = (a, b) => (!a && !b) || (!!a && !!b && Math.abs(a - b) < 1000);
+// each platform's version of the track: [{ k, title, ms, isrc }]
+const pfPlats = x => (x.versions || []).flatMap(v => v.keys.map((k, j) => { const tr = v.tracks[j] || {}; return { k, title: tr.title || v.title, ms: tr.lengthMs || null, isrc: tr.isrc ? tr.isrc.toUpperCase() : null }; }));
+// what a track differs in from what some platform gives: its title, or its length by a second or more
+const pfDiffers = x => { const t = rel.tracks[pfIndex(x)]; return !!t && (x.differs || pfPlats(x).some(p => p.ms && !pfSameLen(p.ms, pfMs(t.len)))); };
+// a title or length taken in on the row under the track (#782): kept only while it differs from the track's own;
+// `from` names the platforms that give it. Falcon writes it in the release editor, Platform Check sends it.
+function pfSet(i, what, val, from) {
+    const t = rel.tracks[i], x = t && trackFinding('fc', t.rec);
+    if (!x) return;
+    const p = Object.assign({}, CMP.picks[i] || {});
+    p.from = Object.assign({}, p.from || {});
+    if (what === 'title') {
+        val = String(val || '').trim();
+        if (!val || val === t.title) { delete p.title; delete p.from.title; delete p.recording; }
+        else { p.title = val; p.from.title = from || ''; }
+    } else {
+        if (!val || pfSameLen(val, pfMs(t.len))) { delete p.ms; delete p.from.ms; }
+        else { p.ms = val; p.from.ms = from || ''; }
+    }
+    if (p.title == null && !p.ms) delete CMP.picks[i]; else CMP.picks[i] = p;
+    Log.info('track ' + t.pos + ': ' + (CMP.picks[i] ? JSON.stringify(CMP.picks[i]) : 'as it is'));
+    paintMatrix(); paintExec();
+}
+// what Platform Check gets: { medium, position, title?, recording?, ms?, was, from }
+function pfChanges() {
+    if (S.platforms === 'off' || !results.fc || results.fc.state !== 'done') return [];
+    return Object.entries(CMP.picks).map(([i, p]) => {
+        const t = rel.tracks[+i];
+        if (!t) return null;
+        const o = { medium: t.medium || 1, position: pfPos(+i), was: {} };
+        if (p.title != null) { o.title = p.title; o.was.title = t.title; if (p.recording) o.recording = true; }
+        if (p.ms) { o.ms = p.ms; o.was.ms = pfMs(t.len); }
+        const from = [...new Set([p.from && p.from.title, p.from && p.from.ms].filter(Boolean))].join('; ');
+        if (from) o.from = from;
+        return o;
+    }).filter(Boolean);
+}
+// #782: the row under the track: what each platform gives for it, each title and length a click takes in
 function pfPill(x) {
-    const open = fxOpen.has(x.key);
-    return '<button type="button" class="mc-fxo" data-act="fx-pf" data-key="' + esc(x.key) + '" aria-expanded="' + open + '" title="' + esc('The platforms\' title: ' + x.title + ' (' + x.titleFrom + '). Shown only: Mission Control changes no title\n' + (open ? 'Hide' : 'Show') + ' what each platform gives') + '">'
-        + '<span class="car">▸</span>≠ title</button>';
+    const open = fxOpen.has(x.key), d = x.differs;
+    return '<button type="button" class="mc-fxo' + (d ? '' : ' same') + '" data-act="fx-pf" data-key="' + esc(x.key) + '" aria-expanded="' + open + '" title="' + esc((d ? 'The platforms\' title: ' + x.title + ' (' + x.titleFrom + ')' : 'The platforms agree with the title (' + x.titleFrom + ')') + '\n' + (open ? 'Hide' : 'Show') + ' what each platform gives: a click on a title or a length takes it in') + '">'
+        + '<span class="car">▸</span>' + (d ? '≠ title' : '✓') + '</button>';
 }
 function pfDetail(x, t) {
-    const row = (who, title, len, isrc, own) => '<tr><td class="who">' + who + '</td><td>' + (own ? esc(title) : ccTitleDiff(title, t.title)) + '</td><td class="mono">' + (len || '?') + '</td><td class="mono">' + (own ? '' : isrc ? isrcHtml(isrc) : '<span class="weak">none</span>') + '</td></tr>';
-    const plats = [];
-    (x.versions || []).forEach(v => v.keys.forEach((k, j) => {
-        const tr = v.tracks[j] || {};
-        plats.push(row('<span class="mc-pfw">' + ccIco(k, 14) + esc(ccName(k)) + '</span>', tr.title || v.title, ccLen(tr.lengthMs), tr.isrc && tr.isrc.toUpperCase(), false));
-    }));
-    return '<div class="mc-fxwrap"><table class="mc-fxtbl"><thead><tr><th></th><th>Title</th><th>Length</th><th>ISRC</th></tr></thead><tbody>'
-        + row('this', t.title, esc(t.len), null, true) + plats.join('') + '</tbody></table></div>'
-        + '<div class="mc-fxn">Shown only: Mission Control changes no title.</div>';
+    const i = pfIndex(x), p = CMP.picks[i] || {}, own = pfMs(t.len);
+    const take = (what, k, inner, val, tip) => {
+        const on = what === 'title' ? p.title === val : !!p.ms && pfSameLen(p.ms, val);
+        return '<button type="button" class="mc-pft' + (on ? ' on' : '') + '" data-act="fx-take" data-i="' + i + '" data-what="' + what + '" data-k="' + esc(k) + '" title="' + esc(tip) + '">' + inner + '</button>';
+    };
+    // one line per version (the platforms giving the same title, length and ISRC), its platforms' icons on the right
+    const plats = (x.versions || []).map(v => {
+        const k = v.keys[0], who = v.keys.map(ccName).join(', ');
+        return '<tr><td>' + (v.title === t.title ? '<span class="weak">' + esc(v.title) + '</span>' : take('title', k, ccTitleDiff(v.title, t.title), v.title, 'Take this title (' + who + ')')) + '</td>'
+            + '<td class="mono">' + (!v.len ? '?' : pfSameLen(v.len, own) ? '<span class="weak">' + ccLen(v.len) + '</span>' : take('ms', k, ccLen(v.len) + (own ? fxLenDiff({ ms: own }, { ms: v.len }) : ''), v.len, 'Take this length (' + who + ')')) + '</td>'
+            + '<td class="mono">' + (v.isrc ? isrcHtml(v.isrc) : '<span class="weak">none</span>') + '</td>'
+            + '<td class="plats">' + ccIcons(v.keys) + '</td></tr>';
+    }).join('');
+    const mine = '<tr class="own">'
+        + '<td><input type="text" class="mc-pf-in" data-pf-title="' + i + '" value="' + esc(p.title != null ? p.title : t.title) + '" spellcheck="false" title="The track\'s title: type another, or click a platform\'s. Enter keeps it, Escape puts it back"></td>'
+        + '<td><input type="text" class="mc-pf-in mono" data-pf-len="' + i + '" value="' + esc(p.ms ? ccLen(p.ms) : t.len && t.len !== '?:??' ? t.len : '') + '" placeholder="m:ss" spellcheck="false" title="The track\'s length (m:ss): type another, or click a platform\'s"></td>'
+        + '<td>' + (p.title != null ? '<label class="mc-pfrec" title="Give the recording this title too (the release editor\'s &quot;update the recording title&quot;)"><input type="checkbox" data-pf-rec="' + i + '"' + (p.recording ? ' checked' : '') + '> the recording too</label>' : '')
+        + (CMP.picks[i] ? ' <button type="button" class="mc-all" data-act="fx-untake" data-i="' + i + '" title="Keep the track as it is">Keep as is</button>' : '') + '</td>'
+        + '<td class="plats weak">this track</td></tr>';
+    return '<div class="mc-fxwrap"><table class="mc-fxtbl mc-pftbl"><thead><tr><th>Title</th><th>Length</th><th>ISRC</th><th class="plats">Platforms</th></tr></thead><tbody>'
+        + mine + plats + '</tbody></table></div>'
+        + '<div class="mc-fxn">A click on a platform\'s title or length takes it in; Platform Check sends it with the release, and Falcon writes it in the release editor.</div>';
 }
 function fxDetail(x) {
     const me = x.self || null, ck = x.checked || {}, all = x.signals || [], any = x.any || [];
@@ -1370,16 +1435,27 @@ async function fxAutoCheck() {
 const fxOpenable = () => {
     const r = results.fusion, f = results.fc;
     return (S.fusion !== 'off' && r && r.findings ? rel.tracks.map(t => trackFinding('fusion', t.rec)).filter(x => x && FX_SHOWN[x.state]).map(x => x.key) : [])
-        .concat(S.platforms !== 'off' && f && f.findings ? rel.tracks.map(t => trackFinding('fc', t.rec)).filter(x => x && x.differs).map(x => x.key) : []);
+        .concat(S.platforms !== 'off' && f && f.findings ? rel.tracks.map(t => trackFinding('fc', t.rec)).filter(x => x && (pfDiffers(x) || CMP.picks[pfIndex(x)])).map(x => x.key) : []);
 };
 function fxAllBtn() {
     const ks = fxOpenable();
     if (!ks.length) return '';
     const all = ks.every(k => fxOpen.has(k));
-    return '<button type="button" class="mc-all" data-act="fx-all" title="' + (all ? 'Fold every comparison under the tracks' : 'Open every comparison under the tracks: Fusion\'s, and the platforms\' titles') + '">' + (all ? 'Collapse all' : 'Expand all') + '</button>';
+    return '<button type="button" class="mc-all" data-act="fx-all" title="' + (all ? 'Fold every comparison under the tracks' : 'Open every comparison under the tracks: Fusion\'s, and the platforms\' where a title or a length differs') + '">' + (all ? 'Collapse all' : 'Expand all') + '</button>';
 }
 function fxAct(b) {
     const k = b.dataset.key;
+    if (b.dataset.act === 'fx-take') {
+        const i = +b.dataset.i, t = rel.tracks[i], x = t && trackFinding('fc', t.rec), q = x && (x.versions || []).find(v => v.keys.includes(b.dataset.k));
+        if (!q) return;
+        const what = b.dataset.what, val = what === 'title' ? q.title : q.len, cur = CMP.picks[i] || {};
+        const on = what === 'title' ? cur.title === val : !!cur.ms && pfSameLen(cur.ms, val);
+        // the platforms giving the same, named in the edit note
+        const from = pfPlats(x).filter(v => what === 'title' ? v.title === val : pfSameLen(v.ms, val)).map(v => ccName(v.k)).join(', ');
+        pfSet(i, what, on ? null : val, from);
+        return;
+    }
+    if (b.dataset.act === 'fx-untake') { delete CMP.picks[+b.dataset.i]; paintMatrix(); paintExec(); return; }
     if (b.dataset.act === 'fx' || b.dataset.act === 'fx-pf') { if (fxOpen.has(k)) fxOpen.delete(k); else fxOpen.add(k); paintMatrix(); return; }
     if (b.dataset.act === 'fx-all') {
         const ks = fxOpenable(), all = ks.every(x => fxOpen.has(x));
@@ -1401,6 +1477,7 @@ function trackPicks(t) {
         const x = c.pick && trackFinding(c.p, t.rec);
         if (x && PICKABLE[x.state] && picked[c.p].has(x.key)) n++;
     });
+    if (S.platforms !== 'off' && CMP.picks[rel.tracks.indexOf(t)]) n++;   // #782: a title or length taken in
     return n;
 }
 function paintMatrix() {
@@ -1427,8 +1504,9 @@ function paintMatrix() {
     }
     ui.querySelectorAll('.mc-tbl tr.mc-fxd[data-pf]').forEach(tr => {
         const t = rel.tracks[+tr.dataset.pf], x = S.platforms !== 'off' && t ? trackFinding('fc', t.rec) : null;
-        const show = !!(x && x.differs && fxOpen.has(x.key));
+        const show = !!(x && fxOpen.has(x.key));
         tr.hidden = !show;
+        if (show && tr.contains(document.activeElement) && document.activeElement.classList.contains('mc-pf-in')) return;   // being typed in
         tr.firstElementChild.innerHTML = mbuHtml(show ? pfDetail(x, t) : '');
     });
     ui.querySelectorAll('.mc-tbl tr.mc-fxd[data-fx]').forEach(tr => {
@@ -1711,7 +1789,7 @@ const BC_CSS = '#mc-root,#mcc-root{' + BC_LIGHT.map((c, i) => '--mc-bc-' + i + '
     + ':root[data-mbu-theme=dark] #mc-root,:root[data-mbu-theme=dark] #mcc-root{' + BC_DARK.map((c, i) => '--mc-bc-' + i + ':' + c).join(';') + '}';
 // AS's selected rows are the pool its one cover comes from, so they count once, not once each
 const isPool = id => ((results[id] || {}).findings || []).some(x => x.role === 'searched' || x.role === 'best');
-function changeCount() { return Object.entries(picked).reduce((n, [id, set]) => n + (providerOff(id) ? 0 : isPool(id) ? Math.min(1, set.size) : set.size), 0) + axChosen().length; }
+function changeCount() { return Object.entries(picked).reduce((n, [id, set]) => n + (providerOff(id) ? 0 : isPool(id) ? Math.min(1, set.size) : set.size), 0) + axChosen().length + pfChanges().length; }
 // Probe or Execute in flight, or a Falcon batch that Execute handed over still running: the
 // header pulses, as Apollo's bar does while an edit saves (#412).
 function isBusy() { return executing || Object.values(results).some(r => r.state === 'busy' || (r.falcon && r.falcon.running)); }
@@ -1828,7 +1906,23 @@ function open() {
     ui.addEventListener('mouseover', onPickOver);
     // #772: an image's comment: Enter saves it and moves to the next, Escape (or leaving it) saves it
     ui.addEventListener('input', e => { if (e.target.classList.contains('mc-ax-cin') && axCmt) { const st = axState.get(axCmt); if (st) st.comment = e.target.value; } });
+    // #782: a track's title or length typed in the row under it: taken in when it changes; Enter keeps it, Escape puts it back
+    ui.addEventListener('change', e => {
+        const el = e.target;
+        if (el.dataset.pfTitle != null) pfSet(+el.dataset.pfTitle, 'title', el.value, '');
+        else if (el.dataset.pfLen != null) {
+            const ms = el.value.trim() ? pfMs(el.value) : null;
+            if (el.value.trim() && !ms) { Log.warn('"' + el.value + '" isn\'t a length (m:ss): left as it was'); paintMatrix(); return; }
+            pfSet(+el.dataset.pfLen, 'ms', ms, '');
+        } else if (el.dataset.pfRec != null) { const p = CMP.picks[+el.dataset.pfRec]; if (p) { p.recording = el.checked; Log.info('track ' + rel.tracks[+el.dataset.pfRec].pos + ': the recording\'s title ' + (el.checked ? 'too' : 'kept')); } }
+    });
     ui.addEventListener('keydown', e => {
+        if (e.target.classList.contains('mc-pf-in')) {
+            e.stopPropagation();
+            if (e.key === 'Enter') { e.preventDefault(); e.target.blur(); }
+            else if (e.key === 'Escape') { e.preventDefault(); e.target.value = e.target.defaultValue; e.target.blur(); }
+            return;
+        }
         if (!e.target.classList.contains('mc-ax-cin')) return;
         e.stopPropagation();
         if (e.key === 'Enter') { e.preventDefault(); axCmtDone(true); } else if (e.key === 'Escape') { e.preventDefault(); axCmtDone(false); }
@@ -1974,6 +2068,7 @@ function onClick(e) {
     const fx = t.closest('[data-act^="fx"]');
     if (fx) {
         const row = (fx.dataset.act === 'fx' || fx.dataset.act === 'fx-pf') && fx.closest('.mc-tbl tbody tr[data-i]');
+        if (fx.tagName === 'INPUT') return;
         fxAct(fx);
         if (row) selectTrack(Number(row.dataset.i));   // the count also selects its track
         return;
@@ -3138,7 +3233,7 @@ if (mbuTestHooks()) window.__mccTest = { state: () => CC, model: ccModel, seedRe
 // ISRC Scout (the ISRCs, by track); a title that differs is shown, never applied.
 function cmpReset() {
     clearInterval(CMP.timer);
-    Object.assign(CMP, { waiting: false, cons: null, isrcs: null, title: null, timer: 0 });
+    Object.assign(CMP, { waiting: false, cons: null, isrcs: null, title: null, timer: 0, picks: {} });
     CC.sources = []; CC.pc = { state: 'wait', note: '', findings: [], at: 0 }; CC.pick = {}; CC.rowPick = {};
     CC.run = 'c' + Date.now().toString(36);   // a read of the comparison before is dropped
 }
@@ -3299,7 +3394,7 @@ function launcher() {
     mbRestackCorner('br');
 }
 
-if (mbuTestHooks()) window.__mcTest = { open, close, execute, results: () => results, cmp: () => ({ cons: CMP.cons, isrcs: CMP.isrcs, title: CMP.title, sources: CC.sources.map(s => ({ key: s.key, take: s.take, read: s.read.state })) }), withCons: c => { CMP.cons = c; probeOne('pc'); }, compare: () => probeOne('fc'), after: () => AFTER, picked: () => Object.fromEntries(Object.entries(picked).map(([k, v]) => [k, Array.from(v)])), settings: () => Object.assign({}, S), off: () => [...OFF], found: () => Object.assign({}, found), release: () => rel, bestHtml, coverList, setStall: ms => { STALL_MS = ms; }, fxChecking: () => fxBusy.size };
+if (mbuTestHooks()) window.__mcTest = { open, close, execute, results: () => results, cmp: () => ({ cons: CMP.cons, isrcs: CMP.isrcs, title: CMP.title, picks: CMP.picks, changes: pfChanges(), sources: CC.sources.map(s => ({ key: s.key, take: s.take, read: s.read.state })) }), withCons: c => { CMP.cons = c; probeOne('pc'); }, compare: () => probeOne('fc'), after: () => AFTER, picked: () => Object.fromEntries(Object.entries(picked).map(([k, v]) => [k, Array.from(v)])), settings: () => Object.assign({}, S), off: () => [...OFF], found: () => Object.assign({}, found), release: () => rel, bestHtml, coverList, setStall: ms => { STALL_MS = ms; }, fxChecking: () => fxBusy.size };
 
 // <ST-ICONS> — generated by dev/ui/sync-icons.mjs from dev/ui/platform-icons.mjs — DO NOT EDIT
 const ST_ICONS = {"musicbrainz":{"color":"#eb743b","svg":"<svg viewBox=\"0.75 0.75 28.5 28.5\" xmlns=\"http://www.w3.org/2000/svg\"><g transform=\"translate(1.5)\"><path d=\"m13 1-12 7v14l12 7z\" fill=\"#ba478f\"/><path d=\"m14 1 12 7v14l-12 7z\" fill=\"#eb743b\"/></g></svg>"},"discogs":{"color":"#333333","svg":"<svg viewBox=\"71 71 882 882\" xmlns=\"http://www.w3.org/2000/svg\"><g transform=\"translate(512 512) scale(0.86) translate(-512 -512)\"><circle cx=\"512\" cy=\"512\" r=\"496\" fill=\"#333\" stroke=\"#9a9a9a\" stroke-width=\"32\"/><path fill=\"#fff\" d=\"M439.84 511.58A72.58 72.58 0 0 1 512.41 439 72.54 72.54 0 0 1 585 511.58a72.56 72.56 0 0 1-72.57 72.56 72.56 72.56 0 0 1-72.57-72.56zm3.18 0A69.48 69.48 0 0 0 512.41 581a69.4 69.4 0 0 0 69.4-69.38 69.49 69.49 0 0 0-69.4-69.43A69.44 69.44 0 0 0 443 511.58zm69.42-11.44a11.43 11.43 0 1 0 11.47 11.45 11.45 11.45 0 0 0-11.48-11.45zm-131.08 11.43a130.68 130.68 0 0 0 40.3 94.43l24.68-26.69.33.3a94.59 94.59 0 0 1 113.08-149.95l17.51-31.95a130.23 130.23 0 0 0-64.82-17.22c-72.27.01-131.08 58.81-131.08 131.08zm225.73 0a94.6 94.6 0 0 1-138.64 83.79l-17.83 31.74a130.26 130.26 0 0 0 61.82 15.53c72.28 0 131.08-58.8 131.08-131.08a130.63 130.63 0 0 0-37.73-91.9L581 446.39a94.3 94.3 0 0 1 26.1 65.2zm-267.34 0a172.17 172.17 0 0 0 53.68 125l25-27.07a135.38 135.38 0 0 1-41.82-97.89c0-74.88 60.92-135.8 135.8-135.8a134.92 134.92 0 0 1 67.08 17.8l17.73-32.34a171.57 171.57 0 0 0-84.81-22.35c-95.19-.03-172.66 77.43-172.66 172.65zm308.49 0c0 74.88-60.92 135.8-135.8 135.8a135 135 0 0 1-64.14-16.14l-18.07 32.17a171.62 171.62 0 0 0 82.21 20.86c95.22 0 172.69-77.47 172.69-172.69a172.15 172.15 0 0 0-51-122.4l-25.12 27a135.35 135.35 0 0 1 39.23 95.4zm41.61 0c0 97.83-79.58 177.43-177.41 177.43a176.32 176.32 0 0 1-84.52-21.46l-18.18 32.36a213.21 213.21 0 0 0 102.7 26.23C630.74 726.11 727 629.87 727 511.57a213.87 213.87 0 0 0-64.38-153l-25.26 27.18a176.85 176.85 0 0 1 52.49 125.82zm-392 0A213.9 213.9 0 0 0 365 667.24L390.23 640A176.88 176.88 0 0 1 335 511.57c0-97.82 79.59-177.41 177.41-177.41a176.26 176.26 0 0 1 87.08 22.93l17.84-32.55A213.14 213.14 0 0 0 512.44 297c-118.3 0-214.54 96.28-214.54 214.57zm392.55-183-24.64 26.49a218.57 218.57 0 0 1 65.94 156.51c0 120.9-98.36 219.26-219.26 219.26a217.9 217.9 0 0 1-105-26.84l-18.24 32.47A255.43 255.43 0 0 0 512 768c141.39 0 256-114.64 256-256a255.23 255.23 0 0 0-77.55-183.41zm-397.27 183c0-120.9 98.36-219.26 219.26-219.26a217.84 217.84 0 0 1 107.19 28.09L637 288.65A254.46 254.46 0 0 0 516.12 256H512c-140.54.22-254.42 113.26-256 253.5v2.5a255.69 255.69 0 0 0 80.51 186.08l25.31-27.36a218.61 218.61 0 0 1-68.64-159.15z\"/></g></svg>"},"spotify":{"color":"#1DB954","svg":"<svg viewBox=\"1.25 1.375 21.25 21.25\" fill=\"#1DB954\"><path transform=\"translate(12 12) scale(.875) translate(-12 -12)\" d=\"M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.42 1.56-.299.421-1.02.599-1.559.3z\"/></svg>"},"apple":{"color":"#FA243C","svg":"<svg viewBox=\"1.625 1.25 20 20\" fill=\"#FA243C\"><path d=\"M17.05 12.04c-.03-2.5 2.04-3.7 2.13-3.76-1.16-1.7-2.97-1.93-3.61-1.96-1.54-.16-3 .9-3.78.9-.78 0-1.97-.88-3.24-.86-1.67.03-3.21.97-4.07 2.46-1.73 3.01-.44 7.47 1.24 9.92.82 1.2 1.8 2.54 3.08 2.49 1.24-.05 1.71-.8 3.21-.8 1.5 0 1.92.8 3.23.77 1.33-.02 2.18-1.22 3-2.42.94-1.39 1.33-2.73 1.35-2.8-.03-.01-2.59-.99-2.62-3.93zM14.6 4.59c.68-.83 1.14-1.97 1.01-3.11-.98.04-2.17.65-2.87 1.47-.63.73-1.18 1.9-1.03 3.02 1.09.08 2.21-.55 2.89-1.38z\"/></svg>"},"deezer":{"color":"#A238FF","svg":"<svg viewBox=\"3 3 18 18\"><path transform=\"translate(12 12) scale(.74) translate(-12 -12)\" d=\"M4 2h6v2h-6zM14 2h6v2h-6zM2 4h20v2h-20zM0 6h24v2h-24zM0 8h24v2h-24zM0 10h24v2h-24zM2 12h20v2h-20zM4 14h16v2h-16zM6 16h12v2h-12zM8 18h8v2h-8zM10 20h4v2h-4z\" fill=\"#A238FF\"/></svg>"},"tidal":{"color":"#000000","svg":"<svg viewBox=\"3 3 18 18\"><path d=\"M6 6l3 3-3 3-3-3zM12 6l3 3-3 3-3-3zM18 6l3 3-3 3-3-3zM12 12l3 3-3 3-3-3z\" style=\"fill:var(--mbu-text,currentColor)\"/></svg>"},"qobuz":{"color":"#0070ef","svg":"<svg viewBox=\"1.75 1.75 20.5 20.5\"><circle cx=\"12\" cy=\"12\" r=\"10\" fill=\"#0070ef\"/><circle cx=\"12\" cy=\"12\" r=\"5\" fill=\"none\" stroke=\"#fff\" stroke-width=\"2.2\"/><path d=\"M14.5 14.5 19 19\" stroke=\"#fff\" stroke-width=\"2.2\" stroke-linecap=\"round\"/></svg>"},"beatport":{"color":"#01FF95","svg":"<svg viewBox=\"0.75 0.75 22.5 22.5\"><circle cx=\"12\" cy=\"12\" r=\"11\" fill=\"#000\"/><g transform=\"translate(12 12) scale(0.84) translate(-12 -12)\" fill=\"none\" stroke=\"#01FF95\" stroke-width=\"2.5\"><path d=\"M10.9 3V8.3c0 1.2-.4 1.9-1.1 2.6L5.6 15.1\"/><circle cx=\"13.9\" cy=\"15.8\" r=\"4.05\" stroke-width=\"2.35\"/></g></svg>"},"bandcamp":{"color":"#629AA9","svg":"<svg viewBox=\"2.25 2.25 19.5 19.5\" fill=\"#629AA9\"><path transform=\"translate(12 12) scale(.8) translate(-12 -12)\" d=\"M0 18.75l7.437-13.5H24l-7.438 13.5z\"/></svg>"},"volumo":{"color":"#7c4dff","svg":"<svg viewBox=\"1.75 1.75 20.5 20.5\"><circle cx=\"12\" cy=\"12\" r=\"10\" fill=\"#7c4dff\"/><path d=\"M7 8h2.2l2.8 6 2.8-6H17l-4 9h-2z\" fill=\"#fff\"/></svg>"},"hdtracks":{"color":"#e63329","svg":"<svg viewBox=\"1.75 1.75 20.5 20.5\"><circle cx=\"12\" cy=\"12\" r=\"10\" fill=\"#e63329\"/><path d=\"M5 7.5h1.7v3.1h2.6V7.5H11v8H9.3v-3.2H6.7v3.2H5zm7.2 0h2.9c2 0 3.4 1.6 3.4 4s-1.4 4-3.4 4h-2.9zm1.7 1.5v5h1.1c1.1 0 1.8-1 1.8-2.5s-.7-2.5-1.8-2.5z\" fill=\"#fff\"/></svg>"},"soundcloud":{"color":"#ff5500","svg":"<svg viewBox=\"1.75 1.75 20.5 20.5\"><circle cx=\"12\" cy=\"12\" r=\"10\" fill=\"#ff5500\"/><g fill=\"#fff\"><rect x=\"6\" y=\"12\" width=\"1.4\" height=\"4\" rx=\".6\"/><rect x=\"8.5\" y=\"10\" width=\"1.4\" height=\"6\" rx=\".6\"/><rect x=\"11\" y=\"8.5\" width=\"1.4\" height=\"7.5\" rx=\".6\"/><rect x=\"13.5\" y=\"10.5\" width=\"1.4\" height=\"5.5\" rx=\".6\"/><rect x=\"16\" y=\"11.5\" width=\"1.4\" height=\"4.5\" rx=\".6\"/></g></svg>"},"audiomack":{"color":"#FFA200","svg":"<svg viewBox=\"1.75 1.75 20.5 20.5\"><circle cx=\"12\" cy=\"12\" r=\"10\" fill=\"#FFA200\"/><path d=\"M5 13.5l2-2 1.6 2.4 2.2-5.4 2.4 6.6 2.2-4 1.6 2.4H19\" fill=\"none\" stroke=\"#fff\" stroke-width=\"1.6\" stroke-linejoin=\"round\" stroke-linecap=\"round\"/></svg>"},"sevendigital":{"color":"#07606E","svg":"<svg viewBox=\"1.75 1.75 20.5 20.5\"><circle cx=\"12\" cy=\"12\" r=\"10\" fill=\"#07606E\"/><path d=\"M7.8 6.8h8.4v1.9l-4.5 8.9H9.4l4.4-8.7h-6z\" fill=\"#fff\"/></svg>"},"ytmusic":{"color":"#FF0000","svg":"<svg viewBox=\"1.75 1.75 20.5 20.5\"><circle cx=\"12\" cy=\"12\" r=\"10\" fill=\"#FF0000\"/><circle cx=\"12\" cy=\"12\" r=\"5.6\" fill=\"none\" stroke=\"#fff\" stroke-width=\"1.4\"/><path d=\"M10.4 9.5v5l4.2-2.5z\" fill=\"#fff\"/></svg>"},"amazonmusic":{"color":"#25D1DA","svg":"<svg viewBox=\"1.75 1.75 20.5 20.5\"><circle cx=\"12\" cy=\"12\" r=\"10\" fill=\"#25D1DA\"/><path d=\"M5.8 11.2c3.5 3.2 8.9 3.5 12.4.9\" fill=\"none\" stroke=\"#0F1111\" stroke-width=\"1.9\" stroke-linecap=\"round\"/><path d=\"M15.5 10.7l3 1.3-.9 3.1\" fill=\"none\" stroke=\"#0F1111\" stroke-width=\"1.7\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/></svg>"},"soundexchange":{"color":"#6f42c1","svg":"<svg viewBox=\"1.75 1.75 20.5 20.5\"><circle cx=\"12\" cy=\"12\" r=\"10\" fill=\"#6f42c1\"/><path d=\"M6.5 12h1.3l1-3 1.6 6 1.6-9 1.6 12 1.4-6h1.5\" fill=\"none\" stroke=\"#fff\" stroke-width=\"1.4\" stroke-linejoin=\"round\" stroke-linecap=\"round\"/></svg>"},"globe":{"color":"#6f7d75","svg":"<svg viewBox=\"2 2 20 20\" fill=\"none\" stroke=\"#6f7d75\" stroke-width=\"1.8\"><circle cx=\"12\" cy=\"12\" r=\"9\"/><path d=\"M3 12h18M12 3a15 15 0 0 1 0 18M12 3a15 15 0 0 0 0 18\"/></svg>"}};
