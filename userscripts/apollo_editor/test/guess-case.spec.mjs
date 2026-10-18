@@ -17,7 +17,7 @@ test('#785: the mode and options change the guess, and Aa applies it', { tag: ['
   await until(guess, g => !!g);
   await page.waitForSelector('.tc-gco select.tc-gc-lang', { state: 'attached', timeout: 10000 });
   const pick = (sel, v) => page.evaluate(([sel, v]) => { const el = document.querySelector(sel); el.value = v; el.dispatchEvent(new Event('change', { bubbles: true })); }, [sel, v]);
-  const tick = (i, on) => page.evaluate(([i, on]) => { const c = document.querySelectorAll('.tc-gco label input[type=checkbox]')[i]; if (c.checked !== on) c.click(); }, [i, on]);
+  const tick = (i, on) => page.evaluate(([i, on]) => { const c = document.querySelectorAll('.tc-gco button.tc-gc-tg')[i]; if (c.classList.contains('on') !== on) c.click(); }, [i, on]);
 
   const opts = await page.evaluate(() => [...document.querySelectorAll('.tc-gco select.tc-gc-lang option')].map(o => o.value));
   check(opts[0] === 'auto' && ['English', 'French', 'Sentence', 'Spanish', 'Dutch', 'Turkish'].every(m => opts.includes(m)), `the mode list: Auto, then the modes (${opts})`);

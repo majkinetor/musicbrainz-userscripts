@@ -4025,13 +4025,16 @@ click to open the label`;
   function gcOptionsBox() {
     const box = document.createElement('span'); box.className = 'tc-gco';
     box.appendChild(gcModeSelect());
-    const mkChk = (text, key, title) => { const l = document.createElement('label'); l.title = title; const c = document.createElement('input'); c.type = 'checkbox'; c.dataset.gcKey = key; c.checked = key === 'gcKeepUC' ? SETTINGS[key] !== false : !!SETTINGS[key]; c.onchange = () => { SETTINGS[key] = c.checked; saveSettings(); gcOptionsChanged(); }; l.append(c, document.createTextNode(' ' + text)); return l; };
-    box.appendChild(mkChk('Keep uppercased', 'gcKeepUC', 'A word written in capitals (or with a capital inside, as KoRn) stays as it is'));
-    box.appendChild(mkChk('Roman numerals', 'gcRoman', 'Roman numerals in capitals: part ii → Part II'));
+    // the two options as toggles, drawn as S&R's RE: ABC keeps capitals, IV writes roman numerals in capitals
+    const gcVal = key => (key === 'gcKeepUC' ? SETTINGS[key] !== false : !!SETTINGS[key]);
+    const mkTog = (text, key, title) => { const b = document.createElement('button'); b.type = 'button'; b.className = 'tc-srbtn tc-gc-tg' + (key === 'gcRoman' ? ' rn' : ''); b.textContent = text; b.title = title; b.dataset.gcKey = key; const show = () => { b.classList.toggle('on', gcVal(key)); b.setAttribute('aria-pressed', String(gcVal(key))); }; show(); b.onclick = () => { SETTINGS[key] = !gcVal(key); saveSettings(); Log.cat('Tool').info('guess case', key, SETTINGS[key]); gcOptionsChanged(); }; return b; };
+    box.appendChild(mkTog('ABC', 'gcKeepUC', 'Keep uppercased: a word written in capitals (or with a capital inside, as KoRn) stays as it is'));
+    box.appendChild(mkTog('IV', 'gcRoman', 'Roman numerals: in capitals, part ii → Part II'));
     const sl = document.createElement('label'); sl.title = "In Auto, the parts of a title split by this are guessed on their own when they are in different scripts: Love story / история любви → Love Story / История любви. Empty: never split.";
     const si = document.createElement('input'); si.type = 'text'; si.className = 'tc-gc-sep'; si.dataset.gcSep = '1'; si.maxLength = 5; si.spellcheck = false; si.value = SETTINGS.gcSep == null ? '/' : SETTINGS.gcSep;
     si.onchange = () => { SETTINGS.gcSep = si.value.trim(); saveSettings(); Log.cat('Tool').info('guess case separator', JSON.stringify(SETTINGS.gcSep)); gcOptionsChanged(); };
-    sl.append(document.createTextNode('Separator '), si);
+    si.title = 'Separator. ' + sl.title; si.setAttribute('aria-label', 'Separator');
+    sl.append(si);   // no caption: the tooltip names it
     box.appendChild(sl);
     return box;
   }
@@ -4039,6 +4042,7 @@ click to open the label`;
     const mode = mbuGuessCase.modes.includes(SETTINGS.gcMode) ? SETTINGS.gcMode : 'auto';
     document.querySelectorAll('select.tc-gc-lang').forEach(s => { if (s.value !== mode) s.value = mode; });
     document.querySelectorAll('input[data-gc-sep]').forEach(i => { const v = SETTINGS.gcSep == null ? '/' : SETTINGS.gcSep; if (i.value !== v && document.activeElement !== i) i.value = v; });
+    document.querySelectorAll('button[data-gc-key]').forEach(b => { const v = b.dataset.gcKey === 'gcKeepUC' ? SETTINGS.gcKeepUC !== false : !!SETTINGS.gcRoman; b.classList.toggle('on', v); b.setAttribute('aria-pressed', String(v)); });
     document.querySelectorAll('input[data-gc-key]').forEach(c => { const v = c.dataset.gcKey === 'gcKeepUC' ? SETTINGS.gcKeepUC !== false : !!SETTINGS.gcRoman; if (c.checked !== v) c.click(); });
     recomputeGuesses();
   }
@@ -5676,7 +5680,8 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     body.tc-ri-on #information td > input#name ~ :is(button.guesscase-title,button.guessfeat){margin-top:0;margin-bottom:0}
     body.tc-ri-on #information td > input#name ~ button.guessfeat{margin-left:0!important}   /* the options are on the Aa's right-click */
     .tc-gcpop{position:fixed;z-index:var(--mbu-z-pop);background:var(--mbu-bg);border:1px solid var(--mbu-accent);border-radius:var(--mbu-radius);box-shadow:var(--mbu-shadow-lg);padding:8px 12px 10px}
-    .tc-gcpop .tc-gco{flex-direction:column;align-items:flex-start;gap:7px}
+    .tc-gcpop .tc-gco{display:grid;grid-template-columns:auto auto auto auto;justify-items:start;align-items:center;gap:7px 6px}   /* the mode and its toggles on a line, the separator under them */
+    .tc-gco .tc-gc-tg{min-width:30px;text-align:center}.tc-gco .tc-gc-tg.rn{font-family:Georgia,'Times New Roman',serif;font-size:12px}
     .tc-gcpop-h{font:700 11px Arial;letter-spacing:.05em;text-transform:uppercase;color:var(--mbu-accent-text);margin:0 0 7px}
     .tc-mirror .mv{cursor:pointer;color:var(--mbu-accent-text);font-size:12px;padding:0 1px}
     /* drag-to-reorder: ⠿ handle + drop indicators (a purple line at the row edge you'll drop against) */
@@ -5913,7 +5918,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     select.tc-gc-lang:hover,select.tc-gc-lang:focus-visible,.tc-opt .tc-gco select.tc-gc-lang:hover{border-color:var(--mbu-accent);outline:none}
     .tc-gco label{display:inline-flex;align-items:center;gap:4px;font:12px Arial;color:var(--mbu-text);white-space:nowrap;cursor:pointer}
     .tc-gco input[type=checkbox]{margin:0;accent-color:var(--mbu-accent)}
-    .tc-gco input.tc-gc-sep,.tc-opt .tc-gco input.tc-gc-sep,.tc-toolopts .tc-gco input.tc-gc-sep{width:3.2em;font:12px Arial;text-align:center;padding:2px 4px;border:1px solid var(--mbu-border-strong);border-radius:var(--mbu-radius);background:var(--mbu-bg);color:var(--mbu-text);margin:0}
+    .tc-gco input.tc-gc-sep,.tc-opt .tc-gco input.tc-gc-sep,.tc-toolopts .tc-gco input.tc-gc-sep{width:1.9em;font:12px Arial;text-align:center;padding:2px 0;border:1px solid var(--mbu-border-strong);border-radius:var(--mbu-radius);background:var(--mbu-bg);color:var(--mbu-text);margin:0}
     .tc-gco input.tc-gc-sep:focus{border-color:var(--mbu-accent);outline:none}
     .tc-colso{gap:4px}
     .tc-colbtn{font:12px Arial;padding:2px 9px;border:1px solid var(--mbu-border);border-radius:4px;background:var(--mbu-bg);cursor:pointer;color:var(--mbu-text)}
