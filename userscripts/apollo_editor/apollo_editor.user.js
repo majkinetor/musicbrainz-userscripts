@@ -5909,11 +5909,11 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     .tc-toolopts{display:flex;align-items:center;gap:6px;min-width:0}
     .tc-gco,.tc-sro,.tc-colso,.tc-medo{display:flex;align-items:center;gap:8px}
     /* #785 the guess-case mode list, themed as the external links' type combo; its options sit by it */
-    select.tc-gc-lang{-webkit-appearance:none;-moz-appearance:none;appearance:none;font:12px Arial;color:var(--mbu-accent-deep-text);background-color:var(--mbu-bg);background-image:url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20width='10'%20height='7'%20viewBox='0%200%2010%207'%3E%3Cpath%20d='M1%201l4%204%204-4'%20fill='none'%20stroke='%235a3e94'%20stroke-width='1.5'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 6px center;border:1px solid var(--mbu-border-strong);border-radius:var(--mbu-radius);box-shadow:none;padding:2px 22px 2px 7px;height:auto;margin:0;cursor:pointer}
-    select.tc-gc-lang:hover,select.tc-gc-lang:focus-visible{border-color:var(--mbu-accent);outline:none}
+    select.tc-gc-lang,.tc-opt .tc-gco select.tc-gc-lang,.tc-toolopts .tc-gco select.tc-gc-lang{-webkit-appearance:none;-moz-appearance:none;appearance:none;font:12px Arial;color:var(--mbu-accent-deep-text);background-color:var(--mbu-bg);background-image:url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20width='10'%20height='7'%20viewBox='0%200%2010%207'%3E%3Cpath%20d='M1%201l4%204%204-4'%20fill='none'%20stroke='%235a3e94'%20stroke-width='1.5'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 6px center;border:1px solid var(--mbu-border-strong);border-radius:var(--mbu-radius);box-shadow:none;padding:2px 22px 2px 7px;height:auto;margin:0;cursor:pointer}
+    select.tc-gc-lang:hover,select.tc-gc-lang:focus-visible,.tc-opt .tc-gco select.tc-gc-lang:hover{border-color:var(--mbu-accent);outline:none}
     .tc-gco label{display:inline-flex;align-items:center;gap:4px;font:12px Arial;color:var(--mbu-text);white-space:nowrap;cursor:pointer}
     .tc-gco input[type=checkbox]{margin:0;accent-color:var(--mbu-accent)}
-    .tc-gco input.tc-gc-sep{width:3.2em;font:12px Arial;text-align:center;padding:2px 4px;border:1px solid var(--mbu-border-strong);border-radius:var(--mbu-radius);background:var(--mbu-bg);color:var(--mbu-text);margin:0}
+    .tc-gco input.tc-gc-sep,.tc-opt .tc-gco input.tc-gc-sep,.tc-toolopts .tc-gco input.tc-gc-sep{width:3.2em;font:12px Arial;text-align:center;padding:2px 4px;border:1px solid var(--mbu-border-strong);border-radius:var(--mbu-radius);background:var(--mbu-bg);color:var(--mbu-text);margin:0}
     .tc-gco input.tc-gc-sep:focus{border-color:var(--mbu-accent);outline:none}
     .tc-colso{gap:4px}
     .tc-colbtn{font:12px Arial;padding:2px 9px;border:1px solid var(--mbu-border);border-radius:4px;background:var(--mbu-bg);cursor:pointer;color:var(--mbu-text)}
