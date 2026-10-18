@@ -26,7 +26,7 @@ test('#784: the gallery shows in the card, scrolls with it and goes full screen'
   await page.locator('#mc-root #mc-as-slot').waitFor({ timeout: 200_000 });
   const fr = page.frames().find(f => /mc_frame=/.test(f.url()));
   await fr.waitForSelector('.as-sec-more', { timeout: 60_000 });
-  await page.locator('#mc-root #mc-as-slot').scrollIntoViewIfNeeded();
+  await page.evaluate(() => document.getElementById('mc-as-slot').scrollIntoView({ block: 'center' }));   // the slot of now: a repaint makes a new one
   const geo = () => page.evaluate(() => {
     const s = document.getElementById('mc-as-slot').getBoundingClientRect(), f = document.querySelector('iframe[src*="mc_frame="]'), r = f.getBoundingClientRect();
     return { slot: [Math.round(s.left), Math.round(s.top), Math.round(s.width), Math.round(s.height)], frame: [Math.round(r.left), Math.round(r.top), Math.round(r.width), Math.round(r.height)], op: getComputedStyle(f).opacity };
