@@ -52,7 +52,11 @@ test('#787: a removal stays in place, and an open removal links to its edit', { 
   check(after.rm && after.keep, `the marked cover has the REMOVE ribbon and keep (${JSON.stringify(after)})`);
   check(JSON.stringify(after.ids) === JSON.stringify(before), 'it stays in its place');
   check(!after.sec, 'no Marked for removal section');
-  await page.locator('#as-root').screenshot({ path: 'test-results/as-787.png' });
+  const two = page.locator(`#as-root .as-card[data-id="${first}"]`), mark = page.locator(`#as-root .as-card[data-id="${other}"]`);
+  await two.screenshot({ path: 'test-results/as-787-open.png' }); await mark.screenshot({ path: 'test-results/as-787-rm.png' });
+  await page.evaluate(() => document.documentElement.setAttribute('data-mbu-theme', 'dark'));
+  await two.screenshot({ path: 'test-results/as-787-open-dark.png' }); await mark.screenshot({ path: 'test-results/as-787-rm-dark.png' });
+  await page.evaluate(() => document.documentElement.removeAttribute('data-mbu-theme'));
 
   // View's Hide removals hides both, and showing them again puts them back
   const hidden = async on => {
