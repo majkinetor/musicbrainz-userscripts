@@ -6,7 +6,7 @@
 import { test, check, functionSource } from '../../../dev/test/harness.mjs';
 
 async function loadWith(stored) {
-  const loadSettings = new Function('gmLoad', 'SKEY', `${await functionSource('apollo_editor', ['loadSettings'])}; return loadSettings;`)(
+  const loadSettings = new Function('gmLoad', 'SKEY', `${await functionSource('apollo_editor', ['pageCookies', 'loadSettings'])}; return loadSettings;`)(
     () => (stored === undefined ? undefined : JSON.stringify(stored)), 'apolloEditor.settings.v1');
   return loadSettings();
 }
