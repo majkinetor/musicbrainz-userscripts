@@ -1406,7 +1406,7 @@
       </div>
       <div class="as-dmeta as-dmeta-del">
         <div class="as-ddel-lbl">${esc(it.types.join(', ') || 'no type')}${it.comment ? ` — “${esc(it.comment)}”` : ''}</div>
-        <button class="as-tbtn as-undo" title="keep this image">↺ keep</button>
+        ${it._mcOffer ? '<button class="as-tbtn as-undo" title="take this image in">＋ take in</button>' : '<button class="as-tbtn as-undo" title="keep this image">↺ keep</button>'}
       </div>
     </div>`;
     const types = ALL_TYPES.map(t => `<label><input type="checkbox" value="${esc(t)}"${it.types.includes(t) ? ' checked' : ''}> ${esc(t)}</label>`).join('');
@@ -6293,7 +6293,7 @@
   html.as-embed .as-bar{position:static}
   .as-sec-more+.as-grid .as-card.del,.as-sec-more+.as-dlist .as-drow.del{opacity:1}
   .as-sec-more+.as-grid .as-card.del .as-thumb img{filter:none;opacity:.6}
-  .as-mcdup{position:absolute;left:34px;bottom:6px;max-width:calc(100% - 40px);font:600 10px var(--mbu-font);color:var(--mbu-warn);background:var(--mbu-bg);border:1px solid var(--mbu-warn-border);border-radius:4px;padding:0 4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;z-index:4}
+  .as-mcdup{position:absolute;left:34px;bottom:6px;max-width:calc(100% - 68px);font:600 10px var(--mbu-font);color:var(--mbu-warn);background:var(--mbu-bg);border:1px solid var(--mbu-warn-border);border-radius:4px;padding:0 4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;z-index:4}
   /* #695: a round icon like every other corner launcher (Falcon, Fusion); in colour while Art Station shows, monochrome while off */
   #as-switch{position:fixed;bottom:14px;right:14px;z-index:var(--mbu-z-pop);width:40px;height:40px;border-radius:50%;border:none;padding:0;display:flex;align-items:center;justify-content:center;cursor:pointer;background:transparent;box-shadow:none;opacity:.85;transition:background .15s,transform .1s,opacity .15s}
   #as-switch:hover{opacity:1;transform:scale(1.08)}
@@ -6440,6 +6440,9 @@
   .as-dim-sz,.as-dim-px{white-space:nowrap}
   .as-tbtn{position:absolute;top:6px;right:6px;border:none;border-radius:var(--mbu-radius);background:rgba(255,255,255,.92);cursor:pointer;font-size:14px;line-height:1;padding:4px 7px;color:var(--mbu-text-dim);box-shadow:0 1px 3px rgba(0,0,0,.2);opacity:0;transition:.1s}
   .as-card:hover .as-tbtn{opacity:1}
+  /* the NEW ribbon owns the top-right corner: what else sits there moves left of it, above it */
+  .as-tbtn,.as-pdfban{z-index:6}
+  .as-card.new .as-tbtn,.as-card.new .as-pdfban,.as-dthumb .as-newban~.as-pdfban{right:44px}
   .as-only{position:absolute;top:6px;left:6px;z-index:6;border:1px solid var(--mbu-border);border-radius:var(--mbu-radius);background:var(--mbu-bg);color:var(--mbu-accent-text);cursor:pointer;font:600 12px/1 var(--mbu-font);padding:5px 8px;box-shadow:0 1px 3px rgba(0,0,0,.25);opacity:0;transition:opacity .1s}
   .as-card:hover .as-only,.as-only:focus-visible{opacity:1}
   .as-only:hover{background:var(--mbu-bg-hover);border-color:var(--mbu-accent)}
