@@ -33,7 +33,15 @@ test('#680: Fusion runs on Fetch RG and marks the tracks with duplicates', { tag
   check(hits > 0, `tracks with duplicates in the release group are marked (${hits})`);
   check(await page.locator('#mc-root .mc-tbl td[data-col="fusion"] .mc-pick.on').count() === hits, 'and start selected');
 
-  const row = page.locator('#mc-root .mc-tbl td[data-col="fusion"] .mc-fxo').first().locator('xpath=ancestor::tr');
+  // a badge in the row (the count, the tick) leaves the inspector closed; the row itself opens it
+  const insp = page.locator('#mc-root .mc-insp');
+  if (await insp.isVisible()) await page.click('#mc-root [data-close="right"]');
+  const fxo = page.locator('#mc-root .mc-tbl td[data-col="fusion"] .mc-fxo').first();
+  await fxo.click(); await fxo.click();   // opens the comparison and folds it again
+  const row = fxo.locator('xpath=ancestor::tr');
+  const tick = row.locator('td[data-col="fusion"] .mc-pick').first();
+  await tick.click(); await tick.click();   // leaves it out and takes it in again
+  check(!(await insp.isVisible()), 'a click on a badge leaves the inspector closed');
   await row.locator('td.ttl').click();   // the title cell: the row's middle can be a pick cell
   check(await page.locator('#mc-root .mc-insp a[href^="/recording/"]').count() >= 2, 'inspector lists the matching recordings');
 

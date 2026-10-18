@@ -53,7 +53,7 @@ One row per track, a column per script: the ISRCs and recording links ISRC Scout
 
 The Tracks header counts the changes taken in and on how many tracks; each track with one has a bar on its left.
 
-Click a finding to take it in, and again to leave it out; what is taken in is tinted and ticked. New findings start taken in. A click anywhere in a track's row also shows it in the [Inspector](#inspector).
+Click a finding to take it in, and again to leave it out; what is taken in is tinted and ticked. New findings start taken in. A click anywhere else in a track's row also shows it in the [Inspector](#inspector); a click on a finding or a badge only shows it there when the Inspector is already open.
 
 To take in or leave out many at once, hold a key while you click: the others follow the one you click.
 
