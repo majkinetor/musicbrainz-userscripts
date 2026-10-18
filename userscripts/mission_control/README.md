@@ -18,7 +18,7 @@ One window on a release page that asks the other scripts what the release is mis
 - **[Tracks](#tracks)**: a row per track with its ISRCs, recording links, duplicate recordings and credits.
 - **[Release and entity links](#release-and-entity-links)**: the platform pages found for the release, its artists and its labels.
 - **[Compare with the platforms](#compare-with-the-platforms)**: read the release on its platforms and add what it lacks: a barcode, labels and catalog numbers, a release event, track lengths.
-- **[Cover art](#cover-art)**: the best cover found, beside the current front, and the other images Discogs and Amazon have, to type and add.
+- **[Cover art](#cover-art)**: the best cover found, beside the current front, and Art Station's gallery, to add, order and type the other images Discogs and Amazon have.
 - **[Release credits](#release-credits)**: what the credit sources have, with a way into Credit Hoarder.
 - **[Inspector](#inspector)**: everything found for one track.
 - **[Execute](#execute)**: applies what you selected, script by script, in a fixed order.
@@ -119,18 +119,15 @@ Art Station looks for the largest cover on the platforms the release links, and 
 
 Each platform searched shows how large its own cover is on the right, or *no cover*; click the size to open that cover. A release without a front cover starts with the cover taken in. Click either image to see both full screen, with **←** **→** between them.
 
-### More images
+### Gallery
 
-Discogs and Amazon have every image of a release: the back, the medium, the booklet. Under the front, **More images** shows the others, a row for each store (the one with the larger images first):
+Under the front, the card shows [Art Station's gallery](../art_station/README.md#gallery) for the release, with everything it does there: drag covers into order, set types and comments, remove, rotate, view full screen. When the gallery would take more than two rows, the card is two columns wide.
 
-- Right-click an image to take it in, and again to leave it out; right-drag across several to do the same to each. **take all in** beside a store takes in all its images, then says **leave all out**. Nothing starts taken in.
-- Click an image to see it full screen, with **←** **→** to the others. **Enter** there writes its comment, and **Enter** again goes to the next image's; **Esc** stops writing.
-- Click its type pill (*＋ type*) to tick its types; right-click a type to set only that one. The stores don't say what an image is, so nothing starts typed. Setting a type takes the image in.
-- ✎, on the left when you point at an image, adds a comment. **Enter** moves to the next image's comment.
+Discogs and Amazon have every image of a release: the back, the medium, the booklet. The gallery puts the others at its end under **More images**, a row for each store (the one with the larger images first). Click **＋ take in** on one, or **＋ take all in** beside a store, to add them after the covers, then drag them where they go. The stores don't say what an image is, so nothing starts typed. An image that is the same picture as a cover the release already has says *in archive*, even one just entered; one that is the same as the best front or as a larger image says which (*= Amazon 1*).
 
-An image that is the same picture as a cover the release already has says *in archive*, even one just entered; one that is the same as the best front or as a larger image says which (*= Amazon 1*). They can still be taken in.
+Taking the best front's platform in or out on the card puts the best cover in the gallery or leaves it out (waiting in *More images*), and with it the removal of the smaller front it replaces. What you change in the gallery wins over that. Under the gallery, **Execute:** lists what Execute will do there, and Execute counts it.
 
-Execute enters the images taken in after the front, with their types and comments, in the same edit. Those it entered show *entered*. With only these taken in, the front is left out. An image MusicBrainz didn't take shows its error on the card, with **Retry**.
+Execute enters what the gallery holds: Art Station's own **Enter edit** isn't shown. An image MusicBrainz didn't take shows its error on the card, with **Retry**.
 
 An upload that fails is repeated as Art Station's [auto-repeat](../art_station/README.md#applying-changes) setting says, and the card shows each attempt.
 
@@ -184,14 +181,10 @@ A label with another catalog number keeps it. A label the release hasn't is adde
 
 ## Shortcuts
 
-| Key         | Where                |                                                        |
-| ----------- | -------------------- | ------------------------------------------------------ |
-| right-click | a link in a row      | take it in or leave it out, instead of opening it      |
-| Ctrl / Alt  | a click in Tracks    | the whole track / the whole column ([Tracks](#tracks)) |
-| drag        | ISRCs or duplicates  | take in or leave out every one you pass                |
-| ← →         | a cover full screen  | the other cover                                        |
-| right-click | one of More images   | take it in or leave it out; right-drag: each you pass  |
-| right-click | a type in the list   | that type only                                         |
-| Enter       | an image's comment   | the next image's comment                               |
-| Enter       | an image full screen | write its comment                                      |
-| right-click | the corner icon      | settings                                               |
+| Key         | Where               |                                                        |
+| ----------- | ------------------- | ------------------------------------------------------ |
+| right-click | a link in a row     | take it in or leave it out, instead of opening it      |
+| Ctrl / Alt  | a click in Tracks   | the whole track / the whole column ([Tracks](#tracks)) |
+| drag        | ISRCs or duplicates | take in or leave out every one you pass                |
+| ← →         | a cover full screen | the other cover                                        |
+| right-click | the corner icon     | settings                                               |

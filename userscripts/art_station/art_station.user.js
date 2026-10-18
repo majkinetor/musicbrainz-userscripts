@@ -363,14 +363,74 @@
         : n ? 'Cover art: ' + n + ' image' + (n === 1 ? '' : 's') + (front ? ', front cover ✓' : ', no front cover') : 'Cover art: none yet';
       log.info('Mission Control probe ' + d.run + ': ' + summary + ' (archive ' + imgs.length + ', tab ' + tabN + ', frame ' + existing.length + ') · ' + findings.length + ' source(s): ' + findings.map(x => x.name).join(', ') + (why ? ' · ' + why : ''));
       send('mc:findings', { id: 'as', run: d.run, release: rel, summary, findings, best: best ? Object.assign({ larger, replace, unknown, current: top || null }, best) : null });
+      stage();
     });
-    // #680: covers are sourced and entered in a hidden frame of the cover-art page, where Art
-    // Station runs headless (mc_frame) and talks back by postMessage. One frame at a time.
-    let frame = null;   // { el, token, urls, best }
+    // #680: covers are sourced and entered in a frame of the cover-art page, where Art Station runs
+    // for Mission Control (mc_frame) and talks back by postMessage. One frame at a time.
+    // #784: the frame is Art Station's own gallery, shown in MC's cover-art card (mc_embed)
+    let frame = null;   // { el, token, urls, best, existing, h, full, used }
     const frameMsgs = new Set();
     window.addEventListener('message', e => {
       if (e.origin !== location.origin || !e.data || e.data.mcAs !== 1 || !frame || e.data.token !== frame.token) return;
       frameMsgs.forEach(f => f(e.data));
+    });
+    const framePost = o => { if (frame) frame.el.contentWindow.postMessage(Object.assign({ mcAs: 1, token: frame.token }, o), location.origin); };
+    // #784: the best front in or out as its source rows are ticked on MC's card (mc:stage), and with it the smaller
+    // front it replaces, so the gallery shows what Execute does
+    let stageFront = null;
+    const stage = () => { if (frame && frame.best && stageFront !== null) framePost({ type: 'stage', front: stageFront, replace: !!mcPlan.replace }); };
+    document.addEventListener('mc:stage', e => {
+      let d = {};
+      try { d = JSON.parse(e.detail) || {}; } catch (x) { return; }
+      if (d.id !== 'as' || (d.release && d.release !== rel)) return;
+      stageFront = !!d.front;
+      stage();
+    });
+    // #784: the frame is kept over the card's slot (#mc-as-slot), as moving an iframe into the card loads it again:
+    // clipped to what the card's scrolling shows, hidden while MC shows something of its own over the card, and
+    // over the whole window while the gallery shows full screen or a dialog. The slot takes the gallery's height.
+    const HIDDEN = w => 'position:fixed;left:-20000px;top:0;width:' + (w || 1200) + 'px;height:900px;border:0;opacity:0;pointer-events:none';
+    let clipBy = { slot: null, xs: [] };
+    const scrollers = slot => {
+      if (clipBy.slot !== slot) {
+        const xs = [];
+        for (let n = slot.parentElement; n && n !== document.documentElement; n = n.parentElement) { const o = getComputedStyle(n); if (/auto|scroll|hidden|clip/.test(o.overflowX + o.overflowY)) xs.push(n); }
+        clipBy = { slot, xs };
+      }
+      return clipBy.xs;
+    };
+    const covered = () => !!document.querySelector('#mc-cover, #mc-root .mbu-ov, body > .mbu-ov, #mbu-logpop:not(.min)');
+    let placeOn = false;
+    const place = () => {
+      if (!frame) { placeOn = false; return; }
+      const f = frame.el, slot = document.getElementById('mc-as-slot');
+      let css;
+      if (frame.full) css = 'position:fixed;left:0;top:0;width:100vw;height:100vh;border:0;opacity:1;pointer-events:auto;z-index:2147483646';
+      else {
+        const r = slot && frame.h ? slot.getBoundingClientRect() : null;
+        if (slot && frame.h && slot.style.height !== frame.h + 'px') slot.style.height = frame.h + 'px';
+        if (!r || !r.width || covered()) css = HIDDEN(r && r.width ? Math.round(r.width) : frame.w);
+        else {
+          frame.w = Math.round(r.width);
+          let t = r.top, b = r.top + frame.h, l = r.left, rt = r.right;
+          scrollers(slot).forEach(n => { const q = n.getBoundingClientRect(); t = Math.max(t, q.top); b = Math.min(b, q.bottom); l = Math.max(l, q.left); rt = Math.min(rt, q.right); });
+          css = b <= t || rt <= l ? HIDDEN(frame.w)
+            : 'position:fixed;left:' + r.left + 'px;top:' + r.top + 'px;width:' + r.width + 'px;height:' + frame.h + 'px;border:0;opacity:1;pointer-events:auto;z-index:2147483001;'
+              + 'clip-path:inset(' + Math.max(0, t - r.top) + 'px ' + Math.max(0, r.right - rt) + 'px ' + Math.max(0, r.top + frame.h - b) + 'px ' + Math.max(0, l - r.left) + 'px)';
+        }
+      }
+      if (f.style.cssText !== css) f.style.cssText = css;
+      if (slot || frame.full) requestAnimationFrame(place); else setTimeout(place, 400);
+    };
+    frameMsgs.add(m => {
+      if (m.type === 'size') frame.h = m.h;
+      else if (m.type === 'full') { frame.full = !!m.on; if (m.on) frame.el.focus(); }
+      else if (m.type === 'wheel') {
+        const slot = document.getElementById('mc-as-slot'), xs = slot ? scrollers(slot) : [];
+        const k = m.mode === 1 ? 16 : m.mode === 2 ? innerHeight : 1;
+        (xs.find(n => n.scrollHeight > n.clientHeight) || document.scrollingElement).scrollBy(m.dx * k, m.dy * k);
+      }
+      else if (m.type === 'plan') { frame.plan = m; send('mc:plan', { id: 'as', release: rel, ops: m.ops || [], more: m.more || 0, n: m.n || 0, tile: m.tile || 0 }); }
     });
     // the ticks are a self-ending setTimeout chain, not setInterval: in Violentmonkey on Firefox the
     // interval outlived its clearInterval and kept reporting "finding the best cover" after the answer (#680)
@@ -388,17 +448,25 @@
       frameMsgs.add(f);
       setTimeout(tick, 3000);
     });
+    // #784: a probe keeps the frame, and what was arranged in its gallery, while its sources are the same and
+    // nothing was entered from it
     async function mcSource(urls, onTick) {
+      const key = urls.slice().sort().join(' ');
+      if (frame && frame.best && !frame.used && frame.urls === key) {
+        log.info('Mission Control: keeping the gallery, its sources are the same: ' + urls.join(' '));
+        return { best: frame.best, existing: frame.existing };
+      }
       if (frame) { frame.el.remove(); frame = null; }
       const token = Math.random().toString(36).slice(2);
       const el = document.createElement('iframe');
-      el.setAttribute('aria-hidden', 'true'); el.tabIndex = -1;
-      el.style.cssText = 'position:fixed;left:-20000px;top:0;width:1200px;height:900px;border:0;opacity:0;pointer-events:none';
-      el.src = location.origin + '/release/' + rel + '/cover-art?mc_frame=' + token + '&mc_source=' + encodeURIComponent(JSON.stringify(urls));
-      frame = { el, token, urls: urls.slice().sort().join(' '), best: null };
-      log.info('Mission Control: sourcing the best cover in a hidden frame from ' + urls.join(' '));
+      el.setAttribute('title', 'Art Station');
+      el.style.cssText = HIDDEN();
+      el.src = location.origin + '/release/' + rel + '/cover-art?mc_frame=' + token + '&mc_embed=1&mc_source=' + encodeURIComponent(JSON.stringify(urls));
+      frame = { el, token, urls: key, best: null, h: 0, w: 0, full: false, used: false };
+      log.info('Mission Control: sourcing the best cover in a frame from ' + urls.join(' '));
       const got = waitFrame('best', 300000, s => onTick && onTick('finding the best cover (' + s + ' s)'));
       document.body.appendChild(el);
+      if (!placeOn) { placeOn = true; place(); }
       const m = await got;
       if (!frame || frame.token !== token) return null;
       frame.best = m ? m.best : null; frame.existing = (m && m.existing) || [];
@@ -409,56 +477,49 @@
       let d = {};
       try { d = JSON.parse(e.detail) || {}; } catch (x) { return; }
       if (d.id !== 'as' || (d.release && d.release !== rel)) return;
-      // #772: extras, the stores' other images taken in on MC's card ({ key, types, comment }); front: whether a
-      // source row is taken in, so the best front is entered too. Extras alone come from the probe's sources.
-      const extras = Array.isArray(d.extras) ? d.extras : [];
-      let urls = last.filter(x => (d.keys || []).includes(x.p.name)).map(x => x.u);
+      // #784: Execute enters what the gallery holds: the best front when a source row is taken in (front), the
+      // stores' other images taken in there, and whatever else was changed in it
+      const urls = last.filter(x => (d.keys || []).includes(x.p.name)).map(x => x.u);
       const front = urls.length > 0;
-      if (!front && extras.length && frame) urls = frame.urls.split(' ').filter(Boolean);
-      // the stores the extras come from are sourced too, should the probe's frame not serve
-      const provUrl = name => { const n = String(name || '').toLowerCase(); return (last.find(x => n === x.p.name.toLowerCase() || n.includes(x.p.name.toLowerCase())) || {}).u; };
-      extras.forEach(x => { const u = provUrl(x.key.split('#')[0]); if (u && !urls.includes(u)) urls.push(u); });
       const reply = o => send('mc:applied', Object.assign({ id: 'as', run: d.run, release: rel }, o));
       const busy = note => send('mc:progress', { id: 'as', run: d.run, state: 'busy', note });
-      const more = extras.length ? extras.length + ' more image' + (extras.length === 1 ? '' : 's') : '';
-      if (!urls.length) { reply({ ok: true, sent: 0, note: 'nothing to source' }); return; }
-      if (d.dry) { reply({ ok: true, sent: 0, note: 'dry run: would enter ' + [front && 'the best cover of ' + urls.length + ' source' + (urls.length === 1 ? '' : 's') + (frame && frame.best ? ' (' + frame.best.provider + ' ' + frame.best.w + '×' + frame.best.h + ')' : ''), more].filter(Boolean).join(' and ') }); return; }
-      // the probe's best is reused when it came from a ticked source and every ticked source was in
-      // that probe: the best of more sources is also the best of the ticked ones. Otherwise source again.
-      const probed = frame ? frame.urls.split(' ') : [];
-      const bp = String((frame && frame.best && frame.best.provider) || '').toLowerCase();
-      const bestUrl = bp && (last.find(x => bp === x.p.name.toLowerCase() || bp.includes(x.p.name.toLowerCase())) || {}).u;
-      const same = !!frame && probed.slice().sort().join(' ') === urls.slice().sort().join(' ');
-      const reuse = !!(frame && frame.best && urls.every(u => probed.includes(u)) && (same || (bestUrl && urls.includes(bestUrl))));
-      log.info('Mission Control apply: ' + (reuse ? 'reusing the best cover from the probe (' + frame.best.provider + ')' : 'sourcing again for ' + urls.join(' ')));
-      if (!reuse) {
+      const more = frame && frame.plan ? frame.plan.more || 0 : 0;
+      if (!front && !more) { reply({ ok: true, sent: 0, note: 'nothing to enter' }); return; }
+      if (d.dry) {
+        const ops = (frame && frame.plan && frame.plan.ops) || [];
+        reply({ ok: true, sent: 0, note: 'dry run: would ' + (ops.length ? ops.map(o => o.label).join(' · ') : 'enter the best cover of ' + urls.length + ' source' + (urls.length === 1 ? '' : 's')) });
+        return;
+      }
+      if (!frame || !frame.best || frame.used) {
+        // no gallery to enter from (the probe found nothing, or it was entered from already): source again
         busy('finding the best cover');
-        const r = await mcSource(urls, busy);
+        const r = await mcSource(urls.length ? urls : last.map(x => x.u), busy);
         if (!r || !r.best) { reply({ ok: false, sent: 0, note: 'no cover could be imported' }); return; }
-        // the same comparison as the probe's, for the new pick
         const { top, larger, replace, unknown } = vsFronts(r.best, r.existing);
         mcPlan = { replace };
+        stageFront = front; stage();   // a new gallery: the best front as the source rows say
         send('mc:progress', { id: 'as', run: d.run, state: 'busy', note: 'entering the cover', best: Object.assign({ larger, replace, unknown, current: top || null }, r.best) });
       }
-      busy(front ? 'entering the cover' : 'entering ' + more);
+      if (stageFront === null) { stageFront = front; stage(); }   // never staged (no card painted): as the source rows say
+      log.info('Mission Control apply: entering the gallery' + (front ? ' with the best cover (' + frame.best.provider + ')' : ' without the best cover'));
+      busy('entering the cover art');
       // #741: the frame repeats a failed upload (auto-repeat), which can take longer than ten minutes: it is
       // waited for while it says what it does, and its word is the note
-      let word = 'entering the cover', heard = Date.now();
+      let word = 'entering the cover art', heard = Date.now();
       const onWord = m => { if (m.type === 'progress') { word = m.note || word; heard = Date.now(); busy(word); } };
       frameMsgs.add(onWord);
       const got = waitFrame('entered', 6 * 3600000, s => { if (Date.now() - heard > 600000) frameMsgs.forEach(f => f({ type: 'entered', ok: false, error: 'no word from the cover-art frame for 10 minutes' })); else busy(word + ' (' + s + ' s)'); });
-      frame.el.contentWindow.postMessage({ mcAs: 1, token: frame.token, type: 'enter', replace: front && mcPlan.replace, front, extras, note: 'Via Mission Control' + (d.mc ? ' v' + d.mc : '') + ': ' + location.origin + '/release/' + rel }, location.origin);
+      framePost({ type: 'enter', front, replace: front && mcPlan.replace, note: 'Via Mission Control' + (d.mc ? ' v' + d.mc : '') + ': ' + location.origin + '/release/' + rel });
       const m = await got;
       frameMsgs.delete(onWord);
       log.info('Mission Control apply: ' + JSON.stringify(m));
       const b = frame.best;
-      if (!m) reply({ ok: false, sent: 0, note: 'Art Station did not finish within 10 minutes' });
+      if (m && m.ok) frame.used = true;
+      if (!m) reply({ ok: false, sent: 0, note: 'Art Station did not finish' });
       else if (m.ok) {
-        // #772: the count is the frame's, which knows which images it found again
-        const nx = typeof m.extrasIn === 'number' ? m.extrasIn : extras.length, lost = Array.isArray(m.missing) ? m.missing : [];
-        const moreIn = nx ? nx + ' more image' + (nx === 1 ? '' : 's') : '';
-        reply({ ok: true, sent: (front ? 1 : 0) + nx, extras: extras.filter(x => !lost.includes(x.key)), note: [front && 'entered ' + b.provider + ' ' + b.w + '×' + b.h + ' as the front cover' + (mcPlan.replace ? ', and removed the smaller one' : ''), moreIn && (front ? 'and ' : 'entered ') + moreIn,
-          lost.length && '(' + lost.join(', ') + ' not found this time)'].filter(Boolean).join(' ') });
+        const nx = m.extrasIn || 0, other = Math.max(0, (m.total || 0) - (m.front ? 1 : 0) - nx);
+        reply({ ok: true, sent: (m.front ? 1 : 0) + nx + other, note: [m.front && 'entered ' + b.provider + ' ' + b.w + '×' + b.h + ' as the front cover' + (m.replaced ? ', and removed the smaller one' : ''),
+          nx && (m.front ? 'and ' : 'entered ') + nx + ' more image' + (nx === 1 ? '' : 's'), other && other + ' other change' + (other === 1 ? '' : 's') + ' from the gallery'].filter(Boolean).join(' ') || 'done' });
       }
       else reply({ ok: false, sent: 0, retry: !m.cancelled && !!m.retry, note: m.cancelled ? 'cancelled' : 'the edit failed' + (m.error ? ': ' + m.error : '') + (m.gaveUp ? ' (repeated for ' + m.gaveUp + ')' : '') });
     });
@@ -1209,12 +1270,23 @@
       <div class="as-grid">${news.map(card).join('')}</div>`;
   }
   function deletedSection() {
+    // #784: the stores' other images Mission Control's frame keeps left out have a section of their own
+    const sec = (dels, title, cls, extra) => {
+      if (!dels.length) return '';
+      const body = SETTINGS.detailed   // match the current view — detail rows, not grid cards
+        ? `<div class="as-dlist">${dels.map(detailRow).join('')}</div>`
+        : `<div class="as-grid">${dels.map(card).join('')}</div>`;
+      return `<div class="as-sec ${cls}"><h3>${title}</h3><span class="as-cnt">${dels.length}</span>${extra || ''}<span class="as-line"></span></div>${body}`;
+    };
     const dels = MODEL.filter(it => it._del);
-    if (!dels.length) return '';
-    const body = SETTINGS.detailed   // match the current view — detail rows, not grid cards
-      ? `<div class="as-dlist">${dels.map(detailRow).join('')}</div>`
-      : `<div class="as-grid">${dels.map(card).join('')}</div>`;
-    return `<div class="as-sec as-sec-del"><h3>Marked for removal</h3><span class="as-cnt">${dels.length}</span><span class="as-line"></span></div>${body}`;
+    // a row per store (the one with the larger images first), each with its take all in
+    const offer = dels.filter(it => it._mcOffer).sort((a, b) => a.order - b.order), stores = [];
+    offer.forEach(it => { const p = it._provider || 'Other'; let g = stores.find(x => x.p === p); if (!g) stores.push(g = { p, xs: [] }); g.xs.push(it); });
+    const area = g => Math.max(...g.xs.map(x => (x.w || 0) * (x.h || 0)));
+    stores.sort((a, b) => area(b) - area(a));
+    return sec(dels.filter(it => !it._mcOffer), 'Marked for removal', 'as-sec-del')
+      + stores.map(g => sec(g.xs, `More images · ${esc(g.p)}: take in, then drag into place`, 'as-sec-del as-sec-more',
+        `<button class="as-btn as-more-all" data-prov="${esc(g.p)}" title="Take in every ${esc(g.p)} image, after the covers">＋ take all in</button>`)).join('');
   }
   // Stable CAA thumbnails are HTTP-cached, so recreating their <img> on each
   // render is cheap and flicker-free. NEW (blob) and PENDING (no CAA thumb yet →
@@ -1282,7 +1354,8 @@
         ${it._new ? '<span class="as-newban">NEW</span>' : ''}
         ${it._pdf ? '<span class="as-pdfban" title="PDF — opens in a new tab">PDF</span>' : ''}
         ${provBadge(it)}
-        ${it._del ? '<button class="as-tbtn as-undo" title="keep this image">↺ keep</button>' : ''}
+        ${it._del ? (it._mcOffer ? '<button class="as-tbtn as-undo" title="take this image in">＋ take in</button>' : '<button class="as-tbtn as-undo" title="keep this image">↺ keep</button>') : ''}
+        ${it._mcDup ? `<span class="as-mcdup" title="the same picture as ${esc(it._mcDup.replace(/^= /, ''))}">${esc(it._mcDup)}</span>` : ''}
         ${onlyBtn(it)}
       </div>
       ${foot(it)}
@@ -1340,7 +1413,7 @@
       </div>
       <div class="as-dmeta as-dmeta-del">
         <div class="as-ddel-lbl">${esc(it.types.join(', ') || 'no type')}${it.comment ? ` — “${esc(it.comment)}”` : ''}</div>
-        <button class="as-tbtn as-undo" title="keep this image">↺ keep</button>
+        ${it._mcOffer ? '<button class="as-tbtn as-undo" title="take this image in">＋ take in</button>' : '<button class="as-tbtn as-undo" title="keep this image">↺ keep</button>'}
       </div>
     </div>`;
     const types = ALL_TYPES.map(t => `<label><input type="checkbox" value="${esc(t)}"${it.types.includes(t) ? ' checked' : ''}> ${esc(t)}</label>`).join('');
@@ -1482,7 +1555,23 @@
     // left click genuinely calls enterEdit() with no argument (falsy).
     const commit = root.querySelector('.as-commit'); if (commit && !commit.disabled) { commit.onclick = () => enterEdit(); commit.oncontextmenu = e => { e.preventDefault(); enterEdit(true); }; }   // #493: right-click — skip the review dialog
 
-    root.querySelectorAll('.as-undo').forEach(b => b.onclick = e => { e.stopPropagation(); const it = byId(cardId(e.target)); if (it) { it._del = false; render(); } });
+    // #784: a store image taken in goes last, to be dragged into place from there; the best front goes in typed Front
+    const takeIn = xs => {
+      xs.forEach(it => { it._del = false; if (it === _mcBest && !(it.types || []).includes('Front')) it.types = ['Front'].concat(it.types || []); });
+      const seq = MODEL.filter(x => !xs.includes(x)).sort((a, b) => a.order - b.order).concat(xs); seq.forEach((x, i) => x.order = i);
+    };
+    root.querySelectorAll('.as-undo').forEach(b => b.onclick = e => {
+      e.stopPropagation(); const it = byId(cardId(e.target)); if (!it) return;
+      if (it._mcOffer) takeIn([it]); else it._del = false;
+      render();
+    });
+    root.querySelectorAll('.as-more-all').forEach(b => b.onclick = e => {
+      e.stopPropagation();
+      const xs = MODEL.filter(it => it._del && it._mcOffer && (it._provider || 'Other') === b.dataset.prov).sort((a, c) => a.order - c.order);
+      takeIn(xs);
+      asLog.info(`Mission Control: took in every ${b.dataset.prov} image (${xs.length})`);
+      render();
+    });
     root.querySelectorAll('.as-only').forEach(b => b.onclick = e => { e.stopPropagation(); keepOnly(byId(cardId(b))); });
     wireComments();
     wireDetail();
@@ -2965,11 +3054,14 @@
         asLog.info(`Best cover: ${best._provider || best.id} ${best.w}×${best.h} (${best.bytes ? fmtBytes(best.bytes) : '?'}) of ${cands.length}`);
         // the losers are removed outright, not marked for removal — they never show up at all
         const drop = MODEL.filter(x => !before.has(x.id) && x !== best && !x._sourcing);
-        // #772: in Mission Control's frame they are the store's other images, offered on MC's card: kept aside, off the gallery
+        // #772: in Mission Control's frame they are the store's other images: #784 they stay in the gallery, left out
+        // (in their own section) until taken in
         if (MC_FRAME) _mcPool = drop.filter(x => x._new && !x._del && !x._pdf && x.w > 0);
-        drop.forEach(x => { try { if (x._file && !_mcPool.includes(x)) URL.revokeObjectURL(x._file); } catch (e) {} });
-        MODEL = MODEL.filter(x => !drop.includes(x)); MODEL.forEach((x, i) => x.order = i);
-        asLog.info(`Best cover: removed the other ${drop.length} imported ${drop.length === 1 ? ITEM : ITEMS}${drop.length ? ` (${drop.map(x => `${x._provider || x.id} ${x.w}×${x.h}`).join(', ')})` : ''}`);
+        _mcPool.forEach(x => { x._del = true; x._sel = false; x._mcPool = x._mcOffer = true; });
+        const gone = drop.filter(x => !_mcPool.includes(x));
+        gone.forEach(x => { try { if (x._file) URL.revokeObjectURL(x._file); } catch (e) {} });
+        MODEL = MODEL.filter(x => !gone.includes(x)); MODEL.forEach((x, i) => x.order = i);
+        asLog.info(`Best cover: removed the other ${gone.length} imported ${gone.length === 1 ? ITEM : ITEMS}${gone.length ? ` (${gone.map(x => `${x._provider || x.id} ${x.w}×${x.h}`).join(', ')})` : ''}${_mcPool.length ? `; ${_mcPool.length} left out for Mission Control's gallery` : ''}`);
         toast(cands.length > 1 ? `Kept the best of ${cands.length}: ${best._provider || ''} ${best.w}×${best.h}` : `Only one cover found — ${best._provider || 'kept'}`);
         render();
         onDone(best);
@@ -3009,11 +3101,10 @@
   const flatHash = h => { const ones = h.split('1').length - 1; return ones < 4 || ones > 60; };
   // a store's images in the order it gave them, keyed by the store (the link it came from)
   const provKey = x => x._provUrl || x._provider || '';
-  // #772: the other images of the stores that gave several (Discogs, Amazon): Mission Control offers them beside the
-  // best front, each with a preview, its place in the store's list (`key`, which a new sourcing gives again) and
-  // `dup` when it is the same picture as a cover already in the archive, the best front, or a larger one of them
+  // #772: the other images of the stores that gave several (Discogs, Amazon), each with its place in the store's
+  // list (`key`) and `dup` when it is the same picture as a cover already in the archive, the best front, or a larger
+  // one of them; #784 the dup shows on its card in the gallery (_mcDup)
   async function mcExtras(best) {
-    _mcExtras = new Map();
     if (!best || !_mcPool.length) return [];
     const all = [best, ..._mcPool].sort((a, b) => (a._seq || 0) - (b._seq || 0));
     const groups = new Map();
@@ -3043,8 +3134,7 @@
       if (x === best) continue;
       const r = await hashOf(x._file);
       const l = label.get(x), key = l.name + '#' + l.n;
-      const e = { key, provider: l.name, n: l.n, of: l.of, w: x.w || 0, h: x.h || 0, bytes: x.bytes || 0, url: x._provImageUrl || '', thumb: '', types: (x.types || []).filter(t => t !== 'Front'), _h: r && r.h, _x: x };
-      if (r) e.thumb = scaled(r.bmp, 240, 0.8);
+      const e = { key, provider: l.name, n: l.n, of: l.of, w: x.w || 0, h: x.h || 0, bytes: x.bytes || 0, url: x._provImageUrl || '', types: (x.types || []).filter(t => t !== 'Front'), _h: r && r.h, _x: x };
       extras.push(e);
     }
     const lb = x => { const l = label.get(x); return l ? l.name + ' ' + l.n : 'the best front'; };
@@ -3056,7 +3146,7 @@
       const big = extras.find(o => o !== e && o._h && hamming(o._h, e._h) <= SAME_PICTURE && (o.w * o.h > e.w * e.h || (o.w * o.h === e.w * e.h && extras.indexOf(o) < extras.indexOf(e))));
       if (big) e.dup = '= ' + big.provider + ' ' + big.n;
     });
-    extras.forEach(e => { _mcExtras.set(e.key, e._x); delete e._h; delete e._x; });
+    extras.forEach(e => { e._x._mcDup = e.dup || ''; e._x._mcKey = e.key; delete e._h; delete e._x; });
     // the store that gives the larger images leads (Amazon's are usually larger than Discogs')
     const area = p => Math.max(0, ...extras.filter(e => e.provider === p).map(e => e.w * e.h));
     extras.sort((a, b) => (a.provider === b.provider ? a.n - b.n : area(b.provider) - area(a.provider)));
@@ -3066,7 +3156,7 @@
   // test hook only (#772): the frame's pool and best set by a spec, as sourceBest leaves them
   if (mbuTestHooks()) (window.__asTest || (window.__asTest = {})).mc = {
     model: () => MODEL,
-    offer: (best, pool) => { _mcBest = best; _mcPool = pool; MODEL = MODEL.filter(x => !pool.includes(x)); MODEL.forEach((x, i) => x.order = i); render(); return mcExtras(best); },
+    offer: (best, pool) => { _mcBest = best; _mcPool = pool; pool.forEach(x => { x._del = true; x._sel = false; x._mcPool = x._mcOffer = true; }); render(); return mcExtras(best).then(xs => { render(); return xs; }); },
   };
   // #680: Mission Control opened this page with ?mc_source=[links] — import from those
   // links and keep the best cover, as a middle-click on the URL button does
@@ -3091,7 +3181,7 @@
         // full: the archive's own image, for Mission Control's full-screen view
         const existing = fronts().map(x => ({ id: x.id, w: x.w || 0, h: x.h || 0, bytes: x.bytes || 0, thumb: x.id ? thumb(x.id, 250) : '', full: x._img || (x.id ? thumb(x.id, 1200) : '') }));
         asLog.info(`Mission Control: existing front cover(s): ${existing.map(x => `#${x.id} ${x.w ? x.w + '×' + x.h : 'size unknown (not processed yet?)'}`).join(', ') || 'none'}`);
-        if (out) { out.extras = extras; out.types = COVER_TYPES.slice(); }
+        if (extras.length) render();   // #784 the dups on their cards
         mcFramePost({ type: 'best', best: out, existing });
       });
       if (!best || !best._file) { post(); return; }
@@ -3107,57 +3197,99 @@
   // the frame runs Enter edit and answers { type: 'entered', ok, errs, total }.
   const MC_FRAME = window.top !== window ? new URLSearchParams(location.search).get('mc_frame') : null;
   function mcFramePost(o) { try { window.parent.postMessage(Object.assign({ mcAs: 1, token: MC_FRAME }, o), location.origin); } catch (e) { asLog.warn('Mission Control: post failed: ' + (e && e.message)); } }
+  let _mcCommitDone = null, _mcBest = null, _mcNoteBase = null, _mcPool = [];   // #772 _mcPool: the stores' other images; #784 in the gallery, left out until taken in
+  // #784: the best front in or out as its source rows are ticked on Mission Control's card; with it in, the one
+  // smaller front it replaces is marked for removal (and kept again when it goes out)
+  let _mcReplaced = null, _mcFront = false;
+  function mcStage(front, replace) {
+    if (!_mcBest || !MODEL.includes(_mcBest)) return;
+    _mcFront = front;
+    _mcBest._del = !front; _mcBest._mcOffer = true;   // left out, it waits with the stores' other images
+    if (front) { if (!(_mcBest.types || []).includes('Front')) _mcBest.types = ['Front'].concat(_mcBest.types || []); }
+    else _mcBest._sel = false;
+    if (front && replace && !_mcReplaced) {
+      const old = MODEL.filter(x => !x._new && !x._del && (x.types || []).includes('Front'));
+      if (old.length === 1) { _mcReplaced = old[0]; old[0]._del = true; old[0]._sel = false; asLog.info(`Mission Control: the smaller front #${old[0].id} ${old[0].w}×${old[0].h} marked for removal`); }
+    } else if ((!front || !replace) && _mcReplaced) { _mcReplaced._del = false; _mcReplaced = null; }
+    asLog.info(`Mission Control: the best front ${front ? 'taken in' : 'left out'}`);
+    render();
+  }
   if (MC_FRAME) window.addEventListener('message', e => {
     const d = e.data;
-    if (e.origin !== location.origin || !d || d.mcAs !== 1 || d.token !== MC_FRAME || d.type !== 'enter') return;
+    if (e.origin !== location.origin || !d || d.mcAs !== 1 || d.token !== MC_FRAME) return;
+    if (d.type === 'stage') { mcStage(!!d.front, !!d.replace); return; }
+    if (d.type !== 'enter') return;
     asLog.info('Mission Control: Enter edit' + (d.note ? ' with its note' : ''));
     // #741: the frame's own note plus Mission Control's line, once: a second Execute on the same frame
     // appended the line again
     if (_mcNoteBase === null) _mcNoteBase = _seedNote;
     _seedNote = [_mcNoteBase, d.note].filter(Boolean).join('\n\n');
-    // replace: the one existing front is smaller, so it goes and the best becomes the front
-    // #772: front false: only the other images taken in on MC's card, not the best front
-    if (d.front === false && _mcBest) {
-      MODEL = MODEL.filter(x => x !== _mcBest); MODEL.forEach((x, i) => x.order = i);
-      asLog.info('Mission Control: the best front is not taken in, so it is left out');
-    }
-    // #772: the stores' other images taken in on MC's card, with the types and comment set there, after the front
-    const missing = [];
-    const add = (Array.isArray(d.extras) ? d.extras : []).map(e => {
-      const x = _mcExtras.get(e.key);
-      if (!x) { missing.push(e.key); asLog.warn(`Mission Control: ${e.key} is not among the images found this time`); return null; }
-      x.types = (Array.isArray(e.types) ? e.types : []).filter(t => ALL_TYPES.includes(t));
-      x.comment = String(e.comment || '').trim();
-      return x;
-    }).filter(x => x && !MODEL.includes(x));
-    if (add.length) {
-      const seq = MODEL.slice().sort((a, b) => a.order - b.order);
-      // after the front entered with them; without it, after the covers already there
-      const at = _mcBest && seq.includes(_mcBest) ? seq.indexOf(_mcBest) + 1 : seq.length;
-      seq.splice(at, 0, ...add);
-      MODEL = seq; MODEL.forEach((x, i) => x.order = i);
-      asLog.info(`Mission Control: entering ${add.length} more image(s): ${add.map(x => `${x._provider || '?'} ${x.w}×${x.h} [${x.types.join(', ') || 'no type'}]${x.comment ? ' "' + x.comment + '"' : ''}`).join(', ')}`);
-    }
-    if (d.replace && _mcBest && d.front !== false) {
-      const old = MODEL.filter(x => !x._new && !x._del && (x.types || []).includes('Front'));
-      if (old.length === 1) { old[0]._del = true; old[0]._sel = false; asLog.info(`Mission Control: removing the smaller front #${old[0].id} ${old[0].w}×${old[0].h}`); }
-    }
-    // #772: the best goes in as the front, typed Front whether or not it replaces one (a Discogs image comes untyped)
-    if (_mcBest && d.front !== false && MODEL.includes(_mcBest) && !(_mcBest.types || []).includes('Front')) _mcBest.types = ['Front'].concat(_mcBest.types || []);
-    // #772: what was taken, so Mission Control isn't told an image went in when the frame had nothing to enter
-    const front = !!(_mcBest && MODEL.includes(_mcBest)), extrasIn = add.length;
-    _mcCommitDone = r => mcFramePost(Object.assign({ type: 'entered', front, extrasIn, missing }, r));
+    // #784: what the gallery holds is entered, the best front too: its source rows on MC's card put it in or left it
+    // out (stage), and the gallery may have changed that since
+    const front = !!(_mcBest && MODEL.includes(_mcBest) && !_mcBest._del), replaced = !!(_mcReplaced && _mcReplaced._del);
+    const extrasIn = _mcPool.filter(x => MODEL.includes(x) && !x._del).length;
+    _mcCommitDone = r => mcFramePost(Object.assign({ type: 'entered', front, replaced, extrasIn }, r));
     const plan = buildPlan();
     asLog.info(`Mission Control: ${plan.length} operation(s): ${plan.map(o => o.label).join(' · ') || 'none'}`);
-    if (!plan.some(o => o.kind === 'add')) {
-      asLog.warn('Mission Control: nothing to upload' + (missing.length ? ` (${missing.join(', ')} not found this time)` : ''));
-      _mcCommitDone({ ok: false, errs: 0, total: 0, error: 'nothing to enter' + (missing.length ? ': ' + missing.join(', ') + ' not found this time' : '') });
+    if (!plan.length) {
+      asLog.warn('Mission Control: nothing to enter');
+      _mcCommitDone({ ok: false, errs: 0, total: 0, error: 'nothing to enter' });
       _mcCommitDone = null;
       return;
     }
     enterEdit(true);
   });
-  let _mcCommitDone = null, _mcBest = null, _mcNoteBase = null, _mcPool = [], _mcExtras = new Map();   // #772 _mcPool: the stores' other images, kept off the gallery; _mcExtras: key -> one of them
+  // #784: what Enter edit would do, for Mission Control's card: every operation, and how many go beyond the best
+  // front (its upload, the front it replaces, and the reorder an upload alone brings)
+  function mcPlanNow() {
+    const plan = buildPlan();
+    const ex = MODEL.filter(it => !it._del && !it._new);
+    const moved = ex.slice().sort((a, b) => a.order - b.order).map(it => it.id).join(',') !== ex.slice().sort((a, b) => a._origOrder - b._origOrder).map(it => it.id).join(',');
+    const more = plan.filter(o => !(o.kind === 'add' && o.it === _mcBest && _mcFront) && !(o.kind === 'remove' && _mcReplaced && o.id === _mcReplaced.id) && !(o.kind === 'reorder' && !moved && !MODEL.some(x => x._new && !x._del && x !== _mcBest))).length;
+    // n and tile: the images in the gallery and the width a card takes in its row, for the card's width in Mission Control
+    const c = root.querySelector('.as-grid .as-card'), g = c && parseFloat(getComputedStyle(c.parentElement).columnGap) || 0;
+    return { ops: plan.map(o => ({ kind: o.kind, label: o.label })), more, n: MODEL.filter(x => !x._sourcing).length, tile: c ? Math.round(c.offsetWidth + g) : 0 };
+  }
+  // #784: Mission Control shows this frame in its cover-art card (mc_embed): the gallery alone, without
+  // MusicBrainz's header, tabs and sidebar, and without Enter edit (Execute enters). It tells the release page
+  // its height and plan, asks for the whole window while a full-screen view or dialog is open, and hands the
+  // wheel to the card, which scrolls (the frame itself never does)
+  function mcEmbed() {
+    if (!root.isConnected) { setTimeout(mcEmbed, 200); return; }
+    document.documentElement.classList.add('as-embed');
+    for (let n = root; n && n !== document.body; n = n.parentElement) {
+      n.classList.add('as-embed-keep');
+      [...n.parentElement.children].forEach(s => { if (s !== n && !/^(SCRIPT|STYLE|LINK|IFRAME)$/.test(s.tagName) && !/^(as-|mbu-)/.test(s.id || '')) s.classList.add('as-embed-hide'); });
+    }
+    const shown = sel => [...document.querySelectorAll(sel)].some(x => x.getClientRects().length);
+    let h = 0, full = false, plan = '', t = 0;
+    const tick = () => {
+      t = 0;
+      const f = !!((shown('#as-lb, #as-report, #as-setup, .mbu-ov, #mbu-logpop')) || (!_mcCommitDone && shown('#as-commit')));
+      if (f !== full) { full = f; mcFramePost({ type: 'full', on: f }); }
+      if (!full) {
+        // the gallery's lowest part: the type pills hang below the last row of cards, and a popover below the
+        // gallery makes the frame taller while it is open
+        const low = [root, ...root.querySelectorAll('.as-card, .as-drow, .as-foot-type, .as-type, .as-type-add'), ...document.querySelectorAll('.as-pop')];
+        const nh = Math.ceil(Math.max(...low.map(x => x.getBoundingClientRect().bottom)) + window.scrollY) + 10;
+        if (nh !== h) { h = nh; mcFramePost({ type: 'size', h }); }
+      }
+      const p = mcPlanNow(), s = JSON.stringify(p);
+      if (s !== plan) { plan = s; mcFramePost(Object.assign({ type: 'plan' }, p)); }
+    };
+    const soon = () => { if (!t) t = setTimeout(tick, 60); };
+    new MutationObserver(soon).observe(document.body, { childList: true, subtree: true, attributes: true, attributeFilter: ['style', 'class', 'hidden'] });
+    new ResizeObserver(soon).observe(root);
+    window.addEventListener('resize', soon);
+    window.addEventListener('wheel', e => {
+      if (full || e.ctrlKey || (e.target.closest && e.target.closest('.as-pop'))) return;
+      e.preventDefault();
+      mcFramePost({ type: 'wheel', dx: e.deltaX, dy: e.deltaY, mode: e.deltaMode });
+    }, { passive: false });
+    tick();
+    asLog.info('Mission Control: the gallery shows in its cover-art card');
+  }
+  if (MC_FRAME && new URLSearchParams(location.search).get('mc_embed') === '1') mcEmbed();
   function openSourcePop(btn) {
     _srcBtn = btn;   // #250 remembered so a late provider registration can re-open this popover
     document.querySelectorAll('.as-pop').forEach(p => p.remove());
@@ -6173,6 +6305,15 @@
   .as-bar>*{flex:0 0 auto}
   /* "Original" (Apollo-style switch): hide the whole Art Station UI, MB's native page shows through */
   #as-root.as-orig{display:none}
+  /* #784: in Mission Control's card, the gallery alone: MusicBrainz's page around it, the corner launcher and Enter edit go */
+  html.as-embed,html.as-embed body{margin:0!important;padding:0!important;min-width:0!important;overflow:hidden!important;background:var(--mbu-bg)!important}
+  html.as-embed .as-embed-hide,html.as-embed #as-switch,html.as-embed #as-switch-wrap,html.as-embed #as-root .as-commit{display:none!important}
+  html.as-embed .as-embed-keep{margin:0!important;padding:0!important;float:none!important;width:auto!important;min-width:0!important;max-width:none!important;border:0!important;box-shadow:none!important}
+  html.as-embed #as-root{margin:0!important;padding:6px 10px 8px}
+  html.as-embed .as-bar{position:static}
+  .as-sec-more+.as-grid .as-card.del,.as-sec-more+.as-dlist .as-drow.del{opacity:1}
+  .as-sec-more+.as-grid .as-card.del .as-thumb img{filter:none;opacity:.6}
+  .as-mcdup{position:absolute;left:34px;bottom:6px;max-width:calc(100% - 68px);font:600 10px var(--mbu-font);color:var(--mbu-warn);background:var(--mbu-bg);border:1px solid var(--mbu-warn-border);border-radius:4px;padding:0 4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;z-index:4}
   /* #695: a round icon like every other corner launcher (Falcon, Fusion); in colour while Art Station shows, monochrome while off */
   #as-switch{position:fixed;bottom:14px;right:14px;z-index:var(--mbu-z-pop);width:40px;height:40px;border-radius:50%;border:none;padding:0;display:flex;align-items:center;justify-content:center;cursor:pointer;background:transparent;box-shadow:none;opacity:.85;transition:background .15s,transform .1s,opacity .15s}
   #as-switch:hover{opacity:1;transform:scale(1.08)}
@@ -6226,6 +6367,7 @@
   .as-commit{background:var(--as-acc);color:var(--mbu-text-on-accent);border-color:var(--as-acc);font-weight:600}
   .as-commit:disabled{opacity:.45;cursor:default}
   .as-sec{margin:14px 0 4px;display:flex;align-items:center;gap:8px}
+  #as-root .as-more-all{padding:2px 9px;font-size:12px}
   .as-sec h3{margin:0;font-size:13px;letter-spacing:.04em;text-transform:uppercase;color:var(--mbu-accent-text)}
   .as-sec-del h3{color:var(--as-warn)}
   .as-cnt{font-size:12px;color:var(--mbu-accent-text)}
@@ -6319,6 +6461,9 @@
   .as-dim-sz,.as-dim-px{white-space:nowrap}
   .as-tbtn{position:absolute;top:6px;right:6px;border:none;border-radius:var(--mbu-radius);background:rgba(255,255,255,.92);cursor:pointer;font-size:14px;line-height:1;padding:4px 7px;color:var(--mbu-text-dim);box-shadow:0 1px 3px rgba(0,0,0,.2);opacity:0;transition:.1s}
   .as-card:hover .as-tbtn{opacity:1}
+  /* the NEW ribbon owns the top-right corner: what else sits there moves left of it, above it */
+  .as-tbtn,.as-pdfban{z-index:6}
+  .as-card.new .as-tbtn,.as-card.new .as-pdfban,.as-dthumb .as-newban~.as-pdfban{right:44px}
   .as-only{position:absolute;top:6px;left:6px;z-index:6;border:1px solid var(--mbu-border);border-radius:var(--mbu-radius);background:var(--mbu-bg);color:var(--mbu-accent-text);cursor:pointer;font:600 12px/1 var(--mbu-font);padding:5px 8px;box-shadow:0 1px 3px rgba(0,0,0,.25);opacity:0;transition:opacity .1s}
   .as-card:hover .as-only,.as-only:focus-visible{opacity:1}
   .as-only:hover{background:var(--mbu-bg-hover);border-color:var(--mbu-accent)}
@@ -6485,10 +6630,10 @@
   .as-lb-rotbusy .as-lb-rot{pointer-events:none;opacity:.45}
   /* z-index:2 keeps the footer above a ZOOMED image — the image's transform makes a
      stacking context that would otherwise paint over the bar (it sits below in flow). */
-  .as-lb-bar{margin-top:14px;display:flex;flex-direction:column;align-items:center;gap:8px;width:min(560px,84vw);position:relative;z-index:2}
+  .as-lb-bar{margin-top:3px;display:flex;flex-direction:column;align-items:center;gap:8px;width:min(560px,84vw);position:relative;z-index:2;padding:11px 16px;border-radius:13px;box-sizing:content-box}   /* the focused bar's padding always: focusing it (the type picker, the comment) must not move the cover */
   /* while editing (focused), give the bar a readable dark backdrop — otherwise the comment
      field / type chip are invisible over a light image */
-  .as-lb-bar:focus-within{background:rgba(15,12,28,.88);padding:11px 16px;border-radius:13px;box-shadow:0 6px 24px rgba(0,0,0,.5)}
+  .as-lb-bar:focus-within{background:rgba(15,12,28,.88);box-shadow:0 6px 24px rgba(0,0,0,.5)}
   .as-lb-bar:focus-within .as-lb-cmt{background:rgba(255,255,255,.16);border-color:rgba(255,255,255,.5)}
   .as-lb-caprow{display:flex;align-items:center;justify-content:center;gap:14px;flex-wrap:wrap}
   .as-lb-cap{color:#eee;font-size:13px;text-align:center;display:flex;align-items:center;justify-content:center;gap:10px;flex-wrap:wrap}
@@ -6496,7 +6641,7 @@
   .as-lb-type:hover{background:rgba(255,255,255,.2);color:var(--mbu-text-on-accent)}
   .as-lb-type.as-type-add{font-weight:600;border-style:dashed;color:rgba(255,255,255,.6)}
   .as-lb-dim{color:var(--mbu-text-weak)}
-  .as-lb-cmtarea{width:100%;display:flex;justify-content:center}
+  .as-lb-cmtarea{width:100%;display:flex;justify-content:center;align-items:center;min-height:34px}   /* one height for the ✎ button, the text and the input */
   .as-lb-cmt{width:100%;font-size:13px;font-family:inherit;border:1px solid rgba(255,255,255,.25);background:rgba(255,255,255,.08);color:var(--mbu-text-on-accent);border-radius:7px;padding:7px 11px;text-align:center}
   .as-lb-cmt-text{font-size:14px;font-family:inherit;color:var(--mbu-text-on-accent);text-align:center;line-height:1.4;padding:4px 8px;cursor:text;max-width:100%;word-break:break-word}
   .as-lb-cmt-text:hover{color:#e7dffb}

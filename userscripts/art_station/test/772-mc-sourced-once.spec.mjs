@@ -32,13 +32,18 @@ test('#772: the frame sources once, so the images offered are there at Execute',
   await fr.evaluate(() => { window.clearInterval = () => {}; });
   await inject('art_station', { target: fr, transform: quick });
   await page.waitForFunction(() => window.__f, null, { timeout: 150_000, polling: 500 });
-  const extras = await page.evaluate(() => ((window.__f.best || {}).extras || []).map(e => e.key));
+  const extras = await until(() => fr.evaluate(() => window.__asTest.mc.model().filter(x => x._mcPool && x._mcKey).map(x => x._mcKey)), v => v.includes('Discogs#2'));
   console.log('offered', JSON.stringify(extras));
   check(extras.includes('Discogs#2'), `the back is offered (${extras})`);
   await page.waitForTimeout(3000);   // the extra pass, if any, comes within a beat
   check(await page.evaluate(() => window.__bests) === 1, `the frame answered once (${await page.evaluate(() => window.__bests)})`);
 
-  await page.evaluate(() => document.dispatchEvent(new CustomEvent('mc:apply', { detail: JSON.stringify({ id: 'as', run: 2, mc: 'test', keys: [], extras: [{ key: 'Discogs#2', types: ['Back'], comment: '' }] }) })));
+  // #784: the back taken in on its card in the gallery, the best front left out; Execute then has a plan to enter
+  await page.evaluate(() => { window.__plan = null; document.addEventListener('mc:plan', e => { window.__plan = JSON.parse(e.detail); }); document.dispatchEvent(new CustomEvent('mc:stage', { detail: JSON.stringify({ id: 'as', front: false }) })); });
+  const id = await fr.evaluate(() => { const x = window.__asTest.mc.model().find(m => m._mcKey === 'Discogs#2'); x.types = ['Back']; return x.id; });
+  await fr.evaluate(i => document.querySelector(`.as-card[data-id="${i}"] .as-undo`).click(), id);   // the frame shows nowhere here (no card)
+  await until(() => page.evaluate(() => window.__plan), p => p && p.more >= 1);
+  await page.evaluate(() => document.dispatchEvent(new CustomEvent('mc:apply', { detail: JSON.stringify({ id: 'as', run: 2, mc: 'test', keys: [] }) })));
   const a = await until(() => page.evaluate(() => window.__a), Boolean, { timeout: 150_000 });
   console.log(JSON.stringify(a));
   check(!!a, 'Execute answers');
@@ -66,7 +71,7 @@ test('#772: the best front is typed Front when it is entered', { tag: ['@sandbox
   await page.waitForFunction(() => window.__f, null, { timeout: 150_000, polling: 500 });
   const best = await page.evaluate(() => window.__f.best && window.__f.best.provider);
   check(best === 'Discogs', `Discogs gives the best front (${best})`);
-  await page.evaluate(() => document.dispatchEvent(new CustomEvent('mc:apply', { detail: JSON.stringify({ id: 'as', run: 2, mc: 'test', keys: ['Discogs'], extras: [] }) })));
+  await page.evaluate(() => document.dispatchEvent(new CustomEvent('mc:apply', { detail: JSON.stringify({ id: 'as', run: 2, mc: 'test', keys: ['Discogs'] }) })));
   const types = await until(() => fr.evaluate(() => { const x = window.__asTest.mc.model().find(m => m._new && !m._del); return x ? x.types.join('+') : null; }), v => v !== null, { timeout: 60_000 });
   console.log('best front types', types);
   check(/(^|\+)Front(\+|$)/.test(types || ''), `typed Front (${types})`);

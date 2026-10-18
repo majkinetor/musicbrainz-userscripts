@@ -25,7 +25,7 @@ test('#772: a store image already in the archive is marked so while its thumbnai
   await fr.waitForLoadState('domcontentloaded');
   await inject('art_station', { target: fr, transform: noThumbs });
   await page.waitForFunction(() => window.__f, null, { timeout: 150_000, polling: 500 });
-  const extras = await page.evaluate(() => ((window.__f.best || {}).extras || []).map(e => [e.key, e.dup || '']));
+  const extras = await until(() => fr.evaluate(() => window.__asTest.mc.model().filter(x => x._mcPool && x._mcKey).map(x => [x._mcKey, x._mcDup || ''])), v => v.length > 0);
   console.log('offered', JSON.stringify(extras));
   const back = extras.find(e => e[0] === 'Discogs#2');
   check(back, `the back is offered (${JSON.stringify(extras)})`);
