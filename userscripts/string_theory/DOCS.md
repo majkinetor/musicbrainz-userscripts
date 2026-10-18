@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-10-17 23:27 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-10-18 14:39 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -138,7 +138,7 @@ Green means matched confidently; a white search box means unresolved, counted by
 | **SET**                   | linked before Apollo matched: by the release, the seed or the page                    |
 | **LOW**                   | uncertain; the card lists what each stage found                                       |
 
-The platform badges: **DZ** Deezer, **SP** Spotify, **TD** Tidal, **AM** Apple Music, **YTM** YouTube Music, **BC** Bandcamp, **BP** Beatport, **QZ** Qobuz, **SC** SoundCloud, **AMZ** Amazon Music, **VO** Volumo, **HD** HDtracks, **AMK** Audiomack, **7D** 7digital, **OTO** Ototoy.
+The platform badges: **DZ** Deezer, **SP** Spotify, **TD** Tidal, **AM** Apple Music, **YTM** YouTube Music, **BC** Bandcamp, **BP** Beatport, **QZ** Qobuz, **SC** SoundCloud, **AMZ** Amazon Music, **VO** Volumo, **HD** HDtracks, **AMK** Audiomack, **7D** 7digital, **OTO** Ototoy, **PM** Presto Music.
 
 **Discogs links.** When the Discogs link is known, the type icon offers what's missing: **🔗** creates the artist with the link, or adds the link to the matched artist. **⚠** warns that the link belongs to a different artist, or that the artist links a different Discogs page (often a wrong match). **🔗 N links** in the toolbar counts them and steps through them.
 
@@ -913,7 +913,7 @@ Without every track's length: 1 track is a Single, 3 to 6 an EP, 7 or more an Al
 
 The button beside **Import to MusicBrainz**, with [Mission Control](../mission_control/README.md)'s icon, reads the album as Import does, then opens MusicBrainz's release editor in a new tab with Mission Control over it. Mission Control finds the album on the other platforms, First Contact reads each of them there, and you take the best title, date, label, tracklist and ISRCs of all of them into the editor. See [Consolidate a new release](../mission_control/README.md#consolidate-a-new-release).
 
-Mission Control has to be installed, and Platform Check too, to find the other platforms; [String Theory](../string_theory/README.md) has them all. Turn the button off in [Settings](#settings-2).
+Mission Control has to be installed, and Platform Check too, to find the other platforms; [String Theory](../string_theory/README.md) has them all. Turn the button off in [Settings](#settings-2). Presto Music has no Consolidate button: Mission Control doesn't compare it.
 
 ### Send to Harmony
 
@@ -922,7 +922,7 @@ The button before **⚙︎**, with [Harmony](https://harmony.pulsewidth.org.uk/)
 | Platform                                                                        | Sent                                |
 | ------------------------------------------------------------------------------- | ----------------------------------- |
 | Deezer, Bandcamp, Discogs, Apple Music, Tidal, Qobuz, Beatport, Spotify, Ototoy | the album link, at once             |
-| Volumo, HDtracks, SoundCloud, Audiomack, 7digital                               | the barcode, once the album is read |
+| Volumo, HDtracks, SoundCloud, Audiomack, 7digital, Presto Music                 | the barcode, once the album is read |
 | YouTube Music, Amazon Music                                                     | nothing; the button is greyed out   |
 
 Harmony can't read the platforms in the last two rows. For the middle row, First Contact reads the album first, as for an import, and sends its barcode; an album without one (a SoundCloud set that isn't a label's) sends nothing, and a message says why. YouTube Music and Amazon Music show no barcode either, so there is nothing to send.
@@ -949,6 +949,7 @@ Turn the button off in [Settings](#settings-2).
 | [Audiomack](#audiomack)         |     ✓      |     ✓      | from the ℗ line       | description    |
 | [7digital](#7digital)           |     ✓      |     ✓      | ✓                     | ℗ and © lines  |
 | [Ototoy](#ototoy)               |            |            | ✓                     | album info     |
+| [Presto Music](#presto-music)   |            |     ✓      | ✓ with catalog number | about          |
 
 #### Deezer
 
@@ -1093,6 +1094,18 @@ Pages: `ototoy.jp/_/default/p/<id>`
 - A track's artists are all the artists Ototoy links for it, and the featured ones come from its title's *(feat. …)*. On some compilations those links include the arranger or the label, so check the track artists there.
 - The hi-res and CD-quality editions are separate pages; the format some titles carry (*Disc2(24bit/44.1kHz)*) is left out of the title.
 - The catalog number isn't filled in: Ototoy often shows the CD's or a distributor's code instead.
+
+#### Presto Music
+
+Pages: `prestomusic.com/classical/products/<id>`, `prestomusic.com/jazz/products/<id>`
+
+- No Presto account is needed.
+- Presto sells CDs, SACDs, vinyl and downloads, so the medium's format is the one on the page: *CD*, *Hybrid SACD*, *Vinyl*, or *Digital Media* for a download. A physical one gets the *purchase for mail-order* link and no packaging; the country is left for you.
+- A set of several discs (*5 CDs*) comes as one medium: Presto doesn't say where each disc starts. A message says so; split it at each disc's first track with Apollo Editor's [Split medium](../apollo_editor/README.md#merge-and-split-mediums).
+- A classical work's movements are its tracks, titled *Work: Movement*; a work without movements is one track. The composer Presto puts before a title (*Beethoven: …*, *Ida Sand: Salt & Sugar*) is left out.
+- Track artists are the names Presto lists for each work without an instrument or role. The musicians listed with one (*Ida Sand (piano)*, *Ola Gustafsson (guitar)*) are left out; when every name has one, as on most classical pages (*Chiaroscuro Quartet (stringquartet)*), all of them are the artists. Artists have no Presto link to hand off.
+- Some lengths are missing; those tracks get none.
+- When the page lists no tracks (a new vinyl, say), the tracklist is taken from another format of the same album, the CD first. A message and the edit note say where it came from: check it, as the vinyl can differ. When no format lists tracks, nothing is imported.
 
 ### Artist matching
 
