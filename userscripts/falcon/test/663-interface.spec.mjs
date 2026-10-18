@@ -78,6 +78,9 @@ test("#663: list/grid views + keyboard walk", { tag: ['@sandbox', '@critical'] }
   check(await page.evaluate(() => window.__falconTest.getQueue()[0].disambiguation === 'x'), 'the field was committed on the way out');
   await page.keyboard.press('Tab');
   at = await page.evaluate(() => document.activeElement.dataset.col + '@' + document.activeElement.dataset.id);
+  check(at === 'length@r1', `Tab → Length (#783) (got ${at})`);
+  await page.keyboard.press('Tab');
+  at = await page.evaluate(() => document.activeElement.dataset.col + '@' + document.activeElement.dataset.id);
   check(at === 'isrc@r1', `Tab → ISRCs (got ${at})`);
   await page.keyboard.press('ArrowDown'); await frames(page);
   at = await page.evaluate(() => document.activeElement.dataset.col + '@' + document.activeElement.dataset.id);
@@ -90,7 +93,7 @@ test("#663: list/grid views + keyboard walk", { tag: ['@sandbox', '@critical'] }
   // r1 has no ISRCs yet, so the caret is already at the start
   await page.keyboard.press('ArrowLeft'); await frames(page);
   at = await page.evaluate(() => document.activeElement.dataset.col + '@' + document.activeElement.dataset.id);
-  check(at === 'disambig@r1', `Left at the start of the text → previous field (got ${at})`);
+  check(at === 'length@r1', `Left at the start of the text → previous field (got ${at})`);
 
   // ── grid view
   await page.click('#falcon-view-toggle'); await frames(page);

@@ -61,6 +61,8 @@ The button beside **Import to MusicBrainz**, with [Mission Control](../mission_c
 
 Mission Control has to be installed, and Platform Check too, to find the other platforms; [String Theory](../string_theory/README.md) has them all. Turn the button off in [Settings](#settings). Presto Music has no Consolidate button: Mission Control doesn't compare it.
 
+First Contact reads the platforms for Mission Control on a release MusicBrainz already has too, when Mission Control [compares it with the platforms](../mission_control/README.md#compare-with-the-platforms).
+
 ## Send to Harmony
 
 The button before **⚙︎**, with [Harmony](https://harmony.pulsewidth.org.uk/)'s icon, opens the album in Harmony's release lookup in a new tab instead. Harmony then finds the album by its barcode on the platforms ticked in [Harmony's settings](https://harmony.pulsewidth.org.uk/settings), in the region set there, and [Falcon](../falcon/README.md) works there as usual. Open those settings once: until then Harmony has none, so it looks an album link up on its own platform only, and a barcode on none.

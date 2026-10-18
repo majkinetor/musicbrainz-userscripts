@@ -31,6 +31,7 @@ Entry point for any AI assistant (Claude Code, a cloud agent, a subagent). It's 
 - **"Verification failed. Please try again."** instead of a test page is the sandbox throttling a burst of page loads, not a script failure; it clears on its own, so rerun. So does the proxy's "upstream request failed".
 - **Branch from a freshly fetched `origin/main`**, never a stale local ref: a build from an old base quietly brings back what main has since removed.
 - **No `@version` care on a branch** (maintainer): he reinstalls branch builds by hand, so a branch build needn't read newer than the last.
+- **Scripts go in a file, not inline** (maintainer, 2026-10-18): on the maintainer's Windows machine the shell is Git Bash, which mangles backslashes and mixed quotes in heredocs and in `python -c` / `node -e` strings ("unexpected EOF while looking for matching `''", `\\` halved). Write any script with quotes, backslashes or template literals to a file in the scratchpad and run that file; inline only one-liners without either. Several of the repo's files are CRLF: an edit script reads the file with newlines as they are, matches without the CRs, and writes CRLF back.
 - **Before changing a script's code**, read [DEVELOP → Branches and channels](DEVELOP.md#branches-and-channels) (incl. `@version`) and [DEVELOP → Conventions](DEVELOP.md#conventions) (shared blocks, tokens, settings).
 
 ## Userscripts

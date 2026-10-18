@@ -101,13 +101,16 @@ Each run keeps its own log in this browser, so a run whose tab crashed or naviga
 |                                      | artist | label | recording | release | release group |
 | ------------------------------------ | :----: | :---: | :-------: | :-----: | :-----------: |
 | links, name, aliases, disambiguation |   ✓    |   ✓   |     ✓     |    ✓    |       ✓       |
-| ISRCs, video                         |        |       |     ✓     |         |               |
-| cover art, barcode                   |        |       |           |    ✓    |               |
+| ISRCs, video, length                 |        |       |     ✓     |         |               |
+| cover art, barcode, event, tracks    |        |       |           |    ✓    |               |
 
 - **Name**: an expanded row's ✎ box starts with the current name, so a fix is an edit, not a retype. A rename is votable, so it shows once the edit passes.
 - **Aliases**: one row per alias, with its name, its language and **✕**; the **+** by the *Aliases* label adds one, or use [JSON](./examples/aliases.json) for many. A new alias takes the language last typed; `name@locale` typed in the name box sets the language too. Enter on a filled alias opens the next one, on an empty one moves on to the next row's aliases; Esc drops a new, still empty row.
 - **Video** is only ever set, never cleared.
 - **Barcode** fills a release that has none, and unticks *This release does not have a barcode* if it is ticked. A release that already has a different barcode keeps it, and the row says so. In the grid it is in the row's opened part, with the links.
+- **Event** gives a release that has no release event one: the date (`2014`, `2014-02` or `2014-02-20`), then the country's code, `2014-02-20 XW`. Only [Worldwide] (`XW`) is known as a country so far; another code leaves the country empty. A release that has an event keeps it, and the row says so.
+- **Tracks** changes a release's track titles and lengths, each as medium.track, a quoted title, a length, separated by `;`: `1.2 "New title" 5:02; 1.3 6:58`. `+rec` after the title gives the recording that title too. A track that changed since the change was made (another script hands Falcon what the track had) keeps what it has, and the row says so; so does a medium with a disc ID, whose lengths MusicBrainz locks. In the grid, Event and Tracks are in the row's opened part, with the barcode.
+- **Length** sets a recording's own length (`m:ss`). MusicBrainz takes it only for a recording without tracks; any other's comes from its tracks, and the row says so.
 
 > [!WARNING]
 > MusicBrainz silently drops the locale of a *Search hint* alias; Falcon warns in the log. Use the `<entity> name` type for a localised title.
@@ -174,15 +177,22 @@ What **Import** reads, **Export** writes, and Harmony and other scripts produce:
 | `aliases[]`                     | `{ name, locale, type, primary, sortName, begin, end, ended }`, or `"name@locale"`; each is its own edit. `type` as MusicBrainz names it (`Recording name`, `Search hint`…) |
 | `isrcs[]`                       | recordings                                                                                                                                                                  |
 | `video`                         | recordings; only `true` does anything                                                                                                                                       |
+| `length`                        | recordings: the length in ms, for a recording without tracks                                                                                                                |
 | `cover[]`                       | releases: `{ url, type, comment, candidates }`, type defaulting to Front                                                                                                    |
 | `barcode`                       | releases: a barcode for a release that has none                                                                                                                             |
 | `labels[]`                      | releases: `{ mbid, name, catno, add }`: an empty catalog number to fill, or a label to add                                                                                  |
+| `event`                         | releases: `{ date: { year, month, day }, country }` for a release without an event                                                                                          |
+| `tracks[]`                      | releases: track titles and lengths, `{ medium, position, title, recording, ms, was }` ([below](#track-changes))                                                             |
 | `note`                          | that item's own edit note                                                                                                                                                   |
 | `status`, `error`, `urlResults` | written by Export: the outcome of the last run                                                                                                                              |
 
+### Track changes
+
+A release's `tracks[]` changes its tracks, each by `medium` and `position` (from 1): `title` gives the track a new title, and the recording too with `recording: true`; `ms` a new length. `was: { title, ms }` is what the track had when the change was made: a track that holds something else by now is left alone (`ms: null` means a track without a length). Without `was` the change is made whatever the track holds. The older `lengths[]` (`{ medium, position, ms }`) fills tracks without a length.
+
 ### From another script
 
-Another script can hand Falcon a queue in the [JSON model](#json-model), by a `?falcon=` link or by an event on the page; a link never starts the queue. Sending the same batch twice doesn't run it twice. [Mission Control](../mission_control/README.md#execute) and [Platform Check](../platform_check/README.md#artists-and-labels) send their links, barcodes and catalog numbers this way. How is in [DEVELOP.md](DEVELOP.md#handoff).
+Another script can hand Falcon a queue in the [JSON model](#json-model), by a `?falcon=` link or by an event on the page; a link never starts the queue. Sending the same batch twice doesn't run it twice. [Mission Control](../mission_control/README.md#execute) and [Platform Check](../platform_check/README.md#artists-and-labels) send their links, barcodes, catalog numbers, release events and track titles and lengths this way. How is in [DEVELOP.md](DEVELOP.md#handoff).
 
 ## Settings
 

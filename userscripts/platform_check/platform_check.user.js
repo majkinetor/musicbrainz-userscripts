@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Platform Check
 // @namespace    http://tampermonkey.net/
-// @version      2026.10.18
+// @version      2026.10.18.195122
 // @description  Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CjxnIHN0cm9rZT0iIzk0YTNiOCIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2UtbGluZWNhcD0icm91bmQiPjxwYXRoIGQ9Ik02NCA2NCBMODggMjIuNCIvPjxwYXRoIGQ9Ik02NCA2NCBMMTEyIDY0Ii8+PHBhdGggZD0iTTY0IDY0IEw4OCAxMDUuNiIvPjxwYXRoIGQ9Ik02NCA2NCBMNDAgMTA1LjYiLz48cGF0aCBkPSJNNjQgNjQgTDE2IDY0Ii8+PHBhdGggZD0iTTY0IDY0IEw0MCAyMi40Ii8+PC9nPjxjaXJjbGUgY3g9Ijg4IiBjeT0iMjIuNCIgcj0iMTIiIGZpbGw9IiNmNDcyYjYiLz48Y2lyY2xlIGN4PSIxMTIiIGN5PSI2NCIgcj0iMTIiIGZpbGw9IiNmYWNjMTUiLz48Y2lyY2xlIGN4PSI4OCIgY3k9IjEwNS42IiByPSIxMiIgZmlsbD0iIzRhZGU4MCIvPjxjaXJjbGUgY3g9IjQwIiBjeT0iMTA1LjYiIHI9IjEyIiBmaWxsPSIjMzhiZGY4Ii8+PGNpcmNsZSBjeD0iMTYiIGN5PSI2NCIgcj0iMTIiIGZpbGw9IiNhNzhiZmEiLz48Y2lyY2xlIGN4PSI0MCIgY3k9IjIyLjQiIHI9IjEyIiBmaWxsPSIjZmI5MjNjIi8+PGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iMjQiIGZpbGw9IiMwZjE3MmEiLz48cGF0aCBkPSJNNTQuMjIyMjIyMjIyMjIyMjIgNjQgTDYxLjMzMzMzMzMzMzMzMzMzNiA3MS4xMTExMTExMTExMTExMSBMNzQuNjY2NjY2NjY2NjY2NjcgNTYuODg4ODg4ODg4ODg4ODg2IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iNiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+Cjwvc3ZnPgo=
@@ -1175,10 +1175,17 @@ function pcEditNote(urls, forced, barcode, barcodeFrom, extra) {
     if (catnos.length) lines.push('', ...catnos.map(c => 'Added catalog number ' + c.catno + ' for ' + c.label));
     const added = (extra && extra.added) || [];
     if (added.length) lines.push('', ...added.map(l => 'Added label ' + l.name + (l.catno ? ', catalog number ' + l.catno : '')));
+    // #782: a release event and track lengths a comparison with the platforms brings
+    if (extra && extra.event) lines.push('', 'Added release event ' + extra.event);
+    if (extra && extra.lengths) lines.push('', 'Added the length' + (extra.lengths === 1 ? '' : 's') + ' of ' + extra.lengths + ' track' + (extra.lengths === 1 ? '' : 's') + ' that had none');
+    // the track titles and lengths taken in on Mission Control's tracks, each with the platforms it came from
+    const tch = (extra && extra.tracks) || [];
+    if (tch.length) lines.push('', ...tch.map(t => 'Track ' + t.medium + '.' + t.position + ': ' + [t.title != null ? 'title "' + (t.was && t.was.title != null ? t.was.title + '" → "' : '') + t.title + '"' + (t.recording ? ' (and the recording\'s)' : '') : '', t.ms ? 'length ' + pcLenText(t.ms) : ''].filter(Boolean).join(', ') + (t.from ? ' (from ' + t.from + ')' : '')));
     if (extra && extra.consFrom && extra.consFrom.length) lines.push('', 'Consolidated by Mission Control from ' + extra.consFrom.join(', '));
     return lines.join('\n');
 }
 
+function pcLenText(ms) { const s = Math.round(ms / 1000); return Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0'); }
 // Fill MB's edit-note textarea via the native setter so React picks it up.
 // Appends to anything already typed there.
 function setEditNote(text) {
@@ -8995,6 +9002,22 @@ async function pcMcLabelFindings() {
     }
     return (_pcMcLab = out);
 }
+// #782: what a comparison with the platforms brings that only Falcon's release editor can enter: a release event (kind
+// 'event', key event:<date>:<country>) and the lengths of tracks that have none (kind 'lengths', key lengths:<n>). Mission
+// Control sends them only for a release that lacks them; both start taken in.
+function pcMcFieldFindings() {
+    const c = _pcMcCons;
+    if (!c) return [];
+    const from = 'consolidated by Mission Control from ' + ((c.from || []).join(', ') || 'the platforms');
+    const out = [], e = c.event;
+    if (e && e.date && e.date.year) {
+        const d = [e.date.year, e.date.month, e.date.day].filter(Boolean).map((x, i) => i ? String(x).padStart(2, '0') : String(x)).join('-');
+        out.push({ key: `event:${d}:${e.country || ''}`, kind: 'event', name: 'Release event', code: d + (e.country ? ` ${e.countryName || e.country}` : ''), event: { date: e.date, country: e.country || null }, state: 'new', cons: true, why: [from, e.why].filter(Boolean).join(' · ') });
+    }
+    const ls = (Array.isArray(c.lengths) ? c.lengths : []).filter(l => l && l.medium > 0 && l.position > 0 && l.ms > 0);
+    if (ls.length) out.push({ key: `lengths:${ls.length}`, kind: 'lengths', name: 'Track lengths', code: `${ls.length} track${ls.length === 1 ? '' : 's'}`, lengths: ls, state: 'new', cons: true, why: from });
+    return out;
+}
 // The Artists & labels links (#671) as MC findings, one per link: key `ent:<type>:<mbid>:<url>`,
 // with `entity` { type, mbid, name } and `icon` the platform. MusicBrainz is asked which links
 // it already has through the same cached lookup as the count; a link on someone else is
@@ -9072,13 +9095,13 @@ document.addEventListener('mc:probe', async e => {
     if (d.only && !d.only.includes('pc')) return;
     if (PC_SEED) { await pcMcSeedProbe(d); return; }
     _pcMcCons = d.cons && typeof d.cons === 'object' ? d.cons : null;
-    if (_pcMcCons) appendLog('System', `Mission Control brings a consolidation: barcode ${_pcMcCons.barcode || '—'} · ${(_pcMcCons.labels || []).length} catalog number(s) · ${(_pcMcCons.urls || []).length} link(s)`);
+    if (_pcMcCons) appendLog('System', `Mission Control brings a consolidation: barcode ${_pcMcCons.barcode || '—'} · ${(_pcMcCons.labels || []).length} catalog number(s) · ${(_pcMcCons.urls || []).length} link(s)${_pcMcCons.event ? ' · a release event' : ''}${(_pcMcCons.lengths || []).length ? ` · ${_pcMcCons.lengths.length} track length(s)` : ''}`);
     appendLog('System', `Mission Control probe ${d.run || ''}: ${PC_SCAN.busy ? 'waiting for the scan running' : 'reporting the last scan'}`);
     pcMcSend('mc:progress', { id: 'pc', run: d.run, state: 'busy', note: PC_SCAN.busy ? 'scanning platforms' : '' });
     // a rescan (pasted barcode, ↻) replaces the scan we waited for: wait for that one instead
     try { let p; do { p = PC_SCAN.last || pcScan(); await p; } while (p !== PC_SCAN.last); } catch (x) { appendLog('System', `scan failed for Mission Control: ${x.message}`, 'error'); }
     const labs = await pcMcLabelFindings();
-    const findings = pcMcBarcodeFindings().concat(labs, pcMcCatnoFindings(labs), PROVIDER_ORDER.filter(providerEnabled).map(pcMcFinding), providerEnabled('discogs') ? [pcMcMasterFinding()].filter(Boolean) : [], await pcMcEntityFindings());
+    const findings = pcMcBarcodeFindings().concat(labs, pcMcCatnoFindings(labs), pcMcFieldFindings(), PROVIDER_ORDER.filter(providerEnabled).map(pcMcFinding), providerEnabled('discogs') ? [pcMcMasterFinding()].filter(Boolean) : [], await pcMcEntityFindings());
     const tally = findings.reduce((t, f) => (t[f.state] = (t[f.state] || 0) + 1, t), {});
     appendLog('System', `Mission Control probe ${d.run || ''} answered: ${JSON.stringify(tally)}`, 'ok');
     // the release's barcode beside each platform's: MC shows them in a column, one colour per barcode
@@ -9136,7 +9159,7 @@ document.addEventListener('mc:apply', e => {
     try { d = JSON.parse(e.detail) || {}; } catch (x) { appendLog('System', `Mission Control apply with unreadable detail: ${x.message}`, 'warn'); return; }
     if (d.id !== 'pc' || (d.release && d.release !== mbid)) return;
     const keys = d.keys || [];
-    const picked = keys.filter(k => !k.startsWith('ent:') && !k.startsWith('barcode:') && !k.startsWith('catno:') && !k.startsWith('label:')).map(pcMcFinding).filter(f => f.url && f.state !== 'linked' && f.state !== 'none');
+    const picked = keys.filter(k => !/^(ent|barcode|catno|label|event|lengths):/.test(k)).map(pcMcFinding).filter(f => f.url && f.state !== 'linked' && f.state !== 'none');
     // #709: the barcode taken in, if any (only while the release has none); Falcon types it into the release editor
     const bcFinding = MB_OWN_BARCODE ? null : pcMcBarcodeFindings().find(f => keys.includes(f.key)) || null;
     const barcode = bcFinding ? String(bcFinding.code).replace(/\D/g, '') : null;
@@ -9144,6 +9167,14 @@ document.addEventListener('mc:apply', e => {
     // label the release has, and adds a label it hasn't
     const labels = _pcMcLab.concat(_pcMcCat).filter(f => keys.includes(f.key) && f.state !== 'linked').map(f => ({ mbid: f.label.mbid, name: f.label.name, catno: f.code, ...(f.kind === 'label' ? { add: true } : {}) }))
         .filter((l, i, a) => l.add || a.findIndex(x => !x.add && x.mbid === l.mbid) === i);   // one catalog number per label
+    // #782: the release event and the track lengths taken in
+    const fields = pcMcFieldFindings().filter(f => keys.includes(f.key));
+    const event = (fields.find(f => f.kind === 'event') || {}).event || null, lengths = (fields.find(f => f.kind === 'lengths') || {}).lengths || [];
+    // #782: the track titles and lengths taken in on Mission Control's tracks ({ medium, position, title?, ms?,
+    // recording?, was, from }); a track's own change wins over the length filled for it
+    const tch = (Array.isArray(d.tracks) ? d.tracks : []).filter(t => t && t.medium > 0 && t.position > 0 && (t.title || t.ms > 0));
+    const tracks = lengths.filter(l => !tch.some(t => t.medium === l.medium && t.position === l.position && t.ms)).map(l => ({ medium: l.medium, position: l.position, ms: l.ms, was: { ms: null } }))
+        .concat(tch.map(t => { const o = Object.assign({}, t); delete o.from; return o; }));
     // artist and label links: from the last probe, grouped per entity (a link on someone else only when ticked by hand)
     const ents = new Map();
     for (const f of _pcMcEnt) {
@@ -9158,25 +9189,26 @@ document.addEventListener('mc:apply', e => {
         ents.set('release_group', { type: 'release_group', mbid: master.entity.mbid, name: master.entity.name, urls: [master.url] });
     const reply = o => pcMcSend('mc:applied', Object.assign({ id: 'pc', run: d.run, release: mbid }, o));
     const entN = [...ents.values()].reduce((n, r) => n + r.urls.length, 0);
-    if (!picked.length && !entN && !barcode && !labels.length) { appendLog('System', 'Mission Control apply: nothing left to add', 'warn'); reply({ ok: true, sent: 0, note: 'nothing left to add' }); return; }
+    if (!picked.length && !entN && !barcode && !labels.length && !event && !tracks.length) { appendLog('System', 'Mission Control apply: nothing left to add', 'warn'); reply({ ok: true, sent: 0, note: 'nothing left to add' }); return; }
     const urls = picked.map(f => f.url);
     const forced = Object.fromEntries(picked.filter(f => f.state === 'withheld').map(f => [f.url, f.why]));
     const album = mbDataGet(mbid)?.album || mbid;
-    const relItem = !!(urls.length || barcode || labels.length);
-    const items = (relItem ? [{ entityType: 'release', mbid, name: album, urls: urls.flatMap(pcMcReleaseLinkTypes), ...(barcode ? { barcode } : {}), ...(labels.length ? { labels } : {}) }] : [])
+    const relItem = !!(urls.length || barcode || labels.length || event || tracks.length);
+    const items = (relItem ? [{ entityType: 'release', mbid, name: album, urls: urls.flatMap(pcMcReleaseLinkTypes), ...(barcode ? { barcode } : {}), ...(labels.length ? { labels } : {}), ...(event ? { event } : {}), ...(tracks.length ? { tracks } : {}) }] : [])
         .concat([...ents.values()].map(r => ({ entityType: r.type, mbid: r.mbid, name: r.name, urls: r.urls.map(url => ({ url, linkTypeId: r.type === 'release_group' ? 90 : pcLinkTypeFor(r.type, url) })) })));
     // one edit note for the batch: the release's links note, or the artist/label one when there are none
-    const consFrom = _pcMcCons && (labels.length || bcFinding?.cons || picked.some(f => f.cons)) ? _pcMcCons.from || [] : null;
-    const note = (relItem ? pcEditNote(urls, forced, barcode, bcFinding && (bcFinding.cons ? 'from the consolidation' : bcFinding.why), { catnos: labels.filter(l => l.catno && !l.add).map(l => ({ catno: l.catno, label: l.name })), added: labels.filter(l => l.add), consFrom }) + (entN ? `\n\n${pcLinksNote()}` : '') : pcLinksNote())
+    const consFrom = _pcMcCons && (labels.length || bcFinding?.cons || picked.some(f => f.cons) || fields.length) ? _pcMcCons.from || [] : null;
+    const nFill = tracks.length - tch.length;
+    const note = (relItem ? pcEditNote(urls, forced, barcode, bcFinding && (bcFinding.cons ? 'from the consolidation' : bcFinding.why), { catnos: labels.filter(l => l.catno && !l.add).map(l => ({ catno: l.catno, label: l.name })), added: labels.filter(l => l.add), consFrom, event: event ? fields.find(f => f.kind === 'event').code : null, lengths: nFill, tracks: tch }) + (entN ? `\n\n${pcLinksNote()}` : '') : pcLinksNote())
         + '\n' + 'Via Mission Control' + (d.mc ? ' v' + d.mc : '') + ': ' + location.origin + '/release/' + mbid;
     // headless: Falcon keeps its panel shut and reports the batch as falcon:status, tagged, for MC's card
     const json = JSON.stringify({ name: `${album} — platform links`, note, items, headless: !d.dry, tag: `mc:pc:${d.run}` });
     const ok = pcSendToFalconHere(json, !d.dry);
-    const n = urls.length + entN + (barcode ? 1 : 0) + labels.length;
+    const n = urls.length + entN + (barcode ? 1 : 0) + labels.length + (event ? 1 : 0) + (nFill ? 1 : 0) + tch.length;
     if (ok && entN) { _pcLinked = null; pcShowLinksCount(null); }
     appendLog('System', `Mission Control apply${d.dry ? ' (dry run: queued, not run)' : ''}: ${barcode ? `barcode ${barcode}, ` : ''}${urls.length} release link(s), ${entN} artist/label link(s) ${ok ? 'handed to Falcon' : 'NOT taken — no Falcon on this page'}: ${urls.concat([...ents.values()].flatMap(r => r.urls)).join(' ')}`, ok ? 'ok' : 'error');
     const nAdd = labels.filter(l => l.add).length, nCat = labels.length - nAdd;
-    const what = (barcode ? ['the barcode'] : []).concat(nCat ? [nCat === 1 ? 'the catalog number' : nCat + ' catalog numbers'] : [], nAdd ? [nAdd === 1 ? 'a label' : nAdd + ' labels'] : [], urls.length + entN ? [`${urls.length + entN} link${urls.length + entN === 1 ? '' : 's'}`] : []).join(' and ');
+    const what = (barcode ? ['the barcode'] : []).concat(nCat ? [nCat === 1 ? 'the catalog number' : nCat + ' catalog numbers'] : [], nAdd ? [nAdd === 1 ? 'a label' : nAdd + ' labels'] : [], event ? ['the release event'] : [], nFill ? [`${nFill} track length${nFill === 1 ? '' : 's'}`] : [], tch.length ? [`${tch.length} track change${tch.length === 1 ? '' : 's'}`] : [], urls.length + entN ? [`${urls.length + entN} link${urls.length + entN === 1 ? '' : 's'}`] : []).join(' and ');
     reply(ok ? { ok: true, sent: n, via: 'falcon', tag: `mc:pc:${d.run}`, note: `${what} ${d.dry ? 'queued in' : 'sent to'} Falcon` } : { ok: false, sent: 0, note: 'Falcon is not running on this page' });
 });
 pcMcHello();   // MC may have asked before PC loaded
