@@ -67,11 +67,13 @@ test('#784: the gallery shows in the card, scrolls with it and goes full screen'
   });
   check(pinned === 0, `the frame stays scrolled to its top (${pinned})`);
 
-  // the wheel over the gallery scrolls Mission Control, and the frame follows the slot
-  const scroller = () => page.evaluate(() => { let n = document.getElementById('mc-as-slot').parentElement; while (n && n.scrollHeight <= n.clientHeight) n = n.parentElement; return n ? n.scrollTop : -1; });
-  const before = await scroller();
+  // the wheel over the gallery scrolls Mission Control, and the frame follows the slot; up when the card is
+  // scrolled to its bottom already (how far it can go depends on the sandbox release's covers)
+  const scrollerAt = () => page.evaluate(() => { let n = document.getElementById('mc-as-slot').parentElement; while (n && n.scrollHeight <= n.clientHeight) n = n.parentElement; return n ? { top: n.scrollTop, max: n.scrollHeight - n.clientHeight } : { top: -1, max: -1 }; });
+  const scroller = async () => (await scrollerAt()).top;
+  const at = await scrollerAt(), before = at.top;
   await page.mouse.move(g.slot[0] + 40, Math.max(g.slot[1], 0) + 40);
-  await page.mouse.wheel(0, 200);
+  await page.mouse.wheel(0, at.max - at.top >= 100 ? 200 : -200);
   const after = await until(scroller, v => v !== before);
   check(after !== before, `the wheel over the gallery scrolls the card (${before} → ${after})`);
   const g2 = await until(geo, v => v.frame[1] === v.slot[1]);
