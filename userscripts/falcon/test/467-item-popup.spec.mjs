@@ -19,7 +19,7 @@ import { test, check, requireLogin, sourceOf, idle, frames } from '../../../dev/
 const HYDRATION = /Minified React error #418/;
 test.use({ gm: false, pageErrors: [HYDRATION.source] });
 
-test("#467: item popup", { tag: ['@sandbox', '@login', '@flaky'] }, async ({ context, page }) => {
+test("#467: item popup", { tag: ['@sandbox', '@login'] }, async ({ context, page }) => {
   const code = await readFile(sourceOf('falcon'), 'utf8');
 
   await context.addInitScript(() => {
