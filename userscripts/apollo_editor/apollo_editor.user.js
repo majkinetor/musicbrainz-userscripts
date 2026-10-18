@@ -5681,7 +5681,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     body.tc-ri-on #information td > input#name ~ button.guessfeat{margin-left:0!important}   /* the options are on the Aa's right-click */
     .tc-gcpop{position:fixed;z-index:var(--mbu-z-pop);background:var(--mbu-bg);border:1px solid var(--mbu-accent);border-radius:var(--mbu-radius);box-shadow:var(--mbu-shadow-lg);padding:8px 12px 10px}
     .tc-gcpop .tc-gco{display:grid;grid-template-columns:auto auto auto auto;justify-items:start;align-items:center;gap:7px 6px}   /* the mode and its toggles on a line, the separator under them */
-    .tc-gco .tc-gc-tg{min-width:30px;text-align:center}.tc-gco .tc-gc-tg.rn{font-family:Georgia,'Times New Roman',serif;font-size:12px}
+    .tc-gco .tc-gc-tg{min-width:30px;text-align:center;box-sizing:border-box;height:20px;line-height:12px}.tc-gco .tc-gc-tg.rn{font-family:Georgia,'Times New Roman',serif;font-size:12px}
     .tc-gcpop-h{font:700 11px Arial;letter-spacing:.05em;text-transform:uppercase;color:var(--mbu-accent-text);margin:0 0 7px}
     .tc-mirror .mv{cursor:pointer;color:var(--mbu-accent-text);font-size:12px;padding:0 1px}
     /* drag-to-reorder: ⠿ handle + drop indicators (a purple line at the row edge you'll drop against) */
@@ -5918,7 +5918,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     select.tc-gc-lang:hover,select.tc-gc-lang:focus-visible,.tc-opt .tc-gco select.tc-gc-lang:hover{border-color:var(--mbu-accent);outline:none}
     .tc-gco label{display:inline-flex;align-items:center;gap:4px;font:12px Arial;color:var(--mbu-text);white-space:nowrap;cursor:pointer}
     .tc-gco input[type=checkbox]{margin:0;accent-color:var(--mbu-accent)}
-    .tc-gco input.tc-gc-sep,.tc-opt .tc-gco input.tc-gc-sep,.tc-toolopts .tc-gco input.tc-gc-sep{width:1.9em;font:12px Arial;text-align:center;padding:2px 0;border:1px solid var(--mbu-border-strong);border-radius:var(--mbu-radius);background:var(--mbu-bg);color:var(--mbu-text);margin:0}
+    .tc-gco input.tc-gc-sep,.tc-opt .tc-gco input.tc-gc-sep,.tc-toolopts .tc-gco input.tc-gc-sep{width:30px;box-sizing:border-box;font:bold 11px Arial;line-height:normal;text-align:center;padding:3px 0;border:1px solid var(--mbu-accent);border-radius:4px;background:var(--mbu-bg);color:var(--mbu-accent-text);margin:0;height:20px}
     .tc-gco input.tc-gc-sep:focus{border-color:var(--mbu-accent);outline:none}
     .tc-colso{gap:4px}
     .tc-colbtn{font:12px Arial;padding:2px 9px;border:1px solid var(--mbu-border);border-radius:4px;background:var(--mbu-bg);cursor:pointer;color:var(--mbu-text)}
