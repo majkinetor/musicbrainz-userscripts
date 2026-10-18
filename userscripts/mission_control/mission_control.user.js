@@ -1654,6 +1654,7 @@ function setPicks(pks, on) {
     if (pks.some(pk => !pk.closest('.mc-tbl'))) paintCards();
     paintExec();
     if (pks.some(pk => pk.dataset.prov === 'pc')) syncLinks(700);
+    if (pks.some(pk => pk.dataset.prov === 'as')) asStage();   // #784
 }
 function togglePick(pk) { setPicks([pk], !isPicked(pk)); }
 // #714: in the track matrix, as in Apollo and ISRC Scout, Ctrl takes the whole row (the track),
