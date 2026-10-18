@@ -1417,11 +1417,32 @@
           return out;
       }
 
+      // Cyrillic by its script: with the mode left to the language, a title written mostly in Cyrillic gets
+      // Sentence whatever the language (the guidelines' rule for Cyrillic; a release in English, in several
+      // languages or in none would capitalise every word). A title whose parts, split by the separator
+      // ('/' by default), are in different scripts has each part guessed on its own.
+      const count = (s, re) => (s.match(re) || []).length;
+      const isCyrillic = s => count(s, /\p{Script=Cyrillic}/gu) > count(s, /\p{Script=Latin}/gu);
+      function byScript(s, o) {
+          const sep = o.separator == null ? '/' : String(o.separator);
+          const parts = sep.trim() ? s.split(new RegExp(String.raw`(\s*` + escapeRegExp(sep.trim()) + String.raw`\s*)`)) : [s];
+          const texts = parts.filter((p, i) => i % 2 === 0), cyr = texts.map(isCyrillic);
+          const sentence = Object.assign({}, o, { mode: 'Sentence' });
+          if (cyr.every(Boolean)) return run('process', s, sentence);
+          if (!cyr.some(Boolean)) return run('process', s, o);
+          return parts.map((p, i) => (i % 2 ? p : run('process', p, cyr[i / 2] ? sentence : o))).join('');
+      }
+
       /** A title in MusicBrainz's guess case. Options: entity ('track' default, 'release',
        *  'release_group', 'recording', 'work', 'artist', 'label', 'area', 'place', 'event',
        *  'series', 'genre', 'instrument'), mode or language, keepUpperCase (true), romanUpper
-       *  (false), extras (true: our rules on top; false gives exactly MusicBrainz's result). */
-      function guessCase(title, opts) { return run('process', String(title == null ? '' : title), opts); }
+       *  (false), extras (true: our rules on top; false gives exactly MusicBrainz's result),
+       *  byScript (true: with no mode, Cyrillic gets Sentence) and separator ('/': a title's parts). */
+      function guessCase(title, opts) {
+          const s = String(title == null ? '' : title), o = opts || {};
+          if (!(o.mode && MODES[o.mode]) && o.byScript !== false && o.extras !== false && TITLE_ENTITIES.has(o.entity || 'track')) return byScript(s, o);
+          return run('process', s, o);
+      }
       guessCase.sortName = (name, opts) => run('guessSortName', String(name == null ? '' : name), opts);
       guessCase.modeFor = modeFor;
       guessCase.modes = MODE_NAMES;
@@ -1487,7 +1508,7 @@
   const SKEY = 'apolloEditor.settings.v1';
   // MusicBrainz's own guess-case options seed Apollo's once (#785); a page without cookies (about:blank) throws
   function pageCookies() { try { return document.cookie || ''; } catch (e) { return ''; } }
-  function loadSettings() { const d = { apolloEnabled: true, colWidths: {}, applyMode: 'all', altRows: false, gridCols: false, gridRows: true, replaceReleaseInfo: true, replaceTracklist: true, replaceRecordings: true, modifyAnnotation: true, modifyDuplicates: true, autoMatch: true, autoMatchRec: true, autoMatchOnV: 1, autoMatchLabel: true, autoMatchArtist: true, autoMatchRG: true, discogsUrlMatch: true, recLenTol: 5, recIgnoreCase: true, recIgnorePunct: true, recTitleTol: 1, recCutoff: 'near', recDetailedHl: true, recPunctSize: 3, recHlColor: '#e53935', lastTool: '', layout: 'normal', lastView: 'apollo', zenMode: true, autoConfirmSeed: true, keepCaretColumn: true, hoverHighlight: false, srRegex: false, srTemplates: [], srSeedV: 0, srHistory: [], srDefault: '', srHistoryOpen: false, archive: true, archiveMenu: true, gcMode: 'auto', gcKeepUC: !/(?:^|;\s*)guesscase_keepuppercase=(?:false|0)(?:;|$)/.test(pageCookies()), gcRoman: /(?:^|;\s*)guesscase_roman=(?:true|1)(?:;|$)/.test(pageCookies()) }; try { const stored = JSON.parse(gmLoad(SKEY) || '{}'); const s = Object.assign(d, stored); if (stored.gridCols === undefined && stored.grid !== undefined) s.gridCols = stored.grid; if (stored.autoMatchOnV === undefined) { s.autoMatch = true; s.autoMatchRec = true; }   /* tracklist + recordings auto-match became on by default; the whole object is saved, so an existing install has the old false stored and needs flipping once (autoMatchOnV, from the defaults, marks it done on the next save) */ return s; } catch (e) { return d; } }
+  function loadSettings() { const d = { apolloEnabled: true, colWidths: {}, applyMode: 'all', altRows: false, gridCols: false, gridRows: true, replaceReleaseInfo: true, replaceTracklist: true, replaceRecordings: true, modifyAnnotation: true, modifyDuplicates: true, autoMatch: true, autoMatchRec: true, autoMatchOnV: 1, autoMatchLabel: true, autoMatchArtist: true, autoMatchRG: true, discogsUrlMatch: true, recLenTol: 5, recIgnoreCase: true, recIgnorePunct: true, recTitleTol: 1, recCutoff: 'near', recDetailedHl: true, recPunctSize: 3, recHlColor: '#e53935', lastTool: '', layout: 'normal', lastView: 'apollo', zenMode: true, autoConfirmSeed: true, keepCaretColumn: true, hoverHighlight: false, srRegex: false, srTemplates: [], srSeedV: 0, srHistory: [], srDefault: '', srHistoryOpen: false, archive: true, archiveMenu: true, gcMode: 'auto', gcSep: '/', gcKeepUC: !/(?:^|;\s*)guesscase_keepuppercase=(?:false|0)(?:;|$)/.test(pageCookies()), gcRoman: /(?:^|;\s*)guesscase_roman=(?:true|1)(?:;|$)/.test(pageCookies()) }; try { const stored = JSON.parse(gmLoad(SKEY) || '{}'); const s = Object.assign(d, stored); if (stored.gridCols === undefined && stored.grid !== undefined) s.gridCols = stored.grid; if (stored.autoMatchOnV === undefined) { s.autoMatch = true; s.autoMatchRec = true; }   /* tracklist + recordings auto-match became on by default; the whole object is saved, so an existing install has the old false stored and needs flipping once (autoMatchOnV, from the defaults, marks it done on the next save) */ return s; } catch (e) { return d; } }
   function saveSettings() { try { gmSave(SKEY, JSON.stringify(SETTINGS)); } catch (e) {} }
   let SETTINGS = loadSettings();
   try { srSeedTemplates(); } catch (e) {}   // #375 seed the default S&R templates once
@@ -3886,9 +3907,10 @@ click to open the label`;
   // Guess case: the shared block (#785), MusicBrainz's own with more modes and our rules; the mode
   // follows the release's language (Auto) unless one is chosen
   function gcOpts() {
-    let mode = SETTINGS.gcMode, lang = null;
-    if (!mode || mode === 'auto' || !mbuGuessCase.modes.includes(mode)) { try { lang = u(release().languageID); } catch (e) { /* no release yet */ } mode = mbuGuessCase.modeFor(lang); }
-    return { entity: 'track', mode, keepUpperCase: SETTINGS.gcKeepUC !== false, romanUpper: !!SETTINGS.gcRoman };
+    const o = { entity: 'track', keepUpperCase: SETTINGS.gcKeepUC !== false, romanUpper: !!SETTINGS.gcRoman, separator: SETTINGS.gcSep == null ? '/' : SETTINGS.gcSep };
+    if (mbuGuessCase.modes.includes(SETTINGS.gcMode)) o.mode = SETTINGS.gcMode;
+    else { o.language = null; try { o.language = u(release().languageID) || null; } catch (e) { /* no release yet */ } }   // Auto: the language, so a Cyrillic title (or part) gets Sentence whatever it is
+    return o;
   }
   function guessTitleStr(entry) {
     const name = u(koTrack(entry.mi, entry.ti).name) || '';
@@ -3994,7 +4016,7 @@ click to open the label`;
     const autoMode = () => { let lang = null; try { lang = u(release().languageID); } catch (e) { /* no release yet */ } return mbuGuessCase.modeFor(lang); };
     sel.append(new Option('Auto (' + autoMode() + ')', 'auto'), ...mbuGuessCase.modes.map(m => new Option(m, m)));
     sel.value = mbuGuessCase.modes.includes(SETTINGS.gcMode) ? SETTINGS.gcMode : 'auto';
-    sel.title = "Guess case mode. Auto follows the release's language: English, French, Turkish, Spanish, Italian, Portuguese and Dutch have their own, any other is Sentence.";
+    sel.title = "Guess case mode. Auto follows the release's language: English, French, Turkish, Spanish, Italian, Portuguese and Dutch have their own, any other is Sentence. A title in Cyrillic gets Sentence whatever the language.";
     sel.onfocus = () => { sel.options[0].text = 'Auto (' + autoMode() + ')'; sel.value = mbuGuessCase.modes.includes(SETTINGS.gcMode) ? SETTINGS.gcMode : 'auto'; };
     sel.onchange = () => { SETTINGS.gcMode = sel.value; saveSettings(); Log.cat('Tool').info('guess case mode', sel.value); gcOptionsChanged(); };
     return sel;
@@ -4006,11 +4028,17 @@ click to open the label`;
     const mkChk = (text, key, title) => { const l = document.createElement('label'); l.title = title; const c = document.createElement('input'); c.type = 'checkbox'; c.dataset.gcKey = key; c.checked = key === 'gcKeepUC' ? SETTINGS[key] !== false : !!SETTINGS[key]; c.onchange = () => { SETTINGS[key] = c.checked; saveSettings(); gcOptionsChanged(); }; l.append(c, document.createTextNode(' ' + text)); return l; };
     box.appendChild(mkChk('Keep uppercased', 'gcKeepUC', 'A word written in capitals (or with a capital inside, as KoRn) stays as it is'));
     box.appendChild(mkChk('Roman numerals', 'gcRoman', 'Roman numerals in capitals: part ii → Part II'));
+    const sl = document.createElement('label'); sl.title = "In Auto, the parts of a title split by this are guessed on their own when they are in different scripts: Love story / история любви → Love Story / История любви. Empty: never split.";
+    const si = document.createElement('input'); si.type = 'text'; si.className = 'tc-gc-sep'; si.dataset.gcSep = '1'; si.maxLength = 5; si.spellcheck = false; si.value = SETTINGS.gcSep == null ? '/' : SETTINGS.gcSep;
+    si.onchange = () => { SETTINGS.gcSep = si.value.trim(); saveSettings(); Log.cat('Tool').info('guess case separator', JSON.stringify(SETTINGS.gcSep)); gcOptionsChanged(); };
+    sl.append(document.createTextNode('Separator '), si);
+    box.appendChild(sl);
     return box;
   }
   function gcOptionsChanged() {
     const mode = mbuGuessCase.modes.includes(SETTINGS.gcMode) ? SETTINGS.gcMode : 'auto';
     document.querySelectorAll('select.tc-gc-lang').forEach(s => { if (s.value !== mode) s.value = mode; });
+    document.querySelectorAll('input[data-gc-sep]').forEach(i => { const v = SETTINGS.gcSep == null ? '/' : SETTINGS.gcSep; if (i.value !== v && document.activeElement !== i) i.value = v; });
     document.querySelectorAll('input[data-gc-key]').forEach(c => { const v = c.dataset.gcKey === 'gcKeepUC' ? SETTINGS.gcKeepUC !== false : !!SETTINGS.gcRoman; if (c.checked !== v) c.click(); });
     recomputeGuesses();
   }
@@ -5885,6 +5913,8 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     select.tc-gc-lang:hover,select.tc-gc-lang:focus-visible{border-color:var(--mbu-accent);outline:none}
     .tc-gco label{display:inline-flex;align-items:center;gap:4px;font:12px Arial;color:var(--mbu-text);white-space:nowrap;cursor:pointer}
     .tc-gco input[type=checkbox]{margin:0;accent-color:var(--mbu-accent)}
+    .tc-gco input.tc-gc-sep{width:3.2em;font:12px Arial;text-align:center;padding:2px 4px;border:1px solid var(--mbu-border-strong);border-radius:var(--mbu-radius);background:var(--mbu-bg);color:var(--mbu-text);margin:0}
+    .tc-gco input.tc-gc-sep:focus{border-color:var(--mbu-accent);outline:none}
     .tc-colso{gap:4px}
     .tc-colbtn{font:12px Arial;padding:2px 9px;border:1px solid var(--mbu-border);border-radius:4px;background:var(--mbu-bg);cursor:pointer;color:var(--mbu-text)}
     /* #455 track length parser panel — centred, draggable, textarea+chooser | list */

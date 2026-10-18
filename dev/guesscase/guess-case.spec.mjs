@@ -104,6 +104,16 @@ test('our rules: version words in brackets, CamelCase, the language modes', { ta
     ['la casa de papel', {}, 'La Casa de Papel'],
     ['the beatles', { entity: 'artist', mode: 'Sentence' }, 'The beatles'],
     ['Rock', { entity: 'genre' }, 'rock'],
+    // Cyrillic by its script, whatever the language, unless a mode is picked
+    ['группа крови на рукаве', { language: 'eng' }, 'Группа крови на рукаве'],
+    ['группа крови на рукаве', {}, 'Группа крови на рукаве'],
+    ['группа крови на рукаве', { mode: 'English' }, 'Группа Крови На Рукаве'],
+    ['группа крови на рукаве', { byScript: false }, 'Группа Крови На Рукаве'],
+    ['love story / история любви', { language: 'eng' }, 'Love Story / История любви'],
+    ['история любви / love story', {}, 'История любви / Love Story'],
+    ['love story | история любви', { separator: '|' }, 'Love Story | История любви'],
+    ['love story / история любви', { separator: '' }, 'Love story / История любви'],
+    ['ac/dc live', {}, 'AC/DC Live'],
   ];
   for (const [t, o, want] of cases) {
     const got = mbuGuessCase(t, o);

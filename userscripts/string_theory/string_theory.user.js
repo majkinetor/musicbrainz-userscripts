@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         String Theory
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.18.233427
+// @version      2026.10.18.233925
 // @description  Unified bundle of 11 MusicBrainz userscripts (apollo_editor, art_station, credit_hoarder, falcon, first_contact, fusion, group_therapy, isrc_scout, mammoth, mission_control, platform_check). Built by userscripts/string_theory/build.mjs — do not hand-edit.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5TdHJpbmcgVGhlb3J5PC90aXRsZT4KPHBhdGggZD0iTTY0IDEwIEw2Ni40IDEwLjIgTDY4LjcgMTAuNiBMNzAuOSAxMS40IEw3My4xIDEyLjQgTDc1LjIgMTMuNyBMNzcuMSAxNS4yIEw3OC44IDE3IEw4MC40IDE4LjkgTDgxLjggMjEgTDgzLjEgMjMuMSBMODQuMSAyNS40IEw4NSAyNy42IEw4NS43IDI5LjkgTDg2LjMgMzIuMSBMODYuOCAzNC4zIEw4Ny4xIDM2LjQgTDg3LjQgMzguNCBMODcuNyA0MC4zIEw4Ny45IDQyLjEgTDg4LjIgNDMuNyBMODguNSA0NS4yIEw4OC45IDQ2LjYgTDg5LjQgNDcuOCBMOTAgNDkgTDkwLjcgNTAuMSBMOTEuNiA1MS4xIEw5Mi42IDUyLjIgTDkzLjcgNTMuMiBMOTUgNTQuMiBMOTYuNCA1NS4zIEw5Ny45IDU2LjUgTDk5LjUgNTcuNyBMMTAxLjEgNTkuMSBMMTAyLjcgNjAuNiBMMTA0LjQgNjIuMiBMMTA2IDY0IEwxMDcuNSA2NS45IEwxMDguOSA2Ny45IEwxMTAuMiA3MC4xIEwxMTEuMyA3Mi4zIEwxMTIuMSA3NC43IEwxMTIuOCA3Ny4xIEwxMTMuMSA3OS41IEwxMTMuMiA4MS45IEwxMTMgODQuMyBMMTEyLjYgODYuNiBMMTExLjggODguOSBMMTEwLjggOTEgTDEwOS41IDkzIEwxMDcuOSA5NC43IEwxMDYuMSA5Ni4zIEwxMDQuMSA5Ny43IEwxMDIgOTguOCBMOTkuNyA5OS43IEw5Ny4zIDEwMC40IEw5NC45IDEwMC44IEw5Mi40IDEwMSBMODkuOSAxMDAuOSBMODcuNCAxMDAuNyBMODUgMTAwLjQgTDgyLjcgOTkuOSBMODAuNCA5OS4zIEw3OC4zIDk4LjYgTDc2LjMgOTcuOCBMNzQuNCA5Ny4xIEw3Mi43IDk2LjQgTDcxIDk1LjcgTDY5LjUgOTUuMSBMNjggOTQuNiBMNjYuNyA5NC4zIEw2NS4zIDk0LjEgTDY0IDk0IEw2Mi43IDk0LjEgTDYxLjMgOTQuMyBMNjAgOTQuNiBMNTguNSA5NS4xIEw1NyA5NS43IEw1NS4zIDk2LjQgTDUzLjYgOTcuMSBMNTEuNyA5Ny44IEw0OS43IDk4LjYgTDQ3LjYgOTkuMyBMNDUuMyA5OS45IEw0MyAxMDAuNCBMNDAuNiAxMDAuNyBMMzguMSAxMDAuOSBMMzUuNiAxMDEgTDMzLjEgMTAwLjggTDMwLjcgMTAwLjQgTDI4LjMgOTkuNyBMMjYgOTguOCBMMjMuOSA5Ny43IEwyMS45IDk2LjMgTDIwLjEgOTQuNyBMMTguNSA5MyBMMTcuMiA5MSBMMTYuMiA4OC45IEwxNS40IDg2LjYgTDE1IDg0LjMgTDE0LjggODEuOSBMMTQuOSA3OS41IEwxNS4yIDc3LjEgTDE1LjkgNzQuNyBMMTYuNyA3Mi4zIEwxNy44IDcwLjEgTDE5LjEgNjcuOSBMMjAuNSA2NS45IEwyMiA2NCBMMjMuNiA2Mi4yIEwyNS4zIDYwLjYgTDI2LjkgNTkuMSBMMjguNSA1Ny43IEwzMC4xIDU2LjUgTDMxLjYgNTUuMyBMMzMgNTQuMiBMMzQuMyA1My4yIEwzNS40IDUyLjIgTDM2LjQgNTEuMSBMMzcuMyA1MC4xIEwzOCA0OSBMMzguNiA0Ny44IEwzOS4xIDQ2LjYgTDM5LjUgNDUuMiBMMzkuOCA0My43IEw0MC4xIDQyLjEgTDQwLjMgNDAuMyBMNDAuNiAzOC40IEw0MC45IDM2LjQgTDQxLjIgMzQuMyBMNDEuNyAzMi4xIEw0Mi4zIDI5LjkgTDQzIDI3LjYgTDQzLjkgMjUuNCBMNDQuOSAyMy4xIEw0Ni4yIDIxIEw0Ny42IDE4LjkgTDQ5LjIgMTcgTDUwLjkgMTUuMiBMNTIuOCAxMy43IEw1NC45IDEyLjQgTDU3LjEgMTEuNCBMNTkuMyAxMC42IEw2MS42IDEwLjJaIiBmaWxsPSJub25lIiBzdHJva2U9IiM5Yzg2ZWEiIHN0cm9rZS13aWR0aD0iMTAiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz4KPHBhdGggZD0iTTY0IDM0IEw2NS4zIDMzLjkgTDY2LjcgMzMuNyBMNjggMzMuNCBMNjkuNSAzMi45IEw3MSAzMi4zIEw3Mi43IDMxLjYgTDc0LjQgMzAuOSBMNzYuMyAzMC4yIEw3OC4zIDI5LjQgTDgwLjQgMjguNyBMODIuNyAyOC4xIEw4NSAyNy42IEw4Ny40IDI3LjMgTDg5LjkgMjcuMSBMOTIuNCAyNyBMOTQuOSAyNy4yIEw5Ny4zIDI3LjYgTDk5LjcgMjguMyBMMTAyIDI5LjIgTDEwNC4xIDMwLjMgTDEwNi4xIDMxLjcgTDEwNy45IDMzLjMgTDEwOS41IDM1IEwxMTAuOCAzNyBMMTExLjggMzkuMSBMMTEyLjYgNDEuNCBMMTEzIDQzLjcgTDExMy4yIDQ2LjEgTDExMy4xIDQ4LjUgTDExMi44IDUwLjkgTDExMi4xIDUzLjMgTDExMS4zIDU1LjcgTDExMC4yIDU3LjkgTDEwOC45IDYwLjEgTDEwNy41IDYyLjEgTDEwNiA2NCBMMTA0LjQgNjUuOCBMMTAyLjcgNjcuNCBMMTAxLjEgNjguOSBMOTkuNSA3MC4zIEw5Ny45IDcxLjUgTDk2LjQgNzIuNyBMOTUgNzMuOCBMOTMuNyA3NC44IEw5Mi42IDc1LjggTDkxLjYgNzYuOSBMOTAuNyA3Ny45IEw5MCA3OSBMODkuNCA4MC4yIEw4OC45IDgxLjQgTDg4LjUgODIuOCBMODguMiA4NC4zIEw4Ny45IDg1LjkgTDg3LjcgODcuNyBMODcuNCA4OS42IEw4Ny4xIDkxLjYgTDg2LjggOTMuNyBMODYuMyA5NS45IEw4NS43IDk4LjEgTDg1IDEwMC40IEw4NC4xIDEwMi42IEw4My4xIDEwNC45IEw4MS44IDEwNyBMODAuNCAxMDkuMSBMNzguOCAxMTEgTDc3LjEgMTEyLjggTDc1LjIgMTE0LjMgTDczLjEgMTE1LjYgTDcwLjkgMTE2LjYgTDY4LjcgMTE3LjQgTDY2LjQgMTE3LjggTDY0IDExOCBMNjEuNiAxMTcuOCBMNTkuMyAxMTcuNCBMNTcuMSAxMTYuNiBMNTQuOSAxMTUuNiBMNTIuOCAxMTQuMyBMNTAuOSAxMTIuOCBMNDkuMiAxMTEgTDQ3LjYgMTA5LjEgTDQ2LjIgMTA3IEw0NC45IDEwNC45IEw0My45IDEwMi42IEw0MyAxMDAuNCBMNDIuMyA5OC4xIEw0MS43IDk1LjkgTDQxLjIgOTMuNyBMNDAuOSA5MS42IEw0MC42IDg5LjYgTDQwLjMgODcuNyBMNDAuMSA4NS45IEwzOS44IDg0LjMgTDM5LjUgODIuOCBMMzkuMSA4MS40IEwzOC42IDgwLjIgTDM4IDc5IEwzNy4zIDc3LjkgTDM2LjQgNzYuOSBMMzUuNCA3NS44IEwzNC4zIDc0LjggTDMzIDczLjggTDMxLjYgNzIuNyBMMzAuMSA3MS41IEwyOC41IDcwLjMgTDI2LjkgNjguOSBMMjUuMyA2Ny40IEwyMy42IDY1LjggTDIyIDY0IEwyMC41IDYyLjEgTDE5LjEgNjAuMSBMMTcuOCA1Ny45IEwxNi43IDU1LjcgTDE1LjkgNTMuMyBMMTUuMiA1MC45IEwxNC45IDQ4LjUgTDE0LjggNDYuMSBMMTUgNDMuNyBMMTUuNCA0MS40IEwxNi4yIDM5LjEgTDE3LjIgMzcgTDE4LjUgMzUgTDIwLjEgMzMuMyBMMjEuOSAzMS43IEwyMy45IDMwLjMgTDI2IDI5LjIgTDI4LjMgMjguMyBMMzAuNyAyNy42IEwzMy4xIDI3LjIgTDM1LjYgMjcgTDM4LjEgMjcuMSBMNDAuNiAyNy4zIEw0MyAyNy42IEw0NS4zIDI4LjEgTDQ3LjYgMjguNyBMNDkuNyAyOS40IEw1MS43IDMwLjIgTDUzLjYgMzAuOSBMNTUuMyAzMS42IEw1NyAzMi4zIEw1OC41IDMyLjkgTDYwIDMzLjQgTDYxLjMgMzMuNyBMNjIuNyAzMy45WiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZmZmZmZmIiBzdHJva2Utd2lkdGg9IjIwIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+CjxwYXRoIGQ9Ik02NCAzNCBMNjUuMyAzMy45IEw2Ni43IDMzLjcgTDY4IDMzLjQgTDY5LjUgMzIuOSBMNzEgMzIuMyBMNzIuNyAzMS42IEw3NC40IDMwLjkgTDc2LjMgMzAuMiBMNzguMyAyOS40IEw4MC40IDI4LjcgTDgyLjcgMjguMSBMODUgMjcuNiBMODcuNCAyNy4zIEw4OS45IDI3LjEgTDkyLjQgMjcgTDk0LjkgMjcuMiBMOTcuMyAyNy42IEw5OS43IDI4LjMgTDEwMiAyOS4yIEwxMDQuMSAzMC4zIEwxMDYuMSAzMS43IEwxMDcuOSAzMy4zIEwxMDkuNSAzNSBMMTEwLjggMzcgTDExMS44IDM5LjEgTDExMi42IDQxLjQgTDExMyA0My43IEwxMTMuMiA0Ni4xIEwxMTMuMSA0OC41IEwxMTIuOCA1MC45IEwxMTIuMSA1My4zIEwxMTEuMyA1NS43IEwxMTAuMiA1Ny45IEwxMDguOSA2MC4xIEwxMDcuNSA2Mi4xIEwxMDYgNjQgTDEwNC40IDY1LjggTDEwMi43IDY3LjQgTDEwMS4xIDY4LjkgTDk5LjUgNzAuMyBMOTcuOSA3MS41IEw5Ni40IDcyLjcgTDk1IDczLjggTDkzLjcgNzQuOCBMOTIuNiA3NS44IEw5MS42IDc2LjkgTDkwLjcgNzcuOSBMOTAgNzkgTDg5LjQgODAuMiBMODguOSA4MS40IEw4OC41IDgyLjggTDg4LjIgODQuMyBMODcuOSA4NS45IEw4Ny43IDg3LjcgTDg3LjQgODkuNiBMODcuMSA5MS42IEw4Ni44IDkzLjcgTDg2LjMgOTUuOSBMODUuNyA5OC4xIEw4NSAxMDAuNCBMODQuMSAxMDIuNiBMODMuMSAxMDQuOSBMODEuOCAxMDcgTDgwLjQgMTA5LjEgTDc4LjggMTExIEw3Ny4xIDExMi44IEw3NS4yIDExNC4zIEw3My4xIDExNS42IEw3MC45IDExNi42IEw2OC43IDExNy40IEw2Ni40IDExNy44IEw2NCAxMTggTDYxLjYgMTE3LjggTDU5LjMgMTE3LjQgTDU3LjEgMTE2LjYgTDU0LjkgMTE1LjYgTDUyLjggMTE0LjMgTDUwLjkgMTEyLjggTDQ5LjIgMTExIEw0Ny42IDEwOS4xIEw0Ni4yIDEwNyBMNDQuOSAxMDQuOSBMNDMuOSAxMDIuNiBMNDMgMTAwLjQgTDQyLjMgOTguMSBMNDEuNyA5NS45IEw0MS4yIDkzLjcgTDQwLjkgOTEuNiBMNDAuNiA4OS42IEw0MC4zIDg3LjcgTDQwLjEgODUuOSBMMzkuOCA4NC4zIEwzOS41IDgyLjggTDM5LjEgODEuNCBMMzguNiA4MC4yIEwzOCA3OSBMMzcuMyA3Ny45IEwzNi40IDc2LjkgTDM1LjQgNzUuOCBMMzQuMyA3NC44IEwzMyA3My44IEwzMS42IDcyLjcgTDMwLjEgNzEuNSBMMjguNSA3MC4zIEwyNi45IDY4LjkgTDI1LjMgNjcuNCBMMjMuNiA2NS44IEwyMiA2NCBMMjAuNSA2Mi4xIEwxOS4xIDYwLjEgTDE3LjggNTcuOSBMMTYuNyA1NS43IEwxNS45IDUzLjMgTDE1LjIgNTAuOSBMMTQuOSA0OC41IEwxNC44IDQ2LjEgTDE1IDQzLjcgTDE1LjQgNDEuNCBMMTYuMiAzOS4xIEwxNy4yIDM3IEwxOC41IDM1IEwyMC4xIDMzLjMgTDIxLjkgMzEuNyBMMjMuOSAzMC4zIEwyNiAyOS4yIEwyOC4zIDI4LjMgTDMwLjcgMjcuNiBMMzMuMSAyNy4yIEwzNS42IDI3IEwzOC4xIDI3LjEgTDQwLjYgMjcuMyBMNDMgMjcuNiBMNDUuMyAyOC4xIEw0Ny42IDI4LjcgTDQ5LjcgMjkuNCBMNTEuNyAzMC4yIEw1My42IDMwLjkgTDU1LjMgMzEuNiBMNTcgMzIuMyBMNTguNSAzMi45IEw2MCAzMy40IEw2MS4zIDMzLjcgTDYyLjcgMzMuOVoiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZjNDdlMCIgc3Ryb2tlLXdpZHRoPSIxMyIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgo8L3N2Zz4K
@@ -130,7 +130,7 @@
 // Bundles (verbatim, each wrapped in a URL gate and a run-at gate): apollo_editor, art_station, credit_hoarder, falcon, first_contact, fusion, group_therapy, isrc_scout, mammoth, mission_control, platform_check.
 
 try {
-  console.log('%c String Theory %c v2026.10.18.233427 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
+  console.log('%c String Theory %c v2026.10.18.233925 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
   console.log("String Theory bundles:\n  · Apollo Editor v2026.10.18.213751\n  · Art Station v2026.10.18.145901\n  · Credit Hoarder v2026.10.17.232714\n  · Falcon v2026.10.18.195122\n  · First Contact v2026.10.18.173327\n  · Fusion v2026.10.17.231850\n  · Group Therapy v2026.10.17.231850\n  · ISRC Scout v2026.10.17.231850\n  · Mammoth v2026.10.17.231850\n  · Mission Control v2026.10.18.213751\n  · Platform Check v2026.10.18.195122");
 } catch (e) {}
 
@@ -1634,11 +1634,32 @@ if (__stOff.indexOf("apollo_editor") < 0 && __stRuns("apollo_editor", {"inc":["^
           return out;
       }
 
+      // Cyrillic by its script: with the mode left to the language, a title written mostly in Cyrillic gets
+      // Sentence whatever the language (the guidelines' rule for Cyrillic; a release in English, in several
+      // languages or in none would capitalise every word). A title whose parts, split by the separator
+      // ('/' by default), are in different scripts has each part guessed on its own.
+      const count = (s, re) => (s.match(re) || []).length;
+      const isCyrillic = s => count(s, /\p{Script=Cyrillic}/gu) > count(s, /\p{Script=Latin}/gu);
+      function byScript(s, o) {
+          const sep = o.separator == null ? '/' : String(o.separator);
+          const parts = sep.trim() ? s.split(new RegExp(String.raw`(\s*` + escapeRegExp(sep.trim()) + String.raw`\s*)`)) : [s];
+          const texts = parts.filter((p, i) => i % 2 === 0), cyr = texts.map(isCyrillic);
+          const sentence = Object.assign({}, o, { mode: 'Sentence' });
+          if (cyr.every(Boolean)) return run('process', s, sentence);
+          if (!cyr.some(Boolean)) return run('process', s, o);
+          return parts.map((p, i) => (i % 2 ? p : run('process', p, cyr[i / 2] ? sentence : o))).join('');
+      }
+
       /** A title in MusicBrainz's guess case. Options: entity ('track' default, 'release',
        *  'release_group', 'recording', 'work', 'artist', 'label', 'area', 'place', 'event',
        *  'series', 'genre', 'instrument'), mode or language, keepUpperCase (true), romanUpper
-       *  (false), extras (true: our rules on top; false gives exactly MusicBrainz's result). */
-      function guessCase(title, opts) { return run('process', String(title == null ? '' : title), opts); }
+       *  (false), extras (true: our rules on top; false gives exactly MusicBrainz's result),
+       *  byScript (true: with no mode, Cyrillic gets Sentence) and separator ('/': a title's parts). */
+      function guessCase(title, opts) {
+          const s = String(title == null ? '' : title), o = opts || {};
+          if (!(o.mode && MODES[o.mode]) && o.byScript !== false && o.extras !== false && TITLE_ENTITIES.has(o.entity || 'track')) return byScript(s, o);
+          return run('process', s, o);
+      }
       guessCase.sortName = (name, opts) => run('guessSortName', String(name == null ? '' : name), opts);
       guessCase.modeFor = modeFor;
       guessCase.modes = MODE_NAMES;
@@ -1704,7 +1725,7 @@ if (__stOff.indexOf("apollo_editor") < 0 && __stRuns("apollo_editor", {"inc":["^
   const SKEY = 'apolloEditor.settings.v1';
   // MusicBrainz's own guess-case options seed Apollo's once (#785); a page without cookies (about:blank) throws
   function pageCookies() { try { return document.cookie || ''; } catch (e) { return ''; } }
-  function loadSettings() { const d = { apolloEnabled: true, colWidths: {}, applyMode: 'all', altRows: false, gridCols: false, gridRows: true, replaceReleaseInfo: true, replaceTracklist: true, replaceRecordings: true, modifyAnnotation: true, modifyDuplicates: true, autoMatch: true, autoMatchRec: true, autoMatchOnV: 1, autoMatchLabel: true, autoMatchArtist: true, autoMatchRG: true, discogsUrlMatch: true, recLenTol: 5, recIgnoreCase: true, recIgnorePunct: true, recTitleTol: 1, recCutoff: 'near', recDetailedHl: true, recPunctSize: 3, recHlColor: '#e53935', lastTool: '', layout: 'normal', lastView: 'apollo', zenMode: true, autoConfirmSeed: true, keepCaretColumn: true, hoverHighlight: false, srRegex: false, srTemplates: [], srSeedV: 0, srHistory: [], srDefault: '', srHistoryOpen: false, archive: true, archiveMenu: true, gcMode: 'auto', gcKeepUC: !/(?:^|;\s*)guesscase_keepuppercase=(?:false|0)(?:;|$)/.test(pageCookies()), gcRoman: /(?:^|;\s*)guesscase_roman=(?:true|1)(?:;|$)/.test(pageCookies()) }; try { const stored = JSON.parse(gmLoad(SKEY) || '{}'); const s = Object.assign(d, stored); if (stored.gridCols === undefined && stored.grid !== undefined) s.gridCols = stored.grid; if (stored.autoMatchOnV === undefined) { s.autoMatch = true; s.autoMatchRec = true; }   /* tracklist + recordings auto-match became on by default; the whole object is saved, so an existing install has the old false stored and needs flipping once (autoMatchOnV, from the defaults, marks it done on the next save) */ return s; } catch (e) { return d; } }
+  function loadSettings() { const d = { apolloEnabled: true, colWidths: {}, applyMode: 'all', altRows: false, gridCols: false, gridRows: true, replaceReleaseInfo: true, replaceTracklist: true, replaceRecordings: true, modifyAnnotation: true, modifyDuplicates: true, autoMatch: true, autoMatchRec: true, autoMatchOnV: 1, autoMatchLabel: true, autoMatchArtist: true, autoMatchRG: true, discogsUrlMatch: true, recLenTol: 5, recIgnoreCase: true, recIgnorePunct: true, recTitleTol: 1, recCutoff: 'near', recDetailedHl: true, recPunctSize: 3, recHlColor: '#e53935', lastTool: '', layout: 'normal', lastView: 'apollo', zenMode: true, autoConfirmSeed: true, keepCaretColumn: true, hoverHighlight: false, srRegex: false, srTemplates: [], srSeedV: 0, srHistory: [], srDefault: '', srHistoryOpen: false, archive: true, archiveMenu: true, gcMode: 'auto', gcSep: '/', gcKeepUC: !/(?:^|;\s*)guesscase_keepuppercase=(?:false|0)(?:;|$)/.test(pageCookies()), gcRoman: /(?:^|;\s*)guesscase_roman=(?:true|1)(?:;|$)/.test(pageCookies()) }; try { const stored = JSON.parse(gmLoad(SKEY) || '{}'); const s = Object.assign(d, stored); if (stored.gridCols === undefined && stored.grid !== undefined) s.gridCols = stored.grid; if (stored.autoMatchOnV === undefined) { s.autoMatch = true; s.autoMatchRec = true; }   /* tracklist + recordings auto-match became on by default; the whole object is saved, so an existing install has the old false stored and needs flipping once (autoMatchOnV, from the defaults, marks it done on the next save) */ return s; } catch (e) { return d; } }
   function saveSettings() { try { gmSave(SKEY, JSON.stringify(SETTINGS)); } catch (e) {} }
   let SETTINGS = loadSettings();
   try { srSeedTemplates(); } catch (e) {}   // #375 seed the default S&R templates once
@@ -4103,9 +4124,10 @@ click to open the label`;
   // Guess case: the shared block (#785), MusicBrainz's own with more modes and our rules; the mode
   // follows the release's language (Auto) unless one is chosen
   function gcOpts() {
-    let mode = SETTINGS.gcMode, lang = null;
-    if (!mode || mode === 'auto' || !mbuGuessCase.modes.includes(mode)) { try { lang = u(release().languageID); } catch (e) { /* no release yet */ } mode = mbuGuessCase.modeFor(lang); }
-    return { entity: 'track', mode, keepUpperCase: SETTINGS.gcKeepUC !== false, romanUpper: !!SETTINGS.gcRoman };
+    const o = { entity: 'track', keepUpperCase: SETTINGS.gcKeepUC !== false, romanUpper: !!SETTINGS.gcRoman, separator: SETTINGS.gcSep == null ? '/' : SETTINGS.gcSep };
+    if (mbuGuessCase.modes.includes(SETTINGS.gcMode)) o.mode = SETTINGS.gcMode;
+    else { o.language = null; try { o.language = u(release().languageID) || null; } catch (e) { /* no release yet */ } }   // Auto: the language, so a Cyrillic title (or part) gets Sentence whatever it is
+    return o;
   }
   function guessTitleStr(entry) {
     const name = u(koTrack(entry.mi, entry.ti).name) || '';
@@ -4211,7 +4233,7 @@ click to open the label`;
     const autoMode = () => { let lang = null; try { lang = u(release().languageID); } catch (e) { /* no release yet */ } return mbuGuessCase.modeFor(lang); };
     sel.append(new Option('Auto (' + autoMode() + ')', 'auto'), ...mbuGuessCase.modes.map(m => new Option(m, m)));
     sel.value = mbuGuessCase.modes.includes(SETTINGS.gcMode) ? SETTINGS.gcMode : 'auto';
-    sel.title = "Guess case mode. Auto follows the release's language: English, French, Turkish, Spanish, Italian, Portuguese and Dutch have their own, any other is Sentence.";
+    sel.title = "Guess case mode. Auto follows the release's language: English, French, Turkish, Spanish, Italian, Portuguese and Dutch have their own, any other is Sentence. A title in Cyrillic gets Sentence whatever the language.";
     sel.onfocus = () => { sel.options[0].text = 'Auto (' + autoMode() + ')'; sel.value = mbuGuessCase.modes.includes(SETTINGS.gcMode) ? SETTINGS.gcMode : 'auto'; };
     sel.onchange = () => { SETTINGS.gcMode = sel.value; saveSettings(); Log.cat('Tool').info('guess case mode', sel.value); gcOptionsChanged(); };
     return sel;
@@ -4223,11 +4245,17 @@ click to open the label`;
     const mkChk = (text, key, title) => { const l = document.createElement('label'); l.title = title; const c = document.createElement('input'); c.type = 'checkbox'; c.dataset.gcKey = key; c.checked = key === 'gcKeepUC' ? SETTINGS[key] !== false : !!SETTINGS[key]; c.onchange = () => { SETTINGS[key] = c.checked; saveSettings(); gcOptionsChanged(); }; l.append(c, document.createTextNode(' ' + text)); return l; };
     box.appendChild(mkChk('Keep uppercased', 'gcKeepUC', 'A word written in capitals (or with a capital inside, as KoRn) stays as it is'));
     box.appendChild(mkChk('Roman numerals', 'gcRoman', 'Roman numerals in capitals: part ii → Part II'));
+    const sl = document.createElement('label'); sl.title = "In Auto, the parts of a title split by this are guessed on their own when they are in different scripts: Love story / история любви → Love Story / История любви. Empty: never split.";
+    const si = document.createElement('input'); si.type = 'text'; si.className = 'tc-gc-sep'; si.dataset.gcSep = '1'; si.maxLength = 5; si.spellcheck = false; si.value = SETTINGS.gcSep == null ? '/' : SETTINGS.gcSep;
+    si.onchange = () => { SETTINGS.gcSep = si.value.trim(); saveSettings(); Log.cat('Tool').info('guess case separator', JSON.stringify(SETTINGS.gcSep)); gcOptionsChanged(); };
+    sl.append(document.createTextNode('Separator '), si);
+    box.appendChild(sl);
     return box;
   }
   function gcOptionsChanged() {
     const mode = mbuGuessCase.modes.includes(SETTINGS.gcMode) ? SETTINGS.gcMode : 'auto';
     document.querySelectorAll('select.tc-gc-lang').forEach(s => { if (s.value !== mode) s.value = mode; });
+    document.querySelectorAll('input[data-gc-sep]').forEach(i => { const v = SETTINGS.gcSep == null ? '/' : SETTINGS.gcSep; if (i.value !== v && document.activeElement !== i) i.value = v; });
     document.querySelectorAll('input[data-gc-key]').forEach(c => { const v = c.dataset.gcKey === 'gcKeepUC' ? SETTINGS.gcKeepUC !== false : !!SETTINGS.gcRoman; if (c.checked !== v) c.click(); });
     recomputeGuesses();
   }
@@ -6102,6 +6130,8 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     select.tc-gc-lang:hover,select.tc-gc-lang:focus-visible{border-color:var(--mbu-accent);outline:none}
     .tc-gco label{display:inline-flex;align-items:center;gap:4px;font:12px Arial;color:var(--mbu-text);white-space:nowrap;cursor:pointer}
     .tc-gco input[type=checkbox]{margin:0;accent-color:var(--mbu-accent)}
+    .tc-gco input.tc-gc-sep{width:3.2em;font:12px Arial;text-align:center;padding:2px 4px;border:1px solid var(--mbu-border-strong);border-radius:var(--mbu-radius);background:var(--mbu-bg);color:var(--mbu-text);margin:0}
+    .tc-gco input.tc-gc-sep:focus{border-color:var(--mbu-accent);outline:none}
     .tc-colso{gap:4px}
     .tc-colbtn{font:12px Arial;padding:2px 9px;border:1px solid var(--mbu-border);border-radius:4px;background:var(--mbu-bg);cursor:pointer;color:var(--mbu-text)}
     /* #455 track length parser panel — centred, draggable, textarea+chooser | list */
@@ -69906,8 +69936,8 @@ function pfChanges() {
 }
 // #785: guess case for a track's title, the shared one, in the release's language's mode
 const pfGuessMode = () => mbuGuessCase.modeFor(rel && rel.language);
-function pfGuess(title) {
-    try { return mbuGuessCase(title || '', { entity: 'track', mode: pfGuessMode() }); } catch (e) { Log.warn('guess case failed on "' + title + '": ' + e.message); return title; }
+function pfGuess(title) {   // the language, not its mode: a Cyrillic title gets Sentence whatever it is
+    try { return mbuGuessCase(title || '', { entity: 'track', language: (rel && rel.language) || null }); } catch (e) { Log.warn('guess case failed on "' + title + '": ' + e.message); return title; }
 }
 // #782: the row under the track: what each platform gives for it, each title and length a click takes in
 function pfPill(x) {
@@ -72061,11 +72091,32 @@ const mbuGuessCase = (() => {
         return out;
     }
 
+    // Cyrillic by its script: with the mode left to the language, a title written mostly in Cyrillic gets
+    // Sentence whatever the language (the guidelines' rule for Cyrillic; a release in English, in several
+    // languages or in none would capitalise every word). A title whose parts, split by the separator
+    // ('/' by default), are in different scripts has each part guessed on its own.
+    const count = (s, re) => (s.match(re) || []).length;
+    const isCyrillic = s => count(s, /\p{Script=Cyrillic}/gu) > count(s, /\p{Script=Latin}/gu);
+    function byScript(s, o) {
+        const sep = o.separator == null ? '/' : String(o.separator);
+        const parts = sep.trim() ? s.split(new RegExp(String.raw`(\s*` + escapeRegExp(sep.trim()) + String.raw`\s*)`)) : [s];
+        const texts = parts.filter((p, i) => i % 2 === 0), cyr = texts.map(isCyrillic);
+        const sentence = Object.assign({}, o, { mode: 'Sentence' });
+        if (cyr.every(Boolean)) return run('process', s, sentence);
+        if (!cyr.some(Boolean)) return run('process', s, o);
+        return parts.map((p, i) => (i % 2 ? p : run('process', p, cyr[i / 2] ? sentence : o))).join('');
+    }
+
     /** A title in MusicBrainz's guess case. Options: entity ('track' default, 'release',
      *  'release_group', 'recording', 'work', 'artist', 'label', 'area', 'place', 'event',
      *  'series', 'genre', 'instrument'), mode or language, keepUpperCase (true), romanUpper
-     *  (false), extras (true: our rules on top; false gives exactly MusicBrainz's result). */
-    function guessCase(title, opts) { return run('process', String(title == null ? '' : title), opts); }
+     *  (false), extras (true: our rules on top; false gives exactly MusicBrainz's result),
+     *  byScript (true: with no mode, Cyrillic gets Sentence) and separator ('/': a title's parts). */
+    function guessCase(title, opts) {
+        const s = String(title == null ? '' : title), o = opts || {};
+        if (!(o.mode && MODES[o.mode]) && o.byScript !== false && o.extras !== false && TITLE_ENTITIES.has(o.entity || 'track')) return byScript(s, o);
+        return run('process', s, o);
+    }
     guessCase.sortName = (name, opts) => run('guessSortName', String(name == null ? '' : name), opts);
     guessCase.modeFor = modeFor;
     guessCase.modes = MODE_NAMES;

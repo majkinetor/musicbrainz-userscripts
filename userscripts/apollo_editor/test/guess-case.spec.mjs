@@ -40,6 +40,20 @@ test('#785: the mode and options change the guess, and Aa applies it', { tag: ['
   check(name === sentence, `Aa sets the track's title to the guess (${name})`);
 });
 
+test('#785: in Auto a Cyrillic title, or a part of one, gets Sentence; the separator is an option', { tag: ['@sandbox', '@login'] }, async ({ page, inject }) => {
+  await openApollo(page, inject, { seed: 'seed-saigon', tab: 'tracklist' });
+  await page.waitForSelector('.tc-gco select.tc-gc-lang', { state: 'attached', timeout: 10000 });
+  await page.evaluate(() => { const el = document.querySelector('.tc-gco select.tc-gc-lang'); el.value = 'auto'; el.dispatchEvent(new Event('change', { bubbles: true })); });
+  await page.evaluate(() => window.MB.releaseEditor.rootField.release().mediums()[0].tracks()[0].name('love story / история любви'));
+  const guess = () => page.evaluate(() => { const t = window.__apolloEditor.model.tracks.find(x => /история/i.test(x.title || '')); return t ? t.guessTitle : null; });
+  const split = await until(guess, g => g === 'Love Story / История любви');
+  check(split === 'Love Story / История любви', `the Latin part in the release's mode, the Cyrillic part in Sentence (${split})`);
+  await page.evaluate(() => { const i = document.querySelector('.tc-gco input.tc-gc-sep'); i.value = '|'; i.dispatchEvent(new Event('change', { bubbles: true })); });
+  const whole = await until(guess, g => g === 'Love story / История любви');
+  check(whole === 'Love story / История любви', `another separator: the title is one, mostly Cyrillic, so Sentence (${whole})`);
+  check(await page.evaluate(() => window.__apolloEditor.settings.gcSep) === '|', 'the separator is kept in the settings');
+});
+
 test("#785: MusicBrainz's own guess-case buttons give Apollo's guess", { tag: ['@sandbox', '@login'] }, async ({ page, inject }) => {
   await openApollo(page, inject, { seed: 'seed-saigon', tab: 'tracklist' });
   await page.waitForSelector('.tc-gco select.tc-gc-lang', { state: 'attached', timeout: 10000 });

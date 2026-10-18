@@ -1168,8 +1168,8 @@ function pfChanges() {
 }
 // #785: guess case for a track's title, the shared one, in the release's language's mode
 const pfGuessMode = () => mbuGuessCase.modeFor(rel && rel.language);
-function pfGuess(title) {
-    try { return mbuGuessCase(title || '', { entity: 'track', mode: pfGuessMode() }); } catch (e) { Log.warn('guess case failed on "' + title + '": ' + e.message); return title; }
+function pfGuess(title) {   // the language, not its mode: a Cyrillic title gets Sentence whatever it is
+    try { return mbuGuessCase(title || '', { entity: 'track', language: (rel && rel.language) || null }); } catch (e) { Log.warn('guess case failed on "' + title + '": ' + e.message); return title; }
 }
 // #782: the row under the track: what each platform gives for it, each title and length a click takes in
 function pfPill(x) {
@@ -3323,11 +3323,32 @@ const mbuGuessCase = (() => {
         return out;
     }
 
+    // Cyrillic by its script: with the mode left to the language, a title written mostly in Cyrillic gets
+    // Sentence whatever the language (the guidelines' rule for Cyrillic; a release in English, in several
+    // languages or in none would capitalise every word). A title whose parts, split by the separator
+    // ('/' by default), are in different scripts has each part guessed on its own.
+    const count = (s, re) => (s.match(re) || []).length;
+    const isCyrillic = s => count(s, /\p{Script=Cyrillic}/gu) > count(s, /\p{Script=Latin}/gu);
+    function byScript(s, o) {
+        const sep = o.separator == null ? '/' : String(o.separator);
+        const parts = sep.trim() ? s.split(new RegExp(String.raw`(\s*` + escapeRegExp(sep.trim()) + String.raw`\s*)`)) : [s];
+        const texts = parts.filter((p, i) => i % 2 === 0), cyr = texts.map(isCyrillic);
+        const sentence = Object.assign({}, o, { mode: 'Sentence' });
+        if (cyr.every(Boolean)) return run('process', s, sentence);
+        if (!cyr.some(Boolean)) return run('process', s, o);
+        return parts.map((p, i) => (i % 2 ? p : run('process', p, cyr[i / 2] ? sentence : o))).join('');
+    }
+
     /** A title in MusicBrainz's guess case. Options: entity ('track' default, 'release',
      *  'release_group', 'recording', 'work', 'artist', 'label', 'area', 'place', 'event',
      *  'series', 'genre', 'instrument'), mode or language, keepUpperCase (true), romanUpper
-     *  (false), extras (true: our rules on top; false gives exactly MusicBrainz's result). */
-    function guessCase(title, opts) { return run('process', String(title == null ? '' : title), opts); }
+     *  (false), extras (true: our rules on top; false gives exactly MusicBrainz's result),
+     *  byScript (true: with no mode, Cyrillic gets Sentence) and separator ('/': a title's parts). */
+    function guessCase(title, opts) {
+        const s = String(title == null ? '' : title), o = opts || {};
+        if (!(o.mode && MODES[o.mode]) && o.byScript !== false && o.extras !== false && TITLE_ENTITIES.has(o.entity || 'track')) return byScript(s, o);
+        return run('process', s, o);
+    }
     guessCase.sortName = (name, opts) => run('guessSortName', String(name == null ? '' : name), opts);
     guessCase.modeFor = modeFor;
     guessCase.modes = MODE_NAMES;

@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-10-18 23:34 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-10-18 23:39 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -201,6 +201,7 @@ Capitalises the track titles the way MusicBrainz's own Guess case does, with mor
 - **Mode**: **Auto** follows the release's language. English, French, Turkish, Spanish, Italian, Portuguese and Dutch have their own mode; any other language gets Sentence (a capital only at the start of a sentence). Pick a mode to use it whatever the language.
 - **Keep uppercased**: a word in capitals stays in capitals, and a word with a capital inside it (*KoRn*, *JoJo*, *OutKast*) keeps it.
 - **Roman numerals**: *part ii* becomes *Part II*.
+- **Separator**: in Auto, a title written mostly in Cyrillic gets Sentence whatever the release's language. A title whose parts, split by this (`/` by default), are in different scripts has each part guessed on its own: *love story / история любви* becomes *Love Story / История любви*. Empty never splits.
 
 On top of MusicBrainz's rules, version words in brackets are lowercased (*official music video*, *slowed + reverb*, *sped up*, *bootleg*, *mashup*), and Dutch writes *IJ* as one capital (*IJsland*).
 
