@@ -94,7 +94,7 @@ Each platform searched shows how large its own cover is on the right, or *no cov
 
 ### Gallery
 
-Under the front, the card shows [Art Station's gallery](../art_station/README.md#gallery) for the release, with everything it does there: drag covers into order, set types and comments, remove, rotate, view full screen.
+Under the front, the card shows [Art Station's gallery](../art_station/README.md#gallery) for the release, with everything it does there: drag covers into order, set types and comments, remove, rotate, view full screen. When the gallery would take more than two rows, the card is two columns wide.
 
 Discogs and Amazon have every image of a release: the back, the medium, the booklet. The gallery puts the others at its end under **More images**, a row for each store (the one with the larger images first). Click **＋ take in** on one, or **＋ take all in** beside a store, to add them after the covers, then drag them where they go. The stores don't say what an image is, so nothing starts typed. An image that is the same picture as a cover the release already has says *in archive*, even one just entered; one that is the same as the best front or as a larger image says which (*= Amazon 1*).
 
