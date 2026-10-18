@@ -87,6 +87,21 @@ test('#782: Compare reads the release\'s platforms and offers what it lacks', { 
   await page.locator('#mc-root .mc-tbl tbody tr[data-i="1"] td.ttl').click();
   const insp = await page.locator('#mc-root .mc-insp').textContent();
   check(/Platforms/.test(insp) && /Homes & Gardens \(Remix\)/.test(insp), 'the inspector shows the track\'s versions on the platforms');
+  // ≠ title opens, under the track, what each platform gives; Expand all opens them as it does Fusion's
+  const sub = page.locator('#mc-root .mc-tbl tr.mc-fxd[data-pf="1"]');
+  check(await sub.isHidden(), 'the platforms\' titles are folded at first');
+  await page.locator('#mc-root .mc-tbl td[data-col="plat"] [data-act="fx-pf"]').click();
+  const lines = await sub.locator('tbody tr').allTextContents();
+  check(lines.length === 3 && /Deezer/.test(lines[1]) && /Qobuz/.test(lines[2]) && lines.slice(1).every(l => /Homes & Gardens \(Remix\)/.test(l)), `one line per platform under the track (${JSON.stringify(lines)})`);
+  await page.locator('#mc-root .mc-tbl td[data-col="plat"] [data-act="fx-pf"]').click();
+  check(await sub.isHidden(), 'a second click folds it');
+  const all = page.locator('#mc-root .mc-fxall [data-act="fx-all"]');
+  check(/Expand all/.test(await all.textContent()), 'the Tracks header offers Expand all');
+  await all.click();
+  check(await sub.isVisible() && /Collapse all/.test(await all.textContent()), 'Expand all opens it, and turns into Collapse all');
+  await page.locator('#mc-root').screenshot({ path: 'dev/_782-expanded.png' });
+  await all.click();
+  check(await sub.isHidden(), 'Collapse all folds it');
   const card = page.locator('#mc-root [data-card="pc"]');
   check(/Compared with/.test(await card.textContent()), 'Platform Check\'s card says the release was compared');
   check(await card.locator('.mc-line:has-text("Release event")').count() === 1 && await card.locator('.mc-line:has-text("Track lengths for")').count() === 1, 'the release event and the track lengths are rows of the Release section');

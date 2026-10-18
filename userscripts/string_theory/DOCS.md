@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-10-18 18:09 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-10-18 19:08 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -1866,7 +1866,7 @@ To take in or leave out many at once, hold a key while you click: the others fol
 
 Found links take the same keys with a right-click. Press on an ISRC or a duplicate and drag up or down the column to do the same to every one you pass.
 
-Fusion's count opens what Fusion compared under the row: each recording's artist, release, length, ISRCs, AcoustIDs and open edits, with what differs marked. The comparisons fill in as their ISRCs and AcoustIDs come. Fusion's icon beside it (*Open in Fusion*) shows the group on Fusion's board. **Expand all** in the Tracks header opens every track's comparison, and **Collapse all** folds them.
+Fusion's count opens what Fusion compared under the row: each recording's artist, release, length, ISRCs, AcoustIDs and open edits, with what differs marked. The comparisons fill in as their ISRCs and AcoustIDs come. Fusion's icon beside it (*Open in Fusion*) shows the group on Fusion's board. **Expand all** in the Tracks header opens every track's comparison (and the platforms' titles, [below](#compare-with-the-platforms)), and **Collapse all** folds them.
 
 ### Release and entity links
 
@@ -1909,7 +1909,7 @@ The links are added through [Falcon](../falcon/README.md), out of sight. The car
 | ISRCs                | a track has none                                             | ISRCs                                       |
 | Title, a track title | the platforms give another                                   | shown only, never changed                   |
 
-Nothing the release has is changed. The tracks are compared one by one only when the platforms have as many as the release. The Platforms column shows each track's length to add (*+ 4:01*), and *≠ title* when the platforms call it something else; click the track to see its versions in the [Inspector](#inspector). Platform Check's card names the platforms read, and the release's title if the platforms give another.
+Nothing the release has is changed. The tracks are compared one by one only when the platforms have as many as the release. The Platforms column shows each track's length to add (*+ 4:01*), and *≠ title* when the platforms call it something else. *≠ title* opens, under the row, what each platform gives for the track: its title, with the part that differs marked, length and ISRC; **Expand all** opens these with Fusion's comparisons. The [Inspector](#inspector) shows the track's versions too. Platform Check's card names the platforms read, and the release's title if the platforms give another.
 
 Execute adds the release event and the track lengths with the barcode, labels and links, in one edit of the release, through [Falcon](../falcon/README.md).
 
