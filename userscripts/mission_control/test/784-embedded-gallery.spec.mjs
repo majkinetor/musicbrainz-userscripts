@@ -70,6 +70,16 @@ test('#784: the gallery shows in the card, scrolls with it and goes full screen'
   const full = await until(geo, v => v.frame[2] === 1400 && v.frame[3] === 900);
   check(full.frame.join() === '0,0,1400,900', `full screen takes the window (${JSON.stringify(full)})`);
   await page.screenshot({ path: 'test-results/mc-784-full.png' });
+  // setting a type there leaves the cover where it is (the bar took padding while focused, and moved it)
+  const top = () => fr.evaluate(() => Math.round(document.querySelector('.as-lb-img').getBoundingClientRect().top));
+  await until(() => fr.evaluate(() => { const i = document.querySelector('.as-lb-img'); return !!(i && i.complete && i.naturalWidth); }), Boolean);
+  const t0 = await top();
+  await fr.locator('#as-lb .as-lb-type').click();
+  await fr.locator('.as-pop input[type=checkbox]').first().waitFor();
+  const t1 = await top();
+  await fr.locator('.as-pop input[type=checkbox]').first().check();
+  const t2 = await top();
+  check(t1 === t0 && t2 === t0, `the cover stays put while its type is set (${t0} → ${t1} → ${t2})`);
   await fr.locator('body').press('Escape');
   const back = await until(geo, v => v.frame.join() === v.slot.join());
   check(back.frame.join() === back.slot.join(), `Esc gives the card back (${JSON.stringify(back)})`);

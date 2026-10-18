@@ -6630,10 +6630,10 @@
   .as-lb-rotbusy .as-lb-rot{pointer-events:none;opacity:.45}
   /* z-index:2 keeps the footer above a ZOOMED image — the image's transform makes a
      stacking context that would otherwise paint over the bar (it sits below in flow). */
-  .as-lb-bar{margin-top:14px;display:flex;flex-direction:column;align-items:center;gap:8px;width:min(560px,84vw);position:relative;z-index:2}
+  .as-lb-bar{margin-top:3px;display:flex;flex-direction:column;align-items:center;gap:8px;width:min(560px,84vw);position:relative;z-index:2;padding:11px 16px;border-radius:13px;box-sizing:content-box}   /* the focused bar's padding always: focusing it (the type picker, the comment) must not move the cover */
   /* while editing (focused), give the bar a readable dark backdrop — otherwise the comment
      field / type chip are invisible over a light image */
-  .as-lb-bar:focus-within{background:rgba(15,12,28,.88);padding:11px 16px;border-radius:13px;box-shadow:0 6px 24px rgba(0,0,0,.5)}
+  .as-lb-bar:focus-within{background:rgba(15,12,28,.88);box-shadow:0 6px 24px rgba(0,0,0,.5)}
   .as-lb-bar:focus-within .as-lb-cmt{background:rgba(255,255,255,.16);border-color:rgba(255,255,255,.5)}
   .as-lb-caprow{display:flex;align-items:center;justify-content:center;gap:14px;flex-wrap:wrap}
   .as-lb-cap{color:#eee;font-size:13px;text-align:center;display:flex;align-items:center;justify-content:center;gap:10px;flex-wrap:wrap}
@@ -6641,7 +6641,7 @@
   .as-lb-type:hover{background:rgba(255,255,255,.2);color:var(--mbu-text-on-accent)}
   .as-lb-type.as-type-add{font-weight:600;border-style:dashed;color:rgba(255,255,255,.6)}
   .as-lb-dim{color:var(--mbu-text-weak)}
-  .as-lb-cmtarea{width:100%;display:flex;justify-content:center}
+  .as-lb-cmtarea{width:100%;display:flex;justify-content:center;align-items:center;min-height:34px}   /* one height for the ✎ button, the text and the input */
   .as-lb-cmt{width:100%;font-size:13px;font-family:inherit;border:1px solid rgba(255,255,255,.25);background:rgba(255,255,255,.08);color:var(--mbu-text-on-accent);border-radius:7px;padding:7px 11px;text-align:center}
   .as-lb-cmt-text{font-size:14px;font-family:inherit;color:var(--mbu-text-on-accent);text-align:center;line-height:1.4;padding:4px 8px;cursor:text;max-width:100%;word-break:break-word}
   .as-lb-cmt-text:hover{color:#e7dffb}
