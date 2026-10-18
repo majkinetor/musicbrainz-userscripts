@@ -6523,12 +6523,13 @@
   .as-card.new .as-tbtn,.as-card.new .as-pdfban,.as-dthumb .as-newban~.as-pdfban{right:44px}
   /* #787 marked for removal: in its place, grey on red, a REMOVE ribbon and its type struck through; a removal open
      for votes: a red dashed border and a chip linking to the edit */
-  .as-card.rm,.as-drow.rm{background:var(--mbu-error-bg);border-color:var(--mbu-error-border);opacity:1}
+  .as-card.rm,.as-drow.rm{background:color-mix(in srgb,var(--mbu-bg) 75%,var(--mbu-error));border-color:var(--mbu-error-border);opacity:1}
   .as-card.rm .as-thumb img,.as-drow.rm .as-dthumb img{filter:grayscale(1);opacity:.55}
   .as-card.rm .as-type,.as-drow.rm .as-ddel-lbl{text-decoration:line-through;color:var(--mbu-error);border-color:var(--mbu-error-border)}
   .as-card.rm .as-tbtn,.as-drow.rm .as-dthumb .as-newban~.as-pdfban{right:44px}
   .as-rmban{background:var(--mbu-error)}
-  .as-card.rmopen{border:1.5px dashed var(--mbu-error);background:var(--mbu-error-bg)}
+  .as-card.rmopen{border:1.5px dashed var(--mbu-error);background:color-mix(in srgb,var(--mbu-bg) 75%,var(--mbu-error))}
+  .as-card.rm .as-foot,.as-card.rmopen .as-foot{background:transparent}
   .as-rmopen{position:absolute;left:6px;bottom:6px;z-index:5;background:var(--mbu-error);color:var(--mbu-text-on-accent);font:600 11px var(--mbu-font);border-radius:4px;padding:1px 6px;text-decoration:none;white-space:nowrap}
   .as-rmopen:hover{text-decoration:underline;color:var(--mbu-text-on-accent)}
   .as-only{position:absolute;top:6px;left:6px;z-index:6;border:1px solid var(--mbu-border);border-radius:var(--mbu-radius);background:var(--mbu-bg);color:var(--mbu-accent-text);cursor:pointer;font:600 12px/1 var(--mbu-font);padding:5px 8px;box-shadow:0 1px 3px rgba(0,0,0,.25);opacity:0;transition:opacity .1s}
