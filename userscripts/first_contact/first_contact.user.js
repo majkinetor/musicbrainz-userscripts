@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         First Contact
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.16
-// @description  Import a release into MusicBrainz from the platform's album page with one click: the release editor opens with the title, tracklist, artists, date, label, barcode and link filled in. Each artist's platform link is handed to Apollo Editor for matching. A second button sends the album to Harmony instead. By default the album page is also saved on the Internet Archive (it sends each imported URL to archive.org; off in the settings), and the edit note links the snapshot. Platforms: Deezer, Bandcamp, Discogs, Apple Music, Tidal, Qobuz, Beatport, Spotify, YouTube Music, Volumo, HDtracks, SoundCloud, Amazon Music, Audiomack, 7digital, Ototoy.
+// @version      2026.10.18
+// @description  Import a release into MusicBrainz from the platform's album page with one click: the release editor opens with the title, tracklist, artists, date, label, barcode and link filled in. Each artist's platform link is handed to Apollo Editor for matching. A second button sends the album to Harmony instead. By default the album page is also saved on the Internet Archive (it sends each imported URL to archive.org; off in the settings), and the edit note links the snapshot. Platforms: Deezer, Bandcamp, Discogs, Apple Music, Tidal, Qobuz, Beatport, Spotify, YouTube Music, Volumo, HDtracks, SoundCloud, Amazon Music, Audiomack, 7digital, Ototoy, Presto Music.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5GaXJzdCBDb250YWN0PC90aXRsZT4KPGxpbmVhckdyYWRpZW50IGlkPSJmYy1kIiB4MT0iMCIgeTE9IjAiIHgyPSIwIiB5Mj0iMSI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjYmFlNmZkIi8+PHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjMzhiZGY4Ii8+PC9saW5lYXJHcmFkaWVudD48cmFkaWFsR3JhZGllbnQgaWQ9ImZjLWIiIGN4PSIuMzUiIGN5PSIuMyIgcj0iLjgiPjxzdG9wIG9mZnNldD0iMCIgc3RvcC1jb2xvcj0iI2ZmZjdjYyIvPjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iI2Y2YzQzMSIvPjwvcmFkaWFsR3JhZGllbnQ+PHBhdGggZD0iTTUwIDQyIEw3OCA0MiBMMTA0IDExMiBMMjQgMTEyIFoiIGZpbGw9IiNmNmM0MzEiIG9wYWNpdHk9Ii45Ii8+PHBhdGggZD0iTTU2IDQyIEw3MiA0MiBMODggMTEyIEw0MCAxMTIgWiIgZmlsbD0iI2ZkZTY4YSIgb3BhY2l0eT0iLjciLz48ZWxsaXBzZSBjeD0iNjQiIGN5PSIxMTQiIHJ4PSI0MiIgcnk9IjgiIGZpbGw9IiMxZTIzNDYiIHN0cm9rZT0iI2M5Y2RmMiIgc3Ryb2tlLXdpZHRoPSIzIi8+PGVsbGlwc2UgY3g9IjY0IiBjeT0iMTEzIiByeD0iMjYiIHJ5PSI0LjIiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2Y2YzQzMSIgc3Ryb2tlLXdpZHRoPSIyLjQiLz48cGF0aCBkPSJNNDIgMjggQTIyIDE4IDAgMCAxIDg2IDI4IFoiIGZpbGw9InVybCgjZmMtZCkiIHN0cm9rZT0iI2M5Y2RmMiIgc3Ryb2tlLXdpZHRoPSIzIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PHBhdGggZD0iTTUwLjM2IDE5LjkgQTE1LjM5OTk5OTk5OTk5OTk5OSAxMy41IDAgMCAxIDYxLjggMTEuOCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjIuNiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBvcGFjaXR5PSIuOSIvPjxlbGxpcHNlIGN4PSI2NCIgY3k9IjMyIiByeD0iNTYiIHJ5PSIxMiIgZmlsbD0iIzFlMjM0NiIgc3Ryb2tlPSIjYzljZGYyIiBzdHJva2Utd2lkdGg9IjMiLz48ZWxsaXBzZSBjeD0iNjQiIGN5PSI0MCIgcng9IjIyIiByeT0iNiIgZmlsbD0idXJsKCNmYy1iKSIgc3Ryb2tlPSIjYzljZGYyIiBzdHJva2Utd2lkdGg9IjIuNCIvPjxjaXJjbGUgY3g9IjIyIiBjeT0iMzEiIHI9IjQiIGZpbGw9IiNmNmM0MzEiLz48Y2lyY2xlIGN4PSI0MCIgY3k9IjMxIiByPSI0IiBmaWxsPSIjZjZjNDMxIi8+PGNpcmNsZSBjeD0iODgiIGN5PSIzMSIgcj0iNCIgZmlsbD0iI2Y2YzQzMSIvPjxjaXJjbGUgY3g9IjEwNiIgY3k9IjMxIiByPSI0IiBmaWxsPSIjZjZjNDMxIi8+PHBhdGggZD0iTTY0IDU4IEw4NCA2OS41IEw4NCA5Mi41IEw2NCAxMDQgTDQ0IDkyLjUgTDQ0IDY5LjUgWiIgZmlsbD0iIzdiNGZkNiIvPjxwYXRoIGQ9Ik02NCA1OCBMODQgNjkuNSBMNjQgODEgTDQ0IDY5LjUgWiIgZmlsbD0iIzliNzJlYSIvPjxwYXRoIGQ9Ik02MCA3MiBMNzQgNjkgTDc0IDg5IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iMy40IiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PHBhdGggZD0iTTYwIDcyIEw2MCA5MiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjMuNCIvPjxlbGxpcHNlIGN4PSI1NiIgY3k9IjkyIiByeD0iNC42IiByeT0iMy42IiBmaWxsPSIjZmZmIi8+PGVsbGlwc2UgY3g9IjcwIiBjeT0iODkiIHJ4PSI0LjYiIHJ5PSIzLjYiIGZpbGw9IiNmZmYiLz4KPC9zdmc+Cg==
 // @homepageURL  https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/first_contact/README.md
@@ -34,6 +34,8 @@
 // @match        https://music.amazon.com.au/*
 // @match        https://music.amazon.com.br/*
 // @match        https://music.amazon.com.mx/*
+// @match        https://www.prestomusic.com/classical/products/*
+// @match        https://www.prestomusic.com/jazz/products/*
 // @match        https://music.amazon.in/*
 // @match        https://*.musicbrainz.org/release/add*
 // @noframes
@@ -2270,7 +2272,164 @@ const OTOTOY = {
     },
 };
 
-const PROVIDERS = [DEEZER, BANDCAMP, DISCOGS, APPLE, TIDAL, QOBUZ, BEATPORT, SPOTIFY, YTMUSIC, VOLUMO, HDTRACKS, SOUNDCLOUD, AMAZON, AUDIOMACK, SEVENDIGITAL, OTOTOY];
+// Presto Music (#779): a UK shop for classical and jazz, CDs, SACDs, vinyl and downloads. Everything is
+// on the product page, server-rendered behind Cloudflare: the title, the artist line (plain text, roles
+// in brackets), the format bought here, Release date / Label / Catalogue number, the barcode in the
+// ld+json (gtin13), and the tracklist as works, each a row (composer, work, length, linked performers)
+// with its movements under it. No ISRCs, no type, no country, no disc breaks. A product with no
+// tracklist (a new vinyl) shows the album title as one bullet; its tracks are then taken from another
+// format of the same album, which the page links. Out of Platform Check and Mission Control (majkinetor).
+const PRESTO = {
+    id: 'presto',
+    name: 'Presto Music',
+    abbr: 'pm',
+    host: /^www\.prestomusic\.com$/,
+    consolidate: false,
+    albumId(loc) { const m = loc.pathname.match(/^\/(classical|jazz)\/products\/(\d+)/); return m ? `${m[1]}/${m[2]}` : null; },
+    text: el => (el ? el.textContent.replace(/\s+/g, ' ').trim() : ''),
+    hms(t) { const p = String(t || '').trim().split(':').map(Number); return p.length > 1 && p.every(Number.isFinite) ? p.reduce((a, n) => a * 60 + n, 0) * 1000 : null; },
+    // "Ida Sand", "Antonio Dayyani, Kristoffer Jessen (leadvocalist)": the role isn't the name
+    unrole: s => String(s || '').replace(/\s*\([^()]*\)\s*$/, '').trim(),
+    // the format bought on this page → the medium's format and how many there are ("5 CDs")
+    format(doc) {
+        const phys = doc.querySelector('.c-product__purchase--physical .c-purchase__format__name');
+        if (!phys) return doc.querySelector('.c-product__purchase--download') ? { name: 'Download', format: 'Digital Media', count: 1, digital: true } : null;
+        const name = this.text(phys), sub = this.text(phys.parentElement.querySelector('p'));
+        const count = parseInt((name.match(/^(\d+)\s/) || [])[1], 10) || 1;
+        const size = (name.match(/\b(7|10|12)\s*(?:"|''|”|-?inch)/i) || [])[1];
+        const f = /\bsacd\b/i.test(name) ? (/hybrid/i.test(sub + ' ' + name) ? 'Hybrid SACD' : 'SACD')
+            : /blu-?ray/i.test(name) ? 'Blu-ray'
+                : /dvd/i.test(name) ? (/audio/i.test(name) ? 'DVD-Audio' : 'DVD-Video')
+                    : /vinyl|\blps?\b/i.test(name) ? (size ? `${size}" Vinyl` : 'Vinyl')
+                        : /cassette/i.test(name) ? 'Cassette'
+                            : /\bcds?\b/i.test(name) ? 'CD' : null;
+        return { name: [name, sub].filter(Boolean).join(' '), format: f, count, digital: false };
+    },
+    // the tracklist: a work with movements gives "Work: Movement" for each (as 140 of 141 sampled
+    // releases with a Presto link have it), one without is a track itself. The composer Presto puts
+    // before the work ("Beethoven: String Quartet No. 9…") is not part of the title.
+    tracks(doc, album) {
+        const works = [...doc.querySelectorAll('.c-tracklist .c-tracklist__work')];
+        const out = [];
+        for (const w of works) {
+            const head = w.querySelector('.c-track:not(.c-track--track)');
+            const t = head && head.querySelector('.c-track__title');
+            if (!t) continue;
+            const c = t.cloneNode(true);
+            c.querySelectorAll('a[href*="/composers/"]').forEach(a => a.remove());
+            const work = this.text(c).replace(/^[\s:,;/&]+/, '').replace(/\s{2,}/g, ' ');
+            // classical: one linked performer per item; jazz: one unlinked item, "A, B (leadvocalist)".
+            // No artist link is handed off: MusicBrainz keeps no Presto artist pages, and Apollo would offer to add them
+            const performers = [...w.querySelectorAll('.c-track__details li')].flatMap(li => {
+                const a = li.querySelector('a[href*="/artists/"]');
+                return a ? [{ name: this.unrole(this.text(a)), url: null }] : this.text(li).split(/\s*,\s*/).map(n => ({ name: this.unrole(n), url: null }));
+            }).filter(p => p.name);
+            const moves = [...w.querySelectorAll('.c-track--track')];
+            if (!moves.length) { out.push({ title: work, len: this.text(head.querySelector('.c-track__duration')), performers }); continue; }
+            for (const m of moves) out.push({ title: `${work}: ${this.text(m.querySelector('.c-track__title'))}`, len: this.text(m.querySelector('.c-track__duration')), performers });
+        }
+        if (!out.length) {
+            // no works: a bulleted list of titles, or the album title alone, which is no tracklist
+            const li = [...doc.querySelectorAll('.c-tracklist li')].map(x => this.text(x)).filter(Boolean);
+            if (li.length > 1 || (li.length === 1 && normName(li[0]) !== normName(album))) li.forEach(x => out.push({ title: x, len: '', performers: [] }));
+        }
+        return out.map(x => Object.assign(x, { len: x.len.replace(/^(?:Work|Track) length\s*/i, '') }));
+    },
+    // Cloudflare refuses some of a page's own fetches (403, "Just a moment…") at random, the page's
+    // clearance or not; one tried again 2 s later mostly passes, within 6 tries in every probe
+    async page(url) {
+        for (let i = 1; ; i++) {
+            const r = await fetch(url, { credentials: 'include', headers: { Accept: 'text/html' } });
+            const doc = r.status === 403 || r.ok ? new DOMParser().parseFromString(await r.text(), 'text/html') : null;
+            if (r.ok && !/just a moment/i.test(doc.title)) return doc;
+            if (!doc || i === 6) throw new Error(doc ? `Presto's bot check refused ${url} ${i} times: open it, then import again` : `HTTP ${r.status} for ${url}`);
+            Log.debug(`Presto Music: ${url} refused by the bot check (try ${i}), again in 2 s`);
+            await new Promise(res => setTimeout(res, 2000));
+        }
+    },
+
+    async fetchRelease(id, progress, doc) {
+        doc = doc || document;
+        const pid = id.split('/')[1];
+        const h1 = doc.querySelector('.c-product__purchase h1, h1');
+        const c = h1 && h1.cloneNode(true);
+        if (c) c.querySelectorAll('.is-visuallyhidden').forEach(e => e.remove());
+        const rawTitle = this.text(c);
+        if (!rawTitle) throw new Error('Presto Music: no product on this page');
+        const artistLine = this.text(h1.parentElement.querySelector('.o-text--sharp-med-it-18'));
+        const meta = {};
+        doc.querySelectorAll('.c-product-block__metadata li').forEach(li => {
+            const k = this.text(li.querySelector('strong')).replace(/:$/, '');
+            if (k) meta[k] = { text: this.text(li).slice(this.text(li.querySelector('strong')).length).trim(), a: li.querySelector('a') };
+        });
+        let barcode = null;
+        for (const s of doc.querySelectorAll('script[type="application/ld+json"]')) {
+            try { const j = [].concat(JSON.parse(s.textContent)); const p = j.find(x => x && x['@type'] === 'Product'); if (p && p.gtin13) barcode = String(p.gtin13); } catch (e) { /* not ours */ }
+        }
+        const fmt = this.format(doc);
+        Log.info(`Presto Music product ${pid}: "${rawTitle}" by ${artistLine || '—'} · ${fmt ? fmt.name : 'no format'} · ${Object.entries(meta).map(([k, v]) => `${k}: ${v.text}`).join(' · ')} · barcode ${barcode || '—'}`);
+        if (fmt && !fmt.format) Log.warn(`Presto Music: format "${fmt.name}" has no MusicBrainz format here; left for you`);
+
+        // the album's artists: the line under the title
+        let rows = this.tracks(doc, rawTitle), from = null;
+        if (!rows.length) {
+            const others = [...doc.querySelectorAll('a.c-product__variant[href*="/products/"]')].map(a => ({ url: new URL(a.getAttribute('href'), 'https://www.prestomusic.com/').href, name: this.text(a.querySelector('.c-product__variant__title')) }));
+            others.sort((a, b) => (/\bcd\b/i.test(b.name) ? 1 : 0) - (/\bcd\b/i.test(a.name) ? 1 : 0));   // a CD's tracklist usually has the lengths
+            Log.info(`Presto Music lists no tracks for this ${fmt ? fmt.name : 'product'}; looking at its other formats: ${others.map(o => `${o.name} ${o.url}`).join(', ') || 'none'}`);
+            for (const o of others) {
+                try {
+                    const d = await this.page(o.url);
+                    const r = this.tracks(d, rawTitle);
+                    Log.info(`Presto Music: ${o.name} ${o.url} has ${r.length} track(s)`);
+                    if (r.length) { rows = r; from = o; break; }
+                } catch (e) { Log.warn(`Presto Music: ${o.url}: ${e.message}`); }
+            }
+            if (!rows.length) throw new Error('Presto Music lists no tracks for this release, in any format');
+        }
+        const albumArtists = artistLine.split(/\s*,\s*/).map(this.unrole).filter(Boolean).map(n => ({ name: n, url: null }));
+
+        const tracks = rows.map((r, i) => {
+            const tf = splitFeat(r.title);
+            const credit = creditFromTitle(r.performers.length ? r.performers : albumArtists, tf.feat);
+            progress && progress(i + 1, rows.length);
+            Log.debug(`track ${i + 1}: "${tf.title}" ${r.len || '(no length)'} — ${credit.map(a => a.name + a.join).join('') || '(no artist)'}`);
+            return { title: tf.title, lengthMs: this.hms(r.len), isrc: null, url: null, credit };
+        });
+        const noLen = tracks.filter(t => !t.lengthMs).length;
+        if (noLen) Log.info(`Presto Music: ${noLen} of ${tracks.length} track(s) have no length`);
+        if (fmt && fmt.count > 1) Log.warn(`Presto Music sells this as ${fmt.name} but doesn't say where each disc starts: the tracks are on one medium, to split in the editor`);
+
+        const af = splitFeat(rawTitle);
+        const credit = albumArtists.length ? creditFromTitle(albumArtists, af.feat) : [];
+        // "16th Oct 2026"
+        const dm = ((meta['Release date'] || {}).text || '').match(/(\d{1,2})(?:st|nd|rd|th)?\s+([A-Za-z]{3})[a-z]*\s+(\d{4})/);
+        const month = dm ? 'janfebmaraprmayjunjulaugsepoctnovdec'.indexOf(dm[2].toLowerCase()) / 3 + 1 : null;
+        const label = meta.Label ? (meta.Label.a ? this.text(meta.Label.a) : meta.Label.text) : '';
+        const catno = (meta['Catalogue number'] || {}).text || '';
+        const url = `https://www.prestomusic.com/${id.split('/')[0]}/products/${pid}`;
+        const digital = !fmt || fmt.digital;
+        return {
+            source: this.id,
+            annotation: notesText((doc.querySelector('.c-product__about') || {}).innerHTML),
+            url,
+            title: af.title,
+            credit,
+            types: [],
+            status: 'official',
+            packaging: digital ? 'None' : null,
+            date: { year: dm ? +dm[3] : null, month: month > 0 ? month : null, day: dm ? +dm[1] : null },
+            country: null,   // Presto ships the UK distributor's stock and doesn't say where it was released
+            barcode: /^\d{12,13}$/.test(barcode || '') ? barcode : null,
+            labels: label ? [{ name: label, catno, url: null }] : [],
+            urls: [{ url, linkType: digital ? 74 : 79 }],   // 74 = purchase for download, 79 = purchase for mail-order
+            mediums: [{ format: (fmt && fmt.format) || '', name: '', tracks }],
+            tracksFrom: from,
+            discs: fmt ? fmt.count : 1,
+        };
+    },
+};
+
+const PROVIDERS = [DEEZER, BANDCAMP, DISCOGS, APPLE, TIDAL, QOBUZ, BEATPORT, SPOTIFY, YTMUSIC, VOLUMO, HDTRACKS, SOUNDCLOUD, AMAZON, AUDIOMACK, SEVENDIGITAL, OTOTOY, PRESTO];
 
 /* ── Harmony (#687): the album sent to Harmony's release lookup instead of the editor ── */
 const HARMONY = 'https://harmony.pulsewidth.org.uk/release';
@@ -2361,6 +2520,8 @@ function editNoteFor(rel, provider) {
     if (rel.missing) lines.push(missingText(rel, provider));
     // #743: lengths Bandcamp hides until the release, from its app data
     if (rel.hiddenLengths) lines.push(`${rel.hiddenLengths} track length(s) are from ${provider.name}'s app data: its page hides them until the album is out, and they can still change.`);
+    // #779: Presto lists no tracks for some formats; they come from another format of the album
+    if (rel.tracksFrom) lines.push(`Tracklist from the ${rel.tracksFrom.name}: ${rel.tracksFrom.url}`);
     return lines.join('\n') + `\n\n${NAME} v${VERSION} by majkinetor - ${HOMEPAGE}`;
 }
 
@@ -3101,6 +3262,8 @@ async function importCurrent() {
         if (mbuTestHooks()) window.__fcLastSeed = { token, server, params, rel };
 
         const where = sendSeed(server, token, params);
+        if (rel.tracksFrom) mbuToast(`⚠ ${provider.name} lists no tracks for this format: the tracklist is the ${rel.tracksFrom.name}'s, check it against this one`, { kind: 'warn' });
+        if (rel.discs > 1) mbuToast(`⚠ ${provider.name} sells this as ${rel.discs} discs but doesn't say where each starts: split the tracklist in the editor`, { kind: 'warn' });
         if (rel.hiddenLengths) mbuToast(`⚠ ${rel.hiddenLengths} track length(s) are from ${provider.name}'s app data: the album isn't out yet, so they can still change`, { kind: 'warn' });
         Log.ok(`seeded ${server}/release/add with ${nTracks} track(s) (${where === 'here' ? 'in this tab: the browser blocked a new one' : 'in a new tab'})`);
         if (settings().closeAfter) {
@@ -3218,7 +3381,7 @@ function relWithForms(rel, provider) {
 function showCons(root, provider) {
     const b = root.querySelector('.fc-cons');
     if (!b) return;
-    b.hidden = !settings().consolidate;
+    b.hidden = !settings().consolidate || provider.consolidate === false;
     b.setAttribute('aria-label', 'Consolidate in Mission Control');
     b.title = `Consolidate in Mission Control: read this ${provider.name} album, find it on the other platforms, and take the best of each into the release editor`;
 }

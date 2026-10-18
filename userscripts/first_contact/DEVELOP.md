@@ -46,6 +46,7 @@ It travels in the script's storage under `fc.handoff.<token>`, the token in the 
 | HDtracks | HDtracks's API |
 | SoundCloud | `api-v2.soundcloud.com`, with the web player's public client id |
 | Amazon Music | the web player's API (`na.mesk.skill.music.a2z.com`), as a guest |
+| Presto Music | the product page's HTML (behind Cloudflare, so only on the page): the tracklist's works (`.c-tracklist__work`), the barcode from the ld+json (`gtin13`), the format from the purchase block; a product without a tracklist fetches its other formats' pages (`a.c-product__variant`) with the page's cookies |
 
 ### Spotify
 

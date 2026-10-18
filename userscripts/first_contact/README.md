@@ -59,7 +59,7 @@ Without every track's length: 1 track is a Single, 3 to 6 an EP, 7 or more an Al
 
 The button beside **Import to MusicBrainz**, with [Mission Control](../mission_control/README.md)'s icon, reads the album as Import does, then opens MusicBrainz's release editor in a new tab with Mission Control over it. Mission Control finds the album on the other platforms, First Contact reads each of them there, and you take the best title, date, label, tracklist and ISRCs of all of them into the editor. See [Consolidate a new release](../mission_control/README.md#consolidate-a-new-release).
 
-Mission Control has to be installed, and Platform Check too, to find the other platforms; [String Theory](../string_theory/README.md) has them all. Turn the button off in [Settings](#settings).
+Mission Control has to be installed, and Platform Check too, to find the other platforms; [String Theory](../string_theory/README.md) has them all. Turn the button off in [Settings](#settings). Presto Music has no Consolidate button: Mission Control doesn't compare it.
 
 ## Send to Harmony
 
@@ -68,7 +68,7 @@ The button before **⚙︎**, with [Harmony](https://harmony.pulsewidth.org.uk/)
 | Platform                                                                        | Sent                                |
 | ------------------------------------------------------------------------------- | ----------------------------------- |
 | Deezer, Bandcamp, Discogs, Apple Music, Tidal, Qobuz, Beatport, Spotify, Ototoy | the album link, at once             |
-| Volumo, HDtracks, SoundCloud, Audiomack, 7digital                               | the barcode, once the album is read |
+| Volumo, HDtracks, SoundCloud, Audiomack, 7digital, Presto Music                 | the barcode, once the album is read |
 | YouTube Music, Amazon Music                                                     | nothing; the button is greyed out   |
 
 Harmony can't read the platforms in the last two rows. For the middle row, First Contact reads the album first, as for an import, and sends its barcode; an album without one (a SoundCloud set that isn't a label's) sends nothing, and a message says why. YouTube Music and Amazon Music show no barcode either, so there is nothing to send.
@@ -95,6 +95,7 @@ Turn the button off in [Settings](#settings).
 | [Audiomack](#audiomack)         |     ✓      |     ✓      | from the ℗ line       | description    |
 | [7digital](#7digital)           |     ✓      |     ✓      | ✓                     | ℗ and © lines  |
 | [Ototoy](#ototoy)               |            |            | ✓                     | album info     |
+| [Presto Music](#presto-music)   |            |     ✓      | ✓ with catalog number | about          |
 
 ### Deezer
 
@@ -239,6 +240,18 @@ Pages: `ototoy.jp/_/default/p/<id>`
 - A track's artists are all the artists Ototoy links for it, and the featured ones come from its title's *(feat. …)*. On some compilations those links include the arranger or the label, so check the track artists there.
 - The hi-res and CD-quality editions are separate pages; the format some titles carry (*Disc2(24bit/44.1kHz)*) is left out of the title.
 - The catalog number isn't filled in: Ototoy often shows the CD's or a distributor's code instead.
+
+### Presto Music
+
+Pages: `prestomusic.com/classical/products/<id>`, `prestomusic.com/jazz/products/<id>`
+
+- No Presto account is needed.
+- Presto sells CDs, SACDs, vinyl and downloads, so the medium's format is the one on the page: *CD*, *Hybrid SACD*, *Vinyl*, or *Digital Media* for a download. A physical one gets the *purchase for mail-order* link and no packaging; the country is left for you.
+- A set of several discs (*5 CDs*) comes as one medium: Presto doesn't say where each disc starts, so split it in the editor. A message says so.
+- A classical work's movements are its tracks, titled *Work: Movement*, without the composer Presto puts first; a work without movements is one track.
+- Track artists are the performers Presto lists for each work, without their role (*Kristoffer Jessen (leadvocalist)* is Kristoffer Jessen). Artists have no Presto link to hand off.
+- Some lengths are missing; those tracks get none.
+- When the page lists no tracks (a new vinyl, say), the tracklist is taken from another format of the same album, the CD first. A message and the edit note say where it came from: check it, as the vinyl can differ. When no format lists tracks, nothing is imported.
 
 ## Artist matching
 
