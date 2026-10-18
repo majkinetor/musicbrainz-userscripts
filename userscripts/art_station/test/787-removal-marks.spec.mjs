@@ -55,8 +55,25 @@ test('#787: a removal waits on red under the gallery, a selection of them is kep
   }), marked), v => v.under);
   console.log(JSON.stringify(after));
   check(after.under && after.keep && !after.inGrid, `the marked covers wait under the gallery with the REMOVE ribbon and keep (${JSON.stringify(after)})`);
+  // ↺ keep sits top-left, where ✓ only this does, clear of the REMOVE ribbon
+  const kp = await page.evaluate(id => { const c = document.querySelector(`.as-card.rm[data-id="${id}"]`), k = c.querySelector('.as-undo').getBoundingClientRect(), r = c.getBoundingClientRect(); return { left: Math.round(k.left - r.left), right: Math.round(r.right - k.right) }; }, other);
+  check(kp.left < kp.right, `keep is on the left (${JSON.stringify(kp)})`);
   const two = page.locator(`#as-root .as-card[data-id="${first}"]`), mark = page.locator(`#as-root .as-card[data-id="${other}"]`);
   await two.screenshot({ path: 'test-results/as-787-open.png' }); await mark.screenshot({ path: 'test-results/as-787-rm.png' });
+
+  // the hover ✕ at the image's bottom right marks one cover; the open removal has none
+  const one = before.filter(id => id !== first && !marked.includes(id))[0];
+  const card1 = page.locator(`#as-root .as-card[data-id="${one}"]`);
+  await card1.hover();
+  const x = await until(() => page.evaluate(id => { const c = document.querySelector(`.as-card[data-id="${id}"]`), b = c.querySelector('.as-rmone'), t = c.querySelector('.as-thumb').getBoundingClientRect(), r = b && b.getBoundingClientRect();
+    return r && { op: getComputedStyle(b).opacity, right: Math.round(t.right - r.right), bottom: Math.round(t.bottom - r.bottom) }; }, one), v => v && v.op === '1');
+  check(x && x.op === '1' && x.right < 20 && x.bottom < 20, `the ✕ shows at the image's bottom right on hover (${JSON.stringify(x)})`);
+  check(!(await page.evaluate(id => !!document.querySelector(`.as-card[data-id="${id}"] .as-rmone`), first)), 'a cover with an open removal has no ✕');
+  await card1.locator('.as-rmone').click();
+  check(await until(() => page.evaluate(id => !!document.querySelector(`.as-sec-del:not(.as-sec-more) + .as-grid .as-card.rm[data-id="${id}"]`), one), Boolean), 'one click marks it, and it goes under the gallery');
+  check(!(await page.evaluate(() => !!document.querySelector('#as-lb') && getComputedStyle(document.querySelector('#as-lb')).display !== 'none')), 'without opening full screen');
+  await page.evaluate(id => document.querySelector(`.as-card.rm[data-id="${id}"] .as-undo`).click(), one);
+  await until(() => page.evaluate(id => !document.querySelector(`.as-card.rm[data-id="${id}"]`), one), Boolean);
 
   // they are selected by dragging, as any cover, and Keep keeps the selection
   await paint(marked);
