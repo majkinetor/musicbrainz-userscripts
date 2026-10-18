@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Mission Control
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.17.231850
+// @version      2026.10.18.173327
 // @description  One window on the release page that asks the other scripts (Platform Check, ISRC Scout, Art Station, Fusion, Credit Hoarder) what is missing, shows it all in one review, and applies the selected changes in order.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5NaXNzaW9uIENvbnRyb2w8L3RpdGxlPgo8ZGVmcz48ZmlsdGVyIGlkPSJtY28xMy1oIiB4PSItMTAlIiB5PSItMTAlIiB3aWR0aD0iMTIwJSIgaGVpZ2h0PSIxMjAlIj48ZmVNb3JwaG9sb2d5IGluPSJTb3VyY2VBbHBoYSIgb3BlcmF0b3I9ImRpbGF0ZSIgcmFkaXVzPSIxLjUiIHJlc3VsdD0iZCIvPjxmZUZsb29kIGZsb29kLWNvbG9yPSIjZmZmIiBmbG9vZC1vcGFjaXR5PSIuNyIvPjxmZUNvbXBvc2l0ZSBpbjI9ImQiIG9wZXJhdG9yPSJpbiIvPjxmZU1lcmdlPjxmZU1lcmdlTm9kZS8+PGZlTWVyZ2VOb2RlIGluPSJTb3VyY2VHcmFwaGljIi8+PC9mZU1lcmdlPjwvZmlsdGVyPjwvZGVmcz48ZyBmaWx0ZXI9InVybCgjbWNvMTMtaCkiPjxwYXRoIGQ9Ik03NyAzNS41IEw2NCA0MyBMNTEgMzUuNSBMNTEgMjAuNSBMNjQgMTMgTDc3IDIwLjVaIiBmaWxsPSIjN2E1N2U4IiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik01OS43IDc3LjUgTDQ2LjcgODUgTDMzLjcgNzcuNSBMMzMuNyA2Mi41IEw0Ni43IDU1IEw1OS43IDYyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik05NC4zIDc3LjUgTDgxLjMgODUgTDY4LjMgNzcuNSBMNjguMyA2Mi41IEw4MS4zIDU1IEw5NC4zIDYyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik00Mi4zIDEwNy41IEwyOS40IDExNSBMMTYuNCAxMDcuNSBMMTYuNCA5Mi41IEwyOS40IDg1IEw0Mi4zIDkyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik03NyAxMDcuNSBMNjQgMTE1IEw1MSAxMDcuNSBMNTEgOTIuNSBMNjQgODUgTDc3IDkyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik0xMTEuNiAxMDcuNSBMOTguNiAxMTUgTDg1LjcgMTA3LjUgTDg1LjcgOTIuNSBMOTguNiA4NSBMMTExLjYgOTIuNVoiIGZpbGw9IiNmZmM5NGEiIHN0cm9rZT0iIzIyMjIzYiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PC9nPgo8L3N2Zz4K
@@ -39,9 +39,10 @@ Log.info(mbuStartupInfo('Mission Control'));
 // reloadAfter: reload the release page after an Execute without errors
 // consAfter: after saving a consolidated release (#702), open Mission Control on it and probe
 // disabled: the providers without a mode (PC, IS, AS) switched off with their step in the header (#753)
-const DEFAULTS = { fusion: 'ask', ch: 'ask', disabled: [], left: true, right: true, linkedOpen: [], autoProbe: true, reloadAfter: true, consAfter: true, v: 2 };
+// platforms: the comparison with the platforms (#782), First Contact's reads: as fusion and ch
+const DEFAULTS = { fusion: 'ask', ch: 'ask', platforms: 'ask', disabled: [], left: true, right: true, linkedOpen: [], autoProbe: true, reloadAfter: true, consAfter: true, v: 2 };
 // a card and the providers whose selections it holds (Tracks: the per-track ones without a card of their own)
-const CARDS = [['tracks', ['is', 'fusion']], ['pc', ['pc']], ['as', ['as']], ['ch', ['ch']]];
+const CARDS = [['tracks', ['is', 'fusion', 'fc']], ['pc', ['pc']], ['as', ['as']], ['ch', ['ch']]];
 // The cards switched off with the switch in their header: folded, and Execute leaves out what is selected
 // in them. For this page only, never saved: the next release starts with every card on.
 const OFF = new Set();
@@ -74,6 +75,8 @@ function saveSettings() {
 // switch an optional step to auto / ask / off.
 const STEPS = [
     { id: 'pc', name: 'Release and entity links', short: 'PC', provider: 'Platform Check', glyph: '🔗' },
+    // #782: reads the platforms Platform Check found (First Contact) and hands what the release lacks back to it
+    { id: 'fc', name: 'Platforms', short: 'FC', provider: 'First Contact', glyph: '≡', mode: 'platforms' },
     { id: 'enrich', name: 'Enrich', glyph: '⇶', lanes: [
         { id: 'is', name: 'ISRCs & recording links', short: 'IS', provider: 'ISRC Scout', glyph: '#' },
         { id: 'as', name: 'Cover art', short: 'AS', provider: 'Art Station', glyph: '🖼' },
@@ -84,6 +87,7 @@ const STEPS = [
 const PROVIDERS = STEPS.flatMap(s => s.lanes || [s]);
 // each provider's own userscript icon, for its badge (embedded: an image from raw.githubusercontent didn't load)
 const PROVIDER_ICONS = {
+    "fc": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5GaXJzdCBDb250YWN0PC90aXRsZT4KPGxpbmVhckdyYWRpZW50IGlkPSJmYy1kIiB4MT0iMCIgeTE9IjAiIHgyPSIwIiB5Mj0iMSI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjYmFlNmZkIi8+PHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjMzhiZGY4Ii8+PC9saW5lYXJHcmFkaWVudD48cmFkaWFsR3JhZGllbnQgaWQ9ImZjLWIiIGN4PSIuMzUiIGN5PSIuMyIgcj0iLjgiPjxzdG9wIG9mZnNldD0iMCIgc3RvcC1jb2xvcj0iI2ZmZjdjYyIvPjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iI2Y2YzQzMSIvPjwvcmFkaWFsR3JhZGllbnQ+PHBhdGggZD0iTTUwIDQyIEw3OCA0MiBMMTA0IDExMiBMMjQgMTEyIFoiIGZpbGw9IiNmNmM0MzEiIG9wYWNpdHk9Ii45Ii8+PHBhdGggZD0iTTU2IDQyIEw3MiA0MiBMODggMTEyIEw0MCAxMTIgWiIgZmlsbD0iI2ZkZTY4YSIgb3BhY2l0eT0iLjciLz48ZWxsaXBzZSBjeD0iNjQiIGN5PSIxMTQiIHJ4PSI0MiIgcnk9IjgiIGZpbGw9IiMxZTIzNDYiIHN0cm9rZT0iI2M5Y2RmMiIgc3Ryb2tlLXdpZHRoPSIzIi8+PGVsbGlwc2UgY3g9IjY0IiBjeT0iMTEzIiByeD0iMjYiIHJ5PSI0LjIiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2Y2YzQzMSIgc3Ryb2tlLXdpZHRoPSIyLjQiLz48cGF0aCBkPSJNNDIgMjggQTIyIDE4IDAgMCAxIDg2IDI4IFoiIGZpbGw9InVybCgjZmMtZCkiIHN0cm9rZT0iI2M5Y2RmMiIgc3Ryb2tlLXdpZHRoPSIzIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PHBhdGggZD0iTTUwLjM2IDE5LjkgQTE1LjM5OTk5OTk5OTk5OTk5OSAxMy41IDAgMCAxIDYxLjggMTEuOCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjIuNiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBvcGFjaXR5PSIuOSIvPjxlbGxpcHNlIGN4PSI2NCIgY3k9IjMyIiByeD0iNTYiIHJ5PSIxMiIgZmlsbD0iIzFlMjM0NiIgc3Ryb2tlPSIjYzljZGYyIiBzdHJva2Utd2lkdGg9IjMiLz48ZWxsaXBzZSBjeD0iNjQiIGN5PSI0MCIgcng9IjIyIiByeT0iNiIgZmlsbD0idXJsKCNmYy1iKSIgc3Ryb2tlPSIjYzljZGYyIiBzdHJva2Utd2lkdGg9IjIuNCIvPjxjaXJjbGUgY3g9IjIyIiBjeT0iMzEiIHI9IjQiIGZpbGw9IiNmNmM0MzEiLz48Y2lyY2xlIGN4PSI0MCIgY3k9IjMxIiByPSI0IiBmaWxsPSIjZjZjNDMxIi8+PGNpcmNsZSBjeD0iODgiIGN5PSIzMSIgcj0iNCIgZmlsbD0iI2Y2YzQzMSIvPjxjaXJjbGUgY3g9IjEwNiIgY3k9IjMxIiByPSI0IiBmaWxsPSIjZjZjNDMxIi8+PHBhdGggZD0iTTY0IDU4IEw4NCA2OS41IEw4NCA5Mi41IEw2NCAxMDQgTDQ0IDkyLjUgTDQ0IDY5LjUgWiIgZmlsbD0iIzdiNGZkNiIvPjxwYXRoIGQ9Ik02NCA1OCBMODQgNjkuNSBMNjQgODEgTDQ0IDY5LjUgWiIgZmlsbD0iIzliNzJlYSIvPjxwYXRoIGQ9Ik02MCA3MiBMNzQgNjkgTDc0IDg5IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iMy40IiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PHBhdGggZD0iTTYwIDcyIEw2MCA5MiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjMuNCIvPjxlbGxpcHNlIGN4PSI1NiIgY3k9IjkyIiByeD0iNC42IiByeT0iMy42IiBmaWxsPSIjZmZmIi8+PGVsbGlwc2UgY3g9IjcwIiBjeT0iODkiIHJ4PSI0LjYiIHJ5PSIzLjYiIGZpbGw9IiNmZmYiLz4KPC9zdmc+Cg==",
     "pc": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CjxnIHN0cm9rZT0iIzk0YTNiOCIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2UtbGluZWNhcD0icm91bmQiPjxwYXRoIGQ9Ik02NCA2NCBMODggMjIuNCIvPjxwYXRoIGQ9Ik02NCA2NCBMMTEyIDY0Ii8+PHBhdGggZD0iTTY0IDY0IEw4OCAxMDUuNiIvPjxwYXRoIGQ9Ik02NCA2NCBMNDAgMTA1LjYiLz48cGF0aCBkPSJNNjQgNjQgTDE2IDY0Ii8+PHBhdGggZD0iTTY0IDY0IEw0MCAyMi40Ii8+PC9nPjxjaXJjbGUgY3g9Ijg4IiBjeT0iMjIuNCIgcj0iMTIiIGZpbGw9IiNmNDcyYjYiLz48Y2lyY2xlIGN4PSIxMTIiIGN5PSI2NCIgcj0iMTIiIGZpbGw9IiNmYWNjMTUiLz48Y2lyY2xlIGN4PSI4OCIgY3k9IjEwNS42IiByPSIxMiIgZmlsbD0iIzRhZGU4MCIvPjxjaXJjbGUgY3g9IjQwIiBjeT0iMTA1LjYiIHI9IjEyIiBmaWxsPSIjMzhiZGY4Ii8+PGNpcmNsZSBjeD0iMTYiIGN5PSI2NCIgcj0iMTIiIGZpbGw9IiNhNzhiZmEiLz48Y2lyY2xlIGN4PSI0MCIgY3k9IjIyLjQiIHI9IjEyIiBmaWxsPSIjZmI5MjNjIi8+PGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iMjQiIGZpbGw9IiMwZjE3MmEiLz48cGF0aCBkPSJNNTQuMjIyMjIyMjIyMjIyMjIgNjQgTDYxLjMzMzMzMzMzMzMzMzMzNiA3MS4xMTExMTExMTExMTExMSBMNzQuNjY2NjY2NjY2NjY2NjcgNTYuODg4ODg4ODg4ODg4ODg2IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iNiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+Cjwvc3ZnPgo=",
     "is": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+DQogIDx0aXRsZT5JU1JDIFNjb3V0PC90aXRsZT4NCiAgICA8cGF0aCBkPSJNNjQgNjQgTDY0IDI0IEE0MCA0MCAwIDAgMSA5OSA4NCBaIiBmaWxsPSIjZTNkOGY3Ii8+DQogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij4NCiAgICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSI0MCIvPg0KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjI2IiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPg0KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPg0KICA8L2c+DQogIDxsaW5lIHgxPSI2NCIgeTE9IjY0IiB4Mj0iNjQiIHkyPSIyNCIgc3Ryb2tlPSIjNmY0MmMxIiBzdHJva2Utd2lkdGg9IjYiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPg0KICA8Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+DQo8L3N2Zz4NCg==",
     "as": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5BcnQgU3RhdGlvbjwvdGl0bGU+CjxjaXJjbGUgY3g9Ijg2IiBjeT0iNjQiIHI9IjM4IiBmaWxsPSIjMWIwZjNiIiBzdHJva2U9IiNiOTY3ZmYiIHN0cm9rZS13aWR0aD0iMyIvPgo8Y2lyY2xlIGN4PSI4NiIgY3k9IjY0IiByPSIyOC44OCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjNGEzNDgwIiBzdHJva2Utd2lkdGg9IjEuNSIvPjxjaXJjbGUgY3g9Ijg2IiBjeT0iNjQiIHI9IjIwLjkwMDAwMDAwMDAwMDAwMiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjNGEzNDgwIiBzdHJva2Utd2lkdGg9IjEuNSIvPgo8Y2lyY2xlIGN4PSI4NiIgY3k9IjY0IiByPSIxMS4wMiIgZmlsbD0iI2ZmNzFjZSIvPjxjaXJjbGUgY3g9Ijg2IiBjeT0iNjQiIHI9IjIuNTA4IiBmaWxsPSIjMWIwZjNiIi8+PGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJhcy1za3ljIiB4MT0iMCIgeTE9IjAiIHgyPSIwIiB5Mj0iMSI+PHN0b3Agb2Zmc2V0PSIwLjAwIiBzdG9wLWNvbG9yPSIjN2ZlN2ZmIi8+PHN0b3Agb2Zmc2V0PSIwLjUwIiBzdG9wLWNvbG9yPSIjZDlhNmZmIi8+PHN0b3Agb2Zmc2V0PSIxLjAwIiBzdG9wLWNvbG9yPSIjZmY3MWNlIi8+PC9saW5lYXJHcmFkaWVudD48Y2xpcFBhdGggaWQ9ImFzLWNjIj48cmVjdCB4PSIxMCIgeT0iMjIiIHdpZHRoPSI3OCIgaGVpZ2h0PSI4NCIgcng9IjgiLz48L2NsaXBQYXRoPjwvZGVmcz4KPGcgY2xpcC1wYXRoPSJ1cmwoI2FzLWNjKSI+PHJlY3QgeD0iMTAiIHk9IjIyIiB3aWR0aD0iNzgiIGhlaWdodD0iODQiIGZpbGw9InVybCgjYXMtc2t5YykiLz4KPGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJhcy1nczIiIHgxPSIwIiB5MT0iMCIgeDI9IjAiIHkyPSIxIj48c3RvcCBvZmZzZXQ9IjAiIHN0b3AtY29sb3I9IiNmZmY2YTgiLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiNmZjhhNWMiLz48L2xpbmVhckdyYWRpZW50Pgo8bWFzayBpZD0iYXMtbXMyIj48cmVjdCB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCIgZmlsbD0iI2ZmZiIvPjxyZWN0IHg9IjI1LjYiIHk9IjY3LjIiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjEuMiIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9IjY5LjgiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjEuNSIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9IjczLjAiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjEuOCIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9Ijc3LjAiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjIuMyIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9IjgyLjAiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjIuOSIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9Ijg4LjMiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjMuNiIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9Ijk2LjIiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjQuNSIgZmlsbD0iIzAwMCIvPjwvbWFzaz48L2RlZnM+CjxjaXJjbGUgY3g9IjQ5IiBjeT0iNzYuMDgiIHI9IjIzLjQiIGZpbGw9InVybCgjYXMtZ3MyKSIgbWFzaz0idXJsKCNhcy1tczIpIi8+PHJlY3QgeD0iMTAiIHk9Ijc0LjA4IiB3aWR0aD0iNzgiIGhlaWdodD0iMzEuOTIiIGZpbGw9IiNiOTY3ZmYiLz48cGF0aCBkPSJNMTAgNzQuMDhIODhNMTAgNzcuOUg4OE0xMCA4My4ySDg4TTEwIDkxLjRIODhNMTAgMTA0LjJIODhNMzQuOCA3NC4wOEwtNDguNSAxMDZNMzguNCA3NC4wOEwtMjQuMSAxMDZNNDEuOSA3NC4wOEwwLjMgMTA2TTQ1LjUgNzQuMDhMMjQuNiAxMDZNNDkuMCA3NC4wOEw0OS4wIDEwNk01Mi41IDc0LjA4TDczLjQgMTA2TTU2LjEgNzQuMDhMOTcuOCAxMDZNNTkuNiA3NC4wOEwxMjIuMSAxMDZNNjMuMiA3NC4wOEwxNDYuNSAxMDYiIHN0cm9rZT0iI2ZmZmI5NiIgc3Ryb2tlLXdpZHRoPSIxLjMiIGZpbGw9Im5vbmUiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPjwvZz48cmVjdCB4PSIxMCIgeT0iMjIiIHdpZHRoPSI3OCIgaGVpZ2h0PSI4NCIgcng9IjgiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJhMTQ1OCIgc3Ryb2tlLXdpZHRoPSIzIi8+Cjwvc3ZnPgo=",
@@ -117,6 +121,9 @@ const fxBusy = new Set();   // tracks whose group Fusion is checking (or is queu
 const fxWaiters = new Map();   // track -> resolves when Fusion answers that track's check
 let fxCheckGen = 0;   // a newer Fusion answer stops the check queue of the one before
 let run = null;
+// #782: the comparison with the platforms (the Platforms step): waiting for Platform Check's platforms, what it
+// brings for Platform Check (cons) and ISRC Scout (isrcs, by track), the release's title on the platforms when it differs
+const CMP = { waiting: false, cons: null, isrcs: null, title: null, timer: 0 };
 function busEvent(e, kind) {
     let d;
     try { d = JSON.parse(e.detail); } catch (x) { Log.warn(kind + ' with unreadable detail: ' + x.message); return null; }
@@ -163,6 +170,7 @@ document.addEventListener('mc:findings', e => {
     Log.ok('findings ' + d.id + ': ' + findings.length + ' ' + JSON.stringify(tally));
     noteProbeDone();
     if (d.id === 'fusion') fxAutoCheck();
+    if (d.id === 'pc' && CMP.waiting) cmpStart();   // #782: the comparison waited for Platform Check's platforms
     findings.forEach(x => Log.debug('  ' + d.id + ' ' + x.key + ' ' + x.state + (x.why ? ' (' + x.why + ')' : '') + (x.url ? ' ' + x.url : '')));
     paintAll();
     syncLinks();
@@ -213,6 +221,7 @@ function syncLinks(delay) {
 }
 function probe() {
     run = Date.now().toString(36);
+    cmpReset();
     fxCheckGen++;   // the last answer's check queue stops
     for (const k in results) delete results[k];
     for (const k in picked) delete picked[k];
@@ -221,7 +230,9 @@ function probe() {
     probeAt = Date.now(); probeTook = 0;
     LINK_READERS.forEach(id => { linksAsked[id] = '[]'; });   // nothing is selected yet
     Log.info('probe run ' + run + ' · asking ' + (ask.join(', ') || 'nobody') + '');
-    document.dispatchEvent(new CustomEvent('mc:probe', { detail: JSON.stringify({ release: RELEASE, run, only: ask, links: [], isrcs: afterIsrcs(), cons: afterCons() }) }));
+    document.dispatchEvent(new CustomEvent('mc:probe', { detail: JSON.stringify({ release: RELEASE, run, only: ask.filter(id => id !== 'fc'), links: [], isrcs: isrcsNow(), cons: CMP.cons || undefined }) }));
+    // #782: the comparison starts once Platform Check has answered; Update this release runs it whatever its mode
+    if (found.fc && (ask.includes('fc') || (AFTER && AFTER.compare && !AFTER.compared))) { if (AFTER && AFTER.compare) AFTER.compared = true; cmpStart(); }
     paintAll();
     return ask.length;
 }
@@ -229,6 +240,7 @@ function probe() {
 // (a run is started if there is none), leaving the others' results alone.
 function probeOne(id) {
     if (!found[id]) return;
+    if (id === 'fc') { cmpStart(); return; }
     if (!run) run = Date.now().toString(36);
     delete picked[id];
     if (id === 'fusion') fxCheckGen++;
@@ -237,7 +249,7 @@ function probeOne(id) {
     const links = pcAlbumLinks();
     if (LINK_READERS.includes(id)) linksAsked[id] = JSON.stringify(links);
     Log.info('probe ' + id + ' on request · run ' + run + (links.length ? ' · selected album links ' + links.join(' ') : ''));
-    document.dispatchEvent(new CustomEvent('mc:probe', { detail: JSON.stringify({ release: RELEASE, run, only: [id], links, isrcs: afterIsrcs(), cons: afterCons() }) }));
+    document.dispatchEvent(new CustomEvent('mc:probe', { detail: JSON.stringify({ release: RELEASE, run, only: [id], links, isrcs: isrcsNow(), cons: CMP.cons || undefined }) }));
     paintAll();
 }
 // Execute: the steps in order, the lanes of a parallel step together. Each
@@ -674,7 +686,11 @@ function readRelease() {
         });
     });
     Log.info('release: "' + title + '" by ' + (artist || '?') + ' · ' + location.origin + '/release/' + RELEASE + ' · ' + tracks.length + ' tracks on ' + medium + ' medium(s) · format ' + (format || '?'));
-    return { title, artist, cover: cover ? cover.src : '', tracks, media: medium, format, versions };
+    // #782: the release's events, from the JSON its sidebar embeds after the heading (none: no heading)
+    const evh = document.querySelector('#sidebar h2.release-events');
+    let events = 0;
+    if (evh) { try { events = (JSON.parse((evh.nextElementSibling || {}).textContent || '{}').events || []).length; } catch (e) { events = 1; } }
+    return { title, artist, cover: cover ? cover.src : '', tracks, media: medium, format, versions, events };
 }
 
 /* ── UI ────────────────────────────────────────────────────────────────────── */
@@ -1188,10 +1204,15 @@ const COLS = [
         // as Fusion's pool badge: this recording has an open edit, so Fusion groups it with nothing
         : x.pending ? '<a class="mc-fxp" target="_blank" href="/recording/' + esc(x.key) + '/open_edits" title="This recording has an open edit: Fusion leaves it out of auto-match until the edit closes">⏳ pending</a>'
         : '<span class="pend">—</span>' },
+    // #782: what the platforms give for the track: a length the track hasn't, a title that differs (shown, never applied)
+    { id: 'plat', p: 'fc', head: 'Platforms · FC', cell: x =>
+        (x.lenNew ? '<span class="mc-add mono" title="' + esc('The track has no length; ' + ccLen(x.len) + ' from ' + x.lenFrom + '. Platform Check adds it with the release (Track lengths)') + '">+ ' + ccLen(x.len) + '</span>' : '')
+        + (x.differs ? (x.lenNew ? ' ' : '') + '<span class="mc-warn" title="' + esc('The platforms\' title: ' + x.title + ' (' + x.titleFrom + '). Shown only: Mission Control changes no title') + '">≠ title</span>' : '')
+        || '<span class="weak" title="' + esc('The platforms agree with the track (' + x.titleFrom + ')') + '">✓</span>' },
     { id: 'ch', p: 'ch', head: 'Credits · CH', cell: x =>
         x.credits ? '<span title="' + esc((x.list || []).map(c => c.name + ' — ' + c.role).join('\n')) + '">' + x.credits + '</span>' : '<span class="pend">—</span>' },
 ];
-const FETCH_LABEL = { fusion: 'Fetch RG', ch: 'Fetch credits' };
+const FETCH_LABEL = { fusion: 'Fetch RG', ch: 'Fetch credits', fc: 'Compare' };
 function colHead(c) {
     const p = PROVIDERS.find(x => x.id === c.p);
     if (!p.mode) return esc(c.head);
@@ -1225,7 +1246,7 @@ function linksCell(t) {
 }
 const PICKABLE = { new: 1, withheld: 1, unsure: 1 };
 // what a lane's "take all in" takes: not a link whose track count or format says it is another release (#709)
-const laneTakes = x => PICKABLE[x.state] && !x.mismatch && !['barcode', 'catno', 'label'].includes(x.kind);   // #740: never a catalog number or a label
+const laneTakes = x => PICKABLE[x.state] && !x.mismatch && !['barcode', 'catno', 'label', 'event', 'lengths'].includes(x.kind);   // #740: never a catalog number or a label
 function cellHtml(c, t) {
     const p = PROVIDERS.find(x => x.id === c.p), r = results[c.p];
     if (r && r.state === 'busy') return '<span class="pend">…</span>';
@@ -1538,7 +1559,8 @@ function paintCards() {
         // so the rows that need a decision lead; clicking them lists them as rows instead, each section on its own (S.linkedOpen).
         // #709: PC's barcodes (kind 'barcode') are rows of their own at the top of Release, linked ones too ('added');
         // so are the catalog numbers and labels a consolidation brings (kinds 'catno' and 'label', #727)
-        const isBc = x => x.kind === 'barcode' || x.kind === 'catno' || x.kind === 'label';
+        // #782: and the release event and track lengths a comparison with the platforms brings ('event', 'lengths')
+        const isBc = x => ['barcode', 'catno', 'label', 'event', 'lengths'].includes(x.kind);
         const linked = r.findings.filter(x => x.state === 'linked' && !isBc(x));
         // PC's card is in sections, each with its own linked icons; another card's are in its header
         const pc = id === 'pc';
@@ -1577,8 +1599,8 @@ function paintCards() {
             return '<div class="mc-line ' + esc(x.state) + (x.cover ? ' mc-hassize' : '') + (x.entity ? ' mc-ent' : '') + (lane ? ' mc-in' : '') + (pick ? ' mc-pick' : '') + (on ? ' on' : '') + '"'
                 + (pick ? ' data-prov="' + id + '" data-key="' + esc(x.key) + '" title="' + (on ? 'Taken in: click to leave out' : 'Click to take in') + '"' : '') + '>'
                 + '<span class="mc-tick">' + (on ? '✓' : '') + '</span>'
-                + '<span class="mc-pico">' + (x.kind === 'catno' || x.kind === 'label' ? CATNO_SVG : isBc(x) ? BARCODE_SVG : stIcon(x.icon || x.key, 14)) + '</span>'
-                + '<div class="mc-lt"><div class="t">' + (x.kind === 'label' ? 'Label <b>' + esc(x.label && x.label.name || '') + '</b>' + (x.code ? ' · cat. no. <b class="mc-bcn">' + esc(x.code) + '</b>' : '') : x.kind === 'catno' ? 'Cat. no. <b class="mc-bcn">' + esc(x.code) + '</b> · ' + esc(x.label && x.label.name || '') : isBc(x) ? 'Barcode <b class="mc-bcn">' + esc(x.code) + '</b>' : esc(x.name || x.key)) + '</div>'
+                + '<span class="mc-pico">' + (x.kind === 'catno' || x.kind === 'label' ? CATNO_SVG : x.kind === 'event' || x.kind === 'lengths' ? FIELD_SVG : isBc(x) ? BARCODE_SVG : stIcon(x.icon || x.key, 14)) + '</span>'
+                + '<div class="mc-lt"><div class="t">' + (x.kind === 'event' ? 'Release event <b>' + esc(x.code) + '</b>' : x.kind === 'lengths' ? 'Track lengths for <b>' + esc(x.code) + '</b>' : x.kind === 'label' ? 'Label <b>' + esc(x.label && x.label.name || '') + '</b>' + (x.code ? ' · cat. no. <b class="mc-bcn">' + esc(x.code) + '</b>' : '') : x.kind === 'catno' ? 'Cat. no. <b class="mc-bcn">' + esc(x.code) + '</b> · ' + esc(x.label && x.label.name || '') : isBc(x) ? 'Barcode <b class="mc-bcn">' + esc(x.code) + '</b>' : esc(x.name || x.key)) + '</div>'
                 + (x.url ? '<a class="s" target="_blank" rel="noopener" href="' + esc(x.url) + '" title="' + esc(x.url) + '">' + esc(shortUrl(x.url)) + '</a>' : '')
                 + whyHtml(x, lane) + '</div>'
                 // #751: Art Station's row, the size of the platform's own cover in a column of its own, a link to the cover
@@ -1642,13 +1664,15 @@ function paintCards() {
         }
         const sect = (sub, title, body, lk) => !pc ? body : body || lk.length ? '<div class="mc-sub" data-sub="' + sub + '"><span>' + title + '</span>' + linkedBtn(lk, 'pc:' + sub) + '</div>' + body : '';
         const entSect = (type, title) => sect(type, title, entRows.filter(x => x.entity.type === type).map(x => line(x)).join(''), linked.filter(x => isEnt(x) && x.entity.type === type));
-        setCard(box, mbuHtml(sum + ap + sect('release', 'Release', bcRowsOf().map(x => line(x)).join('') + rgRows.map(x => line(x)).join('') + relHtml + hint, linked.filter(x => !isEnt(x)))
+        setCard(box, mbuHtml(sum + (pc ? cmpHtml() : '') + ap + sect('release', 'Release', bcRowsOf().map(x => line(x)).join('') + rgRows.map(x => line(x)).join('') + relHtml + hint, linked.filter(x => !isEnt(x)))
             + entSect('artist', 'Artists') + entSect('label', 'Labels') + (none.length ? '<div class="mc-none" title="' + esc('Not found: ' + none.map(x => x.name || x.key).join(', ')) + '"><span>Not found</span>'
             + none.map(x => '<span class="mc-pico" title="' + esc(x.name || x.key) + '">' + stIcon(x.icon || x.key, 14) + '</span>').join('') + '</div>' : '') + (id === 'as' ? axHtml() : '')));
     });
 }
 // #727: a catalog number's icon, a tag
 const CATNO_SVG = '<svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.4" style="color:var(--mbu-text-dim)"><path d="M1.5 7.6V1.5h6.1l5 5-6.1 6.1z"/><circle cx="4.6" cy="4.6" r="1.1"/></svg>';
+// #782: a release field's icon (release event, track lengths), a calendar
+const FIELD_SVG = '<svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.4" style="color:var(--mbu-text-dim)"><rect x="1.5" y="2.5" width="11" height="10" rx="1.5"/><path d="M1.5 6h11M4.5 1v3M9.5 1v3"/></svg>';
 const BARCODE_SVG = '<svg width="14" height="14" viewBox="0 0 14 10" fill="currentColor" style="color:var(--mbu-text-dim)"><rect x="0" width="1.4" height="10"/><rect x="2.4" width="0.8" height="10"/><rect x="4.2" width="1.8" height="10"/><rect x="7" width="0.8" height="10"/><rect x="8.8" width="1.4" height="10"/><rect x="11.2" width="0.8" height="10"/><rect x="12.6" width="1.4" height="10"/></svg>';
 // another barcode lane's colour: a token per lane, lighter on the dark theme (majkinetor: "hardly visible on dark theme")
 const BC_LIGHT = ['#2563eb', '#c2410c', '#9333ea', '#0e7490', '#be185d', '#a16207', '#4d7c0f', '#6d28d9'];
@@ -1710,12 +1734,16 @@ function paintInspector() {
             + '<span>edits</span><span>' + (m.pending ? '<span class="mc-err">open edit</span>' : 'none') + '</span></div></div>').join('')
         + (x.signals ? '<div class="weak" style="font-size:11px;margin:4px 0">every pair agrees on: ' + esc(x.signals.join(', ') || 'nothing') + '</div>' : '')
         + fxOpenBtn(x);
+    // #782: the track's versions on the platforms, the one most give first, what differs from the track's own title marked
+    const platBody = x => x.versions.map(v => '<div class="mc-fxm">' + mini('<span title="' + esc(v.title) + '">' + ccTitleDiff(v.title, t.title) + '</span>', ccIcons(v.keys))
+        + '<div class="mc-kv"><span>length</span><span>' + (ccLen(v.len) || '?') + '</span>' + (v.isrc ? '<span>ISRC</span><span class="mono">' + isrcHtml(v.isrc) + '</span>' : '') + '</div></div>').join('');
     // each credit names the sources that give it, when more than one source was read (#680)
     const chBody = x => (x.list || []).map(c => mini(esc(c.name), esc(c.role) + (c.sources && /,/.test(x.source || '') ? ' <span class="weak">· ' + esc(c.sources.join(', ')) + '</span>' : ''))).join('') || '<div class="weak" style="font-size:11.5px">no credits</div>';
     box.innerHTML = mbuHtml('<div class="mc-mini">Recording<a class="n" target="_blank" href="/recording/' + esc(t.rec) + '">' + esc((t.rec || '').slice(0, 8)) + '</a></div>'
         + '<div class="mc-mini">Length<span class="n">' + esc(t.len || '?') + '</span></div><div style="height:10px"></div>'
         + blk('ISRCs', 'is', isrcBody) + blk('Recording links', 'is', linksBody)
-        + (S.fusion !== 'off' ? blk('Fusion matches', 'fusion', fusionBody) : '') + (S.ch !== 'off' ? blk('Credits', 'ch', chBody) : ''));
+        + (S.fusion !== 'off' ? blk('Fusion matches', 'fusion', fusionBody) : '') + (S.ch !== 'off' ? blk('Credits', 'ch', chBody) : '')
+        + (S.platforms !== 'off' ? blk('Platforms', 'fc', platBody) : ''));
 }
 
 
@@ -2372,6 +2400,7 @@ document.addEventListener('mc:read-progress', e => {
     const s = d && d.run === CC.run && CC.sources.find(x => x.url === d.url && x.read.state === 'reading');
     if (!s) return;
     Object.assign(s.read, { n: d.n, total: d.total, at: Date.now() });
+    if (!CONS) { cmpProgress(); return; }
     ccPaintSide(); ccPaintSteps();
 });
 document.addEventListener('mc:read-result', e => {
@@ -2533,6 +2562,14 @@ function ccLinked(credit, credits) {
         return { name: a.name, artistName: a.artistName || a.name, join: a.join || '', mbid: a.mbid || null, url: own ? own.url : null, urlForms: own ? own.urlForms : undefined, alt: alt.length ? alt : undefined };
     });
 }
+// the winning labels, each with its catalog number (the first takes them all when the platforms give more catalog numbers than labels)
+function ccLabels(f) {
+    const labelData = f.label.win ? f.label.win.data : [];
+    const catnos = f.catno.win ? f.catno.win.val.split(' / ') : [];
+    const labels = (labelData || []).map((l, i) => ({ name: l.name, catno: catnos[i] || (i === 0 ? catnos.join(' / ') : '') || '', url: l.url || null, urlForms: l.urlForms, mbid: l.mbid || null }));
+    if (!labels.length && catnos.length) labels.push({ name: '', catno: catnos.join(' / ') });
+    return labels;
+}
 function ccSeedRel(m) {
     const f = m.fields, src = CC.src.rel, srcKey = CC.sources[0].key;
     const provOf = k => { const s = CC.sources.find(x => x.key === k); return (s && s.read.provider) || CC.src.platform; };
@@ -2541,10 +2578,7 @@ function ccSeedRel(m) {
     const winRel = g => (g ? relOf(g.keys[0]) : null) || src;
     const credit = ccLinked(f.artist.win ? f.artist.win.data : src.credit, releaseCredits);
     const dateRel = winRel(f.date.win);
-    const labelData = f.label.win ? f.label.win.data : [];
-    const catnos = f.catno.win ? f.catno.win.val.split(' / ') : [];
-    const labels = (labelData || []).map((l, i) => ({ name: l.name, catno: catnos[i] || (i === 0 ? catnos.join(' / ') : '') || '', url: l.url || null, urlForms: l.urlForms, mbid: l.mbid || null }));
-    if (!labels.length && catnos.length) labels.push({ name: '', catno: catnos.join(' / ') });
+    const labels = ccLabels(f);
     const typeG = f.type.win;
     // the tracklist in the medium layout of the platform the tracklist came from
     const t = m.tracks, mediums = [];
@@ -2806,7 +2840,7 @@ function ccPaintInspector() {
     }
     box.innerHTML = mbuHtml(h);
 }
-function ccPaint() { ccPaintHeader(); ccPaintSide(); ccPaintCenter(); ccPaintInspector(); }
+function ccPaint() { if (!CONS) { cmpProgress(); return; } ccPaintHeader(); ccPaintSide(); ccPaintCenter(); ccPaintInspector(); }
 
 // Add release's ▾ menu (Copy as Markdown). A mousedown outside closes it and swallows the click it
 // starts, so that click doesn't also tick or open what is under it; Escape closes it too.
@@ -3021,21 +3055,12 @@ function ccSameRelease(e) {
 // as for Add release, with the release's MBID: its page opens Mission Control and probes, ISRC Scout
 // gets the ISRCs, and Platform Check the barcode, the catalog numbers and the platforms' links (cons),
 // each offered only where the release lacks it.
+// #782: nothing read here goes with it: the release page compares the release with the platforms itself (its
+// Platforms step, run at once), so only the After saving ticks go
 function ccUpdateRelease(mbid) {
-    const m = ccModel();
-    if (!m.fields) { mbuToast('Nothing read yet', { kind: 'warn' }); return; }
     const e = CC.inMb.releases.find(x => x.id === mbid);
-    const rel = ccSeedRel(m), n = ccCount(rel);
-    const isrcs = rel.mediums.flatMap(md => md.tracks.map(t => t.isrc || null));
-    const cons = {
-        barcode: rel.barcode ? String(rel.barcode).replace(/\D/g, '') : null,
-        labels: rel.labels.filter(l => l.name || l.mbid).map(l => ({ name: l.name || '', mbid: l.mbid || null, catno: l.catno || '', url: l.url || null })),
-        urls: CC.sources.filter(s => s.take && s.url).map(s => ({ key: s.key, url: s.url })),
-        from: m.reads.map(s => ccName(s.key)),
-    };
-    const note = { created: Date.now(), mbid, title: (e && e.title) || rel.title, tracks: n, isrcs, ticks: CC.ticks, cons };
-    Log.info('update release ' + mbid + ': barcode ' + (cons.barcode || '—') + ' · labels ' + (cons.labels.map(l => (l.name || l.mbid) + (l.catno ? ' ' + l.catno : '')).join(', ') || '—')
-        + ' · ' + isrcs.filter(Boolean).length + ' ISRC(s) · ' + cons.urls.length + ' link(s) · taken in: ' + (Object.keys(CC.ticks).filter(k => CC.ticks[k]).join(', ') || 'none'));
+    const note = { created: Date.now(), mbid, title: (e && e.title) || '', ticks: CC.ticks, compare: true };
+    Log.info('update release ' + mbid + ': it opens and compares itself with the platforms · taken in: ' + (Object.keys(CC.ticks).filter(k => CC.ticks[k]).join(', ') || 'none'));
     if (mbuTestHooks()) window.__mccLastUpdate = note;
     try { sessionStorage.setItem(CC_AFTER_KEY, JSON.stringify(note)); } catch (x) { Log.err('the update is not noted (' + x.message + ')'); mbuToast('Could not note the update: ' + x.message, { kind: 'error' }); return; }
     if (CC.dry) { Log.info('dry run: the release is not opened'); return; }
@@ -3051,7 +3076,7 @@ function ccInMbHtml() {
     const same = rs.filter(e => e.same), other = rs.filter(e => !e.same);
     let h = '';
     // #727: Update this release takes what is consolidated here to it, for what it lacks
-    const upd = e => ' <button type="button" class="mcc-btn mcc-upd" data-cc="update" data-id="' + esc(e.id) + '" title="Open this release in this tab with what is taken here: Mission Control probes it and offers what it lacks (the barcode, catalog numbers, ISRCs, links)">Update this release →</button>';
+    const upd = e => ' <button type="button" class="mcc-btn mcc-upd" data-cc="update" data-id="' + esc(e.id) + '" title="Open this release in this tab: Mission Control probes it, compares it with the platforms and offers what it lacks (the barcode, catalog numbers, labels, ISRCs, links, release event, track lengths)">Update this release →</button>';
     if (same.length) h += '<div class="mcc-inmb"><b>MusicBrainz already has this album.</b> Update it with what it lacks, rather than adding the album again.<ul>' + same.map(e => li(e).replace(/<\/li>$/, upd(e) + '</li>')).join('') + '</ul></div>';
     if (other.length) h += '<div class="mcc-inmb other"><b>Other editions in MusicBrainz</b> <span class="dim">(another barcode, format or track count than ' + esc(ccFormat()) + (CC.sources[0] && CC.sources[0].barcode ? ' ' + esc(CC.sources[0].barcode) : '') + '):</span><ul>' + other.map(li).join('') + '</ul></div>';
     return h;
@@ -3075,6 +3100,128 @@ function consolidateMain(token) {
 }
 if (mbuTestHooks()) window.__mccTest = { state: () => CC, model: ccModel, seedRel: () => ccSeedRel(ccModel()), markdown: ccMarkdown, open: ccOpenEditor, setDry: v => { CC.dry = v; }, lanes: ccLanes, versions: ccVersions, inMb: ccCheckInMb, paint: () => ccPaint(), same: ccSameRelease, fmtKind: ccFmtKind };
 
+/* ── the release compared with its platforms (#782) ─────────────────────────── */
+
+// The Platforms step: the album links Platform Check has for this release, linked or found in the release's barcode
+// lane, read by First Contact headless and voted on as in a consolidation. CC is the comparison's state here: no
+// source, the platforms in Platform Check's order. What the release lacks goes back to Platform Check as a
+// consolidation (cons: the barcode, catalog numbers and labels, the links, a release event, track lengths) and to
+// ISRC Scout (the ISRCs, by track); a title that differs is shown, never applied.
+function cmpReset() {
+    clearInterval(CMP.timer);
+    Object.assign(CMP, { waiting: false, cons: null, isrcs: null, title: null, timer: 0 });
+    CC.sources = []; CC.pc = { state: 'wait', note: '', findings: [], at: 0 }; CC.pick = {}; CC.rowPick = {};
+    CC.run = 'c' + Date.now().toString(36);   // a read of the comparison before is dropped
+}
+function cmpDone(summary, findings) {
+    clearInterval(CMP.timer);
+    results.fc = { state: 'done', findings: findings || [], summary };
+    Log.info('platforms: ' + summary);
+    noteProbeDone();
+    paintAll();
+}
+function cmpStart() {
+    if (!found.fc) return;
+    cmpReset();
+    if (!run) run = Date.now().toString(36);
+    results.fc = { state: 'busy', note: 'waiting for Platform Check', at: Date.now() };
+    const pc = results.pc;
+    if (!pc || pc.state !== 'done') {
+        if (!found.pc || providerOff('pc')) { cmpDone('needs Platform Check, which finds the platforms'); return; }
+        CMP.waiting = true;
+        Log.info('platforms: waiting for Platform Check');
+        if (!pc) probeOne('pc');
+        paintAll();
+        return;
+    }
+    // the release's own lane: its barcode, else the one a linked platform gives; a platform without a barcode
+    // joins it when it has as many tracks; one Platform Check marks as another release (mismatch) never
+    const own = ccBc(pc.barcode) || ccBc((pc.findings.find(x => !x.entity && !x.kind && x.state === 'linked' && x.barcode) || {}).barcode);
+    const n = rel.tracks.length;
+    const links = pc.findings.filter(x => !x.entity && !x.kind && x.url && x.state !== 'none');
+    CC.pc = { state: 'done', note: '', findings: links, at: 0 };
+    CC.sources = links.map(x => {
+        const bc = ccBc(x.barcode), count = x.tracks == null || x.tracks === n;
+        return { key: x.key, url: x.url, barcode: x.barcode || null, tracks: x.tracks == null ? null : x.tracks, format: x.format || null, mismatch: x.mismatch || null, state: x.state,
+            role: 'found', take: !x.mismatch && (own && bc ? bc === own : count), read: { state: 'none' } };
+    });
+    const want = CC.sources.filter(s => s.take && ccReadable(s.key));
+    Log.info('platforms: ' + CC.sources.map(s => s.key + (s.take ? (ccReadable(s.key) ? '✓' : '·unread') : '·') + (s.barcode ? ' ' + s.barcode : '') + (s.tracks != null ? ' ' + s.tracks + 't' : '')).join(' | ') + ' · the release\'s barcode ' + (own || '—'));
+    if (!want.length) { cmpDone(CC.sources.length ? 'no platform of this release to read' : 'Platform Check found no platform'); return; }
+    results.fc.note = 'read 0 of ' + want.length;
+    // a read not heard from in a while has failed (First Contact gone, or a request that hangs)
+    CMP.timer = setInterval(() => {
+        CC.sources.forEach(s => { if (s.read.state === 'reading' && Date.now() - s.read.at > CC_READ_WAIT) { s.read = { state: 'failed', error: 'no answer in ' + CC_READ_WAIT / 1000 + ' s' }; Log.warn('read ' + ccName(s.key) + ': no answer'); ccPump(); } });
+    }, 1000);
+    ccReadTaken();
+}
+// a read came in (or failed): the step says how far it is; once none is left, what it found
+function cmpProgress() {
+    const r = results.fc;
+    if (!r || r.state !== 'busy' || CMP.waiting) return;
+    const want = CC.sources.filter(s => s.take && ccReadable(s.key));
+    const done = want.filter(s => s.read.state === 'done').length, failed = want.filter(s => s.read.state === 'failed').length;
+    if (want.some(s => s.read.state === 'queued' || s.read.state === 'reading')) {
+        r.note = 'read ' + done + ' of ' + want.length + (failed ? ' · ' + failed + ' failed' : ''); r.at = Date.now();
+        paintAll();
+        return;
+    }
+    cmpFinish();
+}
+function cmpFinish() {
+    const m = ccModel(), f = m.fields, t = m.tracks;
+    const failed = CC.sources.filter(s => s.take && s.read.state === 'failed');
+    const read = m.reads.length + ' platform' + (m.reads.length === 1 ? '' : 's') + ' read' + (failed.length ? ' · ' + failed.length + ' failed' : '');
+    if (!f) { cmpDone(failed.length ? 'no platform could be read' : 'nothing read'); return; }
+    const names = keys => keys.map(ccName).join(', ');
+    const from = m.reads.map(s => ccName(s.key));
+    const cons = {
+        barcode: f.barcode.win ? String(f.barcode.win.show).replace(/\D/g, '') : null,
+        labels: ccLabels(f).filter(l => l.name || l.mbid).map(l => ({ name: l.name || '', mbid: l.mbid || null, catno: l.catno || '', url: l.url || null })),
+        urls: CC.sources.filter(s => s.take && s.url).map(s => ({ key: s.key, url: s.url })),
+        from,
+    };
+    // a release event, for a release that has none: the date most platforms give, the country most give
+    if (!rel.events && f.date.win && f.date.win.data && f.date.win.data.year) {
+        const c = ccVote('country', m.reads.map(s => ({ key: s.key, val: s.read.rel.country || '', show: s.read.rel.country || '' })));
+        const country = c.win ? c.win.val : null;
+        cons.event = { date: f.date.win.data, country, countryName: country === 'XW' ? '[Worldwide]' : country, why: 'the date from ' + names(f.date.win.keys) + (country ? ', the country from ' + names(c.win.keys) : '') };
+    }
+    // the tracks line up with the release's when there are as many: by position
+    const aligned = t.n === rel.tracks.length && !t.extras.some(x => CC.extraTake[x.id]);
+    const findings = [], lengths = [];
+    if (aligned) {
+        const inMedium = {};
+        rel.tracks.forEach((trk, i) => {
+            const row = t.rows[i], v = row.win, position = inMedium[trk.medium] = (inMedium[trk.medium] || 0) + 1;
+            const lenNew = !trk.len && !!v.len;
+            if (lenNew) lengths.push({ medium: trk.medium, position, ms: v.len });
+            findings.push({ key: 'fc:' + i, track: trk.rec, state: 'info', len: v.len, lenNew, lenFrom: names(v.keys.filter((k, j) => v.tracks[j] && v.tracks[j].lengthMs)), title: v.title, titleFrom: names(v.keys), differs: v.title !== trk.title, versions: row.versions });
+        });
+        const isrcs = t.rows.map(r => r.win.isrc || null);
+        if (isrcs.some(Boolean)) CMP.isrcs = isrcs;
+    } else Log.warn('platforms: ' + t.n + ' track(s) on the platforms, the release has ' + rel.tracks.length + ': the tracks are not compared');
+    if (lengths.length) cons.lengths = lengths;
+    if (f.title.win && f.title.win.val !== rel.title) CMP.title = { val: f.title.win.val, from: names(f.title.win.keys) };
+    CMP.cons = cons;
+    Log.ok('platforms: ' + read + ' · barcode ' + (cons.barcode || '—') + ' · labels ' + (cons.labels.map(l => l.name + (l.catno ? ' ' + l.catno : '')).join(', ') || '—') + ' · event ' + (cons.event ? JSON.stringify(cons.event.date) + ' ' + (cons.event.country || '') : '—')
+        + ' · ' + lengths.length + ' length(s) · ' + (CMP.isrcs || []).filter(Boolean).length + ' ISRC(s) · ' + findings.filter(x => x.differs).length + ' title(s) differ' + (CMP.title ? ' · release title "' + CMP.title.val + '"' : ''));
+    const differ = findings.filter(x => x.differs).length;
+    cmpDone(read + (aligned ? differ ? ' · ' + differ + ' track title' + (differ === 1 ? ' differs' : 's differ') : '' : ' · ' + t.n + ' tracks there, not compared'), findings);
+    // what the release lacks, offered by those who add it
+    if (found.pc && !providerOff('pc')) probeOne('pc');
+    if (CMP.isrcs && found.is && !providerOff('is')) probeOne('is');
+}
+// Platform Check's card: what the comparison shows and doesn't apply (the release's title on the platforms), and
+// which platforms it read
+function cmpHtml() {
+    const r = results.fc;
+    if (!r || r.state !== 'done' || !CMP.cons) return '';
+    const read = CC.sources.filter(s => s.take && s.read.state === 'done').map(s => s.key);
+    return '<div class="mc-summary mc-cmp" title="' + esc('Mission Control compared the release with ' + read.map(ccName).join(', ') + ': what the release lacks is in the rows below') + '">Compared with ' + ccIcons(read)
+        + (CMP.title ? ' · <span class="mc-warn" title="' + esc('Shown only: Mission Control changes no title') + '">the platforms call it <b>' + esc(CMP.title.val) + '</b> (' + esc(CMP.title.from) + ')</span>' : '') + '</div>';
+}
+
 /* after saving: Mission Control on the new release (#702) */
 
 // Add release notes, in this tab's sessionStorage, what Mission Control should do once
@@ -3094,7 +3241,7 @@ function afterSave() {
         if (ccNorm(title).indexOf(ccNorm(a.title)) === -1) { Log.info('a consolidation\'s note for after saving is for "' + a.title + '", not this release: dropped'); return; }
     }
     AFTER = a;
-    Log.info((a.mbid ? 'a consolidation updates this release' : 'the consolidated release is saved') + ': Mission Control opens and probes · ' +Object.keys(a.ticks).filter(k => a.ticks[k]).join(', ') + ' · ' + (a.isrcs || []).filter(Boolean).length + ' ISRC(s) from the consolidation');
+    Log.info((a.mbid ? 'a consolidation updates this release: Mission Control opens, probes and compares it with the platforms' : 'the consolidated release is saved: Mission Control opens and probes') + ' · ' + Object.keys(a.ticks).filter(k => a.ticks[k]).join(', ') + (a.mbid ? '' : ' · ' + (a.isrcs || []).filter(Boolean).length + ' ISRC(s) from the consolidation'));
     open();
     setTimeout(() => { if (ui && !run) probe(); }, 700);
 }
@@ -3105,10 +3252,9 @@ function afterPicks(id) {
     Log.info('after saving: ' + id + ' left out, as ticked in the consolidation');
 }
 
-// the ISRCs taken in the consolidation, by track, for ISRC Scout (#702)
+// the ISRCs taken in the consolidation, by track, for ISRC Scout (#702); or those the comparison with the platforms found (#782)
 function afterIsrcs() { return AFTER && AFTER.ticks.is && Array.isArray(AFTER.isrcs) ? AFTER.isrcs : undefined; }
-// #727: what a consolidation brings to a release MusicBrainz already had, for Platform Check
-function afterCons() { return AFTER && AFTER.cons ? AFTER.cons : undefined; }
+const isrcsNow = () => afterIsrcs() || CMP.isrcs || undefined;
 
 /* ── launcher ──────────────────────────────────────────────────────────────── */
 
@@ -3124,7 +3270,7 @@ function launcher() {
     mbRestackCorner('br');
 }
 
-if (mbuTestHooks()) window.__mcTest = { open, close, execute, results: () => results, after: () => AFTER, picked: () => Object.fromEntries(Object.entries(picked).map(([k, v]) => [k, Array.from(v)])), settings: () => Object.assign({}, S), off: () => [...OFF], found: () => Object.assign({}, found), release: () => rel, bestHtml, coverList, setStall: ms => { STALL_MS = ms; }, fxChecking: () => fxBusy.size };
+if (mbuTestHooks()) window.__mcTest = { open, close, execute, results: () => results, cmp: () => ({ cons: CMP.cons, isrcs: CMP.isrcs, title: CMP.title, sources: CC.sources.map(s => ({ key: s.key, take: s.take, read: s.read.state })) }), withCons: c => { CMP.cons = c; probeOne('pc'); }, compare: () => probeOne('fc'), after: () => AFTER, picked: () => Object.fromEntries(Object.entries(picked).map(([k, v]) => [k, Array.from(v)])), settings: () => Object.assign({}, S), off: () => [...OFF], found: () => Object.assign({}, found), release: () => rel, bestHtml, coverList, setStall: ms => { STALL_MS = ms; }, fxChecking: () => fxBusy.size };
 
 // <ST-ICONS> — generated by dev/ui/sync-icons.mjs from dev/ui/platform-icons.mjs — DO NOT EDIT
 const ST_ICONS = {"musicbrainz":{"color":"#eb743b","svg":"<svg viewBox=\"0.75 0.75 28.5 28.5\" xmlns=\"http://www.w3.org/2000/svg\"><g transform=\"translate(1.5)\"><path d=\"m13 1-12 7v14l12 7z\" fill=\"#ba478f\"/><path d=\"m14 1 12 7v14l-12 7z\" fill=\"#eb743b\"/></g></svg>"},"discogs":{"color":"#333333","svg":"<svg viewBox=\"71 71 882 882\" xmlns=\"http://www.w3.org/2000/svg\"><g transform=\"translate(512 512) scale(0.86) translate(-512 -512)\"><circle cx=\"512\" cy=\"512\" r=\"496\" fill=\"#333\" stroke=\"#9a9a9a\" stroke-width=\"32\"/><path fill=\"#fff\" d=\"M439.84 511.58A72.58 72.58 0 0 1 512.41 439 72.54 72.54 0 0 1 585 511.58a72.56 72.56 0 0 1-72.57 72.56 72.56 72.56 0 0 1-72.57-72.56zm3.18 0A69.48 69.48 0 0 0 512.41 581a69.4 69.4 0 0 0 69.4-69.38 69.49 69.49 0 0 0-69.4-69.43A69.44 69.44 0 0 0 443 511.58zm69.42-11.44a11.43 11.43 0 1 0 11.47 11.45 11.45 11.45 0 0 0-11.48-11.45zm-131.08 11.43a130.68 130.68 0 0 0 40.3 94.43l24.68-26.69.33.3a94.59 94.59 0 0 1 113.08-149.95l17.51-31.95a130.23 130.23 0 0 0-64.82-17.22c-72.27.01-131.08 58.81-131.08 131.08zm225.73 0a94.6 94.6 0 0 1-138.64 83.79l-17.83 31.74a130.26 130.26 0 0 0 61.82 15.53c72.28 0 131.08-58.8 131.08-131.08a130.63 130.63 0 0 0-37.73-91.9L581 446.39a94.3 94.3 0 0 1 26.1 65.2zm-267.34 0a172.17 172.17 0 0 0 53.68 125l25-27.07a135.38 135.38 0 0 1-41.82-97.89c0-74.88 60.92-135.8 135.8-135.8a134.92 134.92 0 0 1 67.08 17.8l17.73-32.34a171.57 171.57 0 0 0-84.81-22.35c-95.19-.03-172.66 77.43-172.66 172.65zm308.49 0c0 74.88-60.92 135.8-135.8 135.8a135 135 0 0 1-64.14-16.14l-18.07 32.17a171.62 171.62 0 0 0 82.21 20.86c95.22 0 172.69-77.47 172.69-172.69a172.15 172.15 0 0 0-51-122.4l-25.12 27a135.35 135.35 0 0 1 39.23 95.4zm41.61 0c0 97.83-79.58 177.43-177.41 177.43a176.32 176.32 0 0 1-84.52-21.46l-18.18 32.36a213.21 213.21 0 0 0 102.7 26.23C630.74 726.11 727 629.87 727 511.57a213.87 213.87 0 0 0-64.38-153l-25.26 27.18a176.85 176.85 0 0 1 52.49 125.82zm-392 0A213.9 213.9 0 0 0 365 667.24L390.23 640A176.88 176.88 0 0 1 335 511.57c0-97.82 79.59-177.41 177.41-177.41a176.26 176.26 0 0 1 87.08 22.93l17.84-32.55A213.14 213.14 0 0 0 512.44 297c-118.3 0-214.54 96.28-214.54 214.57zm392.55-183-24.64 26.49a218.57 218.57 0 0 1 65.94 156.51c0 120.9-98.36 219.26-219.26 219.26a217.9 217.9 0 0 1-105-26.84l-18.24 32.47A255.43 255.43 0 0 0 512 768c141.39 0 256-114.64 256-256a255.23 255.23 0 0 0-77.55-183.41zm-397.27 183c0-120.9 98.36-219.26 219.26-219.26a217.84 217.84 0 0 1 107.19 28.09L637 288.65A254.46 254.46 0 0 0 516.12 256H512c-140.54.22-254.42 113.26-256 253.5v2.5a255.69 255.69 0 0 0 80.51 186.08l25.31-27.36a218.61 218.61 0 0 1-68.64-159.15z\"/></g></svg>"},"spotify":{"color":"#1DB954","svg":"<svg viewBox=\"1.25 1.375 21.25 21.25\" fill=\"#1DB954\"><path transform=\"translate(12 12) scale(.875) translate(-12 -12)\" d=\"M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.42 1.56-.299.421-1.02.599-1.559.3z\"/></svg>"},"apple":{"color":"#FA243C","svg":"<svg viewBox=\"1.625 1.25 20 20\" fill=\"#FA243C\"><path d=\"M17.05 12.04c-.03-2.5 2.04-3.7 2.13-3.76-1.16-1.7-2.97-1.93-3.61-1.96-1.54-.16-3 .9-3.78.9-.78 0-1.97-.88-3.24-.86-1.67.03-3.21.97-4.07 2.46-1.73 3.01-.44 7.47 1.24 9.92.82 1.2 1.8 2.54 3.08 2.49 1.24-.05 1.71-.8 3.21-.8 1.5 0 1.92.8 3.23.77 1.33-.02 2.18-1.22 3-2.42.94-1.39 1.33-2.73 1.35-2.8-.03-.01-2.59-.99-2.62-3.93zM14.6 4.59c.68-.83 1.14-1.97 1.01-3.11-.98.04-2.17.65-2.87 1.47-.63.73-1.18 1.9-1.03 3.02 1.09.08 2.21-.55 2.89-1.38z\"/></svg>"},"deezer":{"color":"#A238FF","svg":"<svg viewBox=\"3 3 18 18\"><path transform=\"translate(12 12) scale(.74) translate(-12 -12)\" d=\"M4 2h6v2h-6zM14 2h6v2h-6zM2 4h20v2h-20zM0 6h24v2h-24zM0 8h24v2h-24zM0 10h24v2h-24zM2 12h20v2h-20zM4 14h16v2h-16zM6 16h12v2h-12zM8 18h8v2h-8zM10 20h4v2h-4z\" fill=\"#A238FF\"/></svg>"},"tidal":{"color":"#000000","svg":"<svg viewBox=\"3 3 18 18\"><path d=\"M6 6l3 3-3 3-3-3zM12 6l3 3-3 3-3-3zM18 6l3 3-3 3-3-3zM12 12l3 3-3 3-3-3z\" style=\"fill:var(--mbu-text,currentColor)\"/></svg>"},"qobuz":{"color":"#0070ef","svg":"<svg viewBox=\"1.75 1.75 20.5 20.5\"><circle cx=\"12\" cy=\"12\" r=\"10\" fill=\"#0070ef\"/><circle cx=\"12\" cy=\"12\" r=\"5\" fill=\"none\" stroke=\"#fff\" stroke-width=\"2.2\"/><path d=\"M14.5 14.5 19 19\" stroke=\"#fff\" stroke-width=\"2.2\" stroke-linecap=\"round\"/></svg>"},"beatport":{"color":"#01FF95","svg":"<svg viewBox=\"0.75 0.75 22.5 22.5\"><circle cx=\"12\" cy=\"12\" r=\"11\" fill=\"#000\"/><g transform=\"translate(12 12) scale(0.84) translate(-12 -12)\" fill=\"none\" stroke=\"#01FF95\" stroke-width=\"2.5\"><path d=\"M10.9 3V8.3c0 1.2-.4 1.9-1.1 2.6L5.6 15.1\"/><circle cx=\"13.9\" cy=\"15.8\" r=\"4.05\" stroke-width=\"2.35\"/></g></svg>"},"bandcamp":{"color":"#629AA9","svg":"<svg viewBox=\"2.25 2.25 19.5 19.5\" fill=\"#629AA9\"><path transform=\"translate(12 12) scale(.8) translate(-12 -12)\" d=\"M0 18.75l7.437-13.5H24l-7.438 13.5z\"/></svg>"},"volumo":{"color":"#7c4dff","svg":"<svg viewBox=\"1.75 1.75 20.5 20.5\"><circle cx=\"12\" cy=\"12\" r=\"10\" fill=\"#7c4dff\"/><path d=\"M7 8h2.2l2.8 6 2.8-6H17l-4 9h-2z\" fill=\"#fff\"/></svg>"},"hdtracks":{"color":"#e63329","svg":"<svg viewBox=\"1.75 1.75 20.5 20.5\"><circle cx=\"12\" cy=\"12\" r=\"10\" fill=\"#e63329\"/><path d=\"M5 7.5h1.7v3.1h2.6V7.5H11v8H9.3v-3.2H6.7v3.2H5zm7.2 0h2.9c2 0 3.4 1.6 3.4 4s-1.4 4-3.4 4h-2.9zm1.7 1.5v5h1.1c1.1 0 1.8-1 1.8-2.5s-.7-2.5-1.8-2.5z\" fill=\"#fff\"/></svg>"},"soundcloud":{"color":"#ff5500","svg":"<svg viewBox=\"1.75 1.75 20.5 20.5\"><circle cx=\"12\" cy=\"12\" r=\"10\" fill=\"#ff5500\"/><g fill=\"#fff\"><rect x=\"6\" y=\"12\" width=\"1.4\" height=\"4\" rx=\".6\"/><rect x=\"8.5\" y=\"10\" width=\"1.4\" height=\"6\" rx=\".6\"/><rect x=\"11\" y=\"8.5\" width=\"1.4\" height=\"7.5\" rx=\".6\"/><rect x=\"13.5\" y=\"10.5\" width=\"1.4\" height=\"5.5\" rx=\".6\"/><rect x=\"16\" y=\"11.5\" width=\"1.4\" height=\"4.5\" rx=\".6\"/></g></svg>"},"audiomack":{"color":"#FFA200","svg":"<svg viewBox=\"1.75 1.75 20.5 20.5\"><circle cx=\"12\" cy=\"12\" r=\"10\" fill=\"#FFA200\"/><path d=\"M5 13.5l2-2 1.6 2.4 2.2-5.4 2.4 6.6 2.2-4 1.6 2.4H19\" fill=\"none\" stroke=\"#fff\" stroke-width=\"1.6\" stroke-linejoin=\"round\" stroke-linecap=\"round\"/></svg>"},"sevendigital":{"color":"#07606E","svg":"<svg viewBox=\"1.75 1.75 20.5 20.5\"><circle cx=\"12\" cy=\"12\" r=\"10\" fill=\"#07606E\"/><path d=\"M7.8 6.8h8.4v1.9l-4.5 8.9H9.4l4.4-8.7h-6z\" fill=\"#fff\"/></svg>"},"ytmusic":{"color":"#FF0000","svg":"<svg viewBox=\"1.75 1.75 20.5 20.5\"><circle cx=\"12\" cy=\"12\" r=\"10\" fill=\"#FF0000\"/><circle cx=\"12\" cy=\"12\" r=\"5.6\" fill=\"none\" stroke=\"#fff\" stroke-width=\"1.4\"/><path d=\"M10.4 9.5v5l4.2-2.5z\" fill=\"#fff\"/></svg>"},"amazonmusic":{"color":"#25D1DA","svg":"<svg viewBox=\"1.75 1.75 20.5 20.5\"><circle cx=\"12\" cy=\"12\" r=\"10\" fill=\"#25D1DA\"/><path d=\"M5.8 11.2c3.5 3.2 8.9 3.5 12.4.9\" fill=\"none\" stroke=\"#0F1111\" stroke-width=\"1.9\" stroke-linecap=\"round\"/><path d=\"M15.5 10.7l3 1.3-.9 3.1\" fill=\"none\" stroke=\"#0F1111\" stroke-width=\"1.7\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/></svg>"},"soundexchange":{"color":"#6f42c1","svg":"<svg viewBox=\"1.75 1.75 20.5 20.5\"><circle cx=\"12\" cy=\"12\" r=\"10\" fill=\"#6f42c1\"/><path d=\"M6.5 12h1.3l1-3 1.6 6 1.6-9 1.6 12 1.4-6h1.5\" fill=\"none\" stroke=\"#fff\" stroke-width=\"1.4\" stroke-linejoin=\"round\" stroke-linecap=\"round\"/></svg>"},"globe":{"color":"#6f7d75","svg":"<svg viewBox=\"2 2 20 20\" fill=\"none\" stroke=\"#6f7d75\" stroke-width=\"1.8\"><circle cx=\"12\" cy=\"12\" r=\"9\"/><path d=\"M3 12h18M12 3a15 15 0 0 1 0 18M12 3a15 15 0 0 0 0 18\"/></svg>"}};
