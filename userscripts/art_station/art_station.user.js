@@ -739,7 +739,7 @@
   // timeout (currently visible as IA is slow) while it passes in native uploader.
   // Let's make timeout configurable in minutes, and make default double the
   // current value." Was a hardcoded 5 minutes; the default is 10 now.
-  function load() { const d = { tile: 200, group: false, sort: 'type', detailed: false, hideMbFooter: true, showOrig: false, autoRepeat: true, autoRepeatMin: 10, autoRepeatTimes: 10, arV: AR_SETTINGS_V, autoType: true, autoComment: true, autoFront: true, autoFrontMode: 'whenNone', clearSelAfterOp: true, followPan: true, uploadTimeoutMin: 10, showFileType: false }; try { const stored = JSON.parse(gmLoad('artstation:settings') || '{}'); return arMigrate(Object.assign(d, stored), stored); } catch (e) { return d; } }
+  function load() { const d = { tile: 200, group: false, sort: 'type', detailed: false, hideMbFooter: true, showOrig: false, autoRepeat: true, autoRepeatMin: 10, autoRepeatTimes: 10, arV: AR_SETTINGS_V, autoType: true, autoComment: true, autoFront: true, autoFrontMode: 'whenNone', clearSelAfterOp: true, followPan: true, uploadTimeoutMin: 10, showFileType: false, hideRemovals: false }; try { const stored = JSON.parse(gmLoad('artstation:settings') || '{}'); return arMigrate(Object.assign(d, stored), stored); } catch (e) { return d; } }
   /* #566 follow-up (majkinetor): "change defaults to 10/10 and enable the option
      by default". Raising the defaults alone reaches nobody who already has
      settings stored — save() persists every key, so a stored 20 shadows the new
@@ -1211,8 +1211,9 @@
   }
 
   // #787: a cover marked for removal stays in its place; only the stores' images Mission Control's frame keeps left
-  // out wait in a section of their own
-  const inGallery = it => !it._del || !it._mcOffer;
+  // out wait in a section of their own. View's Hide removals hides both kinds: marked here, and open for votes
+  const isRemoval = it => (it._del && !it._mcOffer) || !!it._rmOpen;
+  const inGallery = it => (!it._del || !it._mcOffer) && !(SETTINGS.hideRemovals && isRemoval(it));
   function grouped() {
     if (!SETTINGS.group) {
       // Position view (committed order): new uploads sit INLINE, positioned among covers
@@ -1832,7 +1833,9 @@
       + sorts.map(([v, l]) => `<label><input type="radio" name="as-vsort" value="${v}"${SETTINGS.sort === v ? ' checked' : ''}> ${l}${v === 'type' ? ' <span class="as-pop-note">(needed to drag-reorder)</span>' : ''}</label>`).join('')
       + `<div class="as-pop-h">View</div>`
       + [['grid', 'Grid', ''], ['detailed', 'Detailed view', '(list + all types &amp; comment)'], ['group', 'Group by type', '(view-only)']]
-          .map(([v, l, note]) => `<label><input type="radio" name="as-vmode" value="${v}"${vmode === v ? ' checked' : ''}> ${l}${note ? ` <span class="as-pop-note">${note}</span>` : ''}</label>`).join('');
+          .map(([v, l, note]) => `<label><input type="radio" name="as-vmode" value="${v}"${vmode === v ? ' checked' : ''}> ${l}${note ? ` <span class="as-pop-note">${note}</span>` : ''}</label>`).join('')
+      + `<div class="as-pop-h">Show</div>`
+      + `<label><input type="checkbox" class="as-vhide-rm"${SETTINGS.hideRemovals ? ' checked' : ''}> Hide removals <span class="as-pop-note">(${MODEL.filter(isRemoval).length}: marked, or open for votes)</span></label>`;
     document.body.appendChild(pop);
     placePop(pop, btn.getBoundingClientRect());
     pop.querySelectorAll('input[name="as-vsort"]').forEach(r => r.onchange = () => { SETTINGS.sort = r.value; save(); render(); });
@@ -1841,6 +1844,7 @@
       SETTINGS.detailed = r.value === 'detailed'; SETTINGS.group = r.value === 'group';
       save(); render();
     });
+    pop.querySelector('.as-vhide-rm').onchange = e => { SETTINGS.hideRemovals = e.target.checked; save(); render(); asLog.info(`Removals ${SETTINGS.hideRemovals ? 'hidden' : 'shown'}`); };   // #787
     const off = e => { if (!pop.contains(e.target) && e.target !== btn) { pop.remove(); document.removeEventListener('mousedown', off); } };
     setTimeout(() => document.addEventListener('mousedown', off), 0);
   }

@@ -46,4 +46,14 @@ test('#787: a removal stays in place, and an open removal links to its edit', { 
   check(JSON.stringify(after.ids) === JSON.stringify(before), 'it stays in its place');
   check(!after.sec, 'no Marked for removal section');
   await page.locator('#as-root').screenshot({ path: 'test-results/as-787.png' });
+
+  // View's Hide removals hides both, and showing them again puts them back
+  const hidden = async on => {
+    await page.evaluate(() => document.querySelector('#as-root .as-view').click());
+    await until(() => page.evaluate(() => !!document.querySelector('.as-vhide-rm')), Boolean);
+    await page.evaluate(v => { const b = document.querySelector('.as-vhide-rm'); if (b.checked !== v) b.click(); }, on);
+    return until(() => page.evaluate(ids => ids.filter(id => document.querySelector(`#as-root .as-card[data-id="${id}"]`)).length, [first, other]), n => n === (on ? 0 : 2));
+  };
+  check(await hidden(true) === 0, 'Hide removals hides the marked one and the open one');
+  check(await hidden(false) === 2, 'and they show again when it is off');
 });
