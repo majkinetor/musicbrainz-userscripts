@@ -147,6 +147,19 @@ test('#782: Compare reads the release\'s platforms and offers what it lacks', { 
   check(tr && tr[0].was.title === 'Homes & Gardens (remix)' && tr[0].was.ms === null && /Deezer, Qobuz/.test(tr[0].from), `with what the track had, and where it came from (${JSON.stringify(tr && tr[0])})`);
   await until(() => page.evaluate(() => !Object.keys(window.__mcTest.cmp().picks).length), Boolean);
   check(!Object.keys((await page.evaluate(() => window.__mcTest.cmp())).picks).length, 'once sent, the track is as it was again');
+  // #785: Aa beside the title shows the guess case of what the box holds, and a click takes it in
+  if (!(await subRows.count())) await page.locator('#mc-root .mc-tbl tr[data-i="1"] td[data-col="plat"] [data-act="fx-pf"]').click();
+  await sub.locator('[data-pf-title="1"]').fill('homes and gardens of KoRn (Official Music Video)');
+  await sub.locator('[data-pf-title="1"]').press('Enter');
+  const aa = sub.locator('[data-act="fx-gc"][data-i="1"]');
+  const want = 'Homes and Gardens of KoRn (official music video)';
+  const tip = await until(() => aa.getAttribute('title'), t => (t || '').includes(want));
+  check((tip || '').includes('Guess case (English) → ' + want), `Aa shows the guess (${tip})`);
+  await aa.click();
+  st = await page.evaluate(() => window.__mcTest.cmp());
+  check(st.picks[1] && st.picks[1].title === want && await sub.locator('[data-pf-title="1"]').inputValue() === want, `a click takes it in (${JSON.stringify(st.picks[1])})`);
+  check(/same/.test(await aa.getAttribute('class')), 'then Aa shows the title is as guess case writes it');
+  await page.locator('#mc-root .mc-tbl').screenshot({ path: 'dev/_785-aa.png' });
   const card = page.locator('#mc-root [data-card="pc"]');
   check(/Compared with/.test(await card.textContent()), 'Platform Check\'s card says the release was compared');
   check(await card.locator('.mc-line:has-text("Release event")').count() === 1 && await card.locator('.mc-line:has-text("Track lengths for")').count() === 1, 'the release event and the track lengths are rows of the Release section');

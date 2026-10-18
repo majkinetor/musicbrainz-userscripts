@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-10-18 20:08 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-10-18 23:52 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -184,7 +184,8 @@ The toolbar holds the tools you choose; the rest are in **Tools ▾**, with **Cu
 
 | Tool                                                    |                                                                                                                                   |
 | ------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
-| Track parser, Swap, Reset #, Guess feat., Guess case    | MusicBrainz's own                                                                                                                 |
+| Track parser, Swap, Reset #, Guess feat.                | MusicBrainz's own                                                                                                                 |
+| [Guess case](#guess-case)                               | MusicBrainz's capitalisation, with more languages                                                                                 |
 | [Search and Replace](#search-and-replace)               | replace text in titles, with saved patterns                                                                                       |
 | [Pattern parser](#pattern-parser)                       | a tracklist from text, by a pattern                                                                                               |
 | [Length parser](#length-parser)                         | track lengths from any text or page                                                                                               |
@@ -192,6 +193,19 @@ The toolbar holds the tools you choose; the rest are in **Tools ▾**, with **Cu
 | Resize columns                                          | Fit, Centered or Default widths                                                                                                   |
 | Guess punctuation                                       | kellnerd's [guess-unicode-punctuation](https://github.com/kellnerd/musicbrainz-scripts#guess-unicode-punctuation), when installed |
 | **↺ Revert all**, **✕ Clear all** (under ▾)             | back to the loaded page, or empty                                                                                                 |
+
+#### Guess case
+
+Capitalises the track titles the way MusicBrainz's own Guess case does, with more languages and a few more rules. Click **Guess case** for every track; a track's **Aa** on hover does one track and shows the guess before you click.
+
+- **Mode**: **Auto** follows the release's language. English, French, Turkish, Spanish, Italian, Portuguese and Dutch have their own mode; any other language gets Sentence (a capital only at the start of a sentence). Pick a mode to use it whatever the language.
+- **ABC** (Keep uppercased), a toggle: a word in capitals stays in capitals, and a word with a capital inside it (*KoRn*, *JoJo*, *OutKast*) keeps it.
+- **IV** (Roman numerals), a toggle: *part ii* becomes *Part II*.
+- **Separator**, the small field after them: in Auto, a title written mostly in Cyrillic gets Sentence whatever the release's language. A title whose parts, split by this (`/` by default), are in different scripts has each part guessed on its own: *love story / история любви* becomes *Love Story / История любви*. Empty never splits.
+
+On top of MusicBrainz's rules, version words in brackets are lowercased (*official music video*, *slowed + reverb*, *sped up*, *bootleg*, *mashup*), and Dutch writes *IJ* as one capital (*IJsland*).
+
+MusicBrainz's own guess-case buttons give the same guess with the same options: the release title's **Aa**, a medium title's, and **Guess case** under MusicBrainz's tracklist. In the release information, right-click the title's **Aa** for the options; MusicBrainz's own options show Apollo's modes.
 
 #### Search and Replace
 
@@ -1916,7 +1930,7 @@ The links are added through [Falcon](../falcon/README.md), out of sight. The car
 | Track title, length | you take a platform's, or type your own                      | the row under the track                     |
 | Title               | the platforms give another                                   | shown only, never changed                   |
 
-Nothing the release has is changed unless you take it. The tracks are compared one by one only when the platforms have as many as the release. The Platforms column shows each track's length to add (*+ 4:01*), and *≠ title* when the platforms call it something else (*✓* when they agree). Either opens, under the row, what the platforms give for the track: a line per version (title, with the part that differs marked, length and ISRC), the platforms that give it on the right. A click on a title or length there takes it in, and the track's own line above them holds what the track gets: type there for a title or length of your own (Enter keeps it, Escape puts it back). *the recording too* gives the recording the new title as well; **↺** reverts the track. The column then shows what the track gets (*→ Title · → 5:02*), and Execute counts it. **Expand all** opens these rows, where a title or a length differs, with Fusion's comparisons. The [Inspector](#inspector) shows the track's versions too. Platform Check's card names the platforms read, and the release's title if the platforms give another.
+Nothing the release has is changed unless you take it. The tracks are compared one by one only when the platforms have as many as the release. The Platforms column shows each track's length to add (*+ 4:01*), and *≠ title* when the platforms call it something else (*✓* when they agree). Either opens, under the row, what the platforms give for the track: a line per version (title, with the part that differs marked, length and ISRC), the platforms that give it on the right. A click on a title or length there takes it in, and the track's own line above them holds what the track gets: type there for a title or length of your own (Enter keeps it, Escape puts it back). **Aa** beside the title shows, on hover, the title as Guess case writes it in the release's language, and a click takes that in; it's the same Guess case as [Apollo's](../apollo_editor/README.md#guess-case). *the recording too* gives the recording the new title as well; **↺** reverts the track. The column then shows what the track gets (*→ Title · → 5:02*), and Execute counts it. **Expand all** opens these rows, where a title or a length differs, with Fusion's comparisons. The [Inspector](#inspector) shows the track's versions too. Platform Check's card names the platforms read, and the release's title if the platforms give another.
 
 Execute adds the release event, the track lengths and the titles and lengths you took with the barcode, labels and links, in one edit of the release, through [Falcon](../falcon/README.md). A track that changed on MusicBrainz since you compared keeps what it has.
 

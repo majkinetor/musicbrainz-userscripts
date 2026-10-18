@@ -33,6 +33,7 @@ export default defineConfig({
     { name: 'net', testDir: 'dev/net' },        // the shared MusicBrainz request gate (ST-NET)
     { name: 'imgmax', testDir: 'dev/imgmax' },  // the shared image maximizer (ST-IMGMAX)
     { name: 'mbpage', testDir: 'dev/mbpage' },  // the shared MusicBrainz page helpers (ST-MBPAGE)
+    { name: 'guesscase', testDir: 'dev/guesscase' },  // the shared guess case (ST-GUESSCASE)
     ...scripts.map(name => ({ name, testDir: `userscripts/${name}/test` })),
   ],
 });
