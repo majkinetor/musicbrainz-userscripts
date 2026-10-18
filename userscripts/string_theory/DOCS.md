@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-10-18 17:35 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-10-18 17:40 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -1893,7 +1893,7 @@ Under the front, the card shows [Art Station's gallery](../art_station/README.md
 
 Discogs and Amazon have every image of a release: the back, the medium, the booklet. The gallery puts the others in **More images: take in, then drag into place**, at its end. Click **＋ take in** on one to add it after the covers, then drag it where it goes. The stores don't say what an image is, so nothing starts typed. An image that is the same picture as a cover the release already has says *in archive*, even one just entered; one that is the same as the best front or as a larger image says which (*= Amazon 1*).
 
-Taking the best front's platform in or out on the card puts the best cover in the gallery or leaves it out, and with it the removal of the smaller front it replaces. What you change in the gallery wins over that. Under the gallery, **Execute:** lists what Execute will do there, and Execute counts it.
+Taking the best front's platform in or out on the card puts the best cover in the gallery or leaves it out (waiting in *More images*), and with it the removal of the smaller front it replaces. What you change in the gallery wins over that. Under the gallery, **Execute:** lists what Execute will do there, and Execute counts it.
 
 Execute enters what the gallery holds: Art Station's own **Enter edit** isn't shown. An image MusicBrainz didn't take shows its error on the card, with **Retry**.
 

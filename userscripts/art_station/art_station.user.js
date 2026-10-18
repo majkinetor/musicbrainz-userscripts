@@ -1279,7 +1279,7 @@
       return `<div class="as-sec ${cls}"><h3>${title}</h3><span class="as-cnt">${dels.length}</span><span class="as-line"></span></div>${body}`;
     };
     const dels = MODEL.filter(it => it._del);
-    return sec(dels.filter(it => !it._mcPool), 'Marked for removal', 'as-sec-del') + sec(dels.filter(it => it._mcPool).sort((a, b) => a.order - b.order), 'More images: take in, then drag into place', 'as-sec-del as-sec-more');
+    return sec(dels.filter(it => !it._mcOffer), 'Marked for removal', 'as-sec-del') + sec(dels.filter(it => it._mcOffer).sort((a, b) => a.order - b.order), 'More images: take in, then drag into place', 'as-sec-del as-sec-more');
   }
   // Stable CAA thumbnails are HTTP-cached, so recreating their <img> on each
   // render is cheap and flicker-free. NEW (blob) and PENDING (no CAA thumb yet →
@@ -1347,7 +1347,7 @@
         ${it._new ? '<span class="as-newban">NEW</span>' : ''}
         ${it._pdf ? '<span class="as-pdfban" title="PDF — opens in a new tab">PDF</span>' : ''}
         ${provBadge(it)}
-        ${it._del ? (it._mcPool ? '<button class="as-tbtn as-undo" title="take this image in">＋ take in</button>' : '<button class="as-tbtn as-undo" title="keep this image">↺ keep</button>') : ''}
+        ${it._del ? (it._mcOffer ? '<button class="as-tbtn as-undo" title="take this image in">＋ take in</button>' : '<button class="as-tbtn as-undo" title="keep this image">↺ keep</button>') : ''}
         ${it._mcDup ? `<span class="as-mcdup" title="the same picture as ${esc(it._mcDup.replace(/^= /, ''))}">${esc(it._mcDup)}</span>` : ''}
         ${onlyBtn(it)}
       </div>
@@ -1551,8 +1551,9 @@
     root.querySelectorAll('.as-undo').forEach(b => b.onclick = e => {
       e.stopPropagation(); const it = byId(cardId(e.target)); if (!it) return;
       it._del = false;
-      // #784: a store image taken in goes last, to be dragged into place from there
-      if (it._mcPool) { const seq = MODEL.filter(x => x !== it).sort((a, b) => a.order - b.order); seq.push(it); seq.forEach((x, i) => x.order = i); }
+      // #784: a store image taken in goes last, to be dragged into place from there; the best front goes in typed Front
+      if (it._mcOffer && it === _mcBest && !(it.types || []).includes('Front')) it.types = ['Front'].concat(it.types || []);
+      if (it._mcOffer) { const seq = MODEL.filter(x => x !== it).sort((a, b) => a.order - b.order); seq.push(it); seq.forEach((x, i) => x.order = i); }
       render();
     });
     root.querySelectorAll('.as-only').forEach(b => b.onclick = e => { e.stopPropagation(); keepOnly(byId(cardId(b))); });
@@ -3040,7 +3041,7 @@
         // #772: in Mission Control's frame they are the store's other images: #784 they stay in the gallery, left out
         // (in their own section) until taken in
         if (MC_FRAME) _mcPool = drop.filter(x => x._new && !x._del && !x._pdf && x.w > 0);
-        _mcPool.forEach(x => { x._del = true; x._sel = false; x._mcPool = true; });
+        _mcPool.forEach(x => { x._del = true; x._sel = false; x._mcPool = x._mcOffer = true; });
         const gone = drop.filter(x => !_mcPool.includes(x));
         gone.forEach(x => { try { if (x._file) URL.revokeObjectURL(x._file); } catch (e) {} });
         MODEL = MODEL.filter(x => !gone.includes(x)); MODEL.forEach((x, i) => x.order = i);
@@ -3139,7 +3140,7 @@
   // test hook only (#772): the frame's pool and best set by a spec, as sourceBest leaves them
   if (mbuTestHooks()) (window.__asTest || (window.__asTest = {})).mc = {
     model: () => MODEL,
-    offer: (best, pool) => { _mcBest = best; _mcPool = pool; pool.forEach(x => { x._del = true; x._sel = false; x._mcPool = true; }); render(); return mcExtras(best).then(xs => { render(); return xs; }); },
+    offer: (best, pool) => { _mcBest = best; _mcPool = pool; pool.forEach(x => { x._del = true; x._sel = false; x._mcPool = x._mcOffer = true; }); render(); return mcExtras(best).then(xs => { render(); return xs; }); },
   };
   // #680: Mission Control opened this page with ?mc_source=[links] — import from those
   // links and keep the best cover, as a middle-click on the URL button does
@@ -3187,7 +3188,7 @@
   function mcStage(front, replace) {
     if (!_mcBest || !MODEL.includes(_mcBest)) return;
     _mcFront = front;
-    _mcBest._del = !front;
+    _mcBest._del = !front; _mcBest._mcOffer = true;   // left out, it waits with the stores' other images
     if (front) { if (!(_mcBest.types || []).includes('Front')) _mcBest.types = ['Front'].concat(_mcBest.types || []); }
     else _mcBest._sel = false;
     if (front && replace && !_mcReplaced) {
@@ -6292,7 +6293,7 @@
   html.as-embed .as-bar{position:static}
   .as-sec-more+.as-grid .as-card.del,.as-sec-more+.as-dlist .as-drow.del{opacity:1}
   .as-sec-more+.as-grid .as-card.del .as-thumb img{filter:none;opacity:.6}
-  .as-mcdup{position:absolute;left:6px;bottom:6px;max-width:calc(100% - 12px);font:600 10px var(--mbu-font);color:var(--mbu-warn);background:var(--mbu-bg);border:1px solid var(--mbu-warn-border);border-radius:4px;padding:0 4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;z-index:4}
+  .as-mcdup{position:absolute;left:34px;bottom:6px;max-width:calc(100% - 40px);font:600 10px var(--mbu-font);color:var(--mbu-warn);background:var(--mbu-bg);border:1px solid var(--mbu-warn-border);border-radius:4px;padding:0 4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;z-index:4}
   /* #695: a round icon like every other corner launcher (Falcon, Fusion); in colour while Art Station shows, monochrome while off */
   #as-switch{position:fixed;bottom:14px;right:14px;z-index:var(--mbu-z-pop);width:40px;height:40px;border-radius:50%;border:none;padding:0;display:flex;align-items:center;justify-content:center;cursor:pointer;background:transparent;box-shadow:none;opacity:.85;transition:background .15s,transform .1s,opacity .15s}
   #as-switch:hover{opacity:1;transform:scale(1.08)}
