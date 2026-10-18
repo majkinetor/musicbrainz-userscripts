@@ -14,7 +14,7 @@ Finds a MusicBrainz release on the streaming and store platforms, checks each ma
 - **[Dashboard](#dashboard)** on every release page: each [platform](#platforms), with its track count, year, label and format beside MusicBrainz's.
 - **[Link confidence](#link-confidence)**: a match with a different barcode or format is a different release, and is not added.
 - **[Adding links](#adding-links)** to the release, one or all, in the foreground or in the background, or opening all the pages found.
-- **[Pasting a barcode](#pasting-a-barcode)** on a release that has none, or picking one the platforms report: the platforms are checked against it, and an added link adds it too.
+- **[Pasting a barcode](#pasting-a-barcode)** on a release that has none, or picking one the platforms report: the platforms are checked against it, and an added link adds it too; or adding it on its own.
 - **[Catalog numbers](#catalog-numbers)** the platforms give, for a label the release has without one: an added link adds it too.
 - **[Artists and labels](#artists-and-labels)**: the artist and label pages the matched albums name, added to the release's MusicBrainz artists and labels through [Falcon](../falcon/README.md).
 
@@ -76,9 +76,9 @@ A release without a barcode can borrow one: copy it (from the cover, a store pag
 - A link added from the panel (icon or **+**, in the foreground or the background) puts the barcode on the release too, in the same edit, and the edit note says so.
 - It stays with the release, across reloads, until it's removed or the release has a barcode of its own.
 - A release that already has a barcode refuses the paste, with an error.
-
-The matched platforms often show a barcode the release lacks. On a release without one, a dashed barcode button on the line under the title counts the barcodes they report. Click it for the list: each barcode with the platforms that report it, the ones in this release's medium first. A barcode from another format, with a wrong check digit, or already on another MusicBrainz release (most likely that edition's) is marked ⚠, the last with a link to that release. Click one to use it as if you pasted it; right-click to copy it. [Mission Control](../mission_control/README.md#release-and-entity-links) offers the same barcodes, to add one to the release. A barcode picked or pasted while the platforms are still being searched stops that search and starts over with it.
 - Accepted: 8, 12, 13 or 14 digits, spaces and dashes allowed. A wrong check digit is used anyway, with a warning; MusicBrainz then asks you to confirm it in the editor.
+
+The matched platforms often show a barcode the release lacks. On a release without one, a dashed barcode button on the line under the title counts the barcodes they report. Click it for the list: each barcode with the platforms that report it, the ones in this release's medium first. A barcode from another format, with a wrong check digit, or already on another MusicBrainz release (most likely that edition's) is marked ⚠, the last with a link to that release. Click one to use it as if you pasted it. Right-click one to add it to the release on its own, in the background, with no links: the edit note names the platforms that report it, and a barcode marked ⚠ is added only once you confirm it. Ctrl+click copies it. [Mission Control](../mission_control/README.md#release-and-entity-links) offers the same barcodes, to add one to the release. A barcode picked or pasted while the platforms are still being searched stops that search and starts over with it.
 
 ## Catalog numbers
 
@@ -95,13 +95,13 @@ Beatport and Discogs give the album's catalog number, which the dashboard shows 
 
 A matched album usually names its artists' pages on that platform, and sometimes its label's. **Artists & labels**, in the footer next to **+** and **↗**, lists them against this release's MusicBrainz artists and labels: one row per artist or label, one column per platform. Once the scans finish, the button shows how many links would be added as a purple badge beside its name, like an unread count.
 
-| Mark |                                                                                                                         |
-| ---- | ----------------------------------------------------------------------------------------------------------------------- |
-| ✓    | already linked in MusicBrainz                                                                                           |
-| +    | found, not linked yet: will be added                                                                                    |
-| ⚠    | on another MusicBrainz artist or label: not added; hover shows which, click opens it                                    |
+| Mark |                                                                                                                       |
+| ---- | --------------------------------------------------------------------------------------------------------------------- |
+| ✓    | already linked in MusicBrainz                                                                                         |
+| +    | found, not linked yet: will be added                                                                                  |
+| ⚠    | on another MusicBrainz artist or label: not added; hover shows which, click opens it                                  |
 | +?   | may be the artist or the label (Bandcamp, SoundCloud, Audiomack), or a label of another name: left out until taken in |
-| ·    | no page, or the platform didn't find the release                                                                        |
+| ·    | no page, or the platform didn't find the release                                                                      |
 
 Click a mark to open the page (a ⚠ opens the MusicBrainz artist or label that has it); right-click to take it in or leave it out. **Run N in Falcon** closes the table, queues every row with its new links in Falcon on this page and starts it (with *Close Falcon after a successful import* on, Falcon closes once every link is added, and stays open when one fails); **▾ › Send only** queues them and Falcon waits for you to press Start. Where Falcon doesn't run, it opens in a new tab with the links queued, not started; the edit note names the release. Without Falcon, a row's **✎** opens that artist's or label's edit page with its new links filled in, for you to submit.
 
@@ -154,22 +154,22 @@ Click a mark to open the page (a ⚠ opens the MusicBrainz artist or label that 
 
 <img width="400" src="./screenshots/config.png" />
 
-| Setting                                | Default           |                                                                                      |
-| -------------------------------------- | ----------------- | ------------------------------------------------------------------------------------ |
-| Platforms                              | all               | order them, or leave some out                                                        |
-| Logins                                 | none              | Beatport and Qobuz; see [Platforms](#platforms)                                      |
-| Use barcodes                           | on, strictly      | [link confidence](#link-confidence); *if they exist* withholds only a known mismatch |
-| Use formats                            | on, strictly      | the same, for the format                                                             |
-| Open the editor in a new tab           | on                | off navigates this tab                                                               |
-| Keep background tabs awake             | off               | see [Adding links](#adding-links)                                                    |
-| Count the links to add                 | on                | the badge on [Artists & labels](#artists-and-labels)                                 |
-| Close Falcon after a successful import | on                | see [Artists and labels](#artists-and-labels)                                        |
-| Icon, Name                             | icon only         | what each row shows, and its size                                                    |
-| Compact: Unmatched, Low-confidence     | on, off           | see [Dashboard](#dashboard)                                                          |
-| In MusicBrainz                         | Ring              | how a platform already linked is marked                                              |
-| Format                                 | Circle            | the release's format as a circle or as text                                          |
-| Layout                                 | 1 row             | or 2 rows per platform                                                               |
-| Spacing                                | 5 px              | between rows, and between columns in the 1-row layout                                |
+| Setting                                | Default      |                                                                                      |
+| -------------------------------------- | ------------ | ------------------------------------------------------------------------------------ |
+| Platforms                              | all          | order them, or leave some out                                                        |
+| Logins                                 | none         | Beatport and Qobuz; see [Platforms](#platforms)                                      |
+| Use barcodes                           | on, strictly | [link confidence](#link-confidence); *if they exist* withholds only a known mismatch |
+| Use formats                            | on, strictly | the same, for the format                                                             |
+| Open the editor in a new tab           | on           | off navigates this tab                                                               |
+| Keep background tabs awake             | off          | see [Adding links](#adding-links)                                                    |
+| Count the links to add                 | on           | the badge on [Artists & labels](#artists-and-labels)                                 |
+| Close Falcon after a successful import | on           | see [Artists and labels](#artists-and-labels)                                        |
+| Icon, Name                             | icon only    | what each row shows, and its size                                                    |
+| Compact: Unmatched, Low-confidence     | on, off      | see [Dashboard](#dashboard)                                                          |
+| In MusicBrainz                         | Ring         | how a platform already linked is marked                                              |
+| Format                                 | Circle       | the release's format as a circle or as text                                          |
+| Layout                                 | 1 row        | or 2 rows per platform                                                               |
+| Spacing                                | 5 px         | between rows, and between columns in the 1-row layout                                |
 
 ## Shortcuts
 
@@ -179,6 +179,8 @@ Click a mark to open the page (a ⚠ opens the MusicBrainz artist or label that 
 | Ctrl+V                                         | on a release without a barcode, [use the pasted barcode](#pasting-a-barcode)                       |
 | Alt+click                                      | as a middle click: add a link [link confidence](#link-confidence) withholds; on **+**, all of them |
 | Ctrl+middle-click, Ctrl+Alt+click (⌘ on a Mac) | the same, in the background                                                                        |
+| right-click                                    | in the [platforms' barcodes](#pasting-a-barcode), add the barcode alone, in the background         |
+| Ctrl+click                                     | in the platforms' barcodes, copy the barcode                                                       |
 
 ## Notes
 

@@ -74,6 +74,23 @@ test('the barcodes the platforms report are offered, and picking one uses it', {
   await page.click('#mb-found-bc');
   check(!(await page.$('#pc-bc-pop')), 'the button closes the list again');
 
+  // #780: Ctrl+click copies; right-click queues the barcode alone, for a background tab, once its warnings are confirmed
+  await context.grantPermissions(['clipboard-read', 'clipboard-write']);
+  await page.click('#mb-found-bc');
+  await page.click(`#pc-bc-pop .pc-bc-opt[data-code="${CODE}"]`, { modifiers: ['Control'] });
+  check(await page.evaluate(() => navigator.clipboard.readText()) === CODE, 'Ctrl+click copies it');
+  check(!(await page.evaluate(rel => localStorage.getItem('pc:pasted-barcode:' + rel), BARE)), '…and does not use it');
+  await page.evaluate(() => { window.GM_openInTab = u => { window.__opened = u; return null; }; });
+  const asked = [];
+  page.once('dialog', d => { asked.push(d.message()); d.accept(); });
+  await page.click(`#pc-bc-pop .pc-bc-opt[data-code="${CODE}"]`, { button: 'right' });
+  const bg = await until(() => page.evaluate(rel => ({ q: localStorage.getItem('pc:bg-barcode:' + rel), opened: window.__opened || '' }), BARE), x => x.opened);
+  check(asked.length === 1 && /already on another MusicBrainz release/.test(asked[0]) && /this release is CD/.test(asked[0]), `its warnings are asked about first (${asked[0]})`);
+  check(JSON.parse(bg.q || '{}').code === CODE && /reported by Deezer/.test(bg.q), `right-click queues the barcode alone (${bg.q})`);
+  check(bg.opened.endsWith(`/release/${BARE}/edit#pc-autocommit-pc-barcode`), `…and opens the editor for it in the background (${bg.opened})`);
+  check(!(await page.evaluate(rel => localStorage.getItem('pc:pasted-barcode:' + rel), BARE)), '…without using it as pasted');
+  await page.evaluate(rel => localStorage.removeItem('pc:bg-barcode:' + rel), BARE);
+
   await page.click('#mb-found-bc');
   await page.click(`#pc-bc-pop .pc-bc-opt[data-code="${CODE}"]`);
   await until(() => scans(page), n => n >= 3, { timeout: 60000 });

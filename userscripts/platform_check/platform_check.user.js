@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Platform Check
 // @namespace    http://tampermonkey.net/
-// @version      2026.10.17.231850
+// @version      2026.10.18
 // @description  Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CjxnIHN0cm9rZT0iIzk0YTNiOCIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2UtbGluZWNhcD0icm91bmQiPjxwYXRoIGQ9Ik02NCA2NCBMODggMjIuNCIvPjxwYXRoIGQ9Ik02NCA2NCBMMTEyIDY0Ii8+PHBhdGggZD0iTTY0IDY0IEw4OCAxMDUuNiIvPjxwYXRoIGQ9Ik02NCA2NCBMNDAgMTA1LjYiLz48cGF0aCBkPSJNNjQgNjQgTDE2IDY0Ii8+PHBhdGggZD0iTTY0IDY0IEw0MCAyMi40Ii8+PC9nPjxjaXJjbGUgY3g9Ijg4IiBjeT0iMjIuNCIgcj0iMTIiIGZpbGw9IiNmNDcyYjYiLz48Y2lyY2xlIGN4PSIxMTIiIGN5PSI2NCIgcj0iMTIiIGZpbGw9IiNmYWNjMTUiLz48Y2lyY2xlIGN4PSI4OCIgY3k9IjEwNS42IiByPSIxMiIgZmlsbD0iIzRhZGU4MCIvPjxjaXJjbGUgY3g9IjQwIiBjeT0iMTA1LjYiIHI9IjEyIiBmaWxsPSIjMzhiZGY4Ii8+PGNpcmNsZSBjeD0iMTYiIGN5PSI2NCIgcj0iMTIiIGZpbGw9IiNhNzhiZmEiLz48Y2lyY2xlIGN4PSI0MCIgY3k9IjIyLjQiIHI9IjEyIiBmaWxsPSIjZmI5MjNjIi8+PGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iMjQiIGZpbGw9IiMwZjE3MmEiLz48cGF0aCBkPSJNNTQuMjIyMjIyMjIyMjIyMjIgNjQgTDYxLjMzMzMzMzMzMzMzMzMzNiA3MS4xMTExMTExMTExMTExMSBMNzQuNjY2NjY2NjY2NjY2NjcgNTYuODg4ODg4ODg4ODg4ODg2IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iNiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+Cjwvc3ZnPgo=
@@ -571,20 +571,27 @@ async function runInjectHelper(entityType) {
         const mbid = (window.location.pathname.match(re) || [])[1];
         if (!mbid) return;
         const key  = entityType === 'release-group' ? `pc:pending:rg:${mbid}` : `pc:pending:${mbid}`;
-        const raw  = localStorage.getItem(key);
-        // No pending payload means the user navigated to /edit themselves,
-        // not via the panel's + button. Stay silent — banner noise on every
-        // direct edit-page visit is worse than the diagnostic value (the
-        // 2nd-click-doesn't-work bug it was diagnosing has been fixed).
-        if (!raw) return;
-        let pending;
-        try { pending = JSON.parse(raw); }
-        catch (e) {
-            showInjectBanner(`Platform Check: pending payload not JSON: ${e.message}`, [], { fail: true });
-            return;
+        // #780: a barcode on its own (right-click in the found-barcodes list): no links, whatever is queued
+        const bcOnly = entityType === 'release' && /pc-barcode/.test(location.hash);
+        let urls = [];
+        if (bcOnly) {
+            if (!localStorage.getItem(`pc:bg-barcode:${mbid}`)) return;
+        } else {
+            const raw  = localStorage.getItem(key);
+            // No pending payload means the user navigated to /edit themselves,
+            // not via the panel's + button. Stay silent — banner noise on every
+            // direct edit-page visit is worse than the diagnostic value (the
+            // 2nd-click-doesn't-work bug it was diagnosing has been fixed).
+            if (!raw) return;
+            let pending;
+            try { pending = JSON.parse(raw); }
+            catch (e) {
+                showInjectBanner(`Platform Check: pending payload not JSON: ${e.message}`, [], { fail: true });
+                return;
+            }
+            urls = Object.values(pending || {}).filter(Boolean);
+            if (urls.length === 0) return;
         }
-        const urls = Object.values(pending || {}).filter(Boolean);
-        if (urls.length === 0) return;
         // #556: this lookup used to run ONCE, immediately, and was a no-op besides.
         // Measured live on the release editor: there is no "External links" TAB at
         // all — the wizard's steps are Release information / Tracklist / Recordings
@@ -596,7 +603,7 @@ async function runInjectHelper(entityType) {
         // release editor the tab does not exist, so the wait could only ever run to
         // its full timeout before injectInto even started — pure dead time added to
         // every single background add.
-        pcMark(`helper start on ${entityType}`, `${urls.length} url(s) queued, readyState=${document.readyState}`);
+        pcMark(`helper start on ${entityType}`, `${bcOnly ? 'barcode only' : urls.length + ' url(s) queued'}, readyState=${document.readyState}`);
         // #556: read the hash HERE rather than after the inject — the keep-awake
         // tone has to start before MusicBrainz's throttled work does, not after.
         const autoCommit = /pc-autocommit/.test(location.hash);
@@ -614,7 +621,7 @@ async function runInjectHelper(entityType) {
         awake = wantAwake ? pcKeepAwake() : null;
         pcOpenExternalLinks();
         await pcWait(200);
-        const result = await injectInto(urls, key) || { injected: 0 };
+        const result = (bcOnly ? await pcInjectBarcodeOnly(mbid) : await injectInto(urls, key)) || { injected: 0 };
         pcMark('inject finished', `${result.injected} confirmed`);
         // #464: right-click "add in background" — auto-submit once the URLs are in,
         // and mark this tab so the redirect back to the clean /release/<mbid> page
@@ -636,7 +643,9 @@ async function runInjectHelper(entityType) {
         if (autoCommit && !result.injected) {
             try { console.warn('[Platform Check] background add: nothing landed — NOT submitting. The tab is left open and the links stay queued; press ↻ or the + again to retry.'); } catch (e) {}
             hush();
-            showInjectBanner('Platform Check: no link could be added — not submitting. The links are still queued, so you can retry; this tab is left open on purpose.', [], { fail: true });
+            showInjectBanner(bcOnly
+                ? `Platform Check: the barcode could not be added${result.why ? ' (' + result.why + ')' : ''} — not submitting; this tab is left open on purpose.`
+                : 'Platform Check: no link could be added — not submitting. The links are still queued, so you can retry; this tab is left open on purpose.', [], { fail: true });
         } else if (autoCommit) {
             // #465 (chaban-mb): the release editor is the multi-step wizard, not the
             // simple artist/label/place form — its submit button is #enter-edit. Same
@@ -1040,6 +1049,24 @@ async function pcFillBarcode(relMbid) {
     try { localStorage.removeItem(key); } catch (e) {}
     pcMark('barcode filled', bc);
     return bc;
+}
+// #780: the barcode queued on its own (pc:bg-barcode:<mbid>, { code, from }), typed into the release
+// editor's Barcode field with an edit note and nothing else. { injected: 1 } once the field holds it.
+async function pcInjectBarcodeOnly(relMbid) {
+    const key = `pc:bg-barcode:${relMbid}`;
+    let q = null;
+    try { q = JSON.parse(localStorage.getItem(key) || 'null'); } catch (e) {}
+    if (!q || !q.code) return { injected: 0, why: 'no barcode queued' };
+    try { localStorage.removeItem(key); } catch (e) {}
+    const r = await pcFillBarcodeField(document, q.code);
+    if (r.other) {
+        try { console.warn(`[Platform Check] inject: the release has barcode ${r.other} by now — ${q.code} not added`); } catch (e) {}
+        return { injected: 0, why: `the release has barcode ${r.other} by now` };
+    }
+    if (!r.ok) { try { console.warn(`[Platform Check] inject: ${r.why} — barcode ${q.code} not added`); } catch (e) {} return { injected: 0, why: r.why }; }
+    pcMark('barcode filled', q.code);
+    setEditNote(pcEditNote([], {}, q.code, q.from || null));
+    return { injected: 1 };
 }
 // #740: the catalog numbers used on the release page (pc:pending-catno:<mbid>, [{ mbid, name, catno }]), each
 // typed into the empty Cat. No. field of its label's row in the release editor (the row whose Label field reads
@@ -8187,14 +8214,14 @@ function pcOpenFoundBarcodes(btn) {
     const pop = document.createElement('div');
     pop.id = 'pc-bc-pop';
     pop.innerHTML = mbuHtml(`<div class="pc-bc-h">Barcodes on the platforms</div>` + list.map(c => `
-      <div class="pc-bc-opt" data-code="${c.code}" title="Use ${c.code} as if it were pasted · right-click: copy it">
+      <div class="pc-bc-opt" data-code="${c.code}" title="Use ${c.code} as if it were pasted · right-click: add it to the release in the background, on its own · Ctrl+click: copy it">
         <span class="pc-bc-code">${c.code}</span><span class="pc-bc-use">use</span>
         <span class="pc-bc-who">${c.platforms.map(p => `<span class="pc-bc-plat" title="${PROVIDER_NAME[p]}">${stIcon(p, 12)}</span>`).join('')} ${c.platforms.map(p => PROVIDER_NAME[p]).join(', ')}</span>
         ${c.format === 'same' ? `<span class="pc-bc-fmt pc-bc-same">✓ ${mbKind}, like this release</span>`
           : c.format === 'other' ? `<span class="pc-bc-fmt pc-bc-other">⚠ ${c.kinds.join(' and ')}: this release is ${mbKind}</span>` : ''}
         ${pcGtinValid(c.code) ? '' : '<span class="pc-bc-fmt pc-bc-other">⚠ wrong check digit</span>'}
         <span class="pc-bc-fmt pc-bc-mb">checking MusicBrainz…</span>
-      </div>`).join('') + `<div class="pc-bc-hint">Right-click to copy · Ctrl+V a barcode from anywhere else</div>`);
+      </div>`).join('') + `<div class="pc-bc-hint">Right-click to add it on its own, in the background · Ctrl+click to copy · Ctrl+V a barcode from anywhere else</div>`);
     document.body.appendChild(pop);
     const r = btn.getBoundingClientRect();
     pop.style.top = `${r.bottom + 4}px`;
@@ -8211,20 +8238,48 @@ function pcOpenFoundBarcodes(btn) {
         const r = on[0], more = on.length > 1 ? ` and ${on.length - 1} more` : '';
         line.classList.add('pc-bc-other');
         line.innerHTML = mbuHtml(`⚠ already on <a href="${MB_ORIGIN}/release/${r.id}" target="_blank" rel="noopener" title="${pcEsc([r.format, r.date].filter(Boolean).join(' · '))}">${pcEsc(r.title)}</a>${more}`);
-        opt.title = `${opt.dataset.code} is already on another MusicBrainz release — probably that edition's, not this one's · click to use it anyway · right-click: copy it`;
+        opt.dataset.onMb = r.title || r.id;
+        opt.title = `${opt.dataset.code} is already on another MusicBrainz release — probably that edition's, not this one's · click to use it anyway · right-click: add it anyway, in the background · Ctrl+click: copy it`;
     }));
     pop.addEventListener('click', e => {
         if (e.target.closest('a')) return;   // the release it is already on: opened, not picked
         const opt = e.target.closest('.pc-bc-opt'); if (!opt) return;
+        if (e.ctrlKey || e.metaKey) {
+            navigator.clipboard.writeText(opt.dataset.code)
+                .then(() => mbuToast(`Copied ${opt.dataset.code}`), () => mbuToast(`✗ Couldn't copy ${opt.dataset.code}`, { kind: 'error' }));
+            return;
+        }
         off();
         pcPasteBarcode(opt.dataset.code);
     });
+    // #780: right-click adds the barcode to the release on its own, in a background tab
     pop.addEventListener('contextmenu', e => {
         const opt = e.target.closest('.pc-bc-opt'); if (!opt) return;
         e.preventDefault();
-        navigator.clipboard.writeText(opt.dataset.code)
-            .then(() => mbuToast(`Copied ${opt.dataset.code}`), () => mbuToast(`✗ Couldn't copy ${opt.dataset.code}`, { kind: 'error' }));
+        const c = list.find(x => x.code === opt.dataset.code); if (!c) return;
+        off();
+        pcAddBarcodeBg(c, opt.dataset.onMb || null);
     });
+}
+// #780: a barcode from the list straight onto the release, with no links: the release editor opens in a
+// background tab, fills the Barcode field, notes which platforms report it, submits and closes (runInjectHelper).
+// A barcode the list marks with a warning is added only once confirmed.
+function pcAddBarcodeBg(c, onMb) {
+    if (MB_OWN_BARCODE) { mbuToast(`✗ This release already has a barcode (${MB_OWN_BARCODE})`, { kind: 'error' }); return; }
+    const warn = [];
+    if (onMb) warn.push(`it is already on another MusicBrainz release (${onMb})`);
+    if (c.format === 'other') warn.push(`the platforms have it on ${c.kinds.join(' and ')}, and this release is ${[...formatCategories(MB_FORMAT)].join(' and ')}`);
+    if (!pcGtinValid(c.code)) warn.push('its check digit is wrong');
+    if (warn.length && !confirm(`Add barcode ${c.code} to this release anyway?\n\n- ${warn.join('\n- ')}`)) {
+        appendLog('System', `Barcode ${c.code}: not added (${warn.join('; ')})`, 'warn');
+        return;
+    }
+    const from = 'reported by ' + c.platforms.map(p => PROVIDER_NAME[p]).join(', ');
+    try { localStorage.setItem(`pc:bg-barcode:${mbid}`, JSON.stringify({ code: c.code, from })); }
+    catch (e) { mbuToast(`✗ Couldn't queue barcode ${c.code}`, { kind: 'error' }); return; }
+    appendLog('System', `Barcode ${c.code}: adding it in the background, ${from}`, 'ok');
+    mbuToast(`Adding barcode ${c.code} in the background`);
+    openReleaseEditTab(mbid, { background: true, hash: '#pc-autocommit-pc-barcode' });
 }
 // ─── Found catalog numbers (#740) ───────────────────────────────────────────
 // The catalog numbers the matched platforms give (Beatport, Discogs), each for a label the release has
@@ -8490,7 +8545,7 @@ function formatBlocks(platform) {
 //     autoCommit branch does the submit+close, we just wait for its postMessage here.
 //     Only release edits support this (release-group has no plain landing @match to
 //     detect the redirect on), so callers must pass a release mbid.
-function openReleaseEditTab(mbid_, { background = false } = {}) {
+function openReleaseEditTab(mbid_, { background = false, hash = '#pc-autocommit' } = {}) {
     const url = `${MB_ORIGIN}/release/${mbid_}/edit`;
     if (background) {
         if (typeof GM_openInTab !== 'function' || !PC_CHANNEL) {
@@ -8501,7 +8556,7 @@ function openReleaseEditTab(mbid_, { background = false } = {}) {
         // #556: start this run's timeline clean, so the Log shows THIS background
         // add rather than every one since the page loaded.
         pcMarkReset();
-        const bgTab = GM_openInTab(`${url}#pc-autocommit`, { active: false, insert: true });
+        const bgTab = GM_openInTab(`${url}${hash}`, { active: false, insert: true });
         const onCommitted = (e) => {
             if (!e.data || e.data.type !== 'pc-edit-committed' || e.data.mbid !== mbid_) return;
             PC_CHANNEL.removeEventListener('message', onCommitted);

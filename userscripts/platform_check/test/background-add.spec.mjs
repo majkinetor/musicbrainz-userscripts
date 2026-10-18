@@ -107,3 +107,64 @@ test('#559: the Discogs master lands on the release group, in the background', {
   check(await until(() => tab.isClosed(), 120000), 'it submits and is closed');
   check((await linksOf('release-group')).includes(master), `the master is on the release group now (${master})`);
 });
+
+// #780: a barcode from the found-barcodes list, right-clicked: the release editor fills the barcode alone
+// (a link queued for the release stays out, and stays queued), submits, and closes. The release is then
+// given back its empty barcode, through the editor, so the next run starts from the same place.
+const gtin = core => core + String((10 - [...core].reverse().reduce((a, d, i) => a + Number(d) * (i % 2 ? 1 : 3), 0) % 10) % 10);
+const barcodeOf = async () => (await mbJson(`${SANDBOX}/ws/2/release/${REL}?fmt=json`)).barcode;
+// the release's barcode taken off through the editor (also before a run, should an earlier one have stopped half-way)
+async function clearBarcode(page) {
+  await page.goto(`${SANDBOX}/release/${REL}/edit`, { waitUntil: 'domcontentloaded' });
+  await page.waitForSelector('#barcode', { timeout: 60000 });
+  await page.waitForFunction(() => document.getElementById('barcode').value, null, { timeout: 30000 });
+  await page.click('#barcode');
+  await page.keyboard.press('Control+A');
+  await page.keyboard.press('Backspace');
+  await page.keyboard.press('Tab');
+  await page.waitForTimeout(1500);   // the editor binds the change late
+  check(!(await page.inputValue('#barcode')), "the editor's Barcode field is empty");
+  // Enter edit is shown on the edit-note step only; clicked as Platform Check clicks it
+  await page.waitForSelector('#enter-edit:not([disabled])', { state: 'attached', timeout: 30000 });
+  await Promise.all([page.waitForURL(u => !/\/edit/.test(u.pathname), { timeout: 60000 }), page.evaluate(() => document.getElementById('enter-edit').click())]);
+  // taking a barcode off is voted on, not applied: the sandbox's own Accept edit applies it
+  await page.goto(`${SANDBOX}/release/${REL}/open_edits`, { waitUntil: 'domcontentloaded' });
+  const accept = await page.evaluate(() => [...document.querySelectorAll('.edit-list')].filter(e => /Barcode/.test(e.innerText))
+    .map(e => e.querySelector('a[href*="/test/accept-edit/"]')?.getAttribute('href')).filter(Boolean)[0] || null);
+  check(accept, 'the edit taking the barcode off is open, to accept');
+  if (accept) await page.goto(SANDBOX + accept, { waitUntil: 'domcontentloaded' });
+}
+test('#780: a barcode alone lands on the release, in the background', { tag: ['@sandbox', '@login'] }, async ({ page, context }) => {
+  const said = await everyTab(context);
+  await page.goto(`${SANDBOX}/release/${REL}`, { waitUntil: 'domcontentloaded' });
+  await requireLogin(page);
+  if (await barcodeOf()) { await clearBarcode(page); await page.goto(`${SANDBOX}/release/${REL}`, { waitUntil: 'domcontentloaded' }); }
+  await page.waitForFunction(() => !!window.__pcTest464, null, { timeout: 30000 });
+  check(!(await barcodeOf()), 'the release has no barcode yet');
+  const code = gtin('5' + String(Date.now()).slice(-11));   // a new one each run
+  const url = `https://www.deezer.com/album/${1e9 + Date.now() % 1e9}`;
+  await page.evaluate(([id, c, u]) => {
+    localStorage.setItem('pc:bg-barcode:' + id, JSON.stringify({ code: c, from: 'reported by Deezer' }));
+    localStorage.setItem('pc:pending:' + id, JSON.stringify({ deezer: u }));
+  }, [REL, code, url]);
+
+  const opened = context.waitForEvent('page', { timeout: 30000 });
+  await page.evaluate(() => { window.__beforeTheAdd = true; });   // gone once the opener reloads
+  await page.evaluate(id => window.__pcTest464.openReleaseEditTab(id, { background: true, hash: '#pc-autocommit-pc-barcode' }), REL);
+  const tab = await opened;
+  check(await hiddenEditTab(said), 'a hidden background tab opens the editor');
+  check(await until(() => tab.isClosed(), 120000), 'it submits and is closed');
+  check((await barcodeOf()) === code, `the barcode is on the release now (${code})`);
+  check(!(await linksOf('release')).includes(url), 'the queued link is not');
+  let reloaded = false;
+  for (const t0 = Date.now(); !reloaded && Date.now() - t0 < 30000; await new Promise(r => setTimeout(r, 500))) {
+    reloaded = await page.evaluate(() => !window.__beforeTheAdd && document.readyState !== 'loading').catch(() => false);
+  }
+  check(reloaded, 'the opener reloads');
+  const left = await page.evaluate(id => ({ bc: localStorage.getItem('pc:bg-barcode:' + id), links: localStorage.getItem('pc:pending:' + id) }), REL);
+  check(!left.bc && (left.links || '').includes(url), `the barcode is consumed, the link still queued (${JSON.stringify(left)})`);
+  await page.evaluate(id => localStorage.removeItem('pc:pending:' + id), REL);
+
+  await clearBarcode(page);
+  check(!(await barcodeOf()), 'the barcode is taken off again');
+});
