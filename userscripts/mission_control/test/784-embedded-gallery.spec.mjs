@@ -45,6 +45,15 @@ test('#784: the gallery shows in the card, scrolls with it and goes full screen'
   check(fit.low <= fit.h, `the gallery's lowest part is inside the frame (${JSON.stringify(fit)})`);
   check(fit.clear, `take in sits left of the NEW ribbon (${JSON.stringify(fit)})`);
   await page.screenshot({ path: 'test-results/mc-784-embedded.png' });
+  // a store's take all in takes in each of its images, after the covers
+  const all = await fr.evaluate(async () => {
+    const b = document.querySelector('.as-more-all'), p = b && b.dataset.prov;
+    const n = document.querySelectorAll('.as-sec-more + .as-grid .as-card').length;
+    b.click();
+    await new Promise(r => setTimeout(r, 300));
+    return { p, n, left: document.querySelectorAll('.as-sec-more + .as-grid .as-card').length, last: !!document.querySelector('.as-grid .as-card.new:not(.del)') };
+  });
+  check(all.p && all.n > 0 && all.left === 0 && all.last, `take all in takes in every ${all.p} image (${JSON.stringify(all)})`);
 
   // the wheel over the gallery scrolls Mission Control, and the frame follows the slot
   const scroller = () => page.evaluate(() => { let n = document.getElementById('mc-as-slot').parentElement; while (n && n.scrollHeight <= n.clientHeight) n = n.parentElement; return n ? n.scrollTop : -1; });

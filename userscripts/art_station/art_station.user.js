@@ -1271,15 +1271,22 @@
   }
   function deletedSection() {
     // #784: the stores' other images Mission Control's frame keeps left out have a section of their own
-    const sec = (dels, title, cls) => {
+    const sec = (dels, title, cls, extra) => {
       if (!dels.length) return '';
       const body = SETTINGS.detailed   // match the current view — detail rows, not grid cards
         ? `<div class="as-dlist">${dels.map(detailRow).join('')}</div>`
         : `<div class="as-grid">${dels.map(card).join('')}</div>`;
-      return `<div class="as-sec ${cls}"><h3>${title}</h3><span class="as-cnt">${dels.length}</span><span class="as-line"></span></div>${body}`;
+      return `<div class="as-sec ${cls}"><h3>${title}</h3><span class="as-cnt">${dels.length}</span>${extra || ''}<span class="as-line"></span></div>${body}`;
     };
     const dels = MODEL.filter(it => it._del);
-    return sec(dels.filter(it => !it._mcOffer), 'Marked for removal', 'as-sec-del') + sec(dels.filter(it => it._mcOffer).sort((a, b) => a.order - b.order), 'More images: take in, then drag into place', 'as-sec-del as-sec-more');
+    // a row per store (the one with the larger images first), each with its take all in
+    const offer = dels.filter(it => it._mcOffer).sort((a, b) => a.order - b.order), stores = [];
+    offer.forEach(it => { const p = it._provider || 'Other'; let g = stores.find(x => x.p === p); if (!g) stores.push(g = { p, xs: [] }); g.xs.push(it); });
+    const area = g => Math.max(...g.xs.map(x => (x.w || 0) * (x.h || 0)));
+    stores.sort((a, b) => area(b) - area(a));
+    return sec(dels.filter(it => !it._mcOffer), 'Marked for removal', 'as-sec-del')
+      + stores.map(g => sec(g.xs, `More images · ${esc(g.p)}: take in, then drag into place`, 'as-sec-del as-sec-more',
+        `<button class="as-btn as-more-all" data-prov="${esc(g.p)}" title="Take in every ${esc(g.p)} image, after the covers">＋ take all in</button>`)).join('');
   }
   // Stable CAA thumbnails are HTTP-cached, so recreating their <img> on each
   // render is cheap and flicker-free. NEW (blob) and PENDING (no CAA thumb yet →
@@ -1548,12 +1555,21 @@
     // left click genuinely calls enterEdit() with no argument (falsy).
     const commit = root.querySelector('.as-commit'); if (commit && !commit.disabled) { commit.onclick = () => enterEdit(); commit.oncontextmenu = e => { e.preventDefault(); enterEdit(true); }; }   // #493: right-click — skip the review dialog
 
+    // #784: a store image taken in goes last, to be dragged into place from there; the best front goes in typed Front
+    const takeIn = xs => {
+      xs.forEach(it => { it._del = false; if (it === _mcBest && !(it.types || []).includes('Front')) it.types = ['Front'].concat(it.types || []); });
+      const seq = MODEL.filter(x => !xs.includes(x)).sort((a, b) => a.order - b.order).concat(xs); seq.forEach((x, i) => x.order = i);
+    };
     root.querySelectorAll('.as-undo').forEach(b => b.onclick = e => {
       e.stopPropagation(); const it = byId(cardId(e.target)); if (!it) return;
-      it._del = false;
-      // #784: a store image taken in goes last, to be dragged into place from there; the best front goes in typed Front
-      if (it._mcOffer && it === _mcBest && !(it.types || []).includes('Front')) it.types = ['Front'].concat(it.types || []);
-      if (it._mcOffer) { const seq = MODEL.filter(x => x !== it).sort((a, b) => a.order - b.order); seq.push(it); seq.forEach((x, i) => x.order = i); }
+      if (it._mcOffer) takeIn([it]); else it._del = false;
+      render();
+    });
+    root.querySelectorAll('.as-more-all').forEach(b => b.onclick = e => {
+      e.stopPropagation();
+      const xs = MODEL.filter(it => it._del && it._mcOffer && (it._provider || 'Other') === b.dataset.prov).sort((a, c) => a.order - c.order);
+      takeIn(xs);
+      asLog.info(`Mission Control: took in every ${b.dataset.prov} image (${xs.length})`);
       render();
     });
     root.querySelectorAll('.as-only').forEach(b => b.onclick = e => { e.stopPropagation(); keepOnly(byId(cardId(b))); });
@@ -6349,6 +6365,7 @@
   .as-commit{background:var(--as-acc);color:var(--mbu-text-on-accent);border-color:var(--as-acc);font-weight:600}
   .as-commit:disabled{opacity:.45;cursor:default}
   .as-sec{margin:14px 0 4px;display:flex;align-items:center;gap:8px}
+  #as-root .as-more-all{padding:2px 9px;font-size:12px}
   .as-sec h3{margin:0;font-size:13px;letter-spacing:.04em;text-transform:uppercase;color:var(--mbu-accent-text)}
   .as-sec-del h3{color:var(--as-warn)}
   .as-cnt{font-size:12px;color:var(--mbu-accent-text)}
