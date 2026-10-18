@@ -4,6 +4,10 @@
 //
 // The frame here gets a clearInterval that does nothing, as Firefox's did. The release is linked to a Discogs release
 // with a front and a back (the real store, so @web); every POST is aborted, so nothing is uploaded.
+//
+// The back is in this release's archive too (772-mc-dup-unprocessed needs it there), and since #784 a store image
+// already in the archive can't be taken in. The first spec compares nothing with the archive, so the back is offered
+// as new and can be taken in for Execute.
 import { test, check, until, requireLogin, SANDBOX } from '../../../dev/test/harness.mjs';
 import { blockPosts } from './as.mjs';
 
@@ -12,6 +16,7 @@ test.use({ gm: { name: 'Art Station' } });
 const quick = code => code
   .replace('function arDelayMs(attempt) {', 'function arDelayMs(attempt) { return 300;')
   .replace('const arTimes = () =>', 'const arTimes = () => 1 || ');
+const noArchive = code => quick(code).replace('const a = arch.find(', 'const a = null && arch.find(');
 const REL = '1c0d1707-e032-48a4-acd8-dbaac77be17f';   // Journey Inwards, linked to discogs.com/release/1118432
 
 test('#772: the frame sources once, so the images offered are there at Execute', { tag: ['@sandbox', '@login', '@web'] }, async ({ page, inject }) => {
@@ -30,7 +35,7 @@ test('#772: the frame sources once, so the images offered are there at Execute',
   const fr = await until(() => page.frames().find(f => /mc_frame=/.test(f.url())) || null, Boolean, { timeout: 60000 });
   await fr.waitForLoadState('domcontentloaded');
   await fr.evaluate(() => { window.clearInterval = () => {}; });
-  await inject('art_station', { target: fr, transform: quick });
+  await inject('art_station', { target: fr, transform: noArchive });
   await page.waitForFunction(() => window.__f, null, { timeout: 150_000, polling: 500 });
   const extras = await until(() => fr.evaluate(() => window.__asTest.mc.model().filter(x => x._mcPool && x._mcKey).map(x => x._mcKey)), v => v.includes('Discogs#2'));
   console.log('offered', JSON.stringify(extras));
