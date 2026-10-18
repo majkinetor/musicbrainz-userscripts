@@ -880,7 +880,38 @@
     asLog.info(`Loaded ${MODEL.length} ${MODEL.length === 1 ? ITEM : ITEMS}`);
     MODEL.forEach(measure);   // lazy-fill dimensions
     loadSizes();              // lazy-fill file sizes (single archive.org request)
+    loadOpenRemovals();       // #787 the covers with a remove edit open for votes
   }
+  // #787: a cover with a remove edit open for votes says so on its card, with a link to the edit. One read of the
+  // open-edits page, by its structure (MusicBrainz translates the labels): an open remove edit's header, its link,
+  // the image link with the artwork id, and the closing time in the expiration tooltip
+  async function loadOpenRemovals() {
+    try {
+      const r = await mbnFetch(`${ENT.base}/open_edits`, { credentials: 'same-origin' }, { log: (l, m) => asLog[l === 'warn' ? 'warn' : 'info'](m) });
+      if (!r || !r.ok) { asLog.debug(`Open removals: no open-edits page (HTTP ${r ? r.status : 'failed'})`); return; }
+      const doc = new DOMParser().parseFromString(await r.text(), 'text/html');
+      let n = 0;
+      doc.querySelectorAll('.edit-list').forEach(e => {
+        if (!e.querySelector(`.edit-header.open.remove-${ENT.art}`)) return;
+        const a = e.querySelector('.edit-header a[href*="/edit/"]'), img = e.querySelector('a.artwork-image');
+        const edit = a && (a.getAttribute('href').match(/\/edit\/(\d+)/) || [])[1];
+        const id = img && (img.getAttribute('href').match(/\/(\d+)\.[a-z0-9]+$/i) || [])[1];
+        const it = id && MODEL.find(x => !x._new && String(x.id) === id);
+        if (!edit || !it) return;
+        const t = e.querySelector('.edit-expiration [title]'), until = t ? Date.parse(t.getAttribute('title').replace(' UTC', 'Z').replace(' ', 'T')) : NaN;
+        it._rmOpen = { edit, until };
+        if (it._del && !it._mcOffer) it._del = false;   // already entered: nothing to remove again
+        n++;
+      });
+      if (n) { asLog.info(`Open removals: ${n} ${n === 1 ? ITEM : ITEMS} with a remove edit open for votes`); render(); }
+    } catch (e) { asLog.debug('Open removals: ' + (e && e.message)); }
+  }
+  const rmOpenChip = it => {
+    if (!it._rmOpen) return '';
+    const d = Math.ceil((it._rmOpen.until - Date.now()) / 86400000);
+    const left = isNaN(d) ? '' : d <= 0 ? ' · closing' : ` · ${d} day${d === 1 ? '' : 's'}`;
+    return `<a class="as-rmopen" href="/edit/${esc(it._rmOpen.edit)}" target="_blank" rel="noopener" title="Edit #${esc(it._rmOpen.edit)}: a removal open for votes${isNaN(it._rmOpen.until) ? '' : ', closes ' + esc(new Date(it._rmOpen.until).toLocaleString())}">removal open${left}</a>`;
+  };
   function measure(it) {
     if (it.w || (it._new && it._pdf)) return;          // measured already, or a PDF (no pixel dims)
     const src = it._new ? it._file : imgUrl(it.id);     // new covers measure from the local object URL
@@ -1135,7 +1166,7 @@
     // #238 Detailed view: a flat list, image left + all type checkboxes & the full
     // comment beside it (read long comments / see every type without the popover).
     const body = SETTINGS.detailed
-      ? `<div class="as-dlist">${MODEL.filter(it => !it._del).slice().sort(sortFn).map(detailRow).join('')}</div>`
+      ? `<div class="as-dlist">${MODEL.filter(inGallery).slice().sort(sortFn).map(detailRow).join('')}</div>`
       : SETTINGS.group
         ? groups.map(g => groupRow(g.type, g.items)).join('')   // compact: label column + cards beside it
         : groups.map(g => section(g.type, g.items)).join('');
@@ -1179,14 +1210,17 @@
     return `<datalist id="as-cmt-presets">${seen.map(c => `<option value="${esc(c)}"></option>`).join('')}</datalist>`;
   }
 
+  // #787: a cover marked for removal stays in its place; only the stores' images Mission Control's frame keeps left
+  // out wait in a section of their own
+  const inGallery = it => !it._del || !it._mcOffer;
   function grouped() {
     if (!SETTINGS.group) {
       // Position view (committed order): new uploads sit INLINE, positioned among covers
-      const items = MODEL.filter(it => !it._del).slice().sort(sortFn);
+      const items = MODEL.filter(inGallery).slice().sort(sortFn);
       return [{ type: null, items }];
     }
     // group mode is view-only; new uploads get their own section on top (see newSection)
-    let items = MODEL.filter(it => !it._del && !it._new);
+    let items = MODEL.filter(it => inGallery(it) && !it._new);
     // group by primary type; untyped → NO_TYPE; order groups by TYPE_ORDER then alpha
     const map = new Map();
     for (const it of items) { const t = (it.types[0] || NO_TYPE); if (!map.has(t)) map.set(t, []); map.get(t).push(it); }
@@ -1264,7 +1298,7 @@
     // group view excludes _new covers from the type groups, so the New uploads section
     // is the ONLY place they show — include in-progress sourcing placeholders too, or
     // a URL/provider/MH import would add nothing visible while it works.
-    const news = MODEL.filter(it => it._new && !it._del).sort((a, b) => a.order - b.order);
+    const news = MODEL.filter(it => it._new && inGallery(it)).sort((a, b) => a.order - b.order);
     if (!news.length) return '';
     return `<div class="as-sec as-sec-new"><h3>New uploads</h3><span class="as-cnt">${news.length}</span><span class="as-line"></span></div>
       <div class="as-grid">${news.map(card).join('')}</div>`;
@@ -1284,8 +1318,7 @@
     offer.forEach(it => { const p = it._provider || 'Other'; let g = stores.find(x => x.p === p); if (!g) stores.push(g = { p, xs: [] }); g.xs.push(it); });
     const area = g => Math.max(...g.xs.map(x => (x.w || 0) * (x.h || 0)));
     stores.sort((a, b) => area(b) - area(a));
-    return sec(dels.filter(it => !it._mcOffer), 'Marked for removal', 'as-sec-del')
-      + stores.map(g => { const k = g.xs.filter(x => !x._mcDup).length; return sec(g.xs, `More images · ${esc(g.p)}: take in, then drag into place`, 'as-sec-del as-sec-more',
+    return stores.map(g => { const k = g.xs.filter(x => !x._mcDup).length; return sec(g.xs, `More images · ${esc(g.p)}: take in, then drag into place`, 'as-sec-del as-sec-more',
         !k ? '' : _mcChecking ? `<button class="as-btn as-more-all" disabled title="checking for duplicates…">＋ take all in</button>`
           : `<button class="as-btn as-more-all" data-prov="${esc(g.p)}" title="Take in every ${esc(g.p)} image that isn't a duplicate, after the covers">＋ take all in${k < g.xs.length ? ` (${k})` : ''}</button>`); }).join('');
   }
@@ -1352,11 +1385,11 @@
   function card(it) {
     if (it._sourcing) return `<div class="as-card new as-sourcing" data-id="${esc(it.id)}" title="${esc(it._srcLabel || 'Sourcing…')}">`
       + `<div class="as-srcing-thumb"><div class="as-spinner"></div><div class="as-srcing-lbl">${esc(it._srcLabel || 'Sourcing…')}</div></div></div>`;
-    return `<div class="as-card${it._del?' del':''}${it._new?' new':''}${it._sel?' sel':''}${it._pending?' pending':''}" data-id="${esc(it.id)}" ${(!it._del && canReorder())?'draggable="true"':''}>
+    return `<div class="as-card${it._del?' del':''}${it._del && !it._mcOffer?' rm':''}${it._rmOpen?' rmopen':''}${it._new?' new':''}${it._sel?' sel':''}${it._pending?' pending':''}" data-id="${esc(it.id)}" ${(!it._del && canReorder())?'draggable="true"':''}>
       <div class="as-thumb"${uploadTip(it)}>${thumbImg(it, SETTINGS.tile > 260 ? 500 : 250)}
-        ${it._new ? '<span class="as-newban">NEW</span>' : ''}
+        ${it._del && !it._mcOffer ? '<span class="as-newban as-rmban">REMOVE</span>' : it._new ? '<span class="as-newban">NEW</span>' : ''}
         ${it._pdf ? '<span class="as-pdfban" title="PDF — opens in a new tab">PDF</span>' : ''}
-        ${provBadge(it)}
+        ${provBadge(it)}${rmOpenChip(it)}
         ${it._del ? (it._mcOffer ? (it._mcDup ? '' : `<button class="as-tbtn as-undo"${_mcChecking ? ' disabled title="checking for duplicates…"' : ' title="take this image in"'}>＋ take in</button>`) : '<button class="as-tbtn as-undo" title="keep this image">↺ keep</button>') : ''}
         ${it._mcDup ? `<span class="as-mcdup" title="the same picture as ${esc(it._mcDup.replace(/^= /, ''))}">${esc(it._mcDup)}</span>` : ''}
         ${onlyBtn(it)}
@@ -1407,10 +1440,10 @@
     if (it._sourcing) return `<div class="as-drow new as-sourcing" data-id="${esc(it.id)}" title="${esc(it._srcLabel || 'Sourcing…')}">
       <div class="as-dthumb as-srcing-thumb"><div class="as-spinner"></div></div>
       <div class="as-dmeta"><div class="as-srcing-lbl">${esc(it._srcLabel || 'Sourcing…')}</div></div></div>`;
-    if (it._del) return `<div class="as-drow del" data-id="${esc(it.id)}">
+    if (it._del) return `<div class="as-drow del${it._mcOffer ? '' : ' rm'}" data-id="${esc(it.id)}">
       <span class="as-dsel-x">✕</span>
       <div class="as-dleft">
-        <div class="as-dthumb">${it._new ? '<span class="as-newban">NEW</span>' : ''}${thumbImg(it, 250)}${it._pdf ? '<span class="as-pdfban">PDF</span>' : ''}</div>
+        <div class="as-dthumb">${!it._mcOffer ? '<span class="as-newban as-rmban">REMOVE</span>' : it._new ? '<span class="as-newban">NEW</span>' : ''}${thumbImg(it, 250)}${it._pdf ? '<span class="as-pdfban">PDF</span>' : ''}</div>
         <div class="as-dcap"><span class="as-dim">${esc(dimText(it))}</span></div>
         ${it._new ? '' : `<div class="as-did">#${esc(it.id)}</div>`}
       </div>
@@ -1423,7 +1456,7 @@
     return `<div class="as-drow${it._new ? ' new' : ''}${it._pending ? ' pending' : ''}${it._sel ? ' sel' : ''}" data-id="${esc(it.id)}">
       <input type="checkbox" class="as-dsel" title="select"${it._sel ? ' checked' : ''}>
       <div class="as-dleft">
-        <div class="as-dthumb"${uploadTip(it)}>${it._new ? '<span class="as-newban">NEW</span>' : ''}${thumbImg(it, 250)}${provBadge(it)}${it._pdf ? '<span class="as-pdfban" title="PDF — opens in a new tab">PDF</span>' : ''}</div>
+        <div class="as-dthumb"${uploadTip(it)}>${it._new ? '<span class="as-newban">NEW</span>' : ''}${thumbImg(it, 250)}${provBadge(it)}${rmOpenChip(it)}${it._pdf ? '<span class="as-pdfban" title="PDF — opens in a new tab">PDF</span>' : ''}</div>
         <div class="as-dcap"><span class="as-dim">${esc(dimText(it))}</span></div>
         ${it._new ? '' : `<div class="as-did">#${esc(it.id)}</div>`}
       </div>
@@ -1633,7 +1666,7 @@
     const q = s => root.querySelector(s);
     q('.as-selall') && (q('.as-selall').onclick = () => { selectable().forEach(it => it._sel = true); root.querySelectorAll('.as-card:not(.del), .as-drow').forEach(c => c.classList.add('sel')); root.querySelectorAll('.as-dsel').forEach(cb => cb.checked = true); syncSel(); });
     q('.as-selclr') && (q('.as-selclr').onclick = () => clearSel());
-    q('.as-bk-rm')  && (q('.as-bk-rm').onclick  = () => { let n = 0; MODEL.forEach(it => { if (it._sel) { it._del = true; it._sel = false; n++; } }); asLog.info(`Batch: marked ${n} ${n === 1 ? ITEM : ITEMS} for removal`); render(); });
+    q('.as-bk-rm')  && (q('.as-bk-rm').onclick  = () => { let n = 0; MODEL.forEach(it => { if (it._sel && !it._rmOpen) { it._del = true; it._sel = false; n++; } }); asLog.info(`Batch: marked ${n} ${n === 1 ? ITEM : ITEMS} for removal`); render(); });
     q('.as-bk-dl')  && (q('.as-bk-dl').onclick  = async e => {
       const sel = MODEL.filter(it => it._sel && !it._del && !it._sourcing); if (!sel.length) return;   // include NEW covers (download their local blob)
       if (sel.length === 1) { dlOne(sel[0]); maybeClearSel(); return; }   // single → save the image directly
@@ -4735,6 +4768,7 @@
   // the next cover — or close the lightbox if that was the last one.
   function deleteLbCover() {
     const it = byId(_lb); if (!it) return;
+    if (it._rmOpen) { toast(`Its removal is open for votes already (edit #${it._rmOpen.edit})`); return; }   // #787
     const seq = visible().filter(x => !x._pdf);
     const i = seq.findIndex(x => String(x.id) === String(_lb));
     it._del = true; it._sel = false; _lbDirty = true;
@@ -4903,6 +4937,7 @@
     else if ((e.key === 'Delete' || e.key === 'Backspace') && _cursorId) {   // mark the focused cover for removal (mirrors the viewer's Del)
       e.preventDefault();
       const it = byId(_cursorId); if (!it || it._del) return;
+      if (it._rmOpen) { toast(`Its removal is open for votes already (edit #${it._rmOpen.edit})`); return; }   // #787
       const cards = [...root.querySelectorAll('.as-card:not(.del)')];
       const i = cards.findIndex(c => c.dataset.id === String(_cursorId));
       it._del = true; it._sel = false;
@@ -6482,6 +6517,16 @@
   /* the NEW ribbon owns the top-right corner: what else sits there moves left of it, above it */
   .as-tbtn,.as-pdfban{z-index:6}
   .as-card.new .as-tbtn,.as-card.new .as-pdfban,.as-dthumb .as-newban~.as-pdfban{right:44px}
+  /* #787 marked for removal: in its place, grey on red, a REMOVE ribbon and its type struck through; a removal open
+     for votes: a red dashed border and a chip linking to the edit */
+  .as-card.rm,.as-drow.rm{background:var(--mbu-error-bg);border-color:var(--mbu-error-border);opacity:1}
+  .as-card.rm .as-thumb img,.as-drow.rm .as-dthumb img{filter:grayscale(1);opacity:.55}
+  .as-card.rm .as-type,.as-drow.rm .as-ddel-lbl{text-decoration:line-through;color:var(--mbu-error);border-color:var(--mbu-error-border)}
+  .as-card.rm .as-tbtn,.as-drow.rm .as-dthumb .as-newban~.as-pdfban{right:44px}
+  .as-rmban{background:var(--mbu-error)}
+  .as-card.rmopen{border:1.5px dashed var(--mbu-error);background:var(--mbu-error-bg)}
+  .as-rmopen{position:absolute;left:6px;bottom:6px;z-index:5;background:var(--mbu-error);color:var(--mbu-text-on-accent);font:600 11px var(--mbu-font);border-radius:4px;padding:1px 6px;text-decoration:none;white-space:nowrap}
+  .as-rmopen:hover{text-decoration:underline;color:var(--mbu-text-on-accent)}
   .as-only{position:absolute;top:6px;left:6px;z-index:6;border:1px solid var(--mbu-border);border-radius:var(--mbu-radius);background:var(--mbu-bg);color:var(--mbu-accent-text);cursor:pointer;font:600 12px/1 var(--mbu-font);padding:5px 8px;box-shadow:0 1px 3px rgba(0,0,0,.25);opacity:0;transition:opacity .1s}
   .as-card:hover .as-only,.as-only:focus-visible{opacity:1}
   .as-only:hover{background:var(--mbu-bg-hover);border-color:var(--mbu-accent)}

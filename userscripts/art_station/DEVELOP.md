@@ -22,6 +22,10 @@ On the add page, `x_seed.image.<n>.url` / `.types` / `.comment` and `x_seed.orig
 2. **Upload** — `POST <action>` (an archive.org S3 URL) as **multipart**: the returned `formdata` policy fields + the file. Uses `XMLHttpRequest` for the upload progress, which also feeds the commit window's upload rate (#698), and the *Upload timeout* setting (#560); the live XHR is registered on the run's `AbortController` so **Cancel** aborts it mid-upload. Runs in **parallel** (concurrency 4).
 3. **Register** — `POST /release/<mbid>/add-<art>` with `add-<art>.id` (= `image_id`), `.nonce`, `.mime_type`, `.position`, `.type_id` (repeated per type), `.comment`, `.edit_note`. Creates the *add artwork* edit. Also runs in **parallel** (#362).
 
+### Open removals
+
+The covers with a remove edit open for votes ([#787](https://github.com/majkinetor/musicbrainz-userscripts/issues/787)) come from one read of `<release>/open_edits` per gallery, through the browser-check gate. MusicBrainz translates its labels, so the page is read by structure: an `.edit-list` whose header is `.edit-header.open.remove-<art>`, the edit's `/edit/<n>` link, the artwork id from the `a.artwork-image` link (`…/<id>.<ext>`), and the closing time from the `title` (`YYYY-MM-DD HH:MM UTC`) of `.edit-expiration [title]`. Only the first page is read. Such a cover gets `_rmOpen = { edit, until }`: a chip on its card, and it can't be marked for removal again (it still counts in the reorder).
+
 ### Ordering — the reorder edit
 
 `add-<art>.position` only places the whole upload as **one group**, so it does *not* reliably interleave several new covers (or a new cover slotted among existing ones). A single **reorder** edit fixes it:
