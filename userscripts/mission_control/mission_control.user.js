@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Mission Control
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.18.195122
+// @version      2026.10.18.203638
 // @description  One window on the release page that asks the other scripts (Platform Check, ISRC Scout, Art Station, Fusion, Credit Hoarder) what is missing, shows it all in one review, and applies the selected changes in order.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5NaXNzaW9uIENvbnRyb2w8L3RpdGxlPgo8ZGVmcz48ZmlsdGVyIGlkPSJtY28xMy1oIiB4PSItMTAlIiB5PSItMTAlIiB3aWR0aD0iMTIwJSIgaGVpZ2h0PSIxMjAlIj48ZmVNb3JwaG9sb2d5IGluPSJTb3VyY2VBbHBoYSIgb3BlcmF0b3I9ImRpbGF0ZSIgcmFkaXVzPSIxLjUiIHJlc3VsdD0iZCIvPjxmZUZsb29kIGZsb29kLWNvbG9yPSIjZmZmIiBmbG9vZC1vcGFjaXR5PSIuNyIvPjxmZUNvbXBvc2l0ZSBpbjI9ImQiIG9wZXJhdG9yPSJpbiIvPjxmZU1lcmdlPjxmZU1lcmdlTm9kZS8+PGZlTWVyZ2VOb2RlIGluPSJTb3VyY2VHcmFwaGljIi8+PC9mZU1lcmdlPjwvZmlsdGVyPjwvZGVmcz48ZyBmaWx0ZXI9InVybCgjbWNvMTMtaCkiPjxwYXRoIGQ9Ik03NyAzNS41IEw2NCA0MyBMNTEgMzUuNSBMNTEgMjAuNSBMNjQgMTMgTDc3IDIwLjVaIiBmaWxsPSIjN2E1N2U4IiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik01OS43IDc3LjUgTDQ2LjcgODUgTDMzLjcgNzcuNSBMMzMuNyA2Mi41IEw0Ni43IDU1IEw1OS43IDYyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik05NC4zIDc3LjUgTDgxLjMgODUgTDY4LjMgNzcuNSBMNjguMyA2Mi41IEw4MS4zIDU1IEw5NC4zIDYyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik00Mi4zIDEwNy41IEwyOS40IDExNSBMMTYuNCAxMDcuNSBMMTYuNCA5Mi41IEwyOS40IDg1IEw0Mi4zIDkyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik03NyAxMDcuNSBMNjQgMTE1IEw1MSAxMDcuNSBMNTEgOTIuNSBMNjQgODUgTDc3IDkyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik0xMTEuNiAxMDcuNSBMOTguNiAxMTUgTDg1LjcgMTA3LjUgTDg1LjcgOTIuNSBMOTguNiA4NSBMMTExLjYgOTIuNVoiIGZpbGw9IiNmZmM5NGEiIHN0cm9rZT0iIzIyMjIzYiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PC9nPgo8L3N2Zz4K
@@ -918,11 +918,18 @@ function mcStyle() {
         + '.mc-fxo{display:inline-flex;align-items:center;gap:4px;font:inherit;font-size:11px;font-weight:700;padding:1px 8px;border-radius:20px;cursor:pointer;color:var(--mbu-warn);background:var(--mbu-warn-bg);border:1px solid var(--mbu-warn-border)}'
         + '.mc-fxgo{display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;padding:0;border-radius:8px;cursor:pointer;background:transparent;border:1px solid transparent}.mc-fxgo:hover,.mc-fxgo:focus-visible{background:var(--mbu-bg);border-color:var(--mbu-accent)}.mc-fxgo img{width:20px;height:20px;display:block}'
         + '.mc-fxo.same{color:var(--mbu-text-weak);background:transparent;border-color:var(--mbu-border)}'
+        // #782: the lines under a track are rows of the Tracks table, each value in its column: no box, no background;
+        // a box's or a taken value's text starts where the track's own does (padding and border offset by the margin)
+        + '.mc-tbl tr.mc-pfr{cursor:default}.mc-tbl tr.mc-pfr>td,.mc-tbl tr.mc-pfr:hover>td{background:none;border-bottom:none;padding-top:2px;padding-bottom:2px;white-space:normal}'
+        + '.mc-tbl tr.mc-pfr.last>td{padding-bottom:8px;border-bottom:1px solid var(--mbu-divider)}.mc-tbl tr.mc-pfr>td:first-child{box-shadow:inset 3px 0 0 var(--mbu-accent)}.mc-tbl tbody tr.pfopen>td{border-bottom:none}'
         + '.mc-pft{font:inherit;color:inherit;background:transparent;border:1px solid transparent;border-radius:6px;padding:2px 6px;margin:-3px -7px;cursor:pointer;text-align:left}.mc-pft:hover{border-color:var(--mbu-accent);background:var(--mbu-bg)}'
-        + '.mc-pft.on{border-color:var(--mbu-ok);background:var(--mbu-ok-bg,var(--mbu-bg));box-shadow:inset 3px 0 0 var(--mbu-ok)}.mc-pft.on::after{content:" ✓";color:var(--mbu-ok)}'
-        + '.mc-pftbl .plats{text-align:right;white-space:nowrap}.mc-pftbl td.plats .mcc-icos{gap:4px}.mc-pftbl tr.own td{background:var(--mbu-bg-raised)}.mc-pf-in{font:inherit;width:100%;min-width:220px;box-sizing:border-box;padding:3px 6px;border:1px solid var(--mbu-border);border-radius:6px;background:var(--mbu-bg);color:var(--mbu-text)}'
-        + '.mc-pf-in.mono{min-width:70px;width:80px;font-family:var(--mbu-font-mono)}.mc-pf-in:focus{outline:none;border-color:var(--mbu-accent)}.mc-pfrec{white-space:nowrap;font-size:11.5px}'
-        + '.mc-pfw{display:inline-flex;align-items:center;gap:6px;white-space:nowrap}.mc-fxtbl .hl,.mc-fxm .hl{background:var(--mbu-warn-bg);color:var(--mbu-warn);border-radius:3px;padding:0 2px}.mc-fxtbl .hl.gap,.mc-fxm .hl.gap{display:inline-block;width:6px;height:1em;vertical-align:-2px;padding:0;border:1px dashed var(--mbu-warn-border)}'
+        + '.mc-pft.on{border-color:var(--mbu-ok);background:var(--mbu-ok-bg,var(--mbu-bg))}.mc-pft.on::after{content:" ✓";color:var(--mbu-ok)}'
+        + '.mc-pf-in{font:inherit;width:calc(100% + 8px);margin-left:-8px;box-sizing:border-box;padding:3px 7px;border:1px solid var(--mbu-border);border-radius:6px;background:var(--mbu-bg);color:var(--mbu-text)}'
+        + '.mc-pf-in.mono{width:64px;font-family:var(--mbu-font-mono)}.mc-pf-in:focus{outline:none;border-color:var(--mbu-accent)}'
+        + '.mc-pfa{display:inline-flex;align-items:center;gap:8px;white-space:nowrap;font-size:11.5px}.mc-pfa label{display:inline-flex;align-items:center;gap:4px;cursor:pointer}'
+        + '.mc-pfrev{width:30px;height:30px;padding:0;font-size:17px;line-height:1;color:var(--mbu-accent-text);background:none;border:1px solid transparent;border-radius:6px;cursor:pointer}.mc-pfrev:hover,.mc-pfrev:focus-visible{background:var(--mbu-accent-soft);border-color:var(--mbu-border-strong)}.mc-pfrev.void{visibility:hidden}'
+        + '.mc-tbl tr.mc-pfr .mcc-icos{gap:4px}.mc-tbl tr.mc-pfr .mono{white-space:nowrap}.mc-tbl td[data-col="plat"]{white-space:normal;min-width:120px}.mc-tbl tbody tr.pfopen td.ttl,.mc-tbl tr.mc-pfr td.ttl{min-width:200px}'
+        + '.mc-pfw{display:inline-flex;align-items:center;gap:6px;white-space:nowrap}.mc-fxtbl .hl,.mc-fxm .hl,.mc-pfr .hl{background:var(--mbu-warn-bg);color:var(--mbu-warn);border-radius:3px;padding:0 2px}.mc-fxtbl .hl.gap,.mc-fxm .hl.gap,.mc-pfr .hl.gap{display:inline-block;width:6px;height:1em;vertical-align:-2px;padding:0;border:1px dashed var(--mbu-warn-border)}'
         + '.mc-fxo:hover{border-color:var(--mbu-warn)}.mc-fxp{font-size:11px;font-weight:700;color:var(--mbu-warn);text-decoration:none}.mc-fxp:hover{text-decoration:underline}'
         + '.mc-fxo .car{display:inline-block;transition:transform .15s}.mc-fxo[aria-expanded="true"] .car{transform:rotate(90deg)}'
         + '.mc-tbl tr.mc-fxd{cursor:default}.mc-tbl tr.mc-fxd>td,.mc-tbl tr.mc-fxd:hover>td{background:var(--mbu-bg-sunken);white-space:normal;padding:10px 12px 12px 40px}'
@@ -1343,29 +1350,32 @@ function pfPill(x) {
     return '<button type="button" class="mc-fxo' + (d ? '' : ' same') + '" data-act="fx-pf" data-key="' + esc(x.key) + '" aria-expanded="' + open + '" title="' + esc((d ? 'The platforms\' title: ' + x.title + ' (' + x.titleFrom + ')' : 'The platforms agree with the title (' + x.titleFrom + ')') + '\n' + (open ? 'Hide' : 'Show') + ' what each platform gives: a click on a title or a length takes it in') + '">'
         + '<span class="car">▸</span>' + (d ? '≠ title' : '✓') + '</button>';
 }
-function pfDetail(x, t) {
+// the lines under a track, as rows of the Tracks table: the track's own (what it gets, typed in), then one per version
+// (the platforms giving the same title, length and ISRC), each value in its column, the platforms under Platforms
+function pfRows(x, t, heads) {
     const i = pfIndex(x), p = CMP.picks[i] || {}, own = pfMs(t.len);
     const take = (what, k, inner, val, tip) => {
         const on = what === 'title' ? p.title === val : !!p.ms && pfSameLen(p.ms, val);
         return '<button type="button" class="mc-pft' + (on ? ' on' : '') + '" data-act="fx-take" data-i="' + i + '" data-what="' + what + '" data-k="' + esc(k) + '" title="' + esc(tip) + '">' + inner + '</button>';
     };
-    // one line per version (the platforms giving the same title, length and ISRC), its platforms' icons on the right
-    const plats = (x.versions || []).map(v => {
+    const row = (cells, cls) => '<tr class="mc-pfr' + (cls ? ' ' + cls : '') + '" data-pfr="' + i + '">' + heads.map(h => '<td' + (h === 'ttl' ? ' class="ttl"' : '') + '>' + (cells[h] || '') + '</td>').join('') + '</tr>';
+    const mine = row({
+        ttl: '<input type="text" class="mc-pf-in" data-pf-title="' + i + '" value="' + esc(p.title != null ? p.title : t.title) + '" spellcheck="false" title="The track\'s title: type another, or click a platform\'s below. Enter keeps it, Escape puts it back">',
+        len: '<input type="text" class="mc-pf-in mono" data-pf-len="' + i + '" value="' + esc(p.ms ? ccLen(p.ms) : t.len && t.len !== '?:??' ? t.len : '') + '" placeholder="m:ss" spellcheck="false" title="The track\'s length (m:ss): type another, or click a platform\'s below">',
+        // Apollo's revert-this-track; its slot stays when there's nothing to revert, so nothing beside it moves
+        plat: '<span class="mc-pfa"><button type="button" class="mc-pfrev' + (CMP.picks[i] ? '" data-act="fx-untake" data-i="' + i + '" title="Revert this track: keep it as it is"' : ' void" tabindex="-1" aria-hidden="true"') + '>↺</button>'
+            + (p.title != null ? '<label title="Give the recording this title too (the release editor\'s &quot;update the recording title&quot;)"><input type="checkbox" data-pf-rec="' + i + '"' + (p.recording ? ' checked' : '') + '>the recording too</label>' : '<span class="weak">this track</span>') + '</span>',
+    }, 'own');
+    const vs = x.versions || [];
+    return mine + vs.map((v, n) => {
         const k = v.keys[0], who = v.keys.map(ccName).join(', ');
-        return '<tr><td>' + (v.title === t.title ? '<span class="weak">' + esc(v.title) + '</span>' : take('title', k, ccTitleDiff(v.title, t.title), v.title, 'Take this title (' + who + ')')) + '</td>'
-            + '<td class="mono">' + (!v.len ? '?' : pfSameLen(v.len, own) ? '<span class="weak">' + ccLen(v.len) + '</span>' : take('ms', k, ccLen(v.len) + (own ? fxLenDiff({ ms: own }, { ms: v.len }) : ''), v.len, 'Take this length (' + who + ')')) + '</td>'
-            + '<td class="mono">' + (v.isrc ? isrcHtml(v.isrc) : '<span class="weak">none</span>') + '</td>'
-            + '<td class="plats">' + ccIcons(v.keys) + '</td></tr>';
+        return row({
+            ttl: v.title === t.title ? '<span class="weak">' + esc(v.title) + '</span>' : take('title', k, ccTitleDiff(v.title, t.title), v.title, 'Take this title (' + who + ')'),
+            len: '<span class="mono">' + (!v.len ? '?' : pfSameLen(v.len, own) ? '<span class="weak">' + ccLen(v.len) + '</span>' : take('ms', k, ccLen(v.len) + (own ? fxLenDiff({ ms: own }, { ms: v.len }) : ''), v.len, 'Take this length (' + who + ')')) + '</span>',
+            isrc: '<span class="mono">' + (v.isrc ? isrcHtml(v.isrc) : '<span class="weak">none</span>') + '</span>',
+            plat: ccIcons(v.keys),
+        }, n === vs.length - 1 ? 'last' : '');
     }).join('');
-    const mine = '<tr class="own">'
-        + '<td><input type="text" class="mc-pf-in" data-pf-title="' + i + '" value="' + esc(p.title != null ? p.title : t.title) + '" spellcheck="false" title="The track\'s title: type another, or click a platform\'s. Enter keeps it, Escape puts it back"></td>'
-        + '<td><input type="text" class="mc-pf-in mono" data-pf-len="' + i + '" value="' + esc(p.ms ? ccLen(p.ms) : t.len && t.len !== '?:??' ? t.len : '') + '" placeholder="m:ss" spellcheck="false" title="The track\'s length (m:ss): type another, or click a platform\'s"></td>'
-        + '<td>' + (p.title != null ? '<label class="mc-pfrec" title="Give the recording this title too (the release editor\'s &quot;update the recording title&quot;)"><input type="checkbox" data-pf-rec="' + i + '"' + (p.recording ? ' checked' : '') + '> the recording too</label>' : '')
-        + (CMP.picks[i] ? ' <button type="button" class="mc-all" data-act="fx-untake" data-i="' + i + '" title="Keep the track as it is">Keep as is</button>' : '') + '</td>'
-        + '<td class="plats weak">this track</td></tr>';
-    return '<div class="mc-fxwrap"><table class="mc-fxtbl mc-pftbl"><thead><tr><th>Title</th><th>Length</th><th>ISRC</th><th class="plats">Platforms</th></tr></thead><tbody>'
-        + mine + plats + '</tbody></table></div>'
-        + '<div class="mc-fxn">A click on a platform\'s title or length takes it in; Platform Check sends it with the release, and Falcon writes it in the release editor.</div>';
 }
 function fxDetail(x) {
     const me = x.self || null, ck = x.checked || {}, all = x.signals || [], any = x.any || [];
@@ -1441,7 +1451,7 @@ function fxAllBtn() {
     const ks = fxOpenable();
     if (!ks.length) return '';
     const all = ks.every(k => fxOpen.has(k));
-    return '<button type="button" class="mc-all" data-act="fx-all" title="' + (all ? 'Fold every comparison under the tracks' : 'Open every comparison under the tracks: Fusion\'s, and the platforms\' where a title or a length differs') + '">' + (all ? 'Collapse all' : 'Expand all') + '</button>';
+    return '<button type="button" class="mc-all" data-act="fx-all" title="' + (all ? 'Fold every comparison under the tracks' : 'Open every comparison under the tracks: Fusion\'s, and the platforms\' where a title or a length differs (a click on a title or a length there takes it in; Platform Check sends it with the release, and Falcon writes it in the release editor)') + '">' + (all ? 'Collapse all' : 'Expand all') + '</button>';
 }
 function fxAct(b) {
     const k = b.dataset.key;
@@ -1502,12 +1512,17 @@ function paintMatrix() {
         tp.textContent = pend ? pend + ' pending change' + (pend === 1 ? '' : 's') + ' on ' + rows + ' of ' + rel.tracks.length + ' track' + (rel.tracks.length === 1 ? '' : 's') : 'no pending track changes';
         tp.classList.toggle('on', !!pend);
     }
+    // #782: the platforms' lines go in after the track's marker row, as rows of the table; the columns they fill
+    // are the header's (#, Title, Len, then each provider's)
+    const heads = ['n', 'ttl', 'len'].concat([...ui.querySelectorAll('.mc-tbl th[data-colh]')].map(th => th.dataset.colh));
     ui.querySelectorAll('.mc-tbl tr.mc-fxd[data-pf]').forEach(tr => {
-        const t = rel.tracks[+tr.dataset.pf], x = S.platforms !== 'off' && t ? trackFinding('fc', t.rec) : null;
-        const show = !!(x && fxOpen.has(x.key));
-        tr.hidden = !show;
-        if (show && tr.contains(document.activeElement) && document.activeElement.classList.contains('mc-pf-in')) return;   // being typed in
-        tr.firstElementChild.innerHTML = mbuHtml(show ? pfDetail(x, t) : '');
+        const n = tr.dataset.pf, t = rel.tracks[+n], x = S.platforms !== 'off' && t ? trackFinding('fc', t.rec) : null;
+        const show = !!(x && fxOpen.has(x.key)), old = [...ui.querySelectorAll('.mc-tbl tr.mc-pfr[data-pfr="' + n + '"]')];
+        const trk = ui.querySelector('.mc-tbl tbody tr[data-i="' + n + '"]');
+        if (trk) trk.classList.toggle('pfopen', show);
+        if (show && old.some(r => r.contains(document.activeElement) && document.activeElement.classList.contains('mc-pf-in'))) return;   // being typed in
+        old.forEach(r => r.remove());
+        if (show) tr.insertAdjacentHTML('afterend', mbuHtml(pfRows(x, t, heads)));
     });
     ui.querySelectorAll('.mc-tbl tr.mc-fxd[data-fx]').forEach(tr => {
         const t = rel.tracks[+tr.dataset.fx], x = S.fusion !== 'off' && t ? trackFinding('fusion', t.rec) : null;

@@ -96,21 +96,27 @@ test('#782: Compare reads the release\'s platforms and offers what it lacks', { 
   const insp = await page.locator('#mc-root .mc-insp').textContent();
   check(/Platforms/.test(insp) && /Homes & Gardens \(Remix\)/.test(insp), 'the inspector shows the track\'s versions on the platforms');
   // ≠ title opens, under the track, what each platform gives; Expand all opens them as it does Fusion's
-  const sub = page.locator('#mc-root .mc-tbl tr.mc-fxd[data-pf="1"]');
-  check(await sub.isHidden(), 'the platforms\' titles are folded at first');
+  // the lines under track 2 are rows of the Tracks table (tr.mc-pfr), there only while it is open
+  const sub = page.locator('#mc-root .mc-tbl tbody'), subRows = page.locator('#mc-root .mc-tbl tr.mc-pfr[data-pfr="1"]');
+  check(await subRows.count() === 0, 'the platforms\' titles are folded at first');
   await page.locator('#mc-root .mc-tbl tr[data-i="1"] td[data-col="plat"] [data-act="fx-pf"]').click();
-  const lines = await sub.locator('tbody tr').allTextContents();
-  const icons = await sub.locator('tbody tr').nth(1).locator('td.plats .mcc-icos > span').evaluateAll(s => s.map(x => x.title));
+  const lines = await subRows.allTextContents();
+  const icons = await subRows.nth(1).locator('.mcc-icos > span').evaluateAll(s => s.map(x => x.title));
+  // each value in its column: the version's title under Title, its icons under Platforms
+  const cols = await subRows.nth(1).evaluate(r => { const hs = [...r.closest('table').querySelectorAll('thead th')].map(h => h.textContent.trim()); return { title: hs[[...r.cells].findIndex(c => /Homes/.test(c.textContent))], icons: hs[[...r.cells].findIndex(c => c.querySelector('.mcc-icos'))] }; });
+  check(/^Title/i.test(cols.title) && /^Platforms/.test(cols.icons), `the line's title is under Title, its platforms under Platforms (${JSON.stringify(cols)})`);
+  const x0 = await page.evaluate(() => { const r = document.querySelector('#mc-root .mc-tbl tr[data-i="1"] td.ttl').getBoundingClientRect(), i = document.querySelector('#mc-root [data-pf-title="1"]'), st = getComputedStyle(i); return [Math.round(r.left + parseFloat(getComputedStyle(document.querySelector('#mc-root .mc-tbl tr[data-i="1"] td.ttl')).paddingLeft)), Math.round(i.getBoundingClientRect().left + parseFloat(st.paddingLeft) + parseFloat(st.borderLeftWidth))]; });
+  check(Math.abs(x0[0] - x0[1]) <= 1, `the box's text starts where the track's title does (${x0})`);
   check(lines.length === 2 && /Homes & Gardens \(Remix\)/.test(lines[1]) && icons.join() === 'Deezer,Qobuz', `under the track, one line for what Deezer and Qobuz both give, their icons on the right (${JSON.stringify(lines)} ${icons})`);
   await page.locator('#mc-root .mc-tbl tr[data-i="1"] td[data-col="plat"] [data-act="fx-pf"]').click();
-  check(await sub.isHidden(), 'a second click folds it');
+  check(await subRows.count() === 0, 'a second click folds it');
   const all = page.locator('#mc-root .mc-fxall [data-act="fx-all"]');
   check(/Expand all/.test(await all.textContent()), 'the Tracks header offers Expand all');
   await all.click();
-  check(await sub.isVisible() && /Collapse all/.test(await all.textContent()), 'Expand all opens it, and turns into Collapse all');
+  check(await subRows.count() === 2 && /Collapse all/.test(await all.textContent()), 'Expand all opens it, and turns into Collapse all');
   await page.locator('#mc-root').screenshot({ path: 'dev/_782-expanded.png' });
   await all.click();
-  check(await sub.isHidden(), 'Collapse all folds it');
+  check(await subRows.count() === 0, 'Collapse all folds it');
 
   // a title and a length taken in: a click on a platform's, or typed on the track's own line
   await page.locator('#mc-root .mc-tbl tr[data-i="1"] td[data-col="plat"] [data-act="fx-pf"]').click();
@@ -118,7 +124,7 @@ test('#782: Compare reads the release\'s platforms and offers what it lacks', { 
   await sub.locator('[data-act="fx-take"][data-what="title"][data-k="deezer"]').click();
   let st = await page.evaluate(() => window.__mcTest.cmp());
   check(st.picks[1] && st.picks[1].title === 'Homes & Gardens (Remix)' && st.picks[1].from.title === 'Deezer, Qobuz', `a click takes Deezer's title, naming every platform that gives it (${JSON.stringify(st.picks)})`);
-  check(await sub.locator('[data-act="fx-take"][data-what="title"].on').count() === 1 && await sub.locator('tbody tr').count() === 2, 'the platforms giving the same are one line, shown taken');
+  check(await sub.locator('[data-act="fx-take"][data-what="title"].on').count() === 1 && await subRows.count() === 2, 'the platforms giving the same are one line, shown taken');
   check(await sub.locator('[data-pf-title="1"]').inputValue() === 'Homes & Gardens (Remix)', 'the track\'s own line holds it');
   check(/→ Homes & Gardens \(Remix\)/.test(await page.locator('#mc-root .mc-tbl tr[data-i="1"] td[data-col="plat"]').textContent()), 'the column shows what the track gets');
   check(await page.locator('#mc-root .mc-tbl tr[data-i="1"]').evaluate(r => r.classList.contains('chg')), 'the track counts as changed');
