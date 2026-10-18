@@ -36,7 +36,7 @@ const fakeRec = (id, title) => ({ id, title, length: 200000, video: false, isrcs
 
 test.use({ gm: apolloGm({ autoMatchRec: true, autoMatch: false }) });
 
-test('recordings are matched by the ISRC First Contact hands over', { tag: ['@sandbox', '@login', '@critical', '@flaky'] }, async ({ page, inject }) => {
+test('recordings are matched by the ISRC First Contact hands over', { tag: ['@sandbox', '@login', '@critical'] }, async ({ page, inject }) => {
   // #662 (chaban-mb): the release's ISRCs go out together, as one recording search
   const isrcLookups = [], isrcSearches = [];
   page.on('request', r => {
