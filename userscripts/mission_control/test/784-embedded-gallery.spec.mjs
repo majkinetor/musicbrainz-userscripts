@@ -45,15 +45,20 @@ test('#784: the gallery shows in the card, scrolls with it and goes full screen'
   check(fit.low <= fit.h, `the gallery's lowest part is inside the frame (${JSON.stringify(fit)})`);
   check(fit.clear, `take in sits left of the NEW ribbon (${JSON.stringify(fit)})`);
   await page.screenshot({ path: 'test-results/mc-784-embedded.png' });
-  // a store's take all in takes in each of its images, after the covers
+  // a store's take all in takes in each of its images that isn't a duplicate, after the covers; a duplicate stays
+  // left out, with no take in and no type
+  await until(() => fr.evaluate(() => !!document.querySelector('.as-more-all:not([disabled])')));
   const all = await fr.evaluate(async () => {
-    const b = document.querySelector('.as-more-all'), p = b && b.dataset.prov;
-    const n = document.querySelectorAll('.as-sec-more + .as-grid .as-card').length;
+    const more = () => [...document.querySelectorAll('.as-sec-more + .as-grid .as-card')];
+    const b = document.querySelector('.as-more-all:not([disabled])'), p = b && b.dataset.prov;
+    const n = more().filter(c => !c.querySelector('.as-mcdup')).length;
     b.click();
     await new Promise(r => setTimeout(r, 300));
-    return { p, n, left: document.querySelectorAll('.as-sec-more + .as-grid .as-card').length, last: !!document.querySelector('.as-grid .as-card.new:not(.del)') };
+    const dups = more().filter(c => c.querySelector('.as-mcdup'));
+    return { p, n, left: more().filter(c => !c.querySelector('.as-mcdup')).length, dups: dups.length, bare: dups.every(c => !c.querySelector('.as-undo, .as-foot-type')), last: !!document.querySelector('.as-grid .as-card.new:not(.del)') };
   });
-  check(all.p && all.n > 0 && all.left === 0 && all.last, `take all in takes in every ${all.p} image (${JSON.stringify(all)})`);
+  check(all.p && all.n > 0 && all.left < all.n && all.last, `take all in takes in the ${all.p} images that aren't duplicates (${JSON.stringify(all)})`);
+  check(all.bare, `a duplicate has no take in and no type (${JSON.stringify(all)})`);
 
   // the wheel over the gallery scrolls Mission Control, and the frame follows the slot
   const scroller = () => page.evaluate(() => { let n = document.getElementById('mc-as-slot').parentElement; while (n && n.scrollHeight <= n.clientHeight) n = n.parentElement; return n ? n.scrollTop : -1; });

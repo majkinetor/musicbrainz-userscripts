@@ -71,6 +71,8 @@ test('#784: the stores\' other images wait left out in the gallery, and the ones
     out: window.__asTest.mc.model().filter(x => x._tag && x._del && x._mcPool).map(x => x._tag).sort().join(),
     more: document.querySelectorAll('.as-sec-more + .as-grid .as-card').length,
     dups: [...document.querySelectorAll('.as-sec-more + .as-grid .as-mcdup')].map(x => x.textContent).sort().join(),
+    bare: [...document.querySelectorAll('.as-sec-more + .as-grid .as-card')].filter(c => c.querySelector('.as-mcdup')).every(c => !c.querySelector('.as-undo, .as-foot-type')),
+    all: [...document.querySelectorAll('.as-more-all')].map(b => b.textContent.trim()).join('|'),
     embed: document.documentElement.classList.contains('as-embed'),
     header: !!(document.querySelector('.header, #header') || {}).offsetParent,
     enter: !!(document.querySelector('#as-root .as-commit') || {}).offsetParent,
@@ -78,6 +80,9 @@ test('#784: the stores\' other images wait left out in the gallery, and the ones
   console.log(JSON.stringify(shown));
   check(shown.out === 'a2,d1,d2,d3' && shown.more === 4, `the four wait left out in their own section (${shown.out}, ${shown.more} cards)`);
   check(shown.dups === '= Amazon 1,= Amazon 2', `the dups show on their cards (${shown.dups})`);
+  // #784: a duplicate is never taken in: no take in and no type on its card, and take all in leaves it out
+  check(shown.bare, 'a dup has no take in and no type');
+  check(shown.all === '＋ take all in|＋ take all in (1)', `Discogs' take all in takes only its one picture of its own (${shown.all})`);
   check(shown.embed && !shown.header && !shown.enter, `the gallery alone, without MusicBrainz's header or Enter edit (${JSON.stringify(shown)})`);
 
   // MC's card takes the best front's source in; Amazon 2 and Discogs 3 are taken in on their cards, Discogs 3

@@ -1285,8 +1285,9 @@
     const area = g => Math.max(...g.xs.map(x => (x.w || 0) * (x.h || 0)));
     stores.sort((a, b) => area(b) - area(a));
     return sec(dels.filter(it => !it._mcOffer), 'Marked for removal', 'as-sec-del')
-      + stores.map(g => sec(g.xs, `More images · ${esc(g.p)}: take in, then drag into place`, 'as-sec-del as-sec-more',
-        `<button class="as-btn as-more-all" data-prov="${esc(g.p)}" title="Take in every ${esc(g.p)} image, after the covers">＋ take all in</button>`)).join('');
+      + stores.map(g => { const k = g.xs.filter(x => !x._mcDup).length; return sec(g.xs, `More images · ${esc(g.p)}: take in, then drag into place`, 'as-sec-del as-sec-more',
+        !k ? '' : _mcChecking ? `<button class="as-btn as-more-all" disabled title="checking for duplicates…">＋ take all in</button>`
+          : `<button class="as-btn as-more-all" data-prov="${esc(g.p)}" title="Take in every ${esc(g.p)} image that isn't a duplicate, after the covers">＋ take all in${k < g.xs.length ? ` (${k})` : ''}</button>`); }).join('');
   }
   // Stable CAA thumbnails are HTTP-cached, so recreating their <img> on each
   // render is cheap and flicker-free. NEW (blob) and PENDING (no CAA thumb yet →
@@ -1346,6 +1347,8 @@
     toast(`Kept only this one — ${drop.length} other new ${drop.length === 1 ? ITEM : ITEMS} marked for removal`);
     render();
   }
+  // #784: while the stores' images are compared with the archive (mcExtras), nothing is taken in; a duplicate never is
+  var _mcChecking = false;
   function card(it) {
     if (it._sourcing) return `<div class="as-card new as-sourcing" data-id="${esc(it.id)}" title="${esc(it._srcLabel || 'Sourcing…')}">`
       + `<div class="as-srcing-thumb"><div class="as-spinner"></div><div class="as-srcing-lbl">${esc(it._srcLabel || 'Sourcing…')}</div></div></div>`;
@@ -1354,7 +1357,7 @@
         ${it._new ? '<span class="as-newban">NEW</span>' : ''}
         ${it._pdf ? '<span class="as-pdfban" title="PDF — opens in a new tab">PDF</span>' : ''}
         ${provBadge(it)}
-        ${it._del ? (it._mcOffer ? '<button class="as-tbtn as-undo" title="take this image in">＋ take in</button>' : '<button class="as-tbtn as-undo" title="keep this image">↺ keep</button>') : ''}
+        ${it._del ? (it._mcOffer ? (it._mcDup ? '' : `<button class="as-tbtn as-undo"${_mcChecking ? ' disabled title="checking for duplicates…"' : ' title="take this image in"'}>＋ take in</button>`) : '<button class="as-tbtn as-undo" title="keep this image">↺ keep</button>') : ''}
         ${it._mcDup ? `<span class="as-mcdup" title="the same picture as ${esc(it._mcDup.replace(/^= /, ''))}">${esc(it._mcDup)}</span>` : ''}
         ${onlyBtn(it)}
       </div>
@@ -1379,7 +1382,7 @@
        starts to curve. That mismatch at both bottom corners is the "bottom
        border" looking broken. The pill has its own background, so it masks the
        border behind it exactly as before. */
-    const typeRow = `<div class="as-foot-type">${typePill}</div>`;
+    const typeRow = it._mcDup ? '' : `<div class="as-foot-type">${typePill}</div>`;   // #784: a duplicate is never taken in, so it has no type
     const dim = `<span class="as-dim">${dimHtml(it)}</span>`;
     if (it._del) return `<div class="as-foot"><div class="as-foot-row"><span class="as-foot-cmt"></span>${dim}</div>${typeRow}</div>`;
     const cmt = it._editcmt
@@ -1413,7 +1416,7 @@
       </div>
       <div class="as-dmeta as-dmeta-del">
         <div class="as-ddel-lbl">${esc(it.types.join(', ') || 'no type')}${it.comment ? ` — “${esc(it.comment)}”` : ''}</div>
-        ${it._mcOffer ? '<button class="as-tbtn as-undo" title="take this image in">＋ take in</button>' : '<button class="as-tbtn as-undo" title="keep this image">↺ keep</button>'}
+        ${it._mcOffer ? (it._mcDup ? '' : `<button class="as-tbtn as-undo"${_mcChecking ? ' disabled title="checking for duplicates…"' : ' title="take this image in"'}>＋ take in</button>`) : '<button class="as-tbtn as-undo" title="keep this image">↺ keep</button>'}
       </div>
     </div>`;
     const types = ALL_TYPES.map(t => `<label><input type="checkbox" value="${esc(t)}"${it.types.includes(t) ? ' checked' : ''}> ${esc(t)}</label>`).join('');
@@ -1557,6 +1560,7 @@
 
     // #784: a store image taken in goes last, to be dragged into place from there; the best front goes in typed Front
     const takeIn = xs => {
+      xs = xs.filter(it => !it._mcDup); if (_mcChecking || !xs.length) return;
       xs.forEach(it => { it._del = false; if (it === _mcBest && !(it.types || []).includes('Front')) it.types = ['Front'].concat(it.types || []); });
       const seq = MODEL.filter(x => !xs.includes(x)).sort((a, b) => a.order - b.order).concat(xs); seq.forEach((x, i) => x.order = i);
     };
@@ -1567,7 +1571,7 @@
     });
     root.querySelectorAll('.as-more-all').forEach(b => b.onclick = e => {
       e.stopPropagation();
-      const xs = MODEL.filter(it => it._del && it._mcOffer && (it._provider || 'Other') === b.dataset.prov).sort((a, c) => a.order - c.order);
+      const xs = MODEL.filter(it => it._del && it._mcOffer && !it._mcDup && (it._provider || 'Other') === b.dataset.prov).sort((a, c) => a.order - c.order);
       takeIn(xs);
       asLog.info(`Mission Control: took in every ${b.dataset.prov} image (${xs.length})`);
       render();
@@ -3105,6 +3109,10 @@
   // list (`key`) and `dup` when it is the same picture as a cover already in the archive, the best front, or a larger
   // one of them; #784 the dup shows on its card in the gallery (_mcDup)
   async function mcExtras(best) {
+    _mcChecking = true; render();
+    try { return await mcExtrasOf(best); } finally { _mcChecking = false; render(); }
+  }
+  async function mcExtrasOf(best) {
     if (!best || !_mcPool.length) return [];
     const all = [best, ..._mcPool].sort((a, b) => (a._seq || 0) - (b._seq || 0));
     const groups = new Map();
