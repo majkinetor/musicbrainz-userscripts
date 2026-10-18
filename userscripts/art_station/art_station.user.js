@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Art Station
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.17.231850
+// @version      2026.10.18.145901
 // @description  Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5BcnQgU3RhdGlvbjwvdGl0bGU+CjxjaXJjbGUgY3g9Ijg2IiBjeT0iNjQiIHI9IjM4IiBmaWxsPSIjMWIwZjNiIiBzdHJva2U9IiNiOTY3ZmYiIHN0cm9rZS13aWR0aD0iMyIvPgo8Y2lyY2xlIGN4PSI4NiIgY3k9IjY0IiByPSIyOC44OCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjNGEzNDgwIiBzdHJva2Utd2lkdGg9IjEuNSIvPjxjaXJjbGUgY3g9Ijg2IiBjeT0iNjQiIHI9IjIwLjkwMDAwMDAwMDAwMDAwMiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjNGEzNDgwIiBzdHJva2Utd2lkdGg9IjEuNSIvPgo8Y2lyY2xlIGN4PSI4NiIgY3k9IjY0IiByPSIxMS4wMiIgZmlsbD0iI2ZmNzFjZSIvPjxjaXJjbGUgY3g9Ijg2IiBjeT0iNjQiIHI9IjIuNTA4IiBmaWxsPSIjMWIwZjNiIi8+PGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJhcy1za3ljIiB4MT0iMCIgeTE9IjAiIHgyPSIwIiB5Mj0iMSI+PHN0b3Agb2Zmc2V0PSIwLjAwIiBzdG9wLWNvbG9yPSIjN2ZlN2ZmIi8+PHN0b3Agb2Zmc2V0PSIwLjUwIiBzdG9wLWNvbG9yPSIjZDlhNmZmIi8+PHN0b3Agb2Zmc2V0PSIxLjAwIiBzdG9wLWNvbG9yPSIjZmY3MWNlIi8+PC9saW5lYXJHcmFkaWVudD48Y2xpcFBhdGggaWQ9ImFzLWNjIj48cmVjdCB4PSIxMCIgeT0iMjIiIHdpZHRoPSI3OCIgaGVpZ2h0PSI4NCIgcng9IjgiLz48L2NsaXBQYXRoPjwvZGVmcz4KPGcgY2xpcC1wYXRoPSJ1cmwoI2FzLWNjKSI+PHJlY3QgeD0iMTAiIHk9IjIyIiB3aWR0aD0iNzgiIGhlaWdodD0iODQiIGZpbGw9InVybCgjYXMtc2t5YykiLz4KPGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJhcy1nczIiIHgxPSIwIiB5MT0iMCIgeDI9IjAiIHkyPSIxIj48c3RvcCBvZmZzZXQ9IjAiIHN0b3AtY29sb3I9IiNmZmY2YTgiLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiNmZjhhNWMiLz48L2xpbmVhckdyYWRpZW50Pgo8bWFzayBpZD0iYXMtbXMyIj48cmVjdCB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCIgZmlsbD0iI2ZmZiIvPjxyZWN0IHg9IjI1LjYiIHk9IjY3LjIiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjEuMiIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9IjY5LjgiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjEuNSIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9IjczLjAiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjEuOCIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9Ijc3LjAiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjIuMyIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9IjgyLjAiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjIuOSIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9Ijg4LjMiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjMuNiIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9Ijk2LjIiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjQuNSIgZmlsbD0iIzAwMCIvPjwvbWFzaz48L2RlZnM+CjxjaXJjbGUgY3g9IjQ5IiBjeT0iNzYuMDgiIHI9IjIzLjQiIGZpbGw9InVybCgjYXMtZ3MyKSIgbWFzaz0idXJsKCNhcy1tczIpIi8+PHJlY3QgeD0iMTAiIHk9Ijc0LjA4IiB3aWR0aD0iNzgiIGhlaWdodD0iMzEuOTIiIGZpbGw9IiNiOTY3ZmYiLz48cGF0aCBkPSJNMTAgNzQuMDhIODhNMTAgNzcuOUg4OE0xMCA4My4ySDg4TTEwIDkxLjRIODhNMTAgMTA0LjJIODhNMzQuOCA3NC4wOEwtNDguNSAxMDZNMzguNCA3NC4wOEwtMjQuMSAxMDZNNDEuOSA3NC4wOEwwLjMgMTA2TTQ1LjUgNzQuMDhMMjQuNiAxMDZNNDkuMCA3NC4wOEw0OS4wIDEwNk01Mi41IDc0LjA4TDczLjQgMTA2TTU2LjEgNzQuMDhMOTcuOCAxMDZNNTkuNiA3NC4wOEwxMjIuMSAxMDZNNjMuMiA3NC4wOEwxNDYuNSAxMDYiIHN0cm9rZT0iI2ZmZmI5NiIgc3Ryb2tlLXdpZHRoPSIxLjMiIGZpbGw9Im5vbmUiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPjwvZz48cmVjdCB4PSIxMCIgeT0iMjIiIHdpZHRoPSI3OCIgaGVpZ2h0PSI4NCIgcng9IjgiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJhMTQ1OCIgc3Ryb2tlLXdpZHRoPSIzIi8+Cjwvc3ZnPgo=
@@ -2517,7 +2517,7 @@
   // Some stores (notably Amazon) list their site logo alongside the real covers.
   // Those are tiny; real cover art is never this small. #242
   const MIN_ART_PX = 200;
-  // the image types the Cover Art Archive takes; anything else (WebP, AVIF) is skipped
+  // the image types the Cover Art Archive takes; WebP / AVIF / BMP / TIFF are converted when staged (#781)
   const CAA_MIME = { jpeg: 'image/jpeg', png: 'image/png', gif: 'image/gif', pdf: 'application/pdf' };
   const IMGMAX = new ImageMaximizer({
     request: (url, o) => {
@@ -2639,7 +2639,7 @@
         metas.push({ types, comment: it.comment || '', provider: prov.name, provIcon: prov.icon || hostIcon(srcUrl), provUrl: srcUrl });
       }
       finish();
-      if (files.length) { addFiles(files, metas); toast(`Added ${files.length} image${files.length > 1 ? 's' : ''} from ${prov.name} ✓`); }
+      if (files.length) { await addFiles(files, metas); toast(`Added ${files.length} image${files.length > 1 ? 's' : ''} from ${prov.name} ✓`); }
       else { render(); toast(`${prov.name} returned no image`, 5000); }
     }).catch(e => { if (done) return; clearTimeout(killer); finish(); render(); toast(`${prov.name} failed — ${(e && e.message) || e}`, 8000); });
   }
@@ -2681,9 +2681,10 @@
       for (const g of got) {
         let kind = '';
         try { kind = (ImageMaximizer.dimensions(await g.blob.slice(0, 262144).arrayBuffer()) || {}).type || ''; } catch (e) {}
-        const mime = CAA_MIME[kind];
-        if (!mime) { asLog.warn(`Source: ${who} — skipped ${g.url}: ${kind ? kind.toUpperCase() : 'not an image'} isn't a Cover Art Archive type (JPEG/PNG/GIF/PDF)`); continue; }
-        const ext = kind === 'jpeg' ? 'jpg' : kind;
+        // #781 a WebP (or an AVIF / BMP / TIFF the sniffer doesn't know) goes on to addFiles, which converts it
+        const mime = CAA_MIME[kind] || (kind === 'webp' ? 'image/webp' : (!kind && /^image\/(avif|bmp|tiff)$/.test(g.blob.type) ? g.blob.type : ''));
+        if (!mime) { asLog.warn(`Source: ${who} — skipped ${g.url}: ${kind ? kind.toUpperCase() : 'not an image'} isn't a Cover Art Archive type (JPEG/PNG/GIF/PDF) or one Art Station converts`); continue; }
+        const ext = kind ? (kind === 'jpeg' ? 'jpg' : kind) : mime.split('/')[1];
         files.push(new File([g.blob], `src-${Date.now()}-${files.length}.${ext}`, { type: mime }));
         const types = ((seed && seed.types) || g.types || []).filter(t => ALL_TYPES.includes(t));
         const comment = (seed && seed.comment != null) ? seed.comment : (g.comment || '');
@@ -3279,7 +3280,7 @@
       if (SETTINGS.autoComment && !comment && p.comment) comment = p.comment;
     }
     return { id: 'new-' + Math.random().toString(36).slice(2, 8), types, comment, order: 0, w: 0, h: 0,
-      bytes: f.size, fmt: fileFormat(f.type) || fileFormat(f.name), _del: false, _new: true, _pdf: f.type === 'application/pdf', _file: URL.createObjectURL(f), _fileObj: f,
+      bytes: f.size, fmt: ((meta && meta.convFrom) ? meta.convFrom + '→' : '') + (fileFormat(f.type) || fileFormat(f.name)), _del: false, _new: true, _pdf: f.type === 'application/pdf', _file: URL.createObjectURL(f), _fileObj: f,
       _provider: (meta && meta.provider) || '', _provIcon: (meta && meta.provIcon) || '', _provUrl: (meta && meta.provUrl) || '',   // #249 where this image was sourced (shown until committed)
       _seq: ++_newSeq,   // arrival order: a source's first image is its front (sourceBest)
       _provImageUrl: (meta && meta.provImageUrl) || '',   // #260 direct image URL when the provider exposes one (e.g. Discogs)
@@ -3305,11 +3306,59 @@
     if (SETTINGS.autoFrontMode !== 'always' && MODEL.some(it => !it._del && it.types.includes('Front'))) return;   // a Front already exists
     first.types = ['Front'];
   }
+  // #781 the Cover Art Archive takes only JPEG / PNG / GIF / PDF. Anything else the
+  // browser can decode (WebP, AVIF, BMP; TIFF only in Safari) is re-encoded on a canvas
+  // while it's staged, so preview, dims, rotate, download and the upload MIME all see the
+  // CAA file. Lossy sources (lossy WebP, AVIF) → JPEG, unless they're transparent — as PNG
+  // they'd grow several times for nothing; lossless WebP, BMP, TIFF and anything with
+  // alpha → PNG. Colour profile / EXIF are lost, as with rotate.
+  // Returns { f, from } (from = the source format when converted), or null if undecodable.
+  const CAA_TYPES = ['image/jpeg', 'image/png', 'image/gif', 'application/pdf'];
+  function webpIsLossy(b) {   // walk the RIFF chunks: VP8 = lossy, VP8L = lossless; VP8X carries the alpha flag
+    const tag = o => String.fromCharCode(b[o], b[o + 1], b[o + 2], b[o + 3]);
+    if (b.length < 16 || tag(0) !== 'RIFF' || tag(8) !== 'WEBP') return false;
+    let alpha = false;
+    for (let o = 12; o + 8 <= b.length;) {
+      const t = tag(o), n = b[o + 4] | (b[o + 5] << 8) | (b[o + 6] << 16) | (b[o + 7] << 24);
+      if (t === 'VP8X') alpha = !!(b[o + 8] & 0x10);
+      else if (t === 'ALPH') alpha = true;
+      else if (t === 'VP8L') return false;
+      else if (t === 'VP8 ') return !alpha;
+      o += 8 + n + (n & 1);
+    }
+    return false;
+  }
+  async function toCaaFile(f) {
+    if (CAA_TYPES.includes(f.type)) return { f };
+    const from = fileFormat(f.type) || fileFormat(f.name) || 'image';
+    let bmp; try { bmp = await createImageBitmap(f); } catch (e) { asLog.warn(`${f.name || from} can't be decoded — skipped (the Cover Art Archive takes JPEG/PNG/GIF/PDF)`); return null; }
+    try {
+      const cv = document.createElement('canvas'); cv.width = bmp.width; cv.height = bmp.height;
+      const ctx = cv.getContext('2d'); ctx.drawImage(bmp, 0, 0);
+      let type = 'image/png';
+      if (from === 'WEBP') { if (webpIsLossy(new Uint8Array(await f.arrayBuffer()))) type = 'image/jpeg'; }
+      else if (from === 'AVIF') {   // AVIF's alpha is buried in its boxes: look at the pixels instead
+        const px = ctx.getImageData(0, 0, cv.width, cv.height).data; let alpha = false;
+        for (let i = 3; i < px.length; i += 4) if (px[i] < 255) { alpha = true; break; }
+        if (!alpha) type = 'image/jpeg';
+      }
+      const out = await new Promise(res => cv.toBlob(res, type, type === 'image/jpeg' ? 0.95 : undefined));
+      if (!out) { asLog.warn(`${f.name || from}: conversion failed — skipped`); return null; }
+      const ext = type === 'image/jpeg' ? 'jpg' : 'png';
+      const name = ((f.name || 'image').replace(/\.[^./]*$/, '') || 'image') + '.' + ext;
+      asLog.info(`Converted ${f.name || from} from ${from} to ${fileFormat(type)} (${fmtSize(f.size)} → ${fmtSize(out.size)})`);
+      return { f: new File([out], name, { type }), from };
+    } finally { bmp.close && bmp.close(); }
+  }
   // metas (optional) carries per-file { types, comment } — used when sourcing covers
   // that already know their type/comment (e.g. a store import, #242)
-  function addFiles(files, metas) {
-    const news = [...files].map((f, i) => ({ f, meta: metas && metas[i] }))
-      .filter(x => x.f.type.startsWith('image/') || x.f.type === 'application/pdf').map(x => newItem(x.f, x.meta));
+  async function addFiles(files, metas) {
+    const conv = await Promise.all([...files].map(async (f, i) => {
+      if (!(f.type.startsWith('image/') || f.type === 'application/pdf')) return null;
+      const c = await toCaaFile(f); if (!c) return null;
+      return { f: c.f, meta: c.from ? Object.assign({}, metas && metas[i], { convFrom: c.from }) : (metas && metas[i]) };
+    }));
+    const news = conv.filter(Boolean).map(x => newItem(x.f, x.meta));
     if (!news.length) return;
     maybeAutoFront(news);   // #262 type the first untyped imported cover Front (per setting), before they're inserted
     // New covers go before the existing/published ones (majkinetor: they were landing last). WHERE among
@@ -3348,7 +3397,7 @@
       have.add(k);
       outF.push(f); outM.push(Object.assign({}, metas && metas[i], { contentKey: k }));
     }
-    if (outF.length) addFiles(outF, outM);
+    if (outF.length) await addFiles(outF, outM);
     return outF.length;
   }
   // #243 a drop can include whole FOLDERS — recurse the directory entries to collect every
@@ -3358,7 +3407,7 @@
   // DIR_MAX_FILES image/PDF files, so a stray huge tree can't stage thousands. Loose
   // files dropped directly are kept as-is (type-filtered downstream by addFiles).
   const DIR_MAX_DEPTH = 1, DIR_MAX_FILES = 100;
-  const DIR_ACCEPT_RE = /\.(jpe?g|png|gif|pdf)$/i;
+  const DIR_ACCEPT_RE = /\.(jpe?g|png|gif|webp|avif|bmp|tiff?|pdf)$/i;   // #781 WebP / AVIF / BMP / TIFF are converted when staged
   let _dropTruncated = false;
   function filesFromDrop(dt) {
     const entries = [...(dt.items || [])].map(i => i.webkitGetAsEntry && i.webkitGetAsEntry()).filter(Boolean);
@@ -3404,7 +3453,7 @@
     return null;
   }
   // Fetch a dropped image URL (CORS-free via fetchBytes/GM) and wrap it as a File. Sniffs the
-  // bytes for a CAA-accepted type (JPEG/PNG/GIF/PDF); warns + skips anything else (e.g. webp).
+  // bytes for a CAA-accepted type (JPEG/PNG/GIF/PDF) or WebP / AVIF / BMP / TIFF (converted when staged, #781); warns + skips anything else.
   async function fileFromUrl(url) {
     asLog.info('Fetching dropped image…');
     const bytes = await fetchBytes(url);
@@ -3414,9 +3463,13 @@
     else if (hex.startsWith('89504e47')) { type = 'image/png'; ext = 'png'; }
     else if (hex.startsWith('47494638')) { type = 'image/gif'; ext = 'gif'; }
     else if (hex.startsWith('25504446')) { type = 'application/pdf'; ext = 'pdf'; }
-    else { asLog.warn(`Dropped image isn't a Cover Art Archive type (JPEG/PNG/GIF/PDF) — skipped: ${url.slice(0, 90)}`); return null; }
+    else if (hex.startsWith('52494646') && String.fromCharCode(...bytes.slice(8, 12)) === 'WEBP') { type = 'image/webp'; ext = 'webp'; }
+    else if (/^ftypavi[fs]$/.test(String.fromCharCode(...bytes.slice(4, 12)))) { type = 'image/avif'; ext = 'avif'; }
+    else if (hex.startsWith('424d')) { type = 'image/bmp'; ext = 'bmp'; }
+    else if (hex === '49492a00' || hex === '4d4d002a') { type = 'image/tiff'; ext = 'tif'; }
+    else { asLog.warn(`Dropped image isn't JPEG/PNG/GIF/PDF, or WebP/AVIF/BMP/TIFF to convert — skipped: ${url.slice(0, 90)}`); return null; }
     let name = ''; try { name = decodeURIComponent(new URL(url).pathname.split('/').pop() || ''); } catch (e) {}
-    if (!/\.(jpe?g|png|gif|pdf)$/i.test(name)) name = (name.replace(/\.[^./]*$/, '') || 'dropped-image') + '.' + ext;
+    if (!/\.(jpe?g|png|gif|webp|avif|bmp|tiff?|pdf)$/i.test(name)) name = (name.replace(/\.[^./]*$/, '') || 'dropped-image') + '.' + ext;
     return new File([bytes], name, { type });
   }
   // #604: a dropped / picked .zip is unpacked in the browser and its covers staged as if
@@ -3429,7 +3482,7 @@
   // subfolders deep, at most DIR_MAX_FILES. Encrypted, ZIP64 and other methods are
   // skipped and reported rather than guessed at.
   const isZipFile = f => !!f && (/\.zip$/i.test(f.name || '') || /^application\/(?:x-)?zip(?:-compressed)?$/i.test(f.type || ''));
-  const MIME_BY_EXT = { jpg: 'image/jpeg', jpeg: 'image/jpeg', png: 'image/png', gif: 'image/gif', pdf: 'application/pdf' };
+  const MIME_BY_EXT = { jpg: 'image/jpeg', jpeg: 'image/jpeg', png: 'image/png', gif: 'image/gif', webp: 'image/webp', avif: 'image/avif', bmp: 'image/bmp', tif: 'image/tiff', tiff: 'image/tiff', pdf: 'application/pdf' };
   const AS_MANIFEST_RE = /Report created with \[Art Station\]/;
   // exact types + comment from a #244 download name ("03 front,sticker a comment.jpg").
   // Unlike parseName, the "none" placeholder means untyped and KEEPS the comment after it.
@@ -3489,7 +3542,7 @@
     for (const e of cand) {
       const base = e.name.split('/').pop(), depth = e.name.split('/').length - 1 - wrap;
       if (e === readme) continue;
-      if (!DIR_ACCEPT_RE.test(base)) { res.skipped.push(`${e.name} (not JPEG/PNG/GIF/PDF)`); continue; }
+      if (!DIR_ACCEPT_RE.test(base)) { res.skipped.push(`${e.name} (not an image or PDF)`); continue; }
       if (depth > DIR_MAX_DEPTH) { res.truncated = true; asLog.debug(`Zip: ${e.name} is ${depth} folders deep — skipped`); continue; }
       if (res.files.length >= DIR_MAX_FILES) { res.truncated = true; continue; }
       let data; try { data = await dataOf(e); } catch (err) { res.skipped.push(`${e.name} (${err.message || err})`); continue; }
@@ -3527,21 +3580,21 @@
     const dropped = await filesFromDrop(dt);
     if (dropped && dropped.length) {
       const { files, metas, zips } = await expandZips(dropped);   // #604 a .zip → its covers
-      if (files.length) addFiles(files, metas);
+      if (files.length) await addFiles(files, metas);
       if (_dropTruncated) toast(`Folder upload capped: first ${DIR_MAX_FILES} images, one level of subfolders deep`, 6000);
       return files.length > 0 || !zips;
     }
     const url = urlFromDrop(dt); if (!url) return false;
-    try { const f = await fileFromUrl(url); if (f) { addFiles([f], [{ provImageUrl: url, provUrl: url }]); return true; } }
+    try { const f = await fileFromUrl(url); if (f) { await addFiles([f], [{ provImageUrl: url, provUrl: url }]); return true; } }
     catch (e) { asLog.err('Drop fetch failed: ' + (e.message || e)); }
     return false;
   }
   function pickFiles() {
     // Only the types MusicBrainz / the Cover Art Archive accept — `image/*` was too
-    // broad (it offered webp, bmp, … which CAA rejects). JPEG · PNG · GIF · PDF.
+    // broad (it offered formats the browser can't decode). JPEG · PNG · GIF · PDF, plus WebP / AVIF / BMP / TIFF, converted when staged (#781).
     // #604 plus a .zip of them (e.g. an Art Station download), unpacked in the browser
-    const inp = document.createElement('input'); inp.type = 'file'; inp.accept = 'image/jpeg,image/png,image/gif,application/pdf,.zip,application/zip'; inp.multiple = true;
-    inp.onchange = async () => { const { files, metas } = await expandZips([...inp.files]); if (files.length) addFiles(files, metas); };
+    const inp = document.createElement('input'); inp.type = 'file'; inp.accept = 'image/jpeg,image/png,image/gif,image/webp,image/avif,image/bmp,image/tiff,.tif,.tiff,application/pdf,.zip,application/zip'; inp.multiple = true;
+    inp.onchange = async () => { const { files, metas } = await expandZips([...inp.files]); if (files.length) await addFiles(files, metas); };
     inp.click();
   }
   // #359: pick a FOLDER → upload its image/PDF files one level of subfolders deep, capped
@@ -6628,11 +6681,13 @@
           if (!existing || existing._del) continue;
           if (src !== existing._seedBlobSrc) {   // maximised in place → replace the staged blob with the bigger one
             let blob; try { blob = await fetch(src).then(r => r.ok ? r.blob() : null); } catch (e) { blob = null; }
-            if (blob) {
+            const c = blob ? await toCaaFile(new File([blob], (existing._fileObj && existing._fileObj.name) || 'seed.jpg', { type: (blob.type && blob.type.startsWith('image/')) ? blob.type : 'image/jpeg' })) : null;   // #781
+            if (c) {
+              blob = c.f;
               try { URL.revokeObjectURL(existing._file); } catch (e) {}
-              const m = (blob.type && blob.type.startsWith('image/')) ? blob.type : 'image/jpeg';
               existing._file = URL.createObjectURL(blob);
-              existing._fileObj = new File([blob], (existing._fileObj && existing._fileObj.name) || 'seed.jpg', { type: m });
+              existing._fileObj = c.f;
+              if (c.from) existing.fmt = c.from + '→' + fileFormat(c.f.type);
               existing._seedBlobSrc = src; existing.bytes = blob.size; existing.w = 0; existing.h = 0; existing._contentKey = await fileKey(existing._fileObj);
               _imgCache.delete(String(existing.id)); measure(existing); dirty = true;
             }

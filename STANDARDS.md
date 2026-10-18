@@ -40,6 +40,7 @@ Tampermonkey/Violentmonkey auto-detect the `.user.js` and offer install, and the
 For [Standard 2](#standard-2), the area labels are:
 
 - `area | <script>` — the script the issue is about; one per script it touches. Its changelog gets the line.
+- Use only labels that already exist, spelled exactly (`area | art station`, with spaces); never create one. Applying a misspelt name on GitHub silently creates it.
 - `general` — work that belongs to no single script, or is non-functional: tooling, tests, CI, docs, shared blocks. It gets its own *General* section, listed first in the release notes and in String Theory's changelog; a `general` issue that is neither bug nor enhancement goes under *Changes*.
 
 The release script that copies issue titles into the changelog ([Standard 1](#standard-1)) is `dev/publish.mjs`.
