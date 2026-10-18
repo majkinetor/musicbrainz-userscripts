@@ -40,6 +40,44 @@ test('#785: the mode and options change the guess, and Aa applies it', { tag: ['
   check(name === sentence, `Aa sets the track's title to the guess (${name})`);
 });
 
+test("#785: MusicBrainz's own guess-case buttons give Apollo's guess", { tag: ['@sandbox', '@login'] }, async ({ page, inject }) => {
+  await openApollo(page, inject, { seed: 'seed-saigon', tab: 'tracklist' });
+  await page.waitForSelector('.tc-gco select.tc-gc-lang', { state: 'attached', timeout: 10000 });
+  await page.evaluate(() => { const el = document.querySelector('.tc-gco select.tc-gc-lang'); el.value = 'Dutch'; el.dispatchEvent(new Event('change', { bubbles: true })); });
+
+  // a track's and a medium's: the editor's own methods, as its buttons call them (Dutch's IJ is ours alone)
+  const r = await page.evaluate(() => {
+    const ed = window.MB.releaseEditor, m = ed.rootField.release().mediums()[0], t = m.tracks()[0];
+    t.name('ijsland'); m.name('ijs en weder');
+    ed.guessCaseTrackName(t, { type: 'mouseenter', buttons: 0 });
+    const preview = t.previewName();
+    ed.guessCaseTrackName(t, { type: 'click' });
+    ed.guessCaseMediumName(m, { type: 'click' });
+    return { preview, track: t.name(), medium: m.name(), modified: t.nameModified() };
+  });
+  check(r.preview === 'IJsland', `a track's Aa previews Apollo's guess (${r.preview})`);
+  check(r.track === 'IJsland' && r.modified, `and sets it (${r.track})`);
+  check(r.medium === 'IJs en weder', `a medium's Aa too (${r.medium})`);
+
+  // the release title's Aa (jQuery's) and MusicBrainz's options dialog
+  const title = await page.evaluate(() => {
+    const i = document.querySelector('input#name'), b = i.parentElement.querySelector('button.guesscase-title');
+    i.value = 'ijsland live'; i.dispatchEvent(new Event('input', { bubbles: true }));
+    b.click();
+    return window.MB.releaseEditor.rootField.release().name();
+  });
+  check(title === 'IJsland live', `the release title's Aa (${title})`);
+  const dlg = await page.evaluate(() => { const box = document.querySelector('#guesscase-options'); const s = box && box.querySelector('select.tc-gc-lang'); return { ours: s ? s.value : null, mbHidden: !!box && box.querySelector('select:not(.tc-gc-lang)').style.display === 'none' }; });
+  check(dlg.ours === 'Dutch' && dlg.mbHidden, `MusicBrainz's options show Apollo's mode list (${JSON.stringify(dlg)})`);
+  const pop = await page.evaluate(() => {
+    const b = document.querySelector('input#name').parentElement.querySelector('button.guesscase-title');
+    b.dispatchEvent(new MouseEvent('contextmenu', { bubbles: true, cancelable: true }));
+    const p = document.querySelector('.tc-gcpop'), s = p && p.querySelector('select.tc-gc-lang');
+    return { open: !!p, mode: s ? s.value : null, mbDialog: !!(document.querySelector('#guesscase-options') || {}).offsetParent };
+  });
+  check(pop.open && pop.mode === 'Dutch' && !pop.mbDialog, `right-click on the title's Aa opens Apollo's options (${JSON.stringify(pop)})`);
+});
+
 test('#153: the in-cell title buttons take no width from the title', { tag: ['@cosmetic', '@sandbox', '@login'] }, async ({ page, inject }) => {
   await openApollo(page, inject, { seed: 'seed-saigon', tab: 'tracklist' });
   // a guess-case difference on the first title, so its Aa button shows

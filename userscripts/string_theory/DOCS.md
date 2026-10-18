@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-10-18 21:50 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-10-18 23:34 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -203,6 +203,8 @@ Capitalises the track titles the way MusicBrainz's own Guess case does, with mor
 - **Roman numerals**: *part ii* becomes *Part II*.
 
 On top of MusicBrainz's rules, version words in brackets are lowercased (*official music video*, *slowed + reverb*, *sped up*, *bootleg*, *mashup*), and Dutch writes *IJ* as one capital (*IJsland*).
+
+MusicBrainz's own guess-case buttons give the same guess with the same options: the release title's **Aa**, a medium title's, and **Guess case** under MusicBrainz's tracklist. In the release information, right-click the title's **Aa** for the options; MusicBrainz's own options show Apollo's modes.
 
 #### Search and Replace
 

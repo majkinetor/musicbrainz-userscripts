@@ -184,6 +184,8 @@ Capitalises the track titles the way MusicBrainz's own Guess case does, with mor
 
 On top of MusicBrainz's rules, version words in brackets are lowercased (*official music video*, *slowed + reverb*, *sped up*, *bootleg*, *mashup*), and Dutch writes *IJ* as one capital (*IJsland*).
 
+MusicBrainz's own guess-case buttons give the same guess with the same options: the release title's **Aa**, a medium title's, and **Guess case** under MusicBrainz's tracklist. In the release information, right-click the title's **Aa** for the options; MusicBrainz's own options show Apollo's modes.
+
 ### Search and Replace
 
 <img width="600" src="./screenshots/search.png" />
