@@ -248,19 +248,18 @@ const APPLY_WAIT = 15000;
 let executing = false;
 function applyOne(id, dry) {
     const keys = Array.from(picked[id] || []);
-    const extras = id === 'as' ? axChosen() : [];   // #772: the stores' other images taken in, with their types and comments
     return new Promise(resolve => {
         // a provider still working says so with mc:progress, and each one restarts the wait (#680: a cover upload takes minutes)
         const done = o => { document.removeEventListener('mc:applied', on); document.removeEventListener('mc:progress', alive); clearTimeout(t); if (results[id]) delete results[id].working; resolve(o); };
-        const on = e => { const d = busEvent(e, 'mc:applied'); if (d && d.id === id) done(Object.assign({ keys, extras }, d)); };
+        const on = e => { const d = busEvent(e, 'mc:applied'); if (d && d.id === id) done(Object.assign({ keys }, d)); };
         const timeout = () => setTimeout(() => done({ id, ok: false, sent: 0, note: 'no answer in ' + APPLY_WAIT / 1000 + ' s' }), APPLY_WAIT);
         let t = timeout();
         const alive = e => { let d = null; try { d = JSON.parse(e.detail); } catch (x) { return; } if (d && d.id === id && d.run === run) { clearTimeout(t); t = timeout(); } };
         document.addEventListener('mc:applied', on);
         document.addEventListener('mc:progress', alive);
         if (results[id]) Object.assign(results[id], { working: dry ? 'queueing' : 'applying', at: Date.now() });
-        Log.info((dry ? 'dry run' : 'apply') + ' ' + id + ': ' + keys.length + ' item(s) ' + JSON.stringify(keys) + (extras.length ? ' + extras ' + JSON.stringify(extras) : ''));
-        document.dispatchEvent(new CustomEvent('mc:apply', { detail: JSON.stringify(Object.assign({ id, run, release: RELEASE, keys, dry: !!dry, mc: VERSION }, extras.length ? { extras } : {})) }));
+        Log.info((dry ? 'dry run' : 'apply') + ' ' + id + ': ' + keys.length + ' item(s) ' + JSON.stringify(keys) + (id === 'as' && asMore() ? ' + ' + asMore() + ' gallery change(s)' : ''));
+        document.dispatchEvent(new CustomEvent('mc:apply', { detail: JSON.stringify({ id, run, release: RELEASE, keys, dry: !!dry, mc: VERSION }) }));
     });
 }
 // #680: a provider that hands its edits to Falcon tags the batch 'mc:<id>:<run>'. Falcon runs
@@ -331,59 +330,26 @@ function coverList(b) {
     if (same) return [one(c.full || b.full || c.thumb || b.thumb, 'Front cover', c.w, c.h, c.bytes, b.provider)].filter(Boolean);
     return [one(b.full || b.thumb, 'Best cover', b.w, b.h, b.bytes, b.provider || ''), c ? one(c.full || c.thumb, 'Current front', c.w, c.h, c.bytes, 'Cover Art Archive') : null].filter(Boolean);
 }
-function coverViewer(list, at, onClose) {
+function coverViewer(list, at) {
     if (!list.length) return;
     document.getElementById('mc-cover')?.remove();
     let i = Math.min(at || 0, list.length - 1);
     const v = el('div', ''); v.id = 'mc-cover';
     v.setAttribute('role', 'dialog'); v.setAttribute('aria-label', 'Cover, full screen');
     v.innerHTML = mbuHtml('<div class="mc-cov-top"><span class="mc-cov-t"></span><span class="mc-cov-i"></span><span class="mc-cov-n"></span><button type="button" class="mc-cov-x" title="Close (Esc)">✕</button></div>'
-        + '<div class="mc-cov-stage"><img alt=""></div><div class="mc-cov-cmt"></div>'
+        + '<div class="mc-cov-stage"><img alt=""></div>'
         + (list.length > 1 ? '<button type="button" class="mc-cov-go prev" title="Previous (←)">‹</button><button type="button" class="mc-cov-go next" title="Next (→)">›</button>' : ''));
-    // #772: an image with `cmt` ({ get, set }) takes a comment: Enter writes it, Enter again keeps it and goes to the
-    // next image's, Esc stops, as in Art Station's full screen
-    let editing = false, dirty = false;
-    const cmtArea = () => {
-        const x = list[i], a = v.querySelector('.mc-cov-cmt');
-        if (!x.cmt) { a.innerHTML = ''; return; }
-        if (editing) {
-            a.innerHTML = mbuHtml('<input class="mc-cov-cin" placeholder="comment…" spellcheck="false">');
-            const inp = a.querySelector('input'); inp.value = x.cmt.get();
-            inp.setAttribute('aria-label', 'Comment for ' + x.title);
-            inp.oninput = () => { x.cmt.set(inp.value); dirty = true; };
-            inp.onblur = () => { editing = false; cmtArea(); };
-            inp.focus();
-            return;
-        }
-        const c = x.cmt.get();
-        a.innerHTML = mbuHtml(c ? '<span class="mc-cov-ctx" title="Edit the comment (Enter)"></span>' : '<button type="button" class="mc-cov-cadd" title="Add a comment (Enter)">✎ comment</button>');
-        if (c) a.firstChild.textContent = c;
-        a.firstChild.onclick = () => { editing = true; cmtArea(); };
-    };
     const show = () => {
         const x = list[i];
-        const img = v.querySelector('img');
-        img.onerror = x.alt && x.alt !== x.src ? () => { img.onerror = null; img.src = x.alt; } : null;   // #772: a store image that won't load shows its preview
-        img.src = x.src;
+        v.querySelector('img').src = x.src;
         v.querySelector('.mc-cov-t').textContent = x.title;
         v.querySelector('.mc-cov-i').textContent = x.info;
         v.querySelector('.mc-cov-n').textContent = list.length > 1 ? (i + 1) + ' / ' + list.length : '';
-        cmtArea();
     };
     const go = d => { i = (i + d + list.length) % list.length; show(); };
-    const done = () => { v.remove(); document.removeEventListener('keydown', key, true); if (dirty && onClose) onClose(); };
+    const done = () => { v.remove(); document.removeEventListener('keydown', key, true); };
     const key = e => {
-        if (e.target && e.target.classList && e.target.classList.contains('mc-cov-cin')) {
-            if (e.key === 'Escape') { e.target.blur(); v.focus && v.focus(); }
-            else if (e.key === 'Enter') {
-                const inp = e.target; inp.onblur = null; list[i].cmt.set(inp.value); dirty = true;
-                const at = list.findIndex((x, j) => j > i && x.cmt);   // the next image that takes a comment
-                if (at >= 0) { i = at; show(); } else { editing = false; cmtArea(); }
-            } else return;
-            e.preventDefault(); e.stopPropagation(); return;
-        }
-        if (e.key === 'Enter' && list[i].cmt) { editing = true; cmtArea(); }
-        else if (e.key === 'Escape') done();
+        if (e.key === 'Escape') done();
         else if (e.key === 'ArrowLeft') go(-1);
         else if (e.key === 'ArrowRight') go(1);
         else return;
@@ -391,171 +357,40 @@ function coverViewer(list, at, onClose) {
     };
     v.addEventListener('click', e => {
         if (e.target.closest('.mc-cov-go')) go(e.target.closest('.prev') ? -1 : 1);
-        else if (e.target.closest('.mc-cov-x') || !e.target.closest('img, .mc-cov-top, .mc-cov-cmt')) done();
+        else if (e.target.closest('.mc-cov-x') || !e.target.closest('img, .mc-cov-top')) done();
     });
     document.addEventListener('keydown', key, true);
     (ui || document.body).appendChild(v);
     show();
 }
-// #772: the stores' other images (AS's best.extras: Discogs and Amazon give every image of a release), each
-// taken in, typed and commented on the card as in Art Station: a right-click takes it in or leaves it out (a
-// right-drag every one it passes), a click shows it full screen, the type pill opens Art Station's picker
-// (right-click a type for only that one), ✎ the comment (Enter: the next one). Nothing starts taken in or typed:
-// the stores don't say what an image is. Execute sends the taken in as mc:apply's extras.
-const axState = new Map();   // key -> { taken, types, comment, entered }
-let axCmt = null, axDrag = null, axPopUntil = 0;
-function axList() { const b = results.as && results.as.best; return b && Array.isArray(b.extras) ? b.extras : []; }
-function axOf(e) {
-    let s = axState.get(e.key);
-    if (!s) { s = { taken: false, types: (e.types || []).slice(), comment: '', entered: false }; axState.set(e.key, s); }
-    return s;
+// #784: Art Station's own gallery, in its frame: Art Station keeps the frame over this slot (#mc-as-slot) and gives
+// it the gallery's height (kept across a repaint). Execute enters what the gallery holds; mc:plan says what that is.
+let asPlan = { ops: [], more: 0 }, asStaged = null;
+document.addEventListener('mc:plan', e => {
+    let d = null;
+    try { d = JSON.parse(e.detail); } catch (x) { return; }
+    if (!d || d.id !== 'as' || (d.release && d.release !== RELEASE)) return;
+    asPlan = { ops: Array.isArray(d.ops) ? d.ops : [], more: d.more || 0 };
+    Log.debug('#784 gallery plan: ' + (asPlan.ops.map(o => o.label).join(' · ') || 'nothing'));
+    if (ui) { paintAll(); paintFoot(); }
+});
+// the gallery's changes beyond the best front (its upload, the front it replaces)
+const asMore = () => providerOff('as') ? 0 : asPlan.more;
+// the best front in the gallery as its source rows are taken in
+function asStage() {
+    const on = !!(picked.as && picked.as.size) && !providerOff('as');
+    if (on === asStaged || !(results.as && results.as.best)) return;
+    asStaged = on;
+    document.dispatchEvent(new CustomEvent('mc:stage', { detail: JSON.stringify({ id: 'as', release: RELEASE, front: on }) }));
 }
-function axChosen() {
-    if (providerOff('as')) return [];
-    return axList().filter(e => axOf(e).taken && !axOf(e).entered).map(e => ({ key: e.key, types: axOf(e).types.slice(), comment: axOf(e).comment }));
-}
-const axTypes = () => { const b = results.as && results.as.best; return b && Array.isArray(b.types) && b.types.length ? b.types : ['Front', 'Back', 'Booklet', 'Medium', 'Tray', 'Obi', 'Spine', 'Track', 'Liner', 'Sticker', 'Poster', 'Watermark', 'Raw/Unedited', 'Matrix/Runout', 'Top', 'Bottom', 'Panel', 'Other']; };
-const axName = e => e.provider + ' ' + e.n;
-function axHtml() {
-    const xs = axList();
-    if (!xs.length) return '';
-    const btn = (act, label, tip) => '<button type="button" class="mc-ax-b" data-act="' + act + '" title="' + esc(tip) + '">' + label + '</button>';
-    const head = '<div class="mc-ax-h"><span class="mc-ax-t">More images</span>'
-        + '<span class="mc-ax-hint">right-click to take in or leave out · click for full screen · ✎ comment · type pill</span>'
-        + '<span class="mc-ax-sp"></span>' + (xs.some(e => axOf(e).taken && !axOf(e).entered) ? btn('ax-none', 'leave all out', 'Leave every image out') : '') + '</div>';
-    const groups = [];
-    xs.forEach(e => { let g = groups.find(x => x.p === e.provider); if (!g) groups.push(g = { p: e.provider, xs: [] }); g.xs.push(e); });
-    const card = e => {
-        const s = axOf(e), on = s.taken && !s.entered, typed = s.types.length > 0;
-        const cmt = s.entered ? '' : axCmt === e.key ? '<input class="mc-ax-cin" value="' + esc(s.comment) + '" placeholder="comment…" spellcheck="false" aria-label="' + esc('Comment for ' + axName(e)) + '">'
-            : s.comment ? '<button type="button" class="mc-ax-ctx" data-act="ax-cmt" title="edit comment">' + esc(s.comment) + '</button>'
-            : '<button type="button" class="mc-ax-pen" data-act="ax-cmt" title="add a comment">✎</button>';
-        const pill = s.entered ? '<span class="mc-ax-note ok">entered</span>'
-            : '<button type="button" class="mc-ax-pill' + (typed ? '' : ' add') + '" data-act="ax-type" title="' + esc(typed ? s.types.join(', ') : 'set type') + '">' + (typed ? esc(s.types.join(', ')) : '＋ type') + '</button>';
-        const tip = axName(e) + ' of ' + e.of + ' · ' + e.w + ' × ' + e.h + (e.dup ? ' · ' + e.dup : '') + (s.entered ? '' : on ? '. Taken in: right-click to leave out' : '. Right-click to take in') + '. Click: full screen (← → for the others)';
-        return '<div class="mc-ax-c' + (on ? ' on' : '') + (e.dup ? ' dup' : '') + (s.entered ? ' done' : '') + '" data-ax="' + esc(e.key) + '">'
-            + '<button type="button" class="mc-ax-img" data-act="ax-view" title="' + esc(tip) + '">' + (e.thumb ? '<img alt="" src="' + esc(e.thumb) + '">' : '<span class="mc-best-no">🖼</span>') + '</button>'
-            + (e.dup && !on ? '<span class="mc-ax-dup">' + esc(e.dup) + '</span>' : '')
-            + '<div class="mc-ax-f"><span class="mc-ax-cm">' + cmt + '</span><span class="mc-ax-d">' + e.w + ' × ' + e.h + '</span></div>'
-            + '<div class="mc-ax-ty">' + pill + '</div>'
-            + '</div>';
-    };
-    return '<div class="mc-ax">' + head + groups.map(g => '<div class="mc-ax-g"><div class="mc-ax-gh"><span class="mc-pico">' + stIcon(/amazon/i.test(g.p) ? 'amazonmusic' : g.p.toLowerCase(), 14) + '</span><b>' + esc(g.p) + '</b><span class="mc-ax-gn">'
-        + g.xs[0].of + ' images' + (g.xs.some(e => e.n === 1) ? '' : ', the first is the best front above') + '</span>' + axGroupBtn(g) + '</div><div class="mc-ax-cs">' + g.xs.map(card).join('') + '</div></div>').join('') + '</div>';
-}
-// #772: the images Execute entered show as entered, and leave Execute's count
-function axEntered(o) { if (o.id === 'as') (o.extras || []).forEach(x => { const st = axState.get(x.key); if (st) st.entered = true; }); }
-function axPaint() { paintAll(); paintFoot(); axFocus(); }
-// a repaint rebuilds the card: the comment being written gets the focus back, the caret at its end
-function axFocus() {
-    if (!axCmt || !ui) return;
-    const i = ui.querySelector('.mc-ax-cin');
-    if (i && document.activeElement !== i) { i.focus(); i.setSelectionRange(i.value.length, i.value.length); }
-}
-function axSet(keys, f) {
-    const xs = axList().filter(e => keys.includes(e.key) && !axOf(e).entered);
-    xs.forEach(e => f(axOf(e), e));
-    return xs;
-}
-function axCmtDone(next) {
-    const i = ui && ui.querySelector('.mc-ax-cin');
-    const k = axCmt;
-    if (i && k) { const s = axState.get(k); if (s) { s.comment = i.value.trim(); if (s.comment && !s.taken) s.taken = true; } }
-    if (k) Log.debug('#772 comment ' + k + ': ' + JSON.stringify((axState.get(k) || {}).comment || ''));
-    const xs = axList().filter(e => !axOf(e).entered), at = xs.findIndex(e => e.key === k);
-    axCmt = next && at >= 0 && at < xs.length - 1 ? xs[at + 1].key : null;
-    axPaint();
-}
-// Art Station's type picker: tick types; right-click one for only that one. keys: the images it types
-function axTypePop(anchor, keys) {
-    axPopClose();
-    const xs = axList().filter(e => keys.includes(e.key));
-    if (!xs.length) return;
-    const pop = el('div', 'mc-ax-pop'); pop.id = 'mc-ax-pop';
-    const all = t => xs.every(e => axOf(e).types.includes(t));
-    pop.innerHTML = mbuHtml('<div class="mc-ax-tg">' + axTypes().map(t => '<label title="Right-click: set only this type"><input type="checkbox" value="' + esc(t) + '"' + (all(t) ? ' checked' : '') + '> ' + esc(t) + '</label>').join('') + '</div>');
-    const order = axTypes();
-    pop.addEventListener('change', ev => {
-        const t = ev.target.value, on = ev.target.checked;
-        axSet(keys, s => { s.types = order.filter(x => x === t ? on : s.types.includes(x)); if (s.types.length) s.taken = true; });
-        Log.debug('#772 type ' + (on ? '+' : '-') + t + ' on ' + keys.join(', '));
-        axPaint();
-    });
-    pop.addEventListener('contextmenu', ev => {
-        const lab = ev.target.closest('label'); if (!lab) return;
-        ev.preventDefault();
-        const t = lab.querySelector('input').value;
-        axSet(keys, s => { s.types = [t]; s.taken = true; });
-        Log.debug('#772 type only ' + t + ' on ' + keys.join(', '));
-        axPopClose(); axPaint();
-    });
-    ui.appendChild(pop);
-    const r = anchor.getBoundingClientRect(), M = 8;
-    let top = r.bottom + 3;
-    if (top + pop.offsetHeight > innerHeight - M && r.top - pop.offsetHeight - 3 >= M) top = r.top - pop.offsetHeight - 3;
-    pop.style.top = Math.max(M, Math.min(top, innerHeight - pop.offsetHeight - M)) + 'px';
-    pop.style.left = Math.max(M, Math.min(r.left, innerWidth - pop.offsetWidth - M)) + 'px';
-    setTimeout(() => document.addEventListener('mousedown', axPopOutside, true), 0);
-}
-function axPopOutside(ev) {
-    const pop = document.getElementById('mc-ax-pop');
-    if (pop && pop.contains(ev.target)) return;
-    axPopUntil = Date.now() + 600;   // the click that ends this press only closes the picker
-    axPopClose();
-}
-function axPopClose() { document.getElementById('mc-ax-pop')?.remove(); document.removeEventListener('mousedown', axPopOutside, true); }
-function axView(key) {
-    const xs = axList();
-    const list = xs.map(e => ({ src: e.url || e.thumb, alt: e.thumb, title: axName(e), info: [e.w + ' × ' + e.h, e.bytes ? Math.round(e.bytes / 1024) + ' KB' : '', e.dup || '', axOf(e).types.join(', ')].filter(Boolean).join(' · '),
-        // a comment written here takes the image in, as on its card
-        cmt: axOf(e).entered ? null : { get: () => axOf(e).comment, set: c => { const s = axOf(e); s.comment = c.trim(); if (s.comment && !s.taken) s.taken = true; } } }));
-    if (axCmt) axCmtDone(false);
-    coverViewer(list, Math.max(0, xs.findIndex(e => e.key === key)), () => { Log.debug('#772 comments written full screen'); axPaint(); });
-}
-// each store's row: take all its images in, or leave them all out once they are
-function axGroupBtn(g) {
-    const open = g.xs.filter(e => !axOf(e).entered);
-    if (!open.length) return '';
-    const all = open.every(e => axOf(e).taken);
-    return '<button type="button" class="mc-ax-b mc-ax-gb" data-act="ax-group" data-p="' + esc(g.p) + '" title="' + esc((all ? 'Leave out every ' : 'Take in every ') + g.p + ' image') + '">' + (all ? 'leave all out' : 'take all in') + '</button>';
-}
-// right-click takes an image in or leaves it out, right-drag every one it passes the same way
-function axTake(k, on) {
-    const e = axList().find(x => x.key === k); if (!e || axOf(e).entered || axOf(e).taken === on) return false;
-    axOf(e).taken = on;
-    Log.debug('#772 ' + (on ? 'taken in ' : 'left out ') + k);
-    return true;
-}
-function axDown(e) {
-    const c = e.button === 2 && e.target.closest('.mc-ax-c');
-    if (!c || c.classList.contains('done')) return false;
-    if (e.target.closest('.mc-ax-cin')) return false;   // the comment being written keeps its own right-click
-    e.preventDefault();
-    const k = c.dataset.ax, s = axState.get(k), on = !(s && s.taken);
-    axTake(k, on);
-    axDrag = { on };
-    axPaint();
-    return true;
-}
-function axOver(e) {
-    if (!axDrag) return;
-    const c = e.target.closest('.mc-ax-c');
-    if (c && !c.classList.contains('done') && axTake(c.dataset.ax, axDrag.on)) axPaint();
-}
-function axAct(act, t) {
-    const c = t.closest('.mc-ax-c'), k = c && c.dataset.ax;
-    switch (act) {
-        case 'ax-type': axTypePop(t, [k]); break;
-        case 'ax-cmt': if (axCmt) axCmtDone(false); axCmt = k; axPaint(); break;
-        case 'ax-view': axView(k); break;
-        case 'ax-group': {
-            const xs = axList().filter(e => e.provider === t.dataset.p && !axOf(e).entered), on = !xs.every(e => axOf(e).taken);
-            xs.forEach(e => { axOf(e).taken = on; });
-            Log.debug('#772 every ' + t.dataset.p + ' image ' + (on ? 'taken in' : 'left out'));
-            axPaint(); break;
-        }
-        case 'ax-none': axList().forEach(e => { axOf(e).taken = false; }); Log.debug('#772 every image left out'); axPaint(); break;
-    }
+function asGalleryHtml() {
+    const r = results.as;
+    if (!r || !r.best || providerOff('as')) return '';
+    const old = document.getElementById('mc-as-slot'), h = old ? old.style.height : '';
+    const ops = asPlan.ops;
+    return '<div class="mc-ax"><div class="mc-ax-h"><span class="mc-ax-t">Gallery</span><span class="mc-ax-hint">Art Station\'s: take the stores\' other images in, drag into order, type, comment; Execute enters it</span></div>'
+        + '<div id="mc-as-slot" class="mc-as-slot"' + (h ? ' style="height:' + h + '"' : '') + '></div>'
+        + (ops.length ? '<div class="mc-ax-plan"><b>Execute:</b> ' + esc(ops.map(o => o.label).join(' · ')) + '</div>' : '') + '</div>';
 }
 function falconHtml(f) {
     if (!f || !f.items.length) return '';
@@ -595,7 +430,7 @@ async function execute(dry) {
     try {
         for (const step of STEPS) {
             const ids = (step.lanes || [step]).map(p => p.id)
-                .filter(id => ((picked[id] && picked[id].size) || (id === 'as' && axChosen().length)) && !providerOff(id) && found[id] && (found[id].capabilities || []).includes('apply'));
+                .filter(id => ((picked[id] && picked[id].size) || (id === 'as' && asMore())) && !providerOff(id) && found[id] && (found[id].capabilities || []).includes('apply'));
             if (!ids.length) continue;
             Log.info('step ' + step.id + ': ' + ids.join(' ∥ '));
             const outs = await Promise.all(ids.map(id => applyOne(id, dry)));
@@ -606,7 +441,6 @@ async function execute(dry) {
                 // #748: a step that failed in part says what went through (doneKeys): that is done, and leaves Execute's count
                 else if (!o.ok && !dry && Array.isArray(o.doneKeys) && o.doneKeys.length) markApplied(o.id, o.doneKeys);
                 if (o.via === 'falcon') results[o.id].falconKeys = o.keys || [];
-                if (o.ok && !dry) axEntered(o);
                 if (o.ok) { sent += o.sent || 0; Log.ok(o.id + ': ' + (o.note || 'done')); } else { failed++; Log.err(o.id + ': ' + (o.note || 'failed')); }
             });
             paintAll();
@@ -617,14 +451,13 @@ async function execute(dry) {
 }
 // #741: one provider applied again (its card's Retry), as Execute applies it
 async function retryOne(id) {
-    if (executing || !((picked[id] && picked[id].size) || (id === 'as' && axChosen().length))) return;
+    if (executing || !((picked[id] && picked[id].size) || (id === 'as' && asMore()))) return;
     executing = true; paintExec(); paintCards();
-    Log.info('retry ' + id + ': ' + (picked[id] ? picked[id].size : 0) + ' item(s)' + (id === 'as' ? ' + ' + axChosen().length + ' more image(s)' : ''));
+    Log.info('retry ' + id + ': ' + (picked[id] ? picked[id].size : 0) + ' item(s)' + (id === 'as' ? ' + ' + asMore() + ' gallery change(s)' : ''));
     try {
         const o = await applyOne(id, false);
         results[id] = Object.assign(results[id] || {}, { applied: o });
         if (o.ok && o.sent && o.via !== 'falcon') markApplied(id, o.keys || []);
-        if (o.ok) axEntered(o);
         else if (!o.ok && Array.isArray(o.doneKeys) && o.doneKeys.length) markApplied(id, o.doneKeys);   // #748
         if (o.ok) Log.ok(id + ': ' + (o.note || 'done')); else Log.err(id + ': ' + (o.note || 'failed'));
         mbuToast(o.ok ? 'Done: ' + (o.note || id) : 'Failed again: ' + (o.note || id), { kind: o.ok ? 'ok' : 'error' });
@@ -843,30 +676,11 @@ function mcStyle() {
         + '#mc-cover button{all:unset;cursor:pointer;color:#fff;display:flex;align-items:center;justify-content:center;border-radius:50%;background:rgba(255,255,255,.12)}#mc-cover button:hover{background:rgba(255,255,255,.26)}'
         + '.mc-cov-x{width:36px;height:36px;font-size:18px}.mc-cov-stage{flex:1 1 auto;min-height:0;display:flex;align-items:center;justify-content:center;padding:0 72px 16px}'
         + '.mc-cov-stage img{max-width:100%;max-height:100%;object-fit:contain;box-shadow:0 6px 40px rgba(0,0,0,.6);cursor:default}'
-        + '.mc-cov-cmt{display:flex;justify-content:center;min-height:30px;padding:0 16px 14px}.mc-cov-cmt:empty{display:none}#mc-cover .mc-cov-cadd{border-radius:var(--mbu-radius);padding:4px 12px;font-size:13px}'
-        + '.mc-cov-ctx{cursor:text;font-size:14px;color:#fff;padding:4px 8px;max-width:80%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.mc-cov-cin{width:min(480px,80%);font:inherit;font-size:14px;padding:5px 10px;border-radius:var(--mbu-radius);border:1px solid rgba(255,255,255,.4);background:rgba(0,0,0,.5);color:#fff;outline:none}'
         + '#mc-cover .mc-cov-go{position:absolute;top:50%;transform:translateY(-50%);width:52px;height:52px;font-size:34px;line-height:1}#mc-cover .mc-cov-go.prev{left:12px}#mc-cover .mc-cov-go.next{right:12px}'
         + '.mc-best img{width:72px;height:72px;object-fit:contain;border-radius:var(--mbu-radius);background:var(--mbu-bg-sunken);border:1px solid var(--mbu-border-soft);flex:0 0 auto}'
         // #772: the stores' other images, cards as in Art Station's gallery
         + '.mc-ax{padding:8px 10px 12px;border-top:1px solid var(--mbu-divider)}.mc-ax-h{display:flex;align-items:center;gap:6px;flex-wrap:wrap;min-height:26px;margin-bottom:4px}.mc-ax-t{font-size:10.5px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:var(--mbu-text-dim)}'
-        + '.mc-ax-hint{font-size:11px;color:var(--mbu-text-weak)}.mc-ax-sp{flex:1 1 auto}'
-        + '#mc-root .mc-ax-b{font:12px var(--mbu-font);padding:2px 9px;border-radius:var(--mbu-radius);border:1px solid var(--mbu-border-strong);background:var(--mbu-bg);color:var(--mbu-accent-text);cursor:pointer}#mc-root .mc-ax-b:hover{background:var(--mbu-bg-hover);border-color:var(--mbu-accent)}'
-        + '.mc-ax-g{margin-top:6px}.mc-ax-gh{display:flex;align-items:center;gap:6px;font-size:12px;margin-bottom:6px}.mc-ax-gh .mc-ax-gn{color:var(--mbu-text-weak);font-size:11px}.mc-ax-cs{display:flex;flex-wrap:wrap;gap:20px 10px;padding-bottom:10px}'
-        + '.mc-ax-c{position:relative;width:132px;box-sizing:border-box;background:var(--mbu-bg);border:1px solid var(--mbu-border-soft);border-radius:9px;display:flex;flex-direction:column;user-select:none}'
-        + '.mc-ax-c.on{border-color:var(--mbu-accent);background:var(--mbu-accent-soft)}.mc-ax-c.done{opacity:.7}'
-        + '#mc-root .mc-ax-img{all:unset;cursor:zoom-in;height:104px;display:flex;align-items:center;justify-content:center;padding:6px 6px 4px}.mc-ax-img img{max-width:118px;max-height:100px;object-fit:contain;border-radius:3px;display:block}'
-        + '.mc-ax-c:not(.on):not(.done) .mc-ax-img img{opacity:.55}.mc-ax-c:not(.on):not(.done):hover .mc-ax-img img{opacity:.85}#mc-root .mc-ax-img:focus-visible{outline:2px solid var(--mbu-accent);outline-offset:-2px;border-radius:9px}'
-        + '.mc-ax-dup{position:absolute;top:4px;left:4px;max-width:96px;font-size:10px;font-weight:600;color:var(--mbu-warn);background:var(--mbu-bg);border:1px solid var(--mbu-warn-border);border-radius:4px;padding:0 4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}'
-        + '.mc-ax-f{display:flex;align-items:center;gap:6px;min-height:17px;padding:4px 8px 0;border-top:1px solid var(--mbu-divider)}.mc-ax-cm{flex:0 1 auto;min-width:0;display:flex;overflow:hidden}.mc-ax-d{margin-left:auto;font:10.5px var(--mbu-font-mono);color:var(--mbu-text-weak);white-space:nowrap}'
-        + '#mc-root .mc-ax-pen{font:11px var(--mbu-font);border:1px dashed var(--mbu-accent);background:var(--mbu-bg);color:var(--mbu-accent-text);border-radius:var(--mbu-radius);padding:0 7px;cursor:pointer;opacity:0;transition:.1s}#mc-root .mc-ax-c:hover .mc-ax-pen,#mc-root .mc-ax-pen:focus-visible{opacity:1}'
-        + '#mc-root .mc-ax-ctx{all:unset;font-size:11px;color:var(--mbu-accent-text);cursor:text;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}'
-        + '#mc-root .mc-ax-cin{width:100%;box-sizing:border-box;font:11px var(--mbu-font);padding:1px 4px;border:1px solid var(--mbu-accent);border-radius:4px;background:var(--mbu-bg);color:var(--mbu-text)}'
-        + '.mc-ax-ty{display:flex;justify-content:center;transform:translateY(50%);position:relative;z-index:1;margin-top:2px}'
-        + '#mc-root .mc-ax-pill{font:700 11px var(--mbu-font);color:var(--mbu-accent-text);background:var(--mbu-bg-sunken);border:1px solid var(--mbu-accent);border-radius:20px;padding:2px 13px;cursor:pointer;max-width:118px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}#mc-root .mc-ax-pill:hover{background:var(--mbu-bg-hover)}'
-        + '#mc-root .mc-ax-pill.add{background:var(--mbu-bg);border-style:dashed;font-weight:600;opacity:.5}#mc-root .mc-ax-c:hover .mc-ax-pill.add,#mc-root .mc-ax-pill.add:focus-visible{opacity:1}'
-        + '.mc-ax-note{font-size:11px;font-weight:700;background:var(--mbu-bg);border:1px solid var(--mbu-border);border-radius:20px;padding:2px 11px}.mc-ax-note.ok{color:var(--mbu-ok);border-color:var(--mbu-ok-border)}'
-        + '.mc-ax-pop{position:fixed;z-index:var(--mbu-z-pop);background:var(--mbu-bg);border:1px solid var(--mbu-accent);border-radius:8px;box-shadow:var(--mbu-shadow-lg);padding:6px;font-size:13px;color:var(--mbu-text)}'
-        + '.mc-ax-tg{display:grid;grid-template-columns:1fr 1fr;gap:0 14px}.mc-ax-tg label{display:flex;align-items:center;gap:7px;padding:3px 6px;border-radius:5px;cursor:pointer;white-space:nowrap}.mc-ax-tg label:hover{background:var(--mbu-bg-hover)}.mc-ax-tg input{accent-color:var(--mbu-accent);margin:0}'
+        + '.mc-ax-hint{font-size:11px;color:var(--mbu-text-weak)}.mc-as-slot{min-height:120px;border:1px solid var(--mbu-border-soft);border-radius:8px}.mc-ax-plan{margin-top:6px;font-size:12px;color:var(--mbu-text-dim)}'
         + '.mc-best-no{width:72px;height:72px;display:flex;align-items:center;justify-content:center;font-size:32px;background:var(--mbu-bg-sunken);border-radius:var(--mbu-radius);flex:0 0 auto}.mc-best-t{display:flex;flex-direction:column;gap:2px;font-size:12px;min-width:0}.mc-best-t .dim{color:var(--mbu-text-weak);font-size:11px}'
         + '.mc-working{display:flex;align-items:center;gap:7px;padding:5px 10px;font-size:11.5px;color:var(--mbu-accent-text);border-bottom:1px solid var(--mbu-divider)}'
         + '.mc-spin{width:10px;height:10px;border:2px solid var(--mbu-accent-soft);border-top-color:var(--mbu-accent);border-radius:50%;animation:mc-spin .8s linear infinite;flex:0 0 auto}@keyframes mc-spin{to{transform:rotate(360deg)}}'
@@ -937,7 +751,7 @@ function mcStyle() {
         + '.mc-center{order:-1;flex:none;overflow:visible;padding:8px}'
         + '.mc-side{flex:none;overflow:visible;border:0;border-top:1px solid var(--mbu-border)}.mc-side.right{border-left:0}'
         // a card's header wraps rather than squeeze its title (Release credits' import buttons go under it)
-        + '.mc-sect-h{flex-wrap:wrap}.mc-sect-h .t{white-space:nowrap}.mc-ax-gh{flex-wrap:wrap}#mc-root .mc-ax-b{white-space:nowrap}'
+        + '.mc-sect-h{flex-wrap:wrap}.mc-sect-h .t{white-space:nowrap}'
         // the settings: less of the screen for the overlay's margin, and the title row wraps rather than cut off Log
         + '.mbu-ov:has(>.mc-cfg){padding:10px}.mc-cfg .mbu-cfg-h{flex-wrap:wrap;row-gap:4px}'
         + '.mc-sect{overflow-x:auto}.mc-tbl td.ttl{min-width:140px}.mc-row2{flex-direction:column;align-items:stretch}'
@@ -972,7 +786,7 @@ function stateOf(p) {
 // an info-only provider (CH) counts what it found instead of what it would add
 function infoCount(id) { const r = results[id]; return r && r.findings ? r.findings.reduce((n, x) => n + (x.credits || 0), 0) : 0; }
 // a 'searched' row (AS's sources other than the best cover's) is in the pool, not something entered
-function countNew(id) { const r = results[id]; return (r && r.findings ? r.findings.filter(x => x.state === 'new' && x.role !== 'searched').length : 0) + (id === 'as' ? axChosen().length : 0); }
+function countNew(id) { const r = results[id]; return (r && r.findings ? r.findings.filter(x => x.state === 'new' && x.role !== 'searched').length : 0) + (id === 'as' ? asMore() : 0); }
 function stateText(p) {
     const st = stateOf(p), r = results[p.id];
     if (st === 'off') return 'off';
@@ -983,7 +797,7 @@ function stateText(p) {
     const t = r.findings.reduce((a, x) => { const k = x.role === 'searched' ? 'searched' : x.state; a[k] = (a[k] || 0) + 1; return a; }, {});
     return [t.new && t.new + ' new', t.searched && t.searched + ' searched', t.linked && t.linked + ' linked', t.withheld && t.withheld + ' withheld', t.unsure && t.unsure + ' unsure', t.blocked && t.blocked + ' blocked', t.none && t.none + ' not found'].filter(Boolean).join(' · ') || 'nothing';
 }
-function paintAll() { if (!ui) return; paintBadges(); paintCards(); paintReleaseCredits(); fitCards(); paintMatrix(); paintInspector(); paintExec(); }
+function paintAll() { if (!ui) return; asStage(); paintBadges(); paintCards(); paintReleaseCredits(); fitCards(); paintMatrix(); paintInspector(); paintExec(); }
 
 function header() {
     const h = el('header', 'mc-hdr');
@@ -1127,7 +941,7 @@ function addText(p) {
     const n = (k, w) => k + ' ' + w + (k === 1 ? '' : 's');
     if (p.id === 'is') { const l = xs.filter(x => x.kind === 'link').length, i = xs.length - l; return [i && n(i, 'ISRC'), l && n(l, 'link')].filter(Boolean).join(' · ') + ' to add'; }
     if (p.id === 'pc') return n(xs.length, 'link') + ' to add';
-    if (p.id === 'as') { const k = (xs.some(x => x.role === 'best') ? 1 : 0) + axChosen().length; if (k) return n(k, 'cover') + ' to enter'; }
+    if (p.id === 'as') { const k = xs.some(x => x.role === 'best') ? 1 : 0, m = asMore(); if (k || m) return [k && n(k, 'cover') + ' to enter', m && n(m, 'gallery change')].filter(Boolean).join(' · '); }
     return xs.length + ' new';
 }
 // [class, words, mark on the ring]
@@ -1644,7 +1458,7 @@ function paintCards() {
         const entSect = (type, title) => sect(type, title, entRows.filter(x => x.entity.type === type).map(x => line(x)).join(''), linked.filter(x => isEnt(x) && x.entity.type === type));
         setCard(box, mbuHtml(sum + ap + sect('release', 'Release', bcRowsOf().map(x => line(x)).join('') + rgRows.map(x => line(x)).join('') + relHtml + hint, linked.filter(x => !isEnt(x)))
             + entSect('artist', 'Artists') + entSect('label', 'Labels') + (none.length ? '<div class="mc-none" title="' + esc('Not found: ' + none.map(x => x.name || x.key).join(', ')) + '"><span>Not found</span>'
-            + none.map(x => '<span class="mc-pico" title="' + esc(x.name || x.key) + '">' + stIcon(x.icon || x.key, 14) + '</span>').join('') + '</div>' : '') + (id === 'as' ? axHtml() : '')));
+            + none.map(x => '<span class="mc-pico" title="' + esc(x.name || x.key) + '">' + stIcon(x.icon || x.key, 14) + '</span>').join('') + '</div>' : '') + (id === 'as' ? asGalleryHtml() : '')));
     });
 }
 // #727: a catalog number's icon, a tag
@@ -1658,7 +1472,7 @@ const BC_CSS = '#mc-root,#mcc-root{' + BC_LIGHT.map((c, i) => '--mc-bc-' + i + '
     + ':root[data-mbu-theme=dark] #mc-root,:root[data-mbu-theme=dark] #mcc-root{' + BC_DARK.map((c, i) => '--mc-bc-' + i + ':' + c).join(';') + '}';
 // AS's selected rows are the pool its one cover comes from, so they count once, not once each
 const isPool = id => ((results[id] || {}).findings || []).some(x => x.role === 'searched' || x.role === 'best');
-function changeCount() { return Object.entries(picked).reduce((n, [id, set]) => n + (providerOff(id) ? 0 : isPool(id) ? Math.min(1, set.size) : set.size), 0) + axChosen().length; }
+function changeCount() { return Object.entries(picked).reduce((n, [id, set]) => n + (providerOff(id) ? 0 : isPool(id) ? Math.min(1, set.size) : set.size), 0) + asMore(); }
 // Probe or Execute in flight, or a Falcon batch that Execute handed over still running: the
 // header pulses, as Apollo's bar does while an edit saves (#412).
 function isBusy() { return executing || Object.values(results).some(r => r.state === 'busy' || (r.falcon && r.falcon.running)); }
@@ -1769,18 +1583,6 @@ function open() {
     ui.addEventListener('contextmenu', onContextMenu);
     ui.addEventListener('mousedown', onPickDown);
     ui.addEventListener('mouseover', onPickOver);
-    // #772: an image's comment: Enter saves it and moves to the next, Escape (or leaving it) saves it
-    ui.addEventListener('input', e => { if (e.target.classList.contains('mc-ax-cin') && axCmt) { const st = axState.get(axCmt); if (st) st.comment = e.target.value; } });
-    ui.addEventListener('keydown', e => {
-        if (!e.target.classList.contains('mc-ax-cin')) return;
-        e.stopPropagation();
-        if (e.key === 'Enter') { e.preventDefault(); axCmtDone(true); } else if (e.key === 'Escape') { e.preventDefault(); axCmtDone(false); }
-    });
-    ui.addEventListener('focusout', e => {
-        if (!e.target.classList.contains('mc-ax-cin')) return;
-        const k = axCmt;
-        setTimeout(() => { if (ui && axCmt === k && !(document.activeElement && document.activeElement.classList.contains('mc-ax-cin'))) axCmtDone(false); }, 150);
-    });
     document.addEventListener('mouseup', onPickUp);
     // a cover thumbnail that fails falls back to its full image once (errors don't bubble: capture)
     ui.addEventListener('error', e => { const i = e.target; if (i.tagName === 'IMG' && i.dataset.alt) { const a = i.dataset.alt; delete i.dataset.alt; i.dataset.from = i.getAttribute('src'); i.src = a; } }, true);
@@ -1873,7 +1675,6 @@ let drag = null, dragged = false;
 const DRAG_SEL = '.mc-tbl span.mc-pick[data-col]';
 function onPickDown(e) {
     dragged = false;
-    if (axDown(e)) return;
     if (e.button !== 0 || e.ctrlKey || e.metaKey || e.altKey || e.shiftKey) return;
     const pk = e.target.closest(DRAG_SEL);
     if (!pk || e.target.closest('a, button')) return;
@@ -1881,7 +1682,6 @@ function onPickDown(e) {
     drag = { col: pk.dataset.col, key: pk.dataset.key, on: !isPicked(pk), moved: false };
 }
 function onPickOver(e) {
-    axOver(e);
     if (!drag) return;
     const pk = e.target.closest(DRAG_SEL);
     if (!pk || pk.dataset.col !== drag.col || (!drag.moved && pk.dataset.key === drag.key)) return;
@@ -1891,13 +1691,11 @@ function onPickOver(e) {
     setPicks(pks.filter(x => isPicked(x) !== drag.on), drag.on);
 }
 function onPickUp() {
-    axDrag = null;
     if (drag && drag.moved) dragged = true;
     drag = null;
 }
 // a found track link is an <a> (a click opens it): right-click takes it in or leaves it out
 function onContextMenu(e) {
-    if (e.target.closest('.mc-ax-c')) { e.preventDefault(); return; }   // #772: right-click takes in
     const pk = e.target.closest('a.mc-lnk.mc-pick');
     if (!pk) return;
     e.preventDefault();
@@ -1905,9 +1703,6 @@ function onContextMenu(e) {
 }
 function onClick(e) {
     const t = e.target;
-    if (Date.now() < axPopUntil) { axPopUntil = 0; if (ui.contains(t)) return; }   // #772: the click that closed the type picker
-    const axa = t.closest('[data-act^="ax-"]');
-    if (axa) { axAct(axa.dataset.act, axa); return; }
     const side = t.closest('[data-side]');
     if (side) { S[side.dataset.side] = true; saveSettings(); paintSides(); return; }
     const x = t.closest('[data-close]');

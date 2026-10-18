@@ -1,7 +1,7 @@
 // #772: Mission Control's Execute with only the stores' other images taken in (front: false) said "entered 1 more
-// image" while nothing was. The frame now answers what it did: no image found again is "nothing to enter", not ok,
+// image" while nothing was. The frame now answers what it did: nothing taken in is "nothing to enter", not ok,
 // and an add MusicBrainz didn't save (it shows the form again, a 200 without the redirect to the cover-art page) is
-// a failure. The image taken in goes after the covers already there.
+// a failure. #784: the image taken in on its card in the gallery goes after the covers already there.
 //
 // The frame is a real cover-art page in an iframe of the release page, its "stores' images" drawn and given a
 // store by the test hook, as in 772-mc-extras. The upload (the sandbox's goes to its own /ssssss/) is answered 200, the add with
@@ -66,17 +66,21 @@ test('#772: extras alone: nothing found is not ok, an add MusicBrainz didn\'t sa
     return (await window.__asTest.mc.offer(fresh[0], fresh.slice(1))).map(e => e.key);
   });
   check(JSON.stringify(offered) === '["Discogs#2"]', `Discogs 2 is offered (${offered})`);
-  const enter = extras => page.evaluate(([t, x]) => { window.__got = []; document.getElementById('mcf').contentWindow.postMessage({ mcAs: 1, token: t, type: 'enter', front: false, note: 'Via Mission Control vtest: x', extras: x }, location.origin); }, [TOKEN, extras]);
+  const post = o => page.evaluate(([t, x]) => { window.__got = []; document.getElementById('mcf').contentWindow.postMessage(Object.assign({ mcAs: 1, token: t }, x), location.origin); }, [TOKEN, o]);
+  const enter = () => post({ type: 'enter', front: false, note: 'Via Mission Control vtest: x' });
   const entered = () => until(() => page.evaluate(() => window.__got.find(m => m.type === 'entered') || null), Boolean, { timeout: 120_000 });
 
-  // an image not found again: nothing to enter, and the frame says so
-  await enter([{ key: 'Discogs#9', types: ['Back'] }]);
+  // the best front left out on MC's card, nothing taken in: nothing to enter, and the frame says so
+  await post({ type: 'stage', front: false, replace: false });
+  await enter();
   let m = await entered();
   console.log(JSON.stringify(m));
-  check(m && m.ok === false && /nothing to enter/.test(m.error) && m.extrasIn === 0 && (m.missing || []).join() === 'Discogs#9', `nothing found is not ok (${JSON.stringify(m)})`);
+  check(m && m.ok === false && /nothing to enter/.test(m.error) && m.extrasIn === 0 && !m.front, `nothing taken in is not ok (${JSON.stringify(m)})`);
 
   // Discogs 2 alone, after the covers already there; MusicBrainz shows the form again
-  await enter([{ key: 'Discogs#2', types: ['Back'], comment: '' }]);
+  const id = await frame.evaluate(() => { const x = window.__asTest.mc.model().find(m => m._tag === 'd2'); x.types = ['Back']; return x.id; });
+  await frame.click(`.as-card[data-id="${id}"] .as-undo`);
+  await enter();
   const order = await until(() => frame.evaluate(() => { const s = window.__asTest.mc.model().filter(x => !x._del).sort((a, b) => a.order - b.order); return s.length ? s.map(x => x._tag || 'old').join() : null; }), v => /d2/.test(v || ''));
   check(/^(old,)+d2$/.test(order || '') && !/d1/.test(order), `the best front is left out, Discogs 2 follows the covers there (${order})`);
   m = await entered();

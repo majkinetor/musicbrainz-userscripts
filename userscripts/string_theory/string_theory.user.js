@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         String Theory
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.18.150156
+// @version      2026.10.18.173550
 // @description  Unified bundle of 11 MusicBrainz userscripts (apollo_editor, art_station, credit_hoarder, falcon, first_contact, fusion, group_therapy, isrc_scout, mammoth, mission_control, platform_check). Built by userscripts/string_theory/build.mjs — do not hand-edit.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5TdHJpbmcgVGhlb3J5PC90aXRsZT4KPHBhdGggZD0iTTY0IDEwIEw2Ni40IDEwLjIgTDY4LjcgMTAuNiBMNzAuOSAxMS40IEw3My4xIDEyLjQgTDc1LjIgMTMuNyBMNzcuMSAxNS4yIEw3OC44IDE3IEw4MC40IDE4LjkgTDgxLjggMjEgTDgzLjEgMjMuMSBMODQuMSAyNS40IEw4NSAyNy42IEw4NS43IDI5LjkgTDg2LjMgMzIuMSBMODYuOCAzNC4zIEw4Ny4xIDM2LjQgTDg3LjQgMzguNCBMODcuNyA0MC4zIEw4Ny45IDQyLjEgTDg4LjIgNDMuNyBMODguNSA0NS4yIEw4OC45IDQ2LjYgTDg5LjQgNDcuOCBMOTAgNDkgTDkwLjcgNTAuMSBMOTEuNiA1MS4xIEw5Mi42IDUyLjIgTDkzLjcgNTMuMiBMOTUgNTQuMiBMOTYuNCA1NS4zIEw5Ny45IDU2LjUgTDk5LjUgNTcuNyBMMTAxLjEgNTkuMSBMMTAyLjcgNjAuNiBMMTA0LjQgNjIuMiBMMTA2IDY0IEwxMDcuNSA2NS45IEwxMDguOSA2Ny45IEwxMTAuMiA3MC4xIEwxMTEuMyA3Mi4zIEwxMTIuMSA3NC43IEwxMTIuOCA3Ny4xIEwxMTMuMSA3OS41IEwxMTMuMiA4MS45IEwxMTMgODQuMyBMMTEyLjYgODYuNiBMMTExLjggODguOSBMMTEwLjggOTEgTDEwOS41IDkzIEwxMDcuOSA5NC43IEwxMDYuMSA5Ni4zIEwxMDQuMSA5Ny43IEwxMDIgOTguOCBMOTkuNyA5OS43IEw5Ny4zIDEwMC40IEw5NC45IDEwMC44IEw5Mi40IDEwMSBMODkuOSAxMDAuOSBMODcuNCAxMDAuNyBMODUgMTAwLjQgTDgyLjcgOTkuOSBMODAuNCA5OS4zIEw3OC4zIDk4LjYgTDc2LjMgOTcuOCBMNzQuNCA5Ny4xIEw3Mi43IDk2LjQgTDcxIDk1LjcgTDY5LjUgOTUuMSBMNjggOTQuNiBMNjYuNyA5NC4zIEw2NS4zIDk0LjEgTDY0IDk0IEw2Mi43IDk0LjEgTDYxLjMgOTQuMyBMNjAgOTQuNiBMNTguNSA5NS4xIEw1NyA5NS43IEw1NS4zIDk2LjQgTDUzLjYgOTcuMSBMNTEuNyA5Ny44IEw0OS43IDk4LjYgTDQ3LjYgOTkuMyBMNDUuMyA5OS45IEw0MyAxMDAuNCBMNDAuNiAxMDAuNyBMMzguMSAxMDAuOSBMMzUuNiAxMDEgTDMzLjEgMTAwLjggTDMwLjcgMTAwLjQgTDI4LjMgOTkuNyBMMjYgOTguOCBMMjMuOSA5Ny43IEwyMS45IDk2LjMgTDIwLjEgOTQuNyBMMTguNSA5MyBMMTcuMiA5MSBMMTYuMiA4OC45IEwxNS40IDg2LjYgTDE1IDg0LjMgTDE0LjggODEuOSBMMTQuOSA3OS41IEwxNS4yIDc3LjEgTDE1LjkgNzQuNyBMMTYuNyA3Mi4zIEwxNy44IDcwLjEgTDE5LjEgNjcuOSBMMjAuNSA2NS45IEwyMiA2NCBMMjMuNiA2Mi4yIEwyNS4zIDYwLjYgTDI2LjkgNTkuMSBMMjguNSA1Ny43IEwzMC4xIDU2LjUgTDMxLjYgNTUuMyBMMzMgNTQuMiBMMzQuMyA1My4yIEwzNS40IDUyLjIgTDM2LjQgNTEuMSBMMzcuMyA1MC4xIEwzOCA0OSBMMzguNiA0Ny44IEwzOS4xIDQ2LjYgTDM5LjUgNDUuMiBMMzkuOCA0My43IEw0MC4xIDQyLjEgTDQwLjMgNDAuMyBMNDAuNiAzOC40IEw0MC45IDM2LjQgTDQxLjIgMzQuMyBMNDEuNyAzMi4xIEw0Mi4zIDI5LjkgTDQzIDI3LjYgTDQzLjkgMjUuNCBMNDQuOSAyMy4xIEw0Ni4yIDIxIEw0Ny42IDE4LjkgTDQ5LjIgMTcgTDUwLjkgMTUuMiBMNTIuOCAxMy43IEw1NC45IDEyLjQgTDU3LjEgMTEuNCBMNTkuMyAxMC42IEw2MS42IDEwLjJaIiBmaWxsPSJub25lIiBzdHJva2U9IiM5Yzg2ZWEiIHN0cm9rZS13aWR0aD0iMTAiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz4KPHBhdGggZD0iTTY0IDM0IEw2NS4zIDMzLjkgTDY2LjcgMzMuNyBMNjggMzMuNCBMNjkuNSAzMi45IEw3MSAzMi4zIEw3Mi43IDMxLjYgTDc0LjQgMzAuOSBMNzYuMyAzMC4yIEw3OC4zIDI5LjQgTDgwLjQgMjguNyBMODIuNyAyOC4xIEw4NSAyNy42IEw4Ny40IDI3LjMgTDg5LjkgMjcuMSBMOTIuNCAyNyBMOTQuOSAyNy4yIEw5Ny4zIDI3LjYgTDk5LjcgMjguMyBMMTAyIDI5LjIgTDEwNC4xIDMwLjMgTDEwNi4xIDMxLjcgTDEwNy45IDMzLjMgTDEwOS41IDM1IEwxMTAuOCAzNyBMMTExLjggMzkuMSBMMTEyLjYgNDEuNCBMMTEzIDQzLjcgTDExMy4yIDQ2LjEgTDExMy4xIDQ4LjUgTDExMi44IDUwLjkgTDExMi4xIDUzLjMgTDExMS4zIDU1LjcgTDExMC4yIDU3LjkgTDEwOC45IDYwLjEgTDEwNy41IDYyLjEgTDEwNiA2NCBMMTA0LjQgNjUuOCBMMTAyLjcgNjcuNCBMMTAxLjEgNjguOSBMOTkuNSA3MC4zIEw5Ny45IDcxLjUgTDk2LjQgNzIuNyBMOTUgNzMuOCBMOTMuNyA3NC44IEw5Mi42IDc1LjggTDkxLjYgNzYuOSBMOTAuNyA3Ny45IEw5MCA3OSBMODkuNCA4MC4yIEw4OC45IDgxLjQgTDg4LjUgODIuOCBMODguMiA4NC4zIEw4Ny45IDg1LjkgTDg3LjcgODcuNyBMODcuNCA4OS42IEw4Ny4xIDkxLjYgTDg2LjggOTMuNyBMODYuMyA5NS45IEw4NS43IDk4LjEgTDg1IDEwMC40IEw4NC4xIDEwMi42IEw4My4xIDEwNC45IEw4MS44IDEwNyBMODAuNCAxMDkuMSBMNzguOCAxMTEgTDc3LjEgMTEyLjggTDc1LjIgMTE0LjMgTDczLjEgMTE1LjYgTDcwLjkgMTE2LjYgTDY4LjcgMTE3LjQgTDY2LjQgMTE3LjggTDY0IDExOCBMNjEuNiAxMTcuOCBMNTkuMyAxMTcuNCBMNTcuMSAxMTYuNiBMNTQuOSAxMTUuNiBMNTIuOCAxMTQuMyBMNTAuOSAxMTIuOCBMNDkuMiAxMTEgTDQ3LjYgMTA5LjEgTDQ2LjIgMTA3IEw0NC45IDEwNC45IEw0My45IDEwMi42IEw0MyAxMDAuNCBMNDIuMyA5OC4xIEw0MS43IDk1LjkgTDQxLjIgOTMuNyBMNDAuOSA5MS42IEw0MC42IDg5LjYgTDQwLjMgODcuNyBMNDAuMSA4NS45IEwzOS44IDg0LjMgTDM5LjUgODIuOCBMMzkuMSA4MS40IEwzOC42IDgwLjIgTDM4IDc5IEwzNy4zIDc3LjkgTDM2LjQgNzYuOSBMMzUuNCA3NS44IEwzNC4zIDc0LjggTDMzIDczLjggTDMxLjYgNzIuNyBMMzAuMSA3MS41IEwyOC41IDcwLjMgTDI2LjkgNjguOSBMMjUuMyA2Ny40IEwyMy42IDY1LjggTDIyIDY0IEwyMC41IDYyLjEgTDE5LjEgNjAuMSBMMTcuOCA1Ny45IEwxNi43IDU1LjcgTDE1LjkgNTMuMyBMMTUuMiA1MC45IEwxNC45IDQ4LjUgTDE0LjggNDYuMSBMMTUgNDMuNyBMMTUuNCA0MS40IEwxNi4yIDM5LjEgTDE3LjIgMzcgTDE4LjUgMzUgTDIwLjEgMzMuMyBMMjEuOSAzMS43IEwyMy45IDMwLjMgTDI2IDI5LjIgTDI4LjMgMjguMyBMMzAuNyAyNy42IEwzMy4xIDI3LjIgTDM1LjYgMjcgTDM4LjEgMjcuMSBMNDAuNiAyNy4zIEw0MyAyNy42IEw0NS4zIDI4LjEgTDQ3LjYgMjguNyBMNDkuNyAyOS40IEw1MS43IDMwLjIgTDUzLjYgMzAuOSBMNTUuMyAzMS42IEw1NyAzMi4zIEw1OC41IDMyLjkgTDYwIDMzLjQgTDYxLjMgMzMuNyBMNjIuNyAzMy45WiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZmZmZmZmIiBzdHJva2Utd2lkdGg9IjIwIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+CjxwYXRoIGQ9Ik02NCAzNCBMNjUuMyAzMy45IEw2Ni43IDMzLjcgTDY4IDMzLjQgTDY5LjUgMzIuOSBMNzEgMzIuMyBMNzIuNyAzMS42IEw3NC40IDMwLjkgTDc2LjMgMzAuMiBMNzguMyAyOS40IEw4MC40IDI4LjcgTDgyLjcgMjguMSBMODUgMjcuNiBMODcuNCAyNy4zIEw4OS45IDI3LjEgTDkyLjQgMjcgTDk0LjkgMjcuMiBMOTcuMyAyNy42IEw5OS43IDI4LjMgTDEwMiAyOS4yIEwxMDQuMSAzMC4zIEwxMDYuMSAzMS43IEwxMDcuOSAzMy4zIEwxMDkuNSAzNSBMMTEwLjggMzcgTDExMS44IDM5LjEgTDExMi42IDQxLjQgTDExMyA0My43IEwxMTMuMiA0Ni4xIEwxMTMuMSA0OC41IEwxMTIuOCA1MC45IEwxMTIuMSA1My4zIEwxMTEuMyA1NS43IEwxMTAuMiA1Ny45IEwxMDguOSA2MC4xIEwxMDcuNSA2Mi4xIEwxMDYgNjQgTDEwNC40IDY1LjggTDEwMi43IDY3LjQgTDEwMS4xIDY4LjkgTDk5LjUgNzAuMyBMOTcuOSA3MS41IEw5Ni40IDcyLjcgTDk1IDczLjggTDkzLjcgNzQuOCBMOTIuNiA3NS44IEw5MS42IDc2LjkgTDkwLjcgNzcuOSBMOTAgNzkgTDg5LjQgODAuMiBMODguOSA4MS40IEw4OC41IDgyLjggTDg4LjIgODQuMyBMODcuOSA4NS45IEw4Ny43IDg3LjcgTDg3LjQgODkuNiBMODcuMSA5MS42IEw4Ni44IDkzLjcgTDg2LjMgOTUuOSBMODUuNyA5OC4xIEw4NSAxMDAuNCBMODQuMSAxMDIuNiBMODMuMSAxMDQuOSBMODEuOCAxMDcgTDgwLjQgMTA5LjEgTDc4LjggMTExIEw3Ny4xIDExMi44IEw3NS4yIDExNC4zIEw3My4xIDExNS42IEw3MC45IDExNi42IEw2OC43IDExNy40IEw2Ni40IDExNy44IEw2NCAxMTggTDYxLjYgMTE3LjggTDU5LjMgMTE3LjQgTDU3LjEgMTE2LjYgTDU0LjkgMTE1LjYgTDUyLjggMTE0LjMgTDUwLjkgMTEyLjggTDQ5LjIgMTExIEw0Ny42IDEwOS4xIEw0Ni4yIDEwNyBMNDQuOSAxMDQuOSBMNDMuOSAxMDIuNiBMNDMgMTAwLjQgTDQyLjMgOTguMSBMNDEuNyA5NS45IEw0MS4yIDkzLjcgTDQwLjkgOTEuNiBMNDAuNiA4OS42IEw0MC4zIDg3LjcgTDQwLjEgODUuOSBMMzkuOCA4NC4zIEwzOS41IDgyLjggTDM5LjEgODEuNCBMMzguNiA4MC4yIEwzOCA3OSBMMzcuMyA3Ny45IEwzNi40IDc2LjkgTDM1LjQgNzUuOCBMMzQuMyA3NC44IEwzMyA3My44IEwzMS42IDcyLjcgTDMwLjEgNzEuNSBMMjguNSA3MC4zIEwyNi45IDY4LjkgTDI1LjMgNjcuNCBMMjMuNiA2NS44IEwyMiA2NCBMMjAuNSA2Mi4xIEwxOS4xIDYwLjEgTDE3LjggNTcuOSBMMTYuNyA1NS43IEwxNS45IDUzLjMgTDE1LjIgNTAuOSBMMTQuOSA0OC41IEwxNC44IDQ2LjEgTDE1IDQzLjcgTDE1LjQgNDEuNCBMMTYuMiAzOS4xIEwxNy4yIDM3IEwxOC41IDM1IEwyMC4xIDMzLjMgTDIxLjkgMzEuNyBMMjMuOSAzMC4zIEwyNiAyOS4yIEwyOC4zIDI4LjMgTDMwLjcgMjcuNiBMMzMuMSAyNy4yIEwzNS42IDI3IEwzOC4xIDI3LjEgTDQwLjYgMjcuMyBMNDMgMjcuNiBMNDUuMyAyOC4xIEw0Ny42IDI4LjcgTDQ5LjcgMjkuNCBMNTEuNyAzMC4yIEw1My42IDMwLjkgTDU1LjMgMzEuNiBMNTcgMzIuMyBMNTguNSAzMi45IEw2MCAzMy40IEw2MS4zIDMzLjcgTDYyLjcgMzMuOVoiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZjNDdlMCIgc3Ryb2tlLXdpZHRoPSIxMyIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgo8L3N2Zz4K
@@ -130,7 +130,7 @@
 // Bundles (verbatim, each wrapped in a URL gate and a run-at gate): apollo_editor, art_station, credit_hoarder, falcon, first_contact, fusion, group_therapy, isrc_scout, mammoth, mission_control, platform_check.
 
 try {
-  console.log('%c String Theory %c v2026.10.18.150156 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
+  console.log('%c String Theory %c v2026.10.18.173550 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
   console.log("String Theory bundles:\n  · Apollo Editor v2026.10.17.231850\n  · Art Station v2026.10.18.145901\n  · Credit Hoarder v2026.10.17.232714\n  · Falcon v2026.10.17.231850\n  · First Contact v2026.10.18.143251\n  · Fusion v2026.10.17.231850\n  · Group Therapy v2026.10.17.231850\n  · ISRC Scout v2026.10.17.231850\n  · Mammoth v2026.10.17.231850\n  · Mission Control v2026.10.17.231850\n  · Platform Check v2026.10.18");
 } catch (e) {}
 
@@ -13410,14 +13410,74 @@ if (__stOff.indexOf("art_station") < 0 && __stRuns("art_station", {"inc":["^http
         : n ? 'Cover art: ' + n + ' image' + (n === 1 ? '' : 's') + (front ? ', front cover ✓' : ', no front cover') : 'Cover art: none yet';
       log.info('Mission Control probe ' + d.run + ': ' + summary + ' (archive ' + imgs.length + ', tab ' + tabN + ', frame ' + existing.length + ') · ' + findings.length + ' source(s): ' + findings.map(x => x.name).join(', ') + (why ? ' · ' + why : ''));
       send('mc:findings', { id: 'as', run: d.run, release: rel, summary, findings, best: best ? Object.assign({ larger, replace, unknown, current: top || null }, best) : null });
+      stage();
     });
-    // #680: covers are sourced and entered in a hidden frame of the cover-art page, where Art
-    // Station runs headless (mc_frame) and talks back by postMessage. One frame at a time.
-    let frame = null;   // { el, token, urls, best }
+    // #680: covers are sourced and entered in a frame of the cover-art page, where Art Station runs
+    // for Mission Control (mc_frame) and talks back by postMessage. One frame at a time.
+    // #784: the frame is Art Station's own gallery, shown in MC's cover-art card (mc_embed)
+    let frame = null;   // { el, token, urls, best, existing, h, full, used }
     const frameMsgs = new Set();
     window.addEventListener('message', e => {
       if (e.origin !== location.origin || !e.data || e.data.mcAs !== 1 || !frame || e.data.token !== frame.token) return;
       frameMsgs.forEach(f => f(e.data));
+    });
+    const framePost = o => { if (frame) frame.el.contentWindow.postMessage(Object.assign({ mcAs: 1, token: frame.token }, o), location.origin); };
+    // #784: the best front in or out as its source rows are ticked on MC's card (mc:stage), and with it the smaller
+    // front it replaces, so the gallery shows what Execute does
+    let stageFront = null;
+    const stage = () => { if (frame && frame.best && stageFront !== null) framePost({ type: 'stage', front: stageFront, replace: !!mcPlan.replace }); };
+    document.addEventListener('mc:stage', e => {
+      let d = {};
+      try { d = JSON.parse(e.detail) || {}; } catch (x) { return; }
+      if (d.id !== 'as' || (d.release && d.release !== rel)) return;
+      stageFront = !!d.front;
+      stage();
+    });
+    // #784: the frame is kept over the card's slot (#mc-as-slot), as moving an iframe into the card loads it again:
+    // clipped to what the card's scrolling shows, hidden while MC shows something of its own over the card, and
+    // over the whole window while the gallery shows full screen or a dialog. The slot takes the gallery's height.
+    const HIDDEN = w => 'position:fixed;left:-20000px;top:0;width:' + (w || 1200) + 'px;height:900px;border:0;opacity:0;pointer-events:none';
+    let clipBy = { slot: null, xs: [] };
+    const scrollers = slot => {
+      if (clipBy.slot !== slot) {
+        const xs = [];
+        for (let n = slot.parentElement; n && n !== document.documentElement; n = n.parentElement) { const o = getComputedStyle(n); if (/auto|scroll|hidden|clip/.test(o.overflowX + o.overflowY)) xs.push(n); }
+        clipBy = { slot, xs };
+      }
+      return clipBy.xs;
+    };
+    const covered = () => !!document.querySelector('#mc-cover, #mc-root .mbu-ov, body > .mbu-ov, #mbu-logpop:not(.min)');
+    let placeOn = false;
+    const place = () => {
+      if (!frame) { placeOn = false; return; }
+      const f = frame.el, slot = document.getElementById('mc-as-slot');
+      let css;
+      if (frame.full) css = 'position:fixed;left:0;top:0;width:100vw;height:100vh;border:0;opacity:1;pointer-events:auto;z-index:2147483646';
+      else {
+        const r = slot && frame.h ? slot.getBoundingClientRect() : null;
+        if (slot && frame.h && slot.style.height !== frame.h + 'px') slot.style.height = frame.h + 'px';
+        if (!r || !r.width || covered()) css = HIDDEN(r && r.width ? Math.round(r.width) : frame.w);
+        else {
+          frame.w = Math.round(r.width);
+          let t = r.top, b = r.top + frame.h, l = r.left, rt = r.right;
+          scrollers(slot).forEach(n => { const q = n.getBoundingClientRect(); t = Math.max(t, q.top); b = Math.min(b, q.bottom); l = Math.max(l, q.left); rt = Math.min(rt, q.right); });
+          css = b <= t || rt <= l ? HIDDEN(frame.w)
+            : 'position:fixed;left:' + r.left + 'px;top:' + r.top + 'px;width:' + r.width + 'px;height:' + frame.h + 'px;border:0;opacity:1;pointer-events:auto;z-index:2147483001;'
+              + 'clip-path:inset(' + Math.max(0, t - r.top) + 'px ' + Math.max(0, r.right - rt) + 'px ' + Math.max(0, r.top + frame.h - b) + 'px ' + Math.max(0, l - r.left) + 'px)';
+        }
+      }
+      if (f.style.cssText !== css) f.style.cssText = css;
+      if (slot || frame.full) requestAnimationFrame(place); else setTimeout(place, 400);
+    };
+    frameMsgs.add(m => {
+      if (m.type === 'size') frame.h = m.h;
+      else if (m.type === 'full') { frame.full = !!m.on; if (m.on) frame.el.focus(); }
+      else if (m.type === 'wheel') {
+        const slot = document.getElementById('mc-as-slot'), xs = slot ? scrollers(slot) : [];
+        const k = m.mode === 1 ? 16 : m.mode === 2 ? innerHeight : 1;
+        (xs.find(n => n.scrollHeight > n.clientHeight) || document.scrollingElement).scrollBy(m.dx * k, m.dy * k);
+      }
+      else if (m.type === 'plan') { frame.plan = m; send('mc:plan', { id: 'as', release: rel, ops: m.ops || [], more: m.more || 0 }); }
     });
     // the ticks are a self-ending setTimeout chain, not setInterval: in Violentmonkey on Firefox the
     // interval outlived its clearInterval and kept reporting "finding the best cover" after the answer (#680)
@@ -13435,17 +13495,25 @@ if (__stOff.indexOf("art_station") < 0 && __stRuns("art_station", {"inc":["^http
       frameMsgs.add(f);
       setTimeout(tick, 3000);
     });
+    // #784: a probe keeps the frame, and what was arranged in its gallery, while its sources are the same and
+    // nothing was entered from it
     async function mcSource(urls, onTick) {
+      const key = urls.slice().sort().join(' ');
+      if (frame && frame.best && !frame.used && frame.urls === key) {
+        log.info('Mission Control: keeping the gallery, its sources are the same: ' + urls.join(' '));
+        return { best: frame.best, existing: frame.existing };
+      }
       if (frame) { frame.el.remove(); frame = null; }
       const token = Math.random().toString(36).slice(2);
       const el = document.createElement('iframe');
-      el.setAttribute('aria-hidden', 'true'); el.tabIndex = -1;
-      el.style.cssText = 'position:fixed;left:-20000px;top:0;width:1200px;height:900px;border:0;opacity:0;pointer-events:none';
-      el.src = location.origin + '/release/' + rel + '/cover-art?mc_frame=' + token + '&mc_source=' + encodeURIComponent(JSON.stringify(urls));
-      frame = { el, token, urls: urls.slice().sort().join(' '), best: null };
-      log.info('Mission Control: sourcing the best cover in a hidden frame from ' + urls.join(' '));
+      el.setAttribute('title', 'Art Station');
+      el.style.cssText = HIDDEN();
+      el.src = location.origin + '/release/' + rel + '/cover-art?mc_frame=' + token + '&mc_embed=1&mc_source=' + encodeURIComponent(JSON.stringify(urls));
+      frame = { el, token, urls: key, best: null, h: 0, w: 0, full: false, used: false };
+      log.info('Mission Control: sourcing the best cover in a frame from ' + urls.join(' '));
       const got = waitFrame('best', 300000, s => onTick && onTick('finding the best cover (' + s + ' s)'));
       document.body.appendChild(el);
+      if (!placeOn) { placeOn = true; place(); }
       const m = await got;
       if (!frame || frame.token !== token) return null;
       frame.best = m ? m.best : null; frame.existing = (m && m.existing) || [];
@@ -13456,56 +13524,49 @@ if (__stOff.indexOf("art_station") < 0 && __stRuns("art_station", {"inc":["^http
       let d = {};
       try { d = JSON.parse(e.detail) || {}; } catch (x) { return; }
       if (d.id !== 'as' || (d.release && d.release !== rel)) return;
-      // #772: extras, the stores' other images taken in on MC's card ({ key, types, comment }); front: whether a
-      // source row is taken in, so the best front is entered too. Extras alone come from the probe's sources.
-      const extras = Array.isArray(d.extras) ? d.extras : [];
-      let urls = last.filter(x => (d.keys || []).includes(x.p.name)).map(x => x.u);
+      // #784: Execute enters what the gallery holds: the best front when a source row is taken in (front), the
+      // stores' other images taken in there, and whatever else was changed in it
+      const urls = last.filter(x => (d.keys || []).includes(x.p.name)).map(x => x.u);
       const front = urls.length > 0;
-      if (!front && extras.length && frame) urls = frame.urls.split(' ').filter(Boolean);
-      // the stores the extras come from are sourced too, should the probe's frame not serve
-      const provUrl = name => { const n = String(name || '').toLowerCase(); return (last.find(x => n === x.p.name.toLowerCase() || n.includes(x.p.name.toLowerCase())) || {}).u; };
-      extras.forEach(x => { const u = provUrl(x.key.split('#')[0]); if (u && !urls.includes(u)) urls.push(u); });
       const reply = o => send('mc:applied', Object.assign({ id: 'as', run: d.run, release: rel }, o));
       const busy = note => send('mc:progress', { id: 'as', run: d.run, state: 'busy', note });
-      const more = extras.length ? extras.length + ' more image' + (extras.length === 1 ? '' : 's') : '';
-      if (!urls.length) { reply({ ok: true, sent: 0, note: 'nothing to source' }); return; }
-      if (d.dry) { reply({ ok: true, sent: 0, note: 'dry run: would enter ' + [front && 'the best cover of ' + urls.length + ' source' + (urls.length === 1 ? '' : 's') + (frame && frame.best ? ' (' + frame.best.provider + ' ' + frame.best.w + '×' + frame.best.h + ')' : ''), more].filter(Boolean).join(' and ') }); return; }
-      // the probe's best is reused when it came from a ticked source and every ticked source was in
-      // that probe: the best of more sources is also the best of the ticked ones. Otherwise source again.
-      const probed = frame ? frame.urls.split(' ') : [];
-      const bp = String((frame && frame.best && frame.best.provider) || '').toLowerCase();
-      const bestUrl = bp && (last.find(x => bp === x.p.name.toLowerCase() || bp.includes(x.p.name.toLowerCase())) || {}).u;
-      const same = !!frame && probed.slice().sort().join(' ') === urls.slice().sort().join(' ');
-      const reuse = !!(frame && frame.best && urls.every(u => probed.includes(u)) && (same || (bestUrl && urls.includes(bestUrl))));
-      log.info('Mission Control apply: ' + (reuse ? 'reusing the best cover from the probe (' + frame.best.provider + ')' : 'sourcing again for ' + urls.join(' ')));
-      if (!reuse) {
+      const more = frame && frame.plan ? frame.plan.more || 0 : 0;
+      if (!front && !more) { reply({ ok: true, sent: 0, note: 'nothing to enter' }); return; }
+      if (d.dry) {
+        const ops = (frame && frame.plan && frame.plan.ops) || [];
+        reply({ ok: true, sent: 0, note: 'dry run: would ' + (ops.length ? ops.map(o => o.label).join(' · ') : 'enter the best cover of ' + urls.length + ' source' + (urls.length === 1 ? '' : 's')) });
+        return;
+      }
+      if (!frame || !frame.best || frame.used) {
+        // no gallery to enter from (the probe found nothing, or it was entered from already): source again
         busy('finding the best cover');
-        const r = await mcSource(urls, busy);
+        const r = await mcSource(urls.length ? urls : last.map(x => x.u), busy);
         if (!r || !r.best) { reply({ ok: false, sent: 0, note: 'no cover could be imported' }); return; }
-        // the same comparison as the probe's, for the new pick
         const { top, larger, replace, unknown } = vsFronts(r.best, r.existing);
         mcPlan = { replace };
+        stageFront = front; stage();   // a new gallery: the best front as the source rows say
         send('mc:progress', { id: 'as', run: d.run, state: 'busy', note: 'entering the cover', best: Object.assign({ larger, replace, unknown, current: top || null }, r.best) });
       }
-      busy(front ? 'entering the cover' : 'entering ' + more);
+      if (stageFront === null) { stageFront = front; stage(); }   // never staged (no card painted): as the source rows say
+      log.info('Mission Control apply: entering the gallery' + (front ? ' with the best cover (' + frame.best.provider + ')' : ' without the best cover'));
+      busy('entering the cover art');
       // #741: the frame repeats a failed upload (auto-repeat), which can take longer than ten minutes: it is
       // waited for while it says what it does, and its word is the note
-      let word = 'entering the cover', heard = Date.now();
+      let word = 'entering the cover art', heard = Date.now();
       const onWord = m => { if (m.type === 'progress') { word = m.note || word; heard = Date.now(); busy(word); } };
       frameMsgs.add(onWord);
       const got = waitFrame('entered', 6 * 3600000, s => { if (Date.now() - heard > 600000) frameMsgs.forEach(f => f({ type: 'entered', ok: false, error: 'no word from the cover-art frame for 10 minutes' })); else busy(word + ' (' + s + ' s)'); });
-      frame.el.contentWindow.postMessage({ mcAs: 1, token: frame.token, type: 'enter', replace: front && mcPlan.replace, front, extras, note: 'Via Mission Control' + (d.mc ? ' v' + d.mc : '') + ': ' + location.origin + '/release/' + rel }, location.origin);
+      framePost({ type: 'enter', front, replace: front && mcPlan.replace, note: 'Via Mission Control' + (d.mc ? ' v' + d.mc : '') + ': ' + location.origin + '/release/' + rel });
       const m = await got;
       frameMsgs.delete(onWord);
       log.info('Mission Control apply: ' + JSON.stringify(m));
       const b = frame.best;
-      if (!m) reply({ ok: false, sent: 0, note: 'Art Station did not finish within 10 minutes' });
+      if (m && m.ok) frame.used = true;
+      if (!m) reply({ ok: false, sent: 0, note: 'Art Station did not finish' });
       else if (m.ok) {
-        // #772: the count is the frame's, which knows which images it found again
-        const nx = typeof m.extrasIn === 'number' ? m.extrasIn : extras.length, lost = Array.isArray(m.missing) ? m.missing : [];
-        const moreIn = nx ? nx + ' more image' + (nx === 1 ? '' : 's') : '';
-        reply({ ok: true, sent: (front ? 1 : 0) + nx, extras: extras.filter(x => !lost.includes(x.key)), note: [front && 'entered ' + b.provider + ' ' + b.w + '×' + b.h + ' as the front cover' + (mcPlan.replace ? ', and removed the smaller one' : ''), moreIn && (front ? 'and ' : 'entered ') + moreIn,
-          lost.length && '(' + lost.join(', ') + ' not found this time)'].filter(Boolean).join(' ') });
+        const nx = m.extrasIn || 0, other = Math.max(0, (m.total || 0) - (m.front ? 1 : 0) - nx);
+        reply({ ok: true, sent: (m.front ? 1 : 0) + nx + other, note: [m.front && 'entered ' + b.provider + ' ' + b.w + '×' + b.h + ' as the front cover' + (m.replaced ? ', and removed the smaller one' : ''),
+          nx && (m.front ? 'and ' : 'entered ') + nx + ' more image' + (nx === 1 ? '' : 's'), other && other + ' other change' + (other === 1 ? '' : 's') + ' from the gallery'].filter(Boolean).join(' ') || 'done' });
       }
       else reply({ ok: false, sent: 0, retry: !m.cancelled && !!m.retry, note: m.cancelled ? 'cancelled' : 'the edit failed' + (m.error ? ': ' + m.error : '') + (m.gaveUp ? ' (repeated for ' + m.gaveUp + ')' : '') });
     });
@@ -14256,12 +14317,16 @@ if (__stOff.indexOf("art_station") < 0 && __stRuns("art_station", {"inc":["^http
       <div class="as-grid">${news.map(card).join('')}</div>`;
   }
   function deletedSection() {
+    // #784: the stores' other images Mission Control's frame keeps left out have a section of their own
+    const sec = (dels, title, cls) => {
+      if (!dels.length) return '';
+      const body = SETTINGS.detailed   // match the current view — detail rows, not grid cards
+        ? `<div class="as-dlist">${dels.map(detailRow).join('')}</div>`
+        : `<div class="as-grid">${dels.map(card).join('')}</div>`;
+      return `<div class="as-sec ${cls}"><h3>${title}</h3><span class="as-cnt">${dels.length}</span><span class="as-line"></span></div>${body}`;
+    };
     const dels = MODEL.filter(it => it._del);
-    if (!dels.length) return '';
-    const body = SETTINGS.detailed   // match the current view — detail rows, not grid cards
-      ? `<div class="as-dlist">${dels.map(detailRow).join('')}</div>`
-      : `<div class="as-grid">${dels.map(card).join('')}</div>`;
-    return `<div class="as-sec as-sec-del"><h3>Marked for removal</h3><span class="as-cnt">${dels.length}</span><span class="as-line"></span></div>${body}`;
+    return sec(dels.filter(it => !it._mcPool), 'Marked for removal', 'as-sec-del') + sec(dels.filter(it => it._mcPool).sort((a, b) => a.order - b.order), 'More images: take in, then drag into place', 'as-sec-del as-sec-more');
   }
   // Stable CAA thumbnails are HTTP-cached, so recreating their <img> on each
   // render is cheap and flicker-free. NEW (blob) and PENDING (no CAA thumb yet →
@@ -14329,7 +14394,8 @@ if (__stOff.indexOf("art_station") < 0 && __stRuns("art_station", {"inc":["^http
         ${it._new ? '<span class="as-newban">NEW</span>' : ''}
         ${it._pdf ? '<span class="as-pdfban" title="PDF — opens in a new tab">PDF</span>' : ''}
         ${provBadge(it)}
-        ${it._del ? '<button class="as-tbtn as-undo" title="keep this image">↺ keep</button>' : ''}
+        ${it._del ? (it._mcPool ? '<button class="as-tbtn as-undo" title="take this image in">＋ take in</button>' : '<button class="as-tbtn as-undo" title="keep this image">↺ keep</button>') : ''}
+        ${it._mcDup ? `<span class="as-mcdup" title="the same picture as ${esc(it._mcDup.replace(/^= /, ''))}">${esc(it._mcDup)}</span>` : ''}
         ${onlyBtn(it)}
       </div>
       ${foot(it)}
@@ -14529,7 +14595,13 @@ if (__stOff.indexOf("art_station") < 0 && __stRuns("art_station", {"inc":["^http
     // left click genuinely calls enterEdit() with no argument (falsy).
     const commit = root.querySelector('.as-commit'); if (commit && !commit.disabled) { commit.onclick = () => enterEdit(); commit.oncontextmenu = e => { e.preventDefault(); enterEdit(true); }; }   // #493: right-click — skip the review dialog
 
-    root.querySelectorAll('.as-undo').forEach(b => b.onclick = e => { e.stopPropagation(); const it = byId(cardId(e.target)); if (it) { it._del = false; render(); } });
+    root.querySelectorAll('.as-undo').forEach(b => b.onclick = e => {
+      e.stopPropagation(); const it = byId(cardId(e.target)); if (!it) return;
+      it._del = false;
+      // #784: a store image taken in goes last, to be dragged into place from there
+      if (it._mcPool) { const seq = MODEL.filter(x => x !== it).sort((a, b) => a.order - b.order); seq.push(it); seq.forEach((x, i) => x.order = i); }
+      render();
+    });
     root.querySelectorAll('.as-only').forEach(b => b.onclick = e => { e.stopPropagation(); keepOnly(byId(cardId(b))); });
     wireComments();
     wireDetail();
@@ -16012,11 +16084,14 @@ if (__stOff.indexOf("art_station") < 0 && __stRuns("art_station", {"inc":["^http
         asLog.info(`Best cover: ${best._provider || best.id} ${best.w}×${best.h} (${best.bytes ? fmtBytes(best.bytes) : '?'}) of ${cands.length}`);
         // the losers are removed outright, not marked for removal — they never show up at all
         const drop = MODEL.filter(x => !before.has(x.id) && x !== best && !x._sourcing);
-        // #772: in Mission Control's frame they are the store's other images, offered on MC's card: kept aside, off the gallery
+        // #772: in Mission Control's frame they are the store's other images: #784 they stay in the gallery, left out
+        // (in their own section) until taken in
         if (MC_FRAME) _mcPool = drop.filter(x => x._new && !x._del && !x._pdf && x.w > 0);
-        drop.forEach(x => { try { if (x._file && !_mcPool.includes(x)) URL.revokeObjectURL(x._file); } catch (e) {} });
-        MODEL = MODEL.filter(x => !drop.includes(x)); MODEL.forEach((x, i) => x.order = i);
-        asLog.info(`Best cover: removed the other ${drop.length} imported ${drop.length === 1 ? ITEM : ITEMS}${drop.length ? ` (${drop.map(x => `${x._provider || x.id} ${x.w}×${x.h}`).join(', ')})` : ''}`);
+        _mcPool.forEach(x => { x._del = true; x._sel = false; x._mcPool = true; });
+        const gone = drop.filter(x => !_mcPool.includes(x));
+        gone.forEach(x => { try { if (x._file) URL.revokeObjectURL(x._file); } catch (e) {} });
+        MODEL = MODEL.filter(x => !gone.includes(x)); MODEL.forEach((x, i) => x.order = i);
+        asLog.info(`Best cover: removed the other ${gone.length} imported ${gone.length === 1 ? ITEM : ITEMS}${gone.length ? ` (${gone.map(x => `${x._provider || x.id} ${x.w}×${x.h}`).join(', ')})` : ''}${_mcPool.length ? `; ${_mcPool.length} left out for Mission Control's gallery` : ''}`);
         toast(cands.length > 1 ? `Kept the best of ${cands.length}: ${best._provider || ''} ${best.w}×${best.h}` : `Only one cover found — ${best._provider || 'kept'}`);
         render();
         onDone(best);
@@ -16056,11 +16131,10 @@ if (__stOff.indexOf("art_station") < 0 && __stRuns("art_station", {"inc":["^http
   const flatHash = h => { const ones = h.split('1').length - 1; return ones < 4 || ones > 60; };
   // a store's images in the order it gave them, keyed by the store (the link it came from)
   const provKey = x => x._provUrl || x._provider || '';
-  // #772: the other images of the stores that gave several (Discogs, Amazon): Mission Control offers them beside the
-  // best front, each with a preview, its place in the store's list (`key`, which a new sourcing gives again) and
-  // `dup` when it is the same picture as a cover already in the archive, the best front, or a larger one of them
+  // #772: the other images of the stores that gave several (Discogs, Amazon), each with its place in the store's
+  // list (`key`) and `dup` when it is the same picture as a cover already in the archive, the best front, or a larger
+  // one of them; #784 the dup shows on its card in the gallery (_mcDup)
   async function mcExtras(best) {
-    _mcExtras = new Map();
     if (!best || !_mcPool.length) return [];
     const all = [best, ..._mcPool].sort((a, b) => (a._seq || 0) - (b._seq || 0));
     const groups = new Map();
@@ -16090,8 +16164,7 @@ if (__stOff.indexOf("art_station") < 0 && __stRuns("art_station", {"inc":["^http
       if (x === best) continue;
       const r = await hashOf(x._file);
       const l = label.get(x), key = l.name + '#' + l.n;
-      const e = { key, provider: l.name, n: l.n, of: l.of, w: x.w || 0, h: x.h || 0, bytes: x.bytes || 0, url: x._provImageUrl || '', thumb: '', types: (x.types || []).filter(t => t !== 'Front'), _h: r && r.h, _x: x };
-      if (r) e.thumb = scaled(r.bmp, 240, 0.8);
+      const e = { key, provider: l.name, n: l.n, of: l.of, w: x.w || 0, h: x.h || 0, bytes: x.bytes || 0, url: x._provImageUrl || '', types: (x.types || []).filter(t => t !== 'Front'), _h: r && r.h, _x: x };
       extras.push(e);
     }
     const lb = x => { const l = label.get(x); return l ? l.name + ' ' + l.n : 'the best front'; };
@@ -16103,7 +16176,7 @@ if (__stOff.indexOf("art_station") < 0 && __stRuns("art_station", {"inc":["^http
       const big = extras.find(o => o !== e && o._h && hamming(o._h, e._h) <= SAME_PICTURE && (o.w * o.h > e.w * e.h || (o.w * o.h === e.w * e.h && extras.indexOf(o) < extras.indexOf(e))));
       if (big) e.dup = '= ' + big.provider + ' ' + big.n;
     });
-    extras.forEach(e => { _mcExtras.set(e.key, e._x); delete e._h; delete e._x; });
+    extras.forEach(e => { e._x._mcDup = e.dup || ''; e._x._mcKey = e.key; delete e._h; delete e._x; });
     // the store that gives the larger images leads (Amazon's are usually larger than Discogs')
     const area = p => Math.max(0, ...extras.filter(e => e.provider === p).map(e => e.w * e.h));
     extras.sort((a, b) => (a.provider === b.provider ? a.n - b.n : area(b.provider) - area(a.provider)));
@@ -16113,7 +16186,7 @@ if (__stOff.indexOf("art_station") < 0 && __stRuns("art_station", {"inc":["^http
   // test hook only (#772): the frame's pool and best set by a spec, as sourceBest leaves them
   if (mbuTestHooks()) (window.__asTest || (window.__asTest = {})).mc = {
     model: () => MODEL,
-    offer: (best, pool) => { _mcBest = best; _mcPool = pool; MODEL = MODEL.filter(x => !pool.includes(x)); MODEL.forEach((x, i) => x.order = i); render(); return mcExtras(best); },
+    offer: (best, pool) => { _mcBest = best; _mcPool = pool; pool.forEach(x => { x._del = true; x._sel = false; x._mcPool = true; }); render(); return mcExtras(best).then(xs => { render(); return xs; }); },
   };
   // #680: Mission Control opened this page with ?mc_source=[links] — import from those
   // links and keep the best cover, as a middle-click on the URL button does
@@ -16138,7 +16211,7 @@ if (__stOff.indexOf("art_station") < 0 && __stRuns("art_station", {"inc":["^http
         // full: the archive's own image, for Mission Control's full-screen view
         const existing = fronts().map(x => ({ id: x.id, w: x.w || 0, h: x.h || 0, bytes: x.bytes || 0, thumb: x.id ? thumb(x.id, 250) : '', full: x._img || (x.id ? thumb(x.id, 1200) : '') }));
         asLog.info(`Mission Control: existing front cover(s): ${existing.map(x => `#${x.id} ${x.w ? x.w + '×' + x.h : 'size unknown (not processed yet?)'}`).join(', ') || 'none'}`);
-        if (out) { out.extras = extras; out.types = COVER_TYPES.slice(); }
+        if (extras.length) render();   // #784 the dups on their cards
         mcFramePost({ type: 'best', best: out, existing });
       });
       if (!best || !best._file) { post(); return; }
@@ -16154,57 +16227,95 @@ if (__stOff.indexOf("art_station") < 0 && __stRuns("art_station", {"inc":["^http
   // the frame runs Enter edit and answers { type: 'entered', ok, errs, total }.
   const MC_FRAME = window.top !== window ? new URLSearchParams(location.search).get('mc_frame') : null;
   function mcFramePost(o) { try { window.parent.postMessage(Object.assign({ mcAs: 1, token: MC_FRAME }, o), location.origin); } catch (e) { asLog.warn('Mission Control: post failed: ' + (e && e.message)); } }
+  let _mcCommitDone = null, _mcBest = null, _mcNoteBase = null, _mcPool = [];   // #772 _mcPool: the stores' other images; #784 in the gallery, left out until taken in
+  // #784: the best front in or out as its source rows are ticked on Mission Control's card; with it in, the one
+  // smaller front it replaces is marked for removal (and kept again when it goes out)
+  let _mcReplaced = null, _mcFront = false;
+  function mcStage(front, replace) {
+    if (!_mcBest || !MODEL.includes(_mcBest)) return;
+    _mcFront = front;
+    _mcBest._del = !front;
+    if (front) { if (!(_mcBest.types || []).includes('Front')) _mcBest.types = ['Front'].concat(_mcBest.types || []); }
+    else _mcBest._sel = false;
+    if (front && replace && !_mcReplaced) {
+      const old = MODEL.filter(x => !x._new && !x._del && (x.types || []).includes('Front'));
+      if (old.length === 1) { _mcReplaced = old[0]; old[0]._del = true; old[0]._sel = false; asLog.info(`Mission Control: the smaller front #${old[0].id} ${old[0].w}×${old[0].h} marked for removal`); }
+    } else if ((!front || !replace) && _mcReplaced) { _mcReplaced._del = false; _mcReplaced = null; }
+    asLog.info(`Mission Control: the best front ${front ? 'taken in' : 'left out'}`);
+    render();
+  }
   if (MC_FRAME) window.addEventListener('message', e => {
     const d = e.data;
-    if (e.origin !== location.origin || !d || d.mcAs !== 1 || d.token !== MC_FRAME || d.type !== 'enter') return;
+    if (e.origin !== location.origin || !d || d.mcAs !== 1 || d.token !== MC_FRAME) return;
+    if (d.type === 'stage') { mcStage(!!d.front, !!d.replace); return; }
+    if (d.type !== 'enter') return;
     asLog.info('Mission Control: Enter edit' + (d.note ? ' with its note' : ''));
     // #741: the frame's own note plus Mission Control's line, once: a second Execute on the same frame
     // appended the line again
     if (_mcNoteBase === null) _mcNoteBase = _seedNote;
     _seedNote = [_mcNoteBase, d.note].filter(Boolean).join('\n\n');
-    // replace: the one existing front is smaller, so it goes and the best becomes the front
-    // #772: front false: only the other images taken in on MC's card, not the best front
-    if (d.front === false && _mcBest) {
-      MODEL = MODEL.filter(x => x !== _mcBest); MODEL.forEach((x, i) => x.order = i);
-      asLog.info('Mission Control: the best front is not taken in, so it is left out');
-    }
-    // #772: the stores' other images taken in on MC's card, with the types and comment set there, after the front
-    const missing = [];
-    const add = (Array.isArray(d.extras) ? d.extras : []).map(e => {
-      const x = _mcExtras.get(e.key);
-      if (!x) { missing.push(e.key); asLog.warn(`Mission Control: ${e.key} is not among the images found this time`); return null; }
-      x.types = (Array.isArray(e.types) ? e.types : []).filter(t => ALL_TYPES.includes(t));
-      x.comment = String(e.comment || '').trim();
-      return x;
-    }).filter(x => x && !MODEL.includes(x));
-    if (add.length) {
-      const seq = MODEL.slice().sort((a, b) => a.order - b.order);
-      // after the front entered with them; without it, after the covers already there
-      const at = _mcBest && seq.includes(_mcBest) ? seq.indexOf(_mcBest) + 1 : seq.length;
-      seq.splice(at, 0, ...add);
-      MODEL = seq; MODEL.forEach((x, i) => x.order = i);
-      asLog.info(`Mission Control: entering ${add.length} more image(s): ${add.map(x => `${x._provider || '?'} ${x.w}×${x.h} [${x.types.join(', ') || 'no type'}]${x.comment ? ' "' + x.comment + '"' : ''}`).join(', ')}`);
-    }
-    if (d.replace && _mcBest && d.front !== false) {
-      const old = MODEL.filter(x => !x._new && !x._del && (x.types || []).includes('Front'));
-      if (old.length === 1) { old[0]._del = true; old[0]._sel = false; asLog.info(`Mission Control: removing the smaller front #${old[0].id} ${old[0].w}×${old[0].h}`); }
-    }
-    // #772: the best goes in as the front, typed Front whether or not it replaces one (a Discogs image comes untyped)
-    if (_mcBest && d.front !== false && MODEL.includes(_mcBest) && !(_mcBest.types || []).includes('Front')) _mcBest.types = ['Front'].concat(_mcBest.types || []);
-    // #772: what was taken, so Mission Control isn't told an image went in when the frame had nothing to enter
-    const front = !!(_mcBest && MODEL.includes(_mcBest)), extrasIn = add.length;
-    _mcCommitDone = r => mcFramePost(Object.assign({ type: 'entered', front, extrasIn, missing }, r));
+    // #784: what the gallery holds is entered, the best front too: its source rows on MC's card put it in or left it
+    // out (stage), and the gallery may have changed that since
+    const front = !!(_mcBest && MODEL.includes(_mcBest) && !_mcBest._del), replaced = !!(_mcReplaced && _mcReplaced._del);
+    const extrasIn = _mcPool.filter(x => MODEL.includes(x) && !x._del).length;
+    _mcCommitDone = r => mcFramePost(Object.assign({ type: 'entered', front, replaced, extrasIn }, r));
     const plan = buildPlan();
     asLog.info(`Mission Control: ${plan.length} operation(s): ${plan.map(o => o.label).join(' · ') || 'none'}`);
-    if (!plan.some(o => o.kind === 'add')) {
-      asLog.warn('Mission Control: nothing to upload' + (missing.length ? ` (${missing.join(', ')} not found this time)` : ''));
-      _mcCommitDone({ ok: false, errs: 0, total: 0, error: 'nothing to enter' + (missing.length ? ': ' + missing.join(', ') + ' not found this time' : '') });
+    if (!plan.length) {
+      asLog.warn('Mission Control: nothing to enter');
+      _mcCommitDone({ ok: false, errs: 0, total: 0, error: 'nothing to enter' });
       _mcCommitDone = null;
       return;
     }
     enterEdit(true);
   });
-  let _mcCommitDone = null, _mcBest = null, _mcNoteBase = null, _mcPool = [], _mcExtras = new Map();   // #772 _mcPool: the stores' other images, kept off the gallery; _mcExtras: key -> one of them
+  // #784: what Enter edit would do, for Mission Control's card: every operation, and how many go beyond the best
+  // front (its upload, the front it replaces, and the reorder an upload alone brings)
+  function mcPlanNow() {
+    const plan = buildPlan();
+    const ex = MODEL.filter(it => !it._del && !it._new);
+    const moved = ex.slice().sort((a, b) => a.order - b.order).map(it => it.id).join(',') !== ex.slice().sort((a, b) => a._origOrder - b._origOrder).map(it => it.id).join(',');
+    const more = plan.filter(o => !(o.kind === 'add' && o.it === _mcBest && _mcFront) && !(o.kind === 'remove' && _mcReplaced && o.id === _mcReplaced.id) && !(o.kind === 'reorder' && !moved && !MODEL.some(x => x._new && !x._del && x !== _mcBest))).length;
+    return { ops: plan.map(o => ({ kind: o.kind, label: o.label })), more };
+  }
+  // #784: Mission Control shows this frame in its cover-art card (mc_embed): the gallery alone, without
+  // MusicBrainz's header, tabs and sidebar, and without Enter edit (Execute enters). It tells the release page
+  // its height and plan, asks for the whole window while a full-screen view or dialog is open, and hands the
+  // wheel to the card, which scrolls (the frame itself never does)
+  function mcEmbed() {
+    if (!root.isConnected) { setTimeout(mcEmbed, 200); return; }
+    document.documentElement.classList.add('as-embed');
+    for (let n = root; n && n !== document.body; n = n.parentElement) {
+      n.classList.add('as-embed-keep');
+      [...n.parentElement.children].forEach(s => { if (s !== n && !/^(SCRIPT|STYLE|LINK|IFRAME)$/.test(s.tagName) && !/^(as-|mbu-)/.test(s.id || '')) s.classList.add('as-embed-hide'); });
+    }
+    const shown = sel => [...document.querySelectorAll(sel)].some(x => x.getClientRects().length);
+    let h = 0, full = false, plan = '', t = 0;
+    const tick = () => {
+      t = 0;
+      const f = !!((shown('#as-lb, #as-report, #as-setup, .mbu-ov, #mbu-logpop')) || (!_mcCommitDone && shown('#as-commit')));
+      if (f !== full) { full = f; mcFramePost({ type: 'full', on: f }); }
+      if (!full) {
+        // a popover below the gallery makes the frame taller while it is open
+        const nh = Math.ceil(Math.max(root.getBoundingClientRect().bottom, ...[...document.querySelectorAll('.as-pop')].map(p => p.getBoundingClientRect().bottom)) + window.scrollY) + 4;
+        if (nh !== h) { h = nh; mcFramePost({ type: 'size', h }); }
+      }
+      const p = mcPlanNow(), s = JSON.stringify(p);
+      if (s !== plan) { plan = s; mcFramePost(Object.assign({ type: 'plan' }, p)); }
+    };
+    const soon = () => { if (!t) t = setTimeout(tick, 60); };
+    new MutationObserver(soon).observe(document.body, { childList: true, subtree: true, attributes: true, attributeFilter: ['style', 'class', 'hidden'] });
+    new ResizeObserver(soon).observe(root);
+    window.addEventListener('resize', soon);
+    window.addEventListener('wheel', e => {
+      if (full || e.ctrlKey || (e.target.closest && e.target.closest('.as-pop'))) return;
+      e.preventDefault();
+      mcFramePost({ type: 'wheel', dx: e.deltaX, dy: e.deltaY, mode: e.deltaMode });
+    }, { passive: false });
+    tick();
+    asLog.info('Mission Control: the gallery shows in its cover-art card');
+  }
+  if (MC_FRAME && new URLSearchParams(location.search).get('mc_embed') === '1') mcEmbed();
   function openSourcePop(btn) {
     _srcBtn = btn;   // #250 remembered so a late provider registration can re-open this popover
     document.querySelectorAll('.as-pop').forEach(p => p.remove());
@@ -19220,6 +19331,15 @@ if (__stOff.indexOf("art_station") < 0 && __stRuns("art_station", {"inc":["^http
   .as-bar>*{flex:0 0 auto}
   /* "Original" (Apollo-style switch): hide the whole Art Station UI, MB's native page shows through */
   #as-root.as-orig{display:none}
+  /* #784: in Mission Control's card, the gallery alone: MusicBrainz's page around it, the corner launcher and Enter edit go */
+  html.as-embed,html.as-embed body{margin:0!important;padding:0!important;min-width:0!important;overflow:hidden!important;background:var(--mbu-bg)!important}
+  html.as-embed .as-embed-hide,html.as-embed #as-switch,html.as-embed #as-switch-wrap,html.as-embed #as-root .as-commit{display:none!important}
+  html.as-embed .as-embed-keep{margin:0!important;padding:0!important;float:none!important;width:auto!important;min-width:0!important;max-width:none!important;border:0!important;box-shadow:none!important}
+  html.as-embed #as-root{margin:0!important;padding:6px 10px 8px}
+  html.as-embed .as-bar{position:static}
+  .as-sec-more+.as-grid .as-card.del,.as-sec-more+.as-dlist .as-drow.del{opacity:1}
+  .as-sec-more+.as-grid .as-card.del .as-thumb img{filter:none;opacity:.6}
+  .as-mcdup{position:absolute;left:6px;bottom:6px;max-width:calc(100% - 12px);font:600 10px var(--mbu-font);color:var(--mbu-warn);background:var(--mbu-bg);border:1px solid var(--mbu-warn-border);border-radius:4px;padding:0 4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;z-index:4}
   /* #695: a round icon like every other corner launcher (Falcon, Fusion); in colour while Art Station shows, monochrome while off */
   #as-switch{position:fixed;bottom:14px;right:14px;z-index:var(--mbu-z-pop);width:40px;height:40px;border-radius:50%;border:none;padding:0;display:flex;align-items:center;justify-content:center;cursor:pointer;background:transparent;box-shadow:none;opacity:.85;transition:background .15s,transform .1s,opacity .15s}
   #as-switch:hover{opacity:1;transform:scale(1.08)}
@@ -67359,19 +67479,18 @@ const APPLY_WAIT = 15000;
 let executing = false;
 function applyOne(id, dry) {
     const keys = Array.from(picked[id] || []);
-    const extras = id === 'as' ? axChosen() : [];   // #772: the stores' other images taken in, with their types and comments
     return new Promise(resolve => {
         // a provider still working says so with mc:progress, and each one restarts the wait (#680: a cover upload takes minutes)
         const done = o => { document.removeEventListener('mc:applied', on); document.removeEventListener('mc:progress', alive); clearTimeout(t); if (results[id]) delete results[id].working; resolve(o); };
-        const on = e => { const d = busEvent(e, 'mc:applied'); if (d && d.id === id) done(Object.assign({ keys, extras }, d)); };
+        const on = e => { const d = busEvent(e, 'mc:applied'); if (d && d.id === id) done(Object.assign({ keys }, d)); };
         const timeout = () => setTimeout(() => done({ id, ok: false, sent: 0, note: 'no answer in ' + APPLY_WAIT / 1000 + ' s' }), APPLY_WAIT);
         let t = timeout();
         const alive = e => { let d = null; try { d = JSON.parse(e.detail); } catch (x) { return; } if (d && d.id === id && d.run === run) { clearTimeout(t); t = timeout(); } };
         document.addEventListener('mc:applied', on);
         document.addEventListener('mc:progress', alive);
         if (results[id]) Object.assign(results[id], { working: dry ? 'queueing' : 'applying', at: Date.now() });
-        Log.info((dry ? 'dry run' : 'apply') + ' ' + id + ': ' + keys.length + ' item(s) ' + JSON.stringify(keys) + (extras.length ? ' + extras ' + JSON.stringify(extras) : ''));
-        document.dispatchEvent(new CustomEvent('mc:apply', { detail: JSON.stringify(Object.assign({ id, run, release: RELEASE, keys, dry: !!dry, mc: VERSION }, extras.length ? { extras } : {})) }));
+        Log.info((dry ? 'dry run' : 'apply') + ' ' + id + ': ' + keys.length + ' item(s) ' + JSON.stringify(keys) + (id === 'as' && asMore() ? ' + ' + asMore() + ' gallery change(s)' : ''));
+        document.dispatchEvent(new CustomEvent('mc:apply', { detail: JSON.stringify({ id, run, release: RELEASE, keys, dry: !!dry, mc: VERSION }) }));
     });
 }
 // #680: a provider that hands its edits to Falcon tags the batch 'mc:<id>:<run>'. Falcon runs
@@ -67442,59 +67561,26 @@ function coverList(b) {
     if (same) return [one(c.full || b.full || c.thumb || b.thumb, 'Front cover', c.w, c.h, c.bytes, b.provider)].filter(Boolean);
     return [one(b.full || b.thumb, 'Best cover', b.w, b.h, b.bytes, b.provider || ''), c ? one(c.full || c.thumb, 'Current front', c.w, c.h, c.bytes, 'Cover Art Archive') : null].filter(Boolean);
 }
-function coverViewer(list, at, onClose) {
+function coverViewer(list, at) {
     if (!list.length) return;
     document.getElementById('mc-cover')?.remove();
     let i = Math.min(at || 0, list.length - 1);
     const v = el('div', ''); v.id = 'mc-cover';
     v.setAttribute('role', 'dialog'); v.setAttribute('aria-label', 'Cover, full screen');
     v.innerHTML = mbuHtml('<div class="mc-cov-top"><span class="mc-cov-t"></span><span class="mc-cov-i"></span><span class="mc-cov-n"></span><button type="button" class="mc-cov-x" title="Close (Esc)">✕</button></div>'
-        + '<div class="mc-cov-stage"><img alt=""></div><div class="mc-cov-cmt"></div>'
+        + '<div class="mc-cov-stage"><img alt=""></div>'
         + (list.length > 1 ? '<button type="button" class="mc-cov-go prev" title="Previous (←)">‹</button><button type="button" class="mc-cov-go next" title="Next (→)">›</button>' : ''));
-    // #772: an image with `cmt` ({ get, set }) takes a comment: Enter writes it, Enter again keeps it and goes to the
-    // next image's, Esc stops, as in Art Station's full screen
-    let editing = false, dirty = false;
-    const cmtArea = () => {
-        const x = list[i], a = v.querySelector('.mc-cov-cmt');
-        if (!x.cmt) { a.innerHTML = ''; return; }
-        if (editing) {
-            a.innerHTML = mbuHtml('<input class="mc-cov-cin" placeholder="comment…" spellcheck="false">');
-            const inp = a.querySelector('input'); inp.value = x.cmt.get();
-            inp.setAttribute('aria-label', 'Comment for ' + x.title);
-            inp.oninput = () => { x.cmt.set(inp.value); dirty = true; };
-            inp.onblur = () => { editing = false; cmtArea(); };
-            inp.focus();
-            return;
-        }
-        const c = x.cmt.get();
-        a.innerHTML = mbuHtml(c ? '<span class="mc-cov-ctx" title="Edit the comment (Enter)"></span>' : '<button type="button" class="mc-cov-cadd" title="Add a comment (Enter)">✎ comment</button>');
-        if (c) a.firstChild.textContent = c;
-        a.firstChild.onclick = () => { editing = true; cmtArea(); };
-    };
     const show = () => {
         const x = list[i];
-        const img = v.querySelector('img');
-        img.onerror = x.alt && x.alt !== x.src ? () => { img.onerror = null; img.src = x.alt; } : null;   // #772: a store image that won't load shows its preview
-        img.src = x.src;
+        v.querySelector('img').src = x.src;
         v.querySelector('.mc-cov-t').textContent = x.title;
         v.querySelector('.mc-cov-i').textContent = x.info;
         v.querySelector('.mc-cov-n').textContent = list.length > 1 ? (i + 1) + ' / ' + list.length : '';
-        cmtArea();
     };
     const go = d => { i = (i + d + list.length) % list.length; show(); };
-    const done = () => { v.remove(); document.removeEventListener('keydown', key, true); if (dirty && onClose) onClose(); };
+    const done = () => { v.remove(); document.removeEventListener('keydown', key, true); };
     const key = e => {
-        if (e.target && e.target.classList && e.target.classList.contains('mc-cov-cin')) {
-            if (e.key === 'Escape') { e.target.blur(); v.focus && v.focus(); }
-            else if (e.key === 'Enter') {
-                const inp = e.target; inp.onblur = null; list[i].cmt.set(inp.value); dirty = true;
-                const at = list.findIndex((x, j) => j > i && x.cmt);   // the next image that takes a comment
-                if (at >= 0) { i = at; show(); } else { editing = false; cmtArea(); }
-            } else return;
-            e.preventDefault(); e.stopPropagation(); return;
-        }
-        if (e.key === 'Enter' && list[i].cmt) { editing = true; cmtArea(); }
-        else if (e.key === 'Escape') done();
+        if (e.key === 'Escape') done();
         else if (e.key === 'ArrowLeft') go(-1);
         else if (e.key === 'ArrowRight') go(1);
         else return;
@@ -67502,171 +67588,40 @@ function coverViewer(list, at, onClose) {
     };
     v.addEventListener('click', e => {
         if (e.target.closest('.mc-cov-go')) go(e.target.closest('.prev') ? -1 : 1);
-        else if (e.target.closest('.mc-cov-x') || !e.target.closest('img, .mc-cov-top, .mc-cov-cmt')) done();
+        else if (e.target.closest('.mc-cov-x') || !e.target.closest('img, .mc-cov-top')) done();
     });
     document.addEventListener('keydown', key, true);
     (ui || document.body).appendChild(v);
     show();
 }
-// #772: the stores' other images (AS's best.extras: Discogs and Amazon give every image of a release), each
-// taken in, typed and commented on the card as in Art Station: a right-click takes it in or leaves it out (a
-// right-drag every one it passes), a click shows it full screen, the type pill opens Art Station's picker
-// (right-click a type for only that one), ✎ the comment (Enter: the next one). Nothing starts taken in or typed:
-// the stores don't say what an image is. Execute sends the taken in as mc:apply's extras.
-const axState = new Map();   // key -> { taken, types, comment, entered }
-let axCmt = null, axDrag = null, axPopUntil = 0;
-function axList() { const b = results.as && results.as.best; return b && Array.isArray(b.extras) ? b.extras : []; }
-function axOf(e) {
-    let s = axState.get(e.key);
-    if (!s) { s = { taken: false, types: (e.types || []).slice(), comment: '', entered: false }; axState.set(e.key, s); }
-    return s;
+// #784: Art Station's own gallery, in its frame: Art Station keeps the frame over this slot (#mc-as-slot) and gives
+// it the gallery's height (kept across a repaint). Execute enters what the gallery holds; mc:plan says what that is.
+let asPlan = { ops: [], more: 0 }, asStaged = null;
+document.addEventListener('mc:plan', e => {
+    let d = null;
+    try { d = JSON.parse(e.detail); } catch (x) { return; }
+    if (!d || d.id !== 'as' || (d.release && d.release !== RELEASE)) return;
+    asPlan = { ops: Array.isArray(d.ops) ? d.ops : [], more: d.more || 0 };
+    Log.debug('#784 gallery plan: ' + (asPlan.ops.map(o => o.label).join(' · ') || 'nothing'));
+    if (ui) { paintAll(); paintFoot(); }
+});
+// the gallery's changes beyond the best front (its upload, the front it replaces)
+const asMore = () => providerOff('as') ? 0 : asPlan.more;
+// the best front in the gallery as its source rows are taken in
+function asStage() {
+    const on = !!(picked.as && picked.as.size) && !providerOff('as');
+    if (on === asStaged || !(results.as && results.as.best)) return;
+    asStaged = on;
+    document.dispatchEvent(new CustomEvent('mc:stage', { detail: JSON.stringify({ id: 'as', release: RELEASE, front: on }) }));
 }
-function axChosen() {
-    if (providerOff('as')) return [];
-    return axList().filter(e => axOf(e).taken && !axOf(e).entered).map(e => ({ key: e.key, types: axOf(e).types.slice(), comment: axOf(e).comment }));
-}
-const axTypes = () => { const b = results.as && results.as.best; return b && Array.isArray(b.types) && b.types.length ? b.types : ['Front', 'Back', 'Booklet', 'Medium', 'Tray', 'Obi', 'Spine', 'Track', 'Liner', 'Sticker', 'Poster', 'Watermark', 'Raw/Unedited', 'Matrix/Runout', 'Top', 'Bottom', 'Panel', 'Other']; };
-const axName = e => e.provider + ' ' + e.n;
-function axHtml() {
-    const xs = axList();
-    if (!xs.length) return '';
-    const btn = (act, label, tip) => '<button type="button" class="mc-ax-b" data-act="' + act + '" title="' + esc(tip) + '">' + label + '</button>';
-    const head = '<div class="mc-ax-h"><span class="mc-ax-t">More images</span>'
-        + '<span class="mc-ax-hint">right-click to take in or leave out · click for full screen · ✎ comment · type pill</span>'
-        + '<span class="mc-ax-sp"></span>' + (xs.some(e => axOf(e).taken && !axOf(e).entered) ? btn('ax-none', 'leave all out', 'Leave every image out') : '') + '</div>';
-    const groups = [];
-    xs.forEach(e => { let g = groups.find(x => x.p === e.provider); if (!g) groups.push(g = { p: e.provider, xs: [] }); g.xs.push(e); });
-    const card = e => {
-        const s = axOf(e), on = s.taken && !s.entered, typed = s.types.length > 0;
-        const cmt = s.entered ? '' : axCmt === e.key ? '<input class="mc-ax-cin" value="' + esc(s.comment) + '" placeholder="comment…" spellcheck="false" aria-label="' + esc('Comment for ' + axName(e)) + '">'
-            : s.comment ? '<button type="button" class="mc-ax-ctx" data-act="ax-cmt" title="edit comment">' + esc(s.comment) + '</button>'
-            : '<button type="button" class="mc-ax-pen" data-act="ax-cmt" title="add a comment">✎</button>';
-        const pill = s.entered ? '<span class="mc-ax-note ok">entered</span>'
-            : '<button type="button" class="mc-ax-pill' + (typed ? '' : ' add') + '" data-act="ax-type" title="' + esc(typed ? s.types.join(', ') : 'set type') + '">' + (typed ? esc(s.types.join(', ')) : '＋ type') + '</button>';
-        const tip = axName(e) + ' of ' + e.of + ' · ' + e.w + ' × ' + e.h + (e.dup ? ' · ' + e.dup : '') + (s.entered ? '' : on ? '. Taken in: right-click to leave out' : '. Right-click to take in') + '. Click: full screen (← → for the others)';
-        return '<div class="mc-ax-c' + (on ? ' on' : '') + (e.dup ? ' dup' : '') + (s.entered ? ' done' : '') + '" data-ax="' + esc(e.key) + '">'
-            + '<button type="button" class="mc-ax-img" data-act="ax-view" title="' + esc(tip) + '">' + (e.thumb ? '<img alt="" src="' + esc(e.thumb) + '">' : '<span class="mc-best-no">🖼</span>') + '</button>'
-            + (e.dup && !on ? '<span class="mc-ax-dup">' + esc(e.dup) + '</span>' : '')
-            + '<div class="mc-ax-f"><span class="mc-ax-cm">' + cmt + '</span><span class="mc-ax-d">' + e.w + ' × ' + e.h + '</span></div>'
-            + '<div class="mc-ax-ty">' + pill + '</div>'
-            + '</div>';
-    };
-    return '<div class="mc-ax">' + head + groups.map(g => '<div class="mc-ax-g"><div class="mc-ax-gh"><span class="mc-pico">' + stIcon(/amazon/i.test(g.p) ? 'amazonmusic' : g.p.toLowerCase(), 14) + '</span><b>' + esc(g.p) + '</b><span class="mc-ax-gn">'
-        + g.xs[0].of + ' images' + (g.xs.some(e => e.n === 1) ? '' : ', the first is the best front above') + '</span>' + axGroupBtn(g) + '</div><div class="mc-ax-cs">' + g.xs.map(card).join('') + '</div></div>').join('') + '</div>';
-}
-// #772: the images Execute entered show as entered, and leave Execute's count
-function axEntered(o) { if (o.id === 'as') (o.extras || []).forEach(x => { const st = axState.get(x.key); if (st) st.entered = true; }); }
-function axPaint() { paintAll(); paintFoot(); axFocus(); }
-// a repaint rebuilds the card: the comment being written gets the focus back, the caret at its end
-function axFocus() {
-    if (!axCmt || !ui) return;
-    const i = ui.querySelector('.mc-ax-cin');
-    if (i && document.activeElement !== i) { i.focus(); i.setSelectionRange(i.value.length, i.value.length); }
-}
-function axSet(keys, f) {
-    const xs = axList().filter(e => keys.includes(e.key) && !axOf(e).entered);
-    xs.forEach(e => f(axOf(e), e));
-    return xs;
-}
-function axCmtDone(next) {
-    const i = ui && ui.querySelector('.mc-ax-cin');
-    const k = axCmt;
-    if (i && k) { const s = axState.get(k); if (s) { s.comment = i.value.trim(); if (s.comment && !s.taken) s.taken = true; } }
-    if (k) Log.debug('#772 comment ' + k + ': ' + JSON.stringify((axState.get(k) || {}).comment || ''));
-    const xs = axList().filter(e => !axOf(e).entered), at = xs.findIndex(e => e.key === k);
-    axCmt = next && at >= 0 && at < xs.length - 1 ? xs[at + 1].key : null;
-    axPaint();
-}
-// Art Station's type picker: tick types; right-click one for only that one. keys: the images it types
-function axTypePop(anchor, keys) {
-    axPopClose();
-    const xs = axList().filter(e => keys.includes(e.key));
-    if (!xs.length) return;
-    const pop = el('div', 'mc-ax-pop'); pop.id = 'mc-ax-pop';
-    const all = t => xs.every(e => axOf(e).types.includes(t));
-    pop.innerHTML = mbuHtml('<div class="mc-ax-tg">' + axTypes().map(t => '<label title="Right-click: set only this type"><input type="checkbox" value="' + esc(t) + '"' + (all(t) ? ' checked' : '') + '> ' + esc(t) + '</label>').join('') + '</div>');
-    const order = axTypes();
-    pop.addEventListener('change', ev => {
-        const t = ev.target.value, on = ev.target.checked;
-        axSet(keys, s => { s.types = order.filter(x => x === t ? on : s.types.includes(x)); if (s.types.length) s.taken = true; });
-        Log.debug('#772 type ' + (on ? '+' : '-') + t + ' on ' + keys.join(', '));
-        axPaint();
-    });
-    pop.addEventListener('contextmenu', ev => {
-        const lab = ev.target.closest('label'); if (!lab) return;
-        ev.preventDefault();
-        const t = lab.querySelector('input').value;
-        axSet(keys, s => { s.types = [t]; s.taken = true; });
-        Log.debug('#772 type only ' + t + ' on ' + keys.join(', '));
-        axPopClose(); axPaint();
-    });
-    ui.appendChild(pop);
-    const r = anchor.getBoundingClientRect(), M = 8;
-    let top = r.bottom + 3;
-    if (top + pop.offsetHeight > innerHeight - M && r.top - pop.offsetHeight - 3 >= M) top = r.top - pop.offsetHeight - 3;
-    pop.style.top = Math.max(M, Math.min(top, innerHeight - pop.offsetHeight - M)) + 'px';
-    pop.style.left = Math.max(M, Math.min(r.left, innerWidth - pop.offsetWidth - M)) + 'px';
-    setTimeout(() => document.addEventListener('mousedown', axPopOutside, true), 0);
-}
-function axPopOutside(ev) {
-    const pop = document.getElementById('mc-ax-pop');
-    if (pop && pop.contains(ev.target)) return;
-    axPopUntil = Date.now() + 600;   // the click that ends this press only closes the picker
-    axPopClose();
-}
-function axPopClose() { document.getElementById('mc-ax-pop')?.remove(); document.removeEventListener('mousedown', axPopOutside, true); }
-function axView(key) {
-    const xs = axList();
-    const list = xs.map(e => ({ src: e.url || e.thumb, alt: e.thumb, title: axName(e), info: [e.w + ' × ' + e.h, e.bytes ? Math.round(e.bytes / 1024) + ' KB' : '', e.dup || '', axOf(e).types.join(', ')].filter(Boolean).join(' · '),
-        // a comment written here takes the image in, as on its card
-        cmt: axOf(e).entered ? null : { get: () => axOf(e).comment, set: c => { const s = axOf(e); s.comment = c.trim(); if (s.comment && !s.taken) s.taken = true; } } }));
-    if (axCmt) axCmtDone(false);
-    coverViewer(list, Math.max(0, xs.findIndex(e => e.key === key)), () => { Log.debug('#772 comments written full screen'); axPaint(); });
-}
-// each store's row: take all its images in, or leave them all out once they are
-function axGroupBtn(g) {
-    const open = g.xs.filter(e => !axOf(e).entered);
-    if (!open.length) return '';
-    const all = open.every(e => axOf(e).taken);
-    return '<button type="button" class="mc-ax-b mc-ax-gb" data-act="ax-group" data-p="' + esc(g.p) + '" title="' + esc((all ? 'Leave out every ' : 'Take in every ') + g.p + ' image') + '">' + (all ? 'leave all out' : 'take all in') + '</button>';
-}
-// right-click takes an image in or leaves it out, right-drag every one it passes the same way
-function axTake(k, on) {
-    const e = axList().find(x => x.key === k); if (!e || axOf(e).entered || axOf(e).taken === on) return false;
-    axOf(e).taken = on;
-    Log.debug('#772 ' + (on ? 'taken in ' : 'left out ') + k);
-    return true;
-}
-function axDown(e) {
-    const c = e.button === 2 && e.target.closest('.mc-ax-c');
-    if (!c || c.classList.contains('done')) return false;
-    if (e.target.closest('.mc-ax-cin')) return false;   // the comment being written keeps its own right-click
-    e.preventDefault();
-    const k = c.dataset.ax, s = axState.get(k), on = !(s && s.taken);
-    axTake(k, on);
-    axDrag = { on };
-    axPaint();
-    return true;
-}
-function axOver(e) {
-    if (!axDrag) return;
-    const c = e.target.closest('.mc-ax-c');
-    if (c && !c.classList.contains('done') && axTake(c.dataset.ax, axDrag.on)) axPaint();
-}
-function axAct(act, t) {
-    const c = t.closest('.mc-ax-c'), k = c && c.dataset.ax;
-    switch (act) {
-        case 'ax-type': axTypePop(t, [k]); break;
-        case 'ax-cmt': if (axCmt) axCmtDone(false); axCmt = k; axPaint(); break;
-        case 'ax-view': axView(k); break;
-        case 'ax-group': {
-            const xs = axList().filter(e => e.provider === t.dataset.p && !axOf(e).entered), on = !xs.every(e => axOf(e).taken);
-            xs.forEach(e => { axOf(e).taken = on; });
-            Log.debug('#772 every ' + t.dataset.p + ' image ' + (on ? 'taken in' : 'left out'));
-            axPaint(); break;
-        }
-        case 'ax-none': axList().forEach(e => { axOf(e).taken = false; }); Log.debug('#772 every image left out'); axPaint(); break;
-    }
+function asGalleryHtml() {
+    const r = results.as;
+    if (!r || !r.best || providerOff('as')) return '';
+    const old = document.getElementById('mc-as-slot'), h = old ? old.style.height : '';
+    const ops = asPlan.ops;
+    return '<div class="mc-ax"><div class="mc-ax-h"><span class="mc-ax-t">Gallery</span><span class="mc-ax-hint">Art Station\'s: take the stores\' other images in, drag into order, type, comment; Execute enters it</span></div>'
+        + '<div id="mc-as-slot" class="mc-as-slot"' + (h ? ' style="height:' + h + '"' : '') + '></div>'
+        + (ops.length ? '<div class="mc-ax-plan"><b>Execute:</b> ' + esc(ops.map(o => o.label).join(' · ')) + '</div>' : '') + '</div>';
 }
 function falconHtml(f) {
     if (!f || !f.items.length) return '';
@@ -67706,7 +67661,7 @@ async function execute(dry) {
     try {
         for (const step of STEPS) {
             const ids = (step.lanes || [step]).map(p => p.id)
-                .filter(id => ((picked[id] && picked[id].size) || (id === 'as' && axChosen().length)) && !providerOff(id) && found[id] && (found[id].capabilities || []).includes('apply'));
+                .filter(id => ((picked[id] && picked[id].size) || (id === 'as' && asMore())) && !providerOff(id) && found[id] && (found[id].capabilities || []).includes('apply'));
             if (!ids.length) continue;
             Log.info('step ' + step.id + ': ' + ids.join(' ∥ '));
             const outs = await Promise.all(ids.map(id => applyOne(id, dry)));
@@ -67717,7 +67672,6 @@ async function execute(dry) {
                 // #748: a step that failed in part says what went through (doneKeys): that is done, and leaves Execute's count
                 else if (!o.ok && !dry && Array.isArray(o.doneKeys) && o.doneKeys.length) markApplied(o.id, o.doneKeys);
                 if (o.via === 'falcon') results[o.id].falconKeys = o.keys || [];
-                if (o.ok && !dry) axEntered(o);
                 if (o.ok) { sent += o.sent || 0; Log.ok(o.id + ': ' + (o.note || 'done')); } else { failed++; Log.err(o.id + ': ' + (o.note || 'failed')); }
             });
             paintAll();
@@ -67728,14 +67682,13 @@ async function execute(dry) {
 }
 // #741: one provider applied again (its card's Retry), as Execute applies it
 async function retryOne(id) {
-    if (executing || !((picked[id] && picked[id].size) || (id === 'as' && axChosen().length))) return;
+    if (executing || !((picked[id] && picked[id].size) || (id === 'as' && asMore()))) return;
     executing = true; paintExec(); paintCards();
-    Log.info('retry ' + id + ': ' + (picked[id] ? picked[id].size : 0) + ' item(s)' + (id === 'as' ? ' + ' + axChosen().length + ' more image(s)' : ''));
+    Log.info('retry ' + id + ': ' + (picked[id] ? picked[id].size : 0) + ' item(s)' + (id === 'as' ? ' + ' + asMore() + ' gallery change(s)' : ''));
     try {
         const o = await applyOne(id, false);
         results[id] = Object.assign(results[id] || {}, { applied: o });
         if (o.ok && o.sent && o.via !== 'falcon') markApplied(id, o.keys || []);
-        if (o.ok) axEntered(o);
         else if (!o.ok && Array.isArray(o.doneKeys) && o.doneKeys.length) markApplied(id, o.doneKeys);   // #748
         if (o.ok) Log.ok(id + ': ' + (o.note || 'done')); else Log.err(id + ': ' + (o.note || 'failed'));
         mbuToast(o.ok ? 'Done: ' + (o.note || id) : 'Failed again: ' + (o.note || id), { kind: o.ok ? 'ok' : 'error' });
@@ -67954,30 +67907,11 @@ function mcStyle() {
         + '#mc-cover button{all:unset;cursor:pointer;color:#fff;display:flex;align-items:center;justify-content:center;border-radius:50%;background:rgba(255,255,255,.12)}#mc-cover button:hover{background:rgba(255,255,255,.26)}'
         + '.mc-cov-x{width:36px;height:36px;font-size:18px}.mc-cov-stage{flex:1 1 auto;min-height:0;display:flex;align-items:center;justify-content:center;padding:0 72px 16px}'
         + '.mc-cov-stage img{max-width:100%;max-height:100%;object-fit:contain;box-shadow:0 6px 40px rgba(0,0,0,.6);cursor:default}'
-        + '.mc-cov-cmt{display:flex;justify-content:center;min-height:30px;padding:0 16px 14px}.mc-cov-cmt:empty{display:none}#mc-cover .mc-cov-cadd{border-radius:var(--mbu-radius);padding:4px 12px;font-size:13px}'
-        + '.mc-cov-ctx{cursor:text;font-size:14px;color:#fff;padding:4px 8px;max-width:80%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.mc-cov-cin{width:min(480px,80%);font:inherit;font-size:14px;padding:5px 10px;border-radius:var(--mbu-radius);border:1px solid rgba(255,255,255,.4);background:rgba(0,0,0,.5);color:#fff;outline:none}'
         + '#mc-cover .mc-cov-go{position:absolute;top:50%;transform:translateY(-50%);width:52px;height:52px;font-size:34px;line-height:1}#mc-cover .mc-cov-go.prev{left:12px}#mc-cover .mc-cov-go.next{right:12px}'
         + '.mc-best img{width:72px;height:72px;object-fit:contain;border-radius:var(--mbu-radius);background:var(--mbu-bg-sunken);border:1px solid var(--mbu-border-soft);flex:0 0 auto}'
         // #772: the stores' other images, cards as in Art Station's gallery
         + '.mc-ax{padding:8px 10px 12px;border-top:1px solid var(--mbu-divider)}.mc-ax-h{display:flex;align-items:center;gap:6px;flex-wrap:wrap;min-height:26px;margin-bottom:4px}.mc-ax-t{font-size:10.5px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:var(--mbu-text-dim)}'
-        + '.mc-ax-hint{font-size:11px;color:var(--mbu-text-weak)}.mc-ax-sp{flex:1 1 auto}'
-        + '#mc-root .mc-ax-b{font:12px var(--mbu-font);padding:2px 9px;border-radius:var(--mbu-radius);border:1px solid var(--mbu-border-strong);background:var(--mbu-bg);color:var(--mbu-accent-text);cursor:pointer}#mc-root .mc-ax-b:hover{background:var(--mbu-bg-hover);border-color:var(--mbu-accent)}'
-        + '.mc-ax-g{margin-top:6px}.mc-ax-gh{display:flex;align-items:center;gap:6px;font-size:12px;margin-bottom:6px}.mc-ax-gh .mc-ax-gn{color:var(--mbu-text-weak);font-size:11px}.mc-ax-cs{display:flex;flex-wrap:wrap;gap:20px 10px;padding-bottom:10px}'
-        + '.mc-ax-c{position:relative;width:132px;box-sizing:border-box;background:var(--mbu-bg);border:1px solid var(--mbu-border-soft);border-radius:9px;display:flex;flex-direction:column;user-select:none}'
-        + '.mc-ax-c.on{border-color:var(--mbu-accent);background:var(--mbu-accent-soft)}.mc-ax-c.done{opacity:.7}'
-        + '#mc-root .mc-ax-img{all:unset;cursor:zoom-in;height:104px;display:flex;align-items:center;justify-content:center;padding:6px 6px 4px}.mc-ax-img img{max-width:118px;max-height:100px;object-fit:contain;border-radius:3px;display:block}'
-        + '.mc-ax-c:not(.on):not(.done) .mc-ax-img img{opacity:.55}.mc-ax-c:not(.on):not(.done):hover .mc-ax-img img{opacity:.85}#mc-root .mc-ax-img:focus-visible{outline:2px solid var(--mbu-accent);outline-offset:-2px;border-radius:9px}'
-        + '.mc-ax-dup{position:absolute;top:4px;left:4px;max-width:96px;font-size:10px;font-weight:600;color:var(--mbu-warn);background:var(--mbu-bg);border:1px solid var(--mbu-warn-border);border-radius:4px;padding:0 4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}'
-        + '.mc-ax-f{display:flex;align-items:center;gap:6px;min-height:17px;padding:4px 8px 0;border-top:1px solid var(--mbu-divider)}.mc-ax-cm{flex:0 1 auto;min-width:0;display:flex;overflow:hidden}.mc-ax-d{margin-left:auto;font:10.5px var(--mbu-font-mono);color:var(--mbu-text-weak);white-space:nowrap}'
-        + '#mc-root .mc-ax-pen{font:11px var(--mbu-font);border:1px dashed var(--mbu-accent);background:var(--mbu-bg);color:var(--mbu-accent-text);border-radius:var(--mbu-radius);padding:0 7px;cursor:pointer;opacity:0;transition:.1s}#mc-root .mc-ax-c:hover .mc-ax-pen,#mc-root .mc-ax-pen:focus-visible{opacity:1}'
-        + '#mc-root .mc-ax-ctx{all:unset;font-size:11px;color:var(--mbu-accent-text);cursor:text;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}'
-        + '#mc-root .mc-ax-cin{width:100%;box-sizing:border-box;font:11px var(--mbu-font);padding:1px 4px;border:1px solid var(--mbu-accent);border-radius:4px;background:var(--mbu-bg);color:var(--mbu-text)}'
-        + '.mc-ax-ty{display:flex;justify-content:center;transform:translateY(50%);position:relative;z-index:1;margin-top:2px}'
-        + '#mc-root .mc-ax-pill{font:700 11px var(--mbu-font);color:var(--mbu-accent-text);background:var(--mbu-bg-sunken);border:1px solid var(--mbu-accent);border-radius:20px;padding:2px 13px;cursor:pointer;max-width:118px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}#mc-root .mc-ax-pill:hover{background:var(--mbu-bg-hover)}'
-        + '#mc-root .mc-ax-pill.add{background:var(--mbu-bg);border-style:dashed;font-weight:600;opacity:.5}#mc-root .mc-ax-c:hover .mc-ax-pill.add,#mc-root .mc-ax-pill.add:focus-visible{opacity:1}'
-        + '.mc-ax-note{font-size:11px;font-weight:700;background:var(--mbu-bg);border:1px solid var(--mbu-border);border-radius:20px;padding:2px 11px}.mc-ax-note.ok{color:var(--mbu-ok);border-color:var(--mbu-ok-border)}'
-        + '.mc-ax-pop{position:fixed;z-index:var(--mbu-z-pop);background:var(--mbu-bg);border:1px solid var(--mbu-accent);border-radius:8px;box-shadow:var(--mbu-shadow-lg);padding:6px;font-size:13px;color:var(--mbu-text)}'
-        + '.mc-ax-tg{display:grid;grid-template-columns:1fr 1fr;gap:0 14px}.mc-ax-tg label{display:flex;align-items:center;gap:7px;padding:3px 6px;border-radius:5px;cursor:pointer;white-space:nowrap}.mc-ax-tg label:hover{background:var(--mbu-bg-hover)}.mc-ax-tg input{accent-color:var(--mbu-accent);margin:0}'
+        + '.mc-ax-hint{font-size:11px;color:var(--mbu-text-weak)}.mc-as-slot{min-height:120px;border:1px solid var(--mbu-border-soft);border-radius:8px}.mc-ax-plan{margin-top:6px;font-size:12px;color:var(--mbu-text-dim)}'
         + '.mc-best-no{width:72px;height:72px;display:flex;align-items:center;justify-content:center;font-size:32px;background:var(--mbu-bg-sunken);border-radius:var(--mbu-radius);flex:0 0 auto}.mc-best-t{display:flex;flex-direction:column;gap:2px;font-size:12px;min-width:0}.mc-best-t .dim{color:var(--mbu-text-weak);font-size:11px}'
         + '.mc-working{display:flex;align-items:center;gap:7px;padding:5px 10px;font-size:11.5px;color:var(--mbu-accent-text);border-bottom:1px solid var(--mbu-divider)}'
         + '.mc-spin{width:10px;height:10px;border:2px solid var(--mbu-accent-soft);border-top-color:var(--mbu-accent);border-radius:50%;animation:mc-spin .8s linear infinite;flex:0 0 auto}@keyframes mc-spin{to{transform:rotate(360deg)}}'
@@ -68048,7 +67982,7 @@ function mcStyle() {
         + '.mc-center{order:-1;flex:none;overflow:visible;padding:8px}'
         + '.mc-side{flex:none;overflow:visible;border:0;border-top:1px solid var(--mbu-border)}.mc-side.right{border-left:0}'
         // a card's header wraps rather than squeeze its title (Release credits' import buttons go under it)
-        + '.mc-sect-h{flex-wrap:wrap}.mc-sect-h .t{white-space:nowrap}.mc-ax-gh{flex-wrap:wrap}#mc-root .mc-ax-b{white-space:nowrap}'
+        + '.mc-sect-h{flex-wrap:wrap}.mc-sect-h .t{white-space:nowrap}'
         // the settings: less of the screen for the overlay's margin, and the title row wraps rather than cut off Log
         + '.mbu-ov:has(>.mc-cfg){padding:10px}.mc-cfg .mbu-cfg-h{flex-wrap:wrap;row-gap:4px}'
         + '.mc-sect{overflow-x:auto}.mc-tbl td.ttl{min-width:140px}.mc-row2{flex-direction:column;align-items:stretch}'
@@ -68083,7 +68017,7 @@ function stateOf(p) {
 // an info-only provider (CH) counts what it found instead of what it would add
 function infoCount(id) { const r = results[id]; return r && r.findings ? r.findings.reduce((n, x) => n + (x.credits || 0), 0) : 0; }
 // a 'searched' row (AS's sources other than the best cover's) is in the pool, not something entered
-function countNew(id) { const r = results[id]; return (r && r.findings ? r.findings.filter(x => x.state === 'new' && x.role !== 'searched').length : 0) + (id === 'as' ? axChosen().length : 0); }
+function countNew(id) { const r = results[id]; return (r && r.findings ? r.findings.filter(x => x.state === 'new' && x.role !== 'searched').length : 0) + (id === 'as' ? asMore() : 0); }
 function stateText(p) {
     const st = stateOf(p), r = results[p.id];
     if (st === 'off') return 'off';
@@ -68094,7 +68028,7 @@ function stateText(p) {
     const t = r.findings.reduce((a, x) => { const k = x.role === 'searched' ? 'searched' : x.state; a[k] = (a[k] || 0) + 1; return a; }, {});
     return [t.new && t.new + ' new', t.searched && t.searched + ' searched', t.linked && t.linked + ' linked', t.withheld && t.withheld + ' withheld', t.unsure && t.unsure + ' unsure', t.blocked && t.blocked + ' blocked', t.none && t.none + ' not found'].filter(Boolean).join(' · ') || 'nothing';
 }
-function paintAll() { if (!ui) return; paintBadges(); paintCards(); paintReleaseCredits(); fitCards(); paintMatrix(); paintInspector(); paintExec(); }
+function paintAll() { if (!ui) return; asStage(); paintBadges(); paintCards(); paintReleaseCredits(); fitCards(); paintMatrix(); paintInspector(); paintExec(); }
 
 function header() {
     const h = el('header', 'mc-hdr');
@@ -68238,7 +68172,7 @@ function addText(p) {
     const n = (k, w) => k + ' ' + w + (k === 1 ? '' : 's');
     if (p.id === 'is') { const l = xs.filter(x => x.kind === 'link').length, i = xs.length - l; return [i && n(i, 'ISRC'), l && n(l, 'link')].filter(Boolean).join(' · ') + ' to add'; }
     if (p.id === 'pc') return n(xs.length, 'link') + ' to add';
-    if (p.id === 'as') { const k = (xs.some(x => x.role === 'best') ? 1 : 0) + axChosen().length; if (k) return n(k, 'cover') + ' to enter'; }
+    if (p.id === 'as') { const k = xs.some(x => x.role === 'best') ? 1 : 0, m = asMore(); if (k || m) return [k && n(k, 'cover') + ' to enter', m && n(m, 'gallery change')].filter(Boolean).join(' · '); }
     return xs.length + ' new';
 }
 // [class, words, mark on the ring]
@@ -68755,7 +68689,7 @@ function paintCards() {
         const entSect = (type, title) => sect(type, title, entRows.filter(x => x.entity.type === type).map(x => line(x)).join(''), linked.filter(x => isEnt(x) && x.entity.type === type));
         setCard(box, mbuHtml(sum + ap + sect('release', 'Release', bcRowsOf().map(x => line(x)).join('') + rgRows.map(x => line(x)).join('') + relHtml + hint, linked.filter(x => !isEnt(x)))
             + entSect('artist', 'Artists') + entSect('label', 'Labels') + (none.length ? '<div class="mc-none" title="' + esc('Not found: ' + none.map(x => x.name || x.key).join(', ')) + '"><span>Not found</span>'
-            + none.map(x => '<span class="mc-pico" title="' + esc(x.name || x.key) + '">' + stIcon(x.icon || x.key, 14) + '</span>').join('') + '</div>' : '') + (id === 'as' ? axHtml() : '')));
+            + none.map(x => '<span class="mc-pico" title="' + esc(x.name || x.key) + '">' + stIcon(x.icon || x.key, 14) + '</span>').join('') + '</div>' : '') + (id === 'as' ? asGalleryHtml() : '')));
     });
 }
 // #727: a catalog number's icon, a tag
@@ -68769,7 +68703,7 @@ const BC_CSS = '#mc-root,#mcc-root{' + BC_LIGHT.map((c, i) => '--mc-bc-' + i + '
     + ':root[data-mbu-theme=dark] #mc-root,:root[data-mbu-theme=dark] #mcc-root{' + BC_DARK.map((c, i) => '--mc-bc-' + i + ':' + c).join(';') + '}';
 // AS's selected rows are the pool its one cover comes from, so they count once, not once each
 const isPool = id => ((results[id] || {}).findings || []).some(x => x.role === 'searched' || x.role === 'best');
-function changeCount() { return Object.entries(picked).reduce((n, [id, set]) => n + (providerOff(id) ? 0 : isPool(id) ? Math.min(1, set.size) : set.size), 0) + axChosen().length; }
+function changeCount() { return Object.entries(picked).reduce((n, [id, set]) => n + (providerOff(id) ? 0 : isPool(id) ? Math.min(1, set.size) : set.size), 0) + asMore(); }
 // Probe or Execute in flight, or a Falcon batch that Execute handed over still running: the
 // header pulses, as Apollo's bar does while an edit saves (#412).
 function isBusy() { return executing || Object.values(results).some(r => r.state === 'busy' || (r.falcon && r.falcon.running)); }
@@ -68880,18 +68814,6 @@ function open() {
     ui.addEventListener('contextmenu', onContextMenu);
     ui.addEventListener('mousedown', onPickDown);
     ui.addEventListener('mouseover', onPickOver);
-    // #772: an image's comment: Enter saves it and moves to the next, Escape (or leaving it) saves it
-    ui.addEventListener('input', e => { if (e.target.classList.contains('mc-ax-cin') && axCmt) { const st = axState.get(axCmt); if (st) st.comment = e.target.value; } });
-    ui.addEventListener('keydown', e => {
-        if (!e.target.classList.contains('mc-ax-cin')) return;
-        e.stopPropagation();
-        if (e.key === 'Enter') { e.preventDefault(); axCmtDone(true); } else if (e.key === 'Escape') { e.preventDefault(); axCmtDone(false); }
-    });
-    ui.addEventListener('focusout', e => {
-        if (!e.target.classList.contains('mc-ax-cin')) return;
-        const k = axCmt;
-        setTimeout(() => { if (ui && axCmt === k && !(document.activeElement && document.activeElement.classList.contains('mc-ax-cin'))) axCmtDone(false); }, 150);
-    });
     document.addEventListener('mouseup', onPickUp);
     // a cover thumbnail that fails falls back to its full image once (errors don't bubble: capture)
     ui.addEventListener('error', e => { const i = e.target; if (i.tagName === 'IMG' && i.dataset.alt) { const a = i.dataset.alt; delete i.dataset.alt; i.dataset.from = i.getAttribute('src'); i.src = a; } }, true);
@@ -68984,7 +68906,6 @@ let drag = null, dragged = false;
 const DRAG_SEL = '.mc-tbl span.mc-pick[data-col]';
 function onPickDown(e) {
     dragged = false;
-    if (axDown(e)) return;
     if (e.button !== 0 || e.ctrlKey || e.metaKey || e.altKey || e.shiftKey) return;
     const pk = e.target.closest(DRAG_SEL);
     if (!pk || e.target.closest('a, button')) return;
@@ -68992,7 +68913,6 @@ function onPickDown(e) {
     drag = { col: pk.dataset.col, key: pk.dataset.key, on: !isPicked(pk), moved: false };
 }
 function onPickOver(e) {
-    axOver(e);
     if (!drag) return;
     const pk = e.target.closest(DRAG_SEL);
     if (!pk || pk.dataset.col !== drag.col || (!drag.moved && pk.dataset.key === drag.key)) return;
@@ -69002,13 +68922,11 @@ function onPickOver(e) {
     setPicks(pks.filter(x => isPicked(x) !== drag.on), drag.on);
 }
 function onPickUp() {
-    axDrag = null;
     if (drag && drag.moved) dragged = true;
     drag = null;
 }
 // a found track link is an <a> (a click opens it): right-click takes it in or leaves it out
 function onContextMenu(e) {
-    if (e.target.closest('.mc-ax-c')) { e.preventDefault(); return; }   // #772: right-click takes in
     const pk = e.target.closest('a.mc-lnk.mc-pick');
     if (!pk) return;
     e.preventDefault();
@@ -69016,9 +68934,6 @@ function onContextMenu(e) {
 }
 function onClick(e) {
     const t = e.target;
-    if (Date.now() < axPopUntil) { axPopUntil = 0; if (ui.contains(t)) return; }   // #772: the click that closed the type picker
-    const axa = t.closest('[data-act^="ax-"]');
-    if (axa) { axAct(axa.dataset.act, axa); return; }
     const side = t.closest('[data-side]');
     if (side) { S[side.dataset.side] = true; saveSettings(); paintSides(); return; }
     const x = t.closest('[data-close]');
