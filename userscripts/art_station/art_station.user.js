@@ -3164,6 +3164,7 @@
   // test hook only (#772): the frame's pool and best set by a spec, as sourceBest leaves them
   if (mbuTestHooks()) (window.__asTest || (window.__asTest = {})).mc = {
     model: () => MODEL,
+    render: () => render(),
     offer: (best, pool) => { _mcBest = best; _mcPool = pool; pool.forEach(x => { x._del = true; x._sel = false; x._mcPool = x._mcOffer = true; }); render(); return mcExtras(best).then(xs => { render(); return xs; }); },
   };
   // #680: Mission Control opened this page with ?mc_source=[links] — import from those
@@ -3929,18 +3930,20 @@
     // #772: a saved edit redirects to the cover-art page; the form again (an error) or the browser check
     // is a 200 too, which counted as entered while nothing was
     if (!add.redirected || /\/add-[a-z-]+$/.test(new URL(add.url).pathname)) {
-      let why = '';
-      try {
-        const html = await add.text();
-        if (/<title>\s*Verifying your browser\s*<\/title>/i.test(html)) why = 'MusicBrainz asked to verify the browser';
-        else {
-          const doc = new DOMParser().parseFromString(html, 'text/html');
-          why = [...doc.querySelectorAll('#page .error, #page ul.errors li')].map(e => e.textContent.trim()).filter(Boolean).join(' · ').slice(0, 300);
-        }
-      } catch (e) {}
+      const why = await formError(add);
       asLog.warn(`Upload: MusicBrainz didn't save the edit (HTTP ${add.status}, ${add.url})${why ? ': ' + why : ''}`);
       throw new Error("MusicBrainz didn't save the edit" + (why ? ': ' + why : ''));
     }
+  }
+  // why MusicBrainz answered an edit's POST with a page instead of a redirect: the browser check, or the form again
+  // with its errors
+  async function formError(r) {
+    try {
+      const html = await r.text();
+      if (/<title>\s*Verifying your browser\s*<\/title>/i.test(html)) return 'MusicBrainz asked to verify the browser';
+      const doc = new DOMParser().parseFromString(html, 'text/html');
+      return [...doc.querySelectorAll('#page .error, #page ul.errors li')].map(e => e.textContent.trim()).filter(Boolean).join(' · ').slice(0, 300);
+    } catch (e) { return ''; }
   }
   async function runAdd(it, meta, dry, report) {   // dry-run summary only (live uses runAdds)
     const mime = (it._fileObj && it._fileObj.type) || 'image/jpeg';
@@ -3960,14 +3963,14 @@
     // group, so without this the relative order of multiple new covers (or a new cover
     // slotted among existing ones) isn't preserved.
     const seq = MODEL.filter(it => !it._del && !it._sourcing).sort((a, b) => a.order - b.order);
-    let n = 0;
-    for (const it of seq) {
-      const id = it._new ? (it._signed && it._signed.image_id) : it.id;
-      if (!id) continue;   // a new cover whose upload failed — leave it out of the ordering
+    const ids = seq.map(it => it._new ? (it._signed && it._signed.image_id) : it.id).filter(Boolean).map(String);   // a new cover whose upload failed is left out
+    // #784: every image the form lists goes in, the ones the gallery drops (a removal still open for votes) last:
+    // MusicBrainz takes no reorder that leaves one out
+    form.querySelectorAll('input[name$=".id"]').forEach(h => { if (/\.artwork\.\d+\.id$/.test(h.name) && h.value && !ids.includes(String(h.value))) ids.push(String(h.value)); });
+    ids.forEach((id, n) => {
       p.append(`reorder-${ART}.artwork.${n}.id`, id);
       p.append(`reorder-${ART}.artwork.${n}.position`, String(n + 1));
-      n++;
-    }
+    });
     p.append(`reorder-${ART}.edit_note`, editNote(meta));
     if (meta.votable) p.append(`reorder-${ART}.make_votable`, '1');
     return { method: 'POST', url: form._action, body: p };
@@ -4190,8 +4193,11 @@
           pay.textContent = `${req.method} ${req.url}\n${decodeURIComponent(req.body.toString()).replace(/\+/g, ' ').replace(/&/g, '\n  ')}`;
           setRowBar(row, 100, 'dry');
         } else {
-          const r = await fetch(req.url, { method: 'POST', body: req.body, credentials: 'same-origin', signal: ctl && ctl.ac.signal });
-          if (!r.ok) throw new Error('HTTP ' + r.status);
+          const r = await mbnFetch(req.url, { method: 'POST', body: req.body, credentials: 'same-origin', signal: ctl && ctl.ac.signal }, { log: (l, m) => asLog[l === 'warn' ? 'warn' : 'info'](m) });
+          if (!r || !r.ok) throw new Error('HTTP ' + (r ? r.status : 'failed'));
+          // #784: an edit is entered when MusicBrainz redirects away from its form; the form again (200) carries its
+          // error, which was counted as done, and the reorder after Mission Control's uploads never went in
+          if (!r.redirected || new URL(r.url).pathname === new URL(req.url, location.href).pathname) { const why = await formError(r); asLog.warn(`Edit: MusicBrainz didn't save ${op.label} (${r.url})${why ? ': ' + why : ''}`); throw new Error("MusicBrainz didn't save the edit" + (why ? ': ' + why : '')); }
           st.textContent = '✅'; setRowBar(row, 100, 'done');
           asLog.ok(`Edit: ${op.label}`);
         }

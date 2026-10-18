@@ -27,6 +27,8 @@ On the add page, `x_seed.image.<n>.url` / `.types` / `.comment` and `x_seed.orig
 `add-<art>.position` only places the whole upload as **one group**, so it does *not* reliably interleave several new covers (or a new cover slotted among existing ones). A single **reorder** edit fixes it:
 
 > `POST /release/<mbid>/reorder-<art>` — the full artwork list: `reorder-<art>.artwork.<n>.id` + `.artwork.<n>.position` for every non-deleted cover, new ones referenced by their post-upload `image_id`.
+>
+> It must list **every** image the form lists: one left out (a cover marked for removal, whose remove edit is still open for votes) gets the form back with "The edit could not be applied because the images have changed" ([#784](https://github.com/majkinetor/musicbrainz-userscripts/issues/784)). So the covers the gallery drops go last. Like an add, an edit counts as entered only when MusicBrainz redirects away from its form; a 200 is the form again (its error) or the browser check.
 
 It runs **last**, after every register, and is **re-run whenever a failed upload is retried** (it re-reads `MODEL` live, so a late success lands in the right slot). Because the reorder is authoritative for order, the register step doesn't need to be sequential.
 
