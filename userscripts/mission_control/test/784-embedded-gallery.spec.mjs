@@ -66,7 +66,8 @@ test('#784: the gallery shows in the card, scrolls with it and goes full screen'
   check(g2.frame[1] === g2.slot[1], `the frame follows the slot (${JSON.stringify(g2)})`);
 
   // a cover full screen: the frame takes the window; Esc gives the card back
-  await fr.evaluate(() => document.querySelector('.as-card.new:not(.del) .as-thumb img').click()   // a store image: the sandbox archive's own often don't load);
+  // a store image: the sandbox archive's own often don't load
+  await fr.evaluate(() => document.querySelector('.as-card.new:not(.del) .as-thumb img').click());
   const full = await until(geo, v => v.frame[2] === 1400 && v.frame[3] === 900);
   check(full.frame.join() === '0,0,1400,900', `full screen takes the window (${JSON.stringify(full)})`);
   await page.screenshot({ path: 'test-results/mc-784-full.png' });
