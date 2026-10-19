@@ -44,6 +44,13 @@ test('#784: the gallery shows in the card, scrolls with it and goes full screen'
   }), v => v.low <= v.h);
   check(fit.low <= fit.h, `the gallery's lowest part is inside the frame (${JSON.stringify(fit)})`);
   check(fit.clear, `take in sits left of the NEW ribbon (${JSON.stringify(fit)})`);
+  // and shows: the last row's type pills hang below its cards, outside the body's box, which mustn't clip them
+  const pill = await fr.evaluate(() => {
+    const ps = [...document.querySelectorAll('.as-foot-type > *')], p = ps.sort((a, b) => b.getBoundingClientRect().bottom - a.getBoundingClientRect().bottom)[0], r = p.getBoundingClientRect();
+    const e = document.elementFromPoint(r.left + r.width / 2, r.bottom - 3);
+    return { shown: !!(e && p.contains(e)), at: e && e.tagName + '.' + e.className };
+  });
+  check(pill.shown, `the lowest type pill shows whole (${JSON.stringify(pill)})`);
   await page.screenshot({ path: 'test-results/mc-784-embedded.png' });
   // a store's take all in takes in each of its images that isn't a duplicate, after the covers; a duplicate stays
   // left out, with no take in and no type
