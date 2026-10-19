@@ -1401,7 +1401,7 @@
         ${provBadge(it)}${rmOpenChip(it)}
         ${!it._del && !it._rmOpen ? `<button class="as-tbtn as-rmone" title="Mark this ${ITEM} for removal">✕</button>` : ''}
         ${it._del ? (it._mcOffer ? (it._mcDup ? '' : `<button class="as-tbtn as-undo"${_mcChecking ? ' disabled title="checking for duplicates…"' : ' title="take this image in"'}>＋ take in</button>`) : '<button class="as-tbtn as-undo" title="keep this image">↺ keep</button>') : ''}
-        ${it._mcDup ? `<span class="as-mcdup" title="the same picture as ${esc(it._mcDup.replace(/^= /, ''))}">${esc(it._mcDup)}</span>` : ''}
+        ${it._mcDup && it._del ? `<span class="as-mcdup" title="the same picture as ${esc(it._mcDup.replace(/^= /, ''))}">${esc(it._mcDup)}</span>` : ''}
         ${onlyBtn(it)}
       </div>
       ${foot(it)}
@@ -1425,7 +1425,7 @@
        starts to curve. That mismatch at both bottom corners is the "bottom
        border" looking broken. The pill has its own background, so it masks the
        border behind it exactly as before. */
-    const typeRow = it._mcDup ? '' : `<div class="as-foot-type">${typePill}</div>`;   // #784: a duplicate is never taken in, so it has no type
+    const typeRow = it._mcDup && it._del ? '' : `<div class="as-foot-type">${typePill}</div>`;   // #784: a duplicate is never taken in, so it has no type
     const dim = `<span class="as-dim">${dimHtml(it)}</span>`;
     if (it._del) return `<div class="as-foot"><div class="as-foot-row"><span class="as-foot-cmt"></span>${dim}</div>${typeRow}</div>`;
     const cmt = it._editcmt
@@ -3166,14 +3166,13 @@
     try { return await mcExtrasOf(best); } finally { _mcChecking = false; render(); }
   }
   async function mcExtrasOf(best) {
-    if (!best || !_mcPool.length) return [];
+    if (!best) return [];
     const all = [best, ..._mcPool].sort((a, b) => (a._seq || 0) - (b._seq || 0));
     const groups = new Map();
     all.forEach(x => { const k = provKey(x); if (!groups.has(k)) groups.set(k, []); groups.get(k).push(x); });
     const label = new Map();
     groups.forEach(xs => xs.forEach((x, i) => label.set(x, { name: x._provider || 'Image', n: i + 1, of: xs.length })));
     const many = [...groups.values()].filter(xs => xs.length > 1);
-    if (!many.length) { asLog.info('Mission Control: no store gave more than one image'); return []; }
     const hashOf = async src => {
       try {
         const b = typeof src === 'string' && /^https?:/.test(src) ? await gmFetch(src) : await (await fetch(src)).blob();
@@ -3190,6 +3189,12 @@
       if (r && r.h) arch.push({ x, h: r.h }); else asLog.debug(`Mission Control: no fingerprint for archive cover #${x.id}`);
     }
     const bestH = await hashOf(best._file);
+    const inArch = h => { const a = h && arch.find(c => hamming(c.h, h) <= SAME_PICTURE); return a ? 'in archive' + ((a.x.types || []).length ? ' (' + a.x.types.join(', ') + ')' : '') : ''; };
+    // the best front is the same picture as an archive cover too at times (Discogs' first image, the archive's front
+    // taken from it): it is marked so, and isn't taken in with the rest
+    best._mcDup = inArch(bestH && bestH.h);
+    if (best._mcDup) asLog.info(`Mission Control: the best front is ${best._mcDup}`);
+    if (!many.length) { asLog.info('Mission Control: no store gave more than one image'); return []; }
     const extras = [];
     for (const xs of many) for (const x of xs) {
       if (x === best) continue;
@@ -3201,8 +3206,8 @@
     const lb = x => { const l = label.get(x); return l ? l.name + ' ' + l.n : 'the best front'; };
     extras.forEach(e => {
       if (!e._h) return;
-      const a = arch.find(c => hamming(c.h, e._h) <= SAME_PICTURE);
-      if (a) { e.dup = 'in archive' + ((a.x.types || []).length ? ' (' + a.x.types.join(', ') + ')' : ''); return; }
+      const a = inArch(e._h);
+      if (a) { e.dup = a; return; }
       if (bestH && bestH.h && hamming(bestH.h, e._h) <= SAME_PICTURE) { e.dup = '= ' + lb(best); return; }
       const big = extras.find(o => o !== e && o._h && hamming(o._h, e._h) <= SAME_PICTURE && (o.w * o.h > e.w * e.h || (o.w * o.h === e.w * e.h && extras.indexOf(o) < extras.indexOf(e))));
       if (big) e.dup = '= ' + big.provider + ' ' + big.n;

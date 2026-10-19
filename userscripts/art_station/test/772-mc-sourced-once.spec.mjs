@@ -16,7 +16,7 @@ test.use({ gm: { name: 'Art Station' } });
 const quick = code => code
   .replace('function arDelayMs(attempt) {', 'function arDelayMs(attempt) { return 300;')
   .replace('const arTimes = () =>', 'const arTimes = () => 1 || ');
-const noArchive = code => quick(code).replace('const a = arch.find(', 'const a = null && arch.find(');
+const noArchive = code => quick(code).replace('const a = h && arch.find(', 'const a = null && arch.find(');
 const REL = '1c0d1707-e032-48a4-acd8-dbaac77be17f';   // Journey Inwards, linked to discogs.com/release/1118432
 
 test('#772: the frame sources once, so the images offered are there at Execute', { tag: ['@sandbox', '@login', '@web'] }, async ({ page, inject }) => {
