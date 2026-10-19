@@ -4731,11 +4731,15 @@
     const dims = [it.bytes ? fmtSize(it.bytes) : '', it.w && it.h ? `${it.w} × ${it.h}` : ''].filter(Boolean).join(' · ');   // #380-followup show file size in full screen too, like the card
     const cap = ov.querySelector('.as-lb-cap');
     // type is a clickable chip (same picker as the grid pills) so it can be set full-screen
-    cap.innerHTML = `<button class="as-lb-type${it.types.length ? '' : ' as-type-add'}" title="set ${ITEM} type">${it.types.length ? esc(it.types.join(', ')) : '＋ type'}</button>${dims ? `<span class="as-lb-dim">${esc(dims)}</span>` : ''}`;
+    // the store it came from, as on the card (#249)
+    const prov = it._new && it._provIcon ? `<span class="as-lb-prov" title="${esc(`Sourced from ${it._provider || 'provider'}` + (it._provUrl ? `
+${it._provUrl}` : ''))}"><img src="${esc(it._provIcon)}" alt="">${it._provider ? esc(it._provider) : ''}</span>` : '';
+    cap.innerHTML = `${prov}<button class="as-lb-type${it.types.length ? '' : ' as-type-add'}" title="set ${ITEM} type">${it.types.length ? esc(it.types.join(', ')) : '＋ type'}</button>${dims ? `<span class="as-lb-dim">${esc(dims)}</span>` : ''}`;
     cap.querySelector('.as-lb-type').onclick = e => {
       e.stopPropagation();
       openTypePopFor(byId(_lb), e.currentTarget, () => { _lbDirty = true; paintLightbox(); });
     };
+    const pimg = cap.querySelector('.as-lb-prov img'); if (pimg) pimg.onerror = () => pimg.remove();   // a missing favicon: the name alone
     paintCmtArea(ov, it);
   }
   let _lbEditCmt = false;
@@ -6510,6 +6514,8 @@
   /* #249 provider favicon chip, bottom-left of a newly-sourced cover */
   .as-prov{position:absolute;left:6px;bottom:6px;z-index:5;width:25px;height:25px;border-radius:var(--mbu-radius);background:rgba(255,255,255,.93);box-shadow:0 1px 3px rgba(0,0,0,.32);display:flex;align-items:center;justify-content:center;overflow:hidden;cursor:zoom-in}
   .as-prov img{width:18px;height:18px;display:block;object-fit:contain}
+  .as-lb-prov{display:inline-flex;align-items:center;gap:7px;color:#eee}
+  .as-lb-prov img{width:22px;height:22px;padding:3px;border-radius:var(--mbu-radius);background:rgba(255,255,255,.93);object-fit:contain;box-sizing:content-box}
   .as-dthumb .as-prov{left:4px;bottom:4px;width:22px;height:22px}
   .as-dthumb .as-prov img{width:16px;height:16px}
   /* majkinetor, again: "it still happens that borders are junky", "mostly visible
