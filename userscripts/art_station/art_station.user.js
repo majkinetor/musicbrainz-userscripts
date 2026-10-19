@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Art Station
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.19.022614
+// @version      2026.10.19.152215
 // @description  Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5BcnQgU3RhdGlvbjwvdGl0bGU+CjxjaXJjbGUgY3g9Ijg2IiBjeT0iNjQiIHI9IjM4IiBmaWxsPSIjMWIwZjNiIiBzdHJva2U9IiNiOTY3ZmYiIHN0cm9rZS13aWR0aD0iMyIvPgo8Y2lyY2xlIGN4PSI4NiIgY3k9IjY0IiByPSIyOC44OCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjNGEzNDgwIiBzdHJva2Utd2lkdGg9IjEuNSIvPjxjaXJjbGUgY3g9Ijg2IiBjeT0iNjQiIHI9IjIwLjkwMDAwMDAwMDAwMDAwMiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjNGEzNDgwIiBzdHJva2Utd2lkdGg9IjEuNSIvPgo8Y2lyY2xlIGN4PSI4NiIgY3k9IjY0IiByPSIxMS4wMiIgZmlsbD0iI2ZmNzFjZSIvPjxjaXJjbGUgY3g9Ijg2IiBjeT0iNjQiIHI9IjIuNTA4IiBmaWxsPSIjMWIwZjNiIi8+PGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJhcy1za3ljIiB4MT0iMCIgeTE9IjAiIHgyPSIwIiB5Mj0iMSI+PHN0b3Agb2Zmc2V0PSIwLjAwIiBzdG9wLWNvbG9yPSIjN2ZlN2ZmIi8+PHN0b3Agb2Zmc2V0PSIwLjUwIiBzdG9wLWNvbG9yPSIjZDlhNmZmIi8+PHN0b3Agb2Zmc2V0PSIxLjAwIiBzdG9wLWNvbG9yPSIjZmY3MWNlIi8+PC9saW5lYXJHcmFkaWVudD48Y2xpcFBhdGggaWQ9ImFzLWNjIj48cmVjdCB4PSIxMCIgeT0iMjIiIHdpZHRoPSI3OCIgaGVpZ2h0PSI4NCIgcng9IjgiLz48L2NsaXBQYXRoPjwvZGVmcz4KPGcgY2xpcC1wYXRoPSJ1cmwoI2FzLWNjKSI+PHJlY3QgeD0iMTAiIHk9IjIyIiB3aWR0aD0iNzgiIGhlaWdodD0iODQiIGZpbGw9InVybCgjYXMtc2t5YykiLz4KPGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJhcy1nczIiIHgxPSIwIiB5MT0iMCIgeDI9IjAiIHkyPSIxIj48c3RvcCBvZmZzZXQ9IjAiIHN0b3AtY29sb3I9IiNmZmY2YTgiLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiNmZjhhNWMiLz48L2xpbmVhckdyYWRpZW50Pgo8bWFzayBpZD0iYXMtbXMyIj48cmVjdCB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCIgZmlsbD0iI2ZmZiIvPjxyZWN0IHg9IjI1LjYiIHk9IjY3LjIiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjEuMiIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9IjY5LjgiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjEuNSIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9IjczLjAiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjEuOCIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9Ijc3LjAiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjIuMyIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9IjgyLjAiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjIuOSIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9Ijg4LjMiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjMuNiIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9Ijk2LjIiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjQuNSIgZmlsbD0iIzAwMCIvPjwvbWFzaz48L2RlZnM+CjxjaXJjbGUgY3g9IjQ5IiBjeT0iNzYuMDgiIHI9IjIzLjQiIGZpbGw9InVybCgjYXMtZ3MyKSIgbWFzaz0idXJsKCNhcy1tczIpIi8+PHJlY3QgeD0iMTAiIHk9Ijc0LjA4IiB3aWR0aD0iNzgiIGhlaWdodD0iMzEuOTIiIGZpbGw9IiNiOTY3ZmYiLz48cGF0aCBkPSJNMTAgNzQuMDhIODhNMTAgNzcuOUg4OE0xMCA4My4ySDg4TTEwIDkxLjRIODhNMTAgMTA0LjJIODhNMzQuOCA3NC4wOEwtNDguNSAxMDZNMzguNCA3NC4wOEwtMjQuMSAxMDZNNDEuOSA3NC4wOEwwLjMgMTA2TTQ1LjUgNzQuMDhMMjQuNiAxMDZNNDkuMCA3NC4wOEw0OS4wIDEwNk01Mi41IDc0LjA4TDczLjQgMTA2TTU2LjEgNzQuMDhMOTcuOCAxMDZNNTkuNiA3NC4wOEwxMjIuMSAxMDZNNjMuMiA3NC4wOEwxNDYuNSAxMDYiIHN0cm9rZT0iI2ZmZmI5NiIgc3Ryb2tlLXdpZHRoPSIxLjMiIGZpbGw9Im5vbmUiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPjwvZz48cmVjdCB4PSIxMCIgeT0iMjIiIHdpZHRoPSI3OCIgaGVpZ2h0PSI4NCIgcng9IjgiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJhMTQ1OCIgc3Ryb2tlLXdpZHRoPSIzIi8+Cjwvc3ZnPgo=
@@ -430,7 +430,7 @@
         const k = m.mode === 1 ? 16 : m.mode === 2 ? innerHeight : 1;
         (xs.find(n => n.scrollHeight > n.clientHeight) || document.scrollingElement).scrollBy(m.dx * k, m.dy * k);
       }
-      else if (m.type === 'plan') { frame.plan = m; send('mc:plan', { id: 'as', release: rel, ops: m.ops || [], more: m.more || 0, n: m.n || 0, tile: m.tile || 0 }); }
+      else if (m.type === 'plan') { frame.plan = m; send('mc:plan', { id: 'as', release: rel, ops: m.ops || [], more: m.more || 0, n: m.n || 0, tile: m.tile || 0, fit: m.fit || 0 }); }
     });
     // the ticks are a self-ending setTimeout chain, not setInterval: in Violentmonkey on Firefox the
     // interval outlived its clearInterval and kept reporting "finding the best cover" after the answer (#680)
@@ -3315,7 +3315,21 @@
     const more = plan.filter(o => !(o.kind === 'add' && o.it === _mcBest && _mcFront) && !(o.kind === 'remove' && _mcReplaced && o.id === _mcReplaced.id) && !(o.kind === 'reorder' && !moved && !MODEL.some(x => x._new && !x._del && x !== _mcBest))).length;
     // n and tile: the images in the gallery and the width a card takes in its row, for the card's width in Mission Control
     const c = root.querySelector('.as-grid .as-card'), g = c && parseFloat(getComputedStyle(c.parentElement).columnGap) || 0;
-    return { ops: plan.map(o => ({ kind: o.kind, label: o.label })), more, n: MODEL.filter(x => !x._sourcing).length, tile: c ? Math.round(c.offsetWidth + g) : 0 };
+    const n = MODEL.filter(x => !x._sourcing).length, tile = c ? Math.round(c.offsetWidth + g) : 0;
+    return { ops: plan.map(o => ({ kind: o.kind, label: o.label })), more, n, tile, fit: mcFit(n, tile, g) };
+  }
+  // the frame's width the gallery needs: its toolbar in one row with icon-only buttons, or the row of cards nearest
+  // that, whichever is wider; Mission Control gives its card that width rather than two whole columns.
+  // Reckoned, not toggled: a class flip here would wake the embed's observer, which asks for the plan again
+  function mcFit(n, tile, g) {
+    const bar = root.querySelector('.as-bar'); if (!bar) return 0;
+    const bs = getComputedStyle(bar), rs = getComputedStyle(root), px = (s, ...k) => k.reduce((a, x) => a + (parseFloat(s[x]) || 0), 0);
+    const kids = [...bar.children].filter(k => k.getClientRects().length && !k.matches('.as-sp'));
+    const labels = bar.classList.contains('mbu-compact') ? 0 : [...bar.querySelectorAll('.mbu-bt')].reduce((a, b) => a + b.offsetWidth, 0);
+    const w = kids.reduce((a, k) => a + k.offsetWidth, 0) - labels + (parseFloat(bs.columnGap) || 0) * Math.max(0, kids.length - 1)
+      + px(bs, 'paddingLeft', 'paddingRight', 'borderLeftWidth', 'borderRightWidth');
+    const k = tile ? Math.max(1, Math.min(n || 1, Math.round((w + g) / tile))) : 0;
+    return Math.ceil(Math.max(w, k * tile - g) + px(rs, 'paddingLeft', 'paddingRight'));
   }
   // #784: Mission Control shows this frame in its cover-art card (mc_embed): the gallery alone, without
   // MusicBrainz's header, tabs and sidebar, and without Enter edit (Execute enters). It tells the release page
@@ -6398,7 +6412,7 @@ ${it._provUrl}` : ''))}"><img src="${esc(it._provIcon)}" alt="">${it._provider ?
   /* only the page clips, not the body: the type pills hang below the last row of cards by a transform, outside the body's box */
   html.as-embed{overflow:hidden!important}html.as-embed body{overflow:visible!important}
   html.as-embed .as-embed-hide,html.as-embed #as-switch,html.as-embed #as-switch-wrap,html.as-embed #as-root .as-commit{display:none!important}
-  html.as-embed .as-embed-keep{margin:0!important;padding:0!important;float:none!important;width:auto!important;min-width:0!important;max-width:none!important;border:0!important;box-shadow:none!important}
+  html.as-embed .as-embed-keep{display:block!important;margin:0!important;padding:0!important;float:none!important;width:auto!important;min-width:0!important;max-width:none!important;border:0!important;box-shadow:none!important}
   html.as-embed #as-root{margin:0!important;padding:6px 10px 8px}
   html.as-embed .as-bar{position:static}
   .as-sec-more+.as-grid .as-card.del,.as-sec-more+.as-dlist .as-drow.del{opacity:1}
