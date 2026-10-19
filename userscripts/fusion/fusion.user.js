@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Fusion
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.19
+// @version      2026.10.19.150059
 // @description  Merge-recordings assistant for MusicBrainz: gather a pool of candidate recordings from a release / release group / recording page (or paste any MBID/URL), auto-match them into merge groups by ISRC / AcoustID / length / title+artist, review and adjust the groups, then submit the merges directly in the background — no MB merge page involved.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPkZ1c2lvbjwvdGl0bGU+CiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjYTE4NGY4IiBzdHJva2Utd2lkdGg9IjUuNSI+CiAgICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSI2NCIgcng9IjUyIiByeT0iMjIiLz4KICAgIDxlbGxpcHNlIGN4PSI2NCIgY3k9IjY0IiByeD0iNTIiIHJ5PSIyMiIgdHJhbnNmb3JtPSJyb3RhdGUoNjAgNjQgNjQpIi8+CiAgICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSI2NCIgcng9IjUyIiByeT0iMjIiIHRyYW5zZm9ybT0icm90YXRlKDEyMCA2NCA2NCkiLz4KICA8L2c+CiAgPGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iMTEiIGZpbGw9IiM3YzRkZmYiLz4KPC9zdmc+Cg==
@@ -317,7 +317,7 @@ async function wsGet(path, retries) {
 
 // ── settings (GM-persisted) ──────────────────────────────────────────────
 const SETTINGS_KEY = 'fusion.settings';
-const SETTINGS_DEFAULTS = { lengthToleranceMs: 5000, grossLengthMs: 30000, acoustidEnrich: true, acoustidPoolCap: 2000, autoMatchOnOpen: false, prefetchGroupReleases: false, releasePrefetchCap: 200, poolCollapsed: false, matchCutoff: 'strict' };
+const SETTINGS_DEFAULTS = { lengthToleranceMs: 5000, grossLengthMs: 30000, acoustidEnrich: true, acoustidPoolCap: 2000, autoMatchOnOpen: false, prefetchGroupReleases: false, releasePrefetchCap: 200, poolCollapsed: false, matchCutoff: 'strict', poolSort: 'added' };
 function loadSettings() {
     // (#623: the one-time #529 migrations of the old AcoustID cap and prefetch default are retired)
     try { return Object.assign({}, SETTINGS_DEFAULTS, JSON.parse(GM_getValue(SETTINGS_KEY, '{}'))); }
@@ -2959,6 +2959,14 @@ function fsStyle() {
         + '.fs-hint{text-transform:none;font-weight:400;color:var(--fs-muted)}'
         + '.fs-poolfilter{flex:1;min-width:0;max-width:210px;box-sizing:border-box;background:var(--fs-panel);border:1px solid var(--fs-border);color:var(--fs-text);border-radius:var(--mbu-radius);padding:3px 8px;font:400 11.5px -apple-system,Segoe UI,Arial,sans-serif;text-transform:none;letter-spacing:0}'
         + '.fs-poolfilter:focus{outline:none;border-color:var(--fs-purple)}'
+        + '.fs-poolsort{display:flex;align-items:center;gap:8px;padding:6px 14px;border-bottom:1px solid var(--fs-border);background:var(--fs-panel2);color:var(--fs-muted);font-size:11.5px}'
+        + '.fs-seg{display:inline-flex;border:1px solid var(--fs-border);border-radius:var(--mbu-radius);overflow:hidden}'
+        + '.fs-seg button{border:0;border-left:1px solid var(--fs-border);background:var(--fs-panel);color:var(--fs-text);padding:4px 11px;font:400 12px -apple-system,Segoe UI,Arial,sans-serif;cursor:pointer}'
+        + '.fs-seg button:first-child{border-left:0}'
+        + '.fs-seg button:hover{background:var(--fs-panel2)}'
+        + '.fs-seg button.fs-on{background:var(--fs-purple);color:var(--mbu-text-on-accent)}'
+        + '.fs-pcard.fs-run0{border-left:3px solid var(--fs-purple);background:color-mix(in srgb,var(--fs-purple) 8%,var(--fs-panel))}'
+        + '.fs-pcard.fs-run1{border-left:3px solid var(--fs-green);background:color-mix(in srgb,var(--fs-green) 8%,var(--fs-panel))}'
         + '.fs-cnt.fs-cnt-filtered{color:var(--mbu-accent-deep-text);border-color:var(--fs-purple)}'
         // #529 follow-up (majkinetor, screenshot): "I can't see individual
         // recordings here (have to zoom out)" — classic flexbox trap: a flex
@@ -3317,9 +3325,9 @@ function presenceDots(rec) {
         + dot('acid', 'AcoustID', rec.acoustids, rec.acoustids != null, false, '')
         + '</div>';
 }
-function poolCardHtml(rec) {
+function poolCardHtml(rec, run) {
     const rs = releasesSummary(rec);
-    return '<div class="fs-pcard" draggable="true" data-gid="' + rec.gid + '">'
+    return '<div class="fs-pcard' + (run == null ? '' : ' fs-run' + run) + '" draggable="true" data-gid="' + rec.gid + '">'
         + '<span class="fs-grip">⠿</span>'
         + '<div class="fs-info"><div class="fs-t" title="' + recTip(rec) + '">' + pendingBadge(rec) + videoBadge(rec) + liveBadge(rec) + recLink(rec.gid, rec.title) + recPlace(rec) + recDis(rec) + (rec.artistCredit ? ' <span class="fs-artist">— ' + artistLink(rec) + '</span>' : '') + '</div>'
         + '<div class="fs-m" title="' + escapeHtml(rs.tooltip) + '">' + escapeHtml(rs.text) + ' · ' + dur(rec.length) + '</div>' + idsLine(rec) + '</div>'
@@ -3760,6 +3768,39 @@ function poolMatches(rec, q) {
         .filter(Boolean).join(' ');
     return normName(hay).includes(normName(q));
 }
+// The pool's sort (majkinetor): Added keeps the order recordings came in; Title puts
+// the versions of one song together (a bracketed part such as "(remastered)" is
+// ignored), Artist sorts by artist, then title. Only the view: poolOrder and Match
+// don't change. A title that repeats (the same artist too, under Artist) is a run, and
+// its cards are tinted, alternating two colours so neighbouring runs stay apart; a
+// title on its own stays plain, so a pool of all-different titles shows no tint.
+const POOL_SORTS = ['added', 'title', 'artist'];
+function sortTitle(t) { return normName(String(t || '').replace(/\s*[([][^)\]]*[)\]]/g, ' ')) || normName(t); }
+// [{ rec, run }]: run is 0 or 1 (the colour) for a card in a run of two or more, else null
+function sortPool(recs, mode) {
+    if (mode !== 'title' && mode !== 'artist') return recs.map(r => ({ rec: r, run: null }));
+    const cmp = (a, b) => a.localeCompare(b);
+    const rows = recs.map((r, i) => ({ rec: r, t: sortTitle(r.title), a: normName(r.artistCredit), i }))
+        .sort((x, y) => (mode === 'title' ? cmp(x.t, y.t) || cmp(x.a, y.a) : cmp(x.a, y.a) || cmp(x.t, y.t)) || x.i - y.i);
+    const key = x => mode === 'title' ? x.t : x.a + '\u0001' + x.t;
+    let n = 0;
+    for (let i = 0; i < rows.length;) {
+        let j = i + 1; while (j < rows.length && key(rows[j]) === key(rows[i])) j++;
+        const run = j - i > 1 ? n++ % 2 : null;
+        for (let k = i; k < j; k++) rows[k].run = run;
+        i = j;
+    }
+    return rows.map(x => ({ rec: x.rec, run: x.run }));
+}
+function renderPoolSort() {
+    const mode = POOL_SORTS.includes(SETTINGS.poolSort) ? SETTINGS.poolSort : 'added';
+    document.querySelectorAll('#fs-pool-sort [data-sort]').forEach(b => b.classList.toggle('fs-on', b.dataset.sort === mode));
+}
+function setPoolSort(mode) {
+    if (!POOL_SORTS.includes(mode)) return;
+    if (SETTINGS.poolSort !== mode) { SETTINGS.poolSort = mode; saveSettings(); }
+    renderPoolSort(); renderPool();
+}
 function renderPool() {
     const body = document.getElementById('fs-pool-body'); if (!body) return;
     const q = STATE.poolFilter || '';
@@ -3768,7 +3809,7 @@ function renderPool() {
     const cnt = document.getElementById('fs-pool-cnt');
     if (cnt) { cnt.textContent = q ? recs.length + ' / ' + all.length : String(all.length); cnt.classList.toggle('fs-cnt-filtered', !!q); }
     body.innerHTML = recs.length
-        ? recs.map(poolCardHtml).join('')
+        ? sortPool(recs, SETTINGS.poolSort).map(({ rec, run }) => poolCardHtml(rec, run)).join('')
         : '<div class="fs-empty">' + (q ? 'No pool recording matches “' + escapeHtml(q) + '”.' : 'Pool is empty — add a recording by MBID/URL above.') + '</div>';
     if (STATE.selected) { const c = body.querySelector('[data-gid="' + STATE.selected + '"]'); if (c) c.classList.add('fs-selected'); }
     renderPoolCount();
@@ -4430,6 +4471,7 @@ function buildShell() {
         + '<button type="button" id="fs-automatch" class="fs-btn fs-primary">⚡ Match</button></div>'
 
         + '<div class="fs-body" id="fs-body"><div class="fs-col fs-pool"><div class="fs-colhdr">Pool <span class="fs-cnt" id="fs-pool-cnt">0</span><span class="fs-sp"></span><input type="text" id="fs-pool-filter" class="fs-poolfilter" placeholder="filter the pool…" title="Filter by title, artist, release, ISRC or AcoustID. Match still considers the whole pool."><span class="fs-pooltog" id="fs-pooltog" title="collapse the pool to give the groups the full width">◀</span></div>'
+        + '<div class="fs-poolsort">Sort <span class="fs-seg" id="fs-pool-sort"><button type="button" data-sort="added" title="in the order they were added">Added</button><button type="button" data-sort="title" title="by title, so the versions of one song sit together">Title</button><button type="button" data-sort="artist" title="by artist, then title">Artist</button></span></div>'
         + '<div class="fs-colbody" id="fs-pool-body"></div></div>'
         + '<div class="fs-poolrail" id="fs-poolrail" title="show the pool again"><span class="fs-railarrow">▶</span><span class="fs-raillabel">POOL <span id="fs-rail-cnt">0</span></span></div>'
         + '<div class="fs-col fs-groups"><div class="fs-colhdr">Groups <span class="fs-cnt" id="fs-groups-cnt">0</span><span class="fs-subcnt" id="fs-groups-recs"></span><button type="button" id="fs-expandall-deep" class="fs-btn" title="expand every group and every release table (or collapse it all again)">⇲ All details</button><button type="button" id="fs-collapseall" class="fs-btn" title="collapse or expand every group card">▼ Collapse all</button><span class="fs-matchmsg" id="fs-matchmsg" style="display:none"></span><span class="fs-sp"></span><span class="fs-clearset">Clear: <button type="button" id="fs-clearboard" class="fs-btn fs-clearboard-btn" title="dissolve every group — all recordings return to the pool">all</button><button type="button" id="fs-clearmerged" class="fs-btn fs-clearboard-btn" title="remove groups that have already been merged — their recordings leave the board (the merged-away ones no longer exist in MusicBrainz)">merged</button></span></div>'
@@ -4464,6 +4506,8 @@ function buildShell() {
     document.getElementById('fs-pooltog').onclick = () => setPoolCollapsed(true);
     document.getElementById('fs-poolrail').onclick = () => setPoolCollapsed(false);
     setPoolCollapsed(SETTINGS.poolCollapsed === true);
+    document.getElementById('fs-pool-sort').addEventListener('click', e => { const b = e.target.closest('[data-sort]'); if (b) setPoolSort(b.dataset.sort); });
+    renderPoolSort();
     document.getElementById('fs-clearmerged').onclick = () => { clearMerged(); renderAll(); };
     document.getElementById('fs-runsum').addEventListener('click', e => {
         if (e.target.classList.contains('fs-runclose')) { _lastRun = null; renderRunSummary(); }
@@ -4729,7 +4773,7 @@ try {
         fetchReleaseDetails, releaseTableHtml, toggleReleaseDetails, storeReleaseDetails, releasesSummary, renderFooter, seedPageProgress, lengthSpread,
         renderRunSummary, getLastRun: () => _lastRun, showNotice, renderNotice, cancelBackground, bgAlive, resumeBackground, isBgStopped: () => _bgStopped,
         lengthDiffLabel,
-        toggleCollapseAll, allGroupsCollapsed, placeLenBadges, toggleExpandAllDeep, everythingExpanded, setPoolCollapsed, renderPoolCount, backfillMissingReleases, prefetchGroupReleases, setBgTask, renderCollapseAllBtn, toggleAllDetails, groupAllExpanded, clearMerged,
+        toggleCollapseAll, allGroupsCollapsed, placeLenBadges, toggleExpandAllDeep, everythingExpanded, setPoolCollapsed, renderPoolCount, sortPool, setPoolSort, backfillMissingReleases, prefetchGroupReleases, setBgTask, renderCollapseAllBtn, toggleAllDetails, groupAllExpanded, clearMerged,
         addToPool, createGroupWithMember, addToGroup, returnToPool, removeFromGroupAndPool, removeFromPoolPermanently, findGroup, deleteGroup, clearBoard, videoConflict,
         buildEditNote, autoEditNote, evidenceLines, ensureInternalIds, mergeGroup, mergeAll, describeRecordingForLog,
         openFusion, closeFusion, onAutoMatch, seedFromScope, maybeAutoMatchOnOpen, renderAll, renderPool, renderGroups, busyStart, busyEnd,

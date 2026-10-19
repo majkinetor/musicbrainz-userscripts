@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-10-19 14:59 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-10-19 15:01 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -1236,6 +1236,8 @@ A merge assistant for MusicBrainz recordings: gather candidates, let Match group
 ### Pool and groups
 
 Every candidate starts in the **Pool**. A recording's disambiguation follows its title in brackets, as on MusicBrainz, here and in the groups; a release's follows the release's title. A live recording (its performance of the work is marked live) has a **live** tag, and a recording with a place it was recorded at shows it after an @ (before the disambiguation), with the date in its tooltip. Put it in a group by dragging it, by double-clicking it (it joins the *current* group, the one whose header you clicked last), or by selecting it and clicking a group.
+
+**Sort** above the pool lists it as the recordings came in (**Added**), by **Title**, or by **Artist** and then title. Title ignores a bracketed part such as *(remastered)*, so the versions of one song sit together. A title that repeats (the same artist too, under Artist) is tinted, each run in a different colour from the next; a title on its own stays plain. Fusion remembers the choice, and Match doesn't depend on it.
 
 In a group:
 
