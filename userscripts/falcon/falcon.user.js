@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Falcon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.18.195122
+// @version      2026.10.19.124314
 // @description  Edit a BATCH of MusicBrainz artists/labels/recordings at once — add external links, ISRCs, names, aliases, disambiguations and cover art — no popup-per-entity, no tab churn. A small pool of persistent worker iframes churns through a queue, each submitting its own edit and moving straight to the next entity. Paste a list, hand it a queue via a `?falcon=` URL param, or click "Send to Falcon" on a Harmony actions page to import its suggestions directly.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5GYWxjb248L3RpdGxlPgo8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSI1OCIgZmlsbD0iI2Y2ZWZlMiIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjYiLz48cGF0aCBkPSJNMTA1LjYgNDAuMCBBNDggNDggMCAwIDEgMTA1LjYgODguMCIgc3Ryb2tlPSIjZDYyODI4IiBzdHJva2Utd2lkdGg9IjciIGZpbGw9Im5vbmUiLz4KPGcgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2UtbGluZWNhcD0icm91bmQiPjxwYXRoIGQ9Ik0yMC43IDg5LjAgTDI5LjQgODQuMCIgc3Ryb2tlLXdpZHRoPSIzIi8+PHBhdGggZD0iTTE0LjMgNjkuMiBMMjQuMiA2OC4yIiBzdHJva2Utd2lkdGg9IjMiLz48cGF0aCBkPSJNMTYuNCA0OC41IEwyNi4wIDUxLjYiIHN0cm9rZS13aWR0aD0iMyIvPjxwYXRoIGQ9Ik0yNi44IDMwLjUgTDM0LjMgMzcuMiIgc3Ryb2tlLXdpZHRoPSIzIi8+PHBhdGggZD0iTTQzLjcgMTguMyBMNDcuNyAyNy41IiBzdHJva2Utd2lkdGg9IjMiLz48cGF0aCBkPSJNNjQuMCAxNC4wIEw2NC4wIDI0LjAiIHN0cm9rZS13aWR0aD0iMyIvPjxwYXRoIGQ9Ik04NC4zIDE4LjMgTDgwLjMgMjcuNSIgc3Ryb2tlLXdpZHRoPSIzIi8+PHBhdGggZD0iTTEwMS4yIDMwLjUgTDkzLjcgMzcuMiIgc3Ryb2tlLXdpZHRoPSIzIi8+PHBhdGggZD0iTTExMS42IDQ4LjUgTDEwMi4wIDUxLjYiIHN0cm9rZS13aWR0aD0iMyIvPjxwYXRoIGQ9Ik0xMTMuNyA2OS4yIEwxMDMuOCA2OC4yIiBzdHJva2Utd2lkdGg9IjMiLz48cGF0aCBkPSJNMTA3LjMgODkuMCBMOTguNiA4NC4wIiBzdHJva2Utd2lkdGg9IjMiLz48L2c+PGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoNjQgOTQpIHJvdGF0ZSgwKSBzY2FsZSgwLjE2KSB0cmFuc2xhdGUoLTY0IC02NCkiPjxwYXRoIGQ9Ik02NCAyNiBDNjcgMjYgNzAgMzAgNzAgMzYgQzcyIDQwIDc0IDQyIDc2IDQ0IEM5MiA0MiAxMDggMzYgMTI0IDM0IEMxMTIgNDQgOTYgNTQgNzggNjIgQzc2IDY4IDc0IDc0IDc0IDgwIEw4MCAxMDAgQzc0IDEwNCA2OCAxMDQgNjQgMTA0IFoiIGZpbGw9IiM0YTVhNzgiLz48cGF0aCBkPSJNNjQgMjYgQzY3IDI2IDcwIDMwIDcwIDM2IEM3MiA0MCA3NCA0MiA3NiA0NCBDOTIgNDIgMTA4IDM2IDEyNCAzNCBDMTEyIDQ0IDk2IDU0IDc4IDYyIEM3NiA2OCA3NCA3NCA3NCA4MCBMODAgMTAwIEM3NCAxMDQgNjggMTA0IDY0IDEwNCBaIiBmaWxsPSIjNGE1YTc4IiB0cmFuc2Zvcm09InRyYW5zbGF0ZSgxMjggMCkgc2NhbGUoLTEgMSkiLz48L2c+PGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoNjQgNjQpIHJvdGF0ZSgxMTIpIj48cGF0aCBkPSJNMCAtNDYgTDQgMCBMLTQgMFoiIGZpbGw9IiMxYjJhNGEiLz48L2c+CjxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjciIGZpbGw9IiMxYjJhNGEiLz4KPC9zdmc+Cg==
@@ -6795,6 +6795,7 @@
       '.falcon-bar.falcon-compact .falcon-bt{display:none}',
       // #663: the open tab is marked; the select-all box and the selection count head the rows
       '#falcon-hdr .falcon-tab{border-bottom:2px solid transparent!important;padding:2px 4px}',
+      'html.falcon-dragging iframe{pointer-events:none!important}',   // the window's drag, over the workers
       '#falcon-hdr .falcon-tab.falcon-tab-on{border-bottom-color:var(--mbu-warn)!important;font-weight:700}',
       // #705: the shared log viewer fills the Log tab
       '#falcon-body-log>.mbu-logemb{flex:1 1 auto;min-height:0}',
@@ -7624,10 +7625,22 @@
     };
     // drag by header
     const hdr = document.getElementById('falcon-hdr');
-    let dragging = false, dx = 0, dy = 0;
+    // majkinetor (2026-10-19): "falcon is glitchy when moving window around during batch processing". A worker's
+    // MusicBrainz page booting holds the main thread, the cursor runs ahead of the window onto a worker's iframe,
+    // and the iframe's document took the moves and the release: the window jumped, or stayed on the cursor after
+    // the button was up. While dragging, iframes let the pointer through (html.falcon-dragging), moves are applied
+    // once a frame, and a move with the button up ends the drag.
+    let dragging = false, dx = 0, dy = 0, at = null, frame = 0;
+    const endDrag = () => { dragging = false; at = null; document.documentElement.classList.remove('falcon-dragging'); };
+    const place = () => {
+      frame = 0; if (!dragging || !at) return;
+      panel.style.right = 'auto'; panel.style.bottom = 'auto';
+      panel.style.left = Math.max(0, Math.min(window.innerWidth - 60, at.x - dx)) + 'px'; panel.style.top = Math.max(0, Math.min(window.innerHeight - 40, at.y - dy)) + 'px';
+    };
     hdr.addEventListener('mousedown', e => {
-      if (e.target.closest('button, a')) return;
+      if (e.target.closest('button, a') || e.button !== 0) return;
       dragging = true;
+      document.documentElement.classList.add('falcon-dragging');
       const r = panel.getBoundingClientRect();
       // detach from the centering transform BEFORE reading dx/dy — otherwise the
       // first drag move jumps (translate(-50%,-50%) would double-apply against the
@@ -7637,8 +7650,14 @@
       dx = e.clientX - r.left; dy = e.clientY - r.top;
       e.preventDefault();
     });
-    window.addEventListener('mousemove', e => { if (!dragging) return; panel.style.right = 'auto'; panel.style.bottom = 'auto'; panel.style.left = Math.max(0, Math.min(window.innerWidth - 60, e.clientX - dx)) + 'px'; panel.style.top = Math.max(0, Math.min(window.innerHeight - 40, e.clientY - dy)) + 'px'; });
-    window.addEventListener('mouseup', () => { dragging = false; });
+    window.addEventListener('mousemove', e => {
+      if (!dragging) return;
+      if (!(e.buttons & 1)) { endDrag(); return; }   // let go where the page didn't hear it
+      at = { x: e.clientX, y: e.clientY };
+      if (!frame) frame = requestAnimationFrame(place);
+    });
+    window.addEventListener('mouseup', e => { if (!dragging) return; at = { x: e.clientX, y: e.clientY }; place(); endDrag(); });
+    window.addEventListener('blur', () => { if (dragging) endDrag(); });
     // Normalise tab visibility through the same code path the tab buttons use,
     // so the panes can never start in a state setTab() wouldn't produce. The
     // Workers pane in particular must not be display:none (see setTab) — it was
